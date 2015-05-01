@@ -3,5 +3,5 @@ SWEET
 Shallow
 Water
 Equation
-E???
+Environment for
 Tests
