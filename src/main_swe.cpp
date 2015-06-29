@@ -5,93 +5,31 @@
 #include "libgl/draw/GlDrawCube.hpp"
 #include "libgl/core/CGlTexture.hpp"
 #include "libgl/shaders/shader_blinn/CShaderBlinn.hpp"
-       #include <unistd.h>
+#include <unistd.h>
 
 
 #define DIM 2
 
 
-void runTests(
-	std::size_t size_y,
-	std::size_t size_x
-)
-{
-	std::size_t size[2] = {size_x,size_y};
+// problem size
+std::size_t N = 64;
 
-	DataArray<2> h(size);
-	DataArray<2> hu(size);
-	DataArray<2> hv(size);
+double h0 = 1000.0;
 
-	h.data_setall(10);
-	hu.data_setall(0);
-	hv.data_setall(0);
+// gravitation
+double g = 9.81;
 
-	int c = 1;
-	for (std::size_t j = 0; j < size[1]; j++)
-		for (std::size_t i = 0; i < size[0]; i++)
-		{
-			h.getDataRef(j, i) = c;
-			c++;
-		}
+// cfl condition
+double CFL = 0.01;
 
-	// shift left test
-	if (1)
-	{
-		DataArray<2> h_t(size);
-		DataArray<2> u_t(size);
-		DataArray<2> v_t(size);
+// viscosity
+double viscocity = 0.0;
 
-		DataArray<2> op_shift_left(size);
-		double shift_left_kernel[3][3] = {{0,0,0},{0,0,1},{0,0,0}};
-		op_shift_left.setup_kernel(shift_left_kernel);
+// viscosity
+double hyper_viscocity = 0.0;
 
-		std::cout << "H 0" << std::endl;
-		std::cout << h << std::endl;
-
-		h_t = op_shift_left(h);
-		std::cout << "H 1" << std::endl;
-		std::cout << h_t << std::endl;
-
-		std::cout << h_t << std::endl;
-		u_t = op_shift_left(h_t);
-		std::cout << "H 2" << std::endl;
-		std::cout << u_t << std::endl;
-
-		h = op_shift_left(h);
-		h = op_shift_left(h);
-		std::cout << "H 2" << std::endl;
-		std::cout << h << std::endl;
-
-		return;
-	}
-
-	// shift up
-	if (1)
-	{
-		DataArray<2> op_shift_left(size);
-		double shift_left_kernel[3][3] = {{0,1,0},{0,0,0},{0,0,0}};
-		op_shift_left.setup_kernel(shift_left_kernel);
-		DataArray<2> shifted_result = op_shift_left(h);
-
-		std::cout << "H" << std::endl;
-		std::cout << h << std::endl;
-		std::cout << "SHIFT UP" << std::endl;
-		std::cout << shifted_result << std::endl;
-	}
-
-#if 0
-	DataArray<2> test(size);
-	double test_kernel[3][3] = {{1,2,3},{4,5,6},{7,8,9}};
-	//double test_kernel[5][5] = {{1,2,3,4,5},{6,7,8,9,10},{11,12,13,14,15},{16,17,18,19,20},{21,22,23,24,25}};
-	test.setup_kernel(test_kernel);
-	std::cout << test << std::endl;
-	test = h;
-	test.test_fftw();
-	std::cout << test << std::endl;
-	return;
-#endif
-}
-
+// setup scenario
+int setup_scenario = 0;
 
 class SimulationSWE
 {
@@ -108,17 +46,6 @@ public:
 	// cell size
 	double hx, hy;
 
-	// gravitation
-	double g = 9.81;
-
-	// cfl condition
-	double CFL = 0.01;
-
-	// viscosity
-	double viscocity = 0.5;
-
-	// viscosity
-	double hyper_viscocity = 50.0;
 
 	// number of simulated time steps
 	int timestep_nr = 0;
@@ -140,16 +67,18 @@ public:
 		diff2_x(i_res),
 		diff2_y(i_res)
 	{
+		CFL = ::CFL;
+
 		hx = domain_size/(double)i_res[0];
 		hy = domain_size/(double)i_res[1];
 
 		{
-			h.data_setall(10);
+			h.data_setall(h0);
 
-			double center_x = 0.6;
-			double center_y = 0.7;
+			double center_x = 0.7;
+			double center_y = 0.6;
 
-			if (1)
+			if (setup_scenario == 0)
 			{
 				/*
 				 * radial dam break
@@ -171,7 +100,7 @@ public:
 				}
 			}
 
-			if (0)
+			if (setup_scenario == 1)
 			{
 				/*
 				 * fun with Gaussian
@@ -192,14 +121,70 @@ public:
 			}
 		}
 
-		double diff1_x_kernel[3][3] = {{0,0,0},{-1.0/(2.0*hx),0,1.0/(2.0*hx)},{0,0,0}};
-		diff1_x.setup_kernel(diff1_x_kernel);
-		double diff1_y_kernel[3][3] = {{0,-1.0/(2.0*hy),0},{0,0,0},{0,1.0/(2.0*hy),0}};
-		diff1_y.setup_kernel(diff1_y_kernel);
-		double diff2_x_kernel[3][3] = {{0,0,0},{1.0/(hx*hx),-2.0/(hx*hx),1.0/(hx*hx)},{0,0,0}};
-		diff2_x.setup_kernel(diff2_x_kernel);
-		double diff2_y_kernel[3][3] = {{0,1.0/(hy*hy),0},{0,-2.0/(hy*hy),0},{0,1.0/(hy*hy),0}};
-		diff2_y.setup_kernel(diff2_y_kernel);
+		if (0)
+		{
+			double diff1_x_kernel[3][3] = {
+					{0,0,0},
+					{-1.0,0,1.0},
+					{0,0,0}
+			};
+			diff1_x.setup_kernel(diff1_x_kernel, 1.0/(2.0*hx));
+
+			double diff1_y_kernel[3][3] = {
+					{0,-1.0,0},	// lower y coordinate
+					{0,0,0},
+					{0,1.0,0}	// higher y coordinate
+			};
+			diff1_y.setup_kernel(diff1_y_kernel, 1.0/(2.0*hy));
+
+			double diff2_x_kernel[3][3] = {
+					{0,0,0},
+					{1.0,-2.0,1.0},
+					{0,0,0}
+				};
+			diff2_x.setup_kernel(diff2_x_kernel, 1.0/(hx*hx));
+
+			double diff2_y_kernel[3][3] = {
+					{0,1.0,0},
+					{0,-2.0,0},
+					{0,1.0,0}
+			};
+			diff2_y.setup_kernel(diff2_y_kernel, 1.0/(hy*hy));
+		}
+		else
+		{
+			double diff1_x_kernel[5][5] = {
+					{0,0,0,0,0},{0,0,0,0,0},
+					{1.0, -8.0, 0, 8.0, -1.0},
+					{0,0,0,0,0},{0,0,0,0,0}
+			};
+			diff1_x.setup_kernel(diff1_x_kernel, 1.0/(12*hx));
+
+			double diff1_y_kernel[5][5] = {
+					{0,0, -1.0, 0,0},
+					{0,0,  8.0, 0,0},
+					{0,0,  0.0, 0,0},
+					{0,0, -8.0, 0,0},
+					{0,0,  1.0, 0,0}
+			};
+			diff1_y.setup_kernel(diff1_y_kernel, 1.0/(12*hy));
+
+			double diff2_x_kernel[5][5] = {
+					{0,0,0,0,0},{0,0,0,0,0},
+					{-1.0, 16.0, -30.0, 16.0, -1.0},
+					{0,0,0,0,0},{0,0,0,0,0}
+			};
+			diff2_x.setup_kernel(diff2_x_kernel, 1.0/(12*hx));
+
+			double diff2_y_kernel[5][5] = {
+					{0,0,  -1.0, 0,0},
+					{0,0,  16.0, 0,0},
+					{0,0, -30.0, 0,0},
+					{0,0,  16.0, 0,0},
+					{0,0,  -1.0, 0,0}
+			};
+			diff2_y.setup_kernel(diff2_y_kernel, 1.0/12*hx);
+		}
 
 		u.data_setall(0);
 		v.data_setall(0);
@@ -222,12 +207,14 @@ public:
 
 		if (viscocity > 0)
 		{
+			// TODO: is this correct?
 			v_t -= (diff2_y(u) + diff2_y(v))*viscocity;
 			u_t -= (diff2_x(u) + diff2_x(v))*viscocity;
 		}
 
 		if (hyper_viscocity > 0)
 		{
+			// TODO: is this correct?
 			u_t -= (diff2_x(diff2_x(u)) + diff2_x(diff2_x(v)))*viscocity;
 			v_t -= (diff2_y(diff2_y(u)) + diff2_y(diff2_y(v)))*viscocity;
 		}
@@ -245,8 +232,7 @@ public:
         std::cout << limit_speed << ", " << limit_visc << ", " << limit_gh << std::endl;
         double dt = CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
 
-//        std::cout << ">>>>>>>>>>>>>>>>>>>>>>>> " << dt << std::endl;
- //       dt = 0.05;
+//       dt = 0.05;
 
 		h += dt*h_t;
 		u += dt*u_t;
@@ -261,7 +247,6 @@ public:
 
 VisualizationEngine *visualizationEngine;
 
-std::size_t N = 64;
 
 class VisualizationSimulationSWE
 {
@@ -320,20 +305,20 @@ public:
 
 		simulationSWE->h.requestDataInCartesianSpace();
 
-		double scale_d = 1.0/(simulationSWE->h-10.0).get_maxAbs();
+		double scale_d = 1.0/(simulationSWE->h-h0).get_maxAbs();
 
 #pragma omp parallel for simd
 		for (std::size_t i = 0; i < simulationSWE->h.array_data_cartesian_length; i++)
 		{
 			double value;
 			// average height
-			value = simulationSWE->h.array_data_cartesian_space[i]-10.0;
+			value = simulationSWE->h.array_data_cartesian_space[i]-h0;
 
 			// scale
 			value *= scale_d;
 
 			// [-1;1] -> [0;255]
-			value = (value+1.)*0.5*255.0;
+			value = (value+1.0)*0.5*255.0;
 
 			texture_data[i] = value;
 		}
@@ -394,16 +379,20 @@ class ProgramCallbacks	:
 
 int main(int i_argc, char *i_argv[])
 {
-#if 0
-	runTests(8, 8);
+	if (i_argc > 1)
+		N = atoi(i_argv[1]);
 
-//	runSWE(8, 12);
-//	int N = 1024;
-//	runSWE(N,N);
+	if (i_argc > 2)
+		CFL = atof(i_argv[2]);
 
-#else
+	if (i_argc > 3)
+		viscocity = atof(i_argv[3]);
 
-	N = 128;
+	if (i_argc > 4)
+		hyper_viscocity = atof(i_argv[4]);
+
+	if (i_argc > 5)
+		setup_scenario = atoi(i_argv[5]);
 
 	ProgramCallbacks programCallbacks;
 
@@ -414,6 +403,5 @@ int main(int i_argc, char *i_argv[])
 
 	delete visSimulationSWE;
 
-#endif
 	return 1;
 }

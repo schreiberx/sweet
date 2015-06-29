@@ -471,14 +471,15 @@ public:
 public:
 	template <int S>
 	void setup_kernel(
-			const double i_kernel_array[S][S]
+			const double i_kernel_array[S][S],
+			double i_scale = 1.0
 	)
 	{
 		double inv_kernel_array[S][S];
 
 		for (int j = 0; j < S; j++)
 			for (int i = 0; i < S; i++)
-				inv_kernel_array[j][i] = i_kernel_array[S-j-1][S-i-1];
+				inv_kernel_array[j][i] = i_kernel_array[S-j-1][S-i-1]*i_scale;
 
 		assert(D == 2);
 
@@ -984,6 +985,8 @@ public:
  * Otherwise, we'd have to write it as arrayData*1.5
  *
  */
+inline
+static
 DataArray<2> operator*(
 		const double i_value,
 		const DataArray<2> &i_array_data
