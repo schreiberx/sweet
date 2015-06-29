@@ -1,0 +1,28 @@
+
+
+
+Optional: Get OpenMPI
+	http://www.open-mpi.org/software/ompi/v1.8/
+	openmpi-1.8.6.tar.bz2
+
+	tar xzf openmpi-1.8.6.tar.bz2
+	./configure --prefix=$HOME/local/sweet_support
+	make -j 4 install
+
+
+FFTW:
+	http://www.fftw.org/download.html
+	fftw-3.3.4.tar.gz
+
+	tar xzf fftw-3.3.4.tar.gz
+	./configure --prefix=$HOME/local/sweet_support --enable-mpi --enable-threads
+	make -j 4 install
+
+
+Get PFFT from the following website:
+	https://www-user.tu-chemnitz.de/~mpip/software.php#pfft
+	pfft-1.0.8-alpha.tar.gz
+
+	tar xzf pfft-1.0.8-alpha.tar.gz
+	./configure --prefix=$HOME/local/sweet_support
+	
