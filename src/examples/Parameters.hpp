@@ -50,6 +50,9 @@ public:
 	// number of simulated time steps
 	int timestep_nr = 0;
 
+	// time in simulation
+	double simulation_time = 0;
+
 	// mass
 	double mass = 0;
 	// energy

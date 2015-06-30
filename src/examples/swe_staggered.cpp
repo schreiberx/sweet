@@ -23,9 +23,6 @@ public:
 
 	Operators2D op;
 
-	// cell size
-	double hx, hy;
-
 	/**
 	 * See "The Dynamics of Finite-Difference Models of the Shallow-Water Equations", Robert Sadourny
 	 *
@@ -60,16 +57,13 @@ public:
 
 		op(parameters.cell_size, parameters.res)
 	{
-		hx = parameters.domain_length/(double)parameters.res[0];
-		hy = parameters.domain_length/(double)parameters.res[1];
-
 		reset();
-
 	}
 
 	void reset()
 	{
 		parameters.timestep_nr = 0;
+		parameters.simulation_time = 0;
 
 		P.data_setall(parameters.h0);
 
@@ -141,7 +135,7 @@ public:
 				P*op.avg_b_y(v*v)
 			).reduce_sum() / (double)(parameters.res[0]*parameters.res[1]);
 		// potential enstropy
-		parameters.potential_entrophy = 0.5*(eta*op.avg_f_x(op.avg_f_y(P))).reduce_sum() / (double)(parameters.res[0]*parameters.res[1]);
+		parameters.potential_entrophy = 0.5*(eta*eta*op.avg_f_x(op.avg_f_y(P))).reduce_sum() / (double)(parameters.res[0]*parameters.res[1]);
 
 		u_t = op.avg_b_y(eta*op.avg_f_x(V)) - op.diff_f_x(H);
 		v_t = op.avg_b_x(eta*op.avg_f_y(U)) - op.diff_f_y(H);
@@ -159,7 +153,7 @@ public:
 			v_t += (op.diff2_c_y(op.diff2_c_y(u)) + op.diff2_c_y(op.diff2_c_y(v)))*parameters.hyper_viscocity;
 		}
 
-		double limit_speed = std::max(hx/u.reduce_maxAbs(), hy/v.reduce_maxAbs());
+		double limit_speed = std::max(parameters.cell_size[0]/u.reduce_maxAbs(), parameters.cell_size[1]/v.reduce_maxAbs());
 
         // limit by re
         double limit_visc = limit_speed;
@@ -167,7 +161,7 @@ public:
  //           limit_visc = (viscocity*0.5)*((hx*hy)*0.5);
 
         // limit by gravitational acceleration
-		double limit_gh = std::min(hx, hy)/std::sqrt(parameters.g*P.reduce_maxAbs());
+		double limit_gh = std::min(parameters.cell_size[0], parameters.cell_size[1])/std::sqrt(parameters.g*P.reduce_maxAbs());
 
 //        std::cout << limit_speed << ", " << limit_visc << ", " << limit_gh << std::endl;
 		double dt = parameters.CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
@@ -175,8 +169,9 @@ public:
 		// provide information to parameters
 		parameters.timestep_size = dt;
 
+//		std::cout << parameters.cell_size[0] << " " << parameters.cell_size[1] << std::endl;
 #define DELAYED_P_UPDATE	1
-#define USE_UP_AND_DOWNWINDING	1
+#define USE_UP_AND_DOWNWINDING	0
 
 #if DELAYED_P_UPDATE == 0
 
@@ -217,7 +212,6 @@ public:
 		u += dt*u_t;
 		v += dt*v_t;
 
-
 #if USE_UP_AND_DOWNWINDING == 0
 		// recompute U and V
 		U = op.avg_f_x(P)*u;
@@ -256,6 +250,7 @@ public:
 			);
 #endif
 
+		parameters.simulation_time += dt;
 		parameters.timestep_nr++;
 	}
 
@@ -277,7 +272,7 @@ public:
 	const char* vis_get_status_string()
 	{
 		static char title_string[1024];
-		sprintf(title_string, "Timestep: %i, timestep size: %e, Mass: %e, Energy: %e, Potential Entrophy: %e", parameters.timestep_nr, parameters.timestep_size, parameters.mass, parameters.energy, parameters.potential_entrophy);
+		sprintf(title_string, "Time: %f, Timestep: %i, timestep size: %e, Mass: %e, Energy: %e, Potential Entrophy: %e", parameters.simulation_time, parameters.timestep_nr, parameters.timestep_size, parameters.mass, parameters.energy, parameters.potential_entrophy);
 		return title_string;
 	}
 

@@ -2,6 +2,8 @@
 #include <sweet/DataArray.hpp>
 #include "VisSweet.hpp"
 #include "Parameters.hpp"
+#include "sweet/Operators2D.hpp"
+
 #include <unistd.h>
 
 Parameters parameters;
@@ -12,13 +14,9 @@ class SimulationSWE
 public:
 	DataArray<2> h, u, v;
 	DataArray<2> h_t, u_t, v_t;
+	DataArray<2> eta;
 
-	DataArray<2> diff1_x, diff1_y;
-	DataArray<2> diff2_x, diff2_y;
-
-	// cell size
-	double hx, hy;
-
+	Operators2D op;
 
 public:
 	SimulationSWE(
@@ -29,77 +27,45 @@ public:
 		h_t(parameters.res),
 		u_t(parameters.res),
 		v_t(parameters.res),
-		diff1_x(parameters.res),
-		diff1_y(parameters.res),
-		diff2_x(parameters.res),
-		diff2_y(parameters.res)
+
+		eta(parameters.res),
+
+		op(parameters.cell_size, parameters.res)
 	{
-		hx = parameters.domain_length/(double)parameters.res[0];
-		hy = parameters.domain_length/(double)parameters.res[1];
 
-		if (1)
+		if (0)
 		{
-			double diff1_x_kernel[3][3] = {
-					{0,0,0},
-					{-1.0,0,1.0},
-					{0,0,0},
-			};
-			diff1_x.setup_kernel(diff1_x_kernel, 1.0/(2.0*hx));
-
-			double diff1_y_kernel[3][3] = {
-					{0,1.0,0},	// higher y coordinate
-					{0,0,0},
-					{0,-1.0,0},	// lower y coordinate
-			};
-			diff1_y.setup_kernel(diff1_y_kernel, 1.0/(2.0*hy));
-
-			double diff2_x_kernel[3][3] = {
-					{0,0,0},
-					{1.0,-2.0,1.0},
-					{0,0,0},
-				};
-			diff2_x.setup_kernel(diff2_x_kernel, 1.0/(hx*hx));
-
-			double diff2_y_kernel[3][3] = {
-					{0,1.0,0},
-					{0,-2.0,0},
-					{0,1.0,0},
-			};
-			diff2_y.setup_kernel(diff2_y_kernel, 1.0/(hy*hy));
-		}
-		else
-		{
-			double diff1_x_kernel[5][5] = {
+			double diff_c_x_kernel[5][5] = {
 					{0,0,0,0,0},{0,0,0,0,0},
 					{1.0, -8.0, 0, 8.0, -1.0},
 					{0,0,0,0,0},{0,0,0,0,0},
 			};
-			diff1_x.setup_kernel(diff1_x_kernel, 1.0/(12*hx));
+			op.diff_c_x.setup_kernel(diff_c_x_kernel, 1.0/(12*parameters.cell_size[0]));
 
-			double diff1_y_kernel[5][5] = {
+			double diff_c_y_kernel[5][5] = {
 					{0,0, 1.0, 0,0},
 					{0,0, -8.0, 0,0},
 					{0,0,  0.0, 0,0},
 					{0,0,  8.0, 0,0},
 					{0,0, -1.0, 0,0},
 			};
-			diff1_y.setup_kernel(diff1_y_kernel, 1.0/(12*hy));
+			op.diff_c_y.setup_kernel(diff_c_y_kernel, 1.0/(12*parameters.cell_size[1]));
 
-			double diff2_x_kernel[5][5] = {
+			double diff2_c_x_kernel[5][5] = {
 					{0,0,0,0,0},{0,0,0,0,0},
 					{-1.0, 16.0, -30.0, 16.0, -1.0},
 					{0,0,0,0,0},{0,0,0,0,0},
 			};
-			diff2_x.setup_kernel(diff2_x_kernel, 1.0/(12*hx));
+			op.diff2_c_x.setup_kernel(diff2_c_x_kernel, 1.0/(12*parameters.cell_size[0]));
 
-			double diff2_y_kernel[5][5] = {
+			double diff2_c_y_kernel[5][5] = {
 					{0, 0,  -1.0, 0, 0},
 					{0, 0,  16.0, 0, 0},
 					{0, 0, -30.0, 0, 0},
 					{0, 0,  16.0, 0, 0},
 					{0, 0,  -1.0, 0, 0},
 			};
-			diff2_y.setup_kernel(diff2_y_kernel, 1.0/12*hx);
+			op.diff2_c_y.setup_kernel(diff2_c_y_kernel, 1.0/12*parameters.cell_size[1]);
 		}
 
 		reset();
@@ -109,6 +75,7 @@ public:
 	void reset()
 	{
 		parameters.timestep_nr = 0;
+		parameters.simulation_time = 0;
 
 		h.data_setall(parameters.h0);
 
@@ -171,25 +138,37 @@ public:
 		 *	u_t = -g * h_x - u * u_x - v * u_y
 		 *	v_t = -g * h_y - u * v_x - v * v_y
 		 */
-		h_t = -diff1_x(u*h) - diff1_y(v*h);
-		u_t = -parameters.g*diff1_x(h) - u*diff1_x(u) - v*diff1_y(u);
-		v_t = -parameters.g*diff1_y(h) - u*diff1_x(v) - v*diff1_y(v);
+		u_t = -parameters.g*op.diff_c_x(h) - u*op.diff_c_x(u) - v*op.diff_c_y(u);
+		v_t = -parameters.g*op.diff_c_y(h) - u*op.diff_c_x(v) - v*op.diff_c_y(v);
 
-		if (parameters.viscocity > 0)
+		// mass
+		parameters.mass = h.reduce_sum() / (double)(parameters.res[0]*parameters.res[1]);
+		// energy
+		parameters.energy = 0.5*(
+				h*h +
+				h*u*u +
+				h*v*v
+			).reduce_sum() / (double)(parameters.res[0]*parameters.res[1]);
+		// potential enstropy
+		// TODO: is this correct?
+		eta = (op.diff_c_x(v) - op.diff_c_y(u)) / h;
+		parameters.potential_entrophy = 0.5*(eta*eta*h).reduce_sum() / (double)(parameters.res[0]*parameters.res[1]);
+
+		if (parameters.viscocity != 0)
 		{
 			// TODO: is this correct?
-			v_t -= (diff2_y(u) + diff2_y(v))*parameters.viscocity;
-			u_t -= (diff2_x(u) + diff2_x(v))*parameters.viscocity;
+			v_t += (op.diff2_c_y(u) + op.diff2_c_y(v))*parameters.viscocity;
+			u_t += (op.diff2_c_x(u) + op.diff2_c_x(v))*parameters.viscocity;
 		}
 
-		if (parameters.hyper_viscocity > 0)
+		if (parameters.hyper_viscocity != 0)
 		{
 			// TODO: is this correct?
-			u_t -= (diff2_x(diff2_x(u)) + diff2_x(diff2_x(v)))*parameters.hyper_viscocity;
-			v_t -= (diff2_y(diff2_y(u)) + diff2_y(diff2_y(v)))*parameters.hyper_viscocity;
+			u_t += (op.diff2_c_x(op.diff2_c_x(u)) + op.diff2_c_x(op.diff2_c_x(v)))*parameters.hyper_viscocity;
+			v_t += (op.diff2_c_y(op.diff2_c_y(u)) + op.diff2_c_y(op.diff2_c_y(v)))*parameters.hyper_viscocity;
 		}
 
-		double limit_speed = std::max(hx/u.reduce_maxAbs(), hy/v.reduce_maxAbs());
+		double limit_speed = std::max(parameters.cell_size[0]/u.reduce_maxAbs(), parameters.cell_size[1]/v.reduce_maxAbs());
 
         // limit by re
         double limit_visc = limit_speed;
@@ -197,15 +176,22 @@ public:
  //           limit_visc = (viscocity*0.5)*((hx*hy)*0.5);
 
         // limit by gravitational acceleration
-		double limit_gh = std::min(hx, hy)/std::sqrt(parameters.g*h.reduce_maxAbs());
+		double limit_gh = std::min(parameters.cell_size[0], parameters.cell_size[1])/std::sqrt(parameters.g*h.reduce_maxAbs());
 
 //        std::cout << limit_speed << ", " << limit_visc << ", " << limit_gh << std::endl;
-        double dt = parameters.CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
+		double dt = parameters.CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
 
-		h += dt*h_t;
+		// provide information to parameters
+		parameters.timestep_size = dt;
+
+
 		u += dt*u_t;
 		v += dt*v_t;
 
+		h_t = -op.diff_c_x(u*h) - op.diff_c_y(v*h);
+		h += dt*h_t;
+
+		parameters.simulation_time += dt;
 		parameters.timestep_nr++;
 	}
 
@@ -226,7 +212,7 @@ public:
 	const char* vis_get_status_string()
 	{
 		static char title_string[1024];
-		sprintf(title_string, "Timestep: %i, timestep size: %e, Mass: %e, Energy: %e, Potential Entrophy: %e", parameters.timestep_nr, parameters.timestep_size, parameters.mass, parameters.energy, parameters.potential_entrophy);
+		sprintf(title_string, "Time: %f, Timestep: %i, timestep size: %e, Mass: %e, Energy: %e, Potential Entrophy: %e", parameters.simulation_time, parameters.timestep_nr, parameters.timestep_size, parameters.mass, parameters.energy, parameters.potential_entrophy);
 		return title_string;
 	}
 
