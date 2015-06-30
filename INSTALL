@@ -1,5 +1,9 @@
 
 
+SCons:
+	SCons is required for building SWEET
+	http://www.scons.org/
+
 
 Optional: Get OpenMPI
 	http://www.open-mpi.org/software/ompi/v1.8/

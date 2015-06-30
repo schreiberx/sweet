@@ -107,14 +107,14 @@ env['gxx_toolchain'] = GetOption('gxx-toolchain')
 
 
 
-AddOption(	'--use-spectral-space',
-		dest='use_spectral_space',
+AddOption(	'--spectral-space',
+		dest='spectral_space',
 		type='choice',
 		choices=['enable', 'disable'],
 		default='disable',
 		help="Use spectral space for operations such as folding [default: %default]"
 )
-env['use_spectral_space'] = GetOption('use_spectral_space')
+env['spectral_space'] = GetOption('spectral_space')
 
 #
 # LIB XML
@@ -185,7 +185,14 @@ env.Append(CXXFLAGS = ' -DSWEET_PROGRAM_NAME='+env['program_name'])
 
 exec_name=env['program_name']
 
-exec_name+='_spectral'+str(env['use_spectral_space'])
+exec_name+='_spectral'+str(env['spectral_space'])
+
+if env['spectral_space'] == 'enable':
+	env.Append(CXXFLAGS = ' -DUSE_SPECTRAL_SPACE=1')
+	env.Append(LDFLAGS=' -Lfftw -Lfftw_omp')
+else:
+	env.Append(CXXFLAGS = ' -DUSE_SPECTRAL_SPACE=0')
+
 
 
 #if env['program_binary_name_override'] != '':

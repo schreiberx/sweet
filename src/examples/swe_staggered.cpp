@@ -1,54 +1,16 @@
 
 #include <sweet/DataArray.hpp>
+#include "VisSweet.hpp"
+#include "Parameters.hpp"
+#include "sweet/Operators2D.hpp"
 #include <unistd.h>
 
+Parameters parameters;
 
-#if SWEET_GUI
-	#include "libgl/VisualizationEngine.hpp"
-	#include "libgl/draw/GlDrawQuad.hpp"
-	#include "libgl/draw/GlDrawCube.hpp"
-	#include "libgl/core/CGlTexture.hpp"
-	#include "libgl/shaders/shader_blinn/CShaderBlinn.hpp"
-#endif
-
-
-//// problem size
-std::size_t N = 64;
-
-// resolution
-std::size_t res[2] = {N,N};
-
-double h0 = 100.0;
-
-// gravitation
-double g = 9.81;
-
-// cfl condition
-double CFL = 0.01;
-
-// viscosity
-double viscocity = 0.0;
-
-// viscosity
-double hyper_viscocity = 0.0;
-
-// domain length
-double domain_length = 1000;
-
-// setup scenario
-int setup_scenario = 0;
-
-double timestep_size = -1;
 
 class SimulationSWEStaggered
-#if ENABLE_GUI
-		:
-		public VisualizationEngine::ProgramCallbacks
-#endif
 {
 public:
-	double domain_size = 1000;
-
 	// prognostics
 	DataArray<2> P, u, v;
 
@@ -58,29 +20,11 @@ public:
 
 	DataArray<2> P_t, u_t, v_t;
 
-	DataArray<2> diff1_x, diff1_y;
-	DataArray<2> diff2_x, diff2_y;
 
-	DataArray<2> op_d_f_x, op_d_f_y;
-	DataArray<2> op_d_b_x, op_d_b_y;
-	DataArray<2> op_avg_f_x, op_avg_f_y;
-	DataArray<2> op_avg_b_x, op_avg_b_y;
+	Operators2D op;
 
 	// cell size
 	double hx, hy;
-
-	// number of simulated time steps
-	int timestep_nr = 0;
-
-	// mass
-	double mass = 0;
-	// energy
-	double energy = 0;
-	// potential enstropy
-	double potential_entrophy = 0;
-
-	// run simulation timestepping
-	bool run_simulation = true;
 
 	/**
 	 * See "The Dynamics of Finite-Difference Models of the Shallow-Water Equations", Robert Sadourny
@@ -102,146 +46,48 @@ public:
 public:
 	SimulationSWEStaggered(
 	)	:
-		P(res),	// density/pressure
-		u(res),	// velocity (x-direction)
-		v(res),	// velocity (y-direction)
+		P(parameters.res),	// density/pressure
+		u(parameters.res),	// velocity (x-direction)
+		v(parameters.res),	// velocity (y-direction)
 
-		H(res),	//
-		U(res),	// mass flux (x-direction)
-		V(res),	// mass flux (y-direction)
-		eta(res),
-		P_t(res),
-		u_t(res),
-		v_t(res),
-		diff1_x(res),
-		diff1_y(res),
-		diff2_x(res),
-		diff2_y(res),
+		H(parameters.res),	//
+		U(parameters.res),	// mass flux (x-direction)
+		V(parameters.res),	// mass flux (y-direction)
+		eta(parameters.res),
+		P_t(parameters.res),
+		u_t(parameters.res),
+		v_t(parameters.res),
 
-		op_d_f_x(res),
-		op_d_f_y(res),
-		op_d_b_x(res),
-		op_d_b_y(res),
-		op_avg_f_x(res),
-		op_avg_f_y(res),
-		op_avg_b_x(res),
-		op_avg_b_y(res)
+		op(parameters.cell_size, parameters.res)
 	{
-		CFL = ::CFL;
-
-		hx = domain_size/(double)res[0];
-		hy = domain_size/(double)res[1];
+		hx = parameters.domain_length/(double)parameters.res[0];
+		hy = parameters.domain_length/(double)parameters.res[1];
 
 		reset();
 
-		double op_avg_f_x_kernel[3][3] = {
-				{0,0,0},
-				{0,1,1},
-				{0,0,0},
-		};
-		op_avg_f_x.setup_kernel(op_avg_f_x_kernel, 0.5);
-
-		double op_avg_f_y_kernel[3][3] = {
-				{0,1,0},
-				{0,1,0},
-				{0,0,0},
-		};
-		op_avg_f_y.setup_kernel(op_avg_f_y_kernel, 0.5);
-
-		double op_avg_b_x_kernel[3][3] = {
-				{0,0,0},
-				{1,1,0},
-				{0,0,0},
-		};
-		op_avg_b_x.setup_kernel(op_avg_b_x_kernel, 0.5);
-
-		double op_avg_b_y_kernel[3][3] = {
-				{0,0,0},
-				{0,1,0},
-				{0,1,0},
-		};
-		op_avg_b_y.setup_kernel(op_avg_b_y_kernel, 0.5);
-
-
-
-		double op_d_f_x_kernel[3][3] = {
-				{0,0,0},
-				{0,-1,1},
-				{0,0,0}
-		};
-		op_d_f_x.setup_kernel(op_d_f_x_kernel, 1.0/hx);
-
-		double op_d_f_y_kernel[3][3] = {
-				{0,1,0},
-				{0,-1,0},
-				{0,0,0}
-		};
-		op_d_f_y.setup_kernel(op_d_f_y_kernel, 1.0/hy);
-
-
-		double op_d_b_x_kernel[3][3] = {
-				{0,0,0},
-				{-1,1,0},
-				{0,0,0}
-		};
-		op_d_b_x.setup_kernel(op_d_b_x_kernel, 1.0/hx);
-
-		double op_d_b_y_kernel[3][3] = {
-				{0,0,0},
-				{0,1,0},
-				{0,-1,0},
-		};
-		op_d_b_y.setup_kernel(op_d_b_y_kernel, 1.0/hy);
-
-
-		double diff1_x_kernel[3][3] = {
-				{0,0,0},
-				{-1.0,0,1.0},
-				{0,0,0}
-		};
-		diff1_x.setup_kernel(diff1_x_kernel, 1.0/(2.0*hx));
-
-		double diff1_y_kernel[3][3] = {
-				{0,-1.0,0},	// lower y coordinate
-				{0,0,0},
-				{0,1.0,0}	// higher y coordinate
-		};
-		diff1_y.setup_kernel(diff1_y_kernel, 1.0/(2.0*hy));
-
-		double diff2_x_kernel[3][3] = {
-				{0,0,0},
-				{1.0,-2.0,1.0},
-				{0,0,0}
-			};
-		diff2_x.setup_kernel(diff2_x_kernel, 1.0/(hx*hx));
-
-		double diff2_y_kernel[3][3] = {
-				{0,1.0,0},
-				{0,-2.0,0},
-				{0,1.0,0}
-		};
-		diff2_y.setup_kernel(diff2_y_kernel, 1.0/(hy*hy));
 	}
 
 	void reset()
 	{
-		P.data_setall(h0);
+		parameters.timestep_nr = 0;
+
+		P.data_setall(parameters.h0);
 
 		double center_x = 0.7;
 		double center_y = 0.6;
 
-		if (setup_scenario == 0)
+		if (parameters.setup_scenario == 0)
 		{
 			/*
 			 * radial dam break
 			 */
 			double radius = 0.2;
-			for (std::size_t j = 0; j < res[1]; j++)
+			for (std::size_t j = 0; j < parameters.res[1]; j++)
 			{
-				for (std::size_t i = 0; i < res[0]; i++)
+				for (std::size_t i = 0; i < parameters.res[0]; i++)
 				{
-					double x = ((double)i+0.5)/(double)res[0];
-					double y = ((double)j+0.5)/(double)res[1];
+					double x = ((double)i+0.5)/(double)parameters.res[0];
+					double y = ((double)j+0.5)/(double)parameters.res[1];
 
 					double dx = x-center_x;
 					double dy = y-center_y;
@@ -252,17 +98,17 @@ public:
 			}
 		}
 
-		if (setup_scenario == 1)
+		if (parameters.setup_scenario == 1)
 		{
 			/*
 			 * fun with Gaussian
 			 */
-			for (std::size_t j = 0; j < res[1]; j++)
+			for (std::size_t j = 0; j < parameters.res[1]; j++)
 			{
-				for (std::size_t i = 0; i < res[0]; i++)
+				for (std::size_t i = 0; i < parameters.res[0]; i++)
 				{
-					double x = ((double)i+0.5)/(double)res[0];
-					double y = ((double)j+0.5)/(double)res[1];
+					double x = ((double)i+0.5)/(double)parameters.res[0];
+					double y = ((double)j+0.5)/(double)parameters.res[1];
 
 					double dx = x-center_x;
 					double dy = y-center_y;
@@ -272,8 +118,6 @@ public:
 			}
 		}
 
-
-
 		u.data_setall(0);
 		v.data_setall(0);
 	}
@@ -281,40 +125,38 @@ public:
 
 	void run_timestep()
 	{
-		U = op_avg_f_x(P)*u;
-		V = op_avg_f_y(P)*v;
+		U = op.avg_f_x(P)*u;
+		V = op.avg_f_y(P)*v;
 
-		H = P + 0.5*(op_avg_b_x(u*u) + op_avg_b_y(v*v));
+		H = P + 0.5*(op.avg_b_x(u*u) + op.avg_b_y(v*v));
 
-		eta = (op_d_f_x(v) - op_d_f_y(u)) / op_avg_f_x(op_avg_f_y(P));
+		eta = (op.diff_f_x(v) - op.diff_f_y(u)) / op.avg_f_x(op.avg_f_y(P));
 
 		// mass
-		mass = P.reduce_sum() / (double)(res[0]*res[1]);
+		parameters.mass = P.reduce_sum() / (double)(parameters.res[0]*parameters.res[1]);
 		// energy
-		energy = 0.5*(
+		parameters.energy = 0.5*(
 				P*P +
-				P*op_avg_b_x(u*u) +
-				P*op_avg_b_y(v*v)
-			).reduce_sum() / (double)(res[0]*res[1]);
+				P*op.avg_b_x(u*u) +
+				P*op.avg_b_y(v*v)
+			).reduce_sum() / (double)(parameters.res[0]*parameters.res[1]);
 		// potential enstropy
-		potential_entrophy = 0.5*(eta*op_avg_f_x(op_avg_f_y(P))).reduce_sum() / (double)(res[0]*res[1]);
+		parameters.potential_entrophy = 0.5*(eta*op.avg_f_x(op.avg_f_y(P))).reduce_sum() / (double)(parameters.res[0]*parameters.res[1]);
 
-		u_t = op_avg_b_y(eta*op_avg_f_x(V)) - op_d_f_x(H);
-		v_t = op_avg_b_x(eta*op_avg_f_y(U)) - op_d_f_y(H);
-		P_t = -op_d_b_x(U) - op_d_b_y(V);
+		u_t = op.avg_b_y(eta*op.avg_f_x(V)) - op.diff_f_x(H);
+		v_t = op.avg_b_x(eta*op.avg_f_y(U)) - op.diff_f_y(H);
+		P_t = -op.diff_b_x(U) - op.diff_b_y(V);
 
-		if (viscocity != 0)
+		if (parameters.viscocity != 0)
 		{
-			// TODO: is this correct?
-			v_t += (diff2_y(u) + diff2_y(v))*viscocity;
-			u_t += (diff2_x(u) + diff2_x(v))*viscocity;
+			u_t += (op.diff2_c_x(u) + op.diff2_c_x(v))*parameters.viscocity;
+			v_t += (op.diff2_c_y(u) + op.diff2_c_y(v))*parameters.viscocity;
 		}
 
-		if (hyper_viscocity != 0)
+		if (parameters.hyper_viscocity != 0)
 		{
-			// TODO: is this correct?
-			u_t += (diff2_x(diff2_x(u)) + diff2_x(diff2_x(v)))*viscocity;
-			v_t += (diff2_y(diff2_y(u)) + diff2_y(diff2_y(v)))*viscocity;
+			u_t += (op.diff2_c_x(op.diff2_c_x(u)) + op.diff2_c_x(op.diff2_c_x(v)))*parameters.hyper_viscocity;
+			v_t += (op.diff2_c_y(op.diff2_c_y(u)) + op.diff2_c_y(op.diff2_c_y(v)))*parameters.hyper_viscocity;
 		}
 
 		double limit_speed = std::max(hx/u.reduce_maxAbs(), hy/v.reduce_maxAbs());
@@ -325,123 +167,125 @@ public:
  //           limit_visc = (viscocity*0.5)*((hx*hy)*0.5);
 
         // limit by gravitational acceleration
-		double limit_gh = std::min(hx, hy)/std::sqrt(g*P.reduce_maxAbs());
+		double limit_gh = std::min(hx, hy)/std::sqrt(parameters.g*P.reduce_maxAbs());
 
 //        std::cout << limit_speed << ", " << limit_visc << ", " << limit_gh << std::endl;
-        timestep_size = CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
+		double dt = parameters.CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
 
-		P += timestep_size*P_t;
-		u += timestep_size*u_t;
-		v += timestep_size*v_t;
+		// provide information to parameters
+		parameters.timestep_size = dt;
 
-		timestep_nr++;
+#define DELAYED_P_UPDATE	1
+#define USE_UP_AND_DOWNWINDING	1
+
+#if DELAYED_P_UPDATE == 0
+
+#if USE_UP_AND_DOWNWINDING == 0
+		P += dt*P_t;
+#else
+
+		// up/downwinding on staggered grid (FV-like method)
+		P += dt/(parameters.cell_size[0]*parameters.cell_size[1])*(
+				parameters.cell_size[1]*(
+					//             |                       |                       |
+					// --v---------|-----------v-----------|-----------v-----------|
+					//   h0        u0          h1          u1          h2          u2
+					//
+
+					// left edge
+					op.shift_right(P*u.return_value_if_positive())		// inflow
+					+(P*op.shift_right(u.return_value_if_negative()))	// outflow
+
+					// right edge
+					-P*u.return_value_if_positive()					// outflow
+					-op.shift_left(P)*u.return_value_if_negative()	// inflow
+				)
+				+
+				parameters.cell_size[0]*(
+						// bottom edge
+						op.shift_up(P*v.return_value_if_positive())	// inflow
+						+(P*op.shift_up(v.return_value_if_negative()))	// outflow
+
+						// top edge
+						-P*v.return_value_if_positive()					// outflow
+						-op.shift_down(P)*v.return_value_if_negative()	// inflow
+				)
+			);
+#endif
+#endif
+
+		u += dt*u_t;
+		v += dt*v_t;
+
+
+#if USE_UP_AND_DOWNWINDING == 0
+		// recompute U and V
+		U = op.avg_f_x(P)*u;
+		V = op.avg_f_y(P)*v;
+
+		P_t = -op.diff_b_x(U) - op.diff_b_y(V);
+		P += dt*P_t;
+#else
+
+		// up/downwinding on staggered grid (FV-like method)
+		P += dt/(parameters.cell_size[0]*parameters.cell_size[1])*(
+				parameters.cell_size[1]*(
+					//             |                       |                       |
+					// --v---------|-----------v-----------|-----------v-----------|
+					//   h0        u0          h1          u1          h2          u2
+					//
+
+					// left edge
+					op.shift_right(P*u.return_value_if_positive())		// inflow
+					+(P*op.shift_right(u.return_value_if_negative()))	// outflow
+
+					// right edge
+					-P*u.return_value_if_positive()					// outflow
+					-op.shift_left(P)*u.return_value_if_negative()	// inflow
+				)
+				+
+				parameters.cell_size[0]*(
+						// bottom edge
+						op.shift_up(P*v.return_value_if_positive())	// inflow
+						+(P*op.shift_up(v.return_value_if_negative()))	// outflow
+
+						// top edge
+						-P*v.return_value_if_positive()					// outflow
+						-op.shift_down(P)*v.return_value_if_negative()	// inflow
+				)
+			);
+#endif
+
+		parameters.timestep_nr++;
 	}
 
 
-#if ENABLE_GUI
 
-	CGlDrawQuad *cGlDrawQuad;
-	CGlTexture *cGlTexture;
-	unsigned char *texture_data;
-
-	VisualizationEngine *visualizationEngine;
-
-	void vis_setup(VisualizationEngine *i_visualizationEngine)
+	void vis_post_frame_processing(int i_num_iterations)
 	{
-		visualizationEngine = i_visualizationEngine;
-
-		cGlTexture = new CGlTexture(GL_TEXTURE_2D, GL_RGBA, GL_BLUE, GL_UNSIGNED_BYTE);
-		cGlTexture->bind();
-		cGlTexture->resize(res[1], res[0]);
-		cGlTexture->unbind();
-
-		texture_data = new unsigned char[P.array_data_cartesian_length];
-
-		cGlDrawQuad = new CGlDrawQuad;
-
+		if (parameters.run_simulation)
+			for (int i = 0; i < i_num_iterations; i++)
+				run_timestep();
 	}
 
-	void vis_render()
+
+	DataArray<2> &vis_get_vis_data_array()
 	{
-		P.requestDataInCartesianSpace();
-
-		double foo = std::max((P-h0).reduce_maxAbs(), 0.00001);
-		double scale_d = 1.0/foo;
-		scale_d = 0.5;
-
-#pragma omp parallel for simd
-		for (std::size_t i = 0; i < P.array_data_cartesian_length; i++)
-		{
-			double value;
-			// average height
-			value = P.array_data_cartesian_space[i]-h0;
-
-			// scale
-			value *= scale_d;
-
-			// [-1;1] -> [0;255]
-			value = (value+1.0)*0.5*255.0;
-
-			texture_data[i] = value;
-		}
-
-
-		visualizationEngine->engineState->commonShaderPrograms.shaderTexturize.use();
-		visualizationEngine->engineState->commonShaderPrograms.shaderTexturize.pvm_matrix_uniform.set(visualizationEngine->engineState->matrices.pvm);
-
-			cGlTexture->bind();
-			cGlTexture->setData(texture_data);
-
-				cGlDrawQuad->render();
-
-			cGlTexture->unbind();
-		visualizationEngine->engineState->commonShaderPrograms.shaderBlinn.disable();
-
-		// execute simulation time step
-//		for (int i = 0; i < 50; i++)
-		if (run_simulation)
-			run_timestep();
-
+		return P;
 	}
 
-	const char* vis_getStatusString()
+	const char* vis_get_status_string()
 	{
 		static char title_string[1024];
-		sprintf(title_string, "Timestep: %i, timestep size: %e, Mass: %e, Energy: %e, Potential Entrophy: %e", timestep_nr, timestep_size, mass, energy, potential_entrophy);
+		sprintf(title_string, "Timestep: %i, timestep size: %e, Mass: %e, Energy: %e, Potential Entrophy: %e", parameters.timestep_nr, parameters.timestep_size, parameters.mass, parameters.energy, parameters.potential_entrophy);
 		return title_string;
 	}
 
-	void vis_viewportChanged(int i_width, int i_height)
+	void vis_pause()
 	{
-
+		parameters.run_simulation = !parameters.run_simulation;
 	}
 
-	void vis_keypress(char i_key)
-	{
-		switch(i_key)
-		{
-		case 'r':
-			reset();
-			break;
-
-		case ' ':
-			run_simulation = !run_simulation;
-			break;
-
-		case 'j':
-			run_timestep();
-			break;
-		}
-	}
-
-	void vis_shutdown()
-	{
-		delete [] texture_data;
-		delete cGlTexture;
-		delete cGlDrawQuad;
-
-	}
-#endif
 };
 
 
@@ -449,33 +293,11 @@ public:
 
 int main(int i_argc, char *i_argv[])
 {
-	if (i_argc > 1)
-	{
-		res[0] = atoi(i_argv[1]);
-		res[1] = res[0];
-	}
-
-	if (i_argc > 2)
-		CFL = atof(i_argv[2]);
-
-	if (i_argc > 3)
-		viscocity = atof(i_argv[3]);
-
-	if (i_argc > 4)
-		hyper_viscocity = atof(i_argv[4]);
-
-	if (i_argc > 5)
-		setup_scenario = atoi(i_argv[5]);
-
-	if (i_argc > 6)
-		domain_length = atof(i_argv[6]);
-
+	parameters.setup(i_argc, i_argv);
 
 	SimulationSWEStaggered *simulationSWE = new SimulationSWEStaggered;
 
-#if SWEET_GUI
-	VisualizationEngine(simulationSWE, "SWE");
-#endif
+	VisSweet<SimulationSWEStaggered> visSweet(simulationSWE);
 
 	delete simulationSWE;
 
