@@ -162,7 +162,7 @@ public:
 
         // limit by gravitational acceleration
 //		double limit_gh = limit_speed;
-		double limit_gh = std::min(parameters.cell_size[0], parameters.cell_size[1])/std::sqrt(0.5*parameters.g*P.reduce_maxAbs());
+		double limit_gh = std::min(parameters.cell_size[0], parameters.cell_size[1])/std::sqrt(parameters.g*P.reduce_maxAbs());
 
 //        std::cout << limit_speed << ", " << limit_visc << ", " << limit_gh << std::endl;
 		double dt = parameters.CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
