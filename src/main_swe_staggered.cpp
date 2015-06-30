@@ -20,7 +20,7 @@ std::size_t N = 64;
 // resolution
 std::size_t res[2] = {N,N};
 
-double h0 = 1000.0;
+double h0 = 100.0;
 
 // gravitation
 double g = 9.81;
@@ -290,35 +290,33 @@ public:
 		eta = (op_d_f_x(v) - op_d_f_y(u)) / op_avg_f_x(op_avg_f_y(P));
 
 		// mass
-		mass = P.reduce_sum();
+		mass = P.reduce_sum() / (double)(res[0]*res[1]);
 		// energy
 		energy = 0.5*(
 				P*P +
 				P*op_avg_b_x(u*u) +
 				P*op_avg_b_y(v*v)
-			).reduce_sum();
+			).reduce_sum() / (double)(res[0]*res[1]);
 		// potential enstropy
-		potential_entrophy = 0.5*(eta*op_avg_f_x(op_avg_f_y(P))).reduce_sum();
+		potential_entrophy = 0.5*(eta*op_avg_f_x(op_avg_f_y(P))).reduce_sum() / (double)(res[0]*res[1]);
 
 		u_t = op_avg_b_y(eta*op_avg_f_x(V)) - op_d_f_x(H);
 		v_t = op_avg_b_x(eta*op_avg_f_y(U)) - op_d_f_y(H);
 		P_t = -op_d_b_x(U) - op_d_b_y(V);
 
-#if 1
-		if (viscocity > 0)
+		if (viscocity != 0)
 		{
 			// TODO: is this correct?
 			v_t += (diff2_y(u) + diff2_y(v))*viscocity;
 			u_t += (diff2_x(u) + diff2_x(v))*viscocity;
 		}
 
-		if (hyper_viscocity > 0)
+		if (hyper_viscocity != 0)
 		{
 			// TODO: is this correct?
 			u_t += (diff2_x(diff2_x(u)) + diff2_x(diff2_x(v)))*viscocity;
 			v_t += (diff2_y(diff2_y(u)) + diff2_y(diff2_y(v)))*viscocity;
 		}
-#endif
 
 		double limit_speed = std::max(hx/u.reduce_maxAbs(), hy/v.reduce_maxAbs());
 
