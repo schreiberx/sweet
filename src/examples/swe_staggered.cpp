@@ -1,12 +1,10 @@
 
-#include "DataArray.hpp"
-#include "libgl/VisualizationEngine.hpp"
+#include <sweet/DataArray.hpp>
 #include <unistd.h>
 
-#define ENABLE_GUI	1
 
-
-#if ENABLE_GUI
+#if SWEET_GUI
+	#include "libgl/VisualizationEngine.hpp"
 	#include "libgl/draw/GlDrawQuad.hpp"
 	#include "libgl/draw/GlDrawCube.hpp"
 	#include "libgl/core/CGlTexture.hpp"
@@ -40,6 +38,7 @@ double domain_length = 1000;
 // setup scenario
 int setup_scenario = 0;
 
+double timestep_size = -1;
 
 class SimulationSWEStaggered
 #if ENABLE_GUI
@@ -329,11 +328,11 @@ public:
 		double limit_gh = std::min(hx, hy)/std::sqrt(g*P.reduce_maxAbs());
 
 //        std::cout << limit_speed << ", " << limit_visc << ", " << limit_gh << std::endl;
-        double dt = CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
+        timestep_size = CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
 
-		P += dt*P_t;
-		u += dt*u_t;
-		v += dt*v_t;
+		P += timestep_size*P_t;
+		u += timestep_size*u_t;
+		v += timestep_size*v_t;
 
 		timestep_nr++;
 	}
@@ -366,8 +365,9 @@ public:
 	{
 		P.requestDataInCartesianSpace();
 
-		double scale_d = 1.0/(P-h0).reduce_maxAbs();
-//		double scale_d = 0.5;
+		double foo = std::max((P-h0).reduce_maxAbs(), 0.00001);
+		double scale_d = 1.0/foo;
+		scale_d = 0.5;
 
 #pragma omp parallel for simd
 		for (std::size_t i = 0; i < P.array_data_cartesian_length; i++)
@@ -407,7 +407,7 @@ public:
 	const char* vis_getStatusString()
 	{
 		static char title_string[1024];
-		sprintf(title_string, "Timestep: %i, Mass: %e, Energy: %e, Potential Entrophy: %e", timestep_nr, mass, energy, potential_entrophy);
+		sprintf(title_string, "Timestep: %i, timestep size: %e, Mass: %e, Energy: %e, Potential Entrophy: %e", timestep_nr, timestep_size, mass, energy, potential_entrophy);
 		return title_string;
 	}
 
@@ -473,7 +473,9 @@ int main(int i_argc, char *i_argv[])
 
 	SimulationSWEStaggered *simulationSWE = new SimulationSWEStaggered;
 
+#if SWEET_GUI
 	VisualizationEngine(simulationSWE, "SWE");
+#endif
 
 	delete simulationSWE;
 

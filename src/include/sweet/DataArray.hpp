@@ -8,7 +8,7 @@
 #define SRC_DATAARRAY_HPP_
 
 
-#define USE_FOLDING_IN_SPECTRAL_SPACE	1
+#define USE_FOLDING_IN_SPECTRAL_SPACE	0
 
 
 #include <cassert>
@@ -19,6 +19,7 @@
 #include <string.h>
 #include <iostream>
 #include <utility>
+
 
 #if USE_FOLDING_IN_SPECTRAL_SPACE
 #	include <fftw3.h>
@@ -146,8 +147,6 @@ public:
 	)	:
 		temporary_data(false)
 	{
-//		std::cout << "Copy constructor called" << std::endl;
-
 		for (int i = 0; i < D; i++)
 		{
 			resolution[i] = i_dataArray.resolution[i];
@@ -263,11 +262,10 @@ public:
 
 	~DataArray()
 	{
-//		std::cout << "Deconstructor called" << std::endl;
 		free(array_data_cartesian_space);
 
 #if !USE_FOLDING_IN_SPECTRAL_SPACE
-		delete kernel_data;
+		free(kernel_data);
 #endif
 
 #if USE_FOLDING_IN_SPECTRAL_SPACE
@@ -727,9 +725,12 @@ public:
 #if USE_FOLDING_IN_SPECTRAL_SPACE == 0
 		int res_x = resolution[0];
 		int res_y = resolution[1];
+
 		if (kernel_size == 3)
 		{
+//#pragma omp parallel for
 			for (int y = 0; y < res_y; y++)
+			{
 				for (int x = 0; x < res_x; x++)
 				{
 					double &data_out = out.array_data_cartesian_space[y*res_x+x];
@@ -738,17 +739,24 @@ public:
 					for (int j = -1; j <= 1; j++)
 					{
 						int pos_y = (y+j+res_y) % res_y;
+						assert(pos_y >= 0 && pos_y < res_y);
+
 						for (int i = -1; i <= 1; i++)
 						{
 							int pos_x = (x+i+res_x) % res_x;
+							assert(pos_x >= 0 && pos_x < res_x);
 
-							double kernel_scalar = kernel_data[(j+1)*3+(i+1)];
+							int idx = (j+1)*3+(i+1);
+							assert(idx >= 0 && idx < 9);
+
+							double kernel_scalar = kernel_data[idx];
 							double data_scalar = i_array_data.array_data_cartesian_space[pos_y*res_x+pos_x];
 
 							data_out += kernel_scalar*data_scalar;
 						}
 					}
 				}
+			}
 		}
 		else
 		{
@@ -794,7 +802,7 @@ public:
 		auto out  = DataArray<D>(this->resolution);
 		out.temporary_data = true;
 
-#if USE_FOLDING_IN_SPECTRAL_SPACE
+#if USE_FOLDING_IN_SPECTRAL_SPACE && 0
 		if (array_data_spectral_space_valid)
 		{
 			rw_array_data.requestDataInSpectralSpace();
@@ -811,7 +819,7 @@ public:
 		}
 #endif
 
-//		requestDataInCartesianSpace();
+		requestDataInCartesianSpace();
 		rw_array_data.requestDataInCartesianSpace();
 
 #pragma omp parallel for simd
@@ -841,6 +849,16 @@ public:
 		auto out  = DataArray<D>(this->resolution);
 		out.temporary_data = true;
 
+#if USE_FOLDING_IN_SPECTRAL_SPACE && 0
+		if (array_data_spectral_space_valid)
+		{
+#pragma omp parallel for simd
+		for (std::size_t i = 0; i < array_data_spectral_length; i++)
+			out.array_data_spectral_space[i] =
+					array_data_spectral_space[i]+i_value;
+		}
+#endif
+
 		requestDataInCartesianSpace();
 
 #pragma omp parallel for simd
@@ -866,7 +884,7 @@ public:
 	{
 		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
 
-#if USE_FOLDING_IN_SPECTRAL_SPACE
+#if USE_FOLDING_IN_SPECTRAL_SPACE && 0
 		if (array_data_spectral_space_valid)
 		{
 			rw_array_data.requestDataInSpectralSpace();
@@ -909,7 +927,7 @@ public:
 	{
 		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
 
-#if USE_FOLDING_IN_SPECTRAL_SPACE
+#if USE_FOLDING_IN_SPECTRAL_SPACE && 0
 		if (array_data_spectral_space_valid)
 		{
 			rw_array_data.requestDataInSpectralSpace();
@@ -955,7 +973,7 @@ public:
 		auto out  = DataArray<D>(this->resolution);
 		out.temporary_data = true;
 
-#if USE_FOLDING_IN_SPECTRAL_SPACE
+#if USE_FOLDING_IN_SPECTRAL_SPACE && 0
 		if (array_data_spectral_space_valid)
 		{
 			rw_array_data.requestDataInSpectralSpace();
@@ -1003,6 +1021,17 @@ public:
 		auto out  = DataArray<D>(this->resolution);
 		out.temporary_data = true;
 
+
+#if USE_FOLDING_IN_SPECTRAL_SPACE && 0
+		if (array_data_spectral_space_valid)
+		{
+#pragma omp parallel for simd
+			for (std::size_t i = 0; i < array_data_spectral_length; i++)
+				out.array_data_spectral_space[i] = array_data_spectral_space[i]-i_value;
+			return out;
+		}
+#endif
+
 		requestDataInCartesianSpace();
 
 #pragma omp parallel for simd
@@ -1024,7 +1053,7 @@ public:
 	inline
 	DataArray<D>& operator-()
 	{
-#if USE_FOLDING_IN_SPECTRAL_SPACE
+#if USE_FOLDING_IN_SPECTRAL_SPACE && 0
 		if (array_data_spectral_space_valid)
 		{
 #pragma omp parallel for simd
@@ -1033,6 +1062,7 @@ public:
 			return *this;
 		}
 #endif
+		requestDataInCartesianSpace();
 
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			array_data_cartesian_space[i] = -array_data_cartesian_space[i];

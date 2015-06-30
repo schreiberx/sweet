@@ -1,12 +1,10 @@
 
-#include "DataArray.hpp"
-#include "libgl/VisualizationEngine.hpp"
+#include <sweet/DataArray.hpp>
 #include <unistd.h>
 
-#define ENABLE_GUI	1
 
-
-#if ENABLE_GUI
+#if SWEET_GUI
+	#include "libgl/VisualizationEngine.hpp"
 	#include "libgl/draw/GlDrawQuad.hpp"
 	#include "libgl/draw/GlDrawCube.hpp"
 	#include "libgl/core/CGlTexture.hpp"
@@ -280,8 +278,8 @@ public:
 
 		h.requestDataInCartesianSpace();
 
-		double scale_d = 1.0/(h-h0).reduce_maxAbs();
-//		double scale_d = 0.5;
+		double foo = std::max((P-h0).reduce_maxAbs(), 0.00001);
+		double scale_d = 1.0/foo;
 
 #pragma omp parallel for simd
 		for (std::size_t i = 0; i < h.array_data_cartesian_length; i++)
@@ -366,7 +364,9 @@ int main(int i_argc, char *i_argv[])
 
 	SimulationSWE *simulationSWE = new SimulationSWE;
 
+#if ENABLE_GUI
 	VisualizationEngine(simulationSWE, "SWE");
+#endif
 
 	delete simulationSWE;
 
