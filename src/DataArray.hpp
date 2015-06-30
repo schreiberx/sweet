@@ -8,6 +8,8 @@
 #define SRC_DATAARRAY_HPP_
 
 
+#define USE_FOLDING_IN_SPECTRAL_SPACE	1
+
 
 #include <cassert>
 #include <cstddef>
@@ -18,7 +20,10 @@
 #include <iostream>
 #include <utility>
 
-#include <fftw3.h>
+#if USE_FOLDING_IN_SPECTRAL_SPACE
+#	include <fftw3.h>
+#endif
+
 #include <omp.h>
 
 /**
@@ -73,6 +78,8 @@ public:
 	 */
 	std::size_t array_data_cartesian_length;
 	double *array_data_cartesian_space;
+
+#if USE_FOLDING_IN_SPECTRAL_SPACE
 	bool array_data_cartesian_space_valid;
 
 	/**
@@ -81,6 +88,7 @@ public:
 	std::size_t array_data_spectral_length;
 	double *array_data_spectral_space;
 	bool array_data_spectral_space_valid;
+#endif
 
 	/**
 	 * local ranges
@@ -88,6 +96,11 @@ public:
 	std::size_t range_start[D];
 	std::size_t range_end[D];
 	std::size_t range_size[D];
+
+#if !USE_FOLDING_IN_SPECTRAL_SPACE
+	int kernel_size;
+	double *kernel_data = nullptr;
+#endif
 
 	/**
 	 * temporary data?
@@ -145,10 +158,14 @@ public:
 		}
 
 		array_data_cartesian_length = i_dataArray.array_data_cartesian_length;
-		array_data_cartesian_space_valid = i_dataArray.array_data_cartesian_space_valid;
 		array_data_cartesian_space = alloc_aligned_mem<double>(array_data_cartesian_length*sizeof(double));
+#if USE_FOLDING_IN_SPECTRAL_SPACE
 		if (array_data_cartesian_space_valid)
+#endif
 			memcpy(array_data_cartesian_space, i_dataArray.array_data_cartesian_space, array_data_cartesian_length*sizeof(double));
+
+#if USE_FOLDING_IN_SPECTRAL_SPACE
+		array_data_cartesian_space_valid = i_dataArray.array_data_cartesian_space_valid;
 
 		array_data_spectral_length = i_dataArray.array_data_spectral_length;
 		array_data_spectral_space_valid = i_dataArray.array_data_spectral_space_valid;
@@ -156,9 +173,9 @@ public:
 		if (array_data_spectral_space_valid)
 			memcpy(array_data_spectral_space, i_dataArray.array_data_spectral_space, array_data_cartesian_length*sizeof(double));
 
-
 		auto fft_ptr = *fftGetSingletonPtr();
 		fft_ptr->ref_counter++;
+#endif
 	}
 
 
@@ -185,6 +202,8 @@ public:
 		array_data_cartesian_length = i_dataArray.array_data_cartesian_length;
 		array_data_cartesian_space = i_dataArray.array_data_cartesian_space;
 		i_dataArray.array_data_cartesian_space = nullptr;
+
+#if USE_FOLDING_IN_SPECTRAL_SPACE
 		array_data_cartesian_space_valid = i_dataArray.array_data_cartesian_space_valid;
 		i_dataArray.array_data_cartesian_space_valid = false;
 
@@ -196,6 +215,7 @@ public:
 
 		auto fft_ptr = *fftGetSingletonPtr();
 		fft_ptr->ref_counter++;
+#endif
 	}
 
 
@@ -224,6 +244,8 @@ public:
 
 
 		array_data_cartesian_space = alloc_aligned_mem<double>(array_data_cartesian_length*sizeof(double));
+
+#if USE_FOLDING_IN_SPECTRAL_SPACE
 		array_data_cartesian_space_valid = false;
 
 		array_data_spectral_length = array_data_cartesian_length/i_resolution[D-1];	/// see FFTW documentation for allocation of memory buffers
@@ -236,12 +258,19 @@ public:
 
 		auto fft_ptr = *fftGetSingletonPtr();
 		fft_ptr->ref_counter++;
+#endif
 	}
 
 	~DataArray()
 	{
 //		std::cout << "Deconstructor called" << std::endl;
 		free(array_data_cartesian_space);
+
+#if !USE_FOLDING_IN_SPECTRAL_SPACE
+		delete kernel_data;
+#endif
+
+#if USE_FOLDING_IN_SPECTRAL_SPACE
 		free(array_data_spectral_space);
 
 		auto fft_ptr = *fftGetSingletonPtr();
@@ -253,6 +282,7 @@ public:
 			delete *fftGetSingletonPtr();
 			*fftGetSingletonPtr() = nullptr;
 		}
+#endif
 	}
 
 
@@ -300,12 +330,14 @@ public:
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			array_data_cartesian_space[i] = i_value;
 
+#if USE_FOLDING_IN_SPECTRAL_SPACE
 		array_data_cartesian_space_valid = true;
 		array_data_spectral_space_valid = false;
+#endif
 	}
 
 
-
+#if USE_FOLDING_IN_SPECTRAL_SPACE
 	class FFTWSingletonClass
 	{
 	public:
@@ -423,11 +455,17 @@ private:
 
 		return *fftw_singleton_data;
 	}
-
+#endif
 
 public:
+	inline
 	void requestDataInSpectralSpace()
 	{
+#if USE_FOLDING_IN_SPECTRAL_SPACE==0
+		std::cerr << "requestDataInSpectralSpace: spectral space is disabled" << std::endl;
+		exit(-1);
+#else
+
 		if (array_data_spectral_space_valid)
 			return;		// nothing to do
 
@@ -436,11 +474,14 @@ public:
 		(*fftGetSingletonPtr())->fft_forward(*this);
 
 		array_data_spectral_space_valid = true;
+#endif
 	}
 
 
+	inline
 	void requestDataInCartesianSpace()
 	{
+#if USE_FOLDING_IN_SPECTRAL_SPACE==1
 		if (array_data_cartesian_space_valid)
 			return;		// nothing to do
 
@@ -449,6 +490,7 @@ public:
 		(*fftGetSingletonPtr())->fft_backward(*this);
 
 		array_data_cartesian_space_valid = true;
+#endif
 	}
 
 
@@ -475,12 +517,12 @@ public:
 	{
 		requestDataInCartesianSpace();
 
-		double sumvalue = 0;
-#pragma omp parallel for simd reduction(+:sumvalue)
+		double sum = 0;
+#pragma omp parallel for simd reduction(+:sum)
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			sumvalue += array_data_cartesian_space[i];
+			sum += array_data_cartesian_space[i];
 
-		return sumvalue;
+		return sum;
 	}
 
 
@@ -491,6 +533,12 @@ public:
 			double i_scale = 1.0
 	)
 	{
+#if USE_FOLDING_IN_SPECTRAL_SPACE == 0
+		kernel_size = S;
+		kernel_data = alloc_aligned_mem<double>(sizeof(double)*S*S);
+		memcpy(kernel_data, &(i_kernel_array[0][0]), sizeof(double)*S*S);
+
+#else
 		double inv_kernel_array[S][S];
 
 		for (int j = 0; j < S; j++)
@@ -584,7 +632,8 @@ public:
 		array_data_cartesian_space_valid = true;
 		array_data_spectral_space_valid = false;
 
-		requestDataInSpectralSpace();	/// convert kernel to spectral space
+		requestDataInSpectralSpace();	/// convert kernel_data; to spectral space
+#endif
 	}
 
 
@@ -621,12 +670,12 @@ public:
 		}
 
 		array_data_cartesian_length = i_dataArray.array_data_cartesian_length;
-		array_data_spectral_length = i_dataArray.array_data_spectral_length;
 
+#if USE_FOLDING_IN_SPECTRAL_SPACE
 		if (i_dataArray.array_data_cartesian_space_valid)
 		{
 			array_data_cartesian_space_valid = true;
-
+#endif
 			/**
 			 * If this data was generated based on temporary data sets (e.g. via h = hu/u), then only swap pointers.
 			 */
@@ -634,11 +683,17 @@ public:
 				std::swap(array_data_cartesian_space, ((DataArray<D> &)i_dataArray).array_data_cartesian_space);
 			else
 				memcpy(array_data_cartesian_space, i_dataArray.array_data_cartesian_space, array_data_cartesian_length*sizeof(double));
+
+#if USE_FOLDING_IN_SPECTRAL_SPACE
 		}
 		else
 		{
 			array_data_cartesian_space_valid = false;
 		}
+#endif
+
+#if USE_FOLDING_IN_SPECTRAL_SPACE
+		array_data_spectral_length = i_dataArray.array_data_spectral_length;
 
 		if (i_dataArray.array_data_spectral_space_valid)
 		{
@@ -652,6 +707,7 @@ public:
 		{
 			array_data_spectral_space_valid = false;
 		}
+#endif
 
 		return *this;
 	}
@@ -665,10 +721,42 @@ public:
 			const DataArray<D> &i_array_data
 	)
 	{
-		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
-
 		DataArray<D> out  = DataArray<D>(this->resolution);
 		out.temporary_data = true;
+
+#if USE_FOLDING_IN_SPECTRAL_SPACE == 0
+		int res_x = resolution[0];
+		int res_y = resolution[1];
+		if (kernel_size == 3)
+		{
+			for (int y = 0; y < res_y; y++)
+				for (int x = 0; x < res_x; x++)
+				{
+					double &data_out = out.array_data_cartesian_space[y*res_x+x];
+					data_out = 0;
+
+					for (int j = -1; j <= 1; j++)
+					{
+						int pos_y = (y+j+res_y) % res_y;
+						for (int i = -1; i <= 1; i++)
+						{
+							int pos_x = (x+i+res_x) % res_x;
+
+							double kernel_scalar = kernel_data[(j+1)*3+(i+1)];
+							double data_scalar = i_array_data.array_data_cartesian_space[pos_y*res_x+pos_x];
+
+							data_out += kernel_scalar*data_scalar;
+						}
+					}
+				}
+		}
+		else
+		{
+			std::cerr << "Not yet implemented" << std::endl;
+		}
+#else
+		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
+
 
 		requestDataInSpectralSpace();
 		rw_array_data.requestDataInSpectralSpace();
@@ -687,7 +775,7 @@ public:
 
 		out.array_data_spectral_space_valid = true;
 		out.array_data_cartesian_space_valid = false;
-
+#endif
 		return out;
 	}
 
@@ -706,7 +794,24 @@ public:
 		auto out  = DataArray<D>(this->resolution);
 		out.temporary_data = true;
 
-		requestDataInCartesianSpace();
+#if USE_FOLDING_IN_SPECTRAL_SPACE
+		if (array_data_spectral_space_valid)
+		{
+			rw_array_data.requestDataInSpectralSpace();
+
+#pragma omp parallel for simd
+			for (std::size_t i = 0; i < array_data_spectral_length; i++)
+				out.array_data_spectral_space[i] =
+						array_data_spectral_space[i]+
+						i_array_data.array_data_spectral_space[i];
+
+			out.array_data_spectral_space_valid = true;
+			out.array_data_cartesian_space_valid = true;
+			return out;
+		}
+#endif
+
+//		requestDataInCartesianSpace();
 		rw_array_data.requestDataInCartesianSpace();
 
 #pragma omp parallel for simd
@@ -715,8 +820,10 @@ public:
 					array_data_cartesian_space[i]+
 					i_array_data.array_data_cartesian_space[i];
 
+#if USE_FOLDING_IN_SPECTRAL_SPACE
 		out.array_data_cartesian_space_valid = true;
 		out.array_data_spectral_space_valid = false;
+#endif
 		return out;
 	}
 
@@ -759,6 +866,23 @@ public:
 	{
 		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
 
+#if USE_FOLDING_IN_SPECTRAL_SPACE
+		if (array_data_spectral_space_valid)
+		{
+			rw_array_data.requestDataInSpectralSpace();
+
+#pragma omp parallel for simd
+			for (std::size_t i = 0; i < array_data_spectral_length; i++)
+				array_data_spectral_space[i] +=
+						i_array_data.array_data_spectral_space[i];
+
+			array_data_spectral_space_valid = true;
+			array_data_cartesian_space_valid = false;
+			return *this;
+		}
+#endif
+
+
 		requestDataInCartesianSpace();
 		rw_array_data.requestDataInCartesianSpace();
 
@@ -767,8 +891,10 @@ public:
 			array_data_cartesian_space[i] +=
 					i_array_data.array_data_cartesian_space[i];
 
+#if USE_FOLDING_IN_SPECTRAL_SPACE
 		array_data_cartesian_space_valid = true;
 		array_data_spectral_space_valid = false;
+#endif
 		return *this;
 	}
 
@@ -783,6 +909,23 @@ public:
 	{
 		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
 
+#if USE_FOLDING_IN_SPECTRAL_SPACE
+		if (array_data_spectral_space_valid)
+		{
+			rw_array_data.requestDataInSpectralSpace();
+
+#pragma omp parallel for simd
+			for (std::size_t i = 0; i < array_data_spectral_length; i++)
+				array_data_spectral_space[i] -=
+						i_array_data.array_data_spectral_space[i];
+
+			array_data_spectral_space_valid = true;
+			array_data_cartesian_space_valid = false;
+			return *this;
+		}
+#endif
+
+
 		requestDataInCartesianSpace();
 		rw_array_data.requestDataInCartesianSpace();
 
@@ -791,8 +934,10 @@ public:
 			array_data_cartesian_space[i] -=
 					i_array_data.array_data_cartesian_space[i];
 
+#if USE_FOLDING_IN_SPECTRAL_SPACE
 		array_data_cartesian_space_valid = true;
 		array_data_spectral_space_valid = false;
+#endif
 		return *this;
 	}
 
@@ -810,6 +955,25 @@ public:
 		auto out  = DataArray<D>(this->resolution);
 		out.temporary_data = true;
 
+#if USE_FOLDING_IN_SPECTRAL_SPACE
+		if (array_data_spectral_space_valid)
+		{
+			rw_array_data.requestDataInSpectralSpace();
+
+#pragma omp parallel for simd
+			for (std::size_t i = 0; i < array_data_spectral_length; i++)
+				out.array_data_spectral_space[i] =
+						array_data_spectral_space[i]-
+						i_array_data.array_data_spectral_space[i];
+
+			out.array_data_spectral_space_valid = true;
+			out.array_data_cartesian_space_valid = false;
+			return out;
+		}
+#endif
+
+
+
 		requestDataInCartesianSpace();
 		rw_array_data.requestDataInCartesianSpace();
 
@@ -819,8 +983,10 @@ public:
 					array_data_cartesian_space[i]-
 					i_array_data.array_data_cartesian_space[i];
 
+#if USE_FOLDING_IN_SPECTRAL_SPACE
 		out.array_data_cartesian_space_valid = true;
 		out.array_data_spectral_space_valid = false;
+#endif
 		return out;
 	}
 
@@ -844,8 +1010,10 @@ public:
 			out.array_data_cartesian_space[i] =
 					array_data_cartesian_space[i]-i_value;
 
+#if USE_FOLDING_IN_SPECTRAL_SPACE
 		out.array_data_cartesian_space_valid = true;
 		out.array_data_spectral_space_valid = false;
+#endif
 		return out;
 	}
 
@@ -856,14 +1024,18 @@ public:
 	inline
 	DataArray<D>& operator-()
 	{
-		requestDataInCartesianSpace();
-
+#if USE_FOLDING_IN_SPECTRAL_SPACE
+		if (array_data_spectral_space_valid)
+		{
 #pragma omp parallel for simd
+			for (std::size_t i = 0; i < array_data_spectral_length; i++)
+				array_data_spectral_space[i] = -array_data_spectral_space[i];
+			return *this;
+		}
+#endif
+
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			array_data_cartesian_space[i] = -array_data_cartesian_space[i];
-
-		array_data_cartesian_space_valid = true;
-		array_data_spectral_space_valid = false;
 
 		return *this;
 	}
@@ -891,14 +1063,15 @@ public:
 					array_data_cartesian_space[i]*
 					i_array_data.array_data_cartesian_space[i];
 
+#if USE_FOLDING_IN_SPECTRAL_SPACE
 		out.array_data_cartesian_space_valid = true;
 		out.array_data_spectral_space_valid = false;
-
+#endif
 		return out;
 	}
 
 	/**
-	 * Compute element-wise multiplication with a scalar
+	 * Compute multiplication with a scalar
 	 */
 	inline
 	DataArray<D> operator*(
@@ -908,6 +1081,7 @@ public:
 		DataArray<D> out  = DataArray<D>(resolution);
 		out.temporary_data = true;
 
+#if USE_FOLDING_IN_SPECTRAL_SPACE
 		if (array_data_spectral_space_valid)
 		{
 #pragma omp parallel for simd
@@ -919,21 +1093,23 @@ public:
 			out.array_data_spectral_space_valid = true;
 			return out;
 		}
+#endif
 
 
-		if (array_data_cartesian_space_valid)
+#if USE_FOLDING_IN_SPECTRAL_SPACE
+		assert(array_data_cartesian_space_valid == true);
+#endif
 		{
 #pragma omp parallel for simd
 			for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 				out.array_data_cartesian_space[i] =
 						array_data_cartesian_space[i]*i_value;
 
+#if USE_FOLDING_IN_SPECTRAL_SPACE
 			out.array_data_spectral_space_valid = false;
 			out.array_data_cartesian_space_valid = true;
-			return out;
+#endif
 		}
-
-		assert(false);
 		return out;
 	}
 
@@ -960,8 +1136,10 @@ public:
 					array_data_cartesian_space[i]/
 					i_array_data.array_data_cartesian_space[i];
 
+#if USE_FOLDING_IN_SPECTRAL_SPACE
 		out.array_data_cartesian_space_valid = true;
 		out.array_data_spectral_space_valid = false;
+#endif
 		return out;
 	}
 

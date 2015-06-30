@@ -80,6 +80,9 @@ public:
 	// potential enstropy
 	double potential_entrophy = 0;
 
+	// run simulation timestepping
+	bool run_simulation = true;
+
 	/**
 	 * See "The Dynamics of Finite-Difference Models of the Shallow-Water Equations", Robert Sadourny
 	 *
@@ -130,59 +133,7 @@ public:
 		hx = domain_size/(double)res[0];
 		hy = domain_size/(double)res[1];
 
-		{
-			P.data_setall(h0);
-
-			double center_x = 0.7;
-			double center_y = 0.6;
-
-			if (setup_scenario == 0)
-			{
-				/*
-				 * radial dam break
-				 */
-				double radius = 0.2;
-				for (std::size_t j = 0; j < res[1]; j++)
-				{
-					for (std::size_t i = 0; i < res[0]; i++)
-					{
-						double x = ((double)i+0.5)/(double)res[0];
-						double y = ((double)j+0.5)/(double)res[1];
-
-						double dx = x-center_x;
-						double dy = y-center_y;
-
-						if (radius*radius >= dx*dx+dy*dy)
-							P.getDataRef(j,i) += 1.0;
-					}
-				}
-			}
-
-			if (setup_scenario == 1)
-			{
-				/*
-				 * fun with Gaussian
-				 */
-				for (std::size_t j = 0; j < res[1]; j++)
-				{
-					for (std::size_t i = 0; i < res[0]; i++)
-					{
-						double x = ((double)i+0.5)/(double)res[0];
-						double y = ((double)j+0.5)/(double)res[1];
-
-						double dx = x-center_x;
-						double dy = y-center_y;
-
-						P.getDataRef(j,i) += std::exp(-50.0*(dx*dx + dy*dy));
-					}
-				}
-			}
-		}
-
-
-		u.data_setall(0);
-		v.data_setall(0);
-
+		reset();
 
 		double op_avg_f_x_kernel[3][3] = {
 				{0,0,0},
@@ -273,6 +224,61 @@ public:
 		diff2_y.setup_kernel(diff2_y_kernel, 1.0/(hy*hy));
 	}
 
+	void reset()
+	{
+		P.data_setall(h0);
+
+		double center_x = 0.7;
+		double center_y = 0.6;
+
+		if (setup_scenario == 0)
+		{
+			/*
+			 * radial dam break
+			 */
+			double radius = 0.2;
+			for (std::size_t j = 0; j < res[1]; j++)
+			{
+				for (std::size_t i = 0; i < res[0]; i++)
+				{
+					double x = ((double)i+0.5)/(double)res[0];
+					double y = ((double)j+0.5)/(double)res[1];
+
+					double dx = x-center_x;
+					double dy = y-center_y;
+
+					if (radius*radius >= dx*dx+dy*dy)
+						P.getDataRef(j,i) += 1.0;
+				}
+			}
+		}
+
+		if (setup_scenario == 1)
+		{
+			/*
+			 * fun with Gaussian
+			 */
+			for (std::size_t j = 0; j < res[1]; j++)
+			{
+				for (std::size_t i = 0; i < res[0]; i++)
+				{
+					double x = ((double)i+0.5)/(double)res[0];
+					double y = ((double)j+0.5)/(double)res[1];
+
+					double dx = x-center_x;
+					double dy = y-center_y;
+
+					P.getDataRef(j,i) += std::exp(-50.0*(dx*dx + dy*dy));
+				}
+			}
+		}
+
+
+
+		u.data_setall(0);
+		v.data_setall(0);
+	}
+
 
 	void run_timestep()
 	{
@@ -286,7 +292,11 @@ public:
 		// mass
 		mass = P.reduce_sum();
 		// energy
-		energy = 0.5*(P*P + P*op_avg_b_x(u*u) + P*op_avg_b_y(v*v)).reduce_sum();
+		energy = 0.5*(
+				P*P +
+				P*op_avg_b_x(u*u) +
+				P*op_avg_b_y(v*v)
+			).reduce_sum();
 		// potential enstropy
 		potential_entrophy = 0.5*(eta*op_avg_f_x(op_avg_f_y(P))).reduce_sum();
 
@@ -298,15 +308,15 @@ public:
 		if (viscocity > 0)
 		{
 			// TODO: is this correct?
-			v_t -= (diff2_y(u) + diff2_y(v))*viscocity;
-			u_t -= (diff2_x(u) + diff2_x(v))*viscocity;
+			v_t += (diff2_y(u) + diff2_y(v))*viscocity;
+			u_t += (diff2_x(u) + diff2_x(v))*viscocity;
 		}
 
 		if (hyper_viscocity > 0)
 		{
 			// TODO: is this correct?
-			u_t -= (diff2_x(diff2_x(u)) + diff2_x(diff2_x(v)))*viscocity;
-			v_t -= (diff2_y(diff2_y(u)) + diff2_y(diff2_y(v)))*viscocity;
+			u_t += (diff2_x(diff2_x(u)) + diff2_x(diff2_x(v)))*viscocity;
+			v_t += (diff2_y(diff2_y(u)) + diff2_y(diff2_y(v)))*viscocity;
 		}
 #endif
 
@@ -356,9 +366,6 @@ public:
 
 	void vis_render()
 	{
-		// execute simulation time step
-		run_timestep();
-
 		P.requestDataInCartesianSpace();
 
 		double scale_d = 1.0/(P-h0).reduce_maxAbs();
@@ -391,13 +398,18 @@ public:
 
 			cGlTexture->unbind();
 		visualizationEngine->engineState->commonShaderPrograms.shaderBlinn.disable();
+
+		// execute simulation time step
+//		for (int i = 0; i < 50; i++)
+		if (run_simulation)
+			run_timestep();
+
 	}
 
 	const char* vis_getStatusString()
 	{
 		static char title_string[1024];
-		sprintf(title_string, "Timestep: %i, Mass: %f, Energy: %f, Potential Entrophy: %f", timestep_nr, mass, energy, potential_entrophy);
-//		std::cout << "Timestep: " << timestep_nr << std::endl;
+		sprintf(title_string, "Timestep: %i, Mass: %e, Energy: %e, Potential Entrophy: %e", timestep_nr, mass, energy, potential_entrophy);
 		return title_string;
 	}
 
@@ -408,7 +420,20 @@ public:
 
 	void vis_keypress(char i_key)
 	{
+		switch(i_key)
+		{
+		case 'r':
+			reset();
+			break;
 
+		case ' ':
+			run_simulation = !run_simulation;
+			break;
+
+		case 'j':
+			run_timestep();
+			break;
+		}
 	}
 
 	void vis_shutdown()
