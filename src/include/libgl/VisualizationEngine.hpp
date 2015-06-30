@@ -30,17 +30,17 @@ public:
 	class ProgramCallbacks
 	{
 	public:
-		virtual void setup(VisualizationEngine *i_visualizationEngine) = 0;
+		virtual void vis_setup(VisualizationEngine *i_visualizationEngine) = 0;
 
-		virtual void render() = 0;
+		virtual void vis_render() = 0;
 
-		virtual const char* getStatusString() = 0;
+		virtual const char* vis_getStatusString() = 0;
 
-		virtual void viewportChanged(int i_width, int i_height) = 0;
+		virtual void vis_viewportChanged(int i_width, int i_height) = 0;
 
-		virtual void keypress(char i_key) = 0;
+		virtual void vis_keypress(char i_key) = 0;
 
-		virtual void shutdown() = 0;
+		virtual void vis_shutdown() = 0;
 
 		virtual ~ProgramCallbacks()
 		{
@@ -198,7 +198,7 @@ public:
 				break;
 
 			default:
-				programCallbacks->keypress(key);
+				programCallbacks->vis_keypress(key);
 				break;
 			}
 		}
@@ -237,7 +237,7 @@ public:
 		{
 			engineState->cGlFreeType.viewportChanged(renderWindow->window_width, renderWindow->window_height);
 
-			programCallbacks->viewportChanged(i_width, i_height);
+			programCallbacks->vis_viewportChanged(i_width, i_height);
 		}
 
 
@@ -294,11 +294,12 @@ public:
 
 
 public:
+	template <typename SimT>
 	VisualizationEngine(
-			ProgramCallbacks *i_programCallbacks,
+			SimT *i_simulationClassWithProgramCallbacks,
 			const char *i_window_title
 		)	:
-			programCallbacks(i_programCallbacks)
+			programCallbacks(&(ProgramCallbacks&)*i_simulationClassWithProgramCallbacks)
 	{
 		renderWindow = new RenderWindow("C3S");
 
@@ -343,7 +344,7 @@ public:
 		 */
 		renderWindow->setWindowEventCallback(windowEventCallbacks);
 
-		programCallbacks->setup(this);
+		programCallbacks->vis_setup(this);
 
 		while (!engineState->quit)
 		{
@@ -425,9 +426,9 @@ public:
 			engineState->commonShaderPrograms.shaderBlinn.material_specular_exponent_uniform.set1f(40.0f);
 			engineState->commonShaderPrograms.shaderBlinn.disable();
 
-			programCallbacks->render();
+			programCallbacks->vis_render();
 
-			renderWindow->setWindowTitle(programCallbacks->getStatusString());
+			renderWindow->setWindowTitle(programCallbacks->vis_getStatusString());
 
 			renderWindow->swapBuffer();
 
@@ -437,7 +438,7 @@ public:
 			renderWindow->eventLoop();
 		}
 
-		programCallbacks->shutdown();
+		programCallbacks->vis_shutdown();
 
 		delete engineState;
 		delete windowEventCallbacks;

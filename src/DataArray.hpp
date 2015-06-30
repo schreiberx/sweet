@@ -455,7 +455,7 @@ public:
 	/**
 	 * return the maximum of all absolute values
 	 */
-	double get_maxAbs()
+	double reduce_maxAbs()
 	{
 		requestDataInCartesianSpace();
 
@@ -465,6 +465,22 @@ public:
 			maxabs = std::max(maxabs, std::abs(array_data_cartesian_space[i]));
 
 		return maxabs;
+	}
+
+
+	/**
+	 * return the maximum of all absolute values
+	 */
+	double reduce_sum()
+	{
+		requestDataInCartesianSpace();
+
+		double sumvalue = 0;
+#pragma omp parallel for simd reduction(+:sumvalue)
+		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
+			sumvalue += array_data_cartesian_space[i];
+
+		return sumvalue;
 	}
 
 

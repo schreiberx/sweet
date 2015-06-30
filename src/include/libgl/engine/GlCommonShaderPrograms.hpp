@@ -27,7 +27,7 @@
 #include <libgl/shaders/shader_blinn_shadow_map/CShaderBlinnShadowMap.hpp>
 #include <libgl/shaders/shader_cube_map_mirror/CShaderCubeMapMirror.hpp>
 #include <libgl/shaders/shader_texturize/CShaderTexturize.hpp>
-#include <libgl/shaders/shader_color/CShaderColor.hpp>
+//#include <libgl/shaders/shader_color/CShaderColor.hpp>
 #include <libgl/shaders/shader_height_color_blinn/CShaderHeightColorBlinn.hpp>
 
 
@@ -44,7 +44,7 @@ public:
 	GlShaderTexturize			shaderTexturize;			///< shader for simple texturization
 	GlShaderBlinn				shaderBlinn;				///< blinn shader
 	GlShaderBlinnShadowMap		shaderBlinnShadowMap;		///< blinn shader with shadow map
-	GlShaderColor				shaderColor;				///< color shader
+//	GlShaderColor				shaderColor;				///< color shader
 
 	GlCommonShaderPrograms(
 			bool i_verbose = true

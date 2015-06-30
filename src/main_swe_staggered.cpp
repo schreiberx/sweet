@@ -41,7 +41,7 @@ double domain_length = 1000;
 int setup_scenario = 0;
 
 
-class SimulationSWE
+class SimulationSWEStaggered
 #if ENABLE_GUI
 		:
 		public VisualizationEngine::ProgramCallbacks
@@ -50,11 +50,22 @@ class SimulationSWE
 public:
 	double domain_size = 1000;
 
-	DataArray<2> h, u, v;
-	DataArray<2> h_t, u_t, v_t;
+	// prognostics
+	DataArray<2> P, u, v;
+
+	// diagnostics
+	DataArray<2> H, U, V;
+	DataArray<2> eta;
+
+	DataArray<2> P_t, u_t, v_t;
 
 	DataArray<2> diff1_x, diff1_y;
 	DataArray<2> diff2_x, diff2_y;
+
+	DataArray<2> op_d_f_x, op_d_f_y;
+	DataArray<2> op_d_b_x, op_d_b_y;
+	DataArray<2> op_avg_f_x, op_avg_f_y;
+	DataArray<2> op_avg_b_x, op_avg_b_y;
 
 	// cell size
 	double hx, hy;
@@ -62,20 +73,57 @@ public:
 	// number of simulated time steps
 	int timestep_nr = 0;
 
+	// mass
+	double mass = 0;
+	// energy
+	double energy = 0;
+	// potential enstropy
+	double potential_entrophy = 0;
 
+	/**
+	 * See "The Dynamics of Finite-Difference Models of the Shallow-Water Equations", Robert Sadourny
+	 *
+	 * Prognostic:
+	 *     V_t + \eta N x (P V) + grad(P + 0.5 V.V) = 0
+	 *     P_t + div(P V) = 0
+	 *
+	 * Potential vorticity:
+	 *     \eta = rot (V) / P
+	 *
+	 *   ______u______
+	 *   |           |
+	 *   |           |
+	 *   v     P     v
+	 *   |           |
+	 *   |_____u_____|
+	 */
 public:
-	SimulationSWE(
+	SimulationSWEStaggered(
 	)	:
-		h(res),
-		u(res),
-		v(res),
-		h_t(res),
+		P(res),	// density/pressure
+		u(res),	// velocity (x-direction)
+		v(res),	// velocity (y-direction)
+
+		H(res),	//
+		U(res),	// mass flux (x-direction)
+		V(res),	// mass flux (y-direction)
+		eta(res),
+		P_t(res),
 		u_t(res),
 		v_t(res),
 		diff1_x(res),
 		diff1_y(res),
 		diff2_x(res),
-		diff2_y(res)
+		diff2_y(res),
+
+		op_d_f_x(res),
+		op_d_f_y(res),
+		op_d_b_x(res),
+		op_d_b_y(res),
+		op_avg_f_x(res),
+		op_avg_f_y(res),
+		op_avg_b_x(res),
+		op_avg_b_y(res)
 	{
 		CFL = ::CFL;
 
@@ -83,7 +131,7 @@ public:
 		hy = domain_size/(double)res[1];
 
 		{
-			h.data_setall(h0);
+			P.data_setall(h0);
 
 			double center_x = 0.7;
 			double center_y = 0.6;
@@ -105,7 +153,7 @@ public:
 						double dy = y-center_y;
 
 						if (radius*radius >= dx*dx+dy*dy)
-							h.getDataRef(j,i) += 1.0;
+							P.getDataRef(j,i) += 1.0;
 					}
 				}
 			}
@@ -125,96 +173,128 @@ public:
 						double dx = x-center_x;
 						double dy = y-center_y;
 
-						h.getDataRef(j,i) += std::exp(-50.0*(dx*dx + dy*dy));
+						P.getDataRef(j,i) += std::exp(-50.0*(dx*dx + dy*dy));
 					}
 				}
 			}
 		}
 
-		if (0)
-		{
-			double diff1_x_kernel[3][3] = {
-					{0,0,0},
-					{-1.0,0,1.0},
-					{0,0,0}
-			};
-			diff1_x.setup_kernel(diff1_x_kernel, 1.0/(2.0*hx));
-
-			double diff1_y_kernel[3][3] = {
-					{0,-1.0,0},	// lower y coordinate
-					{0,0,0},
-					{0,1.0,0}	// higher y coordinate
-			};
-			diff1_y.setup_kernel(diff1_y_kernel, 1.0/(2.0*hy));
-
-			double diff2_x_kernel[3][3] = {
-					{0,0,0},
-					{1.0,-2.0,1.0},
-					{0,0,0}
-				};
-			diff2_x.setup_kernel(diff2_x_kernel, 1.0/(hx*hx));
-
-			double diff2_y_kernel[3][3] = {
-					{0,1.0,0},
-					{0,-2.0,0},
-					{0,1.0,0}
-			};
-			diff2_y.setup_kernel(diff2_y_kernel, 1.0/(hy*hy));
-		}
-		else
-		{
-			double diff1_x_kernel[5][5] = {
-					{0,0,0,0,0},{0,0,0,0,0},
-					{1.0, -8.0, 0, 8.0, -1.0},
-					{0,0,0,0,0},{0,0,0,0,0}
-			};
-			diff1_x.setup_kernel(diff1_x_kernel, 1.0/(12*hx));
-
-			double diff1_y_kernel[5][5] = {
-					{0,0, -1.0, 0,0},
-					{0,0,  8.0, 0,0},
-					{0,0,  0.0, 0,0},
-					{0,0, -8.0, 0,0},
-					{0,0,  1.0, 0,0}
-			};
-			diff1_y.setup_kernel(diff1_y_kernel, 1.0/(12*hy));
-
-			double diff2_x_kernel[5][5] = {
-					{0,0,0,0,0},{0,0,0,0,0},
-					{-1.0, 16.0, -30.0, 16.0, -1.0},
-					{0,0,0,0,0},{0,0,0,0,0}
-			};
-			diff2_x.setup_kernel(diff2_x_kernel, 1.0/(12*hx));
-
-			double diff2_y_kernel[5][5] = {
-					{0, 0,  -1.0, 0, 0},
-					{0, 0,  16.0, 0, 0},
-					{0, 0, -30.0, 0, 0},
-					{0, 0,  16.0, 0, 0},
-					{0, 0,  -1.0, 0, 0}
-			};
-			diff2_y.setup_kernel(diff2_y_kernel, 1.0/12*hx);
-		}
 
 		u.data_setall(0);
 		v.data_setall(0);
+
+
+		double op_avg_f_x_kernel[3][3] = {
+				{0,0,0},
+				{0,1,1},
+				{0,0,0},
+		};
+		op_avg_f_x.setup_kernel(op_avg_f_x_kernel, 0.5);
+
+		double op_avg_f_y_kernel[3][3] = {
+				{0,1,0},
+				{0,1,0},
+				{0,0,0},
+		};
+		op_avg_f_y.setup_kernel(op_avg_f_y_kernel, 0.5);
+
+		double op_avg_b_x_kernel[3][3] = {
+				{0,0,0},
+				{1,1,0},
+				{0,0,0},
+		};
+		op_avg_b_x.setup_kernel(op_avg_b_x_kernel, 0.5);
+
+		double op_avg_b_y_kernel[3][3] = {
+				{0,0,0},
+				{0,1,0},
+				{0,1,0},
+		};
+		op_avg_b_y.setup_kernel(op_avg_b_y_kernel, 0.5);
+
+
+
+		double op_d_f_x_kernel[3][3] = {
+				{0,0,0},
+				{0,-1,1},
+				{0,0,0}
+		};
+		op_d_f_x.setup_kernel(op_d_f_x_kernel, 1.0/hx);
+
+		double op_d_f_y_kernel[3][3] = {
+				{0,1,0},
+				{0,-1,0},
+				{0,0,0}
+		};
+		op_d_f_y.setup_kernel(op_d_f_y_kernel, 1.0/hy);
+
+
+		double op_d_b_x_kernel[3][3] = {
+				{0,0,0},
+				{-1,1,0},
+				{0,0,0}
+		};
+		op_d_b_x.setup_kernel(op_d_b_x_kernel, 1.0/hx);
+
+		double op_d_b_y_kernel[3][3] = {
+				{0,0,0},
+				{0,1,0},
+				{0,-1,0},
+		};
+		op_d_b_y.setup_kernel(op_d_b_y_kernel, 1.0/hy);
+
+
+		double diff1_x_kernel[3][3] = {
+				{0,0,0},
+				{-1.0,0,1.0},
+				{0,0,0}
+		};
+		diff1_x.setup_kernel(diff1_x_kernel, 1.0/(2.0*hx));
+
+		double diff1_y_kernel[3][3] = {
+				{0,-1.0,0},	// lower y coordinate
+				{0,0,0},
+				{0,1.0,0}	// higher y coordinate
+		};
+		diff1_y.setup_kernel(diff1_y_kernel, 1.0/(2.0*hy));
+
+		double diff2_x_kernel[3][3] = {
+				{0,0,0},
+				{1.0,-2.0,1.0},
+				{0,0,0}
+			};
+		diff2_x.setup_kernel(diff2_x_kernel, 1.0/(hx*hx));
+
+		double diff2_y_kernel[3][3] = {
+				{0,1.0,0},
+				{0,-2.0,0},
+				{0,1.0,0}
+		};
+		diff2_y.setup_kernel(diff2_y_kernel, 1.0/(hy*hy));
 	}
+
 
 	void run_timestep()
 	{
-		std::cout << "Timestep: " << timestep_nr << std::endl;
+		U = op_avg_f_x(P)*u;
+		V = op_avg_f_y(P)*v;
 
-		/*
-		 * non-conservative formulation:
-		 *
-		 *	h_t = -(u*h)_x - (v*h)_y
-		 *	u_t = -g * h_x - u * u_x - v * u_y
-		 *	v_t = -g * h_y - u * v_x - v * v_y
-		 */
-		h_t = -diff1_x(u*h) - diff1_y(v*h);
-		u_t = -g*diff1_x(h) - u*diff1_x(u) - v*diff1_y(u);
-		v_t = -g*diff1_y(h) - u*diff1_x(v) - v*diff1_y(v);
+		H = P + 0.5*(op_avg_b_x(u*u) + op_avg_b_y(v*v));
 
+		eta = (op_d_f_x(v) - op_d_f_y(u)) / op_avg_f_x(op_avg_f_y(P));
+
+		// mass
+		mass = P.reduce_sum();
+		// energy
+		energy = 0.5*(P*P + P*op_avg_b_x(u*u) + P*op_avg_b_y(v*v)).reduce_sum();
+		// potential enstropy
+		potential_entrophy = 0.5*(eta*op_avg_f_x(op_avg_f_y(P))).reduce_sum();
+
+		u_t = op_avg_b_y(eta*op_avg_f_x(V)) - op_d_f_x(H);
+		v_t = op_avg_b_x(eta*op_avg_f_y(U)) - op_d_f_y(H);
+		P_t = -op_d_b_x(U) - op_d_b_y(V);
+
+#if 1
 		if (viscocity > 0)
 		{
 			// TODO: is this correct?
@@ -228,6 +308,7 @@ public:
 			u_t -= (diff2_x(diff2_x(u)) + diff2_x(diff2_x(v)))*viscocity;
 			v_t -= (diff2_y(diff2_y(u)) + diff2_y(diff2_y(v)))*viscocity;
 		}
+#endif
 
 		double limit_speed = std::max(hx/u.reduce_maxAbs(), hy/v.reduce_maxAbs());
 
@@ -237,12 +318,12 @@ public:
  //           limit_visc = (viscocity*0.5)*((hx*hy)*0.5);
 
         // limit by gravitational acceleration
-		double limit_gh = std::min(hx, hy)/std::sqrt(g*h.reduce_maxAbs());
+		double limit_gh = std::min(hx, hy)/std::sqrt(g*P.reduce_maxAbs());
 
-        std::cout << limit_speed << ", " << limit_visc << ", " << limit_gh << std::endl;
+//        std::cout << limit_speed << ", " << limit_visc << ", " << limit_gh << std::endl;
         double dt = CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
 
-		h += dt*h_t;
+		P += dt*P_t;
 		u += dt*u_t;
 		v += dt*v_t;
 
@@ -267,7 +348,7 @@ public:
 		cGlTexture->resize(res[1], res[0]);
 		cGlTexture->unbind();
 
-		texture_data = new unsigned char[h.array_data_cartesian_length];
+		texture_data = new unsigned char[P.array_data_cartesian_length];
 
 		cGlDrawQuad = new CGlDrawQuad;
 
@@ -278,17 +359,17 @@ public:
 		// execute simulation time step
 		run_timestep();
 
-		h.requestDataInCartesianSpace();
+		P.requestDataInCartesianSpace();
 
-		double scale_d = 1.0/(h-h0).reduce_maxAbs();
+		double scale_d = 1.0/(P-h0).reduce_maxAbs();
 //		double scale_d = 0.5;
 
 #pragma omp parallel for simd
-		for (std::size_t i = 0; i < h.array_data_cartesian_length; i++)
+		for (std::size_t i = 0; i < P.array_data_cartesian_length; i++)
 		{
 			double value;
 			// average height
-			value = h.array_data_cartesian_space[i]-h0;
+			value = P.array_data_cartesian_space[i]-h0;
 
 			// scale
 			value *= scale_d;
@@ -314,7 +395,10 @@ public:
 
 	const char* vis_getStatusString()
 	{
-		return "";
+		static char title_string[1024];
+		sprintf(title_string, "Timestep: %i, Mass: %f, Energy: %f, Potential Entrophy: %f", timestep_nr, mass, energy, potential_entrophy);
+//		std::cout << "Timestep: " << timestep_nr << std::endl;
+		return title_string;
 	}
 
 	void vis_viewportChanged(int i_width, int i_height)
@@ -364,7 +448,7 @@ int main(int i_argc, char *i_argv[])
 		domain_length = atof(i_argv[6]);
 
 
-	SimulationSWE *simulationSWE = new SimulationSWE;
+	SimulationSWEStaggered *simulationSWE = new SimulationSWEStaggered;
 
 	VisualizationEngine(simulationSWE, "SWE");
 
