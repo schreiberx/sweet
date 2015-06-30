@@ -22,6 +22,7 @@ public:
 	// size of cell (hx, hy)
 	double cell_size[2] = {0,0};
 
+	// average height for initialization
 	double h0 = 1000.0;
 
 	// gravitation

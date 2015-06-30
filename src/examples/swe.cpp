@@ -32,6 +32,8 @@ public:
 
 		op(parameters.cell_size, parameters.res)
 	{
+		// override gravitation
+		parameters.g = 1.0;
 
 		if (0)
 		{
@@ -184,10 +186,10 @@ public:
 		// provide information to parameters
 		parameters.timestep_size = dt;
 
-
 		u += dt*u_t;
 		v += dt*v_t;
 
+		// update h based on updated velocities
 		h_t = -op.diff_c_x(u*h) - op.diff_c_y(v*h);
 		h += dt*h_t;
 
