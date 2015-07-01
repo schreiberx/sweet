@@ -32,7 +32,7 @@ public:
 	public:
 		virtual void vis_setup(VisualizationEngine *i_visualizationEngine) = 0;
 
-		virtual void vis_render() = 0;
+		virtual bool vis_render() = 0;
 
 		virtual const char* vis_getStatusString() = 0;
 
@@ -136,7 +136,7 @@ public:
 			camera_sphere_view_rotation_alpha = 0;
 			camera_sphere_view_rotation_beta = 0;
 
-			camera1stPerson.rotate(M_PI*0.01, 0, 0);
+			camera1stPerson.rotate(0, 0, 0);
 		}
 	};
 
@@ -426,7 +426,7 @@ public:
 			engineState->commonShaderPrograms.shaderBlinn.material_specular_exponent_uniform.set1f(40.0f);
 			engineState->commonShaderPrograms.shaderBlinn.disable();
 
-			programCallbacks->vis_render();
+			engineState->quit = !programCallbacks->vis_render();
 
 			renderWindow->setWindowTitle(programCallbacks->vis_getStatusString());
 

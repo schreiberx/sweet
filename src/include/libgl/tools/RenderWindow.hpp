@@ -232,7 +232,7 @@ public:
 
 		checkSDLError(__LINE__);
 
-		std::cout << "Get current video driver: " << (char*)SDL_GetCurrentVideoDriver() << std::endl;
+//		std::cout << "Get current video driver: " << (char*)SDL_GetCurrentVideoDriver() << std::endl;
 
 		window = SDL_CreateWindow(
 						i_initial_window_title,

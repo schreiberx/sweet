@@ -81,8 +81,8 @@ public:
 
 		h.data_setall(parameters.h0);
 
-		double center_x = 0.7;
-		double center_y = 0.6;
+		double center_x = parameters.init_coord_x;
+		double center_y = parameters.init_coord_y;
 
 		if (parameters.setup_scenario == 0)
 		{
@@ -156,18 +156,18 @@ public:
 		eta = (op.diff_c_x(v) - op.diff_c_y(u)) / h;
 		parameters.potential_entrophy = 0.5*(eta*eta*h).reduce_sum() / (double)(parameters.res[0]*parameters.res[1]);
 
-		if (parameters.viscocity != 0)
+		if (parameters.sim_viscocity != 0)
 		{
 			// TODO: is this correct?
-			v_t += (op.diff2_c_y(u) + op.diff2_c_y(v))*parameters.viscocity;
-			u_t += (op.diff2_c_x(u) + op.diff2_c_x(v))*parameters.viscocity;
+			v_t += (op.diff2_c_y(u) + op.diff2_c_y(v))*parameters.sim_viscocity;
+			u_t += (op.diff2_c_x(u) + op.diff2_c_x(v))*parameters.sim_viscocity;
 		}
 
-		if (parameters.hyper_viscocity != 0)
+		if (parameters.sim_hyper_viscocity != 0)
 		{
 			// TODO: is this correct?
-			u_t += (op.diff2_c_x(op.diff2_c_x(u)) + op.diff2_c_x(op.diff2_c_x(v)))*parameters.hyper_viscocity;
-			v_t += (op.diff2_c_y(op.diff2_c_y(u)) + op.diff2_c_y(op.diff2_c_y(v)))*parameters.hyper_viscocity;
+			u_t += (op.diff2_c_x(op.diff2_c_x(u)) + op.diff2_c_x(op.diff2_c_x(v)))*parameters.sim_hyper_viscocity;
+			v_t += (op.diff2_c_y(op.diff2_c_y(u)) + op.diff2_c_y(op.diff2_c_y(v)))*parameters.sim_hyper_viscocity;
 		}
 
 		double limit_speed = std::max(parameters.cell_size[0]/u.reduce_maxAbs(), parameters.cell_size[1]/v.reduce_maxAbs());
@@ -181,7 +181,7 @@ public:
 		double limit_gh = std::min(parameters.cell_size[0], parameters.cell_size[1])/std::sqrt(parameters.g*h.reduce_maxAbs());
 
 //        std::cout << limit_speed << ", " << limit_visc << ", " << limit_gh << std::endl;
-		double dt = parameters.CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
+		double dt = parameters.sim_CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
 
 		// provide information to parameters
 		parameters.timestep_size = dt;

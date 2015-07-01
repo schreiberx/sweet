@@ -623,6 +623,21 @@ public:
 		return sum;
 	}
 
+	/**
+	 * return the maximum of all absolute values
+	 */
+	double reduce_sumAbs()
+	{
+		requestDataInCartesianSpace();
+
+		double sum = 0;
+#pragma omp parallel for simd reduction(+:sum)
+		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
+			sum += std::abs(array_data_cartesian_space[i]);
+
+		return sum;
+	}
+
 
 public:
 	template <int S>
@@ -1282,18 +1297,20 @@ public:
 
 	friend
 	inline
-	std::ostream& operator<<(std::ostream &o_ostream, DataArray<D> &i_dataArray)
+	std::ostream& operator<<(std::ostream &o_ostream, const DataArray<D> &i_dataArray)
 	{
-		i_dataArray.requestDataInCartesianSpace();
+		DataArray<D> &rw_array_data = (DataArray<D>&)i_dataArray;
+
+		rw_array_data.requestDataInCartesianSpace();
 
 		assert(D == 2);
 		if (D == 2)
 		{
-			for (int y = i_dataArray.resolution[1]-1; y >= 0; y--)
+			for (int y = rw_array_data.resolution[1]-1; y >= 0; y--)
 			{
-				for (std::size_t x = 0; x < i_dataArray.resolution[0]; x++)
+				for (std::size_t x = 0; x < rw_array_data.resolution[0]; x++)
 				{
-					double value = i_dataArray.getDataRef(y, x);
+					double value = rw_array_data.getDataRef(y, x);
 //					if (std::abs(value) < 1e-13)
 //						value = 0;
 					std::cout << value << "\t";

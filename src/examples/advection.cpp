@@ -98,9 +98,9 @@ public:
 
 	void run_timestep()
 	{
-        double dt = parameters.CFL*std::min(parameters.cell_size[0]/u.reduce_maxAbs(), parameters.cell_size[1]/v.reduce_maxAbs());
+        double dt = parameters.sim_CFL*std::min(parameters.cell_size[0]/u.reduce_maxAbs(), parameters.cell_size[1]/v.reduce_maxAbs());
         if (std::isinf(dt))
-        	dt = parameters.CFL*parameters.cell_size[0]/0.000001;
+        	dt = parameters.sim_CFL*parameters.cell_size[0]/0.000001;
 
         parameters.timestep_size = dt;
 

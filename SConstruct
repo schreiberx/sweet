@@ -486,9 +486,15 @@ else:
 build_dir='/tmp/scons_build_'+exec_name+'/'
 
 
+env.Append(CPPPATH = ['/usr/local/include', '/usr/include'])
+# also include the 'src' directory to search for dependencies
+env.Append(CPPPATH = ['.', 'src/'])
+
+
 ######################
 # get source code files
 ######################
+
 
 env.src_files = []
 

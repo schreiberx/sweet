@@ -43,16 +43,15 @@ class VisSweet	:
 		visualizationEngine = i_visualizationEngine;
 
 		cGlDrawQuad = new CGlDrawQuad;
-
 	}
 
-	void vis_render()
+	bool vis_render()
 	{
 		DataArray<2> &visData = simulation->vis_get_vis_data_array();
 
 		if (cGlTexture == nullptr)
 		{
-			cGlTexture = new CGlTexture(GL_TEXTURE_2D, GL_RGBA, GL_BLUE, GL_UNSIGNED_BYTE);
+			cGlTexture = new CGlTexture(GL_TEXTURE_2D, GL_RED, GL_RED, GL_UNSIGNED_BYTE);
 			cGlTexture->bind();
 			cGlTexture->resize(visData.resolution[1], visData.resolution[0]);
 			cGlTexture->unbind();
@@ -82,21 +81,25 @@ class VisSweet	:
 			texture_data[i] = value;
 		}
 
+		cGlTexture->bind();
+		cGlTexture->setData(texture_data);
 
-		visualizationEngine->engineState->commonShaderPrograms.shaderTexturize.use();
-		visualizationEngine->engineState->commonShaderPrograms.shaderTexturize.pvm_matrix_uniform.set(visualizationEngine->engineState->matrices.pvm);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-			cGlTexture->bind();
-			cGlTexture->setData(texture_data);
+			visualizationEngine->engineState->commonShaderPrograms.shaderTexturizeRainbowmap.use();
+			visualizationEngine->engineState->commonShaderPrograms.shaderTexturizeRainbowmap.pvm_matrix_uniform.set(visualizationEngine->engineState->matrices.pvm);
 
 				cGlDrawQuad->render();
 
-			cGlTexture->unbind();
-		visualizationEngine->engineState->commonShaderPrograms.shaderBlinn.disable();
+				visualizationEngine->engineState->commonShaderPrograms.shaderTexturizeRainbowmap.disable();
+
+		cGlTexture->unbind();
 
 		// execute simulation time step
-		simulation->vis_post_frame_processing(sim_runs_per_frame);
+		bool should_continue = simulation->vis_post_frame_processing(sim_runs_per_frame);
 
+		return should_continue;
 	}
 
 	const char* vis_getStatusString()
@@ -133,6 +136,10 @@ class VisSweet	:
 
 		case 'j':
 			simulation->run_timestep();
+			break;
+
+		default:
+			simulation->vis_keypress(i_key);
 			break;
 		}
 	}

@@ -17,9 +17,7 @@ public:
 	// diagnostics
 	DataArray<2> H, U, V;
 	DataArray<2> eta;
-
 	DataArray<2> P_t, u_t, v_t;
-
 
 	Operators2D op;
 
@@ -66,12 +64,15 @@ public:
 		parameters.simulation_time = 0;
 
 		P.data_setall(parameters.h0);
+		u.data_setall(0);
+		v.data_setall(0);
 
-		double center_x = 0.7;
-		double center_y = 0.6;
+		double center_x = parameters.init_coord_x;
+		double center_y = parameters.init_coord_y;
 
 		if (parameters.setup_scenario == 0)
 		{
+			std::cout << "Setting up discontinuous radial dam break" << std::endl;
 			/*
 			 * radial dam break
 			 */
@@ -94,6 +95,7 @@ public:
 
 		if (parameters.setup_scenario == 1)
 		{
+			std::cout << "Setting up Gaussian radial dam break" << std::endl;
 			/*
 			 * fun with Gaussian
 			 */
@@ -112,45 +114,114 @@ public:
 			}
 		}
 
-		u.data_setall(0);
-		v.data_setall(0);
+		if (parameters.setup_scenario == 2)
+		{
+			std::cout << "Setting up balanced steady state solution" << std::endl;
+			// see doc/balanced_steady_state_solution/*
+
+			if (parameters.sim_f == 0)
+			{
+				std::cout << "Coriolis force required to setup balanced steady state solution!" << std::endl;
+				exit(-1);
+			}
+
+			for (std::size_t j = 0; j < parameters.res[1]; j++)
+			{
+				for (std::size_t i = 0; i < parameters.res[0]; i++)
+				{
+					{
+						// P space
+						double x = ((double)i+0.5)/(double)parameters.res[0];
+						P.getDataRef(j,i) = parameters.h0 + std::sin(2.0*M_PI*x);
+					}
+
+					{
+						// v space
+						double x = ((double)i+0.5)/(double)parameters.res[0];
+
+						double s = std::cos(M_PI*x);
+						v.getDataRef(j,i) = 2.0*M_PI*(2.0*s*s-1.0)/(parameters.sim_f*parameters.sim_domain_length);
+//						v.getDataRef(j,i) = 0;
+					}
+				}
+			}
+			std::cout << P << std::endl;
+		}
 	}
 
 
-	void run_timestep()
+
+	bool run_timestep()
 	{
 		U = op.avg_f_x(P)*u;
 		V = op.avg_f_y(P)*v;
 
 		H = P + 0.5*(op.avg_b_x(u*u) + op.avg_b_y(v*v));
 
-		eta = (op.diff_f_x(v) - op.diff_f_y(u)) / op.avg_f_x(op.avg_f_y(P));
+		eta = (op.diff_f_x(v) - op.diff_f_y(u) + parameters.sim_f) / op.avg_f_x(op.avg_f_y(P));
 
 		// mass
 		parameters.mass = P.reduce_sum() / (double)(parameters.res[0]*parameters.res[1]);
+
 		// energy
 		parameters.energy = 0.5*(
 				P*P +
 				P*op.avg_b_x(u*u) +
 				P*op.avg_b_y(v*v)
 			).reduce_sum() / (double)(parameters.res[0]*parameters.res[1]);
+
 		// potential enstropy
 		parameters.potential_entrophy = 0.5*(eta*eta*op.avg_f_x(op.avg_f_y(P))).reduce_sum() / (double)(parameters.res[0]*parameters.res[1]);
 
+#if 0
+		std::cout << "++++++++++++++++++++++++++++++++++++++" << std::endl;
+		std::cout << (eta - op.diff_f_x(H)) << std::endl;
+		std::cout << "++++++++++++++++++++++++++++++++++++++" << std::endl;
+#endif
 		u_t = op.avg_b_y(eta*op.avg_f_x(V)) - op.diff_f_x(H);
-		v_t = op.avg_b_x(eta*op.avg_f_y(U)) - op.diff_f_y(H);
+		v_t = -op.avg_b_x(eta*op.avg_f_y(U)) - op.diff_f_y(H);
 		P_t = -op.diff_b_x(U) - op.diff_b_y(V);
 
-		if (parameters.viscocity != 0)
+		if (parameters.verbosity > 0)
 		{
-			u_t += (op.diff2_c_x(u) + op.diff2_c_x(v))*parameters.viscocity;
-			v_t += (op.diff2_c_y(u) + op.diff2_c_y(v))*parameters.viscocity;
+			if (parameters.timestep_nr == 0)
+			{
+				std::cout << "MASS\tENERGY\tPOT_ENSTROPHY";
+
+				if (parameters.setup_scenario == 2)
+					std::cout << "\tABS_U_DT";
+
+				std::cout << std::endl;
+			}
+
+			std::cout << parameters.mass << "\t" << parameters.energy << "\t" << parameters.potential_entrophy;
+
+			// this should be zero for the steady state test
+			if (parameters.setup_scenario == 2)
+			{
+				double test_val = u_t.reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
+				std::cout << "\t" << test_val;
+
+				test_val = v_t.reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
+				std::cout << "\t" << test_val;
+
+				test_val = P_t.reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
+				std::cout << "\t" << test_val;
+			}
+
+			std::cout << std::endl;
 		}
 
-		if (parameters.hyper_viscocity != 0)
+		if (parameters.sim_viscocity != 0)
 		{
-			u_t += (op.diff2_c_x(op.diff2_c_x(u)) + op.diff2_c_x(op.diff2_c_x(v)))*parameters.hyper_viscocity;
-			v_t += (op.diff2_c_y(op.diff2_c_y(u)) + op.diff2_c_y(op.diff2_c_y(v)))*parameters.hyper_viscocity;
+			u_t += (op.diff2_c_x(u) + op.diff2_c_x(v))*parameters.sim_viscocity;
+			v_t += (op.diff2_c_y(u) + op.diff2_c_y(v))*parameters.sim_viscocity;
+		}
+
+		if (parameters.sim_hyper_viscocity != 0)
+		{
+			u_t += (op.diff2_c_x(op.diff2_c_x(u)) + op.diff2_c_x(op.diff2_c_x(v)))*parameters.sim_hyper_viscocity;
+			v_t += (op.diff2_c_y(op.diff2_c_y(u)) + op.diff2_c_y(op.diff2_c_y(v)))*parameters.sim_hyper_viscocity;
 		}
 
 		double limit_speed = std::max(parameters.cell_size[0]/u.reduce_maxAbs(), parameters.cell_size[1]/v.reduce_maxAbs());
@@ -165,15 +236,15 @@ public:
 		double limit_gh = std::min(parameters.cell_size[0], parameters.cell_size[1])/std::sqrt(parameters.g*P.reduce_maxAbs());
 
 //        std::cout << limit_speed << ", " << limit_visc << ", " << limit_gh << std::endl;
-		double dt = parameters.CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
+		double dt = parameters.sim_CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
 
 		// provide information to parameters
 		parameters.timestep_size = dt;
 
-#define DELAYED_P_UPDATE	1
-#define USE_UP_AND_DOWNWINDING	1
+#define LEAPFROG_LIKE_P_UPDATE	1
+#define USE_UP_AND_DOWNWINDING	0
 
-#if DELAYED_P_UPDATE == 0
+#if LEAPFROG_LIKE_P_UPDATE == 0
 
 #if USE_UP_AND_DOWNWINDING == 0
 		P += dt*P_t;
@@ -212,15 +283,21 @@ public:
 		u += dt*u_t;
 		v += dt*v_t;
 
+#if LEAPFROG_LIKE_P_UPDATE == 1
+
 #if USE_UP_AND_DOWNWINDING == 0
+
 		// recompute U and V
 		U = op.avg_f_x(P)*u;
 		V = op.avg_f_y(P)*v;
 
 		P_t = -op.diff_b_x(U) - op.diff_b_y(V);
 		P += dt*P_t;
+
 #else
 
+
+	#if 0
 		// up/downwinding on staggered grid (FV-like method)
 		P += dt/(parameters.cell_size[0]*parameters.cell_size[1])*(
 				parameters.cell_size[1]*(
@@ -248,31 +325,94 @@ public:
 						-op.shift_down(P)*v.return_value_if_negative()	// inflow
 				)
 			);
+	#else
+		// same a above, but formulated in a finite-difference style
+		P += dt
+			*(
+				(
+					// u is positive
+					op.shift_right(P*u.return_value_if_positive())	// inflow
+					-P*u.return_value_if_positive()					// outflow
+
+					// u is negative
+					+(P*op.shift_right(u.return_value_if_negative()))	// outflow
+					-op.shift_left(P)*u.return_value_if_negative()		// inflow
+				)*(1.0/parameters.cell_size[0])	// here we see a finite-difference-like formulation
+				+
+				(
+					// v is positive
+					op.shift_up(P*v.return_value_if_positive())		// inflow
+					-P*v.return_value_if_positive()					// outflow
+
+					// v is negative
+					+(P*op.shift_up(v.return_value_if_negative()))	// outflow
+					-op.shift_down(P)*v.return_value_if_negative()	// inflow
+				)*(1.0/parameters.cell_size[1])
+			);
+	#endif
+
+#endif
+
 #endif
 
 		parameters.simulation_time += dt;
 		parameters.timestep_nr++;
+
+
+		if (parameters.max_timesteps != -1 && parameters.max_timesteps <= parameters.timestep_nr)
+			return false;
+
+		if (parameters.max_simulation_time != -1 && parameters.max_simulation_time <= parameters.simulation_time)
+			return false;
+
+		return true;
 	}
 
 
 
-	void vis_post_frame_processing(int i_num_iterations)
+	/**
+	 * postprocessing of frame: do time stepping
+	 */
+	bool vis_post_frame_processing(int i_num_iterations)
 	{
 		if (parameters.run_simulation)
 			for (int i = 0; i < i_num_iterations; i++)
-				run_timestep();
-	}
+				return run_timestep();
 
+		return true;
+	}
 
 	DataArray<2> &vis_get_vis_data_array()
 	{
-		return P;
+		int id = parameters.vis_id % 7;
+
+		switch(id)
+		{
+		case 0:	return P;
+		case 1: return u;
+		case 2: return v;
+		case 3: return H;
+		case 4: return eta;
+		case 5: return U;
+		case 6: return V;
+		}
 	}
 
 	const char* vis_get_status_string()
 	{
+		const char *vis_id_strings[] =
+		{
+				"P", "u", "v", "eta", "H", "U", "V"
+		};
+		int vis_id = parameters.vis_id % 7;
+
 		static char title_string[1024];
-		sprintf(title_string, "Time: %f, Timestep: %i, timestep size: %e, Mass: %e, Energy: %e, Potential Entrophy: %e", parameters.simulation_time, parameters.timestep_nr, parameters.timestep_size, parameters.mass, parameters.energy, parameters.potential_entrophy);
+		sprintf(title_string, "Time: %f, Timestep: %i, timestep size: %e, Vis: %s, Mass: %e, Energy: %e, Potential Entrophy: %e",
+				parameters.simulation_time,
+				parameters.timestep_nr,
+				parameters.timestep_size,
+				vis_id_strings[vis_id],
+				parameters.mass, parameters.energy, parameters.potential_entrophy);
 		return title_string;
 	}
 
@@ -281,6 +421,19 @@ public:
 		parameters.run_simulation = !parameters.run_simulation;
 	}
 
+	void vis_keypress(int i_key)
+	{
+		switch(i_key)
+		{
+		case 'v':
+			parameters.vis_id++;
+			break;
+
+		case 'V':
+			parameters.vis_id--;
+			break;
+		}
+	}
 };
 
 
