@@ -173,6 +173,9 @@ public:
 
 		void callback_key_down(int key, int mod, int scancode, int unicode)
 		{
+			if ((mod & KMOD_RSHIFT) || (mod & KMOD_LSHIFT))
+				key += 'A'-'a';
+
 			switch (key)
 			{
 			case 'q':

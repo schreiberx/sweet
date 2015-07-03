@@ -1,6 +1,8 @@
 
 #include <sweet/DataArray.hpp>
-#include "VisSweet.hpp"
+#if SWEET_GUI
+	#include "sweet/VisSweet.hpp"
+#endif
 #include "Parameters.hpp"
 #include "sweet/Operators2D.hpp"
 #include <unistd.h>
@@ -96,7 +98,7 @@ public:
 	}
 
 
-	void run_timestep()
+	bool run_timestep()
 	{
         double dt = parameters.sim_CFL*std::min(parameters.cell_size[0]/u.reduce_maxAbs(), parameters.cell_size[1]/v.reduce_maxAbs());
         if (std::isinf(dt))
@@ -114,8 +116,8 @@ public:
 
         // staggered
 		h -= dt*(
-				op_d_f_x(op_avg_b_x(h)*u) +
-				op_d_f_y(op_avg_b_y(h)*v)
+				op_d_b_x(op_avg_f_x(h)*u) +
+				op_d_b_y(op_avg_f_y(h)*v)
 			);
 #endif
 
@@ -132,48 +134,56 @@ public:
 //		std::cout << u << std::endl;
 
 		// up/downwinding on staggered grid (FV-like method)
-		h += dt/(parameters.cell_size[0]*parameters.cell_size[1])*(
-				parameters.cell_size[1]*(
-					//             |                       |                       |
-					// --v---------|-----------v-----------|-----------v-----------|
-					//   h0        u0          h1          u1          h2          u2
-					//
+		h += dt
+			*(
+				(
+					// u is positive
+					op.shift_right(h)*u.return_value_if_positive()	// inflow
+					-h*op.shift_left(u.return_value_if_positive())					// outflow
 
-					// left edge
-					op.shift_right(h*u.return_value_if_positive())		// inflow
-					+(h*op.shift_right(u.return_value_if_negative()))	// outflow
-
-					// right edge
-					-h*u.return_value_if_positive()					// outflow
-					-op.shift_left(h)*u.return_value_if_negative()	// inflow
-				)
+					// u is negative
+					+(h*u.return_value_if_negative())	// outflow
+					-op.shift_left(h*u.return_value_if_negative())		// inflow
+				)*(1.0/parameters.cell_size[0])	// here we see a finite-difference-like formulation
 				+
-				parameters.cell_size[0]*(
-						// bottom edge
-						op.shift_up(h*v.return_value_if_positive())	// inflow
-						+(h*op.shift_up(v.return_value_if_negative()))	// outflow
+				(
+					// v is positive
+					op.shift_up(h)*v.return_value_if_positive()		// inflow
+					-h*op.shift_down(v.return_value_if_positive())					// outflow
 
-						// top edge
-						-h*v.return_value_if_positive()					// outflow
-						-op.shift_down(h)*v.return_value_if_negative()	// inflow
-				)
+					// v is negative
+					+(h*v.return_value_if_negative())	// outflow
+					-op.shift_down(h*v.return_value_if_negative())	// inflow
+				)*(1.0/parameters.cell_size[1])
 			);
 #endif
 		parameters.timestep_nr++;
+
+		return true;
 	}
 
 
-	void vis_post_frame_processing(int i_num_iterations)
+	/**
+	 * postprocessing of frame: do time stepping
+	 */
+	bool vis_post_frame_processing(int i_num_iterations)
 	{
+		bool retval = true;
 		if (parameters.run_simulation)
 			for (int i = 0; i < i_num_iterations; i++)
-				run_timestep();
+				retval = run_timestep();
+
+		return retval;
 	}
 
 
-	DataArray<2> &vis_get_vis_data_array()
+	void vis_get_vis_data_array(
+			const DataArray<2> **o_dataArray,
+			double *o_aspect_ratio
+	)
 	{
-		return h;
+		*o_dataArray = &h;
+		*o_aspect_ratio = parameters.sim_domain_length[0] / parameters.sim_domain_length[1];
 	}
 
 	const char* vis_get_status_string()
@@ -187,6 +197,21 @@ public:
 	{
 		parameters.run_simulation = !parameters.run_simulation;
 	}
+
+
+	void vis_keypress(int i_key)
+	{
+		switch(i_key)
+		{
+		case 'v':
+			parameters.vis_id++;
+			break;
+
+		case 'V':
+			parameters.vis_id--;
+			break;
+		}
+	}
 };
 
 
@@ -197,7 +222,11 @@ int main(int i_argc, char *i_argv[])
 
 	SimulationSWE *simulationSWE = new SimulationSWE;
 
+#if SWEET_GUI
 	VisSweet<SimulationSWE> visSweet(simulationSWE);
+#else
+//	simulationSWE->run();
+#endif
 
 	delete simulationSWE;
 

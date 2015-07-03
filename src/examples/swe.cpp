@@ -1,6 +1,8 @@
 
 #include <sweet/DataArray.hpp>
-#include "VisSweet.hpp"
+#if SWEET_GUI
+	#include "sweet/VisSweet.hpp"
+#endif
 #include "Parameters.hpp"
 #include "sweet/Operators2D.hpp"
 
@@ -131,7 +133,7 @@ public:
 	}
 
 
-	void run_timestep()
+	bool run_timestep()
 	{
 		/*
 		 * non-conservative formulation:
@@ -195,20 +197,43 @@ public:
 
 		parameters.simulation_time += dt;
 		parameters.timestep_nr++;
+
+		return true;
 	}
 
 
 
-	void vis_post_frame_processing(int i_num_iterations)
+
+	/**
+	 * postprocessing of frame: do time stepping
+	 */
+	bool vis_post_frame_processing(int i_num_iterations)
 	{
+		bool retval = true;
 		if (parameters.run_simulation)
 			for (int i = 0; i < i_num_iterations; i++)
-				run_timestep();
+				retval = run_timestep();
+
+		return retval;
 	}
 
-	DataArray<2> &vis_get_vis_data_array()
+
+	void vis_get_vis_data_array(
+			const DataArray<2> **o_dataArray,
+			double *o_aspect_ratio
+	)
 	{
-		return h;
+		int id = parameters.vis_id % 7;
+
+		switch(id)
+		{
+			case 0:	*o_dataArray = &h;	break;
+			case 1: *o_dataArray = &u;	break;
+			case 2: *o_dataArray = &v;	break;
+			case 4: *o_dataArray = &eta;	break;
+		}
+
+		*o_aspect_ratio = parameters.sim_domain_length_x / parameters.sim_domain_length_y;
 	}
 
 	const char* vis_get_status_string()
@@ -221,6 +246,21 @@ public:
 	void vis_pause()
 	{
 		parameters.run_simulation = !parameters.run_simulation;
+	}
+
+
+	void vis_keypress(int i_key)
+	{
+		switch(i_key)
+		{
+		case 'v':
+			parameters.vis_id++;
+			break;
+
+		case 'V':
+			parameters.vis_id--;
+			break;
+		}
 	}
 };
 

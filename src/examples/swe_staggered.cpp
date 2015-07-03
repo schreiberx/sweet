@@ -1,6 +1,8 @@
 
 #include <sweet/DataArray.hpp>
-#include "VisSweet.hpp"
+#if SWEET_GUI
+	#include "sweet/VisSweet.hpp"
+#endif
 #include "Parameters.hpp"
 #include "sweet/Operators2D.hpp"
 #include <unistd.h>
@@ -16,7 +18,8 @@ public:
 
 	// diagnostics
 	DataArray<2> H, U, V;
-	DataArray<2> eta;
+	DataArray<2> eta_u;
+	DataArray<2> eta_v;
 	DataArray<2> P_t, u_t, v_t;
 
 	DataArray<2> f;
@@ -50,7 +53,8 @@ public:
 		H(parameters.res),	//
 		U(parameters.res),	// mass flux (x-direction)
 		V(parameters.res),	// mass flux (y-direction)
-		eta(parameters.res),
+		eta_u(parameters.res),
+		eta_v(parameters.res),
 		P_t(parameters.res),
 		u_t(parameters.res),
 		v_t(parameters.res),
@@ -95,16 +99,17 @@ public:
 		if (parameters.setup_scenario == 0)
 		{
 			std::cout << "Setting up discontinuous radial dam break" << std::endl;
+
 			/*
 			 * radial dam break
 			 */
-			double radius = 0.2;
+			double radius = 100000;
 			for (std::size_t j = 0; j < parameters.res[1]; j++)
 			{
 				for (std::size_t i = 0; i < parameters.res[0]; i++)
 				{
-					double x = ((double)i+0.5)/(double)parameters.res[0];
-					double y = ((double)j+0.5)/(double)parameters.res[1];
+					double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_length[0];
+					double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_length[1];
 
 					double dx = x-center_x;
 					double dy = y-center_y;
@@ -119,7 +124,16 @@ public:
 		{
 			std::cout << "Setting up Gaussian radial dam break" << std::endl;
 
-			if (center_x != 0.5 || center_y != 0.5)
+			std::cout << center_x << std::endl;
+			std::cout << center_y << std::endl;
+			std::cout << std::endl;
+			std::cout << parameters.sim_domain_length[0] << std::endl;
+			std::cout << parameters.sim_domain_length[1] << std::endl;
+			std::cout << std::endl;
+
+			if (	std::abs(center_x/parameters.sim_domain_length[0]-0.5) > 0.001 ||
+					std::abs(center_y/parameters.sim_domain_length[1]-0.5) > 0.001
+			)
 			{
 				std::cerr << "ERROR: Gaussian radial dam break has to be centered. Otherwise, there will be discontinuities at the domain border" << std::endl;
 				exit(1);
@@ -128,15 +142,19 @@ public:
 			/*
 			 * fun with Gaussian
 			 */
+			double radius = 1000000;
 			for (std::size_t j = 0; j < parameters.res[1]; j++)
 			{
 				for (std::size_t i = 0; i < parameters.res[0]; i++)
 				{
-					double x = ((double)i+0.5)/(double)parameters.res[0];
-					double y = ((double)j+0.5)/(double)parameters.res[1];
+					double x = ((double)i+0.5)*parameters.sim_domain_length[0]/(double)parameters.res[0];
+					double y = ((double)j+0.5)*parameters.sim_domain_length[1]/(double)parameters.res[1];
 
 					double dx = x-center_x;
 					double dy = y-center_y;
+
+					dx /= radius;
+					dy /= radius;
 
 					P.getDataRef(j,i) += std::exp(-50.0*(dx*dx + dy*dy));
 				}
@@ -148,7 +166,7 @@ public:
 			std::cout << "Setting up balanced steady state solution (ver1)" << std::endl;
 			// see doc/balanced_steady_state_solution/*
 
-			if (parameters.sim_dim_f == 0)
+			if (parameters.sim_f == 0)
 			{
 				std::cout << "Coriolis force required to setup balanced steady state solution!" << std::endl;
 				exit(-1);
@@ -168,7 +186,7 @@ public:
 						// v space
 						double x = ((double)i+0.5)/(double)parameters.res[0];
 
-						v.getDataRef(j,i) = 2.0*M_PI*std::cos(2.0*M_PI*x)/parameters.sim_dim_f;
+						v.getDataRef(j,i) = 2.0*M_PI*std::cos(2.0*M_PI*x)/parameters.sim_f;
 					}
 				}
 			}
@@ -180,7 +198,7 @@ public:
 			std::cout << "Setting up balanced steady state solution (ver2)" << std::endl;
 			// see doc/balanced_steady_state_solution/*
 
-			if (parameters.sim_dim_f == 0)
+			if (parameters.sim_f == 0)
 			{
 				std::cout << "Coriolis force required to setup balanced steady state solution!" << std::endl;
 				exit(-1);
@@ -195,12 +213,11 @@ public:
 						double y = ((double)j+0.5)/(double)parameters.res[1];
 						P.getDataRef(j,i) = std::sin(2.0*M_PI*y)+parameters.h0;
 					}
-
 					{
 						// u space
 						double y = ((double)j+0.5)/(double)parameters.res[1];
 
-						u.getDataRef(j,i) = -2.0*M_PI*std::cos(2.0*M_PI*y)/parameters.sim_dim_f;
+						u.getDataRef(j,i) = -2.0*M_PI*std::cos(2.0*M_PI*y)/parameters.sim_f;
 					}
 				}
 			}
@@ -211,22 +228,25 @@ public:
 		{
 			std::cout << "Setting up balanced steady state solution (ver3)" << std::endl;
 			std::cout << "The rotations create instabilities in the linear terms, hence this does not work, yet" << std::endl;
+			std::cout << "Furthermore, rotation doesn't make sense due to the missing periodic boundaries (discontinuities occur)" << std::endl;
 			exit(-1);
+
 			// see doc/balanced_steady_state_solution/*
 
-			if (parameters.sim_dim_f == 0)
+			if (parameters.sim_f == 0)
 			{
 				std::cout << "Coriolis force required to setup balanced steady state solution!" << std::endl;
 				exit(-1);
 			}
 
 			u.data_setall(0);
+			v.data_setall(0);
 
 			for (std::size_t j = 0; j < parameters.res[1]; j++)
 			{
 				for (std::size_t i = 0; i < parameters.res[0]; i++)
 				{
-					double angle = 0;
+					double angle = 45;
 
 					{
 						// P space
@@ -245,7 +265,7 @@ public:
 						rot_coord(angle, xo, yo);
 
 						double vel_u = 0;
-						double vel_v = 2.0*M_PI*std::cos(2.0*M_PI*x)/parameters.sim_dim_f;
+						double vel_v = 2.0*M_PI*std::cos(2.0*M_PI*x)/parameters.sim_f;
 						double vel_x_o = vel_u+x;	double vel_y_o = vel_v+y;
 						rot_coord(angle, vel_x_o, vel_y_o);
 
@@ -262,7 +282,7 @@ public:
 						rot_coord(angle, xo, yo);
 
 						double vel_u = 0;
-						double vel_v = 2.0*M_PI*std::cos(2.0*M_PI*x)/parameters.sim_dim_f;
+						double vel_v = 2.0*M_PI*std::cos(2.0*M_PI*x)/parameters.sim_f;
 						double vel_x_o = vel_u+x;	double vel_y_o = vel_v+y;
 						rot_coord(angle, vel_x_o, vel_y_o);
 
@@ -270,6 +290,7 @@ public:
 						vel_v = vel_y_o - yo;
 
 						v.getDataRef(j,i) = vel_v;
+//						v.getDataRef(j,i) = 2.0*M_PI*std::cos(2.0*M_PI*x)/parameters.sim_f;
 					}
 				}
 			}
@@ -286,7 +307,7 @@ public:
 						// beta plane
 						double x = ((double)i)/(double)parameters.res[0];
 						double y = ((double)j)/(double)parameters.res[1];
-						f.getDataRef(j,i) = (y-0.5)*(y-0.5)*parameters.sim_dim_f;
+						f.getDataRef(j,i) = (y-0.5)*(y-0.5)*parameters.sim_f;
 					}
 
 
@@ -329,11 +350,17 @@ public:
 		H = P + 0.5*(op.avg_f_x(u*u) + op.avg_f_y(v*v));
 
 		if (parameters.setup_scenario != 5)
-			eta = (op.diff_b_x(v) - op.diff_b_y(u) + parameters.sim_dim_f/parameters.sim_domain_length) / op.avg_b_x(op.avg_b_y(P));
+		{
+			eta_u = (op.diff_b_x(v) - op.diff_b_y(u) + parameters.sim_f/parameters.sim_domain_length[0]) / op.avg_b_x(op.avg_b_y(P));
+			eta_v = (op.diff_b_x(v) - op.diff_b_y(u) + parameters.sim_f/parameters.sim_domain_length[1]) / op.avg_b_x(op.avg_b_y(P));
+		}
 		else
-			eta = (op.diff_b_x(v) - op.diff_b_y(u) + f) / op.avg_b_x(op.avg_b_y(P));
+		{
+			eta_u = (op.diff_b_x(v) - op.diff_b_y(u) + f) / op.avg_b_x(op.avg_b_y(P));
+			eta_v = eta_u;
+		}
 
-		double normalization = 1.0 / (double)(parameters.res[0]*parameters.res[1]);
+		double normalization = (parameters.sim_domain_length[0]*parameters.sim_domain_length[1]) / ((double)parameters.res[0]*(double)parameters.res[1]);
 		// mass
 		parameters.mass = P.reduce_sum() * normalization;
 
@@ -345,10 +372,12 @@ public:
 			).reduce_sum() * normalization;
 
 		// potential enstropy
-		parameters.potential_entrophy = 0.5*(eta*eta*op.avg_b_x(op.avg_b_y(P))).reduce_sum() * normalization;
+		parameters.potential_entrophy = 0.5*(eta_u*eta_u*op.avg_b_x(op.avg_b_y(P))).reduce_sum() * normalization;
 
-		u_t = op.avg_f_y(eta*op.avg_b_x(V)) - op.diff_b_x(H);
-		v_t = -op.avg_f_x(eta*op.avg_b_y(U)) - op.diff_b_y(H);
+		u_t = op.avg_f_y(eta_u*op.avg_b_x(V)) - op.diff_b_x(H);
+		v_t = -op.avg_f_x(eta_v*op.avg_b_y(U)) - op.diff_b_y(H);
+
+//		std::cout << u_t << std::endl;
 
 
 		if (parameters.verbosity > 0)
@@ -412,7 +441,7 @@ public:
 
 
 		bool leapfrog_like_update = true;
-		bool up_and_downwinding = true;
+		bool up_and_downwinding = false;
 
 
 		// standard explicit euler on velocities
@@ -501,27 +530,25 @@ public:
 	}
 
 
-	const DataArray<2> &vis_get_vis_data_array()
+	void vis_get_vis_data_array(
+			const DataArray<2> **o_dataArray,
+			double *o_aspect_ratio
+	)
 	{
-#if 0
-		static DataArray<2> *p = nullptr;
-		delete p;
-		p = new DataArray<2>(parameters.res);
-		*p = op.diff_c_y(P);
-#endif
 		int id = parameters.vis_id % 7;
 
 		switch(id)
 		{
-		case 0:	return P;
-		case 1: return u;
-		case 2: return v;
-		case 3: return H;
-		case 4: return eta;
-		case 5: return U;
-		case 6: return V;
+		case 0:	*o_dataArray = &P;		break;
+		case 1: *o_dataArray = &u;		break;
+		case 2: *o_dataArray = &v;		break;
+		case 3: *o_dataArray = &H;		break;
+		case 4: *o_dataArray = &eta_u;	break;
+		case 5: *o_dataArray = &U;		break;
+		case 6: *o_dataArray = &V;		break;
 		}
-		return P;
+
+		*o_aspect_ratio = parameters.sim_domain_length[1] / parameters.sim_domain_length[0];
 	}
 
 	const char* vis_get_status_string()
@@ -533,8 +560,9 @@ public:
 		int vis_id = parameters.vis_id % 7;
 
 		static char title_string[1024];
-		sprintf(title_string, "Time: %f, Timestep: %i, timestep size: %e, Vis: %s, Mass: %e, Energy: %e, Potential Entrophy: %e",
+		sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %e, Vis: %s, Mass: %e, Energy: %e, Potential Entrophy: %e",
 				parameters.simulation_time,
+				parameters.simulation_time/(60.0*60.0*24.0),
 				parameters.timestep_nr,
 				parameters.timestep_size,
 				vis_id_strings[vis_id],
@@ -553,10 +581,14 @@ public:
 		{
 		case 'v':
 			parameters.vis_id++;
+			if (parameters.vis_id >= 7)
+				parameters.vis_id = 6;
 			break;
 
 		case 'V':
 			parameters.vis_id--;
+			if (parameters.vis_id < 0)
+				parameters.vis_id = 0;
 			break;
 		}
 	}
@@ -571,7 +603,11 @@ int main(int i_argc, char *i_argv[])
 
 	SimulationSWEStaggered *simulationSWE = new SimulationSWEStaggered;
 
+#if SWEET_GUI
 	VisSweet<SimulationSWEStaggered> visSweet(simulationSWE);
+#else
+	simulationSWE->run();
+#endif
 
 	delete simulationSWE;
 

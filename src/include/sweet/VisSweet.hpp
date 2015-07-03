@@ -47,14 +47,17 @@ class VisSweet	:
 
 	bool vis_render()
 	{
-		const DataArray<2> &ro_visData = simulation->vis_get_vis_data_array();
-		DataArray<2> &visData = (DataArray<2>&)ro_visData;
+		const DataArray<2> *ro_visData;
+		double aspect_ratio = 0;
+		simulation->vis_get_vis_data_array(&ro_visData, &aspect_ratio);
+
+		DataArray<2> &visData = (DataArray<2>&)*ro_visData;
 
 		if (cGlTexture == nullptr)
 		{
 			cGlTexture = new CGlTexture(GL_TEXTURE_2D, GL_RED, GL_RED, GL_UNSIGNED_BYTE);
 			cGlTexture->bind();
-			cGlTexture->resize(visData.resolution[1], visData.resolution[0]);
+			cGlTexture->resize(visData.resolution[0], visData.resolution[1]);
 			cGlTexture->unbind();
 
 			texture_data = new unsigned char[visData.array_data_cartesian_length];
@@ -88,8 +91,19 @@ class VisSweet	:
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
+			double scale_x = 1.0;
+			double scale_y = aspect_ratio;
+
+			if (aspect_ratio > 1.0)
+			{
+				scale_x /= aspect_ratio;
+				scale_y = 1.0;
+			}
+
 			visualizationEngine->engineState->commonShaderPrograms.shaderTexturizeRainbowmap.use();
-			visualizationEngine->engineState->commonShaderPrograms.shaderTexturizeRainbowmap.pvm_matrix_uniform.set(visualizationEngine->engineState->matrices.pvm);
+			visualizationEngine->engineState->commonShaderPrograms.shaderTexturizeRainbowmap.pvm_matrix_uniform.set(
+					visualizationEngine->engineState->matrices.pvm*GLSL::scale((float)scale_x, (float)scale_y, (float)1.0)
+			);
 
 				cGlDrawQuad->render();
 

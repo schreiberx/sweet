@@ -39,13 +39,13 @@ public:
 	double sim_hyper_viscocity = 0.0;
 
 	// Coriolis term
-	double sim_nondim_f = 0.0;
+//	double sim_nondim_f = 0.0;
 
 	// Coriolis term
-	double sim_dim_f = 0.0;
+	double sim_f = 0.0;
 
 	// domain length
-	double sim_domain_length = 1000;
+	double sim_domain_length[2] = {1000.0*1000.0, 1000.0*1000.0};
 
 	// setup scenario
 	int setup_scenario = 0;
@@ -71,8 +71,8 @@ public:
 	double bogus_var0 = 0;
 	double bogus_var1 = 0;
 
-	double init_coord_x = 0.5;
-	double init_coord_y = 0.5;
+	double init_coord_x = 500.0*1000.0;
+	double init_coord_y = 500.0*1000.0;
 
 	// id for visualization
 	int vis_id = 0;
@@ -88,13 +88,21 @@ public:
 	)
 	{
 		int opt;
-		while ((opt = getopt(i_argc, i_argv, "n:C:u:U:s:l:a:b:f:x:y:t:T:v:H:")) != -1)
+		while ((opt = getopt(i_argc, i_argv, "N:n:m:C:u:U:s:l:w:a:b:f:x:y:t:T:v:H:")) != -1)
 		{
 			switch (opt)
 			{
-			case 'n':
+			case 'N':
 				res[0] = atoi(optarg);
 				res[1] = res[0];
+				break;
+
+			case 'n':
+				res[0] = atoi(optarg);
+				break;
+
+			case 'm':
+				res[1] = atoi(optarg);
 				break;
 
 			case 'C':
@@ -122,7 +130,11 @@ public:
 				break;
 
 			case 'l':
-				sim_domain_length = atof(optarg);
+				sim_domain_length[1] = atof(optarg);
+				break;
+
+			case 'w':
+				sim_domain_length[0] = atof(optarg);
 				break;
 
 			case 'a':
@@ -142,7 +154,7 @@ public:
 				break;
 
 			case 'f':
-				sim_nondim_f = atof(optarg);
+				sim_f = atof(optarg);
 				break;
 
 			case 'v':
@@ -160,11 +172,10 @@ public:
 			}
 		}
 
-		cell_size[0] = sim_domain_length/res[0];
-		cell_size[1] = sim_domain_length/res[1];
+		cell_size[0] = sim_domain_length[0]/res[0];
+		cell_size[1] = sim_domain_length[1]/res[1];
 
-
-		sim_dim_f = sim_nondim_f/sim_domain_length;
+//		sim_f = sim_nondim_f/sim_domain_length[0];
 	}
 };
 
