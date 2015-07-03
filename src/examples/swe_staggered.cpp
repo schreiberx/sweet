@@ -19,6 +19,8 @@ public:
 	DataArray<2> eta;
 	DataArray<2> P_t, u_t, v_t;
 
+	DataArray<2> f;
+
 	Operators2D op;
 
 	/**
@@ -31,12 +33,12 @@ public:
 	 * Potential vorticity:
 	 *     \eta = rot (V) / P
 	 *
-	 *   ______u______
+	 *   ____u0,1_____
 	 *   |           |
 	 *   |           |
-	 *   v     P     v
+	 * v0,0   P0,0   v1,0
 	 *   |           |
-	 *   |_____u_____|
+	 *   |___u0,0____|
 	 */
 public:
 	SimulationSWEStaggered(
@@ -53,9 +55,29 @@ public:
 		u_t(parameters.res),
 		v_t(parameters.res),
 
+		f(parameters.res),
+
 		op(parameters.cell_size, parameters.res)
 	{
 		reset();
+	}
+
+	void rot_coord(double angle, double &x, double &y)
+	{
+		angle *= 2.0*M_PI/360.0;
+		double nx = std::cos(angle)*x - std::sin(angle)*y;
+		double ny = std::sin(angle)*x + std::cos(angle)*y;
+		x = nx;
+		y = ny;
+	}
+	void rot_vector(double angle, double &x, double &y)
+	{
+		angle *= 2.0*M_PI/360.0;
+		double nx = std::cos(angle)*x - std::sin(angle)*y;
+		double ny = std::sin(angle)*x + std::cos(angle)*y;
+
+		x = nx;
+		y = ny;
 	}
 
 	void reset()
@@ -96,6 +118,13 @@ public:
 		if (parameters.setup_scenario == 1)
 		{
 			std::cout << "Setting up Gaussian radial dam break" << std::endl;
+
+			if (center_x != 0.5 || center_y != 0.5)
+			{
+				std::cerr << "ERROR: Gaussian radial dam break has to be centered. Otherwise, there will be discontinuities at the domain border" << std::endl;
+				exit(1);
+			}
+
 			/*
 			 * fun with Gaussian
 			 */
@@ -116,10 +145,10 @@ public:
 
 		if (parameters.setup_scenario == 2)
 		{
-			std::cout << "Setting up balanced steady state solution" << std::endl;
+			std::cout << "Setting up balanced steady state solution (ver1)" << std::endl;
 			// see doc/balanced_steady_state_solution/*
 
-			if (parameters.sim_f == 0)
+			if (parameters.sim_dim_f == 0)
 			{
 				std::cout << "Coriolis force required to setup balanced steady state solution!" << std::endl;
 				exit(-1);
@@ -132,20 +161,146 @@ public:
 					{
 						// P space
 						double x = ((double)i+0.5)/(double)parameters.res[0];
-						P.getDataRef(j,i) = parameters.h0 + std::sin(2.0*M_PI*x);
+						P.getDataRef(j,i) = std::sin(2.0*M_PI*x) + parameters.h0;
 					}
 
 					{
 						// v space
 						double x = ((double)i+0.5)/(double)parameters.res[0];
 
-						double s = std::cos(M_PI*x);
-						v.getDataRef(j,i) = 2.0*M_PI*(2.0*s*s-1.0)/(parameters.sim_f*parameters.sim_domain_length);
-//						v.getDataRef(j,i) = 0;
+						v.getDataRef(j,i) = 2.0*M_PI*std::cos(2.0*M_PI*x)/parameters.sim_dim_f;
 					}
 				}
 			}
-			std::cout << P << std::endl;
+		}
+
+
+		if (parameters.setup_scenario == 3)
+		{
+			std::cout << "Setting up balanced steady state solution (ver2)" << std::endl;
+			// see doc/balanced_steady_state_solution/*
+
+			if (parameters.sim_dim_f == 0)
+			{
+				std::cout << "Coriolis force required to setup balanced steady state solution!" << std::endl;
+				exit(-1);
+			}
+
+			for (std::size_t j = 0; j < parameters.res[1]; j++)
+			{
+				for (std::size_t i = 0; i < parameters.res[0]; i++)
+				{
+					{
+						// P space
+						double y = ((double)j+0.5)/(double)parameters.res[1];
+						P.getDataRef(j,i) = std::sin(2.0*M_PI*y)+parameters.h0;
+					}
+
+					{
+						// u space
+						double y = ((double)j+0.5)/(double)parameters.res[1];
+
+						u.getDataRef(j,i) = -2.0*M_PI*std::cos(2.0*M_PI*y)/parameters.sim_dim_f;
+					}
+				}
+			}
+		}
+
+
+		if (parameters.setup_scenario == 4)
+		{
+			std::cout << "Setting up balanced steady state solution (ver3)" << std::endl;
+			std::cout << "The rotations create instabilities in the linear terms, hence this does not work, yet" << std::endl;
+			exit(-1);
+			// see doc/balanced_steady_state_solution/*
+
+			if (parameters.sim_dim_f == 0)
+			{
+				std::cout << "Coriolis force required to setup balanced steady state solution!" << std::endl;
+				exit(-1);
+			}
+
+			u.data_setall(0);
+
+			for (std::size_t j = 0; j < parameters.res[1]; j++)
+			{
+				for (std::size_t i = 0; i < parameters.res[0]; i++)
+				{
+					double angle = 0;
+
+					{
+						// P space
+						double x = ((double)i+0.5)/(double)parameters.res[0];
+						double y = ((double)j+0.5)/(double)parameters.res[1];
+						rot_coord(angle, x, y);
+
+						P.getDataRef(j,i) = std::sin(2.0*M_PI*x) + parameters.h0;
+					}
+
+					{
+						// u space
+						double x = ((double)i)/(double)parameters.res[0];
+						double y = ((double)j+0.5)/(double)parameters.res[1];
+						double xo = x;	double yo = y;
+						rot_coord(angle, xo, yo);
+
+						double vel_u = 0;
+						double vel_v = 2.0*M_PI*std::cos(2.0*M_PI*x)/parameters.sim_dim_f;
+						double vel_x_o = vel_u+x;	double vel_y_o = vel_v+y;
+						rot_coord(angle, vel_x_o, vel_y_o);
+
+						double fin_vel_u = vel_x_o - xo;
+						double fin_vel_v = vel_y_o - yo;
+
+						u.getDataRef(j,i) = fin_vel_u;
+					}
+					{
+						// v space
+						double x = ((double)i+0.5)/(double)parameters.res[0];
+						double y = ((double)j)/(double)parameters.res[1];
+						double xo = x;	double yo = y;
+						rot_coord(angle, xo, yo);
+
+						double vel_u = 0;
+						double vel_v = 2.0*M_PI*std::cos(2.0*M_PI*x)/parameters.sim_dim_f;
+						double vel_x_o = vel_u+x;	double vel_y_o = vel_v+y;
+						rot_coord(angle, vel_x_o, vel_y_o);
+
+						vel_u = vel_x_o - xo;
+						vel_v = vel_y_o - yo;
+
+						v.getDataRef(j,i) = vel_v;
+					}
+				}
+			}
+		}
+
+
+		if (parameters.setup_scenario == 5)
+		{
+			for (std::size_t j = 0; j < parameters.res[1]; j++)
+			{
+				for (std::size_t i = 0; i < parameters.res[0]; i++)
+				{
+					{
+						// beta plane
+						double x = ((double)i)/(double)parameters.res[0];
+						double y = ((double)j)/(double)parameters.res[1];
+						f.getDataRef(j,i) = (y-0.5)*(y-0.5)*parameters.sim_dim_f;
+					}
+
+
+					{
+						double x = ((double)i+0.5)/(double)parameters.res[0];
+						double y = ((double)j+0.5)/(double)parameters.res[1];
+
+						double dx = x-center_x;
+						double dy = y-center_y;
+
+						P.getDataRef(j,i) += std::exp(-50.0*(dx*dx + dy*dy));
+					}
+				}
+			}
 		}
 	}
 
@@ -153,34 +308,48 @@ public:
 
 	bool run_timestep()
 	{
-		U = op.avg_f_x(P)*u;
-		V = op.avg_f_y(P)*v;
+		/*
+		 * Note, that this grid does not follow the one in the paper
+		 *
+		 *             ^
+		 *             |
+		 *       ____v0,1_____
+		 *       |           |
+		 *       |           |
+		 * <- u0,0  H/P0,0   u1,0 ->
+		 *       |           |
+		 * eta0,0|___v0,0____|
+		 *             |
+		 *             V
+		 */
 
-		H = P + 0.5*(op.avg_b_x(u*u) + op.avg_b_y(v*v));
+		U = op.avg_b_x(P)*u;
+		V = op.avg_b_y(P)*v;
 
-		eta = (op.diff_f_x(v) - op.diff_f_y(u) + parameters.sim_f) / op.avg_f_x(op.avg_f_y(P));
+		H = P + 0.5*(op.avg_f_x(u*u) + op.avg_f_y(v*v));
 
+		if (parameters.setup_scenario != 5)
+			eta = (op.diff_b_x(v) - op.diff_b_y(u) + parameters.sim_dim_f/parameters.sim_domain_length) / op.avg_b_x(op.avg_b_y(P));
+		else
+			eta = (op.diff_b_x(v) - op.diff_b_y(u) + f) / op.avg_b_x(op.avg_b_y(P));
+
+		double normalization = 1.0 / (double)(parameters.res[0]*parameters.res[1]);
 		// mass
-		parameters.mass = P.reduce_sum() / (double)(parameters.res[0]*parameters.res[1]);
+		parameters.mass = P.reduce_sum() * normalization;
 
 		// energy
 		parameters.energy = 0.5*(
 				P*P +
-				P*op.avg_b_x(u*u) +
-				P*op.avg_b_y(v*v)
-			).reduce_sum() / (double)(parameters.res[0]*parameters.res[1]);
+				P*op.avg_f_x(u*u) +
+				P*op.avg_f_y(v*v)
+			).reduce_sum() * normalization;
 
 		// potential enstropy
-		parameters.potential_entrophy = 0.5*(eta*eta*op.avg_f_x(op.avg_f_y(P))).reduce_sum() / (double)(parameters.res[0]*parameters.res[1]);
+		parameters.potential_entrophy = 0.5*(eta*eta*op.avg_b_x(op.avg_b_y(P))).reduce_sum() * normalization;
 
-#if 0
-		std::cout << "++++++++++++++++++++++++++++++++++++++" << std::endl;
-		std::cout << (eta - op.diff_f_x(H)) << std::endl;
-		std::cout << "++++++++++++++++++++++++++++++++++++++" << std::endl;
-#endif
-		u_t = op.avg_b_y(eta*op.avg_f_x(V)) - op.diff_f_x(H);
-		v_t = -op.avg_b_x(eta*op.avg_f_y(U)) - op.diff_f_y(H);
-		P_t = -op.diff_b_x(U) - op.diff_b_y(V);
+		u_t = op.avg_f_y(eta*op.avg_b_x(V)) - op.diff_b_x(H);
+		v_t = -op.avg_f_x(eta*op.avg_b_y(U)) - op.diff_b_y(H);
+
 
 		if (parameters.verbosity > 0)
 		{
@@ -188,7 +357,7 @@ public:
 			{
 				std::cout << "MASS\tENERGY\tPOT_ENSTROPHY";
 
-				if (parameters.setup_scenario == 2)
+				if (parameters.setup_scenario == 2 || parameters.setup_scenario == 3 || parameters.setup_scenario == 4)
 					std::cout << "\tABS_U_DT";
 
 				std::cout << std::endl;
@@ -197,7 +366,7 @@ public:
 			std::cout << parameters.mass << "\t" << parameters.energy << "\t" << parameters.potential_entrophy;
 
 			// this should be zero for the steady state test
-			if (parameters.setup_scenario == 2)
+			if (parameters.setup_scenario == 2 || parameters.setup_scenario == 3 || parameters.setup_scenario == 4)
 			{
 				double test_val = u_t.reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
 				std::cout << "\t" << test_val;
@@ -241,119 +410,67 @@ public:
 		// provide information to parameters
 		parameters.timestep_size = dt;
 
-#define LEAPFROG_LIKE_P_UPDATE	1
-#define USE_UP_AND_DOWNWINDING	0
 
-#if LEAPFROG_LIKE_P_UPDATE == 0
+		bool leapfrog_like_update = true;
+		bool up_and_downwinding = true;
 
-#if USE_UP_AND_DOWNWINDING == 0
-		P += dt*P_t;
-#else
 
-		// up/downwinding on staggered grid (FV-like method)
-		P += dt/(parameters.cell_size[0]*parameters.cell_size[1])*(
-				parameters.cell_size[1]*(
-					//             |                       |                       |
-					// --v---------|-----------v-----------|-----------v-----------|
-					//   h0        u0          h1          u1          h2          u2
-					//
-
-					// left edge
-					op.shift_right(P*u.return_value_if_positive())		// inflow
-					+(P*op.shift_right(u.return_value_if_negative()))	// outflow
-
-					// right edge
-					-P*u.return_value_if_positive()					// outflow
-					-op.shift_left(P)*u.return_value_if_negative()	// inflow
-				)
-				+
-				parameters.cell_size[0]*(
-						// bottom edge
-						op.shift_up(P*v.return_value_if_positive())	// inflow
-						+(P*op.shift_up(v.return_value_if_negative()))	// outflow
-
-						// top edge
-						-P*v.return_value_if_positive()					// outflow
-						-op.shift_down(P)*v.return_value_if_negative()	// inflow
-				)
-			);
-#endif
-#endif
-
+		// standard explicit euler on velocities
 		u += dt*u_t;
 		v += dt*v_t;
 
-#if LEAPFROG_LIKE_P_UPDATE == 1
+		if (!leapfrog_like_update && !up_and_downwinding)
+		{
+			P_t = -op.diff_f_x(U) - op.diff_f_y(V);
+			P += dt*P_t;
+		}
+		else
+		{
+			if (!up_and_downwinding)
+			{
+				if (leapfrog_like_update)
+				{
+					// recompute U and V
+					U = op.avg_b_x(P)*u;
+					V = op.avg_b_y(P)*v;
+				}
 
-#if USE_UP_AND_DOWNWINDING == 0
+				P_t = -op.diff_f_x(U) - op.diff_f_y(V);
+				P += dt*P_t;
+			}
+			else
+			{
 
-		// recompute U and V
-		U = op.avg_f_x(P)*u;
-		V = op.avg_f_y(P)*v;
+				//             |                       |                       |
+				// --v---------|-----------v-----------|-----------v-----------|
+				//   h-1       u0          h0          u1          h1          u2
+				//
 
-		P_t = -op.diff_b_x(U) - op.diff_b_y(V);
-		P += dt*P_t;
+				// same a above, but formulated in a finite-difference style
+				P += dt
+					*(
+						(
+							// u is positive
+							op.shift_right(P)*u.return_value_if_positive()	// inflow
+							-P*op.shift_left(u.return_value_if_positive())					// outflow
 
-#else
+							// u is negative
+							+(P*u.return_value_if_negative())	// outflow
+							-op.shift_left(P*u.return_value_if_negative())		// inflow
+						)*(1.0/parameters.cell_size[0])	// here we see a finite-difference-like formulation
+						+
+						(
+							// v is positive
+							op.shift_up(P)*v.return_value_if_positive()		// inflow
+							-P*op.shift_down(v.return_value_if_positive())					// outflow
 
-
-	#if 0
-		// up/downwinding on staggered grid (FV-like method)
-		P += dt/(parameters.cell_size[0]*parameters.cell_size[1])*(
-				parameters.cell_size[1]*(
-					//             |                       |                       |
-					// --v---------|-----------v-----------|-----------v-----------|
-					//   h0        u0          h1          u1          h2          u2
-					//
-
-					// left edge
-					op.shift_right(P*u.return_value_if_positive())		// inflow
-					+(P*op.shift_right(u.return_value_if_negative()))	// outflow
-
-					// right edge
-					-P*u.return_value_if_positive()					// outflow
-					-op.shift_left(P)*u.return_value_if_negative()	// inflow
-				)
-				+
-				parameters.cell_size[0]*(
-						// bottom edge
-						op.shift_up(P*v.return_value_if_positive())	// inflow
-						+(P*op.shift_up(v.return_value_if_negative()))	// outflow
-
-						// top edge
-						-P*v.return_value_if_positive()					// outflow
-						-op.shift_down(P)*v.return_value_if_negative()	// inflow
-				)
-			);
-	#else
-		// same a above, but formulated in a finite-difference style
-		P += dt
-			*(
-				(
-					// u is positive
-					op.shift_right(P*u.return_value_if_positive())	// inflow
-					-P*u.return_value_if_positive()					// outflow
-
-					// u is negative
-					+(P*op.shift_right(u.return_value_if_negative()))	// outflow
-					-op.shift_left(P)*u.return_value_if_negative()		// inflow
-				)*(1.0/parameters.cell_size[0])	// here we see a finite-difference-like formulation
-				+
-				(
-					// v is positive
-					op.shift_up(P*v.return_value_if_positive())		// inflow
-					-P*v.return_value_if_positive()					// outflow
-
-					// v is negative
-					+(P*op.shift_up(v.return_value_if_negative()))	// outflow
-					-op.shift_down(P)*v.return_value_if_negative()	// inflow
-				)*(1.0/parameters.cell_size[1])
-			);
-	#endif
-
-#endif
-
-#endif
+							// v is negative
+							+(P*v.return_value_if_negative())	// outflow
+							-op.shift_down(P*v.return_value_if_negative())	// inflow
+						)*(1.0/parameters.cell_size[1])
+					);
+			}
+		}
 
 		parameters.simulation_time += dt;
 		parameters.timestep_nr++;
@@ -375,15 +492,23 @@ public:
 	 */
 	bool vis_post_frame_processing(int i_num_iterations)
 	{
+		bool retval = true;
 		if (parameters.run_simulation)
 			for (int i = 0; i < i_num_iterations; i++)
-				return run_timestep();
+				retval = run_timestep();
 
-		return true;
+		return retval;
 	}
 
-	DataArray<2> &vis_get_vis_data_array()
+
+	const DataArray<2> &vis_get_vis_data_array()
 	{
+#if 0
+		static DataArray<2> *p = nullptr;
+		delete p;
+		p = new DataArray<2>(parameters.res);
+		*p = op.diff_c_y(P);
+#endif
 		int id = parameters.vis_id % 7;
 
 		switch(id)
@@ -396,6 +521,7 @@ public:
 		case 5: return U;
 		case 6: return V;
 		}
+		return P;
 	}
 
 	const char* vis_get_status_string()

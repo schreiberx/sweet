@@ -47,7 +47,8 @@ class VisSweet	:
 
 	bool vis_render()
 	{
-		DataArray<2> &visData = simulation->vis_get_vis_data_array();
+		const DataArray<2> &ro_visData = simulation->vis_get_vis_data_array();
+		DataArray<2> &visData = (DataArray<2>&)ro_visData;
 
 		if (cGlTexture == nullptr)
 		{

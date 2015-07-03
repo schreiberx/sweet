@@ -188,12 +188,13 @@ exec_name=env['program_name']
 exec_name+='_spectral'+str(env['spectral_space'])
 
 if env['spectral_space'] == 'enable':
-	env.Append(CXXFLAGS = ' -DUSE_SPECTRAL_SPACE=1')
-	env.Append(LDFLAGS=' -Lfftw -Lfftw_omp')
+	env.Append(CXXFLAGS = ' -DSWEET_USE_SPECTRAL_SPACE=1')
+	env.Append(LINKFLAGS=' -lfftw3 -lfftw3_omp')
 else:
-	env.Append(CXXFLAGS = ' -DUSE_SPECTRAL_SPACE=0')
+	env.Append(CXXFLAGS = ' -DSWEET_USE_SPECTRAL_SPACE=0')
 
-
+env.Append(LINKFLAGS=' -fopenmp')
+env.Append(CXXFLAGS=' -fopenmp')
 
 #if env['program_binary_name_override'] != '':
 #	exec_name = env['program_binary_name_override']

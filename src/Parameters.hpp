@@ -39,7 +39,10 @@ public:
 	double sim_hyper_viscocity = 0.0;
 
 	// Coriolis term
-	double sim_f = 0.0;
+	double sim_nondim_f = 0.0;
+
+	// Coriolis term
+	double sim_dim_f = 0.0;
 
 	// domain length
 	double sim_domain_length = 1000;
@@ -68,8 +71,8 @@ public:
 	double bogus_var0 = 0;
 	double bogus_var1 = 0;
 
-	double init_coord_x = 0.6;
-	double init_coord_y = 0.7;
+	double init_coord_x = 0.5;
+	double init_coord_y = 0.5;
 
 	// id for visualization
 	int vis_id = 0;
@@ -139,7 +142,7 @@ public:
 				break;
 
 			case 'f':
-				sim_f = atof(optarg);
+				sim_nondim_f = atof(optarg);
 				break;
 
 			case 'v':
@@ -159,6 +162,9 @@ public:
 
 		cell_size[0] = sim_domain_length/res[0];
 		cell_size[1] = sim_domain_length/res[1];
+
+
+		sim_dim_f = sim_nondim_f/sim_domain_length;
 	}
 };
 

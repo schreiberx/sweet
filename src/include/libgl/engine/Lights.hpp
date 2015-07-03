@@ -22,6 +22,8 @@
  *      Author: martin
  */
 
+#include <array>
+
 #ifndef CLIGHTS_HPP_
 #define CLIGHTS_HPP_
 

@@ -19,7 +19,6 @@
 
 
 #if SWEET_USE_SPECTRAL_SPACE
-#error "lkjadsf"
 #	include <fftw3.h>
 #endif
 
@@ -600,7 +599,7 @@ public:
 		requestDataInCartesianSpace();
 
 		double minvalue = std::numeric_limits<double>::max();
-#pragma omp parallel for simd reduction(min:maxabs)
+#pragma omp parallel for simd reduction(min:minvalue)
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			minvalue = std::min(minvalue, array_data_cartesian_space[i]);
 
@@ -647,19 +646,23 @@ public:
 	)
 	{
 #if SWEET_USE_SPECTRAL_SPACE == 0
+
 		kernel_size = S;
 		kernel_data = alloc_aligned_mem<double>(sizeof(double)*S*S);
-		memcpy(kernel_data, &(i_kernel_array[0][0]), sizeof(double)*S*S);
+		for (int y = 0; y < S; y++)
+			for (int x = 0; x < S; x++)
+				kernel_data[y*S+x] = i_kernel_array[S-1-y][x];
 
 		for (int i = 0; i < S*S; i++)
 			kernel_data[i] *= i_scale;
 
 #else
+
 		double inv_kernel_array[S][S];
 
 		for (int j = 0; j < S; j++)
 			for (int i = 0; i < S; i++)
-				inv_kernel_array[j][i] = i_kernel_array[S-j-1][S-i-1]*i_scale;
+				inv_kernel_array[j][i] = i_kernel_array[j][S-i-1]*i_scale;
 
 		assert(D == 2);
 
@@ -749,6 +752,7 @@ public:
 		array_data_spectral_space_valid = false;
 
 		requestDataInSpectralSpace();	/// convert kernel_data; to spectral space
+
 #endif
 	}
 
