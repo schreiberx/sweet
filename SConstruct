@@ -189,7 +189,6 @@ exec_name+='_spectral'+str(env['spectral_space'])
 
 if env['spectral_space'] == 'enable':
 	env.Append(CXXFLAGS = ' -DSWEET_USE_SPECTRAL_SPACE=1')
-	env.Append(LINKFLAGS=' -lfftw3 -lfftw3_omp')
 else:
 	env.Append(CXXFLAGS = ' -DSWEET_USE_SPECTRAL_SPACE=0')
 
@@ -318,7 +317,7 @@ elif env['compiler'] == 'intel':
 	env.Replace(LINK='icpc')
 
 	if env['fortran_source'] == 'enable':
-		env.Append(LINKFLAGS=' -lifcore')
+		env.Append(LIBS=['ifcore'])
 		env.Replace(FORTRAN='ifort')
 		env.Replace(F90='ifort')
 		env.Append(FORTRANFLAGS=' -fpp')
@@ -478,6 +477,12 @@ if env['gui'] == 'enable':
 else:
 	env.Append(CXXFLAGS=' -DSWEET_GUI=0')
 
+
+exec_name += '_'+env['mode']
+
+
+if env['spectral_space'] == 'enable':
+	env.Append(LIBS=['fftw3', 'fftw3_omp'])
 
 
 #

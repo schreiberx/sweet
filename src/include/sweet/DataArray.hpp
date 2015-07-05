@@ -429,7 +429,7 @@ public:
 
 
 private:
-	FFTWSingletonClass** fftGetSingletonPtr()
+	FFTWSingletonClass** fftGetSingletonPtr()	const
 	{
 		static FFTWSingletonClass *fftw_singleton_data = nullptr;
 		return &fftw_singleton_data;
@@ -454,7 +454,7 @@ private:
 
 public:
 	inline
-	void requestDataInSpectralSpace()
+	void requestDataInSpectralSpace()	const
 	{
 #if SWEET_USE_SPECTRAL_SPACE==0
 		std::cerr << "requestDataInSpectralSpace: spectral space is disabled" << std::endl;
@@ -466,15 +466,16 @@ public:
 
 		assert(array_data_cartesian_space_valid == true);
 
-		(*fftGetSingletonPtr())->fft_forward(*this);
+		DataArray<D> *rw_array_data = (DataArray<D>*)this;
+		(*fftGetSingletonPtr())->fft_forward(*rw_array_data);
 
-		array_data_spectral_space_valid = true;
+		rw_array_data->array_data_spectral_space_valid = true;
 #endif
 	}
 
 
 	inline
-	void requestDataInCartesianSpace()
+	void requestDataInCartesianSpace()	const
 	{
 #if SWEET_USE_SPECTRAL_SPACE==1
 		if (array_data_cartesian_space_valid)
@@ -482,9 +483,10 @@ public:
 
 		assert(array_data_spectral_space_valid == true);
 
-		(*fftGetSingletonPtr())->fft_backward(*this);
+		DataArray<D> *rw_array_data = (DataArray<D>*)this;
+		(*fftGetSingletonPtr())->fft_backward(*rw_array_data);
 
-		array_data_cartesian_space_valid = true;
+		rw_array_data->array_data_cartesian_space_valid = true;
 #endif
 	}
 
@@ -507,7 +509,7 @@ public:
 
 
 	inline
-	DataArray<D> return_value_if_positive()
+	DataArray<D> return_value_if_positive()	const
 	{
 		DataArray<D> out  = DataArray<D>(this->resolution);
 		out.temporary_data = true;
@@ -525,7 +527,7 @@ public:
 
 
 	inline
-	DataArray<D> return_one_if_negative()
+	DataArray<D> return_one_if_negative()	const
 	{
 		DataArray<D> out  = DataArray<D>(this->resolution);
 		out.temporary_data = true;
@@ -542,7 +544,7 @@ public:
 
 
 	inline
-	DataArray<D> return_value_if_negative()
+	DataArray<D> return_value_if_negative()	const
 	{
 		DataArray<D> out  = DataArray<D>(this->resolution);
 		out.temporary_data = true;
@@ -562,7 +564,7 @@ public:
 	/**
 	 * return the maximum of all absolute values
 	 */
-	double reduce_maxAbs()
+	double reduce_maxAbs()	const
 	{
 		requestDataInCartesianSpace();
 
@@ -578,7 +580,7 @@ public:
 	/**
 	 * return the maximum of all absolute values
 	 */
-	double reduce_max()
+	double reduce_max()	const
 	{
 		requestDataInCartesianSpace();
 
@@ -594,7 +596,7 @@ public:
 	/**
 	 * return the maximum of all absolute values
 	 */
-	double reduce_min()
+	double reduce_min()	const
 	{
 		requestDataInCartesianSpace();
 
@@ -610,7 +612,7 @@ public:
 	/**
 	 * return the maximum of all absolute values
 	 */
-	double reduce_sum()
+	double reduce_sum()	const
 	{
 		requestDataInCartesianSpace();
 
@@ -625,7 +627,7 @@ public:
 	/**
 	 * return the maximum of all absolute values
 	 */
-	double reduce_sumAbs()
+	double reduce_sumAbs()	const
 	{
 		requestDataInCartesianSpace();
 
@@ -839,7 +841,7 @@ public:
 	inline
 	DataArray<D> operator()(
 			const DataArray<D> &i_array_data
-	)
+	)	const
 	{
 		DataArray<D> out  = DataArray<D>(this->resolution);
 		out.temporary_data = true;
@@ -917,7 +919,7 @@ public:
 	inline
 	DataArray<D> operator+(
 			const DataArray<D> &i_array_data
-	)
+	)	const
 	{
 		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
 
@@ -936,7 +938,7 @@ public:
 						i_array_data.array_data_spectral_space[i];
 
 			out.array_data_spectral_space_valid = true;
-			out.array_data_cartesian_space_valid = true;
+			out.array_data_cartesian_space_valid = false;
 			return out;
 		}
 #endif
@@ -966,7 +968,7 @@ public:
 	inline
 	DataArray<D> operator+(
 			const double i_value
-	)
+	)	const
 	{
 		auto out  = DataArray<D>(this->resolution);
 		out.temporary_data = true;
@@ -1041,6 +1043,7 @@ public:
 	}
 
 
+
 	/**
 	 * Compute element-wise subtraction
 	 */
@@ -1090,7 +1093,7 @@ public:
 	inline
 	DataArray<D> operator-(
 			const DataArray<D> &i_array_data
-	)
+	)	const
 	{
 		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
 
@@ -1140,7 +1143,7 @@ public:
 	inline
 	DataArray<D> operator-(
 			const double i_value
-	)
+	)	const
 	{
 		auto out  = DataArray<D>(this->resolution);
 		out.temporary_data = true;
@@ -1201,7 +1204,7 @@ public:
 	inline
 	DataArray<D> operator*(
 			const DataArray<D> &i_array_data
-	)
+	)	const
 	{
 		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
 
@@ -1230,7 +1233,7 @@ public:
 	inline
 	DataArray<D> operator*(
 			const double i_value
-	)
+	)	const
 	{
 		DataArray<D> out  = DataArray<D>(resolution);
 		out.temporary_data = true;
@@ -1274,7 +1277,7 @@ public:
 	inline
 	DataArray<D> operator/(
 			const DataArray<D> &i_array_data
-	)
+	)	const
 	{
 		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
 

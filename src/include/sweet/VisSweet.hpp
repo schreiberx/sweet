@@ -45,7 +45,12 @@ class VisSweet	:
 		cGlDrawQuad = new CGlDrawQuad;
 	}
 
-	bool vis_render()
+	bool should_quit()
+	{
+		return simulation->should_quit();
+	}
+
+	void vis_render()
 	{
 		const DataArray<2> *ro_visData;
 		double aspect_ratio = 0;
@@ -112,9 +117,7 @@ class VisSweet	:
 		cGlTexture->unbind();
 
 		// execute simulation time step
-		bool should_continue = simulation->vis_post_frame_processing(sim_runs_per_frame);
-
-		return should_continue;
+		simulation->vis_post_frame_processing(sim_runs_per_frame);
 	}
 
 	const char* vis_getStatusString()

@@ -1,0 +1,30 @@
+
+* different domain lengths and resolutions
+  > Visualization, DONE
+  > Steady state test, DONE
+
+
+* check coriolis f term (no dimensionalization should be required)
+  (partly done, f term has to be scaled with the domain length in each direction)
+  DONE
+
+* Stabilize rotated f-plane (gets instabilities)
+  Cannot work due to missing symmetries
+  DONE
+
+* Implement RKn
+  DONE
+
+* Maybe implement Adams-Bashforth
+
+* Implement NEMO-like model
+
+* Check scaling of f
+
+* Add Williamson test benches:
+1) Advection
+2) Balances
+5) Mountain
+6) Rot. shallow water
+
+* Add test bench for Galewski unstable jet

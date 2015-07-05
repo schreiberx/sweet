@@ -3,28 +3,36 @@
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
-#include "Parameters.hpp"
+#include <sweet/SimulationParameters.hpp>
+#include <sweet/SWEValidationBenchmarks.hpp>
 #include "sweet/Operators2D.hpp"
 #include <unistd.h>
 
-Parameters parameters;
+SimulationParameters parameters;
 
 
 class SimulationSWEStaggered
 {
 public:
 	// prognostics
-	DataArray<2> P, u, v;
+	DataArray<2> prog_P, prog_u, prog_v;
+	DataArray<2> prog_P_t, prog_u_t, prog_v_t;
 
-	// diagnostics
+	// temporary variables
 	DataArray<2> H, U, V;
-	DataArray<2> eta_u;
-	DataArray<2> eta_v;
-	DataArray<2> P_t, u_t, v_t;
+	DataArray<2> eta;
 
+	// parameters
 	DataArray<2> f;
 
+	// runge kutta data storages
+	DataArray<2>** RK_P_t;
+	DataArray<2>** RK_u_t;
+	DataArray<2>** RK_v_t;
+
 	Operators2D op;
+
+	int last_timestep_nr_update_diagnostics = -1;
 
 	/**
 	 * See "The Dynamics of Finite-Difference Models of the Shallow-Water Equations", Robert Sadourny
@@ -46,24 +54,61 @@ public:
 public:
 	SimulationSWEStaggered(
 	)	:
-		P(parameters.res),	// density/pressure
-		u(parameters.res),	// velocity (x-direction)
-		v(parameters.res),	// velocity (y-direction)
+		prog_P(parameters.res),	// density/pressure
+		prog_u(parameters.res),	// velocity (x-direction)
+		prog_v(parameters.res),	// velocity (y-direction)
 
 		H(parameters.res),	//
 		U(parameters.res),	// mass flux (x-direction)
 		V(parameters.res),	// mass flux (y-direction)
-		eta_u(parameters.res),
-		eta_v(parameters.res),
-		P_t(parameters.res),
-		u_t(parameters.res),
-		v_t(parameters.res),
+		eta(parameters.res),
+		prog_P_t(parameters.res),
+		prog_u_t(parameters.res),
+		prog_v_t(parameters.res),
 
 		f(parameters.res),
 
-		op(parameters.cell_size, parameters.res)
+		RK_P_t(nullptr),
+		RK_u_t(nullptr),
+		RK_v_t(nullptr),
+
+		op(parameters.sim_cell_size, parameters.res)
 	{
 		reset();
+
+
+		int N = parameters.timestepping_runge_kutta_order;
+
+		RK_P_t = new DataArray<2>*[N];
+		RK_u_t = new DataArray<2>*[N];
+		RK_v_t = new DataArray<2>*[N];
+
+		for (int i = 0; i < N; i++)
+		{
+			RK_P_t[i] = new DataArray<2>(parameters.res);
+			RK_u_t[i] = new DataArray<2>(parameters.res);
+			RK_v_t[i] = new DataArray<2>(parameters.res);
+		}
+	}
+
+	~SimulationSWEStaggered()
+	{
+		int N = parameters.timestepping_runge_kutta_order;
+
+		if (RK_P_t != nullptr)
+		{
+			for (int i = 0; i < N; i++)
+			{
+				delete RK_P_t[i];
+				delete RK_u_t[i];
+				delete RK_v_t[i];
+			}
+
+			delete [] RK_P_t;
+			delete [] RK_u_t;
+			delete [] RK_v_t;
+		}
+
 	}
 
 	void rot_coord(double angle, double &x, double &y)
@@ -74,6 +119,7 @@ public:
 		x = nx;
 		y = ny;
 	}
+
 	void rot_vector(double angle, double &x, double &y)
 	{
 		angle *= 2.0*M_PI/360.0;
@@ -86,240 +132,41 @@ public:
 
 	void reset()
 	{
-		parameters.timestep_nr = 0;
-		parameters.simulation_time = 0;
+		last_timestep_nr_update_diagnostics = -1;
 
-		P.data_setall(parameters.h0);
-		u.data_setall(0);
-		v.data_setall(0);
+		parameters.status_timestep_nr = 0;
+		parameters.status_simulation_time = 0;
 
-		double center_x = parameters.init_coord_x;
-		double center_y = parameters.init_coord_y;
+		prog_P.data_setall(parameters.setup_h0);
+		prog_u.data_setall(0);
+		prog_v.data_setall(0);
 
-		if (parameters.setup_scenario == 0)
+		for (std::size_t j = 0; j < parameters.res[1]; j++)
 		{
-			std::cout << "Setting up discontinuous radial dam break" << std::endl;
-
-			/*
-			 * radial dam break
-			 */
-			double radius = 100000;
-			for (std::size_t j = 0; j < parameters.res[1]; j++)
+			for (std::size_t i = 0; i < parameters.res[0]; i++)
 			{
-				for (std::size_t i = 0; i < parameters.res[0]; i++)
 				{
+					// h
 					double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_length[0];
 					double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_length[1];
 
-					double dx = x-center_x;
-					double dy = y-center_y;
-
-					if (radius*radius >= dx*dx+dy*dy)
-						P.getDataRef(j,i) += 1.0;
+					prog_P.getDataRef(j,i) = SWEValidationBenchmarks::return_h(parameters, x, y);
 				}
-			}
-		}
 
-		if (parameters.setup_scenario == 1)
-		{
-			std::cout << "Setting up Gaussian radial dam break" << std::endl;
-
-			std::cout << center_x << std::endl;
-			std::cout << center_y << std::endl;
-			std::cout << std::endl;
-			std::cout << parameters.sim_domain_length[0] << std::endl;
-			std::cout << parameters.sim_domain_length[1] << std::endl;
-			std::cout << std::endl;
-
-			if (	std::abs(center_x/parameters.sim_domain_length[0]-0.5) > 0.001 ||
-					std::abs(center_y/parameters.sim_domain_length[1]-0.5) > 0.001
-			)
-			{
-				std::cerr << "ERROR: Gaussian radial dam break has to be centered. Otherwise, there will be discontinuities at the domain border" << std::endl;
-				exit(1);
-			}
-
-			/*
-			 * fun with Gaussian
-			 */
-			double radius = 1000000;
-			for (std::size_t j = 0; j < parameters.res[1]; j++)
-			{
-				for (std::size_t i = 0; i < parameters.res[0]; i++)
 				{
-					double x = ((double)i+0.5)*parameters.sim_domain_length[0]/(double)parameters.res[0];
-					double y = ((double)j+0.5)*parameters.sim_domain_length[1]/(double)parameters.res[1];
+					// u space
+					double x = (((double)i)/(double)parameters.res[0])*parameters.sim_domain_length[0];
+					double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_length[1];
 
-					double dx = x-center_x;
-					double dy = y-center_y;
-
-					dx /= radius;
-					dy /= radius;
-
-					P.getDataRef(j,i) += std::exp(-50.0*(dx*dx + dy*dy));
+					prog_u.getDataRef(j,i) = SWEValidationBenchmarks::return_u(parameters, x, y);
 				}
-			}
-		}
 
-		if (parameters.setup_scenario == 2)
-		{
-			std::cout << "Setting up balanced steady state solution (ver1)" << std::endl;
-			// see doc/balanced_steady_state_solution/*
-
-			if (parameters.sim_f == 0)
-			{
-				std::cout << "Coriolis force required to setup balanced steady state solution!" << std::endl;
-				exit(-1);
-			}
-
-			for (std::size_t j = 0; j < parameters.res[1]; j++)
-			{
-				for (std::size_t i = 0; i < parameters.res[0]; i++)
 				{
-					{
-						// P space
-						double x = ((double)i+0.5)/(double)parameters.res[0];
-						P.getDataRef(j,i) = std::sin(2.0*M_PI*x) + parameters.h0;
-					}
+					// v space
+					double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_length[0];
+					double y = (((double)j)/(double)parameters.res[1])*parameters.sim_domain_length[1];
 
-					{
-						// v space
-						double x = ((double)i+0.5)/(double)parameters.res[0];
-
-						v.getDataRef(j,i) = 2.0*M_PI*std::cos(2.0*M_PI*x)/parameters.sim_f;
-					}
-				}
-			}
-		}
-
-
-		if (parameters.setup_scenario == 3)
-		{
-			std::cout << "Setting up balanced steady state solution (ver2)" << std::endl;
-			// see doc/balanced_steady_state_solution/*
-
-			if (parameters.sim_f == 0)
-			{
-				std::cout << "Coriolis force required to setup balanced steady state solution!" << std::endl;
-				exit(-1);
-			}
-
-			for (std::size_t j = 0; j < parameters.res[1]; j++)
-			{
-				for (std::size_t i = 0; i < parameters.res[0]; i++)
-				{
-					{
-						// P space
-						double y = ((double)j+0.5)/(double)parameters.res[1];
-						P.getDataRef(j,i) = std::sin(2.0*M_PI*y)+parameters.h0;
-					}
-					{
-						// u space
-						double y = ((double)j+0.5)/(double)parameters.res[1];
-
-						u.getDataRef(j,i) = -2.0*M_PI*std::cos(2.0*M_PI*y)/parameters.sim_f;
-					}
-				}
-			}
-		}
-
-
-		if (parameters.setup_scenario == 4)
-		{
-			std::cout << "Setting up balanced steady state solution (ver3)" << std::endl;
-			std::cout << "The rotations create instabilities in the linear terms, hence this does not work, yet" << std::endl;
-			std::cout << "Furthermore, rotation doesn't make sense due to the missing periodic boundaries (discontinuities occur)" << std::endl;
-			exit(-1);
-
-			// see doc/balanced_steady_state_solution/*
-
-			if (parameters.sim_f == 0)
-			{
-				std::cout << "Coriolis force required to setup balanced steady state solution!" << std::endl;
-				exit(-1);
-			}
-
-			u.data_setall(0);
-			v.data_setall(0);
-
-			for (std::size_t j = 0; j < parameters.res[1]; j++)
-			{
-				for (std::size_t i = 0; i < parameters.res[0]; i++)
-				{
-					double angle = 45;
-
-					{
-						// P space
-						double x = ((double)i+0.5)/(double)parameters.res[0];
-						double y = ((double)j+0.5)/(double)parameters.res[1];
-						rot_coord(angle, x, y);
-
-						P.getDataRef(j,i) = std::sin(2.0*M_PI*x) + parameters.h0;
-					}
-
-					{
-						// u space
-						double x = ((double)i)/(double)parameters.res[0];
-						double y = ((double)j+0.5)/(double)parameters.res[1];
-						double xo = x;	double yo = y;
-						rot_coord(angle, xo, yo);
-
-						double vel_u = 0;
-						double vel_v = 2.0*M_PI*std::cos(2.0*M_PI*x)/parameters.sim_f;
-						double vel_x_o = vel_u+x;	double vel_y_o = vel_v+y;
-						rot_coord(angle, vel_x_o, vel_y_o);
-
-						double fin_vel_u = vel_x_o - xo;
-						double fin_vel_v = vel_y_o - yo;
-
-						u.getDataRef(j,i) = fin_vel_u;
-					}
-					{
-						// v space
-						double x = ((double)i+0.5)/(double)parameters.res[0];
-						double y = ((double)j)/(double)parameters.res[1];
-						double xo = x;	double yo = y;
-						rot_coord(angle, xo, yo);
-
-						double vel_u = 0;
-						double vel_v = 2.0*M_PI*std::cos(2.0*M_PI*x)/parameters.sim_f;
-						double vel_x_o = vel_u+x;	double vel_y_o = vel_v+y;
-						rot_coord(angle, vel_x_o, vel_y_o);
-
-						vel_u = vel_x_o - xo;
-						vel_v = vel_y_o - yo;
-
-						v.getDataRef(j,i) = vel_v;
-//						v.getDataRef(j,i) = 2.0*M_PI*std::cos(2.0*M_PI*x)/parameters.sim_f;
-					}
-				}
-			}
-		}
-
-
-		if (parameters.setup_scenario == 5)
-		{
-			for (std::size_t j = 0; j < parameters.res[1]; j++)
-			{
-				for (std::size_t i = 0; i < parameters.res[0]; i++)
-				{
-					{
-						// beta plane
-						double x = ((double)i)/(double)parameters.res[0];
-						double y = ((double)j)/(double)parameters.res[1];
-						f.getDataRef(j,i) = (y-0.5)*(y-0.5)*parameters.sim_f;
-					}
-
-
-					{
-						double x = ((double)i+0.5)/(double)parameters.res[0];
-						double y = ((double)j+0.5)/(double)parameters.res[1];
-
-						double dx = x-center_x;
-						double dy = y-center_y;
-
-						P.getDataRef(j,i) += std::exp(-50.0*(dx*dx + dy*dy));
-					}
+					prog_v.getDataRef(j,i) = SWEValidationBenchmarks::return_v(parameters, x, y);
 				}
 			}
 		}
@@ -327,10 +174,103 @@ public:
 
 
 
-	bool run_timestep()
+	void update_diagnostics()
+	{
+		// assure, that the diagnostics are only updated for new time steps
+		if (last_timestep_nr_update_diagnostics == parameters.status_timestep_nr)
+			return;
+
+		last_timestep_nr_update_diagnostics = parameters.status_timestep_nr;
+
+		if (parameters.use_f_array)
+		{
+			eta = (op.diff_b_x(prog_v) - op.diff_b_y(prog_u) + f) / op.avg_b_x(op.avg_b_y(prog_P));
+		}
+		else
+		{
+			eta = (op.diff_b_x(prog_v) - op.diff_b_y(prog_u) + parameters.sim_f) / op.avg_b_x(op.avg_b_y(prog_P));
+		}
+
+		double normalization = (parameters.sim_domain_length[0]*parameters.sim_domain_length[1]) /
+								((double)parameters.res[0]*(double)parameters.res[1]);
+
+		// diagnostics_mass
+		parameters.diagnostics_mass = prog_P.reduce_sum() * normalization;
+
+		// diagnostics_energy
+		parameters.diagnostics_energy = 0.5*(
+				prog_P*prog_P +
+				prog_P*op.avg_f_x(prog_u*prog_u) +
+				prog_P*op.avg_f_y(prog_v*prog_v)
+			).reduce_sum() * normalization;
+
+		// potential enstropy
+		parameters.diagnostics_potential_entrophy = 0.5*(eta*eta*op.avg_b_x(op.avg_b_y(prog_P))).reduce_sum() * normalization;
+
+	}
+
+
+
+	void compute_upwinding_P_updates(
+			const DataArray<2> &i_P,		///< prognostic variables (at T=tn)
+			const DataArray<2> &i_u,		///< prognostic variables (at T=tn+dt)
+			const DataArray<2> &i_v,		///< prognostic variables (at T=tn+dt)
+
+			DataArray<2> &o_P_t	///< time updates (at T=tn+dt)
+	)
+	{
+		//             |                       |                       |
+		// --v---------|-----------v-----------|-----------v-----------|
+		//   h-1       u0          h0          u1          h1          u2
+		//
+
+		// same a above, but formulated in a finite-difference style
+		o_P_t =
+			(
+				(
+					// u is positive
+					op.shift_right(i_P)*i_u.return_value_if_positive()	// inflow
+					-i_P*op.shift_left(i_u.return_value_if_positive())					// outflow
+
+					// u is negative
+					+(i_P*i_u.return_value_if_negative())	// outflow
+					-op.shift_left(i_P*i_u.return_value_if_negative())		// inflow
+				)*(1.0/parameters.sim_cell_size[0])	// here we see a finite-difference-like formulation
+				+
+				(
+					// v is positive
+					op.shift_up(i_P)*i_v.return_value_if_positive()		// inflow
+					-i_P*op.shift_down(i_v.return_value_if_positive())					// outflow
+
+					// v is negative
+					+(i_P*i_v.return_value_if_negative())	// outflow
+					-op.shift_down(i_P*i_v.return_value_if_negative())	// inflow
+				)*(1.0/parameters.sim_cell_size[1])
+			);
+	}
+
+
+
+	/**
+	 * Compute derivative for time stepping and store it to
+	 * P_t, u_t and v_t
+	 */
+	void compute_timestep_update(
+			const DataArray<2> &i_P,	///< prognostic variables
+			const DataArray<2> &i_u,	///< prognostic variables
+			const DataArray<2> &i_v,	///< prognostic variables
+
+			DataArray<2> &o_P_t,	///< time updates
+			DataArray<2> &o_u_t,	///< time updates
+			DataArray<2> &o_v_t,	///< time updates
+
+			double &o_dt,			///< time step restriction
+			double i_fixed_dt = 0		///< if this value is not equal to 0, use this time step size instead of computing one
+	)
 	{
 		/*
-		 * Note, that this grid does not follow the one in the paper
+		 * Note, that this grid does not follow the formulation
+		 * in the paper of Robert Sadourny, but looks as follows:
 		 *
 		 *             ^
 		 *             |
@@ -339,234 +279,453 @@ public:
 		 *       |           |
 		 * <- u0,0  H/P0,0   u1,0 ->
 		 *       |           |
-		 * eta0,0|___v0,0____|
+		 * eta0,0|___________|
+		 *           v0,0
 		 *             |
 		 *             V
 		 */
+		/*
+		 * U and V updates
+		 */
+		U = op.avg_b_x(i_P)*i_u;
+		V = op.avg_b_y(i_P)*i_v;
 
-		U = op.avg_b_x(P)*u;
-		V = op.avg_b_y(P)*v;
-
-		H = P + 0.5*(op.avg_f_x(u*u) + op.avg_f_y(v*v));
+		H = i_P + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
 
 		if (parameters.setup_scenario != 5)
 		{
-			eta_u = (op.diff_b_x(v) - op.diff_b_y(u) + parameters.sim_f/parameters.sim_domain_length[0]) / op.avg_b_x(op.avg_b_y(P));
-			eta_v = (op.diff_b_x(v) - op.diff_b_y(u) + parameters.sim_f/parameters.sim_domain_length[1]) / op.avg_b_x(op.avg_b_y(P));
+			eta = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + parameters.sim_f) / op.avg_b_x(op.avg_b_y(i_P));
 		}
 		else
 		{
-			eta_u = (op.diff_b_x(v) - op.diff_b_y(u) + f) / op.avg_b_x(op.avg_b_y(P));
-			eta_v = eta_u;
+			eta = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + f) / op.avg_b_x(op.avg_b_y(i_P));
 		}
 
-		double normalization = (parameters.sim_domain_length[0]*parameters.sim_domain_length[1]) / ((double)parameters.res[0]*(double)parameters.res[1]);
-		// mass
-		parameters.mass = P.reduce_sum() * normalization;
+		o_u_t = op.avg_f_y(eta*op.avg_b_x(V)) - op.diff_b_x(H);
+		o_v_t = -op.avg_f_x(eta*op.avg_b_y(U)) - op.diff_b_y(H);
 
-		// energy
-		parameters.energy = 0.5*(
-				P*P +
-				P*op.avg_f_x(u*u) +
-				P*op.avg_f_y(v*v)
-			).reduce_sum() * normalization;
 
-		// potential enstropy
-		parameters.potential_entrophy = 0.5*(eta_u*eta_u*op.avg_b_x(op.avg_b_y(P))).reduce_sum() * normalization;
+		/*
+		 * VISCOSITY
+		 */
+		if (parameters.sim_viscocity != 0)
+		{
+			o_u_t += (op.diff2_c_x(i_u) + op.diff2_c_x(i_v))*parameters.sim_viscocity;
+			o_v_t += (op.diff2_c_y(i_u) + op.diff2_c_y(i_v))*parameters.sim_viscocity;
+		}
+		if (parameters.sim_hyper_viscocity != 0)
+		{
+			o_u_t += (op.diff2_c_x(op.diff2_c_x(i_u)) + op.diff2_c_x(op.diff2_c_x(i_v)))*parameters.sim_hyper_viscocity;
+			o_v_t += (op.diff2_c_y(op.diff2_c_y(i_u)) + op.diff2_c_y(op.diff2_c_y(i_v)))*parameters.sim_hyper_viscocity;
+		}
 
-		u_t = op.avg_f_y(eta_u*op.avg_b_x(V)) - op.diff_b_x(H);
-		v_t = -op.avg_f_x(eta_v*op.avg_b_y(U)) - op.diff_b_y(H);
 
-//		std::cout << u_t << std::endl;
+		/*
+		 * TIME STEP SIZE
+		 */
+		if (i_fixed_dt != 0)
+		{
+			o_dt = i_fixed_dt;
+		}
+		else
+		{
+			/*
+			 * If the timestep size parameter is negative, we use the absolute value of this one as the time step size
+			 */
+			if (parameters.timestepping_timestep_size < 0)
+			{
+				o_dt = -parameters.timestepping_timestep_size;
+			}
+			else
+			{
+				double limit_speed = std::max(parameters.sim_cell_size[0]/i_u.reduce_maxAbs(), parameters.sim_cell_size[1]/i_v.reduce_maxAbs());
 
+				// limit by re
+				double limit_visc = limit_speed;
+		//        if (viscocity > 0)
+		//           limit_visc = (viscocity*0.5)*((hx*hy)*0.5);
+
+				// limit by gravitational acceleration
+		//		double limit_gh = limit_speed;
+				double limit_gh = std::min(parameters.sim_cell_size[0], parameters.sim_cell_size[1])/std::sqrt(parameters.sim_g*i_P.reduce_maxAbs());
+
+		//        std::cout << limit_speed << ", " << limit_visc << ", " << limit_gh << std::endl;
+				o_dt = parameters.sim_CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
+			}
+		}
+
+
+		/*
+		 * P UPDATE
+		 */
+		if (!parameters.timestepping_leapfrog_like_update)
+		{
+			if (!parameters.timestepping_up_and_downwinding)
+			{
+				// standard update
+				o_P_t = -op.diff_f_x(U) - op.diff_f_y(V);
+				return;
+			}
+			else
+			{
+				// up/down winding
+				compute_upwinding_P_updates(
+						i_P,
+						i_u,
+						i_v,
+						o_P_t
+					);
+				return;
+			}
+		}
+		else
+		{
+			/*
+			 * a kind of leapfrog:
+			 *
+			 * We use the hew v and u values to compute the update for p
+			 *
+			 * compute updated u and v values without using it
+			 */
+			if (parameters.timestepping_up_and_downwinding)
+			{
+				// recompute U and V
+				U = op.avg_b_x(i_P)*(i_u+o_dt*o_u_t);
+				V = op.avg_b_y(i_P)*(i_v+o_dt*o_v_t);
+
+				// update based on new u and v values
+				o_P_t = -op.diff_f_x(U) - op.diff_f_y(V);
+				return;
+			}
+			else
+			{
+				// update based on new u and v values
+				compute_upwinding_P_updates(
+						i_P,
+						i_u+o_dt*o_u_t,
+						i_v+o_dt*o_v_t,
+						o_P_t
+					);
+				return;
+			}
+		}
+	}
+
+
+
+	void run_timestep()
+	{
+		double dt;
+		if (parameters.timestepping_runge_kutta_order == 1)
+		{
+			compute_timestep_update(
+					prog_P, prog_u, prog_v,	///< input
+					prog_P_t, prog_u_t, prog_v_t,
+					dt
+			);
+
+			prog_P += dt*prog_P_t;
+			prog_u += dt*prog_u_t;
+			prog_v += dt*prog_v_t;
+
+			parameters.timestepping_timestep_size = dt;
+		}
+		else if (parameters.timestepping_runge_kutta_order == 2)
+		{
+			int N = parameters.timestepping_runge_kutta_order;
+
+
+			// See https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods#Explicit_Runge.E2.80.93Kutta_methods
+			// See https://de.wikipedia.org/wiki/Runge-Kutta-Verfahren
+			/*
+			 * c     a
+			 * 0   |
+			 * 1/2 | 1/2
+			 * --------------
+			 *     | 0    1    b
+			 */
+			double dummy_dt;
+
+			// STAGE 1
+			compute_timestep_update(
+					prog_P,
+					prog_u,
+					prog_v,
+					*RK_P_t[0],
+					*RK_u_t[0],
+					*RK_v_t[0],
+					dt
+			);
+
+			// STAGE 2
+			double a2[1] = {0.5};
+			compute_timestep_update(
+					prog_P	+ dt*( a2[0]*(*RK_P_t[0]) ),
+					prog_u	+ dt*( a2[0]*(*RK_u_t[0]) ),
+					prog_v	+ dt*( a2[0]*(*RK_v_t[0]) ),
+					*RK_P_t[1],
+					*RK_u_t[1],
+					*RK_v_t[1],
+					dummy_dt,
+					dt
+			);
+
+			double b[2] = {0, 1};
+
+			prog_P += dt*( b[0]**RK_P_t[0] + b[1]**RK_P_t[1] );
+			prog_u += dt*( b[0]**RK_u_t[0] + b[1]**RK_u_t[1] );
+			prog_v += dt*( b[0]**RK_v_t[0] + b[1]**RK_v_t[1] );
+
+			parameters.timestepping_timestep_size = dt;
+		}
+		else if (parameters.timestepping_runge_kutta_order == 3)
+		{
+			int N = parameters.timestepping_runge_kutta_order;
+
+			// See https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods#Explicit_Runge.E2.80.93Kutta_methods
+			// See https://de.wikipedia.org/wiki/Runge-Kutta-Verfahren
+			/*
+			 * c     a
+			 * 0   |
+			 * 1/2 | 1/2
+			 * 1   | -1   2
+			 * --------------
+			 *     | 1/6  4/6  1/6
+			 */
+			double dummy_dt;
+
+			// STAGE 1
+			compute_timestep_update(
+					prog_P,
+					prog_u,
+					prog_v,
+					*RK_P_t[0],
+					*RK_u_t[0],
+					*RK_v_t[0],
+					dt
+			);
+
+			// STAGE 2
+			double a2[1] = {0.5};
+			compute_timestep_update(
+					prog_P	+ dt*( a2[0]*(*RK_P_t[0]) ),
+					prog_u	+ dt*( a2[0]*(*RK_u_t[0]) ),
+					prog_v	+ dt*( a2[0]*(*RK_v_t[0]) ),
+					*RK_P_t[1],
+					*RK_u_t[1],
+					*RK_v_t[1],
+					dummy_dt,
+					dt
+			);
+
+			// STAGE 3
+			double a3[2] = {-1.0, 2.0};
+			compute_timestep_update(
+					prog_P	+ dt*( a3[0]*(*RK_P_t[0]) + a3[1]*(*RK_P_t[1]) ),
+					prog_u	+ dt*( a3[0]*(*RK_u_t[0]) + a3[1]*(*RK_u_t[1]) ),
+					prog_v	+ dt*( a3[0]*(*RK_v_t[0]) + a3[1]*(*RK_v_t[1]) ),
+					*RK_P_t[2],
+					*RK_u_t[2],
+					*RK_v_t[2],
+					dummy_dt,
+					dt
+			);
+
+			double b[3] = {1.0/1.6, 4.0/6.0, 1.0/6.0};
+
+			prog_P += dt*( b[0]**RK_P_t[0] + b[1]**RK_P_t[1]  + b[2]**RK_P_t[2] );
+			prog_u += dt*( b[0]**RK_u_t[0] + b[1]**RK_u_t[1]  + b[2]**RK_u_t[2] );
+			prog_v += dt*( b[0]**RK_v_t[0] + b[1]**RK_v_t[1]  + b[2]**RK_v_t[2] );
+
+			parameters.timestepping_timestep_size = dt;
+		}
+		else if (parameters.timestepping_runge_kutta_order == 4)
+		{
+			int N = parameters.timestepping_runge_kutta_order;
+
+			// See https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods#Explicit_Runge.E2.80.93Kutta_methods
+			// See https://de.wikipedia.org/wiki/Runge-Kutta-Verfahren
+			/*
+			 * c     a
+			 * 0   |
+			 * 1/2 | 1/2
+			 * 1/2 | 0    1/2
+			 * 1   | 0    0    1
+			 * --------------
+			 *     | 1/6  1/3  1/3  1/6
+			 */
+			double dummy_dt;
+
+			// STAGE 1
+			compute_timestep_update(
+					prog_P,
+					prog_u,
+					prog_v,
+					*RK_P_t[0],
+					*RK_u_t[0],
+					*RK_v_t[0],
+					dt
+			);
+
+			// STAGE 2
+			double a2[1] = {0.5};
+			compute_timestep_update(
+					prog_P	+ dt*( a2[0]*(*RK_P_t[0]) ),
+					prog_u	+ dt*( a2[0]*(*RK_u_t[0]) ),
+					prog_v	+ dt*( a2[0]*(*RK_v_t[0]) ),
+					*RK_P_t[1],
+					*RK_u_t[1],
+					*RK_v_t[1],
+					dummy_dt,
+					dt
+			);
+
+			// STAGE 3
+			double a3[2] = {0.0, 0.5};
+			compute_timestep_update(
+					prog_P	+ dt*( /*a3[0]*(*RK_P_t[0]) +*/ a3[1]*(*RK_P_t[1]) ),
+					prog_u	+ dt*( /*a3[0]*(*RK_u_t[0]) +*/ a3[1]*(*RK_u_t[1]) ),
+					prog_v	+ dt*( /*a3[0]*(*RK_v_t[0]) +*/ a3[1]*(*RK_v_t[1]) ),
+					*RK_P_t[2],
+					*RK_u_t[2],
+					*RK_v_t[2],
+					dummy_dt,
+					dt
+			);
+
+			// STAGE 4
+			double a4[3] = {0.0, 0.0, 1.0};
+			compute_timestep_update(
+					prog_P	+ dt*( /*a4[0]*(*RK_P_t[0]) + a4[1]*(*RK_P_t[1]) +*/ a4[2]*(*RK_P_t[2]) ),
+					prog_u	+ dt*( /*a4[0]*(*RK_u_t[0]) + a4[1]*(*RK_u_t[1]) +*/ a4[2]*(*RK_u_t[2]) ),
+					prog_v	+ dt*( /*a4[0]*(*RK_v_t[0]) + a4[1]*(*RK_v_t[1]) +*/ a4[2]*(*RK_v_t[2]) ),
+					*RK_P_t[3],
+					*RK_u_t[3],
+					*RK_v_t[3],
+					dummy_dt,
+					dt
+			);
+
+			double b[4] = {1.0/6.0, 1.0/3.0, 1.0/3.0, 1.0/6.0};
+
+			prog_P += dt*( b[0]**RK_P_t[0] + b[1]**RK_P_t[1]  + b[2]**RK_P_t[2] + b[3]**RK_P_t[3] );
+			prog_u += dt*( b[0]**RK_u_t[0] + b[1]**RK_u_t[1]  + b[2]**RK_u_t[2] + b[3]**RK_u_t[3] );
+			prog_v += dt*( b[0]**RK_v_t[0] + b[1]**RK_v_t[1]  + b[2]**RK_v_t[2] + b[3]**RK_v_t[3] );
+
+			parameters.timestepping_timestep_size = dt;
+		}
+		else
+		{
+			std::cerr << "This order of the Runge-Kutta time stepping is not supported!" << std::endl;
+			exit(-1);
+		}
+
+		// provide information to parameters
+		parameters.status_simulation_time += dt;
+		parameters.status_timestep_nr++;
 
 		if (parameters.verbosity > 0)
 		{
-			if (parameters.timestep_nr == 0)
+			update_diagnostics();
+
+			if (parameters.status_timestep_nr == 0)
 			{
 				std::cout << "MASS\tENERGY\tPOT_ENSTROPHY";
 
 				if (parameters.setup_scenario == 2 || parameters.setup_scenario == 3 || parameters.setup_scenario == 4)
-					std::cout << "\tABS_U_DT";
+					std::cout << "\tABS_P_DT\tABS_U_DT\tABS_V_DT";
 
 				std::cout << std::endl;
 			}
 
-			std::cout << parameters.mass << "\t" << parameters.energy << "\t" << parameters.potential_entrophy;
+			std::cout << parameters.diagnostics_mass << "\t" << parameters.diagnostics_energy << "\t" << parameters.diagnostics_potential_entrophy;
 
 			// this should be zero for the steady state test
 			if (parameters.setup_scenario == 2 || parameters.setup_scenario == 3 || parameters.setup_scenario == 4)
 			{
-				double test_val = u_t.reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
+				double test_val;
+				test_val = prog_P_t.reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
 				std::cout << "\t" << test_val;
 
-				test_val = v_t.reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
+				test_val = prog_u_t.reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
 				std::cout << "\t" << test_val;
 
-				test_val = P_t.reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
+				test_val = prog_v_t.reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
 				std::cout << "\t" << test_val;
 			}
 
 			std::cout << std::endl;
 		}
-
-		if (parameters.sim_viscocity != 0)
-		{
-			u_t += (op.diff2_c_x(u) + op.diff2_c_x(v))*parameters.sim_viscocity;
-			v_t += (op.diff2_c_y(u) + op.diff2_c_y(v))*parameters.sim_viscocity;
-		}
-
-		if (parameters.sim_hyper_viscocity != 0)
-		{
-			u_t += (op.diff2_c_x(op.diff2_c_x(u)) + op.diff2_c_x(op.diff2_c_x(v)))*parameters.sim_hyper_viscocity;
-			v_t += (op.diff2_c_y(op.diff2_c_y(u)) + op.diff2_c_y(op.diff2_c_y(v)))*parameters.sim_hyper_viscocity;
-		}
-
-		double limit_speed = std::max(parameters.cell_size[0]/u.reduce_maxAbs(), parameters.cell_size[1]/v.reduce_maxAbs());
-
-        // limit by re
-        double limit_visc = limit_speed;
-//        if (viscocity > 0)
-//           limit_visc = (viscocity*0.5)*((hx*hy)*0.5);
-
-        // limit by gravitational acceleration
-//		double limit_gh = limit_speed;
-		double limit_gh = std::min(parameters.cell_size[0], parameters.cell_size[1])/std::sqrt(parameters.g*P.reduce_maxAbs());
-
-//        std::cout << limit_speed << ", " << limit_visc << ", " << limit_gh << std::endl;
-		double dt = parameters.sim_CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
-
-		// provide information to parameters
-		parameters.timestep_size = dt;
-
-
-		bool leapfrog_like_update = true;
-		bool up_and_downwinding = false;
-
-
-		// standard explicit euler on velocities
-		u += dt*u_t;
-		v += dt*v_t;
-
-		if (!leapfrog_like_update && !up_and_downwinding)
-		{
-			P_t = -op.diff_f_x(U) - op.diff_f_y(V);
-			P += dt*P_t;
-		}
-		else
-		{
-			if (!up_and_downwinding)
-			{
-				if (leapfrog_like_update)
-				{
-					// recompute U and V
-					U = op.avg_b_x(P)*u;
-					V = op.avg_b_y(P)*v;
-				}
-
-				P_t = -op.diff_f_x(U) - op.diff_f_y(V);
-				P += dt*P_t;
-			}
-			else
-			{
-
-				//             |                       |                       |
-				// --v---------|-----------v-----------|-----------v-----------|
-				//   h-1       u0          h0          u1          h1          u2
-				//
-
-				// same a above, but formulated in a finite-difference style
-				P += dt
-					*(
-						(
-							// u is positive
-							op.shift_right(P)*u.return_value_if_positive()	// inflow
-							-P*op.shift_left(u.return_value_if_positive())					// outflow
-
-							// u is negative
-							+(P*u.return_value_if_negative())	// outflow
-							-op.shift_left(P*u.return_value_if_negative())		// inflow
-						)*(1.0/parameters.cell_size[0])	// here we see a finite-difference-like formulation
-						+
-						(
-							// v is positive
-							op.shift_up(P)*v.return_value_if_positive()		// inflow
-							-P*op.shift_down(v.return_value_if_positive())					// outflow
-
-							// v is negative
-							+(P*v.return_value_if_negative())	// outflow
-							-op.shift_down(P*v.return_value_if_negative())	// inflow
-						)*(1.0/parameters.cell_size[1])
-					);
-			}
-		}
-
-		parameters.simulation_time += dt;
-		parameters.timestep_nr++;
-
-
-		if (parameters.max_timesteps != -1 && parameters.max_timesteps <= parameters.timestep_nr)
-			return false;
-
-		if (parameters.max_simulation_time != -1 && parameters.max_simulation_time <= parameters.simulation_time)
-			return false;
-
-		return true;
 	}
 
+
+	bool should_quit()
+	{
+		if (parameters.max_timesteps_nr != -1 && parameters.max_timesteps_nr <= parameters.status_timestep_nr)
+			return true;
+
+		if (parameters.max_simulation_time != -1 && parameters.max_simulation_time <= parameters.status_simulation_time)
+			return true;
+
+		return false;
+	}
 
 
 	/**
 	 * postprocessing of frame: do time stepping
 	 */
-	bool vis_post_frame_processing(int i_num_iterations)
+	void vis_post_frame_processing(int i_num_iterations)
 	{
-		bool retval = true;
 		if (parameters.run_simulation)
 			for (int i = 0; i < i_num_iterations; i++)
-				retval = run_timestep();
-
-		return retval;
+				run_timestep();
 	}
 
+
+	struct VisStuff
+	{
+		const DataArray<2>* data;
+		const char *description;
+	};
+
+	VisStuff vis_arrays[10] =
+	{
+			{&prog_P,	"P"},
+			{&prog_u,	"u"},
+			{&prog_v,	"v"},
+			{&prog_P_t,	"Pt"},
+			{&prog_u_t,	"ut"},
+			{&prog_v_t,	"vt"},
+			{&H,		"H"},
+			{&eta,		"eta"},
+			{&U,		"U"},
+			{&V,		"V"}
+	};
 
 	void vis_get_vis_data_array(
 			const DataArray<2> **o_dataArray,
 			double *o_aspect_ratio
 	)
 	{
-		int id = parameters.vis_id % 7;
-
-		switch(id)
-		{
-		case 0:	*o_dataArray = &P;		break;
-		case 1: *o_dataArray = &u;		break;
-		case 2: *o_dataArray = &v;		break;
-		case 3: *o_dataArray = &H;		break;
-		case 4: *o_dataArray = &eta_u;	break;
-		case 5: *o_dataArray = &U;		break;
-		case 6: *o_dataArray = &V;		break;
-		}
-
+		int id = parameters.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
+		*o_dataArray = vis_arrays[id].data;
 		*o_aspect_ratio = parameters.sim_domain_length[1] / parameters.sim_domain_length[0];
 	}
 
 	const char* vis_get_status_string()
 	{
-		const char *vis_id_strings[] =
-		{
-				"P", "u", "v", "eta", "H", "U", "V"
-		};
-		int vis_id = parameters.vis_id % 7;
+		update_diagnostics();
+
+		int id = parameters.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
 
 		static char title_string[1024];
 		sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %e, Vis: %s, Mass: %e, Energy: %e, Potential Entrophy: %e",
-				parameters.simulation_time,
-				parameters.simulation_time/(60.0*60.0*24.0),
-				parameters.timestep_nr,
-				parameters.timestep_size,
-				vis_id_strings[vis_id],
-				parameters.mass, parameters.energy, parameters.potential_entrophy);
+				parameters.status_simulation_time,
+				parameters.status_simulation_time/(60.0*60.0*24.0),
+				parameters.status_timestep_nr,
+				parameters.timestepping_timestep_size,
+				vis_arrays[id].description,
+				parameters.diagnostics_mass, parameters.diagnostics_energy, parameters.diagnostics_potential_entrophy);
 		return title_string;
 	}
 

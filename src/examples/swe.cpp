@@ -3,12 +3,13 @@
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
-#include "Parameters.hpp"
+#include <sweet/SimulationParameters.hpp>
+#include <sweet/SWEValidationBenchmarks.hpp>
 #include "sweet/Operators2D.hpp"
 
 #include <unistd.h>
 
-Parameters parameters;
+SimulationParameters parameters;
 
 
 class SimulationSWE
@@ -32,45 +33,10 @@ public:
 
 		eta(parameters.res),
 
-		op(parameters.cell_size, parameters.res)
+		op(parameters.sim_cell_size, parameters.res)
 	{
 		// override gravitation
-		parameters.g = 1.0;
-
-		if (0)
-		{
-			double diff_c_x_kernel[5][5] = {
-					{0,0,0,0,0},{0,0,0,0,0},
-					{1.0, -8.0, 0, 8.0, -1.0},
-					{0,0,0,0,0},{0,0,0,0,0},
-			};
-			op.diff_c_x.setup_kernel(diff_c_x_kernel, 1.0/(12*parameters.cell_size[0]));
-
-			double diff_c_y_kernel[5][5] = {
-					{0,0, 1.0, 0,0},
-					{0,0, -8.0, 0,0},
-					{0,0,  0.0, 0,0},
-					{0,0,  8.0, 0,0},
-					{0,0, -1.0, 0,0},
-			};
-			op.diff_c_y.setup_kernel(diff_c_y_kernel, 1.0/(12*parameters.cell_size[1]));
-
-			double diff2_c_x_kernel[5][5] = {
-					{0,0,0,0,0},{0,0,0,0,0},
-					{-1.0, 16.0, -30.0, 16.0, -1.0},
-					{0,0,0,0,0},{0,0,0,0,0},
-			};
-			op.diff2_c_x.setup_kernel(diff2_c_x_kernel, 1.0/(12*parameters.cell_size[0]));
-
-			double diff2_c_y_kernel[5][5] = {
-					{0, 0,  -1.0, 0, 0},
-					{0, 0,  16.0, 0, 0},
-					{0, 0, -30.0, 0, 0},
-					{0, 0,  16.0, 0, 0},
-					{0, 0,  -1.0, 0, 0},
-			};
-			op.diff2_c_y.setup_kernel(diff2_c_y_kernel, 1.0/12*parameters.cell_size[1]);
-		}
+		parameters.sim_g = 1.0;
 
 		reset();
 	}
@@ -78,58 +44,26 @@ public:
 
 	void reset()
 	{
-		parameters.timestep_nr = 0;
-		parameters.simulation_time = 0;
+		parameters.status_timestep_nr = 0;
+		parameters.status_simulation_time = 0;
 
-		h.data_setall(parameters.h0);
 
-		double center_x = parameters.init_coord_x;
-		double center_y = parameters.init_coord_y;
-
-		if (parameters.setup_scenario == 0)
-		{
-			/*
-			 * radial dam break
-			 */
-			double radius = 0.2;
-			for (std::size_t j = 0; j < parameters.res[1]; j++)
-			{
-				for (std::size_t i = 0; i < parameters.res[0]; i++)
-				{
-					double x = ((double)i+0.5)/(double)parameters.res[0];
-					double y = ((double)j+0.5)/(double)parameters.res[1];
-
-					double dx = x-center_x;
-					double dy = y-center_y;
-
-					if (radius*radius >= dx*dx+dy*dy)
-						h.getDataRef(j,i) += 1.0;
-				}
-			}
-		}
-
-		if (parameters.setup_scenario == 1)
-		{
-			/*
-			 * fun with Gaussian
-			 */
-			for (std::size_t j = 0; j < parameters.res[1]; j++)
-			{
-				for (std::size_t i = 0; i < parameters.res[0]; i++)
-				{
-					double x = ((double)i+0.5)/(double)parameters.res[0];
-					double y = ((double)j+0.5)/(double)parameters.res[1];
-
-					double dx = x-center_x;
-					double dy = y-center_y;
-
-					h.getDataRef(j,i) += std::exp(-50.0*(dx*dx + dy*dy));
-				}
-			}
-		}
-
+		h.data_setall(parameters.setup_h0);
 		u.data_setall(0);
 		v.data_setall(0);
+
+		for (std::size_t j = 0; j < parameters.res[1]; j++)
+		{
+			for (std::size_t i = 0; i < parameters.res[0]; i++)
+			{
+				double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_length[0];
+				double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_length[1];
+
+				h.getDataRef(j,i) = SWEValidationBenchmarks::return_h(parameters, x, y);
+				u.getDataRef(j,i) = SWEValidationBenchmarks::return_u(parameters, x, y);
+				v.getDataRef(j,i) = SWEValidationBenchmarks::return_v(parameters, x, y);
+			}
+		}
 	}
 
 
@@ -142,13 +76,13 @@ public:
 		 *	u_t = -g * h_x - u * u_x - v * u_y
 		 *	v_t = -g * h_y - u * v_x - v * v_y
 		 */
-		u_t = -parameters.g*op.diff_c_x(h) - u*op.diff_c_x(u) - v*op.diff_c_y(u);
-		v_t = -parameters.g*op.diff_c_y(h) - u*op.diff_c_x(v) - v*op.diff_c_y(v);
+		u_t = -parameters.sim_g*op.diff_c_x(h) - u*op.diff_c_x(u) - v*op.diff_c_y(u);
+		v_t = -parameters.sim_g*op.diff_c_y(h) - u*op.diff_c_x(v) - v*op.diff_c_y(v);
 
 		// mass
-		parameters.mass = h.reduce_sum() / (double)(parameters.res[0]*parameters.res[1]);
+		parameters.diagnostics_mass = h.reduce_sum() / (double)(parameters.res[0]*parameters.res[1]);
 		// energy
-		parameters.energy = 0.5*(
+		parameters.diagnostics_energy = 0.5*(
 				h*h +
 				h*u*u +
 				h*v*v
@@ -156,23 +90,21 @@ public:
 		// potential enstropy
 		// TODO: is this correct?
 		eta = (op.diff_c_x(v) - op.diff_c_y(u)) / h;
-		parameters.potential_entrophy = 0.5*(eta*eta*h).reduce_sum() / (double)(parameters.res[0]*parameters.res[1]);
+		parameters.diagnostics_potential_entrophy = 0.5*(eta*eta*h).reduce_sum() / (double)(parameters.res[0]*parameters.res[1]);
 
 		if (parameters.sim_viscocity != 0)
 		{
-			// TODO: is this correct?
 			v_t += (op.diff2_c_y(u) + op.diff2_c_y(v))*parameters.sim_viscocity;
 			u_t += (op.diff2_c_x(u) + op.diff2_c_x(v))*parameters.sim_viscocity;
 		}
 
 		if (parameters.sim_hyper_viscocity != 0)
 		{
-			// TODO: is this correct?
 			u_t += (op.diff2_c_x(op.diff2_c_x(u)) + op.diff2_c_x(op.diff2_c_x(v)))*parameters.sim_hyper_viscocity;
 			v_t += (op.diff2_c_y(op.diff2_c_y(u)) + op.diff2_c_y(op.diff2_c_y(v)))*parameters.sim_hyper_viscocity;
 		}
 
-		double limit_speed = std::max(parameters.cell_size[0]/u.reduce_maxAbs(), parameters.cell_size[1]/v.reduce_maxAbs());
+		double limit_speed = std::max(parameters.sim_cell_size[0]/u.reduce_maxAbs(), parameters.sim_cell_size[1]/v.reduce_maxAbs());
 
         // limit by re
         double limit_visc = limit_speed;
@@ -180,13 +112,13 @@ public:
  //           limit_visc = (viscocity*0.5)*((hx*hy)*0.5);
 
         // limit by gravitational acceleration
-		double limit_gh = std::min(parameters.cell_size[0], parameters.cell_size[1])/std::sqrt(parameters.g*h.reduce_maxAbs());
+		double limit_gh = std::min(parameters.sim_cell_size[0], parameters.sim_cell_size[1])/std::sqrt(parameters.sim_g*h.reduce_maxAbs());
 
 //        std::cout << limit_speed << ", " << limit_visc << ", " << limit_gh << std::endl;
 		double dt = parameters.sim_CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
 
 		// provide information to parameters
-		parameters.timestep_size = dt;
+		parameters.timestepping_timestep_size = dt;
 
 		u += dt*u_t;
 		v += dt*v_t;
@@ -195,13 +127,15 @@ public:
 		h_t = -op.diff_c_x(u*h) - op.diff_c_y(v*h);
 		h += dt*h_t;
 
-		parameters.simulation_time += dt;
-		parameters.timestep_nr++;
-
-		return true;
+		parameters.status_simulation_time += dt;
+		parameters.status_timestep_nr++;
 	}
 
 
+	bool should_quit()
+	{
+		return false;
+	}
 
 
 	/**
@@ -233,13 +167,13 @@ public:
 			case 4: *o_dataArray = &eta;	break;
 		}
 
-		*o_aspect_ratio = parameters.sim_domain_length_x / parameters.sim_domain_length_y;
+		*o_aspect_ratio = parameters.sim_domain_length[1] / parameters.sim_domain_length[0];
 	}
 
 	const char* vis_get_status_string()
 	{
 		static char title_string[1024];
-		sprintf(title_string, "Time: %f, Timestep: %i, timestep size: %e, Mass: %e, Energy: %e, Potential Entrophy: %e", parameters.simulation_time, parameters.timestep_nr, parameters.timestep_size, parameters.mass, parameters.energy, parameters.potential_entrophy);
+		sprintf(title_string, "Time: %f, Timestep: %i, timestep size: %e, Mass: %e, Energy: %e, Potential Entrophy: %e", parameters.status_simulation_time, parameters.status_timestep_nr, parameters.timestepping_timestep_size, parameters.diagnostics_mass, parameters.diagnostics_energy, parameters.diagnostics_potential_entrophy);
 		return title_string;
 	}
 

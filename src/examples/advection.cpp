@@ -3,11 +3,11 @@
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
-#include "Parameters.hpp"
+#include "sweet/SimulationParameters.hpp"
 #include "sweet/Operators2D.hpp"
 #include <unistd.h>
 
-Parameters parameters;
+SimulationParameters parameters;
 
 
 class SimulationSWE
@@ -36,7 +36,7 @@ public:
 
 		h_t(parameters.res),
 
-		op(parameters.cell_size, parameters.res)
+		op(parameters.sim_cell_size, parameters.res)
 	{
 		reset();
 	}
@@ -44,9 +44,9 @@ public:
 
 	void reset()
 	{
-		parameters.timestep_nr = 0;
+		parameters.status_timestep_nr = 0;
 
-		h.data_setall(parameters.h0);
+		h.data_setall(parameters.setup_h0);
 
 		u.data_setall(parameters.bogus_var0);
 		v.data_setall(parameters.bogus_var1);
@@ -98,13 +98,14 @@ public:
 	}
 
 
-	bool run_timestep()
-	{
-        double dt = parameters.sim_CFL*std::min(parameters.cell_size[0]/u.reduce_maxAbs(), parameters.cell_size[1]/v.reduce_maxAbs());
-        if (std::isinf(dt))
-        	dt = parameters.sim_CFL*parameters.cell_size[0]/0.000001;
 
-        parameters.timestep_size = dt;
+	void run_timestep()
+	{
+        double dt = parameters.sim_CFL*std::min(parameters.sim_cell_size[0]/u.reduce_maxAbs(), parameters.sim_cell_size[1]/v.reduce_maxAbs());
+        if (std::isinf(dt))
+        	dt = parameters.sim_CFL*parameters.sim_cell_size[0]/0.000001;
+
+        parameters.timestepping_timestep_size = dt;
 
         // 0: staggered
         // 1: non-staggered
@@ -116,52 +117,52 @@ public:
 
         // staggered
 		h -= dt*(
-				op_d_b_x(op_avg_f_x(h)*u) +
-				op_d_b_y(op_avg_f_y(h)*v)
+				op.diff_b_x(op.avg_f_x(h)*u) +
+				op.diff_b_y(op.avg_f_y(h)*v)
 			);
 #endif
 
 #if ADVECTION_METHOD == 1
 		// non-staggered
 		h = h - dt*(
-				op_d_c_x(h*u) +
-				op_d_c_y(h*v)
+				op.diff_c_x(h*u) +
+				op.diff_c_y(h*v)
 			);
 #endif
 
 #if ADVECTION_METHOD == 2
 
-//		std::cout << u << std::endl;
-
-		// up/downwinding on staggered grid (FV-like method)
-		h += dt
-			*(
+		h += dt*
+			(
 				(
 					// u is positive
 					op.shift_right(h)*u.return_value_if_positive()	// inflow
-					-h*op.shift_left(u.return_value_if_positive())					// outflow
+					-h*op.shift_left(u.return_value_if_positive())	// outflow
 
 					// u is negative
-					+(h*u.return_value_if_negative())	// outflow
-					-op.shift_left(h*u.return_value_if_negative())		// inflow
-				)*(1.0/parameters.cell_size[0])	// here we see a finite-difference-like formulation
+					+(h*u.return_value_if_negative())				// outflow
+					-op.shift_left(h*u.return_value_if_negative())	// inflow
+				)*(1.0/parameters.sim_cell_size[0])				// here we see a finite-difference-like formulation
 				+
 				(
 					// v is positive
 					op.shift_up(h)*v.return_value_if_positive()		// inflow
-					-h*op.shift_down(v.return_value_if_positive())					// outflow
+					-h*op.shift_down(v.return_value_if_positive())	// outflow
 
 					// v is negative
-					+(h*v.return_value_if_negative())	// outflow
+					+(h*v.return_value_if_negative())				// outflow
 					-op.shift_down(h*v.return_value_if_negative())	// inflow
-				)*(1.0/parameters.cell_size[1])
+				)*(1.0/parameters.sim_cell_size[1])
 			);
 #endif
-		parameters.timestep_nr++;
-
-		return true;
+		parameters.status_timestep_nr++;
 	}
 
+
+	bool should_quit()
+	{
+		return false;
+	}
 
 	/**
 	 * postprocessing of frame: do time stepping
@@ -183,13 +184,13 @@ public:
 	)
 	{
 		*o_dataArray = &h;
-		*o_aspect_ratio = parameters.sim_domain_length[0] / parameters.sim_domain_length[1];
+		*o_aspect_ratio = parameters.sim_domain_length[1] / parameters.sim_domain_length[0];
 	}
 
 	const char* vis_get_status_string()
 	{
 		static char title_string[1024];
-		sprintf(title_string, "Timestep: %i, timestep size: %e, Mass: %e, Energy: %e, Potential Entrophy: %e", parameters.timestep_nr, parameters.timestep_size, parameters.mass, parameters.energy, parameters.potential_entrophy);
+		sprintf(title_string, "Timestep: %i, timestep size: %e, Mass: %e, Energy: %e, Potential Entrophy: %e", parameters.status_timestep_nr, parameters.timestepping_timestep_size, parameters.diagnostics_mass, parameters.diagnostics_energy, parameters.diagnostics_potential_entrophy);
 		return title_string;
 	}
 
