@@ -4,8 +4,10 @@
 	#include "sweet/VisSweet.hpp"
 #endif
 #include <sweet/SimulationParameters.hpp>
+#include <sweet/TimesteppingRK.hpp>
 #include <sweet/SWEValidationBenchmarks.hpp>
 #include "sweet/Operators2D.hpp"
+
 #include <unistd.h>
 
 SimulationParameters parameters;
@@ -16,7 +18,6 @@ class SimulationSWEStaggered
 public:
 	// prognostics
 	DataArray<2> prog_P, prog_u, prog_v;
-	DataArray<2> prog_P_t, prog_u_t, prog_v_t;
 
 	// temporary variables
 	DataArray<2> H, U, V;
@@ -25,12 +26,11 @@ public:
 	// parameters
 	DataArray<2> f;
 
-	// runge kutta data storages
-	DataArray<2>** RK_P_t;
-	DataArray<2>** RK_u_t;
-	DataArray<2>** RK_v_t;
+	DataArray<2> tmp;
 
 	Operators2D op;
+
+	TimesteppingRK timestepping;
 
 	int last_timestep_nr_update_diagnostics = -1;
 
@@ -62,53 +62,17 @@ public:
 		U(parameters.res),	// mass flux (x-direction)
 		V(parameters.res),	// mass flux (y-direction)
 		eta(parameters.res),
-		prog_P_t(parameters.res),
-		prog_u_t(parameters.res),
-		prog_v_t(parameters.res),
-
 		f(parameters.res),
 
-		RK_P_t(nullptr),
-		RK_u_t(nullptr),
-		RK_v_t(nullptr),
+		tmp(parameters.res),
 
 		op(parameters.sim_cell_size, parameters.res)
 	{
 		reset();
-
-
-		int N = parameters.timestepping_runge_kutta_order;
-
-		RK_P_t = new DataArray<2>*[N];
-		RK_u_t = new DataArray<2>*[N];
-		RK_v_t = new DataArray<2>*[N];
-
-		for (int i = 0; i < N; i++)
-		{
-			RK_P_t[i] = new DataArray<2>(parameters.res);
-			RK_u_t[i] = new DataArray<2>(parameters.res);
-			RK_v_t[i] = new DataArray<2>(parameters.res);
-		}
 	}
 
 	~SimulationSWEStaggered()
 	{
-		int N = parameters.timestepping_runge_kutta_order;
-
-		if (RK_P_t != nullptr)
-		{
-			for (int i = 0; i < N; i++)
-			{
-				delete RK_P_t[i];
-				delete RK_u_t[i];
-				delete RK_v_t[i];
-			}
-
-			delete [] RK_P_t;
-			delete [] RK_u_t;
-			delete [] RK_v_t;
-		}
-
 	}
 
 	void rot_coord(double angle, double &x, double &y)
@@ -130,12 +94,13 @@ public:
 		y = ny;
 	}
 
+
+
 	void reset()
 	{
 		last_timestep_nr_update_diagnostics = -1;
 
-		parameters.status_timestep_nr = 0;
-		parameters.status_simulation_time = 0;
+		parameters.reset();
 
 		prog_P.data_setall(parameters.setup_h0);
 		prog_u.data_setall(0);
@@ -170,6 +135,9 @@ public:
 				}
 			}
 		}
+
+
+		timestep_output();
 	}
 
 
@@ -255,7 +223,7 @@ public:
 	 * Compute derivative for time stepping and store it to
 	 * P_t, u_t and v_t
 	 */
-	void compute_timestep_update(
+	void p_run_euler_timestep_update(
 			const DataArray<2> &i_P,	///< prognostic variables
 			const DataArray<2> &i_u,	///< prognostic variables
 			const DataArray<2> &i_v,	///< prognostic variables
@@ -332,9 +300,9 @@ public:
 			/*
 			 * If the timestep size parameter is negative, we use the absolute value of this one as the time step size
 			 */
-			if (parameters.timestepping_timestep_size < 0)
+			if (i_fixed_dt < 0)
 			{
-				o_dt = -parameters.timestepping_timestep_size;
+				o_dt = -i_fixed_dt;
 			}
 			else
 			{
@@ -387,7 +355,7 @@ public:
 			 *
 			 * compute updated u and v values without using it
 			 */
-			if (parameters.timestepping_up_and_downwinding)
+			if (!parameters.timestepping_up_and_downwinding)
 			{
 				// recompute U and V
 				U = op.avg_b_x(i_P)*(i_u+o_dt*o_u_t);
@@ -416,221 +384,33 @@ public:
 	void run_timestep()
 	{
 		double dt;
-		if (parameters.timestepping_runge_kutta_order == 1)
-		{
-			compute_timestep_update(
-					prog_P, prog_u, prog_v,	///< input
-					prog_P_t, prog_u_t, prog_v_t,
-					dt
+		timestepping.run_rk_timestep(
+				this,
+				&SimulationSWEStaggered::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
+				prog_P, prog_u, prog_v,
+				dt,
+				parameters.timestepping_timestep_size,
+				parameters.timestepping_runge_kutta_order
 			);
 
-			prog_P += dt*prog_P_t;
-			prog_u += dt*prog_u_t;
-			prog_v += dt*prog_v_t;
 
-			parameters.timestepping_timestep_size = dt;
-		}
-		else if (parameters.timestepping_runge_kutta_order == 2)
-		{
-			int N = parameters.timestepping_runge_kutta_order;
-
-
-			// See https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods#Explicit_Runge.E2.80.93Kutta_methods
-			// See https://de.wikipedia.org/wiki/Runge-Kutta-Verfahren
-			/*
-			 * c     a
-			 * 0   |
-			 * 1/2 | 1/2
-			 * --------------
-			 *     | 0    1    b
-			 */
-			double dummy_dt;
-
-			// STAGE 1
-			compute_timestep_update(
-					prog_P,
-					prog_u,
-					prog_v,
-					*RK_P_t[0],
-					*RK_u_t[0],
-					*RK_v_t[0],
-					dt
-			);
-
-			// STAGE 2
-			double a2[1] = {0.5};
-			compute_timestep_update(
-					prog_P	+ dt*( a2[0]*(*RK_P_t[0]) ),
-					prog_u	+ dt*( a2[0]*(*RK_u_t[0]) ),
-					prog_v	+ dt*( a2[0]*(*RK_v_t[0]) ),
-					*RK_P_t[1],
-					*RK_u_t[1],
-					*RK_v_t[1],
-					dummy_dt,
-					dt
-			);
-
-			double b[2] = {0, 1};
-
-			prog_P += dt*( b[0]**RK_P_t[0] + b[1]**RK_P_t[1] );
-			prog_u += dt*( b[0]**RK_u_t[0] + b[1]**RK_u_t[1] );
-			prog_v += dt*( b[0]**RK_v_t[0] + b[1]**RK_v_t[1] );
-
-			parameters.timestepping_timestep_size = dt;
-		}
-		else if (parameters.timestepping_runge_kutta_order == 3)
-		{
-			int N = parameters.timestepping_runge_kutta_order;
-
-			// See https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods#Explicit_Runge.E2.80.93Kutta_methods
-			// See https://de.wikipedia.org/wiki/Runge-Kutta-Verfahren
-			/*
-			 * c     a
-			 * 0   |
-			 * 1/2 | 1/2
-			 * 1   | -1   2
-			 * --------------
-			 *     | 1/6  4/6  1/6
-			 */
-			double dummy_dt;
-
-			// STAGE 1
-			compute_timestep_update(
-					prog_P,
-					prog_u,
-					prog_v,
-					*RK_P_t[0],
-					*RK_u_t[0],
-					*RK_v_t[0],
-					dt
-			);
-
-			// STAGE 2
-			double a2[1] = {0.5};
-			compute_timestep_update(
-					prog_P	+ dt*( a2[0]*(*RK_P_t[0]) ),
-					prog_u	+ dt*( a2[0]*(*RK_u_t[0]) ),
-					prog_v	+ dt*( a2[0]*(*RK_v_t[0]) ),
-					*RK_P_t[1],
-					*RK_u_t[1],
-					*RK_v_t[1],
-					dummy_dt,
-					dt
-			);
-
-			// STAGE 3
-			double a3[2] = {-1.0, 2.0};
-			compute_timestep_update(
-					prog_P	+ dt*( a3[0]*(*RK_P_t[0]) + a3[1]*(*RK_P_t[1]) ),
-					prog_u	+ dt*( a3[0]*(*RK_u_t[0]) + a3[1]*(*RK_u_t[1]) ),
-					prog_v	+ dt*( a3[0]*(*RK_v_t[0]) + a3[1]*(*RK_v_t[1]) ),
-					*RK_P_t[2],
-					*RK_u_t[2],
-					*RK_v_t[2],
-					dummy_dt,
-					dt
-			);
-
-			double b[3] = {1.0/1.6, 4.0/6.0, 1.0/6.0};
-
-			prog_P += dt*( b[0]**RK_P_t[0] + b[1]**RK_P_t[1]  + b[2]**RK_P_t[2] );
-			prog_u += dt*( b[0]**RK_u_t[0] + b[1]**RK_u_t[1]  + b[2]**RK_u_t[2] );
-			prog_v += dt*( b[0]**RK_v_t[0] + b[1]**RK_v_t[1]  + b[2]**RK_v_t[2] );
-
-			parameters.timestepping_timestep_size = dt;
-		}
-		else if (parameters.timestepping_runge_kutta_order == 4)
-		{
-			int N = parameters.timestepping_runge_kutta_order;
-
-			// See https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods#Explicit_Runge.E2.80.93Kutta_methods
-			// See https://de.wikipedia.org/wiki/Runge-Kutta-Verfahren
-			/*
-			 * c     a
-			 * 0   |
-			 * 1/2 | 1/2
-			 * 1/2 | 0    1/2
-			 * 1   | 0    0    1
-			 * --------------
-			 *     | 1/6  1/3  1/3  1/6
-			 */
-			double dummy_dt;
-
-			// STAGE 1
-			compute_timestep_update(
-					prog_P,
-					prog_u,
-					prog_v,
-					*RK_P_t[0],
-					*RK_u_t[0],
-					*RK_v_t[0],
-					dt
-			);
-
-			// STAGE 2
-			double a2[1] = {0.5};
-			compute_timestep_update(
-					prog_P	+ dt*( a2[0]*(*RK_P_t[0]) ),
-					prog_u	+ dt*( a2[0]*(*RK_u_t[0]) ),
-					prog_v	+ dt*( a2[0]*(*RK_v_t[0]) ),
-					*RK_P_t[1],
-					*RK_u_t[1],
-					*RK_v_t[1],
-					dummy_dt,
-					dt
-			);
-
-			// STAGE 3
-			double a3[2] = {0.0, 0.5};
-			compute_timestep_update(
-					prog_P	+ dt*( /*a3[0]*(*RK_P_t[0]) +*/ a3[1]*(*RK_P_t[1]) ),
-					prog_u	+ dt*( /*a3[0]*(*RK_u_t[0]) +*/ a3[1]*(*RK_u_t[1]) ),
-					prog_v	+ dt*( /*a3[0]*(*RK_v_t[0]) +*/ a3[1]*(*RK_v_t[1]) ),
-					*RK_P_t[2],
-					*RK_u_t[2],
-					*RK_v_t[2],
-					dummy_dt,
-					dt
-			);
-
-			// STAGE 4
-			double a4[3] = {0.0, 0.0, 1.0};
-			compute_timestep_update(
-					prog_P	+ dt*( /*a4[0]*(*RK_P_t[0]) + a4[1]*(*RK_P_t[1]) +*/ a4[2]*(*RK_P_t[2]) ),
-					prog_u	+ dt*( /*a4[0]*(*RK_u_t[0]) + a4[1]*(*RK_u_t[1]) +*/ a4[2]*(*RK_u_t[2]) ),
-					prog_v	+ dt*( /*a4[0]*(*RK_v_t[0]) + a4[1]*(*RK_v_t[1]) +*/ a4[2]*(*RK_v_t[2]) ),
-					*RK_P_t[3],
-					*RK_u_t[3],
-					*RK_v_t[3],
-					dummy_dt,
-					dt
-			);
-
-			double b[4] = {1.0/6.0, 1.0/3.0, 1.0/3.0, 1.0/6.0};
-
-			prog_P += dt*( b[0]**RK_P_t[0] + b[1]**RK_P_t[1]  + b[2]**RK_P_t[2] + b[3]**RK_P_t[3] );
-			prog_u += dt*( b[0]**RK_u_t[0] + b[1]**RK_u_t[1]  + b[2]**RK_u_t[2] + b[3]**RK_u_t[3] );
-			prog_v += dt*( b[0]**RK_v_t[0] + b[1]**RK_v_t[1]  + b[2]**RK_v_t[2] + b[3]**RK_v_t[3] );
-
-			parameters.timestepping_timestep_size = dt;
-		}
-		else
-		{
-			std::cerr << "This order of the Runge-Kutta time stepping is not supported!" << std::endl;
-			exit(-1);
-		}
+		timestep_output();
 
 		// provide information to parameters
+		parameters.status_simulation_timestep_size = dt;
 		parameters.status_simulation_time += dt;
 		parameters.status_timestep_nr++;
+	}
 
+	void timestep_output()
+	{
 		if (parameters.verbosity > 0)
 		{
 			update_diagnostics();
 
 			if (parameters.status_timestep_nr == 0)
 			{
-				std::cout << "MASS\tENERGY\tPOT_ENSTROPHY";
+				std::cout << "T\tMASS\tENERGY\tPOT_ENSTROPHY";
 
 				if (parameters.setup_scenario == 2 || parameters.setup_scenario == 3 || parameters.setup_scenario == 4)
 					std::cout << "\tABS_P_DT\tABS_U_DT\tABS_V_DT";
@@ -638,19 +418,52 @@ public:
 				std::cout << std::endl;
 			}
 
-			std::cout << parameters.diagnostics_mass << "\t" << parameters.diagnostics_energy << "\t" << parameters.diagnostics_potential_entrophy;
+			std::cout << parameters.status_simulation_time << "\t" << parameters.diagnostics_mass << "\t" << parameters.diagnostics_energy << "\t" << parameters.diagnostics_potential_entrophy;
 
 			// this should be zero for the steady state test
 			if (parameters.setup_scenario == 2 || parameters.setup_scenario == 3 || parameters.setup_scenario == 4)
 			{
 				double test_val;
-				test_val = prog_P_t.reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
+
+				// set data to something to overcome assertion error
+				for (std::size_t j = 0; j < parameters.res[1]; j++)
+					for (std::size_t i = 0; i < parameters.res[0]; i++)
+					{
+						// h
+						double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_length[0];
+						double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_length[1];
+
+						tmp.getDataRef(j,i) = SWEValidationBenchmarks::return_h(parameters, x, y);
+					}
+
+				test_val = (prog_P-tmp).reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
 				std::cout << "\t" << test_val;
 
-				test_val = prog_u_t.reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
+				// set data to something to overcome assertion error
+				for (std::size_t j = 0; j < parameters.res[1]; j++)
+					for (std::size_t i = 0; i < parameters.res[0]; i++)
+					{
+						// u space
+						double x = (((double)i)/(double)parameters.res[0])*parameters.sim_domain_length[0];
+						double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_length[1];
+
+						tmp.getDataRef(j,i) = SWEValidationBenchmarks::return_u(parameters, x, y);
+					}
+
+				test_val = (prog_u-tmp).reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
 				std::cout << "\t" << test_val;
 
-				test_val = prog_v_t.reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
+				for (std::size_t j = 0; j < parameters.res[1]; j++)
+					for (std::size_t i = 0; i < parameters.res[0]; i++)
+					{
+						// v space
+						double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_length[0];
+						double y = (((double)j)/(double)parameters.res[1])*parameters.sim_domain_length[1];
+
+						tmp.getDataRef(j,i) = SWEValidationBenchmarks::return_v(parameters, x, y);
+					}
+
+				test_val = (prog_v-tmp).reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
 				std::cout << "\t" << test_val;
 			}
 
@@ -693,9 +506,6 @@ public:
 			{&prog_P,	"P"},
 			{&prog_u,	"u"},
 			{&prog_v,	"v"},
-			{&prog_P_t,	"Pt"},
-			{&prog_u_t,	"ut"},
-			{&prog_v_t,	"vt"},
 			{&H,		"H"},
 			{&eta,		"eta"},
 			{&U,		"U"},
@@ -723,7 +533,7 @@ public:
 				parameters.status_simulation_time,
 				parameters.status_simulation_time/(60.0*60.0*24.0),
 				parameters.status_timestep_nr,
-				parameters.timestepping_timestep_size,
+				parameters.status_simulation_timestep_size,
 				vis_arrays[id].description,
 				parameters.diagnostics_mass, parameters.diagnostics_energy, parameters.diagnostics_potential_entrophy);
 		return title_string;

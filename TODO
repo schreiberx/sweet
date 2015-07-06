@@ -12,14 +12,17 @@
   Cannot work due to missing symmetries
   DONE
 
+* Check scaling of f
+  DONE, works
+
 * Implement RKn
   DONE
+
+* Implement spectral derivative
 
 * Maybe implement Adams-Bashforth
 
 * Implement NEMO-like model
-
-* Check scaling of f
 
 * Add Williamson test benches:
 1) Advection

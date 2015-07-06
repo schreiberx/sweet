@@ -158,7 +158,7 @@ public:
 #if SWEET_USE_SPECTRAL_SPACE
 		if (array_data_cartesian_space_valid)
 #endif
-			memcpy(array_data_cartesian_space, i_dataArray.array_data_cartesian_space, array_data_cartesian_length*sizeof(double));
+		memcpy(array_data_cartesian_space, i_dataArray.array_data_cartesian_space, array_data_cartesian_length*sizeof(double));
 
 #if SWEET_USE_SPECTRAL_SPACE
 		array_data_cartesian_space_valid = i_dataArray.array_data_cartesian_space_valid;
@@ -290,6 +290,11 @@ public:
 		assert(i >= range_start[0] && i < range_end[0]);
 		assert(j >= range_start[1] && j < range_end[1]);
 
+#if SWEET_USE_SPECTRAL_SPACE
+		array_data_cartesian_space_valid = true;
+		array_data_spectral_space_valid = false;
+#endif
+
 		return array_data_cartesian_space[
 							(j-range_start[1])*range_size[0]+
 							(i-range_start[0])
@@ -307,6 +312,11 @@ public:
 		assert(i >= range_start[0] && i < range_end[0]);
 		assert(j >= range_start[1] && j < range_end[1]);
 		assert(k >= range_start[2] && k < range_end[2]);
+
+#if SWEET_USE_SPECTRAL_SPACE
+		array_data_cartesian_space_valid = true;
+		array_data_spectral_space_valid = false;
+#endif
 
 		return array_data_cartesian_space[
 						   (k-range_start[2])*range_size[1]*range_size[0]+
@@ -1116,7 +1126,6 @@ public:
 			return out;
 		}
 #endif
-
 
 
 		requestDataInCartesianSpace();

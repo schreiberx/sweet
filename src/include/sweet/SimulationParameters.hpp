@@ -68,7 +68,7 @@ public:
 	bool timestepping_leapfrog_like_update = true;
 
 	// use up/downwinding for the advection of h
-	bool timestepping_up_and_downwinding = true;
+	bool timestepping_up_and_downwinding = false;
 
 	// order of Runge-Kutta scheme for time stepping
 	double timestepping_runge_kutta_order = 1;
@@ -113,6 +113,7 @@ public:
 	int max_timesteps_nr = -1;
 
 	// time in simulation
+	double status_simulation_timestep_size = -1;
 	double status_simulation_time = 0;
 	double max_simulation_time = -1;
 
@@ -126,10 +127,14 @@ public:
 	/**
 	 * update variables which are based on others
 	 */
-	void update()
+	void reset()
 	{
 		sim_cell_size[0] = sim_domain_length[0]/res[0];
 		sim_cell_size[1] = sim_domain_length[1]/res[1];
+
+		status_simulation_timestep_size = -1;
+		status_timestep_nr = 0;
+		status_simulation_time = 0;
 	}
 
 
@@ -142,7 +147,7 @@ public:
 		res[1] = 128;
 
 		int opt;
-		while ((opt = getopt(i_argc, i_argv, "N:n:m:C:u:U:s:X:Y:a:b:f:x:y:t:T:v:H:r:R:")) != -1)
+		while ((opt = getopt(i_argc, i_argv, "N:n:m:C:u:U:s:X:Y:a:b:f:x:y:t:T:v:H:r:R:W:F:")) != -1)
 		{
 			switch (opt)
 			{
@@ -227,6 +232,14 @@ public:
 				setup_h0 = atof(optarg);
 				break;
 
+			case 'W':
+				timestepping_up_and_downwinding = atoi(optarg);
+				break;
+
+			case 'F':
+				timestepping_leapfrog_like_update = atoi(optarg);
+				break;
+
 			default:
 				std::cerr << "Unknown option '" << (char)opt << "'" << std::endl;
 				exit(1);
@@ -234,7 +247,7 @@ public:
 			}
 		}
 
-		update();
+		reset();
 	}
 };
 
