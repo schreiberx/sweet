@@ -19,8 +19,10 @@
   DONE
   
 * FFT: Get running for resx != resy
+  DONE
 
 * Implement spectral derivative
+  DONE
 
 * Maybe implement Adams-Bashforth
 
