@@ -36,7 +36,7 @@ public:
 		eta(parameters.res),
 		tmp(parameters.res),
 
-		op(parameters.sim_cell_size, parameters.res)
+		op(parameters.sim_cell_size, parameters.res, parameters.sim_domain_length, parameters.use_spectral_diffs)
 	{
 		// override gravitation
 		parameters.sim_g = 1.0;
@@ -53,9 +53,9 @@ public:
 		parameters.status_simulation_time = 0;
 
 
-		prog_h.data_setall(parameters.setup_h0);
-		prog_u.data_setall(0);
-		prog_v.data_setall(0);
+		prog_h.setAll(parameters.setup_h0);
+		prog_u.setAll(0);
+		prog_v.setAll(0);
 
 		for (std::size_t j = 0; j < parameters.res[1]; j++)
 		{
@@ -64,9 +64,9 @@ public:
 				double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_length[0];
 				double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_length[1];
 
-				prog_h.getDataRef(j,i) = SWEValidationBenchmarks::return_h(parameters, x, y);
-				prog_u.getDataRef(j,i) = SWEValidationBenchmarks::return_u(parameters, x, y);
-				prog_v.getDataRef(j,i) = SWEValidationBenchmarks::return_v(parameters, x, y);
+				prog_h.set(j, i, SWEValidationBenchmarks::return_h(parameters, x, y));
+				prog_u.set(j, i, SWEValidationBenchmarks::return_u(parameters, x, y));
+				prog_v.set(j, i, SWEValidationBenchmarks::return_v(parameters, x, y));
 			}
 		}
 	}
@@ -84,18 +84,18 @@ public:
 								((double)parameters.res[0]*(double)parameters.res[1]);
 
 		// mass
-		parameters.diagnostics_mass = prog_h.reduce_sum() / (double)(parameters.res[0]*parameters.res[1]);
+		parameters.diagnostics_mass = prog_h.reduce_sum() * normalization;
 
 		// energy
 		parameters.diagnostics_energy = 0.5*(
 				prog_h*prog_h +
 				prog_h*prog_u*prog_u +
 				prog_h*prog_v*prog_v
-			).reduce_sum() / (double)(parameters.res[0]*parameters.res[1]);
+			).reduce_sum() * normalization;
 
 		// potential enstropy
 		eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + parameters.sim_f) / prog_h;
-		parameters.diagnostics_potential_entrophy = 0.5*(eta*eta*prog_h).reduce_sum() / (double)(parameters.res[0]*parameters.res[1]);
+		parameters.diagnostics_potential_entrophy = 0.5*(eta*eta*prog_h).reduce_sum() * normalization;
 	}
 
 
@@ -325,7 +325,7 @@ public:
 						double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_length[0];
 						double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_length[1];
 
-						tmp.getDataRef(j,i) = SWEValidationBenchmarks::return_h(parameters, x, y);
+						tmp.set(j, i, SWEValidationBenchmarks::return_h(parameters, x, y));
 					}
 
 				test_val = (prog_h-tmp).reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
@@ -339,7 +339,7 @@ public:
 						double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_length[0];
 						double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_length[1];
 
-						tmp.getDataRef(j,i) = SWEValidationBenchmarks::return_u(parameters, x, y);
+						tmp.set(j, i, SWEValidationBenchmarks::return_u(parameters, x, y));
 					}
 
 				test_val = (prog_u-tmp).reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
@@ -352,7 +352,7 @@ public:
 						double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_length[0];
 						double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_length[1];
 
-						tmp.getDataRef(j,i) = SWEValidationBenchmarks::return_v(parameters, x, y);
+						tmp.set(j, i, SWEValidationBenchmarks::return_v(parameters, x, y));
 					}
 
 				test_val = (prog_v-tmp).reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
@@ -367,6 +367,12 @@ public:
 
 	bool should_quit()
 	{
+		if (parameters.max_timesteps_nr != -1 && parameters.max_timesteps_nr <= parameters.status_timestep_nr)
+			return true;
+
+		if (parameters.max_simulation_time != -1 && parameters.max_simulation_time <= parameters.status_simulation_time)
+			return true;
+
 		return false;
 	}
 
@@ -404,6 +410,32 @@ public:
 		int id = parameters.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
 		*o_dataArray = vis_arrays[id].data;
 		*o_aspect_ratio = parameters.sim_domain_length[1] / parameters.sim_domain_length[0];
+
+#if 0
+
+		if (parameters.vis_id == 0)
+		{
+			eta = op.diff_c_x;
+//			eta = op.diff_c_y(prog_h);
+			*o_dataArray = &eta;
+		}
+		else if (parameters.vis_id == 1)
+		{
+			eta = op.diff_c_x(prog_h)-op.diff_c_y(prog_h);
+			*o_dataArray = &eta;
+		}
+		else if (parameters.vis_id == 2)
+		{
+			eta = op.diff_c_x(prog_h);
+			*o_dataArray = &eta;
+		}
+		else if (parameters.vis_id == 3)
+		{
+			eta = op.diff_c_y(prog_h);
+			*o_dataArray = &eta;
+		}
+
+#endif
 	}
 
 	const char* vis_get_status_string()

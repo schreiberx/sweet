@@ -66,7 +66,7 @@ public:
 
 		tmp(parameters.res),
 
-		op(parameters.sim_cell_size, parameters.res)
+		op(parameters.sim_cell_size, parameters.res, parameters.sim_domain_length, parameters.use_spectral_diffs)
 	{
 		reset();
 	}
@@ -102,9 +102,9 @@ public:
 
 		parameters.reset();
 
-		prog_P.data_setall(parameters.setup_h0);
-		prog_u.data_setall(0);
-		prog_v.data_setall(0);
+		prog_P.setAll(parameters.setup_h0);
+		prog_u.setAll(0);
+		prog_v.setAll(0);
 
 		for (std::size_t j = 0; j < parameters.res[1]; j++)
 		{
@@ -115,7 +115,7 @@ public:
 					double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_length[0];
 					double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_length[1];
 
-					prog_P.getDataRef(j,i) = SWEValidationBenchmarks::return_h(parameters, x, y);
+					prog_P.set(j, i, SWEValidationBenchmarks::return_h(parameters, x, y));
 				}
 
 				{
@@ -123,7 +123,7 @@ public:
 					double x = (((double)i)/(double)parameters.res[0])*parameters.sim_domain_length[0];
 					double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_length[1];
 
-					prog_u.getDataRef(j,i) = SWEValidationBenchmarks::return_u(parameters, x, y);
+					prog_u.set(j,i, SWEValidationBenchmarks::return_u(parameters, x, y));
 				}
 
 				{
@@ -131,7 +131,7 @@ public:
 					double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_length[0];
 					double y = (((double)j)/(double)parameters.res[1])*parameters.sim_domain_length[1];
 
-					prog_v.getDataRef(j,i) = SWEValidationBenchmarks::return_v(parameters, x, y);
+					prog_v.set(j, i, SWEValidationBenchmarks::return_v(parameters, x, y));
 				}
 			}
 		}
@@ -433,7 +433,7 @@ public:
 						double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_length[0];
 						double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_length[1];
 
-						tmp.getDataRef(j,i) = SWEValidationBenchmarks::return_h(parameters, x, y);
+						tmp.set(j, i, SWEValidationBenchmarks::return_h(parameters, x, y));
 					}
 
 				test_val = (prog_P-tmp).reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
@@ -447,7 +447,7 @@ public:
 						double x = (((double)i)/(double)parameters.res[0])*parameters.sim_domain_length[0];
 						double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_length[1];
 
-						tmp.getDataRef(j,i) = SWEValidationBenchmarks::return_u(parameters, x, y);
+						tmp.set(j, i, SWEValidationBenchmarks::return_u(parameters, x, y));
 					}
 
 				test_val = (prog_u-tmp).reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
@@ -460,7 +460,7 @@ public:
 						double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_length[0];
 						double y = (((double)j)/(double)parameters.res[1])*parameters.sim_domain_length[1];
 
-						tmp.getDataRef(j,i) = SWEValidationBenchmarks::return_v(parameters, x, y);
+						tmp.set(j,i, SWEValidationBenchmarks::return_v(parameters, x, y));
 					}
 
 				test_val = (prog_v-tmp).reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);

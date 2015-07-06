@@ -75,9 +75,9 @@ class VisSweet	:
 
 		vis_max = std::max(vis_max, vis_min+0.000001);	/// avoid numerical issues if min == max
 
-		double real_delta = vis_max-vis_min;
-		vis_min -= real_delta*0.1;
-		vis_max += real_delta*0.1;
+//		double real_delta = vis_max-vis_min;
+//		vis_min -= real_delta*0.1;
+//		vis_max += real_delta*0.1;
 
 		double inv_delta = 1.0/(vis_max-vis_min);
 

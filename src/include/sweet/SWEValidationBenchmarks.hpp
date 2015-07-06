@@ -36,8 +36,6 @@ public:
 
 		if (i_parameters.setup_scenario == 1)
 		{
-			// Gaussian
-
 			double dx = x-i_parameters.setup_coord_x;
 			double dy = y-i_parameters.setup_coord_y;
 
@@ -56,6 +54,18 @@ public:
 		if (i_parameters.setup_scenario == 3)
 		{
 			return std::sin(2.0*M_PI*y/i_parameters.sim_domain_length[1])+i_parameters.setup_h0;
+		}
+
+		if (i_parameters.setup_scenario == 4)
+		{
+			double dx = x-i_parameters.setup_coord_x;
+			double dy = y-i_parameters.setup_coord_y;
+
+			double radius = i_parameters.setup_radius*10;
+			dx /= radius;
+			dy /= radius;
+
+			return i_parameters.setup_h0+std::exp(-50.0*(std::max(dx*dx, dy*dy)));
 		}
 
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup_scenario << std::endl;
@@ -97,6 +107,9 @@ public:
 			return -2.0*M_PI*std::cos(2.0*M_PI*y/i_parameters.sim_domain_length[1])/(i_parameters.sim_f*i_parameters.sim_domain_length[1]);
 		}
 
+		if (i_parameters.setup_scenario == 4)
+			return 0;
+
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup_scenario << std::endl;
 		return 0;
 	}
@@ -135,6 +148,11 @@ public:
 			}
 			return 0;
 		}
+
+
+		if (i_parameters.setup_scenario == 4)
+			return 0;
+
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup_scenario << std::endl;
 		return 0;
 	}

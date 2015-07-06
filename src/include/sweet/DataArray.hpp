@@ -17,6 +17,9 @@
 #include <utility>
 #include <limits>
 
+#ifndef SWEET_USE_SPECTRAL_SPACE
+	#define SWEET_USE_SPECTRAL_SPACE	1
+#endif
 
 #if SWEET_USE_SPECTRAL_SPACE
 #	include <fftw3.h>
@@ -78,6 +81,7 @@ public:
 	double *array_data_cartesian_space;
 
 #if SWEET_USE_SPECTRAL_SPACE
+	std::size_t resolution_spec[D];
 	bool array_data_cartesian_space_valid;
 
 	/**
@@ -95,7 +99,13 @@ public:
 	std::size_t range_end[D];
 	std::size_t range_size[D];
 
-#if !SWEET_USE_SPECTRAL_SPACE
+#if SWEET_USE_SPECTRAL_SPACE
+
+	std::size_t range_spec_start[D];
+	std::size_t range_spec_end[D];
+	std::size_t range_spec_size[D];
+
+#else
 	int kernel_size;
 	double *kernel_data = nullptr;
 #endif
@@ -125,7 +135,7 @@ private:
 
 private:
 	/**
-	 * prohobit empty initialization
+	 * prohobit empty initialization by making this method private
 	 */
 	DataArray()	{}
 
@@ -151,6 +161,14 @@ public:
 			range_start[i] = i_dataArray.range_start[i];
 			range_end[i] = i_dataArray.range_end[i];
 			range_size[i] = i_dataArray.range_size[i];
+
+#if SWEET_USE_SPECTRAL_SPACE
+			resolution_spec[i] = i_dataArray.resolution_spec[i];
+
+			range_spec_start[i] = i_dataArray.range_spec_start[i];
+			range_spec_end[i] = i_dataArray.range_spec_end[i];
+			range_spec_size[i] = i_dataArray.range_spec_size[i];
+#endif
 		}
 
 		array_data_cartesian_length = i_dataArray.array_data_cartesian_length;
@@ -175,6 +193,7 @@ public:
 	}
 
 
+
 public:
 	/**
 	 * Move constructor
@@ -183,6 +202,10 @@ public:
 			DataArray<D> &&i_dataArray
 	)	:
 		temporary_data(false)
+#if !SWEET_USE_SPECTRAL_SPACE
+		,
+		kernel_size(-1)
+#endif
 	{
 //		std::cout << "Move constructor called" << std::endl;
 
@@ -193,6 +216,14 @@ public:
 			range_start[i] = i_dataArray.range_start[i];
 			range_end[i] = i_dataArray.range_end[i];
 			range_size[i] = i_dataArray.range_size[i];
+
+#if SWEET_USE_SPECTRAL_SPACE
+			resolution_spec[i] = i_dataArray.resolution_spec[i];
+
+			range_spec_start[i] = i_dataArray.range_spec_start[i];
+			range_spec_end[i] = i_dataArray.range_spec_end[i];
+			range_spec_size[i] = i_dataArray.range_spec_size[i];
+#endif
 		}
 
 		array_data_cartesian_length = i_dataArray.array_data_cartesian_length;
@@ -238,14 +269,27 @@ public:
 			range_size[i] = range_end[i]-range_start[i];
 		}
 
-
 		array_data_cartesian_space = alloc_aligned_mem<double>(array_data_cartesian_length*sizeof(double));
+
 
 #if SWEET_USE_SPECTRAL_SPACE
 		array_data_cartesian_space_valid = false;
 
-		array_data_spectral_length = array_data_cartesian_length/i_resolution[D-1];	/// see FFTW documentation for allocation of memory buffers
-		array_data_spectral_length *= (i_resolution[D-1]/2+1)*2;
+		array_data_spectral_length = array_data_cartesian_length/i_resolution[0];	/// see FFTW documentation for allocation of memory buffers
+		array_data_spectral_length *= (i_resolution[0]/2+1)*2;
+
+		for (int i = 0; i < D; i++)
+		{
+			if (i == 0)
+				resolution_spec[0] = (resolution[0]/2+1);
+			else
+				resolution_spec[i] = resolution[i];
+
+			range_spec_start[i] = 0;
+			range_spec_end[i] = resolution_spec[i];
+			range_spec_size[i] = resolution_spec[i];
+		}
+
 		array_data_spectral_space = alloc_aligned_mem<double>(array_data_spectral_length*sizeof(double));
 		array_data_spectral_space_valid = false;
 
@@ -282,9 +326,10 @@ public:
 
 
 	inline
-	double &getDataRef(
+	void set(
 			std::size_t j,
-			std::size_t i
+			std::size_t i,
+			double i_value
 	)
 	{
 		assert(i >= range_start[0] && i < range_end[0]);
@@ -294,6 +339,21 @@ public:
 		array_data_cartesian_space_valid = true;
 		array_data_spectral_space_valid = false;
 #endif
+
+		array_data_cartesian_space[
+							(j-range_start[1])*range_size[0]+
+							(i-range_start[0])
+						] = i_value;
+	}
+
+	inline
+	double get(
+			std::size_t j,
+			std::size_t i
+	)
+	{
+		assert(i >= range_start[0] && i < range_end[0]);
+		assert(j >= range_start[1] && j < range_end[1]);
 
 		return array_data_cartesian_space[
 							(j-range_start[1])*range_size[0]+
@@ -301,33 +361,63 @@ public:
 						];
 	}
 
-
+#if SWEET_USE_SPECTRAL_SPACE==1
 	inline
-	double &getDataRef(
-			std::size_t k,
+	double getSpec_Re(
 			std::size_t j,
 			std::size_t i
 	)
 	{
-		assert(i >= range_start[0] && i < range_end[0]);
-		assert(j >= range_start[1] && j < range_end[1]);
-		assert(k >= range_start[2] && k < range_end[2]);
+		assert(i >= range_spec_start[0] && i < range_spec_end[0]);
+		assert(j >= range_spec_start[1] && j < range_spec_end[1]);
 
-#if SWEET_USE_SPECTRAL_SPACE
-		array_data_cartesian_space_valid = true;
-		array_data_spectral_space_valid = false;
-#endif
+		std::size_t idx =	(j-range_spec_start[1])*range_spec_size[0]+
+							(i-range_spec_start[0]);
+		return array_data_spectral_space[idx*2+0];
+	}
 
-		return array_data_cartesian_space[
-						   (k-range_start[2])*range_size[1]*range_size[0]+
-						   (j-range_start[1])*range_size[0]+
-						   (i-range_start[0])
-					  ];
+	inline
+	double getSpec_Im(
+			std::size_t j,
+			std::size_t i
+	)
+	{
+		assert(i >= range_spec_start[0] && i < range_spec_end[0]);
+		assert(j >= range_spec_start[1] && j < range_spec_end[1]);
+
+		std::size_t idx =	(j-range_spec_start[1])*range_spec_size[0]+
+							(i-range_spec_start[0]);
+		return array_data_spectral_space[idx*2+1];
 	}
 
 
 	inline
-	void data_setall(
+	void setSpec(
+			std::size_t j,
+			std::size_t i,
+			double i_value_re,
+			double i_value_im
+	)
+	{
+		assert(i >= range_spec_start[0] && i < range_spec_end[0]);
+		assert(j >= range_spec_start[1] && j < range_spec_end[1]);
+
+#if SWEET_USE_SPECTRAL_SPACE
+		array_data_cartesian_space_valid = false;
+		array_data_spectral_space_valid = true;
+#endif
+
+		std::size_t idx =	(j-range_spec_start[1])*range_spec_size[0]+
+							(i-range_spec_start[0]);
+
+		array_data_spectral_space[idx*2+0] = i_value_re;
+		array_data_spectral_space[idx*2+1] = i_value_im;
+	}
+#endif
+
+
+	inline
+	void setAll(
 			double i_value
 	)
 	{
@@ -340,6 +430,29 @@ public:
 		array_data_spectral_space_valid = false;
 #endif
 	}
+
+
+#if SWEET_USE_SPECTRAL_SPACE==1
+
+	inline
+	void setAllSpec(
+			double i_value_re,
+			double i_value_im
+	)
+	{
+#pragma omp parallel for simd
+		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
+		{
+			array_data_spectral_space[i+0] = i_value_re;
+			array_data_spectral_space[i+1] = i_value_im;
+		}
+
+#if SWEET_USE_SPECTRAL_SPACE
+		array_data_cartesian_space_valid = false;
+		array_data_spectral_space_valid = true;
+#endif
+	}
+#endif
 
 
 #if SWEET_USE_SPECTRAL_SPACE
@@ -374,8 +487,8 @@ public:
 
 			plan_forward =
 					fftw_plan_dft_r2c_2d(
-						i_dataArray.resolution[1],
-						i_dataArray.resolution[0],
+						i_dataArray.resolution[1],	// n0 = ny
+						i_dataArray.resolution[0],	// n1 = nx
 						data_cartesian,
 						(fftw_complex*)data_spectral,
 						FFTW_PRESERVE_INPUT
@@ -389,8 +502,8 @@ public:
 
 			plan_backward =
 					fftw_plan_dft_c2r_2d(
-						i_dataArray.resolution[1],
-						i_dataArray.resolution[0],
+						i_dataArray.resolution[1],	// n0 = ny
+						i_dataArray.resolution[0],	// n1 = nx
 						(fftw_complex*)data_spectral,
 						data_cartesian,
 						0
@@ -684,10 +797,7 @@ public:
 		// radius of kernel (half size)
 		std::size_t R = S>>1;
 
-		// zero data in Cartesian space
-#pragma omp parallel for simd
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			array_data_cartesian_space[i] = 0;
+		setAll(0);
 
 		// left lower corner
 		//kernel_cart[    0:R[0]+1,       0:R[0]+1    ] = conv_kernel[    R[0]:,  R[0]:   ]
@@ -703,7 +813,7 @@ public:
 				if (range_start[1] > cy || range_end[1] <= cy)
 					continue;
 
-				getDataRef(cy, cx) = inv_kernel_array[ky][kx];
+				set(cy, cx, inv_kernel_array[ky][kx]);
 			}
 
 
@@ -721,7 +831,7 @@ public:
 				if (range_start[1] > cy || range_end[1] <= cy)
 					continue;
 
-				getDataRef(cy, cx) = inv_kernel_array[ky][kx];
+				set(cy, cx, inv_kernel_array[ky][kx]);
 			}
 
 
@@ -739,7 +849,7 @@ public:
 				if (range_start[1] > cy || range_end[1] <= cy)
 					continue;
 
-				getDataRef(cy, cx) = inv_kernel_array[ky][kx];
+				set(cy, cx, inv_kernel_array[ky][kx]);
 			}
 
 
@@ -757,7 +867,7 @@ public:
 				if (range_start[1] > cy || range_end[1] <= cy)
 					continue;
 
-				getDataRef(cy, cx) = inv_kernel_array[ky][kx];
+				set(cy, cx, inv_kernel_array[ky][kx]);
 			}
 
 		array_data_cartesian_space_valid = true;
@@ -1326,7 +1436,7 @@ public:
 			{
 				for (std::size_t x = 0; x < rw_array_data.resolution[0]; x++)
 				{
-					double value = rw_array_data.getDataRef(y, x);
+					double value = rw_array_data.get(y, x);
 //					if (std::abs(value) < 1e-13)
 //						value = 0;
 					std::cout << value << "\t";
@@ -1335,6 +1445,30 @@ public:
 			}
 		}
 		return o_ostream;
+	}
+
+
+	inline
+	void printSpectrum()
+	{
+		DataArray<D> &rw_array_data = (DataArray<D>&)*this;
+
+		rw_array_data.requestDataInSpectralSpace();
+
+		assert(D == 2);
+		if (D == 2)
+		{
+			for (int y = rw_array_data.resolution_spec[1]-1; y >= 0; y--)
+			{
+				for (std::size_t x = 0; x < rw_array_data.resolution_spec[0]; x++)
+				{
+					double value_re = rw_array_data.getSpec_Re(y, x);
+					double value_im = rw_array_data.getSpec_Im(y, x);
+					std::cout << "(" << value_re << ", " << value_im << ")\t";
+				}
+				std::cout << std::endl;
+			}
+		}
 	}
 };
 

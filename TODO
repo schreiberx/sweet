@@ -17,6 +17,8 @@
 
 * Implement RKn
   DONE
+  
+* FFT: Get running for resx != resy
 
 * Implement spectral derivative
 
