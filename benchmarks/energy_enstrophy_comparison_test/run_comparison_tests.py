@@ -185,7 +185,7 @@ for e in execs:
 	binary=e[2]
 	params=e[3]+' '+default_params
 
-	command=['time', binary]
+	command=[binary]
 	command.extend(params.split(' '))
 
 	print
