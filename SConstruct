@@ -185,12 +185,15 @@ env.Append(CXXFLAGS = ' -DSWEET_PROGRAM_NAME='+env['program_name'])
 
 exec_name=env['program_name']
 
-exec_name+='_spectral'+str(env['spectral_space'])
 
 if env['spectral_space'] == 'enable':
 	env.Append(CXXFLAGS = ' -DSWEET_USE_SPECTRAL_SPACE=1')
+	exec_name+='_spectral'
 else:
 	env.Append(CXXFLAGS = ' -DSWEET_USE_SPECTRAL_SPACE=0')
+
+if env['gui']=='enable':
+	exec_name+='_gui'
 
 env.Append(LINKFLAGS=' -fopenmp')
 env.Append(CXXFLAGS=' -fopenmp')
@@ -421,12 +424,12 @@ elif env['mode'] == 'release':
 		env.Append(CXXFLAGS=' -O3 -mtune=native')
 
 	if env['compiler'] == 'llvm':
-		env.Append(CXXFLAGS=' -O4 -mtune=native')
+		env.Append(CXXFLAGS=' -O3 -mtune=native')
 
 	elif env['compiler'] == 'intel':
-		env.Append(CXXFLAGS=' -O3 -fno-alias')
-		env.Append(CXXFLAGS=' -ipo')
-		env.Append(CXXFLAGS=' -fast')
+		env.Append(CXXFLAGS=' -O2 -fno-alias')
+#		env.Append(CXXFLAGS=' -ipo')
+#		env.Append(CXXFLAGS=' -fast')
 
 	elif env['compiler'] == 'pgi':
 		env.Append(CXXFLAGS='-O3 -fast -Mipa=fast,inline -Msmartalloc')
@@ -436,8 +439,8 @@ elif env['mode'] == 'release':
 			env.Append(FORTRANFLAGS=' -O2')
 			env.Append(F90FLAGS=' -O2')
 		elif env['compiler'] == 'intel':
-			env.Append(FORTRANFLAGS=' -O3')
-			env.Append(F90FLAGS=' -O3')
+			env.Append(FORTRANFLAGS=' -O2')
+			env.Append(F90FLAGS=' -O2')
 #			env.Append(FORTRANFLAGS=' -ipo')
 #			env.Append(F90FLAGS=' -ipo')
 #			env.Append(FORTRANFLAGS='-fast')
@@ -478,6 +481,8 @@ else:
 	env.Append(CXXFLAGS=' -DSWEET_GUI=0')
 
 
+
+exec_name += '_'+env['compiler']
 exec_name += '_'+env['mode']
 
 

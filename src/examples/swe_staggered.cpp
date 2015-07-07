@@ -8,7 +8,10 @@
 #include <sweet/SWEValidationBenchmarks.hpp>
 #include "sweet/Operators2D.hpp"
 
+#include <ostream>
+#include <sstream>
 #include <unistd.h>
+#include <iomanip>
 
 SimulationParameters parameters;
 
@@ -163,17 +166,17 @@ public:
 								((double)parameters.res[0]*(double)parameters.res[1]);
 
 		// diagnostics_mass
-		parameters.diagnostics_mass = prog_P.reduce_sum() * normalization;
+		parameters.diagnostics_mass = prog_P.reduce_sum_quad() * normalization;
 
 		// diagnostics_energy
 		parameters.diagnostics_energy = 0.5*(
 				prog_P*prog_P +
 				prog_P*op.avg_f_x(prog_u*prog_u) +
 				prog_P*op.avg_f_y(prog_v*prog_v)
-			).reduce_sum() * normalization;
+			).reduce_sum_quad() * normalization;
 
 		// potential enstropy
-		parameters.diagnostics_potential_entrophy = 0.5*(eta*eta*op.avg_b_x(op.avg_b_y(prog_P))).reduce_sum() * normalization;
+		parameters.diagnostics_potential_entrophy = 0.5*(eta*eta*op.avg_b_x(op.avg_b_y(prog_P))).reduce_sum_quad() * normalization;
 
 	}
 
@@ -251,6 +254,9 @@ public:
 		 *           v0,0
 		 *             |
 		 *             V
+		 *
+		 * V_t + eta N x (P V) + grad( g P + 1/2 V*V) = 0
+		 * P_t + div(P V) = 0
 		 */
 		/*
 		 * U and V updates
@@ -258,7 +264,7 @@ public:
 		U = op.avg_b_x(i_P)*i_u;
 		V = op.avg_b_y(i_P)*i_v;
 
-		H = i_P + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
+		H = parameters.sim_g*i_P + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
 
 		if (parameters.setup_scenario != 5)
 		{
@@ -314,7 +320,6 @@ public:
 		//           limit_visc = (viscocity*0.5)*((hx*hy)*0.5);
 
 				// limit by gravitational acceleration
-		//		double limit_gh = limit_speed;
 				double limit_gh = std::min(parameters.sim_cell_size[0], parameters.sim_cell_size[1])/std::sqrt(parameters.sim_g*i_P.reduce_maxAbs());
 
 		//        std::cout << limit_speed << ", " << limit_visc << ", " << limit_gh << std::endl;
@@ -393,16 +398,19 @@ public:
 				parameters.timestepping_runge_kutta_order
 			);
 
-
-		timestep_output();
-
 		// provide information to parameters
 		parameters.status_simulation_timestep_size = dt;
 		parameters.status_simulation_time += dt;
 		parameters.status_timestep_nr++;
+
+#if SWEET_GUI
+		timestep_output();
+#endif
 	}
 
-	void timestep_output()
+	void timestep_output(
+			std::ostream &o_ostream = std::cout
+	)
 	{
 		if (parameters.verbosity > 0)
 		{
@@ -410,15 +418,15 @@ public:
 
 			if (parameters.status_timestep_nr == 0)
 			{
-				std::cout << "T\tMASS\tENERGY\tPOT_ENSTROPHY";
+				o_ostream << "T\tMASS\tENERGY\tPOT_ENSTROPHY";
 
 				if (parameters.setup_scenario == 2 || parameters.setup_scenario == 3 || parameters.setup_scenario == 4)
-					std::cout << "\tABS_P_DT\tABS_U_DT\tABS_V_DT";
+					o_ostream << "\tABS_P_DT\tABS_U_DT\tABS_V_DT";
 
-				std::cout << std::endl;
+				o_ostream << std::endl;
 			}
 
-			std::cout << parameters.status_simulation_time << "\t" << parameters.diagnostics_mass << "\t" << parameters.diagnostics_energy << "\t" << parameters.diagnostics_potential_entrophy;
+			o_ostream << parameters.status_simulation_time << "\t" << parameters.diagnostics_mass << "\t" << parameters.diagnostics_energy << "\t" << parameters.diagnostics_potential_entrophy;
 
 			// this should be zero for the steady state test
 			if (parameters.setup_scenario == 2 || parameters.setup_scenario == 3 || parameters.setup_scenario == 4)
@@ -437,7 +445,7 @@ public:
 					}
 
 				test_val = (prog_P-tmp).reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
-				std::cout << "\t" << test_val;
+				o_ostream << "\t" << test_val;
 
 				// set data to something to overcome assertion error
 				for (std::size_t j = 0; j < parameters.res[1]; j++)
@@ -451,7 +459,7 @@ public:
 					}
 
 				test_val = (prog_u-tmp).reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
-				std::cout << "\t" << test_val;
+				o_ostream << "\t" << test_val;
 
 				for (std::size_t j = 0; j < parameters.res[1]; j++)
 					for (std::size_t i = 0; i < parameters.res[0]; i++)
@@ -464,12 +472,13 @@ public:
 					}
 
 				test_val = (prog_v-tmp).reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
-				std::cout << "\t" << test_val;
+				o_ostream << "\t" << test_val;
 			}
 
-			std::cout << std::endl;
+			o_ostream << std::endl;
 		}
 	}
+
 
 
 	bool should_quit()
@@ -484,6 +493,7 @@ public:
 	}
 
 
+
 	/**
 	 * postprocessing of frame: do time stepping
 	 */
@@ -495,13 +505,14 @@ public:
 	}
 
 
+
 	struct VisStuff
 	{
 		const DataArray<2>* data;
 		const char *description;
 	};
 
-	VisStuff vis_arrays[10] =
+	VisStuff vis_arrays[7] =
 	{
 			{&prog_P,	"P"},
 			{&prog_u,	"u"},
@@ -522,6 +533,8 @@ public:
 		*o_aspect_ratio = parameters.sim_domain_length[1] / parameters.sim_domain_length[0];
 	}
 
+
+
 	const char* vis_get_status_string()
 	{
 		update_diagnostics();
@@ -529,7 +542,7 @@ public:
 		int id = parameters.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
 
 		static char title_string[1024];
-		sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %e, Vis: %s, Mass: %e, Energy: %e, Potential Entrophy: %e",
+		sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %.14e, Vis: %.14s, Mass: %.14e, Energy: %.14e, Potential Entrophy: %.14e",
 				parameters.status_simulation_time,
 				parameters.status_simulation_time/(60.0*60.0*24.0),
 				parameters.status_timestep_nr,
@@ -561,6 +574,12 @@ public:
 			break;
 		}
 	}
+
+
+	bool instability_detected()
+	{
+		return !(prog_P.reduce_all_finite() && prog_u.reduce_all_finite() && prog_v.reduce_all_finite());
+	}
 };
 
 
@@ -568,14 +587,46 @@ public:
 
 int main(int i_argc, char *i_argv[])
 {
+	std::cout << std::setprecision(14);
+	std::cerr << std::setprecision(14);
+
 	parameters.setup(i_argc, i_argv);
 
 	SimulationSWEStaggered *simulationSWE = new SimulationSWEStaggered;
 
+	std::ostringstream buf;
+	buf << std::setprecision(14);
+
 #if SWEET_GUI
 	VisSweet<SimulationSWEStaggered> visSweet(simulationSWE);
 #else
-	simulationSWE->run();
+	simulationSWE->reset();
+	while(true)
+	{
+		if (parameters.verbosity > 1)
+		{
+			simulationSWE->timestep_output(buf);
+
+			std::string output = buf.str();
+			buf.str("");
+
+			std::cout << output;
+
+			if (parameters.verbosity > 2)
+				std::cerr << output;
+		}
+
+		if (simulationSWE->should_quit())
+			break;
+
+		simulationSWE->run_timestep();
+
+		if (simulationSWE->instability_detected())
+		{
+			std::cout << "INSTABILITY DETECTED" << std::endl;
+			break;
+		}
+	}
 #endif
 
 	delete simulationSWE;

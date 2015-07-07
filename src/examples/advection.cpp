@@ -46,10 +46,10 @@ public:
 	{
 		parameters.status_timestep_nr = 0;
 
-		h.data_setall(parameters.setup_h0);
+		h.setAll(parameters.setup_h0);
 
-		u.data_setall(parameters.bogus_var0);
-		v.data_setall(parameters.bogus_var1);
+		u.setAll(parameters.bogus_var0);
+		v.setAll(parameters.bogus_var1);
 
 		double center_x = 0.7;
 		double center_y = 0.6;
@@ -71,7 +71,7 @@ public:
 					double dy = y-center_y;
 
 					if (radius*radius >= dx*dx+dy*dy)
-						h.getDataRef(j,i) += 1.0;
+						h.set(j,i, parameters.setup_h0+1.0);
 				}
 			}
 		}
@@ -91,7 +91,7 @@ public:
 					double dx = x-center_x;
 					double dy = y-center_y;
 
-					h.getDataRef(j,i) += std::exp(-50.0*(dx*dx + dy*dy));
+					h.set(j,i, parameters.setup_h0+std::exp(-50.0*(dx*dx + dy*dy)));
 				}
 			}
 		}
@@ -167,14 +167,11 @@ public:
 	/**
 	 * postprocessing of frame: do time stepping
 	 */
-	bool vis_post_frame_processing(int i_num_iterations)
+	void vis_post_frame_processing(int i_num_iterations)
 	{
-		bool retval = true;
 		if (parameters.run_simulation)
 			for (int i = 0; i < i_num_iterations; i++)
-				retval = run_timestep();
-
-		return retval;
+				run_timestep();
 	}
 
 

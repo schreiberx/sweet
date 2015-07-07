@@ -173,19 +173,32 @@ public:
 
 		array_data_cartesian_length = i_dataArray.array_data_cartesian_length;
 		array_data_cartesian_space = alloc_aligned_mem<double>(array_data_cartesian_length*sizeof(double));
-#if SWEET_USE_SPECTRAL_SPACE
-		if (array_data_cartesian_space_valid)
-#endif
-		memcpy(array_data_cartesian_space, i_dataArray.array_data_cartesian_space, array_data_cartesian_length*sizeof(double));
 
 #if SWEET_USE_SPECTRAL_SPACE
 		array_data_cartesian_space_valid = i_dataArray.array_data_cartesian_space_valid;
+		if (array_data_cartesian_space_valid)
+#endif
+		{
+			// use parallel copy for first touch policy!
+#pragma omp parallel for
+			for (std::size_t i = 0; i < array_data_cartesian_length; i++)
+				array_data_cartesian_space[i] = i_dataArray.array_data_cartesian_space[i];
+		}
+
+#if SWEET_USE_SPECTRAL_SPACE
 
 		array_data_spectral_length = i_dataArray.array_data_spectral_length;
-		array_data_spectral_space_valid = i_dataArray.array_data_spectral_space_valid;
 		array_data_spectral_space = alloc_aligned_mem<double>(array_data_spectral_length*sizeof(double));
+		array_data_spectral_space_valid = i_dataArray.array_data_spectral_space_valid;
+
 		if (array_data_spectral_space_valid)
-			memcpy(array_data_spectral_space, i_dataArray.array_data_spectral_space, array_data_cartesian_length*sizeof(double));
+		{
+			// use parallel copy for first touch policy!
+#pragma omp parallel for
+			for (std::size_t i = 0; i < array_data_spectral_length; i++)
+				array_data_spectral_space[i] = i_dataArray.array_data_spectral_space[i];
+
+		}
 
 		auto fft_ptr = *fftGetSingletonPtr();
 		fft_ptr->ref_counter++;
@@ -201,11 +214,10 @@ public:
 	DataArray(
 			DataArray<D> &&i_dataArray
 	)	:
-		temporary_data(false)
 #if !SWEET_USE_SPECTRAL_SPACE
-		,
-		kernel_size(-1)
+		kernel_size(-1),
 #endif
+		temporary_data(false)
 	{
 //		std::cout << "Move constructor called" << std::endl;
 
@@ -271,6 +283,11 @@ public:
 
 		array_data_cartesian_space = alloc_aligned_mem<double>(array_data_cartesian_length*sizeof(double));
 
+		// use parallel setup for first touch policy!
+#pragma omp parallel for
+		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
+			array_data_cartesian_space[i] = -123;	// dummy data
+
 
 #if SWEET_USE_SPECTRAL_SPACE
 		array_data_cartesian_space_valid = false;
@@ -291,6 +308,9 @@ public:
 		}
 
 		array_data_spectral_space = alloc_aligned_mem<double>(array_data_spectral_length*sizeof(double));
+#pragma omp parallel for
+		for (std::size_t i = 0; i < array_data_spectral_length; i++)
+			array_data_spectral_space[i] = -123;	// dummy data
 		array_data_spectral_space_valid = false;
 
 		// initialize fft if not yet done
@@ -483,7 +503,14 @@ public:
 			plan_forward_output_length = i_dataArray.array_data_spectral_length;
 
 			double *data_cartesian = alloc_aligned_mem<double>(i_dataArray.array_data_cartesian_length*sizeof(double));
+#pragma omp parallel for
+			for (std::size_t i = 0; i < i_dataArray.array_data_cartesian_length; i++)
+				data_cartesian[i] = -123;	// dummy data
+
 			double *data_spectral = alloc_aligned_mem<double>(i_dataArray.array_data_spectral_length*sizeof(double));
+#pragma omp parallel for
+			for (std::size_t i = 0; i < i_dataArray.array_data_spectral_length; i++)
+				data_spectral[i] = -123;	// dummy data
 
 			plan_forward =
 					fftw_plan_dft_r2c_2d(
@@ -685,6 +712,23 @@ public:
 
 
 	/**
+	 * return true, if any value is infinity
+	 */
+	bool reduce_all_finite() const
+	{
+		requestDataInCartesianSpace();
+
+		bool isallfinite = true;
+#pragma omp parallel for simd reduction(&&:isallfinite)
+		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
+			isallfinite = isallfinite && std::isfinite(array_data_cartesian_space[i]);
+
+		return isallfinite;
+	}
+
+
+
+	/**
 	 * return the maximum of all absolute values
 	 */
 	double reduce_maxAbs()	const
@@ -741,6 +785,21 @@ public:
 
 		double sum = 0;
 #pragma omp parallel for simd reduction(+:sum)
+		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
+			sum += array_data_cartesian_space[i];
+
+		return sum;
+	}
+
+	/**
+	 * return the maximum of all absolute values, use quad precision for reduction
+	 */
+	double reduce_sum_quad()	const
+	{
+		requestDataInCartesianSpace();
+
+		__float128 sum = 0;
+#pragma omp parallel for reduction(+:sum)
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			sum += array_data_cartesian_space[i];
 

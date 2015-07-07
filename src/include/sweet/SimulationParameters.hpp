@@ -154,6 +154,7 @@ public:
 		res[0] = 128;
 		res[1] = 128;
 
+
 		int opt;
 		while ((opt = getopt(i_argc, i_argv, "N:n:m:C:u:U:s:X:Y:a:b:f:x:y:t:T:v:H:r:R:W:F:S:")) != -1)
 		{
@@ -253,6 +254,47 @@ public:
 				break;
 
 			default:
+				const char *help_strings[] = {
+						"Simulation runtime parameters",
+						"	-X [length]	length of simulation domain in x direction",
+						"	-Y [width]	width of simulation domain in y direction",
+						"	-u [visc]	viscosity",
+						"	-U [visc]	hyperviscosity",
+						"	-f [float]	f-parameter for f-plane",
+						"",
+						"Simulation setup parameters",
+						"	-s [scen]	scenario id",
+						"	-x [float]	x coordinate for setup",
+						"	-y [float]	y coordinate for setup",
+						"	-H [float]	average (initial) height of water",
+						"	-r [radius]	radius of initial condition",
+						"",
+						"Discretization:",
+						"  >Space:",
+						"	-N [res]	resolution in x and y direction",
+						"	-n [resx]	resolution in x direction",
+						"	-m [resx]	resolution in x direction",
+						"	-S [0/1]	use spectral derivatives (experimental)",
+						"  >Time:",
+						"	-W [0/1]	use up- and downwinding",
+						"	-F [0/1]	use leapfrog-like algorithm",
+						"	-R [1-RKn]	order of Runge-Kutta method",
+						"	-C [cfl]	CFL condition",
+						"",
+						"Control:",
+						"	-t [time]	maximum simulation time",
+						"	-T [stepnr]	maximum number of time steps",
+						"",
+						"Misc options",
+						"	-a [float]	bogus variable a",
+						"	-b [float]	bogus variable a",
+						"	-v [int]	verbosity level",
+				};
+
+				std::cerr << "Usage information: " << std::endl;
+				for (std::size_t i = 0; i < sizeof(help_strings)/sizeof(*help_strings); i++)
+					std::cerr << help_strings[i] << std::endl;
+
 				std::cerr << "Unknown option '" << (char)opt << "'" << std::endl;
 				exit(1);
 				break;
@@ -260,6 +302,13 @@ public:
 		}
 
 		reset();
+
+		if (verbosity > 1)
+		{
+			for (int i = 0; i < i_argc; i++)
+				std::cout << i_argv[i] << " ";
+			std::cout << std::endl;
+		}
 	}
 };
 
