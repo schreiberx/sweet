@@ -286,7 +286,7 @@ public:
 		// use parallel setup for first touch policy!
 #pragma omp parallel for
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			array_data_cartesian_space[i] = -123;	// dummy data
+			array_data_cartesian_space[i] = -12345;	// dummy data
 
 
 #if SWEET_USE_SPECTRAL_SPACE
@@ -1090,6 +1090,46 @@ public:
 		return out;
 	}
 
+
+#if SWEET_USE_SPECTRAL_SPACE
+	/**
+	 * Apply a linear operator given by this class to the input data array.
+	 */
+	inline
+	DataArray<D> spec_div_element_wise(
+			const DataArray<D> &i_array_data
+	)	const
+	{
+		DataArray<D> out  = DataArray<D>(this->resolution);
+		out.temporary_data = true;
+
+		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
+
+		requestDataInSpectralSpace();
+		rw_array_data.requestDataInSpectralSpace();
+
+#pragma omp parallel for simd
+		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
+		{
+			double ar = array_data_spectral_space[i];
+			double ai = array_data_spectral_space[i+1];
+			double br = i_array_data.array_data_spectral_space[i];
+			double bi = i_array_data.array_data_spectral_space[i+1];
+
+			out.array_data_spectral_space[i] = ar*br - ai*bi;
+			out.array_data_spectral_space[i+1] = ai*br - ar*bi;
+
+			double den = 1.0/(br*br-bi*bi);
+			out.array_data_spectral_space[i] *= den;
+			out.array_data_spectral_space[i+1] *= den;
+		}
+
+		out.array_data_spectral_space_valid = true;
+		out.array_data_cartesian_space_valid = false;
+
+		return out;
+	}
+#endif
 
 
 	/**

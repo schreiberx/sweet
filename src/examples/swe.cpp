@@ -39,7 +39,7 @@ public:
 		eta(parameters.res),
 		tmp(parameters.res),
 
-		op(parameters.sim_cell_size, parameters.res, parameters.sim_domain_length, parameters.use_spectral_diffs)
+		op(parameters.res, parameters.sim_domain_length, parameters.use_spectral_diffs)
 	{
 		reset();
 	}
@@ -105,7 +105,7 @@ public:
 			const DataArray<2> &i_u,		///< prognostic variables (at T=tn+dt)
 			const DataArray<2> &i_v,		///< prognostic variables (at T=tn+dt)
 
-			DataArray<2> &o_P_t	///< time updates (at T=tn+dt)
+			DataArray<2> &o_P_t				///< time updates (at T=tn+dt)
 	)
 	{
 		std::cerr << "TODO: implement, is this really possible for non-staggered grid? (averaging of velocities required)" << std::endl;
@@ -213,6 +213,10 @@ public:
 			}
 		}
 
+		// TODO: FIX
+		o_h_t = -op.diff_c_y(i_v*i_h);
+		o_h_t -= op.diff_c_x(i_u*i_h);
+		return;
 
 		if (!parameters.timestepping_leapfrog_like_update)
 		{

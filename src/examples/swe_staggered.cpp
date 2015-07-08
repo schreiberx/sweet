@@ -69,7 +69,7 @@ public:
 
 		tmp(parameters.res),
 
-		op(parameters.sim_cell_size, parameters.res, parameters.sim_domain_length, parameters.use_spectral_diffs)
+		op(parameters.res, parameters.sim_domain_length, parameters.use_spectral_diffs)
 	{
 		reset();
 	}

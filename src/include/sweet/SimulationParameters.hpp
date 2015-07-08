@@ -23,7 +23,7 @@ public:
 	double setup_h0 = 1000.0;
 
 	// setup scenario
-	int setup_scenario = 0;
+	int setup_scenario = 1;
 
 	// radius
 	double setup_radius = 100000;
@@ -123,7 +123,6 @@ public:
 	// id for visualization
 	int vis_id = 0;
 
-
 	// use spectral differential operators
 	bool use_spectral_diffs = false;
 
@@ -156,7 +155,7 @@ public:
 
 
 		int opt;
-		while ((opt = getopt(i_argc, i_argv, "N:n:m:C:u:U:s:X:Y:a:b:f:x:y:t:T:v:H:r:R:W:F:S:")) != -1)
+		while ((opt = getopt(i_argc, i_argv, "N:n:m:C:u:U:s:X:Y:a:b:f:x:y:t:T:v:H:r:R:W:F:S:g:")) != -1)
 		{
 			switch (opt)
 			{
@@ -178,7 +177,7 @@ public:
 				break;
 
 			case 'r':
-				setup_radius = atoi(optarg);
+				setup_radius = atof(optarg);
 				break;
 
 			case 't':
@@ -237,6 +236,10 @@ public:
 				sim_f = atof(optarg);
 				break;
 
+			case 'g':
+				sim_g = atof(optarg);
+				break;
+
 			case 'v':
 				verbosity = atoi(optarg);
 				break;
@@ -261,6 +264,7 @@ public:
 						"	-u [visc]	viscosity",
 						"	-U [visc]	hyperviscosity",
 						"	-f [float]	f-parameter for f-plane",
+						"	-g [float]	gravity",
 						"",
 						"Simulation setup parameters",
 						"	-s [scen]	scenario id",
