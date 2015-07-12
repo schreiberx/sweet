@@ -1,11 +1,28 @@
 
 
+================
 SCons:
+================
 	SCons is required for building SWEET
 	http://www.scons.org/
 
+	OR
+	apt-get install scons
+	
 
-Optional: Get OpenMPI
+================
+GUI:
+================
+	The GUI depends on libSDL2
+	https://www.libsdl.org/
+
+	apt-get install libsdl2-dev
+
+
+================
+MPI - (Optional)
+================
+	Get OpenMPI or other MPI parallelization library
 	http://www.open-mpi.org/software/ompi/v1.8/
 	openmpi-1.8.6.tar.bz2
 
@@ -14,16 +31,30 @@ Optional: Get OpenMPI
 	make -j 4 install
 
 
-FFTW:
+================
+FFTW (Optional, only for spectral methods):
+================
 	http://www.fftw.org/download.html
 	fftw-3.3.4.tar.gz
 
 	tar xzf fftw-3.3.4.tar.gz
+	Without MPI:
+	./configure --prefix=$HOME/local/sweet_support --enable-threads
+	With MPI:
 	./configure --prefix=$HOME/local/sweet_support --enable-mpi --enable-threads
 	make -j 4 install
 
+	OR
+	apt-get install libfftw3-dev
 
-Get PFFT from the following website:
+
+
+
+================
+PFFT
+================
+	NOT YET REQUIRED (future work):
+	Get PFFT from the following website:
 	https://www-user.tu-chemnitz.de/~mpip/software.php#pfft
 	pfft-1.0.8-alpha.tar.gz
 

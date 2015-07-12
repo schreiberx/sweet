@@ -15,28 +15,12 @@
  */
 
 
-#ifndef CSTOPWATCH_HPP
-#define CSTOPWATCH_HPP
 
-#define OS_UNIX	1
-//#include "lib/os_preprocessor_defines.h"
+#ifndef STOPWATCH_HPP
+#define STOPWATCH_HPP
+
 #include <cstddef>
-
-#if OS_UNIX
-extern "C"
-{
-	#include <sys/time.h>
-}
-#endif
-
-#if OS_WINDOWS
-extern "C"
-{
-	#include <windows.h>
-	#include <mmsystem.h>
-}
-#endif
-
+#include <sys/time.h>
 
 
 /**
@@ -48,15 +32,8 @@ class Stopwatch
 	 * some storage for the time values at start of stopwatch and at stop of stopwatch
 	 */
 private:
-#if OS_WINDOWS
-	DWORD timevalue_start;
-	DWORD timevalue_stop;
-#endif
-
-#if OS_UNIX
 	struct timeval timevalue_start;	///< time value of last start
 	struct timeval timevalue_stop;	///< time value of last stop
-#endif
 
 public:
 	double time;		///< stopped time (difference between start and stop time)
@@ -86,13 +63,7 @@ public:
 	 */
 	inline void start()
 	{
-#if OS_UNIX
 		gettimeofday(&timevalue_start, NULL);
-#endif
-
-#if OS_WINDOWS
-		timevalue_start = timeGetTime();
-#endif
 	}
 
 	/**
@@ -102,19 +73,12 @@ public:
 	 */
 	inline void stop()
 	{
-#if OS_UNIX
 		gettimeofday(&timevalue_stop, NULL);
 
 		time_t dsec = timevalue_stop.tv_sec - timevalue_start.tv_sec;
 		suseconds_t dsusec = timevalue_stop.tv_usec - timevalue_start.tv_usec;
 
 		time += (double)dsec + (double)dsusec/1000000.0;
-#endif
-
-#if OS_WINDOWS
-		DWORD timevalue = timeGetTime();
-		time += (double)timevalue/1000.0;
-#endif
 	}
 
 
@@ -123,19 +87,12 @@ public:
 	 */
 	inline double getTimeSinceStart()
 	{
-#if OS_UNIX
 		gettimeofday(&timevalue_stop, NULL);
 
 		time_t dsec = timevalue_stop.tv_sec - timevalue_start.tv_sec;
 		suseconds_t dsusec = timevalue_stop.tv_usec - timevalue_start.tv_usec;
 
 		return time + (double)dsec + (double)dsusec/1000000.0;
-#endif
-
-#if OS_WINDOWS
-		DWORD timestamp = timeGetTime();
-		return time + (double)timestamp/1000.0;
-#endif
 	}
 
 
@@ -146,16 +103,9 @@ public:
 	 */
 	inline static double getCurrentClockSeconds()
 	{
-#if OS_UNIX
 		struct timeval timevalue;		///< time value of last stop
 		gettimeofday(&timevalue, NULL);
 		return (double)timevalue.tv_sec + (double)timevalue.tv_usec/1000000.0f;
-#endif
-
-#if OS_WINDOWS
-		DWORD timestamp = timeGetTime();
-		return (double)timestamp/1000.0;
-#endif
 	}
 
 	/**

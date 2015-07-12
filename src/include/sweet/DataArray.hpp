@@ -336,13 +336,13 @@ public:
 	DataArray(
 			DataArray<D> &&i_dataArray
 	)	:
-#if !SWEET_USE_SPECTRAL_SPACE
-		kernel_size(-1),
-#endif
 		array_data_cartesian_space(nullptr),
 #if SWEET_USE_SPECTRAL_SPACE
 		array_data_spectral_space(nullptr),
 		aliasing_scaled(i_dataArray.aliasing_scaled),
+#endif
+#if !SWEET_USE_SPECTRAL_SPACE
+		kernel_size(-1),
 #endif
 		temporary_data(false)
 	{
@@ -1133,7 +1133,9 @@ public:
 			const DataArray<D> &i_dataArray
 	)
 	{
+#if SWEET_USE_SPECTRAL_SPACE
 		aliasing_scaled = i_dataArray.aliasing_scaled;
+#endif
 
 //		std::cout << "Assignment operator called" << std::endl;
 
@@ -1543,9 +1545,9 @@ public:
 			const DataArray<D> &i_array_data
 	)
 	{
+#if SWEET_USE_SPECTRAL_SPACE
 		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
 
-#if SWEET_USE_SPECTRAL_SPACE
 		requestDataInSpectralSpace();
 		rw_array_data.requestDataInSpectralSpace();
 
@@ -1760,8 +1762,11 @@ public:
 					array_data_cartesian_space[i]*
 					i_array_data.array_data_cartesian_space[i];
 
+#if SWEET_USE_SPECTRAL_SPACE
 		out.array_data_cartesian_space_valid = true;
 		out.array_data_spectral_space_valid = false;
+#endif
+
 #endif
 		return out;
 	}

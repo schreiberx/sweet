@@ -25,20 +25,15 @@ int main(int i_argc, char *i_argv[])
 {
 	std::cout << std::setprecision(14);
 	std::cerr << std::setprecision(14);
-	std::cout << std::setprecision(4);
-	std::cerr << std::setprecision(4);
-
 
 	SimulationParameters parameters;
 	parameters.setup(i_argc, i_argv);
-
 
 	Complex2DArrayFFT cart(parameters.res);
 	Complex2DArrayFFT spec(parameters.res);
 
 	DataArray<2> dataArrayA(parameters.res);
 
-	std::cout << "*************************************************" << std::endl;
 #if 0
 	for (std::size_t y = 0; y < dataArrayA.resolution_spec[1]; y++)
 		for (std::size_t x = 0; x < dataArrayA.resolution_spec[0]; x++)
@@ -49,7 +44,6 @@ int main(int i_argc, char *i_argv[])
 //			dataArrayA.set(y, x, sin(2.0*M_PIl*(double)x/(double)dataArrayA.resolution[0]));
 			dataArrayA.set(y, x, sin(2.0*M_PIl*(double)y/(double)dataArrayA.resolution[1]));
 #endif
-
 
 	std::cout << dataArrayA << std::endl;
 	std::cout << std::endl;

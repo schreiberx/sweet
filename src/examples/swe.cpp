@@ -7,7 +7,7 @@
 #include <sweet/TimesteppingRK.hpp>
 #include <sweet/SWEValidationBenchmarks.hpp>
 #include <sweet/Operators2D.hpp>
-#include <Stopwatch.hpp>
+#include <sweet/Stopwatch.hpp>
 
 #include <ostream>
 #include <sstream>
@@ -31,8 +31,7 @@ public:
 	int last_timestep_nr_update_diagnostics = -1;
 
 public:
-	SimulationSWE(
-	)	:
+	SimulationSWE()	:
 		prog_h(parameters.res),
 		prog_u(parameters.res),
 		prog_v(parameters.res),
@@ -52,7 +51,6 @@ public:
 
 		parameters.status_timestep_nr = 0;
 		parameters.status_simulation_time = 0;
-
 
 		prog_h.setAll(parameters.setup_h0);
 		prog_u.setAll(0);
@@ -102,6 +100,7 @@ public:
 	}
 
 
+
 	void compute_upwinding_P_updates(
 			const DataArray<2> &i_P,		///< prognostic variables (at T=tn)
 			const DataArray<2> &i_u,		///< prognostic variables (at T=tn+dt)
@@ -141,8 +140,6 @@ public:
 				)*(1.0/parameters.sim_cell_size[1])
 			);
 	}
-
-
 
 
 
@@ -381,6 +378,7 @@ public:
 	}
 
 
+
 public:
 	bool should_quit()
 	{
@@ -397,7 +395,9 @@ public:
 	/**
 	 * postprocessing of frame: do time stepping
 	 */
-	void vis_post_frame_processing(int i_num_iterations)
+	void vis_post_frame_processing(
+			int i_num_iterations
+	)
 	{
 		if (parameters.run_simulation)
 			for (int i = 0; i < i_num_iterations; i++)
@@ -419,6 +419,8 @@ public:
 			{&eta,		"eta"}
 	};
 
+
+
 	void vis_get_vis_data_array(
 			const DataArray<2> **o_dataArray,
 			double *o_aspect_ratio
@@ -427,32 +429,6 @@ public:
 		int id = parameters.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
 		*o_dataArray = vis_arrays[id].data;
 		*o_aspect_ratio = parameters.sim_domain_length[1] / parameters.sim_domain_length[0];
-
-#if 0
-
-		if (parameters.vis_id == 0)
-		{
-			eta = op.diff_c_x;
-//			eta = op.diff_c_y(prog_h);
-			*o_dataArray = &eta;
-		}
-		else if (parameters.vis_id == 1)
-		{
-			eta = op.diff_c_x(prog_h)-op.diff_c_y(prog_h);
-			*o_dataArray = &eta;
-		}
-		else if (parameters.vis_id == 2)
-		{
-			eta = op.diff_c_x(prog_h);
-			*o_dataArray = &eta;
-		}
-		else if (parameters.vis_id == 3)
-		{
-			eta = op.diff_c_y(prog_h);
-			*o_dataArray = &eta;
-		}
-
-#endif
 	}
 
 
@@ -480,10 +456,12 @@ public:
 	}
 
 
+
 	void vis_pause()
 	{
 		parameters.run_simulation = !parameters.run_simulation;
 	}
+
 
 
 	void vis_keypress(int i_key)

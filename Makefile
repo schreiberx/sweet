@@ -1,19 +1,8 @@
-SCONS_OPTS:=-Q -j4
-
-
-all:	debug
-
-
-release:	gnu_release
-gnu_release:
-	scons $(SCONS_OPTS) --compiler=gnu --mode=release
-
-
-debug:	gnu_debug
-gnu_debug:
-	scons $(SCONS_OPTS) --compiler=gnu --mode=debug
+all:
+	@echo "This makefile is only a convenient handler for 'make clean', please use 'scons', see INSTALL"
 
 
 clean:
 	rm -rf build
 	rm -rf /tmp/scons_build_*
+	rm -rf python_mods/*.pyc

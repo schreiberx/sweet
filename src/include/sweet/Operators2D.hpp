@@ -9,9 +9,8 @@
 
 
 #if SWEET_USE_SPECTRAL_SPACE
-#include "Complex2DArrayFFT.hpp"
+	#include "Complex2DArrayFFT.hpp"
 #endif
-
 
 
 
@@ -113,11 +112,11 @@ public:
 				for (int i = 0; i < (int)res[0]; i++)
 				{
 					if (i < (int)res[0]/2)
-						spec_dx.set(j, i, 0, i*wx);
+						spec_dx.set(j, i, 0, (double)i*wx);
 					else if (i == (int)res[0]/2)
 						spec_dx.set(j, i, 0, 0);
 					else
-						spec_dx.set(j, i, 0, (-(int)res[0]+(int)i)*wx);
+						spec_dx.set(j, i, 0, (-(double)res[0]+(double)i)*wx);
 				}
 			}
 
@@ -140,7 +139,7 @@ public:
 					else if (j == (int)res[1]/2)
 						spec_dy.set(j, i, 0, 0);
 					else
-						spec_dy.set(j, i, 0, (-(int)res[1]+(int)j)*wy);
+						spec_dy.set(j, i, 0, (-(double)res[1]+(double)j)*wy);
 				}
 			}
 

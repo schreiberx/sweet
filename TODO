@@ -3,7 +3,6 @@
   > Visualization, DONE
   > Steady state test, DONE
 
-
 * check coriolis f term (no dimensionalization should be required)
   (partly done, f term has to be scaled with the domain length in each direction)
   DONE
@@ -24,14 +23,12 @@
 * Implement spectral derivative
   DONE
 
-* Maybe implement Adams-Bashforth
-
 * Implement NEMO-like model
 
 * Add Williamson test benches:
-1) Advection
-2) Balances
-5) Mountain
-6) Rot. shallow water
+	1) Advection
+	2) Balances
+	5) Mountain
+	6) Rot. shallow water
 
 * Add test bench for Galewski unstable jet

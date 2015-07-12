@@ -1,12 +1,46 @@
 
+**************************
 SWEET
-
-Shallow
-Water
-Equation
-Environment for
-Tests
+**************************
+Shallow Water Equation Environment for Tests, Awesome!
 
 
+Please have a look into the INSTALL instructions to see required libraries.
 
-Awesome!
+
+IMPORTANT: Initialize your environment variables, e.g. with bash:
+
+	$ source ./env_vars.sh
+
+	This sets up the LD_LIBRARY_PATH and other environment variables appropriately
+	Note, that this step may not be required if installing the libraries
+	into your system's directory (e.g. via apt-get)
+
+
+File structure:
+
+	benchmarks/	Test scripts for running analytical benchmarks
+	build/		Build directory, note, that also /tmp is used for storing object files
+	data/		Data such as OpenGL shaders
+	doc/		Documentation
+	package/	Used for creating tarballs to deploy to servers
+	python_mods/	Python helper files
+	src/		Source folder
+	src/examples	Example programs, including testing
+	src/include/libgl	Some visualization helper tools
+	src/include/libmath	Some mathematical routines
+	src/include/sweet	DUDE! That's SWEET!
+
+	run_tests_compile_all.sh	Test script to check compilation of programs
+	run_tests_validation.sh		Test script to validate computations
+	run_valgrind.sh		Convenient script to call valgrind with preset options (Useful for debugging)
+	SConstruct	Required for compilation (scons)
+	TODO		TODO list
+
+
+Once installed scons, you can have a look at the possible compilation options:
+
+	scons --help
+
+	The program to be compiled can be specified via -compile-program=...
+	with the list of programs given in src/examples
