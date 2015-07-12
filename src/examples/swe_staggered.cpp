@@ -297,7 +297,7 @@ public:
 		/*
 		 * TIME STEP SIZE
 		 */
-		if (i_fixed_dt != 0)
+		if (i_fixed_dt > 0)
 		{
 			o_dt = i_fixed_dt;
 		}
@@ -315,14 +315,16 @@ public:
 				double limit_speed = std::max(parameters.sim_cell_size[0]/i_u.reduce_maxAbs(), parameters.sim_cell_size[1]/i_v.reduce_maxAbs());
 
 				// limit by re
-				double limit_visc = limit_speed;
-		//        if (viscocity > 0)
-		//           limit_visc = (viscocity*0.5)*((hx*hy)*0.5);
+				double limit_visc = std::numeric_limits<double>::infinity();
+		//		if (viscocity > 0)
+		//			limit_visc = (viscocity*0.5)*((hx*hy)*0.5);
 
 				// limit by gravitational acceleration
 				double limit_gh = std::min(parameters.sim_cell_size[0], parameters.sim_cell_size[1])/std::sqrt(parameters.sim_g*i_P.reduce_maxAbs());
 
-		//        std::cout << limit_speed << ", " << limit_visc << ", " << limit_gh << std::endl;
+				if (parameters.verbosity > 2)
+					std::cerr << "limit_speed: " << limit_speed << ", limit_visc: " << limit_visc << ", limit_gh: " << limit_gh << std::endl;
+
 				o_dt = parameters.sim_CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
 			}
 		}
@@ -337,7 +339,6 @@ public:
 			{
 				// standard update
 				o_P_t = -op.diff_f_x(U) - op.diff_f_y(V);
-				return;
 			}
 			else
 			{
@@ -348,7 +349,6 @@ public:
 						i_v,
 						o_P_t
 					);
-				return;
 			}
 		}
 		else
@@ -368,7 +368,6 @@ public:
 
 				// update based on new u and v values
 				o_P_t = -op.diff_f_x(U) - op.diff_f_y(V);
-				return;
 			}
 			else
 			{
@@ -379,9 +378,15 @@ public:
 						i_v+o_dt*o_v_t,
 						o_P_t
 					);
-				return;
 			}
 		}
+
+
+		if (parameters.sim_potential_viscocity != 0)
+			o_h_t += (op.diff2_c_x(i_h) + op.diff2_c_y(i_h))*parameters.sim_potential_viscocity;
+
+		if (parameters.sim_potential_hyper_viscocity != 0)
+			o_h_t += (op.diff2_c_x(op.diff2_c_x(i_h)) + op.diff2_c_y(op.diff2_c_y(i_h)))*parameters.sim_potential_hyper_viscocity;
 	}
 
 
@@ -552,10 +557,14 @@ public:
 		return title_string;
 	}
 
+
+
 	void vis_pause()
 	{
 		parameters.run_simulation = !parameters.run_simulation;
 	}
+
+
 
 	void vis_keypress(int i_key)
 	{

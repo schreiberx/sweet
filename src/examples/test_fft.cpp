@@ -9,6 +9,7 @@
 
 
 #include <sweet/DataArray.hpp>
+#include <sweet/Complex2DArrayFFT.hpp>
 #include <sweet/SimulationParameters.hpp>
 
 #include <math.h>
@@ -20,170 +21,6 @@
 
 SimulationParameters parameters;
 
-
-class TestArray
-{
-public:
-	std::size_t resolution[2];
-
-	fftw_plan plan_to_cart;
-	fftw_plan plan_to_spec;
-
-	double *data;
-
-	void setup_fftw()
-	{
-		plan_to_spec =
-				fftw_plan_dft_2d(
-					resolution[1],	// n0 = ny
-					resolution[0],	// n1 = nx
-					(fftw_complex*)data,
-					(fftw_complex*)data,
-					FFTW_FORWARD,
-					0
-				);
-
-
-		plan_to_cart =
-				fftw_plan_dft_2d(
-					resolution[1],	// n0 = ny
-					resolution[0],	// n1 = nx
-					(fftw_complex*)data,
-					(fftw_complex*)data,
-					FFTW_BACKWARD,
-					0
-				);
-
-		if (plan_to_spec == nullptr)
-		{
-			std::cerr << "Failed to create plan_backward for fftw" << std::endl;
-			exit(-1);
-		}
-	}
-
-public:
-	TestArray(
-			std::size_t i_res[2]
-	)	:
-		plan_to_cart(nullptr),
-		plan_to_spec(nullptr)
-	{
-		resolution[0] = i_res[0];
-		resolution[1] = i_res[1];
-
-		data = alloc_aligned_mem<double>(sizeof(double)*resolution[0]*resolution[1]*2);
-
-		setup_fftw();
-	}
-
-
-public:
-	TestArray(const TestArray &i_testArray)
-	:
-		plan_to_cart(nullptr),
-		plan_to_spec(nullptr)
-	{
-		resolution[0] = i_testArray.resolution[0];
-		resolution[1] = i_testArray.resolution[1];
-
-		data = alloc_aligned_mem<double>(sizeof(double)*resolution[0]*resolution[1]*2);
-
-		setup_fftw();
-
-		memcpy(data, i_testArray.data, resolution[0]*resolution[1]*2);
-	}
-
-
-public:
-	TestArray& operator=(const TestArray &i_testArray)
-	{
-		resolution[0] = i_testArray.resolution[0];
-		resolution[1] = i_testArray.resolution[1];
-
-		memcpy(data, i_testArray.data, resolution[0]*resolution[1]*2*sizeof(double));
-		return *this;
-	}
-
-	~TestArray()
-	{
-		fftw_free(plan_to_spec);
-
-		free(data);
-	}
-
-
-	TestArray toSpec()
-	{
-		TestArray o_testArray(resolution);
-
-		fftw_execute_dft(
-				plan_to_spec,
-				(fftw_complex*)this->data,
-				(fftw_complex*)o_testArray.data
-			);
-
-
-		return o_testArray;
-	}
-
-
-	TestArray toCart()
-	{
-		TestArray o_testArray(resolution);
-
-		fftw_execute_dft(
-				plan_to_cart,
-				(fftw_complex*)this->data,
-				(fftw_complex*)o_testArray.data
-			);
-
-		return o_testArray;
-	}
-
-
-	void set(int y, int x, double re, double im)
-	{
-		data[(y*resolution[0]+x)*2+0] = re;
-		data[(y*resolution[0]+x)*2+1] = im;
-	}
-
-	double getRe(int y, int x)	const
-	{
-		return data[(y*resolution[0]+x)*2+0];
-	}
-
-	double getIm(int y, int x)	const
-	{
-		return data[(y*resolution[0]+x)*2+1];
-	}
-
-	void setAll(double re, double im)
-	{
-		for (std::size_t y = 0; y < resolution[1]; y++)
-			for (std::size_t x = 0; x < resolution[0]; x++)
-				set(y, x, re, im);
-	}
-
-
-	friend
-	inline
-	std::ostream& operator<<(std::ostream &o_ostream, const TestArray &i_testArray)
-	{
-		for (int y = i_testArray.resolution[1]-1; y >= 0; y--)
-		{
-			for (std::size_t x = 0; x < i_testArray.resolution[0]; x++)
-			{
-				double value_re = i_testArray.getRe(y, x);
-				double value_im = i_testArray.getIm(y, x);
-				o_ostream << "(" << value_re << ", " << value_im << ")\t";
-			}
-			o_ostream << std::endl;
-		}
-		return o_ostream;
-	}
-};
-
-
 int main(int i_argc, char *i_argv[])
 {
 	std::cout << std::setprecision(14);
@@ -191,18 +28,52 @@ int main(int i_argc, char *i_argv[])
 	std::cout << std::setprecision(4);
 	std::cerr << std::setprecision(4);
 
-	if (i_argc <= 1)
-	{
-		std::cout << "Please specify spectral or non-spectral test with parameter 1 (spectral) / 0 (non-spectral)" << std::endl;
-		return 1;
-	}
 
 	SimulationParameters parameters;
 	parameters.setup(i_argc, i_argv);
 
 
-	TestArray cart(parameters.res);
-	TestArray spec(parameters.res);
+	Complex2DArrayFFT cart(parameters.res);
+	Complex2DArrayFFT spec(parameters.res);
+
+	DataArray<2> dataArrayA(parameters.res);
+
+	std::cout << "*************************************************" << std::endl;
+#if 0
+	for (std::size_t y = 0; y < dataArrayA.resolution_spec[1]; y++)
+		for (std::size_t x = 0; x < dataArrayA.resolution_spec[0]; x++)
+//			dataArray.setSpec(y, x, (int)(y+1)*(int)(x+10), -(int)(y+1)*(int)(x+10));
+#else
+	for (std::size_t y = 0; y < dataArrayA.resolution[1]; y++)
+		for (std::size_t x = 0; x < dataArrayA.resolution[0]; x++)
+//			dataArrayA.set(y, x, sin(2.0*M_PIl*(double)x/(double)dataArrayA.resolution[0]));
+			dataArrayA.set(y, x, sin(2.0*M_PIl*(double)y/(double)dataArrayA.resolution[1]));
+#endif
+
+
+	std::cout << dataArrayA << std::endl;
+	std::cout << std::endl;
+	dataArrayA.printSpectrum();
+	std::cout << std::endl;
+
+	DataArray<2> dataArrayB = dataArrayA.aliasing_scaleUp();
+	dataArrayB.setAll(-666);
+	dataArrayB = dataArrayA.aliasing_scaleUp();
+	dataArrayB.printSpectrum();
+	std::cout << std::endl;
+	std::cout << dataArrayB << std::endl;
+
+
+	DataArray<2> dataArrayC = dataArrayB.aliasing_scaleDown(dataArrayA.resolution);
+	std::cout << dataArrayC << std::endl;
+	dataArrayC.printSpectrum();
+
+	std::cout << "error: " << (dataArrayC-dataArrayA).reduce_sumAbs_quad() << std::endl;
+
+	std::cout << "*************************************************" << std::endl;
+	return 1;
+
+	std::cout << "*************************************************" << std::endl;
 
 	std::cout << "Cartesian space:" << std::endl;
 	cart.setAll(1, 0);

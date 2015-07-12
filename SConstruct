@@ -134,6 +134,15 @@ if env['libxml'] == 'enable':
 
 
 
+AddOption(	'--spectral-dealiasing',
+		dest='spectral_dealiasing',
+		type='choice',
+		choices=['enable','disable'],
+		default='disable',
+		help='spectral dealiasing (3N/2-1 rule): enable, disable [default: %default]'
+)
+env['spectral_dealiasing'] = GetOption('spectral_dealiasing')
+
 AddOption(	'--gui',
 		dest='gui',
 		type='choice',
@@ -152,6 +161,15 @@ AddOption(      '--compile-program',
 )
 env['compile_program'] = GetOption('compile-program')
 
+
+threading_constraints = ['off', 'omp']
+AddOption(	'--threading',
+		dest='threading',
+		type='string',	
+		default='omp',
+		help='Threading to use '+' / '.join(threading_constraints)+', default: omp'
+)
+env['threading'] = GetOption('threading')
 
 
 env['fortran_source'] = 'disable'
@@ -192,11 +210,16 @@ if env['spectral_space'] == 'enable':
 else:
 	env.Append(CXXFLAGS = ' -DSWEET_USE_SPECTRAL_SPACE=0')
 
+
+if env['spectral_dealiasing'] == 'enable':
+	env.Append(CXXFLAGS = ' -DSWEET_USE_SPECTRAL_DEALIASING=1')
+	exec_name+='_dealiasing'
+else:
+	env.Append(CXXFLAGS = ' -DSWEET_USE_SPECTRAL_DEALIASING=0')
+	
+
 if env['gui']=='enable':
 	exec_name+='_gui'
-
-env.Append(LINKFLAGS=' -fopenmp')
-env.Append(CXXFLAGS=' -fopenmp')
 
 #if env['program_binary_name_override'] != '':
 #	exec_name = env['program_binary_name_override']
@@ -368,6 +391,9 @@ elif env['compiler'] == 'llvm':
 	# c++0x flag
 	env.Append(CXXFLAGS=' -std=c++0x')
 
+	# support __float128
+#	env.Append(CXXFLAGS=' -D__STRICT_ANSI__')
+
 	# be pedantic to avoid stupid programming errors
 	env.Append(CXXFLAGS=' -pedantic')
 
@@ -486,8 +512,19 @@ exec_name += '_'+env['compiler']
 exec_name += '_'+env['mode']
 
 
+if env['threading'] == 'omp':
+	env.Append(LINKFLAGS=' -fopenmp')
+	env.Append(CXXFLAGS=' -fopenmp')
+
+	env.Append(CXXFLAGS=' -DSWEET_THREADING=1')
+else:
+	env.Append(CXXFLAGS=' -DSWEET_THREADING=0')
+
 if env['spectral_space'] == 'enable':
-	env.Append(LIBS=['fftw3', 'fftw3_omp'])
+	env.Append(LIBS=['fftw3'])
+
+	if env['threading'] == 'omp':
+		env.Append(LIBS=['fftw3_omp'])
 
 
 #

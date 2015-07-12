@@ -44,6 +44,12 @@ public:
 	// viscosity
 	double sim_hyper_viscocity = 0.0;
 
+	// potential
+	double sim_potential_viscocity = 0.0;
+
+	// potential
+	double sim_potential_hyper_viscocity = 0.0;
+
 	// cfl condition
 	double sim_CFL = 0.01;
 
@@ -155,7 +161,7 @@ public:
 
 
 		int opt;
-		while ((opt = getopt(i_argc, i_argv, "N:n:m:C:u:U:s:X:Y:a:b:f:x:y:t:T:v:H:r:R:W:F:S:g:")) != -1)
+		while ((opt = getopt(i_argc, i_argv, "N:n:m:C:u:U:s:X:Y:a:b:f:x:y:t:T:v:H:r:R:W:F:S:g:p:P:")) != -1)
 		{
 			switch (opt)
 			{
@@ -194,6 +200,14 @@ public:
 
 			case 'U':
 				sim_hyper_viscocity = atof(optarg);
+				break;
+
+			case 'p':
+				sim_potential_viscocity = atof(optarg);
+				break;
+
+			case 'P':
+				sim_potential_hyper_viscocity = atof(optarg);
 				break;
 
 			case 's':
@@ -263,6 +277,8 @@ public:
 						"	-Y [width]	width of simulation domain in y direction",
 						"	-u [visc]	viscosity",
 						"	-U [visc]	hyperviscosity",
+						"	-p [visc]	potential viscosity",
+						"	-P [visc]	potential hyperviscosity",
 						"	-f [float]	f-parameter for f-plane",
 						"	-g [float]	gravity",
 						"",

@@ -6,7 +6,8 @@
 #include <sweet/SimulationParameters.hpp>
 #include <sweet/TimesteppingRK.hpp>
 #include <sweet/SWEValidationBenchmarks.hpp>
-#include "sweet/Operators2D.hpp"
+#include <sweet/Operators2D.hpp>
+#include <Stopwatch.hpp>
 
 #include <ostream>
 #include <sstream>
@@ -70,6 +71,7 @@ public:
 			}
 		}
 	}
+
 
 
 	void update_diagnostics()
@@ -169,8 +171,8 @@ public:
 
 		if (parameters.sim_viscocity != 0)
 		{
-			o_v_t += (op.diff2_c_y(i_u) + op.diff2_c_y(i_v))*parameters.sim_viscocity;
 			o_u_t += (op.diff2_c_x(i_u) + op.diff2_c_x(i_v))*parameters.sim_viscocity;
+			o_v_t += (op.diff2_c_y(i_u) + op.diff2_c_y(i_v))*parameters.sim_viscocity;
 		}
 
 		if (parameters.sim_hyper_viscocity != 0)
@@ -183,7 +185,7 @@ public:
 		/*
 		 * TIME STEP SIZE
 		 */
-		if (i_fixed_dt != 0)
+		if (i_fixed_dt > 0)
 		{
 			o_dt = i_fixed_dt;
 		}
@@ -201,22 +203,19 @@ public:
 				double limit_speed = std::max(parameters.sim_cell_size[0]/i_u.reduce_maxAbs(), parameters.sim_cell_size[1]/i_v.reduce_maxAbs());
 
 				// limit by re
-				double limit_visc = limit_speed;
+				double limit_visc = std::numeric_limits<double>::infinity();
 		//        if (viscocity > 0)
 		//           limit_visc = (viscocity*0.5)*((hx*hy)*0.5);
 
 				// limit by gravitational acceleration
 				double limit_gh = std::min(parameters.sim_cell_size[0], parameters.sim_cell_size[1])/std::sqrt(parameters.sim_g*i_h.reduce_maxAbs());
 
-		//        std::cout << limit_speed << ", " << limit_visc << ", " << limit_gh << std::endl;
+				if (parameters.verbosity > 2)
+					std::cerr << "limit_speed: " << limit_speed << ", limit_visc: " << limit_visc << ", limit_gh: " << limit_gh << std::endl;
+
 				o_dt = parameters.sim_CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
 			}
 		}
-
-		// TODO: FIX
-		o_h_t = -op.diff_c_y(i_v*i_h);
-		o_h_t -= op.diff_c_x(i_u*i_h);
-		return;
 
 		if (!parameters.timestepping_leapfrog_like_update)
 		{
@@ -224,7 +223,6 @@ public:
 			{
 				// standard update
 				o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
-				return;
 			}
 			else
 			{
@@ -235,7 +233,12 @@ public:
 						i_v,
 						o_h_t
 					);
-				return;
+
+				if (parameters.sim_viscocity != 0)
+					o_h_t += (op.diff2_c_x(i_h) + op.diff2_c_y(i_h))*parameters.sim_viscocity;
+
+				if (parameters.sim_hyper_viscocity != 0)
+					o_h_t += (op.diff2_c_x(op.diff2_c_x(i_h)) + op.diff2_c_y(op.diff2_c_y(i_h)))*parameters.sim_hyper_viscocity;
 			}
 		}
 		else
@@ -258,7 +261,6 @@ public:
 						- op.diff_c_y(
 							i_h*(i_v+o_dt*o_v_t)
 						);
-				return;
 			}
 			else
 			{
@@ -269,10 +271,14 @@ public:
 						i_v+o_dt*o_v_t,
 						o_h_t
 					);
-				return;
 			}
 		}
 
+		if (parameters.sim_potential_viscocity != 0)
+			o_h_t += (op.diff2_c_x(i_h) + op.diff2_c_y(i_h))*parameters.sim_potential_viscocity;
+
+		if (parameters.sim_potential_hyper_viscocity != 0)
+			o_h_t += (op.diff2_c_x(op.diff2_c_x(i_h)) + op.diff2_c_y(op.diff2_c_y(i_h)))*parameters.sim_potential_hyper_viscocity;
 
 	}
 
@@ -523,6 +529,9 @@ int main(int i_argc, char *i_argv[])
 #else
 	simulationSWE->reset();
 
+	Stopwatch time;
+	time.reset();
+
 	while(true)
 	{
 		if (parameters.verbosity > 1)
@@ -549,6 +558,13 @@ int main(int i_argc, char *i_argv[])
 			break;
 		}
 	}
+
+	time.stop();
+
+	double seconds = time();
+
+	std::cout << "Simulation time: " << seconds << " seconds" << std::endl;
+	std::cout << "Time per time step: " << seconds/(double)parameters.status_timestep_nr << " sec/ts" << std::endl;
 #endif
 
 	delete simulationSWE;
