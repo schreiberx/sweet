@@ -1,0 +1,820 @@
+#LyX 2.1 created this file. For more info see http://www.lyx.org/
+\lyxformat 474
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_math auto
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Formulations of the shallow-water equations
+\end_layout
+
+\begin_layout Author
+Martin Schreiber <M.Schreiber@exeter.ac.uk>
+\end_layout
+
+\begin_layout Date
+
+\emph on
+2015-07-13
+\end_layout
+
+\begin_layout Standard
+There are a variety of different formulations for the shallow-water equations
+ available.
+ This document serves as an overview of these different formulations and
+ how they are approximated.
+\end_layout
+
+\begin_layout Section
+Overview
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="12" columns="2">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="left" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $h$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Water height
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\bar under
+\begin_inset Formula $u$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Velocity in x direction
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $v$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Velocity in y direction
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $hu$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Momentum in x direction
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $hv$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Momentum in y direction
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\eta$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Potential vorticity
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $g$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Gravity
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $H$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Awesome quantity
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $f$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Coriolis force
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $p_{0}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Steady state of quantity
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $p'$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Perturbation of 
+\begin_inset Formula $p_{0}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Momentum formulation
+\end_layout
+
+\begin_layout Standard
+The conservative formulation uses the momentum 
+\begin_inset Formula $(hu,hv)$
+\end_inset
+
+ as the conserved quantities.
+ In this form, the equations are given as
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+h_{t}+(hu)_{x}+(hv)_{y}=0
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+(hu)_{t}+(hu^{2}+\frac{1}{2}gh^{2})_{x}+(huv)_{y}-fv=0
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+(hv)_{t}+(hv^{2}+\frac{1}{2}gh^{2})_{y}+(huv)_{x}+fu=0
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Since this formulation is conserving the momentum, it is also refered as
+ the conservative form.
+\end_layout
+
+\begin_layout Standard
+Please note, that this formulation contains several non-linear terms!
+\end_layout
+
+\begin_layout Section
+Non-conservative formulation
+\end_layout
+
+\begin_layout Standard
+By using the produce rule, we can reformulate the equations above to make
+ the velocities conserved quantities.
+ Here, we first apply the produce rule to 
+\begin_inset Formula $(hu)_{t}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+hu_{t}+h_{t}u+h_{x}u^{2}+2huu_{x}+ghh_{x}+(hu)_{y}v+huv_{y}-fv=0
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+hu_{t}+(-(hu)_{x}-(hv)_{y})u+h_{x}u^{2}+2huu_{x}+ghh_{x}+(hv)_{y}u+hvu_{y}-fv=0
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+hu_{t}+(-(hu)_{x})u+h_{x}u^{2}+2huu_{x}+ghh_{x}+hvu_{y}-fv=0
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+hu_{t}-h_{x}uu-huu{}_{x}+h_{x}u^{2}+2huu_{x}+ghh_{x}+hvu_{y}-fv=0
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+u_{t}+gh_{x}+uu_{x}+vu_{y}-fv=0
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Alltogether, we get the following non-conservative formulation:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+h_{t}+(hu)_{x}+(hv)_{y}=0
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+u_{t}+gh_{x}+uu_{x}+vu_{y}-fv=0
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+v_{t}+gh_{y}+uv_{x}+vv_{y}+fu=0
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Vorticity formulation
+\end_layout
+
+\begin_layout Standard
+For certain reasons such as energy and enstropy conservation, the equations
+ are reformulated and split into the vorticity and H component.
+ We first add an artificial term 
+\begin_inset Formula $vv_{x}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+u_{t}-vv_{x}+gh_{x}+uu_{x}+vv_{x}+vu_{y}-fv=0
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+u_{t}-vv_{x}+vu_{y}+(gh+u^{2}+v^{2})_{x}-fv=0
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+and set 
+\begin_inset Formula $H:=gh+u^{2}+v^{2}$
+\end_inset
+
+ and 
+\begin_inset Formula $\eta:=v_{x}-u_{y}+f$
+\end_inset
+
+, yielding
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+u_{t}-v\eta+H_{x}=0
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Similarly, we can reformulate 
+\begin_inset Formula $v_{t}$
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+v_{t}+gh_{y}+uv_{x}+vv_{y}+uu_{y}-uu_{y}+fu=0
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+v_{t}+uv_{x}-uu_{y}+fu+(gh+v^{2}+u^{2})=0
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This yields the vorticity formulation:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+h_{t}+(hu)_{x}+(hv)_{y}=0
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+u_{t}-v\eta+H_{x}=0
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+v_{t}+u\eta+H_{y}=0
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Full linearization with perturbation
+\end_layout
+
+\begin_layout Standard
+The equations can be linearized around a perturbation 
+\begin_inset Formula $p=p_{0}+p'$
+\end_inset
+
+, with 
+\begin_inset Formula $p\in\{h,u,v\}$
+\end_inset
+
+with 
+\begin_inset Formula $p_{0}$
+\end_inset
+
+denoting a constant steady state.
+ Assuming 
+\begin_inset Formula $a'b'<O(\epsilon)$
+\end_inset
+
+, we can use
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $(ab)_{x}=((a_{0}+a')(b_{0}+b'))_{z}=(a'b_{0})_{z}+(b'a_{0})_{z}+(a'b')_{z}\approx(a'b_{0})_{z}+(b'a_{0})_{z}=b_{0}a'_{z}+a_{0}b'_{z}$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+to simplify the non-conservative formulation to
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+h'_{t}+h_{0}(u'_{x}+v'_{x})+h'_{x}(u_{0}+v_{0})=0
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Further, we assume a low velocity 
+\begin_inset Formula $\{|u_{0}|,|v_{0}|\}<O(\epsilon)$
+\end_inset
+
+, yielding
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+h'_{t}+h_{0}u'_{x}+h_{0}v'_{x}=0
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Using the approximation 
+\begin_inset Formula $ab_{z}=(a_{0}+a')(b_{0}+b')_{z}=a_{0}b'_{z}+a'b'_{z}\approx a_{0}b'_{z}$
+\end_inset
+
+ , we can then simplify the non-conservative formulation to
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+u'_{t}+gh'_{x}+u_{0}u'_{x}+v_{0}u'_{y}-fv'=0
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+v'_{t}+gh'_{y}+u_{0}v'_{x}+v_{0}v'_{y}+fu'=0
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+and again by assuming a low velocity, get the following formulation:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+h'_{t}+h_{0}u'_{x}+h_{0}v'_{x}=0
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+u'_{t}+gh'_{x}-fv'=0
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+v'_{t}+gh'_{y}+fu'=0
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Setting 
+\begin_inset Formula $U:=(h',u',v')$
+\end_inset
+
+, we can write these equations as
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+U_{t}:=\left(\begin{array}{ccc}
+ & h_{0}\delta_{x} & h_{0}\delta_{y}\\
+g\delta_{x} &  & -f\\
+g\delta_{y} & f
+\end{array}\right)U
+\]
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
