@@ -540,40 +540,6 @@ v_{t}+gh_{y}+uv_{x}+vv_{y}+fu=0
 
 \end_layout
 
-\begin_layout Standard
-We can also split these equations in linear and non-linear parts:
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-L(U):=\left(\begin{array}{ccc}
-\\
-g\delta_{x} &  & -f\\
-g\delta_{y} & f
-\end{array}\right)U
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-N(U):=\left(\begin{array}{c}
-(hu)_{x}+(hv)_{y}\\
-uu_{x}+vu_{y}\\
-uv_{x}+vv_{y}
-\end{array}\right)
-\]
-
-\end_inset
-
-
-\end_layout
-
 \begin_layout Section
 Vorticity formulation
 \end_layout
