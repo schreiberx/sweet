@@ -32,6 +32,40 @@ public:
 	DataArray<2> shift_up;
 	DataArray<2> shift_down;
 
+	inline DataArray<2> arakawa_jacobian(
+			const DataArray<2> &i_a,
+			const DataArray<2> &i_b
+	)
+	{
+//		return diff_c_x(i_a)*diff_c_y(i_b) - diff_c_y(i_a)*diff_c_x(i_b);
+		return diff_c_y(i_a) - diff_c_x(i_a);
+	}
+
+
+
+	/**
+	 *        __2
+	 * apply  \/  operator (aka Laplace)
+	 */
+	inline DataArray<2> laplace(
+			const DataArray<2> &i_a
+	)
+	{
+		return diff2_c_x(i_a)+diff2_c_y(i_a);
+	}
+
+
+	/**
+	 *        __
+	 * apply  \/ .  operator
+	 */
+	inline DataArray<2> diff_dot(
+			const DataArray<2> &i_a
+	)
+	{
+		return diff_c_x(i_a)+diff_c_y(i_a);
+	}
+
 	Operators2D(
 		std::size_t res[2],		///< resolution
 		double i_domain_size[2],	///< domain size
@@ -102,8 +136,6 @@ public:
 #else
 
 			std::size_t *res = diff2_c_x.resolution;
-			double wx = (2.0*M_PIl)/(double)i_domain_size[0];
-			double wy = (2.0*M_PIl)/(double)i_domain_size[1];
 
 			Complex2DArrayFFT spec_dx(res);
 
@@ -112,11 +144,11 @@ public:
 				for (int i = 0; i < (int)res[0]; i++)
 				{
 					if (i < (int)res[0]/2)
-						spec_dx.set(j, i, 0, (double)i*wx);
+						spec_dx.set(j, i, 0, (double)i*(2.0*M_PIl)/(double)i_domain_size[0]);
 					else if (i == (int)res[0]/2)
 						spec_dx.set(j, i, 0, 0);
 					else
-						spec_dx.set(j, i, 0, (-(double)res[0]+(double)i)*wx);
+						spec_dx.set(j, i, 0, (-(double)res[0]+(double)i)*(2.0*M_PIl)/(double)i_domain_size[0]);
 				}
 			}
 
@@ -135,11 +167,11 @@ public:
 				for (int j = 0; j < (int)res[1]; j++)
 				{
 					if (j < (int)res[1]/2)
-						spec_dy.set(j, i, 0, j*wy);
+						spec_dy.set(j, i, 0, (double)j*(2.0*M_PIl)/(double)i_domain_size[1]);
 					else if (j == (int)res[1]/2)
 						spec_dy.set(j, i, 0, 0);
 					else
-						spec_dy.set(j, i, 0, (-(double)res[1]+(double)j)*wy);
+						spec_dy.set(j, i, 0, (-(double)res[1]+(double)j)*(2.0*M_PIl)/(double)i_domain_size[1]);
 				}
 			}
 

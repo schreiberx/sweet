@@ -154,9 +154,9 @@ public:
 
 			double b[2] = {0, 1};
 
-			io_P += dt*( b[0]**RK_P_t[0] + b[1]**RK_P_t[1] );
-			io_u += dt*( b[0]**RK_u_t[0] + b[1]**RK_u_t[1] );
-			io_v += dt*( b[0]**RK_v_t[0] + b[1]**RK_v_t[1] );
+			io_P += dt*( b[0]*(*RK_P_t[0]) + b[1]*(*RK_P_t[1]) );
+			io_u += dt*( b[0]*(*RK_u_t[0]) + b[1]*(*RK_u_t[1]) );
+			io_v += dt*( b[0]*(*RK_v_t[0]) + b[1]*(*RK_v_t[1]) );
 		}
 		else if (i_runge_kutta_order == 3)
 		{
@@ -212,9 +212,9 @@ public:
 
 			double b[3] = {1.0/1.6, 4.0/6.0, 1.0/6.0};
 
-			io_P += dt*( b[0]**RK_P_t[0] + b[1]**RK_P_t[1]  + b[2]**RK_P_t[2] );
-			io_u += dt*( b[0]**RK_u_t[0] + b[1]**RK_u_t[1]  + b[2]**RK_u_t[2] );
-			io_v += dt*( b[0]**RK_v_t[0] + b[1]**RK_v_t[1]  + b[2]**RK_v_t[2] );
+			io_P += dt*( b[0]*(*RK_P_t[0]) + b[1]*(*RK_P_t[1])  + b[2]*(*RK_P_t[2]) );
+			io_u += dt*( b[0]*(*RK_u_t[0]) + b[1]*(*RK_u_t[1])  + b[2]*(*RK_u_t[2]) );
+			io_v += dt*( b[0]*(*RK_v_t[0]) + b[1]*(*RK_v_t[1])  + b[2]*(*RK_v_t[2]) );
 		}
 		else if (i_runge_kutta_order == 4)
 		{

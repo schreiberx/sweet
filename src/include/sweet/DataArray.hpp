@@ -190,6 +190,7 @@ private:
 		if (i == D)
 			return;
 
+
 		array_data_cartesian_length = 1;
 		for (int i = 0; i < D; i++)
 		{
@@ -400,8 +401,8 @@ public:
 #endif
 		temporary_data(false)
 	{
-		resolution[0] = 0;
-		resolution[1] = 0;
+		for (int i = 0; i < D; i++)
+			resolution[i] = 0;
 
 		p_request_buffers_with_resolution(i_resolution);
 
@@ -484,6 +485,8 @@ public:
 			std::size_t i
 	)
 	{
+		requestDataInCartesianSpace();
+
 		assert(i >= range_start[0] && i < range_end[0]);
 		assert(j >= range_start[1] && j < range_end[1]);
 
@@ -498,8 +501,10 @@ public:
 	double getSpec_Re(
 			std::size_t j,
 			std::size_t i
-	)
+	)	const
 	{
+		requestDataInSpectralSpace();
+
 		assert(i >= range_spec_start[0] && i < range_spec_end[0]);
 		assert(j >= range_spec_start[1] && j < range_spec_end[1]);
 
@@ -512,8 +517,10 @@ public:
 	double getSpec_Im(
 			std::size_t j,
 			std::size_t i
-	)
+	)	const
 	{
+		requestDataInSpectralSpace();
+
 		assert(i >= range_spec_start[0] && i < range_spec_end[0]);
 		assert(j >= range_spec_start[1] && j < range_spec_end[1]);
 
@@ -534,16 +541,16 @@ public:
 		assert(i >= range_spec_start[0] && i < range_spec_end[0]);
 		assert(j >= range_spec_start[1] && j < range_spec_end[1]);
 
-#if SWEET_USE_SPECTRAL_SPACE
-		array_data_cartesian_space_valid = false;
-		array_data_spectral_space_valid = true;
-#endif
-
 		std::size_t idx =	(j-range_spec_start[1])*range_spec_size[0]+
 							(i-range_spec_start[0]);
 
 		array_data_spectral_space[idx*2+0] = i_value_re;
 		array_data_spectral_space[idx*2+1] = i_value_im;
+
+#if SWEET_USE_SPECTRAL_SPACE
+		array_data_cartesian_space_valid = false;
+		array_data_spectral_space_valid = true;
+#endif
 	}
 #endif
 
@@ -584,6 +591,7 @@ public:
 		array_data_spectral_space_valid = true;
 #endif
 	}
+
 #endif
 
 
@@ -801,7 +809,7 @@ public:
 	inline
 	DataArray<D> return_one_if_positive()
 	{
-		DataArray<D> out  = DataArray<D>(this->resolution);
+		DataArray<D> out(this->resolution);
 		out.temporary_data = true;
 
 #pragma omp parallel for simd
@@ -819,7 +827,7 @@ public:
 	inline
 	DataArray<D> return_value_if_positive()	const
 	{
-		DataArray<D> out  = DataArray<D>(this->resolution);
+		DataArray<D> out(this->resolution);
 		out.temporary_data = true;
 
 #pragma omp parallel for simd
@@ -836,7 +844,7 @@ public:
 	inline
 	DataArray<D> return_one_if_negative()	const
 	{
-		DataArray<D> out  = DataArray<D>(this->resolution);
+		DataArray<D> out(this->resolution);
 		out.temporary_data = true;
 
 #pragma omp parallel for simd
@@ -853,7 +861,7 @@ public:
 	inline
 	DataArray<D> return_value_if_negative()	const
 	{
-		DataArray<D> out  = DataArray<D>(this->resolution);
+		DataArray<D> out(this->resolution);
 		out.temporary_data = true;
 
 #pragma omp parallel for simd
@@ -896,6 +904,43 @@ public:
 #pragma omp parallel for simd reduction(max:maxabs)
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			maxabs = std::max(maxabs, std::abs(array_data_cartesian_space[i]));
+
+		return maxabs;
+	}
+
+
+	/**
+	 * reduce to root mean square
+	 */
+	double reduce_rms()
+	{
+		requestDataInCartesianSpace();
+
+		double rms = 0;
+#pragma omp parallel for simd reduction(+:rms)
+		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
+			rms += array_data_cartesian_space[i]*array_data_cartesian_space[i];
+
+		rms = std::sqrt(rms/double(array_data_cartesian_length));
+		return rms;
+	}
+
+
+	/**
+	 * return the maximum of all absolute values
+	 */
+	double reduce_spec_maxAbs()	const
+	{
+		requestDataInSpectralSpace();
+
+		double maxabs = -1;
+#pragma omp parallel for simd reduction(max:maxabs)
+		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
+		{
+			double re = array_data_spectral_space[i];
+			double im = array_data_spectral_space[i+1];
+			maxabs = std::max(maxabs, std::sqrt(re*re + im*im));
+		}
 
 		return maxabs;
 	}
@@ -995,6 +1040,42 @@ public:
 		return sum;
 	}
 
+
+#if SWEET_USE_SPECTRAL_SPACE
+	/**
+	 * return centroid of frequency
+	 */
+	double reduce_getFrequencyCentroid()	const
+	{
+		requestDataInSpectralSpace();
+
+		double nom = 0;
+		double denom = 0;
+
+		for (std::size_t j = 0; j < resolution_spec[1]; j++)
+		{
+			for (std::size_t i = 0; i < resolution_spec[0]; i++)
+			{
+				double re = getSpec_Re(j, i);
+				double im = getSpec_Im(j, i);
+
+				std::size_t ka = i;
+//				std::size_t ka = (i < resolution_spec[0] ? i : resolution_spec[0]-i);
+
+				// consider mirroring in y direction
+				std::size_t kb = (j < resolution_spec[1]/2 ? j : resolution_spec[1]-j);
+
+				double k = std::sqrt((double)(ka*ka)+(double)(kb*kb));
+				double value = std::sqrt(re*re+im*im);
+
+				nom += k*value;
+				denom += value;
+			}
+		}
+
+		return nom/denom;
+	}
+#endif
 
 public:
 	template <int S>
@@ -1137,8 +1218,6 @@ public:
 		aliasing_scaled = i_dataArray.aliasing_scaled;
 #endif
 
-//		std::cout << "Assignment operator called" << std::endl;
-
 		for (int i = 0; i < D; i++)
 		{
 			resolution[i] = i_dataArray.resolution[i];
@@ -1212,10 +1291,32 @@ public:
 			const DataArray<D> &i_array_data
 	)	const
 	{
-		DataArray<D> out  = DataArray<D>(this->resolution);
+		DataArray<D> out(this->resolution);
 		out.temporary_data = true;
 
-#if SWEET_USE_SPECTRAL_SPACE == 0
+#if SWEET_USE_SPECTRAL_SPACE
+		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
+
+		requestDataInSpectralSpace();
+		rw_array_data.requestDataInSpectralSpace();
+
+#pragma omp parallel for simd
+		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
+		{
+			double ar = array_data_spectral_space[i];
+			double ai = array_data_spectral_space[i+1];
+			double br = i_array_data.array_data_spectral_space[i];
+			double bi = i_array_data.array_data_spectral_space[i+1];
+
+			out.array_data_spectral_space[i] = ar*br - ai*bi;
+			out.array_data_spectral_space[i+1] = ar*bi + ai*br;
+		}
+
+		out.array_data_spectral_space_valid = true;
+		out.array_data_cartesian_space_valid = false;
+
+#else
+
 		int res_x = resolution[0];
 		int res_y = resolution[1];
 
@@ -1255,27 +1356,6 @@ public:
 		{
 			std::cerr << "Not yet implemented" << std::endl;
 		}
-#else
-		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
-
-
-		requestDataInSpectralSpace();
-		rw_array_data.requestDataInSpectralSpace();
-
-#pragma omp parallel for simd
-		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
-		{
-			double ar = array_data_spectral_space[i];
-			double ai = array_data_spectral_space[i+1];
-			double br = i_array_data.array_data_spectral_space[i];
-			double bi = i_array_data.array_data_spectral_space[i+1];
-
-			out.array_data_spectral_space[i] = ar*br - ai*bi;
-			out.array_data_spectral_space[i+1] = ar*bi + ai*br;
-		}
-
-		out.array_data_spectral_space_valid = true;
-		out.array_data_cartesian_space_valid = false;
 #endif
 
 		return out;
@@ -1284,17 +1364,23 @@ public:
 
 #if SWEET_USE_SPECTRAL_SPACE
 	/**
-	 * Apply a linear operator given by this class to the input data array.
+	 * Invert the application of a linear operator in spectral space.
+	 * The operator is given in i_array_data
 	 */
 	inline
 	DataArray<D> spec_div_element_wise(
-			const DataArray<D> &i_array_data
+			const DataArray<D> &i_array_data,	///< operator
+			double i_denom_zeros_scalar = 0.0,
+			double i_tolerance = 1e-14
 	)	const
 	{
-		DataArray<D> out  = DataArray<D>(this->resolution);
+		DataArray<D> out(this->resolution);
 		out.temporary_data = true;
 
 		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
+
+		// only makes sense, if this is an operator created in spectral space
+		assert(i_array_data.array_data_spectral_space_valid == true);
 
 		requestDataInSpectralSpace();
 		rw_array_data.requestDataInSpectralSpace();
@@ -1307,12 +1393,20 @@ public:
 			double br = i_array_data.array_data_spectral_space[i];
 			double bi = i_array_data.array_data_spectral_space[i+1];
 
-			out.array_data_spectral_space[i] = ar*br - ai*bi;
-			out.array_data_spectral_space[i+1] = ai*br - ar*bi;
+			double den = (br*br+bi*bi);
+			double fac = 1.0/den;
 
-			double den = 1.0/(br*br-bi*bi);
-			out.array_data_spectral_space[i] *= den;
-			out.array_data_spectral_space[i+1] *= den;
+			if (std::abs(den) < i_tolerance)
+			{
+				// For Laplace solution, this is the integration constant C
+				out.array_data_spectral_space[i] = ar*i_denom_zeros_scalar;
+				out.array_data_spectral_space[i+1] = ai*i_denom_zeros_scalar;
+			}
+			else
+			{
+				out.array_data_spectral_space[i] = (ar*br + ai*bi)*fac;
+				out.array_data_spectral_space[i+1] = (ai*br - ar*bi)*fac;
+			}
 		}
 
 		out.array_data_spectral_space_valid = true;
@@ -1320,7 +1414,10 @@ public:
 
 		return out;
 	}
+#endif
 
+
+#if SWEET_USE_SPECTRAL_DEALIASING
 
 	/**
 	 * scale the solution to avoid aliasing effects for handling non-linear terms
@@ -1572,6 +1669,104 @@ public:
 
 
 	/**
+	 * Compute element-wise addition
+	 */
+	inline
+	DataArray<D>& operator+=(
+			const double i_value
+	)
+	{
+#if SWEET_USE_SPECTRAL_SPACE
+
+		requestDataInSpectralSpace();
+
+		double scale = resolution[0]*resolution[1];
+		array_data_spectral_space[0] += i_value*scale;
+
+		array_data_cartesian_space_valid = false;
+		array_data_spectral_space_valid = true;
+
+#else
+
+		requestDataInCartesianSpace();
+
+		#pragma omp parallel for simd
+		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
+			array_data_cartesian_space[i] += i_value;
+
+#endif
+		return *this;
+	}
+
+
+
+	/**
+	 * Compute multiplication with scalar
+	 */
+	inline
+	DataArray<D>& operator*=(
+			const double i_value
+	)
+	{
+#if SWEET_USE_SPECTRAL_SPACE
+
+		requestDataInSpectralSpace();
+
+		#pragma omp parallel for simd
+		for (std::size_t i = 0; i < array_data_spectral_length; i++)
+			array_data_spectral_space[i] *= i_value;
+
+
+		array_data_cartesian_space_valid = false;
+		array_data_spectral_space_valid = true;
+
+#else
+
+		requestDataInCartesianSpace();
+
+		#pragma omp parallel for simd
+		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
+			array_data_cartesian_space[i] *= i_value;
+
+#endif
+		return *this;
+	}
+
+
+	/**
+	 * Compute division with scalar
+	 */
+	inline
+	DataArray<D>& operator/=(
+			const double i_value
+	)
+	{
+#if SWEET_USE_SPECTRAL_SPACE
+
+		requestDataInSpectralSpace();
+
+		#pragma omp parallel for simd
+		for (std::size_t i = 0; i < array_data_spectral_length; i++)
+			array_data_spectral_space[i] /= i_value;
+
+
+		array_data_cartesian_space_valid = false;
+		array_data_spectral_space_valid = true;
+
+#else
+
+		requestDataInCartesianSpace();
+
+		#pragma omp parallel for simd
+		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
+			array_data_cartesian_space[i] /= i_value;
+
+#endif
+		return *this;
+	}
+
+
+	/**
 	 * Compute element-wise subtraction
 	 */
 	inline
@@ -1590,9 +1785,8 @@ public:
 			array_data_spectral_space[i] -=
 					i_array_data.array_data_spectral_space[i];
 
-		array_data_spectral_space_valid = true;
 		array_data_cartesian_space_valid = false;
-
+		array_data_spectral_space_valid = true;
 #else
 
 		requestDataInCartesianSpace();
@@ -1618,7 +1812,7 @@ public:
 	{
 		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
 
-		DataArray<D> out  = DataArray<D>(resolution);
+		DataArray<D> out(resolution);
 		out.temporary_data = true;
 
 #if SWEET_USE_SPECTRAL_SPACE
@@ -1632,8 +1826,8 @@ public:
 					array_data_spectral_space[i]-
 					i_array_data.array_data_spectral_space[i];
 
-		out.array_data_spectral_space_valid = true;
 		out.array_data_cartesian_space_valid = false;
+		out.array_data_spectral_space_valid = true;
 
 #else
 
@@ -1675,6 +1869,9 @@ public:
 		double scale = resolution[0]*resolution[1];
 		out.array_data_spectral_space[0] -= i_value*scale;
 
+		out.array_data_cartesian_space_valid = false;
+		out.array_data_spectral_space_valid = true;
+
 #else
 
 		requestDataInCartesianSpace();
@@ -1689,6 +1886,42 @@ public:
 	}
 
 
+	/**
+	 * Compute element-wise subtraction
+	 */
+	inline
+	DataArray<D> valueMinusThis(
+			const double i_value
+	)	const
+	{
+		DataArray<D> out(this->resolution);
+		out.temporary_data = true;
+
+#if SWEET_USE_SPECTRAL_SPACE
+
+		requestDataInSpectralSpace();
+
+		#pragma omp parallel for simd
+		for (std::size_t i = 0; i < array_data_spectral_length; i++)
+			out.array_data_spectral_space[i] = array_data_spectral_space[i];
+
+		double scale = resolution[0]*resolution[1];
+		out.array_data_spectral_space[0] = i_value*scale - out.array_data_spectral_space[0];
+
+		out.array_data_cartesian_space_valid = false;
+		out.array_data_spectral_space_valid = true;
+
+#else
+
+		requestDataInCartesianSpace();
+
+#pragma omp parallel for simd
+		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
+			out.array_data_cartesian_space[i] = i_value - array_data_cartesian_space[i];
+
+#endif
+		return out;
+	}
 
 	/**
 	 * Invert sign
@@ -1698,9 +1931,14 @@ public:
 	{
 #if SWEET_USE_SPECTRAL_SPACE
 
+		requestDataInSpectralSpace();
+
 		#pragma omp parallel for simd
 		for (std::size_t i = 0; i < array_data_spectral_length; i++)
 			array_data_spectral_space[i] = -array_data_spectral_space[i];
+
+		array_data_cartesian_space_valid = false;
+		array_data_spectral_space_valid = true;
 
 #else
 
@@ -1708,6 +1946,7 @@ public:
 
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			array_data_cartesian_space[i] = -array_data_cartesian_space[i];
+
 #endif
 
 		return *this;
@@ -1725,7 +1964,7 @@ public:
 	{
 		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
 
-		DataArray<D> out  = DataArray<D>(i_array_data.resolution);
+		DataArray<D> out(i_array_data.resolution);
 		out.temporary_data = true;
 
 #if SWEET_USE_SPECTRAL_SPACE && SWEET_USE_SPECTRAL_DEALIASING
@@ -1781,38 +2020,26 @@ public:
 			const double i_value
 	)	const
 	{
-		DataArray<D> out  = DataArray<D>(resolution);
+		DataArray<D> out(resolution);
 		out.temporary_data = true;
 
 #if SWEET_USE_SPECTRAL_SPACE
-		if (array_data_spectral_space_valid)
-		{
-#pragma omp parallel for simd
-			for (std::size_t i = 0; i < array_data_spectral_length; i++)
-				out.array_data_spectral_space[i] =
-						array_data_spectral_space[i]*i_value;
+		requestDataInSpectralSpace();
 
-			out.array_data_cartesian_space_valid = false;
-			out.array_data_spectral_space_valid = true;
-			return out;
-		}
+		#pragma omp parallel for simd
+		for (std::size_t i = 0; i < array_data_spectral_length; i++)
+			out.array_data_spectral_space[i] =
+					array_data_spectral_space[i]*i_value;
+
+		out.array_data_cartesian_space_valid = false;
+		out.array_data_spectral_space_valid = true;
+
+#else
+		#pragma omp parallel for simd
+		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
+			out.array_data_cartesian_space[i] =
+					array_data_cartesian_space[i]*i_value;
 #endif
-
-
-#if SWEET_USE_SPECTRAL_SPACE
-		assert(array_data_cartesian_space_valid == true);
-#endif
-		{
-#pragma omp parallel for simd
-			for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-				out.array_data_cartesian_space[i] =
-						array_data_cartesian_space[i]*i_value;
-
-#if SWEET_USE_SPECTRAL_SPACE
-			out.array_data_spectral_space_valid = false;
-			out.array_data_cartesian_space_valid = true;
-#endif
-		}
 		return out;
 	}
 
@@ -1830,6 +2057,31 @@ public:
 		DataArray<D> out(this->resolution);
 		out.temporary_data = true;
 
+#if SWEET_USE_SPECTRAL_SPACE && SWEET_USE_SPECTRAL_DEALIASING
+
+		DataArray<D> u = aliasing_scaleUp();
+		DataArray<D> v = rw_array_data.aliasing_scaleUp();
+
+		u.requestDataInCartesianSpace();
+		v.requestDataInCartesianSpace();
+
+		DataArray<D> scaled_output(u.resolution);
+
+		#pragma omp parallel for simd
+		for (std::size_t i = 0; i < scaled_output.array_data_cartesian_length; i++)
+			scaled_output.array_data_cartesian_space[i] =
+					u.array_data_cartesian_space[i]/
+					v.array_data_cartesian_space[i];
+
+		scaled_output.array_data_cartesian_space_valid = true;
+		scaled_output.array_data_spectral_space_valid = false;
+
+		out = scaled_output.aliasing_scaleDown(out.resolution);
+
+		out.array_data_cartesian_space_valid = false;
+		out.array_data_spectral_space_valid = true;
+
+#else
 		requestDataInCartesianSpace();
 		rw_array_data.requestDataInCartesianSpace();
 
@@ -1843,9 +2095,10 @@ public:
 		out.array_data_cartesian_space_valid = true;
 		out.array_data_spectral_space_valid = false;
 #endif
+
+#endif
 		return out;
 	}
-
 
 
 	friend
@@ -1916,6 +2169,41 @@ DataArray<2> operator*(
 )
 {
 	return ((DataArray<2>&)i_array_data)*i_value;
+}
+
+/**
+ * operator to support operations such as:
+ *
+ * 1.5 - arrayData;
+ *
+ * Otherwise, we'd have to write it as arrayData-1.5
+ *
+ */
+inline
+static
+DataArray<2> operator-(
+		const double i_value,
+		const DataArray<2> &i_array_data
+)
+{
+	return ((DataArray<2>&)i_array_data).valueMinusThis(i_value);
+}
+/**
+ * operator to support operations such as:
+ *
+ * 1.5 + arrayData;
+ *
+ * Otherwise, we'd have to write it as arrayData+1.5
+ *
+ */
+inline
+static
+DataArray<2> operator+(
+		const double i_value,
+		const DataArray<2> &i_array_data
+)
+{
+	return ((DataArray<2>&)i_array_data)+i_value;
 }
 
 #endif /* SRC_DATAARRAY_HPP_ */

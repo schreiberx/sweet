@@ -43,6 +43,9 @@ int main(int i_argc, char *i_argv[])
 	double prev_error_x = 0;
 	double prev_error_y = 0;
 
+	double prev_error2_x = 0;
+	double prev_error2_y = 0;
+
 	double freq_x = 2.0;
 	double freq_y = 4.0;
 
@@ -69,6 +72,8 @@ int main(int i_argc, char *i_argv[])
 		DataArray<2> v(res);
 		DataArray<2> h_diff_x(res);
 		DataArray<2> h_diff_y(res);
+		DataArray<2> h_diff2_x(res);
+		DataArray<2> h_diff2_y(res);
 
 		{
 			DataArray<2> zero(res);
@@ -160,8 +165,8 @@ int main(int i_argc, char *i_argv[])
 		{
 			for (std::size_t i = 0; i < parameters.res[0]; i++)
 			{
-				double x = ((double)i)/(double)parameters.res[0];
-				double y = ((double)j)/(double)parameters.res[1];
+				double x = ((double)i+0.5)/(double)parameters.res[0];
+				double y = ((double)j+0.5)/(double)parameters.res[1];
 
 #define FUN_ID	1
 
@@ -205,6 +210,28 @@ int main(int i_argc, char *i_argv[])
 					sin(freq_x*M_PIl*x)*freq_y*M_PIl*sin(freq_y*M_PIl*y)/pow(cos(freq_y*M_PIl*y)+2.0, 2.0)/(double)parameters.sim_domain_length[1]*scale
 #endif
 				);
+
+				h_diff2_x.set(
+					j, i,
+#if FUN_ID==1
+					freq_x*freq_x*M_PIl*M_PIl*-1.0*sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)/((double)parameters.sim_domain_length[0]*scale*(double)parameters.sim_domain_length[0]*scale)
+#elif FUN_ID==2
+//					2.0*sin(freq_x*M_PIl*x)*std::pow(cos(freq_y*M_PIl*y),2.0)*freq_x*M_PIl*cos(freq_x*M_PIl*x)/(double)parameters.sim_domain_length[0]*scale
+#elif FUN_ID==3
+//					freq_x*M_PIl*cos(freq_x*M_PIl*x)/(cos(freq_y*M_PIl*y)+2.0)/(double)parameters.sim_domain_length[0]*scale
+#endif
+				);
+
+				h_diff2_y.set(
+					j, i,
+#if FUN_ID==1
+					-sin(freq_x*M_PIl*x)*freq_y*M_PIl*freq_y*M_PIl*cos(freq_y*M_PIl*y)/((double)parameters.sim_domain_length[1]*scale*(double)parameters.sim_domain_length[1]*scale)
+#elif FUN_ID==2
+//					-2.0*std::pow(std::sin(freq_x*M_PIl*x),2.0)*std::cos(freq_y*M_PIl*y)*freq_y*M_PIl*std::sin(freq_y*M_PIl*y)/(double)parameters.sim_domain_length[1]*scale
+#elif FUN_ID==3
+//					sin(freq_x*M_PIl*x)*freq_y*M_PIl*sin(freq_y*M_PIl*y)/pow(cos(freq_y*M_PIl*y)+2.0, 2.0)/(double)parameters.sim_domain_length[1]*scale
+#endif
+				);
 			}
 		}
 
@@ -220,11 +247,16 @@ int main(int i_argc, char *i_argv[])
 
 		double err_x = (op.diff_c_x(h)-h_diff_x).reduce_sumAbs_quad()*normalization;
 		double err_y = (op.diff_c_y(h)-h_diff_y).reduce_sumAbs_quad()*normalization;
+
+		double err2_x = (op.diff2_c_x(h)-h_diff2_x).reduce_sumAbs_quad()*normalization;
+		double err2_y = (op.diff2_c_y(h)-h_diff2_y).reduce_sumAbs_quad()*normalization;
+
 		double err_z = (u*v-h).reduce_sumAbs_quad()*normalization;
+
 
 		if (parameters.use_spectral_diffs)
 		{
-			std::cout << "(" << res_x << "x" << res_y << ")\terr_x=" << err_x << "\terr_y=" << err_y << "\terr_z=" << err_z << std::endl;
+			std::cout << "(" << res_x << "x" << res_y << ")\terr_x=" << err_x << "\terr_y=" << err_y << "\terr2_x=" << err2_x << "\terr2_y=" << err2_y << "\terr_z=" << err_z << std::endl;
 
 			if (err_x > eps)
 			{
@@ -238,22 +270,66 @@ int main(int i_argc, char *i_argv[])
 				exit(-1);
 			}
 
+			if (err2_x > eps)
+			{
+				std::cerr << "SPEC: Error threshold for diff2-X too high for spectral differentiation!" << std::endl;
+				exit(-1);
+			}
+
+			if (err2_y > eps)
+			{
+				std::cerr << "SPEC: Error threshold for diff2-Y too high for spectral differentiation!" << std::endl;
+				exit(-1);
+			}
+
+
 #if FUN_ID == 1
-			if (abs(err_z) > eps)
+			if (err_z > eps)
 			{
 				std::cerr << "SPEC: Error threshold exceeded for err_z!" << std::endl;
 				exit(-1);
 			}
 #endif
+
+			double err3_laplace = (h-op.laplace(h).spec_div_element_wise(op.diff2_c_x+op.diff2_c_y)).reduce_sumAbs_quad()*normalization;
+			std::cout << "SPEC: Error threshold for laplace and inverse: " << err3_laplace << std::endl;
+			if (err3_laplace > eps)
+			{
+				std::cerr << "SPEC: Error threshold for laplace too high for spectral differentiation!" << std::endl;
+				exit(-1);
+			}
+
+			double err_int_x = (h-h_diff_x.spec_div_element_wise(op.diff_c_x)).reduce_sumAbs_quad()*normalization;
+			std::cout << "Testing spectral inverse x " << err_int_x << std::endl;
+
+			if (err_int_x > eps)
+			{
+				std::cout << err_int_x << std::endl;
+				std::cerr << "SPEC: Error threshold for integration in x too high for spectral integration!" << std::endl;
+				exit(-1);
+			}
+
+			double err_int_y = (h-h_diff_y/op.diff_c_y).reduce_sumAbs_quad()*normalization;
+			std::cout << "Testing spectral inverse y " << err_int_y << std::endl;
+
+			if (err_int_y > eps)
+			{
+				std::cout << err_int_y << std::endl;
+				std::cerr << "SPEC: Error threshold for integration in y too high for spectral integration!" << std::endl;
+				exit(-1);
+			}
 		}
 		else
 		{
 			double conv_x = prev_error_x/err_x;
 			double conv_y = prev_error_y/err_y;
+			double conv2_x = prev_error2_x/err2_x;
+			double conv2_y = prev_error2_y/err2_y;
 			std::cout <<
 					"(" << res_x << "x" << res_y << ")" <<
-					"\terr_x=" << err_x << "\terr_y=" << err_y << "\terr_z=" << err_z <<
+					"\terr_x=" << err_x << "\terr_y=" << err_y << "\terr2_x=" << err2_x << "\terr2_y=" << err2_y << "\terr_z=" << err_z <<
 					"\tconv_x=" << conv_x << "\tconv_y=" << conv_y  <<
+					"\tconv2_x=" << conv_x << "\tconv2_y=" << conv_y  <<
 					std::endl;
 
 
@@ -268,6 +344,20 @@ int main(int i_argc, char *i_argv[])
 			if (abs(conv_y-4.0) > eps_convergence)
 			{
 				std::cerr << "Cart: Error threshold exceeded for conv_y, no convergence given!" << std::endl;
+				exit(-1);
+			}
+
+			if (conv2_x != 0)
+			if (abs(conv2_x-4.0) > eps_convergence)
+			{
+				std::cerr << "Cart: Error threshold exceeded for conv2_x, no convergence given!" << std::endl;
+				exit(-1);
+			}
+
+			if (conv2_y != 0)
+			if (abs(conv2_y-4.0) > eps_convergence)
+			{
+				std::cerr << "Cart: Error threshold exceeded for conv2_y, no convergence given!" << std::endl;
 				exit(-1);
 			}
 

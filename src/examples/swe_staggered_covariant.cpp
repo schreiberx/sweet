@@ -6,7 +6,8 @@
 #include <sweet/SimulationParameters.hpp>
 #include <sweet/TimesteppingRK.hpp>
 #include <sweet/SWEValidationBenchmarks.hpp>
-#include "sweet/Operators2D.hpp"
+#include <sweet/Operators2D.hpp>
+#include <sweet/Stopwatch.hpp>
 
 #include <ostream>
 #include <sstream>
@@ -36,6 +37,10 @@ public:
 	TimesteppingRK timestepping;
 
 	int last_timestep_nr_update_diagnostics = -1;
+
+	double benchmark_diff_h;
+	double benchmark_diff_u;
+	double benchmark_diff_v;
 
 	/**
 	 * See "The Dynamics of Finite-Difference Models of the Shallow-Water Equations", Robert Sadourny
@@ -98,10 +103,13 @@ public:
 	}
 
 
-
 	void reset()
 	{
 		last_timestep_nr_update_diagnostics = -1;
+
+		benchmark_diff_h = 0;
+		benchmark_diff_u = 0;
+		benchmark_diff_v = 0;
 
 		parameters.reset();
 
@@ -227,11 +235,11 @@ public:
 	 * P_t, u_t and v_t
 	 */
 	void p_run_euler_timestep_update(
-			const DataArray<2> &i_P,	///< prognostic variables
+			const DataArray<2> &i_h,	///< prognostic variables
 			const DataArray<2> &i_u,	///< prognostic variables
 			const DataArray<2> &i_v,	///< prognostic variables
 
-			DataArray<2> &o_P_t,	///< time updates
+			DataArray<2> &o_h_t,	///< time updates
 			DataArray<2> &o_u_t,	///< time updates
 			DataArray<2> &o_v_t,	///< time updates
 
@@ -261,18 +269,18 @@ public:
 		/*
 		 * U and V updates
 		 */
-		U = op.avg_b_x(i_P)*i_u;
-		V = op.avg_b_y(i_P)*i_v;
+		U = op.avg_b_x(i_h)*i_u;
+		V = op.avg_b_y(i_h)*i_v;
 
-		H = parameters.sim_g*i_P + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
+		H = parameters.sim_g*i_h + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
 
 		if (parameters.setup_scenario != 5)
 		{
-			eta = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + parameters.sim_f) / op.avg_b_x(op.avg_b_y(i_P));
+			eta = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + parameters.sim_f) / op.avg_b_x(op.avg_b_y(i_h));
 		}
 		else
 		{
-			eta = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + f) / op.avg_b_x(op.avg_b_y(i_P));
+			eta = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + f) / op.avg_b_x(op.avg_b_y(i_h));
 		}
 
 		o_u_t = op.avg_f_y(eta*op.avg_b_x(V)) - op.diff_b_x(H);
@@ -320,7 +328,7 @@ public:
 		//			limit_visc = (viscocity*0.5)*((hx*hy)*0.5);
 
 				// limit by gravitational acceleration
-				double limit_gh = std::min(parameters.sim_cell_size[0], parameters.sim_cell_size[1])/std::sqrt(parameters.sim_g*i_P.reduce_maxAbs());
+				double limit_gh = std::min(parameters.sim_cell_size[0], parameters.sim_cell_size[1])/std::sqrt(parameters.sim_g*i_h.reduce_maxAbs());
 
 				if (parameters.verbosity > 2)
 					std::cerr << "limit_speed: " << limit_speed << ", limit_visc: " << limit_visc << ", limit_gh: " << limit_gh << std::endl;
@@ -338,16 +346,16 @@ public:
 			if (!parameters.timestepping_up_and_downwinding)
 			{
 				// standard update
-				o_P_t = -op.diff_f_x(U) - op.diff_f_y(V);
+				o_h_t = -op.diff_f_x(U) - op.diff_f_y(V);
 			}
 			else
 			{
 				// up/down winding
 				compute_upwinding_P_updates(
-						i_P,
+						i_h,
 						i_u,
 						i_v,
-						o_P_t
+						o_h_t
 					);
 			}
 		}
@@ -363,20 +371,20 @@ public:
 			if (!parameters.timestepping_up_and_downwinding)
 			{
 				// recompute U and V
-				U = op.avg_b_x(i_P)*(i_u+o_dt*o_u_t);
-				V = op.avg_b_y(i_P)*(i_v+o_dt*o_v_t);
+				U = op.avg_b_x(i_h)*(i_u+o_dt*o_u_t);
+				V = op.avg_b_y(i_h)*(i_v+o_dt*o_v_t);
 
 				// update based on new u and v values
-				o_P_t = -op.diff_f_x(U) - op.diff_f_y(V);
+				o_h_t = -op.diff_f_x(U) - op.diff_f_y(V);
 			}
 			else
 			{
 				// update based on new u and v values
 				compute_upwinding_P_updates(
-						i_P,
+						i_h,
 						i_u+o_dt*o_u_t,
 						i_v+o_dt*o_v_t,
-						o_P_t
+						o_h_t
 					);
 			}
 		}
@@ -436,8 +444,6 @@ public:
 			// this should be zero for the steady state test
 			if (parameters.setup_scenario == 2 || parameters.setup_scenario == 3 || parameters.setup_scenario == 4)
 			{
-				double test_val;
-
 				// set data to something to overcome assertion error
 				for (std::size_t j = 0; j < parameters.res[1]; j++)
 					for (std::size_t i = 0; i < parameters.res[0]; i++)
@@ -449,8 +455,8 @@ public:
 						tmp.set(j, i, SWEValidationBenchmarks::return_h(parameters, x, y));
 					}
 
-				test_val = (prog_P-tmp).reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
-				o_ostream << "\t" << test_val;
+				benchmark_diff_h = (prog_P-tmp).reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
+				o_ostream << "\t" << benchmark_diff_h;
 
 				// set data to something to overcome assertion error
 				for (std::size_t j = 0; j < parameters.res[1]; j++)
@@ -463,8 +469,8 @@ public:
 						tmp.set(j, i, SWEValidationBenchmarks::return_u(parameters, x, y));
 					}
 
-				test_val = (prog_u-tmp).reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
-				o_ostream << "\t" << test_val;
+				benchmark_diff_u = (prog_u-tmp).reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
+				o_ostream << "\t" << benchmark_diff_v;
 
 				for (std::size_t j = 0; j < parameters.res[1]; j++)
 					for (std::size_t i = 0; i < parameters.res[0]; i++)
@@ -476,8 +482,8 @@ public:
 						tmp.set(j,i, SWEValidationBenchmarks::return_v(parameters, x, y));
 					}
 
-				test_val = (prog_v-tmp).reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
-				o_ostream << "\t" << test_val;
+				benchmark_diff_v = (prog_v-tmp).reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
+				o_ostream << "\t" << benchmark_diff_v;
 			}
 
 			o_ostream << std::endl;
@@ -601,15 +607,38 @@ int main(int i_argc, char *i_argv[])
 
 	parameters.setup(i_argc, i_argv);
 
+	if (parameters.use_spectral_diffs)
+	{
+		std::cerr << "Spectral differentiation not yet supported for staggered grid!" << std::endl;
+		return -1;
+	}
+
 	SimulationSWEStaggered *simulationSWE = new SimulationSWEStaggered;
 
 	std::ostringstream buf;
 	buf << std::setprecision(14);
 
+
+
 #if SWEET_GUI
 	VisSweet<SimulationSWEStaggered> visSweet(simulationSWE);
 #else
 	simulationSWE->reset();
+
+	Stopwatch time;
+	time.reset();
+
+
+	double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
+
+	if (parameters.verbosity > 1)
+	{
+		simulationSWE->update_diagnostics();
+		diagnostics_energy_start = parameters.diagnostics_energy;
+		diagnostics_mass_start = parameters.diagnostics_mass;
+		diagnostics_potential_entrophy_start = parameters.diagnostics_potential_entrophy;
+	}
+
 	while(true)
 	{
 		if (parameters.verbosity > 1)
@@ -636,9 +665,31 @@ int main(int i_argc, char *i_argv[])
 			break;
 		}
 	}
+
+	time.stop();
+
+	double seconds = time();
+
+	std::cout << "Simulation time: " << seconds << " seconds" << std::endl;
+	std::cout << "Time per time step: " << seconds/(double)parameters.status_timestep_nr << " sec/ts" << std::endl;
+
+
+	if (parameters.verbosity > 1)
+	{
+		std::cout << "DIAGNOSTICS ENERGY DIFF:\t" << std::abs(parameters.diagnostics_energy-diagnostics_energy_start) << std::endl;
+		std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs(parameters.diagnostics_mass-diagnostics_mass_start) << std::endl;
+		std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs(parameters.diagnostics_potential_entrophy-diagnostics_potential_entrophy_start) << std::endl;
+
+		if (parameters.setup_scenario == 2 || parameters.setup_scenario == 3 || parameters.setup_scenario == 4)
+		{
+			std::cout << "DIAGNOSTICS BENCHMARK DIFF H:\t" << simulationSWE->benchmark_diff_h << std::endl;
+			std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationSWE->benchmark_diff_u << std::endl;
+			std::cout << "DIAGNOSTICS BENCHMARK DIFF V:\t" << simulationSWE->benchmark_diff_v << std::endl;
+		}
+	}
 #endif
 
 	delete simulationSWE;
 
-	return 1;
+	return 0;
 }
