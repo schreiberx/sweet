@@ -19,15 +19,18 @@ vec3 blend2ndOrder(vec3 f)
 
 void main(void)
 {
-//	vec2 texd = 1.0/textureSize(sampler, 0);
-
 	float red_value = texture(sampler, rast_texture_coord).r;
+//	red_value = rast_texture_coord.x;
 
 	float limited_height = max(0.0, min(1.0, red_value));
-
+#if 1
 	frag_data.xyz = blend2ndOrder(
-					vec3(4.0)*(limited_height-vec3(0.75, 0.5, 0.25))
+					vec3(3.3)*(limited_height-vec3(0.75, 0.5, 0.25))
 				);
-
+#else
+	frag_data.xyz = blend2ndOrder(
+					vec3(3.0)*(limited_height-vec3(1.0, 0.5, 0.0))
+				);
+#endif
 	return;
 }

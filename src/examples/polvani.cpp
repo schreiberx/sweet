@@ -56,7 +56,7 @@ public:
 		eta(parameters.res),
 		tmp(parameters.res),
 
-		op(parameters.res, parameters.sim_domain_length, parameters.use_spectral_diffs)
+		op(parameters.res, parameters.sim_domain_size, parameters.use_spectral_diffs)
 	{
 		reset();
 	}
@@ -73,7 +73,14 @@ public:
 		parameters.status_timestep_nr = 0;
 		parameters.status_simulation_time = 0;
 
-#if 0
+		if (init_h != nullptr)
+		{
+			prog_h = *init_h;
+			prog_u = *init_u;
+			prog_v = *init_v;
+			return;
+		}
+
 		prog_h.setAll(parameters.setup_h0);
 		prog_u.setAll(0);
 		prog_v.setAll(0);
@@ -82,8 +89,8 @@ public:
 		{
 			for (std::size_t i = 0; i < parameters.res[0]; i++)
 			{
-				double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_length[0];
-				double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_length[1];
+				double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
+				double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_size[1];
 
 				prog_h.set(j, i, SWEValidationBenchmarks::return_h(parameters, x, y));
 				prog_u.set(j, i, SWEValidationBenchmarks::return_u(parameters, x, y));
@@ -91,15 +98,6 @@ public:
 			}
 		}
 
-#else
-
-		if (init_h != nullptr)
-		{
-			prog_h = *init_h;
-			prog_u = *init_u;
-			prog_v = *init_v;
-		}
-#endif
 	}
 
 
@@ -113,7 +111,7 @@ public:
 
 		last_timestep_nr_update_diagnostics = parameters.status_timestep_nr;
 
-		double normalization = (parameters.sim_domain_length[0]*parameters.sim_domain_length[1]) /
+		double normalization = (parameters.sim_domain_size[0]*parameters.sim_domain_size[1]) /
 								((double)parameters.res[0]*(double)parameters.res[1]);
 
 		// mass
@@ -364,13 +362,13 @@ public:
 					for (std::size_t i = 0; i < parameters.res[0]; i++)
 					{
 						// h
-						double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_length[0];
-						double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_length[1];
+						double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
+						double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_size[1];
 
 						tmp.set(j, i, SWEValidationBenchmarks::return_h(parameters, x, y));
 					}
 
-				benchmark_diff_h = (prog_h-tmp).reduce_sumAbs_quad() / (double)(parameters.res[0]*parameters.res[1]);
+				benchmark_diff_h = (prog_h-tmp).reduce_norm1_quad() / (double)(parameters.res[0]*parameters.res[1]);
 				o_ostream << "\t" << benchmark_diff_h;
 
 				// set data to something to overcome assertion error
@@ -378,26 +376,26 @@ public:
 					for (std::size_t i = 0; i < parameters.res[0]; i++)
 					{
 						// u space
-						double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_length[0];
-						double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_length[1];
+						double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
+						double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_size[1];
 
 						tmp.set(j, i, SWEValidationBenchmarks::return_u(parameters, x, y));
 					}
 
-				benchmark_diff_u = (prog_u-tmp).reduce_sumAbs_quad() / (double)(parameters.res[0]*parameters.res[1]);
+				benchmark_diff_u = (prog_u-tmp).reduce_norm1_quad() / (double)(parameters.res[0]*parameters.res[1]);
 				o_ostream << "\t" << benchmark_diff_u;
 
 				for (std::size_t j = 0; j < parameters.res[1]; j++)
 					for (std::size_t i = 0; i < parameters.res[0]; i++)
 					{
 						// v space
-						double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_length[0];
-						double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_length[1];
+						double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
+						double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_size[1];
 
 						tmp.set(j, i, SWEValidationBenchmarks::return_v(parameters, x, y));
 					}
 
-				benchmark_diff_v = (prog_v-tmp).reduce_sumAbs_quad() / (double)(parameters.res[0]*parameters.res[1]);
+				benchmark_diff_v = (prog_v-tmp).reduce_norm1_quad() / (double)(parameters.res[0]*parameters.res[1]);
 				o_ostream << "\t" << benchmark_diff_v;
 			}
 
@@ -456,28 +454,28 @@ public:
 	{
 		int id = parameters.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
 		*o_dataArray = vis_arrays[id].data;
-		*o_aspect_ratio = parameters.sim_domain_length[1] / parameters.sim_domain_length[0];
+		*o_aspect_ratio = parameters.sim_domain_size[1] / parameters.sim_domain_size[0];
 #if 0
 		DataArray<2> &o = (DataArray<2> &)*vis_arrays[id].data;
-		o.setAllSpec(0, 0);
-		o.setSpec(0, 0, 1, 0);
+		o.spec_setAll(0, 0);
+		o.spec_set(0, 0, 1, 0);
 
 		if (id == 0)
 		{
-			o.setSpec(0, 0, 1, 0);
+			o.spec_set(0, 0, 1, 0);
 		}
 		else if (id == 1)
 		{
-			o.setSpec(0, 0, 1, 1);
+			o.spec_set(0, 0, 1, 1);
 		}
 		else if (id == 2)
 		{
-			o.setSpec(0, 1, 1, 0);
+			o.spec_set(0, 1, 1, 0);
 		}
 		else if (id == 3)
 		{
-			o.setSpec(0, 1, 1, 1);
-//			o.setSpec(0, o.resolution_spec[0]-1, 1, 0);
+			o.spec_set(0, 1, 1, 1);
+//			o.spec_set(0, o.resolution_spec[0]-1, 1, 0);
 		}
 #endif
 	}
@@ -570,7 +568,7 @@ void compute_polvani_initialization(
 	//	srand(0x15051982);
 		srand(time(NULL));
 
-		Operators2D op(parameters.res, parameters.sim_domain_length, parameters.use_spectral_diffs);
+		Operators2D op(parameters.res, parameters.sim_domain_size, parameters.use_spectral_diffs);
 
 		/*
 		 * see Polvani et. al: Coherent structures of shallow-water turbulence
@@ -593,19 +591,97 @@ void compute_polvani_initialization(
 			{
 				std::size_t ka = i;
 				std::size_t kb = (j < energy_init.resolution_spec[1]/2 ? j : energy_init.resolution_spec[1]-j);
+				std::size_t sign = (j < energy_init.resolution_spec[1]/2 ? 1 : -1);
 				assert(kb >= 0 && kb <= energy_init.resolution_spec[1]/2);
 
 				double k = std::sqrt((double)(ka*ka)+(double)(kb*kb));
 
 				// compute energy spectrum
 				double energy = pow(k, m*0.5)/pow(k+k0, m);
-	//			double energy = exp(-pow(k-k0,2));
 
 				assert(energy >= 0);
+				energy_init.spec_set(j, i, energy, 0);
 
-				energy_init.setSpec(j, i, energy, 0);
+				if (ka*ka+kb*kb == 1)
+					energy_init.spec_set(j, i, 1, 0);
+				else
+					energy_init.spec_set(j, i, 0, 0);
+
+				/**
+				 * Information on real FFT
+				 * x and y are coordinates in the spectral space
+				 * with x halfed in one dimension.
+				 *
+				 * x-direction:
+				 *    real: cos frequencies of M_PI*2.0*x
+				 *    complex: sin frequencies of M_PI*2.0*x
+				 *
+				 *    values at x=res-1: highest frequency
+				 *
+				 *    note, that the amplitudes for the frequencies set
+				 *    for the x direction are of double magnitude compared
+				 *    to each one in the y-direction. This is due to the
+				 *    mirroring: Each value a-kind-of counts twice.
+				 *
+				 * y-direction:
+				 *    real: cos frequencies of M_PI*2.0*y
+				 *    complex: cos frequencies of M_PI*2.0*y
+				 *
+				 *    values at y=res-1: lowest non-constant frequency,
+				 *    equal to freq at y=1
+				 */
+#if 0
+				if (0)
+				{
+					if (j > 0)
+					{
+						energy_init.spec_set(j, i, 0, 0);
+					}
+					else
+					{
+						if (i == 0)
+							energy_init.spec_set(j, i, 0, 0);
+						else if (i == 1)
+							energy_init.spec_set(j, i, 1, 0);
+//						else if (i == energy_init.resolution_spec[0]-1)
+//							energy_init.spec_set(j, i, 1, 0);
+						else
+							energy_init.spec_set(j, i, 0, 0);
+					}
+				}
+
+				if (1)
+				{
+					if (i > 0)
+					{
+						energy_init.spec_set(j, i, 0, 0);
+					}
+					else
+					{
+						if (j == 0)
+							energy_init.spec_set(j, i, 0, 0);
+						else if (j == 1)
+							energy_init.spec_set(j, i, 1, 0);
+						else if (j == energy_init.resolution_spec[1]-1)
+							energy_init.spec_set(j, i, 1, 0);
+						else
+							energy_init.spec_set(j, i, 0, 0);
+					}
+				}
+#endif
 			}
 		}
+
+#if 0
+		double scale_energyx = 1.0/energy_init.reduce_rms();
+		scale_energyx *= 0.5*sqrt(2.0);
+		energy_init *= scale_energyx;
+
+		h = energy_init;
+		u.setAll(0);
+		v.setAll(0);
+		return;
+#endif
 
 		/**
 		 * See paper:
@@ -621,7 +697,7 @@ void compute_polvani_initialization(
 		 */
 
 		// compute rms
-		double scale_energy = 1.0/energy_init.reduce_rms();;
+		double scale_energy = 1.0/energy_init.reduce_rms();
 
 		// normalize to get desired velocity
 		scale_energy *= 0.5;
@@ -637,24 +713,26 @@ void compute_polvani_initialization(
 			for (std::size_t i = 0; i < psi.resolution_spec[0]; i++)
 			{
 				std::size_t ka = i;
-				std::size_t kb = (j < psi.resolution_spec[1]/2 ? j : psi.resolution_spec[1]-j);
+				std::size_t kb = (j < energy_init.resolution_spec[1]/2 ? j : energy_init.resolution_spec[1]-1-j);
 				assert(kb >= 0 && kb <= energy_init.resolution_spec[1]/2);
 
-				double k = std::sqrt((double)(ka*ka)+(double)(kb*kb));
-
-				// compute energy spectrum
-				double energy = energy_init.getSpec_Re(j, i);
-
-				if (k == 0)
+				if (ka == 0 && kb == 0)
 				{
-					psi.setSpec(j, i, 0, 0);
+					psi.spec_set(j, i, 0, 0);
 					continue;
 				}
 
+				// compute energy spectrum
+				double energy = energy_init.spec_getRe(j, i);
+
+				double k = std::sqrt((double)(ka*ka)+(double)(kb*kb));
 				double psi_abs = std::sqrt(energy*2.0/(k*k));
 
 				// compute random number \in [0;1[
 				double r = (double)rand()/((double)RAND_MAX+1);
+
+				// TODO: remove this!
+				r = 0;
 
 				// generate random phase shift
 				double psi_re = cos(2.0*M_PIl*r);
@@ -663,13 +741,21 @@ void compute_polvani_initialization(
 				psi_re *= psi_abs;
 				psi_im *= psi_abs;
 
-				psi.setSpec(j, i, psi_re, psi_im);
+				psi.spec_set(j, i, psi_re, psi_im);
+				psi.spec_set(j, i, psi_re, psi_im);
 			}
 		}
 
+#if 1
+		h = psi;
+		u.setAll(0);
+		v.setAll(0);
+		return;
+#endif
+
 		std::cout << "CART Max: " << psi.reduce_maxAbs() << std::endl;
 		std::cout << "SPEC Max: " << psi.reduce_spec_maxAbs() << std::endl;
-		std::cout << "SPEC Centroid: " << psi.reduce_getFrequencyCentroid() << std::endl;
+		std::cout << "SPEC Centroid: " << psi.reduce_spec_getFrequencyCentroid() << std::endl;
 
 		/**
 		 * STEP 2) Compute h
@@ -687,10 +773,10 @@ void compute_polvani_initialization(
 		 * STEP 3) Solve with iterations for \xi
 		 */
 		DataArray<2> xi(parameters.res);
-		xi.setAllSpec(0, 0);
+		xi.spec_setAll(0, 0);
 
 		DataArray<2> prev_xi(parameters.res);
-		prev_xi.setAllSpec(0, 0);
+		prev_xi.spec_setAll(0, 0);
 
 		double prev_inf_norm = -1;
 		double eps = 1e-9;
@@ -736,7 +822,7 @@ void compute_polvani_initialization(
 			 * Solve iterative equation (after equation 2.6)
 			 */
 			DataArray<2> rhs(parameters.res);
-			rhs.setAllSpec(0, 0);
+			rhs.spec_setAll(0, 0);
 
 			// RHS, 1st line
 			rhs += -op.arakawa_jacobian(psi, op.laplace(xi));
@@ -760,7 +846,7 @@ void compute_polvani_initialization(
 
 			// LHS, 1st line
 			DataArray<2> lhs(parameters.res);
-			lhs.setAllSpec(0, 0);
+			lhs.spec_setAll(0, 0);
 
 			// IMPORTANT! Apply last operator element-wise
 			lhs += (1.0/R)*(1.0-B*laplace_op).operator()(laplace_op);
@@ -807,7 +893,7 @@ void compute_polvani_initialization(
 				new_inf_norm = (prev_xi-xi).reduce_maxAbs();
 			}
 
-			double normalization = xi.reduce_sumAbs()/(double)(parameters.res[0]*parameters.res[1]);
+			double normalization = xi.reduce_norm1()/(double)(parameters.res[0]*parameters.res[1]);
 
 			double convergence = std::abs(prev_inf_norm - new_inf_norm)/normalization;
 			std::cout << "INF norm / convergence: " << new_inf_norm << " / " << convergence << std::endl;
@@ -902,7 +988,7 @@ void compute_polvani_initialization(
 		}
 
 		DataArray<2> energy = 0.5*(u*u+v*v);
-		std::cout << "ENERGY Centroid: " << energy.reduce_getFrequencyCentroid() << std::endl;
+		std::cout << "ENERGY Centroid: " << energy.reduce_spec_getFrequencyCentroid() << std::endl;
 		std::cout << std::endl;
 		std::cout << "R: " << R << std::endl;
 		std::cout << "F: " << F << std::endl;
@@ -924,8 +1010,20 @@ int main(int i_argc, char *i_argv[])
 	DataArray<2> local_u(parameters.res);
 	DataArray<2> local_v(parameters.res);
 
-	if (1)
+	if (parameters.bogus_var0 != 0)
 	{
+		if (parameters.sim_domain_size[0] != 1.0)
+		{
+			std::cout << "Domain length should be set to 1 for non-dimensional Polvani test case" << std::endl;
+			return 1;
+		}
+
+		if (parameters.sim_domain_size[1] != 1.0)
+		{
+			std::cout << "Domain length should be set to 1 for non-dimensional Polvani test case" << std::endl;
+			return 1;
+		}
+
 		compute_polvani_initialization(local_h, local_u, local_v);
 
 		::init_h = &local_h;

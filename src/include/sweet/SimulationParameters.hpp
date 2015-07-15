@@ -59,8 +59,9 @@ public:
 	bool use_f_array = false;
 
 	// domain length
-	double sim_domain_length[2] = {1000.0*1000.0, 1000.0*1000.0};
+	double sim_domain_size[2] = {1000.0*1000.0, 1000.0*1000.0};
 
+	double sim_domain_size2_dbl = -1;
 
 	/**
 	 * DISCRETIZATION
@@ -69,6 +70,8 @@ public:
 	 */
 	// resolution
 	std::size_t res[2] = {0,0};
+
+	double res2_dbl = -1.0;
 
 	// use leapfrog like update? (predictor / corrector intermixing h and v,u updates)
 	bool timestepping_leapfrog_like_update = false;
@@ -137,8 +140,11 @@ public:
 	 */
 	void reset()
 	{
-		sim_cell_size[0] = sim_domain_length[0]/res[0];
-		sim_cell_size[1] = sim_domain_length[1]/res[1];
+		sim_cell_size[0] = sim_domain_size[0]/(double)res[0];
+		sim_cell_size[1] = sim_domain_size[1]/(double)res[1];
+
+		res2_dbl = res[0]*res[1];
+		sim_domain_size2_dbl = sim_domain_size[0]*sim_domain_size[1];
 
 		status_simulation_timestep_size = -1;
 		status_timestep_nr = 0;
@@ -219,11 +225,11 @@ public:
 				break;
 
 			case 'X':
-				sim_domain_length[0] = atof(optarg);
+				sim_domain_size[0] = atof(optarg);
 				break;
 
 			case 'Y':
-				sim_domain_length[1] = atof(optarg);
+				sim_domain_size[1] = atof(optarg);
 				break;
 
 			case 'R':

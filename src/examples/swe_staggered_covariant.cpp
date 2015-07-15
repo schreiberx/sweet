@@ -74,7 +74,7 @@ public:
 
 		tmp(parameters.res),
 
-		op(parameters.res, parameters.sim_domain_length, parameters.use_spectral_diffs)
+		op(parameters.res, parameters.sim_domain_size, parameters.use_spectral_diffs)
 	{
 		reset();
 	}
@@ -123,24 +123,24 @@ public:
 			{
 				{
 					// h
-					double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_length[0];
-					double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_length[1];
+					double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
+					double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_size[1];
 
 					prog_P.set(j, i, SWEValidationBenchmarks::return_h(parameters, x, y));
 				}
 
 				{
 					// u space
-					double x = (((double)i)/(double)parameters.res[0])*parameters.sim_domain_length[0];
-					double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_length[1];
+					double x = (((double)i)/(double)parameters.res[0])*parameters.sim_domain_size[0];
+					double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_size[1];
 
 					prog_u.set(j,i, SWEValidationBenchmarks::return_u(parameters, x, y));
 				}
 
 				{
 					// v space
-					double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_length[0];
-					double y = (((double)j)/(double)parameters.res[1])*parameters.sim_domain_length[1];
+					double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
+					double y = (((double)j)/(double)parameters.res[1])*parameters.sim_domain_size[1];
 
 					prog_v.set(j, i, SWEValidationBenchmarks::return_v(parameters, x, y));
 				}
@@ -170,7 +170,7 @@ public:
 			eta = (op.diff_b_x(prog_v) - op.diff_b_y(prog_u) + parameters.sim_f) / op.avg_b_x(op.avg_b_y(prog_P));
 		}
 
-		double normalization = (parameters.sim_domain_length[0]*parameters.sim_domain_length[1]) /
+		double normalization = (parameters.sim_domain_size[0]*parameters.sim_domain_size[1]) /
 								((double)parameters.res[0]*(double)parameters.res[1]);
 
 		// diagnostics_mass
@@ -449,13 +449,13 @@ public:
 					for (std::size_t i = 0; i < parameters.res[0]; i++)
 					{
 						// h
-						double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_length[0];
-						double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_length[1];
+						double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
+						double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_size[1];
 
 						tmp.set(j, i, SWEValidationBenchmarks::return_h(parameters, x, y));
 					}
 
-				benchmark_diff_h = (prog_P-tmp).reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
+				benchmark_diff_h = (prog_P-tmp).reduce_norm1() / (double)(parameters.res[0]*parameters.res[1]);
 				o_ostream << "\t" << benchmark_diff_h;
 
 				// set data to something to overcome assertion error
@@ -463,26 +463,26 @@ public:
 					for (std::size_t i = 0; i < parameters.res[0]; i++)
 					{
 						// u space
-						double x = (((double)i)/(double)parameters.res[0])*parameters.sim_domain_length[0];
-						double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_length[1];
+						double x = (((double)i)/(double)parameters.res[0])*parameters.sim_domain_size[0];
+						double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_size[1];
 
 						tmp.set(j, i, SWEValidationBenchmarks::return_u(parameters, x, y));
 					}
 
-				benchmark_diff_u = (prog_u-tmp).reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
+				benchmark_diff_u = (prog_u-tmp).reduce_norm1() / (double)(parameters.res[0]*parameters.res[1]);
 				o_ostream << "\t" << benchmark_diff_v;
 
 				for (std::size_t j = 0; j < parameters.res[1]; j++)
 					for (std::size_t i = 0; i < parameters.res[0]; i++)
 					{
 						// v space
-						double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_length[0];
-						double y = (((double)j)/(double)parameters.res[1])*parameters.sim_domain_length[1];
+						double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
+						double y = (((double)j)/(double)parameters.res[1])*parameters.sim_domain_size[1];
 
 						tmp.set(j,i, SWEValidationBenchmarks::return_v(parameters, x, y));
 					}
 
-				benchmark_diff_v = (prog_v-tmp).reduce_sumAbs() / (double)(parameters.res[0]*parameters.res[1]);
+				benchmark_diff_v = (prog_v-tmp).reduce_norm1() / (double)(parameters.res[0]*parameters.res[1]);
 				o_ostream << "\t" << benchmark_diff_v;
 			}
 
@@ -541,7 +541,7 @@ public:
 	{
 		int id = parameters.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
 		*o_dataArray = vis_arrays[id].data;
-		*o_aspect_ratio = parameters.sim_domain_length[1] / parameters.sim_domain_length[0];
+		*o_aspect_ratio = parameters.sim_domain_size[1] / parameters.sim_domain_size[0];
 	}
 
 

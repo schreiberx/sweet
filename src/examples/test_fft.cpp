@@ -3,6 +3,10 @@
 	#error "Spectral space not activated"
 #endif
 
+#if !SWEET_USE_SPECTRAL_DEALIASING
+	#error "Activate spectral dealiasing for this program!"
+#endif
+
 #if SWEET_GUI
 #	error	"GUI not supported"
 #endif
@@ -37,7 +41,7 @@ int main(int i_argc, char *i_argv[])
 #if 0
 	for (std::size_t y = 0; y < dataArrayA.resolution_spec[1]; y++)
 		for (std::size_t x = 0; x < dataArrayA.resolution_spec[0]; x++)
-//			dataArray.setSpec(y, x, (int)(y+1)*(int)(x+10), -(int)(y+1)*(int)(x+10));
+//			dataArray.spec_set(y, x, (int)(y+1)*(int)(x+10), -(int)(y+1)*(int)(x+10));
 #else
 	for (std::size_t y = 0; y < dataArrayA.resolution[1]; y++)
 		for (std::size_t x = 0; x < dataArrayA.resolution[0]; x++)
@@ -62,7 +66,7 @@ int main(int i_argc, char *i_argv[])
 	std::cout << dataArrayC << std::endl;
 	dataArrayC.printSpectrum();
 
-	std::cout << "error: " << (dataArrayC-dataArrayA).reduce_sumAbs_quad() << std::endl;
+	std::cout << "error: " << (dataArrayC-dataArrayA).reduce_norm1_quad() << std::endl;
 
 	std::cout << "*************************************************" << std::endl;
 	return 1;

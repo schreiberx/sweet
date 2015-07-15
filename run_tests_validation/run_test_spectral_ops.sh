@@ -7,8 +7,27 @@ echo "***********************************************"
 
 cd ..
 
-X=10000000
+X=1000000
+echo
+echo "***********************************************"
+echo "TEST SPECTRAL OPS (release) $X"
+echo "***********************************************"
+make clean
+scons --compile-program=test_spectral_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=disable
+./build/example_test_spectral_ops_spectral_gnu_release -n 128 -m 64 -X $X -Y $X -S 1 || exit
+./build/example_test_spectral_ops_spectral_gnu_release -n 128 -m 64 -X $X -Y $X -S 0 || exit
 
+X=0.000001
+echo
+echo "***********************************************"
+echo "TEST SPECTRAL OPS (release) $X"
+echo "***********************************************"
+make clean
+scons --compile-program=test_spectral_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=disable
+./build/example_test_spectral_ops_spectral_gnu_release -n 128 -m 64 -X $X -Y $X -S 1 || exit
+./build/example_test_spectral_ops_spectral_gnu_release -n 128 -m 64 -X $X -Y $X -S 0 || exit
+
+X=10000000
 echo
 echo "***********************************************"
 echo "TEST SPECTRAL OPS (debug) ALIASING CONTROL $X x $X"
@@ -74,3 +93,12 @@ scons --compile-program=test_spectral_ops --gui=disable --spectral-space=enable 
 ./build/example_test_spectral_ops_spectral_gnu_release  -X 1 -Y 1 -S 1 || exit
 
 
+echo "***********************************************"
+echo "***********************************************"
+echo "***********************************************"
+echo "***********************************************"
+echo "***************** FIN *************************"
+echo "***********************************************"
+echo "***********************************************"
+echo "***********************************************"
+echo "***********************************************"

@@ -43,7 +43,7 @@ public:
 		eta(parameters.res),
 		tmp(parameters.res),
 
-		op(parameters.res, parameters.sim_domain_length, parameters.use_spectral_diffs)
+		op(parameters.res, parameters.sim_domain_size, parameters.use_spectral_diffs)
 	{
 		reset();
 	}
@@ -68,8 +68,8 @@ public:
 		{
 			for (std::size_t i = 0; i < parameters.res[0]; i++)
 			{
-				double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_length[0];
-				double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_length[1];
+				double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
+				double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_size[1];
 
 				prog_h.set(j, i, SWEValidationBenchmarks::return_h(parameters, x, y));
 				prog_u.set(j, i, SWEValidationBenchmarks::return_u(parameters, x, y));
@@ -89,7 +89,7 @@ public:
 
 		last_timestep_nr_update_diagnostics = parameters.status_timestep_nr;
 
-		double normalization = (parameters.sim_domain_length[0]*parameters.sim_domain_length[1]) /
+		double normalization = (parameters.sim_domain_size[0]*parameters.sim_domain_size[1]) /
 								((double)parameters.res[0]*(double)parameters.res[1]);
 
 		// mass
@@ -340,13 +340,13 @@ public:
 					for (std::size_t i = 0; i < parameters.res[0]; i++)
 					{
 						// h
-						double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_length[0];
-						double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_length[1];
+						double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
+						double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_size[1];
 
 						tmp.set(j, i, SWEValidationBenchmarks::return_h(parameters, x, y));
 					}
 
-				benchmark_diff_h = (prog_h-tmp).reduce_sumAbs_quad() / (double)(parameters.res[0]*parameters.res[1]);
+				benchmark_diff_h = (prog_h-tmp).reduce_norm1_quad() / (double)(parameters.res[0]*parameters.res[1]);
 				o_ostream << "\t" << benchmark_diff_h;
 
 				// set data to something to overcome assertion error
@@ -354,26 +354,26 @@ public:
 					for (std::size_t i = 0; i < parameters.res[0]; i++)
 					{
 						// u space
-						double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_length[0];
-						double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_length[1];
+						double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
+						double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_size[1];
 
 						tmp.set(j, i, SWEValidationBenchmarks::return_u(parameters, x, y));
 					}
 
-				benchmark_diff_u = (prog_u-tmp).reduce_sumAbs_quad() / (double)(parameters.res[0]*parameters.res[1]);
+				benchmark_diff_u = (prog_u-tmp).reduce_norm1_quad() / (double)(parameters.res[0]*parameters.res[1]);
 				o_ostream << "\t" << benchmark_diff_u;
 
 				for (std::size_t j = 0; j < parameters.res[1]; j++)
 					for (std::size_t i = 0; i < parameters.res[0]; i++)
 					{
 						// v space
-						double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_length[0];
-						double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_length[1];
+						double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
+						double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_size[1];
 
 						tmp.set(j, i, SWEValidationBenchmarks::return_v(parameters, x, y));
 					}
 
-				benchmark_diff_v = (prog_v-tmp).reduce_sumAbs_quad() / (double)(parameters.res[0]*parameters.res[1]);
+				benchmark_diff_v = (prog_v-tmp).reduce_norm1_quad() / (double)(parameters.res[0]*parameters.res[1]);
 				o_ostream << "\t" << benchmark_diff_v;
 			}
 
@@ -432,28 +432,28 @@ public:
 	{
 		int id = parameters.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
 		*o_dataArray = vis_arrays[id].data;
-		*o_aspect_ratio = parameters.sim_domain_length[1] / parameters.sim_domain_length[0];
+		*o_aspect_ratio = parameters.sim_domain_size[1] / parameters.sim_domain_size[0];
 #if 0
 		DataArray<2> &o = (DataArray<2> &)*vis_arrays[id].data;
-		o.setAllSpec(0, 0);
-		o.setSpec(0, 0, 1, 0);
+		o.spec_setAll(0, 0);
+		o.spec_set(0, 0, 1, 0);
 
 		if (id == 0)
 		{
-			o.setSpec(0, 0, 1, 0);
+			o.spec_set(0, 0, 1, 0);
 		}
 		else if (id == 1)
 		{
-			o.setSpec(0, 0, 1, 1);
+			o.spec_set(0, 0, 1, 1);
 		}
 		else if (id == 2)
 		{
-			o.setSpec(0, 1, 1, 0);
+			o.spec_set(0, 1, 1, 0);
 		}
 		else if (id == 3)
 		{
-			o.setSpec(0, 1, 1, 1);
-//			o.setSpec(0, o.resolution_spec[0]-1, 1, 0);
+			o.spec_set(0, 1, 1, 1);
+//			o.spec_set(0, o.resolution_spec[0]-1, 1, 0);
 		}
 #endif
 	}

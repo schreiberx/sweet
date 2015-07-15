@@ -73,13 +73,13 @@ class VisSweet	:
 		vis_min = visData.reduce_min();
 		vis_max = visData.reduce_max();
 
-		vis_max = std::max(vis_max, vis_min+0.000001);	/// avoid numerical issues if min == max
+		vis_max = std::max(vis_max, vis_min+1e-20);	//< avoid numerical issues if min == max
 
 		double real_delta = vis_max-vis_min;
-		vis_min -= real_delta*0.03;
-		vis_max += real_delta*0.03;
+//		vis_min -= real_delta*0.03;
+//		vis_max += real_delta*0.03;
 
-		double inv_delta = 1.0/(vis_max-vis_min);
+		double inv_delta = 1.0/real_delta;
 
 #pragma omp parallel for simd
 		for (std::size_t i = 0; i < visData.array_data_cartesian_length; i++)
@@ -87,7 +87,7 @@ class VisSweet	:
 			double value = (visData.array_data_cartesian_space[i]-vis_min)*inv_delta;
 			value *= 255.0;
 
-			texture_data[i] = value;
+			texture_data[i] = (unsigned char)std::min(255.0, std::max(0.0, value));
 		}
 
 		cGlTexture->bind();

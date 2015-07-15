@@ -48,12 +48,12 @@ public:
 
 		if (i_parameters.setup_scenario == 2)
 		{
-			return std::sin(2.0*M_PI*x/i_parameters.sim_domain_length[0]) + i_parameters.setup_h0;
+			return std::sin(2.0*M_PI*x/i_parameters.sim_domain_size[0]) + i_parameters.setup_h0;
 		}
 
 		if (i_parameters.setup_scenario == 3)
 		{
-			return std::sin(2.0*M_PI*y/i_parameters.sim_domain_length[1]) + i_parameters.setup_h0;
+			return std::sin(2.0*M_PI*y/i_parameters.sim_domain_size[1]) + i_parameters.setup_h0;
 		}
 
 		if (i_parameters.setup_scenario == 4)
@@ -104,7 +104,7 @@ public:
 				std::cerr << "f-value is equal to zero!" << std::endl;
 				exit(-1);
 			}
-			return -i_parameters.sim_g*2.0*M_PI*std::cos(2.0*M_PI*y/i_parameters.sim_domain_length[1])/(i_parameters.sim_f*i_parameters.sim_domain_length[1]);
+			return -i_parameters.sim_g*2.0*M_PI*std::cos(2.0*M_PI*y/i_parameters.sim_domain_size[1])/(i_parameters.sim_f*i_parameters.sim_domain_size[1]);
 		}
 
 		if (i_parameters.setup_scenario == 4)
@@ -136,7 +136,7 @@ public:
 				std::cerr << "f-value is equal to zero!" << std::endl;
 				exit(-1);
 			}
-			return i_parameters.sim_g*2.0*M_PI*std::cos(2.0*M_PI*x/i_parameters.sim_domain_length[0])/(i_parameters.sim_f*i_parameters.sim_domain_length[0]);
+			return i_parameters.sim_g*2.0*M_PI*std::cos(2.0*M_PI*x/i_parameters.sim_domain_size[0])/(i_parameters.sim_f*i_parameters.sim_domain_size[0]);
 		}
 
 		if (i_parameters.setup_scenario == 3)

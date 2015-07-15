@@ -36,7 +36,7 @@ public:
 
 		h_t(parameters.res),
 
-		op(parameters.res, parameters.sim_domain_length, parameters.use_spectral_diffs)
+		op(parameters.res, parameters.sim_domain_size, parameters.use_spectral_diffs)
 	{
 		reset();
 	}
@@ -181,7 +181,7 @@ public:
 	)
 	{
 		*o_dataArray = &h;
-		*o_aspect_ratio = parameters.sim_domain_length[1] / parameters.sim_domain_length[0];
+		*o_aspect_ratio = parameters.sim_domain_size[1] / parameters.sim_domain_size[0];
 	}
 
 	const char* vis_get_status_string()

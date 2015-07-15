@@ -23,6 +23,18 @@
 * Implement spectral derivative
   DONE
 
+* Implement advection test for Gaussian curve
+  > Tests with higher-order time stepping
+  > Tests with increased resolution
+
+* Write interface for setting spectral values
+
+* Write tests for testing spectral values:
+  Tests by setting one frequency and testing response in Cartesian space
+
+* Check scalup/scaledown in operator*, since this creates invalid
+  memory access
+
 * Implement NEMO-like model
 
 * Add Williamson test benches:

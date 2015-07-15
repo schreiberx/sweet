@@ -21,6 +21,10 @@
 	#define SWEET_USE_SPECTRAL_SPACE	1
 #endif
 
+#ifndef SWEET_USE_SPECTRAL_DEALIASING
+	#define SWEET_USE_SPECTRAL_DEALIASING 1
+#endif
+
 #if SWEET_USE_SPECTRAL_SPACE
 #	include <fftw3.h>
 #endif
@@ -158,7 +162,7 @@ private:
 
 		if (i_first_touch_initialize)
 		{
-		// use parallel setup for first touch policy!
+			// use parallel setup for first touch policy!
 			#pragma omp parallel for
 			for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 				array_data_cartesian_space[i] = -12345;	// dummy data
@@ -190,7 +194,6 @@ private:
 		if (i == D)
 			return;
 
-
 		array_data_cartesian_length = 1;
 		for (int i = 0; i < D; i++)
 		{
@@ -206,7 +209,7 @@ private:
 		array_data_cartesian_space_valid = false;
 
 		array_data_spectral_length = array_data_cartesian_length/i_resolution[0];	/// see FFTW documentation for allocation of memory buffers
-		array_data_spectral_length *= (i_resolution[0]/2+1)*2;
+		array_data_spectral_length *= 2*(i_resolution[0]/2+1);
 
 		for (int i = 0; i < D; i++)
 		{
@@ -402,7 +405,16 @@ public:
 		temporary_data(false)
 	{
 		for (int i = 0; i < D; i++)
+		{
 			resolution[i] = 0;
+#if SWEET_USE_SPECTRAL_SPACE
+			if (i_resolution[i] & 1)
+			{
+				std::cerr << "Sorry - only even resolution supported for spectral space, makes the life much easier!" << std::endl;
+				exit(1);
+			}
+#endif
+		}
 
 		p_request_buffers_with_resolution(i_resolution);
 
@@ -411,6 +423,8 @@ public:
 		fftTestAndInit(*this);
 #endif
 	}
+
+
 
 	~DataArray()
 	{
@@ -458,6 +472,7 @@ public:
 	}
 
 
+
 	inline
 	void set(
 			std::size_t j,
@@ -479,6 +494,8 @@ public:
 						] = i_value;
 	}
 
+
+
 	inline
 	double get(
 			std::size_t j,
@@ -495,64 +512,6 @@ public:
 							(i-range_start[0])
 						];
 	}
-
-#if SWEET_USE_SPECTRAL_SPACE==1
-	inline
-	double getSpec_Re(
-			std::size_t j,
-			std::size_t i
-	)	const
-	{
-		requestDataInSpectralSpace();
-
-		assert(i >= range_spec_start[0] && i < range_spec_end[0]);
-		assert(j >= range_spec_start[1] && j < range_spec_end[1]);
-
-		std::size_t idx =	(j-range_spec_start[1])*range_spec_size[0]+
-							(i-range_spec_start[0]);
-		return array_data_spectral_space[idx*2+0];
-	}
-
-	inline
-	double getSpec_Im(
-			std::size_t j,
-			std::size_t i
-	)	const
-	{
-		requestDataInSpectralSpace();
-
-		assert(i >= range_spec_start[0] && i < range_spec_end[0]);
-		assert(j >= range_spec_start[1] && j < range_spec_end[1]);
-
-		std::size_t idx =	(j-range_spec_start[1])*range_spec_size[0]+
-							(i-range_spec_start[0]);
-		return array_data_spectral_space[idx*2+1];
-	}
-
-
-	inline
-	void setSpec(
-			std::size_t j,
-			std::size_t i,
-			double i_value_re,
-			double i_value_im
-	)
-	{
-		assert(i >= range_spec_start[0] && i < range_spec_end[0]);
-		assert(j >= range_spec_start[1] && j < range_spec_end[1]);
-
-		std::size_t idx =	(j-range_spec_start[1])*range_spec_size[0]+
-							(i-range_spec_start[0]);
-
-		array_data_spectral_space[idx*2+0] = i_value_re;
-		array_data_spectral_space[idx*2+1] = i_value_im;
-
-#if SWEET_USE_SPECTRAL_SPACE
-		array_data_cartesian_space_valid = false;
-		array_data_spectral_space_valid = true;
-#endif
-	}
-#endif
 
 
 	inline
@@ -571,10 +530,67 @@ public:
 	}
 
 
+
 #if SWEET_USE_SPECTRAL_SPACE==1
 
 	inline
-	void setAllSpec(
+	double spec_getRe(
+			std::size_t j,
+			std::size_t i
+	)	const
+	{
+		requestDataInSpectralSpace();
+
+		assert(i >= range_spec_start[0] && i < range_spec_end[0]);
+		assert(j >= range_spec_start[1] && j < range_spec_end[1]);
+
+		std::size_t idx =	(j-range_spec_start[1])*range_spec_size[0]+
+							(i-range_spec_start[0]);
+		return array_data_spectral_space[idx*2+0];
+	}
+
+
+
+	inline
+	double spec_getIm(
+			std::size_t j,
+			std::size_t i
+	)	const
+	{
+		requestDataInSpectralSpace();
+
+		assert(i >= range_spec_start[0] && i < range_spec_end[0]);
+		assert(j >= range_spec_start[1] && j < range_spec_end[1]);
+
+		std::size_t idx =	(j-range_spec_start[1])*range_spec_size[0]+
+							(i-range_spec_start[0]);
+		return array_data_spectral_space[idx*2+1];
+	}
+
+
+	inline
+	void spec_set(
+			std::size_t j,
+			std::size_t i,
+			double i_value_re,
+			double i_value_im
+	)
+	{
+		assert(i >= range_spec_start[0] && i < range_spec_end[0]);
+		assert(j >= range_spec_start[1] && j < range_spec_end[1]);
+
+		std::size_t idx =	(j-range_spec_start[1])*range_spec_size[0]+
+							(i-range_spec_start[0]);
+
+		array_data_spectral_space[idx*2+0] = i_value_re;
+		array_data_spectral_space[idx*2+1] = i_value_im;
+
+		array_data_cartesian_space_valid = false;
+		array_data_spectral_space_valid = true;
+	}
+
+	inline
+	void spec_setAll(
 			double i_value_re,
 			double i_value_im
 	)
@@ -586,16 +602,100 @@ public:
 			array_data_spectral_space[i+1] = i_value_im;
 		}
 
-#if SWEET_USE_SPECTRAL_SPACE
 		array_data_cartesian_space_valid = false;
 		array_data_spectral_space_valid = true;
-#endif
 	}
 
-#endif
 
 
-#if SWEET_USE_SPECTRAL_SPACE
+	/**
+	 * Set the spectrum of a frequency.
+	 *
+	 * This is different to the default spec_set function, since
+	 * it directly sets up the y-mirrored frequencies as well.
+	 *
+	 * Note, that the x-frequencies are already mirrored.
+	 */
+	inline
+	void spec_spectrum_set(
+			std::size_t j,		///< j in [0, res[1]/2-1]
+			std::size_t i,		///< i in [0, res[0]/2-1]
+			double i_value_re,
+			double i_value_im
+	)
+	{
+		assert(i >= range_spec_start[0] && i < range_spec_end[0]);
+		assert(j >= range_spec_start[1] && j < range_spec_end[1]);
+
+		/*
+		 * Note the padding in the x-direction:
+		 *
+		 * res_spec_x = 2 * (nx/2 + 1)
+		 *
+		 * SWEET (so far) only supports even resolution.
+		 * Hence we have a padding of 1 complex value in the end.
+		 *
+		 * The frequencies in the x direction are then arranged in the following way:
+		 *     [0, 1, 2, 3, ..., N/2-1, "padding=0"]
+		 *
+		 * Note, that setting a frequency here also sets the frequency on the "virtually mirrored" side.
+		 *
+		 * For the y-axis, the frequencies are given as follows (vector is transposed):
+		 *
+		 *     [0, 1, 2, 3, ..., N/2-1, N/2, N/2-1..., 3, 2, 1]
+		 *
+		 * Setting the frequency for N/2 to zero is a kind of obvious
+		 */
+		assert(i >= 0 && i < resolution[0]/2);
+		assert(j >= 0 && j < resolution[1]/2);
+
+		{	// lower part of y
+			std::size_t idx =	(j-range_spec_start[1])*range_spec_size[0]+
+								(i-range_spec_start[0]);
+
+			array_data_spectral_space[idx*2+0] = i_value_re;
+			array_data_spectral_space[idx*2+1] = i_value_im;
+		}
+
+		if (j != 0)
+		{	// upper part of y
+			std::size_t idx =	((resolution[1]-j)-range_spec_start[1])*range_spec_size[0]+
+								(i-range_spec_start[0]);
+
+			array_data_spectral_space[idx*2+0] = i_value_re;
+			// IMPORTANT! the imaginary component is mirrored!!!
+			array_data_spectral_space[idx*2+1] = -i_value_im;
+		}
+
+		array_data_cartesian_space_valid = false;
+		array_data_spectral_space_valid = true;
+	}
+
+
+	/**
+	 * Set the spectrum of a frequency with amplitude and phase.
+	 *
+	 * The amplitude specifies the magnitude in real space.
+	 * The phase specifies the shift from one amplitude to another one.
+	 */
+	inline
+	void spec_spectrum_set_ampl_phase(
+			std::size_t j,		///< j in [0, res[1]/2-1]
+			std::size_t i,		///< i in [0, res[0]/2-1]
+			double i_value_amplitude,	///< amplitude in |R
+			double i_value_phase_shift	///< phase shift in [0;1[
+	)
+	{
+		assert(i >= range_spec_start[0] && i < range_spec_end[0]);
+		assert(j >= range_spec_start[1] && j < range_spec_end[1]);
+
+		double c = cos(2.0*M_PIl*i_value_phase_shift)*i_value_amplitude;
+		double s = sin(2.0*M_PIl*i_value_phase_shift)*i_value_amplitude;
+
+		spec_spectrum_set(j, i, c, s);
+	}
+
+
 	class FFTWSingletonClass
 	{
 	public:
@@ -926,25 +1026,6 @@ public:
 	}
 
 
-	/**
-	 * return the maximum of all absolute values
-	 */
-	double reduce_spec_maxAbs()	const
-	{
-		requestDataInSpectralSpace();
-
-		double maxabs = -1;
-#pragma omp parallel for simd reduction(max:maxabs)
-		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
-		{
-			double re = array_data_spectral_space[i];
-			double im = array_data_spectral_space[i+1];
-			maxabs = std::max(maxabs, std::sqrt(re*re + im*im));
-		}
-
-		return maxabs;
-	}
-
 
 	/**
 	 * return the maximum of all absolute values
@@ -1012,7 +1093,7 @@ public:
 	/**
 	 * return the maximum of all absolute values, use quad precision for reduction
 	 */
-	double reduce_sumAbs_quad()	const
+	double reduce_norm1_quad()	const
 	{
 		requestDataInCartesianSpace();
 
@@ -1028,7 +1109,7 @@ public:
 	/**
 	 * return the maximum of all absolute values
 	 */
-	double reduce_sumAbs()	const
+	double reduce_norm1()	const
 	{
 		requestDataInCartesianSpace();
 
@@ -1040,12 +1121,65 @@ public:
 		return sum;
 	}
 
+	/**
+	 * return the maximum of all absolute values, use quad precision for reduction
+	 */
+	double reduce_norm2_quad()	const
+	{
+		requestDataInCartesianSpace();
+
+		__float128 sum = 0;
+#pragma omp parallel for reduction(+:sum)
+		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
+			sum += (__float128)array_data_cartesian_space[i]*(__float128)array_data_cartesian_space[i];
+
+		return std::sqrt((double)sum);
+	}
+
+
+	/**
+	 * return the maximum of all absolute values
+	 */
+	double reduce_norm2()	const
+	{
+		requestDataInCartesianSpace();
+
+		double sum = 0;
+#pragma omp parallel for simd reduction(+:sum)
+		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
+			sum += array_data_cartesian_space[i]*array_data_cartesian_space[i];
+
+		return std::sqrt(sum);
+	}
+
 
 #if SWEET_USE_SPECTRAL_SPACE
+
+
+	/**
+	 * return the maximum of all absolute values
+	 */
+	double reduce_spec_maxAbs()	const
+	{
+		requestDataInSpectralSpace();
+
+		double maxabs = -1;
+#pragma omp parallel for simd reduction(max:maxabs)
+		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
+		{
+			double re = array_data_spectral_space[i];
+			double im = array_data_spectral_space[i+1];
+			maxabs = std::max(maxabs, std::sqrt(re*re + im*im));
+		}
+
+		return maxabs;
+	}
+
+
 	/**
 	 * return centroid of frequency
 	 */
-	double reduce_getFrequencyCentroid()	const
+	double reduce_spec_getFrequencyCentroid()	const
 	{
 		requestDataInSpectralSpace();
 
@@ -1056,8 +1190,8 @@ public:
 		{
 			for (std::size_t i = 0; i < resolution_spec[0]; i++)
 			{
-				double re = getSpec_Re(j, i);
-				double im = getSpec_Im(j, i);
+				double re = spec_getRe(j, i);
+				double im = spec_getIm(j, i);
 
 				std::size_t ka = i;
 //				std::size_t ka = (i < resolution_spec[0] ? i : resolution_spec[0]-i);
@@ -1371,9 +1505,12 @@ public:
 	DataArray<D> spec_div_element_wise(
 			const DataArray<D> &i_array_data,	///< operator
 			double i_denom_zeros_scalar = 0.0,
-			double i_tolerance = 1e-14
+			double i_tolerance = 1e-20			///< very very tiny number
 	)	const
 	{
+
+//		std::cout << i_array_data << std::endl;
+
 		DataArray<D> out(this->resolution);
 		out.temporary_data = true;
 
@@ -1385,6 +1522,13 @@ public:
 		requestDataInSpectralSpace();
 		rw_array_data.requestDataInSpectralSpace();
 
+		// determine maximum value for tolerance
+		double max_value = i_array_data.reduce_spec_maxAbs();
+		std::cout << max_value << std::endl;
+//		max_value = std::min(max_value, reduce_spec_maxAbs());
+		i_tolerance *= max_value;
+//		i_tolerance *= (resolution[0]+resolution[1]);	// the larger the matrix, the less the accuracy
+
 #pragma omp parallel for simd
 		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
 		{
@@ -1394,9 +1538,8 @@ public:
 			double bi = i_array_data.array_data_spectral_space[i+1];
 
 			double den = (br*br+bi*bi);
-			double fac = 1.0/den;
 
-			if (std::abs(den) < i_tolerance)
+			if (den < i_tolerance)
 			{
 				// For Laplace solution, this is the integration constant C
 				out.array_data_spectral_space[i] = ar*i_denom_zeros_scalar;
@@ -1404,6 +1547,7 @@ public:
 			}
 			else
 			{
+				double fac = 1.0/den;
 				out.array_data_spectral_space[i] = (ar*br + ai*bi)*fac;
 				out.array_data_spectral_space[i+1] = (ai*br - ar*bi)*fac;
 			}
@@ -1464,7 +1608,7 @@ public:
 			exit(-1);
 		}
 
-		out.setAllSpec(0, 0);
+		out.spec_setAll(0, 0);
 
 		// TODO: this does not work once distributed memory is activated
 		#pragma omp parallel for
@@ -2142,8 +2286,8 @@ public:
 			{
 				for (std::size_t x = 0; x < rw_array_data.resolution_spec[0]; x++)
 				{
-					double value_re = rw_array_data.getSpec_Re(y, x);
-					double value_im = rw_array_data.getSpec_Im(y, x);
+					double value_re = rw_array_data.spec_getRe(y, x);
+					double value_im = rw_array_data.spec_getIm(y, x);
 					std::cout << "(" << value_re << ", " << value_im << ")\t";
 				}
 				std::cout << std::endl;
