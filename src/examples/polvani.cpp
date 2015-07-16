@@ -19,6 +19,7 @@
 #include <sstream>
 #include <unistd.h>
 #include <iomanip>
+#include <stdio.h>
 
 
 SimulationParameters parameters;

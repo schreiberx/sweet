@@ -143,13 +143,17 @@ public:
 			 * We setup the differential operators in complex Fourier space
 			 * and transfer this to complex Cartesian space.
 			 */
+#if 0
+			std::cerr << "WARNING: Use this only for debugging purpose!" << std::endl;
+			std::cerr << "-> Applying RFFT(IFFT(complex)) generates non-zero values in the last column" << std::endl;
+
 			Complex2DArrayFFT spec_dx(res);
 
 			for (int j = 0; j < (int)res[1]; j++)
 			{
 				for (int i = 0; i < (int)res[0]; i++)
 				{
-					if (i == (int)res[0]/2 || j == (int)res[1]/2)
+					if (i == (int)res[0]/2)
 					{
 						spec_dx.set(j, i, 0, 0);
 						continue;
@@ -161,7 +165,7 @@ public:
 						continue;
 					}
 
-					assert((std::size_t)i > res[0]/2);
+//					assert((std::size_t)i > res[0]/2);
 					{
 						// Complement value
 						double comp_value = -((double)res[0]-(double)i);
@@ -183,17 +187,50 @@ public:
 					{
 						std::cerr << "A) Imaginary value of differential operator should be close to zero" << std::endl;
 						std::cerr << "threshold exceeded with a value of " << im_value << std::endl;
-						exit(-1);
+//						exit(-1);
 					}
 
 					diff_c_x.set(j, i, cart_x.getRe(j, i)/((double)diff_c_x.resolution[0]*(double)diff_c_x.resolution[1]));
 				}
 			}
 
+#else
+
+			diff_c_x.spec_setAll(0, 0);
+			/*
+			 * Note, that there's a last column which is now also set to 0
+			 */
+			for (int j = 0; j < (int)diff_c_x.resolution[1]/2; j++)
+			{
+				for (int i = 0; i < (int)diff_c_x.resolution[0]/2; i++)
+				{
+					diff_c_x.spec_set(
+							j, i,
+							0,
+							(double)i*2.0*M_PIl/(double)i_domain_size[0]
+						);
+					diff_c_x.spec_set(
+							diff_c_x.resolution[1]-1-j, i,
+							0,
+							(double)i*2.0*M_PIl/(double)i_domain_size[0]
+						);
+				}
+			}
+/*
+			diff_c_x.printSpectrum();
+			std::cout << diff_c_x << std::endl;
+			exit(1);
+*/
+#endif
+
 
 			/*
 			 * DIFF operator in y axis
 			 */
+#if 0
+			std::cerr << "WARNING: Use this only for debugging purpose!" << std::endl;
+			std::cerr << "-> Applying RFFT(IFFT(complex)) generates non-zero values in the last column" << std::endl;
+
 			Complex2DArrayFFT spec_dy(res);
 
 			for (int i = 0; i < (int)res[0]; i++)
@@ -231,7 +268,7 @@ public:
 					{
 						std::cerr << "B) Imaginary value of differential operator should be close to zero" << std::endl;
 						std::cerr << "threshold exceeded with a value of " << im_value << std::endl;
-						exit(-1);
+//						exit(-1);
 					}
 
 					im_value *= (double)i_domain_size[1];
@@ -239,6 +276,33 @@ public:
 					diff_c_y.set(j, i, cart_y.getRe(j, i)/((double)diff_c_y.resolution[0]*(double)diff_c_y.resolution[1]));
 				}
 			}
+
+#else
+
+			diff_c_y.spec_setAll(0, 0);
+			for (int j = 0; j < (int)diff_c_y.resolution[1]/2-1; j++)
+			{
+				for (int i = 0; i < (int)diff_c_y.resolution[0]/2; i++)
+				{
+					diff_c_y.spec_set(
+							j+1, i,
+							0,
+							(double)(j+1)*2.0*M_PIl/(double)i_domain_size[1]
+						);
+					diff_c_y.spec_set(
+							diff_c_y.resolution[1]-(j+1), i,
+							0,
+							-(double)(j+1)*2.0*M_PIl/(double)i_domain_size[1]
+						);
+				}
+			}
+/*
+			diff_c_y.printSpectrum();
+			std::cout << diff_c_y << std::endl;
+			exit(1);
+*/
+#endif
+
 
 			diff2_c_x = diff_c_x(diff_c_x);
 			diff2_c_y = diff_c_y(diff_c_y);
@@ -261,6 +325,16 @@ public:
 			};
 			diff_c_y.setup_kernel(diff1_y_kernel, 1.0/(2.0*h[1]));
 
+#if 0
+//			diff_c_y.printSpectrum();
+			Complex2DArrayFFT asdf(res);
+			asdf.loadCartFromRealDataArray(diff_c_y);
+
+			std::cout << asdf << std::endl;
+			std::cout << std::endl;
+			std::cout << asdf.toSpec() << std::endl;
+			exit(1);
+#endif
 
 			double d_f_x_kernel[3][3] = {
 					{0,0,0},

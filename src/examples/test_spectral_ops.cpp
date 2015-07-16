@@ -8,7 +8,7 @@
 #endif
 
 #if SWEET_USE_SPECTRAL_DEALIASING
-#	error	"Aliasing not working"
+#	warning	"Aliasing not working"
 #endif
 
 
@@ -21,6 +21,7 @@
 #include <sstream>
 #include <unistd.h>
 #include <iomanip>
+#include <stdio.h>
 
 SimulationParameters parameters;
 
@@ -127,7 +128,6 @@ int main(int i_argc, char *i_argv[])
 		double eps_convergence = 1e-4;
 
 
-
 		std::cout << "*************************************************************" << std::endl;
 		std::cout << "Testing operators with resolution " << res_x << " x " << res_y << std::endl;
 		std::cout << "*************************************************************" << std::endl;
@@ -137,10 +137,16 @@ int main(int i_argc, char *i_argv[])
 		parameters.res[1] = res[1];
 		parameters.reset();
 
+		/*
+		 * keep h in the outer regions to allocate it only once and avoid reinitialization of FFTW
+		 */
+		DataArray<2> h(res);
+
 
 		{
 			std::cout << "**********************************************" << std::endl;
 			std::cout << "> Resolution (" << res_x << "x" << res_y << ")" << std::endl;
+			std::cout << "> Domain size (" << parameters.sim_domain_size[0] << "x" << parameters.sim_domain_size[1] << ")" << std::endl;
 			std::cout << "**********************************************" << std::endl;
 			std::cout << "error tol = " << eps << std::endl;
 			std::cout << "**********************************************" << std::endl;
@@ -148,7 +154,6 @@ int main(int i_argc, char *i_argv[])
 			DataArray<2> zero(res);
 			DataArray<2> two(res);
 			DataArray<2> five(res);
-			DataArray<2> h(res);
 
 			zero.setAll(0);
 			two.setAll(2);
@@ -162,24 +167,24 @@ int main(int i_argc, char *i_argv[])
 			double add_test_ten = ((five+two)+3.0).reduce_norm2_quad()/res2;
 			double error = 0;
 
-			std::cout << "Add test two ||_2 = " << add_test_two << std::endl;
 			error = std::abs(add_test_two-sqrt(res2*(std::pow(2.0, 2.0)))/res2);
+			std::cout << "Add test two ||_2 = " << error << std::endl;
 			if (error > eps)
 			{
 				std::cout << "FAILED with error " << error;
 				exit(-1);
 			}
 
-			std::cout << "Add test seven ||_2 = " << add_test_seven << std::endl;
 			error = std::abs(add_test_seven-sqrt(res2*std::pow(7.0, 2.0))/res2);
+			std::cout << "Add test seven ||_2 = " << error << std::endl;
 			if (error > eps)
 			{
 				std::cout << "FAILED with error " << error;
 				exit(-1);
 			}
 
-			std::cout << "Add test ten ||_2 = " << add_test_seven << std::endl;
 			error = std::abs(add_test_ten-sqrt(res2*std::pow(10.0, 2.0))/res2);
+			std::cout << "Add test ten ||_2 = " << error << std::endl;
 			if (error > eps)
 			{
 				std::cout << "FAILED with error " << error;
@@ -200,9 +205,8 @@ int main(int i_argc, char *i_argv[])
 
 			// TEST summation
 			// has to be zero, error threshold unknown
-			double sin_test_zero = h.reduce_sum_quad()/res2;
-			std::cout << "Sin test zero ||_2 = " << sin_test_zero << std::endl;
-			error = sin_test_zero;
+			error = h.reduce_sum_quad()/res2;
+			std::cout << "Sin test zero ||_2 = " << error << std::endl;
 			if (error > eps)
 			{
 				std::cout << "FAILED with error " << error;
@@ -211,13 +215,12 @@ int main(int i_argc, char *i_argv[])
 			}
 
 			double sin_test_six = (h+6.0).reduce_sum_quad()/res2;
-			std::cout << "Sin test add six ||_2 = " << sin_test_six << std::endl;
 			error = std::abs(sin_test_six-6.0);
+			std::cout << "Sin test add six ||_2 = " << error << std::endl;
 			if (error > eps)
 			{
-				std::cout << "FAILED with error " << error << std::endl;
+				std::cout << "FAILED Sin test add six ||_2 with error " << error << std::endl;
 				std::cout << "FAILED with error " << sin_test_six << std::endl;
-				std::cout << "FAILED with error " << sqrt(res2*std::pow(6.0, 2.0)) << std::endl;
 				exit(-1);
 			}
 
@@ -238,8 +241,6 @@ int main(int i_argc, char *i_argv[])
 		 * Tests for basic operators which are not amplifying the solution depending on the domain size
 		 */
 		{
-
-			DataArray<2> h(res);
 			DataArray<2> u(res);
 			DataArray<2> v(res);
 
@@ -316,8 +317,7 @@ int main(int i_argc, char *i_argv[])
 								spec_div_element_wise(op.diff2_c_x+op.diff2_c_y)
 					).reduce_norm2()/parameters.res2_dbl;
 
-
-				std::cout << "SPEC: Error threshold for Laplace and inverse: " << err3_laplace << std::endl;
+				std::cout << "SPEC: Error threshold for Laplace and its inverse: " << err3_laplace << std::endl;
 				if (err3_laplace > eps)
 				{
 					std::cerr << "SPEC: Error threshold for Laplace too high for spectral differentiation!" << std::endl;
@@ -335,18 +335,6 @@ int main(int i_argc, char *i_argv[])
 				}
 #endif
 
-#if 0
-				double conv_z = prev_error_diff_z/err_z;
-				std::cout << "error diff x = " << err_z << std::endl;
-				std::cout << "conv z = " << conv_z << std::endl;
-
-				if (conv_z != 0)
-				if (abs(conv_z-4.0) > eps_convergence)
-				{
-					std::cerr << "Cart: Error threshold exceeded for conv_z, no convergence given!" << std::endl;
-					exit(-1);
-				}
-#endif
 				prev_error_diff_z = err_z;
 			}
 		}
@@ -358,7 +346,6 @@ int main(int i_argc, char *i_argv[])
 		 * Tests for 1st order differential operator
 		 */
 		{
-			DataArray<2> h(res);
 			DataArray<2> u(res);
 			DataArray<2> v(res);
 			DataArray<2> h_diff_x(res);
@@ -382,7 +369,7 @@ int main(int i_argc, char *i_argv[])
 
 	#if FUN_ID==1
 					u.set(j, i, sin(freq_x*M_PIl*x));
-					v.set(j, i, cos(freq_y*M_PIl*y)*scale);
+					v.set(j, i, cos(freq_y*M_PIl*y));
 	#elif FUN_ID==2
 					u.set(j, i, sin(freq_x*M_PIl*x));
 					v.set(j, i, 1.0/(cos(freq_y*M_PIl*y)+2.0)*scale);
@@ -391,7 +378,7 @@ int main(int i_argc, char *i_argv[])
 					h.set(
 						j, i,
 	#if FUN_ID==1
-						sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)*scale
+						sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)
 	#elif FUN_ID==2
 						sin(freq_x*M_PIl*x)*sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)*cos(freq_y*M_PIl*y)*scale
 	#elif FUN_ID==3
@@ -402,7 +389,7 @@ int main(int i_argc, char *i_argv[])
 					h_diff_x.set(
 						j, i,
 	#if FUN_ID==1
-						freq_x*M_PIl*cos(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)/(double)parameters.sim_domain_size[0]*scale
+						freq_x*M_PIl*cos(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)/(double)parameters.sim_domain_size[0]
 	#elif FUN_ID==2
 						2.0*sin(freq_x*M_PIl*x)*std::pow(cos(freq_y*M_PIl*y),2.0)*freq_x*M_PIl*cos(freq_x*M_PIl*x)/(double)parameters.sim_domain_size[0]*scale
 	#elif FUN_ID==3
@@ -413,7 +400,7 @@ int main(int i_argc, char *i_argv[])
 					h_diff_y.set(
 						j, i,
 	#if FUN_ID==1
-						-sin(freq_x*M_PIl*x)*freq_y*M_PIl*sin(freq_y*M_PIl*y)/(double)parameters.sim_domain_size[1]*scale
+						-sin(freq_x*M_PIl*x)*freq_y*M_PIl*sin(freq_y*M_PIl*y)/(double)parameters.sim_domain_size[1]
 	#elif FUN_ID==2
 						-2.0*std::pow(std::sin(freq_x*M_PIl*x),2.0)*std::cos(freq_y*M_PIl*y)*freq_y*M_PIl*std::sin(freq_y*M_PIl*y)/(double)parameters.sim_domain_size[1]*scale
 	#elif FUN_ID==3
@@ -431,11 +418,12 @@ int main(int i_argc, char *i_argv[])
 			v.requestDataInSpectralSpace();
 			v.array_data_cartesian_space_valid = false;
 
-			double normalization = sqrt(1.0/parameters.res2_dbl);
+			double res_normalization = sqrt(1.0/parameters.res2_dbl);
 
-			double err_x = (op.diff_c_x(h)-h_diff_x).reduce_norm2()*normalization;
-			double err_y = (op.diff_c_y(h)-h_diff_y).reduce_norm2()*normalization;
-			double err_z = (u*v-h).reduce_norm2()*normalization;
+			// normalization for diff = 2 pi / L
+			double err_x = (op.diff_c_x(h)-h_diff_x).reduce_norm2()*res_normalization*parameters.sim_domain_size[0]/(2.0*M_PIl);
+			double err_y = (op.diff_c_y(h)-h_diff_y).reduce_norm2()*res_normalization*parameters.sim_domain_size[1]/(2.0*M_PIl);
+			double err_z = (u*v-h).reduce_norm2()*res_normalization;
 
 			if (parameters.use_spectral_diffs)
 			{
@@ -464,7 +452,7 @@ int main(int i_argc, char *i_argv[])
 				}
 #endif
 
-				double err_int_x = (h-h_diff_x.spec_div_element_wise(op.diff_c_x)).reduce_norm2_quad()*normalization;
+				double err_int_x = (h-h_diff_x.spec_div_element_wise(op.diff_c_x)).reduce_norm2_quad()*res_normalization;
 				std::cout << "Testing spectral inverse x " << err_int_x << std::endl;
 
 				if (err_int_x > eps)
@@ -474,7 +462,7 @@ int main(int i_argc, char *i_argv[])
 					exit(-1);
 				}
 
-				double err_int_y = (h-h_diff_y.spec_div_element_wise(op.diff_c_y)).reduce_norm2_quad()*normalization;
+				double err_int_y = (h-h_diff_y.spec_div_element_wise(op.diff_c_y)).reduce_norm2_quad()*res_normalization;
 				std::cout << "Testing spectral inverse y " << err_int_y << std::endl;
 
 				if (err_int_y > eps)
@@ -534,7 +522,6 @@ int main(int i_argc, char *i_argv[])
 		 * diff(sin(2 pi x / size), x, x) = 4.0 pi^2 sin(2 pi x / size) / size^2
 		 */
 		{
-			DataArray<2> h(res);
 			DataArray<2> h_diff2_x(res);
 			DataArray<2> h_diff2_y(res);
 
@@ -545,8 +532,8 @@ int main(int i_argc, char *i_argv[])
 			 *
 			 * this produces derivatives of the same order of magnitude compared to the nondimensional test case
 			 */
-			double scale = std::sqrt((double)parameters.sim_domain_size[0]*(double)parameters.sim_domain_size[1]);
-			scale *= scale;
+//			double scale = std::sqrt((double)parameters.sim_domain_size[0]*(double)parameters.sim_domain_size[1]);
+//			scale *= scale;
 
 			for (std::size_t j = 0; j < parameters.res[1]; j++)
 			{
@@ -558,7 +545,7 @@ int main(int i_argc, char *i_argv[])
 					h.set(
 						j, i,
 	#if FUN_ID==1
-						sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)*scale
+						sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)
 	#elif FUN_ID==2
 						sin(freq_x*M_PIl*x)*sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)*cos(freq_y*M_PIl*y)*scale
 	#elif FUN_ID==3
@@ -569,7 +556,7 @@ int main(int i_argc, char *i_argv[])
 					h_diff2_x.set(
 						j, i,
 	#if FUN_ID==1
-						freq_x*freq_x*M_PIl*M_PIl*-1.0*sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)/((double)parameters.sim_domain_size[0]*(double)parameters.sim_domain_size[0])*scale
+						freq_x*freq_x*M_PIl*M_PIl*(-1.0)*sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)/(parameters.sim_domain_size[0]*parameters.sim_domain_size[0])
 	#elif FUN_ID==2
 	//					2.0*sin(freq_x*M_PIl*x)*std::pow(cos(freq_y*M_PIl*y),2.0)*freq_x*M_PIl*cos(freq_x*M_PIl*x)/(double)parameters.sim_domain_size[0]*scale
 	#elif FUN_ID==3
@@ -580,7 +567,7 @@ int main(int i_argc, char *i_argv[])
 					h_diff2_y.set(
 						j, i,
 	#if FUN_ID==1
-						-sin(freq_x*M_PIl*x)*freq_y*M_PIl*freq_y*M_PIl*cos(freq_y*M_PIl*y)/((double)parameters.sim_domain_size[1]*(double)parameters.sim_domain_size[1])*scale
+						-sin(freq_x*M_PIl*x)*freq_y*M_PIl*freq_y*M_PIl*cos(freq_y*M_PIl*y)/(parameters.sim_domain_size[1]*parameters.sim_domain_size[1])
 	#elif FUN_ID==2
 	//					-2.0*std::pow(std::sin(freq_x*M_PIl*x),2.0)*std::cos(freq_y*M_PIl*y)*freq_y*M_PIl*std::sin(freq_y*M_PIl*y)/(double)parameters.sim_domain_size[1]*scale
 	#elif FUN_ID==3
@@ -592,8 +579,9 @@ int main(int i_argc, char *i_argv[])
 
 			double normalization = sqrt(1.0/parameters.res2_dbl);
 
-			double err2_x = (op.diff2_c_x(h)-h_diff2_x).reduce_norm2_quad()*normalization;
-			double err2_y = (op.diff2_c_y(h)-h_diff2_y).reduce_norm2_quad()*normalization;
+			// diff2 normalization = 4.0 pi^2 / L^2
+			double err2_x = (op.diff2_c_x(h)-h_diff2_x).reduce_norm2_quad()*normalization*(parameters.sim_domain_size[0]*parameters.sim_domain_size[0])/(4.0*M_PIl*M_PIl);
+			double err2_y = (op.diff2_c_y(h)-h_diff2_y).reduce_norm2_quad()*normalization*(parameters.sim_domain_size[1]*parameters.sim_domain_size[1])/(4.0*M_PIl*M_PIl);
 
 			if (parameters.use_spectral_diffs)
 			{

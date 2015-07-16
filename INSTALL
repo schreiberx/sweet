@@ -39,9 +39,9 @@ FFTW (Optional, only for spectral methods):
 
 	tar xzf fftw-3.3.4.tar.gz
 	Without MPI:
-	./configure --prefix=$HOME/local/sweet_support --enable-threads
+	./configure --prefix=$HOME/local/sweet_support --with-our-malloc16 --enable-threads --with-combined-threads --enable-sse2
 	With MPI:
-	./configure --prefix=$HOME/local/sweet_support --enable-mpi --enable-threads
+	./configure --prefix=$HOME/local/sweet_support --with-our-malloc16 --enable-threads --with-combined-threads --enable-sse2 --enable-mpi
 	make -j 4 install
 
 	OR

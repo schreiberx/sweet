@@ -6,6 +6,7 @@
 #include "sweet/SimulationParameters.hpp"
 #include "sweet/Operators2D.hpp"
 #include <unistd.h>
+#include <stdio.h>
 
 SimulationParameters parameters;
 

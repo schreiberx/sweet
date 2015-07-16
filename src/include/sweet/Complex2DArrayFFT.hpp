@@ -281,6 +281,29 @@ public:
 		}
 		return o_ostream;
 	}
+
+
+	DataArray<2> storeRealToDataArray()
+	{
+		DataArray<2> out(resolution);
+
+		for (std::size_t j = 0; j < resolution[1]; j++)
+			for (std::size_t i = 0; i < resolution[0]; i++)
+				out.set(j, i, getRe(j, i));
+
+		return out;
+	}
+
+	Complex2DArrayFFT &loadCartFromRealDataArray(
+			DataArray<2> &i_dataArray
+	)
+	{
+		for (std::size_t j = 0; j < resolution[1]; j++)
+			for (std::size_t i = 0; i < resolution[0]; i++)
+				set(j, i, i_dataArray.get(j, i), 0);
+
+		return *this;
+	}
 };
 
 

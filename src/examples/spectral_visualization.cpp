@@ -19,6 +19,7 @@
 #include <sstream>
 #include <unistd.h>
 #include <iomanip>
+#include <stdio.h>
 
 SimulationParameters parameters;
 
@@ -155,7 +156,7 @@ public:
 		DataArray<2> dataArray(parameters.res);
 
 		double max = 1.0;
-		double shift = stopwatch.getTimeSinceStart();
+		double shift = stopwatch.getTimeSinceStart()*0.1;
 
 		double c = cos(2.0*M_PIl*shift);
 		double s = sin(2.0*M_PIl*shift);
@@ -164,9 +165,9 @@ public:
 
 		sprintf(vis_description, "test spectrum");
 		tmp.spec_setAll(0, 0);
-		int asdf = 10;
-		tmp.spec_spectrum_set(0, asdf, c, s);
-		tmp.spec_spectrum_set(asdf, 0, c, s);
+		int asdf = 2;
+		tmp.spec_set_spectrum(0, asdf, c, s);
+		tmp.spec_set_spectrum(asdf, 0, c, s);
 	}
 
 
