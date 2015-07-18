@@ -519,6 +519,8 @@ public:
 			double i_value
 	)
 	{
+		// TODO: implement this in spectral space!
+
 #pragma omp parallel for simd
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			array_data_cartesian_space[i] = i_value;
@@ -887,6 +889,111 @@ public:
 	}
 
 
+	/**
+	 * Set the spectrum of a frequency with amplitude and phase.
+	 *
+	 * The amplitude specifies the magnitude in real space.
+	 * The phase specifies the shift from one amplitude to another one.
+	 */
+	inline
+	void spec_set_spectrum_A(
+			std::size_t j,		///< j in [0, res[1]/2-1]
+			std::size_t i,		///< i in [0, res[0]/2-1]
+			double i_value_re,	///< amplitude in |R
+			double i_value_im	///< phase shift in [0;1[
+	)
+	{
+		assert(i >= range_spec_start[0] && i < range_spec_end[0]);
+		assert(j >= range_spec_start[1] && j < range_spec_end[1]);
+
+		/*
+		 * Note the padding in the x-direction:
+		 *
+		 * res_spec_x = 2 * (nx/2 + 1)
+		 *
+		 * SWEET (so far) only supports even resolution.
+		 * Hence we have a padding of 1 complex value in the end.
+		 *
+		 * The frequencies in the x direction are then arranged in the following way:
+		 *     [0, 1, 2, 3, ..., N/2-1, "padding=0"]
+		 *
+		 * Note, that setting a frequency here also sets the frequency on the "virtually mirrored" side.
+		 *
+		 * For the y-axis, the frequencies are given as follows (vector is transposed):
+		 *
+		 *     [0, 1, 2, 3, ..., N/2-1, N/2, N/2-1..., 3, 2, 1]
+		 *
+		 * Setting the frequency for N/2 to zero is a kind of obvious
+		 */
+		assert(i >= 0 && i < resolution[0]/2);
+		assert(j >= 0 && j < resolution[1]/2);
+
+		{	// lower part of y
+			std::size_t idx =	(j-range_spec_start[1])*range_spec_size[0]+
+								(i-range_spec_start[0]);
+
+			array_data_spectral_space[idx*2+0] = i_value_re;
+			array_data_spectral_space[idx*2+1] = i_value_im;
+		}
+
+		array_data_cartesian_space_valid = false;
+		array_data_spectral_space_valid = true;
+	}
+
+
+	/**
+	 * Set the spectrum of a frequency with amplitude and phase.
+	 *
+	 * The amplitude specifies the magnitude in real space.
+	 * The phase specifies the shift from one amplitude to another one.
+	 */
+	inline
+	void spec_set_spectrum_B(
+			std::size_t j,		///< j in [0, res[1]/2-1]
+			std::size_t i,		///< i in [0, res[0]/2-1]
+			double i_value_re,	///< amplitude in |R
+			double i_value_im	///< phase shift in [0;1[
+	)
+	{
+		assert(i >= range_spec_start[0] && i < range_spec_end[0]);
+		assert(j >= range_spec_start[1] && j < range_spec_end[1]);
+
+		/*
+		 * Note the padding in the x-direction:
+		 *
+		 * res_spec_x = 2 * (nx/2 + 1)
+		 *
+		 * SWEET (so far) only supports even resolution.
+		 * Hence we have a padding of 1 complex value in the end.
+		 *
+		 * The frequencies in the x direction are then arranged in the following way:
+		 *     [0, 1, 2, 3, ..., N/2-1, "padding=0"]
+		 *
+		 * Note, that setting a frequency here also sets the frequency on the "virtually mirrored" side.
+		 *
+		 * For the y-axis, the frequencies are given as follows (vector is transposed):
+		 *
+		 *     [0, 1, 2, 3, ..., N/2-1, N/2, N/2-1..., 3, 2, 1]
+		 *
+		 * Setting the frequency for N/2 to zero is a kind of obvious
+		 */
+		assert(i >= 0 && i < resolution[0]/2);
+		assert(j >= 0 && j < resolution[1]/2);
+
+		if (j != 0)
+		{	// upper part of y
+			std::size_t idx =	((resolution[1]-j)-range_spec_start[1])*range_spec_size[0]+
+								(i-range_spec_start[0]);
+
+			array_data_spectral_space[idx*2+0] = i_value_re;
+			// IMPORTANT! the imaginary component is mirrored!!!
+			array_data_spectral_space[idx*2+1] = -i_value_im;
+		}
+
+		array_data_cartesian_space_valid = false;
+		array_data_spectral_space_valid = true;
+	}
+
 
 
 	class FFTWSingletonClass
@@ -935,7 +1042,7 @@ public:
 			int wisdom_plan_loaded = fftw_import_wisdom_from_filename(wisdom_filename);
 			if (wisdom_plan_loaded > 0)
 			{
-				std::cout << "Successfully loades FFTW wisdom from file " << wisdom_filename << std::endl;
+				std::cout << "Successfully loaded FFTW wisdom from file " << wisdom_filename << std::endl;
 			}
 
 			plan_forward =
@@ -968,8 +1075,9 @@ public:
 				exit(-1);
 			}
 
-			if (wisdom_plan_loaded == 0)
-				fftw_export_wisdom_to_filename(wisdom_filename);
+			// always store plans - maybe they got extended with another one
+//			if (wisdom_plan_loaded == 0)
+			fftw_export_wisdom_to_filename(wisdom_filename);
 
 
 			free(data_cartesian);
@@ -1002,10 +1110,11 @@ public:
 			fftw_destroy_plan(plan_forward);
 			fftw_destroy_plan(plan_backward);
 
-			fftw_cleanup();
 #if SWEET_THREADING
 			fftw_cleanup_threads();
 #endif
+
+			fftw_cleanup();
 		}
 	};
 
@@ -1030,6 +1139,7 @@ private:
 			(*fftw_singleton_data)->ref_counter++;
 			return *fftw_singleton_data;
 		}
+
 
 		*fftw_singleton_data = new FFTWSingletonClass(i_dataArray);
 		(*fftw_singleton_data)->ref_counter++;
@@ -1076,7 +1186,12 @@ public:
 		if (array_data_spectral_space_valid)
 			return;		// nothing to do
 
-		assert(array_data_cartesian_space_valid == true);
+		if (array_data_cartesian_space_valid == false)
+		{
+			std::cerr << "Spectral data not available! Is this maybe a non-initialized operator?" << std::endl;
+			assert(false);
+			exit(1);
+		}
 
 		DataArray<D> *rw_array_data = (DataArray<D>*)this;
 
@@ -1223,13 +1338,42 @@ public:
 	{
 		requestDataInCartesianSpace();
 
-		double rms = 0;
-#pragma omp parallel for simd reduction(+:rms)
+		double sum = 0;
+#pragma omp parallel for simd reduction(+:sum)
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			rms += array_data_cartesian_space[i]*array_data_cartesian_space[i];
+			sum += array_data_cartesian_space[i]*array_data_cartesian_space[i];
 
-		rms = std::sqrt(rms/double(array_data_cartesian_length));
-		return rms;
+		sum = std::sqrt(sum/double(array_data_cartesian_length));
+		return sum;
+	}
+
+
+	/**
+	 * reduce to root mean square
+	 */
+	double reduce_rms_quad()
+	{
+		requestDataInCartesianSpace();
+
+		double sum = 0;
+		double c = 0;
+
+#pragma omp parallel for reduction(+:sum,c)
+		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
+		{
+			double value = array_data_cartesian_space[i]*array_data_cartesian_space[i];
+
+			// Use Kahan summation
+			double y = value - c;
+			double t = sum + y;
+			c = (t - sum) - y;
+			sum = t;
+		}
+
+		sum -= c;
+
+		sum = std::sqrt(sum/double(array_data_cartesian_length));
+		return sum;
 	}
 
 
@@ -1420,7 +1564,7 @@ public:
 	/**
 	 * return centroid of frequency
 	 */
-	double reduce_spec_getFrequencyCentroid()	const
+	double reduce_spec_getPolvaniCentroid()	const
 	{
 		requestDataInSpectralSpace();
 
@@ -1577,6 +1721,28 @@ public:
 		assert(false);//TODO
 	}
 
+
+
+public:
+	/**
+	 * assignment operator
+	 */
+	DataArray<D> &operator=(double i_value)
+	{
+		setAll(i_value);
+		return *this;
+	}
+
+
+public:
+	/**
+	 * assignment operator
+	 */
+	DataArray<D> &operator=(int i_value)
+	{
+		setAll(i_value);
+		return *this;
+	}
 
 
 public:
@@ -1797,7 +1963,7 @@ public:
 #endif
 
 
-#if SWEET_USE_SPECTRAL_DEALIASING
+#if SWEET_USE_SPECTRAL_DEALIASING && SWEET_USE_SPECTRAL_SPACE
 
 	/**
 	 * scale the solution to avoid aliasing effects for handling non-linear terms

@@ -112,7 +112,7 @@ public:
         // 1: non-staggered
         // 2: up/downwinding
 
-#define ADVECTION_METHOD	2
+#define GRID_LAYOUT_AND_ADVECTION	2
 
 #if ADVECTION_METHOD == 0
 

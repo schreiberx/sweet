@@ -18,7 +18,7 @@
 SimulationParameters parameters;
 
 
-class SimulationSWECovariant
+class SimulationSWEStaggered
 {
 public:
 	// prognostics
@@ -26,7 +26,7 @@ public:
 
 	// temporary variables
 	DataArray<2> H, U, V;
-	DataArray<2> eta;
+	DataArray<2> q;
 
 	// parameters
 	DataArray<2> f;
@@ -47,11 +47,11 @@ public:
 	 * See "The Dynamics of Finite-Difference Models of the Shallow-Water Equations", Robert Sadourny
 	 *
 	 * Prognostic:
-	 *     V_t + \eta N x (P V) + grad(P + 0.5 V.V) = 0
+	 *     V_t + q N x (P V) + grad(P + 0.5 V.V) = 0
 	 *     P_t + div(P V) = 0
 	 *
 	 * Potential vorticity:
-	 *     \eta = rot (V) / P
+	 *     q = rot (V) / P
 	 *
 	 *   ____u0,1_____
 	 *   |           |
@@ -61,7 +61,7 @@ public:
 	 *   |___u0,0____|
 	 */
 public:
-	SimulationSWECovariant(
+	SimulationSWEStaggered(
 	)	:
 		prog_P(parameters.res),	// density/pressure
 		prog_u(parameters.res),	// velocity (x-direction)
@@ -70,8 +70,7 @@ public:
 		H(parameters.res),	//
 		U(parameters.res),	// mass flux (x-direction)
 		V(parameters.res),	// mass flux (y-direction)
-
-		eta(parameters.res),
+		q(parameters.res),
 		f(parameters.res),
 
 		tmp(parameters.res),
@@ -81,7 +80,7 @@ public:
 		reset();
 	}
 
-	~SimulationSWECovariant()
+	~SimulationSWEStaggered()
 	{
 	}
 
@@ -165,11 +164,11 @@ public:
 
 		if (parameters.use_f_array)
 		{
-			eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + f) / prog_P;
+			q = (op.diff_b_x(prog_v) - op.diff_b_y(prog_u) + f) / op.avg_b_x(op.avg_b_y(prog_P));
 		}
 		else
 		{
-			eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + parameters.sim_f) / prog_P;
+			q = (op.diff_b_x(prog_v) - op.diff_b_y(prog_u) + parameters.sim_f) / op.avg_b_x(op.avg_b_y(prog_P));
 		}
 
 		double normalization = (parameters.sim_domain_size[0]*parameters.sim_domain_size[1]) /
@@ -181,12 +180,12 @@ public:
 		// diagnostics_energy
 		parameters.diagnostics_energy = 0.5*(
 				prog_P*prog_P +
-				prog_P*(prog_u*prog_u) +
-				prog_P*(prog_v*prog_v)
+				prog_P*op.avg_f_x(prog_u*prog_u) +
+				prog_P*op.avg_f_y(prog_v*prog_v)
 			).reduce_sum_quad() * normalization;
 
 		// potential enstropy
-		parameters.diagnostics_potential_entrophy = 0.5*(eta*eta*(prog_P)).reduce_sum_quad() * normalization;
+		parameters.diagnostics_potential_entrophy = 0.5*(q*q*op.avg_b_x(op.avg_b_y(prog_P))).reduce_sum_quad() * normalization;
 
 	}
 
@@ -260,29 +259,33 @@ public:
 		 *       |           |
 		 * <- u0,0  H/P0,0   u1,0 ->
 		 *       |           |
-		 * eta0,0|___________|
+		 *   q0,0|___________|
 		 *           v0,0
 		 *             |
 		 *             V
 		 *
-		 * V_t + eta N x (P V) + grad( g P + 1/2 V*V) = 0
+		 * V_t + q N x (P V) + grad( g P + 1/2 V*V) = 0
 		 * P_t + div(P V) = 0
 		 */
 		/*
 		 * U and V updates
 		 */
-		U = i_h*i_u;
-		V = i_h*i_v;
+		U = op.avg_b_x(i_h)*i_u;
+		V = op.avg_b_y(i_h)*i_v;
 
-		H = parameters.sim_g*i_h + 0.5*(i_u*i_u + i_v*i_v);
+		H = parameters.sim_g*i_h + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
 
 		if (parameters.setup_scenario != 5)
-			eta = (op.diff_c_x(i_v) - op.diff_c_y(i_u) + parameters.sim_f) / i_h;
+		{
+			q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + parameters.sim_f) / op.avg_b_x(op.avg_b_y(i_h));
+		}
 		else
-			eta = (op.diff_c_x(i_v) - op.diff_c_y(i_u) + f) / i_h;
+		{
+			q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + f) / op.avg_b_x(op.avg_b_y(i_h));
+		}
 
-		o_u_t = eta*V - op.diff_c_x(H);
-		o_v_t = -eta*U - op.diff_c_y(H);
+		o_u_t = op.avg_f_y(q*op.avg_b_x(V)) - op.diff_b_x(H);
+		o_v_t = -op.avg_f_x(q*op.avg_b_y(U)) - op.diff_b_y(H);
 
 
 		/*
@@ -318,12 +321,17 @@ public:
 			}
 			else
 			{
-				double limit_speed = std::max(parameters.sim_cell_size[0]/i_u.reduce_maxAbs(), parameters.sim_cell_size[1]/i_v.reduce_maxAbs());
+				double limit_speed = std::min(parameters.sim_cell_size[0]/i_u.reduce_maxAbs(), parameters.sim_cell_size[1]/i_v.reduce_maxAbs());
 
-				// limit by re
+				double hx = parameters.sim_cell_size[0];
+				double hy = parameters.sim_cell_size[1];
+
+				// limit by viscosity
 				double limit_visc = std::numeric_limits<double>::infinity();
-		//		if (viscocity > 0)
-		//			limit_visc = (viscocity*0.5)*((hx*hy)*0.5);
+				if (parameters.sim_viscocity > 0)
+					limit_visc = (hx*hx*hy*hy)/(4.0*parameters.sim_viscocity*parameters.sim_viscocity);
+				if (parameters.sim_hyper_viscocity > 0)
+					limit_visc = std::min((hx*hx*hx*hx*hy*hy*hy*hy)/(16.0*parameters.sim_hyper_viscocity*parameters.sim_hyper_viscocity), limit_visc);
 
 				// limit by gravitational acceleration
 				double limit_gh = std::min(parameters.sim_cell_size[0], parameters.sim_cell_size[1])/std::sqrt(parameters.sim_g*i_h.reduce_maxAbs());
@@ -344,7 +352,7 @@ public:
 			if (!parameters.timestepping_up_and_downwinding)
 			{
 				// standard update
-				o_h_t = -op.diff_c_x(U) - op.diff_c_y(V);
+				o_h_t = -op.diff_f_x(U) - op.diff_f_y(V);
 			}
 			else
 			{
@@ -369,11 +377,11 @@ public:
 			if (!parameters.timestepping_up_and_downwinding)
 			{
 				// recompute U and V
-				U = i_h*(i_u+o_dt*o_u_t);
-				V = i_h*(i_v+o_dt*o_v_t);
+				U = op.avg_b_x(i_h)*(i_u+o_dt*o_u_t);
+				V = op.avg_b_y(i_h)*(i_v+o_dt*o_v_t);
 
 				// update based on new u and v values
-				o_h_t = -op.diff_c_x(U) - op.diff_c_y(V);
+				o_h_t = -op.diff_f_x(U) - op.diff_f_y(V);
 			}
 			else
 			{
@@ -402,7 +410,7 @@ public:
 		double dt;
 		timestepping.run_rk_timestep(
 				this,
-				&SimulationSWECovariant::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
+				&SimulationSWEStaggered::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
 				prog_P, prog_u, prog_v,
 				dt,
 				parameters.timestepping_timestep_size,
@@ -527,7 +535,7 @@ public:
 			{&prog_u,	"u"},
 			{&prog_v,	"v"},
 			{&H,		"H"},
-			{&eta,		"eta"},
+			{&q,		"q"},
 			{&U,		"U"},
 			{&V,		"V"}
 	};
@@ -551,7 +559,7 @@ public:
 		int id = parameters.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
 
 		static char title_string[1024];
-		sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %.14e, Vis: %.14s, Mass: %.14e, Energy: %.14e, Potential Entrophy: %.14e",
+		sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %.14e, Vis: %s, Mass: %.14e, Energy: %.14e, Potential Entrophy: %.14e",
 				parameters.status_simulation_time,
 				parameters.status_simulation_time/(60.0*60.0*24.0),
 				parameters.status_timestep_nr,
@@ -605,7 +613,13 @@ int main(int i_argc, char *i_argv[])
 
 	parameters.setup(i_argc, i_argv);
 
-	SimulationSWECovariant *simulationSWE = new SimulationSWECovariant;
+	if (parameters.use_spectral_diffs)
+	{
+		std::cerr << "Spectral differentiation not yet supported for staggered grid!" << std::endl;
+		return -1;
+	}
+
+	SimulationSWEStaggered *simulationSWE = new SimulationSWEStaggered;
 
 	std::ostringstream buf;
 	buf << std::setprecision(14);
@@ -613,7 +627,7 @@ int main(int i_argc, char *i_argv[])
 
 
 #if SWEET_GUI
-	VisSweet<SimulationSWECovariant> visSweet(simulationSWE);
+	VisSweet<SimulationSWEStaggered> visSweet(simulationSWE);
 #else
 	simulationSWE->reset();
 

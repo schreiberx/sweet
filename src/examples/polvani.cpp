@@ -585,28 +585,25 @@ void compute_polvani_initialization(
 		 */
 
 		DataArray<2> energy_init(parameters.res);
+		energy_init.spec_setAll(0,0);
 
-		for (std::size_t j = 0; j < energy_init.resolution_spec[1]; j++)
+		for (std::size_t j = 0; j < energy_init.resolution_spec[1]/2; j++)
 		{
-			for (std::size_t i = 0; i < energy_init.resolution_spec[0]; i++)
+			for (std::size_t i = 0; i < energy_init.resolution_spec[0]/2; i++)
 			{
-				std::size_t ka = i;
-				std::size_t kb = (j < energy_init.resolution_spec[1]/2 ? j : energy_init.resolution_spec[1]-j);
-				std::size_t sign = (j < energy_init.resolution_spec[1]/2 ? 1 : -1);
-				assert(kb >= 0 && kb <= energy_init.resolution_spec[1]/2);
-
-				double k = std::sqrt((double)(ka*ka)+(double)(kb*kb));
+				double k = std::sqrt((double)(i*i)+(double)(j*j));
 
 				// compute energy spectrum
 				double energy = pow(k, m*0.5)/pow(k+k0, m);
 
 				assert(energy >= 0);
-				energy_init.spec_set(j, i, energy, 0);
+				energy_init.spec_set_spectrum(j, i, energy, 0);
 
+/*
 				if (ka*ka+kb*kb == 1)
 					energy_init.spec_set(j, i, 1, 0);
 				else
-					energy_init.spec_set(j, i, 0, 0);
+					energy_init.spec_set(j, i, 0, 0);*/
 
 				/**
 				 * Information on real FFT
@@ -673,11 +670,11 @@ void compute_polvani_initialization(
 			}
 		}
 
-#if 0
-		double scale_energyx = 1.0/energy_init.reduce_rms();
-		scale_energyx *= 0.5*sqrt(2.0);
+		double scale_energyx = 0.5/energy_init.reduce_rms();
+//		scale_energyx *= 0.5*sqrt(2.0);
 		energy_init *= scale_energyx;
 
+#if 0
 		h = energy_init;
 		u.setAll(0);
 		v.setAll(0);
@@ -708,46 +705,51 @@ void compute_polvani_initialization(
 		std::cout << "ENERGY rms: " << energy_init.reduce_rms() << std::endl;
 
 		DataArray<2> psi(parameters.res);
+		psi.spec_setAll(0, 0);
 
-		for (std::size_t j = 0; j < psi.resolution_spec[1]; j++)
+		for (std::size_t j = 0; j < psi.resolution_spec[1]/2; j++)
 		{
-			for (std::size_t i = 0; i < psi.resolution_spec[0]; i++)
+			for (std::size_t i = 0; i < psi.resolution_spec[0]/2; i++)
 			{
-				std::size_t ka = i;
-				std::size_t kb = (j < energy_init.resolution_spec[1]/2 ? j : energy_init.resolution_spec[1]-1-j);
-				assert(kb >= 0 && kb <= energy_init.resolution_spec[1]/2);
-
-				if (ka == 0 && kb == 0)
-				{
-					psi.spec_set(j, i, 0, 0);
+				if (i == 0 && j == 0)
 					continue;
-				}
 
 				// compute energy spectrum
 				double energy = energy_init.spec_getRe(j, i);
 
-				double k = std::sqrt((double)(ka*ka)+(double)(kb*kb));
+				double k = std::sqrt((double)(i*i)+(double)(j*j));
 				double psi_abs = std::sqrt(energy*2.0/(k*k));
 
-				// compute random number \in [0;1[
-				double r = (double)rand()/((double)RAND_MAX+1);
+				{
+					// compute random number \in [0;1[
+					double r = (double)rand()/((double)RAND_MAX+1);
 
-				// TODO: remove this!
-				r = 0;
+					// generate random phase shift
+					double psi_re = cos(2.0*M_PIl*r);
+					double psi_im = sin(2.0*M_PIl*r);
 
-				// generate random phase shift
-				double psi_re = cos(2.0*M_PIl*r);
-				double psi_im = sin(2.0*M_PIl*r);
+					psi_re *= psi_abs;
+					psi_im *= psi_abs;
 
-				psi_re *= psi_abs;
-				psi_im *= psi_abs;
+					psi.spec_set_spectrum_A(j, i, psi_re, psi_im);
+				}
+				{
+					// compute random number \in [0;1[
+					double r = (double)rand()/((double)RAND_MAX+1);
 
-				psi.spec_set(j, i, psi_re, psi_im);
-				psi.spec_set(j, i, psi_re, psi_im);
+					// generate random phase shift
+					double psi_re = cos(2.0*M_PIl*r);
+					double psi_im = sin(2.0*M_PIl*r);
+
+					psi_re *= psi_abs;
+					psi_im *= psi_abs;
+
+					psi.spec_set_spectrum_B(j, i, psi_re, psi_im);
+				}
 			}
 		}
 
-#if 1
+#if 0
 		h = psi;
 		u.setAll(0);
 		v.setAll(0);
@@ -756,7 +758,7 @@ void compute_polvani_initialization(
 
 		std::cout << "CART Max: " << psi.reduce_maxAbs() << std::endl;
 		std::cout << "SPEC Max: " << psi.reduce_spec_maxAbs() << std::endl;
-		std::cout << "SPEC Centroid: " << psi.reduce_spec_getFrequencyCentroid() << std::endl;
+		std::cout << "SPEC Centroid: " << psi.reduce_spec_getPolvaniCentroid() << std::endl;
 
 		/**
 		 * STEP 2) Compute h
@@ -989,7 +991,7 @@ void compute_polvani_initialization(
 		}
 
 		DataArray<2> energy = 0.5*(u*u+v*v);
-		std::cout << "ENERGY Centroid: " << energy.reduce_spec_getFrequencyCentroid() << std::endl;
+		std::cout << "ENERGY Centroid: " << energy.reduce_spec_getPolvaniCentroid() << std::endl;
 		std::cout << std::endl;
 		std::cout << "R: " << R << std::endl;
 		std::cout << "F: " << F << std::endl;

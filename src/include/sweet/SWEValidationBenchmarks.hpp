@@ -24,10 +24,10 @@ public:
 		if (i_parameters.setup_scenario == 0)
 		{
 			// radial dam break
-			double dx = x-i_parameters.setup_coord_x;
-			double dy = y-i_parameters.setup_coord_y;
+			double dx = x-i_parameters.setup_coord_x*i_parameters.sim_domain_size[0];
+			double dy = y-i_parameters.setup_coord_y*i_parameters.sim_domain_size[1];
 
-			double radius = i_parameters.setup_radius;
+			double radius = i_parameters.setup_radius_scale*sqrt((double)i_parameters.sim_domain_size[0]*(double)i_parameters.sim_domain_size[0]+(double)i_parameters.sim_domain_size[1]*(double)i_parameters.sim_domain_size[1]);
 			if (dx*dx+dy*dy < radius*radius)
 				return i_parameters.setup_h0+1.0;
 			else
@@ -36,10 +36,10 @@ public:
 
 		if (i_parameters.setup_scenario == 1)
 		{
-			double dx = x-i_parameters.setup_coord_x;
-			double dy = y-i_parameters.setup_coord_y;
+			double dx = x-i_parameters.setup_coord_x*i_parameters.sim_domain_size[0];
+			double dy = y-i_parameters.setup_coord_y*i_parameters.sim_domain_size[1];
 
-			double radius = i_parameters.setup_radius*10.0;
+			double radius = i_parameters.setup_radius_scale*sqrt((double)i_parameters.sim_domain_size[0]*(double)i_parameters.sim_domain_size[0]+(double)i_parameters.sim_domain_size[1]*(double)i_parameters.sim_domain_size[1]);
 			dx /= radius;
 			dy /= radius;
 
@@ -61,7 +61,7 @@ public:
 			double dx = x-i_parameters.setup_coord_x;
 			double dy = y-i_parameters.setup_coord_y;
 
-			double radius = i_parameters.setup_radius*10;
+			double radius = i_parameters.setup_radius_scale*sqrt((double)i_parameters.sim_domain_size[0]*(double)i_parameters.sim_domain_size[0]+(double)i_parameters.sim_domain_size[1]*(double)i_parameters.sim_domain_size[1]);
 			dx /= radius;
 			dy /= radius;
 

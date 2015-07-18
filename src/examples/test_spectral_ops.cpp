@@ -162,12 +162,12 @@ int main(int i_argc, char *i_argv[])
 
 			double res2 = (double)(res[0]*res[1]);
 
-			double add_test_two = (zero+two).reduce_norm2_quad()/res2;
-			double add_test_seven = (five+two).reduce_norm2_quad()/res2;
-			double add_test_ten = ((five+two)+3.0).reduce_norm2_quad()/res2;
+			double add_test_two = (zero+two).reduce_rms_quad();
+			double add_test_seven = (five+two).reduce_rms_quad();
+			double add_test_ten = ((five+two)+3.0).reduce_rms_quad();
 			double error = 0;
 
-			error = std::abs(add_test_two-sqrt(res2*(std::pow(2.0, 2.0)))/res2);
+			error = std::abs(add_test_two-2.0);
 			std::cout << "Add test two ||_2 = " << error << std::endl;
 			if (error > eps)
 			{
@@ -175,7 +175,7 @@ int main(int i_argc, char *i_argv[])
 				exit(-1);
 			}
 
-			error = std::abs(add_test_seven-sqrt(res2*std::pow(7.0, 2.0))/res2);
+			error = std::abs(add_test_seven-7.0);
 			std::cout << "Add test seven ||_2 = " << error << std::endl;
 			if (error > eps)
 			{
@@ -183,7 +183,7 @@ int main(int i_argc, char *i_argv[])
 				exit(-1);
 			}
 
-			error = std::abs(add_test_ten-sqrt(res2*std::pow(10.0, 2.0))/res2);
+			error = std::abs(add_test_ten-10.0);
 			std::cout << "Add test ten ||_2 = " << error << std::endl;
 			if (error > eps)
 			{
@@ -226,6 +226,7 @@ int main(int i_argc, char *i_argv[])
 
 			double sin_test_zero_mul = (h*two).reduce_sum_quad()/res2;
 			error = sin_test_zero_mul;
+			std::cout << "Sin test times 2 ||_2 = " << error << std::endl;
 			if (error > eps)
 			{
 				std::cout << "FAILED with error " << error;
@@ -245,12 +246,6 @@ int main(int i_argc, char *i_argv[])
 			DataArray<2> v(res);
 
 			Operators2D op(parameters.res, parameters.sim_domain_size, parameters.use_spectral_diffs);
-
-			/*
-			 * scale everything to get a kind of dimensionalizeation for error boundaries
-			 *
-			 * this produces derivatives of the same order of magnitude compared to the nondimensional test case
-			 */
 
 			for (std::size_t j = 0; j < parameters.res[1]; j++)
 			{
@@ -290,14 +285,7 @@ int main(int i_argc, char *i_argv[])
 			v.requestDataInSpectralSpace();
 			v.array_data_cartesian_space_valid = false;
 
-			double err_z = (u*v-h).reduce_norm2()/parameters.res2_dbl;
-
-			double average = h.reduce_sum_quad();
-			if (std::abs(average) > eps)
-			{
-				std::cerr << "SPEC: h requires average value of 0 so that the following test works, found value " << average << std::endl;
-				exit(-1);
-			}
+			double err_z = (u*v-h).reduce_rms_quad();
 
 			if (parameters.use_spectral_diffs)
 			{
@@ -315,7 +303,7 @@ int main(int i_argc, char *i_argv[])
 							h-
 							(op.diff2_c_x(h)+op.diff2_c_y(h)).
 								spec_div_element_wise(op.diff2_c_x+op.diff2_c_y)
-					).reduce_norm2()/parameters.res2_dbl;
+					).reduce_rms_quad();
 
 				std::cout << "SPEC: Error threshold for Laplace and its inverse: " << err3_laplace << std::endl;
 				if (err3_laplace > eps)
@@ -353,13 +341,6 @@ int main(int i_argc, char *i_argv[])
 
 			Operators2D op(parameters.res, parameters.sim_domain_size, parameters.use_spectral_diffs);
 
-			/*
-			 * scale everything to get a kind of dimensionalizeation for error boundaries
-			 *
-			 * this produces derivatives of the same order of magnitude compared to the nondimensional test case
-			 */
-			double scale = std::sqrt((double)parameters.sim_domain_size[0]*(double)parameters.sim_domain_size[1]);
-
 			for (std::size_t j = 0; j < parameters.res[1]; j++)
 			{
 				for (std::size_t i = 0; i < parameters.res[0]; i++)
@@ -372,7 +353,7 @@ int main(int i_argc, char *i_argv[])
 					v.set(j, i, cos(freq_y*M_PIl*y));
 	#elif FUN_ID==2
 					u.set(j, i, sin(freq_x*M_PIl*x));
-					v.set(j, i, 1.0/(cos(freq_y*M_PIl*y)+2.0)*scale);
+					v.set(j, i, 1.0/(cos(freq_y*M_PIl*y)+2.0));
 	#endif
 
 					h.set(
@@ -380,9 +361,9 @@ int main(int i_argc, char *i_argv[])
 	#if FUN_ID==1
 						sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)
 	#elif FUN_ID==2
-						sin(freq_x*M_PIl*x)*sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)*cos(freq_y*M_PIl*y)*scale
+						sin(freq_x*M_PIl*x)*sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)*cos(freq_y*M_PIl*y)
 	#elif FUN_ID==3
-						sin(freq_x*M_PIl*x)/(cos(freq_y*M_PIl*y)+2.0)*scale
+						sin(freq_x*M_PIl*x)/(cos(freq_y*M_PIl*y)+2.0)
 	#endif
 					);
 
@@ -391,9 +372,9 @@ int main(int i_argc, char *i_argv[])
 	#if FUN_ID==1
 						freq_x*M_PIl*cos(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)/(double)parameters.sim_domain_size[0]
 	#elif FUN_ID==2
-						2.0*sin(freq_x*M_PIl*x)*std::pow(cos(freq_y*M_PIl*y),2.0)*freq_x*M_PIl*cos(freq_x*M_PIl*x)/(double)parameters.sim_domain_size[0]*scale
+						2.0*sin(freq_x*M_PIl*x)*std::pow(cos(freq_y*M_PIl*y),2.0)*freq_x*M_PIl*cos(freq_x*M_PIl*x)/(double)parameters.sim_domain_size[0]
 	#elif FUN_ID==3
-						freq_x*M_PIl*cos(freq_x*M_PIl*x)/(cos(freq_y*M_PIl*y)+2.0)/(double)parameters.sim_domain_size[0]*scale
+						freq_x*M_PIl*cos(freq_x*M_PIl*x)/(cos(freq_y*M_PIl*y)+2.0)/(double)parameters.sim_domain_size[0]
 	#endif
 					);
 
@@ -402,9 +383,9 @@ int main(int i_argc, char *i_argv[])
 	#if FUN_ID==1
 						-sin(freq_x*M_PIl*x)*freq_y*M_PIl*sin(freq_y*M_PIl*y)/(double)parameters.sim_domain_size[1]
 	#elif FUN_ID==2
-						-2.0*std::pow(std::sin(freq_x*M_PIl*x),2.0)*std::cos(freq_y*M_PIl*y)*freq_y*M_PIl*std::sin(freq_y*M_PIl*y)/(double)parameters.sim_domain_size[1]*scale
+						-2.0*std::pow(std::sin(freq_x*M_PIl*x),2.0)*std::cos(freq_y*M_PIl*y)*freq_y*M_PIl*std::sin(freq_y*M_PIl*y)/(double)parameters.sim_domain_size[1]
 	#elif FUN_ID==3
-						sin(freq_x*M_PIl*x)*freq_y*M_PIl*sin(freq_y*M_PIl*y)/pow(cos(freq_y*M_PIl*y)+2.0, 2.0)/(double)parameters.sim_domain_size[1]*scale
+						sin(freq_x*M_PIl*x)*freq_y*M_PIl*sin(freq_y*M_PIl*y)/pow(cos(freq_y*M_PIl*y)+2.0, 2.0)/(double)parameters.sim_domain_size[1]
 	#endif
 					);
 				}
@@ -527,14 +508,6 @@ int main(int i_argc, char *i_argv[])
 
 			Operators2D op(parameters.res, parameters.sim_domain_size, parameters.use_spectral_diffs);
 
-			/*
-			 * scale everything to get a kind of dimensionalization for error boundaries
-			 *
-			 * this produces derivatives of the same order of magnitude compared to the nondimensional test case
-			 */
-//			double scale = std::sqrt((double)parameters.sim_domain_size[0]*(double)parameters.sim_domain_size[1]);
-//			scale *= scale;
-
 			for (std::size_t j = 0; j < parameters.res[1]; j++)
 			{
 				for (std::size_t i = 0; i < parameters.res[0]; i++)
@@ -547,9 +520,9 @@ int main(int i_argc, char *i_argv[])
 	#if FUN_ID==1
 						sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)
 	#elif FUN_ID==2
-						sin(freq_x*M_PIl*x)*sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)*cos(freq_y*M_PIl*y)*scale
+						sin(freq_x*M_PIl*x)*sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)*cos(freq_y*M_PIl*y)
 	#elif FUN_ID==3
-						sin(freq_x*M_PIl*x)/(cos(freq_y*M_PIl*y)+2.0)*scale
+						sin(freq_x*M_PIl*x)/(cos(freq_y*M_PIl*y)+2.0)
 	#endif
 					);
 
@@ -558,9 +531,9 @@ int main(int i_argc, char *i_argv[])
 	#if FUN_ID==1
 						freq_x*freq_x*M_PIl*M_PIl*(-1.0)*sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)/(parameters.sim_domain_size[0]*parameters.sim_domain_size[0])
 	#elif FUN_ID==2
-	//					2.0*sin(freq_x*M_PIl*x)*std::pow(cos(freq_y*M_PIl*y),2.0)*freq_x*M_PIl*cos(freq_x*M_PIl*x)/(double)parameters.sim_domain_size[0]*scale
+	//					2.0*sin(freq_x*M_PIl*x)*std::pow(cos(freq_y*M_PIl*y),2.0)*freq_x*M_PIl*cos(freq_x*M_PIl*x)/(double)parameters.sim_domain_size[0]
 	#elif FUN_ID==3
-	//					freq_x*M_PIl*cos(freq_x*M_PIl*x)/(cos(freq_y*M_PIl*y)+2.0)/(double)parameters.sim_domain_size[0]*scale
+	//					freq_x*M_PIl*cos(freq_x*M_PIl*x)/(cos(freq_y*M_PIl*y)+2.0)/(double)parameters.sim_domain_size[0]
 	#endif
 					);
 
@@ -569,9 +542,9 @@ int main(int i_argc, char *i_argv[])
 	#if FUN_ID==1
 						-sin(freq_x*M_PIl*x)*freq_y*M_PIl*freq_y*M_PIl*cos(freq_y*M_PIl*y)/(parameters.sim_domain_size[1]*parameters.sim_domain_size[1])
 	#elif FUN_ID==2
-	//					-2.0*std::pow(std::sin(freq_x*M_PIl*x),2.0)*std::cos(freq_y*M_PIl*y)*freq_y*M_PIl*std::sin(freq_y*M_PIl*y)/(double)parameters.sim_domain_size[1]*scale
+	//					-2.0*std::pow(std::sin(freq_x*M_PIl*x),2.0)*std::cos(freq_y*M_PIl*y)*freq_y*M_PIl*std::sin(freq_y*M_PIl*y)/(double)parameters.sim_domain_size[1]
 	#elif FUN_ID==3
-	//					sin(freq_x*M_PIl*x)*freq_y*M_PIl*sin(freq_y*M_PIl*y)/pow(cos(freq_y*M_PIl*y)+2.0, 2.0)/(double)parameters.sim_domain_size[1]*scale
+	//					sin(freq_x*M_PIl*x)*freq_y*M_PIl*sin(freq_y*M_PIl*y)/pow(cos(freq_y*M_PIl*y)+2.0, 2.0)/(double)parameters.sim_domain_size[1]
 	#endif
 					);
 				}

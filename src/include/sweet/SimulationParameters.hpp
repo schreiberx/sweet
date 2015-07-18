@@ -26,10 +26,10 @@ public:
 	int setup_scenario = 1;
 
 	// radius
-	double setup_radius = 100000;
+	double setup_radius_scale = 1;
 
-	double setup_coord_x = 500.0*1000.0;
-	double setup_coord_y = 500.0*1000.0;
+	double setup_coord_x = 0.5;
+	double setup_coord_y = 0.5;
 
 
 	/**
@@ -102,11 +102,20 @@ public:
 	 */
 	double bogus_var0 = 0;
 	double bogus_var1 = 0;
+	double bogus_var2 = 0;
 
 	/**
 	 * set verbosity of simulation
 	 */
 	int verbosity = 0;
+
+	bool gui_enabled =
+#if SWEET_GUI
+			true
+#else
+			false
+#endif
+			;
 
 
 	/**
@@ -165,9 +174,8 @@ public:
 		res[0] = 128;
 		res[1] = 128;
 
-
 		int opt;
-		while ((opt = getopt(i_argc, i_argv, "N:n:m:C:u:U:s:X:Y:a:b:f:x:y:t:T:v:H:r:R:W:F:S:g:p:P:")) != -1)
+		while ((opt = getopt(i_argc, i_argv, "N:n:m:C:u:U:s:X:Y:a:b:c:f:x:y:t:T:v:H:r:R:W:F:S:g:p:P:G:")) != -1)
 		{
 			switch (opt)
 			{
@@ -189,7 +197,7 @@ public:
 				break;
 
 			case 'r':
-				setup_radius = atof(optarg);
+				setup_radius_scale = atof(optarg);
 				break;
 
 			case 't':
@@ -244,6 +252,10 @@ public:
 				bogus_var1 = atof(optarg);
 				break;
 
+			case 'c':
+				bogus_var2 = atof(optarg);
+				break;
+
 			case 'x':
 				setup_coord_x = atof(optarg);
 				break;
@@ -254,6 +266,10 @@ public:
 
 			case 'f':
 				sim_f = atof(optarg);
+				break;
+
+			case 'G':
+				gui_enabled = atoi(optarg);
 				break;
 
 			case 'g':
@@ -290,10 +306,10 @@ public:
 						"",
 						"Simulation setup parameters",
 						"	-s [scen]	scenario id",
-						"	-x [float]	x coordinate for setup",
-						"	-y [float]	y coordinate for setup",
+						"	-x [float]	x coordinate for setup \\in [0;1]",
+						"	-y [float]	y coordinate for setup \\in [0;1]",
 						"	-H [float]	average (initial) height of water",
-						"	-r [radius]	radius of initial condition",
+						"	-r [radius]	scale factor of radius for initial condition",
 						"",
 						"Discretization:",
 						"  >Space:",

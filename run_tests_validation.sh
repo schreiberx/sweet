@@ -4,7 +4,9 @@
 
 cd run_tests_validation
 
-for i in *.sh; do
+
+# only execute scripts which do not start with an underscore
+for i in [^_]*.sh; do
 	echo "******************************************************"
 	echo "* Executing script $i"
 	echo "******************************************************"

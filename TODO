@@ -28,12 +28,15 @@
   > Tests with increased resolution
 
 * Write interface for setting spectral values
+  DONE
 
 * Write tests for testing spectral values:
   Tests by setting one frequency and testing response in Cartesian space
+  DONE, spectral_visualization.cpp
 
 * Check scalup/scaledown in operator*, since this creates invalid
   memory access
+  DONE (?)
 
 * Implement NEMO-like model
 
