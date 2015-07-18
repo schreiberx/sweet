@@ -95,7 +95,7 @@ Overview
 
 \begin_layout Standard
 \begin_inset Tabular
-<lyxtabular version="3" rows="12" columns="2">
+<lyxtabular version="3" rows="15" columns="2">
 <features rotate="0" tabularvalignment="middle">
 <column alignment="center" valignment="top">
 <column alignment="left" valignment="top">
@@ -105,6 +105,8 @@ Overview
 
 \begin_layout Plain Layout
 
+\series bold
+Symbol
 \end_layout
 
 \end_inset
@@ -114,6 +116,8 @@ Overview
 
 \begin_layout Plain Layout
 
+\series bold
+Description
 \end_layout
 
 \end_inset
@@ -137,6 +141,29 @@ Overview
 
 \begin_layout Plain Layout
 Water height
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $h_{0}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Mean water depth
 \end_layout
 
 \end_inset
@@ -241,7 +268,57 @@ Momentum in y direction
 \begin_inset Text
 
 \begin_layout Plain Layout
-\begin_inset Formula $\eta$
+\begin_inset Formula $\zeta_{R}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Relative vorticity
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\zeta_{A}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Absolute vorticity (
+\begin_inset Formula $\zeta_{R}+f$
+\end_inset
+
+)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $q$
 \end_inset
 
 
@@ -253,7 +330,11 @@ Momentum in y direction
 \begin_inset Text
 
 \begin_layout Plain Layout
-Potential vorticity
+Potential vorticity (
+\begin_inset Formula $\frac{\zeta_{A}}{h}$
+\end_inset
+
+)
 \end_layout
 
 \end_inset
@@ -287,7 +368,7 @@ Gravity
 \begin_inset Text
 
 \begin_layout Plain Layout
-\begin_inset Formula $H$
+\begin_inset Formula $\Phi$
 \end_inset
 
 
@@ -299,7 +380,7 @@ Gravity
 \begin_inset Text
 
 \begin_layout Plain Layout
-Awesome quantity
+Bernoulli potential
 \end_layout
 
 \end_inset
@@ -322,7 +403,11 @@ Awesome quantity
 \begin_inset Text
 
 \begin_layout Plain Layout
-Coriolis force
+Coriolis force 
+\begin_inset Formula $2\Omega sin(\phi)$
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -345,7 +430,11 @@ Coriolis force
 \begin_inset Text
 
 \begin_layout Plain Layout
-Steady state of quantity
+Steady state of a quantity 
+\begin_inset Formula $p$
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -386,7 +475,7 @@ Perturbation of
 \end_layout
 
 \begin_layout Section
-Momentum formulation
+Flux formulation (momentum, conservative formulation)
 \end_layout
 
 \begin_layout Standard
@@ -441,11 +530,13 @@ Please note, that this formulation contains several non-linear terms!
 \end_layout
 
 \begin_layout Section
-Non-conservative formulation
+Advective formulation
 \end_layout
 
 \begin_layout Standard
-By using the produce rule, we can reformulate the equations above to make
+This is a formulation which makes it more challenging to get conservative
+ properties.
+ By using the produce rule, we can reformulate the equations above to make
  the velocities conserved quantities.
  Here, we first apply the produce rule to 
 \begin_inset Formula $(hu)_{t}$
@@ -575,7 +666,13 @@ uv_{x}+vv_{y}
 \end_layout
 
 \begin_layout Section
-Vorticity formulation
+Vector invariant formulation (vorticity formulation)
+\end_layout
+
+\begin_layout Standard
+The vector invariant formulation is used in models such as NEMO, GungHo,
+ MPAS, etc.
+ The discretization of it strongly differs between the different models.
 \end_layout
 
 \begin_layout Standard
@@ -612,11 +709,11 @@ u_{t}-vv_{x}+vu_{y}+(gh+u^{2}+v^{2})_{x}-fv=0
 
 \begin_layout Standard
 and set 
-\begin_inset Formula $H:=gh+u^{2}+v^{2}$
+\begin_inset Formula $\Phi:=gh+u^{2}+v^{2}$
 \end_inset
 
  and 
-\begin_inset Formula $\eta:=v_{x}-u_{y}+f$
+\begin_inset Formula $\zeta_{A}:=v_{x}-u_{y}+f$
 \end_inset
 
 , yielding
@@ -625,7 +722,7 @@ and set
 \begin_layout Standard
 \begin_inset Formula 
 \[
-u_{t}-v\eta+H_{x}=0
+u_{t}-v\zeta_{A}+\Phi_{x}=0
 \]
 
 \end_inset
@@ -681,7 +778,7 @@ h_{t}+(hu)_{x}+(hv)_{y}=0
 \begin_layout Standard
 \begin_inset Formula 
 \[
-u_{t}-v\eta+H_{x}=0
+u_{t}-v\zeta_{A}+\Phi_{x}=0
 \]
 
 \end_inset
@@ -692,7 +789,7 @@ u_{t}-v\eta+H_{x}=0
 \begin_layout Standard
 \begin_inset Formula 
 \[
-v_{t}+u\eta+H_{y}=0
+v_{t}+u\zeta_{A}+\Phi_{y}=0
 \]
 
 \end_inset
@@ -752,7 +849,12 @@ Further, we assume a low velocity
 \begin_inset Formula $\{|u_{0}|,|v_{0}|\}<O(\epsilon)$
 \end_inset
 
-, yielding
+ and hence 
+\emph on
+neglect the non-linear 
+\emph default
+parts.
+ This yields
 \end_layout
 
 \begin_layout Standard
@@ -866,7 +968,8 @@ Linear/Non-linear version:
 \end_layout
 
 \begin_layout Standard
-In the equation above, we neglected also the non-linear velocities.
+In the equation above, we neglected also the non-linear velocities by assuming
+ close-to-zero velocities.
  Assuming, that their influence is of high importance, we can write the
  equations in a form which is not neglecting these equations:
 \end_layout
