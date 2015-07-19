@@ -431,7 +431,7 @@ public:
 			std::ostream &o_ostream = std::cout
 	)
 	{
-		if (parameters.verbosity > 0)
+		if (parameters.verbosity > 2)
 		{
 			update_diagnostics();
 
@@ -627,73 +627,77 @@ int main(int i_argc, char *i_argv[])
 
 
 #if SWEET_GUI
-	VisSweet<SimulationSWEStaggered> visSweet(simulationSWE);
-#else
-	simulationSWE->reset();
-
-	Stopwatch time;
-	time.reset();
-
-
-	double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
-
-	if (parameters.verbosity > 1)
+	if (parameters.gui_enabled)
 	{
-		simulationSWE->update_diagnostics();
-		diagnostics_energy_start = parameters.diagnostics_energy;
-		diagnostics_mass_start = parameters.diagnostics_mass;
-		diagnostics_potential_entrophy_start = parameters.diagnostics_potential_entrophy;
+		VisSweet<SimulationSWEStaggered> visSweet(simulationSWE);
 	}
-
-	while(true)
+	else
 	{
+#endif
+		simulationSWE->reset();
+
+		Stopwatch time;
+		time.reset();
+
+
+		double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
+
 		if (parameters.verbosity > 1)
 		{
-			simulationSWE->timestep_output(buf);
-
-			std::string output = buf.str();
-			buf.str("");
-
-			std::cout << output;
-
-			if (parameters.verbosity > 2)
-				std::cerr << output;
+			simulationSWE->update_diagnostics();
+			diagnostics_energy_start = parameters.diagnostics_energy;
+			diagnostics_mass_start = parameters.diagnostics_mass;
+			diagnostics_potential_entrophy_start = parameters.diagnostics_potential_entrophy;
 		}
 
-		if (simulationSWE->should_quit())
-			break;
-
-		simulationSWE->run_timestep();
-
-		if (simulationSWE->instability_detected())
+		while(true)
 		{
-			std::cout << "INSTABILITY DETECTED" << std::endl;
-			break;
+			if (parameters.verbosity > 1)
+			{
+				simulationSWE->timestep_output(buf);
+
+				std::string output = buf.str();
+				buf.str("");
+
+				std::cout << output;
+
+				if (parameters.verbosity > 2)
+					std::cerr << output;
+			}
+
+			if (simulationSWE->should_quit())
+				break;
+
+			simulationSWE->run_timestep();
+
+			if (simulationSWE->instability_detected())
+			{
+				std::cout << "INSTABILITY DETECTED" << std::endl;
+				break;
+			}
+		}
+
+		time.stop();
+
+		double seconds = time();
+
+		std::cout << "Simulation time: " << seconds << " seconds" << std::endl;
+		std::cout << "Time per time step: " << seconds/(double)parameters.status_timestep_nr << " sec/ts" << std::endl;
+
+		if (parameters.verbosity > 0)
+		{
+			std::cout << "DIAGNOSTICS ENERGY DIFF:\t" << std::abs(parameters.diagnostics_energy-diagnostics_energy_start) << std::endl;
+			std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs(parameters.diagnostics_mass-diagnostics_mass_start) << std::endl;
+			std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs(parameters.diagnostics_potential_entrophy-diagnostics_potential_entrophy_start) << std::endl;
+
+			if (parameters.setup_scenario == 2 || parameters.setup_scenario == 3 || parameters.setup_scenario == 4)
+			{
+				std::cout << "DIAGNOSTICS BENCHMARK DIFF H:\t" << simulationSWE->benchmark_diff_h << std::endl;
+				std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationSWE->benchmark_diff_u << std::endl;
+				std::cout << "DIAGNOSTICS BENCHMARK DIFF V:\t" << simulationSWE->benchmark_diff_v << std::endl;
+			}
 		}
 	}
-
-	time.stop();
-
-	double seconds = time();
-
-	std::cout << "Simulation time: " << seconds << " seconds" << std::endl;
-	std::cout << "Time per time step: " << seconds/(double)parameters.status_timestep_nr << " sec/ts" << std::endl;
-
-
-	if (parameters.verbosity > 1)
-	{
-		std::cout << "DIAGNOSTICS ENERGY DIFF:\t" << std::abs(parameters.diagnostics_energy-diagnostics_energy_start) << std::endl;
-		std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs(parameters.diagnostics_mass-diagnostics_mass_start) << std::endl;
-		std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs(parameters.diagnostics_potential_entrophy-diagnostics_potential_entrophy_start) << std::endl;
-
-		if (parameters.setup_scenario == 2 || parameters.setup_scenario == 3 || parameters.setup_scenario == 4)
-		{
-			std::cout << "DIAGNOSTICS BENCHMARK DIFF H:\t" << simulationSWE->benchmark_diff_h << std::endl;
-			std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationSWE->benchmark_diff_u << std::endl;
-			std::cout << "DIAGNOSTICS BENCHMARK DIFF V:\t" << simulationSWE->benchmark_diff_v << std::endl;
-		}
-	}
-#endif
 
 	delete simulationSWE;
 
