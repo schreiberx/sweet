@@ -184,7 +184,8 @@ public:
 			DataArray<2> &o_v_t,	///< time updates
 
 			double &o_dt,			///< time step restriction
-			double i_fixed_dt = 0		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_simulation_time = -1
 	)
 	{
 		/*
@@ -321,7 +322,8 @@ public:
 				prog_h, prog_u, prog_v,
 				dt,
 				parameters.timestepping_timestep_size,
-				parameters.timestepping_runge_kutta_order
+				parameters.timestepping_runge_kutta_order,
+				parameters.status_simulation_time
 			);
 
 		// provide information to parameters
@@ -554,10 +556,10 @@ void compute_polvani_initialization(
 		double R = 0.01;
 		double F = 0.04;
 
-		if (parameters.bogus_var0 > 0)
+		if (!std::isinf(parameters.bogus_var0))
 			R = parameters.bogus_var0;
 
-		if (parameters.bogus_var1 > 0)
+		if (!std::isinf(parameters.bogus_var1))
 			F = parameters.bogus_var1;
 
 		std::cout << "Using R of " << R << std::endl;
@@ -1013,7 +1015,7 @@ int main(int i_argc, char *i_argv[])
 	DataArray<2> local_u(parameters.res);
 	DataArray<2> local_v(parameters.res);
 
-	if (parameters.bogus_var0 != 0)
+	if (!std::isinf(parameters.bogus_var0))
 	{
 		if (parameters.sim_domain_size[0] != 1.0)
 		{

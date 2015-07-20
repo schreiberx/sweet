@@ -49,8 +49,16 @@ public:
 
 		h.setAll(parameters.setup_h0);
 
-		u.setAll(parameters.bogus_var0);
-		v.setAll(parameters.bogus_var1);
+		if (std::isinf(parameters.bogus_var0))
+		{
+			u.setAll(0);
+			v.setAll(0);
+		}
+		else
+		{
+			u.setAll(parameters.bogus_var0);
+			v.setAll(parameters.bogus_var1);
+		}
 
 		double center_x = 0.7;
 		double center_y = 0.6;

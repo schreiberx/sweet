@@ -245,7 +245,8 @@ public:
 			DataArray<2> &o_v_t,	///< time updates
 
 			double &o_dt,			///< time step restriction
-			double i_fixed_dt = 0		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_simulation_timestamp = -1
 	)
 	{
 		/*
@@ -414,7 +415,8 @@ public:
 				prog_P, prog_u, prog_v,
 				dt,
 				parameters.timestepping_timestep_size,
-				parameters.timestepping_runge_kutta_order
+				parameters.timestepping_runge_kutta_order,
+				parameters.status_simulation_time
 			);
 
 		// provide information to parameters

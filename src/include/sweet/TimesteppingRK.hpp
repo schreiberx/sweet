@@ -25,7 +25,7 @@ public:
 
 	void setupBuffers(
 			const DataArray<2> &i_test_buffer,	///< array of example data to know dimensions of buffers
-			int i_rk_order
+			int i_rk_order			///< Order of Runge-Kutta method
 	)
 	{
 		if (RK_h_t != nullptr)	///< already allocated?
@@ -45,6 +45,7 @@ public:
 			RK_v_t[i] = new DataArray<2>(i_test_buffer.resolution);
 		}
 	}
+
 
 
 	~TimesteppingRK()
@@ -85,8 +86,9 @@ public:
 					DataArray<2> &o_v_t,	///< time updates
 
 					double &o_dt,			///< time step restriction
-					double i_fixed_dt		///< if this value is not equal to 0,
+					double i_fixed_dt,		///< if this value is not equal to 0,
 											///< use this time step size instead of computing one
+					double i_simulation_time
 			),
 
 			DataArray<2> &io_h,
@@ -95,7 +97,8 @@ public:
 
 			double &o_dt,
 			double i_fixed_dt = 0,
-			int i_runge_kutta_order = 1
+			int i_runge_kutta_order = 1,
+			double i_simulation_time = -1
 	)
 	{
 		setupBuffers(io_h, i_runge_kutta_order);
@@ -111,7 +114,8 @@ public:
 					*RK_u_t[0],
 					*RK_v_t[0],
 					dt,
-					i_fixed_dt
+					i_fixed_dt,
+					i_simulation_time
 			);
 
 			io_h += dt**RK_h_t[0];
@@ -130,6 +134,10 @@ public:
 			 * --------------
 			 *     | 0    1    b
 			 */
+			double a2[1] = {0.5};
+			double b[2] = {0.0, 1.0};
+			double c[1] = {0.5};
+
 			double dummy_dt = -1;
 
 			// STAGE 1
@@ -141,11 +149,11 @@ public:
 					*RK_u_t[0],
 					*RK_v_t[0],
 					dt,
-					i_fixed_dt
+					i_fixed_dt,
+					i_simulation_time
 			);
 
 			// STAGE 2
-			double a2[1] = {0.5};
 			(i_baseClass->*i_compute_euler_timestep_update)(
 					io_h + ( dt*a2[0]*(*RK_h_t[0]) ),
 					io_u + ( dt*a2[0]*(*RK_u_t[0]) ),
@@ -154,10 +162,10 @@ public:
 					*RK_u_t[1],
 					*RK_v_t[1],
 					dummy_dt,
-					dt
+					dt,
+					i_simulation_time + c[0]*dt
 			);
 
-			double b[2] = {0, 1};
 			io_h += dt*(/* b[0]*(*RK_h_t[0]) +*/ b[1]*(*RK_h_t[1]) );
 			io_u += dt*(/* b[0]*(*RK_u_t[0]) +*/ b[1]*(*RK_u_t[1]) );
 			io_v += dt*(/* b[0]*(*RK_v_t[0]) +*/ b[1]*(*RK_v_t[1]) );
@@ -169,11 +177,16 @@ public:
 			/*
 			 * c     a
 			 * 0   |
-			 * 1/2 | 1/2
-			 * 1   | -1   2
+			 * 1/3 | 1/3
+			 * 2/3 | 0    2/3
 			 * --------------
-			 *     | 1/6  4/6  1/6
+			 *     | 1/4  0   3/4
 			 */
+			double a2[1] = {1.0/3.0};
+			double a3[2] = {0.0, 2.0/3.0};
+			double b[3] = {1.0/4.0, 0.0, 3.0/4.0};
+			double c[2] = {1.0/3.0, 2.0/3.0};
+
 			double dummy_dt;
 
 			// STAGE 1
@@ -185,11 +198,11 @@ public:
 					*RK_u_t[0],
 					*RK_v_t[0],
 					dt,
-					i_fixed_dt
+					i_fixed_dt,
+					i_simulation_time
 			);
 
 			// STAGE 2
-			double a2[1] = {0.5};
 			(i_baseClass->*i_compute_euler_timestep_update)(
 					io_h	+ dt*( a2[0]*(*RK_h_t[0]) ),
 					io_u	+ dt*( a2[0]*(*RK_u_t[0]) ),
@@ -198,11 +211,11 @@ public:
 					*RK_u_t[1],
 					*RK_v_t[1],
 					dummy_dt,
-					dt
+					dt,
+					i_simulation_time + c[0]*dt
 			);
 
 			// STAGE 3
-			double a3[2] = {-1.0, 2.0};
 			(i_baseClass->*i_compute_euler_timestep_update)(
 					io_h	+ dt*( a3[0]*(*RK_h_t[0]) + a3[1]*(*RK_h_t[1]) ),
 					io_u	+ dt*( a3[0]*(*RK_u_t[0]) + a3[1]*(*RK_u_t[1]) ),
@@ -211,10 +224,9 @@ public:
 					*RK_u_t[2],
 					*RK_v_t[2],
 					dummy_dt,
-					dt
+					dt,
+					i_simulation_time + c[1]*dt
 			);
-
-			double b[3] = {1.0/6.0, 4.0/6.0, 1.0/6.0};
 
 			io_h += dt*( b[0]*(*RK_h_t[0]) + b[1]*(*RK_h_t[1])  + b[2]*(*RK_h_t[2]) );
 			io_u += dt*( b[0]*(*RK_u_t[0]) + b[1]*(*RK_u_t[1])  + b[2]*(*RK_u_t[2]) );
@@ -233,6 +245,12 @@ public:
 			 * --------------
 			 *     | 1/6  1/3  1/3  1/6
 			 */
+			double a2[1] = {0.5};
+			double a3[2] = {0.0, 0.5};
+			double a4[3] = {0.0, 0.0, 1.0};
+			double b[4] = {1.0/6.0, 1.0/3.0, 1.0/3.0, 1.0/6.0};
+			double c[3] = {0.5, 0.5, 1.0};
+
 			double dummy_dt;
 
 			// STAGE 1
@@ -244,11 +262,11 @@ public:
 					*RK_u_t[0],
 					*RK_v_t[0],
 					dt,
-					i_fixed_dt
+					i_fixed_dt,
+					i_simulation_time
 			);
 
 			// STAGE 2
-			double a2[1] = {0.5};
 			(i_baseClass->*i_compute_euler_timestep_update)(
 					io_h	+ dt*( a2[0]*(*RK_h_t[0]) ),
 					io_u	+ dt*( a2[0]*(*RK_u_t[0]) ),
@@ -257,11 +275,11 @@ public:
 					*RK_u_t[1],
 					*RK_v_t[1],
 					dummy_dt,
-					dt
+					dt,
+					i_simulation_time + c[0]*dt
 			);
 
 			// STAGE 3
-			double a3[2] = {0.0, 0.5};
 			(i_baseClass->*i_compute_euler_timestep_update)(
 					io_h	+ dt*( /*a3[0]*(*RK_P_t[0]) +*/ a3[1]*(*RK_h_t[1]) ),
 					io_u	+ dt*( /*a3[0]*(*RK_u_t[0]) +*/ a3[1]*(*RK_u_t[1]) ),
@@ -270,11 +288,11 @@ public:
 					*RK_u_t[2],
 					*RK_v_t[2],
 					dummy_dt,
-					dt
+					dt,
+					i_simulation_time + c[1]*dt
 			);
 
 			// STAGE 4
-			double a4[3] = {0.0, 0.0, 1.0};
 			(i_baseClass->*i_compute_euler_timestep_update)(
 					io_h	+ dt*( /*a4[0]*(*RK_P_t[0]) + a4[1]*(*RK_P_t[1]) +*/ a4[2]*(*RK_h_t[2]) ),
 					io_u	+ dt*( /*a4[0]*(*RK_u_t[0]) + a4[1]*(*RK_u_t[1]) +*/ a4[2]*(*RK_u_t[2]) ),
@@ -283,14 +301,14 @@ public:
 					*RK_u_t[3],
 					*RK_v_t[3],
 					dummy_dt,
-					dt
+					dt,
+					i_simulation_time + c[2]*dt
 			);
 
-			double b[4] = {1.0/6.0, 1.0/3.0, 1.0/3.0, 1.0/6.0};
 
-			io_h += dt*( b[0]**RK_h_t[0] + b[1]**RK_h_t[1]  + b[2]**RK_h_t[2] + b[3]**RK_h_t[3] );
-			io_u += dt*( b[0]**RK_u_t[0] + b[1]**RK_u_t[1]  + b[2]**RK_u_t[2] + b[3]**RK_u_t[3] );
-			io_v += dt*( b[0]**RK_v_t[0] + b[1]**RK_v_t[1]  + b[2]**RK_v_t[2] + b[3]**RK_v_t[3] );
+			io_h += dt*( b[0]*(*RK_h_t[0]) + b[1]*(*RK_h_t[1])  + b[2]*(*RK_h_t[2]) + b[3]*(*RK_h_t[3]) );
+			io_u += dt*( b[0]*(*RK_u_t[0]) + b[1]*(*RK_u_t[1])  + b[2]*(*RK_u_t[2]) + b[3]*(*RK_u_t[3]) );
+			io_v += dt*( b[0]*(*RK_v_t[0]) + b[1]*(*RK_v_t[1])  + b[2]*(*RK_v_t[2]) + b[3]*(*RK_v_t[3]) );
 		}
 		else
 		{

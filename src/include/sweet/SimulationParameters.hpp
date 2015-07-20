@@ -100,9 +100,9 @@ public:
 	/**
 	 * program parameters without specific association
 	 */
-	double bogus_var0 = 0;
-	double bogus_var1 = 0;
-	double bogus_var2 = 0;
+	double bogus_var0 = std::numeric_limits<double>::infinity();
+	double bogus_var1 = std::numeric_limits<double>::infinity();
+	double bogus_var2 = std::numeric_limits<double>::infinity();
 
 	/**
 	 * set verbosity of simulation

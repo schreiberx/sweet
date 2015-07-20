@@ -61,8 +61,15 @@ public:
 	{
 		parameters.status_timestep_nr = 0;
 
-		prog_u.setAll(parameters.bogus_var0);
-		prog_v.setAll(parameters.bogus_var1);
+		if (std::isinf(parameters.bogus_var0))
+			prog_u.setAll(0);
+		else
+			prog_u.setAll(parameters.bogus_var0);
+
+		if (std::isinf(parameters.bogus_var1))
+			prog_v.setAll(0);
+		else
+			prog_v.setAll(parameters.bogus_var1);
 
 		for (std::size_t j = 0; j < parameters.res[1]; j++)
 		{
@@ -108,7 +115,8 @@ public:
 			DataArray<2> &o_v_t,	///< time updates
 
 			double &o_dt,			///< time step restriction
-			double i_fixed_dt = 0	///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_fixed_dt = 0,	///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_simulation_timestamp
 	)
 	{
 		if (parameters.bogus_var2 == 0)
@@ -209,7 +217,8 @@ public:
 				prog_h, prog_u, prog_v,
 				dt,
 				parameters.timestepping_timestep_size,
-				parameters.timestepping_runge_kutta_order
+				parameters.timestepping_runge_kutta_order,
+				parameters.status_simulation_time
 			);
 
 
@@ -299,8 +308,16 @@ int main(
 {
 	parameters.setup(i_argc, i_argv);
 
-	double u = parameters.bogus_var0;
-	double v = parameters.bogus_var1;
+	double u, v;
+	if (std::isinf(parameters.bogus_var0))
+		u = 0;
+	else
+		u = parameters.bogus_var0;
+
+	if (std::isinf(parameters.bogus_var1))
+		v = 0;
+	else
+		v = parameters.bogus_var1;
 
 	double total_speed;
 	double turnaround_time;
