@@ -81,7 +81,7 @@ class VisSweet	:
 
 		double inv_delta = 1.0/real_delta;
 
-#pragma omp parallel for simd
+#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < visData.array_data_cartesian_length; i++)
 		{
 			double value = (visData.array_data_cartesian_space[i]-vis_min)*inv_delta;

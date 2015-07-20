@@ -6,6 +6,7 @@ scons --compile-program=polvani --gui=disable --spectral-space=enable || exit
 scons --compile-program=spectral_visualization --spectral-space=enable --gui=enable || exit
 
 scons --compile-program=swe_nonstaggered_advective --gui=enable || exit
+scons --compile-program=swe_nonstaggered_advective --spectral-space=enable || exit
 scons --compile-program=swe_nonstaggered_vector_invariant --gui=enable || exit
 scons --compile-program=swe_staggered_vector_invariant --gui=enable || exit
 #scons --compile-program=swe --gui=enable || exit

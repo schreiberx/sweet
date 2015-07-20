@@ -26,8 +26,7 @@ public:
 	Operators2D op;
 
 public:
-	SimulationSWE(
-	)	:
+	SimulationSWE()	:
 		h(parameters.res),
 		u(parameters.res),
 		v(parameters.res),
@@ -41,6 +40,7 @@ public:
 	{
 		reset();
 	}
+
 
 
 	void reset()

@@ -16,6 +16,7 @@
 #include <iostream>
 #include <utility>
 #include <limits>
+#include <sweet/openmp_helper.hpp>
 
 #ifndef SWEET_USE_SPECTRAL_SPACE
 	#define SWEET_USE_SPECTRAL_SPACE	1
@@ -87,14 +88,12 @@ public:
 	std::size_t range_size[D];
 
 #if SWEET_USE_SPECTRAL_SPACE
-
 	std::size_t range_spec_start[D];
 	std::size_t range_spec_end[D];
 	std::size_t range_spec_size[D];
-
 #else
 	int kernel_size;
-	double *kernel_data = nullptr;
+	double *kernel_data;
 #endif
 
 	/**
@@ -274,7 +273,11 @@ public:
 #if SWEET_USE_SPECTRAL_SPACE
 		array_data_spectral_space(nullptr),
 		aliasing_scaled(i_dataArray.aliasing_scaled),
+#else
+		kernel_data(nullptr),
+		kernel_size(-1),
 #endif
+
 		temporary_data(false)
 	{
 		for (int i = 0; i < D; i++)
@@ -344,8 +347,8 @@ public:
 #if SWEET_USE_SPECTRAL_SPACE
 		array_data_spectral_space(nullptr),
 		aliasing_scaled(i_dataArray.aliasing_scaled),
-#endif
-#if !SWEET_USE_SPECTRAL_SPACE
+#else
+		kernel_data(nullptr),
 		kernel_size(-1),
 #endif
 		temporary_data(false)
@@ -401,6 +404,9 @@ public:
 #if SWEET_USE_SPECTRAL_SPACE
 		array_data_spectral_space(nullptr),
 		aliasing_scaled(false),
+#else
+		kernel_data(nullptr),
+		kernel_size(-1),
 #endif
 		temporary_data(false)
 	{
@@ -521,7 +527,7 @@ public:
 	{
 		// TODO: implement this in spectral space!
 
-#pragma omp parallel for simd
+#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			array_data_cartesian_space[i] = i_value;
 
@@ -599,7 +605,7 @@ public:
 			double i_value_im
 	)
 	{
-#pragma omp parallel for simd
+#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
 		{
 			array_data_spectral_space[i+0] = i_value_re;
@@ -1100,7 +1106,7 @@ public:
 			io_dataArray.array_data_spectral_space_valid = false;
 
 			double scale = (1.0/(double)plan_backward_output_length);
-#pragma omp parallel for simd
+#pragma omp parallel for OPENMP_SIMD
 			for (std::size_t i = 0; i < plan_backward_output_length; i++)
 				io_dataArray.array_data_cartesian_space[i] *= scale;
 		}
@@ -1234,7 +1240,7 @@ public:
 		DataArray<D> out(this->resolution);
 		out.temporary_data = true;
 
-#pragma omp parallel for simd
+#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			out.array_data_cartesian_space[i] = (array_data_cartesian_space[i] > 0 ? 1 : 0);
 
@@ -1252,7 +1258,7 @@ public:
 		DataArray<D> out(this->resolution);
 		out.temporary_data = true;
 
-#pragma omp parallel for simd
+#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			out.array_data_cartesian_space[i] = (array_data_cartesian_space[i] > 0 ? array_data_cartesian_space[i] : 0);
 
@@ -1269,7 +1275,7 @@ public:
 		DataArray<D> out(this->resolution);
 		out.temporary_data = true;
 
-#pragma omp parallel for simd
+#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			out.array_data_cartesian_space[i] = (array_data_cartesian_space[i] < 0 ? 1 : 0);
 
@@ -1286,7 +1292,7 @@ public:
 		DataArray<D> out(this->resolution);
 		out.temporary_data = true;
 
-#pragma omp parallel for simd
+#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			out.array_data_cartesian_space[i] = (array_data_cartesian_space[i] < 0 ? array_data_cartesian_space[i] : 0);
 
@@ -1306,7 +1312,7 @@ public:
 		requestDataInCartesianSpace();
 
 		bool isallfinite = true;
-#pragma omp parallel for simd reduction(&&:isallfinite)
+#pragma omp parallel for OPENMP_SIMD reduction(&&:isallfinite)
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			isallfinite = isallfinite && std::isfinite(array_data_cartesian_space[i]);
 
@@ -1323,7 +1329,7 @@ public:
 		requestDataInCartesianSpace();
 
 		double maxabs = -1;
-#pragma omp parallel for simd reduction(max:maxabs)
+#pragma omp parallel for OPENMP_SIMD reduction(max:maxabs)
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			maxabs = std::max(maxabs, std::abs(array_data_cartesian_space[i]));
 
@@ -1339,7 +1345,7 @@ public:
 		requestDataInCartesianSpace();
 
 		double sum = 0;
-#pragma omp parallel for simd reduction(+:sum)
+#pragma omp parallel for OPENMP_SIMD reduction(+:sum)
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			sum += array_data_cartesian_space[i]*array_data_cartesian_space[i];
 
@@ -1386,7 +1392,7 @@ public:
 		requestDataInCartesianSpace();
 
 		double maxvalue = -std::numeric_limits<double>::max();
-#pragma omp parallel for simd reduction(max:maxvalue)
+#pragma omp parallel for OPENMP_SIMD reduction(max:maxvalue)
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			maxvalue = std::max(maxvalue, array_data_cartesian_space[i]);
 
@@ -1402,7 +1408,7 @@ public:
 		requestDataInCartesianSpace();
 
 		double minvalue = std::numeric_limits<double>::max();
-#pragma omp parallel for simd reduction(min:minvalue)
+#pragma omp parallel for OPENMP_SIMD reduction(min:minvalue)
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			minvalue = std::min(minvalue, array_data_cartesian_space[i]);
 
@@ -1418,7 +1424,7 @@ public:
 		requestDataInCartesianSpace();
 
 		double sum = 0;
-#pragma omp parallel for simd reduction(+:sum)
+#pragma omp parallel for OPENMP_SIMD reduction(+:sum)
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			sum += array_data_cartesian_space[i];
 
@@ -1460,7 +1466,7 @@ public:
 		requestDataInCartesianSpace();
 
 		double sum = 0;
-#pragma omp parallel for simd reduction(+:sum)
+#pragma omp parallel for OPENMP_SIMD reduction(+:sum)
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			sum += std::abs(array_data_cartesian_space[i]);
 
@@ -1502,7 +1508,7 @@ public:
 		requestDataInCartesianSpace();
 
 		double sum = 0;
-#pragma omp parallel for simd reduction(+:sum)
+#pragma omp parallel for OPENMP_SIMD reduction(+:sum)
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			sum += array_data_cartesian_space[i]*array_data_cartesian_space[i];
 
@@ -1549,7 +1555,7 @@ public:
 		requestDataInSpectralSpace();
 
 		double maxabs = -1;
-#pragma omp parallel for simd reduction(max:maxabs)
+#pragma omp parallel for OPENMP_SIMD reduction(max:maxabs)
 		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
 		{
 			double re = array_data_spectral_space[i];
@@ -1784,7 +1790,7 @@ public:
 			}
 			else
 			{
-				#pragma omp parallel for simd
+				#pragma omp parallel for OPENMP_SIMD
 				for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 					array_data_cartesian_space[i] = i_dataArray.array_data_cartesian_space[i];
 			}
@@ -1809,7 +1815,7 @@ public:
 			}
 			else
 			{
-				#pragma omp parallel for simd
+				#pragma omp parallel for OPENMP_SIMD
 				for (std::size_t i = 0; i < array_data_spectral_length; i++)
 					array_data_spectral_space[i] = i_dataArray.array_data_spectral_space[i];
 			}
@@ -1841,7 +1847,7 @@ public:
 		requestDataInSpectralSpace();
 		rw_array_data.requestDataInSpectralSpace();
 
-#pragma omp parallel for simd
+#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
 		{
 			double ar = array_data_spectral_space[i];
@@ -1931,7 +1937,7 @@ public:
 		i_tolerance *= max_value;
 		i_tolerance *= (resolution[0]+resolution[1]);	// the larger the matrix, the less the accuracy
 
-#pragma omp parallel for simd
+#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
 		{
 			double ar = array_data_spectral_space[i];
@@ -2033,7 +2039,7 @@ public:
 
 		double scale = ((double)new_resolution[0]*(double)new_resolution[1])/((double)resolution[0]*(double)resolution[1]);
 
-		#pragma omp parallel for simd
+		#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < out.array_data_spectral_length; i++)
 			out.array_data_spectral_space[i] *= scale;
 
@@ -2083,7 +2089,7 @@ public:
 
 		double scale = ((double)i_new_resolution[0]*(double)i_new_resolution[1])/((double)resolution[0]*(double)resolution[1]);
 
-		#pragma omp parallel for simd
+		#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < out.array_data_spectral_length; i++)
 			out.array_data_spectral_space[i] *= scale;
 
@@ -2114,7 +2120,7 @@ public:
 		requestDataInSpectralSpace();
 		rw_array_data.requestDataInSpectralSpace();
 
-		#pragma omp parallel for simd
+		#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_spectral_length; i++)
 			out.array_data_spectral_space[i] =
 					array_data_spectral_space[i]+
@@ -2128,7 +2134,7 @@ public:
 		requestDataInCartesianSpace();
 		rw_array_data.requestDataInCartesianSpace();
 
-		#pragma omp parallel for simd
+		#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			out.array_data_cartesian_space[i] = array_data_cartesian_space[i] + i_array_data.array_data_cartesian_space[i];
 
@@ -2155,7 +2161,7 @@ public:
 
 		requestDataInSpectralSpace();
 
-		#pragma omp parallel for simd
+		#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_spectral_length; i++)
 			out.array_data_spectral_space[i] = array_data_spectral_space[i];
 
@@ -2169,7 +2175,7 @@ public:
 
 		requestDataInCartesianSpace();
 
-		#pragma omp parallel for simd
+		#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			out.array_data_cartesian_space[i] = array_data_cartesian_space[i]+i_value;
 
@@ -2194,7 +2200,7 @@ public:
 		requestDataInSpectralSpace();
 		rw_array_data.requestDataInSpectralSpace();
 
-		#pragma omp parallel for simd
+		#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_spectral_length; i++)
 			array_data_spectral_space[i] +=
 					i_array_data.array_data_spectral_space[i];
@@ -2204,7 +2210,7 @@ public:
 
 #else
 
-		#pragma omp parallel for simd
+		#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			array_data_cartesian_space[i] += i_array_data.array_data_cartesian_space[i];
 #endif
@@ -2236,7 +2242,7 @@ public:
 
 		requestDataInCartesianSpace();
 
-		#pragma omp parallel for simd
+		#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			array_data_cartesian_space[i] += i_value;
 
@@ -2258,7 +2264,7 @@ public:
 
 		requestDataInSpectralSpace();
 
-		#pragma omp parallel for simd
+		#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_spectral_length; i++)
 			array_data_spectral_space[i] *= i_value;
 
@@ -2270,7 +2276,7 @@ public:
 
 		requestDataInCartesianSpace();
 
-		#pragma omp parallel for simd
+		#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			array_data_cartesian_space[i] *= i_value;
 
@@ -2291,7 +2297,7 @@ public:
 
 		requestDataInSpectralSpace();
 
-		#pragma omp parallel for simd
+		#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_spectral_length; i++)
 			array_data_spectral_space[i] /= i_value;
 
@@ -2303,7 +2309,7 @@ public:
 
 		requestDataInCartesianSpace();
 
-		#pragma omp parallel for simd
+		#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			array_data_cartesian_space[i] /= i_value;
 
@@ -2326,7 +2332,7 @@ public:
 		requestDataInSpectralSpace();
 		rw_array_data.requestDataInSpectralSpace();
 
-		#pragma omp parallel for simd
+		#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_spectral_length; i++)
 			array_data_spectral_space[i] -=
 					i_array_data.array_data_spectral_space[i];
@@ -2338,7 +2344,7 @@ public:
 		requestDataInCartesianSpace();
 		rw_array_data.requestDataInCartesianSpace();
 
-		#pragma omp parallel for simd
+		#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			array_data_cartesian_space[i] -= i_array_data.array_data_cartesian_space[i];
 
@@ -2366,7 +2372,7 @@ public:
 		requestDataInSpectralSpace();
 		rw_array_data.requestDataInSpectralSpace();
 
-		#pragma omp parallel for simd
+		#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_spectral_length; i++)
 			out.array_data_spectral_space[i] =
 					array_data_spectral_space[i]-
@@ -2380,7 +2386,7 @@ public:
 		requestDataInCartesianSpace();
 		rw_array_data.requestDataInCartesianSpace();
 
-		#pragma omp parallel for simd
+		#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			out.array_data_cartesian_space[i] =
 					array_data_cartesian_space[i]-
@@ -2408,7 +2414,7 @@ public:
 
 		requestDataInSpectralSpace();
 
-		#pragma omp parallel for simd
+		#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_spectral_length; i++)
 			out.array_data_spectral_space[i] = array_data_spectral_space[i];
 
@@ -2422,7 +2428,7 @@ public:
 
 		requestDataInCartesianSpace();
 
-#pragma omp parallel for simd
+#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			out.array_data_cartesian_space[i] =
 					array_data_cartesian_space[i]-i_value;
@@ -2447,7 +2453,7 @@ public:
 
 		requestDataInSpectralSpace();
 
-		#pragma omp parallel for simd
+		#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_spectral_length; i++)
 			out.array_data_spectral_space[i] = array_data_spectral_space[i];
 
@@ -2461,7 +2467,7 @@ public:
 
 		requestDataInCartesianSpace();
 
-#pragma omp parallel for simd
+#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			out.array_data_cartesian_space[i] = i_value - array_data_cartesian_space[i];
 
@@ -2479,7 +2485,7 @@ public:
 
 		requestDataInSpectralSpace();
 
-		#pragma omp parallel for simd
+		#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_spectral_length; i++)
 			array_data_spectral_space[i] = -array_data_spectral_space[i];
 
@@ -2523,7 +2529,7 @@ public:
 
 		DataArray<D> scaled_output(u.resolution);
 
-		#pragma omp parallel for simd
+		#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < scaled_output.array_data_cartesian_length; i++)
 			scaled_output.array_data_cartesian_space[i] =
 					u.array_data_cartesian_space[i]*
@@ -2541,7 +2547,7 @@ public:
 		requestDataInCartesianSpace();
 		rw_array_data.requestDataInCartesianSpace();
 
-		#pragma omp parallel for simd
+		#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			out.array_data_cartesian_space[i] =
 					array_data_cartesian_space[i]*
@@ -2572,7 +2578,7 @@ public:
 #if SWEET_USE_SPECTRAL_SPACE
 		requestDataInSpectralSpace();
 
-		#pragma omp parallel for simd
+		#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_spectral_length; i++)
 			out.array_data_spectral_space[i] =
 					array_data_spectral_space[i]*i_value;
@@ -2581,7 +2587,7 @@ public:
 		out.array_data_spectral_space_valid = true;
 
 #else
-		#pragma omp parallel for simd
+		#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			out.array_data_cartesian_space[i] =
 					array_data_cartesian_space[i]*i_value;
@@ -2613,7 +2619,7 @@ public:
 
 		DataArray<D> scaled_output(u.resolution);
 
-		#pragma omp parallel for simd
+		#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < scaled_output.array_data_cartesian_length; i++)
 			scaled_output.array_data_cartesian_space[i] =
 					u.array_data_cartesian_space[i]/
@@ -2631,7 +2637,7 @@ public:
 		requestDataInCartesianSpace();
 		rw_array_data.requestDataInCartesianSpace();
 
-#pragma omp parallel for simd
+#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			out.array_data_cartesian_space[i] =
 					array_data_cartesian_space[i]/

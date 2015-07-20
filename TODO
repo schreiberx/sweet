@@ -23,6 +23,9 @@
 * Implement spectral derivative
   DONE
 
+* Get it running with g++-4.7
+  DONE
+
 * Implement advection test for Gaussian curve
   > Tests with higher-order time stepping
   > Tests with increased resolution

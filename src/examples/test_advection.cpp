@@ -19,12 +19,6 @@
 
 SimulationParameters parameters;
 
-//
-// 0: staggered, up/downwinding
-// 1: staggered, finite-difference
-// 2: non-staggered, finite-difference
-//
-#define GRID_LAYOUT_AND_ADVECTION	2
 
 
 class SimulationAdvection
@@ -57,6 +51,139 @@ public:
 	}
 
 
+	DataArray<2> get_advected_solution(
+		double i_timestamp = 0
+	)
+	{
+		DataArray<2> ret_h(prog_h.resolution);
+
+		double adv_x, adv_y;
+
+		adv_x = (std::isinf(parameters.bogus_var0) ? 0 : -parameters.bogus_var0*i_timestamp);
+		adv_y = (std::isinf(parameters.bogus_var1) ? 0 : -parameters.bogus_var1*i_timestamp);
+
+		double radius = parameters.setup_radius_scale*
+			std::sqrt(
+				 (double)parameters.sim_domain_size[0]*(double)parameters.sim_domain_size[0]
+				+(double)parameters.sim_domain_size[1]*(double)parameters.sim_domain_size[1]
+			);
+
+		for (std::size_t j = 0; j < parameters.res[1]; j++)
+		{
+			for (std::size_t i = 0; i < parameters.res[0]; i++)
+			{
+				double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
+				double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_size[1];
+
+				x += adv_x;
+				y += adv_y;
+
+				x = std::fmod(x, parameters.sim_domain_size[0]);
+				y = std::fmod(y, parameters.sim_domain_size[1]);
+
+				double dx = x-parameters.setup_coord_x*parameters.sim_domain_size[0];
+				double dy = y-parameters.setup_coord_y*parameters.sim_domain_size[1];
+
+				dx /= radius;
+				dy /= radius;
+
+				ret_h.set(j, i, parameters.setup_h0+std::exp(-50.0*(dx*dx + dy*dy)));
+			}
+		}
+
+		return ret_h;
+	}
+
+
+	DataArray<2> get_advected_solution_diffx(
+		double i_timestamp = 0
+	)
+	{
+		DataArray<2> ret_h(prog_h.resolution);
+
+		double adv_x, adv_y;
+
+		adv_x = (std::isinf(parameters.bogus_var0) ? 0 : -parameters.bogus_var0*i_timestamp);
+		adv_y = (std::isinf(parameters.bogus_var1) ? 0 : -parameters.bogus_var1*i_timestamp);
+
+		double radius = parameters.setup_radius_scale*
+			std::sqrt(
+				 (double)parameters.sim_domain_size[0]*(double)parameters.sim_domain_size[0]
+				+(double)parameters.sim_domain_size[1]*(double)parameters.sim_domain_size[1]
+			);
+
+		for (std::size_t j = 0; j < parameters.res[1]; j++)
+		{
+			for (std::size_t i = 0; i < parameters.res[0]; i++)
+			{
+				double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
+				double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_size[1];
+
+				x += adv_x;
+				y += adv_y;
+
+				x = std::fmod(x, parameters.sim_domain_size[0]);
+				y = std::fmod(y, parameters.sim_domain_size[1]);
+
+				double dx = x-parameters.setup_coord_x*parameters.sim_domain_size[0];
+				double dy = y-parameters.setup_coord_y*parameters.sim_domain_size[1];
+
+				dx /= radius;
+				dy /= radius;
+
+				ret_h.set(j, i, parameters.setup_h0+std::exp(-50.0*(dx*dx + dy*dy))*(-50.0*2.0)*dx);
+			}
+		}
+
+		return ret_h;
+	}
+
+
+	DataArray<2> get_advected_solution_diffy(
+		double i_timestamp = 0
+	)
+	{
+		DataArray<2> ret_h(prog_h.resolution);
+
+		double adv_x, adv_y;
+
+		adv_x = (std::isinf(parameters.bogus_var0) ? 0 : -parameters.bogus_var0*i_timestamp);
+		adv_y = (std::isinf(parameters.bogus_var1) ? 0 : -parameters.bogus_var1*i_timestamp);
+
+		double radius = parameters.setup_radius_scale*
+			std::sqrt(
+				 (double)parameters.sim_domain_size[0]*(double)parameters.sim_domain_size[0]
+				+(double)parameters.sim_domain_size[1]*(double)parameters.sim_domain_size[1]
+			);
+
+		for (std::size_t j = 0; j < parameters.res[1]; j++)
+		{
+			for (std::size_t i = 0; i < parameters.res[0]; i++)
+			{
+				double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
+				double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_size[1];
+
+				x += adv_x;
+				y += adv_y;
+
+				x = std::fmod(x, parameters.sim_domain_size[0]);
+				y = std::fmod(y, parameters.sim_domain_size[1]);
+
+				double dx = x-parameters.setup_coord_x*parameters.sim_domain_size[0];
+				double dy = y-parameters.setup_coord_y*parameters.sim_domain_size[1];
+
+				dx /= radius;
+				dy /= radius;
+
+				ret_h.set(j, i, parameters.setup_h0+std::exp(-50.0*(dx*dx + dy*dy))*(-50.0*2.0)*dy);
+			}
+		}
+
+		return ret_h;
+	}
+
+
+
 	void reset()
 	{
 		parameters.status_timestep_nr = 0;
@@ -71,36 +198,7 @@ public:
 		else
 			prog_v.setAll(parameters.bogus_var1);
 
-		for (std::size_t j = 0; j < parameters.res[1]; j++)
-		{
-			for (std::size_t i = 0; i < parameters.res[0]; i++)
-			{
-				double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
-				double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_size[1];
-
-				prog_h.set(j, i, SWEValidationBenchmarks::return_h(parameters, x, y));
-			}
-		}
-#if 0
-		for (std::size_t j = 0; j < parameters.res[1]; j++)
-		{
-			for (std::size_t i = 0; i < parameters.res[0]; i++)
-			{
-				if (parameters.bogus_var2 == 0 || parameters.bogus_var2 == 1)
-				{
-					double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
-					double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_size[1];
-				}
-				else
-				{
-					double x = (((double)i)/(double)parameters.res[0])*parameters.sim_domain_size[0];
-					double y = (((double)j)/(double)parameters.res[1])*parameters.sim_domain_size[1];
-				}
-
-				prog_u.set(j, i, parameters.bogus_var0+sin(2.0*M_PIl*x/(double)parameters.sim_domain_size[0])*0.01);
-			}
-		}
-#endif
+		prog_h = get_advected_solution(0);
 	}
 
 
@@ -116,7 +214,7 @@ public:
 
 			double &o_dt,			///< time step restriction
 			double i_fixed_dt = 0,	///< if this value is not equal to 0, use this time step size instead of computing one
-			double i_simulation_timestamp
+			double i_simulation_timestamp = -1
 	)
 	{
 		if (parameters.bogus_var2 == 0)
@@ -129,6 +227,7 @@ public:
 				output_given = true;
 			}
 #endif
+
 			o_h_t =
 				(
 					(
@@ -163,7 +262,6 @@ public:
 					op.diff_f_x(op.avg_b_x(i_h)*i_u) +
 					op.diff_f_y(op.avg_b_y(i_h)*i_v)
 				);
-
 		}
 		else  if (parameters.bogus_var2 == 2)
 		{
@@ -202,9 +300,11 @@ public:
 	}
 
 
+
 	void run()
 	{
 	}
+
 
 
 	void run_timestep()
@@ -221,6 +321,7 @@ public:
 				parameters.status_simulation_time
 			);
 
+		prog_h = get_advected_solution(parameters.status_simulation_time);
 
 		// provide information to parameters
 		parameters.status_simulation_timestep_size = dt;

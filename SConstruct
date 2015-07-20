@@ -107,6 +107,18 @@ env['gxx_toolchain'] = GetOption('gxx-toolchain')
 
 
 
+AddOption(	'--simd',
+		dest='simd',
+		type='choice',
+		choices=['enable', 'disable'],
+		default='disable',
+		help="Use SIMD for operations such as folding [default: %default]"
+)
+env['simd'] = GetOption('simd')
+
+env.Append(CXXFLAGS=' -DSWEET_SIMD_ENABLE='+('1' if env['simd']=='enable' else '0'))
+
+
 AddOption(	'--spectral-space',
 		dest='spectral_space',
 		type='choice',
@@ -293,7 +305,7 @@ if env['compiler'] == 'gnu':
 		env.Append(F90FLAGS=' -cpp')
 		env.Append(LIBS=['gfortran'])
 
-#	env.Replace(CXX = 'g++-4.6')
+#	env.Replace(CXX = 'g++-4.7')
 	env.Replace(CXX = 'g++')
 
 

@@ -179,7 +179,8 @@ public:
 		parameters.diagnostics_mass = prog_P.reduce_sum_quad() * normalization;
 
 		// diagnostics_energy
-		parameters.diagnostics_energy = 0.5*(
+		parameters.diagnostics_energy =
+			0.5*(
 				prog_P*prog_P +
 				prog_P*(prog_u*prog_u) +
 				prog_P*(prog_v*prog_v)
@@ -187,7 +188,6 @@ public:
 
 		// potential enstropy
 		parameters.diagnostics_potential_entrophy = 0.5*(q*q*(prog_P)).reduce_sum_quad() * normalization;
-
 	}
 
 
