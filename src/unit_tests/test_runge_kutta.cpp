@@ -262,8 +262,8 @@ int main(
 		SimulationTestRK *simulationTestRK = new SimulationTestRK;
 		VisSweet<SimulationTestRK> visSweet(simulationTestRK);
 		delete simulationTestRK;
+		return 0;
 	}
-	else
 #endif
 
 	if (parameters.max_simulation_time == -1)

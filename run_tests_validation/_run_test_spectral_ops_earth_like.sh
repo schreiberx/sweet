@@ -29,9 +29,9 @@ echo "***********************************************"
 echo "TEST SPECTRAL OPS (release) ALIASING CONTROL $X"
 echo "***********************************************"
 make clean
-scons --compiler=$COMPILER --compile-program=test_spectral_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=enable
-./build/example_test_spectral_ops_spectral_dealiasing_gnu_release -n $RES_X -m $RES_Y -X $X -Y $Y -S 0 || exit
-./build/example_test_spectral_ops_spectral_dealiasing_gnu_release -n $RES_X -m $RES_Y -X $X -Y $Y -S 1 || exit
+scons --compiler=$COMPILER --unit-test=test_spectral_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=enable
+./build/test_spectral_ops_spectral_dealiasing_gnu_release -n $RES_X -m $RES_Y -X $X -Y $Y -S 0 || exit
+./build/test_spectral_ops_spectral_dealiasing_gnu_release -n $RES_X -m $RES_Y -X $X -Y $Y -S 1 || exit
 
 
 # unit-sphere-like
@@ -45,9 +45,9 @@ echo "***********************************************"
 echo "TEST SPECTRAL OPS (release) ALIASING CONTROL $X"
 echo "***********************************************"
 make clean
-scons --compiler=$COMPILER --compile-program=test_spectral_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=enable
-./build/example_test_spectral_ops_spectral_dealiasing_gnu_release -n $RES_X -m $RES_Y -X $X -Y $Y -S 0 || exit
-./build/example_test_spectral_ops_spectral_dealiasing_gnu_release -n $RES_X -m $RES_Y -X $X -Y $Y -S 1 || exit
+scons --compiler=$COMPILER --unit-test=test_spectral_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=enable
+./build/test_spectral_ops_spectral_dealiasing_gnu_release -n $RES_X -m $RES_Y -X $X -Y $Y -S 0 || exit
+./build/test_spectral_ops_spectral_dealiasing_gnu_release -n $RES_X -m $RES_Y -X $X -Y $Y -S 1 || exit
 
 
 

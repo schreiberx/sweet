@@ -103,6 +103,7 @@ public:
 	double bogus_var0 = std::numeric_limits<double>::infinity();
 	double bogus_var1 = std::numeric_limits<double>::infinity();
 	double bogus_var2 = std::numeric_limits<double>::infinity();
+	double bogus_var3 = std::numeric_limits<double>::infinity();
 
 	/**
 	 * set verbosity of simulation
@@ -175,7 +176,7 @@ public:
 		res[1] = 128;
 
 		int opt;
-		while ((opt = getopt(i_argc, i_argv, "N:n:m:C:u:U:s:X:Y:a:b:c:f:x:y:t:T:v:H:r:R:W:F:S:g:p:P:G:")) != -1)
+		while ((opt = getopt(i_argc, i_argv, "N:n:m:C:u:U:s:X:Y:a:b:c:d:f:x:y:t:T:v:H:r:R:W:F:S:g:p:P:G:")) != -1)
 		{
 			switch (opt)
 			{
@@ -254,6 +255,10 @@ public:
 
 			case 'c':
 				bogus_var2 = atof(optarg);
+				break;
+
+			case 'd':
+				bogus_var3 = atof(optarg);
 				break;
 
 			case 'x':

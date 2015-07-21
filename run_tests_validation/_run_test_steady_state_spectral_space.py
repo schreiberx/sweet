@@ -18,18 +18,18 @@ benchmark_id=2
 
 exec_stuff=[
 		# compile command | execution | parameters | superconvergence?
-		['--compile-program=swe_nonstaggered_covariant --spectral-space=enable --spectral-dealiasing=enable ', './build/example_swe_nonstaggered_covariant_spectral_dealiasing_gnu_release', '-s '+str(benchmark_id)+' -S 1 -C 0.01', True],
-		['--compile-program=swe_nonstaggered_covariant --spectral-space=enable --spectral-dealiasing=disable ', './build/example_swe_nonstaggered_covariant_spectral_gnu_release', '-s '+str(benchmark_id)+' -S 1 -C 0.01', True],
-		['--compile-program=swe_nonstaggered_covariant --spectral-space=enable --spectral-dealiasing=disable ', './build/example_swe_nonstaggered_covariant_spectral_gnu_release', '-s '+str(benchmark_id)+' -S 0 -C 0.01', False],
-		['--compile-program=swe_nonstaggered_covariant --spectral-space=disable --spectral-dealiasing=disable ', './build/example_swe_nonstaggered_covariant_gnu_release', '-s '+str(benchmark_id)+' -S 0 -C 0.01', False],
+		['--program=swe_nonstaggered_covariant --spectral-space=enable --spectral-dealiasing=enable ', './build/unit_tests_swe_nonstaggered_covariant_spectral_dealiasing_gnu_release', '-s '+str(benchmark_id)+' -S 1 -C 0.01', True],
+		['--program=swe_nonstaggered_covariant --spectral-space=enable --spectral-dealiasing=disable ', './build/unit_tests_swe_nonstaggered_covariant_spectral_gnu_release', '-s '+str(benchmark_id)+' -S 1 -C 0.01', True],
+		['--program=swe_nonstaggered_covariant --spectral-space=enable --spectral-dealiasing=disable ', './build/unit_tests_swe_nonstaggered_covariant_spectral_gnu_release', '-s '+str(benchmark_id)+' -S 0 -C 0.01', False],
+		['--program=swe_nonstaggered_covariant --spectral-space=disable --spectral-dealiasing=disable ', './build/unit_tests_swe_nonstaggered_covariant_gnu_release', '-s '+str(benchmark_id)+' -S 0 -C 0.01', False],
 
-		['--compile-program=swe --spectral-space=enable --spectral-dealiasing=enable ', './build/example_swe_spectral_dealiasing_gnu_release', '-s '+str(benchmark_id)+' -S 1 -C 0.01', True],
-		['--compile-program=swe --spectral-space=enable --spectral-dealiasing=disable ', './build/example_swe_spectral_gnu_release', '-s '+str(benchmark_id)+' -S 1 -C 0.01', True],
-		['--compile-program=swe --spectral-space=enable --spectral-dealiasing=disable ', './build/example_swe_spectral_gnu_release', '-s '+str(benchmark_id)+' -S 0 -C 0.01', False],
-		['--compile-program=swe --spectral-space=disable --spectral-dealiasing=disable ', './build/example_swe_gnu_release', '-s '+str(benchmark_id)+' -S 0 -C 0.01', False],
+		['--program=swe --spectral-space=enable --spectral-dealiasing=enable ', './build/unit_tests_swe_spectral_dealiasing_gnu_release', '-s '+str(benchmark_id)+' -S 1 -C 0.01', True],
+		['--program=swe --spectral-space=enable --spectral-dealiasing=disable ', './build/unit_tests_swe_spectral_gnu_release', '-s '+str(benchmark_id)+' -S 1 -C 0.01', True],
+		['--program=swe --spectral-space=enable --spectral-dealiasing=disable ', './build/unit_tests_swe_spectral_gnu_release', '-s '+str(benchmark_id)+' -S 0 -C 0.01', False],
+		['--program=swe --spectral-space=disable --spectral-dealiasing=disable ', './build/unit_tests_swe_gnu_release', '-s '+str(benchmark_id)+' -S 0 -C 0.01', False],
 
-		['--compile-program=swe_staggered_covariant --spectral-space=enable --spectral-dealiasing=disable ', './build/example_swe_staggered_covariant_spectral_gnu_release', '-s '+str(benchmark_id)+' -S 0 -C 0.01', False],
-		['--compile-program=swe_staggered_covariant --spectral-space=disable --spectral-dealiasing=disable ', './build/example_swe_staggered_covariant_gnu_release', '-s '+str(benchmark_id)+' -S 0 -C 0.01', False],
+		['--program=swe_staggered_covariant --spectral-space=enable --spectral-dealiasing=disable ', './build/unit_tests_swe_staggered_covariant_spectral_gnu_release', '-s '+str(benchmark_id)+' -S 0 -C 0.01', False],
+		['--program=swe_staggered_covariant --spectral-space=disable --spectral-dealiasing=disable ', './build/unit_tests_swe_staggered_covariant_gnu_release', '-s '+str(benchmark_id)+' -S 0 -C 0.01', False],
 	]
 
 for e in exec_stuff:

@@ -62,7 +62,6 @@ int main(int i_argc, char *i_argv[])
 	double prev_error_diff2_x = 0;
 	double prev_error_diff2_y = 0;
 
-
 	double freq_x = 2.0;
 	double freq_y = 4.0;
 

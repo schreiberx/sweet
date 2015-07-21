@@ -16,9 +16,14 @@
 #include <stdio.h>
 
 
-
 SimulationParameters parameters;
 
+
+//
+// 0: Gaussian (WARNING! DON'T USE THIS AS INITIAL CONDITIONS!)
+// 1: sin curve
+//
+#define ADV_FUNCTION	1
 
 
 class SimulationAdvection
@@ -31,9 +36,17 @@ public:
 	DataArray<2> hu;
 	DataArray<2> hv;
 
+
+	DataArray<2> tmp;
+
 	Operators2D op;
 
 	TimesteppingRK timestepping;
+
+#if ADV_FUNCTION==1
+	double freq_x = 2.0;
+	double freq_y = 2.0;
+#endif
 
 
 public:
@@ -45,6 +58,8 @@ public:
 		hu(parameters.res),
 		hv(parameters.res),
 
+		tmp(parameters.res),
+
 		op(parameters.res, parameters.sim_domain_size, parameters.use_spectral_diffs)
 	{
 		reset();
@@ -52,15 +67,13 @@ public:
 
 
 	DataArray<2> get_advected_solution(
-		double i_timestamp = 0
+		double i_timestamp
 	)
 	{
 		DataArray<2> ret_h(prog_h.resolution);
 
-		double adv_x, adv_y;
-
-		adv_x = (std::isinf(parameters.bogus_var0) ? 0 : -parameters.bogus_var0*i_timestamp);
-		adv_y = (std::isinf(parameters.bogus_var1) ? 0 : -parameters.bogus_var1*i_timestamp);
+		double adv_x = (std::isinf(parameters.bogus_var0) ? 0 : -parameters.bogus_var0*i_timestamp);
+		double adv_y = (std::isinf(parameters.bogus_var1) ? 0 : -parameters.bogus_var1*i_timestamp);
 
 		double radius = parameters.setup_radius_scale*
 			std::sqrt(
@@ -72,14 +85,19 @@ public:
 		{
 			for (std::size_t i = 0; i < parameters.res[0]; i++)
 			{
+#if ADV_FUNCTION==0
+
 				double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
 				double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_size[1];
 
 				x += adv_x;
 				y += adv_y;
 
-				x = std::fmod(x, parameters.sim_domain_size[0]);
-				y = std::fmod(y, parameters.sim_domain_size[1]);
+				if (x < 0)	x = parameters.sim_domain_size[0]-std::fmod(-x, parameters.sim_domain_size[0]);
+				else		x = std::fmod(x, parameters.sim_domain_size[0]);
+
+				if (y < 0)	y = parameters.sim_domain_size[1]-std::fmod(-y, parameters.sim_domain_size[1]);
+				else		y = std::fmod(y, parameters.sim_domain_size[1]);
 
 				double dx = x-parameters.setup_coord_x*parameters.sim_domain_size[0];
 				double dy = y-parameters.setup_coord_y*parameters.sim_domain_size[1];
@@ -88,42 +106,66 @@ public:
 				dy /= radius;
 
 				ret_h.set(j, i, parameters.setup_h0+std::exp(-50.0*(dx*dx + dy*dy)));
+
+#elif ADV_FUNCTION==1
+				double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
+				double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_size[1];
+
+				x += adv_x;
+				y += adv_y;
+
+				if (x < 0)	x = parameters.sim_domain_size[0]-std::fmod(-x, parameters.sim_domain_size[0]);
+				else		x = std::fmod(x, parameters.sim_domain_size[0]);
+
+				if (y < 0)	y = parameters.sim_domain_size[1]-std::fmod(-y, parameters.sim_domain_size[1]);
+				else		y = std::fmod(y, parameters.sim_domain_size[1]);
+
+				x /= parameters.sim_domain_size[0];
+				y /= parameters.sim_domain_size[1];
+
+				ret_h.set(j, i, std::sin(freq_x*M_PIl*x)*std::sin(freq_x*M_PIl*y));
+#endif
 			}
 		}
 
 		return ret_h;
 	}
+
 
 
 	DataArray<2> get_advected_solution_diffx(
-		double i_timestamp = 0
+		double i_timestamp
 	)
 	{
 		DataArray<2> ret_h(prog_h.resolution);
 
-		double adv_x, adv_y;
+		double adv_x = (std::isinf(parameters.bogus_var0) ? 0 : -parameters.bogus_var0*i_timestamp);
+		double adv_y = (std::isinf(parameters.bogus_var1) ? 0 : -parameters.bogus_var1*i_timestamp);
 
-		adv_x = (std::isinf(parameters.bogus_var0) ? 0 : -parameters.bogus_var0*i_timestamp);
-		adv_y = (std::isinf(parameters.bogus_var1) ? 0 : -parameters.bogus_var1*i_timestamp);
-
-		double radius = parameters.setup_radius_scale*
-			std::sqrt(
+		double radius_scale = std::sqrt(
 				 (double)parameters.sim_domain_size[0]*(double)parameters.sim_domain_size[0]
 				+(double)parameters.sim_domain_size[1]*(double)parameters.sim_domain_size[1]
 			);
+
+		double radius = parameters.setup_radius_scale*radius_scale;
 
 		for (std::size_t j = 0; j < parameters.res[1]; j++)
 		{
 			for (std::size_t i = 0; i < parameters.res[0]; i++)
 			{
+#if ADV_FUNCTION==0
+
 				double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
 				double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_size[1];
 
 				x += adv_x;
 				y += adv_y;
 
-				x = std::fmod(x, parameters.sim_domain_size[0]);
-				y = std::fmod(y, parameters.sim_domain_size[1]);
+				if (x < 0)	x = parameters.sim_domain_size[0]-std::fmod(-x, parameters.sim_domain_size[0]);
+				else		x = std::fmod(x, parameters.sim_domain_size[0]);
+
+				if (y < 0)	y = parameters.sim_domain_size[1]-std::fmod(-y, parameters.sim_domain_size[1]);
+				else		y = std::fmod(y, parameters.sim_domain_size[1]);
 
 				double dx = x-parameters.setup_coord_x*parameters.sim_domain_size[0];
 				double dy = y-parameters.setup_coord_y*parameters.sim_domain_size[1];
@@ -131,7 +173,30 @@ public:
 				dx /= radius;
 				dy /= radius;
 
-				ret_h.set(j, i, parameters.setup_h0+std::exp(-50.0*(dx*dx + dy*dy))*(-50.0*2.0)*dx);
+				double value = -50.0*2.0*dx*std::exp(-50.0*(dx*dx + dy*dy));
+				value /= radius_scale;
+
+				ret_h.set(j, i, value);
+
+#elif ADV_FUNCTION==1
+
+				double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
+				double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_size[1];
+
+				x += adv_x;
+				y += adv_y;
+
+				if (x < 0)	x = parameters.sim_domain_size[0]-std::fmod(-x, parameters.sim_domain_size[0]);
+				else		x = std::fmod(x, parameters.sim_domain_size[0]);
+
+				if (y < 0)	y = parameters.sim_domain_size[1]-std::fmod(-y, parameters.sim_domain_size[1]);
+				else		y = std::fmod(y, parameters.sim_domain_size[1]);
+
+				x /= parameters.sim_domain_size[0];
+				y /= parameters.sim_domain_size[1];
+
+				ret_h.set(j, i, freq_x*M_PIl*cos(freq_x*M_PIl*x)*std::sin(freq_x*M_PIl*y));
+#endif
 			}
 		}
 
@@ -139,35 +204,40 @@ public:
 	}
 
 
+
 	DataArray<2> get_advected_solution_diffy(
-		double i_timestamp = 0
+		double i_timestamp
 	)
 	{
 		DataArray<2> ret_h(prog_h.resolution);
 
-		double adv_x, adv_y;
+		double adv_x = (std::isinf(parameters.bogus_var0) ? 0 : -parameters.bogus_var0*i_timestamp);
+		double adv_y = (std::isinf(parameters.bogus_var1) ? 0 : -parameters.bogus_var1*i_timestamp);
 
-		adv_x = (std::isinf(parameters.bogus_var0) ? 0 : -parameters.bogus_var0*i_timestamp);
-		adv_y = (std::isinf(parameters.bogus_var1) ? 0 : -parameters.bogus_var1*i_timestamp);
-
-		double radius = parameters.setup_radius_scale*
-			std::sqrt(
+		double radius_scale = std::sqrt(
 				 (double)parameters.sim_domain_size[0]*(double)parameters.sim_domain_size[0]
 				+(double)parameters.sim_domain_size[1]*(double)parameters.sim_domain_size[1]
 			);
+
+		double radius = parameters.setup_radius_scale*radius_scale;
 
 		for (std::size_t j = 0; j < parameters.res[1]; j++)
 		{
 			for (std::size_t i = 0; i < parameters.res[0]; i++)
 			{
+#if ADV_FUNCTION==0
+
 				double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
 				double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_size[1];
 
 				x += adv_x;
 				y += adv_y;
 
-				x = std::fmod(x, parameters.sim_domain_size[0]);
-				y = std::fmod(y, parameters.sim_domain_size[1]);
+				if (x < 0)	x = parameters.sim_domain_size[0]-std::fmod(-x, parameters.sim_domain_size[0]);
+				else		x = std::fmod(x, parameters.sim_domain_size[0]);
+
+				if (y < 0)	y = parameters.sim_domain_size[1]-std::fmod(-y, parameters.sim_domain_size[1]);
+				else		y = std::fmod(y, parameters.sim_domain_size[1]);
 
 				double dx = x-parameters.setup_coord_x*parameters.sim_domain_size[0];
 				double dy = y-parameters.setup_coord_y*parameters.sim_domain_size[1];
@@ -175,7 +245,30 @@ public:
 				dx /= radius;
 				dy /= radius;
 
-				ret_h.set(j, i, parameters.setup_h0+std::exp(-50.0*(dx*dx + dy*dy))*(-50.0*2.0)*dy);
+				double value = -50.0*2.0*dy*std::exp(-50.0*(dx*dx + dy*dy));
+				value /= radius_scale;
+
+				ret_h.set(j, i, value);
+
+#elif ADV_FUNCTION==1
+
+				double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
+				double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_size[1];
+
+				x += adv_x;
+				y += adv_y;
+
+				if (x < 0)	x = parameters.sim_domain_size[0]-std::fmod(-x, parameters.sim_domain_size[0]);
+				else		x = std::fmod(x, parameters.sim_domain_size[0]);
+
+				if (y < 0)	y = parameters.sim_domain_size[1]-std::fmod(-y, parameters.sim_domain_size[1]);
+				else		y = std::fmod(y, parameters.sim_domain_size[1]);
+
+				x /= parameters.sim_domain_size[0];
+				y /= parameters.sim_domain_size[1];
+
+				ret_h.set(j, i, freq_x*M_PIl*std::sin(freq_x*M_PIl*y));
+#endif
 			}
 		}
 
@@ -187,6 +280,8 @@ public:
 	void reset()
 	{
 		parameters.status_timestep_nr = 0;
+		parameters.status_simulation_time = 0;
+		parameters.status_simulation_timestep_size = -1;
 
 		if (std::isinf(parameters.bogus_var0))
 			prog_u.setAll(0);
@@ -208,12 +303,12 @@ public:
 			const DataArray<2> &i_u,	///< prognostic variables
 			const DataArray<2> &i_v,	///< prognostic variables
 
-			DataArray<2> &o_h_t,	///< time updates
-			DataArray<2> &o_u_t,	///< time updates
-			DataArray<2> &o_v_t,	///< time updates
+			DataArray<2> &o_h_t,		///< time updates
+			DataArray<2> &o_u_t,		///< time updates
+			DataArray<2> &o_v_t,		///< time updates
 
-			double &o_dt,			///< time step restriction
-			double i_fixed_dt = 0,	///< if this value is not equal to 0, use this time step size instead of computing one
+			double &o_dt,				///< time step restriction
+			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp = -1
 	)
 	{
@@ -265,11 +360,27 @@ public:
 		}
 		else  if (parameters.bogus_var2 == 2)
 		{
-			// non-staggered
-			o_h_t = -(
-					op.diff_c_x(i_h*i_u) +
-					op.diff_c_y(i_h*i_v)
-				);
+			if (parameters.bogus_var3 == 0)
+			{
+				// non-staggered
+				o_h_t = -(
+						op.diff_c_x(i_h*i_u) +
+						op.diff_c_y(i_h*i_v)
+					);
+			}
+			else if (parameters.bogus_var3 == 1)
+			{
+				// non-staggered with analytical solution, only works for constant velocity!
+				o_h_t = -(
+						get_advected_solution_diffx(i_simulation_timestamp)*i_u +
+						get_advected_solution_diffy(i_simulation_timestamp)*i_v
+					);
+			}
+			else
+			{
+				std::cerr << "Usage of analytical solution not specified, use -d option [0: compute diffs on discrete solution, 1: use analytical diffs]" << std::endl;
+				exit(-1);
+			}
 		}
 		else  if (parameters.bogus_var2 == 3)
 		{
@@ -278,6 +389,7 @@ public:
 		else
 		{
 			std::cerr << "Advection type not specified, use -c option [0: up/downwinding, 1: staggered, 2: non-staggered]" << std::endl;
+			exit(-1);
 		}
 
 
@@ -321,8 +433,6 @@ public:
 				parameters.status_simulation_time
 			);
 
-		prog_h = get_advected_solution(parameters.status_simulation_time);
-
 		// provide information to parameters
 		parameters.status_simulation_timestep_size = dt;
 		parameters.status_simulation_time += dt;
@@ -355,7 +465,30 @@ public:
 			double *o_aspect_ratio
 	)
 	{
-		*o_dataArray = &prog_h;
+		int vis_id = parameters.vis_id % 4;
+
+		switch (vis_id)
+		{
+		default:
+			*o_dataArray = &prog_h;
+			break;
+
+		case 1:
+			tmp = get_advected_solution(parameters.status_simulation_time);
+			*o_dataArray = &tmp;
+			break;
+
+		case 2:
+			tmp = get_advected_solution_diffx(parameters.status_simulation_time);
+			*o_dataArray = &tmp;
+			break;
+
+		case 3:
+			tmp = get_advected_solution_diffy(parameters.status_simulation_time);
+			*o_dataArray = &tmp;
+			break;
+		}
+
 		*o_aspect_ratio = parameters.sim_domain_size[1] / parameters.sim_domain_size[0];
 	}
 
@@ -407,6 +540,9 @@ int main(
 		char *i_argv[]
 )
 {
+	std::cout << std::setprecision(14);
+	std::cerr << std::setprecision(14);
+
 	parameters.setup(i_argc, i_argv);
 
 	double u, v;
@@ -459,40 +595,58 @@ int main(
 	}
 
 
-
 #if SWEET_GUI
 	if (parameters.gui_enabled)
 	{
 		SimulationAdvection *simulationAdvection = new SimulationAdvection;
 		VisSweet<SimulationAdvection> visSweet(simulationAdvection);
 		delete simulationAdvection;
+		return 0;
 	}
-	else
 #endif
 
+	/*
+	 * iterate over resolutions, starting by res[0] given e.g. by program parameter -n
+	 */
+	// allocate data storage for computed errors
+
+	std::ostringstream output_string_conv_time;
+	std::ostringstream output_string_conv_space;
+
+	double *computed_errors = new double[1024*4];
+	double *conv_rate_space = new double[1024*4];
+	double *conv_rate_time = new double[1024*4];
+
+	std::size_t res_x = parameters.res[0];
+	std::size_t res_y = parameters.res[1];
+
+	std::size_t max_res = 128;
+
+	if (res_x > max_res || res_y > max_res)
+		max_res = std::max(res_x, res_y);
+
+	for (	int res_iterator_id = 0;
+			res_x <= max_res && res_y <= max_res;
+			res_x *= 2, res_y *= 2, res_iterator_id++
+	)
 	{
-		/*
-		 * iterate over resolutions, starting by res[0] given e.g. by program parameter -n
-		 */
-		double prev_error = 0;
-
-		std::size_t res_x = parameters.res[0];
-		std::size_t res_y = parameters.res[1];
-
-		std::size_t max_res = 256;
-
-		if (res_x > max_res || res_y > max_res)
-			max_res = std::max(res_x, res_y);
-
-		for (; res_x <= max_res && res_y <= max_res; res_x *= 2, res_y *= 2)
 		{
-			std::cout << "*************************************************************" << std::endl;
-			std::cout << "Testing advection with resolution " << res_x << " x " << res_y << std::endl;
-			std::cout << "*************************************************************" << std::endl;
-			std::size_t res[2] = {res_x, res_y};
+			output_string_conv_time << std::endl;
+			output_string_conv_time << res_x << "x" << res_y << "\t";
 
-			parameters.res[0] = res[0];
-			parameters.res[1] = res[1];
+			output_string_conv_space << std::endl;
+			output_string_conv_space << res_x << "x" << res_y << "\t";
+		}
+
+		for (int rk_order = 1; rk_order <= 4; rk_order++)
+		{
+			std::cout << "*********************************************************************************************************" << std::endl;
+			std::cout << "Testing advection with resolution " << res_x << " x " << res_y << " and RK order " << rk_order << std::endl;
+			std::cout << "*********************************************************************************************************" << std::endl;
+
+			parameters.res[0] = res_x;
+			parameters.res[1] = res_y;
+			parameters.timestepping_runge_kutta_order = rk_order;
 			parameters.reset();
 
 			SimulationAdvection *simulationAdvection = new SimulationAdvection;
@@ -515,38 +669,68 @@ int main(
 
 				if (turnaround_time < parameters.status_simulation_time)
 				{
-					DataArray<2> benchmark_h(parameters.res);
+					double &this_error = computed_errors[res_iterator_id*4+rk_order];
+					double &this_conv_rate_space = conv_rate_space[res_iterator_id*4+rk_order];
+					double &this_conv_rate_time = conv_rate_time[res_iterator_id*4+rk_order];
 
-					for (std::size_t j = 0; j < parameters.res[1]; j++)
+					DataArray<2> benchmark_h = simulationAdvection->get_advected_solution(parameters.status_simulation_time);
+
+					double error_rms = (simulationAdvection->prog_h-benchmark_h).reduce_rms_quad();
+					std::cout << "RMS error in height: " << error_rms << std::endl;
+
+					double error_max = (simulationAdvection->prog_h-benchmark_h).reduce_max();
+					std::cout << "Max error in height: " << error_max << std::endl;
+
+					this_error = error_rms;
+
+					double eps = 0.1;
+					/*
+					 * check convergence in space
+					 */
+					if (res_iterator_id > 0)
 					{
-						for (std::size_t i = 0; i < parameters.res[0]; i++)
+						double &prev_error_space = computed_errors[(res_iterator_id-1)*4+rk_order];
+
+						double expected_conv_rate = 4.0*std::pow(2.0, (double)(rk_order-1));
+						double this_conv_rate_space = prev_error_space / this_error;
+
+						std::cout << "          RMS convergence rate (space): " << this_conv_rate_space << ", expected: " << expected_conv_rate << std::endl;
+
+						if (std::abs(this_conv_rate_space-expected_conv_rate) > eps*expected_conv_rate)
 						{
-							double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
-							double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_size[1];
-
-							benchmark_h.set(j, i, SWEValidationBenchmarks::return_h(parameters, x, y));
-						}
-					}
-
-					double error = (simulationAdvection->prog_h-benchmark_h).reduce_rms_quad();
-					std::cout << "RMS error in height: " << error << std::endl;
-
-					if (prev_error != 0)
-					{
-						double conv_rate = prev_error / error;
-						std::cout << "          Convergence rate: " << conv_rate << std::endl;
-
-						if (std::abs(conv_rate-4.0) > 0.5)
-						{
-							std::cerr << "Convergence rate threshold (0.5) exceeded" << std::endl;
+							std::cerr << "Convergence rate threshold (" << eps*expected_conv_rate << ") exceeded" << std::endl;
 							exit(1);
 						}
+
+						output_string_conv_space << this_conv_rate_space << "\t";
 					}
 
-					prev_error = error;
+					/*
+					 * check higher-order convergence in time
+					 */
+					if (rk_order > 1)
+					{
+						double &prev_error_time = computed_errors[res_iterator_id*4+(rk_order-1)];
+						double expected_conv_rate = std::pow(2.0, (double)(rk_order-1));
+						double this_conv_rate_time = prev_error_time / this_error;
+
+						std::cout << "          RMS convergence rate (RK time): " << this_conv_rate_time << std::endl;//", expected: " << expected_conv_rate << std::endl;
+
+//						if (std::abs(this_conv_rate_time-expected_conv_rate) > eps*expected_conv_rate)
+						// check only for at least 2
+						if (this_conv_rate_time < 2.0)
+						{
+							std::cerr << "RK time stepping not converging" << std::endl;
+//							std::cerr << "Convergence rate threshold (" << eps*expected_conv_rate << ") exceeded" << std::endl;
+							exit(1);
+						}
+
+						output_string_conv_time << this_conv_rate_time << "\t";
+					}
+
 					break;
 				}
-			}
+			}	// while true
 
 			time.stop();
 
@@ -556,9 +740,20 @@ int main(
 			std::cout << "Time per time step: " << seconds/(double)parameters.status_timestep_nr << " sec/ts" << std::endl;
 
 			delete simulationAdvection;
-		}
-	}
+		}	// rk
+	}	// res
+
+	delete [] computed_errors;
+	delete [] conv_rate_space;
+	delete [] conv_rate_time;
 
 
-	return 1;
+	std::cout << std::endl;
+	std::cout << "Convergence rate in space (inc. resolution):";
+	std::cout << output_string_conv_space.str() << std::endl;
+	std::cout << std::endl;
+	std::cout << "Convergence rate in time (RKn):";
+	std::cout << output_string_conv_time.str() << std::endl;
+
+	return 0;
 }

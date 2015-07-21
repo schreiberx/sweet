@@ -634,8 +634,8 @@ int main(int i_argc, char *i_argv[])
 		VisSweet<SimulationSWEStaggered> visSweet(simulationSWE);
 	}
 	else
-	{
 #endif
+	{
 		simulationSWE->reset();
 
 		Stopwatch time;

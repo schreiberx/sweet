@@ -27,23 +27,17 @@ env.Append(ENV=os.environ)
 
 files = os.listdir('src/examples/')
 files = sorted(files)
-
 example_programs = []
 for f in files:
-#	tag = 'example_'
-#	if f[0:len(tag)] == tag:
 	example_programs.append(f[0:-4])
-
 env['example_programs'] = example_programs
 
 
 files = os.listdir('src/unit_tests/')
 files = sorted(files)
-
 unit_tests_programs = []
 for f in files:
 	unit_tests_programs.append(f[0:-4])
-
 env['unit_tests_programs'] = unit_tests_programs
 
 
@@ -58,6 +52,7 @@ env['xml_config'] = GetOption('xml_config')
 
 if env['xml_config'] != '':
 	env = CompileXMLOptions.load(env['xml_config'], env)
+
 
 
 ################################################################
@@ -85,26 +80,13 @@ AddOption(	'--compiler',
 env['compiler'] = GetOption('compiler')
 
 
-d = ''
-
-if hostname[0:4] == 'mac-':
-	if env['compiler'] == 'intel':
-		d = ''
-	elif env['compiler'] == 'llvm':
-		d = '/lrz/sys/compilers/gcc/4.7.3/'
-
-elif hostname == 'martinium':
-	if env['compiler'] == 'intel':
-		d = 'g++-4.6'
-
 AddOption(	'--gxx-toolchain',
 		dest='gxx-toolchain',
 		type='string',
-		default=d,
+		default='',
 		help='specify gcc toolchain for intel and llvm compiler, e.g. g++-4.6, default: deactivated'
 )
 env['gxx_toolchain'] = GetOption('gxx-toolchain')
-
 
 
 AddOption(	'--simd',
@@ -145,7 +127,6 @@ if env['libxml'] == 'enable':
 	env.ParseConfig("xml2-config --cflags --libs")
 
 
-
 AddOption(	'--spectral-dealiasing',
 		dest='spectral_dealiasing',
 		type='choice',
@@ -164,14 +145,24 @@ AddOption(	'--gui',
 )
 env['gui'] = GetOption('gui')
 
-AddOption(      '--compile-program',
-		dest='compile-program',
+AddOption(      '--program',
+		dest='program',
 		type='choice',
-		choices=example_programs+unit_tests_programs,
+		choices=example_programs,
 		default='',
-		help='Specify program to compile: '+', '.join(example_programs+unit_tests_programs)+' '*80+' [default: %default]'
+		help='Specify program to compile: '+', '.join(example_programs)+' '*80+' [default: %default]'
 )
-env['compile_program'] = GetOption('compile-program')
+env['compile_program'] = GetOption('program')
+
+
+AddOption(      '--unit-test',
+		dest='unit_test',
+		type='choice',
+		choices=unit_tests_programs,
+		default='',
+		help='Specify unit tests to compile: '+', '.join(unit_tests_programs)+' '*80+' [default: %default]'
+)
+env['unit_test'] = GetOption('unit_test')
 
 
 threading_constraints = ['off', 'omp']
@@ -192,21 +183,28 @@ env['fortran_source'] = 'disable'
 ###########################################
 
 # set default to first example program
-if env['compile_program'] == '':
-	env['compile_program'] = example_programs[0]
-
-#
-# PROGRAM's NAME
-#
-if env['compile_program'] in env['unit_tests_programs']:
-	env['program_name'] = 'unit_test_'+env['compile_program']
-
-elif env['compile_program'] in env['example_programs']:
-	env['program_name'] = 'example_'+env['compile_program']
-
+if env['compile_program'] != '':
+	env['program_name'] = env['compile_program']
+elif env['unit_test'] != '':
+	env['program_name'] = env['unit_test']
 else:
-	print 'FATAL ERROR'
-	sys.exit(-1)
+	env['program_name'] = 'DUMMY'
+	print("\n")
+	print("Neither a program name, nor a unit test is given:\n")
+	print("  use --program=[program name] to specify the program\n")
+	print("  or --unit-test=[unit test] to specify a unit test\n")
+
+
+# PROGRAM's NAME
+#if env['compile_program'] in env['unit_tests_programs']:
+#	env['program_name'] = 'unit_test_'+env['compile_program']
+#
+#if env['unit_testrogram'] in env['example_programs']:
+#	env['program_name'] = 'example_'+env['compile_program']
+
+#else:
+#	print 'FATAL ERROR'
+#	sys.exit(-1)
 
 
 env.Append(CXXFLAGS = ' -DSWEET_PROGRAM_NAME='+env['program_name'])
@@ -547,27 +545,28 @@ if env['spectral_space'] == 'enable':
 #build_dir='build/build_'+exec_name+'/'
 build_dir='/tmp/scons_build_'+exec_name+'/'
 
-
 env.Append(CPPPATH = ['/usr/local/include', '/usr/include'])
 # also include the 'src' directory to search for dependencies
 env.Append(CPPPATH = ['.', 'src/'])
+
 
 
 ######################
 # get source code files
 ######################
 
-
 env.src_files = []
 
-Export('env')
-SConscript('src/SConscript', variant_dir=build_dir, duplicate=0)
-Import('env')
+if env['program_name'] != 'DUMMY':
 
-print
-print '            Program: '+env['program_name']
-print 'Building executable: '+exec_name
-print
+	Export('env')
+	SConscript('src/SConscript', variant_dir=build_dir, duplicate=0)
+	Import('env')
 
-env.Program('build/'+exec_name, env.src_files)
+	print
+	print '            Program: '+env['program_name']
+	print 'Building executable: '+exec_name
+	print
+
+	env.Program('build/'+exec_name, env.src_files)
 

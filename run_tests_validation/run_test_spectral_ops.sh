@@ -25,11 +25,11 @@ if true; then
 	echo "TEST SPECTRAL OPS (release) $X x $Y"
 	echo "***********************************************"
 	make clean
-	scons --compile-program=test_spectral_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=disable
-	EXEC="./build/example_test_spectral_ops_spectral_gnu_release  -X $X -Y $Y -S 0"
+	scons --unit-test=test_spectral_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=disable
+	EXEC="./build/test_spectral_ops_spectral_gnu_release  -X $X -Y $Y -S 0"
 	echo "$EXEC"
 	$EXEC || exit
-	EXEC="./build/example_test_spectral_ops_spectral_gnu_release  -X $X -Y $Y -S 1"
+	EXEC="./build/test_spectral_ops_spectral_gnu_release  -X $X -Y $Y -S 1"
 	echo "$EXEC"
 	$EXEC || exit
 fi
@@ -40,11 +40,11 @@ echo "***********************************************"
 echo "TEST SPECTRAL OPS (release) $X"
 echo "***********************************************"
 make clean
-scons --compile-program=test_spectral_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=disable
-EXEC="./build/example_test_spectral_ops_spectral_gnu_release -n 128 -m 128 -X $X -Y $X -S 1"
+scons --unit-test=test_spectral_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=disable
+EXEC="./build/test_spectral_ops_spectral_gnu_release -n 128 -m 128 -X $X -Y $X -S 1"
 echo "$EXEC"
 $EXEC || exit
-EXEC="./build/example_test_spectral_ops_spectral_gnu_release -n 128 -m 128 -X $X -Y $X -S 0"
+EXEC="./build/test_spectral_ops_spectral_gnu_release -n 128 -m 128 -X $X -Y $X -S 0"
 $EXEC || exit
 
 X=$MIN_SCALE
@@ -53,9 +53,9 @@ echo "***********************************************"
 echo "TEST SPECTRAL OPS (release) $X"
 echo "***********************************************"
 make clean
-scons --compile-program=test_spectral_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=disable
-./build/example_test_spectral_ops_spectral_gnu_release -n 128 -m 128 -X $X -Y $X -S 1 || exit
-./build/example_test_spectral_ops_spectral_gnu_release -n 128 -m 128 -X $X -Y $X -S 0 || exit
+scons --unit-test=test_spectral_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=disable
+./build/test_spectral_ops_spectral_gnu_release -n 128 -m 128 -X $X -Y $X -S 1 || exit
+./build/test_spectral_ops_spectral_gnu_release -n 128 -m 128 -X $X -Y $X -S 0 || exit
 
 X=$MAX_SCALE
 echo
@@ -63,9 +63,9 @@ echo "***********************************************"
 echo "TEST SPECTRAL OPS (release) ALIASING CONTROL $X"
 echo "***********************************************"
 make clean
-scons --compile-program=test_spectral_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=enable
-./build/example_test_spectral_ops_spectral_dealiasing_gnu_release -n 128 -m 128 -X $X -Y $X -S 0 || exit
-./build/example_test_spectral_ops_spectral_dealiasing_gnu_release -n 128 -m 128 -X $X -Y $X -S 1 || exit
+scons --unit-test=test_spectral_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=enable
+./build/test_spectral_ops_spectral_dealiasing_gnu_release -n 128 -m 128 -X $X -Y $X -S 0 || exit
+./build/test_spectral_ops_spectral_dealiasing_gnu_release -n 128 -m 128 -X $X -Y $X -S 1 || exit
 
 X=$MIN_SCALE
 echo
@@ -73,9 +73,9 @@ echo "***********************************************"
 echo "TEST SPECTRAL OPS (release) ALIASING CONTROL $X"
 echo "***********************************************"
 make clean
-scons --compile-program=test_spectral_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=enable
-./build/example_test_spectral_ops_spectral_dealiasing_gnu_release -n 128 -m 128 -X $X -Y $X -S 0 || exit
-./build/example_test_spectral_ops_spectral_dealiasing_gnu_release -n 128 -m 128 -X $X -Y $X -S 1 || exit
+scons --unit-test=test_spectral_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=enable
+./build/test_spectral_ops_spectral_dealiasing_gnu_release -n 128 -m 128 -X $X -Y $X -S 0 || exit
+./build/test_spectral_ops_spectral_dealiasing_gnu_release -n 128 -m 128 -X $X -Y $X -S 1 || exit
 
 
 

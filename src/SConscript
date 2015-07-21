@@ -1,15 +1,11 @@
 Import('env')
 
-if env['compile_program'] in env['example_programs']:
+if env['compile_program'] != '':
 	env.src_files.append(env.Object('examples/'+env['compile_program']+'.cpp'))
 
-elif env['compile_program'] in env['unit_tests_programs']:
-	env.src_files.append(env.Object('unit_tests/'+env['compile_program']+'.cpp'))
-#	env.src_files.append(env.Object('dummy/dummy_include.cpp'))
+elif env['unit_test'] != '':
+	env.src_files.append(env.Object('unit_tests/'+env['unit_test']+'.cpp'))
 
-else:
-	print 'FATAL ERROR'
-	Exit(-1)
 
 #
 # CPP default include paths

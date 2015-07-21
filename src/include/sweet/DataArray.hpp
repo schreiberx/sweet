@@ -92,8 +92,8 @@ public:
 	std::size_t range_spec_end[D];
 	std::size_t range_spec_size[D];
 #else
-	int kernel_size;
-	double *kernel_data;
+	int kernel_size = -1;
+	double *kernel_data = nullptr;
 #endif
 
 	/**
@@ -273,9 +273,6 @@ public:
 #if SWEET_USE_SPECTRAL_SPACE
 		array_data_spectral_space(nullptr),
 		aliasing_scaled(i_dataArray.aliasing_scaled),
-#else
-		kernel_data(nullptr),
-		kernel_size(-1),
 #endif
 
 		temporary_data(false)
@@ -347,9 +344,6 @@ public:
 #if SWEET_USE_SPECTRAL_SPACE
 		array_data_spectral_space(nullptr),
 		aliasing_scaled(i_dataArray.aliasing_scaled),
-#else
-		kernel_data(nullptr),
-		kernel_size(-1),
 #endif
 		temporary_data(false)
 	{
@@ -404,9 +398,6 @@ public:
 #if SWEET_USE_SPECTRAL_SPACE
 		array_data_spectral_space(nullptr),
 		aliasing_scaled(false),
-#else
-		kernel_data(nullptr),
-		kernel_size(-1),
 #endif
 		temporary_data(false)
 	{
