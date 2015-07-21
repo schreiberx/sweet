@@ -655,7 +655,7 @@ int main(
 		std::size_t res_x = parameters.res[0];
 		std::size_t res_y = parameters.res[1];
 
-		std::size_t max_res = 256;
+		std::size_t max_res = 128;
 
 		if (res_x > max_res || res_y > max_res)
 			max_res = std::max(res_x, res_y);
@@ -730,8 +730,15 @@ int main(
 
 						if (std::abs(this_conv_rate_space-expected_conv_rate) > eps*expected_conv_rate)
 						{
-							std::cerr << "Convergence rate threshold (" << eps*expected_conv_rate << ") exceeded" << std::endl;
-							error_detected = true;
+							if (error < 10e-12)
+							{
+								std::cerr << "Warning: Ignoring this error, since it's below machine precision" << std::endl;
+							}
+							else
+							{
+								std::cerr << "Convergence rate threshold (" << eps*expected_conv_rate << ") exceeded" << std::endl;
+								error_detected = true;
+							}
 						}
 
 						output_string_conv << this_conv_rate_space << "\t";
@@ -817,15 +824,15 @@ int main(
 					double &this_error = computed_errors[cfl_iterator_id];
 					double &this_conv_rate_space = conv_rate[cfl_iterator_id];
 
-					double error_rms = compute_current_error(simulationAdvection);
-					std::cout << "Error in height: " << error_rms << std::endl;
+					double error = compute_current_error(simulationAdvection);
+					std::cout << "Error in height: " << error << std::endl;
 
 //					double error_max = (simulationAdvection->prog_h-benchmark_h).reduce_maxAbs();
 //					std::cout << "Max error in height: " << error_max << std::endl;
 
 					std::cout << "          dt = " << parameters.status_simulation_timestep_size << "    dx = " << parameters.sim_cell_size[0] << " x " << parameters.sim_cell_size[0] << std::endl;
 
-					this_error = error_rms;
+					this_error = error;
 
 					double eps = 0.1;
 					/*
@@ -842,8 +849,15 @@ int main(
 
 						if (std::abs(this_conv_rate_space-expected_conv_rate) > eps*expected_conv_rate)
 						{
-							std::cerr << "Convergence rate threshold (" << eps*expected_conv_rate << ") exceeded" << std::endl;
-							error_detected = true;
+							if (error < 10e-12)
+							{
+								std::cerr << "Warning: Ignoring this error, since it's below machine precision" << std::endl;
+							}
+							else
+							{
+								std::cerr << "Convergence rate threshold (" << eps*expected_conv_rate << ") exceeded" << std::endl;
+								error_detected = true;
+							}
 						}
 
 						output_string_conv << "r=" << this_conv_rate_space << "\t";
