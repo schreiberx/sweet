@@ -38,7 +38,10 @@ public:
 	 * Function of 4th order.
 	 */
 public:
-	double test_function(int i_order, double z)
+	double test_function(
+			int i_order,
+			double z
+	)
 	{
 		switch(i_order)
 		{

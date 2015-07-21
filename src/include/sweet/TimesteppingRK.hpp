@@ -132,7 +132,7 @@ public:
 			 * 0   |
 			 * 1/2 | 1/2
 			 * --------------
-			 *     | 0    1    b
+			 *     | 0   1    b
 			 */
 			double a2[1] = {0.5};
 			double b[2] = {0.0, 1.0};
@@ -228,9 +228,9 @@ public:
 					i_simulation_time + c[1]*dt
 			);
 
-			io_h += dt*( b[0]*(*RK_h_t[0]) + b[1]*(*RK_h_t[1])  + b[2]*(*RK_h_t[2]) );
-			io_u += dt*( b[0]*(*RK_u_t[0]) + b[1]*(*RK_u_t[1])  + b[2]*(*RK_u_t[2]) );
-			io_v += dt*( b[0]*(*RK_v_t[0]) + b[1]*(*RK_v_t[1])  + b[2]*(*RK_v_t[2]) );
+			io_h += dt*( (b[0]*(*RK_h_t[0])) + (b[1]*(*RK_h_t[1]))  + (b[2]*(*RK_h_t[2])) );
+			io_u += dt*( (b[0]*(*RK_u_t[0])) + (b[1]*(*RK_u_t[1]))  + (b[2]*(*RK_u_t[2])) );
+			io_v += dt*( (b[0]*(*RK_v_t[0])) + (b[1]*(*RK_v_t[1]))  + (b[2]*(*RK_v_t[2])) );
 		}
 		else if (i_runge_kutta_order == 4)
 		{
@@ -306,9 +306,9 @@ public:
 			);
 
 
-			io_h += dt*( b[0]*(*RK_h_t[0]) + b[1]*(*RK_h_t[1])  + b[2]*(*RK_h_t[2]) + b[3]*(*RK_h_t[3]) );
-			io_u += dt*( b[0]*(*RK_u_t[0]) + b[1]*(*RK_u_t[1])  + b[2]*(*RK_u_t[2]) + b[3]*(*RK_u_t[3]) );
-			io_v += dt*( b[0]*(*RK_v_t[0]) + b[1]*(*RK_v_t[1])  + b[2]*(*RK_v_t[2]) + b[3]*(*RK_v_t[3]) );
+			io_h += dt*( (b[0]*(*RK_h_t[0])) + (b[1]*(*RK_h_t[1]))  + (b[2]*(*RK_h_t[2])) + (b[3]*(*RK_h_t[3])) );
+			io_u += dt*( (b[0]*(*RK_u_t[0])) + (b[1]*(*RK_u_t[1]))  + (b[2]*(*RK_u_t[2])) + (b[3]*(*RK_u_t[3])) );
+			io_v += dt*( (b[0]*(*RK_v_t[0])) + (b[1]*(*RK_v_t[1]))  + (b[2]*(*RK_v_t[2])) + (b[3]*(*RK_v_t[3])) );
 		}
 		else
 		{

@@ -25,7 +25,6 @@ SimulationParameters parameters;
 //
 #define ADV_FUNCTION	1
 
-
 class SimulationAdvection
 {
 public:
@@ -36,7 +35,6 @@ public:
 	DataArray<2> hu;
 	DataArray<2> hv;
 
-
 	DataArray<2> tmp;
 
 	Operators2D op;
@@ -44,8 +42,8 @@ public:
 	TimesteppingRK timestepping;
 
 #if ADV_FUNCTION==1
-	double freq_x = 2.0;
-	double freq_y = 2.0;
+	double freq_x = 4.0;
+	double freq_y = 4.0;
 #endif
 
 
@@ -105,7 +103,8 @@ public:
 				dx /= radius;
 				dy /= radius;
 
-				ret_h.set(j, i, parameters.setup_h0+std::exp(-50.0*(dx*dx + dy*dy)));
+				double value = parameters.setup_h0+std::exp(-50.0*(dx*dx + dy*dy));
+				ret_h.set(j, i, value);
 
 #elif ADV_FUNCTION==1
 				double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
@@ -195,7 +194,7 @@ public:
 				x /= parameters.sim_domain_size[0];
 				y /= parameters.sim_domain_size[1];
 
-				ret_h.set(j, i, freq_x*M_PIl*cos(freq_x*M_PIl*x)*std::sin(freq_x*M_PIl*y));
+				ret_h.set(j, i, freq_x*M_PIl*std::cos(freq_x*M_PIl*x)*std::sin(freq_y*M_PIl*y)/parameters.sim_domain_size[0]);
 #endif
 			}
 		}
@@ -267,7 +266,7 @@ public:
 				x /= parameters.sim_domain_size[0];
 				y /= parameters.sim_domain_size[1];
 
-				ret_h.set(j, i, freq_x*M_PIl*std::sin(freq_x*M_PIl*y));
+				ret_h.set(j, i, freq_y*M_PIl*std::sin(freq_x*M_PIl*x)*std::cos(freq_y*M_PIl*y)/parameters.sim_domain_size[1]);
 #endif
 			}
 		}
@@ -400,9 +399,17 @@ public:
 		else
 		{
 			if (i_fixed_dt < 0)
+			{
 				o_dt = -i_fixed_dt;
+			}
 			else
-				o_dt = parameters.sim_CFL*std::min(parameters.sim_cell_size[0]/i_u.reduce_maxAbs(), parameters.sim_cell_size[1]/i_v.reduce_maxAbs());
+			{
+				if (parameters.sim_CFL < 0)
+					o_dt = -parameters.sim_CFL*std::min(parameters.sim_cell_size[0]/i_u.reduce_maxAbs(), parameters.sim_cell_size[1]/i_v.reduce_maxAbs());
+				else
+					o_dt = parameters.sim_CFL*std::min(parameters.sim_cell_size[0]/i_u.reduce_maxAbs(), parameters.sim_cell_size[1]/i_v.reduce_maxAbs());
+			}
+
 		}
 
 		o_u_t.setAll(0);
@@ -465,7 +472,7 @@ public:
 			double *o_aspect_ratio
 	)
 	{
-		int vis_id = parameters.vis_id % 4;
+		int vis_id = parameters.vis_id % 6;
 
 		switch (vis_id)
 		{
@@ -479,11 +486,21 @@ public:
 			break;
 
 		case 2:
-			tmp = get_advected_solution_diffx(parameters.status_simulation_time);
+			tmp = op.diff_c_x(get_advected_solution(parameters.status_simulation_time));
 			*o_dataArray = &tmp;
 			break;
 
 		case 3:
+			tmp = get_advected_solution_diffx(parameters.status_simulation_time);
+			*o_dataArray = &tmp;
+			break;
+
+		case 4:
+			tmp = op.diff_c_y(get_advected_solution(parameters.status_simulation_time));
+			*o_dataArray = &tmp;
+			break;
+
+		case 5:
 			tmp = get_advected_solution_diffy(parameters.status_simulation_time);
 			*o_dataArray = &tmp;
 			break;
@@ -491,6 +508,7 @@ public:
 
 		*o_aspect_ratio = parameters.sim_domain_size[1] / parameters.sim_domain_size[0];
 	}
+
 
 	const char* vis_get_status_string()
 	{
@@ -500,9 +518,14 @@ public:
 				parameters.status_simulation_time/(60.0*60.0*24.0),
 				parameters.status_timestep_nr,
 				parameters.status_simulation_timestep_size,
-				parameters.diagnostics_mass, parameters.diagnostics_energy, parameters.diagnostics_potential_entrophy);
+				parameters.diagnostics_mass,
+				parameters.diagnostics_energy,
+				parameters.diagnostics_potential_entrophy
+			);
+
 		return title_string;
 	}
+
 
 	void vis_pause()
 	{
@@ -524,6 +547,7 @@ public:
 		}
 	}
 
+
 	bool instability_detected()
 	{
 		return !(	prog_h.reduce_all_finite() &&
@@ -532,6 +556,16 @@ public:
 				);
 	}
 };
+
+
+double compute_current_error(
+		SimulationAdvection *simulationAdvection
+)
+{
+	DataArray<2> benchmark_h = simulationAdvection->get_advected_solution(parameters.status_simulation_time);
+
+	return (simulationAdvection->prog_h-benchmark_h).reduce_rms_quad();
+}
 
 
 
@@ -594,7 +628,6 @@ int main(
 		std::cout << "Total speed: " << total_speed << std::endl;
 	}
 
-
 #if SWEET_GUI
 	if (parameters.gui_enabled)
 	{
@@ -610,43 +643,37 @@ int main(
 	 */
 	// allocate data storage for computed errors
 
-	std::ostringstream output_string_conv_time;
-	std::ostringstream output_string_conv_space;
+	bool error_detected = false;
 
-	double *computed_errors = new double[1024*4];
-	double *conv_rate_space = new double[1024*4];
-	double *conv_rate_time = new double[1024*4];
-
-	std::size_t res_x = parameters.res[0];
-	std::size_t res_y = parameters.res[1];
-
-	std::size_t max_res = 128;
-
-	if (res_x > max_res || res_y > max_res)
-		max_res = std::max(res_x, res_y);
-
-	for (	int res_iterator_id = 0;
-			res_x <= max_res && res_y <= max_res;
-			res_x *= 2, res_y *= 2, res_iterator_id++
-	)
+	if (parameters.bogus_var4 == 0)
 	{
-		{
-			output_string_conv_time << std::endl;
-			output_string_conv_time << res_x << "x" << res_y << "\t";
+		std::ostringstream output_string_conv;
 
-			output_string_conv_space << std::endl;
-			output_string_conv_space << res_x << "x" << res_y << "\t";
-		}
+		double *computed_errors = new double[1024];
+		double *conv_rate = new double[1024];
 
-		for (int rk_order = 1; rk_order <= 4; rk_order++)
+		std::size_t res_x = parameters.res[0];
+		std::size_t res_y = parameters.res[1];
+
+		std::size_t max_res = 256;
+
+		if (res_x > max_res || res_y > max_res)
+			max_res = std::max(res_x, res_y);
+
+		for (	int res_iterator_id = 0;
+				res_x <= max_res && res_y <= max_res;
+				res_x *= 2, res_y *= 2, res_iterator_id++
+		)
 		{
-			std::cout << "*********************************************************************************************************" << std::endl;
-			std::cout << "Testing advection with resolution " << res_x << " x " << res_y << " and RK order " << rk_order << std::endl;
-			std::cout << "*********************************************************************************************************" << std::endl;
+			output_string_conv << std::endl;
+			output_string_conv << res_x << "x" << res_y << "\t";
+
+			std::cout << "*******************************************************************************" << std::endl;
+			std::cout << "Testing convergence with resolution " << res_x << " x " << res_y << " and RK order " << parameters.timestepping_runge_kutta_order << std::endl;
+			std::cout << "*******************************************************************************" << std::endl;
 
 			parameters.res[0] = res_x;
 			parameters.res[1] = res_y;
-			parameters.timestepping_runge_kutta_order = rk_order;
 			parameters.reset();
 
 			SimulationAdvection *simulationAdvection = new SimulationAdvection;
@@ -667,21 +694,26 @@ int main(
 					break;
 				}
 
-				if (turnaround_time < parameters.status_simulation_time)
+				bool print_output = false;
+				if (turnaround_time <= parameters.status_simulation_time)
+					print_output = true;
+
+				if (parameters.max_simulation_time != -1)
+					if (parameters.status_simulation_time >= parameters.max_simulation_time)
+						print_output = true;
+
+				if (print_output)
 				{
-					double &this_error = computed_errors[res_iterator_id*4+rk_order];
-					double &this_conv_rate_space = conv_rate_space[res_iterator_id*4+rk_order];
-					double &this_conv_rate_time = conv_rate_time[res_iterator_id*4+rk_order];
+					double &this_error = computed_errors[res_iterator_id];
+					double &this_conv_rate_space = conv_rate[res_iterator_id];
 
-					DataArray<2> benchmark_h = simulationAdvection->get_advected_solution(parameters.status_simulation_time);
+					double error = compute_current_error(simulationAdvection);
+					std::cout << "RMS error in height: " << error << std::endl;
 
-					double error_rms = (simulationAdvection->prog_h-benchmark_h).reduce_rms_quad();
-					std::cout << "RMS error in height: " << error_rms << std::endl;
+//					double error_max = (simulationAdvection->prog_h-benchmark_h).reduce_maxAbs();
+//					std::cout << "Max error in height: " << error_max << std::endl;
 
-					double error_max = (simulationAdvection->prog_h-benchmark_h).reduce_max();
-					std::cout << "Max error in height: " << error_max << std::endl;
-
-					this_error = error_rms;
+					this_error = error;
 
 					double eps = 0.1;
 					/*
@@ -689,45 +721,21 @@ int main(
 					 */
 					if (res_iterator_id > 0)
 					{
-						double &prev_error_space = computed_errors[(res_iterator_id-1)*4+rk_order];
+						double &prev_error_space = computed_errors[(res_iterator_id-1)];
 
-						double expected_conv_rate = 4.0*std::pow(2.0, (double)(rk_order-1));
+						double expected_conv_rate = std::pow(2.0, (double)(parameters.timestepping_runge_kutta_order));
 						double this_conv_rate_space = prev_error_space / this_error;
 
-						std::cout << "          RMS convergence rate (space): " << this_conv_rate_space << ", expected: " << expected_conv_rate << std::endl;
+						std::cout << "          Norm2 convergence rate (space): " << this_conv_rate_space << ", expected: " << expected_conv_rate << std::endl;
 
 						if (std::abs(this_conv_rate_space-expected_conv_rate) > eps*expected_conv_rate)
 						{
 							std::cerr << "Convergence rate threshold (" << eps*expected_conv_rate << ") exceeded" << std::endl;
-							exit(1);
+							error_detected = true;
 						}
 
-						output_string_conv_space << this_conv_rate_space << "\t";
+						output_string_conv << this_conv_rate_space << "\t";
 					}
-
-					/*
-					 * check higher-order convergence in time
-					 */
-					if (rk_order > 1)
-					{
-						double &prev_error_time = computed_errors[res_iterator_id*4+(rk_order-1)];
-						double expected_conv_rate = std::pow(2.0, (double)(rk_order-1));
-						double this_conv_rate_time = prev_error_time / this_error;
-
-						std::cout << "          RMS convergence rate (RK time): " << this_conv_rate_time << std::endl;//", expected: " << expected_conv_rate << std::endl;
-
-//						if (std::abs(this_conv_rate_time-expected_conv_rate) > eps*expected_conv_rate)
-						// check only for at least 2
-						if (this_conv_rate_time < 2.0)
-						{
-							std::cerr << "RK time stepping not converging" << std::endl;
-//							std::cerr << "Convergence rate threshold (" << eps*expected_conv_rate << ") exceeded" << std::endl;
-							exit(1);
-						}
-
-						output_string_conv_time << this_conv_rate_time << "\t";
-					}
-
 					break;
 				}
 			}	// while true
@@ -740,20 +748,140 @@ int main(
 			std::cout << "Time per time step: " << seconds/(double)parameters.status_timestep_nr << " sec/ts" << std::endl;
 
 			delete simulationAdvection;
-		}	// rk
-	}	// res
 
-	delete [] computed_errors;
-	delete [] conv_rate_space;
-	delete [] conv_rate_time;
+		}	// res
 
+		delete [] computed_errors;
+		delete [] conv_rate;
 
-	std::cout << std::endl;
-	std::cout << "Convergence rate in space (inc. resolution):";
-	std::cout << output_string_conv_space.str() << std::endl;
-	std::cout << std::endl;
-	std::cout << "Convergence rate in time (RKn):";
-	std::cout << output_string_conv_time.str() << std::endl;
+		std::cout << std::endl;
+		std::cout << "Convergence rate in space (inc. resolution):";
+		std::cout << output_string_conv.str() << std::endl;
+	}
+	else if (parameters.bogus_var4 == 1)
+	{
+		std::ostringstream output_string_conv;
+
+		double *computed_errors = new double[1024];
+		double *conv_rate = new double[1024];
+
+		std::size_t res_x = parameters.res[0];
+		std::size_t res_y = parameters.res[1];
+
+		double cfl_limitation = parameters.sim_CFL;
+
+		double end_cfl = 0.0025;
+		for (	int cfl_iterator_id = 0;
+				cfl_iterator_id < 7;
+//				cfl_limitation > end_cfl || cfl_limitation < -end_cfl;
+				cfl_limitation *= 0.5, cfl_iterator_id++
+		)
+		{
+			parameters.sim_CFL = cfl_limitation;
+
+			output_string_conv << std::endl;
+			output_string_conv << "CFL=" << parameters.sim_CFL << "\t";
+
+			std::cout << "*********************************************************************************************************" << std::endl;
+			std::cout << "Testing time convergence with CFL " << parameters.sim_CFL << " and RK order " << parameters.timestepping_runge_kutta_order << std::endl;
+			std::cout << "*********************************************************************************************************" << std::endl;
+
+			SimulationAdvection *simulationAdvection = new SimulationAdvection;
+
+			Stopwatch time;
+			time.reset();
+
+			while(true)
+			{
+				if (parameters.verbosity > 0)
+					std::cout << "time: " << parameters.status_simulation_time << std::endl;
+
+				simulationAdvection->run_timestep();
+
+				if (simulationAdvection->instability_detected())
+				{
+					std::cout << "INSTABILITY DETECTED" << std::endl;
+					break;
+				}
+
+				bool print_output = false;
+				if (turnaround_time <= parameters.status_simulation_time)
+					print_output = true;
+
+				if (parameters.max_simulation_time != -1)
+					if (parameters.status_simulation_time >= parameters.max_simulation_time)
+						print_output = true;
+
+				if (print_output)
+				{
+					double &this_error = computed_errors[cfl_iterator_id];
+					double &this_conv_rate_space = conv_rate[cfl_iterator_id];
+
+					double error_rms = compute_current_error(simulationAdvection);
+					std::cout << "Error in height: " << error_rms << std::endl;
+
+//					double error_max = (simulationAdvection->prog_h-benchmark_h).reduce_maxAbs();
+//					std::cout << "Max error in height: " << error_max << std::endl;
+
+					std::cout << "          dt = " << parameters.status_simulation_timestep_size << "    dx = " << parameters.sim_cell_size[0] << " x " << parameters.sim_cell_size[0] << std::endl;
+
+					this_error = error_rms;
+
+					double eps = 0.1;
+					/*
+					 * check convergence in time
+					 */
+					if (cfl_iterator_id > 0)
+					{
+						double &prev_error_space = computed_errors[(cfl_iterator_id-1)];
+
+						double expected_conv_rate = std::pow(2.0, (double)(parameters.timestepping_runge_kutta_order));
+						double this_conv_rate_space = prev_error_space / this_error;
+
+						std::cout << "          Norm2 convergence rate (time): " << this_conv_rate_space << ", expected: " << expected_conv_rate << std::endl;
+
+						if (std::abs(this_conv_rate_space-expected_conv_rate) > eps*expected_conv_rate)
+						{
+							std::cerr << "Convergence rate threshold (" << eps*expected_conv_rate << ") exceeded" << std::endl;
+							error_detected = true;
+						}
+
+						output_string_conv << "r=" << this_conv_rate_space << "\t";
+						output_string_conv << "dt=" << parameters.status_simulation_timestep_size << "\t";
+						output_string_conv << "dx=" << parameters.sim_cell_size[0] << "." << parameters.sim_cell_size[0];
+					}
+					break;
+				}
+			}	// while true
+
+			time.stop();
+
+			double seconds = time();
+
+			std::cout << "Simulation time: " << seconds << " seconds" << std::endl;
+			std::cout << "Time per time step: " << seconds/(double)parameters.status_timestep_nr << " sec/ts" << std::endl;
+
+			delete simulationAdvection;
+
+		}	// res
+
+		delete [] computed_errors;
+		delete [] conv_rate;
+
+		std::cout << std::endl;
+		std::cout << "Convergence rate in time (inc. resolution):";
+		std::cout << output_string_conv.str() << std::endl;
+	}
+	else
+	{
+		std::cout << "Use -e [0/1] to specify convergence test: 0 = spatial refinement, 1 = time refinement" << std::endl;
+	}
+
+	if (error_detected)
+	{
+		std::cerr << "There was an error in the convergence tests" << std::endl;
+		exit(1);
+	}
 
 	return 0;
 }
