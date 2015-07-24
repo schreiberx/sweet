@@ -69,7 +69,7 @@
 \begin_body
 
 \begin_layout Title
-Understanding the rational approximation of the exponential integrator
+Understanding the rational approximation of the exponential integrator (REXI)
 \end_layout
 
 \begin_layout Author
@@ -94,7 +94,7 @@ We use the advective formulation of the SWE with a full linearization with
  perturbation (see 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "key-1"
+key "Formulations of the shallow-water equations"
 
 \end_inset
 
@@ -211,7 +211,7 @@ However, this is typically quite expensive to compute and analytic solutions
  
 \begin_inset CommandInset citation
 LatexCommand cite
-key "key-4"
+key "Formulations of the shallow-water equations"
 
 \end_inset
 
@@ -230,7 +230,7 @@ Terry et.
  developed a rational approximation of the exponential integrator, see 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "High-order time-parallel approximation of evolution operators,"
+key "High-order time-parallel approximation of evolution operators"
 
 \end_inset
 
@@ -447,7 +447,7 @@ Note an important property (see Sec.
  3.3 in 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "High-order time-parallel approximation of evolution operators,"
+key "High-order time-parallel approximation of evolution operators"
 
 \end_inset
 
@@ -558,7 +558,7 @@ key "An invariant theory of the linearized shallow water equations with rotation
 Using the formulation in 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "High-order time-parallel approximation of evolution operators,"
+key "High-order time-parallel approximation of evolution operators"
 
 \end_inset
 
