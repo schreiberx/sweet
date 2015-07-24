@@ -1,0 +1,735 @@
+#LyX 2.1 created this file. For more info see http://www.lyx.org/
+\lyxformat 474
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_math auto
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Understanding the rational approximation of the exponential integrator
+\end_layout
+
+\begin_layout Author
+Martin Schreiber <M.Schreiber@exeter.ac.uk>
+\end_layout
+
+\begin_layout Standard
+This document serves as the basis for implementing the rational approximation
+ of the exponential integrator (REXI).
+ Here, we purely focus on the linear part of the shallow-water equations
+ (SWE) and show the different steps to approximate solving this linear part
+ with an exponential integrator.
+ This paper is mainly summarises previous work on REXI.
+\end_layout
+
+\begin_layout Section
+Problem formulation
+\end_layout
+
+\begin_layout Standard
+We use the advective formulation of the SWE with a full linearization with
+ perturbation (see 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-1"
+
+\end_inset
+
+) with 
+\begin_inset Formula $U:=(h,u,v)^{T}$
+\end_inset
+
+, yielding
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+L(U):=\left(\begin{array}{ccc}
+ & h_{0}\delta_{x} & h_{0}\delta_{y}\\
+g\delta_{x} &  & -f\\
+g\delta_{y} & f
+\end{array}\right)U
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Here, we neglect all non-linear terms, assume only small perturbations (hence
+ negligible ones) around the average surface height and negligible non-linear
+ terms.
+\end_layout
+
+\begin_layout Standard
+Then, the time evolution of the PDE with the subscript 
+\begin_inset Formula $t$
+\end_inset
+
+ denoting the derivative in time is given by
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+U_{t}:=L(U).
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We continue writing the linear operator in matrix-style 
+\begin_inset Formula $L$
+\end_inset
+
+ and applying 
+\begin_inset Formula $L$
+\end_inset
+
+ on 
+\begin_inset Formula $U$
+\end_inset
+
+ as 
+\begin_inset Formula $L.U$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+U_{t}:=L.U
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+It is further worth noting, that this system describes an oscillatory system,
+ hence the operator 
+\begin_inset Formula $L$
+\end_inset
+
+ has imaginary eigenvalues.
+\end_layout
+
+\begin_layout Section
+Exponential integrator
+\end_layout
+
+\begin_layout Standard
+Linear systems of equations are well known to be solvable with exponential
+ integrators for arbitrary time step sizes via
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+U(t):=e^{Lt}U(0).
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+However, this is typically quite expensive to compute and analytic solutions
+ only exist for some simplified system of equations, see e.g.
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-4"
+
+\end_inset
+
+ for f-plane shallow-water equations.
+ These exponential integrators can be approximated with rational functions
+ and this paper is on giving insight into this approximation.
+\end_layout
+
+\begin_layout Section
+Underlying idea of rational approximation
+\end_layout
+
+\begin_layout Standard
+Terry et.
+ al.
+ developed a rational approximation of the exponential integrator, see 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "High-order time-parallel approximation of evolution operators,"
+
+\end_inset
+
+.
+ First, we like to get more insight into it with a one-dimensional formulation
+ before applying REXI to a rational approximation of a linear operator.
+ Our main target is to find an approximation of an operator with an 
+\emph on
+exponential shape
+\emph default
+, such as 
+\begin_inset Formula $e^{ix}$
+\end_inset
+
+, which (in one-dimension) is given by a function 
+\begin_inset Formula $f(x)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Step A) Approximation of solution space
+\end_layout
+
+\begin_layout Standard
+First, we assume that we can use Gaussian curves as basis functions for
+ our approximation and they are somehow naturally related to this problem
+ (Gaussians are given by exponential functions).
+ So first, we find an approximation of one of our underlying Gaussian basis
+ function
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\psi_{s}(x):=(4\pi)^{-\frac{1}{2}}e^{-x^{2}/(4s^{2})}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In this formulation, 
+\begin_inset Formula $s$
+\end_inset
+
+ can be interpreted as the horizontal 
+\begin_inset Quotes eld
+\end_inset
+
+stretching
+\begin_inset Quotes erd
+\end_inset
+
+ of the basis function.
+ Note the similarities to the Gaussian distribution, but by dropping certain
+ parts of the vertical scaling as it is required for probability distributions.
+ We can now approximate our function 
+\begin_inset Formula $f(x)$
+\end_inset
+
+ with the Gaussian distributions:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+f(x)\approx\sum_{m=-M}^{M}b_{m}\psi_{s}(x+ms)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+with 
+\begin_inset Formula $M$
+\end_inset
+
+ controling the interval of approximation (~size of 
+\begin_inset Quotes eld
+\end_inset
+
+domain of interest
+\begin_inset Quotes erd
+\end_inset
+
+) and 
+\begin_inset Formula $s$
+\end_inset
+
+ the accuracy of integration (~resolution in 
+\begin_inset Quotes eld
+\end_inset
+
+domain of interest
+\begin_inset Quotes erd
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Subsection
+Step B) Approximation of basis function
+\end_layout
+
+\begin_layout Standard
+The second step is the approximation of the basis function 
+\begin_inset Formula $\psi_{s}(x)$
+\end_inset
+
+ itself via
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\psi_{s}(x)\approx2Re\left(\sum_{l=-L}^{L}\frac{a_{j}}{ix-(\mu+i\,l)}\right).
+\]
+
+\end_inset
+
+See the paper for these mathematical magic tricks....
+ The weights are derived via optimization in Fourier space.
+\end_layout
+
+\begin_layout Subsection
+Step C) Approximation of the approximation
+\end_layout
+
+\begin_layout Standard
+We then combine the approximation (B) of the approximation (A), yielding
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+f(x)\approx2Re\left(\sum_{n=-M-L}^{M+L}\frac{c_{n}}{ix-s(\mu+i\,n)}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+which gives us the REXI for a one-dimensional function with precomputed
+ values of 
+\begin_inset Formula $c_{n}$
+\end_inset
+
+ and 
+\begin_inset Formula $\mu$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Section
+REXI, our little dog
+\end_layout
+
+\begin_layout Standard
+In the following, we use 
+\begin_inset Formula $L:=\tau L'$
+\end_inset
+
+ and assume an a-priori fixed time step size, making a REXI approximation
+ more efficient.
+ Then, the REXI approximation is given by
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+exp(\tau L')\approx\sum_{k=-K}^{K}\beta_{k}(L-\alpha_{k})^{-1}\label{eq:rexi}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The coefficients 
+\begin_inset Formula $\alpha_{k}$
+\end_inset
+
+ (corresponding to 
+\begin_inset Formula $s(\mu+i\,n)$
+\end_inset
+
+ in step C for the one-dimensional formulation) can be precomputed based
+ on a one-dimensional approximation, see the paper, and can be interpreted
+ as shifts of the rational approximations.
+ The coefficients 
+\begin_inset Formula $\beta_{k}$
+\end_inset
+
+ (corresponding to 
+\begin_inset Formula $c_{n}$
+\end_inset
+
+ in step C) are describing the scaling of the basis function and depend
+ on the solution itself.
+\end_layout
+
+\begin_layout Standard
+Note an important property (see Sec.
+ 3.3 in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "High-order time-parallel approximation of evolution operators,"
+
+\end_inset
+
+).
+ There's an anti-symmetry in the 
+\begin_inset Formula $\alpha_{i}$
+\end_inset
+
+ coefficients, which avoids computing half of the inverses:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\overline{(L-\alpha)^{-1}u_{0}}=(L-\overline{\alpha})^{-1}u_{0}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Computing inverse of 
+\begin_inset Formula $(L-\alpha)^{-1}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We still have to compute the inverse of 
+\begin_inset Formula $(L-\alpha)$
+\end_inset
+
+ which can be very expensive if directly computing it.
+ Here, we consider a specialization on the shallow-water equations given
+ above with
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+L(U):=\left(\begin{array}{ccc}
+ & h_{0}\delta_{x} & h_{0}\delta_{y}\\
+g\delta_{x} &  & -f\\
+g\delta_{y} & f
+\end{array}\right)U
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+and 
+\begin_inset Formula 
+\[
+U_{t}:=L(U)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+For the REXI method, we now have to solve the systems of equations given
+ by
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+(L-\alpha).U=U_{0}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+with 
+\begin_inset Formula $U_{0}$
+\end_inset
+
+ the initial conditions.
+ According to 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "An invariant theory of the linearized shallow water equations with rotation and its application to a sphere and a plane"
+
+\end_inset
+
+, instead of solving this relatively large system of equations we can split
+ the problem into an elliptic one for the height which then allows to use
+ an explicit formulation for the velocities.
+ We use the abbreviation
+\begin_inset Formula $\vec{v}:=(u,v)$
+\end_inset
+
+ in the following paragraph.
+\end_layout
+
+\begin_layout Standard
+Using the formulation in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "High-order time-parallel approximation of evolution operators,"
+
+\end_inset
+
+, the height can be computed with the elliptic equation given by
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+(\nabla^{2}-(\alpha^{2}+f^{2}))h=\frac{\alpha^{2}+f^{2}}{\alpha}(h_{0}+\nabla\cdot(A.v_{0})\label{eq:elliptic_height}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+with
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+A:=\frac{1}{\alpha^{2}+f^{2}}\left(\begin{array}{cc}
+\alpha & -f\\
+f & \alpha
+\end{array}\right).
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Then, the velocities can be directly computed via
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\vec{v}=-A.v_{0}+A.\nabla h\label{eq:elliptic_velocity}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+giving us our final solution
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+U:=(h,v,u)^{T}.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Bringing everything together
+\end_layout
+
+\begin_layout Standard
+Using the spectral methods (e.g.
+ in SWEET), we can directly solve the height Eq.
+ 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:elliptic_height"
+
+\end_inset
+
+ and then solver for the velocity in Eq.
+ 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:elliptic_velocity"
+
+\end_inset
+
+.
+ Then, the problem is reduced to computing the REXI as given in Eq.
+ 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:rexi"
+
+\end_inset
+
+.
+ We like to note again, that the 
+\begin_inset Formula $\alpha_{i}$
+\end_inset
+
+ are independent of the system 
+\begin_inset Formula $L$
+\end_inset
+
+ to solve, and only the 
+\begin_inset Formula $\beta_{i}$
+\end_inset
+
+ depend on the system 
+\begin_inset Formula $L$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Section
+Acknowledgements
+\end_layout
+
+\begin_layout Standard
+Thanks to Pedro & Terry!
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "Formulations of the shallow-water equations"
+
+\end_inset
+
+Formulations of the shallow-water equations, M.
+ Schreiber
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "High-order time-parallel approximation of evolution operators"
+
+\end_inset
+
+High-order time-parallel approximation of evolution operators, T.
+ Haut et.
+ al.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "An asymptotic parallel-in-time method for highly oscillatory PDEs"
+
+\end_inset
+
+An asymptotic parallel-in-time method for highly oscillatory PDEs, T.
+ Haut et.
+ al.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "An invariant theory of the linearized shallow water equations with rotation and its application to a sphere and a plane"
+
+\end_inset
+
+An invariant theory of the linearized shallow water equations with rotation
+ and its application to a sphere and a plane, N.
+ Paldor et.
+ al.
+\end_layout
+
+\end_body
+\end_document
