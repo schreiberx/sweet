@@ -643,11 +643,11 @@ f & \alpha
 
 \end_inset
 
-Here, 
-\begin_inset Formula $\gamma$
+Here, the 
+\begin_inset Formula $\alpha$
 \end_inset
 
- denotes the only term with an imaginary number.
+ denote the only terms with imaginary numbers.
  On the right hand side, we see an update-like scheme 
 \begin_inset Formula $h(0)$
 \end_inset
