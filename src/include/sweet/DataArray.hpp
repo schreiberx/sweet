@@ -347,8 +347,6 @@ public:
 #endif
 		temporary_data(false)
 	{
-//		std::cout << "Move constructor called" << std::endl;
-
 		for (int i = 0; i < D; i++)
 		{
 			resolution[i] = i_dataArray.resolution[i];
@@ -606,133 +604,6 @@ public:
 		array_data_cartesian_space_valid = false;
 		array_data_spectral_space_valid = true;
 	}
-
-
-#if 0
-	/**
-	 * Set the spectrum of a frequency.
-	 *
-	 * This is different to the default spec_set function, since
-	 * it directly sets up the y-mirrored frequencies as well.
-	 *
-	 * Note, that the x-frequencies are already mirrored.
-	 */
-	inline
-	void spec_spectrum_set_with_conjugate(
-			std::size_t j,		///< j in [0, res[1]/2-1]
-			std::size_t i,		///< i in [0, res[0]/2-1]
-			double i_value_re,
-			double i_value_im
-	)
-	{
-		assert(i >= range_spec_start[0] && i < range_spec_end[0]);
-		assert(j >= range_spec_start[1] && j < range_spec_end[1]);
-
-		/*
-		 * Note the padding in the x-direction:
-		 *
-		 * res_spec_x = 2 * (nx/2 + 1)
-		 *
-		 * SWEET (so far) only supports even resolution.
-		 * Hence we have a padding of 1 complex value in the end.
-		 *
-		 * The frequencies in the x direction are then arranged in the following way:
-		 *     [0, 1, 2, 3, ..., N/2-1, "padding=0"]
-		 *
-		 * Note, that setting a frequency here also sets the frequency on the "virtually mirrored" side.
-		 *
-		 * For the y-axis, the frequencies are given as follows (vector is transposed):
-		 *
-		 *     [0, 1, 2, 3, ..., N/2-1, N/2, N/2-1..., 3, 2, 1]
-		 *
-		 * Setting the frequency for N/2 to zero is a kind of obvious
-		 */
-		assert(i >= 0 && i < resolution[0]/2);
-		assert(j >= 0 && j < resolution[1]/2);
-
-		{	// lower part of y
-			std::size_t idx =	(j-range_spec_start[1])*range_spec_size[0]+
-								(i-range_spec_start[0]);
-
-			array_data_spectral_space[idx*2+0] = i_value_re;
-			array_data_spectral_space[idx*2+1] = i_value_im;
-		}
-
-		if (j != 0)
-		{	// upper part of y
-			std::size_t idx =	((resolution[1]-j)-range_spec_start[1])*range_spec_size[0]+
-								(i-range_spec_start[0]);
-
-			array_data_spectral_space[idx*2+0] = i_value_re;
-			// IMPORTANT! the imaginary component is mirrored!!!
-			array_data_spectral_space[idx*2+1] = -i_value_im;
-		}
-
-		array_data_cartesian_space_valid = false;
-		array_data_spectral_space_valid = true;
-	}
-
-
-
-	/**
-	 * Set the spectrum of a frequency.
-	 *
-	 * This is different to the default spec_set function, since
-	 * it directly sets up the y-mirrored frequencies as well.
-	 *
-	 * Note, that the x-frequencies are already mirrored.
-	 */
-	inline
-	void spec_set_with_mirrored(
-			std::size_t j,		///< j in [0, res[1]/2-1]
-			std::size_t i,		///< i in [0, res[0]/2-1]
-			double i_value_re,
-			double i_value_im
-	)
-	{
-		assert(i >= range_spec_start[0] && i < range_spec_end[0]);
-		assert(j >= range_spec_start[1] && j < range_spec_end[1]);
-
-		/*
-		 * Note the padding in the x-direction:
-		 *
-		 * res_spec_x = 2 * (nx/2 + 1)
-		 *
-		 * SWEET (so far) only supports even resolution.
-		 * Hence we have a padding of 1 complex value in the end.
-		 *
-		 * The frequencies in the x direction are then arranged in the following way:
-		 *     [0, 1, 2, 3, ..., N/2-1, "padding=0"]
-		 *
-		 * Note, that setting a frequency here also sets the frequency on the "virtually mirrored" side.
-		 *
-		 * For the y-axis, the frequencies are given as follows (vector is transposed):
-		 *
-		 *     [0, 1, 2, 3, ..., N/2-1, N/2, N/2-1..., 3, 2, 1]
-		 */
-		assert(i >= 0 && i < resolution[0]/2);
-		assert(j >= 0 && j < resolution[1]/2);
-
-		{	// lower part of y
-			std::size_t idx =	(j-range_spec_start[1])*range_spec_size[0]+
-								(i-range_spec_start[0]);
-
-			array_data_spectral_space[idx*2+0] = i_value_re;
-			array_data_spectral_space[idx*2+1] = i_value_im;
-		}
-
-		{	// upper part of y
-			std::size_t idx =	((resolution[1]-1-j)-range_spec_start[1])*range_spec_size[0]+
-								(i-range_spec_start[0]);
-
-			array_data_spectral_space[idx*2+0] = i_value_re;
-			array_data_spectral_space[idx*2+1] = i_value_im;
-		}
-
-		array_data_cartesian_space_valid = false;
-		array_data_spectral_space_valid = true;
-	}
-#endif
 
 
 
@@ -1537,7 +1408,6 @@ public:
 
 #if SWEET_USE_SPECTRAL_SPACE
 
-
 	/**
 	 * return the maximum of all absolute values
 	 */
@@ -1559,7 +1429,9 @@ public:
 
 
 	/**
-	 * return centroid of frequency
+	 * return centroid of frequency:
+	 *
+	 * Note, that the centroid is given in logarithmic space
 	 */
 	double reduce_spec_getPolvaniCentroid()	const
 	{
@@ -1592,6 +1464,7 @@ public:
 		return nom/denom;
 	}
 #endif
+
 
 public:
 	template <int S>
@@ -1792,9 +1665,7 @@ public:
 		{
 			array_data_cartesian_space_valid = false;
 		}
-#endif
 
-#if SWEET_USE_SPECTRAL_SPACE
 		array_data_spectral_length = i_dataArray.array_data_spectral_length;
 
 		if (i_dataArray.array_data_spectral_space_valid)
@@ -1938,7 +1809,7 @@ public:
 
 			double den = (br*br+bi*bi);
 
-			if (den == i_tolerance)
+			if (std::abs(den) <= i_tolerance)
 			{
 				// For Laplace solution, this is the integration constant C
 				out.array_data_spectral_space[i] = ar*i_denom_zeros_scalar;
@@ -1946,9 +1817,8 @@ public:
 			}
 			else
 			{
-				double fac = 1.0/den;
-				out.array_data_spectral_space[i] = (ar*br + ai*bi)*fac;
-				out.array_data_spectral_space[i+1] = (ai*br - ar*bi)*fac;
+				out.array_data_spectral_space[i] = (ar*br + ai*bi)/den;
+				out.array_data_spectral_space[i+1] = (ai*br - ar*bi)/den;
 			}
 		}
 

@@ -1,7 +1,7 @@
 Import('env')
 
 if env['compile_program'] != '':
-	env.src_files.append(env.Object('examples/'+env['compile_program']+'.cpp'))
+	env.src_files.append(env.Object('programs/'+env['compile_program']+'.cpp'))
 
 elif env['unit_test'] != '':
 	env.src_files.append(env.Object('unit_tests/'+env['unit_test']+'.cpp'))
