@@ -25,7 +25,7 @@ env = Environment()
 env.Append(ENV=os.environ)
 
 
-files = os.listdir('src/examples/')
+files = os.listdir('src/programs/')
 files = sorted(files)
 example_programs = []
 for f in files:
