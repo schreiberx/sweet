@@ -24,6 +24,7 @@ class GaussianApproximation
 public:
 	complex mu;
 	std::vector<complex> a;
+	int L;
 
 	GaussianApproximation()
 	{
@@ -33,7 +34,8 @@ public:
 		 */
 		mu = {	-4.315321510875024, 0};
 
-		a.resize(23);
+		L = 11;
+		a.resize(L*2+1);
 		a = {
 				{	-1.0845749544592896e-7,		2.77075431662228e-8		},
 				{	1.858753344202957e-8,		-9.105375434750162e-7	},
@@ -75,15 +77,17 @@ public:
 
 
 	/**
-	 * evaluate approximation of basis function with sum of complex rational functions
+	 * evaluate approximation of Gaussian basis function
+	 *
+	 * 	  exp(-(x*x)/(4*h*h))/sqrt(4.0*M_PIl)
+	 *
+	 * with sum of complex rational functions
 	 */
 	double approxGaussian(
 			double x,
 			double h
 	)
 	{
-		const int L = 11;
-
 		// scale x, since it depends linearly on h:
 		// x^2 ~ h^2
 		x /= h;
@@ -101,6 +105,34 @@ public:
 		return sum;
 	}
 
+#if 0
+	/**
+	 * Compute the approximation to the Gaussian and return the complex value
+	 *
+	 * TODO: Does this make any sense?
+	 */
+	complex approxGaussian_returnComplex(
+			double x,
+			double h
+	)
+	{
+		// scale x, since it depends linearly on h:
+		// x^2 ~ h^2
+		x /= h;
+
+		complex sum = 0;
+
+		for (int l = 0; l < 2*L+1; l++)
+		{
+			int j = l-L;
+
+			// WORKS with max error 7.15344e-13
+			sum += a[l]/(complex(0, x) + mu + complex(0, j));
+		}
+
+		return sum;
+	}
+#endif
 
 	void print()
 	{

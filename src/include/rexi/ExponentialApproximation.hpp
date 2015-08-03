@@ -52,7 +52,7 @@ public:
 
 		b.resize(i_M*2+1);
 
-		for (int m = -i_M; m < i_M; m++)
+		for (int m = -i_M; m < i_M+1; m++)
 		{
 			/*
 			 * See Section 3.1 for approx. of general function
@@ -98,13 +98,20 @@ public:
 			 *
 			 * Let's hope, that these equations are right.
 			 */
-
-			b[m+M] = std::exp(i_h*i_h)*std::exp(-complex(0, 1)*((double)m*(double)h));
+			b[m+M] = std::exp(h*h)*std::exp(-complex(0, 1)*((double)m*h));
 		}
 	}
 
 
-	complex evalExponential(
+	void print()
+	{
+		for (std::size_t i = 0; i < b.size(); i++)
+		{
+			std::cout << "b[" << i << "]: " << b[i] << std::endl;
+		}
+	}
+
+	complex eval_e_ix(
 			double i_x
 	)
 	{
@@ -112,7 +119,7 @@ public:
 	}
 
 
-	complex approxExponentialEvalGaussian(
+	complex approx_e_ix(
 			double i_x
 	)
 	{
@@ -120,24 +127,25 @@ public:
 
 		// \sum_{m=-M}^{M}{b_m \psi_h(x+m*h)}
 
-		for (int m = -M; m < M; m++)
+		for (int m = -M; m < M+1; m++)
 		{
-			sum += b[m+M] * ga.evalGaussian(i_x+((double)m)*h, h);
+			sum += b[m+M] * ga.approxGaussian(i_x+((double)m)*h, h);
 		}
 		return sum;
 	}
 
-	complex approxExponentialApproxGaussian(
+
+	double approx_e_ix_returnReal(
 			double i_x
 	)
 	{
-		complex sum = 0;
+		double sum = 0;
 
 		// \sum_{m=-M}^{M}{b_m \psi_h(x+m*h)}
 
-		for (int m = -M; m < M; m++)
+		for (int m = -M; m < M+1; m++)
 		{
-			sum += b[m+M] * ga.approxGaussian(i_x+((double)m)*h, h);
+			sum += b[m+M].real() * ga.approxGaussian(i_x+((double)m)*h, h);
 		}
 		return sum;
 	}
