@@ -29,8 +29,12 @@ class RexiSWE
 	std::vector<complex> alpha_table;
 	std::vector<complex> beta_table;
 
+	std::vector<complex> filter_alpha_table;
+	std::vector<complex> filter_beta_table;
+
 	double tau;
 	int M;
+	int M_filter;
 	double f;
 
 
@@ -42,7 +46,7 @@ class RexiSWE
 	{
 		std::ifstream infile(i_filename);
 
-		for (int i = 0; i < i_data.size(); i++)
+		for (std::size_t i = 0; i < i_data.size(); i++)
 		{
 			if (!infile)
 			{
@@ -53,7 +57,7 @@ class RexiSWE
 			double a;
 			infile >> a;
 
-			a /= 2.0*M_PIl;
+//			a /= 2.0*M_PIl;
 
 			if (i_load_real_values)
 				i_data[i].real(a);
@@ -69,6 +73,7 @@ public:
 	void setup(
 			double i_tau,	///< time step size
 			int i_M,		///< number of sampling points
+			int i_filter_M,	///< number of points for filtering
 			double i_f		///< Coriolis force
 	)
 	{
@@ -79,22 +84,22 @@ public:
 
 		std::ostringstream filename;
 
-		filename << "data/rexi/alpha_" << M << "_re.txt";
+		filename << "data/rexi/rexi_" << M << "_poles_re.txt";
 		loadData(alpha_table, true, filename.str().c_str());
 		filename .str("");
 		filename .clear();
 
-		filename << "data/rexi/alpha_" << M << "_im.txt";
+		filename << "data/rexi/rexi_" << M << "_poles_im.txt";
 		loadData(alpha_table, false, filename.str().c_str());
 		filename .str("");
 		filename .clear();
 
-		filename << "data/rexi/beta_" << M << "_re.txt";
+		filename << "data/rexi/rexi_" << M << "_coef_re.txt";
 		loadData(beta_table, true, filename.str().c_str());
 		filename .str("");
 		filename .clear();
 
-		filename << "data/rexi/beta_" << M << "_im.txt";
+		filename << "data/rexi/rexi_" << M << "_coef_im.txt";
 		loadData(beta_table, false, filename.str().c_str());
 		filename .str("");
 		filename .clear();
@@ -112,6 +117,8 @@ public:
 	 * See also
 	 * 	apply_rational_func_expL_wave_prop
 	 * in Terrys code
+	 *
+	 * See also doc/rexi/understanding_rexi.pdf
 	 */
 	void run_timestep(
 		DataArray<2> &io_h,
@@ -119,10 +126,10 @@ public:
 		DataArray<2> &io_v,
 
 		Operators2D &op,
-		const SimulationParameters &parameters
+		const SimulationParameters &i_parameters
 	)
 	{
-		if (parameters.sim_g != 1.0 || parameters.setup_h0 != 1.0)
+		if (i_parameters.sim_g != 1.0 || i_parameters.setup_h0 != 1.0)
 		{
 			std::cerr << "Only non-dimensional formulation supported yet, use g=1 and h0=1" << std::endl;
 			exit(1);
@@ -150,131 +157,68 @@ public:
 
 		for (int m = 0; m < M; m++)
 		{
+			/*
+			 * (D^2 + K) h = k/a h(0) - H f/a D x v(0) + H D.v(0)
+			 */
 			// load alpha and scale by inverse of tau
 			complex alpha = alpha_table[m]/tau;
+			complex kappa = alpha*alpha + f*f;
 
-			/*
-			 * Note, that alpha and beta are complex valued!
-			 *
-			 * B = alpha^2 + f^2
-			 *
-			 *         ( alpha    -f  )
-			 * A = 1/B (              )
-			 *         (   f    alpha )
-			 *
-			 * D: (diff_x, diff_y) operator
-			 *
-			 * (D^2 - B) h = B/alpha ( h0 + D.(A.v0) )
-			 */
-			complex B = alpha*alpha + f*f;
-			complex inv_B = 1.0/B;
+			// TERM 1: k/a h(0)
+			complex k_a = kappa/alpha;
 
-			// complex derivative:
-			// f = a+ib
-			// df/dx = da/dx + i db/dx
+			DataArray<2> rhs_re = k_a.real() * io_h;
+			DataArray<2> rhs_im = k_a.imag() * io_h;
 
-			// from now on, we handle the complex and real valued parts separated.
+			// TERM 2: H f/a D x v(0)
+			complex H_f_a = i_parameters.setup_h0*i_parameters.sim_f/alpha;
+			DataArray<2> Dxv = op.diff_c_x(io_v) - op.diff_c_y(io_u);
+			rhs_re -= H_f_a.real()*Dxv;
+			rhs_im -= H_f_a.imag()*Dxv;
 
-			complex f_B = f/B;
-			complex alpha_B = alpha/B;
+			// TERM 3: H D.v(0)
+			DataArray<2> Dv = op.diff_c_x(io_u) + op.diff_c_y(io_v);
+			rhs_re += i_parameters.setup_h0*Dv;
 
-			// assemble first element of A.v0
-			DataArray<2> A_v0_l1_re = alpha_B.real()*io_v - f_B.real()*io_u;
-			DataArray<2> A_v0_l1_im = alpha_B.imag()*io_v - f_B.imag()*io_u;
+			// Now we have the RHS assembled.
+			// It's stored in Cartesian space and is split into imaginary and real components.
+			// In order to be able to compute the inverse of (D^2-k), we first have to compute
+			// the FFT on these complex numbers.
 
-			// assemble second element of A.v0
-			DataArray<2> A_v0_l2_re = f_B.real()*io_v + alpha_B.real()*io_u;
-			DataArray<2> A_v0_l2_im = f_B.imag()*io_v + alpha_B.imag()*io_u;
+			Complex2DArrayFFT rhs_complex(rhs_re.resolution);
+			rhs_complex.loadRealAndImagFromDataArrays(rhs_re, rhs_im);
 
-			// compute
-			// foo = h0 + D.(A.v0)
-			DataArray<2> foo_re = parameters.setup_h0 + op.diff_c_x(A_v0_l1_re) + op.diff_c_y(A_v0_l2_re);
-			DataArray<2> foo_im = op.diff_c_x(A_v0_l1_im) + op.diff_c_y(A_v0_l2_im);
+			// assemble LHS (D^2-k)
+			// lhs/h := (D^2 - B)*h
+			Complex2DArrayFFT lhs_complex(rhs_re.resolution);
+			lhs_complex.loadRealFromDataArray(op.diff2_c_x + op.diff2_c_y - kappa.real());
+			lhs_complex.setAllIm(-kappa.imag());
 
-			// bar = B/alpha
-			complex bar = B/alpha;
+			// compute h:=RHS/LHS
+			Complex2DArrayFFT h = rhs_complex.spec_div_element_wise(lhs_complex);
 
-			// compute rhs := foo*bar with complex numbers
-			DataArray<2> rhs_re = foo_re*bar.real() - foo_im*bar.imag();
-			DataArray<2> rhs_im = foo_re*bar.imag() + foo_im*bar.real();
+			DataArray<2> h_re = h.getRealWithDataArray();
+			DataArray<2> h_im = h.getImagWithDataArray();
 
-			// compute
-			// lhs/h := D^2 - B
-			// split into real and imaginary parts
-			DataArray<2> lhs_re = op.diff2_c_x + op.diff2_c_y - B.real();
-			DataArray<2> lhs_im = op.diff2_c_x + op.diff2_c_y - B.imag();
+			DataArray<2> u0_dx_h_re = (io_u - op.diff_c_x(h_re));
+			DataArray<2> u0_dx_h_im = op.diff_c_x(h_im);
 
-			// now compute h = foobar / B
-			DataArray<2> h_re(io_h.resolution);
-			DataArray<2> h_im(io_h.resolution);
+			DataArray<2> v0_dy_h_re = (io_v - op.diff_c_y(h_re));
+			DataArray<2> v0_dy_h_im = op.diff_c_y(h_im);
 
-			{
-				rhs_re.requestDataInCartesianSpace();
-				rhs_im.requestDataInCartesianSpace();
-				lhs_re.requestDataInCartesianSpace();
-				lhs_im.requestDataInCartesianSpace();
+			Complex2DArrayFFT u0_dx_h(io_u.resolution);
+			Complex2DArrayFFT v0_dy_h(io_u.resolution);
 
-				for (int j = 0; j < io_h.resolution[1]; j++)
-				{
-					for (int i = 0; i < io_h.resolution[0]; i++)
-					{
-						double ar = rhs_re.get(j, i);
-						double ai = rhs_im.get(j, i);
-						double br = lhs_re.get(j, i);
-						double bi = lhs_im.get(j, i);
+			u0_dx_h.loadRealAndImagFromDataArrays(u0_dx_h_re, u0_dx_h_im);
+			v0_dy_h.loadRealAndImagFromDataArrays(v0_dy_h_re, v0_dy_h_im);
 
-						double den = (br*br+bi*bi);
+			Complex2DArrayFFT u = -alpha/kappa*u0_dx_h + i_parameters.sim_f/kappa*v0_dy_h;
+			Complex2DArrayFFT v = -i_parameters.sim_f/kappa*u0_dx_h + -alpha/kappa*v0_dy_h;
 
-						if (den == 0)
-						{
-							// For Laplace operator, this is the integration constant C
-							h_re.set(j, i, 0);
-							h_im.set(j, i, 0);
-						}
-						else
-						{
-							h_re.set(j, i, (ar*br + ai*bi)/den);
-							h_im.set(j, i, (ai*br - ar*bi)/den);
-						}
-					}
-				}
-			}
-
-
-			// A.D h
-			DataArray<2> Dx_h_re = op.diff_c_x(h_re);
-			DataArray<2> Dy_h_re = op.diff_c_y(h_re);
-			DataArray<2> Dx_h_im = op.diff_c_x(h_im);
-			DataArray<2> Dy_h_im = op.diff_c_y(h_im);
-
-			/*
-			 *         ( alpha   -f   )
-			 * A = 1/B |              |
-			 *         (   f    alpha )
-			 *
-			 * v = −A.v0 + A.D h
-			 */
-			DataArray<2> u_re =
-							- A_v0_l1_re
-							+ alpha_B.real()*Dx_h_re - alpha_B.imag()*Dx_h_im
-							- (f_B.real()*Dy_h_re - f_B.imag()*Dy_h_im)
-						;
-			DataArray<2> u_im =
-							- A_v0_l1_im
-							+ alpha_B.real()*Dx_h_im + alpha_B.real()*Dx_h_im
-							- (f_B.real()*Dy_h_im + f_B.real()*Dy_h_im)
-						;
-
-			DataArray<2> v_re =
-							- A_v0_l2_re
-							+ f_B.real()*Dx_h_re - f_B.imag()*Dx_h_im
-							- (alpha_B.real()*Dy_h_re - alpha_B.imag()*Dy_h_im)
-						;
-			DataArray<2> v_im =
-							- A_v0_l2_im
-							+ f_B.real()*Dx_h_im + f_B.real()*Dx_h_im
-							- (alpha_B.real()*Dy_h_im + alpha_B.real()*Dy_h_im)
-						;
+			DataArray<2> u_re = u.getRealWithDataArray();
+			DataArray<2> u_im = u.getImagWithDataArray();
+			DataArray<2> v_re = v.getRealWithDataArray();
+			DataArray<2> v_im = v.getImagWithDataArray();
 
 			o_h += h_re*beta_table[m].real() - h_im*beta_table[m].imag();
 			o_u += u_re*beta_table[m].real() - u_im*beta_table[m].imag();
@@ -307,6 +251,7 @@ public:
 		std::cout << "o_v_im : " << o_v_im.reduce_norm1_quad() << std::endl;
 #endif
 	}
+
 
 	~RexiSWE()
 	{

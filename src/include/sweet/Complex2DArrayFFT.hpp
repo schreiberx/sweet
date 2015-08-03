@@ -13,6 +13,7 @@
 
 #include <sweet/DataArray.hpp>
 #include <cstddef>
+#include <complex>
 
 
 /**
@@ -72,7 +73,7 @@ public:
 
 public:
 	Complex2DArrayFFT(
-			std::size_t i_res[2]
+			const std::size_t i_res[2]
 	)	:
 		plan_to_cart(nullptr),
 		plan_to_spec(nullptr)
@@ -161,6 +162,17 @@ public:
 		data[(y*resolution[0]+x)*2+1] = im;
 	}
 
+
+	void setRe(int y, int x, double re)
+	{
+		data[(y*resolution[0]+x)*2+0] = re;
+	}
+
+	void setIm(int y, int x, double im)
+	{
+		data[(y*resolution[0]+x)*2+1] = im;
+	}
+
 	double getRe(int y, int x)	const
 	{
 		return data[(y*resolution[0]+x)*2+0];
@@ -176,6 +188,20 @@ public:
 		for (std::size_t y = 0; y < resolution[1]; y++)
 			for (std::size_t x = 0; x < resolution[0]; x++)
 				set(y, x, re, im);
+	}
+
+	void setAllRe(double re)
+	{
+		for (std::size_t y = 0; y < resolution[1]; y++)
+			for (std::size_t x = 0; x < resolution[0]; x++)
+				setRe(y, x, re);
+	}
+
+	void setAllIm(double im)
+	{
+		for (std::size_t y = 0; y < resolution[1]; y++)
+			for (std::size_t x = 0; x < resolution[0]; x++)
+				setIm(y, x, im);
 	}
 
 
@@ -283,7 +309,41 @@ public:
 	}
 
 
-	DataArray<2> storeRealToDataArray()
+
+	Complex2DArrayFFT spec_div_element_wise(
+			Complex2DArrayFFT &i_d
+	)
+	{
+		Complex2DArrayFFT out(resolution);
+
+		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		{
+			double ar = data[i];
+			double ai = data[i+1];
+			double br = i_d.data[i];
+			double bi = i_d.data[i+1];
+
+			double den = (br*br+bi*bi);
+
+			if (std::abs(den) == 0)
+			{
+				// For Laplace solution, this is the integration constant C
+				out.data[i] = 0;
+				out.data[i+1] = 0;
+			}
+			else
+			{
+				out.data[i] = (ar*br + ai*bi)/den;
+				out.data[i+1] = (ai*br - ar*bi)/den;
+			}
+		}
+
+		return out;
+	}
+
+
+
+	DataArray<2> getRealWithDataArray()
 	{
 		DataArray<2> out(resolution);
 
@@ -294,18 +354,110 @@ public:
 		return out;
 	}
 
-	Complex2DArrayFFT &loadCartFromRealDataArray(
-			DataArray<2> &i_dataArray
-	)
+
+
+	DataArray<2> getImagWithDataArray()
 	{
+		DataArray<2> out(resolution);
+
 		for (std::size_t j = 0; j < resolution[1]; j++)
 			for (std::size_t i = 0; i < resolution[0]; i++)
-				set(j, i, i_dataArray.get(j, i), 0);
+				out.set(j, i, getIm(j, i));
+
+		return out;
+	}
+
+	Complex2DArrayFFT &loadRealFromDataArray(
+			const DataArray<2> &i_dataArray_Real
+	)
+	{
+		i_dataArray_Real.requestDataInCartesianSpace();
+
+		for (std::size_t j = 0; j < resolution[1]; j++)
+			for (std::size_t i = 0; i < resolution[0]; i++)
+				set(j, i, i_dataArray_Real.get(j, i), 0);
 
 		return *this;
 	}
+
+
+	Complex2DArrayFFT &loadRealAndImagFromDataArrays(
+			const DataArray<2> &i_dataArray_Real,
+			const DataArray<2> &i_dataArray_Imag
+	)
+	{
+		i_dataArray_Real.requestDataInCartesianSpace();
+		i_dataArray_Imag.requestDataInCartesianSpace();
+
+		for (std::size_t j = 0; j < resolution[1]; j++)
+			for (std::size_t i = 0; i < resolution[0]; i++)
+				set(	j, i,
+						i_dataArray_Real.get(j, i),
+						i_dataArray_Imag.get(j, i)
+				);
+
+		return *this;
+	}
+
+
+
+	/**
+	 * Compute multiplication with a complex scalar
+	 */
+	inline
+	Complex2DArrayFFT operator*(
+			const std::complex<double> &i_value
+	)	const
+	{
+		Complex2DArrayFFT out(resolution);
+
+		double br = i_value.real();
+		double bi = i_value.imag();
+
+		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		{
+			double ar = data[i];
+			double ai = data[i+1];
+
+			out.data[i] = ar*br - ai*bi;
+			out.data[i+1] = ar*bi + ai*br;
+		}
+		return out;
+	}
+
+
+
+	/**
+	 * Compute element-wise addition
+	 */
+	inline
+	Complex2DArrayFFT operator+(
+			const Complex2DArrayFFT &i_array_data
+	)	const
+	{
+		Complex2DArrayFFT out(this->resolution);
+
+		#pragma omp parallel for OPENMP_SIMD
+		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i++)
+		{
+			out.data[i] = data[i] + i_array_data.data[i];
+			out.data[i+1] = data[i+1] + i_array_data.data[i+1];
+		}
+
+		return out;
+	}
+
 };
 
 
+inline
+static
+Complex2DArrayFFT operator*(
+		const std::complex<double> &i_value,
+		const Complex2DArrayFFT &i_array_data
+)
+{
+	return ((Complex2DArrayFFT&)i_array_data)*i_value;
+}
 
 #endif /* SRC_INCLUDE_SWEET_COMPLEX2DARRAYFFT_HPP_ */

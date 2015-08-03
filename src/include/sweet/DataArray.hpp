@@ -495,7 +495,7 @@ public:
 	double get(
 			std::size_t j,
 			std::size_t i
-	)
+	)	const
 	{
 		requestDataInCartesianSpace();
 
@@ -1054,7 +1054,7 @@ public:
 		if (array_data_spectral_space_valid)
 			return;		// nothing to do
 
-		if (array_data_cartesian_space_valid == false)
+		if (!array_data_cartesian_space_valid)
 		{
 			std::cerr << "Spectral data not available! Is this maybe a non-initialized operator?" << std::endl;
 			assert(false);
@@ -2096,8 +2096,8 @@ public:
 		double scale = resolution[0]*resolution[1];
 		array_data_spectral_space[0] += i_value*scale;
 
-		array_data_cartesian_space_valid = false;
 		array_data_spectral_space_valid = true;
+		array_data_cartesian_space_valid = false;
 
 #else
 
@@ -2129,9 +2129,8 @@ public:
 		for (std::size_t i = 0; i < array_data_spectral_length; i++)
 			array_data_spectral_space[i] *= i_value;
 
-
-		array_data_cartesian_space_valid = false;
 		array_data_spectral_space_valid = true;
+		array_data_cartesian_space_valid = false;
 
 #else
 
@@ -2163,8 +2162,8 @@ public:
 			array_data_spectral_space[i] /= i_value;
 
 
-		array_data_cartesian_space_valid = false;
 		array_data_spectral_space_valid = true;
+		array_data_cartesian_space_valid = false;
 
 #else
 
@@ -2437,15 +2436,29 @@ public:
 		out.temporary_data = true;
 
 #if SWEET_USE_SPECTRAL_SPACE
-		requestDataInSpectralSpace();
 
-		#pragma omp parallel for OPENMP_SIMD
-		for (std::size_t i = 0; i < array_data_spectral_length; i++)
-			out.array_data_spectral_space[i] =
-					array_data_spectral_space[i]*i_value;
+		if (array_data_spectral_space_valid)
+		{
+			#pragma omp parallel for OPENMP_SIMD
+			for (std::size_t i = 0; i < array_data_spectral_length; i++)
+				out.array_data_spectral_space[i] =
+						array_data_spectral_space[i]*i_value;
 
-		out.array_data_cartesian_space_valid = false;
-		out.array_data_spectral_space_valid = true;
+			out.array_data_cartesian_space_valid = false;
+			out.array_data_spectral_space_valid = true;
+		}
+		else
+		{
+			assert(array_data_cartesian_space_valid);
+
+			#pragma omp parallel for OPENMP_SIMD
+			for (std::size_t i = 0; i < array_data_cartesian_length; i++)
+				out.array_data_cartesian_space[i] =
+						array_data_cartesian_space[i]*i_value;
+
+			out.array_data_cartesian_space_valid = true;
+			out.array_data_spectral_space_valid = false;
+		}
 
 #else
 		#pragma omp parallel for OPENMP_SIMD
