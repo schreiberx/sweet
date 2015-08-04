@@ -43,7 +43,7 @@ int main(int i_argc, char *i_argv[])
 	if (1)
 	{
 		std::cout << "******************************************************" << std::endl;
-		std::cout << "EVALUATING EXPONENTIAL APPROXIMATION with analytical Gaussian" << std::endl;
+		std::cout << "EVALUATING EXPONENTIAL APPROXIMATION with approx Gaussian (approx_e_ix)" << std::endl;
 		std::cout << "******************************************************" << std::endl;
 
 		for (double h = 2; h > 0.001; h *= 0.5)
@@ -67,39 +67,12 @@ int main(int i_argc, char *i_argv[])
 		}
 	}
 
+
+#if 0
 	if (1)
 	{
 		std::cout << "******************************************************" << std::endl;
-		std::cout << "EVALUATING EXPONENTIAL APPROXIMATION with approximated Gaussian" << std::endl;
-		std::cout << "******************************************************" << std::endl;
-
-		for (double h = 2; h > 0.01; h *= 0.5)
-		{
-			int M = 32/h;
-
-			ExponentialApproximation ea(h, M);
-//			ea.print();
-
-			double start = -2.0;
-			double end = 2.0;
-			double step_size = 0.01;
-
-			double max_error = 0;
-
-			for (double x = start; x < end; x += step_size)
-			{
-				double error = std::abs(ea.eval_e_ix(x) - ea.approx_e_ix(x));
-				max_error = std::max(max_error, error);
-			}
-
-			std::cout << "max_error: " << max_error << " for h " << h << " and M " << M << std::endl;
-		}
-	}
-
-	if (1)
-	{
-		std::cout << "******************************************************" << std::endl;
-		std::cout << "EVALUATING REAL EXPONENTIAL APPROXIMATION with approximated Gaussian" << std::endl;
+		std::cout << "EVALUATING REAL EXPONENTIAL APPROXIMATION with approximated Gaussian (approx_e_ix_returnReal)" << std::endl;
 		std::cout << "******************************************************" << std::endl;
 
 		for (double h = 2; h > 0.01; h *= 0.5)
@@ -123,6 +96,7 @@ int main(int i_argc, char *i_argv[])
 			std::cout << "max_error: " << max_error << " for h " << h << " and M " << M << std::endl;
 		}
 	}
+#endif
 
 	if (1)
 	{
@@ -144,7 +118,6 @@ int main(int i_argc, char *i_argv[])
 
 			for (double x = start; x < end; x += step_size)
 			{
-//				double error = std::abs(rexi.evalExponential(x).real() - rexi.approxExponentialApproxGaussian_returnReal(x));
 				double error = std::abs(rexi.eval_e_ix(x) - rexi.approx_e_ix(x));
 				max_error = std::max(max_error, error);
 			}
@@ -156,7 +129,7 @@ int main(int i_argc, char *i_argv[])
 	if (1)
 	{
 		std::cout << "******************************************************" << std::endl;
-		std::cout << "REXI real/imag" << std::endl;
+		std::cout << "REXI real" << std::endl;
 		std::cout << "******************************************************" << std::endl;
 
 		for (double h = 2; h > 0.01; h *= 0.5)
@@ -175,7 +148,32 @@ int main(int i_argc, char *i_argv[])
 			{
 				double error_real = std::abs(rexi.eval_e_ix(x).real() - rexi.approx_e_ix_returnReal(x));
 				max_error = std::max(max_error, error_real);
+			}
 
+			std::cout << "max_error: " << max_error << " for h " << h << " and M " << M << std::endl;
+		}
+	}
+
+	if (1)
+	{
+		std::cout << "******************************************************" << std::endl;
+		std::cout << "REXI imag" << std::endl;
+		std::cout << "******************************************************" << std::endl;
+
+		for (double h = 2; h > 0.01; h *= 0.5)
+		{
+			int M = 256/h;
+
+			REXI rexi(h, M);
+
+			double start = -2.0;
+			double end = 2.0;
+			double step_size = 0.01;
+
+			double max_error = 0;
+
+			for (double x = start; x < end; x += step_size)
+			{
 				double error_imag = std::abs(rexi.eval_e_ix(x).imag() - rexi.approx_e_ix_returnImag(x));
 				max_error = std::max(max_error, error_imag);
 			}

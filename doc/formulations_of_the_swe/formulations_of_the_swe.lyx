@@ -530,12 +530,13 @@ Please note, that this formulation contains several non-linear terms!
 \end_layout
 
 \begin_layout Section
-Advective formulation
+Advective formulation (non-conservative formulation)
 \end_layout
 
 \begin_layout Standard
 This is a formulation which makes it more challenging to get conservative
- properties.
+ properties such as for the momentum, hence it is also called non-conservative
+ formulation.
  By using the produce rule, we can reformulate the equations above to make
  the velocities conserved quantities.
  Here, we first apply the produce rule to 
@@ -802,7 +803,7 @@ Full linearization with perturbation
 \end_layout
 
 \begin_layout Standard
-The equations can be linearized around a perturbation 
+The advective equations can be linearized around a perturbation 
 \begin_inset Formula $p=p_{0}+p'$
 \end_inset
 

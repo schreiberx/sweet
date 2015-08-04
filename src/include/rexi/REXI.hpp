@@ -27,7 +27,8 @@ class REXI
 	int N;
 
 	std::vector<complex> alpha;
-	std::vector<complex> beta;
+	std::vector<complex> beta_re;
+	std::vector<complex> beta_im;
 
 public:
 	REXI(
@@ -38,19 +39,20 @@ public:
 		GaussianApproximation ga;
 		ExponentialApproximation ea(i_h, i_M);
 
-
 		L = ga.L;
 		N = i_M+L;
 		M = i_M;
 
 		alpha.resize(2*N+1);
-		beta.resize(2*N+1);
+		beta_re.resize(2*N+1);
+		beta_im.resize(2*N+1);
 
 #if 1
 		for (int n = 0; n < 2*N+1; n++)
 		{
 			alpha[n] = {0,0};
-			beta[n] = {0,0};
+			beta_re[n] = {0,0};
+			beta_im[n] = {0,0};
 		}
 
 		for (int l = -L; l < L+1; l++)
@@ -60,7 +62,8 @@ public:
 				int n = l+m;
 				alpha[n+N] = i_h*(ga.mu + complex(0, n));
 
-				beta[n+N] += ea.b[m+M].real()*i_h*ga.a[l+L];
+				beta_re[n+N] += ea.b[m+M].real()*i_h*ga.a[l+L];
+				beta_im[n+N] += ea.b[m+M].imag()*i_h*ga.a[l+L];
 			}
 		}
 
@@ -72,7 +75,7 @@ public:
 			int L1 = std::max(-L, n-M);
 			int L2 = std::min(L, n+M);
 
-			beta[n+N] = 0;
+			beta_re[n+N] = 0;
 			for (int k = L1; k < L2; k++)
 			{
 				assert(k+L >= 0);
@@ -80,10 +83,10 @@ public:
 				assert(n-k+M >= 0);
 				assert(n-k+M < 2*M+1);
 
-				beta[n+N] += ga.a[k+L]*ea.b[n-k+M].real();
+				beta_re[n+N] += ga.a[k+L]*ea.b[n-k+M].real();
 			}
 
-			beta[n+N] *= i_h;
+			beta_re[n+N] *= i_h;
 		}
 #endif
 	}
@@ -105,16 +108,18 @@ public:
 			double i_x
 	)
 	{
-		complex sum = 0;
+		double sum_re = 0;
+		double sum_im = 0;
 
 		// Split computation into real part of cos(i_x) and imaginary part sin(i_x)
 		for (int n = 0; n < 2*N+1; n++)
 		{
-			sum.real(sum.real() + (beta[n] / (complex(0, i_x) + alpha[n])).real());
-			sum.imag(sum.imag() + (beta[n] / (complex(0, i_x-M_PIl*0.5) + alpha[n])).real());
+			complex denom = (complex(0, i_x) + alpha[n]);
+			sum_re += (beta_re[n] / denom).real();
+			sum_im += (beta_im[n] / denom).real();
 		}
 
-		return sum;
+		return complex(sum_re, sum_im);
 	}
 
 
@@ -129,7 +134,7 @@ public:
 		double sum = 0;
 
 		for (int n = 0; n < 2*N+1; n++)
-			sum += (beta[n] / (complex(0, i_x) + alpha[n])).real();
+			sum += (beta_re[n] / (complex(0, i_x) + alpha[n])).real();
 
 		return sum;
 	}
@@ -144,7 +149,14 @@ public:
 			double i_x
 	)
 	{
+#if 1
 		return approx_e_ix_returnReal(i_x-M_PIl*0.5);
+#else
+		double sum = 0;
+		for (int n = 0; n < 2*N+1; n++)
+			sum += (beta_im[n] / (complex(0, i_x) + alpha[n])).real();
+		return sum;
+#endif
 	}
 };
 

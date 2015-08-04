@@ -134,7 +134,7 @@ public:
 		return sum;
 	}
 
-
+#if 0
 	double approx_e_ix_returnReal(
 			double i_x
 	)
@@ -149,6 +149,7 @@ public:
 		}
 		return sum;
 	}
+#endif
 };
 
 
