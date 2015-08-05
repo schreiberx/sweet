@@ -85,7 +85,8 @@ public:
 
 		if (!std::isinf(parameters.bogus_var0))
 		{
-			int M = parameters.bogus_var0;
+			double h = parameters.bogus_var0;
+			int M = parameters.bogus_var1;
 
 			if (parameters.verbosity > 0)
 			{
@@ -100,7 +101,7 @@ public:
 			}
 
 			// use REXI
-			rexiSWE.setup(-parameters.sim_CFL, M, parameters.sim_f);
+			rexiSWE.setup(-parameters.sim_CFL, h, M, parameters.sim_f);
 		}
 	}
 

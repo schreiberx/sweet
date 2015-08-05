@@ -25,59 +25,150 @@
  */
 class Complex2DArrayFFT
 {
+	typedef std::complex<double> complex;
+
 public:
 	std::size_t resolution[2];
 
-	fftw_plan plan_to_cart;
-	fftw_plan plan_to_spec;
-
+	bool aliased_scaled = false;
 	double *data;
+
+
+	class Plans
+	{
+	public:
+		fftw_plan to_cart;
+		fftw_plan to_spec;
+		fftw_plan to_cart_aliasing;
+		fftw_plan to_spec_aliasing;
+	};
+
+	Plans &getPlans()
+	{
+		static Plans plans;
+		return plans;
+	}
+
+	int &getRefCounter()
+	{
+		static int ref_counter = 0;
+		return ref_counter;
+	}
 
 	void setup_fftw()
 	{
-		// create dummy array for plan creation
-		// IMPORTANT! if we use the same array for input/output,
-		// a plan will be created with does not support out-of-place
-		// FFTs, see http://www.fftw.org/doc/New_002darray-Execute-Functions.html
-		double *dummy_data = DataArray<2>::alloc_aligned_mem<double>(sizeof(double)*resolution[0]*resolution[1]*2);
+		getRefCounter()++;
+		if (getRefCounter() == 1)
+			return;
 
-		plan_to_spec =
-				fftw_plan_dft_2d(
-					resolution[1],	// n0 = ny
-					resolution[0],	// n1 = nx
-					(fftw_complex*)data,
-					(fftw_complex*)dummy_data,
-					FFTW_FORWARD,
-					0
-				);
-
-
-		plan_to_cart =
-				fftw_plan_dft_2d(
-					resolution[1],	// n0 = ny
-					resolution[0],	// n1 = nx
-					(fftw_complex*)data,
-					(fftw_complex*)dummy_data,
-					FFTW_BACKWARD,
-					0
-				);
-
-		free(dummy_data);
-
-		if (plan_to_spec == nullptr)
 		{
-			std::cerr << "Failed to create plan_backward for fftw" << std::endl;
-			exit(-1);
+			// create dummy array for plan creation
+			// IMPORTANT! if we use the same array for input/output,
+			// a plan will be created with does not support out-of-place
+			// FFTs, see http://www.fftw.org/doc/New_002darray-Execute-Functions.html
+			double *dummy_data = DataArray<2>::alloc_aligned_mem<double>(sizeof(double)*resolution[0]*resolution[1]*2);
+
+			getPlans().to_spec =
+					fftw_plan_dft_2d(
+						resolution[1],	// n0 = ny
+						resolution[0],	// n1 = nx
+						(fftw_complex*)data,
+						(fftw_complex*)dummy_data,
+						FFTW_FORWARD,
+						FFTW_PRESERVE_INPUT
+					);
+
+			if (getPlans().to_spec == nullptr)
+			{
+				std::cerr << "Failed to create plan_forward for fftw" << std::endl;
+				exit(-1);
+			}
+
+
+			getPlans().to_cart =
+					fftw_plan_dft_2d(
+						resolution[1],	// n0 = ny
+						resolution[0],	// n1 = nx
+						(fftw_complex*)data,
+						(fftw_complex*)dummy_data,
+						FFTW_BACKWARD,
+						FFTW_PRESERVE_INPUT
+					);
+
+			if (getPlans().to_cart == nullptr)
+			{
+				std::cerr << "Failed to create plan_backward for fftw" << std::endl;
+				exit(-1);
+			}
+
+			free(dummy_data);
 		}
+
+		{
+			double *dummy_data_aliasing_in = DataArray<2>::alloc_aligned_mem<double>(sizeof(double)*resolution[0]*resolution[1]*2*4);
+			double *dummy_data_aliasing_out = DataArray<2>::alloc_aligned_mem<double>(sizeof(double)*resolution[0]*resolution[1]*2*4);
+
+			getPlans().to_spec_aliasing =
+					fftw_plan_dft_2d(
+						resolution[1]*2,	// n0 = ny
+						resolution[0]*2,	// n1 = nx
+						(fftw_complex*)dummy_data_aliasing_in,
+						(fftw_complex*)dummy_data_aliasing_out,
+						FFTW_FORWARD,
+						FFTW_PRESERVE_INPUT
+					);
+
+			if (getPlans().to_spec_aliasing == nullptr)
+			{
+				std::cerr << "Failed to create plan_forward for fftw" << std::endl;
+				exit(-1);
+			}
+
+
+			getPlans().to_cart_aliasing =
+					fftw_plan_dft_2d(
+						resolution[1]*2,	// n0 = ny
+						resolution[0]*2,	// n1 = nx
+						(fftw_complex*)dummy_data_aliasing_out,
+						(fftw_complex*)dummy_data_aliasing_in,
+						FFTW_BACKWARD,
+						FFTW_PRESERVE_INPUT
+					);
+
+			if (getPlans().to_cart_aliasing == nullptr)
+			{
+				std::cerr << "Failed to create plan_backward for fftw" << std::endl;
+				exit(-1);
+			}
+
+
+			free(dummy_data_aliasing_out);
+			free(dummy_data_aliasing_in);
+		}
+	}
+
+	void shutdown_fftw()
+	{
+		getRefCounter()--;
+
+		if (getRefCounter() > 0)
+			return;
+
+		fftw_free(getPlans().to_spec);
+		fftw_free(getPlans().to_cart);
+
+		fftw_free(getPlans().to_spec_aliasing);
+		fftw_free(getPlans().to_cart_aliasing);
 	}
 
 public:
 	Complex2DArrayFFT(
-			const std::size_t i_res[2]
-	)	:
-		plan_to_cart(nullptr),
-		plan_to_spec(nullptr)
+			const std::size_t i_res[2],
+			bool i_aliased_scaled = false
+	)
 	{
+		aliased_scaled = i_aliased_scaled;
+
 		resolution[0] = i_res[0];
 		resolution[1] = i_res[1];
 
@@ -91,12 +182,11 @@ public:
 	Complex2DArrayFFT(
 			const Complex2DArrayFFT &i_testArray
 	)
-	:
-		plan_to_cart(nullptr),
-		plan_to_spec(nullptr)
 	{
 		resolution[0] = i_testArray.resolution[0];
 		resolution[1] = i_testArray.resolution[1];
+
+		aliased_scaled = i_testArray.aliased_scaled;
 
 		data = DataArray<2>::alloc_aligned_mem<double>(sizeof(double)*resolution[0]*resolution[1]*2);
 
@@ -106,13 +196,14 @@ public:
 	}
 
 
+
 	~Complex2DArrayFFT()
 	{
-		fftw_free(plan_to_spec);
-		fftw_free(plan_to_cart);
+		shutdown_fftw();
 
 		free(data);
 	}
+
 
 
 public:
@@ -128,15 +219,27 @@ public:
 	}
 
 
+
 	Complex2DArrayFFT toSpec()
 	{
-		Complex2DArrayFFT o_testArray(resolution);
+		Complex2DArrayFFT o_testArray(resolution, aliased_scaled);
 
-		fftw_execute_dft(
-				plan_to_spec,
-				(fftw_complex*)this->data,
-				(fftw_complex*)o_testArray.data
-			);
+		if (aliased_scaled)
+		{
+			fftw_execute_dft(
+					getPlans().to_spec_aliasing,
+					(fftw_complex*)this->data,
+					(fftw_complex*)o_testArray.data
+				);
+		}
+		else
+		{
+			fftw_execute_dft(
+					getPlans().to_spec,
+					(fftw_complex*)this->data,
+					(fftw_complex*)o_testArray.data
+				);
+		}
 
 		return o_testArray;
 	}
@@ -144,13 +247,34 @@ public:
 
 	Complex2DArrayFFT toCart()
 	{
-		Complex2DArrayFFT o_testArray(resolution);
+		Complex2DArrayFFT o_testArray(resolution, aliased_scaled);
 
-		fftw_execute_dft(
-				plan_to_cart,
-				(fftw_complex*)this->data,
-				(fftw_complex*)o_testArray.data
-			);
+		if (aliased_scaled)
+		{
+			fftw_execute_dft(
+					getPlans().to_cart_aliasing,
+					(fftw_complex*)this->data,
+					(fftw_complex*)o_testArray.data
+				);
+		}
+		else
+		{
+			fftw_execute_dft(
+					getPlans().to_cart,
+					(fftw_complex*)this->data,
+					(fftw_complex*)o_testArray.data
+				);
+		}
+
+		/*
+		 * to the scaling only if we convert the data back to cartesian space
+		 */
+		double scale = (1.0/((double)resolution[0]*resolution[1]));
+		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		{
+			o_testArray.data[i] *= scale;
+			o_testArray.data[i+1] *= scale;
+		}
 
 		return o_testArray;
 	}
@@ -278,13 +402,180 @@ public:
 	}
 
 
+
+public:
+	void op_setup_diff_x(
+			const double i_domain_size[2]
+	)
+	{
+		setAll(0,0);
+		double scale = 2.0*M_PIl/i_domain_size[0];
+
+		for (std::size_t j = 0; j < resolution[1]/2; j++)
+		{
+			for (std::size_t i = 1; i < resolution[0]/2; i++)
+			{
+				set(	j,
+						i,
+						0,
+						(double)i*scale
+					);
+				set(
+						resolution[1]-1-j,
+						i,
+						0,
+						(double)i*scale
+					);
+
+				set(	j,
+						resolution[0]-i,
+						0,
+						-(double)i*scale
+					);
+				set(
+						resolution[1]-1-j,
+						resolution[0]-i,
+						0,
+						-(double)i*scale
+					);
+			}
+		}
+	}
+
+
+
+public:
+	void op_setup_diff2_x(
+			const double i_domain_size[2]
+	)
+	{
+		setAll(0,0);
+		double scale = 2.0*M_PIl/i_domain_size[0];
+
+		for (std::size_t j = 0; j < resolution[1]/2; j++)
+		{
+			for (std::size_t i = 1; i < resolution[0]/2; i++)
+			{
+				set(	j,
+						i,
+						-(double)i*scale*(double)i*scale,
+						0
+					);
+				set(
+						resolution[1]-1-j,
+						i,
+						-(double)i*scale*(double)i*scale,
+						0
+					);
+
+				set(	j,
+						resolution[0]-i,
+						-(double)i*scale*(double)i*scale,
+						0
+					);
+				set(
+						resolution[1]-1-j,
+						resolution[0]-i,
+						-(double)i*scale*(double)i*scale,
+						0
+					);
+			}
+		}
+	}
+
+
+
+public:
+	void op_setup_diff_y(
+			const double i_domain_size[2]
+	)
+	{
+		setAll(0,0);
+		double scale = 2.0*M_PIl/i_domain_size[1];
+
+		for (int j = 1; j < (int)resolution[1]/2; j++)
+		{
+			for (int i = 0; i < (int)resolution[0]/2; i++)
+			{
+				set(
+						j,
+						i,
+						0,
+						(double)j*scale
+					);
+				set(
+						resolution[1]-j,
+						i,
+						0,
+						-(double)j*scale
+					);
+
+				set(
+						j,
+						resolution[0]-i-1,
+						0,
+						(double)j*scale
+					);
+				set(
+						resolution[1]-j,
+						resolution[0]-i-1,
+						0,
+						-(double)j*scale
+					);
+			}
+		}
+	}
+
+
+public:
+	void op_setup_diff2_y(
+			const double i_domain_size[2]
+	)
+	{
+		setAll(0,0);
+		double scale = 2.0*M_PIl/i_domain_size[1];
+
+		for (int j = 1; j < (int)resolution[1]/2; j++)
+		{
+			for (int i = 0; i < (int)resolution[0]/2; i++)
+			{
+				set(
+						j,
+						i,
+						-(double)j*scale*(double)j*scale,
+						0
+					);
+				set(
+						resolution[1]-j,
+						i,
+						-(double)j*scale*(double)j*scale,
+						0
+					);
+
+				set(
+						j,
+						resolution[0]-i-1,
+						-(double)j*scale*(double)j*scale,
+						0
+					);
+				set(
+						resolution[1]-j,
+						resolution[0]-i-1,
+						-(double)j*scale*(double)j*scale,
+						0
+					);
+			}
+		}
+	}
+
+
 	/**
 	 * return the maximum of all absolute values
 	 */
 	double reduce_sumAbs()	const
 	{
 		double sum = 0;
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]; i++)
+		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
 			sum += std::abs(data[i*2])+std::abs(data[i*2+1]);
 
 		return sum;
@@ -301,6 +592,12 @@ public:
 			{
 				double value_re = i_testArray.getRe(y, x);
 				double value_im = i_testArray.getIm(y, x);
+#if 1
+				if (std::abs(value_re) < 10e-10)
+					value_re = 0;
+				if (std::abs(value_im) < 10e-10)
+					value_im = 0;
+#endif
 				o_ostream << "(" << value_re << ", " << value_im << ")\t";
 			}
 			o_ostream << std::endl;
@@ -311,10 +608,10 @@ public:
 
 
 	Complex2DArrayFFT spec_div_element_wise(
-			Complex2DArrayFFT &i_d
+			const Complex2DArrayFFT &i_d
 	)
 	{
-		Complex2DArrayFFT out(resolution);
+		Complex2DArrayFFT out(resolution, aliased_scaled);
 
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
 		{
@@ -400,6 +697,31 @@ public:
 	}
 
 
+	/**
+	 * Apply a linear operator given by this class to the input data array.
+	 */
+	inline
+	Complex2DArrayFFT operator()(
+			const Complex2DArrayFFT &i_array_data
+	)	const
+	{
+		Complex2DArrayFFT out(resolution, aliased_scaled);
+
+		#pragma omp parallel for OPENMP_SIMD
+		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		{
+			double ar = data[i];
+			double ai = data[i+1];
+			double br = i_array_data.data[i];
+			double bi = i_array_data.data[i+1];
+
+			out.data[i] = ar*br - ai*bi;
+			out.data[i+1] = ar*bi + ai*br;
+		}
+
+		return out;
+	}
+
 
 	/**
 	 * Compute multiplication with a complex scalar
@@ -409,7 +731,7 @@ public:
 			const std::complex<double> &i_value
 	)	const
 	{
-		Complex2DArrayFFT out(resolution);
+		Complex2DArrayFFT out(resolution, aliased_scaled);
 
 		double br = i_value.real();
 		double bi = i_value.imag();
@@ -435,16 +757,245 @@ public:
 			const Complex2DArrayFFT &i_array_data
 	)	const
 	{
-		Complex2DArrayFFT out(this->resolution);
+		Complex2DArrayFFT out(resolution, aliased_scaled);
 
 		#pragma omp parallel for OPENMP_SIMD
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i++)
+		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
 		{
 			out.data[i] = data[i] + i_array_data.data[i];
 			out.data[i+1] = data[i+1] + i_array_data.data[i+1];
 		}
 
 		return out;
+	}
+
+
+
+	/**
+	 * Compute element-wise subtraction
+	 */
+	inline
+	Complex2DArrayFFT operator-(
+			const Complex2DArrayFFT &i_array_data
+	)	const
+	{
+		Complex2DArrayFFT out(this->resolution, aliased_scaled);
+
+		#pragma omp parallel for OPENMP_SIMD
+		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		{
+			out.data[i] = data[i] - i_array_data.data[i];
+			out.data[i+1] = data[i+1] - i_array_data.data[i+1];
+		}
+
+		return out;
+	}
+
+
+
+	/**
+	 * Compute addition with complex value
+	 */
+	inline
+	Complex2DArrayFFT addScalar_Spec(
+			const complex &i_value
+	)	const
+	{
+		Complex2DArrayFFT out(this->resolution, aliased_scaled);
+
+		#pragma omp parallel for OPENMP_SIMD
+		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		{
+			out.data[i] = data[i];
+			out.data[i+1] = data[i+1];
+		}
+
+		double scale = resolution[0]*resolution[1];
+		out.data[0] += i_value.real()*scale;
+		out.data[1] += i_value.imag()*scale;
+
+		return out;
+	}
+
+
+
+	/**
+	 * Compute addition with complex value
+	 */
+	inline
+	Complex2DArrayFFT addScalar_Cart(
+			const complex &i_value
+	)	const
+	{
+		Complex2DArrayFFT out(this->resolution, aliased_scaled);
+
+		#pragma omp parallel for OPENMP_SIMD
+		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		{
+			out.data[i] = data[i]+i_value.real();
+			out.data[i+1] = data[i+1]+i_value.imag();
+		}
+
+		return out;
+	}
+
+
+
+	/**
+	 * Compute subtraction with complex value
+	 */
+	inline
+	Complex2DArrayFFT subScalar_Spec(
+			const complex &i_value
+	)	const
+	{
+		Complex2DArrayFFT out(this->resolution, aliased_scaled);
+
+		#pragma omp parallel for OPENMP_SIMD
+		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		{
+			out.data[i] = data[i];
+			out.data[i+1] = data[i+1];
+		}
+
+		double scale = resolution[0]*resolution[1];
+		out.data[0] -= i_value.real()*scale;
+		out.data[1] -= i_value.imag()*scale;
+
+		return out;
+	}
+
+
+
+	/**
+	 * Compute addition with complex value
+	 */
+	inline
+	Complex2DArrayFFT subScalar_Cart(
+			const complex &i_value
+	)	const
+	{
+		Complex2DArrayFFT out(this->resolution, aliased_scaled);
+
+		#pragma omp parallel for OPENMP_SIMD
+		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		{
+			out.data[i] = data[i]-i_value.real();
+			out.data[i+1] = data[i+1]-i_value.imag();
+		}
+
+		return out;
+	}
+
+
+
+	/**
+	 * Compute element-wise multiplication
+	 */
+	inline
+	Complex2DArrayFFT operator*(
+			const Complex2DArrayFFT &i_array_data
+	)	const
+	{
+		Complex2DArrayFFT out(i_array_data.resolution, aliased_scaled);
+
+#pragma omp parallel for OPENMP_SIMD
+		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		{
+			complex a = complex(data[i], data[i+1]);
+			complex b = complex(i_array_data.data[i], i_array_data.data[i+1]);
+
+			complex c = a*b;
+			out.data[i+0] = c.real();
+			out.data[i+1] = c.imag();
+		}
+
+		return out;
+	}
+
+
+
+
+	/**
+	 * reduce to root mean square
+	 */
+	double reduce_rms_quad()
+	{
+		double sum = 0;
+		double c = 0;
+
+#pragma omp parallel for reduction(+:sum,c)
+		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		{
+			double radius2 = data[i]*data[i]+data[i+1]*data[i+1];
+			//double value = std::sqrt(radius2);
+			//value *= value;
+			double value = radius2;
+
+			// Use Kahan summation
+			double y = value - c;
+			double t = sum + y;
+			c = (t - sum) - y;
+			sum = t;
+		}
+
+		sum -= c;
+
+		sum = std::sqrt(sum/double(resolution[0]*resolution[1]));
+		return sum;
+	}
+
+
+
+	/**
+	 * return the maximum of all absolute values, use quad precision for reduction
+	 */
+	double reduce_sum_re_quad()	const
+	{
+		double sum = 0;
+		double c = 0;
+#pragma omp parallel for reduction(+:sum,c)
+		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		{
+			double value = data[i];
+
+			// Use Kahan summation
+			double y = value - c;
+			double t = sum + y;
+			c = (t - sum) - y;
+			sum = t;
+		}
+
+		sum -= c;
+
+		return sum;
+	}
+
+
+
+	/**
+	 * return the maximum of all absolute values, use quad precision for reduction
+	 */
+	double reduce_norm2_quad()	const
+	{
+		double sum = 0.0;
+		double c = 0.0;
+
+#pragma omp parallel for reduction(+:sum,c)
+		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		{
+			double value = data[i]*data[i]+data[i+1]*data[i+1];
+
+			// Use Kahan summation
+			double y = value - c;
+			double t = sum + y;
+			c = (t - sum) - y;
+			sum = t;
+		}
+
+		sum -= c;
+
+		return std::sqrt(sum);
 	}
 
 };

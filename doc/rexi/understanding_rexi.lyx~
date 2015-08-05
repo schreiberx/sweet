@@ -1088,8 +1088,82 @@ with
 \end_inset
 
 .
- For sake of simplicity, we continue with sticking to the formulation without
- the prime notation.
+ For sake of simplicity, we stick to the formulation without the prime notation.
+\end_layout
+
+\begin_layout Standard
+One final scaling has to be done: the exponential is computing 
+\begin_inset Formula $e^{\tau L}$
+\end_inset
+
+, hence the real-valued 
+\begin_inset Formula $\tau$
+\end_inset
+
+ has to be included in the operator 
+\begin_inset Formula $L$
+\end_inset
+
+.
+ There are basically two different ways: The first one is rescaling all
+ parameters by 
+\begin_inset Formula $\tau$
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+g^{\tau}:=\tau g,\,\,\,\,\,f^{\tau}:=\tau f,\,\,\,\,\,h_{0}^{\tau}:=\tau h_{0}
+\]
+
+\end_inset
+
+The second way is to factor the 
+\begin_inset Formula $\tau$
+\end_inset
+
+ parameter out:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\left(\tau L-\alpha\right)^{-1}.U(\tau)=U(0)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\left(L-\frac{\alpha}{\tau}\right)^{-1}.U(\tau)\tau^{-1}=U(0)
+\]
+
+\end_inset
+
+So instead of solving for 
+\begin_inset Formula $U(\tau)$
+\end_inset
+
+, we are solving for 
+\begin_inset Formula $U^{\tau}(\tau):=U(\tau)\tau$
+\end_inset
+
+ as well as 
+\begin_inset Formula $\alpha^{\tau}:=\frac{\alpha}{\tau}$
+\end_inset
+
+and have to divide the computed solution by 
+\begin_inset Formula $\tau$
+\end_inset
+
+ in the end.
 \end_layout
 
 \begin_layout Subsection

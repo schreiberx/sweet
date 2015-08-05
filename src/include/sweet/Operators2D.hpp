@@ -192,6 +192,7 @@ public:
 			 * DIFF operator in y axis
 			 */
 			diff_c_y.spec_setAll(0, 0);
+			// TODO: shift j for loop by +1
 			for (int j = 0; j < (int)diff_c_y.resolution[1]/2-1; j++)
 			{
 				for (int i = 0; i < (int)diff_c_y.resolution[0]/2; i++)

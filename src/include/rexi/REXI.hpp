@@ -26,12 +26,28 @@ class REXI
 	int M;
 	int N;
 
+public:
 	std::vector<complex> alpha;
 	std::vector<complex> beta_re;
 	std::vector<complex> beta_im;
 
+
+public:
+	REXI()
+	{
+	}
+
 public:
 	REXI(
+			double i_h,	///< sampling width
+			int i_M		///< approximation area
+	)
+	{
+		setup(i_h, i_M);
+	}
+
+public:
+	void setup(
 		double i_h,	///< sampling width
 		int i_M		///< approximation area
 	)
