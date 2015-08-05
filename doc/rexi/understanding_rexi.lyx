@@ -382,7 +382,7 @@ domain of interest
 , we rewrite the previous equation in Fourier space with
 \begin_inset Formula 
 \[
-\frac{\hat{f}(\xi)}{\hat{\psi_{h}}(\xi)}:=\sum_{m:=\infty}^{\infty}b_{m}e^{2\pi imh\xi},
+\frac{\hat{f}(\xi)}{\hat{\psi_{h}}(\xi)}:=\sum_{m:=-\infty}^{\infty}b_{m}e^{2\pi imh\xi},
 \]
 
 \end_inset
