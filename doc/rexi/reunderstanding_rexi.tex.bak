@@ -12,8 +12,8 @@
 (REXI)}
 
 
-\author{Martin Schreiber <M.Schreiber@exeter.ac.uk>\\
-Pedro S. Peixoto <pedrosp@ime.usp.br>\\
+\author{Martin Schreiber (M.Schreiber@exeter.ac.uk)\\
+Pedro S. Peixoto (pedrosp@ime.usp.br)\\
 et. al.}
 
 \maketitle
@@ -135,9 +135,9 @@ of ``domain of interest'') and $h$ will be related to the accuracy of integratio
 %by the linear operator. 
 % PP: Needs better explanation
 
-We choose $h$ small enough so that the support of the Fourier transform of $f$ is mainly localised within $[-1/(2h),1/(2h)]$ (i.e. almost zero outside this interval). $M$ is chosen such that the approximation will be adequate in the interval $|x|<Mh$. $M$ and $h$ are connected in the sense that to obtain a good approximation for a larger interval, $M$ needs to be larger and $h$ smaller.
+We choose $h$ small enough so that the support of the Fourier transform of $f$ is mainly localised within $[-1/(2h),1/(2h)]$ (i.e. almost zero outside this interval). $M$ is chosen such that the approximation will be adequate in the interval $|x|<Mh$. 
 
-%The choice of $M$ is related to the eigen-structure of $L$. We will briefly discuss how this works. the We will eventually substitute $e{ix}$ with $e^{\tauL}$ in Now we need to chose $M$ in a way to ensure that $\tau \Lambda \in [-Mh, Mh]$, where $\Lambda$ is such that all eigenvalues $\lambda$ of $L$ satisfy $|\lambda| < \Lambda $. That is, the domain of interest must capture waves of frequency up until $\Lambda$. 
+%$M$ and $h$ are connected in the sense that to obtain a good approximation for a larger interval, $M$ needs to be larger and $h$ smaller.
 
  To compute the coefficients $b_{m}$, we rewrite
 the previous equation in Fourier space with
@@ -218,44 +218,81 @@ $h$ via
 
 \subsection{Step C) Approximation of the approximation}
 
-We then combine the approximation (B) of the approximation (A), yielding
+We then combine the approximation (B) of the approximation (A), yielding the approximation for $f$ given by
 \[
-f(x)\approx\sum_{m=-M}^{M}b_{m}\psi_{h}(x+mh)=\sum_{m=-M}^{M}b_{m}Re\left(\sum_{l=-L}^{L}\frac{a_{l}}{i\frac{x+mh}{h}+(\mu+i\,l)}\right)
+\tilde{f}(x)=\sum_{m=-M}^{M}b_{m}\psi_{h}(x+mh)=\sum_{m=-M}^{M}b_{m}Re\left(\sum_{l=-L}^{L}\frac{a_{l}}{i\frac{x+mh}{h}+(\mu+i\,l)}\right)
 \]
 
 
 \[
 =\sum_{m=-M}^{M}b_{m}\sum_{l=-L}^{L}Re\left(\frac{ha_{l}}{ix+h(\mu+i(m+l))}\right).
 \]
-We further like to simplify this equation and we observe, that for
-$n:=m+l$, the denominator is equal. We can hence express parts of
-the denominator in terms of $n$ by
 
+We can simplify the summations assuming $n=m+l$ and inverting their order,
+\begin{eqnarray*}
+\tilde{f}(x)& =& \sum_{l=-L}^{L} \, \sum_{m=-M}^{M}b_{m}Re\left(\frac{ha_{l}}{ix+h(\mu+i(m+l))}\right) \\
+& =& \sum_{l=-L}^{L}\,\sum_{n=-M+l}^{M+l}b_{n-l}Re\left(\frac{ha_{l}}{ix+h(\mu+in)}\right) \\
+& =& \sum_{n=-N}^{N}\,\sum_{k=L_1}^{L_2}b_{n-k}Re\left(\frac{ha_{k}}{ix+h(\mu+in)}\right),
+\end{eqnarray*}
+where $N=L+M$, $L_1=max(-L, n-M)$ and $L_2=min(L,n+M)$.
+
+%We further like to simplify this equation and we observe, that for
+%$n:=m+l$, the denominator is equal. We can hence express parts of
+%the denominator in terms of $n$ by
+
+We will define the poles as
 \[
 \alpha_{n}:=h(\mu+i n).
 \]
-Now, we merge the $b_{m}$ and $a_{l}$ coefficients and first have
-a look at the $b_{m}$ which is complex values. We observe the following
-property: Assuming that we want to compute the real value of $f(x)$,
-only the real value of $b_{m}$ has to be merged with the sum, since
-the imaginary component would be dropped afterwards. This allows us
-to move the $Re(b_{m})$ values inside the $\sum_{L}$:
 
+For the real part of $f(x)$ we have that
+\begin{eqnarray*}
+Re(\tilde{f}(x))& =& \sum_{n=-N}^{N}\,\sum_{k=L_1}^{L_2}Re(b_{n-k})Re\left(\frac{ha_{k}}{ix+\alpha_{n}}\right) \\
+& =& Re\left(\sum_{n=-N}^{N}\, \sum_{k=L_1}^{L_2}Re(b_{n-k})\frac{ha_{k}}{ix+\alpha_{n}}\right) \\
+& =& Re\left(\sum_{n=-N}^{N}\frac{1}{ix+\alpha_{n}}\, h \sum_{k=L_1}^{L_2}Re(b_{n-k})a_{k}\right).
+\end{eqnarray*}
+By setting the real residue as 
 \[
-Re(f(x)):=Re\left(\sum_{m=-M}^{M}\,\,\sum_{l=-L}^{L}\frac{Re(b_{m})\,a_{l}}{ix+s(\mu+i(m+l))}\right).
+\beta^{Re}_{n}:=h \sum_{k=L_1}^{L_2}Re(b_{n-k})a_{k},
 \]
-Now we can collect all nominators with equivalent denominator (if
-$n=m+l$ and by using $\delta$ as the Kronecker delta), yielding
+we have that 
+\[
+Re(\tilde{f}(x))=Re\left(\sum_{n=-N}^{N}\frac{\beta^{Re}_n}{ix+\alpha_{n}}\right).
+\]
 
+For the imaginary part of $f(x)$ we analogously have that
 \[
-\beta_{n}^{Re}:=\sum_{m=-M\,}^{M}\sum_{l=-L}^{L}Re(b_{m})a_{l}\delta(n,\,m+l)
+Im(\tilde{f}(x)) = Re\left(\sum_{n=-N}^{N}\frac{\beta_n^{Im}}{ix+\alpha_{n}}\right),
 \]
-for real values $f(x)$ and
+where 
+\[
+\beta^{Im}_{n}:=h \sum_{k=L_1}^{L_2}Im(b_{n-k})a_{k}.
+\]
 
-\[
-\beta_{n}^{Im}:=\sum_{m=-M\,}^{M}\sum_{l=-L}^{L}Im(b_{m})a_{l}\delta(n,\,m+l)
-\]
-for complex values of $f(x)$. This finally leads us to the REXI approximation
+%Now, we merge the $b_{m}$ and $a_{l}$ coefficients and first have
+%a look at the $b_{m}$ which is complex values. We observe the following
+%property: Assuming that we want to compute the real value of $f(x)$,
+%only the real value of $b_{m}$ has to be merged with the sum, since
+%the imaginary component would be dropped afterwards. This allows us
+%to move the $Re(b_{m})$ values inside the $\sum_{L}$:
+%
+%\[
+%Re(f(x)):=Re\left(\sum_{m=-M}^{M}\,\,\sum_{l=-L}^{L}\frac{Re(b_{m})\,a_{l}}{ix+s(\mu+i(m+l))}\right).
+%\]
+%Now we can collect all nominators with equivalent denominator (if
+%$n=m+l$ and by using $\delta$ as the Kronecker delta), yielding
+%
+%\[
+%\beta_{n}^{Re}:=\sum_{m=-M\,}^{M}\sum_{l=-L}^{L}Re(b_{m})a_{l}\delta(n,\,m+l)
+%\]
+%for real values $f(x)$ and
+%
+%\[
+%\beta_{n}^{Im}:=\sum_{m=-M\,}^{M}\sum_{l=-L}^{L}Im(b_{m})a_{l}\delta(n,\,m+l)
+%\]
+%for complex values of $f(x)$. 
+
+This finally leads us to the REXI approximation
 
 \[
 e^{ix}\approx\sum_{n=-N}^{N}Re\left(\frac{\beta_{n}^{Re}}{ix+\alpha_{n}}\right)+i\,Re\left(\frac{\beta_{n}^{Im}}{ix+\alpha_{n}}\right)
@@ -263,49 +300,66 @@ e^{ix}\approx\sum_{n=-N}^{N}Re\left(\frac{\beta_{n}^{Re}}{ix+\alpha_{n}}\right)+
 for the complex-valued function $e^{ix}$.
 
 
-\section{Apply REXI with a matrix:}
+\section{Apply REXI with a matrix}
 
 Finally, we like to apply REXI to a formulation such as 
 \[
 U(t):=e^{tL}U(0).
 \]
-To see the relationship between the approximation of $e^{ix}$ with
-REXI, we first rewrite the exponential formulation in terms of $f(x):=e^{itx}$
+To see the relationship between the approximation of $e^{ix}$ with $e^{tL}$ we assume that $L$ is skew hermitian and therefore has only purely imaginary eigenvalues, and maybe decomposed as $\Sigma\Lambda\Sigma^{H}$, yielding
 \[
-f(L):=e^{tL}=\Sigma\Lambda\Sigma^{H}=\Sigma\left(\begin{array}{ccc}
+e^{tL}=\sum_{k=0}^{\infty}\frac{tL}{k!}=\Sigma\left(\sum_{k=0}^{\infty}\frac{t\Lambda}{k!}\right)\Sigma^H=\Sigma e^{t\Lambda}\Sigma^H,
+\]
+where we used the orthonormality of $\Sigma$ to remove it from the summation, and
+
+\[
+e^{t\Lambda}=\left(\begin{array}{ccc}
 ...\\
  & e^{i\lambda_{n}t}\\
  &  & ...
-\end{array}\right)\Sigma^{H}=\Sigma\,f(\lambda_{n})\,\Sigma^{H}
+\end{array}\right)
 \]
-with complex-valued exponentials on the eigenvalues. Hence, the accuracy
-of the exponential integrator on $f(L)$ only depends on the spectrum
-of the $L$ and allows to be applied in the same way as $e^{ix}$,
-but by replacing $x$ with the matrix $L$. For error bounds, we like
-to refer to \cite{High-order time-parallel approximation of evolution operators}.
+where we hare explicitly detached the imaginary unit from the eigenvalues, therefore $\lambda_n$ are assumed real. Since $e^{t\Lambda}$ is diagonal, it can be eigenvalue-wise approximated in the same way as in $e^{ix}$.
+
+Some important points about the choice of $M$ and $h$ have to be made at this point. We know that $e^{ix}$ is accurately approximated with REXI for the interval $|x| < hM$, where $h$ is chosen small enough to obtain a good approximation in step (A), and $M$ will define the interval size and number of approximation points. In the matrix case, $M$ has to be chosen so that $ hM > t\bar{\lambda}$, where $\bar{\lambda}=\max_{n}|\lambda_n|$, in order to capture all wavelengths of $L$. In other other words, $hM$ need to be set to capture the fastest wave. Note that if this is used as a time stepping method, with time step $t=\tau$, then, the larger the timestep, the larger $M$ will be. Exact evaluations of the choices for $h$ and $M$ may be done based on equation (3.6) of \cite{High-order time-parallel approximation of evolution operators}.
+
+
+%The choice of $M$ is related to the eigen-structure of $L$. We will briefly discuss how this works. the We will eventually substitute $e{ix}$ with $e^{\tauL}$ in Now we need to chose $M$ in a way to ensure that $\tau \Lambda \in [-Mh, Mh]$, where $\Lambda$ is such that all eigenvalues $\lambda$ of $L$ satisfy $|\lambda| < \Lambda $. That is, the domain of interest must capture waves of frequency up until $\Lambda$.
+
+%
+%with complex-valued exponentials on the eigenvalues. Hence, the accuracy
+%of the exponential integrator on $f(L)$ only depends on the spectrum
+%of the $L$ and allows to be applied in the same way as $e^{ix}$,
+%but by replacing $x$ with the matrix $L$. For error bounds, we like
+%to refer to \cite{High-order time-parallel approximation of evolution operators}.
 
 
 \section{Filtering}
 
-Since we are approximating the exponential function with a series,
-one of the most important properties can be violated: The evaluation
-of $e^{ix}$ is bounded by unity (think of it as a series of real-valued
-$cos$ and imaginary-valued $sin$).
+The method described in the previous section is well defined for skew hermitian $L$. If $L$ is not skew hermitian, the real eigenvalues might cause the REXI to have absolute values larger than 1, which can lead to instabilities if used as time stepping method.
 
-However, the interpolated values can exceed this unity due to interpolation
-properties (think of a Lagrangian interpolation of high order, leading
-to large oscillations with the possibility of exceeding the local
-min/max of the interpolated function in the area of support). This
-can lead to long-term effects such as amplifying unphysical solutions.
-Therefore a filtering may be required to assure that the function
-in the interpolation range is always bounded by unity.
+To ensure that the REXI is bounded by unit, a filtering process is proposed in \cite{High-order time-parallel approximation of evolution operators}. REXI is prone to exceed unit in the neighbourhood of $| t \lambda | \approx hM$, therefore in the highest frequencies. The idea is to construct a rational function $S(ix)$ that is approximately $1$ in a smaller interval   $  | t \lambda | < hM_0 $, with $M_0<M$, and decays very fast to zero outside this interval. Then we multiply this filters function to the original REXI, which will lead to a unit bounded REXI.
+
+Further details of how $S(ix)$ is computed will be added later.
+
+%However, the interpolated values can exceed this unity due to interpolation
+%properties (think of a Lagrangian interpolation of high order, leading
+%to large oscillations with the possibility of exceeding the local
+%min/max of the interpolated function in the area of support). This
+%can lead to long-term effects such as amplifying unphysical solutions.
+%Therefore a filtering may be required to assure that the function
+%in the interpolation range is always bounded by unity.
 
 
 \section{REXI, our little dog}
 
 In the following, we use $L:=\tau L'$ and assume an a-priori fixed
-time step size, making a REXI approximation more efficient. Then,
+time step size. Fixing a time step size will make a REXI approximation more efficient. Then,
 the REXI approximation is given by
+
+\fbox{\parbox{10cm}{
+PP: I don't agreed with this part - needs to be discussed. L has complex eigenvalues, and the complex part of REXI needs to be taken into account.}}
+
 
 \begin{equation}
 exp(\tau L')\approx\sum_{k=-K}^{K}\beta_{k}(L-\alpha_{k})^{-1}\label{eq:rexi}
@@ -358,29 +412,32 @@ and we set $g:=1$ and the average height $H:=1$.
 We recall the formulation of the solution as an exponential integrator
 
 \[
-U(t):=e^{tL}U(0)
+U(t)=e^{tL}U(0)
 \]
-which formally allows us to join the integration in time givey by
-$t$ with the $L$ operator in case of such a formulation. There are
-basically two different ways to handle this scaling:
+which formally allows us to join the integration in time given by
+$t$ with the $L$ operator in case of such a formulation. 
 
-The first one is rescaling all parameters by $\tau$:
+%There are
+%basically two different ways to handle this scaling:
 
-\[
-g':=\tau g,\,\,\,\,\,f':=\tau f,\,\,\,\,\,h_{0}':=\tau h_{0}.
-\]
+%The first one is rescaling all parameters by $\tau$:
+
+%\[
+%g':=\tau g,\,\,\,\,\,f':=\tau f,\,\,\,\,\,h_{0}':=\tau h_{0}.
+%\]
 
 
-The second way is to reformulate the REXI approximation scheme given
+%The second way is to 
+We reformulate the REXI approximation scheme given
 by
 
 \[
-(\tau L-\alpha)^{-1}.U(\tau)=U(0)
+(\tau L-\alpha)^{-1} U(\tau)=U(0)
 \]
 and by factoring $\tau$ out, yielding
 
 \[
-(L-\frac{\alpha}{\tau})^{-1}.U(\tau)\tau^{-1}=U(0)
+(L-\frac{\alpha}{\tau})^{-1} U(\tau)\tau^{-1}=U(0)
 \]
 So instead of solving for $U(\tau)$, we are solving for $U^{\tau}(\tau):=U(\tau)\tau^{-1}$
 as well as $\alpha^{\tau}:=\frac{\alpha}{\tau}$.
@@ -388,11 +445,10 @@ as well as $\alpha^{\tau}:=\frac{\alpha}{\tau}$.
 To summarize, we have to solve the system of equations given by
 
 \begin{equation}
-(L-\alpha^{\tau})^{-1}.U^{\tau}(1)=U(0)\label{eq:unit_rexi_timestep}
+(L-\alpha^{\tau})^{-1} U^{\tau}(1)=U(0)\label{eq:unit_rexi_timestep}
 \end{equation}
-with $U(0)$ the initial conditions, $\alpha^{\tau}:=\frac{\alpha}{\tau}$
-and $U(\tau):=U^{\tau}(1)\tau$. For sake of simplicity, we stick
-to the formulation without the prime notation.
+with $U(0)$ the initial conditions. For sake of simplicity, we stick
+to the formulation without the $\tau$ notation.
 
 One final scaling has to be done: the exponential is computing $e^{\tau L}$,
 hence the real-valued $\tau$ has to be included in the operator $L$.
