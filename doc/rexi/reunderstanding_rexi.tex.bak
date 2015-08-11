@@ -3,8 +3,9 @@
 \documentclass[english]{article}
 \usepackage[T1]{fontenc}
 \usepackage[latin9]{inputenc}
-\usepackage{esint}
+%\usepackage{esint}
 \usepackage{babel}
+\usepackage{amsmath}
 \usepackage{amsfonts}
 
 \begin{document}
@@ -19,10 +20,10 @@ et. al.}
 
 \maketitle
 
-\begin{center}
-\textbf{!!!THIS IS A PRELIMINARY, NON PROOF-READ DOCUMENT!!!}
-\par
-\end{center}
+%\begin{center}
+%\textbf{!!!THIS IS A PRELIMINARY, NON PROOF-READ DOCUMENT!!!}
+%\par
+%\end{center}
 
 
 This document serves as the basis for implementing the Rational approximation
@@ -73,7 +74,7 @@ It is further worth noting, that this system describes an oscillatory
 system (2D wave equation), hence the operator $L$ is hyperbolic and has imaginary eigenvalues.
 
 
-\section{Exponential integrator}
+%\section{Exponential integrator}
 
 Linear initial value differential problems are well known to be solvable with exponential
 integrators for arbitrary time step sizes via
@@ -89,7 +90,7 @@ with rational functions and this paper is on giving insight into this
 approximation.
 
 
-\section{Underlying idea of rational approximation}
+\section{1D rational approximation}
 
 Terry et. al. \cite{High-order time-parallel approximation of evolution operators}
 developed a rational approximation of the exponential
@@ -107,7 +108,7 @@ e^{ix}\approx\sum_{n=-N}^{N}\frac{\beta_{n}}{ix-\alpha_{n}}
 with complex coefficients $\alpha_{n}$ and $\beta_{n}$. We point out that the coefficients $\alpha_{n}$ will always have non zero real part, so no singularity occurs with the rational function.
 
 
-\subsection{Step A) Approximation of solution space}
+\subsection{Step A: Approximation of solution space}
 
 First, we assume that we can use Gaussian curves as basis functions
 for our approximation 
@@ -131,12 +132,12 @@ $f(x)$ with a superposition of basis functions $\psi_{h}(x)$ by
 f(x)\approx\sum_{m=-M}^{M}b_{m}\psi_{h}(x+mh)
 \]
 with $M$ controlling the interval of approximation (\textasciitilde{}size
-of ``domain of interest'') and $h$ will be related to the accuracy of integration (\textasciitilde{}resolution in ``domain of interest''). 
+of  ``domain of interest'') and $h$ will be related to the accuracy of integration (\textasciitilde{}resolution in  ``domain of interest''). 
 %and the max. frequency of the oscillations generated
 %by the linear operator. 
 % PP: Needs better explanation
 
-We choose $h$ small enough so that the support of the Fourier transform of $f$ is mainly localised within $[-1/(2h),1/(2h)]$ (i.e. almost zero outside this interval). $M$ is chosen such that the approximation will be adequate in the interval $|x|<Mh$. 
+We choose $h$ small enough so that the support of the Fourier transform of $f$ is mainly localised within $[-1/(2h),1/(2h)]$, i.e. almost zero outside this interval. $M$ is chosen such that the approximation will be adequate in the interval $|x|<Mh$. 
 
 %$M$ and $h$ are connected in the sense that to obtain a good approximation for a larger interval, $M$ needs to be larger and $h$ smaller.
 
@@ -145,12 +146,12 @@ the previous equation in Fourier space with
 \[
 \frac{\hat{f}(\xi)}{\hat{\psi_{h}}(\xi)}=\sum_{m=\infty}^{\infty}b_{m}e^{2\pi imh\xi},
 \]
-where the $\hat{\cdot}$ symbols indicate the Fourier transforms of the respective functions. The $b_m$ are now the Fourier coefficients of the series for the function $\frac{\hat{f}(\xi)}{\hat{\psi_{h}}(\xi)}$ and be calculated as \footnote{see \cite{High-order time-parallel approximation of evolution operators},
+where the $\hat{\cdot}$ symbols indicate the Fourier transforms of the respective functions. The $b_m$ are now the Fourier coefficients of the series for the function $\frac{\hat{f}(\xi)}{\hat{\psi_{h}}(\xi)}$ and can be calculated as \footnote{see \cite{High-order time-parallel approximation of evolution operators},
 page 11}, 
 \[
 b_{m}=h\intop_{-\frac{1}{2h}}^{\frac{1}{2h}}e^{-2\pi imh\xi}\frac{\hat{f}(\xi)}{\hat{\psi_{h}}(\xi)}d\xi,
 \]
-for $m\in \mathbb{Z}$. 
+for $m\in \mathbb{Z}$ and $1/h$ defines the periodicity of the trigonometric basis function. 
 
 Since we are interested in approximating $f(x)=e^{ix}$, we
 can simplify the equation by using the response in frequency space
@@ -180,7 +181,7 @@ The Fourier transform of the Gaussian function is well known and given by
 %\[
 %=\frac{1}{\sqrt{4\pi}}e^{-(2h\pi\xi)^{2}}\intop_{-\infty}^{\infty}e^{-\left(\frac{x}{2h}\right)^{2}}dx
 %\]
-where we used that $\intop_{-\infty}^{\infty}e^{-\left(\frac{x}{2h}\right)^{2}}dx=h\,\sqrt{4\pi}$. For the case $\xi=\frac{1}{2\pi}$, we get
+where we used that $\intop_{-\infty}^{\infty}e^{-\left(\frac{x}{2h}\right)^{2}}dx=h\,\sqrt{4\pi}$ and completed squares in the exponential term. For the case $\xi=\frac{1}{2\pi}$, we get
 
 \[
 \hat{\psi}_{h}\left(\frac{1}{2\pi}\right)=h\,e^{-h^{2}}.
@@ -193,7 +194,7 @@ b_{m}=h\,e^{-imh}\frac{1}{h\,e^{-h^{2}}}=e^{-imh}e^{h^{2}}
 to compute the coefficients $b_{m}$ for $f(x)=e^{ix}$.
 
 
-\subsection{Step B) Approximation of basis function}
+\subsection{Step B: Approximation of basis function}
 
 The second step is the approximation of the basis function $\psi_{h}(x)$
 itself with a rational approximation, see \cite{Near optimal rational approximations of large data sets}.
@@ -212,14 +213,14 @@ with the $\mu$ and $a_{l}$ given in \cite{Near optimal rational approximations o
 Table 1. We can generalise this approximation to arbitrary chosen
 $h$ via 
 \[
-\psi_{h}(x)\approx Re\left(\sum_{l=-L}^{L}\frac{a_{l}}{i\frac{x}{h}+(\mu+i\,l)}\right)
+\psi_{h}(x)\approx Re\left(\sum_{l=-L}^{L}\frac{a_{l}}{i\frac{x}{h}+(\mu+i\,l)}\right).
 \]
 
+The theory of how these coefficients are calculated are in \cite{Near optimal rational approximations of large data sets} and will not be described here. Therefore, we assume that the coefficients $a_l$ are given.
 
+\subsection{Step C: Approximation of the approximation}
 
-\subsection{Step C) Approximation of the approximation}
-
-We then combine the approximation (B) of the approximation (A), yielding the approximation for $f$ given by
+We then combine the approximation (B) into the approximation (A), yielding the approximation $\tilde{f}$ for $f$ given by
 \[
 \tilde{f}(x)=\sum_{m=-M}^{M}b_{m}\psi_{h}(x+mh)=\sum_{m=-M}^{M}b_{m}Re\left(\sum_{l=-L}^{L}\frac{a_{l}}{i\frac{x+mh}{h}+(\mu+i\,l)}\right)
 \]
@@ -253,7 +254,7 @@ Re(\tilde{f}(x))& =& \sum_{n=-N}^{N}\,\sum_{k=L_1}^{L_2}Re(b_{n-k})Re\left(\frac
 & =& Re\left(\sum_{n=-N}^{N}\, \sum_{k=L_1}^{L_2}Re(b_{n-k})\frac{ha_{k}}{ix+\alpha_{n}}\right) \\
 & =& Re\left(\sum_{n=-N}^{N}\frac{1}{ix+\alpha_{n}}\, h \sum_{k=L_1}^{L_2}Re(b_{n-k})a_{k}\right).
 \end{eqnarray*}
-By setting the real residue as 
+Defining the residue as 
 \begin{equation}
 \beta^{Re}_{n}:=h \sum_{k=L_1}^{L_2}Re(b_{n-k})a_{k},
 \label{eq:beta_re}
@@ -263,7 +264,17 @@ we have that
 Re(\tilde{f}(x))=Re\left(\sum_{n=-N}^{N}\frac{\beta^{Re}_n}{ix+\alpha_{n}}\right).
 \]
 
-For the imaginary part of $f(x)$ we analogously have that
+Therefore, if $f$ is in fact real, we should be able to directly apply
+\[
+\tilde{f}(x)=\sum_{n=-N}^{N}\frac{\beta_n}{ix+\alpha_{n}},
+\]
+where we have dropped the index in the $\beta$ coefficients, but explicitly state that they are given by
+\begin{equation}
+\beta_{n}:=h \sum_{k=L_1}^{L_2}Re(b_{n-k})a_{k}.
+\label{eq:beta}
+\end{equation}
+
+If $f$ is complex, its imaginary part can be analogously found by
 \[
 Im(\tilde{f}(x)) = Re\left(\sum_{n=-N}^{N}\frac{\beta_n^{Im}}{ix+\alpha_{n}}\right),
 \]
@@ -303,11 +314,13 @@ e^{ix}\approx\sum_{n=-N}^{N}Re\left(\frac{\beta_{n}^{Re}}{ix+\alpha_{n}}\right)+
 for the complex-valued function $e^{ix}$.
 
 
-\section{Matrix exponential}
+\section{REXI on linear operators}
+
+\subsection{Matrix exponential}
 \label{sec:mat_exp}
-Finally, we like to apply REXI to a formulation such as 
+We would like to apply REXI to a formulation such as 
 \[
-U(t):=e^{tL}U(0).
+U(t)=e^{tL}U(0).
 \]
 To see the relationship between the approximation of $e^{ix}$ with $e^{tL}$ we assume that $L$ is skew hermitian and therefore has only purely imaginary eigenvalues, and maybe decomposed as $\Sigma\Lambda\Sigma^{H}$, yielding
 \[
@@ -320,7 +333,7 @@ e^{t\Lambda}=\left(\begin{array}{ccc}
 ...\\
  & e^{i\lambda_{n}t}\\
  &  & ...
-\end{array}\right)
+\end{array}\right),
 \]
 where we hare explicitly detached the imaginary unit from the eigenvalues, therefore $\lambda_n$ are assumed real. Since $e^{t\Lambda}$ is diagonal, it can be eigenvalue-wise approximated in the same way as in $e^{ix}$.
 
@@ -337,14 +350,6 @@ Some important points about the choice of $M$ and $h$ have to be made at this po
 %to refer to \cite{High-order time-parallel approximation of evolution operators}.
 
 
-\section{Filtering}
-
-The method described in the previous section is well defined for skew hermitian $L$. If $L$ is not skew hermitian, the real eigenvalues might cause the REXI to have absolute values larger than 1, which can lead to instabilities if used as time stepping method.
-
-To ensure that the REXI is bounded by unit, a filtering process is proposed in \cite{High-order time-parallel approximation of evolution operators}. REXI is prone to exceed unit in the neighbourhood of $| t \lambda | \approx hM$, therefore in the highest frequencies. The idea is to construct a rational function $S(ix)$ that is approximately $1$ in a smaller interval   $  | t \lambda | < hM_0 $, with $M_0<M$, and decays very fast to zero outside this interval. Then we multiply this filters function to the original REXI, which will lead to a unit bounded REXI.
-
-Further details of how $S(ix)$ is computed will be added later.
-
 %However, the interpolated values can exceed this unity due to interpolation
 %properties (think of a Lagrangian interpolation of high order, leading
 %to large oscillations with the possibility of exceeding the local
@@ -354,7 +359,6 @@ Further details of how $S(ix)$ is computed will be added later.
 %in the interpolation range is always bounded by unity.
 
 
-\section{REXI on linear operators, ``our little wild dog''}
 
 We want to evaluate $e^{\tau L}U(0)$ with REXI, where $\tau$ will be a time step size and $U(0)$ the initial condition for this time step.  We will assume $\tau$ a-priori fixed, which implies that the coefficients in REXI will not change and may be pre-computed.
 
@@ -392,36 +396,17 @@ avoids computing half of the inverses,
 
 
 
-\subsection{Computing inverse of $(L-\alpha)^{-1}$}
-
-For computing the inverse, arbitrary solvers can be used. However
-we like to note, that $\alpha$ is a complex number. Hence, requiring
-solvers with support for solving in complex space. As an example,
-we consider a specialization on the shallow-water equations given
-above with
-
-\[
-L(U(t)):=\left(\begin{array}{ccc}
- & H\delta_{x} & H\delta_{y}\\
-g\delta_{x} &  & -f\\
-g\delta_{y} & f
-\end{array}\right)U(t)
-\]
-\[
-U_{t}(t):=L(U(t))
-\]
-and we set $g:=1$ and the average height $H:=1$. 
 
 
 \subsection{Handling $\tau$ in REXI\label{sub:Handling-tau-in-REXI}}
 
-We recall the formulation of the solution as an exponential integrator
-
-\[
-U(t)=e^{tL}U(0)
-\]
-which formally allows us to join the integration in time given by
-$t$ with the $L$ operator in case of such a formulation. 
+%We recall the formulation of the solution as an exponential integrator
+%
+%\[
+%U(t)=e^{tL}U(0)
+%\]
+%which formally allows us to join the integration in time given by
+%$t$ with the $L$ operator in case of such a formulation. 
 
 %There are
 %basically two different ways to handle this scaling:
@@ -479,41 +464,62 @@ to the formulation without the $\tau$ notation.
 %the computed solution by $\tau$ in the end.
 
 
-\subsection{Solving as an elliptic problem}
+\subsection{Computing inverse of $(L-\alpha)^{-1}$}
+
+For computing the inverse, arbitrary solvers can be used. However
+we like to note, that $\alpha$ is a complex number. Hence, requiring
+solvers with support for solving in complex space.
+
+% As an example,
+%we consider a specialization on the shallow-water equations given
+%above with
+
+%\[
+%L(U(t)):=\left(\begin{array}{ccc}
+% & H\delta_{x} & H\delta_{y}\\
+%g\delta_{x} &  & -f\\
+%g\delta_{y} & f
+%\end{array}\right)U(t)
+%\]
+%\[
+%U_{t}(t):=L(U(t)).
+%\]
+%and we set $g:=1$ and the average height $H:=1$. 
+
 
 We wish to solve the differential problem for each time step
-\[ (L-\alpha)U=U_0 \]
-so that $U=(L-\alpha)^{-1}U_0$. Expanding the equations with the definition of $L$ brings us to
+\[ (L-\alpha)U=U_0 \] so that $U=(L-\alpha)^{-1}U_0$. We will do this converting the problem into and elliptic equation.
+
+
+First, lets expand the equations with the definition of $L$,
 \begin{eqnarray}
- -f v - g\eta_x -\alpha u &=& u_0 
+ -f v - g\eta_x -\alpha u &=& u_0 ,
  \label{eq:mom_u}\\
-f u - g\eta_y -\alpha v &=& v_0 
+f u - g\eta_y -\alpha v &=& v_0, 
  \label{eq:mom_v} \\
- H ( u_x+v_y) -\alpha \eta  &=& \eta_0
+ H ( u_x+v_y) -\alpha \eta  &=& \eta_0.
  \label{eq:mass}
 \end{eqnarray}
 
 Let $f$ be constant (f-plane approximation), $\delta:=u_x+v_y$ be the wind divergence, $\zeta:=v_x-u_y$ be the wind (relative) vorticity and $\Delta \eta:= \eta_{xx}+\eta_{yy}$ the Laplacian of the fluid depth. We will re-write the problem in a divergence-vorticity formulation by taking 2 steps. First, sum the $\partial_x$ of equation (\ref{eq:mom_u}) and the $\partial_y$ of equation (\ref{eq:mom_v}), yielding
 \begin{equation}
--f\zeta -g \Delta \eta - \alpha \delta = \delta _0,
+-f\zeta -g \Delta \eta - \alpha \delta = \delta _0.
 \label{eq:zeta}
 \end{equation}
-then subtract the $\partial_y$ of equation (\ref{eq:mom_u}) from the $\partial_x$ of equation (\ref{eq:mom_v}), yielding
+Then subtract the $\partial_y$ of equation (\ref{eq:mom_u}) from the $\partial_x$ of equation (\ref{eq:mom_v}), yielding
 \begin{equation}
-f\delta - \alpha \zeta = -\zeta_0.
+f\delta - \alpha \zeta = \zeta_0.
 \label{eq:delta}
 \end{equation}
 Using equation (\ref{eq:zeta}) in equation (\ref{eq:delta}) gives us
+
 \[
-\left(1+\frac{\alpha^2}{f^2}\right)\delta =- \frac{\alpha}{f^2}(g \Delta \eta + \delta _0)  -\frac{1}{f}\zeta_0,
-\]
-\[
-\delta =- \frac{1}{f^ 2+\alpha^ 2} \left( \alpha g \Delta \eta + \alpha \delta _0  + f\zeta_0 \right).
+\delta =- \frac{1}{f^ 2+\alpha^ 2} \left( \alpha g \Delta \eta + \alpha \delta _0  - f\zeta_0 \right).
 \]
 
 Finally, substituting $\delta$ in equation (\ref{eq:mass}), that reads  $ H \delta -\alpha \eta  = \eta_0$, results in
 \[
-- \frac{H}{f^ 2+\alpha^ 2} \left( \alpha g \Delta \eta + \alpha \delta _0  + f\zeta_0 \right) -\alpha \eta  = \eta_0 ,
+- \frac{H}{f^ 2+\alpha^ 2} \left( \alpha g \Delta \eta + \alpha \delta _0  - f\zeta_0 \right) -\alpha \eta  = \eta_0 ,
 \]
 which may be simplified into the elliptic Helmholtz equation by multiplying by $ - \frac{f^ 2+\alpha^ 2}{H\alpha g}$
 
@@ -521,20 +527,47 @@ which may be simplified into the elliptic Helmholtz equation by multiplying by $
 \Delta \eta  + \kappa^2 \eta  = r_0
 \label{eq:hemholtz}
 \end{equation}
-where \[ \kappa^2=\frac{f^2+\alpha^2}{Hg} \] and \[r_0=\eta_0 -\frac{1}{g}\delta_0 - \frac{f}{\alpha g} \zeta_0. \]
+where \[ \kappa^2=\frac{f^2+\alpha^2}{Hg} \] and 
+\[
+r_0=-\frac{\kappa^2}{\alpha}\eta_0 -\frac{1}{g}\delta_0 + \frac{f}{\alpha g} \zeta_0. 
+\]
 
 
-Once $\eta$ is calculated, we need to retrieve the velocities by solving the $2\times 2$ system formed by equations (\ref{eq:mom_u}) and (\ref{eq:mom_v}), which gives
+Once $\eta$ is calculated from any Helmholtz solver, we need to retrieve the velocities by solving the $2\times 2$ system formed by equations (\ref{eq:mom_u}) and (\ref{eq:mom_v}), which reads
+\[
+A_{\alpha}U=U_0+g\nabla \eta
+\]
+with
+\[A_{\alpha}=
+\left( \begin{matrix}
+-\alpha & -f \\
+f & -\alpha 
+\end{matrix}
+\right).
+\]
+The solution is
 \begin{equation}
-u=\frac{f}{f^2+\alpha^2}\left[g(\eta_y-\frac{\alpha}{f}\eta_x)+v_0-\frac{\alpha}{f}u_0 \right]
+u=-\frac{1}{f^2+\alpha^2}\left[g(\alpha\eta_x-f\eta_y)+\alpha u_0-fv_0 \right]
 \label{eq:elliptic_velocity_u}
 \end{equation}
 and
 \begin{equation}
-v=\frac{-\alpha}{f^2+\alpha^2}\left[g(\eta_y+\frac{f}{\alpha}\eta_x)+v_0-\frac{f}{\alpha}u_0 \right].
+v=-\frac{1}{f^2+\alpha^2}\left[g(f\eta_x+\alpha\eta_y)+f u_0+\alpha v_0 \right],
 \label{eq:elliptic_velocity_v}
 \end{equation}
-
+which may be written as
+\[
+U=A^ {-1}_{\alpha}(g\nabla \eta+U_0)	
+\]
+where
+\[
+A^ {-1}_{\alpha}=-\frac{1}{f^2+\alpha^2}
+\left( \begin{matrix}
+\alpha & -f \\
+f & \alpha 
+\end{matrix}.
+\right)
+\]
 
 %We like to mention again, that we can use arbitrary solvers and in
 %this work, we focus on a reformulation into an eliptic problem. Following
@@ -560,7 +593,7 @@ v=\frac{-\alpha}{f^2+\alpha^2}\left[g(\eta_y+\frac{f}{\alpha}\eta_x)+v_0-\frac{f
 %
 
 %
-%\subsection{f-plane}
+% \subsection{f-plane}
 %
 %Assuming an f-plane approximation (f is constant), we can rearrange
 %this equation by using the abbreviations $\kappa:=\alpha^{2}+f^{2}$
@@ -640,14 +673,21 @@ Indeed, we saw in section \ref{sec:mat_exp} that for larger $\tau$, $M$ needs to
 %hidden in the paper{]}
 
 
+\section{Filtering}
+
+The method described in the previous section is well defined for skew hermitian $L$. If $L$ is not skew hermitian, the real eigenvalues might cause the REXI to have absolute values larger than 1, which can lead to instabilities if used as time stepping method.
+
+To ensure that the REXI is bounded by unit, a filtering process is proposed in \cite{High-order time-parallel approximation of evolution operators}. REXI is prone to exceed unit in the neighbourhood of $| t \lambda | \approx hM$, therefore in the highest frequencies. The idea is to construct a rational function $S(ix)$ that is approximately $1$ in a smaller interval   $  | t \lambda | < hM_0 $, with $M_0<M$, and decays very fast to zero outside this interval. Then we multiply this filters function to the original REXI, which will lead to a unit bounded REXI.
+
+Further details of how $S(ix)$ is computed will be added later.
+
 \section{Bringing everything together}
 
 Using the spectral methods (e.g. in SWEET), we can directly solve
-the height Eq. (\ref{eq:hemholtz}) and then solver for the
-velocity in Eqs. (\ref{eq:elliptic_velocity_u},\ref{eq:elliptic_velocity_v}). Note that the H
+the Helmholtz problem for the height in Eq. (\ref{eq:hemholtz}) and then solver for the
+velocity in Eqs. (\ref{eq:elliptic_velocity_u},\ref{eq:elliptic_velocity_v}). Note that the Helmholtz problem is in complex space, as $\alpha$ is complex. this is straightforward with spectral methods. for finite difference/element methods, the problems needs to be split into its real and imaginary parts.
 
-Then, the problem is
-reduced to computing the REXI as given in Eq. (\ref{eq:rexi}). We
+Then, the problem is reduced to computing the REXI as given in Eq. (\ref{eq:rexi}). We
 like to note again, that the $\alpha_{n}$ and $\beta_{n}$ are independent
 of the system $L$ to solve, and the number of coefficients only depends
 on the accuracy and the resolution.
