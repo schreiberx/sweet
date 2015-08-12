@@ -1,4 +1,4 @@
-%% LyX 2.1.4 created this file.  For more info, see http://www.lyx.org/.
+%% LyX 2.1.3 created this file.  For more info, see http://www.lyx.org/.
 %% Do not edit unless you really know what you are doing.
 \documentclass[english]{article}
 \usepackage[T1]{fontenc}
@@ -23,7 +23,8 @@
 \author{Martin Schreiber <M.Schreiber@exeter.ac.uk>}
 
 
-\date{\emph{2015-07-13}}
+%\date{\emph{2015-07-13}}
+%\date{}
 
 \maketitle
 There are a variety of different formulations for the shallow-water
@@ -33,16 +34,15 @@ different formulations and how they are approximated.
 
 \section{Overview}
 
+We will adopt the following terminology:
 \begin{tabular}{|c|l|}
 \hline 
-\textbf{Symbol} & \textbf{Description}\tabularnewline
+ Symbol & Definition \tabularnewline
 \hline 
 \hline 
-$h$ & Water height\tabularnewline
+$h$ & Fluid layer depth/height\tabularnewline
 \hline 
-$h_{0}$ & Mean water depth\tabularnewline
-\hline 
-\uline{$u$} & Velocity in x direction\tabularnewline
+$u$ & Velocity in x direction\tabularnewline
 \hline 
 $v$ & Velocity in y direction\tabularnewline
 \hline 
@@ -50,26 +50,23 @@ $hu$ & Momentum in x direction\tabularnewline
 \hline 
 $hv$ & Momentum in y direction\tabularnewline
 \hline 
-$\zeta_{R}$ & Relative vorticity\tabularnewline
-\hline 
-$\zeta_{A}$ & Absolute vorticity ($\zeta_{R}+f$)\tabularnewline
-\hline 
-$q$ & Potential vorticity ($\frac{\zeta_{A}}{h}$)\tabularnewline
+$\eta$ & Potential vorticity\tabularnewline
 \hline 
 $g$ & Gravity\tabularnewline
 \hline 
-$\Phi$ & Bernoulli potential\tabularnewline
+$H$ & Bernoulli potential\tabularnewline
 \hline 
-$f$ & Coriolis force $2\Omega sin(\phi)$\tabularnewline
+$f$ & Coriolis frequency \tabularnewline
 \hline 
-$p_{0}$ & Steady state of a quantity $p$\tabularnewline
+$p_{0}$ & Steady state of quantity\tabularnewline
 \hline 
 $p'$ & Perturbation of $p_{0}$\tabularnewline
 \hline 
 \end{tabular}
 
+We will also assume no bottom topography (orography/bathymetry), so the fluid layer height is the total height. 
 
-\section{Flux formulation (momentum, conservative formulation)}
+\section{Momentum formulation}
 
 The conservative formulation uses the momentum $(hu,hv)$ as the conserved
 quantities. In this form, the equations are given as
@@ -95,13 +92,11 @@ as the conservative form.
 Please note, that this formulation contains several non-linear terms!
 
 
-\section{Advective formulation (non-conservative formulation)}
+\section{Non-conservative formulation}
 
-This is a formulation which makes it more challenging to get conservative
-properties such as for the momentum, hence it is also called non-conservative
-formulation. By using the produce rule, we can reformulate the equations
-above to make the velocities conserved quantities. Here, we first
-apply the produce rule to $(hu)_{t}$
+By using the produce rule, we can reformulate the equations above
+to make the velocities conserved quantities. Here, we first apply
+the produce rule to $(hu)_{t}$
 
 \[
 hu_{t}+h_{t}u+h_{x}u^{2}+2huu_{x}+ghh_{x}+(hu)_{y}v+huv_{y}-fv=0
@@ -162,11 +157,7 @@ uv_{x}+vv_{y}
 
 
 
-\section{Vector invariant formulation (vorticity formulation)}
-
-The vector invariant formulation is used in models such as NEMO, GungHo,
-MPAS, etc. The discretization of it strongly differs between the different
-models.
+\section{Vorticity formulation}
 
 For certain reasons such as energy and enstropy conservation, the
 equations are reformulated and split into the vorticity and H component.
@@ -182,10 +173,10 @@ u_{t}-vv_{x}+vu_{y}+(gh+u^{2}+v^{2})_{x}-fv=0
 \]
 
 
-and set $\Phi:=gh+u^{2}+v^{2}$ and $\zeta_{A}:=v_{x}-u_{y}+f$, yielding
+and set $H:=gh+u^{2}+v^{2}$ and $\eta:=v_{x}-u_{y}+f$, yielding
 
 \[
-u_{t}-v\zeta_{A}+\Phi_{x}=0
+u_{t}-v\eta+H_{x}=0
 \]
 
 
@@ -209,19 +200,19 @@ h_{t}+(hu)_{x}+(hv)_{y}=0
 
 
 \[
-u_{t}-v\zeta_{A}+\Phi_{x}=0
+u_{t}-v\eta+H_{x}=0
 \]
 
 
 \[
-v_{t}+u\zeta_{A}+\Phi_{y}=0
+v_{t}+u\eta+H_{y}=0
 \]
 
 
 
 \section{Full linearization with perturbation}
 
-The advective equations can be linearized around a perturbation $p=p_{0}+p'$,
+The equations can be linearized around a perturbation $p=p_{0}+p'$,
 with $p\in\{h,u,v\}$with $p_{0}$denoting a constant steady state.
 Assuming $a'b'<O(\epsilon)$, we can use
 
@@ -234,8 +225,8 @@ h'_{t}+h_{0}(u'_{x}+v'_{x})+h'_{x}(u_{0}+v_{0})=0
 \]
 
 
-Further, we assume a low velocity $\{|u_{0}|,|v_{0}|\}<O(\epsilon)$
-and hence \emph{neglect the non-linear }parts. This yields
+Further, we assume a low velocity $\{|u_{0}|,|v_{0}|\}<O(\epsilon)$,
+yielding
 
 \[
 h'_{t}+h_{0}u'_{x}+h_{0}v'_{x}=0
@@ -288,10 +279,9 @@ U_{t}+L(U)=0
 
 \section{Linear/Non-linear version:}
 
-In the equation above, we neglected also the non-linear velocities
-by assuming close-to-zero velocities. Assuming, that their influence
-is of high importance, we can write the equations in a form which
-is not neglecting these equations:
+In the equation above, we neglected also the non-linear velocities.
+Assuming, that their influence is of high importance, we can write
+the equations in a form which is not neglecting these equations:
 
 \[
 U_{t}+L(U)+N(U)=0
