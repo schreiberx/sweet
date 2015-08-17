@@ -525,7 +525,7 @@ which may be simplified into the elliptic Helmholtz equation by multiplying by $
 
 \begin{equation}
 \Delta \eta  + \kappa^2 \eta  = r_0
-\label{eq:hemholtz}
+\label{eq:helmhotz}
 \end{equation}
 where \[ \kappa^2=\frac{f^2+\alpha^2}{Hg} \] and 
 \[
@@ -678,9 +678,9 @@ We are interested in solving a system of the form,
 \[
 (L-\alpha)U=U_0,
 \]
-where $\alpha$ is a complex number, therefore we must allow complex solutions for $U$. The system cam be transformed to have only real arithmetic in the following way.
+where $\alpha$ is a complex number, therefore we must allow complex solutions for $U$. The system can be transformed to have only real arithmetic in the following way.
 
-First we decompose $U$ into its real and imaginary parts, $U=U^{r}+iU^{i}$, and allow $U_0$ to be decomposed in the same way. Although $\alpha$ can be a general complex number, it real part is always constant in REXI, given by $\mu$. We will therefore write $\alpha=\mu+i\alpha^i$, and we can absorve $\mu$ into $L$ writing $D=L-\mu I$, where $I$ is the identity matrix. Now
+First we decompose $U$ into its real and imaginary parts, $U=U^{r}+iU^{i}$, and allow $U_0$ to be decomposed in the same way. Although $\alpha$ can be a general complex number, it real part is always constant in REXI, given by $\mu$. We will therefore write $\alpha=\mu+i\alpha^i$, and we can absorb $\mu$ into $L$ writing $D=L-\mu I$, where $I$ is the identity matrix. Now
 \[
 (D-i\alpha^i)(U^r+iU^i)=U^r_0+iU_0^i,
 \]
@@ -732,14 +732,13 @@ U^i_0
 A similar approach may be taken with the elliptic equation
 \begin{equation}
 \Delta \eta  + \theta \eta  = r_0,
-\label{eq:hemholtz}
 \end{equation}
 where $\eta$, $\theta$ and $r_0$ may be complex. The resulting system is given by
 \begin{eqnarray}
  \Delta \eta^r+\theta^r\eta^r-\theta^i\eta^i=r^r_0, \\
  \Delta \eta^i+\theta^i\eta^r+\theta^r\eta^i=r^i_0,
 \end{eqnarray}
-which can also be written in matrix notation and solved with arbitray elliptic equation solver.
+which can also be written in matrix notation and solved with arbitrary elliptic equation solvers.
 
 
 \section{Filtering}
@@ -753,7 +752,7 @@ Further details of how $S(ix)$ is computed will be added later.
 \section{Bringing everything together}
 
 Using the spectral methods (e.g. in SWEET), we can directly solve
-the Helmholtz problem for the height in Eq. (\ref{eq:hemholtz}) and then solver for the
+the Helmholtz problem for the height in Eq. (\ref{eq:helmhotz}) and then solver for the
 velocity in Eqs. (\ref{eq:elliptic_velocity_u},\ref{eq:elliptic_velocity_v}). Note that the Helmholtz problem is in complex space, as $\alpha$ is complex. this is straightforward with spectral methods. for finite difference/element methods, the problems needs to be split into its real and imaginary parts.
 
 Then, the problem is reduced to computing the REXI as given in Eq. (\ref{eq:rexi}). We
@@ -798,10 +797,6 @@ time-parallel approximation of evolution operators, T. Haut et. al.
 \bibitem{An asymptotic parallel-in-time method for highly oscillatory PDEs}An
 asymptotic parallel-in-time method for highly oscillatory PDEs, T.
 Haut et. al.
-
-\bibitem{An invariant theory of the linearized shallow water equations with rotation and its application to a sphere and a plane}An
-invariant theory of the linearized shallow water equations with rotation
-and its application to a sphere and a plane, N. Paldor et. al.
 
 \bibitem{Nineteen Dubious Ways to Compute the Exponential of a Matrix}Nineteen
 Dubious Ways to Compute the Exponential of a Matrix, Twenty-Five Years
