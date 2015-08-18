@@ -693,8 +693,8 @@ We can also split these equations in linear and non-linear parts:
 \[
 L(U):=\left(\begin{array}{ccc}
 \\
-g\partial_{x} &  & -f\\
-g\partial_{y} & f
+g\delta_{x} &  & -f\\
+g\delta_{y} & f
 \end{array}\right)U
 \]
 
@@ -956,9 +956,9 @@ We can write these equations, in any of the above formulations, as a linear
 \begin_inset Formula 
 \[
 L(U):=\left(\begin{array}{ccc}
-0 & \eta_{0}\partial_{x} & \eta_{0}\partial_{y}\\
-g\partial_{x} & 0 & -f\\
-g\partial_{y} & f & 0
+0 & \eta_{0}\delta_{x} & \eta_{0}\delta_{y}\\
+g\delta_{x} & 0 & -f\\
+g\delta_{y} & f & 0
 \end{array}\right)U,
 \]
 

@@ -1,0 +1,2044 @@
+#LyX 2.1 created this file. For more info see http://www.lyx.org/
+\lyxformat 474
+\begin_document
+\begin_header
+\textclass article
+\begin_preamble
+\usepackage{babel}
+\end_preamble
+\use_default_options false
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding iso8859-15
+\fontencoding T1
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_math auto
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 2
+\use_package amssymb 0
+\use_package cancel 0
+\use_package esint 1
+\use_package mathdots 0
+\use_package mathtools 0
+\use_package mhchem 0
+\use_package stackrel 0
+\use_package stmaryrd 0
+\use_package undertilde 0
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Understanding the Rational Approximation of the Exponential Integrator (REXI)
+\end_layout
+
+\begin_layout Author
+Martin Schreiber <M.Schreiber@exeter.ac.uk>
+\begin_inset Newline newline
+\end_inset
+
+ Pedro S.
+ Peixoto <pedrosp@ime.usp.br>
+\begin_inset Newline newline
+\end_inset
+
+ et al.
+\end_layout
+
+\begin_layout Standard
+This document serves as the basis for implementing the Rational approximation
+ of the EXponential Integrator (REXI).
+ Here, we purely focus on the linear part of the shallow-water equations
+ (SWE) and show the different steps to approximate solving this linear part
+ with an exponential integrator.
+ This paper mainly summarises previous work on REXI.
+\end_layout
+
+\begin_layout Section
+Problem formulation
+\end_layout
+
+\begin_layout Standard
+We use linearised shallow water equations (SWE) with respect to a rest state
+ with mean water depth of 
+\begin_inset Formula $\eta_{0}$
+\end_inset
+
+ and defined for perturbations of height 
+\begin_inset Formula $\eta$
+\end_inset
+
+ (see 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Schreiber:Formulations of the shallow-water equations"
+
+\end_inset
+
+).
+ The linear operator (
+\begin_inset Formula $L$
+\end_inset
+
+) may be written as
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+L(U):=\left(\begin{array}{ccc}
+0 & \eta_{0}\partial_{x} & \eta_{0}\partial_{y}\\
+g\partial_{x} & 0 & -f\\
+g\partial_{y} & f & 0
+\end{array}\right)U
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $U:=(\eta,u,v)^{T}$
+\end_inset
+
+.
+ Here, we neglect all non-linear terms and consider 
+\begin_inset Formula $f$
+\end_inset
+
+ constant (f-plane approximation).
+ The time evolution of the PDE, with the subscript 
+\begin_inset Formula $t$
+\end_inset
+
+ denoting the derivative in time, is given by
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+U_{t}=L(U).
+\]
+
+\end_inset
+
+It is further worth noting, that this system describes an oscillatory system
+ (2D wave equation), hence the operator 
+\begin_inset Formula $L$
+\end_inset
+
+ is hyperbolic and has imaginary eigenvalues.
+ Linear initial value differential problems are well known to be solvable
+ with exponential integrators for arbitrary time step sizes via 
+\begin_inset Formula 
+\[
+U(t)=e^{Lt}U(0).
+\]
+
+\end_inset
+
+see e.g.
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Moler:Nineteen Dubious Ways to Compute the Exponential of a Matrix"
+
+\end_inset
+
+.
+ However, this is typically quite expensive to compute and analytic solutions
+ only exist for some simplified system of equations, see e.g.
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Schreiber:Formulations of the shallow-water equations"
+
+\end_inset
+
+ for f-plane shallow-water equations.
+ These exponential integrators can be approximated with rational functions
+ and this paper is on giving insight into this approximation.
+\end_layout
+
+\begin_layout Section
+1D rational approximation
+\end_layout
+
+\begin_layout Standard
+Terry et.
+ al.
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Terry:High-order time-parallel approximation of evolution operators"
+
+\end_inset
+
+ developed a rational approximation of the exponential integrator.
+ First, we like to get more insight into it with a one-dimensional formulation
+ before applying REXI to a rational approximation of a linear operator.
+ Our main target is to find an approximation of an operator with a 
+\emph on
+complex exponential shape
+\emph default
+, in our case 
+\begin_inset Formula $e^{ix}$
+\end_inset
+
+, which (in one-dimension) is given as a function 
+\begin_inset Formula $f(x)$
+\end_inset
+
+.
+ We will end up in an approximation given by the following rational approximatio
+n:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+e^{ix}\approx\sum_{n=-N}^{N}\frac{\beta_{n}}{ix-\alpha_{n}}
+\]
+
+\end_inset
+
+with complex coefficients 
+\begin_inset Formula $\alpha_{n}$
+\end_inset
+
+ and 
+\begin_inset Formula $\beta_{n}$
+\end_inset
+
+.
+ We point out that the coefficients 
+\begin_inset Formula $\alpha_{n}$
+\end_inset
+
+ will always have non zero real part, so no singularity occurs with the
+ rational function.
+\end_layout
+
+\begin_layout Subsection
+Step A: Approximation of solution space
+\end_layout
+
+\begin_layout Standard
+First, we assume that we can use Gaussian curves as basis functions for
+ our approximation.
+ So first we find an approximation of one of our underlying Gaussian basis
+ function
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\psi_{h}(x):=(4\pi)^{-\frac{1}{2}}e^{-x^{2}/(4h^{2})}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In this formulation, 
+\begin_inset Formula $h$
+\end_inset
+
+ can be interpreted as the horizontal 
+\begin_inset Quotes eld
+\end_inset
+
+stretching
+\begin_inset Quotes erd
+\end_inset
+
+ of the basis function.
+ Note the similarities to the Gaussian distribution, but by dropping certain
+ parts of the vertical scaling as it is required for probability distributions.
+ We can now approximate our function 
+\begin_inset Formula $f(x)$
+\end_inset
+
+ with a superposition of basis functions 
+\begin_inset Formula $\psi_{h}(x)$
+\end_inset
+
+ by
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+f(x)\approx\sum_{m=-M}^{M}b_{m}\psi_{h}(x+mh)
+\]
+
+\end_inset
+
+with 
+\begin_inset Formula $M$
+\end_inset
+
+ controlling the interval of approximation (~size of 
+\begin_inset Quotes eld
+\end_inset
+
+domain of interest
+\begin_inset Quotes erd
+\end_inset
+
+) and 
+\begin_inset Formula $h$
+\end_inset
+
+ will be related to the accuracy of integration (~resolution in 
+\begin_inset Quotes eld
+\end_inset
+
+domain of interest
+\begin_inset Quotes erd
+\end_inset
+
+).
+ We choose 
+\begin_inset Formula $h$
+\end_inset
+
+ small enough so that the support of the Fourier transform of 
+\begin_inset Formula $f$
+\end_inset
+
+ is mainly localised within 
+\begin_inset Formula $[-1/(2h),1/(2h)]$
+\end_inset
+
+, i.e.
+ almost zero outside this interval.
+ 
+\begin_inset Formula $M$
+\end_inset
+
+ is chosen such that the approximation will be adequate in the interval
+ 
+\begin_inset Formula $|x|<Mh$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+To compute the coefficients 
+\begin_inset Formula $b_{m}$
+\end_inset
+
+, we rewrite the previous equation in Fourier space with 
+\begin_inset Formula 
+\[
+\frac{\hat{f}(\xi)}{\hat{\psi_{h}}(\xi)}=\sum_{m=\infty}^{\infty}b_{m}e^{2\pi imh\xi},
+\]
+
+\end_inset
+
+where the 
+\begin_inset Formula $\hat{\cdot}$
+\end_inset
+
+ symbols indicate the Fourier transforms of the respective functions.
+ The 
+\begin_inset Formula $b_{m}$
+\end_inset
+
+ are now the Fourier coefficients of the series for the function 
+\begin_inset Formula $\frac{\hat{f}(\xi)}{\hat{\psi_{h}}(\xi)}$
+\end_inset
+
+ and can be calculated as (see 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Terry:High-order time-parallel approximation of evolution operators"
+
+\end_inset
+
+, page 11), 
+\begin_inset Formula 
+\[
+b_{m}=h\intop_{-\frac{1}{2h}}^{\frac{1}{2h}}e^{-2\pi imh\xi}\frac{\hat{f}(\xi)}{\hat{\psi_{h}}(\xi)}d\xi,
+\]
+
+\end_inset
+
+for 
+\begin_inset Formula $m\in\mathbb{Z}$
+\end_inset
+
+ and 
+\begin_inset Formula $1/h$
+\end_inset
+
+ defines the periodicity of the trigonometric basis function.
+\end_layout
+
+\begin_layout Standard
+Since we are interested in approximating 
+\begin_inset Formula $f(x)=e^{ix}$
+\end_inset
+
+, we can simplify the equation by using the response in frequency space
+ 
+\begin_inset Formula $\hat{f}(\xi)=\delta(\xi-\frac{1}{2\pi})$
+\end_inset
+
+, where here 
+\begin_inset Formula $\delta$
+\end_inset
+
+ is the Dirac distribution, and
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+b_{m}=h\,e^{-imh}\hat{\psi_{h}}(\frac{1}{2\pi})^{-1}.
+\]
+
+\end_inset
+
+The Fourier transform of the Gaussian function is well known and given by
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{eqnarray*}
+\hat{\psi_{h}}(\xi) & = & \intop_{-\infty}^{\infty}\frac{1}{\sqrt{4\pi}}e^{-\left(\frac{x}{2h}\right)^{2}}e^{-2\pi ix\xi}dx\\
+ & = & \frac{1}{\sqrt{4\pi}}\intop_{-\infty}^{\infty}e^{-\left(\left(\frac{x}{2h}\right)^{2}+2\pi ix\xi+(2h\pi i\xi)^{2}-(2h\pi i\xi)^{2}\right)}dx\\
+ & = & \frac{1}{\sqrt{4\pi}}e^{-(2h\pi\xi)^{2}}\intop_{-\infty}^{\infty}e^{-\left(\frac{x}{2h}+2h\pi i\xi\right)^{2}}dx\\
+ & = & \frac{1}{\sqrt{4\pi}}e^{-(2h\pi\xi)^{2}}\intop_{-\infty}^{\infty}e^{-\left(\frac{x}{2h}\right)^{2}}dx\\
+ & = & he^{-(2h\pi\xi)^{2}}
+\end{eqnarray*}
+
+\end_inset
+
+where we used that 
+\begin_inset Formula $\intop_{-\infty}^{\infty}e^{-\left(\frac{x}{2h}\right)^{2}}dx=h\,\sqrt{4\pi}$
+\end_inset
+
+ and completed squares in the exponential term.
+ For the case 
+\begin_inset Formula $\xi=\frac{1}{2\pi}$
+\end_inset
+
+, we get
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\hat{\psi}_{h}\left(\frac{1}{2\pi}\right)=h\,e^{-h^{2}}.
+\]
+
+\end_inset
+
+Finally, one can obtain the equation
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+b_{m}=h\,e^{-imh}\frac{1}{h\,e^{-h^{2}}}=e^{-imh}e^{h^{2}}
+\]
+
+\end_inset
+
+to compute the coefficients 
+\begin_inset Formula $b_{m}$
+\end_inset
+
+ for 
+\begin_inset Formula $f(x)=e^{ix}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Step B: Approximation of basis function
+\end_layout
+
+\begin_layout Standard
+The second step is the approximation of the basis function 
+\begin_inset Formula $\psi_{h}(x)$
+\end_inset
+
+ itself with a rational approximation, see 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Damle:Near optimal rational approximations of large data sets"
+
+\end_inset
+
+.
+ Our basis function is given by
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\psi_{h}(x):=(4\pi)^{-\frac{1}{2}}e^{-x^{2}/(4h^{2})}
+\]
+
+\end_inset
+
+and a close-to-optimal approximation of 
+\begin_inset Formula $\psi_{1}(x)$
+\end_inset
+
+ with a sum of rational functions is given by
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\psi_{1}(x)\approx Re\left(\sum_{l=-L}^{L}\frac{a_{l}}{ix+(\mu+i\,l)}\right)
+\]
+
+\end_inset
+
+with the 
+\begin_inset Formula $\mu$
+\end_inset
+
+ and 
+\begin_inset Formula $a_{l}$
+\end_inset
+
+ given in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Damle:Near optimal rational approximations of large data sets"
+
+\end_inset
+
+, Table 1.
+ We can generalise this approximation to arbitrary chosen 
+\begin_inset Formula $h$
+\end_inset
+
+ via 
+\begin_inset Formula 
+\[
+\psi_{h}(x)\approx Re\left(\sum_{l=-L}^{L}\frac{a_{l}}{i\frac{x}{h}+(\mu+i\,l)}\right).
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The theory of how these coefficients are calculated are in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Damle:Near optimal rational approximations of large data sets"
+
+\end_inset
+
+ and will not be described here.
+ Therefore, we assume that the coefficients 
+\begin_inset Formula $a_{l}$
+\end_inset
+
+ are given.
+\end_layout
+
+\begin_layout Subsection
+Step C: Approximation of the approximation
+\end_layout
+
+\begin_layout Standard
+We then combine the approximation (B) into the approximation (A), yielding
+ the approximation 
+\begin_inset Formula $\tilde{f}$
+\end_inset
+
+ for 
+\begin_inset Formula $f$
+\end_inset
+
+ given by 
+\begin_inset Formula 
+\[
+\tilde{f}(x)=\sum_{m=-M}^{M}b_{m}\psi_{h}(x+mh)=\sum_{m=-M}^{M}b_{m}Re\left(\sum_{l=-L}^{L}\frac{a_{l}}{i\frac{x+mh}{h}+(\mu+i\,l)}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+=\sum_{m=-M}^{M}b_{m}\sum_{l=-L}^{L}Re\left(\frac{ha_{l}}{ix+h(\mu+i(m+l))}\right).
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We further like to simplify this equation and we observe, that for 
+\begin_inset Formula $n:=m+l$
+\end_inset
+
+, the denominator is equal.
+ We can hence express parts of the denomiator in terms of 
+\begin_inset Formula $n:=m+l$
+\end_inset
+
+ by
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\alpha_{n}:=s(\mu+in).\label{eq:alpha}
+\end{equation}
+
+\end_inset
+
+Now, we merge the 
+\begin_inset Formula $b_{m}$
+\end_inset
+
+ and 
+\begin_inset Formula $a_{l}$
+\end_inset
+
+ coefficients and first have a look at the 
+\begin_inset Formula $b_{m}$
+\end_inset
+
+ which is complex valued.
+ We observe the following property: Assuming that we want to compute the
+ real value of 
+\begin_inset Formula $f(x)$
+\end_inset
+
+, only the real value of 
+\begin_inset Formula $b_{m}$
+\end_inset
+
+ has to be merged with the sum, since the imaginary component would be dropped
+ afterwards.
+ This allows us to move the 
+\begin_inset Formula $Re(b_{m})$
+\end_inset
+
+ values inside the 
+\begin_inset Formula $\sum_{L}$
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+Re(f(x)):=Re\left(\sum_{m=-M}^{M}\,\,\sum_{l=-L}^{L}\frac{Re(b_{m})\,ha_{l}}{ix+h(\mu+i(m+l))}\right).
+\]
+
+\end_inset
+
+Now we can collect all nominators with equivalent denominator (if 
+\begin_inset Formula $n=m+l$
+\end_inset
+
+ and by using 
+\begin_inset Formula $\delta$
+\end_inset
+
+ as the Kronecker delta), yielding
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\beta_{n}^{Re}:=h\sum_{m=-M\,}^{M}\sum_{l=-L}^{L}Re(b_{m})ha_{l}\delta(n,\,m+l)\label{eq:beta_re}
+\end{equation}
+
+\end_inset
+
+for real values 
+\begin_inset Formula $f(x)$
+\end_inset
+
+ and
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\beta_{n}^{Im}:=h\sum_{m=-M\,}^{M}\sum_{l=-L}^{L}Im(b_{m})a_{l}\delta(n,\,m+l)\label{eq:beta_im}
+\end{equation}
+
+\end_inset
+
+for complex values of 
+\begin_inset Formula $f(x)$
+\end_inset
+
+.
+ Note, that the complexity of this operation is 
+\begin_inset Formula $O(N\,L)$
+\end_inset
+
+, which is negligible for small 
+\begin_inset Formula $N$
+\end_inset
+
+ and 
+\begin_inset Formula $L$
+\end_inset
+
+.
+ This can be optimized by using 
+\begin_inset Formula $L_{1}=max(-L,n-M)$
+\end_inset
+
+ and 
+\begin_inset Formula $L_{2}=min(L,n+M)$
+\end_inset
+
+ (see 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Terry:High-order time-parallel approximation of evolution operators"
+
+\end_inset
+
+) and we can compute 
+\begin_inset Formula $\beta_{n}^{Re}$
+\end_inset
+
+ with
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\beta_{n}^{Re}:=h\sum_{k=L_{1}}^{L_{2}}Re(b_{n-k})a_{k},\label{eq:beta_re_fast}
+\end{equation}
+
+\end_inset
+
+and 
+\begin_inset Formula $\beta_{n}^{Im}$
+\end_inset
+
+ correspondingly.
+\end_layout
+
+\begin_layout Standard
+Finally, we get the REXI approximation
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+e^{ix}\approx\sum_{n=-N}^{N}Re\left(\frac{\beta_{n}^{Re}}{ix+\alpha_{n}}\right)+i\,Re\left(\frac{\beta_{n}^{Im}}{ix+\alpha_{n}}\right).
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+REXI on linear operators
+\end_layout
+
+\begin_layout Subsection
+Matrix exponential
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:mat_exp"
+
+\end_inset
+
+ We would like to apply REXI to a formulation such as 
+\begin_inset Formula 
+\[
+U(t)=e^{tL}U(0).
+\]
+
+\end_inset
+
+To see the relationship between the approximation of 
+\begin_inset Formula $e^{ix}$
+\end_inset
+
+ with 
+\begin_inset Formula $e^{tL}$
+\end_inset
+
+ we assume that 
+\begin_inset Formula $L$
+\end_inset
+
+ is skew hermitian and therefore has only purely imaginary eigenvalues,
+ and maybe decomposed as 
+\begin_inset Formula $\Sigma\Lambda\Sigma^{H}$
+\end_inset
+
+, yielding 
+\begin_inset Formula 
+\[
+e^{tL}=\sum_{k=0}^{\infty}\frac{tL}{k!}=\Sigma\left(\sum_{k=0}^{\infty}\frac{t\Lambda}{k!}\right)\Sigma^{H}=\Sigma e^{t\Lambda}\Sigma^{H},
+\]
+
+\end_inset
+
+where we used the orthonormality of 
+\begin_inset Formula $\Sigma$
+\end_inset
+
+ to remove it from the summation, and
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+e^{t\Lambda}=\left(\begin{array}{ccc}
+...\\
+ & e^{i\lambda_{n}t}\\
+ &  & ...
+\end{array}\right),
+\]
+
+\end_inset
+
+where we hare explicitly detached the imaginary unit from the eigenvalues,
+ therefore 
+\begin_inset Formula $\lambda_{n}$
+\end_inset
+
+ are assumed real.
+ Since 
+\begin_inset Formula $e^{t\Lambda}$
+\end_inset
+
+ is diagonal, it can be eigenvalue-wise approximated in the same way as
+ in 
+\begin_inset Formula $e^{ix}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Some important points about the choice of 
+\begin_inset Formula $M$
+\end_inset
+
+ and 
+\begin_inset Formula $h$
+\end_inset
+
+ have to be made at this point.
+ We know that 
+\begin_inset Formula $e^{ix}$
+\end_inset
+
+ is accurately approximated with REXI for the interval 
+\begin_inset Formula $|x|<hM$
+\end_inset
+
+, where 
+\begin_inset Formula $h$
+\end_inset
+
+ is chosen small enough to obtain a good approximation in step (A), and
+ 
+\begin_inset Formula $M$
+\end_inset
+
+ will define the interval size and number of approximation points.
+ In the matrix case, 
+\begin_inset Formula $M$
+\end_inset
+
+ has to be chosen so that 
+\begin_inset Formula $hM>t\bar{\lambda}$
+\end_inset
+
+, where 
+\begin_inset Formula $\bar{\lambda}=\max_{n}|\lambda_{n}|$
+\end_inset
+
+, in order to capture all wavelengths of 
+\begin_inset Formula $L$
+\end_inset
+
+.
+ In other other words, 
+\begin_inset Formula $hM$
+\end_inset
+
+ need to be set to capture the fastest wave.
+ Note that if this is used as a time stepping method, with time step 
+\begin_inset Formula $t=\tau$
+\end_inset
+
+, then, the larger the timestep, the larger 
+\begin_inset Formula $M$
+\end_inset
+
+ will be.
+ Exact evaluations of the choices for 
+\begin_inset Formula $h$
+\end_inset
+
+ and 
+\begin_inset Formula $M$
+\end_inset
+
+ may be done based on equation (3.6) of 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Terry:High-order time-parallel approximation of evolution operators"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+We want to evaluate 
+\begin_inset Formula $e^{\tau L}U(0)$
+\end_inset
+
+ with REXI, where 
+\begin_inset Formula $\tau$
+\end_inset
+
+ will be a time step size and 
+\begin_inset Formula $U(0)$
+\end_inset
+
+ the initial condition for this time step.
+ We will assume 
+\begin_inset Formula $\tau$
+\end_inset
+
+ a-priori fixed, which implies that the coefficients in REXI will not change
+ and may be pre-computed.
+\end_layout
+
+\begin_layout Standard
+Although 
+\begin_inset Formula $L$
+\end_inset
+
+ has imaginary eigenvalues, we wish to evaluate the 
+\begin_inset Formula $e^{\tau L}U(0)$
+\end_inset
+
+, which is real valued, therefore, we will use the real approximation of
+ 
+\begin_inset Formula $e^{ix}$
+\end_inset
+
+ 
+\begin_inset Formula 
+\begin{equation}
+exp(\tau L)\approx Re\left(\sum_{n=-N}^{N}\beta_{n}(\tau L+\alpha_{n})^{-1}\right),\label{eq:rexi}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $\beta_{n}$
+\end_inset
+
+ is given by equation 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:beta_re"
+
+\end_inset
+
+ and 
+\begin_inset Formula $\alpha_{n}$
+\end_inset
+
+ by equation 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:alpha"
+
+\end_inset
+
+.
+ These coefficient may be pre-computed if 
+\begin_inset Formula $L$
+\end_inset
+
+ and 
+\begin_inset Formula $\tau$
+\end_inset
+
+ are fixed.
+\end_layout
+
+\begin_layout Standard
+Note, that for debugging purpose, their 
+\emph on
+imaginary values have to cancel out
+\emph default
+.
+
+\series bold
+ (TODO - PP: are you sure? MaS: No, but this is what Terry mentioned).
+\end_layout
+
+\begin_layout Standard
+Note an important property (see Sec.
+ 3.3 in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Terry:High-order time-parallel approximation of evolution operators"
+
+\end_inset
+
+).
+ There's an anti-symmetry in the 
+\begin_inset Formula $\alpha_{i}$
+\end_inset
+
+ coefficients, which avoids computing half of the inverses, 
+\begin_inset Formula 
+\[
+\overline{(L+\alpha)^{-1}U(0)}=(L+\overline{\alpha})^{-1}U(0).
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Handling 
+\begin_inset Formula $\tau$
+\end_inset
+
+ in REXI
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:Handling-tau-in-REXI"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We reformulate the REXI approximation scheme given by
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+(\tau L+\alpha)^{-1}U(\tau)=U(0)
+\]
+
+\end_inset
+
+and by factoring 
+\begin_inset Formula $\tau$
+\end_inset
+
+ out, yielding
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+(L+\frac{\alpha}{\tau})^{-1}U(\tau)\tau^{-1}=U(0)
+\]
+
+\end_inset
+
+So instead of solving for 
+\begin_inset Formula $U(\tau)$
+\end_inset
+
+, we are solving for 
+\begin_inset Formula $U^{\tau}(\tau):=U(\tau)\tau^{-1}$
+\end_inset
+
+ as well as 
+\begin_inset Formula $\alpha^{\tau}:=\frac{\alpha}{\tau}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+To summarize, we have to solve the system of equations given by
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+(L+\alpha^{\tau})^{-1}U^{\tau}(\tau)=U(0)\label{eq:unit_rexi_timestep}
+\end{equation}
+
+\end_inset
+
+with 
+\begin_inset Formula $U(0)$
+\end_inset
+
+ the initial conditions.
+ For sake of simplicity, we stick to the formulation without the 
+\begin_inset Formula $\tau$
+\end_inset
+
+ notation.
+\end_layout
+
+\begin_layout Subsection
+Computing inverse of 
+\begin_inset Formula $(L+\alpha)^{-1}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+@Pedro: I´ve now also uploaded the jpeg ( IMG_20150806_002902.jpg ) which
+ I´ve sent you 10 days ago.
+\begin_inset Newline newline
+\end_inset
+
+This is how it is currently implemented and knowing the problems in this
+ formulations would greatly simplify debugging.
+ Maybe you can rearrange these equations in a form which match closely this
+ formulations and check where the problem in this formulation (see jpeg)
+ is?
+\begin_inset Newline newline
+\end_inset
+
+@Pedro: The equations above were also derived with (L+
+\backslash
+alpha), not with (L-
+\backslash
+alpha).
+ Sorry, but I forgot to update also the rest of this document with (L+
+\backslash
+alpha).
+\begin_inset Newline newline
+\end_inset
+
+@Pedro: 
+\begin_inset Formula $\delta$
+\end_inset
+
+ is already used above as the Kronecker delta and the derivative.
+ Maybe we should avoid overutilising it :-).
+\begin_inset Newline newline
+\end_inset
+
+@Pedro: Consistency with formulations of SWE: 
+\begin_inset Formula $H=\eta_{0}$
+\end_inset
+
+, 
+\begin_inset Formula $\eta_{0}=\eta(0)$
+\end_inset
+
+, 
+\begin_inset Formula $\eta_{1}=\eta(1)$
+\end_inset
+
+, 
+\begin_inset Formula $u_{0}=u(0)$
+\end_inset
+
+, 
+\begin_inset Formula $v_{0}=v(0)$
+\end_inset
+
+...
+\end_layout
+
+\begin_layout Standard
+For computing the inverse, arbitrary solvers can be used.
+ However we like to note, that 
+\begin_inset Formula $\alpha$
+\end_inset
+
+ is a complex number.
+ Hence, requiring solvers with support for solving in complex space.
+\end_layout
+
+\begin_layout Standard
+We wish to solve the differential problem for each time step 
+\begin_inset Formula 
+\[
+(L-\alpha)U=U(0)
+\]
+
+\end_inset
+
+so that 
+\begin_inset Formula $U=(L-\alpha)^{-1}U_{0}$
+\end_inset
+
+.
+ We will do this converting the problem into and elliptic equation.
+\series bold
+
+\begin_inset Newline newline
+\end_inset
+
+@Pedro: There seem to be strange sign errors in the 3 equations below, L(U)
+ is given by
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+\begin_inset Formula 
+\[
+L(U):=\left(\begin{array}{ccc}
+0 & \eta_{0}\partial_{x} & \eta_{0}\partial_{y}\\
+g\partial_{x} & 0 & -f\\
+g\partial_{y} & f & 0
+\end{array}\right)U
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+First, lets expand the equations with the definition of 
+\begin_inset Formula $L$
+\end_inset
+
+, 
+\begin_inset Formula 
+\begin{eqnarray}
+-fv-g\eta_{x}-\alpha u & = & u_{0},\label{eq:mom_u}\\
+fu-g\eta_{y}-\alpha v & = & v_{0},\label{eq:mom_v}\\
+H(u_{x}+v_{y})-\alpha\eta & = & \eta_{0}.\label{eq:mass}
+\end{eqnarray}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Let 
+\begin_inset Formula $f$
+\end_inset
+
+ be constant (f-plane approximation), 
+\begin_inset Formula $\delta:=u_{x}+v_{y}$
+\end_inset
+
+ be the wind divergence, 
+\begin_inset Formula $\zeta:=v_{x}-u_{y}$
+\end_inset
+
+ be the wind (relative) vorticity and 
+\begin_inset Formula $\Delta\eta:=\eta_{xx}+\eta_{yy}$
+\end_inset
+
+ the Laplacian of the fluid depth.
+ We will re-write the problem in a divergence-vorticity formulation by taking
+ 2 steps.
+ First, sum the 
+\begin_inset Formula $\partial_{x}$
+\end_inset
+
+ of equation 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:mom_u"
+
+\end_inset
+
+ and the 
+\begin_inset Formula $\partial_{y}$
+\end_inset
+
+ of equation 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:mom_v"
+
+\end_inset
+
+, yielding 
+\begin_inset Formula 
+\begin{equation}
+-f\zeta-g\Delta\eta-\alpha\delta=\delta_{0}.\label{eq:zeta}
+\end{equation}
+
+\end_inset
+
+Then subtract the 
+\begin_inset Formula $\partial_{y}$
+\end_inset
+
+ of equation 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:mom_u"
+
+\end_inset
+
+ from the 
+\begin_inset Formula $\partial_{x}$
+\end_inset
+
+ of equation 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:mom_v"
+
+\end_inset
+
+, yielding 
+\begin_inset Formula 
+\begin{equation}
+f\delta-\alpha\zeta=\zeta_{0}.\label{eq:delta}
+\end{equation}
+
+\end_inset
+
+Using equation 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:zeta"
+
+\end_inset
+
+ in equation 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:delta"
+
+\end_inset
+
+ gives us
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\delta=-\frac{1}{f^{2}+\alpha^{2}}\left(\alpha g\Delta\eta+\alpha\delta_{0}-f\zeta_{0}\right).
+\]
+
+\end_inset
+
+Finally, substituting 
+\begin_inset Formula $\delta$
+\end_inset
+
+ in equation 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:mass"
+
+\end_inset
+
+, that reads 
+\begin_inset Formula $H\delta-\alpha\eta=\eta_{0}$
+\end_inset
+
+, results in 
+\begin_inset Formula 
+\[
+-\frac{H}{f^{2}+\alpha^{2}}\left(\alpha g\Delta\eta+\alpha\delta_{0}-f\zeta_{0}\right)-\alpha\eta=\eta_{0},
+\]
+
+\end_inset
+
+which may be simplified into the elliptic Helmholtz equation by multiplying
+ by 
+\begin_inset Formula $-\frac{f^{2}+\alpha^{2}}{H\alpha g}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\Delta\eta+\kappa^{2}\eta=r_{0}\label{eq:helmhotz}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula 
+\[
+\kappa^{2}=\frac{f^{2}+\alpha^{2}}{Hg}
+\]
+
+\end_inset
+
+and 
+\begin_inset Formula 
+\[
+r_{0}=-\frac{\kappa^{2}}{\alpha}\eta_{0}-\frac{1}{g}\delta_{0}+\frac{f}{\alpha g}\zeta_{0}.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Once 
+\begin_inset Formula $\eta$
+\end_inset
+
+ is calculated from any Helmholtz solver, we need to retrieve the velocities
+ by solving the 
+\begin_inset Formula $2\times2$
+\end_inset
+
+ system formed by equations 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:mom_u"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:mom_v"
+
+\end_inset
+
+, which reads 
+\begin_inset Formula 
+\[
+A_{\alpha}U=U_{0}+g\nabla\eta
+\]
+
+\end_inset
+
+with 
+\begin_inset Formula 
+\[
+A_{\alpha}=\left(\begin{matrix}-\alpha & -f\\
+f & -\alpha
+\end{matrix}\right).
+\]
+
+\end_inset
+
+The solution is 
+\begin_inset Formula 
+\begin{equation}
+u=-\frac{1}{f^{2}+\alpha^{2}}\left[g(\alpha\eta_{x}-f\eta_{y})+\alpha u_{0}-fv_{0}\right]\label{eq:elliptic_velocity_u}
+\end{equation}
+
+\end_inset
+
+and 
+\begin_inset Formula 
+\begin{equation}
+v=-\frac{1}{f^{2}+\alpha^{2}}\left[g(f\eta_{x}+\alpha\eta_{y})+fu_{0}+\alpha v_{0}\right],\label{eq:elliptic_velocity_v}
+\end{equation}
+
+\end_inset
+
+which may be written as 
+\begin_inset Formula 
+\[
+U=A_{\alpha}^{-1}(g\nabla\eta+U_{0})
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula 
+\[
+A_{\alpha}^{-1}=-\frac{1}{f^{2}+\alpha^{2}}\left(\begin{matrix}\alpha & -f\\
+f & \alpha
+\end{matrix}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Interpretation of 
+\begin_inset Formula $\tau$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We like to close this section with a brief discussion of 
+\begin_inset Formula $\tau$
+\end_inset
+
+ by having a look on the REXI reformulation
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+(L-\frac{\alpha}{\tau})^{-1}U(\tau)\tau^{-1}=U(0)
+\]
+
+\end_inset
+
+We see, that for an increasing 
+\begin_inset Formula $\tau$
+\end_inset
+
+, hence an integration in time over a larger time period, the poles given
+ by 
+\begin_inset Formula $\alpha$
+\end_inset
+
+ are getting closer.
+ This can possibly lead to a loss in accuracy for the data sampled by the
+ outer poles 
+\begin_inset Formula $\alpha_{-N}$
+\end_inset
+
+ and 
+\begin_inset Formula $\alpha_{N}$
+\end_inset
+
+.
+ Therefore, the number 
+\begin_inset Formula $N$
+\end_inset
+
+ of poles is expected to scale linearly with the size of the coarse time
+ step, 
+\begin_inset Formula 
+\[
+|N|\propto\tau.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Indeed, we saw in section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:mat_exp"
+
+\end_inset
+
+ that for larger 
+\begin_inset Formula $\tau$
+\end_inset
+
+, 
+\begin_inset Formula $M$
+\end_inset
+
+ needs to be larger.
+\end_layout
+
+\begin_layout Subsection
+Complex solver
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+@Pedro: (L+
+\backslash
+alpha) with a plus sign ...
+\end_layout
+
+\begin_layout Standard
+We are interested in solving a system of the form, 
+\begin_inset Formula 
+\[
+(L-\alpha)U=U_{0},
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $\alpha$
+\end_inset
+
+ is a complex number, therefore we must allow complex solutions for 
+\begin_inset Formula $U$
+\end_inset
+
+.
+ The system can be transformed to have only real arithmetic in the following
+ way.
+\end_layout
+
+\begin_layout Standard
+First we decompose 
+\begin_inset Formula $U$
+\end_inset
+
+ into its real and imaginary parts, 
+\begin_inset Formula $U=U^{r}+iU^{i}$
+\end_inset
+
+, and allow 
+\begin_inset Formula $U_{0}$
+\end_inset
+
+ to be decomposed in the same way.
+ Although 
+\begin_inset Formula $\alpha$
+\end_inset
+
+ can be a general complex number, it real part is always constant in REXI,
+ given by 
+\begin_inset Formula $\mu$
+\end_inset
+
+.
+ We will therefore write 
+\begin_inset Formula $\alpha=\mu+i\alpha^{i}$
+\end_inset
+
+, and we can absorb 
+\begin_inset Formula $\mu$
+\end_inset
+
+ into 
+\begin_inset Formula $L$
+\end_inset
+
+ writing 
+\begin_inset Formula $D=L-\mu I$
+\end_inset
+
+, where 
+\begin_inset Formula $I$
+\end_inset
+
+ is the identity matrix.
+ Now 
+\begin_inset Formula 
+\[
+(D-i\alpha^{i})(U^{r}+iU^{i})=U_{0}^{r}+iU_{0}^{i},
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+DU^{r}+\alpha^{i}U^{i}+i(-\alpha^{i}U^{r}+DU^{i})=U_{0}^{r}+iU_{0}^{i},
+\]
+
+\end_inset
+
+therefore 
+\begin_inset Formula 
+\begin{eqnarray}
+DU^{r}+\alpha^{i}U^{i} & = & U_{0}^{r}\\
+-\alpha^{i}U^{r}+DU^{i} & = & U_{0}^{i},
+\end{eqnarray}
+
+\end_inset
+
+which in matrix notation gives 
+\begin_inset Formula 
+\[
+\left(\begin{matrix}D & \alpha^{i}I\\
+-\alpha^{i}I & D
+\end{matrix}\right)\left(\begin{matrix}U^{r}\\
+U^{i}
+\end{matrix}\right)=\left(\begin{matrix}U_{0}^{r}\\
+U_{0}^{i}
+\end{matrix}\right),
+\]
+
+\end_inset
+
+or, 
+\begin_inset Formula 
+\[
+\left(\begin{matrix}L-\mu I & \alpha^{i}I\\
+-\alpha^{i}I & L-\mu I
+\end{matrix}\right)\left(\begin{matrix}U^{r}\\
+U^{i}
+\end{matrix}\right)=\left(\begin{matrix}U_{0}^{r}\\
+U_{0}^{i}
+\end{matrix}\right).
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+A similar approach may be taken with the elliptic equation 
+\begin_inset Formula 
+\begin{equation}
+\Delta\eta+\theta\eta=r_{0},
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $\eta$
+\end_inset
+
+, 
+\begin_inset Formula $\theta$
+\end_inset
+
+ and 
+\begin_inset Formula $r_{0}$
+\end_inset
+
+ may be complex.
+ The resulting system is given by 
+\begin_inset Formula 
+\begin{eqnarray}
+\Delta\eta^{r}+\theta^{r}\eta^{r}-\theta^{i}\eta^{i}=r_{0}^{r},\\
+\Delta\eta^{i}+\theta^{i}\eta^{r}+\theta^{r}\eta^{i}=r_{0}^{i},
+\end{eqnarray}
+
+\end_inset
+
+which can also be written in matrix notation and solved with arbitrary elliptic
+ equation solvers.
+\end_layout
+
+\begin_layout Section
+Filtering
+\end_layout
+
+\begin_layout Standard
+The method described in the previous section is well defined for skew hermitian
+ 
+\begin_inset Formula $L$
+\end_inset
+
+.
+ If 
+\begin_inset Formula $L$
+\end_inset
+
+ is not skew hermitian, the real eigenvalues might cause the REXI to have
+ absolute values larger than 1, which can lead to instabilities if used
+ as time stepping method.
+\end_layout
+
+\begin_layout Standard
+To ensure that the REXI is bounded by unit, a filtering process is proposed
+ in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Terry:High-order time-parallel approximation of evolution operators"
+
+\end_inset
+
+.
+ REXI is prone to exceed unit in the neighbourhood of 
+\begin_inset Formula $|t\lambda|\approx hM$
+\end_inset
+
+, therefore in the highest frequencies.
+ The idea is to construct a rational function 
+\begin_inset Formula $S(ix)$
+\end_inset
+
+ that is approximately 
+\begin_inset Formula $1$
+\end_inset
+
+ in a smaller interval 
+\begin_inset Formula $|t\lambda|<hM_{0}$
+\end_inset
+
+, with 
+\begin_inset Formula $M_{0}<M$
+\end_inset
+
+, and decays very fast to zero outside this interval.
+ Then we multiply this filters function to the original REXI, which will
+ lead to a unit bounded REXI.
+\end_layout
+
+\begin_layout Standard
+Further details of how 
+\begin_inset Formula $S(ix)$
+\end_inset
+
+ is computed will be added later.
+\end_layout
+
+\begin_layout Section
+Bringing everything together
+\end_layout
+
+\begin_layout Standard
+Using the spectral methods (e.g.
+ in SWEET), we can directly solve the Helmholtz problem for the height in
+ Eq.
+ (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:helmhotz"
+
+\end_inset
+
+) and then solver for the velocity in Eqs.
+ (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:elliptic_velocity_u"
+
+\end_inset
+
+,
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:elliptic_velocity_v"
+
+\end_inset
+
+).
+ Note that the Helmholtz problem is in complex space, as 
+\begin_inset Formula $\alpha_{n}$
+\end_inset
+
+ are complex.
+ This is straightforward with spectral methods.
+ For finite difference/element methods, the problems needs to be split into
+ its real and imaginary parts.
+\end_layout
+
+\begin_layout Standard
+Then, the problem is reduced to computing the REXI as given in Eq.
+ 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:rexi"
+
+\end_inset
+
+.
+ We like to note again, that the 
+\begin_inset Formula $\alpha_{n}$
+\end_inset
+
+ and 
+\begin_inset Formula $\beta_{n}$
+\end_inset
+
+ are independent of the system 
+\begin_inset Formula $L$
+\end_inset
+
+ to solve, and the number of coefficients only depends on the accuracy and
+ the resolution.
+\end_layout
+
+\begin_layout Section
+Notes on HPC
+\end_layout
+
+\begin_layout Itemize
+The terms in REXI to solve are all independent.
+ Hence, for latency avoiding, the communication can be interleaved with
+ computations.
+ 
+\end_layout
+
+\begin_layout Itemize
+The iterative solvers are memory bound.
+ Instead of computing 
+\begin_inset Formula $c:=a*b$
+\end_inset
+
+ for the stencil operations, we could compute 
+\begin_inset Formula $\vec{c}:=a\vec{b}$
+\end_inset
+
+ with 
+\begin_inset Formula $a$
+\end_inset
+
+ one coefficient in the stencil.
+ This allows vectorization over 
+\begin_inset Formula $c$
+\end_inset
+
+ and 
+\begin_inset Formula $b$
+\end_inset
+
+ on accelerator cards with strided memory access.
+ 
+\end_layout
+
+\begin_layout Itemize
+It is unknown which method is more efficient to solve the system of equations:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+iterative solvers have low memory access, 
+\end_layout
+
+\begin_layout Itemize
+inverting the system and storing it as a sparse matrix allows fast direct
+ solving but can yield more memory access operations.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Splitting the solver into real and complex number would store them consecutively
+ in memory.
+ This has a potential to avoid non-strided memory access and using the same
+ SIMD operations (Just a rough idea, TODO: check if this is really the case).
+ 
+\end_layout
+
+\begin_layout Section
+Acknowledgements
+\end_layout
+
+\begin_layout Standard
+Thanks to Terry for the feedback & discussions! 
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "Schreiber:Formulations of the shallow-water equations"
+
+\end_inset
+
+Formulations of the shallow-water equations, M.
+ Schreiber, P.
+ Peixoto et al.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "Terry:High-order time-parallel approximation of evolution operators"
+
+\end_inset
+
+High-order time-parallel approximation of evolution operators, T.
+ Haut et al.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "Terry:An asymptotic parallel-in-time method for highly oscillatory PDEs"
+
+\end_inset
+
+An asymptotic parallel-in-time method for highly oscillatory PDEs, T.
+ Haut et al.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "Moler:Nineteen Dubious Ways to Compute the Exponential of a Matrix"
+
+\end_inset
+
+Nineteen Dubious Ways to Compute the Exponential of a Matrix, Twenty-Five
+ Years Later, Cleve Moler and Charles Van Loan, SIAM review
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "Damle:Near optimal rational approximations of large data sets"
+
+\end_inset
+
+Near optimal rational approximations of large data sets, Damle, A., Beylkin,
+ G., Haut, T.
+ S.
+ & Monzon
+\end_layout
+
+\end_body
+\end_document

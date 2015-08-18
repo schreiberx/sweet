@@ -600,13 +600,13 @@ f(x)\approx\sum_{m=-M}^{M}c_{m}\psi_{s}(x+ms)=\sum_{m=-M}^{M}b_{m}Re\left(\sum_{
 \begin_layout Standard
 \begin_inset Formula 
 \[
-=\sum_{m=-M}^{M}b_{m}Re\left(\sum_{l=-L}^{L}\frac{a_{l}}{ix+s(\mu+i(m+l))}\right).
+=\sum_{m=-M}^{M}b_{m}Re\left(\sum_{l=-L}^{L}\frac{s\,a_{l}}{ix+s(\mu+i(m+l))}\right).
 \]
 
 \end_inset
 
 We further like to simplify this equation and we observe, that for 
-\begin_inset Formula $n:=n+l$
+\begin_inset Formula $n:=m+l$
 \end_inset
 
 , the denominator is equal.
@@ -637,7 +637,7 @@ Now, we merge the
 \begin_inset Formula $b_{m}$
 \end_inset
 
- which is complex values.
+ which is complex valued.
  We observe the following property: Assuming that we want to compute the
  real value of 
 \begin_inset Formula $f(x)$
