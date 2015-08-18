@@ -3,12 +3,15 @@
 \begin_document
 \begin_header
 \textclass article
-\use_default_options true
+\begin_preamble
+\usepackage{babel}
+\end_preamble
+\use_default_options false
 \maintain_unincluded_children false
 \language english
 \language_package default
-\inputencoding auto
-\fontencoding global
+\inputencoding iso8859-15
+\fontencoding T1
 \font_roman default
 \font_sans default
 \font_typewriter default
@@ -25,19 +28,20 @@
 \bibtex_command default
 \index_command default
 \paperfontsize default
+\spacing single
 \use_hyperref false
 \papersize default
 \use_geometry false
 \use_package amsmath 1
-\use_package amssymb 1
-\use_package cancel 1
+\use_package amssymb 0
+\use_package cancel 0
 \use_package esint 1
-\use_package mathdots 1
-\use_package mathtools 1
-\use_package mhchem 1
-\use_package stackrel 1
-\use_package stmaryrd 1
-\use_package undertilde 1
+\use_package mathdots 0
+\use_package mathtools 0
+\use_package mhchem 0
+\use_package stackrel 0
+\use_package stmaryrd 0
+\use_package undertilde 0
 \cite_engine basic
 \cite_engine_type default
 \biblio_style plain
@@ -46,7 +50,7 @@
 \paperorientation portrait
 \suppress_date false
 \justification true
-\use_refstyle 1
+\use_refstyle 0
 \index Index
 \shortcut idx
 \color #008000
@@ -74,12 +78,11 @@ Formulations of the shallow-water equations
 
 \begin_layout Author
 Martin Schreiber <M.Schreiber@exeter.ac.uk>
-\end_layout
+\begin_inset Newline newline
+\end_inset
 
-\begin_layout Date
-
-\emph on
-2015-07-13
+ Pedro S.
+ Peixoto <pedrosp@ime.usp.br>
 \end_layout
 
 \begin_layout Standard
@@ -94,24 +97,31 @@ Overview
 \end_layout
 
 \begin_layout Standard
+We will adopt the following terminology.
+\begin_inset Newline newline
+\end_inset
+
+ 
 \begin_inset Tabular
-<lyxtabular version="3" rows="15" columns="2">
+<lyxtabular version="3" rows="16" columns="2">
 <features rotate="0" tabularvalignment="middle">
 <column alignment="center" valignment="top">
 <column alignment="left" valignment="top">
 <row>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
 
 \series bold
 Symbol
+\series default
+ 
 \end_layout
 
 \end_inset
 </cell>
-<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+<cell alignment="left" valignment="top" topline="true" bottomline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -124,42 +134,42 @@ Description
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
 \begin_inset Formula $h$
 \end_inset
 
-
+ 
 \end_layout
 
 \end_inset
 </cell>
-<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
-Water height
+Fluid layer depth/height
 \end_layout
 
 \end_inset
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
 \begin_inset Formula $h_{0}$
 \end_inset
 
-
+ 
 \end_layout
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -170,21 +180,42 @@ Mean water depth
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
-
-\bar under
-\begin_inset Formula $u$
+\begin_inset Formula $\vec{u}$
 \end_inset
 
-
+ 
 \end_layout
 
 \end_inset
 </cell>
-<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2D velocity 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $u$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -195,19 +226,19 @@ Velocity in x direction
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
 \begin_inset Formula $v$
 \end_inset
 
-
+ 
 \end_layout
 
 \end_inset
 </cell>
-<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -218,19 +249,19 @@ Velocity in y direction
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
 \begin_inset Formula $hu$
 \end_inset
 
-
+ 
 \end_layout
 
 \end_inset
 </cell>
-<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -241,19 +272,19 @@ Momentum in x direction
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
 \begin_inset Formula $hv$
 \end_inset
 
-
+ 
 \end_layout
 
 \end_inset
 </cell>
-<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -264,11 +295,24 @@ Momentum in y direction
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
-\begin_inset Formula $\zeta_{R}$
+\begin_inset Formula $U$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Vector with 
+\begin_inset Formula $(h,u,v)$
 \end_inset
 
 
@@ -276,7 +320,21 @@ Momentum in y direction
 
 \end_inset
 </cell>
+</row>
+<row>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\zeta_{R}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -287,19 +345,19 @@ Relative vorticity
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
 \begin_inset Formula $\zeta_{A}$
 \end_inset
 
-
+ 
 \end_layout
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -314,19 +372,19 @@ Absolute vorticity (
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
 \begin_inset Formula $q$
 \end_inset
 
-
+ 
 \end_layout
 
 \end_inset
 </cell>
-<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -341,19 +399,19 @@ Potential vorticity (
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
 \begin_inset Formula $g$
 \end_inset
 
-
+ 
 \end_layout
 
 \end_inset
 </cell>
-<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -364,19 +422,19 @@ Gravity
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
 \begin_inset Formula $\Phi$
 \end_inset
 
-
+ 
 \end_layout
 
 \end_inset
 </cell>
-<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -387,19 +445,19 @@ Bernoulli potential
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
 \begin_inset Formula $f$
 \end_inset
 
-
+ 
 \end_layout
 
 \end_inset
 </cell>
-<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -414,54 +472,23 @@ Coriolis force
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
-\begin_inset Formula $p_{0}$
+\begin_inset Formula $\vec{k}$
 \end_inset
 
-
+ 
 \end_layout
 
 \end_inset
 </cell>
-<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+<cell alignment="left" valignment="top" topline="true" bottomline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
-Steady state of a quantity 
-\begin_inset Formula $p$
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-\begin_inset Formula $p'$
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Perturbation of 
-\begin_inset Formula $p_{0}$
-\end_inset
-
-
+Vector pointing outward of the plane
 \end_layout
 
 \end_inset
@@ -472,6 +499,27 @@ Perturbation of
 \end_inset
 
 
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We will also assume no bottom topography (orography/bathymetry), so the
+ fluid layer height 
+\begin_inset Formula $h$
+\end_inset
+
+ is the total height.
+ Most of what is described here is as well described in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Williamson1992"
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Section
@@ -517,12 +565,28 @@ h_{t}+(hu)_{x}+(hv)_{y}=0
 
 \end_inset
 
-
+Since this formulation is conserving the momentum, it is also referred as
+ the conservative form.
 \end_layout
 
 \begin_layout Standard
-Since this formulation is conserving the momentum, it is also refered as
- the conservative form.
+In vector notation we have it as, 
+\begin_inset Formula 
+\[
+h_{t}+\nabla\cdot(h\vec{u})=0
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+(h\vec{u})_{t}+\nabla\cdot(\vec{u}h\vec{u})+f\vec{k}\times(h\vec{v})+gh\nabla h=0
+\]
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -598,17 +662,13 @@ u_{t}+gh_{x}+uu_{x}+vu_{y}-fv=0
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Standard
-Alltogether, we get the following non-conservative formulation:
+Altogether, we get the following non-conservative formulation:
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula 
 \[
-h_{t}+(hu)_{x}+(hv)_{y}=0
+h_{t}+uh_{x}+vh_{y}+hu_{x}+hv_{y}=0
 \]
 
 \end_inset
@@ -616,7 +676,7 @@ h_{t}+(hu)_{x}+(hv)_{y}=0
 
 \begin_inset Formula 
 \[
-u_{t}+gh_{x}+uu_{x}+vu_{y}-fv=0
+u_{t}+uu_{x}+vu_{y}-fv+gh_{x}=0
 \]
 
 \end_inset
@@ -624,15 +684,11 @@ u_{t}+gh_{x}+uu_{x}+vu_{y}-fv=0
 
 \begin_inset Formula 
 \[
-v_{t}+gh_{y}+uv_{x}+vv_{y}+fu=0
+v_{t}+uv_{x}+vv_{y}+fu+gh_{y}=0
 \]
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Standard
 We can also split these equations in linear and non-linear parts:
 \end_layout
 
@@ -663,6 +719,33 @@ uv_{x}+vv_{y}
 
 \end_inset
 
+Defining the material derivative as 
+\begin_inset Formula 
+\[
+\frac{d}{dt}:=\frac{\partial}{\partial t}+\vec{u}\cdot\nabla
+\]
+
+\end_inset
+
+we may write the equations in vector notation, 
+\begin_inset Formula 
+\[
+\frac{dh}{dt}+h\nabla\cdot\vec{u}=0,
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\frac{d\vec{u}}{dt}+f\vec{k}\times\vec{v}+g\nabla h=0.
+\]
+
+\end_inset
+
 
 \end_layout
 
@@ -678,8 +761,24 @@ The vector invariant formulation is used in models such as NEMO, GungHo,
 
 \begin_layout Standard
 For certain reasons such as energy and enstropy conservation, the equations
- are reformulated and split into the vorticity and H component.
- We first add an artificial term 
+ are reformulated and split into the vorticity and the Bernoulli potential
+ 
+\begin_inset Formula $\Phi$
+\end_inset
+
+ component, defined as 
+\begin_inset Formula 
+\[
+\Phi:=gh+\frac{u^{2}+v^{2}}{2}=gh+\frac{\vec{u}\cdot\vec{u}}{2}.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We first add and subtract an artificial term 
 \begin_inset Formula $vv_{x}$
 \end_inset
 
@@ -689,31 +788,23 @@ For certain reasons such as energy and enstropy conservation, the equations
 \begin_layout Standard
 \begin_inset Formula 
 \[
-u_{t}-vv_{x}+gh_{x}+uu_{x}+vv_{x}+vu_{y}-fv=0
+u_{t}-vv_{x}+gh_{x}+uu_{x}+vv_{x}+vu_{y}-fv=0,
 \]
 
 \end_inset
 
-
+which leads to,
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula 
 \[
-u_{t}-vv_{x}+vu_{y}+(gh+u^{2}+v^{2})_{x}-fv=0
+u_{t}-vv_{x}+vu_{y}+(gh+\frac{u^{2}+v^{2}}{2})_{x}-fv=0,
 \]
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Standard
-and set 
-\begin_inset Formula $\Phi:=gh+u^{2}+v^{2}$
-\end_inset
-
- and 
+with 
 \begin_inset Formula $\zeta_{A}:=v_{x}-u_{y}+f$
 \end_inset
 
@@ -723,20 +814,16 @@ and set
 \begin_layout Standard
 \begin_inset Formula 
 \[
-u_{t}-v\zeta_{A}+\Phi_{x}=0
+u_{t}-v\zeta_{A}+\Phi_{x}=0.
 \]
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Standard
 Similarly, we can reformulate 
 \begin_inset Formula $v_{t}$
 \end_inset
 
-:
+,
 \end_layout
 
 \begin_layout Standard
@@ -753,33 +840,18 @@ v_{t}+gh_{y}+uv_{x}+vv_{y}+uu_{y}-uu_{y}+fu=0
 \begin_layout Standard
 \begin_inset Formula 
 \[
-v_{t}+uv_{x}-uu_{y}+fu+(gh+v^{2}+u^{2})=0
+v_{t}+uv_{x}-uu_{y}+fu+(gh+\frac{v^{2}+u^{2}}{2})=0
 \]
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Standard
-This yields the vorticity formulation:
+This yields the vorticity formulation,
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula 
 \[
-h_{t}+(hu)_{x}+(hv)_{y}=0
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-u_{t}-v\zeta_{A}+\Phi_{x}=0
+h_{t}+(hu)_{x}+(hv)_{y}=0,
 \]
 
 \end_inset
@@ -790,7 +862,37 @@ u_{t}-v\zeta_{A}+\Phi_{x}=0
 \begin_layout Standard
 \begin_inset Formula 
 \[
-v_{t}+u\zeta_{A}+\Phi_{y}=0
+u_{t}-v\zeta_{A}+\Phi_{x}=0,
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+v_{t}+u\zeta_{A}+\Phi_{y}=0.
+\]
+
+\end_inset
+
+In vector notation we have 
+\begin_inset Formula 
+\[
+h_{t}+\nabla\cdot(h\vec{u})=0,
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\vec{u}_{t}+\zeta_{A}\vec{k}\times\vec{u}+\nabla\Phi=0.
 \]
 
 \end_inset
@@ -799,88 +901,32 @@ v_{t}+u\zeta_{A}+\Phi_{y}=0
 \end_layout
 
 \begin_layout Section
-Full linearization with perturbation
+Fluid depth perturbation
 \end_layout
 
 \begin_layout Standard
-The advective equations can be linearized around a perturbation 
-\begin_inset Formula $p=p_{0}+p'$
+It is convenient to split the fluid depth into a mean heigh and a perturbation,
+ such that we express 
+\begin_inset Formula $h=h_{0}+h'$
 \end_inset
 
 , with 
-\begin_inset Formula $p\in\{h,u,v\}$
+\begin_inset Formula $h_{0}$
 \end_inset
 
-with 
-\begin_inset Formula $p_{0}$
+ being the assumed constant mean water depth.
+ Since the gradient of 
+\begin_inset Formula $h$
 \end_inset
 
-denoting a constant steady state.
- Assuming 
-\begin_inset Formula $a'b'<O(\epsilon)$
+ will be the same as the gradient of 
+\begin_inset Formula $h'$
 \end_inset
 
-, we can use
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula $(ab)_{x}=((a_{0}+a')(b_{0}+b'))_{z}=(a'b_{0})_{z}+(b'a_{0})_{z}+(a'b')_{z}\approx(a'b_{0})_{z}+(b'a_{0})_{z}=b_{0}a'_{z}+a_{0}b'_{z}$
-\end_inset
-
- 
-\end_layout
-
-\begin_layout Standard
-to simplify the non-conservative formulation to
-\end_layout
-
-\begin_layout Standard
+, the only change happens in the continuity equation, 
 \begin_inset Formula 
 \[
-h'_{t}+h_{0}(u'_{x}+v'_{x})+h'_{x}(u_{0}+v_{0})=0
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-Further, we assume a low velocity 
-\begin_inset Formula $\{|u_{0}|,|v_{0}|\}<O(\epsilon)$
-\end_inset
-
- and hence 
-\emph on
-neglect the non-linear 
-\emph default
-parts.
- This yields
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-h'_{t}+h_{0}u'_{x}+h_{0}v'_{x}=0
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-Using the approximation 
-\begin_inset Formula $ab_{z}=(a_{0}+a')(b_{0}+b')_{z}=a_{0}b'_{z}+a'b'_{z}\approx a_{0}b'_{z}$
-\end_inset
-
- , we can then simplify the non-conservative formulation to
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-u'_{t}+gh'_{x}+u_{0}u'_{x}+v_{0}u'_{y}-fv'=0
+h_{t}+\nabla\cdot((h_{0}+h')\vec{u})=0,
 \]
 
 \end_inset
@@ -888,64 +934,36 @@ u'_{t}+gh'_{x}+u_{0}u'_{x}+v_{0}u'_{y}-fv'=0
 
 \begin_inset Formula 
 \[
-v'_{t}+gh'_{y}+u_{0}v'_{x}+v_{0}v'_{y}+fu'=0
+h'_{t}+h_{0}\nabla\cdot\vec{u}=-\nabla\cdot(h'\vec{u}),
 \]
 
 \end_inset
 
+and the momentum equations can be adopted with your preferred formulation
+ but now considering 
+\begin_inset Formula $h'$
+\end_inset
 
+ instead of 
+\begin_inset Formula $h$
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Standard
-and again by assuming a low velocity, get the following formulation:
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-h'_{t}+h_{0}u'_{x}+h_{0}v'_{x}=0
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-u'_{t}+gh'_{x}-fv'=0
-\]
-
-\end_inset
-
-
-\begin_inset Formula 
-\[
-v'_{t}+gh'_{y}+fu'=0
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-Setting 
-\begin_inset Formula $U:=(h',u',v')$
-\end_inset
-
-, we can write these equations as a linear operator
+We can write these equations, in any of the above formulations, as a linear
+ operator and a non linear one
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula 
 \[
 L(U):=\left(\begin{array}{ccc}
- & h_{0}\delta_{x} & h_{0}\delta_{y}\\
-g\delta_{x} &  & -f\\
-g\delta_{y} & f
-\end{array}\right)U
+0 & h_{0}\delta_{x} & h_{0}\delta_{y}\\
+g\delta_{x} & 0 & -f\\
+g\delta_{y} & f & 0
+\end{array}\right)U,
 \]
 
 \end_inset
@@ -956,73 +974,34 @@ g\delta_{y} & f
 \begin_layout Standard
 \begin_inset Formula 
 \[
-U_{t}+L(U)=0
+U_{t}+L(U)=N(U)
 \]
 
 \end_inset
 
+where the nonlinear part 
+\begin_inset Formula $N(U)$
+\end_inset
 
+ will depend on the equation formulation.
 \end_layout
 
-\begin_layout Section
-Linear/Non-linear version:
-\end_layout
-
-\begin_layout Standard
-In the equation above, we neglected also the non-linear velocities by assuming
- close-to-zero velocities.
- Assuming, that their influence is of high importance, we can write the
- equations in a form which is not neglecting these equations:
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-U_{t}+L(U)+N(U)=0
-\]
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "Williamson1992"
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Standard
-with
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-N(U):=\left(\begin{array}{c}
-(hu)_{x}-h_{0}u_{x}+(hv)_{y}-h_{0}v_{y}\\
-uu_{x}+vu_{y}\\
-uv_{x}+vv_{y}
-\end{array}\right)
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-or with the assumption of negligible perturbations of the water height,
- we get
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-N(U):=\left(\begin{array}{c}
-0\\
-uu_{x}+vu_{y}\\
-uv_{x}+vv_{y}
-\end{array}\right)
-\]
-
-\end_inset
-
-
+ Williamson, David L.
+ and Drake, John B.
+ and Hack, James J.
+ and Jakob, Rüdiger and Swarztrauber, Paul N.
+ A standard test set for numerical approximations to the shallow water equations
+ in spherical geometry, J.
+ Comput.
+ Phys, 1992.
+ 
 \end_layout
 
 \end_body
