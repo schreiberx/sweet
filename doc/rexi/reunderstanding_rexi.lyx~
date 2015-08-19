@@ -1165,6 +1165,36 @@ Computing inverse of
 \begin_layout Standard
 
 \series bold
+@Pedro: I´ve now also uploaded the jpeg ( IMG_20150806_002902.jpg ) which
+ I´ve sent you 10 days ago.
+\begin_inset Newline newline
+\end_inset
+
+This is how it is currently implemented and knowing the problems in this
+ formulations would greatly simplify debugging.
+ Maybe you can rearrange these equations in a form which match closely this
+ formulations and check where the problem in this formulation (see jpeg)
+ is?
+\begin_inset Newline newline
+\end_inset
+
+@Pedro: The equations above were also derived with (L+
+\backslash
+alpha), not with (L-
+\backslash
+alpha).
+ Sorry, but I forgot to update also the rest of this document with (L+
+\backslash
+alpha).
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+@Martin: Why not stick with Terry's paper standard?
+\begin_inset Newline newline
+\end_inset
+
 @Pedro: 
 \begin_inset Formula $\delta$
 \end_inset
