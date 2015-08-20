@@ -1,0 +1,650 @@
+%% LyX 2.1.3 created this file.  For more info, see http://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+\documentclass[english]{article}
+\usepackage[T1]{fontenc}
+\usepackage[latin9]{inputenc}
+\usepackage{textcomp}
+\usepackage{amsmath}
+\usepackage{esint}
+
+\makeatletter
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+\usepackage{babel}
+
+\makeatother
+
+\usepackage{babel}
+\begin{document}
+
+\title{Understanding the Rational Approximation of the Exponential Integrator
+(REXI)}
+
+
+\author{Martin Schreiber <M.Schreiber@exeter.ac.uk>\\
+ Pedro S. Peixoto <pedrosp@ime.usp.br>\\
+ et al.}
+
+\maketitle
+This document serves as the basis for implementing the Rational approximation
+of the EXponential Integrator (REXI). Here, we purely focus on the
+linear part of the shallow-water equations (SWE) and show the different
+steps to approximate solving this linear part with an exponential
+integrator. This paper mainly summarises previous work on REXI.
+
+
+\section{Problem formulation}
+
+We use linearised shallow water equations (SWE) with respect to a
+rest state with mean water depth of $\eta_{0}$ and defined for perturbations
+of height $\eta$ (see \cite{Schreiber:Formulations of the shallow-water equations}).
+The linear operator ($L$) may be written as
+
+\[
+L(U):=\left(\begin{array}{ccc}
+0 & \eta_{0}\partial_{x} & \eta_{0}\partial_{y}\\
+g\partial_{x} & 0 & -f\\
+g\partial_{y} & f & 0
+\end{array}\right)U
+\]
+where $U:=(\eta,u,v)^{T}$. Here, we neglect all non-linear terms
+and consider $f$ constant (f-plane approximation). The time evolution
+of the PDE, with the subscript $t$ denoting the derivative in time,
+is given by
+
+\[
+U_{t}=L(U).
+\]
+It is further worth noting, that this system describes an oscillatory
+system (2D wave equation), hence the operator $L$ is hyperbolic and
+has imaginary eigenvalues. Linear initial value differential problems
+are well known to be solvable with exponential integrators for arbitrary
+time step sizes via 
+\[
+U(t)=e^{Lt}U(0).
+\]
+see e.g. \cite{Moler:Nineteen Dubious Ways to Compute the Exponential of a Matrix}.
+However, this is typically quite expensive to compute and analytic
+solutions only exist for some simplified system of equations, see
+e.g. \cite{Schreiber:Formulations of the shallow-water equations}
+for f-plane shallow-water equations. These exponential integrators
+can be approximated with rational functions and this paper is on giving
+insight into this approximation.
+
+
+\section{1D rational approximation}
+
+Terry et. al. \cite{Terry:High-order time-parallel approximation of evolution operators}
+developed a rational approximation of the exponential integrator.
+First, we like to get more insight into it with a one-dimensional
+formulation before applying REXI to a rational approximation of a
+linear operator. Our main target is to find an approximation of an
+operator with a \emph{complex exponential shape}, in our case $e^{ix}$,
+which (in one-dimension) is given as a function $f(x)$. We will end
+up in an approximation given by the following rational approximation:
+
+\[
+e^{ix}\approx\sum_{n=-N}^{N}\frac{\beta_{n}}{ix-\alpha_{n}}
+\]
+with complex coefficients $\alpha_{n}$ and $\beta_{n}$. We point
+out that the coefficients $\alpha_{n}$ will always have non zero
+real part, so no singularity occurs with the rational function.
+
+
+\subsection{Step A: Approximation of solution space}
+
+First, we assume that we can use Gaussian curves as basis functions
+for our approximation. So first we find an approximation of one of
+our underlying Gaussian basis function
+
+\[
+\psi_{h}(x):=(4\pi)^{-\frac{1}{2}}e^{-x^{2}/(4h^{2})}
+\]
+
+
+In this formulation, $h$ can be interpreted as the horizontal ``stretching''
+of the basis function. Note the similarities to the Gaussian distribution,
+but by dropping certain parts of the vertical scaling as it is required
+for probability distributions. We can now approximate our function
+$f(x)$ with a superposition of basis functions $\psi_{h}(x)$ by
+
+\[
+f(x)\approx\sum_{m=-M}^{M}b_{m}\psi_{h}(x+mh)
+\]
+with $M$ controlling the interval of approximation (\textasciitilde{}size
+of ``domain of interest'') and $h$ will be related to the accuracy
+of integration (\textasciitilde{}resolution in ``domain of interest'').
+We choose $h$ small enough so that the support of the Fourier transform
+of $f$ is mainly localised within $[-1/(2h),1/(2h)]$, i.e. almost
+zero outside this interval. $M$ is chosen such that the approximation
+will be adequate in the interval $|x|<Mh$.
+
+To compute the coefficients $b_{m}$, we rewrite the previous equation
+in Fourier space with 
+\[
+\frac{\hat{f}(\xi)}{\hat{\psi_{h}}(\xi)}=\sum_{m=\infty}^{\infty}b_{m}e^{2\pi imh\xi},
+\]
+where the $\hat{\cdot}$ symbols indicate the Fourier transforms of
+the respective functions. The $b_{m}$ are now the Fourier coefficients
+of the series for the function $\frac{\hat{f}(\xi)}{\hat{\psi_{h}}(\xi)}$
+and can be calculated as (see \cite{Terry:High-order time-parallel approximation of evolution operators},
+page 11), 
+\[
+b_{m}=h\intop_{-\frac{1}{2h}}^{\frac{1}{2h}}e^{-2\pi imh\xi}\frac{\hat{f}(\xi)}{\hat{\psi_{h}}(\xi)}d\xi,
+\]
+for $m$ integer and $1/h$ defines the periodicity of the trigonometric
+basis function.
+
+Since we are interested in approximating $f(x)=e^{ix}$, we can simplify
+the equation by using the response in frequency space $\hat{f}(\xi)=\delta(\xi-\frac{1}{2\pi})$,
+where here $\delta$ is the Dirac distribution, and
+
+\[
+b_{m}=h\,e^{-imh}\hat{\psi_{h}}(\frac{1}{2\pi})^{-1}.
+\]
+The Fourier transform of the Gaussian function is well known and given
+by
+
+\begin{eqnarray*}
+\hat{\psi_{h}}(\xi) & = & \intop_{-\infty}^{\infty}\frac{1}{\sqrt{4\pi}}e^{-\left(\frac{x}{2h}\right)^{2}}e^{-2\pi ix\xi}dx\\
+ & = & \frac{1}{\sqrt{4\pi}}\intop_{-\infty}^{\infty}e^{-\left(\left(\frac{x}{2h}\right)^{2}+2\pi ix\xi+(2h\pi i\xi)^{2}-(2h\pi i\xi)^{2}\right)}dx\\
+ & = & \frac{1}{\sqrt{4\pi}}e^{-(2h\pi\xi)^{2}}\intop_{-\infty}^{\infty}e^{-\left(\frac{x}{2h}+2h\pi i\xi\right)^{2}}dx\\
+ & = & \frac{1}{\sqrt{4\pi}}e^{-(2h\pi\xi)^{2}}\intop_{-\infty}^{\infty}e^{-\left(\frac{x}{2h}\right)^{2}}dx\\
+ & = & he^{-(2h\pi\xi)^{2}}
+\end{eqnarray*}
+where we used that $\intop_{-\infty}^{\infty}e^{-\left(\frac{x}{2h}\right)^{2}}dx=h\,\sqrt{4\pi}$
+and completed squares in the exponential term. For the case $\xi=\frac{1}{2\pi}$,
+we get
+
+\[
+\hat{\psi}_{h}\left(\frac{1}{2\pi}\right)=h\,e^{-h^{2}}.
+\]
+Finally, one can obtain the equation
+
+\[
+b_{m}=h\,e^{-imh}\frac{1}{h\,e^{-h^{2}}}=e^{-imh}e^{h^{2}}
+\]
+to compute the coefficients $b_{m}$ for $f(x)=e^{ix}$.
+
+
+\subsection{Step B: Approximation of basis function}
+
+The second step is the approximation of the basis function $\psi_{h}(x)$
+itself with a rational approximation, see \cite{Damle:Near optimal rational approximations of large data sets}.
+Our basis function is given by
+
+\[
+\psi_{h}(x):=(4\pi)^{-\frac{1}{2}}e^{-x^{2}/(4h^{2})}
+\]
+and a close-to-optimal approximation of $\psi_{1}(x)$ with a sum
+of rational functions is given by
+
+\[
+\psi_{1}(x)\approx Re\left(\sum_{l=-L}^{L}\frac{a_{l}}{ix+(\mu+i\,l)}\right)
+\]
+with the $\mu$ and $a_{l}$ given in \cite{Damle:Near optimal rational approximations of large data sets},
+Table 1. We can generalise this approximation to arbitrary chosen
+$h$ via 
+\[
+\psi_{h}(x)\approx Re\left(\sum_{l=-L}^{L}\frac{a_{l}}{i\frac{x}{h}+(\mu+i\,l)}\right).
+\]
+
+
+The theory of how these coefficients are calculated are in \cite{Damle:Near optimal rational approximations of large data sets}
+and will not be described here. Therefore, we assume that the coefficients
+$a_{l}$ are given.
+
+
+\subsection{Step C: Approximation of the approximation}
+
+We then combine the approximation (B) into the approximation (A),
+yielding the approximation $\tilde{f}$ for $f$ given by 
+\[
+\tilde{f}(x)=\sum_{m=-M}^{M}b_{m}\psi_{h}(x+mh)=\sum_{m=-M}^{M}b_{m}Re\left(\sum_{l=-L}^{L}\frac{a_{l}}{i\frac{x+mh}{h}+(\mu+i\,l)}\right)
+\]
+
+
+\[
+=\sum_{m=-M}^{M}b_{m}\sum_{l=-L}^{L}Re\left(\frac{ha_{l}}{ix+h(\mu+i(m+l))}\right).
+\]
+
+
+We further like to simplify this equation and we observe, that for
+$n:=m+l$, the denominator is equal. We can hence express parts of
+the denomiator in terms of $n:=m+l$ by
+
+\begin{equation}
+\alpha_{n}:=s(\mu+in).\label{eq:alpha}
+\end{equation}
+Now, we merge the $b_{m}$ and $a_{l}$ coefficients and first have
+a look at the $b_{m}$ which is complex valued. We observe the following
+property: Assuming that we want to compute the real value of $f(x)$,
+only the real value of $b_{m}$ has to be merged with the sum, since
+the imaginary component would be dropped afterwards. This allows us
+to move the $Re(b_{m})$ values inside the $\sum_{L}$:
+
+\[
+Re(f(x)):=Re\left(\sum_{m=-M}^{M}\,\,\sum_{l=-L}^{L}\frac{Re(b_{m})\,ha_{l}}{ix+h(\mu+i(m+l))}\right).
+\]
+Now we can collect all nominators with equivalent denominator (if
+$n=m+l$ and by using $\delta$ as the Kronecker delta), yielding
+
+\begin{equation}
+\beta_{n}^{Re}:=h\sum_{m=-M\,}^{M}\sum_{l=-L}^{L}Re(b_{m})ha_{l}\delta(n,\,m+l)\label{eq:beta_re}
+\end{equation}
+for real values $f(x)$ and
+
+\begin{equation}
+\beta_{n}^{Im}:=h\sum_{m=-M\,}^{M}\sum_{l=-L}^{L}Im(b_{m})a_{l}\delta(n,\,m+l)\label{eq:beta_im}
+\end{equation}
+for complex values of $f(x)$. Note, that the complexity of this operation
+is $O(N\,L)$, which is negligible for small $N$ and $L$. This can
+be optimized by using $L_{1}=max(-L,n-M)$ and $L_{2}=min(L,n+M)$
+(see \cite{Terry:High-order time-parallel approximation of evolution operators})
+and we can compute $\beta_{n}^{Re}$ with
+
+\begin{equation}
+\beta_{n}^{Re}:=h\sum_{k=L_{1}}^{L_{2}}Re(b_{n-k})a_{k},\label{eq:beta_re_fast}
+\end{equation}
+and $\beta_{n}^{Im}$ correspondingly.
+
+Finally, we get the REXI approximation
+
+\[
+e^{ix}\approx\sum_{n=-N}^{N}Re\left(\frac{\beta_{n}^{Re}}{ix+\alpha_{n}}\right)+i\,Re\left(\frac{\beta_{n}^{Im}}{ix+\alpha_{n}}\right).
+\]
+
+
+
+\section{REXI on linear operators}
+
+
+\subsection{Matrix exponential}
+
+\label{sec:mat_exp} We would like to apply REXI to a formulation
+such as 
+\[
+U(t)=e^{tL}U(0).
+\]
+To see the relationship between the approximation of $e^{ix}$ with
+$e^{tL}$ we assume that $L$ is skew hermitian and therefore has
+only purely imaginary eigenvalues, and maybe decomposed as $\Sigma\Lambda\Sigma^{H}$,
+yielding 
+\[
+e^{tL}=\sum_{k=0}^{\infty}\frac{tL}{k!}=\Sigma\left(\sum_{k=0}^{\infty}\frac{t\Lambda}{k!}\right)\Sigma^{H}=\Sigma e^{t\Lambda}\Sigma^{H},
+\]
+where we used the orthonormality of $\Sigma$ to remove it from the
+summation, and
+
+\[
+e^{t\Lambda}=\left(\begin{array}{ccc}
+...\\
+ & e^{i\lambda_{n}t}\\
+ &  & ...
+\end{array}\right),
+\]
+where we hare explicitly detached the imaginary unit from the eigenvalues,
+therefore $\lambda_{n}$ are assumed real. Since $e^{t\Lambda}$ is
+diagonal, it can be eigenvalue-wise approximated in the same way as
+in $e^{ix}$.
+
+Some important points about the choice of $M$ and $h$ have to be
+made at this point. We know that $e^{ix}$ is accurately approximated
+with REXI for the interval $|x|<hM$, where $h$ is chosen small enough
+to obtain a good approximation in step (A), and $M$ will define the
+interval size and number of approximation points. In the matrix case,
+$M$ has to be chosen so that $hM>t\bar{\lambda}$, where $\bar{\lambda}=\max_{n}|\lambda_{n}|$,
+in order to capture all wavelengths of $L$. In other other words,
+$hM$ need to be set to capture the fastest wave. Note that if this
+is used as a time stepping method, with time step $t=\tau$, then,
+the larger the timestep, the larger $M$ will be. Exact evaluations
+of the choices for $h$ and $M$ may be done based on equation (3.6)
+of \cite{Terry:High-order time-parallel approximation of evolution operators}.
+
+We want to evaluate $e^{\tau L}U(0)$ with REXI, where $\tau$ will
+be a time step size and $U(0)$ the initial condition for this time
+step. We will assume $\tau$ a-priori fixed, which implies that the
+coefficients in REXI will not change and may be pre-computed.
+
+Although $L$ has imaginary eigenvalues, we wish to evaluate the $e^{\tau L}U(0)$,
+which is real valued, therefore, we will use the real approximation
+of $e^{ix}$ 
+\begin{equation}
+exp(\tau L)\approx Re\left(\sum_{n=-N}^{N}\beta_{n}(\tau L+\alpha_{n})^{-1}\right),\label{eq:rexi}
+\end{equation}
+where $\beta_{n}$ is given by equation \eqref{eq:beta_re} and $\alpha_{n}$
+by equation \eqref{eq:alpha}. These coefficient may be pre-computed
+if $L$ and $\tau$ are fixed.
+
+Note, that for debugging purpose, their \emph{imaginary values have
+to cancel out}.\textbf{ (TODO - PP: are you sure? MaS: No, but this
+is what Terry mentioned).}
+
+Note an important property (see Sec. 3.3 in \cite{Terry:High-order time-parallel approximation of evolution operators}).
+There's an anti-symmetry in the $\alpha_{i}$ coefficients, which
+avoids computing half of the inverses, 
+\[
+\overline{(L+\alpha)^{-1}U(0)}=(L+\overline{\alpha})^{-1}U(0).
+\]
+
+
+
+\subsection{Handling $\tau$ in REXI\label{sub:Handling-tau-in-REXI}}
+
+We reformulate the REXI approximation scheme given by
+
+\[
+(\tau L+\alpha)^{-1}U(\tau)=U(0)
+\]
+and by factoring $\tau$ out, yielding
+
+\[
+(L+\frac{\alpha}{\tau})^{-1}U(\tau)\tau^{-1}=U(0)
+\]
+So instead of solving for $U(\tau)$, we are solving for $U^{\tau}(\tau):=U(\tau)\tau^{-1}$
+as well as $\alpha^{\tau}:=\frac{\alpha}{\tau}$.
+
+To summarize, we have to solve the system of equations given by
+
+\begin{equation}
+(L+\alpha^{\tau})^{-1}U^{\tau}(\tau)=U(0)\label{eq:unit_rexi_timestep}
+\end{equation}
+with $U(0)$ the initial conditions. For sake of simplicity, we stick
+to the formulation without the $\tau$ notation.
+
+
+\subsection{Computing inverse of $(L+\alpha)^{-1}$}
+
+\textbf{@Pedro: I\textasciiacute ve now also uploaded the jpeg ( IMG\_20150806\_002902.jpg
+) which I\textasciiacute ve sent you 10 days ago.}\\
+\textbf{This is how it is currently implemented and knowing the problems
+in this formulations would greatly simplify debugging. Maybe you can
+rearrange these equations in a form which match closely this formulations
+and check where the problem in this formulation (see jpeg) is?}\\
+\textbf{@Pedro: The equations above were also derived with (L+\textbackslash{}alpha),
+not with (L-\textbackslash{}alpha). Sorry, but I forgot to update
+also the rest of this document with (L+\textbackslash{}alpha).}
+
+\textbf{@Martin: Why not stick with Terry's paper standard?}\\
+\textbf{@Pedro: $\delta$ is already used above as the Kronecker delta
+and the derivative. Maybe we should avoid overutilising it :-).}
+
+@Martin: We should not be using \$\textbackslash{}delta\$ for derivative
+(where are we doing this?)\\
+\textbf{@Pedro: Consistency with formulations of SWE: $H=\eta_{0}$,
+$\eta_{0}=\eta(0)$, $\eta_{1}=\eta(1)$, $u_{0}=u(0)$, $v_{0}=v(0)$... }
+
+\textbf{@ Martin: I used \$\textbackslash{}bar\{\textbackslash{}eta\}\$
+instead of \$\textbackslash{}eta\_0\$ for the mean fluid depth - needs
+to be changed in formulation doc}\\
+
+
+For computing the inverse, arbitrary solvers can be used. However
+we like to note, that $\alpha$ is a complex number. Hence, requiring
+solvers with support for solving in complex space.
+
+We wish to solve the differential problem for each time step 
+\[
+(L+\alpha)U=U(0)
+\]
+so that $U=(L+\alpha)^{-1}U_{0}$. We will do this converting the
+problem into and elliptic equation.\textbf{}\\
+
+
+First, lets expand the equations with the definition of $L$, 
+\begin{eqnarray}
+-fv+g\eta_{x}+\alpha u & = & u_{0},\label{eq:mom_u}\\
+fu+g\eta_{y}+\alpha v & = & v_{0},\label{eq:mom_v}\\
+\bar{\eta}(u_{x}+v_{y})+\alpha\eta & = & \eta_{0}.\label{eq:mass}
+\end{eqnarray}
+
+
+Let $f$ be constant (f-plane approximation), $\delta:=u_{x}+v_{y}$
+be the wind divergence, $\zeta:=v_{x}-u_{y}$ be the wind (relative)
+vorticity and $\Delta\eta:=\eta_{xx}+\eta_{yy}$ the Laplacian of
+the fluid depth. We will re-write the problem in a divergence-vorticity
+formulation by taking 2 steps. First, sum the $\partial_{x}$ of equation
+\eqref{eq:mom_u} and the $\partial_{y}$ of equation \eqref{eq:mom_v},
+yielding 
+\begin{equation}
+-f\zeta+g\Delta\eta+\alpha\delta=\delta_{0}.\label{eq:zeta}
+\end{equation}
+Then subtract the $\partial_{y}$ of equation \eqref{eq:mom_u} from
+the $\partial_{x}$ of equation \eqref{eq:mom_v}, yielding 
+\begin{equation}
+f\delta+\alpha\zeta=\zeta_{0}.\label{eq:delta}
+\end{equation}
+Using equation \eqref{eq:zeta} in equation \eqref{eq:delta} gives
+us
+
+\[
+\delta=-\frac{1}{f^{2}+\alpha^{2}}\left(\alpha g\Delta\eta-\alpha\delta_{0}-f\zeta_{0}\right).
+\]
+Finally, substituting $\delta$ in equation \eqref{eq:mass}, that
+reads $H\delta-\alpha\eta=\eta_{0}$, results in 
+\[
+-\frac{\bar{\eta}}{f^{2}+\alpha^{2}}\left(\alpha g\Delta\eta-\alpha\delta_{0}-f\zeta_{0}\right)+\alpha\eta=\eta_{0},
+\]
+which may be simplified into the elliptic equation by multiplying
+by $-\frac{f^{2}+\alpha^{2}}{\bar{\eta}\alpha g}$
+
+\begin{equation}
+\Delta\eta-\kappa^{2}\eta=r_{0}\label{eq:helmhotz}
+\end{equation}
+where 
+\[
+\kappa^{2}=\frac{f^{2}+\alpha^{2}}{\bar{\eta}g}
+\]
+and 
+\[
+r_{0}=-\frac{\kappa^{2}}{\alpha}\eta_{0}+\frac{1}{g}\delta_{0}+\frac{f}{\alpha g}\zeta_{0}.
+\]
+
+
+Multiplying the equation \eqref{eq:helmhotz} by $-g\bar{\eta}$ gives 
+
+\[
+((\alpha^{2}+f^{2})-g\bar{\eta}\Delta)\eta-\kappa^{2}\eta=\frac{f^{2}+\alpha^{2}}{\alpha}\eta_{0}-\eta\delta_{0}-\frac{f\bar{\eta}}{\alpha}\zeta_{0}
+\]
+
+
+Once $\eta$ is calculated from any Helmholtz solver, we need to retrieve
+the velocities by solving the $2\times2$ system formed by equations
+\eqref{eq:mom_u} and \eqref{eq:mom_v}, which reads 
+\[
+A_{\alpha}U=U_{0}+g\nabla\eta
+\]
+with 
+\[
+A_{\alpha}=\left(\begin{matrix}-\alpha & -f\\
+f & -\alpha
+\end{matrix}\right).
+\]
+The solution is 
+\begin{equation}
+u=-\frac{1}{f^{2}+\alpha^{2}}\left[g(\alpha\eta_{x}-f\eta_{y})+\alpha u_{0}-fv_{0}\right]\label{eq:elliptic_velocity_u}
+\end{equation}
+and 
+\begin{equation}
+v=-\frac{1}{f^{2}+\alpha^{2}}\left[g(f\eta_{x}+\alpha\eta_{y})+fu_{0}+\alpha v_{0}\right],\label{eq:elliptic_velocity_v}
+\end{equation}
+which may be written as 
+\[
+U=A_{\alpha}^{-1}(g\nabla\eta+U_{0})
+\]
+where 
+\[
+A_{\alpha}^{-1}=-\frac{1}{f^{2}+\alpha^{2}}\left(\begin{matrix}\alpha & -f\\
+f & \alpha
+\end{matrix}\right)
+\]
+
+
+
+\subsection{Interpretation of $\tau$}
+
+We like to close this section with a brief discussion of $\tau$ by
+having a look on the REXI reformulation
+
+\[
+(L-\frac{\alpha}{\tau})^{-1}U(\tau)\tau^{-1}=U(0)
+\]
+We see, that for an increasing $\tau$, hence an integration in time
+over a larger time period, the poles given by $\alpha$ are getting
+closer. This can possibly lead to a loss in accuracy for the data
+sampled by the outer poles $\alpha_{-N}$ and $\alpha_{N}$. Therefore,
+the number $N$ of poles is expected to scale linearly with the size
+of the coarse time step, 
+\[
+|N|\propto\tau.
+\]
+
+
+Indeed, we saw in section \ref{sec:mat_exp} that for larger $\tau$,
+$M$ needs to be larger.
+
+
+\subsection{Complex solver}
+
+\textbf{@Pedro: (L+\textbackslash{}alpha) with a plus sign ...}
+
+We are interested in solving a system of the form, 
+\[
+(L-\alpha)U=U_{0},
+\]
+where $\alpha$ is a complex number, therefore we must allow complex
+solutions for $U$. The system can be transformed to have only real
+arithmetic in the following way.
+
+First we decompose $U$ into its real and imaginary parts, $U=U^{r}+iU^{i}$,
+and allow $U_{0}$ to be decomposed in the same way. Although $\alpha$
+can be a general complex number, it real part is always constant in
+REXI, given by $\mu$. We will therefore write $\alpha=\mu+i\alpha^{i}$,
+and we can absorb $\mu$ into $L$ writing $D=L-\mu I$, where $I$
+is the identity matrix. Now 
+\[
+(D-i\alpha^{i})(U^{r}+iU^{i})=U_{0}^{r}+iU_{0}^{i},
+\]
+\[
+DU^{r}+\alpha^{i}U^{i}+i(-\alpha^{i}U^{r}+DU^{i})=U_{0}^{r}+iU_{0}^{i},
+\]
+therefore 
+\begin{eqnarray}
+DU^{r}+\alpha^{i}U^{i} & = & U_{0}^{r}\\
+-\alpha^{i}U^{r}+DU^{i} & = & U_{0}^{i},
+\end{eqnarray}
+which in matrix notation gives 
+\[
+\left(\begin{matrix}D & \alpha^{i}I\\
+-\alpha^{i}I & D
+\end{matrix}\right)\left(\begin{matrix}U^{r}\\
+U^{i}
+\end{matrix}\right)=\left(\begin{matrix}U_{0}^{r}\\
+U_{0}^{i}
+\end{matrix}\right),
+\]
+or, 
+\[
+\left(\begin{matrix}L-\mu I & \alpha^{i}I\\
+-\alpha^{i}I & L-\mu I
+\end{matrix}\right)\left(\begin{matrix}U^{r}\\
+U^{i}
+\end{matrix}\right)=\left(\begin{matrix}U_{0}^{r}\\
+U_{0}^{i}
+\end{matrix}\right).
+\]
+
+
+A similar approach may be taken with the elliptic equation 
+\begin{equation}
+\Delta\eta+\theta\eta=r_{0},
+\end{equation}
+where $\eta$, $\theta$ and $r_{0}$ may be complex. The resulting
+system is given by 
+\begin{eqnarray}
+\Delta\eta^{r}+\theta^{r}\eta^{r}-\theta^{i}\eta^{i}=r_{0}^{r},\\
+\Delta\eta^{i}+\theta^{i}\eta^{r}+\theta^{r}\eta^{i}=r_{0}^{i},
+\end{eqnarray}
+which can also be written in matrix notation and solved with arbitrary
+elliptic equation solvers.
+
+
+\section{Filtering}
+
+The method described in the previous section is well defined for skew
+hermitian $L$. If $L$ is not skew hermitian, the real eigenvalues
+might cause the REXI to have absolute values larger than 1, which
+can lead to instabilities if used as time stepping method.
+
+To ensure that the REXI is bounded by unit, a filtering process is
+proposed in \cite{Terry:High-order time-parallel approximation of evolution operators}.
+REXI is prone to exceed unit in the neighbourhood of $|t\lambda|\approx hM$,
+therefore in the highest frequencies. The idea is to construct a rational
+function $S(ix)$ that is approximately $1$ in a smaller interval
+$|t\lambda|<hM_{0}$, with $M_{0}<M$, and decays very fast to zero
+outside this interval. Then we multiply this filters function to the
+original REXI, which will lead to a unit bounded REXI.
+
+Further details of how $S(ix)$ is computed will be added later.
+
+
+\section{Bringing everything together}
+
+Using the spectral methods (e.g. in SWEET), we can directly solve
+the Helmholtz problem for the height in Eq. (\ref{eq:helmhotz}) and
+then solver for the velocity in Eqs. (\ref{eq:elliptic_velocity_u},\ref{eq:elliptic_velocity_v}).
+Note that the Helmholtz problem is in complex space, as $\alpha_{n}$
+are complex. This is straightforward with spectral methods. For finite
+difference/element methods, the problems needs to be split into its
+real and imaginary parts.
+
+Then, the problem is reduced to computing the REXI as given in Eq.
+\eqref{eq:rexi}. We like to note again, that the $\alpha_{n}$ and
+$\beta_{n}$ are independent of the system $L$ to solve, and the
+number of coefficients only depends on the accuracy and the resolution.
+
+
+\section{Notes on HPC}
+\begin{itemize}
+\item The terms in REXI to solve are all independent. Hence, for latency
+avoiding, the communication can be interleaved with computations. 
+\item The iterative solvers are memory bound. Instead of computing $c:=a*b$
+for the stencil operations, we could compute $\vec{c}:=a\vec{b}$
+with $a$ one coefficient in the stencil. This allows vectorization
+over $c$ and $b$ on accelerator cards with strided memory access. 
+\item It is unknown which method is more efficient to solve the system of
+equations:
+
+\begin{itemize}
+\item iterative solvers have low memory access, 
+\item inverting the system and storing it as a sparse matrix allows fast
+direct solving but can yield more memory access operations. 
+\end{itemize}
+\item Splitting the solver into real and complex number would store them
+consecutively in memory. This has a potential to avoid non-strided
+memory access and using the same SIMD operations (Just a rough idea,
+TODO: check if this is really the case). 
+\end{itemize}
+
+\section{Acknowledgements}
+
+Thanks to Terry for the feedback \& discussions! 
+\begin{thebibliography}{1}
+\bibitem{Schreiber:Formulations of the shallow-water equations}Formulations
+of the shallow-water equations, M. Schreiber, P. Peixoto et al.
+
+\bibitem{Terry:High-order time-parallel approximation of evolution operators}High-order
+time-parallel approximation of evolution operators, T. Haut et al.
+
+\bibitem{Terry:An asymptotic parallel-in-time method for highly oscillatory PDEs}An
+asymptotic parallel-in-time method for highly oscillatory PDEs, T.
+Haut et al.
+
+\bibitem{Moler:Nineteen Dubious Ways to Compute the Exponential of a Matrix}Nineteen
+Dubious Ways to Compute the Exponential of a Matrix, Twenty-Five Years
+Later, Cleve Moler and Charles Van Loan, SIAM review
+
+\bibitem{Damle:Near optimal rational approximations of large data sets}Near
+optimal rational approximations of large data sets, Damle, A., Beylkin,
+G., Haut, T. S. \& Monzon\end{thebibliography}
+
+\end{document}

@@ -112,9 +112,58 @@ public:
 		o_u_im.setAll(0);
 		o_v_im.setAll(0);
 #endif
+		double H = i_parameters.setup_h0;
+		double g = i_parameters.sim_g;
 
 		for (int m = 0; m < M*2+1; m++)
 		{
+#if 1
+			Complex2DArrayFFT h0(o_h.resolution);	h0.setAll(0,0);		h0.loadRealFromDataArray(io_h);
+			Complex2DArrayFFT u0(o_u.resolution);	u0.setAll(0,0);		u0.loadRealFromDataArray(io_u);
+			Complex2DArrayFFT v0(o_v.resolution);	v0.setAll(0,0);		v0.loadRealFromDataArray(io_v);
+
+			h0 = h0.toSpec();
+			u0 = u0.toSpec();
+			v0 = v0.toSpec();
+
+			// load alpha (a) and scale by inverse of tau
+			complex alpha = rexi.alpha[m]/tau;
+
+			// load kappa (k)
+			complex kappa = alpha*alpha + f*f;
+
+			Complex2DArrayFFT rhs =
+					kappa/alpha * h0
+					- (f*H/alpha) * (op_diff_c_x(v0) - op_diff_c_y(u0))
+					- H*(op_diff_c_x(u0) + op_diff_c_y(v0))
+				;
+
+			Complex2DArrayFFT lhs = (-g*H*(op_diff2_c_x + op_diff2_c_y)).addScalar_Spec(kappa);
+
+			Complex2DArrayFFT h1 = rhs.spec_div_element_wise(lhs);
+
+			// v1 = A * (D h(1) - v(0))
+			Complex2DArrayFFT uh = u0 - g*op_diff_c_x(h1);
+			Complex2DArrayFFT vh = v0 - g*op_diff_c_y(h1);
+
+			Complex2DArrayFFT u1 = 1.0/kappa * (alpha * uh     + f * vh);
+			Complex2DArrayFFT v1 = 1.0/kappa * (   -f * uh + alpha * vh);
+
+			// TO CARTESIAN and scale with TAU
+			h1 = h1.toCart()*(1.0/tau);
+			u1 = u1.toCart()*(1.0/tau);
+			v1 = v1.toCart()*(1.0/tau);
+
+			o_h += (h1*rexi.beta_re[m]).getRealWithDataArray();
+			o_u += (u1*rexi.beta_re[m]).getRealWithDataArray();
+			o_v += (v1*rexi.beta_re[m]).getRealWithDataArray();
+
+#if TEST_IMAG_ZERO
+			o_h_im += (h1*rexi.beta_im[m]).getRealWithDataArray();
+			o_u_im += (u1*rexi.beta_im[m]).getRealWithDataArray();
+			o_v_im += (v1*rexi.beta_im[m]).getRealWithDataArray();
+#endif
+#else
 			/*
 			 * (D^2 - K) h1 = k/a h0 - f/a D x v0 + D.v0
 			 */
@@ -163,6 +212,7 @@ public:
 			o_h_im += (h1*rexi.beta_im[m]).getRealWithDataArray();
 			o_u_im += (u1*rexi.beta_im[m]).getRealWithDataArray();
 			o_v_im += (v1*rexi.beta_im[m]).getRealWithDataArray();
+#endif
 #endif
 		}
 

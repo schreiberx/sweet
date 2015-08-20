@@ -161,7 +161,7 @@ Fluid layer depth/height
 \begin_inset Text
 
 \begin_layout Plain Layout
-\begin_inset Formula $\eta_{0}$
+\begin_inset Formula $\bar{\eta}$
 \end_inset
 
  
@@ -901,13 +901,13 @@ Fluid depth perturbation
 \end_layout
 
 \begin_layout Standard
-It is convenient to split the fluid depth into a mean heigh and a perturbation,
+It is convenient to split the fluid depth into a mean height and a perturbation,
  such that we express 
-\begin_inset Formula $\eta=\eta_{0}+\eta'$
+\begin_inset Formula $\eta=\bar{\eta}+\eta'$
 \end_inset
 
 , with 
-\begin_inset Formula $\eta_{0}$
+\begin_inset Formula $\bar{\eta}$
 \end_inset
 
  being the assumed constant mean water depth.
@@ -922,7 +922,7 @@ It is convenient to split the fluid depth into a mean heigh and a perturbation,
 , the only change happens in the continuity equation, 
 \begin_inset Formula 
 \[
-\eta_{t}+\nabla\cdot((\eta_{0}+\eta')\vec{u})=0,
+\eta_{t}+\nabla\cdot((\bar{\eta}+\eta')\vec{u})=0,
 \]
 
 \end_inset
@@ -930,7 +930,7 @@ It is convenient to split the fluid depth into a mean heigh and a perturbation,
 
 \begin_inset Formula 
 \[
-\eta'_{t}+\eta_{0}\nabla\cdot\vec{u}=-\nabla\cdot(\eta'\vec{u}),
+\eta'_{t}+\bar{\eta}\nabla\cdot\vec{u}=-\nabla\cdot(\eta'\vec{u}),
 \]
 
 \end_inset
@@ -956,7 +956,7 @@ We can write these equations, in any of the above formulations, as a linear
 \begin_inset Formula 
 \[
 L(U):=\left(\begin{array}{ccc}
-0 & \eta_{0}\partial_{x} & \eta_{0}\partial_{y}\\
+0 & \bar{\eta}\partial_{x} & \bar{\eta}\partial_{y}\\
 g\partial_{x} & 0 & -f\\
 g\partial_{y} & f & 0
 \end{array}\right)U,

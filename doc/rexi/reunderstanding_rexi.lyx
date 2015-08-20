@@ -411,19 +411,10 @@ b_{m}=h\intop_{-\frac{1}{2h}}^{\frac{1}{2h}}e^{-2\pi imh\xi}\frac{\hat{f}(\xi)}{
 \end_inset
 
 for 
-\begin_inset Note Note
-status open
-
-\begin_layout Plain Layout
-\begin_inset Formula $m\in Z$
+\begin_inset Formula $m$
 \end_inset
 
- and
-\end_layout
-
-\end_inset
-
- 
+ integer and 
 \begin_inset Formula $1/h$
 \end_inset
 
@@ -1174,39 +1165,23 @@ Computing inverse of
 \begin_layout Standard
 
 \series bold
-@Pedro: I´ve now also uploaded the jpeg ( IMG_20150806_002902.jpg ) which
- I´ve sent you 10 days ago.
-\begin_inset Newline newline
-\end_inset
-
-This is how it is currently implemented and knowing the problems in this
- formulations would greatly simplify debugging.
- Maybe you can rearrange these equations in a form which match closely this
- formulations and check where the problem in this formulation (see jpeg)
- is?
-\begin_inset Newline newline
-\end_inset
-
-@Pedro: The equations above were also derived with (L+
-\backslash
-alpha), not with (L-
-\backslash
-alpha).
- Sorry, but I forgot to update also the rest of this document with (L+
-\backslash
-alpha).
-\begin_inset Newline newline
-\end_inset
-
 @Pedro: 
 \begin_inset Formula $\delta$
 \end_inset
 
  is already used above as the Kronecker delta and the derivative.
  Maybe we should avoid overutilising it :-).
+\end_layout
+
+\begin_layout Standard
+@Martin: We should not be using $
+\backslash
+delta$ for derivative (where are we doing this?)
 \begin_inset Newline newline
 \end_inset
 
+
+\series bold
 @Pedro: Consistency with formulations of SWE: 
 \begin_inset Formula $H=\eta_{0}$
 \end_inset
@@ -1228,6 +1203,23 @@ alpha).
 \end_inset
 
 ...
+ 
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+@ Martin: I used $
+\backslash
+bar{
+\backslash
+eta}$ instead of $
+\backslash
+eta_0$ for the mean fluid depth - needs to be changed in formulation doc
+\begin_inset Newline newline
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -1244,13 +1236,13 @@ For computing the inverse, arbitrary solvers can be used.
 We wish to solve the differential problem for each time step 
 \begin_inset Formula 
 \[
-(L-\alpha)U=U(0)
+(L+\alpha)U=U(0)
 \]
 
 \end_inset
 
 so that 
-\begin_inset Formula $U=(L-\alpha)^{-1}U_{0}$
+\begin_inset Formula $U=(L+\alpha)^{-1}U_{0}$
 \end_inset
 
 .
@@ -1258,24 +1250,6 @@ so that
 \series bold
 
 \begin_inset Newline newline
-\end_inset
-
-@Pedro: There seem to be strange sign errors in the 3 equations below, L(U)
- is given by
-\end_layout
-
-\begin_layout Standard
-
-\series bold
-\begin_inset Formula 
-\[
-L(U):=\left(\begin{array}{ccc}
-0 & \eta_{0}\partial_{x} & \eta_{0}\partial_{y}\\
-g\partial_{x} & 0 & -f\\
-g\partial_{y} & f & 0
-\end{array}\right)U
-\]
-
 \end_inset
 
 
@@ -1289,9 +1263,9 @@ First, lets expand the equations with the definition of
 , 
 \begin_inset Formula 
 \begin{eqnarray}
--fv-g\eta_{x}-\alpha u & = & u_{0},\label{eq:mom_u}\\
-fu-g\eta_{y}-\alpha v & = & v_{0},\label{eq:mom_v}\\
-H(u_{x}+v_{y})-\alpha\eta & = & \eta_{0}.\label{eq:mass}
+-fv+g\eta_{x}+\alpha u & = & u_{0},\label{eq:mom_u}\\
+fu+g\eta_{y}+\alpha v & = & v_{0},\label{eq:mom_v}\\
+\bar{\eta}(u_{x}+v_{y})+\alpha\eta & = & \eta_{0}.\label{eq:mass}
 \end{eqnarray}
 
 \end_inset
@@ -1344,7 +1318,7 @@ reference "eq:mom_v"
 , yielding 
 \begin_inset Formula 
 \begin{equation}
--f\zeta-g\Delta\eta-\alpha\delta=\delta_{0}.\label{eq:zeta}
+-f\zeta+g\Delta\eta+\alpha\delta=\delta_{0}.\label{eq:zeta}
 \end{equation}
 
 \end_inset
@@ -1374,7 +1348,7 @@ reference "eq:mom_v"
 , yielding 
 \begin_inset Formula 
 \begin{equation}
-f\delta-\alpha\zeta=\zeta_{0}.\label{eq:delta}
+f\delta+\alpha\zeta=\zeta_{0}.\label{eq:delta}
 \end{equation}
 
 \end_inset
@@ -1399,7 +1373,7 @@ reference "eq:delta"
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\delta=-\frac{1}{f^{2}+\alpha^{2}}\left(\alpha g\Delta\eta+\alpha\delta_{0}-f\zeta_{0}\right).
+\delta=-\frac{1}{f^{2}+\alpha^{2}}\left(\alpha g\Delta\eta-\alpha\delta_{0}-f\zeta_{0}\right).
 \]
 
 \end_inset
@@ -1416,20 +1390,19 @@ reference "eq:mass"
 \end_inset
 
 , that reads 
-\begin_inset Formula $H\delta-\alpha\eta=\eta_{0}$
+\begin_inset Formula $\bar{\eta}\delta+\alpha\eta=\eta_{0}$
 \end_inset
 
 , results in 
 \begin_inset Formula 
 \[
--\frac{H}{f^{2}+\alpha^{2}}\left(\alpha g\Delta\eta+\alpha\delta_{0}-f\zeta_{0}\right)-\alpha\eta=\eta_{0},
+-\frac{\bar{\eta}}{f^{2}+\alpha^{2}}\left(\alpha g\Delta\eta-\alpha\delta_{0}-f\zeta_{0}\right)+\alpha\eta=\eta_{0},
 \]
 
 \end_inset
 
-which may be simplified into the elliptic Helmholtz equation by multiplying
- by 
-\begin_inset Formula $-\frac{f^{2}+\alpha^{2}}{H\alpha g}$
+which may be simplified into the elliptic equation by multiplying by 
+\begin_inset Formula $-\frac{f^{2}+\alpha^{2}}{\bar{\eta}\alpha g}$
 \end_inset
 
 
@@ -1438,7 +1411,7 @@ which may be simplified into the elliptic Helmholtz equation by multiplying
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-\Delta\eta+\kappa^{2}\eta=r_{0}\label{eq:helmhotz}
+\Delta\eta-\kappa^{2}\eta=r_{0}\label{eq:ellip}
 \end{equation}
 
 \end_inset
@@ -1446,7 +1419,7 @@ which may be simplified into the elliptic Helmholtz equation by multiplying
 where 
 \begin_inset Formula 
 \[
-\kappa^{2}=\frac{f^{2}+\alpha^{2}}{Hg}
+\kappa^{2}=\frac{f^{2}+\alpha^{2}}{\bar{\eta}g}
 \]
 
 \end_inset
@@ -1454,7 +1427,7 @@ where
 and 
 \begin_inset Formula 
 \[
-r_{0}=-\frac{\kappa^{2}}{\alpha}\eta_{0}-\frac{1}{g}\delta_{0}+\frac{f}{\alpha g}\zeta_{0}.
+r_{0}=-\frac{\kappa^{2}}{\alpha}\eta_{0}+\frac{1}{g}\delta_{0}+\frac{f}{\alpha g}\zeta_{0}.
 \]
 
 \end_inset
@@ -1463,11 +1436,53 @@ r_{0}=-\frac{\kappa^{2}}{\alpha}\eta_{0}-\frac{1}{g}\delta_{0}+\frac{f}{\alpha g
 \end_layout
 
 \begin_layout Standard
+Multiplying the equation 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:ellip"
+
+\end_inset
+
+by 
+\begin_inset Formula $-g\bar{\eta}$
+\end_inset
+
+ gives 
+\end_layout
+
+\begin_layout Standard
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+\begin_inset Formula 
+\[
+((\alpha^{2}+f^{2})-g\bar{\eta}\Delta)\eta=\frac{f^{2}+\alpha^{2}}{\alpha}\eta_{0}-\bar{\eta}\delta_{0}-\frac{f\bar{\eta}}{\alpha}\zeta_{0}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+(This is exactly what is in the jpg)
+\end_layout
+
+\begin_layout Standard
 Once 
 \begin_inset Formula $\eta$
 \end_inset
 
- is calculated from any Helmholtz solver, we need to retrieve the velocities
+ is calculated from any elliptic solver, we need to retrieve the velocities
  by solving the 
 \begin_inset Formula $2\times2$
 \end_inset
@@ -1489,7 +1504,7 @@ reference "eq:mom_v"
 , which reads 
 \begin_inset Formula 
 \[
-A_{\alpha}U=U_{0}+g\nabla\eta
+A_{\alpha}U=U_{0}-g\nabla\eta
 \]
 
 \end_inset
@@ -1497,8 +1512,8 @@ A_{\alpha}U=U_{0}+g\nabla\eta
 with 
 \begin_inset Formula 
 \[
-A_{\alpha}=\left(\begin{matrix}-\alpha & -f\\
-f & -\alpha
+A_{\alpha}=\left(\begin{matrix}\alpha & -f\\
+f & \alpha
 \end{matrix}\right).
 \]
 
@@ -1506,24 +1521,8 @@ f & -\alpha
 
 The solution is 
 \begin_inset Formula 
-\begin{equation}
-u=-\frac{1}{f^{2}+\alpha^{2}}\left[g(\alpha\eta_{x}-f\eta_{y})+\alpha u_{0}-fv_{0}\right]\label{eq:elliptic_velocity_u}
-\end{equation}
-
-\end_inset
-
-and 
-\begin_inset Formula 
-\begin{equation}
-v=-\frac{1}{f^{2}+\alpha^{2}}\left[g(f\eta_{x}+\alpha\eta_{y})+fu_{0}+\alpha v_{0}\right],\label{eq:elliptic_velocity_v}
-\end{equation}
-
-\end_inset
-
-which may be written as 
-\begin_inset Formula 
 \[
-U=A_{\alpha}^{-1}(g\nabla\eta+U_{0})
+U=A_{\alpha}^{-1}(U_{0}-g\nabla\eta)
 \]
 
 \end_inset
@@ -1531,8 +1530,8 @@ U=A_{\alpha}^{-1}(g\nabla\eta+U_{0})
 where 
 \begin_inset Formula 
 \[
-A_{\alpha}^{-1}=-\frac{1}{f^{2}+\alpha^{2}}\left(\begin{matrix}\alpha & -f\\
-f & \alpha
+A_{\alpha}^{-1}=\frac{1}{f^{2}+\alpha^{2}}\left(\begin{matrix}\alpha & f\\
+-f & \alpha
 \end{matrix}\right)
 \]
 
@@ -1625,18 +1624,10 @@ Complex solver
 \end_layout
 
 \begin_layout Standard
-
-\series bold
-@Pedro: (L+
-\backslash
-alpha) with a plus sign ...
-\end_layout
-
-\begin_layout Standard
 We are interested in solving a system of the form, 
 \begin_inset Formula 
 \[
-(L-\alpha)U=U_{0},
+(L+\alpha)U=U_{0},
 \]
 
 \end_inset
@@ -1691,7 +1682,7 @@ First we decompose
 \end_inset
 
  writing 
-\begin_inset Formula $D=L-\mu I$
+\begin_inset Formula $D=L+\mu I$
 \end_inset
 
 , where 
@@ -1702,7 +1693,7 @@ First we decompose
  Now 
 \begin_inset Formula 
 \[
-(D-i\alpha^{i})(U^{r}+iU^{i})=U_{0}^{r}+iU_{0}^{i},
+(D+i\alpha^{i}I)(U^{r}+iU^{i})=U_{0}^{r}+iU_{0}^{i},
 \]
 
 \end_inset
@@ -1710,7 +1701,7 @@ First we decompose
 
 \begin_inset Formula 
 \[
-DU^{r}+\alpha^{i}U^{i}+i(-\alpha^{i}U^{r}+DU^{i})=U_{0}^{r}+iU_{0}^{i},
+DU^{r}-\alpha^{i}U^{i}+i(\alpha^{i}U^{r}+DU^{i})=U_{0}^{r}+iU_{0}^{i},
 \]
 
 \end_inset
@@ -1718,8 +1709,8 @@ DU^{r}+\alpha^{i}U^{i}+i(-\alpha^{i}U^{r}+DU^{i})=U_{0}^{r}+iU_{0}^{i},
 therefore 
 \begin_inset Formula 
 \begin{eqnarray}
-DU^{r}+\alpha^{i}U^{i} & = & U_{0}^{r}\\
--\alpha^{i}U^{r}+DU^{i} & = & U_{0}^{i},
+DU^{r}-\alpha^{i}U^{i} & = & U_{0}^{r}\\
+\alpha^{i}U^{r}+DU^{i} & = & U_{0}^{i},
 \end{eqnarray}
 
 \end_inset
@@ -1727,8 +1718,8 @@ DU^{r}+\alpha^{i}U^{i} & = & U_{0}^{r}\\
 which in matrix notation gives 
 \begin_inset Formula 
 \[
-\left(\begin{matrix}D & \alpha^{i}I\\
--\alpha^{i}I & D
+\left(\begin{matrix}D & -\alpha^{i}I\\
+\alpha^{i}I & D
 \end{matrix}\right)\left(\begin{matrix}U^{r}\\
 U^{i}
 \end{matrix}\right)=\left(\begin{matrix}U_{0}^{r}\\
@@ -1741,8 +1732,8 @@ U_{0}^{i}
 or, 
 \begin_inset Formula 
 \[
-\left(\begin{matrix}L-\mu I & \alpha^{i}I\\
--\alpha^{i}I & L-\mu I
+\left(\begin{matrix}L+\mu I & -\alpha^{i}I\\
+\alpha^{i}I & L+\mu I
 \end{matrix}\right)\left(\begin{matrix}U^{r}\\
 U^{i}
 \end{matrix}\right)=\left(\begin{matrix}U_{0}^{r}\\
