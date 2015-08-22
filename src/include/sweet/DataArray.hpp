@@ -258,6 +258,8 @@ private:
 #endif
 
 
+
+
 public:
 	/**
 	 * copy constructor, used e.g. in
@@ -386,11 +388,13 @@ public:
 
 
 	/**
-	 * default constructor
+	 * special empty constructor
+	 *
+	 * note, that the class may only be used after calling the setup() method.
 	 */
 public:
 	DataArray(
-		const std::size_t i_resolution[D]	///< size of array
+		int i_int
 	)	:
 		array_data_cartesian_space(nullptr),
 #if SWEET_USE_SPECTRAL_SPACE
@@ -399,6 +403,24 @@ public:
 #endif
 		temporary_data(false)
 	{
+	}
+
+
+
+
+	/**
+	 * setup the DataArray in case that the special
+	 * empty constructor with int as a parameter was used.
+	 *
+	 * Calling this setup function should be in general avoided.
+	 */
+public:
+	void setup(
+			const std::size_t i_resolution[D]	///< size of array
+	)
+	{
+		assert(array_data_cartesian_space == nullptr);
+
 		for (int i = 0; i < D; i++)
 		{
 			resolution[i] = 0;
@@ -417,6 +439,24 @@ public:
 		// initialize fft if not yet done
 		fftTestAndInit(*this);
 #endif
+	}
+
+
+	/**
+	 * default constructor
+	 */
+public:
+	DataArray(
+		const std::size_t i_resolution[D]	///< size of array
+	)	:
+		array_data_cartesian_space(nullptr),
+#if SWEET_USE_SPECTRAL_SPACE
+		array_data_spectral_space(nullptr),
+		aliasing_scaled(false),
+#endif
+		temporary_data(false)
+	{
+		setup(i_resolution);
 	}
 
 

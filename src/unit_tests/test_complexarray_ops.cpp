@@ -11,7 +11,6 @@
 #	warning	"Aliasing not working / supported here"
 #endif
 
-
 #include <sweet/DataArray.hpp>
 #include <sweet/Complex2DArrayFFT.hpp>
 #include <sweet/SimulationParameters.hpp>
@@ -116,17 +115,16 @@ int main(int i_argc, char *i_argv[])
 		double eps = 1e-9*tolerance_increase;
 
 
-
 		std::cout << "*************************************************************" << std::endl;
 		std::cout << "Testing operators with resolution " << res_x << " x " << res_y << std::endl;
 		std::cout << "*************************************************************" << std::endl;
 		std::size_t res[2] = {res_x, res_y};
-//		std::size_t res_aliasing[2] = {res_x*2, res_y*2};
 
 
 		parameters.res[0] = res[0];
 		parameters.res[1] = res[1];
 		parameters.reset();
+
 
 		/*
 		 * keep h in the outer regions to allocate it only once and avoid reinitialization of FFTW
@@ -219,6 +217,36 @@ int main(int i_argc, char *i_argv[])
 				std::cout << "FAILED with error " << error;
 				exit(-1);
 			}
+
+			double add_test_three_imaginary = ((five_cart+two_cart).addScalar_Cart(complex(-7.0, 3.0))).reduce_rms_quad();
+			std::cout << "add_test_three_imaginary ||_2 = " << add_test_three_imaginary << std::endl;
+			error = std::abs(add_test_three_imaginary-3.0);
+			if (error > eps)
+			{
+				std::cout << "FAILED add_test_three_imaginary with error " << error;
+				exit(-1);
+			}
+
+			double add_test_two_two_spec = ((five_cart.toSpec()+two_cart.toSpec()).addScalar_Spec(complex(-7.0-3.0, 4.0))).toCart().reduce_rms_quad();
+			std::cout << "add_test_two_two_spec ||_2 = " << add_test_two_two_spec << std::endl;
+			error = std::abs(add_test_two_two_spec-5.0);
+			if (error > eps)
+			{
+				std::cout << "FAILED add_test_two_two_spec with error " << error;
+				exit(-1);
+			}
+
+			double mul_test_two_times_two_spec = ((two_cart.toSpec()*complex(2.0, 0.0))).toCart().reduce_rms_quad();
+			std::cout << "mul_test_two_times_two_spec ||_2 = " << mul_test_two_times_two_spec << std::endl;
+			error = std::abs(mul_test_two_times_two_spec-4.0);
+			if (error > eps)
+			{
+				std::cout << "FAILED mul_test_two_times_two_spec with error " << error;
+				exit(-1);
+			}
+
+
+
 
 			// create sinus curve
 			for (std::size_t j = 0; j < parameters.res[1]; j++)
@@ -322,8 +350,10 @@ int main(int i_argc, char *i_argv[])
 			double err3_laplace =
 				(
 						h_cart-
-							((op_diff2_c_x+op_diff2_c_y)(h_cart.toSpec())).
-							spec_div_element_wise(op_diff2_c_x+op_diff2_c_y).toCart()
+							(
+								((op_diff2_c_x+op_diff2_c_y)(h_cart.toSpec())).
+								spec_div_element_wise(op_diff2_c_x+op_diff2_c_y)
+							).toCart()
 				).reduce_rms_quad();
 
 			std::cout << "SPEC: Error threshold for Laplace and its inverse: " << err3_laplace << std::endl;
@@ -347,6 +377,7 @@ int main(int i_argc, char *i_argv[])
 				std::cerr << "SPEC: Error threshold for Laplace check too high for spectral differentiation!" << std::endl;
 				exit(-1);
 			}
+
 		}
 
 		std::cout << "TEST B: DONE" << std::endl;

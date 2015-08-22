@@ -57,8 +57,10 @@ public:
 
 	void setup_fftw()
 	{
+		assert(getRefCounter() >= 0);
+
 		getRefCounter()++;
-		if (getRefCounter() == 1)
+		if (getRefCounter() != 1)
 			return;
 
 		{
@@ -83,7 +85,6 @@ public:
 				std::cerr << "Failed to create plan_forward for fftw" << std::endl;
 				exit(-1);
 			}
-
 
 			getPlans().to_cart =
 					fftw_plan_dft_2d(
@@ -150,9 +151,10 @@ public:
 	void shutdown_fftw()
 	{
 		getRefCounter()--;
-
 		if (getRefCounter() > 0)
 			return;
+
+		assert(getRefCounter() >= 0);
 
 		fftw_free(getPlans().to_spec);
 		fftw_free(getPlans().to_cart);
@@ -161,8 +163,32 @@ public:
 		fftw_free(getPlans().to_cart_aliasing);
 	}
 
+
+	Complex2DArrayFFT()	:
+		data(nullptr)
+	{
+
+	}
+
 public:
 	Complex2DArrayFFT(
+			const std::size_t i_res[2],
+			bool i_aliased_scaled = false
+	)
+	{
+		aliased_scaled = i_aliased_scaled;
+
+		resolution[0] = i_res[0];
+		resolution[1] = i_res[1];
+
+		data = DataArray<2>::alloc_aligned_mem<double>(sizeof(double)*resolution[0]*resolution[1]*2);
+
+		setup_fftw();
+	}
+
+
+public:
+	void setup(
 			const std::size_t i_res[2],
 			bool i_aliased_scaled = false
 	)
@@ -211,8 +237,8 @@ public:
 			const Complex2DArrayFFT &i_testArray
 	)
 	{
-		resolution[0] = i_testArray.resolution[0];
-		resolution[1] = i_testArray.resolution[1];
+		assert(resolution[0] == i_testArray.resolution[0]);
+		assert(resolution[1] == i_testArray.resolution[1]);
 
 		memcpy(data, i_testArray.data, sizeof(double)*resolution[0]*resolution[1]*2);
 		return *this;
@@ -269,7 +295,7 @@ public:
 		/*
 		 * to the scaling only if we convert the data back to cartesian space
 		 */
-		double scale = (1.0/((double)resolution[0]*resolution[1]));
+		double scale = (1.0/((double)resolution[0]*(double)resolution[1]));
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
 		{
 			o_testArray.data[i] *= scale;
@@ -284,6 +310,13 @@ public:
 	{
 		data[(y*resolution[0]+x)*2+0] = re;
 		data[(y*resolution[0]+x)*2+1] = im;
+	}
+
+
+	void set(int y, int x, const std::complex<double> &i_value)
+	{
+		data[(y*resolution[0]+x)*2+0] = i_value.real();
+		data[(y*resolution[0]+x)*2+1] = i_value.imag();
 	}
 
 
@@ -312,6 +345,23 @@ public:
 		for (std::size_t y = 0; y < resolution[1]; y++)
 			for (std::size_t x = 0; x < resolution[0]; x++)
 				set(y, x, re, im);
+	}
+
+	void setAll(
+			std::complex<double> &i_value
+	)
+	{
+		double *d = data;
+		for (std::size_t y = 0; y < resolution[1]; y++)
+		{
+			for (std::size_t x = 0; x < resolution[0]; x++)
+			{
+				*d = i_value.real();
+				d++;
+				*d = i_value.imag();
+				d++;
+			}
+		}
 	}
 
 	void setAllRe(double re)
@@ -608,7 +658,8 @@ public:
 
 
 	Complex2DArrayFFT spec_div_element_wise(
-			const Complex2DArrayFFT &i_d
+			const Complex2DArrayFFT &i_d,
+			double i_instability_threshold = 0
 	)
 	{
 		Complex2DArrayFFT out(resolution, aliased_scaled);
@@ -621,6 +672,12 @@ public:
 			double bi = i_d.data[i+1];
 
 			double den = (br*br+bi*bi);
+
+			if (std::abs(den) < i_instability_threshold)
+			{
+				std::cerr << "Instability via division by 0 detected (" << den << ")" << std::endl;
+				exit(1);
+			}
 
 			if (std::abs(den) == 0)
 			{
@@ -811,6 +868,7 @@ public:
 		}
 
 		double scale = resolution[0]*resolution[1];
+//		double scale = 1.0;
 		out.data[0] += i_value.real()*scale;
 		out.data[1] += i_value.imag()*scale;
 

@@ -101,7 +101,7 @@ public:
 			}
 
 			// use REXI
-			rexiSWE.setup(-parameters.sim_CFL, h, M, parameters.sim_f);
+			rexiSWE.setup(-parameters.sim_CFL, h, M, parameters.sim_f, parameters.res, parameters.sim_domain_size);
 		}
 	}
 

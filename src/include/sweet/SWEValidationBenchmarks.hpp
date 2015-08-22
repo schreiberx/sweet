@@ -36,6 +36,7 @@ public:
 
 		if (i_parameters.setup_scenario == 1)
 		{
+			// gaussian
 			double dx = x-i_parameters.setup_coord_x*i_parameters.sim_domain_size[0];
 			double dy = y-i_parameters.setup_coord_y*i_parameters.sim_domain_size[1];
 
@@ -56,16 +57,22 @@ public:
 			return std::sin(2.0*M_PI*y/i_parameters.sim_domain_size[1]) + i_parameters.setup_h0;
 		}
 
-		if (i_parameters.setup_scenario == 4)
+
+		if (i_parameters.setup_scenario == 8)
 		{
-			double dx = x-i_parameters.setup_coord_x;
-			double dy = y-i_parameters.setup_coord_y;
+			// gaussian in x
+			double dx = x-i_parameters.setup_coord_x*i_parameters.sim_domain_size[0];
 
-			double radius = i_parameters.setup_radius_scale*sqrt((double)i_parameters.sim_domain_size[0]*(double)i_parameters.sim_domain_size[0]+(double)i_parameters.sim_domain_size[1]*(double)i_parameters.sim_domain_size[1]);
+			double radius = i_parameters.setup_radius_scale*i_parameters.sim_domain_size[0];
 			dx /= radius;
-			dy /= radius;
 
-			return i_parameters.setup_h0+std::exp(-50.0*(std::max(dx*dx, dy*dy)));
+			return i_parameters.setup_h0+std::exp(-50.0*(dx*dx));
+		}
+
+
+		if (i_parameters.setup_scenario == 9)
+		{
+			return i_parameters.setup_h0;
 		}
 
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup_scenario << std::endl;
@@ -107,8 +114,16 @@ public:
 			return -i_parameters.sim_g*2.0*M_PI*std::cos(2.0*M_PI*y/i_parameters.sim_domain_size[1])/(i_parameters.sim_f*i_parameters.sim_domain_size[1]);
 		}
 
-		if (i_parameters.setup_scenario == 4)
+		if (i_parameters.setup_scenario == 8)
+		{
 			return 0;
+		}
+
+
+		if (i_parameters.setup_scenario == 9)
+		{
+			return 1;
+		}
 
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup_scenario << std::endl;
 		return 0;
@@ -149,9 +164,16 @@ public:
 			return 0;
 		}
 
-
-		if (i_parameters.setup_scenario == 4)
+		if (i_parameters.setup_scenario == 8)
+		{
 			return 0;
+		}
+
+		if (i_parameters.setup_scenario == 9)
+		{
+			return 2;
+		}
+
 
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup_scenario << std::endl;
 		return 0;
