@@ -773,7 +773,6 @@ void compute_polvani_initialization(
 		// Add 1.0 for non-dimensional average height (not sure, if this is correct)
 //		h += 1.0;
 
-
 		/**
 		 * STEP 3) Solve with iterations for \xi
 		 */
@@ -854,7 +853,7 @@ void compute_polvani_initialization(
 			lhs.spec_setAll(0, 0);
 
 			// IMPORTANT! Apply last operator element-wise
-			lhs += (1.0/R)*(1.0-B*laplace_op).operator()(laplace_op);
+			lhs += (1.0/R)*(laplace_op-B*laplace_op*laplace_op);
 
 			xi = rhs.spec_div_element_wise(lhs);
 

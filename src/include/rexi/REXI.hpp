@@ -33,7 +33,10 @@ public:
 
 
 public:
-	REXI()
+	REXI()	:
+		L(-1),
+		M(-1),
+		N(-1)
 	{
 	}
 
