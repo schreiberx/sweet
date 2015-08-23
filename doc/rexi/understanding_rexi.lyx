@@ -797,6 +797,1102 @@ e^{ix}\approx\sum_{n=-N}^{N}Re\left(\frac{\beta_{n}^{Re}}{ix+\alpha_{n}}\right)+
 
 \end_layout
 
+\begin_layout Subsection
+Example coefficents
+\end_layout
+
+\begin_layout Standard
+For a better understanding and discussion of the poles, we provide some
+ examplanory coefficients for 
+\begin_inset Formula $\alpha_{n}$
+\end_inset
+
+ and 
+\begin_inset Formula $\beta_{n}^{Re}$
+\end_inset
+
+ computed with 
+\begin_inset Formula $M:=2$
+\end_inset
+
+ and 
+\begin_inset Formula $h:=0.2$
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+
+\size scriptsize
+\begin_inset Tabular
+<lyxtabular version="3" rows="28" columns="3">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $n$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+\begin_inset Formula $\alpha_{n}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+\begin_inset Formula $\beta_{n}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.863064302175, -2.6)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-2.0794560075645e-08,5.312368394177e-09)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.863064302175, -2.4)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-1.8562925598646e-08,-1.6892470811809e-07)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.863064302175, -2.2)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(6.8570271350932e-07,-4.4377515257134e-08)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+3
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.863064302175, -2)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(1.9470768200785e-07,2.1186231739561e-06)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.863064302175, -1.8)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(3.037169144916e-06,-3.8007524015554e-06)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+5
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.863064302175, -1.6)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.00020292956274934,-9.4793805592883e-05)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+6
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.863064302175, -1.4)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(0.00051562027155282,0.0033198141762956)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+7
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.863064302175, -1.2)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(0.023802856324805,-0.020097812439831)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+8
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.863064302175, -1)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.16210306892042,-0.057527918763957)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+9
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.863064302175, -0.8)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(0.083936569694558,0.55379453117192)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+10
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.863064302175, -0.6)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(0.87683903065806,-0.58136186212318)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+11
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.863064302175, -0.4)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.87618099667542,-0.6444132979014)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+12
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.863064302175, -0.2)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.2112750856805,0.51693268636776)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+p:=13
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.863064302175, 0)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(0.21113064943379,1.1012434042446e-07)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+14
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.863064302175, 0.2)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.2112752777559,-0.51693263772868)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+15
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.863064302175, 0.4)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.87618105783081,0.6444131761443)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+16
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.863064302175, 0.6)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(0.87683907406497,0.58136183517238)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+17
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.863064302175, 0.8)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(0.083936534477108,-0.55379454106338)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+18
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.863064302175, 1)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.16210304313401,0.057527824955638)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+19
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.863064302175, 1.2)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(0.023802980792584,0.020097827969804)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+20
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.863064302175, 1.4)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(0.00051562077173168,-0.0033196934926057)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+21
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.863064302175, 1.6)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.0002030221163996,9.4802957184526e-05)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+22
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.863064302175, 1.8)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(3.0281700967037e-06,3.7434363774526e-06)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+23
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.863064302175, 2)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(2.2311216999616e-07,-2.1234907990132e-06)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+24
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.863064302175, 2.2)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(6.871098037128e-07,5.5123982746463e-08)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+25
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.863064302175, 2.4)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-2.1322288893395e-08,1.6899352278552e-07)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+26
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-0.863064302175, 2.6)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(-2.0738399377275e-08,-5.6642992624128e-09)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Reducing number of computations
+\end_layout
+
+\begin_layout Standard
+Note the property (see Sec.
+ 3.3 in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Terry:High-order time-parallel approximation of evolution operators"
+
+\end_inset
+
+) for the 
+\begin_inset Formula $\alpha_{n}$
+\end_inset
+
+ and 
+\begin_inset Formula $\beta_{n}$
+\end_inset
+
+: There is an anti-symmetry around the central pole with
+\begin_inset Formula 
+\[
+\alpha_{p-i}=\bar{\alpha}_{p+i}
+\]
+
+\end_inset
+
+and
+\begin_inset Formula 
+\[
+\beta_{p-i}=\bar{\beta}_{p+i}
+\]
+
+\end_inset
+
+Furthermore, it holds that 
+\begin_inset Formula 
+\[
+\overline{(L+\alpha)^{-1}U(0)}=(L+\overline{\alpha})^{-1}U(0)
+\]
+
+\end_inset
+
+with the overbar denoting the complex conjugate.
+\end_layout
+
+\begin_layout Standard
+This allows us to reduce the computational amount almost by a factor of
+ two for solving 
+\begin_inset Formula $(L+\alpha)^{-1}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Note, that for debugging purpose, their 
+\emph on
+imaginary values have to cancel out
+\emph default
+.
+
+\series bold
+ (TODO - PP: are you sure? MaS: No, but this is what Terry mentioned).
+\end_layout
+
 \begin_layout Section
 REXI on linear operators
 \end_layout
@@ -815,7 +1911,7 @@ name "sec:mat_exp"
  We would like to apply REXI to a formulation such as 
 \begin_inset Formula 
 \[
-U(t)=e^{tL}U(0).
+U(t)=e^{\tau L}U(0).
 \]
 
 \end_inset
@@ -825,7 +1921,7 @@ To see the relationship between the approximation of
 \end_inset
 
  with 
-\begin_inset Formula $e^{tL}$
+\begin_inset Formula $e^{\tau L}$
 \end_inset
 
  we assume that 
@@ -838,9 +1934,14 @@ To see the relationship between the approximation of
 \end_inset
 
 , yielding 
+\series bold
+(@Pedro: I fixed the following formula with the power to k, is this still
+ correct? :-) )
+\series default
+ 
 \begin_inset Formula 
 \[
-e^{tL}=\sum_{k=0}^{\infty}\frac{tL}{k!}=\Sigma\left(\sum_{k=0}^{\infty}\frac{t\Lambda}{k!}\right)\Sigma^{H}=\Sigma e^{t\Lambda}\Sigma^{H},
+e^{\tau L}=\sum_{k=0}^{\infty}\frac{(\tau L)^{k}}{k!}=\sum_{k=0}^{\infty}\frac{\tau\Sigma\Lambda^{k}\Sigma^{H}}{k!}=\Sigma\left(\sum_{k=0}^{\infty}\frac{(\tau\Lambda)^{k}}{k!}\right)\Sigma^{H}=\Sigma e^{\tau\Lambda}\Sigma^{H},
 \]
 
 \end_inset
@@ -849,29 +1950,41 @@ where we used the orthonormality of
 \begin_inset Formula $\Sigma$
 \end_inset
 
- to remove it from the summation, and
+ 
+\series bold
+(@Pedro: Isn't this simply possible since 
+\begin_inset Formula $\Sigma$
+\end_inset
+
+ is independent of 
+\begin_inset Formula $k$
+\end_inset
+
+?)
+\series default
+ to factor it out from the summation, and
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula 
 \[
-e^{t\Lambda}=\left(\begin{array}{ccc}
+e^{\tau\Lambda}=\left(\begin{array}{ccc}
 ...\\
- & e^{i\lambda_{n}t}\\
+ & e^{i\lambda_{j}\tau}\\
  &  & ...
-\end{array}\right),
+\end{array}\right)
 \]
 
 \end_inset
 
-where we hare explicitly detached the imaginary unit from the eigenvalues,
+where we have explicitly detached the imaginary unit from the eigenvalues,
  therefore 
 \begin_inset Formula $\lambda_{n}$
 \end_inset
 
  are assumed real.
  Since 
-\begin_inset Formula $e^{t\Lambda}$
+\begin_inset Formula $e^{\tau\Lambda}$
 \end_inset
 
  is diagonal, it can be eigenvalue-wise approximated in the same way as
@@ -879,7 +1992,123 @@ where we hare explicitly detached the imaginary unit from the eigenvalues,
 \begin_inset Formula $e^{ix}$
 \end_inset
 
+ with REXI.
+\end_layout
+
+\begin_layout Standard
+Although 
+\begin_inset Formula $L$
+\end_inset
+
+ has imaginary eigenvalues, we wish to evaluate the 
+\begin_inset Formula $e^{\tau L}U(0)$
+\end_inset
+
+, which is real valued, therefore, we will use the real approximation of
+ 
+\begin_inset Formula $e^{ix}$
+\end_inset
+
+ 
+\begin_inset Formula 
+\begin{equation}
+exp(\tau L)\approx Re\left(\sum_{n=-N}^{N}\beta_{n}(\tau L+\alpha_{n})^{-1}\right),\label{eq:rexi}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $\beta_{n}$
+\end_inset
+
+ is given by equation 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:beta_re"
+
+\end_inset
+
+ and 
+\begin_inset Formula $\alpha_{n}$
+\end_inset
+
+ by equation 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:alpha"
+
+\end_inset
+
 .
+\end_layout
+
+\begin_layout Standard
+Given the linear operator 
+\begin_inset Formula $L$
+\end_inset
+
+ to be applied on 
+\begin_inset Formula $U(0)$
+\end_inset
+
+, we continue to show the relation of the linear operator to the REXI approximat
+ion of the real term
+\begin_inset Formula 
+\[
+e^{\tau L}\approx\sum_{n=-N}^{N}Re\left(\frac{\beta_{n}^{Re}}{\tau L+\alpha_{n}}\right)
+\]
+
+\end_inset
+
+as we use it later on.
+ Next, we rewrite 
+\begin_inset Formula $L$
+\end_inset
+
+ with our EV decomposition as
+\begin_inset Formula 
+\[
+e^{\tau L}\approx\sum_{n=-N}^{N}Re\left(\frac{\beta_{n}^{Re}}{\tau\Sigma\Lambda\Sigma^{H}+\alpha_{n}}\right)=\sum_{n=-N}^{N}Re\left(\frac{\Sigma^{H}\beta_{n}^{Re}\Sigma}{\tau\Lambda+\Sigma^{H}\alpha_{n}\Sigma}\right)=\sum_{n=-N}^{N}Re\left(\frac{\beta_{n}^{Re}}{\tau\Lambda+\alpha_{n}}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+(@Pedro: This seems to be plain wrong, that 
+\begin_inset Formula $\Sigma^{H}\beta\Sigma=\beta$
+\end_inset
+
+, can you confirm this?)
+\series default
+.
+ Note, that we use the same REXI approximation for different 
+\begin_inset Formula $\lambda_{j}$
+\end_inset
+
+.
+ Hence, the approximation has to be sufficiently accurate over the entire
+ range of all Eigenvalues
+\begin_inset Formula $\lambda_{j}$
+\end_inset
+
+ which is what we use the approximation for.
+\end_layout
+
+\begin_layout Subsection
+Choosing 
+\begin_inset Formula $h$
+\end_inset
+
+ and 
+\begin_inset Formula $M$
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -960,117 +2189,8 @@ key "Terry:High-order time-parallel approximation of evolution operators"
 \end_layout
 
 \begin_layout Standard
-We want to evaluate 
-\begin_inset Formula $e^{\tau L}U(0)$
-\end_inset
-
- with REXI, where 
-\begin_inset Formula $\tau$
-\end_inset
-
- will be a time step size and 
-\begin_inset Formula $U(0)$
-\end_inset
-
- the initial condition for this time step.
- We will assume 
-\begin_inset Formula $\tau$
-\end_inset
-
- a-priori fixed, which implies that the coefficients in REXI will not change
- and may be pre-computed.
-\end_layout
-
-\begin_layout Standard
-Although 
-\begin_inset Formula $L$
-\end_inset
-
- has imaginary eigenvalues, we wish to evaluate the 
-\begin_inset Formula $e^{\tau L}U(0)$
-\end_inset
-
-, which is real valued, therefore, we will use the real approximation of
- 
-\begin_inset Formula $e^{ix}$
-\end_inset
-
- 
-\begin_inset Formula 
-\begin{equation}
-exp(\tau L)\approx Re\left(\sum_{n=-N}^{N}\beta_{n}(\tau L+\alpha_{n})^{-1}\right),\label{eq:rexi}
-\end{equation}
-
-\end_inset
-
-where 
-\begin_inset Formula $\beta_{n}$
-\end_inset
-
- is given by equation 
-\begin_inset CommandInset ref
-LatexCommand eqref
-reference "eq:beta_re"
-
-\end_inset
-
- and 
-\begin_inset Formula $\alpha_{n}$
-\end_inset
-
- by equation 
-\begin_inset CommandInset ref
-LatexCommand eqref
-reference "eq:alpha"
-
-\end_inset
-
-.
- These coefficient may be pre-computed if 
-\begin_inset Formula $L$
-\end_inset
-
- and 
-\begin_inset Formula $\tau$
-\end_inset
-
- are fixed.
-\end_layout
-
-\begin_layout Standard
-Note, that for debugging purpose, their 
-\emph on
-imaginary values have to cancel out
-\emph default
-.
-
-\series bold
- (TODO - PP: are you sure? MaS: No, but this is what Terry mentioned).
-\end_layout
-
-\begin_layout Standard
-Note an important property (see Sec.
- 3.3 in 
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Terry:High-order time-parallel approximation of evolution operators"
-
-\end_inset
-
-).
- There's an anti-symmetry in the 
-\begin_inset Formula $\alpha_{i}$
-\end_inset
-
- coefficients, which avoids computing half of the inverses, 
-\begin_inset Formula 
-\[
-\overline{(L+\alpha)^{-1}U(0)}=(L+\overline{\alpha})^{-1}U(0).
-\]
-
-\end_inset
-
-
+TODO: We have to investigate this by far in more depth.
+ Can we possibly use a standard time step restriction of the linear equations?
 \end_layout
 
 \begin_layout Subsection
@@ -1157,66 +2277,6 @@ with
 \begin_layout Subsection
 Computing inverse of 
 \begin_inset Formula $(L+\alpha)^{-1}$
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-
-\series bold
-@Pedro: 
-\begin_inset Formula $\delta$
-\end_inset
-
- is already used above as the Kronecker delta and the derivative.
- Maybe we should avoid overutilising it :-).
-\end_layout
-
-\begin_layout Standard
-@Martin: We should not be using $
-\backslash
-delta$ for derivative (where are we doing this?)
-\begin_inset Newline newline
-\end_inset
-
-
-\series bold
-@Pedro: Consistency with formulations of SWE: 
-\begin_inset Formula $H=\eta_{0}$
-\end_inset
-
-, 
-\begin_inset Formula $\eta_{0}=\eta(0)$
-\end_inset
-
-, 
-\begin_inset Formula $\eta_{1}=\eta(1)$
-\end_inset
-
-, 
-\begin_inset Formula $u_{0}=u(0)$
-\end_inset
-
-, 
-\begin_inset Formula $v_{0}=v(0)$
-\end_inset
-
-...
- 
-\end_layout
-
-\begin_layout Standard
-
-\series bold
-@ Martin: I used $
-\backslash
-bar{
-\backslash
-eta}$ instead of $
-\backslash
-eta_0$ for the mean fluid depth - needs to be changed in formulation doc
-\begin_inset Newline newline
 \end_inset
 
 
@@ -1474,16 +2534,52 @@ by
 \end_layout
 
 \begin_layout Standard
-(This is exactly what is in the jpg)
-\end_layout
-
-\begin_layout Standard
-Once 
+We can compute
 \begin_inset Formula $\eta$
 \end_inset
 
- is calculated from any elliptic solver, we need to retrieve the velocities
- by solving the 
+ calculated from any elliptic solver.
+ Special attention has to be given to the LHS of the form 
+\begin_inset Formula $(\gamma-\Delta)\eta$
+\end_inset
+
+ for a spectral solver and this is the reason for this brief excursion.
+ We use the annotation 
+\begin_inset Formula $\tilde{}$
+\end_inset
+
+ to annotate an operator or quantity to be given in spectral space.
+ Then, we factor 
+\begin_inset Formula $\tilde{\eta}$
+\end_inset
+
+ in and write form of the LHS in spectral space with the identity matrix
+ 
+\begin_inset Formula $I$
+\end_inset
+
+ as
+\begin_inset Formula 
+\[
+(\gamma I\tilde{\eta}-\tilde{\Delta}\tilde{\eta})=(\gamma I-\tilde{\Delta})\tilde{\eta}
+\]
+
+\end_inset
+
+Here, the minus operator in spectral space has to be applied on all elements
+ of 
+\begin_inset Formula $\tilde{\Delta}$
+\end_inset
+
+ and not only to the 
+\begin_inset Formula $0^{th}$
+\end_inset
+
+ mode as it is typically the case for adding a constant in spectral space.
+\end_layout
+
+\begin_layout Standard
+We need to retrieve the velocities by solving the 
 \begin_inset Formula $2\times2$
 \end_inset
 
@@ -1864,7 +2960,7 @@ reference "eq:helmhotz"
  (
 \begin_inset CommandInset ref
 LatexCommand ref
-reference "eq:elliptic_velocity_u"
+reference "BROKEN: Ref: eq:elliptic_velo..."
 
 \end_inset
 
@@ -1882,8 +2978,8 @@ reference "eq:elliptic_velocity_v"
 
  are complex.
  This is straightforward with spectral methods.
- For finite difference/element methods, the problems needs to be split into
- its real and imaginary parts.
+ For finite difference/element methods, the problem can be split into its
+ real and imaginary parts.
 \end_layout
 
 \begin_layout Standard
@@ -1910,6 +3006,14 @@ reference "eq:rexi"
 
  to solve, and the number of coefficients only depends on the accuracy and
  the resolution.
+ 
+\series bold
+(@Pedro: Is this sentence still correct? the max.
+ wave speed is based on
+\begin_inset Formula $\tau L$
+\end_inset
+
+, hence also the poles).
 \end_layout
 
 \begin_layout Section
