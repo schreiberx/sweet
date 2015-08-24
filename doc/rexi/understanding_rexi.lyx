@@ -1934,15 +1934,10 @@ To see the relationship between the approximation of
 \end_inset
 
 , yielding 
-\series bold
-(@Pedro: I fixed the following formula with the power to k, is this still
- correct? :-) )
-\series default
- 
 \begin_inset Formula 
-\[
-e^{\tau L}=\sum_{k=0}^{\infty}\frac{(\tau L)^{k}}{k!}=\sum_{k=0}^{\infty}\frac{\tau\Sigma\Lambda^{k}\Sigma^{H}}{k!}=\Sigma\left(\sum_{k=0}^{\infty}\frac{(\tau\Lambda)^{k}}{k!}\right)\Sigma^{H}=\Sigma e^{\tau\Lambda}\Sigma^{H},
-\]
+\begin{equation}
+e^{\tau L}=\sum_{k=0}^{\infty}\frac{(\tau L)^{k}}{k!}=\sum_{k=0}^{\infty}\frac{\tau\Sigma\Lambda^{k}\Sigma^{H}}{k!}=\Sigma\left(\sum_{k=0}^{\infty}\frac{(\tau\Lambda)^{k}}{k!}\right)\Sigma^{H}=\Sigma e^{\tau\Lambda}\Sigma^{H},\label{eq:expL}
+\end{equation}
 
 \end_inset
 
@@ -1950,19 +1945,7 @@ where we used the orthonormality of
 \begin_inset Formula $\Sigma$
 \end_inset
 
- 
-\series bold
-(@Pedro: Isn't this simply possible since 
-\begin_inset Formula $\Sigma$
-\end_inset
-
- is independent of 
-\begin_inset Formula $k$
-\end_inset
-
-?)
-\series default
- to factor it out from the summation, and
+ to cancel it out from the summation, and
 \end_layout
 
 \begin_layout Standard
@@ -2067,9 +2050,14 @@ as we use it later on.
 
  with our EV decomposition as
 \begin_inset Formula 
-\[
-e^{\tau L}\approx\sum_{n=-N}^{N}Re\left(\frac{\beta_{n}^{Re}}{\tau\Sigma\Lambda\Sigma^{H}+\alpha_{n}}\right)=\sum_{n=-N}^{N}Re\left(\frac{\Sigma^{H}\beta_{n}^{Re}\Sigma}{\tau\Lambda+\Sigma^{H}\alpha_{n}\Sigma}\right)=\sum_{n=-N}^{N}Re\left(\frac{\beta_{n}^{Re}}{\tau\Lambda+\alpha_{n}}\right)
-\]
+\begin{eqnarray}
+e^{\tau L} & \approx & \sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}(\tau\Sigma\Lambda\Sigma^{H}+\alpha_{n}I)^{-1}\right)\nonumber \\
+ & = & \sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}(\Sigma(\tau\Lambda\Sigma^{H}+\alpha_{n}\Sigma^{H}))^{-1}\right)\nonumber \\
+ & = & \sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}(\Sigma(\tau\Lambda+\alpha_{n}\Sigma^{H}\Sigma)\Sigma^{H})^{-1}\right)\nonumber \\
+ & = & \sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}\Sigma^{H}(\tau\Lambda+\alpha_{n})^{-1}\Sigma\right)\nonumber \\
+ & = & \Sigma^{H}\left[\sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}(\tau\Lambda+\alpha_{n})^{-1}\right)\right]\Sigma\nonumber \\
+ & = & \Sigma^{H}e^{\tau\Lambda}\Sigma\label{eq:expLeigen}
+\end{eqnarray}
 
 \end_inset
 
@@ -2079,14 +2067,26 @@ e^{\tau L}\approx\sum_{n=-N}^{N}Re\left(\frac{\beta_{n}^{Re}}{\tau\Sigma\Lambda\
 \begin_layout Standard
 
 \series bold
-(@Pedro: This seems to be plain wrong, that 
-\begin_inset Formula $\Sigma^{H}\beta\Sigma=\beta$
+@ALL: equation 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:expL"
+
 \end_inset
 
-, can you confirm this?)
-\series default
-.
- Note, that we use the same REXI approximation for different 
+ and 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:expLeigen"
+
+\end_inset
+
+ should match, but are not.
+ 
+\end_layout
+
+\begin_layout Standard
+Note, that we use the same REXI approximation for different 
 \begin_inset Formula $\lambda_{j}$
 \end_inset
 
@@ -2992,28 +2992,7 @@ reference "eq:rexi"
 \end_inset
 
 .
- We like to note again, that the 
-\begin_inset Formula $\alpha_{n}$
-\end_inset
-
- and 
-\begin_inset Formula $\beta_{n}$
-\end_inset
-
- are independent of the system 
-\begin_inset Formula $L$
-\end_inset
-
- to solve, and the number of coefficients only depends on the accuracy and
- the resolution.
  
-\series bold
-(@Pedro: Is this sentence still correct? the max.
- wave speed is based on
-\begin_inset Formula $\tau L$
-\end_inset
-
-, hence also the poles).
 \end_layout
 
 \begin_layout Section
