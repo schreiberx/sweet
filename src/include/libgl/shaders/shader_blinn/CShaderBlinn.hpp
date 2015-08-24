@@ -2,7 +2,7 @@
 #define CGL_SHADER_BLINN_HPP
 
 #include "libgl/shaders/CDefaultShaderDir.hpp"
-#include "libgl/core/CGlTexture.hpp"
+//#include "libgl/core/CGlTexture.hpp"
 #include "libgl/core/CGlError.hpp"
 
 

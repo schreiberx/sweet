@@ -308,8 +308,15 @@ public:
 	 * initialize texture from file specifying target
 	 * this is useful for cubemap
 	 */
-	inline bool loadFromFile(const std::string &filename, GLuint target)
+	inline bool loadFromFile(
+			const std::string &filename,
+			GLuint target
+	)
 	{
+#if 1
+		std::cerr << "NOT SUPPORTED" << std::endl;
+		exit(0);
+#else
 		SDL_Surface *surface = IMG_Load(filename.c_str());
 
 		// could not load filename
@@ -354,7 +361,7 @@ public:
 		setLinearInterpolation();
 		setParam(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		setParam(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
+#endif
 		return true;
 	}
 
