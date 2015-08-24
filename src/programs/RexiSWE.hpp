@@ -67,7 +67,7 @@ public:
 		tau = i_tau;
 		f = i_f;
 
-		std::cout << "REXI setup: M=" << M << ", h=" << h << ", tau=" << tau << ", f=" << f << std::endl;
+//		std::cout << "REXI setup: M=" << M << ", h=" << h << ", tau=" << tau << ", f=" << f << std::endl;
 
 		rexi.setup(h, M);
 
@@ -126,11 +126,6 @@ public:
 		u0 = u0.toSpec()*std::complex<double>(1.0/tau, 0);
 		v0 = v0.toSpec()*std::complex<double>(1.0/tau, 0);
 
-//		std::cout << "REXI SWE START" << std::endl;
-//		std::cout << "  io_h : " << io_h.reduce_norm1_quad()/(double)(i_parameters.res[0]*i_parameters.res[1]) << std::endl;
-//		std::cout << "  io_u : " << io_u.reduce_norm1_quad()/(double)(i_parameters.res[0]*i_parameters.res[1]) << std::endl;
-//		std::cout << "  io_v : " << io_v.reduce_norm1_quad()/(double)(i_parameters.res[0]*i_parameters.res[1]) << std::endl;
-
 		io_h.setAll(0);
 		io_u.setAll(0);
 		io_v.setAll(0);
@@ -143,11 +138,11 @@ public:
 #if USE_REXI_HALF
 		N = N >> 1;
 #endif
-		for (std::size_t n = 0; n < N; n++)
-			std::cout << " + alpha " << n << ": " << rexi.alpha[n] << std::endl;
+//		for (std::size_t n = 0; n < N; n++)
+//			std::cout << " + alpha " << n << ": " << rexi.alpha[n] << std::endl;
 
-		for (std::size_t n = 0; n < N; n++)
-			std::cout << " + beta " << n << ": " << rexi.beta_re[n] << std::endl;
+//		for (std::size_t n = 0; n < N; n++)
+//			std::cout << " + beta " << n << ": " << rexi.beta_re[n] << std::endl;
 
 		for (std::size_t n = 0; n < N; n++)
 		{
@@ -197,11 +192,6 @@ public:
 			io_u += (u1_cart*(rexi.beta_re[n])).getRealWithDataArray();
 			io_v += (v1_cart*(rexi.beta_re[n])).getRealWithDataArray();
 		}
-
-//		std::cout << "REXI SWE END" << std::endl;
-//		std::cout << "  o_h : " << io_h.reduce_norm1_quad()/(double)(i_parameters.res[0]*i_parameters.res[1]) << std::endl;
-//		std::cout << "  o_u : " << io_u.reduce_norm1_quad()/(double)(i_parameters.res[0]*i_parameters.res[1]) << std::endl;
-//		std::cout << "  o_v : " << io_v.reduce_norm1_quad()/(double)(i_parameters.res[0]*i_parameters.res[1]) << std::endl;
 	}
 
 
