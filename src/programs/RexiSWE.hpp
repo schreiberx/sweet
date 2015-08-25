@@ -107,12 +107,6 @@ public:
 		const SimulationParameters &i_parameters
 	)
 	{
-		if (i_parameters.sim_g != 1.0 || i_parameters.setup_h0 != 1.0)
-		{
-			std::cerr << "Only non-dimensional formulation supported yet, use g=1 and h0=1" << std::endl;
-//			exit(1);
-		}
-
 		double eta_bar = i_parameters.setup_h0;
 		double g = i_parameters.sim_g;
 
