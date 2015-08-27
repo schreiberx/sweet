@@ -18,6 +18,15 @@ GUI:
 
 	apt-get install libsdl2-dev
 
+	OR
+	
+	Download  http://libsdl.org/release/SDL2-2.X.X.tar.gz
+	./configure --prefix=$HOME/local/SDL2-2.0.3
+	make -j 4
+	make install
+	Add the SDL2-2.0.3 to manually installed libraries 
+	 enviromental variables to import them.
+	 (Such as in $HOME/bin/local_vars.sh).
 
 ================
 MPI - (Optional)
