@@ -1,33 +1,71 @@
 #! /usr/bin/python2
 
+#
+# Compute analytical solution for linear operator in spectral space
+#
+# See Embid/Madja, Averaging over fast Gravity waves for geophysical flows with arbitrary potential vorticity, 1996
+#
+# This file is part of the SWEET development
+# Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+#
+#
+
 from sympy.matrices import Matrix
 from sympy import *
-import sys
 from sympy.printing import print_ccode
 from sympy.abc import u, v, h
 import re as re_exp
-
-# use real assumptions for complex valued optimizations (conjugate)
-x = symbols('x1:3', real=True, positive=True)
-k = symbols('k1:3', real=True, positive=True)
+import sys
 
 
+####################################
+# SETUP START
+####################################
+#
+# Choose for which L operator to compute the EV decomposition in spectral space:
+# 	1) Embid and Madja formulation with U=(u,v,h)
+# 	2) Similar to 1, but with U=(h,u,v)
+#	3) Full-dimensional with U=(h,u,v)
+#	4) Full-dimensional with U=(h,u,v), but with f=0
+#
 LNr=3
 
-if LNr == 1 or LNr == 2:
+####################################
+# SETUP END
+####################################
+
+# use real assumptions for complex valued optimizations (conjugate)
+
+# discretization in 2D Cartesian space
+x = symbols('x0:2', real=True, positive=True)
+
+# discretization in 2D spectral space
+k = symbols('k0:2', real=True, positive=True)
+
+# Domain size
+# TODO: Not yet working
+s = symbols('s0:2', real=True, positive=True)
+s = [1,1]
+#s = [1/s[0],1/s[1]]
+
+# Setup some variables used in the respective formulation
+if LNr in [1,2]:
 	F = symbols('F', real=True, positive=True)
 	Fsinv = 1/sqrt(F)
 	#Fsinv = symbols('F^-1/2', real=True, positive=True)
 
-elif LNr == 3:
+elif LNr in [3,4]:
 	H0 = symbols('H0', real=True, positive=True)
 	g = symbols('g', real=True, positive=True)
 	f = symbols('f', real=True, positive=True)
 
-K2 = symbols('K2', real=True, positive=True)
 
 
 if LNr == 1:
+	#
+	# U=(u, v, h)
+	# f = 1
+	#
 	U = Matrix([u, v, h])
 	U_spec = Matrix([symbols('u_spec', real=True), symbols('v_spec', real=True), symbols('h_spec', real=True)])
 
@@ -42,6 +80,10 @@ if LNr == 1:
 
 
 elif LNr == 2:
+	#
+	# U=(h, u, v)
+	# f = 1
+	#
 	U = Matrix([h, u, v])
 	U_spec = Matrix([symbols('h_spec', real=True), symbols('u_spec', real=True), symbols('v_spec', real=True)])
 
@@ -56,6 +98,9 @@ elif LNr == 2:
 
 
 elif LNr == 3:
+	#
+	# f = variable
+	#
 	U = Matrix([h, u, v])
 	U_spec = Matrix([symbols('h_spec', real=True), symbols('u_spec', real=True), symbols('v_spec', real=True)])
 
@@ -69,56 +114,67 @@ elif LNr == 3:
 		)
 
 
+elif LNr == 4:
+	#
+	# f = 0
+	#
+	U = Matrix([h, u, v])
+	U_spec = Matrix([symbols('h_spec', real=True), symbols('u_spec', real=True), symbols('v_spec', real=True)])
+
+	def getL(U):
+		return Matrix(
+			[
+				[0*U[0],		H0*diff(U[1], x[0]),		H0*diff(U[2], x[1])	],
+				[g*diff(U[0], x[0]),	0*U[1],				0*U[2]			],
+				[g*diff(U[0], x[1]),	0*U[1],				0*U[2]			]
+			]
+		)
+
+
+# Substitutions to make equations nicer
+eq_subs = {}
+inv_eq_subs = {}
+
+
 # Substitutions
-if LNr == 1:
-	eq_subs = {}
-	inv_eq_subs = {}
-
+if LNr in [1,2]:
 	w = symbols('w', real=True, positive=True)
-	omega_2 = 1 + Fsinv**2*k[0]*k[0] + Fsinv**2*k[1]*k[1]
+	omega_2 = 1 + Fsinv**2*pi*pi*k[0]*k[0] + Fsinv**2*pi*pi*k[1]*k[1]
 	eq_subs[omega_2] = w*w
 	eq_subs[-omega_2] = -w*w
 	eq_subs[expand(omega_2*F)] = w*w*F
 	eq_subs[expand(-omega_2*F)] = -w*w*F
 	inv_eq_subs[w] = sqrt(omega_2)
 
-elif LNr == 2:
-	eq_subs = {}
-	inv_eq_subs = {}
-
+elif LNr in [3,4]:
 	w = symbols('w', real=True, positive=True)
-	omega_2 = 1 + Fsinv**2*k[0]*k[0] + Fsinv**2*k[1]*k[1]
-	eq_subs[omega_2] = w*w
-	eq_subs[-omega_2] = -w*w
-	eq_subs[expand(omega_2*F)] = w*w*F
-	eq_subs[expand(-omega_2*F)] = -w*w*F
-	inv_eq_subs[w] = sqrt(omega_2)
-else:
-	eq_subs = {}
-	inv_eq_subs = {}
-
-	w = symbols('w', real=True, positive=True)
-	omega_2 = H0*g*k[0]*k[0]+H0*g*k[1]*k[1]+f*f
+	omega_2 = H0*g*2*2*pi*pi*k[0]*k[0]*s[1]*s[1]+H0*g*2*2*pi*pi*k[1]*k[1]*s[0]*s[0]+f*f*s[0]*s[0]*s[1]*s[1]
 	eq_subs[omega_2] = w*w
 	eq_subs[-omega_2] = -w*w
 	inv_eq_subs[w] = sqrt(omega_2)
 
 	wg = symbols('wg', real=True, positive=True)
-	omegag_2 = g*g*k[0]*k[0]+g*g*k[1]*k[1]+f*f
+	omegag_2 = g*g*2*2*pi*pi*k[0]*k[0]*s[1]*s[1]+g*g*2*2*pi*pi*k[1]*k[1]*s[0]*s[0]+f*f*s[0]*s[0]*s[1]*s[1]
 	eq_subs[omegag_2] = wg*wg
 	eq_subs[-omegag_2] = -wg*wg
 	inv_eq_subs[wg] = sqrt(omegag_2)
 
 
+# replace k0*k0 + k1*k1 by 'K2' symbol
+K2 = symbols('K2', real=True, positive=True)
+asdf = pi*pi*k[0]*k[0]+pi*pi*k[1]*k[1]
+eq_subs[asdf] = K2
+inv_eq_subs[K2] = asdf
 
-# replace k1*k1 + k2*k2 by 'K2' symbol
-eq_subs[k[0]*k[0]+k[1]*k[1]] = K2
-inv_eq_subs[K2] = k[0]*k[0]+k[1]*k[1]
 
-
+# Solution expressed with variables in spectral space
 U_spec = U_spec.transpose()
 
-U_fromSpec = exp(I*(k[0]*x[0]+k[1]*x[1])) * U_spec
+#
+# Solution given in Cartesian space, but expressed in spectral space
+# Remove 2*pi for "2pi-sized" domain
+#
+U_fromSpec = exp(I*2*pi*(k[0]*x[0]/s[0]+k[1]*x[1]/s[1])) * U_spec
 
 
 print
@@ -127,12 +183,12 @@ print("L(U):")
 M = getL(U_fromSpec)
 pprint(M)
 
-
-#Lik = Matrix[
+# Remove spectral basis components (This should be possible in general)
 Lik = Matrix.zeros(3,3)
-Lik[:,0] = M[:,0]/U_fromSpec[0]
-Lik[:,1] = M[:,1]/U_fromSpec[1]
-Lik[:,2] = M[:,2]/U_fromSpec[2]
+Lik[:,0] = simplify(M[:,0]/U_fromSpec[0])
+Lik[:,1] = simplify(M[:,1]/U_fromSpec[1])
+Lik[:,2] = simplify(M[:,2]/U_fromSpec[2])
+
 
 if True:
 	print
@@ -140,33 +196,52 @@ if True:
 	print("Lik(U):")
 	pprint(Lik)
 
+
+print
 print
 print("Using omega(k)^2:")
 pprint(omega_2)
-if LNr == 3:
+if LNr in [3,4]:
 	print("Using omegag(k)^2:")
 	pprint(omegag_2)
 print
 
 
+#
+# Compute the entire eigenvector decomposition
+#
 def getEVStuff(Lik):
+
+	# compute Eigenvalue/Eigenvector decomposition
 	e_vals_vects = Lik.eigenvects()
-	if False:
+	if True:
 		print
 		print
 		print("Eigenvectors:")
 		pprint(e_vals_vects)
 
+	# check for multiplicity of 2
+	if 2 in e_vals_vects[:][1]:
+		print("Multiplicity of 2 not yet supported!")
+		sys.exit(1)
 
-	evals = [simplify(e_vals_vects[i][0].subs(eq_subs)) for i in range(0,3)]
-	multi = [simplify(e_vals_vects[i][1]) for i in range(0,3)]
-	evects = [Matrix([simplify(e_vals_vects[i][2][0][j].subs(eq_subs)).subs(eq_subs) for j in range(0,3)]) for i in range(0,3)]
+	# special handler for 3 times the same EV (special case for f=0)
+	if e_vals_vects[0][1] == 3:
+		# Multiplicity of 3 given, probably this is the solution without the Coriolis frequency
+		evals = [simplify(e_vals_vects[0][0].subs(eq_subs)) for i in range(0,3)]
+		multi = [simplify(e_vals_vects[0][1]) for i in range(0,3)]
+		evects = [Matrix([simplify(e_vals_vects[0][2][i][j].subs(eq_subs)).subs(eq_subs) for j in range(0,3)]) for i in range(0,3)]
 
-	norm_facs = [simplify(sqrt(evects[i].dot(evects[i].conjugate()).subs(eq_subs)).subs(eq_subs)).subs(eq_subs) for i in range(0,3)]
-	nevects = [simplify(evects[i]/norm_facs[i]) for i in range(0,3)]
+		norm_facs = [simplify(sqrt(evects[i].dot(evects[0].conjugate()).subs(eq_subs)).subs(eq_subs)).subs(eq_subs) for i in range(0,3)]
+		nevects = [simplify(evects[i]/norm_facs[0]) for i in range(0,3)]
 
-	#pprint(expand(norm_facs[1]))
-	#sys.exit(1)
+	else:
+		evals = [simplify(e_vals_vects[i][0].subs(eq_subs)) for i in range(0,3)]
+		multi = [simplify(e_vals_vects[i][1]) for i in range(0,3)]
+		evects = [Matrix([simplify(e_vals_vects[i][2][0][j].subs(eq_subs)).subs(eq_subs) for j in range(0,3)]) for i in range(0,3)]
+
+		norm_facs = [simplify(sqrt(evects[i].dot(evects[i].conjugate()).subs(eq_subs)).subs(eq_subs)).subs(eq_subs) for i in range(0,3)]
+		nevects = [simplify(evects[i]/norm_facs[i]) for i in range(0,3)]
 
 	for i in range(0,3):
 		print
@@ -197,7 +272,6 @@ def getEVStuff(Lik):
 	print("*"*80)
 
 
-
 	print("Eigenvector property Lik*V-lambda*V:")
 	for i in range(0,3):
 		vec = simplify(expand((Lik*evects[i]-evects[i]*evals[i]).subs(inv_eq_subs)))
@@ -225,18 +299,14 @@ def getEVStuff(Lik):
 				print(str(i)+", "+str(j)+": "+str(dot))
 
 				dot_result = 1 if i == j else 0
+
+				# don't check for orthonormality if the Eigenvectors cannot be orthonormal
+				if LNr in [3,4] and dot_result != 0:
+					continue
+
 				if simplify(dot-dot_result) != 0:
 					print "VALIDATION FAILED (orthonormality of EVs)"
-					if LNr != 3:
-						sys.exit(1)
-
-					print "*"*80
-					print "* FALLBACK TEST with (g=2, H0=1)"
-					dot = simplify(dot.subs({g:1,H0:1,k[0]:3, k[1]:4, f:1}))
-					if simplify(dot-dot_result) != 0:
-						print "VALIDATION FAILED (orthonormality of EVs)"
-						pprint(simplify(expand(dot*dot)))
-						sys.exit(1)
+					sys.exit(1)
 
 
 	print("Eigenvalues - imaginary only:")
@@ -265,52 +335,70 @@ kzero_subs = {k[0]:0, k[1]:0, K2:0}
 # function to make code nice looking
 #
 def code_nice_replace(code):
-	code = re_exp.sub(r'pow\(([_a-zA-Z0-9]*), 2\)' , r'\1*\1', code)
-	code = re_exp.sub(r'pow\(([_a-zA-Z0-9]*), 3\)' , r'\1*\1*\1', code)
-	code = re_exp.sub(r'pow\(([_a-zA-Z0-9]*), 4\)' , r'\1*\1*\1*\1', code)
+	code = re_exp.sub(r'pow\(([_a-zA-Z0-9]*), 2.0\)' , r'\1*\1', code)
+	code = re_exp.sub(r'pow\(([_a-zA-Z0-9]*), 3.0\)' , r'\1*\1*\1', code)
+	code = re_exp.sub(r'pow\(([_a-zA-Z0-9]*), 4.0\)' , r'\1*\1*\1*\1', code)
 	code = re_exp.sub(r'sqrt\(([^\)])\)' , r'sqrt((double)\1)', code)
 	code = re_exp.sub(r'1\.0L' , r'1.0', code)
 	code = re_exp.sub(r'2\.0L' , r'2.0', code)
+	code = re_exp.sub(r'^([0-9][0-9]*)([*])' , r'\1.\2', code)
 	return code
 
+
 def _ccode(expr):
+	for i in range(0, 30):
+		expr = expr.subs(i, float(i))
 	return code_nice_replace(ccode(expr))
 
+pprint(Matrix([[1,2,3],[4,5,6],[7,8,9]]))
 
+print "*"*80
+print "*"*80
+print "*"*80
+
+#
+# Output C-Code
+#
 if True:
 	print("*"*80)
-	print(" C CODE OUTPUT")
+	print(" C CODE OUTPUT for LNr "+str(LNr))
 	print("*"*80)
 	print
 	print("std::complex<double> eigenvalues[3];")
 	print("std::complex<double> eigenvectors[3][3];")
-	print("if (k1 != 0 || k2 != 0)")
+	print
+	print("if (k0 != 0 || k1 != 0)")
 	print("{")
-
-	print("\tdouble K2 = k1*k1+k2*k2;")
+	print("\tdouble K2 = "+_ccode(K2)+";")
 	print("\tdouble w = std::sqrt("+_ccode(omega_2)+");")
 	print
+
 	if LNr == 3:
-		print("double omegag = std::sqrt("+_ccode(omegag_2)+");")
+		print("\tdouble wg = std::sqrt("+_ccode(omegag_2)+");")
 	for i in range(0,3):
 		print("\teigenvalues["+str(i)+"] = "+_ccode(im(evals[i]))+";")
+
 	print
 	for i in range(0,3):
 		for j in range(0,3):
 			print("\teigenvectors["+str(i)+"]["+sstr(j)+"] = "+_ccode(nevects[i][j])+";")
+
 	print("}")
 	print("else")
 	print("{")
 
 	if LNr == 3:
-		print("double omegag0 = std::sqrt("+_ccode(omegag_2.subs(kzero_subs))+");")
+		print("\tdouble wg = std::sqrt("+_ccode(omegag_2.subs(kzero_subs))+");")
+
 	print
 	for i in range(0,3):
 		print("\teigenvalues["+str(i)+"] = "+_ccode(im(evals0[i]))+";")
 	print
+
 	for i in range(0,3):
 		for j in range(0,3):
 			print("\teigenvectors["+str(i)+"]["+sstr(j)+"] = "+_ccode(nevects0[i][j])+";")
+
 	print("}")
 	print
 

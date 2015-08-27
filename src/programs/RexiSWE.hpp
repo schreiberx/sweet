@@ -189,6 +189,300 @@ public:
 	}
 
 
+	complex conj(complex v)	const
+	{
+		return complex(v.real(), -v.imag());
+	}
+
+
+	/**
+	 * This method computes the analytical solution based on the given initial values.
+	 *
+	 * See Embid/Madja/1996
+	 * Terry/Beth/2014, page 16 and
+	 * the maple worksheet in doc/swe_solution_for_L/swe_solution_for_L.mw
+	 */
+	void run_timestep_direct_solution(
+			DataArray<2> &io_h,
+			DataArray<2> &io_u,
+			DataArray<2> &io_v,
+
+			double i_timestep_size,
+
+			Operators2D &op,
+			const SimulationParameters &i_parameters
+	)
+	{
+		double eta_bar = i_parameters.setup_h0;
+		double g = i_parameters.sim_g;
+		double f = i_parameters.sim_f;
+		complex I(0.0,1.0);
+
+		Complex2DArrayFFT i_h(io_h.resolution);
+		Complex2DArrayFFT i_u(io_h.resolution);
+		Complex2DArrayFFT i_v(io_h.resolution);
+
+		Complex2DArrayFFT o_h(io_h.resolution);
+		Complex2DArrayFFT o_u(io_h.resolution);
+		Complex2DArrayFFT o_v(io_h.resolution);
+
+		i_h.loadRealFromDataArray(io_h);
+		i_h = i_h.toSpec();
+
+		i_u.loadRealFromDataArray(io_u);
+		i_u = i_u.toSpec();
+
+		i_v.loadRealFromDataArray(io_v);
+		i_v = i_v.toSpec();
+
+		double s0 = i_parameters.sim_domain_size[0];
+		double s1 = i_parameters.sim_domain_size[1];
+
+		for (std::size_t ik1 = 0; ik1 < i_h.resolution[1]; ik1++)
+		{
+			for (std::size_t ik0 = 0; ik0 < i_h.resolution[0]; ik0++)
+			{
+				if (ik0 == i_h.resolution[0]/2 || ik1 == i_h.resolution[1]/2)
+				{
+					o_h.set(ik1, ik0, 0, 0);
+					o_u.set(ik1, ik0, 0, 0);
+					o_v.set(ik1, ik0, 0, 0);
+				}
+
+				complex U_hat[3];
+				U_hat[0] = i_h.get(ik1, ik0);
+				U_hat[1] = i_u.get(ik1, ik0);
+				U_hat[2] = i_v.get(ik1, ik0);
+
+				double k0, k1;
+				if (ik0 < i_h.resolution[0]/2)
+					k0 = (double)ik0;
+				else
+					k0 = (double)((int)ik0-(int)i_h.resolution[0]);
+
+				if (ik1 < i_h.resolution[1]/2)
+					k1 = (double)ik1;
+				else
+					k1 = (double)((int)ik1-(int)i_h.resolution[1]);
+#if 1
+				/*
+				 * dimensionful formulation
+				 * see doc/swe_solution_for_L
+				 */
+
+				double H0 = eta_bar;
+
+				if (s0 != 1 || s1 != 1)
+				{
+					std::cerr << "Domain size != 1 not supported yet!" << std::endl;
+					exit(1);
+				}
+
+				//////////////////////////////////////
+				// GENERATED CODE START
+				//////////////////////////////////////
+				std::complex<double> eigenvalues[3];
+				std::complex<double> eigenvectors[3][3];
+
+				if (k0 != 0 || k1 != 0)
+				{
+					double K2 = K2;
+					double w = std::sqrt(4.0*M_PI*M_PI*H0*g*k0*k0 + 4.0*M_PI*M_PI*H0*g*k1*k1 + f*f);
+
+					double wg = std::sqrt(f*f + 4.0*M_PI*M_PI*g*g*k0*k0 + 4.0*M_PI*M_PI*g*g*k1*k1);
+					eigenvalues[0] = 0.0;
+					eigenvalues[1] = -1.0*w;
+					eigenvalues[2] = w;
+
+					eigenvectors[0][0] = -1.0*I*f*1.0/wg;
+					eigenvectors[0][1] = -2.0*M_PI*g*k1*1.0/wg;
+					eigenvectors[0][2] = 2.0*M_PI*g*k0*1.0/wg;
+					eigenvectors[1][0] = 2.0*M_PI*H0*(I*k0*(4.0*I*M_PI*M_PI*H0*g*k0*k1 + f*w) - 1.0*k1*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f))/sqrt(4.0*M_PI*M_PI*H0*H0*(I*k0*(4.0*I*M_PI*M_PI*H0*g*k0*k1 - 1.0*f*w) - 1.0*k1*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f))*(I*k0*(4.0*I*M_PI*M_PI*H0*g*k0*k1 + f*w) - 1.0*k1*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f)) + w*w*pow(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f, 2.0) + w*w*(4.0*M_PI*M_PI*H0*g*k0*k1 - 1.0*I*f*w)*(4.0*M_PI*M_PI*H0*g*k0*k1 + I*f*w));
+					eigenvectors[1][1] = w*(4.0*M_PI*M_PI*H0*g*k0*k1 - 1.0*I*f*w)/sqrt(4.0*M_PI*M_PI*H0*H0*(I*k0*(4.0*I*M_PI*M_PI*H0*g*k0*k1 - 1.0*f*w) - 1.0*k1*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f))*(I*k0*(4.0*I*M_PI*M_PI*H0*g*k0*k1 + f*w) - 1.0*k1*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f)) + w*w*pow(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f, 2.0) + w*w*(4.0*M_PI*M_PI*H0*g*k0*k1 - 1.0*I*f*w)*(4.0*M_PI*M_PI*H0*g*k0*k1 + I*f*w));
+					eigenvectors[1][2] = w*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f)/sqrt(4.0*M_PI*M_PI*H0*H0*(I*k0*(4.0*I*M_PI*M_PI*H0*g*k0*k1 - 1.0*f*w) - 1.0*k1*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f))*(I*k0*(4.0*I*M_PI*M_PI*H0*g*k0*k1 + f*w) - 1.0*k1*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f)) + w*w*pow(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f, 2.0) + w*w*(4.0*M_PI*M_PI*H0*g*k0*k1 - 1.0*I*f*w)*(4.0*M_PI*M_PI*H0*g*k0*k1 + I*f*w));
+					eigenvectors[2][0] = -2.0*M_PI*H0*(I*k0*(4.0*I*M_PI*M_PI*H0*g*k0*k1 - 1.0*f*w) - 1.0*k1*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f))/sqrt(4.0*M_PI*M_PI*H0*H0*(I*k0*(4.0*I*M_PI*M_PI*H0*g*k0*k1 - 1.0*f*w) - 1.0*k1*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f))*(I*k0*(4.0*I*M_PI*M_PI*H0*g*k0*k1 + f*w) - 1.0*k1*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f)) + w*w*pow(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f, 2.0) + w*w*(4.0*M_PI*M_PI*H0*g*k0*k1 - 1.0*I*f*w)*(4.0*M_PI*M_PI*H0*g*k0*k1 + I*f*w));
+					eigenvectors[2][1] = w*(4.0*M_PI*M_PI*H0*g*k0*k1 + I*f*w)/sqrt(4.0*M_PI*M_PI*H0*H0*(I*k0*(4.0*I*M_PI*M_PI*H0*g*k0*k1 - 1.0*f*w) - 1.0*k1*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f))*(I*k0*(4.0*I*M_PI*M_PI*H0*g*k0*k1 + f*w) - 1.0*k1*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f)) + w*w*pow(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f, 2.0) + w*w*(4.0*M_PI*M_PI*H0*g*k0*k1 - 1.0*I*f*w)*(4.0*M_PI*M_PI*H0*g*k0*k1 + I*f*w));
+					eigenvectors[2][2] = w*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f)/sqrt(4.0*M_PI*M_PI*H0*H0*(I*k0*(4.0*I*M_PI*M_PI*H0*g*k0*k1 - 1.0*f*w) - 1.0*k1*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f))*(I*k0*(4.0*I*M_PI*M_PI*H0*g*k0*k1 + f*w) - 1.0*k1*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f)) + w*w*pow(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f, 2.0) + w*w*(4.0*M_PI*M_PI*H0*g*k0*k1 - 1.0*I*f*w)*(4.0*M_PI*M_PI*H0*g*k0*k1 + I*f*w));
+				}
+				else
+				{
+					double wg = std::sqrt(f*f);
+
+					eigenvalues[0] = 0.0;
+					eigenvalues[1] = -1.0*f;
+					eigenvalues[2] = f;
+
+					eigenvectors[0][0] = 1.00000000000000;
+					eigenvectors[0][1] = 0.0;
+					eigenvectors[0][2] = 0.0;
+					eigenvectors[1][0] = 0.0;
+					eigenvectors[1][1] = -0.707106781186548*I;
+					eigenvectors[1][2] = 0.707106781186548;
+					eigenvectors[2][0] = 0.0;
+					eigenvectors[2][1] = 0.707106781186548*I;
+					eigenvectors[2][2] = 0.707106781186548;
+				}
+
+
+
+
+				//////////////////////////////////////
+				// GENERATED CODE END
+				//////////////////////////////////////
+
+				if (f == 0)
+				{
+					/*
+					 * override if f == 0, see ./sympy_L_spec_decomposition.py executed with LNr=4
+					 */
+					if (k0 != 0 || k1 != 0)
+					{
+					 	double K2 = k0*k0+k1*k1;
+					 	double w = std::sqrt(H0*g*k0*k0 + H0*g*k1*k1 + f*f);
+
+					 	eigenvalues[0] = 0;
+					 	eigenvalues[1] = -sqrt(H0)*sqrt(K2)*sqrt((double)g);
+					 	eigenvalues[2] = sqrt(H0)*sqrt(K2)*sqrt((double)g);
+
+					 	eigenvectors[0][0] = 0;
+					 	eigenvectors[0][1] = -k1/sqrt(K2);
+					 	eigenvectors[0][2] = k0/sqrt(K2);
+					 	eigenvectors[1][0] = -sqrt(H0)*sqrt(K2)/sqrt(H0*K2 + g*k0*k0 + g*k1*k1);
+					 	eigenvectors[1][1] = sqrt((double)g)*k0/sqrt(H0*K2 + g*k0*k0 + g*k1*k1);
+					 	eigenvectors[1][2] = sqrt((double)g)*k1/sqrt(H0*K2 + g*k0*k0 + g*k1*k1);
+					 	eigenvectors[2][0] = sqrt(H0)*sqrt(K2)/sqrt(H0*K2 + g*k0*k0 + g*k1*k1);
+					 	eigenvectors[2][1] = sqrt((double)g)*k0/sqrt(H0*K2 + g*k0*k0 + g*k1*k1);
+					 	eigenvectors[2][2] = sqrt((double)g)*k1/sqrt(H0*K2 + g*k0*k0 + g*k1*k1);
+					 }
+					 else
+					 {
+
+					 	eigenvalues[0] = 0;
+					 	eigenvalues[1] = 0;
+					 	eigenvalues[2] = 0;
+
+					 	eigenvectors[0][0] = 1;
+					 	eigenvectors[0][1] = 0;
+					 	eigenvectors[0][2] = 0;
+					 	eigenvectors[1][0] = 0;
+					 	eigenvectors[1][1] = 1;
+					 	eigenvectors[1][2] = 0;
+					 	eigenvectors[2][0] = 0;
+					 	eigenvectors[2][1] = 0;
+					 	eigenvectors[2][2] = 1;
+					 }
+				}
+
+				std::complex<double> eigenvectors_inv[3][3];
+
+				eigenvectors_inv[0][0] =  (eigenvectors[1][1]*eigenvectors[2][2] - eigenvectors[1][2]*eigenvectors[2][1]);
+				eigenvectors_inv[0][1] = -(eigenvectors[0][1]*eigenvectors[2][2] - eigenvectors[0][2]*eigenvectors[2][1]);
+				eigenvectors_inv[0][2] =  (eigenvectors[0][1]*eigenvectors[1][2] - eigenvectors[0][2]*eigenvectors[1][1]);
+
+				eigenvectors_inv[1][0] = -(eigenvectors[1][0]*eigenvectors[2][2] - eigenvectors[1][2]*eigenvectors[2][0]);
+				eigenvectors_inv[1][1] =  (eigenvectors[0][0]*eigenvectors[2][2] - eigenvectors[0][2]*eigenvectors[2][0]);
+				eigenvectors_inv[1][2] = -(eigenvectors[0][0]*eigenvectors[1][2] - eigenvectors[0][2]*eigenvectors[1][0]);
+
+				eigenvectors_inv[2][0] =  (eigenvectors[1][0]*eigenvectors[2][1] - eigenvectors[1][1]*eigenvectors[2][0]);
+				eigenvectors_inv[2][1] = -(eigenvectors[0][0]*eigenvectors[2][1] - eigenvectors[0][1]*eigenvectors[2][0]);
+				eigenvectors_inv[2][2] =  (eigenvectors[0][0]*eigenvectors[1][1] - eigenvectors[0][1]*eigenvectors[1][0]);
+
+			    complex s = eigenvectors[0][0]*eigenvectors_inv[0][0] + eigenvectors[0][1]*eigenvectors_inv[1][0] + eigenvectors[0][2]*eigenvectors_inv[2][0];
+
+			    for (int j = 0; j < 3; j++)
+				    for (int i = 0; i < 3; i++)
+				    	eigenvectors_inv[j][i] /= s;
+
+#else
+				if (g != 1.0 || eta_bar != 1.0)
+				{
+					std::cerr << "Only g=1 and eta_bar=0 supported in this formulation!" << std::endl;
+					exit(1);
+				}
+				/*
+				 * Dimensionless formulation
+				 */
+				double F = 1;
+
+				// GENERATED CODE START
+				std::complex<double> eigenvalues[3];
+				std::complex<double> eigenvectors[3][3];
+				if (k0 != 0 || k1 != 0)
+				{
+					double K2 = k0*k0+k1*k1;
+					double w = std::sqrt(1 + k0*k0/F + k1*k1/F);
+
+					eigenvalues[0] = 0;
+					eigenvalues[1] = -w;
+					eigenvalues[2] = w;
+
+					eigenvectors[0][0] = -I/w;
+					eigenvectors[0][1] = -k1/(sqrt((double)F)*w);
+					eigenvectors[0][2] = k0/(sqrt((double)F)*w);
+					eigenvectors[1][0] = (I*k0*(F*w + I*k0*k1) - k1*(F + k1*k1))/sqrt(F*w*w*pow(F + k1*k1, 2) - F*w*w*(I*F*w - k0*k1)*(I*F*w + k0*k1) - (I*k0*(F*w - I*k0*k1) + k1*(F + k1*k1))*(I*k0*(F*w + I*k0*k1) - k1*(F + k1*k1)));
+					eigenvectors[1][1] = -sqrt((double)F)*w*(I*F*w - k0*k1)/sqrt(F*w*w*pow(F + k1*k1, 2) - F*w*w*(I*F*w - k0*k1)*(I*F*w + k0*k1) - (I*k0*(F*w - I*k0*k1) + k1*(F + k1*k1))*(I*k0*(F*w + I*k0*k1) - k1*(F + k1*k1)));
+					eigenvectors[1][2] = sqrt((double)F)*w*(F + k1*k1)/sqrt(F*w*w*pow(F + k1*k1, 2) - F*w*w*(I*F*w - k0*k1)*(I*F*w + k0*k1) - (I*k0*(F*w - I*k0*k1) + k1*(F + k1*k1))*(I*k0*(F*w + I*k0*k1) - k1*(F + k1*k1)));
+					eigenvectors[2][0] = (I*k0*(F*w - I*k0*k1) + k1*(F + k1*k1))/sqrt(F*w*w*pow(F + k1*k1, 2) - F*w*w*(I*F*w - k0*k1)*(I*F*w + k0*k1) - (I*k0*(F*w - I*k0*k1) + k1*(F + k1*k1))*(I*k0*(F*w + I*k0*k1) - k1*(F + k1*k1)));
+					eigenvectors[2][1] = sqrt((double)F)*w*(I*F*w + k0*k1)/sqrt(F*w*w*pow(F + k1*k1, 2) - F*w*w*(I*F*w - k0*k1)*(I*F*w + k0*k1) - (I*k0*(F*w - I*k0*k1) + k1*(F + k1*k1))*(I*k0*(F*w + I*k0*k1) - k1*(F + k1*k1)));
+					eigenvectors[2][2] = sqrt((double)F)*w*(F + k1*k1)/sqrt(F*w*w*pow(F + k1*k1, 2) - F*w*w*(I*F*w - k0*k1)*(I*F*w + k0*k1) - (I*k0*(F*w - I*k0*k1) + k1*(F + k1*k1))*(I*k0*(F*w + I*k0*k1) - k1*(F + k1*k1)));
+				}
+				else
+				{
+
+					eigenvalues[0] = 0;
+					eigenvalues[1] = -1;
+					eigenvalues[2] = 1;
+
+					eigenvectors[0][0] = 1;
+					eigenvectors[0][1] = 0;
+					eigenvectors[0][2] = 0;
+					eigenvectors[1][0] = 0;
+					eigenvectors[1][1] = -1.0/2.0*sqrt((double)2)*I;
+					eigenvectors[1][2] = (1.0/2.0)*sqrt((double)2);
+					eigenvectors[2][0] = 0;
+					eigenvectors[2][1] = (1.0/2.0)*sqrt((double)2)*I;
+					eigenvectors[2][2] = (1.0/2.0)*sqrt((double)2);
+				}
+
+				// GENERATED CODE END
+#endif
+
+
+				/**
+				 * SOLVE BASED ON CONSTANT DATA
+				 */
+				complex UEV0_sp[3];
+				for (int k = 0; k < 3; k++)
+				{
+					UEV0_sp[k] = {0, 0};
+					for (int j = 0; j < 3; j++)
+						UEV0_sp[k] += eigenvectors_inv[j][k] * U_hat[j];
+				}
+
+				complex omega[3];
+				omega[0] = std::exp(-I*eigenvalues[0]*i_timestep_size);
+				omega[1] = std::exp(-I*eigenvalues[1]*i_timestep_size);
+				omega[2] = std::exp(-I*eigenvalues[2]*i_timestep_size);
+
+				complex U_hat_sp[3];
+				for (int k = 0; k < 3; k++)
+				{
+					U_hat_sp[k] = {0, 0};
+					for (int j = 0; j < 3; j++)
+						U_hat_sp[k] += eigenvectors[j][k] * omega[j] * UEV0_sp[j];
+				}
+
+				o_h.set(ik1, ik0, U_hat_sp[0]);
+				o_u.set(ik1, ik0, U_hat_sp[1]);
+				o_v.set(ik1, ik0, U_hat_sp[2]);
+			}
+		}
+
+		io_h = o_h.toCart().getRealWithDataArray();
+		io_u = o_u.toCart().getRealWithDataArray();
+		io_v = o_v.toCart().getRealWithDataArray();
+	}
+
 	~RexiSWE()
 	{
 	}

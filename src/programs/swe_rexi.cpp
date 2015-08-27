@@ -70,16 +70,82 @@ public:
 		prog_u.setAll(0);
 		prog_v.setAll(0);
 
-		for (std::size_t j = 0; j < parameters.res[1]; j++)
+		if (parameters.setup_scenario == -1)
 		{
-			for (std::size_t i = 0; i < parameters.res[0]; i++)
-			{
-				double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
-				double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_size[1];
+			std::cout << "Setting up steady state" << std::endl;
 
-				prog_h.set(j, i, SWEValidationBenchmarks::return_h(parameters, x, y));
-				prog_u.set(j, i, SWEValidationBenchmarks::return_u(parameters, x, y));
-				prog_v.set(j, i, SWEValidationBenchmarks::return_v(parameters, x, y));
+			if (parameters.sim_f == 0)
+			{
+				std::cerr << "Coriolis frequency f is set to 0" << std::endl;
+				exit(1);
+			}
+			if (std::isinf(parameters.bogus_var0))
+			{
+				std::cerr << "ERROR: Steady state scenario here only makes sense for linear solver only" << std::endl;
+//				exit(1);
+			}
+
+			/**
+			 * setup steady state
+			 */
+			for (std::size_t j = 0; j < parameters.res[1]; j++)
+			{
+				for (std::size_t i = 0; i < parameters.res[0]; i++)
+				{
+#if 0
+					double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
+					double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_size[1];
+#else
+					double x = (((double)i)/(double)parameters.res[0])*parameters.sim_domain_size[0];
+					double y = (((double)j)/(double)parameters.res[1])*parameters.sim_domain_size[1];
+#endif
+
+					// Gaussian
+					double dx = x-parameters.setup_coord_x*parameters.sim_domain_size[0];
+					double dy = y-parameters.setup_coord_y*parameters.sim_domain_size[1];
+
+					double radius = parameters.setup_radius_scale*sqrt((double)parameters.sim_domain_size[0]*(double)parameters.sim_domain_size[0]+(double)parameters.sim_domain_size[1]*(double)parameters.sim_domain_size[1]);
+					dx /= radius;
+					dy /= radius;
+
+#if 1
+					double sx = x/parameters.sim_domain_size[0];
+					double sy = y/parameters.sim_domain_size[1];
+
+					double foo = std::sin(sx*2.0*M_PIl)*std::sin(sy*2.0*M_PIl);
+
+					double barx = std::cos(sx*2.0*M_PIl)*std::sin(sy*2.0*M_PIl)*2.0*M_PIl/parameters.sim_domain_size[0];
+					double bary = std::sin(sx*2.0*M_PIl)*std::cos(sy*2.0*M_PIl)*2.0*M_PIl/parameters.sim_domain_size[1];
+
+					double h = parameters.setup_h0+foo;
+					double u = -parameters.sim_g/parameters.sim_f*bary;
+					double v = parameters.sim_g/parameters.sim_f*barx;
+#else
+					double foo = std::exp(-50.0*(dx*dx + dy*dy));
+					double h = parameters.setup_h0+foo;
+					double u = -parameters.sim_g/parameters.sim_f*(-50.0*2.0*dy)*foo;
+					double v = parameters.sim_g/parameters.sim_f*(-50.0*2.0*dx)*foo;
+#endif
+
+					prog_h.set(j, i, h);
+					prog_u.set(j, i, u);
+					prog_v.set(j, i, v);
+				}
+			}
+		}
+		else
+		{
+			for (std::size_t j = 0; j < parameters.res[1]; j++)
+			{
+				for (std::size_t i = 0; i < parameters.res[0]; i++)
+				{
+					double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
+					double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_size[1];
+
+					prog_h.set(j, i, SWEValidationBenchmarks::return_h(parameters, x, y));
+					prog_u.set(j, i, SWEValidationBenchmarks::return_u(parameters, x, y));
+					prog_v.set(j, i, SWEValidationBenchmarks::return_v(parameters, x, y));
+				}
 			}
 		}
 
@@ -327,12 +393,25 @@ public:
 		double dt;
 		if (!std::isinf(parameters.bogus_var0))
 		{
-			dt = -parameters.sim_CFL;
-			rexiSWE.run_timestep(
-					prog_h, prog_u, prog_v,
-					op,
-					parameters
-			);
+			if (parameters.bogus_var0 < 0)
+			{
+				dt = -parameters.sim_CFL;
+				rexiSWE.run_timestep_direct_solution(
+						prog_h, prog_u, prog_v,
+						-parameters.sim_CFL,
+						op,
+						parameters
+				);
+			}
+			else
+			{
+				dt = -parameters.sim_CFL;
+				rexiSWE.run_timestep(
+						prog_h, prog_u, prog_v,
+						op,
+						parameters
+				);
+			}
 		}
 		else
 		{

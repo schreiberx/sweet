@@ -7,6 +7,7 @@
 #ifndef SRC_DATAARRAY_HPP_
 #define SRC_DATAARRAY_HPP_
 
+#include <complex>
 #include <cassert>
 #include <cstddef>
 #include <cmath>
@@ -532,6 +533,30 @@ public:
 
 
 	inline
+	void setSpec(
+			std::size_t j,
+			std::size_t i,
+			std::complex<double> &i_value
+	)
+	{
+		assert(i >= range_spec_start[0] && i < range_spec_end[0]);
+		assert(j >= range_spec_start[1] && j < range_spec_end[1]);
+
+//		requestDataInSpectralSpace();
+
+#if SWEET_USE_SPECTRAL_SPACE
+		array_data_cartesian_space_valid = false;
+		array_data_spectral_space_valid = true;
+#endif
+
+		std::size_t idx = ((j-range_spec_start[1])*range_spec_size[0]+(i-range_spec_start[0]))*2;
+		array_data_spectral_space[idx] = i_value.real();
+		array_data_spectral_space[idx+1] = i_value.imag();
+	}
+
+
+
+	inline
 	double get(
 			std::size_t j,
 			std::size_t i
@@ -546,6 +571,23 @@ public:
 							(j-range_start[1])*range_size[0]+
 							(i-range_start[0])
 						];
+	}
+
+	inline
+	std::complex<double> getSpec(
+			std::size_t j,
+			std::size_t i
+	)	const
+	{
+		requestDataInSpectralSpace();
+
+		((DataArray<D>*)this)->array_data_spectral_space_valid = true;
+
+		assert(i >= range_spec_start[0] && i < range_spec_end[0]);
+		assert(j >= range_spec_start[1] && j < range_spec_end[1]);
+
+		std::size_t idx = ((j-range_spec_start[1])*range_spec_size[0]+(i-range_spec_start[0]))*2;
+		return std::complex<double>(array_data_spectral_space[idx], array_data_spectral_space[idx+1]);
 	}
 
 

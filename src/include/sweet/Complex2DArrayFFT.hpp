@@ -33,6 +33,7 @@ public:
 	bool aliased_scaled = false;
 	double *data;
 
+	bool fftw_initialized;
 
 	class Plans
 	{
@@ -57,6 +58,8 @@ public:
 
 	void setup_fftw()
 	{
+		fftw_initialized = true;
+
 		assert(getRefCounter() >= 0);
 
 		getRefCounter()++;
@@ -150,6 +153,9 @@ public:
 
 	void shutdown_fftw()
 	{
+		if (!fftw_initialized)
+			return;
+
 		getRefCounter()--;
 		if (getRefCounter() > 0)
 			return;
@@ -165,7 +171,8 @@ public:
 
 
 	Complex2DArrayFFT()	:
-		data(nullptr)
+		data(nullptr),
+		fftw_initialized(false)
 	{
 
 	}
@@ -174,7 +181,8 @@ public:
 	Complex2DArrayFFT(
 			const std::size_t i_res[2],
 			bool i_aliased_scaled = false
-	)
+	)	:
+		fftw_initialized(false)
 	{
 		aliased_scaled = i_aliased_scaled;
 
@@ -207,7 +215,8 @@ public:
 public:
 	Complex2DArrayFFT(
 			const Complex2DArrayFFT &i_testArray
-	)
+	)	:
+		fftw_initialized(false)
 	{
 		resolution[0] = i_testArray.resolution[0];
 		resolution[1] = i_testArray.resolution[1];
@@ -338,6 +347,16 @@ public:
 	double getIm(int y, int x)	const
 	{
 		return data[(y*resolution[0]+x)*2+1];
+	}
+
+	complex get(int y, int x)	const
+	{
+		std::size_t idx = (y*resolution[0]+x)*2;
+
+		return complex(
+				data[idx+0],
+				data[idx+1]
+				);
 	}
 
 	void setAll(double re, double im)
