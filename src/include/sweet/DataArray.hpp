@@ -532,6 +532,7 @@ public:
 
 
 
+#if SWEET_USE_SPECTRAL_SPACE
 	inline
 	void setSpec(
 			std::size_t j,
@@ -544,15 +545,14 @@ public:
 
 //		requestDataInSpectralSpace();
 
-#if SWEET_USE_SPECTRAL_SPACE
 		array_data_cartesian_space_valid = false;
 		array_data_spectral_space_valid = true;
-#endif
 
 		std::size_t idx = ((j-range_spec_start[1])*range_spec_size[0]+(i-range_spec_start[0]))*2;
 		array_data_spectral_space[idx] = i_value.real();
 		array_data_spectral_space[idx+1] = i_value.imag();
 	}
+#endif
 
 
 
@@ -573,6 +573,7 @@ public:
 						];
 	}
 
+#if SWEET_USE_SPECTRAL_SPACE
 	inline
 	std::complex<double> getSpec(
 			std::size_t j,
@@ -589,6 +590,7 @@ public:
 		std::size_t idx = ((j-range_spec_start[1])*range_spec_size[0]+(i-range_spec_start[0]))*2;
 		return std::complex<double>(array_data_spectral_space[idx], array_data_spectral_space[idx+1]);
 	}
+#endif
 
 
 	inline
