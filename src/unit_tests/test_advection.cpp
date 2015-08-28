@@ -313,6 +313,7 @@ public:
 	{
 		if (parameters.bogus_var2 == 0)
 		{
+			// UP/DOWNWINDING
 #if SWEET_USE_SPECTRAL_SPACE
 			static bool output_given = false;
 			if (!output_given)
@@ -347,6 +348,8 @@ public:
 		}
 		else if (parameters.bogus_var2 == 1)
 		{
+			// STAGGERED
+
 			//             |                       |                       |
 			// --v---------|-----------v-----------|-----------v-----------|
 			//   h-1       u0          h0          u1          h1          u2
@@ -359,6 +362,8 @@ public:
 		}
 		else  if (parameters.bogus_var2 == 2)
 		{
+			// NON-STAGGERED
+
 			if (parameters.bogus_var3 == 0)
 			{
 				// non-staggered
@@ -383,6 +388,7 @@ public:
 		}
 		else  if (parameters.bogus_var2 == 3)
 		{
+			// NO H UPDATE
 			o_h_t.setAll(0);
 		}
 		else
@@ -577,11 +583,38 @@ int main(
 	std::cout << std::setprecision(14);
 	std::cerr << std::setprecision(14);
 
-	if (!parameters.setup(i_argc, i_argv))
+	const char *bogus_var_names[] = {
+			"velocity-u",
+			"velocity-v",
+			"advection-scheme",
+			"staggered-use-analytical-solution",
+			"test-mode",
+			nullptr
+	};
+
+	if (!parameters.setup(i_argc, i_argv, bogus_var_names))
 	{
+		std::cout << std::endl;
+		std::cout << "Program-specific options:" << std::endl;
+		std::cout << "	--velocity-u [velocity in u direction]" << std::endl;
+		std::cout << std::endl;
+		std::cout << "	--velocity-v [velocity in v direction]" << std::endl;
+		std::cout << std::endl;
+		std::cout << "	--advection-scheme [nr]		Advection scheme" << std::endl;
+		std::cout << "	                            0: up/downwinding" << std::endl;
+		std::cout << "	                            1: staggered" << std::endl;
+		std::cout << "	                            2: non-staggered" << std::endl;
+		std::cout << "	                            3: no h update" << std::endl;
+		std::cout << std::endl;
+		std::cout << "	--staggered-use-analytical-solution [0/1]" << std::endl;
+		std::cout << "	                            Use analytical solution for non-staggered advection" << std::endl;
+		std::cout << std::endl;
+		std::cout << "	--test-mode [nr]	Test mode" << std::endl;
+		std::cout << "	                    0: space" << std::endl;
+		std::cout << "	                    1: time" << std::endl;
+		std::cout << std::endl;
 		return -1;
 	}
-
 
 	double u, v;
 	if (std::isinf(parameters.bogus_var0))
