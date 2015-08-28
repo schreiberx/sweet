@@ -257,7 +257,20 @@ int main(
 		char *i_argv[]
 )
 {
-	parameters.setup(i_argc, i_argv);
+	const char *bogus_var_names[] = {
+			"function-order",
+			nullptr
+	};
+
+	if (!parameters.setup(i_argc, i_argv, bogus_var_names))
+	{
+		std::cout << std::endl;
+		std::cout << "Program-specific options:" << std::endl;
+		std::cout << "	--function-order [order of function to test]" << std::endl;
+		std::cout << std::endl;
+		return -1;
+	}
+
 
 #if SWEET_GUI
 	if (parameters.gui_enabled)

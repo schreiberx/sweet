@@ -213,7 +213,11 @@ public:
 
 int main(int i_argc, char *i_argv[])
 {
-	parameters.setup(i_argc, i_argv);
+	if (!parameters.setup(i_argc, i_argv))
+	{
+		return -1;
+	}
+
 
 	TestSpectral *testSpectral = new TestSpectral;
 

@@ -8,8 +8,7 @@
 #define SRC_EXAMPLES_PARAMETERS_HPP_
 
 #include <unistd.h>
-
-
+#include <getopt.h>
 
 class SimulationParameters
 {
@@ -69,7 +68,7 @@ public:
 	 * resolution / timestepping
 	 */
 	// resolution
-	std::size_t res[2] = {0,0};
+	std::size_t res[2] = {128, 128};
 
 	double res2_dbl = -1.0;
 
@@ -105,6 +104,11 @@ public:
 	double bogus_var2 = std::numeric_limits<double>::infinity();
 	double bogus_var3 = std::numeric_limits<double>::infinity();
 	double bogus_var4 = std::numeric_limits<double>::infinity();
+	double bogus_var5 = std::numeric_limits<double>::infinity();
+	double bogus_var6 = std::numeric_limits<double>::infinity();
+	double bogus_var7 = std::numeric_limits<double>::infinity();
+	double bogus_var8 = std::numeric_limits<double>::infinity();
+	double bogus_var9 = std::numeric_limits<double>::infinity();
 
 	/**
 	 * set verbosity of simulation
@@ -168,19 +172,105 @@ public:
 	}
 
 
-	void setup(
+	bool setup(
 			int i_argc,
-			char *i_argv[]
+			char *i_argv[],
+			const char *bogus_var_names[] = nullptr
 	)
 	{
-		res[0] = 128;
-		res[1] = 128;
+        static struct option long_options[11] = {
+                {0,				0,					0,	0	}, // 0
+                {0,				0,					0,	0	}, // 1
+                {0,				0,					0,	0	}, // 2
+                {0,				0,					0,	0	}, // 3
+                {0,				0,					0,	0	}, // 4
+				{0,				0,					0,	0	}, // 5
+				{0,				0,					0,	0	}, // 6
+				{0,				0,					0,	0	}, // 7
+				{0,				0,					0,	0	}, // 8
+				{0,				0,					0,	0	}, // 9
+				{0,				0,					0,	0	}, // NULL
+        };
+
+        if (bogus_var_names != nullptr)
+        {
+			int opt_nr;
+			for (opt_nr = 0; opt_nr < 10; opt_nr++)
+			{
+				if (bogus_var_names[opt_nr] == nullptr)
+					break;
+
+				long_options[opt_nr].name = bogus_var_names[opt_nr];
+				long_options[opt_nr].has_arg = required_argument;
+				long_options[opt_nr].flag = 0;
+				long_options[opt_nr].val = 256+'a'+opt_nr;
+			}
+        }
+
+		// index into long_options for determined argument
+		int option_index = 0;
+
 
 		int opt;
-		while ((opt = getopt(i_argc, i_argv, "N:n:m:C:u:U:s:X:Y:a:b:c:d:e:f:x:y:t:T:v:H:r:R:W:F:S:g:p:P:G:")) != -1)
+		while (1)
 		{
+			opt = getopt_long(	i_argc, i_argv,
+							"N:n:m:C:u:U:s:X:Y:f:x:y:t:T:v:H:r:R:W:F:S:g:p:P:G:",
+							long_options, &option_index
+					);
+
+			if (opt == -1)
+				break;
+
 			switch (opt)
 			{
+			/*
+			 * LONG OPTIONS
+			 */
+			case 256+'a':
+				bogus_var0 = atof(optarg);
+				break;
+
+			case 256+'b':
+				bogus_var1 = atof(optarg);
+				break;
+
+			case 256+'c':
+				bogus_var2 = atof(optarg);
+				break;
+
+			case 256+'d':
+				bogus_var3 = atof(optarg);
+				break;
+
+			case 256+'e':
+				bogus_var4 = atof(optarg);
+				break;
+
+			case 256+'f':
+				bogus_var5 = atof(optarg);
+				break;
+
+			case 256+'g':
+				bogus_var6 = atof(optarg);
+				break;
+
+			case 256+'h':
+				bogus_var7 = atof(optarg);
+				break;
+
+			case 256+'i':
+				bogus_var8 = atof(optarg);
+				break;
+
+			case 256+'j':
+				bogus_var9 = atof(optarg);
+				break;
+
+
+			/*
+			 * SHORT OPTIONS
+			 */
 			case 'N':
 				res[0] = atoi(optarg);
 				res[1] = res[0];
@@ -244,26 +334,6 @@ public:
 
 			case 'R':
 				timestepping_runge_kutta_order = atoi(optarg);
-				break;
-
-			case 'a':
-				bogus_var0 = atof(optarg);
-				break;
-
-			case 'b':
-				bogus_var1 = atof(optarg);
-				break;
-
-			case 'c':
-				bogus_var2 = atof(optarg);
-				break;
-
-			case 'd':
-				bogus_var3 = atof(optarg);
-				break;
-
-			case 'e':
-				bogus_var4 = atof(optarg);
 				break;
 
 			case 'x':
@@ -343,8 +413,6 @@ public:
 						"	-T [stepnr]	maximum number of time steps",
 						"",
 						"Misc options",
-						"	-a [float]	bogus variable a",
-						"	-b [float]	bogus variable a",
 						"	-v [int]	verbosity level",
 				};
 
@@ -353,8 +421,7 @@ public:
 					std::cerr << help_strings[i] << std::endl;
 
 				std::cerr << "Unknown option '" << (char)opt << "'" << std::endl;
-				exit(1);
-				break;
+				return false;
 			}
 		}
 
@@ -366,6 +433,8 @@ public:
 				std::cout << i_argv[i] << " ";
 			std::cout << std::endl;
 		}
+
+		return true;
 	}
 };
 

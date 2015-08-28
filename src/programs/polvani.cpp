@@ -1008,7 +1008,11 @@ int main(int i_argc, char *i_argv[])
 	std::cout << std::setprecision(14);
 	std::cerr << std::setprecision(14);
 
-	parameters.setup(i_argc, i_argv);
+	if (!parameters.setup(i_argc, i_argv))
+	{
+		return -1;
+	}
+
 
 	DataArray<2> local_h(parameters.res);
 	DataArray<2> local_u(parameters.res);

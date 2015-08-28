@@ -15,7 +15,10 @@
 int main(int i_argc, char *i_argv[])
 {
 	SimulationParameters parameters;
-	parameters.setup(i_argc, i_argv);
+	if (!parameters.setup(i_argc, i_argv))
+	{
+		return -1;
+	}
 
 	double max_error_threshold = 1e-9;
 	double max_error_threshold_machine = 1e-12;

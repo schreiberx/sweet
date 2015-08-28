@@ -52,7 +52,12 @@ int main(int i_argc, char *i_argv[])
 
 	SimulationParameters parameters;
 	parameters.use_spectral_diffs = 1;
-	parameters.setup(i_argc, i_argv);
+
+	if (!parameters.setup(i_argc, i_argv))
+	{
+		return -1;
+	}
+
 
 	if (parameters.use_spectral_diffs)
 		std::cout << "Using spectral diffs" << std::endl;

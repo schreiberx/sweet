@@ -189,9 +189,24 @@ public:
 			double *o_aspect_ratio
 	)
 	{
-		*o_dataArray = &h;
+		switch (parameters.vis_id)
+		{
+		case 0:
+			*o_dataArray = &h;
+			break;
+
+		case 1:
+			*o_dataArray = &u;
+			break;
+
+		case 2:
+			*o_dataArray = &v;
+			break;
+		}
 		*o_aspect_ratio = parameters.sim_domain_size[1] / parameters.sim_domain_size[0];
 	}
+
+
 
 	const char* vis_get_status_string()
 	{
@@ -225,14 +240,44 @@ public:
 
 int main(int i_argc, char *i_argv[])
 {
-	parameters.setup(i_argc, i_argv);
+	const char *bogus_var_names[] = {
+			"velocity-u",
+			"velocity-v",
+			nullptr
+	};
+
+	if (!parameters.setup(i_argc, i_argv, bogus_var_names))
+	{
+		std::cout << std::endl;
+		std::cout << "Program-specific options:" << std::endl;
+		std::cout << "	--velocity-u [advection velocity u]" << std::endl;
+		std::cout << "	--velocity-v [advection velocity v]" << std::endl;
+		return -1;
+	}
+
+	if (std::isinf(parameters.bogus_var0) || std::isinf(parameters.bogus_var1))
+	{
+		std::cout << "Both velocities have to be set, see parameters --velocity-u, --velocity-v" << std::endl;
+		return -1;
+	}
+
 
 	SimulationSWE *simulationSWE = new SimulationSWE;
 
 #if SWEET_GUI
 	VisSweet<SimulationSWE> visSweet(simulationSWE);
 #else
-//	simulationSWE->run();
+	simulationSWE->reset();
+	while (!simulationSWE->should_quit())
+	{
+		simulationSWE->run_timestep();
+
+		if (parameters.verbosity > 2)
+			std::cout << parameters.status_simulation_time << std::endl;
+
+		if (parameters.status_simulation_time > parameters.max_simulation_time)
+			break;
+	}
 #endif
 
 	delete simulationSWE;

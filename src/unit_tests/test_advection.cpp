@@ -577,7 +577,11 @@ int main(
 	std::cout << std::setprecision(14);
 	std::cerr << std::setprecision(14);
 
-	parameters.setup(i_argc, i_argv);
+	if (!parameters.setup(i_argc, i_argv))
+	{
+		return -1;
+	}
+
 
 	double u, v;
 	if (std::isinf(parameters.bogus_var0))

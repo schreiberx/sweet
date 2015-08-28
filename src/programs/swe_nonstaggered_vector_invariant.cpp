@@ -610,7 +610,11 @@ int main(int i_argc, char *i_argv[])
 	std::cout << std::setprecision(14);
 	std::cerr << std::setprecision(14);
 
-	parameters.setup(i_argc, i_argv);
+	if (!parameters.setup(i_argc, i_argv))
+	{
+		return -1;
+	}
+
 
 	SimulationSWECovariant *simulationSWE = new SimulationSWECovariant;
 

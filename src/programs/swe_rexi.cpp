@@ -149,7 +149,7 @@ public:
 			}
 		}
 
-		if (!std::isinf(parameters.bogus_var0))
+		if (parameters.bogus_var2 == 1)
 		{
 			double h = parameters.bogus_var0;
 			int M = parameters.bogus_var1;
@@ -389,32 +389,10 @@ public:
 
 	void run_timestep()
 	{
-
 		double dt;
-		if (!std::isinf(parameters.bogus_var0))
+		if (parameters.bogus_var2 == 0)
 		{
-			if (parameters.bogus_var0 < 0)
-			{
-				dt = -parameters.sim_CFL;
-				rexiSWE.run_timestep_direct_solution(
-						prog_h, prog_u, prog_v,
-						-parameters.sim_CFL,
-						op,
-						parameters
-				);
-			}
-			else
-			{
-				dt = -parameters.sim_CFL;
-				rexiSWE.run_timestep(
-						prog_h, prog_u, prog_v,
-						op,
-						parameters
-				);
-			}
-		}
-		else
-		{
+			// standard time stepping
 			timestepping.run_rk_timestep(
 					this,
 					&SimulationSWE::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
@@ -424,6 +402,32 @@ public:
 					parameters.timestepping_runge_kutta_order,
 					parameters.status_simulation_time
 				);
+		}
+		else if (parameters.bogus_var2 == 1)
+		{
+			// REXI time stepping
+			dt = -parameters.sim_CFL;
+			rexiSWE.run_timestep(
+					prog_h, prog_u, prog_v,
+					op,
+					parameters
+			);
+		}
+		else if (parameters.bogus_var2 == 2)
+		{
+			// Analytical solution
+			dt = -parameters.sim_CFL;
+			rexiSWE.run_timestep_direct_solution(
+					prog_h, prog_u, prog_v,
+					-parameters.sim_CFL,
+					op,
+					parameters
+			);
+		}
+		else
+		{
+			std::cerr << "Invalid time stepping method" << std::endl;
+			exit(1);
 		}
 
 		// provide information to parameters
@@ -647,7 +651,26 @@ int main(int i_argc, char *i_argv[])
 	std::cout << std::setprecision(14);
 	std::cerr << std::setprecision(14);
 
-	parameters.setup(i_argc, i_argv);
+	const char *bogus_var_names[] = {
+			"rexi-h",
+			"rexi-m",
+			"timestepping-mode",
+			nullptr
+	};
+
+	if (!parameters.setup(i_argc, i_argv, bogus_var_names))
+	{
+		std::cout << std::endl;
+		std::cout << "Special parameters:" << std::endl;
+		std::cout << "	--rexi-h [h-value]	h-sampling distance for REXI" << std::endl;
+		std::cout << "	--rexi-m [m-value]	M-value for REXI (related to number of poles)" << std::endl;
+		std::cout << "	--timestepping-mode [0/1/2]	Timestepping method to use" << std::endl;
+		std::cout << "	                            0: Finite-difference / Spectral time stepping" << std::endl;
+		std::cout << "	                            1: REXI" << std::endl;
+		std::cout << "	                            2: Direct solution in spectral space" << std::endl;
+		return -1;
+	}
+
 
 	SimulationSWE *simulationSWE = new SimulationSWE;
 
