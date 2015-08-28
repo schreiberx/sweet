@@ -294,13 +294,13 @@ public:
 		 */
 		if (parameters.sim_viscocity != 0)
 		{
-			o_u_t += (op.diff2_c_x(i_u) + op.diff2_c_x(i_v))*parameters.sim_viscocity;
-			o_v_t += (op.diff2_c_y(i_u) + op.diff2_c_y(i_v))*parameters.sim_viscocity;
+			o_u_t -= (op.diff2_c_x(i_u) + op.diff2_c_x(i_v))*parameters.sim_viscocity;
+			o_v_t -= (op.diff2_c_y(i_u) + op.diff2_c_y(i_v))*parameters.sim_viscocity;
 		}
 		if (parameters.sim_hyper_viscocity != 0)
 		{
-			o_u_t += (op.diff2_c_x(op.diff2_c_x(i_u)) + op.diff2_c_x(op.diff2_c_x(i_v)))*parameters.sim_hyper_viscocity;
-			o_v_t += (op.diff2_c_y(op.diff2_c_y(i_u)) + op.diff2_c_y(op.diff2_c_y(i_v)))*parameters.sim_hyper_viscocity;
+			o_u_t -= (op.diff2_c_x(op.diff2_c_x(i_u)) + op.diff2_c_x(op.diff2_c_x(i_v)))*parameters.sim_hyper_viscocity;
+			o_v_t -= (op.diff2_c_y(op.diff2_c_y(i_u)) + op.diff2_c_y(op.diff2_c_y(i_v)))*parameters.sim_hyper_viscocity;
 		}
 
 
