@@ -26,7 +26,8 @@ File structure:
 	package/	Used for creating tarballs to deploy to servers
 	python_mods/	Python helper files
 	src/		Source folder
-	src/examples	Example programs, including testing
+	src/programs	Example programs
+	src/unit_tests	Unit tests to validate SWEET
 	src/include/libgl	Some visualization helper tools
 	src/include/libmath	Some mathematical routines
 	src/include/sweet	DUDE! That's SWEET!
