@@ -51,8 +51,9 @@ public:
 
 public:
 	void setup(
-		double i_h,	///< sampling width
-		int i_M		///< approximation area
+		double i_h,				///< sampling width
+		int i_M,				///< approximation area
+		bool i_reduce_to_half = true	///< reduce the number of poles to half
 	)
 	{
 		GaussianApproximation ga;
@@ -108,6 +109,25 @@ public:
 			beta_re[n+N] *= i_h;
 		}
 #endif
+
+
+		if (i_reduce_to_half)
+		{
+			/**
+			 * reduce the computational amount to its half,
+			 * see understanding REXI in the documentation folder
+			 */
+			alpha.resize(N+1);
+			beta_re.resize(N+1);
+			beta_im.resize(N+1);
+
+			// N+1 contains the pole and we don't rescale this one by 2 but all the other ones
+			for (int i = 0; i < N; i++)
+			{
+				beta_re[i] *= 2.0;
+				beta_im[i] *= 2.0;
+			}
+		}
 	}
 
 
@@ -130,8 +150,10 @@ public:
 		double sum_re = 0;
 		double sum_im = 0;
 
+		std::size_t S = alpha.size();
+
 		// Split computation into real part of cos(i_x) and imaginary part sin(i_x)
-		for (int n = 0; n < 2*N+1; n++)
+		for (std::size_t n = 0; n < S; n++)
 		{
 			complex denom = (complex(0, i_x) + alpha[n]);
 			sum_re += (beta_re[n] / denom).real();
@@ -152,7 +174,9 @@ public:
 	{
 		double sum = 0;
 
-		for (int n = 0; n < 2*N+1; n++)
+		std::size_t S = alpha.size();
+
+		for (std::size_t n = 0; n < S; n++)
 			sum += (beta_re[n] / (complex(0, i_x) + alpha[n])).real();
 
 		return sum;

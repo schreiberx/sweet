@@ -225,5 +225,5 @@ int main(int i_argc, char *i_argv[])
 
 	delete testSpectral;
 
-	return 1;
+	return 0;
 }

@@ -19,6 +19,12 @@
 SimulationParameters parameters;
 
 
+double param_rexi_h;
+double param_rexi_m;
+bool param_rexi_half;
+int param_timestepping_mode;
+bool param_compute_error;
+
 
 class SimulationSWE
 {
@@ -26,6 +32,10 @@ public:
 	DataArray<2> prog_h, prog_u, prog_v;
 	DataArray<2> eta;
 	DataArray<2> tmp;
+
+
+	// initial values for comparison with analytical solution
+	DataArray<2> t0_prog_h, t0_prog_u, t0_prog_v;
 
 	Operators2D op;
 
@@ -36,6 +46,10 @@ public:
 	double benchmark_diff_h;
 	double benchmark_diff_u;
 	double benchmark_diff_v;
+
+	double benchmark_analytical_diff_h;
+	double benchmark_analytical_diff_u;
+	double benchmark_analytical_diff_v;
 
 	RexiSWE rexiSWE;
 
@@ -48,6 +62,10 @@ public:
 
 		eta(parameters.res),
 		tmp(parameters.res),
+
+		t0_prog_h(parameters.res),
+		t0_prog_u(parameters.res),
+		t0_prog_v(parameters.res),
 
 		op(parameters.res, parameters.sim_domain_size, parameters.use_spectral_diffs)
 	{
@@ -62,6 +80,10 @@ public:
 		benchmark_diff_h = 0;
 		benchmark_diff_u = 0;
 		benchmark_diff_v = 0;
+
+		benchmark_analytical_diff_h = 0;
+		benchmark_analytical_diff_u = 0;
+		benchmark_analytical_diff_v = 0;
 
 		parameters.status_timestep_nr = 0;
 		parameters.status_simulation_time = 0;
@@ -79,7 +101,8 @@ public:
 				std::cerr << "Coriolis frequency f is set to 0" << std::endl;
 				exit(1);
 			}
-			if (std::isinf(parameters.bogus_var0))
+
+			if (std::isinf(param_rexi_h))
 			{
 				std::cerr << "ERROR: Steady state scenario here only makes sense for linear solver only" << std::endl;
 //				exit(1);
@@ -149,15 +172,17 @@ public:
 			}
 		}
 
-		if (parameters.bogus_var2 == 1)
-		{
-			double h = parameters.bogus_var0;
-			int M = parameters.bogus_var1;
+		t0_prog_h = prog_h;
+		t0_prog_u = prog_u;
+		t0_prog_v = prog_v;
 
+
+		if (param_timestepping_mode == 1)
+		{
 			if (parameters.verbosity > 0)
 			{
 				std::cout << "REXI: Using REXI for time integration" << std::endl;
-				std::cout << "REXI: Using " << M << " poles" << std::endl;
+				std::cout << "REXI: Using " << param_rexi_m << " poles and sampling size " << param_rexi_h << std::endl;
 			}
 
 			if (parameters.sim_CFL >= 0)
@@ -167,8 +192,24 @@ public:
 			}
 
 			// use REXI
-			rexiSWE.setup(-parameters.sim_CFL, h, M, parameters.sim_f, parameters.res, parameters.sim_domain_size);
+			rexiSWE.setup(-parameters.sim_CFL, param_rexi_h, param_rexi_m, parameters.sim_f, parameters.res, parameters.sim_domain_size, param_rexi_half);
+
+			if (parameters.verbosity > 2)
+			{
+				std::cout << "ALPHA:" << std::endl;
+				for (std::size_t n = 0; n < rexiSWE.rexi.alpha.size(); n++)
+					std::cout << rexiSWE.rexi.alpha[n] << std::endl;
+
+
+				std::cout << "BETA:" << std::endl;
+				for (std::size_t n = 0; n < rexiSWE.rexi.beta_re.size(); n++)
+					std::cout << rexiSWE.rexi.beta_re[n] << std::endl;
+			}
 		}
+
+
+		if (parameters.gui_enabled)
+			timestep_output();
 	}
 
 
@@ -390,8 +431,11 @@ public:
 	void run_timestep()
 	{
 		double dt;
-		if (parameters.bogus_var2 == 0)
+		if (param_timestepping_mode == 0)
 		{
+			if (parameters.sim_CFL < 0)
+				parameters.timestepping_timestep_size = -parameters.sim_CFL;
+
 			// standard time stepping
 			timestepping.run_rk_timestep(
 					this,
@@ -403,7 +447,7 @@ public:
 					parameters.status_simulation_time
 				);
 		}
-		else if (parameters.bogus_var2 == 1)
+		else if (param_timestepping_mode == 1)
 		{
 			// REXI time stepping
 			dt = -parameters.sim_CFL;
@@ -413,7 +457,7 @@ public:
 					parameters
 			);
 		}
-		else if (parameters.bogus_var2 == 2)
+		else if (param_timestepping_mode == 2)
 		{
 			// Analytical solution
 			dt = -parameters.sim_CFL;
@@ -457,6 +501,9 @@ public:
 
 				if (parameters.setup_scenario == 2 || parameters.setup_scenario == 3 || parameters.setup_scenario == 4)
 					o_ostream << "\tDIFF_P\tDIFF_U\tDIFF_V";
+
+				if (param_compute_error)
+					o_ostream << "\tANAL_DIFF_P\tANAL_DIFF_U\tANAL_DIFF_V";
 
 				o_ostream << std::endl;
 			}
@@ -504,6 +551,23 @@ public:
 
 				benchmark_diff_v = (prog_v-tmp).reduce_norm1_quad() / (double)(parameters.res[0]*parameters.res[1]);
 				o_ostream << "\t" << benchmark_diff_v;
+			}
+
+			if (param_compute_error)
+			{
+				DataArray<2> t_h = t0_prog_h;
+				DataArray<2> t_u = t0_prog_u;
+				DataArray<2> t_v = t0_prog_v;
+
+				rexiSWE.run_timestep_direct_solution(t_h, t_u, t_v, parameters.status_simulation_time, op, parameters);
+
+				benchmark_analytical_diff_h = (t_h-prog_h).reduce_norm2_quad() / (double)(parameters.res[0]*parameters.res[1]);
+				benchmark_analytical_diff_u = (t_u-prog_u).reduce_norm2_quad() / (double)(parameters.res[0]*parameters.res[1]);
+				benchmark_analytical_diff_v = (t_v-prog_v).reduce_norm2_quad() / (double)(parameters.res[0]*parameters.res[1]);
+
+				o_ostream << "\t" << benchmark_analytical_diff_h;
+				o_ostream << "\t" << benchmark_analytical_diff_u;
+				o_ostream << "\t" << benchmark_analytical_diff_v;
 			}
 
 			o_ostream << std::endl;
@@ -559,31 +623,42 @@ public:
 			double *o_aspect_ratio
 	)
 	{
+#if 0
 		int id = parameters.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
 		*o_dataArray = vis_arrays[id].data;
 		*o_aspect_ratio = parameters.sim_domain_size[1] / parameters.sim_domain_size[0];
-#if 0
-		DataArray<2> &o = (DataArray<2> &)*vis_arrays[id].data;
-		o.spec_setAll(0, 0);
-		o.spec_set(0, 0, 1, 0);
+#else
+		DataArray<2> t_h = t0_prog_h;
+		DataArray<2> t_u = t0_prog_u;
+		DataArray<2> t_v = t0_prog_v;
 
-		if (id == 0)
+		rexiSWE.run_timestep_direct_solution(t_h, t_u, t_v, parameters.status_simulation_time, op, parameters);
+
+		switch(parameters.vis_id)
 		{
-			o.spec_set(0, 0, 1, 0);
+		case 0:
+			tmp = prog_h;
+			break;
+		case 1:
+			tmp = t_h;
+			break;
+		case 2:
+			tmp = prog_u;
+			break;
+		case 3:
+			tmp = t_u;
+			break;
+		case 4:
+			tmp = prog_v;
+			break;
+		case 5:
+			tmp = t_v;
+			break;
 		}
-		else if (id == 1)
-		{
-			o.spec_set(0, 0, 1, 1);
-		}
-		else if (id == 2)
-		{
-			o.spec_set(0, 1, 1, 0);
-		}
-		else if (id == 3)
-		{
-			o.spec_set(0, 1, 1, 1);
-//			o.spec_set(0, o.resolution_spec[0]-1, 1, 0);
-		}
+
+
+		*o_dataArray = &tmp;
+		*o_aspect_ratio = parameters.sim_domain_size[1] / parameters.sim_domain_size[0];
 #endif
 	}
 
@@ -654,23 +729,43 @@ int main(int i_argc, char *i_argv[])
 	const char *bogus_var_names[] = {
 			"rexi-h",
 			"rexi-m",
+			"rexi-half",
 			"timestepping-mode",
+			"compute-error",
 			nullptr
 	};
+
+
+	parameters.bogus_var0 = 0.1;
+	parameters.bogus_var1 = 200;
+	parameters.bogus_var2 = 1;	// param_rexi_half
+	parameters.bogus_var3 = 0;
+	parameters.bogus_var4 = 0;
 
 	if (!parameters.setup(i_argc, i_argv, bogus_var_names))
 	{
 		std::cout << std::endl;
 		std::cout << "Special parameters:" << std::endl;
 		std::cout << "	--rexi-h [h-value]	h-sampling distance for REXI" << std::endl;
+		std::cout << "" << std::endl;
 		std::cout << "	--rexi-m [m-value]	M-value for REXI (related to number of poles)" << std::endl;
+		std::cout << "" << std::endl;
+		std::cout << "	--rexi-half [0/1]	Reduce rexi computations to its half" << std::endl;
+		std::cout << "" << std::endl;
 		std::cout << "	--timestepping-mode [0/1/2]	Timestepping method to use" << std::endl;
 		std::cout << "	                            0: Finite-difference / Spectral time stepping" << std::endl;
 		std::cout << "	                            1: REXI" << std::endl;
 		std::cout << "	                            2: Direct solution in spectral space" << std::endl;
+		std::cout << "" << std::endl;
+		std::cout << "	--compute-error [0/1]	Compute the errors" << std::endl;
 		return -1;
 	}
 
+	param_rexi_h = parameters.bogus_var0;
+	param_rexi_m = parameters.bogus_var1;
+	param_rexi_half = parameters.bogus_var2;
+	param_timestepping_mode = parameters.bogus_var3;
+	param_compute_error = parameters.bogus_var4;
 
 	SimulationSWE *simulationSWE = new SimulationSWE;
 
@@ -678,75 +773,86 @@ int main(int i_argc, char *i_argv[])
 	buf << std::setprecision(14);
 
 #if SWEET_GUI
-	VisSweet<SimulationSWE> visSweet(simulationSWE);
-#else
-	simulationSWE->reset();
-
-	Stopwatch time;
-	time.reset();
-
-	double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
-
-	if (parameters.verbosity > 1)
+	if (parameters.gui_enabled)
 	{
-		simulationSWE->update_diagnostics();
-		diagnostics_energy_start = parameters.diagnostics_energy;
-		diagnostics_mass_start = parameters.diagnostics_mass;
-		diagnostics_potential_entrophy_start = parameters.diagnostics_potential_entrophy;
+		VisSweet<SimulationSWE> visSweet(simulationSWE);
 	}
+	else
+#endif
 
-	while(true)
 	{
+		simulationSWE->reset();
+
+		Stopwatch time;
+		time.reset();
+
+		double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
+
 		if (parameters.verbosity > 1)
 		{
-			simulationSWE->timestep_output(buf);
-
-			std::string output = buf.str();
-			buf.str("");
-
-			std::cout << output;
-
-			if (parameters.verbosity > 2)
-				std::cerr << output;
+			simulationSWE->update_diagnostics();
+			diagnostics_energy_start = parameters.diagnostics_energy;
+			diagnostics_mass_start = parameters.diagnostics_mass;
+			diagnostics_potential_entrophy_start = parameters.diagnostics_potential_entrophy;
 		}
 
-		if (simulationSWE->should_quit())
-			break;
-
-		simulationSWE->run_timestep();
-
-		if (simulationSWE->instability_detected())
+		while(true)
 		{
-			std::cout << "INSTABILITY DETECTED" << std::endl;
-			break;
+			if (parameters.verbosity > 1)
+			{
+				simulationSWE->timestep_output(buf);
+
+				std::string output = buf.str();
+				buf.str("");
+
+				std::cout << output;
+
+				if (parameters.verbosity > 2)
+					std::cerr << output;
+			}
+
+			if (simulationSWE->should_quit())
+				break;
+
+			simulationSWE->run_timestep();
+
+			if (simulationSWE->instability_detected())
+			{
+				std::cout << "INSTABILITY DETECTED" << std::endl;
+				break;
+			}
+		}
+
+		time.stop();
+
+		double seconds = time();
+
+		std::cout << "Simulation time: " << seconds << " seconds" << std::endl;
+		std::cout << "Time per time step: " << seconds/(double)parameters.status_timestep_nr << " sec/ts" << std::endl;
+
+		if (parameters.verbosity > 1)
+		{
+			std::cout << "DIAGNOSTICS ENERGY DIFF:\t" << std::abs((parameters.diagnostics_energy-diagnostics_energy_start)/diagnostics_energy_start) << std::endl;
+			std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs((parameters.diagnostics_mass-diagnostics_mass_start)/diagnostics_mass_start) << std::endl;
+			std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs((parameters.diagnostics_potential_entrophy-diagnostics_potential_entrophy_start)/diagnostics_potential_entrophy_start) << std::endl;
+
+			if (parameters.setup_scenario == 2 || parameters.setup_scenario == 3 || parameters.setup_scenario == 4)
+			{
+				std::cout << "DIAGNOSTICS BENCHMARK DIFF H:\t" << simulationSWE->benchmark_diff_h << std::endl;
+				std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationSWE->benchmark_diff_u << std::endl;
+				std::cout << "DIAGNOSTICS BENCHMARK DIFF V:\t" << simulationSWE->benchmark_diff_v << std::endl;
+			}
+
+			if (param_compute_error)
+			{
+				std::cout << "DIAGNOSTICS ANALYTICAL DIFF H:\t" << simulationSWE->benchmark_analytical_diff_h << std::endl;
+				std::cout << "DIAGNOSTICS ANALYTICAL DIFF U:\t" << simulationSWE->benchmark_analytical_diff_u << std::endl;
+				std::cout << "DIAGNOSTICS ANALYTICAL DIFF V:\t" << simulationSWE->benchmark_analytical_diff_v << std::endl;
+			}
 		}
 	}
-
-	time.stop();
-
-	double seconds = time();
-
-	std::cout << "Simulation time: " << seconds << " seconds" << std::endl;
-	std::cout << "Time per time step: " << seconds/(double)parameters.status_timestep_nr << " sec/ts" << std::endl;
-
-
-
-	if (parameters.verbosity > 1)
-	{
-		std::cout << "DIAGNOSTICS ENERGY DIFF:\t" << std::abs((parameters.diagnostics_energy-diagnostics_energy_start)/diagnostics_energy_start) << std::endl;
-		std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs((parameters.diagnostics_mass-diagnostics_mass_start)/diagnostics_mass_start) << std::endl;
-		std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs((parameters.diagnostics_potential_entrophy-diagnostics_potential_entrophy_start)/diagnostics_potential_entrophy_start) << std::endl;
-
-		if (parameters.setup_scenario == 2 || parameters.setup_scenario == 3 || parameters.setup_scenario == 4)
-		{
-			std::cout << "DIAGNOSTICS BENCHMARK DIFF H:\t" << simulationSWE->benchmark_diff_h << std::endl;
-			std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationSWE->benchmark_diff_u << std::endl;
-			std::cout << "DIAGNOSTICS BENCHMARK DIFF V:\t" << simulationSWE->benchmark_diff_v << std::endl;
-		}
-	}
-#endif
 
 	delete simulationSWE;
 
-	return 1;
+	return 0;
 }

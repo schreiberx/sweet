@@ -406,7 +406,7 @@ public:
 						"	-W [0/1]	use up- and downwinding",
 						"	-F [0/1]	use leapfrog-like algorithm",
 						"	-R [1-RKn]	order of Runge-Kutta method",
-						"	-C [cfl]	CFL condition",
+						"	-C [cfl]	CFL condition, use negative value for fixed time step size",
 						"",
 						"Control:",
 						"	-t [time]	maximum simulation time",

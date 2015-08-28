@@ -611,5 +611,5 @@ int main(int i_argc, char *i_argv[])
 
 	delete simulationSWE;
 
-	return 1;
+	return 0;
 }

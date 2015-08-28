@@ -34,7 +34,6 @@ class RexiSWE
 	int M;
 	double f;
 
-	REXI rexi;
 
 	Complex2DArrayFFT op_diff_c_x, op_diff_c_y;
 	Complex2DArrayFFT op_diff2_c_x, op_diff2_c_y;
@@ -43,6 +42,8 @@ class RexiSWE
 	Complex2DArrayFFT u0;
 	Complex2DArrayFFT v0;
 
+public:
+	REXI rexi;
 
 public:
 	RexiSWE()
@@ -59,17 +60,18 @@ public:
 			int i_M,		///< number of sampling points
 			double i_f,		///< Coriolis force
 			std::size_t *i_resolution,		///< resolution of domain
-			const double *i_domain_size		///< size of domain
+			const double *i_domain_size,		///< size of domain
+			bool i_rexi_half = true	///< use half-pole reduction
 	)
 	{
 		M = i_M;
 		h = i_h;
 		tau = i_tau;
-		f = i_f;
+		f = -i_f;
 
 //		std::cout << "REXI setup: M=" << M << ", h=" << h << ", tau=" << tau << ", f=" << f << std::endl;
 
-		rexi.setup(h, M);
+		rexi.setup(h, M, i_rexi_half);
 
 		if (op_diff_c_x.data == nullptr)
 		{
@@ -104,9 +106,17 @@ public:
 		DataArray<2> &io_v,
 
 		Operators2D &op,
-		const SimulationParameters &i_parameters
+		const SimulationParameters &i_parameters,
+		bool i_use_half_reduction = false			///< reduce the REXI computations to its half
 	)
 	{
+		/*
+		 * TODO: we have to flip the signs for the velocities to match it with the analytical solution
+		 * TODO: figure out, why this is required
+		 */
+		io_u *= -1.0;
+		io_v *= -1.0;
+
 		double eta_bar = i_parameters.setup_h0;
 		double g = i_parameters.sim_g;
 
@@ -116,39 +126,20 @@ public:
 
 		// convert to spectral space
 		// scale with inverse of tau
-		eta0 = eta0.toSpec()*std::complex<double>(1.0/tau, 0);
-		u0 = u0.toSpec()*std::complex<double>(1.0/tau, 0);
-		v0 = v0.toSpec()*std::complex<double>(1.0/tau, 0);
+		eta0 = eta0.toSpec()*(1.0/tau);
+		u0 = u0.toSpec()*(1.0/tau);
+		v0 = v0.toSpec()*(1.0/tau);
 
 		io_h.setAll(0);
 		io_u.setAll(0);
 		io_v.setAll(0);
 
-#define USE_REXI_HALF	0
 
 		// TODO: compute only half of it
 		std::size_t N = rexi.alpha.size();
 
-#if USE_REXI_HALF
-		N = N >> 1;
-#endif
-//		for (std::size_t n = 0; n < N; n++)
-//			std::cout << " + alpha " << n << ": " << rexi.alpha[n] << std::endl;
-
-//		for (std::size_t n = 0; n < N; n++)
-//			std::cout << " + beta " << n << ": " << rexi.beta_re[n] << std::endl;
-
 		for (std::size_t n = 0; n < N; n++)
 		{
-#if USE_REXI_HALF
-			if (n == N-1)
-			{
-				// This is the last (middle) pole we process.
-				// First, we have to merge the other already computed data
-				// with the equation
-			}
-#endif
-
 			// load alpha (a) and scale by inverse of tau
 			complex alpha = rexi.alpha[n]/tau;
 
@@ -186,6 +177,12 @@ public:
 			io_u += (u1_cart*(rexi.beta_re[n])).getRealWithDataArray();
 			io_v += (v1_cart*(rexi.beta_re[n])).getRealWithDataArray();
 		}
+
+		/*
+		 * TODO: here we have to flip the sign again, see start of this function
+		 */
+		io_u *= -1.0;
+		io_v *= -1.0;
 	}
 
 
@@ -306,8 +303,6 @@ public:
 				}
 				else
 				{
-					double wg = std::sqrt(f*f);
-
 					eigenvalues[0] = 0.0;
 					eigenvalues[1] = -1.0*f;
 					eigenvalues[2] = f;
@@ -323,12 +318,11 @@ public:
 					eigenvectors[2][2] = 0.707106781186548;
 				}
 
-
-
-
 				//////////////////////////////////////
 				// GENERATED CODE END
 				//////////////////////////////////////
+
+
 
 				if (f == 0)
 				{
@@ -337,40 +331,40 @@ public:
 					 */
 					if (k0 != 0 || k1 != 0)
 					{
-					 	double K2 = k0*k0+k1*k1;
-					 	double w = std::sqrt(H0*g*k0*k0 + H0*g*k1*k1 + f*f);
+						double K2 = K2;
+//						double w = std::sqrt(4.0*M_PI*M_PI*H0*g*k0*k0 + 4.0*M_PI*M_PI*H0*g*k1*k1 + f*f);
 
-					 	eigenvalues[0] = 0;
-					 	eigenvalues[1] = -sqrt(H0)*sqrt(K2)*sqrt((double)g);
-					 	eigenvalues[2] = sqrt(H0)*sqrt(K2)*sqrt((double)g);
+						eigenvalues[0] = 0.0;
+						eigenvalues[1] = -2.0*M_PI*sqrt(H0)*sqrt((double)g)*sqrt(k0*k0 + k1*k1);
+						eigenvalues[2] = 2.0*M_PI*sqrt(H0)*sqrt((double)g)*sqrt(k0*k0 + k1*k1);
 
-					 	eigenvectors[0][0] = 0;
-					 	eigenvectors[0][1] = -k1/sqrt(K2);
-					 	eigenvectors[0][2] = k0/sqrt(K2);
-					 	eigenvectors[1][0] = -sqrt(H0)*sqrt(K2)/sqrt(H0*K2 + g*k0*k0 + g*k1*k1);
-					 	eigenvectors[1][1] = sqrt((double)g)*k0/sqrt(H0*K2 + g*k0*k0 + g*k1*k1);
-					 	eigenvectors[1][2] = sqrt((double)g)*k1/sqrt(H0*K2 + g*k0*k0 + g*k1*k1);
-					 	eigenvectors[2][0] = sqrt(H0)*sqrt(K2)/sqrt(H0*K2 + g*k0*k0 + g*k1*k1);
-					 	eigenvectors[2][1] = sqrt((double)g)*k0/sqrt(H0*K2 + g*k0*k0 + g*k1*k1);
-					 	eigenvectors[2][2] = sqrt((double)g)*k1/sqrt(H0*K2 + g*k0*k0 + g*k1*k1);
-					 }
-					 else
-					 {
+						eigenvectors[0][0] = 0.0;
+						eigenvectors[0][1] = -1.0*k1/sqrt(k0*k0 + k1*k1);
+						eigenvectors[0][2] = k0/sqrt(k0*k0 + k1*k1);
+						eigenvectors[1][0] = -1.0*sqrt(H0)*sqrt(k0*k0 + k1*k1)/sqrt(H0*(k0*k0 + k1*k1) + g*k0*k0 + g*k1*k1);
+						eigenvectors[1][1] = sqrt((double)g)*k0/sqrt(H0*(k0*k0 + k1*k1) + g*k0*k0 + g*k1*k1);
+						eigenvectors[1][2] = sqrt((double)g)*k1/sqrt(H0*(k0*k0 + k1*k1) + g*k0*k0 + g*k1*k1);
+						eigenvectors[2][0] = sqrt(H0)*sqrt(k0*k0 + k1*k1)/sqrt(H0*(k0*k0 + k1*k1) + g*k0*k0 + g*k1*k1);
+						eigenvectors[2][1] = sqrt((double)g)*k0/sqrt(H0*(k0*k0 + k1*k1) + g*k0*k0 + g*k1*k1);
+						eigenvectors[2][2] = sqrt((double)g)*k1/sqrt(H0*(k0*k0 + k1*k1) + g*k0*k0 + g*k1*k1);
+					}
+					else
+					{
 
-					 	eigenvalues[0] = 0;
-					 	eigenvalues[1] = 0;
-					 	eigenvalues[2] = 0;
+						eigenvalues[0] = 0.0;
+						eigenvalues[1] = 0.0;
+						eigenvalues[2] = 0.0;
 
-					 	eigenvectors[0][0] = 1;
-					 	eigenvectors[0][1] = 0;
-					 	eigenvectors[0][2] = 0;
-					 	eigenvectors[1][0] = 0;
-					 	eigenvectors[1][1] = 1;
-					 	eigenvectors[1][2] = 0;
-					 	eigenvectors[2][0] = 0;
-					 	eigenvectors[2][1] = 0;
-					 	eigenvectors[2][2] = 1;
-					 }
+						eigenvectors[0][0] = 1.00000000000000;
+						eigenvectors[0][1] = 0.0;
+						eigenvectors[0][2] = 0.0;
+						eigenvectors[1][0] = 0.0;
+						eigenvectors[1][1] = 1.00000000000000;
+						eigenvectors[1][2] = 0.0;
+						eigenvectors[2][0] = 0.0;
+						eigenvectors[2][1] = 0.0;
+						eigenvectors[2][2] = 1.00000000000000;
+					}
 				}
 
 				std::complex<double> eigenvectors_inv[3][3];
