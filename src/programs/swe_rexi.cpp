@@ -47,9 +47,13 @@ public:
 	double benchmark_diff_u;
 	double benchmark_diff_v;
 
-	double benchmark_analytical_diff_h;
-	double benchmark_analytical_diff_u;
-	double benchmark_analytical_diff_v;
+	double benchmark_analytical_error_rms_h;
+	double benchmark_analytical_error_rms_u;
+	double benchmark_analytical_error_rms_v;
+
+	double benchmark_analytical_error_maxabs_h;
+	double benchmark_analytical_error_maxabs_u;
+	double benchmark_analytical_error_maxabs_v;
 
 	RexiSWE rexiSWE;
 
@@ -81,9 +85,13 @@ public:
 		benchmark_diff_u = 0;
 		benchmark_diff_v = 0;
 
-		benchmark_analytical_diff_h = 0;
-		benchmark_analytical_diff_u = 0;
-		benchmark_analytical_diff_v = 0;
+		benchmark_analytical_error_rms_h = 0;
+		benchmark_analytical_error_rms_u = 0;
+		benchmark_analytical_error_rms_v = 0;
+
+		benchmark_analytical_error_maxabs_h = 0;
+		benchmark_analytical_error_maxabs_u = 0;
+		benchmark_analytical_error_maxabs_v = 0;
 
 		parameters.status_timestep_nr = 0;
 		parameters.status_simulation_time = 0;
@@ -379,10 +387,10 @@ public:
 					);
 
 				if (parameters.sim_viscocity != 0)
-					o_h_t += (op.diff2_c_x(i_h) + op.diff2_c_y(i_h))*parameters.sim_viscocity;
+					o_h_t -= (op.diff2_c_x(i_h) + op.diff2_c_y(i_h))*parameters.sim_viscocity;
 
 				if (parameters.sim_hyper_viscocity != 0)
-					o_h_t += (op.diff2_c_x(op.diff2_c_x(i_h)) + op.diff2_c_y(op.diff2_c_y(i_h)))*parameters.sim_hyper_viscocity;
+					o_h_t -= (op.diff2_c_x(op.diff2_c_x(i_h)) + op.diff2_c_y(op.diff2_c_y(i_h)))*parameters.sim_hyper_viscocity;
 			}
 		}
 		else
@@ -419,10 +427,10 @@ public:
 		}
 
 		if (parameters.sim_potential_viscocity != 0)
-			o_h_t += (op.diff2_c_x(i_h) + op.diff2_c_y(i_h))*parameters.sim_potential_viscocity;
+			o_h_t -= (op.diff2_c_x(i_h) + op.diff2_c_y(i_h))*parameters.sim_potential_viscocity;
 
 		if (parameters.sim_potential_hyper_viscocity != 0)
-			o_h_t += (op.diff2_c_x(op.diff2_c_x(i_h)) + op.diff2_c_y(op.diff2_c_y(i_h)))*parameters.sim_potential_hyper_viscocity;
+			o_h_t -= (op.diff2_c_x(op.diff2_c_x(i_h)) + op.diff2_c_y(op.diff2_c_y(i_h)))*parameters.sim_potential_hyper_viscocity;
 
 	}
 
@@ -555,23 +563,40 @@ public:
 
 			if (param_compute_error)
 			{
-				DataArray<2> t_h = t0_prog_h;
-				DataArray<2> t_u = t0_prog_u;
-				DataArray<2> t_v = t0_prog_v;
+				compute_errors();
 
-				rexiSWE.run_timestep_direct_solution(t_h, t_u, t_v, parameters.status_simulation_time, op, parameters);
+				o_ostream << "\t" << benchmark_analytical_error_rms_h;
+				o_ostream << "\t" << benchmark_analytical_error_rms_u;
+				o_ostream << "\t" << benchmark_analytical_error_rms_v;
 
-				benchmark_analytical_diff_h = (t_h-prog_h).reduce_norm2_quad() / (double)(parameters.res[0]*parameters.res[1]);
-				benchmark_analytical_diff_u = (t_u-prog_u).reduce_norm2_quad() / (double)(parameters.res[0]*parameters.res[1]);
-				benchmark_analytical_diff_v = (t_v-prog_v).reduce_norm2_quad() / (double)(parameters.res[0]*parameters.res[1]);
-
-				o_ostream << "\t" << benchmark_analytical_diff_h;
-				o_ostream << "\t" << benchmark_analytical_diff_u;
-				o_ostream << "\t" << benchmark_analytical_diff_v;
+				o_ostream << "\t" << benchmark_analytical_error_maxabs_h;
+				o_ostream << "\t" << benchmark_analytical_error_maxabs_u;
+				o_ostream << "\t" << benchmark_analytical_error_maxabs_v;
 			}
 
 			o_ostream << std::endl;
 		}
+	}
+
+	void compute_errors()
+	{
+		DataArray<2> t_h = t0_prog_h;
+		DataArray<2> t_u = t0_prog_u;
+		DataArray<2> t_v = t0_prog_v;
+
+		rexiSWE.run_timestep_direct_solution(t_h, t_u, t_v, parameters.status_simulation_time, op, parameters);
+
+		benchmark_analytical_error_rms_h = (t_h-prog_h).reduce_rms_quad();
+		benchmark_analytical_error_rms_u = (t_u-prog_u).reduce_rms_quad();
+		benchmark_analytical_error_rms_v = (t_v-prog_v).reduce_rms_quad();
+
+		benchmark_analytical_error_maxabs_h = (t_h-prog_h).reduce_maxAbs();
+		benchmark_analytical_error_maxabs_u = (t_u-prog_u).reduce_maxAbs();
+		benchmark_analytical_error_maxabs_v = (t_v-prog_v).reduce_maxAbs();
+
+		benchmark_analytical_error_maxabs_h = (t_h-prog_h).reduce_norm2_quad()/(double)(parameters.res[0]*parameters.res[1]);
+		benchmark_analytical_error_maxabs_u = (t_u-prog_u).reduce_norm2_quad()/(double)(parameters.res[0]*parameters.res[1]);
+		benchmark_analytical_error_maxabs_v = (t_v-prog_v).reduce_norm2_quad()/(double)(parameters.res[0]*parameters.res[1]);
 	}
 
 
@@ -842,13 +867,19 @@ int main(int i_argc, char *i_argv[])
 				std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationSWE->benchmark_diff_u << std::endl;
 				std::cout << "DIAGNOSTICS BENCHMARK DIFF V:\t" << simulationSWE->benchmark_diff_v << std::endl;
 			}
+		}
 
-			if (param_compute_error)
-			{
-				std::cout << "DIAGNOSTICS ANALYTICAL DIFF H:\t" << simulationSWE->benchmark_analytical_diff_h << std::endl;
-				std::cout << "DIAGNOSTICS ANALYTICAL DIFF U:\t" << simulationSWE->benchmark_analytical_diff_u << std::endl;
-				std::cout << "DIAGNOSTICS ANALYTICAL DIFF V:\t" << simulationSWE->benchmark_analytical_diff_v << std::endl;
-			}
+		if (param_compute_error)
+		{
+			simulationSWE->compute_errors();
+
+			std::cout << "DIAGNOSTICS ANALYTICAL RMS H:\t" << simulationSWE->benchmark_analytical_error_rms_h << std::endl;
+			std::cout << "DIAGNOSTICS ANALYTICAL RMS U:\t" << simulationSWE->benchmark_analytical_error_rms_u << std::endl;
+			std::cout << "DIAGNOSTICS ANALYTICAL RMS V:\t" << simulationSWE->benchmark_analytical_error_rms_v << std::endl;
+
+			std::cout << "DIAGNOSTICS ANALYTICAL MAXABS H:\t" << simulationSWE->benchmark_analytical_error_maxabs_h << std::endl;
+			std::cout << "DIAGNOSTICS ANALYTICAL MAXABS U:\t" << simulationSWE->benchmark_analytical_error_maxabs_u << std::endl;
+			std::cout << "DIAGNOSTICS ANALYTICAL MAXABS V:\t" << simulationSWE->benchmark_analytical_error_maxabs_v << std::endl;
 		}
 	}
 

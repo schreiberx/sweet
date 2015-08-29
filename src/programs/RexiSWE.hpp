@@ -261,7 +261,7 @@ public:
 					k1 = (double)ik1;
 				else
 					k1 = (double)((int)ik1-(int)i_h.resolution[1]);
-#if 1
+
 				/*
 				 * dimensionful formulation
 				 * see doc/swe_solution_for_L
@@ -269,40 +269,16 @@ public:
 
 				double H0 = eta_bar;
 
-				if (s0 != 1 || s1 != 1)
-				{
-					std::cerr << "Domain size != 1 not supported yet!" << std::endl;
-					exit(1);
-				}
-
 				//////////////////////////////////////
 				// GENERATED CODE START
 				//////////////////////////////////////
 				std::complex<double> eigenvalues[3];
 				std::complex<double> eigenvectors[3][3];
 
-				if (k0 != 0 || k1 != 0)
+				if (k0 == 0 && k1 == 0)
 				{
-					double K2 = K2;
-					double w = std::sqrt(4.0*M_PI*M_PI*H0*g*k0*k0 + 4.0*M_PI*M_PI*H0*g*k1*k1 + f*f);
+					complex wg = std::sqrt((complex)f*f*s0*s0*s1*s1);
 
-					double wg = std::sqrt(f*f + 4.0*M_PI*M_PI*g*g*k0*k0 + 4.0*M_PI*M_PI*g*g*k1*k1);
-					eigenvalues[0] = 0.0;
-					eigenvalues[1] = -1.0*w;
-					eigenvalues[2] = w;
-
-					eigenvectors[0][0] = -1.0*I*f*1.0/wg;
-					eigenvectors[0][1] = -2.0*M_PI*g*k1*1.0/wg;
-					eigenvectors[0][2] = 2.0*M_PI*g*k0*1.0/wg;
-					eigenvectors[1][0] = 2.0*M_PI*H0*(I*k0*(4.0*I*M_PI*M_PI*H0*g*k0*k1 + f*w) - 1.0*k1*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f))/sqrt(4.0*M_PI*M_PI*H0*H0*(I*k0*(4.0*I*M_PI*M_PI*H0*g*k0*k1 - 1.0*f*w) - 1.0*k1*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f))*(I*k0*(4.0*I*M_PI*M_PI*H0*g*k0*k1 + f*w) - 1.0*k1*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f)) + w*w*pow(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f, 2.0) + w*w*(4.0*M_PI*M_PI*H0*g*k0*k1 - 1.0*I*f*w)*(4.0*M_PI*M_PI*H0*g*k0*k1 + I*f*w));
-					eigenvectors[1][1] = w*(4.0*M_PI*M_PI*H0*g*k0*k1 - 1.0*I*f*w)/sqrt(4.0*M_PI*M_PI*H0*H0*(I*k0*(4.0*I*M_PI*M_PI*H0*g*k0*k1 - 1.0*f*w) - 1.0*k1*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f))*(I*k0*(4.0*I*M_PI*M_PI*H0*g*k0*k1 + f*w) - 1.0*k1*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f)) + w*w*pow(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f, 2.0) + w*w*(4.0*M_PI*M_PI*H0*g*k0*k1 - 1.0*I*f*w)*(4.0*M_PI*M_PI*H0*g*k0*k1 + I*f*w));
-					eigenvectors[1][2] = w*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f)/sqrt(4.0*M_PI*M_PI*H0*H0*(I*k0*(4.0*I*M_PI*M_PI*H0*g*k0*k1 - 1.0*f*w) - 1.0*k1*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f))*(I*k0*(4.0*I*M_PI*M_PI*H0*g*k0*k1 + f*w) - 1.0*k1*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f)) + w*w*pow(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f, 2.0) + w*w*(4.0*M_PI*M_PI*H0*g*k0*k1 - 1.0*I*f*w)*(4.0*M_PI*M_PI*H0*g*k0*k1 + I*f*w));
-					eigenvectors[2][0] = -2.0*M_PI*H0*(I*k0*(4.0*I*M_PI*M_PI*H0*g*k0*k1 - 1.0*f*w) - 1.0*k1*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f))/sqrt(4.0*M_PI*M_PI*H0*H0*(I*k0*(4.0*I*M_PI*M_PI*H0*g*k0*k1 - 1.0*f*w) - 1.0*k1*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f))*(I*k0*(4.0*I*M_PI*M_PI*H0*g*k0*k1 + f*w) - 1.0*k1*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f)) + w*w*pow(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f, 2.0) + w*w*(4.0*M_PI*M_PI*H0*g*k0*k1 - 1.0*I*f*w)*(4.0*M_PI*M_PI*H0*g*k0*k1 + I*f*w));
-					eigenvectors[2][1] = w*(4.0*M_PI*M_PI*H0*g*k0*k1 + I*f*w)/sqrt(4.0*M_PI*M_PI*H0*H0*(I*k0*(4.0*I*M_PI*M_PI*H0*g*k0*k1 - 1.0*f*w) - 1.0*k1*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f))*(I*k0*(4.0*I*M_PI*M_PI*H0*g*k0*k1 + f*w) - 1.0*k1*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f)) + w*w*pow(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f, 2.0) + w*w*(4.0*M_PI*M_PI*H0*g*k0*k1 - 1.0*I*f*w)*(4.0*M_PI*M_PI*H0*g*k0*k1 + I*f*w));
-					eigenvectors[2][2] = w*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f)/sqrt(4.0*M_PI*M_PI*H0*H0*(I*k0*(4.0*I*M_PI*M_PI*H0*g*k0*k1 - 1.0*f*w) - 1.0*k1*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f))*(I*k0*(4.0*I*M_PI*M_PI*H0*g*k0*k1 + f*w) - 1.0*k1*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f)) + w*w*pow(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f, 2.0) + w*w*(4.0*M_PI*M_PI*H0*g*k0*k1 - 1.0*I*f*w)*(4.0*M_PI*M_PI*H0*g*k0*k1 + I*f*w));
-				}
-				else
-				{
 					eigenvalues[0] = 0.0;
 					eigenvalues[1] = -1.0*f;
 					eigenvalues[2] = f;
@@ -311,17 +287,75 @@ public:
 					eigenvectors[0][1] = 0.0;
 					eigenvectors[0][2] = 0.0;
 					eigenvectors[1][0] = 0.0;
-					eigenvectors[1][1] = -0.707106781186548*I;
-					eigenvectors[1][2] = 0.707106781186548;
+					eigenvectors[1][1] = -1.0*I;
+					eigenvectors[1][2] = 1.00000000000000;
 					eigenvectors[2][0] = 0.0;
-					eigenvectors[2][1] = 0.707106781186548*I;
-					eigenvectors[2][2] = 0.707106781186548;
+					eigenvectors[2][1] = I;
+					eigenvectors[2][2] = 1.00000000000000;
 				}
+				else if (k0 == 0)
+				{
+					complex wg = std::sqrt((complex)s0*s0*(f*f*s1*s1 + 4.0*M_PI*M_PI*g*g*k1*k1));
+
+					eigenvalues[0] = 0.0;
+					eigenvalues[1] = -1.0*1.0/s1*std::sqrt((complex)4.0*M_PI*M_PI*H0*g*k1*k1 + f*f*s1*s1);
+					eigenvalues[2] = -1.0*I*1.0/s1*std::sqrt((complex)-4.0*M_PI*M_PI*H0*g*k1*k1 - 1.0*f*f*s1*s1);
+
+					eigenvectors[0][0] = (1.0/2.0)*I*1.0/M_PI*f*1.0/g*1.0/k1*s1;
+					eigenvectors[0][1] = 1.00000000000000;
+					eigenvectors[0][2] = 0.0;
+					eigenvectors[1][0] = -2.0*M_PI*H0*k1/std::sqrt((complex)4.0*M_PI*M_PI*H0*g*k1*k1 + f*f*s1*s1);
+					eigenvectors[1][1] = -1.0*I*f*s1/std::sqrt((complex)4.0*M_PI*M_PI*H0*g*k1*k1 + f*f*s1*s1);
+					eigenvectors[1][2] = 1.00000000000000;
+					eigenvectors[2][0] = 2.0*M_PI*H0*k1/std::sqrt((complex)4.0*M_PI*M_PI*H0*g*k1*k1 + f*f*s1*s1);
+					eigenvectors[2][1] = I*f*s1/std::sqrt((complex)4.0*M_PI*M_PI*H0*g*k1*k1 + f*f*s1*s1);
+					eigenvectors[2][2] = 1.00000000000000;
+				}
+				else if (k1 == 0)
+				{
+					complex wg = std::sqrt((complex)s1*s1*(f*f*s0*s0 + 4.0*M_PI*M_PI*g*g*k0*k0));
+
+					eigenvalues[0] = 0.0;
+					eigenvalues[1] = -1.0*1.0/s0*std::sqrt((complex)4.0*M_PI*M_PI*H0*g*k0*k0 + f*f*s0*s0);
+					eigenvalues[2] = -1.0*I*1.0/s0*std::sqrt((complex)-4.0*M_PI*M_PI*H0*g*k0*k0 - 1.0*f*f*s0*s0);
+
+					eigenvectors[0][0] = -1.0/2.0*I*1.0/M_PI*f*1.0/g*1.0/k0*s0;
+					eigenvectors[0][1] = 0.0;
+					eigenvectors[0][2] = 1.00000000000000;
+					eigenvectors[1][0] = 2.0*I*M_PI*H0*1.0/f*k0*1.0/s0;
+					eigenvectors[1][1] = -1.0*I*1.0/f*1.0/s0*std::sqrt((complex)4.0*M_PI*M_PI*H0*g*k0*k0 + f*f*s0*s0);
+					eigenvectors[1][2] = 1.00000000000000;
+					eigenvectors[2][0] = 2.0*I*M_PI*H0*1.0/f*k0*1.0/s0;
+					eigenvectors[2][1] = 1.0/f*1.0/s0*std::sqrt((complex)-4.0*M_PI*M_PI*H0*g*k0*k0 - 1.0*f*f*s0*s0);
+					eigenvectors[2][2] = 1.00000000000000;
+				}
+				else
+				{
+					complex K2 = M_PI*M_PI*k0*k0 + M_PI*M_PI*k1*k1;
+					complex w = std::sqrt((complex)4.0*M_PI*M_PI*H0*g*k0*k0*s1*s1 + 4.0*M_PI*M_PI*H0*g*k1*k1*s0*s0 + f*f*s0*s0*s1*s1);
+
+					complex wg = std::sqrt((complex)f*f*s0*s0*s1*s1 + 4.0*M_PI*M_PI*g*g*k0*k0*s1*s1 + 4.0*M_PI*M_PI*g*g*k1*k1*s0*s0);
+					eigenvalues[0] = 0.0;
+					eigenvalues[1] = -1.0*1.0/s0*1.0/s1*std::sqrt((complex)4.0*M_PI*M_PI*H0*g*k0*k0*s1*s1 + 4.0*M_PI*M_PI*H0*g*k1*k1*s0*s0 + f*f*s0*s0*s1*s1);
+					eigenvalues[2] = -1.0*I*1.0/s0*1.0/s1*std::sqrt((complex)-4.0*M_PI*M_PI*H0*g*k0*k0*s1*s1 - 4.0*M_PI*M_PI*H0*g*k1*k1*s0*s0 - 1.0*f*f*s0*s0*s1*s1);
+
+					eigenvectors[0][0] = -1.0/2.0*I*1.0/M_PI*f*1.0/g*1.0/k0*s0;
+					eigenvectors[0][1] = -1.0*1.0/k0*k1*s0*1.0/s1;
+					eigenvectors[0][2] = 1.00000000000000;
+					eigenvectors[1][0] = 2.0*M_PI*H0*1.0/s0*1.0/w*(I*k0*s1*s1*(4.0*I*M_PI*M_PI*H0*g*k0*k1 + f*w) - 1.0*k1*s0*s0*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f*s1*s1))*1.0/(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f*s1*s1);
+					eigenvectors[1][1] = 1.0/s0*s1*1.0/(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f*s1*s1)*(4.0*M_PI*M_PI*H0*g*k0*k1 - 1.0*I*f*w);
+					eigenvectors[1][2] = 1.00000000000000;
+					eigenvectors[2][0] = -2.0*M_PI*H0*1.0/s0*1.0/w*(I*k0*s1*s1*(4.0*I*M_PI*M_PI*H0*g*k0*k1 - 1.0*f*w) - 1.0*k1*s0*s0*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f*s1*s1))*1.0/(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f*s1*s1);
+					eigenvectors[2][1] = 1.0/s0*s1*1.0/(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f*s1*s1)*(4.0*M_PI*M_PI*H0*g*k0*k1 + I*f*w);
+					eigenvectors[2][2] = 1.00000000000000;
+				}
+
+
+
 
 				//////////////////////////////////////
 				// GENERATED CODE END
 				//////////////////////////////////////
-
 
 
 				if (f == 0)
@@ -332,7 +366,6 @@ public:
 					if (k0 != 0 || k1 != 0)
 					{
 						double K2 = K2;
-//						double w = std::sqrt(4.0*M_PI*M_PI*H0*g*k0*k0 + 4.0*M_PI*M_PI*H0*g*k1*k1 + f*f);
 
 						eigenvalues[0] = 0.0;
 						eigenvalues[1] = -2.0*M_PI*sqrt(H0)*sqrt((double)g)*sqrt(k0*k0 + k1*k1);
@@ -367,6 +400,11 @@ public:
 					}
 				}
 
+
+				/*
+				 * Compute inverse of Eigenvectors.
+				 * This generalizes to the case that the Eigenvectors are not orthonormal.
+				 */
 				std::complex<double> eigenvectors_inv[3][3];
 
 				eigenvectors_inv[0][0] =  (eigenvectors[1][1]*eigenvectors[2][2] - eigenvectors[1][2]*eigenvectors[2][1]);
@@ -387,60 +425,29 @@ public:
 				    for (int i = 0; i < 3; i++)
 				    	eigenvectors_inv[j][i] /= s;
 
-#else
-				if (g != 1.0 || eta_bar != 1.0)
-				{
-					std::cerr << "Only g=1 and eta_bar=0 supported in this formulation!" << std::endl;
-					exit(1);
-				}
-				/*
-				 * Dimensionless formulation
-				 */
-				double F = 1;
 
-				// GENERATED CODE START
-				std::complex<double> eigenvalues[3];
-				std::complex<double> eigenvectors[3][3];
-				if (k0 != 0 || k1 != 0)
-				{
-					double K2 = k0*k0+k1*k1;
-					double w = std::sqrt(1 + k0*k0/F + k1*k1/F);
+			    // check
+			    for (int j = 0; j < 3; j++)
+			    {
+				    for (int i = 0; i < 3; i++)
+				    {
+				    	if (
+				    			std::isnan(eigenvectors[j][i].real()) || std::isinf(eigenvectors[j][i].real())	||
+				    			std::isnan(eigenvectors[j][i].imag()) || std::isinf(eigenvectors[j][i].imag())
+				    	)
+				    	{
+				    		std::cerr << "Invalid number in Eigenvector " << j << " detected: " << eigenvectors[j][0] << ", " << eigenvectors[j][1] << ", " << eigenvectors[j][2] << std::endl;
+				    	}
 
-					eigenvalues[0] = 0;
-					eigenvalues[1] = -w;
-					eigenvalues[2] = w;
-
-					eigenvectors[0][0] = -I/w;
-					eigenvectors[0][1] = -k1/(sqrt((double)F)*w);
-					eigenvectors[0][2] = k0/(sqrt((double)F)*w);
-					eigenvectors[1][0] = (I*k0*(F*w + I*k0*k1) - k1*(F + k1*k1))/sqrt(F*w*w*pow(F + k1*k1, 2) - F*w*w*(I*F*w - k0*k1)*(I*F*w + k0*k1) - (I*k0*(F*w - I*k0*k1) + k1*(F + k1*k1))*(I*k0*(F*w + I*k0*k1) - k1*(F + k1*k1)));
-					eigenvectors[1][1] = -sqrt((double)F)*w*(I*F*w - k0*k1)/sqrt(F*w*w*pow(F + k1*k1, 2) - F*w*w*(I*F*w - k0*k1)*(I*F*w + k0*k1) - (I*k0*(F*w - I*k0*k1) + k1*(F + k1*k1))*(I*k0*(F*w + I*k0*k1) - k1*(F + k1*k1)));
-					eigenvectors[1][2] = sqrt((double)F)*w*(F + k1*k1)/sqrt(F*w*w*pow(F + k1*k1, 2) - F*w*w*(I*F*w - k0*k1)*(I*F*w + k0*k1) - (I*k0*(F*w - I*k0*k1) + k1*(F + k1*k1))*(I*k0*(F*w + I*k0*k1) - k1*(F + k1*k1)));
-					eigenvectors[2][0] = (I*k0*(F*w - I*k0*k1) + k1*(F + k1*k1))/sqrt(F*w*w*pow(F + k1*k1, 2) - F*w*w*(I*F*w - k0*k1)*(I*F*w + k0*k1) - (I*k0*(F*w - I*k0*k1) + k1*(F + k1*k1))*(I*k0*(F*w + I*k0*k1) - k1*(F + k1*k1)));
-					eigenvectors[2][1] = sqrt((double)F)*w*(I*F*w + k0*k1)/sqrt(F*w*w*pow(F + k1*k1, 2) - F*w*w*(I*F*w - k0*k1)*(I*F*w + k0*k1) - (I*k0*(F*w - I*k0*k1) + k1*(F + k1*k1))*(I*k0*(F*w + I*k0*k1) - k1*(F + k1*k1)));
-					eigenvectors[2][2] = sqrt((double)F)*w*(F + k1*k1)/sqrt(F*w*w*pow(F + k1*k1, 2) - F*w*w*(I*F*w - k0*k1)*(I*F*w + k0*k1) - (I*k0*(F*w - I*k0*k1) + k1*(F + k1*k1))*(I*k0*(F*w + I*k0*k1) - k1*(F + k1*k1)));
-				}
-				else
-				{
-
-					eigenvalues[0] = 0;
-					eigenvalues[1] = -1;
-					eigenvalues[2] = 1;
-
-					eigenvectors[0][0] = 1;
-					eigenvectors[0][1] = 0;
-					eigenvectors[0][2] = 0;
-					eigenvectors[1][0] = 0;
-					eigenvectors[1][1] = -1.0/2.0*sqrt((double)2)*I;
-					eigenvectors[1][2] = (1.0/2.0)*sqrt((double)2);
-					eigenvectors[2][0] = 0;
-					eigenvectors[2][1] = (1.0/2.0)*sqrt((double)2)*I;
-					eigenvectors[2][2] = (1.0/2.0)*sqrt((double)2);
-				}
-
-				// GENERATED CODE END
-#endif
-
+				    	if (
+				    			std::isnan(eigenvectors_inv[j][i].real()) || std::isinf(eigenvectors_inv[j][i].real())	||
+				    			std::isnan(eigenvectors_inv[j][i].imag()) || std::isinf(eigenvectors_inv[j][i].imag())
+				    	)
+				    	{
+				    		std::cerr << "Invalid number in inverse of Eigenvector " << j << " detected: " << eigenvectors_inv[j][0] << ", " << eigenvectors_inv[j][1] << ", " << eigenvectors_inv[j][2] << std::endl;
+				    	}
+				    }
+			    }
 
 				/**
 				 * SOLVE BASED ON CONSTANT DATA

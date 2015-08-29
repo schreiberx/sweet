@@ -264,10 +264,10 @@ public:
 					);
 
 				if (parameters.sim_viscocity != 0)
-					o_h_t += (op.diff2_c_x(i_h) + op.diff2_c_y(i_h))*parameters.sim_viscocity;
+					o_h_t -= (op.diff2_c_x(i_h) + op.diff2_c_y(i_h))*parameters.sim_viscocity;
 
 				if (parameters.sim_hyper_viscocity != 0)
-					o_h_t += (op.diff2_c_x(op.diff2_c_x(i_h)) + op.diff2_c_y(op.diff2_c_y(i_h)))*parameters.sim_hyper_viscocity;
+					o_h_t -= (op.diff2_c_x(op.diff2_c_x(i_h)) + op.diff2_c_y(op.diff2_c_y(i_h)))*parameters.sim_hyper_viscocity;
 			}
 		}
 		else
@@ -304,10 +304,10 @@ public:
 		}
 
 		if (parameters.sim_potential_viscocity != 0)
-			o_h_t += (op.diff2_c_x(i_h) + op.diff2_c_y(i_h))*parameters.sim_potential_viscocity;
+			o_h_t -= (op.diff2_c_x(i_h) + op.diff2_c_y(i_h))*parameters.sim_potential_viscocity;
 
 		if (parameters.sim_potential_hyper_viscocity != 0)
-			o_h_t += (op.diff2_c_x(op.diff2_c_x(i_h)) + op.diff2_c_y(op.diff2_c_y(i_h)))*parameters.sim_potential_hyper_viscocity;
+			o_h_t -= (op.diff2_c_x(op.diff2_c_x(i_h)) + op.diff2_c_y(op.diff2_c_y(i_h)))*parameters.sim_potential_hyper_viscocity;
 
 	}
 
