@@ -161,7 +161,6 @@ public:
 
 			Complex2DArrayFFT eta = rhs.spec_div_element_wise(lhs);
 
-			// v1 = A * (D h(1) - v(0))
 			Complex2DArrayFFT uh = u0 - g*op_diff_c_x(eta);
 			Complex2DArrayFFT vh = v0 - g*op_diff_c_y(eta);
 

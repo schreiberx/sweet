@@ -8,7 +8,7 @@
 #include <sweet/SWEValidationBenchmarks.hpp>
 #include <sweet/Operators2D.hpp>
 #include <sweet/Stopwatch.hpp>
-#include "../programs/RexiSWE.hpp"
+#include <rexi/RexiSWE.hpp>
 
 #include <ostream>
 #include <sstream>
