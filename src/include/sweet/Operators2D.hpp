@@ -32,6 +32,28 @@ public:
 	DataArray<2> shift_up;
 	DataArray<2> shift_down;
 
+
+	/**
+	 * D2, e.g. for viscosity
+	 */
+	DataArray<2> diff2(
+			const DataArray<2> &i_dataArray
+	)
+	{
+		return diff2_c_x(i_dataArray) + diff2_c_y(i_dataArray);
+	}
+
+
+	/**
+	 * D4, e.g. for hyperviscosity
+	 */
+	DataArray<2> diff4(
+			const DataArray<2> &i_dataArray
+	)
+	{
+		return diff2_c_x(diff2_c_x(i_dataArray)) + diff2_c_y(diff2_c_y(i_dataArray));
+	}
+
 	inline DataArray<2> arakawa_jacobian(
 			const DataArray<2> &i_a,
 			const DataArray<2> &i_b
@@ -166,10 +188,11 @@ public:
 			exit(-1);
 #else
 
-			diff_c_x.spec_setAll(0, 0);
 			/*
-			 * Note, that there's a last column which is now also set to 0
+			 * Note, that there's a last column which is set to 0 (Nyquist freq)
 			 */
+			diff_c_x.spec_setAll(0, 0);
+
 			for (int j = 0; j < (int)diff_c_x.resolution[1]/2; j++)
 			{
 				for (int i = 0; i < (int)diff_c_x.resolution[0]/2; i++)
@@ -212,7 +235,7 @@ public:
 
 
 			/**
-			 * WARNING! These operators are setup in Cartesian space,
+			 * TODO: WARNING! These operators are setup in Cartesian space,
 			 * hence they are not as accurate as spectral operators
 			 */
 			double d_f_x_kernel[3][3] = {

@@ -2559,6 +2559,47 @@ public:
 	 */
 	inline
 	DataArray<D> operator/(
+			const double &i_value
+	)	const
+	{
+		DataArray<D> out(this->resolution);
+		out.temporary_data = true;
+
+#if SWEET_USE_SPECTRAL_SPACE
+		if (array_data_cartesian_space_valid)
+		{
+#endif
+			#pragma omp parallel for OPENMP_SIMD
+			for (std::size_t i = 0; i < array_data_cartesian_length; i++)
+				out.array_data_cartesian_space[i] = array_data_cartesian_space[i] / i_value;
+
+			out.array_data_cartesian_space_valid = true;
+			out.array_data_spectral_space_valid = false;
+
+#if SWEET_USE_SPECTRAL_SPACE
+		}
+		else
+		{
+			assert(array_data_spectral_space_valid);
+
+			#pragma omp parallel for OPENMP_SIMD
+			for (std::size_t i = 0; i < array_data_spectral_length; i++)
+				out.array_data_spectral_space[i] = array_data_spectral_space[i] / i_value;
+
+			out.array_data_cartesian_space_valid = false;
+			out.array_data_spectral_space_valid = true;
+		}
+#endif
+
+		return out;
+	}
+
+
+	/**
+	 * Compute element-wise division
+	 */
+	inline
+	DataArray<D> operator/(
 			const DataArray<D> &i_array_data
 	)	const
 	{

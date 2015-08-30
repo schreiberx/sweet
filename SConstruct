@@ -93,7 +93,7 @@ AddOption(	'--simd',
 		dest='simd',
 		type='choice',
 		choices=['enable', 'disable'],
-		default='disable',
+		default='enable',
 		help="Use SIMD for operations such as folding [default: %default]"
 )
 env['simd'] = GetOption('simd')

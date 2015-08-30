@@ -24,6 +24,7 @@ double param_rexi_m;
 bool param_rexi_half;
 int param_timestepping_mode;
 bool param_compute_error;
+bool param_use_staggering;
 
 
 class SimulationSWE
@@ -306,132 +307,285 @@ public:
 			double i_simulation_timestamp = -1
 	)
 	{
-		/*
-		 * linearized non-conservative (advective) formulation:
-		 *
-		 * h_t = -h0*u_x - h0*v_y
-		 * u_t = -g * h_x + f*v
-		 * v_t = -g * h_y - f*u
-		 */
-		o_u_t = -parameters.sim_g*op.diff_c_x(i_h) + parameters.sim_f*i_v;
-		o_v_t = -parameters.sim_g*op.diff_c_y(i_h) - parameters.sim_f*i_u;
-
-		if (parameters.sim_viscocity != 0)
-		{
-			o_u_t -= (op.diff2_c_x(i_u) + op.diff2_c_x(i_v))*parameters.sim_viscocity;
-			o_v_t -= (op.diff2_c_y(i_u) + op.diff2_c_y(i_v))*parameters.sim_viscocity;
-		}
-
-		if (parameters.sim_hyper_viscocity != 0)
-		{
-			o_u_t -= (op.diff2_c_x(op.diff2_c_x(i_u)) + op.diff2_c_x(op.diff2_c_x(i_v)))*parameters.sim_hyper_viscocity;
-			o_v_t -= (op.diff2_c_y(op.diff2_c_y(i_u)) + op.diff2_c_y(op.diff2_c_y(i_v)))*parameters.sim_hyper_viscocity;
-		}
-
-
-		/*
-		 * TIME STEP SIZE
-		 */
-		if (i_fixed_dt > 0)
-		{
-			o_dt = i_fixed_dt;
-		}
-		else
+		if (!param_use_staggering)
 		{
 			/*
-			 * If the timestep size parameter is negative, we use the absolute value of this one as the time step size
+			 * linearized non-conservative (advective) formulation:
+			 *
+			 * h_t = -h0*u_x - h0*v_y
+			 * u_t = -g * h_x + f*v
+			 * v_t = -g * h_y - f*u
 			 */
-			if (i_fixed_dt < 0)
+			o_u_t = -parameters.sim_g*op.diff_c_x(i_h) + parameters.sim_f*i_v;
+			o_v_t = -parameters.sim_g*op.diff_c_y(i_h) - parameters.sim_f*i_u;
+
+			if (parameters.sim_viscosity != 0)
 			{
-				o_dt = -i_fixed_dt;
+				o_u_t -= op.diff2(i_u)*parameters.sim_viscosity;
+				o_v_t -= op.diff2(i_v)*parameters.sim_viscosity;
+			}
+
+			if (parameters.sim_hyper_viscosity != 0)
+			{
+				o_u_t -= op.diff4(i_u)*parameters.sim_hyper_viscosity;
+				o_v_t -= op.diff4(i_v)*parameters.sim_hyper_viscosity;
+			}
+
+
+			/*
+			 * TIME STEP SIZE
+			 */
+			if (i_fixed_dt > 0)
+			{
+				o_dt = i_fixed_dt;
 			}
 			else
 			{
-				double limit_speed = std::min(parameters.sim_cell_size[0]/i_u.reduce_maxAbs(), parameters.sim_cell_size[1]/i_v.reduce_maxAbs());
+				/*
+				 * If the timestep size parameter is negative, we use the absolute value of this one as the time step size
+				 */
+				if (i_fixed_dt < 0)
+				{
+					o_dt = -i_fixed_dt;
+				}
+				else
+				{
+					double limit_speed = std::min(parameters.sim_cell_size[0]/i_u.reduce_maxAbs(), parameters.sim_cell_size[1]/i_v.reduce_maxAbs());
 
-				double hx = parameters.sim_cell_size[0];
-				double hy = parameters.sim_cell_size[1];
+					double hx = parameters.sim_cell_size[0];
+					double hy = parameters.sim_cell_size[1];
 
-				// limit by re
-				double limit_visc = std::numeric_limits<double>::infinity();
-				if (parameters.sim_viscocity > 0)
-					limit_visc = (hx*hx*hy*hy)/(4.0*parameters.sim_viscocity*parameters.sim_viscocity);
-				if (parameters.sim_hyper_viscocity > 0)
-					limit_visc = std::min((hx*hx*hx*hx*hy*hy*hy*hy)/(16.0*parameters.sim_hyper_viscocity*parameters.sim_hyper_viscocity), limit_visc);
+					// limit by re
+					double limit_visc = std::numeric_limits<double>::infinity();
+					if (parameters.sim_viscosity > 0)
+						limit_visc = (hx*hx*hy*hy)/(4.0*parameters.sim_viscosity*parameters.sim_viscosity);
+					if (parameters.sim_hyper_viscosity > 0)
+						limit_visc = std::min((hx*hx*hx*hx*hy*hy*hy*hy)/(16.0*parameters.sim_hyper_viscosity*parameters.sim_hyper_viscosity), limit_visc);
 
-				// limit by gravitational acceleration
-				double limit_gh = std::min(parameters.sim_cell_size[0], parameters.sim_cell_size[1])/std::sqrt(parameters.sim_g*i_h.reduce_maxAbs());
+					// limit by gravitational acceleration
+					double limit_gh = std::min(parameters.sim_cell_size[0], parameters.sim_cell_size[1])/std::sqrt(parameters.sim_g*i_h.reduce_maxAbs());
 
-				if (parameters.verbosity > 2)
-					std::cerr << "limit_speed: " << limit_speed << ", limit_visc: " << limit_visc << ", limit_gh: " << limit_gh << std::endl;
+					if (parameters.verbosity > 2)
+						std::cerr << "limit_speed: " << limit_speed << ", limit_visc: " << limit_visc << ", limit_gh: " << limit_gh << std::endl;
 
-				o_dt = parameters.sim_CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
+					o_dt = parameters.sim_CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
+				}
 			}
-		}
 
-		if (!parameters.timestepping_leapfrog_like_update)
-		{
-			if (!parameters.timestepping_up_and_downwinding)
+			if (!parameters.timestepping_leapfrog_like_update)
 			{
-				// standard update
-				o_h_t = -op.diff_c_x(i_u)*parameters.setup_h0 - op.diff_c_y(i_v*parameters.setup_h0);
-			}
-			else
-			{
-				// up/down winding
-				compute_upwinding_P_updates(
-						i_h,
-						i_u,
-						i_v,
-						o_h_t
-					);
-
-				if (parameters.sim_viscocity != 0)
-					o_h_t -= (op.diff2_c_x(i_h) + op.diff2_c_y(i_h))*parameters.sim_viscocity;
-
-				if (parameters.sim_hyper_viscocity != 0)
-					o_h_t -= (op.diff2_c_x(op.diff2_c_x(i_h)) + op.diff2_c_y(op.diff2_c_y(i_h)))*parameters.sim_hyper_viscocity;
-			}
-		}
-		else
-		{
-			/*
-			 * a kind of leapfrog:
-			 *
-			 * We use the hew v and u values to compute the update for p
-			 *
-			 * compute updated u and v values without using it
-			 */
-			if (!parameters.timestepping_up_and_downwinding)
-			{
-				// recompute U and V
-
-				// update based on new u and v values
-				o_h_t = -op.diff_c_x(
-							parameters.setup_h0*(i_u+o_dt*o_u_t)
-						)
-						- op.diff_c_y(
-								parameters.setup_h0*(i_v+o_dt*o_v_t)
+				if (!parameters.timestepping_up_and_downwinding)
+				{
+					// standard update
+					o_h_t = -op.diff_c_x(i_u)*parameters.setup_h0 - op.diff_c_y(i_v*parameters.setup_h0);
+				}
+				else
+				{
+					// up/down winding
+					compute_upwinding_P_updates(
+							i_h,
+							i_u,
+							i_v,
+							o_h_t
 						);
+
+					if (parameters.sim_viscosity != 0)
+						o_h_t -= op.diff2(i_h)*parameters.sim_viscosity;
+
+					if (parameters.sim_hyper_viscosity != 0)
+						o_h_t -= op.diff2(i_h)*parameters.sim_hyper_viscosity;
+				}
 			}
 			else
 			{
-				// update based on new u and v values
-				compute_upwinding_P_updates(
-						i_h,
-						i_u+o_dt*o_u_t,
-						i_v+o_dt*o_v_t,
-						o_h_t
-					);
+				/*
+				 * a kind of leapfrog:
+				 *
+				 * We use the hew v and u values to compute the update for p
+				 *
+				 * compute updated u and v values without using it
+				 */
+				if (!parameters.timestepping_up_and_downwinding)
+				{
+					// recompute U and V
+
+					// update based on new u and v values
+					o_h_t = -op.diff_c_x(
+								parameters.setup_h0*(i_u+o_dt*o_u_t)
+							)
+							- op.diff_c_y(
+									parameters.setup_h0*(i_v+o_dt*o_v_t)
+							);
+				}
+				else
+				{
+					// update based on new u and v values
+					compute_upwinding_P_updates(
+							i_h,
+							i_u+o_dt*o_u_t,
+							i_v+o_dt*o_v_t,
+							o_h_t
+						);
+				}
 			}
+
+			if (parameters.sim_potential_viscosity != 0)
+				o_h_t -= op.diff2(i_h)*parameters.sim_potential_viscosity;
+
+			if (parameters.sim_potential_hyper_viscosity != 0)
+				o_h_t -= op.diff4(i_h)*parameters.sim_potential_hyper_viscosity;
 		}
+		else
+		{
+			DataArray<2> U(i_h.resolution), V(i_h.resolution), q(i_h.resolution), H(i_h.resolution);
 
-		if (parameters.sim_potential_viscocity != 0)
-			o_h_t -= (op.diff2_c_x(i_h) + op.diff2_c_y(i_h))*parameters.sim_potential_viscocity;
+			/*
+			 * Note, that this grid does not follow the formulation
+			 * in the paper of Robert Sadourny, but looks as follows:
+			 *
+			 *             ^
+			 *             |
+			 *       ____v0,1_____
+			 *       |           |
+			 *       |           |
+			 * <- u0,0  H/P0,0   u1,0 ->
+			 *       |           |
+			 *   q0,0|___________|
+			 *           v0,0
+			 *             |
+			 *             V
+			 *
+			 * V_t + q N x (P V) + grad( g P + 1/2 V*V) = 0
+			 * P_t + div(P V) = 0
+			 */
+			/*
+			 * U and V updates
+			 */
+//			U = op.avg_b_x(i_h)*i_u;
+//			V = op.avg_b_y(i_h)*i_v;
+			U = parameters.setup_h0*i_u;
+			V = parameters.setup_h0*i_v;
 
-		if (parameters.sim_potential_hyper_viscocity != 0)
-			o_h_t -= (op.diff2_c_x(op.diff2_c_x(i_h)) + op.diff2_c_y(op.diff2_c_y(i_h)))*parameters.sim_potential_hyper_viscocity;
+			H = parameters.sim_g*i_h;// + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
 
+			o_u_t = op.avg_f_y(parameters.sim_f*op.avg_b_x(i_v)) - op.diff_b_x(H);
+			o_v_t = -op.avg_f_x(parameters.sim_f*op.avg_b_y(i_u)) - op.diff_b_y(H);
+
+
+			/*
+			 * VISCOSITY
+			 */
+			if (parameters.sim_viscosity != 0)
+			{
+				o_u_t -= op.diff2(i_u)*parameters.sim_viscosity;
+				o_v_t -= op.diff2(i_v)*parameters.sim_viscosity;
+			}
+			if (parameters.sim_hyper_viscosity != 0)
+			{
+				o_u_t -= op.diff4(i_u)*parameters.sim_hyper_viscosity;
+				o_v_t -= op.diff4(i_v)*parameters.sim_hyper_viscosity;
+			}
+
+
+			/*
+			 * TIME STEP SIZE
+			 */
+			if (i_fixed_dt > 0)
+			{
+				o_dt = i_fixed_dt;
+			}
+			else
+			{
+				/*
+				 * If the timestep size parameter is negative, we use the absolute value of this one as the time step size
+				 */
+				if (i_fixed_dt < 0)
+				{
+					o_dt = -i_fixed_dt;
+				}
+				else
+				{
+					double limit_speed = std::min(parameters.sim_cell_size[0]/i_u.reduce_maxAbs(), parameters.sim_cell_size[1]/i_v.reduce_maxAbs());
+
+					double hx = parameters.sim_cell_size[0];
+					double hy = parameters.sim_cell_size[1];
+
+					// limit by viscosity
+					double limit_visc = std::numeric_limits<double>::infinity();
+					if (parameters.sim_viscosity > 0)
+						limit_visc = (hx*hx*hy*hy)/(4.0*parameters.sim_viscosity*parameters.sim_viscosity);
+					if (parameters.sim_hyper_viscosity > 0)
+						limit_visc = std::min((hx*hx*hx*hx*hy*hy*hy*hy)/(16.0*parameters.sim_hyper_viscosity*parameters.sim_hyper_viscosity), limit_visc);
+
+					// limit by gravitational acceleration
+					double limit_gh = std::min(parameters.sim_cell_size[0], parameters.sim_cell_size[1])/std::sqrt(parameters.sim_g*i_h.reduce_maxAbs());
+
+					if (parameters.verbosity > 2)
+						std::cerr << "limit_speed: " << limit_speed << ", limit_visc: " << limit_visc << ", limit_gh: " << limit_gh << std::endl;
+
+					o_dt = parameters.sim_CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
+				}
+			}
+
+
+			/*
+			 * P UPDATE
+			 */
+			if (!parameters.timestepping_leapfrog_like_update)
+			{
+				if (!parameters.timestepping_up_and_downwinding)
+				{
+					// standard update
+					o_h_t = -op.diff_f_x(U) - op.diff_f_y(V);
+				}
+				else
+				{
+					// up/down winding
+					compute_upwinding_P_updates(
+							i_h,
+							i_u,
+							i_v,
+							o_h_t
+						);
+				}
+			}
+			else
+			{
+				/*
+				 * a kind of leapfrog:
+				 *
+				 * We use the hew v and u values to compute the update for p
+				 *
+				 * compute updated u and v values without using it
+				 */
+				if (!parameters.timestepping_up_and_downwinding)
+				{
+					// recompute U and V
+					U = op.avg_b_x(i_h)*(i_u+o_dt*o_u_t);
+					V = op.avg_b_y(i_h)*(i_v+o_dt*o_v_t);
+
+					// update based on new u and v values
+					o_h_t = -op.diff_f_x(U) - op.diff_f_y(V);
+				}
+				else
+				{
+					// update based on new u and v values
+					compute_upwinding_P_updates(
+							i_h,
+							i_u+o_dt*o_u_t,
+							i_v+o_dt*o_v_t,
+							o_h_t
+						);
+				}
+			}
+
+
+			if (parameters.sim_potential_viscosity != 0)
+				o_h_t -= op.diff2(i_h)*parameters.sim_potential_viscosity;
+
+			if (parameters.sim_potential_hyper_viscosity != 0)
+				o_h_t -= op.diff4(i_h)*parameters.sim_potential_hyper_viscosity;
+		}
 	}
 
 
@@ -578,6 +732,9 @@ public:
 		}
 	}
 
+
+
+public:
 	void compute_errors()
 	{
 		DataArray<2> t_h = t0_prog_h;
@@ -587,16 +744,23 @@ public:
 		rexiSWE.run_timestep_direct_solution(t_h, t_u, t_v, parameters.status_simulation_time, op, parameters);
 
 		benchmark_analytical_error_rms_h = (t_h-prog_h).reduce_rms_quad();
-		benchmark_analytical_error_rms_u = (t_u-prog_u).reduce_rms_quad();
-		benchmark_analytical_error_rms_v = (t_v-prog_v).reduce_rms_quad();
+
+		if (!param_use_staggering)
+		{
+			benchmark_analytical_error_rms_u = (t_u-prog_u).reduce_rms_quad();
+			benchmark_analytical_error_rms_v = (t_v-prog_v).reduce_rms_quad();
+		}
 
 		benchmark_analytical_error_maxabs_h = (t_h-prog_h).reduce_maxAbs();
-		benchmark_analytical_error_maxabs_u = (t_u-prog_u).reduce_maxAbs();
-		benchmark_analytical_error_maxabs_v = (t_v-prog_v).reduce_maxAbs();
+		if (!param_use_staggering)
+		{
+			benchmark_analytical_error_maxabs_u = (t_u-prog_u).reduce_maxAbs();
+			benchmark_analytical_error_maxabs_v = (t_v-prog_v).reduce_maxAbs();
+		}
 
-		benchmark_analytical_error_maxabs_h = (t_h-prog_h).reduce_norm2_quad()/(double)(parameters.res[0]*parameters.res[1]);
-		benchmark_analytical_error_maxabs_u = (t_u-prog_u).reduce_norm2_quad()/(double)(parameters.res[0]*parameters.res[1]);
-		benchmark_analytical_error_maxabs_v = (t_v-prog_v).reduce_norm2_quad()/(double)(parameters.res[0]*parameters.res[1]);
+//		benchmark_analytical_error_maxabs_h = (t_h-prog_h).reduce_norm2_quad()/(double)(parameters.res[0]*parameters.res[1]);
+//		benchmark_analytical_error_maxabs_u = (t_u-prog_u).reduce_norm2_quad()/(double)(parameters.res[0]*parameters.res[1]);
+//		benchmark_analytical_error_maxabs_v = (t_v-prog_v).reduce_norm2_quad()/(double)(parameters.res[0]*parameters.res[1]);
 	}
 
 
@@ -757,6 +921,7 @@ int main(int i_argc, char *i_argv[])
 			"rexi-half",
 			"timestepping-mode",
 			"compute-error",
+			"staggering",
 			nullptr
 	};
 
@@ -766,6 +931,7 @@ int main(int i_argc, char *i_argv[])
 	parameters.bogus_var2 = 1;	// param_rexi_half
 	parameters.bogus_var3 = 0;
 	parameters.bogus_var4 = 0;
+	parameters.bogus_var5 = 0;
 
 	if (!parameters.setup(i_argc, i_argv, bogus_var_names))
 	{
@@ -783,6 +949,8 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "	                            2: Direct solution in spectral space" << std::endl;
 		std::cout << "" << std::endl;
 		std::cout << "	--compute-error [0/1]	Compute the errors" << std::endl;
+		std::cout << "" << std::endl;
+		std::cout << "	--staggering [0/1]		Use staggered grid" << std::endl;
 		return -1;
 	}
 
@@ -791,6 +959,7 @@ int main(int i_argc, char *i_argv[])
 	param_rexi_half = parameters.bogus_var2;
 	param_timestepping_mode = parameters.bogus_var3;
 	param_compute_error = parameters.bogus_var4;
+	param_use_staggering = parameters.bogus_var5;
 
 	SimulationSWE *simulationSWE = new SimulationSWE;
 

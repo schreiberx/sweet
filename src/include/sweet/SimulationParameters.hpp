@@ -38,16 +38,16 @@ public:
 	double sim_g = 9.81;
 
 	// viscosity
-	double sim_viscocity = 0.0;
+	double sim_viscosity = 0.0;
 
-	// viscosity
-	double sim_hyper_viscocity = 0.0;
+	// hyper viscosity
+	double sim_hyper_viscosity = 0.0;
 
-	// potential
-	double sim_potential_viscocity = 0.0;
+	// viscosity on potential
+	double sim_potential_viscosity = 0.0;
 
-	// potential
-	double sim_potential_hyper_viscocity = 0.0;
+	// hyperviscosity on potential
+	double sim_potential_hyper_viscosity = 0.0;
 
 	// cfl condition
 	double sim_CFL = 0.01;
@@ -301,19 +301,19 @@ public:
 				break;
 
 			case 'u':
-				sim_viscocity = atof(optarg);
+				sim_viscosity = atof(optarg);
 				break;
 
 			case 'U':
-				sim_hyper_viscocity = atof(optarg);
+				sim_hyper_viscosity = atof(optarg);
 				break;
 
 			case 'p':
-				sim_potential_viscocity = atof(optarg);
+				sim_potential_viscosity = atof(optarg);
 				break;
 
 			case 'P':
-				sim_potential_hyper_viscocity = atof(optarg);
+				sim_potential_hyper_viscosity = atof(optarg);
 				break;
 
 			case 's':
@@ -370,6 +370,8 @@ public:
 
 			case 'F':
 				timestepping_leapfrog_like_update = atoi(optarg);
+				std::cout << "WARNING: This time stepping method produces significant errors!" << std::endl;
+				std::cerr << "WARNING: This time stepping method produces significant errors!" << std::endl;
 				break;
 
 			default:

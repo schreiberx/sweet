@@ -292,15 +292,15 @@ public:
 		/*
 		 * VISCOSITY
 		 */
-		if (parameters.sim_viscocity != 0)
+		if (parameters.sim_viscosity != 0)
 		{
-			o_u_t -= (op.diff2_c_x(i_u) + op.diff2_c_x(i_v))*parameters.sim_viscocity;
-			o_v_t -= (op.diff2_c_y(i_u) + op.diff2_c_y(i_v))*parameters.sim_viscocity;
+			o_u_t -= op.diff2(i_u)*parameters.sim_viscosity;
+			o_v_t -= op.diff2(i_v)*parameters.sim_viscosity;
 		}
-		if (parameters.sim_hyper_viscocity != 0)
+		if (parameters.sim_hyper_viscosity != 0)
 		{
-			o_u_t -= (op.diff2_c_x(op.diff2_c_x(i_u)) + op.diff2_c_x(op.diff2_c_x(i_v)))*parameters.sim_hyper_viscocity;
-			o_v_t -= (op.diff2_c_y(op.diff2_c_y(i_u)) + op.diff2_c_y(op.diff2_c_y(i_v)))*parameters.sim_hyper_viscocity;
+			o_u_t -= op.diff4(i_u)*parameters.sim_hyper_viscosity;
+			o_v_t -= op.diff4(i_v)*parameters.sim_hyper_viscosity;
 		}
 
 
@@ -329,10 +329,10 @@ public:
 
 				// limit by viscosity
 				double limit_visc = std::numeric_limits<double>::infinity();
-				if (parameters.sim_viscocity > 0)
-					limit_visc = (hx*hx*hy*hy)/(4.0*parameters.sim_viscocity*parameters.sim_viscocity);
-				if (parameters.sim_hyper_viscocity > 0)
-					limit_visc = std::min((hx*hx*hx*hx*hy*hy*hy*hy)/(16.0*parameters.sim_hyper_viscocity*parameters.sim_hyper_viscocity), limit_visc);
+				if (parameters.sim_viscosity > 0)
+					limit_visc = (hx*hx*hy*hy)/(4.0*parameters.sim_viscosity*parameters.sim_viscosity);
+				if (parameters.sim_hyper_viscosity > 0)
+					limit_visc = std::min((hx*hx*hx*hx*hy*hy*hy*hy)/(16.0*parameters.sim_hyper_viscosity*parameters.sim_hyper_viscosity), limit_visc);
 
 				// limit by gravitational acceleration
 				double limit_gh = std::min(parameters.sim_cell_size[0], parameters.sim_cell_size[1])/std::sqrt(parameters.sim_g*i_h.reduce_maxAbs());
@@ -397,11 +397,11 @@ public:
 		}
 
 
-		if (parameters.sim_potential_viscocity != 0)
-			o_h_t -= (op.diff2_c_x(i_h) + op.diff2_c_y(i_h))*parameters.sim_potential_viscocity;
+		if (parameters.sim_potential_viscosity != 0)
+			o_h_t -= op.diff2(i_h)*parameters.sim_potential_viscosity;
 
-		if (parameters.sim_potential_hyper_viscocity != 0)
-			o_h_t -= (op.diff2_c_x(op.diff2_c_x(i_h)) + op.diff2_c_y(op.diff2_c_y(i_h)))*parameters.sim_potential_hyper_viscocity;
+		if (parameters.sim_potential_hyper_viscosity != 0)
+			o_h_t -= op.diff4(i_h)*parameters.sim_potential_hyper_viscosity;
 	}
 
 
