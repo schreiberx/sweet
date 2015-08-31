@@ -175,6 +175,15 @@ public:
 			}
 		}
 
+		if (simVars.setup.input_data_filenames.size() > 0)
+			prog_h.file_loadData_ascii(simVars.setup.input_data_filenames[0].c_str());
+
+		if (simVars.setup.input_data_filenames.size() > 1)
+			prog_u.file_loadData_ascii(simVars.setup.input_data_filenames[1].c_str());
+
+		if (simVars.setup.input_data_filenames.size() > 2)
+			prog_v.file_loadData_ascii(simVars.setup.input_data_filenames[2].c_str());
+
 		t0_prog_h = prog_h;
 		t0_prog_u = prog_u;
 		t0_prog_v = prog_v;

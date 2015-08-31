@@ -4,13 +4,15 @@
  *  Created on: 30 Jun 2015
  *      Author: Martin Schreiber <schreiberx@gmail.com>
  */
-#ifndef SRC_EXAMPLES_VARIABLES_HPP_
-#define SRC_EXAMPLES_VARIABLES_HPP_
+#ifndef SRC_SIMULATION_VARIABLES_HPP_
+#define SRC_SIMULATION_VARIABLES_HPP_
 
 #include <unistd.h>
 #include <getopt.h>
 #include <iomanip>
 #include <iostream>
+#include <string>
+#include <vector>
 
 
 
@@ -57,6 +59,24 @@ public:
 		double coord_x = 0.5;
 		/// setup coordinate of e.g. radial breaking dam, y-placement \in [0;1]
 		double coord_y = 0.5;
+
+		/// filenames of input data for setup (this has to be setup by each application individually)
+		std::vector<std::string> input_data_filenames;
+
+		void setup_initial_condition_filenames(std::string i_string)
+		{
+			std::size_t last_pos = 0;
+			for (std::size_t pos = 0; i_string[pos] != '\0'; pos++)
+			{
+				if (i_string[pos] != ';')
+					continue;
+
+				input_data_filenames.push_back(i_string.substr(last_pos, pos-last_pos));
+				last_pos = pos+1;
+			}
+
+			input_data_filenames.push_back(i_string.substr(last_pos));
+		}
 	} setup;
 
 
@@ -222,17 +242,17 @@ public:
 	)
 	{
         static struct option long_options[11] = {
-				{0,				0,					0,	0	}, // 0
-				{0,				0,					0,	0	}, // 1
-				{0,				0,					0,	0	}, // 2
-				{0,				0,					0,	0	}, // 3
-				{0,				0,					0,	0	}, // 4
-				{0,				0,					0,	0	}, // 5
-				{0,				0,					0,	0	}, // 6
-				{0,				0,					0,	0	}, // 7
-				{0,				0,					0,	0	}, // 8
-				{0,				0,					0,	0	}, // 9
-				{0,				0,					0,	0	}, // NULL
+			{0, 0, 0, 0}, // 0
+			{0, 0, 0, 0}, // 1
+			{0, 0, 0, 0}, // 2
+			{0, 0, 0, 0}, // 3
+			{0, 0, 0, 0}, // 4
+			{0, 0, 0, 0}, // 5
+			{0, 0, 0, 0}, // 6
+			{0, 0, 0, 0}, // 7
+			{0, 0, 0, 0}, // 8
+			{0, 0, 0, 0}, // 9
+			{0, 0, 0, 0}, // NULL
         };
 
         if (bogus_var_names != nullptr)
@@ -258,7 +278,7 @@ public:
 		while (1)
 		{
 			opt = getopt_long(	i_argc, i_argv,
-							"N:n:m:C:u:U:s:X:Y:f:x:y:t:T:v:H:r:R:W:F:S:g:p:P:G:d:",
+							"N:n:m:C:u:U:s:X:Y:f:x:y:t:i:T:v:H:r:R:W:F:S:g:p:P:G:d:",
 							long_options, &option_index
 					);
 
@@ -381,6 +401,10 @@ public:
 				disc.timestepping_up_and_downwinding = atoi(optarg);
 				break;
 
+			case 'i':
+				setup.setup_initial_condition_filenames(optarg);
+				break;
+
 			case 'F':
 				disc.timestepping_leapfrog_like_update = atoi(optarg);
 				std::cout << "WARNING: This time stepping method produces significant errors!" << std::endl;
@@ -430,6 +454,7 @@ public:
 						"Misc options",
 						"	-v [int]	verbosity level",
 						"	-d [int]	accuracy of floating point output",
+						"	-i [file0][;file1][;file3]...	string with filenames for initial conditions",
 				};
 
 				std::cerr << "Usage information: " << std::endl;
@@ -467,4 +492,4 @@ public:
 
 
 
-#endif /* SRC_EXAMPLES_PARAMETERS_HPP_ */
+#endif /* SRC_SIMULATION_VARIABLES_HPP_ */

@@ -18,6 +18,7 @@
 #include <utility>
 #include <limits>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <sweet/openmp_helper.hpp>
 
@@ -2715,11 +2716,13 @@ public:
 	 * Per default, a tab separator is used in each line to separate the values.
 	 */
 	bool file_saveData_ascii(
-			const char *i_filename,	///< Name of file to store data to
-			char i_separator = '\t'	///< separator to use for each line
+			const char *i_filename,		///< Name of file to store data to
+			char i_separator = '\t',	///< separator to use for each line
+			int i_precision = 12		///< number of floating point digits
 	)
 	{
 		std::ofstream file(i_filename, std::ios_base::out);
+		file << std::setprecision(i_precision);
 
 		for (int y = resolution[1]-1; y >= 0; y--)
 		{
@@ -2763,7 +2766,7 @@ public:
 				return false;
 			}
 
-			std::size_t start = 0;
+			std::size_t last_pos = 0;
 			std::size_t col = 0;
 			for (std::size_t pos = 0; pos < line.size()+1; pos++)
 			{
@@ -2771,14 +2774,14 @@ public:
 					if (line[pos] != '\t' && line[pos] != ' ')
 						continue;
 
-				std::string strvalue = line.substr(start, pos-start);
+				std::string strvalue = line.substr(last_pos, pos-last_pos);
 
 				double i_value = atof(strvalue.c_str());
 
 				set(resolution[1]-row-1, col, i_value);
 
 				col++;
-				start = pos+1;
+				last_pos = pos+1;
 		    }
 
 			if (col < resolution[0])

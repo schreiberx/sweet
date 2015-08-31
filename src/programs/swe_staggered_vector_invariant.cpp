@@ -132,6 +132,15 @@ public:
 		}
 
 
+		if (simVars.setup.input_data_filenames.size() > 0)
+			prog_P.file_loadData_ascii(simVars.setup.input_data_filenames[0].c_str());
+
+		if (simVars.setup.input_data_filenames.size() > 1)
+			prog_u.file_loadData_ascii(simVars.setup.input_data_filenames[1].c_str());
+
+		if (simVars.setup.input_data_filenames.size() > 2)
+			prog_v.file_loadData_ascii(simVars.setup.input_data_filenames[2].c_str());
+
 		timestep_output();
 	}
 
@@ -392,12 +401,18 @@ public:
 	void run_timestep()
 	{
 		double dt;
+
+		// either set time step size to 0 for autodetection or to
+		// a positive value to use a fixed time step size
+		simVars.timecontrol.current_simulation_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
+
+
 		timestepping.run_rk_timestep(
 				this,
 				&SimulationSWEStaggered::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
 				prog_P, prog_u, prog_v,
 				dt,
-				simVars.disc.timestepping_timestep_size,
+				simVars.timecontrol.current_simulation_timestep_size,
 				simVars.disc.timestepping_runge_kutta_order,
 				simVars.timecontrol.current_simulation_time
 			);
