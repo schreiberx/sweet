@@ -283,14 +283,14 @@ public:
 		simVars.timecontrol.current_simulation_timestep_size = -1;
 
 		if (std::isinf(simVars.bogus.var[0]))
-			prog_u.setAll(0);
+			prog_u.set_all(0);
 		else
-			prog_u.setAll(simVars.bogus.var[0]);
+			prog_u.set_all(simVars.bogus.var[0]);
 
 		if (std::isinf(simVars.bogus.var[1]))
-			prog_v.setAll(0);
+			prog_v.set_all(0);
 		else
-			prog_v.setAll(simVars.bogus.var[1]);
+			prog_v.set_all(simVars.bogus.var[1]);
 
 		prog_h = get_advected_solution(0);
 	}
@@ -389,7 +389,7 @@ public:
 		else  if (simVars.bogus.var[2] == 3)
 		{
 			// NO H UPDATE
-			o_h_t.setAll(0);
+			o_h_t.set_all(0);
 		}
 		else
 		{
@@ -418,8 +418,8 @@ public:
 
 		}
 
-		o_u_t.setAll(0);
-		o_v_t.setAll(0);
+		o_u_t.set_all(0);
+		o_v_t.set_all(0);
 
 		simVars.timecontrol.current_timestep_nr++;
 	}

@@ -123,28 +123,28 @@ public:
 				{0,1,1},
 				{0,0,0},
 		};
-		avg_f_x.setup_kernel(avg_f_x_kernel, 0.5);
+		avg_f_x.stencil_setup(avg_f_x_kernel, 0.5);
 
 		double avg_f_y_kernel[3][3] = {
 				{0,1,0},
 				{0,1,0},
 				{0,0,0},
 		};
-		avg_f_y.setup_kernel(avg_f_y_kernel, 0.5);
+		avg_f_y.stencil_setup(avg_f_y_kernel, 0.5);
 
 		double avg_b_x_kernel[3][3] = {
 				{0,0,0},
 				{1,1,0},
 				{0,0,0},
 		};
-		avg_b_x.setup_kernel(avg_b_x_kernel, 0.5);
+		avg_b_x.stencil_setup(avg_b_x_kernel, 0.5);
 
 		double avg_b_y_kernel[3][3] = {
 				{0,0,0},
 				{0,1,0},
 				{0,1,0},
 		};
-		avg_b_y.setup_kernel(avg_b_y_kernel, 0.5);
+		avg_b_y.stencil_setup(avg_b_y_kernel, 0.5);
 
 /////////////////////////////////////////////////////////////////////
 
@@ -153,28 +153,28 @@ public:
 				{0,0,1},
 				{0,0,0},
 		};
-		shift_left.setup_kernel(shift_left_kernel);
+		shift_left.stencil_setup(shift_left_kernel);
 
 		double shift_right_kernel[3][3] = {
 				{0,0,0},
 				{1,0,0},
 				{0,0,0},
 		};
-		shift_right.setup_kernel(shift_right_kernel);
+		shift_right.stencil_setup(shift_right_kernel);
 
 		double shift_up_kernel[3][3] = {
 				{0,0,0},
 				{0,0,0},
 				{0,1,0},
 		};
-		shift_up.setup_kernel(shift_up_kernel);
+		shift_up.stencil_setup(shift_up_kernel);
 
 		double shift_down_kernel[3][3] = {
 				{0,1,0},
 				{0,0,0},
 				{0,0,0},
 		};
-		shift_down.setup_kernel(shift_down_kernel);
+		shift_down.stencil_setup(shift_down_kernel);
 
 /////////////////////////////////////////////////////////////////////
 
@@ -191,18 +191,18 @@ public:
 			/*
 			 * Note, that there's a last column which is set to 0 (Nyquist freq)
 			 */
-			diff_c_x.spec_setAll(0, 0);
+			diff_c_x.set_spec_all(0, 0);
 
 			for (int j = 0; j < (int)diff_c_x.resolution[1]/2; j++)
 			{
 				for (int i = 0; i < (int)diff_c_x.resolution[0]/2; i++)
 				{
-					diff_c_x.spec_set(
+					diff_c_x.set_spec(
 							j, i,
 							0,
 							(double)i*2.0*M_PIl/(double)i_domain_size[0]
 						);
-					diff_c_x.spec_set(
+					diff_c_x.set_spec(
 							diff_c_x.resolution[1]-1-j, i,
 							0,
 							(double)i*2.0*M_PIl/(double)i_domain_size[0]
@@ -214,18 +214,18 @@ public:
 			/*
 			 * DIFF operator in y axis
 			 */
-			diff_c_y.spec_setAll(0, 0);
+			diff_c_y.set_spec_all(0, 0);
 			// TODO: shift j for loop by +1
 			for (int j = 0; j < (int)diff_c_y.resolution[1]/2-1; j++)
 			{
 				for (int i = 0; i < (int)diff_c_y.resolution[0]/2; i++)
 				{
-					diff_c_y.spec_set(
+					diff_c_y.set_spec(
 							j+1, i,
 							0,
 							(double)(j+1)*2.0*M_PIl/(double)i_domain_size[1]
 						);
-					diff_c_y.spec_set(
+					diff_c_y.set_spec(
 							diff_c_y.resolution[1]-(j+1), i,
 							0,
 							-(double)(j+1)*2.0*M_PIl/(double)i_domain_size[1]
@@ -243,14 +243,14 @@ public:
 					{0,-1,1},
 					{0,0,0}
 			};
-			diff_f_x.setup_kernel(d_f_x_kernel, 1.0/h[0]);
+			diff_f_x.stencil_setup(d_f_x_kernel, 1.0/h[0]);
 
 			double d_f_y_kernel[3][3] = {
 					{0,1,0},
 					{0,-1,0},
 					{0,0,0},
 			};
-			diff_f_y.setup_kernel(d_f_y_kernel, 1.0/h[1]);
+			diff_f_y.stencil_setup(d_f_y_kernel, 1.0/h[1]);
 
 
 			double d_b_x_kernel[3][3] = {
@@ -258,14 +258,14 @@ public:
 					{-1,1,0},
 					{0,0,0}
 			};
-			diff_b_x.setup_kernel(d_b_x_kernel, 1.0/h[0]);
+			diff_b_x.stencil_setup(d_b_x_kernel, 1.0/h[0]);
 
 			double d_b_y_kernel[3][3] = {
 					{0,0,0},
 					{0,1,0},
 					{0,-1,0},
 			};
-			diff_b_y.setup_kernel(d_b_y_kernel, 1.0/h[1]);
+			diff_b_y.stencil_setup(d_b_y_kernel, 1.0/h[1]);
 
 
 
@@ -281,28 +281,28 @@ public:
 					{-1.0,0,1.0},
 					{0,0,0}
 			};
-			diff_c_x.setup_kernel(diff1_x_kernel, 1.0/(2.0*h[0]));
+			diff_c_x.stencil_setup(diff1_x_kernel, 1.0/(2.0*h[0]));
 
 			double diff1_y_kernel[3][3] = {
 					{0,1.0,0},	// higher y coordinate
 					{0,0,0},
 					{0,-1.0,0},	// lower y coordinate
 			};
-			diff_c_y.setup_kernel(diff1_y_kernel, 1.0/(2.0*h[1]));
+			diff_c_y.stencil_setup(diff1_y_kernel, 1.0/(2.0*h[1]));
 
 			double d_f_x_kernel[3][3] = {
 					{0,0,0},
 					{0,-1,1},
 					{0,0,0}
 			};
-			diff_f_x.setup_kernel(d_f_x_kernel, 1.0/h[0]);
+			diff_f_x.stencil_setup(d_f_x_kernel, 1.0/h[0]);
 
 			double d_f_y_kernel[3][3] = {
 					{0,1,0},
 					{0,-1,0},
 					{0,0,0},
 			};
-			diff_f_y.setup_kernel(d_f_y_kernel, 1.0/h[1]);
+			diff_f_y.stencil_setup(d_f_y_kernel, 1.0/h[1]);
 
 
 			double d_b_x_kernel[3][3] = {
@@ -310,14 +310,14 @@ public:
 					{-1,1,0},
 					{0,0,0}
 			};
-			diff_b_x.setup_kernel(d_b_x_kernel, 1.0/h[0]);
+			diff_b_x.stencil_setup(d_b_x_kernel, 1.0/h[0]);
 
 			double d_b_y_kernel[3][3] = {
 					{0,0,0},
 					{0,1,0},
 					{0,-1,0},
 			};
-			diff_b_y.setup_kernel(d_b_y_kernel, 1.0/h[1]);
+			diff_b_y.stencil_setup(d_b_y_kernel, 1.0/h[1]);
 
 
 			double diff2_x_kernel[3][3] = {
@@ -325,14 +325,14 @@ public:
 					{1.0,-2.0,1.0},
 					{0,0,0}
 				};
-			diff2_c_x.setup_kernel(diff2_x_kernel, 1.0/(h[0]*h[0]));
+			diff2_c_x.stencil_setup(diff2_x_kernel, 1.0/(h[0]*h[0]));
 
 			double diff2_y_kernel[3][3] = {
 					{0,1.0,0},
 					{0,-2.0,0},
 					{0,1.0,0}
 			};
-			diff2_c_y.setup_kernel(diff2_y_kernel, 1.0/(h[1]*h[1]));
+			diff2_c_y.stencil_setup(diff2_y_kernel, 1.0/(h[1]*h[1]));
 		}
 
 	}

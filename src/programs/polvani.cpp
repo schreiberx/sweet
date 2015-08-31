@@ -82,9 +82,9 @@ public:
 			return;
 		}
 
-		prog_h.setAll(simVars.setup.h0);
-		prog_u.setAll(0);
-		prog_v.setAll(0);
+		prog_h.set_all(simVars.setup.h0);
+		prog_u.set_all(0);
+		prog_v.set_all(0);
 
 		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 		{
@@ -678,8 +678,8 @@ void compute_polvani_initialization(
 
 #if 0
 		h = energy_init;
-		u.setAll(0);
-		v.setAll(0);
+		u.set_all(0);
+		v.set_all(0);
 		return;
 #endif
 
@@ -753,8 +753,8 @@ void compute_polvani_initialization(
 
 #if 0
 		h = psi;
-		u.setAll(0);
-		v.setAll(0);
+		u.set_all(0);
+		v.set_all(0);
 		return;
 #endif
 

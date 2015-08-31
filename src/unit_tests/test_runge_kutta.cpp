@@ -119,9 +119,9 @@ public:
 	{
 		simVars.timecontrol.current_timestep_nr = 0;
 
-		prog_h.setAll(test_function(time_test_function_order, 0));
-		prog_u.setAll(0);
-		prog_v.setAll(0);
+		prog_h.set_all(test_function(time_test_function_order, 0));
+		prog_u.set_all(0);
+		prog_v.set_all(0);
 	}
 
 
@@ -139,9 +139,9 @@ public:
 			double i_current_timestamp = -1
 	)
 	{
-		o_h_t.setAll(test_function_diff(time_test_function_order, i_current_timestamp));
-		o_u_t.setAll(0);
-		o_v_t.setAll(0);
+		o_h_t.set_all(test_function_diff(time_test_function_order, i_current_timestamp));
+		o_u_t.set_all(0);
+		o_v_t.set_all(0);
 
 		if (simVars.sim.CFL < 0)
 			o_dt = -simVars.sim.CFL;
@@ -323,7 +323,7 @@ int main(
 				{
 					DataArray<2> benchmark_h(simVars.disc.res);
 
-					benchmark_h.setAll(simulationTestRK->test_function(time_test_function_order, simVars.timecontrol.current_simulation_time));
+					benchmark_h.set_all(simulationTestRK->test_function(time_test_function_order, simVars.timecontrol.current_simulation_time));
 
 					double error = (simulationTestRK->prog_h-benchmark_h).reduce_rms_quad();
 					std::cout << "with function order " << fun_order << " with RK timestepping " << ts_order << " resulted in RMS error " << error << std::endl;

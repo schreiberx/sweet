@@ -97,9 +97,9 @@ public:
 
 		simVars.reset();
 
-		prog_P.setAll(simVars.setup.h0);
-		prog_u.setAll(0);
-		prog_v.setAll(0);
+		prog_P.set_all(simVars.setup.h0);
+		prog_u.set_all(0);
+		prog_v.set_all(0);
 
 		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 		{

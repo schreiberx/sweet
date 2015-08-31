@@ -94,9 +94,9 @@ public:
 		simVars.timecontrol.current_timestep_nr = 0;
 		simVars.timecontrol.current_simulation_time = 0;
 
-		prog_h.setAll(simVars.setup.h0);
-		prog_u.setAll(0);
-		prog_v.setAll(0);
+		prog_h.set_all(simVars.setup.h0);
+		prog_u.set_all(0);
+		prog_v.set_all(0);
 
 		if (simVars.setup.scenario == -1)
 		{
@@ -891,6 +891,20 @@ public:
 
 		case 'V':
 			simVars.misc.vis_id--;
+			break;
+
+		case 'c':
+			// dump data arrays
+			prog_h.file_saveData_ascii("swe_rexi_dump_h.csv");
+			prog_u.file_saveData_ascii("swe_rexi_dump_u.csv");
+			prog_v.file_saveData_ascii("swe_rexi_dump_v.csv");
+			break;
+
+		case 'l':
+			// dump data arrays
+			prog_h.file_loadData_ascii("swe_rexi_dump_h.csv");
+			prog_u.file_loadData_ascii("swe_rexi_dump_u.csv");
+			prog_v.file_loadData_ascii("swe_rexi_dump_v.csv");
 			break;
 		}
 	}

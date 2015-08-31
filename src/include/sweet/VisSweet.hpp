@@ -20,11 +20,15 @@
 /**
  * A visualization class specifically designed for SWEET applications
  */
-
 template <typename SimT>
 class VisSweet	:
 		public VisualizationEngine::ProgramCallbacks
 {
+	/**
+	 * Simulation class from the SWEET-using application
+	 *
+	 * Certain interfaces have to be implemented, see other programs for these interfaces
+	 */
 	SimT *simulation;
 
 	CGlDrawQuad *cGlDrawQuad;

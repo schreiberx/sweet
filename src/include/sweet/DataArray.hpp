@@ -17,6 +17,8 @@
 #include <iostream>
 #include <utility>
 #include <limits>
+#include <fstream>
+#include <iostream>
 #include <sweet/openmp_helper.hpp>
 
 #ifndef SWEET_USE_SPECTRAL_SPACE
@@ -109,8 +111,8 @@ public:
 	 */
 	bool temporary_data;
 
-/*
 
+#if 0
 private:
 	// http://stackoverflow.com/questions/124856/how-do-i-prevent-a-class-from-being-allocated-via-the-new-operator-id-like
 	// Prevent heap allocation
@@ -118,11 +120,12 @@ private:
 	void *operator new[](std::size_t);
 	void operator delete(void*);
 	void operator delete[](void*);
-*/
+#endif
 
 	/**
 	 * allocator which allocated memory blocks aligned at 128 byte boundaries
 	 */
+public:
 	template <typename T=void>
 	static
 	T *alloc_aligned_mem(
@@ -534,7 +537,7 @@ public:
 
 #if SWEET_USE_SPECTRAL_SPACE
 	inline
-	void setSpec(
+	void set_spec(
 			std::size_t j,
 			std::size_t i,
 			std::complex<double> &i_value
@@ -575,7 +578,7 @@ public:
 
 #if SWEET_USE_SPECTRAL_SPACE
 	inline
-	std::complex<double> getSpec(
+	std::complex<double> get_spec(
 			std::size_t j,
 			std::size_t i
 	)	const
@@ -594,7 +597,7 @@ public:
 
 
 	inline
-	void setAll(
+	void set_all(
 			double i_value
 	)
 	{
@@ -650,7 +653,7 @@ public:
 
 
 	inline
-	void spec_set(
+	void set_spec(
 			std::size_t j,
 			std::size_t i,
 			double i_value_re,
@@ -673,7 +676,7 @@ public:
 
 
 	inline
-	void spec_setAll(
+	void set_spec_all(
 			double i_value_re,
 			double i_value_im
 	)
@@ -700,7 +703,7 @@ public:
 	 * Note, that the x-frequencies are already mirrored.
 	 */
 	inline
-	void spec_diff_set(
+	void set_spec_diff(
 			std::size_t j,		///< j in [0, res[1]/2-1]
 			std::size_t i,		///< i in [0, res[0]/2-1]
 			double i_value_re,
@@ -762,7 +765,7 @@ public:
 	 * The phase specifies the shift from one amplitude to another one.
 	 */
 	inline
-	void spec_set_spectrum_with_ampl_and_phase(
+	void set_spec_spectrum_with_ampl_and_phase(
 			std::size_t j,		///< j in [0, res[1]/2-1]
 			std::size_t i,		///< i in [0, res[0]/2-1]
 			double i_value_amplitude,	///< amplitude in |R
@@ -775,7 +778,7 @@ public:
 		double c = cos(2.0*M_PIl*i_value_phase_shift)*i_value_amplitude;
 		double s = sin(2.0*M_PIl*i_value_phase_shift)*i_value_amplitude;
 
-		spec_set_spectrum(j, i, c, s);
+		set_spec_spectrum(j, i, c, s);
 	}
 
 
@@ -786,7 +789,7 @@ public:
 	 * The phase specifies the shift from one amplitude to another one.
 	 */
 	inline
-	void spec_set_spectrum(
+	void set_spec_spectrum(
 			std::size_t j,		///< j in [0, res[1]/2-1]
 			std::size_t i,		///< i in [0, res[0]/2-1]
 			double i_value_re,	///< amplitude in |R
@@ -848,7 +851,7 @@ public:
 	 * The phase specifies the shift from one amplitude to another one.
 	 */
 	inline
-	void spec_set_spectrum_A(
+	void set_spec_spectrum_A(
 			std::size_t j,		///< j in [0, res[1]/2-1]
 			std::size_t i,		///< i in [0, res[0]/2-1]
 			double i_value_re,	///< amplitude in |R
@@ -900,7 +903,7 @@ public:
 	 * The phase specifies the shift from one amplitude to another one.
 	 */
 	inline
-	void spec_set_spectrum_B(
+	void set_spec_spectrum_B(
 			std::size_t j,		///< j in [0, res[1]/2-1]
 			std::size_t i,		///< i in [0, res[0]/2-1]
 			double i_value_re,	///< amplitude in |R
@@ -1552,7 +1555,7 @@ public:
 
 public:
 	template <int S>
-	void setup_kernel(
+	void stencil_setup(
 			const double i_kernel_array[S][S],
 			double i_scale = 1.0
 	)
@@ -1584,7 +1587,7 @@ public:
 		// radius of kernel (half size)
 		std::size_t R = S>>1;
 
-		setAll(0);
+		set_all(0);
 
 		// left lower corner
 		//kernel_cart[    0:R[0]+1,       0:R[0]+1    ] = conv_kernel[    R[0]:,  R[0]:   ]
@@ -1667,7 +1670,7 @@ public:
 
 public:
 	template <int S>
-	void setup_kernel(
+	void stencil_setup(
 			const double i_kernel_array[S][S][S]
 	)
 	{
@@ -1677,13 +1680,206 @@ public:
 
 
 
+#if SWEET_USE_SPECTRAL_SPACE
+	/**
+	 * Invert the application of a linear operator in spectral space.
+	 * The operator is given in i_array_data
+	 */
+	inline
+	DataArray<D> spec_div_element_wise(
+			const DataArray<D> &i_array_data,	///< operator
+			double i_denom_zeros_scalar = 0.0,
+			double i_tolerance = 0.0			///< set tolerance to 0, since we setup the values in the spectral operator directly
+	)	const
+	{
+		DataArray<D> out(this->resolution);
+		out.temporary_data = true;
+
+		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
+
+		// only makes sense, if this is an operator created in spectral space
+		assert(i_array_data.array_data_spectral_space_valid == true);
+
+		requestDataInSpectralSpace();
+		rw_array_data.requestDataInSpectralSpace();
+
+		// determine maximum value for tolerance
+		double max_value = i_array_data.reduce_spec_maxAbs();
+		i_tolerance *= max_value;
+		i_tolerance *= (resolution[0]+resolution[1]);	// the larger the matrix, the less the accuracy
+
+#pragma omp parallel for OPENMP_SIMD
+		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
+		{
+			double ar = array_data_spectral_space[i];
+			double ai = array_data_spectral_space[i+1];
+			double br = i_array_data.array_data_spectral_space[i];
+			double bi = i_array_data.array_data_spectral_space[i+1];
+
+			double den = (br*br+bi*bi);
+
+			if (std::abs(den) <= i_tolerance)
+			{
+				// For Laplace solution, this is the integration constant C
+				out.array_data_spectral_space[i] = ar*i_denom_zeros_scalar;
+				out.array_data_spectral_space[i+1] = ai*i_denom_zeros_scalar;
+			}
+			else
+			{
+				out.array_data_spectral_space[i] = (ar*br + ai*bi)/den;
+				out.array_data_spectral_space[i+1] = (ai*br - ar*bi)/den;
+			}
+		}
+
+		out.array_data_spectral_space_valid = true;
+		out.array_data_cartesian_space_valid = false;
+
+		return out;
+	}
+#endif
+
+
+#if SWEET_USE_SPECTRAL_DEALIASING && SWEET_USE_SPECTRAL_SPACE
+
+	/**
+	 * scale the solution to avoid aliasing effects for handling non-linear terms
+	 */
+	inline
+	DataArray<D> aliasing_scaleUp(
+			std::size_t *i_new_resolution = nullptr
+	)	const
+	{
+		std::size_t new_resolution[D];
+
+		if (i_new_resolution == nullptr)
+		{
+			for (int i = 0; i < D; i++)
+			{
+				new_resolution[i] = (this->resolution[i]*3)/2;
+//				new_resolution[i] = (this->resolution[i]*3)/2-1;
+//				new_resolution[i] = (this->resolution[i]*2);
+
+				if ((new_resolution[i] & 1) != 0)
+				{
+					std::cerr << "Odd resolution for dealiasing not supported, please change your resolution" << std::endl;
+					exit(-1);
+				}
+			}
+		}
+		else
+		{
+			for (int i = 0; i < D; i++)
+				new_resolution[i] = i_new_resolution[i];
+		}
+
+		DataArray<D> out(new_resolution);
+//		out.temporary_data = true;
+		out.aliasing_scaled = true;
+
+		fftAliasingTestAndInit(out);
+
+		requestDataInSpectralSpace();
+
+		if (D != 2)
+		{
+			std::cerr << "TODO: Only 2D so far supported" << std::endl;
+			exit(-1);
+		}
+
+		out.set_spec_all(0, 0);
+
+		// TODO: this does not work once distributed memory is activated
+		#pragma omp parallel for
+		for (std::size_t j = 0; j < resolution_spec[1]/2; j++)
+		{
+			// lower quadrant
+			memcpy(
+					out.array_data_spectral_space+(j*out.range_spec_size[0])*2,
+					array_data_spectral_space+(j*range_spec_size[0])*2,
+					sizeof(double)*range_spec_size[0]*2
+				);
+
+			// top quadrant
+			memcpy(
+					out.array_data_spectral_space+((out.resolution_spec[1]-resolution_spec[1]/2+j)*out.range_spec_size[0])*2,
+					array_data_spectral_space+((resolution_spec[1]-resolution_spec[1]/2+j)*range_spec_size[0])*2,
+					sizeof(double)*range_spec_size[0]*2
+				);
+		}
+
+		double scale = ((double)new_resolution[0]*(double)new_resolution[1])/((double)resolution[0]*(double)resolution[1]);
+
+		#pragma omp parallel for OPENMP_SIMD
+		for (std::size_t i = 0; i < out.array_data_spectral_length; i++)
+			out.array_data_spectral_space[i] *= scale;
+
+		out.array_data_spectral_space_valid = true;
+		out.array_data_cartesian_space_valid = false;
+
+		return out;
+	}
+
+	DataArray<D> aliasing_scaleDown(
+			std::size_t *i_new_resolution
+	)
+	{
+		aliasing_scaled = true;
+
+		DataArray<D> out(i_new_resolution);
+//		out.temporary_data = true;
+		out.aliasing_scaled = false;
+
+		fftAliasingTestAndInit(out);
+
+		requestDataInSpectralSpace();
+
+		if (D != 2)
+		{
+			std::cerr << "TODO: Only 2D so far supported" << std::endl;
+			exit(-1);
+		}
+
+		#pragma omp parallel for
+		for (std::size_t j = 0; j < out.resolution_spec[1]/2; j++)
+		{
+			// lower quadrant
+			memcpy(
+					out.array_data_spectral_space+(j*out.range_spec_size[0])*2,
+					array_data_spectral_space+(j*range_spec_size[0])*2,
+					sizeof(double)*out.range_spec_size[0]*2
+				);
+
+			// top quadrant
+			memcpy(
+					out.array_data_spectral_space+((out.resolution_spec[1]-out.resolution_spec[1]/2+j)*out.range_spec_size[0])*2,
+					array_data_spectral_space+((resolution_spec[1]-out.resolution_spec[1]/2+j)*range_spec_size[0])*2,
+					sizeof(double)*out.range_spec_size[0]*2
+				);
+		}
+
+		double scale = ((double)i_new_resolution[0]*(double)i_new_resolution[1])/((double)resolution[0]*(double)resolution[1]);
+
+		#pragma omp parallel for OPENMP_SIMD
+		for (std::size_t i = 0; i < out.array_data_spectral_length; i++)
+			out.array_data_spectral_space[i] *= scale;
+
+		out.array_data_spectral_space_valid = true;
+		out.array_data_cartesian_space_valid = false;
+
+		return out;
+	}
+
+#endif
+
+
+
 public:
 	/**
 	 * assignment operator
 	 */
 	DataArray<D> &operator=(double i_value)
 	{
-		setAll(i_value);
+		set_all(i_value);
 		return *this;
 	}
 
@@ -1694,7 +1890,7 @@ public:
 	 */
 	DataArray<D> &operator=(int i_value)
 	{
-		setAll(i_value);
+		set_all(i_value);
 		return *this;
 	}
 
@@ -1854,197 +2050,6 @@ public:
 		return out;
 	}
 
-
-#if SWEET_USE_SPECTRAL_SPACE
-	/**
-	 * Invert the application of a linear operator in spectral space.
-	 * The operator is given in i_array_data
-	 */
-	inline
-	DataArray<D> spec_div_element_wise(
-			const DataArray<D> &i_array_data,	///< operator
-			double i_denom_zeros_scalar = 0.0,
-			double i_tolerance = 0.0			///< set tolerance to 0, since we setup the values in the spectral operator directly
-	)	const
-	{
-		DataArray<D> out(this->resolution);
-		out.temporary_data = true;
-
-		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
-
-		// only makes sense, if this is an operator created in spectral space
-		assert(i_array_data.array_data_spectral_space_valid == true);
-
-		requestDataInSpectralSpace();
-		rw_array_data.requestDataInSpectralSpace();
-
-		// determine maximum value for tolerance
-		double max_value = i_array_data.reduce_spec_maxAbs();
-		i_tolerance *= max_value;
-		i_tolerance *= (resolution[0]+resolution[1]);	// the larger the matrix, the less the accuracy
-
-#pragma omp parallel for OPENMP_SIMD
-		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
-		{
-			double ar = array_data_spectral_space[i];
-			double ai = array_data_spectral_space[i+1];
-			double br = i_array_data.array_data_spectral_space[i];
-			double bi = i_array_data.array_data_spectral_space[i+1];
-
-			double den = (br*br+bi*bi);
-
-			if (std::abs(den) <= i_tolerance)
-			{
-				// For Laplace solution, this is the integration constant C
-				out.array_data_spectral_space[i] = ar*i_denom_zeros_scalar;
-				out.array_data_spectral_space[i+1] = ai*i_denom_zeros_scalar;
-			}
-			else
-			{
-				out.array_data_spectral_space[i] = (ar*br + ai*bi)/den;
-				out.array_data_spectral_space[i+1] = (ai*br - ar*bi)/den;
-			}
-		}
-
-		out.array_data_spectral_space_valid = true;
-		out.array_data_cartesian_space_valid = false;
-
-		return out;
-	}
-#endif
-
-
-#if SWEET_USE_SPECTRAL_DEALIASING && SWEET_USE_SPECTRAL_SPACE
-
-	/**
-	 * scale the solution to avoid aliasing effects for handling non-linear terms
-	 */
-	inline
-	DataArray<D> aliasing_scaleUp(
-			std::size_t *i_new_resolution = nullptr
-	)	const
-	{
-		std::size_t new_resolution[D];
-
-		if (i_new_resolution == nullptr)
-		{
-			for (int i = 0; i < D; i++)
-			{
-				new_resolution[i] = (this->resolution[i]*3)/2;
-//				new_resolution[i] = (this->resolution[i]*3)/2-1;
-//				new_resolution[i] = (this->resolution[i]*2);
-
-				if ((new_resolution[i] & 1) != 0)
-				{
-					std::cerr << "Odd resolution for dealiasing not supported, please change your resolution" << std::endl;
-					exit(-1);
-				}
-			}
-		}
-		else
-		{
-			for (int i = 0; i < D; i++)
-				new_resolution[i] = i_new_resolution[i];
-		}
-
-		DataArray<D> out(new_resolution);
-//		out.temporary_data = true;
-		out.aliasing_scaled = true;
-
-		fftAliasingTestAndInit(out);
-
-		requestDataInSpectralSpace();
-
-		if (D != 2)
-		{
-			std::cerr << "TODO: Only 2D so far supported" << std::endl;
-			exit(-1);
-		}
-
-		out.spec_setAll(0, 0);
-
-		// TODO: this does not work once distributed memory is activated
-		#pragma omp parallel for
-		for (std::size_t j = 0; j < resolution_spec[1]/2; j++)
-		{
-			// lower quadrant
-			memcpy(
-					out.array_data_spectral_space+(j*out.range_spec_size[0])*2,
-					array_data_spectral_space+(j*range_spec_size[0])*2,
-					sizeof(double)*range_spec_size[0]*2
-				);
-
-			// top quadrant
-			memcpy(
-					out.array_data_spectral_space+((out.resolution_spec[1]-resolution_spec[1]/2+j)*out.range_spec_size[0])*2,
-					array_data_spectral_space+((resolution_spec[1]-resolution_spec[1]/2+j)*range_spec_size[0])*2,
-					sizeof(double)*range_spec_size[0]*2
-				);
-		}
-
-		double scale = ((double)new_resolution[0]*(double)new_resolution[1])/((double)resolution[0]*(double)resolution[1]);
-
-		#pragma omp parallel for OPENMP_SIMD
-		for (std::size_t i = 0; i < out.array_data_spectral_length; i++)
-			out.array_data_spectral_space[i] *= scale;
-
-		out.array_data_spectral_space_valid = true;
-		out.array_data_cartesian_space_valid = false;
-
-		return out;
-	}
-
-	DataArray<D> aliasing_scaleDown(
-			std::size_t *i_new_resolution
-	)
-	{
-		aliasing_scaled = true;
-
-		DataArray<D> out(i_new_resolution);
-//		out.temporary_data = true;
-		out.aliasing_scaled = false;
-
-		fftAliasingTestAndInit(out);
-
-		requestDataInSpectralSpace();
-
-		if (D != 2)
-		{
-			std::cerr << "TODO: Only 2D so far supported" << std::endl;
-			exit(-1);
-		}
-
-		#pragma omp parallel for
-		for (std::size_t j = 0; j < out.resolution_spec[1]/2; j++)
-		{
-			// lower quadrant
-			memcpy(
-					out.array_data_spectral_space+(j*out.range_spec_size[0])*2,
-					array_data_spectral_space+(j*range_spec_size[0])*2,
-					sizeof(double)*out.range_spec_size[0]*2
-				);
-
-			// top quadrant
-			memcpy(
-					out.array_data_spectral_space+((out.resolution_spec[1]-out.resolution_spec[1]/2+j)*out.range_spec_size[0])*2,
-					array_data_spectral_space+((resolution_spec[1]-out.resolution_spec[1]/2+j)*range_spec_size[0])*2,
-					sizeof(double)*out.range_spec_size[0]*2
-				);
-		}
-
-		double scale = ((double)i_new_resolution[0]*(double)i_new_resolution[1])/((double)resolution[0]*(double)resolution[1]);
-
-		#pragma omp parallel for OPENMP_SIMD
-		for (std::size_t i = 0; i < out.array_data_spectral_length; i++)
-			out.array_data_spectral_space[i] *= scale;
-
-		out.array_data_spectral_space_valid = true;
-		out.array_data_cartesian_space_valid = false;
-
-		return out;
-	}
-
-#endif
 
 
 	/**
@@ -2700,6 +2705,90 @@ public:
 				std::cout << std::endl;
 			}
 		}
+	}
+
+
+	/**
+	 * Write data to ASCII file
+	 *
+	 * Each array row is stored to a line.
+	 * Per default, a tab separator is used in each line to separate the values.
+	 */
+	bool file_saveData_ascii(
+			const char *i_filename,	///< Name of file to store data to
+			char i_separator = '\t'	///< separator to use for each line
+	)
+	{
+		std::ofstream file(i_filename, std::ios_base::out);
+
+		for (int y = resolution[1]-1; y >= 0; y--)
+		{
+			for (std::size_t x = 0; x < resolution[0]; x++)
+			{
+				file << get(y, x);
+
+				if (x < resolution[0]-1)
+					file << i_separator;
+				else
+					file << std::endl;
+			}
+		}
+
+		return true;
+	}
+
+
+	/**
+	 * Load data from ASCII file.
+	 * This is a non-bullet proof implementation, so be careful for invalid file formats.
+	 *
+	 * New array rows are initialized with a newline.
+	 * Each line then has the floating point values stored separated with space ' ' or tabs '\t'
+	 *
+	 * Note, that the number of values in the ASCII file have to match the resolution of the DataArray.
+	 */
+	bool file_loadData_ascii(
+			const char *i_filename	///< Name of file to load data from
+	)
+	{
+		std::ifstream file(i_filename);
+
+		for (std::size_t row = 0; row < resolution[1]; row++)
+		{
+			std::string line;
+			std::getline(file, line);
+			if (!file.good())
+			{
+				std::cerr << "Failed to read data from file " << i_filename << " in line " << row << std::endl;
+				return false;
+			}
+
+			std::size_t start = 0;
+			std::size_t col = 0;
+			for (std::size_t pos = 0; pos < line.size()+1; pos++)
+			{
+				if (pos < line.size())
+					if (line[pos] != '\t' && line[pos] != ' ')
+						continue;
+
+				std::string strvalue = line.substr(start, pos-start);
+
+				double i_value = atof(strvalue.c_str());
+
+				set(resolution[1]-row-1, col, i_value);
+
+				col++;
+				start = pos+1;
+		    }
+
+			if (col < resolution[0])
+			{
+				std::cerr << "Failed to read data from file " << i_filename << " in line " << row << ", column " << col << std::endl;
+				return false;
+			}
+		}
+
+		return true;
 	}
 };
 

@@ -152,10 +152,10 @@ int main(int i_argc, char *i_argv[])
 			DataArray<2> two(res);
 			DataArray<2> five(res);
 
-			zero.setAll(0);
-			two.setAll(2);
-			five.setAll(5);
-			h.setAll(0);
+			zero.set_all(0);
+			two.set_all(2);
+			five.set_all(5);
+			h.set_all(0);
 
 			double res2 = (double)(res[0]*res[1]);
 

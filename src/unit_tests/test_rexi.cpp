@@ -420,7 +420,7 @@ int main(int i_argc, char *i_argv[])
 						Complex2DArrayFFT test_a(parameters.disc.res);
 
 						// test add scalar spec
-						test_a.setAll(test_value);
+						test_a.set_all(test_value);
 						double error_4 = (test_a.toSpec().addScalar_Spec(-test_value)).toCart().reduce_norm2_quad()/(parameters.disc.res[0]*parameters.disc.res[1]);
 						std::cout << "ERROR 4: " << error_4 << std::endl;
 
@@ -436,7 +436,7 @@ int main(int i_argc, char *i_argv[])
 						Complex2DArrayFFT test_a(parameters.disc.res);
 
 						// test add scalar cart
-						test_a.setAll(test_value);
+						test_a.set_all(test_value);
 						double error_5 = (test_a.addScalar_Cart(-test_value)).reduce_norm2_quad()/(parameters.disc.res[0]*parameters.disc.res[1]);
 						std::cout << "ERROR 5: " << error_5 << std::endl;
 

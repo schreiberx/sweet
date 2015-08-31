@@ -61,9 +61,9 @@ public:
 		simVars.timecontrol.current_timestep_nr = 0;
 		simVars.timecontrol.current_simulation_time = 0;
 
-		prog_h.setAll(simVars.setup.h0);
-		prog_u.setAll(0);
-		prog_v.setAll(0);
+		prog_h.set_all(simVars.setup.h0);
+		prog_u.set_all(0);
+		prog_v.set_all(0);
 
 		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 		{

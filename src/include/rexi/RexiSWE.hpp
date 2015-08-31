@@ -123,9 +123,9 @@ public:
 		u0 = u0.toSpec()*(1.0/tau);
 		v0 = v0.toSpec()*(1.0/tau);
 
-		io_h.setAll(0);
-		io_u.setAll(0);
-		io_v.setAll(0);
+		io_h.set_all(0);
+		io_u.set_all(0);
+		io_v.set_all(0);
 
 
 		// TODO: compute only half of it

@@ -47,17 +47,17 @@ public:
 	{
 		simVars.timecontrol.current_timestep_nr = 0;
 
-		h.setAll(simVars.setup.h0);
+		h.set_all(simVars.setup.h0);
 
 		if (std::isinf(simVars.bogus.var[0]))
 		{
-			u.setAll(0);
-			v.setAll(0);
+			u.set_all(0);
+			v.set_all(0);
 		}
 		else
 		{
-			u.setAll(simVars.bogus.var[0]);
-			v.setAll(simVars.bogus.var[1]);
+			u.set_all(simVars.bogus.var[0]);
+			v.set_all(simVars.bogus.var[1]);
 		}
 
 		double center_x = 0.7;
