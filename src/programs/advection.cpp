@@ -3,12 +3,12 @@
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
-#include "sweet/SimulationParameters.hpp"
+#include <sweet/SimulationVariables.hpp>
 #include "sweet/Operators2D.hpp"
 #include <unistd.h>
 #include <stdio.h>
 
-SimulationParameters parameters;
+SimulationVariables simVars;
 
 
 class SimulationSWE
@@ -27,16 +27,16 @@ public:
 
 public:
 	SimulationSWE()	:
-		h(parameters.res),
-		u(parameters.res),
-		v(parameters.res),
+		h(simVars.disc.res),
+		u(simVars.disc.res),
+		v(simVars.disc.res),
 
-		hu(parameters.res),
-		hv(parameters.res),
+		hu(simVars.disc.res),
+		hv(simVars.disc.res),
 
-		h_t(parameters.res),
+		h_t(simVars.disc.res),
 
-		op(parameters.res, parameters.sim_domain_size, parameters.use_spectral_diffs)
+		op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_diffs)
 	{
 		reset();
 	}
@@ -45,62 +45,62 @@ public:
 
 	void reset()
 	{
-		parameters.status_timestep_nr = 0;
+		simVars.timecontrol.current_timestep_nr = 0;
 
-		h.setAll(parameters.setup_h0);
+		h.setAll(simVars.setup.h0);
 
-		if (std::isinf(parameters.bogus_var0))
+		if (std::isinf(simVars.bogus.var[0]))
 		{
 			u.setAll(0);
 			v.setAll(0);
 		}
 		else
 		{
-			u.setAll(parameters.bogus_var0);
-			v.setAll(parameters.bogus_var1);
+			u.setAll(simVars.bogus.var[0]);
+			v.setAll(simVars.bogus.var[1]);
 		}
 
 		double center_x = 0.7;
 		double center_y = 0.6;
 
-		if (parameters.setup_scenario == 0)
+		if (simVars.setup.scenario == 0)
 		{
 			/*
 			 * radial dam break
 			 */
 			double radius = 0.2;
-			for (std::size_t j = 0; j < parameters.res[1]; j++)
+			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 			{
-				for (std::size_t i = 0; i < parameters.res[0]; i++)
+				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
 				{
-					double x = ((double)i+0.5)/(double)parameters.res[0];
-					double y = ((double)j+0.5)/(double)parameters.res[1];
+					double x = ((double)i+0.5)/(double)simVars.disc.res[0];
+					double y = ((double)j+0.5)/(double)simVars.disc.res[1];
 
 					double dx = x-center_x;
 					double dy = y-center_y;
 
 					if (radius*radius >= dx*dx+dy*dy)
-						h.set(j,i, parameters.setup_h0+1.0);
+						h.set(j,i, simVars.setup.h0+1.0);
 				}
 			}
 		}
 
-		if (parameters.setup_scenario == 1)
+		if (simVars.setup.scenario == 1)
 		{
 			/*
 			 * fun with Gaussian
 			 */
-			for (std::size_t j = 0; j < parameters.res[1]; j++)
+			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 			{
-				for (std::size_t i = 0; i < parameters.res[0]; i++)
+				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
 				{
-					double x = ((double)i+0.5)/(double)parameters.res[0];
-					double y = ((double)j+0.5)/(double)parameters.res[1];
+					double x = ((double)i+0.5)/(double)simVars.disc.res[0];
+					double y = ((double)j+0.5)/(double)simVars.disc.res[1];
 
 					double dx = x-center_x;
 					double dy = y-center_y;
 
-					h.set(j,i, parameters.setup_h0+std::exp(-50.0*(dx*dx + dy*dy)));
+					h.set(j,i, simVars.setup.h0+std::exp(-50.0*(dx*dx + dy*dy)));
 				}
 			}
 		}
@@ -110,11 +110,11 @@ public:
 
 	void run_timestep()
 	{
-        double dt = parameters.sim_CFL*std::min(parameters.sim_cell_size[0]/u.reduce_maxAbs(), parameters.sim_cell_size[1]/v.reduce_maxAbs());
+        double dt = simVars.sim.CFL*std::min(simVars.disc.cell_size[0]/u.reduce_maxAbs(), simVars.disc.cell_size[1]/v.reduce_maxAbs());
         if (std::isinf(dt))
-        	dt = parameters.sim_CFL*parameters.sim_cell_size[0]/0.000001;
+        	dt = simVars.sim.CFL*simVars.disc.cell_size[0]/0.000001;
 
-        parameters.timestepping_timestep_size = dt;
+        simVars.disc.timestepping_timestep_size = dt;
 
         // 0: staggered
         // 1: non-staggered
@@ -151,7 +151,7 @@ public:
 					// u is negative
 					+(h*u.return_value_if_negative())				// outflow
 					-op.shift_left(h*u.return_value_if_negative())	// inflow
-				)*(1.0/parameters.sim_cell_size[0])				// here we see a finite-difference-like formulation
+				)*(1.0/simVars.disc.cell_size[0])				// here we see a finite-difference-like formulation
 				+
 				(
 					// v is positive
@@ -161,10 +161,10 @@ public:
 					// v is negative
 					+(h*v.return_value_if_negative())				// outflow
 					-op.shift_down(h*v.return_value_if_negative())	// inflow
-				)*(1.0/parameters.sim_cell_size[1])
+				)*(1.0/simVars.disc.cell_size[1])
 			);
 #endif
-		parameters.status_timestep_nr++;
+		simVars.timecontrol.current_timestep_nr++;
 	}
 
 
@@ -178,7 +178,7 @@ public:
 	 */
 	void vis_post_frame_processing(int i_num_iterations)
 	{
-		if (parameters.run_simulation)
+		if (simVars.timecontrol.run_simulation_timesteps)
 			for (int i = 0; i < i_num_iterations; i++)
 				run_timestep();
 	}
@@ -189,7 +189,7 @@ public:
 			double *o_aspect_ratio
 	)
 	{
-		switch (parameters.vis_id)
+		switch (simVars.misc.vis_id)
 		{
 		case 0:
 			*o_dataArray = &h;
@@ -203,7 +203,7 @@ public:
 			*o_dataArray = &v;
 			break;
 		}
-		*o_aspect_ratio = parameters.sim_domain_size[1] / parameters.sim_domain_size[0];
+		*o_aspect_ratio = simVars.sim.domain_size[1] / simVars.sim.domain_size[0];
 	}
 
 
@@ -211,13 +211,13 @@ public:
 	const char* vis_get_status_string()
 	{
 		static char title_string[1024];
-		sprintf(title_string, "Timestep: %i, timestep size: %e, Mass: %e, Energy: %e, Potential Entrophy: %e", parameters.status_timestep_nr, parameters.timestepping_timestep_size, parameters.diagnostics_mass, parameters.diagnostics_energy, parameters.diagnostics_potential_entrophy);
+		sprintf(title_string, "Timestep: %i, timestep size: %e", simVars.timecontrol.current_timestep_nr, simVars.disc.timestepping_timestep_size);
 		return title_string;
 	}
 
 	void vis_pause()
 	{
-		parameters.run_simulation = !parameters.run_simulation;
+		simVars.timecontrol.run_simulation_timesteps = !simVars.timecontrol.run_simulation_timesteps;
 	}
 
 
@@ -226,11 +226,11 @@ public:
 		switch(i_key)
 		{
 		case 'v':
-			parameters.vis_id++;
+			simVars.misc.vis_id++;
 			break;
 
 		case 'V':
-			parameters.vis_id--;
+			simVars.misc.vis_id--;
 			break;
 		}
 	}
@@ -246,7 +246,7 @@ int main(int i_argc, char *i_argv[])
 			nullptr
 	};
 
-	if (!parameters.setup(i_argc, i_argv, bogus_var_names))
+	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
 		std::cout << std::endl;
 		std::cout << "Program-specific options:" << std::endl;
@@ -255,7 +255,7 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 	}
 
-	if (std::isinf(parameters.bogus_var0) || std::isinf(parameters.bogus_var1))
+	if (std::isinf(simVars.bogus.var[0]) || std::isinf(simVars.bogus.var[1]))
 	{
 		std::cout << "Both velocities have to be set, see parameters --velocity-u, --velocity-v" << std::endl;
 		return -1;
@@ -272,10 +272,10 @@ int main(int i_argc, char *i_argv[])
 	{
 		simulationSWE->run_timestep();
 
-		if (parameters.verbosity > 2)
-			std::cout << parameters.status_simulation_time << std::endl;
+		if (simVars.misc.verbosity > 2)
+			std::cout << simVars.timecontrol.current_simulation_time << std::endl;
 
-		if (parameters.status_simulation_time > parameters.max_simulation_time)
+		if (simVars.timecontrol.current_simulation_time > simVars.timecontrol.max_simulation_time)
 			break;
 	}
 #endif

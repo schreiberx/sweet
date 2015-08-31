@@ -13,7 +13,7 @@
 
 #include <sweet/DataArray.hpp>
 #include <sweet/Complex2DArrayFFT.hpp>
-#include <sweet/SimulationParameters.hpp>
+#include <sweet/SimulationVariables.hpp>
 
 #include <math.h>
 #include <ostream>
@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <complex>
 
-SimulationParameters parameters;
+SimulationVariables simVars;
 
 #if SWEET_DEBUG_MODE
 #include <fenv.h>
@@ -45,13 +45,8 @@ int main(int i_argc, char *i_argv[])
 	trapfpe();
 #endif
 
-	std::cout << std::setprecision(14);
-	std::cerr << std::setprecision(14);
-	std::cout << std::setprecision(6);
-	std::cerr << std::setprecision(6);
-
-	SimulationParameters parameters;
-	parameters.use_spectral_diffs = 1;
+	SimulationVariables parameters;
+	parameters.disc.use_spectral_diffs = 1;
 
 	if (!parameters.setup(i_argc, i_argv))
 	{
@@ -59,7 +54,7 @@ int main(int i_argc, char *i_argv[])
 	}
 
 
-	if (parameters.use_spectral_diffs)
+	if (parameters.disc.use_spectral_diffs)
 		std::cout << "Using spectral diffs" << std::endl;
 	else
 		std::cout << "Using kernel-based diffs" << std::endl;
@@ -70,8 +65,8 @@ int main(int i_argc, char *i_argv[])
 	/*
 	 * iterate over resolutions, starting by res[0] given e.g. by program parameter -n
 	 */
-	std::size_t res_x = parameters.res[0];
-	std::size_t res_y = parameters.res[1];
+	std::size_t res_x = parameters.disc.res[0];
+	std::size_t res_y = parameters.disc.res[1];
 
 	std::size_t max_res = 2048;
 
@@ -126,9 +121,9 @@ int main(int i_argc, char *i_argv[])
 		std::size_t res[2] = {res_x, res_y};
 
 
-		parameters.res[0] = res[0];
-		parameters.res[1] = res[1];
-		parameters.reset();
+		parameters.disc.res[0] = res[0];
+		parameters.disc.res[1] = res[1];
+		simVars..reset();
 
 
 		/*
@@ -140,7 +135,7 @@ int main(int i_argc, char *i_argv[])
 		{
 			std::cout << "**********************************************" << std::endl;
 			std::cout << "> Resolution (" << res_x << "x" << res_y << ")" << std::endl;
-			std::cout << "> Domain size (" << parameters.sim_domain_size[0] << "x" << parameters.sim_domain_size[1] << ")" << std::endl;
+			std::cout << "> Domain size (" << parameters.sim.domain_size[0] << "x" << parameters.sim.domain_size[1] << ")" << std::endl;
 			std::cout << "**********************************************" << std::endl;
 			std::cout << "error tol = " << eps << std::endl;
 			std::cout << "**********************************************" << std::endl;
@@ -254,9 +249,9 @@ int main(int i_argc, char *i_argv[])
 
 
 			// create sinus curve
-			for (std::size_t j = 0; j < parameters.res[1]; j++)
+			for (std::size_t j = 0; j < parameters.disc.res[1]; j++)
 			{
-				for (std::size_t i = 0; i < parameters.res[0]; i++)
+				for (std::size_t i = 0; i < parameters.disc.res[0]; i++)
 				{
 					double x = ((double)i)/(double)res[0];
 					double y = ((double)j)/(double)res[1];
@@ -309,26 +304,26 @@ int main(int i_argc, char *i_argv[])
 			Complex2DArrayFFT u(res);
 			Complex2DArrayFFT v(res);
 
-//			Operators2D op(parameters.res, parameters.sim_domain_size, parameters.use_spectral_diffs);
+//			Operators2D op(parameters.discretization.res, parameters.sim.domain_size, parameters.disc.use_spectral_diffs);
 
 			Complex2DArrayFFT op_diff2_c_x(res);
 			Complex2DArrayFFT op_diff2_c_y(res);
-			op_diff2_c_x.op_setup_diff2_x(parameters.sim_domain_size);
-			op_diff2_c_y.op_setup_diff2_y(parameters.sim_domain_size);
+			op_diff2_c_x.op_setup_diff2_x(parameters.sim.domain_size);
+			op_diff2_c_y.op_setup_diff2_y(parameters.sim.domain_size);
 
 			Complex2DArrayFFT op_diff_c_x(res);
-			op_diff_c_x.op_setup_diff_x(parameters.sim_domain_size);
+			op_diff_c_x.op_setup_diff_x(parameters.sim.domain_size);
 
 			Complex2DArrayFFT op_diff_c_y(res);
-			op_diff_c_y.op_setup_diff_y(parameters.sim_domain_size);
+			op_diff_c_y.op_setup_diff_y(parameters.sim.domain_size);
 
 
-			for (std::size_t j = 0; j < parameters.res[1]; j++)
+			for (std::size_t j = 0; j < parameters.disc.res[1]; j++)
 			{
-				for (std::size_t i = 0; i < parameters.res[0]; i++)
+				for (std::size_t i = 0; i < parameters.disc.res[0]; i++)
 				{
-					double x = ((double)i+0.5)/(double)parameters.res[0];
-					double y = ((double)j+0.5)/(double)parameters.res[1];
+					double x = ((double)i+0.5)/(double)parameters.disc.res[0];
+					double y = ((double)j+0.5)/(double)parameters.disc.res[1];
 
 					u.set(j, i, sin(freq_x*M_PIl*x), 0.0);
 					v.set(j, i, cos(freq_y*M_PIl*y), 0.0);
@@ -393,26 +388,26 @@ int main(int i_argc, char *i_argv[])
 		 */
 		{
 			Complex2DArrayFFT op_diff_c_x(res);
-			op_diff_c_x.op_setup_diff_x(parameters.sim_domain_size);
+			op_diff_c_x.op_setup_diff_x(parameters.sim.domain_size);
 
 			Complex2DArrayFFT op_diff_c_y(res);
-			op_diff_c_y.op_setup_diff_y(parameters.sim_domain_size);
+			op_diff_c_y.op_setup_diff_y(parameters.sim.domain_size);
 
 			Complex2DArrayFFT u(res);
 			Complex2DArrayFFT v(res);
 			Complex2DArrayFFT h_diff_x(res);
 			Complex2DArrayFFT h_diff_y(res);
 
-//			Operators2D op(parameters.res, parameters.sim_domain_size, parameters.use_spectral_diffs);
+//			Operators2D op(parameters.discretization.res, parameters.sim.domain_size, parameters.disc.use_spectral_diffs);
 
-			for (std::size_t j = 0; j < parameters.res[1]; j++)
+			for (std::size_t j = 0; j < parameters.disc.res[1]; j++)
 			{
-				for (std::size_t i = 0; i < parameters.res[0]; i++)
+				for (std::size_t i = 0; i < parameters.disc.res[0]; i++)
 				{
-					double x = ((double)i+0.5)/(double)parameters.res[0];
-					double y = ((double)j+0.5)/(double)parameters.res[1];
-//					double x = ((double)i)/(double)parameters.res[0];
-//					double y = ((double)j)/(double)parameters.res[1];
+					double x = ((double)i+0.5)/(double)parameters.disc.res[0];
+					double y = ((double)j+0.5)/(double)parameters.disc.res[1];
+//					double x = ((double)i)/(double)parameters.discretization.res[0];
+//					double y = ((double)j)/(double)parameters.discretization.res[1];
 
 					u.set(j, i, sin(freq_x*M_PIl*x), 0);
 					v.set(j, i, cos(freq_y*M_PIl*y), 0);
@@ -425,24 +420,24 @@ int main(int i_argc, char *i_argv[])
 
 					h_diff_x.set(
 						j, i,
-						freq_x*M_PIl*cos(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)/(double)parameters.sim_domain_size[0],
+						freq_x*M_PIl*cos(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)/(double)parameters.sim.domain_size[0],
 						0
 					);
 
 					h_diff_y.set(
 						j, i,
-						-sin(freq_x*M_PIl*x)*freq_y*M_PIl*sin(freq_y*M_PIl*y)/(double)parameters.sim_domain_size[1],
+						-sin(freq_x*M_PIl*x)*freq_y*M_PIl*sin(freq_y*M_PIl*y)/(double)parameters.sim.domain_size[1],
 						0
 					);
 				}
 			}
 
 
-			double res_normalization = std::sqrt(1.0/parameters.res2_dbl);
+			double res_normalization = std::sqrt(1.0/(parameters.disc.res[0]*parameters.disc.res[1]));
 
 			// normalization for diff = 2 pi / L
-			double err_x = (op_diff_c_x(h_cart.toSpec()).toCart()-h_diff_x).reduce_norm2_quad()*res_normalization*parameters.sim_domain_size[0]/(2.0*M_PIl);
-			double err_y = (op_diff_c_y(h_cart.toSpec()).toCart()-h_diff_y).reduce_norm2_quad()*res_normalization*parameters.sim_domain_size[1]/(2.0*M_PIl);
+			double err_x = (op_diff_c_x(h_cart.toSpec()).toCart()-h_diff_x).reduce_norm2_quad()*res_normalization*parameters.sim.domain_size[0]/(2.0*M_PIl);
+			double err_y = (op_diff_c_y(h_cart.toSpec()).toCart()-h_diff_y).reduce_norm2_quad()*res_normalization*parameters.sim.domain_size[1]/(2.0*M_PIl);
 			double err_z = (u*v-h_cart).reduce_norm2_quad()*res_normalization;
 
 			std::cout << "error diff x = " << err_x << std::endl;
@@ -531,14 +526,14 @@ int main(int i_argc, char *i_argv[])
 			Complex2DArrayFFT h_diff2_x(res);
 			Complex2DArrayFFT h_diff2_y(res);
 
-//			Operators2D op(parameters.res, parameters.sim_domain_size, parameters.use_spectral_diffs);
+//			Operators2D op(parameters.discretization.res, parameters.sim.domain_size, parameters.disc.use_spectral_diffs);
 
-			for (std::size_t j = 0; j < parameters.res[1]; j++)
+			for (std::size_t j = 0; j < parameters.disc.res[1]; j++)
 			{
-				for (std::size_t i = 0; i < parameters.res[0]; i++)
+				for (std::size_t i = 0; i < parameters.disc.res[0]; i++)
 				{
-					double x = ((double)i+0.5)/(double)parameters.res[0];
-					double y = ((double)j+0.5)/(double)parameters.res[1];
+					double x = ((double)i+0.5)/(double)parameters.disc.res[0];
+					double y = ((double)j+0.5)/(double)parameters.disc.res[1];
 
 					h_cart.set(
 						j, i,
@@ -548,28 +543,28 @@ int main(int i_argc, char *i_argv[])
 
 					h_diff2_x.set(
 						j, i,
-						freq_x*freq_x*M_PIl*M_PIl*(-1.0)*sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)/(parameters.sim_domain_size[0]*parameters.sim_domain_size[0]),
+						freq_x*freq_x*M_PIl*M_PIl*(-1.0)*sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)/(parameters.sim.domain_size[0]*parameters.sim.domain_size[0]),
 						0
 					);
 
 					h_diff2_y.set(
 						j, i,
-						-sin(freq_x*M_PIl*x)*freq_y*M_PIl*freq_y*M_PIl*cos(freq_y*M_PIl*y)/(parameters.sim_domain_size[1]*parameters.sim_domain_size[1]),
+						-sin(freq_x*M_PIl*x)*freq_y*M_PIl*freq_y*M_PIl*cos(freq_y*M_PIl*y)/(parameters.sim.domain_size[1]*parameters.sim.domain_size[1]),
 						0
 					);
 				}
 			}
 
-			double normalization = sqrt(1.0/parameters.res2_dbl);
+			double normalization = sqrt(1.0/(parameters.disc.res[0]*parameters.disc.res[1]));
 
 			Complex2DArrayFFT op_diff2_c_x(res);
 			Complex2DArrayFFT op_diff2_c_y(res);
-			op_diff2_c_x.op_setup_diff2_x(parameters.sim_domain_size);
-			op_diff2_c_y.op_setup_diff2_y(parameters.sim_domain_size);
+			op_diff2_c_x.op_setup_diff2_x(parameters.sim.domain_size);
+			op_diff2_c_y.op_setup_diff2_y(parameters.sim.domain_size);
 
 			// diff2 normalization = 4.0 pi^2 / L^2
-			double err2_x = (op_diff2_c_x(h_cart.toSpec()).toCart()-h_diff2_x).reduce_norm2_quad()*normalization*(parameters.sim_domain_size[0]*parameters.sim_domain_size[0])/(4.0*M_PIl*M_PIl);
-			double err2_y = (op_diff2_c_y(h_cart.toSpec()).toCart()-h_diff2_y).reduce_norm2_quad()*normalization*(parameters.sim_domain_size[1]*parameters.sim_domain_size[1])/(4.0*M_PIl*M_PIl);
+			double err2_x = (op_diff2_c_x(h_cart.toSpec()).toCart()-h_diff2_x).reduce_norm2_quad()*normalization*(parameters.sim.domain_size[0]*parameters.sim.domain_size[0])/(4.0*M_PIl*M_PIl);
+			double err2_y = (op_diff2_c_y(h_cart.toSpec()).toCart()-h_diff2_y).reduce_norm2_quad()*normalization*(parameters.sim.domain_size[1]*parameters.sim.domain_size[1])/(4.0*M_PIl*M_PIl);
 
 			std::cout << "error diff2 x = " << err2_x << std::endl;
 			std::cout << "error diff2 y = " << err2_y << std::endl;

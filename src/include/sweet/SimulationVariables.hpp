@@ -1,181 +1,224 @@
 /*
- * Parameters.hpp
+ * SimulationVariables.hpp
  *
  *  Created on: 30 Jun 2015
  *      Author: Martin Schreiber <schreiberx@gmail.com>
  */
-#ifndef SRC_EXAMPLES_PARAMETERS_HPP_
-#define SRC_EXAMPLES_PARAMETERS_HPP_
+#ifndef SRC_EXAMPLES_VARIABLES_HPP_
+#define SRC_EXAMPLES_VARIABLES_HPP_
 
 #include <unistd.h>
 #include <getopt.h>
+#include <iomanip>
+#include <iostream>
 
-class SimulationParameters
+
+
+/**
+ * This class exists for convenience reasons.
+ *
+ * It offers a common structure for the used variables.
+ */
+class SimulationVariables
 {
 public:
 	/**
-	 * SETUP
-	 *
-	 * values and parameters to setup simulations
+	 * Diagnostic variables
 	 */
-	// average height for initialization
-	double setup_h0 = 1000.0;
+	struct Diagnostics
+	{
+		/// total mass
+		double total_mass = 0;
+		/// total energy
+		double total_energy = 0;
+		/// total potential enstropy
+		double total_potential_enstrophy = 0;
 
-	// setup scenario
-	int setup_scenario = 1;
+	} diag;
 
-	// radius
-	double setup_radius_scale = 1;
 
-	double setup_coord_x = 0.5;
-	double setup_coord_y = 0.5;
+
+public:
+	/**
+	 * Values and parameters to setup simulations
+	 */
+	struct Setup
+	{
+		/// average height for initialization
+		double h0 = 1000.0;
+
+		/// setup scenario
+		int scenario = 1;
+
+		/// radius
+		double radius_scale = 1;
+
+		/// setup coordinate of e.g. radial breaking dam, x-placement \in [0;1]
+		double coord_x = 0.5;
+		/// setup coordinate of e.g. radial breaking dam, y-placement \in [0;1]
+		double coord_y = 0.5;
+	} setup;
 
 
 	/**
-	 * SIMULATION PARAMETERS
+	 * simulation coefficients
 	 */
-	// gravitation
-	double sim_g = 9.81;
+	struct Coefficients
+	{
+		/// gravitational constant
+		double g = 9.81;
 
-	// viscosity
-	double sim_viscosity = 0.0;
+		/// For more information on viscosity,
+		/// see 13.3.1 "Generic Form of the Explicit Diffusion Mechanism"
+		/// in "Numerical Techniques for Global Atmospheric Models"
 
-	// hyper viscosity
-	double sim_hyper_viscosity = 0.0;
+		/// viscosity-term on velocities with 2nd order diff operator
+		double viscosity = 0.0;
 
-	// viscosity on potential
-	double sim_potential_viscosity = 0.0;
+		/// hyper viscosity-term on velocities with 4th order diff operator
+		double hyper_viscosity = 0.0;
 
-	// hyperviscosity on potential
-	double sim_potential_hyper_viscosity = 0.0;
+		/// viscosity-term on velocities with 2nd order diff operator on potential
+		double potential_viscosity = 0.0;
 
-	// cfl condition
-	double sim_CFL = 0.01;
+		/// hyper viscosity-term on velocities with 4th order diff operator on potential
+		double potential_hyper_viscosity = 0.0;
 
-	// Coriolis term
-	double sim_f = 0.0;
+		/// CFL condition
+		double CFL = 0.05;
 
-	bool use_f_array = false;
+		/// Coriolis frequency
+		double f = 0.0;
 
-	// domain length
-	double sim_domain_size[2] = {1000.0*1000.0, 1000.0*1000.0};
+		/// Use f-array instead of constant f. This can be used
+		bool use_f_array = false;
 
-	double sim_domain_size2_dbl = -1;
+		/// domain size
+		double domain_size[2] = {1000.0*1000.0, 1000.0*1000.0};
+	} sim;
+
 
 	/**
-	 * DISCRETIZATION
+	 * This class stored the discretization-related parameters
 	 *
 	 * resolution / timestepping
 	 */
-	// resolution
-	std::size_t res[2] = {128, 128};
+	struct Discretization
+	{
+		/// resolution
+		std::size_t res[2] = {128, 128};
 
-	double res2_dbl = -1.0;
+		/// size of cell (hx, hy)
+		/// this is computed based on disc.res and sim.domain_size
+		double cell_size[2] = {0,0};
 
-	// use leapfrog like update? (predictor / corrector intermixing h and v,u updates)
-	bool timestepping_leapfrog_like_update = false;
+		/// use leapfrog like update? (predictor / corrector intermixing h and v,u updates)
+		bool timestepping_leapfrog_like_update = false;
 
-	// use up/downwinding for the advection of h
-	bool timestepping_up_and_downwinding = false;
+		/// use up/downwinding for the advection of h
+		bool timestepping_up_and_downwinding = false;
 
-	// order of Runge-Kutta scheme for time stepping
-	double timestepping_runge_kutta_order = 1;
+		/// order of Runge-Kutta scheme for time stepping
+		double timestepping_runge_kutta_order = 1;
 
-	// size of time step
-	double timestepping_timestep_size = 0;
-
-	// size of cell (hx, hy)
-	double sim_cell_size[2] = {0,0};
-
-
-	// mass
-	double diagnostics_mass = 0;
-	// energy
-	double diagnostics_energy = 0;
-	// potential enstropy
-	double diagnostics_potential_entrophy = 0;
+		// use spectral differential operators
+		bool use_spectral_diffs = false;
+	} disc;
 
 
 	/**
-	 * program parameters without specific association
+	 * program parameters without specific association.
+	 * These variables can be used different for each program
 	 */
-	double bogus_var0 = std::numeric_limits<double>::infinity();
-	double bogus_var1 = std::numeric_limits<double>::infinity();
-	double bogus_var2 = std::numeric_limits<double>::infinity();
-	double bogus_var3 = std::numeric_limits<double>::infinity();
-	double bogus_var4 = std::numeric_limits<double>::infinity();
-	double bogus_var5 = std::numeric_limits<double>::infinity();
-	double bogus_var6 = std::numeric_limits<double>::infinity();
-	double bogus_var7 = std::numeric_limits<double>::infinity();
-	double bogus_var8 = std::numeric_limits<double>::infinity();
-	double bogus_var9 = std::numeric_limits<double>::infinity();
-
-	/**
-	 * set verbosity of simulation
-	 */
-	int verbosity = 0;
-
-	bool gui_enabled =
-#if SWEET_GUI
-			true
-#else
-			false
-#endif
-			;
+	struct Bogus
+	{
+		double var[10] =
+		{
+				std::numeric_limits<double>::infinity(),
+				std::numeric_limits<double>::infinity(),
+				std::numeric_limits<double>::infinity(),
+				std::numeric_limits<double>::infinity(),
+				std::numeric_limits<double>::infinity(),
+				std::numeric_limits<double>::infinity(),
+				std::numeric_limits<double>::infinity(),
+				std::numeric_limits<double>::infinity(),
+				std::numeric_limits<double>::infinity(),
+				std::numeric_limits<double>::infinity()
+		};
+	} bogus;
 
 
 	/**
-	 * SIM CONTROL
-	 *
-	 * Simulation control variables
+	 * Miscellaneous variables
 	 */
-	// run simulation timestepping
-	bool run_simulation = true;
+	struct Misc
+	{
+		/// set verbosity of simulation
+		int verbosity = 0;
 
-	// number of simulated time steps
-	int status_timestep_nr = 0;
-	int max_timesteps_nr = -1;
+		/// precision for floating point output to std::cout and std::endl
+		int output_floating_point_precision = 12;
 
-	// time in simulation
-	double status_simulation_timestep_size = -1;
-	double status_simulation_time = 0;
-	double max_simulation_time = -1;
+		/// activate gui mode?
+		bool gui_enabled = (SWEET_GUI == 0 ? false : true);
+
+		/// id for visualization
+		int vis_id = 0;
+	} misc;
+
 
 	/**
-	 * visualization - which conserved quantity to visualize
+	 * timestepping
 	 */
-	// id for visualization
-	int vis_id = 0;
+	struct TimestepControl
+	{
+		/// Continue running simulation timestepping.
+		/// This is beneficial to pause simulations if driven interactively.
+		bool run_simulation_timesteps = true;
 
-	// use spectral differential operators
-	bool use_spectral_diffs = false;
+		/// number of simulated time steps
+		int current_timestep_nr = 0;
+
+		/// current time step size
+		double current_simulation_timestep_size = -1;
+
+		/// time in simulation
+		double current_simulation_time = 0;
+
+		/// maximum number of time steps to simulate
+		int max_timesteps_nr = -1;
+
+		/// maximum simulation time to execute the simulation for
+		double max_simulation_time = -1;
+	} timecontrol;
+
+
 
 	/**
 	 * update variables which are based on others
 	 */
 	void reset()
 	{
-		sim_cell_size[0] = sim_domain_size[0]/(double)res[0];
-		sim_cell_size[1] = sim_domain_size[1]/(double)res[1];
+		disc.cell_size[0] = sim.domain_size[0]/(double)disc.res[0];
+		disc.cell_size[1] = sim.domain_size[1]/(double)disc.res[1];
 
-		res2_dbl = res[0]*res[1];
-		sim_domain_size2_dbl = sim_domain_size[0]*sim_domain_size[1];
+		timecontrol.current_simulation_timestep_size = -1;
+		timecontrol.current_timestep_nr = 0;
+		timecontrol.current_simulation_time = 0;
 
-		status_simulation_timestep_size = -1;
-		status_timestep_nr = 0;
-		status_simulation_time = 0;
-
-		if ((res[0] & 1) || (res[1] & 1))
-		{
-			std::cout << "Only even resolutions supported!" << std::endl;
-		}
+		if ((disc.res[0] & 1) || (disc.res[1] & 1))
+			std::cout << "WARNING: Typically there are only even resolutions supported!" << std::endl;
 	}
 
 
-	bool setup(
-			int i_argc,
-			char *i_argv[],
-			const char *bogus_var_names[] = nullptr
+
+	/**
+	 * setup the variables based on program parameters
+	 */
+	bool setupFromMainParameters(
+			int i_argc,				///< argc from main()
+			char *i_argv[],			///< argv from main()
+			const char *bogus_var_names[] = nullptr			///< list of strings of simulation-specific variables, has to be terminated by nullptr
 	)
 	{
         static struct option long_options[11] = {
@@ -215,161 +258,131 @@ public:
 		while (1)
 		{
 			opt = getopt_long(	i_argc, i_argv,
-							"N:n:m:C:u:U:s:X:Y:f:x:y:t:T:v:H:r:R:W:F:S:g:p:P:G:",
+							"N:n:m:C:u:U:s:X:Y:f:x:y:t:T:v:H:r:R:W:F:S:g:p:P:G:d:",
 							long_options, &option_index
 					);
 
 			if (opt == -1)
 				break;
 
-			switch (opt)
-			{
 			/*
 			 * LONG OPTIONS
 			 */
-			case 256+'a':
-				bogus_var0 = atof(optarg);
-				break;
+			if (opt >= 256+'a' && opt <= 256+'j')
+			{
+				int i = opt-(256+'a');
+				bogus.var[i] = atof(optarg);
+				continue;
+			}
 
-			case 256+'b':
-				bogus_var1 = atof(optarg);
-				break;
-
-			case 256+'c':
-				bogus_var2 = atof(optarg);
-				break;
-
-			case 256+'d':
-				bogus_var3 = atof(optarg);
-				break;
-
-			case 256+'e':
-				bogus_var4 = atof(optarg);
-				break;
-
-			case 256+'f':
-				bogus_var5 = atof(optarg);
-				break;
-
-			case 256+'g':
-				bogus_var6 = atof(optarg);
-				break;
-
-			case 256+'h':
-				bogus_var7 = atof(optarg);
-				break;
-
-			case 256+'i':
-				bogus_var8 = atof(optarg);
-				break;
-
-			case 256+'j':
-				bogus_var9 = atof(optarg);
-				break;
-
-
+			switch (opt)
+			{
 			/*
 			 * SHORT OPTIONS
 			 */
+			case 'd':
+				misc.output_floating_point_precision = atoi(optarg);
+				break;
+
 			case 'N':
-				res[0] = atoi(optarg);
-				res[1] = res[0];
+				disc.res[0] = atoi(optarg);
+				disc.res[1] = disc.res[0];
 				break;
 
 			case 'n':
-				res[0] = atoi(optarg);
+				disc.res[0] = atoi(optarg);
 				break;
 
 			case 'm':
-				res[1] = atoi(optarg);
+				disc.res[1] = atoi(optarg);
 				break;
 
 			case 'C':
-				sim_CFL = atof(optarg);
+				sim.CFL = atof(optarg);
 				break;
 
 			case 'r':
-				setup_radius_scale = atof(optarg);
+				setup.radius_scale = atof(optarg);
 				break;
 
 			case 't':
-				max_simulation_time = atof(optarg);
+				timecontrol.max_simulation_time = atof(optarg);
 				break;
 
 			case 'T':
-				max_timesteps_nr = atoi(optarg);
+				timecontrol.max_timesteps_nr = atoi(optarg);
 				break;
 
 			case 'u':
-				sim_viscosity = atof(optarg);
+				sim.viscosity = atof(optarg);
 				break;
 
 			case 'U':
-				sim_hyper_viscosity = atof(optarg);
+				sim.hyper_viscosity = atof(optarg);
 				break;
 
 			case 'p':
-				sim_potential_viscosity = atof(optarg);
+				sim.potential_viscosity = atof(optarg);
 				break;
 
 			case 'P':
-				sim_potential_hyper_viscosity = atof(optarg);
+				sim.potential_hyper_viscosity = atof(optarg);
 				break;
 
 			case 's':
-				setup_scenario = atoi(optarg);
+				setup.scenario = atoi(optarg);
 				break;
 
 			case 'S':
-				use_spectral_diffs = atoi(optarg);
+				disc.use_spectral_diffs = atoi(optarg);
 				break;
 
 			case 'X':
-				sim_domain_size[0] = atof(optarg);
+				sim.domain_size[0] = atof(optarg);
 				break;
 
 			case 'Y':
-				sim_domain_size[1] = atof(optarg);
-				break;
-
-			case 'R':
-				timestepping_runge_kutta_order = atoi(optarg);
+				sim.domain_size[1] = atof(optarg);
 				break;
 
 			case 'x':
-				setup_coord_x = atof(optarg);
+				setup.coord_x = atof(optarg);
 				break;
 
 			case 'y':
-				setup_coord_y = atof(optarg);
+				setup.coord_y = atof(optarg);
 				break;
 
 			case 'f':
-				sim_f = atof(optarg);
+				sim.f = atof(optarg);
 				break;
 
 			case 'G':
-				gui_enabled = atoi(optarg);
+				misc.gui_enabled = atoi(optarg);
 				break;
 
 			case 'g':
-				sim_g = atof(optarg);
+				sim.g = atof(optarg);
 				break;
 
 			case 'v':
-				verbosity = atoi(optarg);
+				misc.verbosity = atoi(optarg);
 				break;
 
 			case 'H':
-				setup_h0 = atof(optarg);
+				setup.h0 = atof(optarg);
+				break;
+
+			case 'R':
+				disc.timestepping_runge_kutta_order = atoi(optarg);
 				break;
 
 			case 'W':
-				timestepping_up_and_downwinding = atoi(optarg);
+				disc.timestepping_up_and_downwinding = atoi(optarg);
 				break;
 
 			case 'F':
-				timestepping_leapfrog_like_update = atoi(optarg);
+				disc.timestepping_leapfrog_like_update = atoi(optarg);
 				std::cout << "WARNING: This time stepping method produces significant errors!" << std::endl;
 				std::cerr << "WARNING: This time stepping method produces significant errors!" << std::endl;
 				break;
@@ -416,6 +429,7 @@ public:
 						"",
 						"Misc options",
 						"	-v [int]	verbosity level",
+						"	-d [int]	accuracy of floating point output",
 				};
 
 				std::cerr << "Usage information: " << std::endl;
@@ -429,12 +443,20 @@ public:
 
 		reset();
 
-		if (verbosity > 1)
+		if (misc.verbosity > 1)
 		{
 			for (int i = 0; i < i_argc; i++)
 				std::cout << i_argv[i] << " ";
 			std::cout << std::endl;
 		}
+
+		/*
+		 * WARNING: the precision of std::cout and std::cerr is set here.
+		 * This is not related to the simulation variables but makes it very convenient
+		 * to specify it in all other programs.
+		 */
+		std::cout << std::setprecision(misc.output_floating_point_precision);
+		std::cerr << std::setprecision(misc.output_floating_point_precision);
 
 		return true;
 	}

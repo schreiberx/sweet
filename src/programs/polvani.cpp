@@ -8,7 +8,7 @@
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
-#include <sweet/SimulationParameters.hpp>
+#include <sweet/SimulationVariables.hpp>
 #include <sweet/TimesteppingRK.hpp>
 #include <sweet/SWEValidationBenchmarks.hpp>
 #include <sweet/Operators2D.hpp>
@@ -22,7 +22,7 @@
 #include <stdio.h>
 
 
-SimulationParameters parameters;
+SimulationVariables simVars;
 
 
 
@@ -50,14 +50,14 @@ public:
 
 public:
 	SimulationSWE()	:
-		prog_h(parameters.res),
-		prog_u(parameters.res),
-		prog_v(parameters.res),
+		prog_h(simVars.disc.res),
+		prog_u(simVars.disc.res),
+		prog_v(simVars.disc.res),
 
-		eta(parameters.res),
-		tmp(parameters.res),
+		eta(simVars.disc.res),
+		tmp(simVars.disc.res),
 
-		op(parameters.res, parameters.sim_domain_size, parameters.use_spectral_diffs)
+		op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_diffs)
 	{
 		reset();
 	}
@@ -71,8 +71,8 @@ public:
 		benchmark_diff_u = 0;
 		benchmark_diff_v = 0;
 
-		parameters.status_timestep_nr = 0;
-		parameters.status_simulation_time = 0;
+		simVars.timecontrol.current_timestep_nr = 0;
+		simVars.timecontrol.current_simulation_time = 0;
 
 		if (init_h != nullptr)
 		{
@@ -82,20 +82,20 @@ public:
 			return;
 		}
 
-		prog_h.setAll(parameters.setup_h0);
+		prog_h.setAll(simVars.setup.h0);
 		prog_u.setAll(0);
 		prog_v.setAll(0);
 
-		for (std::size_t j = 0; j < parameters.res[1]; j++)
+		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 		{
-			for (std::size_t i = 0; i < parameters.res[0]; i++)
+			for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
 			{
-				double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
-				double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_size[1];
+				double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+				double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
 
-				prog_h.set(j, i, SWEValidationBenchmarks::return_h(parameters, x, y));
-				prog_u.set(j, i, SWEValidationBenchmarks::return_u(parameters, x, y));
-				prog_v.set(j, i, SWEValidationBenchmarks::return_v(parameters, x, y));
+				prog_h.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
+				prog_u.set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
+				prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
 			}
 		}
 
@@ -107,27 +107,27 @@ public:
 	{
 
 		// assure, that the diagnostics are only updated for new time steps
-		if (last_timestep_nr_update_diagnostics == parameters.status_timestep_nr)
+		if (last_timestep_nr_update_diagnostics == simVars.timecontrol.current_timestep_nr)
 			return;
 
-		last_timestep_nr_update_diagnostics = parameters.status_timestep_nr;
+		last_timestep_nr_update_diagnostics = simVars.timecontrol.current_timestep_nr;
 
-		double normalization = (parameters.sim_domain_size[0]*parameters.sim_domain_size[1]) /
-								((double)parameters.res[0]*(double)parameters.res[1]);
+		double normalization = (simVars.sim.domain_size[0]*simVars.sim.domain_size[1]) /
+								((double)simVars.disc.res[0]*(double)simVars.disc.res[1]);
 
 		// mass
-		parameters.diagnostics_mass = prog_h.reduce_sum_quad() * normalization;
+		simVars.diag.total_mass = prog_h.reduce_sum_quad() * normalization;
 
 		// energy
-		parameters.diagnostics_energy = 0.5*(
+		simVars.diag.total_energy = 0.5*(
 				prog_h*prog_h +
 				prog_h*prog_u*prog_u +
 				prog_h*prog_v*prog_v
 			).reduce_sum_quad() * normalization;
 
 		// potential enstropy
-		eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + parameters.sim_f) / prog_h;
-		parameters.diagnostics_potential_entrophy = 0.5*(eta*eta*prog_h).reduce_sum_quad() * normalization;
+		eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + simVars.sim.f) / prog_h;
+		simVars.diag.total_potential_enstrophy = 0.5*(eta*eta*prog_h).reduce_sum_quad() * normalization;
 	}
 
 
@@ -158,7 +158,7 @@ public:
 					// u is negative
 					+(i_P*i_u.return_value_if_negative())	// outflow
 					-op.shift_left(i_P*i_u.return_value_if_negative())		// inflow
-				)*(1.0/parameters.sim_cell_size[0])	// here we see a finite-difference-like formulation
+				)*(1.0/simVars.disc.cell_size[0])	// here we see a finite-difference-like formulation
 				+
 				(
 					// v is positive
@@ -168,7 +168,7 @@ public:
 					// v is negative
 					+(i_P*i_v.return_value_if_negative())	// outflow
 					-op.shift_down(i_P*i_v.return_value_if_negative())	// inflow
-				)*(1.0/parameters.sim_cell_size[1])
+				)*(1.0/simVars.disc.cell_size[1])
 			);
 	}
 
@@ -195,19 +195,19 @@ public:
 		 *	u_t = -g * h_x - u * u_x - v * u_y + f*v
 		 *	v_t = -g * h_y - u * v_x - v * v_y - f*u
 		 */
-		o_u_t = -parameters.sim_g*op.diff_c_x(i_h) - i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u) + parameters.sim_f*i_v;
-		o_v_t = -parameters.sim_g*op.diff_c_y(i_h) - i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v) - parameters.sim_f*i_u;
+		o_u_t = -simVars.sim.g*op.diff_c_x(i_h) - i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u) + simVars.sim.f*i_v;
+		o_v_t = -simVars.sim.g*op.diff_c_y(i_h) - i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v) - simVars.sim.f*i_u;
 
-		if (parameters.sim_viscosity != 0)
+		if (simVars.sim.viscosity != 0)
 		{
-			o_u_t -= op.diff2(i_u)*parameters.sim_viscosity;
-			o_v_t -= op.diff2(i_v)*parameters.sim_viscosity;
+			o_u_t -= op.diff2(i_u)*simVars.sim.viscosity;
+			o_v_t -= op.diff2(i_v)*simVars.sim.viscosity;
 		}
 
-		if (parameters.sim_hyper_viscosity != 0)
+		if (simVars.sim.hyper_viscosity != 0)
 		{
-			o_u_t -= op.diff4(i_u)*parameters.sim_hyper_viscosity;
-			o_v_t -= op.diff4(i_v)*parameters.sim_hyper_viscosity;
+			o_u_t -= op.diff4(i_u)*simVars.sim.hyper_viscosity;
+			o_v_t -= op.diff4(i_v)*simVars.sim.hyper_viscosity;
 		}
 
 
@@ -229,7 +229,7 @@ public:
 			}
 			else
 			{
-				double limit_speed = std::max(parameters.sim_cell_size[0]/i_u.reduce_maxAbs(), parameters.sim_cell_size[1]/i_v.reduce_maxAbs());
+				double limit_speed = std::max(simVars.disc.cell_size[0]/i_u.reduce_maxAbs(), simVars.disc.cell_size[1]/i_v.reduce_maxAbs());
 
 				// limit by re
 				double limit_visc = std::numeric_limits<double>::infinity();
@@ -237,18 +237,18 @@ public:
 		//           limit_visc = (viscocity*0.5)*((hx*hy)*0.5);
 
 				// limit by gravitational acceleration
-				double limit_gh = std::min(parameters.sim_cell_size[0], parameters.sim_cell_size[1])/std::sqrt(parameters.sim_g*i_h.reduce_maxAbs());
+				double limit_gh = std::min(simVars.disc.cell_size[0], simVars.disc.cell_size[1])/std::sqrt(simVars.sim.g*i_h.reduce_maxAbs());
 
-				if (parameters.verbosity > 2)
+				if (simVars.misc.verbosity > 2)
 					std::cerr << "limit_speed: " << limit_speed << ", limit_visc: " << limit_visc << ", limit_gh: " << limit_gh << std::endl;
 
-				o_dt = parameters.sim_CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
+				o_dt = simVars.sim.CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
 			}
 		}
 
-		if (!parameters.timestepping_leapfrog_like_update)
+		if (!simVars.disc.timestepping_leapfrog_like_update)
 		{
-			if (!parameters.timestepping_up_and_downwinding)
+			if (!simVars.disc.timestepping_up_and_downwinding)
 			{
 				// standard update
 				o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
@@ -263,11 +263,11 @@ public:
 						o_h_t
 					);
 
-				if (parameters.sim_viscosity != 0)
-					o_h_t -= op.diff2(i_h)*parameters.sim_viscosity;
+				if (simVars.sim.viscosity != 0)
+					o_h_t -= op.diff2(i_h)*simVars.sim.viscosity;
 
-				if (parameters.sim_hyper_viscosity != 0)
-					o_h_t -= op.diff4(i_h)*parameters.sim_hyper_viscosity;
+				if (simVars.sim.hyper_viscosity != 0)
+					o_h_t -= op.diff4(i_h)*simVars.sim.hyper_viscosity;
 			}
 		}
 		else
@@ -279,7 +279,7 @@ public:
 			 *
 			 * compute updated u and v values without using it
 			 */
-			if (!parameters.timestepping_up_and_downwinding)
+			if (!simVars.disc.timestepping_up_and_downwinding)
 			{
 				// recompute U and V
 
@@ -303,11 +303,11 @@ public:
 			}
 		}
 
-		if (parameters.sim_potential_viscosity != 0)
-			o_h_t -= op.diff2(i_h)*parameters.sim_potential_viscosity;
+		if (simVars.sim.potential_viscosity != 0)
+			o_h_t -= op.diff2(i_h)*simVars.sim.potential_viscosity;
 
-		if (parameters.sim_potential_hyper_viscosity != 0)
-			o_h_t -= op.diff4(i_h)*parameters.sim_potential_hyper_viscosity;
+		if (simVars.sim.potential_hyper_viscosity != 0)
+			o_h_t -= op.diff4(i_h)*simVars.sim.potential_hyper_viscosity;
 
 	}
 
@@ -321,15 +321,15 @@ public:
 				&SimulationSWE::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
 				prog_h, prog_u, prog_v,
 				dt,
-				parameters.timestepping_timestep_size,
-				parameters.timestepping_runge_kutta_order,
-				parameters.status_simulation_time
+				simVars.disc.timestepping_timestep_size,
+				simVars.disc.timestepping_runge_kutta_order,
+				simVars.timecontrol.current_simulation_time
 			);
 
 		// provide information to parameters
-		parameters.status_simulation_timestep_size = dt;
-		parameters.status_simulation_time += dt;
-		parameters.status_timestep_nr++;
+		simVars.timecontrol.current_simulation_timestep_size = dt;
+		simVars.timecontrol.current_simulation_time += dt;
+		simVars.timecontrol.current_timestep_nr++;
 
 #if SWEET_GUI
 		timestep_output();
@@ -343,62 +343,62 @@ public:
 			std::ostream &o_ostream = std::cout
 	)
 	{
-		if (parameters.verbosity > 0)
+		if (simVars.misc.verbosity > 0)
 		{
 			update_diagnostics();
 
-			if (parameters.status_timestep_nr == 0)
+			if (simVars.timecontrol.current_timestep_nr == 0)
 			{
 				o_ostream << "T\tMASS\tENERGY\tPOT_ENSTROPHY";
 
-				if (parameters.setup_scenario == 2 || parameters.setup_scenario == 3 || parameters.setup_scenario == 4)
+				if (simVars.setup.scenario == 2 || simVars.setup.scenario == 3 || simVars.setup.scenario == 4)
 					o_ostream << "\tDIFF_P\tDIFF_U\tDIFF_V";
 
 				o_ostream << std::endl;
 			}
 
-			o_ostream << parameters.status_simulation_time << "\t" << parameters.diagnostics_mass << "\t" << parameters.diagnostics_energy << "\t" << parameters.diagnostics_potential_entrophy;
+			o_ostream << simVars.timecontrol.current_simulation_time << "\t" << simVars.diag.total_mass << "\t" << simVars.diag.total_energy << "\t" << simVars.diag.total_potential_enstrophy;
 
-			if (parameters.setup_scenario == 2 || parameters.setup_scenario == 3 || parameters.setup_scenario == 4)
+			if (simVars.setup.scenario == 2 || simVars.setup.scenario == 3 || simVars.setup.scenario == 4)
 			{
-				for (std::size_t j = 0; j < parameters.res[1]; j++)
-					for (std::size_t i = 0; i < parameters.res[0]; i++)
+				for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+					for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
 					{
 						// h
-						double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
-						double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_size[1];
+						double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+						double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
 
-						tmp.set(j, i, SWEValidationBenchmarks::return_h(parameters, x, y));
+						tmp.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
 					}
 
-				benchmark_diff_h = (prog_h-tmp).reduce_norm1_quad() / (double)(parameters.res[0]*parameters.res[1]);
+				benchmark_diff_h = (prog_h-tmp).reduce_norm1_quad() / (double)(simVars.disc.res[0]*simVars.disc.res[1]);
 				o_ostream << "\t" << benchmark_diff_h;
 
 				// set data to something to overcome assertion error
-				for (std::size_t j = 0; j < parameters.res[1]; j++)
-					for (std::size_t i = 0; i < parameters.res[0]; i++)
+				for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+					for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
 					{
 						// u space
-						double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
-						double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_size[1];
+						double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+						double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
 
-						tmp.set(j, i, SWEValidationBenchmarks::return_u(parameters, x, y));
+						tmp.set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
 					}
 
-				benchmark_diff_u = (prog_u-tmp).reduce_norm1_quad() / (double)(parameters.res[0]*parameters.res[1]);
+				benchmark_diff_u = (prog_u-tmp).reduce_norm1_quad() / (double)(simVars.disc.res[0]*simVars.disc.res[1]);
 				o_ostream << "\t" << benchmark_diff_u;
 
-				for (std::size_t j = 0; j < parameters.res[1]; j++)
-					for (std::size_t i = 0; i < parameters.res[0]; i++)
+				for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+					for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
 					{
 						// v space
-						double x = (((double)i+0.5)/(double)parameters.res[0])*parameters.sim_domain_size[0];
-						double y = (((double)j+0.5)/(double)parameters.res[1])*parameters.sim_domain_size[1];
+						double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+						double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
 
-						tmp.set(j, i, SWEValidationBenchmarks::return_v(parameters, x, y));
+						tmp.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
 					}
 
-				benchmark_diff_v = (prog_v-tmp).reduce_norm1_quad() / (double)(parameters.res[0]*parameters.res[1]);
+				benchmark_diff_v = (prog_v-tmp).reduce_norm1_quad() / (double)(simVars.disc.res[0]*simVars.disc.res[1]);
 				o_ostream << "\t" << benchmark_diff_v;
 			}
 
@@ -411,10 +411,10 @@ public:
 public:
 	bool should_quit()
 	{
-		if (parameters.max_timesteps_nr != -1 && parameters.max_timesteps_nr <= parameters.status_timestep_nr)
+		if (simVars.timecontrol.max_timesteps_nr != -1 && simVars.timecontrol.max_timesteps_nr <= simVars.timecontrol.current_timestep_nr)
 			return true;
 
-		if (parameters.max_simulation_time != -1 && parameters.max_simulation_time <= parameters.status_simulation_time)
+		if (simVars.timecontrol.max_simulation_time != -1 && simVars.timecontrol.max_simulation_time <= simVars.timecontrol.current_simulation_time)
 			return true;
 
 		return false;
@@ -428,7 +428,7 @@ public:
 			int i_num_iterations
 	)
 	{
-		if (parameters.run_simulation)
+		if (simVars.timecontrol.run_simulation_timesteps)
 			for (int i = 0; i < i_num_iterations; i++)
 				run_timestep();
 	}
@@ -455,9 +455,9 @@ public:
 			double *o_aspect_ratio
 	)
 	{
-		int id = parameters.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
+		int id = simVars.misc.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
 		*o_dataArray = vis_arrays[id].data;
-		*o_aspect_ratio = parameters.sim_domain_size[1] / parameters.sim_domain_size[0];
+		*o_aspect_ratio = simVars.sim.domain_size[1] / simVars.sim.domain_size[0];
 #if 0
 		DataArray<2> &o = (DataArray<2> &)*vis_arrays[id].data;
 		o.spec_setAll(0, 0);
@@ -493,16 +493,16 @@ public:
 		// first, update diagnostic values if required
 		update_diagnostics();
 
-		int id = parameters.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
+		int id = simVars.misc.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
 
 		static char title_string[2048];
 		sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %.14e, Vis: %.14s, Mass: %.14e, Energy: %.14e, Potential Entrophy: %.14e",
-				parameters.status_simulation_time,
-				parameters.status_simulation_time/(60.0*60.0*24.0),
-				parameters.status_timestep_nr,
-				parameters.status_simulation_timestep_size,
+				simVars.timecontrol.current_simulation_time,
+				simVars.timecontrol.current_simulation_time/(60.0*60.0*24.0),
+				simVars.timecontrol.current_timestep_nr,
+				simVars.timecontrol.current_simulation_timestep_size,
 				vis_arrays[id].description,
-				parameters.diagnostics_mass, parameters.diagnostics_energy, parameters.diagnostics_potential_entrophy);
+				simVars.diag.total_mass, simVars.diag.total_energy, simVars.diag.total_potential_enstrophy);
 
 		return title_string;
 	}
@@ -511,7 +511,7 @@ public:
 
 	void vis_pause()
 	{
-		parameters.run_simulation = !parameters.run_simulation;
+		simVars.timecontrol.run_simulation_timesteps = !simVars.timecontrol.run_simulation_timesteps;
 	}
 
 
@@ -521,11 +521,11 @@ public:
 		switch(i_key)
 		{
 		case 'v':
-			parameters.vis_id++;
+			simVars.misc.vis_id++;
 			break;
 
 		case 'V':
-			parameters.vis_id--;
+			simVars.misc.vis_id--;
 			break;
 		}
 	}
@@ -556,11 +556,11 @@ void compute_polvani_initialization(
 		double R = 0.01;
 		double F = 0.04;
 
-		if (!std::isinf(parameters.bogus_var0))
-			R = parameters.bogus_var0;
+		if (!std::isinf(simVars.bogus.var[0]))
+			R = simVars.bogus.var[0];
 
-		if (!std::isinf(parameters.bogus_var1))
-			F = parameters.bogus_var1;
+		if (!std::isinf(simVars.bogus.var[1]))
+			F = simVars.bogus.var[1];
 
 		std::cout << "Using R of " << R << std::endl;
 		std::cout << "Using F of " << F << std::endl;
@@ -571,7 +571,7 @@ void compute_polvani_initialization(
 	//	srand(0x15051982);
 		srand(time(NULL));
 
-		Operators2D op(parameters.res, parameters.sim_domain_size, parameters.use_spectral_diffs);
+		Operators2D op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_diffs);
 
 		/*
 		 * see Polvani et. al: Coherent structures of shallow-water turbulence
@@ -586,7 +586,7 @@ void compute_polvani_initialization(
 		 * STEP 1) Initialize PSI
 		 */
 
-		DataArray<2> energy_init(parameters.res);
+		DataArray<2> energy_init(simVars.disc.res);
 		energy_init.spec_setAll(0,0);
 
 		for (std::size_t j = 0; j < energy_init.resolution_spec[1]/2; j++)
@@ -706,7 +706,7 @@ void compute_polvani_initialization(
 
 		std::cout << "ENERGY rms: " << energy_init.reduce_rms() << std::endl;
 
-		DataArray<2> psi(parameters.res);
+		DataArray<2> psi(simVars.disc.res);
 		psi.spec_setAll(0, 0);
 
 		for (std::size_t j = 0; j < psi.resolution_spec[1]/2; j++)
@@ -776,10 +776,10 @@ void compute_polvani_initialization(
 		/**
 		 * STEP 3) Solve with iterations for \xi
 		 */
-		DataArray<2> xi(parameters.res);
+		DataArray<2> xi(simVars.disc.res);
 		xi.spec_setAll(0, 0);
 
-		DataArray<2> prev_xi(parameters.res);
+		DataArray<2> prev_xi(simVars.disc.res);
 		prev_xi.spec_setAll(0, 0);
 
 		double prev_inf_norm = -1;
@@ -825,7 +825,7 @@ void compute_polvani_initialization(
 			/**
 			 * Solve iterative equation (after equation 2.6)
 			 */
-			DataArray<2> rhs(parameters.res);
+			DataArray<2> rhs(simVars.disc.res);
 			rhs.spec_setAll(0, 0);
 
 			// RHS, 1st line
@@ -849,7 +849,7 @@ void compute_polvani_initialization(
 				);
 
 			// LHS, 1st line
-			DataArray<2> lhs(parameters.res);
+			DataArray<2> lhs(simVars.disc.res);
 			lhs.spec_setAll(0, 0);
 
 			// IMPORTANT! Apply last operator element-wise
@@ -897,7 +897,7 @@ void compute_polvani_initialization(
 				new_inf_norm = (prev_xi-xi).reduce_maxAbs();
 			}
 
-			double normalization = xi.reduce_norm1()/(double)(parameters.res[0]*parameters.res[1]);
+			double normalization = xi.reduce_norm1()/(double)(simVars.disc.res[0]*simVars.disc.res[1]);
 
 			double convergence = std::abs(prev_inf_norm - new_inf_norm)/normalization;
 			std::cout << "INF norm / convergence: " << new_inf_norm << " / " << convergence << std::endl;
@@ -937,7 +937,7 @@ void compute_polvani_initialization(
 		 * Check results
 		 */
 		{
-//			double normalize_norm = 1.0/(double)(parameters.res[0]*parameters.res[1]);
+//			double normalize_norm = 1.0/(double)(parameters.discretization.res[0]*parameters.discretization.res[1]);
 
 			DataArray<2> laplace_psi = op.laplace(psi);
 			double psi_l1_norm =
@@ -1005,28 +1005,24 @@ void compute_polvani_initialization(
 
 int main(int i_argc, char *i_argv[])
 {
-	std::cout << std::setprecision(14);
-	std::cerr << std::setprecision(14);
-
-	if (!parameters.setup(i_argc, i_argv))
+	if (!simVars.setupFromMainParameters(i_argc, i_argv))
 	{
 		return -1;
 	}
 
+	DataArray<2> local_h(simVars.disc.res);
+	DataArray<2> local_u(simVars.disc.res);
+	DataArray<2> local_v(simVars.disc.res);
 
-	DataArray<2> local_h(parameters.res);
-	DataArray<2> local_u(parameters.res);
-	DataArray<2> local_v(parameters.res);
-
-	if (!std::isinf(parameters.bogus_var0))
+	if (!std::isinf(simVars.bogus.var[0]))
 	{
-		if (parameters.sim_domain_size[0] != 1.0)
+		if (simVars.sim.domain_size[0] != 1.0)
 		{
 			std::cout << "Domain length should be set to 1 for non-dimensional Polvani test case" << std::endl;
 			return 1;
 		}
 
-		if (parameters.sim_domain_size[1] != 1.0)
+		if (simVars.sim.domain_size[1] != 1.0)
 		{
 			std::cout << "Domain length should be set to 1 for non-dimensional Polvani test case" << std::endl;
 			return 1;
@@ -1042,9 +1038,6 @@ int main(int i_argc, char *i_argv[])
 
 	if (1)
 	{
-		std::cout << std::setprecision(14);
-		std::cerr << std::setprecision(14);
-
 		SimulationSWE *simulationSWE = new SimulationSWE;
 
 		std::ostringstream buf;
@@ -1060,17 +1053,17 @@ int main(int i_argc, char *i_argv[])
 
 		double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
 
-		if (parameters.verbosity > 1)
+		if (simVars.misc.verbosity > 1)
 		{
 			simulationSWE->update_diagnostics();
-			diagnostics_energy_start = parameters.diagnostics_energy;
-			diagnostics_mass_start = parameters.diagnostics_mass;
-			diagnostics_potential_entrophy_start = parameters.diagnostics_potential_entrophy;
+			diagnostics_energy_start = simVars.diag.total_energy;
+			diagnostics_mass_start = simVars.diag.total_mass;
+			diagnostics_potential_entrophy_start = simVars.diag.total_potential_enstrophy;
 		}
 
 		while(true)
 		{
-			if (parameters.verbosity > 1)
+			if (simVars.misc.verbosity > 1)
 			{
 				simulationSWE->timestep_output(buf);
 
@@ -1079,7 +1072,7 @@ int main(int i_argc, char *i_argv[])
 
 				std::cout << output;
 
-				if (parameters.verbosity > 2)
+				if (simVars.misc.verbosity > 2)
 					std::cerr << output;
 			}
 
@@ -1100,17 +1093,17 @@ int main(int i_argc, char *i_argv[])
 		double seconds = time();
 
 		std::cout << "Simulation time: " << seconds << " seconds" << std::endl;
-		std::cout << "Time per time step: " << seconds/(double)parameters.status_timestep_nr << " sec/ts" << std::endl;
+		std::cout << "Time per time step: " << seconds/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
 
 
 
-		if (parameters.verbosity > 1)
+		if (simVars.misc.verbosity > 1)
 		{
-			std::cout << "DIAGNOSTICS ENERGY DIFF:\t" << std::abs((parameters.diagnostics_energy-diagnostics_energy_start)/diagnostics_energy_start) << std::endl;
-			std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs((parameters.diagnostics_mass-diagnostics_mass_start)/diagnostics_mass_start) << std::endl;
-			std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs((parameters.diagnostics_potential_entrophy-diagnostics_potential_entrophy_start)/diagnostics_potential_entrophy_start) << std::endl;
+			std::cout << "DIAGNOSTICS ENERGY DIFF:\t" << std::abs((simVars.diag.total_energy-diagnostics_energy_start)/diagnostics_energy_start) << std::endl;
+			std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) << std::endl;
+			std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs((simVars.diag.total_potential_enstrophy-diagnostics_potential_entrophy_start)/diagnostics_potential_entrophy_start) << std::endl;
 
-			if (parameters.setup_scenario == 2 || parameters.setup_scenario == 3 || parameters.setup_scenario == 4)
+			if (simVars.setup.scenario == 2 || simVars.setup.scenario == 3 || simVars.setup.scenario == 4)
 			{
 				std::cout << "DIAGNOSTICS BENCHMARK DIFF H:\t" << simulationSWE->benchmark_diff_h << std::endl;
 				std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationSWE->benchmark_diff_u << std::endl;

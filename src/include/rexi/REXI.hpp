@@ -132,19 +132,21 @@ public:
 
 
 	/**
-	 * return
-	 * cos(i_x) + i*sin(i_x)
+	 * \return \f$ cos(x) + i*sin(x) \f$
 	 */
 	complex eval_e_ix(
-			double i_x
+			double i_x	///< sampling position
 	)
 	{
 		return std::exp(complex(0,1)*i_x);
 	}
 
 
+	/**
+	 * compute the approximated value of e^{ix}
+	 */
 	complex approx_e_ix(
-			double i_x
+			double i_x	///< sampling position
 	)
 	{
 		double sum_re = 0;
@@ -152,7 +154,7 @@ public:
 
 		std::size_t S = alpha.size();
 
-		// Split computation into real part of cos(i_x) and imaginary part sin(i_x)
+		// Split computation into real part of \f$ cos(x) \f$ and imaginary part \f$ sin(x) \f$
 		for (std::size_t n = 0; n < S; n++)
 		{
 			complex denom = (complex(0, i_x) + alpha[n]);
@@ -165,8 +167,7 @@ public:
 
 
 	/**
-	 * return
-	 * Re(cos(i_x) + i*sin(i_x)) = cos(i_x)
+	 * \return \f$ Re(cos(x) + i*sin(x)) = cos(x) \f$
 	 */
 	double approx_e_ix_returnReal(
 			double i_x
@@ -183,13 +184,12 @@ public:
 	}
 
 	/**
-	 * return
-	 * Im(cos(i_x) + i*sin(i_x)) = sin(i_x)
+	 * \return \f$ Im(cos(x) + i*sin(x)) = sin(x) \f$
 	 *
 	 * we simply use a phase shift of M_PI and use the returnReal variant
 	 */
 	double approx_e_ix_returnImag(
-			double i_x
+			double i_x		///< sampling position
 	)
 	{
 #if 1
@@ -204,4 +204,4 @@ public:
 };
 
 
-#endif /* SRC_INCLUDE_REXI_REXI_HPP_ */
+#endif

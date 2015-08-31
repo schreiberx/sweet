@@ -14,7 +14,7 @@
 #include <rexi/REXI.hpp>
 #include <sweet/DataArray.hpp>
 #include <sweet/Operators2D.hpp>
-#include <sweet/SimulationParameters.hpp>
+#include <sweet/SimulationVariables.hpp>
 #include <sweet/Complex2DArrayFFT.hpp>
 #include <complex>
 #include <ostream>
@@ -94,7 +94,7 @@ public:
 
 
 	/**
-	 * Solve the REXI of U(t) = exp(L*t)
+	 * Solve the REXI of \f$ U(t) = exp(L*t) \f$
 	 *
 	 * See
 	 * 		doc/rexi/understanding_rexi.pdf
@@ -106,12 +106,12 @@ public:
 		DataArray<2> &io_v,
 
 		Operators2D &op,
-		const SimulationParameters &i_parameters,
+		const SimulationVariables &i_parameters,
 		bool i_use_half_reduction = false			///< reduce the REXI computations to its half
 	)
 	{
-		double eta_bar = i_parameters.setup_h0;
-		double g = i_parameters.sim_g;
+		double eta_bar = i_parameters.setup.h0;
+		double g = i_parameters.sim.g;
 
 		eta0.loadRealFromDataArray(io_h);
 		u0.loadRealFromDataArray(io_u);
@@ -195,12 +195,12 @@ public:
 			double i_timestep_size,
 
 			Operators2D &op,
-			const SimulationParameters &i_parameters
+			const SimulationVariables &i_parameters
 	)
 	{
-		double eta_bar = i_parameters.setup_h0;
-		double g = i_parameters.sim_g;
-		double f = i_parameters.sim_f;
+		double eta_bar = i_parameters.setup.h0;
+		double g = i_parameters.sim.g;
+		double f = i_parameters.sim.f;
 		complex I(0.0,1.0);
 
 		Complex2DArrayFFT i_h(io_h.resolution);
@@ -220,8 +220,8 @@ public:
 		i_v.loadRealFromDataArray(io_v);
 		i_v = i_v.toSpec();
 
-		double s0 = i_parameters.sim_domain_size[0];
-		double s1 = i_parameters.sim_domain_size[1];
+		double s0 = i_parameters.sim.domain_size[0];
+		double s1 = i_parameters.sim.domain_size[1];
 
 		for (std::size_t ik1 = 0; ik1 < i_h.resolution[1]; ik1++)
 		{
@@ -265,7 +265,7 @@ public:
 
 				if (k0 == 0 && k1 == 0)
 				{
-					complex wg = std::sqrt((complex)f*f*s0*s0*s1*s1);
+//					complex wg = std::sqrt((complex)f*f*s0*s0*s1*s1);
 
 					eigenvalues[0] = 0.0;
 					eigenvalues[1] = -1.0*f;
@@ -283,7 +283,7 @@ public:
 				}
 				else if (k0 == 0)
 				{
-					complex wg = std::sqrt((complex)s0*s0*(f*f*s1*s1 + 4.0*M_PI*M_PI*g*g*k1*k1));
+//					complex wg = std::sqrt((complex)s0*s0*(f*f*s1*s1 + 4.0*M_PI*M_PI*g*g*k1*k1));
 
 					eigenvalues[0] = 0.0;
 					eigenvalues[1] = -1.0*1.0/s1*std::sqrt((complex)4.0*M_PI*M_PI*H0*g*k1*k1 + f*f*s1*s1);
@@ -301,7 +301,7 @@ public:
 				}
 				else if (k1 == 0)
 				{
-					complex wg = std::sqrt((complex)s1*s1*(f*f*s0*s0 + 4.0*M_PI*M_PI*g*g*k0*k0));
+//					complex wg = std::sqrt((complex)s1*s1*(f*f*s0*s0 + 4.0*M_PI*M_PI*g*g*k0*k0));
 
 					eigenvalues[0] = 0.0;
 					eigenvalues[1] = -1.0*1.0/s0*std::sqrt((complex)4.0*M_PI*M_PI*H0*g*k0*k0 + f*f*s0*s0);
@@ -319,10 +319,10 @@ public:
 				}
 				else
 				{
-					complex K2 = M_PI*M_PI*k0*k0 + M_PI*M_PI*k1*k1;
+//					complex K2 = M_PI*M_PI*k0*k0 + M_PI*M_PI*k1*k1;
 					complex w = std::sqrt((complex)4.0*M_PI*M_PI*H0*g*k0*k0*s1*s1 + 4.0*M_PI*M_PI*H0*g*k1*k1*s0*s0 + f*f*s0*s0*s1*s1);
 
-					complex wg = std::sqrt((complex)f*f*s0*s0*s1*s1 + 4.0*M_PI*M_PI*g*g*k0*k0*s1*s1 + 4.0*M_PI*M_PI*g*g*k1*k1*s0*s0);
+//					complex wg = std::sqrt((complex)f*f*s0*s0*s1*s1 + 4.0*M_PI*M_PI*g*g*k0*k0*s1*s1 + 4.0*M_PI*M_PI*g*g*k1*k1*s0*s0);
 					eigenvalues[0] = 0.0;
 					eigenvalues[1] = -1.0*1.0/s0*1.0/s1*std::sqrt((complex)4.0*M_PI*M_PI*H0*g*k0*k0*s1*s1 + 4.0*M_PI*M_PI*H0*g*k1*k1*s0*s0 + f*f*s0*s0*s1*s1);
 					eigenvalues[2] = -1.0*I*1.0/s0*1.0/s1*std::sqrt((complex)-4.0*M_PI*M_PI*H0*g*k0*k0*s1*s1 - 4.0*M_PI*M_PI*H0*g*k1*k1*s0*s0 - 1.0*f*f*s0*s0*s1*s1);
@@ -437,8 +437,9 @@ public:
 				    }
 			    }
 
-				/**
-				 * SOLVE BASED ON CONSTANT DATA
+				/*
+				 * Solve based on previously computed data.
+				 * Note, that this data can be also precomputed and reused every time.
 				 */
 				complex UEV0_sp[3];
 				for (int k = 0; k < 3; k++)

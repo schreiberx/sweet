@@ -8,6 +8,10 @@
 #define SRC_EXAMPLES_OPENMP_HELPER_HPP_
 
 
+/**
+ * This is a class to overcome SIMD instruction issues with older GNU compilers
+ */
+
 #if !SWEET_SIMD_ENABLE
 
 	#define OPENMP_SIMD

@@ -12,7 +12,7 @@
 #include <sweet/DataArray.hpp>
 #include <sweet/Operators2D.hpp>
 #include <sweet/VisSweet.hpp>
-#include <sweet/SimulationParameters.hpp>
+#include <sweet/SimulationVariables.hpp>
 #include <sweet/Stopwatch.hpp>
 
 #include <ostream>
@@ -21,7 +21,7 @@
 #include <iomanip>
 #include <stdio.h>
 
-SimulationParameters parameters;
+SimulationVariables simVars;
 
 class TestSpectral
 {
@@ -42,9 +42,9 @@ public:
 
 public:
 	TestSpectral()	:
-		tmp(parameters.res),
+		tmp(simVars.disc.res),
 
-		op(parameters.res, parameters.sim_domain_size, parameters.use_spectral_diffs)
+		op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_diffs)
 	{
 		stopwatch.reset();
 	}
@@ -95,9 +95,9 @@ public:
 	)
 	{
 		*o_dataArray = &tmp;
-		*o_aspect_ratio = parameters.sim_domain_size[1] / parameters.sim_domain_size[0];
+		*o_aspect_ratio = simVars.sim.domain_size[1] / simVars.sim.domain_size[0];
 
-		if (parameters.run_simulation)
+		if (simVars.timecontrol.run_simulation_timesteps)
 		{
 			tmp.spec_setAll(0, 0);
 
@@ -124,28 +124,28 @@ public:
 					{1, 1, 0, 1},
 					{1, 1, 1, 1},
 
-					{(int)parameters.res[1]-1, 0, 1, 0},
-					{(int)parameters.res[1]-1, 0, 0, 1},
-					{(int)parameters.res[1]-1, 0, 1, 1},
+					{(int)simVars.disc.res[1]-1, 0, 1, 0},
+					{(int)simVars.disc.res[1]-1, 0, 0, 1},
+					{(int)simVars.disc.res[1]-1, 0, 1, 1},
 
-					{(int)parameters.res[1]-2, 0, 1, 0},
-					{(int)parameters.res[1]-2, 0, 0, 1},
-					{(int)parameters.res[1]-2, 0, 1, 1},
+					{(int)simVars.disc.res[1]-2, 0, 1, 0},
+					{(int)simVars.disc.res[1]-2, 0, 0, 1},
+					{(int)simVars.disc.res[1]-2, 0, 1, 1},
 
-					{0, (int)parameters.res[0]/2, 1, 0},
-					{0, (int)parameters.res[0]/2, 0, 1},
-					{0, (int)parameters.res[0]/2, 1, 1},
+					{0, (int)simVars.disc.res[0]/2, 1, 0},
+					{0, (int)simVars.disc.res[0]/2, 0, 1},
+					{0, (int)simVars.disc.res[0]/2, 1, 1},
 
-					{0, (int)parameters.res[0]/2-1, 1, 0},
-					{0, (int)parameters.res[0]/2-1, 0, 1},
-					{0, (int)parameters.res[0]/2-1, 1, 1},
+					{0, (int)simVars.disc.res[0]/2-1, 1, 0},
+					{0, (int)simVars.disc.res[0]/2-1, 0, 1},
+					{0, (int)simVars.disc.res[0]/2-1, 1, 1},
 
-					{0, (int)parameters.res[0]/2-2, 1, 0},
-					{0, (int)parameters.res[0]/2-2, 0, 1},
-					{0, (int)parameters.res[0]/2-2, 1, 1},
+					{0, (int)simVars.disc.res[0]/2-2, 1, 0},
+					{0, (int)simVars.disc.res[0]/2-2, 0, 1},
+					{0, (int)simVars.disc.res[0]/2-2, 1, 1},
 			};
 
-			int id = parameters.vis_id % (sizeof(spec_array)/sizeof(spec_array[0]));
+			int id = simVars.misc.vis_id % (sizeof(spec_array)/sizeof(spec_array[0]));
 
 			sprintf(vis_description, "spec_coord (j, i) = (%i, %i), value = %i + i*%i", spec_array[id][0], spec_array[id][1], spec_array[id][2], spec_array[id][3]);
 			tmp.spec_set(spec_array[id][0], spec_array[id][1], spec_array[id][2], spec_array[id][3]);
@@ -153,7 +153,7 @@ public:
 			return;
 		}
 
-		DataArray<2> dataArray(parameters.res);
+		DataArray<2> dataArray(simVars.disc.res);
 
 		double max = 1.0;
 		double shift = stopwatch.getTimeSinceStart()*0.1;
@@ -179,7 +179,7 @@ public:
 	{
 		static char output_string[2048];
 
-		sprintf(output_string, "%i: %s, res x/y: %lu/%lu, inv: %f", parameters.vis_id, vis_description, parameters.res[0], parameters.res[1], 1.0/(double)(parameters.res[0]*parameters.res[1]));
+		sprintf(output_string, "%i: %s, res x/y: %lu/%lu, inv: %f", simVars.misc.vis_id, vis_description, simVars.disc.res[0], simVars.disc.res[1], 1.0/(double)(simVars.disc.res[0]*simVars.disc.res[1]));
 		return output_string;
 	}
 
@@ -187,7 +187,7 @@ public:
 
 	void vis_pause()
 	{
-		parameters.run_simulation = !parameters.run_simulation;
+		simVars.timecontrol.run_simulation_timesteps = !simVars.timecontrol.run_simulation_timesteps;
 	}
 
 
@@ -197,11 +197,11 @@ public:
 		switch(i_key)
 		{
 		case 'v':
-			parameters.vis_id++;
+			simVars.misc.vis_id++;
 			break;
 
 		case 'V':
-			parameters.vis_id--;
+			simVars.misc.vis_id--;
 			break;
 		}
 	}
@@ -213,7 +213,7 @@ public:
 
 int main(int i_argc, char *i_argv[])
 {
-	if (!parameters.setup(i_argc, i_argv))
+	if (!simVars.setupFromMainParameters(i_argc, i_argv))
 	{
 		return -1;
 	}

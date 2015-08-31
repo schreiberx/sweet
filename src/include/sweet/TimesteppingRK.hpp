@@ -73,6 +73,10 @@ public:
 
 
 
+	/**
+	 * execute a Runge-Kutta timestep with the order
+	 * specified in the simulation variables.
+	 */
 	template <class BaseClass>
 	void run_rk_timestep(
 			BaseClass *i_baseClass,
@@ -86,7 +90,7 @@ public:
 					DataArray<2> &o_v_t,	///< time updates
 
 					double &o_dt,			///< time step restriction
-					double i_fixed_dt,		///< if this value is not equal to 0,
+					double i_use_fixed_dt,	///< if this value is not equal to 0,
 											///< use this time step size instead of computing one
 					double i_simulation_time
 			),
@@ -95,10 +99,16 @@ public:
 			DataArray<2> &io_u,
 			DataArray<2> &io_v,
 
-			double &o_dt,
-			double i_fixed_dt = 0,
-			int i_runge_kutta_order = 1,
-			double i_simulation_time = -1
+			double &o_dt,					///< return time step size for the computed time step
+
+			double i_use_fixed_dt = 0,		///< If this value is not equal to 0,
+											///< Use this time step size instead of computing one
+											///< This also sets o_dt = i_use_fixed_dt
+
+			int i_runge_kutta_order = 1,	///< Order of RK time stepping
+
+			double i_simulation_time = -1	///< Current simulation time.
+											///< This gets e.g. important for tidal waves
 	)
 	{
 		setupBuffers(io_h, i_runge_kutta_order);
@@ -114,7 +124,7 @@ public:
 					*RK_u_t[0],
 					*RK_v_t[0],
 					dt,
-					i_fixed_dt,
+					i_use_fixed_dt,
 					i_simulation_time
 			);
 
@@ -149,7 +159,7 @@ public:
 					*RK_u_t[0],
 					*RK_v_t[0],
 					dt,
-					i_fixed_dt,
+					i_use_fixed_dt,
 					i_simulation_time
 			);
 
@@ -198,7 +208,7 @@ public:
 					*RK_u_t[0],
 					*RK_v_t[0],
 					dt,
-					i_fixed_dt,
+					i_use_fixed_dt,
 					i_simulation_time
 			);
 
@@ -262,7 +272,7 @@ public:
 					*RK_u_t[0],
 					*RK_v_t[0],
 					dt,
-					i_fixed_dt,
+					i_use_fixed_dt,
 					i_simulation_time
 			);
 

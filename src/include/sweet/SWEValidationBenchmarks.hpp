@@ -7,8 +7,8 @@
 #ifndef SRC_INCLUDE_SWEET_SWEVALIDATIONBENCHMARKS_HPP_
 #define SRC_INCLUDE_SWEET_SWEVALIDATIONBENCHMARKS_HPP_
 
-#include <sweet/SimulationParameters.hpp>
 #include <math.h>
+#include <sweet/SimulationVariables.hpp>
 
 
 class SWEValidationBenchmarks
@@ -16,66 +16,66 @@ class SWEValidationBenchmarks
 public:
 	static
 	double return_h(
-			SimulationParameters &i_parameters,
+			SimulationVariables &i_parameters,
 			double x,
 			double y
 	)
 	{
-		if (i_parameters.setup_scenario == 0)
+		if (i_parameters.setup.scenario == 0)
 		{
 			// radial dam break
-			double dx = x-i_parameters.setup_coord_x*i_parameters.sim_domain_size[0];
-			double dy = y-i_parameters.setup_coord_y*i_parameters.sim_domain_size[1];
+			double dx = x-i_parameters.setup.coord_x*i_parameters.sim.domain_size[0];
+			double dy = y-i_parameters.setup.coord_y*i_parameters.sim.domain_size[1];
 
-			double radius = i_parameters.setup_radius_scale*sqrt((double)i_parameters.sim_domain_size[0]*(double)i_parameters.sim_domain_size[0]+(double)i_parameters.sim_domain_size[1]*(double)i_parameters.sim_domain_size[1]);
+			double radius = i_parameters.setup.radius_scale*sqrt((double)i_parameters.sim.domain_size[0]*(double)i_parameters.sim.domain_size[0]+(double)i_parameters.sim.domain_size[1]*(double)i_parameters.sim.domain_size[1]);
 			if (dx*dx+dy*dy < radius*radius)
-				return i_parameters.setup_h0+1.0;
+				return i_parameters.setup.h0+1.0;
 			else
-				return i_parameters.setup_h0;
+				return i_parameters.setup.h0;
 		}
 
-		if (i_parameters.setup_scenario == 1)
+		if (i_parameters.setup.scenario == 1)
 		{
 			// gaussian
-			double dx = x-i_parameters.setup_coord_x*i_parameters.sim_domain_size[0];
-			double dy = y-i_parameters.setup_coord_y*i_parameters.sim_domain_size[1];
+			double dx = x-i_parameters.setup.coord_x*i_parameters.sim.domain_size[0];
+			double dy = y-i_parameters.setup.coord_y*i_parameters.sim.domain_size[1];
 
-			double radius = i_parameters.setup_radius_scale*sqrt((double)i_parameters.sim_domain_size[0]*(double)i_parameters.sim_domain_size[0]+(double)i_parameters.sim_domain_size[1]*(double)i_parameters.sim_domain_size[1]);
+			double radius = i_parameters.setup.radius_scale*sqrt((double)i_parameters.sim.domain_size[0]*(double)i_parameters.sim.domain_size[0]+(double)i_parameters.sim.domain_size[1]*(double)i_parameters.sim.domain_size[1]);
 			dx /= radius;
 			dy /= radius;
 
-			return i_parameters.setup_h0+std::exp(-50.0*(dx*dx + dy*dy));
+			return i_parameters.setup.h0+std::exp(-50.0*(dx*dx + dy*dy));
 		}
 
-		if (i_parameters.setup_scenario == 2)
+		if (i_parameters.setup.scenario == 2)
 		{
-			return std::sin(2.0*M_PI*x/i_parameters.sim_domain_size[0]) + i_parameters.setup_h0;
+			return std::sin(2.0*M_PI*x/i_parameters.sim.domain_size[0]) + i_parameters.setup.h0;
 		}
 
-		if (i_parameters.setup_scenario == 3)
+		if (i_parameters.setup.scenario == 3)
 		{
-			return std::sin(2.0*M_PI*y/i_parameters.sim_domain_size[1]) + i_parameters.setup_h0;
+			return std::sin(2.0*M_PI*y/i_parameters.sim.domain_size[1]) + i_parameters.setup.h0;
 		}
 
 
-		if (i_parameters.setup_scenario == 8)
+		if (i_parameters.setup.scenario == 8)
 		{
 			// gaussian in x
-			double dx = x-i_parameters.setup_coord_x*i_parameters.sim_domain_size[0];
+			double dx = x-i_parameters.setup.coord_x*i_parameters.sim.domain_size[0];
 
-			double radius = i_parameters.setup_radius_scale*i_parameters.sim_domain_size[0];
+			double radius = i_parameters.setup.radius_scale*i_parameters.sim.domain_size[0];
 			dx /= radius;
 
-			return i_parameters.setup_h0+std::exp(-50.0*(dx*dx));
+			return i_parameters.setup.h0+std::exp(-50.0*(dx*dx));
 		}
 
 
-		if (i_parameters.setup_scenario == 9)
+		if (i_parameters.setup.scenario == 9)
 		{
-			return i_parameters.setup_h0;
+			return i_parameters.setup.h0;
 		}
 
-		std::cerr << "Invalid setup scenario id " << i_parameters.setup_scenario << std::endl;
+		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
 		return 0;
 	}
 
@@ -83,20 +83,20 @@ public:
 
 	static
 	double return_u(
-			SimulationParameters &i_parameters,
+			SimulationVariables &i_parameters,
 			double x,
 			double y
 	)
 	{
-		if (i_parameters.setup_scenario == 0)
+		if (i_parameters.setup.scenario == 0)
 			return 0;
 
-		if (i_parameters.setup_scenario == 1)
+		if (i_parameters.setup.scenario == 1)
 			return 0;
 
-		if (i_parameters.setup_scenario == 2)
+		if (i_parameters.setup.scenario == 2)
 		{
-			if (i_parameters.sim_f == 0)
+			if (i_parameters.sim.f == 0)
 			{
 				std::cerr << "f-value is equal to zero!" << std::endl;
 				exit(-1);
@@ -104,28 +104,28 @@ public:
 			return 0;
 		}
 
-		if (i_parameters.setup_scenario == 3)
+		if (i_parameters.setup.scenario == 3)
 		{
-			if (i_parameters.sim_f == 0)
+			if (i_parameters.sim.f == 0)
 			{
 				std::cerr << "f-value is equal to zero!" << std::endl;
 				exit(-1);
 			}
-			return -i_parameters.sim_g*2.0*M_PI*std::cos(2.0*M_PI*y/i_parameters.sim_domain_size[1])/(i_parameters.sim_f*i_parameters.sim_domain_size[1]);
+			return -i_parameters.sim.g*2.0*M_PI*std::cos(2.0*M_PI*y/i_parameters.sim.domain_size[1])/(i_parameters.sim.f*i_parameters.sim.domain_size[1]);
 		}
 
-		if (i_parameters.setup_scenario == 8)
+		if (i_parameters.setup.scenario == 8)
 		{
 			return 0;
 		}
 
 
-		if (i_parameters.setup_scenario == 9)
+		if (i_parameters.setup.scenario == 9)
 		{
 			return 1;
 		}
 
-		std::cerr << "Invalid setup scenario id " << i_parameters.setup_scenario << std::endl;
+		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
 		return 0;
 	}
 
@@ -133,30 +133,30 @@ public:
 
 	static
 	double return_v(
-			SimulationParameters &i_parameters,
+			SimulationVariables &i_parameters,
 			double x,
 			double y
 	)
 	{
-		if (i_parameters.setup_scenario == 0)
+		if (i_parameters.setup.scenario == 0)
 			return 0;
 
-		if (i_parameters.setup_scenario == 1)
+		if (i_parameters.setup.scenario == 1)
 			return 0;
 
-		if (i_parameters.setup_scenario == 2)
+		if (i_parameters.setup.scenario == 2)
 		{
-			if (i_parameters.sim_f == 0)
+			if (i_parameters.sim.f == 0)
 			{
 				std::cerr << "f-value is equal to zero!" << std::endl;
 				exit(-1);
 			}
-			return i_parameters.sim_g*2.0*M_PI*std::cos(2.0*M_PI*x/i_parameters.sim_domain_size[0])/(i_parameters.sim_f*i_parameters.sim_domain_size[0]);
+			return i_parameters.sim.g*2.0*M_PI*std::cos(2.0*M_PI*x/i_parameters.sim.domain_size[0])/(i_parameters.sim.f*i_parameters.sim.domain_size[0]);
 		}
 
-		if (i_parameters.setup_scenario == 3)
+		if (i_parameters.setup.scenario == 3)
 		{
-			if (i_parameters.sim_f == 0)
+			if (i_parameters.sim.f == 0)
 			{
 				std::cerr << "f-value is equal to zero!" << std::endl;
 				exit(-1);
@@ -164,18 +164,18 @@ public:
 			return 0;
 		}
 
-		if (i_parameters.setup_scenario == 8)
+		if (i_parameters.setup.scenario == 8)
 		{
 			return 0;
 		}
 
-		if (i_parameters.setup_scenario == 9)
+		if (i_parameters.setup.scenario == 9)
 		{
 			return 2;
 		}
 
 
-		std::cerr << "Invalid setup scenario id " << i_parameters.setup_scenario << std::endl;
+		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
 		return 0;
 	}
 };

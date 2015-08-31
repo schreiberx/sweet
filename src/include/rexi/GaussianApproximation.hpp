@@ -13,7 +13,13 @@
 
 /**
  * This class provides the weights and coefficients for the
- * approximation of a Gaussian with a sum over complex rational functions.
+ * approximation of a Gaussian
+ *
+ * \f$
+ * 	  exp(-(x*x)/(4*h*h))/sqrt(4 \pi)
+ * \f$
+ *
+ * with a sum over complex rational functions.
  *
  * See e.g. Near optimal rational approximations of large data sets, Damle et. al.
  */
@@ -22,9 +28,9 @@ class GaussianApproximation
 	typedef std::complex<double> complex;
 
 public:
-	complex mu;
-	std::vector<complex> a;
-	int L;
+	complex mu;				///< average
+	std::vector<complex> a;	///< weights for approximation
+	int L;					///< 2*L+1 = number of weights
 
 	GaussianApproximation()
 	{
@@ -64,12 +70,13 @@ public:
 	}
 
 
+
 	/**
 	 * directly evaluate basis function which is to be approximated
 	 */
 	double evalGaussian(
-			double x,
-			double h
+			double x,	///< x-coefficient for Gaussian basis function
+			double h	///< h-coefficient for Gaussian basis function
 	)
 	{
 		return std::exp(-(x*x)/(4*h*h))/std::sqrt(4.0*M_PIl);
@@ -79,13 +86,11 @@ public:
 	/**
 	 * evaluate approximation of Gaussian basis function
 	 *
-	 * 	  exp(-(x*x)/(4*h*h))/sqrt(4.0*M_PIl)
-	 *
 	 * with sum of complex rational functions
 	 */
 	double approxGaussian(
-			double x,
-			double h
+			double x,	///< x-coefficient for Gaussian basis function
+			double h	///< h-coefficient for Gaussian basis function
 	)
 	{
 		// scale x, since it depends linearly on h:
@@ -104,35 +109,6 @@ public:
 
 		return sum;
 	}
-
-#if 0
-	/**
-	 * Compute the approximation to the Gaussian and return the complex value
-	 *
-	 * TODO: Does this make any sense?
-	 */
-	complex approxGaussian_returnComplex(
-			double x,
-			double h
-	)
-	{
-		// scale x, since it depends linearly on h:
-		// x^2 ~ h^2
-		x /= h;
-
-		complex sum = 0;
-
-		for (int l = 0; l < 2*L+1; l++)
-		{
-			int j = l-L;
-
-			// WORKS with max error 7.15344e-13
-			sum += a[l]/(complex(0, x) + mu + complex(0, j));
-		}
-
-		return sum;
-	}
-#endif
 
 	void print()
 	{

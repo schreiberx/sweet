@@ -3,7 +3,7 @@
 #if SWEET_GUI
 	#include <sweet/VisSweet.hpp>
 #endif
-#include <sweet/SimulationParameters.hpp>
+#include <sweet/SimulationVariables.hpp>
 #include <sweet/TimesteppingRK.hpp>
 #include <sweet/SWEValidationBenchmarks.hpp>
 #include <sweet/Operators2D.hpp>
@@ -17,7 +17,7 @@
 
 
 
-SimulationParameters parameters;
+SimulationVariables simVars;
 
 int time_test_function_order = 0;
 int timestepping_runge_kutta_order = 0;
@@ -105,11 +105,11 @@ public:
 
 public:
 	SimulationTestRK()	:
-		prog_h(parameters.res),
-		prog_u(parameters.res),
-		prog_v(parameters.res),
+		prog_h(simVars.disc.res),
+		prog_u(simVars.disc.res),
+		prog_v(simVars.disc.res),
 
-		op(parameters.res, parameters.sim_domain_size, parameters.use_spectral_diffs)
+		op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_diffs)
 	{
 		reset();
 	}
@@ -117,7 +117,7 @@ public:
 
 	void reset()
 	{
-		parameters.status_timestep_nr = 0;
+		simVars.timecontrol.current_timestep_nr = 0;
 
 		prog_h.setAll(test_function(time_test_function_order, 0));
 		prog_u.setAll(0);
@@ -143,12 +143,12 @@ public:
 		o_u_t.setAll(0);
 		o_v_t.setAll(0);
 
-		if (parameters.sim_CFL < 0)
-			o_dt = -parameters.sim_CFL;
+		if (simVars.sim.CFL < 0)
+			o_dt = -simVars.sim.CFL;
 		else
 			o_dt = 0.1;
 
-		parameters.status_timestep_nr++;
+		simVars.timecontrol.current_timestep_nr++;
 	}
 
 
@@ -168,15 +168,15 @@ public:
 				&SimulationTestRK::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
 				prog_h, prog_u, prog_v,
 				dt,
-				parameters.timestepping_timestep_size,
+				simVars.disc.timestepping_timestep_size,
 				timestepping_runge_kutta_order,
-				parameters.status_simulation_time
+				simVars.timecontrol.current_simulation_time
 			);
 
 		// provide information to parameters
-		parameters.status_simulation_timestep_size = dt;
-		parameters.status_simulation_time += dt;
-		parameters.status_timestep_nr++;
+		simVars.timecontrol.current_simulation_timestep_size = dt;
+		simVars.timecontrol.current_simulation_time += dt;
+		simVars.timecontrol.current_timestep_nr++;
 	}
 
 
@@ -193,7 +193,7 @@ public:
 	 */
 	void vis_post_frame_processing(int i_num_iterations)
 	{
-		if (parameters.run_simulation)
+		if (simVars.timecontrol.run_simulation_timesteps)
 			for (int i = 0; i < i_num_iterations; i++)
 				run_timestep();
 	}
@@ -206,24 +206,24 @@ public:
 	)
 	{
 		*o_dataArray = &prog_h;
-		*o_aspect_ratio = parameters.sim_domain_size[1] / parameters.sim_domain_size[0];
+		*o_aspect_ratio = simVars.sim.domain_size[1] / simVars.sim.domain_size[0];
 	}
 
 	const char* vis_get_status_string()
 	{
 		static char title_string[1024];
 		sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %.14e, Mass: %.14e, Energy: %.14e, Potential Entrophy: %.14e",
-				parameters.status_simulation_time,
-				parameters.status_simulation_time/(60.0*60.0*24.0),
-				parameters.status_timestep_nr,
-				parameters.status_simulation_timestep_size,
-				parameters.diagnostics_mass, parameters.diagnostics_energy, parameters.diagnostics_potential_entrophy);
+				simVars.timecontrol.current_simulation_time,
+				simVars.timecontrol.current_simulation_time/(60.0*60.0*24.0),
+				simVars.timecontrol.current_timestep_nr,
+				simVars.timecontrol.current_simulation_timestep_size,
+				simVars.diag.total_mass, simVars.diag.total_energy, simVars.diag.total_potential_enstrophy);
 		return title_string;
 	}
 
 	void vis_pause()
 	{
-		parameters.run_simulation = !parameters.run_simulation;
+		simVars.timecontrol.run_simulation_timesteps = !simVars.timecontrol.run_simulation_timesteps;
 	}
 
 
@@ -232,11 +232,11 @@ public:
 		switch(i_key)
 		{
 		case 'v':
-			parameters.vis_id++;
+			simVars.misc.vis_id++;
 			break;
 
 		case 'V':
-			parameters.vis_id--;
+			simVars.misc.vis_id--;
 			break;
 		}
 	}
@@ -262,7 +262,7 @@ int main(
 			nullptr
 	};
 
-	if (!parameters.setup(i_argc, i_argv, bogus_var_names))
+	if (!simVars.setup(i_argc, i_argv, bogus_var_names))
 	{
 		std::cout << std::endl;
 		std::cout << "Program-specific options:" << std::endl;
@@ -273,7 +273,7 @@ int main(
 
 
 #if SWEET_GUI
-	if (parameters.gui_enabled)
+	if (simVars.misc.gui_enabled)
 	{
 		SimulationTestRK *simulationTestRK = new SimulationTestRK;
 		VisSweet<SimulationTestRK> visSweet(simulationTestRK);
@@ -282,14 +282,14 @@ int main(
 	}
 #endif
 
-	if (parameters.max_simulation_time == -1)
+	if (simVars.timecontrol.max_simulation_time == -1)
 	{
 		std::cerr << "Max. simulation time is unlimited, please specify e.g. -t 6" << std::endl;
 		return -1;
 	}
 
-	if (!std::isinf(parameters.bogus_var0))
-		time_test_function_order = parameters.bogus_var0;
+	if (!std::isinf(simVars.bogus.var[0]))
+		time_test_function_order = simVars.bogus.var[0];
 
 	for (int fun_order = 0; fun_order <= 4; fun_order++)
 	{
@@ -302,14 +302,14 @@ int main(
 			/*
 			 * iterate over resolutions, starting by res[0] given e.g. by program parameter -n
 			 */
-			parameters.reset();
+			simVars.reset();
 
 			SimulationTestRK *simulationTestRK = new SimulationTestRK;
 
 			while(true)
 			{
-				if (parameters.verbosity > 2)
-					std::cout << parameters.status_simulation_time << ": " << simulationTestRK->prog_h.get(0,0) << std::endl;
+				if (simVars.misc.verbosity > 2)
+					std::cout << simVars.timecontrol.current_simulation_time << ": " << simulationTestRK->prog_h.get(0,0) << std::endl;
 
 				simulationTestRK->run_timestep();
 
@@ -319,11 +319,11 @@ int main(
 					break;
 				}
 
-				if (parameters.max_simulation_time < parameters.status_simulation_time)
+				if (simVars.timecontrol.max_simulation_time < simVars.timecontrol.current_simulation_time)
 				{
-					DataArray<2> benchmark_h(parameters.res);
+					DataArray<2> benchmark_h(simVars.disc.res);
 
-					benchmark_h.setAll(simulationTestRK->test_function(time_test_function_order, parameters.status_simulation_time));
+					benchmark_h.setAll(simulationTestRK->test_function(time_test_function_order, simVars.timecontrol.current_simulation_time));
 
 					double error = (simulationTestRK->prog_h-benchmark_h).reduce_rms_quad();
 					std::cout << "with function order " << fun_order << " with RK timestepping " << ts_order << " resulted in RMS error " << error << std::endl;
