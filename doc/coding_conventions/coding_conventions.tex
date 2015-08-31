@@ -1,0 +1,120 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[latin1]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{listings}
+\author{Martin Schreiber}
+\title{Coding Conventions for Sierpi}
+\begin{document}
+
+\maketitle
+
+\section{Purpose}
+Different developers working together have usually different coding conventions.
+Therefore an agreement to coding conventions has to be achieved when working together on one project for several reasons.
+One of the main reasons is to keep the code clean and thus to maintain a better code structure.
+
+
+\section{Coding conventions}
+
+\subsection{Identation}
+Blocks and scopes have to be indented by using a single TAB for each identation.
+
+\subsection{Naming conventions}
+
+\subsubsection{Types}
+
+Types are distinguished whether they are used as a
+\begin{itemize}
+	\item class,
+	\item class with templates
+	\item typedef followed by a specialized class
+	\item classes without templates
+	\item atomic variables (int, char, float, ...)
+\end{itemize}
+
+%When classes are defined, they are always prefixed with a  capital letter 'C' denoting that they are a class.
+%Also classes with template parameters are prefixed with the 'C'.
+
+%As soon as a class (with or without template parameters) is given as a template parameter or redefined via a typedef, the 'C' is replaced by a 'T' to account for a fixed type without necessity of template parameters. 
+
+\subsubsection{Variable naming}
+
+\begin{itemize}
+	\item For atomic types (int, char, float, etc.), all variables have to be written using underscores and small letters.
+
+	\item For class types, the class variables have to be written without underscores
+\end{itemize}
+
+\subsubsection{Parameters for methods}
+
+parameters of methods are prefixed by i\_, o\_ or io\_.
+\begin{itemize}
+      \item i\_ means that this parameter is accessed read/only (const).
+      \item o\_ is used to declare this parameter as being an output reference to write some output values.
+      \item io\_ is used to declare an input/output pointer or reference which is read and written.
+\end{itemize}
+Output parameters always have to be of type pointer.
+No references should ever be used for output parameters!
+Return values handed back to the calling method are still allowed and have so far no convention.
+
+
+\begin{lstlisting}
+/**
+ * some comment
+ *
+ * \return description of return value 
+ */
+char foo(
+    const int i_bar_var,     
+                  ///< this is a totally useless variable
+    const SomeClass &i_someClass,    
+                  ///< input via referenced parameter
+    SomeClass *o_someOutputClass
+                  ///< output via pointer parameter
+) {
+    while (true) {
+        ...
+    }
+    return 42;
+}
+\end{lstlisting}
+
+\subsection{Template parameters}
+ALL template parameters have to be prefixed with a "t\_" to differ between template types and other types.
+
+
+\subsection{Comments}
+Comments are one of the most important thing in writing code.
+Therefore as much comments as are necessary or being requested by other developers have to be written.
+
+
+\begin{lstlisting}
+/**
+ * comments preceeding functions should
+ * follow the doxygen (www.doxygen.org)
+ * code-style
+ *
+ * \return description of return value 
+ */
+void foo(
+    const int i_bar_var, ///< this is totally useless
+    void *io_foo_var     ///< this variable is not
+                         ///< able to drink beer
+) {
+    while (true) {
+        ...
+    }
+}
+
+constructor(
+    int i_val,	///< index
+) :
+  some_variable(i_val)
+{
+	...
+}
+\end{lstlisting}
+
+\end{document}
