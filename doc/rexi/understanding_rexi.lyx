@@ -119,7 +119,7 @@ key "Schreiber:Formulations of the shallow-water equations"
 
 \end_inset
 
-).
+, note that the sign is inverted).
  The linear operator (
 \begin_inset Formula $L$
 \end_inset
@@ -131,9 +131,9 @@ key "Schreiber:Formulations of the shallow-water equations"
 \begin_inset Formula 
 \[
 L(U):=\left(\begin{array}{ccc}
-0 & \eta_{0}\partial_{x} & \eta_{0}\partial_{y}\\
-g\partial_{x} & 0 & -f\\
-g\partial_{y} & f & 0
+0 & -\eta_{0}\partial_{x} & -\eta_{0}\partial_{y}\\
+-g\partial_{x} & 0 & f\\
+-g\partial_{y} & -f & 0
 \end{array}\right)U
 \]
 
@@ -1827,8 +1827,24 @@ For a better understanding and discussion of the poles, we provide some
 
 \end_layout
 
+\begin_layout Section
+REXI on linear operators
+\end_layout
+
+\begin_layout Standard
+In this section, we investigate the linear operator 
+\begin_inset Formula $L$
+\end_inset
+
+ with the rational approximation.
+\end_layout
+
 \begin_layout Subsection
-Reducing number of computations
+Reducing number of computations for 
+\begin_inset Formula $L$
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -1883,9 +1899,10 @@ Furthermore, it holds that
 with the overbar denoting the complex conjugate.
  We can then reformulate the approximation
 \begin_inset Formula 
-\[
-e^{\tau L}\approx\sum_{n=-N}^{N}Re\left(\frac{\beta_{n}^{Re}}{\tau L+\alpha_{n}}\right)=\sum_{n=-N}^{-1}Re\left(\frac{\beta_{n}^{Re}}{\tau L+\alpha_{n}}\right)+Re\left(\frac{\beta_{0}^{Re}}{\tau L+\alpha_{0}}\right)+\sum_{n=-N}^{-1}Re\left(\frac{\beta_{N+n+1}^{Re}}{\tau L+\alpha_{N+n+1}}\right)
-\]
+\begin{eqnarray*}
+e^{\tau L} & \approx & \sum_{n=-N}^{N}Re\left(\frac{\beta_{n}^{Re}}{\tau L+\alpha_{n}}\right)\\
+ & = & \sum_{n=-N}^{-1}Re\left(\frac{\beta_{n}^{Re}}{\tau L+\alpha_{n}}\right)+Re\left(\frac{\beta_{0}^{Re}}{\tau L+\alpha_{0}}\right)+\sum_{n=-N}^{-1}Re\left(\frac{\beta_{N+n+1}^{Re}}{\tau L+\alpha_{N+n+1}}\right)
+\end{eqnarray*}
 
 \end_inset
 
@@ -1905,10 +1922,28 @@ reference "eq:beta_conjugate_symmetry"
 
 , we can write this as
 \begin_inset Formula 
-\[
-\sum_{n=-N}^{-1}Re\left(\frac{\beta_{n}^{Re}}{\tau L+\alpha_{n}}\right)+Re\left(\frac{\beta_{0}^{Re}}{\tau L+\alpha_{0}}\right)+\sum_{n=-N}^{-1}Re\left(\frac{\overline{\beta_{N}^{Re}}}{\tau L+\overline{\alpha_{N}}}\right)=\sum_{n=-N}^{-1}\left(Re\left(\frac{\beta_{n}^{Re}}{\tau L+\alpha_{n}}+\overline{\left(\frac{\beta_{n}^{Re}}{\tau L+\alpha_{n}}\right)}\right)\right)+Re\left(\frac{\beta_{0}^{Re}}{\tau L+\alpha_{0}}\right).
-\]
+\begin{align*}
+\sum_{n=-N}^{-1}Re\left(\frac{\beta_{n}^{Re}}{\tau L+\alpha_{n}}\right)+Re\left(\frac{\beta_{0}^{Re}}{\tau L+\alpha_{0}}\right)+\sum_{n=-N}^{-1}Re\left(\frac{\overline{\beta_{N}^{Re}}}{\tau L+\overline{\alpha_{N}}}\right)\\
+=\sum_{n=-N}^{-1}\left(Re\left(\frac{\beta_{n}^{Re}}{\tau L+\alpha_{n}}+\overline{\left(\frac{\beta_{n}^{Re}}{\tau L+\alpha_{n}}\right)}\right)\right)+Re\left(\frac{\beta_{0}^{Re}}{\tau L+\alpha_{0}}\right).
+\end{align*}
 
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+(TODO: Is this reformulation in the last line really allowed?!? We are computing
+ the conjugate on 
+\begin_inset Formula $\tau L$
+\end_inset
+
+)
+\series default
+
+\begin_inset Newline newline
 \end_inset
 
 Since the imaginary parts cancel out for 
@@ -1960,13 +1995,6 @@ else
 \end_inset
 
 
-\series bold
-(TODO - PP: are you sure? MaS: No, but this is what Terry mentioned.
- MaS: @PP: Do you agree in this reformulation?).
-\end_layout
-
-\begin_layout Section
-REXI on linear operators
 \end_layout
 
 \begin_layout Subsection
@@ -2059,8 +2087,8 @@ Although
 \begin_inset Formula $e^{\tau L}U(0)$
 \end_inset
 
-, which is real valued, therefore, we will use the real approximation of
- 
+, which is real valued.
+ Therefore, we will use the real approximation of 
 \begin_inset Formula $e^{ix}$
 \end_inset
 
@@ -2368,16 +2396,21 @@ For computing the inverse, arbitrary solvers can be used.
 We wish to solve the differential problem for each time step 
 \begin_inset Formula 
 \[
-(L+\alpha)U=U(0)
+(-L+\alpha)U=U(0)
 \]
 
 \end_inset
 
 so that 
-\begin_inset Formula $U=(L+\alpha)^{-1}U_{0}$
+\begin_inset Formula $U=(-L+\alpha)^{-1}U_{0}$
 \end_inset
 
 .
+ Note, the change in sign before 
+\begin_inset Formula $L$
+\end_inset
+
+ for convenience which has to be accounted for afterwards.
  We will do this converting the problem into and elliptic equation.
 \series bold
 
@@ -2395,7 +2428,7 @@ First, lets expand the equations with the definition of
 , 
 \begin_inset Formula 
 \begin{eqnarray}
--fv+g\eta_{x}+\alpha u & = & u_{0},\label{eq:mom_u}\\
+fv+g\eta_{x}+\alpha u & = & u_{0},\label{eq:mom_u}\\
 fu+g\eta_{y}+\alpha v & = & v_{0},\label{eq:mom_v}\\
 \bar{\eta}(u_{x}+v_{y})+\alpha\eta & = & \eta_{0}.\label{eq:mass}
 \end{eqnarray}
@@ -2705,7 +2738,24 @@ A_{\alpha}^{-1}=\frac{1}{f^{2}+\alpha^{2}}\left(\begin{matrix}\alpha & f\\
 
 \end_inset
 
+Finally, since we computed 
+\begin_inset Formula $(-L+\alpha)^{-1}$
+\end_inset
 
+, we also have to invert the sign of the computed solution 
+\begin_inset Formula $U$
+\end_inset
+
+.
+ Alternatively, we are allowed to flip the signs of 
+\begin_inset Formula $\alpha_{n}$
+\end_inset
+
+ and 
+\begin_inset Formula $\beta_{n}$
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Subsection
@@ -2795,7 +2845,7 @@ Complex solver
 We are interested in solving a system of the form, 
 \begin_inset Formula 
 \[
-(L+\alpha)U=U_{0},
+(-L+\alpha)U=U_{0},
 \]
 
 \end_inset
@@ -2850,7 +2900,7 @@ First we decompose
 \end_inset
 
  writing 
-\begin_inset Formula $D=L+\mu I$
+\begin_inset Formula $D=-L+\mu I$
 \end_inset
 
 , where 
@@ -2900,8 +2950,8 @@ U_{0}^{i}
 or, 
 \begin_inset Formula 
 \[
-\left(\begin{matrix}L+\mu I & -\alpha^{i}I\\
-\alpha^{i}I & L+\mu I
+\left(\begin{matrix}-L+\mu I & -\alpha^{i}I\\
+\alpha^{i}I & -L+\mu I
 \end{matrix}\right)\left(\begin{matrix}U^{r}\\
 U^{i}
 \end{matrix}\right)=\left(\begin{matrix}U_{0}^{r}\\

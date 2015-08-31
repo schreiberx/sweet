@@ -67,7 +67,7 @@ public:
 		M = i_M;
 		h = i_h;
 		tau = i_tau;
-		f = -i_f;
+		f = i_f;
 
 //		std::cout << "REXI setup: M=" << M << ", h=" << h << ", tau=" << tau << ", f=" << f << std::endl;
 
@@ -110,13 +110,6 @@ public:
 		bool i_use_half_reduction = false			///< reduce the REXI computations to its half
 	)
 	{
-		/*
-		 * TODO: we have to flip the signs for the velocities to match it with the analytical solution
-		 * TODO: figure out, why this is required
-		 */
-		io_u *= -1.0;
-		io_v *= -1.0;
-
 		double eta_bar = i_parameters.setup_h0;
 		double g = i_parameters.sim_g;
 
@@ -141,7 +134,9 @@ public:
 		for (std::size_t n = 0; n < N; n++)
 		{
 			// load alpha (a) and scale by inverse of tau
-			complex alpha = rexi.alpha[n]/tau;
+			// we flip the sign to account for the -L used in exp(\tau (-L))
+			complex alpha = -rexi.alpha[n]/tau;
+			complex beta = -rexi.beta_re[n];
 
 			// load kappa (k)
 			complex kappa = alpha*alpha + f*f;
@@ -172,16 +167,10 @@ public:
 			Complex2DArrayFFT u1_cart = u1.toCart();
 			Complex2DArrayFFT v1_cart = v1.toCart();
 
-			io_h += (eta1_cart*(rexi.beta_re[n])).getRealWithDataArray();
-			io_u += (u1_cart*(rexi.beta_re[n])).getRealWithDataArray();
-			io_v += (v1_cart*(rexi.beta_re[n])).getRealWithDataArray();
+			io_h += (eta1_cart*beta).getRealWithDataArray();
+			io_u += (u1_cart*beta).getRealWithDataArray();
+			io_v += (v1_cart*beta).getRealWithDataArray();
 		}
-
-		/*
-		 * TODO: here we have to flip the sign again, see start of this function
-		 */
-		io_u *= -1.0;
-		io_v *= -1.0;
 	}
 
 
