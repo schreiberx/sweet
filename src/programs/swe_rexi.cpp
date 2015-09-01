@@ -18,6 +18,7 @@ SimulationVariables simVars;
 
 double param_rexi_h;
 double param_rexi_m;
+double param_rexi_l;
 bool param_rexi_half;
 int param_timestepping_mode;
 bool param_compute_error;
@@ -194,7 +195,7 @@ public:
 			if (simVars.misc.verbosity > 0)
 			{
 				std::cout << "REXI: Using REXI for time integration" << std::endl;
-				std::cout << "REXI: Using " << param_rexi_m << " poles and sampling size " << param_rexi_h << std::endl;
+				std::cout << "REXI: Using M=" << param_rexi_m << ", L=" << param_rexi_l << ", poles and sampling size " << param_rexi_h << std::endl;
 			}
 
 			if (simVars.sim.CFL >= 0)
@@ -204,7 +205,7 @@ public:
 			}
 
 			// use REXI
-			rexiSWE.setup(-simVars.sim.CFL, param_rexi_h, param_rexi_m, simVars.sim.f, simVars.disc.res, simVars.sim.domain_size, param_rexi_half);
+			rexiSWE.setup(-simVars.sim.CFL, param_rexi_h, param_rexi_m, param_rexi_l, simVars.sim.f, simVars.disc.res, simVars.sim.domain_size, param_rexi_half);
 
 			if (simVars.misc.verbosity > 2)
 			{
@@ -935,6 +936,7 @@ int main(int i_argc, char *i_argv[])
 	const char *bogus_var_names[] = {
 			"rexi-h",
 			"rexi-m",
+			"rexi-l",
 			"rexi-half",
 			"timestepping-mode",
 			"compute-error",
@@ -944,11 +946,12 @@ int main(int i_argc, char *i_argv[])
 
 
 	simVars.bogus.var[0] = 0.1;
-	simVars.bogus.var[1] = 200;
-	simVars.bogus.var[2] = 1;	// param_rexi_half
-	simVars.bogus.var[3] = 0;
+	simVars.bogus.var[1] = 200;	// M
+	simVars.bogus.var[2] = 0;	// L = 0: default
+	simVars.bogus.var[3] = 1;	// param_rexi_half
 	simVars.bogus.var[4] = 0;
 	simVars.bogus.var[5] = 0;
+	simVars.bogus.var[6] = 0;
 
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
@@ -973,10 +976,11 @@ int main(int i_argc, char *i_argv[])
 
 	param_rexi_h = simVars.bogus.var[0];
 	param_rexi_m = simVars.bogus.var[1];
-	param_rexi_half = simVars.bogus.var[2];
-	param_timestepping_mode = simVars.bogus.var[3];
-	param_compute_error = simVars.bogus.var[4];
-	param_use_staggering = simVars.bogus.var[5];
+	param_rexi_l = simVars.bogus.var[2];
+	param_rexi_half = simVars.bogus.var[3];
+	param_timestepping_mode = simVars.bogus.var[4];
+	param_compute_error = simVars.bogus.var[5];
+	param_use_staggering = simVars.bogus.var[6];
 
 	SimulationSWE *simulationSWE = new SimulationSWE;
 

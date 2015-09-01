@@ -99,7 +99,7 @@ public:
 
 		if (simVars.timecontrol.run_simulation_timesteps)
 		{
-			tmp.spec_setAll(0, 0);
+			tmp.set_spec_all(0, 0);
 
 			int spec_array[][4] =
 			{
@@ -148,7 +148,7 @@ public:
 			int id = simVars.misc.vis_id % (sizeof(spec_array)/sizeof(spec_array[0]));
 
 			sprintf(vis_description, "spec_coord (j, i) = (%i, %i), value = %i + i*%i", spec_array[id][0], spec_array[id][1], spec_array[id][2], spec_array[id][3]);
-			tmp.spec_set(spec_array[id][0], spec_array[id][1], spec_array[id][2], spec_array[id][3]);
+			tmp.set_spec(spec_array[id][0], spec_array[id][1], spec_array[id][2], spec_array[id][3]);
 
 			return;
 		}
@@ -164,10 +164,10 @@ public:
 		s *= max;
 
 		sprintf(vis_description, "test spectrum");
-		tmp.spec_setAll(0, 0);
+		tmp.set_spec_all(0, 0);
 		int asdf = 2;
-		tmp.spec_set_spectrum(0, asdf, c, s);
-		tmp.spec_set_spectrum(asdf, 0, c, s);
+		tmp.set_spec_spectrum(0, asdf, c, s);
+		tmp.set_spec_spectrum(asdf, 0, c, s);
 	}
 
 

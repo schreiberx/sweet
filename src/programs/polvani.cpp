@@ -316,12 +316,17 @@ public:
 	void run_timestep()
 	{
 		double dt;
+
+		// either set time step size to 0 for autodetection or to
+		// a positive value to use a fixed time step size
+		simVars.timecontrol.current_simulation_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
+
 		timestepping.run_rk_timestep(
 				this,
 				&SimulationSWE::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
 				prog_h, prog_u, prog_v,
 				dt,
-				simVars.disc.timestepping_timestep_size,
+				simVars.timecontrol.current_simulation_timestep_size,
 				simVars.disc.timestepping_runge_kutta_order,
 				simVars.timecontrol.current_simulation_time
 			);
@@ -460,7 +465,7 @@ public:
 		*o_aspect_ratio = simVars.sim.domain_size[1] / simVars.sim.domain_size[0];
 #if 0
 		DataArray<2> &o = (DataArray<2> &)*vis_arrays[id].data;
-		o.spec_setAll(0, 0);
+		o.set_spec_all(0, 0);
 		o.spec_set(0, 0, 1, 0);
 
 		if (id == 0)
@@ -587,7 +592,7 @@ void compute_polvani_initialization(
 		 */
 
 		DataArray<2> energy_init(simVars.disc.res);
-		energy_init.spec_setAll(0,0);
+		energy_init.set_spec_all(0,0);
 
 		for (std::size_t j = 0; j < energy_init.resolution_spec[1]/2; j++)
 		{
@@ -599,7 +604,7 @@ void compute_polvani_initialization(
 				double energy = pow(k, m*0.5)/pow(k+k0, m);
 
 				assert(energy >= 0);
-				energy_init.spec_set_spectrum(j, i, energy, 0);
+				energy_init.set_spec_spectrum(j, i, energy, 0);
 
 /*
 				if (ka*ka+kb*kb == 1)
@@ -707,7 +712,7 @@ void compute_polvani_initialization(
 		std::cout << "ENERGY rms: " << energy_init.reduce_rms() << std::endl;
 
 		DataArray<2> psi(simVars.disc.res);
-		psi.spec_setAll(0, 0);
+		psi.set_spec_all(0, 0);
 
 		for (std::size_t j = 0; j < psi.resolution_spec[1]/2; j++)
 		{
@@ -733,7 +738,7 @@ void compute_polvani_initialization(
 					psi_re *= psi_abs;
 					psi_im *= psi_abs;
 
-					psi.spec_set_spectrum_A(j, i, psi_re, psi_im);
+					psi.set_spec_spectrum_A(j, i, psi_re, psi_im);
 				}
 				{
 					// compute random number \in [0;1[
@@ -746,7 +751,7 @@ void compute_polvani_initialization(
 					psi_re *= psi_abs;
 					psi_im *= psi_abs;
 
-					psi.spec_set_spectrum_B(j, i, psi_re, psi_im);
+					psi.set_spec_spectrum_B(j, i, psi_re, psi_im);
 				}
 			}
 		}
@@ -777,10 +782,10 @@ void compute_polvani_initialization(
 		 * STEP 3) Solve with iterations for \xi
 		 */
 		DataArray<2> xi(simVars.disc.res);
-		xi.spec_setAll(0, 0);
+		xi.set_spec_all(0, 0);
 
 		DataArray<2> prev_xi(simVars.disc.res);
-		prev_xi.spec_setAll(0, 0);
+		prev_xi.set_spec_all(0, 0);
 
 		double prev_inf_norm = -1;
 		double eps = 1e-9;
@@ -826,7 +831,7 @@ void compute_polvani_initialization(
 			 * Solve iterative equation (after equation 2.6)
 			 */
 			DataArray<2> rhs(simVars.disc.res);
-			rhs.spec_setAll(0, 0);
+			rhs.set_spec_all(0, 0);
 
 			// RHS, 1st line
 			rhs += -op.arakawa_jacobian(psi, op.laplace(xi));
@@ -850,7 +855,7 @@ void compute_polvani_initialization(
 
 			// LHS, 1st line
 			DataArray<2> lhs(simVars.disc.res);
-			lhs.spec_setAll(0, 0);
+			lhs.set_spec_all(0, 0);
 
 			// IMPORTANT! Apply last operator element-wise
 			lhs += (1.0/R)*(laplace_op-B*laplace_op*laplace_op);

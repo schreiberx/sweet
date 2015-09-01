@@ -22,9 +22,6 @@ class REXI
 {
 	typedef std::complex<double> complex;
 
-	int L;
-	int M;
-	int N;
 
 public:
 	std::vector<complex> alpha;
@@ -33,35 +30,34 @@ public:
 
 
 public:
-	REXI()	:
-		L(-1),
-		M(-1),
-		N(-1)
+	REXI()
 	{
 	}
 
 public:
 	REXI(
 			double i_h,	///< sampling width
-			int i_M		///< approximation area
+			int i_M,	///< approximation area
+			int i_L = 0	///< L, see Gaussian approximation
 	)
 	{
-		setup(i_h, i_M);
+		setup(i_h, i_M, i_L);
 	}
 
 public:
 	void setup(
 		double i_h,				///< sampling width
 		int i_M,				///< approximation area
+		int i_L = 0,			///< L value for Gaussian approximation, use 0 for autodetection
 		bool i_reduce_to_half = true	///< reduce the number of poles to half
 	)
 	{
-		GaussianApproximation ga;
+		GaussianApproximation ga(i_L);
 		ExponentialApproximation ea(i_h, i_M);
 
-		L = ga.L;
-		N = i_M+L;
-		M = i_M;
+		int L = ga.L;
+		int N = i_M+ga.L;
+		int M = i_M;
 
 		alpha.resize(2*N+1);
 		beta_re.resize(2*N+1);

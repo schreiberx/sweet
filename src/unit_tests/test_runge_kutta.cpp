@@ -262,7 +262,7 @@ int main(
 			nullptr
 	};
 
-	if (!simVars.setup(i_argc, i_argv, bogus_var_names))
+	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
 		std::cout << std::endl;
 		std::cout << "Program-specific options:" << std::endl;

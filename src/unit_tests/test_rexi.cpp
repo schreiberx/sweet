@@ -14,8 +14,8 @@
 
 int main(int i_argc, char *i_argv[])
 {
-	SimulationVariables parameters;
-	if (!parameters.setup(i_argc, i_argv))
+	SimulationVariables simVars;
+	if (!simVars.setupFromMainParameters(i_argc, i_argv))
 	{
 		return -1;
 	}
@@ -198,21 +198,21 @@ int main(int i_argc, char *i_argv[])
 	{
 		std::size_t res[2] = {128, 128};
 
-		double eta_bar = parameters.setup.h0;
-		double g = parameters.sim.g;
+		double eta_bar = simVars.setup.h0;
+		double g = simVars.sim.g;
 
-		Complex2DArrayFFT eta0(parameters.disc.res);
-		Complex2DArrayFFT u0(parameters.disc.res);
-		Complex2DArrayFFT v0(parameters.disc.res);
+		Complex2DArrayFFT eta0(simVars.disc.res);
+		Complex2DArrayFFT u0(simVars.disc.res);
+		Complex2DArrayFFT v0(simVars.disc.res);
 
-		Complex2DArrayFFT op_diff_c_x(parameters.disc.res), op_diff_c_y(parameters.disc.res);
-		Complex2DArrayFFT op_diff2_c_x(parameters.disc.res), op_diff2_c_y(parameters.disc.res);
+		Complex2DArrayFFT op_diff_c_x(simVars.disc.res), op_diff_c_y(simVars.disc.res);
+		Complex2DArrayFFT op_diff2_c_x(simVars.disc.res), op_diff2_c_y(simVars.disc.res);
 
-		op_diff_c_x.op_setup_diff_x(parameters.sim.domain_size);
-		op_diff_c_y.op_setup_diff_y(parameters.sim.domain_size);
+		op_diff_c_x.op_setup_diff_x(simVars.sim.domain_size);
+		op_diff_c_y.op_setup_diff_y(simVars.sim.domain_size);
 
-		op_diff2_c_x.op_setup_diff2_x(parameters.sim.domain_size);
-		op_diff2_c_y.op_setup_diff2_y(parameters.sim.domain_size);
+		op_diff2_c_x.op_setup_diff2_x(simVars.sim.domain_size);
+		op_diff2_c_y.op_setup_diff2_y(simVars.sim.domain_size);
 
 
 		for (double h = 2; h > 0.01; h *= 0.5)
@@ -220,7 +220,7 @@ int main(int i_argc, char *i_argv[])
 			int M = 256/h;
 
 			double tau = h*20.0;
-			double f = parameters.sim.f;
+			double f = simVars.sim.f;
 
 			std::cout << "REXI setup: M=" << M << ", h=" << h << ", tau=" << tau << ", f=" << f << std::endl;
 
@@ -261,24 +261,24 @@ int main(int i_argc, char *i_argv[])
 				{
 					std::complex<double> alpha = rexi.alpha[n];
 
-					Complex2DArrayFFT test_eta0(parameters.disc.res);
-					Complex2DArrayFFT test_eta(parameters.disc.res);
-					Complex2DArrayFFT test_diff1(parameters.disc.res);
-					Complex2DArrayFFT test_diff2(parameters.disc.res);
+					Complex2DArrayFFT test_eta0(simVars.disc.res);
+					Complex2DArrayFFT test_eta(simVars.disc.res);
+					Complex2DArrayFFT test_diff1(simVars.disc.res);
+					Complex2DArrayFFT test_diff2(simVars.disc.res);
 
-					Complex2DArrayFFT test_step1(parameters.disc.res);
-					Complex2DArrayFFT test_step2(parameters.disc.res);
-					Complex2DArrayFFT test_step3(parameters.disc.res);
+					Complex2DArrayFFT test_step1(simVars.disc.res);
+					Complex2DArrayFFT test_step2(simVars.disc.res);
+					Complex2DArrayFFT test_step3(simVars.disc.res);
 
 					double k1 = 2.0*M_PIl*1.0;
 					double k2 = 2.0*M_PIl*2.0;
 
-					for (std::size_t j = 0; j < parameters.disc.res[1]; j++)
+					for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 					{
-						for (std::size_t i = 0; i < parameters.disc.res[0]; i++)
+						for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
 						{
-							double x = ((double)i+0.5)/(double)parameters.disc.res[0];
-							double y = ((double)j+0.5)/(double)parameters.disc.res[1];
+							double x = ((double)i+0.5)/(double)simVars.disc.res[0];
+							double y = ((double)j+0.5)/(double)simVars.disc.res[1];
 
 							double exponent = x*k1 + y*k2;
 							std::complex<double> eta_val(cos(exponent), sin(exponent));
@@ -287,8 +287,8 @@ int main(int i_argc, char *i_argv[])
 							// \eta := exp(i*(k1*x+k2*y))
 							test_eta.set(j, i, eta_val);
 
-							double sim_size_scale_x = 1.0/(double)parameters.sim.domain_size[0];
-							double sim_size_scale_y = 1.0/(double)parameters.sim.domain_size[1];
+							double sim_size_scale_x = 1.0/(double)simVars.sim.domain_size[0];
+							double sim_size_scale_y = 1.0/(double)simVars.sim.domain_size[1];
 							std::complex<double> eta_fac = (alpha*alpha + (k1*k1*sim_size_scale_x*sim_size_scale_x + k2*k2*sim_size_scale_y*sim_size_scale_y))/(alpha*alpha) * alpha;
 							test_eta0.set(j, i, eta_val * eta_fac);
 
@@ -317,7 +317,7 @@ int main(int i_argc, char *i_argv[])
 //						Complex2DArrayFFT lhs = ((-1.0*(op_diff2_c_x + op_diff2_c_y)).addScalar_Spec(alpha*alpha))(test_eta.toSpec());
 						Complex2DArrayFFT lhs = ((-1.0*(op_diff2_c_x + op_diff2_c_y)))(test_eta.toSpec());
 						lhs = lhs + test_eta.toSpec()*(alpha*alpha);
-						double error_0 = (lhs.toCart()-test_step1).reduce_norm2_quad()/(parameters.disc.res[0]*parameters.disc.res[1]);
+						double error_0 = (lhs.toCart()-test_step1).reduce_norm2_quad()/(simVars.disc.res[0]*simVars.disc.res[1]);
 						std::cout << "ERROR 0 step1: " << error_0 << std::endl;
 
 						if (std::abs(error_0) > max_error_threshold_machine)
@@ -331,7 +331,7 @@ int main(int i_argc, char *i_argv[])
 					{
 						// Test LHS with alpha and by multiplying in, step 2
 						Complex2DArrayFFT lhs = test_eta.toSpec()*(alpha*alpha);
-						double error_0 = (lhs.toCart()-test_step2).reduce_norm2_quad()/(parameters.disc.res[0]*parameters.disc.res[1]);
+						double error_0 = (lhs.toCart()-test_step2).reduce_norm2_quad()/(simVars.disc.res[0]*simVars.disc.res[1]);
 						std::cout << "ERROR 0 step2: " << error_0 << std::endl;
 
 						if (std::abs(error_0) > max_error_threshold_machine)
@@ -349,7 +349,7 @@ int main(int i_argc, char *i_argv[])
 	//					Complex2DArrayFFT lhs = ((-1.0*(op_diff2_c_x + op_diff2_c_y)))(test_eta.toSpec())
 	//											 + test_eta.toSpec()*(alpha*alpha);
 
-						double error_0 = (lhs.toCart()-test_step1).reduce_norm2_quad()/(parameters.disc.res[0]*parameters.disc.res[1]);
+						double error_0 = (lhs.toCart()-test_step1).reduce_norm2_quad()/(simVars.disc.res[0]*simVars.disc.res[1]);
 						std::cout << "ERROR 0 step3: " << error_0 << std::endl;
 
 						if (std::abs(error_0) > max_error_threshold_machine)
@@ -369,7 +369,7 @@ int main(int i_argc, char *i_argv[])
 						Complex2DArrayFFT eta = rhs.spec_div_element_wise(lhs).toCart();
 
 						// Test SOLVER
-						double error_1 = (eta - test_eta).reduce_norm2_quad()/(parameters.disc.res[0]*parameters.disc.res[1]);
+						double error_1 = (eta - test_eta).reduce_norm2_quad()/(simVars.disc.res[0]*simVars.disc.res[1]);
 						std::cout << "ERROR 1: " << error_1 << std::endl;
 
 						if (std::abs(error_1) > max_error_threshold_machine)
@@ -381,7 +381,7 @@ int main(int i_argc, char *i_argv[])
 
 					{
 						// Test DIFF
-						double error_2 = ((op_diff_c_x + op_diff_c_y)(test_eta.toSpec()).toCart()-test_diff1).reduce_norm2_quad()/(parameters.disc.res[0]*parameters.disc.res[1]);
+						double error_2 = ((op_diff_c_x + op_diff_c_y)(test_eta.toSpec()).toCart()-test_diff1).reduce_norm2_quad()/(simVars.disc.res[0]*simVars.disc.res[1]);
 						std::cout << "ERROR 2: " << error_2 << std::endl;
 
 						if (std::abs(error_2) > max_error_threshold_machine)
@@ -393,7 +393,7 @@ int main(int i_argc, char *i_argv[])
 
 					{
 						// Test DIFF2
-						double error_3 = ((op_diff2_c_x + op_diff2_c_y)(test_eta.toSpec()).toCart()-test_diff2).reduce_norm2_quad()/(parameters.disc.res[0]*parameters.disc.res[1]);
+						double error_3 = ((op_diff2_c_x + op_diff2_c_y)(test_eta.toSpec()).toCart()-test_diff2).reduce_norm2_quad()/(simVars.disc.res[0]*simVars.disc.res[1]);
 						std::cout << "ERROR 3: " << error_3 << std::endl;
 
 						if (std::abs(error_3) > max_error_threshold_machine)
@@ -405,7 +405,7 @@ int main(int i_argc, char *i_argv[])
 
 					{
 						// Test inverse of DIFF2
-						double error_3b = (test_diff2.toSpec().spec_div_element_wise(op_diff2_c_x + op_diff2_c_y).toCart() - test_eta).reduce_norm2_quad()/(parameters.disc.res[0]*parameters.disc.res[1]);
+						double error_3b = (test_diff2.toSpec().spec_div_element_wise(op_diff2_c_x + op_diff2_c_y).toCart() - test_eta).reduce_norm2_quad()/(simVars.disc.res[0]*simVars.disc.res[1]);
 						std::cout << "ERROR 3b: " << error_3b << std::endl;
 
 						if (std::abs(error_3b) > max_error_threshold_machine)
@@ -417,11 +417,11 @@ int main(int i_argc, char *i_argv[])
 
 					{
 						std::complex<double> test_value(0.7, -2.0);
-						Complex2DArrayFFT test_a(parameters.disc.res);
+						Complex2DArrayFFT test_a(simVars.disc.res);
 
 						// test add scalar spec
 						test_a.set_all(test_value);
-						double error_4 = (test_a.toSpec().addScalar_Spec(-test_value)).toCart().reduce_norm2_quad()/(parameters.disc.res[0]*parameters.disc.res[1]);
+						double error_4 = (test_a.toSpec().addScalar_Spec(-test_value)).toCart().reduce_norm2_quad()/(simVars.disc.res[0]*simVars.disc.res[1]);
 						std::cout << "ERROR 4: " << error_4 << std::endl;
 
 						if (std::abs(error_4) > max_error_threshold_machine)
@@ -433,11 +433,11 @@ int main(int i_argc, char *i_argv[])
 
 					{
 						std::complex<double> test_value(0.7, -2.0);
-						Complex2DArrayFFT test_a(parameters.disc.res);
+						Complex2DArrayFFT test_a(simVars.disc.res);
 
 						// test add scalar cart
 						test_a.set_all(test_value);
-						double error_5 = (test_a.addScalar_Cart(-test_value)).reduce_norm2_quad()/(parameters.disc.res[0]*parameters.disc.res[1]);
+						double error_5 = (test_a.addScalar_Cart(-test_value)).reduce_norm2_quad()/(simVars.disc.res[0]*simVars.disc.res[1]);
 						std::cout << "ERROR 5: " << error_5 << std::endl;
 
 						if (std::abs(error_5) > max_error_threshold_machine)

@@ -436,12 +436,16 @@ public:
 	{
 		double dt;
 
+		// either set time step size to 0 for autodetection or to
+		// a positive value to use a fixed time step size
+		simVars.timecontrol.current_simulation_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
+
 		timestepping.run_rk_timestep(
 				this,
 				&SimulationAdvection::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
 				prog_h, prog_u, prog_v,
 				dt,
-				simVars.disc.timestepping_timestep_size,
+				simVars.timecontrol.current_simulation_timestep_size,
 				simVars.disc.timestepping_runge_kutta_order,
 				simVars.timecontrol.current_simulation_time
 			);
@@ -589,7 +593,7 @@ int main(
 			nullptr
 	};
 
-	if (!simVars.setup(i_argc, i_argv, bogus_var_names))
+	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
 		std::cout << std::endl;
 		std::cout << "Program-specific options:" << std::endl;

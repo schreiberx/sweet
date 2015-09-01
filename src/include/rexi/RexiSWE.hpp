@@ -58,6 +58,7 @@ public:
 			double i_tau,	///< time step size
 			double i_h,		///< sampling size
 			int i_M,		///< number of sampling points
+			int i_L,		///< number of sampling points for Gaussian approx
 			double i_f,		///< Coriolis force
 			std::size_t *i_resolution,		///< resolution of domain
 			const double *i_domain_size,		///< size of domain
@@ -71,7 +72,8 @@ public:
 
 //		std::cout << "REXI setup: M=" << M << ", h=" << h << ", tau=" << tau << ", f=" << f << std::endl;
 
-		rexi.setup(h, M, i_rexi_half);
+		rexi.setup(h, M, i_L, i_rexi_half);
+
 
 		if (op_diff_c_x.data == nullptr)
 		{
