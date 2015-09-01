@@ -1,0 +1,6 @@
+Gaussian dam break
+simulation time: 1
+coarse time step size: 0.1
+time stepping order: 4 (not used, since REXI)
+
+Search for optimal h/M for changing resolution
