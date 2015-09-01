@@ -123,7 +123,7 @@ int main(int i_argc, char *i_argv[])
 
 		simVars.disc.res[0] = res[0];
 		simVars.disc.res[1] = res[1];
-		simVars..reset();
+		simVars.reset();
 
 
 		/*
@@ -144,10 +144,10 @@ int main(int i_argc, char *i_argv[])
 			Complex2DArrayFFT two_cart(res);
 			Complex2DArrayFFT five_cart(res);
 
-			zero_cart.set_all(0.0, 0.0);
-			two_cart.set_all(2.0, 0.0);
-			five_cart.set_all(5.0, 0.0);
-			h_cart.set_all(0.0, 0.0);
+			zero_cart.setAll(0.0, 0.0);
+			two_cart.setAll(2.0, 0.0);
+			five_cart.setAll(5.0, 0.0);
+			h_cart.setAll(0.0, 0.0);
 
 			double res2 = (double)(res[0]*res[1]);
 
