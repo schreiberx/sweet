@@ -1042,7 +1042,7 @@ int main(int i_argc, char *i_argv[])
 
 		double seconds = time();
 
-		std::cout << "Simulation time: " << seconds << " seconds" << std::endl;
+		std::cout << "Simulation time (seconds): " << seconds << std::endl;
 		std::cout << "Time per time step: " << seconds/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
 
 		if (simVars.misc.verbosity > 1)

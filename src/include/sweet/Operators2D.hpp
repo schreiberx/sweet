@@ -184,7 +184,7 @@ public:
 			// see test_spectral_ops.cpp
 
 #if !SWEET_USE_SPECTRAL_SPACE
-			std::cerr << "Activate FFTW during compile time to use spectral diffs" << std::endl;
+			std::cerr << "Activate spectral space during compile time to use spectral diffs. Otherwise, the convolution would be freakingly expensive" << std::endl;
 			exit(-1);
 #else
 

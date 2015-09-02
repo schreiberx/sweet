@@ -110,6 +110,17 @@ AddOption(	'--spectral-space',
 )
 env['spectral_space'] = GetOption('spectral_space')
 
+
+AddOption(	'--libfft',
+		dest='libfft',
+		type='choice',
+		choices=['enable', 'disable'],
+		default='enable',
+		help="Enable libFFT [default: %default]"
+)
+env['libfft'] = GetOption('libfft')
+
+
 #
 # LIB XML
 #
@@ -215,10 +226,19 @@ exec_name=env['program_name']
 
 
 if env['spectral_space'] == 'enable':
+	if env['libfft'] != 'enable':
+		print("Option --libfft is disabled!")
+		Exit(1)
 	env.Append(CXXFLAGS = ' -DSWEET_USE_SPECTRAL_SPACE=1')
 	exec_name+='_spectral'
 else:
 	env.Append(CXXFLAGS = ' -DSWEET_USE_SPECTRAL_SPACE=0')
+
+if env['libfft'] == 'enable':
+	env.Append(CXXFLAGS = ' -DSWEET_USE_LIBFFT=1')
+	exec_name+='_libfft'
+else:
+	env.Append(CXXFLAGS = ' -DSWEET_USE_LIBFFT=0')
 
 
 if env['spectral_dealiasing'] == 'enable':
@@ -351,7 +371,7 @@ elif env['compiler'] == 'intel':
 
 	# SSE 4.2
 	env.Replace(CXX = 'icpc')
-	env.Append(CXXFLAGS=' -msse4.2')
+#	env.Append(CXXFLAGS=' -msse4.2')
 	env.Replace(LINK='icpc')
 
 	if env['fortran_source'] == 'enable':
@@ -466,6 +486,7 @@ elif env['mode'] == 'release':
 
 	elif env['compiler'] == 'intel':
 		env.Append(CXXFLAGS=' -O2 -fno-alias')
+		env.Append(CXXFLAGS=' -xHost')
 #		env.Append(CXXFLAGS=' -ipo')
 #		env.Append(CXXFLAGS=' -fast')
 
@@ -532,7 +553,7 @@ if env['threading'] == 'omp':
 else:
 	env.Append(CXXFLAGS=' -DSWEET_THREADING=0')
 
-if env['spectral_space'] == 'enable':
+if env['libfft'] == 'enable':
 	env.Append(LIBS=['fftw3'])
 
 	if env['threading'] == 'omp':

@@ -7,10 +7,11 @@
 #ifndef SRC_INCLUDE_SWEET_COMPLEX2DARRAYFFT_HPP_
 #define SRC_INCLUDE_SWEET_COMPLEX2DARRAYFFT_HPP_
 
-#if SWEET_USE_SPECTRAL_SPACE
-#	include <fftw3.h>
+#if !SWEET_USE_LIBFFT
+#	error "This class only makes sense with FFT"
 #endif
 
+#include <fftw3.h>
 #include <sweet/DataArray.hpp>
 #include <cstddef>
 #include <complex>

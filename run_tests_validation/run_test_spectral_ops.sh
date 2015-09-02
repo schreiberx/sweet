@@ -26,10 +26,10 @@ if true; then
 	echo "***********************************************"
 	make clean
 	scons --unit-test=test_spectral_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=disable
-	EXEC="./build/test_spectral_ops_spectral_gnu_release  -X $X -Y $Y -S 0"
+	EXEC="./build/test_spectral_ops_spectral_libfft_gnu_release  -X $X -Y $Y -S 0"
 	echo "$EXEC"
 	$EXEC || exit
-	EXEC="./build/test_spectral_ops_spectral_gnu_release  -X $X -Y $Y -S 1"
+	EXEC="./build/test_spectral_ops_spectral_libfft_gnu_release  -X $X -Y $Y -S 1"
 	echo "$EXEC"
 	$EXEC || exit
 fi
@@ -41,10 +41,10 @@ echo "TEST SPECTRAL OPS (release) $X"
 echo "***********************************************"
 make clean
 scons --unit-test=test_spectral_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=disable
-EXEC="./build/test_spectral_ops_spectral_gnu_release -n 128 -m 128 -X $X -Y $X -S 1"
+EXEC="./build/test_spectral_ops_spectral_libfft_gnu_release -n 128 -m 128 -X $X -Y $X -S 1"
 echo "$EXEC"
 $EXEC || exit
-EXEC="./build/test_spectral_ops_spectral_gnu_release -n 128 -m 128 -X $X -Y $X -S 0"
+EXEC="./build/test_spectral_ops_spectral_libfft_gnu_release -n 128 -m 128 -X $X -Y $X -S 0"
 $EXEC || exit
 
 X=$MIN_SCALE
@@ -54,8 +54,8 @@ echo "TEST SPECTRAL OPS (release) $X"
 echo "***********************************************"
 make clean
 scons --unit-test=test_spectral_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=disable
-./build/test_spectral_ops_spectral_gnu_release -n 128 -m 128 -X $X -Y $X -S 1 || exit
-./build/test_spectral_ops_spectral_gnu_release -n 128 -m 128 -X $X -Y $X -S 0 || exit
+./build/test_spectral_ops_spectral_libfft_gnu_release -n 128 -m 128 -X $X -Y $X -S 1 || exit
+./build/test_spectral_ops_spectral_libfft_gnu_release -n 128 -m 128 -X $X -Y $X -S 0 || exit
 
 X=$MAX_SCALE
 echo
@@ -64,8 +64,8 @@ echo "TEST SPECTRAL OPS (release) ALIASING CONTROL $X"
 echo "***********************************************"
 make clean
 scons --unit-test=test_spectral_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=enable
-./build/test_spectral_ops_spectral_dealiasing_gnu_release -n 128 -m 128 -X $X -Y $X -S 0 || exit
-./build/test_spectral_ops_spectral_dealiasing_gnu_release -n 128 -m 128 -X $X -Y $X -S 1 || exit
+./build/test_spectral_ops_spectral_libfft_dealiasing_gnu_release -n 128 -m 128 -X $X -Y $X -S 0 || exit
+./build/test_spectral_ops_spectral_libfft_dealiasing_gnu_release -n 128 -m 128 -X $X -Y $X -S 1 || exit
 
 X=$MIN_SCALE
 echo
@@ -74,8 +74,8 @@ echo "TEST SPECTRAL OPS (release) ALIASING CONTROL $X"
 echo "***********************************************"
 make clean
 scons --unit-test=test_spectral_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=enable
-./build/test_spectral_ops_spectral_dealiasing_gnu_release -n 128 -m 128 -X $X -Y $X -S 0 || exit
-./build/test_spectral_ops_spectral_dealiasing_gnu_release -n 128 -m 128 -X $X -Y $X -S 1 || exit
+./build/test_spectral_ops_spectral_libfft_dealiasing_gnu_release -n 128 -m 128 -X $X -Y $X -S 0 || exit
+./build/test_spectral_ops_spectral_libfft_dealiasing_gnu_release -n 128 -m 128 -X $X -Y $X -S 1 || exit
 
 
 

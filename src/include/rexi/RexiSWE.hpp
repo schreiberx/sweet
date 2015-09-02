@@ -7,8 +7,8 @@
 #ifndef SRC_PROGRAMS_REXISWE_HPP_
 #define SRC_PROGRAMS_REXISWE_HPP_
 
-#if SWEET_USE_SPECTRAL_SPACE != 1
-	#error	"Spectral space required for solvers"
+#if !SWEET_USE_LIBFFT
+	#error	"Spectral space required for solvers, use --libfft=enable"
 #endif
 
 #include <rexi/REXI.hpp>

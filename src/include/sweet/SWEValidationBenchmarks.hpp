@@ -36,7 +36,7 @@ public:
 
 		if (i_parameters.setup.scenario == 1)
 		{
-			// gaussian
+			// Gaussian
 			double dx = x-i_parameters.setup.coord_x*i_parameters.sim.domain_size[0];
 			double dy = y-i_parameters.setup.coord_y*i_parameters.sim.domain_size[1];
 

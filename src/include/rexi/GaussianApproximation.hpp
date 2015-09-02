@@ -38,14 +38,14 @@ public:
 	{
 		L = i_L;
 
-		if (i_L == 0)
+		if (L == 0)
 			L = 11;
 
 		/*
 		 * mu and a coefficients from
 		 * "A high-order time-parallel scheme for solving wave propagation problems via the direct construction of an approximate time-evolution operator", Haut et.al.
 		 */
-		if (i_L == 11)
+		if (L == 11)
 		{
 			mu = {	-4.315321510875024, 0};
 
@@ -77,7 +77,7 @@ public:
 					{	-1.0816457995911385e-7,		-2.954309729192276e-8	}
 			};
 		}
-		else if (i_L == -11)
+		else if (L == -11)
 		{
 			/**
 			 * Recomputed coefficients with higher accuracy
