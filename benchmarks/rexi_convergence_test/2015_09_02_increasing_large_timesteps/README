@@ -1,0 +1,10 @@
+Gaussian dam break
+time stepping order: 4 (not used, since REXI)
+
+Search for optimal M for changing large time step size dt
+g=H=f=1
+
+
+Interpreting the results:
+* The M values are linearly depending on dT
+* The M vaules are linearly depending on the resolution in one direction

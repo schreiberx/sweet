@@ -30,6 +30,9 @@ with open(infile, 'rb') as csvfile:
 
 	# read column headers
 	row = next(spamreader)
+
+	# axis descriptions in the format [Y]/[X]
+	XY_desc = row[0]
 	column_labels = [float(d) for d in row[1:]]
 
 	# convert to int if integer
@@ -53,24 +56,33 @@ print "Array size: "+str(Z.shape)
 fig, ax = plt.subplots()
 
 
-heatmap = ax.pcolor(Z, cmap=cm.rainbow, norm=LogNorm(vmin=Z.min()+0.00000001, vmax=Z.max()))
+desc = XY_desc.split('\\')
+
+heatmap = ax.pcolor(Z, cmap=cm.rainbow, norm=LogNorm(10e-12, vmax=1))
+
+plt.title(infile)
 
 #legend
 cbar = plt.colorbar(heatmap)
 cbar.set_label('RMS error in height', rotation=270)
 
+fig.subplots_adjust(left=0.25, right=0.9, top=0.9, bottom=0.3)
+
 # put the major ticks at the middle of each cell
 ax.set_xticks(numpy.arange(len(column_labels))+0.5, minor=False)
-ax.set_xticklabels(column_labels, minor=False)
+ax.set_xticklabels(column_labels, minor=False, rotation=45)
 ax.set_xlim(0, len(column_labels))
+if len(desc) == 2:
+	ax.set_xlabel(desc[1])
 
 ax.set_yticks(numpy.arange(len(row_labels))+0.5, minor=False)
 ax.set_yticklabels(row_labels, minor=False)
 ax.set_ylim(0, len(row_labels))
+if len(desc) == 2:
+	ax.set_ylabel(desc[0])
 
 # want a more natural, table-like display
 ax.invert_yaxis()
-ax.xaxis.tick_top()
 
 
 if outfile != '':

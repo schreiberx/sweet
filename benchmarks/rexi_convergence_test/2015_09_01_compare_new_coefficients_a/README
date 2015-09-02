@@ -1,1 +1,4 @@
 This script compares the improved coefficients which were recomputed by Pedro based on Terrys matlab code
+
+The plot output_128_diff.pdf shows the differences of both coefficients.
+
