@@ -685,7 +685,15 @@ v_{t}+uv_{x}+vv_{y}+fu+g\eta_{y}=0
 
 \end_inset
 
-We can also split these equations in linear and non-linear parts:
+We can also split these equations in linear and non-linear parts
+\begin_inset Formula 
+\[
+U_{t}=L(U)+N(U)
+\]
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -693,8 +701,8 @@ We can also split these equations in linear and non-linear parts:
 \[
 L(U):=\left(\begin{array}{ccc}
 \\
-g\partial_{x} &  & -f\\
-g\partial_{y} & f
+-g\partial_{x} &  & f\\
+-g\partial_{y} & -f
 \end{array}\right)U
 \]
 
@@ -707,9 +715,9 @@ g\partial_{y} & f
 \begin_inset Formula 
 \[
 N(U):=\left(\begin{array}{c}
-(\eta u)_{x}+(\eta v)_{y}\\
-uu_{x}+vu_{y}\\
-uv_{x}+vv_{y}
+-(\eta u)_{x}-(\eta v)_{y}\\
+-uu_{x}-vu_{y}\\
+-uv_{x}-vv_{y}
 \end{array}\right)
 \]
 
@@ -930,7 +938,7 @@ It is convenient to split the fluid depth into a mean height and a perturbation,
 
 \begin_inset Formula 
 \[
-\eta'_{t}+\bar{\eta}\nabla\cdot\vec{u}=-\nabla\cdot(\eta'\vec{u}),
+\eta'_{t}=-\bar{\eta}\nabla\cdot\vec{u}-\nabla\cdot(\eta'\vec{u})
 \]
 
 \end_inset
@@ -956,9 +964,9 @@ We can write these equations, in any of the above formulations, as a linear
 \begin_inset Formula 
 \[
 L(U):=\left(\begin{array}{ccc}
-0 & \bar{\eta}\partial_{x} & \bar{\eta}\partial_{y}\\
-g\partial_{x} & 0 & -f\\
-g\partial_{y} & f & 0
+0 & -\bar{\eta}\partial_{x} & -\bar{\eta}\partial_{y}\\
+-g\partial_{x} & 0 & f\\
+-g\partial_{y} & -f & 0
 \end{array}\right)U,
 \]
 
@@ -970,7 +978,7 @@ g\partial_{y} & f & 0
 \begin_layout Standard
 \begin_inset Formula 
 \[
-U_{t}+L(U)=N(U)
+U_{t}=L(U)+N(U)
 \]
 
 \end_inset

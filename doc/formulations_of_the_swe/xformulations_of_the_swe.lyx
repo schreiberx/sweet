@@ -161,7 +161,7 @@ Fluid layer depth/height
 \begin_inset Text
 
 \begin_layout Plain Layout
-\begin_inset Formula $\eta_{0}$
+\begin_inset Formula $\bar{\eta}$
 \end_inset
 
  
@@ -538,7 +538,7 @@ The conservative formulation uses the momentum
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\eta_{t}+(\eta u)_{x}+(\eta v)_{y}=0
+\eta_{t}=-(\eta u)_{x}-(\eta v)_{y}=0
 \]
 
 \end_inset
@@ -549,7 +549,7 @@ The conservative formulation uses the momentum
 \begin_layout Standard
 \begin_inset Formula 
 \[
-(\eta u)_{t}+(\eta u^{2}+\frac{1}{2}g\eta^{2})_{x}+(\eta uv)_{y}-fv=0
+(\eta u)_{t}=-(\eta u^{2}+\frac{1}{2}g\eta^{2})_{x}-(\eta uv)_{y}-fv
 \]
 
 \end_inset
@@ -560,7 +560,7 @@ The conservative formulation uses the momentum
 \begin_layout Standard
 \begin_inset Formula 
 \[
-(\eta v)_{t}+(\eta v^{2}+\frac{1}{2}g\eta^{2})_{y}+(\eta uv)_{x}+fu=0
+(\eta v)_{t}=-(\eta v^{2}+\frac{1}{2}g\eta^{2})_{y}-(\eta uv)_{x}-fu
 \]
 
 \end_inset
@@ -573,7 +573,7 @@ Since this formulation is conserving the momentum, it is also referred as
 In vector notation we have it as, 
 \begin_inset Formula 
 \[
-\eta_{t}+\nabla\cdot(\eta\vec{u})=0
+\eta_{t}=-\nabla\cdot(\eta\vec{u})
 \]
 
 \end_inset
@@ -581,7 +581,7 @@ In vector notation we have it as,
 
 \begin_inset Formula 
 \[
-(\eta\vec{u})_{t}+\nabla\cdot(\vec{u}\eta\vec{u})+f\vec{k}\times(\eta\vec{v})+gh\nabla\eta=0
+(\eta\vec{u})_{t}=-\nabla\cdot(\vec{u}\eta\vec{u})-f\vec{k}\times(\eta\vec{v})-gh\nabla\eta
 \]
 
 \end_inset
@@ -609,7 +609,7 @@ This is a formulation which makes it more challenging to get conservative
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\eta u_{t}+\eta_{t}u+\eta_{x}u^{2}+2\eta uu_{x}+g\eta\eta_{x}+(\eta u)_{y}v+\eta uv_{y}-fv=0
+\eta u_{t}+\eta_{t}u=-\eta_{x}u^{2}-2\eta uu_{x}-g\eta\eta_{x}-(\eta u)_{y}v-\eta uv_{y}+fv
 \]
 
 \end_inset
@@ -620,7 +620,7 @@ This is a formulation which makes it more challenging to get conservative
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\eta u_{t}+(-(\eta u)_{x}-(\eta v)_{y})u+\eta_{x}u^{2}+2\eta uu_{x}+g\eta\eta_{x}+(\eta v)_{y}u+\eta vu_{y}-fv=0
+\eta u_{t}=(\eta u)_{x}+(\eta v)_{y}u-\eta_{x}u^{2}-2\eta uu_{x}-g\eta\eta_{x}-(\eta v)_{y}u-\eta vu_{y}+fv
 \]
 
 \end_inset
@@ -631,7 +631,7 @@ This is a formulation which makes it more challenging to get conservative
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\eta u_{t}+(-(\eta u)_{x})u+\eta_{x}u^{2}+2\eta uu_{x}+g\eta\eta_{x}+\eta vu_{y}-fv=0
+\eta u_{t}=(\eta u)_{x}u-\eta_{x}u^{2}-2\eta uu_{x}-g\eta\eta_{x}-\eta vu_{y}+fv
 \]
 
 \end_inset
@@ -642,7 +642,7 @@ This is a formulation which makes it more challenging to get conservative
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\eta u_{t}-\eta_{x}uu-\eta uu{}_{x}+\eta_{x}u^{2}+2\eta uu_{x}+g\eta\eta_{x}+\eta vu_{y}-fv=0
+\eta u_{t}=+\eta_{x}uu+\eta uu{}_{x}-\eta_{x}u^{2}-2\eta uu_{x}-g\eta\eta_{x}-\eta vu_{y}+fv
 \]
 
 \end_inset
@@ -653,7 +653,7 @@ This is a formulation which makes it more challenging to get conservative
 \begin_layout Standard
 \begin_inset Formula 
 \[
-u_{t}+g\eta_{x}+uu_{x}+vu_{y}-fv=0
+u_{t}=-g\eta_{x}-uu_{x}-vu_{y}+fv
 \]
 
 \end_inset
@@ -664,7 +664,7 @@ Altogether, we get the following non-conservative formulation:
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\eta_{t}+u\eta_{x}+v\eta_{y}+\eta u_{x}+\eta v_{y}=0
+\eta_{t}=-u\eta_{x}-v\eta_{y}-\eta u_{x}-\eta v_{y}
 \]
 
 \end_inset
@@ -672,7 +672,7 @@ Altogether, we get the following non-conservative formulation:
 
 \begin_inset Formula 
 \[
-u_{t}+uu_{x}+vu_{y}-fv+g\eta_{x}=0
+u_{t}=-uu_{x}-vu_{y}+fv-g\eta_{x}
 \]
 
 \end_inset
@@ -680,7 +680,7 @@ u_{t}+uu_{x}+vu_{y}-fv+g\eta_{x}=0
 
 \begin_inset Formula 
 \[
-v_{t}+uv_{x}+vv_{y}+fu+g\eta_{y}=0
+v_{t}=-uv_{x}-vv_{y}-fu-g\eta_{y}
 \]
 
 \end_inset
@@ -693,8 +693,8 @@ We can also split these equations in linear and non-linear parts:
 \[
 L(U):=\left(\begin{array}{ccc}
 \\
-g\partial_{x} &  & -f\\
-g\partial_{y} & f
+-g\partial_{x} &  & f\\
+-g\partial_{y} & -f
 \end{array}\right)U
 \]
 
@@ -707,9 +707,9 @@ g\partial_{y} & f
 \begin_inset Formula 
 \[
 N(U):=\left(\begin{array}{c}
-(\eta u)_{x}+(\eta v)_{y}\\
-uu_{x}+vu_{y}\\
-uv_{x}+vv_{y}
+-(\eta u)_{x}-(\eta v)_{y}\\
+-uu_{x}-vu_{y}\\
+-uv_{x}-vv_{y}
 \end{array}\right)
 \]
 
@@ -726,7 +726,7 @@ Defining the material derivative as
 we may write the equations in vector notation, 
 \begin_inset Formula 
 \[
-\frac{d\eta}{dt}+\eta\nabla\cdot\vec{u}=0,
+\frac{d\eta}{dt}=-\eta\nabla\cdot\vec{u},
 \]
 
 \end_inset
@@ -737,7 +737,7 @@ we may write the equations in vector notation,
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\frac{d\vec{u}}{dt}+f\vec{k}\times\vec{v}+g\nabla\eta=0.
+\frac{d\vec{u}}{dt}=-f\vec{k}\times\vec{v}-g\nabla\eta
 \]
 
 \end_inset
@@ -784,7 +784,7 @@ We first add and subtract an artificial term
 \begin_layout Standard
 \begin_inset Formula 
 \[
-u_{t}-vv_{x}+g\eta_{x}+uu_{x}+vv_{x}+vu_{y}-fv=0,
+u_{t}=vv_{x}-g\eta_{x}-uu_{x}-vv_{x}-vu_{y}+fv,
 \]
 
 \end_inset
@@ -795,7 +795,7 @@ which leads to,
 \begin_layout Standard
 \begin_inset Formula 
 \[
-u_{t}-vv_{x}+vu_{y}+(g\eta+\frac{u^{2}+v^{2}}{2})_{x}-fv=0,
+u_{t}=vv_{x}-vu_{y}-(g\eta+\frac{u^{2}+v^{2}}{2})_{x}+fv,
 \]
 
 \end_inset
@@ -810,7 +810,7 @@ with
 \begin_layout Standard
 \begin_inset Formula 
 \[
-u_{t}-v\zeta_{A}+\Phi_{x}=0.
+u_{t}=v\zeta_{A}-\Phi_{x}.
 \]
 
 \end_inset
@@ -825,7 +825,7 @@ Similarly, we can reformulate
 \begin_layout Standard
 \begin_inset Formula 
 \[
-v_{t}+g\eta_{y}+uv_{x}+vv_{y}+uu_{y}-uu_{y}+fu=0
+v_{t}=-g\eta_{y}-uv_{x}-vv_{y}-uu_{y}+uu_{y}-fu
 \]
 
 \end_inset
@@ -836,7 +836,7 @@ v_{t}+g\eta_{y}+uv_{x}+vv_{y}+uu_{y}-uu_{y}+fu=0
 \begin_layout Standard
 \begin_inset Formula 
 \[
-v_{t}+uv_{x}-uu_{y}+fu+(g\eta+\frac{v^{2}+u^{2}}{2})=0
+v_{t}=-uv_{x}+uu_{y}-fu-\left(g\eta+\frac{v^{2}+u^{2}}{2}\right)
 \]
 
 \end_inset
@@ -847,7 +847,7 @@ This yields the vorticity formulation,
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\eta_{t}+(\eta u)_{x}+(\eta v)_{y}=0,
+\eta_{t}=-(\eta u)_{x}-(\eta v)_{y},
 \]
 
 \end_inset
@@ -858,7 +858,7 @@ This yields the vorticity formulation,
 \begin_layout Standard
 \begin_inset Formula 
 \[
-u_{t}-v\zeta_{A}+\Phi_{x}=0,
+u_{t}=v\zeta_{A}-\Phi_{x},
 \]
 
 \end_inset
@@ -869,7 +869,7 @@ u_{t}-v\zeta_{A}+\Phi_{x}=0,
 \begin_layout Standard
 \begin_inset Formula 
 \[
-v_{t}+u\zeta_{A}+\Phi_{y}=0.
+v_{t}=-u\zeta_{A}-\Phi_{y}.
 \]
 
 \end_inset
@@ -877,7 +877,7 @@ v_{t}+u\zeta_{A}+\Phi_{y}=0.
 In vector notation we have 
 \begin_inset Formula 
 \[
-\eta_{t}+\nabla\cdot(\eta\vec{u})=0,
+\eta_{t}=-\nabla\cdot(\eta\vec{u}),
 \]
 
 \end_inset
@@ -888,7 +888,7 @@ In vector notation we have
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\vec{u}_{t}+\zeta_{A}\vec{k}\times\vec{u}+\nabla\Phi=0.
+\vec{u}_{t}=-\zeta_{A}\vec{k}\times\vec{u}-\nabla\Phi.
 \]
 
 \end_inset
@@ -901,13 +901,13 @@ Fluid depth perturbation
 \end_layout
 
 \begin_layout Standard
-It is convenient to split the fluid depth into a mean heigh and a perturbation,
+It is convenient to split the fluid depth into a mean height and a perturbation,
  such that we express 
-\begin_inset Formula $\eta=\eta_{0}+\eta'$
+\begin_inset Formula $\eta=\bar{\eta}+\eta'$
 \end_inset
 
 , with 
-\begin_inset Formula $\eta_{0}$
+\begin_inset Formula $\bar{\eta}$
 \end_inset
 
  being the assumed constant mean water depth.
@@ -922,7 +922,7 @@ It is convenient to split the fluid depth into a mean heigh and a perturbation,
 , the only change happens in the continuity equation, 
 \begin_inset Formula 
 \[
-\eta_{t}+\nabla\cdot((\eta_{0}+\eta')\vec{u})=0,
+\eta_{t}=-\nabla\cdot((\bar{\eta}+\eta')\vec{u}),
 \]
 
 \end_inset
@@ -930,7 +930,7 @@ It is convenient to split the fluid depth into a mean heigh and a perturbation,
 
 \begin_inset Formula 
 \[
-\eta'_{t}+\eta_{0}\nabla\cdot\vec{u}=-\nabla\cdot(\eta'\vec{u}),
+\eta'_{t}+\bar{\eta}\nabla\cdot\vec{u}=-\nabla\cdot(\eta'\vec{u}),
 \]
 
 \end_inset
@@ -956,9 +956,9 @@ We can write these equations, in any of the above formulations, as a linear
 \begin_inset Formula 
 \[
 L(U):=\left(\begin{array}{ccc}
-0 & \eta_{0}\partial_{x} & \eta_{0}\partial_{y}\\
-g\partial_{x} & 0 & -f\\
-g\partial_{y} & f & 0
+0 & -\bar{\eta}\partial_{x} & -\bar{\eta}\partial_{y}\\
+-g\partial_{x} & 0 & f\\
+-g\partial_{y} & -f & 0
 \end{array}\right)U,
 \]
 
@@ -970,7 +970,7 @@ g\partial_{y} & f & 0
 \begin_layout Standard
 \begin_inset Formula 
 \[
-U_{t}+L(U)=N(U)
+U_{t}=L(U)+N(U)
 \]
 
 \end_inset
