@@ -29,6 +29,7 @@
 * Implement advection test for Gaussian curve
   > Tests with higher-order time stepping
   > Tests with increased resolution
+  DONE
 
 * Write interface for setting spectral values
   DONE
@@ -50,3 +51,7 @@
 	6) Rot. shallow water
 
 * Add test bench for Galewski unstable jet
+
+* Optimize stencil computations on Cartesian grids for performance benchmarks
+
+* Implement cache blocking for performance benchmarks
