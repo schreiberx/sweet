@@ -200,7 +200,7 @@ public:
 		int current_timestep_nr = 0;
 
 		/// current time step size
-		double current_simulation_timestep_size = -1;
+		double current_timestep_size = -1;
 
 		/// time in simulation
 		double current_simulation_time = 0;
@@ -222,7 +222,7 @@ public:
 		disc.cell_size[0] = sim.domain_size[0]/(double)disc.res[0];
 		disc.cell_size[1] = sim.domain_size[1]/(double)disc.res[1];
 
-		timecontrol.current_simulation_timestep_size = -1;
+		timecontrol.current_timestep_size = -1;
 		timecontrol.current_timestep_nr = 0;
 		timecontrol.current_simulation_time = 0;
 

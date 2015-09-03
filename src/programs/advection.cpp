@@ -115,7 +115,7 @@ public:
         if (std::isinf(dt))
         	dt = simVars.sim.CFL*simVars.disc.cell_size[0]/0.000001;
 
-		simVars.timecontrol.current_simulation_timestep_size = dt;
+		simVars.timecontrol.current_timestep_size = dt;
 
         // 0: staggered
         // 1: non-staggered
@@ -212,7 +212,7 @@ public:
 	const char* vis_get_status_string()
 	{
 		static char title_string[1024];
-		sprintf(title_string, "Timestep: %i, timestep size: %e", simVars.timecontrol.current_timestep_nr, simVars.timecontrol.current_simulation_timestep_size);
+		sprintf(title_string, "Timestep: %i, timestep size: %e", simVars.timecontrol.current_timestep_nr, simVars.timecontrol.current_timestep_size);
 		return title_string;
 	}
 

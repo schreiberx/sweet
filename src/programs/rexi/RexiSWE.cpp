@@ -41,18 +41,17 @@ RexiSWE::~RexiSWE()
 
 
 
-
 /**
  * setup the REXI
  */
 void RexiSWE::setup(
-		double i_tau,	///< time step size
-		double i_h,		///< sampling size
-		int i_M,		///< number of sampling points
-		int i_L,		///< number of sampling points for Gaussian approx
-		double i_f,		///< Coriolis force
+		double i_tau,			///< time step size
+		double i_h,				///< sampling size
+		int i_M,				///< number of sampling points
+		int i_L,				///< number of sampling points for Gaussian approx
+		double i_f,				///< Coriolis force
 		std::size_t *i_resolution,		///< resolution of domain
-		const double *i_domain_size,		///< size of domain
+		const double *i_domain_size,	///< size of domain
 		bool i_rexi_half		///< use half-pole reduction
 )
 {
@@ -62,6 +61,8 @@ void RexiSWE::setup(
 	f = i_f;
 
 	rexi.setup(h, M, i_L, i_rexi_half);
+
+
 
 	std::size_t N = rexi.alpha.size();
 	block_size = N/num_threads;
@@ -80,18 +81,20 @@ void RexiSWE::setup(
 	{
 		// initialize all values to account for first touch policy
 		perThreadVars[i].op_diff_c_x.setup(i_resolution);
-		perThreadVars[i].op_diff_c_x.op_setup_diff_x(i_domain_size);
 		perThreadVars[i].op_diff_c_x.setAll(0, 0);
+		perThreadVars[i].op_diff_c_x.op_setup_diff_x(i_domain_size);
+
 		perThreadVars[i].op_diff_c_y.setup(i_resolution);
-		perThreadVars[i].op_diff_c_y.op_setup_diff_y(i_domain_size);
 		perThreadVars[i].op_diff_c_y.setAll(0, 0);
+		perThreadVars[i].op_diff_c_y.op_setup_diff_y(i_domain_size);
 
 		perThreadVars[i].op_diff2_c_x.setup(i_resolution);
-		perThreadVars[i].op_diff2_c_x.op_setup_diff2_x(i_domain_size);
 		perThreadVars[i].op_diff2_c_x.setAll(0, 0);
+		perThreadVars[i].op_diff2_c_x.op_setup_diff2_x(i_domain_size);
+
 		perThreadVars[i].op_diff2_c_y.setup(i_resolution);
-		perThreadVars[i].op_diff2_c_y.op_setup_diff2_y(i_domain_size);
 		perThreadVars[i].op_diff2_c_y.setAll(0, 0);
+		perThreadVars[i].op_diff2_c_y.op_setup_diff2_y(i_domain_size);
 
 		perThreadVars[i].eta0.setup(i_resolution);
 		perThreadVars[i].eta0.setAll(0, 0);
@@ -124,8 +127,7 @@ void RexiSWE::run_timestep(
 	DataArray<2> &io_v,
 
 	Operators2D &op,
-	const SimulationVariables &i_parameters,
-	bool i_use_half_reduction			///< reduce the REXI computations to its half
+	const SimulationVariables &i_parameters
 )
 {
 	typedef std::complex<double> complex;
@@ -134,7 +136,7 @@ void RexiSWE::run_timestep(
 	std::size_t N = rexi.alpha.size();
 
 #if SWEET_REXI_PARALLEL_SUM
-#	pragma omp parallel for schedule(static)
+#	pragma omp parallel for schedule(static) shared(perThreadVars)
 #endif
 	for (int i = 0; i < num_threads; i++)
 	{
@@ -157,9 +159,9 @@ void RexiSWE::run_timestep(
 		/*
 		 * INITIALIZATION - THIS IS THE NON-PARALLELIZABLE PART!
 		 */
-		h_sum.setAll(0,0);
-		u_sum.setAll(0,0);
-		v_sum.setAll(0,0);
+		h_sum.setAll(0, 0);
+		u_sum.setAll(0, 0);
+		v_sum.setAll(0, 0);
 
 		eta0.loadRealFromDataArray(io_h);
 		u0.loadRealFromDataArray(io_u);
@@ -205,7 +207,7 @@ void RexiSWE::run_timestep(
 			Complex2DArrayFFT lhs = (-g*eta_bar*(op_diff2_c_x + op_diff2_c_y)).addScalar_Cart(kappa);
 
 			Complex2DArrayFFT rhs =
-					kappa/alpha * eta0
+					(kappa/alpha) * eta0
 					- eta_bar*(op_diff_c_x(u0) + op_diff_c_y(v0))
 					- (f*eta_bar/alpha) * (op_diff_c_x(v0) - op_diff_c_y(u0))
 				;
@@ -215,17 +217,12 @@ void RexiSWE::run_timestep(
 			Complex2DArrayFFT uh = u0 - g*op_diff_c_x(eta);
 			Complex2DArrayFFT vh = v0 - g*op_diff_c_y(eta);
 
-			Complex2DArrayFFT u1 = 1.0/kappa * (alpha * uh     + f * vh);
-			Complex2DArrayFFT v1 = 1.0/kappa * (   -f * uh + alpha * vh);
+			Complex2DArrayFFT u1 = alpha/kappa * uh     + f/kappa * vh;
+			Complex2DArrayFFT v1 =    -f/kappa * uh + alpha/kappa * vh;
 
-			// TO CARTESIAN
-			Complex2DArrayFFT eta1_cart = eta.toCart();
-			Complex2DArrayFFT u1_cart = u1.toCart();
-			Complex2DArrayFFT v1_cart = v1.toCart();
-
-			h_sum += eta1_cart*beta;
-			u_sum += u1_cart*beta;
-			v_sum += v1_cart*beta;
+			h_sum += eta.toCart()*beta;
+			u_sum += u1.toCart()*beta;
+			v_sum += v1.toCart()*beta;
 		}
 	}
 
@@ -244,9 +241,11 @@ void RexiSWE::run_timestep(
 		}
 	}
 #else
+
 	io_h = perThreadVars[0].h_sum.getRealWithDataArray();
 	io_u = perThreadVars[0].u_sum.getRealWithDataArray();
 	io_v = perThreadVars[0].v_sum.getRealWithDataArray();
+
 #endif
 }
 

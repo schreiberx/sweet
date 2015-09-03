@@ -75,7 +75,7 @@ public:
 			// IMPORTANT! if we use the same array for input/output,
 			// a plan will be created with does not support out-of-place
 			// FFTs, see http://www.fftw.org/doc/New_002darray-Execute-Functions.html
-			double *dummy_data = DataArray<2>::alloc_aligned_mem<double>(sizeof(double)*resolution[0]*resolution[1]*2);
+			double *dummy_data = alloc_aligned_mem<double>(sizeof(double)*resolution[0]*resolution[1]*2);
 
 			getPlans().to_spec =
 					fftw_plan_dft_2d(
@@ -113,8 +113,8 @@ public:
 		}
 
 		{
-			double *dummy_data_aliasing_in = DataArray<2>::alloc_aligned_mem<double>(sizeof(double)*resolution[0]*resolution[1]*2*4);
-			double *dummy_data_aliasing_out = DataArray<2>::alloc_aligned_mem<double>(sizeof(double)*resolution[0]*resolution[1]*2*4);
+			double *dummy_data_aliasing_in = alloc_aligned_mem<double>(sizeof(double)*resolution[0]*resolution[1]*2*4);
+			double *dummy_data_aliasing_out = alloc_aligned_mem<double>(sizeof(double)*resolution[0]*resolution[1]*2*4);
 
 			getPlans().to_spec_aliasing =
 					fftw_plan_dft_2d(
@@ -212,9 +212,38 @@ public:
 		resolution[0] = i_res[0];
 		resolution[1] = i_res[1];
 
-		data = DataArray<2>::alloc_aligned_mem<double>(sizeof(double)*resolution[0]*resolution[1]*2);
+		data = alloc_aligned_mem<double>(sizeof(double)*resolution[0]*resolution[1]*2);
 
 		setup_fftw();
+	}
+
+
+	/**
+	 * allocator which allocated memory blocks aligned at 128 byte boundaries
+	 */
+public:
+	template <typename T=void>
+	static
+	T *alloc_aligned_mem(
+			std::size_t i_size
+	)
+	{
+		T *data;
+		int retval;
+
+#if SWEET_REXI_PARALLEL_SUM
+#	pragma omp critical
+#endif
+		{
+			retval = posix_memalign((void**)&data, 128, i_size);
+		}
+		if (retval != 0)
+		{
+			std::cerr << "Unable to allocate memory" << std::endl;
+			assert(false);
+			exit(-1);
+		}
+		return data;
 	}
 
 
@@ -229,7 +258,7 @@ public:
 		resolution[0] = i_res[0];
 		resolution[1] = i_res[1];
 
-		data = DataArray<2>::alloc_aligned_mem<double>(sizeof(double)*resolution[0]*resolution[1]*2);
+		data = alloc_aligned_mem<double>(sizeof(double)*resolution[0]*resolution[1]*2);
 
 		setup_fftw();
 	}
@@ -252,14 +281,23 @@ public:
 
 		aliased_scaled = i_testArray.aliased_scaled;
 
-		data = DataArray<2>::alloc_aligned_mem<double>(sizeof(double)*resolution[0]*resolution[1]*2);
+		data = alloc_aligned_mem<double>(sizeof(double)*resolution[0]*resolution[1]*2);
 
 		setup_fftw();
 
-		memcpy(data, i_testArray.data, sizeof(double)*resolution[0]*resolution[1]*2);
+		par_doublecopy(data, i_testArray.data, resolution[0]*resolution[1]*2);
 	}
 
 
+	inline
+	void par_doublecopy(double *o_data, double *i_data, std::size_t i_size)
+	{
+#if !SWEET_REXI_PARALLEL_SUM
+#		pragma omp parallel for
+#endif
+		for (std::size_t i = 0; i < i_size; i++)
+			o_data[i] = i_data[i];
+	}
 
 	~Complex2DArrayFFT()
 	{
@@ -278,7 +316,7 @@ public:
 		assert(resolution[0] == i_testArray.resolution[0]);
 		assert(resolution[1] == i_testArray.resolution[1]);
 
-		memcpy(data, i_testArray.data, sizeof(double)*resolution[0]*resolution[1]*2);
+		par_doublecopy(data, i_testArray.data, resolution[0]*resolution[1]*2);
 		return *this;
 	}
 

@@ -194,7 +194,7 @@ public:
 			if (simVars.misc.verbosity > 0)
 			{
 				std::cout << "REXI: Using REXI for time integration" << std::endl;
-				std::cout << "REXI: Using M=" << param_rexi_m << ", L=" << param_rexi_l << ", poles and sampling size " << param_rexi_h << std::endl;
+				std::cout << "REXI: Using M=" << param_rexi_m << ", L=" << param_rexi_l << ", poles and sampling size h=" << param_rexi_h << std::endl;
 			}
 
 			if (simVars.sim.CFL >= 0)
@@ -600,7 +600,7 @@ public:
 		{
 			// either set time step size to 0 for autodetection or to
 			// a positive value to use a fixed time step size
-			simVars.timecontrol.current_simulation_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
+			simVars.timecontrol.current_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
 
 			// standard time stepping
 			timestepping.run_rk_timestep(
@@ -608,7 +608,7 @@ public:
 					&SimulationSWE::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
 					prog_h, prog_u, prog_v,
 					o_dt,
-					simVars.timecontrol.current_simulation_timestep_size,
+					simVars.timecontrol.current_timestep_size,
 					simVars.disc.timestepping_runge_kutta_order,
 					simVars.timecontrol.current_simulation_time,
 					simVars.timecontrol.max_simulation_time
@@ -642,7 +642,7 @@ public:
 		}
 
 		// provide information to parameters
-		simVars.timecontrol.current_simulation_timestep_size = o_dt;
+		simVars.timecontrol.current_timestep_size = o_dt;
 		simVars.timecontrol.current_simulation_time += o_dt;
 		simVars.timecontrol.current_timestep_nr++;
 
@@ -875,7 +875,7 @@ public:
 				simVars.timecontrol.current_simulation_time,
 				simVars.timecontrol.current_simulation_time/(60.0*60.0*24.0),
 				simVars.timecontrol.current_timestep_nr,
-				simVars.timecontrol.current_simulation_timestep_size,
+				simVars.timecontrol.current_timestep_size,
 				vis_arrays[id].description,
 				simVars.diag.total_mass, simVars.diag.total_energy, simVars.diag.total_potential_enstrophy);
 
@@ -1045,6 +1045,7 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "Simulation time (seconds): " << seconds << std::endl;
 		std::cout << "Number of time steps: " << simVars.timecontrol.current_timestep_nr << std::endl;
 		std::cout << "Time per time step: " << seconds/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
+		std::cout << "Last time step size: " << simVars.timecontrol.current_timestep_size << std::endl;
 		std::cout << "REXI alpha.size(): " << simulationSWE->rexiSWE.rexi.alpha.size() << std::endl;
 
 		if (simVars.misc.verbosity > 1)

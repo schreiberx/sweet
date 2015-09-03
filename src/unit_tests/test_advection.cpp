@@ -280,7 +280,7 @@ public:
 	{
 		simVars.timecontrol.current_timestep_nr = 0;
 		simVars.timecontrol.current_simulation_time = 0;
-		simVars.timecontrol.current_simulation_timestep_size = -1;
+		simVars.timecontrol.current_timestep_size = -1;
 
 		if (std::isinf(simVars.bogus.var[0]))
 			prog_u.set_all(0);
@@ -438,20 +438,20 @@ public:
 
 		// either set time step size to 0 for autodetection or to
 		// a positive value to use a fixed time step size
-		simVars.timecontrol.current_simulation_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
+		simVars.timecontrol.current_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
 
 		timestepping.run_rk_timestep(
 				this,
 				&SimulationAdvection::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
 				prog_h, prog_u, prog_v,
 				dt,
-				simVars.timecontrol.current_simulation_timestep_size,
+				simVars.timecontrol.current_timestep_size,
 				simVars.disc.timestepping_runge_kutta_order,
 				simVars.timecontrol.current_simulation_time
 			);
 
 		// provide information to parameters
-		simVars.timecontrol.current_simulation_timestep_size = dt;
+		simVars.timecontrol.current_timestep_size = dt;
 		simVars.timecontrol.current_simulation_time += dt;
 		simVars.timecontrol.current_timestep_nr++;
 	}
@@ -527,7 +527,7 @@ public:
 				simVars.timecontrol.current_simulation_time,
 				simVars.timecontrol.current_simulation_time/(60.0*60.0*24.0),
 				simVars.timecontrol.current_timestep_nr,
-				simVars.timecontrol.current_simulation_timestep_size,
+				simVars.timecontrol.current_timestep_size,
 				simVars.diag.total_mass,
 				simVars.diag.total_energy,
 				simVars.diag.total_potential_enstrophy
@@ -868,7 +868,7 @@ int main(
 //					double error_max = (simulationAdvection->prog_h-benchmark_h).reduce_maxAbs();
 //					std::cout << "Max error in height: " << error_max << std::endl;
 
-					std::cout << "          dt = " << simVars.timecontrol.current_simulation_timestep_size << "    dx = " << simVars.disc.cell_size[0] << " x " << simVars.disc.cell_size[0] << std::endl;
+					std::cout << "          dt = " << simVars.timecontrol.current_timestep_size << "    dx = " << simVars.disc.cell_size[0] << " x " << simVars.disc.cell_size[0] << std::endl;
 
 					this_error = error;
 
@@ -899,7 +899,7 @@ int main(
 						}
 
 						output_string_conv << "r=" << this_conv_rate_space << "\t";
-						output_string_conv << "dt=" << simVars.timecontrol.current_simulation_timestep_size << "\t";
+						output_string_conv << "dt=" << simVars.timecontrol.current_timestep_size << "\t";
 						output_string_conv << "dx=" << simVars.disc.cell_size[0] << "." << simVars.disc.cell_size[0];
 					}
 					break;

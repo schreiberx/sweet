@@ -301,20 +301,20 @@ public:
 
 		// either set time step size to 0 for autodetection or to
 		// a positive value to use a fixed time step size
-		simVars.timecontrol.current_simulation_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
+		simVars.timecontrol.current_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
 
 		timestepping.run_rk_timestep(
 				this,
 				&SimulationSWE::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
 				prog_h, prog_u, prog_v,
 				dt,
-				simVars.timecontrol.current_simulation_timestep_size,
+				simVars.timecontrol.current_timestep_size,
 				simVars.disc.timestepping_runge_kutta_order,
 				simVars.timecontrol.current_simulation_time
 			);
 
 		// provide information to parameters
-		simVars.timecontrol.current_simulation_timestep_size = dt;
+		simVars.timecontrol.current_timestep_size = dt;
 		simVars.timecontrol.current_simulation_time += dt;
 		simVars.timecontrol.current_timestep_nr++;
 
@@ -487,7 +487,7 @@ public:
 				simVars.timecontrol.current_simulation_time,
 				simVars.timecontrol.current_simulation_time/(60.0*60.0*24.0),
 				simVars.timecontrol.current_timestep_nr,
-				simVars.timecontrol.current_simulation_timestep_size,
+				simVars.timecontrol.current_timestep_size,
 				vis_arrays[id].description,
 				simVars.diag.total_mass, simVars.diag.total_energy, simVars.diag.total_potential_enstrophy);
 

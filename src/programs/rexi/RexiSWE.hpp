@@ -47,6 +47,7 @@ class RexiSWE
 		Complex2DArrayFFT v_sum;
 	} *perThreadVars;
 
+
 	int num_threads;
 
 public:
@@ -85,8 +86,7 @@ public:
 		DataArray<2> &io_v,
 
 		Operators2D &op,
-		const SimulationVariables &i_parameters,
-		bool i_use_half_reduction = false			///< reduce the REXI computations to its half
+		const SimulationVariables &i_parameters
 	);
 
 
