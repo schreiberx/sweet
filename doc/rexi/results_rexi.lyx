@@ -1,0 +1,1317 @@
+#LyX 2.1 created this file. For more info see http://www.lyx.org/
+\lyxformat 474
+\begin_document
+\begin_header
+\textclass article
+\begin_preamble
+\usepackage{babel}
+\end_preamble
+\use_default_options false
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding iso8859-15
+\fontencoding T1
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_math auto
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry true
+\use_package amsmath 2
+\use_package amssymb 0
+\use_package cancel 0
+\use_package esint 1
+\use_package mathdots 0
+\use_package mathtools 0
+\use_package mhchem 0
+\use_package stackrel 0
+\use_package stmaryrd 0
+\use_package undertilde 0
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 2cm
+\topmargin 2cm
+\rightmargin 2cm
+\bottommargin 2cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Results for REXI
+\end_layout
+
+\begin_layout Author
+Martin Schreiber <M.Schreiber@exeter.ac.uk>
+\begin_inset Newline newline
+\end_inset
+
+ et al.
+\end_layout
+
+\begin_layout Standard
+This documents is on results for the REXI as described in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Terry:High-order time-parallel approximation of evolution operators"
+
+\end_inset
+
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Schreiber:Understanding_REXI"
+
+\end_inset
+
+ and is based on the linear formulation only.
+ Several benchmarks are executed to evaluate the dependency of the REXI
+ parameters on scenarios representative for geophysical flows.
+\end_layout
+
+\begin_layout Section
+Benchmark scenario description
+\end_layout
+
+\begin_layout Subsection
+Equations
+\end_layout
+
+\begin_layout Standard
+We analyze the behavior of REXI based on parameter studies of the linear
+ part 
+\begin_inset Formula 
+\[
+L(U):=\left(\begin{array}{ccc}
+0 & -\eta_{0}\partial_{x} & -\eta_{0}\partial_{y}\\
+-g\partial_{x} & 0 & f\\
+-g\partial_{y} & -f & 0
+\end{array}\right)U
+\]
+
+\end_inset
+
+of the SWE (see 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Schreiber:Formulations of the shallow-water equations"
+
+\end_inset
+
+, note that the sign is inverted) 
+\begin_inset Formula 
+\[
+U_{t}=L(U).
+\]
+
+\end_inset
+
+If not otherwise stated, we set 
+\begin_inset Formula $g=\eta_{0}=f=1$
+\end_inset
+
+ and 
+\begin_inset Formula $\Omega=[0;1]^{2}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Initial conditions
+\end_layout
+
+\begin_layout Standard
+We use the Gaussian function
+\begin_inset Formula 
+\[
+\eta(x,y)=\eta_{0}+e^{-50(x^{2}+y^{2})}
+\]
+
+\end_inset
+
+as initial conditions and use zero values for initial velocity conditions.
+\end_layout
+
+\begin_layout Subsection
+Discretization in time
+\end_layout
+
+\begin_layout Standard
+A Runge-Kutta time stepping method of 4-th order is used if appropriate.
+ E.g.
+ RK4 does not make sense for REXI.
+\end_layout
+
+\begin_layout Subsection
+Discretization in space
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:discretization_in_space"
+
+\end_inset
+
+The tests are based on different implementations:
+\end_layout
+
+\begin_layout Subsubsection
+Used derivatives
+\end_layout
+
+\begin_layout Standard
+Furthermore, the derivatives can be based on
+\end_layout
+
+\begin_layout Itemize
+(FDderiv) Finite difference methods (e.g.
+ a 
+\begin_inset Formula $[-1,0,1]$
+\end_inset
+
+ stencil) or
+\end_layout
+
+\begin_layout Itemize
+(SPderiv) computing the derivative via the spectral basis functions (
+\begin_inset Formula $\frac{d}{dx}e^{ixj2\pi}$
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Subsubsection
+Realization of operator
+\end_layout
+
+\begin_layout Standard
+Derivatives can be expressed either in
+\end_layout
+
+\begin_layout Itemize
+(Cop) Cartesian space via a stencil computation (expensive in Cartesian
+ space) or
+\end_layout
+
+\begin_layout Itemize
+(Sop) Spectral (Fourier) space via a spectral convolution (element-wise
+ multiplication and hence very cheap in spectral space).
+\end_layout
+
+\begin_layout Subsubsection
+Grid alignment
+\end_layout
+
+\begin_layout Itemize
+(A-grid): All conserved quantities are places at the cell center
+\end_layout
+
+\begin_layout Itemize
+(C-grid): The potential is placed at the cell center and the velocity components
+ at the cell edges
+\end_layout
+
+\begin_layout Subsubsection
+REXI
+\end_layout
+
+\begin_layout Standard
+There is only one REXI implementation, but with different parameters which
+ are discussed below.
+\end_layout
+
+\begin_layout Subsection
+REXI
+\end_layout
+
+\begin_layout Standard
+The REXI approach allows testing different parameters.
+ In this work, we analyze the accuracy of REXI, based on the parameters
+ 
+\begin_inset Formula $h$
+\end_inset
+
+ and 
+\begin_inset Formula $M$
+\end_inset
+
+, see 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Schreiber:Understanding_REXI"
+
+\end_inset
+
+ for their description.
+ We denote the result 
+\begin_inset Formula $U'(\tau)$
+\end_inset
+
+ of the REXI approach by
+\begin_inset Formula 
+\[
+U'(\tau):=REXI(U(0),\tau,h,M)
+\]
+
+\end_inset
+
+with 
+\begin_inset Formula $U$
+\end_inset
+
+ the solution at 
+\begin_inset Formula $t=0$
+\end_inset
+
+, the parameter
+\begin_inset Formula $\tau$
+\end_inset
+
+ the size of the large time step, 
+\begin_inset Formula $h$
+\end_inset
+
+ the sampling interval size and 
+\begin_inset Formula $M$
+\end_inset
+
+ the number of poles.
+\end_layout
+
+\begin_layout Subsection
+Error norm
+\end_layout
+
+\begin_layout Standard
+We use the RMS error norm 
+\begin_inset Formula 
+\[
+rms(f):=\sqrt{\frac{\sum_{\vec{x}}\left(f_{\vec{x}}-\tilde{f}_{\vec{x}}\right)^{2}}{\prod_{i}\vec{N}_{i}}}
+\]
+
+\end_inset
+
+based on a discrete computed solution 
+\begin_inset Formula $f_{\vec{x}}$
+\end_inset
+
+ for the points given by 
+\begin_inset Formula $\vec{x}_{i}\in\{0,1,...,\vec{N}_{i}\}$
+\end_inset
+
+, the reference solution given by 
+\begin_inset Formula $\tilde{f}(\vec{x})$
+\end_inset
+
+ and with each component in 
+\begin_inset Formula $\vec{N}$
+\end_inset
+
+ giving the resolution.
+\end_layout
+
+\begin_layout Section
+Analytical results
+\end_layout
+
+\begin_layout Subsection
+Testing for h/M parameters
+\end_layout
+
+\begin_layout Standard
+(benchmark folder: 2015_08_30_search_h_M)
+\end_layout
+
+\begin_layout Standard
+We first search for an optimal choice of 
+\begin_inset Formula $h$
+\end_inset
+
+ and 
+\begin_inset Formula $M$
+\end_inset
+
+ values.
+ 
+\begin_inset Formula $h$
+\end_inset
+
+ is a value which only relates to the accuracy of the REXI approximation
+ and 
+\begin_inset Formula $M$
+\end_inset
+
+ relates to the accuracy, as well as to the computational workload which
+ has to be invested for the REXI approach.
+ We execute the simulation for an overall simulation time of one second
+ and use a time step size for REXI of 
+\begin_inset Formula $0.1$
+\end_inset
+
+.
+ Hence, 10 REXI time steps are executed.
+ The results are given based on the computation of the RMS error on the
+ height.
+\end_layout
+
+\begin_layout Standard
+We first analyze a parameter study for a resolution of 
+\begin_inset Formula $128^{2}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename results_plots/2015_08_30_search_h_M/output_128.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+First, we can see a (blue-colored) triangle with high-accurate solutions
+ of 
+\begin_inset Formula $O(10^{-6})$
+\end_inset
+
+.
+ This optimal triangle area can be described by
+\begin_inset Formula 
+\[
+A_{(M,h)}(C):=\{(M,h)|Mh>C,\,h>0.5\}
+\]
+
+\end_inset
+
+with 
+\begin_inset Formula $1024$
+\end_inset
+
+ for an accuracy 
+\begin_inset Formula $\approx10^{-7}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The diagonal edge at 
+\begin_inset Formula $Mh=const.$
+\end_inset
+
+ is explained by 
+\begin_inset Formula $h$
+\end_inset
+
+ specifying the sampling interval and 
+\begin_inset Formula $M$
+\end_inset
+
+ the sampling nodes.
+ If a smaller value of 
+\begin_inset Formula $h$
+\end_inset
+
+ results in an oversampling of the frequency, more poles 
+\begin_inset Formula $M$
+\end_inset
+
+ have to be used to accurately cover the approximation of the solution.
+ Since we should try to minimize 
+\begin_inset Formula $M$
+\end_inset
+
+ as far as possible, we can determine a particular best-investment for 
+\begin_inset Formula $M$
+\end_inset
+
+ at the left lower corner of the triangle area by choosing 
+\begin_inset Formula $h\in[0.125,\,0.25]$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+We define such an optimal choice of 
+\begin_inset Formula $h$
+\end_inset
+
+ and 
+\begin_inset Formula $M$
+\end_inset
+
+ as the sweetspot for a given numeric solution 
+\begin_inset Formula $U'(t+\tau):=REXI(U(t),\tau,h,M)$
+\end_inset
+
+ and a given numerical error threshold
+\begin_inset Formula $e$
+\end_inset
+
+.
+ We then search for parameters 
+\begin_inset Formula $(M,h)$
+\end_inset
+
+ which keep the error below a certain error threshold 
+\begin_inset Formula $e$
+\end_inset
+
+ and which minimize the number of poles directly related to 
+\begin_inset Formula $M$
+\end_inset
+
+.
+ 
+\begin_inset Formula 
+\[
+S(h,M):=min_{M}min_{h}\left(rms\left(U'(t+\tau)-U(t\tau)\right)<e\right)
+\]
+
+\end_inset
+
+obviously, the optimal choice of the parameters 
+\begin_inset Formula $(M,h)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Next, we test if both parameter change for different resolutions 
+\begin_inset Formula $16^{2}$
+\end_inset
+
+ and 
+\begin_inset Formula $64^{2}$
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="2">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_08_30_search_h_M/output_16.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_08_30_search_h_M/output_64.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We can observe, that a change in resolution does not significantly change
+ the results for selected parameters 
+\begin_inset Formula $h$
+\end_inset
+
+ and 
+\begin_inset Formula $M$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Testing for different 
+\begin_inset Formula $\epsilon$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+(benchmark folder: 2015_08_30_search_epsilons, 2015_09_03_search_epsilons,
+ 2015_09_03_search_epsilons_b)
+\end_layout
+
+\begin_layout Standard
+The REXI approach should hold for all the possible regimes of atmospheric
+ constellations.
+ Therefore, we generalize our formulation with 
+\begin_inset Formula $\epsilon$
+\end_inset
+
+
+\begin_inset Formula 
+\[
+U_{t}=\epsilon L(U)
+\]
+
+\end_inset
+
+which we realize by setting 
+\begin_inset Formula $g=\eta_{0}=f=\epsilon$
+\end_inset
+
+.
+ We fix our test resolution to 
+\begin_inset Formula $64^{2}$
+\end_inset
+
+ for this evaluation and show plots for 
+\begin_inset Formula $\epsilon:=\{1,\,0.1,\,0.01\}$
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="2">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_08_30_search_epsilons/output_64_eps0.01.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_08_30_search_epsilons/output_64_eps0.10.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_08_30_search_epsilons/output_64_eps1.00.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_08_30_search_epsilons/output_128_eps0.01.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+For a decreasing 
+\begin_inset Formula $\epsilon$
+\end_inset
+
+, we can see that the previously clear optimal parameters for 
+\begin_inset Formula $(h,M)$
+\end_inset
+
+ are now getting more diffusive.
+ To see if the parameters 
+\begin_inset Formula $(h,M)$
+\end_inset
+
+ depend on the resolution, we added a plot for benchmarks with the resolution
+ 
+\begin_inset Formula $128^{2}$
+\end_inset
+
+ and 
+\begin_inset Formula $\epsilon:=0.01$
+\end_inset
+
+, see above.
+ We can see, that the parameters of the REXI approach are independent to
+ the resolution.
+\end_layout
+
+\begin_layout Standard
+Since the borders got more diffusive for 
+\begin_inset Formula $\epsilon\ll1$
+\end_inset
+
+, we expect a sharp border for 
+\begin_inset Formula $\epsilon\gg1$
+\end_inset
+
+ which we evaluate next:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="2">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_08_30_search_epsilons/output_64_eps10.00.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_08_30_search_epsilons/output_64_eps100.00.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+However, we don't see an increase in diffusiveness.
+ But we can observe, that the solution area 
+\begin_inset Formula $A_{(M,h)}$
+\end_inset
+
+ is shifted to the right side.
+ Hence, for larger 
+\begin_inset Formula $\epsilon$
+\end_inset
+
+ values (this increases the stiffness of the problem), we also have to increase
+ 
+\begin_inset Formula $M$
+\end_inset
+
+.
+ We observe again, that the solution area 
+\begin_inset Formula $A_{(M,h)}$
+\end_inset
+
+ still seems to be independent to the choice of 
+\begin_inset Formula $h$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+To determine the dependency of 
+\begin_inset Formula $M$
+\end_inset
+
+ to 
+\begin_inset Formula $\epsilon$
+\end_inset
+
+, we finally executed a parameter study by setting 
+\begin_inset Formula $h:=0.2$
+\end_inset
+
+ and with variables 
+\begin_inset Formula $\epsilon$
+\end_inset
+
+ and 
+\begin_inset Formula $M$
+\end_inset
+
+.
+ Here, we keep the simulation time limited to 
+\begin_inset Formula $1$
+\end_inset
+
+ second and use a REXI timestep size of 
+\begin_inset Formula $dt:=0.1$
+\end_inset
+
+.
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename results_plots/2015_09_03_search_epsilons_b/output_n64.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We can see a linear dependency of 
+\begin_inset Formula $\epsilon$
+\end_inset
+
+ to 
+\begin_inset Formula $M$
+\end_inset
+
+ in the range of
+\begin_inset Formula $\epsilon\in[0.01;1]$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Increasing large time step
+\end_layout
+
+\begin_layout Standard
+(benchmark folder: 2015_09_02_increasing_large_timesteps)
+\end_layout
+
+\begin_layout Standard
+In theory, we can make very long time steps with the REXI approach.
+ However, the question arises how the 
+\begin_inset Formula $(M,h)$
+\end_inset
+
+ coefficients are related to the time step size.
+ We evaluate this by setting 
+\begin_inset Formula $h:=0.2$
+\end_inset
+
+ (see also 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Terry:High-order time-parallel approximation of evolution operators"
+
+\end_inset
+
+) and test the accuracy depending on number of poles related to 
+\begin_inset Formula $M$
+\end_inset
+
+ for different coarse time step sizes.
+ Only a single time step is computed with REXI with the resolutions 
+\begin_inset Formula $64^{2}$
+\end_inset
+
+ and 
+\begin_inset Formula $128^{2}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="2">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_09_02_increasing_large_timesteps/output_n64.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_09_02_increasing_large_timesteps/output_n128.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We can observe, that for an increasing large time step size for the REXI
+ approach, also the parameter 
+\begin_inset Formula $M$
+\end_inset
+
+ increases linearly to the resolution in one dimension:
+\begin_inset Formula 
+\[
+M\sim max_{i}(\vec{N_{i}})
+\]
+
+\end_inset
+
+ with 
+\begin_inset Formula $N_{i}$
+\end_inset
+
+ the resolution in dimension 
+\begin_inset Formula $i$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Since the parameter 
+\begin_inset Formula $M$
+\end_inset
+
+ now depends on the resolution, we investigate this in more detail.
+ We set 
+\begin_inset Formula $h:0.2$
+\end_inset
+
+ and run parameter studies 
+\end_layout
+
+\begin_layout Subsection
+Study for 
+\begin_inset Formula $M$
+\end_inset
+
+ and 
+\begin_inset Formula $N$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+(benchmark: 2015_09_03_study_N_M)
+\end_layout
+
+\begin_layout Standard
+This study is performed, since 
+\begin_inset Formula $M$
+\end_inset
+
+ was once stated to depend on 
+\begin_inset Formula $N$
+\end_inset
+
+ and then that it does not depend on 
+\begin_inset Formula $N$
+\end_inset
+
+.
+ Therefore, we investigate this in more detail: We use 
+\begin_inset Formula $h:=0.2$
+\end_inset
+
+ and vary 
+\begin_inset Formula $N$
+\end_inset
+
+ and 
+\begin_inset Formula $M$
+\end_inset
+
+, showing the heatmap for the RMS accuracy on height in the following plot:
+\end_layout
+
+\begin_layout Section
+Performance benchmarks
+\end_layout
+
+\begin_layout Standard
+Here, we compare the REXI approach with several other possible discretizations,
+ see Sec.
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:discretization_in_space"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Performance studies for time stepping methods
+\end_layout
+
+\begin_layout Standard
+We executed performance studies on a 40-core Intel Westmere system (4 sockets)
+ to compare the overall computation time of several discretization methods
+ with the REXI approach in both accuracy and time to solution.
+\end_layout
+
+\begin_layout Standard
+[TODO]
+\end_layout
+
+\begin_layout Subsection
+Evaluation via a performance model
+\end_layout
+
+\begin_layout Standard
+With a standard time stepping method, we denote the costs for computing
+ a single time step by 
+\begin_inset Formula $C_{N}\left(\prod_{i}\vec{N_{i}}\right)$
+\end_inset
+
+.
+ Furthermore, we can assume that 
+\begin_inset Formula $T:=O\left(\frac{t\cdot\vec{v}_{max}}{N}\right)$
+\end_inset
+
+ time steps are required for computing the solution with 
+\begin_inset Formula $\vec{v}_{max}:=max_{i}(\vec{v})$
+\end_inset
+
+ denoting the maximum velocity.
+\end_layout
+
+\begin_layout Standard
+We assume that 
+\begin_inset Formula $M$
+\end_inset
+
+ is directly proportional to 
+\begin_inset Formula $\vec{v}_{max}$
+\end_inset
+
+being related to With the REXI approach, this would result in 
+\end_layout
+
+\begin_layout Standard
+For a given 
+\begin_inset Formula $M$
+\end_inset
+
+-value, and by using the symmetry of the 
+\begin_inset Formula $\alpha_{i}$
+\end_inset
+
+ poles in REXI, this requires solving 
+\begin_inset Formula $L+M+1$
+\end_inset
+
+ times (TODO: check this) the system 
+\begin_inset Formula $(L-\alpha)^{-1}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Section
+Summary
+\end_layout
+
+\begin_layout Standard
+We summarize 
+\end_layout
+
+\begin_layout Section
+Discussion of possible alternative approaches
+\end_layout
+
+\begin_layout Subsection
+Eigenvector decomposition in spectral space
+\end_layout
+
+\begin_layout Standard
+Since the analytical solution is directly given by an Eigenvalue decomposition
+ in spectral space, this could be an appropriate alternative to using the
+ REXI approach.
+ This is true for the f-plane.
+ Let's analyze this property with the 
+\begin_inset Formula $\beta$
+\end_inset
+
+-plane.
+ Here, the 
+\begin_inset Formula $f$
+\end_inset
+
+ value is not constant over the plane, but varies depending on the 
+\begin_inset Formula $y$
+\end_inset
+
+-coordinate:
+\begin_inset Formula 
+\[
+f(y):=f_{0}+\beta y
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We can now have a look at the spectral formulation of the 
+\begin_inset Formula $L(U)$
+\end_inset
+
+ operator
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+-L(U):=\left(\begin{array}{ccc}
+0 & \eta_{0}\partial_{x} & \eta_{0}\partial_{y}\\
+g\partial_{x} & 0 & -f(y)\\
+g\partial_{y} & f(y) & 0
+\end{array}\right)U
+\]
+
+\end_inset
+
+with 
+\begin_inset Formula $U(\vec{x})$
+\end_inset
+
+ given by its spectral superposition
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+U(\vec{x}):=\int_{\vec{k}}\tilde{U}(\vec{k})e^{i\vec{k}\vec{x}}
+\]
+
+\end_inset
+
+and 
+\begin_inset Formula $f(\vec{x})$
+\end_inset
+
+ given by
+\begin_inset Formula 
+\[
+f(\vec{x}):=\int_{\vec{k}}\tilde{f}(\vec{k})e^{i\vec{k}\vec{x}}.
+\]
+
+\end_inset
+
+We were able to compute the solution to 
+\begin_inset Formula $L(U)$
+\end_inset
+
+ directly in spectral space with the EV decomposition, since we were able
+ to factor out the spectral basis functions.
+ An example is given here for the term 
+\begin_inset Formula $\eta_{0}\partial_{x}$
+\end_inset
+
+: 
+\begin_inset Formula 
+\[
+\left(\eta_{0}\partial_{x}\right)\int_{\vec{k}}\tilde{U}(\vec{k})e^{i\vec{k}\vec{x}}=\int_{\vec{k}}\tilde{U}(\vec{k})\eta_{0}\partial_{x}e^{i\vec{k}\vec{x}}=\int_{\vec{k}}\tilde{U}(\vec{k})\eta_{0}i\vec{k}e^{i\vec{k}\vec{x}}=\int_{\vec{k}}\tilde{U}(\vec{k})\left(\eta_{0}i\vec{k}e^{i\vec{k}\vec{x}}\right)
+\]
+
+\end_inset
+
+In combination with a Ritz-Galerkin approach and using the orthogonality
+ of the basis functions, this allows a wave-wise Eigenvalue decomposition.
+ However for the 
+\begin_inset Formula $f(x)$
+\end_inset
+
+ term, we are not able to factor out the basis function and apply the previously
+ mentioned method
+\begin_inset Formula 
+\[
+\left(f(y)\right)\int_{\vec{k}}\tilde{U}(\vec{k})e^{i\vec{k}\vec{x}}=\int_{\vec{k}}f(\vec{k})e^{i\vec{k}\vec{x}}\int_{\vec{k}}\tilde{U}(\vec{k})e^{i\vec{k}\vec{x}}
+\]
+
+\end_inset
+
+which results in a non-linearity.
+ Hence, we are not able to factor out the spectral basis functions and the
+ approach is not applicable to the 
+\begin_inset Formula $\beta$
+\end_inset
+
+-plane anymore.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "Schreiber:Formulations of the shallow-water equations"
+
+\end_inset
+
+Formulations of the shallow-water equations, M.
+ Schreiber, P.
+ Peixoto et al.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "Terry:High-order time-parallel approximation of evolution operators"
+
+\end_inset
+
+High-order time-parallel approximation of evolution operators, T.
+ Haut et al.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "Schreiber:Understanding_REXI"
+
+\end_inset
+
+Understanding the Rational Approximation of the Exponential Integrator (REXI),
+ Schreiber M., Peixoto P.
+\end_layout
+
+\end_body
+\end_document
