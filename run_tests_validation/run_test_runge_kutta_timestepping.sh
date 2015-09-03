@@ -17,7 +17,7 @@ echo "TEST RK TIMESTEPPING (release) $X"
 echo "***********************************************"
 make clean
 scons --unit-test=test_runge_kutta --gui=disable --spectral-space=disable --libfft=disable --mode=release --spectral-dealiasing=disable
-EXEC="./build/test_runge_kutta_gnu_release -N 128 -G 0 -C -1 -t 5 --function-order 4"
+EXEC="./build/test_runge_kutta_omp_gnu_release -N 128 -G 0 -C -1 -t 5 --function-order 4"
 echo "$EXEC"
 $EXEC || exit
 

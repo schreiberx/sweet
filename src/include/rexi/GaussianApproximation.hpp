@@ -7,6 +7,7 @@
 #ifndef SRC_INCLUDE_REXI_GAUSSIANAPPROXIMATION_HPP_
 #define SRC_INCLUDE_REXI_GAUSSIANAPPROXIMATION_HPP_
 
+#include <iostream>
 #include <complex>
 #include <vector>
 

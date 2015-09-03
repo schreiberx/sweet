@@ -57,6 +57,21 @@ public:
 			return std::sin(2.0*M_PI*y/i_parameters.sim.domain_size[1]) + i_parameters.setup.h0;
 		}
 
+		if (i_parameters.setup.scenario == 4)
+		{
+			double dx = x/i_parameters.sim.domain_size[0];
+			double dy = y/i_parameters.sim.domain_size[1];
+			return i_parameters.setup.h0 + (std::abs(dx-0.5) < 0.3)*(std::abs(dy-0.5) < 0.1);
+		}
+
+		if (i_parameters.setup.scenario == 5)
+		{
+			double dx = x/i_parameters.sim.domain_size[0];
+			double dy = y/i_parameters.sim.domain_size[1];
+
+			return std::sin(6.0*M_PIl*dx)*std::cos(4.0*M_PIl*dy) - (1.0/5.0)*std::cos(4.0*M_PIl*dx)*std::sin(2.0*M_PIl*dy) + i_parameters.setup.h0;
+		}
+
 
 		if (i_parameters.setup.scenario == 8)
 		{
@@ -114,6 +129,19 @@ public:
 			return -i_parameters.sim.g*2.0*M_PI*std::cos(2.0*M_PI*y/i_parameters.sim.domain_size[1])/(i_parameters.sim.f*i_parameters.sim.domain_size[1]);
 		}
 
+		if (i_parameters.setup.scenario == 4)
+		{
+			return 0;
+		}
+
+		if (i_parameters.setup.scenario == 5)
+		{
+			double dx = x/i_parameters.sim.domain_size[0];
+			double dy = y/i_parameters.sim.domain_size[1];
+
+			return std::cos(6.0*M_PIl*dx)*std::cos(4.0*M_PIl*dy)-4.0*std::sin(6.0*M_PIl*dx)*std::sin(4.0*M_PIl*dy);
+		}
+
 		if (i_parameters.setup.scenario == 8)
 		{
 			return 0;
@@ -151,7 +179,7 @@ public:
 				std::cerr << "f-value is equal to zero!" << std::endl;
 				exit(-1);
 			}
-			return i_parameters.sim.g*2.0*M_PI*std::cos(2.0*M_PI*x/i_parameters.sim.domain_size[0])/(i_parameters.sim.f*i_parameters.sim.domain_size[0]);
+			return i_parameters.sim.g*2.0*M_PIl*std::cos(2.0*M_PIl*x/i_parameters.sim.domain_size[0])/(i_parameters.sim.f*i_parameters.sim.domain_size[0]);
 		}
 
 		if (i_parameters.setup.scenario == 3)
@@ -162,6 +190,17 @@ public:
 				exit(-1);
 			}
 			return 0;
+		}
+
+		if (i_parameters.setup.scenario == 4)
+			return 0;
+
+		if (i_parameters.setup.scenario == 5)
+		{
+			double dx = x/i_parameters.sim.domain_size[0];
+			double dy = y/i_parameters.sim.domain_size[1];
+
+			return std::cos(6.0*M_PIl*dx)*std::cos(6.0*M_PIl*dy);
 		}
 
 		if (i_parameters.setup.scenario == 8)

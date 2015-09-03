@@ -92,7 +92,7 @@ public:
 					double &o_dt,			///< time step restriction
 					double i_use_fixed_dt,	///< if this value is not equal to 0,
 											///< use this time step size instead of computing one
-					double i_simulation_time
+					double i_simulation_time	///< simulation time, e.g. for tidal waves
 			),
 
 			DataArray<2> &io_h,
@@ -107,8 +107,10 @@ public:
 
 			int i_runge_kutta_order = 1,	///< Order of RK time stepping
 
-			double i_simulation_time = -1	///< Current simulation time.
+			double i_simulation_time = -1,	///< Current simulation time.
 											///< This gets e.g. important for tidal waves
+
+			double i_max_simulation_time = std::numeric_limits<double>::infinity()	///< limit the maximum simulation time
 	)
 	{
 		setupBuffers(io_h, i_runge_kutta_order);
@@ -127,6 +129,10 @@ public:
 					i_use_fixed_dt,
 					i_simulation_time
 			);
+
+			// padding to max simulation time if exceeding the maximum
+			if (dt+i_simulation_time > i_max_simulation_time)
+				dt = i_max_simulation_time-i_simulation_time;
 
 			io_h += dt**RK_h_t[0];
 			io_u += dt**RK_u_t[0];
@@ -162,6 +168,10 @@ public:
 					i_use_fixed_dt,
 					i_simulation_time
 			);
+
+			// padding to max simulation time if exceeding the maximum
+			if (dt+i_simulation_time > i_max_simulation_time)
+				dt = i_max_simulation_time-i_simulation_time;
 
 			// STAGE 2
 			(i_baseClass->*i_compute_euler_timestep_update)(
@@ -211,6 +221,10 @@ public:
 					i_use_fixed_dt,
 					i_simulation_time
 			);
+
+			// padding to max simulation time if exceeding the maximum
+			if (dt+i_simulation_time > i_max_simulation_time)
+				dt = i_max_simulation_time-i_simulation_time;
 
 			// STAGE 2
 			(i_baseClass->*i_compute_euler_timestep_update)(
@@ -275,6 +289,10 @@ public:
 					i_use_fixed_dt,
 					i_simulation_time
 			);
+
+			// padding to max simulation time if exceeding the maximum
+			if (dt+i_simulation_time > i_max_simulation_time)
+				dt = i_max_simulation_time-i_simulation_time;
 
 			// STAGE 2
 			(i_baseClass->*i_compute_euler_timestep_update)(

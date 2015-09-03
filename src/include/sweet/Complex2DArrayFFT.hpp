@@ -7,10 +7,6 @@
 #ifndef SRC_INCLUDE_SWEET_COMPLEX2DARRAYFFT_HPP_
 #define SRC_INCLUDE_SWEET_COMPLEX2DARRAYFFT_HPP_
 
-#if !SWEET_USE_LIBFFT
-#	error "This class only makes sense with FFT"
-#endif
-
 #include <fftw3.h>
 #include <sweet/DataArray.hpp>
 #include <cstddef>
@@ -63,8 +59,15 @@ public:
 
 		assert(getRefCounter() >= 0);
 
-		getRefCounter()++;
-		if (getRefCounter() != 1)
+		int ref_counter;
+#if SWEET_REXI_PARALLEL_SUM
+#	pragma omp critical
+#endif
+		{
+			ref_counter = ++(getRefCounter());
+		}
+
+		if (ref_counter != 1)
 			return;
 
 		{
@@ -157,11 +160,19 @@ public:
 		if (!fftw_initialized)
 			return;
 
-		getRefCounter()--;
-		if (getRefCounter() > 0)
+
+		int ref_counter;
+#if SWEET_REXI_PARALLEL_SUM
+#	pragma omp critical
+#endif
+		{
+			ref_counter = --(getRefCounter());
+		}
+
+		if (ref_counter > 0)
 			return;
 
-		assert(getRefCounter() >= 0);
+		assert(ref_counter >= 0);
 
 		fftw_free(getPlans().to_spec);
 		fftw_free(getPlans().to_cart);
@@ -176,6 +187,11 @@ public:
 		fftw_initialized(false)
 	{
 
+#if !SWEET_USE_LIBFFT
+		std::cerr << "This class only makes sense with FFT" << std::endl;
+		exit(1);
+#endif
+
 	}
 
 public:
@@ -185,6 +201,12 @@ public:
 	)	:
 		fftw_initialized(false)
 	{
+
+#if !SWEET_USE_LIBFFT
+		std::cerr << "This class only makes sense with FFT" << std::endl;
+		exit(1);
+#endif
+
 		aliased_scaled = i_aliased_scaled;
 
 		resolution[0] = i_res[0];
@@ -219,6 +241,12 @@ public:
 	)	:
 		fftw_initialized(false)
 	{
+
+#if !SWEET_USE_LIBFFT
+		std::cerr << "This class only makes sense with FFT" << std::endl;
+		exit(1);
+#endif
+
 		resolution[0] = i_testArray.resolution[0];
 		resolution[1] = i_testArray.resolution[1];
 
@@ -729,6 +757,24 @@ public:
 	}
 
 
+#if 0
+	void storeRealToDataArray(
+			DataArray<2> &i_out
+	)
+	{
+#if SWEET_THREADING
+#pragma omp parallel for
+#endif
+		for (std::size_t n = 0; n < resolution[0]*resolution[1]; n++)
+			i_out.array_data_cartesian_space[n] = data[n<<1];
+
+#if SWEET_USE_SPECTRAL_SPACE
+		i_out.array_data_cartesian_space_valid = true;
+		i_out.array_data_spectral_space_valid = true;
+#endif
+	}
+#endif
+
 
 	DataArray<2> getImagWithDataArray()
 	{
@@ -740,6 +786,8 @@ public:
 
 		return out;
 	}
+
+
 
 	Complex2DArrayFFT &loadRealFromDataArray(
 			const DataArray<2> &i_dataArray_Real
@@ -774,6 +822,7 @@ public:
 	}
 
 
+
 	/**
 	 * Apply a linear operator given by this class to the input data array.
 	 */
@@ -784,7 +833,9 @@ public:
 	{
 		Complex2DArrayFFT out(resolution, aliased_scaled);
 
+#if SWEET_THREADING
 		#pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
 		{
 			double ar = data[i];
@@ -836,7 +887,9 @@ public:
 	{
 		Complex2DArrayFFT out(resolution, aliased_scaled);
 
+#if SWEET_THREADING
 		#pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
 		{
 			out.data[i] = data[i] + i_array_data.data[i];
@@ -844,6 +897,29 @@ public:
 		}
 
 		return out;
+	}
+
+
+
+
+	/**
+	 * Compute element-wise addition
+	 */
+	inline
+	Complex2DArrayFFT& operator+=(
+			const Complex2DArrayFFT &i_array_data
+	)
+	{
+#if SWEET_THREADING
+		#pragma omp parallel for OPENMP_SIMD
+#endif
+		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		{
+			data[i] += i_array_data.data[i];
+			data[i+1] += i_array_data.data[i+1];
+		}
+
+		return *this;
 	}
 
 
@@ -858,7 +934,9 @@ public:
 	{
 		Complex2DArrayFFT out(this->resolution, aliased_scaled);
 
+#if SWEET_THREADING
 		#pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
 		{
 			out.data[i] = data[i] - i_array_data.data[i];
@@ -880,7 +958,10 @@ public:
 	{
 		Complex2DArrayFFT out(this->resolution, aliased_scaled);
 
+
+#if SWEET_THREADING
 		#pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
 		{
 			out.data[i] = data[i];
@@ -907,7 +988,9 @@ public:
 	{
 		Complex2DArrayFFT out(this->resolution, aliased_scaled);
 
+#if SWEET_THREADING
 		#pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
 		{
 			out.data[i] = data[i]+i_value.real();
@@ -929,7 +1012,9 @@ public:
 	{
 		Complex2DArrayFFT out(this->resolution, aliased_scaled);
 
+#if SWEET_THREADING
 		#pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
 		{
 			out.data[i] = data[i];
@@ -955,7 +1040,9 @@ public:
 	{
 		Complex2DArrayFFT out(this->resolution, aliased_scaled);
 
+#if SWEET_THREADING
 		#pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
 		{
 			out.data[i] = data[i]-i_value.real();
@@ -977,7 +1064,9 @@ public:
 	{
 		Complex2DArrayFFT out(i_array_data.resolution, aliased_scaled);
 
-#pragma omp parallel for OPENMP_SIMD
+#if SWEET_THREADING
+		#pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
 		{
 			complex a = complex(data[i], data[i+1]);
@@ -1002,7 +1091,9 @@ public:
 		double sum = 0;
 		double c = 0;
 
-#pragma omp parallel for reduction(+:sum,c)
+#if SWEET_THREADING
+		#pragma omp parallel for reduction(+:sum,c)
+#endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
 		{
 			double radius2 = data[i]*data[i]+data[i+1]*data[i+1];
@@ -1032,7 +1123,9 @@ public:
 	{
 		double sum = 0;
 		double c = 0;
-#pragma omp parallel for reduction(+:sum,c)
+#if SWEET_THREADING
+		#pragma omp parallel for reduction(+:sum,c)
+#endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
 		{
 			double value = data[i];
@@ -1059,7 +1152,9 @@ public:
 		double sum = 0.0;
 		double c = 0.0;
 
-#pragma omp parallel for reduction(+:sum,c)
+#if SWEET_THREADING
+		#pragma omp parallel for reduction(+:sum,c)
+#endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
 		{
 			double value = data[i]*data[i]+data[i+1]*data[i+1];

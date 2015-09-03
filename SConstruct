@@ -147,6 +147,7 @@ AddOption(	'--spectral-dealiasing',
 )
 env['spectral_dealiasing'] = GetOption('spectral_dealiasing')
 
+
 AddOption(	'--gui',
 		dest='gui',
 		type='choice',
@@ -155,6 +156,20 @@ AddOption(	'--gui',
 		help='gui: enable, disable [default: %default]'
 )
 env['gui'] = GetOption('gui')
+
+
+
+
+AddOption(	'--rexi-parallel-sum',
+		dest='rexi_parallel_sum',
+		type='choice',
+		choices=['enable','disable'],
+		default='disable',
+		help='Use a par for loop over the sum in REXI: enable, disable [default: %default]'
+)
+env['rexi_parallel_sum'] = GetOption('rexi_parallel_sum')
+
+
 
 AddOption(      '--program',
 		dest='program',
@@ -204,18 +219,8 @@ else:
 	print("Neither a program name, nor a unit test is given:\n")
 	print("  use --program=[program name] to specify the program\n")
 	print("  or --unit-test=[unit test] to specify a unit test\n")
+	Exit(1)
 
-
-# PROGRAM's NAME
-#if env['compile_program'] in env['unit_tests_programs']:
-#	env['program_name'] = 'unit_test_'+env['compile_program']
-#
-#if env['unit_testrogram'] in env['example_programs']:
-#	env['program_name'] = 'example_'+env['compile_program']
-
-#else:
-#	print 'FATAL ERROR'
-#	sys.exit(-1)
 
 
 env.Append(CXXFLAGS = ' -DSWEET_PROGRAM_NAME='+env['program_name'])
@@ -540,18 +545,22 @@ else:
 	env.Append(CXXFLAGS=' -DSWEET_GUI=0')
 
 
+if env['threading'] in ['omp']:
+	exec_name+='_'+env['threading']
+
+if env['rexi_parallel_sum']=='enable':
+	exec_name+='_rexipar'
+
 
 exec_name += '_'+env['compiler']
 exec_name += '_'+env['mode']
 
-
 if env['threading'] == 'omp':
-	env.Append(LINKFLAGS=' -fopenmp')
 	env.Append(CXXFLAGS=' -fopenmp')
-
 	env.Append(CXXFLAGS=' -DSWEET_THREADING=1')
 else:
 	env.Append(CXXFLAGS=' -DSWEET_THREADING=0')
+
 
 if env['libfft'] == 'enable':
 	env.Append(LIBS=['fftw3'])
@@ -560,15 +569,24 @@ if env['libfft'] == 'enable':
 		env.Append(LIBS=['fftw3_omp'])
 
 
+if env['rexi_parallel_sum']=='enable' or env['threading'] == 'omp':
+	env.Append(LINKFLAGS=' -fopenmp')
+
+if env['rexi_parallel_sum'] == 'enable':
+	env.Append(CXXFLAGS=' -DSWEET_REXI_PARALLEL_SUM=1')
+else:
+	env.Append(CXXFLAGS=' -DSWEET_REXI_PARALLEL_SUM=0')
+
+
 #
 # build directory
 #
-#build_dir='build/build_'+exec_name+'/'
 build_dir='/tmp/scons_build_'+exec_name+'/'
 
 env.Append(CPPPATH = ['/usr/local/include', '/usr/include'])
+
 # also include the 'src' directory to search for dependencies
-env.Append(CPPPATH = ['.', 'src/'])
+env.Append(CPPPATH = ['.', 'src/', 'src/include'])
 
 
 
@@ -577,6 +595,7 @@ env.Append(CPPPATH = ['.', 'src/'])
 ######################
 
 env.src_files = []
+
 
 if env['program_name'] != 'DUMMY':
 
@@ -590,4 +609,3 @@ if env['program_name'] != 'DUMMY':
 	print
 
 	env.Program('build/'+exec_name, env.src_files)
-

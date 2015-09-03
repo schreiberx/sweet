@@ -7,12 +7,11 @@
 #include <sweet/SWEValidationBenchmarks.hpp>
 #include <sweet/Operators2D.hpp>
 #include <sweet/Stopwatch.hpp>
-#include <rexi/RexiSWE.hpp>
-
 #include <ostream>
 #include <sstream>
 #include <unistd.h>
 #include <stdio.h>
+#include "rexi/RexiSWE.hpp"
 
 SimulationVariables simVars;
 
@@ -611,7 +610,8 @@ public:
 					o_dt,
 					simVars.timecontrol.current_simulation_timestep_size,
 					simVars.disc.timestepping_runge_kutta_order,
-					simVars.timecontrol.current_simulation_time
+					simVars.timecontrol.current_simulation_time,
+					simVars.timecontrol.max_simulation_time
 				);
 		}
 		else if (param_timestepping_mode == 1)
@@ -1043,7 +1043,9 @@ int main(int i_argc, char *i_argv[])
 		double seconds = time();
 
 		std::cout << "Simulation time (seconds): " << seconds << std::endl;
+		std::cout << "Number of time steps: " << simVars.timecontrol.current_timestep_nr << std::endl;
 		std::cout << "Time per time step: " << seconds/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
+		std::cout << "REXI alpha.size(): " << simulationSWE->rexiSWE.rexi.alpha.size() << std::endl;
 
 		if (simVars.misc.verbosity > 1)
 		{
