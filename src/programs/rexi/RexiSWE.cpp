@@ -136,7 +136,7 @@ void RexiSWE::run_timestep(
 	std::size_t N = rexi.alpha.size();
 
 #if SWEET_REXI_PARALLEL_SUM
-#	pragma omp parallel for schedule(static) shared(perThreadVars)
+#	pragma omp parallel for schedule(static) default(none) shared(i_parameters, io_h, io_u, io_v, N)
 #endif
 	for (int i = 0; i < num_threads; i++)
 	{
