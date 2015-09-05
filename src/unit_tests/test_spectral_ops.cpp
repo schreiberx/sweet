@@ -274,6 +274,7 @@ int main(int i_argc, char *i_argv[])
 				}
 			}
 
+#if SWEET_USE_SPECTRAL_SPACE
 			// force forward/backward conversion
 			u.requestDataInSpectralSpace();
 			u.array_data_cartesian_space_valid = false;
@@ -281,6 +282,7 @@ int main(int i_argc, char *i_argv[])
 			// force forward/backward conversion
 			v.requestDataInSpectralSpace();
 			v.array_data_cartesian_space_valid = false;
+#endif
 
 			double err_z = (u*v-h).reduce_rms_quad();
 
@@ -295,6 +297,8 @@ int main(int i_argc, char *i_argv[])
 					exit(-1);
 				}
 #endif
+
+#if SWEET_USE_SPECTRAL_SPACE
 				double err3_laplace =
 					(
 							h-
@@ -308,6 +312,7 @@ int main(int i_argc, char *i_argv[])
 					std::cerr << "SPEC: Error threshold for Laplace too high for spectral differentiation!" << std::endl;
 					exit(-1);
 				}
+#endif
 			}
 			else
 			{
@@ -388,6 +393,7 @@ int main(int i_argc, char *i_argv[])
 				}
 			}
 
+#if SWEET_USE_SPECTRAL_SPACE
 			// force forward/backward conversion
 			u.requestDataInSpectralSpace();
 			u.array_data_cartesian_space_valid = false;
@@ -395,6 +401,7 @@ int main(int i_argc, char *i_argv[])
 			// force forward/backward conversion
 			v.requestDataInSpectralSpace();
 			v.array_data_cartesian_space_valid = false;
+#endif
 
 			double res_normalization = sqrt(1.0/(simVars.disc.res[0]*simVars.disc.res[1]));
 
@@ -430,6 +437,7 @@ int main(int i_argc, char *i_argv[])
 				}
 #endif
 
+#if SWEET_USE_SPECTRAL_SPACE
 				double err_int_x = (h-h_diff_x.spec_div_element_wise(op.diff_c_x)).reduce_norm2_quad()*res_normalization;
 				std::cout << "Testing spectral inverse x " << err_int_x << std::endl;
 
@@ -449,6 +457,7 @@ int main(int i_argc, char *i_argv[])
 					std::cerr << "SPEC: Error threshold for integration in y too high for spectral integration!" << std::endl;
 					exit(-1);
 				}
+#endif
 			}
 			else
 			{

@@ -48,10 +48,14 @@ FFTW (Optional, only for spectral methods):
 
 	tar xzf fftw-3.3.4.tar.gz
 	Without MPI:
-	./configure --prefix=$HOME/local/sweet_support --with-our-malloc16 --enable-threads --with-combined-threads --enable-sse2
+	./configure --prefix=$HOME/local/sweet_support --with-our-malloc16 --enable-openmp --with-combined-threads --enable-avx
 	With MPI:
-	./configure --prefix=$HOME/local/sweet_support --with-our-malloc16 --enable-threads --with-combined-threads --enable-sse2 --enable-mpi
+	./configure --prefix=$HOME/local/sweet_support --with-our-malloc16 --enable-openmp --with-combined-threads --enable-avx --enable-mpi
 	make -j 4 install
+
+	For intel compiler, use e.g.:
+	./configure CC=icc CFLAGS="-gcc -xHost" --with-our-malloc16 --enable-openmp --enable-avx --prefix=$HOME/local/fftw-3.3.4
+	make install
 
 	OR
 	apt-get install libfftw3-dev

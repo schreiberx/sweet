@@ -50,12 +50,12 @@ if not os.path.isfile(binary_cart):
 #
 # run for 1 seconds
 #
-max_time = 1
+max_time = 50
 
 #
 # time step size for coarse time steps
 #
-rexi_dt = 0.1
+rexi_dt = 5.0
 
 #
 # order of time step for RK
@@ -76,11 +76,11 @@ default_params += '-f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1 -s 1 -t '+str(max
 default_params += ' -R '+str(timestep_order)
 
 
-cfl=0.05
+cfl=0.5
 
 
 # FD/Spectral time stepping
-run_method_0 = True
+run_method_0 = False
 
 # rexi
 run_method_rexi = True
@@ -89,12 +89,15 @@ run_method_rexi = True
 
 # resolutions
 #N_list = [16, 32, 64, 128, 256, 512]
-N_list = [16, 32, 64, 128, 256]
-N_list = [16, 32, 64]
+N_list = [16, 32, 64, 128, 256, 512]
+#N_list = [16, 32, 64]
 
 # REXI parameters
-h_list = [0.2]
-m_list = [256, 512]
+#h_list = [0.2]
+h_list = [0.15, 0.2, 0.25]
+h_list = [0.15]
+m_list = [pow(2, i) for i in range(7, 32)]
+#m_list = [128, 256, 512, 1024]
 
 def extract_errors(output):
 	match_list = [
@@ -363,7 +366,7 @@ if run_method_0:
 if run_method_rexi:
 	for rexi_h in h_list:
 		for rexi_m in m_list:
-			title = "REXI solver (h="+str(rexi_h)+", m="+str(rexi_m)+"), A-grid, DT="+str(-rexi_dt)
+			title = "REXI solver (h="+str(rexi_h)+", m="+str(rexi_m)+"), A-grid, DT="+str(rexi_dt)
 			print
 			print "#TI "+title
 			print "#TX RMS, L2, convergence"

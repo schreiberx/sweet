@@ -57,7 +57,7 @@ timestep_order = 4
 #
 # default params
 #
-default_params += ' -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1 -s 1'
+default_params += ' -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1 '
 
 # Use higher-order time stepping?
 default_params += ' -R '+str(timestep_order)
@@ -306,7 +306,7 @@ if run_method_1_search:
 		for n in N_search_list:
 			for eps in eps_list:
 				print
-				print "Creating study with resolution "+str(n)+"x"+str(n)+" and for eps="+str(eps)+" and for h="+str(h)+" and for timestep restriction ="+str(dt_list)
+				print "res="+str(n)+"x"+str(n)+", eps="+str(eps)+", h="+str(h)+", t="+str(dt)
 
 				sys.stdout.write("dT\M")
 				for M in M_list:

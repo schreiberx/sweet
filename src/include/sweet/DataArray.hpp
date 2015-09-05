@@ -98,6 +98,7 @@ public:
 #else
 	int kernel_size = -1;
 	double *kernel_data = nullptr;
+	int kernel_id = -1;
 #endif
 
 	/**
@@ -1553,10 +1554,36 @@ public:
 	}
 #endif
 
+	constexpr
+	static
+	int get_kernel_mask3x3(
+			int i_0,
+			int i_1,
+			int i_2,
+			int i_3,
+			int i_4,
+			int i_5,
+			int i_6,
+			int i_7,
+			int i_8
+	)
+	{
+		return
+				(i_0 << 0) |
+				(i_1 << 1) |
+				(i_2 << 2) |
+				(i_3 << 3) |
+				(i_4 << 4) |
+				(i_5 << 5) |
+				(i_6 << 6) |
+				(i_7 << 7) |
+				(i_8 << 8);
+	}
+
 
 public:
 	template <int S>
-	void stencil_setup(
+	void kernel_stencil_setup(
 			const double i_kernel_array[S][S],
 			double i_scale = 1.0
 	)
@@ -1571,6 +1598,26 @@ public:
 
 		for (int i = 0; i < S*S; i++)
 			kernel_data[i] *= i_scale;
+
+
+		if (S == 3)
+		{
+			kernel_id = get_kernel_mask3x3(
+					kernel_data[0] != 0,
+					kernel_data[1] != 0,
+					kernel_data[2] != 0,
+					kernel_data[3] != 0,
+					kernel_data[4] != 0,
+					kernel_data[5] != 0,
+					kernel_data[6] != 0,
+					kernel_data[7] != 0,
+					kernel_data[8] != 0
+				);
+		}
+		else
+		{
+			kernel_id = -1;
+		}
 
 #else
 
@@ -1671,7 +1718,7 @@ public:
 
 public:
 	template <int S>
-	void stencil_setup(
+	void kernel_stencil_setup(
 			const double i_kernel_array[S][S][S]
 	)
 	{
@@ -2007,36 +2054,191 @@ public:
 
 #else
 
+		/**
+		 * TODO: optimize this!!!
+		 *
+		 *  - cache blocking
+		 *  - if branching elimination
+		 *  - etc.....
+		 */
 		int res_x = resolution[0];
 		int res_y = resolution[1];
 
 		if (kernel_size == 3)
 		{
-#pragma omp parallel for
-			for (int y = 0; y < res_y; y++)
+			switch (kernel_id)
 			{
-				for (int x = 0; x < res_x; x++)
+			case get_kernel_mask3x3(0, 0, 0, 1, 0, 1, 0, 0, 0):	// (X, 0, X)
+				#pragma omp parallel for
+				for (int y = 0; y < res_y; y++)
 				{
-					double &data_out = out.array_data_cartesian_space[y*res_x+x];
-					data_out = 0;
-
-					for (int j = -1; j <= 1; j++)
+					for (int x = 0; x < res_x; x++)
 					{
-						int pos_y = (y+j+res_y) % res_y;
+						double &data_out = out.array_data_cartesian_space[y*res_x+x];
+						data_out = 0;
+
+						int pos_y = (y+res_y) % res_y;
 						assert(pos_y >= 0 && pos_y < res_y);
 
-						for (int i = -1; i <= 1; i++)
+						if (x > 0 && x < res_x-1)
 						{
-							int pos_x = (x+i+res_x) % res_x;
-							assert(pos_x >= 0 && pos_x < res_x);
+							double *kernel_scalar_ptr = &kernel_data[3];
+							double *data_scalar_ptr = &i_array_data.array_data_cartesian_space[pos_y*res_x+x-1];
 
-							int idx = (j+1)*3+(i+1);
-							assert(idx >= 0 && idx < 9);
+							data_out += kernel_scalar_ptr[0]*data_scalar_ptr[0];
+							data_out += kernel_scalar_ptr[2]*data_scalar_ptr[2];
+						}
+						else
+						{
+							for (int i = -1; i <= 1; i+=2)
+							{
+								int pos_x = (x+i+res_x) % res_x;
+								int idx = i+4;
+								double kernel_scalar = kernel_data[idx];
+								double data_scalar = i_array_data.array_data_cartesian_space[pos_y*res_x+pos_x];
 
-							double kernel_scalar = kernel_data[idx];
-							double data_scalar = i_array_data.array_data_cartesian_space[pos_y*res_x+pos_x];
+								data_out += kernel_scalar*data_scalar;
+							}
+						}
+					}
+				}
+				break;
 
-							data_out += kernel_scalar*data_scalar;
+
+
+			case get_kernel_mask3x3(0, 0, 0, 1, 1, 1, 0, 0, 0):	// (X, X, X)
+					#pragma omp parallel for
+					for (int y = 0; y < res_y; y++)
+					{
+						for (int x = 0; x < res_x; x++)
+						{
+							double &data_out = out.array_data_cartesian_space[y*res_x+x];
+							data_out = 0;
+
+							int pos_y = (y+res_y) % res_y;
+							assert(pos_y >= 0 && pos_y < res_y);
+
+							if (x > 0 && x < res_x-1)
+							{
+								double *kernel_scalar_ptr = &kernel_data[3];
+								double *data_scalar_ptr = &i_array_data.array_data_cartesian_space[pos_y*res_x+x-1];
+
+								data_out += kernel_scalar_ptr[0]*data_scalar_ptr[0];
+								data_out += kernel_scalar_ptr[1]*data_scalar_ptr[1];
+								data_out += kernel_scalar_ptr[2]*data_scalar_ptr[2];
+							}
+							else
+							{
+								for (int i = -1; i <= 1; i++)
+								{
+									int pos_x = (x+i+res_x) % res_x;
+									int idx = i+4;
+									double kernel_scalar = kernel_data[idx];
+									double data_scalar = i_array_data.array_data_cartesian_space[pos_y*res_x+pos_x];
+
+									data_out += kernel_scalar*data_scalar;
+								}
+							}
+						}
+					}
+					break;
+
+			case get_kernel_mask3x3(0, 1, 0, 0, 0, 0, 0, 1, 0):	// (X, 0, X)^T
+					#pragma omp parallel for
+					for (int y = 0; y < res_y; y++)
+					{
+						for (int x = 0; x < res_x; x++)
+						{
+							double &data_out = out.array_data_cartesian_space[y*res_x+x];
+							data_out = 0;
+
+							if (y > 0 && y < res_y-1)
+							{
+								double *kernel_scalar_ptr = &kernel_data[1];
+								double *data_scalar_ptr = &i_array_data.array_data_cartesian_space[(y-1)*res_x+x];
+
+								data_out += kernel_scalar_ptr[0]*data_scalar_ptr[0];
+								data_out += kernel_scalar_ptr[6]*data_scalar_ptr[2*res_x];
+							}
+							else
+							{
+								for (int j = -1; j <= 1; j+=2)
+								{
+									int pos_y = (y+j+res_y) % res_y;
+									int idx = (j+1)*3+1;
+
+									double kernel_scalar = kernel_data[idx];
+									double data_scalar = i_array_data.array_data_cartesian_space[pos_y*res_x+x];
+
+									data_out += kernel_scalar*data_scalar;
+								}
+							}
+						}
+					}
+					break;
+
+			case get_kernel_mask3x3(0, 1, 0, 0, 1, 0, 0, 1, 0):	// (X, 0, X)^T
+					#pragma omp parallel for
+					for (int y = 0; y < res_y; y++)
+					{
+						for (int x = 0; x < res_x; x++)
+						{
+							double &data_out = out.array_data_cartesian_space[y*res_x+x];
+							data_out = 0;
+
+							if (y > 0 && y < res_y-1)
+							{
+								double *kernel_scalar_ptr = &kernel_data[1];
+								double *data_scalar_ptr = &i_array_data.array_data_cartesian_space[(y-1)*res_x+x];
+
+								data_out += kernel_scalar_ptr[0]*data_scalar_ptr[0];
+								data_out += kernel_scalar_ptr[3]*data_scalar_ptr[res_x];
+								data_out += kernel_scalar_ptr[6]*data_scalar_ptr[2*res_x];
+							}
+							else
+							{
+								for (int j = -1; j <= 1; j++)
+								{
+									int pos_y = (y+j+res_y) % res_y;
+									int idx = (j+1)*3+1;
+
+									double kernel_scalar = kernel_data[idx];
+									double data_scalar = i_array_data.array_data_cartesian_space[pos_y*res_x+x];
+
+									data_out += kernel_scalar*data_scalar;
+								}
+							}
+						}
+					}
+					break;
+
+			default:
+				#pragma omp parallel for
+				for (int y = 0; y < res_y; y++)
+				{
+					for (int x = 0; x < res_x; x++)
+					{
+						double &data_out = out.array_data_cartesian_space[y*res_x+x];
+						data_out = 0;
+
+						for (int j = -1; j <= 1; j++)
+						{
+							int pos_y = (y+j+res_y) % res_y;
+							assert(pos_y >= 0 && pos_y < res_y);
+
+							for (int i = -1; i <= 1; i++)
+							{
+								int pos_x = (x+i+res_x) % res_x;
+								assert(pos_x >= 0 && pos_x < res_x);
+
+								int idx = (j+1)*3+(i+1);
+								assert(idx >= 0 && idx < 9);
+
+								double kernel_scalar = kernel_data[idx];
+								double data_scalar = i_array_data.array_data_cartesian_space[pos_y*res_x+pos_x];
+
+								data_out += kernel_scalar*data_scalar;
+							}
 						}
 					}
 				}

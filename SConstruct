@@ -609,3 +609,4 @@ if env['program_name'] != 'DUMMY':
 	print
 
 	env.Program('build/'+exec_name, env.src_files)
+

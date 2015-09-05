@@ -1,0 +1,1221 @@
+scons: Reading SConscript files ...
+
+            Program: swe_rexi
+Building executable: swe_rexi_spectral_libfft_omp_gnu_release
+
+scons: done reading SConscript files.
+scons: Building targets ...
+scons: `.' is up to date.
+scons: done building targets.
+Current working directory: /home/martin/workspace/sweet/benchmarks/rexi_tests/2015_09_04_increasing_dt_10_timesteps_s1
+Running on martinium
+Time step size for coarse time step: [1.52587890625e-05, 3.0517578125e-05, 6.103515625e-05, 0.0001220703125, 0.000244140625, 0.00048828125, 0.0009765625, 0.001953125, 0.00390625, 0.0078125, 0.015625, 0.03125, 0.0625, 0.125, 0.25, 0.5, 1.0, 2.0, 4.0, 8.0]
+Time step order: 4
+Search range for h: [0.2]
+Search range for M: [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384]
+Used hyperviscosity: {32: 0, 64: 0}
+
+Running with time stepping mode 1 (search) L_rms:
+Writing output to /home/martin/workspace/sweet/benchmarks/rexi_tests/2015_09_04_increasing_dt_10_timesteps_s1/output_n32_eps1_h0.2.csv
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.52587890625e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.08843899977', '0.000168308150206', '0.000168308150206', '1.88755745899', '0.000572453297586', '0.000572453297586']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.52587890625e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.523696316778', '9.45887893791e-06', '9.45887893791e-06', '0.908188828647', '3.21758000927e-05', '3.21758000927e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.52587890625e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.00730524396268', '2.7368794136e-06', '2.7368794136e-06', '0.0126687127626', '9.3088873457e-06', '9.3088873457e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.52587890625e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['5.02999745725e-08', '2.61190091723e-05', '2.61190091723e-05', '2.15164026896e-07', '8.88371663523e-05', '8.88371663523e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.52587890625e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['1.13736015731e-08', '2.86380102314e-06', '2.86380102314e-06', '1.51589399768e-08', '9.74049932373e-06', '9.74049932372e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.52587890625e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['1.08452173249e-08', '1.5879474648e-07', '1.5879474648e-07', '2.04160880306e-08', '5.40100476142e-07', '5.40100476139e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.52587890625e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['1.0753856331e-08', '1.37282058438e-07', '1.37282058438e-07', '1.72477517622e-08', '4.66930461122e-07', '4.66930461129e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.52587890625e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['1.07593692207e-08', '9.00251513258e-08', '9.00251513258e-08', '1.77408940657e-08', '3.06197954577e-07', '3.06197954581e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.52587890625e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['1.07629754934e-08', '4.04175315422e-08', '4.04175315422e-08', '1.8253483929e-08', '1.37470088371e-07', '1.37470088381e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.52587890625e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['1.07636936933e-08', '1.12222438292e-08', '1.12222438293e-08', '1.85520996652e-08', '3.81696455121e-08', '3.81696455125e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.52587890625e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['1.07637570337e-08', '1.91488702751e-09', '1.91488702752e-09', '1.86858680617e-08', '6.51300762619e-09', '6.51300762564e-09']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.52587890625e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['1.07637992604e-08', '7.27864711634e-10', '7.27864711731e-10', '1.86590587102e-08', '2.47564908064e-09', '2.47564907463e-09']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.52587890625e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['1.07637835274e-08', '1.17381119084e-10', '1.17381119258e-10', '1.86652429531e-08', '3.99242371255e-10', '3.99242378901e-10']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.52587890625e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['1.07637639932e-08', '4.49567800908e-11', '4.49567800319e-11', '1.86668592588e-08', '1.5290924543e-10', '1.52909248879e-10']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.52587890625e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['1.07637711356e-08', '8.28931390612e-13', '8.28931224757e-13', '1.866642398e-08', '2.81944853968e-12', '2.81945074469e-12']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -3.0517578125e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.08843893281', '0.000336616207762', '0.000336616207762', '1.88755507489', '0.00114491382952', '0.00114491382952']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -3.0517578125e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.523696386382', '1.89187996006e-05', '1.89187996006e-05', '0.908191306906', '6.43647408332e-05', '6.43647408332e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -3.0517578125e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.00730524785188', '5.4737332772e-06', '5.4737332772e-06', '0.0126688512372', '1.86180908093e-05', '1.86180908093e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -3.0517578125e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['1.86866404672e-07', '5.22378882868e-05', '5.22378882868e-05', '9.95769462237e-07', '0.000177676190361', '0.000177676190361']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -3.0517578125e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['2.30492257769e-08', '5.72758610665e-06', '5.72758610665e-06', '1.0277886949e-07', '1.94812117589e-05', '1.94812117588e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -3.0517578125e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['1.1051558137e-08', '3.17588595654e-07', '3.17588595652e-07', '2.55118887987e-08', '1.08021283014e-06', '1.08021283014e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -3.0517578125e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['1.06791004756e-08', '2.74563340185e-07', '2.74563340187e-07', '1.33082406178e-08', '9.33871175034e-07', '9.33871175032e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -3.0517578125e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['1.06992360239e-08', '1.8004979321e-07', '1.80049793212e-07', '1.48538632021e-08', '6.12402633152e-07', '6.12402633151e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -3.0517578125e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['1.07307754337e-08', '8.08348343106e-08', '8.0834834312e-08', '1.69571772258e-08', '2.74943195759e-07', '2.74943195758e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -3.0517578125e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['1.0753908605e-08', '2.24444241311e-08', '2.24444241325e-08', '1.81921611686e-08', '7.63401292664e-08', '7.63401292743e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -3.0517578125e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['1.07654925771e-08', '3.82976321026e-09', '3.82976320894e-09', '1.87473191521e-08', '1.30261583566e-08', '1.30261583569e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -3.0517578125e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['1.07631452117e-08', '1.45572530622e-09', '1.45572530751e-09', '1.86357374295e-08', '4.95135247686e-09', '4.95135247957e-09']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -3.0517578125e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['1.07636785683e-08', '2.34761577294e-10', '2.34761578417e-10', '1.86615043915e-08', '7.98493453244e-10', '7.98493458152e-10']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -3.0517578125e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['1.07638050328e-08', '8.99133020362e-11', '8.99133006735e-11', '1.86683289881e-08', '3.05821915365e-10', '3.05821912366e-10']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -3.0517578125e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['1.07637728587e-08', '1.65785446768e-12', '1.65785304329e-12', '1.86664783545e-08', '5.63900912847e-12', '5.63902009444e-12']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -6.103515625e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.08843866498', '0.000673231674275', '0.000673231674275', '1.88754553839', '0.00228985467218', '0.00228985467218']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -6.103515625e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.523696664796', '3.78459333281e-05', '3.78459333281e-05', '0.908201219529', '0.000128802524206', '0.000128802524206']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -6.103515625e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.00730526340949', '1.09472621554e-05', '1.09472621554e-05', '0.0126694051317', '3.72369180314e-05', '3.72369180315e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -6.103515625e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['7.52862424001e-07', '0.000104474736117', '0.000104474736117', '4.11816489261e-06', '0.000355357137174', '0.000355357137174']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -6.103515625e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['8.73354664963e-08', '1.14550446972e-05', '1.14550446972e-05', '4.67472710247e-07', '3.89629481734e-05', '3.89629481734e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -6.103515625e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['1.25441135525e-08', '6.35170012871e-07', '6.35170012872e-07', '4.5894900784e-08', '2.16045471886e-06', '2.16045471884e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -6.103515625e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['1.09739912586e-08', '5.49120466922e-07', '5.4912046692e-07', '1.42211370336e-08', '1.86776738941e-06', '1.86776738942e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -6.103515625e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['1.07151973089e-08', '3.60095510949e-07', '3.60095510948e-07', '1.32844750506e-08', '1.22482168618e-06', '1.22482168623e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -6.103515625e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['1.0653197909e-08', '1.61667838474e-07', '1.61667838472e-07', '1.30120579263e-08', '5.49893763105e-07', '5.49893763104e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -6.103515625e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['1.07186678647e-08', '4.48883400771e-08', '4.48883400757e-08', '1.6752418502e-08', '1.52682305271e-07', '1.5268230527e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -6.103515625e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['1.07725466603e-08', '7.65943963358e-09', '7.65943963459e-09', '1.89931201894e-08', '2.60526660318e-08', '2.60526660212e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -6.103515625e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['1.07605472664e-08', '2.91141770487e-09', '2.91141770396e-09', '1.85424567683e-08', '9.90283764588e-09', '9.90283766316e-09']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -6.103515625e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['1.07632591376e-08', '4.69517896337e-10', '4.69517895246e-10', '1.86465499434e-08', '1.59700826015e-09', '1.5970082795e-09']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -6.103515625e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['1.07639707673e-08', '1.79824509784e-10', '1.79824510711e-10', '1.86742053871e-08', '6.11652069859e-10', '6.11652079979e-10']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -6.103515625e-05 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['1.07637794827e-08', '3.31561372798e-12', '3.31561468637e-12', '1.86666910403e-08', '1.12782353569e-11', '1.12782349496e-11']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0001220703125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.08843759365', '0.00134645741699', '0.00134645741699', '1.8875073909', '0.00457980199429', '0.00457980199429']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0001220703125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.523697778417', '7.5758550178e-05', '7.5758550178e-05', '0.908240863463', '0.000258061023274', '0.000258061023274']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0001220703125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.00730532565261', '2.18928891535e-05', '2.18928891535e-05', '0.0126716206518', '7.44725571055e-05', '7.44725571056e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0001220703125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['3.0217903873e-06', '0.000208941148794', '0.000208941148794', '1.66073257476e-05', '0.000710711906813', '0.000710711906813']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0001220703125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['3.51887150045e-07', '2.29090692942e-05', '2.29090692942e-05', '1.92619460134e-06', '7.79253726583e-05', '7.79253726583e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0001220703125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['2.39276116341e-08', '1.27028259992e-06', '1.27028259992e-06', '1.27423917275e-07', '4.32087804963e-06', '4.32087804963e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0001220703125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['1.87260647134e-08', '1.09819122765e-06', '1.09819122765e-06', '7.51905595654e-08', '3.7355071618e-06', '3.7355071618e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0001220703125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['1.42908919911e-08', '7.2015841903e-07', '7.20158419029e-07', '4.28844730453e-08', '2.44962524326e-06', '2.44962524327e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0001220703125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['1.11627227575e-08', '3.23321036155e-07', '3.23321036156e-07', '1.47439795138e-08', '1.09977937713e-06', '1.09977937711e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0001220703125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['1.0641037742e-08', '8.97726147584e-08', '8.9772614758e-08', '1.29062426848e-08', '3.05362346963e-07', '3.05362346963e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0001220703125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['1.08025633188e-08', '1.5318185025e-08', '1.53181850251e-08', '1.99762859839e-08', '5.21049447245e-08', '5.21049446838e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0001220703125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['1.07504157706e-08', '5.82257212396e-09', '5.82257212337e-09', '1.81693377216e-08', '1.98055292352e-08', '1.98055292791e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0001220703125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['1.07615876706e-08', '9.38993697288e-10', '9.38993696544e-10', '1.85867349681e-08', '3.19399368793e-09', '3.19399370666e-09']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0001220703125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['1.07646317024e-08', '3.59632297198e-10', '3.5963229723e-10', '1.86977022314e-08', '1.22329426636e-09', '1.2232942053e-09']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0001220703125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['1.0763802541e-08', '6.6304964955e-12', '6.63049638255e-12', '1.8667543348e-08', '2.25554591171e-11', '2.25554508659e-11']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.000244140625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.08843330843', '0.00269286733144', '0.00269286733144', '1.88735477735', '0.00915985105564', '0.00915985105564']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.000244140625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.523702232368', '0.000152050902206', '0.000152050902206', '0.908399334265', '0.00051925545008', '0.00051925545008']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.000244140625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.00730557482829', '4.3772698168e-05', '4.3772698168e-05', '0.0126804818031', '0.000148906198743', '0.000148906198743']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.000244140625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['1.20978038912e-05', '0.00041781571692', '0.00041781571692', '6.65572356702e-05', '0.0014212432095', '0.0014212432095']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.000244140625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['1.41183544456e-06', '4.58099787023e-05', '4.58099787023e-05', '7.76022647181e-06', '0.000155827673774', '0.000155827673774']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.000244140625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['8.13699185193e-08', '2.54010584555e-06', '2.54010584555e-06', '4.53491495206e-07', '8.64044966629e-06', '8.64044966625e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.000244140625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['6.74237640562e-08', '2.19598485126e-06', '2.19598485126e-06', '3.56862506426e-07', '7.46988174786e-06', '7.46988174787e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.000244140625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['4.4388080922e-08', '1.44005604499e-06', '1.44005604499e-06', '2.27618096254e-07', '4.8985075578e-06', '4.8985075576e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.000244140625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['2.12843570202e-08', '6.46524959398e-07', '6.46524959397e-07', '9.19154882057e-08', '2.19922509943e-06', '2.19922509941e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.000244140625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['1.13354290175e-08', '1.79512710082e-07', '1.79512710082e-07', '1.51312472642e-08', '6.10632042915e-07', '6.10632042878e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.000244140625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['1.09509682858e-08', '3.06308167391e-08', '3.06308167404e-08', '2.39083651787e-08', '1.04194064107e-07', '1.04194064181e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.000244140625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['1.07140860397e-08', '1.16430382075e-08', '1.16430382067e-08', '1.66770857782e-08', '3.96050604078e-08', '3.96050603419e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.000244140625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['1.07550117081e-08', '1.87765067077e-09', '1.8776506713e-09', '1.83475156234e-08', '6.38703047724e-09', '6.38703044944e-09']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.000244140625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['1.07672939243e-08', '7.19130824986e-10', '7.19130824302e-10', '1.87916838958e-08', '2.44620477263e-09', '2.44620485648e-09']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.000244140625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['1.07638991601e-08', '1.32551401993e-11', '1.32551403113e-11', '1.86709506343e-08', '4.50916855141e-11', '4.50915845377e-11']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00048828125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.08841616906', '0.00538535304309', '0.00538535304309', '1.88674394704', '0.0183196915615', '0.0183196915615']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00048828125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.523720039572', '0.000308382578725', '0.000308382578725', '0.909031540211', '0.0010614936605', '0.0010614936605']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00048828125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.00730657477911', '8.7440791119e-05', '8.7440791119e-05', '0.0127159115294', '0.000297386276102', '0.000297386276101']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00048828125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['4.83872828818e-05', '0.000835099007524', '0.000835099007524', '0.000266249167773', '0.00284039552571', '0.00284039552571']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00048828125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['5.65019604115e-06', '9.15547076068e-05', '9.15547076068e-05', '3.10826666443e-05', '0.000311395325311', '0.000311395325311']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00048828125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['3.17732289304e-07', '5.07653852914e-06', '5.07653852913e-06', '1.75698610651e-06', '1.72662310253e-05', '1.72662310253e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00048828125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['2.71416076424e-07', '4.3887903273e-06', '4.3887903273e-06', '1.4828757318e-06', '1.49270602558e-05', '1.49270602558e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00048828125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['1.77616702814e-07', '2.87802670126e-06', '2.87802670126e-06', '9.66110107059e-07', '9.78868267563e-06', '9.78868267526e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00048828125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['7.94079340922e-08', '1.29211344481e-06', '1.29211344481e-06', '4.23506739088e-07', '4.39470826889e-06', '4.39470826902e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00048828125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['2.32268063967e-08', '3.58765383878e-07', '3.58765383878e-07', '1.04108879877e-07', '1.22022502955e-06', '1.22022502942e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00048828125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['1.19596707973e-08', '6.12172274003e-08', '6.12172273971e-08', '3.96272473899e-08', '2.08210676396e-07', '2.08210676513e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00048828125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['1.06368487654e-08', '2.32692357803e-08', '2.32692357831e-08', '1.28771762224e-08', '7.9142838025e-08', '7.9142837936e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00048828125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['1.07304331661e-08', '3.75260875412e-09', '3.75260875506e-09', '1.73911942389e-08', '1.27633119549e-08', '1.27633120196e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00048828125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['1.07782005866e-08', '1.43719202322e-09', '1.43719202275e-09', '1.9167374017e-08', '4.888125245e-09', '4.8881252302e-09']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00048828125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['1.07642819915e-08', '2.64635319074e-11', '2.64635279168e-11', '1.86845640439e-08', '8.99852898896e-11', '8.99853696844e-11']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0009765625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.08834763683', '0.0107676022248', '0.0107676022248', '1.88429469136', '0.0366310108387', '0.0366310108387']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0009765625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.523791127353', '0.000651305044045', '0.000651305044045', '0.911533637117', '0.00229770604121', '0.00229770604121']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0009765625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.00731062635688', '0.00017404590032', '0.00017404590032', '0.012857391634', '0.000590902871783', '0.000590902871782']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0009765625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['0.000193307431904', '0.00166594561', '0.00166594561', '0.00106329539001', '0.00566150163579', '0.00566150163579']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0009765625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['2.25735298857e-05', '0.000182588353735', '0.000182588353735', '0.000124153671293', '0.000620411548883', '0.000620411548883']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0009765625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['1.26342607154e-06', '1.01237452548e-05', '1.01237452548e-05', '6.95856741563e-06', '3.4398412361e-05', '3.43984123612e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0009765625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['1.08829409359e-06', '8.7521922563e-06', '8.7521922563e-06', '5.97614791447e-06', '2.97380679937e-05', '2.97380679938e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0009765625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['7.13225832278e-07', '5.73940086613e-06', '5.73940086613e-06', '3.91300638785e-06', '1.95012442203e-05', '1.95012442201e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0009765625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['3.19470470528e-07', '2.5767488303e-06', '2.57674883031e-06', '1.74669569918e-06', '8.75523274346e-06', '8.75523274386e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0009765625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['8.8098177724e-08', '7.15454290801e-07', '7.15454290797e-07', '4.71510961556e-07', '2.43095799332e-06', '2.43095799316e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0009765625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['1.99498778316e-08', '1.22079857988e-07', '1.22079857989e-07', '1.02352112973e-07', '4.14800350347e-07', '4.14800350431e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0009765625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['1.14008012281e-08', '4.64039929821e-08', '4.6403992981e-08', '1.5259683979e-08', '1.57670981163e-07', '1.57670981127e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0009765625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['1.06599446053e-08', '7.4837157965e-09', '7.48371579691e-09', '1.36587204924e-08', '2.54283772458e-08', '2.54283769446e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0009765625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['1.08259585253e-08', '2.86584324074e-09', '2.86584324248e-09', '2.06664697486e-08', '9.73716437116e-09', '9.73716447472e-09']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0009765625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['1.07658166455e-08', '5.25545783448e-11', '5.25545800696e-11', '1.87388218019e-08', '1.78215554062e-10', '1.7821573894e-10']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.001953125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.08807397767', '0.0215087800007', '0.0215087800007', '1.87440789476', '0.0731516475318', '0.0731516475318']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.001953125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.52407301189', '0.00158464784235', '0.00158464784235', '0.921121303184', '0.00593245284487', '0.00593245284487']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.001953125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.00732764850307', '0.000341444895757', '0.000341444895757', '0.0134194445687', '0.00114897107548', '0.00114897107548']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.001953125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['0.000769199075124', '0.00329809571866', '0.00329809571866', '0.00422405197669', '0.0111591815758', '0.0111591815758']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.001953125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['8.97855522738e-05', '0.00036103814676', '0.00036103814676', '0.00049295296816', '0.0012206915843', '0.0012206915843']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.001953125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['5.01942697531e-06', '2.00145449889e-05', '2.00145449889e-05', '2.75674204794e-05', '6.76631474585e-05', '6.76631474578e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.001953125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['4.33267760419e-06', '1.7302765981e-05', '1.7302765981e-05', '2.37775259423e-05', '5.84948578287e-05', '5.84948578292e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.001953125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['2.8410054496e-06', '1.13465580444e-05', '1.13465580444e-05', '1.55879555233e-05', '3.83588535155e-05', '3.83588535154e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.001953125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['1.27475759823e-06', '5.09411184369e-06', '5.09411184369e-06', '6.98886496305e-06', '1.72214303134e-05', '1.72214303138e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.001953125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['3.52897385569e-07', '1.41441857342e-06', '1.41441857342e-06', '1.9270722329e-06', '4.78165768079e-06', '4.78165768022e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.001953125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['6.30765614906e-08', '2.41343764278e-07', '2.41343764289e-07', '3.5085200139e-07', '8.15894959774e-07', '8.15894959163e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.001953125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['2.38021406061e-08', '9.17400297345e-08', '9.17400297252e-08', '1.07402506828e-07', '3.1014430352e-07', '3.1014430311e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.001953125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['1.08226926863e-08', '1.47966617749e-08', '1.47966617705e-08', '1.37832034839e-08', '5.0025796738e-08', '5.00257970802e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.001953125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['1.10803041419e-08', '5.66387909911e-09', '5.66387908505e-09', '2.66044495768e-08', '1.91441020302e-08', '1.91441026842e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.001953125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['1.07719971828e-08', '1.02179409704e-10', '1.02179406284e-10', '1.89526940056e-08', '3.41846225288e-10', '3.41845947911e-10']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00390625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.08699069046', '0.0427593965337', '0.0427593965337', '1.83372140459', '0.144961788935', '0.144961788935']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00390625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.52514975278', '0.00540781307972', '0.00540781307972', '0.953163140512', '0.0219342747378', '0.0219342747378']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00390625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.0074079728677', '0.000631137645467', '0.000631137645467', '0.0156029386744', '0.00202736560333', '0.00202736560333']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00390625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['0.00301316180798', '0.00633293860402', '0.00633293860402', '0.0164355426098', '0.0209933718389', '0.0209933718389']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00390625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['0.00035106907701', '0.000689920364506', '0.000689920364506', '0.00191336592365', '0.00227901348671', '0.00227901348671']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00390625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['1.96149878498e-05', '3.82199126614e-05', '3.82199126614e-05', '0.000106899008425', '0.00012618719451', '0.00012618719451']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00390625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['1.6937784426e-05', '3.3039939265e-05', '3.30399392649e-05', '9.22849692531e-05', '0.000109081643002', '0.000109081643001']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00390625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['1.11079531891e-05', '2.16662333646e-05', '2.16662333646e-05', '6.05179201613e-05', '7.15307161713e-05', '7.15307161707e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00390625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['4.9866439891e-06', '9.72709132258e-06', '9.72709132257e-06', '2.71626853185e-05', '3.21135738679e-05', '3.21135738681e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00390625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['1.38343288017e-06', '2.70079194117e-06', '2.70079194118e-06', '7.52859779102e-06', '8.91652774606e-06', '8.91652774601e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00390625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['2.3838143044e-07', '4.60822265132e-07', '4.60822265122e-07', '1.30714979095e-06', '1.52134124709e-06', '1.52134124728e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00390625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['8.87026753315e-08', '1.75186881006e-07', '1.75186881033e-07', '4.70352916259e-07', '5.78399020616e-07', '5.78399020069e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00390625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['1.6569496393e-08', '2.82667773707e-08', '2.82667773909e-08', '5.97465331059e-08', '9.3352280452e-08', '9.33522806615e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00390625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['1.29134347661e-08', '1.08017668499e-08', '1.08017668409e-08', '4.94408191366e-08', '3.56297949179e-08', '3.56297947827e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00390625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['1.07972637191e-08', '1.82515075096e-10', '1.82515079849e-10', '1.97607292798e-08', '5.68966784058e-10', '5.68966834797e-10']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0078125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.08300752538', '0.0823993537166', '0.0823993537166', '1.66556831054', '0.271549157805', '0.271549157805']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0078125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.528301597463', '0.0248743242272', '0.0248743242272', '1.00330362432', '0.0998335938269', '0.0998335938269']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0078125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.00787218159164', '0.000924700027187', '0.000924700027187', '0.0231516311668', '0.00245788737412', '0.00245788737412']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0078125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['0.0110955258643', '0.0107829862997', '0.0107829862997', '0.0588237875818', '0.0325388762812', '0.0325388762812']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0078125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['0.00128324280219', '0.00115267953907', '0.00115267953907', '0.00677774124525', '0.0034294441939', '0.0034294441939']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0078125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['7.16032045359e-05', '6.36846388769e-05', '6.36846388769e-05', '0.000377963020076', '0.000189077154251', '0.000189077154251']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0078125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['6.18047953406e-05', '5.50484400955e-05', '5.50484400956e-05', '0.000326148813603', '0.000163436290284', '0.000163436290285']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0078125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['4.05329792986e-05', '3.60970718248e-05', '3.60970718248e-05', '0.000213890648911', '0.000107167175248', '0.000107167175248']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0078125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['1.81982959601e-05', '1.62051589319e-05', '1.62051589319e-05', '9.60252714245e-05', '4.8109275059e-05', '4.81092750588e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0078125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['5.05172487417e-06', '4.4994159147e-06', '4.49941591473e-06', '2.6648914401e-05', '1.33575700875e-05', '1.33575700864e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0078125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['8.6449892746e-07', '7.67606195134e-07', '7.67606195157e-07', '4.57117206896e-06', '2.27857097551e-06', '2.27857097575e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0078125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['3.25897194732e-07', '2.91929757653e-07', '2.91929757637e-07', '1.70939299021e-06', '8.66837144252e-07', '8.66837144009e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0078125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['5.18946297529e-08', '4.71733384396e-08', '4.71733384578e-08', '2.58569683964e-07', '1.40235810627e-07', '1.40235810113e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0078125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['2.47138518433e-08', '1.79119843295e-08', '1.79119843311e-08', '1.27229284033e-07', '5.29794819102e-08', '5.29794827275e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0078125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['1.09020548232e-08', '2.46817460743e-10', '2.46817442061e-10', '2.23586309598e-08', '6.34759623776e-10', '6.34760398039e-10']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.015625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.07431251001', '0.132709041378', '0.132709041378', '1.25595270027', '0.372213813535', '0.372213813535']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.015625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.529237707103', '0.0863915181852', '0.0863915181852', '0.770897106567', '0.283649498267', '0.283649498267']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.015625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.0098217133369', '0.00309975832425', '0.00309975832425', '0.0314703015877', '0.0118503069905', '0.0118503069905']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.015625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['0.0323820537929', '0.0132352590998', '0.0132352590998', '0.149150142291', '0.0322421323147', '0.0322421323147']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.015625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['0.00364121036274', '0.0014156615087', '0.0014156615087', '0.0163448557274', '0.00345389128301', '0.00345389128301']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.015625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['0.000202260299371', '7.82936939701e-05', '7.829369397e-05', '0.000904341972135', '0.000190670592141', '0.000190670592141']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.015625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['0.000174345505855', '6.75391274057e-05', '6.75391274056e-05', '0.000779304914606', '0.000164431194268', '0.000164431194268']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.015625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['0.000114333681413', '4.42886799708e-05', '4.42886799708e-05', '0.000511025566748', '0.000107822405398', '0.000107822405398']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.015625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['5.13307202495e-05', '1.98828357334e-05', '1.98828357335e-05', '0.00022940737207', '4.84039126205e-05', '4.84039126207e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.015625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['1.42507454158e-05', '5.52051717272e-06', '5.52051717275e-06', '6.36803354662e-05', '1.34393128393e-05', '1.343931284e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.015625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['2.43480055487e-06', '9.41954381156e-07', '9.41954381148e-07', '1.08906977974e-05', '2.2929324284e-06', '2.29293242868e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.015625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['9.21878860819e-07', '3.58071124873e-07', '3.58071124829e-07', '4.11042221059e-06', '8.71825883257e-07', '8.71825882469e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.015625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['1.46819560067e-07', '5.77673881727e-08', '5.77673881565e-08', '6.45117550208e-07', '1.4075573967e-07', '1.40755739286e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.015625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['6.06855004339e-08', '2.21155991781e-08', '2.21155991338e-08', '2.76365082718e-07', '5.36479594851e-08', '5.3647958526e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.015625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['1.12350467851e-08', '9.8531848912e-10', '9.85318488953e-10', '2.58811044819e-08', '3.93541797877e-09', '3.93541783532e-09']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.03125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.07663952891', '0.126119655105', '0.126119655105', '1.20778008586', '0.258133198666', '0.258133198666']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.03125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.528772005847', '0.145784624293', '0.145784624293', '0.662923595556', '0.320641661855', '0.320641661855']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.03125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.0228276716424', '0.0128447335081', '0.0128447335081', '0.0414241592233', '0.0322947843888', '0.0322947843888']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.03125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['0.0558840710312', '0.0325688397966', '0.0325688397966', '0.103862109781', '0.097584253698', '0.097584253698']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.03125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['0.00628622820397', '0.00389701919687', '0.00389701919687', '0.0112174560806', '0.0113051914495', '0.0113051914495']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.03125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['0.000348932798265', '0.000217262806374', '0.000217262806374', '0.000619655353278', '0.000626709251287', '0.000626709251287']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.03125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['0.000298942617549', '0.00018529939351', '0.00018529939351', '0.000529507592369', '0.000535206861747', '0.000535206861748']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.03125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['0.000196045823817', '0.000121529667117', '0.000121529667117', '0.000347231563986', '0.00035098304683', '0.00035098304683']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.03125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['8.80140759882e-05', '5.45636482488e-05', '5.45636482488e-05', '0.000155872539437', '0.000157566102431', '0.000157566102432']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.03125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['2.44360035482e-05', '1.51492361556e-05', '1.51492361557e-05', '4.32671270776e-05', '4.37442709975e-05', '4.37442709977e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.03125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['4.17326636913e-06', '2.58798175935e-06', '2.58798175936e-06', '7.40150782468e-06', '7.47311188824e-06', '7.47311188817e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.03125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['1.58206018374e-06', '9.80254319975e-07', '9.80254320005e-07', '2.7913160395e-06', '2.83017259766e-06', '2.83017259877e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.03125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['2.52765951698e-07', '1.55991760265e-07', '1.55991760318e-07', '4.36748970321e-07', '4.50092251435e-07', '4.50092251515e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.03125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['1.01544165117e-07', '6.32096637393e-08', '6.32096637313e-08', '1.89370060087e-07', '1.82811517836e-07', '1.82811517686e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.03125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['1.16806971423e-08', '3.7967349504e-09', '3.79673493655e-09', '1.92937907865e-08', '1.10756001809e-08', '1.10756006873e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.07840085518', '0.1144934739', '0.1144934739', '1.57350544717', '0.263871985504', '0.263871985504']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.539978354083', '0.123779729817', '0.123779729817', '1.07499160303', '0.276124208503', '0.276124208503']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.0570396075441', '0.0627825226211', '0.0627825226211', '0.231860291199', '0.127544730579', '0.127544730579']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['0.0896358272863', '0.0659227462065', '0.0659227462065', '0.204153466472', '0.129044811235', '0.129044811235']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['0.0132067795181', '0.00773150014671', '0.00773150014671', '0.0291742068948', '0.0154890033749', '0.0154890033749']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['0.00074548311167', '0.000428662400414', '0.000428662400414', '0.00164064881259', '0.000861083196767', '0.000861083196767']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['0.000610789214808', '0.00035955800052', '0.00035955800052', '0.00134115818547', '0.000706321189531', '0.000706321189531']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['0.000400722300967', '0.000235816149637', '0.000235816149637', '0.000879846409854', '0.000463298853484', '0.000463298853484']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['0.000179928791156', '0.000105862565027', '0.000105862565027', '0.0003950248096', '0.000207979428413', '0.000207979428413']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['4.99636543858e-05', '2.93917048113e-05', '2.93917048113e-05', '0.00010968142504', '5.7745806239e-05', '5.7745806239e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['8.53528128667e-06', '5.02002321278e-06', '5.02002321281e-06', '1.87479538672e-05', '9.86305239306e-06', '9.86305239321e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['3.23383504386e-06', '1.90261342692e-06', '1.90261342692e-06', '7.08973730782e-06', '3.73816208301e-06', '3.73816208278e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['5.15311584376e-07', '3.03482038037e-07', '3.0348203808e-07', '1.12131668809e-06', '5.9630344458e-07', '5.96303445433e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['2.08001299453e-07', '1.21758863875e-07', '1.21758863883e-07', '4.65795569542e-07', '2.39467540167e-07', '2.39467540125e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0625 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['1.5462909474e-08', '6.22147798322e-09', '6.22147795265e-09', '3.4375006534e-08', '1.32097594775e-08', '1.32097590526e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.07046822713', '0.147204106196', '0.147204106196', '1.16143493065', '0.317797643308', '0.317797643308']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.517803268904', '0.14594473985', '0.14594473985', '0.608337178216', '0.316110053286', '0.316110053286']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.0690741898757', '0.142050990383', '0.142050990383', '0.170099941238', '0.311751399768', '0.311751399768']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['0.0935852609488', '0.117538831639', '0.117538831639', '0.203892380026', '0.260664757081', '0.260664757081']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['0.0262546302167', '0.0207344219444', '0.0207344219444', '0.0761851086867', '0.0459707219711', '0.0459707219711']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['0.00148914104173', '0.00114593076941', '0.00114593076941', '0.00399831938848', '0.00263887548023', '0.00263887548023']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['0.00108842052559', '0.000818217014193', '0.000818217014193', '0.00264070212098', '0.00185737749508', '0.00185737749508']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['0.000714667975982', '0.000536911472594', '0.000536911472594', '0.00173399271198', '0.00121913912734', '0.00121913912734']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['0.000320924495892', '0.000240896731643', '0.000240896731643', '0.000777889207559', '0.000547064567818', '0.000547064567818']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['8.91437831102e-05', '6.68856551879e-05', '6.68856551879e-05', '0.000216003966683', '0.000151912932688', '0.000151912932688']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['1.52318877253e-05', '1.14252925878e-05', '1.14252925878e-05', '3.69171136248e-05', '2.59509769868e-05', '2.59509769869e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['5.7699349471e-06', '4.32956695382e-06', '4.3295669538e-06', '1.39702791683e-05', '9.83407273664e-06', '9.83407273713e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['9.18899572112e-07', '6.90358802494e-07', '6.90358802501e-07', '2.21622506514e-06', '1.56821651475e-06', '1.56821651446e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['3.7131870672e-07', '2.77373846577e-07', '2.77373846556e-07', '9.09407595597e-07', '6.29832879826e-07', '6.29832879875e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.125 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['2.30752890211e-08', '1.43298987278e-08', '1.43298987717e-08', '5.97743248274e-08', '3.23425191257e-08', '3.23425191042e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.25 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.08737384941', '0.0585617915808', '0.0585617915808', '1.42799540104', '0.136996385623', '0.136996385623']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.25 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.552582351376', '0.0521473300009', '0.0521473300009', '0.876161095038', '0.12727675057', '0.12727675057']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.25 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.20419541046', '0.0475118375893', '0.0475118375893', '0.50580317009', '0.121309722852', '0.121309722852']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.25 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['0.204130902294', '0.0477695065533', '0.0477695065533', '0.513145423594', '0.122011663182', '0.122011663182']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.25 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['0.106120080905', '0.0257404245963', '0.0257404245963', '0.235718625775', '0.081125872959', '0.081125872959']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.25 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['0.00555978216341', '0.00430348802227', '0.00430348802227', '0.0223242267577', '0.0123257315004', '0.0123257315004']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.25 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['0.00259721032537', '0.0013204353886', '0.0013204353886', '0.00870838548183', '0.00348323857743', '0.00348323857743']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.25 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['0.00170454985018', '0.000866591475463', '0.000866591475463', '0.00562883665334', '0.00229175428055', '0.00229175428055']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.25 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['0.000763166791971', '0.000385514401363', '0.000385514401363', '0.00251390225329', '0.00101948904381', '0.00101948904381']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.25 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['0.000211781264884', '0.000106755103204', '0.000106755103204', '0.000696998973272', '0.000282323393612', '0.000282323393612']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.25 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['3.61748571947e-05', '1.8223591264e-05', '1.8223591264e-05', '0.000119034647399', '4.81951797752e-05', '4.81951797754e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.25 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['1.37044524314e-05', '6.90312636719e-06', '6.9031263672e-06', '4.50796485621e-05', '1.82561049889e-05', '1.82561049889e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.25 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['2.18336836867e-06', '1.09961250467e-06', '1.09961250465e-06', '7.17272203404e-06', '2.9079432396e-06', '2.90794323982e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.25 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['8.80362738521e-07', '4.43561955307e-07', '4.4356195529e-07', '2.90712393345e-06', '1.17319001732e-06', '1.17319001735e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.25 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['4.8681067672e-08', '2.40946418217e-08', '2.409464181e-08', '1.67157040137e-07', '6.38347138448e-08', '6.38347137886e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.5 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.08484956677', '0.078556580828', '0.078556580828', '1.72344108875', '0.244511796192', '0.244511796192']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.5 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.546157436235', '0.0790506481534', '0.0790506481534', '1.16267327684', '0.245966008169', '0.245966008169']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.5 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.182208828611', '0.0806695637141', '0.0806695637141', '0.64991682768', '0.248007936566', '0.248007936566']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.5 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['0.182040363469', '0.0807001895973', '0.0807001895973', '0.642663108733', '0.248036823688', '0.248036823688']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.5 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['0.172945196026', '0.0854610624976', '0.0854610624976', '0.620798651944', '0.258296103395', '0.258296103395']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.5 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['0.0581434404839', '0.040379964966', '0.040379964966', '0.199178243339', '0.138782502176', '0.138782502176']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.5 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['0.00297446778383', '0.00406346217286', '0.00406346217286', '0.00581027564148', '0.010472672049', '0.010472672049']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.5 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['0.00199314325684', '0.00271092327206', '0.00271092327206', '0.00426675189378', '0.00693224788954', '0.00693224788954']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.5 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['0.000869484539073', '0.0011881254021', '0.0011881254021', '0.00183369294283', '0.00303664093697', '0.00303664093697']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.5 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['0.000239423066304', '0.000327461386449', '0.000327461386449', '0.000506684342623', '0.000835107131143', '0.000835107131142']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.5 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['4.08098912768e-05', '5.58210092775e-05', '5.58210092775e-05', '8.65815402514e-05', '0.000142256329946', '0.000142256329946']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.5 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['1.54531915767e-05', '2.11413728276e-05', '2.11413728276e-05', '3.27332167433e-05', '5.3877659125e-05', '5.38776591248e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.5 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['2.46106352293e-06', '3.36711228518e-06', '3.36711228517e-06', '5.20485006788e-06', '8.58039698273e-06', '8.58039698216e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.5 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['9.9327457785e-07', '1.35864619133e-06', '1.35864619131e-06', '2.11499021707e-06', '3.46251254725e-06', '3.46251254691e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.5 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['5.52983834519e-08', '7.40849336658e-08', '7.40849336836e-08', '1.25268413873e-07', '1.89015378033e-07', '1.89015377979e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.07752927343', '0.11868344496', '0.11868344496', '1.31261832665', '0.317192368643', '0.317192368643']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.53171736772', '0.118453779931', '0.118453779931', '0.751850514699', '0.317035897982', '0.317035897982']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.133706664385', '0.119033065054', '0.119033065054', '0.239094059224', '0.318804273688', '0.318804273688']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['0.133489775361', '0.11904663268', '0.11904663268', '0.23184026002', '0.318829290326', '0.318829290326']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['0.133489775287', '0.119046632708', '0.119046632708', '0.231840244935', '0.318829290377', '0.318829290377']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['0.120620538991', '0.128121722854', '0.128121722854', '0.201887482116', '0.335693483907', '0.335693483907']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['0.0815776768866', '0.0254326821362', '0.0254326821362', '0.234590828555', '0.0804357077475', '0.0804357077475']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['0.0070894147191', '0.00465593743142', '0.00465593743142', '0.0239724091842', '0.0108564125682', '0.0108564125682']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['0.00290760715254', '0.00181761344358', '0.00181761344358', '0.00981806982516', '0.00417145010877', '0.00417145010877']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['0.000790687672337', '0.000487604591475', '0.000487604591475', '0.00269274564638', '0.00112893865699', '0.00112893865699']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['0.000134511837916', '8.25301000553e-05', '8.25301000553e-05', '0.000457907539019', '0.000191503584664', '0.000191503584664']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['5.08436676376e-05', '3.12176419013e-05', '3.12176419013e-05', '0.000173050756457', '7.24508039017e-05', '7.24508039014e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['8.09563022283e-06', '4.96951058989e-06', '4.9695105899e-06', '2.75618295015e-05', '1.15347100732e-05', '1.15347100735e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['3.26761665871e-06', '2.00559297649e-06', '2.0055929765e-06', '1.11097556981e-05', '4.65514131315e-06', '4.65514131303e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['1.79230646372e-07', '1.09751210637e-07', '1.09751210622e-07', '5.9836172563e-07', '2.54634574002e-07', '2.54634573766e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -2.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.0751970031', '0.128825967545', '0.128825967545', '1.35193051699', '0.253576121976', '0.253576121976']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -2.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.52758806867', '0.12735145247', '0.12735145247', '0.79846528554', '0.238000762214', '0.238000762214']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -2.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.118720166798', '0.126729505736', '0.126729505736', '0.292386184238', '0.223918925206', '0.223918925206']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -2.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['0.118511136462', '0.126725751446', '0.126725751446', '0.285226847349', '0.223737351577', '0.223737351577']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -2.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['0.118511136478', '0.126725751439', '0.126725751439', '0.285226832514', '0.223737351201', '0.223737351201']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -2.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['0.118511136478', '0.126725751439', '0.126725751439', '0.285226832475', '0.2237373512', '0.2237373512']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -2.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['0.120823136182', '0.150101540521', '0.150101540521', '0.285226832473', '0.25791411657', '0.25791411657']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -2.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['0.0488032416813', '0.0327491717437', '0.0327491717437', '0.133927003493', '0.0944862772657', '0.0944862772657']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -2.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['0.00693368237441', '0.00421179822757', '0.00421179822757', '0.0215967601591', '0.0105679201804', '0.0105679201804']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -2.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['0.00172578615889', '0.000928915108285', '0.000928915108285', '0.00513870224729', '0.00238332818133', '0.00238332818133']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -2.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['0.000287998257595', '0.000151143154364', '0.000151143154364', '0.000861664818371', '0.000387429427742', '0.000387429427742']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -2.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['0.00010840201385', '5.68144186292e-05', '5.68144186292e-05', '0.000323851174839', '0.000145621833875', '0.000145621833875']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -2.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['1.72410631586e-05', '9.02451777034e-06', '9.02451777042e-06', '5.15026321076e-05', '2.31255459368e-05', '2.31255459375e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -2.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['6.95742919966e-06', '3.64052990733e-06', '3.64052990735e-06', '2.07670483553e-05', '9.32851798547e-06', '9.32851798564e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -2.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['3.81365356401e-07', '1.99471660725e-07', '1.99471660774e-07', '1.1278777346e-06', '5.11205070722e-07', '5.1120507106e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -4.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.08594366255', '0.0705946778761', '0.0705946778761', '1.63363762401', '0.164770422365', '0.164770422365']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -4.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.549522809478', '0.0663725732475', '0.0663725732475', '1.08180338769', '0.160883263594', '0.160883263594']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -4.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.195159907866', '0.0637488180847', '0.0637488180847', '0.577215640325', '0.158798625589', '0.158798625589']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -4.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['0.19504612169', '0.063721001398', '0.063721001398', '0.570077401136', '0.158781439017', '0.158781439017']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -4.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['0.195046121728', '0.0637210013406', '0.0637210013406', '0.570077386344', '0.158781438981', '0.158781438981']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -4.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['0.195046121728', '0.0637210013405', '0.0637210013405', '0.570077386305', '0.158781438981', '0.158781438981']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -4.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['0.195046121728', '0.0637210013405', '0.0637210013405', '0.570077386304', '0.158781438981', '0.158781438981']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -4.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['0.219875089343', '0.0815441554477', '0.0815441554477', '0.627192979048', '0.215995204688', '0.215995204688']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -4.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['0.0526068403324', '0.04072155133', '0.04072155133', '0.205074566781', '0.12040852643', '0.12040852643']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -4.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['0.00416166140078', '0.00217973428486', '0.00217973428486', '0.0136782019287', '0.00480697432052', '0.00480697432052']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -4.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['0.000589169961747', '0.000316691089522', '0.000316691089522', '0.0017616700998', '0.000689575319575', '0.000689575319575']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -4.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['0.000215212450689', '0.000117469234575', '0.000117469234575', '0.000653534620508', '0.000256086979279', '0.00025608697928']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -4.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['3.39661813484e-05', '1.86223666776e-05', '1.86223666776e-05', '0.000102981501495', '4.04176935231e-05', '4.04176935234e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -4.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['1.36806469339e-05', '7.50893800976e-06', '7.50893800978e-06', '4.14771038528e-05', '1.62833901367e-05', '1.62833901366e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -4.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['7.49604699283e-07', '4.11443954657e-07', '4.11443954625e-07', '2.28209818729e-06', '8.9217835019e-07', '8.92178349885e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -8.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.08574170503', '0.072131148862', '0.072131148862', '1.38547036176', '0.195247836371', '0.195247836371']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -8.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.547941182723', '0.0726168553833', '0.0726168553833', '0.826809829737', '0.19591808239', '0.19591808239']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -8.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.18752461908', '0.074329437277', '0.074329437277', '0.315980234825', '0.196530943838', '0.196530943838']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -8.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['0.187361423282', '0.074362015473', '0.074362015473', '0.308753694244', '0.19653961379', '0.19653961379']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -8.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['0.187361423228', '0.0743620155407', '0.0743620155407', '0.30875367927', '0.196539613808', '0.196539613808']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -8.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['0.187361423228', '0.0743620155409', '0.0743620155409', '0.30875367923', '0.196539613808', '0.196539613808']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -8.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['0.187361423228', '0.0743620155409', '0.0743620155409', '0.308753679229', '0.196539613808', '0.196539613808']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -8.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['0.187361423228', '0.074362015541', '0.074362015541', '0.308753679222', '0.196539613808', '0.196539613808']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -8.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['0.148968520169', '0.0826301330506', '0.0826301330506', '0.243735317632', '0.238281182349', '0.238281182349']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -8.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['0.0591649660137', '0.0410514784613', '0.0410514784613', '0.196936827552', '0.126921043906', '0.126921043906']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -8.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['0.000863285678916', '0.00112224263978', '0.00112224263978', '0.00205411244496', '0.00211851168457', '0.00211851168457']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -8.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['0.000245582334036', '0.000357079878734', '0.000357079878734', '0.000433314275749', '0.00069313978194', '0.000693139781939']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -8.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['3.76150356791e-05', '5.51477022518e-05', '5.51477022519e-05', '6.27405817541e-05', '0.000106654132689', '0.000106654132689']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -8.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['1.50681253685e-05', '2.21033868958e-05', '2.21033868957e-05', '2.4924164118e-05', '4.27421123091e-05', '4.2742112309e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -8.0 --timestepping-mode 1 -N 32 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['8.24593252364e-07', '1.20943302194e-06', '1.20943302196e-06', '1.35187133487e-06', '2.33890699693e-06', '2.33890699778e-06']
+Writing output to /home/martin/workspace/sweet/benchmarks/rexi_tests/2015_09_04_increasing_dt_10_timesteps_s1/output_n64_eps1_h0.2.csv
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.52587890625e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.08843729736', '0.000168308602116', '0.000168308602116', '1.89618469527', '0.000573682858913', '0.000573682858913']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.52587890625e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.523695497676', '9.45890437982e-06', '9.45890437982e-06', '0.912339797116', '3.22428759975e-05', '3.22428759975e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.52587890625e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.00730523253672', '2.73688676109e-06', '2.73688676109e-06', '0.0127266168738', '9.32879742509e-06', '9.32879742509e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.52587890625e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['5.03059922009e-08', '2.61190792972e-05', '2.61190792972e-05', '2.19784878692e-07', '8.9027631332e-05', '8.9027631332e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.52587890625e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['1.13739464917e-08', '2.86380871185e-06', '2.86380871185e-06', '1.51598379506e-08', '9.761378034e-06', '9.76137803402e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.52587890625e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['1.084520198e-08', '1.58795172812e-07', '1.58795172812e-07', '2.05331461518e-08', '5.41258144803e-07', '5.41258144806e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.52587890625e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['1.07538394043e-08', '1.3728242701e-07', '1.3728242701e-07', '1.73060712993e-08', '4.67931297823e-07', '4.67931297819e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.52587890625e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['1.07593516484e-08', '9.00253930226e-08', '9.00253930233e-08', '1.7808526175e-08', '3.06854270742e-07', '3.06854270761e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.52587890625e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['1.07629592663e-08', '4.04176400532e-08', '4.04176400539e-08', '1.83308740692e-08', '1.3776474678e-07', '1.37764746787e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.52587890625e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['1.07636774309e-08', '1.12222739571e-08', '1.12222739576e-08', '1.86352176851e-08', '3.82514597194e-08', '3.82514597142e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.52587890625e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['1.07637412416e-08', '1.91489217008e-09', '1.91489216945e-09', '1.877156109e-08', '6.5269678145e-09', '6.52696780649e-09']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.52587890625e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['1.07637819665e-08', '7.27866664343e-10', '7.27866664983e-10', '1.87442339146e-08', '2.48095549314e-09', '2.48095549895e-09']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.52587890625e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['1.07637661951e-08', '1.17381432137e-10', '1.17381433195e-10', '1.87505357316e-08', '4.00098150178e-10', '4.00098157313e-10']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.52587890625e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['1.07637462056e-08', '4.49569028813e-11', '4.4956901822e-11', '1.87521840268e-08', '1.5323697701e-10', '1.53236981616e-10']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.52587890625e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['1.07637542292e-08', '8.28935705111e-13', '8.28934664046e-13', '1.87517406713e-08', '2.82547637685e-12', '2.82545466061e-12']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -3.0517578125e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.08843723041', '0.000336617111557', '0.000336617111557', '1.89618226694', '0.00114736891673', '0.00114736891673']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -3.0517578125e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.523695567281', '1.8918850755e-05', '1.8918850755e-05', '0.912342321345', '6.44944932478e-05', '6.44944932478e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -3.0517578125e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.00730523642595', '5.47374796524e-06', '5.47374796524e-06', '0.012726757917', '1.86576803674e-05', '1.86576803674e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -3.0517578125e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['1.86892463935e-07', '5.22380285013e-05', '5.22380285013e-05', '1.01487037699e-06', '0.000178055817629', '0.000178055817629']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -3.0517578125e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['2.30520943823e-08', '5.72760147977e-06', '5.72760147977e-06', '1.04948020797e-07', '1.95228171664e-05', '1.95228171664e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -3.0517578125e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['1.10515610423e-08', '3.17589448071e-07', '3.1758944807e-07', '2.5723471799e-08', '1.08251967254e-06', '1.08251967255e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -3.0517578125e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['1.06790972547e-08', '2.74564077123e-07', '2.74564077124e-07', '1.33086605842e-08', '9.35865510407e-07', '9.35865510398e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -3.0517578125e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['1.06992246555e-08', '1.8005027647e-07', '1.80050276472e-07', '1.4867943919e-08', '6.13710452901e-07', '6.13710452883e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -3.0517578125e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['1.0730759693e-08', '8.08350512747e-08', '8.08350512758e-08', '1.7010518757e-08', '2.75530351648e-07', '2.75530351677e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -3.0517578125e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['1.07538912789e-08', '2.24444843733e-08', '2.24444843745e-08', '1.8268599944e-08', '7.650315767e-08', '7.65031576716e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -3.0517578125e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['1.07654761199e-08', '3.82977348896e-09', '3.82977348806e-09', '1.88341509135e-08', '1.30539762859e-08', '1.30539762907e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -3.0517578125e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['1.07631283505e-08', '1.45572921423e-09', '1.45572921529e-09', '1.87204791999e-08', '4.96192644377e-09', '4.96192641612e-09']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -3.0517578125e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['1.07636619099e-08', '2.34762207842e-10', '2.34762208769e-10', '1.87467290871e-08', '8.00198759135e-10', '8.00198794681e-10']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -3.0517578125e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['1.07637870682e-08', '8.99135428223e-11', '8.99135419915e-11', '1.8753680007e-08', '3.06474932837e-10', '3.06474898759e-10']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -3.0517578125e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['1.07637557478e-08', '1.6578583628e-12', '1.65785758844e-12', '1.87517957722e-08', '5.6509734407e-12', '5.65097293112e-12']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -6.103515625e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.08843696257', '0.000673233481661', '0.000673233481661', '1.89617255354', '0.00229474877493', '0.00229474877493']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -6.103515625e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.523695845696', '3.78460378371e-05', '3.78460378371e-05', '0.912352417841', '0.000129043687174', '0.000129043687174']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -6.103515625e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.00730525198366', '1.09472914761e-05', '1.09472914761e-05', '0.0127273220862', '3.73151939733e-05', '3.73151939732e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -6.103515625e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['7.52965903478e-07', '0.000104475016265', '0.000104475016265', '4.19518532512e-06', '0.000356111278317', '0.000356111278317']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -6.103515625e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['8.73476257221e-08', '1.14550754091e-05', '1.14550754091e-05', '4.7640682291e-07', '3.90455628718e-05', '3.90455628717e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -6.103515625e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['1.25443674306e-08', '6.35171715774e-07', '6.35171715772e-07', '4.64845839072e-08', '2.16503509589e-06', '2.16503509585e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -6.103515625e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['1.09741975745e-08', '5.4912193912e-07', '5.49121939121e-07', '1.42300704221e-08', '1.87172728962e-06', '1.87172728962e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -6.103515625e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['1.0715277015e-08', '3.60096476369e-07', '3.60096476371e-07', '1.32851988683e-08', '1.22741845668e-06', '1.22741845668e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -6.103515625e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['1.06532008367e-08', '1.61668271907e-07', '1.61668271908e-07', '1.30133982094e-08', '5.51059602603e-07', '5.51059602544e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -6.103515625e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['1.07186521645e-08', '4.48884604227e-08', '4.4888460424e-08', '1.68021531224e-08', '1.53006009659e-07', '1.53006009643e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -6.103515625e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['1.07725307583e-08', '7.65946016919e-09', '7.65946016806e-09', '1.90845120996e-08', '2.61079002915e-08', '2.61079002538e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -6.103515625e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['1.07605298892e-08', '2.91142550939e-09', '2.91142551083e-09', '1.86254664329e-08', '9.9238331304e-09', '9.92383313101e-09']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -6.103515625e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['1.07632418099e-08', '4.69519154379e-10', '4.69519155577e-10', '1.87314971974e-08', '1.60039443331e-09', '1.60039448325e-09']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -6.103515625e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['1.07639527911e-08', '1.79824992589e-10', '1.79824991475e-10', '1.8759665005e-08', '6.12948532362e-10', '6.12948496658e-10']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -6.103515625e-05 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['1.07637619587e-08', '3.31562306651e-12', '3.31562167886e-12', '1.87520126088e-08', '1.13018023713e-11', '1.13017809123e-11']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0001220703125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.08843589123', '0.00134646103009', '0.00134646103009', '1.8961336984', '0.00458952647837', '0.00458952647837']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0001220703125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.523696959325', '7.57587779219e-05', '7.57587779219e-05', '0.912392797081', '0.000258464046037', '0.000258464046037']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0001220703125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.00730531422722', '2.18929473548e-05', '2.18929473548e-05', '0.0127295787031', '7.46256501936e-05', '7.46256501938e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0001220703125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['3.02220143426e-06', '0.000208941706858', '0.000208941706858', '1.69160124881e-05', '0.000712200514479', '0.000712200514479']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0001220703125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['3.51935276257e-07', '2.29091304443e-05', '2.29091304443e-05', '1.96218705794e-06', '7.80883130682e-05', '7.80883130683e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0001220703125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['2.39298232059e-08', '1.27028599032e-06', '1.27028599033e-06', '1.29525910723e-07', '4.32991094761e-06', '4.32991094768e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0001220703125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['1.87281548587e-08', '1.09819415871e-06', '1.09819415871e-06', '7.68469191759e-08', '3.74331653247e-06', '3.74331653253e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0001220703125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['1.42920605641e-08', '7.20160341126e-07', '7.20160341125e-07', '4.39414058874e-08', '2.45474635992e-06', '2.45474635997e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0001220703125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['1.11630096088e-08', '3.23321899095e-07', '3.23321899094e-07', '1.47435608107e-08', '1.10207853707e-06', '1.10207853701e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0001220703125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['1.06410431943e-08', '8.97728543594e-08', '8.97728543594e-08', '1.29064642972e-08', '3.06000726375e-07', '3.06000726321e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0001220703125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['1.08025480608e-08', '1.53182259094e-08', '1.53182259098e-08', '2.00859158268e-08', '5.22138716993e-08', '5.22138718157e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0001220703125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['1.07503980151e-08', '5.82258766364e-09', '5.82258766292e-09', '1.82454250848e-08', '1.98469352047e-08', '1.98469352221e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0001220703125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['1.07615709882e-08', '9.38996201908e-10', '9.38996202031e-10', '1.86705745537e-08', '3.20067228017e-09', '3.20067236696e-09']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0001220703125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['1.07646141688e-08', '3.59633258335e-10', '3.59633257628e-10', '1.87835980124e-08', '1.22585027613e-09', '1.2258501271e-09']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0001220703125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['1.07637863002e-08', '6.63051517244e-12', '6.63051522221e-12', '1.87528800757e-08', '2.26013368855e-11', '2.26012835887e-11']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.000244140625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.08843160598', '0.00269287454315', '0.00269287454315', '1.89597825361', '0.00917904981421', '0.00917904981421']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.000244140625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.523701413307', '0.000152051541358', '0.000152051541358', '0.91255420617', '0.000519697284648', '0.000519697284648']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.000244140625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.0073055634047', '4.37728111364e-05', '4.37728111364e-05', '0.0127386042154', '0.000149199782352', '0.000149199782352']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.000244140625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['1.20994225584e-05', '0.000417816815501', '0.000417816815501', '6.77923994188e-05', '0.00142414795135', '0.00142414795135']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.000244140625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['1.41202432665e-06', '4.58100988573e-05', '4.58100988573e-05', '7.90442839564e-06', '0.000156145161604', '0.000156145161604']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.000244140625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['8.13801596969e-08', '2.54011250564e-06', '2.54011250564e-06', '4.61641372292e-07', '8.65804698736e-06', '8.65804698772e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.000244140625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['6.74329684963e-08', '2.19599060892e-06', '2.19599060892e-06', '3.63743296643e-07', '7.48509594422e-06', '7.48509594432e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.000244140625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['4.43940892211e-08', '1.44005982066e-06', '1.44005982066e-06', '2.32101455093e-07', '4.90848447611e-06', '4.90848447622e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.000244140625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['2.12868716932e-08', '6.46526654503e-07', '6.46526654503e-07', '9.38815473863e-08', '2.20370429256e-06', '2.2037042927e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.000244140625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['1.13357749113e-08', '1.79513180739e-07', '1.79513180738e-07', '1.51330009701e-08', '6.11875724792e-07', '6.11875724712e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.000244140625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['1.09509641777e-08', '3.06308970502e-08', '3.06308970496e-08', '2.40909262513e-08', '1.0440627129e-07', '1.04406271472e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.000244140625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['1.07140717363e-08', '1.16430687337e-08', '1.16430687338e-08', '1.67255002405e-08', '3.96857291104e-08', '3.96857291247e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.000244140625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['1.07549952445e-08', '1.87765559304e-09', '1.87765559224e-09', '1.84269165461e-08', '6.40004388507e-09', '6.40004402949e-09']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.000244140625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['1.07672770561e-08', '7.19132712072e-10', '7.19132712438e-10', '1.8879324154e-08', '2.45118205794e-09', '2.45118203552e-09']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.000244140625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['1.07638820517e-08', '1.32551759708e-11', '1.3255175734e-11', '1.87563513928e-08', '4.51786762452e-11', '4.5178612379e-11']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00048828125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.0884144665', '0.00538536731766', '0.00538536731766', '1.89535608782', '0.0183571299201', '0.0183571299201']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00048828125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.52371922063', '0.000308386171256', '0.000308386171256', '0.913198118423', '0.00106148056838', '0.00106148056838']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00048828125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.00730656336356', '8.74409924213e-05', '8.74409924213e-05', '0.0127746909696', '0.000297932917315', '0.000297932917315']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00048828125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['4.83933864893e-05', '0.00083510107428', '0.00083510107428', '0.000271187229476', '0.00284596461062', '0.00284596461062']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00048828125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['5.65090414875e-06', '9.15549320977e-05', '9.15549320977e-05', '3.16593239148e-05', '0.000312002792615', '0.000312002792615']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00048828125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['3.17771586085e-07', '5.07655096022e-06', '5.07655096022e-06', '1.78930584468e-06', '1.72998930756e-05', '1.72998930761e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00048828125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['2.71450368865e-07', '4.38880107337e-06', '4.38880107337e-06', '1.51063540388e-06', '1.4956165851e-05', '1.4956165851e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00048828125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['1.77639238848e-07', '2.87803374805e-06', '2.87803374805e-06', '9.84286810675e-07', '9.80776899804e-06', '9.8077689982e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00048828125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['7.94180900735e-08', '1.29211660846e-06', '1.29211660846e-06', '4.31621262983e-07', '4.40327715163e-06', '4.40327715189e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00048828125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['2.32294699553e-08', '3.58766262282e-07', '3.58766262284e-07', '1.06300364455e-07', '1.22260424383e-06', '1.22260424386e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00048828125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['1.19598100782e-08', '6.12173772743e-08', '6.12173772722e-08', '4.01012701955e-08', '2.08616629284e-07', '2.08616629143e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00048828125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['1.06368543938e-08', '2.32692927608e-08', '2.32692927605e-08', '1.28802198892e-08', '7.92971662664e-08', '7.92971667355e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00048828125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['1.07304162204e-08', '3.75261794849e-09', '3.75261794995e-09', '1.74528598427e-08', '1.2788214057e-08', '1.278821389e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00048828125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['1.07781836923e-08', '1.43719553416e-09', '1.43719553586e-09', '1.92619794896e-08', '4.89764038104e-09', '4.89764033746e-09']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00048828125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['1.07642644412e-08', '2.64635883598e-11', '2.64635894104e-11', '1.87702171915e-08', '9.01449729279e-11', '9.01451338266e-11']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0009765625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.08834593383', '0.0107676289872', '0.0107676289872', '1.89286132547', '0.0367024495031', '0.0367024495031']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0009765625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.523790308809', '0.000651338750958', '0.000651338750958', '0.915746295427', '0.00230017695151', '0.00230017695151']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0009765625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.00731061498269', '0.000174046199295', '0.000174046199295', '0.0129187924985', '0.000591912785107', '0.000591912785106']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0009765625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['0.000193326767123', '0.00166594897192', '0.00166594897192', '0.0010829969619', '0.00567206379777', '0.00567206379777']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0009765625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['2.25757259033e-05', '0.000182588712354', '0.000182588712354', '0.000126454040325', '0.000621563605343', '0.000621563605343']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0009765625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['1.26354806206e-06', '1.01237650652e-05', '1.01237650652e-05', '7.0872203519e-06', '3.44622594009e-05', '3.44622594008e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0009765625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['1.08839954367e-06', '8.75220938114e-06', '8.75220938114e-06', '6.08712201975e-06', '2.97932835828e-05', '2.97932835828e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0009765625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['7.13295035121e-07', '5.73941209542e-06', '5.73941209541e-06', '3.98575895974e-06', '1.95374525039e-05', '1.95374525033e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0009765625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['3.19501611369e-07', '2.57675387149e-06', '2.57675387149e-06', '1.77931538165e-06', '8.77148864458e-06', '8.7714886443e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0009765625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['8.81068757983e-08', '7.15455690494e-07', '7.1545569049e-07', '4.80506647531e-07', '2.43547157525e-06', '2.43547157627e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0009765625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['1.99509963173e-08', '1.22080096781e-07', '1.22080096779e-07', '1.03987786449e-07', '4.15570469793e-07', '4.15570470038e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0009765625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['1.14010623932e-08', '4.64040837989e-08', '4.64040837966e-08', '1.52641871459e-08', '1.57963764128e-07', '1.5796376423e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0009765625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['1.06599337392e-08', '7.48373047373e-09', '7.48373047092e-09', '1.36588928397e-08', '2.54756260755e-08', '2.54756265853e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0009765625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['1.08259425037e-08', '2.86584881822e-09', '2.86584881861e-09', '2.0788836995e-08', '9.75520727344e-09', '9.75520731571e-09']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0009765625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['1.07657991352e-08', '5.25546679801e-11', '5.25546686176e-11', '1.88254763972e-08', '1.78510026177e-10', '1.78510042885e-10']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.001953125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.08807227333', '0.0215088203074', '0.0215088203074', '1.88279004696', '0.0732842135862', '0.0732842135862']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.001953125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.524072194437', '0.00158476397002', '0.00158476397002', '0.925506600586', '0.00597135424159', '0.00597135424159']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.001953125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.00732763728844', '0.000341446587439', '0.000341446587439', '0.0134912228164', '0.00115121833303', '0.00115121833303']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.001953125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['0.000769231054987', '0.00329810093162', '0.00329810093162', '0.00430204295694', '0.011180831678', '0.011180831678']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.001953125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['8.9788909004e-05', '0.000361038731754', '0.000361038731754', '0.000502051049355', '0.00122308861454', '0.00122308861454']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.001953125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['5.01961136151e-06', '2.0014577529e-05', '2.0014577529e-05', '2.80759019251e-05', '6.77962979994e-05', '6.77962980006e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.001953125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['4.33283614243e-06', '1.73027940433e-05', '1.73027940433e-05', '2.42165717073e-05', '5.86100549025e-05', '5.86100549018e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.001953125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['2.84110942026e-06', '1.13465764478e-05', '1.13465764478e-05', '1.58758720828e-05', '3.84343978672e-05', '3.84343978667e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.001953125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['1.27480429731e-06', '5.09412010638e-06', '5.09412010638e-06', '7.11809528616e-06', '1.72553476251e-05', '1.72553476247e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.001953125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['3.52910383852e-07', '1.41442086763e-06', '1.41442086763e-06', '1.96289319687e-06', '4.79107521607e-06', '4.79107521677e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.001953125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['6.30786854074e-08', '2.41344155874e-07', '2.4134415587e-07', '3.57067388475e-07', '8.17501956543e-07', '8.17501956121e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.001953125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['2.38029364932e-08', '9.17401784369e-08', '9.17401784392e-08', '1.09643656265e-07', '3.10755087037e-07', '3.10755087376e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.001953125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['1.08227201428e-08', '1.47966856761e-08', '1.47966856752e-08', '1.37850872089e-08', '5.01242665114e-08', '5.01242670402e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.001953125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['1.10802952315e-08', '5.66388838293e-09', '5.66388839009e-09', '2.68362383217e-08', '1.91818651969e-08', '1.91818649922e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.001953125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['1.07719796953e-08', '1.02179953399e-10', '1.02179946656e-10', '1.90432779245e-08', '3.42576917233e-10', '3.42577310033e-10']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00390625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.08698898207', '0.0427594528127', '0.0427594528127', '1.84133714345', '0.145225256438', '0.145225256438']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00390625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.525148939957', '0.0054078772923', '0.0054078772923', '0.958067378105', '0.0221395259418', '0.0221395259418']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00390625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.00740796359847', '0.00063115000583', '0.00063115000583', '0.015714382133', '0.00203729605615', '0.00203729605615']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00390625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['0.00301317503861', '0.00633295320751', '0.00633295320751', '0.0167347111787', '0.0210587368977', '0.0210587368977']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00390625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['0.000351070571573', '0.00068992210238', '0.00068992210238', '0.00194813429042', '0.00228661004176', '0.00228661004176']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00390625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['1.96150699654e-05', '3.82200096955e-05', '3.82200096955e-05', '0.000108840661421', '0.000126612014159', '0.000126612014159']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00390625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['1.69378522287e-05', '3.3040022231e-05', '3.3040022231e-05', '9.39614280348e-05', '0.000109449324874', '0.000109449324874']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00390625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['1.11079976543e-05', '2.16662877789e-05', '2.16662877789e-05', '6.16173783961e-05', '7.17718595517e-05', '7.17718595507e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00390625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['4.98666394724e-06', '9.72711575397e-06', '9.72711575395e-06', '2.76563003023e-05', '3.22218519444e-05', '3.22218519445e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00390625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['1.38343842203e-06', '2.7007987246e-06', '2.70079872462e-06', '7.66559471026e-06', '8.94659338504e-06', '8.94659338477e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00390625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['2.38382372944e-07', '4.60823423717e-07', '4.60823423715e-07', '1.33063780137e-06', '1.52647326179e-06', '1.52647326265e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00390625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['8.87030313311e-08', '1.75187320151e-07', '1.75187320144e-07', '4.79149909333e-07', '5.80347796723e-07', '5.80347795518e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00390625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['1.65695307368e-08', '2.82668474499e-08', '2.82668474464e-08', '6.10856300419e-08', '9.36653806022e-08', '9.36653802926e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00390625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['1.29134327739e-08', '1.08017949475e-08', '1.08017949377e-08', '5.00849063604e-08', '3.57516493501e-08', '3.57516495505e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.00390625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['1.07972463254e-08', '1.82517545139e-10', '1.82517554639e-10', '1.98657328693e-08', '5.72588901038e-10', '5.72589449163e-10']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0078125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.08300579959', '0.0823994722025', '0.0823994722025', '1.67008504949', '0.272639050494', '0.272639050494']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0078125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.528300811347', '0.0248742301702', '0.0248742301702', '1.00835416546', '0.101280207433', '0.101280207433']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0078125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.00787218890399', '0.000924790439359', '0.000924790439359', '0.0233869649555', '0.0024734149479', '0.0024734149479']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0078125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['0.0110955008862', '0.0107830352368', '0.0107830352368', '0.0598321815772', '0.0326336453853', '0.0326336453853']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0078125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['0.00128324072881', '0.00115268598142', '0.00115268598142', '0.00689301499428', '0.00342928536945', '0.00342928536945']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0078125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['7.16030904356e-05', '6.36850021267e-05', '6.36850021267e-05', '0.000384382630009', '0.000188988834482', '0.000188988834481']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0078125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['6.1804681108e-05', '5.50487449884e-05', '5.50487449884e-05', '0.000331686182835', '0.000163363289547', '0.000163363289548']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0078125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['4.05329044262e-05', '3.60972718335e-05', '3.60972718335e-05', '0.000217522108912', '0.000107118625595', '0.000107118625596']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0078125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['1.81982623307e-05', '1.62052487428e-05', '1.62052487428e-05', '9.76556907057e-05', '4.80871676762e-05', '4.80871676764e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0078125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['5.05171553155e-06', '4.49944085329e-06', '4.49944085329e-06', '2.71015512878e-05', '1.33514074818e-05', '1.33514074808e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0078125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['8.64497343834e-07', '7.67610455013e-07', '7.67610454996e-07', '4.64854033824e-06', '2.2774676437e-06', '2.27746764314e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0078125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['3.25896580055e-07', '2.91931371965e-07', '2.91931371966e-07', '1.73864576165e-06', '8.66474282941e-07', '8.66474283297e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0078125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['5.18945216051e-08', '4.71735958538e-08', '4.71735958303e-08', '2.63192761753e-07', '1.40211444599e-07', '1.40211444207e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0078125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['2.47138175782e-08', '1.79120878497e-08', '1.79120878476e-08', '1.29155663569e-07', '5.29266727559e-08', '5.29266727869e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0078125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['1.09020378802e-08', '2.46826297707e-10', '2.46826293339e-10', '2.25046907904e-08', '6.3773849307e-10', '6.37738187434e-10']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.015625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.07431060277', '0.132709860425', '0.132709860425', '1.25601131091', '0.372659582767', '0.372659582767']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.015625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.529237108901', '0.0863911273847', '0.0863911273847', '0.771021624531', '0.286937041736', '0.286937041736']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.015625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.00982175271399', '0.00309982217965', '0.00309982217965', '0.0316033830065', '0.0118688749618', '0.0118688749618']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.015625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['0.0323819746356', '0.0132354475391', '0.0132354475391', '0.151044661873', '0.0325122547964', '0.0325122547964']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.015625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['0.00364120871379', '0.00141568699012', '0.00141568699012', '0.0165405019198', '0.00344991640955', '0.00344991640955']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.015625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['0.000202260207974', '7.82950562353e-05', '7.82950562353e-05', '0.000915066800583', '0.000190352599794', '0.000190352599793']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.015625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['0.000174345321583', '6.75401501209e-05', '6.75401501209e-05', '0.000788546377808', '0.00016407172703', '0.00016407172703']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.015625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['0.000114333560979', '4.42893507631e-05', '4.4289350763e-05', '0.000517084834584', '0.000107587070102', '0.000107587070102']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.015625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['5.13306662069e-05', '1.98831367037e-05', '1.98831367037e-05', '0.00023212714927', '4.82988979825e-05', '4.82988979819e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.015625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['1.42507304173e-05', '5.52060073333e-06', '5.52060073331e-06', '6.44353587093e-05', '1.34102109035e-05', '1.3410210903e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.015625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['2.43479801974e-06', '9.41968637146e-07', '9.41968637194e-07', '1.10196302239e-05', '2.28808817429e-06', '2.28808817415e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.015625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['9.21877870749e-07', '3.58076546308e-07', '3.58076546254e-07', '4.15930569598e-06', '8.69976288873e-07', '8.69976288268e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.015625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['1.46819383722e-07', '5.77682639799e-08', '5.7768263972e-08', '6.52924780286e-07', '1.40539061036e-07', '1.40539060583e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.015625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['6.06854563984e-08', '2.21159314633e-08', '2.21159314934e-08', '2.79480691884e-07', '5.36272217992e-08', '5.36272220979e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.015625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['1.12350337163e-08', '9.85316727557e-10', '9.85316754236e-10', '2.60275907336e-08', '3.9480941124e-09', '3.94809412739e-09']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.03125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.07663782462', '0.126119737744', '0.126119737744', '1.2082019548', '0.258954679613', '0.258954679613']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.03125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.528771551702', '0.145784959338', '0.145784959338', '0.663580507342', '0.320205966169', '0.320205966169']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.03125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.0228273221192', '0.0128450477885', '0.0128450477885', '0.0414848503652', '0.0326139686725', '0.0326139686725']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.03125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['0.0558846115615', '0.0325685090825', '0.0325685090825', '0.103814864109', '0.0978000247214', '0.0978000247214']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.03125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['0.00628628164072', '0.00389703918894', '0.00389703918894', '0.0112808368521', '0.0112820306553', '0.0112820306553']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.03125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['0.000348938922052', '0.000217266838183', '0.000217266838183', '0.000621504558017', '0.000633038965753', '0.000633038965753']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.03125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['0.000298943911837', '0.000185299509075', '0.000185299509075', '0.00052997682307', '0.000538562886425', '0.000538562886426']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.03125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['0.000196046670236', '0.000121529745382', '0.000121529745382', '0.000347529114139', '0.000353192877719', '0.00035319287772']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.03125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['8.80144527242e-05', '5.45636828036e-05', '5.45636828037e-05', '0.000156001207049', '0.0001585595375', '0.000158559537499']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.03125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['2.4436107793e-05', '1.51492457663e-05', '1.51492457663e-05', '4.33022072231e-05', '4.40204525424e-05', '4.40204525417e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.03125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['4.17328411158e-06', '2.58798344169e-06', '2.58798344168e-06', '7.40734558029e-06', '7.52047917711e-06', '7.52047917745e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.03125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['1.58206695363e-06', '9.80254916182e-07', '9.80254916214e-07', '2.79365297872e-06', '2.8479388293e-06', '2.84793882961e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.03125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['2.527670571e-07', '1.55991831065e-07', '1.5599183103e-07', '4.37195581843e-07', '4.52815705694e-07', '4.52815706562e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.03125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['1.01544559251e-07', '6.32097326012e-08', '6.32097326026e-08', '1.89429031039e-07', '1.84088392221e-07', '1.84088391261e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.03125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['1.16806749625e-08', '3.79676396387e-09', '3.79676398409e-09', '1.93034396306e-08', '1.1083984846e-08', '1.10839844179e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.07839911863', '0.114493664802', '0.114493664802', '1.57797012081', '0.263631594297', '0.263631594297']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.539977926777', '0.123779962093', '0.123779962093', '1.07969023032', '0.275626845799', '0.275626845799']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.0570392890727', '0.0627821317569', '0.0627821317569', '0.23484364784', '0.128366793743', '0.128366793743']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['0.0896368861398', '0.0659223834148', '0.0659223834148', '0.207154059633', '0.128939646614', '0.128939646614']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['0.0132068756684', '0.00773149913854', '0.00773149913854', '0.0295284696311', '0.0155666156913', '0.0155666156913']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['0.000745625508395', '0.000428798244461', '0.000428798244461', '0.00166137451025', '0.000861602868517', '0.000861602868516']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['0.000610792499638', '0.000359557610339', '0.00035955761034', '0.00135720195516', '0.000704977562524', '0.000704977562524']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['0.000400724498213', '0.000235815922995', '0.000235815922995', '0.000890377964937', '0.000462514150029', '0.000462514150029']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['0.000179929757974', '0.00010586244985', '0.00010586244985', '0.000399753029644', '0.000207684733856', '0.000207684733856']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['4.99639211053e-05', '2.9391671882e-05', '2.9391671882e-05', '0.000110994405475', '5.7671261686e-05', '5.76712616856e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['8.53532673491e-06', '5.02001756542e-06', '5.02001756551e-06', '1.89722467304e-05', '9.85188204912e-06', '9.8518820484e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['3.23385228555e-06', '1.90261126471e-06', '1.90261126471e-06', '7.17472485977e-06', '3.73271286766e-06', '3.73271286773e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['5.15314344903e-07', '3.03481682769e-07', '3.03481682718e-07', '1.13486239182e-06', '5.95032768898e-07', '5.95032769018e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['2.08002385641e-07', '1.21758738541e-07', '1.21758738546e-07', '4.71247597208e-07', '2.39739143627e-07', '2.39739143611e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.0625 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['1.54629265846e-08', '6.22148491071e-09', '6.22148490031e-09', '3.46629282797e-08', '1.32295797718e-08', '1.32295794136e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.07046617328', '0.147205363483', '0.147205363483', '1.16229165859', '0.317908932708', '0.317908932708']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.517802111987', '0.145945997758', '0.145945997758', '0.609024579634', '0.316032881911', '0.316032881911']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.0690725172942', '0.142052277414', '0.142052277414', '0.172045662218', '0.311782196088', '0.311782196088']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['0.0935843642238', '0.117539979768', '0.117539979768', '0.207064614189', '0.260567296107', '0.260567296107']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['0.0262545501835', '0.0207346860212', '0.0207346860212', '0.0775369817088', '0.0463408379715', '0.0463408379715']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['0.00148939368662', '0.00114610377343', '0.00114610377343', '0.00406519794061', '0.00265003877865', '0.00265003877865']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['0.00108850840172', '0.000818260019322', '0.000818260019322', '0.00268408185664', '0.00186569210145', '0.00186569210145']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['0.000714665800295', '0.000536916619718', '0.000536916619718', '0.00176009539626', '0.0012243014826', '0.0012243014826']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['0.000320923260207', '0.000240898862464', '0.000240898862464', '0.000789453089221', '0.000549389228364', '0.000549389228364']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['8.91434270718e-05', '6.68862372934e-05', '6.68862372934e-05', '0.000219202477804', '0.000152556183613', '0.000152556183614']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['1.52318263921e-05', '1.14253916078e-05', '1.14253916078e-05', '3.74627507684e-05', '2.60605056699e-05', '2.60605056704e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['5.7699116465e-06', '4.32960445213e-06', '4.32960445208e-06', '1.41770368996e-05', '9.87570070236e-06', '9.87570070211e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['9.18895844302e-07', '6.90364781064e-07', '6.90364781056e-07', '2.24915709793e-06', '1.57489765738e-06', '1.57489765772e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['3.71317226444e-07', '2.77376247165e-07', '2.7737624717e-07', '9.22695114613e-07', '6.32443561483e-07', '6.32443561933e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.125 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['2.30752227159e-08', '1.43300216642e-08', '1.43300216956e-08', '6.04982628966e-08', '3.24274806808e-08', '3.24274804638e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.25 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.08737212933', '0.0585621496501', '0.0585621496501', '1.43246448131', '0.137980348598', '0.137980348598']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.25 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.552581875685', '0.0521476294613', '0.0521476294613', '0.880636600769', '0.127571669861', '0.127571669861']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.25 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.204196514608', '0.0475120881894', '0.0475120881894', '0.508363469535', '0.121573241958', '0.121573241958']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.25 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['0.204132007924', '0.0477697573641', '0.0477697573641', '0.515706515879', '0.122310293738', '0.122310293738']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.25 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['0.106119882782', '0.0257398814805', '0.0257398814805', '0.238131171862', '0.081519922432', '0.081519922432']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.25 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['0.00556015206672', '0.0043034117647', '0.0043034117647', '0.0224804454918', '0.0124581087761', '0.0124581087761']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.25 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['0.00259747896227', '0.00132046692209', '0.00132046692209', '0.00904086983343', '0.00352088933659', '0.00352088933659']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.25 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['0.00170463359053', '0.000866581262549', '0.000866581262549', '0.00575767035418', '0.00232307241247', '0.00232307241247']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.25 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['0.000763180416918', '0.00038550559978', '0.00038550559978', '0.00253744964783', '0.00103281319415', '0.00103281319415']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.25 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['0.00021178482851', '0.000106752476166', '0.000106752476166', '0.00070350604423', '0.000285968504432', '0.000285968504432']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.25 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['3.61754614792e-05', '1.82231390438e-05', '1.82231390438e-05', '0.000120144739041', '4.88147020817e-05', '4.88147020815e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.25 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['1.37046810005e-05', '6.90295474545e-06', '6.90295474544e-06', '4.55001549215e-05', '1.84908692167e-05', '1.84908692164e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.25 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['2.18340476071e-06', '1.09958515878e-06', '1.09958515876e-06', '7.23970133722e-06', '2.9453232634e-06', '2.94532326334e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.25 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['8.80377422347e-07', '4.43550916445e-07', '4.43550916451e-07', '2.93414477738e-06', '1.18828057315e-06', '1.18828057317e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.25 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['4.86818459627e-08', '2.40940379655e-08', '2.40940379684e-08', '1.68626426135e-07', '6.4663030322e-08', '6.46630312705e-08']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.5 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.08484779745', '0.078557160163', '0.078557160163', '1.72929858632', '0.245666038289', '0.245666038289']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.5 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.546156844179', '0.0790512283478', '0.0790512283478', '1.16849305529', '0.246419052207', '0.246419052207']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.5 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.182209676794', '0.0806701509718', '0.0806701509718', '0.65570211644', '0.248567342295', '0.248567342295']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.5 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['0.182041212627', '0.0807007769973', '0.0807007769973', '0.648447909875', '0.248609041668', '0.248609041668']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.5 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['0.17294601527', '0.0854616541497', '0.0854616541497', '0.626504036852', '0.259044198499', '0.259044198499']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.5 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['0.0581412768423', '0.0403790994682', '0.0403790994682', '0.202919659822', '0.139516128799', '0.139516128799']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.5 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['0.00297407888115', '0.00406343945743', '0.00406343945743', '0.00596882171171', '0.0105391370139', '0.0105391370139']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.5 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['0.00199334426341', '0.00271097508384', '0.00271097508384', '0.00435460142202', '0.00693504319483', '0.00693504319483']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.5 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['0.00086959541462', '0.00118815245451', '0.00118815245451', '0.00184657012012', '0.00303751786456', '0.00303751786456']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.5 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['0.000239426877982', '0.000327461795188', '0.000327461795188', '0.000512053618082', '0.000836039342755', '0.000836039342754']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.5 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['4.081047054e-05', '5.58209997168e-05', '5.58209997167e-05', '8.76872376886e-05', '0.000142436258989', '0.000142436258989']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.5 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['1.54534084815e-05', '2.11413666518e-05', '2.11413666518e-05', '3.31617227833e-05', '5.39469794615e-05', '5.39469794618e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.5 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['2.46109794624e-06', '3.36711120785e-06', '3.36711120785e-06', '5.27347986653e-06', '8.59149146238e-06', '8.59149146164e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.5 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['9.9328845163e-07', '1.358645744e-06', '1.35864574401e-06', '2.14272507669e-06', '3.46695747179e-06', '3.46695747183e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -0.5 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['5.52991201897e-08', '7.40849070577e-08', '7.40849070546e-08', '1.26783873854e-07', '1.8923419025e-07', '1.89234190269e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.07752726488', '0.1186848598', '0.1186848598', '1.3130045454', '0.317678735857', '0.317678735857']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.531716304082', '0.118455189454', '0.118455189454', '0.752199014325', '0.317451176474', '0.317451176474']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.133706026731', '0.11903447034', '0.11903447034', '0.239408069134', '0.31860209675', '0.31860209675']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['0.133489137184', '0.119048037912', '0.119048037912', '0.232153782016', '0.318640902082', '0.318640902082']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['0.133489137111', '0.11904803794', '0.11904803794', '0.23215376693', '0.318640902162', '0.318640902162']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['0.120619724429', '0.128123098484', '0.128123098484', '0.202092209407', '0.335113382171', '0.335113382171']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['0.0815744686982', '0.0254319427196', '0.0254319427196', '0.237236937045', '0.0802878666483', '0.0802878666483']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['0.0070895535635', '0.00465586908035', '0.00465586908035', '0.0239513142301', '0.0109194051629', '0.0109194051629']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['0.00290778551151', '0.00181766797208', '0.00181766797208', '0.00986309486784', '0.00420042545373', '0.00420042545373']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['0.000790798679086', '0.000487678281571', '0.000487678281571', '0.00274146639662', '0.00113616842856', '0.00113616842856']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['0.000134512865005', '8.25300733013e-05', '8.25300733013e-05', '0.000461116548965', '0.000191863332792', '0.000191863332792']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['5.08440089456e-05', '3.12175721071e-05', '3.12175721071e-05', '0.000174429728915', '7.25742281824e-05', '7.25742281825e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['8.09568382697e-06', '4.96949845393e-06', '4.96949845394e-06', '2.77854174378e-05', '1.15541104086e-05', '1.1554110409e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['3.26763822488e-06', '2.00558798555e-06', '2.00558798554e-06', '1.12003733286e-05', '4.66292179671e-06', '4.662921796e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -1.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['1.79231820547e-07', '1.09750935976e-07', '1.09750935973e-07', '6.03328809712e-07', '2.55044396002e-07', '2.55044395678e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -2.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.07519526608', '0.128826119736', '0.128826119736', '1.35443058515', '0.253364991341', '0.253364991341']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -2.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.527587571146', '0.127351573636', '0.127351573636', '0.800971881286', '0.238016013458', '0.238016013458']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -2.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.118722051035', '0.126729606723', '0.126729606723', '0.294898748699', '0.224472523404', '0.224472523404']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -2.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['0.118513025303', '0.126725852206', '0.126725852206', '0.287739496247', '0.224280928043', '0.224280928043']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -2.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['0.11851302532', '0.126725852198', '0.126725852198', '0.287739481412', '0.224280927646', '0.224280927646']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -2.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['0.11851302532', '0.126725852198', '0.126725852198', '0.287739481373', '0.224280927645', '0.224280927645']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -2.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['0.120825007174', '0.150101797796', '0.150101797796', '0.287739481372', '0.259341802095', '0.259341802095']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -2.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['0.0488017703094', '0.0327485898225', '0.0327485898225', '0.136195561906', '0.0952056083318', '0.0952056083318']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -2.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['0.00693367246573', '0.00421177308499', '0.00421177308499', '0.021682816658', '0.0106997751219', '0.0106997751219']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -2.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['0.00172605345696', '0.000929066137662', '0.000929066137662', '0.00523419193342', '0.00238144720276', '0.00238144720276']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -2.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['0.000288294347431', '0.000151191852307', '0.000151191852307', '0.000949616514155', '0.000383671051471', '0.000383671051472']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -2.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['0.000108402057433', '5.6815061164e-05', '5.6815061164e-05', '0.000327137317781', '0.000145449741922', '0.000145449741921']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -2.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['1.72410613093e-05', '9.02459264796e-06', '9.02459264791e-06', '5.20319723457e-05', '2.31021865779e-05', '2.31021865777e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -2.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['6.95742818826e-06', '3.64055892191e-06', '3.64055892191e-06', '2.0980386393e-05', '9.31920545288e-06', '9.3192054539e-06']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -2.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['3.8136529605e-07', '1.99473235791e-07', '1.99473235824e-07', '1.13956174389e-06', '5.10680486421e-07', '5.1068048635e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -4.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.08594206556', '0.070594010763', '0.070594010763', '1.63659762618', '0.166982009956', '0.166982009956']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -4.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.54952256474', '0.0663718414895', '0.0663718414895', '1.08476981557', '0.162986008283', '0.162986008283']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -4.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.19516168464', '0.063748053659', '0.063748053659', '0.580187943768', '0.160840716484', '0.160840716484']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -4.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['0.195047899921', '0.06372023673', '0.06372023673', '0.573049787699', '0.160815326679', '0.160815326679']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -4.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['0.195047899958', '0.0637202366726', '0.0637202366726', '0.573049772907', '0.160815326627', '0.160815326627']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -4.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['0.195047899958', '0.0637202366724', '0.0637202366724', '0.573049772868', '0.160815326627', '0.160815326627']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -4.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['0.195047899958', '0.0637202366724', '0.0637202366724', '0.573049772867', '0.160815326627', '0.160815326627']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -4.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['0.219876853929', '0.0815436847436', '0.0815436847436', '0.630372821398', '0.216083353234', '0.216083353234']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -4.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['0.052605106991', '0.040720393966', '0.040720393966', '0.208227978635', '0.121526894784', '0.121526894784']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -4.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['0.0041616687641', '0.00217950376431', '0.00217950376431', '0.0140479920939', '0.0048178135737', '0.0048178135737']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -4.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['0.000589870464139', '0.000316983984675', '0.000316983984675', '0.00181415845824', '0.00071509443771', '0.000715094437709']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -4.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['0.000215539138303', '0.000117593138099', '0.000117593138099', '0.000669145180518', '0.000260003909545', '0.000260003909545']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -4.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['3.39661632874e-05', '1.86225967266e-05', '1.86225967266e-05', '0.000104268151063', '4.0627232643e-05', '4.06272326437e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -4.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['1.36806304629e-05', '7.50901027249e-06', '7.50901027248e-06', '4.20151656643e-05', '1.63629805348e-05', '1.63629805343e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -4.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['7.49603753607e-07', '4.11447797718e-07', '4.11447797778e-07', '2.31168445675e-06', '8.9650830297e-07', '8.96508303483e-07']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -8.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1 -g 1 -H 1 -f 1
+['1.0857398645', '0.0721323266341', '0.0721323266341', '1.3853372318', '0.19599973851', '0.19599973851']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -8.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2 -g 1 -H 1 -f 1
+['0.547940446063', '0.0726180398108', '0.0726180398108', '0.826941511437', '0.196344620887', '0.196344620887']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -8.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4 -g 1 -H 1 -f 1
+['0.187525008223', '0.074330623343', '0.074330623343', '0.316354055757', '0.196861326551', '0.196861326551']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -8.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8 -g 1 -H 1 -f 1
+['0.187361812853', '0.0743632015376', '0.0743632015376', '0.30913094064', '0.196874687811', '0.196874687811']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -8.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16 -g 1 -H 1 -f 1
+['0.187361812799', '0.0743632016054', '0.0743632016054', '0.309130925673', '0.196874687839', '0.196874687839']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -8.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 32 -g 1 -H 1 -f 1
+['0.187361812799', '0.0743632016056', '0.0743632016056', '0.309130925633', '0.196874687839', '0.196874687839']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -8.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 64 -g 1 -H 1 -f 1
+['0.187361812799', '0.0743632016056', '0.0743632016056', '0.309130925632', '0.196874687839', '0.196874687839']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -8.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 128 -g 1 -H 1 -f 1
+['0.187361812799', '0.0743632016056', '0.0743632016056', '0.309130925625', '0.196874687839', '0.196874687839']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -8.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 256 -g 1 -H 1 -f 1
+['0.148968663898', '0.0826312631854', '0.0826312631854', '0.244606471453', '0.239391705774', '0.239391705774']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -8.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 512 -g 1 -H 1 -f 1
+['0.059162421742', '0.0410503384454', '0.0410503384454', '0.20065134923', '0.126756054272', '0.126756054272']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -8.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 1024 -g 1 -H 1 -f 1
+['0.000863114958342', '0.00112242609241', '0.00112242609241', '0.00210193556945', '0.00213021223362', '0.00213021223362']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -8.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 2048 -g 1 -H 1 -f 1
+['0.000247151739268', '0.000357382703203', '0.000357382703203', '0.000466993952979', '0.000706196363978', '0.000706196363978']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -8.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 4096 -g 1 -H 1 -f 1
+['3.93323268398e-05', '5.54061734944e-05', '5.54061734945e-05', '9.15894781196e-05', '0.000109276668128', '0.000109276668128']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -8.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 8192 -g 1 -H 1 -f 1
+['1.50682445206e-05', '2.21034633935e-05', '2.21034633934e-05', '2.51262804585e-05', '4.2742791079e-05', '4.27427910788e-05']
+./build/swe_rexi_spectral_libfft_omp_gnu_release  -s 1  -T 10  -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1  -R 4 -C -8.0 --timestepping-mode 1 -N 64 --rexi-h 0.2 --rexi-m 16384 -g 1 -H 1 -f 1
+['8.24597739588e-07', '1.20943576535e-06', '1.20943576538e-06', '1.36235197392e-06', '2.33902709189e-06', '2.33902709166e-06']
+FIN

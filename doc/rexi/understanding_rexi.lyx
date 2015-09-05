@@ -2641,7 +2641,7 @@ We can compute
 \begin_inset Formula $\eta$
 \end_inset
 
- calculated from any elliptic solver.
+ with any elliptic solver.
  Special attention has to be given to the LHS of the form 
 \begin_inset Formula $(\gamma-\Delta)\eta$
 \end_inset

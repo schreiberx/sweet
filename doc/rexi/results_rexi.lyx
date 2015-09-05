@@ -77,7 +77,7 @@
 \begin_body
 
 \begin_layout Title
-Results for REXI
+Parameter studies for REXI
 \end_layout
 
 \begin_layout Author
@@ -137,16 +137,28 @@ key "Schreiber:Formulations of the shallow-water equations"
 
 \end_inset
 
-, note that the sign is inverted) 
+, note that the sign is inverted) with 
 \begin_inset Formula 
 \[
-U_{t}=L(U).
+U_{t}=\epsilon L(U)
 \]
 
 \end_inset
 
+with
+\begin_inset Formula 
+\[
+U:=(h,u,v)^{T}.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
 If not otherwise stated, we set 
-\begin_inset Formula $g=\eta_{0}=f=1$
+\begin_inset Formula $\epsilon=g=\eta_{0}=f=1$
 \end_inset
 
  and 
@@ -157,19 +169,306 @@ If not otherwise stated, we set
 \end_layout
 
 \begin_layout Subsection
+Abbreviations
+\end_layout
+
+\begin_layout Standard
+We give a brief overview of the used abbreviations for the parameter studies:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="9" columns="2">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="left" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Symbol
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Description
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $h$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+REXI parameter specifying the sampling accuracy
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $M$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+REXI parameter related to the number of poles
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $NxN$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Resolution of simulation domain
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\tau$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Time step size for REXI
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $dt$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Time step size for REXI (identical to 
+\begin_inset Formula $\tau$
+\end_inset
+
+ in this work)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $DT$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Overall simulation time
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $nT$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Number of time steps
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
 Initial conditions
 \end_layout
 
 \begin_layout Standard
-We use the Gaussian function
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:initial_conditions"
+
+\end_inset
+
+We consider the following initial conditions
+\end_layout
+
+\begin_layout Subsubsection
+Scenario 
+\begin_inset Quotes eld
+\end_inset
+
+Gaussian
+\begin_inset Quotes erd
+\end_inset
+
+ (Default)
+\end_layout
+
+\begin_layout Standard
+If not otherwise stated, we use the Gaussian function
 \begin_inset Formula 
-\[
-\eta(x,y)=\eta_{0}+e^{-50(x^{2}+y^{2})}
-\]
+\begin{eqnarray*}
+\eta(x,y) & := & \eta_{0}+e^{-50(x^{2}+y^{2})}\\
+u(x,y) & := & 0\\
+v(x,y) & := & 0
+\end{eqnarray*}
 
 \end_inset
 
 as initial conditions and use zero values for initial velocity conditions.
+\end_layout
+
+\begin_layout Subsubsection
+Scenario 
+\begin_inset Quotes eld
+\end_inset
+
+Waves
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We also evaluate the following initial parameter from 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Terry:High-order time-parallel approximation of evolution operators"
+
+\end_inset
+
+:
+\begin_inset Formula 
+\begin{eqnarray*}
+h(x,y) & := & sin(6\pi x)cos(4\pi y)-\frac{1}{5}cos(4\pi x)sin(2\pi y)+\eta_{0}\\
+u(x,y) & := & cos(6\pi x)cos(4\pi y)-4sin(6\pi x)sin(4\pi y)\\
+v(x,y) & := & cos(6\pi x)cos(6\pi y)
+\end{eqnarray*}
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection
@@ -179,11 +478,12 @@ Discretization in time
 \begin_layout Standard
 A Runge-Kutta time stepping method of 4-th order is used if appropriate.
  E.g.
- RK4 does not make sense for REXI.
+ RK4 is not used for REXI, but for the other methods discussed in the next
+ section.
 \end_layout
 
 \begin_layout Subsection
-Discretization in space
+Solvers and their discretization in space
 \end_layout
 
 \begin_layout Standard
@@ -352,15 +652,29 @@ based on a discrete computed solution
 \end_layout
 
 \begin_layout Section
-Analytical results
+Analytical benchmark results
 \end_layout
 
 \begin_layout Subsection
-Testing for h/M parameters
+Study for REXI parameters 
+\begin_inset Formula $h$
+\end_inset
+
+ and 
+\begin_inset Formula $M$
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-(benchmark folder: 2015_08_30_search_h_M)
+(benchmark folder: 2015_08_30_search_h_M) 
+\series bold
+[TODO: reproduce these results 
+\series default
+2015_09_04_search_h_M
+\series bold
+]
 \end_layout
 
 \begin_layout Standard
@@ -384,9 +698,12 @@ We first search for an optimal choice of
 
  relates to the accuracy, as well as to the computational workload which
  has to be invested for the REXI approach.
- We execute the simulation for an overall simulation time of one second
- and use a time step size for REXI of 
-\begin_inset Formula $0.1$
+ We execute the simulation for an overall simulation time of 
+\begin_inset Formula $DT:=1$
+\end_inset
+
+ second and use a time step size for REXI of 
+\begin_inset Formula $dt:=0.1$
 \end_inset
 
 .
@@ -395,17 +712,31 @@ We first search for an optimal choice of
  height.
 \end_layout
 
-\begin_layout Standard
-We first analyze a parameter study for a resolution of 
-\begin_inset Formula $128^{2}$
-\end_inset
-
-.
+\begin_layout Subsubsection
+Different resolutions
 \end_layout
 
 \begin_layout Standard
+We first analyze a parameter study for different resolutions
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="2">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
 \begin_inset Graphics
-	filename results_plots/2015_08_30_search_h_M/output_128.pdf
+	filename results_plots/2015_09_04_search_h_M/output_n16_eps1_dt0.1.pdf
 	width 45text%
 
 \end_inset
@@ -413,23 +744,84 @@ We first analyze a parameter study for a resolution of
 
 \end_layout
 
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_09_04_search_h_M/output_n32_eps1_dt0.1.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_09_04_search_h_M/output_n64_eps1_dt0.1.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_09_04_search_h_M/output_n128_eps1_dt0.1.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Standard
-First, we can see a (blue-colored) triangle with high-accurate solutions
- of 
+We can observe a (blue-colored) triangle with high-accurate solutions of
+ 
 \begin_inset Formula $O(10^{-6})$
 \end_inset
 
 .
- This optimal triangle area can be described by
+ This optimal triangle area for a given numerical accuracy 
+\begin_inset Formula $e$
+\end_inset
+
+ can be described by
 \begin_inset Formula 
 \[
-A_{(M,h)}(C):=\{(M,h)|Mh>C,\,h>0.5\}
+A_{(M,h)}:=\{(M,h)|Mh>C(e),\,h<0.5\}
 \]
 
 \end_inset
 
 with 
-\begin_inset Formula $1024$
+\begin_inset Formula $C:=1024$
 \end_inset
 
  for an accuracy 
@@ -487,7 +879,7 @@ We define such an optimal choice of
 \end_inset
 
  as the sweetspot for a given numeric solution 
-\begin_inset Formula $U'(t+\tau):=REXI(U(t),\tau,h,M)$
+\begin_inset Formula $U'(t+\tau,h,M):=REXI(U(t),\tau,h,M)$
 \end_inset
 
  and a given numerical error threshold
@@ -508,19 +900,35 @@ We define such an optimal choice of
 \end_inset
 
 .
- 
+ This sweetspot is given by 
 \begin_inset Formula 
 \[
-S(h,M):=min_{M}min_{h}\left(rms\left(U'(t+\tau)-U(t\tau)\right)<e\right)
+S(h,M):=min_{M}min_{h}\left(rms\left(U'(t+\tau,h,M)-U(t\tau)\right)<e\right)
 \]
 
 \end_inset
 
-obviously, the optimal choice of the parameters 
+for the optimal choice of the parameters 
 \begin_inset Formula $(M,h)$
 \end_inset
 
 .
+\end_layout
+
+\begin_layout Subsubsection
+Resolution 
+\begin_inset Formula $16^{2}$
+\end_inset
+
+, 
+\begin_inset Formula $32^{2}$
+\end_inset
+
+ and 
+\begin_inset Formula $64^{2}$
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -536,20 +944,71 @@ Next, we test if both parameter change for different resolutions
 \end_layout
 
 \begin_layout Standard
+We can observe, that 
+\begin_inset Formula $h$
+\end_inset
+
+ can be fixed and we use 
+\begin_inset Formula $h:=0.2$
+\end_inset
+
+ if not otherwise stated.
+\end_layout
+
+\begin_layout Standard
+For these benchmarks, a change in resolution did not significantly change
+ the results for selected parameters 
+\begin_inset Formula $h$
+\end_inset
+
+ and 
+\begin_inset Formula $M$
+\end_inset
+
+ and continue investigating this possible independence to the resolution
+ further.
+\end_layout
+
+\begin_layout Subsubsection
+Summary
+\end_layout
+
+\begin_layout Standard
 \begin_inset Tabular
-<lyxtabular version="3" rows="1" columns="2">
+<lyxtabular version="3" rows="3" columns="2">
 <features rotate="0" tabularvalignment="middle">
-<column alignment="center" valignment="top">
-<column alignment="center" valignment="top">
+<column alignment="right" valignment="top">
+<column alignment="left" valignment="top">
 <row>
-<cell alignment="center" valignment="top" usebox="none">
+<cell alignment="right" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
-\begin_inset Graphics
-	filename results_plots/2015_08_30_search_h_M/output_16.pdf
-	width 45text%
 
+\series bold
+REXI parameter
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Observation
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $h$
 \end_inset
 
 
@@ -557,17 +1016,38 @@ Next, we test if both parameter change for different resolutions
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" usebox="none">
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
-\begin_inset Graphics
-	filename results_plots/2015_08_30_search_h_M/output_64.pdf
-	width 45text%
-
+Optimum given at 
+\begin_inset Formula $h:=0.2$
 \end_inset
 
 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $M$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Independent to the resolution
 \end_layout
 
 \end_inset
@@ -581,16 +1061,39 @@ Next, we test if both parameter change for different resolutions
 \end_layout
 
 \begin_layout Standard
-We can observe, that a change in resolution does not significantly change
- the results for selected parameters 
-\begin_inset Formula $h$
+Given a desired numerical accuracy 
+\begin_inset Formula $e$
 \end_inset
 
- and 
+ and with 
+\begin_inset Formula $h:=0.2$
+\end_inset
+
+ assumed to be constant, the optimal parameters 
 \begin_inset Formula $M$
 \end_inset
 
-.
+ is given by
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+
+\begin_inset Formula 
+\begin{equation}
+M:=\frac{C(e)}{h}.\label{eq:summary_m_c_h}
+\end{equation}
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection
@@ -626,7 +1129,18 @@ which we realize by setting
 \end_inset
 
 .
- We fix our test resolution to 
+\end_layout
+
+\begin_layout Subsubsection
+Studies for 
+\begin_inset Formula $\epsilon:=\{1,\,0.1,\,0.01\}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We fix our test resolution to 
 \begin_inset Formula $64^{2}$
 \end_inset
 
@@ -738,8 +1252,16 @@ For a decreasing
 \end_inset
 
 , see above.
- We can see, that the parameters of the REXI approach are independent to
- the resolution.
+ We can see, that the parameters of the REXI approach are again independent
+ to the resolution for this scenario.
+\end_layout
+
+\begin_layout Subsubsection
+Studies for 
+\begin_inset Formula $\epsilon:=\{10,100\}$
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -827,7 +1349,25 @@ However, we don't see an increase in diffusiveness.
 .
 \end_layout
 
+\begin_layout Subsubsection
+Dependency of 
+\begin_inset Formula $M$
+\end_inset
+
+ to 
+\begin_inset Formula $\epsilon$
+\end_inset
+
+
+\end_layout
+
 \begin_layout Standard
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:dep_of_M_to_eps"
+
+\end_inset
+
 To determine the dependency of 
 \begin_inset Formula $M$
 \end_inset
@@ -876,11 +1416,11 @@ To determine the dependency of
 
 \begin_layout Standard
 We can see a linear dependency of 
-\begin_inset Formula $\epsilon$
+\begin_inset Formula $M$
 \end_inset
 
  to 
-\begin_inset Formula $M$
+\begin_inset Formula $\epsilon$
 \end_inset
 
  in the range of
@@ -888,48 +1428,116 @@ We can see a linear dependency of
 \end_inset
 
 .
+\begin_inset Newline newline
+\end_inset
+
+
 \end_layout
 
-\begin_layout Subsection
-Increasing large time step
+\begin_layout Subsubsection
+Summary
 \end_layout
 
 \begin_layout Standard
-(benchmark folder: 2015_09_02_increasing_large_timesteps)
-\end_layout
-
-\begin_layout Standard
-In theory, we can make very long time steps with the REXI approach.
- However, the question arises how the 
-\begin_inset Formula $(M,h)$
-\end_inset
-
- coefficients are related to the time step size.
- We evaluate this by setting 
-\begin_inset Formula $h:=0.2$
-\end_inset
-
- (see also 
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Terry:High-order time-parallel approximation of evolution operators"
+Regarding the results from Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:dep_of_M_to_eps"
 
 \end_inset
 
-) and test the accuracy depending on number of poles related to 
+, the REXI parameter 
 \begin_inset Formula $M$
 \end_inset
 
- for different coarse time step sizes.
- Only a single time step is computed with REXI with the resolutions 
-\begin_inset Formula $64^{2}$
+ is indirectly proportional to 
+\begin_inset Formula $\epsilon$
 \end_inset
 
- and 
-\begin_inset Formula $128^{2}$
+ In combination with Eq.
+ 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:summary_m_c_h"
+
+\end_inset
+
+, we can extent the formula for automatically determining M to 
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+
+\begin_inset Formula 
+\begin{equation}
+M:=\frac{C(e)}{h\epsilon}.\label{eq:summary_m_c_h_eps}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Study for REXI parameter 
+\begin_inset Formula $M$
+\end_inset
+
+ and resolution 
+\begin_inset Formula $NxN$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We start by evaluating the dependency of the REXI parameter 
+\begin_inset Formula $M$
+\end_inset
+
+ to the resolution 
+\begin_inset Formula $NxN$
+\end_inset
+
+ by a single time step.
+ We again set 
+\begin_inset Formula $h:=0.2$
+\end_inset
+
+ for these benchmarks and evaluate the dependency with the initial conditions
+ described in Section 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "sub:initial_conditions"
+
 \end_inset
 
 .
+\end_layout
+
+\begin_layout Subsubsection
+Single time step
+\end_layout
+
+\begin_layout Standard
+(benchmark: 2015_09_04_increasing_dt_single_timestep_s1, 2015_09_04_increasing_d
+t_single_timestep_s5)
+\end_layout
+
+\begin_layout Standard
+The first tests are performed with a single time step and varying time step
+ size.
+\end_layout
+
+\begin_layout Standard
+We first have a look on the results for the Gaussian initial conditions:
 \end_layout
 
 \begin_layout Standard
@@ -944,7 +1552,7 @@ key "Terry:High-order time-parallel approximation of evolution operators"
 
 \begin_layout Plain Layout
 \begin_inset Graphics
-	filename results_plots/2015_09_02_increasing_large_timesteps/output_n64.pdf
+	filename results_plots/2015_09_04_increasing_dt_single_timestep_s1/output_n32_eps1_h0.2.pdf
 	width 45text%
 
 \end_inset
@@ -959,7 +1567,7 @@ key "Terry:High-order time-parallel approximation of evolution operators"
 
 \begin_layout Plain Layout
 \begin_inset Graphics
-	filename results_plots/2015_09_02_increasing_large_timesteps/output_n128.pdf
+	filename results_plots/2015_09_04_increasing_dt_single_timestep_s1/output_n64_eps1_h0.2.pdf
 	width 45text%
 
 \end_inset
@@ -978,86 +1586,377 @@ key "Terry:High-order time-parallel approximation of evolution operators"
 \end_layout
 
 \begin_layout Standard
-We can observe, that for an increasing large time step size for the REXI
- approach, also the parameter 
+We can observe, that there is indeed a dependency on the used resolution.
+ However, this can be induced by using zero-valued velocity components as
+ initial conditions.
+ Therefore, we further evaluate this with initial conditions with non-zero
+ velocities:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="2">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_09_04_increasing_dt_single_timestep_s5/output_n32_eps1_h0.2.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_09_04_increasing_dt_single_timestep_s5/output_n64_eps1_h0.2.pdf
+	width 45cm
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Here, we can observe that the accuracy of the solution again is independent
+ to the resolution.
+ An increasing time step size 
+\begin_inset Formula $dt$
+\end_inset
+
+ requires a linear increase of 
 \begin_inset Formula $M$
 \end_inset
 
- increases linearly to the resolution in one dimension:
-\begin_inset Formula 
-\[
-M\sim max_{i}(\vec{N_{i}})
-\]
+.
+\end_layout
+
+\begin_layout Subsubsection
+Multiple time steps
+\end_layout
+
+\begin_layout Standard
+(benchmark: 2015_09_04_increasing_dt_10_timesteps_s1, 2015_09_04_increasing_dt_1
+0_timesteps_s5)
+\end_layout
+
+\begin_layout Standard
+Next, we analyze the accuracy over multiple time steps with the Gaussian
+ and Waves as initial conditions:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="2">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_09_04_increasing_dt_10_timesteps_s1/output_n32_eps1_h0.2.pdf
+	width 45cm
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_09_04_increasing_dt_10_timesteps_s1/output_n64_eps1_h0.2.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_09_04_increasing_dt_10_timesteps_s5/output_n32_eps1_h0.2.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_09_04_increasing_dt_10_timesteps_s5/output_n64_eps1_h0.2.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We can again observe, that the results show an independence to the resolution.
+ Again, an increasing time step size 
+\begin_inset Formula $dt$
+\end_inset
+
+ results in a linear increase of 
+\begin_inset Formula $M$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+Different time step sizes over varying resolution 
+\begin_inset Formula $N$
+\end_inset
+
+ and 
+\begin_inset Formula $M$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+(benchmark: 2015_09_04_study_N_M_small_ts)
+\end_layout
+
+\begin_layout Standard
+The independence to the resolution can be caused by the large time step
+ size dominating the error.
+ To check that the error in time is not dominating (which would explain
+ the independency of 
+\begin_inset Formula $M$
+\end_inset
+
+ to the resolution), we further analyze the error with very small time step
+ sizes 
+\begin_inset Formula $dt$
+\end_inset
+
+, varying 
+\begin_inset Formula $M$
+\end_inset
+
+ and varying resolution 
+\begin_inset Formula $N$
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="4" columns="2">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_09_04_study_N_M_small_ts/output_eps1_dt1e-05_DT0.001.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+For these small time step sizes, we can observe, that the change in resolution
+ still does not result in any change regarding the parameter 
+\begin_inset Formula $M$
+\end_inset
+
+ depending on the resolution 
+\begin_inset Formula $N$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+Conclusion
+\end_layout
+
+\begin_layout Standard
+An increasing time step size 
+\begin_inset Formula $dt$
+\end_inset
+
+ requires a linear increase of 
+\begin_inset Formula $M$
+\end_inset
+
+.
+ Therefore, we extend Equation 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:summary_m_c_h_eps"
 
 \end_inset
 
  with 
-\begin_inset Formula $N_{i}$
-\end_inset
-
- the resolution in dimension 
-\begin_inset Formula $i$
+\begin_inset Formula $dt$
 \end_inset
 
 .
 \end_layout
 
 \begin_layout Standard
-Since the parameter 
-\begin_inset Formula $M$
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+\begin_inset Formula 
+\begin{equation}
+M:=\frac{dt\,C(e)}{h\epsilon}.\label{eq:summary_m_dt_c_h_eps}
+\end{equation}
+
 \end_inset
 
- now depends on the resolution, we investigate this in more detail.
- We set 
-\begin_inset Formula $h:0.2$
-\end_inset
 
- and run parameter studies 
-\end_layout
-
-\begin_layout Subsection
-Study for 
-\begin_inset Formula $M$
-\end_inset
-
- and 
-\begin_inset Formula $N$
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-(benchmark: 2015_09_03_study_N_M)
-\end_layout
-
-\begin_layout Standard
-This study is performed, since 
-\begin_inset Formula $M$
-\end_inset
-
- was once stated to depend on 
-\begin_inset Formula $N$
-\end_inset
-
- and then that it does not depend on 
-\begin_inset Formula $N$
-\end_inset
-
-.
- Therefore, we investigate this in more detail: We use 
-\begin_inset Formula $h:=0.2$
-\end_inset
-
- and vary 
-\begin_inset Formula $N$
-\end_inset
-
- and 
-\begin_inset Formula $M$
-\end_inset
-
-, showing the heatmap for the RMS accuracy on height in the following plot:
 \end_layout
 
 \begin_layout Section
@@ -1085,6 +1984,17 @@ Performance studies for time stepping methods
 We executed performance studies on a 40-core Intel Westmere system (4 sockets)
  to compare the overall computation time of several discretization methods
  with the REXI approach in both accuracy and time to solution.
+ We tested two different parallelization concepts for the REXI method:
+\end_layout
+
+\begin_layout Itemize
+REXI standard: The first one is the default one which parallelizes over
+ the different solvers
+\end_layout
+
+\begin_layout Itemize
+REXI PARSUM: The second one uses a parallelization over the sum and computes
+ each term in the sum using only a single core.
 \end_layout
 
 \begin_layout Standard
@@ -1122,7 +2032,11 @@ We assume that
 \begin_inset Formula $\vec{v}_{max}$
 \end_inset
 
-being related to With the REXI approach, this would result in 
+ being related to 
+\begin_inset Formula $\epsilon^{-1}$
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Standard
@@ -1138,7 +2052,7 @@ For a given
 \begin_inset Formula $L+M+1$
 \end_inset
 
- times (TODO: check this) the system 
+ times the system 
 \begin_inset Formula $(L-\alpha)^{-1}$
 \end_inset
 
