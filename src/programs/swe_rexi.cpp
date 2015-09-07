@@ -22,6 +22,7 @@ bool param_rexi_half;
 int param_timestepping_mode;
 bool param_compute_error;
 bool param_use_staggering;
+bool param_use_finite_differences_for_complex_array;
 
 
 class SimulationSWE
@@ -204,7 +205,7 @@ public:
 			}
 
 			// use REXI
-			rexiSWE.setup(-simVars.sim.CFL, param_rexi_h, param_rexi_m, param_rexi_l, simVars.sim.f, simVars.disc.res, simVars.sim.domain_size, param_rexi_half);
+			rexiSWE.setup(-simVars.sim.CFL, param_rexi_h, param_rexi_m, param_rexi_l, simVars.sim.f, simVars.disc.res, simVars.sim.domain_size, param_rexi_half, param_use_finite_differences_for_complex_array);
 
 			if (simVars.misc.verbosity > 2)
 			{
@@ -941,17 +942,19 @@ int main(int i_argc, char *i_argv[])
 			"timestepping-mode",
 			"compute-error",
 			"staggering",
+			"use-fd-for-complex-array",	/// use finite differences for complex array
 			nullptr
 	};
 
 
-	simVars.bogus.var[0] = 0.1;
-	simVars.bogus.var[1] = 200;	// M
+	simVars.bogus.var[0] = 0.2;
+	simVars.bogus.var[1] = 256;	// M
 	simVars.bogus.var[2] = 0;	// L = 0: default
 	simVars.bogus.var[3] = 1;	// param_rexi_half
 	simVars.bogus.var[4] = 0;
 	simVars.bogus.var[5] = 0;
 	simVars.bogus.var[6] = 0;
+	simVars.bogus.var[7] = 0;	// don't use FD per default for complex array
 
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
@@ -971,6 +974,9 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "	--compute-error [0/1]	Compute the errors" << std::endl;
 		std::cout << "" << std::endl;
 		std::cout << "	--staggering [0/1]		Use staggered grid" << std::endl;
+		std::cout << std::endl;
+		std::cout << "	--use-fd-for-complex-array=[0/1]	Use finite-differences for derivatives in spectral space" << std::endl;
+		std::cout << std::endl;
 		return -1;
 	}
 
@@ -981,6 +987,8 @@ int main(int i_argc, char *i_argv[])
 	param_timestepping_mode = simVars.bogus.var[4];
 	param_compute_error = simVars.bogus.var[5];
 	param_use_staggering = simVars.bogus.var[6];
+	param_use_finite_differences_for_complex_array = simVars.bogus.var[7];
+
 
 	SimulationSWE *simulationSWE = new SimulationSWE;
 

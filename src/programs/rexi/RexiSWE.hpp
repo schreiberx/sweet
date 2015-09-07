@@ -66,9 +66,10 @@ public:
 			int i_M,		///< number of sampling points
 			int i_L,		///< number of sampling points for Gaussian approx
 			double i_f,		///< Coriolis force
-			std::size_t *i_resolution,		///< resolution of domain
+			std::size_t *i_resolution,			///< resolution of domain
 			const double *i_domain_size,		///< size of domain
-			bool i_rexi_half = true	///< use half-pole reduction
+			bool i_rexi_half = true,			///< use half-pole reduction
+			bool i_use_finite_differences = false		///< use finite-differences for derivatives
 	);
 
 

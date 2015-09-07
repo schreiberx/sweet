@@ -52,7 +52,8 @@ void RexiSWE::setup(
 		double i_f,				///< Coriolis force
 		std::size_t *i_resolution,		///< resolution of domain
 		const double *i_domain_size,	///< size of domain
-		bool i_rexi_half		///< use half-pole reduction
+		bool i_rexi_half,		///< use half-pole reduction
+		bool i_use_finite_differences
 )
 {
 	M = i_M;
@@ -82,19 +83,19 @@ void RexiSWE::setup(
 		// initialize all values to account for first touch policy
 		perThreadVars[i].op_diff_c_x.setup(i_resolution);
 		perThreadVars[i].op_diff_c_x.setAll(0, 0);
-		perThreadVars[i].op_diff_c_x.op_setup_diff_x(i_domain_size);
+		perThreadVars[i].op_diff_c_x.op_setup_diff_x(i_domain_size, i_use_finite_differences);
 
 		perThreadVars[i].op_diff_c_y.setup(i_resolution);
 		perThreadVars[i].op_diff_c_y.setAll(0, 0);
-		perThreadVars[i].op_diff_c_y.op_setup_diff_y(i_domain_size);
+		perThreadVars[i].op_diff_c_y.op_setup_diff_y(i_domain_size, i_use_finite_differences);
 
 		perThreadVars[i].op_diff2_c_x.setup(i_resolution);
 		perThreadVars[i].op_diff2_c_x.setAll(0, 0);
-		perThreadVars[i].op_diff2_c_x.op_setup_diff2_x(i_domain_size);
+		perThreadVars[i].op_diff2_c_x.op_setup_diff2_x(i_domain_size, i_use_finite_differences);
 
 		perThreadVars[i].op_diff2_c_y.setup(i_resolution);
 		perThreadVars[i].op_diff2_c_y.setAll(0, 0);
-		perThreadVars[i].op_diff2_c_y.op_setup_diff2_y(i_domain_size);
+		perThreadVars[i].op_diff2_c_y.op_setup_diff2_y(i_domain_size, i_use_finite_differences);
 
 		perThreadVars[i].eta0.setup(i_resolution);
 		perThreadVars[i].eta0.setAll(0, 0);

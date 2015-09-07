@@ -131,8 +131,9 @@ public:
 			);
 
 			// padding to max simulation time if exceeding the maximum
-			if (dt+i_simulation_time > i_max_simulation_time)
-				dt = i_max_simulation_time-i_simulation_time;
+			if (i_max_simulation_time >= 0)
+				if (dt+i_simulation_time > i_max_simulation_time)
+					dt = i_max_simulation_time-i_simulation_time;
 
 			io_h += dt**RK_h_t[0];
 			io_u += dt**RK_u_t[0];
@@ -170,8 +171,9 @@ public:
 			);
 
 			// padding to max simulation time if exceeding the maximum
-			if (dt+i_simulation_time > i_max_simulation_time)
-				dt = i_max_simulation_time-i_simulation_time;
+			if (i_max_simulation_time >= 0)
+				if (dt+i_simulation_time > i_max_simulation_time)
+					dt = i_max_simulation_time-i_simulation_time;
 
 			// STAGE 2
 			(i_baseClass->*i_compute_euler_timestep_update)(
@@ -223,8 +225,9 @@ public:
 			);
 
 			// padding to max simulation time if exceeding the maximum
-			if (dt+i_simulation_time > i_max_simulation_time)
-				dt = i_max_simulation_time-i_simulation_time;
+			if (i_max_simulation_time >= 0)
+				if (dt+i_simulation_time > i_max_simulation_time)
+					dt = i_max_simulation_time-i_simulation_time;
 
 			// STAGE 2
 			(i_baseClass->*i_compute_euler_timestep_update)(
@@ -291,8 +294,9 @@ public:
 			);
 
 			// padding to max simulation time if exceeding the maximum
-			if (dt+i_simulation_time > i_max_simulation_time)
-				dt = i_max_simulation_time-i_simulation_time;
+			if (i_max_simulation_time >= 0)
+				if (dt+i_simulation_time > i_max_simulation_time)
+					dt = i_max_simulation_time-i_simulation_time;
 
 			// STAGE 2
 			(i_baseClass->*i_compute_euler_timestep_update)(
