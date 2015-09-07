@@ -56,9 +56,9 @@ elif socket.gethostname() == "martinium":
 
 
 
-subprocess.call('scons --program=swe_rexi --spectral-space=enable --spectral-dealiasing=disable --mode=release '.split(' '), shell=False)
+subprocess.call('scons --program=swe_rexi --spectral-space=enable --spectral-dealiasing=disable --libfft=enable --threading=off --rexi-parallel-sum=enable --mode=release '.split(' '), shell=False)
 
-binary = './build/swe_rexi_spectral_libfft_omp_gnu_release'
+binary = './build/swe_rexi_spectral_libfft_rexipar_gnu_release'
 if not os.path.isfile(binary):
 	print "Binary "+binary+" not found"
 	sys.exit(1)
@@ -66,7 +66,7 @@ if not os.path.isfile(binary):
 #
 # run for 1 seconds
 #
-max_time = 0.001
+max_time = 0.01
 
 
 #
@@ -87,7 +87,7 @@ default_params += ' -R '+str(timestep_order)
 
 
 # time step size for coarse time steps
-dt_list = [1e-5, 1e-4, 1e-3, 1e-2]
+dt_list = [1e-2, 1e-3, 1e-4, 1e-5, 1e-6]
 
 # epsilons
 #eps_list = [1, 0.1, 0.01]
@@ -105,7 +105,7 @@ h_list = [0.2]
 # M values for REXI
 M_list = []
 M = 1
-while M < 5000:
+while M < 10000:
 	M_list.append(M)
 	M *= 2;
 

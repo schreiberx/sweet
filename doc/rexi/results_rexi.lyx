@@ -501,6 +501,12 @@ Used derivatives
 \end_layout
 
 \begin_layout Standard
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:discretization_derivatives_fd_sp"
+
+\end_inset
+
 Furthermore, the derivatives can be based on
 \end_layout
 
@@ -1621,7 +1627,7 @@ We can observe, that there is indeed a dependency on the used resolution.
 \begin_layout Plain Layout
 \begin_inset Graphics
 	filename results_plots/2015_09_04_increasing_dt_single_timestep_s5/output_n64_eps1_h0.2.pdf
-	width 45cm
+	width 45text%
 
 \end_inset
 
@@ -1679,7 +1685,7 @@ Next, we analyze the accuracy over multiple time steps with the Gaussian
 \begin_layout Plain Layout
 \begin_inset Graphics
 	filename results_plots/2015_09_04_increasing_dt_10_timesteps_s1/output_n32_eps1_h0.2.pdf
-	width 45cm
+	width 45text%
 
 \end_inset
 
@@ -1798,17 +1804,17 @@ The independence to the resolution can be caused by the large time step
 
 \begin_layout Standard
 \begin_inset Tabular
-<lyxtabular version="3" rows="4" columns="2">
+<lyxtabular version="3" rows="2" columns="2">
 <features rotate="0" tabularvalignment="middle">
 <column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
 <row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
 \begin_inset Graphics
-	filename results_plots/2015_09_04_study_N_M_small_ts/output_eps1_dt1e-05_DT0.001.pdf
+	filename results_plots/2015_09_04_study_N_M_small_ts/output_eps1_dt0.01_DT0.01.pdf
 	width 45text%
 
 \end_inset
@@ -1818,10 +1824,16 @@ The independence to the resolution can be caused by the large time step
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+<cell alignment="center" valignment="top" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_09_04_study_N_M_small_ts/output_eps1_dt0.001_DT0.01.pdf
+	width 45text%
+
+\end_inset
+
 
 \end_layout
 
@@ -1829,59 +1841,31 @@ The independence to the resolution can be caused by the large time step
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_09_04_study_N_M_small_ts/output_eps1_dt0.0001_DT0.01.pdf
+	width 45text%
+
+\end_inset
+
 
 \end_layout
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+<cell alignment="center" valignment="top" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
-
-\end_layout
+\begin_inset Graphics
+	filename results_plots/2015_09_04_study_N_M_small_ts/output_eps1_dt1e-05_DT0.01.pdf
+	width 45text%
 
 \end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
 
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
 
 \end_layout
 
@@ -1893,9 +1877,13 @@ The independence to the resolution can be caused by the large time step
 \end_inset
 
 
-\end_layout
+\begin_inset Newline newline
+\end_inset
 
-\begin_layout Standard
+
+\begin_inset Newline newline
+\end_inset
+
 For these small time step sizes, we can observe, that the change in resolution
  still does not result in any change regarding the parameter 
 \begin_inset Formula $M$
@@ -1957,6 +1945,45 @@ M:=\frac{dt\,C(e)}{h\epsilon}.\label{eq:summary_m_dt_c_h_eps}
 \end_inset
 
 
+\end_layout
+
+\begin_layout Subsection
+Spectral solver for 
+\begin_inset Formula $(\tau L-\alpha)^{-1}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Since we use a spectral solver to solve for 
+\begin_inset Formula $(\tau L-\alpha)^{-1}$
+\end_inset
+
+, this can be the reason why 
+\begin_inset Formula $M$
+\end_inset
+
+ is independent to the resolution 
+\begin_inset Formula $M$
+\end_inset
+
+.
+ Therefore, we run tests with an alternative solver in spectral space: One
+ which does not setup the derivative operator in spectral space (e.g.
+ based on 
+\begin_inset Formula $\frac{\partial}{\partial x}e^{ixk}=ike^{ixk}$
+\end_inset
+
+), but by using a folding in spectral space based on a finite difference
+ operators specified in Cartesian space (see also Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:discretization_derivatives_fd_sp"
+
+\end_inset
+
+).
 \end_layout
 
 \begin_layout Section
