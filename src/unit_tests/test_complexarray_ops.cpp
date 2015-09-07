@@ -384,21 +384,6 @@ int main(int i_argc, char *i_argv[])
 				std::cerr << "SPEC: Error threshold for Laplace too high for spectral differentiation!" << std::endl;
 				exit(-1);
 			}
-#if 0
-			op_diff2_c_x.op_setup_diff2_y(simVars.sim.domain_size, 0);
-			std::cout << std::endl;
-			std::cout << op_diff2_c_x << std::endl;
-			std::cout << std::endl;
-			std::cout << op_diff2_c_x.toCart() << std::endl;
-			std::cout << std::endl;
-			op_diff2_c_x.op_setup_diff2_y(simVars.sim.domain_size, 1);
-			std::cout << std::endl;
-			std::cout << op_diff2_c_x << std::endl;
-			std::cout << std::endl;
-			std::cout << op_diff2_c_x.toCart() << std::endl;
-			exit(1);
-#endif
-
 
 			static double err3_laplace_check_prev = -1;
 			double err3_laplace_check =
@@ -493,15 +478,6 @@ int main(int i_argc, char *i_argv[])
 			double err_x = (op_diff_c_x(h_cart.toSpec()).toCart()-h_diff_x).reduce_norm2_quad()*res_normalization*simVars.sim.domain_size[0]/(2.0*M_PIl);
 			double err_y = (op_diff_c_y(h_cart.toSpec()).toCart()-h_diff_y).reduce_norm2_quad()*res_normalization*simVars.sim.domain_size[1]/(2.0*M_PIl);
 			double err_z = (u*v-h_cart).reduce_norm2_quad()*res_normalization;
-
-#if 0
-			{
-//				std::cout << op_diff_c_x << std::endl;
-				double err_x = (op_diff_c_x(h_cart.toSpec()).toCart()-h_diff_x).reduce_norm2_quad();
-				std::cout << "error diff x = " << err_x << std::endl;
-				exit(1);
-			}
-#endif
 
 			std::cout << "error diff x = " << err_x << std::endl;
 			std::cout << "error diff y = " << err_y << std::endl;
@@ -621,7 +597,6 @@ int main(int i_argc, char *i_argv[])
 
 
 
-#if 1
 
 		/**
 		 * 2nd order differential operator
@@ -724,7 +699,6 @@ int main(int i_argc, char *i_argv[])
 				}
 			}
 		}
-#endif
 
 		std::cout << "TEST D: DONE" << std::endl;
 	}
