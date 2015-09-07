@@ -48,11 +48,32 @@ int main(int i_argc, char *i_argv[])
 	SimulationVariables simVars;
 	simVars.disc.use_spectral_diffs = 1;
 
-	if (!simVars.setupFromMainParameters(i_argc, i_argv))
+	const char *bogus_var_names[] = {
+			"use-fd-for-complex-array",	/// use finite differences for complex array
+			nullptr
+	};
+
+	simVars.bogus.var[0] = 0;	// don't use FD per default for complex array
+
+	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
+		std::cout << std::endl;
+		std::cout << "		--use-fd-for-complex-array=[0/1]	Use finite-differences for derivatives in spectral space" << std::endl;
+		std::cout << std::endl;
 		return -1;
 	}
 
+	/*
+	 * use finite differences for differential operators in complex array
+	 */
+	bool use_finite_differences_for_complex_array = simVars.bogus.var[0];
+
+	if (use_finite_differences_for_complex_array)
+	{
+		std::cout << "********************************************************" << std::endl;
+		std::cout << "*** Using finite-differences for complex array" << std::endl;
+		std::cout << "********************************************************" << std::endl;
+	}
 
 	if (simVars.disc.use_spectral_diffs)
 		std::cout << "Using spectral diffs" << std::endl;
@@ -113,6 +134,7 @@ int main(int i_argc, char *i_argv[])
 		 * We assume 1e-12 for double precision
 		 */
 		double eps = 1e-9*tolerance_increase;
+		double eps_conv = 1e-3*tolerance_increase;
 
 
 		std::cout << "*************************************************************" << std::endl;
@@ -308,14 +330,14 @@ int main(int i_argc, char *i_argv[])
 
 			Complex2DArrayFFT op_diff2_c_x(res);
 			Complex2DArrayFFT op_diff2_c_y(res);
-			op_diff2_c_x.op_setup_diff2_x(simVars.sim.domain_size);
-			op_diff2_c_y.op_setup_diff2_y(simVars.sim.domain_size);
+			op_diff2_c_x.op_setup_diff2_x(simVars.sim.domain_size, use_finite_differences_for_complex_array);
+			op_diff2_c_y.op_setup_diff2_y(simVars.sim.domain_size, use_finite_differences_for_complex_array);
 
 			Complex2DArrayFFT op_diff_c_x(res);
-			op_diff_c_x.op_setup_diff_x(simVars.sim.domain_size);
+			op_diff_c_x.op_setup_diff_x(simVars.sim.domain_size, use_finite_differences_for_complex_array);
 
 			Complex2DArrayFFT op_diff_c_y(res);
-			op_diff_c_y.op_setup_diff_y(simVars.sim.domain_size);
+			op_diff_c_y.op_setup_diff_y(simVars.sim.domain_size, use_finite_differences_for_complex_array);
 
 
 			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
@@ -362,8 +384,23 @@ int main(int i_argc, char *i_argv[])
 				std::cerr << "SPEC: Error threshold for Laplace too high for spectral differentiation!" << std::endl;
 				exit(-1);
 			}
+#if 0
+			op_diff2_c_x.op_setup_diff2_y(simVars.sim.domain_size, 0);
+			std::cout << std::endl;
+			std::cout << op_diff2_c_x << std::endl;
+			std::cout << std::endl;
+			std::cout << op_diff2_c_x.toCart() << std::endl;
+			std::cout << std::endl;
+			op_diff2_c_x.op_setup_diff2_y(simVars.sim.domain_size, 1);
+			std::cout << std::endl;
+			std::cout << op_diff2_c_x << std::endl;
+			std::cout << std::endl;
+			std::cout << op_diff2_c_x.toCart() << std::endl;
+			exit(1);
+#endif
 
 
+			static double err3_laplace_check_prev = -1;
 			double err3_laplace_check =
 				(
 						h_cart-
@@ -371,13 +408,30 @@ int main(int i_argc, char *i_argv[])
 							spec_div_element_wise(op_diff2_c_x+op_diff2_c_y).toCart()
 				).reduce_rms_quad();
 
-			std::cout << "SPEC: Error threshold for Laplace and its inverse (check): " << err3_laplace << std::endl;
-			if (err3_laplace_check > eps)
-			{
-				std::cerr << "SPEC: Error threshold for Laplace check too high for spectral differentiation!" << std::endl;
-				exit(-1);
-			}
+			std::cout << "Error for Laplace (diff*diff()) and its inverse (check): " << err3_laplace_check << std::endl;
 
+			if (use_finite_differences_for_complex_array)
+			{
+				if (err3_laplace_check_prev != -1)
+				{
+					double conv = err3_laplace_check_prev/err3_laplace_check;
+					std::cout << " + Convergence: " << conv << std::endl;
+					if (std::abs(conv-4.0) > eps_conv)
+					{
+						std::cerr << "Convergence of laplace operator expected to be 4 ... aborting" << std::endl;
+						exit(-1);
+					}
+				}
+				err3_laplace_check_prev = err3_laplace_check;
+			}
+			else
+			{
+				if (err3_laplace_check > eps)
+				{
+					std::cerr << "SPEC: Error threshold for Laplace check too high for spectral differentiation!" << std::endl;
+					exit(-1);
+				}
+			}
 		}
 
 		std::cout << "TEST B: DONE" << std::endl;
@@ -388,10 +442,10 @@ int main(int i_argc, char *i_argv[])
 		 */
 		{
 			Complex2DArrayFFT op_diff_c_x(res);
-			op_diff_c_x.op_setup_diff_x(simVars.sim.domain_size);
+			op_diff_c_x.op_setup_diff_x(simVars.sim.domain_size, use_finite_differences_for_complex_array);
 
 			Complex2DArrayFFT op_diff_c_y(res);
-			op_diff_c_y.op_setup_diff_y(simVars.sim.domain_size);
+			op_diff_c_y.op_setup_diff_y(simVars.sim.domain_size, use_finite_differences_for_complex_array);
 
 			Complex2DArrayFFT u(res);
 			Complex2DArrayFFT v(res);
@@ -440,6 +494,15 @@ int main(int i_argc, char *i_argv[])
 			double err_y = (op_diff_c_y(h_cart.toSpec()).toCart()-h_diff_y).reduce_norm2_quad()*res_normalization*simVars.sim.domain_size[1]/(2.0*M_PIl);
 			double err_z = (u*v-h_cart).reduce_norm2_quad()*res_normalization;
 
+#if 0
+			{
+//				std::cout << op_diff_c_x << std::endl;
+				double err_x = (op_diff_c_x(h_cart.toSpec()).toCart()-h_diff_x).reduce_norm2_quad();
+				std::cout << "error diff x = " << err_x << std::endl;
+				exit(1);
+			}
+#endif
+
 			std::cout << "error diff x = " << err_x << std::endl;
 			std::cout << "error diff y = " << err_y << std::endl;
 
@@ -458,58 +521,104 @@ int main(int i_argc, char *i_argv[])
 								-h_diff_x-h_diff_y
 						).reduce_norm2_quad()*res_normalization/(2.0*M_PIl);
 
-			if (err_x > eps)
+			if (use_finite_differences_for_complex_array)
 			{
-				std::cerr << "SPEC: Error threshold for diff-X too high for spectral differentiation!" << std::endl;
-				exit(-1);
+				static double err_x_prev = -1;
+				if (err_x_prev != -1)
+				{
+					double conv = err_x_prev/err_x;
+					std::cout << " + Convergence: " << conv << std::endl;
+					if (std::abs(conv-4.0) > eps_conv)
+					{
+						std::cerr << "Convergence of diff-x operator expected to be 4 ... aborting" << std::endl;
+						exit(-1);
+					}
+				}
+				err_x_prev = err_x;
+
+				static double err_y_prev = -1;
+				if (err_y_prev != -1)
+				{
+					double conv = err_y_prev/err_y;
+					std::cout << " + Convergence: " << conv << std::endl;
+					if (std::abs(conv-4.0) > eps_conv)
+					{
+						std::cerr << "Convergence of diff-y operator expected to be 4 ... aborting" << std::endl;
+						exit(-1);
+					}
+				}
+				err_y_prev = err_y;
+
+				static double err_xy_prev = -1;
+				if (err_xy_prev != -1)
+				{
+					double conv = err_xy_prev/err_xy;
+					std::cout << " + Convergence: " << conv << std::endl;
+					if (std::abs(conv-4.0) > eps_conv)
+					{
+						std::cerr << "Convergence of diff-xy operator expected to be 4 ... aborting" << std::endl;
+						exit(-1);
+					}
+				}
+				err_xy_prev = err_xy;
+
 			}
-
-			if (err_y > eps)
+			else
 			{
-				std::cerr << "SPEC: Error threshold for diff-Y too high for spectral differentiation!" << std::endl;
-				exit(-1);
-			}
+				if (err_x > eps)
+				{
+					std::cerr << "SPEC: Error threshold for diff-X too high for spectral differentiation!" << std::endl;
+					exit(-1);
+				}
 
-			if (err_xy > eps)
-			{
-				std::cerr << "SPEC: Error threshold for diff-X+Y too high for spectral differentiation!" << std::endl;
-				exit(-1);
-			}
+				if (err_y > eps)
+				{
+					std::cerr << "SPEC: Error threshold for diff-Y too high for spectral differentiation!" << std::endl;
+					exit(-1);
+				}
 
-			if (err_xy_split > eps)
-			{
-				std::cerr << "SPEC: Error threshold for diff-X+Y split too high for spectral differentiation!" << std::endl;
-				exit(-1);
-			}
+				if (err_xy > eps)
+				{
+					std::cerr << "SPEC: Error threshold for diff-X+Y too high for spectral differentiation!" << std::endl;
+					exit(-1);
+				}
 
-			if (err_z > eps)
-			{
-				std::cerr << "SPEC: Error threshold exceeded for err_z, value = " << err_z << std::endl;
-				exit(-1);
-			}
+				if (err_xy_split > eps)
+				{
+					std::cerr << "SPEC: Error threshold for diff-X+Y split too high for spectral differentiation!" << std::endl;
+					exit(-1);
+				}
 
-			double err_int_x = (h_cart-h_diff_x.toSpec().spec_div_element_wise(op_diff_c_x).toCart()).reduce_norm2_quad()*res_normalization;
-			std::cout << "Testing spectral inverse x " << err_int_x << std::endl;
+				if (err_z > eps)
+				{
+					std::cerr << "SPEC: Error threshold exceeded for err_z, value = " << err_z << std::endl;
+					exit(-1);
+				}
 
-			if (err_int_x > eps)
-			{
-				std::cerr << "SPEC: Error threshold for integration in x too high for spectral integration!" << std::endl;
-				std::cout << err_int_x << std::endl;
-				exit(-1);
-			}
+				double err_int_x = (h_cart-h_diff_x.toSpec().spec_div_element_wise(op_diff_c_x).toCart()).reduce_norm2_quad()*res_normalization;
+				std::cout << "Testing spectral inverse x " << err_int_x << std::endl;
 
-			double err_int_y = (h_cart-h_diff_y.toSpec().spec_div_element_wise(op_diff_c_y).toCart()).reduce_norm2_quad()*res_normalization;
-			std::cout << "Testing spectral inverse y " << err_int_y << std::endl;
+				if (err_int_x > eps)
+				{
+					std::cerr << "SPEC: Error threshold for integration in x too high for spectral integration!" << std::endl;
+					std::cout << err_int_x << std::endl;
+					exit(-1);
+				}
 
-			if (err_int_y > eps)
-			{
-				std::cout << err_int_y << std::endl;
-				std::cerr << "SPEC: Error threshold for integration in y too high for spectral integration!" << std::endl;
-				exit(-1);
+				double err_int_y = (h_cart-h_diff_y.toSpec().spec_div_element_wise(op_diff_c_y).toCart()).reduce_norm2_quad()*res_normalization;
+				std::cout << "Testing spectral inverse y " << err_int_y << std::endl;
+
+				if (err_int_y > eps)
+				{
+					std::cout << err_int_y << std::endl;
+					std::cerr << "SPEC: Error threshold for integration in y too high for spectral integration!" << std::endl;
+					exit(-1);
+				}
 			}
 		}
 
 		std::cout << "TEST C: DONE" << std::endl;
+
 
 
 #if 1
@@ -559,8 +668,8 @@ int main(int i_argc, char *i_argv[])
 
 			Complex2DArrayFFT op_diff2_c_x(res);
 			Complex2DArrayFFT op_diff2_c_y(res);
-			op_diff2_c_x.op_setup_diff2_x(simVars.sim.domain_size);
-			op_diff2_c_y.op_setup_diff2_y(simVars.sim.domain_size);
+			op_diff2_c_x.op_setup_diff2_x(simVars.sim.domain_size, use_finite_differences_for_complex_array);
+			op_diff2_c_y.op_setup_diff2_y(simVars.sim.domain_size, use_finite_differences_for_complex_array);
 
 			// diff2 normalization = 4.0 pi^2 / L^2
 			double err2_x = (op_diff2_c_x(h_cart.toSpec()).toCart()-h_diff2_x).reduce_norm2_quad()*normalization*(simVars.sim.domain_size[0]*simVars.sim.domain_size[0])/(4.0*M_PIl*M_PIl);
@@ -569,16 +678,50 @@ int main(int i_argc, char *i_argv[])
 			std::cout << "error diff2 x = " << err2_x << std::endl;
 			std::cout << "error diff2 y = " << err2_y << std::endl;
 
-			if (err2_x > eps)
-			{
-				std::cerr << "SPEC: Error threshold for diff2-X too high for spectral differentiation!" << std::endl;
-				exit(-1);
-			}
 
-			if (err2_y > eps)
+			if (use_finite_differences_for_complex_array)
 			{
-				std::cerr << "SPEC: Error threshold for diff2-Y too high for spectral differentiation!" << std::endl;
-				exit(-1);
+				static double err2_x_prev = -1;
+				if (err2_x_prev != -1)
+				{
+					double conv = err2_x_prev/err2_x;
+					std::cout << " + Convergence: " << conv << std::endl;
+					if (std::abs(conv-4.0) > eps_conv)
+					{
+						std::cerr << "Convergence of diff2-x operator expected to be 4 ... aborting" << std::endl;
+						exit(-1);
+					}
+				}
+				err2_x_prev = err2_x;
+
+
+				static double err2_y_prev = -1;
+				if (err2_y_prev != -1)
+				{
+					double conv = err2_y_prev/err2_y;
+					std::cout << " + Convergence: " << conv << std::endl;
+					if (std::abs(conv-4.0) > eps_conv)
+					{
+						std::cerr << "Convergence of diff2-y operator expected to be 4 ... aborting" << std::endl;
+						exit(-1);
+					}
+				}
+				err2_y_prev = err2_y;
+
+			}
+			else
+			{
+				if (err2_x > eps)
+				{
+					std::cerr << "SPEC: Error threshold for diff2-X too high for spectral differentiation!" << std::endl;
+					exit(-1);
+				}
+
+				if (err2_y > eps)
+				{
+					std::cerr << "SPEC: Error threshold for diff2-Y too high for spectral differentiation!" << std::endl;
+					exit(-1);
+				}
 			}
 		}
 #endif

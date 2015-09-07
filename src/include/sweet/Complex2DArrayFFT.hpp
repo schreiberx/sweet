@@ -541,39 +541,57 @@ public:
 
 public:
 	void op_setup_diff_x(
-			const double i_domain_size[2]
+			const double i_domain_size[2],
+			bool i_use_finite_difference = false
 	)
 	{
 		setAll(0,0);
-		double scale = 2.0*M_PIl/i_domain_size[0];
 
-		for (std::size_t j = 0; j < resolution[1]/2; j++)
+		if (i_use_finite_difference)
 		{
-			for (std::size_t i = 1; i < resolution[0]/2; i++)
-			{
-				set(	j,
-						i,
-						0,
-						(double)i*scale
-					);
-				set(
-						resolution[1]-1-j,
-						i,
-						0,
-						(double)i*scale
-					);
+			double h[2] = {(double)i_domain_size[0] / (double)resolution[0], (double)i_domain_size[1] / (double)resolution[1]};
 
-				set(	j,
-						resolution[0]-i,
-						0,
-						-(double)i*scale
-					);
-				set(
-						resolution[1]-1-j,
-						resolution[0]-i,
-						0,
-						-(double)i*scale
-					);
+			/*
+			 * setup FD operator
+			 */
+			set(0, 1, -1.0/(2.0*h[0]), 0);
+			set(0, resolution[0]-1, 1.0/(2.0*h[0]), 0);
+
+			*this = this->toSpec();
+			// TODO: maybe set highest modes to zero?
+		}
+		else
+		{
+			double scale = 2.0*M_PIl/i_domain_size[0];
+
+			for (std::size_t j = 0; j < resolution[1]/2; j++)
+			{
+				for (std::size_t i = 1; i < resolution[0]/2; i++)
+				{
+					set(	j,
+							i,
+							0,
+							(double)i*scale
+						);
+					set(
+							resolution[1]-1-j,
+							i,
+							0,
+							(double)i*scale
+						);
+
+					set(	j,
+							resolution[0]-i,
+							0,
+							-(double)i*scale
+						);
+					set(
+							resolution[1]-1-j,
+							resolution[0]-i,
+							0,
+							-(double)i*scale
+						);
+				}
 			}
 		}
 	}
@@ -582,39 +600,59 @@ public:
 
 public:
 	void op_setup_diff2_x(
-			const double i_domain_size[2]
+			const double i_domain_size[2],
+			bool i_use_finite_difference = false
 	)
 	{
 		setAll(0,0);
-		double scale = 2.0*M_PIl/i_domain_size[0];
 
-		for (std::size_t j = 0; j < resolution[1]/2; j++)
+
+		if (i_use_finite_difference)
 		{
-			for (std::size_t i = 1; i < resolution[0]/2; i++)
-			{
-				set(	j,
-						i,
-						-(double)i*scale*(double)i*scale,
-						0
-					);
-				set(
-						resolution[1]-1-j,
-						i,
-						-(double)i*scale*(double)i*scale,
-						0
-					);
+			double h[2] = {(double)i_domain_size[0] / (double)resolution[0], (double)i_domain_size[1] / (double)resolution[1]};
 
-				set(	j,
-						resolution[0]-i,
-						-(double)i*scale*(double)i*scale,
-						0
-					);
-				set(
-						resolution[1]-1-j,
-						resolution[0]-i,
-						-(double)i*scale*(double)i*scale,
-						0
-					);
+			/*
+			 * setup FD operator
+			 */
+			set(0, 1, 1.0/(h[0]*h[0]), 0);
+			set(0, 0, -2.0/(h[0]*h[0]), 0);
+			set(0, resolution[0]-1, 1.0/(h[0]*h[0]), 0);
+
+			*this = this->toSpec();
+			// TODO: maybe set highest modes to zero?
+		}
+		else
+		{
+			double scale = 2.0*M_PIl/i_domain_size[0];
+
+			for (std::size_t j = 0; j < resolution[1]/2; j++)
+			{
+				for (std::size_t i = 1; i < resolution[0]/2; i++)
+				{
+					set(	j,
+							i,
+							-(double)i*scale*(double)i*scale,
+							0
+						);
+					set(
+							resolution[1]-1-j,
+							i,
+							-(double)i*scale*(double)i*scale,
+							0
+						);
+
+					set(	j,
+							resolution[0]-i,
+							-(double)i*scale*(double)i*scale,
+							0
+						);
+					set(
+							resolution[1]-1-j,
+							resolution[0]-i,
+							-(double)i*scale*(double)i*scale,
+							0
+						);
+				}
 			}
 		}
 	}
@@ -623,41 +661,59 @@ public:
 
 public:
 	void op_setup_diff_y(
-			const double i_domain_size[2]
+			const double i_domain_size[2],
+			bool i_use_finite_difference = false
 	)
 	{
 		setAll(0,0);
-		double scale = 2.0*M_PIl/i_domain_size[1];
 
-		for (int j = 1; j < (int)resolution[1]/2; j++)
+		if (i_use_finite_difference)
 		{
-			for (int i = 0; i < (int)resolution[0]/2; i++)
-			{
-				set(
-						j,
-						i,
-						0,
-						(double)j*scale
-					);
-				set(
-						resolution[1]-j,
-						i,
-						0,
-						-(double)j*scale
-					);
+			double h[2] = {(double)i_domain_size[0] / (double)resolution[0], (double)i_domain_size[1] / (double)resolution[1]};
 
-				set(
-						j,
-						resolution[0]-i-1,
-						0,
-						(double)j*scale
-					);
-				set(
-						resolution[1]-j,
-						resolution[0]-i-1,
-						0,
-						-(double)j*scale
-					);
+			/*
+			 * setup FD operator
+			 */
+			set(1, 0, -1.0/(2.0*h[1]), 0);
+			set(resolution[1]-1, 0, 1.0/(2.0*h[1]), 0);
+
+			*this = this->toSpec();
+			// TODO: maybe set highest modes to zero?
+		}
+		else
+		{
+			double scale = 2.0*M_PIl/i_domain_size[1];
+
+			for (int j = 1; j < (int)resolution[1]/2; j++)
+			{
+				for (int i = 0; i < (int)resolution[0]/2; i++)
+				{
+					set(
+							j,
+							i,
+							0,
+							(double)j*scale
+						);
+					set(
+							resolution[1]-j,
+							i,
+							0,
+							-(double)j*scale
+						);
+
+					set(
+							j,
+							resolution[0]-i-1,
+							0,
+							(double)j*scale
+						);
+					set(
+							resolution[1]-j,
+							resolution[0]-i-1,
+							0,
+							-(double)j*scale
+						);
+				}
 			}
 		}
 	}
@@ -665,41 +721,61 @@ public:
 
 public:
 	void op_setup_diff2_y(
-			const double i_domain_size[2]
+			const double i_domain_size[2],
+			bool i_use_finite_difference = false
 	)
 	{
 		setAll(0,0);
-		double scale = 2.0*M_PIl/i_domain_size[1];
 
-		for (int j = 1; j < (int)resolution[1]/2; j++)
+
+		if (i_use_finite_difference)
 		{
-			for (int i = 0; i < (int)resolution[0]/2; i++)
-			{
-				set(
-						j,
-						i,
-						-(double)j*scale*(double)j*scale,
-						0
-					);
-				set(
-						resolution[1]-j,
-						i,
-						-(double)j*scale*(double)j*scale,
-						0
-					);
+			double h[2] = {(double)i_domain_size[0] / (double)resolution[0], (double)i_domain_size[1] / (double)resolution[1]};
 
-				set(
-						j,
-						resolution[0]-i-1,
-						-(double)j*scale*(double)j*scale,
-						0
-					);
-				set(
-						resolution[1]-j,
-						resolution[0]-i-1,
-						-(double)j*scale*(double)j*scale,
-						0
-					);
+			/*
+			 * setup FD operator
+			 */
+			set(1, 0, 1.0/(h[1]*h[1]), 0);
+			set(0, 0, -2.0/(h[1]*h[1]), 0);
+			set(resolution[1]-1, 0, 1.0/(h[1]*h[1]), 0);
+
+			*this = this->toSpec();
+			// TODO: maybe set highest modes to zero?
+		}
+		else
+		{
+			double scale = 2.0*M_PIl/i_domain_size[1];
+
+			for (int j = 1; j < (int)resolution[1]/2; j++)
+			{
+				for (int i = 0; i < (int)resolution[0]/2; i++)
+				{
+					set(
+							j,
+							i,
+							-(double)j*scale*(double)j*scale,
+							0
+						);
+					set(
+							resolution[1]-j,
+							i,
+							-(double)j*scale*(double)j*scale,
+							0
+						);
+
+					set(
+							j,
+							resolution[0]-i-1,
+							-(double)j*scale*(double)j*scale,
+							0
+						);
+					set(
+							resolution[1]-j,
+							resolution[0]-i-1,
+							-(double)j*scale*(double)j*scale,
+							0
+						);
+				}
 			}
 		}
 	}

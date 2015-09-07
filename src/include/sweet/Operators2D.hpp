@@ -189,7 +189,7 @@ public:
 #else
 
 			/*
-			 * Note, that there's a last column which is set to 0 (Nyquist freq)
+			 * Note, that there's a last column which is set to 0 (Nyquist freq, noise in signal)
 			 */
 			diff_c_x.set_spec_all(0, 0);
 
@@ -266,7 +266,6 @@ public:
 					{0,-1,0},
 			};
 			diff_b_y.kernel_stencil_setup(d_b_y_kernel, 1.0/h[1]);
-
 
 
 			diff2_c_x = diff_c_x(diff_c_x);
