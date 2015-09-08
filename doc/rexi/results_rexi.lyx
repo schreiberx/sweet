@@ -89,23 +89,46 @@ Martin Schreiber <M.Schreiber@exeter.ac.uk>
 \end_layout
 
 \begin_layout Standard
-This documents is on results for the REXI as described in 
+This documents is on results for the REXI (In this work, we refer to REXI
+ as described in 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Terry:High-order time-parallel approximation of evolution operators"
 
 \end_inset
 
- 
+
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Schreiber:Understanding_REXI"
 
 \end_inset
 
- and is based on the linear formulation only.
- Several benchmarks are executed to evaluate the dependency of the REXI
+) and is based on the linear formulation of the SWE only.
+ The main for creating this document were questions on the dependency of
+ the REXI parameters 
+\begin_inset Formula $h$
+\end_inset
+
+ and 
+\begin_inset Formula $M$
+\end_inset
+
+ on the given scenarios described by the linear operator 
+\begin_inset Formula $L$
+\end_inset
+
+ and the initial conditions.
+\end_layout
+
+\begin_layout Standard
+Several benchmarks are executed to evaluate these dependencies of the REXI
  parameters on scenarios representative for geophysical flows.
+\end_layout
+
+\begin_layout Standard
+For sake of reproducibility, the benchmarks are given by (benchmark: [directory
+ name]).
 \end_layout
 
 \begin_layout Section
@@ -178,7 +201,7 @@ We give a brief overview of the used abbreviations for the parameter studies:
 
 \begin_layout Standard
 \begin_inset Tabular
-<lyxtabular version="3" rows="9" columns="2">
+<lyxtabular version="3" rows="8" columns="2">
 <features rotate="0" tabularvalignment="middle">
 <column alignment="center" valignment="top">
 <column alignment="left" valignment="top">
@@ -349,7 +372,7 @@ Overall simulation time
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -361,31 +384,11 @@ Overall simulation time
 
 \end_inset
 </cell>
-<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Number of time steps
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
 <cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
-
+Number of time steps
 \end_layout
 
 \end_inset
@@ -451,6 +454,12 @@ Waves
 \end_layout
 
 \begin_layout Standard
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:scenario_waves"
+
+\end_inset
+
 We also evaluate the following initial parameter from 
 \begin_inset CommandInset citation
 LatexCommand cite
@@ -493,7 +502,7 @@ name "sub:discretization_in_space"
 
 \end_inset
 
-The tests are based on different implementations:
+The tests are based on different implementations in space:
 \end_layout
 
 \begin_layout Subsubsection
@@ -507,7 +516,11 @@ name "sub:discretization_derivatives_fd_sp"
 
 \end_inset
 
-Furthermore, the derivatives can be based on
+The derivatives in the linear operator 
+\begin_inset Formula $L$
+\end_inset
+
+ can be based on
 \end_layout
 
 \begin_layout Itemize
@@ -550,12 +563,16 @@ Grid alignment
 \end_layout
 
 \begin_layout Itemize
-(A-grid): All conserved quantities are places at the cell center
+(A-grid): All conserved quantities are placed at the cell center
 \end_layout
 
 \begin_layout Itemize
 (C-grid): The potential is placed at the cell center and the velocity components
- at the cell edges
+ at the cell edges.
+\begin_inset Newline newline
+\end_inset
+
+Furthermore, computations are based on the vector invariant formulation.
 \end_layout
 
 \begin_layout Subsubsection
@@ -563,8 +580,8 @@ REXI
 \end_layout
 
 \begin_layout Standard
-There is only one REXI implementation, but with different parameters which
- are discussed below.
+There is only one REXI implementation considered, but with different parameters
+ which are discussed below.
 \end_layout
 
 \begin_layout Subsection
@@ -610,7 +627,7 @@ with
 \begin_inset Formula $t=0$
 \end_inset
 
-, the parameter
+, the parameter 
 \begin_inset Formula $\tau$
 \end_inset
 
@@ -622,7 +639,15 @@ with
 \begin_inset Formula $M$
 \end_inset
 
- the number of poles.
+ related to the number of poles 
+\begin_inset Formula $L+M+1$
+\end_inset
+
+ used to compute REXI to 
+\begin_inset Formula $L$
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Subsection
@@ -633,7 +658,7 @@ Error norm
 We use the RMS error norm 
 \begin_inset Formula 
 \[
-rms(f):=\sqrt{\frac{\sum_{\vec{x}}\left(f_{\vec{x}}-\tilde{f}_{\vec{x}}\right)^{2}}{\prod_{i}\vec{N}_{i}}}
+RMS(f):=\sqrt{\frac{\sum_{\vec{x}}\left(f_{\vec{x}}-\tilde{f}_{\vec{x}}\right)^{2}}{\prod_{i}\vec{N}_{i}}}
 \]
 
 \end_inset
@@ -655,6 +680,11 @@ based on a discrete computed solution
 \end_inset
 
  giving the resolution.
+ In this work we only compare the RMS to the height 
+\begin_inset Formula $\eta$
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Section
@@ -674,13 +704,7 @@ Study for REXI parameters
 \end_layout
 
 \begin_layout Standard
-(benchmark folder: 2015_08_30_search_h_M) 
-\series bold
-[TODO: reproduce these results 
-\series default
-2015_09_04_search_h_M
-\series bold
-]
+(benchmark folder: 2015_09_04_search_h_M)
 \end_layout
 
 \begin_layout Standard
@@ -713,9 +737,13 @@ We first search for an optimal choice of
 \end_inset
 
 .
- Hence, 10 REXI time steps are executed.
+ Hence, 10 time steps with REXI are executed.
  The results are given based on the computation of the RMS error on the
- height.
+ height 
+\begin_inset Formula $\eta$
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Subsubsection
@@ -723,7 +751,7 @@ Different resolutions
 \end_layout
 
 \begin_layout Standard
-We first analyze a parameter study for different resolutions
+We first conduct a parameter study for different resolutions
 \begin_inset Newline newline
 \end_inset
 
@@ -838,11 +866,11 @@ with
 \end_layout
 
 \begin_layout Standard
-The diagonal edge at 
+We account for the diagonal edge at 
 \begin_inset Formula $Mh=const.$
 \end_inset
 
- is explained by 
+ by 
 \begin_inset Formula $h$
 \end_inset
 
@@ -897,16 +925,20 @@ We define such an optimal choice of
 \begin_inset Formula $(M,h)$
 \end_inset
 
- which keep the error below a certain error threshold 
+ which keep the error below a certain error threshold
+\begin_inset space ~
+\end_inset
+
+
 \begin_inset Formula $e$
 \end_inset
 
- and which minimize the number of poles directly related to 
+ and minimize the number of poles directly related to 
 \begin_inset Formula $M$
 \end_inset
 
 .
- This sweetspot is given by 
+ Then, this sweetspot is given by 
 \begin_inset Formula 
 \[
 S(h,M):=min_{M}min_{h}\left(rms\left(U'(t+\tau,h,M)-U(t\tau)\right)<e\right)
@@ -915,42 +947,31 @@ S(h,M):=min_{M}min_{h}\left(rms\left(U'(t+\tau,h,M)-U(t\tau)\right)<e\right)
 \end_inset
 
 for the optimal choice of the parameters 
-\begin_inset Formula $(M,h)$
+\begin_inset Formula $(h,M)$
 \end_inset
 
 .
 \end_layout
 
 \begin_layout Subsubsection
-Resolution 
-\begin_inset Formula $16^{2}$
-\end_inset
-
-, 
-\begin_inset Formula $32^{2}$
+Dependency of 
+\begin_inset Formula $h$
 \end_inset
 
  and 
-\begin_inset Formula $64^{2}$
+\begin_inset Formula $M$
+\end_inset
+
+ on different resolutions 
+\begin_inset Formula $N$
 \end_inset
 
 
 \end_layout
 
 \begin_layout Standard
-Next, we test if both parameter change for different resolutions 
-\begin_inset Formula $16^{2}$
-\end_inset
-
- and 
-\begin_inset Formula $64^{2}$
-\end_inset
-
-:
-\end_layout
-
-\begin_layout Standard
-We can observe, that 
+Next, we test if both parameter changes for different resolutions (see above)
+ and we can observe, that 
 \begin_inset Formula $h$
 \end_inset
 
@@ -962,8 +983,8 @@ We can observe, that
 \end_layout
 
 \begin_layout Standard
-For these benchmarks, a change in resolution did not significantly change
- the results for selected parameters 
+For these conducted benchmarks, a change in resolution did not significantly
+ change the results for selected parameters 
 \begin_inset Formula $h$
 \end_inset
 
@@ -971,8 +992,20 @@ For these benchmarks, a change in resolution did not significantly change
 \begin_inset Formula $M$
 \end_inset
 
- and continue investigating this possible independence to the resolution
- further.
+.
+ Here, we like to mention, that this independency depends on the solver
+ for 
+\begin_inset Formula $(L+\alpha)^{-1}$
+\end_inset
+
+ and refer to Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:finite_differences_for_solver"
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Subsubsection
@@ -1134,7 +1167,7 @@ which we realize by setting
 \begin_inset Formula $g=\eta_{0}=f=\epsilon$
 \end_inset
 
-.
+ in our simulations.
 \end_layout
 
 \begin_layout Subsubsection
@@ -1257,7 +1290,7 @@ For a decreasing
 \begin_inset Formula $\epsilon:=0.01$
 \end_inset
 
-, see above.
+, see right bottom in the figures above.
  We can see, that the parameters of the REXI approach are again independent
  to the resolution for this scenario.
 \end_layout
@@ -1279,7 +1312,7 @@ Since the borders got more diffusive for
 \begin_inset Formula $\epsilon\gg1$
 \end_inset
 
- which we evaluate next:
+ which we evaluate next for sake of curiosity:
 \end_layout
 
 \begin_layout Standard
@@ -1349,7 +1382,7 @@ However, we don't see an increase in diffusiveness.
 \end_inset
 
  still seems to be independent to the choice of 
-\begin_inset Formula $h$
+\begin_inset Formula $h\approx0.2$
 \end_inset
 
 .
@@ -1395,11 +1428,11 @@ To determine the dependency of
 \end_inset
 
 .
- Here, we keep the simulation time limited to 
-\begin_inset Formula $1$
+ Here, we keep the simulated time limited to 
+\begin_inset Formula $dT:=1$
 \end_inset
 
- second and use a REXI timestep size of 
+ and use a REXI timestep size of 
 \begin_inset Formula $dt:=0.1$
 \end_inset
 
@@ -1434,10 +1467,6 @@ We can see a linear dependency of
 \end_inset
 
 .
-\begin_inset Newline newline
-\end_inset
-
-
 \end_layout
 
 \begin_layout Subsubsection
@@ -1456,10 +1485,15 @@ reference "sub:dep_of_M_to_eps"
 \begin_inset Formula $M$
 \end_inset
 
- is indirectly proportional to 
+ is proportional to 
 \begin_inset Formula $\epsilon$
 \end_inset
 
+: The larger the 
+\begin_inset Formula $\epsilon$
+\end_inset
+
+, the more poles have to be used for an approximation of sufficient accuracy.
  In combination with Eq.
  
 \begin_inset CommandInset ref
@@ -1468,7 +1502,11 @@ reference "eq:summary_m_c_h"
 
 \end_inset
 
-, we can extent the formula for automatically determining M to 
+, we can extend the formula for automatically determining 
+\begin_inset Formula $M$
+\end_inset
+
+ to 
 \family roman
 \series medium
 \shape up
@@ -1483,12 +1521,55 @@ reference "eq:summary_m_c_h"
 
 \begin_inset Formula 
 \begin{equation}
-M:=\frac{C(e)}{h\epsilon}.\label{eq:summary_m_c_h_eps}
+M:=\frac{C(e)\epsilon}{h}.\label{eq:summary_m_c_h_eps}
 \end{equation}
 
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+This dependency to 
+\begin_inset Formula $\epsilon$
+\end_inset
+
+ gets more obvious with a straight-forward EV decomposition of 
+\begin_inset Formula $L$
+\end_inset
+
+:
+\begin_inset Formula 
+\[
+U(t):=e^{\epsilon tL}U(0):=\Sigma\Lambda\Sigma^{-1}U(0)=\Sigma\left[\begin{array}{ccc}
+e^{\epsilon t\lambda_{0}}\\
+\\
+ &  & e^{\epsilon t\lambda_{n}}
+\end{array}\right]\Sigma^{-1}U(0)=\Sigma e^{\epsilon t\Lambda}\Sigma^{-1}U(0)
+\]
+
+\end_inset
+
+with imaginary eigenvalues 
+\begin_inset Formula $\lambda_{i}$
+\end_inset
+
+ as the diagonal in 
+\begin_inset Formula $\Lambda$
+\end_inset
+
+.
+ Therefore, larger values of 
+\begin_inset Formula $\epsilon$
+\end_inset
+
+ also lead to faster oscillations in the solution.
+ Therefore, more poles have to be invested to capture these frequencies
+ which is specified by 
+\begin_inset Formula $M$
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Subsection
@@ -1596,7 +1677,15 @@ We can observe, that there is indeed a dependency on the used resolution.
  However, this can be induced by using zero-valued velocity components as
  initial conditions.
  Therefore, we further evaluate this with initial conditions with non-zero
- velocities:
+ velocities based on the wave initial conditions (see Sec.
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:scenario_waves"
+
+\end_inset
+
+):
 \end_layout
 
 \begin_layout Standard
@@ -1651,8 +1740,12 @@ Here, we can observe that the accuracy of the solution again is independent
 \begin_inset Formula $dt$
 \end_inset
 
- requires a linear increase of 
+ shows a linear dependency of 
 \begin_inset Formula $M$
+\end_inset
+
+ on 
+\begin_inset Formula $dt$
 \end_inset
 
 .
@@ -1782,7 +1875,7 @@ Different time step sizes over varying resolution
 The independence to the resolution can be caused by the large time step
  size dominating the error.
  To check that the error in time is not dominating (which would explain
- the independency of 
+ the independence of 
 \begin_inset Formula $M$
 \end_inset
 
@@ -1948,7 +2041,7 @@ M:=\frac{dt\,C(e)}{h\epsilon}.\label{eq:summary_m_dt_c_h_eps}
 \end_layout
 
 \begin_layout Subsection
-Spectral solver for 
+Finite-difference-based solution for 
 \begin_inset Formula $(\tau L-\alpha)^{-1}$
 \end_inset
 
@@ -1956,38 +2049,471 @@ Spectral solver for
 \end_layout
 
 \begin_layout Standard
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:finite_differences_for_solver"
+
+\end_inset
+
 Since we use a spectral solver to solve for 
 \begin_inset Formula $(\tau L-\alpha)^{-1}$
 \end_inset
 
-, this can be the reason why 
+, this can be the reason of 
 \begin_inset Formula $M$
 \end_inset
 
- is independent to the resolution 
+ being independent to the resolution 
 \begin_inset Formula $M$
 \end_inset
 
 .
- Therefore, we run tests with an alternative solver in spectral space: One
- which does not setup the derivative operator in spectral space (e.g.
+ Therefore, we run tests with an alternative solver in spectral space (to
+ avoid implementing time-consuming alternative solvers): One which does
+ not setup the derivative operator in spectral space (e.g.
  based on 
-\begin_inset Formula $\frac{\partial}{\partial x}e^{ixk}=ike^{ixk}$
+\begin_inset Formula $\frac{\partial}{\partial x}e^{ixk}\tilde{u}(k)=ike^{ixk}\tilde{u}(k)$
 \end_inset
 
-), but by using a folding in spectral space based on a finite difference
- operators specified in Cartesian space (see also Section 
+), but one which is based on a finite difference operator (e.g.
+ 
+\begin_inset Formula $\frac{\partial}{\partial x}u(x)\approx\frac{u_{x+h}-u_{x-h}}{2h}$
+\end_inset
+
+) specified in Cartesian space (see also Section 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "sub:discretization_derivatives_fd_sp"
 
 \end_inset
 
-).
+), but applied as a folding operation in Fourier space.
+\end_layout
+
+\begin_layout Standard
+Note, that despite we are using the Fourier space to solve this, the results
+ are representative for the solution which would be computed with alternative
+ solvers such as based on an LU decomposition or iterative solvers.
+\end_layout
+
+\begin_layout Subsubsection
+Studies for varying 
+\begin_inset Formula $h$
+\end_inset
+
+ and 
+\begin_inset Formula $M$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+(benchmark: 2015_09_07_search_h_M_finite_differences)
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="2">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_09_07_search_h_M_finite_differences/output_n16_eps1_dt0.1.pdf
+	width 45mm
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_09_07_search_h_M_finite_differences/output_n32_eps1_dt0.1.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_09_07_search_h_M_finite_differences/output_n64_eps1_dt0.1.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_09_07_search_h_M_finite_differences/output_n128_eps1_dt0.1.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+For the 
+\begin_inset Formula $16^{2}$
+\end_inset
+
+ resolution, we like to mention that the initial conditions are barely captured
+ by this resolution.
+\end_layout
+
+\begin_layout Standard
+Compared to computing 
+\begin_inset Formula $(L+\alpha)^{-1}$
+\end_inset
+
+ with spectral methods, 
+\end_layout
+
+\begin_layout Itemize
+Accuracy: We observe now a significantly reduced accuracy
+\end_layout
+
+\begin_layout Itemize
+Optimal solution area: We can observe a similar 
+\begin_inset Quotes eld
+\end_inset
+
+triangular
+\begin_inset Quotes erd
+\end_inset
+
+-shaped solution area.
+ However, the 
+\begin_inset Formula $h$
+\end_inset
+
+ values can be larger.
+\end_layout
+
+\begin_layout Itemize
+Dependency of 
+\begin_inset Formula $M$
+\end_inset
+
+ to the resolution 
+\begin_inset Formula $N$
+\end_inset
+
+.
+\begin_inset Newline newline
+\end_inset
+
+For the larger resolution 
+\begin_inset Formula $128^{2}$
+\end_inset
+
+, there seems to be a dependency of 
+\begin_inset Formula $M$
+\end_inset
+
+ to the resolution 
+\begin_inset Formula $N$
+\end_inset
+
+, however there's not a clear significance given
+\end_layout
+
+\begin_layout Subsubsection
+Studies for varying 
+\begin_inset Formula $h$
+\end_inset
+
+ and 
+\begin_inset Formula $M$
+\end_inset
+
+: refined 
+\begin_inset Formula $h$
+\end_inset
+
+ & 
+\begin_inset Formula $N$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+(benchmark: 2015_09_07_search_h_M_finite_differences_2)
+\end_layout
+
+\begin_layout Standard
+Based on the previous results, we continue with additional parameter studies,
+ but with 
+\begin_inset Formula $h$
+\end_inset
+
+ refined around the optimum interval 
+\begin_inset Formula $\{0.1,0.2,...,2.0\}$
+\end_inset
+
+ and with larger resolutions to determine if there's a dependency of 
+\begin_inset Formula $M$
+\end_inset
+
+ to the resolution.
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Note the different scaling for the coloring which we did for sake of clarity!
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="3" columns="2">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_09_07_search_h_M_finite_differences_2/output_n16_eps1_dt0.1.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_09_07_search_h_M_finite_differences_2/output_n32_eps1_dt0.1.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_09_07_search_h_M_finite_differences_2/output_n64_eps1_dt0.1.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_09_07_search_h_M_finite_differences_2/output_n128_eps1_dt0.1.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_09_07_search_h_M_finite_differences_2/output_n256_eps1_dt0.1.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_09_07_search_h_M_finite_differences_2/output_n512_eps1_dt0.1.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Here, we can observe indeed the requirement of 
+\begin_inset Formula $M$
+\end_inset
+
+ to be increased if also a decrease in error should be obtained.
+ There also seems to be a linear dependence of 
+\begin_inset Formula $M$
+\end_inset
+
+ to the resolution 
+\begin_inset Formula $N$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+Conclusion
+\end_layout
+
+\begin_layout Standard
+When using a finite-difference solver or any other solvers based on 1st
+ order accurate approximations of the solution (e.g.
+ finite-element with 1st order basis functions), this requires a dependency
+ of 
+\begin_inset Formula $M$
+\end_inset
+
+ on the resolution 
+\begin_inset Formula $N$
+\end_inset
+
+.
+ We use the subindex to differentiate this determination of 
+\begin_inset Formula $M$
+\end_inset
+
+ to the one for a spectral solver.
+\end_layout
+
+\begin_layout Standard
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+\begin_inset Formula 
+\begin{equation}
+M_{FD}:=\frac{dt\,C_{FD}(e)\,N}{h\epsilon}.\label{eq:summary_m_dt_c_h_eps-1}
+\end{equation}
+
+\end_inset
+
+
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\bar default
+\strikeout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+We should emphasize, that here the desired accuracy specified by 
+\begin_inset Formula $e$
+\end_inset
+
+ may be not achieved due to space-discretization errors.
+ Finally we mention that the 
+\begin_inset Formula $C(e)$
+\end_inset
+
+ already included the accuracy, hence this formula for determining 
+\begin_inset Formula $M$
+\end_inset
+
+ can be rewritten by making 
+\begin_inset Formula $C$
+\end_inset
+
+ dependent on 
+\begin_inset Formula $N$
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Section
-Performance benchmarks
+Performance benchmarks and comparison to standard time stepping schemes
 \end_layout
 
 \begin_layout Standard
@@ -2008,6 +2534,10 @@ Performance studies for time stepping methods
 \end_layout
 
 \begin_layout Standard
+[TODO]
+\end_layout
+
+\begin_layout Standard
 We executed performance studies on a 40-core Intel Westmere system (4 sockets)
  to compare the overall computation time of several discretization methods
  with the REXI approach in both accuracy and time to solution.
@@ -2024,12 +2554,12 @@ REXI PARSUM: The second one uses a parallelization over the sum and computes
  each term in the sum using only a single core.
 \end_layout
 
-\begin_layout Standard
-[TODO]
-\end_layout
-
 \begin_layout Subsection
 Evaluation via a performance model
+\end_layout
+
+\begin_layout Standard
+[TODO]
 \end_layout
 
 \begin_layout Standard
@@ -2091,7 +2621,7 @@ Summary
 \end_layout
 
 \begin_layout Standard
-We summarize 
+[TODO]
 \end_layout
 
 \begin_layout Section

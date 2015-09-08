@@ -440,7 +440,7 @@ Since we are interested in approximating
 \begin_layout Standard
 \begin_inset Formula 
 \[
-b_{m}=h\,e^{-imh}\hat{\psi_{h}}(\frac{1}{2\pi})^{-1}.
+b_{m}=h\,e^{-imh}\hat{\psi_{h}}\left(\frac{1}{2\pi}\right)^{-1}.
 \]
 
 \end_inset
