@@ -130,7 +130,7 @@ public:
 				{
 					// beta plane
 					double y_beta = (((double)j+0.5)/(double)simVars.disc.res[1]);
-					beta_plane.set(j, i, simVars.sim.f+simVars.sim.beta*y_beta);
+					beta_plane.set(j, i, simVars.sim.f0+simVars.sim.beta*y_beta);
 				}
 			}
 		}
@@ -155,7 +155,7 @@ public:
 		}
 		else
 		{
-			q = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + simVars.sim.f) / prog_P;
+			q = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + simVars.sim.f0) / prog_P;
 		}
 
 		double normalization = (simVars.sim.domain_size[0]*simVars.sim.domain_size[1]) /
@@ -264,7 +264,7 @@ public:
 		H = simVars.sim.g*i_h + 0.5*(i_u*i_u + i_v*i_v);
 
 		if (simVars.setup.scenario != 5)
-			q = (op.diff_c_x(i_v) - op.diff_c_y(i_u) + simVars.sim.f) / i_h;
+			q = (op.diff_c_x(i_v) - op.diff_c_y(i_u) + simVars.sim.f0) / i_h;
 		else
 			q = (op.diff_c_x(i_v) - op.diff_c_y(i_u) + beta_plane) / i_h;
 

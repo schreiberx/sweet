@@ -126,7 +126,7 @@ public:
 			).reduce_sum_quad() * normalization;
 
 		// potential enstropy
-		eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + simVars.sim.f) / prog_h;
+		eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + simVars.sim.f0) / prog_h;
 		simVars.diag.total_potential_enstrophy = 0.5*(eta*eta*prog_h).reduce_sum_quad() * normalization;
 	}
 
@@ -195,8 +195,8 @@ public:
 		 *	u_t = -g * h_x - u * u_x - v * u_y + f*v
 		 *	v_t = -g * h_y - u * v_x - v * v_y - f*u
 		 */
-		o_u_t = -simVars.sim.g*op.diff_c_x(i_h) - i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u) + simVars.sim.f*i_v;
-		o_v_t = -simVars.sim.g*op.diff_c_y(i_h) - i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v) - simVars.sim.f*i_u;
+		o_u_t = -simVars.sim.g*op.diff_c_x(i_h) - i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u) + simVars.sim.f0*i_v;
+		o_v_t = -simVars.sim.g*op.diff_c_y(i_h) - i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v) - simVars.sim.f0*i_u;
 
 		if (simVars.sim.viscosity != 0)
 		{

@@ -108,7 +108,7 @@ public:
 		double CFL = 0.05;
 
 		/// Coriolis frequency f0
-		double f = 0.0;
+		double f0 = 0.0;
 
 		/// Beta coefficient for f(y_N) = f0 + y_N*beta
 		/// here, y_N is the normalized y coordinate \in [0;1]
@@ -378,7 +378,7 @@ public:
 				break;
 
 			case 'f':
-				sim.f = atof(optarg);
+				sim.f0 = atof(optarg);
 				break;
 
 			case 'b':

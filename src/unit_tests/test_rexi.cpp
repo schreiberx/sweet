@@ -220,7 +220,7 @@ int main(int i_argc, char *i_argv[])
 			int M = 256/h;
 
 			double tau = h*20.0;
-			double f = simVars.sim.f;
+			double f = simVars.sim.f0;
 
 			std::cout << "REXI setup: M=" << M << ", h=" << h << ", tau=" << tau << ", f=" << f << std::endl;
 

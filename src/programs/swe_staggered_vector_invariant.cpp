@@ -63,15 +63,14 @@ public:
 	 *   |___u0,0____|
 	 */
 public:
-	SimulationSWEStaggered(
-	)	:
+	SimulationSWEStaggered()	:
 		prog_P(simVars.disc.res),	// density/pressure
 		prog_u(simVars.disc.res),	// velocity (x-direction)
 		prog_v(simVars.disc.res),	// velocity (y-direction)
 
-		H(simVars.disc.res),	//
-		U(simVars.disc.res),	// mass flux (x-direction)
-		V(simVars.disc.res),	// mass flux (y-direction)
+		H(simVars.disc.res),		//
+		U(simVars.disc.res),		// mass flux (x-direction)
+		V(simVars.disc.res),		// mass flux (y-direction)
 		q(simVars.disc.res),
 		beta_plane(simVars.disc.res),
 
@@ -132,7 +131,7 @@ public:
 				{
 					// beta plane
 					double y_beta = (((double)j+0.5)/(double)simVars.disc.res[1]);
-					beta_plane.set(j, i, simVars.sim.f+simVars.sim.beta*y_beta);
+					beta_plane.set(j, i, simVars.sim.f0+simVars.sim.beta*y_beta);
 				}
 			}
 		}
@@ -166,7 +165,7 @@ public:
 		}
 		else
 		{
-			q = (op.diff_b_x(prog_v) - op.diff_b_y(prog_u) + simVars.sim.f) / op.avg_b_x(op.avg_b_y(prog_P));
+			q = (op.diff_b_x(prog_v) - op.diff_b_y(prog_u) + simVars.sim.f0) / op.avg_b_x(op.avg_b_y(prog_P));
 		}
 
 		double normalization = (simVars.sim.domain_size[0]*simVars.sim.domain_size[1]) /
@@ -280,7 +279,7 @@ public:
 		}
 		else
 		{
-			q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + simVars.sim.f) / op.avg_b_x(op.avg_b_y(i_h));
+			q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + simVars.sim.f0) / op.avg_b_x(op.avg_b_y(i_h));
 		}
 
 		o_u_t = op.avg_f_y(q*op.avg_b_x(V)) - op.diff_b_x(H);

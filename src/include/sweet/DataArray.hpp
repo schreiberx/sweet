@@ -625,11 +625,14 @@ public:
 			double i_value
 	)
 	{
+		if (i_row < 0)
+			i_row += resolution[1];
+
 		requestDataInCartesianSpace();
 
 #pragma omp parallel for OPENMP_SIMD
-		for (std::size_t i = i_row*resolution[0]; i < (i_row+1)*resolution[0]; i++)
-			array_data_cartesian_space[i] = i_value;
+		for (std::size_t i = 0; i < resolution[0]; i++)
+			array_data_cartesian_space[i_row*resolution[0]+i] = i_value;
 	}
 
 	/**
@@ -641,6 +644,12 @@ public:
 			int i_dst_row
 	)
 	{
+		if (i_src_row < 0)
+			i_src_row += resolution[1];
+
+		if (i_dst_row < 0)
+			i_dst_row += resolution[1];
+
 		requestDataInCartesianSpace();
 
 		std::size_t src_idx = i_src_row*resolution[0];
@@ -651,6 +660,7 @@ public:
 			array_data_cartesian_space[dst_idx+i] = -array_data_cartesian_space[src_idx+i];
 	}
 
+
 	/**
 	 * Copy values from another row
 	 */
@@ -660,6 +670,12 @@ public:
 			int i_dst_row
 	)
 	{
+		if (i_src_row < 0)
+			i_src_row = resolution[1]+i_src_row;
+
+		if (i_dst_row < 0)
+			i_dst_row = resolution[1]+i_dst_row;
+
 		requestDataInCartesianSpace();
 
 		std::size_t src_idx = i_src_row*resolution[0];

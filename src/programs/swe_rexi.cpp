@@ -103,7 +103,7 @@ public:
 		{
 			std::cout << "Setting up steady state" << std::endl;
 
-			if (simVars.sim.f == 0)
+			if (simVars.sim.f0 == 0)
 			{
 				std::cerr << "Coriolis frequency f is set to 0" << std::endl;
 				exit(1);
@@ -145,13 +145,13 @@ public:
 					double bary = std::sin(sx*2.0*M_PIl)*std::cos(sy*2.0*M_PIl)*2.0*M_PIl/simVars.sim.domain_size[1];
 
 					double h = simVars.setup.h0+foo;
-					double u = -simVars.sim.g/simVars.sim.f*bary;
-					double v = simVars.sim.g/simVars.sim.f*barx;
+					double u = -simVars.sim.g/simVars.sim.f0*bary;
+					double v = simVars.sim.g/simVars.sim.f0*barx;
 #else
 					double foo = std::exp(-50.0*(dx*dx + dy*dy));
 					double h = simVars.setup.h0+foo;
-					double u = -simVars.sim.g/simVars.sim.f*(-50.0*2.0*dy)*foo;
-					double v = simVars.sim.g/simVars.sim.f*(-50.0*2.0*dx)*foo;
+					double u = -simVars.sim.g/simVars.sim.f0*(-50.0*2.0*dy)*foo;
+					double v = simVars.sim.g/simVars.sim.f0*(-50.0*2.0*dx)*foo;
 #endif
 
 					prog_h.set(j, i, h);
@@ -205,7 +205,7 @@ public:
 			}
 
 			// use REXI
-			rexiSWE.setup(-simVars.sim.CFL, param_rexi_h, param_rexi_m, param_rexi_l, simVars.sim.f, simVars.disc.res, simVars.sim.domain_size, param_rexi_half, param_use_finite_differences_for_complex_array);
+			rexiSWE.setup(-simVars.sim.CFL, param_rexi_h, param_rexi_m, param_rexi_l, simVars.sim.f0, simVars.disc.res, simVars.sim.domain_size, param_rexi_half, param_use_finite_differences_for_complex_array);
 
 			if (simVars.misc.verbosity > 2)
 			{
@@ -249,7 +249,7 @@ public:
 			).reduce_sum_quad() * normalization;
 
 		// potential enstropy
-		eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + simVars.sim.f) / prog_h;
+		eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + simVars.sim.f0) / prog_h;
 		simVars.diag.total_potential_enstrophy = 0.5*(eta*eta*prog_h).reduce_sum_quad() * normalization;
 	}
 
@@ -320,8 +320,8 @@ public:
 			 * u_t = -g * h_x + f*v
 			 * v_t = -g * h_y - f*u
 			 */
-			o_u_t = -simVars.sim.g*op.diff_c_x(i_h) + simVars.sim.f*i_v;
-			o_v_t = -simVars.sim.g*op.diff_c_y(i_h) - simVars.sim.f*i_u;
+			o_u_t = -simVars.sim.g*op.diff_c_x(i_h) + simVars.sim.f0*i_v;
+			o_v_t = -simVars.sim.g*op.diff_c_y(i_h) - simVars.sim.f0*i_u;
 
 			if (simVars.sim.viscosity != 0)
 			{
@@ -472,8 +472,8 @@ public:
 
 			H = simVars.sim.g*i_h;// + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
 
-			o_u_t = op.avg_f_y(simVars.sim.f*op.avg_b_x(i_v)) - op.diff_b_x(H);
-			o_v_t = -op.avg_f_x(simVars.sim.f*op.avg_b_y(i_u)) - op.diff_b_y(H);
+			o_u_t = op.avg_f_y(simVars.sim.f0*op.avg_b_x(i_v)) - op.diff_b_x(H);
+			o_v_t = -op.avg_f_x(simVars.sim.f0*op.avg_b_y(i_u)) - op.diff_b_y(H);
 
 
 			/*

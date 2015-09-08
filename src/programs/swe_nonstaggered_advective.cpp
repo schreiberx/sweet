@@ -85,7 +85,7 @@ public:
 				{
 					// beta plane
 					double y_beta = (((double)j+0.5)/(double)simVars.disc.res[1]);
-					beta_plane.set(j, i, simVars.sim.f+simVars.sim.beta*y_beta);
+					beta_plane.set(j, i, simVars.sim.f0+simVars.sim.beta*y_beta);
 				}
 			}
 		}
@@ -116,13 +116,10 @@ public:
 
 		// potential enstropy
 		if (simVars.sim.beta != 0.0)
-		{
-			eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + beta_plane) / prog_h;
-		}
+			eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + simVars.sim.beta) / prog_h;
 		else
-		{
-			eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + simVars.sim.f) / prog_h;
-		}
+			eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + simVars.sim.f0) / prog_h;
+
 		simVars.diag.total_potential_enstrophy = 0.5*(eta*eta*prog_h).reduce_sum_quad() * normalization;
 	}
 
@@ -187,36 +184,29 @@ public:
 		if (simVars.sim.top_bottom_zero_v_velocity)
 		{
 			/**
-			 * We use a simple trick to simulate a slip condition (no outflow) at the top and bottom layer.
+			 * See doc/beta_plane_for_swe/beta_plane_for_swe.lyx
+			 * for further information.
 			 *
-			 * The v-velocity components for the top and bottom layer are overwritten in each time step.
+			 * We use some tricks to simulate a slip condition (no outflow) at the top and bottom layer.
 			 *
 			 * Note, that this has to be done here, since the the RK time step updates may generate
-			 * non-zero velocities at the top and bottom layer in the stages if only zeroing the componens
+			 * non-zero velocities at the top and bottom layer in the stages if only zeroing the components
 			 * for the very 1st stage of RK.
 			 */
-#if 0
-			// override 'const'
-			((DataArray<2>&)i_v).set_row(0, 0);
-			((DataArray<2>&)i_v).set_row(1, 0);
-			((DataArray<2>&)i_v).set_row(simVars.disc.res[1]-2, 0);
-			((DataArray<2>&)i_v).set_row(simVars.disc.res[1]-1, 0);
-#else
-			((DataArray<2>&)i_u).set_row(0, 0);
-			((DataArray<2>&)i_u).set_row(simVars.disc.res[1]-1, 0);
 
-			((DataArray<2>&)i_v).set_row(1, 0);
-			((DataArray<2>&)i_h).set_row(0, simVars.setup.h0);
+			/*
+			 * here, we first handle the VELOCITY UPDATES
+			 *
+			 * WARNING: This probably does not conserve the quantities
+			 */
+			((DataArray<2>&)i_v).set_row(0, 0);		// zero velocities
+			((DataArray<2>&)i_v).set_row(-1, 0);
 
-			((DataArray<2>&)i_v).copy_row_inv_sign(2, 0);
-			((DataArray<2>&)i_h).copy_row(2, 0);
+			((DataArray<2>&)i_u).copy_row(1, 0);	// slip boundaries
+			((DataArray<2>&)i_u).copy_row(-2, -1);
 
-			((DataArray<2>&)i_v).set_row(simVars.disc.res[1]-2, 0);
-			((DataArray<2>&)i_h).set_row(simVars.disc.res[1]-1, simVars.setup.h0);
-
-			((DataArray<2>&)i_v).copy_row_inv_sign(simVars.disc.res[1]-3, simVars.disc.res[1]-1);
-			((DataArray<2>&)i_h).copy_row(simVars.disc.res[1]-3, simVars.disc.res[1]-1);
-#endif
+			((DataArray<2>&)i_h).copy_row(1, 0);	// make smooth
+			((DataArray<2>&)i_h).copy_row(-2, -1);
 		}
 
 		/*
@@ -226,8 +216,22 @@ public:
 		 *	u_t = -g * h_x - u * u_x - v * u_y + f*v
 		 *	v_t = -g * h_y - u * v_x - v * v_y - f*u
 		 */
-		o_u_t = -simVars.sim.g*op.diff_c_x(i_h) - i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u) + simVars.sim.f*i_v;
-		o_v_t = -simVars.sim.g*op.diff_c_y(i_h) - i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v) - simVars.sim.f*i_u;
+		o_u_t = -simVars.sim.g*op.diff_c_x(i_h) - i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
+		o_v_t = -simVars.sim.g*op.diff_c_y(i_h) - i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
+
+		if (simVars.sim.beta == 0.0)
+		{
+			o_u_t += simVars.sim.f0*i_v;
+			o_v_t -= simVars.sim.f0*i_u;
+		}
+		else
+		{
+			o_u_t += beta_plane*i_v;
+			o_v_t -= beta_plane*i_u;
+
+			o_v_t.set_row(0, 0);
+			o_v_t.set_row(-1, 0);
+		}
 
 		if (simVars.sim.viscosity != 0)
 		{
@@ -240,7 +244,6 @@ public:
 			o_u_t -= op.diff4(i_u)*simVars.sim.hyper_viscosity;
 			o_v_t -= op.diff4(i_v)*simVars.sim.hyper_viscosity;
 		}
-
 
 		/*
 		 * TIME STEP SIZE

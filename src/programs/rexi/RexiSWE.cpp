@@ -299,7 +299,7 @@ void RexiSWE::run_timestep_direct_solution(
 
 	double eta_bar = i_parameters.setup.h0;
 	double g = i_parameters.sim.g;
-	double f = i_parameters.sim.f;
+	double f = i_parameters.sim.f0;
 	complex I(0.0,1.0);
 
 	Complex2DArrayFFT i_h(io_h.resolution);
