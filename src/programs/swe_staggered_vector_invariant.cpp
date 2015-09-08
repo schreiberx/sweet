@@ -28,8 +28,8 @@ public:
 	DataArray<2> H, U, V;
 	DataArray<2> q;
 
-	// parameters
-	DataArray<2> f;
+	// beta plane
+	DataArray<2> beta_plane;
 
 	DataArray<2> tmp;
 
@@ -73,7 +73,7 @@ public:
 		U(simVars.disc.res),	// mass flux (x-direction)
 		V(simVars.disc.res),	// mass flux (y-direction)
 		q(simVars.disc.res),
-		f(simVars.disc.res),
+		beta_plane(simVars.disc.res),
 
 		tmp(simVars.disc.res),
 
@@ -128,6 +128,12 @@ public:
 
 					prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
 				}
+
+				{
+					// beta plane
+					double y_beta = (((double)j+0.5)/(double)simVars.disc.res[1]);
+					beta_plane.set(j, i, simVars.sim.f+simVars.sim.beta*y_beta);
+				}
 			}
 		}
 
@@ -154,9 +160,9 @@ public:
 
 		last_timestep_nr_update_diagnostics = simVars.timecontrol.current_timestep_nr;
 
-		if (simVars.sim.use_f_array)
+		if (simVars.sim.beta != 0.0)
 		{
-			q = (op.diff_b_x(prog_v) - op.diff_b_y(prog_u) + f) / op.avg_b_x(op.avg_b_y(prog_P));
+			q = (op.diff_b_x(prog_v) - op.diff_b_y(prog_u) + beta_plane) / op.avg_b_x(op.avg_b_y(prog_P));
 		}
 		else
 		{
@@ -268,13 +274,13 @@ public:
 
 		H = simVars.sim.g*i_h + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
 
-		if (simVars.setup.scenario != 5)
+		if (simVars.sim.beta != 0.0)
 		{
-			q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + simVars.sim.f) / op.avg_b_x(op.avg_b_y(i_h));
+			q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + beta_plane) / op.avg_b_x(op.avg_b_y(i_h));
 		}
 		else
 		{
-			q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + f) / op.avg_b_x(op.avg_b_y(i_h));
+			q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + simVars.sim.f) / op.avg_b_x(op.avg_b_y(i_h));
 		}
 
 		o_u_t = op.avg_f_y(q*op.avg_b_x(V)) - op.diff_b_x(H);

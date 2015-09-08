@@ -75,40 +75,54 @@ void RexiSWE::setup(
 
 	perThreadVars = new PerThreadVars[num_threads];
 
+	/**
+	 * We split the setup from the utilization here.
+	 *
+	 * This is necessary, since it has to be assured that
+	 * the FFTW plans are initialized before using them.
+	 */
+#if SWEET_REXI_PARALLEL_SUM
+#	pragma omp parallel for schedule(static)
+#endif
+	for (int i = 0; i < num_threads; i++)
+	{
+		perThreadVars[i].op_diff_c_x.setup(i_resolution);
+		perThreadVars[i].op_diff_c_y.setup(i_resolution);
+		perThreadVars[i].op_diff2_c_x.setup(i_resolution);
+		perThreadVars[i].op_diff2_c_y.setup(i_resolution);
+		perThreadVars[i].eta0.setup(i_resolution);
+		perThreadVars[i].u0.setup(i_resolution);
+		perThreadVars[i].v0.setup(i_resolution);
+		perThreadVars[i].h_sum.setup(i_resolution);
+		perThreadVars[i].u_sum.setup(i_resolution);
+		perThreadVars[i].v_sum.setup(i_resolution);
+	}
+
+
 #if SWEET_REXI_PARALLEL_SUM
 #	pragma omp parallel for schedule(static)
 #endif
 	for (int i = 0; i < num_threads; i++)
 	{
 		// initialize all values to account for first touch policy
-		perThreadVars[i].op_diff_c_x.setup(i_resolution);
 		perThreadVars[i].op_diff_c_x.setAll(0, 0);
 		perThreadVars[i].op_diff_c_x.op_setup_diff_x(i_domain_size, i_use_finite_differences);
 
-		perThreadVars[i].op_diff_c_y.setup(i_resolution);
 		perThreadVars[i].op_diff_c_y.setAll(0, 0);
 		perThreadVars[i].op_diff_c_y.op_setup_diff_y(i_domain_size, i_use_finite_differences);
 
-		perThreadVars[i].op_diff2_c_x.setup(i_resolution);
 		perThreadVars[i].op_diff2_c_x.setAll(0, 0);
 		perThreadVars[i].op_diff2_c_x.op_setup_diff2_x(i_domain_size, i_use_finite_differences);
 
-		perThreadVars[i].op_diff2_c_y.setup(i_resolution);
 		perThreadVars[i].op_diff2_c_y.setAll(0, 0);
 		perThreadVars[i].op_diff2_c_y.op_setup_diff2_y(i_domain_size, i_use_finite_differences);
 
-		perThreadVars[i].eta0.setup(i_resolution);
 		perThreadVars[i].eta0.setAll(0, 0);
-		perThreadVars[i].u0.setup(i_resolution);
 		perThreadVars[i].u0.setAll(0, 0);
-		perThreadVars[i].v0.setup(i_resolution);
 		perThreadVars[i].v0.setAll(0, 0);
 
-		perThreadVars[i].h_sum.setup(i_resolution);
 		perThreadVars[i].h_sum.setAll(0, 0);
-		perThreadVars[i].u_sum.setup(i_resolution);
 		perThreadVars[i].u_sum.setAll(0, 0);
-		perThreadVars[i].v_sum.setup(i_resolution);
 		perThreadVars[i].v_sum.setAll(0, 0);
 	}
 }

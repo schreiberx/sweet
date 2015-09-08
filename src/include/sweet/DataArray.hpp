@@ -616,6 +616,61 @@ public:
 	}
 
 
+	/**
+	 * Set the values in the specified row
+	 */
+	inline
+	void set_row(
+			int i_row,
+			double i_value
+	)
+	{
+		requestDataInCartesianSpace();
+
+#pragma omp parallel for OPENMP_SIMD
+		for (std::size_t i = i_row*resolution[0]; i < (i_row+1)*resolution[0]; i++)
+			array_data_cartesian_space[i] = i_value;
+	}
+
+	/**
+	 * Copy values from another row and flip sign
+	 */
+	inline
+	void copy_row_inv_sign(
+			int i_src_row,
+			int i_dst_row
+	)
+	{
+		requestDataInCartesianSpace();
+
+		std::size_t src_idx = i_src_row*resolution[0];
+		std::size_t dst_idx = i_dst_row*resolution[0];
+
+#pragma omp parallel for OPENMP_SIMD
+		for (std::size_t i = 0; i < resolution[0]; i++)
+			array_data_cartesian_space[dst_idx+i] = -array_data_cartesian_space[src_idx+i];
+	}
+
+	/**
+	 * Copy values from another row
+	 */
+	inline
+	void copy_row(
+			int i_src_row,
+			int i_dst_row
+	)
+	{
+		requestDataInCartesianSpace();
+
+		std::size_t src_idx = i_src_row*resolution[0];
+		std::size_t dst_idx = i_dst_row*resolution[0];
+
+#pragma omp parallel for OPENMP_SIMD
+		for (std::size_t i = 0; i < resolution[0]; i++)
+			array_data_cartesian_space[dst_idx+i] = array_data_cartesian_space[src_idx+i];
+	}
+
+
 
 #if SWEET_USE_SPECTRAL_SPACE==1
 

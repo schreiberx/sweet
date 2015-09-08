@@ -22,8 +22,12 @@ class SimulationSWE
 {
 public:
 	DataArray<2> prog_h, prog_u, prog_v;
+	// beta plane
+	DataArray<2> beta_plane;
+
 	DataArray<2> eta;
 	DataArray<2> tmp;
+
 
 	Operators2D op;
 
@@ -40,6 +44,8 @@ public:
 		prog_h(simVars.disc.res),
 		prog_u(simVars.disc.res),
 		prog_v(simVars.disc.res),
+
+		beta_plane(simVars.disc.res),
 
 		eta(simVars.disc.res),
 		tmp(simVars.disc.res),
@@ -75,6 +81,12 @@ public:
 				prog_h.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
 				prog_u.set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
 				prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
+
+				{
+					// beta plane
+					double y_beta = (((double)j+0.5)/(double)simVars.disc.res[1]);
+					beta_plane.set(j, i, simVars.sim.f+simVars.sim.beta*y_beta);
+				}
 			}
 		}
 	}
@@ -103,7 +115,14 @@ public:
 			).reduce_sum_quad() * normalization;
 
 		// potential enstropy
-		eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + simVars.sim.f) / prog_h;
+		if (simVars.sim.beta != 0.0)
+		{
+			eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + beta_plane) / prog_h;
+		}
+		else
+		{
+			eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + simVars.sim.f) / prog_h;
+		}
 		simVars.diag.total_potential_enstrophy = 0.5*(eta*eta*prog_h).reduce_sum_quad() * normalization;
 	}
 
@@ -165,6 +184,41 @@ public:
 			double i_simulation_timestamp = -1
 	)
 	{
+		if (simVars.sim.top_bottom_zero_v_velocity)
+		{
+			/**
+			 * We use a simple trick to simulate a slip condition (no outflow) at the top and bottom layer.
+			 *
+			 * The v-velocity components for the top and bottom layer are overwritten in each time step.
+			 *
+			 * Note, that this has to be done here, since the the RK time step updates may generate
+			 * non-zero velocities at the top and bottom layer in the stages if only zeroing the componens
+			 * for the very 1st stage of RK.
+			 */
+#if 0
+			// override 'const'
+			((DataArray<2>&)i_v).set_row(0, 0);
+			((DataArray<2>&)i_v).set_row(1, 0);
+			((DataArray<2>&)i_v).set_row(simVars.disc.res[1]-2, 0);
+			((DataArray<2>&)i_v).set_row(simVars.disc.res[1]-1, 0);
+#else
+			((DataArray<2>&)i_u).set_row(0, 0);
+			((DataArray<2>&)i_u).set_row(simVars.disc.res[1]-1, 0);
+
+			((DataArray<2>&)i_v).set_row(1, 0);
+			((DataArray<2>&)i_h).set_row(0, simVars.setup.h0);
+
+			((DataArray<2>&)i_v).copy_row_inv_sign(2, 0);
+			((DataArray<2>&)i_h).copy_row(2, 0);
+
+			((DataArray<2>&)i_v).set_row(simVars.disc.res[1]-2, 0);
+			((DataArray<2>&)i_h).set_row(simVars.disc.res[1]-1, simVars.setup.h0);
+
+			((DataArray<2>&)i_v).copy_row_inv_sign(simVars.disc.res[1]-3, simVars.disc.res[1]-1);
+			((DataArray<2>&)i_h).copy_row(simVars.disc.res[1]-3, simVars.disc.res[1]-1);
+#endif
+		}
+
 		/*
 		 * non-conservative (advective) formulation:
 		 *

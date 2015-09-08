@@ -107,11 +107,15 @@ public:
 		/// CFL condition
 		double CFL = 0.05;
 
-		/// Coriolis frequency
+		/// Coriolis frequency f0
 		double f = 0.0;
 
-		/// Use f-array instead of constant f. This can be used
-		bool use_f_array = false;
+		/// Beta coefficient for f(y_N) = f0 + y_N*beta
+		/// here, y_N is the normalized y coordinate \in [0;1]
+		double beta = 0.0;
+
+		/// zero out the v-component at the top and bottom layer
+		bool top_bottom_zero_v_velocity = false;
 
 		/// domain size
 		double domain_size[2] = {1000.0*1000.0, 1000.0*1000.0};
@@ -278,7 +282,7 @@ public:
 		while (1)
 		{
 			opt = getopt_long(	i_argc, i_argv,
-							"N:n:m:C:u:U:s:X:Y:f:x:y:t:i:T:v:H:r:R:W:F:S:g:p:P:G:d:",
+							"N:n:m:C:u:U:s:X:Y:f:b:x:y:t:i:T:v:H:r:R:W:F:S:g:p:P:G:d:z",
 							long_options, &option_index
 					);
 
@@ -375,6 +379,14 @@ public:
 
 			case 'f':
 				sim.f = atof(optarg);
+				break;
+
+			case 'b':
+				sim.beta = atof(optarg);
+				break;
+
+			case 'z':
+				sim.top_bottom_zero_v_velocity = true;
 				break;
 
 			case 'G':

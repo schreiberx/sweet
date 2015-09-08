@@ -90,6 +90,13 @@ public:
 			return i_parameters.setup.h0;
 		}
 
+		if (i_parameters.setup.scenario == 10)
+		{
+			// beta plane
+			// use e.g. parameters -N 64 -C 0.5 -R 4 -f 0.000001  -g 9.81 -H 1000 -X 100000 -Y 100000 -b 0.0000001 -z -S 1 -s 10
+			return i_parameters.setup.h0;
+		}
+
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
 		return 0;
 	}
@@ -153,6 +160,20 @@ public:
 			return 1;
 		}
 
+
+		if (i_parameters.setup.scenario == 10)
+		{
+			// Gaussian
+			double dx = x-i_parameters.setup.coord_x*i_parameters.sim.domain_size[0];
+			double dy = y-i_parameters.setup.coord_y*i_parameters.sim.domain_size[1];
+
+			double radius = i_parameters.setup.radius_scale*sqrt((double)i_parameters.sim.domain_size[0]*(double)i_parameters.sim.domain_size[0]+(double)i_parameters.sim.domain_size[1]*(double)i_parameters.sim.domain_size[1]);
+			dx /= radius;
+			dy /= radius;
+
+			return i_parameters.setup.h0+std::exp(-50.0*(dx*dx + dy*dy));
+		}
+
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
 		return 0;
 	}
@@ -211,6 +232,11 @@ public:
 		if (i_parameters.setup.scenario == 9)
 		{
 			return 2;
+		}
+
+		if (i_parameters.setup.scenario == 10)
+		{
+			return 0;
 		}
 
 
