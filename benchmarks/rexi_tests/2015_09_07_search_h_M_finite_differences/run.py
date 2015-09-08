@@ -192,6 +192,7 @@ for n in N_list:
 			command += ' -H '+str(eps)
 			command += ' -f '+str(eps)
 			command += ' -t '+str(max_time)
+			command += ' --use-fd-for-complex-array 1 '
 
 			p = subprocess.Popen(command.split(' '), stdout=PIPE, stderr=PIPE, env=os.environ)
 			output, err = p.communicate()

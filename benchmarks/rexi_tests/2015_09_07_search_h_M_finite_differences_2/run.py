@@ -98,20 +98,20 @@ eps_list = [1]
 # resolutions
 #N_list = [16, 32, 64, 128, 256, 512]
 #N_list = [16, 32, 64, 128, 256]
-N_list = [16, 32, 64, 128]
+N_list = [16, 32, 64, 128, 256, 512]
 
 
 # h values for REXI
 h_list = []
-h = 1.0/pow(2.0, 9)
-while h <= 2.0:
+h = 0.05
+while h <= 1.2:
 	h_list.append(h)
-	h *= 2.0;
+	h += 0.05;
 
 # M values for REXI
 M_list = []
 M = 1
-while M < 20000:
+while M < 2000:
 	M_list.append(M)
 	M *= 2;
 
@@ -192,6 +192,7 @@ for n in N_list:
 			command += ' -H '+str(eps)
 			command += ' -f '+str(eps)
 			command += ' -t '+str(max_time)
+			command += ' --use-fd-for-complex-array 1 '
 
 			p = subprocess.Popen(command.split(' '), stdout=PIPE, stderr=PIPE, env=os.environ)
 			output, err = p.communicate()

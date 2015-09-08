@@ -15,10 +15,25 @@ if len(sys.argv) < 2:
 
 infile = sys.argv[1]
 
+
 if len(sys.argv) > 2:
 	outfile = sys.argv[2]
 else:
 	outfile = ""
+
+
+legend_min = 1e-11
+legend_max = 1e-0
+
+if len(sys.argv) > 3:
+	legend_min = float(sys.argv[3])
+
+if len(sys.argv) > 4:
+	legend_max = float(sys.argv[4])
+
+legend_norm = LogNorm(legend_min, legend_max)
+
+print "Legend: "+str(legend_min)+", "+str(legend_max)
 
 col_title = ''
 row_title = ''
@@ -98,7 +113,7 @@ print " + row_title: "+row_title
 print " + col_title: "+col_title
 print " + array size: "+str(Z.shape)
 
-heatmap = ax.pcolor(Z, cmap=cm.rainbow, norm=LogNorm(10e-12, vmax=1))
+heatmap = ax.pcolor(Z, cmap=cm.rainbow, norm=legend_norm)
 
 plt.title(title, y=1.08, fontweight='bold')
 plt.suptitle(subtitle, y=0.95)
