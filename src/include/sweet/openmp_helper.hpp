@@ -18,17 +18,20 @@
 
 #else
 
-	#ifndef __GNUC__
-		#define OPENMP_SIMD	simd
+	#ifdef __INTEL_COMPILER
+		#define OPENMP_SIMD     simd
 	#else
-		#if __GNUC__ > 4 || ((__GNUC__ == 4) && (__GNUC_MINOR__ > 8))
+		#ifndef __GNUC__
 			#define OPENMP_SIMD	simd
 		#else
-			#warning "SIMD is disabled for this compiler version"
-			#define OPENMP_SIMD
+			#if __GNUC__ > 4 || ((__GNUC__ == 4) && (__GNUC_MINOR__ > 8))
+				#define OPENMP_SIMD	simd
+			#else
+				#warning "SIMD is disabled for this compiler version"
+				#define OPENMP_SIMD
+			#endif
 		#endif
 	#endif
-
 #endif
 
 #endif /* SRC_EXAMPLES_OPENMP_HELPER_HPP_ */
