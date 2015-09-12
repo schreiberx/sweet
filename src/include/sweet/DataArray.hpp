@@ -322,7 +322,6 @@ public:
 
 #if SWEET_USE_SPECTRAL_SPACE
 		array_data_spectral_length = i_dataArray.array_data_spectral_length;
-		array_data_spectral_space = alloc_aligned_mem<double>(array_data_spectral_length*sizeof(double));
 		array_data_spectral_space_valid = i_dataArray.array_data_spectral_space_valid;
 
 		if (array_data_spectral_space_valid)
@@ -1067,11 +1066,14 @@ public:
 
 			static const char *wisdom_filename = "FFTW_WISDOM.cached";
 
-			int wisdom_plan_loaded = fftw_import_wisdom_from_filename(wisdom_filename);
 #if 0
+			int wisdom_plan_loaded = fftw_import_wisdom_from_filename(wisdom_filename);
 			if (wisdom_plan_loaded > 0)
 				std::cout << "Successfully loaded FFTW wisdom from file " << wisdom_filename << std::endl;
+#else
+			fftw_import_wisdom_from_filename(wisdom_filename);
 #endif
+
 			plan_forward =
 					fftw_plan_dft_r2c_2d(
 						i_dataArray.resolution[1],	// n0 = ny
@@ -1891,10 +1893,9 @@ public:
 			for (int i = 0; i < D; i++)
 				new_resolution[i] = i_new_resolution[i];
 		}
-//		std::cout << new_resolution[0] << " x " << new_resolution[1] << std::endl;
 
 		DataArray<D> out(new_resolution);
-//		out.temporary_data = true;
+		out.temporary_data = false;
 		out.aliasing_scaled = true;
 
 		fftAliasingTestAndInit(out);
@@ -1917,7 +1918,7 @@ public:
 			memcpy(
 					out.array_data_spectral_space+(j*out.range_spec_size[0])*2,
 					array_data_spectral_space+(j*range_spec_size[0])*2,
-					sizeof(double)*(range_spec_size[0]*2)
+					sizeof(double)*(range_spec_size[0]*2-2)
 				);
 		}
 
@@ -1929,7 +1930,7 @@ public:
 			memcpy(
 					out.array_data_spectral_space+((j+disp)*out.range_spec_size[0])*2,
 					array_data_spectral_space+(j*range_spec_size[0])*2,
-					sizeof(double)*(range_spec_size[0]*2)
+					sizeof(double)*(range_spec_size[0]*2-2)
 				);
 		}
 
@@ -1952,7 +1953,7 @@ public:
 		aliasing_scaled = true;
 
 		DataArray<D> out(i_new_resolution);
-//		out.temporary_data = true;
+		out.temporary_data = false;
 		out.aliasing_scaled = false;
 
 		fftAliasingTestAndInit(out);
@@ -1974,7 +1975,7 @@ public:
 			memcpy(
 					out.array_data_spectral_space+(j*out.range_spec_size[0])*2,
 					array_data_spectral_space+(j*range_spec_size[0])*2,
-					sizeof(double)*(out.range_spec_size[0]*2)
+					sizeof(double)*(out.range_spec_size[0]*2-2)
 				);
 		}
 
@@ -1986,7 +1987,7 @@ public:
 			memcpy(
 					out.array_data_spectral_space+(j*out.range_spec_size[0])*2,
 					array_data_spectral_space+((j+disp)*range_spec_size[0])*2,
-					sizeof(double)*(out.range_spec_size[0]*2)
+					sizeof(double)*(out.range_spec_size[0]*2-2)
 				);
 		}
 		out.array_data_spectral_space_valid = true;
