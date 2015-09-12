@@ -101,6 +101,17 @@ env['simd'] = GetOption('simd')
 env.Append(CXXFLAGS=' -DSWEET_SIMD_ENABLE='+('1' if env['simd']=='enable' else '0'))
 
 
+AddOption(	'--debug-symbols',
+		dest='debug_symbols',
+		type='choice',
+		choices=['enable', 'disable'],
+		default='enable',
+		help="Create binary with debug symbols [default: %default]"
+)
+env['debug_symbols'] = GetOption('debug_symbols')
+
+
+
 AddOption(	'--spectral-space',
 		dest='spectral_space',
 		type='choice',
@@ -181,6 +192,16 @@ AddOption(      '--program',
 env['compile_program'] = GetOption('program')
 
 
+AddOption(      '--program-binary-name',
+		dest='program_binary_name',
+		type='string',
+		action='store',
+		help='Name of program binary, default: [auto]',
+		default=''
+)
+env['program_binary_name'] = GetOption('program_binary_name')
+
+
 AddOption(      '--unit-test',
 		dest='unit_test',
 		type='choice',
@@ -251,6 +272,7 @@ if env['spectral_dealiasing'] == 'enable':
 	exec_name+='_dealiasing'
 else:
 	env.Append(CXXFLAGS = ' -DSWEET_USE_SPECTRAL_DEALIASING=0')
+	
 	
 
 if env['gui']=='enable':
@@ -578,12 +600,31 @@ else:
 	env.Append(CXXFLAGS=' -DSWEET_REXI_PARALLEL_SUM=0')
 
 
+if env['program_binary_name'] != '':
+	exec_name = env['program_binary_name']
+
+if env['debug_symbols'] == 'enable':
+	env.Append(CXXFLAGS = ' -g')
+	env.Append(LINKFLAGS = ' -g')
+
+	if env['compiler'] == 'intel':
+		env.Append(CXXFLAGS = ' -O2 -shared-intel -shared-libgcc -debug inline-debug-info')
+		env.Append(LINKFLAGS = ' -O2 -shared-intel  -shared-libgcc -debug inline-debug-info')
+		
+
+
 #
 # build directory
 #
 build_dir='/tmp/scons_build_'+exec_name+'/'
 
 env.Append(CPPPATH = ['/usr/local/include', '/usr/include'])
+
+# MAC CLUSTER
+print hostname
+if hostname[0:4] == "mac-":
+	env.Append(CPPPATH = ['/usr/local/include', '/usr/include', '/lrz/sys/libraries/fftw/3.3.3/avx/include'])
+	env.Append(LINKFLAGS=' -L/lrz/sys/libraries/fftw/3.3.3/avx/lib_omp ')
 
 # also include the 'src' directory to search for dependencies
 env.Append(CPPPATH = ['.', 'src/', 'src/include'])

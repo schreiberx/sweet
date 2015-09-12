@@ -63,7 +63,12 @@ public:
 		/// filenames of input data for setup (this has to be setup by each application individually)
 		std::vector<std::string> input_data_filenames;
 
-		void setup_initial_condition_filenames(std::string i_string)
+		/// use "BINARY;filename1;filename2" to specify that the binary files should be read in binary format
+		bool input_data_binary = false;
+
+		void setup_initial_condition_filenames(
+				const std::string i_string
+		)
 		{
 			std::size_t last_pos = 0;
 			for (std::size_t pos = 0; i_string[pos] != '\0'; pos++)
@@ -76,6 +81,15 @@ public:
 			}
 
 			input_data_filenames.push_back(i_string.substr(last_pos));
+
+			if (input_data_filenames.size() > 0)
+			{
+				if (input_data_filenames[0] == "BINARY")
+				{
+					input_data_filenames.erase(input_data_filenames.begin());
+					input_data_binary = true;
+				}
+			}
 		}
 	} setup;
 
@@ -183,8 +197,14 @@ public:
 		/// precision for floating point output to std::cout and std::endl
 		int output_floating_point_precision = 12;
 
-		/// activate gui mode?
+		/// activate GUI mode?
 		bool gui_enabled = (SWEET_GUI == 0 ? false : true);
+
+		/// output verbose information every given period of simulation time.
+		double be_verbose_after_this_period = 0;
+
+		/// prefix of filename for output of data
+		std::string output_file_name_prefix;
 
 		/// id for visualization
 		int vis_id = 0;
@@ -282,7 +302,7 @@ public:
 		while (1)
 		{
 			opt = getopt_long(	i_argc, i_argv,
-							"N:n:m:C:u:U:s:X:Y:f:b:x:y:t:i:T:v:H:r:R:W:F:S:g:p:P:G:d:z",
+							"N:n:m:C:u:U:s:X:Y:f:b:x:y:t:i:T:v:V:O:H:r:R:W:F:S:g:p:P:G:d:z",
 							long_options, &option_index
 					);
 
@@ -401,6 +421,14 @@ public:
 				misc.verbosity = atoi(optarg);
 				break;
 
+			case 'V':
+				misc.be_verbose_after_this_period = atof(optarg);
+				break;
+
+			case 'O':
+				misc.output_file_name_prefix = optarg;
+				break;
+
 			case 'H':
 				setup.h0 = atof(optarg);
 				break;
@@ -438,7 +466,7 @@ public:
 						"Simulation setup parameters",
 						"	-s [scen]	scenario id",
 						"	            0: radial dam break",
-						"	            1: gaussian dam break",
+						"	            1: Gaussian dam break",
 						"	            2: balanced state x",
 						"	            3: balanced state y",
 						"	            9: h=H0, v=0, u=0",
@@ -451,7 +479,7 @@ public:
 						"  >Space:",
 						"	-N [res]	resolution in x and y direction",
 						"	-n [resx]	resolution in x direction",
-						"	-m [resx]	resolution in x direction",
+						"	-m [resy]	resolution in y direction",
 						"	-S [0/1]	use spectral derivatives (experimental)",
 						"  >Time:",
 						"	-W [0/1]	use up- and downwinding",
@@ -465,8 +493,11 @@ public:
 						"",
 						"Misc options",
 						"	-v [int]	verbosity level",
+						"	-V [double]	period of output",
+						"	-O [string]	string prefix for filename of output of simulation data",
 						"	-d [int]	accuracy of floating point output",
 						"	-i [file0][;file1][;file3]...	string with filenames for initial conditions",
+						"	            specify BINARY; as first file name to read files as binary raw data",
 				};
 
 				std::cerr << "Usage information: " << std::endl;

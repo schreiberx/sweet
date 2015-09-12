@@ -1,6 +1,7 @@
 #! /bin/bash
 
-PACKAGE_DIRS_AND_FILES="benchmarks data doc python_mods src run_tests_validation"
+PACKAGE_DIRS_AND_FILES=" data doc python_mods src run_tests_validation "
+#PACKAGE_DIRS_AND_FILES+=" benchmarks "
 PACKAGE_DIRS_AND_FILES+="
 run_tests_compile_all.sh
 run_tests_validation.sh

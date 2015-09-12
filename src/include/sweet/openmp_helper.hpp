@@ -12,26 +12,29 @@
  * This is a class to overcome SIMD instruction issues with older GNU compilers
  */
 
+#define OMP_SCHEDULE	schedule(static)
+
 #if !SWEET_SIMD_ENABLE
 
-	#define OPENMP_SIMD
+	#define OPENMP_SIMD	OMP_SCHEDULE
 
 #else
 
 	#ifdef __INTEL_COMPILER
-		#define OPENMP_SIMD     simd
+		#define OPENMP_SIMD     simd OMP_SCHEDULE
 	#else
 		#ifndef __GNUC__
-			#define OPENMP_SIMD	simd
+			#define OPENMP_SIMD	simd OMP_SCHEDULE
 		#else
 			#if __GNUC__ > 4 || ((__GNUC__ == 4) && (__GNUC_MINOR__ > 8))
-				#define OPENMP_SIMD	simd
+				#define OPENMP_SIMD	simd OMP_SCHEDULE
 			#else
 				#warning "SIMD is disabled for this compiler version"
-				#define OPENMP_SIMD
+				#define OPENMP_SIMD OMP_SCHEDULE
 			#endif
 		#endif
 	#endif
 #endif
+
 
 #endif /* SRC_EXAMPLES_OPENMP_HELPER_HPP_ */

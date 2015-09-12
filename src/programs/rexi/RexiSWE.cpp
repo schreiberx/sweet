@@ -10,6 +10,9 @@
 #	define SWEET_REXI_PARALLEL_SUM 1
 #endif
 
+/**
+ * Compute the REXI sum massively parallel *without* a parallelization with parfor in space
+ */
 #if SWEET_REXI_PARALLEL_SUM
 #	include <omp.h>
 #endif

@@ -17,6 +17,8 @@
 
 SimulationVariables simVars;
 
+double next_timestep_output = 0;
+
 
 class SimulationSWECovariant
 {
@@ -26,9 +28,9 @@ public:
 
 	// temporary variables
 	DataArray<2> H, U, V;
-	DataArray<2> q;
+	DataArray<2> q;			/// vorticity
 
-	// parameters
+	// beta plane
 	DataArray<2> beta_plane;
 
 	DataArray<2> tmp;
@@ -47,18 +49,20 @@ public:
 	 * See "The Dynamics of Finite-Difference Models of the Shallow-Water Equations", Robert Sadourny
 	 *
 	 * Prognostic:
-	 *     V_t + q N x (P V) + grad(P + 0.5 V.V) = 0
-	 *     P_t + div(P V) = 0
+	 *
+	 *     \f$ V_t + q N x (P V) + grad(P + 0.5 V.V) = 0 \f$
+	 *
+	 *     \f$ P_t + div(P V) = 0 \f$
 	 *
 	 * Potential vorticity:
-	 *     q = rot (V) / P
+	 *     \f$  q = rot (V) / P \f$
 	 *
-	 *   ____u0,1_____
-	 *   |           |
-	 *   |           |
-	 * v0,0   P0,0   v1,0
-	 *   |           |
-	 *   |___u0,0____|
+	 *   ______________
+	 *   |            |
+	 *   |    u0,1    |
+	 *   v0,0 P0,0 v1,0
+	 *   |    u0,0    |
+	 *   |____________|
 	 */
 public:
 	SimulationSWECovariant(
@@ -81,12 +85,16 @@ public:
 		reset();
 	}
 
+
 	~SimulationSWECovariant()
 	{
 	}
 
+
 	void reset()
 	{
+		next_timestep_output = 0;
+
 		last_timestep_nr_update_diagnostics = -1;
 
 		benchmark_diff_h = 0;
@@ -135,8 +143,17 @@ public:
 			}
 		}
 
+		if (simVars.setup.input_data_filenames.size() > 0)
+			prog_P.file_loadData(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
 
-		timestep_output();
+		if (simVars.setup.input_data_filenames.size() > 1)
+			prog_u.file_loadData(simVars.setup.input_data_filenames[1].c_str(), simVars.setup.input_data_binary);
+
+		if (simVars.setup.input_data_filenames.size() > 2)
+			prog_v.file_loadData(simVars.setup.input_data_filenames[2].c_str(), simVars.setup.input_data_binary);
+
+		if (simVars.misc.gui_enabled)
+			timestep_output();
 	}
 
 
@@ -146,6 +163,8 @@ public:
 		// assure, that the diagnostics are only updated for new time steps
 		if (last_timestep_nr_update_diagnostics == simVars.timecontrol.current_timestep_nr)
 			return;
+
+		last_timestep_nr_update_diagnostics = simVars.timecontrol.current_timestep_nr;
 
 		last_timestep_nr_update_diagnostics = simVars.timecontrol.current_timestep_nr;
 
@@ -167,9 +186,12 @@ public:
 		// diagnostics_energy
 		simVars.diag.total_energy =
 			0.5*(
-				prog_P*prog_P +
-				prog_P*(prog_u*prog_u) +
-				prog_P*(prog_v*prog_v)
+				prog_P*
+				(
+					prog_P +
+					(prog_u*prog_u) +
+					(prog_v*prog_v)
+				)
 			).reduce_sum_quad() * normalization;
 
 		// potential enstropy
@@ -312,17 +334,18 @@ public:
 
 				// limit by re
 				double limit_visc = std::numeric_limits<double>::infinity();
+#if 0
 				if (simVars.sim.viscosity > 0)
 					limit_visc = (hx*hx*hy*hy)/(4.0*simVars.sim.viscosity*simVars.sim.viscosity);
 				if (simVars.sim.hyper_viscosity > 0)
 					limit_visc = std::min((hx*hx*hx*hx*hy*hy*hy*hy)/(16.0*simVars.sim.hyper_viscosity*simVars.sim.hyper_viscosity), limit_visc);
-
+#endif
 
 				// limit by gravitational acceleration
 				double limit_gh = std::min(simVars.disc.cell_size[0], simVars.disc.cell_size[1])/std::sqrt(simVars.sim.g*i_h.reduce_maxAbs());
 
-				if (simVars.misc.verbosity > 2)
-					std::cerr << "limit_speed: " << limit_speed << ", limit_visc: " << limit_visc << ", limit_gh: " << limit_gh << std::endl;
+//				if (simVars.misc.verbosity > 2)
+//					std::cout << "limit_speed: " << limit_speed << ", limit_visc: " << limit_visc << ", limit_gh: " << limit_gh << std::endl;
 
 				o_dt = simVars.sim.CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
 			}
@@ -421,13 +444,43 @@ public:
 			std::ostream &o_ostream = std::cout
 	)
 	{
+		if (simVars.timecontrol.current_simulation_time < next_timestep_output)
+			return;
+
+		if (simVars.misc.be_verbose_after_this_period != 0)
+		{
+			// advance to next time step output
+			while (next_timestep_output <= simVars.timecontrol.current_simulation_time)
+				next_timestep_output += simVars.misc.be_verbose_after_this_period;
+		}
+
 		if (simVars.misc.verbosity > 0)
 		{
 			update_diagnostics();
 
+			if (simVars.misc.output_file_name_prefix.size() > 0)
+			{
+				double secs = simVars.timecontrol.current_simulation_time;
+				double msecs = 1000000.*(simVars.timecontrol.current_simulation_time - floor(simVars.timecontrol.current_simulation_time));
+				char t_buf[256];
+				sprintf(	t_buf,
+							"%08d.%06d",
+							(int)secs, (int)msecs
+					);
+
+				std::string ss = simVars.misc.output_file_name_prefix+"_t"+t_buf;
+
+
+				prog_P.file_saveData_ascii((ss+"_h.csv").c_str());
+				prog_u.file_saveData_ascii((ss+"_u.csv").c_str());
+				prog_v.file_saveData_ascii((ss+"_v.csv").c_str());
+
+				(op.diff_c_x(prog_v) - op.diff_c_y(prog_u)).file_saveData_ascii((ss+"_q.csv").c_str());
+			}
+
 			if (simVars.timecontrol.current_timestep_nr == 0)
 			{
-				o_ostream << "T\tMASS\tENERGY\tPOT_ENSTROPHY";
+				o_ostream << "T\tTOTAL_MASS\tTOTAL_ENERGY\tPOT_ENSTROPHY";
 
 				if (simVars.setup.scenario == 2 || simVars.setup.scenario == 3 || simVars.setup.scenario == 4)
 					o_ostream << "\tABS_P_DT\tABS_U_DT\tABS_V_DT";
@@ -607,75 +660,77 @@ int main(int i_argc, char *i_argv[])
 	buf << std::setprecision(14);
 
 
-
 #if SWEET_GUI
-	VisSweet<SimulationSWECovariant> visSweet(simulationSWE);
-#else
-	simulationSWE->reset();
-
-	Stopwatch time;
-	time.reset();
-
-
-	double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
-
-	if (simVars.misc.verbosity > 1)
+	if (simVars.misc.gui_enabled)
 	{
-		simulationSWE->update_diagnostics();
-		diagnostics_energy_start = simVars.diag.total_energy;
-		diagnostics_mass_start = simVars.diag.total_mass;
-		diagnostics_potential_entrophy_start = simVars.diag.total_potential_enstrophy;
+		VisSweet<SimulationSWECovariant> visSweet(simulationSWE);
 	}
-
-	while(true)
+	else
+#endif
 	{
+//		simulationSWE->reset();
+
+		Stopwatch time;
+		time.reset();
+
+
+		double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
+
 		if (simVars.misc.verbosity > 1)
 		{
-			simulationSWE->timestep_output(buf);
-
-			std::string output = buf.str();
-			buf.str("");
-
-			std::cout << output;
-
-			if (simVars.misc.verbosity > 2)
-				std::cerr << output;
+			simulationSWE->update_diagnostics();
+			diagnostics_energy_start = simVars.diag.total_energy;
+			diagnostics_mass_start = simVars.diag.total_mass;
+			diagnostics_potential_entrophy_start = simVars.diag.total_potential_enstrophy;
 		}
 
-		if (simulationSWE->should_quit())
-			break;
-
-		simulationSWE->run_timestep();
-
-		if (simulationSWE->instability_detected())
+		while(true)
 		{
-			std::cout << "INSTABILITY DETECTED" << std::endl;
-			break;
+			if (simVars.misc.verbosity > 1)
+			{
+				simulationSWE->timestep_output(buf);
+
+				std::string output = buf.str();
+				buf.str("");
+
+				std::cout << output << std::flush;
+			}
+
+			if (simulationSWE->should_quit())
+				break;
+
+			simulationSWE->run_timestep();
+
+			if (simulationSWE->instability_detected())
+			{
+				std::cout << "INSTABILITY DETECTED" << std::endl;
+				break;
+			}
+		}
+
+		time.stop();
+
+		double seconds = time();
+
+		std::cout << "Simulation time: " << seconds << " seconds" << std::endl;
+		std::cout << "Time per time step: " << seconds/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
+		std::cout << "Timesteps: " << simVars.timecontrol.current_timestep_nr << std::endl;
+
+
+		if (simVars.misc.verbosity > 1)
+		{
+			std::cout << "DIAGNOSTICS ENERGY DIFF:\t" << std::abs(simVars.diag.total_energy-diagnostics_energy_start) << std::endl;
+			std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs(simVars.diag.total_mass-diagnostics_mass_start) << std::endl;
+			std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs(simVars.diag.total_potential_enstrophy-diagnostics_potential_entrophy_start) << std::endl;
+
+			if (simVars.setup.scenario == 2 || simVars.setup.scenario == 3 || simVars.setup.scenario == 4)
+			{
+				std::cout << "DIAGNOSTICS BENCHMARK DIFF H:\t" << simulationSWE->benchmark_diff_h << std::endl;
+				std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationSWE->benchmark_diff_u << std::endl;
+				std::cout << "DIAGNOSTICS BENCHMARK DIFF V:\t" << simulationSWE->benchmark_diff_v << std::endl;
+			}
 		}
 	}
-
-	time.stop();
-
-	double seconds = time();
-
-	std::cout << "Simulation time: " << seconds << " seconds" << std::endl;
-	std::cout << "Time per time step: " << seconds/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
-
-
-	if (simVars.misc.verbosity > 1)
-	{
-		std::cout << "DIAGNOSTICS ENERGY DIFF:\t" << std::abs(simVars.diag.total_energy-diagnostics_energy_start) << std::endl;
-		std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs(simVars.diag.total_mass-diagnostics_mass_start) << std::endl;
-		std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs(simVars.diag.total_potential_enstrophy-diagnostics_potential_entrophy_start) << std::endl;
-
-		if (simVars.setup.scenario == 2 || simVars.setup.scenario == 3 || simVars.setup.scenario == 4)
-		{
-			std::cout << "DIAGNOSTICS BENCHMARK DIFF H:\t" << simulationSWE->benchmark_diff_h << std::endl;
-			std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationSWE->benchmark_diff_u << std::endl;
-			std::cout << "DIAGNOSTICS BENCHMARK DIFF V:\t" << simulationSWE->benchmark_diff_v << std::endl;
-		}
-	}
-#endif
 
 	delete simulationSWE;
 

@@ -177,13 +177,13 @@ public:
 		}
 
 		if (simVars.setup.input_data_filenames.size() > 0)
-			prog_h.file_loadData_ascii(simVars.setup.input_data_filenames[0].c_str());
+			prog_h.file_loadData(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
 
 		if (simVars.setup.input_data_filenames.size() > 1)
-			prog_u.file_loadData_ascii(simVars.setup.input_data_filenames[1].c_str());
+			prog_u.file_loadData(simVars.setup.input_data_filenames[1].c_str(), simVars.setup.input_data_binary);
 
 		if (simVars.setup.input_data_filenames.size() > 2)
-			prog_v.file_loadData_ascii(simVars.setup.input_data_filenames[2].c_str());
+			prog_v.file_loadData(simVars.setup.input_data_filenames[2].c_str(), simVars.setup.input_data_binary);
 
 		t0_prog_h = prog_h;
 		t0_prog_u = prog_u;
@@ -361,11 +361,12 @@ public:
 
 					// limit by re
 					double limit_visc = std::numeric_limits<double>::infinity();
+#if 0
 					if (simVars.sim.viscosity > 0)
 						limit_visc = (hx*hx*hy*hy)/(4.0*simVars.sim.viscosity*simVars.sim.viscosity);
 					if (simVars.sim.hyper_viscosity > 0)
 						limit_visc = std::min((hx*hx*hx*hx*hy*hy*hy*hy)/(16.0*simVars.sim.hyper_viscosity*simVars.sim.hyper_viscosity), limit_visc);
-
+#endif
 					// limit by gravitational acceleration
 					double limit_gh = std::min(simVars.disc.cell_size[0], simVars.disc.cell_size[1])/std::sqrt(simVars.sim.g*i_h.reduce_maxAbs());
 
@@ -665,7 +666,7 @@ public:
 
 			if (simVars.timecontrol.current_timestep_nr == 0)
 			{
-				o_ostream << "T\tMASS\tENERGY\tPOT_ENSTROPHY";
+				o_ostream << "T\tTOTAL_MASS\tTOTAL_ENERGY\tPOT_ENSTROPHY";
 
 				if (simVars.setup.scenario == 2 || simVars.setup.scenario == 3 || simVars.setup.scenario == 4)
 					o_ostream << "\tDIFF_P\tDIFF_U\tDIFF_V";
@@ -913,9 +914,9 @@ public:
 
 		case 'l':
 			// dump data arrays
-			prog_h.file_loadData_ascii("swe_rexi_dump_h.csv");
-			prog_u.file_loadData_ascii("swe_rexi_dump_u.csv");
-			prog_v.file_loadData_ascii("swe_rexi_dump_v.csv");
+			prog_h.file_loadData("swe_rexi_dump_h.csv", simVars.setup.input_data_binary);
+			prog_u.file_loadData("swe_rexi_dump_u.csv", simVars.setup.input_data_binary);
+			prog_v.file_loadData("swe_rexi_dump_v.csv", simVars.setup.input_data_binary);
 			break;
 		}
 	}

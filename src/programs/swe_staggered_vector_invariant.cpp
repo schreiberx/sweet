@@ -17,6 +17,8 @@
 
 SimulationVariables simVars;
 
+double next_timestep_output = 0;
+
 
 class SimulationSWEStaggered
 {
@@ -68,9 +70,10 @@ public:
 		prog_u(simVars.disc.res),	// velocity (x-direction)
 		prog_v(simVars.disc.res),	// velocity (y-direction)
 
-		H(simVars.disc.res),		//
-		U(simVars.disc.res),		// mass flux (x-direction)
-		V(simVars.disc.res),		// mass flux (y-direction)
+		H(simVars.disc.res),	//
+		U(simVars.disc.res),	// mass flux (x-direction)
+		V(simVars.disc.res),	// mass flux (y-direction)
+		
 		q(simVars.disc.res),
 		beta_plane(simVars.disc.res),
 
@@ -88,6 +91,8 @@ public:
 
 	void reset()
 	{
+		next_timestep_output = 0;
+
 		last_timestep_nr_update_diagnostics = -1;
 
 		benchmark_diff_h = 0;
@@ -136,17 +141,18 @@ public:
 			}
 		}
 
-
 		if (simVars.setup.input_data_filenames.size() > 0)
-			prog_P.file_loadData_ascii(simVars.setup.input_data_filenames[0].c_str());
+			prog_P.file_loadData(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
 
 		if (simVars.setup.input_data_filenames.size() > 1)
-			prog_u.file_loadData_ascii(simVars.setup.input_data_filenames[1].c_str());
+			prog_u.file_loadData(simVars.setup.input_data_filenames[1].c_str(), simVars.setup.input_data_binary);
 
 		if (simVars.setup.input_data_filenames.size() > 2)
-			prog_v.file_loadData_ascii(simVars.setup.input_data_filenames[2].c_str());
+			prog_v.file_loadData(simVars.setup.input_data_filenames[2].c_str(), simVars.setup.input_data_binary);
 
-		timestep_output();
+
+		if (simVars.misc.gui_enabled)
+			timestep_output();
 	}
 
 
@@ -326,10 +332,12 @@ public:
 
 				// limit by viscosity
 				double limit_visc = std::numeric_limits<double>::infinity();
+#if 0
 				if (simVars.sim.viscosity > 0)
 					limit_visc = (hx*hx*hy*hy)/(4.0*simVars.sim.viscosity*simVars.sim.viscosity);
 				if (simVars.sim.hyper_viscosity > 0)
 					limit_visc = std::min((hx*hx*hx*hx*hy*hy*hy*hy)/(16.0*simVars.sim.hyper_viscosity*simVars.sim.hyper_viscosity), limit_visc);
+#endif
 
 				// limit by gravitational acceleration
 				double limit_gh = std::min(simVars.disc.cell_size[0], simVars.disc.cell_size[1])/std::sqrt(simVars.sim.g*i_h.reduce_maxAbs());
@@ -411,7 +419,6 @@ public:
 		// a positive value to use a fixed time step size
 		simVars.timecontrol.current_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
 
-
 		timestepping.run_rk_timestep(
 				this,
 				&SimulationSWEStaggered::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
@@ -436,13 +443,42 @@ public:
 			std::ostream &o_ostream = std::cout
 	)
 	{
-		if (simVars.misc.verbosity > 2)
+		if (simVars.timecontrol.current_simulation_time < next_timestep_output)
+			return;
+
+		if (simVars.misc.be_verbose_after_this_period != 0)
+		{
+			// advance to next time step output
+			while (next_timestep_output <= simVars.timecontrol.current_simulation_time)
+				next_timestep_output += simVars.misc.be_verbose_after_this_period;
+		}
+
+		if (simVars.misc.verbosity > 0)
 		{
 			update_diagnostics();
 
+			if (simVars.misc.output_file_name_prefix.size() > 0)
+			{
+				double secs = simVars.timecontrol.current_simulation_time;
+				double msecs = 1000000.*(simVars.timecontrol.current_simulation_time - floor(simVars.timecontrol.current_simulation_time));
+				char t_buf[256];
+				sprintf(	t_buf,
+							"%08d.%06d",
+							(int)secs, (int)msecs
+					);
+
+				std::string ss = simVars.misc.output_file_name_prefix+"_t"+t_buf;
+
+				prog_P.file_saveData_ascii((ss+"_h.csv").c_str());
+				prog_u.file_saveData_ascii((ss+"_u.csv").c_str());
+				prog_v.file_saveData_ascii((ss+"_v.csv").c_str());
+
+				(op.diff_b_x(prog_v) - op.diff_b_y(prog_u)).file_saveData_ascii((ss+"_q.csv").c_str());
+			}
+
 			if (simVars.timecontrol.current_timestep_nr == 0)
 			{
-				o_ostream << "T\tMASS\tENERGY\tPOT_ENSTROPHY";
+				o_ostream << "T\tTOTAL_MASS\tTOTAL_ENERGY\tPOT_ENSTROPHY";
 
 				if (simVars.setup.scenario == 2 || simVars.setup.scenario == 3 || simVars.setup.scenario == 4)
 					o_ostream << "\tABS_P_DT\tABS_U_DT\tABS_V_DT";
@@ -616,14 +652,13 @@ int main(int i_argc, char *i_argv[])
 	if (!simVars.setupFromMainParameters(i_argc, i_argv))
 		return -1;
 
+	SimulationSWEStaggered *simulationSWE = new SimulationSWEStaggered;
 
 	if (simVars.disc.use_spectral_diffs)
 	{
 		std::cerr << "Spectral differentiation not yet supported for staggered grid!" << std::endl;
 		return -1;
 	}
-
-	SimulationSWEStaggered *simulationSWE = new SimulationSWEStaggered;
 
 	std::ostringstream buf;
 	buf << std::setprecision(14);
@@ -663,10 +698,7 @@ int main(int i_argc, char *i_argv[])
 				std::string output = buf.str();
 				buf.str("");
 
-				std::cout << output;
-
-				if (simVars.misc.verbosity > 2)
-					std::cerr << output;
+				std::cout << output << std::flush;
 			}
 
 			if (simulationSWE->should_quit())
@@ -687,8 +719,10 @@ int main(int i_argc, char *i_argv[])
 
 		std::cout << "Simulation time: " << seconds << " seconds" << std::endl;
 		std::cout << "Time per time step: " << seconds/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
+		std::cout << "Timesteps: " << simVars.timecontrol.current_timestep_nr << std::endl;
 
-		if (simVars.misc.verbosity > 0)
+
+		if (simVars.misc.verbosity > 1)
 		{
 			std::cout << "DIAGNOSTICS ENERGY DIFF:\t" << std::abs(simVars.diag.total_energy-diagnostics_energy_start) << std::endl;
 			std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs(simVars.diag.total_mass-diagnostics_mass_start) << std::endl;
