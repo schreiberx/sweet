@@ -7,10 +7,6 @@
 #	error	"GUI not supported"
 #endif
 
-#if SWEET_USE_SPECTRAL_DEALIASING
-#	warning	"Aliasing not working"
-#endif
-
 
 #include <sweet/DataArray.hpp>
 #include <sweet/SimulationVariables.hpp>

@@ -110,14 +110,15 @@ public:
 		double viscosity = 0.0;
 
 		/// hyper viscosity-term on velocities with 4th order diff operator
-		double hyper_viscosity = 0.0;
+		int viscosity_order = 2;
 
+#if 0
 		/// viscosity-term on velocities with 2nd order diff operator on potential
 		double potential_viscosity = 0.0;
 
 		/// hyper viscosity-term on velocities with 4th order diff operator on potential
-		double potential_hyper_viscosity = 0.0;
-
+		double potential_viscosity_order = 0.0;
+#endif
 		/// CFL condition
 		double CFL = 0.05;
 
@@ -201,7 +202,7 @@ public:
 		bool gui_enabled = (SWEET_GUI == 0 ? false : true);
 
 		/// output verbose information every given period of simulation time.
-		double be_verbose_after_this_period = 0;
+		double be_verbose_after_this_simulation_time_period = 0;
 
 		/// prefix of filename for output of data
 		std::string output_file_name_prefix;
@@ -362,17 +363,17 @@ public:
 				break;
 
 			case 'U':
-				sim.hyper_viscosity = atof(optarg);
+				sim.viscosity_order = atoi(optarg);
 				break;
-
+#if 0
 			case 'p':
 				sim.potential_viscosity = atof(optarg);
 				break;
 
 			case 'P':
-				sim.potential_hyper_viscosity = atof(optarg);
+				sim.potential_viscosity_order = atof(optarg);
 				break;
-
+#endif
 			case 's':
 				setup.scenario = atoi(optarg);
 				break;
@@ -422,7 +423,7 @@ public:
 				break;
 
 			case 'V':
-				misc.be_verbose_after_this_period = atof(optarg);
+				misc.be_verbose_after_this_simulation_time_period = atof(optarg);
 				break;
 
 			case 'O':

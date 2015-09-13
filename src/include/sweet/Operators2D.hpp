@@ -43,9 +43,9 @@ public:
 		return diff2_c_x(i_dataArray) + diff2_c_y(i_dataArray);
 	}
 
-
+#if 0
 	/**
-	 * D4, e.g. for hyperviscosity
+	 * D4
 	 */
 	DataArray<2> diff4(
 			const DataArray<2> &i_dataArray
@@ -53,7 +53,8 @@ public:
 	{
 		return diff2_c_x(diff2_c_x(i_dataArray)) + diff2_c_y(diff2_c_y(i_dataArray));
 	}
-
+#endif
+#if 1
 	inline DataArray<2> arakawa_jacobian(
 			const DataArray<2> &i_a,
 			const DataArray<2> &i_b
@@ -62,7 +63,7 @@ public:
 //		return diff_c_x(i_a)*diff_c_y(i_b) - diff_c_y(i_a)*diff_c_x(i_b);
 		return diff_c_y(i_a) - diff_c_x(i_a);
 	}
-
+#endif
 
 
 	/**
@@ -87,6 +88,58 @@ public:
 	{
 		return diff_c_x(i_a)+diff_c_y(i_a);
 	}
+
+
+
+	/**
+	 * Diff N operator for hyperviscosity, see
+	 * "Numerical Techniques for Global Atmospheric Models", page 500
+	 */
+	inline DataArray<2> diffN_x(
+			const DataArray<2> &io_u,
+			int i_order
+	)
+	{
+		return io_u;
+//		if (i_order == 0)
+//			return io_u;
+
+		DataArray<2> tu = io_u;
+		return tu;
+
+		for (int i = 0; i < i_order/2; i++)
+			tu = diff2_c_x(tu);
+
+		if (i_order & 1)
+			tu = diff_c_x(tu);
+
+		return tu;
+	}
+
+
+	/**
+	 * Diff N operator for hyperviscosity, see
+	 * "Numerical Techniques for Global Atmospheric Models", page 500
+	 */
+	inline DataArray<2> diffN_y(
+			const DataArray<2> &io_v,
+			int i_order
+	)
+	{
+		if (i_order == 0)
+			return io_v;
+
+		DataArray<2> tv = io_v;
+
+		for (int i = 0; i < i_order/2; i++)
+			tv = diff2_c_y(tv);
+
+		if (i_order & 1)
+			tv = diff_c_y(tv);
+
+		return tv;
+	}
+
 
 	Operators2D(
 		std::size_t res[2],		///< resolution

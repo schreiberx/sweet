@@ -323,16 +323,11 @@ public:
 			o_u_t = -simVars.sim.g*op.diff_c_x(i_h) + simVars.sim.f0*i_v;
 			o_v_t = -simVars.sim.g*op.diff_c_y(i_h) - simVars.sim.f0*i_u;
 
+
 			if (simVars.sim.viscosity != 0)
 			{
-				o_u_t -= op.diff2(i_u)*simVars.sim.viscosity;
-				o_v_t -= op.diff2(i_v)*simVars.sim.viscosity;
-			}
-
-			if (simVars.sim.hyper_viscosity != 0)
-			{
-				o_u_t -= op.diff4(i_u)*simVars.sim.hyper_viscosity;
-				o_v_t -= op.diff4(i_v)*simVars.sim.hyper_viscosity;
+				o_u_t -= op.diffN_x(i_u, simVars.sim.viscosity_order)*simVars.sim.viscosity;
+				o_v_t -= op.diffN_y(i_v, simVars.sim.viscosity_order)*simVars.sim.viscosity;
 			}
 
 
@@ -361,12 +356,7 @@ public:
 
 					// limit by re
 					double limit_visc = std::numeric_limits<double>::infinity();
-#if 0
-					if (simVars.sim.viscosity > 0)
-						limit_visc = (hx*hx*hy*hy)/(4.0*simVars.sim.viscosity*simVars.sim.viscosity);
-					if (simVars.sim.hyper_viscosity > 0)
-						limit_visc = std::min((hx*hx*hx*hx*hy*hy*hy*hy)/(16.0*simVars.sim.hyper_viscosity*simVars.sim.hyper_viscosity), limit_visc);
-#endif
+
 					// limit by gravitational acceleration
 					double limit_gh = std::min(simVars.disc.cell_size[0], simVars.disc.cell_size[1])/std::sqrt(simVars.sim.g*i_h.reduce_maxAbs());
 
@@ -393,12 +383,6 @@ public:
 							i_v,
 							o_h_t
 						);
-
-					if (simVars.sim.viscosity != 0)
-						o_h_t -= op.diff2(i_h)*simVars.sim.viscosity;
-
-					if (simVars.sim.hyper_viscosity != 0)
-						o_h_t -= op.diff2(i_h)*simVars.sim.hyper_viscosity;
 				}
 			}
 			else
@@ -433,12 +417,13 @@ public:
 						);
 				}
 			}
-
+#if 0
 			if (simVars.sim.potential_viscosity != 0)
 				o_h_t -= op.diff2(i_h)*simVars.sim.potential_viscosity;
 
 			if (simVars.sim.potential_hyper_viscosity != 0)
 				o_h_t -= op.diff4(i_h)*simVars.sim.potential_hyper_viscosity;
+#endif
 		}
 		else
 		{
@@ -480,15 +465,11 @@ public:
 			/*
 			 * VISCOSITY
 			 */
+
 			if (simVars.sim.viscosity != 0)
 			{
-				o_u_t -= op.diff2(i_u)*simVars.sim.viscosity;
-				o_v_t -= op.diff2(i_v)*simVars.sim.viscosity;
-			}
-			if (simVars.sim.hyper_viscosity != 0)
-			{
-				o_u_t -= op.diff4(i_u)*simVars.sim.hyper_viscosity;
-				o_v_t -= op.diff4(i_v)*simVars.sim.hyper_viscosity;
+				o_u_t -= op.diffN_x(i_u, simVars.sim.viscosity_order)*simVars.sim.viscosity;
+				o_v_t -= op.diffN_y(i_v, simVars.sim.viscosity_order)*simVars.sim.viscosity;
 			}
 
 
@@ -517,11 +498,12 @@ public:
 
 					// limit by viscosity
 					double limit_visc = std::numeric_limits<double>::infinity();
+/*
 					if (simVars.sim.viscosity > 0)
 						limit_visc = (hx*hx*hy*hy)/(4.0*simVars.sim.viscosity*simVars.sim.viscosity);
-					if (simVars.sim.hyper_viscosity > 0)
-						limit_visc = std::min((hx*hx*hx*hx*hy*hy*hy*hy)/(16.0*simVars.sim.hyper_viscosity*simVars.sim.hyper_viscosity), limit_visc);
-
+					if (simVars.sim.viscosity_order > 0)
+						limit_visc = std::min((hx*hx*hx*hx*hy*hy*hy*hy)/(16.0*simVars.sim.viscosity_order*simVars.sim.viscosity_order), limit_visc);
+*/
 					// limit by gravitational acceleration
 					double limit_gh = std::min(simVars.disc.cell_size[0], simVars.disc.cell_size[1])/std::sqrt(simVars.sim.g*i_h.reduce_maxAbs());
 
@@ -584,12 +566,13 @@ public:
 				}
 			}
 
-
+#if 0
 			if (simVars.sim.potential_viscosity != 0)
 				o_h_t -= op.diff2(i_h)*simVars.sim.potential_viscosity;
 
 			if (simVars.sim.potential_hyper_viscosity != 0)
 				o_h_t -= op.diff4(i_h)*simVars.sim.potential_hyper_viscosity;
+#endif
 		}
 	}
 

@@ -297,13 +297,8 @@ public:
 		 */
 		if (simVars.sim.viscosity != 0)
 		{
-			o_u_t -= op.diff2(i_u)*simVars.sim.viscosity;
-			o_v_t -= op.diff2(i_v)*simVars.sim.viscosity;
-		}
-		if (simVars.sim.hyper_viscosity != 0)
-		{
-			o_u_t -= op.diff4(i_u)*simVars.sim.hyper_viscosity;
-			o_v_t -= op.diff4(i_v)*simVars.sim.hyper_viscosity;
+			o_u_t -= op.diffN_x(i_u, simVars.sim.viscosity_order)*simVars.sim.viscosity;
+			o_v_t -= op.diffN_y(i_v, simVars.sim.viscosity_order)*simVars.sim.viscosity;
 		}
 
 
@@ -335,8 +330,8 @@ public:
 #if 0
 				if (simVars.sim.viscosity > 0)
 					limit_visc = (hx*hx*hy*hy)/(4.0*simVars.sim.viscosity*simVars.sim.viscosity);
-				if (simVars.sim.hyper_viscosity > 0)
-					limit_visc = std::min((hx*hx*hx*hx*hy*hy*hy*hy)/(16.0*simVars.sim.hyper_viscosity*simVars.sim.hyper_viscosity), limit_visc);
+				if (simVars.sim.viscosity_order > 0)
+					limit_visc = std::min((hx*hx*hx*hx*hy*hy*hy*hy)/(16.0*simVars.sim.viscosity_order*simVars.sim.viscosity_order), limit_visc);
 #endif
 
 				// limit by gravitational acceleration
@@ -401,12 +396,13 @@ public:
 			}
 		}
 
-
+#if 0
 		if (simVars.sim.potential_viscosity != 0)
 			o_h_t -= op.diff2(i_h)*simVars.sim.potential_viscosity;
 
 		if (simVars.sim.potential_hyper_viscosity != 0)
 			o_h_t -= op.diff4(i_h)*simVars.sim.potential_hyper_viscosity;
+#endif
 	}
 
 
@@ -446,11 +442,11 @@ public:
 		if (simVars.timecontrol.current_simulation_time < next_timestep_output)
 			return;
 
-		if (simVars.misc.be_verbose_after_this_period != 0)
+		if (simVars.misc.be_verbose_after_this_simulation_time_period != 0)
 		{
 			// advance to next time step output
 			while (next_timestep_output <= simVars.timecontrol.current_simulation_time)
-				next_timestep_output += simVars.misc.be_verbose_after_this_period;
+				next_timestep_output += simVars.misc.be_verbose_after_this_simulation_time_period;
 		}
 
 		if (simVars.misc.verbosity > 0)

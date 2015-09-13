@@ -200,15 +200,10 @@ public:
 
 		if (simVars.sim.viscosity != 0)
 		{
-			o_u_t -= op.diff2(i_u)*simVars.sim.viscosity;
-			o_v_t -= op.diff2(i_v)*simVars.sim.viscosity;
+			o_u_t -= op.diffN_x(i_u, simVars.sim.viscosity_order)*simVars.sim.viscosity;
+			o_v_t -= op.diffN_y(i_v, simVars.sim.viscosity_order)*simVars.sim.viscosity;
 		}
 
-		if (simVars.sim.hyper_viscosity != 0)
-		{
-			o_u_t -= op.diff4(i_u)*simVars.sim.hyper_viscosity;
-			o_v_t -= op.diff4(i_v)*simVars.sim.hyper_viscosity;
-		}
 
 
 		/*
@@ -262,12 +257,6 @@ public:
 						i_v,
 						o_h_t
 					);
-
-				if (simVars.sim.viscosity != 0)
-					o_h_t -= op.diff2(i_h)*simVars.sim.viscosity;
-
-				if (simVars.sim.hyper_viscosity != 0)
-					o_h_t -= op.diff4(i_h)*simVars.sim.hyper_viscosity;
 			}
 		}
 		else
@@ -302,13 +291,13 @@ public:
 					);
 			}
 		}
-
+#if 0
 		if (simVars.sim.potential_viscosity != 0)
 			o_h_t -= op.diff2(i_h)*simVars.sim.potential_viscosity;
 
 		if (simVars.sim.potential_hyper_viscosity != 0)
 			o_h_t -= op.diff4(i_h)*simVars.sim.potential_hyper_viscosity;
-
+#endif
 	}
 
 
@@ -1010,8 +999,21 @@ void compute_polvani_initialization(
 
 int main(int i_argc, char *i_argv[])
 {
-	if (!simVars.setupFromMainParameters(i_argc, i_argv))
+
+	const char *bogus_var_names[] = {
+			"polvani-R",
+			"polvani-F",
+			nullptr
+	};
+
+
+//	simVars.bogus.var[0] = 0.0;	// R
+//	simVars.bogus.var[1] = 0.0;	// F
+
+	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
+		std::cout << "	--polvani-R [param]" << std::endl;
+		std::cout << "	--polvani-F [param]" << std::endl;
 		return -1;
 	}
 
