@@ -9,6 +9,7 @@
 
 #include <fftw3.h>
 #include <sweet/DataArray.hpp>
+#include <sweet/NUMABlockAlloc.hpp>
 #include <cstddef>
 #include <complex>
 #include <sweet/openmp_helper.hpp>
@@ -26,13 +27,31 @@ class Complex2DArrayFFT
 	typedef std::complex<double> complex;
 
 public:
+	/**
+	 * resolution of data array
+	 */
 	std::size_t resolution[2];
 
+	/**
+	 * Is this an aliased version?
+	 * Then this uses different FFTW plans
+	 */
 	bool aliased_scaled = false;
+
+	/**
+	 * Data associated to this complex array
+	 */
 	double *data;
 
-	bool fftw_initialized;
+	/**
+	 * Flag which is true if this is the initializer class of the FFTW library
+	 */
+	bool is_data_initialized;
 
+
+	/**
+	 * container for different plans supported by this class
+	 */
 	class Plans
 	{
 	public:
@@ -42,25 +61,39 @@ public:
 		fftw_plan to_spec_aliasing;
 	};
 
-	Plans &getPlans()
+
+	/**
+	 * Singleton of plans
+	 */
+	Plans &fft_getSingleton_Plans()
 	{
 		static Plans plans;
 		return plans;
 	}
 
-	int &getRefCounter()
+
+	/**
+	 * Singleton of reference counter
+	 */
+	int &fft_getSingleton_RefCounter()
 	{
 		static int ref_counter = 0;
 		return ref_counter;
 	}
 
-	void setup_fftw()
+
+	/**
+	 * Setup the FFTW
+	 *
+	 * This may be only called once
+	 */
+	void fft_setup()
 	{
-		fftw_initialized = true;
+		is_data_initialized = true;
 
-		assert(getRefCounter() >= 0);
+		assert(fft_getSingleton_RefCounter() >= 0);
 
-		int &ref_counter = getRefCounter();
+		int &ref_counter = fft_getSingleton_RefCounter();
 #if SWEET_REXI_PARALLEL_SUM
 #	pragma omp atomic
 #endif
@@ -74,9 +107,9 @@ public:
 			// IMPORTANT! if we use the same array for input/output,
 			// a plan will be created with does not support out-of-place
 			// FFTs, see http://www.fftw.org/doc/New_002darray-Execute-Functions.html
-			double *dummy_data = alloc_aligned_mem<double>(sizeof(double)*resolution[0]*resolution[1]*2);
+			double *dummy_data = NUMABlockAlloc::alloc<double>(sizeof(double)*resolution[0]*resolution[1]*2);
 
-			getPlans().to_spec =
+			fft_getSingleton_Plans().to_spec =
 					fftw_plan_dft_2d(
 						resolution[1],	// n0 = ny
 						resolution[0],	// n1 = nx
@@ -86,13 +119,13 @@ public:
 						FFTW_PRESERVE_INPUT
 					);
 
-			if (getPlans().to_spec == nullptr)
+			if (fft_getSingleton_Plans().to_spec == nullptr)
 			{
 				std::cerr << "Failed to create plan_forward for fftw" << std::endl;
 				exit(-1);
 			}
 
-			getPlans().to_cart =
+			fft_getSingleton_Plans().to_cart =
 					fftw_plan_dft_2d(
 						resolution[1],	// n0 = ny
 						resolution[0],	// n1 = nx
@@ -102,20 +135,20 @@ public:
 						FFTW_PRESERVE_INPUT
 					);
 
-			if (getPlans().to_cart == nullptr)
+			if (fft_getSingleton_Plans().to_cart == nullptr)
 			{
 				std::cerr << "Failed to create plan_backward for fftw" << std::endl;
 				exit(-1);
 			}
 
-			free(dummy_data);
+			NUMABlockAlloc::free(dummy_data, sizeof(double)*resolution[0]*resolution[1]*2);
 		}
 
 		{
-			double *dummy_data_aliasing_in = alloc_aligned_mem<double>(sizeof(double)*resolution[0]*resolution[1]*2*4);
-			double *dummy_data_aliasing_out = alloc_aligned_mem<double>(sizeof(double)*resolution[0]*resolution[1]*2*4);
+			double *dummy_data_aliasing_in = NUMABlockAlloc::alloc<double>(sizeof(double)*resolution[0]*resolution[1]*2*4);
+			double *dummy_data_aliasing_out = NUMABlockAlloc::alloc<double>(sizeof(double)*resolution[0]*resolution[1]*2*4);
 
-			getPlans().to_spec_aliasing =
+			fft_getSingleton_Plans().to_spec_aliasing =
 					fftw_plan_dft_2d(
 						resolution[1]*2,	// n0 = ny
 						resolution[0]*2,	// n1 = nx
@@ -125,14 +158,14 @@ public:
 						FFTW_PRESERVE_INPUT
 					);
 
-			if (getPlans().to_spec_aliasing == nullptr)
+			if (fft_getSingleton_Plans().to_spec_aliasing == nullptr)
 			{
 				std::cerr << "Failed to create plan_forward for fftw" << std::endl;
 				exit(-1);
 			}
 
 
-			getPlans().to_cart_aliasing =
+			fft_getSingleton_Plans().to_cart_aliasing =
 					fftw_plan_dft_2d(
 						resolution[1]*2,	// n0 = ny
 						resolution[0]*2,	// n1 = nx
@@ -142,47 +175,46 @@ public:
 						FFTW_PRESERVE_INPUT
 					);
 
-			if (getPlans().to_cart_aliasing == nullptr)
+			if (fft_getSingleton_Plans().to_cart_aliasing == nullptr)
 			{
 				std::cerr << "Failed to create plan_backward for fftw" << std::endl;
 				exit(-1);
 			}
 
 
-			free(dummy_data_aliasing_out);
-			free(dummy_data_aliasing_in);
+			NUMABlockAlloc::free(dummy_data_aliasing_out, sizeof(double)*resolution[0]*resolution[1]*2*4);
+			NUMABlockAlloc::free(dummy_data_aliasing_in, sizeof(double)*resolution[0]*resolution[1]*2*4);
 		}
 	}
 
-	void shutdown_fftw()
+	void fftw_shutdown()
 	{
-		if (!fftw_initialized)
+		if (!is_data_initialized)
 			return;
 
-
-		int &ref_counter = getRefCounter();
+		int &ref_counter = fft_getSingleton_RefCounter();
 #if SWEET_REXI_PARALLEL_SUM
 #	pragma omp atomic
 #endif
 		ref_counter--;
-
 
 		if (ref_counter > 0)
 			return;
 
 		assert(ref_counter >= 0);
 
-		fftw_free(getPlans().to_spec);
-		fftw_free(getPlans().to_cart);
+		fftw_destroy_plan(fft_getSingleton_Plans().to_spec);
+		fftw_destroy_plan(fft_getSingleton_Plans().to_cart);
 
-		fftw_free(getPlans().to_spec_aliasing);
-		fftw_free(getPlans().to_cart_aliasing);
+		fftw_destroy_plan(fft_getSingleton_Plans().to_spec_aliasing);
+		fftw_destroy_plan(fft_getSingleton_Plans().to_cart_aliasing);
 	}
+
 
 
 	Complex2DArrayFFT()	:
 		data(nullptr),
-		fftw_initialized(false)
+		is_data_initialized(false)
 	{
 
 #if !SWEET_USE_LIBFFT
@@ -192,12 +224,14 @@ public:
 
 	}
 
+
+
 public:
 	Complex2DArrayFFT(
 			const std::size_t i_res[2],
 			bool i_aliased_scaled = false
 	)	:
-		fftw_initialized(false)
+		is_data_initialized(false)
 	{
 
 #if !SWEET_USE_LIBFFT
@@ -210,19 +244,20 @@ public:
 		resolution[0] = i_res[0];
 		resolution[1] = i_res[1];
 
-		data = alloc_aligned_mem<double>(sizeof(double)*resolution[0]*resolution[1]*2);
+		data = NUMABlockAlloc::alloc<double>(sizeof(double)*resolution[0]*resolution[1]*2);
 
-		setup_fftw();
+		fft_setup();
 	}
 
 
+#if 0
 	/**
 	 * allocator which allocated memory blocks aligned at 128 byte boundaries
 	 */
 public:
 	template <typename T=void>
 	static
-	T *alloc_aligned_mem(
+	T *alloc(
 			std::size_t i_size
 	)
 	{
@@ -241,6 +276,18 @@ public:
 	}
 
 
+	/**
+	 * Free memory which was previously allocated
+	 */
+public:
+	template <typename T>
+	void free(T *i_ptr)
+	{
+		free(i_ptr);
+	}
+#endif
+
+
 public:
 	void setup(
 			const std::size_t i_res[2],
@@ -252,9 +299,9 @@ public:
 		resolution[0] = i_res[0];
 		resolution[1] = i_res[1];
 
-		data = alloc_aligned_mem<double>(sizeof(double)*resolution[0]*resolution[1]*2);
+		data = NUMABlockAlloc::alloc<double>(sizeof(double)*resolution[0]*resolution[1]*2);
 
-		setup_fftw();
+		fft_setup();
 	}
 
 
@@ -262,9 +309,8 @@ public:
 	Complex2DArrayFFT(
 			const Complex2DArrayFFT &i_testArray
 	)	:
-		fftw_initialized(false)
+		is_data_initialized(false)
 	{
-
 #if !SWEET_USE_LIBFFT
 		std::cerr << "This class only makes sense with FFT" << std::endl;
 		exit(1);
@@ -275,9 +321,9 @@ public:
 
 		aliased_scaled = i_testArray.aliased_scaled;
 
-		data = alloc_aligned_mem<double>(sizeof(double)*resolution[0]*resolution[1]*2);
+		data = NUMABlockAlloc::alloc<double>(sizeof(double)*resolution[0]*resolution[1]*2);
 
-		setup_fftw();
+		fft_setup();
 
 		par_doublecopy(data, i_testArray.data, resolution[0]*resolution[1]*2);
 	}
@@ -295,9 +341,9 @@ public:
 
 	~Complex2DArrayFFT()
 	{
-		shutdown_fftw();
+		fftw_shutdown();
 
-		free(data);
+		NUMABlockAlloc::free(data, sizeof(double)*resolution[0]*resolution[1]*2);
 	}
 
 
@@ -323,7 +369,7 @@ public:
 		if (aliased_scaled)
 		{
 			fftw_execute_dft(
-					getPlans().to_spec_aliasing,
+					fft_getSingleton_Plans().to_spec_aliasing,
 					(fftw_complex*)this->data,
 					(fftw_complex*)o_testArray.data
 				);
@@ -331,7 +377,7 @@ public:
 		else
 		{
 			fftw_execute_dft(
-					getPlans().to_spec,
+					fft_getSingleton_Plans().to_spec,
 					(fftw_complex*)this->data,
 					(fftw_complex*)o_testArray.data
 				);
@@ -348,7 +394,7 @@ public:
 		if (aliased_scaled)
 		{
 			fftw_execute_dft(
-					getPlans().to_cart_aliasing,
+					fft_getSingleton_Plans().to_cart_aliasing,
 					(fftw_complex*)this->data,
 					(fftw_complex*)o_testArray.data
 				);
@@ -356,7 +402,7 @@ public:
 		else
 		{
 			fftw_execute_dft(
-					getPlans().to_cart,
+					fft_getSingleton_Plans().to_cart,
 					(fftw_complex*)this->data,
 					(fftw_complex*)o_testArray.data
 				);
@@ -1219,7 +1265,6 @@ public:
 
 
 
-
 	/**
 	 * reduce to root mean square
 	 */
@@ -1319,7 +1364,23 @@ Complex2DArrayFFT operator*(
 		const Complex2DArrayFFT &i_array_data
 )
 {
-	return ((Complex2DArrayFFT&)i_array_data)*i_value;
+	Complex2DArrayFFT out(i_array_data.resolution, i_array_data.aliased_scaled);
+
+	double br = i_value.real();
+	double bi = i_value.imag();
+
+#if !SWEET_REXI_PARALLEL_SUM
+	#pragma omp parallel for OPENMP_SIMD
+#endif
+	for (std::size_t i = 0; i < i_array_data.resolution[0]*i_array_data.resolution[1]*2; i+=2)
+	{
+		double ar = i_array_data.data[i];
+		double ai = i_array_data.data[i+1];
+
+		out.data[i] = ar*br - ai*bi;
+		out.data[i+1] = ar*bi + ai*br;
+	}
+	return out;
 }
 
 #endif /* SRC_INCLUDE_SWEET_COMPLEX2DARRAYFFT_HPP_ */

@@ -80,6 +80,16 @@ AddOption(	'--compiler',
 env['compiler'] = GetOption('compiler')
 
 
+AddOption(	'--numa-block-allocator',
+		dest='numa_block_allocator',
+		type='choice',
+		choices=['0', '1', '2'],
+		default='0',
+		help='Specify allocation method to use: 0: default system\'s malloc, 1: allocation with NUMA granularity, 2: allocation with thread granularity [default: %default]'
+)
+env['numa_block_allocator'] = GetOption('numa_block_allocator')
+
+
 AddOption(	'--gxx-toolchain',
 		dest='gxx-toolchain',
 		type='string',
@@ -240,7 +250,6 @@ else:
 	print("Neither a program name, nor a unit test is given:\n")
 	print("  use --program=[program name] to specify the program\n")
 	print("  or --unit-test=[unit test] to specify a unit test\n")
-	Exit(1)
 
 
 
@@ -573,6 +582,10 @@ if env['threading'] in ['omp']:
 if env['rexi_parallel_sum']=='enable':
 	exec_name+='_rexipar'
 
+env.Append(CXXFLAGS=' -DNUMA_BLOCK_ALLOCATOR_TYPE='+env['numa_block_allocator'])
+
+if env['numa_block_allocator'] != '0':
+	exec_name+='_numaallocator'+env['numa_block_allocator']
 
 exec_name += '_'+env['compiler']
 exec_name += '_'+env['mode']
@@ -590,6 +603,7 @@ if env['libfft'] == 'enable':
 	if env['threading'] == 'omp':
 		env.Append(LIBS=['fftw3_omp'])
 
+env.Append(LIBS=['numa'])
 
 if env['rexi_parallel_sum']=='enable' or env['threading'] == 'omp':
 	env.Append(LINKFLAGS=' -fopenmp')

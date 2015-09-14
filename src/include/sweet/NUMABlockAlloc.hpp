@@ -1,0 +1,408 @@
+/*
+ * NUMABlockAlloc.hpp
+ *
+ *  Created on: 14 Sep 2015
+ *      Author: Martin Schreiber <schreiberx@gmail.com>
+ */
+#ifndef SRC_INCLUDE_SWEET_NUMABLOCKALLOC_HPP_
+#define SRC_INCLUDE_SWEET_NUMABLOCKALLOC_HPP_
+
+/**
+ * define granularity of allocation
+ *
+ * 0: default allocator
+ *
+ * 1: NUMA domains
+ *    -> requires additional synchronization (critical regions)
+ *
+ * 2: Threads
+ *    -> requires no synchronization
+ *
+ */
+#if !(NUMA_BLOCK_ALLOCATOR_TYPE >= 0 && NUMA_BLOCK_ALLOCATOR_TYPE <= 2)
+#	error	"Please specify allocator type via NUMA_BLOCK_ALLOCATOR_TYPE"
+#endif
+
+#undef NUMA_BLOCK_ALLOCATOR_TYPE
+#define NUMA_BLOCK_ALLOCATOR_TYPE 2
+
+#if NUMA_BLOCK_ALLOCATOR_TYPE == 1
+#	include <numa.h>
+#endif
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <omp.h>
+#include <cstdlib>
+#include <cassert>
+#include <iostream>
+#include <vector>
+
+
+
+
+
+/**
+ * This class implements a memory manager which caches the allocation of large memory blocks.
+ *
+ * The idea is to avoid freeing blocks directly.
+ */
+class NUMABlockAlloc
+{
+	/**
+	 * Number of allocation domains
+	 *
+	 * Either this is the number of NUMA domains or the number of threads,
+	 * depending on NUMA_BLOCK_ALLOCATOR_TYPE
+	 */
+	int num_alloc_domains = 1;
+
+	/**
+	 * verbosity
+	 */
+	int verbosity = 1;
+
+	/**
+	 * List of memory blocks of same size
+	 */
+private:
+	class MemBlocksSameSize
+	{
+	public:
+		/**
+		 * size of memory blocks
+		 */
+		std::size_t block_size;
+
+		/**
+		 * Array of memory blocks
+		 */
+		std::vector<void*> free_blocks;
+	};
+
+
+	/**
+	 * List of varying memory blocks of same size
+	 */
+	class DomainMemBlocks
+	{
+	public:
+		/**
+		 * Array of memory blocks
+		 */
+		std::vector<MemBlocksSameSize> block_groups;
+	};
+
+
+	/**
+	 * List over all domains which are a
+	 * -> list over all Block sizes which are a
+	 * ---> list over all free blocks with that size
+	 */
+	std::vector<DomainMemBlocks> domain_block_groups;
+
+
+	/**
+	 * Hardware page size to use for memory alignment.
+	 * (avoid overlapping pages for different NUMA nodes)
+	 */
+//	long page_size;
+
+	/**
+	 * setup already executed?
+	 */
+	bool setup_done;
+
+
+private:
+	inline
+	static
+	int& getDomainIdRef()
+	{
+		/**
+		 * Domain node for current thread
+		 */
+		static thread_local int domain_id;
+		return domain_id;
+	}
+
+
+public:
+	NUMABlockAlloc()	:
+		setup_done(false)
+	{
+		p_setup();
+	}
+
+
+public:
+	static
+	void setup()
+	{
+		// access singleton to call constructor
+		getSingletonRef();
+	}
+
+private:
+	void p_setup()
+	{
+		if (omp_in_parallel())
+		{
+			std::cerr << "ERROR: NUMAMemManager may not be initialized within parallel region!" << std::endl;
+			std::cerr << "       Call NUMAMemManager::setup() at program start" << std::endl;
+			exit(1);
+		}
+
+		if (setup_done)
+			return;
+
+		const char* env_verbosity = getenv("NUMA_BLOCK_ALLOC_VERBOSITY");
+		if (env_verbosity == nullptr)
+			verbosity = 0;
+		else
+			verbosity = atoi(env_verbosity);
+
+//		std::cout << "HELLO FROM NUMA MEM MANAGER" << std::endl;
+
+//		page_size = sysconf(_SC_PAGESIZE);
+//		if (verbosity > 0)
+//			std::cout << "page_size: " << page_size << std::endl;
+
+
+#if  NUMA_BLOCK_ALLOCATOR_TYPE == 0
+
+		if (verbosity > 0)
+			std::cout << "NUMA block alloc: Using default system's allocator" << std::endl;
+
+		num_alloc_domains = 1;
+		getDomainIdRef() = 0;
+
+#elif  NUMA_BLOCK_ALLOCATOR_TYPE == 1
+
+		if (verbosity > 0)
+			std::cout << "NUMA block alloc: Using NUMA node granularity" << std::endl;
+
+		/*
+		 * NUMA granularity
+		 */
+		num_alloc_domains = numa_num_configured_nodes();
+		if (verbosity > 0)
+			std::cout << "num_alloc_domains: " << num_alloc_domains << std::endl;
+
+		// set NUMA id in case that master thread has a different id than the first thread
+		getDomainIdRef() = numa_preferred();
+
+#pragma omp parallel
+		getDomainIdRef() = numa_preferred();
+
+#elif NUMA_BLOCK_ALLOCATOR_TYPE == 2
+
+		if (verbosity > 0)
+			std::cout << "NUMA block alloc: Using allocator based on thread granularity" << std::endl;
+
+		/*
+		 * Thread granularity, use this also per default
+		 */
+		num_alloc_domains = omp_get_max_threads();
+
+		if (verbosity > 0)
+			std::cout << "num_alloc_domains: " << num_alloc_domains << std::endl;
+
+		// set NUMA id in case that master thread has a different id than the first thread
+		getDomainIdRef() = omp_get_thread_num();
+
+#pragma omp parallel
+		getDomainIdRef() = omp_get_thread_num();
+
+#else
+
+	#error "Invalid NUMA_BLOCK_ALLOCATOR_TYPE"
+
+#endif
+
+		if (verbosity > 0)
+		{
+			#pragma omp parallel
+			{
+				#pragma omp critical
+				{
+					std::cout << "	thread id " << omp_get_thread_num() << " has domain " << getDomainIdRef() << std::endl;
+				}
+			}
+		}
+
+		domain_block_groups.resize(num_alloc_domains);
+
+#if 0
+		for (auto& n : domain_block_groups)
+		{
+			std::size_t S = 10;
+
+			// preallocate S different size of blocks which should be sufficient
+			n.block_groups.reserve(S);
+		}
+#endif
+
+		setup_done = true;
+	}
+
+
+
+private:
+	~NUMABlockAlloc()
+	{
+		if (verbosity > 1)
+			std::cout << "NUMABlockAlloc EXIT" << std::endl;
+
+		for (auto& n : domain_block_groups)
+		{
+			for (auto& g : n.block_groups)
+			{
+//				std::cout << "cleaning up " << g.free_blocks.size() << " blocks of size " << g.block_size << std::endl;
+
+				for (auto& b : g.free_blocks)
+					::free(b);
+			}
+		}
+	}
+
+
+public:
+	static
+	inline
+	NUMABlockAlloc& getSingletonRef()
+	{
+		/*
+		 * Compilation details:
+		 * this is compiled to a code such as
+		 * '
+		 * 		cmp memManager, 0
+		 * 		jne return
+		 * 		# memManager = NUMABlockAlloc()
+		 * 		...
+		 * 	return:
+		 * 		ret ...
+		 * '
+		 */
+		static NUMABlockAlloc memManager;
+		return memManager;
+	}
+
+
+
+	/**
+	 * return a list of blocks with the same size
+	 *
+	 * If the list does not exist, insert it
+	 */
+	static
+	std::vector<void*>& getBlocksSameSize(
+			std::size_t i_size				///< size of blocks
+	)
+	{
+		NUMABlockAlloc &n = NUMABlockAlloc::getSingletonRef();
+
+		assert(n.getDomainIdRef() < (int)n.domain_block_groups.size());
+
+		std::vector<MemBlocksSameSize>& block_groups = n.domain_block_groups[n.getDomainIdRef()].block_groups;
+
+		// iterate over blocks available for this NUMA domain
+		for (auto& block_group : block_groups)
+		{
+			// check for matching block size
+			if (block_group.block_size == i_size)
+				return block_group.free_blocks;
+		}
+
+		// add new vector of blocks at the end with given size
+		block_groups.emplace_back();
+		block_groups.back().block_size = i_size;
+
+		return block_groups.back().free_blocks;
+	}
+
+
+
+public:
+	template <typename T=void>
+	static
+	inline
+	T *alloc(
+			std::size_t i_size		///< size of block
+	)
+	{
+		T *data = nullptr;
+
+
+#if NUMA_BLOCK_ALLOCATOR_TYPE == 1 || NUMA_BLOCK_ALLOCATOR_TYPE == 2
+
+
+#if NUMA_BLOCK_ALLOCATOR_TYPE == 1
+		// dummy call here to initialize this class as part of the singleton out of critical region
+		getSingletonRef();
+
+#	pragma omp critical
+#endif
+		{
+			std::vector<void*>& block_list = getBlocksSameSize(i_size);
+
+			if (block_list.size() > 0)
+			{
+				data = (T*)block_list.back();
+				block_list.pop_back();
+			}
+		}
+
+		if (data != nullptr)
+			return data;
+#endif
+
+		/// allocate a new element to the list of blocks given in block_list
+
+		// posix_memalign is thread safe
+		// http://www.qnx.com/developers/docs/6.3.0SP3/neutrino/lib_ref/p/posix_memalign.html
+		int retval = posix_memalign((void**)&data, 4096, i_size);
+		if (retval != 0)
+		{
+			std::cerr << "Unable to allocate memory" << std::endl;
+			assert(false);
+			exit(-1);
+		}
+
+		return data;
+	}
+
+
+
+public:
+	inline
+	static
+	void free(
+			void *i_data,
+			std::size_t i_size
+	)
+	{
+		if (i_data == nullptr)
+			return;
+
+#if NUMA_BLOCK_ALLOCATOR_TYPE == 0
+
+		::free(i_data);
+
+#else
+
+	#if NUMA_BLOCK_ALLOCATOR_TYPE == 1
+	#pragma omp critical
+	#endif
+		{
+			std::vector<void*>& block_list = getBlocksSameSize(i_size);
+			block_list.push_back(i_data);
+		}
+
+#endif
+	}
+};
+
+
+#endif /* SRC_INCLUDE_SWEET_NUMABLOCKALLOC_HPP_ */

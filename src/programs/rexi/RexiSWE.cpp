@@ -28,9 +28,7 @@ RexiSWE::RexiSWE()	:
 #endif
 
 #if SWEET_REXI_PARALLEL_SUM
-	#pragma omp parallel
-	#pragma omp master
-		num_threads = omp_get_num_threads();
+	num_threads = omp_get_max_threads();
 #else
 	num_threads = 1;
 #endif
@@ -85,7 +83,7 @@ void RexiSWE::setup(
 	 * the FFTW plans are initialized before using them.
 	 */
 #if SWEET_REXI_PARALLEL_SUM
-#	pragma omp parallel for schedule(static)
+#	pragma omp parallel for schedule(static,1)
 #endif
 	for (int i = 0; i < num_threads; i++)
 	{
@@ -103,7 +101,7 @@ void RexiSWE::setup(
 
 
 #if SWEET_REXI_PARALLEL_SUM
-#	pragma omp parallel for schedule(static)
+#	pragma omp parallel for schedule(static,1)
 #endif
 	for (int i = 0; i < num_threads; i++)
 	{
@@ -154,7 +152,7 @@ void RexiSWE::run_timestep(
 	std::size_t N = rexi.alpha.size();
 
 #if SWEET_REXI_PARALLEL_SUM
-#	pragma omp parallel for schedule(static) default(none) shared(i_parameters, io_h, io_u, io_v, N)
+#	pragma omp parallel for schedule(static,1) default(none) shared(i_parameters, io_h, io_u, io_v, N)
 #endif
 	for (int i = 0; i < num_threads; i++)
 	{

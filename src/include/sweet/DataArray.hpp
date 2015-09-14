@@ -21,6 +21,7 @@
 #include <iomanip>
 #include <iostream>
 #include <sweet/openmp_helper.hpp>
+#include <sweet/NUMABlockAlloc.hpp>
 
 #ifndef SWEET_USE_SPECTRAL_SPACE
 	#define SWEET_USE_SPECTRAL_SPACE	1
@@ -124,6 +125,7 @@ private:
 	void operator delete[](void*);
 #endif
 
+#if 0
 	/**
 	 * allocator which allocated memory blocks aligned at 128 byte boundaries
 	 */
@@ -146,6 +148,17 @@ public:
 	}
 
 
+	/**
+	 * Free memory which was previously allocated
+	 */
+public:
+	template <typename T>
+	void free(T *i_ptr)
+	{
+		::free(i_ptr);
+	}
+#endif
+
 
 	/**
 	 * allocate buffers
@@ -157,12 +170,12 @@ private:
 			bool i_first_touch_initialize = true	///< true: initialize the data buffers with dummy data for first touch policy of page allocation on shared-memory systems
 	)
 	{
-		free(array_data_cartesian_space);
-		array_data_cartesian_space = alloc_aligned_mem<double>(array_data_cartesian_length*sizeof(double));
+		NUMABlockAlloc::free(array_data_cartesian_space, array_data_cartesian_length*sizeof(double));
+		array_data_cartesian_space = NUMABlockAlloc::alloc<double>(array_data_cartesian_length*sizeof(double));
 
 #if SWEET_USE_SPECTRAL_SPACE
-		free(array_data_spectral_space);
-		array_data_spectral_space = alloc_aligned_mem<double>(array_data_spectral_length*sizeof(double));
+		NUMABlockAlloc::free(array_data_spectral_space, array_data_cartesian_length*sizeof(double));
+		array_data_spectral_space = NUMABlockAlloc::alloc<double>(array_data_spectral_length*sizeof(double));
 #endif
 
 		if (i_first_touch_initialize)
@@ -468,10 +481,11 @@ public:
 
 	~DataArray()
 	{
-		free(array_data_cartesian_space);
+		NUMABlockAlloc::free(array_data_cartesian_space, array_data_cartesian_length*sizeof(double));
 
 #if SWEET_USE_SPECTRAL_SPACE
-		free(array_data_spectral_space);
+
+		NUMABlockAlloc::free(array_data_spectral_space, array_data_spectral_length*sizeof(double));
 
 		{
 			auto fft_ptr = *fftGetSingletonPtr();
@@ -496,18 +510,10 @@ public:
 		{
 			auto fft_ptr = *fftAliasingGetSingletonPtr();
 			fft_ptr->ref_counter--;
-
-#if 0
-			assert(fft_ptr->ref_counter >= 0);
-			if (fft_ptr->ref_counter == 0)
-			{
-				delete *fftAliasingGetSingletonPtr();
-				*fftAliasingGetSingletonPtr() = nullptr;
-			}
-#endif
 		}
+
 #else
-		free(kernel_data);
+		NUMABlockAlloc::free(kernel_data, sizeof(double)*kernel_size*kernel_size);
 #endif
 	}
 
@@ -1037,26 +1043,36 @@ public:
 
 	public:
 		FFTWSingletonClass(
-				DataArray<D> &i_dataArray
+				DataArray<D> &i_dataArray,
+				bool i_aliasing = false		///< set true for aliasing to avoid thread reinitialization
 		)	:
 			ref_counter(0)
 		{
+			if (!i_aliasing)
+			{
 #if SWEET_THREADING
+	#if SWEET_REXI_PARALLEL_SUM
+			std::cout << "Using REXI parallel sum, hence using only single FFT thread" << std::endl;
+			// only use serial FFT in case of REXI parallel sum
+//		    fftw_plan_with_nthreads(1);
+	#else
 			// support threading
 			fftw_init_threads();
-
 		    fftw_plan_with_nthreads(omp_get_max_threads());
+	#endif
+
 #endif
+			}
 
 			plan_backward_output_length = i_dataArray.array_data_cartesian_length;
 			plan_forward_output_length = i_dataArray.array_data_spectral_length;
 
-			double *data_cartesian = alloc_aligned_mem<double>(i_dataArray.array_data_cartesian_length*sizeof(double));
+			double *data_cartesian = NUMABlockAlloc::alloc<double>(i_dataArray.array_data_cartesian_length*sizeof(double));
 #pragma omp parallel for OPENMP_SIMD
 			for (std::size_t i = 0; i < i_dataArray.array_data_cartesian_length; i++)
 				data_cartesian[i] = -123;	// dummy data
 
-			double *data_spectral = alloc_aligned_mem<double>(i_dataArray.array_data_spectral_length*sizeof(double));
+			double *data_spectral = NUMABlockAlloc::alloc<double>(i_dataArray.array_data_spectral_length*sizeof(double));
 #pragma omp parallel for OPENMP_SIMD
 			for (std::size_t i = 0; i < i_dataArray.array_data_spectral_length; i++)
 				data_spectral[i] = -123;	// dummy data
@@ -1109,8 +1125,8 @@ public:
 			fftw_export_wisdom_to_filename(wisdom_filename);
 
 
-			free(data_cartesian);
-			free(data_spectral);
+			NUMABlockAlloc::free(data_cartesian, i_dataArray.array_data_cartesian_length*sizeof(double));
+			NUMABlockAlloc::free(data_spectral, i_dataArray.array_data_spectral_length*sizeof(double));
 		}
 
 		void fft_forward(
@@ -1196,7 +1212,7 @@ private:
 			return *fftw_singleton_data;
 		}
 
-		*fftw_singleton_data = new FFTWSingletonClass(i_dataArray);
+		*fftw_singleton_data = new FFTWSingletonClass(i_dataArray, true);
 		(*fftw_singleton_data)->ref_counter++;
 
 		return *fftw_singleton_data;
@@ -1663,7 +1679,7 @@ public:
 #if SWEET_USE_SPECTRAL_SPACE == 0
 
 		kernel_size = S;
-		kernel_data = alloc_aligned_mem<double>(sizeof(double)*S*S);
+		kernel_data = NUMABlockAlloc::alloc<double>(sizeof(double)*S*S);
 		for (int y = 0; y < S; y++)
 			for (int x = 0; x < S; x++)
 				kernel_data[y*S+x] = i_kernel_array[S-1-y][x];

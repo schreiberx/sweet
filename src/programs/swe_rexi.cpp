@@ -493,8 +493,8 @@ public:
 				{
 					double limit_speed = std::min(simVars.disc.cell_size[0]/i_u.reduce_maxAbs(), simVars.disc.cell_size[1]/i_v.reduce_maxAbs());
 
-					double hx = simVars.disc.cell_size[0];
-					double hy = simVars.disc.cell_size[1];
+//					double hx = simVars.disc.cell_size[0];
+//					double hy = simVars.disc.cell_size[1];
 
 					// limit by viscosity
 					double limit_visc = std::numeric_limits<double>::infinity();
@@ -918,6 +918,8 @@ public:
 
 int main(int i_argc, char *i_argv[])
 {
+	NUMABlockAlloc::setup();
+
 	const char *bogus_var_names[] = {
 			"rexi-h",
 			"rexi-m",
