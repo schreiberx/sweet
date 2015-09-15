@@ -45,13 +45,18 @@ class RexiSWE
 		Complex2DArrayFFT h_sum;
 		Complex2DArrayFFT u_sum;
 		Complex2DArrayFFT v_sum;
-	} *perThreadVars;
+	};
+
+	std::vector<PerThreadVars*> perThreadVars;
 
 
 	int num_threads;
 
 public:
 	REXI rexi;
+
+private:
+	void cleanup();
 
 public:
 

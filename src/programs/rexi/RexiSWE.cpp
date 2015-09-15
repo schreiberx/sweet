@@ -19,8 +19,7 @@
 
 
 
-RexiSWE::RexiSWE()	:
-	perThreadVars(nullptr)
+RexiSWE::RexiSWE()
 {
 #if !SWEET_USE_LIBFFT
 	std::cerr << "Spectral space required for solvers, use compile optino --libfft=enable" << std::endl;
@@ -34,10 +33,18 @@ RexiSWE::RexiSWE()	:
 #endif
 }
 
+
+void RexiSWE::cleanup()
+{
+	for (auto &i : perThreadVars)
+		delete i;
+
+	perThreadVars.resize(0);
+}
+
 RexiSWE::~RexiSWE()
 {
-	if (perThreadVars != nullptr)
-		delete [] perThreadVars;
+	cleanup();
 }
 
 
@@ -64,17 +71,14 @@ void RexiSWE::setup(
 
 	rexi.setup(h, M, i_L, i_rexi_half);
 
-
-
 	std::size_t N = rexi.alpha.size();
 	block_size = N/num_threads;
 	if (block_size*num_threads != N)
 		block_size++;
 
-	if (perThreadVars != nullptr)
-		delete [] perThreadVars;
+	cleanup();
 
-	perThreadVars = new PerThreadVars[num_threads];
+	perThreadVars.resize(num_threads);
 
 	/**
 	 * We split the setup from the utilization here.
@@ -87,16 +91,18 @@ void RexiSWE::setup(
 #endif
 	for (int i = 0; i < num_threads; i++)
 	{
-		perThreadVars[i].op_diff_c_x.setup(i_resolution);
-		perThreadVars[i].op_diff_c_y.setup(i_resolution);
-		perThreadVars[i].op_diff2_c_x.setup(i_resolution);
-		perThreadVars[i].op_diff2_c_y.setup(i_resolution);
-		perThreadVars[i].eta0.setup(i_resolution);
-		perThreadVars[i].u0.setup(i_resolution);
-		perThreadVars[i].v0.setup(i_resolution);
-		perThreadVars[i].h_sum.setup(i_resolution);
-		perThreadVars[i].u_sum.setup(i_resolution);
-		perThreadVars[i].v_sum.setup(i_resolution);
+		perThreadVars[i] = new PerThreadVars;
+
+		perThreadVars[i]->op_diff_c_x.setup(i_resolution);
+		perThreadVars[i]->op_diff_c_y.setup(i_resolution);
+		perThreadVars[i]->op_diff2_c_x.setup(i_resolution);
+		perThreadVars[i]->op_diff2_c_y.setup(i_resolution);
+		perThreadVars[i]->eta0.setup(i_resolution);
+		perThreadVars[i]->u0.setup(i_resolution);
+		perThreadVars[i]->v0.setup(i_resolution);
+		perThreadVars[i]->h_sum.setup(i_resolution);
+		perThreadVars[i]->u_sum.setup(i_resolution);
+		perThreadVars[i]->v_sum.setup(i_resolution);
 	}
 
 
@@ -106,25 +112,25 @@ void RexiSWE::setup(
 	for (int i = 0; i < num_threads; i++)
 	{
 		// initialize all values to account for first touch policy
-		perThreadVars[i].op_diff_c_x.setAll(0, 0);
-		perThreadVars[i].op_diff_c_x.op_setup_diff_x(i_domain_size, i_use_finite_differences);
+		perThreadVars[i]->op_diff_c_x.setAll(0, 0);
+		perThreadVars[i]->op_diff_c_x.op_setup_diff_x(i_domain_size, i_use_finite_differences);
 
-		perThreadVars[i].op_diff_c_y.setAll(0, 0);
-		perThreadVars[i].op_diff_c_y.op_setup_diff_y(i_domain_size, i_use_finite_differences);
+		perThreadVars[i]->op_diff_c_y.setAll(0, 0);
+		perThreadVars[i]->op_diff_c_y.op_setup_diff_y(i_domain_size, i_use_finite_differences);
 
-		perThreadVars[i].op_diff2_c_x.setAll(0, 0);
-		perThreadVars[i].op_diff2_c_x.op_setup_diff2_x(i_domain_size, i_use_finite_differences);
+		perThreadVars[i]->op_diff2_c_x.setAll(0, 0);
+		perThreadVars[i]->op_diff2_c_x.op_setup_diff2_x(i_domain_size, i_use_finite_differences);
 
-		perThreadVars[i].op_diff2_c_y.setAll(0, 0);
-		perThreadVars[i].op_diff2_c_y.op_setup_diff2_y(i_domain_size, i_use_finite_differences);
+		perThreadVars[i]->op_diff2_c_y.setAll(0, 0);
+		perThreadVars[i]->op_diff2_c_y.op_setup_diff2_y(i_domain_size, i_use_finite_differences);
 
-		perThreadVars[i].eta0.setAll(0, 0);
-		perThreadVars[i].u0.setAll(0, 0);
-		perThreadVars[i].v0.setAll(0, 0);
+		perThreadVars[i]->eta0.setAll(0, 0);
+		perThreadVars[i]->u0.setAll(0, 0);
+		perThreadVars[i]->v0.setAll(0, 0);
 
-		perThreadVars[i].h_sum.setAll(0, 0);
-		perThreadVars[i].u_sum.setAll(0, 0);
-		perThreadVars[i].v_sum.setAll(0, 0);
+		perThreadVars[i]->h_sum.setAll(0, 0);
+		perThreadVars[i]->u_sum.setAll(0, 0);
+		perThreadVars[i]->v_sum.setAll(0, 0);
 	}
 }
 
@@ -159,18 +165,18 @@ void RexiSWE::run_timestep(
 		double eta_bar = i_parameters.setup.h0;
 		double g = i_parameters.sim.g;
 
-		Complex2DArrayFFT &op_diff_c_x = perThreadVars[i].op_diff_c_x;
-		Complex2DArrayFFT &op_diff_c_y = perThreadVars[i].op_diff_c_y;
-		Complex2DArrayFFT &op_diff2_c_x = perThreadVars[i].op_diff2_c_x;
-		Complex2DArrayFFT &op_diff2_c_y = perThreadVars[i].op_diff2_c_y;
+		Complex2DArrayFFT &op_diff_c_x = perThreadVars[i]->op_diff_c_x;
+		Complex2DArrayFFT &op_diff_c_y = perThreadVars[i]->op_diff_c_y;
+		Complex2DArrayFFT &op_diff2_c_x = perThreadVars[i]->op_diff2_c_x;
+		Complex2DArrayFFT &op_diff2_c_y = perThreadVars[i]->op_diff2_c_y;
 
-		Complex2DArrayFFT &eta0 = perThreadVars[i].eta0;
-		Complex2DArrayFFT &u0 = perThreadVars[i].u0;
-		Complex2DArrayFFT &v0 = perThreadVars[i].v0;
+		Complex2DArrayFFT &eta0 = perThreadVars[i]->eta0;
+		Complex2DArrayFFT &u0 = perThreadVars[i]->u0;
+		Complex2DArrayFFT &v0 = perThreadVars[i]->v0;
 
-		Complex2DArrayFFT &h_sum = perThreadVars[i].h_sum;
-		Complex2DArrayFFT &u_sum = perThreadVars[i].u_sum;
-		Complex2DArrayFFT &v_sum = perThreadVars[i].v_sum;
+		Complex2DArrayFFT &h_sum = perThreadVars[i]->h_sum;
+		Complex2DArrayFFT &u_sum = perThreadVars[i]->u_sum;
+		Complex2DArrayFFT &v_sum = perThreadVars[i]->v_sum;
 
 		/*
 		 * INITIALIZATION - THIS IS THE NON-PARALLELIZABLE PART!
@@ -251,9 +257,9 @@ void RexiSWE::run_timestep(
 		#pragma omp parallel for schedule(static)
 		for (std::size_t i = 0; i < io_h.array_data_cartesian_length; i++)
 		{
-			io_h.array_data_cartesian_space[i] += perThreadVars[n].h_sum.data[i<<1];
-			io_u.array_data_cartesian_space[i] += perThreadVars[n].u_sum.data[i<<1];
-			io_v.array_data_cartesian_space[i] += perThreadVars[n].v_sum.data[i<<1];
+			io_h.array_data_cartesian_space[i] += perThreadVars[n]->h_sum.data[i<<1];
+			io_u.array_data_cartesian_space[i] += perThreadVars[n]->u_sum.data[i<<1];
+			io_v.array_data_cartesian_space[i] += perThreadVars[n]->v_sum.data[i<<1];
 		}
 	}
 #else

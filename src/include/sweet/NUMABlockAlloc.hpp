@@ -23,9 +23,6 @@
 #	error	"Please specify allocator type via NUMA_BLOCK_ALLOCATOR_TYPE"
 #endif
 
-#undef NUMA_BLOCK_ALLOCATOR_TYPE
-#define NUMA_BLOCK_ALLOCATOR_TYPE 2
-
 #if NUMA_BLOCK_ALLOCATOR_TYPE == 1
 #	include <numa.h>
 #endif
@@ -118,7 +115,7 @@ private:
 private:
 	inline
 	static
-	int& getDomainIdRef()
+	int& getThreadLocalDomainIdRef()
 	{
 		/**
 		 * Domain node for current thread
@@ -176,7 +173,7 @@ private:
 			std::cout << "NUMA block alloc: Using default system's allocator" << std::endl;
 
 		num_alloc_domains = 1;
-		getDomainIdRef() = 0;
+		getThreadLocalDomainIdRef() = 0;
 
 #elif  NUMA_BLOCK_ALLOCATOR_TYPE == 1
 
@@ -191,10 +188,15 @@ private:
 			std::cout << "num_alloc_domains: " << num_alloc_domains << std::endl;
 
 		// set NUMA id in case that master thread has a different id than the first thread
-		getDomainIdRef() = numa_preferred();
+		int cpuid = sched_getcpu();
+		getThreadLocalDomainIdRef() = numa_node_of_cpu(cpuid);
+
 
 #pragma omp parallel
-		getDomainIdRef() = numa_preferred();
+		{
+			int cpuid = sched_getcpu();
+			getThreadLocalDomainIdRef() = numa_node_of_cpu(cpuid);
+		}
 
 #elif NUMA_BLOCK_ALLOCATOR_TYPE == 2
 
@@ -210,10 +212,10 @@ private:
 			std::cout << "num_alloc_domains: " << num_alloc_domains << std::endl;
 
 		// set NUMA id in case that master thread has a different id than the first thread
-		getDomainIdRef() = omp_get_thread_num();
+		getThreadLocalDomainIdRef() = omp_get_thread_num();
 
 #pragma omp parallel
-		getDomainIdRef() = omp_get_thread_num();
+		getThreadLocalDomainIdRef() = omp_get_thread_num();
 
 #else
 
@@ -227,7 +229,7 @@ private:
 			{
 				#pragma omp critical
 				{
-					std::cout << "	thread id " << omp_get_thread_num() << " has domain " << getDomainIdRef() << std::endl;
+					std::cout << "	thread id " << omp_get_thread_num() << " is assigned to memory allocator domain " << getThreadLocalDomainIdRef() << std::endl;
 				}
 			}
 		}
@@ -262,7 +264,13 @@ private:
 //				std::cout << "cleaning up " << g.free_blocks.size() << " blocks of size " << g.block_size << std::endl;
 
 				for (auto& b : g.free_blocks)
+				{
+#if NUMA_BLOCK_ALLOCATOR_TYPE == 0
 					::free(b);
+#else
+					numa_free(b, g.block_size);
+#endif
+				}
 			}
 		}
 	}
@@ -303,9 +311,9 @@ public:
 	{
 		NUMABlockAlloc &n = NUMABlockAlloc::getSingletonRef();
 
-		assert(n.getDomainIdRef() < (int)n.domain_block_groups.size());
+		assert(n.getThreadLocalDomainIdRef() < (int)n.domain_block_groups.size());
 
-		std::vector<MemBlocksSameSize>& block_groups = n.domain_block_groups[n.getDomainIdRef()].block_groups;
+		std::vector<MemBlocksSameSize>& block_groups = n.domain_block_groups[n.getThreadLocalDomainIdRef()].block_groups;
 
 		// iterate over blocks available for this NUMA domain
 		for (auto& block_group : block_groups)
@@ -356,6 +364,8 @@ public:
 
 		if (data != nullptr)
 			return data;
+
+		return (T*)numa_alloc(i_size);
 #endif
 
 		/// allocate a new element to the list of blocks given in block_list

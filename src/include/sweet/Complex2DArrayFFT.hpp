@@ -82,6 +82,7 @@ public:
 	}
 
 
+
 	/**
 	 * Setup the FFTW
 	 *

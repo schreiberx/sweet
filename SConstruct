@@ -639,6 +639,8 @@ print hostname
 if hostname[0:4] == "mac-":
 	env.Append(CPPPATH = ['/usr/local/include', '/usr/include', '/lrz/sys/libraries/fftw/3.3.3/avx/include'])
 	env.Append(LINKFLAGS=' -L/lrz/sys/libraries/fftw/3.3.3/avx/lib_omp ')
+	env.Append(LINKFLAGS=' -L/home/hpc/pr63so/di69fol/local/numactl-2.0.8/lib64 ')
+	env.Append(CPPPATH = ['/home/hpc/pr63so/di69fol/local/numactl-2.0.8/include'])
 
 # also include the 'src' directory to search for dependencies
 env.Append(CPPPATH = ['.', 'src/', 'src/include'])
