@@ -40,7 +40,7 @@
 
 * Check scalup/scaledown in operator*, since this creates invalid
   memory access
-  DONE (?)
+  DONE
 
 * Implement NEMO-like model
 
@@ -50,8 +50,11 @@
 	5) Mountain
 	6) Rot. shallow water
 
-* Add test bench for Galewski unstable jet
-
 * Optimize stencil computations on Cartesian grids for performance benchmarks
+  DONE (partially)
 
 * Implement cache blocking for performance benchmarks
+
+* Think about moving "#omp parallel" to higher recursive level
+  Question: How to keep this transparent to the SWEET user?!?
+

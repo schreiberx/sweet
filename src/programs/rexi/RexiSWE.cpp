@@ -28,6 +28,11 @@ RexiSWE::RexiSWE()
 
 #if SWEET_REXI_PARALLEL_SUM
 	num_threads = omp_get_max_threads();
+	if (num_threads == 0)
+	{
+		std::cerr << "FATAL ERROR: omp_get_max_threads == 0" << std::endl;
+		exit(-1);
+	}
 #else
 	num_threads = 1;
 #endif
@@ -36,8 +41,8 @@ RexiSWE::RexiSWE()
 
 void RexiSWE::cleanup()
 {
-	for (auto &i : perThreadVars)
-		delete i;
+	for (std::vector<PerThreadVars*>::iterator iter = perThreadVars.begin(); iter != perThreadVars.end(); iter++)
+		delete *iter;
 
 	perThreadVars.resize(0);
 }
@@ -86,31 +91,85 @@ void RexiSWE::setup(
 	 * This is necessary, since it has to be assured that
 	 * the FFTW plans are initialized before using them.
 	 */
-#if SWEET_REXI_PARALLEL_SUM
-#	pragma omp parallel for schedule(static,1)
-#endif
-	for (int i = 0; i < num_threads; i++)
+	if (num_threads == 0)
 	{
-		perThreadVars[i] = new PerThreadVars;
+		std::cerr << "FATAL ERROR B: omp_get_max_threads == 0" << std::endl;
+		exit(-1);
+	}
 
-		perThreadVars[i]->op_diff_c_x.setup(i_resolution);
-		perThreadVars[i]->op_diff_c_y.setup(i_resolution);
-		perThreadVars[i]->op_diff2_c_x.setup(i_resolution);
-		perThreadVars[i]->op_diff2_c_y.setup(i_resolution);
-		perThreadVars[i]->eta0.setup(i_resolution);
-		perThreadVars[i]->u0.setup(i_resolution);
-		perThreadVars[i]->v0.setup(i_resolution);
-		perThreadVars[i]->h_sum.setup(i_resolution);
-		perThreadVars[i]->u_sum.setup(i_resolution);
-		perThreadVars[i]->v_sum.setup(i_resolution);
+	if (omp_in_parallel())
+	{
+		std::cerr << "FATAL ERROR X: in parallel region" << std::endl;
+		exit(-1);
+	}
+
+	// use a kind of serialization of the input to avoid threading conflicts in the ComplexFFT generation
+	for (int j = 0; j < num_threads; j++)
+	{
+#if SWEET_REXI_PARALLEL_SUM
+#	pragma omp parallel for schedule(static,1) default(none) shared(i_resolution,i_use_finite_differences,std::cout, j)
+#endif
+		for (int i = 0; i < num_threads; i++)
+		{
+			if (i != j)
+				continue;
+
+			if (omp_get_thread_num() != i)
+			{
+				// leave this dummy std::cout in it to avoid the intel compiler removing this part
+				std::cout << "ERROR: thread " << omp_get_thread_num() << " number mismatch " << i << std::endl;
+				exit(-1);
+			}
+
+			perThreadVars[i] = new PerThreadVars;
+
+			perThreadVars[i]->op_diff_c_x.setup(i_resolution);
+			perThreadVars[i]->op_diff_c_y.setup(i_resolution);
+			perThreadVars[i]->op_diff2_c_x.setup(i_resolution);
+			perThreadVars[i]->op_diff2_c_y.setup(i_resolution);
+			perThreadVars[i]->eta0.setup(i_resolution);
+			perThreadVars[i]->u0.setup(i_resolution);
+			perThreadVars[i]->v0.setup(i_resolution);
+			perThreadVars[i]->h_sum.setup(i_resolution);
+			perThreadVars[i]->u_sum.setup(i_resolution);
+			perThreadVars[i]->v_sum.setup(i_resolution);
+		}
 	}
 
 
+	if (num_threads == 0)
+	{
+		std::cerr << "FATAL ERROR C: omp_get_max_threads == 0" << std::endl;
+		exit(-1);
+	}
+
+	for (int i = 0; i < num_threads; i++)
+	{
+		if (perThreadVars[i]->op_diff_c_x.data == nullptr)
+		{
+			std::cerr << "ARRAY NOT INITIALIZED!!!!" << std::endl;
+			exit(-1);
+		}
+	}
+
 #if SWEET_REXI_PARALLEL_SUM
-#	pragma omp parallel for schedule(static,1)
+#	pragma omp parallel for schedule(static,1) default(none)  shared(i_domain_size,i_use_finite_differences, std::cout, std::cerr)
 #endif
 	for (int i = 0; i < num_threads; i++)
 	{
+		if (omp_get_thread_num() != i)
+		{
+			// leave this dummy std::cout in it to avoid the intel compiler removing this part
+			std::cout << "ERROR: thread " << omp_get_thread_num() << " number mismatch " << i << std::endl;
+			exit(-1);
+		}
+
+		if (perThreadVars[i]->op_diff_c_x.data == nullptr)
+		{
+			std::cout << "ERROR, data == nullptr" << std::endl;
+			exit(-1);
+		}
+
 		// initialize all values to account for first touch policy
 		perThreadVars[i]->op_diff_c_x.setAll(0, 0);
 		perThreadVars[i]->op_diff_c_x.op_setup_diff_x(i_domain_size, i_use_finite_differences);
@@ -264,9 +323,9 @@ void RexiSWE::run_timestep(
 	}
 #else
 
-	io_h = perThreadVars[0].h_sum.getRealWithDataArray();
-	io_u = perThreadVars[0].u_sum.getRealWithDataArray();
-	io_v = perThreadVars[0].v_sum.getRealWithDataArray();
+	io_h = perThreadVars[0]->h_sum.getRealWithDataArray();
+	io_u = perThreadVars[0]->u_sum.getRealWithDataArray();
+	io_v = perThreadVars[0]->v_sum.getRealWithDataArray();
 
 #endif
 }

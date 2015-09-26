@@ -23,7 +23,7 @@
 #	error	"Please specify allocator type via NUMA_BLOCK_ALLOCATOR_TYPE"
 #endif
 
-#if NUMA_BLOCK_ALLOCATOR_TYPE == 1
+#if NUMA_BLOCK_ALLOCATOR_TYPE == 1 || NUMA_BLOCK_ALLOCATOR_TYPE == 2
 #	include <numa.h>
 #endif
 

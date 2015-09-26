@@ -49,7 +49,6 @@ class RexiSWE
 
 	std::vector<PerThreadVars*> perThreadVars;
 
-
 	int num_threads;
 
 public:

@@ -24,6 +24,8 @@ bool param_compute_error;
 bool param_use_staggering;
 bool param_use_finite_differences_for_complex_array;
 
+double param_initial_freq_x_mul;
+double param_initial_freq_y_mul;
 
 class SimulationSWE
 {
@@ -115,44 +117,111 @@ public:
 			/**
 			 * setup steady state
 			 */
+			if (param_use_staggering)
+			{
+				std::cerr << "NOT SUPPORTED YET" << std::endl;
+				exit(1);
+			}
+			else
+			{
+				for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+				{
+					for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+					{
+						double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+						double y = (((double)j)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+
+						// Gaussian
+						double dx = x-simVars.setup.coord_x*simVars.sim.domain_size[0];
+						double dy = y-simVars.setup.coord_y*simVars.sim.domain_size[1];
+
+						double radius = simVars.setup.radius_scale*sqrt((double)simVars.sim.domain_size[0]*(double)simVars.sim.domain_size[0]+(double)simVars.sim.domain_size[1]*(double)simVars.sim.domain_size[1]);
+						dx /= radius;
+						dy /= radius;
+
+	#if 1
+						double sx = x/simVars.sim.domain_size[0];
+						double sy = y/simVars.sim.domain_size[1];
+
+						double foo = std::sin(sx*2.0*M_PIl)*std::sin(sy*2.0*M_PIl);
+
+						double barx = std::cos(sx*2.0*M_PIl)*std::sin(sy*2.0*M_PIl)*2.0*M_PIl/simVars.sim.domain_size[0];
+						double bary = std::sin(sx*2.0*M_PIl)*std::cos(sy*2.0*M_PIl)*2.0*M_PIl/simVars.sim.domain_size[1];
+
+						double h = simVars.setup.h0+foo;
+						double u = -simVars.sim.g/simVars.sim.f0*bary;
+						double v = simVars.sim.g/simVars.sim.f0*barx;
+	#else
+						double foo = std::exp(-50.0*(dx*dx + dy*dy));
+						double h = simVars.setup.h0+foo;
+						double u = -simVars.sim.g/simVars.sim.f0*(-50.0*2.0*dy)*foo;
+						double v = simVars.sim.g/simVars.sim.f0*(-50.0*2.0*dx)*foo;
+	#endif
+
+						prog_h.set(j, i, h);
+						prog_u.set(j, i, u);
+						prog_v.set(j, i, v);
+					}
+				}
+			}
+		}
+		else if (param_initial_freq_x_mul != -1)
+		{
 			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 			{
 				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
 				{
-#if 0
-					double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-					double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
-#else
-					double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-					double y = (((double)j)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
-#endif
+					double h_dx, h_dy;
+					double u_dx, u_dy;
+					double v_dx, v_dy;
 
-					// Gaussian
-					double dx = x-simVars.setup.coord_x*simVars.sim.domain_size[0];
-					double dy = y-simVars.setup.coord_y*simVars.sim.domain_size[1];
+					if (param_use_staggering)
+					{
+						{
+							// h
+							double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+							double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
 
-					double radius = simVars.setup.radius_scale*sqrt((double)simVars.sim.domain_size[0]*(double)simVars.sim.domain_size[0]+(double)simVars.sim.domain_size[1]*(double)simVars.sim.domain_size[1]);
-					dx /= radius;
-					dy /= radius;
+							h_dx = x/simVars.sim.domain_size[0]*param_initial_freq_x_mul*M_PIl;
+							h_dy = y/simVars.sim.domain_size[1]*param_initial_freq_y_mul*M_PIl;
+						}
 
-#if 1
-					double sx = x/simVars.sim.domain_size[0];
-					double sy = y/simVars.sim.domain_size[1];
+						{
+							// u space
+							double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+							double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
 
-					double foo = std::sin(sx*2.0*M_PIl)*std::sin(sy*2.0*M_PIl);
+							u_dx = x/simVars.sim.domain_size[0]*param_initial_freq_x_mul*M_PIl;
+							u_dy = y/simVars.sim.domain_size[1]*param_initial_freq_y_mul*M_PIl;
+						}
 
-					double barx = std::cos(sx*2.0*M_PIl)*std::sin(sy*2.0*M_PIl)*2.0*M_PIl/simVars.sim.domain_size[0];
-					double bary = std::sin(sx*2.0*M_PIl)*std::cos(sy*2.0*M_PIl)*2.0*M_PIl/simVars.sim.domain_size[1];
+						{
+							// v space
+							double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+							double y = (((double)j)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
 
-					double h = simVars.setup.h0+foo;
-					double u = -simVars.sim.g/simVars.sim.f0*bary;
-					double v = simVars.sim.g/simVars.sim.f0*barx;
-#else
-					double foo = std::exp(-50.0*(dx*dx + dy*dy));
-					double h = simVars.setup.h0+foo;
-					double u = -simVars.sim.g/simVars.sim.f0*(-50.0*2.0*dy)*foo;
-					double v = simVars.sim.g/simVars.sim.f0*(-50.0*2.0*dx)*foo;
-#endif
+							v_dx = x/simVars.sim.domain_size[0]*param_initial_freq_x_mul*M_PIl;
+							v_dy = y/simVars.sim.domain_size[1]*param_initial_freq_y_mul*M_PIl;
+						}
+					}
+					else
+					{
+						double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+						double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+
+						h_dx = x/simVars.sim.domain_size[0]*param_initial_freq_x_mul*M_PIl;
+						h_dy = y/simVars.sim.domain_size[1]*param_initial_freq_y_mul*M_PIl;
+
+						u_dx = h_dx;
+						u_dy = h_dy;
+
+						v_dx = h_dx;
+						v_dy = h_dy;
+					}
+
+					double h = std::sin(2.0*h_dx)*std::cos(2.0*h_dy) - (1.0/5.0)*std::cos(2.0*h_dx)*std::sin(4.0*h_dy) + simVars.setup.h0;
+					double u = std::cos(4.0*u_dx)*std::cos(2.0*u_dy);
+					double v = std::cos(2.0*v_dx)*std::cos(4.0*v_dy);
 
 					prog_h.set(j, i, h);
 					prog_u.set(j, i, u);
@@ -166,12 +235,41 @@ public:
 			{
 				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
 				{
-					double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-					double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+					if (param_use_staggering)
+					{
+						{
+							// h
+							double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+							double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
 
-					prog_h.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
-					prog_u.set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
-					prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
+							prog_h.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
+						}
+
+						{
+							// u space
+							double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+							double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+
+							prog_u.set(j,i, SWEValidationBenchmarks::return_u(simVars, x, y));
+						}
+
+						{
+							// v space
+							double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+							double y = (((double)j)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+
+							prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
+						}
+					}
+					else
+					{
+						double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+						double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+
+						prog_h.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
+						prog_u.set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
+						prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
+					}
 				}
 			}
 		}
@@ -427,6 +525,8 @@ public:
 		}
 		else
 		{
+			// STAGGERED GRID
+
 			DataArray<2> U(i_h.resolution), V(i_h.resolution), q(i_h.resolution), H(i_h.resolution);
 
 			/*
@@ -929,6 +1029,8 @@ int main(int i_argc, char *i_argv[])
 			"compute-error",
 			"staggering",
 			"use-fd-for-complex-array",	/// use finite differences for complex array
+			"initial-freq-x-mul",
+			"initial-freq-y-mul",
 			nullptr
 	};
 
@@ -941,6 +1043,9 @@ int main(int i_argc, char *i_argv[])
 	simVars.bogus.var[5] = 0;
 	simVars.bogus.var[6] = 0;
 	simVars.bogus.var[7] = 0;	// don't use FD per default for complex array
+
+	simVars.bogus.var[8] = -1;	// freq multiplier for initial conditions
+	simVars.bogus.var[9] = -1;
 
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
@@ -963,6 +1068,9 @@ int main(int i_argc, char *i_argv[])
 		std::cout << std::endl;
 		std::cout << "	--use-fd-for-complex-array=[0/1]	Use finite-differences for derivatives in spectral space" << std::endl;
 		std::cout << std::endl;
+		std::cout << "	--init-cond-freq-mul-x=[float]	Setup initial conditions by using this multiplier values" << std::endl;
+		std::cout << "	--init-cond-freq-mul-y=[float]	" << std::endl;
+		std::cout << std::endl;
 		return -1;
 	}
 
@@ -975,6 +1083,8 @@ int main(int i_argc, char *i_argv[])
 	param_use_staggering = simVars.bogus.var[6];
 	param_use_finite_differences_for_complex_array = simVars.bogus.var[7];
 
+	param_initial_freq_x_mul = simVars.bogus.var[8];
+	param_initial_freq_y_mul = simVars.bogus.var[9];
 
 	SimulationSWE *simulationSWE = new SimulationSWE;
 
