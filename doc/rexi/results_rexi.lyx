@@ -176,10 +176,6 @@ U:=(h,u,v)^{T}.
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Standard
 If not otherwise stated, we set 
 \begin_inset Formula $\epsilon=g=\eta_{0}=f=1$
 \end_inset
@@ -201,7 +197,7 @@ We give a brief overview of the used abbreviations for the parameter studies:
 
 \begin_layout Standard
 \begin_inset Tabular
-<lyxtabular version="3" rows="8" columns="2">
+<lyxtabular version="3" rows="9" columns="2">
 <features rotate="0" tabularvalignment="middle">
 <column alignment="center" valignment="top">
 <column alignment="left" valignment="top">
@@ -372,7 +368,7 @@ Overall simulation time
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -384,11 +380,34 @@ Overall simulation time
 
 \end_inset
 </cell>
-<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
 Number of time steps
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $W$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Parameter related to the number of waves in the initial conditions
 \end_layout
 
 \end_inset
@@ -473,6 +492,58 @@ key "Terry:High-order time-parallel approximation of evolution operators"
 h(x,y) & := & sin(6\pi x)cos(4\pi y)-\frac{1}{5}cos(4\pi x)sin(2\pi y)+\eta_{0}\\
 u(x,y) & := & cos(6\pi x)cos(4\pi y)-4sin(6\pi x)sin(4\pi y)\\
 v(x,y) & := & cos(6\pi x)cos(6\pi y)
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Scenario 
+\begin_inset Quotes eld
+\end_inset
+
+Frequencies
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:scenario_frequencies"
+
+\end_inset
+
+For testing different frequencies in the initial conditions, we also introduce
+ additional frequencies via the parameter 
+\begin_inset Formula $W$
+\end_inset
+
+ by setting
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{eqnarray*}
+fx & := & \pi\cdot x\cdot W\\
+fy & := & \pi\cdot y\cdot W
+\end{eqnarray*}
+
+\end_inset
+
+and use the following initial conditions:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{eqnarray*}
+h(x,y) & := & sin(2\,fx)\,cos(2\,fy)-\frac{1}{5}cos(2\,fx)\,sin(4\,fy)+\eta_{0}\\
+u(x,y) & := & cos(4\,fx)\,cos(2\,fy)\\
+v(x,y) & := & cos(2\,fx)\,cos(4\,fy)
 \end{eqnarray*}
 
 \end_inset
@@ -607,7 +678,19 @@ key "Schreiber:Understanding_REXI"
 \end_inset
 
  for their description.
- We denote the result 
+ The approximation is then given by a sum over a system of independent systems
+ of equations to be solved:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+e^{\tau L}\approx\sum_{n=0}^{N}\frac{\gamma_{n}^{Re}}{\tau L+\alpha_{n}}\label{eq:rexi_approx}
+\end{equation}
+
+\end_inset
+
+We denote the result 
 \begin_inset Formula $U'(\tau)$
 \end_inset
 
@@ -640,7 +723,7 @@ with
 \end_inset
 
  related to the number of poles 
-\begin_inset Formula $L+M+1$
+\begin_inset Formula $K+M+1$
 \end_inset
 
  used to compute REXI to 
@@ -2129,7 +2212,7 @@ Studies for varying
 \begin_layout Plain Layout
 \begin_inset Graphics
 	filename results_plots/2015_09_07_search_h_M_finite_differences/output_n16_eps1_dt0.1.pdf
-	width 45mm
+	width 45text%
 
 \end_inset
 
@@ -2512,6 +2595,302 @@ We should emphasize, that here the desired accuracy specified by
 .
 \end_layout
 
+\begin_layout Subsection
+Dependency of 
+\begin_inset Formula $M$
+\end_inset
+
+ on number of waves 
+\begin_inset Formula $W$
+\end_inset
+
+ in initial conditions
+\end_layout
+
+\begin_layout Standard
+The REXI approach approximates the linear operator 
+\begin_inset Formula $L$
+\end_inset
+
+ acting on initial conditions.
+ Hence, this approximation has to be able to capture all waves in the initial
+ condition.
+ Therefore, we next evaluate the possible dependency 
+\begin_inset Formula $M$
+\end_inset
+
+ on the number of frequencies in the initial condition (see Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:scenario_frequencies"
+
+\end_inset
+
+).
+ We briefly like to mention, that we skipped showing the resolutions 
+\begin_inset Formula $32\text{²}$
+\end_inset
+
+ and 
+\begin_inset Formula $64\text{²}$
+\end_inset
+
+ here, since all frequencies of the initial conditions cannot be captured
+ by the grid resolution.
+ We evaluated these studies with 
+\begin_inset Formula $h:=0.8$
+\end_inset
+
+.
+ Smaller values of 
+\begin_inset Formula $h$
+\end_inset
+
+ only resulted in a decrease of accuracy for a fixed 
+\begin_inset Formula $M$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+Spectral REXI:
+\end_layout
+
+\begin_layout Standard
+The simulation is executed over 
+\begin_inset Formula $DT:=50$
+\end_inset
+
+ with 
+\begin_inset Formula $dt:=5$
+\end_inset
+
+.
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="2">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_09_25_search_M_vs_waves/summary_rexi_spec_par_h08_error_n0128.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_09_25_search_M_vs_waves/summary_rexi_spec_par_h08_error_n0256.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_09_25_search_M_vs_waves/summary_rexi_spec_par_h08_error_n0512.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We can observe, that for an increase of frequencies in the initial conditions
+ (related to 
+\begin_inset Formula $W$
+\end_inset
+
+), also an increase of the number of poles 
+\begin_inset Formula $M$
+\end_inset
+
+ for the REXI approximation is required in spectral space.
+ The apparent independence of 
+\begin_inset Formula $M$
+\end_inset
+
+ to the resolution was already discussed in a previous Section which we
+ expect to be dependent by using finite differences which we evaluate next.
+\end_layout
+
+\begin_layout Subsubsection
+Finite-difference REXI
+\end_layout
+
+\begin_layout Standard
+We evaluate the accuracy and dependence of 
+\begin_inset Formula $M$
+\end_inset
+
+ on the resolution 
+\begin_inset Formula $N$
+\end_inset
+
+ and the number of waves 
+\begin_inset Formula $W$
+\end_inset
+
+.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="2">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_09_25_search_M_vs_waves/summary_rexi_fd_par_h08_error_n0128.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_09_25_search_M_vs_waves/summary_rexi_fd_par_h08_error_n0256.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename results_plots/2015_09_25_search_M_vs_waves/summary_rexi_fd_par_h08_error_n0512.pdf
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The accuracy of these simulations are significantly worse than the ones
+ with the spectral solver.
+ We like to mention, that we executed these studies over a very large time
+ step size of 
+\begin_inset Formula $DT:=50$
+\end_inset
+
+ which leads to these high inaccuracies.
+ We can observe, that in these benchmarks, the parameter 
+\begin_inset Formula $M$
+\end_inset
+
+ also depends on the number of waves.
+\end_layout
+
+\begin_layout Subsubsection
+Conclusion
+\end_layout
+
+\begin_layout Standard
+The number of poles for the REXI approximation depends on the frequencies
+ in the solution.
+ Since these frequencies are in general not known for arbitrary simulation
+ states (assuming that a Fourier transformation is not feasible), the parameter
+ 
+\series bold
+
+\begin_inset Formula $M$
+\end_inset
+
+ has to be set to capture also the highest frequencies 
+\begin_inset Formula $W$
+\end_inset
+
+.
+\end_layout
+
 \begin_layout Section
 Performance benchmarks and comparison to standard time stepping schemes
 \end_layout
@@ -2534,14 +2913,119 @@ Performance studies for time stepping methods
 \end_layout
 
 \begin_layout Standard
-[TODO]
+(benchmark: 2015_09_16_performance_and_scalability_snb)
 \end_layout
 
 \begin_layout Standard
-We executed performance studies on a 40-core Intel Westmere system (4 sockets)
- to compare the overall computation time of several discretization methods
- with the REXI approach in both accuracy and time to solution.
- We tested two different parallelization concepts for the REXI method:
+We executed performance studies on a 16-core Intel Sandybridge system (2
+ sockets, each socket has 8 cores) to compare the overall computation time
+ of several discretization methods with the REXI approach in both accuracy
+ and time to solution.
+ For initial conditions, we used the Gaussian distribution which generates
+ frequencies over the entire band in Fourier space.
+\end_layout
+
+\begin_layout Standard
+The initial conditions are given by the Gaussian distribution (see Sec.
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:initial_conditions"
+
+\end_inset
+
+).
+ For the non-REXI approaches, we use a 
+\begin_inset Formula $CFL:=0.3$
+\end_inset
+
+ and RK4 time stepping method.
+ For the approximated solution with REXI, a time step size of 
+\begin_inset Formula $dt:=5$
+\end_inset
+
+ is used.
+ All simulations were executed over 
+\begin_inset Formula $DT:=50$
+\end_inset
+
+ simulation seconds.
+\end_layout
+
+\begin_layout Subsection
+Error
+\end_layout
+
+\begin_layout Standard
+We first evaluate the errors for different time stepping methods, including
+ REXI to compare the performance of similar results.
+\end_layout
+
+\begin_layout Standard
+The following plot shows the results for the finite difference space discretizat
+ion:
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename results_plots/2015_09_16_performance_and_scalability_snb/summary_error_fd.pdf
+	width 95text%
+
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We can observe, that error with the REXI approach and with M=256 poles are
+ competitive to the finite-difference results.
+\end_layout
+
+\begin_layout Standard
+The next plot shows the accuracy for spectral discretization in space:
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename results_plots/2015_09_16_performance_and_scalability_snb/summary_error_spec.pdf
+	width 95text%
+
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+As we can see, only with about 
+\begin_inset Formula $M:=16384$
+\end_inset
+
+, the REXI approximation is competitive to the standard spectral method.
+\end_layout
+
+\begin_layout Subsection
+Parallel performance
+\end_layout
+
+\begin_layout Standard
+Regarding the parallelization, We tested two different parallelization concepts
+ for the REXI method:
 \end_layout
 
 \begin_layout Itemize
@@ -2554,66 +3038,146 @@ REXI PARSUM: The second one uses a parallelization over the sum and computes
  each term in the sum using only a single core.
 \end_layout
 
-\begin_layout Subsection
-Evaluation via a performance model
+\begin_layout Standard
+For sake of reproducibility, we like to mention that we only discuss the
+ results in this section based on memory allocator version 2 (in SWEET developme
+nt) which resulted in the best results.
+ This is a NUMA-aware memory allocator, avoids allocations on the heap and
+ strongly improves the performance, hence allows a fair comparison of the
+ computational amount.
+ A solver in spectral space is used for solving the Helmholtz equation.
+\end_layout
+
+\begin_layout Subsubsection
+
+\series bold
+Finite-differences
 \end_layout
 
 \begin_layout Standard
-[TODO]
+We first have a look on the performance results for the finite difference
+ method.
+\begin_inset Newline newline
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-With a standard time stepping method, we denote the costs for computing
- a single time step by 
-\begin_inset Formula $C_{N}\left(\prod_{i}\vec{N_{i}}\right)$
+\begin_inset Graphics
+	filename results_plots/2015_09_16_performance_and_scalability_snb/summary_time_fd.pdf
+	width 95text%
+
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The axis for the wallclock time is in log scale.
+ Comparing the REXI approach M=256 poles which obtains the same error bounds,
+ we can observe speedups of 
+\begin_inset Formula $(7.08,\,8.04,\,8.93,\,40.62)$
+\end_inset
+
+ compared to the standard time stepping methods from left to right in the
+ performance results, respectively.
+ We like to mention, that the FD mehtod on the C-grid was not optimized.
+ Therefore, we consider 
+\begin_inset Formula $8.93$
+\end_inset
+
+ as a realistic speedup.
+\end_layout
+
+\begin_layout Standard
+Using a parallelization in space, we see a stagnating reduction in computation
+ time in the 5 left-most groups of performance studies.
+ With the REXI also a parallelization over the sum itself instead of a paralleli
+zation in space over the term in each sum is possible and denoted in the
+ performance study above with 
+\begin_inset Quotes eld
+\end_inset
+
+REXI PAR
+\begin_inset Quotes erd
 \end_inset
 
 .
- Furthermore, we can assume that 
-\begin_inset Formula $T:=O\left(\frac{t\cdot\vec{v}_{max}}{N}\right)$
+ In contrast to the parallelization in space with its scalability limitation
+ already reached (see REXI M=256) results, we can observe that there is
+ still an increase in speedup of 
+\begin_inset Formula $1.81$
 \end_inset
 
- time steps are required for computing the solution with 
-\begin_inset Formula $\vec{v}_{max}:=max_{i}(\vec{v})$
-\end_inset
-
- denoting the maximum velocity.
-\end_layout
-
-\begin_layout Standard
-We assume that 
-\begin_inset Formula $M$
-\end_inset
-
- is directly proportional to 
-\begin_inset Formula $\vec{v}_{max}$
-\end_inset
-
- being related to 
-\begin_inset Formula $\epsilon^{-1}$
+ by doubling the cores from 8 to 16 cores.
+ Comparing both parallelization strategies, the REXI PAR implementation
+ results in a speedup of 
+\begin_inset Formula $2.23$
 \end_inset
 
 .
 \end_layout
 
 \begin_layout Standard
-For a given 
-\begin_inset Formula $M$
+To summarize, we achieve a speedup of 
+\begin_inset Formula $19.88$
 \end_inset
 
--value, and by using the symmetry of the 
-\begin_inset Formula $\alpha_{i}$
+ for problem sizes for which a speedup was not achievable with conventional
+ parallelization-in-time methods.
+\end_layout
+
+\begin_layout Subsubsection
+
+\series bold
+Spectral space
+\end_layout
+
+\begin_layout Standard
+Next, we evaluate possible speedup effects based on a spectral method used
+ for the standard time stepping with RK4 with a parallelization-in-space:
+\begin_inset Newline newline
 \end_inset
 
- poles in REXI, this requires solving 
-\begin_inset Formula $L+M+1$
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename results_plots/2015_09_16_performance_and_scalability_snb/summary_time_spec.pdf
+	width 95text%
+
 \end_inset
 
- times the system 
-\begin_inset Formula $(L-\alpha)^{-1}$
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Similar to the finite-difference method, we can observe a stagnation in
+ the speedup for the parallelization-in-space.
+ With the REXI approach, we would need 
+\begin_inset Formula $M:=16384$
+\end_inset
+
+ poles to be competitive to the standard time stepping solver.
+ Comparing the wallclock time with the best REXI PAR solver results in a
+ speeddown of 
+\begin_inset Formula $3.15$
 \end_inset
 
 .
+ We account for that by the super-convergence of the spectral solvers.
+ However, as an outlook we should mention that the scalability of the REXI
+ PAR implementation is not yet reached hence allows using even more cores.
 \end_layout
 
 \begin_layout Section
@@ -2759,7 +3323,7 @@ key "Schreiber:Formulations of the shallow-water equations"
 
 Formulations of the shallow-water equations, M.
  Schreiber, P.
- Peixoto et al.
+ Peixoto
 \end_layout
 
 \begin_layout Bibliography
@@ -2782,6 +3346,17 @@ key "Schreiber:Understanding_REXI"
 
 Understanding the Rational Approximation of the Exponential Integrator (REXI),
  Schreiber M., Peixoto P.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "Schreiber:SWEET_software"
+
+\end_inset
+
+SWEET software development, http://www.martin-schreiber.info/sweet/ , Schreiber
+ M.
 \end_layout
 
 \end_body

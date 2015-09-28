@@ -540,7 +540,7 @@ and a close-to-optimal approximation of
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\psi_{1}(x)\approx Re\left(\sum_{l=-L}^{L}\frac{a_{l}}{ix+(\mu+i\,l)}\right)
+\psi_{1}(x)\approx Re\left(\sum_{l=-K}^{K}\frac{a_{l}}{ix+(\mu+i\,l)}\right)
 \]
 
 \end_inset
@@ -568,15 +568,11 @@ key "Damle:Near optimal rational approximations of large data sets"
  via 
 \begin_inset Formula 
 \[
-\psi_{h}(x)\approx Re\left(\sum_{l=-L}^{L}\frac{a_{l}}{i\frac{x}{h}+(\mu+i\,l)}\right).
+\psi_{h}(x)\approx Re\left(\sum_{l=-K}^{K}\frac{a_{l}}{i\frac{x}{h}+(\mu+i\,l)}\right).
 \]
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Standard
 The theory of how these coefficients are calculated are in 
 \begin_inset CommandInset citation
 LatexCommand cite
@@ -609,7 +605,7 @@ We then combine the approximation (B) into the approximation (A), yielding
  given by 
 \begin_inset Formula 
 \[
-\tilde{f}(x)=\sum_{m=-M}^{M}b_{m}\psi_{h}(x+mh)=\sum_{m=-M}^{M}b_{m}Re\left(\sum_{l=-L}^{L}\frac{a_{l}}{i\frac{x+mh}{h}+(\mu+i\,l)}\right)
+\tilde{f}(x)=\sum_{m=-M}^{M}b_{m}\psi_{h}(x+mh)=\sum_{m=-M}^{M}b_{m}Re\left(\sum_{l=-K}^{K}\frac{a_{l}}{i\frac{x+mh}{h}+(\mu+i\,l)}\right)
 \]
 
 \end_inset
@@ -620,7 +616,7 @@ We then combine the approximation (B) into the approximation (A), yielding
 \begin_layout Standard
 \begin_inset Formula 
 \[
-=\sum_{m=-M}^{M}b_{m}\sum_{l=-L}^{L}Re\left(\frac{ha_{l}}{ix+h(\mu+i(m+l))}\right).
+=\sum_{m=-M}^{M}b_{m}\sum_{k=-K}^{K}Re\left(\frac{ha_{l}}{ix+h(\mu+i(m+l))}\right).
 \]
 
 \end_inset
@@ -630,12 +626,12 @@ We then combine the approximation (B) into the approximation (A), yielding
 
 \begin_layout Standard
 We further like to simplify this equation and we observe, that for 
-\begin_inset Formula $n:=m+l$
+\begin_inset Formula $n:=m+k$
 \end_inset
 
 , the denominator is equal.
  We can hence express parts of the denomiator in terms of 
-\begin_inset Formula $n:=m+l$
+\begin_inset Formula $n:=m+k$
 \end_inset
 
  by
@@ -678,7 +674,7 @@ Now, we merge the
 \end_inset
 
  values inside the 
-\begin_inset Formula $\sum_{L}$
+\begin_inset Formula $\sum_{K}$
 \end_inset
 
 :
@@ -687,13 +683,13 @@ Now, we merge the
 \begin_layout Standard
 \begin_inset Formula 
 \[
-Re(f(x)):=Re\left(\sum_{m=-M}^{M}\,\,\sum_{l=-L}^{L}\frac{Re(b_{m})\,ha_{l}}{ix+h(\mu+i(m+l))}\right).
+Re(f(x)):=Re\left(\sum_{m=-M}^{M}\,\,\sum_{k=-K}^{K}\frac{Re(b_{m})\,ha_{l}}{ix+h(\mu+i(m+k))}\right).
 \]
 
 \end_inset
 
 Now we can collect all nominators with equivalent denominator (if 
-\begin_inset Formula $n=m+l$
+\begin_inset Formula $n=m+k$
 \end_inset
 
  and by using 
@@ -706,7 +702,7 @@ Now we can collect all nominators with equivalent denominator (if
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-\beta_{n}^{Re}:=h\sum_{m=-M\,}^{M}\sum_{l=-L}^{L}Re(b_{m})ha_{l}\delta(n,\,m+l)\label{eq:beta_re}
+\beta_{n}^{Re}:=h\sum_{m=-M\,}^{M}\sum_{k=-K}^{K}Re(b_{m})ha_{l}\delta(n,\,m+k)\label{eq:beta_re}
 \end{equation}
 
 \end_inset
@@ -721,7 +717,7 @@ for real values
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-\beta_{n}^{Im}:=h\sum_{m=-M\,}^{M}\sum_{l=-L}^{L}Im(b_{m})a_{l}\delta(n,\,m+l)\label{eq:beta_im}
+\beta_{n}^{Im}:=h\sum_{m=-M\,}^{M}\sum_{k=-K}^{K}Im(b_{m})a_{l}\delta(n,\,m+k)\label{eq:beta_im}
 \end{equation}
 
 \end_inset
@@ -732,7 +728,7 @@ for complex values of
 
 .
  Note, that the complexity of this operation is 
-\begin_inset Formula $O(N\,L)$
+\begin_inset Formula $O(N\,K)$
 \end_inset
 
 , which is negligible for small 
@@ -740,16 +736,16 @@ for complex values of
 \end_inset
 
  and 
-\begin_inset Formula $L$
+\begin_inset Formula $K$
 \end_inset
 
 .
  This can be optimized by using 
-\begin_inset Formula $L_{1}=max(-L,n-M)$
+\begin_inset Formula $L_{1}=max(-K,n-M)$
 \end_inset
 
  and 
-\begin_inset Formula $L_{2}=min(L,n+M)$
+\begin_inset Formula $L_{2}=min(K,n+M)$
 \end_inset
 
  (see 
