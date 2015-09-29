@@ -1,0 +1,917 @@
+#LyX 2.1 created this file. For more info see http://www.lyx.org/
+\lyxformat 474
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_math auto
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Scalability for realtime problems
+\end_layout
+
+\begin_layout Standard
+The performance of parallel programs and the feasibility to run efficiently
+ on large-scale architectures is typically measured by weak and strong scalabili
+ty plots.
+ In this work, we briefly review these performance measurements, show significan
+t disadvantages of this metric and present a new way to measure scalability
+ results for problems with (sub)realtime requirements.
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Standard
+The term scalability has its origins in the economics for describing how
+ efficiently goods can be produced depending on the number of workers.
+ It was used to measure how well the production of one product can be accelerate
+d by increasing the number of workers.
+\end_layout
+
+\begin_layout Standard
+Later, this term was adopted by the computer scientists to describe how
+ well a problem (production outcome) can be solved for an increasing number
+ of processors (workers).
+ Two different laws were developed: The one by Amdahl which basically describes
+ a strong scaling problem and the other one by Gustafson which describes
+ a weak scaling problem.
+ Both problem descriptions are nowadays used to describe the scalability
+ of programs and they only take the workload per computing core into account.
+ Both laws were only based on purely theoretical parts without consideration
+ of the underlying problem.
+ They in particular only distinguished between serial and parallelizable
+ parts in the way how an algorithm can be parallelized.
+\end_layout
+
+\begin_layout Standard
+In this work, we focus on simulations executed on an arbitrary grid.
+ With the desire of running higher resolution simulations being one of the
+ main driving force for the advance in super computers, this could be directly
+ represented as a weak scalability problem: For an increase of resolution,
+ the workload is kept constant at each core and the number of cores are
+ increased.
+ However, this does not account for real time requirements, since an increase
+ of resolution typically also leads to an increase of required time step
+ sizes.
+ Therefore, the given problem has to be able to scale on a larger number
+ of cores which, again, is related to a strong scaling problem.
+\end_layout
+
+\begin_layout Standard
+This work is on showing the relation between weak, strong and realtime scalabili
+ty with the latter one introduced in this work.
+\end_layout
+
+\begin_layout Section
+Symbols
+\end_layout
+
+\begin_layout Subsection
+Weak and strong scaling:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="9" columns="2">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="left" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Symbol
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Description
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $C$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Number of cores
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $C_{B}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Number of cores used as scalability baseline
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $W(N)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Total workload per time step
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $W(N,1)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Workload per core
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $N$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Value describing problem size (e.g.
+ 
+\begin_inset Formula $N\text{²}$
+\end_inset
+
+ for 2D or 
+\begin_inset Formula $N\text{³}$
+\end_inset
+
+ for 3D simulation)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $T(w,c)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Wallclock time to solve a problem of total workload 
+\begin_inset Formula $w$
+\end_inset
+
+ on 
+\begin_inset Formula $c$
+\end_inset
+
+ cores
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $S_{W}(c)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Weak scalability on 
+\begin_inset Formula $c$
+\end_inset
+
+ cores
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $S_{S}(c)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Strong scalability on 
+\begin_inset Formula $c$
+\end_inset
+
+ cores
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Realtime scaling
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="4" columns="2">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="left" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Symbol
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Description
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $dt(N)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Timestep size depending on problem size
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $W^{T}(N)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Total workload for entire simulation
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $D$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Dimension of problem
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Weak and strong Scalability
+\end_layout
+
+\begin_layout Standard
+We first formalize weak and strong scalability as a staring point for our
+ ongoing discussions.
+ This scalability is based on a wallclock time given for a baseline of cores
+ which we denote with the subscript 
+\begin_inset Formula $B$
+\end_inset
+
+ as 
+\begin_inset Formula $C_{B}$
+\end_inset
+
+.
+ The wallclock time for an execution of a certain total baseline workload
+ 
+\begin_inset Formula $W_{B}$
+\end_inset
+
+ on 
+\begin_inset Formula $C_{B}$
+\end_inset
+
+ processors is then given as
+\begin_inset Formula 
+\[
+T_{B}:=T(W_{B},C_{B}).
+\]
+
+\end_inset
+
+The weak scalability with 
+\begin_inset Formula $c$
+\end_inset
+
+ the number of cores is then defined as
+\begin_inset Formula 
+\[
+S_{W}(c):=\frac{T\left(W_{B}\cdot\frac{c}{C_{B}},C_{B}\right)}{T_{B}}
+\]
+
+\end_inset
+
+with the per-core workload
+\begin_inset Formula 
+\[
+W_{Weak}(N,1):=W_{B}.
+\]
+
+\end_inset
+
+Here, we can either interpret it as a proportional increase of the workload
+ to the number of cores or as fixing the workload per core.
+ The strong scalability is defined as
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+S_{S}(c):=\frac{T\left(W_{B},C_{B}\right)}{T_{B}}
+\]
+
+\end_inset
+
+with the per-core workload
+\begin_inset Formula 
+\[
+W_{Strong}(N,1):=\frac{W_{B}}{C_{B}}.
+\]
+
+\end_inset
+
+Here, the total workload is fixed and only the number of cores is increased
+ which results in successively decreasing workload per core.
+ Obviously, achieving a strong scalability is much harder to achieve in
+ this context.
+\end_layout
+
+\begin_layout Section
+Realtime scalability
+\end_layout
+
+\begin_layout Standard
+It is obvious, that the above mentioned scalability measurements are not
+ related at all to the absolute wallclock time of executing a simulation.
+ In this work, we focus on simulations executed with finite-differences
+ or finite-element (FV/DG/CG) methods.
+ Using flux and/or FD-based solvers, this results in a time step restriction
+ of the form
+\begin_inset Formula 
+\[
+dt:=CFL\,min_{i}\frac{r(c_{i})}{|\vec{v}_{i}|}
+\]
+
+\end_inset
+
+with 
+\begin_inset Formula $\vec{v}$
+\end_inset
+
+ the velocity in the current cell, 
+\begin_inset Formula $r(c)$
+\end_inset
+
+ the incircle radius and CFL the value for the Courant–Friedrichs–Lewy condition.
+ Assuming a fixed time step size with a regular grid resolution and 
+\begin_inset Formula $N$
+\end_inset
+
+ denoting the Cartesian resolution in one dimension, the time step size
+ is given by 
+\begin_inset Formula $dt(N):=\frac{dt(1)}{N}$
+\end_inset
+
+ and we can tabulate the increase in total workload increase depending on
+ the resolution:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="6" columns="2">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Dimensions
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Workload 
+\begin_inset Formula $W^{T}(N)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $W^{T}(1)\,N\,N$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $W^{T}(1)\,N^{2}\,N$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $W^{T}(1)\,N^{3}\,N$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+D
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $W^{T}(1)\,N^{D}\,N$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $W^{T}(1)\,N$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Here, the total workload 
+\begin_inset Formula $W^{T}(1)$
+\end_inset
+
+ with 
+\begin_inset Formula $N:=1$
+\end_inset
+
+ gives the workload over all time steps for that resolution.
+ The 
+\begin_inset Formula $N^{D}$
+\end_inset
+
+ factor accounts for the increase in resolution and the last factor 
+\begin_inset Formula $N$
+\end_inset
+
+ for the increase in number of time steps.
+ We can now set an overall wallclock time limitation 
+\begin_inset Formula $T\left(N_{B},C_{B}\right)$
+\end_inset
+
+ for the computations on a single core as before for a given workload (depending
+ on the resolution) and number of cores: 
+\begin_inset Formula 
+\[
+T\left(N_{B},C_{B}\right):=\frac{W^{T}(N_{B},C_{B})}{C_{B}}=\frac{W^{T}(1)\,N_{B}^{D+1}}{C_{B}}.
+\]
+
+\end_inset
+
+Without loss of generality, we assume that each unit workload requires a
+ unit time to be computed.
+ We denote 
+\begin_inset Formula $C_{R}$
+\end_inset
+
+ and 
+\begin_inset Formula $N_{R}$
+\end_inset
+
+ as the cores considered for realtime scalability and the resolution-related
+ parameter, respectively.
+ Since the per-core workload has to be the same for realtime reasons, we
+ get
+\begin_inset Formula 
+\begin{eqnarray*}
+T\left(N_{B},C_{B}\right) & = & T\left(N,C\right)\\
+\frac{W^{T}(1)\,N_{B}^{D+1}}{C_{B}} & = & \frac{W^{T}(1)\,N^{D+1}}{C}\\
+\frac{N_{B}^{D+1}}{C_{B}} & = & \frac{N^{D+1}}{C}
+\end{eqnarray*}
+
+\end_inset
+
+Hence, for a given number of resolution 
+\begin_inset Formula $N$
+\end_inset
+
+, the number of cores are given by
+\begin_inset Formula 
+\[
+C:=\frac{N^{D+1}\,C_{B}}{N_{B}^{D+1}}=N^{D+1}\frac{C_{B}}{N_{B}^{D+1}}
+\]
+
+\end_inset
+
+or based on the number of cores 
+\begin_inset Formula $C$
+\end_inset
+
+, the resolution 
+\begin_inset Formula $N$
+\end_inset
+
+ is given by
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+N:=N_{B}\left(\frac{C}{C_{B}}\right)^{(D+1)^{-1}}.
+\]
+
+\end_inset
+
+This results in the following workload distribution for weak, strong and
+ realtime scaling with the last one depending on the dimension of the underlying
+ problem.
+ Both axes are given in log-scaling.
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename plot.pdf
+
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Here, we can observe that the workload per core results (as well known)
+ is constant for weak scaling and decreases reciprocal to the number of
+ cores for strong scaling.
+ Regarding the realtime scaling, we can observe, that for D=0 such as it
+ is the case for an ODE, this does not change anything since the time step
+ size is independent of the resolution.
+ For D=1, the workload per core is by far not as much decreasing as it is
+ the case for the strong scaling.
+ For problems with a higher dimension, hence 
+\begin_inset Formula $D\rightarrow\infty$
+\end_inset
+
+, the workload is not as fast decreasing as typically expected for the strong
+ scaling.
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Therefore, the real circumstance onto which the HPC community for scalability
+ is exposed to is not a strong scalability issue, but a mix between strong
+ and weak scalability.
+ All these plots show only the optimal scalability for the considered problem
+ size.
+\end_layout
+
+\begin_layout Section
+Realtime scalability with Amdahl and Gustafson
+\end_layout
+
+\begin_layout Standard
+[TODO] show relationship to Amdahl and Gustafson
+\end_layout
+
+\end_body
+\end_document
