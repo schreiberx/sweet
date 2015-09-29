@@ -2432,7 +2432,6 @@ public:
 
 
 
-
 	/**
 	 * Compute element-wise addition
 	 */
@@ -2739,12 +2738,12 @@ public:
 
 		requestDataInSpectralSpace();
 
-		#pragma omp parallel for OPENMP_SIMD
+#pragma omp parallel for OPENMP_SIMD
 		for (std::size_t i = 0; i < array_data_spectral_length; i++)
-			out.array_data_spectral_space[i] = array_data_spectral_space[i];
+			out.array_data_spectral_space[i] = -array_data_spectral_space[i];
 
 		double scale = resolution[0]*resolution[1];
-		out.array_data_spectral_space[0] = i_value*scale - out.array_data_spectral_space[0];
+		out.array_data_spectral_space[0] = i_value*scale + out.array_data_spectral_space[0];
 
 		out.array_data_cartesian_space_valid = false;
 		out.array_data_spectral_space_valid = true;
@@ -3204,6 +3203,7 @@ DataArray<2> operator-(
 )
 {
 	return ((DataArray<2>&)i_array_data).valueMinusThis(i_value);
+//	return -(((DataArray<2>&)i_array_data).operator-(i_value));
 }
 /**
  * operator to support operations such as:

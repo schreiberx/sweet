@@ -171,8 +171,18 @@ public:
 	 */
 	struct Bogus
 	{
-		double var[10] =
+		double var[20] =
 		{
+				std::numeric_limits<double>::infinity(),
+				std::numeric_limits<double>::infinity(),
+				std::numeric_limits<double>::infinity(),
+				std::numeric_limits<double>::infinity(),
+				std::numeric_limits<double>::infinity(),
+				std::numeric_limits<double>::infinity(),
+				std::numeric_limits<double>::infinity(),
+				std::numeric_limits<double>::infinity(),
+				std::numeric_limits<double>::infinity(),
+				std::numeric_limits<double>::infinity(),
 				std::numeric_limits<double>::infinity(),
 				std::numeric_limits<double>::infinity(),
 				std::numeric_limits<double>::infinity(),
@@ -266,24 +276,34 @@ public:
 			const char *bogus_var_names[] = nullptr			///< list of strings of simulation-specific variables, has to be terminated by nullptr
 	)
 	{
-        static struct option long_options[11] = {
-			{0, 0, 0, 0}, // 0
-			{0, 0, 0, 0}, // 1
-			{0, 0, 0, 0}, // 2
-			{0, 0, 0, 0}, // 3
-			{0, 0, 0, 0}, // 4
-			{0, 0, 0, 0}, // 5
-			{0, 0, 0, 0}, // 6
-			{0, 0, 0, 0}, // 7
-			{0, 0, 0, 0}, // 8
-			{0, 0, 0, 0}, // 9
-			{0, 0, 0, 0}, // NULL
+        static struct option long_options[21] = {
+    			{0, 0, 0, 0}, // 0
+    			{0, 0, 0, 0}, // 1
+    			{0, 0, 0, 0}, // 2
+    			{0, 0, 0, 0}, // 3
+    			{0, 0, 0, 0}, // 4
+    			{0, 0, 0, 0}, // 5
+    			{0, 0, 0, 0}, // 6
+    			{0, 0, 0, 0}, // 7
+    			{0, 0, 0, 0}, // 8
+    			{0, 0, 0, 0}, // 9
+				{0, 0, 0, 0}, // 0
+				{0, 0, 0, 0}, // 1
+				{0, 0, 0, 0}, // 2
+				{0, 0, 0, 0}, // 3
+				{0, 0, 0, 0}, // 4
+				{0, 0, 0, 0}, // 5
+				{0, 0, 0, 0}, // 6
+				{0, 0, 0, 0}, // 7
+				{0, 0, 0, 0}, // 8
+				{0, 0, 0, 0}, // 9
+				{0, 0, 0, 0}, // NULL
         };
 
         if (bogus_var_names != nullptr)
         {
 			int opt_nr;
-			for (opt_nr = 0; opt_nr < 10; opt_nr++)
+			for (opt_nr = 0; opt_nr < 20; opt_nr++)
 			{
 				if (bogus_var_names[opt_nr] == nullptr)
 					break;
@@ -313,7 +333,7 @@ public:
 			/*
 			 * LONG OPTIONS
 			 */
-			if (opt >= 256+'a' && opt <= 256+'j')
+			if (opt >= 256+'a' && opt <= 256+'z')
 			{
 				int i = opt-(256+'a');
 				bogus.var[i] = atof(optarg);

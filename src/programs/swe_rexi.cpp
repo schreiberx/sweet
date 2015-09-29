@@ -27,6 +27,8 @@ bool param_use_finite_differences_for_complex_array;
 double param_initial_freq_x_mul;
 double param_initial_freq_y_mul;
 
+int param_boundary_id;
+
 class SimulationSWE
 {
 public:
@@ -34,6 +36,8 @@ public:
 	DataArray<2> eta;
 	DataArray<2> tmp;
 
+	DataArray<2> boundary_mask;
+	DataArray<2> boundary_mask_inv;
 
 	// initial values for comparison with analytical solution
 	DataArray<2> t0_prog_h, t0_prog_u, t0_prog_v;
@@ -68,6 +72,9 @@ public:
 		eta(simVars.disc.res),
 		tmp(simVars.disc.res),
 
+		boundary_mask(simVars.disc.res),
+		boundary_mask_inv(simVars.disc.res),
+
 		t0_prog_h(simVars.disc.res),
 		t0_prog_u(simVars.disc.res),
 		t0_prog_v(simVars.disc.res),
@@ -100,6 +107,7 @@ public:
 		prog_h.set_all(simVars.setup.h0);
 		prog_u.set_all(0);
 		prog_v.set_all(0);
+		boundary_mask.set_all(0);
 
 		if (simVars.setup.scenario == -1)
 		{
@@ -139,7 +147,7 @@ public:
 						dx /= radius;
 						dy /= radius;
 
-	#if 1
+#if 1
 						double sx = x/simVars.sim.domain_size[0];
 						double sy = y/simVars.sim.domain_size[1];
 
@@ -151,12 +159,12 @@ public:
 						double h = simVars.setup.h0+foo;
 						double u = -simVars.sim.g/simVars.sim.f0*bary;
 						double v = simVars.sim.g/simVars.sim.f0*barx;
-	#else
+#else
 						double foo = std::exp(-50.0*(dx*dx + dy*dy));
 						double h = simVars.setup.h0+foo;
 						double u = -simVars.sim.g/simVars.sim.f0*(-50.0*2.0*dy)*foo;
 						double v = simVars.sim.g/simVars.sim.f0*(-50.0*2.0*dx)*foo;
-	#endif
+#endif
 
 						prog_h.set(j, i, h);
 						prog_u.set(j, i, u);
@@ -274,6 +282,39 @@ public:
 			}
 		}
 
+
+		if (param_boundary_id != 0)
+		{
+			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+			{
+				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+				{
+					int boundary_flag = 0;
+					switch(param_boundary_id)
+					{
+					case 0:
+						break;
+
+					case 1:
+						boundary_flag =
+								(i >= simVars.disc.res[0]*1/4) &&
+								(i < simVars.disc.res[0]*3/4) &&
+								(j >= simVars.disc.res[1]*1/4) &&
+								(j < simVars.disc.res[1]*3/4)
+							;
+						break;
+
+					default:
+						std::cerr << "Unknown boundary id " << param_boundary_id << std::endl;
+						exit(1);
+					}
+
+					boundary_mask.set(j, i, boundary_flag);
+					boundary_mask_inv.set(j, i, 1.0-boundary_flag);
+				}
+			}
+		}
+
 		if (simVars.setup.input_data_filenames.size() > 0)
 			prog_h.file_loadData(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
 
@@ -311,13 +352,11 @@ public:
 				for (std::size_t n = 0; n < rexiSWE.rexi.alpha.size(); n++)
 					std::cout << rexiSWE.rexi.alpha[n] << std::endl;
 
-
 				std::cout << "BETA:" << std::endl;
 				for (std::size_t n = 0; n < rexiSWE.rexi.beta_re.size(); n++)
 					std::cout << rexiSWE.rexi.beta_re[n] << std::endl;
 			}
 		}
-
 
 		if (simVars.misc.gui_enabled)
 			timestep_output();
@@ -409,6 +448,20 @@ public:
 			double i_simulation_timestamp = -1
 	)
 	{
+		if (param_boundary_id != 0)
+		{
+			if (param_use_staggering)
+			{
+				std::cout << "STAGGERING WITH BOUNDARIES NOT SUPPORTED YET!!!" << std::endl;
+				exit(1);
+			}
+
+			std::cout << boundary_mask_inv << std::endl;
+			prog_u = prog_u*boundary_mask_inv;
+			prog_v = prog_v*boundary_mask_inv;
+			prog_h = prog_h*boundary_mask_inv + boundary_mask*simVars.setup.h0;
+		}
+
 		if (!param_use_staggering)
 		{
 			/*
@@ -639,7 +692,7 @@ public:
 			else
 			{
 				/*
-				 * a kind of leapfrog:
+				 * a kind of leapfrog (this is not conserving anything! don't use it for production runs!):
 				 *
 				 * We use the hew v and u values to compute the update for p
 				 *
@@ -1031,6 +1084,7 @@ int main(int i_argc, char *i_argv[])
 			"use-fd-for-complex-array",	/// use finite differences for complex array
 			"initial-freq-x-mul",
 			"initial-freq-y-mul",
+			"boundary-id",
 			nullptr
 	};
 
@@ -1044,8 +1098,12 @@ int main(int i_argc, char *i_argv[])
 	simVars.bogus.var[6] = 0;
 	simVars.bogus.var[7] = 0;	// don't use FD per default for complex array
 
-	simVars.bogus.var[8] = -1;	// freq multiplier for initial conditions
+	simVars.bogus.var[8] = -1;	// freq. multiplier for initial conditions
 	simVars.bogus.var[9] = -1;
+
+	simVars.bogus.var[10] = 0;
+
+
 
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
@@ -1071,6 +1129,10 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "	--init-cond-freq-mul-x=[float]	Setup initial conditions by using this multiplier values" << std::endl;
 		std::cout << "	--init-cond-freq-mul-y=[float]	" << std::endl;
 		std::cout << std::endl;
+		std::cout << "	--boundary-id=[0,1,...]	    Boundary id" << std::endl;
+		std::cout << "                              0: no boundary" << std::endl;
+		std::cout << "                              1: centered box" << std::endl;
+		std::cout << std::endl;
 		return -1;
 	}
 
@@ -1085,6 +1147,8 @@ int main(int i_argc, char *i_argv[])
 
 	param_initial_freq_x_mul = simVars.bogus.var[8];
 	param_initial_freq_y_mul = simVars.bogus.var[9];
+
+	param_boundary_id = simVars.bogus.var[10];
 
 	SimulationSWE *simulationSWE = new SimulationSWE;
 

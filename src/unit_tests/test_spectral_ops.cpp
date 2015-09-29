@@ -159,6 +159,8 @@ int main(int i_argc, char *i_argv[])
 			double add_test_two = (zero+two).reduce_rms_quad();
 			double add_test_seven = (five+two).reduce_rms_quad();
 			double add_test_ten = ((five+two)+3.0).reduce_rms_quad();
+			double add_test_ten2 = (3.0+(five+two)).reduce_rms_quad();
+			double add_test_ten3 = (17.0-(five+two)).reduce_rms_quad();
 			double error = 0;
 
 			error = std::abs(add_test_two-2.0);
@@ -179,6 +181,22 @@ int main(int i_argc, char *i_argv[])
 
 			error = std::abs(add_test_ten-10.0);
 			std::cout << "Add test ten ||_2 = " << error << std::endl;
+			if (error > eps)
+			{
+				std::cout << "FAILED with error " << error;
+				exit(-1);
+			}
+
+			error = std::abs(add_test_ten2-10.0);
+			std::cout << "Add test ten2 ||_2 = " << error << std::endl;
+			if (error > eps)
+			{
+				std::cout << "FAILED with error " << error;
+				exit(-1);
+			}
+
+			error = std::abs(add_test_ten3-10.0);
+			std::cout << "Add test ten3 ||_2 = " << error << std::endl;
 			if (error > eps)
 			{
 				std::cout << "FAILED with error " << error;
