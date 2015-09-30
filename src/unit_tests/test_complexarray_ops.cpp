@@ -650,6 +650,10 @@ int main(int i_argc, char *i_argv[])
 			std::cout << "error diff2 y = " << err2_y << std::endl;
 
 
+			std::cout << "error diff2 x = " << err2_x << std::endl;
+			std::cout << "error diff2 y = " << err2_y << std::endl;
+
+
 			if (use_finite_differences_for_complex_array)
 			{
 				static double err2_x_prev = -1;
@@ -679,6 +683,48 @@ int main(int i_argc, char *i_argv[])
 				}
 				err2_y_prev = err2_y;
 
+
+				std::complex<double> D2_kernel[3*3];
+
+				{
+					double h[2] = {
+							(double)simVars.sim.domain_size[0] / (double)simVars.disc.res[0],
+							(double)simVars.sim.domain_size[1] / (double)simVars.disc.res[1]
+					};
+
+					D2_kernel[0] = {0, 0};
+					D2_kernel[1] = {1.0/(h[1]*h[1]), 0};
+					D2_kernel[2] = {0, 0};
+
+					D2_kernel[3] = {1.0/(h[0]*h[0]), 0};
+					D2_kernel[4] = {-(2.0/(h[0]*h[0]) + 2.0/(h[1]*h[1])), 0};
+					D2_kernel[5] = {1.0/(h[0]*h[0]), 0};
+
+					D2_kernel[6] = {0, 0};
+					D2_kernel[7] = {1.0/(h[1]*h[1]), 0};
+					D2_kernel[8] = {0, 0};
+				}
+
+				// diff2 normalization = 4.0 pi^2 / L^2
+				double err2 = (
+							h_cart.op_stencil_3x3(D2_kernel)
+							-(h_diff2_x+h_diff2_y)
+						).reduce_norm2_quad()*normalization*(simVars.sim.domain_size[0]*simVars.sim.domain_size[1])/(4.0*M_PIl*M_PIl);
+
+				std::cout << "error diff2 xy = " << err2 << std::endl;
+
+				static double err2_prev = -1;
+				if (err2_prev != -1)
+				{
+					double conv = err2_prev/err2;
+					std::cout << " + Convergence: " << conv << std::endl;
+					if (std::abs(conv-4.0) > eps_conv)
+					{
+						std::cerr << "Convergence of diff2 operator expected to be 4 ... aborting" << std::endl;
+						exit(-1);
+					}
+				}
+				err2_prev = err2;
 			}
 			else
 			{
@@ -698,6 +744,7 @@ int main(int i_argc, char *i_argv[])
 
 		std::cout << "TEST D: DONE" << std::endl;
 	}
+
 
 	std::cout << "SUCCESSFULLY FINISHED" << std::endl;
 

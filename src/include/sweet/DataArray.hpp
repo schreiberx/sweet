@@ -343,7 +343,6 @@ public:
 #pragma omp parallel for OPENMP_SIMD
 			for (std::size_t i = 0; i < array_data_spectral_length; i++)
 				array_data_spectral_space[i] = i_dataArray.array_data_spectral_space[i];
-
 		}
 
 		auto fft_ptr = *fftGetSingletonPtr();

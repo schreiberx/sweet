@@ -596,6 +596,68 @@ public:
 #endif
 
 
+	/**
+	 * apply a 3x3 stencil
+	 */
+	Complex2DArrayFFT op_stencil_3x3(
+			const complex *i_kernel_data
+	)
+	{
+		Complex2DArrayFFT out(resolution, aliased_scaled);
+
+		int res_x = resolution[0];
+		int res_y = resolution[1];
+
+#pragma omp parallel for OPENMP_SIMD shared(res_x, res_y, out, i_kernel_data)
+		for (int y = 0; y < res_y; y++)
+		{
+			for (int x = 0; x < res_x; x++)
+			{
+				double *data_out = &out.data[(y*res_x+x)*2];
+				data_out[0] = 0;
+				data_out[1] = 0;
+
+				for (int j = -1; j <= 1; j++)
+				{
+					int pos_y = y+j;
+
+					pos_y -= (pos_y >= res_y ? res_y : 0);
+					pos_y += (pos_y < 0 ? res_y : 0);
+
+					assert(pos_y >= 0 && pos_y < res_y);
+
+					for (int i = -1; i <= 1; i++)
+					{
+						int pos_x = x+i;
+
+						pos_x -= (pos_x >= res_x ? res_x : 0);
+						pos_x += (pos_x < 0 ? res_x : 0);
+
+						assert(pos_x >= 0 && pos_x < res_x);
+
+						int idx = (j+1)*3+(i+1);
+						assert(idx >= 0 && idx < 9);
+
+						double kre = i_kernel_data[idx].real();
+						double kim = i_kernel_data[idx].imag();
+
+						double dre = data[(pos_y*res_x+pos_x)*2];
+						double dim = data[(pos_y*res_x+pos_x)*2+1];
+
+						data_out[0] += kre*dre - kim*dim;
+						data_out[1] += kre*dim + kim*dre;
+					}
+				}
+			}
+		}
+
+		return out;
+	}
+
+
+	/**
+	 * setup the data in this class as a differential operator (d/dx)
+	 */
 public:
 	void op_setup_diff_x(
 			const double i_domain_size[2],
@@ -679,7 +741,7 @@ public:
 			set(0, resolution[0]-1, 1.0/(h[0]*h[0]), 0);
 
 			*this = this->toSpec();
-			// TODO: maybe set highest modes to zero?
+			// TODO: maybe set highest modes to zero? Shouldn't be a big problem
 		}
 		else
 		{

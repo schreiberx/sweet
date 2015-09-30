@@ -30,6 +30,8 @@ class RexiSWE
 	int M;
 	double f;
 
+	bool use_iterative_solver;
+
 	std::size_t block_size;
 
 	class PerThreadVars
@@ -73,7 +75,8 @@ public:
 			std::size_t *i_resolution,			///< resolution of domain
 			const double *i_domain_size,		///< size of domain
 			bool i_rexi_half = true,			///< use half-pole reduction
-			bool i_use_finite_differences = false		///< use finite-differences for derivatives
+			bool i_use_finite_differences = false,		///< use finite-differences for derivatives,	///< use finite differences for REXI approximation
+			bool i_use_iterative_solver = false		///< Use iterative solver instead of direct solving it in spectral space
 	);
 
 

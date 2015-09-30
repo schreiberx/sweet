@@ -100,12 +100,10 @@ public:
 			int i_order
 	)
 	{
-		return io_u;
-//		if (i_order == 0)
-//			return io_u;
+		if (i_order == 0)
+			return io_u;
 
 		DataArray<2> tu = io_u;
-		return tu;
 
 		for (int i = 0; i < i_order/2; i++)
 			tu = diff2_c_x(tu);

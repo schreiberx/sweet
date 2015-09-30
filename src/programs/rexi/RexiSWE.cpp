@@ -19,7 +19,8 @@
 
 
 
-RexiSWE::RexiSWE()
+RexiSWE::RexiSWE()	:
+	use_iterative_solver(false)
 {
 #if !SWEET_USE_LIBFFT
 	std::cerr << "Spectral space required for solvers, use compile optino --libfft=enable" << std::endl;
@@ -58,21 +59,23 @@ RexiSWE::~RexiSWE()
  * setup the REXI
  */
 void RexiSWE::setup(
-		double i_tau,			///< time step size
-		double i_h,				///< sampling size
-		int i_M,				///< number of sampling points
-		int i_L,				///< number of sampling points for Gaussian approx
-		double i_f,				///< Coriolis force
+		double i_tau,					///< time step size
+		double i_h,						///< sampling size
+		int i_M,						///< number of sampling points
+		int i_L,						///< number of sampling points for Gaussian approx
+		double i_f,						///< Coriolis force
 		std::size_t *i_resolution,		///< resolution of domain
 		const double *i_domain_size,	///< size of domain
-		bool i_rexi_half,		///< use half-pole reduction
-		bool i_use_finite_differences
+		bool i_rexi_half,				///< use half-pole reduction
+		bool i_use_finite_differences,	///< use finite differences for REXI approximation
+		bool i_use_iterative_solver		///< Use iterative solver instead of direct solving it in spectral space
 )
 {
 	M = i_M;
 	h = i_h;
 	tau = i_tau;
 	f = i_f;
+	use_iterative_solver = i_use_iterative_solver;
 
 	rexi.setup(h, M, i_L, i_rexi_half);
 

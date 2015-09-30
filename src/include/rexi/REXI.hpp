@@ -34,6 +34,7 @@ public:
 	{
 	}
 
+
 public:
 	REXI(
 			double i_h,	///< sampling width
@@ -43,6 +44,7 @@ public:
 	{
 		setup(i_h, i_M, i_L);
 	}
+
 
 public:
 	void setup(

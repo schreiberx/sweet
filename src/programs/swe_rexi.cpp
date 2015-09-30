@@ -22,7 +22,8 @@ bool param_rexi_half;
 int param_timestepping_mode;
 bool param_compute_error;
 bool param_use_staggering;
-bool param_use_finite_differences_for_complex_array;
+bool param_rexi_use_finite_differences_for_complex_array;
+bool param_rexi_use_iterative_solver;
 
 double param_initial_freq_x_mul;
 double param_initial_freq_y_mul;
@@ -36,11 +37,15 @@ public:
 	DataArray<2> eta;
 	DataArray<2> tmp;
 
+	// temporary variables;
+	DataArray<2> tmp0, tmp1, tmp2, tmp3;
+
 	DataArray<2> boundary_mask;
 	DataArray<2> boundary_mask_inv;
 
 	// initial values for comparison with analytical solution
 	DataArray<2> t0_prog_h, t0_prog_u, t0_prog_v;
+
 
 	Operators2D op;
 
@@ -71,6 +76,11 @@ public:
 
 		eta(simVars.disc.res),
 		tmp(simVars.disc.res),
+
+		tmp0(simVars.disc.res),
+		tmp1(simVars.disc.res),
+		tmp2(simVars.disc.res),
+		tmp3(simVars.disc.res),
 
 		boundary_mask(simVars.disc.res),
 		boundary_mask_inv(simVars.disc.res),
@@ -304,6 +314,73 @@ public:
 							;
 						break;
 
+
+					case 2:
+						boundary_flag =
+								(i >= simVars.disc.res[0]*3/8) &&
+								(i < simVars.disc.res[0]*5/8) &&
+								(j >= simVars.disc.res[1]*3/8) &&
+								(j < simVars.disc.res[1]*5/8)
+							;
+						break;
+
+
+					case 3:
+						boundary_flag |=
+								(i >= simVars.disc.res[0]*1/8) &&
+								(i < simVars.disc.res[0]*3/8) &&
+								(j >= simVars.disc.res[1]*1/8) &&
+								(j < simVars.disc.res[1]*3/8)
+							;
+						boundary_flag |=
+								(i >= simVars.disc.res[0]*1/8) &&
+								(i < simVars.disc.res[0]*3/8) &&
+								(j >= simVars.disc.res[1]*5/8) &&
+								(j < simVars.disc.res[1]*7/8)
+							;
+						boundary_flag |=
+								(i >= simVars.disc.res[0]*5/8) &&
+								(i < simVars.disc.res[0]*7/8) &&
+								(j >= simVars.disc.res[1]*5/8) &&
+								(j < simVars.disc.res[1]*7/8)
+							;
+						boundary_flag |=
+								(i >= simVars.disc.res[0]*5/8) &&
+								(i < simVars.disc.res[0]*7/8) &&
+								(j >= simVars.disc.res[1]*	1/8) &&
+								(j < simVars.disc.res[1]*3/8)
+							;
+						break;
+
+
+
+					case 4:
+						boundary_flag |=
+								(i >= simVars.disc.res[0]*0/8) &&
+								(i < simVars.disc.res[0]*2/8) &&
+								(j >= simVars.disc.res[1]*0/8) &&
+								(j < simVars.disc.res[1]*2/8)
+							;
+						boundary_flag |=
+								(i >= simVars.disc.res[0]*1/8) &&
+								(i < simVars.disc.res[0]*3/8) &&
+								(j >= simVars.disc.res[1]*5/8) &&
+								(j < simVars.disc.res[1]*7/8)
+							;
+						boundary_flag |=
+								(i >= simVars.disc.res[0]*5/8) &&
+								(i < simVars.disc.res[0]*7/8) &&
+								(j >= simVars.disc.res[1]*6/8) &&
+								(j < simVars.disc.res[1]*8/8)
+							;
+						boundary_flag |=
+								(i >= simVars.disc.res[0]*5/8) &&
+								(i < simVars.disc.res[0]*7/8) &&
+								(j >= simVars.disc.res[1]*	1/8) &&
+								(j < simVars.disc.res[1]*3/8)
+							;
+						break;
+
 					default:
 						std::cerr << "Unknown boundary id " << param_boundary_id << std::endl;
 						exit(1);
@@ -344,7 +421,18 @@ public:
 			}
 
 			// use REXI
-			rexiSWE.setup(-simVars.sim.CFL, param_rexi_h, param_rexi_m, param_rexi_l, simVars.sim.f0, simVars.disc.res, simVars.sim.domain_size, param_rexi_half, param_use_finite_differences_for_complex_array);
+			rexiSWE.setup(
+					-simVars.sim.CFL,
+					param_rexi_h,
+					param_rexi_m,
+					param_rexi_l,
+					simVars.sim.f0,
+					simVars.disc.res,
+					simVars.sim.domain_size,
+					param_rexi_half,
+					param_rexi_use_finite_differences_for_complex_array,
+					param_rexi_use_iterative_solver
+				);
 
 			if (simVars.misc.verbosity > 2)
 			{
@@ -434,6 +522,71 @@ public:
 
 
 
+	void boundary_action()
+	{
+		if (param_boundary_id != 0)
+		{
+			if (param_use_staggering)
+			{
+				/*
+				 * 0     1       1       0       0
+				 *       h0      h1      h2      h3
+				 *   |---+---|---+---|---+---|---+---|
+				 *       |XXXXXXX|
+				 *
+				 *   u0      u1      u2      u3      u4
+				 *
+				 *   0       1       1       0       0	// boundary mask at u
+				 *   1       0       0       1       1	// inv boundary mask at u
+				 */
+				// process U
+				prog_u =
+						// velocities outside of boundary
+						prog_u*(boundary_mask_inv*op.shift_right(boundary_mask_inv))
+						// left boundary
+						- op.shift_right(prog_u*boundary_mask_inv)*boundary_mask
+						// right boundary
+						- op.shift_left(prog_u)*boundary_mask_inv*op.shift_right(boundary_mask);
+
+				prog_v =
+						// velocities outside of boundary
+						prog_v*(boundary_mask_inv*op.shift_up(boundary_mask_inv))
+						// left boundary
+						- op.shift_up(prog_v*boundary_mask_inv)*boundary_mask
+						// right boundary
+						- op.shift_down(prog_v)*boundary_mask_inv*op.shift_up(boundary_mask);
+
+				prog_h = boundary_mask_inv*prog_h + boundary_mask*simVars.setup.h0;
+			}
+			else
+			{
+				//          |XXXXXXXXXXXXXXX
+				//  u0     u1    u2     u3
+				//  0      1     1      1	// boundary
+				//  1      0     0      0	// inv
+#if 1
+				prog_u = boundary_mask_inv*prog_u
+						+ op.shift_right(op.shift_right(boundary_mask_inv*prog_u)*boundary_mask)
+						+ op.shift_right(boundary_mask_inv*prog_u)*boundary_mask
+						+ op.shift_left(op.shift_left(boundary_mask_inv*prog_u)*boundary_mask)
+						+ op.shift_left(boundary_mask_inv*prog_u)*boundary_mask
+						;
+#endif
+#if 1
+				prog_v = boundary_mask_inv*prog_v
+						+ op.shift_up(op.shift_up(boundary_mask_inv*prog_v)*boundary_mask)
+						+ op.shift_up(boundary_mask_inv*prog_v)*boundary_mask
+						+ op.shift_down(op.shift_down(boundary_mask_inv*prog_v)*boundary_mask)
+						+ op.shift_down(boundary_mask_inv*prog_v)*boundary_mask
+						;
+#endif
+
+				prog_h = boundary_mask_inv*prog_h + boundary_mask*simVars.setup.h0;
+			}
+		}
+	}
+
+
 	void p_run_euler_timestep_update(
 			const DataArray<2> &i_h,	///< prognostic variables
 			const DataArray<2> &i_u,	///< prognostic variables
@@ -448,22 +601,10 @@ public:
 			double i_simulation_timestamp = -1
 	)
 	{
-		if (param_boundary_id != 0)
-		{
-			if (param_use_staggering)
-			{
-				std::cout << "STAGGERING WITH BOUNDARIES NOT SUPPORTED YET!!!" << std::endl;
-				exit(1);
-			}
-
-			std::cout << boundary_mask_inv << std::endl;
-			prog_u = prog_u*boundary_mask_inv;
-			prog_v = prog_v*boundary_mask_inv;
-			prog_h = prog_h*boundary_mask_inv + boundary_mask*simVars.setup.h0;
-		}
-
 		if (!param_use_staggering)
 		{
+			boundary_action();
+
 			/*
 			 * linearized non-conservative (advective) formulation:
 			 *
@@ -481,6 +622,7 @@ public:
 				o_v_t -= op.diffN_y(i_v, simVars.sim.viscosity_order)*simVars.sim.viscosity;
 			}
 
+			boundary_action();
 
 			/*
 			 * TIME STEP SIZE
@@ -568,6 +710,9 @@ public:
 						);
 				}
 			}
+
+			boundary_action();
+
 #if 0
 			if (simVars.sim.potential_viscosity != 0)
 				o_h_t -= op.diff2(i_h)*simVars.sim.potential_viscosity;
@@ -578,9 +723,14 @@ public:
 		}
 		else
 		{
+			boundary_action();
+
 			// STAGGERED GRID
 
-			DataArray<2> U(i_h.resolution), V(i_h.resolution), q(i_h.resolution), H(i_h.resolution);
+			DataArray<2>& U = tmp0;
+			DataArray<2>& V = tmp1;
+//			DataArray<2>& q = tmp2;
+			DataArray<2>& H = tmp3;
 
 			/*
 			 * Note, that this grid does not follow the formulation
@@ -618,7 +768,6 @@ public:
 			/*
 			 * VISCOSITY
 			 */
-
 			if (simVars.sim.viscosity != 0)
 			{
 				o_u_t -= op.diffN_x(i_u, simVars.sim.viscosity_order)*simVars.sim.viscosity;
@@ -957,7 +1106,7 @@ public:
 			double *o_aspect_ratio
 	)
 	{
-#if 0
+#if 1
 		int id = simVars.misc.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
 		*o_dataArray = vis_arrays[id].data;
 		*o_aspect_ratio = simVars.sim.domain_size[1] / simVars.sim.domain_size[0];
@@ -1082,6 +1231,7 @@ int main(int i_argc, char *i_argv[])
 			"compute-error",
 			"staggering",
 			"use-fd-for-complex-array",	/// use finite differences for complex array
+			"use-iterative-solver",		/// use iterative solver for REXI
 			"initial-freq-x-mul",
 			"initial-freq-y-mul",
 			"boundary-id",
@@ -1096,12 +1246,13 @@ int main(int i_argc, char *i_argv[])
 	simVars.bogus.var[4] = 0;
 	simVars.bogus.var[5] = 0;
 	simVars.bogus.var[6] = 0;
-	simVars.bogus.var[7] = 0;	// don't use FD per default for complex array
+	simVars.bogus.var[7] = 0;	// Don't use FD per default for complex array
+	simVars.bogus.var[8] = 0;	// Use iterative solver
 
-	simVars.bogus.var[8] = -1;	// freq. multiplier for initial conditions
-	simVars.bogus.var[9] = -1;
+	simVars.bogus.var[9] = -1;	// freq. multiplier for initial conditions
+	simVars.bogus.var[10] = -1;
 
-	simVars.bogus.var[10] = 0;
+	simVars.bogus.var[11] = 0;
 
 
 
@@ -1125,6 +1276,7 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "	--staggering [0/1]		Use staggered grid" << std::endl;
 		std::cout << std::endl;
 		std::cout << "	--use-fd-for-complex-array=[0/1]	Use finite-differences for derivatives in spectral space" << std::endl;
+		std::cout << "	--use-iterative-solver=[0/1]	Use iterative solver for REXI" << std::endl;
 		std::cout << std::endl;
 		std::cout << "	--init-cond-freq-mul-x=[float]	Setup initial conditions by using this multiplier values" << std::endl;
 		std::cout << "	--init-cond-freq-mul-y=[float]	" << std::endl;
@@ -1143,12 +1295,13 @@ int main(int i_argc, char *i_argv[])
 	param_timestepping_mode = simVars.bogus.var[4];
 	param_compute_error = simVars.bogus.var[5];
 	param_use_staggering = simVars.bogus.var[6];
-	param_use_finite_differences_for_complex_array = simVars.bogus.var[7];
+	param_rexi_use_finite_differences_for_complex_array = simVars.bogus.var[7];
+	param_rexi_use_iterative_solver = simVars.bogus.var[8];
 
-	param_initial_freq_x_mul = simVars.bogus.var[8];
-	param_initial_freq_y_mul = simVars.bogus.var[9];
+	param_initial_freq_x_mul = simVars.bogus.var[9];
+	param_initial_freq_y_mul = simVars.bogus.var[10];
 
-	param_boundary_id = simVars.bogus.var[10];
+	param_boundary_id = simVars.bogus.var[11];
 
 	SimulationSWE *simulationSWE = new SimulationSWE;
 
