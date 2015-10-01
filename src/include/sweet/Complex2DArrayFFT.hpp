@@ -46,7 +46,7 @@ public:
 	/**
 	 * Flag which is true if this is the initializer class of the FFTW library
 	 */
-	bool is_data_initialized;
+	bool is_fft_data_initialized;
 
 
 	/**
@@ -59,6 +59,9 @@ public:
 		fftw_plan to_spec;
 		fftw_plan to_cart_aliasing;
 		fftw_plan to_spec_aliasing;
+
+		std::size_t resolution[2];
+		std::size_t resolution_aliasing[2];
 	};
 
 
@@ -90,7 +93,8 @@ public:
 	 */
 	void fft_setup()
 	{
-		is_data_initialized = true;
+		assert(!is_fft_data_initialized);
+		is_fft_data_initialized = true;
 
 		assert(fft_getSingleton_RefCounter() >= 0);
 
@@ -136,6 +140,9 @@ public:
 						FFTW_PRESERVE_INPUT
 					);
 
+			fft_getSingleton_Plans().resolution[0] = resolution[0];
+			fft_getSingleton_Plans().resolution[1] = resolution[1];
+
 			if (fft_getSingleton_Plans().to_cart == nullptr)
 			{
 				std::cerr << "Failed to create plan_backward for fftw" << std::endl;
@@ -176,6 +183,10 @@ public:
 						FFTW_PRESERVE_INPUT
 					);
 
+			fft_getSingleton_Plans().resolution_aliasing[0] = resolution[0]*2;
+			fft_getSingleton_Plans().resolution_aliasing[1] = resolution[1]*2;
+
+
 			if (fft_getSingleton_Plans().to_cart_aliasing == nullptr)
 			{
 				std::cerr << "Failed to create plan_backward for fftw" << std::endl;
@@ -190,10 +201,13 @@ public:
 
 	void fftw_shutdown()
 	{
-		if (!is_data_initialized)
+		if (!is_fft_data_initialized)
 			return;
 
+		is_fft_data_initialized = false;
+
 		int &ref_counter = fft_getSingleton_RefCounter();
+
 #if SWEET_REXI_PARALLEL_SUM
 #	pragma omp atomic
 #endif
@@ -209,13 +223,19 @@ public:
 
 		fftw_destroy_plan(fft_getSingleton_Plans().to_spec_aliasing);
 		fftw_destroy_plan(fft_getSingleton_Plans().to_cart_aliasing);
+
+		fft_getSingleton_Plans().resolution[0] = 0;
+		fft_getSingleton_Plans().resolution[1] = 0;
+
+		fft_getSingleton_Plans().resolution_aliasing[0] = 0;
+		fft_getSingleton_Plans().resolution_aliasing[1] = 0;
 	}
 
 
 
 	Complex2DArrayFFT()	:
 		data(nullptr),
-		is_data_initialized(false)
+		is_fft_data_initialized(false)
 	{
 
 #if !SWEET_USE_LIBFFT
@@ -232,9 +252,8 @@ public:
 			const std::size_t i_res[2],
 			bool i_aliased_scaled = false
 	)	:
-		is_data_initialized(false)
+		is_fft_data_initialized(false)
 	{
-
 #if !SWEET_USE_LIBFFT
 		std::cerr << "This class only makes sense with FFT" << std::endl;
 		exit(1);
@@ -250,43 +269,6 @@ public:
 		fft_setup();
 	}
 
-
-#if 0
-	/**
-	 * allocator which allocated memory blocks aligned at 128 byte boundaries
-	 */
-public:
-	template <typename T=void>
-	static
-	T *alloc(
-			std::size_t i_size
-	)
-	{
-		T *data;
-
-		// posix_memalign is thread safe
-		// http://www.qnx.com/developers/docs/6.3.0SP3/neutrino/lib_ref/p/posix_memalign.html
-		int retval = posix_memalign((void**)&data, 128, i_size);
-		if (retval != 0)
-		{
-			std::cerr << "Unable to allocate memory" << std::endl;
-			assert(false);
-			exit(-1);
-		}
-		return data;
-	}
-
-
-	/**
-	 * Free memory which was previously allocated
-	 */
-public:
-	template <typename T>
-	void free(T *i_ptr)
-	{
-		free(i_ptr);
-	}
-#endif
 
 
 public:
@@ -300,17 +282,30 @@ public:
 		resolution[0] = i_res[0];
 		resolution[1] = i_res[1];
 
+		if (data)
+			cleanup();
+
 		data = NUMABlockAlloc::alloc<double>(sizeof(double)*resolution[0]*resolution[1]*2);
 
-		fft_setup();
+		if (!is_fft_data_initialized)
+			fft_setup();
 	}
+
+
+
+	void cleanup()
+	{
+		NUMABlockAlloc::free(data, sizeof(double)*resolution[0]*resolution[1]*2);
+		data = nullptr;
+	}
+
 
 
 public:
 	Complex2DArrayFFT(
 			const Complex2DArrayFFT &i_testArray
 	)	:
-		is_data_initialized(false)
+		is_fft_data_initialized(false)
 	{
 #if !SWEET_USE_LIBFFT
 		std::cerr << "This class only makes sense with FFT" << std::endl;
@@ -344,7 +339,7 @@ public:
 	{
 		fftw_shutdown();
 
-		NUMABlockAlloc::free(data, sizeof(double)*resolution[0]*resolution[1]*2);
+		cleanup();
 	}
 
 
@@ -354,6 +349,18 @@ public:
 			const Complex2DArrayFFT &i_testArray
 	)
 	{
+		if (	data == nullptr ||
+				resolution[0] != i_testArray.resolution[0] ||
+				resolution[1] != i_testArray.resolution[1]
+		)
+		{
+			setup(i_testArray.resolution, aliased_scaled);
+		}
+
+		aliased_scaled = i_testArray.aliased_scaled;
+		resolution[0] = i_testArray.resolution[0];
+		resolution[1] = i_testArray.resolution[1];
+
 		assert(resolution[0] == i_testArray.resolution[0]);
 		assert(resolution[1] == i_testArray.resolution[1]);
 
@@ -369,6 +376,9 @@ public:
 
 		if (aliased_scaled)
 		{
+			assert(resolution[0] == fft_getSingleton_Plans().resolution_aliasing[0]);
+			assert(resolution[1] == fft_getSingleton_Plans().resolution_aliasing[1]);
+
 			fftw_execute_dft(
 					fft_getSingleton_Plans().to_spec_aliasing,
 					(fftw_complex*)this->data,
@@ -377,6 +387,9 @@ public:
 		}
 		else
 		{
+			assert(resolution[0] == fft_getSingleton_Plans().resolution[0]);
+			assert(resolution[1] == fft_getSingleton_Plans().resolution[1]);
+
 			fftw_execute_dft(
 					fft_getSingleton_Plans().to_spec,
 					(fftw_complex*)this->data,
@@ -596,6 +609,7 @@ public:
 #endif
 
 
+
 	/**
 	 * apply a 3x3 stencil
 	 */
@@ -655,6 +669,108 @@ public:
 	}
 
 
+
+	/**
+	 * apply a cross-shaped stencil by value real value 'A' given
+	 *
+	 * 0  Dy 0
+	 * Dx 0  Dx
+	 * 0  Dy 0
+	 */
+	Complex2DArrayFFT op_stencil_Re_X(
+			const double i_scalar_Dx,
+			const double i_scalar_Dy
+	)
+	{
+		Complex2DArrayFFT out(resolution, aliased_scaled);
+
+		int res_x = resolution[0];
+		int res_y = resolution[1];
+
+
+		// from right
+#pragma omp parallel for OPENMP_SIMD shared(res_x, res_y)
+		for (int y = 0; y < res_y; y++)
+		{
+			double *o_data = &out.data[y*res_x*2];
+			double *i_data = &data[(y*res_x+1)*2];
+
+			for (int x = 0; x < res_x-1; x++)
+			{
+				o_data[0] = i_data[0]*i_scalar_Dx;
+				o_data[1] = i_data[1]*i_scalar_Dx;
+
+				o_data += 2;
+				i_data += 2;
+			}
+
+			i_data -= res_x*2;
+			o_data[0] = i_data[0]*i_scalar_Dx;
+			o_data[1] = i_data[1]*i_scalar_Dx;
+		}
+
+
+		// from left
+#pragma omp parallel for OPENMP_SIMD shared(res_x, res_y)
+		for (int y = 0; y < res_y; y++)
+		{
+			double *o_data = &out.data[(y*res_x+1)*2];
+			double *i_data = &data[y*res_x*2];
+
+			for (int x = 1; x < res_x; x++)
+			{
+				o_data[0] += i_data[0]*i_scalar_Dx;
+				o_data[1] += i_data[1]*i_scalar_Dx;
+
+				o_data += 2;
+				i_data += 2;
+			}
+
+			o_data -= res_x*2;
+			o_data[0] += i_data[0]*i_scalar_Dx;
+			o_data[1] += i_data[1]*i_scalar_Dx;
+		}
+
+
+		// from upper
+#pragma omp parallel for OPENMP_SIMD shared(res_x, res_y)
+		for (int y = 0; y < res_y; y++)
+		{
+			double *o_data = &out.data[y*res_x*2];
+			double *i_data = &data[(y == res_y-1 ? 0 : y+1)*res_x*2];
+
+			for (int x = 0; x < res_x; x++)
+			{
+				o_data[0] += i_data[0]*i_scalar_Dy;
+				o_data[1] += i_data[1]*i_scalar_Dy;
+
+				o_data += 2;
+				i_data += 2;
+			}
+		}
+
+
+		// from lower
+#pragma omp parallel for OPENMP_SIMD shared(res_x, res_y)
+		for (int y = 0; y < res_y; y++)
+		{
+			double *o_data = &out.data[y*res_x*2];
+			double *i_data = &data[(y == 0 ? res_y-1 : y-1)*res_x*2];
+
+			for (int x = 0; x < res_x; x++)
+			{
+				o_data[0] += i_data[0]*i_scalar_Dy;
+				o_data[1] += i_data[1]*i_scalar_Dy;
+
+				o_data += 2;
+				i_data += 2;
+			}
+		}
+
+		return out;
+	}
+
+
 	/**
 	 * setup the data in this class as a differential operator (d/dx)
 	 */
@@ -673,8 +789,10 @@ public:
 			/*
 			 * setup FD operator
 			 */
-			set(0, 1, -1.0/(2.0*h[0]), 0);
-			set(0, resolution[0]-1, 1.0/(2.0*h[0]), 0);
+			set(0, 1,
+					-1.0/(2.0*h[0]), 0);
+			set(0, resolution[0]-1,
+					1.0/(2.0*h[0]), 0);
 
 			*this = this->toSpec();
 			// TODO: maybe set highest modes to zero?
@@ -728,17 +846,22 @@ public:
 	{
 		setAll(0,0);
 
-
 		if (i_use_finite_difference)
 		{
-			double h[2] = {(double)i_domain_size[0] / (double)resolution[0], (double)i_domain_size[1] / (double)resolution[1]};
+			double h[2] = {
+					(double)i_domain_size[0] / (double)resolution[0],
+					(double)i_domain_size[1] / (double)resolution[1]
+			};
 
 			/*
 			 * setup FD operator
 			 */
-			set(0, 1, 1.0/(h[0]*h[0]), 0);
-			set(0, 0, -2.0/(h[0]*h[0]), 0);
-			set(0, resolution[0]-1, 1.0/(h[0]*h[0]), 0);
+			set(0, 1,
+					1.0/(h[0]*h[0]), 0);
+			set(0, 0,
+					-2.0/(h[0]*h[0]), 0);
+			set(0, resolution[0]-1,
+					1.0/(h[0]*h[0]), 0);
 
 			*this = this->toSpec();
 			// TODO: maybe set highest modes to zero? Shouldn't be a big problem
@@ -1055,11 +1178,15 @@ public:
 #		pragma omp parallel for OPENMP_SIMD
 #endif
 		for (std::size_t j = 0; j < resolution[1]; j++)
+		{
 			for (std::size_t i = 0; i < resolution[0]; i++)
+			{
 				set(	j, i,
 						i_dataArray_Real.get(j, i),
 						i_dataArray_Imag.get(j, i)
 				);
+			}
+		}
 
 		return *this;
 	}
@@ -1232,6 +1359,9 @@ public:
 			const complex &i_value
 	)	const
 	{
+		double re = i_value.real();
+		double im = i_value.imag();
+
 		Complex2DArrayFFT out(this->resolution, aliased_scaled);
 
 #if !SWEET_REXI_PARALLEL_SUM
@@ -1239,8 +1369,8 @@ public:
 #endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
 		{
-			out.data[i] = data[i]+i_value.real();
-			out.data[i+1] = data[i+1]+i_value.imag();
+			out.data[i] = data[i]+re;
+			out.data[i+1] = data[i+1]+im;
 		}
 
 		return out;
@@ -1293,6 +1423,100 @@ public:
 		{
 			out.data[i] = data[i]-i_value.real();
 			out.data[i+1] = data[i+1]-i_value.imag();
+		}
+
+		return out;
+	}
+
+
+
+	/**
+	 * scale down
+	 */
+	inline
+	Complex2DArrayFFT scale_down()	const
+	{
+		std::size_t res[2];
+		res[0] = resolution[0]>>1;
+		res[1] = resolution[1]>>1;
+
+		// check for power of 2
+		assert(res[0]*2 == resolution[0]);
+		assert(res[1]*2 == resolution[1]);
+
+		Complex2DArrayFFT out(res, aliased_scaled);
+
+#if !SWEET_REXI_PARALLEL_SUM
+		#pragma omp parallel for OPENMP_SIMD
+#endif
+		for (std::size_t j = 0; j < res[1]; j++)
+		{
+			double *o_data = &out.data[j*res[0]*2];
+
+			// first line
+			double *i_data1 = &data[j*2*resolution[0]*2];
+			// second line
+			double *i_data2 = &data[(j*2+1)*resolution[0]*2];
+
+			for (std::size_t i = 0; i < res[0]; i++)
+			{
+				// real
+				o_data[0] = (1.0/4.0)*(i_data1[0] + i_data1[2] + i_data2[0] + i_data2[2]);
+
+				// imag
+				o_data[1] = (1.0/4.0)*(i_data1[1] + i_data1[3] + i_data2[1] + i_data2[3]);
+
+				o_data += 2;
+				i_data1 += 4;
+				i_data2 += 4;
+			}
+		}
+
+		return out;
+	}
+
+
+
+	/**
+	 * scale up
+	 */
+	inline
+	Complex2DArrayFFT scale_up()	const
+	{
+		std::size_t res[2];
+		res[0] = resolution[0]*2;
+		res[1] = resolution[1]*2;
+
+		Complex2DArrayFFT out(res, aliased_scaled);
+
+#if !SWEET_REXI_PARALLEL_SUM
+		#pragma omp parallel for OPENMP_SIMD
+#endif
+		for (std::size_t j = 0; j < resolution[1]; j++)
+		{
+			// first line
+			double *o_data1 = &out.data[(j*2)*res[0]*2];
+			// second line
+			double *o_data2 = &out.data[(j*2+1)*res[0]*2];
+
+			double *i_data = &data[j*resolution[0]*2];
+
+			for (std::size_t i = 0; i < resolution[0]; i++)
+			{
+				o_data1[0] = i_data[0];
+				o_data1[1] = i_data[1];
+				o_data1[2] = i_data[0];
+				o_data1[3] = i_data[1];
+
+				o_data2[0] = i_data[0];
+				o_data2[1] = i_data[1];
+				o_data2[2] = i_data[0];
+				o_data2[3] = i_data[1];
+
+				o_data1 += 4;
+				o_data2 += 4;
+				i_data += 2;
+			}
 		}
 
 		return out;
@@ -1354,6 +1578,25 @@ public:
 		}
 
 		sum -= c;
+
+		sum = std::sqrt(sum/double(resolution[0]*resolution[1]));
+		return sum;
+	}
+
+
+
+	/**
+	 * reduce to root mean square
+	 */
+	double reduce_rms()
+	{
+		double sum = 0;
+
+#if !SWEET_REXI_PARALLEL_SUM
+		#pragma omp parallel for reduction(+:sum)
+#endif
+		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+			sum += data[i]*data[i]+data[i+1]*data[i+1];
 
 		sum = std::sqrt(sum/double(resolution[0]*resolution[1]));
 		return sum;

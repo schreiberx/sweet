@@ -43,7 +43,10 @@ RexiSWE::RexiSWE()	:
 void RexiSWE::cleanup()
 {
 	for (std::vector<PerThreadVars*>::iterator iter = perThreadVars.begin(); iter != perThreadVars.end(); iter++)
-		delete *iter;
+	{
+		PerThreadVars* p = *iter;
+		delete p;
+	}
 
 	perThreadVars.resize(0);
 }
@@ -63,7 +66,8 @@ void RexiSWE::setup(
 		double i_h,						///< sampling size
 		int i_M,						///< number of sampling points
 		int i_L,						///< number of sampling points for Gaussian approx
-		double i_f,						///< Coriolis force
+										///< set to 0 for auto detection
+		double i_f,						///< Coriolis frequency
 		std::size_t *i_resolution,		///< resolution of domain
 		const double *i_domain_size,	///< size of domain
 		bool i_rexi_half,				///< use half-pole reduction
@@ -76,6 +80,9 @@ void RexiSWE::setup(
 	tau = i_tau;
 	f = i_f;
 	use_iterative_solver = i_use_iterative_solver;
+
+	domain_size[0] = i_domain_size[0];
+	domain_size[1] = i_domain_size[1];
 
 	rexi.setup(h, M, i_L, i_rexi_half);
 
@@ -110,7 +117,7 @@ void RexiSWE::setup(
 	for (int j = 0; j < num_threads; j++)
 	{
 #if SWEET_REXI_PARALLEL_SUM
-#	pragma omp parallel for schedule(static,1) default(none) shared(i_resolution,i_use_finite_differences,std::cout, j)
+#	pragma omp parallel for schedule(static,1) default(none) shared(i_resolution,i_use_finite_differences,std::cout,j)
 #endif
 		for (int i = 0; i < num_threads; i++)
 		{
@@ -138,7 +145,6 @@ void RexiSWE::setup(
 			perThreadVars[i]->v_sum.setup(i_resolution);
 		}
 	}
-
 
 	if (num_threads == 0)
 	{

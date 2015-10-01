@@ -7,6 +7,7 @@
 #	error	"GUI not supported"
 #endif
 
+#include <sweet/Stopwatch.hpp>
 #include <sweet/DataArray.hpp>
 #include <sweet/Complex2DArrayFFT.hpp>
 #include <sweet/SimulationVariables.hpp>
@@ -18,6 +19,8 @@
 #include <iomanip>
 #include <stdio.h>
 #include <complex>
+
+#include "../programs/rexi/RexiSWE.hpp"
 
 SimulationVariables simVars;
 
@@ -197,7 +200,7 @@ int main(int i_argc, char *i_argv[])
 			}
 
 			error = std::abs(add_test_seven_spec-7.0);
-			std::cout << "Add test seven cart ||_2 = " << error << std::endl;
+			std::cout << "Add test seven spec ||_2 = " << error << std::endl;
 			if (error > eps)
 			{
 				std::cout << "FAILED with error " << error;
@@ -688,8 +691,8 @@ int main(int i_argc, char *i_argv[])
 
 				{
 					double h[2] = {
-							(double)simVars.sim.domain_size[0] / (double)simVars.disc.res[0],
-							(double)simVars.sim.domain_size[1] / (double)simVars.disc.res[1]
+							(double)simVars.sim.domain_size[0] / (double)res[0],
+							(double)simVars.sim.domain_size[1] / (double)res[1]
 					};
 
 					D2_kernel[0] = {0, 0};
@@ -743,6 +746,120 @@ int main(int i_argc, char *i_argv[])
 		}
 
 		std::cout << "TEST D: DONE" << std::endl;
+
+
+		/**
+		 * Test iterative solver for Helmholtz problem
+		 */
+		{
+			RexiSWE rexiSWE;
+
+
+			Complex2DArrayFFT h0(res);
+			Complex2DArrayFFT rhs(res);
+
+			for (std::size_t j = 0; j < res[1]; j++)
+			{
+				for (std::size_t i = 0; i < res[0]; i++)
+				{
+					// A-grid layout
+					double x = ((double)i)/(double)res[0];
+					double y = ((double)j)/(double)res[1];
+
+					h0.set(
+						j, i,
+						sin(freq_x*M_PIl*x)*cos(4.0*freq_y*M_PIl*y),
+						0
+					);
+
+					rhs.set(
+						j, i,
+						sin(2.0*freq_x*M_PIl*x)*cos(freq_y*M_PIl*y),
+						cos(4.0*freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)
+					);
+				}
+			}
+
+
+			Complex2DArrayFFT h(res);
+
+			for (double a = -1; a <= 1; a += 0.1)
+			{
+				for (double b = -100; b <= 100; b += 50)
+				{
+					rexiSWE.setup(
+							1,			// time step size
+							0.2,		// h
+							16,			// REXI M
+							0,			// REXI N (0 for auto detection)
+							simVars.sim.f0,
+							res,
+							simVars.sim.domain_size,
+							true,		// use only half of REXI
+							true,		// use finite differences
+							true		// iterative solver
+						);
+
+					// set initial estimation for solution
+					// TODO: how about an error correction scheme?
+
+					double eps = 1e-5;
+					int iter_max = 20000;
+					double omega = 1;
+
+					std::complex<double> kappa(a,b);
+					std::cout << "KAPPA: " << kappa << std::endl;
+
+					{
+						h.setAll(0, 0);
+
+						Stopwatch watch;
+						watch.start();
+#if 0
+						bool retval = rexiSWE.helmholtz_iterative_smoother(
+								kappa,
+								simVars.sim.g * simVars.setup.h0,
+								rhs,
+								h,
+								simVars.sim.domain_size,
+								eps,
+								iter_max,
+								omega		// omega
+							);
+#else
+						bool retval = rexiSWE.helmholtz_iterative_solve_mg(
+								kappa,
+								simVars.sim.g * simVars.setup.h0,
+								rhs,
+								h,
+								simVars.sim.domain_size,
+								eps,
+								iter_max,
+								omega,		// omega
+								3
+							);
+#endif
+
+						watch.stop();
+
+						double residual = rexiSWE.helmholtz_iterative_get_residual(
+								kappa,
+								simVars.sim.g * simVars.setup.h0,
+								rhs,
+								h
+							);
+						std::cout << "    Computed solution with residual " << residual << " in " << watch() << " seconds" << std::endl;
+
+						if (!retval)
+						{
+							std::cout << "CONVERGENCE NOT REACHED after " << iter_max << " iterations!!! STOP" << std::endl;
+							exit(-1);
+						}
+					}
+				}
+			}
+		}
+		std::cout << "TEST REXI: DONE" << std::endl;
 	}
 
 
