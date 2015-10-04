@@ -20,7 +20,6 @@
 #include <stdio.h>
 #include <complex>
 
-#include "../programs/rexi/RexiSWE.hpp"
 
 SimulationVariables simVars;
 
@@ -57,7 +56,7 @@ int main(int i_argc, char *i_argv[])
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
 		std::cout << std::endl;
-		std::cout << "		--use-fd-for-complex-array=[0/1]	Use finite-differences for derivatives in spectral space" << std::endl;
+		std::cout << "      --use-fd-for-complex-array=[0/1]	Use finite-differences for derivatives in spectral space" << std::endl;
 		std::cout << std::endl;
 		return -1;
 	}
@@ -653,10 +652,6 @@ int main(int i_argc, char *i_argv[])
 			std::cout << "error diff2 y = " << err2_y << std::endl;
 
 
-			std::cout << "error diff2 x = " << err2_x << std::endl;
-			std::cout << "error diff2 y = " << err2_y << std::endl;
-
-
 			if (use_finite_differences_for_complex_array)
 			{
 				static double err2_x_prev = -1;
@@ -687,7 +682,7 @@ int main(int i_argc, char *i_argv[])
 				err2_y_prev = err2_y;
 
 
-				std::complex<double> D2_kernel[3*3];
+				double D2_re_kernel[3*3];
 
 				{
 					double h[2] = {
@@ -695,22 +690,22 @@ int main(int i_argc, char *i_argv[])
 							(double)simVars.sim.domain_size[1] / (double)res[1]
 					};
 
-					D2_kernel[0] = {0, 0};
-					D2_kernel[1] = {1.0/(h[1]*h[1]), 0};
-					D2_kernel[2] = {0, 0};
+					D2_re_kernel[0] = 0;
+					D2_re_kernel[1] = 1.0/(h[1]*h[1]);
+					D2_re_kernel[2] = 0;
 
-					D2_kernel[3] = {1.0/(h[0]*h[0]), 0};
-					D2_kernel[4] = {-(2.0/(h[0]*h[0]) + 2.0/(h[1]*h[1])), 0};
-					D2_kernel[5] = {1.0/(h[0]*h[0]), 0};
+					D2_re_kernel[3] = 1.0/(h[0]*h[0]);
+					D2_re_kernel[4] = -(2.0/(h[0]*h[0]) + 2.0/(h[1]*h[1]));
+					D2_re_kernel[5] = 1.0/(h[0]*h[0]);
 
-					D2_kernel[6] = {0, 0};
-					D2_kernel[7] = {1.0/(h[1]*h[1]), 0};
-					D2_kernel[8] = {0, 0};
+					D2_re_kernel[6] = 0;
+					D2_re_kernel[7] = 1.0/(h[1]*h[1]);
+					D2_re_kernel[8] = 0;
 				}
 
 				// diff2 normalization = 4.0 pi^2 / L^2
 				double err2 = (
-							h_cart.op_stencil_3x3(D2_kernel)
+							h_cart.op_stencil_Re_3x3(D2_re_kernel)
 							-(h_diff2_x+h_diff2_y)
 						).reduce_norm2_quad()*normalization*(simVars.sim.domain_size[0]*simVars.sim.domain_size[1])/(4.0*M_PIl*M_PIl);
 
@@ -746,120 +741,6 @@ int main(int i_argc, char *i_argv[])
 		}
 
 		std::cout << "TEST D: DONE" << std::endl;
-
-
-		/**
-		 * Test iterative solver for Helmholtz problem
-		 */
-		{
-			RexiSWE rexiSWE;
-
-
-			Complex2DArrayFFT h0(res);
-			Complex2DArrayFFT rhs(res);
-
-			for (std::size_t j = 0; j < res[1]; j++)
-			{
-				for (std::size_t i = 0; i < res[0]; i++)
-				{
-					// A-grid layout
-					double x = ((double)i)/(double)res[0];
-					double y = ((double)j)/(double)res[1];
-
-					h0.set(
-						j, i,
-						sin(freq_x*M_PIl*x)*cos(4.0*freq_y*M_PIl*y),
-						0
-					);
-
-					rhs.set(
-						j, i,
-						sin(2.0*freq_x*M_PIl*x)*cos(freq_y*M_PIl*y),
-						cos(4.0*freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)
-					);
-				}
-			}
-
-
-			Complex2DArrayFFT h(res);
-
-			for (double a = -1; a <= 1; a += 0.1)
-			{
-				for (double b = -100; b <= 100; b += 50)
-				{
-					rexiSWE.setup(
-							1,			// time step size
-							0.2,		// h
-							16,			// REXI M
-							0,			// REXI N (0 for auto detection)
-							simVars.sim.f0,
-							res,
-							simVars.sim.domain_size,
-							true,		// use only half of REXI
-							true,		// use finite differences
-							true		// iterative solver
-						);
-
-					// set initial estimation for solution
-					// TODO: how about an error correction scheme?
-
-					double eps = 1e-5;
-					int iter_max = 20000;
-					double omega = 1;
-
-					std::complex<double> kappa(a,b);
-					std::cout << "KAPPA: " << kappa << std::endl;
-
-					{
-						h.setAll(0, 0);
-
-						Stopwatch watch;
-						watch.start();
-#if 0
-						bool retval = rexiSWE.helmholtz_iterative_smoother(
-								kappa,
-								simVars.sim.g * simVars.setup.h0,
-								rhs,
-								h,
-								simVars.sim.domain_size,
-								eps,
-								iter_max,
-								omega		// omega
-							);
-#else
-						bool retval = rexiSWE.helmholtz_iterative_solve_mg(
-								kappa,
-								simVars.sim.g * simVars.setup.h0,
-								rhs,
-								h,
-								simVars.sim.domain_size,
-								eps,
-								iter_max,
-								omega,		// omega
-								3
-							);
-#endif
-
-						watch.stop();
-
-						double residual = rexiSWE.helmholtz_iterative_get_residual(
-								kappa,
-								simVars.sim.g * simVars.setup.h0,
-								rhs,
-								h
-							);
-						std::cout << "    Computed solution with residual " << residual << " in " << watch() << " seconds" << std::endl;
-
-						if (!retval)
-						{
-							std::cout << "CONVERGENCE NOT REACHED after " << iter_max << " iterations!!! STOP" << std::endl;
-							exit(-1);
-						}
-					}
-				}
-			}
-		}
-		std::cout << "TEST REXI: DONE" << std::endl;
 	}
 
 

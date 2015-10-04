@@ -68,7 +68,7 @@ public:
 	/**
 	 * Singleton of plans
 	 */
-	Plans &fft_getSingleton_Plans()
+	Plans &fft_getSingleton_Plans()	const
 	{
 		static Plans plans;
 		return plans;
@@ -370,7 +370,7 @@ public:
 
 
 
-	Complex2DArrayFFT toSpec()
+	Complex2DArrayFFT toSpec()	const
 	{
 		Complex2DArrayFFT o_testArray(resolution, aliased_scaled);
 
@@ -495,8 +495,20 @@ public:
 		}
 	}
 
+
+	void zero()
+	{
+		#pragma omp parallel for OPENMP_SIMD
+		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		{
+			data[i] = 0;
+			data[i+1] = 0;
+		}
+	}
+
+
 	void setAll(
-			std::complex<double> &i_value
+			const std::complex<double> &i_value
 	)
 	{
 		double re = i_value.real();
@@ -669,6 +681,64 @@ public:
 	}
 
 
+	/**
+	 * apply a 3x3 stencil
+	 */
+	Complex2DArrayFFT op_stencil_Re_3x3(
+			const double *i_kernel_data
+	)
+	{
+		Complex2DArrayFFT out(resolution, aliased_scaled);
+
+		int res_x = resolution[0];
+		int res_y = resolution[1];
+
+#pragma omp parallel for OPENMP_SIMD shared(res_x, res_y, out, i_kernel_data)
+		for (int y = 0; y < res_y; y++)
+		{
+			for (int x = 0; x < res_x; x++)
+			{
+				double *data_out = &out.data[(y*res_x+x)*2];
+				data_out[0] = 0;
+				data_out[1] = 0;
+
+				for (int j = -1; j <= 1; j++)
+				{
+					int pos_y = y+j;
+
+					pos_y -= (pos_y >= res_y ? res_y : 0);
+					pos_y += (pos_y < 0 ? res_y : 0);
+
+					assert(pos_y >= 0 && pos_y < res_y);
+
+					for (int i = -1; i <= 1; i++)
+					{
+						int pos_x = x+i;
+
+						pos_x -= (pos_x >= res_x ? res_x : 0);
+						pos_x += (pos_x < 0 ? res_x : 0);
+
+						assert(pos_x >= 0 && pos_x < res_x);
+
+						int idx = (j+1)*3+(i+1);
+						assert(idx >= 0 && idx < 9);
+
+						double kre = i_kernel_data[idx];
+
+						double dre = data[(pos_y*res_x+pos_x)*2];
+						double dim = data[(pos_y*res_x+pos_x)*2+1];
+
+						data_out[0] += dre*kre;
+						data_out[1] += dim*kre;
+					}
+				}
+			}
+		}
+
+		return out;
+	}
+
+
 
 	/**
 	 * apply a cross-shaped stencil by value real value 'A' given
@@ -678,8 +748,8 @@ public:
 	 * 0  Dy 0
 	 */
 	Complex2DArrayFFT op_stencil_Re_X(
-			const double i_scalar_Dx,
-			const double i_scalar_Dy
+			const double i_scalar_Re_Dx,
+			const double i_scalar_Re_Dy
 	)
 	{
 		Complex2DArrayFFT out(resolution, aliased_scaled);
@@ -697,16 +767,16 @@ public:
 
 			for (int x = 0; x < res_x-1; x++)
 			{
-				o_data[0] = i_data[0]*i_scalar_Dx;
-				o_data[1] = i_data[1]*i_scalar_Dx;
+				o_data[0] = i_data[0]*i_scalar_Re_Dx;
+				o_data[1] = i_data[1]*i_scalar_Re_Dx;
 
 				o_data += 2;
 				i_data += 2;
 			}
 
 			i_data -= res_x*2;
-			o_data[0] = i_data[0]*i_scalar_Dx;
-			o_data[1] = i_data[1]*i_scalar_Dx;
+			o_data[0] = i_data[0]*i_scalar_Re_Dx;
+			o_data[1] = i_data[1]*i_scalar_Re_Dx;
 		}
 
 
@@ -719,16 +789,16 @@ public:
 
 			for (int x = 1; x < res_x; x++)
 			{
-				o_data[0] += i_data[0]*i_scalar_Dx;
-				o_data[1] += i_data[1]*i_scalar_Dx;
+				o_data[0] += i_data[0]*i_scalar_Re_Dx;
+				o_data[1] += i_data[1]*i_scalar_Re_Dx;
 
 				o_data += 2;
 				i_data += 2;
 			}
 
 			o_data -= res_x*2;
-			o_data[0] += i_data[0]*i_scalar_Dx;
-			o_data[1] += i_data[1]*i_scalar_Dx;
+			o_data[0] += i_data[0]*i_scalar_Re_Dx;
+			o_data[1] += i_data[1]*i_scalar_Re_Dx;
 		}
 
 
@@ -741,8 +811,8 @@ public:
 
 			for (int x = 0; x < res_x; x++)
 			{
-				o_data[0] += i_data[0]*i_scalar_Dy;
-				o_data[1] += i_data[1]*i_scalar_Dy;
+				o_data[0] += i_data[0]*i_scalar_Re_Dy;
+				o_data[1] += i_data[1]*i_scalar_Re_Dy;
 
 				o_data += 2;
 				i_data += 2;
@@ -759,8 +829,126 @@ public:
 
 			for (int x = 0; x < res_x; x++)
 			{
-				o_data[0] += i_data[0]*i_scalar_Dy;
-				o_data[1] += i_data[1]*i_scalar_Dy;
+				o_data[0] += i_data[0]*i_scalar_Re_Dy;
+				o_data[1] += i_data[1]*i_scalar_Re_Dy;
+
+				o_data += 2;
+				i_data += 2;
+			}
+		}
+
+		return out;
+	}
+
+	/**
+	 * apply a cross-shaped stencil by value real value 'A' given
+	 *
+	 * 0  Dy 0
+	 * Dx C  Dx
+	 * 0  Dy 0
+	 */
+	Complex2DArrayFFT op_stencil_Re_X_C(
+			const double i_scalar_Re_Dx,
+			const double i_scalar_Re_Dy,
+			const double i_scalar_Re_C
+	)
+	{
+		Complex2DArrayFFT out(resolution, aliased_scaled);
+
+		int res_x = resolution[0];
+		int res_y = resolution[1];
+
+		// from right
+#pragma omp parallel for OPENMP_SIMD shared(res_x, res_y)
+		for (int y = 0; y < res_y; y++)
+		{
+			double *o_data = &out.data[y*res_x*2];
+			double *i_data = &data[(y*res_x+1)*2];
+
+			for (int x = 0; x < res_x-1; x++)
+			{
+				o_data[0] = i_data[0]*i_scalar_Re_Dx;
+				o_data[1] = i_data[1]*i_scalar_Re_Dx;
+
+				o_data += 2;
+				i_data += 2;
+			}
+
+			i_data -= res_x*2;
+			o_data[0] = i_data[0]*i_scalar_Re_Dx;
+			o_data[1] = i_data[1]*i_scalar_Re_Dx;
+		}
+
+
+		// from left
+#pragma omp parallel for OPENMP_SIMD shared(res_x, res_y)
+		for (int y = 0; y < res_y; y++)
+		{
+			double *o_data = &out.data[(y*res_x+1)*2];
+			double *i_data = &data[y*res_x*2];
+
+			for (int x = 1; x < res_x; x++)
+			{
+				o_data[0] += i_data[0]*i_scalar_Re_Dx;
+				o_data[1] += i_data[1]*i_scalar_Re_Dx;
+
+				o_data += 2;
+				i_data += 2;
+			}
+
+			o_data -= res_x*2;
+			o_data[0] += i_data[0]*i_scalar_Re_Dx;
+			o_data[1] += i_data[1]*i_scalar_Re_Dx;
+		}
+
+
+		// from upper
+#pragma omp parallel for OPENMP_SIMD shared(res_x, res_y)
+		for (int y = 0; y < res_y; y++)
+		{
+			double *o_data = &out.data[y*res_x*2];
+			double *i_data = &data[(y == res_y-1 ? 0 : y+1)*res_x*2];
+
+			for (int x = 0; x < res_x; x++)
+			{
+				o_data[0] += i_data[0]*i_scalar_Re_Dy;
+				o_data[1] += i_data[1]*i_scalar_Re_Dy;
+
+				o_data += 2;
+				i_data += 2;
+			}
+		}
+
+
+		// from lower
+#pragma omp parallel for OPENMP_SIMD shared(res_x, res_y)
+		for (int y = 0; y < res_y; y++)
+		{
+			double *o_data = &out.data[y*res_x*2];
+			double *i_data = &data[(y == 0 ? res_y-1 : y-1)*res_x*2];
+
+			for (int x = 0; x < res_x; x++)
+			{
+				o_data[0] += i_data[0]*i_scalar_Re_Dy;
+				o_data[1] += i_data[1]*i_scalar_Re_Dy;
+
+				o_data += 2;
+				i_data += 2;
+			}
+		}
+
+
+		// center
+#pragma omp parallel for OPENMP_SIMD shared(res_x, res_y)
+		for (int y = 0; y < res_y; y++)
+		{
+			double *o_data = &out.data[y*res_x*2];
+			double *i_data = &data[(y*res_x)*2];
+
+			for (int x = 0; x < res_x; x++)
+			{
+				o_data[0] += i_data[0]*i_scalar_Re_C;
+				o_data[1] += i_data[1]*i_scalar_Re_C;
 
 				o_data += 2;
 				i_data += 2;
@@ -1035,22 +1223,6 @@ public:
 	}
 
 
-	/**
-	 * return the maximum of all absolute values
-	 */
-	double reduce_sumAbs()	const
-	{
-		double sum = 0;
-#if !SWEET_REXI_PARALLEL_SUM
-		#pragma omp parallel for reduction(+:sum)
-#endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
-			sum += std::abs(data[i*2])+std::abs(data[i*2+1]);
-
-		return sum;
-	}
-
-
 	friend
 	inline
 	std::ostream& operator<<(std::ostream &o_ostream, const Complex2DArrayFFT &i_testArray)
@@ -1079,7 +1251,7 @@ public:
 	Complex2DArrayFFT spec_div_element_wise(
 			const Complex2DArrayFFT &i_d,
 			double i_instability_threshold = 0
-	)
+	)	const
 	{
 		Complex2DArrayFFT out(resolution, aliased_scaled);
 
@@ -1193,6 +1365,51 @@ public:
 
 
 
+	DataArray<2> toDataArrays_Real()	const
+	{
+		DataArray<2> out(resolution);
+
+#if !SWEET_REXI_PARALLEL_SUM
+#		pragma omp parallel for OPENMP_SIMD
+#endif
+		for (std::size_t j = 0; j < resolution[1]; j++)
+		{
+			for (std::size_t i = 0; i < resolution[0]; i++)
+			{
+				out.set(
+					j, i,
+					getRe(j, i)
+				);
+			}
+		}
+
+		return out;
+	}
+
+
+
+	DataArray<2> toDataArrays_Imag()	const
+	{
+		DataArray<2> out(resolution);
+
+#if !SWEET_REXI_PARALLEL_SUM
+#		pragma omp parallel for OPENMP_SIMD
+#endif
+		for (std::size_t j = 0; j < resolution[1]; j++)
+		{
+			for (std::size_t i = 0; i < resolution[0]; i++)
+			{
+				out.set(
+					j, i,
+					getIm(j, i)
+				);
+			}
+		}
+
+		return out;
+	}
+
+
 	/**
 	 * Apply a linear operator given by this class to the input data array.
 	 */
@@ -1244,6 +1461,56 @@ public:
 
 			out.data[i] = ar*br - ai*bi;
 			out.data[i+1] = ar*bi + ai*br;
+		}
+		return out;
+	}
+
+
+
+	/**
+	 * Compute multiplication with real and imaginary components separately
+	 */
+	inline
+	Complex2DArrayFFT multiply_real_imag(
+			double i_real,
+			double i_imag
+	)	const
+	{
+		Complex2DArrayFFT out(resolution, aliased_scaled);
+
+#if !SWEET_REXI_PARALLEL_SUM
+#		pragma omp parallel for OPENMP_SIMD
+#endif
+		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		{
+			out.data[i] = data[i] * i_real;
+			out.data[i+1] = data[i+1] * i_imag;
+		}
+		return out;
+	}
+
+
+
+	/**
+	 * Compute multiplication with a real value
+	 */
+	inline
+	Complex2DArrayFFT operator*(
+			double &i_value_real
+	)	const
+	{
+		Complex2DArrayFFT out(resolution, aliased_scaled);
+
+#if !SWEET_REXI_PARALLEL_SUM
+#		pragma omp parallel for OPENMP_SIMD
+#endif
+		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		{
+			double ar = data[i];
+			double ai = data[i+1];
+
+			out.data[i] = ar*i_value_real;
+			out.data[i+1] = ai*i_value_real;
 		}
 		return out;
 	}
@@ -1539,17 +1806,91 @@ public:
 #endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
 		{
-			complex a = complex(data[i], data[i+1]);
-			complex b = complex(i_array_data.data[i], i_array_data.data[i+1]);
-
-			complex c = a*b;
-			out.data[i+0] = c.real();
-			out.data[i+1] = c.imag();
+			out.data[i+0] = data[i]*i_array_data.data[i] - data[i+1]*i_array_data.data[i+1];
+			out.data[i+1] = data[i]*i_array_data.data[i+1] + data[i+1]*i_array_data.data[i];
 		}
 
 		return out;
 	}
 
+
+
+	/**
+	 * return the sum of the absolute values
+	 */
+	double reduce_sumAbs()	const
+	{
+		double sum = 0;
+
+#if !SWEET_REXI_PARALLEL_SUM
+		#pragma omp parallel for reduction(+:sum)
+#endif
+		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+			sum += std::abs(data[i])+std::abs(data[i+1]);
+
+		return sum;
+	}
+
+
+
+	/**
+	 * return the sum
+	 */
+	std::complex<double> reduce_sum()	const
+	{
+		double sum_re = 0;
+		double sum_im = 0;
+
+#if !SWEET_REXI_PARALLEL_SUM
+		#pragma omp parallel for reduction(+:sum_re,sum_im)
+#endif
+		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		{
+			sum_re += data[i+0];
+			sum_im += data[i+1];
+		}
+
+		return std::complex<double>(sum_re, sum_im);
+	}
+
+
+#if 0
+	/**
+	 * return the sum
+	 */
+	double reduce_sum_real_imag()	const
+	{
+		double sum_re = 0;
+		double sum_im = 0;
+
+#if !SWEET_REXI_PARALLEL_SUM
+		#pragma omp parallel for reduction(+:sum_re,sum_im)
+#endif
+		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		{
+			sum_re += data[i+0];
+			sum_im += data[i+1];
+		}
+
+		return sum_re+sum_im;
+	}
+#else
+	/**
+	 * return the sum
+	 */
+	double reduce_sum_real_imag()	const
+	{
+		double sum = 0;
+
+#if !SWEET_REXI_PARALLEL_SUM
+		#pragma omp parallel for reduction(+:sum)
+#endif
+		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+			sum += data[i+0] + data[i+1];
+
+		return sum;
+	}
+#endif
 
 
 	/**
@@ -1601,6 +1942,26 @@ public:
 		sum = std::sqrt(sum/double(resolution[0]*resolution[1]));
 		return sum;
 	}
+
+
+
+
+	/**
+	 * reduce to max value
+	 */
+	double reduce_max()
+	{
+		double max_abs = 0;
+
+#if !SWEET_REXI_PARALLEL_SUM
+		#pragma omp parallel for reduction(max:max_abs)
+#endif
+		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+			max_abs = std::max(std::max(max_abs, std::abs(data[i])), std::abs(data[i+1]));
+
+		return max_abs;
+	}
+
 
 
 
@@ -1660,6 +2021,22 @@ public:
 		return std::sqrt(sum);
 	}
 
+	/**
+	 * return the maximum of all absolute values, use quad precision for reduction
+	 */
+	double reduce_norm2_squared()	const
+	{
+		double sum = 0.0;
+
+#if !SWEET_REXI_PARALLEL_SUM
+		#pragma omp parallel for reduction(+:sum)
+#endif
+		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+			sum += data[i]*data[i]+data[i+1]*data[i+1];
+
+		return sum;
+	}
+
 };
 
 
@@ -1685,6 +2062,30 @@ Complex2DArrayFFT operator*(
 
 		out.data[i] = ar*br - ai*bi;
 		out.data[i+1] = ar*bi + ai*br;
+	}
+	return out;
+}
+
+
+inline
+static
+Complex2DArrayFFT operator*(
+		double &i_value_re,
+		const Complex2DArrayFFT &i_array_data
+)
+{
+	Complex2DArrayFFT out(i_array_data.resolution, i_array_data.aliased_scaled);
+
+#if !SWEET_REXI_PARALLEL_SUM
+	#pragma omp parallel for OPENMP_SIMD
+#endif
+	for (std::size_t i = 0; i < i_array_data.resolution[0]*i_array_data.resolution[1]*2; i+=2)
+	{
+		double ar = i_array_data.data[i];
+		double ai = i_array_data.data[i+1];
+
+		out.data[i] = ar*i_value_re;
+		out.data[i+1] = ai*i_value_re;
 	}
 	return out;
 }

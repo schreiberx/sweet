@@ -23,7 +23,8 @@ int param_timestepping_mode;
 bool param_compute_error;
 bool param_use_staggering;
 bool param_rexi_use_finite_differences_for_complex_array;
-bool param_rexi_use_iterative_solver;
+int param_rexi_helmholtz_solver_id;
+double param_rexi_helmholtz_solver_eps;
 
 double param_initial_freq_x_mul;
 double param_initial_freq_y_mul;
@@ -431,7 +432,8 @@ public:
 					simVars.sim.domain_size,
 					param_rexi_half,
 					param_rexi_use_finite_differences_for_complex_array,
-					param_rexi_use_iterative_solver
+					param_rexi_helmholtz_solver_id,
+					param_rexi_helmholtz_solver_eps
 				);
 
 			if (simVars.misc.verbosity > 2)
@@ -1106,6 +1108,30 @@ public:
 			double *o_aspect_ratio
 	)
 	{
+		if (simVars.misc.vis_id < 0)
+		{
+			DataArray<2> t_h = t0_prog_h;
+			DataArray<2> t_u = t0_prog_u;
+			DataArray<2> t_v = t0_prog_v;
+
+			rexiSWE.run_timestep_direct_solution(t_h, t_u, t_v, simVars.timecontrol.current_simulation_time, op, simVars);
+
+			switch(simVars.misc.vis_id)
+			{
+			case -1:
+				tmp = t_h;
+				break;
+
+			case -2:
+				tmp = t_h-prog_h;	// difference
+				break;
+			}
+
+			*o_dataArray = &tmp;
+			*o_aspect_ratio = simVars.sim.domain_size[1] / simVars.sim.domain_size[0];
+			return;
+		}
+
 #if 1
 		int id = simVars.misc.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
 		*o_dataArray = vis_arrays[id].data;
@@ -1231,7 +1257,8 @@ int main(int i_argc, char *i_argv[])
 			"compute-error",
 			"staggering",
 			"use-fd-for-complex-array",	/// use finite differences for complex array
-			"use-iterative-solver",		/// use iterative solver for REXI
+			"rexi-helmholtz-solver-id",		/// use iterative solver for REXI
+			"rexi-helmholtz-solver-eps",		/// error threshold for solver
 			"initial-freq-x-mul",
 			"initial-freq-y-mul",
 			"boundary-id",
@@ -1247,12 +1274,13 @@ int main(int i_argc, char *i_argv[])
 	simVars.bogus.var[5] = 0;
 	simVars.bogus.var[6] = 0;
 	simVars.bogus.var[7] = 0;	// Don't use FD per default for complex array
-	simVars.bogus.var[8] = 0;	// Use iterative solver
+	simVars.bogus.var[8] = 0;	// Use spectral solver id
+	simVars.bogus.var[9] = 1e-7;	// Error threshold
 
-	simVars.bogus.var[9] = -1;	// freq. multiplier for initial conditions
-	simVars.bogus.var[10] = -1;
+	simVars.bogus.var[10] = -1;	// freq. multiplier for initial conditions
+	simVars.bogus.var[11] = -1;
 
-	simVars.bogus.var[11] = 0;
+	simVars.bogus.var[12] = 0;
 
 
 
@@ -1276,7 +1304,8 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "	--staggering [0/1]		Use staggered grid" << std::endl;
 		std::cout << std::endl;
 		std::cout << "	--use-fd-for-complex-array=[0/1]	Use finite-differences for derivatives in spectral space" << std::endl;
-		std::cout << "	--use-iterative-solver=[0/1]	Use iterative solver for REXI" << std::endl;
+		std::cout << "	--rexi-helmholtz-solver-id=[int]	Use iterative solver for REXI" << std::endl;
+		std::cout << "	--rexi-helmholtz-solver-eps=[err]	Error threshold for iterative solver" << std::endl;
 		std::cout << std::endl;
 		std::cout << "	--init-cond-freq-mul-x=[float]	Setup initial conditions by using this multiplier values" << std::endl;
 		std::cout << "	--init-cond-freq-mul-y=[float]	" << std::endl;
@@ -1296,12 +1325,13 @@ int main(int i_argc, char *i_argv[])
 	param_compute_error = simVars.bogus.var[5];
 	param_use_staggering = simVars.bogus.var[6];
 	param_rexi_use_finite_differences_for_complex_array = simVars.bogus.var[7];
-	param_rexi_use_iterative_solver = simVars.bogus.var[8];
+	param_rexi_helmholtz_solver_id = simVars.bogus.var[8];
+	param_rexi_helmholtz_solver_eps = simVars.bogus.var[9];
 
-	param_initial_freq_x_mul = simVars.bogus.var[9];
-	param_initial_freq_y_mul = simVars.bogus.var[10];
+	param_initial_freq_x_mul = simVars.bogus.var[10];
+	param_initial_freq_y_mul = simVars.bogus.var[11];
 
-	param_boundary_id = simVars.bogus.var[11];
+	param_boundary_id = simVars.bogus.var[12];
 
 	SimulationSWE *simulationSWE = new SimulationSWE;
 

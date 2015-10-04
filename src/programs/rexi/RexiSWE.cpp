@@ -20,7 +20,7 @@
 
 
 RexiSWE::RexiSWE()	:
-	use_iterative_solver(false)
+	helmholtz_solver(0)
 {
 #if !SWEET_USE_LIBFFT
 	std::cerr << "Spectral space required for solvers, use compile optino --libfft=enable" << std::endl;
@@ -70,16 +70,20 @@ void RexiSWE::setup(
 		double i_f,						///< Coriolis frequency
 		std::size_t *i_resolution,		///< resolution of domain
 		const double *i_domain_size,	///< size of domain
+
 		bool i_rexi_half,				///< use half-pole reduction
 		bool i_use_finite_differences,	///< use finite differences for REXI approximation
-		bool i_use_iterative_solver		///< Use iterative solver instead of direct solving it in spectral space
+		int i_helmholtz_solver,			///< Use iterative solver instead of direct solving it in spectral space
+		double i_eps					///< Error threshold
 )
 {
 	M = i_M;
 	h = i_h;
 	tau = i_tau;
 	f = i_f;
-	use_iterative_solver = i_use_iterative_solver;
+	helmholtz_solver = i_helmholtz_solver;
+	eps = i_eps;
+	use_finite_differences = i_use_finite_differences;
 
 	domain_size[0] = i_domain_size[0];
 	domain_size[1] = i_domain_size[1];
@@ -117,7 +121,7 @@ void RexiSWE::setup(
 	for (int j = 0; j < num_threads; j++)
 	{
 #if SWEET_REXI_PARALLEL_SUM
-#	pragma omp parallel for schedule(static,1) default(none) shared(i_resolution,i_use_finite_differences,std::cout,j)
+#	pragma omp parallel for schedule(static,1) default(none) shared(i_resolution,std::cout,j)
 #endif
 		for (int i = 0; i < num_threads; i++)
 		{
@@ -137,6 +141,7 @@ void RexiSWE::setup(
 			perThreadVars[i]->op_diff_c_y.setup(i_resolution);
 			perThreadVars[i]->op_diff2_c_x.setup(i_resolution);
 			perThreadVars[i]->op_diff2_c_y.setup(i_resolution);
+			perThreadVars[i]->eta.setup(i_resolution);
 			perThreadVars[i]->eta0.setup(i_resolution);
 			perThreadVars[i]->u0.setup(i_resolution);
 			perThreadVars[i]->v0.setup(i_resolution);
@@ -162,7 +167,7 @@ void RexiSWE::setup(
 	}
 
 #if SWEET_REXI_PARALLEL_SUM
-#	pragma omp parallel for schedule(static,1) default(none)  shared(i_domain_size,i_use_finite_differences, std::cout, std::cerr)
+#	pragma omp parallel for schedule(static,1) default(none)  shared(i_domain_size,i_use_finite_differences, std::cout)
 #endif
 	for (int i = 0; i < num_threads; i++)
 	{
@@ -179,19 +184,13 @@ void RexiSWE::setup(
 			exit(-1);
 		}
 
-		// initialize all values to account for first touch policy
-		perThreadVars[i]->op_diff_c_x.setAll(0, 0);
 		perThreadVars[i]->op_diff_c_x.op_setup_diff_x(i_domain_size, i_use_finite_differences);
-
-		perThreadVars[i]->op_diff_c_y.setAll(0, 0);
 		perThreadVars[i]->op_diff_c_y.op_setup_diff_y(i_domain_size, i_use_finite_differences);
-
-		perThreadVars[i]->op_diff2_c_x.setAll(0, 0);
 		perThreadVars[i]->op_diff2_c_x.op_setup_diff2_x(i_domain_size, i_use_finite_differences);
-
-		perThreadVars[i]->op_diff2_c_y.setAll(0, 0);
 		perThreadVars[i]->op_diff2_c_y.op_setup_diff2_y(i_domain_size, i_use_finite_differences);
 
+		// initialize all values to account for first touch policy reason
+		perThreadVars[i]->eta.setAll(0, 0);
 		perThreadVars[i]->eta0.setAll(0, 0);
 		perThreadVars[i]->u0.setAll(0, 0);
 		perThreadVars[i]->v0.setAll(0, 0);
@@ -222,11 +221,10 @@ void RexiSWE::run_timestep(
 {
 	typedef std::complex<double> complex;
 
-
 	std::size_t N = rexi.alpha.size();
 
 #if SWEET_REXI_PARALLEL_SUM
-#	pragma omp parallel for schedule(static,1) default(none) shared(i_parameters, io_h, io_u, io_v, N)
+#	pragma omp parallel for schedule(static,1) default(none) shared(i_parameters, io_h, io_u, io_v, N, std::cout, std::cerr)
 #endif
 	for (int i = 0; i < num_threads; i++)
 	{
@@ -235,8 +233,8 @@ void RexiSWE::run_timestep(
 
 		Complex2DArrayFFT &op_diff_c_x = perThreadVars[i]->op_diff_c_x;
 		Complex2DArrayFFT &op_diff_c_y = perThreadVars[i]->op_diff_c_y;
-		Complex2DArrayFFT &op_diff2_c_x = perThreadVars[i]->op_diff2_c_x;
-		Complex2DArrayFFT &op_diff2_c_y = perThreadVars[i]->op_diff2_c_y;
+//		Complex2DArrayFFT &op_diff2_c_x = perThreadVars[i]->op_diff2_c_x;
+//		Complex2DArrayFFT &op_diff2_c_y = perThreadVars[i]->op_diff2_c_y;
 
 		Complex2DArrayFFT &eta0 = perThreadVars[i]->eta0;
 		Complex2DArrayFFT &u0 = perThreadVars[i]->u0;
@@ -245,6 +243,8 @@ void RexiSWE::run_timestep(
 		Complex2DArrayFFT &h_sum = perThreadVars[i]->h_sum;
 		Complex2DArrayFFT &u_sum = perThreadVars[i]->u_sum;
 		Complex2DArrayFFT &v_sum = perThreadVars[i]->v_sum;
+
+		Complex2DArrayFFT &eta = perThreadVars[i]->eta;
 
 		/*
 		 * INITIALIZATION - THIS IS THE NON-PARALLELIZABLE PART!
@@ -257,62 +257,245 @@ void RexiSWE::run_timestep(
 		u0.loadRealFromDataArray(io_u);
 		v0.loadRealFromDataArray(io_v);
 
-		// convert to spectral space
-		// scale with inverse of tau
-		eta0 = eta0.toSpec()*(1.0/tau);
-		u0 = u0.toSpec()*(1.0/tau);
-		v0 = v0.toSpec()*(1.0/tau);
+		if (helmholtz_solver == 0)
+		{
+			/**
+			 * SPECTRAL SOLVER - DO EVERYTHING IN SPECTRAL SPACE
+			 */
+			// convert to spectral space
+			// scale with inverse of tau
+			eta0 = eta0.toSpec()*(1.0/tau);
+			u0 = u0.toSpec()*(1.0/tau);
+			v0 = v0.toSpec()*(1.0/tau);
 
 #if SWEET_REXI_PARALLEL_SUM
-		int thread_id = omp_get_thread_num();
+			int thread_id = omp_get_thread_num();
 
-		std::size_t start = block_size*thread_id;
-		std::size_t end = std::min(N, start+block_size);
-
+			std::size_t start = block_size*thread_id;
+			std::size_t end = std::min(N, start+block_size);
 #else
-
-		std::size_t start = 0;
-		std::size_t end = N;
-
+			std::size_t start = 0;
+			std::size_t end = N;
 #endif
 
-		/*
-		 * DO SUM IN PARALLEL
-		 */
-		for (std::size_t n = start; n < end; n++)
+			// reuse result from previous computations
+			// this significantly speeds up the process
+			// initial guess
+//			eta.setAll(0,0);
+
+			/*
+			 * DO SUM IN PARALLEL
+			 */
+			for (std::size_t n = start; n < end; n++)
+			{
+				// load alpha (a) and scale by inverse of tau
+				// we flip the sign to account for the -L used in exp(\tau (-L))
+				complex alpha = -rexi.alpha[n]/tau;
+				complex beta = -rexi.beta_re[n];
+
+				// load kappa (k)
+				complex kappa = alpha*alpha + f*f;
+
+				/*
+				 * TODO: we can even get more performance out of this operations
+				 * by partly using the real Fourier transformation
+				 */
+				Complex2DArrayFFT rhs =
+						(kappa/alpha) * eta0
+						- eta_bar*(op_diff_c_x(u0) + op_diff_c_y(v0))
+						- (f*eta_bar/alpha) * (op_diff_c_x(v0) - op_diff_c_y(u0))
+					;
+
+				helmholtz_spectral_solver_spec(kappa, g*eta_bar, rhs, eta, i);
+
+				Complex2DArrayFFT uh = u0 - g*op_diff_c_x(eta);
+				Complex2DArrayFFT vh = v0 - g*op_diff_c_y(eta);
+
+				Complex2DArrayFFT u1 = alpha/kappa * uh     + f/kappa * vh;
+				Complex2DArrayFFT v1 =    -f/kappa * uh + alpha/kappa * vh;
+
+				h_sum += eta.toCart()*beta;
+				u_sum += u1.toCart()*beta;
+				v_sum += v1.toCart()*beta;
+			}
+		}
+		else
 		{
-			// load alpha (a) and scale by inverse of tau
-			// we flip the sign to account for the -L used in exp(\tau (-L))
-			complex alpha = -rexi.alpha[n]/tau;
-			complex beta = -rexi.beta_re[n];
+			/*
+			 * Use FD solver in CARTESIAN SPACE ONLY
+			 */
+			if (!use_finite_differences)
+			{
+				std::cerr << "Using FD solvers only makes sense if FD is activated for REXI!" << std::endl;
+				exit(-1);
+			}
 
-			// load kappa (k)
-			complex kappa = alpha*alpha + f*f;
+			// convert to spectral space
+			// scale with inverse of tau
+			eta0 = eta0.toSpec()*(1.0/tau);
+			u0 = u0.toSpec()*(1.0/tau);
+			v0 = v0.toSpec()*(1.0/tau);
 
-			// compute
-			// 		kappa - g * eta_bar * D2
-			// NOTE!!! We add kappa in Cartesian space, hence add this value to all frequency components to account for scaling all frequencies!!!
-			// This is *NOT* straightforward and different to adding a constant for computations.
-			// We account for this by seeing the LHS as a set of operators which have to be joint later by a sum.
-			Complex2DArrayFFT lhs = (-g*eta_bar*(op_diff2_c_x + op_diff2_c_y)).addScalar_Cart(kappa);
+#if SWEET_REXI_PARALLEL_SUM
+			int thread_id = omp_get_thread_num();
 
-			Complex2DArrayFFT rhs =
-					(kappa/alpha) * eta0
-					- eta_bar*(op_diff_c_x(u0) + op_diff_c_y(v0))
-					- (f*eta_bar/alpha) * (op_diff_c_x(v0) - op_diff_c_y(u0))
-				;
+			std::size_t start = block_size*thread_id;
+			std::size_t end = std::min(N, start+block_size);
 
-			Complex2DArrayFFT eta = rhs.spec_div_element_wise(lhs);
+#else
+			std::size_t start = 0;
+			std::size_t end = N;
+#endif
 
-			Complex2DArrayFFT uh = u0 - g*op_diff_c_x(eta);
-			Complex2DArrayFFT vh = v0 - g*op_diff_c_y(eta);
+			/*
+			 * DO SUM IN PARALLEL
+			 */
+			for (std::size_t n = start; n < end; n++)
+			{
+				// load alpha (a) and scale by inverse of tau
+				// we flip the sign to account for the -L used in exp(\tau (-L))
+				complex alpha = -rexi.alpha[n]/tau;
+				complex beta = -rexi.beta_re[n];
 
-			Complex2DArrayFFT u1 = alpha/kappa * uh     + f/kappa * vh;
-			Complex2DArrayFFT v1 =    -f/kappa * uh + alpha/kappa * vh;
+				// load kappa (k)
+				complex kappa = alpha*alpha + f*f;
+				std::cout << "KAPPA: " << kappa << std::endl;
 
-			h_sum += eta.toCart()*beta;
-			u_sum += u1.toCart()*beta;
-			v_sum += v1.toCart()*beta;
+				/*
+				 * TODO: we can even get more performance out of this operations
+				 * by partly using the real Fourier transformation
+				 */
+				Complex2DArrayFFT rhs =
+						(kappa/alpha) * eta0
+						- eta_bar*(op_diff_c_x(u0) + op_diff_c_y(v0))
+						- (f*eta_bar/alpha) * (op_diff_c_x(v0) - op_diff_c_y(u0))
+					;
+
+				rhs = rhs.toCart();
+
+				Complex2DArrayFFT eta(rhs.resolution);
+				eta.setAll(0,0);
+
+				int max_iters = 2000;
+
+				bool retval = true;
+				switch (helmholtz_solver)
+				{
+				default:
+					{
+						{
+						std::cout << "Helmholtz solver IDs:" << std::endl;
+						std::cout << "	0: Spectral solver" << std::endl;
+						std::cout << "	1: Jacobi" << std::endl;
+						std::cout << "	2: CG" << std::endl;
+						std::cout << "	3: MG: Jacobi" << std::endl;
+						std::cout << "	4: MG: CG" << std::endl;
+						}
+					}
+					exit(-1);
+					break;
+/*
+
+				case 0:
+					helmholtz_spectral_solver_spec(kappa, g*eta_bar, rhs, eta, i);
+					break;
+*/
+
+				case 1:
+					max_iters *= 10;
+					std::cout << "kappa: " << kappa << std::endl;
+					retval = RexiSWE_HelmholtzSolver::smoother_jacobi(
+							kappa,
+							g*eta_bar,
+							rhs,
+							eta,
+							domain_size,
+							eps,
+							max_iters,
+							0.5,
+							0
+						);
+
+					break;
+
+				case 2:
+					retval = RexiSWE_HelmholtzSolver::smoother_conjugate_gradient(
+							kappa,
+							g*eta_bar,
+							rhs,
+							eta,
+							domain_size,
+							eps,
+							max_iters,
+							1.0,
+							0
+						);
+
+					break;
+
+				case 3:
+					retval = RexiSWE_HelmholtzSolver::multigrid(	// MG with jacobi
+						kappa,
+						g*eta_bar,
+						rhs,
+						eta,
+						RexiSWE_HelmholtzSolver::smoother_jacobi,
+						domain_size,
+						eps,
+						max_iters,
+						1.0,
+						2,
+						0//simVars.misc.verbosity
+					);
+
+					break;
+
+				case 4:
+					retval = RexiSWE_HelmholtzSolver::multigrid(	// MG with jacobi
+						kappa,
+						g*eta_bar,
+						rhs,
+						eta,
+						RexiSWE_HelmholtzSolver::smoother_conjugate_gradient,
+						domain_size,
+						eps,
+						max_iters,
+						1.0,
+						2,
+						0//simVars.misc.verbosity
+					);
+
+					break;
+				}
+
+				if (!retval)
+				{
+					double residual = RexiSWE_HelmholtzSolver::helmholtz_iterative_get_residual_rms(
+							kappa,
+							g*eta_bar,
+							rhs,
+							eta,
+							domain_size
+						);
+
+					std::cerr << "NO CONVERGENCE AFTER " << max_iters << " iterations for K=" << kappa << ", gh=" << g*eta_bar << ", eps=" << eps << ", residual=" << residual << std::endl;
+					std::cerr << "alpha: " << alpha << std::endl;
+					std::cerr << "kappa: " << kappa << std::endl;
+					exit(-1);
+				}
+
+				eta = eta.toSpec();
+
+				Complex2DArrayFFT uh = u0 - g*op_diff_c_x(eta);
+				Complex2DArrayFFT vh = v0 - g*op_diff_c_y(eta);
+
+				Complex2DArrayFFT u1 = (alpha/kappa) * uh	+ (f/kappa) * vh;
+				Complex2DArrayFFT v1 =    (-f/kappa) * uh	+ (alpha/kappa) * vh;
+
+				h_sum += eta.toCart()*beta;
+				u_sum += u1.toCart()*beta;
+				v_sum += v1.toCart()*beta;
+			}
 		}
 	}
 
