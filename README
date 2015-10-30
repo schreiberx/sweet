@@ -4,18 +4,7 @@ SWEET
 **************************
 Shallow Water Equation Environment for Tests, Awesome!
 
-
 Please have a look into the INSTALL instructions to see required libraries.
-
-
-IMPORTANT: Initialize your environment variables, e.g. with bash:
-
-	$ source ./env_vars.sh
-
-	This sets up the LD_LIBRARY_PATH and other environment variables appropriately
-	Note, that this step may not be required if installing the libraries
-	into your system's directory (e.g. via apt-get)
-
 
 File structure:
 
@@ -43,5 +32,5 @@ Once installed scons, you can have a look at the possible compilation options:
 
 	scons --help
 
-	The program to be compiled can be specified via -compile-program=...
+	The program to be compiled can be specified via -program=...
 	with the list of programs given in src/examples

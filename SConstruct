@@ -586,6 +586,8 @@ env.Append(CXXFLAGS=' -DNUMA_BLOCK_ALLOCATOR_TYPE='+env['numa_block_allocator'])
 
 if env['numa_block_allocator'] != '0':
 	exec_name+='_numaallocator'+env['numa_block_allocator']
+	env.Append(LIBS=['numa'])
+
 
 exec_name += '_'+env['compiler']
 exec_name += '_'+env['mode']
@@ -602,8 +604,6 @@ if env['libfft'] == 'enable':
 
 	if env['threading'] == 'omp':
 		env.Append(LIBS=['fftw3_omp'])
-
-env.Append(LIBS=['numa'])
 
 if env['rexi_parallel_sum']=='enable' or env['threading'] == 'omp':
 	env.Append(LINKFLAGS=' -fopenmp')
@@ -645,6 +645,8 @@ if hostname[0:4] == "mac-":
 # also include the 'src' directory to search for dependencies
 env.Append(CPPPATH = ['.', 'src/', 'src/include'])
 
+# MAC OSX local software hack
+env.Append(LINKFLAGS=' -Llocal_software/local/lib ')
 
 
 ######################

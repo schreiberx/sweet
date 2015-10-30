@@ -3,18 +3,18 @@
 	#error "Spectral space not activated"
 #endif
 
-
 #include <sweet/DataArray.hpp>
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
+
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/TimesteppingRK.hpp>
 #include <sweet/SWEValidationBenchmarks.hpp>
 #include <sweet/Operators2D.hpp>
 #include <sweet/Stopwatch.hpp>
 
-#include <math.h>
+#include <sweetmath.hpp>
 #include <ostream>
 #include <sstream>
 #include <unistd.h>

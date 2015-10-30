@@ -1,4 +1,24 @@
 
+******************
+Note:
+******************
+
+There are scripts in the directory 'local_software' to make handling
+external software requirements easier.
+
+ * ./install_*.sh
+   Build and install the 3rd party software automatically
+   Please note that this does not generate highly optimized 3rd party
+   software, but focusses on getting SWEET running.
+
+ * ./env_vars.sh
+   This script sets up all the environment variables to compile and run SWEET
+
+After installing the software, you can use
+	source ./local_software/env_vars.sh
+to setup your environment variables correctly
+
+
 
 ================
 SCons:
@@ -11,7 +31,29 @@ SCons:
 	
 
 ================
-GUI:
+FFTW (Optional, but mandatory if Fourier space is required):
+================
+	http://www.fftw.org/download.html
+	fftw-3.3.4.tar.gz
+
+	tar xzf fftw-3.3.4.tar.gz
+	Without MPI:
+	./configure --prefix=$HOME/local/sweet_support --with-our-malloc16 --enable-openmp --enable-avx --enable-shared
+	With MPI:
+	./configure --prefix=$HOME/local/sweet_support --with-our-malloc16 --enable-openmp --enable-avx --enable-mpi --enable-shared
+	make -j 4 install
+
+	For intel compiler, use e.g.:
+	./configure CC=icc CFLAGS="-gcc -xHost" --with-our-malloc16 --enable-openmp --enable-avx --prefix=$HOME/local/fftw-3.3.4
+	make install
+
+	OR
+	apt-get install libfftw3-dev
+
+
+
+================
+SDL (optional): Graphical user interface to simulations
 ================
 	The GUI depends on libSDL2
 	https://www.libsdl.org/
@@ -28,6 +70,14 @@ GUI:
 	 enviromental variables to import them.
 	 (Such as in $HOME/bin/local_vars.sh).
 
+
+================
+NUMA (optional): optimized memory allocation
+================
+	Get libnuma from
+	ftp://oss.sgi.com/www/projects/libnuma/download/numactl-2.0.10.tar.gz
+
+
 ================
 MPI - (Optional)
 ================
@@ -38,29 +88,6 @@ MPI - (Optional)
 	tar xzf openmpi-1.8.6.tar.bz2
 	./configure --prefix=$HOME/local/sweet_support
 	make -j 4 install
-
-
-================
-FFTW (Optional, only for spectral methods):
-================
-	http://www.fftw.org/download.html
-	fftw-3.3.4.tar.gz
-
-	tar xzf fftw-3.3.4.tar.gz
-	Without MPI:
-	./configure --prefix=$HOME/local/sweet_support --with-our-malloc16 --enable-openmp --with-combined-threads --enable-avx
-	With MPI:
-	./configure --prefix=$HOME/local/sweet_support --with-our-malloc16 --enable-openmp --with-combined-threads --enable-avx --enable-mpi
-	make -j 4 install
-
-	For intel compiler, use e.g.:
-	./configure CC=icc CFLAGS="-gcc -xHost" --with-our-malloc16 --enable-openmp --enable-avx --prefix=$HOME/local/fftw-3.3.4
-	make install
-
-	OR
-	apt-get install libfftw3-dev
-
-
 
 
 ================
