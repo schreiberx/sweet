@@ -17,6 +17,9 @@
 #include "RexiSWE_HelmholtzSolver.hpp"
 
 
+#if SWEET_MPI
+#	include <mpi.h>
+#endif
 
 /**
  * This class implements the REXI (rational approximation of exponential integrator) solver for the SWE,
@@ -69,8 +72,16 @@ class RexiSWE
 	std::vector<PerThreadVars*> perThreadVars;
 
 	// number of threads to be used
-	int num_threads;
+	int num_local_rexi_par_threads;
 
+	// number of mpi ranks to be used
+	int mpi_rank;
+
+	// MPI ranks
+	int num_mpi_ranks;
+
+	// number of threads to be used
+	int num_global_threads;
 
 public:
 	REXI rexi;
@@ -125,7 +136,7 @@ public:
 		// This is *NOT* straightforward and different to adding a constant for computations.
 		// We account for this by seeing the LHS as a set of operators which have to be joint later by a sum.
 
-		Complex2DArrayFFT lhs = (-i_gh0*(perThreadVars[i_thread_id]->op_diff2_c_x + perThreadVars[i_thread_id]->op_diff2_c_y)).addScalar_Cart(i_kappa);
+		Complex2DArrayFFT lhs = ((-i_gh0)*(perThreadVars[i_thread_id]->op_diff2_c_x + perThreadVars[i_thread_id]->op_diff2_c_y)).addScalar_Cart(i_kappa);
 
 		io_x = ((i_rhs.toSpec()).spec_div_element_wise(lhs)).toCart();
 	}
@@ -160,6 +171,21 @@ public:
 	}
 
 
+	/**
+	 * Solve U_t = L U via implicit solver:
+	 *
+	 *
+	 */
+	bool run_timestep_implicit_ts(
+		DataArray<2> &io_h,
+		DataArray<2> &io_u,
+		DataArray<2> &io_v,
+
+		Operators2D &op,
+		const SimulationVariables &i_parameters
+	);
+
+
 
 	/**
 	 * Solve the REXI of \f$ U(t) = exp(L*t) \f$
@@ -168,13 +194,14 @@ public:
 	 * 		doc/rexi/understanding_rexi.pdf
 	 * for further information
 	 */
-	void run_timestep(
+	bool run_timestep(
 		DataArray<2> &io_h,
 		DataArray<2> &io_u,
 		DataArray<2> &io_v,
 
 		Operators2D &op,
-		const SimulationVariables &i_parameters
+		const SimulationVariables &i_parameters,
+		bool i_iterative_solver_zero_solution = false
 	);
 
 
@@ -199,6 +226,22 @@ public:
 			Operators2D &op,
 			const SimulationVariables &i_parameters
 	);
+
+
+	inline
+	static
+	void MPI_quitWorkers(
+			std::size_t i_resolution[2]
+	)
+	{
+#if SWEET_MPI
+	DataArray<2> dummyData(i_resolution);
+	dummyData.set_all(NAN);
+
+	MPI_Bcast(dummyData.array_data_cartesian_space, dummyData.resolution[0]*dummyData.resolution[1], MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+#endif
+	}
 
 	~RexiSWE();
 };

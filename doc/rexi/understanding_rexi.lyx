@@ -83,10 +83,6 @@ Martin Schreiber <M.Schreiber@exeter.ac.uk>
 
  Pedro S.
  Peixoto <pedrosp@ime.usp.br>
-\begin_inset Newline newline
-\end_inset
-
- et al.
 \end_layout
 
 \begin_layout Standard
@@ -700,6 +696,7 @@ Now we can collect all nominators with equivalent denominator (if
 \end_layout
 
 \begin_layout Standard
+	
 \begin_inset Formula 
 \begin{equation}
 \beta_{n}^{Re}:=h\sum_{m=-M\,}^{M}\sum_{k=-K}^{K}Re(b_{m})ha_{l}\delta(n,\,m+k)\label{eq:beta_re}
@@ -2606,7 +2603,7 @@ by
 \begin_inset Formula $-g\bar{\eta}$
 \end_inset
 
- gives 
+ gives
 \end_layout
 
 \begin_layout Standard

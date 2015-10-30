@@ -1050,7 +1050,7 @@ public:
 			if (!i_aliasing)
 			{
 #if SWEET_THREADING
-	#if SWEET_REXI_PARALLEL_SUM
+	#if SWEET_REXI_THREAD_PARALLEL_SUM
 			std::cout << "Using REXI parallel sum, hence using only single FFT thread" << std::endl;
 			// only use serial FFT in case of REXI parallel sum
 //		    fftw_plan_with_nthreads(1);

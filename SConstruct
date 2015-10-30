@@ -191,6 +191,16 @@ AddOption(	'--rexi-parallel-sum',
 env['rexi_parallel_sum'] = GetOption('rexi_parallel_sum')
 
 
+AddOption(	'--sweet-mpi',
+		dest='sweet_mpi',
+		type='choice',
+		choices=['enable','disable'],
+		default='disable',
+		help='Enable MPI commands e.g. for REXI sum: enable, disable [default: %default]'
+)
+env['sweet_mpi'] = GetOption('sweet_mpi')
+
+
 
 AddOption(      '--program',
 		dest='program',
@@ -274,6 +284,14 @@ if env['libfft'] == 'enable':
 	exec_name+='_libfft'
 else:
 	env.Append(CXXFLAGS = ' -DSWEET_USE_LIBFFT=0')
+
+
+
+if env['sweet_mpi'] == 'enable':
+	env.Append(CXXFLAGS = ' -DSWEET_MPI=1')
+else:
+	env.Append(CXXFLAGS = ' -DSWEET_MPI=0')
+
 
 
 if env['spectral_dealiasing'] == 'enable':
