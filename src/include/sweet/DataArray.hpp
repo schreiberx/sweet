@@ -10,7 +10,7 @@
 #include <complex>
 #include <cassert>
 #include <cstddef>
-#include <cmath>
+#include <sweetmath.hpp>
 #include <memory>
 #include <stdlib.h>
 #include <string.h>
