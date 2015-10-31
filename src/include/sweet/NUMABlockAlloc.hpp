@@ -237,9 +237,10 @@ private:
 		domain_block_groups.resize(num_alloc_domains);
 
 #if 0
+		// TODO: care about first-touch policy
 		for (auto& n : domain_block_groups)
 		{
-			std::size_t S = 10;
+			std::size_t S = num_alloc_domains*10;
 
 			// preallocate S different size of blocks which should be sufficient
 			n.block_groups.reserve(S);

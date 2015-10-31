@@ -99,7 +99,7 @@ public:
 		assert(fft_getSingleton_RefCounter() >= 0);
 
 		int &ref_counter = fft_getSingleton_RefCounter();
-#if SWEET_REXI_PARALLEL_SUM
+#if SWEET_REXI_THREAD_PARALLEL_SUM
 #	pragma omp atomic
 #endif
 		ref_counter++;
@@ -208,7 +208,7 @@ public:
 
 		int &ref_counter = fft_getSingleton_RefCounter();
 
-#if SWEET_REXI_PARALLEL_SUM
+#if SWEET_REXI_THREAD_PARALLEL_SUM
 #	pragma omp atomic
 #endif
 		ref_counter--;
@@ -328,7 +328,7 @@ public:
 	inline
 	void par_doublecopy(double *o_data, double *i_data, std::size_t i_size)
 	{
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_SIMD
 #endif
 		for (std::size_t i = 0; i < i_size; i++)
@@ -426,7 +426,7 @@ public:
 		 * to the scaling only if we convert the data back to cartesian space
 		 */
 		double scale = (1.0/((double)resolution[0]*(double)resolution[1]));
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_SIMD
 #endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
@@ -485,7 +485,7 @@ public:
 
 	void setAll(double re, double im)
 	{
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_SIMD
 #endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
@@ -498,7 +498,9 @@ public:
 
 	void zero()
 	{
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
 		{
 			data[i] = 0;
@@ -514,7 +516,7 @@ public:
 		double re = i_value.real();
 		double im = i_value.imag();
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_SIMD
 #endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
@@ -526,7 +528,7 @@ public:
 
 	void setAllRe(double re)
 	{
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_SIMD
 #endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
@@ -537,7 +539,7 @@ public:
 
 	void setAllIm(double im)
 	{
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_SIMD
 #endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
@@ -634,7 +636,9 @@ public:
 		int res_x = resolution[0];
 		int res_y = resolution[1];
 
-#pragma omp parallel for OPENMP_SIMD shared(res_x, res_y, out, i_kernel_data)
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#	pragma omp parallel for OPENMP_SIMD shared(res_x, res_y, out, i_kernel_data)
+#endif
 		for (int y = 0; y < res_y; y++)
 		{
 			for (int x = 0; x < res_x; x++)
@@ -693,7 +697,9 @@ public:
 		int res_x = resolution[0];
 		int res_y = resolution[1];
 
-#pragma omp parallel for OPENMP_SIMD shared(res_x, res_y, out, i_kernel_data)
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#	pragma omp parallel for OPENMP_SIMD shared(res_x, res_y, out, i_kernel_data)
+#endif
 		for (int y = 0; y < res_y; y++)
 		{
 			for (int x = 0; x < res_x; x++)
@@ -759,7 +765,9 @@ public:
 
 
 		// from right
-#pragma omp parallel for OPENMP_SIMD shared(res_x, res_y)
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#	pragma omp parallel for OPENMP_SIMD shared(res_x, res_y)
+#endif
 		for (int y = 0; y < res_y; y++)
 		{
 			double *o_data = &out.data[y*res_x*2];
@@ -781,7 +789,9 @@ public:
 
 
 		// from left
-#pragma omp parallel for OPENMP_SIMD shared(res_x, res_y)
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#	pragma omp parallel for OPENMP_SIMD shared(res_x, res_y)
+#endif
 		for (int y = 0; y < res_y; y++)
 		{
 			double *o_data = &out.data[(y*res_x+1)*2];
@@ -803,7 +813,9 @@ public:
 
 
 		// from upper
-#pragma omp parallel for OPENMP_SIMD shared(res_x, res_y)
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#	pragma omp parallel for OPENMP_SIMD shared(res_x, res_y)
+#endif
 		for (int y = 0; y < res_y; y++)
 		{
 			double *o_data = &out.data[y*res_x*2];
@@ -821,7 +833,9 @@ public:
 
 
 		// from lower
-#pragma omp parallel for OPENMP_SIMD shared(res_x, res_y)
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#	pragma omp parallel for OPENMP_SIMD shared(res_x, res_y)
+#endif
 		for (int y = 0; y < res_y; y++)
 		{
 			double *o_data = &out.data[y*res_x*2];
@@ -859,7 +873,9 @@ public:
 		int res_y = resolution[1];
 
 		// from right
-#pragma omp parallel for OPENMP_SIMD shared(res_x, res_y)
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#	pragma omp parallel for OPENMP_SIMD shared(res_x, res_y)
+#endif
 		for (int y = 0; y < res_y; y++)
 		{
 			double *o_data = &out.data[y*res_x*2];
@@ -881,7 +897,9 @@ public:
 
 
 		// from left
-#pragma omp parallel for OPENMP_SIMD shared(res_x, res_y)
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#	pragma omp parallel for OPENMP_SIMD shared(res_x, res_y)
+#endif
 		for (int y = 0; y < res_y; y++)
 		{
 			double *o_data = &out.data[(y*res_x+1)*2];
@@ -903,7 +921,9 @@ public:
 
 
 		// from upper
-#pragma omp parallel for OPENMP_SIMD shared(res_x, res_y)
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#	pragma omp parallel for OPENMP_SIMD shared(res_x, res_y)
+#endif
 		for (int y = 0; y < res_y; y++)
 		{
 			double *o_data = &out.data[y*res_x*2];
@@ -921,7 +941,9 @@ public:
 
 
 		// from lower
-#pragma omp parallel for OPENMP_SIMD shared(res_x, res_y)
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#	pragma omp parallel for OPENMP_SIMD shared(res_x, res_y)
+#endif
 		for (int y = 0; y < res_y; y++)
 		{
 			double *o_data = &out.data[y*res_x*2];
@@ -939,7 +961,9 @@ public:
 
 
 		// center
-#pragma omp parallel for OPENMP_SIMD shared(res_x, res_y)
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#	pragma omp parallel for OPENMP_SIMD shared(res_x, res_y)
+#endif
 		for (int y = 0; y < res_y; y++)
 		{
 			double *o_data = &out.data[y*res_x*2];
@@ -989,7 +1013,7 @@ public:
 		{
 			double scale = 2.0*M_PIl/i_domain_size[0];
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_SIMD
 #endif
 			for (std::size_t j = 0; j < resolution[1]/2; j++)
@@ -1058,7 +1082,7 @@ public:
 		{
 			double scale = 2.0*M_PIl/i_domain_size[0];
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_SIMD
 #endif
 			for (std::size_t j = 0; j < resolution[1]/2; j++)
@@ -1120,7 +1144,7 @@ public:
 		{
 			double scale = 2.0*M_PIl/i_domain_size[1];
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_SIMD
 #endif
 			for (int j = 1; j < (int)resolution[1]/2; j++)
@@ -1185,7 +1209,7 @@ public:
 		{
 			double scale = 2.0*M_PIl/i_domain_size[1];
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_SIMD
 #endif
 			for (int j = 1; j < (int)resolution[1]/2; j++)
@@ -1255,7 +1279,7 @@ public:
 	{
 		Complex2DArrayFFT out(resolution, aliased_scaled);
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_SIMD
 #endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
@@ -1295,7 +1319,7 @@ public:
 	{
 		DataArray<2> out(resolution);
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_SIMD
 #endif
 		for (std::size_t j = 0; j < resolution[1]; j++)
@@ -1309,7 +1333,7 @@ public:
 	{
 		DataArray<2> out(resolution);
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_SIMD
 #endif
 		for (std::size_t j = 0; j < resolution[1]; j++)
@@ -1327,7 +1351,7 @@ public:
 	{
 		i_dataArray_Real.requestDataInCartesianSpace();
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_SIMD
 #endif
 		for (std::size_t j = 0; j < resolution[1]; j++)
@@ -1346,7 +1370,7 @@ public:
 		i_dataArray_Real.requestDataInCartesianSpace();
 		i_dataArray_Imag.requestDataInCartesianSpace();
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_SIMD
 #endif
 		for (std::size_t j = 0; j < resolution[1]; j++)
@@ -1369,7 +1393,7 @@ public:
 	{
 		DataArray<2> out(resolution);
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_SIMD
 #endif
 		for (std::size_t j = 0; j < resolution[1]; j++)
@@ -1387,12 +1411,33 @@ public:
 	}
 
 
+	void toDataArrays_Real(
+			DataArray<2> &o_out
+	)	const
+	{
+
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#		pragma omp parallel for OPENMP_SIMD
+#endif
+		for (std::size_t j = 0; j < resolution[1]; j++)
+		{
+			for (std::size_t i = 0; i < resolution[0]; i++)
+			{
+				o_out.set(
+					j, i,
+					getRe(j, i)
+				);
+			}
+		}
+	}
+
+
 
 	DataArray<2> toDataArrays_Imag()	const
 	{
 		DataArray<2> out(resolution);
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_SIMD
 #endif
 		for (std::size_t j = 0; j < resolution[1]; j++)
@@ -1420,7 +1465,7 @@ public:
 	{
 		Complex2DArrayFFT out(resolution, aliased_scaled);
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for OPENMP_SIMD
 #endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
@@ -1451,7 +1496,7 @@ public:
 		double br = i_value.real();
 		double bi = i_value.imag();
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_SIMD
 #endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
@@ -1478,7 +1523,7 @@ public:
 	{
 		Complex2DArrayFFT out(resolution, aliased_scaled);
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_SIMD
 #endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
@@ -1501,7 +1546,7 @@ public:
 	{
 		Complex2DArrayFFT out(resolution, aliased_scaled);
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_SIMD
 #endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
@@ -1527,7 +1572,7 @@ public:
 	{
 		Complex2DArrayFFT out(resolution, aliased_scaled);
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for OPENMP_SIMD
 #endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
@@ -1550,7 +1595,7 @@ public:
 			const Complex2DArrayFFT &i_array_data
 	)
 	{
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for OPENMP_SIMD
 #endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
@@ -1574,7 +1619,7 @@ public:
 	{
 		Complex2DArrayFFT out(this->resolution, aliased_scaled);
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for OPENMP_SIMD
 #endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
@@ -1599,7 +1644,7 @@ public:
 		Complex2DArrayFFT out(this->resolution, aliased_scaled);
 
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for OPENMP_SIMD
 #endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
@@ -1631,7 +1676,7 @@ public:
 
 		Complex2DArrayFFT out(this->resolution, aliased_scaled);
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for OPENMP_SIMD
 #endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
@@ -1655,7 +1700,7 @@ public:
 	{
 		Complex2DArrayFFT out(this->resolution, aliased_scaled);
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for OPENMP_SIMD
 #endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
@@ -1683,7 +1728,7 @@ public:
 	{
 		Complex2DArrayFFT out(this->resolution, aliased_scaled);
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for OPENMP_SIMD
 #endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
@@ -1713,7 +1758,7 @@ public:
 
 		Complex2DArrayFFT out(res, aliased_scaled);
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for OPENMP_SIMD
 #endif
 		for (std::size_t j = 0; j < res[1]; j++)
@@ -1756,7 +1801,7 @@ public:
 
 		Complex2DArrayFFT out(res, aliased_scaled);
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for OPENMP_SIMD
 #endif
 		for (std::size_t j = 0; j < resolution[1]; j++)
@@ -1801,7 +1846,7 @@ public:
 	{
 		Complex2DArrayFFT out(i_array_data.resolution, aliased_scaled);
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for OPENMP_SIMD
 #endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
@@ -1814,6 +1859,32 @@ public:
 	}
 
 
+	/**
+	 * Compute dot product with complex conjugate
+	 */
+	inline
+	std::complex<double> dotProd(
+			const Complex2DArrayFFT &i_array_data
+	)	const
+	{
+		Complex2DArrayFFT out(i_array_data.resolution, aliased_scaled);
+
+		double sum_re = 0;
+		double sum_im = 0;
+
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
+		#pragma omp parallel for OPENMP_SIMD reduction (+:sum_re,sum_im)
+#endif
+		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		{
+			sum_re += data[i]*i_array_data.data[i] - data[i+1]*i_array_data.data[i+1];
+			sum_im += data[i]*i_array_data.data[i+1] + data[i+1]*i_array_data.data[i];
+		}
+
+		return std::complex<double>(sum_re, sum_im);
+	}
+
+
 
 	/**
 	 * return the sum of the absolute values
@@ -1822,7 +1893,7 @@ public:
 	{
 		double sum = 0;
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
@@ -1841,7 +1912,7 @@ public:
 		double sum_re = 0;
 		double sum_im = 0;
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for reduction(+:sum_re,sum_im)
 #endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
@@ -1863,7 +1934,7 @@ public:
 		double sum_re = 0;
 		double sum_im = 0;
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for reduction(+:sum_re,sum_im)
 #endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
@@ -1882,7 +1953,7 @@ public:
 	{
 		double sum = 0;
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
@@ -1901,7 +1972,7 @@ public:
 		double sum = 0;
 		double c = 0;
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
@@ -1933,7 +2004,7 @@ public:
 	{
 		double sum = 0;
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
@@ -1953,7 +2024,7 @@ public:
 	{
 		double max_abs = 0;
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for reduction(max:max_abs)
 #endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
@@ -1973,7 +2044,7 @@ public:
 		double sum = 0;
 		double c = 0;
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
@@ -2002,7 +2073,7 @@ public:
 		double sum = 0.0;
 		double c = 0.0;
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
@@ -2028,7 +2099,7 @@ public:
 	{
 		double sum = 0.0;
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
@@ -2052,7 +2123,7 @@ Complex2DArrayFFT operator*(
 	double br = i_value.real();
 	double bi = i_value.imag();
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 	#pragma omp parallel for OPENMP_SIMD
 #endif
 	for (std::size_t i = 0; i < i_array_data.resolution[0]*i_array_data.resolution[1]*2; i+=2)
@@ -2076,7 +2147,7 @@ Complex2DArrayFFT operator*(
 {
 	Complex2DArrayFFT out(i_array_data.resolution, i_array_data.aliased_scaled);
 
-#if !SWEET_REXI_PARALLEL_SUM
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
 	#pragma omp parallel for OPENMP_SIMD
 #endif
 	for (std::size_t i = 0; i < i_array_data.resolution[0]*i_array_data.resolution[1]*2; i+=2)

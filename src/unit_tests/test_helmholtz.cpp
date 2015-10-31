@@ -215,6 +215,8 @@ int main(int i_argc, char *i_argv[])
 
 			double tau = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 1);
 
+			Operators2D op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_diffs);
+
 			for (std::size_t i = 0; i < rexiSWE.rexi.alpha.size(); i++)
 			{
 				std::complex<double> alpha = -rexiSWE.rexi.alpha[i]/tau;
@@ -330,8 +332,35 @@ int main(int i_argc, char *i_argv[])
 							simVars.misc.verbosity
 						);
 					}
+#if 0
+					else if (helmholtz_solver_id == 5)
+					{
+						if (simVars.misc.verbosity > 1)
+							std::cout << "REXI: Using helmholtz_iterative_smoother_conjugate_gradient_REAL" << std::endl;
+
+						retval = RexiSWE_HelmholtzSolver::smoother_conjugate_gradient_real(	// CONJUGATE GRADIENT ITERATIVE SOLVER
+							kappa,
+							simVars.sim.g * simVars.setup.h0,
+							rhs,
+							h,
+							op,
+							simVars.sim.domain_size,
+							helmholtz_solver_eps,
+							iter_max,
+							-123,
+							simVars.misc.verbosity
+						);
+					}
+#endif
+					else
+					{
+						std::cout << "INVALID SOLVER "<< std::endl;
+						exit(-1);
+					}
 
 				watch.stop();
+
+				h = h*tau;
 
 				double residual = RexiSWE_HelmholtzSolver::helmholtz_iterative_get_residual_rms(
 						kappa,
@@ -345,11 +374,11 @@ int main(int i_argc, char *i_argv[])
 				double error_analytical = (h_cart-h).reduce_rms();
 
 				// compare with numerical solution (has to be close to requested numerical accuracy)
-				double error_numerical = ((h * kappa - simVars.sim.g * simVars.setup.h0 * (h.op_stencil_Re_X_C(scalar_Dx, scalar_Dy, scalar_C))) - rhs).reduce_rms();
+				double error_numerical = ((h * kappa - simVars.sim.g * simVars.setup.h0 * (h.op_stencil_Re_X_C(scalar_Dx, scalar_Dy, scalar_C))) - rhs*tau).reduce_rms();
 
 				std::cout << "    Computed solution with residual " << residual << " in " << watch() << " seconds" << std::endl;
-				std::cout << "                           RMS error (analytical): " << error_analytical << std::endl;
-				std::cout << "                           RMS error (numeric): " << error_numerical << std::endl;
+				std::cout << "                           RMS error on h (analytical): " << error_analytical << std::endl;
+				std::cout << "                           RMS error on residual (numeric): " << error_numerical << std::endl;
 
 				if (!retval)
 				{

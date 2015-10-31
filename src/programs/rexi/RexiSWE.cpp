@@ -5,18 +5,28 @@
  *      Author: Martin Schreiber <schreiberx@gmail.com>
  */
 #include "RexiSWE.hpp"
+#include <cmath>
 
-#ifndef SWEET_REXI_PARALLEL_SUM
-#	define SWEET_REXI_PARALLEL_SUM 1
+#ifndef SWEET_REXI_THREAD_PARALLEL_SUM
+#	define SWEET_REXI_THREAD_PARALLEL_SUM 1
 #endif
 
 /**
  * Compute the REXI sum massively parallel *without* a parallelization with parfor in space
  */
-#if SWEET_REXI_PARALLEL_SUM
+#if SWEET_REXI_THREAD_PARALLEL_SUM
 #	include <omp.h>
 #endif
 
+
+#ifndef SWEET_MPI
+#	define SWEET_MPI 1
+#endif
+
+
+#if SWEET_MPI
+#	include <mpi.h>
+#endif
 
 
 RexiSWE::RexiSWE()	:
@@ -27,16 +37,26 @@ RexiSWE::RexiSWE()	:
 	exit(-1);
 #endif
 
-#if SWEET_REXI_PARALLEL_SUM
-	num_threads = omp_get_max_threads();
-	if (num_threads == 0)
+#if SWEET_REXI_THREAD_PARALLEL_SUM
+	num_local_rexi_par_threads = omp_get_max_threads();
+	if (num_local_rexi_par_threads == 0)
 	{
 		std::cerr << "FATAL ERROR: omp_get_max_threads == 0" << std::endl;
 		exit(-1);
 	}
 #else
-	num_threads = 1;
+	num_local_rexi_par_threads = 1;
 #endif
+
+#if SWEET_MPI
+	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+	MPI_Comm_size(MPI_COMM_WORLD, &num_mpi_ranks);
+#else
+	mpi_rank = 0;
+	num_mpi_ranks = 1;
+#endif
+
+	num_global_threads = num_local_rexi_par_threads * num_mpi_ranks;
 }
 
 
@@ -91,13 +111,13 @@ void RexiSWE::setup(
 	rexi.setup(h, M, i_L, i_rexi_half);
 
 	std::size_t N = rexi.alpha.size();
-	block_size = N/num_threads;
-	if (block_size*num_threads != N)
+	block_size = N/num_global_threads;
+	if (block_size*num_global_threads != N)
 		block_size++;
 
 	cleanup();
 
-	perThreadVars.resize(num_threads);
+	perThreadVars.resize(num_local_rexi_par_threads);
 
 	/**
 	 * We split the setup from the utilization here.
@@ -105,7 +125,7 @@ void RexiSWE::setup(
 	 * This is necessary, since it has to be assured that
 	 * the FFTW plans are initialized before using them.
 	 */
-	if (num_threads == 0)
+	if (num_local_rexi_par_threads == 0)
 	{
 		std::cerr << "FATAL ERROR B: omp_get_max_threads == 0" << std::endl;
 		exit(-1);
@@ -118,12 +138,12 @@ void RexiSWE::setup(
 	}
 
 	// use a kind of serialization of the input to avoid threading conflicts in the ComplexFFT generation
-	for (int j = 0; j < num_threads; j++)
+	for (int j = 0; j < num_local_rexi_par_threads; j++)
 	{
-#if SWEET_REXI_PARALLEL_SUM
+#if SWEET_REXI_THREAD_PARALLEL_SUM
 #	pragma omp parallel for schedule(static,1) default(none) shared(i_resolution,std::cout,j)
 #endif
-		for (int i = 0; i < num_threads; i++)
+		for (int i = 0; i < num_local_rexi_par_threads; i++)
 		{
 			if (i != j)
 				continue;
@@ -151,13 +171,13 @@ void RexiSWE::setup(
 		}
 	}
 
-	if (num_threads == 0)
+	if (num_local_rexi_par_threads == 0)
 	{
 		std::cerr << "FATAL ERROR C: omp_get_max_threads == 0" << std::endl;
 		exit(-1);
 	}
 
-	for (int i = 0; i < num_threads; i++)
+	for (int i = 0; i < num_local_rexi_par_threads; i++)
 	{
 		if (perThreadVars[i]->op_diff_c_x.data == nullptr)
 		{
@@ -166,11 +186,12 @@ void RexiSWE::setup(
 		}
 	}
 
-#if SWEET_REXI_PARALLEL_SUM
+#if SWEET_REXI_THREAD_PARALLEL_SUM
 #	pragma omp parallel for schedule(static,1) default(none)  shared(i_domain_size,i_use_finite_differences, std::cout)
 #endif
-	for (int i = 0; i < num_threads; i++)
+	for (int i = 0; i < num_local_rexi_par_threads; i++)
 	{
+		int global_thread_id = omp_get_thread_num() + mpi_rank*num_local_rexi_par_threads;
 		if (omp_get_thread_num() != i)
 		{
 			// leave this dummy std::cout in it to avoid the intel compiler removing this part
@@ -202,6 +223,76 @@ void RexiSWE::setup(
 }
 
 
+/**
+ * Solve REXI with implicit time stepping
+ *
+ * U_t = L U(0)
+ *
+ * (U(tau) - U(0)) / tau = L U(tau)
+ *
+ * <=> U(tau) - U(0) = L U(tau) tau
+ *
+ * <=> U(tau) - L tau U(tau) = U(0)
+ *
+ * <=> (1 - L tau) U(tau) = U(0)
+ *
+ * <=> (1/tau - L) U(tau) = U(0)/tau
+ */
+bool RexiSWE::run_timestep_implicit_ts(
+	DataArray<2> &io_h,
+	DataArray<2> &io_u,
+	DataArray<2> &io_v,
+
+	Operators2D &op,
+	const SimulationVariables &i_variables
+)
+{
+	Complex2DArrayFFT eta(io_h.resolution);
+
+	Complex2DArrayFFT eta0(io_h.resolution);
+	Complex2DArrayFFT u0(io_u.resolution);
+	Complex2DArrayFFT v0(io_v.resolution);
+
+	eta0.loadRealFromDataArray(io_h);
+	u0.loadRealFromDataArray(io_u);
+	v0.loadRealFromDataArray(io_v);
+
+	eta0 = eta0.toSpec() * (1.0/tau);
+	u0 = u0.toSpec() * (1.0/tau);
+	v0 = v0.toSpec() * (1.0/tau);
+
+	double alpha = 1.0/tau;
+
+	// load kappa (k)
+	double kappa = alpha*alpha + f*f;
+
+	double eta_bar = i_variables.setup.h0;
+	double g = i_variables.sim.g;
+
+	Complex2DArrayFFT &op_diff_c_x = perThreadVars[0]->op_diff_c_x;
+	Complex2DArrayFFT &op_diff_c_y = perThreadVars[0]->op_diff_c_y;
+
+	Complex2DArrayFFT rhs =
+			(kappa/alpha) * eta0
+			- eta_bar*(op_diff_c_x(u0) + op_diff_c_y(v0))
+			- (f*eta_bar/alpha) * (op_diff_c_x(v0) - op_diff_c_y(u0))
+		;
+
+	helmholtz_spectral_solver_spec(kappa, g*eta_bar, rhs, eta, 0);
+
+	Complex2DArrayFFT uh = u0 - g*op_diff_c_x(eta);
+	Complex2DArrayFFT vh = v0 - g*op_diff_c_y(eta);
+
+	Complex2DArrayFFT u1 = alpha/kappa * uh     + f/kappa * vh;
+	Complex2DArrayFFT v1 =    -f/kappa * uh + alpha/kappa * vh;
+
+	eta.toCart().toDataArrays_Real(io_h);
+	u1.toCart().toDataArrays_Real(io_u);
+	v1.toCart().toDataArrays_Real(io_v);
+
+	return true;
+}
+
 
 /**
  * Solve the REXI of \f$ U(t) = exp(L*t) \f$
@@ -210,23 +301,43 @@ void RexiSWE::setup(
  * 		doc/rexi/understanding_rexi.pdf
  * for further information
  */
-void RexiSWE::run_timestep(
+bool RexiSWE::run_timestep(
 	DataArray<2> &io_h,
 	DataArray<2> &io_u,
 	DataArray<2> &io_v,
 
 	Operators2D &op,
-	const SimulationVariables &i_parameters
+	const SimulationVariables &i_parameters,
+	bool i_iterative_solver_always_init_zero_solution
 )
 {
 	typedef std::complex<double> complex;
 
 	std::size_t N = rexi.alpha.size();
 
-#if SWEET_REXI_PARALLEL_SUM
-#	pragma omp parallel for schedule(static,1) default(none) shared(i_parameters, io_h, io_u, io_v, N, std::cout, std::cerr)
+	io_h.requestDataInCartesianSpace();
+	io_u.requestDataInCartesianSpace();
+	io_v.requestDataInCartesianSpace();
+
+
+#if SWEET_MPI
+
+	std::size_t data_size = io_h.resolution[0]*io_h.resolution[1];
+	MPI_Bcast(io_h.array_data_cartesian_space, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+	if (std::isnan(io_h.get(0,0)))
+		return false;
+
+	MPI_Bcast(io_u.array_data_cartesian_space, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	MPI_Bcast(io_v.array_data_cartesian_space, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
 #endif
-	for (int i = 0; i < num_threads; i++)
+
+
+#if SWEET_REXI_THREAD_PARALLEL_SUM
+#	pragma omp parallel for schedule(static,1) default(none) shared(i_parameters, io_h, io_u, io_v, N, std::cout, std::cerr, i_iterative_solver_always_init_zero_solution)
+#endif
+	for (int i = 0; i < num_local_rexi_par_threads; i++)
 	{
 		double eta_bar = i_parameters.setup.h0;
 		double g = i_parameters.sim.g;
@@ -245,6 +356,7 @@ void RexiSWE::run_timestep(
 		Complex2DArrayFFT &v_sum = perThreadVars[i]->v_sum;
 
 		Complex2DArrayFFT &eta = perThreadVars[i]->eta;
+
 
 		/*
 		 * INITIALIZATION - THIS IS THE NON-PARALLELIZABLE PART!
@@ -268,20 +380,22 @@ void RexiSWE::run_timestep(
 			u0 = u0.toSpec()*(1.0/tau);
 			v0 = v0.toSpec()*(1.0/tau);
 
-#if SWEET_REXI_PARALLEL_SUM
-			int thread_id = omp_get_thread_num();
+#if SWEET_REXI_THREAD_PARALLEL_SUM || SWEET_MPI
+			int local_thread_id = omp_get_thread_num();
+			int global_thread_id = local_thread_id + num_local_rexi_par_threads*mpi_rank;
 
-			std::size_t start = block_size*thread_id;
+			std::size_t start = block_size*global_thread_id;
 			std::size_t end = std::min(N, start+block_size);
 #else
 			std::size_t start = 0;
 			std::size_t end = N;
 #endif
 
+
 			// reuse result from previous computations
 			// this significantly speeds up the process
 			// initial guess
-//			eta.setAll(0,0);
+			eta.setAll(0,0);
 
 			/*
 			 * DO SUM IN PARALLEL
@@ -297,7 +411,7 @@ void RexiSWE::run_timestep(
 				complex kappa = alpha*alpha + f*f;
 
 				/*
-				 * TODO: we can even get more performance out of this operations
+/				 * TODO: we can even get more performance out of this operations
 				 * by partly using the real Fourier transformation
 				 */
 				Complex2DArrayFFT rhs =
@@ -336,16 +450,22 @@ void RexiSWE::run_timestep(
 			u0 = u0.toSpec()*(1.0/tau);
 			v0 = v0.toSpec()*(1.0/tau);
 
-#if SWEET_REXI_PARALLEL_SUM
-			int thread_id = omp_get_thread_num();
+#if SWEET_REXI_THREAD_PARALLEL_SUM || SWEET_MPI
 
-			std::size_t start = block_size*thread_id;
+			int local_thread_id = omp_get_thread_num();
+			int global_thread_id = local_thread_id + num_local_rexi_par_threads*mpi_rank;
+
+			std::size_t start = block_size*global_thread_id;
 			std::size_t end = std::min(N, start+block_size);
 
 #else
 			std::size_t start = 0;
 			std::size_t end = N;
 #endif
+
+			// only at the beginning
+			if (!i_iterative_solver_always_init_zero_solution)
+				eta.setAll(0,0);
 
 			/*
 			 * DO SUM IN PARALLEL
@@ -355,11 +475,12 @@ void RexiSWE::run_timestep(
 				// load alpha (a) and scale by inverse of tau
 				// we flip the sign to account for the -L used in exp(\tau (-L))
 				complex alpha = -rexi.alpha[n]/tau;
+//				alpha.imag(-alpha.imag());
 				complex beta = -rexi.beta_re[n];
 
 				// load kappa (k)
 				complex kappa = alpha*alpha + f*f;
-				std::cout << "KAPPA: " << kappa << std::endl;
+//				std::cout << "KAPPA: " << kappa << std::endl;
 
 				/*
 				 * TODO: we can even get more performance out of this operations
@@ -374,7 +495,10 @@ void RexiSWE::run_timestep(
 				rhs = rhs.toCart();
 
 				Complex2DArrayFFT eta(rhs.resolution);
-				eta.setAll(0,0);
+
+				// don't reuse old solution?
+				if (i_iterative_solver_always_init_zero_solution)
+					eta.setAll(0,0);
 
 				int max_iters = 2000;
 
@@ -403,7 +527,7 @@ void RexiSWE::run_timestep(
 
 				case 1:
 					max_iters *= 10;
-					std::cout << "kappa: " << kappa << std::endl;
+//					std::cout << "kappa: " << kappa << std::endl;
 					retval = RexiSWE_HelmholtzSolver::smoother_jacobi(
 							kappa,
 							g*eta_bar,
@@ -499,20 +623,28 @@ void RexiSWE::run_timestep(
 		}
 	}
 
-#if SWEET_REXI_PARALLEL_SUM
+#if SWEET_REXI_THREAD_PARALLEL_SUM
 	io_h.set_all(0);
 	io_u.set_all(0);
 	io_v.set_all(0);
-	for (int n = 0; n < num_threads; n++)
+
+	for (int n = 0; n < num_local_rexi_par_threads; n++)
 	{
+		// sum real-valued elements
+
 		#pragma omp parallel for schedule(static)
 		for (std::size_t i = 0; i < io_h.array_data_cartesian_length; i++)
-		{
 			io_h.array_data_cartesian_space[i] += perThreadVars[n]->h_sum.data[i<<1];
+
+		#pragma omp parallel for schedule(static)
+		for (std::size_t i = 0; i < io_h.array_data_cartesian_length; i++)
 			io_u.array_data_cartesian_space[i] += perThreadVars[n]->u_sum.data[i<<1];
+
+		#pragma omp parallel for schedule(static)
+		for (std::size_t i = 0; i < io_h.array_data_cartesian_length; i++)
 			io_v.array_data_cartesian_space[i] += perThreadVars[n]->v_sum.data[i<<1];
-		}
 	}
+
 #else
 
 	io_h = perThreadVars[0]->h_sum.getRealWithDataArray();
@@ -520,6 +652,28 @@ void RexiSWE::run_timestep(
 	io_v = perThreadVars[0]->v_sum.getRealWithDataArray();
 
 #endif
+
+#if SWEET_MPI
+	DataArray<2> tmp(io_h.resolution);
+
+	int retval = MPI_Reduce(io_h.array_data_cartesian_space, tmp.array_data_cartesian_space, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	if (retval != MPI_SUCCESS)
+	{
+		std::cerr << "MPI FAILED!" << std::endl;
+		exit(1);
+	}
+
+	std::swap(io_h.array_data_cartesian_space, tmp.array_data_cartesian_space);
+
+	MPI_Reduce(io_u.array_data_cartesian_space, tmp.array_data_cartesian_space, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	std::swap(io_u.array_data_cartesian_space, tmp.array_data_cartesian_space);
+
+	MPI_Reduce(io_v.array_data_cartesian_space, tmp.array_data_cartesian_space, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	std::swap(io_v.array_data_cartesian_space, tmp.array_data_cartesian_space);
+
+#endif
+
+	return true;
 }
 
 
@@ -829,3 +983,5 @@ void RexiSWE::run_timestep_direct_solution(
 	io_u = o_u.toCart().getRealWithDataArray();
 	io_v = o_v.toCart().getRealWithDataArray();
 }
+
+

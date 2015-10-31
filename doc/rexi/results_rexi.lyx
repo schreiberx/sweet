@@ -131,6 +131,19 @@ For sake of reproducibility, the benchmarks are given by (benchmark: [directory
  name]).
 \end_layout
 
+\begin_layout Section*
+Table of contents
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset toc
+LatexCommand tableofcontents
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Section
 Benchmark scenario description
 \end_layout
@@ -2892,6 +2905,16 @@ The number of poles for the REXI approximation depends on the frequencies
 \end_layout
 
 \begin_layout Section
+Comparison with Terry's paper
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+[TODO] These results match with Terrys paper.
+\end_layout
+
+\begin_layout Section
 Performance benchmarks and comparison to standard time stepping schemes
 \end_layout
 
@@ -3036,6 +3059,14 @@ REXI standard: The first one is the default one which parallelizes over
 \begin_layout Itemize
 REXI PARSUM: The second one uses a parallelization over the sum and computes
  each term in the sum using only a single core.
+\end_layout
+
+\begin_layout Standard
+We use a resolution of 
+\begin_inset Formula $256^{2}$
+\end_inset
+
+ for these performance studies.
 \end_layout
 
 \begin_layout Standard
@@ -3186,6 +3217,16 @@ Summary
 
 \begin_layout Standard
 [TODO]
+\end_layout
+
+\begin_layout Section
+Reproducibility
+\end_layout
+
+\begin_layout Standard
+There are many variants of implementations possible.
+ To assure a reproducibility of the presented results, we refer to the SWEET
+ development with which we generated these results.
 \end_layout
 
 \begin_layout Section

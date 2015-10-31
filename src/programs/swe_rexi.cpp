@@ -13,6 +13,14 @@
 #include <stdio.h>
 #include "rexi/RexiSWE.hpp"
 
+#ifndef SWEET_MPI
+#	define SWEET_MPI 1
+#endif
+
+#if SWEET_MPI
+#	include <mpi.h>
+#endif
+
 SimulationVariables simVars;
 
 double param_rexi_h;
@@ -25,6 +33,7 @@ bool param_use_staggering;
 bool param_rexi_use_finite_differences_for_complex_array;
 int param_rexi_helmholtz_solver_id;
 double param_rexi_helmholtz_solver_eps;
+bool param_rexi_zero_before_solving;
 
 double param_initial_freq_x_mul;
 double param_initial_freq_y_mul;
@@ -407,7 +416,7 @@ public:
 		t0_prog_v = prog_v;
 
 
-		if (param_timestepping_mode == 1)
+		if (param_timestepping_mode == 1 || param_timestepping_mode == 3)
 		{
 			if (simVars.misc.verbosity > 0)
 			{
@@ -910,7 +919,8 @@ public:
 			rexiSWE.run_timestep(
 					prog_h, prog_u, prog_v,
 					op,
-					simVars
+					simVars,
+					param_rexi_zero_before_solving
 			);
 		}
 		else if (param_timestepping_mode == 2)
@@ -920,6 +930,17 @@ public:
 			rexiSWE.run_timestep_direct_solution(
 					prog_h, prog_u, prog_v,
 					-simVars.sim.CFL,
+					op,
+					simVars
+			);
+		}
+		else if (param_timestepping_mode == 3)
+		{
+			// Analytical solution
+			o_dt = -simVars.sim.CFL;
+			rexiSWE.run_timestep_implicit_ts(
+					prog_h, prog_u, prog_v,
+//					-simVars.sim.CFL,
 					op,
 					simVars
 			);
@@ -1246,6 +1267,10 @@ public:
 
 int main(int i_argc, char *i_argv[])
 {
+#if SWEET_MPI
+	MPI_Init(&i_argc, &i_argv);
+#endif
+
 	NUMABlockAlloc::setup();
 
 	const char *bogus_var_names[] = {
@@ -1262,6 +1287,7 @@ int main(int i_argc, char *i_argv[])
 			"initial-freq-x-mul",
 			"initial-freq-y-mul",
 			"boundary-id",
+			"rexi-zero-before-solving",
 			nullptr
 	};
 
@@ -1281,6 +1307,7 @@ int main(int i_argc, char *i_argv[])
 	simVars.bogus.var[11] = -1;
 
 	simVars.bogus.var[12] = 0;
+	simVars.bogus.var[13] = 1;
 
 
 
@@ -1314,6 +1341,8 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "                              0: no boundary" << std::endl;
 		std::cout << "                              1: centered box" << std::endl;
 		std::cout << std::endl;
+		std::cout << "	--rexi-zero-before-solving=[0/1]	Zero the solution for the iterative solver" << std::endl;
+		std::cout << std::endl;
 		return -1;
 	}
 
@@ -1333,101 +1362,161 @@ int main(int i_argc, char *i_argv[])
 
 	param_boundary_id = simVars.bogus.var[12];
 
+	param_rexi_zero_before_solving = simVars.bogus.var[13];
+
 	SimulationSWE *simulationSWE = new SimulationSWE;
 
 	std::ostringstream buf;
 	buf << std::setprecision(14);
 
-#if SWEET_GUI
-	if (simVars.misc.gui_enabled)
+#if SWEET_MPI
+	int rank;
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+	// only start simulation and time stepping for first rank
+	if (rank == 0)
+#endif
 	{
-		VisSweet<SimulationSWE> visSweet(simulationSWE);
-	}
-	else
+#if SWEET_GUI
+		if (simVars.misc.gui_enabled)
+		{
+			VisSweet<SimulationSWE> visSweet(simulationSWE);
+		}
+		else
 #endif
 
-	{
-		simulationSWE->reset();
-
-		Stopwatch time;
-		time.reset();
-
-		double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
-
-		if (simVars.misc.verbosity > 1)
 		{
-			simulationSWE->update_diagnostics();
-			diagnostics_energy_start = simVars.diag.total_energy;
-			diagnostics_mass_start = simVars.diag.total_mass;
-			diagnostics_potential_entrophy_start = simVars.diag.total_potential_enstrophy;
-		}
+			simulationSWE->reset();
 
-		while(true)
-		{
+			Stopwatch time;
+			time.reset();
+
+			double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
+
 			if (simVars.misc.verbosity > 1)
 			{
-				simulationSWE->timestep_output(buf);
-
-				std::string output = buf.str();
-				buf.str("");
-
-				std::cout << output;
-
-				if (simVars.misc.verbosity > 2)
-					std::cerr << output;
+				simulationSWE->update_diagnostics();
+				diagnostics_energy_start = simVars.diag.total_energy;
+				diagnostics_mass_start = simVars.diag.total_mass;
+				diagnostics_potential_entrophy_start = simVars.diag.total_potential_enstrophy;
 			}
 
-			if (simulationSWE->should_quit())
-				break;
-
-			simulationSWE->run_timestep();
-
-			if (simulationSWE->instability_detected())
+			while(true)
 			{
-				std::cout << "INSTABILITY DETECTED" << std::endl;
-				break;
+				if (simVars.misc.verbosity > 1)
+				{
+					simulationSWE->timestep_output(buf);
+
+					std::string output = buf.str();
+					buf.str("");
+
+					std::cout << output;
+
+					if (simVars.misc.verbosity > 2)
+						std::cerr << output;
+				}
+
+				if (simulationSWE->should_quit())
+					break;
+
+				simulationSWE->run_timestep();
+
+				if (simulationSWE->instability_detected())
+				{
+					std::cout << "INSTABILITY DETECTED" << std::endl;
+					break;
+				}
+			}
+
+			time.stop();
+
+			double seconds = time();
+
+			std::cout << "Simulation time (seconds): " << seconds << std::endl;
+			std::cout << "Number of time steps: " << simVars.timecontrol.current_timestep_nr << std::endl;
+			std::cout << "Time per time step: " << seconds/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
+			std::cout << "Last time step size: " << simVars.timecontrol.current_timestep_size << std::endl;
+			std::cout << "REXI alpha.size(): " << simulationSWE->rexiSWE.rexi.alpha.size() << std::endl;
+
+			if (simVars.misc.verbosity > 1)
+			{
+				std::cout << "DIAGNOSTICS ENERGY DIFF:\t" << std::abs((simVars.diag.total_energy-diagnostics_energy_start)/diagnostics_energy_start) << std::endl;
+				std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) << std::endl;
+				std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs((simVars.diag.total_potential_enstrophy-diagnostics_potential_entrophy_start)/diagnostics_potential_entrophy_start) << std::endl;
+
+				if (simVars.setup.scenario == 2 || simVars.setup.scenario == 3 || simVars.setup.scenario == 4)
+				{
+					std::cout << "DIAGNOSTICS BENCHMARK DIFF H:\t" << simulationSWE->benchmark_diff_h << std::endl;
+					std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationSWE->benchmark_diff_u << std::endl;
+					std::cout << "DIAGNOSTICS BENCHMARK DIFF V:\t" << simulationSWE->benchmark_diff_v << std::endl;
+				}
+			}
+
+			if (param_compute_error)
+			{
+				simulationSWE->compute_errors();
+
+				std::cout << "DIAGNOSTICS ANALYTICAL RMS H:\t" << simulationSWE->benchmark_analytical_error_rms_h << std::endl;
+				std::cout << "DIAGNOSTICS ANALYTICAL RMS U:\t" << simulationSWE->benchmark_analytical_error_rms_u << std::endl;
+				std::cout << "DIAGNOSTICS ANALYTICAL RMS V:\t" << simulationSWE->benchmark_analytical_error_rms_v << std::endl;
+
+				std::cout << "DIAGNOSTICS ANALYTICAL MAXABS H:\t" << simulationSWE->benchmark_analytical_error_maxabs_h << std::endl;
+				std::cout << "DIAGNOSTICS ANALYTICAL MAXABS U:\t" << simulationSWE->benchmark_analytical_error_maxabs_u << std::endl;
+				std::cout << "DIAGNOSTICS ANALYTICAL MAXABS V:\t" << simulationSWE->benchmark_analytical_error_maxabs_v << std::endl;
 			}
 		}
 
-		time.stop();
+		delete simulationSWE;
+	}
+#if SWEET_MPI
+	else
+	{
+		RexiSWE rexiSWE;
 
-		double seconds = time();
+		/*
+		 * Setup our little dog REXI
+		 */
+		rexiSWE.setup(
+				-simVars.sim.CFL,
+				param_rexi_h,
+				param_rexi_m,
+				param_rexi_l,
+				simVars.sim.f0,
+				simVars.disc.res,
+				simVars.sim.domain_size,
+				param_rexi_half,
+				param_rexi_use_finite_differences_for_complex_array,
+				param_rexi_helmholtz_solver_id,
+				param_rexi_helmholtz_solver_eps
+			);
 
-		std::cout << "Simulation time (seconds): " << seconds << std::endl;
-		std::cout << "Number of time steps: " << simVars.timecontrol.current_timestep_nr << std::endl;
-		std::cout << "Time per time step: " << seconds/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
-		std::cout << "Last time step size: " << simVars.timecontrol.current_timestep_size << std::endl;
-		std::cout << "REXI alpha.size(): " << simulationSWE->rexiSWE.rexi.alpha.size() << std::endl;
+		bool run = true;
 
-		if (simVars.misc.verbosity > 1)
+		DataArray<2> prog_h(simVars.disc.res);
+		DataArray<2> prog_u(simVars.disc.res);
+		DataArray<2> prog_v(simVars.disc.res);
+
+		Operators2D op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_diffs);
+
+		while (run)
 		{
-			std::cout << "DIAGNOSTICS ENERGY DIFF:\t" << std::abs((simVars.diag.total_energy-diagnostics_energy_start)/diagnostics_energy_start) << std::endl;
-			std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) << std::endl;
-			std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs((simVars.diag.total_potential_enstrophy-diagnostics_potential_entrophy_start)/diagnostics_potential_entrophy_start) << std::endl;
-
-			if (simVars.setup.scenario == 2 || simVars.setup.scenario == 3 || simVars.setup.scenario == 4)
-			{
-				std::cout << "DIAGNOSTICS BENCHMARK DIFF H:\t" << simulationSWE->benchmark_diff_h << std::endl;
-				std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationSWE->benchmark_diff_u << std::endl;
-				std::cout << "DIAGNOSTICS BENCHMARK DIFF V:\t" << simulationSWE->benchmark_diff_v << std::endl;
-			}
-		}
-
-		if (param_compute_error)
-		{
-			simulationSWE->compute_errors();
-
-			std::cout << "DIAGNOSTICS ANALYTICAL RMS H:\t" << simulationSWE->benchmark_analytical_error_rms_h << std::endl;
-			std::cout << "DIAGNOSTICS ANALYTICAL RMS U:\t" << simulationSWE->benchmark_analytical_error_rms_u << std::endl;
-			std::cout << "DIAGNOSTICS ANALYTICAL RMS V:\t" << simulationSWE->benchmark_analytical_error_rms_v << std::endl;
-
-			std::cout << "DIAGNOSTICS ANALYTICAL MAXABS H:\t" << simulationSWE->benchmark_analytical_error_maxabs_h << std::endl;
-			std::cout << "DIAGNOSTICS ANALYTICAL MAXABS U:\t" << simulationSWE->benchmark_analytical_error_maxabs_u << std::endl;
-			std::cout << "DIAGNOSTICS ANALYTICAL MAXABS V:\t" << simulationSWE->benchmark_analytical_error_maxabs_v << std::endl;
+			// REXI time stepping
+			run = rexiSWE.run_timestep(
+					prog_h, prog_u, prog_v,
+					op,
+					simVars,
+					param_rexi_zero_before_solving
+			);
 		}
 	}
+#endif
 
-	delete simulationSWE;
+#if SWEET_MPI
+	if (rank == 0)
+		RexiSWE::MPI_quitWorkers(simVars.disc.res);
+
+	MPI_Finalize();
+#endif
 
 	return 0;
 }

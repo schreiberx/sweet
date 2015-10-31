@@ -105,61 +105,6 @@ public:
 
 			if (residual < i_error_threshold)
 				return true;
-#if 0
-			if (i == 1778)
-			{
-				Complex2DArrayFFT asdf = io_x-tmp;
-
-				std::cout << std::setprecision(4);
-				std::cout << tmp << std::endl;
-				std::cout << std::endl;
-				std::cout << io_x << std::endl;
-				std::cout << std::endl;
-				std::cout << asdf << std::endl;
-				std::cout << std::endl;
-
-				residual = ((tmp*i_kappa - i_gh0*tmp.op_stencil_Re_X_C(scalar_Dx, scalar_Dy, scalar_C)) - i_rhs).reduce_rms();
-				std::cout << "RESIDUAL pre: " << residual << std::endl;
-
-				residual = ((io_x*i_kappa - i_gh0*io_x.op_stencil_Re_X_C(scalar_Dx, scalar_Dy, scalar_C)) - i_rhs).reduce_rms();
-				std::cout << "RESIDUAL: " << residual << std::endl;
-
-				std::cout << (io_x*i_kappa - i_gh0*io_x.op_stencil_Re_X_C(scalar_Dx, scalar_Dy, scalar_C) - i_rhs) << std::endl;
-
-				Complex2DArrayFFT k = (io_x*i_kappa - i_gh0*io_x.op_stencil_Re_X_C(scalar_Dx, scalar_Dy, scalar_C) - i_rhs);
-
-				double t = 0;
-				for (int j = 0; j < io_x.resolution[1]; j++)
-					for (int i = 0; i < io_x.resolution[0]; i++)
-						t += k.getRe(j, i)*k.getRe(j, i);
-
-				double l = 0;
-				for (int j = 0; j < io_x.resolution[1]; j++)
-					for (int i = 0; i < io_x.resolution[0]; i++)
-						l += k.getIm(j, i)*k.getIm(j, i);
-
-				double u = 0;
-				for (int j = 0; j < io_x.resolution[1]; j++)
-					for (int i = 0; i < io_x.resolution[0]; i++)
-						u += k.getRe(j, i)*k.getRe(j, i) + k.getIm(j, i)*k.getIm(j, i);
-
-				std::cout << t << std::endl;
-				std::cout << l << std::endl;
-				std::cout << u << std::endl;
-
-				double sum = std::sqrt(u/double(k.resolution[0]*k.resolution[1]));
-				std::cout << sum << std::endl;
-				std::cout << k.reduce_rms_quad() << std::endl;
-
-				for (int j = 0; j < io_x.resolution[1]; j++)
-					for (int i = 0; i < io_x.resolution[0]; i++)
-						if (std::abs(asdf.get(j, i)) > 1e-7)
-							std::cout << j << ", " << i << ", " << asdf.get(j, i) << std::endl;
-
-				std::cout << std::endl;
-				exit(-1);
-			}
-#endif
 		}
 
 		return false;
@@ -199,6 +144,12 @@ public:
 		double scalar_Dy = 1.0*(inv_helm_h[1]*inv_helm_h[1]);
 		double scalar_C = -(2.0*(inv_helm_h[0]*inv_helm_h[0]) + 2.0*(inv_helm_h[1]*inv_helm_h[1]));
 
+		if (	std::abs(scalar_C+i_kappa.real()) < std::abs(i_kappa.imag())	)
+		{
+			std::cerr << "ERROR: Diagonal dominance for CG solver not assured (TODO: check if this is required for CG) - stopping!" << std::endl;
+			exit(-1);
+		}
+
 #define A(x)	(x*i_kappa - x.op_stencil_Re_X_C(scalar_Dx, scalar_Dy, scalar_C))
 
 #if 0
@@ -219,24 +170,27 @@ public:
 		Complex2DArrayFFT r = b - A(x);
 		Complex2DArrayFFT w = Ci(r);
 		Complex2DArrayFFT v = Ci(w);
-		double alpha = (w*w).reduce_sum_real_imag();
+
+		// TODO: should we maybe use the conjugate dot product?
+		std::complex<double> alpha = w.dotProd(w);
+
+		if (i_verbosity > 3)
+			std::cout << "RESIDUAL: " << r.reduce_rms() << std::endl;
+
 
 		int i = 0;
 		for (i = 0; i < i_max_iters; i++)
 		{
-			if (i_verbosity > 3)
-				std::cout << "RESIDUAL: " << (b-A(x)).reduce_rms() << std::endl;
-
 //			if (v.reduce_rms() < i_error_threshold)
 //				return true;
 
 			Complex2DArrayFFT u = A(v);
-			double t = alpha / (v*u).reduce_sum_real_imag();
+			std::complex<double> t = alpha / (v.dotProd(u));
 
 			x = x + t*v;
 			r = r - t*u;
 			w = Ci(r);
-			double beta = (w*w).reduce_sum_real_imag();
+			std::complex<double> beta = w.dotProd(w);
 
 			if (std::abs(beta) < i_error_threshold)
 			{
@@ -248,7 +202,10 @@ public:
 				}
 			}
 
-			double s = beta / alpha;
+			if (i_verbosity > 3)
+				std::cout << "RESIDUAL: " << r.reduce_rms() << std::endl;
+
+			std::complex<double> s = beta / alpha;
 			v = Ci(w) + v*s;
 
 			alpha = beta;
@@ -259,6 +216,99 @@ public:
 
 		return false;
 	}
+
+
+
+#if 0
+	/**
+	 * Solve complex-valued Helmholtz problem with CG solver
+	 * It's not really a smoother, but it's nice to use the same interfaces as for the smoothers ;-).
+	 *
+	 * (kappa - gh*D2) X = B
+	 *
+	 * See "Numerical Analysis", page 474
+	 */
+	static
+	bool smoother_conjugate_gradient_real(
+			std::complex<double> i_kappa,
+			double i_gh0,
+			const Complex2DArrayFFT &i_rhs,
+			Complex2DArrayFFT &io_x,
+			Operators2D &op,
+			double *i_domain_size,
+			double i_error_threshold = 0.000001,
+			int i_max_iters = 999999999,
+			double i_omega = -1,
+			int i_verbosity = 0
+	)
+	{
+		DataArray<2> b_re = i_rhs.toDataArrays_Real();
+		DataArray<2> b_im = i_rhs.toDataArrays_Imag();
+
+		DataArray<2> x_re = io_x.toDataArrays_Real();
+		DataArray<2> x_im = io_x.toDataArrays_Imag();
+
+#define A_re(x_re, x_im)	((x_re)*i_kappa.real() - (x_im)*(i_kappa.imag()) - i_gh0*(op.diff2_c_x(x_re) + op.diff2_c_y(x_re)))
+#define A_im(x_re, x_im)	((x_re)*i_kappa.imag() + (x_im)*(i_kappa.real()) - i_gh0*(op.diff2_c_x(x_im) + op.diff2_c_y(x_im)))
+
+		DataArray<2> r_re = b_re - A_re(x_re, x_im);
+		DataArray<2> r_im = b_im - A_im(x_re, x_im);
+
+		DataArray<2> v_re = r_re;
+		DataArray<2> v_im = r_im;
+		double alpha = (v_re*v_re).reduce_sum() + (v_im*v_im).reduce_sum();
+
+		int i = 0;
+		for (i = 0; i < i_max_iters; i++)
+		{
+			if (i_verbosity > 3)
+			{
+				DataArray<2> r_re = b_re - A_re(x_re, x_im);
+				DataArray<2> r_im = b_im - A_im(x_re, x_im);
+
+				std::cout << "RESIDUAL: " << std::sqrt(((r_re*r_re).reduce_sum() + (r_im*r_im).reduce_sum())/(double)(x_re.resolution[0]*x_re.resolution[1])) << std::endl;
+			}
+
+//			if (v.reduce_rms() < i_error_threshold)
+//				return true;
+
+			DataArray<2> u_re = A_re(v_re, v_im);
+			DataArray<2> u_im = A_im(v_re, v_im);
+			double t = alpha / ((v_re*u_re).reduce_sum() + (v_im*u_im).reduce_sum());
+
+			x_re = x_re + t*v_re;
+			x_im = x_im + t*v_im;
+
+			r_re = r_re - t*u_re;
+			r_im = r_im - t*u_im;
+
+			double beta = (r_re*r_re).reduce_sum() + (r_im*r_im).reduce_sum();
+
+			if (std::abs(beta) < i_error_threshold)
+			{
+				double res = std::sqrt(beta/(double)(x_re.resolution[0]*x_re.resolution[1]));
+				if (res < i_error_threshold)
+				{
+					if (i_verbosity > 0)
+						std::cout << "FIN RESIDUAL: " << res << " after " << i << " iterations" << std::endl;
+
+					io_x.loadRealAndImagFromDataArrays(x_re, x_im);
+					return true;
+				}
+			}
+
+			double s = beta / alpha;
+			v_re = r_re + v_re*s;
+			v_im = r_im + v_im*s;
+
+			alpha = beta;
+		}
+
+#undef A
+
+		return false;
+	}
+#endif
 
 
 
