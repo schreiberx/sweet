@@ -663,8 +663,9 @@ if hostname[0:4] == "mac-":
 # also include the 'src' directory to search for dependencies
 env.Append(CPPPATH = ['.', 'src/', 'src/include'])
 
-# MAC OSX local software hack
+# local software directories
 env.Append(LINKFLAGS=' -Llocal_software/local/lib ')
+env.Append(LINKFLAGS=' -Ilocal_software/local/include ')
 
 
 ######################
