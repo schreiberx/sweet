@@ -133,7 +133,8 @@ public:
 		bool top_bottom_zero_v_velocity = false;
 
 		/// domain size
-		double domain_size[2] = {1000.0*1000.0, 1000.0*1000.0};
+//		double domain_size[2] = {1000.0*1000.0, 1000.0*1000.0};
+		double domain_size[2] = {1.0, 1.0};
 	} sim;
 
 
@@ -544,6 +545,7 @@ public:
 		 * This is not related to the simulation variables but makes it very convenient
 		 * to specify it in all other programs.
 		 */
+
 		std::cout << std::setprecision(misc.output_floating_point_precision);
 		std::cerr << std::setprecision(misc.output_floating_point_precision);
 

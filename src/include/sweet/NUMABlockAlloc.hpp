@@ -30,7 +30,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <omp.h>
+
+#if SWEET_THREADING
+#	include <omp.h>
+#endif
 #include <cstdlib>
 #include <cassert>
 #include <iostream>
@@ -144,12 +147,14 @@ public:
 private:
 	void p_setup()
 	{
+#if SWEET_THREADING
 		if (omp_in_parallel())
 		{
 			std::cerr << "ERROR: NUMAMemManager may not be initialized within parallel region!" << std::endl;
 			std::cerr << "       Call NUMAMemManager::setup() at program start" << std::endl;
 			exit(1);
 		}
+#endif
 
 		if (setup_done)
 			return;
@@ -192,11 +197,15 @@ private:
 		getThreadLocalDomainIdRef() = numa_node_of_cpu(cpuid);
 
 
+#if SWEET_THREADING
 #pragma omp parallel
 		{
 			int cpuid = sched_getcpu();
 			getThreadLocalDomainIdRef() = numa_node_of_cpu(cpuid);
 		}
+#else
+		getThreadLocalDomainIdRef() = 0;
+#endif
 
 #elif NUMA_BLOCK_ALLOCATOR_TYPE == 2
 
@@ -206,16 +215,25 @@ private:
 		/*
 		 * Thread granularity, use this also per default
 		 */
+#if SWEET_THREADING
 		num_alloc_domains = omp_get_max_threads();
+#else
+		num_alloc_domains = 1;
+#endif
 
 		if (verbosity > 0)
 			std::cout << "num_alloc_domains: " << num_alloc_domains << std::endl;
 
 		// set NUMA id in case that master thread has a different id than the first thread
+#if SWEET_THREADING
 		getThreadLocalDomainIdRef() = omp_get_thread_num();
 
 #pragma omp parallel
 		getThreadLocalDomainIdRef() = omp_get_thread_num();
+
+#else
+		getThreadLocalDomainIdRef() = 0;
+#endif
 
 #else
 
@@ -223,6 +241,7 @@ private:
 
 #endif
 
+#if SWEET_THREADING
 		if (verbosity > 0)
 		{
 			#pragma omp parallel
@@ -233,6 +252,7 @@ private:
 				}
 			}
 		}
+#endif
 
 		domain_block_groups.resize(num_alloc_domains);
 
@@ -351,7 +371,10 @@ public:
 		// dummy call here to initialize this class as part of the singleton out of critical region
 		getSingletonRef();
 
+#if SWEET_THREADING
 #	pragma omp critical
+#endif
+
 #endif
 		{
 			std::vector<void*>& block_list = getBlocksSameSize(i_size);
@@ -404,7 +427,9 @@ public:
 #else
 
 	#if NUMA_BLOCK_ALLOCATOR_TYPE == 1
+#if SWEET_THREADING
 	#pragma omp critical
+#endif
 	#endif
 		{
 			std::vector<void*>& block_list = getBlocksSameSize(i_size);

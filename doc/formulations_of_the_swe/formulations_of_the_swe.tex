@@ -1,0 +1,296 @@
+%% LyX 2.1.4 created this file.  For more info, see http://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+\documentclass[english]{article}
+\usepackage[T1]{fontenc}
+\usepackage[latin9]{inputenc}
+
+\makeatletter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
+%% Because html converters don't know tabularnewline
+\providecommand{\tabularnewline}{\\}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+\usepackage{babel}
+
+\makeatother
+
+\usepackage{babel}
+\begin{document}
+
+\title{Formulations of the shallow-water equations}
+
+
+\author{Martin Schreiber <M.Schreiber@exeter.ac.uk>\\
+ Pedro S. Peixoto <pedrosp@ime.usp.br>}
+
+\maketitle
+There are a variety of different formulations for the shallow-water
+equations available. This document serves as an overview of these
+different formulations and how they are approximated.
+
+
+\section{Overview}
+
+We will adopt the following terminology.\\
+ %
+\begin{tabular}{|c|l|}
+\hline 
+\textbf{Symbol}  & \textbf{Description}\tabularnewline
+\hline 
+\hline 
+$\eta$  & Fluid layer depth/height\tabularnewline
+\hline 
+$\bar{\eta}$  & Mean water depth\tabularnewline
+\hline 
+$\vec{u}$  & 2D velocity \tabularnewline
+\hline 
+$u$  & Velocity in x direction\tabularnewline
+\hline 
+$v$  & Velocity in y direction\tabularnewline
+\hline 
+$\eta u$  & Momentum in x direction\tabularnewline
+\hline 
+$\eta v$  & Momentum in y direction\tabularnewline
+\hline 
+$U$  & Vector with $(\eta,u,v)$\tabularnewline
+\hline 
+$\zeta_{R}$  & Relative vorticity\tabularnewline
+\hline 
+$\zeta_{A}$  & Absolute vorticity ($\zeta_{R}+f$)\tabularnewline
+\hline 
+$q$  & Potential vorticity ($\frac{\zeta_{A}}{\eta}$)\tabularnewline
+\hline 
+$g$  & Gravity\tabularnewline
+\hline 
+$\Phi$  & Bernoulli potential\tabularnewline
+\hline 
+$f$  & Coriolis force $2\Omega sin(\phi)$\tabularnewline
+\hline 
+$\vec{k}$  & Vector pointing outward of the plane\tabularnewline
+\hline 
+\end{tabular}\\
+
+
+We will also assume no bottom topography (orography/bathymetry), so
+the fluid layer height $\eta$ is the total height. Most of what is
+described here is as well described in \cite{Williamson1992}.
+
+
+\section{Flux formulation (momentum, conservative formulation)}
+
+The conservative formulation uses the momentum $(\eta u,\,\eta v)$
+as the conserved quantities. In this form, the equations are given
+as
+
+\[
+\eta_{t}+(\eta u)_{x}+(\eta v)_{y}=0
+\]
+
+
+\[
+(\eta u)_{t}+(\eta u^{2}+\frac{1}{2}g\eta^{2})_{x}+(\eta uv)_{y}-fv=0
+\]
+
+
+\[
+(\eta v)_{t}+(\eta v^{2}+\frac{1}{2}g\eta^{2})_{y}+(\eta uv)_{x}+fu=0
+\]
+Since this formulation is conserving the momentum, it is also referred
+as the conservative form.
+
+In vector notation we have it as, 
+\[
+\eta_{t}+\nabla\cdot(\eta\vec{u})=0
+\]
+\[
+(\eta\vec{u})_{t}+\nabla\cdot(\vec{u}\eta\vec{u})+f\vec{k}\times(\eta\vec{v})+gh\nabla\eta=0
+\]
+Please note, that this formulation contains several non-linear terms.
+
+
+\section{Advective formulation (non-conservative formulation)}
+
+This is a formulation which makes it more challenging to get conservative
+properties such as for the momentum, hence it is also called non-conservative
+formulation. By using the produce rule, we can reformulate the equations
+above to make the velocities conserved quantities. Here, we first
+apply the produce rule to $(\eta u)_{t}$
+
+\[
+\eta u_{t}+\eta_{t}u+\eta_{x}u^{2}+2\eta uu_{x}+g\eta\eta_{x}+(\eta u)_{y}v+\eta uv_{y}-fv=0
+\]
+
+
+\[
+\eta u_{t}+(-(\eta u)_{x}-(\eta v)_{y})u+\eta_{x}u^{2}+2\eta uu_{x}+g\eta\eta_{x}+(\eta v)_{y}u+\eta vu_{y}-fv=0
+\]
+
+
+\[
+\eta u_{t}+(-(\eta u)_{x})u+\eta_{x}u^{2}+2\eta uu_{x}+g\eta\eta_{x}+\eta vu_{y}-fv=0
+\]
+
+
+\[
+\eta u_{t}-\eta_{x}uu-\eta uu{}_{x}+\eta_{x}u^{2}+2\eta uu_{x}+g\eta\eta_{x}+\eta vu_{y}-fv=0
+\]
+
+
+\[
+u_{t}+g\eta_{x}+uu_{x}+vu_{y}-fv=0
+\]
+Altogether, we get the following non-conservative formulation:
+
+\[
+\eta_{t}+u\eta_{x}+v\eta_{y}+\eta u_{x}+\eta v_{y}=0
+\]
+\[
+u_{t}+uu_{x}+vu_{y}-fv+g\eta_{x}=0
+\]
+\[
+v_{t}+uv_{x}+vv_{y}+fu+g\eta_{y}=0
+\]
+We can also split these equations in linear and non-linear parts
+\[
+U_{t}=L(U)+N(U)
+\]
+
+
+\[
+L(U):=\left(\begin{array}{ccc}
+\\
+-g\partial_{x} &  & f\\
+-g\partial_{y} & -f
+\end{array}\right)U
+\]
+
+
+\[
+N(U):=\left(\begin{array}{c}
+-(\eta u)_{x}-(\eta v)_{y}\\
+-uu_{x}-vu_{y}\\
+-uv_{x}-vv_{y}
+\end{array}\right)
+\]
+with $U:=(\eta,u,v)^{T}$. Defining the material derivative as 
+\[
+\frac{d}{dt}:=\frac{\partial}{\partial t}+\vec{u}\cdot\nabla
+\]
+we may write the equations in vector notation, 
+\[
+\frac{d\eta}{dt}+\eta\nabla\cdot\vec{u}=0,
+\]
+
+
+\[
+\frac{d\vec{u}}{dt}+f\vec{k}\times\vec{v}+g\nabla\eta=0.
+\]
+
+
+
+\section{Vector invariant formulation (vorticity formulation)}
+
+The vector invariant formulation is used in models such as NEMO, GungHo,
+MPAS, etc. The discretization of it strongly differs between the different
+models.
+
+For certain reasons such as energy and enstropy conservation, the
+equations are reformulated and split into the vorticity and the Bernoulli
+potential $\Phi$ component, defined as 
+\[
+\Phi:=g\eta+\frac{u^{2}+v^{2}}{2}=g\eta+\frac{\vec{u}\cdot\vec{u}}{2}.
+\]
+
+
+We first add and subtract an artificial term $vv_{x}$
+
+\[
+u_{t}-vv_{x}+g\eta_{x}+uu_{x}+vv_{x}+vu_{y}-fv=0,
+\]
+which leads to,
+
+\[
+u_{t}-vv_{x}+vu_{y}+(g\eta+\frac{u^{2}+v^{2}}{2})_{x}-fv=0,
+\]
+with $\zeta_{A}:=v_{x}-u_{y}+f$, yielding
+
+\[
+u_{t}-v\zeta_{A}+\Phi_{x}=0.
+\]
+Similarly, we can reformulate $v_{t}$,
+
+\[
+v_{t}+g\eta_{y}+uv_{x}+vv_{y}+uu_{y}-uu_{y}+fu=0
+\]
+
+
+\[
+v_{t}+uv_{x}-uu_{y}+fu+(g\eta+\frac{v^{2}+u^{2}}{2})=0
+\]
+This yields the vorticity formulation,
+
+\[
+\eta_{t}+(\eta u)_{x}+(\eta v)_{y}=0,
+\]
+
+
+\[
+u_{t}-v\zeta_{A}+\Phi_{x}=0,
+\]
+
+
+\[
+v_{t}+u\zeta_{A}+\Phi_{y}=0.
+\]
+In vector notation we have 
+\[
+\eta_{t}+\nabla\cdot(\eta\vec{u})=0,
+\]
+
+
+\[
+\vec{u}_{t}+\zeta_{A}\vec{k}\times\vec{u}+\nabla\Phi=0.
+\]
+
+
+
+\section{Fluid depth perturbation}
+
+It is convenient to split the fluid depth into a mean height and a
+perturbation, such that we express $\eta=\bar{\eta}+\eta'$, with
+$\bar{\eta}$ being the assumed constant mean water depth. Since the
+gradient of $\eta$ will be the same as the gradient of $\eta'$,
+the only change happens in the continuity equation, 
+\[
+\eta_{t}+\nabla\cdot((\bar{\eta}+\eta')\vec{u})=0,
+\]
+\[
+\eta'_{t}=-\bar{\eta}\nabla\cdot\vec{u}-\nabla\cdot(\eta'\vec{u})
+\]
+and the momentum equations can be adopted with your preferred formulation
+but now considering $\eta'$ instead of $\eta$.
+
+We can write these equations, in any of the above formulations, as
+a linear operator and a non linear one
+
+\[
+L(U):=\left(\begin{array}{ccc}
+0 & -\bar{\eta}\partial_{x} & -\bar{\eta}\partial_{y}\\
+-g\partial_{x} & 0 & f\\
+-g\partial_{y} & -f & 0
+\end{array}\right)U,
+\]
+
+
+\[
+U_{t}=L(U)+N(U)
+\]
+where the nonlinear part $N(U)$ will depend on the equation formulation.
+\begin{thebibliography}{1}
+\bibitem{Williamson1992} Williamson, David L. and Drake, John B.
+and Hack, James J. and Jakob, Rüdiger and Swarztrauber, Paul N. A
+standard test set for numerical approximations to the shallow water
+equations in spherical geometry, J. Comput. Phys, 1992. \end{thebibliography}
+
+\end{document}

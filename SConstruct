@@ -25,6 +25,7 @@ env = Environment()
 env.Append(ENV=os.environ)
 
 
+
 files = os.listdir('src/programs/')
 files = sorted(files)
 example_programs = []
@@ -627,9 +628,9 @@ if env['rexi_parallel_sum']=='enable' or env['threading'] == 'omp':
 	env.Append(LINKFLAGS=' -fopenmp')
 
 if env['rexi_parallel_sum'] == 'enable':
-	env.Append(CXXFLAGS=' -DSWEET_REXI_PARALLEL_SUM=1')
+	env.Append(CXXFLAGS=' -DSWEET_REXI_THREAD_PARALLEL_SUM=1')
 else:
-	env.Append(CXXFLAGS=' -DSWEET_REXI_PARALLEL_SUM=0')
+	env.Append(CXXFLAGS=' -DSWEET_REXI_THREAD_PARALLEL_SUM=0')
 
 
 if env['program_binary_name'] != '':
@@ -642,7 +643,7 @@ if env['debug_symbols'] == 'enable':
 	if env['compiler'] == 'intel':
 		env.Append(CXXFLAGS = ' -O2 -shared-intel -shared-libgcc -debug inline-debug-info')
 		env.Append(LINKFLAGS = ' -O2 -shared-intel  -shared-libgcc -debug inline-debug-info')
-		
+
 
 
 #
@@ -661,11 +662,7 @@ if hostname[0:4] == "mac-":
 	env.Append(CPPPATH = ['/home/hpc/pr63so/di69fol/local/numactl-2.0.8/include'])
 
 # also include the 'src' directory to search for dependencies
-env.Append(CPPPATH = ['.', 'src/', 'src/include'])
-
-# local software directories
-env.Append(LINKFLAGS=' -Llocal_software/local/lib ')
-env.Append(LINKFLAGS=' -Ilocal_software/local/include ')
+env.Append(CPPPATH = ['.', './src/', './src/include'])
 
 
 ######################
@@ -674,11 +671,16 @@ env.Append(LINKFLAGS=' -Ilocal_software/local/include ')
 
 env.src_files = []
 
+# local software directories
+env.Append(LINKFLAGS=['-L./local_software/local/lib'])
+env.Append(CPPPATH=['./local_software/local/include'])
 
 if env['program_name'] != 'DUMMY':
 
+
 	Export('env')
-	SConscript('src/SConscript', variant_dir=build_dir, duplicate=0)
+#	SConscript('src/SConscript', variant_dir=build_dir, duplicate=0)
+	SConscript('./sconscript', variant_dir=build_dir, duplicate=0)
 	Import('env')
 
 	print

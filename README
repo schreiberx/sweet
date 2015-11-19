@@ -28,6 +28,11 @@ File structure:
 	TODO		TODO list
 
 
+Coding:
+	Please read the coding conventions in doc/coding_conventions
+	These conventions are suggestions.
+
+
 Once installed scons, you can have a look at the possible compilation options:
 
 	scons --help

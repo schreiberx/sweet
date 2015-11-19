@@ -35,7 +35,9 @@
 #	include <fftw3.h>
 #endif
 
-#include <omp.h>
+#if SWEET_THREADING
+#	include <omp.h>
+#endif
 
 
 

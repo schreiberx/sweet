@@ -312,7 +312,7 @@ Momentum in y direction
 
 \begin_layout Plain Layout
 Vector with 
-\begin_inset Formula $(h,u,v)$
+\begin_inset Formula $(\eta,u,v)$
 \end_inset
 
 
@@ -389,7 +389,7 @@ Absolute vorticity (
 
 \begin_layout Plain Layout
 Potential vorticity (
-\begin_inset Formula $\frac{\zeta_{A}}{h}$
+\begin_inset Formula $\frac{\zeta_{A}}{\eta}$
 \end_inset
 
 )
@@ -723,7 +723,12 @@ N(U):=\left(\begin{array}{c}
 
 \end_inset
 
-Defining the material derivative as 
+with 
+\begin_inset Formula $U:=(\eta,u,v)^{T}$
+\end_inset
+
+.
+ Defining the material derivative as 
 \begin_inset Formula 
 \[
 \frac{d}{dt}:=\frac{\partial}{\partial t}+\vec{u}\cdot\nabla

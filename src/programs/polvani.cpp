@@ -1,3 +1,10 @@
+/***********
+ * WARNING:
+ * This is only a sketch of the Polvani initial conditions.
+ *
+ * These conditions are not setup correctly!
+ */
+
 
 #if !SWEET_USE_SPECTRAL_SPACE
 	#error "Spectral space not activated"

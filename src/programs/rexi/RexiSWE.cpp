@@ -38,7 +38,13 @@ RexiSWE::RexiSWE()	:
 #endif
 
 #if SWEET_REXI_THREAD_PARALLEL_SUM
+
+#if SWEET_THREADING
 	num_local_rexi_par_threads = omp_get_max_threads();
+#else
+	num_local_rexi_par_threads = 1;
+#endif
+
 	if (num_local_rexi_par_threads == 0)
 	{
 		std::cerr << "FATAL ERROR: omp_get_max_threads == 0" << std::endl;
@@ -131,11 +137,13 @@ void RexiSWE::setup(
 		exit(-1);
 	}
 
+#if SWEET_THREADING
 	if (omp_in_parallel())
 	{
 		std::cerr << "FATAL ERROR X: in parallel region" << std::endl;
 		exit(-1);
 	}
+#endif
 
 	// use a kind of serialization of the input to avoid threading conflicts in the ComplexFFT generation
 	for (int j = 0; j < num_local_rexi_par_threads; j++)
@@ -148,12 +156,15 @@ void RexiSWE::setup(
 			if (i != j)
 				continue;
 
+
+#if SWEET_THREADING
 			if (omp_get_thread_num() != i)
 			{
 				// leave this dummy std::cout in it to avoid the intel compiler removing this part
 				std::cout << "ERROR: thread " << omp_get_thread_num() << " number mismatch " << i << std::endl;
 				exit(-1);
 			}
+#endif
 
 			perThreadVars[i] = new PerThreadVars;
 
@@ -191,6 +202,8 @@ void RexiSWE::setup(
 #endif
 	for (int i = 0; i < num_local_rexi_par_threads; i++)
 	{
+
+#if SWEET_THREADING
 		int global_thread_id = omp_get_thread_num() + mpi_rank*num_local_rexi_par_threads;
 		if (omp_get_thread_num() != i)
 		{
@@ -198,6 +211,9 @@ void RexiSWE::setup(
 			std::cout << "ERROR: thread " << omp_get_thread_num() << " number mismatch " << i << std::endl;
 			exit(-1);
 		}
+#else
+		int global_thread_id = 0;
+#endif
 
 		if (perThreadVars[i]->op_diff_c_x.data == nullptr)
 		{
@@ -381,7 +397,12 @@ bool RexiSWE::run_timestep(
 			v0 = v0.toSpec()*(1.0/tau);
 
 #if SWEET_REXI_THREAD_PARALLEL_SUM || SWEET_MPI
+
+#if SWEET_THREADING
 			int local_thread_id = omp_get_thread_num();
+#else
+			int local_thread_id = 0;
+#endif
 			int global_thread_id = local_thread_id + num_local_rexi_par_threads*mpi_rank;
 
 			std::size_t start = block_size*global_thread_id;
@@ -452,7 +473,11 @@ bool RexiSWE::run_timestep(
 
 #if SWEET_REXI_THREAD_PARALLEL_SUM || SWEET_MPI
 
+#if SWEET_THREADING
 			int local_thread_id = omp_get_thread_num();
+#else
+			int local_thread_id = 0;
+#endif
 			int global_thread_id = local_thread_id + num_local_rexi_par_threads*mpi_rank;
 
 			std::size_t start = block_size*global_thread_id;

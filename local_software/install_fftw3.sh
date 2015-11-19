@@ -17,7 +17,16 @@ if [ ! -e "$DST_DIR/lib/libfftw3.so" ]; then
 	tar xzf "$FILENAME"
 	cd "$BASENAME"
 
-	./configure --prefix="$DST_DIR" --with-our-malloc16 --enable-openmp --enable-shared  || exit 1
+	
+	CONF_FLAGS=""
+	if [ "`uname -s`" == "Linux" ]; then
+		CONF_FLAGS=" --enable-openmp "
+	fi
+	./configure --prefix="$DST_DIR" --with-our-malloc16 $CONF_FLAGS --enable-shared  || exit 1
+
+# AVX is not compiling on all platforms
+#	./configure --prefix="$DST_DIR" --with-our-malloc16 $CONF_FLAGS --enable-shared --enable-avx || exit 1
+
 	make install || exit 1
 
 	echo "DONE"
