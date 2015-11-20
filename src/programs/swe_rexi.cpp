@@ -1485,49 +1485,56 @@ int main(int i_argc, char *i_argv[])
 #if SWEET_MPI
 	else
 	{
-		RexiSWE rexiSWE;
-
-		/*
-		 * Setup our little dog REXI
-		 */
-		rexiSWE.setup(
-				-simVars.sim.CFL,
-				param_rexi_h,
-				param_rexi_m,
-				param_rexi_l,
-				simVars.sim.f0,
-				simVars.disc.res,
-				simVars.sim.domain_size,
-				param_rexi_half,
-				param_rexi_use_finite_differences_for_complex_array,
-				param_rexi_helmholtz_solver_id,
-				param_rexi_helmholtz_solver_eps
-			);
-
-		bool run = true;
-
-		DataArray<2> prog_h(simVars.disc.res);
-		DataArray<2> prog_u(simVars.disc.res);
-		DataArray<2> prog_v(simVars.disc.res);
-
-		Operators2D op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_diffs);
-
-		while (run)
+		if (param_timestepping_mode == 1)
 		{
-			// REXI time stepping
-			run = rexiSWE.run_timestep(
-					prog_h, prog_u, prog_v,
-					op,
-					simVars,
-					param_rexi_zero_before_solving
-			);
+			RexiSWE rexiSWE;
+
+			/*
+			 * Setup our little dog REXI
+			 */
+			rexiSWE.setup(
+					-simVars.sim.CFL,
+					param_rexi_h,
+					param_rexi_m,
+					param_rexi_l,
+					simVars.sim.f0,
+					simVars.disc.res,
+					simVars.sim.domain_size,
+					param_rexi_half,
+					param_rexi_use_finite_differences_for_complex_array,
+					param_rexi_helmholtz_solver_id,
+					param_rexi_helmholtz_solver_eps
+				);
+
+			bool run = true;
+
+			DataArray<2> prog_h(simVars.disc.res);
+			DataArray<2> prog_u(simVars.disc.res);
+			DataArray<2> prog_v(simVars.disc.res);
+
+			Operators2D op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_diffs);
+
+			while (run)
+			{
+				// REXI time stepping
+				run = rexiSWE.run_timestep(
+						prog_h, prog_u, prog_v,
+						op,
+						simVars,
+						param_rexi_zero_before_solving
+				);
+			}
 		}
 	}
 #endif
 
 #if SWEET_MPI
-	if (rank == 0)
-		RexiSWE::MPI_quitWorkers(simVars.disc.res);
+	if (param_timestepping_mode > 0)
+	{
+		// synchronize REXI
+		if (rank == 0)
+			RexiSWE::MPI_quitWorkers(simVars.disc.res);
+	}
 
 	MPI_Finalize();
 #endif
