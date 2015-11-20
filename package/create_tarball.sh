@@ -10,6 +10,8 @@ INSTALL
 Makefile
 README
 SConstruct
+sconscript
+run_valgrind.sh
 "
 
 EXCLUDE_FILES="

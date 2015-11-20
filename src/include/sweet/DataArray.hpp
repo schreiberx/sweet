@@ -1263,9 +1263,7 @@ public:
 		DataArray<D> *rw_array_data = (DataArray<D>*)this;
 
 		if (aliasing_scaled)
-		{
 			(*fftAliasingGetSingletonPtr())->fft_backward(*rw_array_data);
-		}
 		else
 			(*fftGetSingletonPtr())->fft_backward(*rw_array_data);
 

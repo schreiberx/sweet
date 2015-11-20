@@ -243,6 +243,29 @@ AddOption(	'--threading',
 env['threading'] = GetOption('threading')
 
 
+AddOption(	'--cxx-flags',
+		dest='cxx_flags',
+		type='string',	
+		default='',
+		help='Additional cxx-flags, default: ""'
+)
+
+env['cxx_flags'] = GetOption('cxx_flags')
+env.Append(CXXFLAGS = env['cxx_flags'])
+
+
+AddOption(	'--ld-flags',
+		dest='ld_flags',
+		type='string',	
+		default='',
+		help='Additional ld-flags, default: ""'
+)
+env['ld_flags'] = GetOption('ld_flags')
+
+env['ld_flags'] = GetOption('ld_flags')
+env.Append(LINKFLAGS = env['ld_flags'])
+
+
 env['fortran_source'] = 'disable'
 
 
@@ -593,6 +616,26 @@ if env['gui'] == 'enable':
 	env.ParseConfig("pkg-config freetype2 --cflags --libs")
 else:
 	env.Append(CXXFLAGS=' -DSWEET_GUI=0')
+
+  
+
+
+if env['sweet_mpi'] == 'enable':
+	print "Enabling MPI for REXI"
+	print "Warning: Compiler checks not done"
+
+	if env['compiler'] == 'gnu':
+		env.Replace(CXX = 'mpiCC')
+		env.Replace(LINK = 'mpiCC')
+
+	elif env['compiler'] == 'intel':
+		env.Replace(CXX = 'mpiicpc')
+		env.Replace(LINK = 'mpiicpc')
+
+	if env['threading'] != 'off':
+		env.Append(LINKFLAGS=' -mt_mpi')
+
+
 
 
 if env['threading'] in ['omp']:

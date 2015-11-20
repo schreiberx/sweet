@@ -1267,8 +1267,22 @@ public:
 
 int main(int i_argc, char *i_argv[])
 {
+
 #if SWEET_MPI
-	MPI_Init(&i_argc, &i_argv);
+
+	#if SWEET_THREADING
+		int provided;
+		MPI_Init_thread(&i_argc, &i_argv, MPI_THREAD_MULTIPLE, &provided);
+
+		if (provided != MPI_THREAD_MULTIPLE)
+		{
+				std::cerr << "MPI_THREAD_MULTIPLE not available! Try to get an MPI version with multi-threading support or compile without OMP/TBB support. Good bye..." << std::endl;
+				exit(-1);
+		}
+	#else
+		MPI_Init(&i_argc, &i_argv);
+	#endif
+
 #endif
 
 	NUMABlockAlloc::setup();
