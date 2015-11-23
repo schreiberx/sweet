@@ -79,6 +79,20 @@ public:
 		}
 
 
+		if (i_parameters.setup.scenario == 6)
+		{
+			// Gaussian
+			double dx = x-i_parameters.setup.coord_x*i_parameters.sim.domain_size[0];
+			double dy = y-i_parameters.setup.coord_y*i_parameters.sim.domain_size[1];
+
+			double radius = i_parameters.setup.radius_scale*sqrt((double)i_parameters.sim.domain_size[0]*(double)i_parameters.sim.domain_size[0]+(double)i_parameters.sim.domain_size[1]*(double)i_parameters.sim.domain_size[1]);
+			double e = 50;
+			dx /= radius;
+			dy /= radius;
+
+			return i_parameters.setup.h0+std::exp(-e*(dx*dx + dy*dy));
+		}
+
 		if (i_parameters.setup.scenario == 8)
 		{
 			// gaussian in x
@@ -155,6 +169,22 @@ public:
 			return std::cos(6.0*M_PIl*dx)*std::cos(4.0*M_PIl*dy)-4.0*std::sin(6.0*M_PIl*dx)*std::sin(4.0*M_PIl*dy);
 		}
 
+
+		if (i_parameters.setup.scenario == 6)
+		{
+			// Gaussian
+			double dx = x-i_parameters.setup.coord_x*i_parameters.sim.domain_size[0];
+			double dy = y-i_parameters.setup.coord_y*i_parameters.sim.domain_size[1];
+
+			double radius = i_parameters.setup.radius_scale*sqrt((double)i_parameters.sim.domain_size[0]*(double)i_parameters.sim.domain_size[0]+(double)i_parameters.sim.domain_size[1]*(double)i_parameters.sim.domain_size[1]);
+			double e = 50;
+			dx /= radius;
+			dy /= radius;
+
+			double dh = std::exp(-e*(dx*dx + dy*dy));
+			return i_parameters.sim.g/i_parameters.sim.f0*e*2.0*dy*dh;
+		}
+
 		if (i_parameters.setup.scenario == 8)
 		{
 			return 0;
@@ -228,6 +258,22 @@ public:
 			double dy = y/i_parameters.sim.domain_size[1];
 
 			return std::cos(6.0*M_PIl*dx)*std::cos(6.0*M_PIl*dy);
+		}
+
+
+		if (i_parameters.setup.scenario == 6)
+		{
+			// Gaussian
+			double dx = x-i_parameters.setup.coord_x*i_parameters.sim.domain_size[0];
+			double dy = y-i_parameters.setup.coord_y*i_parameters.sim.domain_size[1];
+
+			double radius = i_parameters.setup.radius_scale*sqrt((double)i_parameters.sim.domain_size[0]*(double)i_parameters.sim.domain_size[0]+(double)i_parameters.sim.domain_size[1]*(double)i_parameters.sim.domain_size[1]);
+			double e = 50;
+			dx /= radius;
+			dy /= radius;
+
+			double dh = std::exp(-e*(dx*dx + dy*dy));
+			return -i_parameters.sim.g/i_parameters.sim.f0*e*2.0*dx*dh;
 		}
 
 		if (i_parameters.setup.scenario == 8)

@@ -144,6 +144,8 @@ public:
 
 
 
+
+
 	void p_run_euler_timestep_update(
 			const DataArray<2> &i_h,	///< prognostic variables
 			const DataArray<2> &i_u,	///< prognostic variables
@@ -158,34 +160,6 @@ public:
 			double i_simulation_timestamp = -1
 	)
 	{
-		if (simVars.sim.top_bottom_zero_v_velocity)
-		{
-			/**
-			 * See doc/beta_plane_for_swe/beta_plane_for_swe.lyx
-			 * for further information.
-			 *
-			 * We use some tricks to simulate a slip condition (no outflow) at the top and bottom layer.
-			 *
-			 * Note, that this has to be done here, since the the RK time step updates may generate
-			 * non-zero velocities at the top and bottom layer in the stages if only zeroing the components
-			 * for the very 1st stage of RK.
-			 */
-
-			/*
-			 * here, we first handle the VELOCITY UPDATES
-			 *
-			 * WARNING: This probably does not conserve the quantities
-			 */
-			((DataArray<2>&)i_v).set_row(0, 0);		// zero velocities
-			((DataArray<2>&)i_v).set_row(-1, 0);
-
-			((DataArray<2>&)i_u).copy_row(1, 0);	// slip boundaries
-			((DataArray<2>&)i_u).copy_row(-2, -1);
-
-			((DataArray<2>&)i_h).copy_row(1, 0);	// make smooth
-			((DataArray<2>&)i_h).copy_row(-2, -1);
-		}
-
 		/*
 		 * non-conservative (advective) formulation:
 		 *
@@ -193,30 +167,11 @@ public:
 		 *	u_t = -g * h_x - u * u_x - v * u_y + f*v
 		 *	v_t = -g * h_y - u * v_x - v * v_y - f*u
 		 */
-		o_u_t = -simVars.sim.g*op.diff_c_x(i_h) - i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
-		o_v_t = -simVars.sim.g*op.diff_c_y(i_h) - i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
+		o_u_t = -simVars.sim.g*op.diff_c_x(i_h);// - i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
+		o_v_t = -simVars.sim.g*op.diff_c_y(i_h);// - i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
 
-		if (simVars.sim.beta == 0.0)
-		{
-			o_u_t += simVars.sim.f0*i_v;
-			o_v_t -= simVars.sim.f0*i_u;
-		}
-		else
-		{
-			o_u_t += beta_plane*i_v;
-			o_v_t -= beta_plane*i_u;
-
-			o_v_t.set_row(0, 0);
-			o_v_t.set_row(-1, 0);
-		}
-
-#if 0
-		if (simVars.sim.viscosity != 0)
-		{
-			o_u_t -= op.diffN_x(i_u, simVars.sim.viscosity_order)*simVars.sim.viscosity;
-			o_v_t -= op.diffN_y(i_v, simVars.sim.viscosity_order)*simVars.sim.viscosity;
-		}
-#endif
+		o_u_t += simVars.sim.f0*i_v;
+		o_v_t -= simVars.sim.f0*i_u;
 
 
 		/*
@@ -252,29 +207,8 @@ public:
 			}
 		}
 
-		if (!simVars.disc.timestepping_leapfrog_like_update)
-		{
-			if (!simVars.disc.timestepping_up_and_downwinding)
-			{
-				// standard update
-				o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
-			}
-			else
-			{
-				// up/down winding
-				compute_upwinding_P_updates(
-						i_h,
-						i_u,
-						i_v,
-						o_h_t
-					);
-			}
-		}
-		else
-		{
-			std::cerr << "not supported!" << std::endl;
-
-		}
+		// standard update
+		o_h_t = -op.diff_c_x(i_u)*simVars.setup.h0 - op.diff_c_y(i_v)*simVars.setup.h0;
 	}
 
 
@@ -458,29 +392,6 @@ public:
 		int id = simVars.misc.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
 		*o_dataArray = vis_arrays[id].data;
 		*o_aspect_ratio = simVars.sim.domain_size[1] / simVars.sim.domain_size[0];
-#if 0
-		DataArray<2> &o = (DataArray<2> &)*vis_arrays[id].data;
-		o.spec_setAll(0, 0);
-		o.spec_set(0, 0, 1, 0);
-
-		if (id == 0)
-		{
-			o.spec_set(0, 0, 1, 0);
-		}
-		else if (id == 1)
-		{
-			o.spec_set(0, 0, 1, 1);
-		}
-		else if (id == 2)
-		{
-			o.spec_set(0, 1, 1, 0);
-		}
-		else if (id == 3)
-		{
-			o.spec_set(0, 1, 1, 1);
-//			o.spec_set(0, o.resolution_spec[0]-1, 1, 0);
-		}
-#endif
 	}
 
 
