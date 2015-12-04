@@ -143,6 +143,47 @@ public:
 	}
 
 
+	void compute_upwinding_P_updates(
+			const DataArray<2> &i_h,		///< prognostic variables (at T=tn)
+			const DataArray<2> &i_u,		///< prognostic variables (at T=tn+dt)
+			const DataArray<2> &i_v,		///< prognostic variables (at T=tn+dt)
+
+			DataArray<2> &o_P_t				///< time updates (at T=tn+dt)
+	)
+	{
+		std::cerr << "TODO: implement, is this really possible for non-staggered grid? (averaging of velocities required)" << std::endl;
+		exit(-1);
+		//             |                       |                       |
+		// --v---------|-----------v-----------|-----------v-----------|
+		//   h-1       u0          h0          u1          h1          u2
+		//
+
+		// same a above, but formulated in a finite-difference style
+		o_P_t =
+			(
+				(
+					// u is positive
+					op.shift_right(i_h)*i_u.return_value_if_positive()	// inflow
+					-i_h*op.shift_left(i_u.return_value_if_positive())					// outflow
+
+					// u is negative
+					+(i_h*i_u.return_value_if_negative())	// outflow
+					-op.shift_left(i_h*i_u.return_value_if_negative())		// inflow
+				)*(1.0/simVars.disc.cell_size[0])	// here we see a finite-difference-like formulation
+				+
+				(
+					// v is positive
+					op.shift_up(i_h)*i_v.return_value_if_positive()		// inflow
+					-i_h*op.shift_down(i_v.return_value_if_positive())					// outflow
+
+					// v is negative
+					+(i_h*i_v.return_value_if_negative())	// outflow
+					-op.shift_down(i_h*i_v.return_value_if_negative())	// inflow
+				)*(1.0/simVars.disc.cell_size[1])
+			);
+	}
+
+
 
 	void p_run_euler_timestep_update(
 			const DataArray<2> &i_h,	///< prognostic variables

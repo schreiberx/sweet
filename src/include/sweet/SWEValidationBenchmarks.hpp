@@ -236,7 +236,7 @@ public:
 				std::cerr << "f-value is equal to zero!" << std::endl;
 				exit(-1);
 			}
-			return i_parameters.sim.g*2.0*M_PIl*std::cos(2.0*M_PIl*x/i_parameters.sim.domain_size[0])/(i_parameters.sim.f0*i_parameters.sim.domain_size[0]);
+			return i_parameters.sim.g/i_parameters.sim.f0*2.0*M_PIl*std::cos(2.0*M_PIl*x/i_parameters.sim.domain_size[0])/i_parameters.sim.domain_size[0];
 		}
 
 		if (i_parameters.setup.scenario == 3)

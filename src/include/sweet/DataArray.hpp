@@ -1855,7 +1855,7 @@ public:
 
 			if (std::abs(den) <= i_tolerance)
 			{
-				// For Laplace solution, this is the integration constant C
+				// For inverting differential operators, this is the integration constant C
 				out.array_data_spectral_space[i] = ar*i_denom_zeros_scalar;
 				out.array_data_spectral_space[i+1] = ai*i_denom_zeros_scalar;
 			}

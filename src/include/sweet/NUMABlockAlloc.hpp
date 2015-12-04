@@ -34,6 +34,7 @@
 #if SWEET_THREADING
 #	include <omp.h>
 #endif
+
 #include <cstdlib>
 #include <cassert>
 #include <iostream>
