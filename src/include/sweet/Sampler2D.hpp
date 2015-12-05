@@ -190,7 +190,7 @@ public:
 				idx_j = wrapPeriodic(idx_j+1, res[1]);
 			}
 
-			double value = q[0] + x*(q[1]-q[0]);
+			double value = q[0] + y*(q[1]-q[0]);
 
 			o_data.array_data_cartesian_space[pos_idx] = value;
 		}
