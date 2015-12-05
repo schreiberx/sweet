@@ -14,7 +14,7 @@ if [ ! -d "$SCRIPTDIR" ]; then
 	echo "ERROR: Execute this script only from the SWEET root directory"
 	echo "   source local_software/env_vars.sh"
 	echo
-	exit 1
+	return
 fi
 
 export PATH="$SCRIPTDIR/local/bin:$PATH"
