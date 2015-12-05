@@ -156,14 +156,6 @@ public:
 			double pos_y = i_pos[1]->array_data_cartesian_space[pos_idx]*scale_factor[1] + i_shift_y;
 
 			/**
-			 * For the interpolation, we assume node-aligned values
-			 *
-			 * x0  x1  x2  x3
-			 * |---|---|---|---
-			 * 0   2   4   6    <- positions and associated values e.g. for domain size 8
-			 */
-
-			/**
 			 * See http://www.paulinternet.nl/?page=bicubic
 			 */
 			// compute x/y position
@@ -173,35 +165,33 @@ public:
 			// precompute x-position indices since they are reused 4 times
 			int idx_i[2];
 			{
-				int i = (int)pos_x-1;
-
-				i = wrapPeriodic(i, res[0]);
-				idx_i[0] = wrapPeriodic(i, res[0]);
+				int i = (int)pos_x;
+				idx_i[0] = i;
 
 				i = wrapPeriodic(i+1, res[0]);
 				idx_i[1] = wrapPeriodic(i, res[0]);
-
 			}
 
 			/**
 			 * iterate over rows and interpolate over the columns in the x direction
 			 */
 			// start at this row
-			int idx_j = wrapPeriodic((int)pos_y-1, res[1]);
+			int idx_j = pos_y;//wrapPeriodic((int)pos_y, res[1]);
 
 			double q[2];
-			for (int kj = 0; kj < 4; kj++)
+			for (int kj = 0; kj < 2; kj++)
 			{
 				double p[2];
 				p[0] = i_data.get(idx_j, idx_i[0]);
 				p[1] = i_data.get(idx_j, idx_i[1]);
 
-				q[kj] = p[1] + x*p[2];
+				q[kj] = p[0] + x*(p[1]-p[0]);
 
 				idx_j = wrapPeriodic(idx_j+1, res[1]);
 			}
 
-			double value = q[1] + y*q[2];
+			double value = q[0] + x*(q[1]-q[0]);
+
 			o_data.array_data_cartesian_space[pos_idx] = value;
 		}
 	}
