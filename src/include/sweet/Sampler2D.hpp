@@ -10,9 +10,11 @@
 
 class Sampler2D
 {
+public:
 	double domain_size[2];
 	int res[2];
 
+private:
 	double scale_factor[2];
 
 
@@ -27,6 +29,14 @@ public:
 
 	Sampler2D()
 	{
+		res[0] = -1;
+		res[1] = -1;
+
+		scale_factor[0] = -1;
+		scale_factor[1] = -1;
+
+		domain_size[0] = -1;
+		domain_size[1] = -1;
 	}
 
 
@@ -46,15 +56,19 @@ public:
 		scale_factor[1] = (double)i_res[1] / i_domain_size[1];
 	}
 
-private:
+public:
 	/**
 	 * wrap the position i in a periodic domain of size d
 	 */
+	template <typename T>
 	inline
-	int wrapPeriodic(int i, int i_res)
+	T wrapPeriodic(T i, T i_res)
 	{
 		while (i < 0)
+		{
 			i += i_res;
+//			std::cout << i << std::endl;
+		}
 		while (i >= i_res)
 			i -= i_res;
 
@@ -72,9 +86,12 @@ public:
 			double i_shift_y = 0.0				///< shift in y for staggered grids
 	)
 	{
+		assert(res[0] > 0);
+		assert(scale_factor[0] > 0);
+
 		// iterate over all positions
 #pragma omp parallel for OPENMP_SIMD
-		for (int pos_idx = 0; pos_idx < i_pos[0]->resolution[0]*i_pos[0]->resolution[1]; pos_idx++)
+		for (std::size_t pos_idx = 0; pos_idx < i_pos[0]->resolution[0]*i_pos[0]->resolution[1]; pos_idx++)
 		{
 			// load position to interpolate
 			double pos_x = i_pos[0]->array_data_cartesian_space[pos_idx]*scale_factor[0] + i_shift_x;
@@ -138,6 +155,8 @@ public:
 		}
 	}
 
+
+
 public:
 	void bilinear_scalar(
 			DataArray<2> &i_data,				///< sampling data
@@ -149,11 +168,11 @@ public:
 	{
 		// iterate over all positions
 #pragma omp parallel for OPENMP_SIMD
-		for (int pos_idx = 0; pos_idx < i_pos[0]->resolution[0]*i_pos[0]->resolution[1]; pos_idx++)
+		for (std::size_t pos_idx = 0; pos_idx < i_pos[0]->resolution[0]*i_pos[0]->resolution[1]; pos_idx++)
 		{
 			// load position to interpolate
-			double pos_x = i_pos[0]->array_data_cartesian_space[pos_idx]*scale_factor[0] + i_shift_x;
-			double pos_y = i_pos[1]->array_data_cartesian_space[pos_idx]*scale_factor[1] + i_shift_y;
+			double pos_x = wrapPeriodic(i_pos[0]->array_data_cartesian_space[pos_idx]*scale_factor[0] + i_shift_x, (double)res[0]);
+			double pos_y = wrapPeriodic(i_pos[1]->array_data_cartesian_space[pos_idx]*scale_factor[1] + i_shift_y, (double)res[0]);
 
 			/**
 			 * See http://www.paulinternet.nl/?page=bicubic
@@ -194,6 +213,20 @@ public:
 
 			o_data.array_data_cartesian_space[pos_idx] = value;
 		}
+	}
+
+
+public:
+	const DataArray<2> bilinear_scalar(
+			DataArray<2> &i_data,				///< sampling data
+			DataArray<2>* i_pos[2],	///< sampling position
+			double i_shift_x = 0.0,
+			double i_shift_y = 0.0
+	)
+	{
+		DataArray<2> out(i_data.resolution);
+		bilinear_scalar(i_data, i_pos, out, i_shift_x, i_shift_y);
+		return out;
 	}
 
 };

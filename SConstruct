@@ -420,8 +420,8 @@ elif env['compiler'] == 'intel':
 
 	# override g++ called by intel compiler to determine location of header files
 	if env['gxx_toolchain'] != '':
-		env.Append(CXXFLAGS=' -gxx-name='+env['gxx_toolchain'])
-		env.Append(LINKFLAGS=' -gxx-name='+env['gxx_toolchain'])
+		env.Append(CXXFLAGS='-gxx-name='+env['gxx_toolchain'])
+		env.Append(LINKFLAGS='-gxx-name='+env['gxx_toolchain'])
 
 	env.Append(LINKFLAGS=' -shared-intel')
 	env.Append(LINKFLAGS=' -shared-libgcc')
@@ -528,29 +528,29 @@ if env['mode'] == 'debug':
 	env.Append(CXXFLAGS=' -DSWEET_DEBUG_MODE=1')
 
 	if env['compiler'] == 'gnu':
-		env.Append(CXXFLAGS=' -O0 -g3 -Wall')
+		env.Append(CXXFLAGS='-O0 -g3 -Wall')
 
 		# integer overflow check
 		env.Append(CXXFLAGS=' -ftrapv')
 
 	elif env['compiler'] == 'llvm':
-		env.Append(CXXFLAGS=' -O0 -g3 -Wall')
+		env.Append(CXXFLAGS='-O0 -g3 -Wall')
 
 	elif env['compiler'] == 'intel':
-		env.Append(CXXFLAGS=' -O0 -g -traceback')
+		env.Append(CXXFLAGS='-O0 -g -traceback')
 #		env.Append(CXXFLAGS=' -fp-trap=common')
 
 	elif env['compiler'] == 'pgi':
-		env.Append(CXXFLAGS=' -O0 -g -traceback')
+		env.Append(CXXFLAGS='-O0 -g -traceback')
 
 
 	if env['fortran_source'] == 'enable':
 		if env['compiler'] == 'gnu':
-			env.Append(FORTRANFLAGS=' -g -O0')
-			env.Append(F90FLAGS=' -g -O0')
+			env.Append(FORTRANFLAGS='-g -O0')
+			env.Append(F90FLAGS='-g -O0')
 		elif env['compiler'] == 'intel':
-			env.Append(FORTRANFLAGS=' -g -O0 -traceback')
-			env.Append(F90FLAGS=' -g -O0 -traceback')
+			env.Append(FORTRANFLAGS='-g -O0 -traceback')
+			env.Append(F90FLAGS='-g -O0 -traceback')
 
 
 elif env['mode'] == 'release':
@@ -680,8 +680,8 @@ if env['program_binary_name'] != '':
 	exec_name = env['program_binary_name']
 
 if env['debug_symbols'] == 'enable':
-	env.Append(CXXFLAGS = ' -g')
-	env.Append(LINKFLAGS = ' -g')
+	env.Append(CXXFLAGS = '-g')
+	env.Append(LINKFLAGS = '-g')
 
 	if env['compiler'] == 'intel':
 		env.Append(CXXFLAGS = ' -O2 -shared-intel -shared-libgcc -debug inline-debug-info')

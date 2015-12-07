@@ -14,6 +14,7 @@
 #include <sweet/SWEValidationBenchmarks.hpp>
 #include <sweet/Operators2D.hpp>
 #include <sweet/Sampler2D.hpp>
+#include <sweet/SemiLagrangian.hpp>
 #include <unistd.h>
 #include <stdio.h>
 #include <vector>
@@ -21,31 +22,49 @@
 
 SimulationVariables simVars;
 
+double param_velocity_u;
+double param_velocity_v;
+
 
 class SimulationSWE
 {
 public:
 	DataArray<2> prog_h;
-	DataArray<2> prog_u;
-	DataArray<2> prog_v;
 
-	DataArray<2> interpol_values;
+	DataArray<2> prog_u, prog_v;
+	DataArray<2> prog_u_prev, prog_v_prev;
+
+
+	DataArray<2> posx_a, posy_a;
+	DataArray<2> *pos_a[2];
+
+//	DataArray<2> interpol_values;
 //	DataArray<2> hu;
 //	DataArray<2> hv;
 
 	DataArray<2> h_t;
 
 	Operators2D op;
+
 	Sampler2D sampler2D;
+	SemiLagrangian semiLagrangian;
+
 
 
 public:
 	SimulationSWE()	:
 		prog_h(simVars.disc.res),
+
 		prog_u(simVars.disc.res),
 		prog_v(simVars.disc.res),
 
-		interpol_values(simVars.disc.res),
+		prog_u_prev(simVars.disc.res),
+		prog_v_prev(simVars.disc.res),
+
+		posx_a(simVars.disc.res),
+		posy_a(simVars.disc.res),
+
+//		interpol_values(simVars.disc.res),
 
 //		hu(simVars.disc.res),
 //		hv(simVars.disc.res),
@@ -82,34 +101,99 @@ public:
 		{
 			for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
 			{
-				double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-				double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+				//				double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+				//				double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+				double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+				double y = (((double)j)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
 
 				prog_h.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
-				prog_u.set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
-				prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
+//				prog_u.set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
+//				prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
 			}
 		}
 
-		prog_u += 4.0;
-		prog_v += 4.0;
+//		prog_u += 4.0;
+//		prog_v += 4.0;
+
+		prog_u = param_velocity_u;
+		prog_v = param_velocity_v;
+
+		prog_u_prev = prog_u;
+		prog_v_prev = prog_v;
+
+		pos_a[0] = &posx_a;
+		pos_a[1] = &posy_a;
+
+		// setup some test sampling points
+		// we use 2 arrays - one for each sampling position
+		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+		{
+			for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+			{
+				posx_a.set(j, i, ((double)i)*((double)simVars.sim.domain_size[0]/(double)simVars.disc.res[0]));
+				posy_a.set(j, i, ((double)j)*((double)simVars.sim.domain_size[1]/(double)simVars.disc.res[1]));
+			}
+		}
 
 		sampler2D.setup(simVars.sim.domain_size, simVars.disc.res);
 
+		semiLagrangian.setup(simVars.sim.domain_size, simVars.disc.res);
 	}
 
 
 
 	void run_timestep()
 	{
-		double dt = simVars.sim.domain_size[0] / simVars.disc.res[0];
+		double dt = std::min(
+				std::abs((double)prog_h.resolution[0]/param_velocity_u),
+				std::abs((double)prog_h.resolution[1]/param_velocity_v)
+			)*simVars.sim.CFL;
+
+		if ((param_velocity_u == 0) && (param_velocity_v == 0))
+			dt = 0;
+
 		simVars.timecontrol.current_timestep_size = dt;
 
+		// update velocities
+		prog_u = param_velocity_u;
+		prog_v = param_velocity_v;
 
-		// setup x/y coordinates
-		DataArray<2> data_x(prog_h.resolution);
-		DataArray<2> data_y(prog_h.resolution);
+		// velocities at t
+		DataArray<2>* vel[2] = {&prog_u, &prog_v};
+		// velocities at t-1
+		DataArray<2>* vel_prev[2] = {&prog_u_prev, &prog_v_prev};
 
+		// position of departure points at t
+		DataArray<2> posx_d(prog_h.resolution);
+		DataArray<2> posy_d(prog_h.resolution);
+		DataArray<2>* pos_d[2] = {&posx_d, &posy_d};
+
+#if 0
+		*pos_d[0] = *pos_a[0];
+		*pos_d[1] = *pos_a[1];
+#else
+		semiLagrangian.compute_departure_points_settls(
+				vel_prev,
+				vel,
+				pos_a,
+				dt,
+				pos_d
+		);
+#endif
+
+		prog_u_prev = prog_u;
+		prog_v_prev = prog_v;
+
+		DataArray<2> new_prog_h(prog_h.resolution);
+		sampler2D.bicubic_scalar(
+				prog_h,
+				pos_d,
+				new_prog_h
+		);
+
+		prog_h = new_prog_h;
+
+#if 0
 		DataArray<2> *x[2] = {&data_x, &data_y};
 
 		// setup some test sampling points
@@ -131,6 +215,7 @@ public:
 
 		// interpolate data from x/y coordinates
 //		interpol_values = op_sample.bilinear(prog_h, x, y);
+#endif
 
 		// advance in time
 		simVars.timecontrol.current_simulation_time += dt;
@@ -210,14 +295,13 @@ public:
 
 int main(int i_argc, char *i_argv[])
 {
-#if 1
 	const char *bogus_var_names[] = {
 			"velocity-u",
 			"velocity-v",
 			nullptr
 	};
 
-	if (!simVars.setupFromMainParameters(i_argc, i_argv/*, bogus_var_names*/))
+	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
 		std::cout << std::endl;
 		std::cout << "Program-specific options:" << std::endl;
@@ -225,32 +309,44 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "	--velocity-v [advection velocity v]" << std::endl;
 		return -1;
 	}
-/*
+
 	if (std::isinf(simVars.bogus.var[0]) || std::isinf(simVars.bogus.var[1]))
 	{
 		std::cout << "Both velocities have to be set, see parameters --velocity-u, --velocity-v" << std::endl;
 		return -1;
 	}
-*/
-#endif
+
+	param_velocity_u = simVars.bogus.var[0];
+	param_velocity_v = simVars.bogus.var[1];
+
 
 	SimulationSWE *simulationSWE = new SimulationSWE;
 
 #if SWEET_GUI
-	VisSweet<SimulationSWE> visSweet(simulationSWE);
-#else
-	simulationSWE->reset();
-	while (!simulationSWE->should_quit())
+	if (simVars.misc.gui_enabled)
 	{
-		simulationSWE->run_timestep();
-
-		if (simVars.misc.verbosity > 2)
-			std::cout << simVars.timecontrol.current_simulation_time << std::endl;
-
-		if (simVars.timecontrol.current_simulation_time > simVars.timecontrol.max_simulation_time)
-			break;
+		VisSweet<SimulationSWE> visSweet(simulationSWE);
 	}
+	else
 #endif
+	{
+		simulationSWE->reset();
+		while (!simulationSWE->should_quit())
+		{
+			simulationSWE->run_timestep();
+
+			if (simVars.misc.verbosity > 2)
+				std::cout << simVars.timecontrol.current_simulation_time << std::endl;
+
+			if (simVars.timecontrol.max_simulation_time != -1)
+				if (simVars.timecontrol.current_simulation_time > simVars.timecontrol.max_simulation_time)
+					break;
+
+			if (simVars.timecontrol.max_timesteps_nr != -1)
+				if (simVars.timecontrol.current_timestep_nr > simVars.timecontrol.max_timesteps_nr)
+					break;
+		}
+	}
 
 	delete simulationSWE;
 
