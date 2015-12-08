@@ -1,6 +1,6 @@
 #! /bin/bash
 
-. config.sh
+source config.sh
 
 
 #
@@ -26,7 +26,7 @@ else
 		cd "$BASENAME"
 
 		pwd
-		./autogen.sh
+		./autogen.sh || exit 1
 		./configure --prefix="$DST_DIR" || exit 1
 		make -j install
 

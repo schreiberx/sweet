@@ -1,6 +1,6 @@
 #! /bin/bash
 
-. config.sh
+source config.sh
 
 
 echo "*** SDL2 ***"

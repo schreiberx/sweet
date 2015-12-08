@@ -436,6 +436,7 @@ elif env['compiler'] == 'intel':
 	# output more warnings
 	env.Append(CXXFLAGS=' -w1')
 
+
 	# compiler option which has to be appended for icpc 12.1 without update1
 #	env.Append(CXXFLAGS=' -U__GXX_EXPERIMENTAL_CXX0X__')
 
@@ -556,6 +557,9 @@ if env['mode'] == 'debug':
 elif env['mode'] == 'release':
 	env.Append(CXXFLAGS=' -DSWEET_DEBUG_MODE=0')
 
+	# deactivate assertion calls
+	env.Append(CXXFLAGS=' -DNDEBUG=1')
+
 	if env['compiler'] == 'gnu':
 		env.Append(CXXFLAGS=' -O3 -mtune=native')
 
@@ -633,6 +637,7 @@ if env['sweet_mpi'] == 'enable':
 		env.Replace(LINK = 'mpiicpc')
 
 	if env['threading'] != 'off':
+		env.Append(CXXFLAGS=' -mt_mpi')
 		env.Append(LINKFLAGS=' -mt_mpi')
 
 
