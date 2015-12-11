@@ -958,13 +958,20 @@ public:
 		else if (param_timestepping_mode == 1)
 		{
 			// REXI time stepping for linear eq
-			o_dt = -simVars.sim.CFL;
-			rexiSWE.run_timestep(
-					prog_h, prog_u, prog_v,
-					op,
-					simVars,
-					param_rexi_zero_before_solving
-			);
+			if (param_nonlinear)
+			{
+				o_dt = -simVars.sim.CFL;
+			}
+			else // linear solver
+			{
+				o_dt = -simVars.sim.CFL;
+				rexiSWE.run_timestep(
+						prog_h, prog_u, prog_v,
+						op,
+						simVars,
+						param_rexi_zero_before_solving
+				);
+			}
 		}
 		else if (param_timestepping_mode == 2)
 		{
