@@ -353,7 +353,7 @@ bool RexiSWE::run_timestep(
 
 
 #if SWEET_REXI_THREAD_PARALLEL_SUM
-#	pragma omp parallel for schedule(static,1) default(none) shared(i_parameters, io_h, io_u, io_v, N, std::cout, std::cerr, i_iterative_solver_always_init_zero_solution)
+#	pragma omp parallel for schedule(static,1) default(none) shared(i_parameters, i_timestep_size, io_h, io_u, io_v, N, std::cout, std::cerr, i_iterative_solver_always_init_zero_solution)
 #endif
 	for (int i = 0; i < num_local_rexi_par_threads; i++)
 	{
