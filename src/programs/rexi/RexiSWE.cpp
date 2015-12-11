@@ -88,12 +88,11 @@ RexiSWE::~RexiSWE()
  * setup the REXI
  */
 void RexiSWE::setup(
-		double i_tau,					///< time step size
 		double i_h,						///< sampling size
 		int i_M,						///< number of sampling points
 		int i_L,						///< number of sampling points for Gaussian approx
 										///< set to 0 for auto detection
-		double i_f,						///< Coriolis frequency
+
 		std::size_t *i_resolution,		///< resolution of domain
 		const double *i_domain_size,	///< size of domain
 
@@ -105,8 +104,7 @@ void RexiSWE::setup(
 {
 	M = i_M;
 	h = i_h;
-	tau = i_tau;
-	f = i_f;
+
 	helmholtz_solver = i_helmholtz_solver;
 	eps = i_eps;
 	use_finite_differences = i_use_finite_differences;
@@ -259,8 +257,10 @@ bool RexiSWE::run_timestep_implicit_ts(
 	DataArray<2> &io_u,
 	DataArray<2> &io_v,
 
+	double i_timestep_size,	///< timestep size
+
 	Operators2D &op,
-	const SimulationVariables &i_variables
+	const SimulationVariables &i_simVars
 )
 {
 	Complex2DArrayFFT eta(io_h.resolution);
@@ -273,17 +273,17 @@ bool RexiSWE::run_timestep_implicit_ts(
 	u0.loadRealFromDataArray(io_u);
 	v0.loadRealFromDataArray(io_v);
 
-	eta0 = eta0.toSpec() * (1.0/tau);
-	u0 = u0.toSpec() * (1.0/tau);
-	v0 = v0.toSpec() * (1.0/tau);
+	eta0 = eta0.toSpec() * (1.0/i_timestep_size);
+	u0 = u0.toSpec() * (1.0/i_timestep_size);
+	v0 = v0.toSpec() * (1.0/i_timestep_size);
 
-	double alpha = 1.0/tau;
+	double alpha = 1.0/i_timestep_size;
 
 	// load kappa (k)
-	double kappa = alpha*alpha + f*f;
+	double kappa = alpha*alpha + i_simVars.sim.f0*i_simVars.sim.f0;
 
-	double eta_bar = i_variables.setup.h0;
-	double g = i_variables.sim.g;
+	double eta_bar = i_simVars.setup.h0;
+	double g = i_simVars.sim.g;
 
 	Complex2DArrayFFT &op_diff_c_x = perThreadVars[0]->op_diff_c_x;
 	Complex2DArrayFFT &op_diff_c_y = perThreadVars[0]->op_diff_c_y;
@@ -291,7 +291,7 @@ bool RexiSWE::run_timestep_implicit_ts(
 	Complex2DArrayFFT rhs =
 			(kappa/alpha) * eta0
 			- eta_bar*(op_diff_c_x(u0) + op_diff_c_y(v0))
-			- (f*eta_bar/alpha) * (op_diff_c_x(v0) - op_diff_c_y(u0))
+			- (i_simVars.sim.f0*eta_bar/alpha) * (op_diff_c_x(v0) - op_diff_c_y(u0))
 		;
 
 	helmholtz_spectral_solver_spec(kappa, g*eta_bar, rhs, eta, 0);
@@ -299,8 +299,8 @@ bool RexiSWE::run_timestep_implicit_ts(
 	Complex2DArrayFFT uh = u0 - g*op_diff_c_x(eta);
 	Complex2DArrayFFT vh = v0 - g*op_diff_c_y(eta);
 
-	Complex2DArrayFFT u1 = alpha/kappa * uh     + f/kappa * vh;
-	Complex2DArrayFFT v1 =    -f/kappa * uh + alpha/kappa * vh;
+	Complex2DArrayFFT u1 = alpha/kappa * uh     + i_simVars.sim.f0/kappa * vh;
+	Complex2DArrayFFT v1 =    -i_simVars.sim.f0/kappa * uh + alpha/kappa * vh;
 
 	eta.toCart().toDataArrays_Real(io_h);
 	u1.toCart().toDataArrays_Real(io_u);
@@ -321,6 +321,8 @@ bool RexiSWE::run_timestep(
 	DataArray<2> &io_h,
 	DataArray<2> &io_u,
 	DataArray<2> &io_v,
+
+	double i_timestep_size,	///< timestep size
 
 	Operators2D &op,
 	const SimulationVariables &i_parameters,
@@ -392,9 +394,9 @@ bool RexiSWE::run_timestep(
 			 */
 			// convert to spectral space
 			// scale with inverse of tau
-			eta0 = eta0.toSpec()*(1.0/tau);
-			u0 = u0.toSpec()*(1.0/tau);
-			v0 = v0.toSpec()*(1.0/tau);
+			eta0 = eta0.toSpec()*(1.0/i_timestep_size);
+			u0 = u0.toSpec()*(1.0/i_timestep_size);
+			v0 = v0.toSpec()*(1.0/i_timestep_size);
 
 #if SWEET_REXI_THREAD_PARALLEL_SUM || SWEET_MPI
 
@@ -425,11 +427,11 @@ bool RexiSWE::run_timestep(
 			{
 				// load alpha (a) and scale by inverse of tau
 				// we flip the sign to account for the -L used in exp(\tau (-L))
-				complex alpha = -rexi.alpha[n]/tau;
+				complex alpha = -rexi.alpha[n]/i_timestep_size;
 				complex beta = -rexi.beta_re[n];
 
 				// load kappa (k)
-				complex kappa = alpha*alpha + f*f;
+				complex kappa = alpha*alpha + i_parameters.sim.f0*i_parameters.sim.f0;
 
 				/*
 /				 * TODO: we can even get more performance out of this operations
@@ -438,7 +440,7 @@ bool RexiSWE::run_timestep(
 				Complex2DArrayFFT rhs =
 						(kappa/alpha) * eta0
 						- eta_bar*(op_diff_c_x(u0) + op_diff_c_y(v0))
-						- (f*eta_bar/alpha) * (op_diff_c_x(v0) - op_diff_c_y(u0))
+						- (i_parameters.sim.f0*eta_bar/alpha) * (op_diff_c_x(v0) - op_diff_c_y(u0))
 					;
 
 				helmholtz_spectral_solver_spec(kappa, g*eta_bar, rhs, eta, i);
@@ -446,8 +448,8 @@ bool RexiSWE::run_timestep(
 				Complex2DArrayFFT uh = u0 - g*op_diff_c_x(eta);
 				Complex2DArrayFFT vh = v0 - g*op_diff_c_y(eta);
 
-				Complex2DArrayFFT u1 = alpha/kappa * uh     + f/kappa * vh;
-				Complex2DArrayFFT v1 =    -f/kappa * uh + alpha/kappa * vh;
+				Complex2DArrayFFT u1 = alpha/kappa * uh     + i_parameters.sim.f0/kappa * vh;
+				Complex2DArrayFFT v1 =    -i_parameters.sim.f0/kappa * uh + alpha/kappa * vh;
 
 				h_sum += eta.toCart()*beta;
 				u_sum += u1.toCart()*beta;
@@ -467,9 +469,9 @@ bool RexiSWE::run_timestep(
 
 			// convert to spectral space
 			// scale with inverse of tau
-			eta0 = eta0.toSpec()*(1.0/tau);
-			u0 = u0.toSpec()*(1.0/tau);
-			v0 = v0.toSpec()*(1.0/tau);
+			eta0 = eta0.toSpec()*(1.0/i_timestep_size);
+			u0 = u0.toSpec()*(1.0/i_timestep_size);
+			v0 = v0.toSpec()*(1.0/i_timestep_size);
 
 #if SWEET_REXI_THREAD_PARALLEL_SUM || SWEET_MPI
 
@@ -499,12 +501,12 @@ bool RexiSWE::run_timestep(
 			{
 				// load alpha (a) and scale by inverse of tau
 				// we flip the sign to account for the -L used in exp(\tau (-L))
-				complex alpha = -rexi.alpha[n]/tau;
+				complex alpha = -rexi.alpha[n]/i_timestep_size;
 //				alpha.imag(-alpha.imag());
 				complex beta = -rexi.beta_re[n];
 
 				// load kappa (k)
-				complex kappa = alpha*alpha + f*f;
+				complex kappa = alpha*alpha + i_parameters.sim.f0*i_parameters.sim.f0;
 //				std::cout << "KAPPA: " << kappa << std::endl;
 
 				/*
@@ -514,7 +516,7 @@ bool RexiSWE::run_timestep(
 				Complex2DArrayFFT rhs =
 						(kappa/alpha) * eta0
 						- eta_bar*(op_diff_c_x(u0) + op_diff_c_y(v0))
-						- (f*eta_bar/alpha) * (op_diff_c_x(v0) - op_diff_c_y(u0))
+						- (i_parameters.sim.f0*eta_bar/alpha) * (op_diff_c_x(v0) - op_diff_c_y(u0))
 					;
 
 				rhs = rhs.toCart();
@@ -638,8 +640,8 @@ bool RexiSWE::run_timestep(
 				Complex2DArrayFFT uh = u0 - g*op_diff_c_x(eta);
 				Complex2DArrayFFT vh = v0 - g*op_diff_c_y(eta);
 
-				Complex2DArrayFFT u1 = (alpha/kappa) * uh	+ (f/kappa) * vh;
-				Complex2DArrayFFT v1 =    (-f/kappa) * uh	+ (alpha/kappa) * vh;
+				Complex2DArrayFFT u1 = (alpha/kappa) * uh	+ (i_parameters.sim.f0/kappa) * vh;
+				Complex2DArrayFFT v1 =    (-i_parameters.sim.f0/kappa) * uh	+ (alpha/kappa) * vh;
 
 				h_sum += eta.toCart()*beta;
 				u_sum += u1.toCart()*beta;
@@ -726,7 +728,7 @@ void RexiSWE::run_timestep_direct_solution(
 		DataArray<2> &io_u,
 		DataArray<2> &io_v,
 
-		double i_timestep_size,
+		double i_timestep_size,	///< timestep size
 
 		Operators2D &op,
 		const SimulationVariables &i_parameters

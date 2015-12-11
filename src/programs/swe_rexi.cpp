@@ -433,11 +433,10 @@ public:
 
 			// use REXI
 			rexiSWE.setup(
-					-simVars.sim.CFL,
 					param_rexi_h,
 					param_rexi_m,
 					param_rexi_l,
-					simVars.sim.f0,
+
 					simVars.disc.res,
 					simVars.sim.domain_size,
 					param_rexi_half,
@@ -906,9 +905,10 @@ public:
 		{
 		case 1:
 			// REXI time stepping
+			assert(simVars.sim.CFL < 0);
 			rexiSWE.run_timestep(
 					prog_h, prog_u, prog_v,
-
+					i_local_timestep_size,
 					op,
 					simVars,
 					param_rexi_zero_before_solving
@@ -919,7 +919,6 @@ public:
 			// Analytical solution
 			rexiSWE.run_timestep_direct_solution(
 					prog_h, prog_u, prog_v,
-
 					i_local_timestep_size,
 					op,
 					simVars
@@ -967,6 +966,7 @@ public:
 				o_dt = -simVars.sim.CFL;
 				rexiSWE.run_timestep(
 						prog_h, prog_u, prog_v,
+						o_dt,
 						op,
 						simVars,
 						param_rexi_zero_before_solving
@@ -976,6 +976,7 @@ public:
 		else if (param_timestepping_mode == 2)
 		{
 			// Analytical solution
+			assert(simVars.sim.CFL < 0);
 			o_dt = -simVars.sim.CFL;
 			rexiSWE.run_timestep_direct_solution(
 					prog_h, prog_u, prog_v,
@@ -986,11 +987,12 @@ public:
 		}
 		else if (param_timestepping_mode == 3)
 		{
+			assert(simVars.sim.CFL < 0);
 			// Analytical solution
 			o_dt = -simVars.sim.CFL;
 			rexiSWE.run_timestep_implicit_ts(
 					prog_h, prog_u, prog_v,
-//					-simVars.sim.CFL,
+					o_dt,
 					op,
 					simVars
 			);
@@ -1186,7 +1188,12 @@ public:
 			DataArray<2> t_u = t0_prog_u;
 			DataArray<2> t_v = t0_prog_v;
 
-			rexiSWE.run_timestep_direct_solution(t_h, t_u, t_v, simVars.timecontrol.current_simulation_time, op, simVars);
+			rexiSWE.run_timestep_direct_solution(
+					t_h, t_u, t_v,
+					simVars.timecontrol.current_simulation_time,
+					op,
+					simVars
+			);
 
 			switch(simVars.misc.vis_id)
 			{

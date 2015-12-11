@@ -32,10 +32,8 @@
  */
 class RexiSWE
 {
-	double tau;
 	double h;
 	int M;
-	double f;
 
 	// ID of solver to use, specify -1 to print a list of solvers
 	int helmholtz_solver;
@@ -98,11 +96,10 @@ public:
 	 */
 public:
 	void setup(
-			double i_tau,	///< time step size
 			double i_h,		///< sampling size
 			int i_M,		///< number of sampling points
 			int i_L,		///< number of sampling points for Gaussian approx
-			double i_f,		///< Coriolis force
+
 			std::size_t *i_resolution,			///< resolution of domain
 			const double *i_domain_size,		///< size of domain
 			bool i_rexi_half = true,			///< use half-pole reduction
@@ -181,6 +178,8 @@ public:
 		DataArray<2> &io_u,
 		DataArray<2> &io_v,
 
+		double i_timestep_size,	///< timestep size
+
 		Operators2D &op,
 		const SimulationVariables &i_parameters
 	);
@@ -198,6 +197,8 @@ public:
 		DataArray<2> &io_h,
 		DataArray<2> &io_u,
 		DataArray<2> &io_v,
+
+		double i_timestep_size,	///< timestep size
 
 		Operators2D &op,
 		const SimulationVariables &i_parameters,
@@ -221,7 +222,7 @@ public:
 			DataArray<2> &io_u,
 			DataArray<2> &io_v,
 
-			double i_timestep_size,
+			double i_timestep_size,	///< timestep size
 
 			Operators2D &op,
 			const SimulationVariables &i_parameters

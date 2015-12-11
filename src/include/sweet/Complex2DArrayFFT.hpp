@@ -439,6 +439,7 @@ public:
 	}
 
 
+	inline
 	void set(int y, int x, double re, double im)
 	{
 		data[(y*resolution[0]+x)*2+0] = re;
@@ -446,6 +447,7 @@ public:
 	}
 
 
+	inline
 	void set(int y, int x, const std::complex<double> &i_value)
 	{
 		data[(y*resolution[0]+x)*2+0] = i_value.real();
@@ -453,26 +455,31 @@ public:
 	}
 
 
+	inline
 	void setRe(int y, int x, double re)
 	{
 		data[(y*resolution[0]+x)*2+0] = re;
 	}
 
+	inline
 	void setIm(int y, int x, double im)
 	{
 		data[(y*resolution[0]+x)*2+1] = im;
 	}
 
+	inline
 	double getRe(int y, int x)	const
 	{
 		return data[(y*resolution[0]+x)*2+0];
 	}
 
+	inline
 	double getIm(int y, int x)	const
 	{
 		return data[(y*resolution[0]+x)*2+1];
 	}
 
+	inline
 	complex get(int y, int x)	const
 	{
 		std::size_t idx = (y*resolution[0]+x)*2;
@@ -1257,7 +1264,7 @@ public:
 			{
 				double value_re = i_testArray.getRe(y, x);
 				double value_im = i_testArray.getIm(y, x);
-#if 1
+#if 0
 				if (std::abs(value_re) < 10e-10)
 					value_re = 0;
 				if (std::abs(value_im) < 10e-10)
@@ -1272,9 +1279,10 @@ public:
 
 
 
+	inline
 	Complex2DArrayFFT spec_div_element_wise(
-			const Complex2DArrayFFT &i_d,
-			double i_instability_threshold = 0
+			const Complex2DArrayFFT &i_d
+//			double i_instability_threshold = 0
 	)	const
 	{
 		Complex2DArrayFFT out(resolution, aliased_scaled);
@@ -1291,23 +1299,11 @@ public:
 
 			double den = (br*br+bi*bi);
 
-			if (std::abs(den) < i_instability_threshold)
-			{
-				std::cerr << "Instability via division by 0 detected (" << den << ")" << std::endl;
-				exit(1);
-			}
-
-			if (std::abs(den) == 0)
-			{
-				// For Laplace solution, this is the integration constant C
-				out.data[i] = 0;
-				out.data[i+1] = 0;
-			}
-			else
-			{
-				out.data[i] = (ar*br + ai*bi)/den;
-				out.data[i+1] = (ai*br - ar*bi)/den;
-			}
+			//if (std::abs(den) == 0)
+			// special handling merged with bit trick
+			// For Laplace solution, this is the integration constant C
+			out.data[i] = (std::abs(den) == 0 ? 0 : (ar*br + ai*bi)/den);
+			out.data[i+1] = (std::abs(den) == 0 ? 0 : (ai*br - ar*bi)/den);
 		}
 
 		return out;
@@ -1351,8 +1347,9 @@ public:
 	{
 		i_dataArray_Real.requestDataInCartesianSpace();
 
+// TODO: Make this SIMD
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
-#		pragma omp parallel for OPENMP_SIMD
+#		pragma omp parallel for //OPENMP_SIMD
 #endif
 		for (std::size_t j = 0; j < resolution[1]; j++)
 			for (std::size_t i = 0; i < resolution[0]; i++)
