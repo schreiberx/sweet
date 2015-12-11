@@ -39,6 +39,7 @@ double param_initial_freq_x_mul;
 double param_initial_freq_y_mul;
 
 int param_boundary_id;
+bool param_nonlinear;
 
 class SimulationSWE
 {
@@ -890,10 +891,52 @@ public:
 	}
 
 
+	/**
+	 * wrapper to unify interfaces for REXI and analytical solution for L operator
+	 */
+	void rexi_run_timestep_wrapper(
+		DataArray<2> &io_h,
+		DataArray<2> &io_u,
+		DataArray<2> &io_v,
+
+		double i_local_timestep_size
+	)
+	{
+		switch(param_timestepping_mode)
+		{
+		case 1:
+			// REXI time stepping
+			rexiSWE.run_timestep(
+					prog_h, prog_u, prog_v,
+
+					op,
+					simVars,
+					param_rexi_zero_before_solving
+			);
+			break;
+
+		case 2:
+			// Analytical solution
+			rexiSWE.run_timestep_direct_solution(
+					prog_h, prog_u, prog_v,
+
+					i_local_timestep_size,
+					op,
+					simVars
+			);
+			break;
+
+		default:
+			assert(false);
+			std::cerr << "Timestepping method in this wrapper not supported" << std::endl;
+			exit(-1);
+		}
+	}
 
 	void run_timestep()
 	{
 		double o_dt;
+
 		if (param_timestepping_mode == 0)
 		{
 			// either set time step size to 0 for autodetection or to
@@ -914,7 +957,7 @@ public:
 		}
 		else if (param_timestepping_mode == 1)
 		{
-			// REXI time stepping
+			// REXI time stepping for linear eq
 			o_dt = -simVars.sim.CFL;
 			rexiSWE.run_timestep(
 					prog_h, prog_u, prog_v,
@@ -945,6 +988,7 @@ public:
 					simVars
 			);
 		}
+
 		else
 		{
 			std::cerr << "Invalid time stepping method" << std::endl;
@@ -1302,6 +1346,7 @@ int main(int i_argc, char *i_argv[])
 			"initial-freq-y-mul",
 			"boundary-id",
 			"rexi-zero-before-solving",
+			"nonlinear",
 			nullptr
 	};
 
@@ -1322,7 +1367,7 @@ int main(int i_argc, char *i_argv[])
 
 	simVars.bogus.var[12] = 0;
 	simVars.bogus.var[13] = 1;
-
+	simVars.bogus.var[14] = 0;
 
 
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
@@ -1357,6 +1402,8 @@ int main(int i_argc, char *i_argv[])
 		std::cout << std::endl;
 		std::cout << "	--rexi-zero-before-solving=[0/1]	Zero the solution for the iterative solver" << std::endl;
 		std::cout << std::endl;
+		std::cout << "	--nonlinear=[0/1]	0-use linear equations, 1-use nonlinear eq" << std::endl;
+		std::cout << std::endl;
 		return -1;
 	}
 
@@ -1377,6 +1424,8 @@ int main(int i_argc, char *i_argv[])
 	param_boundary_id = simVars.bogus.var[12];
 
 	param_rexi_zero_before_solving = simVars.bogus.var[13];
+
+	param_nonlinear = simVars.bogus.var[14];
 
 	SimulationSWE *simulationSWE = new SimulationSWE;
 
