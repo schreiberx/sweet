@@ -79,7 +79,7 @@ public:
 
 		tmp(simVars.disc.res),
 
-		op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_diffs)
+		op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
 	{
 		reset();
 	}
@@ -650,7 +650,7 @@ int main(int i_argc, char *i_argv[])
 
 	SimulationSWEStaggered *simulationSWE = new SimulationSWEStaggered;
 
-	if (simVars.disc.use_spectral_diffs)
+	if (simVars.disc.use_spectral_basis_diffs)
 	{
 		std::cerr << "Spectral differentiation not yet supported for staggered grid!" << std::endl;
 		return -1;

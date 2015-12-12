@@ -162,7 +162,7 @@ public:
 		double timestepping_runge_kutta_order = 1;
 
 		// use spectral differential operators
-		bool use_spectral_diffs = false;
+		bool use_spectral_basis_diffs = true;
 	} disc;
 
 
@@ -400,7 +400,7 @@ public:
 				break;
 
 			case 'S':
-				disc.use_spectral_diffs = atoi(optarg);
+				disc.use_spectral_basis_diffs = atoi(optarg);
 				break;
 
 			case 'X':

@@ -142,7 +142,7 @@ public:
 	Operators2D(
 		std::size_t res[2],		///< resolution
 		double i_domain_size[2],	///< domain size
-		bool i_use_spectral_diffs = false
+		bool i_use_spectral_basis_diffs
 	)	:
 		diff_c_x(res),
 		diff_c_y(res),
@@ -229,8 +229,12 @@ public:
 
 /////////////////////////////////////////////////////////////////////
 
-		if (i_use_spectral_diffs)
+		if (i_use_spectral_basis_diffs)
 		{
+			/*
+			 * setup spectral differential operators
+			 * 		diff(e(ix), x)
+			 */
 			// Assume, that errors are linearly depending on the resolution
 			// see test_spectral_ops.cpp
 

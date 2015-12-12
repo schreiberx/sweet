@@ -731,14 +731,14 @@ void RexiSWE::run_timestep_direct_solution(
 		double i_timestep_size,	///< timestep size
 
 		Operators2D &op,
-		const SimulationVariables &i_parameters
+		const SimulationVariables &i_simVars
 )
 {
 	typedef std::complex<double> complex;
 
-	double eta_bar = i_parameters.setup.h0;
-	double g = i_parameters.sim.g;
-	double f = i_parameters.sim.f0;
+	double eta_bar = i_simVars.setup.h0;
+	double g = i_simVars.sim.g;
+	double f = i_simVars.sim.f0;
 	complex I(0.0,1.0);
 
 	Complex2DArrayFFT i_h(io_h.resolution);
@@ -758,8 +758,8 @@ void RexiSWE::run_timestep_direct_solution(
 	i_v.loadRealFromDataArray(io_v);
 	i_v = i_v.toSpec();
 
-	double s0 = i_parameters.sim.domain_size[0];
-	double s1 = i_parameters.sim.domain_size[1];
+	double s0 = i_simVars.sim.domain_size[0];
+	double s1 = i_simVars.sim.domain_size[1];
 
 	for (std::size_t ik1 = 0; ik1 < i_h.resolution[1]; ik1++)
 	{

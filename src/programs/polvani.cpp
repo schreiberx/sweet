@@ -64,7 +64,7 @@ public:
 		eta(simVars.disc.res),
 		tmp(simVars.disc.res),
 
-		op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_diffs)
+		op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
 	{
 		reset();
 	}
@@ -572,7 +572,7 @@ void compute_polvani_initialization(
 	//	srand(0x15051982);
 		srand(time(NULL));
 
-		Operators2D op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_diffs);
+		Operators2D op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
 		/*
 		 * see Polvani et. al: Coherent structures of shallow-water turbulence

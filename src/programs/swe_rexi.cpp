@@ -100,7 +100,7 @@ public:
 		t0_prog_u(simVars.disc.res),
 		t0_prog_v(simVars.disc.res),
 
-		op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_diffs)
+		op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
 	{
 		reset();
 	}
@@ -129,6 +129,18 @@ public:
 		prog_u.set_all(0);
 		prog_v.set_all(0);
 		boundary_mask.set_all(0);
+
+		if (param_use_staggering && simVars.disc.use_spectral_basis_diffs)
+		{
+			std::cerr << "Staggering and spectral basis not supported!" << std::endl;
+			exit(1);
+		}
+
+		if (param_use_staggering && param_timestepping_mode != 0)
+		{
+			std::cerr << "Staggering only supported for standard time stepping mode 0!" << std::endl;
+			exit(1);
+		}
 
 		if (simVars.setup.scenario == -1)
 		{
@@ -190,6 +202,10 @@ public:
 						prog_h.set(j, i, h);
 						prog_u.set(j, i, u);
 						prog_v.set(j, i, v);
+
+						t0_prog_h.set(j, i, h);
+						t0_prog_u.set(j, i, u);
+						t0_prog_v.set(j, i, v);
 					}
 				}
 			}
@@ -255,6 +271,13 @@ public:
 					prog_h.set(j, i, h);
 					prog_u.set(j, i, u);
 					prog_v.set(j, i, v);
+
+					double t0_h = std::sin(2.0*h_dx)*std::cos(2.0*h_dy) - (1.0/5.0)*std::cos(2.0*h_dx)*std::sin(4.0*h_dy) + simVars.setup.h0;
+					double t0_u = std::cos(4.0*h_dx)*std::cos(2.0*h_dy);
+					double t0_v = std::cos(2.0*h_dx)*std::cos(4.0*h_dy);
+					t0_prog_h.set(j, i, t0_h);
+					t0_prog_u.set(j, i, t0_u);
+					t0_prog_v.set(j, i, t0_v);
 				}
 			}
 		}
@@ -272,6 +295,10 @@ public:
 							double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
 
 							prog_h.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
+
+							t0_prog_h.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
+							t0_prog_u.set(j,i, SWEValidationBenchmarks::return_u(simVars, x, y));
+							t0_prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
 						}
 
 						{
@@ -298,6 +325,10 @@ public:
 						prog_h.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
 						prog_u.set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
 						prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
+
+						t0_prog_h.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
+						t0_prog_u.set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
+						t0_prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
 					}
 				}
 			}
@@ -407,14 +438,25 @@ public:
 			prog_h.file_loadData(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
 
 		if (simVars.setup.input_data_filenames.size() > 1)
+		{
 			prog_u.file_loadData(simVars.setup.input_data_filenames[1].c_str(), simVars.setup.input_data_binary);
+			if (param_use_staggering && param_compute_error)
+			{
+				std::cerr << "Warning: Computing analytical solution with staggered grid based on loaded data not supported!" << std::endl;
+				exit(1);
+			}
+		}
 
 		if (simVars.setup.input_data_filenames.size() > 2)
+		{
 			prog_v.file_loadData(simVars.setup.input_data_filenames[2].c_str(), simVars.setup.input_data_binary);
+			if (param_use_staggering && param_compute_error)
+			{
+				std::cerr << "Warning: Computing analytical solution with staggered grid based on loaded data not supported!" << std::endl;
+				exit(1);
+			}
+		}
 
-		t0_prog_h = prog_h;
-		t0_prog_u = prog_u;
-		t0_prog_v = prog_v;
 
 
 		if (param_timestepping_mode == 1 || param_timestepping_mode == 3)
@@ -535,6 +577,8 @@ public:
 
 	void boundary_action()
 	{
+		assert(param_boundary_id != 0);
+
 		if (param_boundary_id != 0)
 		{
 			if (param_use_staggering)
@@ -916,6 +960,12 @@ public:
 			break;
 
 		case 2:
+			if (param_use_staggering)
+			{
+				std::cerr << "Direct solution on staggered grid not supported!" << std::endl;
+				exit(1);
+			}
+
 			// Analytical solution
 			rexiSWE.run_timestep_direct_solution(
 					prog_h, prog_u, prog_v,
@@ -975,6 +1025,13 @@ public:
 		}
 		else if (param_timestepping_mode == 2)
 		{
+			if (param_use_staggering)
+			{
+				std::cerr << "Direct solution on staggered grid not supported!" << std::endl;
+				exit(1);
+			}
+
+
 			// Analytical solution
 			assert(simVars.sim.CFL < 0);
 			o_dt = -simVars.sim.CFL;
@@ -1556,11 +1613,9 @@ int main(int i_argc, char *i_argv[])
 			 * Setup our little dog REXI
 			 */
 			rexiSWE.setup(
-					-simVars.sim.CFL,
 					param_rexi_h,
 					param_rexi_m,
 					param_rexi_l,
-					simVars.sim.f0,
 					simVars.disc.res,
 					simVars.sim.domain_size,
 					param_rexi_half,
@@ -1575,13 +1630,14 @@ int main(int i_argc, char *i_argv[])
 			DataArray<2> prog_u(simVars.disc.res);
 			DataArray<2> prog_v(simVars.disc.res);
 
-			Operators2D op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_diffs);
+			Operators2D op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
 			while (run)
 			{
 				// REXI time stepping
 				run = rexiSWE.run_timestep(
 						prog_h, prog_u, prog_v,
+						-simVars.sim.CFL,
 						op,
 						simVars,
 						param_rexi_zero_before_solving

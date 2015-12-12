@@ -39,11 +39,11 @@ int main(int i_argc, char *i_argv[])
 #endif
 
 	SimulationVariables simVars;
-	simVars.disc.use_spectral_diffs = 1;
+	simVars.disc.use_spectral_basis_diffs = 1;
 	if (!simVars.setupFromMainParameters(i_argc, i_argv))
 		return -1;
 
-	if (simVars.disc.use_spectral_diffs)
+	if (simVars.disc.use_spectral_basis_diffs)
 		std::cout << "Using spectral diffs" << std::endl;
 	else
 		std::cout << "Using kernel-based diffs" << std::endl;
@@ -151,7 +151,7 @@ int main(int i_argc, char *i_argv[])
 			DataArray<2> u(res);
 			DataArray<2> v(res);
 
-			Operators2D op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_diffs);
+			Operators2D op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
 			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 			{
@@ -208,7 +208,7 @@ int main(int i_argc, char *i_argv[])
 			DataArray<2> h_diff_x(res);
 			DataArray<2> h_diff_y(res);
 
-			Operators2D op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_diffs);
+			Operators2D op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
 			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 			{
@@ -320,7 +320,7 @@ int main(int i_argc, char *i_argv[])
 			DataArray<2> h_diff2_x(res);
 			DataArray<2> h_diff2_y(res);
 
-			Operators2D op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_diffs);
+			Operators2D op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
 			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 			{

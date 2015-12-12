@@ -71,7 +71,7 @@ public:
 
 		h_t(simVars.disc.res),
 
-		op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_diffs)
+		op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
 	{
 		reset();
 	}

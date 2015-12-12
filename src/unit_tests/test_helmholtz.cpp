@@ -46,7 +46,7 @@ int main(int i_argc, char *i_argv[])
 #endif
 
 	SimulationVariables simVars;
-	simVars.disc.use_spectral_diffs = 1;
+	simVars.disc.use_spectral_basis_diffs = 1;
 
 	const char *bogus_var_names[] = {
 			"use-fd-for-complex-array",	/// use finite differences for complex array
@@ -92,7 +92,7 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "********************************************************" << std::endl;
 	}
 
-	if (simVars.disc.use_spectral_diffs)
+	if (simVars.disc.use_spectral_basis_diffs)
 		std::cout << "Using spectral diffs" << std::endl;
 	else
 		std::cout << "Using kernel-based diffs" << std::endl;
@@ -215,7 +215,7 @@ int main(int i_argc, char *i_argv[])
 
 			double tau = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 1);
 
-			Operators2D op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_diffs);
+			Operators2D op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
 			for (std::size_t i = 0; i < rexiSWE.rexi.alpha.size(); i++)
 			{
