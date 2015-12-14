@@ -1523,7 +1523,7 @@ int main(int i_argc, char *i_argv[])
 			simulationSWE->reset();
 
 			Stopwatch time;
-			time.reset();
+
 
 			double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
 
@@ -1534,6 +1534,12 @@ int main(int i_argc, char *i_argv[])
 				diagnostics_mass_start = simVars.diag.total_mass;
 				diagnostics_potential_entrophy_start = simVars.diag.total_potential_enstrophy;
 			}
+
+#if SWEET_MPI
+			MPI_Barrier(MPI_COMM_WORLD);
+#endif
+			time.reset();
+
 
 			while(true)
 			{
@@ -1631,6 +1637,8 @@ int main(int i_argc, char *i_argv[])
 			DataArray<2> prog_v(simVars.disc.res);
 
 			Operators2D op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
+
+			MPI_Barrier(MPI_COMM_WORLD);
 
 			while (run)
 			{
