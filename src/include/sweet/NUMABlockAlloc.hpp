@@ -31,7 +31,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#if SWEET_THREADING
+#if SWEET_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
 #	include <omp.h>
 #endif
 
@@ -121,11 +121,24 @@ private:
 	static
 	int& getThreadLocalDomainIdRef()
 	{
+#if 0
+#if SWEET_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+		static int domain_id = omp_get_thread_num();
+#else
+		static int domain_id = 0;
+#endif
+
+		return domain_id;
+
+#else
+
 		/**
 		 * Domain node for current thread
 		 */
+		// WARNING: This class has to be compiled always with
 		static thread_local int domain_id;
 		return domain_id;
+#endif
 	}
 
 
@@ -148,7 +161,7 @@ public:
 private:
 	void p_setup()
 	{
-#if SWEET_THREADING
+#if SWEET_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
 		if (omp_in_parallel())
 		{
 			std::cerr << "ERROR: NUMAMemManager may not be initialized within parallel region!" << std::endl;
@@ -165,12 +178,6 @@ private:
 			verbosity = 0;
 		else
 			verbosity = atoi(env_verbosity);
-
-//		std::cout << "HELLO FROM NUMA MEM MANAGER" << std::endl;
-
-//		page_size = sysconf(_SC_PAGESIZE);
-//		if (verbosity > 0)
-//			std::cout << "page_size: " << page_size << std::endl;
 
 
 #if  NUMA_BLOCK_ALLOCATOR_TYPE == 0
@@ -198,7 +205,7 @@ private:
 		getThreadLocalDomainIdRef() = numa_node_of_cpu(cpuid);
 
 
-#if SWEET_THREADING
+#if SWEET_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
 #pragma omp parallel
 		{
 			int cpuid = sched_getcpu();
@@ -216,7 +223,7 @@ private:
 		/*
 		 * Thread granularity, use this also per default
 		 */
-#if SWEET_THREADING
+#if SWEET_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
 		num_alloc_domains = omp_get_max_threads();
 #else
 		num_alloc_domains = 1;
@@ -226,7 +233,7 @@ private:
 			std::cout << "num_alloc_domains: " << num_alloc_domains << std::endl;
 
 		// set NUMA id in case that master thread has a different id than the first thread
-#if SWEET_THREADING
+#if SWEET_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
 		getThreadLocalDomainIdRef() = omp_get_thread_num();
 
 #pragma omp parallel
@@ -242,7 +249,7 @@ private:
 
 #endif
 
-#if SWEET_THREADING
+#if SWEET_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
 		if (verbosity > 0)
 		{
 			#pragma omp parallel
@@ -372,7 +379,7 @@ public:
 		// dummy call here to initialize this class as part of the singleton out of critical region
 		getSingletonRef();
 
-#if SWEET_THREADING
+#if SWEET_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
 #	pragma omp critical
 #endif
 
@@ -428,7 +435,7 @@ public:
 #else
 
 	#if NUMA_BLOCK_ALLOCATOR_TYPE == 1
-#if SWEET_THREADING
+#if SWEET_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
 	#pragma omp critical
 #endif
 	#endif

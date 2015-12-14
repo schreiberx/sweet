@@ -17,7 +17,7 @@ elif env['unit_test'] != '':
 if env['program_name'] == 'swe_rexi' or env['unit_test'] == 'test_helmholtz':
 	if env['rexi_parallel_sum']=='enable':
 		env_omp = env.Clone()
-		env_omp.Append(CCFLAGS = ' -fopenmp')
+#		env_omp.Append(CCFLAGS = ' -fopenmp')
 		env.src_files.append(env_omp.Object('src/programs/rexi/RexiSWE.cpp'))
 	else:
 		env.src_files.append(env.Object('src/programs/rexi/RexiSWE.cpp'))

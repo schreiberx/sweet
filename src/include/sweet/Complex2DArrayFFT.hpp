@@ -107,6 +107,8 @@ public:
 		if (ref_counter != 1)
 			return;
 
+		static const char *load_wisdom_from_file = getenv("SWEET_FFTW_LOAD_WISDOM_FROM_FILE");
+
 		{
 			// create dummy array for plan creation
 			// IMPORTANT! if we use the same array for input/output,
@@ -121,12 +123,14 @@ public:
 						(fftw_complex*)data,
 						(fftw_complex*)dummy_data,
 						FFTW_FORWARD,
-						FFTW_PRESERVE_INPUT
+						(load_wisdom_from_file == 0 ? FFTW_PRESERVE_INPUT : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
 					);
 
 			if (fft_getSingleton_Plans().to_spec == nullptr)
 			{
 				std::cerr << "Failed to create plan_forward for fftw" << std::endl;
+				std::cerr << "complex forward preverse_input forward " << resolution[0] << " x " << resolution[1] << std::endl;
+				std::cerr << "fftw-wisdom plan: cf" << resolution[0] << "x" << resolution[1] << std::endl;
 				exit(-1);
 			}
 
@@ -137,7 +141,7 @@ public:
 						(fftw_complex*)data,
 						(fftw_complex*)dummy_data,
 						FFTW_BACKWARD,
-						FFTW_PRESERVE_INPUT
+						(load_wisdom_from_file == 0 ? FFTW_PRESERVE_INPUT : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
 					);
 
 			fft_getSingleton_Plans().resolution[0] = resolution[0];
@@ -146,6 +150,8 @@ public:
 			if (fft_getSingleton_Plans().to_cart == nullptr)
 			{
 				std::cerr << "Failed to create plan_backward for fftw" << std::endl;
+				std::cerr << "complex backward preverse_input forward " << resolution[0] << " x " << resolution[1] << std::endl;
+				std::cerr << "fftw-wisdom plan: cf" << resolution[0] << "x" << resolution[1] << std::endl;
 				exit(-1);
 			}
 
@@ -163,7 +169,7 @@ public:
 						(fftw_complex*)dummy_data_aliasing_in,
 						(fftw_complex*)dummy_data_aliasing_out,
 						FFTW_FORWARD,
-						FFTW_PRESERVE_INPUT
+						(load_wisdom_from_file == 0 ? FFTW_PRESERVE_INPUT : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
 					);
 
 			if (fft_getSingleton_Plans().to_spec_aliasing == nullptr)
@@ -180,7 +186,7 @@ public:
 						(fftw_complex*)dummy_data_aliasing_out,
 						(fftw_complex*)dummy_data_aliasing_in,
 						FFTW_BACKWARD,
-						FFTW_PRESERVE_INPUT
+						(load_wisdom_from_file == 0 ? FFTW_PRESERVE_INPUT : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
 					);
 
 			fft_getSingleton_Plans().resolution_aliasing[0] = resolution[0]*2;

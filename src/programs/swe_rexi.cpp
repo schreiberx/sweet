@@ -577,67 +577,67 @@ public:
 
 	void boundary_action()
 	{
-		assert(param_boundary_id != 0);
+//		assert(param_boundary_id != 0);
 
-		if (param_boundary_id != 0)
+		if (param_boundary_id == 0)
+			return;
+
+		if (param_use_staggering)
 		{
-			if (param_use_staggering)
-			{
-				/*
-				 * 0     1       1       0       0
-				 *       h0      h1      h2      h3
-				 *   |---+---|---+---|---+---|---+---|
-				 *       |XXXXXXX|
-				 *
-				 *   u0      u1      u2      u3      u4
-				 *
-				 *   0       1       1       0       0	// boundary mask at u
-				 *   1       0       0       1       1	// inv boundary mask at u
-				 */
-				// process U
-				prog_u =
-						// velocities outside of boundary
-						prog_u*(boundary_mask_inv*op.shift_right(boundary_mask_inv))
-						// left boundary
-						- op.shift_right(prog_u*boundary_mask_inv)*boundary_mask
-						// right boundary
-						- op.shift_left(prog_u)*boundary_mask_inv*op.shift_right(boundary_mask);
+			/*
+			 * 0     1       1       0       0
+			 *       h0      h1      h2      h3
+			 *   |---+---|---+---|---+---|---+---|
+			 *       |XXXXXXX|
+			 *
+			 *   u0      u1      u2      u3      u4
+			 *
+			 *   0       1       1       0       0	// boundary mask at u
+			 *   1       0       0       1       1	// inv boundary mask at u
+			 */
+			// process U
+			prog_u =
+					// velocities outside of boundary
+					prog_u*(boundary_mask_inv*op.shift_right(boundary_mask_inv))
+					// left boundary
+					- op.shift_right(prog_u*boundary_mask_inv)*boundary_mask
+					// right boundary
+					- op.shift_left(prog_u)*boundary_mask_inv*op.shift_right(boundary_mask);
 
-				prog_v =
-						// velocities outside of boundary
-						prog_v*(boundary_mask_inv*op.shift_up(boundary_mask_inv))
-						// left boundary
-						- op.shift_up(prog_v*boundary_mask_inv)*boundary_mask
-						// right boundary
-						- op.shift_down(prog_v)*boundary_mask_inv*op.shift_up(boundary_mask);
+			prog_v =
+					// velocities outside of boundary
+					prog_v*(boundary_mask_inv*op.shift_up(boundary_mask_inv))
+					// left boundary
+					- op.shift_up(prog_v*boundary_mask_inv)*boundary_mask
+					// right boundary
+					- op.shift_down(prog_v)*boundary_mask_inv*op.shift_up(boundary_mask);
 
-				prog_h = boundary_mask_inv*prog_h + boundary_mask*simVars.setup.h0;
-			}
-			else
-			{
-				//          |XXXXXXXXXXXXXXX
-				//  u0     u1    u2     u3
-				//  0      1     1      1	// boundary
-				//  1      0     0      0	// inv
+			prog_h = boundary_mask_inv*prog_h + boundary_mask*simVars.setup.h0;
+		}
+		else
+		{
+			//          |XXXXXXXXXXXXXXX
+			//  u0     u1    u2     u3
+			//  0      1     1      1	// boundary
+			//  1      0     0      0	// inv
 #if 1
-				prog_u = boundary_mask_inv*prog_u
-						+ op.shift_right(op.shift_right(boundary_mask_inv*prog_u)*boundary_mask)
-						+ op.shift_right(boundary_mask_inv*prog_u)*boundary_mask
-						+ op.shift_left(op.shift_left(boundary_mask_inv*prog_u)*boundary_mask)
-						+ op.shift_left(boundary_mask_inv*prog_u)*boundary_mask
-						;
+			prog_u = boundary_mask_inv*prog_u
+					+ op.shift_right(op.shift_right(boundary_mask_inv*prog_u)*boundary_mask)
+					+ op.shift_right(boundary_mask_inv*prog_u)*boundary_mask
+					+ op.shift_left(op.shift_left(boundary_mask_inv*prog_u)*boundary_mask)
+					+ op.shift_left(boundary_mask_inv*prog_u)*boundary_mask
+					;
 #endif
 #if 1
-				prog_v = boundary_mask_inv*prog_v
-						+ op.shift_up(op.shift_up(boundary_mask_inv*prog_v)*boundary_mask)
-						+ op.shift_up(boundary_mask_inv*prog_v)*boundary_mask
-						+ op.shift_down(op.shift_down(boundary_mask_inv*prog_v)*boundary_mask)
-						+ op.shift_down(boundary_mask_inv*prog_v)*boundary_mask
-						;
+			prog_v = boundary_mask_inv*prog_v
+					+ op.shift_up(op.shift_up(boundary_mask_inv*prog_v)*boundary_mask)
+					+ op.shift_up(boundary_mask_inv*prog_v)*boundary_mask
+					+ op.shift_down(op.shift_down(boundary_mask_inv*prog_v)*boundary_mask)
+					+ op.shift_down(boundary_mask_inv*prog_v)*boundary_mask
+					;
 #endif
 
-				prog_h = boundary_mask_inv*prog_h + boundary_mask*simVars.setup.h0;
-			}
+			prog_h = boundary_mask_inv*prog_h + boundary_mask*simVars.setup.h0;
 		}
 	}
 

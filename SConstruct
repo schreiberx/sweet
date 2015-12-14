@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/env python
 
 import os
 
@@ -237,8 +237,8 @@ threading_constraints = ['off', 'omp']
 AddOption(	'--threading',
 		dest='threading',
 		type='string',	
-		default='omp',
-		help='Threading to use '+' / '.join(threading_constraints)+', default: omp'
+		default='off',
+		help='Threading to use '+' / '.join(threading_constraints)+', default: off'
 )
 env['threading'] = GetOption('threading')
 
@@ -672,8 +672,13 @@ if env['libfft'] == 'enable':
 	if env['threading'] == 'omp':
 		env.Append(LIBS=['fftw3_omp'])
 
-if env['rexi_parallel_sum']=='enable' or env['threading'] == 'omp':
+if env['rexi_parallel_sum'] == 'enable' and env['threading'] == 'omp':
+	print 'ERROR: "REXI Parallel Sum" and "Threading" is both activated'
+	sys.exit(1)
+
+if env['rexi_parallel_sum'] == 'enable' or env['threading'] == 'omp':
 	env.Append(LINKFLAGS=' -fopenmp')
+	env.Append(CXXFLAGS=' -fopenmp')
 
 if env['rexi_parallel_sum'] == 'enable':
 	env.Append(CXXFLAGS=' -DSWEET_REXI_THREAD_PARALLEL_SUM=1')

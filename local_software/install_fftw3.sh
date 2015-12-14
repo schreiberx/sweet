@@ -31,4 +31,6 @@ if [ ! -e "$DST_DIR/lib/libfftw3.so" ]; then
 
 	echo "DONE"
 
+else
+	echo "FFTW already installed"
 fi

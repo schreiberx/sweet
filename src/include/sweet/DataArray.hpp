@@ -31,7 +31,7 @@
 	#define SWEET_USE_SPECTRAL_DEALIASING 1
 #endif
 
-#if SWEET_USE_SPECTRAL_SPACE
+#if SWEET_USE_SPECTRAL_SPACE// || SWEET_USE_LIBFFT
 #	include <fftw3.h>
 #endif
 
@@ -183,12 +183,16 @@ private:
 		if (i_first_touch_initialize)
 		{
 			// use parallel setup for first touch policy!
+#if SWEET_THREADING
 			#pragma omp parallel for OPENMP_SIMD
+#endif
 			for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 				array_data_cartesian_space[i] = -12345;	// dummy data
 
 #if SWEET_USE_SPECTRAL_SPACE
+#if SWEET_THREADING
 			#pragma omp parallel for OPENMP_SIMD
+#endif
 			for (std::size_t i = 0; i < array_data_spectral_length; i++)
 				array_data_spectral_space[i] = -12345;	// dummy data
 #endif
@@ -330,7 +334,9 @@ public:
 #endif
 		{
 			// use parallel copy for first touch policy!
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 			for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 				array_data_cartesian_space[i] = i_dataArray.array_data_cartesian_space[i];
 		}
@@ -342,7 +348,9 @@ public:
 		if (array_data_spectral_space_valid)
 		{
 			// use parallel copy for first touch policy!
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 			for (std::size_t i = 0; i < array_data_spectral_length; i++)
 				array_data_spectral_space[i] = i_dataArray.array_data_spectral_space[i];
 		}
@@ -611,7 +619,9 @@ public:
 	{
 		// TODO: implement this in spectral space!
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			array_data_cartesian_space[i] = i_value;
 
@@ -636,7 +646,9 @@ public:
 
 		requestDataInCartesianSpace();
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < resolution[0]; i++)
 			array_data_cartesian_space[i_row*resolution[0]+i] = i_value;
 	}
@@ -661,7 +673,9 @@ public:
 		std::size_t src_idx = i_src_row*resolution[0];
 		std::size_t dst_idx = i_dst_row*resolution[0];
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < resolution[0]; i++)
 			array_data_cartesian_space[dst_idx+i] = -array_data_cartesian_space[src_idx+i];
 	}
@@ -687,7 +701,9 @@ public:
 		std::size_t src_idx = i_src_row*resolution[0];
 		std::size_t dst_idx = i_dst_row*resolution[0];
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < resolution[0]; i++)
 			array_data_cartesian_space[dst_idx+i] = array_data_cartesian_space[src_idx+i];
 	}
@@ -760,7 +776,9 @@ public:
 			double i_value_im
 	)
 	{
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
 		{
 			array_data_spectral_space[i+0] = i_value_re;
@@ -1045,51 +1063,91 @@ public:
 	public:
 		FFTWSingletonClass(
 				DataArray<D> &i_dataArray,
-				bool i_aliasing = false		///< set true for aliasing to avoid thread reinitialization
+				bool i_aliasing_init = false		///< set true for aliasing to avoid thread reinitialization
 		)	:
 			ref_counter(0)
 		{
-			if (!i_aliasing)
-			{
+			int max_fftw_threads = 1;
+
 #if SWEET_THREADING
-	#if SWEET_REXI_THREAD_PARALLEL_SUM
-			std::cout << "Using REXI parallel sum, hence using only single FFT thread" << std::endl;
-			// only use serial FFT in case of REXI parallel sum
-//		    fftw_plan_with_nthreads(1);
-	#else
-			// support threading
-			fftw_init_threads();
-		    fftw_plan_with_nthreads(omp_get_max_threads());
+			max_fftw_threads = omp_get_max_threads();
+#endif
+
+			if (!i_aliasing_init)
+			{
+				// only initialize it, if this class is not called to initialize aliasing
+#if SWEET_REXI_THREAD_PARALLEL_SUM
+				std::cout << "Using REXI parallel sum, hence using only single FFT thread" << std::endl;
+				// only use serial FFT in case of REXI parallel sum
+				// automatically use single-threaded fftw only
+//#if SWEET_THREADING
+//#	error "Incompatible/unsupported compile flags detected"
+//#endif
+				//fftw_init_threads();
+				//fftw_plan_with_nthreads(1);
+#else
+
+	#if SWEET_THREADING
+				// support threading
+				fftw_init_threads();
+				fftw_plan_with_nthreads(omp_get_max_threads());
 	#endif
 
 #endif
 			}
 
+
+
+#if 0
+			static const char *fftw_load_wisdom_filename = "FFTW_WISDOM.cached";
+
+	#if 1
+			int wisdom_plan_loaded = fftw_import_wisdom_from_filename(fftw_load_wisdom_filename);
+			if (wisdom_plan_loaded > 0)
+				std::cout << "Successfully loaded FFTW wisdom from file " << fftw_load_wisdom_filename << std::endl;
+	#else
+			fftw_import_wisdom_from_filename(fftw_load_wisdom_filename);
+	#endif
+#endif
+
+
 			plan_backward_output_length = i_dataArray.array_data_cartesian_length;
 			plan_forward_output_length = i_dataArray.array_data_spectral_length;
 
 			double *data_cartesian = NUMABlockAlloc::alloc<double>(i_dataArray.array_data_cartesian_length*sizeof(double));
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 			for (std::size_t i = 0; i < i_dataArray.array_data_cartesian_length; i++)
 				data_cartesian[i] = -123;	// dummy data
 
 			double *data_spectral = NUMABlockAlloc::alloc<double>(i_dataArray.array_data_spectral_length*sizeof(double));
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 			for (std::size_t i = 0; i < i_dataArray.array_data_spectral_length; i++)
 				data_spectral[i] = -123;	// dummy data
 
 			// allow to search for a good plan only for 60 seconds
 //			fftw_set_timelimit(60);
 
-			static const char *wisdom_filename = "FFTW_WISDOM.cached";
 
-#if 0
-			int wisdom_plan_loaded = fftw_import_wisdom_from_filename(wisdom_filename);
-			if (wisdom_plan_loaded > 0)
-				std::cout << "Successfully loaded FFTW wisdom from file " << wisdom_filename << std::endl;
-#else
-			fftw_import_wisdom_from_filename(wisdom_filename);
-#endif
+
+			/*
+			 * FFT WISDOM INIT
+			 */
+			static const char *load_wisdom_from_file = getenv("SWEET_FFTW_LOAD_WISDOM_FROM_FILE");
+			if (load_wisdom_from_file != nullptr)
+			{
+				std::cout << "Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=" << load_wisdom_from_file << std::endl;
+
+				int wisdom_plan_loaded = fftw_import_wisdom_from_filename(load_wisdom_from_file);
+				if (wisdom_plan_loaded == 0)
+				{
+					std::cerr << "Failed to load FFTW wisdom from file " << load_wisdom_from_file << std::endl;
+					exit(1);
+				}
+			}
 
 			plan_forward =
 					fftw_plan_dft_r2c_2d(
@@ -1097,12 +1155,16 @@ public:
 						i_dataArray.resolution[0],	// n1 = nx
 						data_cartesian,
 						(fftw_complex*)data_spectral,
-						FFTW_PRESERVE_INPUT
+//						FFTW_PRESERVE_INPUT
+						(load_wisdom_from_file == 0 ? FFTW_PRESERVE_INPUT : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
 					);
 
+//			fftw_print_plan(plan_forward);
 			if (plan_forward == nullptr)
 			{
 				std::cerr << "Failed to create forward plan for fftw" << std::endl;
+				std::cerr << "r2c preverse_input forward " << i_dataArray.resolution[0] << " x " << i_dataArray.resolution[1] << std::endl;
+				std::cerr << "fftw-wisdom plan: rf" << i_dataArray.resolution[0] << "x" << i_dataArray.resolution[1] << std::endl;
 				exit(-1);
 			}
 
@@ -1112,19 +1174,22 @@ public:
 						i_dataArray.resolution[0],	// n1 = nx
 						(fftw_complex*)data_spectral,
 						data_cartesian,
-						0
+						(load_wisdom_from_file == 0 ? 0 : FFTW_WISDOM_ONLY)
 					);
 
 			if (plan_backward == nullptr)
 			{
 				std::cerr << "Failed to create backward plan for fftw" << std::endl;
+				std::cerr << "r2c backward " << i_dataArray.resolution[0] << " x " << i_dataArray.resolution[1] << std::endl;
+				std::cerr << "fftw-wisdom plan: rb" << i_dataArray.resolution[0] << "x" << i_dataArray.resolution[1] << std::endl;
 				exit(-1);
 			}
 
 			// always store plans - maybe they got extended with another one
 //			if (wisdom_plan_loaded == 0)
-			fftw_export_wisdom_to_filename(wisdom_filename);
-
+#if 0
+			fftw_export_wisdom_to_filename(fftw_load_wisdom_filename);
+#endif
 
 			NUMABlockAlloc::free(data_cartesian, i_dataArray.array_data_cartesian_length*sizeof(double));
 			NUMABlockAlloc::free(data_spectral, i_dataArray.array_data_spectral_length*sizeof(double));
@@ -1146,7 +1211,9 @@ public:
 			io_dataArray.array_data_spectral_space_valid = false;
 
 			double scale = (1.0/(double)plan_backward_output_length);
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 			for (std::size_t i = 0; i < plan_backward_output_length; i++)
 				io_dataArray.array_data_cartesian_space[i] *= scale;
 		}
@@ -1278,7 +1345,9 @@ public:
 		DataArray<D> out(this->resolution);
 		out.temporary_data = true;
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			out.array_data_cartesian_space[i] = (array_data_cartesian_space[i] > 0 ? 1 : 0);
 
@@ -1296,7 +1365,9 @@ public:
 		DataArray<D> out(this->resolution);
 		out.temporary_data = true;
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			out.array_data_cartesian_space[i] = (array_data_cartesian_space[i] > 0 ? array_data_cartesian_space[i] : 0);
 
@@ -1313,7 +1384,9 @@ public:
 		DataArray<D> out(this->resolution);
 		out.temporary_data = true;
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			out.array_data_cartesian_space[i] = (array_data_cartesian_space[i] < 0 ? 1 : 0);
 
@@ -1330,7 +1403,9 @@ public:
 		DataArray<D> out(this->resolution);
 		out.temporary_data = true;
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			out.array_data_cartesian_space[i] = (array_data_cartesian_space[i] < 0 ? array_data_cartesian_space[i] : 0);
 
@@ -1350,7 +1425,9 @@ public:
 		requestDataInCartesianSpace();
 
 		bool isallfinite = true;
+#if SWEET_THREADING
 #pragma omp parallel for reduction(&&:isallfinite)
+#endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			isallfinite = isallfinite && std::isfinite(array_data_cartesian_space[i]);
 
@@ -1367,7 +1444,9 @@ public:
 		requestDataInCartesianSpace();
 
 		double maxabs = -1;
+#if SWEET_THREADING
 #pragma omp parallel for reduction(max:maxabs)
+#endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			maxabs = std::max(maxabs, std::abs(array_data_cartesian_space[i]));
 
@@ -1383,7 +1462,9 @@ public:
 		requestDataInCartesianSpace();
 
 		double sum = 0;
+#if SWEET_THREADING
 #pragma omp parallel for reduction(+:sum)
+#endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			sum += array_data_cartesian_space[i]*array_data_cartesian_space[i];
 
@@ -1402,7 +1483,9 @@ public:
 		double sum = 0;
 		double c = 0;
 
+#if SWEET_THREADING
 #pragma omp parallel for reduction(+:sum,c)
+#endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 		{
 			double value = array_data_cartesian_space[i]*array_data_cartesian_space[i];
@@ -1430,7 +1513,9 @@ public:
 		requestDataInCartesianSpace();
 
 		double maxvalue = -std::numeric_limits<double>::max();
+#if SWEET_THREADING
 #pragma omp parallel for reduction(max:maxvalue)
+#endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			maxvalue = std::max(maxvalue, array_data_cartesian_space[i]);
 
@@ -1446,7 +1531,9 @@ public:
 		requestDataInCartesianSpace();
 
 		double minvalue = std::numeric_limits<double>::max();
+#if SWEET_THREADING
 #pragma omp parallel for reduction(min:minvalue)
+#endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			minvalue = std::min(minvalue, array_data_cartesian_space[i]);
 
@@ -1462,7 +1549,9 @@ public:
 		requestDataInCartesianSpace();
 
 		double sum = 0;
+#if SWEET_THREADING
 #pragma omp parallel for reduction(+:sum)
+#endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			sum += array_data_cartesian_space[i];
 
@@ -1479,7 +1568,9 @@ public:
 
 		double sum = 0;
 		double c = 0;
+#if SWEET_THREADING
 #pragma omp parallel for reduction(+:sum,c)
+#endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 		{
 			double value = array_data_cartesian_space[i];
@@ -1504,7 +1595,9 @@ public:
 		requestDataInCartesianSpace();
 
 		double sum = 0;
+#if SWEET_THREADING
 #pragma omp parallel for reduction(+:sum)
+#endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			sum += std::abs(array_data_cartesian_space[i]);
 
@@ -1520,7 +1613,9 @@ public:
 
 		double sum = 0;
 		double c = 0;
+#if SWEET_THREADING
 #pragma omp parallel for reduction(+:sum,c)
+#endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 		{
 			double value = std::abs(array_data_cartesian_space[i]);
@@ -1546,7 +1641,9 @@ public:
 		requestDataInCartesianSpace();
 
 		double sum = 0;
+#if SWEET_THREADING
 #pragma omp parallel for reduction(+:sum)
+#endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			sum += array_data_cartesian_space[i]*array_data_cartesian_space[i];
 
@@ -1564,7 +1661,9 @@ public:
 		double sum = 0.0;
 		double c = 0.0;
 
+#if SWEET_THREADING
 #pragma omp parallel for reduction(+:sum,c)
+#endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 		{
 			double value = array_data_cartesian_space[i]*array_data_cartesian_space[i];
@@ -1592,7 +1691,9 @@ public:
 		requestDataInSpectralSpace();
 
 		double maxabs = -1;
+#if SWEET_THREADING
 #pragma omp parallel for reduction(max:maxabs)
+#endif
 		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
 		{
 			double re = array_data_spectral_space[i];
@@ -1843,7 +1944,9 @@ public:
 		i_tolerance *= max_value;
 		i_tolerance *= (resolution[0]+resolution[1]);	// the larger the matrix, the less the accuracy
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
 		{
 			double ar = array_data_spectral_space[i];
@@ -1926,7 +2029,9 @@ public:
 		out.set_spec_all(0, 0);
 
 		// TODO: this does not work once distributed memory is available
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t j = 0; j < resolution_spec[1]/2; j++)
 		{
 			// lower quadrant
@@ -1938,7 +2043,9 @@ public:
 		}
 
 		std::size_t disp = out.range_spec_size[1] - range_spec_size[1];
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t j = resolution_spec[1]/2+1; j < resolution_spec[1]; j++)
 		{
 			// top quadrant
@@ -1951,7 +2058,9 @@ public:
 
 		double scale = ((double)new_resolution[0]*(double)new_resolution[1])/((double)resolution[0]*(double)resolution[1]);
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < out.array_data_spectral_length; i++)
 			out.array_data_spectral_space[i] *= scale;
 
@@ -1983,7 +2092,9 @@ public:
 
 		out.set_spec_all(0, 0);
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t j = 0; j < out.resolution_spec[1]/2; j++)
 		{
 			// lower quadrant
@@ -1995,7 +2106,9 @@ public:
 		}
 
 		std::size_t disp = range_spec_size[1] - out.range_spec_size[1];
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t j = out.resolution_spec[1]/2+1; j < out.resolution_spec[1]; j++)
 		{
 			// top quadrant
@@ -2019,7 +2132,9 @@ public:
 
 		double scale = ((double)i_new_resolution[0]*(double)i_new_resolution[1])/((double)resolution[0]*(double)resolution[1]);
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < out.array_data_spectral_length; i++)
 			out.array_data_spectral_space[i] *= scale;
 
@@ -2092,7 +2207,9 @@ public:
 			}
 			else
 			{
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 				for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 					array_data_cartesian_space[i] = i_dataArray.array_data_cartesian_space[i];
 			}
@@ -2115,7 +2232,9 @@ public:
 			}
 			else
 			{
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 				for (std::size_t i = 0; i < array_data_spectral_length; i++)
 					array_data_spectral_space[i] = i_dataArray.array_data_spectral_space[i];
 			}
@@ -2147,7 +2266,9 @@ public:
 		requestDataInSpectralSpace();
 		rw_array_data.requestDataInSpectralSpace();
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
 		{
 			double ar = array_data_spectral_space[i];
@@ -2179,7 +2300,9 @@ public:
 			switch (kernel_id)
 			{
 			case get_kernel_mask3x3(0, 0, 0, 1, 0, 1, 0, 0, 0):	// (X, 0, X)
+#if SWEET_THREADING
 #pragma omp parallel for schedule(static)
+#endif
 				for (int y = 0; y < res_y; y++)
 				{
 					for (int x = 0; x < res_x; x++)
@@ -2219,7 +2342,9 @@ public:
 
 
 			case get_kernel_mask3x3(0, 0, 0, 1, 1, 1, 0, 0, 0):	// (X, X, X)
+#if SWEET_THREADING
 #pragma omp parallel for schedule(static)
+#endif
 					for (int y = 0; y < res_y; y++)
 					{
 						for (int x = 0; x < res_x; x++)
@@ -2261,7 +2386,9 @@ public:
 					break;
 
 			case get_kernel_mask3x3(0, 1, 0, 0, 0, 0, 0, 1, 0):	// (X, 0, X)^T
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 					for (int y = 0; y < res_y; y++)
 					{
 						for (int x = 0; x < res_x; x++)
@@ -2299,7 +2426,9 @@ public:
 					break;
 
 			case get_kernel_mask3x3(0, 1, 0, 0, 1, 0, 0, 1, 0):	// (X, 0, X)^T
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 					for (int y = 0; y < res_y; y++)
 					{
 						for (int x = 0; x < res_x; x++)
@@ -2338,7 +2467,9 @@ public:
 					break;
 
 			default:
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 				for (int y = 0; y < res_y; y++)
 				{
 					for (int x = 0; x < res_x; x++)
@@ -2406,7 +2537,9 @@ public:
 		requestDataInSpectralSpace();
 		rw_array_data.requestDataInSpectralSpace();
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < array_data_spectral_length; i++)
 			out.array_data_spectral_space[i] =
 					array_data_spectral_space[i]+
@@ -2420,7 +2553,9 @@ public:
 		requestDataInCartesianSpace();
 		rw_array_data.requestDataInCartesianSpace();
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			out.array_data_cartesian_space[i] = array_data_cartesian_space[i] + i_array_data.array_data_cartesian_space[i];
 
@@ -2446,7 +2581,9 @@ public:
 
 		requestDataInSpectralSpace();
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < array_data_spectral_length; i++)
 			out.array_data_spectral_space[i] = array_data_spectral_space[i];
 
@@ -2460,7 +2597,9 @@ public:
 
 		requestDataInCartesianSpace();
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			out.array_data_cartesian_space[i] = array_data_cartesian_space[i]+i_value;
 
@@ -2485,7 +2624,9 @@ public:
 		requestDataInSpectralSpace();
 		rw_array_data.requestDataInSpectralSpace();
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < array_data_spectral_length; i++)
 			array_data_spectral_space[i] +=
 					i_array_data.array_data_spectral_space[i];
@@ -2495,7 +2636,9 @@ public:
 
 #else
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			array_data_cartesian_space[i] += i_array_data.array_data_cartesian_space[i];
 #endif
@@ -2527,7 +2670,9 @@ public:
 
 		requestDataInCartesianSpace();
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			array_data_cartesian_space[i] += i_value;
 
@@ -2549,7 +2694,9 @@ public:
 
 		requestDataInSpectralSpace();
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < array_data_spectral_length; i++)
 			array_data_spectral_space[i] *= i_value;
 
@@ -2560,7 +2707,9 @@ public:
 
 		requestDataInCartesianSpace();
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			array_data_cartesian_space[i] *= i_value;
 
@@ -2581,7 +2730,9 @@ public:
 
 		requestDataInSpectralSpace();
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < array_data_spectral_length; i++)
 			array_data_spectral_space[i] /= i_value;
 
@@ -2593,7 +2744,9 @@ public:
 
 		requestDataInCartesianSpace();
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			array_data_cartesian_space[i] /= i_value;
 
@@ -2616,7 +2769,9 @@ public:
 		requestDataInSpectralSpace();
 		rw_array_data.requestDataInSpectralSpace();
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < array_data_spectral_length; i++)
 			array_data_spectral_space[i] -=
 					i_array_data.array_data_spectral_space[i];
@@ -2628,7 +2783,9 @@ public:
 		requestDataInCartesianSpace();
 		rw_array_data.requestDataInCartesianSpace();
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			array_data_cartesian_space[i] -= i_array_data.array_data_cartesian_space[i];
 
@@ -2656,7 +2813,9 @@ public:
 		requestDataInSpectralSpace();
 		rw_array_data.requestDataInSpectralSpace();
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < array_data_spectral_length; i++)
 			out.array_data_spectral_space[i] =
 					array_data_spectral_space[i]-
@@ -2670,7 +2829,9 @@ public:
 		requestDataInCartesianSpace();
 		rw_array_data.requestDataInCartesianSpace();
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			out.array_data_cartesian_space[i] =
 					array_data_cartesian_space[i]-
@@ -2698,7 +2859,10 @@ public:
 
 		requestDataInSpectralSpace();
 
+//#pragma error "TOOD: make this depending on rexi_par_sum!"
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < array_data_spectral_length; i++)
 			out.array_data_spectral_space[i] = array_data_spectral_space[i];
 
@@ -2712,7 +2876,9 @@ public:
 
 		requestDataInCartesianSpace();
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			out.array_data_cartesian_space[i] =
 					array_data_cartesian_space[i]-i_value;
@@ -2737,7 +2903,9 @@ public:
 
 		requestDataInSpectralSpace();
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < array_data_spectral_length; i++)
 			out.array_data_spectral_space[i] = -array_data_spectral_space[i];
 
@@ -2751,7 +2919,9 @@ public:
 
 		requestDataInCartesianSpace();
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			out.array_data_cartesian_space[i] = i_value - array_data_cartesian_space[i];
 
@@ -2769,7 +2939,9 @@ public:
 
 		requestDataInSpectralSpace();
 
+#if SWEET_THREADING
 		#pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < array_data_spectral_length; i++)
 			array_data_spectral_space[i] = -array_data_spectral_space[i];
 
@@ -2813,7 +2985,9 @@ public:
 
 		DataArray<D> scaled_output(u.resolution);
 
+#if SWEET_THREADING
 		#pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < scaled_output.array_data_cartesian_length; i++)
 			scaled_output.array_data_cartesian_space[i] =
 					u.array_data_cartesian_space[i]*
@@ -2831,7 +3005,9 @@ public:
 		requestDataInCartesianSpace();
 		rw_array_data.requestDataInCartesianSpace();
 
+#if SWEET_THREADING
 		#pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			out.array_data_cartesian_space[i] =
 					array_data_cartesian_space[i]*
@@ -2863,7 +3039,9 @@ public:
 
 		if (array_data_spectral_space_valid)
 		{
+#if SWEET_THREADING
 			#pragma omp parallel for OPENMP_SIMD
+#endif
 			for (std::size_t i = 0; i < array_data_spectral_length; i++)
 				out.array_data_spectral_space[i] =
 						array_data_spectral_space[i]*i_value;
@@ -2875,7 +3053,9 @@ public:
 		{
 			assert(array_data_cartesian_space_valid);
 
+#if SWEET_THREADING
 			#pragma omp parallel for OPENMP_SIMD
+#endif
 			for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 				out.array_data_cartesian_space[i] =
 						array_data_cartesian_space[i]*i_value;
@@ -2885,7 +3065,9 @@ public:
 		}
 
 #else
+#if SWEET_THREADING
 		#pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			out.array_data_cartesian_space[i] =
 					array_data_cartesian_space[i]*i_value;
@@ -2909,7 +3091,9 @@ public:
 		if (array_data_cartesian_space_valid)
 		{
 #endif
+#if SWEET_THREADING
 			#pragma omp parallel for OPENMP_SIMD
+#endif
 			for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 				out.array_data_cartesian_space[i] = array_data_cartesian_space[i] / i_value;
 
@@ -2922,7 +3106,9 @@ public:
 		{
 			assert(array_data_spectral_space_valid);
 
+#if SWEET_THREADING
 			#pragma omp parallel for OPENMP_SIMD
+#endif
 			for (std::size_t i = 0; i < array_data_spectral_length; i++)
 				out.array_data_spectral_space[i] = array_data_spectral_space[i] / i_value;
 
@@ -2958,7 +3144,9 @@ public:
 
 		DataArray<D> scaled_output(u.resolution);
 
+#if SWEET_THREADING
 		#pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < scaled_output.array_data_cartesian_length; i++)
 			scaled_output.array_data_cartesian_space[i] =
 					u.array_data_cartesian_space[i]/
@@ -2976,7 +3164,9 @@ public:
 		requestDataInCartesianSpace();
 		rw_array_data.requestDataInCartesianSpace();
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			out.array_data_cartesian_space[i] =
 					array_data_cartesian_space[i]/

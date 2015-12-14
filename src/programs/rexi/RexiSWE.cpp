@@ -39,11 +39,11 @@ RexiSWE::RexiSWE()	:
 
 #if SWEET_REXI_THREAD_PARALLEL_SUM
 
-#if SWEET_THREADING
+//#if SWEET_THREADING || 1
 	num_local_rexi_par_threads = omp_get_max_threads();
-#else
-	num_local_rexi_par_threads = 1;
-#endif
+//#else
+//	num_local_rexi_par_threads = 1;
+//#endif
 
 	if (num_local_rexi_par_threads == 0)
 	{
@@ -135,7 +135,7 @@ void RexiSWE::setup(
 		exit(-1);
 	}
 
-#if SWEET_THREADING
+#if SWEET_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
 	if (omp_in_parallel())
 	{
 		std::cerr << "FATAL ERROR X: in parallel region" << std::endl;
@@ -154,8 +154,7 @@ void RexiSWE::setup(
 			if (i != j)
 				continue;
 
-
-#if SWEET_THREADING
+#if SWEET_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
 			if (omp_get_thread_num() != i)
 			{
 				// leave this dummy std::cout in it to avoid the intel compiler removing this part
@@ -201,8 +200,8 @@ void RexiSWE::setup(
 	for (int i = 0; i < num_local_rexi_par_threads; i++)
 	{
 
-#if SWEET_THREADING
-		int global_thread_id = omp_get_thread_num() + mpi_rank*num_local_rexi_par_threads;
+#if SWEET_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+//		int global_thread_id = omp_get_thread_num() + mpi_rank*num_local_rexi_par_threads;
 		if (omp_get_thread_num() != i)
 		{
 			// leave this dummy std::cout in it to avoid the intel compiler removing this part
@@ -210,7 +209,11 @@ void RexiSWE::setup(
 			exit(-1);
 		}
 #else
-		int global_thread_id = 0;
+
+//#if SWEET_REXI_THREAD_PARALLEL_SUM
+//		int global_thread_id = 0;
+//#endif
+
 #endif
 
 		if (perThreadVars[i]->op_diff_c_x.data == nullptr)
@@ -352,11 +355,15 @@ bool RexiSWE::run_timestep(
 #endif
 
 
+
+
 #if SWEET_REXI_THREAD_PARALLEL_SUM
 #	pragma omp parallel for schedule(static,1) default(none) shared(i_parameters, i_timestep_size, io_h, io_u, io_v, N, std::cout, std::cerr, i_iterative_solver_always_init_zero_solution)
 #endif
 	for (int i = 0; i < num_local_rexi_par_threads; i++)
 	{
+//		std::cout << omp_get_thread_num() << std::endl;
+
 		double eta_bar = i_parameters.setup.h0;
 		double g = i_parameters.sim.g;
 
@@ -400,7 +407,7 @@ bool RexiSWE::run_timestep(
 
 #if SWEET_REXI_THREAD_PARALLEL_SUM || SWEET_MPI
 
-#if SWEET_THREADING
+#if SWEET_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
 			int local_thread_id = omp_get_thread_num();
 #else
 			int local_thread_id = 0;
@@ -475,7 +482,7 @@ bool RexiSWE::run_timestep(
 
 #if SWEET_REXI_THREAD_PARALLEL_SUM || SWEET_MPI
 
-#if SWEET_THREADING
+#if SWEET_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
 			int local_thread_id = omp_get_thread_num();
 #else
 			int local_thread_id = 0;
