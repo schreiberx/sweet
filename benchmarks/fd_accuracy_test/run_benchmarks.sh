@@ -3,6 +3,8 @@
 CURDIR=`pwd`
 
 cd ../../
+
+. ./local_software/env_vars.sh
 scons --compiler=gnu --program=swe_rexi --spectral-space=disable --libfft=enable --rexi-parallel-sum=disable --spectral-dealiasing=disable --mode=release --threading=omp --numa-block-allocator=1 || exit 1
 BIN=../../build/swe_rexi_libfft_omp_numaallocator1_gnu_release
 
