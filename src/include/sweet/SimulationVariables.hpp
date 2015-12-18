@@ -218,6 +218,12 @@ public:
 		/// prefix of filename for output of data
 		std::string output_file_name_prefix;
 
+		/// prefix of filename for output of data
+		double output_each_sim_seconds = -1;
+
+		/// Last simulation seconds of output
+		double output_next_sim_seconds = 0;
+
 		/// id for visualization
 		int vis_id = 0;
 	} misc;
@@ -324,7 +330,7 @@ public:
 		while (1)
 		{
 			opt = getopt_long(	i_argc, i_argv,
-							"N:n:m:C:u:U:s:X:Y:f:b:x:y:t:i:T:v:V:O:H:r:R:W:F:S:g:p:P:G:d:z",
+							"N:n:m:C:u:U:s:X:Y:f:b:x:y:t:i:T:v:V:O:o:H:r:R:W:F:S:g:p:P:G:d:z",
 							long_options, &option_index
 					);
 
@@ -449,6 +455,10 @@ public:
 
 			case 'O':
 				misc.output_file_name_prefix = optarg;
+				break;
+
+			case 'o':
+				misc.output_each_sim_seconds = atof(optarg);
 				break;
 
 			case 'H':

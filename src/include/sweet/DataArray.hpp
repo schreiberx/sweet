@@ -31,7 +31,7 @@
 	#define SWEET_USE_SPECTRAL_DEALIASING 1
 #endif
 
-#if SWEET_USE_SPECTRAL_SPACE// || SWEET_USE_LIBFFT
+#if SWEET_USE_SPECTRAL_SPACE || SWEET_USE_LIBFFT
 #	include <fftw3.h>
 #endif
 
@@ -168,6 +168,7 @@ public:
 	 * The size is given in array_data_cartesian_length and array_data_spectral_length
 	 */
 private:
+	inline
 	void p_allocate_buffers(
 			bool i_first_touch_initialize = true	///< true: initialize the data buffers with dummy data for first touch policy of page allocation on shared-memory systems
 	)
@@ -710,6 +711,185 @@ public:
 
 
 
+#if SWEET_USE_LIBFFT
+
+public:
+	class FFTWSingletonClass
+	{
+	public:
+		int ref_counter;
+
+	private:
+		fftw_plan	plan_forward;
+		std::size_t plan_forward_output_length;
+
+		fftw_plan	plan_backward;
+		std::size_t plan_backward_output_length;
+
+	public:
+		static
+		bool loadWisdom()
+		{
+			// only initialize it, if this class is not called to initialize aliasing
+#if SWEET_REXI_THREAD_PARALLEL_SUM
+			std::cout << "Using REXI parallel sum, hence using only single FFT thread" << std::endl;
+			// only use serial FFT in case of REXI parallel sum
+			// automatically use single-threaded fftw only
+//#if SWEET_THREADING
+//#	error "Incompatible/unsupported compile flags detected"
+//#endif
+			//fftw_init_threads();
+			//fftw_plan_with_nthreads(1);
+#else
+
+	#if SWEET_THREADING
+			// support threading
+			fftw_init_threads();
+			fftw_plan_with_nthreads(omp_get_max_threads());
+	#endif
+
+#endif
+			static const char *load_wisdom_from_file = nullptr;
+
+			if (load_wisdom_from_file != nullptr)
+				return false;
+
+			load_wisdom_from_file = getenv("SWEET_FFTW_LOAD_WISDOM_FROM_FILE");
+
+			if (load_wisdom_from_file == nullptr)
+				return false;
+
+			std::cout << "Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=" << load_wisdom_from_file << std::endl;
+
+			int wisdom_plan_loaded = fftw_import_wisdom_from_filename(load_wisdom_from_file);
+			if (wisdom_plan_loaded == 0)
+			{
+				std::cerr << "Failed to load FFTW wisdom from file " << load_wisdom_from_file << std::endl;
+				exit(1);
+			}
+
+			return true;
+		}
+
+	public:
+		FFTWSingletonClass(
+				DataArray<D> &i_dataArray
+		)	:
+			ref_counter(0)
+		{
+			plan_backward_output_length = i_dataArray.array_data_cartesian_length;
+			plan_forward_output_length = i_dataArray.array_data_spectral_length;
+
+			double *data_cartesian = NUMABlockAlloc::alloc<double>(i_dataArray.array_data_cartesian_length*sizeof(double));
+#if SWEET_THREADING
+#pragma omp parallel for OPENMP_SIMD
+#endif
+			for (std::size_t i = 0; i < i_dataArray.array_data_cartesian_length; i++)
+				data_cartesian[i] = -123;	// dummy data
+
+			double *data_spectral = NUMABlockAlloc::alloc<double>(i_dataArray.array_data_spectral_length*sizeof(double));
+#if SWEET_THREADING
+#pragma omp parallel for OPENMP_SIMD
+#endif
+			for (std::size_t i = 0; i < i_dataArray.array_data_spectral_length; i++)
+				data_spectral[i] = -123;	// dummy data
+
+			// allow to search for a good plan only for 60 seconds
+//			fftw_set_timelimit(60);
+
+
+
+			/*
+			 * FFT WISDOM INIT
+			 */
+			bool wisdom_loaded = loadWisdom();
+
+			plan_forward =
+					fftw_plan_dft_r2c_2d(
+						i_dataArray.resolution[1],	// n0 = ny
+						i_dataArray.resolution[0],	// n1 = nx
+						data_cartesian,
+						(fftw_complex*)data_spectral,
+//						FFTW_PRESERVE_INPUT
+						(!wisdom_loaded ? FFTW_PRESERVE_INPUT : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
+					);
+
+//			fftw_print_plan(plan_forward);
+			if (plan_forward == nullptr)
+			{
+				std::cerr << "Failed to create forward plan for fftw" << std::endl;
+				std::cerr << "r2c preverse_input forward " << i_dataArray.resolution[0] << " x " << i_dataArray.resolution[1] << std::endl;
+				std::cerr << "fftw-wisdom plan: rf" << i_dataArray.resolution[0] << "x" << i_dataArray.resolution[1] << std::endl;
+				exit(-1);
+			}
+
+			plan_backward =
+					fftw_plan_dft_c2r_2d(
+						i_dataArray.resolution[1],	// n0 = ny
+						i_dataArray.resolution[0],	// n1 = nx
+						(fftw_complex*)data_spectral,
+						data_cartesian,
+						(!wisdom_loaded == 0 ? 0 : FFTW_WISDOM_ONLY)
+					);
+
+			if (plan_backward == nullptr)
+			{
+				std::cerr << "Failed to create backward plan for fftw" << std::endl;
+				std::cerr << "r2c backward " << i_dataArray.resolution[0] << " x " << i_dataArray.resolution[1] << std::endl;
+				std::cerr << "fftw-wisdom plan: rb" << i_dataArray.resolution[0] << "x" << i_dataArray.resolution[1] << std::endl;
+				exit(-1);
+			}
+
+			// always store plans - maybe they got extended with another one
+//			if (wisdom_plan_loaded == 0)
+#if 0
+			fftw_export_wisdom_to_filename(fftw_load_wisdom_filename);
+#endif
+
+			NUMABlockAlloc::free(data_cartesian, i_dataArray.array_data_cartesian_length*sizeof(double));
+			NUMABlockAlloc::free(data_spectral, i_dataArray.array_data_spectral_length*sizeof(double));
+		}
+
+		void fft_forward(
+				DataArray<D> &io_dataArray
+		)
+		{
+			fftw_execute_dft_r2c(plan_forward, io_dataArray.array_data_cartesian_space, (fftw_complex*)io_dataArray.array_data_spectral_space);
+		}
+
+		void fft_backward(
+				DataArray<D> &io_dataArray
+		)
+		{
+			fftw_execute_dft_c2r(plan_backward, (fftw_complex*)io_dataArray.array_data_spectral_space, io_dataArray.array_data_cartesian_space);
+			// spectral data is not valid anymore, since c2r is destructive!
+			io_dataArray.array_data_spectral_space_valid = false;
+
+			double scale = (1.0/(double)plan_backward_output_length);
+#if SWEET_THREADING
+#pragma omp parallel for OPENMP_SIMD
+#endif
+			for (std::size_t i = 0; i < plan_backward_output_length; i++)
+				io_dataArray.array_data_cartesian_space[i] *= scale;
+		}
+
+		~FFTWSingletonClass()
+		{
+			fftw_destroy_plan(plan_forward);
+			fftw_destroy_plan(plan_backward);
+
+#if SWEET_THREADING
+			fftw_cleanup_threads();
+#endif
+
+			fftw_cleanup();
+		}
+	};
+#endif
+
+
+
+
 #if SWEET_USE_SPECTRAL_SPACE==1
 
 	inline
@@ -1048,189 +1228,6 @@ public:
 
 
 
-	class FFTWSingletonClass
-	{
-	public:
-		int ref_counter;
-
-	private:
-		fftw_plan	plan_forward;
-		std::size_t plan_forward_output_length;
-
-		fftw_plan	plan_backward;
-		std::size_t plan_backward_output_length;
-
-	public:
-		FFTWSingletonClass(
-				DataArray<D> &i_dataArray,
-				bool i_aliasing_init = false		///< set true for aliasing to avoid thread reinitialization
-		)	:
-			ref_counter(0)
-		{
-			int max_fftw_threads = 1;
-
-#if SWEET_THREADING
-			max_fftw_threads = omp_get_max_threads();
-#endif
-
-			if (!i_aliasing_init)
-			{
-				// only initialize it, if this class is not called to initialize aliasing
-#if SWEET_REXI_THREAD_PARALLEL_SUM
-				std::cout << "Using REXI parallel sum, hence using only single FFT thread" << std::endl;
-				// only use serial FFT in case of REXI parallel sum
-				// automatically use single-threaded fftw only
-//#if SWEET_THREADING
-//#	error "Incompatible/unsupported compile flags detected"
-//#endif
-				//fftw_init_threads();
-				//fftw_plan_with_nthreads(1);
-#else
-
-	#if SWEET_THREADING
-				// support threading
-				fftw_init_threads();
-				fftw_plan_with_nthreads(omp_get_max_threads());
-	#endif
-
-#endif
-			}
-
-
-
-#if 0
-			static const char *fftw_load_wisdom_filename = "FFTW_WISDOM.cached";
-
-	#if 1
-			int wisdom_plan_loaded = fftw_import_wisdom_from_filename(fftw_load_wisdom_filename);
-			if (wisdom_plan_loaded > 0)
-				std::cout << "Successfully loaded FFTW wisdom from file " << fftw_load_wisdom_filename << std::endl;
-	#else
-			fftw_import_wisdom_from_filename(fftw_load_wisdom_filename);
-	#endif
-#endif
-
-
-			plan_backward_output_length = i_dataArray.array_data_cartesian_length;
-			plan_forward_output_length = i_dataArray.array_data_spectral_length;
-
-			double *data_cartesian = NUMABlockAlloc::alloc<double>(i_dataArray.array_data_cartesian_length*sizeof(double));
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_SIMD
-#endif
-			for (std::size_t i = 0; i < i_dataArray.array_data_cartesian_length; i++)
-				data_cartesian[i] = -123;	// dummy data
-
-			double *data_spectral = NUMABlockAlloc::alloc<double>(i_dataArray.array_data_spectral_length*sizeof(double));
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_SIMD
-#endif
-			for (std::size_t i = 0; i < i_dataArray.array_data_spectral_length; i++)
-				data_spectral[i] = -123;	// dummy data
-
-			// allow to search for a good plan only for 60 seconds
-//			fftw_set_timelimit(60);
-
-
-
-			/*
-			 * FFT WISDOM INIT
-			 */
-			static const char *load_wisdom_from_file = getenv("SWEET_FFTW_LOAD_WISDOM_FROM_FILE");
-			if (load_wisdom_from_file != nullptr)
-			{
-				std::cout << "Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=" << load_wisdom_from_file << std::endl;
-
-				int wisdom_plan_loaded = fftw_import_wisdom_from_filename(load_wisdom_from_file);
-				if (wisdom_plan_loaded == 0)
-				{
-					std::cerr << "Failed to load FFTW wisdom from file " << load_wisdom_from_file << std::endl;
-					exit(1);
-				}
-			}
-
-			plan_forward =
-					fftw_plan_dft_r2c_2d(
-						i_dataArray.resolution[1],	// n0 = ny
-						i_dataArray.resolution[0],	// n1 = nx
-						data_cartesian,
-						(fftw_complex*)data_spectral,
-//						FFTW_PRESERVE_INPUT
-						(load_wisdom_from_file == 0 ? FFTW_PRESERVE_INPUT : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
-					);
-
-//			fftw_print_plan(plan_forward);
-			if (plan_forward == nullptr)
-			{
-				std::cerr << "Failed to create forward plan for fftw" << std::endl;
-				std::cerr << "r2c preverse_input forward " << i_dataArray.resolution[0] << " x " << i_dataArray.resolution[1] << std::endl;
-				std::cerr << "fftw-wisdom plan: rf" << i_dataArray.resolution[0] << "x" << i_dataArray.resolution[1] << std::endl;
-				exit(-1);
-			}
-
-			plan_backward =
-					fftw_plan_dft_c2r_2d(
-						i_dataArray.resolution[1],	// n0 = ny
-						i_dataArray.resolution[0],	// n1 = nx
-						(fftw_complex*)data_spectral,
-						data_cartesian,
-						(load_wisdom_from_file == 0 ? 0 : FFTW_WISDOM_ONLY)
-					);
-
-			if (plan_backward == nullptr)
-			{
-				std::cerr << "Failed to create backward plan for fftw" << std::endl;
-				std::cerr << "r2c backward " << i_dataArray.resolution[0] << " x " << i_dataArray.resolution[1] << std::endl;
-				std::cerr << "fftw-wisdom plan: rb" << i_dataArray.resolution[0] << "x" << i_dataArray.resolution[1] << std::endl;
-				exit(-1);
-			}
-
-			// always store plans - maybe they got extended with another one
-//			if (wisdom_plan_loaded == 0)
-#if 0
-			fftw_export_wisdom_to_filename(fftw_load_wisdom_filename);
-#endif
-
-			NUMABlockAlloc::free(data_cartesian, i_dataArray.array_data_cartesian_length*sizeof(double));
-			NUMABlockAlloc::free(data_spectral, i_dataArray.array_data_spectral_length*sizeof(double));
-		}
-
-		void fft_forward(
-				DataArray<D> &io_dataArray
-		)
-		{
-			fftw_execute_dft_r2c(plan_forward, io_dataArray.array_data_cartesian_space, (fftw_complex*)io_dataArray.array_data_spectral_space);
-		}
-
-		void fft_backward(
-				DataArray<D> &io_dataArray
-		)
-		{
-			fftw_execute_dft_c2r(plan_backward, (fftw_complex*)io_dataArray.array_data_spectral_space, io_dataArray.array_data_cartesian_space);
-			// spectral data is not valid anymore, since c2r is destructive!
-			io_dataArray.array_data_spectral_space_valid = false;
-
-			double scale = (1.0/(double)plan_backward_output_length);
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_SIMD
-#endif
-			for (std::size_t i = 0; i < plan_backward_output_length; i++)
-				io_dataArray.array_data_cartesian_space[i] *= scale;
-		}
-
-		~FFTWSingletonClass()
-		{
-			fftw_destroy_plan(plan_forward);
-			fftw_destroy_plan(plan_backward);
-
-#if SWEET_THREADING
-			fftw_cleanup_threads();
-#endif
-
-			fftw_cleanup();
-		}
-	};
-
 
 private:
 	FFTWSingletonClass** fftGetSingletonPtr()	const
@@ -1280,7 +1277,7 @@ private:
 			return *fftw_singleton_data;
 		}
 
-		*fftw_singleton_data = new FFTWSingletonClass(i_dataArray, true);
+		*fftw_singleton_data = new FFTWSingletonClass(i_dataArray);
 		(*fftw_singleton_data)->ref_counter++;
 
 		return *fftw_singleton_data;
@@ -3245,7 +3242,7 @@ public:
 			int i_precision = 12		///< number of floating point digits
 	)
 	{
-		std::ofstream file(i_filename, std::ios_base::out);
+		std::ofstream file(i_filename, std::ios_base::trunc);
 		file << std::setprecision(i_precision);
 
 		for (int y = resolution[1]-1; y >= 0; y--)

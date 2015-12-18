@@ -13,6 +13,7 @@
 #include <vector>
 
 
+
 /**
  * This class provides the weights and coefficients for the
  * approximation of a Gaussian

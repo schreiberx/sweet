@@ -1095,6 +1095,36 @@ public:
 				o_ostream << std::endl;
 			}
 
+			if (simVars.misc.output_file_name_prefix.size() > 0)
+			{
+				// output each time step
+				if (simVars.misc.output_each_sim_seconds < 0)
+					simVars.misc.output_next_sim_seconds = 0;
+
+				if (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
+				{
+					while (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
+						simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
+
+					double secs = simVars.timecontrol.current_simulation_time;
+					double msecs = 1000000.*(simVars.timecontrol.current_simulation_time - floor(simVars.timecontrol.current_simulation_time));
+					char t_buf[256];
+					sprintf(	t_buf,
+								"%08d.%06d",
+								(int)secs, (int)msecs
+						);
+
+					std::string ss = simVars.misc.output_file_name_prefix+"_t"+t_buf;
+
+
+					prog_h.file_saveData_ascii((ss+"_h.csv").c_str());
+					prog_u.file_saveData_ascii((ss+"_u.csv").c_str());
+					prog_v.file_saveData_ascii((ss+"_v.csv").c_str());
+
+					(op.diff_c_x(prog_v) - op.diff_c_y(prog_u)).file_saveData_ascii((ss+"_q.csv").c_str());
+				}
+			}
+
 			o_ostream << simVars.timecontrol.current_simulation_time << "\t" << simVars.diag.total_mass << "\t" << simVars.diag.total_energy << "\t" << simVars.diag.total_potential_enstrophy;
 
 			if (simVars.setup.scenario == 2 || simVars.setup.scenario == 3 || simVars.setup.scenario == 4)

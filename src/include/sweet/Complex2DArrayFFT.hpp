@@ -7,12 +7,14 @@
 #ifndef SRC_INCLUDE_SWEET_COMPLEX2DARRAYFFT_HPP_
 #define SRC_INCLUDE_SWEET_COMPLEX2DARRAYFFT_HPP_
 
+
 #include <fftw3.h>
 #include <sweet/DataArray.hpp>
 #include <sweet/NUMABlockAlloc.hpp>
 #include <cstddef>
 #include <complex>
 #include <sweet/openmp_helper.hpp>
+
 
 
 /**
@@ -99,15 +101,17 @@ public:
 		assert(fft_getSingleton_RefCounter() >= 0);
 
 		int &ref_counter = fft_getSingleton_RefCounter();
+
 #if SWEET_REXI_THREAD_PARALLEL_SUM
 #	pragma omp atomic
 #endif
+
 		ref_counter++;
 
 		if (ref_counter != 1)
 			return;
 
-		static const char *load_wisdom_from_file = getenv("SWEET_FFTW_LOAD_WISDOM_FROM_FILE");
+		bool wisdom_loaded = DataArray<2>::FFTWSingletonClass::loadWisdom();
 
 		{
 			// create dummy array for plan creation
@@ -123,12 +127,12 @@ public:
 						(fftw_complex*)data,
 						(fftw_complex*)dummy_data,
 						FFTW_FORWARD,
-						(load_wisdom_from_file == 0 ? FFTW_PRESERVE_INPUT : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
+						(!wisdom_loaded ? FFTW_PRESERVE_INPUT : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
 					);
 
 			if (fft_getSingleton_Plans().to_spec == nullptr)
 			{
-				std::cerr << "Failed to create plan_forward for fftw" << std::endl;
+				std::cerr << "Failed to create plan_forward for non-aliasing fftw" << std::endl;
 				std::cerr << "complex forward preverse_input forward " << resolution[0] << " x " << resolution[1] << std::endl;
 				std::cerr << "fftw-wisdom plan: cf" << resolution[0] << "x" << resolution[1] << std::endl;
 				exit(-1);
@@ -141,7 +145,7 @@ public:
 						(fftw_complex*)data,
 						(fftw_complex*)dummy_data,
 						FFTW_BACKWARD,
-						(load_wisdom_from_file == 0 ? FFTW_PRESERVE_INPUT : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
+						(!wisdom_loaded ? FFTW_PRESERVE_INPUT : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
 					);
 
 			fft_getSingleton_Plans().resolution[0] = resolution[0];
@@ -149,7 +153,7 @@ public:
 
 			if (fft_getSingleton_Plans().to_cart == nullptr)
 			{
-				std::cerr << "Failed to create plan_backward for fftw" << std::endl;
+				std::cerr << "Failed to create plan_backward for non-aliasing fftw" << std::endl;
 				std::cerr << "complex backward preverse_input forward " << resolution[0] << " x " << resolution[1] << std::endl;
 				std::cerr << "fftw-wisdom plan: cf" << resolution[0] << "x" << resolution[1] << std::endl;
 				exit(-1);
@@ -169,12 +173,14 @@ public:
 						(fftw_complex*)dummy_data_aliasing_in,
 						(fftw_complex*)dummy_data_aliasing_out,
 						FFTW_FORWARD,
-						(load_wisdom_from_file == 0 ? FFTW_PRESERVE_INPUT : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
+						(!wisdom_loaded ? FFTW_PRESERVE_INPUT : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
 					);
 
 			if (fft_getSingleton_Plans().to_spec_aliasing == nullptr)
 			{
-				std::cerr << "Failed to create plan_forward for fftw" << std::endl;
+				std::cerr << "Failed to create plan_forward for aliasing fftw" << std::endl;
+				std::cerr << "complex backward preverse_input forward " << resolution[0]*2 << " x " << resolution[1]*2 << std::endl;
+				std::cerr << "fftw-wisdom plan: cf" << resolution[0]*2 << "x" << resolution[1]*2 << std::endl;
 				exit(-1);
 			}
 
@@ -186,7 +192,7 @@ public:
 						(fftw_complex*)dummy_data_aliasing_out,
 						(fftw_complex*)dummy_data_aliasing_in,
 						FFTW_BACKWARD,
-						(load_wisdom_from_file == 0 ? FFTW_PRESERVE_INPUT : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
+						(!wisdom_loaded ? FFTW_PRESERVE_INPUT : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
 					);
 
 			fft_getSingleton_Plans().resolution_aliasing[0] = resolution[0]*2;
@@ -195,7 +201,9 @@ public:
 
 			if (fft_getSingleton_Plans().to_cart_aliasing == nullptr)
 			{
-				std::cerr << "Failed to create plan_backward for fftw" << std::endl;
+				std::cerr << "Failed to create plan_backward for aliasing fftw" << std::endl;
+				std::cerr << "complex backward preverse_input forward " << resolution[0]*2 << " x " << resolution[1]*2 << std::endl;
+				std::cerr << "fftw-wisdom plan: cf" << resolution[0]*2 << "x" << resolution[1]*2 << std::endl;
 				exit(-1);
 			}
 
