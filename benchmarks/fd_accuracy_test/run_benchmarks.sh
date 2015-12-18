@@ -9,13 +9,12 @@ scons --compiler=gnu --program=swe_rexi --spectral-space=disable --libfft=enable
 BIN=../../build/swe_rexi_libfft_omp_numaallocator1_gnu_release
 
 cd "$CURDIR"
-pwd
 
 SIMTIME=50
 OUTPUT_INTERVAL=1
 CFL=0.3
 
-RES_LIST="32 64 128 256 512"
+RES_LIST="32 64 128 256"
 
 
 for N in $RES_LIST; do
