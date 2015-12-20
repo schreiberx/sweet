@@ -12,7 +12,7 @@ echo "***********************************************"
 echo "TEST SPECTRAL OPS (release) ALIASING CONTROL $X"
 echo "***********************************************"
 make clean
-scons --unit-test=test_samplers --gui=disable
+scons --threading=omp --unit-test=test_samplers --gui=disable
 ./build/test_samplers_libfft_omp_gnu_release -s 2 || exit
 ./build/test_samplers_libfft_omp_gnu_release -s 3 || exit
 

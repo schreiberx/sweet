@@ -39,8 +39,10 @@ int main(int i_argc, char *i_argv[])
 	trapfpe();
 #endif
 
+	// override flag
 	SimulationVariables simVars;
-	simVars.disc.use_spectral_basis_diffs = 1;
+	simVars.disc.use_spectral_basis_diffs = true;
+
 	if (!simVars.setupFromMainParameters(i_argc, i_argv))
 		return -1;
 

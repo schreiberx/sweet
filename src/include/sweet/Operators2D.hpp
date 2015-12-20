@@ -240,6 +240,7 @@ public:
 
 #if !SWEET_USE_SPECTRAL_SPACE
 			std::cerr << "Activate spectral space during compile time to use spectral diffs. Otherwise, the convolution would be freakingly expensive" << std::endl;
+			assert(false);
 			exit(-1);
 #else
 

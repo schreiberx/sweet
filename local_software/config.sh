@@ -9,3 +9,6 @@ DST_DIR="$ROOT_DIR"
 mkdir -p "$ROOT_DIR"
 mkdir -p "$SRC_DIR"
 
+#export CC=icc
+#export CXX=icpc
+#export LINK=icpc

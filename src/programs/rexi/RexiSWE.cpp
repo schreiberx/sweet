@@ -97,7 +97,7 @@ void RexiSWE::setup(
 		const double *i_domain_size,	///< size of domain
 
 		bool i_rexi_half,				///< use half-pole reduction
-		bool i_use_finite_differences,	///< use finite differences for REXI approximation
+		bool i_use_spec_diffs_for_complex_array,	///< use spectral differences for complex arrays in REXI approximation
 		int i_helmholtz_solver,			///< Use iterative solver instead of direct solving it in spectral space
 		double i_eps					///< Error threshold
 )
@@ -107,7 +107,7 @@ void RexiSWE::setup(
 
 	helmholtz_solver = i_helmholtz_solver;
 	eps = i_eps;
-	use_finite_differences = i_use_finite_differences;
+	use_spec_diffs = i_use_spec_diffs_for_complex_array;
 
 	domain_size[0] = i_domain_size[0];
 	domain_size[1] = i_domain_size[1];
@@ -195,7 +195,7 @@ void RexiSWE::setup(
 	}
 
 #if SWEET_REXI_THREAD_PARALLEL_SUM
-#	pragma omp parallel for schedule(static,1) default(none)  shared(i_domain_size,i_use_finite_differences, std::cout)
+#	pragma omp parallel for schedule(static,1) default(none)  shared(i_domain_size,i_use_spec_diffs_for_complex_array, std::cout)
 #endif
 	for (int i = 0; i < num_local_rexi_par_threads; i++)
 	{
@@ -222,10 +222,10 @@ void RexiSWE::setup(
 			exit(-1);
 		}
 
-		perThreadVars[i]->op_diff_c_x.op_setup_diff_x(i_domain_size, i_use_finite_differences);
-		perThreadVars[i]->op_diff_c_y.op_setup_diff_y(i_domain_size, i_use_finite_differences);
-		perThreadVars[i]->op_diff2_c_x.op_setup_diff2_x(i_domain_size, i_use_finite_differences);
-		perThreadVars[i]->op_diff2_c_y.op_setup_diff2_y(i_domain_size, i_use_finite_differences);
+		perThreadVars[i]->op_diff_c_x.op_setup_diff_x(i_domain_size, i_use_spec_diffs_for_complex_array);
+		perThreadVars[i]->op_diff_c_y.op_setup_diff_y(i_domain_size, i_use_spec_diffs_for_complex_array);
+		perThreadVars[i]->op_diff2_c_x.op_setup_diff2_x(i_domain_size, i_use_spec_diffs_for_complex_array);
+		perThreadVars[i]->op_diff2_c_y.op_setup_diff2_y(i_domain_size, i_use_spec_diffs_for_complex_array);
 
 		// initialize all values to account for first touch policy reason
 		perThreadVars[i]->eta.setAll(0, 0);
@@ -468,9 +468,9 @@ bool RexiSWE::run_timestep(
 			/*
 			 * Use FD solver in CARTESIAN SPACE ONLY
 			 */
-			if (!use_finite_differences)
+			if (use_spec_diffs)
 			{
-				std::cerr << "Using FD solvers only makes sense if FD is activated for REXI!" << std::endl;
+				std::cerr << "Using FD solvers only makes sense if spectral diffs is NOT activated for REXI!" << std::endl;
 				exit(-1);
 			}
 

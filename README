@@ -39,3 +39,4 @@ Once installed scons, you can have a look at the possible compilation options:
 
 	The program to be compiled can be specified via -program=...
 	with the list of programs given in src/examples
+

@@ -47,7 +47,7 @@ int main(int i_argc, char *i_argv[])
 	simVars.disc.use_spectral_basis_diffs = 1;
 
 	const char *bogus_var_names[] = {
-			"use-fd-for-complex-array",	/// use finite differences for complex array
+			"use-specdiff-for-complex-array",	/// use finite differences for complex array
 			nullptr
 	};
 
@@ -56,7 +56,7 @@ int main(int i_argc, char *i_argv[])
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
 		std::cout << std::endl;
-		std::cout << "      --use-fd-for-complex-array=[0/1]	Use finite-differences for derivatives in spectral space" << std::endl;
+		std::cout << "      --use-specdiff-for-complex-array=[0/1]	Use finite-differences for derivatives in spectral space" << std::endl;
 		std::cout << std::endl;
 		return -1;
 	}
@@ -64,9 +64,9 @@ int main(int i_argc, char *i_argv[])
 	/*
 	 * use finite differences for differential operators in complex array
 	 */
-	bool use_finite_differences_for_complex_array = simVars.bogus.var[0];
+	bool use_spectral_differences_for_complex_array = simVars.bogus.var[0];
 
-	if (use_finite_differences_for_complex_array)
+	if (!use_spectral_differences_for_complex_array)
 	{
 		std::cout << "********************************************************" << std::endl;
 		std::cout << "*** Using finite-differences for complex array" << std::endl;
@@ -328,14 +328,14 @@ int main(int i_argc, char *i_argv[])
 
 			Complex2DArrayFFT op_diff2_c_x(res);
 			Complex2DArrayFFT op_diff2_c_y(res);
-			op_diff2_c_x.op_setup_diff2_x(simVars.sim.domain_size, use_finite_differences_for_complex_array);
-			op_diff2_c_y.op_setup_diff2_y(simVars.sim.domain_size, use_finite_differences_for_complex_array);
+			op_diff2_c_x.op_setup_diff2_x(simVars.sim.domain_size, use_spectral_differences_for_complex_array);
+			op_diff2_c_y.op_setup_diff2_y(simVars.sim.domain_size, use_spectral_differences_for_complex_array);
 
 			Complex2DArrayFFT op_diff_c_x(res);
-			op_diff_c_x.op_setup_diff_x(simVars.sim.domain_size, use_finite_differences_for_complex_array);
+			op_diff_c_x.op_setup_diff_x(simVars.sim.domain_size, use_spectral_differences_for_complex_array);
 
 			Complex2DArrayFFT op_diff_c_y(res);
-			op_diff_c_y.op_setup_diff_y(simVars.sim.domain_size, use_finite_differences_for_complex_array);
+			op_diff_c_y.op_setup_diff_y(simVars.sim.domain_size, use_spectral_differences_for_complex_array);
 
 
 			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
@@ -393,7 +393,7 @@ int main(int i_argc, char *i_argv[])
 
 			std::cout << "Error for Laplace (diff*diff()) and its inverse (check): " << err3_laplace_check << std::endl;
 
-			if (use_finite_differences_for_complex_array)
+			if (!use_spectral_differences_for_complex_array)
 			{
 				if (err3_laplace_check_prev != -1)
 				{
@@ -425,10 +425,10 @@ int main(int i_argc, char *i_argv[])
 		 */
 		{
 			Complex2DArrayFFT op_diff_c_x(res);
-			op_diff_c_x.op_setup_diff_x(simVars.sim.domain_size, use_finite_differences_for_complex_array);
+			op_diff_c_x.op_setup_diff_x(simVars.sim.domain_size, use_spectral_differences_for_complex_array);
 
 			Complex2DArrayFFT op_diff_c_y(res);
-			op_diff_c_y.op_setup_diff_y(simVars.sim.domain_size, use_finite_differences_for_complex_array);
+			op_diff_c_y.op_setup_diff_y(simVars.sim.domain_size, use_spectral_differences_for_complex_array);
 
 			Complex2DArrayFFT u(res);
 			Complex2DArrayFFT v(res);
@@ -495,7 +495,7 @@ int main(int i_argc, char *i_argv[])
 								-h_diff_x-h_diff_y
 						).reduce_norm2_quad()*res_normalization/(2.0*M_PIl);
 
-			if (use_finite_differences_for_complex_array)
+			if (!use_spectral_differences_for_complex_array)
 			{
 				static double err_x_prev = -1;
 				if (err_x_prev != -1)
@@ -641,8 +641,8 @@ int main(int i_argc, char *i_argv[])
 
 			Complex2DArrayFFT op_diff2_c_x(res);
 			Complex2DArrayFFT op_diff2_c_y(res);
-			op_diff2_c_x.op_setup_diff2_x(simVars.sim.domain_size, use_finite_differences_for_complex_array);
-			op_diff2_c_y.op_setup_diff2_y(simVars.sim.domain_size, use_finite_differences_for_complex_array);
+			op_diff2_c_x.op_setup_diff2_x(simVars.sim.domain_size, use_spectral_differences_for_complex_array);
+			op_diff2_c_y.op_setup_diff2_y(simVars.sim.domain_size, use_spectral_differences_for_complex_array);
 
 			// diff2 normalization = 4.0 pi^2 / L^2
 			double err2_x = (op_diff2_c_x(h_cart.toSpec()).toCart()-h_diff2_x).reduce_norm2_quad()*normalization*(simVars.sim.domain_size[0]*simVars.sim.domain_size[0])/(4.0*M_PIl*M_PIl);
@@ -652,7 +652,7 @@ int main(int i_argc, char *i_argv[])
 			std::cout << "error diff2 y = " << err2_y << std::endl;
 
 
-			if (use_finite_differences_for_complex_array)
+			if (!use_spectral_differences_for_complex_array)
 			{
 				static double err2_x_prev = -1;
 				if (err2_x_prev != -1)

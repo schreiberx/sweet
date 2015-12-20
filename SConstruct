@@ -707,7 +707,7 @@ build_dir='/tmp/scons_build_'+exec_name+'/'
 env.Append(CPPPATH = ['/usr/local/include', '/usr/include'])
 
 # MAC CLUSTER
-print hostname
+#print hostname
 if hostname[0:4] == "mac-":
 	env.Append(CPPPATH = ['/usr/local/include', '/usr/include', '/lrz/sys/libraries/fftw/3.3.3/avx/include'])
 	env.Append(LINKFLAGS=' -L/lrz/sys/libraries/fftw/3.3.3/avx/lib_omp ')

@@ -3,6 +3,7 @@
 PACKAGE_DIRS_AND_FILES=" data doc python_mods src run_tests_validation "
 #PACKAGE_DIRS_AND_FILES+=" benchmarks "
 PACKAGE_DIRS_AND_FILES+="
+fftw_gen_wisdoms_all.sh
 run_tests_compile_all.sh
 run_tests_validation.sh
 license.txt

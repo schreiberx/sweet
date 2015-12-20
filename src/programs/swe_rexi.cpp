@@ -30,7 +30,7 @@ bool param_rexi_half;
 int param_timestepping_mode;
 bool param_compute_error;
 bool param_use_staggering;
-bool param_rexi_use_finite_differences_for_complex_array;
+bool param_rexi_use_spectral_differences_for_complex_array;
 int param_rexi_helmholtz_solver_id;
 double param_rexi_helmholtz_solver_eps;
 bool param_rexi_zero_before_solving;
@@ -482,7 +482,7 @@ public:
 					simVars.disc.res,
 					simVars.sim.domain_size,
 					param_rexi_half,
-					param_rexi_use_finite_differences_for_complex_array,
+					param_rexi_use_spectral_differences_for_complex_array,
 					param_rexi_helmholtz_solver_id,
 					param_rexi_helmholtz_solver_eps
 				);
@@ -1440,7 +1440,7 @@ int main(int i_argc, char *i_argv[])
 			"timestepping-mode",
 			"compute-error",
 			"staggering",
-			"use-fd-for-complex-array",	/// use finite differences for complex array
+			"use-specdiff-for-complex-array",	/// use finite differences for complex array
 			"rexi-helmholtz-solver-id",		/// use iterative solver for REXI
 			"rexi-helmholtz-solver-eps",		/// error threshold for solver
 			"initial-freq-x-mul",
@@ -1459,7 +1459,7 @@ int main(int i_argc, char *i_argv[])
 	simVars.bogus.var[4] = 0;
 	simVars.bogus.var[5] = 0;
 	simVars.bogus.var[6] = 0;
-	simVars.bogus.var[7] = 0;	// Don't use FD per default for complex array
+	simVars.bogus.var[7] = 1;	// Use spec diff per default for complex array
 	simVars.bogus.var[8] = 0;	// Use spectral solver id
 	simVars.bogus.var[9] = 1e-7;	// Error threshold
 
@@ -1490,7 +1490,9 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "" << std::endl;
 		std::cout << "	--staggering [0/1]		Use staggered grid" << std::endl;
 		std::cout << std::endl;
-		std::cout << "	--use-fd-for-complex-array=[0/1]	Use finite-differences for derivatives in spectral space" << std::endl;
+		std::cout << "	--use-specdiff-for-complex-array=[0/1]	Controls the discretization of the derivative operations for Complex2DArrays:" << std::endl;
+		std::cout << "                                      0: Finite-difference derivatives" << std::endl;
+		std::cout << "                                      1: Spectral derivatives (default)" << std::endl;
 		std::cout << "	--rexi-helmholtz-solver-id=[int]	Use iterative solver for REXI" << std::endl;
 		std::cout << "	--rexi-helmholtz-solver-eps=[err]	Error threshold for iterative solver" << std::endl;
 		std::cout << std::endl;
@@ -1515,7 +1517,7 @@ int main(int i_argc, char *i_argv[])
 	param_timestepping_mode = simVars.bogus.var[4];
 	param_compute_error = simVars.bogus.var[5];
 	param_use_staggering = simVars.bogus.var[6];
-	param_rexi_use_finite_differences_for_complex_array = simVars.bogus.var[7];
+	param_rexi_use_spectral_differences_for_complex_array = simVars.bogus.var[7];
 	param_rexi_helmholtz_solver_id = simVars.bogus.var[8];
 	param_rexi_helmholtz_solver_eps = simVars.bogus.var[9];
 
@@ -1655,7 +1657,7 @@ int main(int i_argc, char *i_argv[])
 					simVars.disc.res,
 					simVars.sim.domain_size,
 					param_rexi_half,
-					param_rexi_use_finite_differences_for_complex_array,
+					param_rexi_use_spectral_differences_for_complex_array,
 					param_rexi_helmholtz_solver_id,
 					param_rexi_helmholtz_solver_eps
 				);

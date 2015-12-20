@@ -25,7 +25,7 @@ if true; then
 	echo "TEST SPECTRAL OPS (release) $X x $Y"
 	echo "***********************************************"
 	make clean
-	scons --unit-test=test_spectral_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=disable
+	scons --threading=omp --unit-test=test_spectral_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=disable
 	EXEC="./build/test_spectral_ops_spectral_libfft_omp_gnu_release  -X $X -Y $Y -S 0"
 	echo "$EXEC"
 	$EXEC || exit
@@ -40,7 +40,7 @@ echo "***********************************************"
 echo "TEST SPECTRAL OPS (release) $X"
 echo "***********************************************"
 make clean
-scons --unit-test=test_spectral_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=disable
+scons --threading=omp --unit-test=test_spectral_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=disable
 EXEC="./build/test_spectral_ops_spectral_libfft_omp_gnu_release -n 128 -m 128 -X $X -Y $X -S 1"
 echo "$EXEC"
 $EXEC || exit
@@ -53,7 +53,7 @@ echo "***********************************************"
 echo "TEST SPECTRAL OPS (release) $X"
 echo "***********************************************"
 make clean
-scons --unit-test=test_spectral_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=disable
+scons --threading=omp --unit-test=test_spectral_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=disable
 ./build/test_spectral_ops_spectral_libfft_omp_gnu_release -n 128 -m 128 -X $X -Y $X -S 1 || exit
 ./build/test_spectral_ops_spectral_libfft_omp_gnu_release -n 128 -m 128 -X $X -Y $X -S 0 || exit
 
@@ -63,7 +63,7 @@ echo "***********************************************"
 echo "TEST SPECTRAL OPS (release) ALIASING CONTROL $X"
 echo "***********************************************"
 make clean
-scons --unit-test=test_spectral_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=enable
+scons --threading=omp --unit-test=test_spectral_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=enable
 ./build/test_spectral_ops_spectral_libfft_dealiasing_omp_gnu_release -n 128 -m 128 -X $X -Y $X -S 0 || exit
 ./build/test_spectral_ops_spectral_libfft_dealiasing_omp_gnu_release -n 128 -m 128 -X $X -Y $X -S 1 || exit
 
@@ -73,7 +73,7 @@ echo "***********************************************"
 echo "TEST SPECTRAL OPS (release) ALIASING CONTROL $X"
 echo "***********************************************"
 make clean
-scons --unit-test=test_spectral_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=enable
+scons --threading=omp --unit-test=test_spectral_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=enable
 ./build/test_spectral_ops_spectral_libfft_dealiasing_omp_gnu_release -n 128 -m 128 -X $X -Y $X -S 0 || exit
 ./build/test_spectral_ops_spectral_libfft_dealiasing_omp_gnu_release -n 128 -m 128 -X $X -Y $X -S 1 || exit
 

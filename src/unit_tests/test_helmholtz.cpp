@@ -48,8 +48,9 @@ int main(int i_argc, char *i_argv[])
 	SimulationVariables simVars;
 	simVars.disc.use_spectral_basis_diffs = 1;
 
-	const char *bogus_var_names[] = {
-			"use-fd-for-complex-array",	/// use finite differences for complex array
+	const char *bogus_var_names[] =
+	{
+			"use-specdiff-for-complex-array",	/// use finite differences for complex array
 			"helmholtz-solver-id",		/// Which Helmholtz solver to use
 			"helmholtz-smoother-sor",		/// Helmholtz solver overrelaxation
 			"helmholtz-smoother-eps",		/// Helmholtz solver error threshold
@@ -64,7 +65,7 @@ int main(int i_argc, char *i_argv[])
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
 		std::cout << std::endl;
-		std::cout << "      --use-fd-for-complex-array=[0/1]	Use finite-differences for derivatives in spectral space" << std::endl;
+		std::cout << "      --use-specdiff-for-complex-array=[0/1]	Use finite-differences for derivatives in spectral space" << std::endl;
 		std::cout << "      --helmholtz-solver-id=[0/1/2]			Which Helmholtz solver should we use" << std::endl;
 		std::cout << "                          0: Spectral solver (default)" << std::endl;
 		std::cout << "                          1: Iterative solver (Jacobi)" << std::endl;
@@ -80,12 +81,12 @@ int main(int i_argc, char *i_argv[])
 	/*
 	 * use finite differences for differential operators in complex array
 	 */
-	bool use_finite_differences_for_complex_array = simVars.bogus.var[0];
+	bool use_spectral_differences_for_complex_array = simVars.bogus.var[0];
 	int helmholtz_solver_id = simVars.bogus.var[1];
 	double helmholtz_solver_sor = simVars.bogus.var[2];
 	double helmholtz_solver_eps = simVars.bogus.var[3];
 
-	if (use_finite_differences_for_complex_array)
+	if (!use_spectral_differences_for_complex_array)
 	{
 		std::cout << "********************************************************" << std::endl;
 		std::cout << "*** Using finite-differences for complex array" << std::endl;
@@ -190,7 +191,7 @@ int main(int i_argc, char *i_argv[])
 					res,
 					simVars.sim.domain_size,
 					true,		// use only half of REXI
-					use_finite_differences_for_complex_array,	// use finite differences
+					use_spectral_differences_for_complex_array,	// use finite differences
 					helmholtz_solver_id,						// iterative solver
 					helmholtz_solver_eps
 				);
@@ -198,8 +199,8 @@ int main(int i_argc, char *i_argv[])
 
 			Complex2DArrayFFT op_diff2_c_x(res);
 			Complex2DArrayFFT op_diff2_c_y(res);
-			op_diff2_c_x.op_setup_diff2_x(simVars.sim.domain_size, use_finite_differences_for_complex_array);
-			op_diff2_c_y.op_setup_diff2_y(simVars.sim.domain_size, use_finite_differences_for_complex_array);
+			op_diff2_c_x.op_setup_diff2_x(simVars.sim.domain_size, use_spectral_differences_for_complex_array);
+			op_diff2_c_y.op_setup_diff2_y(simVars.sim.domain_size, use_spectral_differences_for_complex_array);
 
 
 			double inv_helm_h[2];

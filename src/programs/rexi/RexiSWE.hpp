@@ -45,7 +45,7 @@ class RexiSWE
 	double eps;
 
 	// use finite differences
-	bool use_finite_differences;
+	bool use_spec_diffs;
 
 	std::size_t block_size;
 

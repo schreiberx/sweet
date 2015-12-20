@@ -829,7 +829,7 @@ public:
 						i_dataArray.resolution[0],	// n1 = nx
 						(fftw_complex*)data_spectral,
 						data_cartesian,
-						(!wisdom_loaded == 0 ? 0 : FFTW_WISDOM_ONLY)
+						(!wisdom_loaded ? 0 : FFTW_WISDOM_ONLY)
 					);
 
 			if (plan_backward == nullptr)
