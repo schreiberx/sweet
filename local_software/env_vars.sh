@@ -7,6 +7,10 @@
 #
 
 
+BACKDIR="$PWD"
+
+test "x${PWD##*/}" = "xlocal_software" && cd ../
+
 SCRIPTDIR="`pwd`/local_software"
 
 if [ ! -d "$SCRIPTDIR" ]; then
@@ -27,3 +31,5 @@ export DYLD_LIBRARY_PATH="$SCRIPTDIR/local/lib:$LD_LIBRARY_PATH"
 export DYLD_LIBRARY_PATH="$SCRIPTDIR/local/lib64:$LD_LIBRARY_PATH"
 
 echo "SWEET environment variables loaded"
+
+cd "$BACKDIR"
