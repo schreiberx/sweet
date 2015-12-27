@@ -125,6 +125,14 @@ public:
 		simVars.timecontrol.current_timestep_nr = 0;
 		simVars.timecontrol.current_simulation_time = 0;
 
+		// set to some values for first touch NUMA policy (HPC stuff)
+#if SWEET_USE_SPECTRAL_SPACE
+		prog_h.set_spec_all(0, 0);
+		prog_u.set_spec_all(0, 0);
+		prog_v.set_spec_all(0, 0);
+		boundary_mask.set_spec_all(0, 0);
+#endif
+
 		prog_h.set_all(simVars.setup.h0);
 		prog_u.set_all(0);
 		prog_v.set_all(0);
@@ -264,6 +272,9 @@ public:
 						v_dy = h_dy;
 					}
 
+					//
+					// note, that cos*cos and cos*sin is a function which cannot be directly represented in spectral space
+					//
 					double h = std::sin(2.0*h_dx)*std::cos(2.0*h_dy) - (1.0/5.0)*std::cos(2.0*h_dx)*std::sin(4.0*h_dy) + simVars.setup.h0;
 					double u = std::cos(4.0*u_dx)*std::cos(2.0*u_dy);
 					double v = std::cos(2.0*v_dx)*std::cos(4.0*v_dy);
@@ -272,6 +283,7 @@ public:
 					prog_u.set(j, i, u);
 					prog_v.set(j, i, v);
 
+					// REXI initial conditions given by values on non-staggered grid
 					double t0_h = std::sin(2.0*h_dx)*std::cos(2.0*h_dy) - (1.0/5.0)*std::cos(2.0*h_dx)*std::sin(4.0*h_dy) + simVars.setup.h0;
 					double t0_u = std::cos(4.0*h_dx)*std::cos(2.0*h_dy);
 					double t0_v = std::cos(2.0*h_dx)*std::cos(4.0*h_dy);

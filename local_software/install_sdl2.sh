@@ -8,7 +8,7 @@ if [ "`uname -s`" != "Linux" ]; then
 	echo "This script only supports SDL2 on Linux systems"
 	echo "Please consider installing pre-build SDL2 packages from http://libsdl.org/release/SDL2-2.0.3.dmg"
 else
-	if [ ! -e "$DST_DIR/lib/libSDL2.so" ]; then
+	if [ ! -e "$DST_DIR/lib/libSDL2.so"  -o "$1" != "" ]; then
 		SRC_LINK="https://www.libsdl.org/release/SDL2-2.0.3.tar.gz"
 		FILENAME="`basename $SRC_LINK`"
 		BASENAME="SDL2-2.0.3"

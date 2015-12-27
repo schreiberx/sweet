@@ -386,9 +386,6 @@ if env['compiler'] == 'gnu':
 	# be pedantic to avoid stupid programming errors
 #	env.Append(CXXFLAGS=' -pedantic')
 
-	# SSE 4.2
-	env.Append(CXXFLAGS=' -msse4.2')
-
 	# speedup compilation - remove this when compiler slows down or segfaults by running out of memory
 	env.Append(CXXFLAGS=' -pipe')
 
@@ -450,7 +447,6 @@ elif env['compiler'] == 'intel':
 
 	# SSE 4.2
 	env.Replace(CXX = 'icpc')
-#	env.Append(CXXFLAGS=' -msse4.2')
 	env.Replace(LINK='icpc')
 
 	if env['fortran_source'] == 'enable':
@@ -479,9 +475,6 @@ elif env['compiler'] == 'pgi':
 	# be pedantic to avoid stupid programming errors
 #	env.Append(CXXFLAGS=' -pedantic')
 
-	# SSE 4.2
-#	env.Append(CXXFLAGS=' -msse4.2')
-
 	# speedup compilation - remove this when compiler slows down or segfaults by running out of memory
 #	env.Append(CXXFLAGS=' -pipe')
 
@@ -507,9 +500,6 @@ elif env['compiler'] == 'llvm':
 
 	# be pedantic to avoid stupid programming errors
 	env.Append(CXXFLAGS=' -pedantic')
-
-	# SSE 4.2
-	env.Append(CXXFLAGS=' -msse4.2')
 
 	# speedup compilation - remove this when compiler slows down or segfaults by running out of memory
 	env.Append(CXXFLAGS=' -pipe')
@@ -563,7 +553,7 @@ elif env['mode'] == 'release':
 	if env['compiler'] == 'gnu':
 		env.Append(CXXFLAGS=' -O3 -mtune=native')
 
-	if env['compiler'] == 'llvm':
+	elif env['compiler'] == 'llvm':
 		env.Append(CXXFLAGS=' -O3 -mtune=native')
 
 	elif env['compiler'] == 'intel':
@@ -636,7 +626,7 @@ if env['sweet_mpi'] == 'enable':
 		env.Replace(CXX = 'mpiicpc')
 		env.Replace(LINK = 'mpiicpc')
 
-	if env['threading'] != 'off':
+	if env['threading'] != 'off' and env['compiler'] == 'intel':
 		env.Append(CXXFLAGS=' -mt_mpi')
 		env.Append(LINKFLAGS=' -mt_mpi')
 
@@ -661,6 +651,7 @@ exec_name += '_'+env['mode']
 
 if env['threading'] == 'omp':
 	env.Append(CXXFLAGS=' -fopenmp')
+	env.Append(LINKFLAGS=' -fopenmp')
 	env.Append(CXXFLAGS=' -DSWEET_THREADING=1')
 else:
 	env.Append(CXXFLAGS=' -DSWEET_THREADING=0')

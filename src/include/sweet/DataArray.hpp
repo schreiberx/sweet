@@ -730,6 +730,7 @@ public:
 		static
 		bool loadWisdom()
 		{
+
 			// only initialize it, if this class is not called to initialize aliasing
 #if SWEET_REXI_THREAD_PARALLEL_SUM
 			std::cout << "Using REXI parallel sum, hence using only single FFT thread" << std::endl;
@@ -796,7 +797,6 @@ public:
 
 			// allow to search for a good plan only for 60 seconds
 //			fftw_set_timelimit(60);
-
 
 
 			/*

@@ -430,6 +430,13 @@ bool RexiSWE::run_timestep(
 			/*
 			 * DO SUM IN PARALLEL
 			 */
+
+			// precompute a bunch of values
+			// this would belong to a serial part according to Amdahls law
+			Complex2DArrayFFT rhs_a = eta_bar*(op_diff_c_x(u0) + op_diff_c_y(v0));
+			Complex2DArrayFFT rhs_b = (op_diff_c_x(v0) - op_diff_c_y(u0));
+			Complex2DArrayFFT lhs_a = (-g*eta_bar)*(perThreadVars[i]->op_diff2_c_x + perThreadVars[i]->op_diff2_c_y);
+
 			for (std::size_t n = start; n < end; n++)
 			{
 				// load alpha (a) and scale by inverse of tau
@@ -446,11 +453,16 @@ bool RexiSWE::run_timestep(
 				 */
 				Complex2DArrayFFT rhs =
 						(kappa/alpha) * eta0
-						- eta_bar*(op_diff_c_x(u0) + op_diff_c_y(v0))
-						- (i_parameters.sim.f0*eta_bar/alpha) * (op_diff_c_x(v0) - op_diff_c_y(u0))
+						- rhs_a
+						- (i_parameters.sim.f0*eta_bar/alpha) * rhs_b
 					;
 
+#if 0
 				helmholtz_spectral_solver_spec(kappa, g*eta_bar, rhs, eta, i);
+#else
+				Complex2DArrayFFT lhs = lhs_a.addScalar_Cart(kappa);
+				rhs.spec_div_element_wise(lhs, eta);
+#endif
 
 				Complex2DArrayFFT uh = u0 - g*op_diff_c_x(eta);
 				Complex2DArrayFFT vh = v0 - g*op_diff_c_y(eta);
@@ -504,17 +516,18 @@ bool RexiSWE::run_timestep(
 			/*
 			 * DO SUM IN PARALLEL
 			 */
+			Complex2DArrayFFT rhs_a = eta_bar*(op_diff_c_x(u0) + op_diff_c_y(v0));
+			Complex2DArrayFFT rhs_b = (op_diff_c_x(v0) - op_diff_c_y(u0));
+
 			for (std::size_t n = start; n < end; n++)
 			{
 				// load alpha (a) and scale by inverse of tau
 				// we flip the sign to account for the -L used in exp(\tau (-L))
 				complex alpha = -rexi.alpha[n]/i_timestep_size;
-//				alpha.imag(-alpha.imag());
 				complex beta = -rexi.beta_re[n];
 
 				// load kappa (k)
 				complex kappa = alpha*alpha + i_parameters.sim.f0*i_parameters.sim.f0;
-//				std::cout << "KAPPA: " << kappa << std::endl;
 
 				/*
 				 * TODO: we can even get more performance out of this operations
@@ -522,8 +535,8 @@ bool RexiSWE::run_timestep(
 				 */
 				Complex2DArrayFFT rhs =
 						(kappa/alpha) * eta0
-						- eta_bar*(op_diff_c_x(u0) + op_diff_c_y(v0))
-						- (i_parameters.sim.f0*eta_bar/alpha) * (op_diff_c_x(v0) - op_diff_c_y(u0))
+						- rhs_a
+						- (i_parameters.sim.f0*eta_bar/alpha) * rhs_b
 					;
 
 				rhs = rhs.toCart();

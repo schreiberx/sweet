@@ -132,7 +132,7 @@ public:
 
 			if (fft_getSingleton_Plans().to_spec == nullptr)
 			{
-				std::cerr << "Failed to create plan_forward for non-aliasing fftw" << std::endl;
+				std::cerr << "Failed to create plan_forward for fftw" << std::endl;
 				std::cerr << "complex forward preverse_input forward " << resolution[0] << " x " << resolution[1] << std::endl;
 				std::cerr << "fftw-wisdom plan: cf" << resolution[0] << "x" << resolution[1] << std::endl;
 				exit(-1);
@@ -153,7 +153,7 @@ public:
 
 			if (fft_getSingleton_Plans().to_cart == nullptr)
 			{
-				std::cerr << "Failed to create plan_backward for non-aliasing fftw" << std::endl;
+				std::cerr << "Failed to create plan_backward for fftw" << std::endl;
 				std::cerr << "complex backward preverse_input forward " << resolution[0] << " x " << resolution[1] << std::endl;
 				std::cerr << "fftw-wisdom plan: cf" << resolution[0] << "x" << resolution[1] << std::endl;
 				exit(-1);
@@ -1327,6 +1327,35 @@ public:
 		}
 
 		return out;
+	}
+
+
+
+	inline
+	void spec_div_element_wise(
+			const Complex2DArrayFFT &i_d,
+			const Complex2DArrayFFT &o_out
+//			double i_instability_threshold = 0
+	)	const
+	{
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#		pragma omp parallel for OPENMP_SIMD
+#endif
+		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		{
+			double ar = data[i];
+			double ai = data[i+1];
+			double br = i_d.data[i];
+			double bi = i_d.data[i+1];
+
+			double den = (br*br+bi*bi);
+
+			//if (std::abs(den) == 0)
+			// special handling merged with bit trick
+			// For Laplace solution, this is the integration constant C
+			o_out.data[i] = (std::abs(den) == 0 ? 0 : (ar*br + ai*bi)/den);
+			o_out.data[i+1] = (std::abs(den) == 0 ? 0 : (ai*br - ar*bi)/den);
+		}
 	}
 
 

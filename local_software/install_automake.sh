@@ -12,7 +12,7 @@ if [ "`uname -s`" != "Linux" ]; then
 	echo "This script only supports Automake on Linux systems"
 else
 
-	if [ ! -e "$DST_DIR/bin/automake" ]; then
+	if [ ! -e "$DST_DIR/bin/automake"  -o "$1" != "" ]; then
 		SRC_LINK="http://ftp.gnu.org/gnu/automake/automake-1.15.tar.gz"
 		FILENAME="`basename $SRC_LINK`"
 		BASENAME="automake-1.15"

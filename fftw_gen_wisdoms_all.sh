@@ -18,12 +18,17 @@ for t in $PROC_RANGE; do
 
 	PLANS=""
 
-	for n in 8 16 32 64 128; do
-#	for n in 8 16 32 64 128 256 512; do
+	# Generate all these plans.
+	# cif and cf plans are required to support different platforms.
+	# On some platforms, only cif seems to work, on others only cf
+#	for n in 8 16 32 64 128; do
+	for n in 8 16 32 64 128 256 512 1024; do
 		PLANS="$PLANS rf""$n""x""$n"
 		PLANS="$PLANS rb""$n""x""$n"
 		PLANS="$PLANS cif""$n""x""$n"
 		PLANS="$PLANS cib""$n""x""$n"
+		PLANS="$PLANS cf""$n""x""$n"
+		PLANS="$PLANS cb""$n""x""$n"
 	done
 
 	T=""
