@@ -1102,7 +1102,8 @@ public:
 					o_ostream << "\tDIFF_P\tDIFF_U\tDIFF_V";
 
 				if (param_compute_error)
-					o_ostream << "\tANAL_DIFF_P\tANAL_DIFF_U\tANAL_DIFF_V";
+					o_ostream << "\tANAL_DIFF_RMS_P\tANAL_DIFF_RMS_U\tANAL_DIFF_RMS_V";
+					o_ostream << "\tANAL_DIFF_MAX_P\tANAL_DIFF_MAX_U\tANAL_DIFF_MAX_V";
 
 				o_ostream << std::endl;
 			}
@@ -1151,7 +1152,8 @@ public:
 						tmp.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
 					}
 
-				benchmark_diff_h = (prog_h-tmp).reduce_norm1_quad() / (double)(simVars.disc.res[0]*simVars.disc.res[1]);
+				//benchmark_diff_h = (prog_h-tmp).reduce_norm1_quad() / (double)(simVars.disc.res[0]*simVars.disc.res[1]);
+				benchmark_diff_h = (prog_h-tmp).reduce_maxAbs() ;
 				o_ostream << "\t" << benchmark_diff_h;
 
 				// set data to something to overcome assertion error
@@ -1165,7 +1167,8 @@ public:
 						tmp.set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
 					}
 
-				benchmark_diff_u = (prog_u-tmp).reduce_norm1_quad() / (double)(simVars.disc.res[0]*simVars.disc.res[1]);
+				//benchmark_diff_u = (prog_u-tmp).reduce_norm1_quad() / (double)(simVars.disc.res[0]*simVars.disc.res[1]);
+				benchmark_diff_u = (prog_u-tmp).reduce_maxAbs();
 				o_ostream << "\t" << benchmark_diff_u;
 
 				for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
@@ -1178,7 +1181,8 @@ public:
 						tmp.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
 					}
 
-				benchmark_diff_v = (prog_v-tmp).reduce_norm1_quad() / (double)(simVars.disc.res[0]*simVars.disc.res[1]);
+				//benchmark_diff_v = (prog_v-tmp).reduce_norm1_quad() / (double)(simVars.disc.res[0]*simVars.disc.res[1]);
+				benchmark_diff_v = (prog_v-tmp).reduce_maxAbs();
 				o_ostream << "\t" << benchmark_diff_v;
 			}
 
