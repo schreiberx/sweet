@@ -183,13 +183,13 @@ env['gui'] = GetOption('gui')
 
 
 AddOption(	'--rexi-parallel-sum',
-		dest='rexi_parallel_sum',
+		dest='rexi_thread_parallel_sum',
 		type='choice',
 		choices=['enable','disable'],
 		default='disable',
 		help='Use a par for loop over the sum in REXI: enable, disable [default: %default]'
 )
-env['rexi_parallel_sum'] = GetOption('rexi_parallel_sum')
+env['rexi_thread_parallel_sum'] = GetOption('rexi_thread_parallel_sum')
 
 
 AddOption(	'--sweet-mpi',
@@ -636,7 +636,7 @@ if env['sweet_mpi'] == 'enable':
 if env['threading'] in ['omp']:
 	exec_name+='_'+env['threading']
 
-if env['rexi_parallel_sum']=='enable':
+if env['rexi_thread_parallel_sum']=='enable':
 	exec_name+='_rexipar'
 
 env.Append(CXXFLAGS=' -DNUMA_BLOCK_ALLOCATOR_TYPE='+env['numa_block_allocator'])
@@ -663,15 +663,15 @@ if env['libfft'] == 'enable':
 	if env['threading'] == 'omp':
 		env.Append(LIBS=['fftw3_omp'])
 
-if env['rexi_parallel_sum'] == 'enable' and env['threading'] == 'omp':
+if env['rexi_thread_parallel_sum'] == 'enable' and env['threading'] == 'omp':
 	print 'ERROR: "REXI Parallel Sum" and "Threading" is both activated'
 	sys.exit(1)
 
-if env['rexi_parallel_sum'] == 'enable' or env['threading'] == 'omp':
+if env['rexi_thread_parallel_sum'] == 'enable' or env['threading'] == 'omp':
 	env.Append(LINKFLAGS=' -fopenmp')
 	env.Append(CXXFLAGS=' -fopenmp')
 
-if env['rexi_parallel_sum'] == 'enable':
+if env['rexi_thread_parallel_sum'] == 'enable':
 	env.Append(CXXFLAGS=' -DSWEET_REXI_THREAD_PARALLEL_SUM=1')
 else:
 	env.Append(CXXFLAGS=' -DSWEET_REXI_THREAD_PARALLEL_SUM=0')

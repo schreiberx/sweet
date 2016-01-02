@@ -150,6 +150,7 @@ public:
 			exit(1);
 		}
 
+#if 0
 		if (simVars.setup.scenario == -1)
 		{
 			std::cout << "Setting up steady state" << std::endl;
@@ -218,7 +219,9 @@ public:
 				}
 			}
 		}
-		else if (param_initial_freq_x_mul != -1)
+		else
+#endif
+		if (param_initial_freq_x_mul != -1)
 		{
 			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 			{
@@ -1508,8 +1511,8 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "	--rexi-helmholtz-solver-id=[int]	Use iterative solver for REXI" << std::endl;
 		std::cout << "	--rexi-helmholtz-solver-eps=[err]	Error threshold for iterative solver" << std::endl;
 		std::cout << std::endl;
-		std::cout << "	--init-cond-freq-mul-x=[float]	Setup initial conditions by using this multiplier values" << std::endl;
-		std::cout << "	--init-cond-freq-mul-y=[float]	" << std::endl;
+		std::cout << "	--initial-freq-x-mul=[float]	Setup initial conditions by using this multiplier values" << std::endl;
+		std::cout << "	--initial-freq-y-mul=[float]	" << std::endl;
 		std::cout << std::endl;
 		std::cout << "	--boundary-id=[0,1,...]	    Boundary id" << std::endl;
 		std::cout << "                              0: no boundary" << std::endl;
