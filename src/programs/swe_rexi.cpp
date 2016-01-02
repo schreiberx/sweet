@@ -1362,15 +1362,34 @@ public:
 		// first, update diagnostic values if required
 		update_diagnostics();
 
-		int id = simVars.misc.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
+		const char* description = "";
+		if (simVars.misc.vis_id >= 0)
+		{
+			int id = simVars.misc.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
+			description = vis_arrays[id].description;
+		}
+		else
+		{
+			switch (simVars.misc.vis_id)
+			{
+			case -1:
+				description = "Direct solution for h";
+				break;
+
+
+			case -2:
+				description = "Error in h";
+				break;
+			}
+		}
 
 		static char title_string[2048];
-		sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %.14e, Vis: %.14s, Mass: %.14e, Energy: %.14e, Potential Entrophy: %.14e",
+		sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %.14e, Vis: %s, Mass: %.14e, Energy: %.14e, Potential Entrophy: %.14e",
 				simVars.timecontrol.current_simulation_time,
 				simVars.timecontrol.current_simulation_time/(60.0*60.0*24.0),
 				simVars.timecontrol.current_timestep_nr,
 				simVars.timecontrol.current_timestep_size,
-				vis_arrays[id].description,
+				description,
 				simVars.diag.total_mass, simVars.diag.total_energy, simVars.diag.total_potential_enstrophy);
 
 		return title_string;
