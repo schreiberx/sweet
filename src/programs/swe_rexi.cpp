@@ -1320,6 +1320,7 @@ public:
 #if 1
 		int id = simVars.misc.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
 		*o_dataArray = vis_arrays[id].data;
+		tmp=**o_dataArray;
 		*o_aspect_ratio = simVars.sim.domain_size[1] / simVars.sim.domain_size[0];
 #else
 		DataArray<2> t_h = t0_prog_h;
@@ -1388,13 +1389,18 @@ public:
 		}
 
 		static char title_string[2048];
-		sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %.14e, Vis: %s, Mass: %.14e, Energy: %.14e, Potential Entrophy: %.14e",
+		//sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %.14e, Vis: %s, Mass: %.14e, Energy: %.14e, Potential Entrophy: %.14e",
+		sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %.6e, Vis: %s, Mass: %.6e, Energy: %.6e, Potential Enstrophy: %.6e, Max: %f, Min: %f ",
 				simVars.timecontrol.current_simulation_time,
 				simVars.timecontrol.current_simulation_time/(60.0*60.0*24.0),
 				simVars.timecontrol.current_timestep_nr,
 				simVars.timecontrol.current_timestep_size,
 				description,
-				simVars.diag.total_mass, simVars.diag.total_energy, simVars.diag.total_potential_enstrophy);
+				simVars.diag.total_mass,
+				simVars.diag.total_energy,
+				simVars.diag.total_potential_enstrophy,
+				tmp.reduce_max(),
+				tmp.reduce_min()	);
 
 		return title_string;
 	}
