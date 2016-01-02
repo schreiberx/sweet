@@ -8,6 +8,7 @@
 #include <sweet/Operators2D.hpp>
 #include <sweet/Stopwatch.hpp>
 #include <ostream>
+#include <algorithm>
 #include <sstream>
 #include <unistd.h>
 #include <stdio.h>
@@ -1227,10 +1228,6 @@ public:
 			benchmark_analytical_error_maxabs_u = (t_u-prog_u).reduce_maxAbs();
 			benchmark_analytical_error_maxabs_v = (t_v-prog_v).reduce_maxAbs();
 		}
-
-//		benchmark_analytical_error_maxabs_h = (t_h-prog_h).reduce_norm2_quad()/(double)(parameters.discretization.res[0]*parameters.discretization.res[1]);
-//		benchmark_analytical_error_maxabs_u = (t_u-prog_u).reduce_norm2_quad()/(double)(parameters.discretization.res[0]*parameters.discretization.res[1]);
-//		benchmark_analytical_error_maxabs_v = (t_v-prog_v).reduce_norm2_quad()/(double)(parameters.discretization.res[0]*parameters.discretization.res[1]);
 	}
 
 
@@ -1363,15 +1360,34 @@ public:
 		// first, update diagnostic values if required
 		update_diagnostics();
 
-		int id = simVars.misc.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
+		const char* description = "";
+		if (simVars.misc.vis_id >= 0)
+		{
+			int id = simVars.misc.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
+			description = vis_arrays[id].description;
+		}
+		else
+		{
+			switch (simVars.misc.vis_id)
+			{
+			case -1:
+				description = "Direct solution for h";
+				break;
+
+
+			case -2:
+				description = "Error in h";
+				break;
+			}
+		}
 
 		static char title_string[2048];
-		sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %.14e, Vis: %.14s, Mass: %.14e, Energy: %.14e, Potential Entrophy: %.14e",
+		sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %.14e, Vis: %s, Mass: %.14e, Energy: %.14e, Potential Entrophy: %.14e",
 				simVars.timecontrol.current_simulation_time,
 				simVars.timecontrol.current_simulation_time/(60.0*60.0*24.0),
 				simVars.timecontrol.current_timestep_nr,
 				simVars.timecontrol.current_timestep_size,
-				vis_arrays[id].description,
+				description,
 				simVars.diag.total_mass, simVars.diag.total_energy, simVars.diag.total_potential_enstrophy);
 
 		return title_string;
@@ -1405,8 +1421,15 @@ public:
 			prog_v.file_saveData_ascii("swe_rexi_dump_v.csv");
 			break;
 
+		case 'C':
+			// dump data arrays to VTK
+			prog_h.file_saveData_vtk("swe_rexi_dump_h.vtk", "Height");
+			prog_u.file_saveData_vtk("swe_rexi_dump_u.vtk", "U-Velocity");
+			prog_v.file_saveData_vtk("swe_rexi_dump_v.vtk", "V-Velocity");
+			break;
+
 		case 'l':
-			// dump data arrays
+			// load data arrays
 			prog_h.file_loadData("swe_rexi_dump_h.csv", simVars.setup.input_data_binary);
 			prog_u.file_loadData("swe_rexi_dump_u.csv", simVars.setup.input_data_binary);
 			prog_v.file_loadData("swe_rexi_dump_v.csv", simVars.setup.input_data_binary);
@@ -1512,8 +1535,8 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "	--rexi-helmholtz-solver-id=[int]	Use iterative solver for REXI" << std::endl;
 		std::cout << "	--rexi-helmholtz-solver-eps=[err]	Error threshold for iterative solver" << std::endl;
 		std::cout << std::endl;
-		std::cout << "	--init-cond-freq-mul-x=[float]	Setup initial conditions by using this multiplier values" << std::endl;
-		std::cout << "	--init-cond-freq-mul-y=[float]	" << std::endl;
+		std::cout << "	--init-cond-freq-x-mul=[float]	Setup initial conditions by using this multiplier values" << std::endl;
+		std::cout << "	--init-cond-freq-y-mul=[float]	" << std::endl;
 		std::cout << std::endl;
 		std::cout << "	--boundary-id=[0,1,...]	    Boundary id" << std::endl;
 		std::cout << "                              0: no boundary" << std::endl;
