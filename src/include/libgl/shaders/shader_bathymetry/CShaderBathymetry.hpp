@@ -2,23 +2,23 @@
 #define CGL_SHADER_BATHYMETRY_HPP
 
 #include "libgl/shaders/CDefaultShaderDir.hpp"
-#include "libgl/core/CGlTexture.hpp"
+#include "libgl/core/GlTexture.hpp"
 #include "libgl/core/CGlError.hpp"
 
 
 /**
  * general blinn shader to use for rendering vertices
  */
-#include "libgl/core/CGlProgram.hpp"
+#include "libgl/core/GlProgram.hpp"
 #include "libgl/shaders/shader_blinn/CShaderBlinnSkeleton.hpp"
 
 
 class CShaderBathymetry	:
-	public CGlProgram,
+	public GlProgram,
 	public CShaderBlinnSkeleton
 {
 public:
-	CGlUniform texture0_enabled;	///< uniform to enable and disable texturing
+	GlUniform texture0_enabled;	///< uniform to enable and disable texturing
 
 	CShaderBathymetry()
 	{

@@ -30,10 +30,10 @@ class CGlDrawSkyBox
 
 public:
 	CError error;					///< error handler
-	CGlTexture texture_cube_map;	///< cube map texture
-	CGlUniform pvm_matrix_uniform;	///< uniform to pvm matrix
+	GlTexture texture_cube_map;	///< cube map texture
+	GlUniform pvm_matrix_uniform;	///< uniform to pvm matrix
 
-	CGlProgram program;				///< program to render sky box
+	GlProgram program;				///< program to render sky box
 
 	CGlDrawSkyBox()	:
 			vertex_buffer(GL_ARRAY_BUFFER),

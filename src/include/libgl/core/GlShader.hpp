@@ -180,11 +180,11 @@ public:
 	 */
 	std::string getInfoLog()
 	{
-		GLint length;
+		GLint length = 0;
 		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
 
 		if (length == 0)
-			return std::string();
+			return "Info log has zero length";
 
 		GLchar *info_log_buf = new GLchar[length];
 

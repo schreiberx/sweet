@@ -43,14 +43,14 @@ extern "C" {
 }
 
 
-#include "CGlError.hpp"
+#include <libgl/core/GlError.hpp>
 
 
 
 /**
  * \brief	general texture handler for 2d, 3d, rectangle and cubemap texture
  */
-class CGlTexture
+class GlTexture
 {
 public:
 	int width;			///< width of texture
@@ -89,7 +89,7 @@ public:
 	/**
 	 * initialize texture
 	 */
-	inline CGlTexture(	GLenum p_target = GL_TEXTURE_2D,
+	inline GlTexture(	GLenum p_target = GL_TEXTURE_2D,
 						GLint p_int_format = GL_RGBA,
 						GLenum p_ext_format = GL_RGBA,
 						GLenum p_ext_type = GL_UNSIGNED_BYTE
@@ -376,7 +376,7 @@ public:
 	/**
 	 * create texture from file
 	 */
-	inline CGlTexture(const char *filename)
+	inline GlTexture(const char *filename)
 	{
 		loadFromFile(filename);
 	}
@@ -563,7 +563,7 @@ public:
 		setParam(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
 
-	inline ~CGlTexture()
+	inline ~GlTexture()
 	{
 		glDeleteTextures(1, &textureid);
 	}

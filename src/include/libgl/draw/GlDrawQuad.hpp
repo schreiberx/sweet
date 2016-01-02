@@ -18,24 +18,24 @@
 #ifndef C_GL_DRAW_QUAD_HPP
 #define C_GL_DRAW_QUAD_HPP
 
+#include <libgl/core/GlBuffer.hpp>
+#include <libgl/core/GlProgram.hpp>
+#include <libgl/core/GlTexture.hpp>
+#include <libgl/core/GlVertexArrayObject.hpp>
 #include "libgl/incgl3.h"
-#include "libgl/core/CGlBuffer.hpp"
-#include "libgl/core/CGlProgram.hpp"
-#include "libgl/core/CGlTexture.hpp"
-#include "libgl/core/CGlVertexArrayObject.hpp"
 #include "libmath/CGlSlMath.hpp"
 
 /**
  * \brief	render a simple textured quad
  */
-class CGlDrawQuad
+class GlDrawQuad
 {
 
 public:
-	CGlVertexArrayObject vao;
+	GlVertexArrayObject vao;
 	CGlBuffer buffer;
 
-	CGlDrawQuad()
+	GlDrawQuad()
 	{
 		static const float vertices[4][4] = {
 					{-1.0, -1.0, -1.0, 1.0},
@@ -79,7 +79,7 @@ public:
 	}
 
 
-	~CGlDrawQuad()
+	~GlDrawQuad()
 	{
 	}
 };

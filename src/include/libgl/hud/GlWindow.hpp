@@ -16,7 +16,7 @@
 
 
 /*
- * CGlWindow.hpp
+ * GlWindow.hpp
  *
  *  Created on: Mar 22, 2010
  *      Author: martin
@@ -25,23 +25,25 @@
 #ifndef CGLWINDOW_HPP_
 #define CGLWINDOW_HPP_
 
-#include "libmath/CGlSlMath.hpp"
-#include "libgl/core/CGlViewport.hpp"
-#include "libgl/core/CGlState.hpp"
-#include "libgl/draw/CGlDrawQuad.hpp"
+#include <libgl/core/GlState.hpp>
+#include <libgl/core/GlViewport.hpp>
+#include <libgl/core/GlProgram.hpp>
+#include <libgl/core/GlUniform.hpp>
+#include <libmath/CGlSlMath.hpp>
+#include <libgl/draw/GlDrawQuad.hpp>
 
-class CGlWindow
+class GlWindow
 {
-	CGlViewport viewport;
-	CGlProgram program;
-	CGlUniform background_color_uniform;
+	GlViewport viewport;
+	GlProgram program;
+	GlUniform background_color_uniform;
 
-	CGlDrawQuad draw_quad;
+	GlDrawQuad draw_quad;
 
 	GLSL::vec4 background_color;
 
 public:
-	CError error;
+//	CError error;
 
 	GLSL::ivec2 pos;		///< position of window
 	GLSL::ivec2 size;		///< size of window
@@ -51,18 +53,15 @@ public:
 		return (mouse_x >= pos[0] && mouse_y >= pos[1] && mouse_x < size[0]+pos[0] && mouse_y < size[1]+pos[1]);
 	}
 
-	CGlWindow()
+	GlWindow()
 	{
 		// setup shader program
 		program.initVertFragShadersFromDirectory("window");
-		if (program.error())
-		{
-			std::cerr << program.error.getString() << std::endl;
+		if (program.error)
 			return;
-		}
 
 		program.link();
-		if (program.error())
+		if (program.error)
 		{
 			std::cerr << "info Log: linking: " << program.getInfoLog() << std::endl;
 			return;

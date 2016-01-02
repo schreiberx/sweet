@@ -23,12 +23,12 @@
 /**
  * \brief	handle GL viewport (save, restore)
  */
-class CGlViewport
+class GlViewport
 {
 	GLfloat viewport[4];
 
 public:
-	inline CGlViewport()
+	inline GlViewport()
 	{
 	}
 

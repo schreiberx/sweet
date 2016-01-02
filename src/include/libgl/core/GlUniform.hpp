@@ -1,21 +1,21 @@
 /*
- * CGlUniform.hpp
+ * GlUniform.hpp
  *
  *  Created on: Sep 6, 2011
  *      Author: schreibm
  */
 
-#ifndef CGLUNIFORM_HPP_
-#define CGLUNIFORM_HPP_
+#ifndef GlUniform_HPP_
+#define GlUniform_HPP_
 
 #include <array>
 
-//#include "libgl/core/CGlProgram.hpp"
+#include <libmath/CGlSlMath.hpp>
 
 /**
  * \brief	handle uniforms for GLSL programs
  */
-class CGlUniform
+class GlUniform
 {
 public:
 	GLint location;		///< location id for uniform
@@ -24,7 +24,7 @@ public:
 	/**
 	 * initialize uniform with OpenGL Uniform location Id
 	 */
-	inline CGlUniform(GLint p_uniformLocation)
+	inline GlUniform(GLint p_uniformLocation)
 	{
 		location = p_uniformLocation;
 	}
@@ -32,7 +32,7 @@ public:
 	/**
 	 * initialize empty uniform
 	 */
-	inline CGlUniform()
+	inline GlUniform()
 	{
 		location = -1;
 	}
@@ -210,4 +210,4 @@ public:
 
 
 
-#endif /* CGLUNIFORM_HPP_ */
+#endif /* GlUniform_HPP_ */

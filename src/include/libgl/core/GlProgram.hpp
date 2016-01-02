@@ -18,26 +18,26 @@
 #ifndef C_GL_PROGRAM_HPP
 #define C_GL_PROGRAM_HPP
 
+#include <libgl/core/GlError.hpp>
+#include <libgl/core/GlUniform.hpp>
 #include <libmath/CGlSlMath.hpp>
-#include "CGlError.hpp"
-
-#include <libgl/tools/CFile.hpp>
+#include <libgl/tools/File.hpp>
 #include <list>
 #include <string>
 
 #include "libgl/shaders/CDefaultShaderDir.hpp"
 
 
-#include "libgl/core/CGlUniform.hpp"
-#include "libgl/core/CGlShader.hpp"
+#include "libgl/core/GlShader.hpp"
 
 /**
  * \brief GLSL program abstraction class
  */
-class CGlProgram
+class GlProgram
 {
 public:
 	GLuint program;					///< OpenGL program ID
+	bool error;
 
 	std::list<CGlShader> shaders;	///< list to attached shaders
 
@@ -59,12 +59,13 @@ protected:
 	 */
 	void init()
 	{
+		error = false;
 		program = glCreateProgram();
 		CGlErrorCheck();
 	}
 
 public:
-	CGlProgram()
+	GlProgram()
 	{
 		init();
 	}
@@ -104,7 +105,9 @@ public:
 		new_shader.init(type);
 		if (!new_shader.loadSource(shader_file, prefix_string))
 		{
-			std::cerr << "Error in shader_file " << shader_file << std::endl;
+			std::cerr << "Load error in shader_file " << shader_file << std::endl;
+			std::cerr << new_shader.getInfoLog() << std::endl;
+			error = true;
 			// call deconstructor and remove
 			shaders.pop_front();
 			return false;
@@ -112,7 +115,9 @@ public:
 
 		if (!new_shader.compile())
 		{
-			std::cerr << "Error in shader_file " << shader_file << std::endl;
+			std::cerr << "Compile error in shader_file " << shader_file << std::endl;
+			std::cerr << new_shader.getInfoLog() << std::endl;
+			error = true;
 
 			// call deconstructor and remove
 			shaders.pop_front();
@@ -261,7 +266,7 @@ public:
 		if (length == 0)
 		{
 			// no info log available
-			infoLog = "";
+			infoLog = "Info log has zero length";
 			return false;
 		}
 
@@ -279,21 +284,19 @@ public:
 	 */
 	std::string getInfoLog()
 	{
-		std::string infoLog;
 
-		GLint length;
+		GLint length = 0;
 		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
 
 		if (length == 0)
-			return infoLog;
+			return "Info log has zero length";
 
 		GLchar *info_log_buf = new GLchar[length];
 
 		// returned string is already zero terminated
 		glGetProgramInfoLog(program, length, nullptr, info_log_buf);
 
-		infoLog = info_log_buf;
-		return infoLog;
+		return info_log_buf;
 	}
 
 	/**
@@ -311,10 +314,12 @@ public:
 			return true;
 
 		std::cerr << getInfoLog() << std::endl;
+		error = true;
 
 		for (CGlShader &s : shaders)
 		{
 			std::cerr << " Shader filename: " << s.filename << std::endl;
+			error = true;
 		}
 		return false;
 	}
@@ -342,7 +347,7 @@ public:
 	 */
 	inline void setUniform1i(const GLchar *name, GLint value)
 	{
-		CGlUniform uniform;
+		GlUniform uniform;
 		setupUniform(uniform, name);
 		uniform.set1i(value);
 
@@ -354,7 +359,7 @@ public:
 	 */
 	inline void setUniform3fv(const GLchar *name, GLfloat *value)
 	{
-		CGlUniform uniform;
+		GlUniform uniform;
 		setupUniform(uniform, name);
 		uniform.set3fv(value);
 
@@ -374,7 +379,7 @@ public:
 	 * initialize uniform from program
 	 */
 	inline void setupUniform(
-			CGlUniform &p_uniform,	///< uniform to setup
+			GlUniform &p_uniform,	///< uniform to setup
 			const GLchar *p_name	///< name of uniform variable in program
 	)
 	{
@@ -444,7 +449,7 @@ public:
 		program = 0;
 	}
 
-	inline ~CGlProgram()
+	inline ~GlProgram()
 	{
 		free();
 		CGlErrorCheck();
@@ -454,13 +459,13 @@ public:
 /**
  * \brief	convenient function to activate usage of programs within {} blocks
  */
-class CGlProgramUse
+class GlProgramUse
 {
 public:
 	/**
 	 * activate usage of program in current program block {}
 	 */
-	inline CGlProgramUse(CGlProgram &p_program)
+	inline GlProgramUse(GlProgram &p_program)
 	{
 		p_program.use();
 	}
@@ -468,9 +473,9 @@ public:
 	/**
 	 * disable program
 	 */
-	inline ~CGlProgramUse()
+	inline ~GlProgramUse()
 	{
-		CGlProgram::disable();
+		GlProgram::disable();
 	}
 };
 

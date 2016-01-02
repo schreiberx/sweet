@@ -1,24 +1,24 @@
 #ifndef CGL_SHADER_BLINN_SHADOW_AND_CAUSTIC_MAP_HPP
 #define CGL_SHADER_BLINN_SHADOW_AND_CAUSTIC_MAP_HPP
 
-#include "libgl/core/CGlTexture.hpp"
+#include "libgl/core/GlTexture.hpp"
 #include "libgl/core/CGlError.hpp"
 
 
 /**
  * blinn shader supporting shadow maps
  */
-#include "libgl/core/CGlProgram.hpp"
+#include "libgl/core/GlProgram.hpp"
 #include "shaders/shader_blinn/CShaderBlinnSkeleton.hpp"
 
 
 class CShaderBlinnShadowAndCausticMap	:
-	public CGlProgram,
+	public GlProgram,
 	public CShaderBlinnSkeleton
 {
 public:
-	CGlUniform texture0_enabled;	///< uniform to enable and disable texturing
-	CGlUniform shadow_map_matrix_uniform;	///< shadow map matrix
+	GlUniform texture0_enabled;	///< uniform to enable and disable texturing
+	GlUniform shadow_map_matrix_uniform;	///< shadow map matrix
 
 
 	CShaderBlinnShadowAndCausticMap()

@@ -16,7 +16,7 @@
 
 
 /*
- * CGlHudConfig.hpp
+ * GlHudConfig.hpp
  *
  *  Created on: Mar 22, 2010
  *      Author: martin
@@ -28,11 +28,13 @@
 #include <list>
 
 #include <cmath>
-#include "libgl/hud/CGlWindow.hpp"
-#include "libgl/hud/CGlHudConfig.hpp"
-#include "libgl/hud/CGlFreeType.hpp"
-#include "libgl/hud/CGlRenderOStream.hpp"
-#include "mainvis/CRenderWindow.hpp"
+#include <libgl/hud/GlWindow.hpp>
+#include <libgl/hud/GlHudConfig.hpp>
+#include <libgl/hud/GlFreeType.hpp>
+#include <libgl/hud/GlRenderOStream.hpp>
+#include <libgl/tools/RenderWindow.hpp>
+
+
 
 /**
  * HudConfig cares about config variables which can be modified via a simple gui
@@ -40,7 +42,7 @@
  * the config variables are not stored in this class. instead, a pointer to the storage of each config
  * variable is given as a parameter on setup.
  */
-class CGlHudConfig
+class GlHudConfig
 {
 public:
 	/**
@@ -620,7 +622,7 @@ public:
 	int area_width;
 	int area_height;
 
-	CGlHudConfig()
+	GlHudConfig()
 	{
 		visible = true;
 		option_id_counter = 0;
@@ -729,15 +731,15 @@ public:
 		option_id_counter++;
 	}
 
-	CGlFreeType *cGlFreeType;
-	CGlRenderOStream *cGlRenderOStream;
+	GlFreeType *cGlFreeType;
+	GlRenderOStream *cGlRenderOStream;
 
 	/**
 	 * setup area_* variables to speedup rendering and mouse interactions
 	 */
 	void setup(
-		CGlFreeType &io_cGlFreeType,
-		CGlRenderOStream &io_cGlRenderOStream,
+		GlFreeType &io_cGlFreeType,
+		GlRenderOStream &io_cGlRenderOStream,
 		int i_pos_x,	// x position to start rendering
 		int i_pos_y		// y position to start rendering - this is the left upper corner of the first character!!!
 	)
@@ -814,7 +816,7 @@ public:
 		if (!visible)
 			return;
 
-		CGlRenderOStream &cGlRenderOStream_ = *cGlRenderOStream;
+		GlRenderOStream &cGlRenderOStream_ = *cGlRenderOStream;
 
 		cGlFreeType->setColor(GLSL::vec3(1,1,1));
 		CGlErrorCheck();
@@ -829,11 +831,14 @@ public:
 				cGlFreeType->setColor(GLSL::vec3(1,0.5,0.5));
 
 
-			cGlFreeType->setPosition(GLSL::ivec2(o.description_render_left, o.description_render_top));
+			std::array<float,2> tmp;
+			tmp = {(float)o.description_render_left, (float)o.description_render_top};
+			cGlFreeType->setPosition(tmp);
 
 			cGlRenderOStream_ << o.description << std::flush;
 
-			cGlFreeType->setPosition(GLSL::ivec2(o.value_render_left, o.value_render_top));
+			tmp = {(float)o.value_render_left, (float)o.value_render_top};
+			cGlFreeType->setPosition(tmp);
 
 			switch(o.type)
 			{
@@ -898,10 +903,10 @@ public:
 	{
 		if (active_option != nullptr)
 		{
-			if (button == CRenderWindow::MOUSE_BUTTON_LEFT)
+			if (button == RenderWindow::MOUSE_BUTTON_LEFT)
 				active_option->button_left_down = true;
 
-			if (button == CRenderWindow::MOUSE_BUTTON_RIGHT)
+			if (button == RenderWindow::MOUSE_BUTTON_RIGHT)
 				active_option->button_right_down = true;
 		}
 	}

@@ -16,7 +16,7 @@
 
 
 /*
- * CGlFreeType.hpp
+ * GlFreeType.hpp
  *
  *  Created on: Mar 21, 2010
  *      Author: martin
@@ -27,41 +27,41 @@
 
 #include <algorithm>
 #include <ft2build.h>
+#include <libgl/core/GlBuffer.hpp>
+#include <libgl/core/GlProgram.hpp>
+#include <libgl/core/GlState.hpp>
+#include <libgl/core/GlTexture.hpp>
+#include <libgl/core/GlVertexArrayObject.hpp>
+#include <libmath/CGlSlMath.hpp>
 #include FT_FREETYPE_H
 
 
 
 #include <cmath>
-
-#include "libgl/core/CGlTexture.hpp"
-#include "libgl/core/CGlBuffer.hpp"
-#include "libgl/core/CGlVertexArrayObject.hpp"
-#include "libgl/core/CGlProgram.hpp"
-#include "libgl/core/CGlState.hpp"
-
 #include <string.h>
 
-class CGlFreeType
+class GlFreeType
 {
 private:
 	int advance_x[256];
 
-	CGlTexture font_texture;
-	CGlProgram program;
+	GlTexture font_texture;
+	GlProgram program;
 
-	CGlUniform glyph_size_uniform;
-	CGlUniform inv_viewport_size_uniform;
-	CGlUniform color_uniform;
+	GlUniform glyph_size_uniform;
+	GlUniform inv_viewport_size_uniform;
+	GlUniform color_uniform;
 
 	int newline_x_position;	///< x position for newline
 
 	int *vertex_attrib;		///< allocated memory for vertex attributes
 	CGlBuffer buffer;
-	CGlVertexArrayObject vao;
+	GlVertexArrayObject vao;
 
-	bool valid;
 
 public:
+	bool valid;					///< Font is available
+
 	int char_width = 0;			///< width of each char in texture
 	int char_height = 0;		///< height of each char in texture
 	int char_origin_left = 0;	///< base (0,0) point of each char in texture - this is the distance of the char origin to the top border in texels
@@ -72,7 +72,7 @@ public:
 
 	int max_length;		///< maximum length of string
 
-	CGlFreeType(
+	GlFreeType(
 			float p_font_size = 12,
 			const char *p_font_file = nullptr
 	)	:
@@ -116,7 +116,7 @@ public:
 		CGlErrorCheck();
 	}
 
-	~CGlFreeType()
+	~GlFreeType()
 	{
 		delete[] vertex_attrib;
 
@@ -168,11 +168,10 @@ public:
 			{
 				no_bold_font_found = true;
 			}
-
 		}
 		else
 		{
-			no_bold_font_found = false;
+			no_bold_font_found = true;
 		}
 
 		if (no_bold_font_found)
@@ -315,6 +314,20 @@ public:
 		program.use();
 		inv_viewport_size_uniform.set(GLSL::vec2(1.0/(float)i_width, 1.0/(float)i_height));
 		program.disable();
+	}
+
+	void viewportChanged(
+			GLfloat i_size[2]
+	)
+	{
+		viewportChanged(i_size[0], i_size[1]);
+	}
+
+	void viewportChanged(
+			int i_size[2]
+	)
+	{
+		viewportChanged(i_size[0], i_size[1]);
 	}
 
 

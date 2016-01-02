@@ -38,7 +38,7 @@ extern "C" {
 #include <sstream>
 #include <signal.h>
 
-#include <libgl/tools/CBitmap.hpp>
+#include <libgl/tools/Bitmap.hpp>
 
 
 
@@ -77,7 +77,7 @@ public:
 
 	SDL_Thread *save_bitmap_thread;
 	std::string save_bitmap_filename;	///< bitmap filename when storing bitmaps using threads
-	CBitmap24 save_bitmap;
+	Bitmap24 save_bitmap;
 
 
 	SDL_Window *window;
@@ -474,7 +474,7 @@ public:
 			const std::string &filename	///< filepath to store the screenshot to
 	)
 	{
-		CBitmap24 bitmap(window_width, window_height);
+		Bitmap24 bitmap(window_width, window_height);
 
 		glReadPixels(0, 0, window_width, window_height, GL_BGR, GL_UNSIGNED_BYTE, bitmap.data);
 

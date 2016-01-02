@@ -1,14 +1,14 @@
 #ifndef CGL_SHADER_TEXTURIZE_HPP
 #define CGL_SHADER_TEXTURIZE_HPP
 
-#include "libgl/core/CGlTexture.hpp"
-#include "libgl/core/CGlError.hpp"
+#include <libgl/core/GlError.hpp>
+#include <libgl/core/GlTexture.hpp>
 
 
-class GlShaderTexturize	: public CGlProgram
+class GlShaderTexturize	: public GlProgram
 {
 public:
-	CGlUniform pvm_matrix_uniform;
+	GlUniform pvm_matrix_uniform;
 
 	GlShaderTexturize()
 	{

@@ -23,7 +23,7 @@
 /**
  * store bitmap
  */
-class CBitmap24
+class Bitmap24
 {
 public:
 	int width;			///< bitmap width
@@ -37,7 +37,7 @@ public:
 	/**
 	 * allocate memory for bitmap with given parameters
 	 */
-	CBitmap24(
+	Bitmap24(
 			int i_width,
 			int i_height
 	)	:
@@ -50,7 +50,7 @@ public:
 	/**
 	 * initialize bitmap storage with zero image size
 	 */
-	CBitmap24()	:
+	Bitmap24()	:
 		width(0),
 		height(0)
 	{
@@ -167,7 +167,7 @@ public:
 	/**
 	 * free bitmap memory
 	 */
-	~CBitmap24()
+	~Bitmap24()
 	{
 		if (data)
 			delete data;

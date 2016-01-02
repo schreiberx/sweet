@@ -25,7 +25,7 @@
 #ifndef CGLDRAWFBOQUAD_HPP_
 #define CGLDRAWFBOQUAD_HPP_
 
-#include "libgl/core/CGlVertexArrayObject.hpp"
+#include "libgl/core/GlVertexArrayObject.hpp"
 
 /**
  * draw an opengl quad with given viewport size
@@ -36,7 +36,7 @@
 class CGlDrawFboQuad
 {
 private:
-	CGlVertexArrayObject vao_quad_vertices;
+	GlVertexArrayObject vao_quad_vertices;
 	CGlBuffer quad_vertices_buffer;
 	CGlViewport viewport;
 

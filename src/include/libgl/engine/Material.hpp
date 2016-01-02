@@ -25,8 +25,8 @@
 #ifndef CGLMATERIAL_HPP_
 #define CGLMATERIAL_HPP_
 
+#include <libgl/core/GlTexture.hpp>
 #include "libmath/CGlSlMath.hpp"
-#include "libgl/core/CGlTexture.hpp"
 
 class CGlMaterial
 {
@@ -38,8 +38,8 @@ public:
 	float specular_exponent;	///< specular exponent
 	GLSL::vec3 specular_color3;	///< specular color
 
-	CGlTexture *texture0;
-	CGlTexture *normal0;
+	GlTexture *texture0;
+	GlTexture *normal0;
 
 	CGlMaterial()	:
 		ambient_color3(0.2,0.2,0.2),
@@ -56,7 +56,7 @@ public:
 		if (texture0)
 			delete texture0;
 
-		texture0 = new CGlTexture;
+		texture0 = new GlTexture;
 		texture0->loadFromFile(file);
 	}
 
@@ -66,7 +66,7 @@ public:
 		if (normal0)
 			delete normal0;
 
-		normal0 = new CGlTexture;
+		normal0 = new GlTexture;
 		normal0->loadFromFile(file);
 	}
 

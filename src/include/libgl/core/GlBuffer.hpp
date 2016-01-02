@@ -18,8 +18,8 @@
 #ifndef CGL_BUFFER_HPP
 #define CGL_BUFFER_HPP
 
+#include <libgl/core/GlError.hpp>
 #include "libgl/incgl3.h"
-#include "libgl/core/CGlError.hpp"
 
 /**
  * \brief draw a box in opengl3 sufficient for volume rendering

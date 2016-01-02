@@ -16,7 +16,7 @@
 #include <libgl/engine/GlCommonShaderPrograms.hpp>
 #include <libgl/engine/EyeBall.hpp>
 #include <libgl/engine/Time.hpp>
-#include <libgl/hud/CGlFreeType.hpp>
+#include <libgl/hud/GlFreeType.hpp>
 
 
 
@@ -85,7 +85,7 @@ public:
 		// player's velocity
 		std::array<float,3> player_velocity;
 
-		CGlFreeType cGlFreeType;
+		GlFreeType glFreeType;
 
 		InputStateMouse inputStateMouse;
 
@@ -240,7 +240,7 @@ public:
 				int i_height
 		)
 		{
-			engineState->cGlFreeType.viewportChanged(renderWindow->window_width, renderWindow->window_height);
+			engineState->glFreeType.viewportChanged(renderWindow->window_width, renderWindow->window_height);
 
 			programCallbacks->vis_viewportChanged(i_width, i_height);
 		}
@@ -306,7 +306,7 @@ public:
 		)	:
 			programCallbacks(&(ProgramCallbacks&)*i_simulationClassWithProgramCallbacks)
 	{
-		renderWindow = new RenderWindow("C3S");
+		renderWindow = new RenderWindow("SWEET");
 
 
 		if (!renderWindow->initialized)
@@ -333,8 +333,8 @@ public:
 
 		engineState->common_scale = 1;
 
-		engineState->cGlFreeType.loadFont(16, true);
-		engineState->cGlFreeType.viewportChanged(renderWindow->window_width, renderWindow->window_height);
+		engineState->glFreeType.loadFont(16, true);
+		engineState->glFreeType.viewportChanged(renderWindow->window_width, renderWindow->window_height);
 
 
 		/*

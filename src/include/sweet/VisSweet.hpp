@@ -9,11 +9,15 @@
 
 #include <sweet/DataArray.hpp>
 
-#include "libgl/VisualizationEngine.hpp"
-#include "libgl/draw/GlDrawQuad.hpp"
-#include "libgl/draw/GlDrawCube.hpp"
-#include "libgl/core/CGlTexture.hpp"
-#include "libgl/shaders/shader_blinn/CShaderBlinn.hpp"
+#include <libgl/core/GlTexture.hpp>
+#include <sweet/VisSweetHUD.hpp>
+#include <libgl/draw/GlDrawQuad.hpp>
+#include <libgl/draw/GlDrawCube.hpp>
+#include <libgl/hud/GlFreeType.hpp>
+#include <libgl/hud/GlRenderOStream.hpp>
+#include <libgl/VisualizationEngine.hpp>
+#include <libgl/shaders/shader_blinn/CShaderBlinn.hpp>
+
 
 
 
@@ -31,9 +35,15 @@ class VisSweet	:
 	 */
 	SimT *simulation;
 
-	CGlDrawQuad *cGlDrawQuad;
-	CGlTexture *cGlTexture = nullptr;
+
+	GlDrawQuad *glDrawQuad;
+	GlTexture *glTexture = nullptr;
 	unsigned char *texture_data = nullptr;
+
+	bool hud_visible = true;
+	VisSweetHUD *visSweetHUD;
+	GlFreeType *glFreeType;
+	GlRenderOStream *glRenderOStream;
 
 	int sim_runs_per_frame = 1;
 
@@ -42,11 +52,29 @@ class VisSweet	:
 	double vis_min = 0;
 	double vis_max = 0;
 
+
 	void vis_setup(VisualizationEngine *i_visualizationEngine)
 	{
 		visualizationEngine = i_visualizationEngine;
 
-		cGlDrawQuad = new CGlDrawQuad;
+		glDrawQuad = new GlDrawQuad;
+
+		glFreeType = new GlFreeType;
+		glFreeType->loadFont(14, false);
+		if (!glFreeType->valid)
+		{
+//			std::cerr << cGlFreeType.error << std::endl;
+			exit(-1);
+		}
+		//CError_AppendReturn(cGlFreeType);
+
+		glRenderOStream = new GlRenderOStream(*glFreeType);
+
+		visSweetHUD = new VisSweetHUD;
+		visSweetHUD->setup();
+		visSweetHUD->assembleGui(*glFreeType, *glRenderOStream);
+		visSweetHUD->setHudVisibility(hud_visible);
+
 	}
 
 	bool should_quit()
@@ -62,12 +90,12 @@ class VisSweet	:
 
 		DataArray<2> &visData = (DataArray<2>&)*ro_visData;
 
-		if (cGlTexture == nullptr)
+		if (glTexture == nullptr)
 		{
-			cGlTexture = new CGlTexture(GL_TEXTURE_2D, GL_RED, GL_RED, GL_UNSIGNED_BYTE);
-			cGlTexture->bind();
-			cGlTexture->resize(visData.resolution[0], visData.resolution[1]);
-			cGlTexture->unbind();
+			glTexture = new GlTexture(GL_TEXTURE_2D, GL_RED, GL_RED, GL_UNSIGNED_BYTE);
+			glTexture->bind();
+			glTexture->resize(visData.resolution[0], visData.resolution[1]);
+			glTexture->unbind();
 
 			texture_data = new unsigned char[visData.array_data_cartesian_length];
 		}
@@ -94,8 +122,8 @@ class VisSweet	:
 			texture_data[i] = (unsigned char)std::min(255.0, std::max(0.0, value));
 		}
 
-		cGlTexture->bind();
-		cGlTexture->setData(texture_data);
+		glTexture->bind();
+		glTexture->setData(texture_data);
 
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -114,11 +142,24 @@ class VisSweet	:
 					visualizationEngine->engineState->matrices.pvm*GLSL::scale((float)scale_x, (float)scale_y, (float)1.0)
 			);
 
-				cGlDrawQuad->render();
+				glDrawQuad->render();
 
 				visualizationEngine->engineState->commonShaderPrograms.shaderTexturizeRainbowmap.disable();
 
-		cGlTexture->unbind();
+		glTexture->unbind();
+
+		if (hud_visible)
+		{
+			glFreeType->viewportChanged(visualizationEngine->renderWindow->window_width, visualizationEngine->renderWindow->window_height);
+
+			std::string status_string = simulation->vis_get_status_string();
+			std::replace(status_string.begin(), status_string.end(), ',', '\n');
+
+			glFreeType->setPosition(10, visualizationEngine->renderWindow->window_height-16);
+			glFreeType->renderString(status_string.c_str());
+			visSweetHUD->render();
+		}
+
 
 		// execute simulation time step
 		simulation->vis_post_frame_processing(sim_runs_per_frame);
@@ -154,6 +195,11 @@ class VisSweet	:
 			simulation->vis_pause();
 			break;
 
+		case SDLK_BACKSPACE:
+			hud_visible = !hud_visible;
+			visSweetHUD->setHudVisibility(hud_visible);
+			break;
+
 		case 'j':
 			simulation->run_timestep();
 			break;
@@ -164,19 +210,30 @@ class VisSweet	:
 		}
 	}
 
+
 	void vis_shutdown()
 	{
-		delete [] texture_data;
-		delete cGlTexture;
-		delete cGlDrawQuad;
+		delete visSweetHUD;
+		delete glRenderOStream;
+		delete glFreeType;
 
+		delete [] texture_data;
+		delete glTexture;
+		delete glDrawQuad;
 	}
 
+
+
 public:
-	VisSweet(SimT *i_simulation)
+	VisSweet(SimT *i_simulation)	:
+		glDrawQuad(nullptr),
+
+		visSweetHUD(nullptr),
+		glFreeType(0),
+		glRenderOStream(nullptr)
 	{
 		simulation = i_simulation;
-		VisualizationEngine(this, "SWE");
+		VisualizationEngine(this, "SWEET");
 	}
 
 };

@@ -22,7 +22,7 @@
 
 #include "libgl/incgl3.h"
 #include "libgl/core/CGlError.hpp"
-#include "libgl/core/CGlTexture.hpp"
+#include "libgl/core/GlTexture.hpp"
 
 
 /**
@@ -39,7 +39,7 @@ public:
 	 * create new fbo
 	 * \param cTexture	texture to bind to framebuffer
 	 */
-	CGlFbo(CGlTexture &cTexture)
+	CGlFbo(GlTexture &cTexture)
 	{
 		glGenFramebuffers(1, &fbo);					// create fbo
 
@@ -74,7 +74,7 @@ public:
 	 * \param textureUnit	bind texture to attachment 'textureUnit'
 	 * \param level			mipmap level
 	 */
-	void bindTexture(const CGlTexture &texture, GLint textureUnit = 0, GLint level = 0)
+	void bindTexture(const GlTexture &texture, GLint textureUnit = 0, GLint level = 0)
 	{
 		static const GLuint fbo_attachments[] = {
 				GL_COLOR_ATTACHMENT0,
@@ -105,7 +105,7 @@ public:
 	/**
 	 * bind a layer of a 3d or 2d array texture to a framebuffer
 	 */
-	void bindTextureLayer(	const CGlTexture &texture,	///< texture to bind to fbo
+	void bindTextureLayer(	const GlTexture &texture,	///< texture to bind to fbo
 							GLint textureUnit,			///< bind texture to attachment 'textureUnit'
 							GLint level,				///< mipmap level
 							GLint layer					///< layer of 2d texture array or 3d texture
@@ -138,7 +138,7 @@ public:
 	/**
 	 * bind a texture as depth buffer to the framebuffer
 	 */
-	void bindDepthTexture(	const CGlTexture &texture,
+	void bindDepthTexture(	const GlTexture &texture,
 							GLint textureUnit = 0,
 							GLint level = 0)
 	{
@@ -151,7 +151,7 @@ public:
 	/**
 	 * bind a depth layer of a 3d or 2d array texture to a framebuffer
 	 */
-	void bindDepthTextureLayer(	const CGlTexture &texture,	///< texture to bind to fbo
+	void bindDepthTextureLayer(	const GlTexture &texture,	///< texture to bind to fbo
 								GLint textureUnit,			///< bind texture to attachment 'textureUnit'
 								GLint level,				///< mipmap level
 								GLint layer					///< layer of 2d texture array or 3d texture
@@ -168,7 +168,7 @@ public:
 	 * \param texture		texture to bind to fbo
 	 * \param textarget		target to bind fbo
 	 */
-	void bindFramebufferTextureWithTarget(CGlTexture &texture, GLenum textarget)
+	void bindFramebufferTextureWithTarget(GlTexture &texture, GLenum textarget)
 	{
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, textarget, texture.textureid, 0);
 		checkStatus();

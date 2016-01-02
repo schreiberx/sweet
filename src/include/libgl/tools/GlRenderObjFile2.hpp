@@ -111,7 +111,7 @@ public:
 
 			if (!obj_material.texture_file.empty())
 			{
-				material->texture0 = new CGlTexture;
+				material->texture0 = new GlTexture;
 				material->texture0->loadFromFile((std::string("data/textures/obj_textures/")+obj_material.texture_file).c_str());
 				CError_PtrAppendReturn(material->texture0);
 				material->texture0->bind();
@@ -360,7 +360,7 @@ public:
 								const GLSL::mat4 &view_model_matrix,
 								const GLSL::mat3 &view_model_normal_matrix3,
 								const GLSL::mat4 &view_matrix,
-								CGlTexture &depth_texture,
+								GlTexture &depth_texture,
 								const GLSL::mat4 &shadow_map_matrix
 				)
 	{
@@ -432,9 +432,9 @@ public:
 										const GLSL::mat4 &view_model_matrix,
 										const GLSL::mat3 &view_model_normal_matrix3,
 										const GLSL::mat4 &view_matrix,
-										CGlTexture &depth_texture,			///< depth texture (front faces rendered from light pos)
-										CGlTexture &caustic_map_texture,	///< caustic map texture (map storing the caustic light)
-										CGlTexture &caustic_map_depth_texture,	///< depth texture of caustics to omit invalid caustics passing through surfaces
+										GlTexture &depth_texture,			///< depth texture (front faces rendered from light pos)
+										GlTexture &caustic_map_texture,	///< caustic map texture (map storing the caustic light)
+										GlTexture &caustic_map_depth_texture,	///< depth texture of caustics to omit invalid caustics passing through surfaces
 										const GLSL::mat4 &shadow_map_matrix
 				)
 	{

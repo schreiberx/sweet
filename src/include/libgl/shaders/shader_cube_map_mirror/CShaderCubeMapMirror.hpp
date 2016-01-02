@@ -1,34 +1,34 @@
 #ifndef CGL_SHADER_CUBE_MAP_HPP
 #define CGL_SHADER_CUBE_MAP_HPP
 
-#include "libgl/core/CGlTexture.hpp"
-#include "libgl/core/CGlError.hpp"
+#include <libgl/core/GlError.hpp>
+#include <libgl/core/GlTexture.hpp>
 
 /**
  * Shader to implement reflections using cube maps
  */
-class GlShaderCubeMapMirror	: public CGlProgram
+class GlShaderCubeMapMirror	: public GlProgram
 {
 public:
-	CGlUniform pvm_matrix;				///< uniform to pvm matrix
-	CGlUniform view_model_normal_matrix3;	///< uniform to view-model normal matrix
-	CGlUniform view_model_matrix;			///< uniform to view-model matrix
+	GlUniform pvm_matrix;				///< uniform to pvm matrix
+	GlUniform view_model_normal_matrix3;	///< uniform to view-model normal matrix
+	GlUniform view_model_matrix;			///< uniform to view-model matrix
 
-//	CGlProgram::CUniform view_matrix;
-	CGlUniform transposed_view_matrix3;	///< uniform to transposed of view matrix
+//	GlProgram::CUniform view_matrix;
+	GlUniform transposed_view_matrix3;	///< uniform to transposed of view matrix
 
-	CGlUniform light0_enabled;			///< uniform to enable or disable uniforms
-	CGlUniform light0_view_pos3;			///< uniform to position of light
+	GlUniform light0_enabled;			///< uniform to enable or disable uniforms
+	GlUniform light0_view_pos3;			///< uniform to position of light
 
-	CGlUniform light0_ambient_intensity;	///< uniform to ambient intensity
-	CGlUniform light0_ambient_color3;		///< uniform to ambient color
+	GlUniform light0_ambient_intensity;	///< uniform to ambient intensity
+	GlUniform light0_ambient_color3;		///< uniform to ambient color
 
-	CGlUniform light0_diffuse_intensity;	///< uniform to diffuse intensity
-	CGlUniform light0_diffuse_color3;		///< uniform to diffuse color
+	GlUniform light0_diffuse_intensity;	///< uniform to diffuse intensity
+	GlUniform light0_diffuse_color3;		///< uniform to diffuse color
 
-	CGlUniform light0_specular_intensity;	///< uniform to specular intensity
-	CGlUniform light0_specular_exponent;	///< uniform to specular exponent
-	CGlUniform light0_specular_color3;	///< uniform to specular color
+	GlUniform light0_specular_intensity;	///< uniform to specular intensity
+	GlUniform light0_specular_exponent;	///< uniform to specular exponent
+	GlUniform light0_specular_color3;	///< uniform to specular color
 
 	GlShaderCubeMapMirror()
 	{

@@ -18,10 +18,10 @@
 #ifndef CGL_CUBE_MAP_HPP
 #define CGL_CUBE_MAP_HPP
 
-#include "libgl/core/CGlTexture.hpp"
-#include "libgl/core/CGlFbo.hpp"
-#include "libgl/core/CGlError.hpp"
-#include "libgl/core/CGlViewport.hpp"
+#include "libgl/core/GlTexture.hpp"
+#include "libgl/core/GlFbo.hpp"
+#include "libgl/core/GlError.hpp"
+#include "libgl/core/GlViewport.hpp"
 
 #include "libmath/CGlSlMath.hpp"
 
@@ -38,17 +38,17 @@ class CGlCubeMapCallbackClass
 /**
  * \brief create cubemap sufficient for mirror textures or other fancy stuff
  */
-class CGlCubeMap
+class GlCubeMap
 {
 
-	CGlViewport cGlViewport;
+	GlViewport cGlViewport;
 
-	CGlFbo fbo_pos_x;		///< framebuffer to render the view aimed to positive x direction
-	CGlFbo fbo_neg_x;
-	CGlFbo fbo_pos_y;
-	CGlFbo fbo_neg_y;
-	CGlFbo fbo_pos_z;
-	CGlFbo fbo_neg_z;
+	GlFbo fbo_pos_x;		///< framebuffer to render the view aimed to positive x direction
+	GlFbo fbo_neg_x;
+	GlFbo fbo_pos_y;
+	GlFbo fbo_neg_y;
+	GlFbo fbo_pos_z;
+	GlFbo fbo_neg_z;
 
 public:
 	CError error;	///< error handler
@@ -57,8 +57,8 @@ public:
 	GLuint height;	///< height of cubemap
 	GLuint depth;	///< depth of cubemap
 
-	CGlTexture texture_cube_map;	///< handler to cubemap texture
-	CGlTexture texture_depth;		///< handler to depth map texture
+	GlTexture texture_cube_map;	///< handler to cubemap texture
+	GlTexture texture_depth;		///< handler to depth map texture
 
 
 	/**
@@ -127,7 +127,7 @@ public:
 	/**
 	 * default cube map constructor
 	 */
-	CGlCubeMap()	:
+	GlCubeMap()	:
 		width(0),
 		height(0),
 		depth(0),
@@ -211,7 +211,7 @@ public:
 		cGlViewport.restoreState();
 	}
 
-	~CGlCubeMap()
+	~GlCubeMap()
 	{
 
 	}

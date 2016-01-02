@@ -18,9 +18,9 @@
 #ifndef CGL_DRAW_SPHERE_HPP
 #define CGL_DRAW_SPHERE_HPP
 
-#include "libgl/core/CGlProgram.hpp"
-#include "libgl/core/CGlBuffer.hpp"
-#include "libgl/core/CGlVertexArrayObject.hpp"
+#include <libgl/core/GlBuffer.hpp>
+#include <libgl/core/GlProgram.hpp>
+#include <libgl/core/GlVertexArrayObject.hpp>
 #include "libmath/CGlSlMath.hpp"
 
 /**
@@ -31,7 +31,7 @@ class GlDrawSphere
 	CGlBuffer vertex_buffer;
 	CGlBuffer texture_coord_buffer;
 	CGlBuffer index_buffer;
-	CGlVertexArrayObject vao;
+	GlVertexArrayObject vao;
 
 	std::size_t triangle_strip_indices_count;
 

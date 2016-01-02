@@ -19,8 +19,8 @@
 #define C_GL_DRAW_FLAT_CUBE_MAP_HPP
 
 #include "libgl/incgl3.h"
-#include "libgl/core/CGlProgram.hpp"
-#include "libgl/core/CGlTexture.hpp"
+#include "libgl/core/GlProgram.hpp"
+#include "libgl/core/GlTexture.hpp"
 #include "libgl/CGlCubeMap.hpp"
 
 #include "libmath/CGlSlMath.hpp"
@@ -32,10 +32,10 @@
 class CGlDrawFlatCubeMap
 {
 	CGlBuffer buffer;
-	CGlVertexArrayObject vao;
+	GlVertexArrayObject vao;
 
-	CGlProgram program;
-	CGlUniform pvm_matrix_uniform;
+	GlProgram program;
+	GlUniform pvm_matrix_uniform;
 
 public:
 	CError error;		///< error handler

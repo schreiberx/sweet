@@ -21,9 +21,9 @@
 
 
 #include <libgl/draw/GlDrawSphere.hpp>
-#include <libgl/core/CGlProgram.hpp>
-#include <libgl/core/CGlBuffer.hpp>
-#include <libgl/core/CGlVertexArrayObject.hpp>
+#include <libgl/core/GlBuffer.hpp>
+#include <libgl/core/GlProgram.hpp>
+#include <libgl/core/GlVertexArrayObject.hpp>
 #include <libmath/CGlSlMath.hpp>
 
 
@@ -37,7 +37,7 @@ class GlDrawCube
 	CGlBuffer normal_buffer;
 	CGlBuffer texture_coord_buffer;
 
-	CGlVertexArrayObject vao;
+	GlVertexArrayObject vao;
 
 
 public:

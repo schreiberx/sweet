@@ -10,8 +10,8 @@
 #ifndef CSHADERBLINNSKELETON_HPP_
 #define CSHADERBLINNSKELETON_HPP_
 
-#include <libgl/core/CGlUniform.hpp>
-#include <libgl/core/CGlProgram.hpp>
+#include <libgl/core/GlProgram.hpp>
+#include <libgl/core/GlUniform.hpp>
 #include <libgl/engine/Lights.hpp>
 #include <libgl/engine/Material.hpp>
 
@@ -22,26 +22,26 @@
 class CShaderBlinnSkeleton
 {
 public:
-	CGlUniform pvm_matrix_uniform;					///< uniform to projection-view-model matrix
-	CGlUniform view_model_normal_matrix3_uniform;	///< uniform to view-model normal matrix
-	CGlUniform view_model_matrix_uniform;			///< uniform to view-model matrix
+	GlUniform pvm_matrix_uniform;					///< uniform to projection-view-model matrix
+	GlUniform view_model_normal_matrix3_uniform;	///< uniform to view-model normal matrix
+	GlUniform view_model_matrix_uniform;			///< uniform to view-model matrix
 
-	CGlUniform light0_enabled_uniform;				///< uniform to enable or disable uniforms
-	CGlUniform light0_view_pos3_uniform;			///< uniform to position of light after applying view matrix
+	GlUniform light0_enabled_uniform;				///< uniform to enable or disable uniforms
+	GlUniform light0_view_pos3_uniform;			///< uniform to position of light after applying view matrix
 
-	CGlUniform light0_ambient_color3_uniform;		///< uniform to ambient color
-	CGlUniform light0_diffuse_color3_uniform;		///< uniform to diffuse color
-	CGlUniform light0_specular_color3_uniform;		///< uniform to specular color
+	GlUniform light0_ambient_color3_uniform;		///< uniform to ambient color
+	GlUniform light0_diffuse_color3_uniform;		///< uniform to diffuse color
+	GlUniform light0_specular_color3_uniform;		///< uniform to specular color
 
-	CGlUniform material_ambient_color3_uniform;		///< uniform to ambient color
-	CGlUniform material_diffuse_color3_uniform;		///< uniform to diffuse color
-	CGlUniform material_specular_color3_uniform;	///< uniform to specular color
-	CGlUniform material_specular_exponent_uniform;	///< uniform to specular exponent
+	GlUniform material_ambient_color3_uniform;		///< uniform to ambient color
+	GlUniform material_diffuse_color3_uniform;		///< uniform to diffuse color
+	GlUniform material_specular_color3_uniform;	///< uniform to specular color
+	GlUniform material_specular_exponent_uniform;	///< uniform to specular exponent
 
 	/**
 	 * initialize the blinn skeleton for a program implementing the necessary uniforms
 	 */
-	void initBlinnSkeleton(CGlProgram &program)
+	void initBlinnSkeleton(GlProgram &program)
 	{
 		program.bindAttribLocation(0, "vertex_position");
 		program.bindAttribLocation(1, "vertex_normal3");

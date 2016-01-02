@@ -18,13 +18,13 @@
 #ifndef CGL_VERTEX_ARRAY_OBJECT_HPP
 #define CGL_VERTEX_ARRAY_OBJECT_HPP
 
+#include <libgl/core/GlError.hpp>
 #include "libgl/incgl3.h"
-#include "libgl/core/CGlError.hpp"
 
 /**
  * handle vertex array objects
  */
-class CGlVertexArrayObject
+class GlVertexArrayObject
 {
 public:
 	GLuint vbo_array;	///< OpenGL buffer id
@@ -32,7 +32,7 @@ public:
 	/**
 	 * create a buffer for specific target
 	 */
-	inline CGlVertexArrayObject()
+	inline GlVertexArrayObject()
 	{
 		glGenVertexArrays(1, &vbo_array);
 		CGlErrorCheck();
@@ -61,7 +61,7 @@ public:
 	/**
 	 * default deconstructor
 	 */
-	inline ~CGlVertexArrayObject()
+	inline ~GlVertexArrayObject()
 	{
 		glDeleteVertexArrays(1, &vbo_array);
 		CGlErrorCheck();

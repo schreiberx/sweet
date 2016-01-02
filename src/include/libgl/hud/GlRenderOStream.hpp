@@ -16,7 +16,7 @@
 
 
 /*
- * CGlRenderOStream.hpp
+ * GlRenderOStream.hpp
  *
  *  Created on: Mar 22, 2010
  *      Author: martin
@@ -27,12 +27,12 @@
 
 #include <sstream>
 #include <ostream>
-#include "libgl/hud/CGlFreeType.hpp"
+#include <libgl/hud/GlFreeType.hpp>
 
 /**
  * this class offers the usual operator<< overloaded string output handling
  */
-class CGlRenderOStream	:
+class GlRenderOStream	:
 	public std::ostream
 {
 	/**
@@ -41,10 +41,10 @@ class CGlRenderOStream	:
 	class CGlRenderStreamBuf	:
 				public std::stringbuf
 	{
-		CGlFreeType &free_type;
+		GlFreeType &free_type;
 
 public:
-		CGlRenderStreamBuf(	CGlFreeType &p_free_type)	:
+		CGlRenderStreamBuf(	GlFreeType &p_free_type)	:
 				free_type(p_free_type)
 		{
 		}
@@ -59,11 +59,11 @@ public:
 	};
 
 
-	CGlFreeType &free_type;
+	GlFreeType &free_type;
 	CGlRenderStreamBuf streambuf;
 
 public:
-	CGlRenderOStream(CGlFreeType &p_free_type)	:
+	GlRenderOStream(GlFreeType &p_free_type)	:
 			std::ostream(&streambuf),
 			free_type(p_free_type),
 			streambuf(free_type)

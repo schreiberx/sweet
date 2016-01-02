@@ -1,25 +1,20 @@
 #ifndef CGL_SHADER_BLINN_HPP
 #define CGL_SHADER_BLINN_HPP
 
+#include <libgl/core/GlError.hpp>
+#include <libgl/core/GlProgram.hpp>
 #include "libgl/shaders/CDefaultShaderDir.hpp"
-//#include "libgl/core/CGlTexture.hpp"
-#include "libgl/core/CGlError.hpp"
-
-
-/**
- * general blinn shader to use for rendering vertices
- */
+//#include "libgl/core/GlTexture.hpp"
 #include "libgl/shaders/shader_blinn/CShaderBlinnSkeleton.hpp"
-#include "libgl/core/CGlProgram.hpp"
 
 
 class GlShaderBlinn	:
-	public CGlProgram,
+	public GlProgram,
 	public CShaderBlinnSkeleton
 {
 public:
-	CGlUniform texture0_enabled;	///< uniform to enable and disable texturing
-	CGlUniform vertex_color;		///< uniform to basic vertex color of fragment
+	GlUniform texture0_enabled;	///< uniform to enable and disable texturing
+	GlUniform vertex_color;		///< uniform to basic vertex color of fragment
 
 	GlShaderBlinn()
 	{
