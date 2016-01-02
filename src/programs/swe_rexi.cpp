@@ -49,7 +49,7 @@ class SimulationSWE
 {
 public:
 	DataArray<2> prog_h, prog_u, prog_v;
-	DataArray<2> eta;
+	DataArray<2> eta, q;
 	DataArray<2> tmp;
 
 	// temporary variables;
@@ -60,7 +60,6 @@ public:
 
 	// initial values for comparison with analytical solution
 	DataArray<2> t0_prog_h, t0_prog_u, t0_prog_v;
-
 
 	Operators2D op;
 
@@ -90,6 +89,7 @@ public:
 		prog_v(simVars.disc.res),
 
 		eta(simVars.disc.res),
+		q(simVars.disc.res),
 		tmp(simVars.disc.res),
 
 		tmp0(simVars.disc.res),
@@ -803,7 +803,7 @@ public:
 
 			DataArray<2>& U = tmp0;
 			DataArray<2>& V = tmp1;
-//			DataArray<2>& q = tmp2;
+			DataArray<2>& q = tmp2;
 			DataArray<2>& H = tmp3;
 
 			/*
@@ -828,15 +828,34 @@ public:
 			/*
 			 * U and V updates
 			 */
-//			U = op.avg_b_x(i_h)*i_u;
-//			V = op.avg_b_y(i_h)*i_v;
-			U = simVars.setup.h0*i_u;
-			V = simVars.setup.h0*i_v;
+			if(!param_nonlinear) //linear case
+			{
+				U = simVars.setup.h0*i_u;
+				V = simVars.setup.h0*i_v;
+			}
+			else // nonlinear case
+			{
+			U = op.avg_b_x(i_h)*i_u;
+			V = op.avg_b_y(i_h)*i_v;
+			}
 
-			H = simVars.sim.g*i_h;// + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
+			if(!param_nonlinear) //linear case
+				H = simVars.sim.g*i_h;// + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
+			else //non linear case
+				H = simVars.sim.g*i_h + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
 
-			o_u_t = op.avg_f_y(simVars.sim.f0*op.avg_b_x(i_v)) - op.diff_b_x(H);
-			o_v_t = -op.avg_f_x(simVars.sim.f0*op.avg_b_y(i_u)) - op.diff_b_y(H);
+			if(!param_nonlinear) //linear case
+			{
+				o_u_t = op.avg_f_y(simVars.sim.f0*op.avg_b_x(i_v)) - op.diff_b_x(H);
+				o_v_t = -op.avg_f_x(simVars.sim.f0*op.avg_b_y(i_u)) - op.diff_b_y(H);
+			}
+			else //non linear case
+			{
+				q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + simVars.sim.f0) / op.avg_b_x(op.avg_b_y(i_h));
+
+				o_u_t = op.avg_f_y(q*op.avg_b_x(V)) - op.diff_b_x(H);
+				o_v_t = -op.avg_f_x(q*op.avg_b_y(U)) - op.diff_b_y(H);
+			}
 
 
 			/*
