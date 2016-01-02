@@ -1,5 +1,5 @@
 /*
-* SWM with nonlinear part using REXI bla bla
+* SWM with nonlinear part using REXI test
 */
 #include <sweet/DataArray.hpp>
 #if SWEET_GUI
