@@ -10,10 +10,11 @@
 #include <complex>
 #include <cassert>
 #include <cstddef>
+#include <algorithm>
 #include <sweetmath.hpp>
 #include <memory>
 #include <stdlib.h>
-#include <string.h>
+#include <string>
 #include <iostream>
 #include <utility>
 #include <limits>
@@ -3243,6 +3244,8 @@ public:
 			int i_precision = 12		///< number of floating point digits
 	)
 	{
+		requestDataInCartesianSpace();
+
 		std::ofstream file(i_filename, std::ios_base::trunc);
 		file << std::setprecision(i_precision);
 
@@ -3258,6 +3261,55 @@ public:
 					file << std::endl;
 			}
 		}
+
+		return true;
+	}
+
+
+
+	/**
+	 * Write data to ASCII file
+	 *
+	 * Each array row is stored to a line.
+	 * Per default, a tab separator is used in each line to separate the values.
+	 */
+	bool file_saveData_vtk(
+			const char *i_filename,		///< Name of file to store data to
+			const char *i_title,		///< Title of scalars
+			int i_precision = 12		///< number of floating point digits
+	)
+	{
+		requestDataInCartesianSpace();
+
+		std::ofstream file(i_filename, std::ios_base::trunc);
+		file << std::setprecision(i_precision);
+
+		file << "# vtk DataFile Version 2.0" << std::endl;
+		file << "Rectangular solid example" << std::endl;
+		file << "ASCII" << std::endl;
+		file << "DATASET RECTILINEAR_GRID" << std::endl;
+		file << "DIMENSIONS " << resolution[0]+1 << " " << resolution[1]+1 << " 1" << std::endl;
+
+		file << "X_COORDINATES " << resolution[0]+1 << " float" << std::endl;
+		for (std::size_t x = 0; x < resolution[0]+1; x++)
+			file << (double)x/((double)resolution[0]+1) << std::endl;
+
+		file << "Y_COORDINATES " << resolution[1]+1 << " float" << std::endl;
+		for (std::size_t y = 0; y < resolution[1]+1; y++)
+			file << (double)y/((double)resolution[1]+1) << std::endl;
+
+		file << "Z_COORDINATES 1 float" << std::endl;
+		file << "0" << std::endl;
+
+
+		std::string title = i_title;
+		std::replace(title.begin(), title.end(), ' ', '_');
+		file << "CELL_DATA " << resolution[0]*resolution[1] << std::endl;
+		file << "SCALARS " << title << " float 1" << std::endl;
+		file << "LOOKUP_TABLE default" << std::endl;
+
+		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
+			file << array_data_cartesian_space[i] << std::endl;
 
 		return true;
 	}

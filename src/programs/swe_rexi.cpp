@@ -8,6 +8,7 @@
 #include <sweet/Operators2D.hpp>
 #include <sweet/Stopwatch.hpp>
 #include <ostream>
+#include <algorithm>
 #include <sstream>
 #include <unistd.h>
 #include <stdio.h>
@@ -1226,10 +1227,6 @@ public:
 			benchmark_analytical_error_maxabs_u = (t_u-prog_u).reduce_maxAbs();
 			benchmark_analytical_error_maxabs_v = (t_v-prog_v).reduce_maxAbs();
 		}
-
-//		benchmark_analytical_error_maxabs_h = (t_h-prog_h).reduce_norm2_quad()/(double)(parameters.discretization.res[0]*parameters.discretization.res[1]);
-//		benchmark_analytical_error_maxabs_u = (t_u-prog_u).reduce_norm2_quad()/(double)(parameters.discretization.res[0]*parameters.discretization.res[1]);
-//		benchmark_analytical_error_maxabs_v = (t_v-prog_v).reduce_norm2_quad()/(double)(parameters.discretization.res[0]*parameters.discretization.res[1]);
 	}
 
 
@@ -1423,8 +1420,15 @@ public:
 			prog_v.file_saveData_ascii("swe_rexi_dump_v.csv");
 			break;
 
+		case 'C':
+			// dump data arrays to VTK
+			prog_h.file_saveData_vtk("swe_rexi_dump_h.vtk", "Height");
+			prog_u.file_saveData_vtk("swe_rexi_dump_u.vtk", "U-Velocity");
+			prog_v.file_saveData_vtk("swe_rexi_dump_v.vtk", "V-Velocity");
+			break;
+
 		case 'l':
-			// dump data arrays
+			// load data arrays
 			prog_h.file_loadData("swe_rexi_dump_h.csv", simVars.setup.input_data_binary);
 			prog_u.file_loadData("swe_rexi_dump_u.csv", simVars.setup.input_data_binary);
 			prog_v.file_loadData("swe_rexi_dump_v.csv", simVars.setup.input_data_binary);
