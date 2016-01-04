@@ -62,7 +62,7 @@ public:
 		if (i_parameters.setup.scenario == 3)
 		{
 			std::cout << "test" << std::endl;
-			std::cout << i_parameters.bogus.var[10] << std::endl;
+			std::cout << i_parameters.setup.initial_freq_x_mul << std::endl;
 			exit(-1);
 			// Steady state (linear and nonlinear) with dominant meridional (y) flow
 			return std::sin(2.0*M_PI*y/i_parameters.sim.domain_size[1]) + i_parameters.setup.h0;

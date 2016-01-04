@@ -290,8 +290,8 @@ public:
 		int next_free_program_option = 2;
 		const int max_options = 30;
         static struct option long_options[max_options+1] = {
-    			{"test-initial-freq-x-mul", required_argument, 0, 256+'a'+0}, // 0
-    			{"test-initial-freq-y-mul", required_argument, 0, 256+'a'+1}, // 1
+    			{"initial-freq-x-mul", required_argument, 0, 256+'a'+0}, // 0
+    			{"initial-freq-y-mul", required_argument, 0, 256+'a'+1}, // 1
     			{"initial-coord-x", required_argument, 0, 256+'a'+2}, // 2
     			{"initial-coord-y", required_argument, 0, 256+'a'+3}, // 3
     			{0, 0, 0, 0}, // 4
@@ -536,15 +536,20 @@ public:
 						"",
 						"Simulation setup parameters",
 						"	-s [scen]	scenario id",
-						"	            0: radial dam break",
-						"	            1: Gaussian dam break",
-						"	            2: balanced state x",
-						"	            3: balanced state y",
-						"	            9: h=H0, v=0, u=0",
+						"	            0 : radial dam break",
+						"	            1 : Gaussian dam break",
+						"	            2 : balanced state x",
+						"	            3 : balanced state y",
+						"	            9 : h=H0, v=0, u=0",
+						"	            11: Waves",
 						"	-x [float]	x coordinate for setup \\in [0;1]",
 						"	-y [float]	y coordinate for setup \\in [0;1]",
 						"	-H [float]	average (initial) height of water",
 						"	-r [radius]	scale factor of radius for initial condition",
+						"	--initial-freq-x-mul [float]	Frequency for the waves initial conditions in x",
+						"	--initial-freq-y-mul [float]	Frequency for the waves initial conditions in y",
+						"	--initial-coord-x [float]	Same as -x",
+						"	--initial-coord-y [float]	Same as -y",
 						"",
 						"Discretization:",
 						"  >Space:",
@@ -571,6 +576,7 @@ public:
 						"	-d [int]	accuracy of floating point output",
 						"	-i [file0][;file1][;file3]...	string with filenames for initial conditions",
 						"	            specify BINARY; as first file name to read files as binary raw data",
+						"",
 				};
 
 				std::cerr << "Usage information: " << std::endl;

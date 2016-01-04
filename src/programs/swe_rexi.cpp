@@ -27,8 +27,12 @@
 #	include <mpi.h>
 #endif
 
+// Input parameters (cmd line)
+
+//general parameters
 SimulationVariables simVars;
 
+//specific parameters
 double param_rexi_h;
 double param_rexi_m;
 double param_rexi_l;
@@ -40,16 +44,10 @@ bool param_rexi_use_spectral_differences_for_complex_array;
 int param_rexi_helmholtz_solver_id;
 double param_rexi_helmholtz_solver_eps;
 bool param_rexi_zero_before_solving;
-
-double param_initial_freq_x_mul;
-double param_initial_freq_y_mul;
-
 int param_boundary_id;
 bool param_nonlinear;
 
-// Variable to control precision of cout
-//std::streamsize ss = std::cout.precision();
-
+//Main simulation class
 class SimulationSWE
 {
 public:
@@ -195,7 +193,7 @@ public:
 		}
 
 		// In case of the scenario with waves
-		if (param_initial_freq_x_mul != -1)
+		if (simVars.setup.initial_freq_x_mul != -1)
 		{
 			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 			{
@@ -212,8 +210,8 @@ public:
 							double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
 							double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
 
-							h_dx = x/simVars.sim.domain_size[0]*param_initial_freq_x_mul*M_PIl;
-							h_dy = y/simVars.sim.domain_size[1]*param_initial_freq_y_mul*M_PIl;
+							h_dx = x/simVars.sim.domain_size[0]*simVars.setup.initial_freq_x_mul*M_PIl;
+							h_dy = y/simVars.sim.domain_size[1]*simVars.setup.initial_freq_y_mul*M_PIl;
 						}
 
 						{
@@ -221,8 +219,8 @@ public:
 							double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
 							double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
 
-							u_dx = x/simVars.sim.domain_size[0]*param_initial_freq_x_mul*M_PIl;
-							u_dy = y/simVars.sim.domain_size[1]*param_initial_freq_y_mul*M_PIl;
+							u_dx = x/simVars.sim.domain_size[0]*simVars.setup.initial_freq_x_mul*M_PIl;
+							u_dy = y/simVars.sim.domain_size[1]*simVars.setup.initial_freq_y_mul*M_PIl;
 						}
 
 						{
@@ -230,8 +228,8 @@ public:
 							double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
 							double y = (((double)j)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
 
-							v_dx = x/simVars.sim.domain_size[0]*param_initial_freq_x_mul*M_PIl;
-							v_dy = y/simVars.sim.domain_size[1]*param_initial_freq_y_mul*M_PIl;
+							v_dx = x/simVars.sim.domain_size[0]*simVars.setup.initial_freq_x_mul*M_PIl;
+							v_dy = y/simVars.sim.domain_size[1]*simVars.setup.initial_freq_y_mul*M_PIl;
 						}
 					}
 					else
@@ -239,8 +237,8 @@ public:
 						double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
 						double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
 
-						h_dx = x/simVars.sim.domain_size[0]*param_initial_freq_x_mul*M_PIl;
-						h_dy = y/simVars.sim.domain_size[1]*param_initial_freq_y_mul*M_PIl;
+						h_dx = x/simVars.sim.domain_size[0]*simVars.setup.initial_freq_x_mul*M_PIl;
+						h_dy = y/simVars.sim.domain_size[1]*simVars.setup.initial_freq_y_mul*M_PIl;
 
 						u_dx = h_dx;
 						u_dy = h_dy;
@@ -1431,34 +1429,28 @@ int main(int i_argc, char *i_argv[])
 			"use-specdiff-for-complex-array",	/// use finite differences for complex array
 			"rexi-helmholtz-solver-id",		/// use iterative solver for REXI
 			"rexi-helmholtz-solver-eps",		/// error threshold for solver
-			"XY_initial-freq-x-mul",
-			"XY_initial-freq-y-mul",
 			"boundary-id",
 			"rexi-zero-before-solving",
 			"nonlinear",
 			nullptr
 	};
 
-
+	// default values for specific input (for general input see SimulationVariables.hpp)
 	simVars.bogus.var[0] = 0.2;
 	simVars.bogus.var[1] = 256;	// M
 	simVars.bogus.var[2] = 0;	// L = 0: default
 	simVars.bogus.var[3] = 1;	// param_rexi_half
-	simVars.bogus.var[4] = 0;
-	simVars.bogus.var[5] = 0;
-	simVars.bogus.var[6] = 0;
+	simVars.bogus.var[4] = 0;	// timestepping mode
+	simVars.bogus.var[5] = 0;	// compute error
+	simVars.bogus.var[6] = 0;	// stag
 	simVars.bogus.var[7] = 1;	// Use spec diff per default for complex array
 	simVars.bogus.var[8] = 0;	// Use spectral solver id
 	simVars.bogus.var[9] = 1e-7;	// Error threshold
+	simVars.bogus.var[10] = 0; 	//boundary
+	simVars.bogus.var[11] = 1;	// zero rexi
+	simVars.bogus.var[12] = 0;	// nonlinear
 
-	simVars.bogus.var[10] = -1;	// freq. multiplier for initial conditions
-	simVars.bogus.var[11] = -1;
-
-	simVars.bogus.var[12] = 0;
-	simVars.bogus.var[13] = 1;
-	simVars.bogus.var[14] = 0;
-
-
+	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
 		std::cout << std::endl;
@@ -1483,9 +1475,6 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "                                      1: Spectral derivatives (default)" << std::endl;
 		std::cout << "	--rexi-helmholtz-solver-id=[int]	Use iterative solver for REXI" << std::endl;
 		std::cout << "	--rexi-helmholtz-solver-eps=[err]	Error threshold for iterative solver" << std::endl;
-		std::cout << std::endl;
-		std::cout << "	--initial-freq-x-mul=[float]	Setup initial conditions by using this multiplier values" << std::endl;
-		std::cout << "	--initial-freq-y-mul=[float]	" << std::endl;
 		std::cout << std::endl;
 		std::cout << "	--boundary-id=[0,1,...]	    Boundary id" << std::endl;
 		std::cout << "                              0: no boundary" << std::endl;
@@ -1513,19 +1502,20 @@ int main(int i_argc, char *i_argv[])
 	// C- grid flag
 	param_use_staggering = simVars.bogus.var[6];
 
+	// Linear solver
 	param_rexi_use_spectral_differences_for_complex_array = simVars.bogus.var[7];
     param_rexi_helmholtz_solver_id = simVars.bogus.var[8];
 	param_rexi_helmholtz_solver_eps = simVars.bogus.var[9];
 
-	param_initial_freq_x_mul = simVars.bogus.var[10];
-	param_initial_freq_y_mul = simVars.bogus.var[11];
+	//Boundary
+	param_boundary_id = simVars.bogus.var[10];
 
-	param_boundary_id = simVars.bogus.var[12];
+	param_rexi_zero_before_solving = simVars.bogus.var[11];
 
-	param_rexi_zero_before_solving = simVars.bogus.var[13];
+	// Linear vs nonlinear swe
+	param_nonlinear = simVars.bogus.var[12];
 
-	param_nonlinear = simVars.bogus.var[14];
-
+	//Print header
 	std::cout << std::endl;
 	if(param_nonlinear)
 		std::cout << "Solving nonlinear SW equations" << std::endl;
@@ -1533,7 +1523,7 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "Solving linear SW equations" << std::endl;
 
 	std::cout << "-----------------------------" << std::endl;
-	std::cout << "Method to be used: "; // << param_timestepping_mode << std::endl;
+	std::cout << "Method to be used (timestepping_mode): "; // << param_timestepping_mode << std::endl;
 	switch(param_timestepping_mode)
 	{
 		case 0:
@@ -1550,9 +1540,9 @@ int main(int i_argc, char *i_argv[])
 	}
 	std::cout << "Staggered grid? " << param_use_staggering << std::endl;
 	std::cout << "Computing error? " << param_compute_error << std::endl;
+	std::cout << "Verbosity: " << simVars.misc.verbosity << std::endl;
 
-	std::cout << "Verbosity " << simVars.misc.verbosity << std::endl;
-
+	//PXT - ?
 	SimulationSWE *simulationSWE = new SimulationSWE;
 
 	std::ostringstream buf;
@@ -1577,8 +1567,10 @@ int main(int i_argc, char *i_argv[])
 			//Setting initial conditions and workspace
 			simulationSWE->reset();
 
+			//Time counter
 			Stopwatch time;
 
+			//Diagnostic measures at initial stage
 			double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
 
 			if (simVars.misc.verbosity > 1)
