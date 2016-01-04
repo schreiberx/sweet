@@ -1375,6 +1375,7 @@ int main(int i_argc, char *i_argv[])
 	// default values for specific input (for general input see SimulationVariables.hpp)
 	simVars.bogus.var[0] = 0.2;
 	simVars.bogus.var[1] = 256;	// M
+	// PXT - why is the default L=0, shouldn't be 11?
 	simVars.bogus.var[2] = 0;	// L = 0: default
 	simVars.bogus.var[3] = 1;	// param_rexi_half
 	simVars.bogus.var[4] = 0;	// timestepping mode
@@ -1399,6 +1400,7 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "	--rexi-half [0/1]	Reduce rexi computations to its half" << std::endl;
 		std::cout << "" << std::endl;
 		std::cout << "	--timestepping-mode [0/1/2]	Timestepping method to use" << std::endl;
+		//PXT - what is that you call spectral timestepping?
 		std::cout << "	                            0: Finite-difference / Spectral time stepping" << std::endl;
 		std::cout << "	                            1: REXI" << std::endl;
 		std::cout << "	                            2: Direct solution in spectral space" << std::endl;

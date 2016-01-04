@@ -30,7 +30,8 @@ public:
 
 
 	/**
-	 * Stable extrapolation Two-Time-Level Scheme, Mariano Hortal, Development and testing of a new two-time-level semi-lagrangian scheme (settls) in the ECMWF forecast model.
+	 * Stable extrapolation Two-Time-Level Scheme, Mariano Hortal,
+	 *     Development and testing of a new two-time-level semi-lagrangian scheme (settls) in the ECMWF forecast model.
 	 * Quaterly Journal of the Royal Meterological Society
 	 *
 	 * r_d = r_a - dt/2 * (2 * v_n(r_d) - v_{n-1}(r_d) + v_n(r_a))
@@ -43,9 +44,10 @@ public:
 			DataArray<2>* i_velocity_field_t[2],	///< velocity field at time n
 			DataArray<2>* i_pos_arrival[2],			///< position at time n+1
 			double i_dt,							///< time step size
-			DataArray<2>* o_pos_departure[2]			///< departure poitns at time n
+			DataArray<2>* o_pos_departure[2]			///< departure points at time n
 	)
 	{
+		//PXT - help understanding these pointers!!!
 		DataArray<2> &vx_n_prev = *i_velocity_field_t_prev[0];
 		DataArray<2> &vy_n_prev = *i_velocity_field_t_prev[1];
 
@@ -57,6 +59,7 @@ public:
 
 		DataArray<2> &rx_d = *o_pos_departure[0];
 		DataArray<2> &ry_d = *o_pos_departure[1];
+
 		rx_d.set(0,0,0);
 		ry_d.set(0,0,0);
 
