@@ -61,9 +61,6 @@ public:
 
 		if (i_parameters.setup.scenario == 3)
 		{
-			std::cout << "test" << std::endl;
-			std::cout << i_parameters.setup.initial_freq_x_mul << std::endl;
-			exit(-1);
 			// Steady state (linear and nonlinear) with dominant meridional (y) flow
 			return std::sin(2.0*M_PI*y/i_parameters.sim.domain_size[1]) + i_parameters.setup.h0;
 		}
@@ -121,6 +118,15 @@ public:
 			// beta plane
 			// use e.g. parameters -N 64 -C 0.5 -R 4 -f 0.000001  -g 9.81 -H 1000 -X 100000 -Y 100000 -b 0.0000001 -z -S 1 -s 10
 			return i_parameters.setup.h0;
+		}
+
+		if (i_parameters.setup.scenario == 11)
+		{
+			// Waves scenario
+			// Remember to set up initial_freq_x_mul and initial_freq_y_mul
+			double dx = x/i_parameters.sim.domain_size[0]*i_parameters.setup.initial_freq_x_mul*M_PIl;
+			double dy = y/i_parameters.sim.domain_size[1]*i_parameters.setup.initial_freq_y_mul*M_PIl;
+			return std::sin(2.0*dx)*std::cos(2.0*dy) - (1.0/5.0)*std::cos(2.0*dx)*std::sin(4.0*dy) + i_parameters.setup.h0;
 		}
 
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
@@ -215,6 +221,14 @@ public:
 
 			return 10+std::exp(-50.0*(dx*dx + dy*dy));
 		}
+		if (i_parameters.setup.scenario == 11)
+		{
+			// Waves scenario
+			// Remember to set up initial_freq_x_mul and initial_freq_y_mul
+			double dx = x/i_parameters.sim.domain_size[0]*i_parameters.setup.initial_freq_x_mul*M_PIl;
+			double dy = y/i_parameters.sim.domain_size[1]*i_parameters.setup.initial_freq_y_mul*M_PIl;
+			return std::cos(4.0*dx)*std::cos(2.0*dy);
+		}
 
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
 		return 0;
@@ -296,7 +310,14 @@ public:
 		{
 			return 0;
 		}
-
+		if (i_parameters.setup.scenario == 11)
+		{
+			// Waves scenario
+			// Remember to set up initial_freq_x_mul and initial_freq_y_mul
+			double dx = x/i_parameters.sim.domain_size[0]*i_parameters.setup.initial_freq_x_mul*M_PIl;
+			double dy = y/i_parameters.sim.domain_size[1]*i_parameters.setup.initial_freq_y_mul*M_PIl;
+			return std::cos(2.0*dx)*std::cos(4.0*dy);
+		}
 
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
 		return 0;

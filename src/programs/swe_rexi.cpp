@@ -150,6 +150,7 @@ public:
 
 	void reset()
 	{
+		// Initialise diagnostics
 		last_timestep_nr_update_diagnostics = -1;
 
 		benchmark_diff_h = 0;
@@ -175,11 +176,13 @@ public:
 		boundary_mask.set_spec_all(0, 0);
 #endif
 
+		//Setup prog vars
 		prog_h.set_all(simVars.setup.h0);
 		prog_u.set_all(0);
 		prog_v.set_all(0);
 		boundary_mask.set_all(0);
 
+		//Check if input parameters are adequate for this simulation
 		if (param_use_staggering && simVars.disc.use_spectral_basis_diffs)
 		{
 			std::cerr << "Staggering and spectral basis not supported!" << std::endl;
@@ -192,135 +195,60 @@ public:
 			exit(1);
 		}
 
-		// In case of the scenario with waves
-		if (simVars.setup.initial_freq_x_mul != -1)
+		// Set initial conditions given from SWEValidationBenchmarks
+		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 		{
-			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+			for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+				if (param_use_staggering) // C-grid
 				{
-					double h_dx, h_dy;
-					double u_dx, u_dy;
-					double v_dx, v_dy;
-
-					if (param_use_staggering)
 					{
-						{
-							// h
-							double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-							double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
-
-							h_dx = x/simVars.sim.domain_size[0]*simVars.setup.initial_freq_x_mul*M_PIl;
-							h_dy = y/simVars.sim.domain_size[1]*simVars.setup.initial_freq_y_mul*M_PIl;
-						}
-
-						{
-							// u space
-							double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-							double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
-
-							u_dx = x/simVars.sim.domain_size[0]*simVars.setup.initial_freq_x_mul*M_PIl;
-							u_dy = y/simVars.sim.domain_size[1]*simVars.setup.initial_freq_y_mul*M_PIl;
-						}
-
-						{
-							// v space
-							double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-							double y = (((double)j)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
-
-							v_dx = x/simVars.sim.domain_size[0]*simVars.setup.initial_freq_x_mul*M_PIl;
-							v_dy = y/simVars.sim.domain_size[1]*simVars.setup.initial_freq_y_mul*M_PIl;
-						}
-					}
-					else
-					{
-						double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-						double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
-
-						h_dx = x/simVars.sim.domain_size[0]*simVars.setup.initial_freq_x_mul*M_PIl;
-						h_dy = y/simVars.sim.domain_size[1]*simVars.setup.initial_freq_y_mul*M_PIl;
-
-						u_dx = h_dx;
-						u_dy = h_dy;
-
-						v_dx = h_dx;
-						v_dy = h_dy;
-					}
-
-					//
-					//
-					double h = std::sin(2.0*h_dx)*std::cos(2.0*h_dy) - (1.0/5.0)*std::cos(2.0*h_dx)*std::sin(4.0*h_dy) + simVars.setup.h0;
-					double u = std::cos(4.0*u_dx)*std::cos(2.0*u_dy);
-					double v = std::cos(2.0*v_dx)*std::cos(4.0*v_dy);
-
-					prog_h.set(j, i, h);
-					prog_u.set(j, i, u);
-					prog_v.set(j, i, v);
-
-					// REXI initial conditions given by values on non-staggered grid
-					double t0_h = std::sin(2.0*h_dx)*std::cos(2.0*h_dy) - (1.0/5.0)*std::cos(2.0*h_dx)*std::sin(4.0*h_dy) + simVars.setup.h0;
-					double t0_u = std::cos(4.0*h_dx)*std::cos(2.0*h_dy);
-					double t0_v = std::cos(2.0*h_dx)*std::cos(4.0*h_dy);
-					t0_prog_h.set(j, i, t0_h);
-					t0_prog_u.set(j, i, t0_u);
-					t0_prog_v.set(j, i, t0_v);
-				}
-			}
-		}
-		else // Initial conditions given from SWEValidationBenchmarks
-		{
-			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
-			{
-				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
-				{
-					if (param_use_staggering)
-					{
-						{
-							// h
-							double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-							double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
-
-							prog_h.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
-
-							t0_prog_h.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
-							t0_prog_u.set(j,i, SWEValidationBenchmarks::return_u(simVars, x, y));
-							t0_prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
-						}
-
-						{
-							// u space
-							double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-							double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
-
-							prog_u.set(j,i, SWEValidationBenchmarks::return_u(simVars, x, y));
-						}
-
-						{
-							// v space
-							double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-							double y = (((double)j)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
-
-							prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
-						}
-					}
-					else
-					{
+						// h
 						double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
 						double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
 
 						prog_h.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
-						prog_u.set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
-						prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
 
 						t0_prog_h.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
+						//PXT - Why if t0 here??? This makes the error calculation wrong for the FD case with C grid
 						t0_prog_u.set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
 						t0_prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
 					}
+
+					{
+						// u space
+						double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+						double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+
+						prog_u.set(j,i, SWEValidationBenchmarks::return_u(simVars, x, y));
+					}
+
+					{
+						// v space
+						double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+						double y = (((double)j)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+
+						prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
+					}
+				}
+				else // A-Grid (colocated grid)
+				{
+					double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+					double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+
+					prog_h.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
+					prog_u.set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
+					prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
+
+					t0_prog_h.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
+					t0_prog_u.set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
+					t0_prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
 				}
 			}
 		}
 
 
+		// Set boundary stuff
 		if (param_boundary_id != 0)
 		{
 			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
@@ -420,6 +348,7 @@ public:
 			}
 		}
 
+		// Load data, if requested
 		if (simVars.setup.input_data_filenames.size() > 0)
 			prog_h.file_loadData(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
 
@@ -444,7 +373,7 @@ public:
 		}
 
 
-
+		// Print info for REXI and setup REXI
 		if (param_timestepping_mode == 1 || param_timestepping_mode == 3)
 		{
 			if (simVars.misc.verbosity > 0)
@@ -485,12 +414,14 @@ public:
 			}
 		}
 
+		// Print output info (if gui is disabled, this is done in main
+		// PXT - can't we just put all the output stuff in main here?
 		if (simVars.misc.gui_enabled)
 			timestep_output();
 	}
 
 
-
+	//Calculate the model diagnostics
 	void update_diagnostics()
 	{
 		// assure, that the diagnostics are only updated for new time steps
@@ -518,7 +449,6 @@ public:
 	}
 
 
-
 	void compute_upwinding_P_updates(
 			const DataArray<2> &i_h,		///< prognostic variables (at T=tn)
 			const DataArray<2> &i_u,		///< prognostic variables (at T=tn+dt)
@@ -534,7 +464,7 @@ public:
 		//   h-1       u0          h0          u1          h1          u2
 		//
 
-		// same a above, but formulated in a finite-difference style
+		// same as above, but formulated in a finite-difference style
 		o_P_t =
 			(
 				(
@@ -563,7 +493,6 @@ public:
 
 	void boundary_action()
 	{
-//		assert(param_boundary_id != 0);
 
 		if (param_boundary_id == 0)
 			return;
@@ -627,7 +556,7 @@ public:
 		}
 	}
 
-
+	// Main routine for method to be used in case of finite differences
 	void p_run_euler_timestep_update(
 			const DataArray<2> &i_h,	///< prognostic variables
 			const DataArray<2> &i_u,	///< prognostic variables
@@ -686,6 +615,13 @@ public:
 		// A- grid method
 		if (!param_use_staggering)
 		{
+			if(param_nonlinear) //nonlinear case
+				std::cout << "Only linear swe are setup for unstaggered grids " << std::endl;
+				exit(1);
+			{
+
+			}
+
 			boundary_action();
 
 			/*
@@ -1313,19 +1249,19 @@ public:
 			switch (simVars.misc.vis_id)
 			{
 			case -1:
-				description = "Direct solution for h";
+				description = "Direct solution for h (linear only)";
 				break;
 
 
 			case -2:
-				description = "Error in h";
+				description = "Diff in h to initial condition";
 				break;
 			}
 		}
 
 		static char title_string[2048];
 		//sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %.14e, Vis: %s, Mass: %.14e, Energy: %.14e, Potential Entrophy: %.14e",
-		sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %.6e, Vis: %s, Mass: %.6e, Energy: %.6e, Potential Enstrophy: %.6e, Max: %.6e, Min: %.6e ",
+		sprintf(title_string, "Time (days): %f (%.2f d), k: %i, dt: %.3e, Vis: %s, TMass: %.6e, TEnergy: %.6e, PotEnstrophy: %.6e, MaxVal: %.6e, MinVal: %.6e ",
 				simVars.timecontrol.current_simulation_time,
 				simVars.timecontrol.current_simulation_time/(60.0*60.0*24.0),
 				simVars.timecontrol.current_timestep_nr,
@@ -1335,7 +1271,7 @@ public:
 				simVars.diag.total_energy,
 				simVars.diag.total_potential_enstrophy,
 				tmp.reduce_max(),
-				tmp.reduce_min()	);
+				tmp.reduce_min() );
 
 		return title_string;
 	}
@@ -1418,6 +1354,7 @@ int main(int i_argc, char *i_argv[])
 
 	NUMABlockAlloc::setup();
 
+	//input parameter names (specific ones for this program)
 	const char *bogus_var_names[] = {
 			"rexi-h",
 			"rexi-m",
@@ -1556,7 +1493,7 @@ int main(int i_argc, char *i_argv[])
 	if (rank == 0)
 #endif
 	{
-#if SWEET_GUI
+#if SWEET_GUI // The VisSweet directly calls simulationSWE->reset() and output stuff
 		if (simVars.misc.gui_enabled)
 		{
 			VisSweet<SimulationSWE> visSweet(simulationSWE);
@@ -1564,7 +1501,7 @@ int main(int i_argc, char *i_argv[])
 		else
 #endif
 		{
-			//Setting initial conditions and workspace
+			//Setting initial conditions and workspace - in case there is no GUI
 			simulationSWE->reset();
 
 			//Time counter
@@ -1573,6 +1510,7 @@ int main(int i_argc, char *i_argv[])
 			//Diagnostic measures at initial stage
 			double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
 
+			// Initialize diagnostics
 			if (simVars.misc.verbosity > 1)
 			{
 				simulationSWE->update_diagnostics();
