@@ -292,8 +292,8 @@ public:
         static struct option long_options[max_options+1] = {
     			{"test-initial-freq-x-mul", required_argument, 0, 256+'a'+0}, // 0
     			{"test-initial-freq-y-mul", required_argument, 0, 256+'a'+1}, // 1
-    			{0, 0, 0, 0}, // 2
-    			{0, 0, 0, 0}, // 3
+    			{"initial-coord-x", required_argument, 0, 256+'a'+2}, // 2
+    			{"initial-coord-y", required_argument, 0, 256+'a'+3}, // 3
     			{0, 0, 0, 0}, // 4
     			{0, 0, 0, 0}, // 5
     			{0, 0, 0, 0}, // 6
@@ -373,15 +373,10 @@ public:
 				{
 					switch(i)
 					{
-					case 0:
-						setup.initial_freq_x_mul = atof(optarg);
-//						std::cout << "setup.initial_freq_x_mul: " << setup.initial_freq_x_mul << std::endl;
-						break;
-
-					case 1:
-						setup.initial_freq_y_mul = atof(optarg);
-//						std::cout << "setup.initial_freq_y_mul: " << setup.initial_freq_y_mul << std::endl;
-						break;
+					case 0:		setup.initial_freq_x_mul = atof(optarg);	break;
+					case 1:		setup.initial_freq_y_mul = atof(optarg);	break;
+					case 2:		setup.coord_x = atof(optarg);	break;
+					case 3:		setup.coord_y = atof(optarg);	break;
 					}
 				}
 				else
