@@ -1481,8 +1481,8 @@ int main(int i_argc, char *i_argv[])
 			"use-specdiff-for-complex-array",	/// use finite differences for complex array
 			"rexi-helmholtz-solver-id",		/// use iterative solver for REXI
 			"rexi-helmholtz-solver-eps",		/// error threshold for solver
-			"initial-freq-x-mul",
-			"initial-freq-y-mul",
+			"XY_initial-freq-x-mul",
+			"XY_initial-freq-y-mul",
 			"boundary-id",
 			"rexi-zero-before-solving",
 			"nonlinear",

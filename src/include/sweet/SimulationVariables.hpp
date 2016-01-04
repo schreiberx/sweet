@@ -60,6 +60,10 @@ public:
 		/// setup coordinate of e.g. radial breaking dam, y-placement \in [0;1]
 		double coord_y = 0.5;
 
+		/// Frequency multiplier for wave-like scenario
+		double initial_freq_x_mul = 2.0;
+		double initial_freq_y_mul = 1.0;
+
 		/// filenames of input data for setup (this has to be setup by each application individually)
 		std::vector<std::string> input_data_filenames;
 
@@ -283,9 +287,11 @@ public:
 			const char *bogus_var_names[] = nullptr			///< list of strings of simulation-specific variables, has to be terminated by nullptr
 	)
 	{
-        static struct option long_options[21] = {
-    			{0, 0, 0, 0}, // 0
-    			{0, 0, 0, 0}, // 1
+		int next_free_program_option = 2;
+		const int max_options = 30;
+        static struct option long_options[max_options+1] = {
+    			{"test-initial-freq-x-mul", required_argument, 0, 256+'a'+0}, // 0
+    			{"test-initial-freq-y-mul", required_argument, 0, 256+'a'+1}, // 1
     			{0, 0, 0, 0}, // 2
     			{0, 0, 0, 0}, // 3
     			{0, 0, 0, 0}, // 4
@@ -294,6 +300,7 @@ public:
     			{0, 0, 0, 0}, // 7
     			{0, 0, 0, 0}, // 8
     			{0, 0, 0, 0}, // 9
+
 				{0, 0, 0, 0}, // 0
 				{0, 0, 0, 0}, // 1
 				{0, 0, 0, 0}, // 2
@@ -304,21 +311,39 @@ public:
 				{0, 0, 0, 0}, // 7
 				{0, 0, 0, 0}, // 8
 				{0, 0, 0, 0}, // 9
-				{0, 0, 0, 0}, // NULL
+
+				{0, 0, 0, 0}, // 0
+				{0, 0, 0, 0}, // 1
+				{0, 0, 0, 0}, // 2
+				{0, 0, 0, 0}, // 3
+				{0, 0, 0, 0}, // 4
+				{0, 0, 0, 0}, // 5
+				{0, 0, 0, 0}, // 6
+				{0, 0, 0, 0}, // 7
+				{0, 0, 0, 0}, // 8
+				{0, 0, 0, 0}, // 9	Option Nr. 30
+				{0, 0, 0, 0} // NULL
         };
+
 
         if (bogus_var_names != nullptr)
         {
 			int opt_nr;
-			for (opt_nr = 0; opt_nr < 20; opt_nr++)
+			for (opt_nr = next_free_program_option; opt_nr < max_options; opt_nr++)
 			{
-				if (bogus_var_names[opt_nr] == nullptr)
+				if (bogus_var_names[opt_nr-next_free_program_option] == nullptr)
 					break;
 
-				long_options[opt_nr].name = bogus_var_names[opt_nr];
+				long_options[opt_nr].name = bogus_var_names[opt_nr-next_free_program_option];
 				long_options[opt_nr].has_arg = required_argument;
 				long_options[opt_nr].flag = 0;
 				long_options[opt_nr].val = 256+'a'+opt_nr;
+			}
+
+			if (opt_nr == max_options)
+			{
+				std::cerr << "Max number of arguments reached. Reduce number of program arguments" << std::endl;
+				exit(1);
 			}
         }
 
@@ -343,7 +368,26 @@ public:
 			if (opt >= 256+'a' && opt <= 256+'z')
 			{
 				int i = opt-(256+'a');
-				bogus.var[i] = atof(optarg);
+
+				if (i < next_free_program_option)
+				{
+					switch(i)
+					{
+					case 0:
+						setup.initial_freq_x_mul = atof(optarg);
+//						std::cout << "setup.initial_freq_x_mul: " << setup.initial_freq_x_mul << std::endl;
+						break;
+
+					case 1:
+						setup.initial_freq_y_mul = atof(optarg);
+//						std::cout << "setup.initial_freq_y_mul: " << setup.initial_freq_y_mul << std::endl;
+						break;
+					}
+				}
+				else
+				{
+					bogus.var[i-next_free_program_option] = atof(optarg);
+				}
 				continue;
 			}
 
