@@ -55,16 +55,22 @@ public:
 
 		if (i_parameters.setup.scenario == 2)
 		{
+			// Steady state (linear and nonlinear) with dominant zonal (x) flow
 			return std::sin(2.0*M_PI*x/i_parameters.sim.domain_size[0]) + i_parameters.setup.h0;
 		}
 
 		if (i_parameters.setup.scenario == 3)
 		{
+			std::cout << "test" << std::endl;
+			std::cout << i_parameters.bogus.var[10] << std::endl;
+			exit(-1);
+			// Steady state (linear and nonlinear) with dominant meridional (y) flow
 			return std::sin(2.0*M_PI*y/i_parameters.sim.domain_size[1]) + i_parameters.setup.h0;
 		}
 
 		if (i_parameters.setup.scenario == 4)
 		{
+			// ???
 			double dx = x/i_parameters.sim.domain_size[0];
 			double dy = y/i_parameters.sim.domain_size[1];
 			return i_parameters.setup.h0 + (std::abs(dx-0.5) < 0.3)*(std::abs(dy-0.5) < 0.1);
@@ -150,7 +156,7 @@ public:
 		{
 			if (i_parameters.sim.f0 == 0)
 			{
-				std::cerr << "f-value is equal to zero!" << std::endl;
+				std::cerr << "f-value is equal to zero! Cannot run this case scenario." << std::endl;
 				exit(-1);
 			}
 			return -i_parameters.sim.g*2.0*M_PI*std::cos(2.0*M_PI*y/i_parameters.sim.domain_size[1])/(i_parameters.sim.f0*i_parameters.sim.domain_size[1]);

@@ -10,6 +10,8 @@
 #include <sweet/SWEValidationBenchmarks.hpp>
 #include <sweet/Operators2D.hpp>
 #include <sweet/Stopwatch.hpp>
+#include <sweet/Sampler2D.hpp>
+#include <sweet/SemiLagrangian.hpp>
 #include <ostream>
 #include <algorithm>
 #include <sstream>
@@ -51,46 +53,73 @@ bool param_nonlinear;
 class SimulationSWE
 {
 public:
+	// Prognostic variables
 	DataArray<2> prog_h, prog_u, prog_v;
+	DataArray<2> prog_u_prev, prog_v_prev;
+
+	// Diagnostics - Vorticity and potential vorticity
 	DataArray<2> eta, q;
 
-	DataArray<2> tmp;
-
 	// temporary variables;
+	DataArray<2> tmp;
+	DataArray<2> h_t;
 	DataArray<2> tmp0, tmp1, tmp2, tmp3;
 
+	// Variables to keep track of boundary
 	DataArray<2> boundary_mask;
 	DataArray<2> boundary_mask_inv;
 
-	// initial values for comparison with analytical solution
+	// Initial values for comparison with analytical solution
 	DataArray<2> t0_prog_h, t0_prog_u, t0_prog_v;
 
-	Operators2D op;
+	// Arrival points for semi-lag
+	DataArray<2> posx_a, posy_a;
+	DataArray<2> *pos_a[2];
 
-	TimesteppingRK timestepping;
-
+	// Diagnostics measures
 	int last_timestep_nr_update_diagnostics = -1;
 
+	//Max difference to initial conditions
 	double benchmark_diff_h;
 	double benchmark_diff_u;
 	double benchmark_diff_v;
 
+	// Error measures L2 norm
 	double benchmark_analytical_error_rms_h;
 	double benchmark_analytical_error_rms_u;
 	double benchmark_analytical_error_rms_v;
 
+	// Error measures max norm
 	double benchmark_analytical_error_maxabs_h;
 	double benchmark_analytical_error_maxabs_u;
 	double benchmark_analytical_error_maxabs_v;
 
+	// Finite difference operators
+	Operators2D op;
+
+	// Runge-Kutta stuff
+	TimesteppingRK timestepping;
+
+	// Rexi stuff
 	RexiSWE rexiSWE;
 
+	// Interpolation stuff
+	Sampler2D sampler2D;
+
+	// Semi-Lag stuff
+	SemiLagrangian semiLagrangian;
 
 public:
 	SimulationSWE()	:
+	// Constructor to initialize the class - all variables in the SW are setup
+
+		// Variable dimensions (mem. allocation)
 		prog_h(simVars.disc.res),
 		prog_u(simVars.disc.res),
 		prog_v(simVars.disc.res),
+
+		prog_u_prev(simVars.disc.res),
+		prog_v_prev(simVars.disc.res),
 
 		eta(simVars.disc.res),
 		q(simVars.disc.res),
@@ -108,8 +137,15 @@ public:
 		t0_prog_u(simVars.disc.res),
 		t0_prog_v(simVars.disc.res),
 
+		posx_a(simVars.disc.res),
+		posy_a(simVars.disc.res),
+
+		h_t(simVars.disc.res),
+
+		// Initialises operators
 		op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
 	{
+		// Calls initialisation of the run (e.g. sets u, v, h)
 		reset();
 	}
 
@@ -158,77 +194,7 @@ public:
 			exit(1);
 		}
 
-#if 0
-		if (simVars.setup.scenario == -1)
-		{
-			std::cout << "Setting up steady state" << std::endl;
-
-			if (simVars.sim.f0 == 0)
-			{
-				std::cerr << "Coriolis frequency f is set to 0" << std::endl;
-				exit(1);
-			}
-
-			if (std::isinf(param_rexi_h))
-				std::cerr << "ERROR: Steady state scenario here only makes sense for linear solver only" << std::endl;
-
-			/**
-			 * setup steady state
-			 */
-			if (param_use_staggering)
-			{
-				std::cerr << "NOT SUPPORTED YET" << std::endl;
-				exit(1);
-			}
-			else
-			{
-				for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
-				{
-					for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
-					{
-						double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-						double y = (((double)j)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
-
-						// Gaussian
-						double dx = x-simVars.setup.coord_x*simVars.sim.domain_size[0];
-						double dy = y-simVars.setup.coord_y*simVars.sim.domain_size[1];
-
-						double radius = simVars.setup.radius_scale*sqrt((double)simVars.sim.domain_size[0]*(double)simVars.sim.domain_size[0]+(double)simVars.sim.domain_size[1]*(double)simVars.sim.domain_size[1]);
-						dx /= radius;
-						dy /= radius;
-
-#if 1
-						double sx = x/simVars.sim.domain_size[0];
-						double sy = y/simVars.sim.domain_size[1];
-
-						double foo = std::sin(sx*2.0*M_PIl)*std::sin(sy*2.0*M_PIl);
-
-						double barx = std::cos(sx*2.0*M_PIl)*std::sin(sy*2.0*M_PIl)*2.0*M_PIl/simVars.sim.domain_size[0];
-						double bary = std::sin(sx*2.0*M_PIl)*std::cos(sy*2.0*M_PIl)*2.0*M_PIl/simVars.sim.domain_size[1];
-
-						double h = simVars.setup.h0+foo;
-						double u = -simVars.sim.g/simVars.sim.f0*bary;
-						double v = simVars.sim.g/simVars.sim.f0*barx;
-#else
-						double foo = std::exp(-50.0*(dx*dx + dy*dy));
-						double h = simVars.setup.h0+foo;
-						double u = -simVars.sim.g/simVars.sim.f0*(-50.0*2.0*dy)*foo;
-						double v = simVars.sim.g/simVars.sim.f0*(-50.0*2.0*dx)*foo;
-#endif
-
-						prog_h.set(j, i, h);
-						prog_u.set(j, i, u);
-						prog_v.set(j, i, v);
-
-						t0_prog_h.set(j, i, h);
-						t0_prog_u.set(j, i, u);
-						t0_prog_v.set(j, i, v);
-					}
-				}
-			}
-		}
-		else
-#endif
+		// In case of the scenario with waves
 		if (param_initial_freq_x_mul != -1)
 		{
 			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
@@ -284,7 +250,6 @@ public:
 					}
 
 					//
-					// note, that cos*cos and cos*sin is a function which cannot be directly represented in spectral space
 					//
 					double h = std::sin(2.0*h_dx)*std::cos(2.0*h_dy) - (1.0/5.0)*std::cos(2.0*h_dx)*std::sin(4.0*h_dy) + simVars.setup.h0;
 					double u = std::cos(4.0*u_dx)*std::cos(2.0*u_dy);
@@ -679,6 +644,48 @@ public:
 			double i_simulation_timestamp = -1
 	)
 	{
+
+		/*
+		 * TIME STEP SIZE
+		 */
+		if (i_fixed_dt > 0)
+		{
+			o_dt = i_fixed_dt;
+		}
+		else
+		{
+			/*
+			 * If the timestep size parameter is negative, we use the absolute value of this one as the time step size
+			 */
+			if (i_fixed_dt < 0)
+			{
+				o_dt = -i_fixed_dt;
+			}
+			else
+			{
+				double limit_speed = std::min(simVars.disc.cell_size[0]/i_u.reduce_maxAbs(), simVars.disc.cell_size[1]/i_v.reduce_maxAbs());
+				//	double hx = simVars.disc.cell_size[0];
+				//	double hy = simVars.disc.cell_size[1];
+
+				// limit by viscosity
+				double limit_visc = std::numeric_limits<double>::infinity();
+				/*
+				if (simVars.sim.viscosity > 0)
+					limit_visc = (hx*hx*hy*hy)/(4.0*simVars.sim.viscosity*simVars.sim.viscosity);
+				if (simVars.sim.viscosity_order > 0)
+					limit_visc = std::min((hx*hx*hx*hx*hy*hy*hy*hy)/(16.0*simVars.sim.viscosity_order*simVars.sim.viscosity_order), limit_visc);
+				 */
+				// limit by gravitational acceleration
+				double limit_gh = std::min(simVars.disc.cell_size[0], simVars.disc.cell_size[1])/std::sqrt(simVars.sim.g*i_h.reduce_maxAbs());
+
+				if (simVars.misc.verbosity > 2)
+					std::cerr << "limit_speed: " << limit_speed << ", limit_visc: " << limit_visc << ", limit_gh: " << limit_gh << std::endl;
+
+				o_dt = simVars.sim.CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
+			}
+		}
+
+		// A- grid method
 		if (!param_use_staggering)
 		{
 			boundary_action();
@@ -701,42 +708,6 @@ public:
 			}
 
 			boundary_action();
-
-			/*
-			 * TIME STEP SIZE
-			 */
-			if (i_fixed_dt > 0)
-			{
-				o_dt = i_fixed_dt;
-			}
-			else
-			{
-				/*
-				 * If the timestep size parameter is negative, we use the absolute value of this one as the time step size
-				 */
-				if (i_fixed_dt < 0)
-				{
-					o_dt = -i_fixed_dt;
-				}
-				else
-				{
-					double hx = simVars.disc.cell_size[0];
-					double hy = simVars.disc.cell_size[1];
-
-					double limit_speed = std::min(hx/i_u.reduce_maxAbs(), hy/i_v.reduce_maxAbs());
-
-					// limit by re
-					double limit_visc = std::numeric_limits<double>::infinity();
-
-					// limit by gravitational acceleration
-					double limit_gh = std::min(simVars.disc.cell_size[0], simVars.disc.cell_size[1])/std::sqrt(simVars.sim.g*i_h.reduce_maxAbs());
-
-					if (simVars.misc.verbosity > 2)
-						std::cerr << "limit_speed: " << limit_speed << ", limit_visc: " << limit_visc << ", limit_gh: " << limit_gh << std::endl;
-
-					o_dt = simVars.sim.CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
-				}
-			}
 
 			if (!simVars.disc.timestepping_leapfrog_like_update)
 			{
@@ -810,7 +781,8 @@ public:
 			DataArray<2>& q = tmp2;
 			DataArray<2>& H = tmp3;
 
-			/*
+			/* Sadourny energy conserving scheme
+			 *
 			 * Note, that this grid does not follow the formulation
 			 * in the paper of Robert Sadourny, but looks as follows:
 			 *
@@ -859,6 +831,7 @@ public:
 				q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + simVars.sim.f0) / op.avg_b_x(op.avg_b_y(i_h));
 
 				// u, v tendencies
+				// Energy conserving scheme
 				o_u_t = op.avg_f_y(q*op.avg_b_x(V)) - op.diff_b_x(H);
 				o_v_t = -op.avg_f_x(q*op.avg_b_y(U)) - op.diff_b_y(H);
 			}
@@ -877,49 +850,6 @@ public:
 				o_u_t -= op.diffN_x(i_u, simVars.sim.viscosity_order)*simVars.sim.viscosity;
 				o_v_t -= op.diffN_y(i_v, simVars.sim.viscosity_order)*simVars.sim.viscosity;
 			}
-
-
-			/*
-			 * TIME STEP SIZE
-			 */
-			if (i_fixed_dt > 0)
-			{
-				o_dt = i_fixed_dt;
-			}
-			else
-			{
-				/*
-				 * If the timestep size parameter is negative, we use the absolute value of this one as the time step size
-				 */
-				if (i_fixed_dt < 0)
-				{
-					o_dt = -i_fixed_dt;
-				}
-				else
-				{
-					double limit_speed = std::min(simVars.disc.cell_size[0]/i_u.reduce_maxAbs(), simVars.disc.cell_size[1]/i_v.reduce_maxAbs());
-
-//					double hx = simVars.disc.cell_size[0];
-//					double hy = simVars.disc.cell_size[1];
-
-					// limit by viscosity
-					double limit_visc = std::numeric_limits<double>::infinity();
-/*
-					if (simVars.sim.viscosity > 0)
-						limit_visc = (hx*hx*hy*hy)/(4.0*simVars.sim.viscosity*simVars.sim.viscosity);
-					if (simVars.sim.viscosity_order > 0)
-						limit_visc = std::min((hx*hx*hx*hx*hy*hy*hy*hy)/(16.0*simVars.sim.viscosity_order*simVars.sim.viscosity_order), limit_visc);
-*/
-					// limit by gravitational acceleration
-					double limit_gh = std::min(simVars.disc.cell_size[0], simVars.disc.cell_size[1])/std::sqrt(simVars.sim.g*i_h.reduce_maxAbs());
-
-					if (simVars.misc.verbosity > 2)
-						std::cerr << "limit_speed: " << limit_speed << ", limit_visc: " << limit_visc << ", limit_gh: " << limit_gh << std::endl;
-
-					o_dt = simVars.sim.CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
-				}
-			}
-
 
 			/*
 			 * P UPDATE
@@ -1397,7 +1327,7 @@ public:
 
 		static char title_string[2048];
 		//sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %.14e, Vis: %s, Mass: %.14e, Energy: %.14e, Potential Entrophy: %.14e",
-		sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %.6e, Vis: %s, Mass: %.6e, Energy: %.6e, Potential Enstrophy: %.6e, Max: %f, Min: %f ",
+		sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %.6e, Vis: %s, Mass: %.6e, Energy: %.6e, Potential Enstrophy: %.6e, Max: %.6e, Min: %.6e ",
 				simVars.timecontrol.current_simulation_time,
 				simVars.timecontrol.current_simulation_time/(60.0*60.0*24.0),
 				simVars.timecontrol.current_timestep_nr,
@@ -1540,7 +1470,6 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "	--rexi-half [0/1]	Reduce rexi computations to its half" << std::endl;
 		std::cout << "" << std::endl;
 		std::cout << "	--timestepping-mode [0/1/2]	Timestepping method to use" << std::endl;
-														//PXT Question: what is spectral timestepping??
 		std::cout << "	                            0: Finite-difference / Spectral time stepping" << std::endl;
 		std::cout << "	                            1: REXI" << std::endl;
 		std::cout << "	                            2: Direct solution in spectral space" << std::endl;
@@ -1568,8 +1497,6 @@ int main(int i_argc, char *i_argv[])
 		std::cout << std::endl;
 		return -1;
 	}
-
-
 
 	//Rexi parameters
 	param_rexi_h = simVars.bogus.var[0];
@@ -1672,7 +1599,6 @@ int main(int i_argc, char *i_argv[])
 			{
 				if (simVars.misc.verbosity > 1)
 				{
-					std::cout << "verbosity output " << simVars.misc.verbosity << std::endl;
 					simulationSWE->timestep_output(buf);
 
 					std::string output = buf.str();
@@ -1706,7 +1632,7 @@ int main(int i_argc, char *i_argv[])
 			std::cout << "Last time step size: " << simVars.timecontrol.current_timestep_size << std::endl;
 			std::cout << "REXI alpha.size(): " << simulationSWE->rexiSWE.rexi.alpha.size() << std::endl;
 
-			if (simVars.misc.verbosity > 1)
+			if (simVars.misc.verbosity > 0)
 			{
 				std::cout << "DIAGNOSTICS ENERGY DIFF:\t" << std::abs((simVars.diag.total_energy-diagnostics_energy_start)/diagnostics_energy_start) << std::endl;
 				std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) << std::endl;

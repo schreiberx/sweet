@@ -527,6 +527,7 @@ public:
 						"Misc options",
 						"	-v [int]	verbosity level",
 						"	-V [double]	period of output",
+						"	-G [0/1]	graphical user interface",
 						"	-O [string]	string prefix for filename of output of simulation data",
 						"	-d [int]	accuracy of floating point output",
 						"	-i [file0][;file1][;file3]...	string with filenames for initial conditions",
