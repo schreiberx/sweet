@@ -605,6 +605,7 @@ public:
 				// limit by gravitational acceleration
 				double limit_gh = std::min(simVars.disc.cell_size[0], simVars.disc.cell_size[1])/std::sqrt(simVars.sim.g*i_h.reduce_maxAbs());
 
+				//PXT - What is the difference between cerr and cout?
 				if (simVars.misc.verbosity > 2)
 					std::cerr << "limit_speed: " << limit_speed << ", limit_visc: " << limit_visc << ", limit_gh: " << limit_gh << std::endl;
 
@@ -615,11 +616,9 @@ public:
 		// A- grid method
 		if (!param_use_staggering)
 		{
-			if(param_nonlinear) //nonlinear case
+			if(param_nonlinear){ //nonlinear case
 				std::cout << "Only linear swe are setup for unstaggered grids " << std::endl;
 				exit(1);
-			{
-
 			}
 
 			boundary_action();
@@ -1538,6 +1537,7 @@ int main(int i_argc, char *i_argv[])
 
 					std::cout << output;
 
+					//PXT - Why are there 2 outputs of the same thing? One in cerr and one in cout?
 					if (simVars.misc.verbosity > 2)
 						std::cerr << output;
 				}
