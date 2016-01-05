@@ -47,7 +47,7 @@ public:
 			DataArray<2>* o_pos_departure[2]			///< departure points at time n
 	)
 	{
-		//PXT - help understanding these pointers!!!
+
 		DataArray<2> &vx_n_prev = *i_velocity_field_t_prev[0];
 		DataArray<2> &vy_n_prev = *i_velocity_field_t_prev[1];
 

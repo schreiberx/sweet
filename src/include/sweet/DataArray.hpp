@@ -1603,8 +1603,7 @@ public:
 	}
 
 	/**
-	 * return the maximum of all absolute values, use quad precision for reduction
-	 *  PXT: This is actually giving the sum of the absolute values.
+	 * return the sum of the absolute values.
 	 */
 	double reduce_norm1_quad()	const
 	{

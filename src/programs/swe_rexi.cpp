@@ -415,7 +415,6 @@ public:
 		}
 
 		// Print output info (if gui is disabled, this is done in main
-		// PXT - can't we just put all the output stuff in main here?
 		if (simVars.misc.gui_enabled)
 			timestep_output();
 	}
@@ -605,7 +604,6 @@ public:
 				// limit by gravitational acceleration
 				double limit_gh = std::min(simVars.disc.cell_size[0], simVars.disc.cell_size[1])/std::sqrt(simVars.sim.g*i_h.reduce_maxAbs());
 
-				//PXT - What is the difference between cerr and cout?
 				if (simVars.misc.verbosity > 2)
 					std::cerr << "limit_speed: " << limit_speed << ", limit_visc: " << limit_visc << ", limit_gh: " << limit_gh << std::endl;
 
@@ -1374,8 +1372,7 @@ int main(int i_argc, char *i_argv[])
 	// default values for specific input (for general input see SimulationVariables.hpp)
 	simVars.bogus.var[0] = 0.2;
 	simVars.bogus.var[1] = 256;	// M
-	// PXT - why is the default L=0, shouldn't be 11?
-	simVars.bogus.var[2] = 0;	// L = 0: default
+	simVars.bogus.var[2] = 0;	// L = 0: default - this gives L=11
 	simVars.bogus.var[3] = 1;	// param_rexi_half
 	simVars.bogus.var[4] = 0;	// timestepping mode
 	simVars.bogus.var[5] = 0;	// compute error
@@ -1399,8 +1396,7 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "	--rexi-half [0/1]	Reduce rexi computations to its half" << std::endl;
 		std::cout << "" << std::endl;
 		std::cout << "	--timestepping-mode [0/1/2]	Timestepping method to use" << std::endl;
-		//PXT - what is that you call spectral timestepping?
-		std::cout << "	                            0: Finite-difference / Spectral time stepping" << std::endl;
+		std::cout << "	                            0: RKn with Finite-difference" << std::endl;
 		std::cout << "	                            1: REXI" << std::endl;
 		std::cout << "	                            2: Direct solution in spectral space" << std::endl;
 		std::cout << "" << std::endl;
@@ -1480,7 +1476,6 @@ int main(int i_argc, char *i_argv[])
 	std::cout << "Computing error? " << param_compute_error << std::endl;
 	std::cout << "Verbosity: " << simVars.misc.verbosity << std::endl;
 
-	//PXT - ?
 	SimulationSWE *simulationSWE = new SimulationSWE;
 
 	std::ostringstream buf;
