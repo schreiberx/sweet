@@ -557,7 +557,7 @@ public:
 						"	-n [resx]	resolution in x direction",
 						"	-m [resy]	resolution in y direction",
 						"	-S [0/1]	Control Operator discretization for DataArrays",
-						"               0: FD, 1: spectral derivatives, default:0",
+						"               0: FD, 1: spectral derivatives, default:1",
 						"  >Time:",
 						"	-W [0/1]	use up- and downwinding, default:0",
 						"	-F [0/1]	use leapfrog-like algorithm, default:0",

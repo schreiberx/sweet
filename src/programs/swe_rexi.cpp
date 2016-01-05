@@ -210,7 +210,7 @@ public:
 						prog_h.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
 
 						t0_prog_h.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
-						//PXT - Why if t0 here??? This makes the error calculation wrong for the FD case with C grid
+						//PXT - Why is t0 here??? This makes the error calculation wrong for the FD case with C grid
 						t0_prog_u.set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
 						t0_prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
 					}
