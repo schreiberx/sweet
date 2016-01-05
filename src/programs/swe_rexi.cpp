@@ -1523,11 +1523,13 @@ int main(int i_argc, char *i_argv[])
 #if SWEET_MPI
 			MPI_Barrier(MPI_COMM_WORLD);
 #endif
+			//Start couting time
 			time.reset();
 
-
+			//Main time loop
 			while(true)
 			{
+				//Output data
 				if (simVars.misc.verbosity > 1)
 				{
 					simulationSWE->timestep_output(buf);
@@ -1535,18 +1537,22 @@ int main(int i_argc, char *i_argv[])
 					std::string output = buf.str();
 					buf.str("");
 
+					//This is an output printed on screen or buffered to files if > used
 					std::cout << output;
 
-					//PXT - Why are there 2 outputs of the same thing? One in cerr and one in cout?
+					//This is an output only printed on screen, not buffered to files if > used
 					if (simVars.misc.verbosity > 2)
 						std::cerr << output;
 				}
 
+				//Stop simulation if requested
 				if (simulationSWE->should_quit())
 					break;
 
+				//Main call for timestep run
 				simulationSWE->run_timestep();
 
+				//Instability
 				if (simulationSWE->instability_detected())
 				{
 					std::cout << "INSTABILITY DETECTED" << std::endl;
@@ -1554,15 +1560,18 @@ int main(int i_argc, char *i_argv[])
 				}
 			}
 
+			//Stop couting time
 			time.stop();
 
 			double seconds = time();
 
+			//End of run output results
 			std::cout << "Simulation time (seconds): " << seconds << std::endl;
 			std::cout << "Number of time steps: " << simVars.timecontrol.current_timestep_nr << std::endl;
 			std::cout << "Time per time step: " << seconds/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
 			std::cout << "Last time step size: " << simVars.timecontrol.current_timestep_size << std::endl;
-			std::cout << "REXI alpha.size(): " << simulationSWE->rexiSWE.rexi.alpha.size() << std::endl;
+			if (param_timestepping_mode != 0)
+				std::cout << "REXI alpha.size(): " << simulationSWE->rexiSWE.rexi.alpha.size() << std::endl;
 
 			if (simVars.misc.verbosity > 0)
 			{
