@@ -89,11 +89,25 @@ public:
 		assert(res[0] > 0);
 		assert(scale_factor[0] > 0);
 
+		const std::size_t size = i_pos[0]->resolution[0]*i_pos[0]->resolution[1];
+
 		// iterate over all positions
 #pragma omp parallel for OPENMP_SIMD
-		for (std::size_t pos_idx = 0; pos_idx < i_pos[0]->resolution[0]*i_pos[0]->resolution[1]; pos_idx++)
+		for (std::size_t pos_idx = 0; pos_idx < size; pos_idx++)
 		{
-			// load position to interpolate
+			/*
+			 * load position to interpolate
+			 * i_pos[0] stores all x-coordinates of the arrival points
+			 * i_pos[1] stores all x-coordinates of the arrival points
+			 *
+			 * Both are arrays and matching array indices (pos_idx) below index the coordinates for the same point.
+			 *
+			 * Scale factor (Nx/dx, Ny/dy) maps from the physical space to the array space.
+			 * The array space is from [0; N[
+			 *
+			 * shift_x/y is operating in array space. Hence, staggered grid can be
+			 * implemented by setting this to 0.5 or -0.5
+			 */
 			double pos_x = i_pos[0]->array_data_cartesian_space[pos_idx]*scale_factor[0] + i_shift_x;
 			double pos_y = i_pos[1]->array_data_cartesian_space[pos_idx]*scale_factor[1] + i_shift_y;
 

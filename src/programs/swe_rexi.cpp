@@ -434,6 +434,18 @@ public:
 		double normalization = (simVars.sim.domain_size[0]*simVars.sim.domain_size[1]) /
 								((double)simVars.disc.res[0]*(double)simVars.disc.res[1]);
 
+		//if(param_use_staggering){
+		//	if (simVars.sim.beta != 0)
+		//	{
+		//		q = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + beta_plane) / prog_h;
+		//	}
+		//	else
+		//	{
+		//		q = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + simVars.sim.f0) / prog_h;
+		//	}
+		//}
+
+
 		// mass
 		simVars.diag.total_mass = prog_h.reduce_sum_quad() * normalization;
 
@@ -1096,7 +1108,7 @@ public:
 		}
 
 		//Run exact solution for linear case
-		if(!nonlinear)
+		if(!param_nonlinear)
 			rexiSWE.run_timestep_direct_solution(t_h, t_u, t_v, simVars.timecontrol.current_simulation_time, op, simVars);
 		else
 		{

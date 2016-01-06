@@ -44,9 +44,15 @@ public:
 			DataArray<2>* i_velocity_field_t[2],	///< velocity field at time n
 			DataArray<2>* i_pos_arrival[2],			///< position at time n+1
 			double i_dt,							///< time step size
-			DataArray<2>* o_pos_departure[2]			///< departure points at time n
+			DataArray<2>* o_pos_departure[2],			///< departure points at time n,
+			double *i_staggering = nullptr				///< staggering (ux, uy, vx, vy)
 	)
 	{
+		if (i_staggering == nullptr)
+		{
+			static double constzerostuff[4] = {0,0,0,0};
+			i_staggering = constzerostuff;
+		}
 
 		DataArray<2> &vx_n_prev = *i_velocity_field_t_prev[0];
 		DataArray<2> &vy_n_prev = *i_velocity_field_t_prev[1];
@@ -87,8 +93,8 @@ public:
 		for (; iters < 10; iters++)
 		{
 			// r_d = r_a - dt/2 * v_n(r_d) - v^{iter}(r_d)
-			rx_d_new = rx_a - dt*0.5 * vx_n - sample2D.bilinear_scalar(vx_iter, r_d);
-			ry_d_new = ry_a - dt*0.5 * vy_n - sample2D.bilinear_scalar(vy_iter, r_d);
+			rx_d_new = rx_a - dt*0.5 * vx_n - sample2D.bilinear_scalar(vx_iter, r_d, i_staggering[0], i_staggering[1]);
+			ry_d_new = ry_a - dt*0.5 * vy_n - sample2D.bilinear_scalar(vy_iter, r_d, i_staggering[2], i_staggering[3]);
 
 			double diff = (rx_d_new - rx_d_prev).reduce_maxAbs() + (ry_d_new - ry_d_prev).reduce_maxAbs();
 			rx_d_prev = rx_d_new;
