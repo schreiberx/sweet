@@ -14,17 +14,12 @@ hostname=subprocess.check_output('hostname')
 hostname = hostname.replace("\n", '')
 hostname = hostname.replace("\r", '')
 
-env = Environment()
-
+env = Environment(ENV = os.environ)
 
 ###################################################################
-# fix environment vars (not imported by default)
+# fix LD LIB PATH
 ###################################################################
-
-# import all environment variables (expecially PATH, LD_LIBRARY_PATH, LD_PATH)
-env.Append(ENV=os.environ)
-
-
+env.Append(LIBPATH=[os.environ['LD_LIBRARY_PATH'].split(':')])
 
 files = os.listdir('src/programs/')
 files = sorted(files)
