@@ -1389,14 +1389,14 @@ int main(int i_argc, char *i_argv[])
 	{
 		std::cout << std::endl;
 		std::cout << "Special parameters:" << std::endl;
-		std::cout << "	--rexi-h [h-value]	h-sampling distance for REXI" << std::endl;
+		std::cout << "	--rexi-h [h-value]	h-sampling distance for REXI, default:0.2" << std::endl;
 		std::cout << "" << std::endl;
-		std::cout << "	--rexi-m [m-value]	M-value for REXI (related to number of poles)" << std::endl;
+		std::cout << "	--rexi-m [m-value]	M-value for REXI (related to number of poles), default:256" << std::endl;
 		std::cout << "" << std::endl;
-		std::cout << "	--rexi-half [0/1]	Reduce rexi computations to its half" << std::endl;
+		std::cout << "	--rexi-half [0/1]	Reduce rexi computations to its half, default:1 " << std::endl;
 		std::cout << "" << std::endl;
 		std::cout << "	--timestepping-mode [0/1/2]	Timestepping method to use" << std::endl;
-		std::cout << "	                            0: RKn with Finite-difference" << std::endl;
+		std::cout << "	                            0: RKn with Finite-difference (default)" << std::endl;
 		std::cout << "	                            1: REXI" << std::endl;
 		std::cout << "	                            2: Direct solution in spectral space" << std::endl;
 		std::cout << "" << std::endl;
@@ -1407,6 +1407,7 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "	--use-specdiff-for-complex-array=[0/1]	Controls the discretization of the derivative operations for Complex2DArrays:" << std::endl;
 		std::cout << "                                      0: Finite-difference derivatives" << std::endl;
 		std::cout << "                                      1: Spectral derivatives (default)" << std::endl;
+		std::cout << std::endl;
 		std::cout << "	--rexi-helmholtz-solver-id=[int]	Use iterative solver for REXI" << std::endl;
 		std::cout << "	--rexi-helmholtz-solver-eps=[err]	Error threshold for iterative solver" << std::endl;
 		std::cout << std::endl;
@@ -1416,7 +1417,7 @@ int main(int i_argc, char *i_argv[])
 		std::cout << std::endl;
 		std::cout << "	--rexi-zero-before-solving=[0/1]	Zero the solution for the iterative solver" << std::endl;
 		std::cout << std::endl;
-		std::cout << "	--nonlinear=[0/1]	   0-use linear equations, 1-use nonlinear eq" << std::endl;
+		std::cout << "	--nonlinear=[0/1]	   0-use linear equations (default), 1-use nonlinear eq" << std::endl;
 		std::cout << std::endl;
 		return -1;
 	}
@@ -1507,7 +1508,7 @@ int main(int i_argc, char *i_argv[])
 			double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
 
 			// Initialize diagnostics
-			if (simVars.misc.verbosity > 1)
+			if (simVars.misc.verbosity > 0)
 			{
 				simulationSWE->update_diagnostics();
 				diagnostics_energy_start = simVars.diag.total_energy;
