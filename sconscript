@@ -18,9 +18,9 @@ if env['program_name'] in ['swe_rexi_nonlinear', 'swe_rexi'] or env['unit_test']
 	if env['rexi_thread_parallel_sum']=='enable':
 		env_omp = env.Clone()
 #		env_omp.Append(CCFLAGS = ' -fopenmp')
-		env.src_files.append(env_omp.Object('src/programs/rexi/RexiSWE.cpp'))
+		env.src_files.append(env_omp.Object('src/programs/rexiswe/RexiSWE.cpp'))
 	else:
-		env.src_files.append(env.Object('src/programs/rexi/RexiSWE.cpp'))
+		env.src_files.append(env.Object('src/programs/rexiswe/RexiSWE.cpp'))
 
 
 Export('env')

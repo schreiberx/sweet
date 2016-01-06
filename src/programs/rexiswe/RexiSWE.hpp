@@ -14,7 +14,8 @@
 #include <sweet/Operators2D.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/Complex2DArrayFFT.hpp>
-#include "RexiSWE_HelmholtzSolver.hpp"
+
+#include "../rexiswe/RexiSWE_HelmholtzSolver.hpp"
 
 
 #if SWEET_MPI
