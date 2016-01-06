@@ -181,7 +181,7 @@ public:
 			double x = pos_x - floor(pos_x);
 			double y = pos_y - floor(pos_y);
 
-			// precompute x-position indices since they are reused 4 times
+			// precompute x-position indices since they are reused 2 times
 			int idx_i[2];
 			{
 				int i = (int)pos_x;

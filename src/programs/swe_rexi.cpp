@@ -208,11 +208,11 @@ public:
 						double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
 
 						prog_h.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
-
 						t0_prog_h.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
+
 						//PXT - Why is t0 here??? This makes the error calculation wrong for the FD case with C grid
-						t0_prog_u.set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
-						t0_prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
+						//t0_prog_u.set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
+						//t0_prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
 					}
 
 					{
@@ -221,6 +221,7 @@ public:
 						double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
 
 						prog_u.set(j,i, SWEValidationBenchmarks::return_u(simVars, x, y));
+						t0_prog_u.set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
 					}
 
 					{
@@ -229,6 +230,7 @@ public:
 						double y = (((double)j)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
 
 						prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
+						t0_prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
 					}
 				}
 				else // A-Grid (colocated grid)
@@ -1087,7 +1089,24 @@ public:
 		DataArray<2> t_u = t0_prog_u;
 		DataArray<2> t_v = t0_prog_v;
 
-		rexiSWE.run_timestep_direct_solution(t_h, t_u, t_v, simVars.timecontrol.current_simulation_time, op, simVars);
+		//The direct spectral solution can only be calculated for A grid
+		if (param_use_staggering)
+		{
+			//remap initial condition to A grid - TODO
+		}
+
+		//Run exact solution for linear case
+		if(!nonlinear)
+			rexiSWE.run_timestep_direct_solution(t_h, t_u, t_v, simVars.timecontrol.current_simulation_time, op, simVars);
+		else
+		{
+			std::cout << "Warning: Exact solution not possible in general for nonlinear swe. Using exact solution for linear case instead." << std::endl;
+		}
+
+		if (param_use_staggering)
+		{
+			//remap exact solution to C grid - TODO
+		}
 
 		benchmark_analytical_error_rms_h = (t_h-prog_h).reduce_rms_quad();
 		if (!param_use_staggering)
@@ -1519,7 +1538,7 @@ int main(int i_argc, char *i_argv[])
 #if SWEET_MPI
 			MPI_Barrier(MPI_COMM_WORLD);
 #endif
-			//Start couting time
+			//Start counting time
 			time.reset();
 
 			//Main time loop
@@ -1556,7 +1575,7 @@ int main(int i_argc, char *i_argv[])
 				}
 			}
 
-			//Stop couting time
+			//Stop counting time
 			time.stop();
 
 			double seconds = time();

@@ -137,6 +137,7 @@ public:
 
 		sampler2D.setup(simVars.sim.domain_size, simVars.disc.res);
 
+		//PXT- This just calls sampler2D.setup, so any reason for having it?
 		semiLagrangian.setup(simVars.sim.domain_size, simVars.disc.res);
 	}
 
