@@ -17,7 +17,7 @@
 #include <sstream>
 #include <unistd.h>
 #include <stdio.h>
-#include "rexi/RexiSWE.hpp"
+#include "rexiswe/RexiSWE.hpp"
 
 #ifndef SWEET_MPI
 #	define SWEET_MPI 1
