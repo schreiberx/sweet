@@ -21,6 +21,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <string.h>
 #include <sweet/openmp_helper.hpp>
 #include <sweet/NUMABlockAlloc.hpp>
 

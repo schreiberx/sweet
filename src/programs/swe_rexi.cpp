@@ -1149,7 +1149,7 @@ public:
 		}
 
 		//std::cout << std::endl;
-		//std::cout << t_v << std::endl;
+		std::cout << t0_u << std::endl;
 
 		//The direct spectral solution can only be calculated for A grid
 		if (param_use_staggering)
@@ -1158,9 +1158,9 @@ public:
 			//remap initial condition to A grid
 			sampler2D.remap_gridC2A(t0_u, t0_v, t_u, t_v, 0);
 		}
-		//std::cout << std::endl;
-		//std::cout << t_h << std::endl;
-
+		std::cout << std::endl;
+		std::cout << t_u << std::endl;
+		exit(-1);
 		//Run exact solution for linear case
 		rexiSWE.run_timestep_direct_solution(t_h, t_u, t_v, simVars.timecontrol.current_simulation_time, op, simVars);
 
