@@ -231,7 +231,8 @@ env['unit_test'] = GetOption('unit_test')
 threading_constraints = ['off', 'omp']
 AddOption(	'--threading',
 		dest='threading',
-		type='string',	
+		type='choice',
+		choices=threading_constraints,
 		default='off',
 		help='Threading to use '+' / '.join(threading_constraints)+', default: off'
 )
