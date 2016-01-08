@@ -78,9 +78,67 @@ public:
 
 
 public:
+	void remap_gridC2A(
+			DataArray<2> &i_u,				///< u data in C-grid
+			DataArray<2> &i_v,				///< v data in C-grid
+			//DataArray<2>* i_pos[2],	            ///< sampling position
+			DataArray<2> &o_u,				///< u data in A-grid
+			DataArray<2> &o_v,				///< v data in A-grid
+			int i_method=0
+	)
+	{
+		// position of A grid points (h)
+		DataArray<2> pos_x(i_u.resolution);
+		DataArray<2> pos_y(i_u.resolution);
+		//DataArray<2>* pos[2] = {&posx, &posy};
+		//pos[0] = &posx;
+		//pos[1] = &posy;
+
+		//Initialise output
+		o_u=i_u;
+		o_v=i_v;
+
+		assert(res[0] > 0);
+		assert(scale_factor[0] > 0);
+
+		/* std::cout<< "test " << res[0] << scale_factor[0] <<std::endl;
+		* std::cout<< i_u <<std::endl;
+		* std::cout<<std::endl;
+		* std::cout<< i_v <<std::endl;
+		* std::cout<<std::endl;
+		*/
+		for (int j = 0; j < res[1]; j++)
+		{
+			for (int i = 0; i < res[0]; i++)
+			{
+		    	// h position - A grid
+				pos_x.set(j, i, ((double)i+0.5)/scale_factor[0]); //*simVars.sim.domain_size[0];
+				pos_y.set(j, i, ((double)j+0.5)/scale_factor[1]); //*simVars.sim.domain_size[1];
+				//std::cout<< "i " << i << " j " << j << " x " << x <<" y "<< y <<std::endl;
+			}
+		}
+
+
+		if(i_method>0){
+			//Do bicubic interpolation
+			bicubic_scalar(i_u, pos_x, pos_y, o_u, 0.0, -0.5);
+			bicubic_scalar(i_v, pos_x, pos_y, o_v, -0.5, 0.0);
+		}
+		else{
+			bilinear_scalar(i_u, pos_x, pos_y, o_u, 0.0, -0.5);
+			bilinear_scalar(i_v, pos_x, pos_y, o_v, -0.5, 0.0);
+		}
+
+		//std::cout<< o_u <<std::endl;
+		//std::cout<< o_v <<std::endl;
+	}
+
+public:
 	void bicubic_scalar(
 			DataArray<2> &i_data,				///< sampling data
-			DataArray<2>* i_pos[2],	            ///< sampling position
+			DataArray<2> &i_pos_x,				///< x positions of interpolation points
+			DataArray<2> &i_pos_y,				///< y positions of interpolation points
+			//DataArray<2>* i_pos[2],	            ///< sampling position
 			DataArray<2> &o_data,				///< output values
 			double i_shift_x = 0.0,            ///< shift in x for staggered grids
 			double i_shift_y = 0.0				///< shift in y for staggered grids
@@ -89,7 +147,7 @@ public:
 		assert(res[0] > 0);
 		assert(scale_factor[0] > 0);
 
-		const std::size_t size = i_pos[0]->resolution[0]*i_pos[0]->resolution[1];
+		const std::size_t size = i_pos_x.resolution[0]*i_pos_x.resolution[1];
 
 		// iterate over all positions
 #pragma omp parallel for OPENMP_SIMD
@@ -97,8 +155,8 @@ public:
 		{
 			/*
 			 * load position to interpolate
-			 * i_pos[0] stores all x-coordinates of the arrival points
-			 * i_pos[1] stores all x-coordinates of the arrival points
+			 * posx stores all x-coordinates of the arrival points
+			 * posy stores all y-coordinates of the arrival points
 			 *
 			 * Both are arrays and matching array indices (pos_idx) below index the coordinates for the same point.
 			 *
@@ -107,9 +165,15 @@ public:
 			 *
 			 * shift_x/y is operating in array space. Hence, staggered grid can be
 			 * implemented by setting this to 0.5 or -0.5
+			 * for C grid, to interpolate given u data, use i_shift_x = 0.0,  i_shift_y = -0.5
+			 *             to interpolate given v data, use i_shift_y = -0.5, i_shift_y = 0.0
+			 *  pay attention to the negative shift, which is necessary because the staggered grids are positively shifted
+			 *  and this shift has to be removed for the interpolation
 			 */
-			double pos_x = i_pos[0]->array_data_cartesian_space[pos_idx]*scale_factor[0] + i_shift_x;
-			double pos_y = i_pos[1]->array_data_cartesian_space[pos_idx]*scale_factor[1] + i_shift_y;
+			//double pos_x = i_pos[0]->array_data_cartesian_space[pos_idx]*scale_factor[0] + i_shift_x;
+			//double pos_y = i_pos[1]->array_data_cartesian_space[pos_idx]*scale_factor[1] + i_shift_y;
+			double pos_x = wrapPeriodic(i_pos_x.array_data_cartesian_space[pos_idx]*scale_factor[0] + i_shift_x, (double)res[0]);
+			double pos_y = wrapPeriodic(i_pos_y.array_data_cartesian_space[pos_idx]*scale_factor[1] + i_shift_y, (double)res[0]);
 
 			/**
 			 * For the interpolation, we assume node-aligned values
@@ -170,23 +234,34 @@ public:
 	}
 
 
-
 public:
 	void bilinear_scalar(
 			DataArray<2> &i_data,				///< sampling data
-			DataArray<2>* i_pos[2],	///< sampling position
+			DataArray<2> &i_pos_x,				///< x positions of interpolation points
+			DataArray<2> &i_pos_y,				///< y positions of interpolation points
+			//DataArray<2>* i_pos[2],	///< sampling position
 			DataArray<2> &o_data,				///< output values
 			double i_shift_x = 0.0,
 			double i_shift_y = 0.0
 	)
 	{
+		/* SHIFT - important
+		 * for C grid, to interpolate given u data, use i_shift_x = 0.0,  i_shift_y = -0.5
+		 *             to interpolate given v data, use i_shift_y = -0.5, i_shift_y = 0.0
+		 *  pay attention to the negative shift, which is necessary because the staggered grids are positively shifted
+		 *  and this shift has to be removed for the interpolation
+		 */
+
+
+		const std::size_t size = i_pos_x.resolution[0]*i_pos_x.resolution[1];
+
 		// iterate over all positions
 #pragma omp parallel for OPENMP_SIMD
-		for (std::size_t pos_idx = 0; pos_idx < i_pos[0]->resolution[0]*i_pos[0]->resolution[1]; pos_idx++)
+		for (std::size_t pos_idx = 0; pos_idx < size; pos_idx++)
 		{
 			// load position to interpolate
-			double pos_x = wrapPeriodic(i_pos[0]->array_data_cartesian_space[pos_idx]*scale_factor[0] + i_shift_x, (double)res[0]);
-			double pos_y = wrapPeriodic(i_pos[1]->array_data_cartesian_space[pos_idx]*scale_factor[1] + i_shift_y, (double)res[0]);
+			double pos_x = wrapPeriodic(i_pos_x.array_data_cartesian_space[pos_idx]*scale_factor[0] + i_shift_x, (double)res[0]);
+			double pos_y = wrapPeriodic(i_pos_y.array_data_cartesian_space[pos_idx]*scale_factor[1] + i_shift_y, (double)res[0]);
 
 			/**
 			 * See http://www.paulinternet.nl/?page=bicubic
@@ -221,6 +296,7 @@ public:
 				q[kj] = p[0] + x*(p[1]-p[0]);
 
 				idx_j = wrapPeriodic(idx_j+1, res[1]);
+				//std::cout<< p[0] << p[1] << x << std::endl;
 			}
 
 			double value = q[0] + y*(q[1]-q[0]);
@@ -233,13 +309,15 @@ public:
 public:
 	const DataArray<2> bilinear_scalar(
 			DataArray<2> &i_data,				///< sampling data
-			DataArray<2>* i_pos[2],	///< sampling position
+			DataArray<2> &i_pos_x,				///< x positions of interpolation points
+			DataArray<2> &i_pos_y,				///< y positions of interpolation points
+			//DataArray<2>* i_pos[2],	///< sampling position
 			double i_shift_x = 0.0,
 			double i_shift_y = 0.0
 	)
 	{
 		DataArray<2> out(i_data.resolution);
-		bilinear_scalar(i_data, i_pos, out, i_shift_x, i_shift_y);
+		bilinear_scalar(i_data, i_pos_x, i_pos_y, out, i_shift_x, i_shift_y);
 		return out;
 	}
 

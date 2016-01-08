@@ -188,7 +188,8 @@ public:
 		DataArray<2> new_prog_h(prog_h.resolution);
 		sampler2D.bicubic_scalar(
 				prog_h,
-				pos_d,
+				posx_d,
+				posy_d,
 				new_prog_h
 		);
 

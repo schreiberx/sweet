@@ -65,9 +65,9 @@ int main(int i_argc, char *i_argv[])
 		}
 
 
-		double pedro_resolution_factor = 2;
+		double resolution_factor = 2;
 
-		std::size_t res3[2] = {res_x*(int)pedro_resolution_factor, res_y*(int)pedro_resolution_factor};
+		std::size_t res3[2] = {res_x*(int)resolution_factor, res_y*(int)resolution_factor};
 
 		DataArray<2> prog_h3(res3);
 
@@ -80,8 +80,8 @@ int main(int i_argc, char *i_argv[])
 			{
 				for (std::size_t i = 0; i < res3[0]; i++)
 				{
-					double x = ((double)i/pedro_resolution_factor)*(simVars.sim.domain_size[0]/(double)res3[0]);
-					double y = ((double)j/pedro_resolution_factor)*(simVars.sim.domain_size[1]/(double)res3[1]);
+					double x = ((double)i/resolution_factor)*(simVars.sim.domain_size[0]/(double)res3[0]);
+					double y = ((double)j/resolution_factor)*(simVars.sim.domain_size[1]/(double)res3[1]);
 
 					prog_h3.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
 				}
@@ -103,12 +103,11 @@ int main(int i_argc, char *i_argv[])
 		{
 			for (std::size_t i = 0; i < res3[0]; i++)
 			{
-				px.set(j, i, ((double)i/pedro_resolution_factor)*(simVars.sim.domain_size[0]/(double)res3[0]));
-				py.set(j, i, ((double)j/pedro_resolution_factor)*(simVars.sim.domain_size[1]/(double)res3[1]));
+				px.set(j, i, ((double)i/resolution_factor)*(simVars.sim.domain_size[0]/(double)res3[0]));
+				py.set(j, i, ((double)j/resolution_factor)*(simVars.sim.domain_size[1]/(double)res3[1]));
 			}
 		}
 
-		DataArray<2> *p3[2] = {&px, &py};
 
 		/*
 		 * setup sampler
@@ -125,7 +124,7 @@ int main(int i_argc, char *i_argv[])
 
 			sampler2D.bilinear_scalar(
 					prog_h,	///< input scalar field
-					p3,		///< sampling positions
+					px, py,		///< sampling positions
 					prog_h3_bilinear	///< output field
 			);
 
@@ -166,7 +165,7 @@ int main(int i_argc, char *i_argv[])
 
 			sampler2D.bicubic_scalar(
 					prog_h,	///< input scalar field
-					p3,		///< sampling positions
+					px, py,		///< sampling positions
 					prog_h3_bicubic	///< output field
 			);
 
@@ -187,7 +186,7 @@ int main(int i_argc, char *i_argv[])
 				)
 				{
 					std::cout << "Bicubic: " << res_x << "x" << res_y << "\t" << error_rms << "\t" << error_max << "\t" << rate_rms << "\t" << rate_max << std::endl;
-					std::cerr << "Convergence of 8 expected" << std::endl;
+					std::cerr << "Convergence of 8 expected for bicubic " << std::endl;
 					exit(1);
 				}
 			}

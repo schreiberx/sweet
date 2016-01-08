@@ -1,5 +1,7 @@
 /*
 * SWM with nonlinear part using REXI test
+*
+*
 */
 #include <sweet/DataArray.hpp>
 #if SWEET_GUI
@@ -58,10 +60,11 @@ public:
 	// Diagnostics - Vorticity and potential vorticity
 	DataArray<2> eta, q;
 
-	// temporary variables;
-	DataArray<2> tmp;
-	DataArray<2> h_t;
-	DataArray<2> tmp0, tmp1, tmp2, tmp3;
+	//visualization variable
+	DataArray<2> vis;
+
+	// temporary variables - may be overwritten, use locally
+	DataArray<2> tmp, tmp0, tmp1, tmp2, tmp3;
 
 	// Variables to keep track of boundary
 	DataArray<2> boundary_mask;
@@ -73,6 +76,15 @@ public:
 	// Arrival points for semi-lag
 	DataArray<2> posx_a, posy_a;
 	DataArray<2> *pos_a[2];
+
+	//Staggering displacement array (use 0.5 for each displacement)
+	// [0] - delta x of u variable
+	// [1] - delta y of u variable
+	// [2] - delta x of v variable
+	// [3] - delta y of v variable
+	// For C grid use {-0.5,0,0,-0.5}
+	// Default - A grid (zeros)
+	double stag_displacement[4] = {0,0,0,0};
 
 	// Diagnostics measures
 	int last_timestep_nr_update_diagnostics = -1;
@@ -121,8 +133,10 @@ public:
 
 		eta(simVars.disc.res),
 		q(simVars.disc.res),
-		tmp(simVars.disc.res),
 
+		vis(simVars.disc.res),
+
+		tmp(simVars.disc.res),
 		tmp0(simVars.disc.res),
 		tmp1(simVars.disc.res),
 		tmp2(simVars.disc.res),
@@ -138,7 +152,7 @@ public:
 		posx_a(simVars.disc.res),
 		posy_a(simVars.disc.res),
 
-		h_t(simVars.disc.res),
+		//h_t(simVars.disc.res),
 
 		// Initialises operators
 		op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
@@ -182,6 +196,8 @@ public:
 		prog_v.set_all(0);
 		boundary_mask.set_all(0);
 
+		sampler2D.setup(simVars.sim.domain_size, simVars.disc.res);
+
 		//Check if input parameters are adequate for this simulation
 		if (param_use_staggering && simVars.disc.use_spectral_basis_diffs)
 		{
@@ -194,6 +210,27 @@ public:
 			std::cerr << "Staggering only supported for standard time stepping mode 0!" << std::endl;
 			exit(1);
 		}
+
+		if (param_use_staggering)
+		{
+			/*
+			 *              ^
+			 *              |
+			 *       ______v0,1_____
+			 *       |             |
+			 *       |			   |
+			 *       |             |
+			 *  u0,0 |->  H/P0,0   |u1,0 ->
+			 *(0,0.5)|			   |
+			 *       |      ^      |
+			 *   q0,0|______|______|
+			 * (0,0)      v0,0
+			 *           (0.5,0)
+			 *
+			 *                            udx  udy  vdx   vdy   */
+			double stag_displacement[4] = {0.0, 0.5, 0.5, 0.0};
+		}
+
 
 		// Set initial conditions given from SWEValidationBenchmarks
 		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
@@ -450,11 +487,11 @@ public:
 		simVars.diag.total_mass = prog_h.reduce_sum_quad() * normalization;
 
 		// energy
-		simVars.diag.total_energy = 0.5*(
+		simVars.diag.total_energy = 0.5*((
 				prog_h*prog_h +
 				prog_h*prog_u*prog_u +
 				prog_h*prog_v*prog_v
-			).reduce_sum_quad() * normalization;
+			).reduce_sum_quad()) * normalization;
 
 		// potential enstropy
 		eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + simVars.sim.f0) / prog_h;
@@ -723,25 +760,25 @@ public:
 
 			DataArray<2>& U = tmp0;
 			DataArray<2>& V = tmp1;
-			DataArray<2>& q = tmp2;
-			DataArray<2>& H = tmp3;
+			DataArray<2>& H = tmp2;
 
 			/* Sadourny energy conserving scheme
 			 *
 			 * Note, that this grid does not follow the formulation
 			 * in the paper of Robert Sadourny, but looks as follows:
 			 *
-			 *             ^
-			 *             |
-			 *       ____v0,1_____
-			 *       |           |
-			 *       |           |
-			 * <- u0,0  H/P0,0   u1,0 ->
-			 *       |           |
-			 *   q0,0|___________|
-			 *           v0,0
-			 *             |
-			 *             V
+			 *              ^
+			 *              |
+			 *       ______v0,1_____
+			 *       |             |
+			 *       |			   |
+			 *       |             |
+			 *  u0,0 |->  H/P0,0   |u1,0 ->
+			 *(0,0.5)|			   |
+			 *       |      ^      |
+			 *   q0,0|______|______|
+			 * (0,0)      v0,0
+			 *           (0.5,0)
 			 *
 			 * V_t + q N x (P V) + grad( g P + 1/2 V*V) = 0
 			 * P_t + div(P V) = 0
@@ -1097,23 +1134,36 @@ public:
 public:
 	void compute_errors()
 	{
-		DataArray<2> t_h = t0_prog_h;
-		DataArray<2> t_u = t0_prog_u;
-		DataArray<2> t_v = t0_prog_v;
+		// Initial conditions (may be in a stag grid)
+		DataArray<2> t0_h = t0_prog_h;
+		DataArray<2> t0_u = t0_prog_u;
+		DataArray<2> t0_v = t0_prog_v;
+		//Variables for remapping t0/from staggered grid
+		DataArray<2> t_h(simVars.disc.res);
+		DataArray<2> t_u(simVars.disc.res);
+		DataArray<2> t_v(simVars.disc.res);
+
+		if(param_nonlinear)
+		{
+			std::cout << "Warning: Exact solution not possible in general for nonlinear swe. Using exact solution for linear case instead." << std::endl;
+		}
+
+		//std::cout << std::endl;
+		//std::cout << t_v << std::endl;
 
 		//The direct spectral solution can only be calculated for A grid
 		if (param_use_staggering)
 		{
-			//remap initial condition to A grid - TODO
+			std::cout << "Warning: Staggered data being interpolated to A-grid for exact linear solution" << std::endl;
+			//remap initial condition to A grid
+			sampler2D.remap_gridC2A(t0_u, t0_v, t_u, t_v, 0);
 		}
+		//std::cout << std::endl;
+		//std::cout << t_h << std::endl;
 
 		//Run exact solution for linear case
-		if(!param_nonlinear)
-			rexiSWE.run_timestep_direct_solution(t_h, t_u, t_v, simVars.timecontrol.current_simulation_time, op, simVars);
-		else
-		{
-			std::cout << "Warning: Exact solution not possible in general for nonlinear swe. Using exact solution for linear case instead." << std::endl;
-		}
+		rexiSWE.run_timestep_direct_solution(t_h, t_u, t_v, simVars.timecontrol.current_simulation_time, op, simVars);
+
 
 		if (param_use_staggering)
 		{
@@ -1189,6 +1239,7 @@ public:
 	{
 		if (simVars.misc.vis_id < 0)
 		{
+			//PXT - Why do this and not simply use t0_prog?
 			DataArray<2> t_h = t0_prog_h;
 			DataArray<2> t_u = t0_prog_u;
 			DataArray<2> t_v = t0_prog_v;
@@ -1203,57 +1254,23 @@ public:
 			switch(simVars.misc.vis_id)
 			{
 			case -1:
-				tmp = t_h;
+				vis = t_h;			//Exact solution
 				break;
 
 			case -2:
-				tmp = t_h-prog_h;	// difference
+				vis = t_h-prog_h;	// difference
 				break;
 			}
 
-			*o_dataArray = &tmp;
+			*o_dataArray = &vis;
 			*o_aspect_ratio = simVars.sim.domain_size[1] / simVars.sim.domain_size[0];
 			return;
 		}
 
-#if 1
 		int id = simVars.misc.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
 		*o_dataArray = vis_arrays[id].data;
-		tmp=**o_dataArray;
+		vis=**o_dataArray;
 		*o_aspect_ratio = simVars.sim.domain_size[1] / simVars.sim.domain_size[0];
-#else
-		DataArray<2> t_h = t0_prog_h;
-		DataArray<2> t_u = t0_prog_u;
-		DataArray<2> t_v = t0_prog_v;
-
-		rexiSWE.run_timestep_direct_solution(t_h, t_u, t_v, simVars.timecontrol.current_simulation_time, op, simVars);
-
-		switch(simVars.misc.vis_id)
-		{
-		case 0:
-			tmp = prog_h;
-			break;
-		case 1:
-			tmp = t_h;
-			break;
-		case 2:
-			tmp = prog_u;
-			break;
-		case 3:
-			tmp = t_u;
-			break;
-		case 4:
-			tmp = prog_v;
-			break;
-		case 5:
-			tmp = t_v;
-			break;
-		}
-
-
-		*o_dataArray = &tmp;
-		*o_aspect_ratio = simVars.sim.domain_size[1] / simVars.sim.domain_size[0];
-#endif
 	}
 
 
@@ -1298,8 +1315,8 @@ public:
 				simVars.diag.total_mass,
 				simVars.diag.total_energy,
 				simVars.diag.total_potential_enstrophy,
-				tmp.reduce_max(),
-				tmp.reduce_min() );
+				vis.reduce_max(),
+				vis.reduce_min() );
 
 		return title_string;
 	}
