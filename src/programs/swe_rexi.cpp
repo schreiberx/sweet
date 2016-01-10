@@ -918,17 +918,6 @@ public:
 		}
 	}
 
-	/* Wrapper to calculate initial conditions */
-	void initial_conditions(
-			DataArray<2> &io_h,
-			DataArray<2> &io_u,
-			DataArray<2> &io_v
-	)
-	{
-
-
-	}
-
 
 	/**
 	 * wrapper to unify interfaces for REXI and analytical solution for L operator
