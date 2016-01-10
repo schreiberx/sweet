@@ -74,12 +74,16 @@ public:
 	// Initial values for comparison with analytical solution
 	DataArray<2> t0_prog_h, t0_prog_u, t0_prog_v;
 
-	// Arrival points for semi-lag
-	DataArray<2> posx_a, posy_a;
-
 	// Points mapping [0,simVars.sim.domain_size[0])x[0,simVars.sim.domain_size[1])
 	// with resolution simVars.sim.resolution
 	DataArray<2> pos_x, pos_y;
+
+	// Arrival points for semi-lag
+	DataArray<2> posx_a, posy_a;
+
+	// Departure points for semi-lag
+	DataArray<2> posx_d, posy_d;
+
 
 	//Staggering displacement array (use 0.5 for each displacement)
 	// [0] - delta x of u variable
@@ -153,11 +157,15 @@ public:
 		t0_prog_u(simVars.disc.res),
 		t0_prog_v(simVars.disc.res),
 
+		pos_x(simVars.disc.res),
+		pos_y(simVars.disc.res),
+
+		//PXT - this is only required for semi-lag part - add if?
 		posx_a(simVars.disc.res),
 		posy_a(simVars.disc.res),
 
-		pos_x(simVars.disc.res),
-		pos_y(simVars.disc.res),
+		posx_d(simVars.disc.res),
+		posy_d(simVars.disc.res),
 
 		//h_t(simVars.disc.res),
 
@@ -210,9 +218,9 @@ public:
 			exit(1);
 		}
 
-		if (param_use_staggering && param_timestepping_mode != 0)
+		if (param_use_staggering && ( param_timestepping_mode != 0 && param_timestepping_mode != 4 ) )
 		{
-			std::cerr << "Staggering only supported for standard time stepping mode 0!" << std::endl;
+			std::cerr << "Staggering only supported for standard time stepping mode 0 and 4!" << std::endl;
 			exit(1);
 		}
 		if (param_use_staggering && param_compute_error)
@@ -238,11 +246,17 @@ public:
 			 *           (0.5,0)
 			 *
 			 *                             udx  udy  vdx   vdy   */
-			double stag_displacement[4] = {0.0, 0.5, 0.5, 0.0};
+			stag_displacement[0] = 0.0; // u_dx
+			stag_displacement[1] = 0.5; // u_dy
+			stag_displacement[2] = 0.5; // v_dx
+			stag_displacement[3] = 0.0; // v_dy
 		}
 
 		//Setup sampler for future interpolations
 		sampler2D.setup(simVars.sim.domain_size, simVars.disc.res);
+
+		//PXT- This just calls sampler2D.setup, so any reason for having it? Copied from SL prog
+		semiLagrangian.setup(simVars.sim.domain_size, simVars.disc.res);
 
 		//Setup general (x,y) grid with position points
 		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
@@ -437,7 +451,7 @@ public:
 
 
 		// Print info for REXI and setup REXI
-		if (param_timestepping_mode == 1 || param_timestepping_mode == 3)
+		if (param_timestepping_mode == 1) // This is not necessary: || param_timestepping_mode == 3)
 		{
 			if (simVars.misc.verbosity > 0)
 			{
@@ -923,7 +937,7 @@ public:
 	 * wrapper to unify interfaces for REXI and analytical solution for L operator
 	 */
 	void rexi_run_timestep_wrapper(
-			//PXT - these variables are of not use, correct? Using global stuff
+	   //PXT - these variables are of not use, correct? Using global stuff
 		DataArray<2> &io_h,
 		DataArray<2> &io_u,
 		DataArray<2> &io_v,
@@ -1034,9 +1048,9 @@ public:
 			);
 		}
 		else if (param_timestepping_mode == 3)
-		{
+		{   // PXT - Implicit time step ?? Check...
 			assert(simVars.sim.CFL < 0);
-			// Analytical solution
+
 			o_dt = -simVars.sim.CFL;
 			rexiSWE.run_timestep_implicit_ts(
 					prog_h, prog_u, prog_v,
@@ -1045,7 +1059,36 @@ public:
 					simVars
 			);
 		}
+		else if (param_timestepping_mode == 4)
+		{ // Semi-Lagrangian with FD in space
+			o_dt = -simVars.sim.CFL;
+			prog_u=1;
+			prog_v=0;
+			semiLagrangian.semi_lag_departure_points_settls(
+							prog_u_prev,
+							prog_v_prev,
+							prog_u,
+							prog_v,
+							posx_a,
+							posy_a,
+							o_dt,
+							posx_d,
+							posy_d,
+							stag_displacement
+					);
+			prog_u_prev = prog_u;
+			prog_v_prev = prog_v;
 
+			DataArray<2> new_prog_h(prog_h.resolution);
+			sampler2D.bicubic_scalar(
+					prog_h,
+					posx_d,
+					posy_d,
+					new_prog_h
+			);
+
+			prog_h = new_prog_h;
+		}
 		else
 		{
 			std::cerr << "Invalid time stepping method" << std::endl;
@@ -1492,10 +1535,12 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "" << std::endl;
 		std::cout << "	--rexi-half [0/1]	Reduce rexi computations to its half, default:1 " << std::endl;
 		std::cout << "" << std::endl;
-		std::cout << "	--timestepping-mode [0/1/2]	Timestepping method to use" << std::endl;
+		std::cout << "	--timestepping-mode [0/1/2/3]	Timestepping method to use" << std::endl;
 		std::cout << "	                            0: RKn with Finite-difference (default)" << std::endl;
 		std::cout << "	                            1: REXI" << std::endl;
 		std::cout << "	                            2: Direct solution in spectral space" << std::endl;
+		std::cout << "	                            3: Implicit Finite-difference (needs checking)" << std::endl;
+		std::cout << "	                            4: Semi-Lagrangian with Finite-difference" << std::endl;
 		std::cout << "" << std::endl;
 		std::cout << "	--compute-error [0/1]	Compute the errors" << std::endl;
 		std::cout << "" << std::endl;
@@ -1566,6 +1611,8 @@ int main(int i_argc, char *i_argv[])
 				std::cout << " 2: Direct solution in spectral space" << std::endl; break;
 		case 3:
 				std::cout << " 3: Implicit method - needs checking!" << std::endl; break;
+		case 4:
+				std::cout << " 4: Semi-Lag with FD - needs checking!" << std::endl; break;
 		default:
 			std::cerr << "Timestepping unknowkn" << std::endl;
 			return -1;

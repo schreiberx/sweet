@@ -83,7 +83,7 @@ public:
 		DataArray<2> rx_d_prev = rx_a;
 		DataArray<2> ry_d_prev = rx_a;
 
-		DataArray<2>* r_d[2] = {&rx_d, &ry_d};
+		//DataArray<2>* r_d[2] = {&rx_d, &ry_d};
 
 		// initialize departure points with arrival points
 		rx_d = rx_a;
@@ -111,6 +111,86 @@ public:
 //			std::cout << iters << ": " << diff << std::endl;
 		}
 //		std::cout << iters << std::endl;
+	}
+
+	/**
+	 * Stable extrapolation Two-Time-Level Scheme, Mariano Hortal,
+	 *     Development and testing of a new two-time-level semi-lagrangian scheme (settls) in the ECMWF forecast model.
+	 * Quaterly Journal of the Royal Meterological Society
+	 *
+	 * r_d = r_a - dt/2 * (2 * v_n(r_d) - v_{n-1}(r_d) + v_n(r_a))
+	 *
+	 * v^{iter} := (dt*v_n - dt*0.5*v_{n-1})
+	 * r_d = r_a - dt/2 * v_n(r_d) - v^{iter}(r_d)
+	 */
+	void semi_lag_departure_points_settls(
+			DataArray<2> &i_u_prev, // Velocities at time t-1
+			DataArray<2> &i_v_prev,
+			DataArray<2> &i_u, // Velocities at time t
+			DataArray<2> &i_v,
+			DataArray<2> &i_posx_a, // Position of arrival points x / y
+			DataArray<2> &i_posy_a,
+			double i_dt,			///< time step size
+			DataArray<2> &o_posx_d, // Position of departure points x / y
+			DataArray<2> &o_posy_d,
+			double *i_staggering = nullptr	///< staggering, if any (ux, uy, vx, vy)
+	)
+	{
+		if (i_staggering == nullptr)
+		{
+			static double constzerostuff[4] = {0,0,0,0};
+			i_staggering = constzerostuff;
+		}
+
+		//Init departure points
+		o_posx_d.set(0,0,0);
+		o_posy_d.set(0,0,0);
+
+		//local dt
+		double dt = i_dt;
+
+		//Velocity for iterations
+		DataArray<2> u_iter(i_u_prev.resolution);
+		DataArray<2> v_iter(i_u_prev.resolution);
+
+		//Time Extrapolation
+		u_iter = dt * i_u - dt*0.5 * i_u_prev;
+		v_iter = dt * i_v - dt*0.5 * i_v_prev;
+
+		//Departure point tmp
+		DataArray<2> rx_d_new(i_u_prev.resolution);
+		DataArray<2> ry_d_new(i_u_prev.resolution);
+
+		//Previous departure point
+		DataArray<2> rx_d_prev = i_posx_a;
+		DataArray<2> ry_d_prev = i_posy_a;
+
+		// initialize departure points with arrival points
+		o_posx_d = i_posx_a;
+		o_posy_d = i_posy_a;
+
+		int iters = 0;
+		for (; iters < 10; iters++)
+		{
+			// r_d = r_a - dt/2 * v_n(r_d) - v^{iter}(r_d)
+			rx_d_new = i_posx_a - dt*0.5 * i_u - sample2D.bilinear_scalar(u_iter, o_posx_d, o_posy_d, i_staggering[0], i_staggering[1]);
+			ry_d_new = i_posy_a - dt*0.5 * i_v - sample2D.bilinear_scalar(v_iter, o_posx_d, o_posy_d, i_staggering[2], i_staggering[3]);
+
+			double diff = (rx_d_new - rx_d_prev).reduce_maxAbs() + (ry_d_new - ry_d_prev).reduce_maxAbs();
+			rx_d_prev = rx_d_new;
+			ry_d_prev = ry_d_new;
+
+			for (std::size_t i = 0; i < o_posx_d.resolution[0]*o_posx_d.resolution[1]; i++)
+			{
+				o_posx_d.array_data_cartesian_space[i] = sample2D.wrapPeriodic(rx_d_new.array_data_cartesian_space[i], sample2D.domain_size[0]);
+				o_posy_d.array_data_cartesian_space[i] = sample2D.wrapPeriodic(ry_d_new.array_data_cartesian_space[i], sample2D.domain_size[1]);
+			}
+
+			if (diff < 1e-8)
+				break;
+				std::cout << iters << ": " << diff << std::endl;
+		}
+	//		std::cout << iters << std::endl;
 	}
 };
 
