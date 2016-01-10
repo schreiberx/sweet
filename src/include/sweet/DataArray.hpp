@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <sweetmath.hpp>
 #include <memory>
+#include <string.h>
 #include <stdlib.h>
 #include <string>
 #include <iostream>

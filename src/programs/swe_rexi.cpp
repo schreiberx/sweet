@@ -3,6 +3,7 @@
 *
 *
 */
+
 #include <sweet/DataArray.hpp>
 #if SWEET_GUI
 	#include <sweet/VisSweet.hpp>
@@ -1363,6 +1364,7 @@ public:
 		}
 
 		static char title_string[2048];
+
 		//sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %.14e, Vis: %s, Mass: %.14e, Energy: %.14e, Potential Entrophy: %.14e",
 		sprintf(title_string, "Time (days): %f (%.2f d), k: %i, dt: %.3e, Vis: %s, TMass: %.6e, TEnergy: %.6e, PotEnstrophy: %.6e, MaxVal: %.6e, MinVal: %.6e ",
 				simVars.timecontrol.current_simulation_time,
