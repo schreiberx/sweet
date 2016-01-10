@@ -1,6 +1,7 @@
 /*
 * SWM with nonlinear part using REXI test
 */
+
 #include <sweet/DataArray.hpp>
 #if SWEET_GUI
 	#include <sweet/VisSweet.hpp>
@@ -1384,7 +1385,7 @@ public:
 		}
 
 		static char title_string[2048];
-		sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %.14e, Vis: %s, Mass: %.14e, Energy: %.14e, Potential Entrophy: %.14e",
+		sprintf(title_string, "Time: %f (%.2f d), Timestep: %i, timestep size: %.14e, Vis: %s, Mass: %.14e, Energy: %.14e, Potential Entrophy: %.14e",
 				simVars.timecontrol.current_simulation_time,
 				simVars.timecontrol.current_simulation_time/(60.0*60.0*24.0),
 				simVars.timecontrol.current_timestep_nr,
@@ -1484,8 +1485,8 @@ int main(int i_argc, char *i_argv[])
 			"use-specdiff-for-complex-array",	/// use finite differences for complex array
 			"rexi-helmholtz-solver-id",		/// use iterative solver for REXI
 			"rexi-helmholtz-solver-eps",		/// error threshold for solver
-			"XY_initial-freq-x-mul",
-			"XY_initial-freq-y-mul",
+			"initial-freq-x-mul",
+			"initial-freq-y-mul",
 			"boundary-id",
 			"rexi-zero-before-solving",
 			"nonlinear",
