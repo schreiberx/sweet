@@ -75,7 +75,10 @@ public:
 
 	// Arrival points for semi-lag
 	DataArray<2> posx_a, posy_a;
-	DataArray<2> *pos_a[2];
+
+	// Points mapping [0,simVars.sim.domain_size[0])x[0,simVars.sim.domain_size[1])
+	// with resolution simVars.sim.resolution
+	DataArray<2> pos_x, pos_y;
 
 	//Staggering displacement array (use 0.5 for each displacement)
 	// [0] - delta x of u variable
@@ -152,6 +155,9 @@ public:
 		posx_a(simVars.disc.res),
 		posy_a(simVars.disc.res),
 
+		pos_x(simVars.disc.res),
+		pos_y(simVars.disc.res),
+
 		//h_t(simVars.disc.res),
 
 		// Initialises operators
@@ -196,8 +202,6 @@ public:
 		prog_v.set_all(0);
 		boundary_mask.set_all(0);
 
-		sampler2D.setup(simVars.sim.domain_size, simVars.disc.res);
-
 		//Check if input parameters are adequate for this simulation
 		if (param_use_staggering && simVars.disc.use_spectral_basis_diffs)
 		{
@@ -210,6 +214,11 @@ public:
 			std::cerr << "Staggering only supported for standard time stepping mode 0!" << std::endl;
 			exit(1);
 		}
+		if (param_use_staggering && param_compute_error)
+			std::cerr << "Warning: Staggered data will be interpolated to/from A-grid for exact linear solution" << std::endl;
+
+		if(param_nonlinear && param_compute_error)
+			std::cout << "Warning: Exact solution not possible in general for nonlinear swe. Using exact solution for linear case instead." << std::endl;
 
 		if (param_use_staggering)
 		{
@@ -227,10 +236,24 @@ public:
 			 * (0,0)      v0,0
 			 *           (0.5,0)
 			 *
-			 *                            udx  udy  vdx   vdy   */
+			 *                             udx  udy  vdx   vdy   */
 			double stag_displacement[4] = {0.0, 0.5, 0.5, 0.0};
 		}
 
+		//Setup sampler for future interpolations
+		sampler2D.setup(simVars.sim.domain_size, simVars.disc.res);
+
+		//Setup general (x,y) grid with position points
+		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+		{
+			for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+			{
+		    	// Equivalent to q position on C-grid
+				pos_x.set(j, i, ((double)i)*simVars.sim.domain_size[0]/simVars.disc.res[0]); //*simVars.sim.domain_size[0];
+				pos_y.set(j, i, ((double)j)*simVars.sim.domain_size[1]/simVars.disc.res[1]); //*simVars.sim.domain_size[1];
+				//std::cout << i << " " << j << " " << pos_x.get(j,i) << std::endl;
+			}
+		}
 
 		// Set initial conditions given from SWEValidationBenchmarks
 		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
@@ -894,11 +917,23 @@ public:
 		}
 	}
 
+	/* Wrapper to calculate initial conditions */
+	void initial_conditions(
+			DataArray<2> &io_h,
+			DataArray<2> &io_u,
+			DataArray<2> &io_v
+	)
+	{
+
+
+	}
+
 
 	/**
 	 * wrapper to unify interfaces for REXI and analytical solution for L operator
 	 */
 	void rexi_run_timestep_wrapper(
+			//PXT - these variables are of not use, correct? Using global stuff
 		DataArray<2> &io_h,
 		DataArray<2> &io_u,
 		DataArray<2> &io_v,
@@ -1112,7 +1147,7 @@ public:
 				o_ostream << "\t" << benchmark_diff_v;
 			}
 
-			if (param_compute_error && !param_nonlinear)
+			if (param_compute_error ) //&& !param_nonlinear)
 			{
 				compute_errors();
 
@@ -1134,55 +1169,78 @@ public:
 public:
 	void compute_errors()
 	{
+		// Compute exact solution for linear part and compare with numerical solution
+
 		// Initial conditions (may be in a stag grid)
 		DataArray<2> t0_h = t0_prog_h;
 		DataArray<2> t0_u = t0_prog_u;
 		DataArray<2> t0_v = t0_prog_v;
+
 		//Variables for remapping t0/from staggered grid
 		DataArray<2> t_h(simVars.disc.res);
 		DataArray<2> t_u(simVars.disc.res);
 		DataArray<2> t_v(simVars.disc.res);
 
-		if(param_nonlinear)
-		{
-			std::cout << "Warning: Exact solution not possible in general for nonlinear swe. Using exact solution for linear case instead." << std::endl;
-		}
-
-		//std::cout << std::endl;
-		std::cout << t0_u << std::endl;
+		//Analytical solution at specific time
+		DataArray<2> ts_h(simVars.disc.res);
+		DataArray<2> ts_u(simVars.disc.res);
+		DataArray<2> ts_v(simVars.disc.res);
 
 		//The direct spectral solution can only be calculated for A grid
+		t_h=t0_h;
+		t_u=t0_u; //PXT - does not work it I remove this line....even for C grid
+		t_v=t0_v;
 		if (param_use_staggering)
 		{
-			std::cout << "Warning: Staggered data being interpolated to A-grid for exact linear solution" << std::endl;
 			//remap initial condition to A grid
-			sampler2D.remap_gridC2A(t0_u, t0_v, t_u, t_v, 0);
+
+			//The h points (A grid) are +0.5 in x from the u points in the C grid
+			//   so shift the generic points pos_xy to match this
+			//sampler2D.bilinear_scalar(t0_u, pos_x, pos_y, t_u, 0.5, 0.0);
+			//t_u=op.avg_f_x(t0_u); //equiv to bilinear
+			sampler2D.bicubic_scalar(t0_u, pos_x, pos_y, t_u, 0.5, 0.0);
+
+			//The h points (A grid) are +0.5 in y from the v points in the C grid
+			//   so shift the generic points pos_xy to match this
+			//sampler2D.bilinear_scalar(t0_v, pos_x, pos_y, t_v, 0.0, 0.5);
+			//t_v=op.avg_f_y(t0_v); //equiv to bilinear
+			sampler2D.bicubic_scalar(t0_v, pos_x, pos_y, t_v, 0.0, 0.5);
+
 		}
-		std::cout << std::endl;
-		std::cout << t_u << std::endl;
-		exit(-1);
+
 		//Run exact solution for linear case
 		rexiSWE.run_timestep_direct_solution(t_h, t_u, t_v, simVars.timecontrol.current_simulation_time, op, simVars);
+		//PXT - For time zero, t_u, t_u, t_v should be returned exactly as received, but not happening (machine prec. error)
 
-
+		// Recover data in C grid using inteprolations
+		ts_h=t_h;
+		ts_u=t_u;
+		ts_v=t_v;
 		if (param_use_staggering)
 		{
-			//remap exact solution to C grid - TODO
+			// Remap A grid to C grid
+
+			//The h points (A grid) are +0.5 in x from the u points in the C grid
+			//   so shift back the generic points pos_xy to match this
+			//sampler2D.bilinear_scalar(t_u, pos_x, pos_y, ts_u, -0.5, 0.0);
+			//t_u=op.avg_b_x(t0_u); //equiv to bilinear
+			sampler2D.bicubic_scalar(t_u, pos_x, pos_y, ts_u, -0.5, 0.0);
+
+			//The h points (A grid) are +0.5 in y from the v points in the C grid
+			//   so shift back the generic points pos_xy to match this
+			//sampler2D.bilinear_scalar(t_v, pos_x, pos_y, ts_v, 0.0, -0.5);
+			//t_v=op.avg_b_y(t0_v); //equiv to bilinear
+			sampler2D.bicubic_scalar(t_v, pos_x, pos_y, ts_v, 0.0, -0.5);
 		}
 
-		benchmark_analytical_error_rms_h = (t_h-prog_h).reduce_rms_quad();
-		if (!param_use_staggering)
-		{
-			benchmark_analytical_error_rms_u = (t_u-prog_u).reduce_rms_quad();
-			benchmark_analytical_error_rms_v = (t_v-prog_v).reduce_rms_quad();
-		}
+		benchmark_analytical_error_rms_h = (ts_h-prog_h).reduce_rms_quad();
+		benchmark_analytical_error_rms_u = (ts_u-prog_u).reduce_rms_quad();
+		benchmark_analytical_error_rms_v = (ts_v-prog_v).reduce_rms_quad();
 
-		benchmark_analytical_error_maxabs_h = (t_h-prog_h).reduce_maxAbs();
-		if (!param_use_staggering)
-		{
-			benchmark_analytical_error_maxabs_u = (t_u-prog_u).reduce_maxAbs();
-			benchmark_analytical_error_maxabs_v = (t_v-prog_v).reduce_maxAbs();
-		}
+		benchmark_analytical_error_maxabs_h = (ts_h-prog_h).reduce_maxAbs();
+		benchmark_analytical_error_maxabs_u = (ts_u-prog_u).reduce_maxAbs();
+		benchmark_analytical_error_maxabs_v = (ts_v-prog_v).reduce_maxAbs();
+
 	}
 
 

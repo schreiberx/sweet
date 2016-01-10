@@ -78,6 +78,7 @@ public:
 
 
 public:
+	// NOT NEEDED, just use directly the interpolation rotines with shifts...
 	void remap_gridC2A(
 			DataArray<2> &i_u,				///< u data in C-grid
 			DataArray<2> &i_v,				///< v data in C-grid
@@ -133,6 +134,7 @@ public:
 		//std::cout<< o_v <<std::endl;
 	}
 
+
 public:
 	void bicubic_scalar(
 			DataArray<2> &i_data,				///< sampling data
@@ -173,8 +175,8 @@ public:
 			//double pos_x = i_pos[0]->array_data_cartesian_space[pos_idx]*scale_factor[0] + i_shift_x;
 			//double pos_y = i_pos[1]->array_data_cartesian_space[pos_idx]*scale_factor[1] + i_shift_y;
 			double pos_x = wrapPeriodic(i_pos_x.array_data_cartesian_space[pos_idx]*scale_factor[0] + i_shift_x, (double)res[0]);
-			double pos_y = wrapPeriodic(i_pos_y.array_data_cartesian_space[pos_idx]*scale_factor[1] + i_shift_y, (double)res[0]);
-
+			double pos_y = wrapPeriodic(i_pos_y.array_data_cartesian_space[pos_idx]*scale_factor[1] + i_shift_y, (double)res[1]);
+			//std::cout << pos_idx << " x " << pos_x << " y " << pos_y << " res " << res[1] << std::endl;
 			/**
 			 * For the interpolation, we assume node-aligned values
 			 *
@@ -193,6 +195,7 @@ public:
 			// precompute x-position indices since they are reused 4 times
 			int idx_i[4];
 			{
+
 				int i = (int)pos_x-1;
 
 				i = wrapPeriodic(i, res[0]);
@@ -207,7 +210,7 @@ public:
 				i = wrapPeriodic(i+1, res[0]);
 				idx_i[3] = wrapPeriodic(i, res[0]);
 			}
-
+			//std::cout << idx_i[0] << idx_i[1] <<idx_i[2] << idx_i[3]<< std::endl;
 			/**
 			 * iterate over rows and interpolate over the columns in the x direction
 			 */
@@ -218,17 +221,21 @@ public:
 			for (int kj = 0; kj < 4; kj++)
 			{
 				double p[4];
+
 				p[0] = i_data.get(idx_j, idx_i[0]);
 				p[1] = i_data.get(idx_j, idx_i[1]);
 				p[2] = i_data.get(idx_j, idx_i[2]);
 				p[3] = i_data.get(idx_j, idx_i[3]);
 
 				q[kj] = p[1] + 0.5 * x*(p[2] - p[0] + x*(2.0*p[0] - 5.0*p[1] + 4.0*p[2] - p[3] + x*(3.0*(p[1] - p[2]) + p[3] - p[0])));
-
+				//std::cout << idx_j << " "<< q[kj] << std::endl;
 				idx_j = wrapPeriodic(idx_j+1, res[1]);
-			}
 
+			}
+			//std::cout << q[0] << " " << q[1] <<  " " << q[2] <<  " " <<  q[3] <<  " " << y << std::endl;
 			double value = q[1] + 0.5 * y*(q[2] - q[0] + y*(2.0*q[0] - 5.0*q[1] + 4.0*q[2] - q[3] + y*(3.0*(q[1] - q[2]) + q[3] - q[0])));
+			//std::cout << value << std::endl;
+			//std::cout  << std::endl;
 			o_data.array_data_cartesian_space[pos_idx] = value;
 		}
 	}
