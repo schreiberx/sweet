@@ -169,6 +169,11 @@ public:
 		o_posx_d = i_posx_a;
 		o_posy_d = i_posy_a;
 
+#if SWEET_USE_SPECTRAL_SPACE
+		o_posx_d.array_data_cartesian_space_valid = true;
+		o_posy_d.array_data_cartesian_space_valid = true;
+#endif
+
 		int iters = 0;
 		for (; iters < 10; iters++)
 		{
@@ -187,9 +192,10 @@ public:
 			}
 
 			if (diff < 1e-8)
-				break;
+			   break;
 
-			std::cout << iters << ": " << diff << std::endl;
+			//std::cout << iters << " : " << diff << std::endl;
+
 		}
 	//		std::cout << iters << std::endl;
 	}

@@ -58,7 +58,7 @@ public:
 	DataArray<2> prog_h, prog_u, prog_v;
 
 	// Prognostic variables at time step t-dt
-	DataArray<2> prog_u_prev, prog_v_prev;
+	DataArray<2> prog_h_prev, prog_u_prev, prog_v_prev;
 
 	// Diagnostics - Vorticity and potential vorticity
 	DataArray<2> eta, q;
@@ -138,6 +138,7 @@ public:
 		prog_u(simVars.disc.res),
 		prog_v(simVars.disc.res),
 
+		prog_h_prev(simVars.disc.res),
 		prog_u_prev(simVars.disc.res),
 		prog_v_prev(simVars.disc.res),
 
@@ -330,6 +331,10 @@ public:
 			}
 		}
 
+		//Initialise t-dt time step with initial condition
+		prog_h_prev=prog_h;
+		prog_u_prev=prog_u;
+		prog_v_prev=prog_v;
 
 		// Set boundary stuff
 		if (param_boundary_id != 0)
@@ -939,55 +944,6 @@ public:
 	}
 
 
-	/**
-	 * wrapper to unify interfaces for REXI and analytical solution for L operator
-	 */
-	void rexi_run_timestep_wrapper(
-	   //PXT - these variables are of not use, correct? Using global stuff
-		DataArray<2> &io_h,
-		DataArray<2> &io_u,
-		DataArray<2> &io_v,
-
-		double i_local_timestep_size
-	)
-	{
-		switch(param_timestepping_mode)
-		{
-		case 1:
-			// REXI time stepping
-			assert(simVars.sim.CFL < 0);
-			rexiSWE.run_timestep(
-					prog_h, prog_u, prog_v,
-					i_local_timestep_size,
-					op,
-					simVars,
-					param_rexi_zero_before_solving
-			);
-			break;
-
-		case 2:
-			if (param_use_staggering)
-			{
-				std::cerr << "Direct solution on staggered grid not supported!" << std::endl;
-				exit(1);
-			}
-
-			// Analytical solution
-			rexiSWE.run_timestep_direct_solution(
-					prog_h, prog_u, prog_v,
-					i_local_timestep_size,
-					op,
-					simVars
-			);
-			break;
-
-		default:
-			assert(false);
-			std::cerr << "Timestepping method in this wrapper not supported" << std::endl;
-			exit(-1);
-		}
-	}
-
 	void run_timestep()
 	{
 		double o_dt;
@@ -1070,10 +1026,7 @@ public:
 
 			o_dt = -simVars.sim.CFL;
 
-			prog_u=1;
-			prog_v=0;
-			prog_u_prev=prog_u;
-			prog_v_prev=prog_v;
+
 			semiLagrangian.semi_lag_departure_points_settls(
 							prog_u_prev,
 							prog_v_prev,
@@ -1089,15 +1042,17 @@ public:
 
 			prog_u_prev = prog_u;
 			prog_v_prev = prog_v;
-
+			prog_h_prev = prog_h;
+			//Arrival and departure points are set for physical grid
+			// To interpolate, needs the shifting -0.5, -0.5
 			sampler2D.bicubic_scalar(
-					prog_h,
+					prog_h_prev,
 					posx_d,
 					posy_d,
-					tmp
+					prog_h,
+					-0.5,
+					-0.5
 			);
-
-			prog_h = tmp;
 
 		}
 		else
