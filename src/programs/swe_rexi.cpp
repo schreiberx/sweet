@@ -92,9 +92,12 @@ public:
 	// [1] - delta y of u variable
 	// [2] - delta x of v variable
 	// [3] - delta y of v variable
-	// For C grid use {-0.5,0,0,-0.5}
-	// Default - A grid (zeros)
-	double stag_displacement[4] = {0,0,0,0};
+	// Default - A grid (there is shift in x,y of 1/2 to all vars)
+	// For C grid use {0,-0.5,-0.5,0}
+	double stag_displacement[4] = {-0.5,-0.5,-0.5,-0.5};
+	double stag_h[2] = {-0.5,-0.5};
+	double stag_u[2] = {-0.5,-0.5};
+	double stag_v[2] = {-0.5,-0.5};
 
 	// Diagnostics measures
 	int last_timestep_nr_update_diagnostics = -1;
@@ -163,7 +166,6 @@ public:
 		pos_x(simVars.disc.res),
 		pos_y(simVars.disc.res),
 
-		//PXT - this is only required for semi-lag part - add if?
 		posx_a(simVars.disc.res),
 		posy_a(simVars.disc.res),
 
@@ -240,25 +242,35 @@ public:
 			 *       ______v0,1_____
 			 *       |             |
 			 *       |			   |
-			 *       |             |
+			 *       |   (0.5,0.5) |
 			 *  u0,0 |->  H/P0,0   |u1,0 ->
-			 *(0,0.5)|			   |
+			 *(0,0.5)|	           |
 			 *       |      ^      |
 			 *   q0,0|______|______|
 			 * (0,0)      v0,0
 			 *           (0.5,0)
 			 *
-			 *                             udx  udy  vdx   vdy   */
-			stag_displacement[0] = 0.0; // u_dx
-			stag_displacement[1] = 0.5; // u_dy
-			stag_displacement[2] = 0.5; // v_dx
-			stag_displacement[3] = 0.0; // v_dy
+			 *
+			 * These staggering should be used when interpolating from a staggered variable
+			 * If interpolating from A grid to C staggered, use negative of displacements.
+			 *
+			 */
+			stag_displacement[0] = 0.0;  // u_dx
+			stag_displacement[1] = -0.5; // u_dy
+			stag_displacement[2] = -0.5; // v_dx
+			stag_displacement[3] = 0.0;  // v_dy
+			stag_h[0] = -0.5;
+			stag_h[1] = -0.5;
+			stag_u[0] = -0.0;
+			stag_u[1] = -0.5;
+			stag_v[0] = -0.5;
+			stag_v[1] = -0.0;
 		}
 
 		//Setup sampler for future interpolations
 		sampler2D.setup(simVars.sim.domain_size, simVars.disc.res);
 
-		//PXT- This just calls sampler2D.setup, so any reason for having it? Copied from SL prog
+		//Setup semi-lag
 		semiLagrangian.setup(simVars.sim.domain_size, simVars.disc.res);
 
 		//Setup general (x,y) grid with position points
@@ -266,7 +278,7 @@ public:
 		{
 			for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
 			{
-		    	// Equivalent to q position on C-grid
+		    	/* Equivalent to q position on C-grid */
 				pos_x.set(j, i, ((double)i)*simVars.sim.domain_size[0]/simVars.disc.res[0]); //*simVars.sim.domain_size[0];
 				pos_y.set(j, i, ((double)j)*simVars.sim.domain_size[1]/simVars.disc.res[1]); //*simVars.sim.domain_size[1];
 				//std::cout << i << " " << j << " " << pos_x.get(j,i) << std::endl;
@@ -274,7 +286,7 @@ public:
 		}
 
 		//Initialize arrival points with h position
-		posx_a=pos_x+0.5*simVars.disc.cell_size[0]; // ].sim.domain_size[0]/simVars.disc.res[0];
+		posx_a=pos_x+0.5*simVars.disc.cell_size[0];
 		posy_a=pos_y+0.5*simVars.disc.cell_size[1];
 
 		// Set initial conditions given from SWEValidationBenchmarks
@@ -291,10 +303,6 @@ public:
 
 						prog_h.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
 						t0_prog_h.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
-
-						//PXT - Why is t0 here??? This makes the error calculation wrong for the FD case with C grid
-						//t0_prog_u.set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
-						//t0_prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
 					}
 
 					{
@@ -481,7 +489,6 @@ public:
 					param_rexi_h,
 					param_rexi_m,
 					param_rexi_l,
-
 					simVars.disc.res,
 					simVars.sim.domain_size,
 					param_rexi_half,
@@ -520,17 +527,6 @@ public:
 		double normalization = (simVars.sim.domain_size[0]*simVars.sim.domain_size[1]) /
 								((double)simVars.disc.res[0]*(double)simVars.disc.res[1]);
 
-		//if(param_use_staggering){
-		//	if (simVars.sim.beta != 0)
-		//	{
-		//		q = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + beta_plane) / prog_h;
-		//	}
-		//	else
-		//	{
-		//		q = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + simVars.sim.f0) / prog_h;
-		//	}
-		//}
-
 
 		// mass
 		simVars.diag.total_mass = prog_h.reduce_sum_quad() * normalization;
@@ -542,7 +538,7 @@ public:
 				prog_h*prog_v*prog_v
 			).reduce_sum_quad()) * normalization;
 
-		// potential enstropy
+		// potential verticity and pot. enstropy
 		eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + simVars.sim.f0) / prog_h;
 		simVars.diag.total_potential_enstrophy = 0.5*(eta*eta*prog_h).reduce_sum_quad() * normalization;
 	}
@@ -1010,7 +1006,7 @@ public:
 			);
 		}
 		else if (param_timestepping_mode == 3)
-		{   // PXT - Implicit time step ?? Check...
+		{   //  Implicit time step - needs check...
 			assert(simVars.sim.CFL < 0);
 
 			o_dt = -simVars.sim.CFL;
@@ -1023,9 +1019,8 @@ public:
 		}
 		else if (param_timestepping_mode == 4)
 		{ // Semi-Lagrangian with FD in space
-
+			assert(simVars.sim.CFL < 0);
 			o_dt = -simVars.sim.CFL;
-
 
 			semiLagrangian.semi_lag_departure_points_settls(
 							prog_u_prev,
@@ -1043,15 +1038,16 @@ public:
 			prog_u_prev = prog_u;
 			prog_v_prev = prog_v;
 			prog_h_prev = prog_h;
-			//Arrival and departure points are set for physical grid
-			// To interpolate, needs the shifting -0.5, -0.5
+
+			//Departure points are set for physical space
+			//    interpolate to h grid
 			sampler2D.bicubic_scalar(
 					prog_h_prev,
 					posx_d,
 					posy_d,
 					prog_h,
-					-0.5,
-					-0.5
+					stag_h[0],
+					stag_h[1]
 			);
 
 		}
@@ -1175,41 +1171,34 @@ public:
 		DataArray<2> t0_u = t0_prog_u;
 		DataArray<2> t0_v = t0_prog_v;
 
-		//Variables for remapping t0/from staggered grid
+		//Variables on unstaggered A-grid
 		DataArray<2> t_h(simVars.disc.res);
 		DataArray<2> t_u(simVars.disc.res);
 		DataArray<2> t_v(simVars.disc.res);
 
-		//Analytical solution at specific time
+		//Analytical solution at specific time on orginal grid (stag or not)
 		DataArray<2> ts_h(simVars.disc.res);
 		DataArray<2> ts_u(simVars.disc.res);
 		DataArray<2> ts_v(simVars.disc.res);
 
 		//The direct spectral solution can only be calculated for A grid
 		t_h=t0_h;
-		t_u=t0_u; //PXT - does not work it I remove this line....even for C grid
+		t_u=t0_u;
 		t_v=t0_v;
-		if (param_use_staggering)
+		if (param_use_staggering) // Remap in case of C-grid
 		{
 			//remap initial condition to A grid
-
-			//The h points (A grid) are +0.5 in x from the u points in the C grid
-			//   so shift the generic points pos_xy to match this
-			//sampler2D.bilinear_scalar(t0_u, pos_x, pos_y, t_u, 0.5, 0.0);
+			//sampler2D.bilinear_scalar(t0_u, posx_a, posy_a, t_u, stag_u[0], stag_u[1]);
 			//t_u=op.avg_f_x(t0_u); //equiv to bilinear
-			sampler2D.bicubic_scalar(t0_u, pos_x, pos_y, t_u, 0.5, 0.0);
+			sampler2D.bicubic_scalar(t0_u, posx_a, posy_a, t_u, stag_u[0], stag_u[1]);
 
-			//The h points (A grid) are +0.5 in y from the v points in the C grid
-			//   so shift the generic points pos_xy to match this
-			//sampler2D.bilinear_scalar(t0_v, pos_x, pos_y, t_v, 0.0, 0.5);
+			//sampler2D.bilinear_scalar(t0_v, posx_a, posy_a, t_v, stag_v[0], stag_v[1]);
 			//t_v=op.avg_f_y(t0_v); //equiv to bilinear
-			sampler2D.bicubic_scalar(t0_v, pos_x, pos_y, t_v, 0.0, 0.5);
-
+			sampler2D.bicubic_scalar(t0_v, posx_a, posy_a, t_v, stag_v[0], stag_v[1]);
 		}
 
 		//Run exact solution for linear case
 		rexiSWE.run_timestep_direct_solution(t_h, t_u, t_v, simVars.timecontrol.current_simulation_time, op, simVars);
-		//PXT - For time zero, t_u, t_u, t_v should be returned exactly as received, but not happening (machine prec. error)
 
 		// Recover data in C grid using inteprolations
 		ts_h=t_h;
@@ -1219,17 +1208,15 @@ public:
 		{
 			// Remap A grid to C grid
 
-			//The h points (A grid) are +0.5 in x from the u points in the C grid
-			//   so shift back the generic points pos_xy to match this
-			//sampler2D.bilinear_scalar(t_u, pos_x, pos_y, ts_u, -0.5, 0.0);
+			//Temporary displacement for U points
+			//sampler2D.bilinear_scalar(t_u, pos_x, tmp, ts_u, stag_h[0], stag_h[1]);
 			//t_u=op.avg_b_x(t0_u); //equiv to bilinear
-			sampler2D.bicubic_scalar(t_u, pos_x, pos_y, ts_u, -0.5, 0.0);
+			sampler2D.bicubic_scalar(t_u, pos_x, pos_y, ts_u, stag_h[0], stag_h[1]+0.5);
 
-			//The h points (A grid) are +0.5 in y from the v points in the C grid
-			//   so shift back the generic points pos_xy to match this
-			//sampler2D.bilinear_scalar(t_v, pos_x, pos_y, ts_v, 0.0, -0.5);
+			//Temporary displacement for V points
+			//sampler2D.bilinear_scalar(t_v, tmp, pos_y, ts_v, stag_h[0], stag_h[1]);
 			//t_v=op.avg_b_y(t0_v); //equiv to bilinear
-			sampler2D.bicubic_scalar(t_v, pos_x, pos_y, ts_v, 0.0, -0.5);
+			sampler2D.bicubic_scalar(t_v, tmp, pos_y, ts_v, stag_h[0]+0.5, stag_h[1]);
 		}
 
 		benchmark_analytical_error_rms_h = (ts_h-prog_h).reduce_rms_quad();
@@ -1296,7 +1283,6 @@ public:
 	{
 		if (simVars.misc.vis_id < 0)
 		{
-			//PXT - Why do this and not simply use t0_prog?
 			DataArray<2> t_h = t0_prog_h;
 			DataArray<2> t_u = t0_prog_u;
 			DataArray<2> t_v = t0_prog_v;

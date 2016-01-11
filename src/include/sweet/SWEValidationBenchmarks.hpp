@@ -128,6 +128,18 @@ public:
 			double dy = y/i_parameters.sim.domain_size[1]*i_parameters.setup.initial_freq_y_mul*M_PIl;
 			return std::sin(2.0*dx)*std::cos(2.0*dy) - (1.0/5.0)*std::cos(2.0*dx)*std::sin(4.0*dy) + i_parameters.setup.h0;
 		}
+		if (i_parameters.setup.scenario == 12)
+		{
+			// Gaussian
+			double dx = x-i_parameters.setup.coord_x*i_parameters.sim.domain_size[0];
+			double dy = y-i_parameters.setup.coord_y*i_parameters.sim.domain_size[1];
+
+			double radius = i_parameters.setup.radius_scale*sqrt((double)i_parameters.sim.domain_size[0]*(double)i_parameters.sim.domain_size[0]+(double)i_parameters.sim.domain_size[1]*(double)i_parameters.sim.domain_size[1]);
+			dx /= radius;
+			dy /= radius;
+
+			return i_parameters.setup.h0+std::exp(-50.0*(dx*dx + dy*dy));
+		}
 
 
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
@@ -230,7 +242,14 @@ public:
 			double dy = y/i_parameters.sim.domain_size[1]*i_parameters.setup.initial_freq_y_mul*M_PIl;
 			return std::cos(4.0*dx)*std::cos(2.0*dy);
 		}
+		if (i_parameters.setup.scenario == 12)
+		{ //Pure advection
+			//double dx = x/i_parameters.sim.domain_size[0];
+			double dy = y/i_parameters.sim.domain_size[1];
 
+			return std::sin(M_PIl*dy) +1.0;
+			//return 2;
+		}
 
 
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
@@ -321,7 +340,14 @@ public:
 			double dy = y/i_parameters.sim.domain_size[1]*i_parameters.setup.initial_freq_y_mul*M_PIl;
 			return std::cos(2.0*dx)*std::cos(4.0*dy);
 		}
+		if (i_parameters.setup.scenario == 12)
+		{ //Pure advection
+			double dx = x/i_parameters.sim.domain_size[0];
+			//double dy = y/i_parameters.sim.domain_size[1];
 
+			return std::sin(M_PIl*dx)  +1.0;
+			//return 0;
+		}
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
 		return 0;
 	}

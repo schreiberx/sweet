@@ -78,11 +78,10 @@ public:
 
 
 public:
-	// NOT NEEDED, just use directly the interpolation rotines with shifts...
+	// NOT NEEDED AND PRO, just use directly the interpolation rotines with shifts...
 	void remap_gridC2A(
 			DataArray<2> &i_u,				///< u data in C-grid
 			DataArray<2> &i_v,				///< v data in C-grid
-			//DataArray<2>* i_pos[2],	            ///< sampling position
 			DataArray<2> &o_u,				///< u data in A-grid
 			DataArray<2> &o_v,				///< v data in A-grid
 			int i_method=0
@@ -91,9 +90,6 @@ public:
 		// position of A grid points (h)
 		DataArray<2> pos_x(i_u.resolution);
 		DataArray<2> pos_y(i_u.resolution);
-		//DataArray<2>* pos[2] = {&posx, &posy};
-		//pos[0] = &posx;
-		//pos[1] = &posy;
 
 		//Initialise output
 		o_u=i_u;
