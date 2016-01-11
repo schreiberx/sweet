@@ -238,6 +238,10 @@ public:
 			//std::cout  << std::endl;
 			o_data.array_data_cartesian_space[pos_idx] = value;
 		}
+
+#if SWEET_USE_SPECTRAL_SPACE
+		o_data.array_data_cartesian_space_valid = true;
+#endif
 	}
 
 
@@ -261,6 +265,8 @@ public:
 
 
 		const std::size_t size = i_pos_x.resolution[0]*i_pos_x.resolution[1];
+
+		assert(size != 0);
 
 		// iterate over all positions
 #pragma omp parallel for OPENMP_SIMD
@@ -310,6 +316,10 @@ public:
 
 			o_data.array_data_cartesian_space[pos_idx] = value;
 		}
+
+#if SWEET_USE_SPECTRAL_SPACE
+		o_data.array_data_cartesian_space_valid = true;
+#endif
 	}
 
 

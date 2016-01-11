@@ -150,16 +150,16 @@ public:
 		double dt = i_dt;
 
 		//Velocity for iterations
-		DataArray<2> u_iter(i_u_prev.resolution);
-		DataArray<2> v_iter(i_u_prev.resolution);
+		DataArray<2> u_iter(i_u.resolution);
+		DataArray<2> v_iter(i_v.resolution);
 
 		//Time Extrapolation
 		u_iter = dt * i_u - dt*0.5 * i_u_prev;
 		v_iter = dt * i_v - dt*0.5 * i_v_prev;
 
 		//Departure point tmp
-		DataArray<2> rx_d_new(i_u_prev.resolution);
-		DataArray<2> ry_d_new(i_u_prev.resolution);
+		DataArray<2> rx_d_new(i_u.resolution);
+		DataArray<2> ry_d_new(i_v.resolution);
 
 		//Previous departure point
 		DataArray<2> rx_d_prev = i_posx_a;
@@ -188,7 +188,8 @@ public:
 
 			if (diff < 1e-8)
 				break;
-				std::cout << iters << ": " << diff << std::endl;
+
+			std::cout << iters << ": " << diff << std::endl;
 		}
 	//		std::cout << iters << std::endl;
 	}

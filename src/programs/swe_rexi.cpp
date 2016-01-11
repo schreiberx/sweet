@@ -56,6 +56,8 @@ class SimulationSWE
 public:
 	// Prognostic variables
 	DataArray<2> prog_h, prog_u, prog_v;
+
+	// Prognostic variables at time step t-dt
 	DataArray<2> prog_u_prev, prog_v_prev;
 
 	// Diagnostics - Vorticity and potential vorticity
@@ -269,6 +271,10 @@ public:
 				//std::cout << i << " " << j << " " << pos_x.get(j,i) << std::endl;
 			}
 		}
+
+		//Initialize arrival points with h position
+		posx_a=pos_x+0.5*simVars.disc.cell_size[0]; // ].sim.domain_size[0]/simVars.disc.res[0];
+		posy_a=pos_y+0.5*simVars.disc.cell_size[1];
 
 		// Set initial conditions given from SWEValidationBenchmarks
 		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
@@ -1061,9 +1067,13 @@ public:
 		}
 		else if (param_timestepping_mode == 4)
 		{ // Semi-Lagrangian with FD in space
+
 			o_dt = -simVars.sim.CFL;
+
 			prog_u=1;
 			prog_v=0;
+			prog_u_prev=prog_u;
+			prog_v_prev=prog_v;
 			semiLagrangian.semi_lag_departure_points_settls(
 							prog_u_prev,
 							prog_v_prev,
@@ -1076,18 +1086,19 @@ public:
 							posy_d,
 							stag_displacement
 					);
+
 			prog_u_prev = prog_u;
 			prog_v_prev = prog_v;
 
-			DataArray<2> new_prog_h(prog_h.resolution);
 			sampler2D.bicubic_scalar(
 					prog_h,
 					posx_d,
 					posy_d,
-					new_prog_h
+					tmp
 			);
 
-			prog_h = new_prog_h;
+			prog_h = tmp;
+
 		}
 		else
 		{

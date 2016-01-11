@@ -129,6 +129,7 @@ public:
 			return std::sin(2.0*dx)*std::cos(2.0*dy) - (1.0/5.0)*std::cos(2.0*dx)*std::sin(4.0*dy) + i_parameters.setup.h0;
 		}
 
+
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
 		return 0;
 	}
@@ -229,6 +230,8 @@ public:
 			double dy = y/i_parameters.sim.domain_size[1]*i_parameters.setup.initial_freq_y_mul*M_PIl;
 			return std::cos(4.0*dx)*std::cos(2.0*dy);
 		}
+
+
 
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
 		return 0;
