@@ -1921,23 +1921,6 @@ reference "eq:beta_conjugate_symmetry"
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Standard
-
-\series bold
-(TODO: Is this reformulation in the last line really allowed?!? We are computing
- the conjugate on 
-\begin_inset Formula $\tau L$
-\end_inset
-
-)
-\series default
-
-\begin_inset Newline newline
-\end_inset
-
 Since the imaginary parts cancel out for 
 \begin_inset Formula $Re(a+\overline{a})=a+\overline{a}$
 \end_inset
@@ -1966,7 +1949,7 @@ This allows us to reduce the computational amount almost by a factor of
  giving the real valued solution
 \begin_inset Formula 
 \[
-e^{\tau L}\approx\sum_{n=0}^{N}\frac{\gamma_{n}^{Re}}{\tau L+\alpha_{n}}
+U(\tau)=e^{\tau L}U(0)\approx\sum_{n=0}^{N}\gamma_{n}^{Re}\left(\tau L+\alpha_{n}\right)^{-1}U(0)
 \]
 
 \end_inset
@@ -2146,37 +2129,13 @@ as we use it later on.
 e^{\tau L} & \approx & \sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}(\tau\Sigma\Lambda\Sigma^{H}+\alpha_{n}I)^{-1}\right)\nonumber \\
  & = & \sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}(\Sigma(\tau\Lambda\Sigma^{H}+\alpha_{n}\Sigma^{H}))^{-1}\right)\nonumber \\
  & = & \sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}(\Sigma(\tau\Lambda+\alpha_{n}\Sigma^{H}\Sigma)\Sigma^{H})^{-1}\right)\nonumber \\
- & = & \sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}\Sigma^{H}(\tau\Lambda+\alpha_{n})^{-1}\Sigma\right)\nonumber \\
- & = & \Sigma^{H}\left[\sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}(\tau\Lambda+\alpha_{n})^{-1}\right)\right]\Sigma\nonumber \\
- & = & \Sigma^{H}e^{\tau\Lambda}\Sigma\label{eq:expLeigen}
+ & = & \sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}\Sigma(\tau\Lambda+\alpha_{n})^{-1}\Sigma^{H}\right)TODO:\,is\,this\,correct?\nonumber \\
+ & = & \Sigma\left[\sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}(\tau\Lambda+\alpha_{n})^{-1}\right)\right]\Sigma^{H}\nonumber \\
+ & \approx & \Sigma e^{\tau\Lambda}\Sigma^{H}\label{eq:expLeigen}
 \end{eqnarray}
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Standard
-
-\series bold
-@ALL: equation 
-\begin_inset CommandInset ref
-LatexCommand eqref
-reference "eq:expL"
-
-\end_inset
-
- and 
-\begin_inset CommandInset ref
-LatexCommand eqref
-reference "eq:expLeigen"
-
-\end_inset
-
- should match, but are not.
-\end_layout
-
-\begin_layout Standard
 Note, that we use the same REXI approximation for different 
 \begin_inset Formula $\lambda_{j}$
 \end_inset
@@ -2640,7 +2599,7 @@ We can compute
 \end_inset
 
  for a spectral solver and this is the reason for this brief excursion.
- We use the annotation 
+ We use 
 \begin_inset Formula $\tilde{}$
 \end_inset
 
@@ -2768,7 +2727,7 @@ We like to close this section with a brief discussion of
 \begin_layout Standard
 \begin_inset Formula 
 \[
-(L-\frac{\alpha}{\tau})^{-1}U(\tau)\tau^{-1}=U(0)
+\left(L-\frac{\alpha}{\tau}\right)^{-1}U\tau^{-1}=U_{0}
 \]
 
 \end_inset
@@ -2826,6 +2785,345 @@ reference "sec:mat_exp"
 \end_inset
 
  needs to be larger.
+\end_layout
+
+\begin_layout Subsection
+Numerical Dispersion
+\end_layout
+
+\begin_layout Standard
+We continue to (try to) analyze possible dispersion effects of the REXI
+ approximation.
+ Here, we assume that we use an accurate solver to compute 
+\begin_inset Formula $(L-\alpha_{i})^{-1}$
+\end_inset
+
+.
+ We are interested in answering the question which error is introduced when
+ not using enough terms in the approximation.
+\end_layout
+
+\begin_layout Standard
+According to 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:mat_exp"
+
+\end_inset
+
+, we can decompose the linear operator into EVals and EVects and write the
+ approximation in the following way:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+e^{\tau L}\approx\Sigma\left[\sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}(\tau\Lambda+\alpha_{n})^{-1}\right)\right]\Sigma^{H}.
+\]
+
+\end_inset
+
+Let the solution 
+\begin_inset Formula $U$
+\end_inset
+
+ be given given in spectral basis by
+\begin_inset Formula 
+\[
+U(x,y,t):=e^{i(kx+ly-\sigma t)}.
+\]
+
+\end_inset
+
+For a selected modes 
+\begin_inset Formula $(k_{1},k_{2})$
+\end_inset
+
+ at a specific point in time 
+\begin_inset Formula $\tau$
+\end_inset
+
+, the solution and operators in spectral space (denoted by 
+\begin_inset Formula $\hat{}$
+\end_inset
+
+) are then given by 
+\series bold
+(TODO: Check if this reformulation is allowed)
+\series default
+
+\begin_inset Formula 
+\[
+\hat{U}(k_{1},k_{2},\tau)=e^{\tau L}\approx\hat{\Sigma}\left[\sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}(\tau\hat{\Lambda}+\alpha_{n})^{-1}\right)\right]\hat{\Sigma}^{H}U(0).
+\]
+
+\end_inset
+
+Case A) For 
+\begin_inset Formula $k_{1}\neq0$
+\end_inset
+
+ and 
+\begin_inset Formula $k_{2}\neq0$
+\end_inset
+
+, we know that 
+\begin_inset Formula $\hat{\Lambda}$
+\end_inset
+
+contains eigenvalues
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="3">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="right" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="left" valignment="top">
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Vortical mode:
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\omega_{0}=0$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+Gravitational modes:
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\omega_{\pm1}=\pm\sqrt{4\pi^{2}(\eta_{0}gk_{1}^{2}+\eta_{0}gk_{2}^{2})+f^{2}}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Case B) For 
+\begin_inset Formula $k_{1}=k_{2}=0$
+\end_inset
+
+, we get the eigenvalues
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="3">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="right" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="left" valignment="top">
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Vortical mode:
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\omega_{0}=0$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+Gravitational modes:
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\omega_{\pm1}=\pm f$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+These eigenvalues describe the frequency in 
+\begin_inset Formula $\hat{\Lambda}$
+\end_inset
+
+ which we approximate.
+ As soon as this frequency cannot be approximated anymore with REXI, this
+ results in errors in the dispersion of this particular frequency.
+\end_layout
+
+\begin_layout Standard
+
+\emph on
+Vortical modes
+\emph default
+: Since the vortical modes are always zero, we do not expect any errors
+ in these modes 
+\series bold
+(TODO: This sounds very very strange - can this be correct?)
+\series default
+.
+\end_layout
+
+\begin_layout Standard
+
+\emph on
+Gravitational modes: 
+\emph default
+We can observe that errors in the frequency 
+\begin_inset Formula $\omega_{\pm1}$
+\end_inset
+
+ in case A area generated.
+ The dominating frequency is only dependent on 
+\begin_inset Formula $\eta_{0}$
+\end_inset
+
+ and 
+\begin_inset Formula $g$
+\end_inset
+
+ in case of
+\begin_inset Formula 
+\[
+4\pi^{2}(\eta_{0}gk_{1}^{2}+\eta_{0}gk_{2}^{2})=4\pi^{2}\eta_{0}g|k|^{2}>f^{2}
+\]
+
+\end_inset
+
+and 
+\begin_inset Formula $f$
+\end_inset
+
+ otherwise.
+ The Coriolis frequency 
+\begin_inset Formula $f$
+\end_inset
+
+ is also independent of the spatial frequency, hence also the resolution.
+ 
+\series bold
+(TODO: Check this entire section)
 \end_layout
 
 \begin_layout Subsection
