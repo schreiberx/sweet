@@ -1,0 +1,402 @@
+OMP_NUM_THREADS=4
+
+SWEET environment variables loaded
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+
+
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+
+
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0
+FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+FFTW_WISDOM_nofreq_T0
+
+FFTW_WISDOM_nofreq_T0
+FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT threadFFTW_WISDOM_nofreq_T0Using REXI parallel sum, hence using only single FFT thread
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+
+Using REXI parallel sum, hence using only single FFT thread
+
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT threadLoading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+
+
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+
+Using REXI parallel sum, hence using only single FFT threadLoading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+
+
+
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+
+Using REXI parallel sum, hence using only single FFT threadFFTW_WISDOM_nofreq_T0Using REXI parallel sum, hence using only single FFT threadFFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+FFTW_WISDOM_nofreq_T0
+
+
+FFTW_WISDOM_nofreq_T0
+FFTW_WISDOM_nofreq_T0Using REXI parallel sum, hence using only single FFT thread
+FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0Using REXI parallel sum, hence using only single FFT threadFFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+
+
+Using REXI parallel sum, hence using only single FFT thread
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadLoading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+
+FFTW_WISDOM_nofreq_T0Using REXI parallel sum, hence using only single FFT thread
+FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+
+FFTW_WISDOM_nofreq_T0
+FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Using REXI parallel sum, hence using only single FFT thread
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+Using REXI parallel sum, hence using only single FFT thread
+
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Using REXI parallel sum, hence using only single FFT thread
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+
+Using REXI parallel sum, hence using only single FFT thread
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+Using REXI parallel sum, hence using only single FFT thread
+
+FFTW_WISDOM_nofreq_T0
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+
+
+Using REXI parallel sum, hence using only single FFT threadLoading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+Using REXI parallel sum, hence using only single FFT thread
+
+
+
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+FFTW_WISDOM_nofreq_T0
+FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0
+FFTW_WISDOM_nofreq_T0
+
+Using REXI parallel sum, hence using only single FFT threadFFTW_WISDOM_nofreq_T0
+FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0Using REXI parallel sum, hence using only single FFT thread
+FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0Using REXI parallel sum, hence using only single FFT threadFFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Using REXI parallel sum, hence using only single FFT thread
+
+Using REXI parallel sum, hence using only single FFT thread
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+
+Using REXI parallel sum, hence using only single FFT thread
+
+
+
+Using REXI parallel sum, hence using only single FFT thread
+FFTW_WISDOM_nofreq_T0
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+
+
+
+
+FFTW_WISDOM_nofreq_T0
+
+Using REXI parallel sum, hence using only single FFT thread
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Using REXI parallel sum, hence using only single FFT thread
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadLoading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+Using REXI parallel sum, hence using only single FFT thread
+Using REXI parallel sum, hence using only single FFT threadFFTW_WISDOM_nofreq_T0Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+
+
+FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+
+
+
+
+
+
+Using REXI parallel sum, hence using only single FFT threadFFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0Using REXI parallel sum, hence using only single FFT threadLoading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Using REXI parallel sum, hence using only single FFT threadLoading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Using REXI parallel sum, hence using only single FFT threadLoading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+
+
+FFTW_WISDOM_nofreq_T0
+FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0
+FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT threadFFTW_WISDOM_nofreq_T0
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0Using REXI parallel sum, hence using only single FFT thread
+FFTW_WISDOM_nofreq_T0
+FFTW_WISDOM_nofreq_T0
+FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+Using REXI parallel sum, hence using only single FFT thread
+
+
+
+Using REXI parallel sum, hence using only single FFT thread
+
+Using REXI parallel sum, hence using only single FFT thread
+
+
+
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+
+FFTW_WISDOM_nofreq_T0
+FFTW_WISDOM_nofreq_T0
+
+Using REXI parallel sum, hence using only single FFT thread
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Using REXI parallel sum, hence using only single FFT threadLoading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Using REXI parallel sum, hence using only single FFT threadLoading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+Using REXI parallel sum, hence using only single FFT threadFFTW_WISDOM_nofreq_T0Using REXI parallel sum, hence using only single FFT threadFFTW_WISDOM_nofreq_T0Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+
+
+
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+
+FFTW_WISDOM_nofreq_T0
+FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+
+
+
+
+
+Using REXI parallel sum, hence using only single FFT thread
+Using REXI parallel sum, hence using only single FFT threadFFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Using REXI parallel sum, hence using only single FFT threadLoading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+
+FFTW_WISDOM_nofreq_T0
+FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT threadFFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0Using REXI parallel sum, hence using only single FFT threadFFTW_WISDOM_nofreq_T0Using REXI parallel sum, hence using only single FFT thread
+FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+Using REXI parallel sum, hence using only single FFT thread
+
+
+
+Using REXI parallel sum, hence using only single FFT thread
+
+
+
+
+
+Using REXI parallel sum, hence using only single FFT thread
+
+
+
+
+FFTW_WISDOM_nofreq_T0
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+
+Using REXI parallel sum, hence using only single FFT thread
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadLoading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadLoading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+Using REXI parallel sum, hence using only single FFT threadFFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+
+
+
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+
+FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+
+FFTW_WISDOM_nofreq_T0
+
+Using REXI parallel sum, hence using only single FFT thread
+
+FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Using REXI parallel sum, hence using only single FFT thread
+
+FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+
+FFTW_WISDOM_nofreq_T0
+FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0
+FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Using REXI parallel sum, hence using only single FFT thread
+FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0Using REXI parallel sum, hence using only single FFT threadFFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0
+FFTW_WISDOM_nofreq_T0
+
+
+
+
+Using REXI parallel sum, hence using only single FFT thread
+
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+
+Using REXI parallel sum, hence using only single FFT thread
+
+
+
+
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+Using REXI parallel sum, hence using only single FFT threadFFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+Using REXI parallel sum, hence using only single FFT threadLoading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadFFTW_WISDOM_nofreq_T0Using REXI parallel sum, hence using only single FFT thread
+
+
+
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+
+FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+FFTW_WISDOM_nofreq_T0
+
+Using REXI parallel sum, hence using only single FFT threadLoading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Using REXI parallel sum, hence using only single FFT thread
+FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0
+FFTW_WISDOM_nofreq_T0
+FFTW_WISDOM_nofreq_T0
+FFTW_WISDOM_nofreq_T0
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+
+
+
+
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0Using REXI parallel sum, hence using only single FFT threadFFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0
+
+
+
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Simulation time (seconds): 0.089442
+Number of time steps: 10
+Time per time step: 0.0089442 sec/ts
+Last time step size: 5
+REXI alpha.size(): 16396
+DIAGNOSTICS ANALYTICAL RMS H:	6.36206177155e-06
+DIAGNOSTICS ANALYTICAL RMS U:	8.04654201744e-06
+DIAGNOSTICS ANALYTICAL RMS V:	2.6769440828e-06
+DIAGNOSTICS ANALYTICAL MAXABS H:	1.48285749495e-05
+DIAGNOSTICS ANALYTICAL MAXABS U:	2.01371595717e-05
+DIAGNOSTICS ANALYTICAL MAXABS V:	7.19778131048e-06
+real 4.81
+user 0.10
+sys 0.23

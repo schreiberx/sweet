@@ -1,0 +1,18 @@
+#TI Threads vs. simulation time N^2=256^2, DT=50, A=1
+#TX Simulation type
+#TY number of threads (compact)
+threads\SimType	nr_spec_spec_agrid
+1 cores (1 ranks / 1 threads)	637.170217
+2 cores (1 ranks / 2 threads)	374.492134
+4 cores (1 ranks / 4 threads)	225.464318
+6 cores (1 ranks / 6 threads)	164.991794
+8 cores (1 ranks / 8 threads)	143.192186
+10 cores (1 ranks / 10 threads)	124.060117
+12 cores (1 ranks / 12 threads)	114.226451
+14 cores (1 ranks / 14 threads)	110.596787
+16 cores (1 ranks / 16 threads)	106.835101
+18 cores (1 ranks / 18 threads)	111.597071
+20 cores (1 ranks / 20 threads)	106.916811
+22 cores (1 ranks / 22 threads)	105.034705
+24 cores (1 ranks / 24 threads)	103.906328
+28 cores (1 ranks / 28 threads)	108.89818

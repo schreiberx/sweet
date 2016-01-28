@@ -866,6 +866,7 @@ This results in the following workload distribution for weak, strong and
 \begin_layout Standard
 \begin_inset Graphics
 	filename plot.pdf
+	width 100text%
 
 \end_inset
 

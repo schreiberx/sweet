@@ -1,0 +1,38 @@
+#TI Threads vs. simulation time N^2=256^2, DT=50, A=1
+#TX Simulation type
+#TY number of threads (compact)
+threads\SimType	nr_fd_cart_cgrid	rexi_m000064	rexi_par_m000064	rexi_m000092	rexi_par_m000092	rexi_m000128	rexi_par_m000128	rexi_m000256	rexi_par_m000256	rexi_m000512	rexi_par_m000512
+1 cores (1 ranks / 1 threads)	2687.447978	4.626655	4.800805	E	E	8.787265	8.631628	16.073661	16.449611	31.276791	32.144374
+12 cores (12 ranks / 1 threads)	-	E	E	E	E	E	E	E	E	E	E
+24 cores (24 ranks / 1 threads)	-	E	E	E	E	E	E	E	E	E	E
+48 cores (48 ranks / 1 threads)	-	E	E	E	E	E	E	E	E	E	E
+192 cores (192 ranks / 1 threads)	-	E	E	E	E	E	E	E	E	E	E
+768 cores (768 ranks / 1 threads)	-	E	E	E	E	E	E	E	E	E	E
+3072 cores (3072 ranks / 1 threads)	-	E	E	E	E	E	E	E	E	E	E
+4096 cores (4096 ranks / 1 threads)	-	0.745467	0.727864	E	E	0.714032	0.729859	0.744443	0.732245	0.826079	0.776352
+2 cores (1 ranks / 2 threads)	E	E	E	E	E	E	E	E	E	E	E
+24 cores (12 ranks / 2 threads)	-	E	E	E	E	E	E	E	E	E	E
+48 cores (24 ranks / 2 threads)	-	E	E	E	E	E	E	E	E	E	E
+96 cores (48 ranks / 2 threads)	-	E	E	E	E	E	E	E	E	E	E
+384 cores (192 ranks / 2 threads)	-	E	E	E	E	E	E	E	E	E	E
+1536 cores (768 ranks / 2 threads)	-	E	E	E	E	E	E	E	E	E	E
+4 cores (1 ranks / 4 threads)	1266.833841	1.459714	1.658624	E	E	2.587148	2.969236	5.649947	5.575467	10.691661	10.703973
+48 cores (12 ranks / 4 threads)	-	E	E	E	E	E	E	E	E	E	E
+96 cores (24 ranks / 4 threads)	-	E	E	E	E	E	E	E	E	E	E
+192 cores (48 ranks / 4 threads)	-	E	E	E	E	E	E	E	E	E	E
+768 cores (192 ranks / 4 threads)	-	E	E	E	E	E	E	E	E	E	E
+3072 cores (768 ranks / 4 threads)	-	E	E	E	E	E	E	E	E	E	E
+8 cores (1 ranks / 8 threads)	731.354638	0.783378	1.20663	E	E	1.383389	2.082596	2.631057	4.409704	5.080998	8.293184
+96 cores (12 ranks / 8 threads)	-	E	E	E	E	E	E	E	E	E	E
+192 cores (24 ranks / 8 threads)	-	E	E	E	E	E	E	E	E	E	E
+384 cores (48 ranks / 8 threads)	-	E	E	E	E	E	E	E	E	E	E
+1536 cores (192 ranks / 8 threads)	-	E	E	E	E	E	E	E	E	E	E
+14 cores (1 ranks / 14 threads)	456.589278	0.761299	1.882039	E	E	1.355432	3.220793	2.549891	5.737501	4.94534	11.116886
+168 cores (12 ranks / 14 threads)	-	E	E	E	E	E	E	E	E	E	E
+336 cores (24 ranks / 14 threads)	-	E	E	E	E	E	E	E	E	E	E
+672 cores (48 ranks / 14 threads)	-	E	E	E	E	E	E	E	E	E	E
+2688 cores (192 ranks / 14 threads)	-	E	E	E	E	E	E	E	E	E	E
+28 cores (1 ranks / 28 threads)	202.694738	0.618272	1.269342	E	E	1.122666	1.954941	2.141156	3.493951	4.065922	6.436116
+336 cores (12 ranks / 28 threads)	-	E	E	E	E	E	E	E	E	E	E
+672 cores (24 ranks / 28 threads)	-	E	E	E	E	E	E	E	E	E	E
+1344 cores (48 ranks / 28 threads)	-	E	E	E	E	E	E	E	E	E	E

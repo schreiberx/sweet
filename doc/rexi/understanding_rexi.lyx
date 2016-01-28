@@ -2818,44 +2818,72 @@ reference "sec:mat_exp"
 \begin_layout Standard
 \begin_inset Formula 
 \[
-e^{\tau L}\approx\Sigma\left[\sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}(\tau\Lambda+\alpha_{n})^{-1}\right)\right]\Sigma^{H}.
+e^{\tau L}\approx\Sigma\left[\sum_{n=0}^{N}Re\left(\gamma_{n}(\tau\Lambda+\alpha_{n})^{-1}\right)\right]\Sigma^{H}.
 \]
 
 \end_inset
 
-Let the solution 
-\begin_inset Formula $U$
+Alternatively without solving a linear operator, one can also think directly
+ about approximating a set of exponents given by 
+\begin_inset Formula $\Lambda$
 \end_inset
 
- be given given in spectral basis by
+ with
+\end_layout
+
+\begin_layout Standard
 \begin_inset Formula 
 \[
-U(x,y,t):=e^{i(kx+ly-\sigma t)}.
+e^{\tau\Lambda}\approx\sum_{n=0}^{N}\left(\gamma_{n}(\tau\Lambda+\alpha_{n})^{-1}\right).
 \]
 
 \end_inset
 
-For a selected modes 
+We can then use the spectral representation of the solution
+\begin_inset Formula 
+\[
+e^{\tau\hat{L}}=\hat{\Sigma}e^{\tau\hat{\Lambda}}\hat{\Sigma}^{H}
+\]
+
+\end_inset
+
+with 
+\begin_inset Formula $\hat{L}=\hat{\Sigma}\hat{\Lambda}$
+\end_inset
+
+the spectral EValue/EVector decomposition.
+ We can then approximate the exponential 
+\begin_inset Formula $e^{\tau\Lambda}$
+\end_inset
+
+ by
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+e^{\tau\hat{L}}\approx\hat{\Sigma}\sum_{n=0}^{N}\left(\gamma_{n}(\tau\hat{\Lambda}+\alpha_{n})^{-1}\right)\hat{\Sigma}^{H}
+\]
+
+\end_inset
+
+For selected modes 
 \begin_inset Formula $(k_{1},k_{2})$
 \end_inset
 
  at a specific point in time 
-\begin_inset Formula $\tau$
+\begin_inset Formula $\tau=\sigma$
 \end_inset
 
-, the solution and operators in spectral space (denoted by 
-\begin_inset Formula $\hat{}$
-\end_inset
+, the solution and operators in spectral space are then given by
+\end_layout
 
-) are then given by 
-\series bold
-(TODO: Check if this reformulation is allowed)
-\series default
-
+\begin_layout Standard
 \begin_inset Formula 
-\[
-\hat{U}(k_{1},k_{2},\tau)=e^{\tau L}\approx\hat{\Sigma}\left[\sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}(\tau\hat{\Lambda}+\alpha_{n})^{-1}\right)\right]\hat{\Sigma}^{H}U(0).
-\]
+\begin{align*}
+\hat{U}(k_{1},k_{2},\tau)= & e^{\tau\hat{L}_{k_{1},k_{2}}}\hat{U}(k_{1},k_{2},0)\\
+\approx & \hat{\Sigma}_{k_{1},k_{2}}\left[\sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}(\tau\hat{\Lambda}_{k_{1},k_{2}}+\alpha_{n})^{-1}\right)\right]\hat{\Sigma}_{k_{1},k_{2}}^{H}\hat{U}(k_{1},k_{2},0).
+\end{align*}
 
 \end_inset
 
@@ -3073,16 +3101,26 @@ These eigenvalues describe the frequency in
 \end_layout
 
 \begin_layout Standard
+With the computational requirements (M) of REXI being related to the fastest
+ waves, we can identify the requirement 
+\begin_inset Formula $M\sim\sqrt{\eta_{0}g}$
+\end_inset
+
+ and 
+\begin_inset Formula $M\sim f$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
 
 \emph on
 Vortical modes
 \emph default
-: Since the vortical modes are always zero, we do not expect any errors
- in these modes 
-\series bold
-(TODO: This sounds very very strange - can this be correct?)
-\series default
-.
+: Since the vortical modes are always zero, we do not expect any (analytical)
+ errors in these modes.
+ However, due to discretization, errors can accumulate and show up.
 \end_layout
 
 \begin_layout Standard
@@ -3116,14 +3154,33 @@ and
 \end_inset
 
  otherwise.
+ The factor 
+\begin_inset Formula $4\pi^{2}$
+\end_inset
+
+ shows up since our domain is on 
+\begin_inset Formula $\Omega=[0;1]^{2}$
+\end_inset
+
+.
  The Coriolis frequency 
 \begin_inset Formula $f$
 \end_inset
 
  is also independent of the spatial frequency, hence also the resolution.
- 
-\series bold
-(TODO: Check this entire section)
+\end_layout
+
+\begin_layout Standard
+Furthermore, we can observe a relation to the Rossby radius given by
+\begin_inset Formula 
+\[
+L_{R}:=4\pi\text{²}\frac{\sqrt{g\eta_{0}}}{f}
+\]
+
+\end_inset
+
+which describes at which scale at the Coriolis effect also strongly contributes
+ to the simulation results compared to the gravitational and height values.
 \end_layout
 
 \begin_layout Subsection

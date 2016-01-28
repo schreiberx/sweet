@@ -3,6 +3,7 @@
 \documentclass[english]{article}
 \usepackage[T1]{fontenc}
 \usepackage[latin9]{inputenc}
+\usepackage{textcomp}
 \usepackage{amsmath}
 \usepackage{esint}
 
@@ -363,10 +364,6 @@ and using the properties \eqref{eq:alpha_conjugate_symmetry} and
 \sum_{n=-N}^{-1}Re\left(\frac{\beta_{n}^{Re}}{\tau L+\alpha_{n}}\right)+Re\left(\frac{\beta_{0}^{Re}}{\tau L+\alpha_{0}}\right)+\sum_{n=-N}^{-1}Re\left(\frac{\overline{\beta_{N}^{Re}}}{\tau L+\overline{\alpha_{N}}}\right)\\
 =\sum_{n=-N}^{-1}\left(Re\left(\frac{\beta_{n}^{Re}}{\tau L+\alpha_{n}}+\overline{\left(\frac{\beta_{n}^{Re}}{\tau L+\alpha_{n}}\right)}\right)\right)+Re\left(\frac{\beta_{0}^{Re}}{\tau L+\alpha_{0}}\right).
 \end{align*}
-
-
-\textbf{(TODO: Is this reformulation in the last line really allowed?!?
-We are computing the conjugate on $\tau L$)}\\
 Since the imaginary parts cancel out for $Re(a+\overline{a})=a+\overline{a}$
 and with $\alpha_{0}$ and $\beta_{0}$ being only real-valued, we
 can simplify the equation to
@@ -376,7 +373,7 @@ e^{\tau L}\approx\sum_{n=-N}^{N}Re\left(\frac{\beta_{n}^{Re}}{\tau L+\alpha_{n}}
 This allows us to reduce the computational amount almost by a factor
 of two for solving $(L+\alpha)^{-1}$ giving the real valued solution
 \[
-e^{\tau L}\approx\sum_{n=0}^{N}\frac{\gamma_{n}^{Re}}{\tau L+\alpha_{n}}
+U(\tau)=e^{\tau L}U(0)\approx\sum_{n=0}^{N}\gamma_{n}^{Re}\left(\tau L+\alpha_{n}\right)^{-1}U(0)
 \]
 with 
 \[
@@ -442,15 +439,10 @@ as
 e^{\tau L} & \approx & \sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}(\tau\Sigma\Lambda\Sigma^{H}+\alpha_{n}I)^{-1}\right)\nonumber \\
  & = & \sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}(\Sigma(\tau\Lambda\Sigma^{H}+\alpha_{n}\Sigma^{H}))^{-1}\right)\nonumber \\
  & = & \sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}(\Sigma(\tau\Lambda+\alpha_{n}\Sigma^{H}\Sigma)\Sigma^{H})^{-1}\right)\nonumber \\
- & = & \sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}\Sigma^{H}(\tau\Lambda+\alpha_{n})^{-1}\Sigma\right)\nonumber \\
- & = & \Sigma^{H}\left[\sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}(\tau\Lambda+\alpha_{n})^{-1}\right)\right]\Sigma\nonumber \\
- & = & \Sigma^{H}e^{\tau\Lambda}\Sigma\label{eq:expLeigen}
+ & = & \sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}\Sigma(\tau\Lambda+\alpha_{n})^{-1}\Sigma^{H}\right)TODO:\,is\,this\,correct?\nonumber \\
+ & = & \Sigma\left[\sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}(\tau\Lambda+\alpha_{n})^{-1}\right)\right]\Sigma^{H}\nonumber \\
+ & \approx & \Sigma e^{\tau\Lambda}\Sigma^{H}\label{eq:expLeigen}
 \end{eqnarray}
-
-
-\textbf{@ALL: equation \eqref{eq:expL} and \eqref{eq:expLeigen}
-should match, but are not.}
-
 Note, that we use the same REXI approximation for different $\lambda_{j}$.
 Hence, the approximation has to be sufficiently accurate over the
 entire range of all Eigenvalues$\lambda_{j}$ which is what we use
@@ -565,7 +557,7 @@ r_{0}=-\frac{\kappa^{2}}{\alpha}\eta_{0}+\frac{1}{g}\delta_{0}+\frac{f}{\alpha g
 \]
 
 
-Multiplying the equation \eqref{eq:ellip}by $-g\bar{\eta}$ gives 
+Multiplying the equation \eqref{eq:ellip}by $-g\bar{\eta}$ gives
 
 \[
 ((\alpha^{2}+f^{2})-g\bar{\eta}\Delta)\eta=\frac{f^{2}+\alpha^{2}}{\alpha}\eta_{0}-\bar{\eta}\delta_{0}-\frac{f\bar{\eta}}{\alpha}\zeta_{0}
@@ -575,10 +567,9 @@ Multiplying the equation \eqref{eq:ellip}by $-g\bar{\eta}$ gives
 We can compute$\eta$ with any elliptic solver. Special attention
 has to be given to the LHS of the form $(\gamma-\Delta)\eta$ for
 a spectral solver and this is the reason for this brief excursion.
-We use the annotation $\tilde{}$ to annotate an operator or quantity
-to be given in spectral space. Then, we factor $\tilde{\eta}$ in
-and write form of the LHS in spectral space with the identity matrix
-$I$ as
+We use $\tilde{}$ to annotate an operator or quantity to be given
+in spectral space. Then, we factor $\tilde{\eta}$ in and write form
+of the LHS in spectral space with the identity matrix $I$ as
 \[
 (\gamma I\tilde{\eta}-\tilde{\Delta}\tilde{\eta})=(\gamma I-\tilde{\Delta})\tilde{\eta}
 \]
@@ -619,7 +610,7 @@ We like to close this section with a brief discussion of $\tau$ by
 having a look on the REXI reformulation
 
 \[
-(L-\frac{\alpha}{\tau})^{-1}U(\tau)\tau^{-1}=U(0)
+\left(L-\frac{\alpha}{\tau}\right)^{-1}U\tau^{-1}=U_{0}
 \]
 We see, that for an increasing $\tau$, hence an integration in time
 over a larger time period, the poles given by $\alpha$ are getting
@@ -634,6 +625,92 @@ of the coarse time step,
 
 Indeed, we saw in section \ref{sec:mat_exp} that for larger $\tau$,
 $M$ needs to be larger.
+
+
+\subsection{Numerical Dispersion}
+
+We continue to (try to) analyze possible dispersion effects of the
+REXI approximation. Here, we assume that we use an accurate solver
+to compute $(L-\alpha_{i})^{-1}$. We are interested in answering
+the question which error is introduced when not using enough terms
+in the approximation.
+
+According to \ref{sec:mat_exp}, we can decompose the linear operator
+into EVals and EVects and write the approximation in the following
+way:
+
+\[
+e^{\tau L}\approx\Sigma\left[\sum_{n=0}^{N}Re\left(\gamma_{n}(\tau\Lambda+\alpha_{n})^{-1}\right)\right]\Sigma^{H}.
+\]
+Alternatively without solving a linear operator, one can also think
+directly about approximating a set of exponents given by $\Lambda$
+with
+
+\[
+e^{\tau\Lambda}\approx\sum_{n=0}^{N}\left(\gamma_{n}(\tau\Lambda+\alpha_{n})^{-1}\right).
+\]
+We can then use the spectral representation of the solution
+\[
+e^{\tau\hat{L}}=\hat{\Sigma}e^{\tau\hat{\Lambda}}\hat{\Sigma}^{H}
+\]
+with $\hat{L}=\hat{\Sigma}\hat{\Lambda}$the spectral EValue/EVector
+decomposition. We can then approximate the exponential $e^{\tau\Lambda}$
+by
+
+\[
+e^{\tau\hat{L}}\approx\hat{\Sigma}\sum_{n=0}^{N}\left(\gamma_{n}(\tau\hat{\Lambda}+\alpha_{n})^{-1}\right)\hat{\Sigma}^{H}
+\]
+For selected modes $(k_{1},k_{2})$ at a specific point in time $\tau=\sigma$,
+the solution and operators in spectral space are then given by
+
+\begin{align*}
+\hat{U}(k_{1},k_{2},\tau)= & e^{\tau\hat{L}_{k_{1},k_{2}}}\hat{U}(k_{1},k_{2},0)\\
+\approx & \hat{\Sigma}_{k_{1},k_{2}}\left[\sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}(\tau\hat{\Lambda}_{k_{1},k_{2}}+\alpha_{n})^{-1}\right)\right]\hat{\Sigma}_{k_{1},k_{2}}^{H}\hat{U}(k_{1},k_{2},0).
+\end{align*}
+Case A) For $k_{1}\neq0$ and $k_{2}\neq0$, we know that $\hat{\Lambda}$contains
+eigenvalues
+
+\begin{tabular}{rcl}
+Vortical mode: &  & $\omega_{0}=0$\tabularnewline
+Gravitational modes: &  & $\omega_{\pm1}=\pm\sqrt{4\pi^{2}(\eta_{0}gk_{1}^{2}+\eta_{0}gk_{2}^{2})+f^{2}}$\tabularnewline
+\end{tabular}\\
+Case B) For $k_{1}=k_{2}=0$, we get the eigenvalues
+
+\begin{tabular}{rcl}
+Vortical mode: &  & $\omega_{0}=0$\tabularnewline
+Gravitational modes: &  & $\omega_{\pm1}=\pm f$\tabularnewline
+\end{tabular}\\
+These eigenvalues describe the frequency in $\hat{\Lambda}$ which
+we approximate. As soon as this frequency cannot be approximated anymore
+with REXI, this results in errors in the dispersion of this particular
+frequency.
+
+With the computational requirements (M) of REXI being related to the
+fastest waves, we can identify the requirement $M\sim\sqrt{\eta_{0}g}$
+and $M\sim f$.
+
+\emph{Vortical modes}: Since the vortical modes are always zero, we
+do not expect any (analytical) errors in these modes. However, due
+to discretization, errors can accumulate and show up.
+
+\emph{Gravitational modes: }We can observe that errors in the frequency
+$\omega_{\pm1}$ in case A area generated. The dominating frequency
+is only dependent on $\eta_{0}$ and $g$ in case of
+\[
+4\pi^{2}(\eta_{0}gk_{1}^{2}+\eta_{0}gk_{2}^{2})=4\pi^{2}\eta_{0}g|k|^{2}>f^{2}
+\]
+and $f$ otherwise. The factor $4\pi^{2}$ shows up since our domain
+is on $\Omega=[0;1]^{2}$. The Coriolis frequency $f$ is also independent
+of the spatial frequency, hence also the resolution.
+
+Furthermore, we can observe a relation to the Rossby radius given
+by
+\[
+L_{R}:=4\pi\text{\texttwosuperior}\frac{\sqrt{g\eta_{0}}}{f}
+\]
+which describes at which scale at the Coriolis effect also strongly
+contributes to the simulation results compared to the gravitational
+and height values.
 
 
 \subsection{Complex solver}

@@ -377,6 +377,11 @@ print "*"*80
 # Output C-Code
 #
 if True:
+	print
+	print("*"*80)
+	print("* INFO: s0/s1: Domain size in X/Y direction")
+	print("*"*80)
+	print
 	print("*"*80)
 	print(" C CODE OUTPUT for LNr "+str(LNr))
 	print("*"*80)
