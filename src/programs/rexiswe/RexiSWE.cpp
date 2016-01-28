@@ -7,6 +7,8 @@
 #include "RexiSWE.hpp"
 #include <cmath>
 
+
+
 #ifndef SWEET_REXI_THREAD_PARALLEL_SUM
 #	define SWEET_REXI_THREAD_PARALLEL_SUM 1
 #endif
@@ -66,6 +68,7 @@ RexiSWE::RexiSWE()	:
 }
 
 
+
 void RexiSWE::cleanup()
 {
 	for (std::vector<PerThreadVars*>::iterator iter = perThreadVars.begin(); iter != perThreadVars.end(); iter++)
@@ -77,9 +80,21 @@ void RexiSWE::cleanup()
 	perThreadVars.resize(0);
 }
 
+
+
 RexiSWE::~RexiSWE()
 {
 	cleanup();
+
+#if SWEET_BENCHMARK_REXI
+	if (mpi_rank == 0)
+	{
+		std::cout << "STOPWATCH broadcast: " << stopwatch_broadcast() << std::endl;
+		std::cout << "STOPWATCH preprocessing: " << stopwatch_preprocessing() << std::endl;
+		std::cout << "STOPWATCH reduce: " << stopwatch_reduce() << std::endl;
+		std::cout << "STOPWATCH solve_rexi_terms: " << stopwatch_solve_rexi_terms() << std::endl;
+	}
+#endif
 }
 
 
@@ -90,7 +105,7 @@ RexiSWE::~RexiSWE()
 void RexiSWE::setup(
 		double i_h,						///< sampling size
 		int i_M,						///< number of sampling points
-		int i_L,						///< number of sampling points for Gaussian approx
+		int i_L,						///< number of sampling points for Gaussian approx.
 										///< set to 0 for auto detection
 
 		std::size_t *i_resolution,		///< resolution of domain
@@ -199,7 +214,6 @@ void RexiSWE::setup(
 #endif
 	for (int i = 0; i < num_local_rexi_par_threads; i++)
 	{
-
 #if SWEET_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
 //		int global_thread_id = omp_get_thread_num() + mpi_rank*num_local_rexi_par_threads;
 		if (omp_get_thread_num() != i)
@@ -237,6 +251,14 @@ void RexiSWE::setup(
 		perThreadVars[i]->u_sum.setAll(0, 0);
 		perThreadVars[i]->v_sum.setAll(0, 0);
 	}
+
+
+#if SWEET_BENCHMARK_REXI
+	stopwatch_preprocessing.reset();
+	stopwatch_broadcast.reset();
+	stopwatch_reduce.reset();
+	stopwatch_solve_rexi_terms.reset();
+#endif
 }
 
 
@@ -343,14 +365,25 @@ bool RexiSWE::run_timestep(
 
 #if SWEET_MPI
 
+#if SWEET_BENCHMARK_REXI
+	if (mpi_rank == 0)
+		stopwatch_broadcast.start();
+#endif
+
 	std::size_t data_size = io_h.resolution[0]*io_h.resolution[1];
 	MPI_Bcast(io_h.array_data_cartesian_space, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
 	if (std::isnan(io_h.get(0,0)))
 		return false;
 
+
 	MPI_Bcast(io_u.array_data_cartesian_space, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	MPI_Bcast(io_v.array_data_cartesian_space, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+#if SWEET_BENCHMARK_REXI
+	if (mpi_rank == 0)
+		stopwatch_broadcast.stop();
+#endif
 
 #endif
 
@@ -362,7 +395,19 @@ bool RexiSWE::run_timestep(
 #endif
 	for (int i = 0; i < num_local_rexi_par_threads; i++)
 	{
-//		std::cout << omp_get_thread_num() << std::endl;
+#if SWEET_BENCHMARK_REXI
+		bool stopwatch_measure = false;
+	#if SWEET_REXI_THREAD_PARALLEL_SUM
+		if (omp_get_thread_num() == 0)
+	#endif
+			if (mpi_rank == 0)
+				stopwatch_measure = true;
+#endif
+
+#if SWEET_BENCHMARK_REXI
+		if (stopwatch_measure)
+			stopwatch_preprocessing.start();
+#endif
 
 		double eta_bar = i_parameters.setup.h0;
 		double g = i_parameters.sim.g;
@@ -437,6 +482,17 @@ bool RexiSWE::run_timestep(
 			Complex2DArrayFFT rhs_b = (op_diff_c_x(v0) - op_diff_c_y(u0));
 			Complex2DArrayFFT lhs_a = (-g*eta_bar)*(perThreadVars[i]->op_diff2_c_x + perThreadVars[i]->op_diff2_c_y);
 
+#if SWEET_BENCHMARK_REXI
+			if (stopwatch_measure)
+				stopwatch_preprocessing.stop();
+#endif
+
+#if SWEET_BENCHMARK_REXI
+			if (stopwatch_measure)
+				stopwatch_solve_rexi_terms.start();
+#endif
+
+
 			for (std::size_t n = start; n < end; n++)
 			{
 				// load alpha (a) and scale by inverse of tau
@@ -474,6 +530,12 @@ bool RexiSWE::run_timestep(
 				u_sum += u1.toCart()*beta;
 				v_sum += v1.toCart()*beta;
 			}
+
+#if SWEET_BENCHMARK_REXI
+			if (stopwatch_measure)
+				stopwatch_solve_rexi_terms.stop();
+#endif
+
 		}
 		else
 		{
@@ -518,6 +580,16 @@ bool RexiSWE::run_timestep(
 			 */
 			Complex2DArrayFFT rhs_a = eta_bar*(op_diff_c_x(u0) + op_diff_c_y(v0));
 			Complex2DArrayFFT rhs_b = (op_diff_c_x(v0) - op_diff_c_y(u0));
+
+#if SWEET_BENCHMARK_REXI
+		if (stopwatch_measure)
+			stopwatch_preprocessing.stop();
+#endif
+
+#if SWEET_BENCHMARK_REXI
+			if (stopwatch_measure)
+				stopwatch_solve_rexi_terms.start();
+#endif
 
 			for (std::size_t n = start; n < end; n++)
 			{
@@ -667,8 +739,18 @@ bool RexiSWE::run_timestep(
 				u_sum += u1.toCart()*beta;
 				v_sum += v1.toCart()*beta;
 			}
+#if SWEET_BENCHMARK_REXI
+			if (stopwatch_measure)
+				stopwatch_solve_rexi_terms.stop();
+#endif
 		}
 	}
+
+#if SWEET_BENCHMARK_REXI
+	if (mpi_rank == 0)
+		stopwatch_reduce.start();
+#endif
+
 
 #if SWEET_REXI_THREAD_PARALLEL_SUM
 	io_h.set_all(0);
@@ -678,7 +760,6 @@ bool RexiSWE::run_timestep(
 	for (int n = 0; n < num_local_rexi_par_threads; n++)
 	{
 		// sum real-valued elements
-
 		#pragma omp parallel for schedule(static)
 		for (std::size_t i = 0; i < io_h.array_data_cartesian_length; i++)
 			io_h.array_data_cartesian_space[i] += perThreadVars[n]->h_sum.data[i<<1];
@@ -700,6 +781,7 @@ bool RexiSWE::run_timestep(
 
 #endif
 
+
 #if SWEET_MPI
 	DataArray<2> tmp(io_h.resolution);
 
@@ -717,7 +799,12 @@ bool RexiSWE::run_timestep(
 
 	MPI_Reduce(io_v.array_data_cartesian_space, tmp.array_data_cartesian_space, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 	std::swap(io_v.array_data_cartesian_space, tmp.array_data_cartesian_space);
+#endif
 
+
+#if SWEET_BENCHMARK_REXI
+	if (mpi_rank == 0)
+		stopwatch_reduce.stop();
 #endif
 
 	return true;

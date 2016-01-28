@@ -18,6 +18,13 @@
 #include "../rexiswe/RexiSWE_HelmholtzSolver.hpp"
 
 
+#define SWEET_BENCHMARK_REXI	0
+
+#if SWEET_BENCHMARK_REXI
+#	include <sweet/Stopwatch.hpp>
+#endif
+
+
 #if SWEET_MPI
 #	include <mpi.h>
 #endif
@@ -49,6 +56,13 @@ class RexiSWE
 	bool use_spec_diffs;
 
 	std::size_t block_size;
+
+#if SWEET_BENCHMARK_REXI
+	Stopwatch stopwatch_preprocessing;
+	Stopwatch stopwatch_broadcast;
+	Stopwatch stopwatch_reduce;
+	Stopwatch stopwatch_solve_rexi_terms;
+#endif
 
 	class PerThreadVars
 	{
@@ -120,6 +134,7 @@ public:
 	 * This is here to compare speedups and such a solver cannot be applied in general,
 	 * e.g. with special general boundary values
 	 */
+public:
 	void helmholtz_spectral_solver_cart(
 			std::complex<double> i_kappa,
 			double i_gh0,
@@ -149,6 +164,7 @@ public:
 	 * This is here to compare speedups and such a solver cannot be applied in general,
 	 * e.g. with special general boundary values
 	 */
+public:
 	void helmholtz_spectral_solver_spec(
 			std::complex<double> i_kappa,
 			double i_gh0,
@@ -174,6 +190,7 @@ public:
 	 *
 	 *
 	 */
+public:
 	bool run_timestep_implicit_ts(
 		DataArray<2> &io_h,
 		DataArray<2> &io_u,
@@ -194,6 +211,7 @@ public:
 	 * 		doc/rexi/understanding_rexi.pdf
 	 * for further information
 	 */
+public:
 	bool run_timestep(
 		DataArray<2> &io_h,
 		DataArray<2> &io_u,
@@ -218,6 +236,7 @@ public:
 	 * Don't use this function to frequently, since it always computes
 	 * the required coefficients on-the-fly which is expensive.
 	 */
+public:
 	void run_timestep_direct_solution(
 			DataArray<2> &io_h,
 			DataArray<2> &io_u,
@@ -230,6 +249,7 @@ public:
 	);
 
 
+public:
 	inline
 	static
 	void MPI_quitWorkers(
