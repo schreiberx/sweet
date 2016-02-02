@@ -2125,14 +2125,13 @@ as we use it later on.
 
  with our EV decomposition as
 \begin_inset Formula 
-\begin{eqnarray}
-e^{\tau L} & \approx & \sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}(\tau\Sigma\Lambda\Sigma^{H}+\alpha_{n}I)^{-1}\right)\nonumber \\
- & = & \sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}(\Sigma(\tau\Lambda\Sigma^{H}+\alpha_{n}\Sigma^{H}))^{-1}\right)\nonumber \\
- & = & \sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}(\Sigma(\tau\Lambda+\alpha_{n}\Sigma^{H}\Sigma)\Sigma^{H})^{-1}\right)\nonumber \\
- & = & \sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}\Sigma(\tau\Lambda+\alpha_{n})^{-1}\Sigma^{H}\right)TODO:\,is\,this\,correct?\nonumber \\
- & = & \Sigma\left[\sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}(\tau\Lambda+\alpha_{n})^{-1}\right)\right]\Sigma^{H}\nonumber \\
- & \approx & \Sigma e^{\tau\Lambda}\Sigma^{H}\label{eq:expLeigen}
-\end{eqnarray}
+\begin{eqnarray*}
+e^{\tau L} & \approx & \sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}(\tau\Sigma\Lambda\Sigma^{-1}+\alpha_{n}I)^{-1}\right)\\
+ & = & \sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}(\Sigma(\tau\Lambda\Sigma^{-1}+\alpha_{n}\Sigma^{-1}))^{-1}\right)\\
+ & = & \sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}(\Sigma^{-1}(\tau\Lambda+\alpha_{n}\Sigma^{-1}\Sigma)){}^{-1}\Sigma^{-1}\right)\\
+ & = & \sum_{n=-N}^{N}Re\left(\beta_{n}^{Re}\Sigma(\tau\Lambda+\alpha_{n})^{-1}\Sigma^{-1}\right)\\
+ & = & \approx\Sigma e^{\tau\Lambda}\Sigma^{H}
+\end{eqnarray*}
 
 \end_inset
 
