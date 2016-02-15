@@ -39,10 +39,11 @@ public:
 	REXI(
 			double i_h,	///< sampling width
 			int i_M,	///< approximation area
-			int i_L = 0	///< L, see Gaussian approximation
+			int i_L = 0,	///< L, see Gaussian approximation
+			bool i_reduce_to_half = true
 	)
 	{
-		setup(i_h, i_M, i_L);
+		setup(i_h, i_M, i_L, i_reduce_to_half);
 	}
 
 
@@ -136,7 +137,7 @@ public:
 			double i_x	///< sampling position
 	)
 	{
-		return std::exp(complex(0,1)*i_x);
+		return std::exp(complex(0,i_x));
 	}
 
 

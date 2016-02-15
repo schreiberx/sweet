@@ -23,7 +23,7 @@ int main(int i_argc, char *i_argv[])
 	double max_error_threshold = 1e-9;
 	double max_error_threshold_machine = 1e-12;
 
-#if 0
+#if 1
 	if (1)
 	{
 		std::cout << "******************************************************" << std::endl;
@@ -31,7 +31,7 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "******************************************************" << std::endl;
 		GaussianApproximation ga;
 
-		for (double h = 8; h > 0.1; h *= 0.5)
+		for (double h = 0.2; h > 0.001; h *= 0.5)
 		{
 			double start = -100.0;
 			double end = 100.0;
@@ -54,15 +54,16 @@ int main(int i_argc, char *i_argv[])
 			}
 		}
 	}
+#endif
 
-
+#if 1
 	if (1)
 	{
 		std::cout << "******************************************************" << std::endl;
 		std::cout << "EVALUATING EXPONENTIAL APPROXIMATION with approx Gaussian (approx_e_ix)" << std::endl;
 		std::cout << "******************************************************" << std::endl;
 
-		for (double h = 1; h > 0.001; h *= 0.5)
+		for (double h = 0.2; h > 0.005; h *= 0.5)
 		{
 			int M = 32/h;
 			ExponentialApproximation ea(h, M);
@@ -88,20 +89,20 @@ int main(int i_argc, char *i_argv[])
 			}
 		}
 	}
+#endif
 
-
-
+#if 1
 	if (1)
 	{
 		std::cout << "******************************************************" << std::endl;
 		std::cout << "REXI complex" << std::endl;
 		std::cout << "******************************************************" << std::endl;
 
-		for (double h = 1; h > 0.01; h *= 0.5)
+		for (double h = 0.2; h > 0.005; h *= 0.5)
 		{
 			int M = 256/h;
 
-			REXI rexi(h, M);
+			REXI rexi(h, M, 0, false);
 
 			double start = -2.0;
 			double end = 2.0;
@@ -111,6 +112,9 @@ int main(int i_argc, char *i_argv[])
 
 			for (double x = start; x < end; x += step_size)
 			{
+//				std::cout << "x: " << x << std::endl;
+//				std::cout << "exp(ix): " << rexi.eval_e_ix(x) << std::endl;
+//				std::cout << "approx. exp(ix): " << rexi.approx_e_ix(x) << std::endl;
 				double error = std::abs(rexi.eval_e_ix(x) - rexi.approx_e_ix(x));
 				max_error = std::max(max_error, error);
 			}
@@ -124,18 +128,20 @@ int main(int i_argc, char *i_argv[])
 			}
 		}
 	}
+#endif
 
+#if 1
 	if (1)
 	{
 		std::cout << "******************************************************" << std::endl;
 		std::cout << "REXI real" << std::endl;
 		std::cout << "******************************************************" << std::endl;
 
-		for (double h = 1; h > 0.01; h *= 0.5)
+		for (double h = 0.2; h > 0.005; h *= 0.5)
 		{
 			int M = 256/h;
 
-			REXI rexi(h, M);
+			REXI rexi(h, M, 0, false);
 
 			double start = -2.0;
 			double end = 2.0;
@@ -145,6 +151,10 @@ int main(int i_argc, char *i_argv[])
 
 			for (double x = start; x < end; x += step_size)
 			{
+//				std::cout << std::endl;
+//				std::cout << "x: " << x << std::endl;
+//				std::cout << "exp(ix): " << rexi.eval_e_ix(x).real() << std::endl;
+//				std::cout << "approx. exp(ix): " << rexi.approx_e_ix(x).real() << std::endl;
 				double error_real = std::abs(rexi.eval_e_ix(x).real() - rexi.approx_e_ix_returnReal(x));
 				max_error = std::max(max_error, error_real);
 			}
@@ -158,18 +168,20 @@ int main(int i_argc, char *i_argv[])
 			}
 		}
 	}
+#endif
 
+#if 1
 	if (1)
 	{
 		std::cout << "******************************************************" << std::endl;
 		std::cout << "REXI imag" << std::endl;
 		std::cout << "******************************************************" << std::endl;
 
-		for (double h = 1; h > 0.01; h *= 0.5)
+		for (double h = 1; h > 0.005; h *= 0.5)
 		{
 			int M = 256.0/h;
 
-			REXI rexi(h, M);
+			REXI rexi(h, M, 0, false);
 
 			double start = -2.0;
 			double end = 2.0;
@@ -194,7 +206,8 @@ int main(int i_argc, char *i_argv[])
 	}
 #endif
 
-	if (1)
+#if 0
+	if (0)
 	{
 		std::size_t res[2] = {128, 128};
 
@@ -450,6 +463,7 @@ int main(int i_argc, char *i_argv[])
 			}
 		}
 	}
+#endif
 
 
 	return 0;

@@ -61,9 +61,10 @@ public:
 		double scalar_Dy = inv_helm_h[1]*inv_helm_h[1];
 		double scalar_C = -(2.0*(inv_helm_h[0]*inv_helm_h[0]) + 2.0*(inv_helm_h[1]*inv_helm_h[1]));
 
-//		std::cout << "scalar_Dx: " << scalar_Dx << std::endl;
-//		std::cout << "scalar_Dy: " << scalar_Dy << std::endl;
-//		std::cout << "scalar_C: " << scalar_C << std::endl;
+		std::cout << "kappa: " << i_kappa << std::endl;
+		std::cout << "scalar_Dx: " << scalar_Dx << std::endl;
+		std::cout << "scalar_Dy: " << scalar_Dy << std::endl;
+		std::cout << "scalar_C: " << scalar_C << std::endl;
 
 		std::complex<double> inv_diag = 1.0/(i_kappa - i_gh0*scalar_C);
 
