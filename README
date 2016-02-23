@@ -12,6 +12,7 @@ File structure:
 	build/		Build directory, note, that also /tmp is used for storing object files
 	data/		Data such as OpenGL shaders
 	doc/		Documentation
+	local_software	3rd party software with installer scripts
 	package/	Used for creating tarballs to deploy to servers
 	python_mods/	Python helper files
 	src/		Source folder
