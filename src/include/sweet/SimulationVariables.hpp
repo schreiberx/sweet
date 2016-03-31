@@ -386,6 +386,16 @@ public:
 				continue;
 			}
 
+
+			if (optarg != nullptr)
+			{
+				if (optarg[0] == '=')
+				{
+					std::cerr << "Short option parameters may not be specified with an equal '=' sign!" << std::endl;
+					exit(-1);
+				}
+			}
+
 			switch (opt)
 			{
 			/*
@@ -576,6 +586,7 @@ public:
 				for (std::size_t i = 0; i < sizeof(help_strings)/sizeof(*help_strings); i++)
 					std::cerr << help_strings[i] << std::endl;
 
+				std::cerr << std::endl;
 				std::cerr << "Unknown option '" << (char)opt << "'" << std::endl;
 				return false;
 			}
