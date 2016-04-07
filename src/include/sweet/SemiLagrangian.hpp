@@ -177,6 +177,7 @@ public:
 		int iters = 0;
 		for (; iters < 10; iters++)
 		{
+			std::cout<<iters<<std::endl;
 			// r_d = r_a - dt/2 * v_n(r_d) - v^{iter}(r_d)
 			rx_d_new = i_posx_a - dt*0.5 * i_u - sample2D.bilinear_scalar(u_iter, o_posx_d, o_posy_d, i_staggering[0], i_staggering[1]);
 			ry_d_new = i_posy_a - dt*0.5 * i_v - sample2D.bilinear_scalar(v_iter, o_posx_d, o_posy_d, i_staggering[2], i_staggering[3]);
@@ -185,11 +186,27 @@ public:
 			rx_d_prev = rx_d_new;
 			ry_d_prev = ry_d_new;
 
+			// r_d_new with zeros - if add print the solves the problem
+
+			//std::cout<<"rdnew_x"<<std::endl;
+			//rx_d_new.printArrayData();
+			//std::cout<<"rdnew_y"<<std::endl;
+			//ry_d_new.printArrayData();
+			//std::cout<<" "<<std::endl;
+
+
 			for (std::size_t i = 0; i < o_posx_d.resolution[0]*o_posx_d.resolution[1]; i++)
 			{
 				o_posx_d.array_data_cartesian_space[i] = sample2D.wrapPeriodic(rx_d_new.array_data_cartesian_space[i], sample2D.domain_size[0]);
+				 std::cout<<i<<'\t'<<o_posx_d.array_data_cartesian_space[i]<<'\t'<< rx_d_new.array_data_cartesian_space[i] << '\t'<< sample2D.domain_size[0] <<std::endl;
 				o_posy_d.array_data_cartesian_space[i] = sample2D.wrapPeriodic(ry_d_new.array_data_cartesian_space[i], sample2D.domain_size[1]);
 			}
+
+			std::cout<<"Departure_x"<<std::endl;
+			o_posx_d.printArrayData();
+			std::cout<<"Departure_y"<<std::endl;
+			o_posy_d.printArrayData();
+
 
 			if (diff < 1e-8)
 			   break;

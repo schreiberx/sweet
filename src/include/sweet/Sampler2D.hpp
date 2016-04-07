@@ -58,7 +58,7 @@ public:
 
 public:
 	/**
-	 * wrap the position i in a periodic domain of size d
+	 * wrap the position i in a periodic domain of size i_res
 	 */
 	template <typename T>
 	inline
@@ -73,6 +73,7 @@ public:
 			i -= i_res;
 
 		assert(i >= 0 && i < i_res);
+
 		return i;
 	}
 
