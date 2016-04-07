@@ -2787,6 +2787,168 @@ reference "sec:mat_exp"
 \end_layout
 
 \begin_layout Subsection
+Errors and fault tolerance
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+TODO: CHECK THIS, IT MIGHT BE WRONG
+\end_layout
+
+\begin_layout Standard
+One question arising is what the error is in case that one term of the REXI
+ approximation is not computed.
+ We assume that this will depend on 
+\begin_inset Formula $\alpha_{i}$
+\end_inset
+
+ and continue investigating this further
+\end_layout
+
+\begin_layout Standard
+Directly analysing the errors with the formulation 
+\begin_inset Formula $\left(L-\alpha\right)^{-1}U=U_{0}$
+\end_inset
+
+ seems to be relatively challenging and we therefore decide to start direclty
+ with the Helmholtz formulation
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+
+\begin_inset Formula 
+\[
+((\alpha^{2}+f^{2})-g\bar{\eta}\Delta)\eta=\frac{f^{2}+\alpha^{2}}{\alpha}\eta_{0}-\bar{\eta}\delta_{0}-\frac{f\bar{\eta}}{\alpha}\zeta_{0}
+\]
+
+\end_inset
+
+and use the spectral space with selected frequencies 
+\begin_inset Formula $\eta=exp(ikx)$
+\end_inset
+
+ for all quantities
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\bar default
+\strikeout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+.
+\end_layout
+
+\begin_layout Standard
+Using the spectral representation leads to
+\end_layout
+
+\begin_layout Standard
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+\begin_inset Formula 
+\[
+((\alpha^{2}+f^{2})+g\bar{\eta}k^{2})\hat{\eta}=\frac{f^{2}+\alpha^{2}}{\alpha}\hat{\eta}_{0}-\bar{\eta ik}(\hat{u}+\hat{v})-\frac{f\bar{\eta}}{\alpha}ik(\hat{v}-\hat{u})
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Solving this for 
+\begin_inset Formula $\hat{\eta}$
+\end_inset
+
+ yields
+\end_layout
+
+\begin_layout Standard
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+\begin_inset Formula 
+\[
+\hat{\eta}=\frac{\frac{f^{2}+\alpha^{2}}{\alpha}\hat{\eta}_{0}-\bar{\eta ik}(\hat{u}+\hat{v})-\frac{f\bar{\eta}}{\alpha}ik(\hat{v}-\hat{u})}{((\alpha^{2}+f^{2})+g\bar{\eta}k^{2})}
+\]
+
+\end_inset
+
+Considering the tabulated alpha values, we observe a constant real alpha
+ value and increasing imaginary parts for larger 
+\begin_inset Formula $N$
+\end_inset
+
+.
+ Hence, also the denominator increases and results in relatively small solutions
+ 
+\begin_inset Formula $\hat{\eta}.$
+\end_inset
+
+ The same accounts for the explicit formulation to compute the velocities.
+\end_layout
+
+\begin_layout Standard
+We tested this imperically with the code in helmholtz_problem_fault_tolerance.py.
+\end_layout
+
+\begin_layout Standard
+Additinally, we can also observe significantly decreasing 
+\begin_inset Formula $\beta_{i}$
+\end_inset
+
+ for increasing 
+\begin_inset Formula $i$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+To conclude, the amplitude (the real part) decreases significantly with
+ increasing 
+\begin_inset Formula $\alpha_{i}$
+\end_inset
+
+ values.
+ 
+\series bold
+TODO: CHECK THIS, IT MIGHT BE WRONG
+\end_layout
+
+\begin_layout Subsection
 Numerical Dispersion
 \end_layout
 
