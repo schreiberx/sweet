@@ -201,10 +201,13 @@ public:
 			rx_d_new = i_posx_a - dt*0.5 * i_u - sample2D.bilinear_scalar(u_iter, o_posx_d, o_posy_d, i_staggering[0], i_staggering[1]);
 			ry_d_new = i_posy_a - dt*0.5 * i_v - sample2D.bilinear_scalar(v_iter, o_posx_d, o_posy_d, i_staggering[2], i_staggering[3]);
 
+
+#if 0
+			// in case of using spectral space, first convert the data to Cartesian space
+			// to make it directly
 			rx_d_new.requestDataInCartesianSpace();
 			ry_d_new.requestDataInCartesianSpace();
 
-#if 0
 			std::cout << "i_posx_a:" << std::endl;
 //			i_posx_a.get(0,0);
 			std::cout << i_posx_a.array_data_cartesian_space[2] << std::endl;
@@ -223,6 +226,9 @@ public:
 			rx_d_prev = rx_d_new;
 			ry_d_prev = ry_d_new;
 
+			rx_d_new.requestDataInCartesianSpace();
+			ry_d_new.requestDataInCartesianSpace();
+
 			for (std::size_t i = 0; i < o_posx_d.resolution[0]*o_posx_d.resolution[1]; i++)
 			{
 				o_posx_d.array_data_cartesian_space[i] = sample2D.wrapPeriodic(rx_d_new.array_data_cartesian_space[i], sample2D.domain_size[0]);
@@ -232,10 +238,10 @@ public:
 			if (diff < 1e-8)
 			   break;
 
-			//std::cout << iters << " : " << diff << std::endl;
+			std::cout << iters << " : " << diff << std::endl;
 
 		}
-	//		std::cout << iters << std::endl;
+		std::cout << iters << std::endl;
 	}
 };
 
