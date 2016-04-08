@@ -19,7 +19,8 @@ env = Environment(ENV = os.environ)
 ###################################################################
 # fix LD LIB PATH
 ###################################################################
-env.Append(LIBPATH=[os.environ['LD_LIBRARY_PATH'].split(':')])
+if 'LD_LIBRARY_PATH' in os.environ:
+	env.Append(LIBPATH=[os.environ['LD_LIBRARY_PATH'].split(':')])
 
 files = os.listdir('src/programs/')
 files = sorted(files)
