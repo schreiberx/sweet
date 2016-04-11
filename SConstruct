@@ -203,6 +203,18 @@ env['sweet_mpi'] = GetOption('sweet_mpi')
 
 
 
+AddOption(	'--parareal',
+		dest='parareal',
+		type='choice',
+		choices=['none', 'serial','mpi'],
+		default='none',
+		help='Enable Parareal (none, serial, mpi) [default: %default]\nOnly works, if Parareal is supported by the simulation'
+)
+env['parareal'] = GetOption('parareal')
+
+
+
+
 AddOption(      '--program',
 		dest='program',
 		type='choice',
@@ -324,6 +336,16 @@ if env['spectral_dealiasing'] == 'enable':
 else:
 	env.Append(CXXFLAGS = ' -DSWEET_USE_SPECTRAL_DEALIASING=0')
 	
+
+if env['parareal'] == 'none':
+	env.Append(CXXFLAGS = ' -DSWEET_PARAREAL=0')
+elif env['parareal'] == 'serial':
+	env.Append(CXXFLAGS = ' -DSWEET_PARAREAL=1')
+elif env['parareal'] == 'mpi':
+	env.Append(CXXFLAGS = ' -DSWEET_PARAREAL=2')
+else:
+	print "Invalid option '"+str(env['parareal'])+"' for parareal method"
+	sys.exit(1)
 	
 
 if env['gui']=='enable':

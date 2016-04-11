@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include "rexiswe/RexiSWE.hpp"
 
+
 #ifndef SWEET_MPI
 #	define SWEET_MPI 1
 #endif
@@ -25,6 +26,12 @@
 #if SWEET_MPI
 #	include <mpi.h>
 #endif
+
+#ifndef SWEET_PARAREAL
+#	define SWEET_PARAREAL 1
+#endif
+#include <parareal/Parareal.hpp>
+
 
 SimulationVariables simVars;
 
@@ -46,7 +53,8 @@ double param_initial_freq_y_mul;
 int param_boundary_id;
 bool param_nonlinear;
 
-class SimulationSWE
+class SimulationSWE :
+		public PararealSimulation_Base
 {
 public:
 	DataArray<2> prog_h, prog_u, prog_v;
@@ -106,9 +114,36 @@ public:
 		t0_prog_v(simVars.disc.res),
 
 		op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
+#if SWEET_PARAREAL != 0
+		,
+		_parareal_data_coarse_h(simVars.disc.res), _parareal_data_coarse_u(simVars.disc.res), _parareal_data_coarse_v(simVars.disc.res),
+		_parareal_data_output_h(simVars.disc.res), _parareal_data_output_u(simVars.disc.res), _parareal_data_output_v(simVars.disc.res)
+#endif
 	{
 		reset();
+
+#if SWEET_PARAREAL != 0
+		{
+			DataArray<2>* data_array[3] = {&prog_h, &prog_u, &prog_v};
+			parareal_data_fine.setup(data_array);
+		}
+
+		{
+			DataArray<2>* data_array[3] = {&_parareal_data_coarse_h, &_parareal_data_coarse_u, &_parareal_data_coarse_v};
+			parareal_data_coarse.setup(data_array);
+		}
+
+		{
+			DataArray<2>* data_array[3] = {&_parareal_data_output_h, &_parareal_data_output_u, &_parareal_data_output_v};
+			parareal_data_output.setup(data_array);
+		}
+#endif
 	}
+
+	virtual ~SimulationSWE()
+	{
+	}
+
 
 
 	void reset()
@@ -1448,6 +1483,162 @@ public:
 					prog_v.reduce_all_finite()
 				);
 	}
+
+
+#if SWEET_PARAREAL != 0
+
+	/******************************************************
+	 ******************************************************
+	 *       ************** PARAREAL **************
+	 ******************************************************
+	 ******************************************************/
+
+	PararealData_DataArrays<3> parareal_data_fine;
+
+	DataArray<2> _parareal_data_coarse_h, _parareal_data_coarse_u, _parareal_data_coarse_v;
+	PararealData_DataArrays<3> parareal_data_coarse;
+
+	DataArray<2> _parareal_data_output_h, _parareal_data_output_u, _parareal_data_output_v;
+	PararealData_DataArrays<3> parareal_data_output;
+
+
+	void parareal_setup()
+	{
+		{
+			DataArray<2>* data_array[3] = {&prog_h, &prog_u, &prog_v};
+			parareal_data_fine.setup(data_array);
+		}
+
+		{
+			DataArray<2>* data_array[3] = {&_parareal_data_coarse_h, &_parareal_data_coarse_u, &_parareal_data_coarse_v};
+			parareal_data_coarse.setup(data_array);
+		}
+
+		{
+			DataArray<2>* data_array[3] = {&_parareal_data_output_h, &_parareal_data_output_u, &_parareal_data_output_v};
+			parareal_data_output.setup(data_array);
+		}
+	}
+
+
+
+	/**
+	 * Set the start and end of the coarse time step
+	 */
+	void sim_set_timeframe(
+			double i_timeframe_start,	///< start timestamp of coarse time step
+			double i_timeframe_end		///< end time stamp of coarse time step
+	)
+	{
+
+	}
+
+	/**
+	 * Set the initial data at i_timeframe_start
+	 */
+	void sim_setup_initial_data(
+	)
+	{
+
+	}
+
+	/**
+	 * Set simulation data to data given in i_sim_data.
+	 * This can be data which is computed by another simulation.
+	 * Y^S := i_sim_data
+	 */
+	void sim_set_data(
+			PararealData &i_pararealData
+	)
+	{
+
+	}
+
+	/**
+	 * Set the MPI communicator to use for simulation purpose
+	 * (TODO: not yet implemented since our parallelization-in-space
+	 * is done only via OpenMP)
+	 */
+	void sim_set_mpi_comm(
+			int i_mpi_comm
+	)
+	{
+
+	}
+
+	/**
+	 * compute solution on time slice with fine timestep:
+	 * Y^F := F(Y^S)
+	 */
+	void run_timestep_fine()
+	{
+
+	}
+
+
+	/**
+	 * return the data after running computations with the fine timestepping:
+	 * return Y^F
+	 */
+	PararealData& get_data_timestep_fine()
+	{
+		return parareal_data_fine;
+	}
+
+
+	/**
+	 * compute solution with coarse timestepping:
+	 * Y^C := G(Y^S)
+	 */
+	void run_timestep_coarse()
+	{
+
+	}
+
+
+	/**
+	 * return the solution after the coarse timestepping:
+	 * return Y^C
+	 */
+	PararealData& get_data_timestep_coarse()
+	{
+		return parareal_data_coarse;
+	}
+
+
+	/**
+	 * Compute the error between the fine and coarse timestepping:
+	 * Y^E := Y^F - Y^C
+	 */
+	void compute_difference()
+	{
+
+	}
+
+
+	/**
+	 * Compute the data to be forwarded to the next time step
+	 * Y^O := Y^C + Y^E
+	 *
+	 * Return: Error indicator based on the computed error norm between the
+	 * old values and new values
+	 */
+	void compute_output_data()
+	{
+
+	}
+
+
+	/**
+	 * Return the data to be forwarded to the next coarse time step interval:
+	 * return Y^O
+	 */
+	PararealData& get_output_data()
+	{
+		return parareal_data_output;
+	}
+
+#endif
 };
 
 

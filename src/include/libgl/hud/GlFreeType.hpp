@@ -26,6 +26,7 @@
 #define CGLFREETYPE_HPP_
 
 #include <algorithm>
+#include <array>
 #include <ft2build.h>
 #include <libgl/core/GlBuffer.hpp>
 #include <libgl/core/GlProgram.hpp>
