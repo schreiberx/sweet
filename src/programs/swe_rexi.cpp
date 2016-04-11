@@ -289,9 +289,9 @@ public:
 		posx_a = pos_x+0.5*simVars.disc.cell_size[0];
 		posy_a = pos_y+0.5*simVars.disc.cell_size[1];
 
-		std::cout << std::endl;
-		std::cout << "posx_a: " << posx_a.array_data_cartesian_space_valid << std::endl;
-		std::cout << std::endl;
+		//std::cout << std::endl;
+		//std::cout << "posx_a: " << posx_a.array_data_cartesian_space_valid << std::endl;
+		//std::cout << std::endl;
 
 		// Set initial conditions given from SWEValidationBenchmarks
 		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
@@ -345,7 +345,7 @@ public:
 
 		//Initialise t-dt time step with initial condition
 		prog_h_prev = prog_h;
-		std::cout << "prog_h_prev.array_data_cartesian_space_valid " << prog_h_prev.array_data_cartesian_space_valid << std::endl;
+		//std::cout << "prog_h_prev.array_data_cartesian_space_valid " << prog_h_prev.array_data_cartesian_space_valid << std::endl;
 		prog_u_prev = prog_u;
 		prog_v_prev = prog_v;
 
@@ -1009,15 +1009,6 @@ public:
 				V = prog_v;
 				H = prog_h;
 
-				std::cout<<"Calculated dep points"<<std::endl;
-				std::cout<<"Arrival_x"<<std::endl;
-				posx_a.printArrayData();
-				std::cout<<"Arrival_y"<<std::endl;
-				posy_a.printArrayData();
-				std::cout<<"Departure_x"<<std::endl;
-				posx_d.printArrayData();
-				std::cout<<"Departure_y"<<std::endl;
-				posy_d.printArrayData();
 
 				if(param_nonlinear==2) //Linear with nonlinear advection only (valid for nondivergent flows
 				{
@@ -1029,7 +1020,7 @@ public:
 										simVars,
 										param_rexi_zero_before_solving
 					);
-					std::cout<<"Did a REXI step"<<std::endl;
+					//std::cout<<"Did a REXI step"<<std::endl;
 					//Now interpolate to the the departure points
 					//Departure points are set for physical space
 
@@ -1061,7 +1052,7 @@ public:
 											stag_v[1]
 					);
 
-					std::cout<<"interpolated vars to dep points"<<std::endl;
+					//std::cout<<"interpolated vars to dep points"<<std::endl;
 
 					prog_u = U;
 					prog_v = V;

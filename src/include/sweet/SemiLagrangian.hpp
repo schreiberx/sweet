@@ -178,6 +178,11 @@ public:
 		o_posx_d = i_posx_a;
 		o_posy_d = i_posy_a;
 
+		//std::cout<<"i_posx_a"<<std::endl;
+		//i_posx_a.printArrayData();
+		//std::cout<<"i_posy_a"<<std::endl;
+		//i_posy_a.printArrayData();
+
 #if SWEET_USE_SPECTRAL_SPACE
 		o_posx_d.array_data_cartesian_space_valid = true;
 		o_posy_d.array_data_cartesian_space_valid = true;
@@ -197,31 +202,15 @@ public:
 		int iters = 0;
 		for (; iters < 10; iters++)
 		{
-			std::cout<<iters<<std::endl;
+			//std::cout<<iters<<std::endl;
 			// r_d = r_a - dt/2 * v_n(r_d) - v^{iter}(r_d)
 			rx_d_new = i_posx_a - dt*0.5 * i_u - sample2D.bilinear_scalar(u_iter, o_posx_d, o_posy_d, i_staggering[0], i_staggering[1]);
 			ry_d_new = i_posy_a - dt*0.5 * i_v - sample2D.bilinear_scalar(v_iter, o_posx_d, o_posy_d, i_staggering[2], i_staggering[3]);
 
-
-#if 0
-			// in case of using spectral space, first convert the data to Cartesian space
-			// to make it directly
-			rx_d_new.requestDataInCartesianSpace();
-			ry_d_new.requestDataInCartesianSpace();
-
-			std::cout << "i_posx_a:" << std::endl;
-//			i_posx_a.get(0,0);
-			std::cout << i_posx_a.array_data_cartesian_space[2] << std::endl;
-			std::cout << i_posx_a << std::endl;
-
-			std::cout << "rx_d_new:" << std::endl;
-			std::cout << rx_d_new.array_data_cartesian_space_valid << std::endl;
-			std::cout << rx_d_new.array_data_cartesian_space[2] << std::endl;
-			std::cout << rx_d_new << std::endl;
-
-			std::cout << std::endl;
-			exit(1);
-#endif
+			//std::cout<<"u_iter"<<std::endl;
+			//u_iter.printArrayData();
+			//std::cout<<"v_iter"<<std::endl;
+			//v_iter.printArrayData();
 
 			double diff = (rx_d_new - rx_d_prev).reduce_maxAbs() + (ry_d_new - ry_d_prev).reduce_maxAbs();
 			rx_d_prev = rx_d_new;
@@ -234,23 +223,23 @@ public:
 			for (std::size_t i = 0; i < o_posx_d.resolution[0]*o_posx_d.resolution[1]; i++)
 			{
 				o_posx_d.array_data_cartesian_space[i] = sample2D.wrapPeriodic(rx_d_new.array_data_cartesian_space[i], sample2D.domain_size[0]);
-				 std::cout<<i<<'\t'<<o_posx_d.array_data_cartesian_space[i]<<'\t'<< rx_d_new.array_data_cartesian_space[i] << '\t'<< sample2D.domain_size[0] <<std::endl;
+				 //std::cout<<i<<'\t'<<o_posx_d.array_data_cartesian_space[i]<<'\t'<< rx_d_new.array_data_cartesian_space[i] << '\t'<< sample2D.domain_size[0] <<std::endl;
 				o_posy_d.array_data_cartesian_space[i] = sample2D.wrapPeriodic(ry_d_new.array_data_cartesian_space[i], sample2D.domain_size[1]);
 			}
 
-			std::cout<<"Departure_x"<<std::endl;
-			o_posx_d.printArrayData();
-			std::cout<<"Departure_y"<<std::endl;
-			o_posy_d.printArrayData();
+			//std::cout<<"Departure_x"<<std::endl;
+			//o_posx_d.printArrayData();
+			//std::cout<<"Departure_y"<<std::endl;
+			//o_posy_d.printArrayData();
 
 
 			if (diff < 1e-8)
 			   break;
 
-			std::cout << iters << " : " << diff << std::endl;
+			//std::cout << iters << " : " << diff << std::endl;
 
 		}
-		std::cout << iters << std::endl;
+		//std::cout << iters << std::endl;
 	}
 };
 
