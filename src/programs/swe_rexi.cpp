@@ -1009,20 +1009,44 @@ public:
 				V = prog_v;
 				H = prog_h;
 
+				/*
+				 *
+				std::cout<<"U"<<std::endl;
+				U.printArrayData();
+				std::cout<<"V"<<std::endl;
+				V.printArrayData();
+				std::cout<<"H"<<std::endl;
+				H.printArrayData();
+				 */
+
+
 
 				if(param_nonlinear==2) //Linear with nonlinear advection only (valid for nondivergent flows
 				{
 					// First calculate the linear part
 					rexiSWE.run_timestep(
-										U, V, H,
+										H, U, V,
 										o_dt,
 										op,
 										simVars,
 										param_rexi_zero_before_solving
 					);
+					//std::cout<<std::endl;
 					//std::cout<<"Did a REXI step"<<std::endl;
+
 					//Now interpolate to the the departure points
 					//Departure points are set for physical space
+
+					/*
+
+					std::cout<<"U"<<std::endl;
+					U.printArrayData();
+					std::cout<<"V"<<std::endl;
+					V.printArrayData();
+					std::cout<<"H"<<std::endl;
+					H.printArrayData();
+
+					 */
 
 					//    interpolate the new h to physical grid
 					sampler2D.bicubic_scalar(
@@ -1038,7 +1062,7 @@ public:
 											U,
 											posx_d,
 											posy_d,
-											prog_h,
+											prog_u,
 											stag_u[0],
 											stag_u[1]
 					);
@@ -1072,6 +1096,7 @@ public:
 						simVars,
 						param_rexi_zero_before_solving
 				);
+
 			}
 
 		}
