@@ -81,7 +81,7 @@ public:
 		DataArray<2> ry_d_new(vx_n_prev.resolution);
 
 		DataArray<2> rx_d_prev = rx_a;
-		DataArray<2> ry_d_prev = rx_a;
+		DataArray<2> ry_d_prev = rx_a;	// TODO: is rx_a correct or should it be ry_a?
 
 		//DataArray<2>* r_d[2] = {&rx_d, &ry_d};
 
@@ -89,12 +89,14 @@ public:
 		rx_d = rx_a;
 		ry_d = ry_a;
 
-		int iters = 0;
-		for (; iters < 10; iters++)
+		int iters;
+		for (iters = 0; iters < 10; iters++)
 		{
 			// r_d = r_a - dt/2 * v_n(r_d) - v^{iter}(r_d)
 			rx_d_new = rx_a - dt*0.5 * vx_n - sample2D.bilinear_scalar(vx_iter, rx_d, ry_d, i_staggering[0], i_staggering[1]);
 			ry_d_new = ry_a - dt*0.5 * vy_n - sample2D.bilinear_scalar(vy_iter, rx_d, ry_d, i_staggering[2], i_staggering[3]);
+			std::cout << rx_d_new << std::endl;
+			exit(1);
 
 			double diff = (rx_d_new - rx_d_prev).reduce_maxAbs() + (ry_d_new - ry_d_prev).reduce_maxAbs();
 			rx_d_prev = rx_d_new;
@@ -136,6 +138,13 @@ public:
 			double *i_staggering = nullptr	///< staggering, if any (ux, uy, vx, vy)
 	)
 	{
+		i_u_prev.requestDataInCartesianSpace();
+		i_v_prev.requestDataInCartesianSpace();
+		i_u.requestDataInCartesianSpace();
+		i_v.requestDataInCartesianSpace();
+		i_posx_a.requestDataInCartesianSpace();
+		i_posy_a.requestDataInCartesianSpace();
+
 		if (i_staggering == nullptr)
 		{
 			static double constzerostuff[4] = {0,0,0,0};
@@ -172,6 +181,17 @@ public:
 #if SWEET_USE_SPECTRAL_SPACE
 		o_posx_d.array_data_cartesian_space_valid = true;
 		o_posy_d.array_data_cartesian_space_valid = true;
+		o_posx_d.array_data_spectral_space_valid = false;
+		o_posy_d.array_data_spectral_space_valid = false;
+
+		assert(i_posx_a.array_data_cartesian_space_valid);
+		assert(i_posy_a.array_data_cartesian_space_valid);
+
+		assert(i_u.array_data_cartesian_space_valid);
+		assert(i_v.array_data_cartesian_space_valid);
+
+		assert(i_u_prev.array_data_cartesian_space_valid);
+		assert(i_v_prev.array_data_cartesian_space_valid);
 #endif
 
 		int iters = 0;
@@ -182,17 +202,33 @@ public:
 			rx_d_new = i_posx_a - dt*0.5 * i_u - sample2D.bilinear_scalar(u_iter, o_posx_d, o_posy_d, i_staggering[0], i_staggering[1]);
 			ry_d_new = i_posy_a - dt*0.5 * i_v - sample2D.bilinear_scalar(v_iter, o_posx_d, o_posy_d, i_staggering[2], i_staggering[3]);
 
+
+#if 0
+			// in case of using spectral space, first convert the data to Cartesian space
+			// to make it directly
+			rx_d_new.requestDataInCartesianSpace();
+			ry_d_new.requestDataInCartesianSpace();
+
+			std::cout << "i_posx_a:" << std::endl;
+//			i_posx_a.get(0,0);
+			std::cout << i_posx_a.array_data_cartesian_space[2] << std::endl;
+			std::cout << i_posx_a << std::endl;
+
+			std::cout << "rx_d_new:" << std::endl;
+			std::cout << rx_d_new.array_data_cartesian_space_valid << std::endl;
+			std::cout << rx_d_new.array_data_cartesian_space[2] << std::endl;
+			std::cout << rx_d_new << std::endl;
+
+			std::cout << std::endl;
+			exit(1);
+#endif
+
 			double diff = (rx_d_new - rx_d_prev).reduce_maxAbs() + (ry_d_new - ry_d_prev).reduce_maxAbs();
 			rx_d_prev = rx_d_new;
 			ry_d_prev = ry_d_new;
 
-			// r_d_new with zeros - if add print the solves the problem
-
-			//std::cout<<"rdnew_x"<<std::endl;
-			//rx_d_new.printArrayData();
-			//std::cout<<"rdnew_y"<<std::endl;
-			//ry_d_new.printArrayData();
-			//std::cout<<" "<<std::endl;
+			rx_d_new.requestDataInCartesianSpace();
+			ry_d_new.requestDataInCartesianSpace();
 
 
 			for (std::size_t i = 0; i < o_posx_d.resolution[0]*o_posx_d.resolution[1]; i++)
@@ -211,10 +247,10 @@ public:
 			if (diff < 1e-8)
 			   break;
 
-			//std::cout << iters << " : " << diff << std::endl;
+			std::cout << iters << " : " << diff << std::endl;
 
 		}
-	//		std::cout << iters << std::endl;
+		std::cout << iters << std::endl;
 	}
 };
 

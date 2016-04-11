@@ -286,8 +286,12 @@ public:
 		}
 
 		//Initialize arrival points with h position
-		posx_a=pos_x+0.5*simVars.disc.cell_size[0];
-		posy_a=pos_y+0.5*simVars.disc.cell_size[1];
+		posx_a = pos_x+0.5*simVars.disc.cell_size[0];
+		posy_a = pos_y+0.5*simVars.disc.cell_size[1];
+
+		std::cout << std::endl;
+		std::cout << "posx_a: " << posx_a.array_data_cartesian_space_valid << std::endl;
+		std::cout << std::endl;
 
 		// Set initial conditions given from SWEValidationBenchmarks
 		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
@@ -340,9 +344,10 @@ public:
 		}
 
 		//Initialise t-dt time step with initial condition
-		prog_h_prev=prog_h;
-		prog_u_prev=prog_u;
-		prog_v_prev=prog_v;
+		prog_h_prev = prog_h;
+		std::cout << "prog_h_prev.array_data_cartesian_space_valid " << prog_h_prev.array_data_cartesian_space_valid << std::endl;
+		prog_u_prev = prog_u;
+		prog_v_prev = prog_v;
 
 		// Set boundary stuff
 		if (param_boundary_id != 0)
@@ -1119,6 +1124,7 @@ public:
 		{ // Semi-Lagrangian with FD in space
 			assert(simVars.sim.CFL < 0);
 			o_dt = -simVars.sim.CFL;
+
 
 			semiLagrangian.semi_lag_departure_points_settls(
 							prog_u_prev,

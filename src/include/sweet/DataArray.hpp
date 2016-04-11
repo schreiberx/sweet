@@ -2579,19 +2579,34 @@ public:
 
 #if SWEET_USE_SPECTRAL_SPACE
 
-		requestDataInSpectralSpace();
+//		if (array_data_cartesian_space_valid)
+//		{
+//			// always run add operation in cartesian space if data is given in Cartesian space
+//#if SWEET_THREADING
+//#pragma omp parallel for OPENMP_SIMD
+//#endif
+//			for (std::size_t i = 0; i < array_data_cartesian_length; i++)
+//				out.array_data_cartesian_space[i] = array_data_cartesian_space[i]+i_value;
+//
+//			out.array_data_cartesian_space_valid = true;
+//			out.array_data_spectral_space_valid = false;
+//		}
+//		else
+		{
+			requestDataInSpectralSpace();
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_spectral_length; i++)
-			out.array_data_spectral_space[i] = array_data_spectral_space[i];
+			for (std::size_t i = 0; i < array_data_spectral_length; i++)
+				out.array_data_spectral_space[i] = array_data_spectral_space[i];
 
-		double scale = resolution[0]*resolution[1];
-		out.array_data_spectral_space[0] += i_value*scale;
+			double scale = resolution[0]*resolution[1];
+			out.array_data_spectral_space[0] += i_value*scale;
 
-		out.array_data_cartesian_space_valid = false;
-		out.array_data_spectral_space_valid = true;
+			out.array_data_cartesian_space_valid = false;
+			out.array_data_spectral_space_valid = true;
+		}
 
 #else
 
@@ -2857,21 +2872,35 @@ public:
 
 #if SWEET_USE_SPECTRAL_SPACE
 
-		requestDataInSpectralSpace();
+//		if (array_data_spectral_space_valid)
+//		{
+			requestDataInSpectralSpace();
 
 //#pragma error "TOOD: make this depending on rexi_par_sum!"
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_spectral_length; i++)
-			out.array_data_spectral_space[i] = array_data_spectral_space[i];
+			for (std::size_t i = 0; i < array_data_spectral_length; i++)
+				out.array_data_spectral_space[i] = array_data_spectral_space[i];
 
-		double scale = resolution[0]*resolution[1];
-		out.array_data_spectral_space[0] -= i_value*scale;
+			double scale = resolution[0]*resolution[1];
+			out.array_data_spectral_space[0] -= i_value*scale;
 
-		out.array_data_cartesian_space_valid = false;
-		out.array_data_spectral_space_valid = true;
-
+			out.array_data_cartesian_space_valid = false;
+			out.array_data_spectral_space_valid = true;
+//		}
+//		else
+//		{
+//#if SWEET_THREADING
+//#pragma omp parallel for OPENMP_SIMD
+//#endif
+//			for (std::size_t i = 0; i < array_data_cartesian_length; i++)
+//				out.array_data_cartesian_space[i] =
+//						array_data_cartesian_space[i]-i_value;
+//
+//			out.array_data_cartesian_space_valid = true;
+//			out.array_data_spectral_space_valid = false;
+//		}
 #else
 
 		requestDataInCartesianSpace();
