@@ -1018,7 +1018,13 @@ public:
 				std::cout<<"H"<<std::endl;
 				H.printArrayData();
 				 */
-
+				std::cout<<"prog_u"<<std::endl;
+				prog_u.printArrayData();
+				std::cout<<"prog_v"<<std::endl;
+				prog_v.printArrayData();
+				std::cout<<"prog_h"<<std::endl;
+				prog_h.printArrayData();
+				std::cout<<std::endl;
 
 
 				if(param_nonlinear==2) //Linear with nonlinear advection only (valid for nondivergent flows
@@ -1037,7 +1043,7 @@ public:
 					//Now interpolate to the the departure points
 					//Departure points are set for physical space
 
-					/*
+
 
 					std::cout<<"U"<<std::endl;
 					U.printArrayData();
@@ -1046,7 +1052,6 @@ public:
 					std::cout<<"H"<<std::endl;
 					H.printArrayData();
 
-					 */
 
 					//    interpolate the new h to physical grid
 					sampler2D.bicubic_scalar(
@@ -1078,12 +1083,19 @@ public:
 
 					//std::cout<<"interpolated vars to dep points"<<std::endl;
 
-					prog_u = U;
-					prog_v = V;
-					prog_h = H;
+					std::cout<<"prog_u"<<std::endl;
+					prog_u.printArrayData();
+					std::cout<<"prog_u"<<std::endl;
+					prog_v.printArrayData();
+					std::cout<<"prog_h"<<std::endl;
+					prog_h.printArrayData();
+					std::cout<<std::endl;
+					//Debug force only linear part
+					//prog_u = U;
+					//prog_v = V;
+					//prog_h = H;
 
 				}
-
 
 			}
 			else // linear solver
@@ -1255,7 +1267,16 @@ public:
 
 				// Velocity u
 				benchmark_diff_u = (prog_u-t0_prog_u).reduce_maxAbs();
+
+				//Bug here --- diff should be non zero
 				o_ostream << "\t" << benchmark_diff_u;
+				std::cout<<"u"<<std::endl;
+				prog_u.printArrayData(6);
+				std::cout<<"u0"<<std::endl;
+				t0_prog_u.printArrayData(6);
+				std::cout<<"u-u0"<<std::endl;
+				(prog_u-t0_prog_u).printArrayData(6);
+				std::cout<<benchmark_diff_u<<std::endl;
 
 				// Velocity v
 				benchmark_diff_v = (prog_v-t0_prog_v).reduce_maxAbs();

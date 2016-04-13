@@ -3267,12 +3267,15 @@ public:
 	 * Each array row is stored to a line.
 	 * Per default, a tab separator is used in each line to separate the values.
 	 */
-	bool printArrayData()
+	bool printArrayData(
+			int i_precision = 6		///< number of floating point digits
+			)
 	{
 		requestDataInCartesianSpace();
 
 		std::ostream &o_ostream = std::cout;
 
+		o_ostream << std::setprecision(i_precision);
 		for (int y = resolution[1]-1; y >= 0; y--)
 		{
 			for (std::size_t x = 0; x < resolution[0]; x++)
