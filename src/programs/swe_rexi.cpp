@@ -116,6 +116,8 @@ public:
 		op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
 #if SWEET_PARAREAL != 0
 		,
+		_parareal_data_start_h(simVars.disc.res), _parareal_data_start_u(simVars.disc.res), _parareal_data_start_v(simVars.disc.res),
+		_parareal_data_fine_h(simVars.disc.res), _parareal_data_fine_u(simVars.disc.res), _parareal_data_fine_v(simVars.disc.res),
 		_parareal_data_coarse_h(simVars.disc.res), _parareal_data_coarse_u(simVars.disc.res), _parareal_data_coarse_v(simVars.disc.res),
 		_parareal_data_output_h(simVars.disc.res), _parareal_data_output_u(simVars.disc.res), _parareal_data_output_v(simVars.disc.res),
 		_parareal_data_error_h(simVars.disc.res), _parareal_data_error_u(simVars.disc.res), _parareal_data_error_v(simVars.disc.res)
@@ -123,26 +125,9 @@ public:
 	{
 		reset();
 
-#if SWEET_PARAREAL != 0
-		{
-			DataArray<2>* data_array[3] = {&prog_h, &prog_u, &prog_v};
-			parareal_data_fine.setup(data_array);
-		}
+#if SWEET_PARAREAL
+		parareal_setup();
 
-		{
-			DataArray<2>* data_array[3] = {&_parareal_data_coarse_h, &_parareal_data_coarse_u, &_parareal_data_coarse_v};
-			parareal_data_coarse.setup(data_array);
-		}
-
-		{
-			DataArray<2>* data_array[3] = {&_parareal_data_output_h, &_parareal_data_output_u, &_parareal_data_output_v};
-			parareal_data_output.setup(data_array);
-		}
-
-		{
-			DataArray<2>* data_array[3] = {&_parareal_data_error_h, &_parareal_data_error_u, &_parareal_data_error_v};
-			parareal_data_error.setup(data_array);
-		}
 #endif
 	}
 
@@ -994,7 +979,8 @@ public:
 		}
 	}
 
-
+#if 0
+	// doesn't seem to be necessary
 	/**
 	 * wrapper to unify interfaces for REXI and analytical solution for L operator
 	 */
@@ -1042,6 +1028,9 @@ public:
 			exit(-1);
 		}
 	}
+#endif
+
+
 
 	/**
 	 * Execute a single simulation time step
@@ -1500,7 +1489,7 @@ public:
 	}
 
 
-#if SWEET_PARAREAL != 0
+#if SWEET_PARAREAL
 
 	/******************************************************
 	 ******************************************************
@@ -1508,6 +1497,10 @@ public:
 	 ******************************************************
 	 ******************************************************/
 
+	DataArray<2> _parareal_data_start_h, _parareal_data_start_u, _parareal_data_start_v;
+	PararealData_DataArrays<3> parareal_data_start;
+
+	DataArray<2> _parareal_data_fine_h, _parareal_data_fine_u, _parareal_data_fine_v;
 	PararealData_DataArrays<3> parareal_data_fine;
 
 	DataArray<2> _parareal_data_coarse_h, _parareal_data_coarse_u, _parareal_data_coarse_v;
@@ -1522,10 +1515,17 @@ public:
 	double timeframe_start = -1;
 	double timeframe_end = -1;
 
+	bool output_data_valid = false;
+
 	void parareal_setup()
 	{
 		{
-			DataArray<2>* data_array[3] = {&prog_h, &prog_u, &prog_v};
+			DataArray<2>* data_array[3] = {&_parareal_data_start_h, &_parareal_data_start_u, &_parareal_data_start_v};
+			parareal_data_start.setup(data_array);
+		}
+
+		{
+			DataArray<2>* data_array[3] = {&_parareal_data_fine_h, &_parareal_data_fine_u, &_parareal_data_fine_v};
 			parareal_data_fine.setup(data_array);
 		}
 
@@ -1538,6 +1538,27 @@ public:
 			DataArray<2>* data_array[3] = {&_parareal_data_output_h, &_parareal_data_output_u, &_parareal_data_output_v};
 			parareal_data_output.setup(data_array);
 		}
+
+		{
+			DataArray<2>* data_array[3] = {&_parareal_data_error_h, &_parareal_data_error_u, &_parareal_data_error_v};
+			parareal_data_error.setup(data_array);
+		}
+
+		// use REXI
+		rexiSWE.setup(
+				param_rexi_h,
+				param_rexi_m,
+				param_rexi_l,
+
+				simVars.disc.res,
+				simVars.sim.domain_size,
+				param_rexi_half,
+				param_rexi_use_spectral_differences_for_complex_array,
+				param_rexi_helmholtz_solver_id,
+				param_rexi_helmholtz_solver_eps
+			);
+
+		output_data_valid = false;
 	}
 
 
@@ -1552,7 +1573,11 @@ public:
 	{
 		timeframe_start = i_timeframe_start;
 		timeframe_end = i_timeframe_end;
+
+		std::cout << "Timeframe: [" << timeframe_start << ", " << timeframe_end << "]" << std::endl;
 	}
+
+
 
 	/**
 	 * Set the initial data at i_timeframe_start
@@ -1560,7 +1585,15 @@ public:
 	void sim_setup_initial_data(
 	)
 	{
+		std::cout << "sim_setup_initial_data()" << std::endl;
+
 		reset();
+
+
+		*parareal_data_start.data_arrays[0] = prog_h;
+		*parareal_data_start.data_arrays[1] = prog_u;
+		*parareal_data_start.data_arrays[2] = prog_v;
+
 	}
 
 	/**
@@ -1572,6 +1605,11 @@ public:
 			PararealData &i_pararealData
 	)
 	{
+		std::cout << "sim_set_data()" << std::endl;
+
+		// copy to buffers
+		parareal_data_start = i_pararealData;
+
 		// cast to pararealDataArray stuff
 	}
 
@@ -1593,6 +1631,12 @@ public:
 	 */
 	void run_timestep_fine()
 	{
+		std::cout << "run_timestep_fine()" << std::endl;
+
+		prog_h = *parareal_data_start.data_arrays[0];
+		prog_u = *parareal_data_start.data_arrays[1];
+		prog_v = *parareal_data_start.data_arrays[2];
+
 		// reset simulation time
 		simVars.timecontrol.current_simulation_time = timeframe_start;
 		simVars.timecontrol.max_simulation_time = timeframe_end;
@@ -1603,6 +1647,11 @@ public:
 			this->run_timestep();
 			assert(simVars.timecontrol.current_simulation_time <= timeframe_end);
 		}
+
+		// copy to buffers
+		*parareal_data_fine.data_arrays[0] = prog_h;
+		*parareal_data_fine.data_arrays[1] = prog_u;
+		*parareal_data_fine.data_arrays[2] = prog_v;
 	}
 
 
@@ -1612,6 +1661,8 @@ public:
 	 */
 	PararealData& get_data_timestep_fine()
 	{
+		std::cout << "get_data_timestep_fine()" << std::endl;
+
 		return parareal_data_fine;
 	}
 
@@ -1622,9 +1673,15 @@ public:
 	 */
 	void run_timestep_coarse()
 	{
+		std::cout << "run_timestep_coarse()" << std::endl;
+
+		prog_h = *parareal_data_start.data_arrays[0];
+		prog_u = *parareal_data_start.data_arrays[1];
+		prog_v = *parareal_data_start.data_arrays[2];
+
 		// run implicit time step
 //		assert(i_max_simulation_time < 0);
-		assert(simVars.sim.CFL < 0);
+//		assert(simVars.sim.CFL < 0);
 
 		rexiSWE.run_timestep_implicit_ts(
 				prog_h, prog_u, prog_v,
@@ -1632,6 +1689,12 @@ public:
 				op,
 				simVars
 		);
+
+
+		// copy to buffers
+		*parareal_data_coarse.data_arrays[0] = prog_h;
+		*parareal_data_coarse.data_arrays[1] = prog_u;
+		*parareal_data_coarse.data_arrays[2] = prog_v;
 	}
 
 
@@ -1642,6 +1705,8 @@ public:
 	 */
 	PararealData& get_data_timestep_coarse()
 	{
+		std::cout << "get_data_timestep_coarse()" << std::endl;
+
 		return parareal_data_coarse;
 	}
 
@@ -1653,11 +1718,10 @@ public:
 	 */
 	void compute_difference()
 	{
+		std::cout << "compute_difference()" << std::endl;
+
 		for (int k = 0; k < 3; k++)
-		{
-			for (std::size_t i = 0; i < parareal_data_error.data_arrays[k]->array_data_cartesian_length; i++)
-				*parareal_data_error.data_arrays[k] = *parareal_data_fine.data_arrays[k] - *parareal_data_coarse.data_arrays[k];
-		}
+			*parareal_data_error.data_arrays[k] = *parareal_data_fine.data_arrays[k] - *parareal_data_coarse.data_arrays[k];
 	}
 
 
@@ -1669,13 +1733,39 @@ public:
 	 * Return: Error indicator based on the computed error norm between the
 	 * old values and new values
 	 */
-	void compute_output_data()
+	double compute_output_data(
+			bool i_compute_convergence_test
+	)
 	{
+		std::cout << "compute_output_data()" << std::endl;
+
+		double convergence = -1;
+
+		if (!i_compute_convergence_test || !output_data_valid)
+		{
+			for (int k = 0; k < 3; k++)
+				*parareal_data_output.data_arrays[k] = *parareal_data_coarse.data_arrays[k] - *parareal_data_error.data_arrays[k];
+
+			output_data_valid = true;
+			return convergence;
+		}
+
+
+
 		for (int k = 0; k < 3; k++)
 		{
-			for (std::size_t i = 0; i < parareal_data_error.data_arrays[k]->array_data_cartesian_length; i++)
-				*parareal_data_output.data_arrays[k] = *parareal_data_coarse.data_arrays[k] - *parareal_data_error.data_arrays[k];
+			tmp = *parareal_data_coarse.data_arrays[k] - *parareal_data_error.data_arrays[k];
+
+			convergence = std::max(
+					convergence,
+					(*parareal_data_output.data_arrays[k]-tmp).reduce_maxAbs()
+				);
+
+			*parareal_data_output.data_arrays[k] = tmp;
 		}
+
+		output_data_valid = true;
+		return convergence;
 	}
 
 
@@ -1686,6 +1776,8 @@ public:
 	 */
 	PararealData& get_output_data()
 	{
+		std::cout << "get_output_data()" << std::endl;
+
 		return parareal_data_output;
 	}
 
@@ -1763,7 +1855,7 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "" << std::endl;
 		std::cout << "	--rexi-m [m-value]	M-value for REXI (related to number of poles)" << std::endl;
 		std::cout << "" << std::endl;
-		std::cout << "	--rexi-half [0/1]	Reduce rexi computations to its half" << std::endl;
+		std::cout << "	--rexi-half [0/1]	Reduce REXI computations to its half" << std::endl;
 		std::cout << "" << std::endl;
 		std::cout << "	--timestepping-mode [0/1/2]	Timestepping method to use" << std::endl;
 		std::cout << "	                            0: Finite-difference / Spectral time stepping" << std::endl;
@@ -1819,10 +1911,10 @@ int main(int i_argc, char *i_argv[])
 
 	param_nonlinear = simVars.bogus.var[14];
 
-	SimulationInstance *simulationSWE = new SimulationInstance;
 
 	std::ostringstream buf;
 	buf << std::setprecision(14);
+
 
 #if SWEET_MPI
 	int rank;
@@ -1832,14 +1924,6 @@ int main(int i_argc, char *i_argv[])
 	if (rank == 0)
 #endif
 	{
-#if SWEET_GUI
-		if (simVars.misc.gui_enabled)
-		{
-			VisSweet<SimulationInstance> visSweet(simulationSWE);
-		}
-		else
-#endif
-
 #if SWEET_PARAREAL
 		if (simVars.parareal.enabled)
 		{
@@ -1858,11 +1942,21 @@ int main(int i_argc, char *i_argv[])
 		else
 #endif
 
+#if SWEET_GUI
+		if (simVars.misc.gui_enabled)
 		{
+			SimulationInstance *simulationSWE = new SimulationInstance;
+			VisSweet<SimulationInstance> visSweet(simulationSWE);
+			delete simulationSWE;
+		}
+		else
+#endif
+
+		{
+			SimulationInstance *simulationSWE = new SimulationInstance;
 			simulationSWE->reset();
 
 			Stopwatch time;
-
 
 			double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
 
@@ -1943,9 +2037,9 @@ int main(int i_argc, char *i_argv[])
 				std::cout << "DIAGNOSTICS ANALYTICAL MAXABS U:\t" << simulationSWE->benchmark_analytical_error_maxabs_u << std::endl;
 				std::cout << "DIAGNOSTICS ANALYTICAL MAXABS V:\t" << simulationSWE->benchmark_analytical_error_maxabs_v << std::endl;
 			}
-		}
 
-		delete simulationSWE;
+			delete simulationSWE;
+		}
 	}
 #if SWEET_MPI
 	else

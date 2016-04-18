@@ -101,11 +101,13 @@ public:
 	 * Compute the data to be forwarded to the next time step
 	 * Y^O := Y^C + Y^E
 	 *
-	 * Return: Error indicator based on the computed error norm between the
+	 * Return: If true, the error indicator based on the computed error norm between the
 	 * old values and new values
 	 */
 	virtual
-	void compute_output_data() = 0;
+	double compute_output_data(
+			bool i_return_convergence
+	) = 0;
 
 
 	/**
@@ -114,6 +116,11 @@ public:
 	 */
 	virtual
 	PararealData& get_output_data() = 0;
+
+
+	virtual ~Parareal_SimulationInstance()
+	{
+	}
 };
 
 

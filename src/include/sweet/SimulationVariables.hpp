@@ -343,8 +343,11 @@ public:
 				{0, 0, 0, 0} // NULL
         };
 
-        long_options[next_free_program_option++] = {"initial-coord-x", required_argument, 0, 256+'a'+0};
-        long_options[next_free_program_option++] = {"initial-coord-y", required_argument, 0, 256+'a'+1};
+        long_options[next_free_program_option] = {"initial-coord-x", required_argument, 0, 256+'a'+0};
+        next_free_program_option++;
+
+        long_options[next_free_program_option] = {"initial-coord-y", required_argument, 0, 256+'a'+1};
+        next_free_program_option++;
 
 //        long_options[next_free_program_option++] = {"test-initial-freq-x-mul", required_argument, 0, 256+'a'+2};
 //        long_options[next_free_program_option++] = {"test-initial-freq-y-mul", required_argument, 0, 256+'a'+3};
@@ -356,8 +359,6 @@ public:
 
         if (bogus_var_names != nullptr)
         {
-        	std::cout << next_free_program_option << std::endl;
-
 			int opt_nr;
 			for (opt_nr = next_free_program_option; opt_nr < max_options; opt_nr++)
 			{
@@ -397,16 +398,16 @@ public:
 			 */
 			if (opt >= 256+'a' && opt <= 256+'z')
 			{
-				int i = (int)opt-(int)(256+'a');
+				int i = (int)opt-((int)256+'a');
 
 				if (i < next_free_program_option)
 				{
 					switch(i)
 					{
-//						case 0:		setup.initial_freq_x_mul = atof(optarg);	break;
-//						case 1:		setup.initial_freq_y_mul = atof(optarg);	break;
-						case 1:		setup.setup_coord_x = atof(optarg);	break;
-						case 2:		setup.setup_coord_y = atof(optarg);	break;
+						case 0:		setup.setup_coord_x = atof(optarg);	break;
+						case 1:		setup.setup_coord_y = atof(optarg);	break;
+//						case 2:		setup.initial_freq_x_mul = atof(optarg);	break;
+//						case 3:		setup.initial_freq_y_mul = atof(optarg);	break;
 
 						default:
 #if SWEET_PARAREAL

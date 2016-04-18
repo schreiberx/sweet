@@ -49,6 +49,7 @@ public:
 	 */
 	double max_simulation_time = -1;
 
+
 	/**
 	 * setup long options for program arguments
 	 */
@@ -59,11 +60,20 @@ public:
 			int i_max_options					///< maximum number of options
 	)
 	{
-		io_long_options[io_next_free_program_option++] = {"parareal-coarse-slices", required_argument, 0, 256+'a'+io_next_free_program_option};
-		io_long_options[io_next_free_program_option++] = {"parareal-convergence-threshold", required_argument, 0, 256+'a'+io_next_free_program_option};
-		io_long_options[io_next_free_program_option++] = {"parareal-verbosity", required_argument, 0, 256+'a'+io_next_free_program_option};
-		io_long_options[io_next_free_program_option++] = {"parareal-enabled", required_argument, 0, 256+'a'+io_next_free_program_option};
-		io_long_options[io_next_free_program_option++] = {"parareal-max-simulation-time", required_argument, 0, 256+'a'+io_next_free_program_option};
+		io_long_options[io_next_free_program_option] = {"parareal-coarse-slices", required_argument, 0, (int)256+'a'+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"parareal-convergence-threshold", required_argument, 0, (int)256+'a'+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"parareal-verbosity", required_argument, 0, (int)256+'a'+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"parareal-enabled", required_argument, 0, (int)256+'a'+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"parareal-max-simulation-time", required_argument, 0, (int)256+'a'+io_next_free_program_option};
+		io_next_free_program_option++;
 
 		if (io_next_free_program_option > i_max_options)
 		{
@@ -82,8 +92,8 @@ public:
 		std::cout << std::endl;
 		std::cout << "  --parareal-coarse-slices=[int]				Number of coarse time slices" << std::endl;
 		std::cout << "  --parareal-convergence-threshold=[float]	Threshold for convergence test" << std::endl;
-		std::cout << "  --parareal-verbosity=[int]					Verbosity IT" << std::endl;
-		std::cout << "  --parareal-enabled=[0/1]					Enable parareal method" << std::endl;
+		std::cout << "  --parareal-verbosity=[int]					Verbosity level" << std::endl;
+		std::cout << "  --parareal-enabled=[0/1]					Enable Parareal method" << std::endl;
 		std::cout << "  --parareal-max-simulation-time=[float]		Overall simulation time" << std::endl;
 		std::cout << std::endl;
 	}

@@ -9,9 +9,9 @@
 #define SRC_INCLUDE_PARAREAL_PARAREAL_CONTROLLER_SERIAL_HPP_
 
 
+#include <parareal/Parareal_ConsolePrefix.hpp>
 #include <parareal/Parareal_SimulationInstance.hpp>
 #include <parareal/Parareal_SimulationVariables.hpp>
-
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -26,100 +26,54 @@
 template <class t_SimulationInstance>
 class Parareal_Controller_Serial
 {
-public:
 	/**
 	 * Array with instantiations of PararealSimulations
 	 */
-	Parareal_SimulationInstance *pararealSimulations = nullptr;
+	t_SimulationInstance *simulationInstances = nullptr;
 
+	/**
+	 * Pointers to interfaces of simulationInstances
+	 * This helps to clearly separate between the allocation of the simulation classes and the parareal interfaces.
+	 */
+	Parareal_SimulationInstance **parareal_simulationInstances = nullptr;
+
+	/**
+	 * Pointer to parareal simulation variables.
+	 * These variables are used as a singleton
+	 */
 	PararealSimulationVariables *pVars;
 
-
-	/*
-	 * Prefix std::cout with string
-	 *
-	 * Source: http://stackoverflow.com/questions/27336335/c-cout-with-prefix
+	/**
+	 * Class which helps prefixing console output
 	 */
-	class prefixbuf
-	    : public std::streambuf
-	{
-	    std::string     prefix;
-	    std::streambuf* sbuf;
-	    bool            need_prefix;
+	Parareal_ConsolePrefix CONSOLEPREFIX;
 
-	    int sync() {
-	        return this->sbuf->pubsync();
-	    }
-
-	    int overflow(int c) {
-	        if (c != std::char_traits<char>::eof()) {
-	            if (this->need_prefix
-	                && !this->prefix.empty()
-	                && this->prefix.size() != this->sbuf->sputn(&this->prefix[0], this->prefix.size())) {
-	                return std::char_traits<char>::eof();
-	            }
-	            this->need_prefix = c == '\n';
-	        }
-	        return this->sbuf->sputc(c);
-	    }
-
-	public:
-	    prefixbuf()
-	        : prefix(0)
-	        , sbuf(0)
-	        , need_prefix(true) {
-	    }
-
-	public:
-	    void setPrefix(std::string const& i_prefix)
-	    {
-	    	prefix = i_prefix;
-	    }
-/*
-	public:
-	    void setPrefix(int const& i_prefix)
-	    {
-			std::ostringstream ss;
-			ss << i_prefix;
-	    	prefix = ss.str();
-	    }*/
-
-	public:
-	    void setStreamBuf(std::streambuf* i_sbuf)
-	    {
-	    	sbuf = i_sbuf;
-	    }
-	};
-
-	prefixbuf prefixBuffer;
-
-	std::streambuf *coutbuf;
-
-
-	void COUT_PrefixStart(int i_number)
-	{
-		std::ostringstream ss;
-		ss << "[" << i_number << "]";
-		prefixBuffer.setPrefix(ss.str());
-
-		std::cout.rdbuf(&prefixBuffer);
-	}
-
-	void COUT_PrefixEnd()
-	{
-		std::cout.rdbuf(coutbuf);
-	}
-
+public:
 	Parareal_Controller_Serial()
 	{
-		prefixBuffer.setStreamBuf(coutbuf);
-		coutbuf = std::cout.rdbuf();
+	}
+
+	~Parareal_Controller_Serial()
+	{
+		cleanup();
+	}
+
+	void cleanup()
+	{
+		if (simulationInstances != nullptr)
+		{
+			delete [] simulationInstances;
+			delete [] parareal_simulationInstances;
+		}
 	}
 
 	void setup(
 			PararealSimulationVariables *i_pararealSimVars
 	)
 	{
+		cleanup();
+
+
 		pVars = i_pararealSimVars;
 
 		if (!pVars->enabled)
@@ -131,8 +85,24 @@ public:
 			exit(1);
 		}
 
-		// allocate simulation instances
-		pararealSimulations = new t_SimulationInstance[pVars->coarse_slices];
+		// allocate raw simulation instances
+		simulationInstances = new t_SimulationInstance[pVars->coarse_slices];
+
+		parareal_simulationInstances = new Parareal_SimulationInstance*[pVars->coarse_slices];
+
+		CONSOLEPREFIX.start("[MAIN] ");
+		std::cout << "Resetting simulation instances" << std::endl;
+
+		// convert to pararealsimulationInstances to get Parareal interfaces
+		for (int k = 0; k < pVars->coarse_slices; k++)
+		{
+			CONSOLEPREFIX.start(k);
+			parareal_simulationInstances[k] = &(Parareal_SimulationInstance&)(simulationInstances[k]);
+			simulationInstances[k].reset();
+		}
+
+		CONSOLEPREFIX.start("[MAIN] ");
+		std::cout << "Setup time frames" << std::endl;
 
 		/*
 		 * SETUP time frame
@@ -140,60 +110,117 @@ public:
 		// size of coarse time step
 		double coarse_timestep_size = i_pararealSimVars->max_simulation_time / pVars->coarse_slices;
 
-		COUT_PrefixStart(0);
-		pararealSimulations[0].sim_set_timeframe(0, i_pararealSimVars->max_simulation_time);
+		CONSOLEPREFIX.start(0);
+		parareal_simulationInstances[0]->sim_set_timeframe(0, coarse_timestep_size);
 
 		for (int k = 1; k < pVars->coarse_slices-1; k++)
 		{
-			COUT_PrefixStart(1);
-			pararealSimulations->sim_set_timeframe(coarse_timestep_size*k, coarse_timestep_size*(k+1));
+			CONSOLEPREFIX.start(k);
+			parareal_simulationInstances[k]->sim_set_timeframe(coarse_timestep_size*k, coarse_timestep_size*(k+1));
 		}
 
-		COUT_PrefixStart(pVars->coarse_slices-1);
-		pararealSimulations[pVars->coarse_slices-1].sim_set_timeframe(i_pararealSimVars->max_simulation_time-coarse_timestep_size, i_pararealSimVars->max_simulation_time);
+		CONSOLEPREFIX.start(pVars->coarse_slices-1);
+		parareal_simulationInstances[pVars->coarse_slices-1]->sim_set_timeframe(i_pararealSimVars->max_simulation_time-coarse_timestep_size, i_pararealSimVars->max_simulation_time);
 
 
 		/*
 		 * Setup first simulation instance
 		 */
-		COUT_PrefixStart(0);
-		pararealSimulations[0].sim_setup_initial_data();
+		CONSOLEPREFIX.start(0);
+		parareal_simulationInstances[0]->sim_setup_initial_data();
 
-		COUT_PrefixEnd();
+		CONSOLEPREFIX.end();
 	}
 
 	void run()
 	{
+
+		CONSOLEPREFIX.start("[MAIN] ");
+		std::cout << "Initial propagation" << std::endl;
+
 		/**
 		 * Initial propagation
 		 */
-		pararealSimulations[0].run_timestep_coarse();
+		CONSOLEPREFIX.start(0);
+		parareal_simulationInstances[0]->run_timestep_coarse();
 		for (int i = 1; i < pVars->coarse_slices; i++)
 		{
-			// use coarse time step output data as initial data of next coarse time step
-			pararealSimulations[i].sim_set_data(
-					pararealSimulations[i-1].get_data_timestep_coarse()
-				);
+			CONSOLEPREFIX.start(i-1);
+			PararealData &tmp = parareal_simulationInstances[i-1]->get_data_timestep_coarse();
+
+				// use coarse time step output data as initial data of next coarse time step
+			CONSOLEPREFIX.start(i);
+			parareal_simulationInstances[i]->sim_set_data(tmp);
+
+			// run coarse time step
+			parareal_simulationInstances[i]->run_timestep_coarse();
 		}
+
 
 
 		/**
-		 * We run as much parareal iterations as there are coarse slices
+		 * We run as much Parareal iterations as there are coarse slices
 		 */
 		for (int k = 0; k < pVars->coarse_slices; k++)
 		{
+			CONSOLEPREFIX.start("[MAIN] ");
+			std::cout << "Iteration Nr. " << k << std::endl;
+			/*
+			 * All the following loop should start with 0.
+			 * For debugging reasons, we leave it here at 0
+			 */
+			int start = 0;
+//			int start = k;
+
 			/**
 			 * Fine time stepping
 			 */
-			for (int i = 0; i < pVars->coarse_slices; i++)
+			for (int i = start; i < pVars->coarse_slices; i++)
 			{
-				pararealSimulations[i].run_timestep_fine();
-				pararealSimulations[i].compute_difference();
+				CONSOLEPREFIX.start(i);
+				parareal_simulationInstances[i]->run_timestep_fine();
 			}
+
+
+			/**
+			 * Compute difference between coarse and fine solution
+			 */
+			for (int i = start; i < pVars->coarse_slices; i++)
+			{
+				CONSOLEPREFIX.start(i);
+				parareal_simulationInstances[i]->compute_difference();
+			}
+
+
+			/**
+			 * 1) Coarse time stepping
+			 * 2) Compute output + convergence check
+			 * 3) Forward to next frame
+			 */
+			for (int i = start; i < pVars->coarse_slices; i++)
+			{
+				CONSOLEPREFIX.start(i);
+				parareal_simulationInstances[i]->run_timestep_coarse();
+
+				// compute convergence
+				double convergence = parareal_simulationInstances[i]->compute_output_data(true);
+				std::cout << "                        iteration " << k << ", time slice " << i << ", convergence: " << convergence << std::endl;
+
+				// forward to next time slice if it exists
+				if (i < pVars->coarse_slices-1)
+				{
+					CONSOLEPREFIX.start(i);
+					PararealData &tmp = parareal_simulationInstances[i]->get_output_data();
+
+					CONSOLEPREFIX.start(i+1);
+					parareal_simulationInstances[i+1]->sim_set_data(tmp);
+				}
+			}
+
 		}
 
 
-		COUT_PrefixEnd();
+		CONSOLEPREFIX.end();
 	}
 };
 

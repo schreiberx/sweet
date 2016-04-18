@@ -63,6 +63,17 @@ public:
 		assert(false);
 	}
 
+	const PararealData&
+	operator=(const PararealData &i_data)
+	{
+		for (int i = 0; i < N; i++)
+		{
+			DataArray<2>** i_data_arrays = ((PararealData_DataArrays&)i_data).data_arrays;
+			data_arrays[i] = i_data_arrays[i];
+		}
+
+		return *this;
+	}
 
 	/**
 	 * Receive data from rank
@@ -81,7 +92,7 @@ public:
 		assert(false);
 	}
 
-	~PararealData_DataArrays()
+	virtual ~PararealData_DataArrays()
 	{
 	}
 };

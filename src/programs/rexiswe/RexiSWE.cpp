@@ -39,6 +39,7 @@ RexiSWE::RexiSWE()	:
 	exit(-1);
 #endif
 
+
 #if SWEET_REXI_THREAD_PARALLEL_SUM
 
 //#if SWEET_THREADING || 1

@@ -1454,6 +1454,7 @@ public:
 	}
 
 
+
 	/**
 	 * reduce to root mean square
 	 */

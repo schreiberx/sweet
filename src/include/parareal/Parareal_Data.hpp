@@ -34,6 +34,15 @@ public:
 
 
 	/**
+	 * Copy operator which has to be overridden by implementing data container
+	 */
+	virtual
+	const PararealData &operator=(
+					const PararealData &i_data
+	) = 0;
+
+
+	/**
 	 * Deconstructor
 	 */
 	~PararealData()
