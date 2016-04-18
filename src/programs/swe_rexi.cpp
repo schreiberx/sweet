@@ -56,8 +56,11 @@ double param_initial_freq_y_mul;
 int param_boundary_id;
 bool param_nonlinear;
 
-class SimulationInstance :
+class SimulationInstance
+#if SWEET_PARAREAL
+		:
 		public Parareal_SimulationInstance
+#endif
 {
 public:
 	DataArray<2> prog_h, prog_u, prog_v;
