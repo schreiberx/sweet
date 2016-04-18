@@ -5,12 +5,12 @@
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#ifndef SRC_INCLUDE_PARAREAL_PARAREALSIMULATION_BASE_HPP_
-#define SRC_INCLUDE_PARAREAL_PARAREALSIMULATION_BASE_HPP_
+#ifndef SRC_INCLUDE_PARAREAL_PARAREAL_SIMULATIONINSTANCE_HPP_
+#define SRC_INCLUDE_PARAREAL_PARAREAL_SIMULATIONINSTANCE_HPP_
 
 
+#include <parareal/Parareal_Data.hpp>
 #include <sweet/DataArray.hpp>
-#include <parareal/PararealData.hpp>
 
 
 /**
@@ -22,7 +22,7 @@
  *
  * These interfaces were ported from the Python implementation.
  */
-class PararealSimulation_Base
+class Parareal_SimulationInstance
 {
 public:
 	/**
@@ -117,4 +117,4 @@ public:
 };
 
 
-#endif /* SRC_INCLUDE_PARAREAL_PARAREALSIMULATION_BASE_HPP_ */
+#endif /* SRC_INCLUDE_PARAREAL_PARAREAL_SIMULATIONINSTANCE_HPP_ */

@@ -14,6 +14,13 @@
 #include <string>
 #include <vector>
 
+#ifndef SWEET_PARAREAL
+#define SWEET_PARAREAL 1
+#endif
+
+#if SWEET_PARAREAL
+#	include <parareal/Parareal_SimulationVariables.hpp>
+#endif
 
 
 /**
@@ -23,6 +30,12 @@
  */
 class SimulationVariables
 {
+public:
+#if SWEET_PARAREAL
+	PararealSimulationVariables parareal;
+#endif
+
+
 public:
 	/**
 	 * Diagnostic variables
@@ -56,13 +69,13 @@ public:
 		double radius_scale = 1;
 
 		/// setup coordinate of e.g. radial breaking dam, x-placement \in [0;1]
-		double coord_x = 0.5;
+		double setup_coord_x = 0.5;
 		/// setup coordinate of e.g. radial breaking dam, y-placement \in [0;1]
-		double coord_y = 0.5;
+		double setup_coord_y = 0.5;
 
 		/// Frequency multiplier for wave-like scenario
-		double initial_freq_x_mul = 2.0;
-		double initial_freq_y_mul = 1.0;
+//		double initial_freq_x_mul = 2.0;
+//		double initial_freq_y_mul = 1.0;
 
 		/// filenames of input data for setup (this has to be setup by each application individually)
 		std::vector<std::string> input_data_filenames;
@@ -287,13 +300,17 @@ public:
 			const char *bogus_var_names[] = nullptr			///< list of strings of simulation-specific variables, has to be terminated by nullptr
 	)
 	{
-		int next_free_program_option = 2;
+		int next_free_program_option = 0;
 		const int max_options = 30;
         static struct option long_options[max_options+1] = {
-    			{"test-initial-freq-x-mul", required_argument, 0, 256+'a'+0}, // 0
-    			{"test-initial-freq-y-mul", required_argument, 0, 256+'a'+1}, // 1
-    			{"initial-coord-x", required_argument, 0, 256+'a'+2}, // 2
-    			{"initial-coord-y", required_argument, 0, 256+'a'+3}, // 3
+//    			{"test-initial-freq-x-mul", required_argument, 0, 256+'a'+0}, // 0
+//    			{"test-initial-freq-y-mul", required_argument, 0, 256+'a'+1}, // 1
+//    			{"initial-coord-x", required_argument, 0, 256+'a'+2}, // 2
+//    			{"initial-coord-y", required_argument, 0, 256+'a'+3}, // 3
+    			{0, 0, 0, 0}, // 0
+    			{0, 0, 0, 0}, // 1
+    			{0, 0, 0, 0}, // 2
+    			{0, 0, 0, 0}, // 3
     			{0, 0, 0, 0}, // 4
     			{0, 0, 0, 0}, // 5
     			{0, 0, 0, 0}, // 6
@@ -322,12 +339,25 @@ public:
 				{0, 0, 0, 0}, // 7
 				{0, 0, 0, 0}, // 8
 				{0, 0, 0, 0}, // 9	Option Nr. 30
+
 				{0, 0, 0, 0} // NULL
         };
 
+        long_options[next_free_program_option++] = {"initial-coord-x", required_argument, 0, 256+'a'+0};
+        long_options[next_free_program_option++] = {"initial-coord-y", required_argument, 0, 256+'a'+1};
+
+//        long_options[next_free_program_option++] = {"test-initial-freq-x-mul", required_argument, 0, 256+'a'+2};
+//        long_options[next_free_program_option++] = {"test-initial-freq-y-mul", required_argument, 0, 256+'a'+3};
+
+#if SWEET_PARAREAL
+        int parareal_start_option_index = next_free_program_option;
+        parareal.setup_longOptionList(long_options, next_free_program_option, max_options);
+#endif
 
         if (bogus_var_names != nullptr)
         {
+        	std::cout << next_free_program_option << std::endl;
+
 			int opt_nr;
 			for (opt_nr = next_free_program_option; opt_nr < max_options; opt_nr++)
 			{
@@ -367,16 +397,22 @@ public:
 			 */
 			if (opt >= 256+'a' && opt <= 256+'z')
 			{
-				int i = opt-(256+'a');
+				int i = (int)opt-(int)(256+'a');
 
 				if (i < next_free_program_option)
 				{
 					switch(i)
 					{
-					case 0:		setup.initial_freq_x_mul = atof(optarg);	break;
-					case 1:		setup.initial_freq_y_mul = atof(optarg);	break;
-					case 2:		setup.coord_x = atof(optarg);	break;
-					case 3:		setup.coord_y = atof(optarg);	break;
+//						case 0:		setup.initial_freq_x_mul = atof(optarg);	break;
+//						case 1:		setup.initial_freq_y_mul = atof(optarg);	break;
+						case 1:		setup.setup_coord_x = atof(optarg);	break;
+						case 2:		setup.setup_coord_y = atof(optarg);	break;
+
+						default:
+#if SWEET_PARAREAL
+							parareal.setup_longOptionValue(i-parareal_start_option_index, optarg);
+#endif
+							break;
 					}
 				}
 				else
@@ -467,11 +503,11 @@ public:
 				break;
 
 			case 'x':
-				setup.coord_x = atof(optarg);
+				setup.setup_coord_x = atof(optarg);
 				break;
 
 			case 'y':
-				setup.coord_y = atof(optarg);
+				setup.setup_coord_y = atof(optarg);
 				break;
 
 			case 'f':
@@ -593,6 +629,13 @@ public:
 		}
 
 		reset();
+
+
+#if SWEET_PARAREAL
+		// if max simulation time was not set for parareal, copy max simulation time from default parameters to parareal parameters.
+		if (parareal.max_simulation_time <= 0)
+			parareal.max_simulation_time = timecontrol.max_simulation_time;
+#endif
 
 		if (misc.verbosity > 1)
 		{

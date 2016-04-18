@@ -5,11 +5,11 @@
  *      Author: martin
  */
 
-#ifndef SRC_INCLUDE_PARAREAL_PARAREALDATA_DATAARRAYS_HPP_
-#define SRC_INCLUDE_PARAREAL_PARAREALDATA_DATAARRAYS_HPP_
+#ifndef SRC_INCLUDE_PARAREAL_PARAREAL_DATA_DATAARRAYS_HPP_
+#define SRC_INCLUDE_PARAREAL_PARAREAL_DATA_DATAARRAYS_HPP_
 
-#include <parareal/PararealData.hpp>
 #include <assert.h>
+#include <parareal/Parareal_Data.hpp>
 
 
 
@@ -89,4 +89,4 @@ public:
 
 
 
-#endif /* SRC_INCLUDE_PARAREAL_PARAREALDATA_DATAARRAYS_HPP_ */
+#endif /* SRC_INCLUDE_PARAREAL_PARAREAL_DATA_DATAARRAYS_HPP_ */

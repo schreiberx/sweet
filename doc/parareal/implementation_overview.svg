@@ -1,0 +1,551 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 744.09448819 1052.3622047"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="implementation_overview.svg">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.4"
+     inkscape:cx="638.01701"
+     inkscape:cy="415.65175"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     inkscape:snap-bbox="true"
+     inkscape:bbox-paths="true"
+     inkscape:bbox-nodes="true"
+     inkscape:snap-bbox-edge-midpoints="true"
+     inkscape:snap-bbox-midpoints="true"
+     inkscape:object-paths="true"
+     inkscape:snap-intersection-paths="true"
+     inkscape:object-nodes="true"
+     inkscape:window-width="3200"
+     inkscape:window-height="1685"
+     inkscape:window-x="0"
+     inkscape:window-y="41"
+     inkscape:window-maximized="1">
+    <inkscape:grid
+       type="xygrid"
+       id="grid4138" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:4;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4136"
+       width="260"
+       height="120.00002"
+       x="350"
+       y="132.3622" />
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4136-3"
+       width="259"
+       height="38.999992"
+       x="350"
+       y="132.36223" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="479.29065"
+       y="160.75026"
+       id="text4155"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4157"
+         x="479.29065"
+         y="160.75026"
+         style="font-weight:bold;font-size:17.5px;text-align:center;text-anchor:middle">SimulationInstance</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="159.79065"
+       y="161.75026"
+       id="text4155-1"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4157-6"
+         x="159.79065"
+         y="161.75026"
+         style="font-weight:bold;font-size:17.5px;text-align:center;text-anchor:middle">SimulationVariables</tspan></text>
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:4;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4136-39"
+       width="259"
+       height="119.00001"
+       x="30.5"
+       y="133.36221" />
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4136-3-7"
+       width="259"
+       height="39.000008"
+       x="30.5"
+       y="133.3622" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="18.846436"
+       y="25.658104"
+       id="text4155-1-6"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         x="18.846436"
+         y="25.658104"
+         style="font-weight:normal;font-size:17.5px;text-align:start;text-anchor:start"
+         id="tspan4240">This document provides an overview of the implementation of</tspan><tspan
+         sodipodi:role="line"
+         x="18.846436"
+         y="47.533104"
+         style="font-weight:normal;font-size:17.5px;text-align:start;text-anchor:start"
+         id="tspan4265">* standard time stepping method and</tspan><tspan
+         sodipodi:role="line"
+         x="18.846436"
+         y="69.408104"
+         style="font-weight:normal;font-size:17.5px;text-align:start;text-anchor:start"
+         id="tspan4267">* Parareal time stepping</tspan><tspan
+         sodipodi:role="line"
+         x="18.846436"
+         y="91.283104"
+         style="font-weight:normal;font-size:17.5px;text-align:start;text-anchor:start"
+         id="tspan4269">of the swe_rexi.cpp implementation</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="358.93738"
+       y="198.72203"
+       id="text4155-1-6-0"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4157-6-7-5"
+         x="358.93738"
+         y="198.72203"
+         style="font-weight:normal;font-size:15px;text-align:start;text-anchor:start">- Object oriented</tspan><tspan
+         sodipodi:role="line"
+         x="358.93738"
+         y="217.47203"
+         style="font-weight:normal;font-size:15px;text-align:start;text-anchor:start"
+         id="tspan4238">- Accesses SimulationVariables</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="38.346436"
+       y="195.65813"
+       id="text4155-1-6-6"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4157-6-7-3"
+         x="38.346436"
+         y="195.65813"
+         style="font-weight:normal;font-size:15px;text-align:start;text-anchor:start">- Initialized in main()</tspan><tspan
+         sodipodi:role="line"
+         x="38.346436"
+         y="214.40813"
+         style="font-weight:normal;font-size:15px;text-align:start;text-anchor:start"
+         id="tspan4240-1">- Singleton</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="159.79065"
+       y="368.75027"
+       id="text4155-1-60"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4157-6-1"
+         x="159.79065"
+         y="368.75027"
+         style="font-weight:bold;font-size:17.5px;text-align:center;text-anchor:middle">Serial main()</tspan></text>
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4136-3-7-3"
+       width="259"
+       height="39.000008"
+       x="30.5"
+       y="340.36221" />
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:4;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4136-39-1"
+       width="259"
+       height="119.00001"
+       x="31"
+       y="342.36221" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="43.306396"
+       y="405.1254"
+       id="text4155-1-6-6-3"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         x="43.306396"
+         y="405.1254"
+         style="font-weight:normal;font-size:15px;text-align:start;text-anchor:start"
+         id="tspan4240-1-7">- Initialize SimulationVariables</tspan><tspan
+         sodipodi:role="line"
+         x="43.306396"
+         y="423.8754"
+         style="font-weight:normal;font-size:15px;text-align:start;text-anchor:start"
+         id="tspan4377">- Initialize SimulationInstance</tspan><tspan
+         sodipodi:role="line"
+         x="43.306396"
+         y="442.6254"
+         style="font-weight:normal;font-size:15px;text-align:start;text-anchor:start"
+         id="tspan4379">- execute simulation</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="1199.9203"
+       y="600.75018"
+       id="text4155-1-7"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4157-6-4"
+         x="1199.9203"
+         y="600.75018"
+         style="font-weight:bold;font-size:17.5px;text-align:center;text-anchor:middle">SimulationVariables</tspan></text>
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4136-3-7-9"
+       width="259"
+       height="39.000008"
+       x="1070.6296"
+       y="572.36212" />
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4136-3-08"
+       width="259"
+       height="38.999992"
+       x="350"
+       y="422.36221" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="479.29065"
+       y="450.75024"
+       id="text4155-6"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4157-4"
+         x="479.29065"
+         y="450.75024"
+         style="font-weight:bold;font-size:17.5px;text-align:center;text-anchor:middle">SimulationInstance</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="158.79065"
+       y="598.75024"
+       id="text4155-1-60-9"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4157-6-1-5"
+         x="158.79065"
+         y="598.75024"
+         style="font-weight:bold;font-size:17.5px;text-align:center;text-anchor:middle">Serial Parareal</tspan></text>
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4136-3-7-3-2"
+       width="259"
+       height="39.000008"
+       x="29.5"
+       y="570.36218" />
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:4;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4136-39-1-6"
+       width="259"
+       height="119.00001"
+       x="30"
+       y="572.36218" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="42.306396"
+       y="635.12537"
+       id="text4155-1-6-6-3-5"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         x="42.306396"
+         y="635.12537"
+         style="font-weight:normal;font-size:15px;text-align:start;text-anchor:start"
+         id="tspan4240-1-7-7">- Initialize SimulationVariables</tspan><tspan
+         sodipodi:role="line"
+         x="42.306396"
+         y="653.87537"
+         style="font-weight:normal;font-size:15px;text-align:start;text-anchor:start"
+         id="tspan4459">- Initialize PararealController</tspan><tspan
+         sodipodi:role="line"
+         x="42.306396"
+         y="672.62537"
+         style="font-weight:normal;font-size:15px;text-align:start;text-anchor:start"
+         id="tspan4379-8">- execute simulation</tspan></text>
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:4;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4136-1"
+       width="300"
+       height="80.000084"
+       x="710.62964"
+       y="572.36206" />
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4136-3-0"
+       width="300"
+       height="40.000023"
+       x="710.62964"
+       y="572.36212" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="857.83429"
+       y="600.75012"
+       id="text4155-3"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4157-9"
+         x="857.83429"
+         y="600.75012"
+         style="font-weight:bold;font-size:17.5px;text-align:center;text-anchor:middle">Parareal_SimulationInstance</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="358.93738"
+       y="638.72198"
+       id="text4155-1-6-0-9"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         x="358.93738"
+         y="638.72198"
+         style="font-weight:normal;font-size:15px;text-align:start;text-anchor:start"
+         id="tspan4238-2" /></text>
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:4.6;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       d="m 10,502.3622 730,0"
+       id="path4496"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:4.5999999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 10,290.0622 730,0"
+       id="path4496-6"
+       inkscape:connector-curvature="0" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="18.564453"
+       y="317.80167"
+       id="text4155-1-60-92"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4157-6-1-8"
+         x="18.564453"
+         y="317.80167"
+         style="font-weight:bold;font-size:20px;text-align:start;text-anchor:start">Standard time stepping:</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="18.564453"
+       y="537.80164"
+       id="text4155-1-60-92-5"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4157-6-1-8-3"
+         x="18.564453"
+         y="537.80164"
+         style="font-weight:bold;font-size:20px;text-align:start;text-anchor:start">Parareal time stepping with serial implementation</tspan></text>
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4136-3-5"
+       width="259"
+       height="38.999992"
+       x="711.12964"
+       y="612.36212" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="840.42029"
+       y="640.75018"
+       id="text4155-2"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4157-2"
+         x="840.42029"
+         y="640.75018"
+         style="font-weight:bold;font-size:17.5px;text-align:center;text-anchor:middle">SimulationInstance</tspan></text>
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:4;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4136-1-2"
+       width="299"
+       height="80.000084"
+       x="711.62964"
+       y="722.36206" />
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4136-3-0-4"
+       width="300"
+       height="40.000023"
+       x="711.62964"
+       y="722.36212" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="858.83429"
+       y="750.75012"
+       id="text4155-3-3"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4157-9-2"
+         x="858.83429"
+         y="750.75012"
+         style="font-weight:bold;font-size:17.5px;text-align:center;text-anchor:middle">Parareal_SimulationInstance</tspan></text>
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4136-3-5-2"
+       width="259"
+       height="38.999992"
+       x="712.12964"
+       y="762.36212" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="841.42029"
+       y="790.75018"
+       id="text4155-2-9"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4157-2-1"
+         x="841.42029"
+         y="790.75018"
+         style="font-weight:bold;font-size:17.5px;text-align:center;text-anchor:middle">SimulationInstance</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="865.63818"
+       y="667.14056"
+       id="text4155-3-3-7"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4157-9-2-1"
+         x="865.63818"
+         y="667.14056"
+         style="font-weight:bold;font-size:17.5px;text-align:center;text-anchor:middle">...</tspan><tspan
+         sodipodi:role="line"
+         x="865.63818"
+         y="689.01556"
+         style="font-weight:bold;font-size:17.5px;text-align:center;text-anchor:middle"
+         id="tspan4649">...</tspan><tspan
+         sodipodi:role="line"
+         x="865.63818"
+         y="710.89056"
+         style="font-weight:bold;font-size:17.5px;text-align:center;text-anchor:middle"
+         id="tspan4651">...</tspan></text>
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       d="m 1010.6296,612.3622 60,-20"
+       id="path4653"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:6,6;stroke-dashoffset:0"
+       d="m 1010.6296,682.3622 60,-90"
+       id="path4655"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       d="m 1010.6296,762.3622 60,-170"
+       id="path4657"
+       inkscape:connector-curvature="0" />
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4136-3-0-9"
+       width="300"
+       height="40.000023"
+       x="350"
+       y="572.36218" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="497.20465"
+       y="600.75018"
+       id="text4155-3-2"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4157-9-9"
+         x="497.20465"
+         y="600.75018"
+         style="font-weight:bold;font-size:17.5px;text-align:center;text-anchor:middle">Parareal_Controller_Serial</tspan></text>
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       d="m 710.15811,612.3622 -60,-20"
+       id="path4653-4"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:6,6;stroke-dashoffset:0"
+       d="m 710.15811,682.3622 -60,-90"
+       id="path4655-2"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       d="m 710.15811,762.36219 -60,-169.99999"
+       id="path4657-2"
+       inkscape:connector-curvature="0" />
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:4;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4136-39-1-6-4"
+       width="299.5"
+       height="121.00002"
+       x="350.5"
+       y="571.36218" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="359.26758"
+       y="633.75867"
+       id="text4155-1-6-6-3-5-6"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         x="359.26758"
+         y="633.75867"
+         style="font-weight:normal;font-size:15px;text-align:start;text-anchor:start"
+         id="tspan4240-1-7-7-1">- Initialize array with Parareal_SimInst.</tspan><tspan
+         sodipodi:role="line"
+         x="359.26758"
+         y="652.50867"
+         style="font-weight:normal;font-size:15px;text-align:start;text-anchor:start"
+         id="tspan4459-6">- Initialize SimulationInstances</tspan><tspan
+         sodipodi:role="line"
+         x="359.26758"
+         y="671.25867"
+         style="font-weight:normal;font-size:15px;text-align:start;text-anchor:start"
+         id="tspan4379-8-1">- Execute Parareal simulation</tspan></text>
+  </g>
+</svg>

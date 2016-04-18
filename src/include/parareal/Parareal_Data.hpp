@@ -5,8 +5,8 @@
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#ifndef SRC_INCLUDE_PARAREAL_PARAREALDATA_HPP_
-#define SRC_INCLUDE_PARAREAL_PARAREALDATA_HPP_
+#ifndef SRC_INCLUDE_PARAREAL_PARAREAL_DATA_HPP_
+#define SRC_INCLUDE_PARAREAL_PARAREAL_DATA_HPP_
 
 
 /**
@@ -50,4 +50,4 @@ class PararealDataInherited	:
 };
 
 
-#endif /* SRC_INCLUDE_PARAREAL_PARAREALDATA_HPP_ */
+#endif /* SRC_INCLUDE_PARAREAL_PARAREAL_DATA_HPP_ */

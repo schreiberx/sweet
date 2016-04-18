@@ -30,8 +30,8 @@ public:
 		if (i_parameters.setup.scenario == 0)
 		{
 			// radial dam break
-			double dx = x-i_parameters.setup.coord_x*i_parameters.sim.domain_size[0];
-			double dy = y-i_parameters.setup.coord_y*i_parameters.sim.domain_size[1];
+			double dx = x-i_parameters.setup.setup_coord_x*i_parameters.sim.domain_size[0];
+			double dy = y-i_parameters.setup.setup_coord_y*i_parameters.sim.domain_size[1];
 
 			double radius = i_parameters.setup.radius_scale*sqrt((double)i_parameters.sim.domain_size[0]*(double)i_parameters.sim.domain_size[0]+(double)i_parameters.sim.domain_size[1]*(double)i_parameters.sim.domain_size[1]);
 			if (dx*dx+dy*dy < radius*radius)
@@ -43,8 +43,8 @@ public:
 		if (i_parameters.setup.scenario == 1)
 		{
 			// Gaussian
-			double dx = x-i_parameters.setup.coord_x*i_parameters.sim.domain_size[0];
-			double dy = y-i_parameters.setup.coord_y*i_parameters.sim.domain_size[1];
+			double dx = x-i_parameters.setup.setup_coord_x*i_parameters.sim.domain_size[0];
+			double dy = y-i_parameters.setup.setup_coord_y*i_parameters.sim.domain_size[1];
 
 			double radius = i_parameters.setup.radius_scale*sqrt((double)i_parameters.sim.domain_size[0]*(double)i_parameters.sim.domain_size[0]+(double)i_parameters.sim.domain_size[1]*(double)i_parameters.sim.domain_size[1]);
 			dx /= radius;
@@ -82,8 +82,8 @@ public:
 		if (i_parameters.setup.scenario == 6)
 		{
 			// Gaussian
-			double dx = x-i_parameters.setup.coord_x*i_parameters.sim.domain_size[0];
-			double dy = y-i_parameters.setup.coord_y*i_parameters.sim.domain_size[1];
+			double dx = x-i_parameters.setup.setup_coord_x*i_parameters.sim.domain_size[0];
+			double dy = y-i_parameters.setup.setup_coord_y*i_parameters.sim.domain_size[1];
 
 			double radius = i_parameters.setup.radius_scale*sqrt((double)i_parameters.sim.domain_size[0]*(double)i_parameters.sim.domain_size[0]+(double)i_parameters.sim.domain_size[1]*(double)i_parameters.sim.domain_size[1]);
 			double e = 50;
@@ -96,7 +96,7 @@ public:
 		if (i_parameters.setup.scenario == 8)
 		{
 			// gaussian in x
-			double dx = x-i_parameters.setup.coord_x*i_parameters.sim.domain_size[0];
+			double dx = x-i_parameters.setup.setup_coord_x*i_parameters.sim.domain_size[0];
 
 			double radius = i_parameters.setup.radius_scale*i_parameters.sim.domain_size[0];
 			dx /= radius;
@@ -173,8 +173,8 @@ public:
 		if (i_parameters.setup.scenario == 6)
 		{
 			// Gaussian
-			double dx = x-i_parameters.setup.coord_x*i_parameters.sim.domain_size[0];
-			double dy = y-i_parameters.setup.coord_y*i_parameters.sim.domain_size[1];
+			double dx = x-i_parameters.setup.setup_coord_x*i_parameters.sim.domain_size[0];
+			double dy = y-i_parameters.setup.setup_coord_y*i_parameters.sim.domain_size[1];
 
 			double radius = i_parameters.setup.radius_scale*sqrt((double)i_parameters.sim.domain_size[0]*(double)i_parameters.sim.domain_size[0]+(double)i_parameters.sim.domain_size[1]*(double)i_parameters.sim.domain_size[1]);
 			double e = 50;
@@ -200,8 +200,8 @@ public:
 		if (i_parameters.setup.scenario == 10)
 		{
 			// Gaussian
-			double dx = x-i_parameters.setup.coord_x*i_parameters.sim.domain_size[0];
-			double dy = y-i_parameters.setup.coord_y*i_parameters.sim.domain_size[1];
+			double dx = x-i_parameters.setup.setup_coord_x*i_parameters.sim.domain_size[0];
+			double dy = y-i_parameters.setup.setup_coord_y*i_parameters.sim.domain_size[1];
 
 			double radius = i_parameters.setup.radius_scale*sqrt((double)i_parameters.sim.domain_size[0]*(double)i_parameters.sim.domain_size[0]+(double)i_parameters.sim.domain_size[1]*(double)i_parameters.sim.domain_size[1]);
 			dx /= radius;
@@ -264,8 +264,8 @@ public:
 		if (i_parameters.setup.scenario == 6)
 		{
 			// Gaussian
-			double dx = x-i_parameters.setup.coord_x*i_parameters.sim.domain_size[0];
-			double dy = y-i_parameters.setup.coord_y*i_parameters.sim.domain_size[1];
+			double dx = x-i_parameters.setup.setup_coord_x*i_parameters.sim.domain_size[0];
+			double dy = y-i_parameters.setup.setup_coord_y*i_parameters.sim.domain_size[1];
 
 			double radius = i_parameters.setup.radius_scale*sqrt((double)i_parameters.sim.domain_size[0]*(double)i_parameters.sim.domain_size[0]+(double)i_parameters.sim.domain_size[1]*(double)i_parameters.sim.domain_size[1]);
 			double e = 50;

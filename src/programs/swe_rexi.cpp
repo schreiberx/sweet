@@ -53,8 +53,8 @@ double param_initial_freq_y_mul;
 int param_boundary_id;
 bool param_nonlinear;
 
-class SimulationSWE :
-		public PararealSimulation_Base
+class SimulationInstance :
+		public Parareal_SimulationInstance
 {
 public:
 	DataArray<2> prog_h, prog_u, prog_v;
@@ -93,7 +93,7 @@ public:
 
 
 public:
-	SimulationSWE()	:
+	SimulationInstance()	:
 		prog_h(simVars.disc.res),
 		prog_u(simVars.disc.res),
 		prog_v(simVars.disc.res),
@@ -117,7 +117,8 @@ public:
 #if SWEET_PARAREAL != 0
 		,
 		_parareal_data_coarse_h(simVars.disc.res), _parareal_data_coarse_u(simVars.disc.res), _parareal_data_coarse_v(simVars.disc.res),
-		_parareal_data_output_h(simVars.disc.res), _parareal_data_output_u(simVars.disc.res), _parareal_data_output_v(simVars.disc.res)
+		_parareal_data_output_h(simVars.disc.res), _parareal_data_output_u(simVars.disc.res), _parareal_data_output_v(simVars.disc.res),
+		_parareal_data_error_h(simVars.disc.res), _parareal_data_error_u(simVars.disc.res), _parareal_data_error_v(simVars.disc.res)
 #endif
 	{
 		reset();
@@ -137,10 +138,15 @@ public:
 			DataArray<2>* data_array[3] = {&_parareal_data_output_h, &_parareal_data_output_u, &_parareal_data_output_v};
 			parareal_data_output.setup(data_array);
 		}
+
+		{
+			DataArray<2>* data_array[3] = {&_parareal_data_error_h, &_parareal_data_error_u, &_parareal_data_error_v};
+			parareal_data_error.setup(data_array);
+		}
 #endif
 	}
 
-	virtual ~SimulationSWE()
+	virtual ~SimulationInstance()
 	{
 	}
 
@@ -1037,7 +1043,12 @@ public:
 		}
 	}
 
-	void run_timestep()
+	/**
+	 * Execute a single simulation time step
+	 */
+	void run_timestep(
+//			double i_max_simulation_time
+	)
 	{
 		double o_dt;
 
@@ -1050,7 +1061,7 @@ public:
 			// standard time stepping
 			timestepping.run_rk_timestep(
 					this,
-					&SimulationSWE::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
+					&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
 					prog_h, prog_u, prog_v,
 					o_dt,
 					simVars.timecontrol.current_timestep_size,
@@ -1061,6 +1072,8 @@ public:
 		}
 		else if (param_timestepping_mode == 1)
 		{
+//			assert(i_max_simulation_time < 0);
+
 			// REXI time stepping for linear eq
 			if (param_nonlinear)
 			{
@@ -1080,6 +1093,7 @@ public:
 		}
 		else if (param_timestepping_mode == 2)
 		{
+//			assert(i_max_simulation_time < 0);
 			if (param_use_staggering)
 			{
 				std::cerr << "Direct solution on staggered grid not supported!" << std::endl;
@@ -1099,6 +1113,7 @@ public:
 		}
 		else if (param_timestepping_mode == 3)
 		{
+//			assert(i_max_simulation_time < 0);
 			assert(simVars.sim.CFL < 0);
 			// Analytical solution
 			o_dt = -simVars.sim.CFL;
@@ -1501,6 +1516,11 @@ public:
 	DataArray<2> _parareal_data_output_h, _parareal_data_output_u, _parareal_data_output_v;
 	PararealData_DataArrays<3> parareal_data_output;
 
+	DataArray<2> _parareal_data_error_h, _parareal_data_error_u, _parareal_data_error_v;
+	PararealData_DataArrays<3> parareal_data_error;
+
+	double timeframe_start = -1;
+	double timeframe_end = -1;
 
 	void parareal_setup()
 	{
@@ -1530,7 +1550,8 @@ public:
 			double i_timeframe_end		///< end time stamp of coarse time step
 	)
 	{
-
+		timeframe_start = i_timeframe_start;
+		timeframe_end = i_timeframe_end;
 	}
 
 	/**
@@ -1539,7 +1560,7 @@ public:
 	void sim_setup_initial_data(
 	)
 	{
-
+		reset();
 	}
 
 	/**
@@ -1551,7 +1572,7 @@ public:
 			PararealData &i_pararealData
 	)
 	{
-
+		// cast to pararealDataArray stuff
 	}
 
 	/**
@@ -1563,7 +1584,7 @@ public:
 			int i_mpi_comm
 	)
 	{
-
+		// NOTHING TO DO HERE
 	}
 
 	/**
@@ -1572,7 +1593,16 @@ public:
 	 */
 	void run_timestep_fine()
 	{
+		// reset simulation time
+		simVars.timecontrol.current_simulation_time = timeframe_start;
+		simVars.timecontrol.max_simulation_time = timeframe_end;
+		simVars.timecontrol.current_timestep_nr = 0;
 
+		while (simVars.timecontrol.current_simulation_time != timeframe_end)
+		{
+			this->run_timestep();
+			assert(simVars.timecontrol.current_simulation_time <= timeframe_end);
+		}
 	}
 
 
@@ -1592,8 +1622,18 @@ public:
 	 */
 	void run_timestep_coarse()
 	{
+		// run implicit time step
+//		assert(i_max_simulation_time < 0);
+		assert(simVars.sim.CFL < 0);
 
+		rexiSWE.run_timestep_implicit_ts(
+				prog_h, prog_u, prog_v,
+				timeframe_end - timeframe_start,
+				op,
+				simVars
+		);
 	}
+
 
 
 	/**
@@ -1606,14 +1646,20 @@ public:
 	}
 
 
+
 	/**
 	 * Compute the error between the fine and coarse timestepping:
 	 * Y^E := Y^F - Y^C
 	 */
 	void compute_difference()
 	{
-
+		for (int k = 0; k < 3; k++)
+		{
+			for (std::size_t i = 0; i < parareal_data_error.data_arrays[k]->array_data_cartesian_length; i++)
+				*parareal_data_error.data_arrays[k] = *parareal_data_fine.data_arrays[k] - *parareal_data_coarse.data_arrays[k];
+		}
 	}
+
 
 
 	/**
@@ -1625,8 +1671,13 @@ public:
 	 */
 	void compute_output_data()
 	{
-
+		for (int k = 0; k < 3; k++)
+		{
+			for (std::size_t i = 0; i < parareal_data_error.data_arrays[k]->array_data_cartesian_length; i++)
+				*parareal_data_output.data_arrays[k] = *parareal_data_coarse.data_arrays[k] - *parareal_data_error.data_arrays[k];
+		}
 	}
+
 
 
 	/**
@@ -1740,6 +1791,11 @@ int main(int i_argc, char *i_argv[])
 		std::cout << std::endl;
 		std::cout << "	--nonlinear=[0/1]	0-use linear equations, 1-use nonlinear eq" << std::endl;
 		std::cout << std::endl;
+
+
+#if SWEET_PARAREAL
+		simVars.parareal.setup_printOptions();
+#endif
 		return -1;
 	}
 
@@ -1763,7 +1819,7 @@ int main(int i_argc, char *i_argv[])
 
 	param_nonlinear = simVars.bogus.var[14];
 
-	SimulationSWE *simulationSWE = new SimulationSWE;
+	SimulationInstance *simulationSWE = new SimulationInstance;
 
 	std::ostringstream buf;
 	buf << std::setprecision(14);
@@ -1779,7 +1835,25 @@ int main(int i_argc, char *i_argv[])
 #if SWEET_GUI
 		if (simVars.misc.gui_enabled)
 		{
-			VisSweet<SimulationSWE> visSweet(simulationSWE);
+			VisSweet<SimulationInstance> visSweet(simulationSWE);
+		}
+		else
+#endif
+
+#if SWEET_PARAREAL
+		if (simVars.parareal.enabled)
+		{
+			/*
+			 * Allocate parareal controller and provide class
+			 * which implement the parareal features
+			 */
+			Parareal_Controller_Serial<SimulationInstance> parareal_Controller_Serial;
+
+			// setup controller. This initializes several simulation instances
+			parareal_Controller_Serial.setup(&simVars.parareal);
+
+			// execute the simulation
+			parareal_Controller_Serial.run();
 		}
 		else
 #endif
