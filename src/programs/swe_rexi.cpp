@@ -48,7 +48,7 @@ int param_rexi_helmholtz_solver_id;
 double param_rexi_helmholtz_solver_eps;
 bool param_rexi_zero_before_solving;
 int param_boundary_id;
-bool param_nonlinear;
+int param_nonlinear;
 
 //Main simulation class
 class SimulationSWE
@@ -231,7 +231,7 @@ public:
 		if (param_use_staggering && param_compute_error)
 			std::cerr << "Warning: Staggered data will be interpolated to/from A-grid for exact linear solution" << std::endl;
 
-		if(param_nonlinear && param_compute_error)
+		if(param_nonlinear > 0 && param_compute_error)
 			std::cout << "Warning: Exact solution not possible in general for nonlinear swe. Using exact solution for linear case instead." << std::endl;
 
 		if (param_use_staggering)
@@ -289,9 +289,9 @@ public:
 		posx_a = pos_x+0.5*simVars.disc.cell_size[0];
 		posy_a = pos_y+0.5*simVars.disc.cell_size[1];
 
-		std::cout << std::endl;
-		std::cout << "posx_a: " << posx_a.array_data_cartesian_space_valid << std::endl;
-		std::cout << std::endl;
+		//std::cout << std::endl;
+		//std::cout << "posx_a: " << posx_a.array_data_cartesian_space_valid << std::endl;
+		//std::cout << std::endl;
 
 		// Set initial conditions given from SWEValidationBenchmarks
 		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
@@ -345,7 +345,7 @@ public:
 
 		//Initialise t-dt time step with initial condition
 		prog_h_prev = prog_h;
-		std::cout << "prog_h_prev.array_data_cartesian_space_valid " << prog_h_prev.array_data_cartesian_space_valid << std::endl;
+		//std::cout << "prog_h_prev.array_data_cartesian_space_valid " << prog_h_prev.array_data_cartesian_space_valid << std::endl;
 		prog_u_prev = prog_u;
 		prog_v_prev = prog_v;
 
@@ -715,7 +715,7 @@ public:
 		// A- grid method
 		if (!param_use_staggering)
 		{
-			if(param_nonlinear){ //nonlinear case
+			if(param_nonlinear > 0){ //nonlinear case
 				std::cout << "Only linear swe are setup for unstaggered grids " << std::endl;
 				exit(1);
 			}
@@ -836,7 +836,7 @@ public:
 			/*
 			 * U and V updates
 			 */
-			if(param_nonlinear) //nonlinear case
+			if(param_nonlinear > 0) //nonlinear case
 			{
 				U = op.avg_b_x(i_h)*i_u;
 				V = op.avg_b_y(i_h)*i_v;
@@ -847,12 +847,12 @@ public:
 				V = simVars.setup.h0*i_v;
 			}
 
-			if(param_nonlinear) //nonlinear case
+			if(param_nonlinear > 0) //nonlinear case
 				H = simVars.sim.g*i_h + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
 			else //linear case
 				H = simVars.sim.g*i_h;// + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
 
-			if(param_nonlinear) //nonlinear case
+			if(param_nonlinear > 0) //nonlinear case
 			{
 				// Potential vorticity
 				if(op.avg_b_x(op.avg_b_y(i_h)).reduce_min() < 0.00000001)
@@ -890,8 +890,14 @@ public:
 			{
 				if (!simVars.disc.timestepping_up_and_downwinding)
 				{
-					// standard update
-					o_h_t = -op.diff_f_x(U) - op.diff_f_y(V);
+					if(param_nonlinear == 1){ //full nonlinear divergence
+						// standard update
+						o_h_t = -op.diff_f_x(U) - op.diff_f_y(V);
+					}
+					else //use linear divergence
+					{
+						o_h_t = -op.diff_f_x(simVars.setup.h0*i_u) - op.diff_f_y(simVars.setup.h0*i_v);
+					}
 				}
 				else
 				{
@@ -949,7 +955,7 @@ public:
 	{
 		double o_dt;
 
-		if (param_timestepping_mode == 0)
+		if (param_timestepping_mode == 0) //FD method
 		{
 			// either set time step size to 0 for autodetection or to
 			// a positive value to use a fixed time step size
@@ -967,12 +973,130 @@ public:
 					simVars.timecontrol.max_simulation_time
 				);
 		}
-		else if (param_timestepping_mode == 1)
+		else if (param_timestepping_mode == 1) //REXI
 		{
-			// REXI time stepping for linear eq
-			if (param_nonlinear)
+			// REXI time stepping for nonlinear eq - semi-lagrangian scheme (SL-REXI)
+			if (param_nonlinear>0)
 			{
+
+				assert(simVars.sim.CFL < 0);
 				o_dt = -simVars.sim.CFL;
+
+				//Calculate departure points
+				semiLagrangian.semi_lag_departure_points_settls(
+								prog_u_prev,
+								prog_v_prev,
+								prog_u,
+								prog_v,
+								posx_a,
+								posy_a,
+								o_dt,
+								posx_d,
+								posy_d,
+								stag_displacement
+						);
+
+				//Save current fields for next time step
+				prog_u_prev = prog_u;
+				prog_v_prev = prog_v;
+				prog_h_prev = prog_h;
+
+				DataArray<2>& U = tmp0;
+				DataArray<2>& V = tmp1;
+				DataArray<2>& H = tmp2;
+
+				U = prog_u;
+				V = prog_v;
+				H = prog_h;
+
+				/*
+				 *
+				std::cout<<"U"<<std::endl;
+				U.printArrayData();
+				std::cout<<"V"<<std::endl;
+				V.printArrayData();
+				std::cout<<"H"<<std::endl;
+				H.printArrayData();
+				 */
+				std::cout<<"prog_u"<<std::endl;
+				prog_u.printArrayData();
+				std::cout<<"prog_v"<<std::endl;
+				prog_v.printArrayData();
+				std::cout<<"prog_h"<<std::endl;
+				prog_h.printArrayData();
+				std::cout<<std::endl;
+
+
+				if(param_nonlinear==2) //Linear with nonlinear advection only (valid for nondivergent flows
+				{
+					// First calculate the linear part
+					rexiSWE.run_timestep(
+										H, U, V,
+										o_dt,
+										op,
+										simVars,
+										param_rexi_zero_before_solving
+					);
+					//std::cout<<std::endl;
+					//std::cout<<"Did a REXI step"<<std::endl;
+
+					//Now interpolate to the the departure points
+					//Departure points are set for physical space
+
+
+
+					std::cout<<"U"<<std::endl;
+					U.printArrayData();
+					std::cout<<"V"<<std::endl;
+					V.printArrayData();
+					std::cout<<"H"<<std::endl;
+					H.printArrayData();
+
+
+					//    interpolate the new h to physical grid
+					sampler2D.bicubic_scalar(
+											H,
+											posx_d,
+											posy_d,
+											prog_h,
+											stag_h[0],
+											stag_h[1]
+					);
+					//    interpolate the new u to physical grid
+					sampler2D.bicubic_scalar(
+											U,
+											posx_d,
+											posy_d,
+											prog_u,
+											stag_u[0],
+											stag_u[1]
+					);
+					//    interpolate the new v to physical grid
+					sampler2D.bicubic_scalar(
+											V,
+											posx_d,
+											posy_d,
+											prog_v,
+											stag_v[0],
+											stag_v[1]
+					);
+
+					//std::cout<<"interpolated vars to dep points"<<std::endl;
+
+					std::cout<<"prog_u"<<std::endl;
+					prog_u.printArrayData();
+					std::cout<<"prog_u"<<std::endl;
+					prog_v.printArrayData();
+					std::cout<<"prog_h"<<std::endl;
+					prog_h.printArrayData();
+					std::cout<<std::endl;
+					//Debug force only linear part
+					//prog_u = U;
+					//prog_v = V;
+					//prog_h = H;
+
+				}
+
 			}
 			else // linear solver
 			{
@@ -984,7 +1108,9 @@ public:
 						simVars,
 						param_rexi_zero_before_solving
 				);
+
 			}
+
 		}
 		else if (param_timestepping_mode == 2)
 		{
@@ -994,7 +1120,7 @@ public:
 				exit(1);
 			}
 
-			if (param_nonlinear)
+			if (param_nonlinear>0)
 			{
 				std::cerr << "Direct solution not available for nonlinear case!" << std::endl;
 				exit(1);
@@ -1089,10 +1215,10 @@ public:
 			{
 				o_ostream << "T\tTOTAL_MASS\tTOTAL_ENERGY\tPOT_ENSTROPHY";
 
-				if (simVars.setup.scenario == 2 || simVars.setup.scenario == 3 || simVars.setup.scenario == 4)
+				if (simVars.setup.scenario >= 0 && simVars.setup.scenario <= 4 )
 					o_ostream << "\tDIFF_P0\tDIFF_U0\tDIFF_V0";
 
-				if (param_compute_error){
+				if (param_compute_error && param_nonlinear==0){
 					o_ostream << "\tANAL_DIFF_RMS_P\tANAL_DIFF_RMS_U\tANAL_DIFF_RMS_V";
 					o_ostream << "\tANAL_DIFF_MAX_P\tANAL_DIFF_MAX_U\tANAL_DIFF_MAX_V";
 				}
@@ -1130,10 +1256,10 @@ public:
 			}
 
 			//Print simulation time, energy and pot enstrophy
-			o_ostream << std::setprecision(6) << simVars.timecontrol.current_simulation_time << "\t" << simVars.diag.total_mass << "\t" << simVars.diag.total_energy << "\t" << simVars.diag.total_potential_enstrophy;
+			o_ostream << std::setprecision(8) << simVars.timecontrol.current_simulation_time << "\t" << simVars.diag.total_mass << "\t" << simVars.diag.total_energy << "\t" << simVars.diag.total_potential_enstrophy;
 
-			// Print max abs difference of vars to initial conditions (this gives the error in steady state cases)
-			if (simVars.setup.scenario == 2 || simVars.setup.scenario == 3 || simVars.setup.scenario == 4)
+			// Print max abs difference of vars to initial conditions (this gives the error in steady state cases, from 2 to 4)
+			if (simVars.setup.scenario >= 0 && simVars.setup.scenario <= 4 )
 			{
 				// Height
 				benchmark_diff_h = (prog_h-t0_prog_h).reduce_maxAbs() ;
@@ -1141,14 +1267,23 @@ public:
 
 				// Velocity u
 				benchmark_diff_u = (prog_u-t0_prog_u).reduce_maxAbs();
+
+				//Bug here --- diff should be non zero
 				o_ostream << "\t" << benchmark_diff_u;
+				std::cout<<"u"<<std::endl;
+				prog_u.printArrayData(6);
+				std::cout<<"u0"<<std::endl;
+				t0_prog_u.printArrayData(6);
+				std::cout<<"u-u0"<<std::endl;
+				(prog_u-t0_prog_u).printArrayData(6);
+				std::cout<<benchmark_diff_u<<std::endl;
 
 				// Velocity v
 				benchmark_diff_v = (prog_v-t0_prog_v).reduce_maxAbs();
 				o_ostream << "\t" << benchmark_diff_v;
 			}
 
-			if (param_compute_error ) //&& !param_nonlinear)
+			if (param_compute_error && param_nonlinear==0)
 			{
 				compute_errors();
 
@@ -1206,7 +1341,7 @@ public:
 		//Run exact solution for linear case
 		rexiSWE.run_timestep_direct_solution(t_h, t_u, t_v, simVars.timecontrol.current_simulation_time, op, simVars);
 
-		// Recover data in C grid using inteprolations
+		// Recover data in C grid using interpolations
 		ts_h=t_h;
 		ts_u=t_u;
 		ts_v=t_v;
@@ -1451,31 +1586,31 @@ int main(int i_argc, char *i_argv[])
 
 	//input parameter names (specific ones for this program)
 	const char *bogus_var_names[] = {
-			"rexi-h",
+			"rexi-h",			///Rexi parameters
 			"rexi-m",
 			"rexi-l",
 			"rexi-half",
-			"timestepping-mode",
+			"timestepping-mode",			///Method to be used
 			"compute-error",
-			"staggering",
+			"staggering",						/// FD A-C grid
 			"use-specdiff-for-complex-array",	/// use finite differences for complex array
 			"rexi-helmholtz-solver-id",		/// use iterative solver for REXI
 			"rexi-helmholtz-solver-eps",		/// error threshold for solver
 			"boundary-id",
 			"rexi-zero-before-solving",
-			"nonlinear",
+			"nonlinear",    /// form of equations
 			nullptr
 	};
 
 	// default values for specific input (for general input see SimulationVariables.hpp)
-	simVars.bogus.var[0] = 0.2;
+	simVars.bogus.var[0] = 0.2;  // REXI h
 	simVars.bogus.var[1] = 256;	// M
 	simVars.bogus.var[2] = 0;	// L = 0: default - this gives L=11
 	simVars.bogus.var[3] = 1;	// param_rexi_half
-	simVars.bogus.var[4] = 0;	// timestepping mode
-	simVars.bogus.var[5] = 0;	// compute error
-	simVars.bogus.var[6] = 0;	// stag
-	simVars.bogus.var[7] = 1;	// Use spec diff per default for complex array
+	simVars.bogus.var[4] = 0;	// timestepping mode - default is RK
+	simVars.bogus.var[5] = 0;	// compute error - default no
+	simVars.bogus.var[6] = 0;	// stag - default A grid
+	simVars.bogus.var[7] = 0;	// Use spec diff per default for complex array
 	simVars.bogus.var[8] = 0;	// Use spectral solver id
 	simVars.bogus.var[9] = 1e-7;	// Error threshold
 	simVars.bogus.var[10] = 0; 	//boundary
@@ -1493,7 +1628,7 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "" << std::endl;
 		std::cout << "	--rexi-half [0/1]	Reduce rexi computations to its half, default:1 " << std::endl;
 		std::cout << "" << std::endl;
-		std::cout << "	--timestepping-mode [0/1/2/3]	Timestepping method to use" << std::endl;
+		std::cout << "	--timestepping-mode [0/1/2/3/4]	Timestepping method to use" << std::endl;
 		std::cout << "	                            0: RKn with Finite-difference (default)" << std::endl;
 		std::cout << "	                            1: REXI" << std::endl;
 		std::cout << "	                            2: Direct solution in spectral space" << std::endl;
@@ -1504,20 +1639,23 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "" << std::endl;
 		std::cout << "	--staggering [0/1]		Use staggered grid" << std::endl;
 		std::cout << std::endl;
-		std::cout << "	--use-specdiff-for-complex-array=[0/1]	Controls the discretization of the derivative operations for Complex2DArrays:" << std::endl;
+		std::cout << "	--use-specdiff-for-complex-array [0/1]	Controls the discretization of the derivative operations for Complex2DArrays:" << std::endl;
 		std::cout << "                                      0: Finite-difference derivatives" << std::endl;
 		std::cout << "                                      1: Spectral derivatives (default)" << std::endl;
 		std::cout << std::endl;
-		std::cout << "	--rexi-helmholtz-solver-id=[int]	Use iterative solver for REXI" << std::endl;
-		std::cout << "	--rexi-helmholtz-solver-eps=[err]	Error threshold for iterative solver" << std::endl;
+		std::cout << "	--rexi-helmholtz-solver-id [int]	Use iterative solver for REXI" << std::endl;
+		std::cout << "	--rexi-helmholtz-solver-eps [err]	Error threshold for iterative solver" << std::endl;
 		std::cout << std::endl;
-		std::cout << "	--boundary-id=[0,1,...]	    Boundary id" << std::endl;
-		std::cout << "                              0: no boundary" << std::endl;
+		std::cout << "	--boundary-id [0,1,...]	    Boundary id" << std::endl;
+		std::cout << "                              0: no boundary (default)" << std::endl;
 		std::cout << "                              1: centered box" << std::endl;
 		std::cout << std::endl;
-		std::cout << "	--rexi-zero-before-solving=[0/1]	Zero the solution for the iterative solver" << std::endl;
+		std::cout << "	--rexi-zero-before-solving [0/1]	Zero the solution for the iterative solver (default=0)" << std::endl;
 		std::cout << std::endl;
-		std::cout << "	--nonlinear=[0/1]	   0-use linear equations (default), 1-use nonlinear eq" << std::endl;
+		std::cout << "	--nonlinear [0/1/2]	   Form of equations:" << std::endl;
+		std::cout << "						     0: Linear SWE (default)" << std::endl;
+		std::cout << "						     1: Full nonlinear SWE" << std::endl;
+		std::cout << "						     2: Linear SWE + nonlinear advection only (needs -H to be set)" << std::endl;
 		std::cout << std::endl;
 		return -1;
 	}
@@ -1552,10 +1690,15 @@ int main(int i_argc, char *i_argv[])
 
 	//Print header
 	std::cout << std::endl;
-	if(param_nonlinear)
-		std::cout << "Solving nonlinear SW equations" << std::endl;
+	if(param_nonlinear == 1)
+		std::cout << "Solving full nonlinear SW equations" << std::endl;
 	else
-		std::cout << "Solving linear SW equations" << std::endl;
+	{
+		if(param_nonlinear == 2)
+				std::cout << "Solving linear SWE with nonlinear advection" << std::endl;
+		else
+			std::cout << "Solving linear SW equations" << std::endl;
+	}
 
 	std::cout << "-----------------------------" << std::endl;
 	std::cout << "Method to be used (timestepping_mode): "; // << param_timestepping_mode << std::endl;
