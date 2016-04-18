@@ -1,36 +1,35 @@
 /*
- * PararealData_DataArrays.hpp
+ * PararealData_Scalar.hpp
  *
  *  Created on: 11 Apr 2016
  *      Author: martin
  */
 
-#ifndef SRC_INCLUDE_PARAREAL_PARAREAL_DATA_DATAARRAYS_HPP_
-#define SRC_INCLUDE_PARAREAL_PARAREAL_DATA_DATAARRAYS_HPP_
+#ifndef SRC_INCLUDE_PARAREAL_PARAREAL_DATA_SCALAR_HPP_
+#define SRC_INCLUDE_PARAREAL_PARAREAL_DATA_SCALAR_HPP_
 
 #include <assert.h>
 #include <parareal/Parareal_Data.hpp>
 
 
 
-template <int N>
-class Parareal_Data_DataArrays	:
+class Parareal_Data_Scalar	:
 		public Parareal_Data
 {
 public:
-	DataArray<2>* data_arrays[N];
+	double data;
 
-	Parareal_Data_DataArrays()
+	Parareal_Data_Scalar()	:
+		data(0)
 	{
-
 	}
 
 
-	Parareal_Data_DataArrays(
-			DataArray<2>* i_data_arrays[N]
-	)
+	Parareal_Data_Scalar(
+			double i_data
+	)	:
+		data(i_data)
 	{
-		setup(i_data_arrays);
 	}
 
 
@@ -38,11 +37,10 @@ public:
 	 * Setup data
 	 */
 	void setup(
-			DataArray<2>* i_data_arrays[N]
+			double i_data
 	)
 	{
-		for (int i = 0; i < N; i++)
-			data_arrays[i] = i_data_arrays[i];
+		data = i_data;
 	}
 
 
@@ -54,7 +52,6 @@ public:
 			int i_mpi_comm
 	)
 	{
-		for (int i = 0; i < N; i++)
 		{
 //			MPI_Isend(...)
 		}
@@ -66,11 +63,7 @@ public:
 	const Parareal_Data&
 	operator=(const Parareal_Data &i_data)
 	{
-		for (int i = 0; i < N; i++)
-		{
-			DataArray<2>** i_data_arrays = ((Parareal_Data_DataArrays&)i_data).data_arrays;
-			data_arrays[i] = i_data_arrays[i];
-		}
+		data = ((Parareal_Data_Scalar&)i_data).data;
 
 		return *this;
 	}
@@ -83,7 +76,6 @@ public:
 			int i_mpi_comm
 	)
 	{
-		for (int i = 0; i < N; i++)
 		{
 //				MPI_Irecv(...)
 		}
@@ -92,7 +84,7 @@ public:
 		assert(false);
 	}
 
-	virtual ~Parareal_Data_DataArrays()
+	virtual ~Parareal_Data_Scalar()
 	{
 	}
 };

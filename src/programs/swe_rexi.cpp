@@ -1,6 +1,8 @@
 /*
-* SWM with nonlinear part using REXI test
-*/
+ * Shallow water equations using REXI
+ *
+ *
+ */
 
 #include <sweet/DataArray.hpp>
 #if SWEET_GUI
@@ -17,6 +19,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include "rexiswe/RexiSWE.hpp"
+
 
 
 #ifndef SWEET_MPI
@@ -1498,19 +1501,19 @@ public:
 	 ******************************************************/
 
 	DataArray<2> _parareal_data_start_h, _parareal_data_start_u, _parareal_data_start_v;
-	PararealData_DataArrays<3> parareal_data_start;
+	Parareal_Data_DataArrays<3> parareal_data_start;
 
 	DataArray<2> _parareal_data_fine_h, _parareal_data_fine_u, _parareal_data_fine_v;
-	PararealData_DataArrays<3> parareal_data_fine;
+	Parareal_Data_DataArrays<3> parareal_data_fine;
 
 	DataArray<2> _parareal_data_coarse_h, _parareal_data_coarse_u, _parareal_data_coarse_v;
-	PararealData_DataArrays<3> parareal_data_coarse;
+	Parareal_Data_DataArrays<3> parareal_data_coarse;
 
 	DataArray<2> _parareal_data_output_h, _parareal_data_output_u, _parareal_data_output_v;
-	PararealData_DataArrays<3> parareal_data_output;
+	Parareal_Data_DataArrays<3> parareal_data_output;
 
 	DataArray<2> _parareal_data_error_h, _parareal_data_error_u, _parareal_data_error_v;
-	PararealData_DataArrays<3> parareal_data_error;
+	Parareal_Data_DataArrays<3> parareal_data_error;
 
 	double timeframe_start = -1;
 	double timeframe_end = -1;
@@ -1571,10 +1574,11 @@ public:
 			double i_timeframe_end		///< end time stamp of coarse time step
 	)
 	{
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "Timeframe: [" << i_timeframe_start << ", " << i_timeframe_end << "]" << std::endl;
+
 		timeframe_start = i_timeframe_start;
 		timeframe_end = i_timeframe_end;
-
-		std::cout << "Timeframe: [" << timeframe_start << ", " << timeframe_end << "]" << std::endl;
 	}
 
 
@@ -1585,7 +1589,8 @@ public:
 	void sim_setup_initial_data(
 	)
 	{
-		std::cout << "sim_setup_initial_data()" << std::endl;
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "sim_setup_initial_data()" << std::endl;
 
 		reset();
 
@@ -1602,10 +1607,11 @@ public:
 	 * Y^S := i_sim_data
 	 */
 	void sim_set_data(
-			PararealData &i_pararealData
+			Parareal_Data &i_pararealData
 	)
 	{
-		std::cout << "sim_set_data()" << std::endl;
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "sim_set_data()" << std::endl;
 
 		// copy to buffers
 		parareal_data_start = i_pararealData;
@@ -1631,7 +1637,8 @@ public:
 	 */
 	void run_timestep_fine()
 	{
-		std::cout << "run_timestep_fine()" << std::endl;
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "run_timestep_fine()" << std::endl;
 
 		prog_h = *parareal_data_start.data_arrays[0];
 		prog_u = *parareal_data_start.data_arrays[1];
@@ -1659,9 +1666,10 @@ public:
 	 * return the data after running computations with the fine timestepping:
 	 * return Y^F
 	 */
-	PararealData& get_data_timestep_fine()
+	Parareal_Data& get_data_timestep_fine()
 	{
-		std::cout << "get_data_timestep_fine()" << std::endl;
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "get_data_timestep_fine()" << std::endl;
 
 		return parareal_data_fine;
 	}
@@ -1673,7 +1681,8 @@ public:
 	 */
 	void run_timestep_coarse()
 	{
-		std::cout << "run_timestep_coarse()" << std::endl;
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "run_timestep_coarse()" << std::endl;
 
 		prog_h = *parareal_data_start.data_arrays[0];
 		prog_u = *parareal_data_start.data_arrays[1];
@@ -1703,9 +1712,10 @@ public:
 	 * return the solution after the coarse timestepping:
 	 * return Y^C
 	 */
-	PararealData& get_data_timestep_coarse()
+	Parareal_Data& get_data_timestep_coarse()
 	{
-		std::cout << "get_data_timestep_coarse()" << std::endl;
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "get_data_timestep_coarse()" << std::endl;
 
 		return parareal_data_coarse;
 	}
@@ -1718,7 +1728,8 @@ public:
 	 */
 	void compute_difference()
 	{
-		std::cout << "compute_difference()" << std::endl;
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "compute_difference()" << std::endl;
 
 		for (int k = 0; k < 3; k++)
 			*parareal_data_error.data_arrays[k] = *parareal_data_fine.data_arrays[k] - *parareal_data_coarse.data_arrays[k];
@@ -1737,14 +1748,15 @@ public:
 			bool i_compute_convergence_test
 	)
 	{
-		std::cout << "compute_output_data()" << std::endl;
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "compute_output_data()" << std::endl;
 
 		double convergence = -1;
 
 		if (!i_compute_convergence_test || !output_data_valid)
 		{
 			for (int k = 0; k < 3; k++)
-				*parareal_data_output.data_arrays[k] = *parareal_data_coarse.data_arrays[k] - *parareal_data_error.data_arrays[k];
+				*parareal_data_output.data_arrays[k] = *parareal_data_coarse.data_arrays[k] + *parareal_data_error.data_arrays[k];
 
 			output_data_valid = true;
 			return convergence;
@@ -1754,7 +1766,7 @@ public:
 
 		for (int k = 0; k < 3; k++)
 		{
-			tmp = *parareal_data_coarse.data_arrays[k] - *parareal_data_error.data_arrays[k];
+			tmp = *parareal_data_coarse.data_arrays[k] + *parareal_data_error.data_arrays[k];
 
 			convergence = std::max(
 					convergence,
@@ -1763,6 +1775,14 @@ public:
 
 			*parareal_data_output.data_arrays[k] = tmp;
 		}
+
+		simVars.timecontrol.current_simulation_time = timeframe_end;
+		prog_h = *parareal_data_output.data_arrays[0];
+		prog_u = *parareal_data_output.data_arrays[1];
+		prog_v = *parareal_data_output.data_arrays[2];
+		compute_errors();
+
+		std::cout << "maxabs error compared to analytical solution: " << benchmark_analytical_error_maxabs_h << std::endl;
 
 		output_data_valid = true;
 		return convergence;
@@ -1774,11 +1794,39 @@ public:
 	 * Return the data to be forwarded to the next coarse time step interval:
 	 * return Y^O
 	 */
-	PararealData& get_output_data()
+	Parareal_Data& get_output_data()
 	{
-		std::cout << "get_output_data()" << std::endl;
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "get_output_data()" << std::endl;
 
 		return parareal_data_output;
+	}
+
+
+	void output_data_file(
+			const Parareal_Data& i_data,
+			int iteration_id,
+			int time_slice_id
+	)
+	{
+		Parareal_Data_DataArrays<3>& data = (Parareal_Data_DataArrays<3>&)i_data;
+
+		std::ostringstream ss;
+		ss << "output_iter" << iteration_id << "_slice" << time_slice_id << ".vtk";
+
+		std::string filename = ss.str();
+
+//		std::cout << "filename: " << filename << std::endl;
+		data.data_arrays[0]->file_saveData_vtk(filename.c_str(), filename.c_str());
+	}
+
+
+	void output_data_console(
+			const Parareal_Data& i_data,
+			int iteration_id,
+			int time_slice_id
+	)
+	{
 	}
 
 #endif

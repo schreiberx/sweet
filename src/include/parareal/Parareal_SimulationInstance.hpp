@@ -45,7 +45,7 @@ public:
 	 * Y^S := i_sim_data
 	 */
 	virtual void sim_set_data(
-			PararealData &i_pararealData
+			Parareal_Data &i_pararealData
 	) = 0;
 
 	/**
@@ -70,7 +70,7 @@ public:
 	 * return Y^F
 	 */
 	virtual
-	PararealData& get_data_timestep_fine() = 0;
+	Parareal_Data& get_data_timestep_fine() = 0;
 
 
 	/**
@@ -86,7 +86,7 @@ public:
 	 * return Y^C
 	 */
 	virtual
-	PararealData& get_data_timestep_coarse() = 0;
+	Parareal_Data& get_data_timestep_coarse() = 0;
 
 
 	/**
@@ -115,8 +115,21 @@ public:
 	 * return Y^O
 	 */
 	virtual
-	PararealData& get_output_data() = 0;
+	Parareal_Data& get_output_data() = 0;
 
+	virtual
+	void output_data_console(
+			const Parareal_Data& i_data,
+			int iteration_id,
+			int time_slice_id
+	) = 0;
+
+	virtual
+	void output_data_file(
+			const Parareal_Data& i_data,
+			int iteration_id,
+			int time_slice_id
+	) = 0;
 
 	virtual ~Parareal_SimulationInstance()
 	{

@@ -13,7 +13,7 @@
  * These interfaces have to be supported by the data
  * which is send/recv'd by the simulations
  */
-class PararealData
+class Parareal_Data
 {
 public:
 	/**
@@ -37,15 +37,15 @@ public:
 	 * Copy operator which has to be overridden by implementing data container
 	 */
 	virtual
-	const PararealData &operator=(
-					const PararealData &i_data
+	const Parareal_Data &operator=(
+					const Parareal_Data &i_data
 	) = 0;
 
 
 	/**
 	 * Deconstructor
 	 */
-	~PararealData()
+	virtual ~Parareal_Data()
 	{
 	}
 };

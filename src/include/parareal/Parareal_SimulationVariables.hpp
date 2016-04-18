@@ -42,7 +42,7 @@ public:
 	/**
 	 * Convergence error threshold
 	 */
-	double convergence_error_threshold = 1e-7;
+	double convergence_error_threshold = -1;
 
 	/**
 	 * Maximum simulation time
@@ -88,13 +88,13 @@ public:
 	 */
 	void setup_printOptions()
 	{
-		std::cout << "PARAREAL OPTIONS" << std::endl;
 		std::cout << std::endl;
-		std::cout << "  --parareal-coarse-slices=[int]				Number of coarse time slices" << std::endl;
-		std::cout << "  --parareal-convergence-threshold=[float]	Threshold for convergence test" << std::endl;
-		std::cout << "  --parareal-verbosity=[int]					Verbosity level" << std::endl;
-		std::cout << "  --parareal-enabled=[0/1]					Enable Parareal method" << std::endl;
-		std::cout << "  --parareal-max-simulation-time=[float]		Overall simulation time" << std::endl;
+		std::cout << "Parareal options:" << std::endl;
+		std::cout << "	--parareal-coarse-slices=[int]				Number of coarse time slices" << std::endl;
+		std::cout << "	--parareal-convergence-threshold=[float]	Threshold for convergence test" << std::endl;
+		std::cout << "	--parareal-verbosity=[int]					Verbosity level" << std::endl;
+		std::cout << "	--parareal-enabled=[0/1]					Enable Parareal method" << std::endl;
+		std::cout << "	--parareal-max-simulation-time=[float]		Overall simulation time" << std::endl;
 		std::cout << std::endl;
 	}
 
@@ -113,12 +113,13 @@ public:
 			coarse_slices = atoi(i_value);
 			break;
 
+
 		case 1:
-			verbosity = atoi(i_value);
+			convergence_error_threshold = atof(i_value);
 			break;
 
 		case 2:
-			convergence_error_threshold = atof(i_value);
+			verbosity = atoi(i_value);
 			break;
 
 		case 3:

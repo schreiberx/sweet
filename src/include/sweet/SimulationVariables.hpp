@@ -73,9 +73,6 @@ public:
 		/// setup coordinate of e.g. radial breaking dam, y-placement \in [0;1]
 		double setup_coord_y = 0.5;
 
-		/// Frequency multiplier for wave-like scenario
-//		double initial_freq_x_mul = 2.0;
-//		double initial_freq_y_mul = 1.0;
 
 		/// filenames of input data for setup (this has to be setup by each application individually)
 		std::vector<std::string> input_data_filenames;
@@ -622,6 +619,11 @@ public:
 				std::cerr << "Usage information: " << std::endl;
 				for (std::size_t i = 0; i < sizeof(help_strings)/sizeof(*help_strings); i++)
 					std::cerr << help_strings[i] << std::endl;
+
+
+#if SWEET_PARAREAL
+				parareal.setup_printOptions();
+#endif
 
 				std::cerr << std::endl;
 				std::cerr << "Unknown option '" << (char)opt << "'" << std::endl;

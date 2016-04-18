@@ -92,7 +92,7 @@ public:
 		cerrPrefixBuffer.setPrefix(ss.str());
 
 		std::cout.rdbuf(&coutPrefixBuffer);
-		std::cout.rdbuf(&cerrPrefixBuffer);
+		std::cerr.rdbuf(&cerrPrefixBuffer);
 	}
 
 
@@ -101,9 +101,9 @@ public:
 	)
 	{
 		coutPrefixBuffer.setPrefix(i_prefix);
-		cerrPrefixBuffer.setPrefix(i_prefix);
-
 		std::cout.rdbuf(&coutPrefixBuffer);
+
+		cerrPrefixBuffer.setPrefix(i_prefix);
 		std::cerr.rdbuf(&cerrPrefixBuffer);
 	}
 
@@ -123,6 +123,12 @@ public:
 
 		coutPrefixBuffer.setStreamBuf(coutbuf);
 		cerrPrefixBuffer.setStreamBuf(cerrbuf);
+	}
+
+
+	~Parareal_ConsolePrefix()
+	{
+		end();
 	}
 
 };
