@@ -11,6 +11,7 @@
 
 #include <stdlib.h>
 #include <cmath>
+#include <limits>
 
 #include <parareal/Parareal.hpp>
 #include <parareal/Parareal_Data.hpp>
@@ -22,14 +23,17 @@
 SimulationVariables simVars;
 
 double param_parareal_fine_dt = -1;
+double param_parareal_function_y0 = 0.123;
+double param_parareal_function_a = 0.1;
+double param_parareal_function_b = 1.0;
 
-
+double param_fine_timestepping_solution = std::numeric_limits<double>::infinity();
 
 /*
  * ODE implementation of the Parareal algorithm to test implementations.
  *
  * Usage of the program:
- * --parareal-fine-dt=0.001 --parareal-enabled=1 --parareal-coarse-slices=10 -t 5 --parareal-convergence-threshold=0.0001
+ * --parareal-fine-dt=0.0001 --parareal-enabled=1 --parareal-coarse-slices=10 -t 10 --parareal-convergence-threshold=0.0001 --parareal-function-param-a=0.3 --parareal-function-param-b=1.0 --parareal-function-param-y0=0.123
  *
  */
 
@@ -50,7 +54,7 @@ class SimulationInstance	:
 	bool output_data_valid = false;
 
 
-
+public:
 	/**
 	 * Set the start and end of the coarse time step
 	 */
@@ -77,7 +81,7 @@ class SimulationInstance	:
 		if (simVars.parareal.verbosity > 2)
 			std::cout << "sim_setup_initial_data()" << std::endl;
 
-		parareal_data_start.data = 0.123;
+		parareal_data_start.data = param_parareal_function_y0;
 	}
 
 
@@ -112,13 +116,35 @@ class SimulationInstance	:
 
 
 
+
 	/**
-	 * Function to be integrated parallel in time
+	 * ODE to simulate
 	 */
 	double f_dt(double y, double t)
 	{
-		return std::sin(t) + std::sin(y)*0.1;
+		double a = param_parareal_function_a;
+		double b = param_parareal_function_b;
+		double y0 = param_parareal_function_y0;
+
+//		return b*sin(t) / (1 - a*sin(y0));
+		return a * std::sin(y) + b * std::sin(t);
 	}
+
+/*
+	double f(double y, double t)
+	{
+		double a = param_parareal_function_a;
+		double b = param_parareal_function_b;
+		double y0 = param_parareal_function_y0;
+
+		return b*cos(t) / (1.0-a*sin(y0));
+#if 0
+		return
+			param_parareal_function_a * std::sin(param_parareal_function_y0) * t
+			- param_parareal_function_b * std::cos(t) + param_parareal_function_b;
+#endif
+	}
+*/
 
 
 
@@ -257,7 +283,8 @@ class SimulationInstance	:
 			parareal_data_output.data = tmp;
 		}
 
-		std::cout << "                           " << parareal_data_output.data << std::endl;
+		std::cout << "                           computed solution: " << parareal_data_output.data << std::endl;
+//		std::cout << "                                       error: " << std::abs(parareal_data_output.data-param_fine_timestepping_solution) << std::endl;
 
 		output_data_valid = true;
 		return convergence;
@@ -284,7 +311,11 @@ class SimulationInstance	:
 			int time_slice_id
 	)
 	{
-		std::cout << ((Parareal_Data_Scalar&)i_data).data << std::endl;
+		double y = ((Parareal_Data_Scalar&)i_data).data;
+		std::cout << "Solution: " << y << std::endl;
+
+		if (timeframe_end == simVars.parareal.max_simulation_time)
+			std::cout << "ERROR in last time slice: " << std::abs(y-param_fine_timestepping_solution) << std::endl;
 	}
 
 
@@ -303,18 +334,31 @@ int main(int i_argc, char *i_argv[])
 {
 	const char *bogus_var_names[] = {
 		"parareal-fine-dt",
+		"parareal-function-param-y0",
+		"parareal-function-param-a",
+		"parareal-function-param-b",
 		nullptr
 	};
 
 	simVars.bogus.var[0] = -1;
+	simVars.bogus.var[1] = 0.123;
+	simVars.bogus.var[2] = 1.0;
+	simVars.bogus.var[3] = 0.1;
 
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
+		std::cout << "	--parareal-fine-dt				Fine time stepping size" << std::endl;
+		std::cout << "	--parareal-function-param-y0	Parameter 'y0' (initial condition) for function y(t=0)" << std::endl;
+		std::cout << "	--parareal-function-param-a		Parameter 'a' for function 'a*sin(y) + b*sin(t)" << std::endl;
+		std::cout << "	--parareal-function-param-b		Parameter 'b' for function 'a*sin(y) + b*sin(t)" << std::endl;
 		std::cout << "Unknown option detected" << std::endl;
 		exit(-1);
 	}
 
 	param_parareal_fine_dt = simVars.bogus.var[0];
+	param_parareal_function_y0 = simVars.bogus.var[1];
+	param_parareal_function_a = simVars.bogus.var[2];
+	param_parareal_function_b = simVars.bogus.var[3];
 
 	if (param_parareal_fine_dt <= 0)
 	{
@@ -328,6 +372,23 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "Activate parareal mode via --parareal0enable=1" << std::endl;
 		return -1;
 	}
+
+	std::cout << "Running parareal" << std::endl;
+	std::cout << " + fine dt: " << param_parareal_fine_dt << std::endl;
+	std::cout << " + initial condition: y0=" << param_parareal_function_y0 << std::endl;
+	std::cout << " + function df(y,t)/dt = " << param_parareal_function_a << "*sin(y) + " << param_parareal_function_b << "*sin(t)" << std::endl;
+
+
+	/*
+	 * Compute fine time stepping solution with single time slice
+	 */
+	SimulationInstance fineSolution;
+	fineSolution.sim_set_timeframe(0, simVars.parareal.max_simulation_time);
+	fineSolution.sim_setup_initial_data();
+	fineSolution.run_timestep_fine();
+	Parareal_Data &data_fine = fineSolution.get_data_timestep_fine();
+	param_fine_timestepping_solution = ((Parareal_Data_Scalar&)(data_fine)).data;
+
 
 	/*
 	 * Allocate parareal controller and provide class
