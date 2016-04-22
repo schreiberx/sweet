@@ -210,6 +210,11 @@ public:
 			return 10+std::exp(-50.0*(dx*dx + dy*dy));
 		}
 
+		if (i_parameters.setup.scenario >= 51 && i_parameters.setup.scenario <= 59)
+		{
+			return 0;
+		}
+
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
 		return 0;
 	}
@@ -291,6 +296,10 @@ public:
 			return 0;
 		}
 
+		if (i_parameters.setup.scenario >= 51 && i_parameters.setup.scenario <= 59)
+		{
+			return 0;
+		}
 
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
 		return 0;
