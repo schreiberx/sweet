@@ -1086,7 +1086,7 @@ public:
 
 					std::cout<<"prog_u"<<std::endl;
 					prog_u.printArrayData();
-					std::cout<<"prog_u"<<std::endl;
+					std::cout<<"prog_v"<<std::endl;
 					prog_v.printArrayData();
 					std::cout<<"prog_h"<<std::endl;
 					prog_h.printArrayData();
