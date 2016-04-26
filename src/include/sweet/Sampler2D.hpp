@@ -238,6 +238,7 @@ public:
 
 #if SWEET_USE_SPECTRAL_SPACE
 		o_data.array_data_cartesian_space_valid = true;
+		o_data.array_data_spectral_space_valid = false;
 #endif
 	}
 
@@ -316,6 +317,7 @@ public:
 
 #if SWEET_USE_SPECTRAL_SPACE
 		o_data.array_data_cartesian_space_valid = true;
+		o_data.array_data_spectral_space_valid = false;
 #endif
 	}
 

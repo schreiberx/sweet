@@ -1267,17 +1267,60 @@ public:
 				o_ostream << "\t" << benchmark_diff_h;
 
 				// Velocity u
+				std::cout << std::endl;
+				std::cout << "prog_u ***********************************" << std::endl;
+				std::cout << prog_u << std::endl;
+				std::cout << std::endl;
+
+				std::cout << std::endl;
+				std::cout << "t0_prog_u ***********************************" << std::endl;
+				std::cout << t0_prog_u << std::endl;
+				std::cout << std::endl;
+
+
 				benchmark_diff_u = (prog_u-t0_prog_u).reduce_maxAbs();
 
 				//Bug here --- diff should be non zero
 				o_ostream << "\t" << benchmark_diff_u;
-				std::cout<<"u"<<std::endl;
-				prog_u.printArrayData(6);
+				std::cout << std::endl;
+				std::cout << std::endl;
 				std::cout<<"u0"<<std::endl;
-				t0_prog_u.printArrayData(6);
-				std::cout<<"u-u0"<<std::endl;
-				(prog_u-t0_prog_u).printArrayData(6);
-				std::cout<<benchmark_diff_u<<std::endl;
+				std::cout << t0_prog_u << std::endl;
+
+				std::cout << std::endl;
+				std::cout<<"u"<<std::endl;
+				std::cout << prog_u << std::endl;
+
+				std::cout << std::endl;
+				DataArray<2> asdf(prog_u.resolution);
+				DataArray<2> asdf2(prog_u.resolution);
+				DataArray<2> asdf3(prog_u.resolution);
+				asdf = prog_u;
+
+				std::cout << "AAA prog_u ***********************************" << std::endl;
+				prog_u.checkConsistency(true);
+				std::cout << "cartSpace: " << prog_u.array_data_cartesian_space_valid << std::endl;
+				prog_u.printArrayData();
+				std::cout << "specSpace: " << prog_u.array_data_spectral_space_valid << std::endl;
+				prog_u.printSpectrum();
+
+				std::cout << "BBB t0_prog_u ***********************************" << std::endl;
+				prog_u.checkConsistency(true);
+				t0_prog_u.checkConsistency(true);
+				std::cout << "cartSpace: " << t0_prog_u.array_data_cartesian_space_valid << std::endl;
+				t0_prog_u.printArrayData();
+				std::cout << "specSpace: " << t0_prog_u.array_data_spectral_space_valid << std::endl;
+				t0_prog_u.printSpectrum();
+
+				std::cout << "CCC ***********************************" << std::endl;
+
+				std::cout << asdf << std::endl;
+//				std::cout<<"u-u0"<<std::endl;
+//				std::cout << (-t0_prog_u+prog_u) << std::endl;
+
+				std::cout << "===========================================================" << std::endl;
+				std::cout << "| BENCHMARK DIFF U: " << benchmark_diff_u << std::endl;
+				std::cout << "===========================================================" << std::endl;
 
 				// Velocity v
 				benchmark_diff_v = (prog_v-t0_prog_v).reduce_maxAbs();
