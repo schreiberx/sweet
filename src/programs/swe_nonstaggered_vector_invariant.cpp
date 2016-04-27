@@ -166,8 +166,6 @@ public:
 
 		last_timestep_nr_update_diagnostics = simVars.timecontrol.current_timestep_nr;
 
-		last_timestep_nr_update_diagnostics = simVars.timecontrol.current_timestep_nr;
-
 		if (simVars.sim.beta != 0)
 		{
 			q = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + beta_plane) / prog_P;
@@ -368,7 +366,7 @@ public:
 			/*
 			 * a kind of leapfrog:
 			 *
-			 * We use the hew v and u values to compute the update for p
+			 * We use the new u and v values to compute the update for p
 			 *
 			 * compute updated u and v values without using it
 			 */

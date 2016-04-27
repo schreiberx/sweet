@@ -35,7 +35,7 @@ RexiSWE::RexiSWE()	:
 	helmholtz_solver(0)
 {
 #if !SWEET_USE_LIBFFT
-	std::cerr << "Spectral space required for solvers, use compile optino --libfft=enable" << std::endl;
+	std::cerr << "Spectral space required for solvers, use compile option --libfft=enable" << std::endl;
 	exit(-1);
 #endif
 
@@ -299,11 +299,11 @@ bool RexiSWE::run_timestep_implicit_ts(
 	u0.loadRealFromDataArray(io_u);
 	v0.loadRealFromDataArray(io_v);
 
-	eta0 = eta0.toSpec() * (1.0/i_timestep_size);
-	u0 = u0.toSpec() * (1.0/i_timestep_size);
-	v0 = v0.toSpec() * (1.0/i_timestep_size);
-
 	double alpha = 1.0/i_timestep_size;
+
+	eta0 = eta0.toSpec() * alpha;
+	u0 = u0.toSpec() * alpha;
+	v0 = v0.toSpec() * alpha;
 
 	// load kappa (k)
 	double kappa = alpha*alpha + i_simVars.sim.f0*i_simVars.sim.f0;
