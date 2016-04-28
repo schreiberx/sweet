@@ -9,11 +9,6 @@
 
 #include <sweetmath.hpp>
 
-// apple hack
-#ifndef M_PIl
-#	define M_PIl M_PI
-#endif
-
 #include <sweet/SimulationVariables.hpp>
 
 

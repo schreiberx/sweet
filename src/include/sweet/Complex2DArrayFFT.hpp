@@ -437,7 +437,7 @@ public:
 		}
 
 		/*
-		 * to the scaling only if we convert the data back to cartesian space
+		 * do the scaling only if we convert the data back to cartesian space
 		 */
 		double scale = (1.0/((double)resolution[0]*(double)resolution[1]));
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
