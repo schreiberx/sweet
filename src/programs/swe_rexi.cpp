@@ -1018,7 +1018,7 @@ public:
 				V.printArrayData();
 				std::cout<<"H"<<std::endl;
 				H.printArrayData();
-				 */
+
 				std::cout<<"prog_u"<<std::endl;
 				prog_u.printArrayData();
 				std::cout<<"prog_v"<<std::endl;
@@ -1026,9 +1026,9 @@ public:
 				std::cout<<"prog_h"<<std::endl;
 				prog_h.printArrayData();
 				std::cout<<std::endl;
+				*/
 
-
-				if(param_nonlinear==2) //Linear with nonlinear advection only (valid for nondivergent flows
+				if(param_nonlinear==2) //Linear with nonlinear advection only (valid for nondivergent nonlinear sw flows flows)
 				{
 					// First calculate the linear part
 					rexiSWE.run_timestep(
@@ -1041,49 +1041,26 @@ public:
 					//std::cout<<std::endl;
 					//std::cout<<"Did a REXI step"<<std::endl;
 
-					//Now interpolate to the the departure points
-					//Departure points are set for physical space
 
-
-
+					/*
 					std::cout<<"U"<<std::endl;
 					U.printArrayData();
 					std::cout<<"V"<<std::endl;
 					V.printArrayData();
 					std::cout<<"H"<<std::endl;
 					H.printArrayData();
+					*/
 
+					//Now interpolate to the the departure points
+					//Departure points are set for physical space
 
-					//    interpolate the new h to physical grid
-					sampler2D.bicubic_scalar(
-											H,
-											posx_d,
-											posy_d,
-											prog_h,
-											stag_h[0],
-											stag_h[1]
-					);
-					//    interpolate the new u to physical grid
-					sampler2D.bicubic_scalar(
-											U,
-											posx_d,
-											posy_d,
-											prog_u,
-											stag_u[0],
-											stag_u[1]
-					);
-					//    interpolate the new v to physical grid
-					sampler2D.bicubic_scalar(
-											V,
-											posx_d,
-											posy_d,
-											prog_v,
-											stag_v[0],
-											stag_v[1]
-					);
+					sampler2D.bicubic_scalar( H, posx_d, posy_d, prog_h, stag_h[0],	stag_h[1]);
+					sampler2D.bicubic_scalar( U, posx_d, posy_d, prog_u, stag_u[0], stag_u[1]);
+					sampler2D.bicubic_scalar( V, posx_d, posy_d, prog_v, stag_v[0], stag_v[1]);
 
 					//std::cout<<"interpolated vars to dep points"<<std::endl;
 
+					/*
 					std::cout<<"prog_u"<<std::endl;
 					prog_u.printArrayData();
 					std::cout<<"prog_v"<<std::endl;
@@ -1091,6 +1068,7 @@ public:
 					std::cout<<"prog_h"<<std::endl;
 					prog_h.printArrayData();
 					std::cout<<std::endl;
+					*/
 					//Debug force only linear part
 					//prog_u = U;
 					//prog_v = V;
@@ -1259,7 +1237,7 @@ public:
 			//Print simulation time, energy and pot enstrophy
 			o_ostream << std::setprecision(8) << simVars.timecontrol.current_simulation_time << "\t" << simVars.diag.total_mass << "\t" << simVars.diag.total_energy << "\t" << simVars.diag.total_potential_enstrophy;
 
-			// Print max abs difference of vars to initial conditions (this gives the error in steady state cases, from 2 to 4)
+			// Print max abs difference of vars to initial conditions (this gives the error in steady state cases, from 2 to 4 - also for test 1, but just for reference)
 			if (simVars.setup.scenario >= 0 && simVars.setup.scenario <= 4 )
 			{
 				// Height
@@ -1267,60 +1245,8 @@ public:
 				o_ostream << "\t" << benchmark_diff_h;
 
 				// Velocity u
-				std::cout << std::endl;
-				std::cout << "prog_u ***********************************" << std::endl;
-				std::cout << prog_u << std::endl;
-				std::cout << std::endl;
-
-				std::cout << std::endl;
-				std::cout << "t0_prog_u ***********************************" << std::endl;
-				std::cout << t0_prog_u << std::endl;
-				std::cout << std::endl;
-
-
 				benchmark_diff_u = (prog_u-t0_prog_u).reduce_maxAbs();
-
-				//Bug here --- diff should be non zero
 				o_ostream << "\t" << benchmark_diff_u;
-				std::cout << std::endl;
-				std::cout << std::endl;
-				std::cout<<"u0"<<std::endl;
-				std::cout << t0_prog_u << std::endl;
-
-				std::cout << std::endl;
-				std::cout<<"u"<<std::endl;
-				std::cout << prog_u << std::endl;
-
-				std::cout << std::endl;
-				DataArray<2> asdf(prog_u.resolution);
-				DataArray<2> asdf2(prog_u.resolution);
-				DataArray<2> asdf3(prog_u.resolution);
-				asdf = prog_u;
-
-				std::cout << "AAA prog_u ***********************************" << std::endl;
-				prog_u.checkConsistency(true);
-				std::cout << "cartSpace: " << prog_u.array_data_cartesian_space_valid << std::endl;
-				prog_u.printArrayData();
-				std::cout << "specSpace: " << prog_u.array_data_spectral_space_valid << std::endl;
-				prog_u.printSpectrum();
-
-				std::cout << "BBB t0_prog_u ***********************************" << std::endl;
-				prog_u.checkConsistency(true);
-				t0_prog_u.checkConsistency(true);
-				std::cout << "cartSpace: " << t0_prog_u.array_data_cartesian_space_valid << std::endl;
-				t0_prog_u.printArrayData();
-				std::cout << "specSpace: " << t0_prog_u.array_data_spectral_space_valid << std::endl;
-				t0_prog_u.printSpectrum();
-
-				std::cout << "CCC ***********************************" << std::endl;
-
-				std::cout << asdf << std::endl;
-//				std::cout<<"u-u0"<<std::endl;
-//				std::cout << (-t0_prog_u+prog_u) << std::endl;
-
-				std::cout << "===========================================================" << std::endl;
-				std::cout << "| BENCHMARK DIFF U: " << benchmark_diff_u << std::endl;
-				std::cout << "===========================================================" << std::endl;
 
 				// Velocity v
 				benchmark_diff_v = (prog_v-t0_prog_v).reduce_maxAbs();
