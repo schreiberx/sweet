@@ -18,6 +18,8 @@
 // AS tmp
 #include <iostream>
 
+#include <parareal/Parareal.hpp>
+
 SimulationVariables simVars;
 
 
@@ -26,7 +28,11 @@ SimulationVariables simVars;
 double next_timestep_output = 0;
 
 
-class SimulationSWECovariant
+class SimulationInstance
+#if SWEET_PARAREAL
+		:
+		public Parareal_SimulationInstance
+#endif
 {
 public:
 	// prognostics
@@ -61,7 +67,7 @@ public:
 	 *   |____________|
 	 */
 public:
-	SimulationSWECovariant(
+	SimulationInstance(
 	)	:
 		prog_u(simVars.disc.res),	// velocity (x-direction)
 		prog_v(simVars.disc.res),	// velocity (y-direction)
@@ -69,12 +75,24 @@ public:
 		tmp(simVars.disc.res),
 
 		op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
+#if SWEET_PARAREAL != 0
+		,
+		_parareal_data_start_u(simVars.disc.res), _parareal_data_start_v(simVars.disc.res),
+		_parareal_data_fine_u(simVars.disc.res), _parareal_data_fine_v(simVars.disc.res),
+		_parareal_data_coarse_u(simVars.disc.res), _parareal_data_coarse_v(simVars.disc.res),
+		_parareal_data_output_u(simVars.disc.res), _parareal_data_output_v(simVars.disc.res),
+		_parareal_data_error_u(simVars.disc.res), _parareal_data_error_v(simVars.disc.res)
+#endif
 	{
 		reset();
+
+#if SWEET_PARAREAL
+		parareal_setup();
+
+#endif
 	}
 
-
-	~SimulationSWECovariant()
+	virtual ~SimulationInstance()
 	{
 	}
 
@@ -340,68 +358,6 @@ public:
 		 * u and v updates
 		 */
 
-		// Source-Term for manufactured solution
-		double t = simVars.timecontrol.current_simulation_time;
-		int inp;
-		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
-		{
-			for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
-			{
-
-				/*
-				{
-					// u space
-					double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-					double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
-					double tp = 2.0*M_PIl;
-					double k = 1;
-
-					/*
-					 * f(t,x,y) = 2*PI*sin(2*PI*k*x)*cos(2*PI*k*t)+2*PI*sin(2*PI*k*x)*cos(2*PI*k*x)*sin^2(2*PI*k*t)
-					 *          - nu(-4*PI^2*k*sin(2*PI*k*x)*sin(2*PI*k*t))
-					 * matching to:
-					 * u(t,x,y) = 1/k * sin(2*PI*k*x)*sin(2*PI*k*t)
-					 *
-					double tmpvar = tp * std::sin(tp*k*x)*std::cos(tp*k*t)
-					              + tp*std::sin(tp*k*x)*std::sin(tp*k*t) * std::cos(tp*k*x)*std::sin(tp*k*t)
-					              + simVars.sim.viscosity * (tp*tp*k* std::sin(tp*k*x)*std::sin(tp*k*t));
-
-					o_u_t.set(j,i, tmpvar);
-				}
-				*/
-
-				/*
-				{
-					// u space
-					double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-					double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
-					double tp = 2.0*M_PIl;
-					double k = 10.0;
-
-					/*
-					 * f(t,x,y) = 2*PI*[sin(2*PI*x)*cos(2*PI*t)+sin(2*PI*k*x)*cos(2*PI*k*t)]
-					 *          + 2*PI*sin(2*PI*x)*sin(2*PI*t)*cos(2*PI*x)*sin(2*PI*t)
-					 *          + 2*PI*sin(2*PI*x)*sin(2*PI*t)*cos(2*PI*k*x)*sin(2*PI*k*t)
-					 *          + 2*PI/k*sin(2*PI*k*x)*sin(2*PI*k*t)*cos(2*PI*x)*sin(2*PI*t)
-					 *          + 2*PI/k*sin(2*PI*k*x)*sin(2*PI*k*t)*cos(2*PI*k*x)*sin(2*PI*k*t)
-					 *          + 4*PI*PI*NU*[sin(2*PI*x)*sin(2*PI*t)+k*sin(2*PI*k*x)*sin(2*PI*k*t)]
-					 * matching to:
-					 * u(t,x,y) = sin(2*PI*x)*sin(2*PI*t)+1/k*sin(2*PI*k*x)*sin(2*PI*k*t)
-					 *
-					double tmpvar = tp*(std::sin(tp*x)*std::cos(tp*t)+std::sin(tp*k*x)*std::cos(tp*k*x));
-					tmpvar += tp*std::sin(tp*x)*std::sin(tp*t)*std::cos(tp*x)*std::sin(tp*t);
-					tmpvar += tp*std::sin(tp*x)*std::sin(tp*t)*std::cos(tp*k*x)*std::sin(tp*k*t);
-					tmpvar += tp/k*std::sin(tp*k*x)*std::sin(tp*k*t)*std::cos(tp*x)*std::sin(tp*t);
-					tmpvar += tp/k*std::sin(tp*k*x)*std::sin(tp*k*t)*std::cos(tp*k*x)*std::sin(tp*k*t);
-					tmpvar += tp*tp*simVars.sim.viscosity*(std::sin(tp*x)*std::sin(tp*t)+k*std::sin(tp*k*x)*std::sin(tp*k*t));
-
-					o_u_t.set(j,i, tmpvar);
-				}
-				*/
-
-			}
-		}
-
 		set_source(o_u_t);
 
 
@@ -463,15 +419,25 @@ public:
 		// a positive value to use a fixed time step size
 		simVars.timecontrol.current_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
 
+#if 0 //test IMEX
 		timestepping.run_rk_timestep(
 				this,
-				&SimulationSWECovariant::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
+				&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
 				prog_u, prog_v,
 				dt,
 				simVars.timecontrol.current_timestep_size,
 				simVars.disc.timestepping_runge_kutta_order,
 				simVars.timecontrol.current_simulation_time
 			);
+#else
+		run_timestep_imex(
+				prog_u, prog_v,
+				simVars.timecontrol.current_timestep_size,
+				op,
+				simVars
+		);
+		dt = simVars.timecontrol.current_timestep_size;
+#endif
 
 		// provide information to parameters
 		simVars.timecontrol.current_timestep_size = dt;
@@ -568,6 +534,31 @@ public:
 		}
 	}
 
+
+public:
+	void compute_errors()
+	{
+		/*TODO: rewrite to compute errors between analytical and actual solution
+		DataArray<2> t_u = t0_prog_u;
+		DataArray<2> t_v = t0_prog_v;
+
+		rexiSWE.run_timestep_direct_solution(t_h, t_u, t_v, simVars.timecontrol.current_simulation_time, op, simVars);
+
+		benchmark_analytical_error_rms_h = (t_h-prog_h).reduce_rms_quad();
+		if (!param_use_staggering)
+		{
+			benchmark_analytical_error_rms_u = (t_u-prog_u).reduce_rms_quad();
+			benchmark_analytical_error_rms_v = (t_v-prog_v).reduce_rms_quad();
+		}
+
+		benchmark_analytical_error_maxabs_h = (t_h-prog_h).reduce_maxAbs();
+		if (!param_use_staggering)
+		{
+			benchmark_analytical_error_maxabs_u = (t_u-prog_u).reduce_maxAbs();
+			benchmark_analytical_error_maxabs_v = (t_v-prog_v).reduce_maxAbs();
+		}
+		*/
+	}
 
 
 	bool should_quit()
@@ -668,6 +659,366 @@ public:
 	{
 		return !(prog_u.reduce_all_finite() && prog_v.reduce_all_finite());
 	}
+
+
+#if SWEET_PARAREAL
+
+	/******************************************************
+	 ******************************************************
+	 *       ************** PARAREAL **************
+	 ******************************************************
+	 ******************************************************/
+
+	DataArray<2> _parareal_data_start_u, _parareal_data_start_v;
+	Parareal_Data_DataArrays<2> parareal_data_start;
+
+	DataArray<2> _parareal_data_fine_u, _parareal_data_fine_v;
+	Parareal_Data_DataArrays<2> parareal_data_fine;
+
+	DataArray<2> _parareal_data_coarse_u, _parareal_data_coarse_v;
+	Parareal_Data_DataArrays<2> parareal_data_coarse;
+
+	DataArray<2> _parareal_data_output_u, _parareal_data_output_v;
+	Parareal_Data_DataArrays<2> parareal_data_output;
+
+	DataArray<2> _parareal_data_error_u, _parareal_data_error_v;
+	Parareal_Data_DataArrays<2> parareal_data_error;
+
+	double timeframe_start = -1;
+	double timeframe_end = -1;
+
+	bool output_data_valid = false;
+
+	void parareal_setup()
+	{
+		{
+			DataArray<2>* data_array[2] = {&_parareal_data_start_u, &_parareal_data_start_v};
+			parareal_data_start.setup(data_array);
+		}
+
+		{
+			DataArray<2>* data_array[2] = {&_parareal_data_fine_u, &_parareal_data_fine_v};
+			parareal_data_fine.setup(data_array);
+		}
+
+		{
+			DataArray<2>* data_array[2] = {&_parareal_data_coarse_u, &_parareal_data_coarse_v};
+			parareal_data_coarse.setup(data_array);
+		}
+
+		{
+			DataArray<2>* data_array[2] = {&_parareal_data_output_u, &_parareal_data_output_v};
+			parareal_data_output.setup(data_array);
+		}
+
+		{
+			DataArray<2>* data_array[2] = {&_parareal_data_error_u, &_parareal_data_error_v};
+			parareal_data_error.setup(data_array);
+		}
+
+		output_data_valid = false;
+	}
+
+
+
+	/**
+	 * Set the start and end of the coarse time step
+	 */
+	void sim_set_timeframe(
+			double i_timeframe_start,	///< start timestamp of coarse time step
+			double i_timeframe_end		///< end time stamp of coarse time step
+	)
+	{
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "Timeframe: [" << i_timeframe_start << ", " << i_timeframe_end << "]" << std::endl;
+
+		timeframe_start = i_timeframe_start;
+		timeframe_end = i_timeframe_end;
+	}
+
+
+
+	/**
+	 * Set the initial data at i_timeframe_start
+	 */
+	void sim_setup_initial_data(
+	)
+	{
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "sim_setup_initial_data()" << std::endl;
+
+		reset();
+
+
+		*parareal_data_start.data_arrays[0] = prog_u;
+		*parareal_data_start.data_arrays[1] = prog_v;
+
+	}
+
+	/**
+	 * Set simulation data to data given in i_sim_data.
+	 * This can be data which is computed by another simulation.
+	 * Y^S := i_sim_data
+	 */
+	void sim_set_data(
+			Parareal_Data &i_pararealData
+	)
+	{
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "sim_set_data()" << std::endl;
+
+		// copy to buffers
+		parareal_data_start = i_pararealData;
+
+		// cast to pararealDataArray stuff
+	}
+
+	/**
+	 * Set the MPI communicator to use for simulation purpose
+	 * (TODO: not yet implemented since our parallelization-in-space
+	 * is done only via OpenMP)
+	 */
+	void sim_set_mpi_comm(
+			int i_mpi_comm
+	)
+	{
+		// NOTHING TO DO HERE
+	}
+
+	/**
+	 * compute solution on time slice with fine timestep:
+	 * Y^F := F(Y^S)
+	 */
+	void run_timestep_fine()
+	{
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "run_timestep_fine()" << std::endl;
+
+		prog_u = *parareal_data_start.data_arrays[0];
+		prog_v = *parareal_data_start.data_arrays[1];
+
+		// reset simulation time
+		simVars.timecontrol.current_simulation_time = timeframe_start;
+		simVars.timecontrol.max_simulation_time = timeframe_end;
+		simVars.timecontrol.current_timestep_nr = 0;
+
+		while (simVars.timecontrol.current_simulation_time != timeframe_end)
+		{
+			this->run_timestep();
+			assert(simVars.timecontrol.current_simulation_time <= timeframe_end);
+		}
+
+		// copy to buffers
+		*parareal_data_fine.data_arrays[0] = prog_u;
+		*parareal_data_fine.data_arrays[1] = prog_v;
+	}
+
+
+	/**
+	 * return the data after running computations with the fine timestepping:
+	 * return Y^F
+	 */
+	Parareal_Data& get_data_timestep_fine()
+	{
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "get_data_timestep_fine()" << std::endl;
+
+		return parareal_data_fine;
+	}
+
+#endif
+
+	/**
+	 * IMEX time stepping for the coarse timestepping method
+	 */
+	bool run_timestep_imex(
+			DataArray<2> &io_u,
+			DataArray<2> &io_v,
+
+			double i_timestep_size,	///< timestep size
+
+			Operators2D &op,
+			const SimulationVariables &i_simVars
+			)
+	{
+		DataArray<2> u0=io_u;
+		DataArray<2> v0=io_v;
+
+		// for Testing with Manufactured Solutions
+		DataArray<2> u(io_u.resolution);
+		set_source(u);
+
+		u0.requestDataInSpectralSpace();
+		v0.requestDataInSpectralSpace();
+		u.requestDataInSpectralSpace();
+
+		DataArray<2> rhs_u =
+				u0 - (u0*op.diff_c_x(u0)+v0*op.diff_c_y(u0))*i_timestep_size +u;
+		DataArray<2> rhs_v =
+				v0 - (u0*op.diff_c_x(v0)+v0*op.diff_c_y(v0))*i_timestep_size;
+		DataArray<2> lhs =
+				-i_timestep_size*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y).addScalar_Cart(1.0);
+
+		io_u = rhs_u.spec_div_element_wise(lhs);
+		io_v = rhs_v.spec_div_element_wise(lhs);
+
+		return true;
+	}
+
+#if SWEET_PARAREAL
+
+	/**
+	 * compute solution with coarse timestepping:
+	 * Y^C := G(Y^S)
+	 */
+	void run_timestep_coarse()
+	{
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "run_timestep_coarse()" << std::endl;
+
+		prog_u = *parareal_data_start.data_arrays[0];
+		prog_v = *parareal_data_start.data_arrays[1];
+
+		// run implicit time step
+//		assert(i_max_simulation_time < 0);
+//		assert(simVars.sim.CFL < 0);
+
+		run_timestep_imex(
+				prog_u, prog_v,
+				timeframe_end - timeframe_start,
+				op,
+				simVars
+		);
+
+
+		// copy to buffers
+		*parareal_data_coarse.data_arrays[0] = prog_u;
+		*parareal_data_coarse.data_arrays[1] = prog_v;
+	}
+
+
+
+	/**
+	 * return the solution after the coarse timestepping:
+	 * return Y^C
+	 */
+	Parareal_Data& get_data_timestep_coarse()
+	{
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "get_data_timestep_coarse()" << std::endl;
+
+		return parareal_data_coarse;
+	}
+
+
+
+	/**
+	 * Compute the error between the fine and coarse timestepping:
+	 * Y^E := Y^F - Y^C
+	 */
+	void compute_difference()
+	{
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "compute_difference()" << std::endl;
+
+		for (int k = 0; k < 2; k++)
+			*parareal_data_error.data_arrays[k] = *parareal_data_fine.data_arrays[k] - *parareal_data_coarse.data_arrays[k];
+	}
+
+
+
+	/**
+	 * Compute the data to be forwarded to the next time step
+	 * Y^O := Y^C + Y^E
+	 *
+	 * Return: Error indicator based on the computed error norm between the
+	 * old values and new values
+	 */
+	double compute_output_data(
+			bool i_compute_convergence_test
+	)
+	{
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "compute_output_data()" << std::endl;
+
+		double convergence = -1;
+
+		if (!i_compute_convergence_test || !output_data_valid)
+		{
+			for (int k = 0; k < 2; k++)
+				*parareal_data_output.data_arrays[k] = *parareal_data_coarse.data_arrays[k] + *parareal_data_error.data_arrays[k];
+
+			output_data_valid = true;
+			return convergence;
+		}
+
+
+
+		for (int k = 0; k < 2; k++)
+		{
+			tmp = *parareal_data_coarse.data_arrays[k] + *parareal_data_error.data_arrays[k];
+
+			convergence = std::max(
+					convergence,
+					(*parareal_data_output.data_arrays[k]-tmp).reduce_maxAbs()
+				);
+
+			*parareal_data_output.data_arrays[k] = tmp;
+		}
+
+		simVars.timecontrol.current_simulation_time = timeframe_end;
+		prog_u = *parareal_data_output.data_arrays[0];
+		prog_v = *parareal_data_output.data_arrays[1];
+		compute_errors(); //TODO still to be implemented
+
+		//std::cout << "maxabs error compared to analytical solution: " << benchmark_analytical_error_maxabs_h << std::endl;
+
+		output_data_valid = true;
+		return convergence;
+	}
+
+
+
+	/**
+	 * Return the data to be forwarded to the next coarse time step interval:
+	 * return Y^O
+	 */
+	Parareal_Data& get_output_data()
+	{
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "get_output_data()" << std::endl;
+
+		return parareal_data_output;
+	}
+
+
+	void output_data_file(
+			const Parareal_Data& i_data,
+			int iteration_id,
+			int time_slice_id
+	)
+	{
+		Parareal_Data_DataArrays<2>& data = (Parareal_Data_DataArrays<2>&)i_data;
+
+		std::ostringstream ss;
+		ss << "output_iter" << iteration_id << "_slice" << time_slice_id << ".vtk";
+
+		std::string filename = ss.str();
+
+//		std::cout << "filename: " << filename << std::endl;
+		data.data_arrays[0]->file_saveData_vtk(filename.c_str(), filename.c_str());
+	}
+
+
+	void output_data_console(
+			const Parareal_Data& i_data,
+			int iteration_id,
+			int time_slice_id
+	)
+	{
+	}
+
+#endif
 };
 
 
@@ -678,21 +1029,39 @@ int main(int i_argc, char *i_argv[])
 	if (!simVars.setupFromMainParameters(i_argc, i_argv))
 		return -1;
 
-	SimulationSWECovariant *simulationSWE = new SimulationSWECovariant;
-
 	std::ostringstream buf;
 	buf << std::setprecision(14);
 
+#if SWEET_PARAREAL
+	if (simVars.parareal.enabled)
+	{
+		/*
+		 * Allocate parareal controller and provide class
+		 * which implement the parareal features
+		 */
+		Parareal_Controller_Serial<SimulationInstance> parareal_Controller_Serial;
+
+		// setup controller. This initializes several simulation instances
+		parareal_Controller_Serial.setup(&simVars.parareal);
+
+		// execute the simulation
+		parareal_Controller_Serial.run();
+	}
+	else
+#endif
 
 #if SWEET_GUI
 	if (simVars.misc.gui_enabled)
 	{
-		VisSweet<SimulationSWECovariant> visSweet(simulationSWE);
+		SimulationInstance *simulationBurgers = new SimulationInstance;
+		VisSweet<SimulationInstance> visSweet(simulationBurgers);
+		delete simulationBurgers;
 	}
 	else
 #endif
 	{
-//		simulationSWE->reset();
+		SimulationInstance *simulationBurgers = new SimulationInstance;
+		simulationBurgers->reset();
 
 		Stopwatch time;
 		time.reset();
@@ -702,7 +1071,7 @@ int main(int i_argc, char *i_argv[])
 
 		if (simVars.misc.verbosity > 1)
 		{
-			simulationSWE->update_diagnostics();
+			simulationBurgers->update_diagnostics();
 			diagnostics_energy_start = simVars.diag.total_energy;
 			diagnostics_mass_start = simVars.diag.total_mass;
 			diagnostics_potential_entrophy_start = simVars.diag.total_potential_enstrophy;
@@ -712,7 +1081,7 @@ int main(int i_argc, char *i_argv[])
 		{
 			if (simVars.misc.verbosity > 1)
 			{
-				simulationSWE->timestep_output(buf);
+				simulationBurgers->timestep_output(buf);
 
 				std::string output = buf.str();
 				buf.str("");
@@ -720,12 +1089,12 @@ int main(int i_argc, char *i_argv[])
 				std::cout << output << std::flush;
 			}
 
-			if (simulationSWE->should_quit())
+			if (simulationBurgers->should_quit())
 				break;
 
-			simulationSWE->run_timestep();
+			simulationBurgers->run_timestep();
 
-			if (simulationSWE->instability_detected())
+			if (simulationBurgers->instability_detected())
 			{
 				std::cout << "INSTABILITY DETECTED" << std::endl;
 				break;
@@ -749,13 +1118,14 @@ int main(int i_argc, char *i_argv[])
 
 			if (simVars.setup.scenario == 2 || simVars.setup.scenario == 3 || simVars.setup.scenario == 4)
 			{
-				std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationSWE->benchmark_diff_u << std::endl;
-				std::cout << "DIAGNOSTICS BENCHMARK DIFF V:\t" << simulationSWE->benchmark_diff_v << std::endl;
+				std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationBurgers->benchmark_diff_u << std::endl;
+				std::cout << "DIAGNOSTICS BENCHMARK DIFF V:\t" << simulationBurgers->benchmark_diff_v << std::endl;
 			}
 		}
+
+		delete simulationBurgers;
 	}
 
-	delete simulationSWE;
 
 	return 0;
 }

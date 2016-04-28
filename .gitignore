@@ -1,2 +1,5 @@
 build
 FFTW_*
+res
+NOTES
+runscript.sh
