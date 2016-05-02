@@ -205,7 +205,7 @@ public:
 			return 10+std::exp(-50.0*(dx*dx + dy*dy));
 		}
 
-		if (i_parameters.setup.scenario >= 51 && i_parameters.setup.scenario <= 59)
+		if (i_parameters.setup.scenario >= 51 && i_parameters.setup.scenario <= 60)
 		{
 			return 0;
 		}
@@ -291,7 +291,7 @@ public:
 			return 0;
 		}
 
-		if (i_parameters.setup.scenario >= 51 && i_parameters.setup.scenario <= 59)
+		if (i_parameters.setup.scenario >= 51 && i_parameters.setup.scenario <= 60)
 		{
 			return 0;
 		}

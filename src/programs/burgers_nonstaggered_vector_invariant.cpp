@@ -331,6 +331,47 @@ public:
 			double k=5.0;
 			o_u_t.set_all(tp*std::cos(tp*k*t));
 		}
+
+		/*
+		 * f(t,x,y) = sin(2*PI*x)*cos(2*PI*x)*2*PI - NU*(-4*PI*PI*sin(2*PI*x))
+		 * matching to:
+		 * u(t,x,y) = sin(2*PI*x)
+		 */
+		if (simVars.setup.scenario == 60)
+		{
+			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+			{
+				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+				{
+					// u space
+					double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+					double tmpvar = std::sin(tp*x)*std::cos(tp*x)*tp
+							      - simVars.sim.viscosity*(-tp*tp*std::sin(tp*x));
+
+					o_u_t.set(j,i, tmpvar);
+				}
+			}
+		}
+
+		/* Test for 2u-grad(u)=F
+		 * f(t,x,y) = (1+4*PI*PI)sin(2*PI*x)
+		 * matching to:
+		 * u(t,x,y) = sin(2*PI*x)
+		 */
+		if (simVars.setup.scenario == 61)
+		{
+			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+			{
+				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+				{
+					// u space
+					double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+					double tmpvar = (1+tp*tp)*std::sin(tp*x);
+
+					o_u_t.set(j,i, tmpvar);
+				}
+			}
+		}
 	}
 
 	/**
@@ -419,7 +460,7 @@ public:
 		// a positive value to use a fixed time step size
 		simVars.timecontrol.current_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
 
-#if 0 //test IMEX
+#if 0 	// run standard RK
 		timestepping.run_rk_timestep(
 				this,
 				&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
@@ -429,7 +470,7 @@ public:
 				simVars.disc.timestepping_runge_kutta_order,
 				simVars.timecontrol.current_simulation_time
 			);
-#else
+#else	// test IMEX
 		run_timestep_imex(
 				prog_u, prog_v,
 				simVars.timecontrol.current_timestep_size,
@@ -847,18 +888,24 @@ public:
 		// for Testing with Manufactured Solutions
 		DataArray<2> u(io_u.resolution);
 		set_source(u);
+		u.requestDataInSpectralSpace();
 
 		u0.requestDataInSpectralSpace();
 		v0.requestDataInSpectralSpace();
-		u.requestDataInSpectralSpace();
-
+#if 1	// actual computation
 		DataArray<2> rhs_u =
-				u0 - (u0*op.diff_c_x(u0)+v0*op.diff_c_y(u0))*i_timestep_size +u;
+				u0 - (u0*op.diff_c_x(u0)+v0*op.diff_c_y(u0))*i_timestep_size + u*i_timestep_size;
 		DataArray<2> rhs_v =
 				v0 - (u0*op.diff_c_x(v0)+v0*op.diff_c_y(v0))*i_timestep_size;
 		DataArray<2> lhs =
-				-i_timestep_size*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y).addScalar_Cart(1.0);
-
+				(-i_timestep_size*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).addScalar_Cart(1.0);
+#else	// Test for inverse
+		DataArray<2> rhs_u = u;
+		DataArray<2> rhs_v(io_u.resolution);
+		rhs_v.set_all(0.0);
+		rhs_v.requestDataInSpectralSpace();
+		DataArray<2> lhs = (-(op.diff2_c_x + op.diff2_c_y)).addScalar_Cart(1.0);
+#endif
 		io_u = rhs_u.spec_div_element_wise(lhs);
 		io_v = rhs_v.spec_div_element_wise(lhs);
 
