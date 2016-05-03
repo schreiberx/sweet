@@ -178,6 +178,11 @@ public:
 		o_posx_d = i_posx_a;
 		o_posy_d = i_posy_a;
 
+		//std::cout<<"u"<<std::endl;
+		//i_u.printArrayData();
+		//std::cout<<"v"<<std::endl;
+		//i_v.printArrayData();
+
 		//std::cout<<"i_posx_a"<<std::endl;
 		//i_posx_a.printArrayData();
 		//std::cout<<"i_posy_a"<<std::endl;

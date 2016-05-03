@@ -141,6 +141,11 @@ public:
 			return i_parameters.setup.h0+std::exp(-50.0*(dx*dx + dy*dy));
 		}
 
+		//Forced nonlinear case - trigonometric
+		if (i_parameters.setup.scenario == 13)
+		{
+			return std::cos(2.0*M_PI*x/i_parameters.sim.domain_size[0])*std::sin(2.0*M_PI*y/i_parameters.sim.domain_size[1]) + i_parameters.setup.h0;
+		}
 
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
 		return 0;
@@ -155,6 +160,7 @@ public:
 			double y
 	)
 	{
+
 		if (i_parameters.setup.scenario == 0)
 			return 0;
 
@@ -249,6 +255,13 @@ public:
 
 			return std::sin(M_PIl*dy) +1.0;
 			//return 2;
+		}
+
+		//Forced nonlinear case - trigonometric
+		if (i_parameters.setup.scenario == 13)
+		{
+			double factor = -i_parameters.sim.g*2.0*M_PI/(i_parameters.sim.f0*i_parameters.sim.domain_size[1]);
+			return factor*std::cos(2.0*M_PI*x/i_parameters.sim.domain_size[0])*std::cos(2.0*M_PI*y/i_parameters.sim.domain_size[1]);
 		}
 
 
@@ -348,9 +361,71 @@ public:
 			return std::sin(M_PIl*dx)  +1.0;
 			//return 0;
 		}
+		//Forced nonlinear case - trigonometric
+		if (i_parameters.setup.scenario == 13)
+		{
+			double factor = i_parameters.sim.g*2.0*M_PI/(i_parameters.sim.f0*i_parameters.sim.domain_size[0]);
+			return factor*std::sin(2.0*M_PI*x/i_parameters.sim.domain_size[0])*std::sin(2.0*M_PI*y/i_parameters.sim.domain_size[1]);
+		}
+
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
 		return 0;
 	}
+
+	// Forcings for the shallow water equations //
+	//------------------------------------------//
+
+	static
+	double return_force_h(
+			SimulationVariables &i_parameters,
+			double x,
+			double y
+	)
+	{
+		if (i_parameters.setup.scenario >= 0 && i_parameters.setup.scenario <= 12)
+			return 0;
+
+		if (i_parameters.setup.scenario == 13)
+			return 0;
+
+		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
+		return 0;
+	}
+
+	static
+	double return_force_u(
+			SimulationVariables &i_parameters,
+			double x,
+			double y
+	)
+	{
+		if (i_parameters.setup.scenario >= 0 && i_parameters.setup.scenario <= 12)
+			return 0;
+
+		if (i_parameters.setup.scenario == 13)
+			return 0;
+
+		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
+		return 0;
+	}
+
+	static
+	double return_force_v(
+			SimulationVariables &i_parameters,
+			double x,
+			double y
+	)
+	{
+		if (i_parameters.setup.scenario >= 0 && i_parameters.setup.scenario <= 12)
+			return 0;
+
+		if (i_parameters.setup.scenario == 13)
+			return 0;
+
+		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
+		return 0;
+	}
+
 };
 
 #endif /* SRC_INCLUDE_SWEET_SWEVALIDATIONBENCHMARKS_HPP_ */

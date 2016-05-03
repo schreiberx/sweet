@@ -976,26 +976,24 @@ public:
 		}
 		else if (param_timestepping_mode == 1) //REXI
 		{
+			assert(simVars.sim.CFL < 0);
+			o_dt = -simVars.sim.CFL;
+
 			// REXI time stepping for nonlinear eq - semi-lagrangian scheme (SL-REXI)
 			if (param_nonlinear>0)
 			{
 
-				assert(simVars.sim.CFL < 0);
-				o_dt = -simVars.sim.CFL;
-
 				//Calculate departure points
 				semiLagrangian.semi_lag_departure_points_settls(
-								prog_u_prev,
-								prog_v_prev,
-								prog_u,
-								prog_v,
-								posx_a,
-								posy_a,
+								prog_u_prev, prog_v_prev,
+								prog_u,	prog_v,
+								posx_a,	posy_a,
 								o_dt,
-								posx_d,
-								posy_d,
+								posx_d,	posy_d,
 								stag_displacement
 						);
+
+				//std::cout<<"Departure points movement (x,y): " << (posx_a-posx_d).reduce_maxAbs() << " " <<(posy_a-posy_d).reduce_maxAbs() << std::endl;
 
 				//Save current fields for next time step
 				prog_u_prev = prog_u;
@@ -1031,13 +1029,9 @@ public:
 				if(param_nonlinear==2) //Linear with nonlinear advection only (valid for nondivergent nonlinear sw flows flows)
 				{
 					// First calculate the linear part
-					rexiSWE.run_timestep(
-										H, U, V,
-										o_dt,
-										op,
-										simVars,
-										param_rexi_zero_before_solving
-					);
+					rexiSWE.run_timestep( H, U, V, o_dt, op, simVars, param_rexi_zero_before_solving);
+					//rexiSWE.run_timestep_direct_solution( H, U, V, o_dt, op, simVars );
+
 					//std::cout<<std::endl;
 					//std::cout<<"Did a REXI step"<<std::endl;
 
@@ -1079,19 +1073,11 @@ public:
 			}
 			else // linear solver
 			{
-				o_dt = -simVars.sim.CFL;
-				rexiSWE.run_timestep(
-						prog_h, prog_u, prog_v,
-						o_dt,
-						op,
-						simVars,
-						param_rexi_zero_before_solving
-				);
-
+				rexiSWE.run_timestep( prog_h, prog_u, prog_v, o_dt,	op,	simVars, param_rexi_zero_before_solving	);
 			}
 
 		}
-		else if (param_timestepping_mode == 2)
+		else if (param_timestepping_mode == 2) //Direct solution
 		{
 			if (param_use_staggering)
 			{
