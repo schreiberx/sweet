@@ -1444,6 +1444,17 @@ public:
 		exit(-1);
 #else
 
+
+#if SWEET_DEBUG
+	#if SWEET_THREADING
+		if (omp_get_num_threads() > 0)
+		{
+			std::cerr << "Threading race conditions likely" << std::endl;
+			assert(false);
+		}
+	#endif
+#endif
+
 		if (array_data_spectral_space_valid)
 			return;		// nothing to do
 

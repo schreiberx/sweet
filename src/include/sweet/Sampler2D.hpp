@@ -148,6 +148,8 @@ public:
 
 		const std::size_t size = i_pos_x.resolution[0]*i_pos_x.resolution[1];
 
+		i_data.requestDataInCartesianSpace();
+
 		// iterate over all positions
 #pragma omp parallel for OPENMP_SIMD
 		for (std::size_t pos_idx = 0; pos_idx < size; pos_idx++)
@@ -265,6 +267,8 @@ public:
 		const std::size_t size = i_pos_x.resolution[0]*i_pos_x.resolution[1];
 
 		assert(size != 0);
+
+		i_data.requestDataInCartesianSpace();
 
 		// iterate over all positions
 #pragma omp parallel for OPENMP_SIMD
