@@ -1958,6 +1958,10 @@ public:
 
 			double den = (br*br+bi*bi);
 
+			/* Used for debugging
+			std::cout << "Den l r: " << den << "\t" << ar << "+" << ai << "\t" << br << "+" << bi << std::endl;
+			*/
+
 			if (std::abs(den) <= i_tolerance)
 			{
 				// For inverting differential operators, this is the integration constant C
@@ -3210,6 +3214,29 @@ public:
 		return o_ostream;
 	}
 
+	/**
+	 * Compute addition with complex value
+	 */
+	inline
+	DataArray<D> addScalar_Cart(
+			const double &i_value
+	)	const
+	{
+
+		DataArray<D> out(this->resolution);
+		out.temporary_data = true;
+
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
+		#pragma omp parallel for OPENMP_SIMD
+#endif
+		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
+			out.array_data_spectral_space[i] = array_data_spectral_space[i]+i_value;
+
+		out.array_data_spectral_space_valid = true;
+		out.array_data_cartesian_space_valid = false;
+
+		return out;
+	}
 
 	inline
 	void printSpectrum()
@@ -3231,6 +3258,7 @@ public:
 				}
 				std::cout << std::endl;
 			}
+			std::cout << std::endl;
 		}
 	}
 
