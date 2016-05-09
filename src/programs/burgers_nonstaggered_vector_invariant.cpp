@@ -291,9 +291,9 @@ public:
 		}
 
 		/*
-		 * f(t,x,y) = sin(2*PI*x) + t*sin(2*PI*x)*t*cos(2*PI*x)*2*PI - NU*(-4*PI*PI*t*sin(2*PI*x))
+		 * f(t,x,y) = 1000*sin(2*PI*x) + 1000^2*t*sin(2*PI*x)*t*cos(2*PI*x)*2*PI - 1000*NU*(-4*PI*PI*t*sin(2*PI*x))
 		 * matching to:
-		 * u(t,x,y) = t*sin(2*PI*x)
+		 * u(t,x,y) = 1000*t*sin(2*PI*x)
 		 */
 		if (simVars.setup.scenario == 54)
 		{
@@ -303,8 +303,8 @@ public:
 				{
 					// u space
 					double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-					double tmpvar = std::sin(tp*x)+t*std::sin(tp*x)*t*std::cos(tp*x)*tp
-							      - simVars.sim.viscosity*(-tp*tp*t*std::sin(tp*x));
+					double tmpvar = 1000*std::sin(tp*x)+1000*1000*t*std::sin(tp*x)*t*std::cos(tp*x)*tp
+							      - 1000*simVars.sim.viscosity*(-tp*tp*t*std::sin(tp*x));
 
 					o_u_t.set(j,i, tmpvar);
 				}
@@ -372,6 +372,27 @@ public:
 				}
 			}
 		}
+
+		/*
+		 * f(t,x,y) = 10*x+100*t*t*x
+		 * matching to:
+		 * u(t,x,y) = 10*t*x
+		 */
+		if (simVars.setup.scenario == 62)
+		{
+			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+			{
+				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+				{
+					// u space
+					double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+					double tmpvar = 10*x+100*t*t*x;
+
+					o_u_t.set(j,i, tmpvar);
+				}
+			}
+		}
+
 	}
 
 	/**
@@ -899,15 +920,40 @@ public:
 				v0 - (u0*op.diff_c_x(v0)+v0*op.diff_c_y(v0))*i_timestep_size;
 		DataArray<2> lhs =
 				(-i_timestep_size*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).addScalar_Cart(1.0);
+		DataArray<2> u1 = rhs_u.spec_div_element_wise(lhs);
+		DataArray<2> v1 = rhs_v.spec_div_element_wise(lhs);
+
+		io_u = u0 + i_timestep_size*simVars.sim.viscosity*(op.diff2_c_x(u1)+op.diff2_c_y(u1))
+				- (u0*op.diff_c_x(u0)+v0*op.diff_c_y(u0))*i_timestep_size +u*i_timestep_size;
+		io_v = v0 + i_timestep_size*simVars.sim.viscosity*(op.diff2_c_x(v1)+op.diff2_c_y(v1))
+				- (u0*op.diff_c_x(v0)+v0*op.diff_c_y(v0))*i_timestep_size;
+
 #else	// Test for inverse
-		DataArray<2> rhs_u = u;
+		DataArray<2> rhs_u(io_u.resolution);
+		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+		{
+			for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+			{
+				// u space
+				double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+				double tmpvar = std::sin(2*M_PI*x);
+				double tmpvar2 = std::sin(2*M_PI*x)+4*M_PI*M_PI*std::sin(2*M_PI*x)-2*M_PI*std::cos(2*M_PI*x);
+
+				rhs_u.set(j,i, tmpvar);
+				u.set(j,i,tmpvar2);
+			}
+		}
+		rhs_u.requestDataInSpectralSpace();
+		u.requestDataInSpectralSpace();
+		rhs_u = op.diff_c_x(rhs_u);
+		rhs_u += u;
 		DataArray<2> rhs_v(io_u.resolution);
 		rhs_v.set_all(0.0);
 		rhs_v.requestDataInSpectralSpace();
 		DataArray<2> lhs = (-(op.diff2_c_x + op.diff2_c_y)).addScalar_Cart(1.0);
-#endif
 		io_u = rhs_u.spec_div_element_wise(lhs);
 		io_v = rhs_v.spec_div_element_wise(lhs);
+#endif
 
 		return true;
 	}
