@@ -26,6 +26,7 @@ SimulationVariables simVars;
 
 
 double next_timestep_output = 0;
+bool param_imex = 1;
 
 
 class SimulationInstance
@@ -416,28 +417,28 @@ public:
 		 * v_t + u*v_x + v*v_y = nu*(v_xx + v_yy) [+ g(t,x,y)]
 		 */
 
+		DataArray<2> f(i_u.resolution);
+		set_source(f);
+
 		/*
 		 * u and v updates
 		 */
 
-		set_source(o_u_t);
-
-
-		//necessary?
-#if SWEET_USE_SPECTRAL_SPACE==1
-		o_u_t.requestDataInSpectralSpace();
-#endif
 
 		/*
 		 * reset to this line if no source term is used
 		 * o_u_t = simVars.sim.viscosity*(op.diff2_c_x(i_u)+op.diff2_c_y(i_u));
 		 */
+		o_u_t = -(i_u*op.diff_c_x(i_u) + i_v*op.diff_c_y(i_u));
 		o_u_t += simVars.sim.viscosity*(op.diff2_c_x(i_u)+op.diff2_c_y(i_u));
-		o_u_t -= i_u*op.diff_c_x(i_u) + i_v*op.diff_c_y(i_u);
+		o_u_t += f;
 
-		o_v_t = simVars.sim.viscosity*(op.diff2_c_x(i_v)+op.diff2_c_y(i_v));
-		o_v_t -= i_u*op.diff_c_x(i_v) + i_v*op.diff_c_y(i_v);
+		o_v_t = -(i_u*op.diff_c_x(i_v) + i_v*op.diff_c_y(i_v));
+		o_v_t += simVars.sim.viscosity*(op.diff2_c_x(i_v)+op.diff2_c_y(i_v));
 
+//		std::cout << simVars.sim.viscosity << std::endl;
+//		DataArray<2> rhs_u = u - t*(u*op.diff_c_x(u)+v*op.diff_c_y(u)) + t*f;
+//		DataArray<2> rhs_v = v - t*(u*op.diff_c_x(v)+v*op.diff_c_y(v));
 
 		/*
 		 * TIME STEP SIZE
@@ -448,25 +449,9 @@ public:
 		}
 		else
 		{
-			/*
-			 * If the timestep size parameter is negative, we use the absolute value of this one as the time step size
-			 */
-			if (i_fixed_dt < 0)
-			{
-				o_dt = -i_fixed_dt;
-			}
-			else
-			{
-				double limit_speed = std::min(simVars.disc.cell_size[0]/i_u.reduce_maxAbs(), simVars.disc.cell_size[1]/i_v.reduce_maxAbs());
-
-				// limit by re
-				double limit_visc = std::numeric_limits<double>::infinity();
-
-//				if (simVars.misc.verbosity > 2)
-//					std::cout << "limit_speed: " << limit_speed << ", limit_visc: " << limit_visc << ", limit_gh: " << limit_gh << std::endl;
-
-				o_dt = simVars.sim.CFL*std::min(limit_speed, limit_visc);
-			}
+			std::cout << "Only fixed time step size supported" << std::endl;
+			assert(false);
+			exit(1);
 		}
 
 	}
@@ -481,25 +466,30 @@ public:
 		// a positive value to use a fixed time step size
 		simVars.timecontrol.current_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
 
-#if 0 	// run standard RK
-		timestepping.run_rk_timestep(
-				this,
-				&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
-				prog_u, prog_v,
-				dt,
-				simVars.timecontrol.current_timestep_size,
-				simVars.disc.timestepping_runge_kutta_order,
-				simVars.timecontrol.current_simulation_time
+		if (!param_imex)
+		{
+			// run standard RK
+			timestepping.run_rk_timestep(
+					this,
+					&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
+					prog_u, prog_v,
+					dt,
+					simVars.timecontrol.current_timestep_size,
+					simVars.disc.timestepping_runge_kutta_order,
+					simVars.timecontrol.current_simulation_time
+				);
+		}
+		else
+		{
+			run_timestep_imex(
+					prog_u, prog_v,
+					simVars.timecontrol.current_timestep_size,
+					op,
+					simVars
 			);
-#else	// test IMEX
-		run_timestep_imex(
-				prog_u, prog_v,
-				simVars.timecontrol.current_timestep_size,
-				op,
-				simVars
-		);
+		}
+
 		dt = simVars.timecontrol.current_timestep_size;
-#endif
 
 		// provide information to parameters
 		simVars.timecontrol.current_timestep_size = dt;
@@ -903,30 +893,42 @@ public:
 			const SimulationVariables &i_simVars
 			)
 	{
-		DataArray<2> u0=io_u;
-		DataArray<2> v0=io_v;
+		DataArray<2> u=io_u;
+		DataArray<2> v=io_v;
 
+		// TODO: Move this into the reset() section
 		// for Testing with Manufactured Solutions
-		DataArray<2> u(io_u.resolution);
-		set_source(u);
-		u.requestDataInSpectralSpace();
+		DataArray<2> f(io_u.resolution);
+		set_source(f);
 
-		u0.requestDataInSpectralSpace();
-		v0.requestDataInSpectralSpace();
+// not required
+//		u.requestDataInSpectralSpace();
+
+//		u0.requestDataInSpectralSpace();
+//		v0.requestDataInSpectralSpace();
+
+		double t = i_timestep_size;
+
 #if 1	// actual computation
-		DataArray<2> rhs_u =
-				u0 - (u0*op.diff_c_x(u0)+v0*op.diff_c_y(u0))*i_timestep_size + u*i_timestep_size;
-		DataArray<2> rhs_v =
-				v0 - (u0*op.diff_c_x(v0)+v0*op.diff_c_y(v0))*i_timestep_size;
-		DataArray<2> lhs =
-				(-i_timestep_size*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).addScalar_Cart(1.0);
-		DataArray<2> u1 = rhs_u.spec_div_element_wise(lhs);
-		DataArray<2> v1 = rhs_v.spec_div_element_wise(lhs);
 
-		io_u = u0 + i_timestep_size*simVars.sim.viscosity*(op.diff2_c_x(u1)+op.diff2_c_y(u1))
-				- (u0*op.diff_c_x(u0)+v0*op.diff_c_y(u0))*i_timestep_size +u*i_timestep_size;
-		io_v = v0 + i_timestep_size*simVars.sim.viscosity*(op.diff2_c_x(v1)+op.diff2_c_y(v1))
-				- (u0*op.diff_c_x(v0)+v0*op.diff_c_y(v0))*i_timestep_size;
+		DataArray<2> rhs_u = u - t*(u*op.diff_c_x(u)+v*op.diff_c_y(u)) + t*f;
+		DataArray<2> rhs_v = v - t*(u*op.diff_c_x(v)+v*op.diff_c_y(v));
+		DataArray<2>   lhs = ((-t)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).addScalar_Cart(1.0);
+
+		io_u = rhs_u.spec_div_element_wise(lhs);
+		io_v = rhs_v.spec_div_element_wise(lhs);
+
+
+		// TODO: Was machst du hier mit dem update?
+		// Soll das ein Explizites Zeitschrittverfahren sein?
+		// Hab' das mal auskommentiert
+
+#if 0
+		io_u = u + t*simVars.sim.viscosity*(op.diff2_c_x(u1)+op.diff2_c_y(u1))
+				- t*(u*op.diff_c_x(u)+v*op.diff_c_y(u)) +f*t;
+		io_v = v + t*simVars.sim.viscosity*(op.diff2_c_x(v1)+op.diff2_c_y(v1))
+				- t*(u*op.diff_c_x(v)+v*op.diff_c_y(v));
+#endif
 
 #else	// Test for inverse
 		DataArray<2> rhs_u(io_u.resolution);
@@ -940,13 +942,13 @@ public:
 				double tmpvar2 = std::sin(2*M_PI*x)+4*M_PI*M_PI*std::sin(2*M_PI*x)-2*M_PI*std::cos(2*M_PI*x);
 
 				rhs_u.set(j,i, tmpvar);
-				u.set(j,i,tmpvar2);
+				f.set(j,i,tmpvar2);
 			}
 		}
 		rhs_u.requestDataInSpectralSpace();
-		u.requestDataInSpectralSpace();
+		f.requestDataInSpectralSpace();
 		rhs_u = op.diff_c_x(rhs_u);
-		rhs_u += u;
+		rhs_u += f;
 		DataArray<2> rhs_v(io_u.resolution);
 		rhs_v.set_all(0.0);
 		rhs_v.requestDataInSpectralSpace();
@@ -1119,8 +1121,27 @@ public:
 
 int main(int i_argc, char *i_argv[])
 {
-	if (!simVars.setupFromMainParameters(i_argc, i_argv))
+	NUMABlockAlloc::setup();
+
+	const char *bogus_var_names[] = {
+			"use-imex",
+			nullptr
+	};
+
+	simVars.bogus.var[0] = param_imex;
+
+
+	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
+	{
+		std::cout << std::endl;
+		std::cout << "Special parameters:" << std::endl;
+		std::cout << "	--use-imex [0/1]	Use IMEX time stepping" << std::endl;
+		std::cout << "" << std::endl;
+
 		return -1;
+	}
+	param_imex = simVars.bogus.var[0];
+
 
 	std::ostringstream buf;
 	buf << std::setprecision(14);

@@ -780,6 +780,15 @@ bool RexiSWE::run_timestep(
 	io_u = perThreadVars[0]->u_sum.getRealWithDataArray();
 	io_v = perThreadVars[0]->v_sum.getRealWithDataArray();
 
+#if 0
+	// check for 0 imaginary parts - doesn't seem to be zero!
+	Complex2DArrayFFT tmp =
+			perThreadVars[0]->h_sum.toCart();
+
+	tmp.setAllRe(0);
+	std::cout << tmp.reduce_sum() << std::endl;
+#endif
+
 #endif
 
 

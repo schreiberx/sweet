@@ -3215,7 +3215,7 @@ public:
 	}
 
 	/**
-	 * Compute addition with complex value
+	 * Compute addition with scalar value in spectral space like it would be in cartesian space
 	 */
 	inline
 	DataArray<D> addScalar_Cart(
@@ -3224,13 +3224,17 @@ public:
 	{
 
 		DataArray<D> out(this->resolution);
-		out.temporary_data = true;
+
+		requestDataInSpectralSpace();
 
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for OPENMP_SIMD
 #endif
 		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
+		{
 			out.array_data_spectral_space[i] = array_data_spectral_space[i]+i_value;
+			out.array_data_spectral_space[i+1] = array_data_spectral_space[i+1]+i_value;
+		}
 
 		out.array_data_spectral_space_valid = true;
 		out.array_data_cartesian_space_valid = false;
