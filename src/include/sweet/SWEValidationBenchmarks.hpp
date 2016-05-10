@@ -205,7 +205,17 @@ public:
 			return 10+std::exp(-50.0*(dx*dx + dy*dy));
 		}
 
-		if (i_parameters.setup.scenario >= 51 && i_parameters.setup.scenario <= 70)
+		if (i_parameters.setup.scenario >= 51 && i_parameters.setup.scenario <= 53)
+		{
+			return 0;
+		}
+
+		if (i_parameters.setup.scenario == 54)
+		{
+			return 1000*i_parameters.timecontrol.current_simulation_time*std::sin(2*M_PI*x);
+		}
+
+		if (i_parameters.setup.scenario >= 55 && i_parameters.setup.scenario <= 70)
 		{
 			return 0;
 		}

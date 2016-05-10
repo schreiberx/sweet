@@ -535,6 +535,31 @@ public:
 				prog_u.file_saveData_ascii((ss+"_u.csv").c_str());
 				prog_v.file_saveData_ascii((ss+"_v.csv").c_str());
 
+				// set data to something to overcome assertion error
+				for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+					for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+					{
+						// u space
+						double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+						double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+
+						tmp.set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
+					}
+
+				(prog_u-tmp).file_saveData_ascii((ss+"_u_diff.csv").c_str());
+
+				for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+					for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+					{
+						// v space
+						double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+						double y = (((double)j)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+
+						tmp.set(j,i, SWEValidationBenchmarks::return_v(simVars, x, y));
+					}
+
+				(prog_v-tmp).file_saveData_ascii((ss+"_v_diff.csv").c_str());
+
 			}
 
 			if (simVars.timecontrol.current_timestep_nr == 0)
@@ -550,40 +575,8 @@ public:
 
 			o_ostream << simVars.timecontrol.current_simulation_time << "\t" << simVars.diag.total_mass << "\t" << simVars.diag.total_energy << "\t" << simVars.diag.total_potential_enstrophy;
 
-			// this should be zero for the steady state test
-			if (simVars.setup.scenario == 2 || simVars.setup.scenario == 3 || simVars.setup.scenario == 4)
-			{
-
-				// set data to something to overcome assertion error
-				for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
-					for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
-					{
-						// u space
-						double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-						double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
-
-						tmp.set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
-					}
-
-				benchmark_diff_u = (prog_u-tmp).reduce_norm1() / (double)(simVars.disc.res[0]*simVars.disc.res[1]);
-				o_ostream << "\t" << benchmark_diff_v;
-
-				for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
-					for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
-					{
-						// v space
-						double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-						double y = (((double)j)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
-
-						tmp.set(j,i, SWEValidationBenchmarks::return_v(simVars, x, y));
-					}
-
-				benchmark_diff_v = (prog_v-tmp).reduce_norm1() / (double)(simVars.disc.res[0]*simVars.disc.res[1]);
-				o_ostream << "\t" << benchmark_diff_v;
-			}
-
-			o_ostream << std::endl;
 		}
+		o_ostream << std::endl;
 	}
 
 
@@ -915,20 +908,14 @@ public:
 		DataArray<2> rhs_v = v - t*(u*op.diff_c_x(v)+v*op.diff_c_y(v));
 		DataArray<2>   lhs = ((-t)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).addScalar_Cart(1.0);
 
-		io_u = rhs_u.spec_div_element_wise(lhs);
-		io_v = rhs_v.spec_div_element_wise(lhs);
+		DataArray<2> u1 = rhs_u.spec_div_element_wise(lhs);
+		DataArray<2> v1 = rhs_v.spec_div_element_wise(lhs);
 
 
-		// TODO: Was machst du hier mit dem update?
-		// Soll das ein Explizites Zeitschrittverfahren sein?
-		// Hab' das mal auskommentiert
-
-#if 0
 		io_u = u + t*simVars.sim.viscosity*(op.diff2_c_x(u1)+op.diff2_c_y(u1))
 				- t*(u*op.diff_c_x(u)+v*op.diff_c_y(u)) +f*t;
 		io_v = v + t*simVars.sim.viscosity*(op.diff2_c_x(v1)+op.diff2_c_y(v1))
 				- t*(u*op.diff_c_x(v)+v*op.diff_c_y(v));
-#endif
 
 #else	// Test for inverse
 		DataArray<2> rhs_u(io_u.resolution);
