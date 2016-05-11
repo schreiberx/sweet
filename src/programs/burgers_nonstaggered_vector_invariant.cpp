@@ -908,14 +908,18 @@ public:
 		DataArray<2> rhs_v = v - t*(u*op.diff_c_x(v)+v*op.diff_c_y(v));
 		DataArray<2>   lhs = ((-t)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).addScalar_Cart(1.0);
 
+#if 1   // solving the system directly
+		io_u = rhs_u.spec_div_element_wise(lhs);
+		io_v = rhs_v.spec_div_element_wise(lhs);
+#else	// making the second step of the IMEX-RK1 scheme
 		DataArray<2> u1 = rhs_u.spec_div_element_wise(lhs);
 		DataArray<2> v1 = rhs_v.spec_div_element_wise(lhs);
-
 
 		io_u = u + t*simVars.sim.viscosity*(op.diff2_c_x(u1)+op.diff2_c_y(u1))
 				- t*(u*op.diff_c_x(u)+v*op.diff_c_y(u)) +f*t;
 		io_v = v + t*simVars.sim.viscosity*(op.diff2_c_x(v1)+op.diff2_c_y(v1))
 				- t*(u*op.diff_c_x(v)+v*op.diff_c_y(v));
+#endif
 
 #else	// Test for inverse
 		DataArray<2> rhs_u(io_u.resolution);

@@ -205,9 +205,19 @@ public:
 			return 10+std::exp(-50.0*(dx*dx + dy*dy));
 		}
 
-		if (i_parameters.setup.scenario >= 51 && i_parameters.setup.scenario <= 53)
+		if (i_parameters.setup.scenario == 51)
 		{
-			return 0;
+			return i_parameters.timecontrol.current_simulation_time;
+		}
+
+		if (i_parameters.setup.scenario == 52)
+		{
+			return i_parameters.timecontrol.current_simulation_time*i_parameters.timecontrol.current_simulation_time;
+		}
+
+		if (i_parameters.setup.scenario == 53)
+		{
+			return i_parameters.timecontrol.current_simulation_time*i_parameters.timecontrol.current_simulation_time*i_parameters.timecontrol.current_simulation_time;
 		}
 
 		if (i_parameters.setup.scenario == 54)
