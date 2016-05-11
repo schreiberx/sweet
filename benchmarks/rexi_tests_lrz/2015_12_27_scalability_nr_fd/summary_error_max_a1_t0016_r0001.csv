@@ -1,8 +1,0 @@
-#TI MAX Error vs. resolution, MPI ranks=1, threads=16
-#TX Simulation type
-#TY Resolution
-N\SimType	nr_fd_cart_cgrid
-32	1.82051060419
-64	1.22926126197
-128	1.05749911415
-256	0.103959499598

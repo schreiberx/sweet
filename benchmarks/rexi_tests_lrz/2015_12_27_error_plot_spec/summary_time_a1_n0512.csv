@@ -1,5 +1,0 @@
-#TI Threads vs. simulation time N^2=512^2, DT=50, A=1
-#TX Simulation type
-#TY number of threads (compact)
-threads\SimType	nr_spec_spec_agrid	rexi_par_m000064	rexi_par_m000128	rexi_par_m000256	rexi_par_m000512	rexi_par_m001024	rexi_par_m002048	rexi_par_m008192	rexi_par_m016384	rexi_par_m032768	rexi_par_m065536	rexi_par_m131072	rexi_par_m262144	rexi_par_m1048576	rexi_par_m2097152
-28 cores (1 ranks / 28 threads)	544.18246	7.213513	11.545031	21.016788	38.675071	73.927276	146.845827	580.923308	1150.449105	2293.540474	4548.972017	9090.896691	18217.612155	9226.901763	x

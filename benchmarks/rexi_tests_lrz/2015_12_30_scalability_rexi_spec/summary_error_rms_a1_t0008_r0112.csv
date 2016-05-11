@@ -1,5 +1,0 @@
-#TI RMS Error vs. resolution, MPI ranks=112, threads=8
-#TX Simulation type
-#TY Resolution
-N\SimType	nr_spec_spec_agrid	rexi_m008192	rexi_par_m008192	rexi_m016384	rexi_par_m016384	rexi_m131072	rexi_par_m131072
-128	-	0.000116396508585	0.000116396508585	6.36206177181e-06	6.36206177162e-06	3.98289814315e-07	3.98289814275e-07

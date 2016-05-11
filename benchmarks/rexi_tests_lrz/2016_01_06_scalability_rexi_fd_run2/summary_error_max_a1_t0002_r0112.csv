@@ -1,5 +1,0 @@
-#TI MAX Error vs. resolution, MPI ranks=112, threads=2
-#TX Simulation type
-#TY Resolution
-N\SimType	nr_fd_cart_cgrid	rexi_fd_m2048	rexi_fd_par_m2048	rexi_fd_m4096	rexi_fd_par_m4096	rexi_fd_m8192	rexi_fd_par_m8192
-128	-	1.02955142423	1.02955142423	1.02916954469	1.02916954469	1.02909032646	1.02909032646
