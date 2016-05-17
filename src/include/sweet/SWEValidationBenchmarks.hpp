@@ -364,7 +364,7 @@ public:
 		//Forced nonlinear case - trigonometric
 		if (i_parameters.setup.scenario == 13)
 		{
-			double factor = i_parameters.sim.g*2.0*M_PI/(i_parameters.sim.f0*i_parameters.sim.domain_size[0]);
+			double factor = -i_parameters.sim.g*2.0*M_PI/(i_parameters.sim.f0*i_parameters.sim.domain_size[0]);
 			return factor*std::sin(2.0*M_PI*x/i_parameters.sim.domain_size[0])*std::sin(2.0*M_PI*y/i_parameters.sim.domain_size[1]);
 		}
 
@@ -402,8 +402,10 @@ public:
 		if (i_parameters.setup.scenario >= 0 && i_parameters.setup.scenario <= 12)
 			return 0;
 
-		if (i_parameters.setup.scenario == 13)
-			return 0;
+		if (i_parameters.setup.scenario == 13){
+			double factor = i_parameters.sim.g*2.0*M_PI/(i_parameters.sim.f0*i_parameters.sim.domain_size[1]);
+			return -factor*factor*(M_PI/i_parameters.sim.domain_size[0])*std::sin(4.0*M_PI*x/i_parameters.sim.domain_size[0]);
+		}
 
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
 		return 0;
@@ -419,9 +421,10 @@ public:
 		if (i_parameters.setup.scenario >= 0 && i_parameters.setup.scenario <= 12)
 			return 0;
 
-		if (i_parameters.setup.scenario == 13)
-			return 0;
-
+		if (i_parameters.setup.scenario == 13){
+			double factor = i_parameters.sim.g*2.0*M_PI/(i_parameters.sim.f0*i_parameters.sim.domain_size[0]);
+			return factor*factor*(M_PI/i_parameters.sim.domain_size[1])*std::sin(4.0*M_PI*y/i_parameters.sim.domain_size[1]);
+		}
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
 		return 0;
 	}

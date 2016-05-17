@@ -77,6 +77,9 @@ public:
 	// Initial values for comparison with analytical solution
 	DataArray<2> t0_prog_h, t0_prog_u, t0_prog_v;
 
+	// Forcings
+	DataArray<2> force_h, force_u, force_v;
+
 	// Points mapping [0,simVars.sim.domain_size[0])x[0,simVars.sim.domain_size[1])
 	// with resolution simVars.sim.resolution
 	DataArray<2> pos_x, pos_y;
@@ -163,6 +166,10 @@ public:
 		t0_prog_h(simVars.disc.res),
 		t0_prog_u(simVars.disc.res),
 		t0_prog_v(simVars.disc.res),
+
+		force_h(simVars.disc.res),
+		force_u(simVars.disc.res),
+		force_v(simVars.disc.res),
 
 		pos_x(simVars.disc.res),
 		pos_y(simVars.disc.res),
@@ -308,6 +315,7 @@ public:
 
 						prog_h.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
 						t0_prog_h.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
+						force_h.set(j, i, SWEValidationBenchmarks::return_force_h(simVars, x, y));
 					}
 
 					{
@@ -317,6 +325,7 @@ public:
 
 						prog_u.set(j,i, SWEValidationBenchmarks::return_u(simVars, x, y));
 						t0_prog_u.set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
+						force_u.set(j, i, SWEValidationBenchmarks::return_force_u(simVars, x, y));
 					}
 
 					{
@@ -326,6 +335,7 @@ public:
 
 						prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
 						t0_prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
+						force_v.set(j, i, SWEValidationBenchmarks::return_force_v(simVars, x, y));
 					}
 				}
 				else // A-Grid (colocated grid)
@@ -340,6 +350,10 @@ public:
 					t0_prog_h.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
 					t0_prog_u.set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
 					t0_prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
+
+					force_h.set(j, i, SWEValidationBenchmarks::return_force_h(simVars, x, y));
+					force_u.set(j, i, SWEValidationBenchmarks::return_force_u(simVars, x, y));
+					force_v.set(j, i, SWEValidationBenchmarks::return_force_v(simVars, x, y));
 				}
 			}
 		}
@@ -1153,6 +1167,10 @@ public:
 			std::cerr << "Invalid time stepping method" << std::endl;
 			exit(1);
 		}
+
+		prog_h=prog_h+force_h*o_dt;
+		prog_u=prog_u+force_u*o_dt;
+		prog_v=prog_v+force_v*o_dt;
 
 		// provide information to parameters
 		simVars.timecontrol.current_timestep_size = o_dt;
