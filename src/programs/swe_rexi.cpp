@@ -905,7 +905,7 @@ public:
 			{
 				if (!simVars.disc.timestepping_up_and_downwinding)
 				{
-					if(param_nonlinear == 1){ //full nonlinear divergence
+					if(param_nonlinear >= 1){ //full nonlinear divergence
 						// standard update
 						o_h_t = -op.diff_f_x(U) - op.diff_f_y(V);
 					}
@@ -954,6 +954,10 @@ public:
 						);
 				}
 			}
+			//Add forcing - not working as it should
+			//o_h_t=o_h_t+force_h;
+			//o_u_t=o_u_t+force_u;
+			//o_v_t=o_v_t+force_v;
 
 #if 0
 			if (simVars.sim.potential_viscosity != 0)
@@ -1090,6 +1094,10 @@ public:
 				rexiSWE.run_timestep( prog_h, prog_u, prog_v, o_dt,	op,	simVars, param_rexi_zero_before_solving	);
 			}
 
+			//Add forcing
+			prog_h=prog_h+force_h*o_dt;
+			prog_u=prog_u+force_u*o_dt;
+			prog_v=prog_v+force_v*o_dt;
 		}
 		else if (param_timestepping_mode == 2) //Direct solution
 		{
@@ -1168,9 +1176,7 @@ public:
 			exit(1);
 		}
 
-		prog_h=prog_h+force_h*o_dt;
-		prog_u=prog_u+force_u*o_dt;
-		prog_v=prog_v+force_v*o_dt;
+
 
 		// provide information to parameters
 		simVars.timecontrol.current_timestep_size = o_dt;
