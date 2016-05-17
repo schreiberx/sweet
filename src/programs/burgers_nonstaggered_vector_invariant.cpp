@@ -192,7 +192,7 @@ public:
 		 */
 		if (simVars.setup.scenario == 57)
 		{
-			double k = 5.0;
+			double k = simVars.sim.f0;
 			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 			{
 				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
@@ -216,7 +216,7 @@ public:
 		 */
 		if (simVars.setup.scenario == 59)
 		{
-			double k = 1.0;
+			double k = simVars.sim.f0;
 			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 			{
 				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
@@ -243,7 +243,7 @@ public:
 		 */
 		if (simVars.setup.scenario == 58)
 		{
-			double k = 5.0;
+			double k = simVars.sim.f0;
 			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 			{
 				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
@@ -329,7 +329,7 @@ public:
 		 */
 		if (simVars.setup.scenario == 56)
 		{
-			double k=5.0;
+			double k=simVars.sim.f0;
 			o_u_t.set_all(tp*std::cos(tp*k*t));
 		}
 
@@ -375,20 +375,35 @@ public:
 		}
 
 		/*
-		 * f(t,x,y) = 10*x+100*t*t*x
+		 * f(t,x,y) = 0.25*[SUM (cos(**)*(-PI*k)+sin(**)*(2*PI*k)^2)*# + 0.25*SUM sin(**)*# * SUM cos(**)*2*PI*k*#]
+		 * mit: ** = 2*PI*k*x-PI*k*t+PI*k
+		 * und: #  = EPS/sinh(0.5*PI*k*EPS)
 		 * matching to:
-		 * u(t,x,y) = 10*t*x
+		 * u(t,x,y) = 0.5*SUM_(k=1)^(k_max) sin(2*PI*k*x-PI*k*t+PI*k)*EPS/sinh(0.5*PI*k*EPS)
 		 */
 		if (simVars.setup.scenario == 62)
 		{
+			int kmax = 100;
+			double eps = 0.1;
 			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 			{
 				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
 				{
 					// u space
 					double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-					double tmpvar = 10*x+100*t*t*x;
+					double tmpvar = 0;
+					for (int k = 1; k < kmax; k++)
+					{
+						double argument = tp*k*x - M_PIl*k*t + M_PIl*k;
+						tmpvar += cos(argument)*(-M_PIl*k) + sin(argument)*(tp*k)*(tp*k)*eps/sinh(M_PIl*k*eps/2);
+						for (int l = 1; l < kmax; l++)
+						{
+							double argument2 = tp*l*x - M_PIl*l*t + M_PIl*l;
+							tmpvar += sin(argument)*eps/sinh(M_PIl*k*eps/2)*cos(argument2)*eps/sinh(M_PIl*l*eps/2)*tp*l;
+						}
+					}
 
+					tmpvar *= 0.25;
 					o_u_t.set(j,i, tmpvar);
 				}
 			}
@@ -533,7 +548,8 @@ public:
 
 
 				prog_u.file_saveData_ascii((ss+"_u.csv").c_str());
-				prog_v.file_saveData_ascii((ss+"_v.csv").c_str());
+				// not necessary for 1D Problems
+				//prog_v.file_saveData_ascii((ss+"_v.csv").c_str());
 
 				// set data to something to overcome assertion error
 				for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
@@ -548,6 +564,7 @@ public:
 
 				(prog_u-tmp).file_saveData_ascii((ss+"_u_diff.csv").c_str());
 
+				/* Not necessary for 1D problems
 				for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 					for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
 					{
@@ -559,6 +576,7 @@ public:
 					}
 
 				(prog_v-tmp).file_saveData_ascii((ss+"_v_diff.csv").c_str());
+				*/
 
 			}
 
@@ -847,7 +865,7 @@ public:
 		simVars.timecontrol.max_simulation_time = timeframe_end;
 		simVars.timecontrol.current_timestep_nr = 0;
 
-		while (simVars.timecontrol.current_simulation_time != timeframe_end)
+		while (simVars.timecontrol.current_simulation_time < timeframe_end)
 		{
 			this->run_timestep();
 			assert(simVars.timecontrol.current_simulation_time <= timeframe_end);
@@ -1087,12 +1105,31 @@ public:
 		Parareal_Data_DataArrays<2>& data = (Parareal_Data_DataArrays<2>&)i_data;
 
 		std::ostringstream ss;
-		ss << "output_iter" << iteration_id << "_slice" << time_slice_id << ".vtk";
+		ss << simVars.misc.output_file_name_prefix << "output_iter" << iteration_id << "_slice" << time_slice_id << ".csv";
 
 		std::string filename = ss.str();
 
 //		std::cout << "filename: " << filename << std::endl;
-		data.data_arrays[0]->file_saveData_vtk(filename.c_str(), filename.c_str());
+		data.data_arrays[0]->file_saveData_ascii(filename.c_str());
+
+		// set data to something to overcome assertion error
+		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+			for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+			{
+				// u space
+				double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+				double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+
+				tmp.set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
+			}
+
+		ss.str("");
+		ss.clear();
+		ss << simVars.misc.output_file_name_prefix << "output_iter" << iteration_id << "_slice" << time_slice_id << "_diff.csv";
+		filename = ss.str();
+		(*data.data_arrays[0]-tmp).file_saveData_ascii(filename.c_str());
+
+		//data.data_arrays[0]->file_saveData_vtk(filename.c_str(), filename.c_str());
 	}
 
 
