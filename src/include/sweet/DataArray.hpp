@@ -1942,9 +1942,12 @@ public:
 		rw_array_data.requestDataInSpectralSpace();
 
 		// determine maximum value for tolerance
-		double max_value = i_array_data.reduce_spec_maxAbs();
-		i_tolerance *= max_value;
-		i_tolerance *= (resolution[0]+resolution[1]);	// the larger the matrix, the less the accuracy
+		if (i_tolerance != 0.0)
+		{
+			double max_value = i_array_data.reduce_spec_maxAbs();
+			i_tolerance *= max_value;
+			i_tolerance *= (resolution[0]+resolution[1]);	// the larger the matrix, the less the accuracy
+		}
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
@@ -3214,6 +3217,7 @@ public:
 		return o_ostream;
 	}
 
+#if SWEET_USE_SPECTRAL_SPACE
 	/**
 	 * Compute addition with scalar value in spectral space like it would be in cartesian space
 	 */
@@ -3265,6 +3269,7 @@ public:
 			std::cout << std::endl;
 		}
 	}
+#endif
 
 
 	/**
