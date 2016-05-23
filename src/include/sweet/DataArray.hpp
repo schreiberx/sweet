@@ -1956,14 +1956,17 @@ public:
 		{
 			double ar = array_data_spectral_space[i];
 			double ai = array_data_spectral_space[i+1];
+//			std::cout << "ar: " << ar << "+" << ai << std::endl;
+
 			double br = i_array_data.array_data_spectral_space[i];
 			double bi = i_array_data.array_data_spectral_space[i+1];
+//			std::cout << "br: " << br << "+" << bi << std::endl;
 
 			double den = (br*br+bi*bi);
 
 			/* Used for debugging
-			std::cout << "Den l r: " << den << "\t" << ar << "+" << ai << "\t" << br << "+" << bi << std::endl;
 			*/
+//			std::cout << "Den l r: " << den << "\t" << ar << "+" << ai << "\t" << br << "+" << bi << std::endl;
 
 			if (std::abs(den) <= i_tolerance)
 			{
@@ -3237,7 +3240,7 @@ public:
 		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
 		{
 			out.array_data_spectral_space[i] = array_data_spectral_space[i]+i_value;
-//			out.array_data_spectral_space[i+1] = array_data_spectral_space[i+1]+i_value;
+			out.array_data_spectral_space[i+1] = array_data_spectral_space[i+1];//+i_value;
 		}
 
 		out.array_data_spectral_space_valid = true;
