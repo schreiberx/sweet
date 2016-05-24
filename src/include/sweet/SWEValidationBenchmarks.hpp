@@ -50,16 +50,19 @@ public:
 
 		if (i_parameters.setup.scenario == 2)
 		{
+			// Steady state (linear and nonlinear) with dominant zonal (x) flow
 			return std::sin(2.0*M_PI*x/i_parameters.sim.domain_size[0]) + i_parameters.setup.h0;
 		}
 
 		if (i_parameters.setup.scenario == 3)
 		{
+			// Steady state (linear and nonlinear) with dominant meridional (y) flow
 			return std::sin(2.0*M_PI*y/i_parameters.sim.domain_size[1]) + i_parameters.setup.h0;
 		}
 
 		if (i_parameters.setup.scenario == 4)
 		{
+			// ???
 			double dx = x/i_parameters.sim.domain_size[0];
 			double dy = y/i_parameters.sim.domain_size[1];
 			return i_parameters.setup.h0 + (std::abs(dx-0.5) < 0.3)*(std::abs(dy-0.5) < 0.1);
@@ -112,7 +115,14 @@ public:
 			return i_parameters.setup.h0;
 		}
 
+		//Forced nonlinear case - trigonometric
+		if (i_parameters.setup.scenario == 13)
+		{
+			return std::cos(2.0*M_PI*x/i_parameters.sim.domain_size[0])*std::sin(2.0*M_PI*y/i_parameters.sim.domain_size[1]) + i_parameters.setup.h0;
+		}
+
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
+		exit(1);
 		return 0;
 	}
 
@@ -125,6 +135,7 @@ public:
 			double y
 	)
 	{
+
 		if (i_parameters.setup.scenario == 0)
 			return 0;
 
@@ -145,7 +156,7 @@ public:
 		{
 			if (i_parameters.sim.f0 == 0)
 			{
-				std::cerr << "f-value is equal to zero!" << std::endl;
+				std::cerr << "f-value is equal to zero! Cannot run this case scenario." << std::endl;
 				exit(-1);
 			}
 			return -i_parameters.sim.g*2.0*M_PI*std::cos(2.0*M_PI*y/i_parameters.sim.domain_size[1])/(i_parameters.sim.f0*i_parameters.sim.domain_size[1]);
@@ -205,7 +216,16 @@ public:
 			return 10+std::exp(-50.0*(dx*dx + dy*dy));
 		}
 
+		//Forced nonlinear case - trigonometric
+		if (i_parameters.setup.scenario == 13)
+		{
+			double factor = -i_parameters.sim.g*2.0*M_PI/(i_parameters.sim.f0*i_parameters.sim.domain_size[1]);
+			return factor*std::cos(2.0*M_PI*x/i_parameters.sim.domain_size[0])*std::cos(2.0*M_PI*y/i_parameters.sim.domain_size[1]);
+		}
+
+
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
+		exit(1);
 		return 0;
 	}
 
@@ -286,10 +306,78 @@ public:
 			return 0;
 		}
 
+		//Forced nonlinear case - trigonometric
+		if (i_parameters.setup.scenario == 13)
+		{
+			double factor = -i_parameters.sim.g*2.0*M_PI/(i_parameters.sim.f0*i_parameters.sim.domain_size[0]);
+			return factor*std::sin(2.0*M_PI*x/i_parameters.sim.domain_size[0])*std::sin(2.0*M_PI*y/i_parameters.sim.domain_size[1]);
+		}
 
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
+		exit(1);
 		return 0;
 	}
+
+	// Forcings for the shallow water equations //
+	//------------------------------------------//
+
+	static
+	double return_force_h(
+			SimulationVariables &i_parameters,
+			double x,
+			double y
+	)
+	{
+		if (i_parameters.setup.scenario >= 0 && i_parameters.setup.scenario <= 12)
+			return 0;
+
+		if (i_parameters.setup.scenario == 13)
+			return 0;
+
+		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
+		exit(1);
+		return 0;
+	}
+
+	static
+	double return_force_u(
+			SimulationVariables &i_parameters,
+			double x,
+			double y
+	)
+	{
+		if (i_parameters.setup.scenario >= 0 && i_parameters.setup.scenario <= 12)
+			return 0;
+
+		if (i_parameters.setup.scenario == 13){
+			double factor = i_parameters.sim.g*2.0*M_PI/(i_parameters.sim.f0*i_parameters.sim.domain_size[1]);
+			return -factor*factor*(M_PI/i_parameters.sim.domain_size[0])*std::sin(4.0*M_PI*x/i_parameters.sim.domain_size[0]);
+		}
+
+		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
+		exit(1);
+		return 0;
+	}
+
+	static
+	double return_force_v(
+			SimulationVariables &i_parameters,
+			double x,
+			double y
+	)
+	{
+		if (i_parameters.setup.scenario >= 0 && i_parameters.setup.scenario <= 12)
+			return 0;
+
+		if (i_parameters.setup.scenario == 13){
+			double factor = i_parameters.sim.g*2.0*M_PI/(i_parameters.sim.f0*i_parameters.sim.domain_size[0]);
+			return factor*factor*(M_PI/i_parameters.sim.domain_size[1])*std::sin(4.0*M_PI*y/i_parameters.sim.domain_size[1]);
+		}
+		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
+		exit(1);
+		return 0;
+	}
+
 };
 
 #endif /* SRC_INCLUDE_SWEET_SWEVALIDATIONBENCHMARKS_HPP_ */

@@ -14,17 +14,13 @@ hostname=subprocess.check_output('hostname')
 hostname = hostname.replace("\n", '')
 hostname = hostname.replace("\r", '')
 
-env = Environment()
-
+env = Environment(ENV = os.environ)
 
 ###################################################################
-# fix environment vars (not imported by default)
+# fix LD LIB PATH
 ###################################################################
-
-# import all environment variables (expecially PATH, LD_LIBRARY_PATH, LD_PATH)
-env.Append(ENV=os.environ)
-
-
+if 'LD_LIBRARY_PATH' in os.environ:
+	env.Append(LIBPATH=[os.environ['LD_LIBRARY_PATH'].split(':')])
 
 files = os.listdir('src/programs/')
 files = sorted(files)
@@ -248,7 +244,8 @@ env['unit_test'] = GetOption('unit_test')
 threading_constraints = ['off', 'omp']
 AddOption(	'--threading',
 		dest='threading',
-		type='string',	
+		type='choice',
+		choices=threading_constraints,
 		default='off',
 		help='Threading to use '+' / '.join(threading_constraints)+', default: off'
 )
@@ -672,8 +669,8 @@ exec_name += '_'+env['compiler']
 exec_name += '_'+env['mode']
 
 if env['threading'] == 'omp':
-	env.Append(CXXFLAGS=' -fopenmp')
-	env.Append(LINKFLAGS=' -fopenmp')
+	env.Append(CXXFLAGS=['-fopenmp'])
+	env.Append(LINKFLAGS=['-fopenmp'])
 	env.Append(CXXFLAGS=' -DSWEET_THREADING=1')
 else:
 	env.Append(CXXFLAGS=' -DSWEET_THREADING=0')
@@ -690,8 +687,8 @@ if env['rexi_thread_parallel_sum'] == 'enable' and env['threading'] == 'omp':
 	sys.exit(1)
 
 if env['rexi_thread_parallel_sum'] == 'enable' or env['threading'] == 'omp':
-	env.Append(LINKFLAGS=' -fopenmp')
-	env.Append(CXXFLAGS=' -fopenmp')
+	env.Append(LINKFLAGS=['-fopenmp'])
+	env.Append(CXXFLAGS=['-fopenmp'])
 
 if env['rexi_thread_parallel_sum'] == 'enable':
 	env.Append(CXXFLAGS=' -DSWEET_REXI_THREAD_PARALLEL_SUM=1')

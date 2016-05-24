@@ -137,6 +137,7 @@ public:
 
 		sampler2D.setup(simVars.sim.domain_size, simVars.disc.res);
 
+		//PXT- This just calls sampler2D.setup, so any reason for having it?
 		semiLagrangian.setup(simVars.sim.domain_size, simVars.disc.res);
 	}
 
@@ -187,7 +188,8 @@ public:
 		DataArray<2> new_prog_h(prog_h.resolution);
 		sampler2D.bicubic_scalar(
 				prog_h,
-				pos_d,
+				posx_d,
+				posy_d,
 				new_prog_h
 		);
 
