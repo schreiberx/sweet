@@ -1367,6 +1367,7 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for
 #endif
+
 		for (std::size_t j = 0; j < resolution[1]; j++)
 		{
 #pragma omp OPENMP_SIMD
@@ -1380,9 +1381,14 @@ public:
 			}
 		}
 
+#if SWEET_USE_SPECTRAL_SPACE
+		out.array_data_cartesian_space_valid = true;
+		out.array_data_spectral_space_valid = false;
+#endif
+
 		return out;
 	}
-
+#if 0
 	DataArray<2> getImagWithDataArray()
 	{
 		DataArray<2> out(resolution);
@@ -1398,11 +1404,13 @@ public:
 			}
 		}
 
+
 		return out;
 	}
+#endif
 
 
-
+#if 1
 	Complex2DArrayFFT &loadRealFromDataArray(
 			const DataArray<2> &i_dataArray_Real
 	)
@@ -1414,13 +1422,25 @@ public:
 #		pragma omp parallel for //OPENMP_PAR_SIMD
 #endif
 		for (std::size_t j = 0; j < resolution[1]; j++)
+		{
+			#pragma omp OPENMP_SIMD
 			for (std::size_t i = 0; i < resolution[0]; i++)
-				set(j, i, i_dataArray_Real.get(j, i), 0);
+			{
+				data[(j*resolution[0]+i)*2+0] =
+						i_dataArray_Real.array_data_cartesian_space[
+								(j-i_dataArray_Real.range_start[1])*i_dataArray_Real.range_size[0]+
+								(i-i_dataArray_Real.range_start[0])
+							];
+
+				data[(j*resolution[0]+i)*2+1] = 0;
+			}
+		}
 
 		return *this;
 	}
+#endif
 
-
+#if 0
 	Complex2DArrayFFT &loadRealAndImagFromDataArrays(
 			const DataArray<2> &i_dataArray_Real,
 			const DataArray<2> &i_dataArray_Imag
@@ -1445,9 +1465,10 @@ public:
 
 		return *this;
 	}
+#endif
 
 
-
+#if 0
 	DataArray<2> toDataArrays_Real()	const
 	{
 		DataArray<2> out(resolution);
@@ -1468,7 +1489,7 @@ public:
 
 		return out;
 	}
-
+#endif
 
 	void toDataArrays_Real(
 			DataArray<2> &o_out
@@ -1489,10 +1510,15 @@ public:
 					data[(j*resolution[0]+i)*2+0];
 			}
 		}
+
+#if SWEET_USE_SPECTRAL_SPACE
+		o_out.array_data_cartesian_space_valid = true;
+		o_out.array_data_spectral_space_valid = false;
+#endif
 	}
 
 
-
+#if 0
 	DataArray<2> toDataArrays_Imag()	const
 	{
 		DataArray<2> out(resolution);
@@ -1513,6 +1539,7 @@ public:
 
 		return out;
 	}
+#endif
 
 
 	/**
