@@ -1942,9 +1942,12 @@ public:
 		rw_array_data.requestDataInSpectralSpace();
 
 		// determine maximum value for tolerance
-		double max_value = i_array_data.reduce_spec_maxAbs();
-		i_tolerance *= max_value;
-		i_tolerance *= (resolution[0]+resolution[1]);	// the larger the matrix, the less the accuracy
+		if (i_tolerance != 0.0)
+		{
+			double max_value = i_array_data.reduce_spec_maxAbs();
+			i_tolerance *= max_value;
+			i_tolerance *= (resolution[0]+resolution[1]);	// the larger the matrix, the less the accuracy
+		}
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_SIMD
@@ -3233,7 +3236,7 @@ public:
 		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
 		{
 			out.array_data_spectral_space[i] = array_data_spectral_space[i]+i_value;
-//			out.array_data_spectral_space[i+1] = array_data_spectral_space[i+1]+i_value;
+			out.array_data_spectral_space[i+1] = array_data_spectral_space[i+1];
 		}
 
 		out.array_data_spectral_space_valid = true;

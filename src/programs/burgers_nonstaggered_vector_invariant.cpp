@@ -427,7 +427,7 @@ public:
 			double i_simulation_timestamp = -1
 	)
 	{
-		/* 2D Burgers equation
+		/* 2D Burgers equation [with source term]
 		 * u_t + u*u_x + v*u_y = nu*(u_xx + u_yy) [+ f(t,x,y)]
 		 * v_t + u*v_x + v*v_y = nu*(v_xx + v_yy) [+ g(t,x,y)]
 		 */
@@ -893,6 +893,10 @@ public:
 
 	/**
 	 * IMEX time stepping for the coarse timestepping method
+	 *
+	 * This routine solves the system
+	 * (I-\nu\Delta) u(t+\tau) = u(t) - \tau (u(t)*\nabla(u(t))
+	 * for u(t+\tau).
 	 */
 	bool run_timestep_imex(
 			DataArray<2> &io_u,
@@ -907,28 +911,21 @@ public:
 		DataArray<2> u=io_u;
 		DataArray<2> v=io_v;
 
-		// TODO: Move this into the reset() section
-		// for Testing with Manufactured Solutions
+		// Initialize and set source for manufactured solution
 		DataArray<2> f(io_u.resolution);
 		set_source(f);
 
-// not required
-//		u.requestDataInSpectralSpace();
-
-//		u0.requestDataInSpectralSpace();
-//		v0.requestDataInSpectralSpace();
-
 		double t = i_timestep_size;
 
-#if 1	// actual computation
-
+		// Setting explicit right hand side and operator of the left hand side
 		DataArray<2> rhs_u = u - t*(u*op.diff_c_x(u)+v*op.diff_c_y(u)) + t*f;
 		DataArray<2> rhs_v = v - t*(u*op.diff_c_x(v)+v*op.diff_c_y(v));
 		DataArray<2>   lhs = ((-t)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).addScalar_Cart(1.0);
 
-#if 1   // solving the system directly
+#if 1   // solving the system directly by inverting the left hand side operator
 		io_u = rhs_u.spec_div_element_wise(lhs);
 		io_v = rhs_v.spec_div_element_wise(lhs);
+
 #else	// making the second step of the IMEX-RK1 scheme
 		DataArray<2> u1 = rhs_u.spec_div_element_wise(lhs);
 		DataArray<2> v1 = rhs_v.spec_div_element_wise(lhs);
@@ -939,7 +936,7 @@ public:
 				- t*(u*op.diff_c_x(v)+v*op.diff_c_y(v));
 #endif
 
-#else	// Test for inverse
+#if 0	// Test for inverse
 		DataArray<2> rhs_u(io_u.resolution);
 		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 		{
