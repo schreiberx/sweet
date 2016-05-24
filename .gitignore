@@ -4,3 +4,8 @@ res
 NOTES
 runscript.sh
 /runparascript.sh
+.cproject
+.project
+.pydevproject
+.sconsign.dblite
+python_mods/*.pyc
