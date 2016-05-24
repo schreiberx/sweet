@@ -151,7 +151,7 @@ public:
 		i_data.requestDataInCartesianSpace();
 
 		// iterate over all positions
-#pragma omp parallel for OPENMP_SIMD
+#pragma omp parallel for OPENMP_PAR_SIMD
 		for (std::size_t pos_idx = 0; pos_idx < size; pos_idx++)
 		{
 			/*
@@ -271,7 +271,7 @@ public:
 		i_data.requestDataInCartesianSpace();
 
 		// iterate over all positions
-#pragma omp parallel for OPENMP_SIMD
+#pragma omp parallel for OPENMP_PAR_SIMD
 		for (std::size_t pos_idx = 0; pos_idx < size; pos_idx++)
 		{
 			// load position to interpolate

@@ -2021,6 +2021,9 @@ public:
 
 int main(int i_argc, char *i_argv[])
 {
+#if __MIC__
+	std::cout << "Compiled for MIC" << std::endl;
+#endif
 
 #if SWEET_MPI
 

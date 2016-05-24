@@ -139,6 +139,26 @@ AddOption(	'--libfft',
 env['libfft'] = GetOption('libfft')
 
 
+AddOption(	'--mkl',
+		dest='mkl',
+		type='choice',
+		choices=['enable', 'disable'],
+		default='disable',
+		help="Enable Intel MKL [default: %default]"
+)
+env['mkl'] = GetOption('mkl')
+
+
+AddOption(	'--mic',
+		dest='mic',
+		type='choice',
+		choices=['enable', 'disable'],
+		default='disable',
+		help="Enable Intel MIC (XeonPhi) [default: %default]"
+)
+env['mic'] = GetOption('mic')
+
+
 #
 # LIB XML
 #
@@ -577,7 +597,10 @@ elif env['mode'] == 'release':
 
 	elif env['compiler'] == 'intel':
 		env.Append(CXXFLAGS=' -O2 -fno-alias')
-		env.Append(CXXFLAGS=' -xHost')
+
+		if env['mic'] != 'enable':
+			env.Append(CXXFLAGS=' -xHost')
+
 #		env.Append(CXXFLAGS=' -ipo')
 #		env.Append(CXXFLAGS=' -fast')
 
@@ -677,10 +700,28 @@ else:
 
 
 if env['libfft'] == 'enable':
-	env.Append(LIBS=['fftw3'])
 
-	if env['threading'] == 'omp':
-		env.Append(LIBS=['fftw3_omp'])
+	if env['mkl'] == 'enable':
+		print("INFO: Using Intel MKL instead of FFTW");
+
+		if env['threading'] != 'omp':
+			env.Append(CXXFLAGS=['-mkl=sequential'])
+			env.Append(LINKFLAGS=['-mkl=sequential'])
+		else:
+			env.Append(CXXFLAGS=['-mkl=parallel'])
+			env.Append(LINKFLAGS=['-mkl=parallel'])
+
+	else:
+		env.Append(LIBS=['fftw3'])
+
+		if env['threading'] == 'omp':
+			env.Append(LIBS=['fftw3_omp'])
+
+
+if env['mic'] == 'enable':
+	env.Append(CXXFLAGS=['-mmic'])
+	env.Append(LINKFLAGS=['-mmic'])
+
 
 if env['rexi_thread_parallel_sum'] == 'enable' and env['threading'] == 'omp':
 	print 'ERROR: "REXI Parallel Sum" and "Threading" is both activated'
