@@ -1560,7 +1560,10 @@ public:
 				break;
 
 			case -2:
-				vis = t_h-prog_h;	// difference
+				vis = t_h-prog_h;	// difference to exact solution
+				break;
+			case -3:
+				vis = t0_prog_h-prog_h;	// difference to initial condition
 				break;
 			}
 
@@ -1601,6 +1604,10 @@ public:
 
 
 			case -2:
+				description = "Diff in h to exact linear solution";
+				break;
+
+			case -3:
 				description = "Diff in h to initial condition";
 				break;
 			}
