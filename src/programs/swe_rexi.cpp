@@ -944,6 +944,7 @@ public:
 			else //linear case
 				H = simVars.sim.g*i_h;// + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
 
+
 			if(param_nonlinear > 0) //nonlinear case
 			{
 				// Potential vorticity
@@ -1031,10 +1032,10 @@ public:
 						);
 				}
 			}
-			//Add forcing - not working as it should
-			//o_h_t=o_h_t+force_h;
-			//o_u_t=o_u_t+force_u;
-			//o_v_t=o_v_t+force_v;
+			//Add forcing, if non zero
+			o_h_t=o_h_t+force_h;
+			o_u_t=o_u_t+force_u;
+			o_v_t=o_v_t+force_v;
 
 #if 0
 			if (simVars.sim.potential_viscosity != 0)
@@ -1341,7 +1342,7 @@ public:
 			{
 				o_ostream << "T\tTOTAL_MASS\tTOTAL_ENERGY\tPOT_ENSTROPHY";
 
-				if (simVars.setup.scenario >= 0 && simVars.setup.scenario <= 4 )
+				if ((simVars.setup.scenario >= 0 && simVars.setup.scenario <= 4) || simVars.setup.scenario == 13)
 					o_ostream << "\tDIFF_P0\tDIFF_U0\tDIFF_V0";
 
 				if (param_compute_error && param_nonlinear==0){
@@ -1385,7 +1386,7 @@ public:
 			o_ostream << std::setprecision(8) << simVars.timecontrol.current_simulation_time << "\t" << simVars.diag.total_mass << "\t" << simVars.diag.total_energy << "\t" << simVars.diag.total_potential_enstrophy;
 
 			// Print max abs difference of vars to initial conditions (this gives the error in steady state cases, from 2 to 4 - also for test 1, but just for reference)
-			if (simVars.setup.scenario >= 0 && simVars.setup.scenario <= 4 )
+			if ((simVars.setup.scenario >= 0 && simVars.setup.scenario <= 4) || simVars.setup.scenario == 13)
 			{
 				// Height
 				benchmark_diff_h = (prog_h-t0_prog_h).reduce_maxAbs() ;
