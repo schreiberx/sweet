@@ -219,7 +219,14 @@ public:
 		//Forced nonlinear case - trigonometric
 		if (i_parameters.setup.scenario == 13)
 		{
+			if (i_parameters.sim.f0 == 0)
+			{
+				std::cerr << "f-value is equal to zero! Cannot run this case scenario." << std::endl;
+				exit(-1);
+			}
+
 			double factor = -i_parameters.sim.g*2.0*M_PI/(i_parameters.sim.f0*i_parameters.sim.domain_size[1]);
+
 			return factor*std::cos(2.0*M_PI*x/i_parameters.sim.domain_size[0])*std::cos(2.0*M_PI*y/i_parameters.sim.domain_size[1]);
 		}
 
