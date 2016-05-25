@@ -439,21 +439,13 @@ public:
 		 * u and v updates
 		 */
 
-
-		/*
-		 * reset to this line if no source term is used
-		 * o_u_t = simVars.sim.viscosity*(op.diff2_c_x(i_u)+op.diff2_c_y(i_u));
-		 */
 		o_u_t = -(i_u*op.diff_c_x(i_u) + i_v*op.diff_c_y(i_u));
 		o_u_t += simVars.sim.viscosity*(op.diff2_c_x(i_u)+op.diff2_c_y(i_u));
+		// Delete this line if no source is used.
 		o_u_t += f;
 
 		o_v_t = -(i_u*op.diff_c_x(i_v) + i_v*op.diff_c_y(i_v));
 		o_v_t += simVars.sim.viscosity*(op.diff2_c_x(i_v)+op.diff2_c_y(i_v));
-
-//		std::cout << simVars.sim.viscosity << std::endl;
-//		DataArray<2> rhs_u = u - t*(u*op.diff_c_x(u)+v*op.diff_c_y(u)) + t*f;
-//		DataArray<2> rhs_v = v - t*(u*op.diff_c_x(v)+v*op.diff_c_y(v));
 
 		/*
 		 * TIME STEP SIZE
@@ -915,7 +907,12 @@ public:
 		DataArray<2> f(io_u.resolution);
 		set_source(f);
 
-		double t = i_timestep_size;
+		// Modify timestep to final time if necessary
+		double t = 0.0;
+		if (simVars.timecontrol.current_simulation_time+i_timestep_size<simVars.timecontrol.max_simulation_time)
+			t = i_timestep_size;
+		else
+			t = simVars.timecontrol.max_simulation_time-simVars.timecontrol.current_simulation_time;
 
 		// Setting explicit right hand side and operator of the left hand side
 		DataArray<2> rhs_u = u - t*(u*op.diff_c_x(u)+v*op.diff_c_y(u)) + t*f;
@@ -934,33 +931,6 @@ public:
 				- t*(u*op.diff_c_x(u)+v*op.diff_c_y(u)) +f*t;
 		io_v = v + t*simVars.sim.viscosity*(op.diff2_c_x(v1)+op.diff2_c_y(v1))
 				- t*(u*op.diff_c_x(v)+v*op.diff_c_y(v));
-#endif
-
-#if 0	// Test for inverse
-		DataArray<2> rhs_u(io_u.resolution);
-		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
-		{
-			for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
-			{
-				// u space
-				double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-				double tmpvar = std::sin(2*M_PI*x);
-				double tmpvar2 = std::sin(2*M_PI*x)+4*M_PI*M_PI*std::sin(2*M_PI*x)-2*M_PI*std::cos(2*M_PI*x);
-
-				rhs_u.set(j,i, tmpvar);
-				f.set(j,i,tmpvar2);
-			}
-		}
-		rhs_u.requestDataInSpectralSpace();
-		f.requestDataInSpectralSpace();
-		rhs_u = op.diff_c_x(rhs_u);
-		rhs_u += f;
-		DataArray<2> rhs_v(io_u.resolution);
-		rhs_v.set_all(0.0);
-		rhs_v.requestDataInSpectralSpace();
-		DataArray<2> lhs = (-(op.diff2_c_x + op.diff2_c_y)).addScalar_Cart(1.0);
-		io_u = rhs_u.spec_div_element_wise(lhs);
-		io_v = rhs_v.spec_div_element_wise(lhs);
 #endif
 
 		return true;

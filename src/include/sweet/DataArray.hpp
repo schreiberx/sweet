@@ -3240,11 +3240,7 @@ public:
 		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
 		{
 			out.array_data_spectral_space[i] = array_data_spectral_space[i]+i_value;
-<<<<<<< HEAD
-			out.array_data_spectral_space[i+1] = array_data_spectral_space[i+1];
-=======
 			out.array_data_spectral_space[i+1] = array_data_spectral_space[i+1];//+i_value;
->>>>>>> branch 'Burgers' of https://github.com/schreiberx/sweet.git
 		}
 
 		out.array_data_spectral_space_valid = true;
