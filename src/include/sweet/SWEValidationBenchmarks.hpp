@@ -351,7 +351,7 @@ public:
 
 		if (i_parameters.setup.scenario == 13){
 			double factor = i_parameters.sim.g*2.0*M_PI/(i_parameters.sim.f0*i_parameters.sim.domain_size[1]);
-			return -factor*factor*(M_PI/i_parameters.sim.domain_size[0])*std::sin(4.0*M_PI*x/i_parameters.sim.domain_size[0]);
+			return -factor*factor*(2.0*M_PI/i_parameters.sim.domain_size[0])*std::sin(4.0*M_PI*x/i_parameters.sim.domain_size[0]);
 		}
 
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
@@ -371,7 +371,7 @@ public:
 
 		if (i_parameters.setup.scenario == 13){
 			double factor = i_parameters.sim.g*2.0*M_PI/(i_parameters.sim.f0*i_parameters.sim.domain_size[0]);
-			return factor*factor*(M_PI/i_parameters.sim.domain_size[1])*std::sin(4.0*M_PI*y/i_parameters.sim.domain_size[1]);
+			return factor*factor*(2*M_PI/i_parameters.sim.domain_size[1])*std::sin(4.0*M_PI*y/i_parameters.sim.domain_size[1]);
 		}
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
 		exit(1);
