@@ -1,0 +1,1260 @@
+#LyX 2.1 created this file. For more info see http://www.lyx.org/
+\lyxformat 474
+\begin_document
+\begin_header
+\textclass article
+\begin_preamble
+\usepackage{babel}
+\end_preamble
+\use_default_options false
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding iso8859-15
+\fontencoding T1
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_math auto
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 2
+\use_package amssymb 0
+\use_package cancel 0
+\use_package esint 1
+\use_package mathdots 0
+\use_package mathtools 0
+\use_package mhchem 0
+\use_package stackrel 0
+\use_package stmaryrd 0
+\use_package undertilde 0
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Solving REXI terms
+\end_layout
+
+\begin_layout Author
+Martin Schreiber <M.Schreiber@exeter.ac.uk>, ADD YOURSELF IF YOU ADD THINGS<cool@th
+ings.hell> et al.
+\end_layout
+
+\begin_layout Standard
+This document serves as the basis to understand and discuss various ways
+ how to solve the terms of the REXI approximation given by
+\begin_inset Formula 
+\[
+e^{L}U_{0}\approx\sum_{i}\beta_{i}(\alpha_{i}+L)^{-1}U_{0}.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Problem formulation
+\end_layout
+
+\begin_layout Standard
+Exponential integrators provide a form to directly express the solution
+ of a linear operator (non-linear operators are not considered in this work).
+ For a linear PDE given by
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+U_{t}=L(U)
+\]
+
+\end_inset
+
+we can write 
+\begin_inset Formula 
+\[
+U(t)=e^{Lt}U(0).
+\]
+
+\end_inset
+
+Furthermore, assuming that the 
+\begin_inset Formula $L$
+\end_inset
+
+ operator is skew-Hermitian - hence has imaginary Eigenvalues only - we
+ can write this as a Rational approximation of the EXponential Integrator
+ (REXI)
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+e^{L}U_{0}\approx\sum_{n=-N}^{N}Re\left(\beta_{n}(\alpha_{n}+L)^{-1}U_{0}\right),
+\]
+
+\end_inset
+
+see 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Terry:High-order time-parallel approximation of evolution operators"
+
+\end_inset
+
+.
+ This is the already simplified equation where the time step size 
+\begin_inset Formula $\tau$
+\end_inset
+
+ is merged with 
+\begin_inset Formula $L$
+\end_inset
+
+.
+ This indeed doesn't make a big difference here.
+\end_layout
+
+\begin_layout Section
+Properties
+\end_layout
+
+\begin_layout Standard
+We will discuss properties and potential misunderstandings in the REXI approxima
+tion in this section.
+\end_layout
+
+\begin_layout Subsection
+REXI Coefficient properties
+\end_layout
+
+\begin_layout Standard
+With overbar denoting the complex conjugate, the coefficients in the REXI
+ terms have the following properties:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\alpha_{-n}=\bar{\alpha}_{n}\label{eq:alpha_conjugate_symmetry-1}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\beta_{-n}=\bar{\beta}_{n}\label{eq:beta_conjugate_symmetry}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+Im(\alpha_{0})=Im(\beta_{0})=0\label{eq:imaginary_a_b_zero}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Reduction of REXI terms
+\end_layout
+
+\begin_layout Standard
+Using the REXI coefficient properties we can almost half the terms of the
+ sum to
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+e^{L}U_{0}\approx\sum_{n=0}^{N}Re\left(\gamma_{n}(\alpha_{n}+L)^{-1}U_{0}\right)\label{eq:rexi_formulation}
+\end{equation}
+
+\end_inset
+
+with
+\begin_inset Formula 
+\[
+\gamma_{n}:=\begin{cases}
+\begin{array}{c}
+\beta_{0}\\
+2\beta_{n}
+\end{array} & \begin{array}{c}
+for\,n=0\\
+else
+\end{array}\end{cases}
+\]
+
+\end_inset
+
+hence
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\gamma_{-n}=\bar{\gamma}_{n}\label{eq:gamma_conjugate_symmetry}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+
+\series bold
+Reutilization of REXI terms for several coarse time steps
+\end_layout
+
+\begin_layout Standard
+[Based on idea of Mike Ashworth].
+ Assuming that we're interested in all the solutions at coarse time stamps
+ 
+\begin_inset Formula $T_{n}:=n\Delta T$
+\end_inset
+
+, is it possible to directly compute them by reutilizing the REXI terms
+ of 
+\begin_inset Formula $T_{n<N}$
+\end_inset
+
+ for 
+\begin_inset Formula $T_{N}$
+\end_inset
+
+? Reusing REXI terms requires computing REXI terms with the same 
+\begin_inset Formula $\alpha_{i}$
+\end_inset
+
+ coefficients.
+ Those alpha coefficients are computed with
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\alpha_{n}:=h(\mu+i(m+k)).
+\]
+
+\end_inset
+
+Here, 
+\begin_inset Formula $h$
+\end_inset
+
+ specifies the sampling accuracy, 
+\begin_inset Formula $m$
+\end_inset
+
+ is related to the number of REXI terms and 
+\begin_inset Formula $k$
+\end_inset
+
+ can be assumed constant and is related to the number of poles for the approxima
+tion of the Gaussian function.
+ This shows, that REXI terms can be indeed reused! However, we shall also
+ take the 
+\begin_inset Formula $\beta$
+\end_inset
+
+ terms into account to see if we can reuse the first partial sum.
+ These 
+\begin_inset Formula $\beta_{n}$
+\end_inset
+
+ coefficients are given by 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\beta_{n}^{Re}:=h\sum_{k=L_{1}}^{L_{2}}Re(b_{n-k})a_{k}
+\]
+
+\end_inset
+
+and
+\begin_inset Formula 
+\[
+b_{m}=e^{-imh}e^{h^{2}}.
+\]
+
+\end_inset
+
+All of these coefficients are constant for given 
+\begin_inset Formula $h$
+\end_inset
+
+, but 
+\begin_inset Formula $L_{1/2}$
+\end_inset
+
+ depend on all 
+\begin_inset Formula $a_{k}$
+\end_inset
+
+ and hence the number of total REXI terms.
+ Therefore, we 
+\series bold
+cannot directly reuse the result of the REXI sum 
+\series default
+of the first coarse time step, 
+\series bold
+but the results of each separate term, the inverse problem
+\series default
+ 
+\begin_inset Formula $(\alpha+L)^{-1}U_{0}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Future work: Maybe a reformulation to reuse the previous sum reduction is
+ possible.
+\end_layout
+
+\begin_layout Subsection
+Real values of exponential integrators
+\end_layout
+
+\begin_layout Standard
+Obviously, only real values should be computed by the exponential integrator
+ 
+\begin_inset Formula $e^{L}.$
+\end_inset
+
+ There could be the assumption that 
+\emph on
+REXI also creates only real values with negligible imaginary values
+\emph default
+.
+ However, this is not true! It holds that
+\begin_inset Formula 
+\[
+Im\left(\lim_{N\rightarrow\infty}\sum_{n=-N}^{N}\left(\beta_{n}(\alpha_{n}+L)^{-1}U_{0}\right)\right)\neq0.
+\]
+
+\end_inset
+
+Note, that here we didn't restrict the solution to real values as in 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:rexi_formulation"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+@TERRY: TODO: The way how I derived 
+\begin_inset Formula $\beta$
+\end_inset
+
+ and 
+\begin_inset Formula $\alpha$
+\end_inset
+
+ might be different to your way but I think it's the same.
+ Do you agree in the statement above?
+\end_layout
+
+\begin_layout Section
+Computing inverse of 
+\begin_inset Formula $(\alpha+L)^{-1}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+It was suggested 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Terry:High-order time-parallel approximation of evolution operators"
+
+\end_inset
+
+ to use a reformulation of this linear operator which is based on an advective
+ shallow-water formulation to compute 
+\begin_inset Formula $\eta(t+\Delta t)$
+\end_inset
+
+ via a Helmholtz problem and then solve for both velocity components direcctly.
+ However, this reformulation in an ODE-oriented way was only possible with
+ a constant Coriolis term.
+ Here, we will also discuss Matrix formulations.
+\end_layout
+
+\begin_layout Subsection
+Deriving Helmholtz problem for constant f SWE
+\end_layout
+
+\begin_layout Standard
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+We can reformulate the SWE (see 
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\bar default
+\strikeout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Schreiber:Understanding REXI"
+
+\end_inset
+
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+) into the following formulation
+\begin_inset Formula 
+\[
+((\alpha^{2}+f^{2})-g\bar{\eta}\Delta)\eta=\frac{f^{2}+\alpha^{2}}{\alpha}\eta_{0}-\bar{\eta}\delta_{0}-\frac{f\bar{\eta}}{\alpha}\zeta_{0}.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Spectral elements:
+\end_layout
+
+\begin_layout Standard
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+For spectral element methods, Gunnar's method was successfully applied to
+ solve this.
+\end_layout
+
+\begin_layout Subsubsection
+Spectral method:
+\end_layout
+
+\begin_layout Standard
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+For spectral methods, we used a so-called fast Helmholtz solver to directly
+ solve this very efficiently.
+\end_layout
+
+\begin_layout Subsection
+Deriving Helmholtz problem for f-varying SWE with matrix partitioning
+\end_layout
+
+\begin_layout Standard
+We have to find a matrix-formulation of this reformulation.
+ Following the derivation in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Schreiber:Understanding REXI"
+
+\end_inset
+
+ we get the system of equations
+\end_layout
+
+\begin_layout Standard
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+\begin_inset Formula 
+\[
+((\alpha^{2}+f^{2})-g\bar{\eta}\Delta)\eta=\frac{f^{2}+\alpha^{2}}{\alpha}\eta_{0}-\bar{\eta}\delta_{0}-\frac{f\bar{\eta}}{\alpha}\zeta_{0}
+\]
+
+\end_inset
+
+
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\bar default
+\strikeout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+to solve for.
+ Instead of treating every term in the linear operator as being scalar-like,
+ we can a partitioning of the matrix making the linear operator a diagonal
+ matrix L
+\begin_inset Formula 
+\begin{equation}
+L(U):=\left(\begin{array}{ccc}
+0 & -\eta_{0}\partial_{x} & -\eta_{0}\partial_{y}\\
+-g\partial_{x} & 0 & F\\
+-g\partial_{y} & -F & 0
+\end{array}\right)U
+\end{equation}
+
+\end_inset
+
+and all other operators itself also representing a matrix formulation.
+ The term 
+\begin_inset Formula $F$
+\end_inset
+
+ is then the matrix with varying Coriolis effect
+\begin_inset Formula 
+\[
+F:=\left[\begin{array}{ccccc}
+cos(θ_{0})\\
+ & cos(θ_{1})\\
+ &  & \ldots\\
+ &  &  & cos(θ_{N-2})\\
+ &  &  &  & cos(θ_{N-1})
+\end{array}\right]
+\]
+
+\end_inset
+
+with 
+\begin_inset Formula $N$
+\end_inset
+
+ the size of the matrix.
+ Then we write the system to solve for as
+\end_layout
+
+\begin_layout Standard
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+\begin_inset Formula 
+\[
+((\alpha^{2}+F^{2})-g\bar{\eta}\Delta)\eta=\frac{F^{2}+\alpha^{2}}{\alpha}\eta_{0}-\bar{\eta}\delta_{0}-\frac{F\bar{\eta}}{\alpha}\zeta_{0}.
+\]
+
+\end_inset
+
+Now the challenge is to solve for this system of equations with the varying
+ terms in the 
+\begin_inset Formula $F$
+\end_inset
+
+ matrix.
+
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\bar default
+\strikeout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+ The 
+\begin_inset Formula $F^{2}$
+\end_inset
+
+ terms lead to longitude-constant 
+\begin_inset Formula $\cos^{2}(θ)$
+\end_inset
+
+ terms.
+\end_layout
+
+\begin_layout Subsubsection
+Spectral elements method:
+\end_layout
+
+\begin_layout Standard
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+For spectral element methods, Gunnar's method could be applied to solve
+ this.
+\end_layout
+
+\begin_layout Subsubsection
+Spectral methods:
+\end_layout
+
+\begin_layout Standard
+Using spectral space, applying this term could basically mean to shift a
+ solution to a different spectrum.
+ This could allow developing a direct solver for it in spectral space.
+ The real-to-real Fourier transformations results in 
+\begin_inset Formula $\cos$
+\end_inset
+
+-only eigenfunctions and could be appropriate for this.
+ 
+\series bold
+[TODO: Just a sketch.
+ Seems to be good to be true, hence probably wrong].
+\end_layout
+
+\begin_layout Subsection
+Hybridization for SWE
+\end_layout
+
+\begin_layout Standard
+This is related to Colin's idea and is based on writing down the entire
+ formulation in its discretized way, hence before applying solver reformulations
+ as done in the previous section.
+\end_layout
+
+\begin_layout Standard
+Before doing any analytical reformulations it discretizes the equations
+ first (e.g.
+ on a C-grid) and then works on this reformulation.
+\end_layout
+
+\begin_layout Standard
+This focuses on maintaining the conservative properties (e.g.
+ avoiding computational modes) first and then to solve it.
+\end_layout
+
+\begin_layout Standard
+[TODO: Awesome formulation of hybridization on C-grid]
+\end_layout
+
+\begin_layout Subsection
+Iterative solver with complex values
+\end_layout
+
+\begin_layout Standard
+A straight-forward approach is to use an iterative solver which supports
+ complex values.
+ This means that 
+\begin_inset Formula $(\alpha+L)U=U_{0}$
+\end_inset
+
+ is solved directly and that's it if we could use already existing solvers.
+\end_layout
+
+\begin_layout Subsection
+Reformulation to real-valued solver
+\end_layout
+
+\begin_layout Standard
+The complex-valued iterative system for 
+\begin_inset Formula $(\alpha+L)U=U_{0}$
+\end_inset
+
+ can be reformulated to a real valued system by treating real and imaginary
+ parts separately.
+ This is based on splitting up 
+\begin_inset Formula $U=Re(U)+i\,Im(U)=U^{R}+i\,U^{I}$
+\end_inset
+
+ (see also notes from Terry and Pedro).
+ Similarly, we use 
+\begin_inset Formula $\alpha=Re(\alpha)+i\,Im(\alpha)=\alpha^{R}+i\alpha^{I}$
+\end_inset
+
+.
+ Then the complex system of equations 
+\begin_inset Formula $(\alpha+L)\,U=U_{0}$
+\end_inset
+
+ can be written as
+\begin_inset Formula 
+\[
+\left[\begin{array}{c|c}
+A^{R}+L & -A^{I}\\
+\hline A^{I} & A^{R}+L
+\end{array}\right]\left[\begin{array}{c}
+U^{R}\\
+U^{I}
+\end{array}\right]=\left[\begin{array}{c}
+U_{0}^{R}\\
+0
+\end{array}\right]
+\]
+
+\end_inset
+
+with 
+\begin_inset Formula $A$
+\end_inset
+
+ a Matrix with 
+\begin_inset Formula $\alpha$
+\end_inset
+
+ values on the diagonal.
+ Obviously, the off-diagonal values in partitions given by 
+\begin_inset Formula $A^{I}$
+\end_inset
+
+ are a pain in the neck for iterative solvers: they are varying depending
+ on the number of REXI term.
+ We again get a skew Hermitian matrix
+\series bold
+ [TODO: Check the signs]
+\series default
+.
+\end_layout
+
+\begin_layout Subsection
+Solving real and imaginary parts
+\end_layout
+
+\begin_layout Standard
+We can go one step further and generate a system of equations to solve by
+ eliminating 
+\begin_inset Formula $U^{I}$
+\end_inset
+
+.
+ We first solve the 2nd line for 
+\begin_inset Formula $U^{I}$
+\end_inset
+
+:
+\begin_inset Formula 
+\[
+U^{I}=-(A^{R}+L)^{-1}A^{I}U^{R}.
+\]
+
+\end_inset
+
+Putting this in the 1st line
+\begin_inset Formula 
+\[
+(A^{R}+L)U^{R}+A^{I}U^{I}=U_{0}^{R}
+\]
+
+\end_inset
+
+we get
+\begin_inset Formula 
+\[
+(A^{R}+L)U^{R}+A^{I}(A^{R}+L)^{-1}A^{I}U^{R}=U_{0}^{R}.
+\]
+
+\end_inset
+
+Solving this for 
+\begin_inset Formula $U^{R}$
+\end_inset
+
+, we get
+\begin_inset Formula 
+\[
+\left((A^{R}+L)+A^{I}(A^{R}+L)^{-1}A^{I}\right)U^{R}=U_{0}^{R}.
+\]
+
+\end_inset
+
+Inverting stuff is not nice and we multiply both sides from left side with
+ 
+\begin_inset Formula $(A^{R}+L)$
+\end_inset
+
+ yielding the following equation:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+U^{R}:\,\,\left((A^{R}+L)^{2}-A^{I}A^{I}\right)U^{R}=(A^{R}+L)U_{0}^{R}
+\]
+
+\end_inset
+
+We are not finished yet, since we also need the imaginary components of
+ 
+\begin_inset Formula $U$
+\end_inset
+
+.
+ The reason for this is that these components, once multiplied with the
+ imaginary component of 
+\begin_inset Formula $\beta$
+\end_inset
+
+, create real values.
+ Solving the 1st line for 
+\begin_inset Formula $U^{R}$
+\end_inset
+
+ gives us
+\begin_inset Formula 
+\[
+U^{R}=(A^{R}+L)^{-1}\left(A^{I}U^{I}+U_{0}^{R}\right)
+\]
+
+\end_inset
+
+Putting this in the 2nd line, we get
+\begin_inset Formula 
+\begin{eqnarray*}
+A^{I}(A^{R}+L)^{-1}\left(A^{I}U^{I}+U_{0}^{R}\right)+(A^{R}+L)U^{I} & = & 0\\
+A^{I}(A^{R}+L)^{-1}\left(A^{I}U^{I}\right)+(A^{R}+L)U^{I} & = & -A^{I}(A^{R}+L)^{-1}U_{0}^{R}\\
+A^{I}A^{I}U^{I}+(A^{R}+L)^{2}U^{I} & = & -A^{I}U_{0}^{R}\\
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+U^{I}:\,\,\,\left(A^{I}A^{I}+(A^{R}+L)^{2}\right)U^{I}=-A^{I}U_{0}^{R}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Boths things look quite ugly.
+ However, this leads to another important property of PinTing.
+ This allows sovling both contributions independent of each other.
+ Hence, this would give us an additional degree of parallelization.
+\end_layout
+
+\begin_layout Subsection
+Including 
+\begin_inset Formula $\beta$
+\end_inset
+
+ and solving for real values only
+\end_layout
+
+\begin_layout Standard
+So far we totally ignored the 
+\begin_inset Formula $\beta$
+\end_inset
+
+ coefficient in REXI.
+ This forced us to also care about the imaginary-values solution 
+\begin_inset Formula $U^{I}$
+\end_inset
+
+.
+ If we would be able to put it into the inverse computation, we might be
+ able to compute only the real values.
+ With 
+\begin_inset Formula $(AB)^{-1}=B^{-1}A^{-1}$
+\end_inset
+
+ we can write 
+\begin_inset Formula 
+\[
+\sum_{i}(\beta_{i}^{-1})^{-1}(\alpha_{i}+L)^{-1}U_{0}=\sum_{i}(\alpha_{i}\beta_{i}^{-1}+L\beta_{i}^{-1})^{-1}U_{0}.
+\]
+
+\end_inset
+
+We formulate this term to
+\begin_inset Formula 
+\[
+\sum_{i}(\alpha_{i}\beta_{i}^{-1}+L\beta_{i}^{-1})^{-1}U_{0}
+\]
+
+\end_inset
+
+with 
+\begin_inset Formula $\beta_{i}^{-1}\alpha_{i}$
+\end_inset
+
+ again complex valued and 
+\begin_inset Formula $L\beta_{i}^{-1}$
+\end_inset
+
+ the linear operator scaled by 
+\begin_inset Formula $\beta_{i}^{-1}$
+\end_inset
+
+, hence also containing real and complex values.
+ We can now apply the same strategy as before by eliminating 
+\begin_inset Formula $U^{I}$
+\end_inset
+
+ and solve for 
+\begin_inset Formula $U^{R}$
+\end_inset
+
+.
+ Let 
+\begin_inset Formula 
+\[
+M^{R}=Re(\alpha_{i}\beta_{i}^{-1}+L\beta_{i}^{-1})
+\]
+
+\end_inset
+
+and
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+M^{I}=Im(\alpha_{i}\beta_{i}^{-1}+L\beta_{i}^{-1}).
+\]
+
+\end_inset
+
+This yields the SoE
+\begin_inset Formula 
+\[
+\left[\begin{array}{c|c}
+M^{R} & -M^{I}\\
+\hline M^{I} & M^{R}
+\end{array}\right]\left[\begin{array}{c}
+U^{R}\\
+U^{I}
+\end{array}\right]=\left[\begin{array}{c}
+U_{0}^{R}\\
+0
+\end{array}\right]
+\]
+
+\end_inset
+
+and further 
+\begin_inset Formula 
+\[
+U^{I}=\left(M^{R}\right)^{-1}\left(-M^{I}U^{R}\right).
+\]
+
+\end_inset
+
+Putting this in 1st line yields
+\begin_inset Formula 
+\[
+M^{R}U^{R}+M^{I}\left(M^{R}\right)^{-1}M^{I}U^{R}=U_{0}^{R}
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+\left(M^{R}+M^{I}\left(M^{R}\right)^{-1}M^{I}\right)U^{R}=U_{0}^{R}
+\]
+
+\end_inset
+
+We can also write
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\left(I+\left(\left(M^{R}\right)^{-1}M^{I}\right)^{2}\right)U^{R}=\left(M^{R}\right)^{-1}U_{0}^{R}
+\]
+
+\end_inset
+
+Now the big question arises what 
+\begin_inset Formula $\left(\left(M^{R}\right)^{-1}M^{I}\right)$
+\end_inset
+
+ is.
+ Seems like computing the time step tendencies 
+\begin_inset Formula $L(U)$
+\end_inset
+
+ with different constant contributions given by the shifted poles.
+\end_layout
+
+\begin_layout Section
+Interpreting 
+\begin_inset Formula $M^{R/I}$
+\end_inset
+
+ and 
+\begin_inset Formula $(\alpha+L)^{-1}$
+\end_inset
+
+ terms
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+[TODO: Here we assuming that the previous reformulations are really possible
+ and there are probably a lot of bugs in it].
+\end_layout
+
+\begin_layout Standard
+We like to get insight in the meaning of the terms 
+\begin_inset Formula 
+\[
+\left(M^{R}\right)^{-1}M^{I}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Both terms only consist out of a real formulation and should be summarized
+ here as
+\begin_inset Formula 
+\[
+(a+bL)
+\]
+
+\end_inset
+
+with 
+\begin_inset Formula $a$
+\end_inset
+
+ a real-valued constant which is e.g.
+ given by 
+\begin_inset Formula $Re(\alpha_{i}\beta_{i}^{-1})$
+\end_inset
+
+ and 
+\begin_inset Formula $bL$
+\end_inset
+
+ the linear operator 
+\begin_inset Formula $L$
+\end_inset
+
+ scaled by a real-valued scalar 
+\begin_inset Formula $b$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+[10 minute brainstorming with John T.]
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $(a+bL)U$
+\end_inset
+
+ can be interpreted as an explicit time stepping method.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $(a+bL)^{-1}U$
+\end_inset
+
+ can be interpreted as an implicit time stepping method.
+\end_layout
+
+\begin_layout Standard
+The factors 
+\begin_inset Formula $a$
+\end_inset
+
+ and 
+\begin_inset Formula $b$
+\end_inset
+
+ can then be interpreted as scaling factors and time step sizes.
+\end_layout
+
+\begin_layout Section
+Final notes
+\end_layout
+
+\begin_layout Standard
+Have fun in reading this.
+ Don't miss out all the errors! ;-)
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label "4"
+key "Schreiber:Understanding REXI"
+
+\end_inset
+
+Understanding REXI
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "Schreiber:Formulations of the shallow-water equations"
+
+\end_inset
+
+Formulations of the shallow-water equations, M.
+ Schreiber, P.
+ Peixoto et al.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "Terry:High-order time-parallel approximation of evolution operators"
+
+\end_inset
+
+High-order time-parallel approximation of evolution operators, T.
+ Haut et al.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "Moler:Nineteen Dubious Ways to Compute the Exponential of a Matrix"
+
+\end_inset
+
+Nineteen Dubious Ways to Compute the Exponential of a Matrix, Twenty-Five
+ Years Later, Cleve Moler and Charles Van Loan, SIAM review
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "Damle:Near optimal rational approximations of large data sets"
+
+\end_inset
+
+Near optimal rational approximations of large data sets, Damle, A., Beylkin,
+ G., Haut, T.
+ S.
+ & Monzon
+\end_layout
+
+\end_body
+\end_document
