@@ -1342,8 +1342,8 @@ public:
 			{
 				o_ostream << "T\tTOTAL_MASS\tTOTAL_ENERGY\tPOT_ENSTROPHY";
 
-				if ((simVars.setup.scenario >= 0 && simVars.setup.scenario <= 4) || simVars.setup.scenario == 13)
-					o_ostream << "\tDIFF_P0\tDIFF_U0\tDIFF_V0";
+				//if ((simVars.setup.scenario >= 0 && simVars.setup.scenario <= 4) || simVars.setup.scenario == 13)
+					o_ostream << "\tDIFF_H0\tDIFF_U0\tDIFF_V0";
 
 				if (param_compute_error && param_nonlinear==0){
 					o_ostream << "\tANAL_DIFF_RMS_P\tANAL_DIFF_RMS_U\tANAL_DIFF_RMS_V";
@@ -1385,21 +1385,21 @@ public:
 			//Print simulation time, energy and pot enstrophy
 			o_ostream << std::setprecision(8) << simVars.timecontrol.current_simulation_time << "\t" << simVars.diag.total_mass << "\t" << simVars.diag.total_energy << "\t" << simVars.diag.total_potential_enstrophy;
 
-			// Print max abs difference of vars to initial conditions (this gives the error in steady state cases, from 2 to 4 - also for test 1, but just for reference)
-			if ((simVars.setup.scenario >= 0 && simVars.setup.scenario <= 4) || simVars.setup.scenario == 13)
-			{
-				// Height
-				benchmark_diff_h = (prog_h-t0_prog_h).reduce_maxAbs() ;
-				o_ostream << "\t" << benchmark_diff_h;
+			// Print max abs difference of vars to initial conditions (this gives the error in steady state cases)
+			//if ((simVars.setup.scenario >= 0 && simVars.setup.scenario <= 4) || simVars.setup.scenario == 13)
+			//{
+			// Height
+			benchmark_diff_h = (prog_h-t0_prog_h).reduce_maxAbs() ;
+			o_ostream << "\t" << benchmark_diff_h;
 
-				// Velocity u
-				benchmark_diff_u = (prog_u-t0_prog_u).reduce_maxAbs();
-				o_ostream << "\t" << benchmark_diff_u;
+			// Velocity u
+			benchmark_diff_u = (prog_u-t0_prog_u).reduce_maxAbs();
+			o_ostream << "\t" << benchmark_diff_u;
 
-				// Velocity v
-				benchmark_diff_v = (prog_v-t0_prog_v).reduce_maxAbs();
-				o_ostream << "\t" << benchmark_diff_v;
-			}
+			// Velocity v
+			benchmark_diff_v = (prog_v-t0_prog_v).reduce_maxAbs();
+			o_ostream << "\t" << benchmark_diff_v;
+			//}
 
 			if (param_compute_error && param_nonlinear==0)
 			{
@@ -1973,9 +1973,11 @@ public:
 		prog_h = *parareal_data_output.data_arrays[0];
 		prog_u = *parareal_data_output.data_arrays[1];
 		prog_v = *parareal_data_output.data_arrays[2];
-		compute_errors();
 
-		std::cout << "maxabs error compared to analytical solution: " << benchmark_analytical_error_maxabs_h << std::endl;
+		if (param_compute_error && param_nonlinear==0){
+			compute_errors();
+			std::cout << "maxabs error compared to analytical solution: " << benchmark_analytical_error_maxabs_h << std::endl;
+		}
 
 		output_data_valid = true;
 		return convergence;
