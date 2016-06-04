@@ -612,7 +612,7 @@ We then combine the approximation (B) into the approximation (A), yielding
 \begin_layout Standard
 \begin_inset Formula 
 \[
-=\sum_{m=-M}^{M}b_{m}\sum_{k=-K}^{K}Re\left(\frac{ha_{l}}{ix+h(\mu+i(m+l))}\right).
+=\sum_{m=-M}^{M}b_{m}\sum_{k=-K}^{K}Re\left(\frac{ha_{l}}{ix+h(\mu+i(m+k))}\right).
 \]
 
 \end_inset
@@ -626,7 +626,11 @@ We further like to simplify this equation and we observe, that for
 \end_inset
 
 , the denominator is equal.
- We can hence express parts of the denomiator in terms of 
+ We can hence express parts of the denomiator 
+\begin_inset Formula $ix+h(\mu+i(m+k))$
+\end_inset
+
+ in terms of 
 \begin_inset Formula $n:=m+k$
 \end_inset
 
@@ -636,7 +640,7 @@ We further like to simplify this equation and we observe, that for
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-\alpha_{n}:=s(\mu+in).\label{eq:alpha}
+\alpha_{n}:=h(\mu+i(m+k))=h(\mu+in)).\label{eq:alpha}
 \end{equation}
 
 \end_inset
@@ -699,7 +703,7 @@ Now we can collect all nominators with equivalent denominator (if
 	
 \begin_inset Formula 
 \begin{equation}
-\beta_{n}^{Re}:=h\sum_{m=-M\,}^{M}\sum_{k=-K}^{K}Re(b_{m})ha_{l}\delta(n,\,m+k)\label{eq:beta_re}
+\beta_{n}^{Re}:=h\sum_{m=-M\,}^{M}\sum_{k=-K}^{K}Re(b_{m})a_{k}\delta(n,\,m+k)\label{eq:beta_re}
 \end{equation}
 
 \end_inset
@@ -714,7 +718,7 @@ for real values
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-\beta_{n}^{Im}:=h\sum_{m=-M\,}^{M}\sum_{k=-K}^{K}Im(b_{m})a_{l}\delta(n,\,m+k)\label{eq:beta_im}
+\beta_{n}^{Im}:=h\sum_{m=-M\,}^{M}\sum_{k=-K}^{K}Im(b_{m})a_{k}\delta(n,\,m+k)\label{eq:beta_im}
 \end{equation}
 
 \end_inset
