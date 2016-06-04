@@ -1181,7 +1181,32 @@ public:
 				std::cout<<std::endl;
 				*/
 
-				if(param_nonlinear==2) //Linear with nonlinear advection only (valid for nondivergent nonlinear sw flows flows)
+				if(param_nonlinear==1) //Full nonlinear swe
+				{
+					// First calculate the linear part
+					rexiSWE.run_timestep( H, U, V, o_dt, op, simVars, param_rexi_zero_before_solving);
+					//rexiSWE.run_timestep_direct_solution( H, U, V, o_dt, op, simVars );
+
+					//Calculate divergence spectrally of with finite differences
+
+
+					//Calculate exp(Ldt/2 N(u))
+
+					//Use previous step to calculate main term to be interpolated
+
+
+					//Now interpolate to the the departure points
+					//Departure points are set for physical space
+
+					sampler2D.bicubic_scalar( H, posx_d, posy_d, prog_h, stag_h[0],	stag_h[1]);
+					sampler2D.bicubic_scalar( U, posx_d, posy_d, prog_u, stag_u[0], stag_u[1]);
+					sampler2D.bicubic_scalar( V, posx_d, posy_d, prog_v, stag_v[0], stag_v[1]);
+
+					//Add nonlinear part attributed to arrival points
+
+				}
+
+				if(param_nonlinear==2) //Linear with nonlinear advection only (valid for nondivergent nonlinear sw flows)
 				{
 					// First calculate the linear part
 					rexiSWE.run_timestep( H, U, V, o_dt, op, simVars, param_rexi_zero_before_solving);

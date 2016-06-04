@@ -455,9 +455,28 @@ We will briefly describe this case here (soon).
 
 \section{Numerical results}
 
+
 \subsection{Non-divergent flows}
 
-\subsubsection*{Forced flow}
+Geostrophically balanced solution of the nonlinear equations.
+
+\begin{eqnarray}
+h&=&\cos\left( 2 \pi (x/L_x+y/L_y)\right)+ \bar{\eta}\\
+u&=&\frac{2 g \pi}{f_0 L_y} \sin\left( 2 \pi (x/L_x+y/L_y)\right)\\
+v&=&-\frac{2 \pi g}{f_0 L_x} \sin\left( 2 \pi (x/L_x+y/L_y)\right)
+\end{eqnarray}
+
+This test has trajectories given as straight lines, but these are not coinciding with the grid. Therefore, the departure point calculation is expected to be very accurate, and the errors associated with the semi-lagrangian are mainly related to interpolation errors of the field at the departure points. 
+
+Since the flow is non-divergent, the non advective nonlinear term (divergence term of continuity equation) is assumed to be zero.
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.4]{geobalance_rotated_h.pdf} \includegraphics[scale=0.4]{geobalance_rotated_hscale.pdf} \hspace{1cm}\includegraphics[scale=0.4]{geobalance_rotated_uv.pdf} 
+\caption{Height and velocity fields for steady state rotated non-divergent flow}
+\end{figure}
+
+\subsection{Non-divergent Forced flow }
 \begin{eqnarray}
 h&=&\cos(2 \pi x/L_x)\sin(2\pi y /L_y) + \bar{\eta}\\
 u&=&-\frac{2 g \pi}{f_0 L_y} \cos(2\pi x/L_x) \cos(2\pi y /L_y)\\
