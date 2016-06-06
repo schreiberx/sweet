@@ -1410,6 +1410,7 @@ public:
 			std::ostream &o_ostream = std::cout
 	)
 	{
+
 		if (simVars.misc.verbosity > 0)
 		{
 			update_diagnostics();
