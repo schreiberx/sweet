@@ -402,9 +402,18 @@ which may be calculated as
 
 The resulting method is 
 \begin{equation}
-U^{n+1}=\left[e^{L \Delta t} U+\frac{\Delta t}{2}e^{L\Delta t/2}\left( N(U^n)- \frac{1}{2}N(U^{n-1})\right) \right]_*+\frac{\Delta t}{4}e^{L\Delta t/2}N(U^n).
+U^{n+1}=\left[e^{L \Delta t} U^n+\frac{\Delta t}{2}e^{L\Delta t/2}\left( N(U^n)- \frac{1}{2}N(U^{n-1})\right) \right]_*+\frac{\Delta t}{4}e^{L\Delta t/2}N(U^n).
 \end{equation}
 
+To save on calculations, one may calculate
+\begin{eqnarray}
+V^n&=&e^{L \Delta t} U^n \\
+W^n&=&e^{L \Delta t/2} N(U^n)
+\end{eqnarray}
+and then
+\begin{equation}
+U^{n+1}=\left[V^n+\frac{\Delta t}{2}W^n - \frac{\Delta t}{4}W^{n-1} \right]_*+\frac{\Delta t}{4}W^n.
+\end{equation}
 
 For the interpolation to departure points, a third order interpolation method is recommended to ensure overall second order accuracy of the semi-Lagrangian scheme \cite{Peixoto2014}.
 

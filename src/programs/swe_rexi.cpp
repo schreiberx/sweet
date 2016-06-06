@@ -92,6 +92,11 @@ public:
 	// Forcings
 	DataArray<2> force_h, force_u, force_v;
 
+	// Nonlinear terms relative to h, u, v and its previous values
+	//    These have already exp(dtL/2) applied to them.
+	DataArray<2> N_h, N_u, N_v;
+	DataArray<2> N_h_prev, N_u_prev, N_v_prev;
+
 	// Points mapping [0,simVars.sim.domain_size[0])x[0,simVars.sim.domain_size[1])
 	// with resolution simVars.sim.resolution
 	DataArray<2> pos_x, pos_y;
@@ -182,6 +187,15 @@ public:
 		force_h(simVars.disc.res),
 		force_u(simVars.disc.res),
 		force_v(simVars.disc.res),
+
+		// @Martin: This should be added only when nonlinear model is ran. How to do that, since I can't put an if in the constructor?
+		N_h(simVars.disc.res),
+		N_u(simVars.disc.res),
+		N_v(simVars.disc.res),
+
+		N_h_prev(simVars.disc.res),
+		N_u_prev(simVars.disc.res),
+		N_v_prev(simVars.disc.res),
 
 		pos_x(simVars.disc.res),
 		pos_y(simVars.disc.res),
@@ -331,7 +345,7 @@ public:
 		//std::cout << "posx_a: " << posx_a.array_data_cartesian_space_valid << std::endl;
 		//std::cout << std::endl;
 
-
+		//@martin : Shouldn't this be in SWEValidationBenchmarks?
 		auto return_h = [] (
 				SimulationVariables &i_parameters,
 				double x,
@@ -437,9 +451,23 @@ public:
 
 		//Initialise t-dt time step with initial condition
 		prog_h_prev = prog_h;
-		//std::cout << "prog_h_prev.array_data_cartesian_space_valid " << prog_h_prev.array_data_cartesian_space_valid << std::endl;
 		prog_u_prev = prog_u;
 		prog_v_prev = prog_v;
+
+		//Nonlinear variables
+		// set to some values for first touch NUMA policy (HPC stuff)
+#if SWEET_USE_SPECTRAL_SPACE
+		N_h.set_spec_all(0, 0);
+		N_u.set_spec_all(0, 0);
+		N_v.set_spec_all(0, 0);
+#endif
+		N_h.set_all(0);
+		N_u.set_all(0);
+		N_v.set_all(0);
+
+		N_h_prev=N_h;
+		N_u_prev=N_u;
+		N_v_prev=N_v;
 
 		// Set boundary stuff
 		if (param_boundary_id != 0)
@@ -1155,6 +1183,7 @@ public:
 				prog_v_prev = prog_v;
 				prog_h_prev = prog_h;
 
+
 				DataArray<2>& U = tmp0;
 				DataArray<2>& V = tmp1;
 				DataArray<2>& H = tmp2;
@@ -1187,22 +1216,45 @@ public:
 					rexiSWE.run_timestep( H, U, V, o_dt, op, simVars, param_rexi_zero_before_solving);
 					//rexiSWE.run_timestep_direct_solution( H, U, V, o_dt, op, simVars );
 
-					//Calculate divergence spectrally of with finite differences
+					//Zero nonlinear vectors
+					#if SWEET_USE_SPECTRAL_SPACE
+							N_h.set_spec_all(0, 0);
+							N_u.set_spec_all(0, 0);
+							N_v.set_spec_all(0, 0);
+					#endif
+							N_h.set_all(0);
+							N_u.set_all(0);
+							N_v.set_all(0);
 
+					//Calculate divergence spectrally or with finite differences
+					if(simVars.disc.use_spectral_basis_diffs) //Spectral derivatives
+						N_h=-prog_h*(op.diff_c_x(prog_u) + op.diff_c_y(prog_v));
+					else //Finite differences - needs further averaging for A grid
+						N_h=-prog_h*(op.avg_f_x(op.diff_c_x(prog_u)) + op.avg_f_y(op.diff_c_y(prog_v)));
 
 					//Calculate exp(Ldt/2 N(u))
+					rexiSWE.run_timestep( N_h, N_u, N_v, o_dt/2.0, op, simVars, param_rexi_zero_before_solving);
 
 					//Use previous step to calculate main term to be interpolated
-
+					H=H+(o_dt/2.0)*N_h-(o_dt/4.0)*N_h_prev;
+					U=U+(o_dt/2.0)*N_u-(o_dt/4.0)*N_u_prev;
+					V=V+(o_dt/2.0)*N_v-(o_dt/4.0)*N_v_prev;
 
 					//Now interpolate to the the departure points
 					//Departure points are set for physical space
-
 					sampler2D.bicubic_scalar( H, posx_d, posy_d, prog_h, stag_h[0],	stag_h[1]);
 					sampler2D.bicubic_scalar( U, posx_d, posy_d, prog_u, stag_u[0], stag_u[1]);
 					sampler2D.bicubic_scalar( V, posx_d, posy_d, prog_v, stag_v[0], stag_v[1]);
 
 					//Add nonlinear part attributed to arrival points
+					prog_h=prog_h+(o_dt/4.0)*N_h;
+					prog_u=prog_u+(o_dt/4.0)*N_u;
+					prog_v=prog_v+(o_dt/4.0)*N_v;
+
+					//Save current nonlinear values for next time step
+					N_h_prev=N_h;
+					N_u_prev=N_u;
+					N_v_prev=N_v;
 
 				}
 
