@@ -1011,7 +1011,7 @@ public:
 			{
 				if (!simVars.disc.timestepping_up_and_downwinding)
 				{
-					if(param_nonlinear >= 1){ //full nonlinear divergence
+					if(param_nonlinear > 0){ //full nonlinear divergence
 						// standard update
 						o_h_t = -op.diff_f_x(U) - op.diff_f_y(V);
 					}
@@ -1217,11 +1217,11 @@ public:
 					//rexiSWE.run_timestep_direct_solution( H, U, V, o_dt, op, simVars );
 
 					//Zero nonlinear vectors
-					#if SWEET_USE_SPECTRAL_SPACE
+#if SWEET_USE_SPECTRAL_SPACE
 							N_h.set_spec_all(0, 0);
 							N_u.set_spec_all(0, 0);
 							N_v.set_spec_all(0, 0);
-					#endif
+#endif
 							N_h.set_all(0);
 							N_u.set_all(0);
 							N_v.set_all(0);
@@ -1257,8 +1257,7 @@ public:
 					N_v_prev=N_v;
 
 				}
-
-				if(param_nonlinear==2) //Linear with nonlinear advection only (valid for nondivergent nonlinear sw flows)
+				else if(param_nonlinear==2) //Linear with nonlinear advection only (valid for nondivergent nonlinear sw flows)
 				{
 					// First calculate the linear part
 					rexiSWE.run_timestep( H, U, V, o_dt, op, simVars, param_rexi_zero_before_solving);
