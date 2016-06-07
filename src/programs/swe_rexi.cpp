@@ -1227,18 +1227,18 @@ public:
 							N_v.set_all(0);
 
 					//Calculate divergence spectrally or with finite differences
-					if(simVars.disc.use_spectral_basis_diffs) //Spectral derivatives
-						N_h=-prog_h*(op.diff_c_x(prog_u) + op.diff_c_y(prog_v));
-					else //Finite differences - needs further averaging for A grid
-						N_h=-prog_h*(op.avg_f_x(op.diff_c_x(prog_u)) + op.avg_f_y(op.diff_c_y(prog_v)));
+					//if(simVars.disc.use_spectral_basis_diffs) //Spectral derivatives
+					//	N_h=-prog_h*(op.diff_c_x(prog_u) + op.diff_c_y(prog_v));
+					//else //Finite differences - needs further averaging for A grid?
+					N_h=-prog_h*(op.diff_c_x(prog_u) + op.diff_c_y(prog_v));
 
 					//Calculate exp(Ldt/2 N(u))
 					rexiSWE.run_timestep( N_h, N_u, N_v, o_dt/2.0, op, simVars, param_rexi_zero_before_solving);
 
 					//Use previous step to calculate main term to be interpolated
-					H=H+(o_dt/2.0)*N_h-(o_dt/4.0)*N_h_prev;
-					U=U+(o_dt/2.0)*N_u-(o_dt/4.0)*N_u_prev;
-					V=V+(o_dt/2.0)*N_v-(o_dt/4.0)*N_v_prev;
+					H=H+(o_dt)*N_h-(o_dt/2.0)*N_h_prev;
+					U=U+(o_dt)*N_u-(o_dt/2.0)*N_u_prev;
+					V=V+(o_dt)*N_v-(o_dt/2.0)*N_v_prev;
 
 					//Now interpolate to the the departure points
 					//Departure points are set for physical space
@@ -1247,9 +1247,9 @@ public:
 					sampler2D.bicubic_scalar( V, posx_d, posy_d, prog_v, stag_v[0], stag_v[1]);
 
 					//Add nonlinear part attributed to arrival points
-					prog_h=prog_h+(o_dt/4.0)*N_h;
-					prog_u=prog_u+(o_dt/4.0)*N_u;
-					prog_v=prog_v+(o_dt/4.0)*N_v;
+					prog_h=prog_h+(o_dt/2.0)*N_h;
+					prog_u=prog_u+(o_dt/2.0)*N_u;
+					prog_v=prog_v+(o_dt/2.0)*N_v;
 
 					//Save current nonlinear values for next time step
 					N_h_prev=N_h;
