@@ -15,7 +15,7 @@ elif env['unit_test'] != '':
 # WARNING!
 #
 if env['program_name'] in ['swe_rexi'] or env['unit_test'] in ['test_helmholtz']:
-	if env['rexi_thread_parallel_sum']=='enable':
+	if env['rexi_parallel_sum']=='enable':
 		env_omp = env.Clone()
 #		env_omp.Append(CCFLAGS = ' -fopenmp')
 		env_omp.Append(CXXFLAGS = ' -fopenmp')
