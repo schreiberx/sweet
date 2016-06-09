@@ -187,39 +187,46 @@ Let $I$ be defined as the solution to the problem
  \end{equation}
  subject to
 \begin{equation}
-I(t_0)=\text{Id},
+I(t_n)=\text{Id},
  \end{equation}
  where $\text{Id}$ is the identity matrix.
  
  
-The problem has solutions of the form
+Considering the integral as being element-wise in $L$, it is easily verified that the problem has solutions of the form
 \begin{equation}
-I=e^{-\int_{t_0}^t L(s, x(s), y(s))\, ds},
+I=e^{-\int_{t_n}^t L(\gamma(s))\, ds},
 \end{equation} 
-which we will verify in what follows.
+where $\gamma(s)$ is the trajectory curve  parametrization related to $d/dt$. This $I$ will be denoted as the integrating factor.
+
+%since
+%\begin{equation}
+%\frac{d }{dt} \int_{t_n}^{t} L_{ij}(\gamma(s))ds =
+%L_{ij}(\gamma(t)),
+%\end{equation}
+%for $L_{ij}$, $i,j=1,2,3$ elements of $L$, 
 
 %where the primitive is considered along trajectories ($\gamma$) and are such that
 %\begin{equation}
 %\frac{D }{Dt}\left(\int L d\gamma \right)=L.
 %\end{equation} 
 
+%
+%Since $L=L(t,x(t), y(t))=L(\gamma(t))$, considering the integral as being element-wise in $L$, we have for an element $L_{ij}$, $i,j=1,2,3$,
+%\begin{equation}
+%\frac{d }{dt} \int_{t_0}^{t} L_{ij}(\gamma(s))ds =
+%L_{ij}(\gamma(t)),
+%\end{equation}
+%and thus,  
+%\begin{eqnarray}
+%\frac{dI}{dt}&=&\frac{d}{dt} \left(e^{-\int_{t_0}^t L(s, x(s), y(s))\, ds} \right) \\
+%& =& -e^{-\int_{t_0}^t L(s, x(s), y(s))\, ds} \frac{d}{dt} \left(\int_{t_0}^t L(s, x(s), y(s))\, ds \right) \\
+%&=& -e^{-\int_{t_0}^t L(s, x(s), y(s))\, ds} L(t, x(t), y(t))\\
+%&=&-IL.
+%\end{eqnarray}
 
-Since $L=L(t,x(t), y(t))=L(\gamma(t))$, considering the integral as being element-wise in $L$, we have for an element $L_{ij}$, $i,j=1,2,3$,
+We will also need the inverse of the integrating factor, which we will call $J$,  defined as
 \begin{equation}
-\frac{d }{dt} \int_{t_0}^{t} L_{ij}(\gamma(s))ds =
-L_{ij}(\gamma(t)),
-\end{equation}
-and thus,  
-\begin{eqnarray}
-\frac{dI}{dt}&=&\frac{d}{dt} \left(e^{-\int_{t_0}^t L(s, x(s), y(s))\, ds} \right) \\
-& =& -e^{-\int_{t_0}^t L(s, x(s), y(s))\, ds} \frac{d}{dt} \left(\int_{t_0}^t L(s, x(s), y(s))\, ds \right) \\
-&=& -e^{-\int_{t_0}^t L(s, x(s), y(s))\, ds} L(t, x(t), y(t))\\
-&=&-IL.
-\end{eqnarray}
-
-We will also need the inverse of the integrating factor $J$, which we will define as
-\begin{equation}
-J=e^{\int_{t_0}^t L(s, x(s), y(s))\, ds},
+J=e^{\int_{t_n}^t L(\gamma(s))\, ds},
 \end{equation} 
 for which one readily sees that $IJ$ is the identity matrix.
 
@@ -228,7 +235,7 @@ Using the above defined integrating factor $I$, we may write the shallow water e
 \begin{equation}
 I\frac{dU}{dt}=ILU+IN(U), 
 \end{equation}
-which using the definition of the integrating factor and the properties of the derivative can be transformed to 
+which, using the definition of the integrating factor and the properties of the derivative, can be transformed to 
 \begin{equation}
 I\frac{dU}{dt}=-\frac{dI}{dt}U+IN(U), 
 \end{equation}
@@ -242,7 +249,7 @@ To derive the semi-Lagrangian formulation we assume that the solution is known a
 \end{equation}
 where $*$ indicates that this value should be at trajectories departure points and the integral is along trajectories. The integrating factor $I$ is the identity at the departure points, so the resulting method for calculation of the new values at grid points can be calculated as
 \begin{equation}
-(U)^{n+1}=J^{n+1}(U)^{n}_{*}+J^{n+1}\int_{t_n}^{t_{n+1}} \, I(t, \vec{r}(t))\, N(U(t, \vec{r}(t)))\,dt .
+U^{n+1}=J^{n+1}(  U)^{n}_{*}+J^{n+1}\int_{t_n}^{t_{n+1}} \, I(t, \vec{r}(t))\, N(U(t, \vec{r}(t)))\,dt .
 \end{equation}
 We see that this is very similar to the usual exponential integrator equation in Eulerian forms.
 
@@ -263,7 +270,11 @@ where all the non-linearities are in the material derivative.
 
 Consider the shallow water equations given for a bi-periodic plane with $f$ constant. In this case $L$ is constant along the trajectories, so
 \begin{equation}
-I=e^{-L\Delta t}, \quad J=e^{L\Delta t}
+U^{n+1}=J^{n+1}U^{n}_{*},
+\end{equation}
+with
+\begin{equation}
+ J^{n+1}=e^{L\Delta t}
 \end{equation}
 and the method may be written as
 \begin{equation}
@@ -289,7 +300,7 @@ We will now allow the Coriolis parameter $f$ to vary in the $y$ direction, for e
 
 Considering that the trajectories spam a small region in space for which the variation of $f$ is small, we may approximate the integrating factor considering the Coriolis parameter given for the trajectory midpoint. That is
 \begin{equation}
-I=e^{-\int_{t_n}^{t_{n+1}}L(\gamma(t))dt}  \approx e^{-L(\gamma(t_{n+1/2})) \int_{t_n}^{t_{n+1}}dt} = e^{-L^{1/2}\Delta t},
+J^{n+1}=e^{\int_{t_n}^{t_{n+1}}L(\gamma(t))dt}  \approx e^{L(\gamma(t_{n+1/2})) \int_{t_n}^{t_{n+1}}dt} = e^{L^{1/2}\Delta t},
 \end{equation}
  where $L^{1/2}$ is the linear operator calculated at the trajectory midpoint $\vec{r}_m$. The resulting method is similar to the $f$-plane case,
 \begin{equation}
@@ -300,7 +311,7 @@ The problem with this approach is that the exponential integrator will depend on
 
 If we consider a constant approximation of $L$ along trajectories, with reference values given for the time $t_n$, then 
 \begin{equation}
-I=e^{-\int_{t_n}^{t_{n+1}}L(\gamma(t))dt} \approx e^{-L(\gamma(t_n))\int_{t_n}^{t_{n+1}}dt} = e^{-L \Delta t},
+J^{n+1}=e^{\int_{t_n}^{t_{n+1}}L(\gamma(t))dt} \approx e^{L(\gamma(t_n))\int_{t_n}^{t_{n+1}}dt} = e^{L \Delta t},
 \end{equation}
 then
 \begin{equation}
@@ -386,7 +397,7 @@ U^{n+1}=\left[e^{L \Delta t} U^n +\frac{\Delta t}{2}e^{L\Delta t/2}\left(\frac{3
 
 As discussed in section \ref{sec:stable}, using standard extrapolation schemes may lead to an unstable scheme. An option is to use the SETTLS approach, which would give
 \begin{equation}
-U^{n+1}=(e^{L \Delta t} U)^{n}_{*}+\frac{\Delta t}{2}e^{L\Delta t/2}\left[  N(U(t_{n+1/2}, \vec{r}_m)\right],
+U^{n+1}=(e^{L \Delta t} U)^{n}_{*}+\Delta t \, e^{L\Delta t/2}\left[  N(U(t_{n+1/2}, \vec{r}_m)\right],
 \end{equation}
 where 
 \begin{equation}
@@ -402,15 +413,24 @@ which may be calculated as
 
 The resulting method is 
 \begin{equation}
-U^{n+1}=\left[e^{L \Delta t} U+\frac{\Delta t}{2}e^{L\Delta t/2}\left( N(U^n)- \frac{1}{2}N(U^{n-1})\right) \right]_*+\frac{\Delta t}{4}e^{L\Delta t/2}N(U^n).
+U^{n+1}=\left[e^{L \Delta t} U^n+\Delta t\,e^{L\Delta t/2}\left( N(U^n)- \frac{1}{2}N(U^{n-1})\right) \right]_*+\frac{\Delta t}{2}e^{L\Delta t/2}N(U^n).
 \end{equation}
 
+To save on calculations, one may calculate
+\begin{eqnarray}
+V^n&=&e^{L \Delta t} U^n \\
+W^n&=&e^{L \Delta t/2} N(U^n)
+\end{eqnarray}
+and then
+\begin{equation}
+U^{n+1}=\left[V^n+\Delta t\,W^n - \frac{\Delta t}{2}W^{n-1} \right]_*+\frac{\Delta t}{2}W^n.
+\end{equation}
 
 For the interpolation to departure points, a third order interpolation method is recommended to ensure overall second order accuracy of the semi-Lagrangian scheme \cite{Peixoto2014}.
-
-\subsection{Calculations of $e^{L\Delta t}N(U)$ }
-
-Since $N(U)=(0,0,\psi)$, it might be possible to simplify the calculation of $e^{L\Delta t}N(U)$ in REXI.
+%
+%\subsection{Calculations of $e^{L\Delta t}N(U)$ }
+%
+%Since $N(U)=(0,0,\psi)$, it might be possible to simplify the calculation of $e^{L\Delta t}N(U)$ in REXI.
 
 \section{Lagrangian treatment of Coriolis term}
 
