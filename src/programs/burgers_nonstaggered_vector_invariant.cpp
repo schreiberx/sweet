@@ -194,7 +194,7 @@ public:
 		{
 			double k = simVars.sim.f0;
 #if SWEET_THREADING
-#pragma omp parallel for OPENMP_SIMD
+#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 			{
@@ -221,7 +221,7 @@ public:
 		{
 			double k = simVars.sim.f0;
 #if SWEET_THREADING
-#pragma omp parallel for OPENMP_SIMD
+#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 			{
@@ -251,7 +251,7 @@ public:
 		{
 			double k = simVars.sim.f0;
 #if SWEET_THREADING
-#pragma omp parallel for OPENMP_SIMD
+#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 			{
@@ -308,7 +308,7 @@ public:
 		if (simVars.setup.scenario == 54)
 		{
 #if SWEET_THREADING
-#pragma omp parallel for OPENMP_SIMD
+#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 			{
@@ -353,7 +353,7 @@ public:
 		if (simVars.setup.scenario == 60)
 		{
 #if SWEET_THREADING
-#pragma omp parallel for OPENMP_SIMD
+#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 			{
@@ -377,7 +377,7 @@ public:
 		if (simVars.setup.scenario == 61)
 		{
 #if SWEET_THREADING
-#pragma omp parallel for OPENMP_SIMD
+#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 			{
@@ -404,7 +404,7 @@ public:
 			int kmax = 100;
 			double eps = 0.1;
 #if SWEET_THREADING
-#pragma omp parallel for OPENMP_SIMD
+#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 			{
@@ -1009,7 +1009,7 @@ public:
 		if (prog_u.array_data_spectral_space_valid)
 		{
 #if SWEET_THREADING
-#pragma omp parallel for OPENMP_SIMD
+#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 			for (std::size_t i = prog_u.array_data_spectral_length/2; i < prog_u.array_data_spectral_length; i+=2)
 			{
@@ -1022,7 +1022,7 @@ public:
 		if (prog_v.array_data_spectral_space_valid)
 		{
 #if SWEET_THREADING
-#pragma omp parallel for OPENMP_SIMD
+#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 			for (std::size_t i = prog_u.array_data_spectral_length/2; i < prog_v.array_data_spectral_length; i+=2)
 			{
@@ -1152,7 +1152,7 @@ public:
 
 		// set data to something to overcome assertion error
 #if SWEET_THREADING
-#pragma omp parallel for OPENMP_SIMD
+#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 			for (std::size_t i = 0; i < simVars.disc.res[0]; i++)

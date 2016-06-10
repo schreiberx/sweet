@@ -90,11 +90,11 @@ public:
 	{
 		std::cout << std::endl;
 		std::cout << "Parareal options:" << std::endl;
-		std::cout << "	--parareal-coarse-slices=[int]				Number of coarse time slices" << std::endl;
-		std::cout << "	--parareal-convergence-threshold=[float]	Threshold for convergence test" << std::endl;
-		std::cout << "	--parareal-verbosity=[int]					Verbosity level" << std::endl;
-		std::cout << "	--parareal-enabled=[0/1]					Enable Parareal method" << std::endl;
-		std::cout << "	--parareal-max-simulation-time=[float]		Overall simulation time" << std::endl;
+		std::cout << "	--parareal-coarse-slices=[int]              Number of coarse time slices (default=-1, auto define)" << std::endl;
+		std::cout << "	--parareal-convergence-threshold=[float]    Threshold for convergence test (default=-1)" << std::endl;
+		std::cout << "	--parareal-verbosity=[int]                  Verbosity level (default=0)" << std::endl;
+		std::cout << "	--parareal-enabled=[0/1]                    Enable Parareal method (default=0)" << std::endl;
+		std::cout << "	--parareal-max-simulation-time=[float]      Overall simulation time (default=-1)" << std::endl;
 		std::cout << std::endl;
 	}
 

@@ -262,11 +262,11 @@ public:
 
 			FT_Bitmap bitmap = ft_slot->bitmap;
 
-			for (std::size_t by = 0; by < bitmap.rows; by++)
+			for (int by = 0; by < (int)bitmap.rows; by++)
 			{
 				int ty = tex_base_y + (char_height-1) - (by+char_origin_top-ft_slot->bitmap_top);
 
-				for (std::size_t bx = 0; bx < bitmap.width; bx++)
+				for (int bx = 0; bx < (int)bitmap.width; bx++)
 				{
 					int tx = tex_base_x + char_origin_left + ft_slot->bitmap_left + bx;
 

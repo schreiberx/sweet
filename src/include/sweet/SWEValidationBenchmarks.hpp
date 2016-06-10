@@ -50,16 +50,19 @@ public:
 
 		if (i_parameters.setup.scenario == 2)
 		{
+			// Steady state (linear and nonlinear) with dominant zonal (x) flow
 			return std::sin(2.0*M_PI*x/i_parameters.sim.domain_size[0]) + i_parameters.setup.h0;
 		}
 
 		if (i_parameters.setup.scenario == 3)
 		{
+			// Steady state (linear and nonlinear) with dominant meridional (y) flow
 			return std::sin(2.0*M_PI*y/i_parameters.sim.domain_size[1]) + i_parameters.setup.h0;
 		}
 
 		if (i_parameters.setup.scenario == 4)
 		{
+			// ???
 			double dx = x/i_parameters.sim.domain_size[0];
 			double dy = y/i_parameters.sim.domain_size[1];
 			return i_parameters.setup.h0 + (std::abs(dx-0.5) < 0.3)*(std::abs(dy-0.5) < 0.1);
@@ -112,7 +115,20 @@ public:
 			return i_parameters.setup.h0;
 		}
 
+		//Forced nonlinear case - trigonometric
+		if (i_parameters.setup.scenario == 13)
+		{
+			return std::cos(2.0*M_PI*x/i_parameters.sim.domain_size[0])*std::sin(2.0*M_PI*y/i_parameters.sim.domain_size[1]) + i_parameters.setup.h0;
+		}
+
+		//Rotated steady state
+		if (i_parameters.setup.scenario == 14)
+		{
+			return std::cos(2.0*M_PI*(x/i_parameters.sim.domain_size[0]+y/i_parameters.sim.domain_size[1])) + i_parameters.setup.h0;
+		}
+
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
+		exit(1);
 		return 0;
 	}
 
@@ -125,6 +141,7 @@ public:
 			double y
 	)
 	{
+
 		if (i_parameters.setup.scenario == 0)
 			return 0;
 
@@ -145,7 +162,7 @@ public:
 		{
 			if (i_parameters.sim.f0 == 0)
 			{
-				std::cerr << "f-value is equal to zero!" << std::endl;
+				std::cerr << "f-value is equal to zero! Cannot run this case scenario." << std::endl;
 				exit(-1);
 			}
 			return -i_parameters.sim.g*2.0*M_PI*std::cos(2.0*M_PI*y/i_parameters.sim.domain_size[1])/(i_parameters.sim.f0*i_parameters.sim.domain_size[1]);
@@ -203,6 +220,33 @@ public:
 			dy /= radius;
 
 			return 10+std::exp(-50.0*(dx*dx + dy*dy));
+		}
+
+		//Forced nonlinear case - trigonometric
+		if (i_parameters.setup.scenario == 13)
+		{
+			if (i_parameters.sim.f0 == 0)
+			{
+				std::cerr << "f-value is equal to zero! Cannot run this case scenario." << std::endl;
+				exit(-1);
+			}
+
+			double factor = -i_parameters.sim.g*2.0*M_PI/(i_parameters.sim.f0*i_parameters.sim.domain_size[1]);
+
+			return factor*std::cos(2.0*M_PI*x/i_parameters.sim.domain_size[0])*std::cos(2.0*M_PI*y/i_parameters.sim.domain_size[1]);
+		}
+
+		//Rotated steady state
+		if (i_parameters.setup.scenario == 14)
+		{
+			if (i_parameters.sim.f0 == 0)
+			{
+				std::cerr << "f-value is equal to zero! Cannot run this case scenario." << std::endl;
+				exit(-1);
+			}
+
+			double factor = i_parameters.sim.g*2.0*M_PI/(i_parameters.sim.f0*i_parameters.sim.domain_size[1]);
+			return factor*std::sin(2.0*M_PI*(x/i_parameters.sim.domain_size[0]+y/i_parameters.sim.domain_size[1]));
 		}
 
 		if (i_parameters.setup.scenario == 51)
@@ -277,6 +321,7 @@ public:
 		}
 
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
+		exit(1);
 		return 0;
 	}
 
@@ -357,14 +402,130 @@ public:
 			return 0;
 		}
 
+		//Forced nonlinear case - trigonometric
+		if (i_parameters.setup.scenario == 13)
+		{
+			double factor = -i_parameters.sim.g*2.0*M_PI/(i_parameters.sim.f0*i_parameters.sim.domain_size[0]);
+			return factor*std::sin(2.0*M_PI*x/i_parameters.sim.domain_size[0])*std::sin(2.0*M_PI*y/i_parameters.sim.domain_size[1]);
+		}
+
+		//Rotated steady state
+		if (i_parameters.setup.scenario == 14)
+		{
+			double factor = -i_parameters.sim.g*2.0*M_PI/(i_parameters.sim.f0*i_parameters.sim.domain_size[0]);
+			return factor*std::sin(2.0*M_PI*(x/i_parameters.sim.domain_size[0]+y/i_parameters.sim.domain_size[1]));
+		}
+
 		if (i_parameters.setup.scenario >= 51 && i_parameters.setup.scenario <= 70)
 		{
 			return 0;
 		}
 
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
+		exit(1);
 		return 0;
 	}
+
+	// Forcings for the shallow water equations //
+	//------------------------------------------//
+
+	static
+	double return_force_h(
+			SimulationVariables &i_parameters,
+			double x,
+			double y
+	)
+	{
+
+		if (i_parameters.setup.scenario == 13)
+			return 0;
+
+		return 0;
+	}
+
+	static
+	double return_force_u(
+			SimulationVariables &i_parameters,
+			double x,
+			double y
+	)
+	{
+
+		if (i_parameters.setup.scenario == 13){
+			double factor = i_parameters.sim.g*2.0*M_PI/(i_parameters.sim.f0*i_parameters.sim.domain_size[1]);
+			return -factor*factor*(M_PI/i_parameters.sim.domain_size[0])*std::sin(4.0*M_PI*x/i_parameters.sim.domain_size[0]);
+		}
+
+		return 0;
+	}
+
+	static
+	double return_force_v(
+			SimulationVariables &i_parameters,
+			double x,
+			double y
+	)
+	{
+
+		if (i_parameters.setup.scenario == 13){
+			double factor = i_parameters.sim.g*2.0*M_PI/(i_parameters.sim.f0*i_parameters.sim.domain_size[0]);
+			return factor*factor*(M_PI/i_parameters.sim.domain_size[1])*std::sin(4.0*M_PI*y/i_parameters.sim.domain_size[1]);
+		}
+
+		return 0;
+	}
+
+
+	//Returns true is initial condition is solution of nonlinear equations, false otherwise
+	static
+	bool scenario_analytical_init(
+				SimulationVariables &i_parameters
+		)
+		{
+			if (i_parameters.setup.scenario == 0)// radial dam break
+				return false;
+
+
+			if (i_parameters.setup.scenario == 1) // Gaussian
+				return false;
+
+
+			if (i_parameters.setup.scenario == 2) // Steady state (linear and nonlinear) with dominant zonal (x) flow
+				return true;
+
+			if (i_parameters.setup.scenario == 3) // Steady state (linear and nonlinear) with dominant meridional (y) flow
+				return true;
+
+			if (i_parameters.setup.scenario == 4)// Square break
+				return false;
+
+
+			if (i_parameters.setup.scenario == 5) // Trigonometric
+				return false;
+
+			if (i_parameters.setup.scenario == 6) // Gaussian
+				return false;
+
+			if (i_parameters.setup.scenario == 8)// gaussian in x
+				return false;
+
+			if (i_parameters.setup.scenario == 9)//Constant
+				return false;
+
+			if (i_parameters.setup.scenario == 10) // beta plane
+				return false;
+
+			if (i_parameters.setup.scenario == 13)//Forced nonlinear case - trigonometric
+				return true;
+
+			//Rotated steady state
+			if (i_parameters.setup.scenario == 14)
+				return true;
+
+			return false;
+		}
+
+
 };
 
 #endif /* SRC_INCLUDE_SWEET_SWEVALIDATIONBENCHMARKS_HPP_ */

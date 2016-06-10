@@ -13,13 +13,20 @@
  * 0: default allocator
  *
  * 1: NUMA domains
+ *    -> Allocate one memory block chain per numa domain
  *    -> requires additional synchronization (critical regions)
  *
  * 2: Threads
+ *    -> Allocate one memory block chain per thread!
  *    -> requires no synchronization
  *
+ * 3: Non-NUMA:
+ *    -> Allocate one memory block chain
+ *    -> requires synchronization
+ *    -> This is useful for XeonPhi KNC
+ *
  */
-#if !(NUMA_BLOCK_ALLOCATOR_TYPE >= 0 && NUMA_BLOCK_ALLOCATOR_TYPE <= 2)
+#if !(NUMA_BLOCK_ALLOCATOR_TYPE >= 0 && NUMA_BLOCK_ALLOCATOR_TYPE <= 3)
 #	error	"Please specify allocator type via NUMA_BLOCK_ALLOCATOR_TYPE"
 #endif
 
@@ -243,9 +250,19 @@ private:
 		getThreadLocalDomainIdRef() = 0;
 #endif
 
+
+#elif  NUMA_BLOCK_ALLOCATOR_TYPE == 3
+
+
+		if (verbosity > 0)
+			std::cout << "NUMA block alloc: Using non-numa single memory block chain" << std::endl;
+
+		num_alloc_domains = 1;
+		getThreadLocalDomainIdRef() = 0;
+
 #else
 
-	#error "Invalid NUMA_BLOCK_ALLOCATOR_TYPE"
+#	error "Invalid NUMA_BLOCK_ALLOCATOR_TYPE"
 
 #endif
 
@@ -294,7 +311,7 @@ private:
 
 				for (auto& b : g.free_blocks)
 				{
-#if NUMA_BLOCK_ALLOCATOR_TYPE == 0
+#if NUMA_BLOCK_ALLOCATOR_TYPE == 0 || NUMA_BLOCK_ALLOCATOR_TYPE == 3
 					::free(b);
 #else
 					numa_free(b, g.block_size);
@@ -371,19 +388,17 @@ public:
 	{
 		T *data = nullptr;
 
-
 #if NUMA_BLOCK_ALLOCATOR_TYPE == 1 || NUMA_BLOCK_ALLOCATOR_TYPE == 2
 
-
-#if NUMA_BLOCK_ALLOCATOR_TYPE == 1
+#	if NUMA_BLOCK_ALLOCATOR_TYPE == 1
 		// dummy call here to initialize this class as part of the singleton out of critical region
 		getSingletonRef();
 
-#if SWEET_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
-#	pragma omp critical
-#endif
+#	if SWEET_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+#		pragma omp critical
+#	endif
 
-#endif
+#	endif
 		{
 			std::vector<void*>& block_list = getBlocksSameSize(i_size);
 
@@ -398,9 +413,38 @@ public:
 			return data;
 
 		return (T*)numa_alloc(i_size);
-#endif
 
-		/// allocate a new element to the list of blocks given in block_list
+#elif NUMA_BLOCK_ALLOCATOR_TYPE == 3
+
+#if SWEET_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+#	pragma omp critical
+#endif
+		{
+			std::vector<void*>& block_list = getBlocksSameSize(i_size);
+
+			if (block_list.size() > 0)
+			{
+				data = (T*)block_list.back();
+				block_list.pop_back();
+			}
+		}
+
+		if (data != nullptr)
+			return data;
+
+		int retval = posix_memalign((void**)&data, 4096, i_size);
+		if (retval != 0)
+		{
+			std::cerr << "Unable to allocate memory" << std::endl;
+			assert(false);
+			exit(-1);
+		}
+
+		return data;
+
+#else
+
+		// allocate a new element to the list of blocks given in block_list
 
 		// posix_memalign is thread safe
 		// http://www.qnx.com/developers/docs/6.3.0SP3/neutrino/lib_ref/p/posix_memalign.html
@@ -413,6 +457,8 @@ public:
 		}
 
 		return data;
+
+#endif
 	}
 
 
@@ -434,7 +480,7 @@ public:
 
 #else
 
-	#if NUMA_BLOCK_ALLOCATOR_TYPE == 1
+	#if NUMA_BLOCK_ALLOCATOR_TYPE == 1 || NUMA_BLOCK_ALLOCATOR_TYPE == 3
 #if SWEET_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
 	#pragma omp critical
 #endif

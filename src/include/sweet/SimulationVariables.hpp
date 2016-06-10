@@ -15,7 +15,11 @@
 #include <vector>
 
 #ifndef SWEET_PARAREAL
-#define SWEET_PARAREAL 1
+#	define SWEET_PARAREAL 1
+#endif
+
+#ifndef SWEET_GUI
+#	define SWEET_GUI 1
 #endif
 
 #if SWEET_PARAREAL
@@ -173,10 +177,10 @@ public:
 		bool timestepping_up_and_downwinding = false;
 
 		/// order of Runge-Kutta scheme for time stepping
-		double timestepping_runge_kutta_order = 1;
+		double timestepping_runge_kutta_order = 4;
 
 		// use spectral differential operators
-		bool use_spectral_basis_diffs = true;
+		bool use_spectral_basis_diffs = false;
 	} disc;
 
 
@@ -308,7 +312,7 @@ public:
     			{0, 0, 0, 0}, // 1
     			{0, 0, 0, 0}, // 2
     			{0, 0, 0, 0}, // 3
-    			{0, 0, 0, 0}, // 4
+				{0, 0, 0, 0}, // 4
     			{0, 0, 0, 0}, // 5
     			{0, 0, 0, 0}, // 6
     			{0, 0, 0, 0}, // 7
@@ -569,51 +573,58 @@ public:
 			default:
 				const char *help_strings[] = {
 						"Simulation runtime parameters",
-						"	-X [length]	length of simulation domain in x direction",
-						"	-Y [width]	width of simulation domain in y direction",
-						"	-u [visc]	viscosity",
-						"	-U [visc]	hyperviscosity",
-						"	-p [visc]	potential viscosity",
-						"	-P [visc]	potential hyperviscosity",
-						"	-f [float]	f-parameter for f-plane",
-						"	-g [float]	gravity",
+						"	-X [length]	length of simulation domain in x direction, default=1",
+						"	-Y [width]	width of simulation domain in y direction, default=1",
+						"	-u [visc]	viscosity, , default=0",
+						"	-U [visc]	hyperviscosity, default=0",
+						"	-p [visc]	potential viscosity, default=0",
+						"	-P [visc]	potential hyperviscosity, default=0",
+						"	-f [float]	f-parameter for f-plane, default=0",
+						"	-g [float]	gravity, default=9.81",
 						"",
 						"Simulation setup parameters",
-						"	-s [scen]	scenario id",
-						"	            0: radial dam break",
-						"	            1: Gaussian dam break",
-						"	            2: balanced state x",
-						"	            3: balanced state y",
-						"	            9: h=H0, v=0, u=0",
-						"	-x [float]	x coordinate for setup \\in [0;1]",
-						"	-y [float]	y coordinate for setup \\in [0;1]",
-						"	-H [float]	average (initial) height of water",
-						"	-r [radius]	scale factor of radius for initial condition",
+						"	-s [scen]	scenario id, default=1",
+						"	            0 : radial dam break",
+						"	            1 : Gaussian dam break",
+						"	            2 : balanced state x",
+						"	            3 : balanced state y",
+						"	            9 : h=H0, v=0, u=0",
+						"	            11: Waves",
+						"	-x [float]	x coordinate for setup \\in [0;1], default=0.5",
+						"	-y [float]	y coordinate for setup \\in [0;1], default=0.5",
+						"	-H [float]	average (initial) height of water, default=1000",
+						"	-r [radius]	scale factor of radius for initial condition, default=1",
+						"	--initial-freq-x-mul [float]	Frequency for the waves initial conditions in x, default=2",
+						"	--initial-freq-y-mul [float]	Frequency for the waves initial conditions in y, default=1",
+						"	--initial-coord-x [float]	Same as -x",
+						"	--initial-coord-y [float]	Same as -y",
 						"",
 						"Discretization:",
 						"  >Space:",
-						"	-N [res]	resolution in x and y direction",
-						"	-n [resx]	resolution in x direction",
-						"	-m [resy]	resolution in y direction",
+						"	-N [res]	resolution in x and y direction, default=128",
+						"	-n [resx]	resolution in x direction, default=128",
+						"	-m [resy]	resolution in y direction, default=128",
 						"	-S [0/1]	Control Operator discretization for DataArrays",
 						"               0: FD, 1: spectral derivatives, default:0",
 						"  >Time:",
 						"	-W [0/1]	use up- and downwinding, default:0",
 						"	-F [0/1]	use leapfrog-like algorithm, default:0",
-						"	-R [1-RKn]	order of Runge-Kutta method, default:1",
-						"	-C [cfl]	CFL condition, use negative value for fixed time step size",
+						"	-R [1-RKn]	order of Runge-Kutta method, default:4",
+						"	-C [cfl]	CFL condition, use negative value for fixed time step size, default=0.05",
 						"",
 						"Control:",
-						"	-t [time]	maximum simulation time",
-						"	-T [stepnr]	maximum number of time steps",
+						"	-t [time]	maximum simulation time, default=-1 (infinity)",
+						"	-T [stepnr]	maximum number of time steps, default=-1 (infinity)",
 						"",
 						"Misc options",
 						"	-v [int]	verbosity level",
 						"	-V [double]	period of output",
+						"	-G [0/1]	graphical user interface",
 						"	-O [string]	string prefix for filename of output of simulation data",
 						"	-d [int]	accuracy of floating point output",
 						"	-i [file0][;file1][;file3]...	string with filenames for initial conditions",
 						"	            specify BINARY; as first file name to read files as binary raw data",
+						"",
 				};
 
 				std::cerr << "Usage information: " << std::endl;

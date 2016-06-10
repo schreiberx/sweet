@@ -16,24 +16,31 @@
 
 #if !SWEET_SIMD_ENABLE
 
-	#define OPENMP_SIMD	OMP_SCHEDULE
+	#define OPENMP_PAR_SIMD	OMP_SCHEDULE
+	#define OPENMP_SIMD
 
 #else
 
 	#ifdef __INTEL_COMPILER
-		#define OPENMP_SIMD     simd OMP_SCHEDULE
+		#define OPENMP_PAR_SIMD     simd OMP_SCHEDULE
+		#define OPENMP_SIMD simd
 	#else
 		#ifndef __GNUC__
-			#define OPENMP_SIMD	simd OMP_SCHEDULE
+			#define OPENMP_PAR_SIMD	simd OMP_SCHEDULE
+			#define OPENMP_SIMD simd
 		#else
 			#if __GNUC__ > 4 || ((__GNUC__ == 4) && (__GNUC_MINOR__ > 8))
-				#define OPENMP_SIMD	simd OMP_SCHEDULE
+				#define OPENMP_PAR_SIMD	simd OMP_SCHEDULE
+				#define OPENMP_SIMD simd
 			#else
 				#warning "SIMD is disabled for this compiler version"
-				#define OPENMP_SIMD OMP_SCHEDULE
+				#define OPENMP_PAR_SIMD OMP_SCHEDULE
+				#define OPENMP_SIMD
 			#endif
 		#endif
 	#endif
+
+	#define OPENMP_SIMD simd
 #endif
 
 
