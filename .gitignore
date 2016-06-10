@@ -1,6 +1,5 @@
 build
 FFTW_*
-*.txt
 res
 NOTES
 runscript.sh
@@ -10,3 +9,4 @@ runscript.sh
 .pydevproject
 .sconsign.dblite
 python_mods/*.pyc
+*.txt
