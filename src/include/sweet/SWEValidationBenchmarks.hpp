@@ -269,6 +269,13 @@ public:
 			return tmpvar;
 		}
 
+		if (i_parameters.setup.scenario == 63)
+		{
+			double tmpvar = 0;
+			tmpvar = sin(2*M_PIl*x)*sin(2*M_PIl*y);
+			return tmpvar;
+		}
+
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
 		return 0;
 	}

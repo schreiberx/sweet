@@ -672,8 +672,8 @@ exec_name += '_'+env['compiler']
 exec_name += '_'+env['mode']
 
 if env['threading'] == 'omp':
-	env.Append(CXXFLAGS=' -fopenmp')
-	env.Append(LINKFLAGS=' -fopenmp')
+	env.Append(CXXFLAGS='-fopenmp')
+	env.Append(LINKFLAGS='-fopenmp')
 	env.Append(CXXFLAGS=' -DSWEET_THREADING=1')
 else:
 	env.Append(CXXFLAGS=' -DSWEET_THREADING=0')
@@ -689,11 +689,9 @@ if env['rexi_thread_parallel_sum'] == 'enable' and env['threading'] == 'omp':
 	print 'ERROR: "REXI Parallel Sum" and "Threading" is both activated'
 	sys.exit(1)
 
-if env['rexi_thread_parallel_sum'] == 'enable' or env['threading'] == 'omp':
-	env.Append(LINKFLAGS=' -fopenmp')
-	env.Append(CXXFLAGS=' -fopenmp')
-
 if env['rexi_thread_parallel_sum'] == 'enable':
+	env.Append(LINKFLAGS='-fopenmp')
+	env.Append(CXXFLAGS='-fopenmp')
 	env.Append(CXXFLAGS=' -DSWEET_REXI_THREAD_PARALLEL_SUM=1')
 else:
 	env.Append(CXXFLAGS=' -DSWEET_REXI_THREAD_PARALLEL_SUM=0')

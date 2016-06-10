@@ -3234,8 +3234,8 @@ public:
 
 		requestDataInSpectralSpace();
 
-#if !SWEET_REXI_THREAD_PARALLEL_SUM
-		#pragma omp parallel for OPENMP_SIMD
+#if SWEET_THREADING
+#pragma omp parallel for OPENMP_SIMD
 #endif
 		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
 		{

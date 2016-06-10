@@ -193,6 +193,9 @@ public:
 		if (simVars.setup.scenario == 57)
 		{
 			double k = simVars.sim.f0;
+#if SWEET_THREADING
+#pragma omp parallel for OPENMP_SIMD
+#endif
 			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 			{
 				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
@@ -217,6 +220,9 @@ public:
 		if (simVars.setup.scenario == 59)
 		{
 			double k = simVars.sim.f0;
+#if SWEET_THREADING
+#pragma omp parallel for OPENMP_SIMD
+#endif
 			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 			{
 				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
@@ -244,6 +250,9 @@ public:
 		if (simVars.setup.scenario == 58)
 		{
 			double k = simVars.sim.f0;
+#if SWEET_THREADING
+#pragma omp parallel for OPENMP_SIMD
+#endif
 			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 			{
 				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
@@ -298,6 +307,9 @@ public:
 		 */
 		if (simVars.setup.scenario == 54)
 		{
+#if SWEET_THREADING
+#pragma omp parallel for OPENMP_SIMD
+#endif
 			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 			{
 				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
@@ -340,6 +352,9 @@ public:
 		 */
 		if (simVars.setup.scenario == 60)
 		{
+#if SWEET_THREADING
+#pragma omp parallel for OPENMP_SIMD
+#endif
 			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 			{
 				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
@@ -361,6 +376,9 @@ public:
 		 */
 		if (simVars.setup.scenario == 61)
 		{
+#if SWEET_THREADING
+#pragma omp parallel for OPENMP_SIMD
+#endif
 			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 			{
 				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
@@ -385,6 +403,9 @@ public:
 		{
 			int kmax = 100;
 			double eps = 0.1;
+#if SWEET_THREADING
+#pragma omp parallel for OPENMP_SIMD
+#endif
 			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 			{
 				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
@@ -408,6 +429,9 @@ public:
 				}
 			}
 		}
+
+		if (simVars.setup.scenario == 63)
+			o_u_t.set_all(0.0);
 
 	}
 
@@ -503,9 +527,9 @@ public:
 		simVars.timecontrol.current_simulation_time += dt;
 		simVars.timecontrol.current_timestep_nr++;
 
-#if SWEET_GUI
+//#if SWEET_GUI
 		timestep_output();
-#endif
+//#endif
 	}
 
 	void timestep_output(
@@ -544,7 +568,7 @@ public:
 				//prog_v.file_saveData_ascii((ss+"_v.csv").c_str());
 
 				// set data to something to overcome assertion error
-				for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+				/*for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 					for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
 					{
 						// u space
@@ -555,6 +579,7 @@ public:
 					}
 
 				(prog_u-tmp).file_saveData_ascii((ss+"_u_diff.csv").c_str());
+				*/
 
 				/* Not necessary for 1D problems
 				for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
@@ -953,14 +978,60 @@ public:
 		// run implicit time step
 //		assert(i_max_simulation_time < 0);
 //		assert(simVars.sim.CFL < 0);
+		if (!param_imex)
+		{
+			// run standard RK
+			double dt = 0.0;
+			timestepping.run_rk_timestep(
+					this,
+					&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
+					prog_u, prog_v,
+					dt,
+					timeframe_end - timeframe_start,
+					simVars.disc.timestepping_runge_kutta_order,
+					simVars.timecontrol.current_simulation_time
+				);
+		}
+		else
+		{
+			run_timestep_imex(
+						prog_u, prog_v,
+						timeframe_end - timeframe_start,
+						op,
+						simVars
+				);
+		}
 
-		run_timestep_imex(
-				prog_u, prog_v,
-				timeframe_end - timeframe_start,
-				op,
-				simVars
-		);
+		std::cout << "Run timestep coarse: " << prog_u.reduce_rms() << std::endl;
 
+		/*
+		// Test for lowpass filter
+		if (prog_u.array_data_spectral_space_valid)
+		{
+#if SWEET_THREADING
+#pragma omp parallel for OPENMP_SIMD
+#endif
+			for (std::size_t i = prog_u.array_data_spectral_length/2; i < prog_u.array_data_spectral_length; i+=2)
+			{
+				double factor = std::sqrt(1/(1+i-prog_u.array_data_spectral_length/2));
+				prog_u.array_data_spectral_space[i] *= factor;
+				prog_u.array_data_spectral_space[i+1] *= factor;
+			}
+		}
+
+		if (prog_v.array_data_spectral_space_valid)
+		{
+#if SWEET_THREADING
+#pragma omp parallel for OPENMP_SIMD
+#endif
+			for (std::size_t i = prog_u.array_data_spectral_length/2; i < prog_v.array_data_spectral_length; i+=2)
+			{
+				double factor = std::sqrt(1/(1+i-prog_u.array_data_spectral_length/2));
+				prog_v.array_data_spectral_space[i] *= factor;
+				prog_v.array_data_spectral_space[i+1] *= factor;
+			}
+		}
+*/
 
 		// copy to buffers
 		*parareal_data_coarse.data_arrays[0] = prog_u;
@@ -1080,6 +1151,9 @@ public:
 		data.data_arrays[0]->file_saveData_ascii(filename.c_str());
 
 		// set data to something to overcome assertion error
+#if SWEET_THREADING
+#pragma omp parallel for OPENMP_SIMD
+#endif
 		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 			for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
 			{
