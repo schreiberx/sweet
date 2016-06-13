@@ -121,7 +121,7 @@ public:
 					// u space
 					double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
 					double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
-
+                                        // set the Initial condition for the velocity u
 					prog_u.set(j,i, SWEValidationBenchmarks::return_u(simVars, x, y));
 				}
 
@@ -129,20 +129,22 @@ public:
 					// v space
 					double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
 					double y = (((double)j)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
-
+                                        // set the Initial condition for the velocity v
 					prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
 				}
 
 			}
 		}
 
+		// read initial conditions from file, if provided
 		if (simVars.setup.input_data_filenames.size() > 0)
 			prog_u.file_loadData(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
 
 		if (simVars.setup.input_data_filenames.size() > 1)
 			prog_v.file_loadData(simVars.setup.input_data_filenames[1].c_str(), simVars.setup.input_data_binary);
 
-		if (simVars.misc.gui_enabled)
+		// timestep output should also be available without the GUI
+		//if (simVars.misc.gui_enabled)
 			timestep_output();
 	}
 
@@ -499,7 +501,7 @@ public:
 
 		if (!param_imex)
 		{
-			// run standard RK
+			// run standard Runge Kutta
 			timestepping.run_rk_timestep(
 					this,
 					&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
@@ -512,6 +514,7 @@ public:
 		}
 		else
 		{
+			// run IMEX Runge Kutta
 			run_timestep_imex(
 					prog_u, prog_v,
 					simVars.timecontrol.current_timestep_size,
@@ -527,6 +530,7 @@ public:
 		simVars.timecontrol.current_simulation_time += dt;
 		simVars.timecontrol.current_timestep_nr++;
 
+		// timestep output also without GUI
 //#if SWEET_GUI
 		timestep_output();
 //#endif
@@ -536,6 +540,7 @@ public:
 			std::ostream &o_ostream = std::cout
 	)
 	{
+		// check whether an output is desired at this timestep. Otherwise skip
 		if (simVars.timecontrol.current_simulation_time < next_timestep_output)
 			return;
 
@@ -563,11 +568,12 @@ public:
 				std::string ss = simVars.misc.output_file_name_prefix+"_t"+t_buf;
 
 
+				// write velocity field u to file
 				prog_u.file_saveData_ascii((ss+"_u.csv").c_str());
-				// not necessary for 1D Problems
+				// write velocity field v to file
 				//prog_v.file_saveData_ascii((ss+"_v.csv").c_str());
 
-				// set data to something to overcome assertion error
+				// calculate analytical solution for velocity u, if given
 				/*for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 					for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
 					{
@@ -578,11 +584,12 @@ public:
 						tmp.set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
 					}
 
+				// write difference between analytical and numerical solution of velocity u to file
 				(prog_u-tmp).file_saveData_ascii((ss+"_u_diff.csv").c_str());
 				*/
 
-				/* Not necessary for 1D problems
-				for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+				// calculate analytical solution for velocity v, if given
+				/*for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 					for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
 					{
 						// v space
@@ -592,11 +599,13 @@ public:
 						tmp.set(j,i, SWEValidationBenchmarks::return_v(simVars, x, y));
 					}
 
+				// write difference between analytical and numerical solution of velocity v to file
 				(prog_v-tmp).file_saveData_ascii((ss+"_v_diff.csv").c_str());
 				*/
 
 			}
 
+			// print initial header for the output in the given output stream
 			if (simVars.timecontrol.current_timestep_nr == 0)
 			{
 				o_ostream << "T\tTOTAL_MASS\tTOTAL_ENERGY\tPOT_ENSTROPHY";
@@ -608,6 +617,7 @@ public:
 
 			}
 
+			// print timestep data to given output stream
 			o_ostream << simVars.timecontrol.current_simulation_time << "\t" << simVars.diag.total_mass << "\t" << simVars.diag.total_energy << "\t" << simVars.diag.total_potential_enstrophy;
 
 		}
@@ -911,7 +921,10 @@ public:
 	/**
 	 * IMEX time stepping for the coarse timestepping method
 	 *
-	 * This routine solves the system
+	 * The IMEX RK schemes combine an implicit and explicit time discretization.
+	 * The diffusive, stiff term gets treated implicitly and the convective, non-
+	 * stiff term gets treated explicitly. This results in the following system, 
+	 * which is solved by this routine:
 	 * (I-\nu\Delta) u(t+\tau) = u(t) - \tau (u(t)*\nabla(u(t))
 	 * for u(t+\tau).
 	 */
@@ -928,7 +941,7 @@ public:
 		DataArray<2> u=io_u;
 		DataArray<2> v=io_v;
 
-		// Initialize and set source for manufactured solution
+		// Initialize and set timestep dependent source for manufactured solution
 		DataArray<2> f(io_u.resolution);
 		set_source(f);
 
@@ -994,6 +1007,7 @@ public:
 		}
 		else
 		{
+			// run IMEX RK
 			run_timestep_imex(
 						prog_u, prog_v,
 						timeframe_end - timeframe_start,
@@ -1001,8 +1015,6 @@ public:
 						simVars
 				);
 		}
-
-		std::cout << "Run timestep coarse: " << prog_u.reduce_rms() << std::endl;
 
 		/*
 		// Test for lowpass filter
@@ -1190,16 +1202,37 @@ public:
 
 int main(int i_argc, char *i_argv[])
 {
+#if __MIC__
+	std::cout << "Compiled for MIC" << std::endl;
+#endif
+
+#if SWEET_MPI
+#if SWEET_THREADING
+	int provided;
+	MPI_Init_thread(&i_argc, &i_argv, MPI_THREAD_MULTIPLE, &provided);
+
+	if (provided != MPI_THREAD_MULTIPLE)
+	{
+		std::cerr << "MPI_THREAD_MULTIPLE not available!";
+		exit(-1);
+	}
+#else
+	MPI_Init(&i_argc, &i_argv);
+#endif
+#endif
+
 	NUMABlockAlloc::setup();
 
+	// program specific input parameter names
 	const char *bogus_var_names[] = {
 			"use-imex",
 			nullptr
 	};
 
-	simVars.bogus.var[0] = param_imex;
+	// default values for program specific parameter
+	simVars.bogus.var[0] = param_imex; //TODO: check declaration
 
-
+	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
 		std::cout << std::endl;
@@ -1207,108 +1240,161 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "	--use-imex [0/1]	Use IMEX time stepping" << std::endl;
 		std::cout << "" << std::endl;
 
+#if SWEET_PARAREAL
+		simVars.parareal.setup_printOptions();
+#endif
 		return -1;
 	}
+
+	//Burgers parameters
 	param_imex = simVars.bogus.var[0];
 
 
 	std::ostringstream buf;
 	buf << std::setprecision(14);
 
-#if SWEET_PARAREAL
-	if (simVars.parareal.enabled)
+#if SWEET_MPI
+	int rank;
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+	//only start simulation and time stepping for first rank
+	if (rank == 0)
+#endif
 	{
-		/*
-		 * Allocate parareal controller and provide class
-		 * which implement the parareal features
-		 */
-		Parareal_Controller_Serial<SimulationInstance> parareal_Controller_Serial;
 
-		// setup controller. This initializes several simulation instances
-		parareal_Controller_Serial.setup(&simVars.parareal);
+#if SWEET_PARAREAL
+		if (simVars.parareal.enabled)
+		{
+			/*
+			 * Allocate parareal controller and provide class
+			 * which implement the parareal features
+			 */
+			Parareal_Controller_Serial<SimulationInstance> parareal_Controller_Serial;
 
-		// execute the simulation
-		parareal_Controller_Serial.run();
-	}
-	else
+			// setup controller. This initializes several simulation instances
+			parareal_Controller_Serial.setup(&simVars.parareal);
+
+			// execute the simulation
+			parareal_Controller_Serial.run();
+		}
+		else
 #endif
 
 #if SWEET_GUI
-	if (simVars.misc.gui_enabled)
-	{
-		SimulationInstance *simulationBurgers = new SimulationInstance;
-		VisSweet<SimulationInstance> visSweet(simulationBurgers);
-		delete simulationBurgers;
-	}
-	else
+		if (simVars.misc.gui_enabled)
+		{
+			SimulationInstance *simulationBurgers = new SimulationInstance;
+			VisSweet<SimulationInstance> visSweet(simulationBurgers);
+			delete simulationBurgers;
+		}
+		else
 #endif
+		{
+			SimulationInstance *simulationBurgers = new SimulationInstance;
+			//Setting initial conditions and workspace - in case there is no GUI
+
+			simulationBurgers->reset();
+
+			//Time counter
+			Stopwatch time;
+
+			//Diagnostic measures at initial stage
+			double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
+
+			// Initialize diagnostics
+			if (simVars.misc.verbosity > 0)
+			{
+				simulationBurgers->update_diagnostics();
+				diagnostics_energy_start = simVars.diag.total_energy;
+				diagnostics_mass_start = simVars.diag.total_mass;
+				diagnostics_potential_entrophy_start = simVars.diag.total_potential_enstrophy;
+			}
+
+#if SWEET_MPI
+			MPI_Barrier(MPI_COMM_WORLD);
+#endif
+			//Start counting time
+			time.reset();
+
+			//Main time loop
+			while(true)
+			{
+				//Output data
+				if (simVars.misc.verbosity > 1)
+				{
+					simulationBurgers->timestep_output(buf);
+
+					//TODO: check the difference to swe_rexi
+					std::string output = buf.str();
+					buf.str("");
+
+					std::cout << output << std::flush;
+				}
+
+				//Stop simulation if requested
+				if (simulationBurgers->should_quit())
+					break;
+
+				//Main call for timestep run
+				simulationBurgers->run_timestep();
+
+				//Instability
+				if (simulationBurgers->instability_detected())
+				{
+					std::cout << "INSTABILITY DETECTED" << std::endl;
+					break;
+				}
+			}
+
+			//Stop counting time
+			time.stop();
+
+			double seconds = time();
+
+			//End of output results
+			std::cout << "Simulation time (seconds): " << seconds << std::endl;
+			std::cout << "Number of time steps: " << simVars.timecontrol.current_timestep_nr << std::endl;
+			std::cout << "Time per time step: " << seconds/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
+			std::cout << "Last time step size: " << simVars.timecontrol.current_timestep_size << std::endl;
+
+
+			if (simVars.misc.verbosity > 0)
+			{
+				std::cout << "DIAGNOSTICS ENERGY DIFF:\t" << std::abs(simVars.diag.total_energy-diagnostics_energy_start) << std::endl;
+				std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs(simVars.diag.total_mass-diagnostics_mass_start) << std::endl;
+				std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs(simVars.diag.total_potential_enstrophy-diagnostics_potential_entrophy_start) << std::endl;
+
+				if (simVars.setup.scenario == 2 || simVars.setup.scenario == 3 || simVars.setup.scenario == 4)
+				{
+					std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationBurgers->benchmark_diff_u << std::endl;
+					std::cout << "DIAGNOSTICS BENCHMARK DIFF V:\t" << simulationBurgers->benchmark_diff_v << std::endl;
+				}
+			}
+
+			//TODO: check diff to swe_rexi
+
+			delete simulationBurgers;
+		}
+	}
+#if SWEET_MPI
+	else
 	{
-		SimulationInstance *simulationBurgers = new SimulationInstance;
-		simulationBurgers->reset();
-
-		Stopwatch time;
-		time.reset();
-
-
-		double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
-
-		if (simVars.misc.verbosity > 1)
+		if (param_timestepping_mode == 1)
 		{
-			simulationBurgers->update_diagnostics();
-			diagnostics_energy_start = simVars.diag.total_energy;
-			diagnostics_mass_start = simVars.diag.total_mass;
-			diagnostics_potential_entrophy_start = simVars.diag.total_potential_enstrophy;
+			//TODO: check whats done here in swe_rexi
 		}
+	}
+#endif
 
-		while(true)
-		{
-			if (simVars.misc.verbosity > 1)
-			{
-				simulationBurgers->timestep_output(buf);
-
-				std::string output = buf.str();
-				buf.str("");
-
-				std::cout << output << std::flush;
-			}
-
-			if (simulationBurgers->should_quit())
-				break;
-
-			simulationBurgers->run_timestep();
-
-			if (simulationBurgers->instability_detected())
-			{
-				std::cout << "INSTABILITY DETECTED" << std::endl;
-				break;
-			}
-		}
-
-		time.stop();
-
-		double seconds = time();
-
-		std::cout << "Simulation time: " << seconds << " seconds" << std::endl;
-		std::cout << "Time per time step: " << seconds/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
-		std::cout << "Timesteps: " << simVars.timecontrol.current_timestep_nr << std::endl;
-
-
-		if (simVars.misc.verbosity > 1)
-		{
-			std::cout << "DIAGNOSTICS ENERGY DIFF:\t" << std::abs(simVars.diag.total_energy-diagnostics_energy_start) << std::endl;
-			std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs(simVars.diag.total_mass-diagnostics_mass_start) << std::endl;
-			std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs(simVars.diag.total_potential_enstrophy-diagnostics_potential_entrophy_start) << std::endl;
-
-			if (simVars.setup.scenario == 2 || simVars.setup.scenario == 3 || simVars.setup.scenario == 4)
-			{
-				std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationBurgers->benchmark_diff_u << std::endl;
-				std::cout << "DIAGNOSTICS BENCHMARK DIFF V:\t" << simulationBurgers->benchmark_diff_v << std::endl;
-			}
-		}
-
-		delete simulationBurgers;
+#if SWEET_MPI
+	if (param_timestepping_mode > 0)
+	{
+		// synchronize Burgers
+		// TODO: check how MPI_quitWorkers is implemented
 	}
 
+	MPI_Finalize();
+#endif
 
 	return 0;
 }
