@@ -37,7 +37,7 @@ class CGlDrawFboQuad
 {
 private:
 	GlVertexArrayObject vao_quad_vertices;
-	CGlBuffer quad_vertices_buffer;
+	GlBuffer quad_vertices_buffer;
 	CGlViewport viewport;
 
 public:

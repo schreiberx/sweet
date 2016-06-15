@@ -1517,11 +1517,10 @@ public:
 #endif
 	}
 
-
-#if 0
-	DataArray<2> toDataArrays_Imag()	const
+	void toDataArrays_Imag(
+			DataArray<2> &o_out
+	)	const
 	{
-		DataArray<2> out(resolution);
 
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
@@ -1530,16 +1529,19 @@ public:
 		{
 			for (std::size_t i = 0; i < resolution[0]; i++)
 			{
-				out.set(
-					j, i,
-					getIm(j, i)
-				);
+				o_out.array_data_cartesian_space[
+									(j-o_out.range_start[1])*o_out.range_size[0]+
+									(i-o_out.range_start[0])
+								] =
+					data[(j*resolution[0]+i)*2+1];
 			}
 		}
 
-		return out;
-	}
+#if SWEET_USE_SPECTRAL_SPACE
+		o_out.array_data_cartesian_space_valid = true;
+		o_out.array_data_spectral_space_valid = false;
 #endif
+	}
 
 
 	/**

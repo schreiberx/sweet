@@ -33,9 +33,9 @@
  */
 class GlDrawCube
 {
-	CGlBuffer vertex_buffer;
-	CGlBuffer normal_buffer;
-	CGlBuffer texture_coord_buffer;
+	GlBuffer vertex_buffer;
+	GlBuffer normal_buffer;
+	GlBuffer texture_coord_buffer;
 
 	GlVertexArrayObject vao;
 

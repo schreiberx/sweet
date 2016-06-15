@@ -520,12 +520,28 @@ bool RexiSWE::run_timestep(
 				Complex2DArrayFFT lhs = lhs_a.addScalar_Cart(kappa);
 				rhs.spec_div_element_wise(lhs, eta);
 #endif
+//				eta.setAllIm(0);
 
 				Complex2DArrayFFT uh = u0 - g*op_diff_c_x(eta);
 				Complex2DArrayFFT vh = v0 - g*op_diff_c_y(eta);
 
 				Complex2DArrayFFT u1 = alpha/kappa * uh     + i_parameters.sim.f0/kappa * vh;
 				Complex2DArrayFFT v1 =    -i_parameters.sim.f0/kappa * uh + alpha/kappa * vh;
+
+				DataArray<2> tmp(h_sum.resolution);
+
+				std::cout << n << ": ";
+
+				(eta.toCart()*beta).toDataArrays_Imag(tmp);
+				std::cout << tmp.reduce_max() << "\t";
+
+				(u1.toCart()*beta).toDataArrays_Imag(tmp);
+				std::cout << tmp.reduce_max() << "\t";
+
+				(v1.toCart()*beta).toDataArrays_Imag(tmp);
+				std::cout << tmp.reduce_max() << "\t";
+
+				std::cout << std::endl;
 
 				h_sum += eta.toCart()*beta;
 				u_sum += u1.toCart()*beta;

@@ -24,7 +24,7 @@
 /**
  * \brief draw a box in opengl3 sufficient for volume rendering
  */
-class CGlBuffer
+class GlBuffer
 {
 public:
 	GLuint buffer;	///< OpenGL buffer id
@@ -33,7 +33,7 @@ public:
 	/**
 	 * create a buffer for specific target
 	 */
-	inline CGlBuffer(GLenum p_target = GL_ARRAY_BUFFER)
+	inline GlBuffer(GLenum p_target = GL_ARRAY_BUFFER)
 	{
 		target = p_target;
 		glGenBuffers(1, &buffer);
@@ -136,7 +136,7 @@ public:
 	/**
 	 * default deconstructor
 	 */
-	inline ~CGlBuffer()
+	inline ~GlBuffer()
 	{
 		glDeleteBuffers(1, &buffer);
 		CGlErrorCheck();

@@ -33,7 +33,7 @@ class GlDrawQuad
 
 public:
 	GlVertexArrayObject vao;
-	CGlBuffer buffer;
+	GlBuffer buffer;
 
 	GlDrawQuad()
 	{
