@@ -810,7 +810,11 @@ public:
 			}
 			else
 			{
-				double limit_speed = std::min(simVars.disc.cell_size[0]/i_u.reduce_maxAbs(), simVars.disc.cell_size[1]/i_v.reduce_maxAbs());
+				double limit_speed = std::min(simVars.disc.cell_size[0]/i_u.reduce_maxAbs(), simVars.disc.cell_size[1]/i_v.reduce_maxAbs())*(1.0/simVars.sim.f0);
+
+				if (std::abs(simVars.sim.f0) == 0)
+					limit_speed = std::numeric_limits<double>::infinity();
+
 				//	double hx = simVars.disc.cell_size[0];
 				//	double hy = simVars.disc.cell_size[1];
 
@@ -823,7 +827,7 @@ public:
 					limit_visc = std::min((hx*hx*hx*hx*hy*hy*hy*hy)/(16.0*simVars.sim.viscosity_order*simVars.sim.viscosity_order), limit_visc);
 				 */
 				// limit by gravitational acceleration
-				double limit_gh = std::min(simVars.disc.cell_size[0], simVars.disc.cell_size[1])/std::sqrt(simVars.sim.g*i_h.reduce_maxAbs());
+				double limit_gh = std::min(simVars.disc.cell_size[0], simVars.disc.cell_size[1])/std::sqrt(simVars.sim.g*simVars.setup.h0);
 
 				if (simVars.misc.verbosity > 2)
 					std::cerr << "limit_speed: " << limit_speed << ", limit_visc: " << limit_visc << ", limit_gh: " << limit_gh << std::endl;
