@@ -810,6 +810,7 @@ public:
 			}
 			else
 			{
+#if 0
 				double limit_speed = std::min(simVars.disc.cell_size[0]/i_u.reduce_maxAbs(), simVars.disc.cell_size[1]/i_v.reduce_maxAbs())*(1.0/simVars.sim.f0);
 
 				if (std::abs(simVars.sim.f0) == 0)
@@ -833,6 +834,15 @@ public:
 					std::cerr << "limit_speed: " << limit_speed << ", limit_visc: " << limit_visc << ", limit_gh: " << limit_gh << std::endl;
 
 				o_dt = simVars.sim.CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
+#endif
+
+				double k = 1.0/std::min(simVars.disc.cell_size[0], simVars.disc.cell_size[1]);
+				o_dt = simVars.sim.CFL /
+					std::sqrt(
+						(k*k)*simVars.sim.g*simVars.setup.h0
+						+
+						simVars.sim.f0*simVars.sim.f0
+					);
 			}
 		}
 
