@@ -1552,7 +1552,7 @@ public:
 			//Temporary displacement for V points
 			//sampler2D.bilinear_scalar(t_v, tmp, pos_y, ts_v, stag_h[0], stag_h[1]);
 			//t_v=op.avg_b_y(t0_v); //equiv to bilinear
-			sampler2D.bicubic_scalar(t_v, tmp, pos_y, ts_v, stag_h[0]+0.5, stag_h[1]);
+			sampler2D.bicubic_scalar(t_v, pos_x, pos_y, ts_v, stag_h[0]+0.5, stag_h[1]);
 		}
 
 		benchmark_analytical_error_rms_h = (ts_h-prog_h).reduce_rms_quad();
