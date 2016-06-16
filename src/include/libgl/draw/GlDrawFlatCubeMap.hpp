@@ -31,7 +31,7 @@
  */
 class CGlDrawFlatCubeMap
 {
-	CGlBuffer buffer;
+	GlBuffer buffer;
 	GlVertexArrayObject vao;
 
 	GlProgram program;

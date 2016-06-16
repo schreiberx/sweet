@@ -80,9 +80,9 @@ env['compiler'] = GetOption('compiler')
 AddOption(	'--numa-block-allocator',
 		dest='numa_block_allocator',
 		type='choice',
-		choices=['0', '1', '2'],
+		choices=['0', '1', '2', '3'],
 		default='0',
-		help='Specify allocation method to use: 0: default system\'s malloc, 1: allocation with NUMA granularity, 2: allocation with thread granularity [default: %default]'
+		help='Specify allocation method to use: 0: default system\'s malloc, 1: allocation with NUMA granularity, 2: allocation with thread granularity, 3: allocation with non-NUMA granularity [default: %default]'
 )
 env['numa_block_allocator'] = GetOption('numa_block_allocator')
 
@@ -199,13 +199,13 @@ env['gui'] = GetOption('gui')
 
 
 AddOption(	'--rexi-parallel-sum',
-		dest='rexi_thread_parallel_sum',
+		dest='rexi_parallel_sum',
 		type='choice',
 		choices=['enable','disable'],
 		default='disable',
 		help='Use a par for loop over the sum in REXI: enable, disable [default: %default]'
 )
-env['rexi_thread_parallel_sum'] = GetOption('rexi_thread_parallel_sum')
+env['rexi_parallel_sum'] = GetOption('rexi_parallel_sum')
 
 
 AddOption(	'--sweet-mpi',
@@ -678,12 +678,12 @@ if env['sweet_mpi'] == 'enable':
 if env['threading'] in ['omp']:
 	exec_name+='_'+env['threading']
 
-if env['rexi_thread_parallel_sum']=='enable':
+if env['rexi_parallel_sum']=='enable':
 	exec_name+='_rexipar'
 
 env.Append(CXXFLAGS=' -DNUMA_BLOCK_ALLOCATOR_TYPE='+env['numa_block_allocator'])
 
-if env['numa_block_allocator'] != '0':
+if env['numa_block_allocator'] in ['1', '2']:
 	exec_name+='_numaallocator'+env['numa_block_allocator']
 	env.Append(LIBS=['numa'])
 
@@ -711,6 +711,10 @@ if env['libfft'] == 'enable':
 			env.Append(CXXFLAGS=['-mkl=parallel'])
 			env.Append(LINKFLAGS=['-mkl=parallel'])
 
+		# STFC HARTREE CENTRE PHASE2 HACK
+		env.Append(CXXFLAGS=['-I/gpfs/stfc/local/apps/intel/intel_cs/2016.2.062/compilers_and_libraries/linux/mkl/include/fftw/'])
+		env.Append(LINKFLAGS=['-L/gpfs/stfc/local/apps/intel/intel_cs/2016.2.062/mkl/lib/intel64_lin_mic/'])
+
 	else:
 		env.Append(LIBS=['fftw3'])
 
@@ -723,15 +727,22 @@ if env['mic'] == 'enable':
 	env.Append(LINKFLAGS=['-mmic'])
 
 
-if env['rexi_thread_parallel_sum'] == 'enable' and env['threading'] == 'omp':
+if env['rexi_parallel_sum'] == 'enable' and env['threading'] == 'omp':
 	print 'ERROR: "REXI Parallel Sum" and "Threading" is both activated'
 	sys.exit(1)
 
-if env['rexi_thread_parallel_sum'] == 'enable' or env['threading'] == 'omp':
-	env.Append(LINKFLAGS=['-fopenmp'])
-	env.Append(CXXFLAGS=['-fopenmp'])
 
-if env['rexi_thread_parallel_sum'] == 'enable':
+#
+# If SWEET_REXI_THREAD_PARALLEL_SUM is activated, the REXI sum is computed
+# with parallel for over the sum terms
+#
+if env['rexi_parallel_sum'] == 'enable':
+	# Same for gcc/icpc
+	env.Append(LINKFLAGS=['-fopenmp'])
+
+	# Compile flag is set in sconscript
+
+	# Activate precompiler flag
 	env.Append(CXXFLAGS=' -DSWEET_REXI_THREAD_PARALLEL_SUM=1')
 else:
 	env.Append(CXXFLAGS=' -DSWEET_REXI_THREAD_PARALLEL_SUM=0')

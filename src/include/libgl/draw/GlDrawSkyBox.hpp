@@ -25,8 +25,8 @@
  */
 class CGlDrawSkyBox
 {
-	CGlBuffer vertex_buffer;
-	CGlBuffer index_buffer;
+	GlBuffer vertex_buffer;
+	GlBuffer index_buffer;
 
 public:
 	CError error;					///< error handler

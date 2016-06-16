@@ -28,9 +28,9 @@
  */
 class GlDrawSphere
 {
-	CGlBuffer vertex_buffer;
-	CGlBuffer texture_coord_buffer;
-	CGlBuffer index_buffer;
+	GlBuffer vertex_buffer;
+	GlBuffer texture_coord_buffer;
+	GlBuffer index_buffer;
 	GlVertexArrayObject vao;
 
 	std::size_t triangle_strip_indices_count;

@@ -233,6 +233,7 @@ public:
 			 * 2) Compute output + convergence check
 			 * 3) Forward to next frame
 			 */
+			double max_convergence = -2;
 //			for (int i = k; i < pVars->coarse_slices; i++)
 			for (int i = 0; i < pVars->coarse_slices; i++)
 			{
@@ -242,6 +243,8 @@ public:
 				// compute convergence
 				double convergence = parareal_simulationInstances[i]->compute_output_data(true);
 				std::cout << "                        iteration " << k << ", time slice " << i << ", convergence: " << convergence << std::endl;
+				if (max_convergence != -1)
+					max_convergence = (convergence==-1)?(convergence):(std::max(max_convergence,convergence));
 
 				parareal_simulationInstances[i]->output_data_file(
 						parareal_simulationInstances[i]->get_output_data(),
@@ -262,13 +265,13 @@ public:
 					// convergence check activated?
 					if (pVars->convergence_error_threshold >= 0)
 					{
-						if (convergence >= 0)
+						if (max_convergence >= 0)
 						{
 							// convergence given?
-							if (convergence < pVars->convergence_error_threshold)
+							if (max_convergence < pVars->convergence_error_threshold)
 							{
 								CONSOLEPREFIX_start("[MAIN] ");
-								std::cout << "Convergence reached at iteration " << k << " with convergence value " << convergence << std::endl;
+								std::cout << "Convergence reached at iteration " << k << " with convergence value " << max_convergence << std::endl;
 								goto converged;
 							}
 						}

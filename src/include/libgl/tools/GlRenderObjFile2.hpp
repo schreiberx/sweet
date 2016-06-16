@@ -36,7 +36,7 @@ class CGlRenderObjFile2
 	class CMesh
 	{
 	public:
-		CGlMaterial *material;	///< pointer to existing material
+		GlMaterial *material;	///< pointer to existing material
 		GLuint vertex_start_id;	///< index of first vertex to render
 		GLuint vertices_count;	///< number of vertices to render
 	};
@@ -69,7 +69,7 @@ class CGlRenderObjFile2
 
 
 	int materials_counter;
-	CGlMaterial *materials;
+	GlMaterial *materials;
 
 	int groups_count;
 	CGroup *groups;
@@ -79,7 +79,7 @@ class CGlRenderObjFile2
 	GLfloat *buf_texture_coords_start_ptr;
 
 	size_t buffer_size;
-	CGlBuffer buffer;
+	GlBuffer buffer;
 
 public:
 	CError error;				///< error handler
@@ -96,9 +96,9 @@ public:
 		/*
 		 * LOAD MATERIALS
 		 */
-		materials = new CGlMaterial[cObjFile.materials.size()];
+		materials = new GlMaterial[cObjFile.materials.size()];
 
-		CGlMaterial *material = materials;
+		GlMaterial *material = materials;
 		for(std::list<CObjFile::CMaterial>::iterator i = cObjFile.materials.begin(); i != cObjFile.materials.end(); i++)
 		{
 			CObjFile::CMaterial &obj_material = *i;
