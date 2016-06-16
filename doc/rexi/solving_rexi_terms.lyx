@@ -383,7 +383,8 @@ Obviously, only real values should be computed by the exponential integrator
 REXI also creates only real values with negligible imaginary values
 \emph default
 .
- However, this is not true! It holds that
+ However, this is not true for the implementation in SWEET.
+ Here, we have the case that
 \begin_inset Formula 
 \[
 Im\left(\lim_{N\rightarrow\infty}\sum_{n=-N}^{N}\left(\beta_{n}(\alpha_{n}+L)^{-1}U_{0}\right)\right)\neq0.
@@ -402,18 +403,14 @@ reference "eq:rexi_formulation"
 \end_layout
 
 \begin_layout Standard
+On the other hand, Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:using_complex_conjugate_properties"
 
-\series bold
-@TERRY: TODO: The way how I derived 
-\begin_inset Formula $\beta$
 \end_inset
 
- and 
-\begin_inset Formula $\alpha$
-\end_inset
-
- might be different to your way but I think it's the same.
- Do you agree in the statement above?
+ shows that the system of equations to solve is real-valued only.
 \end_layout
 
 \begin_layout Section
@@ -1092,6 +1089,113 @@ Now the big question arises what
 \end_inset
 
  with different constant contributions given by the shifted poles.
+\end_layout
+
+\begin_layout Subsection
+Using complex conjugate properties
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:using_complex_conjugate_properties"
+
+\end_inset
+
+[This is based on an Email conversation with Colin] We start with the REXI
+ sum before reducing the number of poles:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+e^{L}U_{0}\approx\sum_{n=-N}^{N}Re\left(\beta_{n}(\alpha_{n}+L)^{-1}U_{0}\right).
+\]
+
+\end_inset
+
+Next we write only the sum of the terms of the poles 
+\begin_inset Formula $n$
+\end_inset
+
+ and 
+\begin_inset Formula $-n$
+\end_inset
+
+ as
+\begin_inset Formula 
+\[
+A=\beta(\alpha+L)^{-1}+\overline{\beta}(\overline{\alpha}+L)^{-1}.
+\]
+
+\end_inset
+
+Since 
+\begin_inset Formula $L$
+\end_inset
+
+ has only zero diagonal values we can also write
+\begin_inset Formula 
+\[
+L=-L^{H},
+\]
+
+\end_inset
+
+hence
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+A=\beta(\alpha+L)^{-1}+\overline{\beta}(\overline{\alpha}+L)^{-1}.
+\]
+
+\end_inset
+
+and rewrite this to
+\begin_inset Formula 
+\[
+A(\alpha+L)(\overline{\alpha}+L)=\beta(\overline{\alpha}+L)+\overline{\beta}(\alpha+L)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+A=\left(\beta\overline{\alpha}+\beta L+\overline{\beta}\alpha+\overline{\beta}L\right)\left(\alpha\overline{\alpha}+\alpha L+\overline{\alpha}L+LL\right)^{-1}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+A=\left(\beta\overline{\alpha}+\overline{\beta}\alpha+(\beta+\overline{\beta})L\right)\left(\alpha\overline{\alpha}+(\alpha+\overline{\alpha})L+LL\right)^{-1}
+\]
+
+\end_inset
+
+Since 
+\begin_inset Formula $\beta\overline{\alpha}+\overline{\beta}\alpha$
+\end_inset
+
+ is real-valued only and so is 
+\begin_inset Formula $\alpha\overline{\alpha}$
+\end_inset
+
+, also 
+\begin_inset Formula $A$
+\end_inset
+
+ is based on real values assuming non-singular inverse computations.
 \end_layout
 
 \begin_layout Section
