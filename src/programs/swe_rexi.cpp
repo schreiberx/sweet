@@ -60,6 +60,9 @@ int param_nonlinear;
 double param_initial_freq_x_mul;
 double param_initial_freq_y_mul;
 
+//Diagnostic measures at initial stage
+double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
+
 class SimulationInstance
 #if SWEET_PARAREAL
 		:
@@ -1424,7 +1427,7 @@ public:
 				o_ostream << "T\tTOTAL_MASS\tTOTAL_ENERGY\tPOT_ENSTROPHY";
 
 				//if ((simVars.setup.scenario >= 0 && simVars.setup.scenario <= 4) || simVars.setup.scenario == 13)
-					o_ostream << "\tDIFF_H0\tDIFF_U0\tDIFF_V0";
+				o_ostream << "\tDIFF_H0\tDIFF_U0\tDIFF_V0";
 
 				if (param_compute_error && param_nonlinear==0){
 					o_ostream << "\tANAL_DIFF_RMS_P\tANAL_DIFF_RMS_U\tANAL_DIFF_RMS_V";
@@ -1465,6 +1468,18 @@ public:
 
 			//Print simulation time, energy and pot enstrophy
 			o_ostream << std::setprecision(8) << simVars.timecontrol.current_simulation_time << "\t" << simVars.diag.total_mass << "\t" << simVars.diag.total_energy << "\t" << simVars.diag.total_potential_enstrophy;
+
+
+			// PXT: I didn't know where to put this to work with and without GUI - if removed crashes when gui=enable
+			if (diagnostics_mass_start==0)
+				diagnostics_mass_start=simVars.diag.total_mass;
+
+			if ( std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) > 10000.0 ) {
+				std::cout << "\n DIAGNOSTICS BENCHMARK DIFF H:\t" << "INF" << std::endl;
+				//std::cout << "\n DIAGNOSTICS MASS DIFF:\t" << diagnostics_mass_start << " "<< simVars.diag.total_mass << " "<<std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) << std::endl;
+				std::cerr << "\n DIAGNOSTICS MASS DIFF TOO LARGE:\t" << std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) << std::endl;
+				exit(1);
+			}
 
 			// Print max abs difference of vars to initial conditions (this gives the error in steady state cases)
 			//if ((simVars.setup.scenario >= 0 && simVars.setup.scenario <= 4) || simVars.setup.scenario == 13)
@@ -2336,7 +2351,7 @@ int main(int i_argc, char *i_argv[])
 			Stopwatch time;
 
 			//Diagnostic measures at initial stage
-			double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
+			//double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
 
 			// Initialize diagnostics
 			if (simVars.misc.verbosity > 0)

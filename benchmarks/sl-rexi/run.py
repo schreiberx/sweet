@@ -76,7 +76,7 @@ timestep_order = 4
 # default params
 #
 #default_params += ' -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1 '
-default_params += '-g 1 -f 1 -X 1 -Y 1 -H 10 --nonlinear 1 --compute-error 1 -G 0 -S 1 -v 1 -s 14 -t 0.1 --timestepping-mode 1 --staggering 0'
+default_params += '-g 1 -f 1 -X 1 -Y 1 -H 10 --nonlinear 1 --compute-error 1 -G 0 -S 1 -v 2 -s 14 -t 1 --timestepping-mode 1 --staggering 0'
 
 #'-N 128  -C -0.0001  -t 0.001 '
 
@@ -150,8 +150,10 @@ for h in h_list:
 	for n in N_list:
                 # redirect output
                 filename = curdir_name+'/'+output_file_prefix+"_n"+str(n)+".csv"
+                filename_dump = curdir_name+'/'+output_file_prefix+"_n"+str(n)+"dump.txt"
                 print "Writing output to "+filename
                 fd = open(filename, "w")
+                fd_dump = open(filename_dump, "w")
 
                 fd.write("#TI res="+str(n)+"x"+str(n)+", h="+str(h)+", "+scenario_name+" scenario\n")
                 fd.write("#TX REXI parameter M\n")
@@ -172,11 +174,12 @@ for h in h_list:
                                 command += ' -C '+str(-dt)
                                 command += ' -N '+str(n)
                                 command += ' --rexi-m '+str(M)
-                                command += ' -T 1'
+                                #command += ' -T 1'
 
                                 p = subprocess.Popen(command.split(' '), stdout=PIPE, stderr=PIPE, env=os.environ)
                                 output, err = p.communicate()
-
+                                fd_dump.write(output)
+          
                                 vals = extract_errors(output)
                                 fd.write("\t"+str(vals[0]))
                                 fd.flush()
