@@ -2150,7 +2150,6 @@ int main(int i_argc, char *i_argv[])
 			"boundary-id",
 			"rexi-zero-before-solving",
 			"nonlinear",    /// form of equations
-
 			"initial-freq-x-mul",		// frequency multipliers for special scenario setup
 			"initial-freq-y-mul",
 			nullptr
@@ -2170,7 +2169,6 @@ int main(int i_argc, char *i_argv[])
 	simVars.bogus.var[10] = 0; 	//boundary
 	simVars.bogus.var[11] = 1;	// zero rexi
 	simVars.bogus.var[12] = 0;	// nonlinear
-
 	simVars.bogus.var[13] = 0;
 	simVars.bogus.var[14] = 0;
 
@@ -2287,7 +2285,7 @@ int main(int i_argc, char *i_argv[])
 	std::cout << "Staggered grid? " << param_use_staggering << std::endl;
 	std::cout << "Computing error? " << param_compute_error << std::endl;
 	std::cout << "Verbosity: " << simVars.misc.verbosity << std::endl;
-
+	std::cout << "Parareal: " << SWEET_PARAREAL << std::endl;
 
 	std::ostringstream buf;
 	buf << std::setprecision(14);
@@ -2408,7 +2406,7 @@ int main(int i_argc, char *i_argv[])
 				std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) << std::endl;
 				std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs((simVars.diag.total_potential_enstrophy-diagnostics_potential_entrophy_start)/diagnostics_potential_entrophy_start) << std::endl;
 
-				if (simVars.setup.scenario == 2 || simVars.setup.scenario == 3 || simVars.setup.scenario == 4 || simVars.setup.scenario == 13  )
+				if (param_compute_error)
 				{
 					std::cout << "DIAGNOSTICS BENCHMARK DIFF H:\t" << simulationSWE->benchmark_diff_h << std::endl;
 					std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationSWE->benchmark_diff_u << std::endl;
