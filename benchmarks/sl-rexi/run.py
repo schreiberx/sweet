@@ -76,16 +76,18 @@ timestep_order = 4
 # default params
 #
 #default_params += ' -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1 '
-default_params += '-g 1 -f 1 -X 1 -Y 1 -H 10 --nonlinear 1 --compute-error 1 -G 0 -S 1 -v 2 -s 14 -t 1 --timestepping-mode 1 --staggering 0'
+default_params += '-g 1 -f 1 -X 1 -Y 1 -H 10 --nonlinear 1 --compute-error 1 -G 0 -S 1 -v 2 -s 14 --timestepping-mode 1 --staggering 0'
 
 #'-N 128  -C -0.0001  -t 0.001 '
 
 # Use higher-order time stepping?
 #default_params += ' -R '+str(timestep_order)
 
+# Max time
+T = 0.01
 
 # time step size for coarse time steps
-dt_list = [16/pow(2.0, i) for i in range(4, 20, +1)]
+dt_list = [T/pow(2.0, i) for i in range(4, 20, +1)]
 
 # epsilons
 #eps_list = [1, 0.1, 0.01]
@@ -155,7 +157,7 @@ for h in h_list:
                 fd = open(filename, "w")
                 fd_dump = open(filename_dump, "w")
 
-                fd.write("#TI res="+str(n)+"x"+str(n)+", h="+str(h)+", "+scenario_name+" scenario\n")
+                fd.write("#TI res="+str(n)+"x"+str(n)+", h="+str(h)+", Max time="+str(T)+" , "+scenario_name+" scenario\n")
                 fd.write("#TX REXI parameter M\n")
                 fd.write("#TY size of time step\n")
                 fd.write("# "+default_params+" \n")
@@ -174,7 +176,7 @@ for h in h_list:
                                 command += ' -C '+str(-dt)
                                 command += ' -N '+str(n)
                                 command += ' --rexi-m '+str(M)
-                                #command += ' -T 1'
+                                command += ' -t '+str(T)
 
                                 p = subprocess.Popen(command.split(' '), stdout=PIPE, stderr=PIPE, env=os.environ)
                                 output, err = p.communicate()
