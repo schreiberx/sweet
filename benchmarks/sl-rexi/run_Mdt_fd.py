@@ -48,7 +48,7 @@ print ("Current working directory: "+curdir_name)
 #os.chdir('../../../')
 
 os.environ['OMP_PROC_BIND'] = "TRUE"
-os.environ['OMP_NUM_THREADS'] = "4"
+os.environ['OMP_NUM_THREADS'] = "8"
 
 subprocess.call('scons --program=swe_rexi --spectral-space=enable --mode=release --threading=off --gui=enable --parareal=none --rexi-parallel-sum=enable --spectral-dealiasing=disable '.split(' '), shell=False)
 
@@ -76,7 +76,7 @@ timestep_order = 4
 # default params
 #
 #default_params += ' -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1 '
-default_params += '-g 1 -f 1 -X 1 -Y 1 -H 10 --nonlinear 1 --compute-error 1 -G 0 -S 1 -v 2 -s 14 --timestepping-mode 1 --staggering 0'
+default_params += '-g 1 -f 1 -X 1 -Y 1 -H 10 --nonlinear 1 --compute-error 1 -G 0 -S 0 -v 2 -s 14 --timestepping-mode 1 --staggering 0'
 
 #'-N 128  -C -0.0001  -t 0.001 '
 
@@ -87,7 +87,7 @@ default_params += '-g 1 -f 1 -X 1 -Y 1 -H 10 --nonlinear 1 --compute-error 1 -G 
 T = 0.1
 
 # time step size for coarse time steps
-dt_list = [T/pow(2.0, i) for i in range(2, 20, +1)]
+dt_list = [T/pow(2.0, i) for i in range(8, 20, +1)]
 
 # epsilons
 #eps_list = [1, 0.1, 0.01]
@@ -97,7 +97,7 @@ eps_list = [1]
 # resolutions
 #N_list = [16, 32, 64, 128, 256, 512]
 #N_list = [16, 32, 64, 128, 256]
-N_list = [ 256]
+N_list = [ 512]
 
 # h values for REXI
 h_list = [0.2]
@@ -105,7 +105,7 @@ h_list = [0.2]
 # M values for REXI
 M_list = []
 M = 4
-while M < 2000:
+while M < 1000:
 	M_list.append(M)
 	M *= 2;
 

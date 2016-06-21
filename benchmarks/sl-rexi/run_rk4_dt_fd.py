@@ -50,11 +50,11 @@ print ("Current working directory: "+curdir_name)
 os.environ['OMP_PROC_BIND'] = "TRUE"
 os.environ['OMP_NUM_THREADS'] = "4"
 
-subprocess.call('scons --program=swe_rexi --spectral-space=enable --mode=release --threading=off --gui=enable --parareal=none --rexi-parallel-sum=enable --spectral-dealiasing=disable '.split(' '), shell=False)
+subprocess.call('scons --program=swe_rexi --spectral-space=enable --mode=release --threading=omp --gui=enable --parareal=none --spectral-dealiasing=disable '.split(' '), shell=False)
 
 #subprocess.call('scons --program=swe_rexi --rexi-parallel-sum=enable --spectral-space=enable --spectral-dealiasing=disable --mode=release '.split(' '), shell=False)
 
-binary = './build/swe_rexi_spectral_libfft_gui_rexipar_gnu_release' 
+binary = './build/swe_rexi_spectral_libfft_gui_omp_gnu_release' 
 # './build/swe_rexi_spectral_libfft_rexipar_gnu_release'
 if not os.path.isfile(binary):
 	print "Binary "+binary+" not found"
@@ -76,7 +76,7 @@ timestep_order = 4
 # default params
 #
 #default_params += ' -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1 '
-default_params += '-g 1 -f 1 -X 1 -Y 1 -H 10 --nonlinear 1 --compute-error 1 -G 0 -S 1 -v 2 -s 14 --timestepping-mode 1 --staggering 0'
+default_params += '-g 1 -f 1 -X 1 -Y 1 -H 10 --nonlinear 1 --compute-error 1 -G 0 -S 0 -v 2 -s 14 --timestepping-mode 0 --staggering 1'
 
 #'-N 128  -C -0.0001  -t 0.001 '
 
@@ -95,9 +95,9 @@ dt_list = [T/pow(2.0, i) for i in range(2, 20, +1)]
 eps_list = [1]
 
 # resolutions
-#N_list = [16, 32, 64, 128, 256, 512]
+N_list = [16, 32, 64, 128, 256, 512]
 #N_list = [16, 32, 64, 128, 256]
-N_list = [ 256]
+#N_list = [ 16, 32, 256]
 
 # h values for REXI
 h_list = [0.2]
@@ -148,47 +148,45 @@ def extract_errors(output):
 print
 print "Running with time stepping mode 1:"
 
-for h in h_list:
-	for n in N_list:
-                # redirect output
-                filename = curdir_name+'/'+output_file_prefix+"_n"+str(n)+".csv"
-                filename_dump = curdir_name+'/'+output_file_prefix+"_n"+str(n)+"dump.txt"
-                print "Writing output to "+filename
-                fd = open(filename, "w")
-                fd_dump = open(filename_dump, "w")
 
-                fd.write("#TI res="+str(n)+"x"+str(n)+", h="+str(h)+", Max time="+str(T)+" , "+scenario_name+" scenario\n")
-                fd.write("#TX REXI parameter M\n")
-                fd.write("#TY size of time step\n")
-                fd.write("# "+default_params+" \n")
-                fd.write("dT\M")
-                for M in M_list:
-                        fd.write("\t"+str(M))
-                fd.write("\n")
+# redirect output
+filename = curdir_name+'/'+output_file_prefix+"_rk4.csv"
+filename_dump = curdir_name+'/'+output_file_prefix+"_rk4_dump.txt"
+print "Writing output to "+filename
+fd = open(filename, "w")
+fd_dump = open(filename_dump, "w")
+
+fd.write("#TI Max time="+str(T)+" , "+scenario_name+" scenario\n")
+fd.write("#TX Grid size N\n")
+fd.write("#TY size of time step\n")
+fd.write("# "+default_params+" \n")
+fd.write("dT\N")
+for n in N_list:
+        fd.write("\t"+str(n))
+fd.write("\n")
+fd.flush()
+
+for dt in dt_list:
+        fd.write(str(dt))
+        fd.flush()
+
+        for n in N_list:
+                command = binary+' '+default_params
+                command += ' -C '+str(-dt)
+                command += ' -N '+str(n)
+                command += ' -t '+str(T)
+
+                p = subprocess.Popen(command.split(' '), stdout=PIPE, stderr=PIPE, env=os.environ)
+                output, err = p.communicate()
+                fd_dump.write(output)
+
+                vals = extract_errors(output)
+                fd.write("\t"+str(vals[0]))
                 fd.flush()
 
-                for dt in dt_list:
-                        fd.write(str(dt))
-                        fd.flush()
-
-                        for M in M_list:
-                                command = binary+' '+default_params
-                                command += ' -C '+str(-dt)
-                                command += ' -N '+str(n)
-                                command += ' --rexi-m '+str(M)
-                                command += ' -t '+str(T)
-
-                                p = subprocess.Popen(command.split(' '), stdout=PIPE, stderr=PIPE, env=os.environ)
-                                output, err = p.communicate()
-                                fd_dump.write(output)
-          
-                                vals = extract_errors(output)
-                                fd.write("\t"+str(vals[0]))
-                                fd.flush()
-
-                                print command
-                                print vals
-                        fd.write("\n")
+                print command
+                print vals
+        fd.write("\n")
 
 
 print("FIN")
