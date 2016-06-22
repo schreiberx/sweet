@@ -1,3 +1,4 @@
 build
 FFTW_*
 *.txt
+benchmarks/sl-rexi/*.csv

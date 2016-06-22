@@ -1270,18 +1270,6 @@ public:
 					rexiSWE.run_timestep( H, U, V, o_dt, op, simVars, param_rexi_zero_before_solving);
 					//rexiSWE.run_timestep_direct_solution( H, U, V, o_dt, op, simVars );
 
-					//std::cout<<std::endl;
-					//std::cout<<"Did a REXI step"<<std::endl;
-
-
-					/*
-					std::cout<<"U"<<std::endl;
-					U.printArrayData();
-					std::cout<<"V"<<std::endl;
-					V.printArrayData();
-					std::cout<<"H"<<std::endl;
-					H.printArrayData();
-					*/
 
 					//Now interpolate to the the departure points
 					//Departure points are set for physical space
@@ -1289,22 +1277,6 @@ public:
 					sampler2D.bicubic_scalar( H, posx_d, posy_d, prog_h, stag_h[0],	stag_h[1]);
 					sampler2D.bicubic_scalar( U, posx_d, posy_d, prog_u, stag_u[0], stag_u[1]);
 					sampler2D.bicubic_scalar( V, posx_d, posy_d, prog_v, stag_v[0], stag_v[1]);
-
-					//std::cout<<"interpolated vars to dep points"<<std::endl;
-
-					/*
-					std::cout<<"prog_u"<<std::endl;
-					prog_u.printArrayData();
-					std::cout<<"prog_v"<<std::endl;
-					prog_v.printArrayData();
-					std::cout<<"prog_h"<<std::endl;
-					prog_h.printArrayData();
-					std::cout<<std::endl;
-					*/
-					//Debug force only linear part
-					//prog_u = U;
-					//prog_v = V;
-					//prog_h = H;
 
 				}
 

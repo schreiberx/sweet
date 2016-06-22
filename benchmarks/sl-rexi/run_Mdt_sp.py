@@ -10,7 +10,7 @@ import socket
 default_params = ''
 
 
-output_file_prefix = 'sl_rexi_out_'
+output_file_prefix = 'sl_rexi_out'
 if len(sys.argv) > 1:
 	output_file_prefix = sys.argv[1]
 
@@ -45,7 +45,7 @@ scenario_name = "Nonlinear-steady"
 curdir_name = os.getcwd()
 print ("Current working directory: "+curdir_name)
 
-os.chdir('../../../')
+os.chdir('../../')
 
 os.environ['OMP_PROC_BIND'] = "TRUE"
 os.environ['OMP_NUM_THREADS'] = "8"
@@ -76,7 +76,12 @@ timestep_order = 4
 # default params
 #
 #default_params += ' -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1 '
-default_params += '-g 1 -f 1 -X 1 -Y 1 -H 10 --nonlinear 1 --compute-error 1 -G 0 -S 0 -v 2 -s 14 --timestepping-mode 1 --staggering 0'
+default_params += '-g 1 -f 1 -X 1 -Y 1 -H 10 --nonlinear 2 --compute-error 1 -G 0 -S 1 -v 2 -s 14 --timestepping-mode 1 --staggering 0'
+tmp=default_params.replace(" ", "")
+tmp=tmp.replace("--", "-")
+output_file_prefix=output_file_prefix+tmp.replace(" ", "")
+print "Output base name"
+print output_file_prefix
 
 #'-N 128  -C -0.0001  -t 0.001 '
 
@@ -87,7 +92,7 @@ default_params += '-g 1 -f 1 -X 1 -Y 1 -H 10 --nonlinear 1 --compute-error 1 -G 
 T = 0.1
 
 # time step size for coarse time steps
-dt_list = [T/pow(2.0, i) for i in range(9, 20, +1)]
+dt_list = [T/pow(2.0, i) for i in range(2, 11, +1)]
 
 # epsilons
 #eps_list = [1, 0.1, 0.01]
@@ -189,6 +194,5 @@ for h in h_list:
                                 print command
                                 print vals
                         fd.write("\n")
-
 
 print("FIN")
