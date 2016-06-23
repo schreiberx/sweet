@@ -530,6 +530,7 @@ bool RexiSWE::run_timestep(
 
 				DataArray<2> tmp(h_sum.resolution);
 
+				/* commented cout by peixoto
 				std::cout << n << ": ";
 
 				(eta.toCart()*beta).toDataArrays_Imag(tmp);
@@ -542,6 +543,7 @@ bool RexiSWE::run_timestep(
 				std::cout << tmp.reduce_max() << "\t";
 
 				std::cout << std::endl;
+				*/
 
 				h_sum += eta.toCart()*beta;
 				u_sum += u1.toCart()*beta;

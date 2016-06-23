@@ -60,6 +60,9 @@ int param_nonlinear;
 double param_initial_freq_x_mul;
 double param_initial_freq_y_mul;
 
+//Diagnostic measures at initial stage
+double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
+
 class SimulationInstance
 #if SWEET_PARAREAL
 		:
@@ -1277,18 +1280,6 @@ public:
 					rexiSWE.run_timestep( H, U, V, o_dt, op, simVars, param_rexi_zero_before_solving);
 					//rexiSWE.run_timestep_direct_solution( H, U, V, o_dt, op, simVars );
 
-					//std::cout<<std::endl;
-					//std::cout<<"Did a REXI step"<<std::endl;
-
-
-					/*
-					std::cout<<"U"<<std::endl;
-					U.printArrayData();
-					std::cout<<"V"<<std::endl;
-					V.printArrayData();
-					std::cout<<"H"<<std::endl;
-					H.printArrayData();
-					*/
 
 					//Now interpolate to the the departure points
 					//Departure points are set for physical space
@@ -1296,22 +1287,6 @@ public:
 					sampler2D.bicubic_scalar( H, posx_d, posy_d, prog_h, stag_h[0],	stag_h[1]);
 					sampler2D.bicubic_scalar( U, posx_d, posy_d, prog_u, stag_u[0], stag_u[1]);
 					sampler2D.bicubic_scalar( V, posx_d, posy_d, prog_v, stag_v[0], stag_v[1]);
-
-					//std::cout<<"interpolated vars to dep points"<<std::endl;
-
-					/*
-					std::cout<<"prog_u"<<std::endl;
-					prog_u.printArrayData();
-					std::cout<<"prog_v"<<std::endl;
-					prog_v.printArrayData();
-					std::cout<<"prog_h"<<std::endl;
-					prog_h.printArrayData();
-					std::cout<<std::endl;
-					*/
-					//Debug force only linear part
-					//prog_u = U;
-					//prog_v = V;
-					//prog_h = H;
 
 				}
 
@@ -1434,7 +1409,7 @@ public:
 				o_ostream << "T\tTOTAL_MASS\tTOTAL_ENERGY\tPOT_ENSTROPHY";
 
 				//if ((simVars.setup.scenario >= 0 && simVars.setup.scenario <= 4) || simVars.setup.scenario == 13)
-					o_ostream << "\tDIFF_H0\tDIFF_U0\tDIFF_V0";
+				o_ostream << "\tDIFF_H0\tDIFF_U0\tDIFF_V0";
 
 				if (param_compute_error && param_nonlinear==0){
 					o_ostream << "\tANAL_DIFF_RMS_P\tANAL_DIFF_RMS_U\tANAL_DIFF_RMS_V";
@@ -1475,6 +1450,18 @@ public:
 
 			//Print simulation time, energy and pot enstrophy
 			o_ostream << std::setprecision(8) << simVars.timecontrol.current_simulation_time << "\t" << simVars.diag.total_mass << "\t" << simVars.diag.total_energy << "\t" << simVars.diag.total_potential_enstrophy;
+
+
+			// PXT: I didn't know where to put this to work with and without GUI - if removed crashes when gui=enable
+			if (diagnostics_mass_start==0)
+				diagnostics_mass_start=simVars.diag.total_mass;
+
+			if ( std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) > 10000.0 ) {
+				std::cout << "\n DIAGNOSTICS BENCHMARK DIFF H:\t" << "INF" << std::endl;
+				//std::cout << "\n DIAGNOSTICS MASS DIFF:\t" << diagnostics_mass_start << " "<< simVars.diag.total_mass << " "<<std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) << std::endl;
+				std::cerr << "\n DIAGNOSTICS MASS DIFF TOO LARGE:\t" << std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) << std::endl;
+				exit(1);
+			}
 
 			// Print max abs difference of vars to initial conditions (this gives the error in steady state cases)
 			//if ((simVars.setup.scenario >= 0 && simVars.setup.scenario <= 4) || simVars.setup.scenario == 13)
@@ -1566,7 +1553,7 @@ public:
 			//Temporary displacement for V points
 			//sampler2D.bilinear_scalar(t_v, tmp, pos_y, ts_v, stag_h[0], stag_h[1]);
 			//t_v=op.avg_b_y(t0_v); //equiv to bilinear
-			sampler2D.bicubic_scalar(t_v, tmp, pos_y, ts_v, stag_h[0]+0.5, stag_h[1]);
+			sampler2D.bicubic_scalar(t_v, pos_x, pos_y, ts_v, stag_h[0]+0.5, stag_h[1]);
 		}
 
 		benchmark_analytical_error_rms_h = (ts_h-prog_h).reduce_rms_quad();
@@ -2160,7 +2147,6 @@ int main(int i_argc, char *i_argv[])
 			"boundary-id",
 			"rexi-zero-before-solving",
 			"nonlinear",    /// form of equations
-
 			"initial-freq-x-mul",		// frequency multipliers for special scenario setup
 			"initial-freq-y-mul",
 			nullptr
@@ -2180,7 +2166,6 @@ int main(int i_argc, char *i_argv[])
 	simVars.bogus.var[10] = 0; 	//boundary
 	simVars.bogus.var[11] = 1;	// zero rexi
 	simVars.bogus.var[12] = 0;	// nonlinear
-
 	simVars.bogus.var[13] = 0;
 	simVars.bogus.var[14] = 0;
 
@@ -2297,7 +2282,7 @@ int main(int i_argc, char *i_argv[])
 	std::cout << "Staggered grid? " << param_use_staggering << std::endl;
 	std::cout << "Computing error? " << param_compute_error << std::endl;
 	std::cout << "Verbosity: " << simVars.misc.verbosity << std::endl;
-
+	std::cout << "Parareal: " << SWEET_PARAREAL << std::endl;
 
 	std::ostringstream buf;
 	buf << std::setprecision(14);
@@ -2348,7 +2333,7 @@ int main(int i_argc, char *i_argv[])
 			Stopwatch time;
 
 			//Diagnostic measures at initial stage
-			double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
+			//double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
 
 			// Initialize diagnostics
 			if (simVars.misc.verbosity > 0)
@@ -2418,7 +2403,7 @@ int main(int i_argc, char *i_argv[])
 				std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) << std::endl;
 				std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs((simVars.diag.total_potential_enstrophy-diagnostics_potential_entrophy_start)/diagnostics_potential_entrophy_start) << std::endl;
 
-				if (simVars.setup.scenario == 2 || simVars.setup.scenario == 3 || simVars.setup.scenario == 4 || simVars.setup.scenario == 13  )
+				if (param_compute_error)
 				{
 					std::cout << "DIAGNOSTICS BENCHMARK DIFF H:\t" << simulationSWE->benchmark_diff_h << std::endl;
 					std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationSWE->benchmark_diff_u << std::endl;
