@@ -12,7 +12,8 @@
 #include <sweet/SWEValidationBenchmarks.hpp>
 #include <sweet/Operators2D.hpp>
 #include <sweet/Stopwatch.hpp>
-
+#include <sweet/Sampler2D.hpp>
+#include <sweet/SemiLagrangian.hpp>
 #include <ostream>
 #include <algorithm>
 #include <sstream>
@@ -41,10 +42,10 @@
 SimulationVariables simVars;
 
 //specific parameters
-int param_imex = -1;
+int param_time_scheme = -1;
 bool param_compute_error = 0;
 bool param_use_staggering = 0;
-
+bool param_semilagrangian = 0;
 
 
 class SimulationInstance
@@ -57,8 +58,21 @@ public:
 	// Prognostic variables
 	DataArray<2> prog_u, prog_v;
 
+	// Prognostic variables at time step t-dt
+	DataArray<2> prog_u_prev, prog_v_prev;
+
 	// temporary variables - may be overwritten, use locally
 	DataArray<2> tmp;
+
+	// Points mapping [0,simVars.sim.domain_size[0])x[0,simVars.sim.domain_size[1])
+	// with resolution simVars.sim.resolution
+	DataArray<2> pos_x, pos_y;
+
+	// Arrival points for semi-lag
+	DataArray<2> posx_a, posy_a;
+
+	// Departure points for semi-lag
+	DataArray<2> posx_d, posy_d;
 
 	//Staggering displacement array (use 0.5 for each displacement)
 	// [0] - delta x of u variable
@@ -93,6 +107,11 @@ public:
 	// Runge-Kutta stuff
 	TimesteppingRK timestepping;
 
+	// Interpolation stuff
+	Sampler2D sampler2D;
+
+	// Semi-Lag stuff
+	SemiLagrangian semiLagrangian;
 
 
 	/**
@@ -116,7 +135,19 @@ public:
 		prog_u(simVars.disc.res),	// velocity (x-direction)
 		prog_v(simVars.disc.res),	// velocity (y-direction)
 
+		prog_u_prev(simVars.disc.res),
+		prog_v_prev(simVars.disc.res),
+
 		tmp(simVars.disc.res),
+
+		pos_x(simVars.disc.res),
+		pos_y(simVars.disc.res),
+
+		posx_a(simVars.disc.res),
+		posy_a(simVars.disc.res),
+
+		posx_d(simVars.disc.res),
+		posy_d(simVars.disc.res),
 
 		// Init operators
 		op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
@@ -152,6 +183,12 @@ public:
 
 		//TODO: is there a reason, why this is not called in swe_rexi
 		simVars.reset();
+
+		// set to some values for first touch NUMA policy (HPC stuff)
+#if SWEET_USE_SPECTRAL_SPACE
+		prog_u.set_spec_all(0,0);
+		prog_v.set_spec_all(0,0);
+#endif
 
 		//Setup prog vars
 		prog_u.set_all(0);
@@ -200,6 +237,28 @@ public:
 			stag_v[1] = -0.0;
 		}
 
+		//Setup sampler for future interpolations
+		sampler2D.setup(simVars.sim.domain_size, simVars.disc.res);
+
+		//Setup semi-lag
+		semiLagrangian.setup(simVars.sim.domain_size, simVars.disc.res);
+
+		//Setup general (x,y) grid with position points
+		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+		{
+			for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+			{
+		    	/* Equivalent to q position on C-grid */
+				pos_x.set(j, i, ((double)i)*simVars.sim.domain_size[0]/simVars.disc.res[0]); //*simVars.sim.domain_size[0];
+				pos_y.set(j, i, ((double)j)*simVars.sim.domain_size[1]/simVars.disc.res[1]); //*simVars.sim.domain_size[1];
+				//std::cout << i << " " << j << " " << pos_x.get(j,i) << std::endl;
+			}
+		}
+
+		//Initialize arrival points with h position
+		posx_a = pos_x+0.5*simVars.disc.cell_size[0];
+		posy_a = pos_y+0.5*simVars.disc.cell_size[1];
+
 		// Set initial conditions
 		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
 		{
@@ -234,6 +293,10 @@ public:
 
 			}
 		}
+
+		//Initialize t-dt time step with initial condition
+		prog_u_prev = prog_u;
+		prog_v_prev = prog_v;
 
 		// Load data, if requested
 		if (simVars.setup.input_data_filenames.size() > 0)
@@ -271,8 +334,6 @@ public:
 
 		last_timestep_nr_update_diagnostics = simVars.timecontrol.current_timestep_nr;
 
-		last_timestep_nr_update_diagnostics = simVars.timecontrol.current_timestep_nr;
-
 
 		double normalization = (simVars.sim.domain_size[0]*simVars.sim.domain_size[1]) /
 								((double)simVars.disc.res[0]*(double)simVars.disc.res[1]);
@@ -282,12 +343,10 @@ public:
 
 		// energy
 		simVars.diag.total_energy =
-			0.5*(
-				(
-					(prog_u*prog_u) +
-					(prog_v*prog_v)
-				)
-			).reduce_sum_quad() * normalization;
+			0.5*((
+					prog_u*prog_u +
+					prog_v*prog_v
+				).reduce_sum_quad()) * normalization;
 
 		// potential enstropy
 		simVars.diag.total_potential_enstrophy = -1;
@@ -658,28 +717,80 @@ public:
 		// a positive value to use a fixed time step size
 		simVars.timecontrol.current_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
 
-		if (!param_imex)
+		if (param_semilagrangian)
 		{
-			// run standard Runge Kutta
-			timestepping.run_rk_timestep(
-					this,
-					&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
-					prog_u, prog_v,
-					dt,
-					simVars.timecontrol.current_timestep_size,
-					simVars.disc.timestepping_runge_kutta_order,
-					simVars.timecontrol.current_simulation_time
+			//Calculate departure points
+			semiLagrangian.semi_lag_departure_points_settls(
+							prog_u_prev, prog_v_prev,
+							prog_u,	prog_v,
+							posx_a,	posy_a,
+							dt,
+							posx_d,	posy_d,
+							stag_displacement
+					);
+
+			// Save old velocities
+			prog_u_prev = prog_u;
+			prog_v_prev = prog_v;
+
+			DataArray<2> U = prog_u;
+			DataArray<2> V = prog_v;
+			if (param_time_scheme>=0)
+			{
+				// run standard Runge Kutta
+				timestepping.run_rk_timestep(
+						this,
+						&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
+						U, V,
+						dt,
+						simVars.timecontrol.current_timestep_size,
+						param_time_scheme,
+						//simVars.disc.timestepping_runge_kutta_order,
+						simVars.timecontrol.current_simulation_time
+					);
+			}
+			else
+			{
+				// run IMEX Runge Kutta
+				run_timestep_imex(
+						prog_u, prog_v,
+						simVars.timecontrol.current_timestep_size,
+						op,
+						simVars
 				);
-		}
-		else
-		{
-			// run IMEX Runge Kutta
-			run_timestep_imex(
-					prog_u, prog_v,
-					simVars.timecontrol.current_timestep_size,
-					op,
-					simVars
-			);
+			}
+
+			//Now interpolate to the the departure points
+			//Departure points are set for physical space
+			sampler2D.bicubic_scalar( U, posx_d, posy_d, prog_u, stag_u[0], stag_u[1]);
+			sampler2D.bicubic_scalar( V, posx_d, posy_d, prog_v, stag_v[0], stag_v[1]);
+
+		}else{
+
+			if (param_time_scheme>=0)
+			{
+				// run standard Runge Kutta
+				timestepping.run_rk_timestep(
+						this,
+						&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
+						prog_u, prog_v,
+						dt,
+						simVars.timecontrol.current_timestep_size,
+						param_time_scheme,
+						//simVars.disc.timestepping_runge_kutta_order,
+						simVars.timecontrol.current_simulation_time
+					);
+			}
+			else
+			{
+				// run IMEX Runge Kutta
+				run_timestep_imex(
+						prog_u, prog_v,
+						simVars.timecontrol.current_timestep_size,
+						op,
+						simVars
+				);
+			}
 		}
 
 		dt = simVars.timecontrol.current_timestep_size;
@@ -698,59 +809,59 @@ public:
 			std::ostream &o_ostream = std::cout
 	)
 	{
-			if (simVars.misc.verbosity > 0)
+		if (simVars.misc.verbosity > 0)
+		{
+			update_diagnostics();
+
+			// Print header
+			if (simVars.timecontrol.current_timestep_nr == 0)
 			{
-				update_diagnostics();
+				o_ostream << "T\tTOTAL_MASS\tTOTAL_ENERGY\tPOT_ENSTROPHY";
 
-				// Print header
-				if (simVars.timecontrol.current_timestep_nr == 0)
-				{
-					o_ostream << "T\tTOTAL_MASS\tTOTAL_ENERGY\tPOT_ENSTROPHY";
+				if (simVars.setup.scenario == 2 || simVars.setup.scenario == 3 || simVars.setup.scenario == 4)
+					o_ostream << "\tABS_P_DT\tABS_U_DT\tABS_V_DT";
 
-					if (simVars.setup.scenario == 2 || simVars.setup.scenario == 3 || simVars.setup.scenario == 4)
-						o_ostream << "\tABS_P_DT\tABS_U_DT\tABS_V_DT";
-
-					o_ostream << std::endl;
-
-				}
-
-				if ((simVars.misc.output_file_name_prefix.size() > 0) && !simVars.parareal.enabled)
-				{
-					// output each time step
-					if (simVars.misc.output_each_sim_seconds < 0)
-						simVars.misc.output_next_sim_seconds = 0;
-					//TODO: default for simVars.misc.output_each_sim_seconds < 0 otherwise infinite loop below
-
-					if (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
-					{
-						while (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
-							simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
-
-						double secs = simVars.timecontrol.current_simulation_time;
-						double msecs = 1000000.*(simVars.timecontrol.current_simulation_time - floor(simVars.timecontrol.current_simulation_time));
-						char t_buf[256];
-						sprintf(	t_buf,
-									"%08d.%06d",
-									(int)secs, (int)msecs
-							);
-
-						std::string ss = simVars.misc.output_file_name_prefix+"_t"+t_buf;
-
-
-						// write velocity field u to file
-						prog_u.file_saveData_ascii((ss+"_u.csv").c_str());
-						// write velocity field v to file
-						//prog_v.file_saveData_ascii((ss+"_v.csv").c_str());
-
-					}
-				}
-
-				// Print timestep data to given output stream
-				o_ostream << std::setprecision(8) << simVars.timecontrol.current_simulation_time << "\t" << simVars.diag.total_mass << "\t" << simVars.diag.total_energy << "\t" << simVars.diag.total_potential_enstrophy;
+				o_ostream << std::endl;
 
 			}
-			o_ostream << std::endl;
+
+			if ((simVars.misc.output_file_name_prefix.size() > 0) && !simVars.parareal.enabled)
+			{
+				// output each time step
+				if (simVars.misc.output_each_sim_seconds < 0)
+					simVars.misc.output_next_sim_seconds = 0;
+				//TODO: default for simVars.misc.output_each_sim_seconds < 0 otherwise infinite loop below
+
+				if (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
+				{
+					while (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
+						simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
+
+					double secs = simVars.timecontrol.current_simulation_time;
+					double msecs = 1000000.*(simVars.timecontrol.current_simulation_time - floor(simVars.timecontrol.current_simulation_time));
+					char t_buf[256];
+					sprintf(	t_buf,
+								"%08d.%06d",
+								(int)secs, (int)msecs
+						);
+
+					std::string ss = simVars.misc.output_file_name_prefix+"_t"+t_buf;
+
+
+					// write velocity field u to file
+					prog_u.file_saveData_ascii((ss+"_u.csv").c_str());
+					// write velocity field v to file
+					//prog_v.file_saveData_ascii((ss+"_v.csv").c_str());
+
+				}
+			}
+
+			// Print timestep data to given output stream
+			o_ostream << std::setprecision(8) << simVars.timecontrol.current_simulation_time << "\t" << simVars.diag.total_mass << "\t" << simVars.diag.total_energy << "\t" << simVars.diag.total_potential_enstrophy;
+
 		}
+		o_ostream << std::endl;
+	}
 
 
 public:
@@ -1154,7 +1265,7 @@ public:
 		// run implicit time step
 //		assert(i_max_simulation_time < 0);
 //		assert(simVars.sim.CFL < 0);
-		if (!param_imex)
+		if (param_time_scheme>=0)
 		{
 			// run standard RK
 			double dt = 0.0;
@@ -1164,7 +1275,8 @@ public:
 					prog_u, prog_v,
 					dt,
 					timeframe_end - timeframe_start,
-					simVars.disc.timestepping_runge_kutta_order,
+					param_time_scheme,
+					//simVars.disc.timestepping_runge_kutta_order,
 					simVars.timecontrol.current_simulation_time
 				);
 		}
@@ -1358,28 +1470,33 @@ int main(int i_argc, char *i_argv[])
 
 	// program specific input parameter names
 	const char *bogus_var_names[] = {
-			"use-imex",
+			"timestepping-scheme",
 			"compute-error",
 			"staggering",
+			"semi-lagrangian",
 			nullptr
 	};
 
 	// default values for program specific parameter
-	simVars.bogus.var[0] = param_imex; //TODO: check declaration
+	simVars.bogus.var[0] = param_time_scheme; // time stepping scheme
 	simVars.bogus.var[1] = param_compute_error; // compute-error
 	simVars.bogus.var[2] = param_use_staggering; // staggering
+	simVars.bogus.var[3] = param_semilagrangian; // semi-lagrangian
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
 		std::cout << std::endl;
 		std::cout << "Special parameters:" << std::endl;
-		std::cout << "	--use-imex [0/1]	Use IMEX time stepping" << std::endl;
+		std::cout << "	--timestepping-scheme [int]	-n: Use IMEX time stepping of order n (Right now only -1)" << std::endl;
+		std::cout << "								 n: Use explicit Runge-Kutta time stepping of order n (n in 1..4)" << std::endl;
 		std::cout << "" << std::endl;
 		std::cout << "	--compute-error [0/1]	Compute the errors" << std::endl;
 		std::cout << "" << std::endl;
 		std::cout << "	--staggering [0/1]		Use staggered grid" << std::endl;
 		std::cout << "" << std::endl;
+		std::cout << "	--semi-lagrangian [0/1]		Use semi-lagrangian formulation" << std::endl;
+		std::cout << std::endl;
 
 #if SWEET_PARAREAL
 		simVars.parareal.setup_printOptions();
@@ -1388,9 +1505,10 @@ int main(int i_argc, char *i_argv[])
 	}
 
 	//Burgers parameters
-	param_imex = simVars.bogus.var[0];
+	param_time_scheme = simVars.bogus.var[0];
 	param_compute_error = simVars.bogus.var[1];
 	param_use_staggering = simVars.bogus.var[2];
+	param_semilagrangian = simVars.bogus.var[3];
 
 
 	std::ostringstream buf;
