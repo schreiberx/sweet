@@ -123,7 +123,7 @@ public:
 
 		parareal_simulationInstances = new Parareal_SimulationInstance*[pVars->coarse_slices];
 
-		std::cout << pVars->coarse_slices << std::endl;
+		//std::cout << pVars->coarse_slices << std::endl;
 
 		CONSOLEPREFIX.start("[MAIN] ");
 		std::cout << "Resetting simulation instances" << std::endl;

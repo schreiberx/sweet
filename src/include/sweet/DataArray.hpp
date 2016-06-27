@@ -2129,6 +2129,76 @@ public:
 	}
 
 
+	/**
+	 * apply a 3x3 stencil
+	 */
+	DataArray<D> op_stencil_Re_3x3(
+			const double *i_kernel_data
+	)
+	{
+		bool was_spectral = false;
+		if (this->array_data_spectral_space_valid)
+		{
+			this->requestDataInCartesianSpace();
+			was_spectral = true;
+		}
+
+		DataArray<D> out = *this;
+
+		int res_x = resolution[0];
+		int res_y = resolution[1];
+
+
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#	pragma omp parallel for OPENMP_PAR_SIMD shared(res_x, res_y, out, i_kernel_data)
+#endif
+		for (int y = 0; y < res_y; y++)
+		{
+			for (int x = 0; x < res_x; x++)
+			{
+				double *data_out = &out.array_data_cartesian_space[(y*res_x+x)];
+				data_out[0] = 0;
+
+				for (int j = -1; j <= 1; j++)
+				{
+					int pos_y = y+j;
+
+					pos_y -= (pos_y >= res_y ? res_y : 0);
+					pos_y += (pos_y < 0 ? res_y : 0);
+
+					assert(pos_y >= 0 && pos_y < res_y);
+
+					for (int i = -1; i <= 1; i++)
+					{
+						int pos_x = x+i;
+
+						pos_x -= (pos_x >= res_x ? res_x : 0);
+						pos_x += (pos_x < 0 ? res_x : 0);
+
+						assert(pos_x >= 0 && pos_x < res_x);
+
+						int idx = (j+1)*3+(i+1);
+						assert(idx >= 0 && idx < 9);
+
+						double kre = i_kernel_data[idx];
+
+						double dre = array_data_cartesian_space[(pos_y*res_x+pos_x)];
+
+						data_out[0] += dre*kre;
+					}
+				}
+			}
+		}
+
+		if (was_spectral)
+		{
+			this->requestDataInSpectralSpace();
+			out.requestDataInSpectralSpace();
+		}
+
+		return out;
+	}
+
 
 #if SWEET_USE_SPECTRAL_SPACE
 	/**
@@ -3528,6 +3598,7 @@ public:
 	}
 
 
+
 	inline
 	void printSpectrum()	const
 	{
@@ -3554,43 +3625,6 @@ public:
 		}
 	}
 #endif
-
-
-
-	/**
-	 * Write data to ASCII file
-	 *
-	 * Each array row is stored to a line.
-	 * Per default, a tab separator is used in each line to separate the values.
-	 */
-	bool printArrayData(
-			int i_precision = 6		///< number of floating point digits
-			)	const
-	{
-
-		checkConsistency();
-		requestDataInCartesianSpace();
-
-		std::ostream &o_ostream = std::cout;
-
-		o_ostream << std::setprecision(i_precision);
-		for (int y = resolution[1]-1; y >= 0; y--)
-		{
-			for (std::size_t x = 0; x < resolution[0]; x++)
-			{
-				o_ostream << get(y, x);
-
-				if (x < resolution[0]-1)
-					o_ostream << '\t';
-				else
-					o_ostream << std::endl;
-			}
-		}
-
-		checkConsistency();
-		return true;
-	}
-
 
 
 
