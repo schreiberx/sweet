@@ -709,7 +709,7 @@ public:
 
 	void run_timestep()
 	{
-		double dt;
+		double dt = 0.0;
 
 		//TODO: Test multiple time stepping methods
 
@@ -746,7 +746,8 @@ public:
 						simVars.timecontrol.current_timestep_size,
 						param_time_scheme,
 						//simVars.disc.timestepping_runge_kutta_order,
-						simVars.timecontrol.current_simulation_time
+						simVars.timecontrol.current_simulation_time,
+						simVars.timecontrol.max_simulation_time
 					);
 			}
 			else
@@ -754,9 +755,11 @@ public:
 				// run IMEX Runge Kutta
 				run_timestep_imex(
 						prog_u, prog_v,
+						dt,
 						simVars.timecontrol.current_timestep_size,
 						op,
-						simVars
+						simVars,
+						simVars.timecontrol.max_simulation_time
 				);
 			}
 
@@ -778,7 +781,8 @@ public:
 						simVars.timecontrol.current_timestep_size,
 						param_time_scheme,
 						//simVars.disc.timestepping_runge_kutta_order,
-						simVars.timecontrol.current_simulation_time
+						simVars.timecontrol.current_simulation_time,
+						simVars.timecontrol.max_simulation_time
 					);
 			}
 			else
@@ -786,14 +790,16 @@ public:
 				// run IMEX Runge Kutta
 				run_timestep_imex(
 						prog_u, prog_v,
+						dt,
 						simVars.timecontrol.current_timestep_size,
 						op,
-						simVars
+						simVars,
+						simVars.timecontrol.max_simulation_time
 				);
 			}
 		}
 
-		dt = simVars.timecontrol.current_timestep_size;
+		//dt = simVars.timecontrol.current_timestep_size;
 
 		// provide information to parameters
 		simVars.timecontrol.current_timestep_size = dt;
@@ -816,10 +822,10 @@ public:
 			// Print header
 			if (simVars.timecontrol.current_timestep_nr == 0)
 			{
-				o_ostream << "T\tTOTAL_MASS\tTOTAL_ENERGY\tPOT_ENSTROPHY";
-
-				if (simVars.setup.scenario == 2 || simVars.setup.scenario == 3 || simVars.setup.scenario == 4)
-					o_ostream << "\tABS_P_DT\tABS_U_DT\tABS_V_DT";
+				o_ostream << "TIME\t\t\t\tTOT_ENERGY";
+				if (param_compute_error){
+					o_ostream << "\tMAX_ABS_U\tMAX_RMS_U";
+				}
 
 				o_ostream << std::endl;
 
@@ -832,7 +838,8 @@ public:
 					simVars.misc.output_next_sim_seconds = 0;
 				//TODO: default for simVars.misc.output_each_sim_seconds < 0 otherwise infinite loop below
 
-				if (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
+				if ((simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time) ||
+						(simVars.timecontrol.current_simulation_time == simVars.timecontrol.max_simulation_time))
 				{
 					while (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
 						simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
@@ -857,7 +864,12 @@ public:
 			}
 
 			// Print timestep data to given output stream
-			o_ostream << std::setprecision(8) << simVars.timecontrol.current_simulation_time << "\t" << simVars.diag.total_mass << "\t" << simVars.diag.total_energy << "\t" << simVars.diag.total_potential_enstrophy;
+			o_ostream << std::setprecision(8) << std::fixed << simVars.timecontrol.current_simulation_time << "\t" << simVars.diag.total_energy;
+
+			if (param_compute_error){
+				compute_errors();
+				o_ostream << std::setprecision(8) << "\t" << benchmark_analytical_error_maxabs_u << "\t" << benchmark_analytical_error_rms_u;
+			}
 
 		}
 		o_ostream << std::endl;
@@ -873,7 +885,7 @@ public:
 			if (simVars.setup.scenario<51 && simVars.setup.scenario>59)
 				return;
 
-			//Analytical solution at specific time on orginal grid (stag or not)
+			//Analytical solution at specific time on original grid (stag or not)
 			DataArray<2> ts_u(simVars.disc.res);
 			DataArray<2> ts_v(simVars.disc.res);
 
@@ -1206,10 +1218,13 @@ public:
 			DataArray<2> &io_u,
 			DataArray<2> &io_v,
 
+			double& o_dt,			///< return time step size for the computed time step
 			double i_timestep_size,	///< timestep size
 
 			Operators2D &op,
-			const SimulationVariables &i_simVars
+			const SimulationVariables &i_simVars,
+
+			double i_max_simulation_time = std::numeric_limits<double>::infinity()	///< limit the maximum simulation time
 			)
 	{
 		DataArray<2> u=io_u;
@@ -1220,11 +1235,11 @@ public:
 		set_source(f);
 
 		// Modify timestep to final time if necessary
-		double t = 0.0;
-		if (simVars.timecontrol.current_simulation_time+i_timestep_size<simVars.timecontrol.max_simulation_time)
+		double& t = o_dt;
+		if (simVars.timecontrol.current_simulation_time+i_timestep_size < i_max_simulation_time)
 			t = i_timestep_size;
 		else
-			t = simVars.timecontrol.max_simulation_time-simVars.timecontrol.current_simulation_time;
+			t = i_max_simulation_time-simVars.timecontrol.current_simulation_time;
 
 		// Setting explicit right hand side and operator of the left hand side
 		DataArray<2> rhs_u = u - t*(u*op.diff_c_x(u)+v*op.diff_c_y(u)) + t*f;
@@ -1283,8 +1298,10 @@ public:
 		else
 		{
 			// run IMEX RK
+			double dt = 0.0;
 			run_timestep_imex(
 						prog_u, prog_v,
+						dt,
 						timeframe_end - timeframe_start,
 						op,
 						simVars
@@ -1417,7 +1434,7 @@ public:
 		Parareal_Data_DataArrays<2>& data = (Parareal_Data_DataArrays<2>&)i_data;
 
 		std::ostringstream ss;
-		ss << simVars.misc.output_file_name_prefix << "output_iter" << iteration_id << "_slice" << time_slice_id << ".csv";
+		ss << simVars.misc.output_file_name_prefix << "_iter" << iteration_id << "_slice" << time_slice_id << ".csv";
 
 		std::string filename = ss.str();
 
@@ -1489,13 +1506,10 @@ int main(int i_argc, char *i_argv[])
 		std::cout << std::endl;
 		std::cout << "Special parameters:" << std::endl;
 		std::cout << "	--timestepping-scheme [int]	-n: Use IMEX time stepping of order n (Right now only -1)" << std::endl;
-		std::cout << "								 n: Use explicit Runge-Kutta time stepping of order n (n in 1..4)" << std::endl;
-		std::cout << "" << std::endl;
-		std::cout << "	--compute-error [0/1]	Compute the errors" << std::endl;
-		std::cout << "" << std::endl;
-		std::cout << "	--staggering [0/1]		Use staggered grid" << std::endl;
-		std::cout << "" << std::endl;
-		std::cout << "	--semi-lagrangian [0/1]		Use semi-lagrangian formulation" << std::endl;
+		std::cout << "					 n: Use explicit Runge-Kutta time stepping of order n (n in 1..4), default:-1" << std::endl;
+		std::cout << "	--compute-error [0/1]		Compute the errors, default:0" << std::endl;
+		std::cout << "	--staggering [0/1]		Use staggered grid, default:0" << std::endl;
+		std::cout << "	--semi-lagrangian [0/1]		Use semi-lagrangian formulation, default:0" << std::endl;
 		std::cout << std::endl;
 
 #if SWEET_PARAREAL
