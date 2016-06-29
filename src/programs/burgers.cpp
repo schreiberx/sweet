@@ -9,7 +9,7 @@
 #endif
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/TimesteppingRK.hpp>
-#include <sweet/SWEValidationBenchmarks.hpp>
+#include <sweet/BurgersValidationBenchmarks.hpp>
 #include <sweet/Operators2D.hpp>
 #include <sweet/Stopwatch.hpp>
 #include <sweet/Sampler2D.hpp>
@@ -271,14 +271,14 @@ public:
 						// u space
 						double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
 						double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
-						prog_u.set(j,i, SWEValidationBenchmarks::return_u(simVars, x, y));
+						prog_u.set(j,i, BurgersValidationBenchmarks::return_u(simVars, x, y));
 					}
 
 					{
 						// v space
 						double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
 						double y = (((double)j)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
-						prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
+						prog_v.set(j, i, BurgersValidationBenchmarks::return_v(simVars, x, y));
 					}
 				}
 				else
@@ -286,8 +286,8 @@ public:
 					double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
 					double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
 
-					prog_u.set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
-					prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
+					prog_u.set(j, i, BurgersValidationBenchmarks::return_u(simVars, x, y));
+					prog_v.set(j, i, BurgersValidationBenchmarks::return_v(simVars, x, y));
 
 				}
 
@@ -338,18 +338,21 @@ public:
 		double normalization = (simVars.sim.domain_size[0]*simVars.sim.domain_size[1]) /
 								((double)simVars.disc.res[0]*(double)simVars.disc.res[1]);
 
-		// mass
-		simVars.diag.total_mass = -1;
-
 		// energy
 		simVars.diag.total_energy =
 			0.5*((
 					prog_u*prog_u +
 					prog_v*prog_v
 				).reduce_sum_quad()) * normalization;
-
-		// potential enstropy
-		simVars.diag.total_potential_enstrophy = -1;
+		/*
+		 * Not used with the Burgers equation
+		 *
+		 * // mass
+		 * simVars.diag.total_mass = -1;
+		 *
+		 * // potential enstropy
+		 * simVars.diag.total_potential_enstrophy = -1;
+		 */
 	}
 
 
@@ -900,14 +903,14 @@ public:
 							// u space
 							double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
 							double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
-							ts_u.set(j,i, SWEValidationBenchmarks::return_u(simVars, x, y));
+							ts_u.set(j,i, BurgersValidationBenchmarks::return_u(simVars, x, y));
 						}
 
 						{
 							// v space
 							double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
 							double y = (((double)j)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
-							ts_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
+							ts_v.set(j, i, BurgersValidationBenchmarks::return_v(simVars, x, y));
 						}
 					}
 					else
@@ -915,8 +918,8 @@ public:
 						double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
 						double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
 
-						ts_u.set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
-						ts_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
+						ts_u.set(j, i, BurgersValidationBenchmarks::return_u(simVars, x, y));
+						ts_v.set(j, i, BurgersValidationBenchmarks::return_v(simVars, x, y));
 
 					}
 
