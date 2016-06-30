@@ -10,3 +10,5 @@ runscript.sh
 .sconsign.dblite
 python_mods/*.pyc
 *.txt
+/tmp/
+/runSL.sh
