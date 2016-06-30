@@ -1234,7 +1234,7 @@ public:
 					//rexiSWE.run_timestep_direct_solution( H, U, V, o_dt, op, simVars );
 
 					//Zero nonlinear vectors
-#if SWEET_USE_SPECTRAL_SPACE
+#if SWEET_USE_SPECTRAL_SPACE && 0
 							N_h.set_spec_all(0, 0);
 							N_u.set_spec_all(0, 0);
 							N_v.set_spec_all(0, 0);
@@ -1427,8 +1427,9 @@ public:
 
 				if (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
 				{
-					while (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
-						simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
+					if (simVars.misc.output_each_sim_seconds > 0)
+						while (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
+							simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
 
 					double secs = simVars.timecontrol.current_simulation_time;
 					double msecs = 1000000.*(simVars.timecontrol.current_simulation_time - floor(simVars.timecontrol.current_simulation_time));
