@@ -844,8 +844,11 @@ public:
 				if ((simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time) ||
 						(simVars.timecontrol.current_simulation_time == simVars.timecontrol.max_simulation_time))
 				{
-					while (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
-						simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
+					if (simVars.misc.output_each_sim_seconds > 0)
+					{
+						while (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
+							simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
+					}
 
 					double secs = simVars.timecontrol.current_simulation_time;
 					double msecs = 1000000.*(simVars.timecontrol.current_simulation_time - floor(simVars.timecontrol.current_simulation_time));
