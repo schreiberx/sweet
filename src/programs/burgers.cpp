@@ -684,10 +684,17 @@ public:
 		 * u and v updates
 		 */
 
-		o_u_t = -(i_u*op.diff_c_x(i_u) + i_v*op.diff_c_y(i_u));
-		o_u_t += simVars.sim.viscosity*(op.diff2_c_x(i_u)+op.diff2_c_y(i_u));
-		// Delete this line if no source is used.
-		o_u_t += f;
+		if (param_semilagrangian)
+		{
+			o_u_t = simVars.sim.viscosity*(op.diff2_c_x(i_u)+op.diff2_c_y(i_u));
+			// Delete this line if no source is used.
+			o_u_t += f;
+		}else{
+			o_u_t = -(i_u*op.diff_c_x(i_u) + i_v*op.diff_c_y(i_u));
+			o_u_t += simVars.sim.viscosity*(op.diff2_c_x(i_u)+op.diff2_c_y(i_u));
+			// Delete this line if no source is used.
+			o_u_t += f;
+		}
 
 		o_v_t = -(i_u*op.diff_c_x(i_v) + i_v*op.diff_c_y(i_v));
 		o_v_t += simVars.sim.viscosity*(op.diff2_c_x(i_v)+op.diff2_c_y(i_v));
@@ -757,7 +764,7 @@ public:
 			{
 				// run IMEX Runge Kutta
 				run_timestep_imex(
-						prog_u, prog_v,
+						U, V,
 						dt,
 						simVars.timecontrol.current_timestep_size,
 						op,
@@ -874,7 +881,7 @@ public:
 
 			if (param_compute_error){
 				compute_errors();
-				o_ostream << std::setprecision(8) << "\t" << benchmark_analytical_error_maxabs_u << "\t" << benchmark_analytical_error_rms_u;
+				o_ostream << std::setprecision(8) << "\t" << benchmark_analytical_error_maxabs_u << "\t" << benchmark_analytical_error_rms_u << "\t" << prog_u.reduce_max();
 			}
 
 		}
@@ -1248,9 +1255,20 @@ public:
 			t = i_max_simulation_time-simVars.timecontrol.current_simulation_time;
 
 		// Setting explicit right hand side and operator of the left hand side
-		DataArray<2> rhs_u = u - t*(u*op.diff_c_x(u)+v*op.diff_c_y(u)) + t*f;
-		DataArray<2> rhs_v = v - t*(u*op.diff_c_x(v)+v*op.diff_c_y(v));
-		DataArray<2>   lhs = ((-t)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).addScalar_Cart(1.0);
+		DataArray<2> rhs_u = u;
+		DataArray<2> rhs_v = v;
+		DataArray<2> lhs = u;
+		if (param_semilagrangian)
+		{
+			double tau = 1.0;
+			rhs_u += t*f;
+			rhs_u += (1.0-tau)*t*simVars.sim.viscosity*(op.diff2_c_x(u) + op.diff2_c_y(u));
+			lhs = ((-t)*tau*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).addScalar_Cart(1.0);
+		}else{
+			rhs_u += - t*(u*op.diff_c_x(u)+v*op.diff_c_y(u)) + t*f;
+			rhs_v += - t*(u*op.diff_c_x(v)+v*op.diff_c_y(v));
+			lhs = ((-t)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).addScalar_Cart(1.0);
+		}
 
 #if 1   // solving the system directly by inverting the left hand side operator
 		io_u = rhs_u.spec_div_element_wise(lhs);
