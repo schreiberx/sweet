@@ -479,8 +479,12 @@ bool RexiSWE::run_timestep(
 
 			// precompute a bunch of values
 			// this would belong to a serial part according to Amdahls law
+			//
+			// (kappa + lhs_a)\eta = kappa/alpha*\eta_0 - (i_parameters.sim.f0*eta_bar/alpha) * rhs_b + rhs_a
+			//
 			Complex2DArrayFFT rhs_a = eta_bar*(op_diff_c_x(u0) + op_diff_c_y(v0));
 			Complex2DArrayFFT rhs_b = (op_diff_c_x(v0) - op_diff_c_y(u0));
+
 			Complex2DArrayFFT lhs_a = (-g*eta_bar)*(perThreadVars[i]->op_diff2_c_x + perThreadVars[i]->op_diff2_c_y);
 
 #if SWEET_BENCHMARK_REXI
@@ -493,25 +497,24 @@ bool RexiSWE::run_timestep(
 				stopwatch_solve_rexi_terms.start();
 #endif
 
-
 			for (std::size_t n = start; n < end; n++)
 			{
 				// load alpha (a) and scale by inverse of tau
 				// we flip the sign to account for the -L used in exp(\tau (-L))
-				complex alpha = -rexi.alpha[n]/i_timestep_size;
-				complex beta = -rexi.beta_re[n];
+				complex alpha = rexi.alpha[n]/i_timestep_size;
+				complex beta = rexi.beta_re[n];
 
 				// load kappa (k)
 				complex kappa = alpha*alpha + i_parameters.sim.f0*i_parameters.sim.f0;
 
 				/*
-/				 * TODO: we can even get more performance out of this operations
+				 * TODO: we can even get more performance out of this operations
 				 * by partly using the real Fourier transformation
 				 */
 				Complex2DArrayFFT rhs =
 						(kappa/alpha) * eta0
-						- rhs_a
-						- (i_parameters.sim.f0*eta_bar/alpha) * rhs_b
+						+ (-i_parameters.sim.f0*eta_bar/alpha) * rhs_b
+						+ rhs_a
 					;
 
 #if 0
@@ -520,30 +523,14 @@ bool RexiSWE::run_timestep(
 				Complex2DArrayFFT lhs = lhs_a.addScalar_Cart(kappa);
 				rhs.spec_div_element_wise(lhs, eta);
 #endif
-//				eta.setAllIm(0);
 
-				Complex2DArrayFFT uh = u0 - g*op_diff_c_x(eta);
-				Complex2DArrayFFT vh = v0 - g*op_diff_c_y(eta);
+				Complex2DArrayFFT uh = u0 + g*op_diff_c_x(eta);
+				Complex2DArrayFFT vh = v0 + g*op_diff_c_y(eta);
 
-				Complex2DArrayFFT u1 = alpha/kappa * uh     + i_parameters.sim.f0/kappa * vh;
-				Complex2DArrayFFT v1 =    -i_parameters.sim.f0/kappa * uh + alpha/kappa * vh;
+				Complex2DArrayFFT u1 = (alpha/kappa) * uh     - (i_parameters.sim.f0/kappa) * vh;
+				Complex2DArrayFFT v1 = (i_parameters.sim.f0/kappa) * uh + (alpha/kappa) * vh;
 
 				DataArray<2> tmp(h_sum.resolution);
-
-				/* commented cout by peixoto
-				std::cout << n << ": ";
-
-				(eta.toCart()*beta).toDataArrays_Imag(tmp);
-				std::cout << tmp.reduce_max() << "\t";
-
-				(u1.toCart()*beta).toDataArrays_Imag(tmp);
-				std::cout << tmp.reduce_max() << "\t";
-
-				(v1.toCart()*beta).toDataArrays_Imag(tmp);
-				std::cout << tmp.reduce_max() << "\t";
-
-				std::cout << std::endl;
-				*/
 
 				h_sum += eta.toCart()*beta;
 				u_sum += u1.toCart()*beta;
