@@ -372,7 +372,7 @@ To compute the coefficients
 , we rewrite the previous equation in Fourier space with 
 \begin_inset Formula 
 \[
-\frac{\hat{f}(\xi)}{\hat{\psi_{h}}(\xi)}=\sum_{m=\infty}^{\infty}b_{m}e^{2\pi imh\xi},
+\frac{\hat{f}(\xi)}{\hat{\psi}_{h}(\xi)}=\sum_{m=\infty}^{\infty}b_{m}e^{2\pi imh\xi},
 \]
 
 \end_inset
@@ -414,6 +414,10 @@ for
 \end_inset
 
  defines the periodicity of the trigonometric basis function.
+ The reformulation from the discrete sum over this formulation can be understood
+ by a Riemann integral over one of the intervals.
+ Therefore, we also don't require the translated Gaussian since the integrated
+ interval is already shifted to the origin.
 \end_layout
 
 \begin_layout Standard
@@ -447,7 +451,7 @@ The Fourier transform of the Gaussian function is well known and given by
 \begin_layout Standard
 \begin_inset Formula 
 \begin{eqnarray*}
-\hat{\psi_{h}}(\xi) & = & \intop_{-\infty}^{\infty}\frac{1}{\sqrt{4\pi}}e^{-\left(\frac{x}{2h}\right)^{2}}e^{-2\pi ix\xi}dx\\
+\hat{\psi}_{h}(\xi) & = & \intop_{-\infty}^{\infty}\frac{1}{\sqrt{4\pi}}e^{-\left(\frac{x}{2h}\right)^{2}}e^{-2\pi ix\xi}dx\\
  & = & \frac{1}{\sqrt{4\pi}}\intop_{-\infty}^{\infty}e^{-\left(\left(\frac{x}{2h}\right)^{2}+2\pi ix\xi+(2h\pi i\xi)^{2}-(2h\pi i\xi)^{2}\right)}dx\\
  & = & \frac{1}{\sqrt{4\pi}}e^{-(2h\pi\xi)^{2}}\intop_{-\infty}^{\infty}e^{-\left(\frac{x}{2h}+2h\pi i\xi\right)^{2}}dx\\
  & = & \frac{1}{\sqrt{4\pi}}e^{-(2h\pi\xi)^{2}}\intop_{-\infty}^{\infty}e^{-\left(\frac{x}{2h}\right)^{2}}dx\\
@@ -461,7 +465,24 @@ where we used that
 \end_inset
 
  and completed squares in the exponential term.
- For the case 
+ For the Gaussian function including a shift 
+\begin_inset Formula $\psi_{h}(x+hm)$
+\end_inset
+
+, we get
+\begin_inset Formula 
+\begin{eqnarray*}
+\hat{\psi}_{h}(\xi) & = & \intop_{-\infty}^{\infty}\frac{1}{\sqrt{4\pi}}e^{-\left(\frac{x+hm}{2h}\right)^{2}}e^{-2\pi ix\xi}dx\\
+ & = & he^{-(2h\pi\xi)^{2}}e^{i2\pi\xi(hm)}
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+For the case 
 \begin_inset Formula $\xi=\frac{1}{2\pi}$
 \end_inset
 
@@ -471,7 +492,18 @@ where we used that
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\hat{\psi}_{h}\left(\frac{1}{2\pi}\right)=h\,e^{-h^{2}}.
+\hat{\psi}_{h}\left(\frac{1}{2\pi}\right)=h\,e^{-h^{2}}
+\]
+
+\end_inset
+
+or including the translation in the Gaussian we get
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\hat{\psi}_{h}\left(\frac{1}{2\pi}\right)=h\,e^{-h^{2}}e^{ihm}.
 \]
 
 \end_inset
@@ -2349,13 +2381,13 @@ For computing the inverse, arbitrary solvers can be used.
 We wish to solve the differential problem for each time step 
 \begin_inset Formula 
 \[
-(-L+\alpha)U=U(0)
+(L+\alpha)U=U(0)
 \]
 
 \end_inset
 
 so that 
-\begin_inset Formula $U=(-L+\alpha)^{-1}U_{0}$
+\begin_inset Formula $U=(L+\alpha)^{-1}U_{0}$
 \end_inset
 
 .
@@ -2381,9 +2413,9 @@ First, lets expand the equations with the definition of
 , 
 \begin_inset Formula 
 \begin{eqnarray}
-fv+g\eta_{x}+\alpha u & = & u_{0},\label{eq:mom_u}\\
-fu+g\eta_{y}+\alpha v & = & v_{0},\label{eq:mom_v}\\
-\bar{\eta}(u_{x}+v_{y})+\alpha\eta & = & \eta_{0}.\label{eq:mass}
+fv-g\eta_{x}+\alpha u & = & u_{0},\label{eq:mom_u}\\
+-fu-g\eta_{y}+\alpha v & = & v_{0},\label{eq:mom_v}\\
+-\bar{\eta}(u_{x}+v_{y})+\alpha\eta & = & \eta_{0}.\label{eq:mass}
 \end{eqnarray}
 
 \end_inset
@@ -2436,7 +2468,7 @@ reference "eq:mom_v"
 , yielding 
 \begin_inset Formula 
 \begin{equation}
--f\zeta+g\Delta\eta+\alpha\delta=\delta_{0}.\label{eq:zeta}
+f\zeta-g\Delta\eta+\alpha\delta=\delta_{0}.\label{eq:zeta}
 \end{equation}
 
 \end_inset
@@ -2466,7 +2498,7 @@ reference "eq:mom_v"
 , yielding 
 \begin_inset Formula 
 \begin{equation}
-f\delta+\alpha\zeta=\zeta_{0}.\label{eq:delta}
+-f\delta+\alpha\zeta=\zeta_{0}.\label{eq:delta}
 \end{equation}
 
 \end_inset
@@ -2491,7 +2523,7 @@ reference "eq:delta"
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\delta=-\frac{1}{f^{2}+\alpha^{2}}\left(\alpha g\Delta\eta-\alpha\delta_{0}-f\zeta_{0}\right).
+\delta=\frac{1}{f^{2}+\alpha^{2}}\left(\alpha g\Delta\eta+\alpha\delta_{0}-f\zeta_{0}\right).
 \]
 
 \end_inset
@@ -2514,22 +2546,18 @@ reference "eq:mass"
 , results in 
 \begin_inset Formula 
 \[
--\frac{\bar{\eta}}{f^{2}+\alpha^{2}}\left(\alpha g\Delta\eta-\alpha\delta_{0}-f\zeta_{0}\right)+\alpha\eta=\eta_{0},
+-\frac{\bar{\eta}}{f^{2}+\alpha^{2}}\left(\alpha g\Delta\eta+\alpha\delta_{0}-f\zeta_{0}\right)+\alpha\eta=\eta_{0},
 \]
 
 \end_inset
 
-which may be simplified into the elliptic equation by multiplying by 
-\begin_inset Formula $-\frac{f^{2}+\alpha^{2}}{\bar{\eta}\alpha g}$
-\end_inset
-
-
+which can be written as an eliptic equation with
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-\Delta\eta-\kappa^{2}\eta=r_{0}\label{eq:ellip}
+(\kappa-\overline{\eta}g\Delta)\eta=r_{0}\label{eq:ellip}
 \end{equation}
 
 \end_inset
@@ -2537,7 +2565,7 @@ which may be simplified into the elliptic equation by multiplying by
 where 
 \begin_inset Formula 
 \[
-\kappa^{2}=\frac{f^{2}+\alpha^{2}}{\bar{\eta}g}
+\kappa=f^{2}+\alpha^{2}
 \]
 
 \end_inset
@@ -2545,45 +2573,7 @@ where
 and 
 \begin_inset Formula 
 \[
-r_{0}=-\frac{\kappa^{2}}{\alpha}\eta_{0}+\frac{1}{g}\delta_{0}+\frac{f}{\alpha g}\zeta_{0}.
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-Multiplying the equation 
-\begin_inset CommandInset ref
-LatexCommand eqref
-reference "eq:ellip"
-
-\end_inset
-
-by 
-\begin_inset Formula $-g\bar{\eta}$
-\end_inset
-
- gives
-\end_layout
-
-\begin_layout Standard
-
-\family roman
-\series medium
-\shape up
-\size normal
-\emph off
-\bar no
-\strikeout off
-\uuline off
-\uwave off
-\noun off
-\color none
-\begin_inset Formula 
-\[
-((\alpha^{2}+f^{2})-g\bar{\eta}\Delta)\eta=\frac{f^{2}+\alpha^{2}}{\alpha}\eta_{0}-\bar{\eta}\delta_{0}-\frac{f\bar{\eta}}{\alpha}\zeta_{0}
+r_{0}=\frac{\kappa}{\alpha}\eta_{0}-\overline{\eta}\frac{f}{\alpha}\zeta_{0}+\overline{\eta}\delta_{0}.
 \]
 
 \end_inset
@@ -2596,7 +2586,7 @@ We can compute
 \begin_inset Formula $\eta$
 \end_inset
 
- with any elliptic solver.
+ with a solver for elliptic problems.
  Special attention has to be given to the LHS of the form 
 \begin_inset Formula $(\gamma-\Delta)\eta$
 \end_inset
@@ -2658,7 +2648,7 @@ reference "eq:mom_v"
 , which reads 
 \begin_inset Formula 
 \[
-A_{\alpha}U=U_{0}-g\nabla\eta
+A_{\alpha}U=U_{0}+g\nabla\eta
 \]
 
 \end_inset
@@ -2666,8 +2656,8 @@ A_{\alpha}U=U_{0}-g\nabla\eta
 with 
 \begin_inset Formula 
 \[
-A_{\alpha}=\left(\begin{matrix}\alpha & -f\\
-f & \alpha
+A_{\alpha}=\left(\begin{matrix}\alpha & f\\
+-f & \alpha
 \end{matrix}\right).
 \]
 
@@ -2676,7 +2666,7 @@ f & \alpha
 The solution is 
 \begin_inset Formula 
 \[
-U=A_{\alpha}^{-1}(U_{0}-g\nabla\eta)
+U=A_{\alpha}^{-1}(U_{0}+g\nabla\eta)
 \]
 
 \end_inset
@@ -2684,31 +2674,14 @@ U=A_{\alpha}^{-1}(U_{0}-g\nabla\eta)
 where 
 \begin_inset Formula 
 \[
-A_{\alpha}^{-1}=\frac{1}{f^{2}+\alpha^{2}}\left(\begin{matrix}\alpha & f\\
--f & \alpha
+A_{\alpha}^{-1}=\frac{1}{f^{2}+\alpha^{2}}\left(\begin{matrix}\alpha & -f\\
+f & \alpha
 \end{matrix}\right)
 \]
 
 \end_inset
 
-Finally, since we computed 
-\begin_inset Formula $(-L+\alpha)^{-1}$
-\end_inset
 
-, we also have to invert the sign of the computed solution 
-\begin_inset Formula $U$
-\end_inset
-
-.
- Alternatively, we can change the signs of 
-\begin_inset Formula $\alpha_{n}$
-\end_inset
-
- and 
-\begin_inset Formula $\beta_{n}$
-\end_inset
-
-.
 \end_layout
 
 \begin_layout Subsection
@@ -2730,7 +2703,7 @@ We like to close this section with a brief discussion of
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\left(L-\frac{\alpha}{\tau}\right)^{-1}U\tau^{-1}=U_{0}
+\left(L+\frac{\alpha}{\tau}\right)^{-1}U\tau^{-1}=U_{0}
 \]
 
 \end_inset
