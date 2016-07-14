@@ -170,9 +170,6 @@ public:
 		/// this is computed based on disc.res and sim.domain_size
 		double cell_size[2] = {0,0};
 
-		/// use leapfrog like update? (predictor / corrector intermixing h and v,u updates)
-		bool timestepping_leapfrog_like_update = false;
-
 		/// use up/downwinding for the advection of h
 		bool timestepping_up_and_downwinding = false;
 
@@ -564,11 +561,6 @@ public:
 				setup.setup_initial_condition_filenames(optarg);
 				break;
 
-			case 'F':
-				disc.timestepping_leapfrog_like_update = atoi(optarg);
-				std::cout << "WARNING: This time stepping method produces significant errors!" << std::endl;
-				std::cerr << "WARNING: This time stepping method produces significant errors!" << std::endl;
-				break;
 
 			default:
 				const char *help_strings[] = {
@@ -580,6 +572,8 @@ public:
 						"	-p [visc]	potential viscosity, default=0",
 						"	-P [visc]	potential hyperviscosity, default=0",
 						"	-f [float]	f-parameter for f-plane, default=0",
+						"	-b [float]	beta-parameter for beta-plane, default=0",
+						"	            Use -1 to set f*sin(phi) with phi in [-pi/2;pi/2] in y",
 						"	-g [float]	gravity, default=9.81",
 						"",
 						"Simulation setup parameters",
@@ -608,7 +602,7 @@ public:
 						"               0: FD, 1: spectral derivatives, default:0",
 						"  >Time:",
 						"	-W [0/1]	use up- and downwinding, default:0",
-						"	-F [0/1]	use leapfrog-like algorithm, default:0",
+//						"	-F [0/1]	use leapfrog-like algorithm, default:0",
 						"	-R [1-RKn]	order of Runge-Kutta method, default:4",
 						"	-C [cfl]	CFL condition, use negative value for fixed time step size, default=0.05",
 						"",

@@ -756,8 +756,8 @@ if env['debug_symbols'] == 'enable':
 	env.Append(LINKFLAGS = '-g')
 
 	if env['compiler'] == 'intel':
-		env.Append(CXXFLAGS = ' -O2 -shared-intel -shared-libgcc -debug inline-debug-info')
-		env.Append(LINKFLAGS = ' -O2 -shared-intel  -shared-libgcc -debug inline-debug-info')
+		env.Append(CXXFLAGS = ' -shared-intel -shared-libgcc -debug inline-debug-info')
+		env.Append(LINKFLAGS = ' -shared-intel  -shared-libgcc -debug inline-debug-info')
 
 
 

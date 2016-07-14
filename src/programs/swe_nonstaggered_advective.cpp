@@ -293,28 +293,20 @@ public:
 			}
 		}
 
-		if (!simVars.disc.timestepping_leapfrog_like_update)
+		if (!simVars.disc.timestepping_up_and_downwinding)
 		{
-			if (!simVars.disc.timestepping_up_and_downwinding)
-			{
-				// standard update
-				o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
-			}
-			else
-			{
-				// up/down winding
-				compute_upwinding_P_updates(
-						i_h,
-						i_u,
-						i_v,
-						o_h_t
-					);
-			}
+			// standard update
+			o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
 		}
 		else
 		{
-			std::cerr << "not supported!" << std::endl;
-
+			// up/down winding
+			compute_upwinding_P_updates(
+					i_h,
+					i_u,
+					i_v,
+					o_h_t
+				);
 		}
 	}
 

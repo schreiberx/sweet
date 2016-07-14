@@ -19,6 +19,7 @@
 #include <sstream>
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "rexiswe/RexiSWE.hpp"
 
 
@@ -72,6 +73,9 @@ class SimulationInstance
 public:
 	// Prognostic variables
 	DataArray<2> prog_h, prog_u, prog_v;
+
+	// beta plane
+	DataArray<2> beta_plane;
 
 	// Prognostic variables at time step t-dt
 	DataArray<2> prog_h_prev, prog_u_prev, prog_v_prev;
@@ -164,6 +168,8 @@ public:
 		prog_h(simVars.disc.res),
 		prog_u(simVars.disc.res),
 		prog_v(simVars.disc.res),
+
+		beta_plane(simVars.disc.res),
 
 		prog_h_prev(simVars.disc.res),
 		prog_u_prev(simVars.disc.res),
@@ -413,6 +419,15 @@ public:
 					}
 
 					{
+						std::cerr << "WARNING: BETA PLANE ON C-GRID NOT SUPPORTED!" << std::endl;
+						assert(false);
+
+						// beta plane: TODO: implement for u anv v placement!
+						//double y_beta = (((double)j+0.5)/(double)simVars.disc.res[1]);
+						//beta_plane.set(j, i, simVars.sim.f0+simVars.sim.beta*y_beta);
+					}
+
+					{
 						// u space
 						double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
 						double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
@@ -440,6 +455,18 @@ public:
 					prog_h.set(j, i, return_h(simVars, x, y));
 					prog_u.set(j, i, return_u(simVars, x, y));
 					prog_v.set(j, i, return_v(simVars, x, y));
+
+					// beta plane
+					if (simVars.sim.beta < 0)
+					{
+						double y_beta = (((double)j+0.5)/(double)simVars.disc.res[1]);
+						beta_plane.set(j, i, simVars.sim.f0*std::sin((y_beta-0.5)*2.0*M_PI));
+					}
+					else
+					{
+						double y_beta = (((double)j+0.5)/(double)simVars.disc.res[1]);
+						beta_plane.set(j, i, simVars.sim.f0+simVars.sim.beta*y_beta);
+					}
 
 					t0_prog_h.set(j, i, return_h(simVars, x, y));
 					t0_prog_u.set(j, i, return_u(simVars, x, y));
@@ -862,12 +889,23 @@ public:
 			/*
 			 * linearized non-conservative (advective) formulation:
 			 *
-			 * h_t = -h0*u_x - h0*v_y
+			 * h_t = -h0*u_x - h0*v_ym
 			 * u_t = -g * h_x + f*v
 			 * v_t = -g * h_y - f*u
 			 */
-			o_u_t = -simVars.sim.g*op.diff_c_x(i_h) + simVars.sim.f0*i_v;
-			o_v_t = -simVars.sim.g*op.diff_c_y(i_h) - simVars.sim.f0*i_u;
+
+			o_u_t = -simVars.sim.g*op.diff_c_x(i_h);
+			o_v_t = -simVars.sim.g*op.diff_c_y(i_h);
+			if (simVars.sim.beta == 0.0)
+			{
+				o_u_t += simVars.sim.f0*i_v;
+				o_v_t -= simVars.sim.f0*i_u;
+			}
+			else
+			{
+				o_u_t += beta_plane*i_v;
+				o_v_t -= beta_plane*i_u;
+			}
 
 
 			if (simVars.sim.viscosity != 0)
@@ -878,55 +916,20 @@ public:
 
 			boundary_action();
 
-			if (!simVars.disc.timestepping_leapfrog_like_update)
+			if (!simVars.disc.timestepping_up_and_downwinding)
 			{
-				if (!simVars.disc.timestepping_up_and_downwinding)
-				{
-					// standard update
-					o_h_t = -(op.diff_c_x(i_u) + op.diff_c_y(i_v))*simVars.setup.h0;
-				}
-				else
-				{
-					// up/down winding
-					compute_upwinding_P_updates(
-							i_h,
-							i_u,
-							i_v,
-							o_h_t
-						);
-				}
+				// standard update
+				o_h_t = -(op.diff_c_x(i_u) + op.diff_c_y(i_v))*simVars.setup.h0;
 			}
 			else
 			{
-				/*
-				 * a kind of leapfrog:
-				 *
-				 * We use the hew v and u values to compute the update for p
-				 *
-				 * compute updated u and v values without using it
-				 */
-				if (!simVars.disc.timestepping_up_and_downwinding)
-				{
-					// recompute U and V
-
-					// update based on new u and v values
-					o_h_t = -op.diff_c_x(
-								simVars.setup.h0*(i_u+o_dt*o_u_t)
-							)
-							-op.diff_c_y(
-									simVars.setup.h0*(i_v+o_dt*o_v_t)
-							);
-				}
-				else
-				{
-					// update based on new u and v values
-					compute_upwinding_P_updates(
-							i_h,
-							i_u+o_dt*o_u_t,
-							i_v+o_dt*o_v_t,
-							o_h_t
-						);
-				}
+				// up/down winding
+				compute_upwinding_P_updates(
+						i_h,
+						i_u,
+						i_v,
+						o_h_t
+					);
 			}
 
 			boundary_action();
@@ -1024,71 +1027,27 @@ public:
 			/*
 			 * P UPDATE
 			 */
-			if (!simVars.disc.timestepping_leapfrog_like_update)
+			if (!simVars.disc.timestepping_up_and_downwinding)
 			{
-				if (!simVars.disc.timestepping_up_and_downwinding)
-				{
-					if(param_nonlinear > 0){ //full nonlinear divergence
-						// standard update
-						o_h_t = -op.diff_f_x(U) - op.diff_f_y(V);
-					}
-					else //use linear divergence
-					{
-						o_h_t = -op.diff_f_x(simVars.setup.h0*i_u) - op.diff_f_y(simVars.setup.h0*i_v);
-					}
+				if(param_nonlinear > 0){ //full nonlinear divergence
+					// standard update
+					o_h_t = -op.diff_f_x(U) - op.diff_f_y(V);
 				}
-				else
+				else //use linear divergence
 				{
-					// up/down winding
-					compute_upwinding_P_updates(
-							i_h,
-							i_u,
-							i_v,
-							o_h_t
-						);
+					o_h_t = -op.diff_f_x(simVars.setup.h0*i_u) - op.diff_f_y(simVars.setup.h0*i_v);
 				}
 			}
 			else
 			{
-				/*
-				 * a kind of leapfrog (this is not conserving anything! don't use it for production runs!):
-				 *
-				 * We use the new v and u values to compute the update for p
-				 *
-				 * compute updated u and v values without using it
-				 */
-				if (!simVars.disc.timestepping_up_and_downwinding)
-				{
-					// recompute U and V
-					U = op.avg_b_x(i_h)*(i_u+o_dt*o_u_t);
-					V = op.avg_b_y(i_h)*(i_v+o_dt*o_v_t);
-
-					// update based on new u and v values
-					o_h_t = -op.diff_f_x(U) - op.diff_f_y(V);
-				}
-				else
-				{
-					// update based on new u and v values
-					compute_upwinding_P_updates(
-							i_h,
-							i_u+o_dt*o_u_t,
-							i_v+o_dt*o_v_t,
-							o_h_t
-						);
-				}
+				// up/down winding
+				compute_upwinding_P_updates(
+						i_h,
+						i_u,
+						i_v,
+						o_h_t
+					);
 			}
-			//Add forcing, if non zero
-			o_h_t=o_h_t+force_h;
-			o_u_t=o_u_t+force_u;
-			o_v_t=o_v_t+force_v;
-
-#if 0
-			if (simVars.sim.potential_viscosity != 0)
-				o_h_t -= op.diff2(i_h)*simVars.sim.potential_viscosity;
-
-			if (simVars.sim.potential_hyper_viscosity != 0)
-				o_h_t -= op.diff4(i_h)*simVars.sim.potential_hyper_viscosity;
-#endif
 		}
 	}
 
@@ -1641,8 +1600,13 @@ public:
 			case -2:
 				vis = t_h-prog_h;	// difference to exact solution
 				break;
+
 			case -3:
 				vis = t0_prog_h-prog_h;	// difference to initial condition
+				break;
+
+			case -4:					// beta plane
+				vis = beta_plane;
 				break;
 			}
 
@@ -2161,7 +2125,7 @@ int main(int i_argc, char *i_argv[])
 	simVars.bogus.var[4] = 0;	// timestepping mode - default is RK
 	simVars.bogus.var[5] = 0;	// compute error - default no
 	simVars.bogus.var[6] = 0;	// stag - default A grid
-	simVars.bogus.var[7] = 0;	// Use spec diff per default for complex array
+	simVars.bogus.var[7] = 1;	// Use spec diff per default for complex array
 	simVars.bogus.var[8] = 0;	// Use spectral solver id
 	simVars.bogus.var[9] = 1e-7;	// Error threshold
 	simVars.bogus.var[10] = 0; 	//boundary
