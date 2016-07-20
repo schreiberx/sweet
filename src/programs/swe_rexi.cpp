@@ -416,15 +416,9 @@ public:
 						prog_h.set(j, i, return_h(simVars, x, y));
 						t0_prog_h.set(j, i, return_h(simVars, x, y));
 						force_h.set(j, i, SWEValidationBenchmarks::return_force_h(simVars, x, y));
-					}
 
-					{
 						std::cerr << "WARNING: BETA PLANE ON C-GRID NOT SUPPORTED!" << std::endl;
-						assert(false);
-
-						// beta plane: TODO: implement for u anv v placement!
-						//double y_beta = (((double)j+0.5)/(double)simVars.disc.res[1]);
-						//beta_plane.set(j, i, simVars.sim.f0+simVars.sim.beta*y_beta);
+						beta_plane.set(j, i, SWEValidationBenchmarks::return_f(simVars, x, y));
 					}
 
 					{
@@ -460,7 +454,7 @@ public:
 					if (simVars.sim.beta < 0)
 					{
 						double y_beta = (((double)j+0.5)/(double)simVars.disc.res[1]);
-						beta_plane.set(j, i, simVars.sim.f0*std::sin((y_beta-0.5)*2.0*M_PI));
+						beta_plane.set(j, i, 0);
 					}
 					else
 					{
@@ -879,7 +873,8 @@ public:
 		// A- grid method
 		if (!param_use_staggering)
 		{
-			if(param_nonlinear > 0){ //nonlinear case
+			if (param_nonlinear > 0)	 // nonlinear case
+			{
 				std::cout << "Only linear swe are setup for unstaggered grids " << std::endl;
 				exit(1);
 			}
