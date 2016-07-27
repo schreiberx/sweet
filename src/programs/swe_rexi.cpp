@@ -417,8 +417,20 @@ public:
 						t0_prog_h.set(j, i, return_h(simVars, x, y));
 						force_h.set(j, i, SWEValidationBenchmarks::return_force_h(simVars, x, y));
 
-						std::cerr << "WARNING: BETA PLANE ON C-GRID NOT SUPPORTED!" << std::endl;
-						beta_plane.set(j, i, SWEValidationBenchmarks::return_f(simVars, x, y));
+						if (param_nonlinear)
+						{
+							double x = (((double)i-0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+							double y = (((double)j-0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+							beta_plane.set(j, i, SWEValidationBenchmarks::return_f(simVars, x, y));
+							std::cerr << "WARNING: BETA PLANE ON C-GRID NOT TESTED FOR NON_LINEARITIES!" << std::endl;
+						}
+						else
+						{
+							std::cerr << "WARNING: BETA PLANE ON C-GRID NOT SUPPORTED!" << std::endl;
+							exit(-1);
+							// linear
+//							op.diff_b_x(H)
+						}
 					}
 
 					{
@@ -450,17 +462,7 @@ public:
 					prog_u.set(j, i, return_u(simVars, x, y));
 					prog_v.set(j, i, return_v(simVars, x, y));
 
-					// beta plane
-					if (simVars.sim.beta < 0)
-					{
-						double y_beta = (((double)j+0.5)/(double)simVars.disc.res[1]);
-						beta_plane.set(j, i, 0);
-					}
-					else
-					{
-						double y_beta = (((double)j+0.5)/(double)simVars.disc.res[1]);
-						beta_plane.set(j, i, simVars.sim.f0+simVars.sim.beta*y_beta);
-					}
+					beta_plane.set(j, i, SWEValidationBenchmarks::return_f(simVars, x, y));
 
 					t0_prog_h.set(j, i, return_h(simVars, x, y));
 					t0_prog_u.set(j, i, return_u(simVars, x, y));
@@ -688,7 +690,12 @@ public:
 			).reduce_sum_quad()) * normalization;
 
 		// potential verticity and pot. enstropy
-		eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + simVars.sim.f0) / prog_h;
+
+		if (simVars.sim.beta == 0)
+			eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + simVars.sim.f0) / prog_h;
+		else
+			eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + beta_plane) / prog_h;
+
 		simVars.diag.total_potential_enstrophy = 0.5*(eta*eta*prog_h).reduce_sum_quad() * normalization;
 	}
 
@@ -834,32 +841,6 @@ public:
 			}
 			else
 			{
-#if 0
-				double limit_speed = std::min(simVars.disc.cell_size[0]/i_u.reduce_maxAbs(), simVars.disc.cell_size[1]/i_v.reduce_maxAbs())*(1.0/simVars.sim.f0);
-
-				if (std::abs(simVars.sim.f0) == 0)
-					limit_speed = std::numeric_limits<double>::infinity();
-
-				//	double hx = simVars.disc.cell_size[0];
-				//	double hy = simVars.disc.cell_size[1];
-
-				// limit by viscosity
-				double limit_visc = std::numeric_limits<double>::infinity();
-				/*
-				if (simVars.sim.viscosity > 0)
-					limit_visc = (hx*hx*hy*hy)/(4.0*simVars.sim.viscosity*simVars.sim.viscosity);
-				if (simVars.sim.viscosity_order > 0)
-					limit_visc = std::min((hx*hx*hx*hx*hy*hy*hy*hy)/(16.0*simVars.sim.viscosity_order*simVars.sim.viscosity_order), limit_visc);
-				 */
-				// limit by gravitational acceleration
-				double limit_gh = std::min(simVars.disc.cell_size[0], simVars.disc.cell_size[1])/std::sqrt(simVars.sim.g*simVars.setup.h0);
-
-				if (simVars.misc.verbosity > 2)
-					std::cerr << "limit_speed: " << limit_speed << ", limit_visc: " << limit_visc << ", limit_gh: " << limit_gh << std::endl;
-
-				o_dt = simVars.sim.CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
-#endif
-
 				double k = 1.0/std::min(simVars.disc.cell_size[0], simVars.disc.cell_size[1]);
 				o_dt = simVars.sim.CFL /
 					std::sqrt(
@@ -891,6 +872,7 @@ public:
 
 			o_u_t = -simVars.sim.g*op.diff_c_x(i_h);
 			o_v_t = -simVars.sim.g*op.diff_c_y(i_h);
+
 			if (simVars.sim.beta == 0.0)
 			{
 				o_u_t += simVars.sim.f0*i_v;
@@ -928,14 +910,6 @@ public:
 			}
 
 			boundary_action();
-
-#if 0
-			if (simVars.sim.potential_viscosity != 0)
-				o_h_t -= op.diff2(i_h)*simVars.sim.potential_viscosity;
-
-			if (simVars.sim.potential_hyper_viscosity != 0)
-				o_h_t -= op.diff4(i_h)*simVars.sim.potential_hyper_viscosity;
-#endif
 		}
 		else // param_use_staggering = true
 		{
@@ -988,7 +962,7 @@ public:
 				H = simVars.sim.g*i_h;// + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
 
 
-			if(param_nonlinear > 0) //nonlinear case
+			if (param_nonlinear > 0) //nonlinear case
 			{
 				// Potential vorticity
 				if(op.avg_b_x(op.avg_b_y(i_h)).reduce_min() < 0.00000001)
@@ -996,7 +970,11 @@ public:
 					std::cerr << "Test case not adequate for vector invariant formulation. Null or negative water height" << std::endl;
 					exit(1);
 				}
-				q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + simVars.sim.f0) / op.avg_b_x(op.avg_b_y(i_h));
+
+				if (simVars.sim.beta == 0)
+					q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + simVars.sim.f0) / op.avg_b_x(op.avg_b_y(i_h));
+				else
+					q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + beta_plane) / op.avg_b_x(op.avg_b_y(i_h));
 
 				// u, v tendencies
 				// Energy conserving scheme
@@ -1005,10 +983,17 @@ public:
 			}
 			else //linear case
 			{
-				o_u_t = op.avg_f_y(simVars.sim.f0*op.avg_b_x(i_v)) - op.diff_b_x(H);
-				o_v_t = -op.avg_f_x(simVars.sim.f0*op.avg_b_y(i_u)) - op.diff_b_y(H);
+				if (simVars.sim.beta == 0)
+				{
+					o_u_t = op.avg_f_y(simVars.sim.f0*op.avg_b_x(i_v)) - op.diff_b_x(H);
+					o_v_t = -op.avg_f_x(simVars.sim.f0*op.avg_b_y(i_u)) - op.diff_b_y(H);
+				}
+				else
+				{
+					o_u_t = op.avg_f_y(beta_plane*op.avg_b_x(i_v)) - op.diff_b_x(H);
+					o_v_t = -op.avg_f_x(beta_plane*op.avg_b_y(i_u)) - op.diff_b_y(H);
+				}
 			}
-
 
 			/*
 			 * VISCOSITY
@@ -2222,7 +2207,7 @@ int main(int i_argc, char *i_argv[])
 	}
 
 	std::cout << "-----------------------------" << std::endl;
-	std::cout << "Method to be used (timestepping_mode): "; // << param_timestepping_mode << std::endl;
+	std::cout << "Time stepping method to be used (timestepping_mode): "; // << param_timestepping_mode << std::endl;
 	switch(param_timestepping_mode)
 	{
 		case 0:
@@ -2239,8 +2224,16 @@ int main(int i_argc, char *i_argv[])
 			std::cerr << "Timestepping unknowkn" << std::endl;
 			return -1;
 	}
+	std::cout << "Viscosity: " << simVars.sim.viscosity << std::endl;
 	std::cout << "Staggered grid? " << param_use_staggering << std::endl;
 	std::cout << "Computing error? " << param_compute_error << std::endl;
+	std::cout << "Dealiasing: " <<
+#if SWEET_USE_SPECTRAL_DEALIASING
+			1
+#else
+			0
+#endif
+			<< std::endl;
 	std::cout << "Verbosity: " << simVars.misc.verbosity << std::endl;
 	std::cout << "Parareal: " << SWEET_PARAREAL << std::endl;
 

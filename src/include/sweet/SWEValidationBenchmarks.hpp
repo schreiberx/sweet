@@ -13,11 +13,11 @@
 
 #include <sweet/SimulationVariables.hpp>
 
-#define error(x)	assert(false);
+//#define error(x)	assert(false);
 
 class SWEValidationBenchmarks
 {
-#if 0
+#if 1
 	static
 	void error(const char *i_string)
 	{
@@ -31,7 +31,7 @@ class SWEValidationBenchmarks
 			SimulationVariables &i_parameters,
 			double x,
 			double y,
-			int i_variable_id	//< 0:h, 1:u, 2:v, 3:force h, 4:force u, 5:force v
+			int i_variable_id	//< 0:h, 1:u, 2:v, 3:force h, 4:force u, 5:force v, 6:coriolis
 	)
 	{
 		double f = i_parameters.sim.f0;
@@ -59,6 +59,10 @@ class SWEValidationBenchmarks
 			else if (i_variable_id == 2) // velocity v
 			{
 				return 0;
+			}
+			else if (i_variable_id == 6) // f-term
+			{
+				return i_parameters.sim.f0;
 			}
 			else
 			{
@@ -88,6 +92,10 @@ class SWEValidationBenchmarks
 			{
 				return 0;
 			}
+			else if (i_variable_id == 6) // f-term
+			{
+				return i_parameters.sim.f0;
+			}
 			else
 			{
 				return 0;
@@ -113,6 +121,10 @@ class SWEValidationBenchmarks
 				if (f == 0)
 					error("f-value is equal to zero!");
 				return i_parameters.sim.g/f*2.0*M_PIl*std::cos(2.0*M_PIl*x/sx)/sx;
+			}
+			else if (i_variable_id == 6) // f-term
+			{
+				return i_parameters.sim.f0;
 			}
 			else
 			{
@@ -142,6 +154,10 @@ class SWEValidationBenchmarks
 
 				error("Variable v not available");
 			}
+			else if (i_variable_id == 6) // f-term
+			{
+				return i_parameters.sim.f0;
+			}
 			else
 			{
 				return 0;
@@ -164,6 +180,10 @@ class SWEValidationBenchmarks
 			else if (i_variable_id == 2) // velocity v
 			{
 				return 0;
+			}
+			else if (i_variable_id == 6) // f-term
+			{
+				return i_parameters.sim.f0;
 			}
 			else
 			{
@@ -194,6 +214,10 @@ class SWEValidationBenchmarks
 				double dy = y/sy;
 
 				return std::cos(6.0*M_PIl*dx)*std::cos(6.0*M_PIl*dy);
+			}
+			else if (i_variable_id == 6) // f-term
+			{
+				return i_parameters.sim.f0;
 			}
 			else
 			{
@@ -237,6 +261,10 @@ class SWEValidationBenchmarks
 				double dh = std::exp(-e*(dx*dx + dy*dy));
 				return -i_parameters.sim.g/f*e*2.0*dx*dh;
 			}
+			else if (i_variable_id == 6) // f-term
+			{
+				return i_parameters.sim.f0;
+			}
 			else
 			{
 				return 0;
@@ -264,6 +292,10 @@ class SWEValidationBenchmarks
 			{
 				return 0;
 			}
+			else if (i_variable_id == 6) // f-term
+			{
+				return i_parameters.sim.f0;
+			}
 			else
 			{
 				return 0;
@@ -285,6 +317,10 @@ class SWEValidationBenchmarks
 			else if (i_variable_id == 2) // velocity v
 			{
 				return 2;
+			}
+			else if (i_variable_id == 6) // f-term
+			{
+				return i_parameters.sim.f0;
 			}
 			else
 			{
@@ -316,6 +352,10 @@ class SWEValidationBenchmarks
 			else if (i_variable_id == 2) // velocity v
 			{
 				return 0;
+			}
+			else if (i_variable_id == 6) // f-term
+			{
+				return i_parameters.sim.f0;
 			}
 			else
 			{
@@ -359,6 +399,10 @@ class SWEValidationBenchmarks
 				double factor = i_parameters.sim.g*2.0*M_PI/(f*sx);
 				return factor*factor*(M_PI/sy)*std::sin(4.0*M_PI*y/sy);
 			}
+			else if (i_variable_id == 6) // f-term
+			{
+				return i_parameters.sim.f0;
+			}
 			else
 			{
 				return 0;
@@ -385,11 +429,55 @@ class SWEValidationBenchmarks
 				double factor = -i_parameters.sim.g*2.0*M_PI/(f*sx);
 				return factor*std::sin(2.0*M_PI*(x/sx+y/sy));
 			}
+			else if (i_variable_id == 6) // f-term
+			{
+				return i_parameters.sim.f0;
+			}
 			else
 			{
 				return 0;
 			}
 		}
+
+
+
+		// Beta plane steady state A
+		if (i_parameters.setup.scenario == 15)
+		{
+			if (i_parameters.sim.beta == 0)
+			{
+				std::cerr << "Set beta to non-zero value to activate varying f term" << std::endl;
+				exit(-1);
+			}
+
+			double phi = (y-0.5)*2.0*M_PI;
+			double a = 1;//i_parameters.setup.h0;
+
+			if (i_variable_id == 0)
+			{
+				return -a*std::cos(phi);
+			}
+			else if (i_variable_id == 1) // velocity u
+			{
+				return -a*(2.0*M_PI);
+			}
+			else if (i_variable_id == 2) // velocity v
+			{
+				return 0;
+			}
+			else if (i_variable_id == 6) // f term on beta plane
+			{
+				if (f == 0)
+					error("f-value is equal to zero! Cannot run this case scenario.");
+
+				return std::sin(phi);//*i_parameters.sim.f0;
+			}
+			else
+			{
+				return 0;
+			}
+		}
+
 
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
 		exit(1);
@@ -407,8 +495,6 @@ public:
 		return return_variable_value(i_parameters, x, y, 0);
 	}
 
-
-
 	static
 	double return_u(
 			SimulationVariables &i_parameters,
@@ -419,8 +505,6 @@ public:
 		return return_variable_value(i_parameters, x, y, 1);
 	}
 
-
-
 	static
 	double return_v(
 			SimulationVariables &i_parameters,
@@ -430,9 +514,6 @@ public:
 	{
 		return return_variable_value(i_parameters, x, y, 2);
 	}
-
-	// Forcings for the shallow water equations //
-	//------------------------------------------//
 
 	static
 	double return_force_h(
@@ -519,6 +600,10 @@ public:
 
 		//Rotated steady state
 		if (i_parameters.setup.scenario == 14)
+			return true;
+
+		// Beta plane
+		if (i_parameters.setup.scenario == 15)
 			return true;
 
 		return false;

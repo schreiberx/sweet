@@ -619,7 +619,7 @@ public:
 	inline
 	void checkConsistency(bool debug = false)	const
 	{
-#if SWEET_USE_SPECTRAL_SPACE && SWEET_DEBUG_MODE==1
+#if SWEET_USE_SPECTRAL_SPACE && SWEET_DEBUG_MODE==1 && 0
 
 		static bool volatile inCheck = false;
 

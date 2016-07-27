@@ -179,6 +179,7 @@ class VisSweet	:
 
 	void vis_keypress(char i_key)
 	{
+//		std::cout << "> " << i_key << " < " << std::endl;
 		if (i_key >= '1' && i_key <= '9')
 		{
 			sim_runs_per_frame = std::pow(2, i_key-'1');

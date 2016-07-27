@@ -140,6 +140,7 @@ comp_spec='scons --compiler=intel --sweet-mpi=enable --program=swe_rexi --spectr
 comp_cart='scons --compiler=intel --sweet-mpi=enable --program=swe_rexi --spectral-space=disable --libfft=enable --spectral-dealiasing=disable --mode=release'
 
 comp_rexi='scons --compiler=intel --sweet-mpi=enable --program=swe_rexi --spectral-space=disable --libfft=enable --rexi-parallel-sum=disable --spectral-dealiasing=disable --mode=release'
+# REXI par: USE REXI parallel sum.
 comp_rexi_par='scons --compiler=intel --sweet-mpi=enable --program=swe_rexi --spectral-space=disable --libfft=enable --rexi-parallel-sum=enable --spectral-dealiasing=disable --mode=release'
 
 
