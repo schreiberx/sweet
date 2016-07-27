@@ -294,6 +294,7 @@ public:
 			}
 		}
 
+
 		//Initialize t-dt time step with initial condition
 		prog_u_prev = prog_u;
 		prog_v_prev = prog_v;
@@ -338,12 +339,16 @@ public:
 		double normalization = (simVars.sim.domain_size[0]*simVars.sim.domain_size[1]) /
 								((double)simVars.disc.res[0]*(double)simVars.disc.res[1]);
 
+      std::cout << "Hier der Wechsel: cart_valid spectral_valid" << std::endl
+      << prog_u.array_data_cartesian_space_valid << "\t" << prog_u.array_data_spectral_space_valid << std::endl;
 		// energy
 		simVars.diag.total_energy =
 			0.5*((
 					prog_u*prog_u +
 					prog_v*prog_v
 				).reduce_sum_quad()) * normalization;
+      std::cout << "Hier der Wechsel part 2: cart_valid spectral_valid" << std::endl
+      << prog_u.array_data_cartesian_space_valid << "\t" << prog_u.array_data_spectral_space_valid << std::endl;
 		/*
 		 * Not used with the Burgers equation
 		 *
@@ -1245,7 +1250,14 @@ public:
 
 		// Initialize and set timestep dependent source for manufactured solution
 		DataArray<2> f(io_u.resolution);
+		std::cout << "f after initialization: " << f.array_data_spectral_space_valid << "\t"
+				<< f.array_data_cartesian_space_valid
+				<< std::endl;
 		set_source(f);
+		f.requestDataInSpectralSpace();
+		std::cout << "f after adding value and requestDataInSpectralSpace: " << f.array_data_spectral_space_valid << "\t"
+				<< f.array_data_cartesian_space_valid
+				<< std::endl;
 
 		// Modify timestep to final time if necessary
 		double& t = o_dt;
@@ -1257,22 +1269,128 @@ public:
 		// Setting explicit right hand side and operator of the left hand side
 		DataArray<2> rhs_u = u;
 		DataArray<2> rhs_v = v;
-		DataArray<2> lhs = u;
+
+		double tau = 1.0;
 		if (param_semilagrangian)
 		{
-			double tau = 1.0;
 			rhs_u += t*f;
-			rhs_u += (1.0-tau)*t*simVars.sim.viscosity*(op.diff2_c_x(u) + op.diff2_c_y(u));
-			lhs = ((-t)*tau*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).addScalar_Cart(1.0);
+			//rhs_u += (1.0-tau)*t*simVars.sim.viscosity*(op.diff2_c_x(u) + op.diff2_c_y(u));
+			//rhs_v += (1.0-tau)*t*simVars.sim.viscosity*(op.diff2_c_x(v) + op.diff2_c_y(v));
 		}else{
 			rhs_u += - t*(u*op.diff_c_x(u)+v*op.diff_c_y(u)) + t*f;
 			rhs_v += - t*(u*op.diff_c_x(v)+v*op.diff_c_y(v));
-			lhs = ((-t)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).addScalar_Cart(1.0);
 		}
 
+		if (false) //spectral
+		{
+			DataArray<2> lhs = u;
+			if (param_semilagrangian)
+			{
+				lhs = ((-t)*tau*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).addScalar_Cart(1.0);
+			}else{
+				lhs = ((-t)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).addScalar_Cart(1.0);
+			}
+
 #if 1   // solving the system directly by inverting the left hand side operator
-		io_u = rhs_u.spec_div_element_wise(lhs);
-		io_v = rhs_v.spec_div_element_wise(lhs);
+			io_u = rhs_u.spec_div_element_wise(lhs);
+			io_v = rhs_v.spec_div_element_wise(lhs);
+		} else { //Jacobi
+			/*
+			 * TODO:
+			 * set these values non manually
+			 */
+			double* domain_size = simVars.sim.domain_size;
+			int i_max_iters = 20;
+			double i_omega = 1.0;
+			double i_error_threshold = 1e-6;
+			rhs_u.requestDataInCartesianSpace();
+			rhs_v.requestDataInCartesianSpace();
+			u.requestDataInCartesianSpace();
+			v.requestDataInCartesianSpace();
+
+			double inv_helm_h[2];
+			inv_helm_h[0] = (double)rhs_u.resolution[0]/(double)domain_size[0];
+			inv_helm_h[1] = (double)rhs_u.resolution[1]/(double)domain_size[1];
+			double scalar_Dx = inv_helm_h[0]*inv_helm_h[0];
+			double scalar_Dy = inv_helm_h[1]*inv_helm_h[1];
+			double scalar_C = -(2.0*scalar_Dx+2.0*scalar_Dy);
+
+			double inv_diag = 1.0/(1-simVars.sim.viscosity*scalar_C);
+
+			int i = 0;
+			double residual = 0;
+			for (i = 0; i < i_max_iters; i++)
+			{
+				double max_res = 0;
+				const double iter_kernel[9] = {
+								 0,         scalar_Dy, 0,
+								 scalar_Dx, 0,         scalar_Dx,
+								 0,         scalar_Dy, 0
+						};
+
+				//u.op_stencil_Re_3x3(iter_kernel).printArrayData();
+				//std::cout << u.op_stencil_Re_3x3(iter_kernel).get(0,0)*inv_diag << std::endl;
+				std::cout << "u vorher: " << u.array_data_spectral_space_valid << "\t"
+						<< u.array_data_cartesian_space_valid
+						<< std::endl;
+				std::cout << "rhs_u vorher: " << u.array_data_spectral_space_valid << "\t"
+						<< rhs_u.array_data_cartesian_space_valid
+						<< std::endl
+						<< "u.op vorher: " << u.op_stencil_Re_3x3(iter_kernel).array_data_spectral_space_valid << "\t"
+						<< u.op_stencil_Re_3x3(iter_kernel).array_data_cartesian_space_valid
+						<< std::endl;
+
+				//((u.op_stencil_Re_3x3(iter_kernel)*inv_diag).printArrayData();
+				//((simVars.sim.viscosity*u.op_stencil_Re_3x3(iter_kernel))*inv_diag).printArrayData();
+				//(rhs_u*inv_diag).printArrayData();
+
+				u = (1.0-i_omega)*u + i_omega*(
+						(rhs_u+simVars.sim.viscosity*u.op_stencil_Re_3x3(iter_kernel))*inv_diag
+						);
+				//u.printArrayData();
+				v = (1.0-i_omega)*v + i_omega*(
+						(rhs_v+simVars.sim.viscosity*v.op_stencil_Re_3x3(iter_kernel))*inv_diag
+						);
+				const double res_kernel[9] = {
+								 0,         scalar_Dy, 0,
+								 scalar_Dx, scalar_C,  scalar_Dx,
+								 0,         scalar_Dy, 0
+						};
+				u.requestDataInCartesianSpace();
+				v.requestDataInCartesianSpace();
+				std::cout << "u nachher: " << u.array_data_spectral_space_valid << "\t"
+						<< u.array_data_cartesian_space_valid
+						<< std::endl;
+				std::cout << "rhs_u nachher: " << u.array_data_spectral_space_valid << "\t"
+						<< rhs_u.array_data_cartesian_space_valid
+						<< std::endl
+						<< "u.op nachher: " << u.op_stencil_Re_3x3(iter_kernel).array_data_spectral_space_valid << "\t"
+						<< u.op_stencil_Re_3x3(iter_kernel).array_data_cartesian_space_valid
+						<< std::endl;
+
+				residual = ((u-simVars.sim.viscosity*u.op_stencil_Re_3x3(res_kernel)) - rhs_u).reduce_rms();
+				max_res = (residual>max_res) ? residual : max_res;
+				residual = ((v-simVars.sim.viscosity*v.op_stencil_Re_3x3(res_kernel)) - rhs_v).reduce_rms();
+				max_res = (residual>max_res) ? residual : max_res;
+
+				//std::cout << max_res << "\t" << i_error_threshold << "\t" << inv_diag << std::endl;
+/*
+				const std::size_t test_res[2] = {4,4};
+				DataArray<2> test(test_res);
+				test.set_all(1.0);
+				test=test.op_stencil_Re_3x3(res_kernel);
+				test.printArrayData();
+*/
+				if (max_res < i_error_threshold)
+					break;
+			}
+			if (i < i_max_iters)
+				std::cout << "Iteration converged!" << std::endl;
+			u.requestDataInSpectralSpace();
+			v.requestDataInSpectralSpace();
+			io_u = u;
+			io_v = v;
+		}
 
 #else	// making the second step of the IMEX-RK1 scheme
 		DataArray<2> u1 = rhs_u.spec_div_element_wise(lhs);

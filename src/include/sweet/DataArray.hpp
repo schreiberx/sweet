@@ -1488,7 +1488,6 @@ public:
 	void requestDataInCartesianSpace()	const
 	{
 #if SWEET_USE_SPECTRAL_SPACE==1
-
 		checkConsistency();
 
 		if (array_data_cartesian_space_valid)
@@ -3645,18 +3644,20 @@ public:
 		std::ostream &o_ostream = std::cout;
 
 		o_ostream << std::setprecision(i_precision);
+		/*
 		for (int y = resolution[1]-1; y >= 0; y--)
-		{
+		{*/
 			for (std::size_t x = 0; x < resolution[0]; x++)
 			{
-				o_ostream << get(y, x);
+				//o_ostream << get(y, x);
+				o_ostream << get(1, x);
 
 				if (x < resolution[0]-1)
 					o_ostream << '\t';
 				else
 					o_ostream << std::endl;
 			}
-		}
+		//}
 
 		checkConsistency();
 		return true;
