@@ -2140,10 +2140,89 @@ public:
 		{
 			this->requestDataInCartesianSpace();
 			was_spectral = true;
+			this->array_data_spectral_space_valid=false;
+		}else if(!this->array_data_cartesian_space_valid){
+			std::cout << "Uninitialized DataArray in op_stencil_Re_3x3" << std::endl;
+			exit(-1);
 		}
 
 		DataArray<D> out = *this;
 
+		int res_x = resolution[0];
+		int res_y = resolution[1];
+
+
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#	pragma omp parallel for OPENMP_PAR_SIMD shared(res_x, res_y, out, i_kernel_data)
+#endif
+		for (int y = 0; y < res_y; y++)
+		{
+			for (int x = 0; x < res_x; x++)
+			{
+				double *data_out = &out.array_data_cartesian_space[(y*res_x+x)];
+				data_out[0] = 0;
+
+				for (int j = -1; j <= 1; j++)
+				{
+					int pos_y = y+j;
+
+					pos_y -= (pos_y >= res_y ? res_y : 0);
+					pos_y += (pos_y < 0 ? res_y : 0);
+
+					assert(pos_y >= 0 && pos_y < res_y);
+
+					for (int i = -1; i <= 1; i++)
+					{
+						int pos_x = x+i;
+
+						pos_x -= (pos_x >= res_x ? res_x : 0);
+						pos_x += (pos_x < 0 ? res_x : 0);
+
+						assert(pos_x >= 0 && pos_x < res_x);
+
+						int idx = (j+1)*3+(i+1);
+						assert(idx >= 0 && idx < 9);
+
+						double kre = i_kernel_data[idx];
+
+						double dre = array_data_cartesian_space[(pos_y*res_x+pos_x)];
+
+						data_out[0] += dre*kre;
+					}
+				}
+			}
+		}
+
+		if (was_spectral)
+		{
+			this->requestDataInSpectralSpace();
+			out.requestDataInSpectralSpace();
+		}
+
+		return out;
+	}
+
+
+	/**
+	 * apply a 3x3 stencil with updates
+	 */
+	DataArray<D> op_stencil_Re_3x3_update(
+			const double *i_kernel_data
+	)
+	{
+		bool was_spectral = false;
+		if (this->array_data_spectral_space_valid)
+		{
+			this->requestDataInCartesianSpace();
+			was_spectral = true;
+			this->array_data_spectral_space_valid=false;
+		}else if(!this->array_data_cartesian_space_valid){
+			std::cout << "Uninitialized DataArray in op_stencil_Re_3x3" << std::endl;
+			exit(-1);
+		}
+
+		DataArray<2> out(resolution);
+		out.array_data_spectral_space_valid=false;
 		int res_x = resolution[0];
 		int res_y = resolution[1];
 
@@ -2547,7 +2626,6 @@ public:
 			array_data_spectral_space_valid = false;
 		}
 #endif
-
 
 		checkConsistency();
 		return *this;
