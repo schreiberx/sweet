@@ -311,6 +311,8 @@ bool RexiSWE::run_timestep_implicit_ts(
 	double eta_bar = i_simVars.setup.h0;
 	double g = i_simVars.sim.g;
 
+	assert(perThreadVars.size() != 0);
+	assert(perThreadVars[0] != nullptr);
 	Complex2DArrayFFT &op_diff_c_x = perThreadVars[0]->op_diff_c_x;
 	Complex2DArrayFFT &op_diff_c_y = perThreadVars[0]->op_diff_c_y;
 
