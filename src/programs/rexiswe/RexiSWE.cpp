@@ -310,18 +310,21 @@ bool RexiSWE::run_timestep_implicit_ts(
 
 	double eta_bar = i_simVars.setup.h0;
 	double g = i_simVars.sim.g;
-
+	std::cout << "hi" <<std::endl;
+	//@MArtin, this seems to be buggy
 	Complex2DArrayFFT &op_diff_c_x = perThreadVars[0]->op_diff_c_x;
 	Complex2DArrayFFT &op_diff_c_y = perThreadVars[0]->op_diff_c_y;
-
+	std::cout << kappa << std::endl;
+	std::cout << eta_bar << std::endl;
 	Complex2DArrayFFT rhs =
 			(kappa/alpha) * eta0
 			- eta_bar*(op_diff_c_x(u0) + op_diff_c_y(v0))
 			- (i_simVars.sim.f0*eta_bar/alpha) * (op_diff_c_x(v0) - op_diff_c_y(u0))
 		;
-
+	std::cout << kappa << std::endl;
+	std::cout << "hi1" <<std::endl;
 	helmholtz_spectral_solver_spec(kappa, g*eta_bar, rhs, eta, 0);
-
+	std::cout << "hi2" <<std::endl;
 	Complex2DArrayFFT uh = u0 - g*op_diff_c_x(eta);
 	Complex2DArrayFFT vh = v0 - g*op_diff_c_y(eta);
 

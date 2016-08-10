@@ -1169,27 +1169,25 @@ public:
 				if(param_nonlinear==1) //Full nonlinear swe
 				{
 					// First calculate the linear part
-					rexiSWE.run_timestep( H, U, V, o_dt, op, simVars, param_rexi_zero_before_solving);
-					//rexiSWE.run_timestep_direct_solution( H, U, V, o_dt, op, simVars );
+					//rexiSWE.run_timestep( H, U, V, o_dt, op, simVars, param_rexi_zero_before_solving);
+					rexiSWE.run_timestep_direct_solution( H, U, V, o_dt, op, simVars );
 
 					//Zero nonlinear vectors
-#if SWEET_USE_SPECTRAL_SPACE && 0
-							N_h.set_spec_all(0, 0);
-							N_u.set_spec_all(0, 0);
-							N_v.set_spec_all(0, 0);
-#endif
-							N_h.set_all(0);
-							N_u.set_all(0);
-							N_v.set_all(0);
+					N_h.set_all(0);
+					N_u.set_all(0);
+					N_v.set_all(0);
 
 					//Calculate divergence spectrally or with finite differences
 					//if(simVars.disc.use_spectral_basis_diffs) //Spectral derivatives
 					//	N_h=-prog_h*(op.diff_c_x(prog_u) + op.diff_c_y(prog_v));
 					//else //Finite differences - needs further averaging for A grid?
 					N_h=-prog_h*(op.diff_c_x(prog_u) + op.diff_c_y(prog_v));
+					std::cout << "Nonlinear error: " << N_h.reduce_maxAbs() << std::endl;
+
 
 					//Calculate exp(Ldt/2 N(u))
-					rexiSWE.run_timestep( N_h, N_u, N_v, o_dt/2.0, op, simVars, param_rexi_zero_before_solving);
+					//rexiSWE.run_timestep( N_h, N_u, N_v, o_dt/2.0, op, simVars, param_rexi_zero_before_solving);
+					rexiSWE.run_timestep_direct_solution( N_h, N_u, N_v, o_dt/2.0, op, simVars );
 
 					//Use previous step to calculate main term to be interpolated
 					H=H+(o_dt)*N_h-(o_dt/2.0)*N_h_prev;
@@ -1281,7 +1279,6 @@ public:
 		{ // Semi-Lagrangian with FD in space
 			assert(simVars.sim.CFL < 0);
 			o_dt = -simVars.sim.CFL;
-
 
 			semiLagrangian.semi_lag_departure_points_settls(
 							prog_u_prev,

@@ -45,17 +45,20 @@ scenario_name = "Nonlinear-steady"
 curdir_name = os.getcwd()
 print ("Current working directory: "+curdir_name)
 
-os.chdir('../../')
+#os.chdir('../../')
 
 os.environ['OMP_PROC_BIND'] = "TRUE"
 os.environ['OMP_NUM_THREADS'] = "8"
 
-subprocess.call('scons --program=swe_rexi --spectral-space=enable --mode=release --threading=off --gui=enable --rexi-parallel-sum=enable '.split(' '), shell=False)
+#subprocess.call('scons --program=swe_rexi --spectral-space=enable --mode=release --threading=off --gui=enable --rexi-parallel-sum=enable '.split(' '), shell=False)
+
+subprocess.call('scons --program=swe_rexi --spectral-space=enable --mode=release --threading=omp --gui=enable --rexi-parallel-sum=enable '.split(' '), shell=False)
 
 #subprocess.call('scons --program=swe_rexi --rexi-parallel-sum=enable --spectral-space=enable --spectral-dealiasing=disable --mode=release '.split(' '), shell=False)
-                  
-binary = './build/swe_rexi_spectral_libfft_gui_rexipar_gnu_release' 
+binary = './build/swe_rexi_spectral_libfft_gui_omp_gnu_release'
+#binary = './build/swe_rexi_spectral_libfft_gui_rexipar_gnu_release' 
 # './build/swe_rexi_spectral_libfft_rexipar_gnu_release'
+
 if not os.path.isfile(binary):
 	print "Binary "+binary+" not found"
 	sys.exit(1)
@@ -76,7 +79,7 @@ timestep_order = 4
 # default params
 #
 #default_params += ' -f 1  -g 1 -H 1 -X 1 -Y 1 --compute-error 1 '
-default_params += '-g 1 -f 1 -X 1 -Y 1 -H 10 --nonlinear 2 --compute-error 1 -G 0 -S 1 -v 2 -s 14 --timestepping-mode 1 --staggering 0'
+default_params += '-g 1 -f 1 -X 1 -Y 1 -H 10 --nonlinear 1 --compute-error 1 -G 0 -S 1 -v 2 -s 14 --timestepping-mode 1 --staggering 0'
 tmp=default_params.replace(" ", "")
 tmp=tmp.replace("--", "-")
 output_file_prefix=output_file_prefix+tmp.replace(" ", "")
@@ -102,7 +105,8 @@ eps_list = [1]
 # resolutions
 #N_list = [16, 32, 64, 128, 256, 512]
 #N_list = [16, 32, 64, 128, 256]
-N_list = [64, 128, 256, 512]
+#N_list = [64, 128, 256, 512]
+N_list = [128, 256, 512]
 
 # h values for REXI
 h_list = [0.2]
