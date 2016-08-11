@@ -398,6 +398,7 @@ public:
 					(fftw_complex*)this->data,
 					(fftw_complex*)o_testArray.data
 				);
+
 		}
 		else
 		{
@@ -409,6 +410,7 @@ public:
 					(fftw_complex*)this->data,
 					(fftw_complex*)o_testArray.data
 				);
+
 		}
 
 		return o_testArray;

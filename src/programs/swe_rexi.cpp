@@ -621,7 +621,7 @@ public:
 
 
 		// Print info for REXI and setup REXI
-		if (param_timestepping_mode == 1) // This is not necessary: || param_timestepping_mode == 3)
+		if (param_timestepping_mode == 1 || param_timestepping_mode == 3 || param_timestepping_mode == 5)
 		{
 			if (simVars.misc.verbosity > 0)
 			{
@@ -689,8 +689,7 @@ public:
 				prog_h*prog_v*prog_v
 			).reduce_sum_quad()) * normalization;
 
-		// potential verticity and pot. enstropy
-
+		// potential vorticity and pot. enstropy
 		if (simVars.sim.beta == 0)
 			eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + simVars.sim.f0) / prog_h;
 		else
@@ -1264,7 +1263,7 @@ public:
 			);
 		}
 		else if (param_timestepping_mode == 3)
-		{   //  Implicit time step - needs check...
+		{   //  Implicit time step - Backward Euler - checked - linear only
 			assert(simVars.sim.CFL < 0);
 
 			o_dt = -simVars.sim.CFL;
@@ -1308,6 +1307,20 @@ public:
 					stag_h[1]
 			);
 
+		}
+		else if (param_timestepping_mode == 5)
+		{   //  Semi-implicit Crank-Nicolson (Spectral)
+			// Linear for now
+			// will add semi-lagrangian for nonlinear case
+			assert(simVars.sim.CFL < 0);
+
+			o_dt = -simVars.sim.CFL;
+			rexiSWE.run_timestep_semi_implicit_cn_ts(
+					prog_h, prog_u, prog_v,
+					o_dt,
+					op,
+					simVars
+			);
 		}
 		else
 		{
@@ -2214,9 +2227,11 @@ int main(int i_argc, char *i_argv[])
 		case 2:
 				std::cout << " 2: Direct solution in spectral space" << std::endl; break;
 		case 3:
-				std::cout << " 3: Implicit method - needs checking!" << std::endl; break;
+				std::cout << " 3: Implicit method (Euler) - Linear only" << std::endl; break;
 		case 4:
 				std::cout << " 4: Semi-Lag with FD - needs checking!" << std::endl; break;
+		case 5:
+				std::cout << " 5: Semi-implicit Crank-Nicolson" << std::endl; break;
 		default:
 			std::cerr << "Timestepping unknowkn" << std::endl;
 			return -1;

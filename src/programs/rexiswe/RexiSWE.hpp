@@ -180,7 +180,7 @@ public:
 		// We account for this by seeing the LHS as a set of operators which have to be joint later by a sum.
 
 		Complex2DArrayFFT lhs = (-i_gh0*(perThreadVars[i_thread_id]->op_diff2_c_x + perThreadVars[i_thread_id]->op_diff2_c_y)).addScalar_Cart(i_kappa);
-		std::cout << lhs << std::endl;
+		//std::cout << lhs << std::endl;
 		io_x = i_rhs.spec_div_element_wise(lhs);
 	}
 
@@ -202,6 +202,22 @@ public:
 		const SimulationVariables &i_parameters
 	);
 
+	/**
+	 * Solve U_t = L U via Crank-Nicolson:
+	 * with semi-implicit solver
+	 * (Coriolis is explicit)
+	 */
+public:
+	bool run_timestep_semi_implicit_cn_ts(
+		DataArray<2> &io_h,
+		DataArray<2> &io_u,
+		DataArray<2> &io_v,
+
+		double i_timestep_size,	///< timestep size
+
+		Operators2D &op,
+		const SimulationVariables &i_parameters
+	);
 
 
 	/**

@@ -264,7 +264,7 @@ void RexiSWE::setup(
 
 
 /**
- * Solve REXI with implicit time stepping
+ * Solve SWE with implicit time stepping
  *
  * U_t = L U(0)
  *
@@ -310,21 +310,93 @@ bool RexiSWE::run_timestep_implicit_ts(
 
 	double eta_bar = i_simVars.setup.h0;
 	double g = i_simVars.sim.g;
-	std::cout << "hi" <<std::endl;
-	//@MArtin, this seems to be buggy
+
+
 	Complex2DArrayFFT &op_diff_c_x = perThreadVars[0]->op_diff_c_x;
 	Complex2DArrayFFT &op_diff_c_y = perThreadVars[0]->op_diff_c_y;
-	std::cout << kappa << std::endl;
-	std::cout << eta_bar << std::endl;
+
 	Complex2DArrayFFT rhs =
 			(kappa/alpha) * eta0
 			- eta_bar*(op_diff_c_x(u0) + op_diff_c_y(v0))
 			- (i_simVars.sim.f0*eta_bar/alpha) * (op_diff_c_x(v0) - op_diff_c_y(u0))
 		;
-	std::cout << kappa << std::endl;
-	std::cout << "hi1" <<std::endl;
+
 	helmholtz_spectral_solver_spec(kappa, g*eta_bar, rhs, eta, 0);
-	std::cout << "hi2" <<std::endl;
+
+	Complex2DArrayFFT uh = u0 - g*op_diff_c_x(eta);
+	Complex2DArrayFFT vh = v0 - g*op_diff_c_y(eta);
+
+	Complex2DArrayFFT u1 = alpha/kappa * uh     + i_simVars.sim.f0/kappa * vh;
+	Complex2DArrayFFT v1 =    -i_simVars.sim.f0/kappa * uh + alpha/kappa * vh;
+
+	eta.toCart().toDataArrays_Real(io_h);
+	u1.toCart().toDataArrays_Real(io_u);
+	v1.toCart().toDataArrays_Real(io_v);
+
+	return true;
+}
+
+/**
+ * Solve Linear SWE with Crank-Nicolson implicit time stepping
+ *  (Semi-implicit spectral formulation - explicit coriolis term)
+ *
+ * U_t = L U(0)
+ *
+ * (U(tau) - U(0)) / tau = 0.5*(L U(tau)+L U(0))
+ *
+ * <=> U(tau) - U(0) =  tau * 0.5*(L U(tau)+L U(0))
+ *
+ * <=> U(tau) - 0.5* L tau U(tau) = U(0) + tau * 0.5*L U(0)
+ *
+ * <=> (1 - 0.5 L tau) U(tau) = (1+tau*0.5*L) U(0)
+ *
+ * <=> (2/tau - L) U(tau) = (2/tau+L) U(0)
+ */
+bool RexiSWE::run_timestep_semi_implicit_cn_ts(
+	DataArray<2> &io_h,
+	DataArray<2> &io_u,
+	DataArray<2> &io_v,
+
+	double i_timestep_size,	///< timestep size
+
+	Operators2D &op,
+	const SimulationVariables &i_simVars
+)
+{
+	Complex2DArrayFFT eta(io_h.resolution);
+
+	Complex2DArrayFFT eta0(io_h.resolution);
+	Complex2DArrayFFT u0(io_u.resolution);
+	Complex2DArrayFFT v0(io_v.resolution);
+
+	eta0.loadRealFromDataArray(io_h);
+	u0.loadRealFromDataArray(io_u);
+	v0.loadRealFromDataArray(io_v);
+
+	double alpha = 1.0/i_timestep_size;
+
+	eta0 = eta0.toSpec() * alpha;
+	u0 = u0.toSpec() * alpha;
+	v0 = v0.toSpec() * alpha;
+
+	// load kappa (k)
+	double kappa = alpha*alpha + i_simVars.sim.f0*i_simVars.sim.f0;
+
+	double eta_bar = i_simVars.setup.h0;
+	double g = i_simVars.sim.g;
+
+
+	Complex2DArrayFFT &op_diff_c_x = perThreadVars[0]->op_diff_c_x;
+	Complex2DArrayFFT &op_diff_c_y = perThreadVars[0]->op_diff_c_y;
+
+	Complex2DArrayFFT rhs =
+			(kappa/alpha) * eta0
+			- eta_bar*(op_diff_c_x(u0) + op_diff_c_y(v0))
+			- (i_simVars.sim.f0*eta_bar/alpha) * (op_diff_c_x(v0) - op_diff_c_y(u0))
+		;
+
+	helmholtz_spectral_solver_spec(kappa, g*eta_bar, rhs, eta, 0);
+
 	Complex2DArrayFFT uh = u0 - g*op_diff_c_x(eta);
 	Complex2DArrayFFT vh = v0 - g*op_diff_c_y(eta);
 
