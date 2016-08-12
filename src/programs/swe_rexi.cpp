@@ -57,6 +57,7 @@ double param_rexi_helmholtz_solver_eps;
 bool param_rexi_zero_before_solving;
 int param_boundary_id;
 int param_nonlinear;
+bool param_semi_implicit;
 
 double param_initial_freq_x_mul;
 double param_initial_freq_y_mul;
@@ -1315,9 +1316,10 @@ public:
 			assert(simVars.sim.CFL < 0);
 
 			o_dt = -simVars.sim.CFL;
-			rexiSWE.run_timestep_semi_implicit_cn_ts(
+			rexiSWE.run_timestep_cn_ts(
 					prog_h, prog_u, prog_v,
 					o_dt,
+					param_semi_implicit,
 					op,
 					simVars
 			);
@@ -2101,8 +2103,9 @@ int main(int i_argc, char *i_argv[])
 			"rexi-helmholtz-solver-eps",		/// error threshold for solver
 			"boundary-id",
 			"rexi-zero-before-solving",
-			"nonlinear",    /// form of equations
-			"initial-freq-x-mul",		// frequency multipliers for special scenario setup
+			"nonlinear",                 /// form of equations
+			"semi-implicit"				/// semi-implicitness flag
+			"initial-freq-x-mul",		/// frequency multipliers for special scenario setup
 			"initial-freq-y-mul",
 			nullptr
 	};
@@ -2121,8 +2124,9 @@ int main(int i_argc, char *i_argv[])
 	simVars.bogus.var[10] = 0; 	//boundary
 	simVars.bogus.var[11] = 1;	// zero rexi
 	simVars.bogus.var[12] = 0;	// nonlinear
-	simVars.bogus.var[13] = 0;
+	simVars.bogus.var[13] = 1;  //semi-implicit flag
 	simVars.bogus.var[14] = 0;
+	simVars.bogus.var[15] = 0;
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
@@ -2135,12 +2139,13 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "" << std::endl;
 		std::cout << "	--rexi-half [0/1]	Reduce rexi computations to its half, default:1 " << std::endl;
 		std::cout << "" << std::endl;
-		std::cout << "	--timestepping-mode [0/1/2/3/4]	Timestepping method to use" << std::endl;
+		std::cout << "	--timestepping-mode [0/1/2/3/4/5]	Timestepping method to use" << std::endl;
 		std::cout << "	                            0: RKn with Finite-difference (default)" << std::endl;
 		std::cout << "	                            1: REXI" << std::endl;
 		std::cout << "	                            2: Direct solution in spectral space" << std::endl;
 		std::cout << "	                            3: Implicit Finite-difference (needs checking)" << std::endl;
 		std::cout << "	                            4: Semi-Lagrangian with Finite-difference" << std::endl;
+		std::cout << "	                            5: Crank-Nicolson with spectral Helmholtz solver" << std::endl;
 		std::cout << "" << std::endl;
 		std::cout << "	--compute-error [0/1]	Compute the errors" << std::endl;
 		std::cout << "" << std::endl;
@@ -2163,6 +2168,10 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "						     0: Linear SWE (default)" << std::endl;
 		std::cout << "						     1: Full nonlinear SWE" << std::endl;
 		std::cout << "						     2: Linear SWE + nonlinear advection only (needs -H to be set)" << std::endl;
+		std::cout << std::endl;
+		std::cout << "	--semi-implicit [0/1]  Semi-implicit for time-stepping mode number 5:" << std::endl;
+		std::cout << "						     0: Fully implicit C-N " << std::endl;
+		std::cout << "						     1: Semi-implicit, Coriolis explicit (default)" << std::endl;
 		std::cout << std::endl;
 
 
@@ -2200,8 +2209,12 @@ int main(int i_argc, char *i_argv[])
 	// Linear vs nonlinear swe
 	param_nonlinear = simVars.bogus.var[12];
 
-	param_initial_freq_x_mul = simVars.bogus.var[13];
-	param_initial_freq_y_mul = simVars.bogus.var[14];
+	//Semi-implicitness - used only for time-stepping 5
+	param_semi_implicit = simVars.bogus.var[13];
+
+	//Frequency for certain initial conditions
+	param_initial_freq_x_mul = simVars.bogus.var[14];
+	param_initial_freq_y_mul = simVars.bogus.var[15];
 
 
 	//Print header
@@ -2229,9 +2242,18 @@ int main(int i_argc, char *i_argv[])
 		case 3:
 				std::cout << " 3: Implicit method (Euler) - Linear only" << std::endl; break;
 		case 4:
-				std::cout << " 4: Semi-Lag with FD - needs checking!" << std::endl; break;
+				std::cout << " 4: Semi-Lag with FD - pure advection (needs checking!)" << std::endl; break;
 		case 5:
-				std::cout << " 5: Semi-implicit Crank-Nicolson" << std::endl; break;
+				std::cout << " 5: Crank-Nicolson - " ;
+				if(param_semi_implicit)
+				{
+					std::cout << " Using semi-implicit approach (Coriolis explicit)" << std::endl; break;
+				}
+				else
+				{
+					std::cout << " Fully implicit approach " << std::endl; break;
+				}
+				break;
 		default:
 			std::cerr << "Timestepping unknowkn" << std::endl;
 			return -1;

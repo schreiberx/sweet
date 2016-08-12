@@ -208,12 +208,13 @@ public:
 	 * (Coriolis is explicit)
 	 */
 public:
-	bool run_timestep_semi_implicit_cn_ts(
+	bool run_timestep_cn_ts(
 		DataArray<2> &io_h,
 		DataArray<2> &io_u,
 		DataArray<2> &io_v,
 
 		double i_timestep_size,	///< timestep size
+		bool i_semi_implicit, ///< semi-implicit or implicit CN
 
 		Operators2D &op,
 		const SimulationVariables &i_parameters
