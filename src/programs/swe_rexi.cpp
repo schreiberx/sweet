@@ -423,7 +423,8 @@ public:
 							double x = (((double)i-0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
 							double y = (((double)j-0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
 							beta_plane.set(j, i, SWEValidationBenchmarks::return_f(simVars, x, y));
-							std::cerr << "WARNING: BETA PLANE ON C-GRID NOT TESTED FOR NON_LINEARITIES!" << std::endl;
+							if(j==0 && i==0 && simVars.sim.beta)
+								std::cerr << "WARNING: BETA PLANE ON C-GRID NOT TESTED FOR NON_LINEARITIES!" << std::endl;
 						}
 						else
 						{

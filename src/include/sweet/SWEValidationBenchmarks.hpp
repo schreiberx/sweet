@@ -556,7 +556,7 @@ public:
 	}
 
 
-	//Returns true is initial condition is solution of nonlinear equations, false otherwise
+	//Returns true if initial condition is solution of nonlinear equations, false otherwise
 	static
 	bool scenario_analytical_init(
 				SimulationVariables &i_parameters
@@ -568,7 +568,6 @@ public:
 
 		if (i_parameters.setup.scenario == 1) // Gaussian
 			return false;
-
 
 		if (i_parameters.setup.scenario == 2) // Steady state (linear and nonlinear) with dominant zonal (x) flow
 			return true;
