@@ -2205,6 +2205,7 @@ public:
 	{
 		std::size_t new_resolution[D];
 
+		//Resolution for augmented cartesian space arrays (3N/2)
 		if (i_new_resolution == nullptr)
 		{
 			for (int i = 0; i < D; i++)
@@ -2228,12 +2229,15 @@ public:
 				new_resolution[i] = i_new_resolution[i];
 		}
 
+		// Augmented array (temporary)
 		DataArray<D> out(new_resolution);
 		out.temporary_data = false;
 		out.aliasing_scaled = true;
 
+		//TODO_comment : This initializes something in FFTW, but I don't know why it is important
 		fftAliasingTestAndInit(out);
 
+		//Get spectral data
 		requestDataInSpectralSpace();
 
 		if (D != 2)
@@ -2242,6 +2246,7 @@ public:
 			exit(-1);
 		}
 
+		//Zero temporary array
 		out.set_spec_all(0, 0);
 
 		// TODO: this does not work once distributed memory is available
@@ -2250,7 +2255,11 @@ public:
 #endif
 		for (std::size_t j = 0; j < resolution_spec[1]/2; j++)
 		{
+			// Copy the spectrum of data_array to the temporary array
+			//    --> this will leave blank the high modes of the tmp array, since it has 3N/2 modes instead of N
+			// TODO_comment: Why the hell do you need to do this with memcpy and not just with ordinary for?
 			// lower quadrant
+			// memcpy(destination, source, length+1);
 			memcpy(
 					out.array_data_spectral_space+(j*out.range_spec_size[0])*2,
 					array_data_spectral_space+(j*range_spec_size[0])*2,
@@ -2272,6 +2281,7 @@ public:
 				);
 		}
 
+		//Scale for temporary array for the correct Fourier constant relative to resolution
 		double scale = ((double)new_resolution[0]*(double)new_resolution[1])/((double)resolution[0]*(double)resolution[1]);
 
 #if SWEET_THREADING
@@ -2285,6 +2295,11 @@ public:
 
 
 		checkConsistency();
+
+		//The temporary array becomes the main array, but this means that it will have 3N/2 modes and ...
+		//TODO_comment: Would any data in cartesian space would be lost? This seems quite dangerous...
+		//         The main data_array could carry much more info, and my feeling is that returning this temp (out)
+		//          would through allow losing stuff...
 		return out;
 	}
 
@@ -3236,24 +3251,34 @@ public:
 			const DataArray<D> &i_array_data
 	)	const
 	{
+		// TODO_comment : I suppose this will be the right hand side of the *
+		// that is data_array_right of data_array_left*data_array_right
+		// Does it differ if I call it data_array_left*data_array_right or data_array_left*(data_array_right)?
 		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
 
+		//This is the actual product result, with the correct N resolution
 		DataArray<D> out(i_array_data.resolution);
 		out.temporary_data = true;
 
 #if SWEET_USE_SPECTRAL_SPACE && SWEET_USE_SPECTRAL_DEALIASING
 
+		// Array on the left of *, augmented to 3N/2 with zeros on high end spectrum
+		// TODO_comment : any previous data in cartesian space will be lost?
 		DataArray<D> u = aliasing_scaleUp();
+		// The input array (right of *) augmented to 3N/2 with zeros on high end spectrum
 		DataArray<D> v = rw_array_data.aliasing_scaleUp();
 
+		//Convert to cartesian
 		u.requestDataInCartesianSpace();
 		v.requestDataInCartesianSpace();
 
+		// This array is augmented to 3N/2, since u is
 		DataArray<D> scaled_output(u.resolution);
 
 #if SWEET_THREADING
 		#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
+		//Calculate the product element wise in cartesian space
 		for (std::size_t i = 0; i < scaled_output.array_data_cartesian_length; i++)
 			scaled_output.array_data_cartesian_space[i] =
 					u.array_data_cartesian_space[i]*
@@ -3262,6 +3287,9 @@ public:
 		scaled_output.array_data_cartesian_space_valid = true;
 		scaled_output.array_data_spectral_space_valid = false;
 
+		//Copies the spectrum of the product to the output data_array, which has the correct resolution N
+		// As a consequence, all high modes are ignored (beyond N to 3N/2)
+		// TODO_comment : any previous data in cartesian space will be lost?
 		out = scaled_output.aliasing_scaleDown(out.resolution);
 
 		out.array_data_cartesian_space_valid = false;

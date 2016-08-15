@@ -199,6 +199,7 @@ public:
 		force_v(simVars.disc.res),
 
 		// @Martin: This should be added only when nonlinear model is ran. How to do that, since I can't put an if in the constructor?
+		//ans: With pointers.	This can be made accessible as standard classes by using references to	pointers.
 		N_h(simVars.disc.res),
 		N_u(simVars.disc.res),
 		N_v(simVars.disc.res),
@@ -355,7 +356,7 @@ public:
 		//std::cout << "posx_a: " << posx_a.array_data_cartesian_space_valid << std::endl;
 		//std::cout << std::endl;
 
-		//@martin : Shouldn't this be in SWEValidationBenchmarks?
+		//Waves test case - separate from SWEValidationBench because it depends on certain local input parameters
 		auto return_h = [] (
 				SimulationVariables &i_parameters,
 				double x,
@@ -410,7 +411,7 @@ public:
 				if (param_use_staggering) // C-grid
 				{
 					{
-						// h
+						// h - lives in the center of the cell
 						double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
 						double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
 
@@ -418,10 +419,12 @@ public:
 						t0_prog_h.set(j, i, return_h(simVars, x, y));
 						force_h.set(j, i, SWEValidationBenchmarks::return_force_h(simVars, x, y));
 
+						//Coriolis term - lives in the corner of the cells
 						if (param_nonlinear)
 						{
-							double x = (((double)i-0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-							double y = (((double)j-0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+							//PXT: had some -0.5 on i and j (why??)
+							double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+							double y = (((double)j)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
 							beta_plane.set(j, i, SWEValidationBenchmarks::return_f(simVars, x, y));
 							if(j==0 && i==0 && simVars.sim.beta)
 								std::cerr << "WARNING: BETA PLANE ON C-GRID NOT TESTED FOR NON_LINEARITIES!" << std::endl;
