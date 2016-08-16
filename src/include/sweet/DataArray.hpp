@@ -2235,6 +2235,11 @@ public:
 		out.aliasing_scaled = true;
 
 		//TODO_comment : This initializes something in FFTW, but I don't know why it is important
+		/*
+		 * Test if the FFTW plans for aliasing were initialized before.
+		 * If not, then initialize them.
+		 * These FFTW plans are of higher resolution than the standard ones.
+		 */
 		fftAliasingTestAndInit(out);
 
 		//Get spectral data
@@ -2255,11 +2260,15 @@ public:
 #endif
 		for (std::size_t j = 0; j < resolution_spec[1]/2; j++)
 		{
-			// Copy the spectrum of data_array to the temporary array
-			//    --> this will leave blank the high modes of the tmp array, since it has 3N/2 modes instead of N
-			// TODO_comment: Why the hell do you need to do this with memcpy and not just with ordinary for?
-			// lower quadrant
-			// memcpy(destination, source, length+1);
+			/*
+			 * Copy the spectrum of data_array to the temporary array
+			 *    --> this will leave blank the high modes of the tmp array, since it has 3N/2 modes instead of N
+			 * TODO_comment: Why the hell do you need to do this with memcpy and not just with ordinary for?
+			 *
+			 * We use memcpy, since there are typically optimized routines available.
+			 * Writing this as a for loop can result in similar or even better performance.
+			 * lower quadrant
+			 */
 			memcpy(
 					out.array_data_spectral_space+(j*out.range_spec_size[0])*2,
 					array_data_spectral_space+(j*range_spec_size[0])*2,
@@ -2296,10 +2305,17 @@ public:
 
 		checkConsistency();
 
-		//The temporary array becomes the main array, but this means that it will have 3N/2 modes and ...
-		//TODO_comment: Would any data in cartesian space would be lost? This seems quite dangerous...
-		//         The main data_array could carry much more info, and my feeling is that returning this temp (out)
-		//          would through allow losing stuff...
+		/*
+		 *The temporary array becomes the main array, but this means that it will have 3N/2 modes and ...
+		 *TODO_comment: Would any data in cartesian space would be lost? This seems quite dangerous...
+		 *         The main data_array could carry much more info, and my feeling is that returning this temp (out)
+		 *          would through allow losing stuff...
+		 *
+		 * Yes, the Cartesian space data is lost.
+		 * In general, both data sets have to match when converted forward or backward or only one of them is valid.
+		 * If they are not consistently matching (converting forward/backward), this would result in an exception.
+		 */
+
 		return out;
 	}
 
@@ -3248,12 +3264,19 @@ public:
 	 */
 	inline
 	DataArray<D> operator*(
-			const DataArray<D> &i_array_data
+			const DataArray<D> &i_array_data	///< this class times i_array_data
 	)	const
 	{
 		// TODO_comment : I suppose this will be the right hand side of the *
+		// YES
+		//
 		// that is data_array_right of data_array_left*data_array_right
 		// Does it differ if I call it data_array_left*data_array_right or data_array_left*(data_array_right)?
+		//
+		// You can also call
+		// 		data_array.operator*(other_data_array)
+		// which is identical to
+		//		data_array * other_data_array
 		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
 
 		//This is the actual product result, with the correct N resolution
@@ -3264,6 +3287,7 @@ public:
 
 		// Array on the left of *, augmented to 3N/2 with zeros on high end spectrum
 		// TODO_comment : any previous data in cartesian space will be lost?
+		// YES
 		DataArray<D> u = aliasing_scaleUp();
 		// The input array (right of *) augmented to 3N/2 with zeros on high end spectrum
 		DataArray<D> v = rw_array_data.aliasing_scaleUp();
@@ -3290,6 +3314,7 @@ public:
 		//Copies the spectrum of the product to the output data_array, which has the correct resolution N
 		// As a consequence, all high modes are ignored (beyond N to 3N/2)
 		// TODO_comment : any previous data in cartesian space will be lost?
+		// YES
 		out = scaled_output.aliasing_scaleDown(out.resolution);
 
 		out.array_data_cartesian_space_valid = false;
