@@ -1320,10 +1320,12 @@ public:
 			assert(simVars.sim.CFL < 0);
 			o_dt = -simVars.sim.CFL;
 
-			//Zero hogh frequency modes to avoid aliasing effects (only for nolinear eqs)
+			//Zero high frequency modes to avoid aliasing effects (only for nonlinear eqs)
+#if SWEET_USE_SPECTRAL_DEALIASING
 			prog_h.aliasing_zero_high_modes();
 			prog_u.aliasing_zero_high_modes();
 			prog_v.aliasing_zero_high_modes();
+#endif
 
 			rexiSWE.run_timestep_cn_ts(
 					prog_h, prog_u, prog_v,
@@ -2073,7 +2075,7 @@ public:
 
 
 
-int main(int i_argc, char *i_argv[])
+int main2(int i_argc, char *i_argv[])
 {
 #if __MIC__
 	std::cout << "Compiled for MIC" << std::endl;
@@ -2482,4 +2484,13 @@ int main(int i_argc, char *i_argv[])
 #endif
 
 	return 0;
+}
+
+int main(int i_argc, char *i_argv[])
+{
+	int retval = main2(i_argc, i_argv);
+
+	DataArray<2>::checkRefCounters();
+
+	return retval;
 }

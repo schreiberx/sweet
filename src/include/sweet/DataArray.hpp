@@ -537,8 +537,16 @@ public:
 				array_data_spectral_space[i] = i_dataArray.array_data_spectral_space[i];
 		}
 
-		FFTWSingletonClass* fft_ptr = *fftGetSingletonPtr();
-		fft_ptr->ref_counter++;
+		if (aliasing_scaled)
+		{
+			FFTWSingletonClass* fft_ptr = *fftAliasingGetSingletonPtr();
+			fft_ptr->ref_counter++;
+		}
+
+		{
+			FFTWSingletonClass* fft_ptr = *fftGetSingletonPtr();
+			fft_ptr->ref_counter++;
+		}
 #endif
 	}
 
@@ -589,13 +597,21 @@ public:
 		array_data_spectral_space_valid = i_dataArray.array_data_spectral_space_valid;
 		i_dataArray.array_data_spectral_space_valid = false;
 
-		auto fft_ptr = *fftGetSingletonPtr();
-		fft_ptr->ref_counter++;
+		if (aliasing_scaled)
+		{
+			FFTWSingletonClass* fft_ptr = *fftAliasingGetSingletonPtr();
+			fft_ptr->ref_counter++;
+		}
+
+		{
+			FFTWSingletonClass* fft_ptr = *fftGetSingletonPtr();
+			fft_ptr->ref_counter++;
+		}
 #endif
 	}
 
 
-
+#if 0
 	/**
 	 * special empty constructor
 	 *
@@ -613,6 +629,7 @@ public:
 		temporary_data(false)
 	{
 	}
+#endif
 
 
 public:
@@ -735,7 +752,8 @@ public:
 	 */
 public:
 	void setup(
-			const std::size_t i_resolution[D]	///< size of array
+			const std::size_t i_resolution[D],	///< size of array
+			bool i_anti_aliasing = false		///< set to true if this should be used as an anti-aliasing dataArray
 	)
 	{
 		assert(array_data_cartesian_space == nullptr);
@@ -757,6 +775,10 @@ public:
 #if SWEET_USE_SPECTRAL_SPACE
 		// initialize fft if not yet done
 		fftTestAndInit(*this);
+
+		aliasing_scaled = i_anti_aliasing;
+		if (i_anti_aliasing)
+			fftAliasingTestAndInit(*this);
 #endif
 
 		checkConsistency();
@@ -768,7 +790,8 @@ public:
 	 */
 public:
 	DataArray(
-		const std::size_t i_resolution[D]	///< size of array for each dimension
+		const std::size_t i_resolution[D],	///< size of array for each dimension,
+		bool i_anti_aliasing = false		///< set to true if this should be used as an anti-aliasing dataArray
 	)	:
 		array_data_cartesian_space(nullptr),
 #if SWEET_USE_SPECTRAL_SPACE
@@ -777,7 +800,7 @@ public:
 #endif
 		temporary_data(false)
 	{
-		setup(i_resolution);
+		setup(i_resolution, i_anti_aliasing);
 	}
 
 
@@ -787,11 +810,29 @@ public:
 		NUMABlockAlloc::free(array_data_cartesian_space, array_data_cartesian_length*sizeof(double));
 
 #if SWEET_USE_SPECTRAL_SPACE
-
 		NUMABlockAlloc::free(array_data_spectral_space, array_data_spectral_length*sizeof(double));
 
+		/*
+		 * If this is an aliasing DataArray, reduce the reference counter of this array
+		 */
+		if (aliasing_scaled)
 		{
-			auto fft_ptr = *fftGetSingletonPtr();
+			FFTWSingletonClass* fft_anti_ptr = *fftAliasingGetSingletonPtr();
+			if (fft_anti_ptr == nullptr)
+			{
+				std::cerr << "FFTS for aliasing DataArrays still existing, but no FFTW handlers!" << std::endl;
+				exit(1);
+			}
+			fft_anti_ptr->ref_counter--;
+
+			/*
+			 * NOTE: The aliasing plans are not free'd here. See below for the reason
+			 */
+		}
+
+		{
+			FFTWSingletonClass* fft_ptr = *fftGetSingletonPtr();
+			assert(fft_ptr != nullptr);
 			fft_ptr->ref_counter--;
 
 			assert(fft_ptr->ref_counter >= 0);
@@ -800,26 +841,57 @@ public:
 				delete *fftGetSingletonPtr();
 				*fftGetSingletonPtr() = nullptr;
 
-				// also free the aliasing stuff
-//				if (fft_ptr->ref_counter == 0)
 				{
-					delete *fftAliasingGetSingletonPtr();
-					*fftAliasingGetSingletonPtr() = nullptr;
+					/*
+					 * Handle anti-aliasing stuff here.
+					 * We don't free the Anti-aliasing FFTW plans if their reference counter is zero
+					 * since these this reference counter could get 0 during each time step.
+					 * This frequent plan creation would significantly slow down the program.
+					 */
+
+					// also free the aliasing stuff
+					FFTWSingletonClass* fft_anti_ptr = *fftAliasingGetSingletonPtr();
+					if (fft_anti_ptr != nullptr)
+					{
+						if (fft_anti_ptr->ref_counter != 0)
+						{
+							std::cerr << "SWEET requires all DataArrays which were used for Antialiasing to be freed before the standard DataArrays!" << std::endl;
+							assert(false);
+							exit(1);
+						}
+
+						delete fft_anti_ptr;
+						*fftAliasingGetSingletonPtr() = nullptr;
+					}
 				}
 			}
 		}
 
-		if (aliasing_scaled)
-		{
-			auto fft_ptr = *fftAliasingGetSingletonPtr();
-			fft_ptr->ref_counter--;
-		}
 
 #else
 		NUMABlockAlloc::free(kernel_data, sizeof(double)*kernel_size*kernel_size);
 #endif
 	}
 
+
+	static void checkRefCounters()
+	{
+#if SWEET_USE_SPECTRAL_DEALIASING
+		if (*fftGetSingletonPtr() != nullptr)
+		{
+			std::cerr << "FFT plans not yet released." << std::endl;
+			std::cerr << "This typically means a memory leak if this is the end of the program and all classes deconstructors have been called" << std::endl;
+			std::cerr << " Reference counter: " << (*fftGetSingletonPtr())->ref_counter << std::endl;
+		}
+
+		if (*fftAliasingGetSingletonPtr() != nullptr)
+		{
+			std::cerr << "FFT plans for ANTI ALIASING not yet released." << std::endl;
+			std::cerr << "This typically means a memory leak if this is the end of the program and all classes deconstructors have been called" << std::endl;
+			std::cerr << " Reference counter: " << (*fftAliasingGetSingletonPtr())->ref_counter << std::endl;
+		}
+#endif
+	}
 
 
 	inline
@@ -1382,7 +1454,7 @@ public:
 
 
 private:
-	FFTWSingletonClass** fftGetSingletonPtr()	const
+	static FFTWSingletonClass** fftGetSingletonPtr()
 	{
 		static FFTWSingletonClass *fftw_singleton_data = nullptr;
 		return &fftw_singleton_data;
@@ -1390,7 +1462,7 @@ private:
 
 
 private:
-	FFTWSingletonClass* fftTestAndInit(
+	static FFTWSingletonClass* fftTestAndInit(
 		DataArray<D> &i_dataArray
 	)
 	{
@@ -1410,7 +1482,10 @@ private:
 	}
 
 private:
-	FFTWSingletonClass** fftAliasingGetSingletonPtr()	const
+	/**
+	 * TODO: Replace this with returning a reference
+	 */
+	static FFTWSingletonClass** fftAliasingGetSingletonPtr()
 	{
 		static FFTWSingletonClass *fftw_singleton_data = nullptr;
 		return &fftw_singleton_data;
@@ -1421,6 +1496,8 @@ private:
 		DataArray<D> &i_dataArray
 	)	const
 	{
+		assert(i_dataArray.aliasing_scaled);
+
 		FFTWSingletonClass **fftw_singleton_data = fftAliasingGetSingletonPtr();
 
 		if (*fftw_singleton_data != nullptr)
@@ -1498,10 +1575,10 @@ public:
 
 		DataArray<D> *rw_array_data = (DataArray<D>*)this;
 
-		if (aliasing_scaled)
-			(*fftAliasingGetSingletonPtr())->fft_backward(*rw_array_data);
-		else
+		if (!aliasing_scaled)
 			(*fftGetSingletonPtr())->fft_backward(*rw_array_data);
+		else
+			(*fftAliasingGetSingletonPtr())->fft_backward(*rw_array_data);
 
 		rw_array_data->array_data_cartesian_space_valid = true;
 
@@ -2316,13 +2393,14 @@ public:
 			std::size_t *i_new_resolution
 	)
 	{
-		aliasing_scaled = true;
+		assert(aliasing_scaled == true);
+//		aliasing_scaled = true;
 
 		DataArray<D> out(i_new_resolution);
 		out.temporary_data = false;
 		out.aliasing_scaled = false;
 
-		fftAliasingTestAndInit(out);
+//		fftAliasingTestAndInit(out);
 
 		requestDataInSpectralSpace();
 
@@ -2363,14 +2441,6 @@ public:
 		out.array_data_spectral_space_valid = true;
 		out.array_data_cartesian_space_valid = false;
 
-/*
-		std::cout << "1 LJASDLKFJAKJLSDF" << std::endl;
-		this->printSpectrum();
-		std::cout << "2 LJASDLKFJAKJLSDF" << std::endl;
-		out.printSpectrum();
-		std::cout << "3 LJASDLKFJAKJLSDF" << std::endl;
-*/
-
 
 		double scale = ((double)i_new_resolution[0]*(double)i_new_resolution[1])/((double)resolution[0]*(double)resolution[1]);
 
@@ -2410,7 +2480,7 @@ public:
 	 *
 	 */
 	inline
-	DataArray<D> aliasing_zero_high_modes(
+	DataArray<D>& aliasing_zero_high_modes(
 	)
 	{
 		//std::cout<<"Cartesian"<<std::endl;
@@ -2490,7 +2560,7 @@ public:
 		//printSpectrum();
 		checkConsistency();
 
-		return 1;
+		return *this;
 	}
 
 #endif
@@ -3383,15 +3453,18 @@ public:
 		// Array on the left of *, augmented to 3N/2 with zeros on high end spectrum
 		// Any previous data in cartesian space will be lost?
 		DataArray<D> u = aliasing_scaleUp();
+		assert(u.aliasing_scaled);
+
 		// The input array (right of *) augmented to 3N/2 with zeros on high end spectrum
 		DataArray<D> v = rw_array_data.aliasing_scaleUp();
+		assert(v.aliasing_scaled);
 
 		//Convert to cartesian
 		u.requestDataInCartesianSpace();
 		v.requestDataInCartesianSpace();
 
 		// This array is augmented to 3N/2, since u is
-		DataArray<D> scaled_output(u.resolution);
+		DataArray<D> scaled_output(u.resolution, true);
 
 #if SWEET_THREADING
 		#pragma omp parallel for OPENMP_PAR_SIMD
@@ -3560,7 +3633,7 @@ public:
 		u.requestDataInCartesianSpace();
 		v.requestDataInCartesianSpace();
 
-		DataArray<D> scaled_output(u.resolution);
+		DataArray<D> scaled_output(u.resolution, true);
 
 #if SWEET_THREADING
 		#pragma omp parallel for OPENMP_PAR_SIMD
