@@ -3577,7 +3577,7 @@ public:
 	 * Per default, a tab separator is used in each line to separate the values.
 	 */
 	bool printArrayData(
-			int i_precision = 6		///< number of floating point digits
+			int i_precision = 8		///< number of floating point digits
 			)	const
 	{
 
