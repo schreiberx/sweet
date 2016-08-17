@@ -2488,6 +2488,7 @@ public:
 		}
 		//std::cout << std::endl;
 		//printSpectrum();
+		requestDataInCartesianSpace();
 		checkConsistency();
 
 		return 1;
