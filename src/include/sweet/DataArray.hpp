@@ -768,7 +768,7 @@ public:
 	 */
 public:
 	DataArray(
-		const std::size_t i_resolution[D]	///< size of array
+		const std::size_t i_resolution[D]	///< size of array for each dimension
 	)	:
 		array_data_cartesian_space(nullptr),
 #if SWEET_USE_SPECTRAL_SPACE
@@ -2234,7 +2234,6 @@ public:
 		out.temporary_data = false;
 		out.aliasing_scaled = true;
 
-		//TODO_comment : This initializes something in FFTW, but I don't know why it is important
 		/*
 		 * Test if the FFTW plans for aliasing were initialized before.
 		 * If not, then initialize them.
@@ -2263,8 +2262,6 @@ public:
 			/*
 			 * Copy the spectrum of data_array to the temporary array
 			 *    --> this will leave blank the high modes of the tmp array, since it has 3N/2 modes instead of N
-			 * TODO_comment: Why the hell do you need to do this with memcpy and not just with ordinary for?
-			 *
 			 * We use memcpy, since there are typically optimized routines available.
 			 * Writing this as a for loop can result in similar or even better performance.
 			 * lower quadrant
@@ -2307,11 +2304,7 @@ public:
 
 		/*
 		 *The temporary array becomes the main array, but this means that it will have 3N/2 modes and ...
-		 *TODO_comment: Would any data in cartesian space would be lost? This seems quite dangerous...
-		 *         The main data_array could carry much more info, and my feeling is that returning this temp (out)
-		 *          would through allow losing stuff...
-		 *
-		 * Yes, the Cartesian space data is lost.
+		 * The Cartesian space data is lost.
 		 * In general, both data sets have to match when converted forward or backward or only one of them is valid.
 		 * If they are not consistently matching (converting forward/backward), this would result in an exception.
 		 */
@@ -2391,6 +2384,113 @@ public:
 
 		checkConsistency();
 		return out;
+	}
+
+	/**
+	 * Zero high frequency modes (beyond 2N/3)
+	 *
+	 *Example of Spectrum with N=16: all high modes will be set to zero
+	 * 	(0, 1, Low )	(1, 1, Low )	(2, 1, Low )	(3, 1, Low )	(4, 1, Low )	(5, 1, Low )	(6, 1, High)	(7, 1, High)	(8, 1, High)
+	 * 	(0, 2, Low )	(1, 2, Low )	(2, 2, Low )	(3, 2, Low )	(4, 2, Low )	(5, 2, Low )	(6, 2, High)	(7, 2, High)	(8, 2, High)
+	 * 	(0, 3, Low )	(1, 3, Low )	(2, 3, Low )	(3, 3, Low )	(4, 3, Low )	(5, 3, Low )	(6, 3, High)	(7, 3, High)	(8, 3, High)
+	 *	(0, 4, Low )	(1, 4, Low )	(2, 4, Low )	(3, 4, Low )	(4, 4, Low )	(5, 4, Low )	(6, 4, High)	(7, 4, High)	(8, 4, High)
+	 *	(0, 5, Low )	(1, 5, Low )	(2, 5, Low )	(3, 5, Low )	(4, 5, Low )	(5, 5, Low )	(6, 5, High)	(7, 5, High)	(8, 5, High)
+	 *	(0, 6, High)	(1, 6, High)	(2, 6, High)	(3, 6, High)	(4, 6, High)	(5, 6, High)	(6, 6, High)	(7, 6, High)	(8, 6, High)
+	 *	(0, 7, High)	(1, 7, High)	(2, 7, High)	(3, 7, High)	(4, 7, High)	(5, 7, High)	(6, 7, High)	(7, 7, High)	(8, 7, High)
+	 *	(0, 8, High)	(1, 8, High)	(2, 8, High)	(3, 8, High)	(4, 8, High)	(5, 8, High)	(6, 8, High)	(7, 8, High)	(8, 8, High)
+	 *	(0, 7, High)	(1, 7, High)	(2, 7, High)	(3, 7, High)	(4, 7, High)	(5, 7, High)	(6, 7, High)	(7, 7, High)	(8, 7, High)
+	 *	(0, 6, High)	(1, 6, High)	(2, 6, High)	(3, 6, High)	(4, 6, High)	(5, 6, High)	(6, 6, High)	(7, 6, High)	(8, 6, High)
+	 *	(0, 5, Low)		(1, 5, Low)		(2, 5, Low)		(3, 5, Low)		(4, 5, Low)		(5, 5, Low)		(6, 5, High)	(7, 5, High)	(8, 5, High)
+	 *	(0, 4, Low)		(1, 4, Low)		(2, 4, Low)		(3, 4, Low)		(4, 4, Low)		(5, 4, Low)		(6, 4, High)	(7, 4, High)	(8, 4, High)
+	 *	(0, 3, Low)		(1, 3, Low)		(2, 3, Low)		(3, 3, Low)		(4, 3, Low)		(5, 3, Low)		(6, 3, High)	(7, 3, High)	(8, 3, High)
+	 *	(0, 2, Low)		(1, 2, Low)		(2, 2, Low)		(3, 2, Low)		(4, 2, Low)		(5, 2, Low)		(6, 2, High)	(7, 2, High)	(8, 2, High)
+	 *	(0, 1, Low)		(1, 1, Low)		(2, 1, Low)		(3, 1, Low)		(4, 1, Low)		(5, 1, Low)		(6, 1, High)	(7, 1, High)	(8, 1, High)
+	 *	(0, 0, Low)		(1, 0, Low)		(2, 0, Low)		(3, 0, Low)		(4, 0, Low)		(5, 0, Low)		(6, 0, High)	(7, 0, High)	(8, 0, High)
+	 *
+	 *
+	 */
+	inline
+	DataArray<D> aliasing_zero_high_modes(
+	)
+	{
+		//std::cout<<"Cartesian"<<std::endl;
+		//printArrayData();
+		//Get spectral data
+		requestDataInSpectralSpace();
+		//std::cout<<"Spectral"<<std::endl;
+		//printSpectrum();
+
+		if (D != 2)
+		{
+			std::cerr << "TODO: Only 2D so far supported" << std::endl;
+			exit(-1);
+		}
+
+		//Upper part
+		std::size_t i=1; //modenumber in x
+		std::size_t j=1; //modenumber in y
+
+		// TODO: this does not work once distributed memory is available
+#if SWEET_THREADING
+//#pragma omp parallel for OPENMP_PAR_SIMD
+#endif
+		for (std::size_t y = resolution_spec[1]-1; y > resolution_spec[1]/2; y--)
+		{
+			i=0;
+			for (std::size_t x = 0; x < resolution_spec[0]; x++)
+			{
+
+				//double value_re = spec_getRe(y, x);
+				//double value_im = spec_getIm(y, x);
+				if( x > 2*(resolution_spec[0]-1)/3 || j > 2*(resolution_spec[1]/2)/3 )
+				{
+					set_spec( y, x, 0.0, 0.0);
+					//std::cout << "(" << i << ", " << j << ", High)\t";
+				}
+				else
+				{
+					//std::cout << "(" << i << ", " << j << ", Low )\t";
+				}
+				i++;
+			}
+			j++;
+			//std::cout << std::endl;
+		}
+
+
+		//Lower part
+		i=0; //modenumber in x
+		j=resolution_spec[1]/2; //modenumber in y
+		// TODO: this does not work once distributed memory is available
+#if SWEET_THREADING
+//#pragma omp parallel for OPENMP_PAR_SIMD
+#endif
+		for (int y = (int) resolution_spec[1]/2; y >= 0; y--)
+		{
+			i=0;
+			for (std::size_t x = 0; x < resolution_spec[0]; x++)
+			{
+				//double value_re = spec_getRe(y, x);
+				//double value_im = spec_getIm(y, x);
+				if( x > 2*(resolution_spec[0]-1)/3 ||  y > 2*((int) resolution_spec[1]/2)/3 )
+				{
+					set_spec( y, x, 0.0, 0.0);
+					//std::cout << "(" << i << ", " << j << ", High)\t";
+				}
+				else
+				{
+					//std::cout << "(" << i << ", " << j << ", Low)\t";
+				}
+				i++;
+			}
+			j--;
+			//std::cout << std::endl;
+		}
+		//std::cout << std::endl;
+		//printSpectrum();
+		checkConsistency();
+
+		return 1;
 	}
 
 #endif
@@ -3267,16 +3367,11 @@ public:
 			const DataArray<D> &i_array_data	///< this class times i_array_data
 	)	const
 	{
-		// TODO_comment : I suppose this will be the right hand side of the *
-		// YES
-		//
-		// that is data_array_right of data_array_left*data_array_right
-		// Does it differ if I call it data_array_left*data_array_right or data_array_left*(data_array_right)?
-		//
-		// You can also call
-		// 		data_array.operator*(other_data_array)
+
+		// Call as
+		// 		data_array.operator*(i_array_data)
 		// which is identical to
-		//		data_array * other_data_array
+		//		data_array * i_array_data
 		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
 
 		//This is the actual product result, with the correct N resolution
@@ -3286,8 +3381,7 @@ public:
 #if SWEET_USE_SPECTRAL_SPACE && SWEET_USE_SPECTRAL_DEALIASING
 
 		// Array on the left of *, augmented to 3N/2 with zeros on high end spectrum
-		// TODO_comment : any previous data in cartesian space will be lost?
-		// YES
+		// Any previous data in cartesian space will be lost?
 		DataArray<D> u = aliasing_scaleUp();
 		// The input array (right of *) augmented to 3N/2 with zeros on high end spectrum
 		DataArray<D> v = rw_array_data.aliasing_scaleUp();
@@ -3313,8 +3407,6 @@ public:
 
 		//Copies the spectrum of the product to the output data_array, which has the correct resolution N
 		// As a consequence, all high modes are ignored (beyond N to 3N/2)
-		// TODO_comment : any previous data in cartesian space will be lost?
-		// YES
 		out = scaled_output.aliasing_scaleDown(out.resolution);
 
 		out.array_data_cartesian_space_valid = false;

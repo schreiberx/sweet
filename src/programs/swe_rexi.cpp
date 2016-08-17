@@ -198,8 +198,8 @@ public:
 		force_u(simVars.disc.res),
 		force_v(simVars.disc.res),
 
-		// @Martin: This should be added only when nonlinear model is ran. How to do that, since I can't put an if in the constructor?
-		//ans: With pointers.	This can be made accessible as standard classes by using references to	pointers.
+		//  This should be added only when nonlinear model is ran. How to do that, since I can't put an if in the constructor?
+		// ans: With pointers.	This can be made accessible as standard classes by using references to	pointers.
 		N_h(simVars.disc.res),
 		N_u(simVars.disc.res),
 		N_v(simVars.disc.res),
@@ -1318,8 +1318,13 @@ public:
 			// Linear for now
 			// will add semi-lagrangian for nonlinear case
 			assert(simVars.sim.CFL < 0);
-
 			o_dt = -simVars.sim.CFL;
+
+			//Zero hogh frequency modes to avoid aliasing effects (only for nolinear eqs)
+			prog_h.aliasing_zero_high_modes();
+			prog_u.aliasing_zero_high_modes();
+			prog_v.aliasing_zero_high_modes();
+
 			rexiSWE.run_timestep_cn_ts(
 					prog_h, prog_u, prog_v,
 					o_dt,
