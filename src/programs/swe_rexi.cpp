@@ -1176,6 +1176,14 @@ public:
 					//rexiSWE.run_timestep( H, U, V, o_dt, op, simVars, param_rexi_zero_before_solving);
 					rexiSWE.run_timestep_direct_solution( H, U, V, o_dt, op, simVars );
 
+					//Zero high frequency modes to avoid aliasing effects (only for nonlinear eqs)
+#if SWEET_USE_SPECTRAL_DEALIASING
+					prog_h.aliasing_zero_high_modes();
+					prog_u.aliasing_zero_high_modes();
+					prog_v.aliasing_zero_high_modes();
+					std::cout<<"hi"<<std::endl;
+#endif
+
 					//Zero nonlinear vectors
 					N_h.set_all(0);
 					N_u.set_all(0);
@@ -1320,20 +1328,62 @@ public:
 			assert(simVars.sim.CFL < 0);
 			o_dt = -simVars.sim.CFL;
 
-			//Zero high frequency modes to avoid aliasing effects (only for nonlinear eqs)
-#if SWEET_USE_SPECTRAL_DEALIASING
-			prog_h.aliasing_zero_high_modes();
-			prog_u.aliasing_zero_high_modes();
-			prog_v.aliasing_zero_high_modes();
-#endif
+			if (param_nonlinear>0)
+			{
+				//Calculate departure points
+				semiLagrangian.semi_lag_departure_points_settls(
+						prog_u_prev, prog_v_prev,
+						prog_u,	prog_v,
+						posx_a,	posy_a,
+						o_dt,
+						posx_d,	posy_d,
+						stag_displacement
+				);
 
-			rexiSWE.run_timestep_cn_ts(
-					prog_h, prog_u, prog_v,
-					o_dt,
-					param_semi_implicit,
-					op,
-					simVars
-			);
+				//std::cout<<"Arrival x" <<std::endl;
+				//std::cout<< posx_a <<std::endl;
+				//std::cout<<"Arrival y" <<std::endl;
+				//std::cout<< posy_a <<std::endl;
+				//std::cout<<"Departure points movement (x,y): " << (posx_a-posx_d).reduce_maxAbs() << " " <<(posy_a-posy_d).reduce_maxAbs() << std::endl;
+
+				//Save current fields for next time step
+				prog_u_prev = prog_u;
+				prog_v_prev = prog_v;
+				prog_h_prev = prog_h;
+
+
+				if(param_nonlinear==2) //Linear with nonlinear advection only (valid for nondivergent nonlinear sw flows)
+				{
+					// First calculate the linear part
+					rexiSWE.run_timestep_cn_sl_ts(
+											prog_h, prog_u, prog_v,
+											posx_d,	posy_d,
+											o_dt,
+											param_semi_implicit,
+											op,
+											sampler2D,
+											simVars
+									);
+
+				}
+				//Zero high frequency modes to avoid aliasing effects (only for nonlinear eqs)
+//#if SWEET_USE_SPECTRAL_DEALIASING
+	//			prog_h.aliasing_zero_high_modes();
+	//			prog_u.aliasing_zero_high_modes();
+	//			prog_v.aliasing_zero_high_modes();
+//#endif
+
+			}
+			else
+			{ //Linear solver
+				rexiSWE.run_timestep_cn_ts(
+						prog_h, prog_u, prog_v,
+						o_dt,
+						param_semi_implicit,
+						op,
+						simVars
+				);
+			}
 		}
 		else
 		{

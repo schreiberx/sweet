@@ -14,7 +14,8 @@
 #include <sweet/Operators2D.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/Complex2DArrayFFT.hpp>
-
+#include <sweet/Sampler2D.hpp>
+#include <sweet/SemiLagrangian.hpp>
 #include "../rexiswe/RexiSWE_HelmholtzSolver.hpp"
 
 
@@ -97,7 +98,14 @@ class RexiSWE
 	int num_global_threads;
 
 public:
+	//REXI stuff
 	REXI rexi;
+
+	// Interpolation stuff
+	//Sampler2D sampler2D;
+
+	// Semi-Lag stuff
+	//SemiLagrangian semiLagrangian;
 
 private:
 	void cleanup();
@@ -204,7 +212,7 @@ public:
 
 	/**
 	 * Solve U_t = L U via Crank-Nicolson:
-	 * with semi-implicit solver
+	 * with (semi)-implicit solver
 	 * (Coriolis is explicit)
 	 */
 public:
@@ -220,6 +228,27 @@ public:
 		const SimulationVariables &i_parameters
 	);
 
+	/**
+	 * Solve U_t = L U via Crank-Nicolson:
+	 * with (semi)-implicit semi-lagrangian solver
+	 */
+public:
+	bool run_timestep_cn_sl_ts(
+			DataArray<2> &io_h,
+			DataArray<2> &io_u,
+			DataArray<2> &io_v,
+
+			DataArray<2> &i_posx_d, //Departure point positions in x and y
+			DataArray<2> &i_posy_d,
+
+			double i_timestep_size,	///< timestep size
+			bool i_semi_implicit, ///< semi-implicit or implicit CN
+
+			Operators2D &op,
+			Sampler2D &sampler2D,
+
+			const SimulationVariables &i_simVars
+	);
 
 	/**
 	 * Solve the REXI of \f$ U(t) = exp(L*t) \f$
