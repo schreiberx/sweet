@@ -2185,7 +2185,7 @@ int main2(int i_argc, char *i_argv[])
 	simVars.bogus.var[10] = 0; 	//boundary
 	simVars.bogus.var[11] = 1;	// zero rexi
 	simVars.bogus.var[12] = 0;	// nonlinear
-	simVars.bogus.var[13] = 1;  //semi-implicit flag
+	simVars.bogus.var[13] = 0;  //semi-implicit flag
 	simVars.bogus.var[14] = 0;
 	simVars.bogus.var[15] = 0;
 

@@ -572,65 +572,80 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	//std::cout << "solution for helmholtz" << std::endl;
 	//std::cout << h << std::endl;
 
+	Complex2DArrayFFT uh_d=u0;
+	Complex2DArrayFFT uh_a=u0;
+	Complex2DArrayFFT vh_d=v0;
+	Complex2DArrayFFT vh_a=v0;
+
 	if(i_semi_implicit)
 	{
 		// u equation
 		//------------------
 
 		// (n) time term
-		Complex2DArrayFFT uh_d = u0 + dt * f0 * v0 - 0.5 * dt * g * op_diff_c_x(h0);
+		uh_d = u0 + dt * f0 * v0 - 0.5 * dt * g * op_diff_c_x(h0);
 
 		// (n+1) time term - using the helmholtz prob solution
-		Complex2DArrayFFT uh_a = - 0.5 * dt * g * op_diff_c_x(h);
-
-		//Convert to cartesian space to do the inteprolation
-		uh_d=uh_d.toCart();
-		uh_a=uh_a.toCart();
-
-		//Final update
-		u = uh_a + sampler2D.bicubic_scalar(uh_d, i_posx_d, i_posy_d, -0.5, -0.5);
+		uh_a = - 0.5 * dt * g * op_diff_c_x(h);
 
 		// v equation
 		//------------------
 
 		// (n) time term
-		Complex2DArrayFFT vh_d = v0 - dt * f0 * u0 - 0.5 * dt * g * op_diff_c_y(h0);
+		vh_d = v0 - dt * f0 * u0 - 0.5 * dt * g * op_diff_c_y(h0);
 
 		// (n+1) time term - using the helmholtz prob solution
-		Complex2DArrayFFT vh_a = - 0.5 * dt * g * op_diff_c_y(h);
+		vh_a = - 0.5 * dt * g * op_diff_c_y(h);
 
-		//Convert to cartesian space to do the inteprolation
-		vh_d=vh_d.toCart();
-		vh_a=vh_a.toCart();
-
-		//Final update
-		v = vh_a + sampler2D.bicubic_scalar(vh_d, i_posx_d, i_posy_d, -0.5, -0.5);
 
 	}
 	else
 	{
-		/* u = (kappa_bar/kappa)*u0
-				+ 2.0* f0 * (alpha / kappa) * v0
-				- ( g / kappa) * ( alpha * (op_diff_c_x(h)+op_diff_c_x(h0)))
-				- ( g / kappa) * ( f0 * (op_diff_c_y(h)+op_diff_c_y(h0)))
+		// (n) time term
+		uh_d = (kappa_bar/kappa)*u0
+						+ 2.0* f0 * (alpha / kappa) * v0
+						- ( g / kappa) * ( alpha * (op_diff_c_x(h0)))
+						- ( g / kappa) * ( f0 * (op_diff_c_y(h0)))
+						;
+		// (n+1) time term - using the helmholtz prob solution
+		uh_a =
+				- ( g / kappa) * ( alpha * (op_diff_c_x(h)))
+				- ( g / kappa) * ( f0 * (op_diff_c_y(h)))
 				;
-		v = (kappa_bar/kappa)*v0
+
+		// (n) time term
+		vh_d = (kappa_bar/kappa)*v0
 				- 2.0* f0 * (alpha / kappa) * u0
-				+ ( g / kappa) * ( f0 * (op_diff_c_x(h)+op_diff_c_x(h0)))
-				- ( g / kappa) * ( alpha * (op_diff_c_y(h)+op_diff_c_y(h0)))
+				+ ( g / kappa) * ( f0 * (op_diff_c_x(h0)))
+				- ( g / kappa) * ( alpha * (op_diff_c_y(h0)))
 				;
-				*/
+
+		// (n+1) time term - using the helmholtz prob solution
+		vh_a =
+				+ ( g / kappa) * ( f0 * (op_diff_c_x(h)))
+				- ( g / kappa) * ( alpha * (op_diff_c_y(h)))
+				;
+
 	}
 
+	//Convert to cartesian space to do the interpolation
+	uh_d=uh_d.toCart();
+	uh_a=uh_a.toCart();
 
-	//Complex2DArrayFFT uh = u0 - g*op_diff_c_x(eta);
-	//Complex2DArrayFFT vh = v0 - g*op_diff_c_y(eta);
+	//Final update on u
+	u = uh_a + sampler2D.bicubic_scalar(uh_d, i_posx_d, i_posy_d, -0.5, -0.5);
 
-	//Complex2DArrayFFT u = u0 + dt * f0 * v0 - 0.5 * dt * g * (op_diff_c_x(h)+op_diff_c_x(h0));
-	//Complex2DArrayFFT v = v0 - dt * f0 * u0 - 0.5 * dt * g * (op_diff_c_y(h)+op_diff_c_y(h0));
+	//Convert to cartesian space to do the interpolation
+	vh_d=vh_d.toCart();
+	vh_a=vh_a.toCart();
 
+	//Final update on v
+	v = vh_a + sampler2D.bicubic_scalar(vh_d, i_posx_d, i_posy_d, -0.5, -0.5);
+
+	//Convert h back into cartesian data
 	h=h.toCart();
 
+	//Put back into real dataarray
 	h.toDataArrays_Real(io_h);
 	u.toDataArrays_Real(io_u);
 	v.toDataArrays_Real(io_v);
