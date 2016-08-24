@@ -464,70 +464,37 @@ bool RexiSWE::run_timestep_cn_ts(
  *
  * <=> (2/tau - L) U(tau) = (2/tau+L) U(0)
  *
- * Semi-implicit has coriolis term as explicit
+ * Semi-implicit has coriolis term as totally explicit
  *
  *Semi-Lagrangian:
  *  U(tau) is on arrival points
  *  U(0) is on departure points
  *
+ * Nonlinear term is added following Hortal (2002)
+ *
  */
 bool RexiSWE::run_timestep_cn_sl_ts(
-	DataArray<2> &io_h,
+	DataArray<2> &io_h,  ///< Current and past fields
 	DataArray<2> &io_u,
 	DataArray<2> &io_v,
+	DataArray<2> &io_h_prev,
+	DataArray<2> &io_u_prev,
+	DataArray<2> &io_v_prev,
 
-	DataArray<2> &i_posx_d, //Departure point positions in x and y
-	DataArray<2> &i_posy_d,
+	DataArray<2> &i_posx_a, //Arrival point positions in x and y (this is basically the grid)
+	DataArray<2> &i_posy_a,
 
 	double i_timestep_size,	///< timestep size
 	bool i_semi_implicit, ///< semi-implicit or implicit CN
+	int i_param_nonlinear, ///< degree of nonlinearity (0-linear, 1-full nonlinear, 2-only nonlinear adv)
 
-	Operators2D &op,
-	Sampler2D &sampler2D,
+	const SimulationVariables &i_simVars, ///< Parameters for simulation
 
-	const SimulationVariables &i_simVars
+	Operators2D &op,     ///< Operator class
+	Sampler2D &sampler2D, ///< Interpolation class
+	SemiLagrangian &semiLagrangian  ///< Semi-Lag class
 )
 {
-	// In vars
-	Complex2DArrayFFT h0(io_h.resolution);
-	Complex2DArrayFFT u0(io_u.resolution);
-	Complex2DArrayFFT v0(io_v.resolution);
-	//Out vars
-	Complex2DArrayFFT h(io_h.resolution);
-	Complex2DArrayFFT u(io_h.resolution);
-	Complex2DArrayFFT v(io_h.resolution);
-
-	h0.loadRealFromDataArray(io_h);
-	u0.loadRealFromDataArray(io_u);
-	v0.loadRealFromDataArray(io_v);
-
-	//std::cout << "h0 cart" << std::endl;
-	//std::cout << h0 << std::endl;
-
-	//std::cout << "v0 cart" << std::endl;
-	//std::cout << v0 << std::endl;
-
-	double h_bar = i_simVars.setup.h0;
-	double g = i_simVars.sim.g;
-	double f0 = i_simVars.sim.f0;
-	double dt = i_timestep_size;
-	double alpha = 2.0/dt;
-	double kappa = alpha*alpha;
-	double kappa_bar = alpha*alpha;
-
-	if(!i_semi_implicit){
-		kappa += f0*f0;
-		kappa_bar -= f0*f0;
-	}
-
-	//std::cout << "kappa " << kappa << std::endl;
-
-	h0 = h0.toSpec();
-	u0 = u0.toSpec();
-	v0 = v0.toSpec();
-
-	//std::cout << "h0 spec" << std::endl;
-	//std::cout << h0 << std::endl;
 
 	//Abbreviation for operators
 	assert(perThreadVars.size() != 0);
@@ -536,6 +503,123 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	Complex2DArrayFFT &op_diff_c_y = perThreadVars[0]->op_diff_c_y;
 	Complex2DArrayFFT &op_diff2_c_x = perThreadVars[0]->op_diff2_c_x;
 	Complex2DArrayFFT &op_diff2_c_y = perThreadVars[0]->op_diff2_c_y;
+
+	// Input vars
+	Complex2DArrayFFT h0(io_h.resolution);
+	Complex2DArrayFFT u0(io_u.resolution);
+	Complex2DArrayFFT v0(io_v.resolution);
+	Complex2DArrayFFT h0_prev(io_h.resolution);
+	Complex2DArrayFFT u0_prev(io_u.resolution);
+	Complex2DArrayFFT v0_prev(io_v.resolution);
+
+	//Out vars
+	Complex2DArrayFFT h(io_h.resolution);
+	Complex2DArrayFFT u(io_h.resolution);
+	Complex2DArrayFFT v(io_h.resolution);
+
+	//Departure points and arrival points
+	DataArray<2> posx_d(io_h.resolution);
+	DataArray<2> posy_d(io_h.resolution);
+
+	//std::cout << "h0 cart" << std::endl;
+	//std::cout << h0 << std::endl;
+
+	//std::cout << "v0 cart" << std::endl;
+	//std::cout << v0 << std::endl;
+
+	//Parameters
+	double h_bar = i_simVars.setup.h0;
+	double g = i_simVars.sim.g;
+	double f0 = i_simVars.sim.f0;
+	double dt = i_timestep_size;
+	double alpha = 2.0/dt;
+	double kappa = alpha*alpha;
+	double kappa_bar = alpha*alpha;
+	double stag_displacement[4] = {-0.5,-0.5,-0.5,-0.5}; //A grid staggering - centred cell
+	if(!i_semi_implicit){
+		kappa += f0*f0;
+		kappa_bar -= f0*f0;
+	}
+	//io_h.requestDataInCartesianSpace()
+	std::cout << "io_h cart" << std::endl;
+	std::cout << io_h.requestDataInCartesianSpace() << std::endl;
+	std::cout << "io_h spec" << std::endl;
+	io_h.printSpectrum();
+
+	if(i_param_nonlinear==1){
+		//Truncate spectral modes to avoid aliasing effects in the h*div term
+		io_h.aliasing_zero_high_modes();
+		//io_u.aliasing_zero_high_modes();
+		//io_v.aliasing_zero_high_modes();
+		std::cout<<"hiiii"<< std::endl;
+	}
+	std::cout << "io_h cart" << std::endl;
+	std::cout << io_h.requestDataInCartesianSpace() << std::endl;
+	std::cout << "io_h spec" << std::endl;
+	io_h.printSpectrum();
+	exit(-1);
+	//Load data (truncated)
+	h0.loadRealFromDataArray(io_h);
+	u0.loadRealFromDataArray(io_u);
+	v0.loadRealFromDataArray(io_v);
+	h0_prev.loadRealFromDataArray(io_h_prev);
+	u0_prev.loadRealFromDataArray(io_u_prev);
+	v0_prev.loadRealFromDataArray(io_v_prev);
+
+	//Calculate departure points
+	semiLagrangian.semi_lag_departure_points_settls(
+			io_u_prev, io_v_prev,
+			io_u,	io_v,
+			i_posx_a,	i_posy_a,
+			dt,
+			posx_d,	posy_d,
+			stag_displacement
+	);
+
+	std::cout << "h0 cart" << std::endl;
+	std::cout << h0 << std::endl;
+	std::cout << "u0 cart" << std::endl;
+	std::cout << u0 << std::endl;
+	std::cout << "v0 cart" << std::endl;
+	std::cout << v0 << std::endl;
+
+	// Calculate the nonlinear term at half step
+	u0 = u0.toSpec();
+	v0 = v0.toSpec();
+	std::cout << "u0 spec" << std::endl;
+	std::cout << u0 << std::endl;
+	std::cout << "v0 spec" << std::endl;
+	std::cout << v0 << std::endl;
+	Complex2DArrayFFT div = op_diff_c_x(u0) + op_diff_c_x(v0) ;
+	std::cout << "div spec" << std::endl;
+	std::cout << div << std::endl;
+
+	//Go to cartesian coordinates to calculate the pseudo spectral product
+	div=div.toCart();
+	std::cout << "div cart" << std::endl;
+	std::cout << div.toCart() << std::endl;
+
+	//Calculate nonlinear term pseudo-spectrally (in cartesian space)
+	// h0 is already given in cartesian coordinates
+	Complex2DArrayFFT hdiv_d = h0 * div;
+
+	//Put h0 in spectral space for rest of spectral calculations
+	h0 = h0.toSpec();
+	std::cout << "h0 spec" << std::endl;
+	std::cout << h0 << std::endl;
+
+	std::cout << "div calc" << std::endl;
+	std::cout << hdiv_d << std::endl;
+	std::cout << "div spec" << std::endl;
+	std::cout << hdiv_d.toSpec() << std::endl;
+	exit(-1);
+	//std::cout << "kappa " << kappa << std::endl;
+
+
+	//std::cout << "h0 spec" << std::endl;
+	//std::cout << h0 << std::endl;
+
+
 
 	//Calculate the RHS, this is all related to time "n", which is to be evaluated at departure points
 	// We first calculate it spectraly ** this is linear - no aliasing ***
@@ -557,7 +641,7 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	//Now interpolate to the the departure points
 	//  Departure points are set for physical space
 	Complex2DArrayFFT rhs_d(io_h.resolution);
-	rhs_d=sampler2D.bicubic_scalar(rhs, i_posx_d, i_posy_d, -0.5, -0.5);
+	rhs_d=sampler2D.bicubic_scalar(rhs, posx_d, posy_d, -0.5, -0.5);
 	//std::cout << "rhs dep complex interpolated" << std::endl;
 	//std::cout << rhs_d << std::endl;
 
@@ -633,14 +717,14 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	uh_a=uh_a.toCart();
 
 	//Final update on u
-	u = uh_a + sampler2D.bicubic_scalar(uh_d, i_posx_d, i_posy_d, -0.5, -0.5);
+	u = uh_a + sampler2D.bicubic_scalar(uh_d, posx_d, posy_d, -0.5, -0.5);
 
 	//Convert to cartesian space to do the interpolation
 	vh_d=vh_d.toCart();
 	vh_a=vh_a.toCart();
 
 	//Final update on v
-	v = vh_a + sampler2D.bicubic_scalar(vh_d, i_posx_d, i_posy_d, -0.5, -0.5);
+	v = vh_a + sampler2D.bicubic_scalar(vh_d, posx_d, posy_d, -0.5, -0.5);
 
 	//Convert h back into cartesian data
 	h=h.toCart();

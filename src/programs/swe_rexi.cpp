@@ -480,10 +480,18 @@ public:
 			}
 		}
 
+		//Truncate spectral modes to avoid aliasing effects
+		if(param_nonlinear==1){
+			prog_h.aliasing_zero_high_modes();
+			prog_u.aliasing_zero_high_modes();
+			prog_v.aliasing_zero_high_modes();
+		}
+
 		//Initialise t-dt time step with initial condition
 		prog_h_prev = prog_h;
 		prog_u_prev = prog_u;
 		prog_v_prev = prog_v;
+
 
 		//Nonlinear variables
 		// set to some values for first touch NUMA policy (HPC stuff)
@@ -1331,6 +1339,7 @@ public:
 			if (param_nonlinear>0)
 			{
 				//Calculate departure points
+				/*
 				semiLagrangian.semi_lag_departure_points_settls(
 						prog_u_prev, prog_v_prev,
 						prog_u,	prog_v,
@@ -1339,33 +1348,36 @@ public:
 						posx_d,	posy_d,
 						stag_displacement
 				);
-
+				*/
 				//std::cout<<"Arrival x" <<std::endl;
 				//std::cout<< posx_a <<std::endl;
 				//std::cout<<"Arrival y" <<std::endl;
 				//std::cout<< posy_a <<std::endl;
 				//std::cout<<"Departure points movement (x,y): " << (posx_a-posx_d).reduce_maxAbs() << " " <<(posy_a-posy_d).reduce_maxAbs() << std::endl;
 
-				//Save current fields for next time step
-				prog_u_prev = prog_u;
-				prog_v_prev = prog_v;
-				prog_h_prev = prog_h;
 
-
-				if(param_nonlinear==2) //Linear with nonlinear advection only (valid for nondivergent nonlinear sw flows)
-				{
+				//if(param_nonlinear==2) //Linear with nonlinear advection only (valid for nondivergent nonlinear sw flows)
+				//{
 					// First calculate the linear part
 					rexiSWE.run_timestep_cn_sl_ts(
 											prog_h, prog_u, prog_v,
-											posx_d,	posy_d,
+											prog_h_prev, prog_u_prev, prog_v_prev,
+											posx_a,	posy_a,
 											o_dt,
 											param_semi_implicit,
+											param_nonlinear,
+											simVars,
 											op,
 											sampler2D,
-											simVars
+											semiLagrangian
 									);
 
-				}
+				//}
+				//Save current fields for next time step
+				//prog_u_prev = prog_u;
+				//prog_v_prev = prog_v;
+				//prog_h_prev = prog_h;
+
 				//Zero high frequency modes to avoid aliasing effects (only for nonlinear eqs)
 //#if SWEET_USE_SPECTRAL_DEALIASING
 	//			prog_h.aliasing_zero_high_modes();
@@ -2186,8 +2198,8 @@ int main2(int i_argc, char *i_argv[])
 	simVars.bogus.var[11] = 1;	// zero rexi
 	simVars.bogus.var[12] = 0;	// nonlinear
 	simVars.bogus.var[13] = 0;  //semi-implicit flag
-	simVars.bogus.var[14] = 0;
-	simVars.bogus.var[15] = 0;
+	simVars.bogus.var[14] = 0;  //frequency in x for waves test case
+	simVars.bogus.var[15] = 0;  //frequency in y for waves test case
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))

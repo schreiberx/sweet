@@ -1515,7 +1515,7 @@ private:
 
 public:
 	inline
-	void requestDataInSpectralSpace()	const
+	const DataArray<D>& requestDataInSpectralSpace() const
 	{
 #if SWEET_USE_SPECTRAL_SPACE==0
 		std::cerr << "requestDataInSpectralSpace: spectral space is disabled" << std::endl;
@@ -1534,7 +1534,7 @@ public:
 #endif
 
 		if (array_data_spectral_space_valid)
-			return;		// nothing to do
+			return *this;		// nothing to do
 
 		if (!array_data_cartesian_space_valid)
 		{
@@ -1558,18 +1558,19 @@ public:
 //		rw_array_data->array_data_cartesian_space_valid = false;
 		checkConsistency();
 #endif
+		return *this;
 	}
 
 
 	inline
-	void requestDataInCartesianSpace()	const
+	const DataArray<D>& requestDataInCartesianSpace() const
 	{
 #if SWEET_USE_SPECTRAL_SPACE==1
 
 		checkConsistency();
 
 		if (array_data_cartesian_space_valid)
-			return;		// nothing to do
+			return *this;		// nothing to do
 
 		assert(array_data_spectral_space_valid == true);
 
@@ -1589,6 +1590,7 @@ public:
 
 		checkConsistency();
 #endif
+	return *this;
 	}
 
 
@@ -2455,6 +2457,7 @@ public:
 		checkConsistency();
 		return out;
 	}
+#endif
 
 	/**
 	 * Zero high frequency modes (beyond 2N/3)
@@ -2483,12 +2486,12 @@ public:
 	DataArray<D>& aliasing_zero_high_modes(
 	)
 	{
-		//std::cout<<"Cartesian"<<std::endl;
-		//printArrayData();
+		std::cout<<"Cartesian"<<std::endl;
+		printArrayData();
 		//Get spectral data
 		requestDataInSpectralSpace();
-		//std::cout<<"Spectral"<<std::endl;
-		//printSpectrum();
+		std::cout<<"Spectral input data"<<std::endl;
+		printSpectrum();
 
 		if (D != 2)
 		{
@@ -2556,16 +2559,17 @@ public:
 			j--;
 			//std::cout << std::endl;
 		}
-		//std::cout << std::endl;
-		//printSpectrum();
+		std::cout << std::endl;
+		std::cout<<"Spectral data changed to"<<std::endl;
+		printSpectrum();
 		requestDataInCartesianSpace();
+		std::cout << std::endl;
+		std::cout<<"Spectral data after requestDataInCartesianSpace()"<<std::endl;
+		printSpectrum();
 		checkConsistency();
-
+		exit(-1);
 		return *this;
 	}
-
-#endif
-
 
 
 public:
@@ -3737,7 +3741,7 @@ public:
 
 
 	/**
-	 * Write data to ASCII file
+	 * Print data
 	 *
 	 * Each array row is stored to a line.
 	 * Per default, a tab separator is used in each line to separate the values.
