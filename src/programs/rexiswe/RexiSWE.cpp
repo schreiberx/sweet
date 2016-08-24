@@ -541,23 +541,23 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 		kappa_bar -= f0*f0;
 	}
 	//io_h.requestDataInCartesianSpace()
-	std::cout << "io_h cart" << std::endl;
-	std::cout << io_h.requestDataInCartesianSpace() << std::endl;
-	std::cout << "io_h spec" << std::endl;
-	io_h.printSpectrum();
+	//std::cout << "io_h cart" << std::endl;
+	//std::cout << io_h.requestDataInCartesianSpace() << std::endl;
+	//std::cout << "io_h spec" << std::endl;
+	//io_h.printSpectrum();
 
 	if(i_param_nonlinear==1){
 		//Truncate spectral modes to avoid aliasing effects in the h*div term
 		io_h.aliasing_zero_high_modes();
-		//io_u.aliasing_zero_high_modes();
-		//io_v.aliasing_zero_high_modes();
-		std::cout<<"hiiii"<< std::endl;
+		io_u.aliasing_zero_high_modes();
+		io_v.aliasing_zero_high_modes();
 	}
-	std::cout << "io_h cart" << std::endl;
-	std::cout << io_h.requestDataInCartesianSpace() << std::endl;
-	std::cout << "io_h spec" << std::endl;
-	io_h.printSpectrum();
-	exit(-1);
+
+	//std::cout << "io_h cart" << std::endl;
+	//std::cout << io_h.requestDataInCartesianSpace() << std::endl;
+	//std::cout << "io_h spec" << std::endl;
+	//io_h.printSpectrum();
+
 	//Load data (truncated)
 	h0.loadRealFromDataArray(io_h);
 	u0.loadRealFromDataArray(io_u);
@@ -576,48 +576,31 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 			stag_displacement
 	);
 
-	std::cout << "h0 cart" << std::endl;
-	std::cout << h0 << std::endl;
-	std::cout << "u0 cart" << std::endl;
-	std::cout << u0 << std::endl;
-	std::cout << "v0 cart" << std::endl;
-	std::cout << v0 << std::endl;
 
-	// Calculate the nonlinear term at half step
+	// Divergence
 	u0 = u0.toSpec();
 	v0 = v0.toSpec();
-	std::cout << "u0 spec" << std::endl;
-	std::cout << u0 << std::endl;
-	std::cout << "v0 spec" << std::endl;
-	std::cout << v0 << std::endl;
-	Complex2DArrayFFT div = op_diff_c_x(u0) + op_diff_c_x(v0) ;
-	std::cout << "div spec" << std::endl;
-	std::cout << div << std::endl;
+	Complex2DArrayFFT div = op_diff_c_x(u0) + op_diff_c_y(v0) ;
 
-	//Go to cartesian coordinates to calculate the pseudo spectral product
+	//Go to cartesian coordinates to calculate the pseudo-spectral product
 	div=div.toCart();
-	std::cout << "div cart" << std::endl;
-	std::cout << div.toCart() << std::endl;
 
 	//Calculate nonlinear term pseudo-spectrally (in cartesian space)
 	// h0 is already given in cartesian coordinates
 	Complex2DArrayFFT hdiv_d = h0 * div;
 
+
+	// Calculate nonlinear term interpolated from departure points (TODO)
+	Complex2DArrayFFT div_d=sampler2D.bicubic_scalar(div, posx_d, posy_d, -0.5, -0.5);
+
 	//Put h0 in spectral space for rest of spectral calculations
 	h0 = h0.toSpec();
-	std::cout << "h0 spec" << std::endl;
-	std::cout << h0 << std::endl;
 
-	std::cout << "div calc" << std::endl;
-	std::cout << hdiv_d << std::endl;
-	std::cout << "div spec" << std::endl;
-	std::cout << hdiv_d.toSpec() << std::endl;
-	exit(-1);
+
 	//std::cout << "kappa " << kappa << std::endl;
-
-
 	//std::cout << "h0 spec" << std::endl;
 	//std::cout << h0 << std::endl;
+
 
 
 

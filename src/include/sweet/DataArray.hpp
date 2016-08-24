@@ -2486,12 +2486,12 @@ public:
 	DataArray<D>& aliasing_zero_high_modes(
 	)
 	{
-		std::cout<<"Cartesian"<<std::endl;
-		printArrayData();
+		//std::cout<<"Cartesian"<<std::endl;
+		//printArrayData();
 		//Get spectral data
 		requestDataInSpectralSpace();
-		std::cout<<"Spectral input data"<<std::endl;
-		printSpectrum();
+		//std::cout<<"Spectral input data"<<std::endl;
+		//printSpectrum();
 
 		if (D != 2)
 		{
@@ -2559,15 +2559,15 @@ public:
 			j--;
 			//std::cout << std::endl;
 		}
-		std::cout << std::endl;
-		std::cout<<"Spectral data changed to"<<std::endl;
-		printSpectrum();
+		//std::cout << std::endl;
+		//std::cout<<"Spectral data changed to"<<std::endl;
+		//printSpectrum();
 		requestDataInCartesianSpace();
-		std::cout << std::endl;
-		std::cout<<"Spectral data after requestDataInCartesianSpace()"<<std::endl;
-		printSpectrum();
+		//std::cout << std::endl;
+		//std::cout<<"Spectral data after requestDataInCartesianSpace()"<<std::endl;
+		//printSpectrum();
 		checkConsistency();
-		exit(-1);
+
 		return *this;
 	}
 
