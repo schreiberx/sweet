@@ -2098,7 +2098,7 @@ int main2(int i_argc, char *i_argv[])
 
 #endif
 
-	NUMABlockAlloc::setup();
+	MemBlockAlloc::setup();
 
 	//input parameter names (specific ones for this program)
 	const char *bogus_var_names[] = {

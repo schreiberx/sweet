@@ -24,7 +24,7 @@
 #include <iostream>
 #include <string.h>
 #include <sweet/openmp_helper.hpp>
-#include <sweet/NUMABlockAlloc.hpp>
+#include "MemBlockAlloc.hpp"
 
 #ifndef SWEET_USE_SPECTRAL_SPACE
 	#define SWEET_USE_SPECTRAL_SPACE	1
@@ -177,12 +177,12 @@ private:
 			bool i_first_touch_initialize = true	///< true: initialize the data buffers with dummy data for first touch policy of page allocation on shared-memory systems
 	)
 	{
-		NUMABlockAlloc::free(array_data_cartesian_space, array_data_cartesian_length*sizeof(double));
-		array_data_cartesian_space = NUMABlockAlloc::alloc<double>(array_data_cartesian_length*sizeof(double));
+		MemBlockAlloc::free(array_data_cartesian_space, array_data_cartesian_length*sizeof(double));
+		array_data_cartesian_space = MemBlockAlloc::alloc<double>(array_data_cartesian_length*sizeof(double));
 
 #if SWEET_USE_SPECTRAL_SPACE
-		NUMABlockAlloc::free(array_data_spectral_space, array_data_cartesian_length*sizeof(double));
-		array_data_spectral_space = NUMABlockAlloc::alloc<double>(array_data_spectral_length*sizeof(double));
+		MemBlockAlloc::free(array_data_spectral_space, array_data_cartesian_length*sizeof(double));
+		array_data_spectral_space = MemBlockAlloc::alloc<double>(array_data_spectral_length*sizeof(double));
 #endif
 
 		if (i_first_touch_initialize)
@@ -329,14 +329,14 @@ public:
 			plan_backward_output_length = i_dataArray.array_data_cartesian_length;
 			plan_forward_output_length = i_dataArray.array_data_spectral_length;
 
-			double *data_cartesian = NUMABlockAlloc::alloc<double>(i_dataArray.array_data_cartesian_length*sizeof(double));
+			double *data_cartesian = MemBlockAlloc::alloc<double>(i_dataArray.array_data_cartesian_length*sizeof(double));
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 			for (std::size_t i = 0; i < i_dataArray.array_data_cartesian_length; i++)
 				data_cartesian[i] = -123;	// dummy data
 
-			double *data_spectral = NUMABlockAlloc::alloc<double>(i_dataArray.array_data_spectral_length*sizeof(double));
+			double *data_spectral = MemBlockAlloc::alloc<double>(i_dataArray.array_data_spectral_length*sizeof(double));
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
@@ -394,8 +394,8 @@ public:
 			fftw_export_wisdom_to_filename(fftw_load_wisdom_filename);
 #endif
 
-			NUMABlockAlloc::free(data_cartesian, i_dataArray.array_data_cartesian_length*sizeof(double));
-			NUMABlockAlloc::free(data_spectral, i_dataArray.array_data_spectral_length*sizeof(double));
+			MemBlockAlloc::free(data_cartesian, i_dataArray.array_data_cartesian_length*sizeof(double));
+			MemBlockAlloc::free(data_spectral, i_dataArray.array_data_spectral_length*sizeof(double));
 		}
 
 		void fft_forward(
@@ -807,10 +807,10 @@ public:
 
 	~DataArray()
 	{
-		NUMABlockAlloc::free(array_data_cartesian_space, array_data_cartesian_length*sizeof(double));
+		MemBlockAlloc::free(array_data_cartesian_space, array_data_cartesian_length*sizeof(double));
 
 #if SWEET_USE_SPECTRAL_SPACE
-		NUMABlockAlloc::free(array_data_spectral_space, array_data_spectral_length*sizeof(double));
+		MemBlockAlloc::free(array_data_spectral_space, array_data_spectral_length*sizeof(double));
 
 		/*
 		 * If this is an aliasing DataArray, reduce the reference counter of this array
@@ -869,7 +869,7 @@ public:
 
 
 #else
-		NUMABlockAlloc::free(kernel_data, sizeof(double)*kernel_size*kernel_size);
+		MemBlockAlloc::free(kernel_data, sizeof(double)*kernel_size*kernel_size);
 #endif
 	}
 
@@ -2068,7 +2068,7 @@ public:
 #if SWEET_USE_SPECTRAL_SPACE == 0
 
 		kernel_size = S;
-		kernel_data = NUMABlockAlloc::alloc<double>(sizeof(double)*S*S);
+		kernel_data = MemBlockAlloc::alloc<double>(sizeof(double)*S*S);
 		for (int y = 0; y < S; y++)
 			for (int x = 0; x < S; x++)
 				kernel_data[y*S+x] = i_kernel_array[S-1-y][x];
