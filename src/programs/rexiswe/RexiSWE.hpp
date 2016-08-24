@@ -14,7 +14,8 @@
 #include <sweet/Operators2D.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/Complex2DArrayFFT.hpp>
-
+#include <sweet/Sampler2D.hpp>
+#include <sweet/SemiLagrangian.hpp>
 #include "../rexiswe/RexiSWE_HelmholtzSolver.hpp"
 
 
@@ -97,7 +98,14 @@ class RexiSWE
 	int num_global_threads;
 
 public:
+	//REXI stuff
 	REXI rexi;
+
+	// Interpolation stuff
+	//Sampler2D sampler2D;
+
+	// Semi-Lag stuff
+	//SemiLagrangian semiLagrangian;
 
 private:
 	void cleanup();
@@ -204,7 +212,7 @@ public:
 
 	/**
 	 * Solve U_t = L U via Crank-Nicolson:
-	 * with semi-implicit solver
+	 * with (semi)-implicit solver
 	 * (Coriolis is explicit)
 	 */
 public:
@@ -220,6 +228,32 @@ public:
 		const SimulationVariables &i_parameters
 	);
 
+	/**
+	 * Solve U_t = L U via Crank-Nicolson:
+	 * with (semi)-implicit semi-lagrangian solver
+	 */
+public:
+	bool run_timestep_cn_sl_ts(
+			DataArray<2> &io_h,  ///< Current and past fields
+			DataArray<2> &io_u,
+			DataArray<2> &io_v,
+			DataArray<2> &io_h_prev,
+			DataArray<2> &io_u_prev,
+			DataArray<2> &io_v_prev,
+
+			DataArray<2> &i_posx_a, //Arrival point positions in x and y (this is basically the grid)
+			DataArray<2> &i_posy_a,
+
+			double i_timestep_size,	///< timestep size
+			bool i_semi_implicit, ///< semi-implicit or implicit CN
+			int i_param_nonlinear, ///< degree of nonlinearity (0-linear, 1-full nonlinear, 2-only nonlinear adv)
+
+			const SimulationVariables &i_simVars, ///< Parameters for simulation
+
+			Operators2D &op,     ///< Operator class
+			Sampler2D &sampler2D, ///< Interpolation class
+			SemiLagrangian &semiLagrangian  ///< Semi-Lag class
+	);
 
 	/**
 	 * Solve the REXI of \f$ U(t) = exp(L*t) \f$
