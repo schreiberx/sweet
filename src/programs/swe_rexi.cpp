@@ -1338,26 +1338,6 @@ public:
 
 			if (param_nonlinear>0)
 			{
-				//Calculate departure points
-				/*
-				semiLagrangian.semi_lag_departure_points_settls(
-						prog_u_prev, prog_v_prev,
-						prog_u,	prog_v,
-						posx_a,	posy_a,
-						o_dt,
-						posx_d,	posy_d,
-						stag_displacement
-				);
-				*/
-				//std::cout<<"Arrival x" <<std::endl;
-				//std::cout<< posx_a <<std::endl;
-				//std::cout<<"Arrival y" <<std::endl;
-				//std::cout<< posy_a <<std::endl;
-				//std::cout<<"Departure points movement (x,y): " << (posx_a-posx_d).reduce_maxAbs() << " " <<(posy_a-posy_d).reduce_maxAbs() << std::endl;
-
-
-				//if(param_nonlinear==2) //Linear with nonlinear advection only (valid for nondivergent nonlinear sw flows)
-				//{
 					// First calculate the linear part
 					rexiSWE.run_timestep_cn_sl_ts(
 											prog_h, prog_u, prog_v,
@@ -1371,19 +1351,6 @@ public:
 											sampler2D,
 											semiLagrangian
 									);
-
-				//}
-				//Save current fields for next time step
-				//prog_u_prev = prog_u;
-				//prog_v_prev = prog_v;
-				//prog_h_prev = prog_h;
-
-				//Zero high frequency modes to avoid aliasing effects (only for nonlinear eqs)
-//#if SWEET_USE_SPECTRAL_DEALIASING
-	//			prog_h.aliasing_zero_high_modes();
-	//			prog_u.aliasing_zero_high_modes();
-	//			prog_v.aliasing_zero_high_modes();
-//#endif
 
 			}
 			else

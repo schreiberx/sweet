@@ -566,42 +566,56 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	u0_prev.loadRealFromDataArray(io_u_prev);
 	v0_prev.loadRealFromDataArray(io_v_prev);
 
-	//Calculate departure points
-	semiLagrangian.semi_lag_departure_points_settls(
-			io_u_prev, io_v_prev,
-			io_u,	io_v,
-			i_posx_a,	i_posy_a,
-			dt,
-			posx_d,	posy_d,
-			stag_displacement
-	);
+	if(i_param_nonlinear>0)
+	{
+		//Calculate departure points
+		semiLagrangian.semi_lag_departure_points_settls(
+				io_u_prev, io_v_prev,
+				io_u,	io_v,
+				i_posx_a,	i_posy_a,
+				dt,
+				posx_d,	posy_d,
+				stag_displacement
+		);
+	}
 
-
-	// Divergence
+	//Go to spectral space
 	u0 = u0.toSpec();
 	v0 = v0.toSpec();
+	//h0 = h0.toSpec(); //this is not necessary
+	//h0_prev = h0_prev.toSpec(); //this is not necessary
+	u0_prev = u0_prev.toSpec();
+	v0_prev = v0_prev.toSpec();
+
+	//Calculate Divergence and vorticity spectrally
 	Complex2DArrayFFT div = op_diff_c_x(u0) + op_diff_c_y(v0) ;
+	Complex2DArrayFFT div_prev = op_diff_c_x(u0_prev) + op_diff_c_y(v0_prev) ;
 
-	//Go to cartesian coordinates to calculate the pseudo-spectral product
-	div=div.toCart();
+	//Calculate div in cartesian coordinates to calculate the pseudo-spectral product
+	div      = div.toCart();
+	div_prev = div_prev.toCart();
 
-	//Calculate nonlinear term pseudo-spectrally (in cartesian space)
-	// h0 is already given in cartesian coordinates
-	Complex2DArrayFFT hdiv_d = h0 * div;
-
-
-	// Calculate nonlinear term interpolated from departure points (TODO)
-	Complex2DArrayFFT div_d=sampler2D.bicubic_scalar(div, posx_d, posy_d, -0.5, -0.5);
+	//Calculate nonlinear term at half timestep
+	Complex2DArrayFFT nonlin(io_h.resolution);
+	if(i_param_nonlinear==1)
+	{
+		// Calculate nonlinear term interpolated to departure points
+		// h*div is calculate in cartesian space (pseudo-spectrally)
+		Complex2DArrayFFT hdiv = 2.0 * h0 * div - h0_prev * div_prev;
+		nonlin = 0.5 * div +
+				0.5 * sampler2D.bicubic_scalar( hdiv, posx_d, posy_d, -0.5, -0.5);
+	}
 
 	//Put h0 in spectral space for rest of spectral calculations
 	h0 = h0.toSpec();
+	h0_prev = h0_prev.toSpec();
+	div      = div.toSpec();
 
+	//* At this point, all data is in spectral space, except _prev which are no longer needed*/
 
 	//std::cout << "kappa " << kappa << std::endl;
 	//std::cout << "h0 spec" << std::endl;
 	//std::cout << h0 << std::endl;
-
-
 
 
 	//Calculate the RHS, this is all related to time "n", which is to be evaluated at departure points
@@ -615,26 +629,34 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	//std::cout << "rhs spectral" << std::endl;
 	//std::cout << rhs << std::endl;
 
-	//Get cartesian data for interpolation
-	rhs=rhs.toCart();
+	if(i_param_nonlinear>0)
+	{
+		//Get cartesian data for interpolation
+		rhs=rhs.toCart();
 
-	//std::cout << "rhs cart" << std::endl;
-	//std::cout << rhs << std::endl;
+		//std::cout << "rhs cart" << std::endl;
+		//std::cout << rhs << std::endl;
 
-	//Now interpolate to the the departure points
-	//  Departure points are set for physical space
-	Complex2DArrayFFT rhs_d(io_h.resolution);
-	rhs_d=sampler2D.bicubic_scalar(rhs, posx_d, posy_d, -0.5, -0.5);
-	//std::cout << "rhs dep complex interpolated" << std::endl;
-	//std::cout << rhs_d << std::endl;
+		//Now interpolate to the the departure points
+		//  Departure points are set for physical space
+		rhs=sampler2D.bicubic_scalar(rhs, posx_d, posy_d, -0.5, -0.5);
+		//std::cout << "rhs dep complex interpolated" << std::endl;
+		//std::cout << rhs_d << std::endl;
 
-	//Convert back to spectral space
-	rhs_d=rhs_d.toSpec();
+		if(i_param_nonlinear==1)
+		{
+			//Add nonlinear term
+			rhs = rhs - 2.0 * (kappa / alpha) * nonlin;
+		}
+		//Convert back to spectral space
+		rhs=rhs.toSpec();
+	}
+
 	//std::cout << "rhs spectral dep complex " << std::endl;
 	//std::cout << rhs_d << std::endl;
 
 	//Solve Helmholtz equation to get h at arrival points
-	helmholtz_spectral_solver_spec(kappa, g*h_bar, rhs_d, h, 0);
+	helmholtz_spectral_solver_spec(kappa, g*h_bar, rhs, h, 0);
 
 	//std::cout << "solution for helmholtz" << std::endl;
 	//std::cout << h << std::endl;
@@ -645,7 +667,9 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	Complex2DArrayFFT vh_a=v0;
 
 	if(i_semi_implicit)
-	{
+	{  // This is wrong for 2 time step, it should have and extrapolation for the coriolis term
+		// but this will influence the other cases, so Coriolis it is kept as fully explicit (Euler like)
+
 		// u equation
 		//------------------
 
@@ -667,7 +691,7 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 
 	}
 	else
-	{
+	{ // Fully implicit f term (Crank-Nicolson style)
 		// (n) time term
 		uh_d = (kappa_bar/kappa)*u0
 						+ 2.0* f0 * (alpha / kappa) * v0
@@ -712,7 +736,12 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	//Convert h back into cartesian data
 	h=h.toCart();
 
-	//Put back into real dataarray
+	//Set time (n) as time (n-1)
+	io_h_prev=io_h;
+	io_u_prev=io_u;
+	io_v_prev=io_v;
+
+	//Put new data into real dataarray
 	h.toDataArrays_Real(io_h);
 	u.toDataArrays_Real(io_u);
 	v.toDataArrays_Real(io_v);
