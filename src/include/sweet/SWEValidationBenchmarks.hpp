@@ -495,7 +495,7 @@ class SWEValidationBenchmarks
 			else if (i_variable_id == 1) // velocity u
 			{
 				//return std::cos(4.0*dx)*std::cos(2.0*dy); //original
-				return std::cos(2.0*dx)*std::cos(2.0*dy); //simplified
+				return std::cos(2.0*dx)*std::cos(2.0*dy)+0.000001*std::cos(40.0*dx)*std::cos(33.0*dy); //simplified
 			}
 			else if (i_variable_id == 2) // velocity v
 			{

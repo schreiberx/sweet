@@ -1340,9 +1340,9 @@ public:
 			assert(simVars.sim.CFL < 0);
 			o_dt = -simVars.sim.CFL;
 
-			if (param_nonlinear>0)
+			if(1) //(param_nonlinear>0)
 			{
-					// First calculate the linear part
+
 					rexiSWE.run_timestep_cn_sl_ts(
 											prog_h, prog_u, prog_v,
 											prog_h_prev, prog_u_prev, prog_v_prev,
@@ -1358,7 +1358,7 @@ public:
 
 			}
 			else
-			{ //Linear solver
+			{ //Linear solver //Obsolete as run_timestep_cn_sl_ts does linear and nonlinear
 				rexiSWE.run_timestep_cn_ts(
 						prog_h, prog_u, prog_v,
 						o_dt,

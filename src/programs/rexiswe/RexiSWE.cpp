@@ -749,15 +749,26 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	uh_d=uh_d.toCart();
 	uh_a=uh_a.toCart();
 
-	//Final update on u
-	u = uh_a + sampler2D.bicubic_scalar(uh_d, posx_d, posy_d, -0.5, -0.5);
-
 	//Convert to cartesian space to do the interpolation
 	vh_d=vh_d.toCart();
 	vh_a=vh_a.toCart();
 
-	//Final update on v
-	v = vh_a + sampler2D.bicubic_scalar(vh_d, posx_d, posy_d, -0.5, -0.5);
+	if(i_param_nonlinear>0)
+	{
+		//Final update on u
+		u = uh_a + sampler2D.bicubic_scalar(uh_d, posx_d, posy_d, -0.5, -0.5);
+
+		//Final update on v
+		v = vh_a + sampler2D.bicubic_scalar(vh_d, posx_d, posy_d, -0.5, -0.5);
+	}
+	else
+	{
+		//Final update on u
+		u = uh_a + uh_d;
+
+		//Final update on v
+		v = vh_a + vh_d;
+	}
 
 	//Convert h back into cartesian data
 	h=h.toCart();
