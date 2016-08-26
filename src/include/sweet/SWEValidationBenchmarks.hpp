@@ -31,7 +31,7 @@ class SWEValidationBenchmarks
 			SimulationVariables &i_parameters,
 			double x,
 			double y,
-			int i_variable_id	//< 0:h, 1:u, 2:v, 3:force h, 4:force u, 5:force v, 6:coriolis
+			int i_variable_id	//< 0:h, 1:u, 2:v, 3:force h, 4:force u, 5:force v, 6:coriolis, 7:divergence, 8: vorticity
 	)
 	{
 		double f = i_parameters.sim.f0;
@@ -478,7 +478,43 @@ class SWEValidationBenchmarks
 			}
 		}
 
+		//Waves scenario for fixed frequencies
+		if (i_parameters.setup.scenario == 16)
+		{
+			double param_initial_freq_x_mul=1.0;
+			double param_initial_freq_y_mul=1.0;
+			double dx = x/i_parameters.sim.domain_size[0]*param_initial_freq_x_mul*M_PIl;
+			double dy = y/i_parameters.sim.domain_size[1]*param_initial_freq_y_mul*M_PIl;
 
+			if (i_variable_id == 0) // height
+			{
+				//return std::sin(2.0*dx)*std::cos(2.0*dy) - (1.0/5.0)*std::cos(2.0*dx)*std::sin(4.0*dy) + i_parameters.setup.h0; // original
+				return std::sin(2.0*dx)*std::cos(2.0*dy) + i_parameters.setup.h0; //simpler
+				//return std::cos(2.0*M_PI*(x/sx+y/sy)) + i_parameters.setup.h0;
+			}
+			else if (i_variable_id == 1) // velocity u
+			{
+				//return std::cos(4.0*dx)*std::cos(2.0*dy); //original
+				return std::cos(2.0*dx)*std::cos(2.0*dy); //simplified
+			}
+			else if (i_variable_id == 2) // velocity v
+			{
+				//return std::cos(2.0*dx)*std::cos(4.0*dy); //original
+				return std::cos(2.0*dx)*std::cos(2.0*dy); //simplified
+			}
+			else if (i_variable_id == 6) // f-term
+			{
+				return i_parameters.sim.f0;
+			}
+			else if (i_variable_id == 7) // divergence
+			{
+				return -2.0*M_PIl*std::sin(2.0*dx+2.0*dy);
+			}
+			else
+			{
+				return 0;
+			}
+		}
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
 		exit(1);
 		return 0;
@@ -555,6 +591,15 @@ public:
 		return return_variable_value(i_parameters, x, y, 6);
 	}
 
+	static
+	double return_div(
+			SimulationVariables &i_parameters,
+			double x,
+			double y
+	)
+	{
+		return return_variable_value(i_parameters, x, y, 7);
+	}
 
 	//Returns true if initial condition is solution of nonlinear equations, false otherwise
 	static
@@ -597,13 +642,15 @@ public:
 		if (i_parameters.setup.scenario == 13)//Forced nonlinear case - trigonometric
 			return true;
 
-		//Rotated steady state
-		if (i_parameters.setup.scenario == 14)
+
+		if (i_parameters.setup.scenario == 14) //Rotated steady state
 			return true;
 
-		// Beta plane
-		if (i_parameters.setup.scenario == 15)
+		if (i_parameters.setup.scenario == 15) // Beta plane
 			return true;
+
+		if (i_parameters.setup.scenario == 16) // Waves
+			return false;
 
 		return false;
 	}

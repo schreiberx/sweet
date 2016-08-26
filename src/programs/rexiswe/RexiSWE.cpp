@@ -590,10 +590,36 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	//Calculate Divergence and vorticity spectrally
 	Complex2DArrayFFT div = op_diff_c_x(u0) + op_diff_c_y(v0) ;
 	Complex2DArrayFFT div_prev = op_diff_c_x(u0_prev) + op_diff_c_y(v0_prev) ;
+	DataArray<2> div_exact(io_h.resolution);
+	DataArray<2> div_approx(io_h.resolution);
+
+	/*
+	// Set initial conditions given from SWEValidationBenchmarks
+	for (std::size_t j = 0; j < i_simVars.disc.res[1]; j++)
+	{
+		for (std::size_t i = 0; i < i_simVars.disc.res[0]; i++)
+		{
+			// div - lives in the center of the cell
+			double param_initial_freq_x_mul=1.0;
+			double param_initial_freq_y_mul=1.0;
+			double x = (((double)i+0.5)/(double)i_simVars.disc.res[0])*i_simVars.sim.domain_size[0];
+			double y = (((double)j+0.5)/(double)i_simVars.disc.res[1])*i_simVars.sim.domain_size[1];
+			double dx = x/i_simVars.sim.domain_size[0]*param_initial_freq_x_mul*M_PIl;
+			double dy = y/i_simVars.sim.domain_size[1]*param_initial_freq_y_mul*M_PIl;
+			div_exact.set(j, i, -2.0*M_PIl*std::sin(2.0*dx+2.0*dy));
+		}
+	}
+	 */
 
 	//Calculate div in cartesian coordinates to calculate the pseudo-spectral product
 	div      = div.toCart();
 	div_prev = div_prev.toCart();
+	//div.toDataArrays_Real(div_approx);
+	//std::cout<< "Div error" << std::endl;
+	//std::cout<< (div_approx) << std::endl;
+	//std::cout<< (div_exact) << std::endl;
+	//std::cout<< (div_approx-div_exact) << std::endl;
+	//std::cout<< (div_approx-div_exact).reduce_maxAbs() << std::endl;
 
 	//Calculate nonlinear term at half timestep
 	Complex2DArrayFFT nonlin(io_h.resolution);

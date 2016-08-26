@@ -17,7 +17,7 @@
 #include <sweet/Sampler2D.hpp>
 #include <sweet/SemiLagrangian.hpp>
 #include "../rexiswe/RexiSWE_HelmholtzSolver.hpp"
-
+//#include <sweet/SWEValidationBenchmarks.hpp>
 
 #define SWEET_BENCHMARK_REXI	0
 

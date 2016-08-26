@@ -81,8 +81,8 @@ public:
 	// Prognostic variables at time step t-dt
 	DataArray<2> prog_h_prev, prog_u_prev, prog_v_prev;
 
-	// Diagnostics - Vorticity and potential vorticity
-	DataArray<2> eta, q;
+	// Diagnostics - Vorticity, potential vorticity, divergence
+	DataArray<2> eta, q, div;
 
 	//visualization variable
 	DataArray<2> vis;
@@ -178,6 +178,7 @@ public:
 
 		eta(simVars.disc.res),
 		q(simVars.disc.res),
+		div(simVars.disc.res),
 
 		vis(simVars.disc.res),
 
@@ -709,6 +710,9 @@ public:
 			eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + beta_plane) / prog_h;
 
 		simVars.diag.total_potential_enstrophy = 0.5*(eta*eta*prog_h).reduce_sum_quad() * normalization;
+
+		//Divergence
+		div = (op.diff_c_x(prog_u) + op.diff_c_y(prog_v));
 	}
 
 
@@ -1595,12 +1599,13 @@ public:
 	/**
 	 * Arrays for online visualisation and their textual description
 	 */
-	VisStuff vis_arrays[4] =
+	VisStuff vis_arrays[5] =
 	{
 			{&prog_h,	"h"},
 			{&prog_u,	"u"},
 			{&prog_v,	"v"},
-			{&eta,		"eta"}
+			{&eta,		"eta"},
+			{&div,		"div"}
 	};
 
 
@@ -2144,7 +2149,7 @@ int main2(int i_argc, char *i_argv[])
 			"boundary-id",
 			"rexi-zero-before-solving",
 			"nonlinear",                 /// form of equations
-			"semi-implicit"				/// semi-implicitness flag
+			"semi-implicit",				/// semi-implicitness flag
 			"initial-freq-x-mul",		/// frequency multipliers for special scenario setup
 			"initial-freq-y-mul",
 			nullptr
