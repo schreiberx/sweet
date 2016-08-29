@@ -1300,7 +1300,11 @@ public:
 			);
 		}
 		else if (param_timestepping_mode == 4)
-		{ // Semi-Lagrangian with FD in space
+		{ // Semi-Lagrangian advection - velocities are kept constant, and
+			//  h is transported according to given initial wind
+			// *** Valid only for non-divergent velocity fields **//
+			// See test case scenario 17 for this ts mode
+
 			assert(simVars.sim.CFL < 0);
 			o_dt = -simVars.sim.CFL;
 
@@ -1317,8 +1321,8 @@ public:
 							stag_displacement
 					);
 
-			prog_u_prev = prog_u;
-			prog_v_prev = prog_v;
+			//prog_u_prev = prog_u;
+			//prog_v_prev = prog_v;
 			prog_h_prev = prog_h;
 
 			//Departure points are set for physical space

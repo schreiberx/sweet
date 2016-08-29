@@ -515,6 +515,42 @@ class SWEValidationBenchmarks
 				return 0;
 			}
 		}
+
+		//Diagonal advection
+		if (i_parameters.setup.scenario == 17)
+		{
+
+			// Gaussian
+			double dx = x-i_parameters.setup.setup_coord_x*sx;
+			double dy = y-i_parameters.setup.setup_coord_y*sy;
+
+			if (i_variable_id == 0)
+			{
+				double radius = i_parameters.setup.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
+				dx /= radius;
+				dy /= radius;
+
+				return i_parameters.setup.h0+std::exp(-50.0*(dx*dx + dy*dy));
+			}
+			else if (i_variable_id == 1) // velocity u
+			{
+				return std::cos(2*M_PI*y);
+			}
+			else if (i_variable_id == 2) // velocity v
+			{
+				return 1; //std::sin(2*M_PI*x);
+			}
+			else if (i_variable_id == 6) // f-term
+			{
+				return 0; //i_parameters.sim.f0;
+			}
+			else
+			{
+				return 0;
+			}
+		}
+
+
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
 		exit(1);
 		return 0;

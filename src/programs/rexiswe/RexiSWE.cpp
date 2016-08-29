@@ -577,6 +577,8 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 				posx_d,	posy_d,
 				stag_displacement
 		);
+		posx_d=i_posx_a;
+		posy_d=i_posy_a;
 	}
 
 	//Go to spectral space
