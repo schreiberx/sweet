@@ -659,24 +659,27 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	rhs.requestDataInCartesianSpace();
 
 	rhs_complex.loadRealFromDataArray(rhs);
+	std::cout<<"rhs complex cart" <<std::endl;
+	std::cout << rhs_complex << std::endl;
+	rhs_complex=rhs_complex.toSpec();
+	std::cout<<"rhs complex spec" <<std::endl;
+	std::cout << rhs_complex << std::endl;
 
-	rhs_complex.toSpec();
-	std::cout<<"h cart" <<std::endl;
-	io_h.printArrayData();
-	std::cout<<"h spec" <<std::endl;
-	io_h.printSpectrum();
 	//Solve Helmholtz equation to get h at arrival points
 	helmholtz_spectral_solver_spec(kappa, g*h_bar, rhs_complex, h_complex, 0);
 	std::cout<<"h solved spec" <<std::endl;
 	std::cout<< h_complex <<std::endl;
 	std::cout<<"h solved cart" <<std::endl;
-	h_complex.toCart();
+	h_complex=h_complex.toCart();
 	std::cout<< h_complex <<std::endl;
-	exit(-1);
+
 	// hand over solution to data arrays
-	h_complex.toCart();
 	h_complex.toDataArrays_Real(h);
+	std::cout<<"h solved cart data array" <<std::endl;
+	std::cout<< h <<std::endl;
 	h.requestDataInSpectralSpace();
+	std::cout<<"h solved spec" <<std::endl;
+	h.printSpectrum();
 
 	//Debug test - put exact h solution of helmholtz solver
 	//h=io_h;
