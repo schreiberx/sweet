@@ -1286,7 +1286,7 @@ public:
 			{
 				double value_re = i_testArray.getRe(y, x);
 				double value_im = i_testArray.getIm(y, x);
-#if 0
+#if 1
 				if (std::abs(value_re) < 10e-10)
 					value_re = 0;
 				if (std::abs(value_im) < 10e-10)

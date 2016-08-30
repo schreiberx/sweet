@@ -381,7 +381,7 @@ public:
 		Complex2DArrayFFT out_cmp(i_data.resolution); // complex output of interpolated data
 
 		// The data needs to be cartesian space!!
-		//data_cmp=i_data.toCart(); // do not use
+		//data_cmp=i_data.toCart(); // do not use, since not secure
 
 		//Put data into a Real DataArray - called data
 		i_data.toDataArrays_Real(data);
