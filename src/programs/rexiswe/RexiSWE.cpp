@@ -527,13 +527,13 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	double dt = i_timestep_size;
 	double alpha = 2.0/dt;
 	double kappa = alpha*alpha;
-	double kappa_bar = alpha*alpha;
+	double kappa_bar = kappa;
 	double stag_displacement[4] = {-0.5,-0.5,-0.5,-0.5}; //A grid staggering - centred cell
-	if(!i_semi_implicit){
-		kappa += f0*f0;
-		kappa_bar -= f0*f0;
-	}
+	kappa += f0*f0;
+	kappa_bar -= f0*f0;
 
+	//std::cout << "Kappa: " << kappa << std::endl;
+	//std::cout << "Alpha: " << alpha << std::endl;
 	//io_h.requestDataInCartesianSpace()
 	//std::cout << "io_h cart" << std::endl;
 	//std::cout << io_h.requestDataInCartesianSpace() << std::endl;
@@ -572,36 +572,36 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	DataArray<2> div = op.diff_c_x(io_u) + op.diff_c_y(io_v) ;
 	//this could be pre-stored
 	DataArray<2> div_prev = op.diff_c_x(io_u_prev) + op.diff_c_y(io_v_prev) ;
-	std::cout<<"div" <<std::endl;
-	div.printArrayData();
-	std::cout<<"div spec" <<std::endl;
-	div.printSpectrum();
+	//std::cout<<"div" <<std::endl;
+	//div.printArrayData();
+	//std::cout<<"div spec" <<std::endl;
+	//div.printSpectrum();
 
 	//Calculate the RHS
-	DataArray<2> rhs_u = alpha * io_u + f0    * io_v - g * op.diff_c_x(io_h);
+	DataArray<2> rhs_u = alpha * io_u + f0 * io_v    - g * op.diff_c_x(io_h);
 	DataArray<2> rhs_v =  - f0 * io_u + alpha * io_v - g * op.diff_c_y(io_h);
 	DataArray<2> rhs_h = alpha * io_h  - h_bar * div;
-	std::cout<<"u" <<std::endl;
-	io_u.printArrayData();
-	std::cout<<"u spec" <<std::endl;
-	io_u.printSpectrum();
-	std::cout<<"v" <<std::endl;
-	io_v.printArrayData();
-	std::cout<<"v spec" <<std::endl;
-	io_v.printSpectrum();
-	std::cout<<"h" <<std::endl;
-	io_h.printArrayData();
-	std::cout<<"h spec" <<std::endl;
-	io_h.printSpectrum();
-	std::cout<<"h_y" <<std::endl;
-	op.diff_c_y(io_h).printArrayData();
-	std::cout<<"h_y spec" <<std::endl;
-	op.diff_c_y(io_h).printSpectrum();
+	//std::cout<<"u" <<std::endl;
+	//io_u.printArrayData();
+	//std::cout<<"u spec" <<std::endl;
+	//io_u.printSpectrum();
+	//std::cout<<"v" <<std::endl;
+	//(io_v).printArrayData();
+	//std::cout<<"v spec" <<std::endl;
+	//io_v.printSpectrum();
+	//std::cout<<"h" <<std::endl;
+	//io_h.printArrayData();
+	//std::cout<<"h spec" <<std::endl;
+	//io_h.printSpectrum();
+	//std::cout<<"h_y" <<std::endl;
+	//op.diff_c_y(io_h).printArrayData();
+	//std::cout<<"h_y spec" <<std::endl;
+	//op.diff_c_y(io_h).printSpectrum();
 
-	std::cout<<"rhs_v" <<std::endl;
-	rhs_v.printArrayData();
-	std::cout<<"rhs_v spec" <<std::endl;
-	rhs_v.printSpectrum();
+	//std::cout<<"rhs_v" <<std::endl;
+	//rhs_v.printArrayData();
+	//std::cout<<"rhs_v spec" <<std::endl;
+	//rhs_v.printSpectrum();
 
 	if(i_param_nonlinear>0){
 		// all the RHS are to be evaluated at the departure points
@@ -623,7 +623,7 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 		DataArray<2> hdiv = 2.0 * io_h * div - io_h_prev * div_prev;
 		DataArray<2> nonlin = 0.5 * io_h * div +
 				0.5 * sampler2D.bicubic_scalar(hdiv, posx_d, posy_d, -0.5, -0.5);
-		rhs_h = rhs_h - nonlin;
+		rhs_h = rhs_h - 2.0*nonlin;
 		rhs_h.requestDataInSpectralSpace();
 	}
 
@@ -635,21 +635,21 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	//Build Helmholtz eq.
 	DataArray<2> rhs_div =op.diff_c_x(rhs_u)+op.diff_c_y(rhs_v);
 	DataArray<2> rhs_vort=op.diff_c_x(rhs_v)-op.diff_c_y(rhs_u);
-	DataArray<2> rhs     = rhs_h- h_bar * alpha * rhs_div / kappa - f0 * h_bar * rhs_vort / kappa;
-	std::cout<<"rhs_div" <<std::endl;
-	rhs_div.printArrayData();
-	std::cout<<"rhs_div spec" <<std::endl;
-	rhs_div.printSpectrum();
+	DataArray<2> rhs     = kappa* rhs_h / alpha - h_bar * rhs_div - f0 * h_bar * rhs_vort / alpha;
+	//std::cout<<"rhs_div" <<std::endl;
+	//rhs_div.printArrayData();
+	//std::cout<<"rhs_div spec" <<std::endl;
+	//rhs_div.printSpectrum();
 
-	std::cout<<"rhs_vort" <<std::endl;
-	rhs_vort.printArrayData();
-	std::cout<<"rhs_vort spec" <<std::endl;
-	rhs_vort.printSpectrum();
+	//std::cout<<"rhs_vort" <<std::endl;
+	//rhs_vort.printArrayData();
+	//std::cout<<"rhs_vort spec" <<std::endl;
+	//rhs_vort.printSpectrum();
 
-	std::cout<<"rhs" <<std::endl;
-	rhs.printArrayData();
-	std::cout<<"rhs spec" <<std::endl;
-	rhs.printSpectrum();
+	//std::cout<<"rhs" <<std::endl;
+	//rhs.printArrayData();
+	//std::cout<<"rhs spec" <<std::endl;
+	//rhs.printSpectrum();
 
 	Complex2DArrayFFT h_complex(io_h.resolution);
 	Complex2DArrayFFT rhs_complex(io_h.resolution);
@@ -658,46 +658,51 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	io_h.requestDataInCartesianSpace();
 	rhs.requestDataInCartesianSpace();
 
+	//std::cout<<"h" <<std::endl;
+	//io_h.printArrayData();
+	//std::cout<<"h spec" <<std::endl;
+	//io_h.printSpectrum();
+
 	rhs_complex.loadRealFromDataArray(rhs);
-	std::cout<<"rhs complex cart" <<std::endl;
-	std::cout << rhs_complex << std::endl;
+	//std::cout<<"rhs complex cart" <<std::endl;
+	//std::cout << rhs_complex << std::endl;
 	rhs_complex=rhs_complex.toSpec();
-	std::cout<<"rhs complex spec" <<std::endl;
-	std::cout << rhs_complex << std::endl;
+	//std::cout<<"rhs complex spec" <<std::endl;
+	//std::cout << rhs_complex << std::endl;
 
 	//Solve Helmholtz equation to get h at arrival points
 	helmholtz_spectral_solver_spec(kappa, g*h_bar, rhs_complex, h_complex, 0);
-	std::cout<<"h solved spec" <<std::endl;
-	std::cout<< h_complex <<std::endl;
-	std::cout<<"h solved cart" <<std::endl;
+	//std::cout<<"h solved spec" <<std::endl;
+	//std::cout<< h_complex <<std::endl;
+	//std::cout<<"h solved cart" <<std::endl;
 	h_complex=h_complex.toCart();
-	std::cout<< h_complex <<std::endl;
+	//std::cout<< h_complex <<std::endl;
 
 	// hand over solution to data arrays
 	h_complex.toDataArrays_Real(h);
-	std::cout<<"h solved cart data array" <<std::endl;
-	std::cout<< h <<std::endl;
+	//std::cout<<"h solved cart data array" <<std::endl;
+	//std::cout<< h <<std::endl;
 	h.requestDataInSpectralSpace();
-	std::cout<<"h solved spec" <<std::endl;
-	h.printSpectrum();
+	//std::cout<<"h solved spec" <<std::endl;
+	//h.printSpectrum();
 
 	//Debug test - put exact h solution of helmholtz solver
 	//h=io_h;
 
-	 // Fully implicit f term (Crank-Nicolson style)
-		// (n) time term
+	// Fully implicit f term (Crank-Nicolson style)
+	// (n) time term
 
-		u = (1/kappa)*
-				( alpha *rhs_u + f0 * rhs_v
-						- g * alpha * op.diff_c_x(h)
-						- g * f0 * op.diff_c_y(h))
-						;
+	u = (1/kappa)*
+			( alpha *rhs_u + f0 * rhs_v
+					- g * alpha * op.diff_c_x(h)
+					- g * f0 * op.diff_c_y(h))
+					;
 
-		v = (1/kappa)*
-						( alpha *rhs_v - f0 * rhs_u
-								+ g * f0 * op.diff_c_x(h)
-								- g * alpha * op.diff_c_y(h))
-								;
+	v = (1/kappa)*
+			( alpha *rhs_v - f0 * rhs_u
+					+ g * f0 * op.diff_c_x(h)
+					- g * alpha * op.diff_c_y(h))
+					;
 
 
 	//Set time (n) as time (n-1)
