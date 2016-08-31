@@ -192,6 +192,41 @@ public:
 		io_x = i_rhs.spec_div_element_wise(lhs);
 	}
 
+	/**
+	 * Solve real-valued Helmholtz problem with a spectral solver,
+	 * values are given in Spectral space
+	 * ***under development!!! ************
+	 * (kappa - gh*D2) X = B
+	 *
+	 * This is here to compare speedups and such a solver cannot be applied in general,
+	 * e.g. with special general boundary values
+	 */
+public:
+	void helmholtz_spectral_solver(
+			double i_kappa,
+			double i_gh0,
+			const DataArray<2> &i_rhs,
+			DataArray<2> &io_x,
+			Operators2D &op     ///< Operator class
+	)
+	{
+		// compute
+		// 		kappa - g * eta_bar * D2
+		// NOTE!!! We add kappa in Cartesian space, hence add this value to all frequency components to account for scaling all frequencies!!!
+		// This is *NOT* straightforward and different to adding a constant for computations.
+		// We account for this by seeing the LHS as a set of operators which have to be joint later by a sum.
+		std::cout << "kappa: " << i_kappa << std::endl;
+		std::cout << "gh: " << i_gh0 << std::endl;
+		std::cout << "lap: " << std::endl;
+		std::cout << ((op.diff2_c_x + op.diff2_c_y)) << std::endl;
+
+		DataArray<2> lhs = (-i_gh0*(op.diff2_c_x + op.diff2_c_y)).spec_addScalarAll(i_kappa);
+		std::cout << "lhs: " << std::endl;
+		std::cout << lhs << std::endl;
+
+		io_x = i_rhs.spec_div_element_wise(lhs);
+	}
+
 
 	/**
 	 * Solve U_t = L U via implicit solver:
