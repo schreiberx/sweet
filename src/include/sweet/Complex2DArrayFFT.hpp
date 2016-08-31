@@ -12,6 +12,7 @@
 #include <sweet/DataArray.hpp>
 #include <cstddef>
 #include <complex>
+#include <cassert>
 #include <sweet/openmp_helper.hpp>
 #include "MemBlockAlloc.hpp"
 
