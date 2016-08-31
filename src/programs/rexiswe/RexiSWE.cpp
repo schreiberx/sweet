@@ -646,10 +646,10 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	//std::cout<<"rhs_vort spec" <<std::endl;
 	//rhs_vort.printSpectrum();
 
-	std::cout<<"rhs" <<std::endl;
-	rhs.printArrayData();
-	std::cout<<"rhs spec" <<std::endl;
-	rhs.printSpectrum();
+	//std::cout<<"rhs" <<std::endl;
+	//rhs.printArrayData();
+	//std::cout<<"rhs spec" <<std::endl;
+	//rhs.printSpectrum();
 
 	Complex2DArrayFFT h_complex(io_h.resolution);
 	Complex2DArrayFFT rhs_complex(io_h.resolution);
@@ -664,11 +664,11 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	//io_h.printSpectrum();
 
 	rhs_complex.loadRealFromDataArray(rhs);
-	std::cout<<"rhs complex cart" <<std::endl;
-	std::cout << rhs_complex << std::endl;
+	//std::cout<<"rhs complex cart" <<std::endl;
+	//std::cout << rhs_complex << std::endl;
 	rhs_complex=rhs_complex.toSpec();
-	std::cout<<"rhs complex spec" <<std::endl;
-	std::cout << rhs_complex << std::endl;
+	//std::cout<<"rhs complex spec" <<std::endl;
+	//std::cout << rhs_complex << std::endl;
 
 	//Solve Helmholtz equation to get h at arrival points
 	helmholtz_spectral_solver_spec(kappa, g*h_bar, rhs_complex, h_complex, 0);
@@ -680,21 +680,21 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 
 	// hand over solution to data arrays
 	h_complex.toDataArrays_Real(h);
-	std::cout<<"h solved cart data array" <<std::endl;
-	std::cout<< h <<std::endl;
+	//std::cout<<"h solved cart data array" <<std::endl;
+	//std::cout<< h <<std::endl;
 	h.requestDataInSpectralSpace();
-	std::cout<<"h solved spec" <<std::endl;
-	h.printSpectrum();
+	//std::cout<<"h solved spec" <<std::endl;
+	//h.printSpectrum();
 
 	//Debuging
-	helmholtz_spectral_solver(kappa, g*h_bar, rhs, h, op);
-	std::cout<<"h solved cart data array new" <<std::endl;
-	std::cout<< h <<std::endl;
-	h.requestDataInSpectralSpace();
-	std::cout<<"h solved spec new" <<std::endl;
-	h.printSpectrum();
+	//helmholtz_spectral_solver(kappa, g*h_bar, rhs, h, op);
+	//std::cout<<"h solved cart data array new" <<std::endl;
+	//std::cout<< h <<std::endl;
+	//h.requestDataInSpectralSpace();
+	//std::cout<<"h solved spec new" <<std::endl;
+	//h.printSpectrum();
 
-exit(-1);
+
 	//Debug test - put exact h solution of helmholtz solver
 	//h=io_h;
 
