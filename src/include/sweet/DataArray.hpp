@@ -3711,50 +3711,35 @@ public:
 		return o_ostream;
 	}
 
+
+#if SWEET_USE_SPECTRAL_SPACE
 	/**
-	 * add scalar in all spectral modes
-	 * if no spectral data given, just add the contant to the cartesian data
+	 * Add scalar to all spectral modes
 	 */
 	inline
 	DataArray<D> spec_addScalarAll(
 			const double &i_value
-		)	const
+	)	const
 	{
 		DataArray<D> out(this->resolution);
 		out.temporary_data = true;
 
-#if SWEET_USE_SPECTRAL_SPACE
 
-		{
-			requestDataInSpectralSpace();
-			double scale = resolution[0]*resolution[1];
+		requestDataInSpectralSpace();
+		double scale = resolution[0]*resolution[1];
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-			for (std::size_t i = 0; i < array_data_spectral_length; i++)
-				out.array_data_spectral_space[i] = array_data_spectral_space[i]+ i_value*scale;
+		for (std::size_t i = 0; i < array_data_spectral_length; i++)
+			out.array_data_spectral_space[i] = array_data_spectral_space[i] + i_value*scale;
 
-			//out.array_data_spectral_space[0] += i_value*scale;
-
-			out.array_data_cartesian_space_valid = false;
-			out.array_data_spectral_space_valid = true;
-		}
-
-#else
-
-		requestDataInCartesianSpace();
-
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			out.array_data_cartesian_space[i] = array_data_cartesian_space[i]+i_value;
-
-#endif
+		out.array_data_cartesian_space_valid = false;
+		out.array_data_spectral_space_valid = true;
 
 		out.checkConsistency();
 		return out;
 	}
+#endif
 
 
 	inline
