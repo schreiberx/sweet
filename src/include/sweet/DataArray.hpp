@@ -478,9 +478,9 @@ public:
 	DataArray(
 			const DataArray<D> &i_dataArray
 	)	:
-		array_data_cartesian_space(nullptr),
+		array_data_cartesian_space(nullptr)
 #if SWEET_USE_SPECTRAL_SPACE
-		array_data_spectral_space(nullptr),
+		,array_data_spectral_space(nullptr),
 		aliasing_scaled(i_dataArray.aliasing_scaled)
 #endif
 
@@ -559,9 +559,9 @@ public:
 	DataArray(
 			DataArray<D> &&i_dataArray
 	)	:
-		array_data_cartesian_space(nullptr),
+		array_data_cartesian_space(nullptr)
 #if SWEET_USE_SPECTRAL_SPACE
-		array_data_spectral_space(nullptr),
+		,array_data_spectral_space(nullptr),
 		aliasing_scaled(i_dataArray.aliasing_scaled)
 #endif
 //		,temporary_data(false)
