@@ -680,21 +680,30 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 
 	// hand over solution to data arrays
 	h_complex.toDataArrays_Real(h);
-	//std::cout<<"h solved cart data array" <<std::endl;
-	//std::cout<< h <<std::endl;
+	std::cout<<"h solved cart data array" <<std::endl;
+	std::cout<< h <<std::endl;
 	h.requestDataInSpectralSpace();
-	//std::cout<<"h solved spec" <<std::endl;
-	//h.printSpectrum();
+	std::cout<<"h solved spec" <<std::endl;
+	h.printSpectrum();
 
 	//Debuging
+	DataArray<2> helmholtz_operator = (-g*h_bar*(op.diff2_c_x+op.diff2_c_y)).spec_addScalarAll(kappa);
+	h=rhs.spec_div_element_wise(helmholtz_operator);
 	//helmholtz_spectral_solver(kappa, g*h_bar, rhs, h, op);
-	//std::cout<<"h solved cart data array new" <<std::endl;
-	//std::cout<< h <<std::endl;
-	//h.requestDataInSpectralSpace();
-	//std::cout<<"h solved spec new" <<std::endl;
-	//h.printSpectrum();
+	std::cout<<"h solved cart data array new" <<std::endl;
+	std::cout<< h <<std::endl;
+	h.requestDataInSpectralSpace();
+	std::cout<<"h solved spec new" <<std::endl;
+	h.printSpectrum();
+
+	DataArray<2> rhs_tmp=(-g*h_bar*(op.diff2_c_x(io_h)+op.diff2_c_y(io_h))+kappa*io_h);
+	std::cout<<"rhs_tmp" <<std::endl;
+	rhs_tmp.printSpectrum();
+	std::cout<<"rhs" <<std::endl;
+	rhs.printSpectrum();
 
 
+exit(-1);
 	//Debug test - put exact h solution of helmholtz solver
 	//h=io_h;
 

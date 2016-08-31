@@ -221,7 +221,7 @@ public:
 		std::cout << "lap: " << std::endl;
 		std::cout << ((op.diff2_c_x + op.diff2_c_y)) << std::endl;
 		((op.diff2_c_x + op.diff2_c_y)).printSpectrum();
-		DataArray<2> lhs = (-i_gh0*(op.diff2_c_x + op.diff2_c_y)).spec_addScalarAll(i_kappa/scale);
+		DataArray<2> lhs = (-i_gh0*(op.diff2_c_x + op.diff2_c_y)).spec_addScalarAll(i_kappa);
 		std::cout << "lhs: " << std::endl;
 		std::cout << lhs << std::endl;
 		std::cout << "lhs spec: " << std::endl;
