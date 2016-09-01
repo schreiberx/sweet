@@ -57,7 +57,7 @@ double param_rexi_helmholtz_solver_eps;
 bool param_rexi_zero_before_solving;
 int param_boundary_id;
 int param_nonlinear;
-bool param_semi_implicit;
+
 
 double param_initial_freq_x_mul;
 double param_initial_freq_y_mul;
@@ -479,17 +479,6 @@ public:
 					force_v.set(j, i, SWEValidationBenchmarks::return_force_v(simVars, x, y));
 				}
 			}
-		}
-
-		//Truncate spectral modes to avoid aliasing effects
-		if(param_nonlinear==1){
-#if SWEET_USE_SPECTRAL_SPACE
-#if 0
-			prog_h.aliasing_zero_high_modes();
-			prog_u.aliasing_zero_high_modes();
-			prog_v.aliasing_zero_high_modes();
-#endif
-#endif
 		}
 
 		//Initialise t-dt time step with initial condition
@@ -1342,39 +1331,21 @@ public:
 
 		}
 		else if (param_timestepping_mode == 5)
-		{   //  Semi-implicit Crank-Nicolson (Spectral)
-			// Linear for now
-			// will add semi-lagrangian for nonlinear case
+		{   // Semi-Lagrangian Semi-implicit Spectral
 			assert(simVars.sim.CFL < 0);
 			o_dt = -simVars.sim.CFL;
 
-			if(1) //(param_nonlinear>0)
-			{
-
-					rexiSWE.run_timestep_cn_sl_ts(
-											prog_h, prog_u, prog_v,
-											prog_h_prev, prog_u_prev, prog_v_prev,
-											posx_a,	posy_a,
-											o_dt,
-											param_semi_implicit,
-											param_nonlinear,
-											simVars,
-											op,
-											sampler2D,
-											semiLagrangian
-									);
-
-			}
-			else
-			{ //Linear solver //Obsolete as run_timestep_cn_sl_ts does linear and nonlinear
-				rexiSWE.run_timestep_cn_ts(
-						prog_h, prog_u, prog_v,
-						o_dt,
-						param_semi_implicit,
-						op,
-						simVars
-				);
-			}
+			rexiSWE.run_timestep_cn_sl_ts(
+					prog_h, prog_u, prog_v,
+					prog_h_prev, prog_u_prev, prog_v_prev,
+					posx_a,	posy_a,
+					o_dt,
+					param_nonlinear,
+					simVars,
+					op,
+					sampler2D,
+					semiLagrangian
+			);
 		}
 		else
 		{
@@ -2177,9 +2148,8 @@ int main2(int i_argc, char *i_argv[])
 	simVars.bogus.var[10] = 0; 	//boundary
 	simVars.bogus.var[11] = 1;	// zero rexi
 	simVars.bogus.var[12] = 0;	// nonlinear
-	simVars.bogus.var[13] = 0;  //semi-implicit flag
-	simVars.bogus.var[14] = 0;  //frequency in x for waves test case
-	simVars.bogus.var[15] = 0;  //frequency in y for waves test case
+	simVars.bogus.var[13] = 0;  //frequency in x for waves test case
+	simVars.bogus.var[14] = 0;  //frequency in y for waves test case
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
@@ -2222,9 +2192,6 @@ int main2(int i_argc, char *i_argv[])
 		std::cout << "						     1: Full nonlinear SWE" << std::endl;
 		std::cout << "						     2: Linear SWE + nonlinear advection only (needs -H to be set)" << std::endl;
 		std::cout << std::endl;
-		std::cout << "	--semi-implicit [0/1]  Semi-implicit for time-stepping mode number 5:" << std::endl;
-		std::cout << "						     0: Fully implicit C-N " << std::endl;
-		std::cout << "						     1: Semi-implicit, Coriolis explicit (default)" << std::endl;
 		std::cout << std::endl;
 
 
@@ -2262,12 +2229,9 @@ int main2(int i_argc, char *i_argv[])
 	// Linear vs nonlinear swe
 	param_nonlinear = simVars.bogus.var[12];
 
-	//Semi-implicitness - used only for time-stepping 5
-	param_semi_implicit = simVars.bogus.var[13];
-
 	//Frequency for certain initial conditions
-	param_initial_freq_x_mul = simVars.bogus.var[14];
-	param_initial_freq_y_mul = simVars.bogus.var[15];
+	param_initial_freq_x_mul = simVars.bogus.var[13];
+	param_initial_freq_y_mul = simVars.bogus.var[14];
 
 
 	//Print header
@@ -2295,18 +2259,9 @@ int main2(int i_argc, char *i_argv[])
 		case 3:
 				std::cout << " 3: Implicit method (Euler) - Linear only" << std::endl; break;
 		case 4:
-				std::cout << " 4: Semi-Lag with FD - pure advection (needs checking!)" << std::endl; break;
+				std::cout << " 4: Semi-Lag - pure advection " << std::endl; break;
 		case 5:
-				std::cout << " 5: Crank-Nicolson - " ;
-				if(param_semi_implicit)
-				{
-					std::cout << " Using semi-implicit approach (Coriolis explicit)" << std::endl; break;
-				}
-				else
-				{
-					std::cout << " Fully implicit approach " << std::endl; break;
-				}
-				break;
+				std::cout << " 5: Semi-Lag Semi-Implicit Spectral " << std::endl; break;
 		default:
 			std::cerr << "Timestepping unknowkn" << std::endl;
 			return -1;

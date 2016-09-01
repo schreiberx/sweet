@@ -376,7 +376,6 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	DataArray<2> &i_posy_a,
 
 	double i_timestep_size,	///< timestep size
-	bool i_semi_implicit, ///< semi-implicit or implicit CN
 	int i_param_nonlinear, ///< degree of nonlinearity (0-linear, 1-full nonlinear, 2-only nonlinear adv)
 
 	const SimulationVariables &i_simVars, ///< Parameters for simulation
@@ -408,9 +407,10 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	kappa += f0*f0;
 	kappa_bar -= f0*f0;
 
-	if(i_param_nonlinear==1){
+
 #if SWEET_USE_SPECTRAL_SPACE
 #if 0
+	if(i_param_nonlinear==1){
 		//Truncate spectral modes to avoid aliasing effects in the h*div term
 		io_h.aliasing_zero_high_modes();
 		io_u.aliasing_zero_high_modes();
@@ -418,9 +418,9 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 		io_h_prev.aliasing_zero_high_modes();
 		io_u_prev.aliasing_zero_high_modes();
 		io_v_prev.aliasing_zero_high_modes();
-#endif
-#endif
 	}
+#endif
+#endif
 
 
 	if(i_param_nonlinear>0)
@@ -504,7 +504,6 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	io_h=h;
 	io_u=u;
 	io_v=v;
-
 
 	return true;
 }

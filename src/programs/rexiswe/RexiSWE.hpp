@@ -250,23 +250,6 @@ public:
 		const SimulationVariables &i_parameters
 	);
 
-	/**
-	 * Solve U_t = L U via Crank-Nicolson:
-	 * with (semi)-implicit solver
-	 * (Coriolis is explicit)
-	 */
-public:
-	bool run_timestep_cn_ts(
-		DataArray<2> &io_h,
-		DataArray<2> &io_u,
-		DataArray<2> &io_v,
-
-		double i_timestep_size,	///< timestep size
-		bool i_semi_implicit, ///< semi-implicit or implicit CN
-
-		Operators2D &op,
-		const SimulationVariables &i_parameters
-	);
 
 	/**
 	 * Solve U_t = L U via Crank-Nicolson:
@@ -285,7 +268,6 @@ public:
 			DataArray<2> &i_posy_a,
 
 			double i_timestep_size,	///< timestep size
-			bool i_semi_implicit, ///< semi-implicit or implicit CN
 			int i_param_nonlinear, ///< degree of nonlinearity (0-linear, 1-full nonlinear, 2-only nonlinear adv)
 
 			const SimulationVariables &i_simVars, ///< Parameters for simulation
