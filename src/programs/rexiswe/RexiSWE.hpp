@@ -223,26 +223,25 @@ public:
 #if SWEET_USE_SPECTRAL_SPACE
 		DataArray<2> laplacian = -i_gh0*op.diff2_c_x -i_gh0*op.diff2_c_y;
 		DataArray<2> lhs = laplacian.spec_addScalarAll(i_kappa);
-		std::cout << "Correct lhs" << std::endl;
-		std::cout << lhs << std::endl;
-		std::cout << "Correct lhs spec" << std::endl;
-		lhs.printSpectrum();
+		//std::cout << "Correct lhs" << std::endl;
+		//std::cout << lhs << std::endl;
+		//std::cout << "Correct lhs spec" << std::endl;
+		//lhs.printSpectrum();
 
 		// This does not work
-		DataArray<2> lhs2 = -i_gh0*(op.diff2_c_x +op.diff2_c_y).spec_addScalarAll(i_kappa);
-		std::cout << "Nonsense lhs" << std::endl;
-		std::cout << lhs2 << std::endl;
-		std::cout << std::endl;
-		std::cout << "Nonsense lhs spec" << std::endl;
-		lhs2.printSpectrum();
-		std::cout << "Diff" << std::endl;
-		std::cout << (lhs-lhs2).reduce_maxAbs() << std::endl;
+		//DataArray<2> lhs2 = -i_gh0*(op.diff2_c_x +op.diff2_c_y).spec_addScalarAll(i_kappa);
+		//std::cout << "Nonsense lhs" << std::endl;
+		//std::cout << lhs2 << std::endl;
+		//std::cout << std::endl;
+		//std::cout << "Nonsense lhs spec" << std::endl;
+		//lhs2.printSpectrum();
+		//std::cout << "Diff" << std::endl;
+		//std::cout << (lhs-lhs2).reduce_maxAbs() << std::endl;
 		io_x = i_rhs.spec_div_element_wise(lhs);
 #else
 		std::cerr << "Cannot use helmholtz_spectral_solver if spectral space not enable in compilation time" << std::endl;
 		exit(1);
 #endif
-		exit(1);
 	}
 
 
