@@ -2460,7 +2460,7 @@ public:
 #endif
 
 
-#if SWEET_USE_SPECTRAL_DEALIASING && SWEET_USE_SPECTRAL_SPACE
+#if SWEET_USE_SPECTRAL_SPACE
 	/**
 	 * Zero high frequency modes (beyond 2N/3)
 	 *

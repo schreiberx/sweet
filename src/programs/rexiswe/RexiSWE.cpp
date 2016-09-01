@@ -687,7 +687,8 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	h.printSpectrum();
 
 	//Debuging
-	DataArray<2> helmholtz_operator = (-g*h_bar*(op.diff2_c_x+op.diff2_c_y)).spec_addScalarAll(kappa);
+	DataArray<2> helmholtz_operator = ((op.diff2_c_x+op.diff2_c_y)).spec_addScalarAll(-kappa);
+	rhs=-rhs;
 	h=rhs.spec_div_element_wise(helmholtz_operator);
 	//helmholtz_spectral_solver(kappa, g*h_bar, rhs, h, op);
 	std::cout<<"h solved cart data array new" <<std::endl;
