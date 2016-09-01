@@ -2561,13 +2561,9 @@ public:
 			j--;
 			//std::cout << std::endl;
 		}
-		//std::cout << std::endl;
-		//std::cout<<"Spectral data changed to"<<std::endl;
-		//printSpectrum();
+
 		requestDataInCartesianSpace();
-		//std::cout << std::endl;
-		//std::cout<<"Spectral data after requestDataInCartesianSpace()"<<std::endl;
-		//printSpectrum();
+
 		checkConsistency();
 
 		return *this;
@@ -3594,11 +3590,9 @@ public:
 #endif
 			for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 				out.array_data_cartesian_space[i] = array_data_cartesian_space[i] / i_value;
-
+#if SWEET_USE_SPECTRAL_SPACE
 			out.array_data_cartesian_space_valid = true;
 			out.array_data_spectral_space_valid = false;
-
-#if SWEET_USE_SPECTRAL_SPACE
 		}
 		else
 		{

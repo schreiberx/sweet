@@ -220,11 +220,16 @@ public:
 		//std::cout<<"gh0: " << i_gh0 <<std::endl;
 		//std::cout<<"kappa: " << i_kappa<<std::endl;
 		//This works
+#if SWEET_USE_SPECTRAL_SPACE
 		DataArray<2> laplacian = -i_gh0*op.diff2_c_x -i_gh0*op.diff2_c_y;
 		DataArray<2> lhs = laplacian.spec_addScalarAll(i_kappa);
 		// This does not work
 		//DataArray<2> lhs = -i_gh0*(op.diff2_c_x +op.diff2_c_y).spec_addScalarAll(i_kappa);
 		io_x = i_rhs.spec_div_element_wise(lhs);
+#else
+		std::cerr << "Cannot use helmholtz_spectral_solver if spectral space not enable in compilation time" << std::endl;
+		exit(1);
+#endif
 	}
 
 

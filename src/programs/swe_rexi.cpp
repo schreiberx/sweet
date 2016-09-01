@@ -483,9 +483,13 @@ public:
 
 		//Truncate spectral modes to avoid aliasing effects
 		if(param_nonlinear==1){
+#if SWEET_USE_SPECTRAL_SPACE
+#if 0
 			prog_h.aliasing_zero_high_modes();
 			prog_u.aliasing_zero_high_modes();
 			prog_v.aliasing_zero_high_modes();
+#endif
+#endif
 		}
 
 		//Initialise t-dt time step with initial condition

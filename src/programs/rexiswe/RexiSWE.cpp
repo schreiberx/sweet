@@ -338,120 +338,11 @@ bool RexiSWE::run_timestep_implicit_ts(
 	return true;
 }
 
-/**
- * Solve Linear SWE with Crank-Nicolson implicit time stepping
- *  (spectral formulation for Helmholtz eq)
- *
- * U_t = L U(0)
- * Fully implicit version
- * (U(tau) - U(0)) / tau = 0.5*(L U(tau)+L U(0))
- *
- * <=> U(tau) - U(0) =  tau * 0.5*(L U(tau)+L U(0))
- *
- * <=> U(tau) - 0.5* L tau U(tau) = U(0) + tau * 0.5*L U(0)
- *
- * <=> (1 - 0.5 L tau) U(tau) = (1+tau*0.5*L) U(0)
- *
- * <=> (2/tau - L) U(tau) = (2/tau+L) U(0)
- *
- * Semi-implicit has coriolis term as explicit
- *
- */
-bool RexiSWE::run_timestep_cn_ts(
-	DataArray<2> &io_h,
-	DataArray<2> &io_u,
-	DataArray<2> &io_v,
-
-	double i_timestep_size,	///< timestep size
-	bool i_semi_implicit, ///< semi-implicit or implicit CN
-
-	Operators2D &op,
-	const SimulationVariables &i_simVars
-)
-{
-	Complex2DArrayFFT h(io_h.resolution);
-
-	Complex2DArrayFFT h0(io_h.resolution);
-	Complex2DArrayFFT u0(io_u.resolution);
-	Complex2DArrayFFT v0(io_v.resolution);
-
-	h0.loadRealFromDataArray(io_h);
-	u0.loadRealFromDataArray(io_u);
-	v0.loadRealFromDataArray(io_v);
-
-	double h_bar = i_simVars.setup.h0;
-	double g = i_simVars.sim.g;
-	double f0 = i_simVars.sim.f0;
-	double dt = i_timestep_size;
-	double alpha = 2.0/dt;
-	double kappa = alpha*alpha;
-	double kappa_bar = alpha*alpha;
-
-	if(!i_semi_implicit){
-		kappa += f0*f0;
-		kappa_bar -= f0*f0;
-	}
-
-
-	h0 = h0.toSpec();
-	u0 = u0.toSpec();
-	v0 = v0.toSpec();
-
-	//Abbreviation for operators
-	assert(perThreadVars.size() != 0);
-	assert(perThreadVars[0] != nullptr);
-	Complex2DArrayFFT &op_diff_c_x = perThreadVars[0]->op_diff_c_x;
-	Complex2DArrayFFT &op_diff_c_y = perThreadVars[0]->op_diff_c_y;
-	Complex2DArrayFFT &op_diff2_c_x = perThreadVars[0]->op_diff2_c_x;
-	Complex2DArrayFFT &op_diff2_c_y = perThreadVars[0]->op_diff2_c_y;
-
-	Complex2DArrayFFT rhs =
-			kappa * h0 + g*h_bar*(op_diff2_c_x(h0)+op_diff2_c_y(h0))
-					- 2.0 * alpha* h_bar*(op_diff_c_x(u0) + op_diff_c_y(v0))
-					- 2.0 * (f0*h_bar) * (op_diff_c_x(v0) - op_diff_c_y(u0))
-					;
-
-	helmholtz_spectral_solver_spec(kappa, g*h_bar, rhs, h, 0);
-
-	Complex2DArrayFFT u=u0;
-	Complex2DArrayFFT v=v0;
-
-	if(i_semi_implicit)
-	{
-		u +=  + dt * f0 * v0 - 0.5 * dt * g * (op_diff_c_x(h)+op_diff_c_x(h0));
-		v +=  - dt * f0 * u0 - 0.5 * dt * g * (op_diff_c_y(h)+op_diff_c_y(h0));
-	}
-	else
-	{
-		u = (kappa_bar/kappa)*u0
-				+ 2.0* f0 * (alpha / kappa) * v0
-				- ( g / kappa) * ( alpha * (op_diff_c_x(h)+op_diff_c_x(h0)))
-				- ( g / kappa) * ( f0 * (op_diff_c_y(h)+op_diff_c_y(h0)))
-				;
-		v = (kappa_bar/kappa)*v0
-				- 2.0* f0 * (alpha / kappa) * u0
-				+ ( g / kappa) * ( f0 * (op_diff_c_x(h)+op_diff_c_x(h0)))
-				- ( g / kappa) * ( alpha * (op_diff_c_y(h)+op_diff_c_y(h0)))
-				;
-	}
-
-	//Complex2DArrayFFT uh = u0 - g*op_diff_c_x(eta);
-	//Complex2DArrayFFT vh = v0 - g*op_diff_c_y(eta);
-
-	//Complex2DArrayFFT u = u0 + dt * f0 * v0 - 0.5 * dt * g * (op_diff_c_x(h)+op_diff_c_x(h0));
-	//Complex2DArrayFFT v = v0 - dt * f0 * u0 - 0.5 * dt * g * (op_diff_c_y(h)+op_diff_c_y(h0));
-
-	h.toCart().toDataArrays_Real(io_h);
-	u.toCart().toDataArrays_Real(io_u);
-	v.toCart().toDataArrays_Real(io_v);
-
-	return true;
-}
 
 /**
  * Solve  SWE with Crank-Nicolson implicit time stepping
  *  (spectral formulation for Helmholtz eq) with semi-Lagrangian
- *
+ *   SL-SI-SP
  * U_t = L U(0)
  * Fully implicit version
  * (U(tau) - U(0)) / tau = 0.5*(L U(tau)+L U(0))
@@ -496,15 +387,6 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 )
 {
 
-
-	// Input vars
-	DataArray<2> h0(io_h.resolution);
-	DataArray<2> u0(io_u.resolution);
-	DataArray<2> v0(io_v.resolution);
-	DataArray<2> h0_prev(io_h.resolution);
-	DataArray<2> u0_prev(io_u.resolution);
-	DataArray<2> v0_prev(io_v.resolution);
-
 	//Out vars
 	DataArray<2> h(io_h.resolution);
 	DataArray<2> u(io_h.resolution);
@@ -513,12 +395,6 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	//Departure points and arrival points
 	DataArray<2> posx_d(io_h.resolution);
 	DataArray<2> posy_d(io_h.resolution);
-
-	//std::cout << "h0 cart" << std::endl;
-	//std::cout << h0 << std::endl;
-
-	//std::cout << "v0 cart" << std::endl;
-	//std::cout << v0 << std::endl;
 
 	//Parameters
 	double h_bar = i_simVars.setup.h0;
@@ -532,15 +408,9 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	kappa += f0*f0;
 	kappa_bar -= f0*f0;
 
-	//std::cout << "Kappa: " << kappa << std::endl;
-	//std::cout << "Alpha: " << alpha << std::endl;
-	//io_h.requestDataInCartesianSpace()
-	//std::cout << "io_h cart" << std::endl;
-	//std::cout << io_h.requestDataInCartesianSpace() << std::endl;
-	//std::cout << "io_h spec" << std::endl;
-	//io_h.printSpectrum();
-
 	if(i_param_nonlinear==1){
+#if SWEET_USE_SPECTRAL_SPACE
+#if 0
 		//Truncate spectral modes to avoid aliasing effects in the h*div term
 		io_h.aliasing_zero_high_modes();
 		io_u.aliasing_zero_high_modes();
@@ -548,12 +418,13 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 		io_h_prev.aliasing_zero_high_modes();
 		io_u_prev.aliasing_zero_high_modes();
 		io_v_prev.aliasing_zero_high_modes();
+#endif
+#endif
 	}
 
 
 	if(i_param_nonlinear>0)
 	{
-
 		//Calculate departure points
 		semiLagrangian.semi_lag_departure_points_settls(
 				io_u_prev, io_v_prev,
@@ -563,10 +434,8 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 				posx_d,	posy_d,
 				stag_displacement
 		);
-		//posx_d=i_posx_a; //debug
-		//posy_d=i_posy_a; //debug
-	}
 
+	}
 
 	//Calculate Divergence and vorticity spectrally
 	DataArray<2> div = op.diff_c_x(io_u) + op.diff_c_y(io_v) ;
@@ -603,10 +472,6 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	}
 
 
-	//std::cout << "rhs status" << std::endl;
-	//std::cout << rhs_u.array_data_cartesian_space_valid << std::endl;
-	//std::cout << rhs_u.array_data_spectral_space_valid << std::endl;
-
 	//Build Helmholtz eq.
 	DataArray<2> rhs_div =op.diff_c_x(rhs_u)+op.diff_c_y(rhs_v);
 	DataArray<2> rhs_vort=op.diff_c_x(rhs_v)-op.diff_c_y(rhs_u);
@@ -616,12 +481,7 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	// Helmholtz solver
 	helmholtz_spectral_solver(kappa, g*h_bar, rhs, h, op);
 
-	//Debug test - put exact h solution of helmholtz solver
-	//h=io_h;
-
-	// Fully implicit f term (Crank-Nicolson style)
-	// (n) time term
-
+	//Update u and v
 	u = (1/kappa)*
 			( alpha *rhs_u + f0 * rhs_v
 					- g * alpha * op.diff_c_x(h)
@@ -648,363 +508,6 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 
 	return true;
 }
-
-
-///**
-// * Solve  SWE with Crank-Nicolson implicit time stepping
-// *  (spectral formulation for Helmholtz eq) with semi-Lagrangian
-// * ***** OLD CODE WITH ISSUES ********************
-// * U_t = L U(0)
-// * Fully implicit version
-// * (U(tau) - U(0)) / tau = 0.5*(L U(tau)+L U(0))
-// *
-// * <=> U(tau) - U(0) =  tau * 0.5*(L U(tau)+L U(0))
-// *
-// * <=> U(tau) - 0.5* L tau U(tau) = U(0) + tau * 0.5*L U(0)
-// *
-// * <=> (1 - 0.5 L tau) U(tau) = (1+tau*0.5*L) U(0)
-// *
-// * <=> (2/tau - L) U(tau) = (2/tau+L) U(0)
-// *
-// * Semi-implicit has coriolis term as totally explicit
-// *
-// *Semi-Lagrangian:
-// *  U(tau) is on arrival points
-// *  U(0) is on departure points
-// *
-// * Nonlinear term is added following Hortal (2002)
-// *
-// */
-//bool RexiSWE::run_timestep_cn_sl_ts(
-//	DataArray<2> &io_h,  ///< Current and past fields
-//	DataArray<2> &io_u,
-//	DataArray<2> &io_v,
-//	DataArray<2> &io_h_prev,
-//	DataArray<2> &io_u_prev,
-//	DataArray<2> &io_v_prev,
-//
-//	DataArray<2> &i_posx_a, //Arrival point positions in x and y (this is basically the grid)
-//	DataArray<2> &i_posy_a,
-//
-//	double i_timestep_size,	///< timestep size
-//	bool i_semi_implicit, ///< semi-implicit or implicit CN
-//	int i_param_nonlinear, ///< degree of nonlinearity (0-linear, 1-full nonlinear, 2-only nonlinear adv)
-//
-//	const SimulationVariables &i_simVars, ///< Parameters for simulation
-//
-//	Operators2D &op,     ///< Operator class
-//	Sampler2D &sampler2D, ///< Interpolation class
-//	SemiLagrangian &semiLagrangian  ///< Semi-Lag class
-//)
-//{
-//
-//	//Abbreviation for operators
-//	assert(perThreadVars.size() != 0);
-//	assert(perThreadVars[0] != nullptr);
-//	Complex2DArrayFFT &op_diff_c_x = perThreadVars[0]->op_diff_c_x;
-//	Complex2DArrayFFT &op_diff_c_y = perThreadVars[0]->op_diff_c_y;
-//	Complex2DArrayFFT &op_diff2_c_x = perThreadVars[0]->op_diff2_c_x;
-//	Complex2DArrayFFT &op_diff2_c_y = perThreadVars[0]->op_diff2_c_y;
-//
-//	// Input vars
-//	Complex2DArrayFFT h0(io_h.resolution);
-//	Complex2DArrayFFT u0(io_u.resolution);
-//	Complex2DArrayFFT v0(io_v.resolution);
-//	Complex2DArrayFFT h0_prev(io_h.resolution);
-//	Complex2DArrayFFT u0_prev(io_u.resolution);
-//	Complex2DArrayFFT v0_prev(io_v.resolution);
-//
-//	//Out vars
-//	Complex2DArrayFFT h(io_h.resolution);
-//	Complex2DArrayFFT u(io_h.resolution);
-//	Complex2DArrayFFT v(io_h.resolution);
-//
-//	//Departure points and arrival points
-//	DataArray<2> posx_d(io_h.resolution);
-//	DataArray<2> posy_d(io_h.resolution);
-//
-//	//std::cout << "h0 cart" << std::endl;
-//	//std::cout << h0 << std::endl;
-//
-//	//std::cout << "v0 cart" << std::endl;
-//	//std::cout << v0 << std::endl;
-//
-//	//Parameters
-//	double h_bar = i_simVars.setup.h0;
-//	double g = i_simVars.sim.g;
-//	double f0 = i_simVars.sim.f0;
-//	double dt = i_timestep_size;
-//	double alpha = 2.0/dt;
-//	double kappa = alpha*alpha;
-//	double kappa_bar = alpha*alpha;
-//	double stag_displacement[4] = {-0.5,-0.5,-0.5,-0.5}; //A grid staggering - centred cell
-//	if(!i_semi_implicit){
-//		kappa += f0*f0;
-//		kappa_bar -= f0*f0;
-//	}
-//	//io_h.requestDataInCartesianSpace()
-//	//std::cout << "io_h cart" << std::endl;
-//	//std::cout << io_h.requestDataInCartesianSpace() << std::endl;
-//	//std::cout << "io_h spec" << std::endl;
-//	//io_h.printSpectrum();
-//
-//	if(i_param_nonlinear==1){
-//		//Truncate spectral modes to avoid aliasing effects in the h*div term
-//		io_h.aliasing_zero_high_modes();
-//		io_u.aliasing_zero_high_modes();
-//		io_v.aliasing_zero_high_modes();
-//	}
-//
-//	//std::cout << "io_h cart" << std::endl;
-//	//std::cout << io_h.requestDataInCartesianSpace() << std::endl;
-//	//std::cout << "io_h spec" << std::endl;
-//	//io_h.printSpectrum();
-//
-//	std::cout<< "u_x from data array" << std::endl;
-//	std::cout<< op.diff_c_x(io_u) << std::endl;
-//
-//	//Load data (truncated)
-//	h0.loadRealFromDataArray(io_h);
-//	u0.loadRealFromDataArray(io_u);
-//	v0.loadRealFromDataArray(io_v);
-//	h0_prev.loadRealFromDataArray(io_h_prev);
-//	u0_prev.loadRealFromDataArray(io_u_prev);
-//	v0_prev.loadRealFromDataArray(io_v_prev);
-//	std::cout<< "u_x from complex" << std::endl;
-//	std::cout<< op_diff_c_x(u0) << std::endl;
-//
-//	exit(-1);
-//	if(i_param_nonlinear>0)
-//	{
-//		//Calculate departure points
-//		semiLagrangian.semi_lag_departure_points_settls(
-//				io_u_prev, io_v_prev,
-//				io_u,	io_v,
-//				i_posx_a,	i_posy_a,
-//				dt,
-//				posx_d,	posy_d,
-//				stag_displacement
-//		);
-//		//posx_d=i_posx_a;
-//		//posy_d=i_posy_a;
-//	}
-//
-//	//Go to spectral space
-//	u0 = u0.toSpec();
-//	v0 = v0.toSpec();
-//	//h0 = h0.toSpec(); //this is not necessary
-//	//h0_prev = h0_prev.toSpec(); //this is not necessary
-//	u0_prev = u0_prev.toSpec();
-//	v0_prev = v0_prev.toSpec();
-//
-//	//Calculate Divergence and vorticity spectrally
-//	Complex2DArrayFFT div = op_diff_c_x(u0) + op_diff_c_y(v0) ;
-//	Complex2DArrayFFT div_prev = op_diff_c_x(u0_prev) + op_diff_c_y(v0_prev) ;
-//
-//	//Calculate nonlinear term at half timestep
-//	Complex2DArrayFFT nonlin(io_h.resolution);
-//	if(i_param_nonlinear==1)
-//	{
-//		//Calculate div in cartesian coordinates to calculate the pseudo-spectral product
-//		div      = div.toCart();
-//		div_prev = div_prev.toCart();
-//		// Calculate nonlinear term interpolated to departure points
-//		// h*div is calculate in cartesian space (pseudo-spectrally)
-//		Complex2DArrayFFT hdiv = 2.0 * h0 * div - h0_prev * div_prev;
-//		nonlin = 0.5 * div +
-//				0.5 * sampler2D.bicubic_scalar( hdiv, posx_d, posy_d, -0.5, -0.5);
-//		//div      = div.toSpec();
-//	}
-//
-//	//Put h0 in spectral space for rest of spectral calculations
-//	h0 = h0.toSpec();
-//	h0_prev = h0_prev.toSpec();
-//
-//	//* At this point, all data is in spectral space, except _prev which are no longer needed*/
-//
-//	//std::cout << "kappa " << kappa << std::endl;
-//	//std::cout << "h0 spec" << std::endl;
-//	//std::cout << h0 << std::endl;
-//
-//	//Calculate the RHS, this is all related to time "n", which is to be evaluated at departure points
-//	// We first calculate it spectraly ** this is linear - no aliasing ***
-//	Complex2DArrayFFT rhs =
-//			kappa * h0 + g*h_bar*(op_diff2_c_x(h0)+op_diff2_c_y(h0))
-//					- 2.0 * alpha* h_bar*(op_diff_c_x(u0) + op_diff_c_y(v0))
-//					- 2.0 * (f0*h_bar) * (op_diff_c_x(v0) - op_diff_c_y(u0))
-//					;
-//
-//	//std::cout << "rhs spectral" << std::endl;
-//	//std::cout << rhs << std::endl;
-//
-//	if(i_param_nonlinear>0)
-//	{
-//		//Get cartesian data for interpolation
-//		rhs=rhs.toCart();
-//
-//		//std::cout << "rhs cart" << std::endl;
-//		//std::cout << rhs << std::endl;
-//
-//		//Now interpolate to the the departure points
-//		//  Departure points are set for physical space
-//		rhs=sampler2D.bicubic_scalar(rhs, posx_d, posy_d, -0.5, -0.5);
-//		//std::cout << "rhs dep complex interpolated" << std::endl;
-//		//std::cout << rhs_d << std::endl;
-//
-//		if(i_param_nonlinear==1)
-//		{
-//			//Add nonlinear term
-//			rhs = rhs - 2.0 * (kappa / alpha) * nonlin;
-//		}
-//		//Convert back to spectral space
-//		rhs=rhs.toSpec();
-//	}
-//
-//	//std::cout << "rhs spectral dep complex " << std::endl;
-//	//std::cout << rhs_d << std::endl;
-//
-//	//Solve Helmholtz equation to get h at arrival points
-//	helmholtz_spectral_solver_spec(kappa, g*h_bar, rhs, h, 0);
-//
-//	//std::cout << "solution for helmholtz" << std::endl;
-//	//std::cout << h << std::endl;
-//
-//	Complex2DArrayFFT uh_d=u0;
-//	Complex2DArrayFFT uh_a=u0;
-//	Complex2DArrayFFT vh_d=v0;
-//	Complex2DArrayFFT vh_a=v0;
-//
-//	//Debug test - put exact h solution of helmholtz solver
-//	h=h0;
-//
-//
-//	if(i_semi_implicit)
-//	{  // This is wrong for 2 time step, it should have and extrapolation for the coriolis term
-//		// but this will influence the other cases, so Coriolis it is kept as fully explicit (Euler like)
-//
-//		// u equation
-//		//------------------
-//
-//		// (n) time term
-//		uh_d = u0 + dt * f0 * v0 - 0.5 * dt * g * op_diff_c_x(h0);
-//
-//		// (n+1) time term - using the helmholtz prob solution
-//		uh_a = - 0.5 * dt * g * op_diff_c_x(h);
-//
-//		// v equation
-//		//------------------
-//
-//		// (n) time term
-//		vh_d = v0 - dt * f0 * u0 - 0.5 * dt * g * op_diff_c_y(h0);
-//
-//		// (n+1) time term - using the helmholtz prob solution
-//		vh_a = - 0.5 * dt * g * op_diff_c_y(h);
-//
-//
-//	}
-//	else
-//	{ // Fully implicit f term (Crank-Nicolson style)
-//		// (n) time term
-//		std::cout<< "u0" << std::endl;
-//		std::cout<< u0 << std::endl;
-//		std::cout<< "v0" << std::endl;
-//		std::cout<< v0 << std::endl;
-//		std::cout<< "h0" << std::endl;
-//		std::cout<< h0 << std::endl;
-//		std::cout<< "h" << std::endl;
-//		std::cout<< h << std::endl;
-//		uh_d = (kappa_bar/kappa)*u0
-//						+ 2.0* f0 * (alpha / kappa) * v0
-//						- ( g / kappa) * ( alpha * (op_diff_c_x(h0)))
-//						- ( g / kappa) * ( f0 * (op_diff_c_y(h0)))
-//						;
-//		std::cout<< "h_x" << std::endl;
-//		std::cout<< op_diff_c_x(h) << std::endl;
-//		std::cout<< "uh_d" << std::endl;
-//		std::cout<< uh_d << std::endl;
-//
-//
-//		// (n+1) time term - using the helmholtz prob solution
-//		uh_a =
-//				- ( g / kappa) * ( alpha * (op_diff_c_x(h)))
-//				- ( g / kappa) * ( f0 * (op_diff_c_y(h)))
-//				;
-//		std::cout<< "uh_a" << std::endl;
-//		std::cout<< uh_a << std::endl;
-//
-//		// (n) time term
-//		vh_d = (kappa_bar/kappa)*v0
-//				- 2.0* f0 * (alpha / kappa) * u0
-//				+ ( g / kappa) * ( f0 * (op_diff_c_x(h0)))
-//				- ( g / kappa) * ( alpha * (op_diff_c_y(h0)))
-//				;
-//
-//		// (n+1) time term - using the helmholtz prob solution
-//		vh_a =
-//				+ ( g / kappa) * ( f0 * (op_diff_c_x(h)))
-//				- ( g / kappa) * ( alpha * (op_diff_c_y(h)))
-//				;
-//
-//	}
-//
-//	//Convert to cartesian space to do the interpolation
-//	uh_d=uh_d.toCart();
-//	uh_a=uh_a.toCart();
-//
-//	//Convert to cartesian space to do the interpolation
-//	vh_d=vh_d.toCart();
-//	vh_a=vh_a.toCart();
-//
-//	if(i_param_nonlinear>0)
-//	{
-//		std::cout<< "---CART----" << std::endl;
-//		std::cout<< "uh_d" << std::endl;
-//		std::cout<< uh_d << std::endl;
-//		std::cout<< "uh_a" << std::endl;
-//		std::cout<< uh_a << std::endl;
-//		std::cout<< "uh_d _interpolated" << std::endl;
-//		//uh_d=sampler2D.bicubic_scalar(uh_d, posx_d, posy_d, -0.5, -0.5)
-//		std::cout<< sampler2D.bicubic_scalar(uh_d, posx_d, posy_d, -0.5, -0.5).toSpec() << std::endl;
-//
-//		//Final update on u
-//		u = uh_a + sampler2D.bicubic_scalar(uh_d, posx_d, posy_d, -0.5, -0.5);
-//		std::cout<< "u" << std::endl;
-//		std::cout<< u << std::endl;
-//		std::cout<< "u spectral" << std::endl;
-//		std::cout<< u.toSpec() << std::endl;
-//		std::cout<< "u_original spec" << std::endl;
-//		std::cout<< u0 << std::endl;
-//		std::cout<< "u_original cart" << std::endl;
-//		std::cout<< u0.toCart() << std::endl;
-//		//u=u0.toCart();
-//		//Final update on v
-//		v = vh_a + sampler2D.bicubic_scalar(vh_d, posx_d, posy_d, -0.5, -0.5);
-//		//v=v0.toCart();
-//	}
-//	else
-//	{
-//		//Final update on u
-//		u = uh_a + uh_d;
-//
-//		//Final update on v
-//		v = vh_a + vh_d;
-//	}
-//
-//	//Convert h back into cartesian data
-//	h=h.toCart();
-//
-//	//Set time (n) as time (n-1)
-//	io_h_prev=io_h;
-//	io_u_prev=io_u;
-//	io_v_prev=io_v;
-//
-//	//Put new data into real dataarray
-//	h.toDataArrays_Real(io_h);
-//	u.toDataArrays_Real(io_u);
-//	v.toDataArrays_Real(io_v);
-//	exit(-1);
-//	return true;
-//}
 
 
 /**
