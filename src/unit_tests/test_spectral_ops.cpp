@@ -649,7 +649,7 @@ int main(int i_argc, char *i_argv[])
 					double x = ((double)i+0.5)/(double)simVars.disc.res[0];
 					double y = ((double)j+0.5)/(double)simVars.disc.res[1];
 
-#define FUN_ID	1
+#define FUN_ID	3
 					h.set(
 						j, i,
 	#if FUN_ID==1
@@ -657,7 +657,7 @@ int main(int i_argc, char *i_argv[])
 	#elif FUN_ID==2
 						10+sin(freq_x*M_PIl*x)*sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)*cos(freq_y*M_PIl*y)
 	#elif FUN_ID==3
-						sin(freq_x*M_PIl*x)/(cos(freq_y*M_PIl*y)+2.0)
+						sin(freq_x*M_PIl*x)/(cos(freq_y*M_PIl*y)+2.0)+10.0
 	#endif
 					);
 
@@ -668,16 +668,17 @@ int main(int i_argc, char *i_argv[])
 			if (simVars.disc.use_spectral_basis_diffs)
 			{
 				double kappa = 406.666;
-
+				double a = 2.0;
+				double b = 5.0;
 #if SWEET_USE_SPECTRAL_SPACE
 				/**
 				 * Solve
-				 *   ( kappa*h - diff2x(h) - diff2y(h)) =
-				 *   ( kappa - diff2x - diff2y) * h = rhs;
+				 *   ( kappa*h - c * (diff2x(h) + diff2y(h))) =
+				 *   ( kappa - c*diff2x - c*diff2y) * h = rhs;
 				 */
-				DataArray<2> helmholtz_operator = (-op.diff2_c_x - op.diff2_c_y).spec_addScalarAll(kappa);
+				DataArray<2> helmholtz_operator = (-a*b*(op.diff2_c_x + op.diff2_c_y)).spec_addScalarAll(kappa);
 
-				DataArray<2> rhs =  kappa*h - op.diff2_c_x(h) - op.diff2_c_y(h);
+				DataArray<2> rhs =  kappa*h - a*b*(op.diff2_c_x(h) + op.diff2_c_y(h));
 
 				double err3_helmholtz =
 					(

@@ -210,24 +210,20 @@ public:
 			Operators2D &op     ///< Operator class
 	)
 	{
-		double scale=i_rhs.resolution[1]*i_rhs.resolution[0];
+
 		// compute
 		// 		kappa - g * eta_bar * D2
 		// NOTE!!! We add kappa in Cartesian space, hence add this value to all frequency components to account for scaling all frequencies!!!
 		// This is *NOT* straightforward and different to adding a constant for computations.
 		// We account for this by seeing the LHS as a set of operators which have to be joint later by a sum.
-		std::cout << "kappa: " << i_kappa << std::endl;
-		std::cout << "gh: " << i_gh0 << std::endl;
-		std::cout << "lap: " << std::endl;
-		std::cout << ((op.diff2_c_x + op.diff2_c_y)) << std::endl;
-		((op.diff2_c_x + op.diff2_c_y)).printSpectrum();
-		DataArray<2> lhs = (-i_gh0*(op.diff2_c_x + op.diff2_c_y)).spec_addScalarAll(i_kappa);
-		std::cout << "lhs: " << std::endl;
-		std::cout << lhs << std::endl;
-		std::cout << "lhs spec: " << std::endl;
-		lhs.printSpectrum();
-		std::cout << "rhs/lhs spec: " << std::endl;
-		i_rhs.spec_div_element_wise(lhs).printSpectrum();
+
+		//std::cout<<"gh0: " << i_gh0 <<std::endl;
+		//std::cout<<"kappa: " << i_kappa<<std::endl;
+		//This works
+		DataArray<2> laplacian = -i_gh0*op.diff2_c_x -i_gh0*op.diff2_c_y;
+		DataArray<2> lhs = laplacian.spec_addScalarAll(i_kappa);
+		// This does not work
+		//DataArray<2> lhs = -i_gh0*(op.diff2_c_x +op.diff2_c_y).spec_addScalarAll(i_kappa);
 		io_x = i_rhs.spec_div_element_wise(lhs);
 	}
 
