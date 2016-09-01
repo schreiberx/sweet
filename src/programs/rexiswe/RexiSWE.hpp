@@ -217,7 +217,7 @@ public:
 		// This is *NOT* straightforward and different to adding a constant for computations.
 		// We account for this by seeing the LHS as a set of operators which have to be joint later by a sum.
 
-		//This works
+
 #if SWEET_USE_SPECTRAL_SPACE
 		DataArray<2> laplacian = -i_gh0*op.diff2_c_x -i_gh0*op.diff2_c_y;
 		DataArray<2> lhs = laplacian.spec_addScalarAll(i_kappa);

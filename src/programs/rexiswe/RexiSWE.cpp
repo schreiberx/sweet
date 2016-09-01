@@ -409,7 +409,6 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 
 
 #if SWEET_USE_SPECTRAL_SPACE
-#if 0
 	if(i_param_nonlinear==1){
 		//Truncate spectral modes to avoid aliasing effects in the h*div term
 		io_h.aliasing_zero_high_modes();
@@ -419,7 +418,6 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 		io_u_prev.aliasing_zero_high_modes();
 		io_v_prev.aliasing_zero_high_modes();
 	}
-#endif
 #endif
 
 
@@ -477,9 +475,9 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	DataArray<2> rhs_vort=op.diff_c_x(rhs_v)-op.diff_c_y(rhs_u);
 	DataArray<2> rhs     = kappa* rhs_h / alpha - h_bar * rhs_div - f0 * h_bar * rhs_vort / alpha;
 
-
 	// Helmholtz solver
 	helmholtz_spectral_solver(kappa, g*h_bar, rhs, h, op);
+
 
 	//Update u and v
 	u = (1/kappa)*
