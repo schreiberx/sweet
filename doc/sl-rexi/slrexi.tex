@@ -281,16 +281,7 @@ and the method may be written as
 U^{n+1}=e^{L\Delta t}(U)^{n}_{*}.
 \end{equation}
 
-Since $e^{L\Delta t}$ is constant, we can allow ourselves to apply it as  
-\begin{equation}
-U^{n+1}=(e^{L\Delta t} U)^{n}_{*},
-\end{equation}
-which means that in practice we can first calculate 
-$
-e^{L\Delta t} U,
-$
-with any given matrix exponentiation method, and then interpolate this to quantity to the departure points.
-
+Although $e^{L\Delta t}$ has constant coefficients, it includes differential operator and cannot be exchanged with the interpolation operator $*$, since the departure points locations are defined through nonlinear trajectories. 
 
 \subsection{On a variable $f$ scenario}
 
@@ -315,7 +306,7 @@ J^{n+1}=e^{\int_{t_n}^{t_{n+1}}L(\gamma(t))dt} \approx e^{L(\gamma(t_n))\int_{t_
 \end{equation}
 then
 \begin{equation}
-U^{n+1}=(e^{L \Delta t} U)^{n}_{*}.
+U^{n+1}=e^{L \Delta t}( U)^{n}_{*}.
 \end{equation}
 where $e^{L \Delta t} U$ is the usual exponential integrator but considering the variations of $f$ given for the time $t_n$. 
 
@@ -330,7 +321,7 @@ The consequences of the latter approximation is that the Rossby waves might not 
 
 Considering the above method, where $L$ is constant along trajectories, then we may write the the method for the full non linear case as 
 \begin{equation}
-U^{n+1}=(e^{L \Delta t} U)^{n}_{*}+e^{L\Delta t}\int_{t_n}^{t_{n+1}} \, I(t, \vec{r}(t))\, N(U(t, \vec{r}(t)))\,dt.
+U^{n+1}=e^{L \Delta t}( U)^{n}_{*}+e^{L\Delta t}\int_{t_n}^{t_{n+1}} \, I(t, \vec{r}(t))\, N(U(t, \vec{r}(t)))\,dt.
 \end{equation}
 
 \subsection{Standard Exponential Integrator Scheme}
@@ -372,59 +363,78 @@ In semi-Lagrangian methods, it is common that the nonlinear terms are discretize
 
 This leads to the following approach,
 \begin{equation}
-U^{n+1}=(e^{L \Delta t} U)^{n}_{*}+\frac{\Delta t}{2}e^{L\Delta t}\left[ I(t_{n+1/2}, \vec{r}_a)\, N(U(t_{n+1/2}, \vec{r}_a)+I(t_{n+1/2}, \vec{r}_d)\, N(U(t_{n+1/2}, \vec{r}_d))\right],
+U^{n+1}=e^{L \Delta t}(U)^{n}_{*}+\frac{\Delta t}{2}e^{L\Delta t}\left[ I(t_{n+1/2}, \vec{r}_a)\, N(U(t_{n+1/2}, \vec{r}_a)+I(t_{n+1/2}, \vec{r}_d)\, N(U(t_{n+1/2}, \vec{r}_d))\right],
 \end{equation}
 which, using the assumption of constant $L$ along trajectories,
 \begin{equation}
  I(t_{n+1/2}, \vec{r}(t))=e^{-L\Delta t/2},
 \end{equation} 
-may be simplified to
-\begin{equation}
-U^{n+1}=(e^{L \Delta t} U)^{n}_{*}+\frac{\Delta t}{2}e^{L\Delta t/2}\left[ N(U(t_{n+1/2}, \vec{r}_a)+ N(U(t_{n+1/2}, \vec{r}_d))\right],
-\end{equation}
-or
-\begin{equation}
-U^{n+1}=\left(e^{L \Delta t} U^n +\frac{\Delta t}{2}e^{L\Delta t/2}N(U)^{n+1/2}\right)_{*}+\frac{\Delta t}{2}e^{L\Delta t/2} N(U)^{n+1/2}.
-\end{equation}
+may be simplified.
 
-Since $N(U)$ is required at an intermediate time-step, this needs to be extrapolated from previous values of $N(U)$ given in time steps $n$ and $n-1$. Using the same extrapolation as in equation \eqref{eq:extrap_simp}, the resulting method is
-\begin{equation}
-U^{n+1}=\left[e^{L \Delta t} U^n +\frac{\Delta t}{2}e^{L\Delta t/2}\left(\frac{3}{2}N(U^n)-\frac{1}{2}N(U^{n-1})\right)\right]_{*}+\frac{\Delta t}{2}e^{L\Delta t/2} \left(\frac{3}{2}N(U^n)-\frac{1}{2}N(U^{n-1})\right).
-\end{equation}
+% to
+%\begin{equation}
+%U^{n+1}=e^{L \Delta t}(U)^{n}_{*}+\frac{\Delta t}{2}e^{L\Delta t/2}\left[ N(U(t_{n+1/2}, \vec{r}_a)+ N(U(t_{n+1/2}, \vec{r}_d))\right],
+%\end{equation}
+%or
+%\begin{equation}
+%U^{n+1}=\left(e^{L \Delta t} U^n +\frac{\Delta t}{2}e^{L\Delta t/2}N(U)^{n+1/2}\right)_{*}+\frac{\Delta t}{2}e^{L\Delta t/2} N(U)^{n+1/2}.
+%\end{equation}
+%
+%Since $N(U)$ is required at an intermediate time-step, this needs to be extrapolated from previous values of $N(U)$ given in time steps $n$ and $n-1$. Using the same extrapolation as in equation \eqref{eq:extrap_simp}, the resulting method is
+%\begin{equation}
+%U^{n+1}=\left[e^{L \Delta t} U^n +\frac{\Delta t}{2}e^{L\Delta t/2}\left(\frac{3}{2}N(U^n)-\frac{1}{2}N(U^{n-1})\right)\right]_{*}+\frac{\Delta t}{2}e^{L\Delta t/2} \left(\frac{3}{2}N(U^n)-\frac{1}{2}N(U^{n-1})\right).
+%\end{equation}
 
 \subsection{Stable scheme}
 
 
 As discussed in section \ref{sec:stable}, using standard extrapolation schemes may lead to an unstable scheme. An option is to use the SETTLS approach, which would give
 \begin{equation}
-U^{n+1}=(e^{L \Delta t} U)^{n}_{*}+\Delta t \, e^{L\Delta t/2}\left[  N(U(t_{n+1/2}, \vec{r}_m)\right],
+U^{n+1}=e^{L \Delta t}  U^{n}_{*}+\Delta t \, e^{L\Delta t}\left[  \tilde{N}(U(t_{n+1/2}, \vec{r}_m)\right],
 \end{equation}
 where 
 \begin{equation}
- N(U(t_{n+1/2}, \vec{r}_m)) = 
-\frac{1}{2}\left[2 N(U(t_{n}, \vec{r}_d))- N(U(t_{n-1}, \vec{r}_d))+  N(U(t_{n}, \vec{r}_a))\right],
+ \tilde{N}(U(t_{n+1/2}, \vec{r}_m)) = 
+\frac{1}{2}\left[2 I(t_{n}) N(U(t_{n})- I(t_{n-1}) N(U(t_{n-1})) \right]_*+ I(t_{n}) N(U(t_{n}),
 \end{equation}
-which may be calculated as
+where
 \begin{equation}
- N(U(t_{n+1/2}, \vec{r}_m)) = 
-\frac{1}{2}\left[ 2 N(U(t_{n}))- N(U(t_{n-1}))\right]_* +  \frac{1}{2}\left[N(U(t_{n}))\right].
+ I(t_{n-1})=e^{L\Delta t},
+\end{equation} 
+ and
+\begin{equation}
+ I(t_{n})=\text{Id}.
+\end{equation} 
+Therefore,
+\begin{equation}
+ \tilde{N}(U(t_{n+1/2}, \vec{r}_m)) = 
+\frac{1}{2}\left[2 N(U(t_{n})- e^{L\Delta t} N(U(t_{n-1})) \right]_*+  N(U(t_{n}).
 \end{equation}
-
 
 The resulting method is 
 \begin{equation}
-U^{n+1}=\left[e^{L \Delta t} U^n+\Delta t\,e^{L\Delta t/2}\left( N(U^n)- \frac{1}{2}N(U^{n-1})\right) \right]_*+\frac{\Delta t}{2}e^{L\Delta t/2}N(U^n).
+U^{n+1}=e^{L \Delta t} U_*^n+\frac{\Delta t}{2}\,e^{L\Delta t}\left[ 2 N^n- e^{L\Delta t}N^{n-1}\right]_*+\frac{\Delta t}{2}N^n,
+\end{equation}
+where
+\begin{equation}
+N^n=N(U(t_n)).
 \end{equation}
 
 To save on calculations, one may calculate
-\begin{eqnarray}
-V^n&=&e^{L \Delta t} U^n \\
-W^n&=&e^{L \Delta t/2} N(U^n)
-\end{eqnarray}
+\begin{equation}
+V^n= e^{L\Delta t}N^n, 
+\end{equation}
+\begin{equation}
+W^n= U^n+ \Delta t \,N^n- \frac{\Delta t}{2} V^{n-1}
+\end{equation}
+
+
 and then
 \begin{equation}
-U^{n+1}=\left[V^n+\Delta t\,W^n - \frac{\Delta t}{2}W^{n-1} \right]_*+\frac{\Delta t}{2}W^n.
+U^{n+1}=e^{L \Delta t} W^n_* + \frac{\Delta t}{2}N^n,
 \end{equation}
+therefore at each time step only 2 applications of exponential integrators are requires: (i) for $V^{n-1}$ and for $W^n_*$.
+
 
 For the interpolation to departure points, a third order interpolation method is recommended to ensure overall second order accuracy of the semi-Lagrangian scheme \cite{Peixoto2014}.
 %
