@@ -1130,130 +1130,31 @@ public:
 			// REXI time stepping for nonlinear eq - semi-lagrangian scheme (SL-REXI)
 			if (param_nonlinear>0)
 			{
-
-				//Calculate departure points
-				semiLagrangian.semi_lag_departure_points_settls(
-								prog_u_prev, prog_v_prev,
-								prog_u,	prog_v,
-								posx_a,	posy_a,
-								o_dt,
-								posx_d,	posy_d,
-								stag_displacement
-						);
-
-				//std::cout<<"Departure points movement (x,y): " << (posx_a-posx_d).reduce_maxAbs() << " " <<(posy_a-posy_d).reduce_maxAbs() << std::endl;
-
-				//Save current fields for next time step
-				prog_u_prev = prog_u;
-				prog_v_prev = prog_v;
-				prog_h_prev = prog_h;
-
-
-				DataArray<2>& U = tmp0;
-				DataArray<2>& V = tmp1;
-				DataArray<2>& H = tmp2;
-
-				U = prog_u;
-				V = prog_v;
-				H = prog_h;
-
-				/*
-				 *
-				std::cout<<"U"<<std::endl;
-				U.printArrayData();
-				std::cout<<"V"<<std::endl;
-				V.printArrayData();
-				std::cout<<"H"<<std::endl;
-				H.printArrayData();
-
-				std::cout<<"prog_u"<<std::endl;
-				prog_u.printArrayData();
-				std::cout<<"prog_v"<<std::endl;
-				prog_v.printArrayData();
-				std::cout<<"prog_h"<<std::endl;
-				prog_h.printArrayData();
-				std::cout<<std::endl;
-				*/
-
-				if(param_nonlinear==1) //Full nonlinear swe
-				{
-					// First calculate the linear part
-					//rexiSWE.run_timestep( H, U, V, o_dt, op, simVars, param_rexi_zero_before_solving);
-					rexiSWE.run_timestep_direct_solution( H, U, V, o_dt, op, simVars );
-
-					//Zero high frequency modes to avoid aliasing effects (only for nonlinear eqs)
-#if SWEET_USE_SPECTRAL_DEALIASING
-					prog_h.aliasing_zero_high_modes();
-					prog_u.aliasing_zero_high_modes();
-					prog_v.aliasing_zero_high_modes();
-					std::cout<<"hi"<<std::endl;
-#endif
-
-					//Zero nonlinear vectors
-					N_h.set_all(0);
-					N_u.set_all(0);
-					N_v.set_all(0);
-
-					//Calculate divergence spectrally or with finite differences
-					//if(simVars.disc.use_spectral_basis_diffs) //Spectral derivatives
-					//	N_h=-prog_h*(op.diff_c_x(prog_u) + op.diff_c_y(prog_v));
-					//else //Finite differences - needs further averaging for A grid?
-					N_h=-prog_h*(op.diff_c_x(prog_u) + op.diff_c_y(prog_v));
-					std::cout << "Nonlinear error: " << N_h.reduce_maxAbs() << std::endl;
-
-
-					//Calculate exp(Ldt/2 N(u))
-					//rexiSWE.run_timestep( N_h, N_u, N_v, o_dt/2.0, op, simVars, param_rexi_zero_before_solving);
-					rexiSWE.run_timestep_direct_solution( N_h, N_u, N_v, o_dt/2.0, op, simVars );
-
-					//Use previous step to calculate main term to be interpolated
-					H=H+(o_dt)*N_h-(o_dt/2.0)*N_h_prev;
-					U=U+(o_dt)*N_u-(o_dt/2.0)*N_u_prev;
-					V=V+(o_dt)*N_v-(o_dt/2.0)*N_v_prev;
-
-					//Now interpolate to the the departure points
-					//Departure points are set for physical space
-					sampler2D.bicubic_scalar( H, posx_d, posy_d, prog_h, stag_h[0],	stag_h[1]);
-					sampler2D.bicubic_scalar( U, posx_d, posy_d, prog_u, stag_u[0], stag_u[1]);
-					sampler2D.bicubic_scalar( V, posx_d, posy_d, prog_v, stag_v[0], stag_v[1]);
-
-					//Add nonlinear part attributed to arrival points
-					prog_h=prog_h+(o_dt/2.0)*N_h;
-					prog_u=prog_u+(o_dt/2.0)*N_u;
-					prog_v=prog_v+(o_dt/2.0)*N_v;
-
-					//Save current nonlinear values for next time step
-					N_h_prev=N_h;
-					N_u_prev=N_u;
-					N_v_prev=N_v;
-
-				}
-				else if(param_nonlinear==2) //Linear with nonlinear advection only (valid for nondivergent nonlinear sw flows)
-				{
-					// First calculate the linear part
-					rexiSWE.run_timestep( H, U, V, o_dt, op, simVars, param_rexi_zero_before_solving);
-					//rexiSWE.run_timestep_direct_solution( H, U, V, o_dt, op, simVars );
-
-
-					//Now interpolate to the the departure points
-					//Departure points are set for physical space
-
-					sampler2D.bicubic_scalar( H, posx_d, posy_d, prog_h, stag_h[0],	stag_h[1]);
-					sampler2D.bicubic_scalar( U, posx_d, posy_d, prog_u, stag_u[0], stag_u[1]);
-					sampler2D.bicubic_scalar( V, posx_d, posy_d, prog_v, stag_v[0], stag_v[1]);
-
-				}
+				rexiSWE.run_timestep_slrexi(
+									prog_h, prog_u, prog_v,
+									prog_h_prev, prog_u_prev, prog_v_prev,
+									posx_a,	posy_a,
+									o_dt,
+									param_nonlinear,
+									param_rexi_zero_before_solving,
+									simVars,
+									op,
+									sampler2D,
+									semiLagrangian
+							);
 
 			}
 			else // linear solver
 			{
 				rexiSWE.run_timestep( prog_h, prog_u, prog_v, o_dt,	op,	simVars, param_rexi_zero_before_solving	);
+
 			}
 
-			//Add forcing
-			prog_h=prog_h+force_h*o_dt;
-			prog_u=prog_u+force_u*o_dt;
-			prog_v=prog_v+force_v*o_dt;
+			//Add forcing --- this is now how it should be added!!!!!
+			//prog_h=prog_h+force_h*o_dt;
+			//prog_u=prog_u+force_u*o_dt;
+			//prog_v=prog_v+force_v*o_dt;
+
 		}
 		else if (param_timestepping_mode == 2) //Direct solution
 		{

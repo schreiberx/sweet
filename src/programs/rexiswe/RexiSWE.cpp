@@ -508,6 +508,155 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 
 
 /**
+ * Solve  SWE with the novel Semi-Lagrangian Exponential Integrator
+ *  SL-REXI
+ *
+ *  See documentation for details
+ *
+ */
+bool RexiSWE::run_timestep_slrexi(
+	DataArray<2> &io_h,  ///< Current and past fields
+	DataArray<2> &io_u,
+	DataArray<2> &io_v,
+	DataArray<2> &io_h_prev,
+	DataArray<2> &io_u_prev,
+	DataArray<2> &io_v_prev,
+
+	DataArray<2> &i_posx_a, //Arrival point positions in x and y (this is basically the grid)
+	DataArray<2> &i_posy_a,
+
+	double i_timestep_size,	///< timestep size
+	int i_param_nonlinear, ///< degree of nonlinearity (0-linear, 1-full nonlinear, 2-only nonlinear adv)
+	bool i_iterative_solver_always_init_zero_solution, //
+
+	const SimulationVariables &i_simVars, ///< Parameters for simulation
+
+	Operators2D &op,     ///< Operator class
+	Sampler2D &sampler2D, ///< Interpolation class
+	SemiLagrangian &semiLagrangian  ///< Semi-Lag class
+)
+{
+
+	//Out vars
+	DataArray<2> h(io_h.resolution);
+	DataArray<2> u(io_h.resolution);
+	DataArray<2> v(io_h.resolution);
+	DataArray<2> N_h(io_h.resolution);
+	DataArray<2> N_u(io_h.resolution);
+	DataArray<2> N_v(io_h.resolution);
+	DataArray<2> hdiv(io_h.resolution);
+
+	//Departure points and arrival points
+	DataArray<2> posx_d(io_h.resolution);
+	DataArray<2> posy_d(io_h.resolution);
+
+	//Parameters
+	double dt = i_timestep_size;
+	double stag_displacement[4] = {-0.5,-0.5,-0.5,-0.5}; //A grid staggering - centred cell
+
+#if SWEET_USE_SPECTRAL_SPACE
+	if(i_param_nonlinear==1){
+		//Truncate spectral modes to avoid aliasing effects in the h*div term
+		io_h.aliasing_zero_high_modes();
+		io_u.aliasing_zero_high_modes();
+		io_v.aliasing_zero_high_modes();
+		io_h_prev.aliasing_zero_high_modes();
+		io_u_prev.aliasing_zero_high_modes();
+		io_v_prev.aliasing_zero_high_modes();
+	}
+#endif
+
+
+	if(i_param_nonlinear>0)
+	{
+		//Calculate departure points
+		semiLagrangian.semi_lag_departure_points_settls(
+				io_u_prev, io_v_prev,
+				io_u,	io_v,
+				i_posx_a,	i_posy_a,
+				dt,
+				posx_d,	posy_d,
+				stag_displacement
+		);
+
+	}
+
+	u = io_u;
+	//std::cout<< "u" << std::endl;
+	//u.printArrayData();
+	v = io_v;
+	//std::cout<< "v" << std::endl;
+	//v.printArrayData();
+	h = io_h;
+	//std::cout<< "h" << std::endl;
+	//h.printArrayData();
+
+	N_u.set_all(0);
+	N_v.set_all(0);
+	N_h.set_all(0);
+	hdiv.set_all(0);
+
+	//Calculate nonlinear terms
+	if(i_param_nonlinear==1)
+	{
+		//Calculate Divergence and vorticity spectrally
+		hdiv =  - io_h * (op.diff_c_x(io_u) + op.diff_c_y(io_v));
+
+		// Calculate nonlinear term for the previous time step
+		// h*div is calculate in cartesian space (pseudo-spectrally)
+		N_h =  - io_h_prev * (op.diff_c_x(io_u_prev) + op.diff_c_y(io_v_prev));
+
+		//Calculate exp(Ldt)N(n-1), relative to previous timestep
+		//Calculate the V{n-1} term as in documentation, with the exponential integrator
+		//run_timestep( h, u, v, dt, op, i_simVars, i_iterative_solver_always_init_zero_solution);
+		run_timestep_direct_solution( N_h, N_u, N_v, dt, op, i_simVars );
+
+		//Use N_h to store now the nonlinearity of the current time (prev will not be required anymore)
+		//Update the nonlinear terms with the constants relative to dt
+		N_u = -0.5 * dt * N_u; // N^n of u term is zero
+		N_v = -0.5 * dt * N_v; // N^n of v term is zero
+		N_h = dt * hdiv - 0.5 * dt * N_h ; //N^n of h has the nonlin term
+	}
+
+
+
+	if(i_param_nonlinear>0){
+		//Build variables to be interpolated to dep. points
+		// This is the W^n term in documentation
+		u = u + N_u;
+		v = v + N_v;
+		h = h + N_h;
+
+		// Interpolate W to departure points
+		u = sampler2D.bicubic_scalar(u, posx_d, posy_d, -0.5, -0.5);
+		v = sampler2D.bicubic_scalar(v, posx_d, posy_d, -0.5, -0.5);
+		h = sampler2D.bicubic_scalar(h, posx_d, posy_d, -0.5, -0.5);
+	}
+
+	//Calculate the exp(Ldt) W{n}_* term as in documentation, with the exponential integrator
+	//run_timestep( h, u, v, dt, op, i_simVars, i_iterative_solver_always_init_zero_solution);
+	run_timestep_direct_solution( h, u, v, dt, op, i_simVars );
+
+	if(i_param_nonlinear==1){
+		// Add nonlinearity in h
+		h = h + 0.5 * dt * hdiv;
+	}
+
+	//Set time (n) as time (n-1)
+	io_h_prev=io_h;
+	io_u_prev=io_u;
+	io_v_prev=io_v;
+
+	//output data
+	io_h=h;
+	io_u=u;
+	io_v=v;
+
+	return true;
+}
+
+
+/**
  * Solve the REXI of \f$ U(t) = exp(L*t) \f$
  *
  * See
