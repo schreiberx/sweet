@@ -377,6 +377,26 @@ public:
 	}
 
 
+	/**
+	 * Explicitly write data to the areas instead of relying on
+	 * the program to apply a first touch policy
+	 */
+	template <typename T=void>
+	static
+	T *first_touch_init(
+			T *i_data,
+			std::size_t i_size
+	)
+	{
+		char *data = (char*)i_data;
+
+#pragma omp parallel for OPENMP_PAR_SIMD
+		for (std::size_t i = 0; i < i_size; i++)
+			data[i] = 0;
+
+		return i_data;
+	}
+
 
 public:
 	template <typename T=void>
@@ -412,7 +432,7 @@ public:
 		if (data != nullptr)
 			return data;
 
-		return (T*)numa_alloc(i_size);
+		return (T*)first_touch_init(numa_alloc(i_size), i_size);
 
 #elif NUMA_BLOCK_ALLOCATOR_TYPE == 3
 
@@ -440,6 +460,7 @@ public:
 			exit(-1);
 		}
 
+		first_touch_init(data, i_size);
 		return data;
 
 #else
@@ -456,6 +477,7 @@ public:
 			exit(-1);
 		}
 
+		first_touch_init(data, i_size);
 		return data;
 
 #endif
