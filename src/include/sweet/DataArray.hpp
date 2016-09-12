@@ -1612,7 +1612,8 @@ public:
 #pragma omp parallel for reduction(&&:isallfinite)
 #endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			isallfinite = isallfinite && std::isfinite(array_data_cartesian_space[i]);
+//TODO:			isallfinite = isallfinite && std::isfinite(array_data_cartesian_space[i]);
+			isallfinite = isallfinite && (array_data_cartesian_space[i]<1000);
 
 
 		return isallfinite;
@@ -3722,20 +3723,19 @@ public:
 		std::ostream &o_ostream = std::cout;
 
 		o_ostream << std::setprecision(i_precision);
-		/*
+
 		for (int y = resolution[1]-1; y >= 0; y--)
-		{*/
+		{
 			for (std::size_t x = 0; x < resolution[0]; x++)
 			{
-				//o_ostream << get(y, x);
-				o_ostream << get(1, x);
+				o_ostream << get(y, x);
 
 				if (x < resolution[0]-1)
 					o_ostream << '\t';
 				else
 					o_ostream << std::endl;
 			}
-		//}
+		}
 
 		checkConsistency();
 		return true;
@@ -3781,9 +3781,51 @@ public:
 	}
 
 
-
 	/**
 	 * Write data to ASCII file
+	 *
+	 * Each array row is stored to a line.
+	 * Per default, a tab separator is used in each line to separate the values.
+	 */
+	bool file_saveSpectralData_ascii(
+			const char *i_filename,		///< Name of file to store data to
+			char i_separator = '\t',	///< separator to use for each line
+			int i_precision = 12		///< number of floating point digits
+	)
+	{
+
+		checkConsistency();
+		requestDataInSpectralSpace();
+
+		std::ofstream file(i_filename, std::ios_base::trunc);
+		file << std::setprecision(i_precision);
+
+		assert(D == 2);
+		if (D == 2)
+		{
+			for (int y = resolution_spec[1]-1; y >= 0; y--)
+			{
+				for (std::size_t x = 0; x < resolution_spec[0]; x++)
+				{
+					double value_re = spec_getRe(y, x);
+					double value_im = spec_getIm(y, x);
+					//file << "(" << value_re << ", " << value_im << ")";
+					file << sqrt(value_re*value_re+value_im*value_im);
+					if (x < resolution_spec[0]-1)
+						file << i_separator;
+					else
+						file << std::endl;
+				}
+			}
+		}
+
+		checkConsistency();
+		return true;
+	}
+
+
+	/**
+	 * Write data to VTK file
 	 *
 	 * Each array row is stored to a line.
 	 * Per default, a tab separator is used in each line to separate the values.

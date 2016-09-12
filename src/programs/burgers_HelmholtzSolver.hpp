@@ -87,8 +87,10 @@ public:
 
 //			std::cout << "maximal residuum:\t" << residual << "\t should be below \t" << i_error_threshold << std::endl;
 
-			if (residual < i_error_threshold)
+			if (residual < i_error_threshold){
+				std::cout << "Used iterations: " << i << std::endl;
 				return true;
+			}
 		}
 
 		return false;

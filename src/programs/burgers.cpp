@@ -39,6 +39,7 @@ int param_time_scheme = -1;
 bool param_compute_error = 0;
 bool param_use_staggering = 0;
 bool param_semilagrangian = 0;
+int param_ts2 = -1;
 
 
 class SimulationInstance
@@ -85,6 +86,8 @@ public:
 	// Max difference to initial conditions
 	double benchmark_diff_u;
 	double benchmark_diff_v;
+
+	DataArray<2> benchmark_analytical_error;
 
 	// Error measures L2 norm
 	double benchmark_analytical_error_rms_u;
@@ -141,6 +144,8 @@ public:
 
 		posx_d(simVars.disc.res),
 		posy_d(simVars.disc.res),
+
+		benchmark_analytical_error(simVars.disc.res),
 
 		// Init operators
 		op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
@@ -683,15 +688,15 @@ public:
 			o_u_t = simVars.sim.viscosity*(op.diff2_c_x(i_u)+op.diff2_c_y(i_u));
 			// Delete this line if no source is used.
 			o_u_t += f;
+			o_v_t = simVars.sim.viscosity*(op.diff2_c_x(i_v)+op.diff2_c_y(i_v));
 		}else{
 			o_u_t = -(i_u*op.diff_c_x(i_u) + i_v*op.diff_c_y(i_u));
 			o_u_t += simVars.sim.viscosity*(op.diff2_c_x(i_u)+op.diff2_c_y(i_u));
 			// Delete this line if no source is used.
 			o_u_t += f;
+			o_v_t = -(i_u*op.diff_c_x(i_v) + i_v*op.diff_c_y(i_v));
+			o_v_t += simVars.sim.viscosity*(op.diff2_c_x(i_v)+op.diff2_c_y(i_v));
 		}
-
-		o_v_t = -(i_u*op.diff_c_x(i_v) + i_v*op.diff_c_y(i_v));
-		o_v_t += simVars.sim.viscosity*(op.diff2_c_x(i_v)+op.diff2_c_y(i_v));
 
 		/*
 		 * TIME STEP SIZE
@@ -838,6 +843,14 @@ public:
 
 			}
 
+			// Print timestep data to given output stream
+			o_ostream << std::setprecision(8) << std::fixed << simVars.timecontrol.current_simulation_time << "\t" << simVars.diag.total_energy;
+
+			if (param_compute_error){
+				compute_errors();
+				o_ostream << std::setprecision(8) << "\t" << benchmark_analytical_error_maxabs_u << "\t" << benchmark_analytical_error_rms_u << "\t" << prog_u.reduce_max();
+			}
+
 			if ((simVars.misc.output_file_name_prefix.size() > 0) && !simVars.parareal.enabled)
 			{
 				// output each time step
@@ -866,18 +879,17 @@ public:
 
 					// write velocity field u to file
 					prog_u.file_saveData_ascii((ss+"_u.csv").c_str());
+					prog_u.file_saveSpectralData_ascii((ss+"_u_spec.csv").c_str());
 					// write velocity field v to file
 					//prog_v.file_saveData_ascii((ss+"_v.csv").c_str());
 
+					if (param_compute_error)
+					{
+						benchmark_analytical_error.file_saveData_ascii((ss+".err").c_str());
+						benchmark_analytical_error.file_saveSpectralData_ascii((ss+"_spec.err").c_str());
+					}
+
 				}
-			}
-
-			// Print timestep data to given output stream
-			o_ostream << std::setprecision(8) << std::fixed << simVars.timecontrol.current_simulation_time << "\t" << simVars.diag.total_energy;
-
-			if (param_compute_error){
-				compute_errors();
-				o_ostream << std::setprecision(8) << "\t" << benchmark_analytical_error_maxabs_u << "\t" << benchmark_analytical_error_rms_u << "\t" << prog_u.reduce_max();
 			}
 
 		}
@@ -931,6 +943,8 @@ public:
 
 				}
 			}
+
+			benchmark_analytical_error = ts_u-prog_u;
 
 			benchmark_analytical_error_rms_u = (ts_u-prog_u).reduce_rms_quad();
 			benchmark_analytical_error_rms_v = (ts_v-prog_v).reduce_rms_quad();
@@ -1187,11 +1201,21 @@ public:
 		simVars.timecontrol.max_simulation_time = timeframe_end;
 		simVars.timecontrol.current_timestep_nr = 0;
 
+		bool was_sl = false;
+		if (param_semilagrangian)
+		{
+			param_semilagrangian = false;
+			was_sl = true;
+		}
+
 		while (simVars.timecontrol.current_simulation_time < timeframe_end)
 		{
 			this->run_timestep();
 			assert(simVars.timecontrol.current_simulation_time <= timeframe_end);
 		}
+
+		if (was_sl)
+			param_semilagrangian = true;
 
 		// copy to buffers
 		*parareal_data_fine.data_arrays[0] = prog_u;
@@ -1263,7 +1287,7 @@ public:
 			rhs_v += - t*(u*op.diff_c_x(v)+v*op.diff_c_y(v));
 		}
 
-		if (false) //spectral
+		if (simVars.disc.use_spectral_basis_diffs) //spectral
 		{
 			DataArray<2> lhs = u;
 			if (param_semilagrangian)
@@ -1283,7 +1307,7 @@ public:
 			 */
 
 			bool retval=false;
-			int max_iters = 20000;
+			int max_iters = 26000;
 			double eps = 1e-7;
 			double* domain_size = simVars.sim.domain_size;
 			double omega = 1.0;
@@ -1351,7 +1375,7 @@ public:
 		// run implicit time step
 //		assert(i_max_simulation_time < 0);
 //		assert(simVars.sim.CFL < 0);
-		if (param_time_scheme>=0)
+		if (param_ts2>=0)
 		{
 			// run standard RK
 			double dt = 0.0;
@@ -1390,7 +1414,7 @@ public:
 		prog_u = prog_u.op_stencil_Re_3x3(f_sharp_kernel);
 		prog_v = prog_v.op_stencil_Re_3x3(f_sharp_kernel);
 #endif
-		std::cerr << "maxabs kommt hier: " <<prog_u.reduce_maxAbs() << std::endl;
+		//std::cerr << "maxabs kommt hier: " <<prog_u.reduce_maxAbs() << std::endl;
 
 
 		// copy to buffers
@@ -1510,7 +1534,17 @@ public:
 		std::string filename = ss.str();
 
 //		std::cout << "filename: " << filename << std::endl;
-		data.data_arrays[0]->file_saveData_ascii(filename.c_str());
+		//data.data_arrays[0]->file_saveData_ascii(filename.c_str());
+		data.data_arrays[0]->file_saveSpectralData_ascii(filename.c_str());
+
+		std::ostringstream ss2;
+		ss2 << simVars.misc.output_file_name_prefix << "_iter" << iteration_id << "_slice" << time_slice_id << ".err";
+
+		std::string filename2 = ss2.str();
+
+		compute_errors();
+
+		benchmark_analytical_error.file_saveSpectralData_ascii(filename2.c_str());
 
 		//data.data_arrays[0]->file_saveData_vtk(filename.c_str(), filename.c_str());
 	}
@@ -1547,6 +1581,7 @@ int main(int i_argc, char *i_argv[])
 			"compute-error",
 			"staggering",
 			"semi-lagrangian",
+			"ts2",
 			nullptr
 	};
 
@@ -1555,6 +1590,7 @@ int main(int i_argc, char *i_argv[])
 	simVars.bogus.var[1] = param_compute_error; // compute-error
 	simVars.bogus.var[2] = param_use_staggering; // staggering
 	simVars.bogus.var[3] = param_semilagrangian; // semi-lagrangian
+	simVars.bogus.var[4] = param_ts2; //timestepping scheme for parareal coarse
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
@@ -1579,6 +1615,7 @@ int main(int i_argc, char *i_argv[])
 	param_compute_error = simVars.bogus.var[1];
 	param_use_staggering = simVars.bogus.var[2];
 	param_semilagrangian = simVars.bogus.var[3];
+	param_ts2 = simVars.bogus.var[4];
 
 
 	std::ostringstream buf;
