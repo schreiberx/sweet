@@ -57,7 +57,7 @@ double param_rexi_helmholtz_solver_eps;
 bool param_rexi_zero_before_solving;
 int param_boundary_id;
 int param_nonlinear;
-
+bool param_linear_exp_analytical;
 
 double param_initial_freq_x_mul;
 double param_initial_freq_y_mul;
@@ -1137,6 +1137,7 @@ public:
 									o_dt,
 									param_nonlinear,
 									param_rexi_zero_before_solving,
+									param_linear_exp_analytical,
 									simVars,
 									op,
 									sampler2D,
@@ -2029,9 +2030,9 @@ int main2(int i_argc, char *i_argv[])
 			"boundary-id",
 			"rexi-zero-before-solving",
 			"nonlinear",                 /// form of equations
-			"semi-implicit",				/// semi-implicitness flag
 			"initial-freq-x-mul",		/// frequency multipliers for special scenario setup
 			"initial-freq-y-mul",
+			"lin-exp-analyt",
 			nullptr
 	};
 
@@ -2051,6 +2052,7 @@ int main2(int i_argc, char *i_argv[])
 	simVars.bogus.var[12] = 0;	// nonlinear
 	simVars.bogus.var[13] = 0;  //frequency in x for waves test case
 	simVars.bogus.var[14] = 0;  //frequency in y for waves test case
+	simVars.bogus.var[15] = 0;  // Use analytical linear operator exponential
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
@@ -2065,11 +2067,11 @@ int main2(int i_argc, char *i_argv[])
 		std::cout << "" << std::endl;
 		std::cout << "	--timestepping-mode [0/1/2/3/4/5]	Timestepping method to use" << std::endl;
 		std::cout << "	                            0: RKn with Finite-difference (default)" << std::endl;
-		std::cout << "	                            1: REXI" << std::endl;
+		std::cout << "	                            1: REXI (SL-REXI if nonlinear)" << std::endl;
 		std::cout << "	                            2: Direct solution in spectral space" << std::endl;
-		std::cout << "	                            3: Implicit Finite-difference (needs checking)" << std::endl;
-		std::cout << "	                            4: Semi-Lagrangian with Finite-difference" << std::endl;
-		std::cout << "	                            5: Crank-Nicolson with spectral Helmholtz solver" << std::endl;
+		std::cout << "	                            3: Implicit Euler Spectral " << std::endl;
+		std::cout << "	                            4: Semi-Lagrangian Advection only" << std::endl;
+		std::cout << "	                            5: Semi-Lagrangian Semi-implicit Spectral" << std::endl;
 		std::cout << "" << std::endl;
 		std::cout << "	--compute-error [0/1]	Compute the errors" << std::endl;
 		std::cout << "" << std::endl;
@@ -2093,6 +2095,7 @@ int main2(int i_argc, char *i_argv[])
 		std::cout << "						     1: Full nonlinear SWE" << std::endl;
 		std::cout << "						     2: Linear SWE + nonlinear advection only (needs -H to be set)" << std::endl;
 		std::cout << std::endl;
+		std::cout << "	--lin-exp-analyt [0/1]	Use analytical exponential of linear operator (default=0)" << std::endl;
 		std::cout << std::endl;
 
 
@@ -2134,6 +2137,7 @@ int main2(int i_argc, char *i_argv[])
 	param_initial_freq_x_mul = simVars.bogus.var[13];
 	param_initial_freq_y_mul = simVars.bogus.var[14];
 
+	param_linear_exp_analytical = simVars.bogus.var[15];
 
 	//Print header
 	std::cout << std::endl;
@@ -2179,7 +2183,7 @@ int main2(int i_argc, char *i_argv[])
 			<< std::endl;
 	std::cout << "Verbosity: " << simVars.misc.verbosity << std::endl;
 	std::cout << "Parareal: " << SWEET_PARAREAL << std::endl;
-
+	std::cout << "Linear exponential analytical: " << param_linear_exp_analytical << std::endl;
 	std::ostringstream buf;
 	buf << std::setprecision(14);
 

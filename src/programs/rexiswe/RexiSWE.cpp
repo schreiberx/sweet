@@ -528,6 +528,7 @@ bool RexiSWE::run_timestep_slrexi(
 	double i_timestep_size,	///< timestep size
 	int i_param_nonlinear, ///< degree of nonlinearity (0-linear, 1-full nonlinear, 2-only nonlinear adv)
 	bool i_iterative_solver_always_init_zero_solution, //
+	bool i_linear_exp_analytical, //
 
 	const SimulationVariables &i_simVars, ///< Parameters for simulation
 
@@ -608,8 +609,14 @@ bool RexiSWE::run_timestep_slrexi(
 
 		//Calculate exp(Ldt)N(n-1), relative to previous timestep
 		//Calculate the V{n-1} term as in documentation, with the exponential integrator
-		//run_timestep( h, u, v, dt, op, i_simVars, i_iterative_solver_always_init_zero_solution);
-		run_timestep_direct_solution( N_h, N_u, N_v, dt, op, i_simVars );
+		if(i_linear_exp_analytical)
+		{
+			run_timestep_direct_solution( N_h, N_u, N_v, dt, op, i_simVars );
+		}
+		else
+		{
+			run_timestep( N_h, N_u, N_v, dt, op, i_simVars, i_iterative_solver_always_init_zero_solution);
+		}
 
 		//Use N_h to store now the nonlinearity of the current time (prev will not be required anymore)
 		//Update the nonlinear terms with the constants relative to dt
@@ -635,7 +642,15 @@ bool RexiSWE::run_timestep_slrexi(
 
 	//Calculate the exp(Ldt) W{n}_* term as in documentation, with the exponential integrator
 	//run_timestep( h, u, v, dt, op, i_simVars, i_iterative_solver_always_init_zero_solution);
-	run_timestep_direct_solution( h, u, v, dt, op, i_simVars );
+	//run_timestep_direct_solution( h, u, v, dt, op, i_simVars );
+	if(i_linear_exp_analytical)
+	{
+		run_timestep_direct_solution( h, u, v, dt, op, i_simVars );
+	}
+	else
+	{
+		run_timestep( h, u, v, dt, op, i_simVars, i_iterative_solver_always_init_zero_solution);
+	}
 
 	if(i_param_nonlinear==1){
 		// Add nonlinearity in h

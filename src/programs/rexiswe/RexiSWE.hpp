@@ -296,6 +296,7 @@ public:
 		double i_timestep_size,	///< timestep size
 		int i_param_nonlinear, ///< degree of nonlinearity (0-linear, 1-full nonlinear, 2-only nonlinear adv)
 		bool i_iterative_solver_always_init_zero_solution, //
+		bool i_linear_exp_analytical, //
 
 		const SimulationVariables &i_simVars, ///< Parameters for simulation
 
