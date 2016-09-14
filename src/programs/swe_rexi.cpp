@@ -894,11 +894,11 @@ public:
 			}
 
 
-			if (simVars.sim.viscosity != 0)
-			{
-				o_u_t -= op.diffN_x(i_u, simVars.sim.viscosity_order)*simVars.sim.viscosity;
-				o_v_t -= op.diffN_y(i_v, simVars.sim.viscosity_order)*simVars.sim.viscosity;
-			}
+			//if (simVars.sim.viscosity != 0)
+			//{
+			//	o_u_t -= op.diffN_x(i_u, simVars.sim.viscosity_order)*simVars.sim.viscosity;
+			//	o_v_t -= op.diffN_y(i_v, simVars.sim.viscosity_order)*simVars.sim.viscosity;
+			//}
 
 			boundary_action();
 
@@ -1007,11 +1007,11 @@ public:
 			/*
 			 * VISCOSITY
 			 */
-			if (simVars.sim.viscosity != 0)
-			{
-				o_u_t -= op.diffN_x(i_u, simVars.sim.viscosity_order)*simVars.sim.viscosity;
-				o_v_t -= op.diffN_y(i_v, simVars.sim.viscosity_order)*simVars.sim.viscosity;
-			}
+			//if (simVars.sim.viscosity != 0)
+			//{
+			//	o_u_t -= op.diffN_x(i_u, simVars.sim.viscosity_order)*simVars.sim.viscosity;
+			//	o_v_t -= op.diffN_y(i_v, simVars.sim.viscosity_order)*simVars.sim.viscosity;
+			//}
 
 			/*
 			 * P UPDATE
@@ -1039,60 +1039,6 @@ public:
 			}
 		}
 	}
-
-
-
-#if 0
-	// doesn't seem to be necessary
-	/**
-	 * wrapper to unify interfaces for REXI and analytical solution for L operator
-	 */
-	void rexi_run_timestep_wrapper(
-		DataArray<2> &io_h,
-		DataArray<2> &io_u,
-		DataArray<2> &io_v,
-
-		double i_local_timestep_size
-	)
-	{
-		switch(param_timestepping_mode)
-		{
-		case 1:
-			// REXI time stepping
-			assert(simVars.sim.CFL < 0);
-			rexiSWE.run_timestep(
-					prog_h, prog_u, prog_v,
-					i_local_timestep_size,
-					op,
-					simVars,
-					param_rexi_zero_before_solving
-			);
-			break;
-
-		case 2:
-			if (param_use_staggering)
-			{
-				std::cerr << "Direct solution on staggered grid not supported!" << std::endl;
-				exit(1);
-			}
-
-			// Analytical solution
-			rexiSWE.run_timestep_direct_solution(
-					prog_h, prog_u, prog_v,
-					i_local_timestep_size,
-					op,
-					simVars
-			);
-			break;
-
-		default:
-			assert(false);
-			std::cerr << "Timestepping method in this wrapper not supported" << std::endl;
-			exit(-1);
-		}
-	}
-#endif
-
 
 
 	/**
@@ -1255,7 +1201,14 @@ public:
 			exit(1);
 		}
 
-
+		//Apply viscosity at posteriori, for all methods
+		if (simVars.sim.viscosity != 0)
+		{
+			prog_u = prog_u + op.diffN_x(prog_u, simVars.sim.viscosity_order)*simVars.sim.viscosity
+					+op.diffN_y(prog_u, simVars.sim.viscosity_order)*simVars.sim.viscosity;
+			prog_v = prog_v + op.diffN_y(prog_v, simVars.sim.viscosity_order)*simVars.sim.viscosity
+					+op.diffN_y(prog_v, simVars.sim.viscosity_order)*simVars.sim.viscosity;
+		}
 
 		// provide information to parameters
 		simVars.timecontrol.current_timestep_size = o_dt;
