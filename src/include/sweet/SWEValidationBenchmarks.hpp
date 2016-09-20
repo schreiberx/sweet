@@ -104,7 +104,7 @@ class SWEValidationBenchmarks
 
 		if (i_parameters.setup.scenario == 2)
 		{
-			// Steady state (linear and nonlinear) with dominant zonal (x) flow
+			// Steady state (linear and nonlinear) with dominant meridional (y) flow
 
 			if (i_variable_id == 0)
 			{
@@ -134,7 +134,7 @@ class SWEValidationBenchmarks
 
 		if (i_parameters.setup.scenario == 3)
 		{
-			// Steady state (linear and nonlinear) with dominant meridional (y) flow
+			// Steady state (linear and nonlinear) with dominant zonal (x) flow
 
 			if (i_variable_id == 0)
 			{
@@ -543,6 +543,34 @@ class SWEValidationBenchmarks
 			else if (i_variable_id == 6) // f-term
 			{
 				return 0; //i_parameters.sim.f0;
+			}
+			else
+			{
+				return 0;
+			}
+		}
+		if (i_parameters.setup.scenario == 18)
+		{
+			// Preparation for flow over mountain
+			double u0 = 20.0; //mean constant velocity
+			double g = i_parameters.sim.g; // gravity
+			double f = i_parameters.sim.f0; // gravity
+
+			if (i_variable_id == 0)
+			{
+				return -std::sin(2.0*M_PI*y/sy)*f*u0*(0.5*sy/M_PI)/g + i_parameters.setup.h0;
+			}
+			else if (i_variable_id == 1) // velocity u
+			{
+				return u0*std::cos(2.0*M_PI*y/sy);
+			}
+			else if (i_variable_id == 2) // velocity v
+			{
+				return 0;
+			}
+			else if (i_variable_id == 6) // f-term
+			{
+				return f;
 			}
 			else
 			{
