@@ -406,7 +406,8 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	double stag_displacement[4] = {-0.5,-0.5,-0.5,-0.5}; //A grid staggering - centred cell
 	kappa += f0*f0;
 	kappa_bar -= f0*f0;
-
+	posx_d=i_posx_a;
+	posy_d=i_posy_a;
 
 #if SWEET_USE_SPECTRAL_SPACE
 	if(i_param_nonlinear==1){
@@ -461,10 +462,31 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	{
 		// Calculate nonlinear term interpolated to departure points
 		// h*div is calculate in cartesian space (pseudo-spectrally)
-
+		//div.aliasing_zero_high_modes();
+		//div_prev.aliasing_zero_high_modes();
 		DataArray<2> hdiv = 2.0 * io_h * div - io_h_prev * div_prev;
+		//hdiv.aliasing_zero_high_modes();
+		//std::cout<<offcent<<std::endl;
 		DataArray<2> nonlin = 0.5 * io_h * div +
 				0.5 * sampler2D.bicubic_scalar(hdiv, posx_d, posy_d, -0.5, -0.5);
+		//add diffusion
+		//nonlin.printSpectrumEnergy_y();
+		//nonlin.printSpectrumIndex();
+
+		//nonlin.aliasing_zero_high_modes();
+		//nonlin.printSpectrumEnergy_y();
+		//nonlin.printSpectrumIndex();
+		//nonlin=diff(nonlin);
+		//nonlin=op.implicit_diffusion(nonlin,i_simVars.sim.viscosity,i_simVars.sim.viscosity_order );
+		//nonlin.printSpectrumIndex();
+		//nonlin.aliasing_zero_high_modes();
+		//nonlin.printSpectrumIndex();
+
+		//std::cout << "blocked: "  << std::endl;
+		//nonlin.printSpectrumEnergy();
+		//std::cout << "Nonlinear error: " << nonlin.reduce_maxAbs() << std::endl;
+		//std::cout << "Div: " << div.reduce_maxAbs() << std::endl;
+		//nonlin=0;
 		rhs_h = rhs_h - 2.0*nonlin;
 		rhs_h.requestDataInSpectralSpace();
 	}
@@ -477,7 +499,6 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 
 	// Helmholtz solver
 	helmholtz_spectral_solver(kappa, g*h_bar, rhs, h, op);
-
 
 	//Update u and v
 	u = (1/kappa)*

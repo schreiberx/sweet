@@ -1201,13 +1201,21 @@ public:
 			exit(1);
 		}
 
-		//Apply viscosity at posteriori, for all methods
+		//Apply viscosity at posteriori, for all methods explicit difusion for non spectral schemes and implicit for spectral
 		if (simVars.sim.viscosity != 0)
 		{
-			prog_u = prog_u + op.diffN_x(prog_u, simVars.sim.viscosity_order)*simVars.sim.viscosity
-					+op.diffN_y(prog_u, simVars.sim.viscosity_order)*simVars.sim.viscosity;
-			prog_v = prog_v + op.diffN_y(prog_v, simVars.sim.viscosity_order)*simVars.sim.viscosity
-					+op.diffN_y(prog_v, simVars.sim.viscosity_order)*simVars.sim.viscosity;
+#if !SWEET_USE_SPECTRAL_SPACE //TODO: this needs checking
+			prog_u = prog_u + pow(-1,simVars.sim.viscosity_order/2)* o_dt*op.diffN_x(prog_u, simVars.sim.viscosity_order)*simVars.sim.viscosity
+					+ pow(-1,simVars.sim.viscosity_order/2)*o_dt*op.diffN_y(prog_u, simVars.sim.viscosity_order)*simVars.sim.viscosity;
+			prog_v = prog_v + pow(-1,simVars.sim.viscosity_order/2)* o_dt*op.diffN_x(prog_v, simVars.sim.viscosity_order)*simVars.sim.viscosity
+					+ pow(-1,simVars.sim.viscosity_order/2)*o_dt*op.diffN_y(prog_v, simVars.sim.viscosity_order)*simVars.sim.viscosity;
+			prog_h = prog_h + pow(-1,simVars.sim.viscosity_order/2)* o_dt*op.diffN_x(prog_h, simVars.sim.viscosity_order)*simVars.sim.viscosity
+					+ pow(-1,simVars.sim.viscosity_order/2)*o_dt*op.diffN_y(prog_h, simVars.sim.viscosity_order)*simVars.sim.viscosity;
+#else
+			prog_u=op.implicit_diffusion(prog_u, o_dt*simVars.sim.viscosity,simVars.sim.viscosity_order );
+			prog_v=op.implicit_diffusion(prog_v, o_dt*simVars.sim.viscosity,simVars.sim.viscosity_order );
+			prog_h=op.implicit_diffusion(prog_h, o_dt*simVars.sim.viscosity,simVars.sim.viscosity_order );
+#endif
 		}
 
 		// provide information to parameters
