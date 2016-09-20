@@ -138,6 +138,66 @@ public:
 		return tv;
 	}
 
+	/**
+	 * Diffusion or hyperviscosity coefficients
+	 * Simply calculates the spectral coefficients
+	 *  see "Numerical Techniques for Global Atmospheric Models", page 500
+	 *
+	 * i_order (q) needs to be even!!! (second or forth order usually)
+	 *
+	 * Returns operator D^q
+	 *
+	 * TODO: not tested for cartesian space
+	 */
+	inline DataArray<2> diffusion(
+			int i_order
+	)
+	{
+#if !SWEET_USE_SPECTRAL_SPACE
+		std::cerr<<"Diffusion not tested for cartesian space";
+		exit(-1);
+#endif
+		//Check if even
+		assert( i_order % 2 == 0);
+		assert( i_order > 0);
+		DataArray<2> out = diff2_c_x+diff2_c_y;
+
+		for (int i = 1; i < i_order/2; i++)
+			out = pow(-1, i)*(diff2_c_x(out)+diff2_c_y(out));
+
+		return out;
+	}
+
+	/**
+	 * Calculates implicit diffusion (applies 1/(1-mu*dt*D^q) to spectrum)
+	 *  see "Numerical Techniques for Global Atmospheric Models", page 500
+	 *
+	 * i_order (q) needs to be even!!! (second or forth order usually)
+	 * i_coef is mu*dt
+	 *
+	 * Only works in spectral space
+	 *
+	 */
+#if SWEET_USE_SPECTRAL_SPACE
+	inline DataArray<2> implicit_diffusion(
+			const DataArray<2> &i_data,
+			double i_coef,
+			int i_order
+	)
+	{
+		DataArray<2> out=i_data;
+
+		//Get diffusion coefficients (these are the -mu*dt*D^q, where q is the order
+		DataArray<2> diff = -i_coef*diffusion(i_order);
+		//Sum 1 to get denominator
+		diff=diff.spec_addScalarAll(1.0);
+		//Invert
+		diff=diff.spec_invert();
+		//apply to data
+		out=diff(out);
+		return out;
+	}
+#endif
 
 	Operators2D(
 		std::size_t res[2],		///< resolution
