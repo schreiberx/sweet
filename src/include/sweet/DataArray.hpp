@@ -2518,6 +2518,7 @@ public:
 				//double value_re = spec_getRe(y, x);
 				//double value_im = spec_getIm(y, x);
 				if( x > 2*(resolution_spec[0]-1)/3 || j > 2*(resolution_spec[1]/2)/3 )
+				//if( x > 2*(resolution_spec[0]-1)/3-1 || j > 2*(resolution_spec[1]/2)/3-1 )
 				{
 					set_spec( y, x, 0.0, 0.0);
 					//std::cout << "(" << i << ", " << j << ", High)\t";
@@ -2548,6 +2549,7 @@ public:
 				//double value_re = spec_getRe(y, x);
 				//double value_im = spec_getIm(y, x);
 				if( x > 2*(resolution_spec[0]-1)/3 ||  y > 2*((int) resolution_spec[1]/2)/3 )
+				//if( x > 2*(resolution_spec[0]-1)/3-1 ||  y > 2*((int) resolution_spec[1]/2)/3-1 )
 				{
 					set_spec( y, x, 0.0, 0.0);
 					//std::cout << "(" << i << ", " << j << ", High)\t";
@@ -3739,6 +3741,41 @@ public:
 	}
 #endif
 
+#if SWEET_USE_SPECTRAL_SPACE
+	/**
+	 * Invert all spectral coefficients a+bi --> 1/(a+bi)
+	 */
+	inline
+	DataArray<D> spec_invert(
+	)	const
+	{
+		DataArray<D> out(this->resolution);
+//		out.temporary_data = true;
+
+		requestDataInSpectralSpace();
+
+#if SWEET_THREADING
+#pragma omp parallel for OPENMP_PAR_SIMD
+#endif
+		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
+		{
+			//get spectral coefficient ar+i*ai
+			double ar = array_data_spectral_space[i];
+			double ai = array_data_spectral_space[i+1];
+			double norm=ar*ar+ai*ai;
+			// Calculate 1/(ar+i*ai) and split into real and imag parts
+			out.array_data_spectral_space[i] = ar/norm;
+			out.array_data_spectral_space[i+1] = -ai/norm;
+		}
+
+		out.array_data_cartesian_space_valid = false;
+		out.array_data_spectral_space_valid = true;
+
+		out.checkConsistency();
+		return out;
+	}
+#endif
+
 
 	inline
 	void printSpectrum()	const
@@ -3765,6 +3802,61 @@ public:
 		}
 	}
 
+	inline
+	void printSpectrumIndex()	const
+	{
+
+		checkConsistency();
+		DataArray<D> &rw_array_data = (DataArray<D>&)*this;
+
+		rw_array_data.requestDataInSpectralSpace();
+
+		assert(D == 2);
+		if (D == 2)
+		{
+			for (int y = rw_array_data.resolution_spec[1]-1; y >= 0; y--)
+			{
+				for (std::size_t x = 0; x < rw_array_data.resolution_spec[0]; x++)
+				{
+					double value_re = rw_array_data.spec_getRe(y, x);
+					double value_im = rw_array_data.spec_getIm(y, x);
+					std::cout << "(" << x << ", "<< y << ", "<< value_re << ", " << value_im << ")\t";
+				}
+				std::cout << std::endl;
+			}
+			std::cout << std::endl;
+		}
+
+	}
+
+	inline //TODO - print for each K^2+l^2 the energy in the spectrum
+		void printSpectrumEnergy_y()	const
+		{
+
+			checkConsistency();
+			DataArray<D> &rw_array_data = (DataArray<D>&)*this;
+
+			rw_array_data.requestDataInSpectralSpace();
+			std::cout << "Energy (sqr)" <<std::endl;
+			assert(D == 2);
+			if (D == 2)
+			{
+				for (int y = rw_array_data.resolution_spec[1]/2; y >= 0; y--)
+				{
+				//	for (std::size_t x = 0; x < rw_array_data.resolution_spec[0]; x++)
+					std::size_t x=0;
+					{
+						double value_re = rw_array_data.spec_getRe(y, x);
+						double value_im = rw_array_data.spec_getIm(y, x);
+						//std::cout << "(" << x << ", " << y << ", "<< value_re << ", "<< value_im*value_im << ")\t";
+						double energy=value_re*value_re + value_im*value_im;
+						if(energy>1e-14)
+							std::cout << "(" << x << ", " << y << ", "<< energy << ")" <<std::endl;
+					}
+					//std::cout << std::endl;
+				}
+			}
+		}
 
 
 	/**
