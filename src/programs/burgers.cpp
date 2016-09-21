@@ -728,9 +728,11 @@ public:
 
 		if (param_semilagrangian)
 		{
-			//TODO: Timestep padding to last time step
 			assert(simVars.sim.CFL < 0);
 			dt = -simVars.sim.CFL;
+			//Padding for last time step
+			if (simVars.timecontrol.current_simulation_time+dt > simVars.timecontrol.max_simulation_time)
+				dt = simVars.timecontrol.max_simulation_time-simVars.timecontrol.current_simulation_time;
 			//Calculate departure points
 			semiLagrangian.semi_lag_departure_points_settls(
 							prog_u_prev, prog_v_prev,
@@ -747,7 +749,7 @@ public:
 
 			DataArray<2> U = prog_u;
 			DataArray<2> V = prog_v;
-			if (param_time_scheme>=0)
+			if (simVars.disc.timestepping_runge_kutta_order>=0)
 			{
 				// run standard Runge Kutta
 				timestepping.run_rk_timestep(
@@ -756,8 +758,7 @@ public:
 						U, V,
 						dt,
 						simVars.timecontrol.current_timestep_size,
-						param_time_scheme,
-						//simVars.disc.timestepping_runge_kutta_order,
+						simVars.disc.timestepping_runge_kutta_order,
 						simVars.timecontrol.current_simulation_time,
 						simVars.timecontrol.max_simulation_time
 					);
@@ -782,7 +783,7 @@ public:
 
 		}else{
 
-			if (param_time_scheme>=0)
+			if (simVars.disc.timestepping_runge_kutta_order>=0)
 			{
 				// run standard Runge Kutta
 				timestepping.run_rk_timestep(
@@ -791,8 +792,7 @@ public:
 						prog_u, prog_v,
 						dt,
 						simVars.timecontrol.current_timestep_size,
-						param_time_scheme,
-						//simVars.disc.timestepping_runge_kutta_order,
+						simVars.disc.timestepping_runge_kutta_order,
 						simVars.timecontrol.current_simulation_time,
 						simVars.timecontrol.max_simulation_time
 					);
@@ -1201,6 +1201,8 @@ public:
 		simVars.timecontrol.max_simulation_time = timeframe_end;
 		simVars.timecontrol.current_timestep_nr = 0;
 
+		simVars.disc.timestepping_runge_kutta_order = param_time_scheme;
+
 		bool was_sl = false;
 		if (param_semilagrangian)
 		{
@@ -1372,20 +1374,32 @@ public:
 		prog_u = *parareal_data_start.data_arrays[0];
 		prog_v = *parareal_data_start.data_arrays[1];
 
-		// run implicit time step
-//		assert(i_max_simulation_time < 0);
-//		assert(simVars.sim.CFL < 0);
+		// reset simulation time
+		simVars.timecontrol.current_simulation_time = timeframe_start;
+		simVars.timecontrol.max_simulation_time = timeframe_end;
+		simVars.timecontrol.current_timestep_nr = 0;
+
+		simVars.disc.timestepping_runge_kutta_order=param_ts2;
+		double tmpCFL = simVars.sim.CFL;
+		simVars.sim.CFL=timeframe_start-timeframe_end;
+
+		while (simVars.timecontrol.current_simulation_time < timeframe_end)
+		{
+			this->run_timestep();
+			assert(simVars.timecontrol.current_simulation_time <= timeframe_end);
+		}
+
+#if 0
 		if (param_ts2>=0)
 		{
 			// run standard RK
-			double dt = 0.0;
 			timestepping.run_rk_timestep(
 					this,
 					&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
 					prog_u, prog_v,
 					dt,
 					timeframe_end - timeframe_start,
-					param_time_scheme,
+					param_ts2,
 					//simVars.disc.timestepping_runge_kutta_order,
 					simVars.timecontrol.current_simulation_time
 				);
@@ -1393,7 +1407,6 @@ public:
 		else
 		{
 			// run IMEX RK
-			double dt = 0.0;
 			run_timestep_imex(
 						prog_u, prog_v,
 						dt,
@@ -1403,20 +1416,9 @@ public:
 				);
 		}
 
-#if 0
-		std::cerr << "maxabs kommt hier: " <<prog_u.reduce_maxAbs() << std::endl;
-		// Test for sharpness filter
-		const double f_sharp_kernel[9] = {
-				 -1,-2, -1,
-				-2, 13,-2,
-				 -1,-2, -1
-		};
-		prog_u = prog_u.op_stencil_Re_3x3(f_sharp_kernel);
-		prog_v = prog_v.op_stencil_Re_3x3(f_sharp_kernel);
 #endif
-		//std::cerr << "maxabs kommt hier: " <<prog_u.reduce_maxAbs() << std::endl;
 
-
+		simVars.sim.CFL = tmpCFL;
 		// copy to buffers
 		*parareal_data_coarse.data_arrays[0] = prog_u;
 		*parareal_data_coarse.data_arrays[1] = prog_v;
@@ -1534,8 +1536,8 @@ public:
 		std::string filename = ss.str();
 
 //		std::cout << "filename: " << filename << std::endl;
-		//data.data_arrays[0]->file_saveData_ascii(filename.c_str());
-		data.data_arrays[0]->file_saveSpectralData_ascii(filename.c_str());
+		data.data_arrays[0]->file_saveData_ascii(filename.c_str());
+		//data.data_arrays[0]->file_saveSpectralData_ascii(filename.c_str());
 
 		std::ostringstream ss2;
 		ss2 << simVars.misc.output_file_name_prefix << "_iter" << iteration_id << "_slice" << time_slice_id << ".err";

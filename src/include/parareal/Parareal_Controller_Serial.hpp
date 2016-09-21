@@ -204,7 +204,7 @@ public:
 			CONSOLEPREFIX_start("[MAIN] ");
 			std::cout << "Iteration Nr. " << k << std::endl;
 			/*
-			 * All the following loop should start with 0.
+			 * All the following loops should start with 0.
 			 * For debugging reasons, we leave it here at 0
 			 */
 

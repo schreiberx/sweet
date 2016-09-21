@@ -11,4 +11,8 @@ runscript.sh
 python_mods/*.pyc
 *.txt
 /tmp/
+/tmp2/
 /runSL.sh
+/stabi_parallel.sh
+/stabi.sh
+/runscenarios.sh
