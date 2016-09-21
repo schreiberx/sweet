@@ -306,12 +306,13 @@ public:
 
 			/*
 			 * Note, that there's a last column which is set to 0 (Nyquist freq, noise in signal)
+			 * PXT: removed this setting to zero, because of 2nd and higher order differentiation
 			 */
 			diff_c_x.set_spec_all(0, 0);
 
-			for (int j = 0; j < (int)diff_c_x.resolution[1]/2; j++)
+			for (int j = 0; j <= (int)diff_c_x.resolution[1]/2; j++)
 			{
-				for (int i = 0; i < (int)diff_c_x.resolution[0]/2; i++)
+				for (int i = 0; i <= (int)diff_c_x.resolution[0]/2; i++)
 				{
 					diff_c_x.set_spec(
 							j, i,
@@ -332,9 +333,9 @@ public:
 			 */
 			diff_c_y.set_spec_all(0, 0);
 			// TODO: shift j for loop by +1
-			for (int j = 0; j < (int)diff_c_y.resolution[1]/2-1; j++)
+			for (int j = 0; j <= (int)diff_c_y.resolution[1]/2-1; j++)
 			{
-				for (int i = 0; i < (int)diff_c_y.resolution[0]/2; i++)
+				for (int i = 0; i <= (int)diff_c_y.resolution[0]/2; i++)
 				{
 					diff_c_y.set_spec(
 							j+1, i,
