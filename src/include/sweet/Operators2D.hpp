@@ -138,6 +138,7 @@ public:
 		return tv;
 	}
 
+#if SWEET_USE_SPECTRAL_SPACE
 	/**
 	 * Diffusion or hyperviscosity coefficients
 	 * Simply calculates the spectral coefficients
@@ -147,16 +148,11 @@ public:
 	 *
 	 * Returns operator D^q
 	 *
-	 * TODO: not tested for cartesian space
 	 */
-	inline DataArray<2> diffusion(
+	inline DataArray<2> diffusion_coef(
 			int i_order
 	)
 	{
-#if !SWEET_USE_SPECTRAL_SPACE
-		std::cerr<<"Diffusion not tested for cartesian space";
-		exit(-1);
-#endif
 		//Check if even
 		assert( i_order % 2 == 0);
 		assert( i_order > 0);
@@ -178,7 +174,6 @@ public:
 	 * Only works in spectral space
 	 *
 	 */
-#if SWEET_USE_SPECTRAL_SPACE
 	inline DataArray<2> implicit_diffusion(
 			const DataArray<2> &i_data,
 			double i_coef,
@@ -188,7 +183,7 @@ public:
 		DataArray<2> out=i_data;
 
 		//Get diffusion coefficients (these are the -mu*dt*D^q, where q is the order
-		DataArray<2> diff = -i_coef*diffusion(i_order);
+		DataArray<2> diff = -i_coef*diffusion_coef(i_order);
 		//Sum 1 to get denominator
 		diff=diff.spec_addScalarAll(1.0);
 		//Invert
@@ -306,7 +301,7 @@ public:
 
 			/*
 			 * Note, that there's a last column which is set to 0 (Nyquist freq, noise in signal)
-			 * PXT: removed this setting to zero, because of 2nd and higher order differentiation
+			 * PXT: removed this setting to zero (changed < to <=), because of 2nd and higher order differentiation
 			 */
 			diff_c_x.set_spec_all(0, 0);
 

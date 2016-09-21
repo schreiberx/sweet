@@ -1917,7 +1917,7 @@ public:
 
 
 	/**
-	 * return the maximum of all absolute values
+	 * return the sqrt of the sum of the squared values
 	 */
 	double reduce_norm2()	const
 	{
@@ -1937,7 +1937,7 @@ public:
 
 
 	/**
-	 * return the maximum of all absolute values, use quad precision for reduction
+	 * return the sqrt of the sum of the squared values, use quad precision for reduction
 	 */
 	double reduce_norm2_quad()	const
 	{
