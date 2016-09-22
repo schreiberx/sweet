@@ -3516,6 +3516,50 @@ public:
 		return out;
 	}
 
+	/**
+	 * Compute element-wise multiplication in cartesian space
+	 * if de-aliasing activated, do a 2/3 truncation in spectrum before and after multiplication
+	 *
+	 *  *** This is not equivalent to operator* with dealiasing !! It kill more modes than necessary.
+	 */
+	inline
+	DataArray<D> mult(
+			const DataArray<D> &i_array_data	///< this class times i_array_data
+	)	const
+	{
+
+		// Call as
+		// 		data_array.mult(i_array_data)
+		// to represent
+		//      data_array*i_array_data
+
+		//This is the actual product result, with the correct de-aliasing
+		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
+		DataArray<D> data_in1= *this;
+		DataArray<D> &data_in2= (DataArray<D>&) i_array_data;
+
+		DataArray<D> out(i_array_data.resolution);
+//		out.temporary_data = true;
+
+#if SWEET_USE_SPECTRAL_SPACE && SWEET_USE_SPECTRAL_DEALIASING
+		// Truncate arrays to 2N/3 high end spectrum
+		data_in1=data_in1.aliasing_zero_high_modes();
+		data_in2=data_in2.aliasing_zero_high_modes();
+		out=data_in1*data_in2;
+		//Truncate the product, since the high modes could contain alias
+		out=out.aliasing_zero_high_modes();
+#else
+		out=data_in1*data_in2;
+#endif
+
+#if SWEET_USE_SPECTRAL_SPACE
+		out.array_data_cartesian_space_valid = true;
+		out.array_data_spectral_space_valid = false;
+#endif
+
+		out.checkConsistency();
+		return out;
+	}
 
 
 	/**
@@ -3820,6 +3864,11 @@ public:
 				{
 					double value_re = rw_array_data.spec_getRe(y, x);
 					double value_im = rw_array_data.spec_getIm(y, x);
+					//if(std::abs(value_re)<1.0e-13)
+						//value_re=0.0;
+					//if(std::abs(value_im)<1.0e-13)
+						//value_im=0.0;
+
 					std::cout << "(" << x << ", "<< y << ", "<< value_re << ", " << value_im << ")\t";
 				}
 				std::cout << std::endl;
@@ -3828,6 +3877,35 @@ public:
 		}
 
 	}
+
+	inline
+	void printSpectrumNonZero()	const
+	{
+
+		checkConsistency();
+		DataArray<D> &rw_array_data = (DataArray<D>&)*this;
+
+		rw_array_data.requestDataInSpectralSpace();
+
+		assert(D == 2);
+		if (D == 2)
+		{
+			for (int y = rw_array_data.resolution_spec[1]-1; y >= 0; y--)
+			{
+				for (std::size_t x = 0; x < rw_array_data.resolution_spec[0]; x++)
+				{
+					double value_re = rw_array_data.spec_getRe(y, x);
+					double value_im = rw_array_data.spec_getIm(y, x);
+					if(value_re*value_re+value_im*value_im>1.0e-13)
+						std::cout << "(" << x << ", "<< y << ", "<< value_re << ", " << value_im << ")" <<std::endl;;
+				}
+				//std::cout << std::endl;
+			}
+			//std::cout << std::endl;
+		}
+
+	}
+
 
 	inline //TODO - print for each K^2+l^2 the energy in the spectrum
 		void printSpectrumEnergy_y()	const
