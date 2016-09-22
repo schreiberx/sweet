@@ -369,14 +369,17 @@ int main(int i_argc, char *i_argv[])
 						{
 							double x = (double)i * dx;
 							double y = (double)j * dy;
-							h1.set(j, i,	cos(2.0*freq_1*M_PIl*x)	);
-							h2.set(j, i,	cos(2.0*freq_2*M_PIl*x)	);
+							h1.set(j, i,	cos(2.0*freq_1*M_PIl*x)*cos(2.0*freq_1*M_PIl*y)	);
+							h2.set(j, i,	cos(2.0*freq_2*M_PIl*x)*cos(2.0*freq_2*M_PIl*y)	);
 
 							//                            ok                      aliased
-							h12.set(j, i,	0.5*(cos(2.0*(freq_sub)*M_PIl*x)+cos(2.0*(freq_sum)*M_PIl*x)));
+							h12.set(j, i,	0.5*(cos(2.0*(freq_sub)*M_PIl*x)+cos(2.0*(freq_sum)*M_PIl*x))
+									*0.5*(cos(2.0*(freq_sub)*M_PIl*y)+cos(2.0*(freq_sum)*M_PIl*y)));
 							// just the representable wave
-							h12_noalias.set(j, i,	0.5*( cos(2.0*(freq_sub)*M_PIl*x)+trunc_sum*cos(2.0*(freq_sum)*M_PIl*x)));
-							h12_truncated.set(j, i,	trunc_freq1*trunc_freq2*0.5*( cos(2.0*(freq_sub)*M_PIl*x)+trunc_freq_sum*cos(2.0*(freq_sum)*M_PIl*x)));
+							h12_noalias.set(j, i,	0.5*( cos(2.0*(freq_sub)*M_PIl*x)+trunc_sum*cos(2.0*(freq_sum)*M_PIl*x))
+									*0.5*( cos(2.0*(freq_sub)*M_PIl*y)+trunc_sum*cos(2.0*(freq_sum)*M_PIl*y)));
+							h12_truncated.set(j, i,	trunc_freq1*trunc_freq2*0.5*( cos(2.0*(freq_sub)*M_PIl*x)+trunc_freq_sum*cos(2.0*(freq_sum)*M_PIl*x))
+									*0.5*( cos(2.0*(freq_sub)*M_PIl*y)+trunc_freq_sum*cos(2.0*(freq_sum)*M_PIl*y)));
 						}
 					}
 
