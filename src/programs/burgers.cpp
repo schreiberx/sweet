@@ -1383,9 +1383,12 @@ public:
 		double tmpCFL = simVars.sim.CFL;
 		simVars.sim.CFL=timeframe_start-timeframe_end;
 
+		int tmpcount=0;
 		while (simVars.timecontrol.current_simulation_time < timeframe_end)
 		{
 			this->run_timestep();
+			tmpcount += 1;
+			std::cout << "Number of loop steps in coarse: " << tmpcount << std::endl;
 			assert(simVars.timecontrol.current_simulation_time <= timeframe_end);
 		}
 
