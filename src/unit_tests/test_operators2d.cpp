@@ -416,7 +416,7 @@ int main(int i_argc, char *i_argv[])
 					{
 						std::cerr << " WARNING: threshold for multiplication * operator too high !" << std::endl;
 						if(alias_present)
-							std::cerr << "    Multiplication has alias but dealiasing not able to remove it" << std::endl;
+							std::cerr << "    Multiplication has alias but dealiasing not able to remove it or removed it incorrectly" << std::endl;
 						else
 							std::cerr << "    Multiplication dealiasing affected spectrum without need" << std::endl;
 						std::cout << "    h1*h2 nonzero spectrum entries" << std::endl;
