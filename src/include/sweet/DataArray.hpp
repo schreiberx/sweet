@@ -877,18 +877,18 @@ public:
 	static void checkRefCounters()
 	{
 #if SWEET_USE_SPECTRAL_DEALIASING
-		if (*fftGetSingletonPtr() != nullptr)
+		if (*DataArray<D>::fftGetSingletonPtr() != nullptr)
 		{
 			std::cerr << "FFT plans not yet released." << std::endl;
 			std::cerr << "This typically means a memory leak if this is the end of the program and all classes deconstructors have been called" << std::endl;
-			std::cerr << " Reference counter: " << (*fftGetSingletonPtr())->ref_counter << std::endl;
+			std::cerr << " Reference counter: " << (*DataArray<D>::fftGetSingletonPtr())->ref_counter << std::endl;
 		}
 
-		if (*fftAliasingGetSingletonPtr() != nullptr)
+		if (*DataArray<D>::fftAliasingGetSingletonPtr() != nullptr)
 		{
 			std::cerr << "FFT plans for ANTI ALIASING not yet released." << std::endl;
 			std::cerr << "This typically means a memory leak if this is the end of the program and all classes deconstructors have been called" << std::endl;
-			std::cerr << " Reference counter: " << (*fftAliasingGetSingletonPtr())->ref_counter << std::endl;
+			std::cerr << " Reference counter: " << (*DataArray<D>::fftAliasingGetSingletonPtr())->ref_counter << std::endl;
 		}
 #endif
 	}
