@@ -380,8 +380,56 @@ public:
 			diff_b_y.kernel_stencil_setup(d_b_y_kernel, 1.0/h[1]);
 
 
+
+#if 1
+			/*
+			 * 2nd order differential operators
+			 */
+			diff2_c_x.set_spec_all(0, 0);
+
+			for (int j = 0; j <= (int)diff_c_x.resolution[1]/2; j++)
+			{
+				for (int i = 0; i <= (int)diff_c_x.resolution[0]/2; i++)
+				{
+					double fac = (double)i*2.0*M_PIl/(double)i_domain_size[0];
+
+					diff2_c_x.set_spec(
+							j, i,
+							-fac*fac,
+							0
+						);
+					diff2_c_x.set_spec(
+							diff_c_x.resolution[1]-1-j, i,
+							-fac*fac,
+							0
+						);
+				}
+			}
+
+
+			diff2_c_y.set_spec_all(0, 0);
+
+			for (int j = 0; j <= (int)diff_c_y.resolution[1]/2-1; j++)
+			{
+				for (int i = 0; i <= (int)diff_c_y.resolution[0]/2; i++)
+				{
+					double fac = (double)(j+1)*2.0*M_PIl/(double)i_domain_size[1];
+					diff2_c_y.set_spec(
+							j+1, i,
+							-fac*fac,
+							0
+						);
+					diff2_c_y.set_spec(
+							diff_c_y.resolution[1]-(j+1), i,
+							-fac*fac,
+							0
+						);
+				}
+			}
+#else
 			diff2_c_x = diff_c_x(diff_c_x);
 			diff2_c_y = diff_c_y(diff_c_y);
+#endif
 
 #endif
 		}
