@@ -2485,8 +2485,7 @@ public:
 	 *
 	 */
 	inline
-	DataArray<D>& aliasing_zero_high_modes(
-	)
+	DataArray<D>& aliasing_zero_high_modes()
 	{
 		//std::cout<<"Cartesian"<<std::endl;
 		//printArrayData();
@@ -3534,22 +3533,27 @@ public:
 		//      data_array*i_array_data
 
 		//This is the actual product result, with the correct de-aliasing
-		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
-		DataArray<D> data_in1= *this;
-		DataArray<D> &data_in2= (DataArray<D>&) i_array_data;
+//		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
+		const DataArray<D> &data_in1_const= *this;
+		const DataArray<D> &data_in2_const= i_array_data;
 
 		DataArray<D> out(i_array_data.resolution);
 //		out.temporary_data = true;
 
 #if SWEET_USE_SPECTRAL_SPACE && SWEET_USE_SPECTRAL_DEALIASING
 		// Truncate arrays to 2N/3 high end spectrum
-		data_in1=data_in1.aliasing_zero_high_modes();
-		data_in2=data_in2.aliasing_zero_high_modes();
+
+		DataArray<D> data_in1 = data_in1_const;
+		data_in1.aliasing_zero_high_modes();
+
+		DataArray<D> data_in2 = data_in2_const;
+		data_in2.aliasing_zero_high_modes();
+
 		out=data_in1*data_in2;
 		//Truncate the product, since the high modes could contain alias
 		out=out.aliasing_zero_high_modes();
 #else
-		out=data_in1*data_in2;
+		out=data_in1_const*data_in2_const;
 #endif
 
 #if SWEET_USE_SPECTRAL_SPACE

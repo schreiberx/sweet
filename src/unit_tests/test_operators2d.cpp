@@ -375,9 +375,11 @@ int main(int i_argc, char *i_argv[])
 							//                            ok                      aliased
 							h12.set(j, i,	0.5*(cos(2.0*(freq_sub)*M_PIl*x)+cos(2.0*(freq_sum)*M_PIl*x))
 									*0.5*(cos(2.0*(freq_sub)*M_PIl*y)+cos(2.0*(freq_sum)*M_PIl*y)));
+
 							// just the representable wave
 							h12_noalias.set(j, i,	0.5*( cos(2.0*(freq_sub)*M_PIl*x)+trunc_sum*cos(2.0*(freq_sum)*M_PIl*x))
 									*0.5*( cos(2.0*(freq_sub)*M_PIl*y)+trunc_sum*cos(2.0*(freq_sum)*M_PIl*y)));
+
 							h12_truncated.set(j, i,	trunc_freq1*trunc_freq2*0.5*( cos(2.0*(freq_sub)*M_PIl*x)+trunc_freq_sum*cos(2.0*(freq_sum)*M_PIl*x))
 									*0.5*( cos(2.0*(freq_sub)*M_PIl*y)+trunc_freq_sum*cos(2.0*(freq_sum)*M_PIl*y)));
 						}
@@ -389,6 +391,10 @@ int main(int i_argc, char *i_argv[])
 					double err_mult_dealias = (h1*h2-h12_noalias).reduce_maxAbs();
 					//Multiplication with dealiasing from mult function (truncation)
 					double err_mult_dealias2 = (h1.mult(h2)-h12_truncated).reduce_maxAbs();
+
+
+					// TODO: remove this
+//					err_mult_dealias = (h1*h2-h12_truncated).reduce_maxAbs();
 
 					//debug
 					//std::cout << "h1" << std::endl;
@@ -407,13 +413,23 @@ int main(int i_argc, char *i_argv[])
 					//(h12_alias).printSpectrumIndex();
 
 
-					std::cout << "error mult * with possibly aliased exact solution    = " << err_mult << std::endl;
+#if 0
+					std::cout << "error mult * with possibly aliased exact solution = " << err_mult << std::endl;
 					std::cout << "error mult * with respect to dealised exact solution = " << err_mult_dealias << std::endl;
 					std::cout << "error mult function with respect to truncated and dealiased exact solution = " << err_mult_dealias2 << std::endl;
+#endif
 
 #if SWEET_USE_SPECTRAL_SPACE && SWEET_USE_SPECTRAL_DEALIASING
+					/**
+					 * Check correct dealiasing.
+					 * If error is too high, dealiasing obviously failed
+					 */
 					if ( err_mult_dealias  > eps)
 					{
+						std::cout << "error operator*(...) with possibly aliased exact solution = " << err_mult << std::endl;
+						std::cout << "error operator*(...) with respect to dealised exact solution = " << err_mult_dealias << std::endl;
+						std::cout << "error mult() function with respect to truncated and dealiased exact solution = " << err_mult_dealias2 << std::endl;
+
 						std::cerr << " WARNING: threshold for multiplication * operator too high !" << std::endl;
 						if(alias_present)
 							std::cerr << "    Multiplication has alias but dealiasing not able to remove it or removed it incorrectly" << std::endl;
@@ -421,12 +437,13 @@ int main(int i_argc, char *i_argv[])
 							std::cerr << "    Multiplication dealiasing affected spectrum without need" << std::endl;
 						std::cout << "    h1*h2 nonzero spectrum entries" << std::endl;
 						(h1*h2).printSpectrumNonZero();
-
+						assert(false);
+						exit(-1);
 					}
 
 					if ( err_mult_dealias2  > eps)
 					{
-						std::cerr << " WARNING: threshold for multiplication function 'mult' too high !" << std::endl;
+						std::cerr << " WARNING: error for multiplication function 'mult' too high !" << std::endl;
 					}
 
 #else
