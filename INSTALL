@@ -18,6 +18,12 @@ After installing the software, you can use
 	source ./local_software/env_vars.sh
 to setup your environment variables correctly
 
+================
+Autoconf:
+================
+	Only install autoconf from the ./local_software directory
+	if your currently installed version is too old (e.g. on some
+	compute cluster)
 
 
 ================
