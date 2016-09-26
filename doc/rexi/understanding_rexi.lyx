@@ -3553,31 +3553,8 @@ Bringing everything together
 
 \begin_layout Standard
 Using the spectral methods (e.g.
- in SWEET), we can directly solve the Helmholtz problem for the height in
- Eq.
- (
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "eq:helmhotz"
-
-\end_inset
-
-) and then solver for the velocity in Eqs.
- (
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "BROKEN: Ref: eq:elliptic_velo..."
-
-\end_inset
-
-,
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "eq:elliptic_velocity_v"
-
-\end_inset
-
-).
+ in SWEET), we can directly solve the Helmholtz problem for the height and
+ then solver for the velocity.
  Note that the Helmholtz problem is in complex space, as 
 \begin_inset Formula $\alpha_{n}$
 \end_inset
@@ -3645,13 +3622,12 @@ It is unknown which method is more efficient to solve the system of equations:
 
 \begin_deeper
 \begin_layout Itemize
-iterative solvers have low memory access, 
+iterative solvers have low memory access,
 \end_layout
 
 \begin_layout Itemize
 inverting the system and storing it as a sparse matrix allows fast direct
  solving but can yield more memory access operations.
- 
 \end_layout
 
 \end_deeper
