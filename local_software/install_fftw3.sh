@@ -22,7 +22,8 @@ if [ ! -e "$DST_DIR/lib/libfftw3.so"  -o "$1" != "" ]; then
 	if [ "`uname -s`" == "Linux" ]; then
 		CONF_FLAGS=" --enable-openmp "
 	fi
-	./configure $HOST --prefix="$DST_DIR" --with-our-malloc16 $CONF_FLAGS --enable-shared  || exit 1
+	./configure --prefix="$DST_DIR" --with-our-malloc16 $CONF_FLAGS --enable-shared  || exit 1
+	#./configure $HOST --prefix="$DST_DIR" --with-our-malloc16 $CONF_FLAGS --enable-shared  || exit 1
 
 # AVX is not compiling on all platforms
 #	./configure --prefix="$DST_DIR" --with-our-malloc16 $CONF_FLAGS --enable-shared --enable-avx || exit 1
