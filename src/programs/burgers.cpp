@@ -39,7 +39,7 @@ int param_time_scheme = -1;
 bool param_compute_error = 0;
 bool param_use_staggering = 0;
 bool param_semilagrangian = 0;
-int param_ts2 = -1;
+int param_time_scheme_coarse = -1;
 
 
 class SimulationInstance
@@ -720,19 +720,15 @@ public:
 	{
 		double dt = 0.0;
 
-		//TODO: Test multiple time stepping methods
-
-		// either set time step size to 0 for autodetection or to
-		// a positive value to use a fixed time step size
-		simVars.timecontrol.current_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
+		// Only fixed time stepping supported with the Burgers equation
+		assert(simVars.sim.CFL < 0);
+		dt = -simVars.sim.CFL;
+		//Padding for last time step
+		if (simVars.timecontrol.current_simulation_time+dt > simVars.timecontrol.max_simulation_time)
+			dt = simVars.timecontrol.max_simulation_time-simVars.timecontrol.current_simulation_time;
 
 		if (param_semilagrangian)
 		{
-			assert(simVars.sim.CFL < 0);
-			dt = -simVars.sim.CFL;
-			//Padding for last time step
-			if (simVars.timecontrol.current_simulation_time+dt > simVars.timecontrol.max_simulation_time)
-				dt = simVars.timecontrol.max_simulation_time-simVars.timecontrol.current_simulation_time;
 			//Calculate departure points
 			semiLagrangian.semi_lag_departure_points_settls(
 							prog_u_prev, prog_v_prev,
@@ -743,19 +739,22 @@ public:
 							stag_displacement
 					);
 
-			// Save old velocities
-			prog_u_prev = prog_u;
-			prog_v_prev = prog_v;
 
 			DataArray<2> U = prog_u;
 			DataArray<2> V = prog_v;
+
+			//Now interpolate to the the departure points
+			//Departure points are set for physical space
+			sampler2D.bicubic_scalar( U, posx_d, posy_d, prog_u, stag_u[0], stag_u[1]);
+			sampler2D.bicubic_scalar( V, posx_d, posy_d, prog_v, stag_v[0], stag_v[1]);
+
 			if (simVars.disc.timestepping_runge_kutta_order>=0)
 			{
 				// run standard Runge Kutta
 				timestepping.run_rk_timestep(
 						this,
 						&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
-						U, V,
+						prog_u, prog_v,
 						dt,
 						simVars.timecontrol.current_timestep_size,
 						simVars.disc.timestepping_runge_kutta_order,
@@ -767,7 +766,7 @@ public:
 			{
 				// run IMEX Runge Kutta
 				run_timestep_imex(
-						U, V,
+						prog_u, prog_v,
 						dt,
 						simVars.timecontrol.current_timestep_size,
 						op,
@@ -776,10 +775,10 @@ public:
 				);
 			}
 
-			//Now interpolate to the the departure points
-			//Departure points are set for physical space
-			sampler2D.bicubic_scalar( U, posx_d, posy_d, prog_u, stag_u[0], stag_u[1]);
-			sampler2D.bicubic_scalar( V, posx_d, posy_d, prog_v, stag_v[0], stag_v[1]);
+
+			// Save old velocities
+			prog_u_prev = prog_u;
+			prog_v_prev = prog_v;
 
 		}else{
 
@@ -1379,48 +1378,20 @@ public:
 		simVars.timecontrol.max_simulation_time = timeframe_end;
 		simVars.timecontrol.current_timestep_nr = 0;
 
-		simVars.disc.timestepping_runge_kutta_order=param_ts2;
+		// set Runge-Kutta scheme to the chosen one for coarse time stepping
+		simVars.disc.timestepping_runge_kutta_order=param_time_scheme_coarse;
+		// save the fine delta t to restore it later
 		double tmpCFL = simVars.sim.CFL;
 		simVars.sim.CFL=timeframe_start-timeframe_end;
 
-		int tmpcount=0;
+		// make multiple time steps in the coarse solver possible
 		while (simVars.timecontrol.current_simulation_time < timeframe_end)
 		{
 			this->run_timestep();
-			tmpcount += 1;
-			std::cout << "Number of loop steps in coarse: " << tmpcount << std::endl;
 			assert(simVars.timecontrol.current_simulation_time <= timeframe_end);
 		}
 
-#if 0
-		if (param_ts2>=0)
-		{
-			// run standard RK
-			timestepping.run_rk_timestep(
-					this,
-					&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
-					prog_u, prog_v,
-					dt,
-					timeframe_end - timeframe_start,
-					param_ts2,
-					//simVars.disc.timestepping_runge_kutta_order,
-					simVars.timecontrol.current_simulation_time
-				);
-		}
-		else
-		{
-			// run IMEX RK
-			run_timestep_imex(
-						prog_u, prog_v,
-						dt,
-						timeframe_end - timeframe_start,
-						op,
-						simVars
-				);
-		}
-
-#endif
-
+		// restore fine delta t
 		simVars.sim.CFL = tmpCFL;
 		// copy to buffers
 		*parareal_data_coarse.data_arrays[0] = prog_u;
@@ -1595,7 +1566,7 @@ int main(int i_argc, char *i_argv[])
 	simVars.bogus.var[1] = param_compute_error; // compute-error
 	simVars.bogus.var[2] = param_use_staggering; // staggering
 	simVars.bogus.var[3] = param_semilagrangian; // semi-lagrangian
-	simVars.bogus.var[4] = param_ts2; //timestepping scheme for parareal coarse
+	simVars.bogus.var[4] = param_time_scheme_coarse; //timestepping scheme for parareal coarse
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
@@ -1620,7 +1591,7 @@ int main(int i_argc, char *i_argv[])
 	param_compute_error = simVars.bogus.var[1];
 	param_use_staggering = simVars.bogus.var[2];
 	param_semilagrangian = simVars.bogus.var[3];
-	param_ts2 = simVars.bogus.var[4];
+	param_time_scheme_coarse = simVars.bogus.var[4];
 
 
 	std::ostringstream buf;
