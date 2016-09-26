@@ -8,7 +8,7 @@ source config.sh
 #
 
 echo "*** Autoconf ***"
-if [ "`uname -s`" != "Linux" ]; then
+if [ "`uname -s`" != "Linux" ] && [ "`uname -s`" != "Darwin" ]; then
 	echo "This script only supports Autoconf on Linux systems"
 else
 
@@ -31,5 +31,7 @@ else
 
 		echo "DONE"
 
+	else
+		echo "Autoconf already installed"
 	fi
 fi
