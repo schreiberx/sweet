@@ -407,14 +407,15 @@ if env['compiler'] == 'gnu':
 
 	if not found:
 		print search_string+" not found"
-		sys.exit(-1)
+		print "Ignoring this error by assuming that this is an unknown GCC version (e.g. using LLVM on MacOSX)"
 
-	for i in range(0, 3):
-		if (int(gccversion[i]) > int(reqversion[i])):
-			break
-		if (int(gccversion[i]) < int(reqversion[i])):
-			print 'At least GCC Version 4.6.1 necessary.'
-			Exit(1)
+	else:
+		for i in range(0, 3):
+			if (int(gccversion[i]) > int(reqversion[i])):
+				break
+			if (int(gccversion[i]) < int(reqversion[i])):
+				print 'At least GCC Version 4.6.1 necessary.'
+				Exit(1)
 
 	# eclipse specific flag
 	env.Append(CXXFLAGS=' -fmessage-length=0')
