@@ -33,14 +33,14 @@
 				#define OPENMP_PAR_SIMD	simd OMP_SCHEDULE
 				#define OPENMP_SIMD simd
 			#else
-				#warning "SIMD is disabled for this compiler version"
+				#ifndef __clang__
+					#warning "SIMD is disabled for this compiler version"
+				#endif
 				#define OPENMP_PAR_SIMD OMP_SCHEDULE
 				#define OPENMP_SIMD
 			#endif
 		#endif
 	#endif
-
-	#define OPENMP_SIMD simd
 #endif
 
 
