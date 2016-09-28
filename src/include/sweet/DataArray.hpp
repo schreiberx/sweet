@@ -1691,8 +1691,8 @@ public:
 #pragma omp parallel for reduction(&&:isallfinite)
 #endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-//TODO:			isallfinite = isallfinite && std::isfinite(array_data_cartesian_space[i]);
-			isallfinite = isallfinite && (array_data_cartesian_space[i]<1000);
+			isallfinite = isallfinite && std::isfinite(array_data_cartesian_space[i]);
+//			isallfinite = isallfinite && (array_data_cartesian_space[i]<1000);
 
 
 		return isallfinite;
@@ -3918,35 +3918,6 @@ public:
 		return o_ostream;
 	}
 
-#if SWEET_USE_SPECTRAL_SPACE
-	/**
-	 * Compute addition with scalar value in spectral space like it would be in cartesian space
-	 */
-	inline
-	DataArray<D> addScalar_Cart(
-			const double &i_value	///< this is assumed to be a real value
-	)	const
-	{
-
-		DataArray<D> out(this->resolution);
-
-		requestDataInSpectralSpace();
-
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
-		{
-			out.array_data_spectral_space[i] = array_data_spectral_space[i]+i_value;
-			out.array_data_spectral_space[i+1] = array_data_spectral_space[i+1];//+i_value;
-		}
-
-		out.array_data_spectral_space_valid = true;
-		out.array_data_cartesian_space_valid = false;
-
-		return out;
-	}
-
 
 #if SWEET_USE_SPECTRAL_SPACE
 	/**
@@ -3966,7 +3937,10 @@ public:
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
-			out.array_data_spectral_space[i] = array_data_spectral_space[i] + i_value;
+		{
+			out.array_data_spectral_space[i] = array_data_spectral_space[i]+i_value;
+			out.array_data_spectral_space[i+1] = array_data_spectral_space[i+1];//+i_value;
+		}
 
 		out.array_data_cartesian_space_valid = false;
 		out.array_data_spectral_space_valid = true;
@@ -4011,7 +3985,7 @@ public:
 	}
 #endif
 
-
+#if SWEET_USE_SPECTRAL_SPACE
 	inline
 	void printSpectrum()	const
 	{

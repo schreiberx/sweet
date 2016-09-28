@@ -659,9 +659,11 @@ public:
 	 * u_t and v_t
 	 */
 	void p_run_euler_timestep_update(
+			const DataArray<2> &i_tmp,	///< prognostic variables
 			const DataArray<2> &i_u,	///< prognostic variables
 			const DataArray<2> &i_v,	///< prognostic variables
 
+			DataArray<2> &o_tmp_t,		///< time updates
 			DataArray<2> &o_u_t,		///< time updates
 			DataArray<2> &o_v_t,		///< time updates
 
@@ -759,7 +761,7 @@ public:
 				timestepping.run_rk_timestep(
 						this,
 						&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
-						prog_u, prog_v,
+						tmp, prog_u, prog_v, ///< tmp is used to make use of the swe version of run_rk_timestep
 						dt,
 						simVars.timecontrol.current_timestep_size,
 						simVars.disc.timestepping_runge_kutta_order,
@@ -788,7 +790,7 @@ public:
 				timestepping.run_rk_timestep(
 						this,
 						&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
-						prog_u, prog_v,
+						tmp, prog_u, prog_v, ///< tmp is used to make use of the swe version of run_rk_timestep
 						dt,
 						simVars.timecontrol.current_timestep_size,
 						simVars.disc.timestepping_runge_kutta_order,
@@ -1293,9 +1295,9 @@ public:
 			DataArray<2> lhs = u;
 			if (param_semilagrangian)
 			{
-				lhs = ((-t)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).addScalar_Cart(1.0);
+				lhs = ((-t)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spec_addScalarAll(1.0);
 			}else{
-				lhs = ((-t)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).addScalar_Cart(1.0);
+				lhs = ((-t)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spec_addScalarAll(1.0);
 			}
 
 #if 1   // solving the system directly by inverting the left hand side operator
