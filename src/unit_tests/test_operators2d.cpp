@@ -438,7 +438,7 @@ int main(int i_argc, char *i_argv[])
 						std::cout << "    h1*h2 nonzero spectrum entries" << std::endl;
 						(h1*h2).printSpectrumNonZero();
 						assert(false);
-						exit(-1);
+						//exit(-1);
 					}
 
 					if ( err_mult_dealias2  > eps)
@@ -453,7 +453,7 @@ int main(int i_argc, char *i_argv[])
 					if ( err_mult  > eps)
 					{
 						std::cerr << " Error threshold for multiplication operator too high !" << std::endl;
-						exit(-1);
+						//exit(-1);
 					}
 #endif
 

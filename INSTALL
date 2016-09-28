@@ -11,13 +11,20 @@ external software requirements easier.
    Please note that this does not generate highly optimized 3rd party
    software, but focusses on getting SWEET running.
 
- * ./env_vars.sh
+ * ./env_vars.sh (See below for more information on how to use this script!)
    This script sets up all the environment variables to compile and run SWEET
 
 After installing the software, you can use
 	source ./local_software/env_vars.sh
-to setup your environment variables correctly
+from the SWEET source code directory to setup your
+environment variables correctly
 
+================
+Autoconf:
+================
+	Only install autoconf from the ./local_software directory
+	if your currently installed version is too old (e.g. on some
+	compute cluster)
 
 
 ================

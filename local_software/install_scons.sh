@@ -21,4 +21,6 @@ if [ ! -e "$DST_DIR/bin/scons"  -o "$1" != "" ]; then
 
 	echo "DONE"
 
+else
+	echo "SCONS is already installed"
 fi

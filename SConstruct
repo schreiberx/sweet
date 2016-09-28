@@ -405,42 +405,53 @@ if env['compiler'] == 'gnu':
                 break
 
     if not found:
-        print search_string+" not found"
-        sys.exit(-1)
+        print(search_string+" not found... testing if this is LLVM on MacOSX")
+        found = False
+        for l in gccv:
+            if clanc in l:
+                found = True
+                break
+        if not found:
+            print("LLVM not detected")
+            sys.exit(1)
 
-    for i in range(0, 3):
-        if (int(gccversion[i]) > int(reqversion[i])):
-            break
-        if (int(gccversion[i]) < int(reqversion[i])):
-            print 'At least GCC Version 4.6.1 necessary.'
-            Exit(1)
+        env['compiler'] = 'llvm'
 
-    # eclipse specific flag
-    env.Append(CXXFLAGS=' -fmessage-length=0')
+    else:
+        for i in range(0, 3):
+            if (int(gccversion[i]) > int(reqversion[i])):
+                break
+            if (int(gccversion[i]) < int(reqversion[i])):
+                print 'At least GCC Version 4.6.1 necessary.'
+                Exit(1)
 
-    # c++0x flag
-    env.Append(CXXFLAGS=' -std=c++0x')
+    if env['compiler'] == 'gnu':
+        # eclipse specific flag
+        env.Append(CXXFLAGS=' -fmessage-length=0')
 
-    # be pedantic to avoid stupid programming errors
-#    env.Append(CXXFLAGS=' -pedantic')
+        # c++0x flag
+        env.Append(CXXFLAGS=' -std=c++0x')
 
-    # speedup compilation - remove this when compiler slows down or segfaults by running out of memory
-    env.Append(CXXFLAGS=' -pipe')
+       # be pedantic to avoid stupid programming errors
+    #	env.Append(CXXFLAGS=' -pedantic')
 
-    # activate gnu C++ compiler
+        # speedup compilation - remove this when compiler slows down or segfaults by running out of memory
+        env.Append(CXXFLAGS=' -pipe')
 
-    if env['fortran_source']=='enable':
-        env.Replace(FORTRAN='gfortran')
-        env.Replace(F90='gfortran')
-        env.Append(FORTRANFLAGS=' -cpp')
-        env.Append(F90FLAGS=' -cpp')
-        env.Append(LIBS=['gfortran'])
+        # activate gnu C++ compiler
 
-#    env.Replace(CXX = 'g++-4.7')
-    env.Replace(CXX = 'g++')
+        if env['fortran_source']=='enable':
+            env.Replace(FORTRAN='gfortran')
+            env.Replace(F90='gfortran')
+            env.Append(FORTRANFLAGS=' -cpp')
+            env.Append(F90FLAGS=' -cpp')
+            env.Append(LIBS=['gfortran'])
+
+    #  env.Replace(CXX = 'g++-4.7')
+       env.Replace(CXX = 'g++')
 
 
-elif env['compiler'] == 'intel':
+if env['compiler'] == 'intel':
     reqversion = [12,1]
     iccversion_line = commands.getoutput('icpc -dumpversion')
 
@@ -494,8 +505,7 @@ elif env['compiler'] == 'intel':
         env.Append(FORTRANFLAGS=' -fpp')
         env.Append(F90FLAGS=' -fpp')
 
-
-elif env['compiler'] == 'pgi':
+if env['compiler'] == 'pgi':
     # activate pgi
     env.Replace(CXX = 'pgc++')
 
@@ -521,7 +531,8 @@ elif env['compiler'] == 'pgi':
         Exit(-1)
 
 
-elif env['compiler'] == 'llvm':
+# WARNING: don't use 'elif' here wince llvm may be activated via the 'gnu' compiler option
+if env['compiler'] == 'llvm':
     reqversion = [3,1]
 
     if env['gxx_toolchain'] != '':
