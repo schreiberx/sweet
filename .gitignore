@@ -10,8 +10,7 @@ runscript.sh
 .sconsign.dblite
 python_mods/*.pyc
 *.txt
-/tmp/
-/tmp2/
+/tmp*/
 /runSL.sh
 /stabi_parallel.sh
 /stabi.sh

@@ -743,6 +743,10 @@ public:
 			DataArray<2> U = prog_u;
 			DataArray<2> V = prog_v;
 
+			// Save old velocities
+			prog_u_prev = prog_u;
+			prog_v_prev = prog_v;
+
 			//Now interpolate to the the departure points
 			//Departure points are set for physical space
 			sampler2D.bicubic_scalar( U, posx_d, posy_d, prog_u, stag_u[0], stag_u[1]);
@@ -774,11 +778,6 @@ public:
 						simVars.timecontrol.max_simulation_time
 				);
 			}
-
-
-			// Save old velocities
-			prog_u_prev = prog_u;
-			prog_v_prev = prog_v;
 
 		}else{
 
