@@ -14,9 +14,10 @@
 #include <sweet/Operators2D.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/Complex2DArrayFFT.hpp>
-
+#include <sweet/Sampler2D.hpp>
+#include <sweet/SemiLagrangian.hpp>
 #include "../rexiswe/RexiSWE_HelmholtzSolver.hpp"
-
+//#include <sweet/SWEValidationBenchmarks.hpp>
 
 #define SWEET_BENCHMARK_REXI	0
 
@@ -97,7 +98,14 @@ class RexiSWE
 	int num_global_threads;
 
 public:
+	//REXI stuff
 	REXI rexi;
+
+	// Interpolation stuff
+	//Sampler2D sampler2D;
+
+	// Semi-Lag stuff
+	//SemiLagrangian semiLagrangian;
 
 private:
 	void cleanup();
@@ -180,8 +188,45 @@ public:
 		// We account for this by seeing the LHS as a set of operators which have to be joint later by a sum.
 
 		Complex2DArrayFFT lhs = (-i_gh0*(perThreadVars[i_thread_id]->op_diff2_c_x + perThreadVars[i_thread_id]->op_diff2_c_y)).addScalar_Cart(i_kappa);
+		//std::cout << lhs << std::endl;
+		io_x = i_rhs.spec_div_element_wise(lhs);
+	}
+
+	/**
+	 * Solve real-valued Helmholtz problem with a spectral solver,
+	 * values are given in Spectral space
+	 *
+	 * (kappa - gh*D2) X = B
+	 *
+	 * This is here to compare speedups and such a solver cannot be applied in general,
+	 * e.g. with special general boundary values
+	 */
+public:
+	void helmholtz_spectral_solver(
+			double i_kappa,
+			double i_gh0,
+			const DataArray<2> &i_rhs,
+			DataArray<2> &io_x,
+			Operators2D &op     ///< Operator class
+	)
+	{
+
+		// compute
+		// 		kappa - g * eta_bar * D2
+		// NOTE!!! We add kappa in Cartesian space, hence add this value to all frequency components to account for scaling all frequencies!!!
+		// This is *NOT* straightforward and different to adding a constant for computations.
+		// We account for this by seeing the LHS as a set of operators which have to be joint later by a sum.
+
+
+#if SWEET_USE_SPECTRAL_SPACE
+		DataArray<2> laplacian = -i_gh0*op.diff2_c_x -i_gh0*op.diff2_c_y;
+		DataArray<2> lhs = laplacian.spec_addScalarAll(i_kappa);
 
 		io_x = i_rhs.spec_div_element_wise(lhs);
+#else
+		std::cerr << "Cannot use helmholtz_spectral_solver if spectral space not enable in compilation time" << std::endl;
+		exit(1);
+#endif
 	}
 
 
@@ -203,6 +248,62 @@ public:
 	);
 
 
+	/**
+	 * Solve U_t = L U via Crank-Nicolson:
+	 * with (semi)-implicit semi-lagrangian solver
+	 */
+public:
+	bool run_timestep_cn_sl_ts(
+			DataArray<2> &io_h,  ///< Current and past fields
+			DataArray<2> &io_u,
+			DataArray<2> &io_v,
+			DataArray<2> &io_h_prev,
+			DataArray<2> &io_u_prev,
+			DataArray<2> &io_v_prev,
+
+			DataArray<2> &i_posx_a, //Arrival point positions in x and y (this is basically the grid)
+			DataArray<2> &i_posy_a,
+
+			double i_timestep_size,	///< timestep size
+			int i_param_nonlinear, ///< degree of nonlinearity (0-linear, 1-full nonlinear, 2-only nonlinear adv)
+
+			const SimulationVariables &i_simVars, ///< Parameters for simulation
+
+			Operators2D &op,     ///< Operator class
+			Sampler2D &sampler2D, ///< Interpolation class
+			SemiLagrangian &semiLagrangian  ///< Semi-Lag class
+	);
+
+	/**
+	 * Solve  SWE with the novel Semi-Lagrangian Exponential Integrator
+	 *  SL-REXI
+	 *
+	 *  See documentation for details
+	 *
+	 */
+public:
+	bool run_timestep_slrexi(
+		DataArray<2> &io_h,  ///< Current and past fields
+		DataArray<2> &io_u,
+		DataArray<2> &io_v,
+		DataArray<2> &io_h_prev,
+		DataArray<2> &io_u_prev,
+		DataArray<2> &io_v_prev,
+
+		DataArray<2> &i_posx_a, //Arrival point positions in x and y (this is basically the grid)
+		DataArray<2> &i_posy_a,
+
+		double i_timestep_size,	///< timestep size
+		int i_param_nonlinear, ///< degree of nonlinearity (0-linear, 1-full nonlinear, 2-only nonlinear adv)
+		bool i_iterative_solver_always_init_zero_solution, //
+		bool i_linear_exp_analytical, //
+
+		const SimulationVariables &i_simVars, ///< Parameters for simulation
+
+		Operators2D &op,     ///< Operator class
+		Sampler2D &sampler2D, ///< Interpolation class
+		SemiLagrangian &semiLagrangian  ///< Semi-Lag class
+	);
 
 	/**
 	 * Solve the REXI of \f$ U(t) = exp(L*t) \f$

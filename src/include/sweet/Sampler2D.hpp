@@ -7,6 +7,7 @@
 #ifndef SRC_INCLUDE_SWEET_SAMPLER2D_HPP_
 #define SRC_INCLUDE_SWEET_SAMPLER2D_HPP_
 
+#include <sweet/Complex2DArrayFFT.hpp>
 
 class Sampler2D
 {
@@ -343,5 +344,60 @@ public:
 		return out;
 	}
 
+public:
+	const DataArray<2> bicubic_scalar(
+			DataArray<2> &i_data,				///< sampling data
+			DataArray<2> &i_pos_x,				///< x positions of interpolation points
+			DataArray<2> &i_pos_y,				///< y positions of interpolation points
+			//DataArray<2>* i_pos[2],	///< sampling position
+			double i_shift_x = 0.0,
+			double i_shift_y = 0.0
+	)
+	{
+		DataArray<2> out(i_data.resolution);
+		bicubic_scalar(i_data, i_pos_x, i_pos_y, out, i_shift_x, i_shift_y);
+		return out;
+	}
+
+	/*
+	 *
+	 *  Bicubic interpolation routine
+	 *  Receives complex arrays and returns complex cartesian data
+	 *    with null imag part.
+	 *   Data MUST be in cartesian space!!!!
+	 */
+public:
+	const Complex2DArrayFFT bicubic_scalar(
+			Complex2DArrayFFT &i_data,				///< sampling data
+			DataArray<2> &i_pos_x,				///< x positions of interpolation points
+			DataArray<2> &i_pos_y,				///< y positions of interpolation points
+			double i_shift_x = 0.0,
+			double i_shift_y = 0.0
+	)
+	{
+
+		DataArray<2> data(i_data.resolution); //i_data in real data_array structure
+		DataArray<2> out(i_data.resolution); // interpolated data in real data_array structure
+		Complex2DArrayFFT out_cmp(i_data.resolution); // complex output of interpolated data
+
+		// The data needs to be cartesian space!!
+		//data_cmp=i_data.toCart(); // do not use, since not secure
+
+		//Put data into a Real DataArray - called data
+		i_data.toDataArrays_Real(data);
+
+		// Do the interpolation
+		bicubic_scalar(data, i_pos_x, i_pos_y, out, i_shift_x, i_shift_y);
+
+		//Convert back to complex array
+		out_cmp.loadRealFromDataArray(out);
+
+		return out_cmp;
+	}
+
 };
+
+
+
+
 #endif /* SRC_INCLUDE_SWEET_SAMPLER2D_HPP_ */

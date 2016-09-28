@@ -81,7 +81,7 @@ public:
 	/**
 	 * setup the material uniforms
 	 */
-	void setupUniformsMaterial(CGlMaterial	&material)
+	void setupUniformsMaterial(GlMaterial	&material)
 	{
 		material_ambient_color3_uniform.set(material.ambient_color3);
 		material_diffuse_color3_uniform.set(material.diffuse_color3);
@@ -109,7 +109,7 @@ public:
 	 * setup the light and material uniforms
 	 */
 	void setupUniforms(
-			CGlMaterial	&material,
+			GlMaterial	&material,
 			Lights &lights,
 			const GLSL::vec3 &light_view_pos3
 	)
@@ -141,7 +141,7 @@ public:
 	/**
 	 * setup the light and material uniforms
 	 */
-	void setupUniforms(	CGlMaterial	&material,
+	void setupUniforms(	GlMaterial	&material,
 						Lights &lights
 	)
 	{

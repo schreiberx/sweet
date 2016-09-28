@@ -197,13 +197,12 @@ env['gui'] = GetOption('gui')
 
 
 
-
-AddOption(    '--rexi-parallel-sum',
-        dest='rexi_parallel_sum',
-        type='choice',
-        choices=['enable','disable'],
-        default='disable',
-        help='Use a par for loop over the sum in REXI: enable, disable [default: %default]'
+AddOption(	'--rexi-parallel-sum',
+		dest='rexi_parallel_sum',
+		type='choice',
+		choices=['enable','disable'],
+		default='disable',
+		help='Use a par for loop over the sum in REXI: enable, disable [default: %default]\n\tWARNING: This also disables the parallelization-in-space with OpenMP'
 )
 env['rexi_parallel_sum'] = GetOption('rexi_parallel_sum')
 
@@ -756,8 +755,8 @@ if env['debug_symbols'] == 'enable':
     env.Append(LINKFLAGS = '-g')
 
     if env['compiler'] == 'intel':
-        env.Append(CXXFLAGS = ' -O2 -shared-intel -shared-libgcc -debug inline-debug-info')
-        env.Append(LINKFLAGS = ' -O2 -shared-intel  -shared-libgcc -debug inline-debug-info')
+        env.Append(CXXFLAGS = ' -shared-intel -shared-libgcc -debug inline-debug-info')
+        env.Append(LINKFLAGS = ' -shared-intel  -shared-libgcc -debug inline-debug-info')
 
 
 

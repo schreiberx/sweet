@@ -56,7 +56,7 @@ private:
 	int newline_x_position;	///< x position for newline
 
 	int *vertex_attrib;		///< allocated memory for vertex attributes
-	CGlBuffer buffer;
+	GlBuffer buffer;
 	GlVertexArrayObject vao;
 
 

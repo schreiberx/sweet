@@ -1,9 +1,13 @@
 #! /bin/bash
 
+for i in 0 1 2 3; do
+	scons --program=advection --numa-block-allocator=$i --threading=omp
+done
+
 scons --program=swe_rexi --gui=disable --spectral-space=enable || exit
 
 scons --program=advection --gui=disable || exit
-scons --program=polvani --gui=disable --spectral-space=enable || exit
+#scons --program=polvani --gui=disable --spectral-space=enable || exit
 
 scons --program=spectral_visualization --spectral-space=enable --gui=enable || exit
 

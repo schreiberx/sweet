@@ -134,6 +134,7 @@ int main(int i_argc, char *i_argv[])
 		simVars.reset();
 
 
+
 		/*
 		 * keep h in the outer regions to allocate it only once and avoid reinitialization of FFTW
 		 */

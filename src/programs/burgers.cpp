@@ -20,6 +20,7 @@
 #include <sstream>
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #ifndef SWEET_PARAREAL
 #	define SWEET_PARAREAL 0
@@ -1548,7 +1549,7 @@ int main(int i_argc, char *i_argv[])
 	std::cout << "Compiled for MIC" << std::endl;
 #endif
 
-	NUMABlockAlloc::setup();
+	MemBlockAlloc::setup();
 
 	// program specific input parameter names
 	const char *bogus_var_names[] = {

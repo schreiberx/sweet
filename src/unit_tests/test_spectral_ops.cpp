@@ -288,6 +288,8 @@ int main(int i_argc, char *i_argv[])
 						sin(freq_x*M_PIl*x)/(cos(freq_y*M_PIl*y)+2.0)
 	#endif
 					);
+
+#undef FUN_ID
 				}
 			}
 
@@ -364,6 +366,7 @@ int main(int i_argc, char *i_argv[])
 			{
 				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
 				{
+#define FUN_ID	1
 					double x = ((double)i+0.5)/(double)simVars.disc.res[0];
 					double y = ((double)j+0.5)/(double)simVars.disc.res[1];
 
@@ -407,6 +410,7 @@ int main(int i_argc, char *i_argv[])
 						sin(freq_x*M_PIl*x)*freq_y*M_PIl*sin(freq_y*M_PIl*y)/pow(cos(freq_y*M_PIl*y)+2.0, 2.0)/(double)simVars.sim.domain_size[1]
 	#endif
 					);
+#undef FUN_ID
 				}
 			}
 
@@ -537,7 +541,7 @@ int main(int i_argc, char *i_argv[])
 				{
 					double x = ((double)i+0.5)/(double)simVars.disc.res[0];
 					double y = ((double)j+0.5)/(double)simVars.disc.res[1];
-
+#define FUN_ID 1
 					h.set(
 						j, i,
 	#if FUN_ID==1
@@ -570,6 +574,7 @@ int main(int i_argc, char *i_argv[])
 	//					sin(freq_x*M_PIl*x)*freq_y*M_PIl*sin(freq_y*M_PIl*y)/pow(cos(freq_y*M_PIl*y)+2.0, 2.0)/(double)parameters.sim.domain_size[1]
 	#endif
 					);
+#undef FUN_ID
 				}
 			}
 
@@ -625,6 +630,73 @@ int main(int i_argc, char *i_argv[])
 		}
 
 		std::cout << "TEST D: DONE" << std::endl;
+
+
+
+		/**
+		 * Tests for helmholtz solver
+		 */
+		{
+			DataArray<2> u(res);
+			DataArray<2> v(res);
+
+			Operators2D op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
+
+			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+			{
+				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+				{
+					double x = ((double)i+0.5)/(double)simVars.disc.res[0];
+					double y = ((double)j+0.5)/(double)simVars.disc.res[1];
+
+#define FUN_ID	3
+					h.set(
+						j, i,
+	#if FUN_ID==1
+						sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)
+	#elif FUN_ID==2
+						10+sin(freq_x*M_PIl*x)*sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)*cos(freq_y*M_PIl*y)
+	#elif FUN_ID==3
+						sin(freq_x*M_PIl*x)/(cos(freq_y*M_PIl*y)+2.0)+10.0
+	#endif
+					);
+
+#undef FUN_ID
+				}
+			}
+
+			if (simVars.disc.use_spectral_basis_diffs)
+			{
+				double kappa = 406.666;
+				double a = 2.0;
+				double b = 5.0;
+#if SWEET_USE_SPECTRAL_SPACE
+				/**
+				 * Solve
+				 *   ( kappa*h - c * (diff2x(h) + diff2y(h))) =
+				 *   ( kappa - c*diff2x - c*diff2y) * h = rhs;
+				 */
+				DataArray<2> helmholtz_operator = (-a*b*(op.diff2_c_x + op.diff2_c_y)).spec_addScalarAll(kappa);
+
+				DataArray<2> rhs =  kappa*h - a*b*(op.diff2_c_x(h) + op.diff2_c_y(h));
+
+				double err3_helmholtz =
+					(
+							h-rhs.spec_div_element_wise(helmholtz_operator)
+					).reduce_rms_quad();
+
+				std::cout << "SPEC: Error threshold for Helmholtz operator with kappa = " << kappa << " and its inverse: " << err3_helmholtz << std::endl;
+				if (err3_helmholtz > eps)
+				{
+					std::cerr << "SPEC: Error threshold for Laplace too high for spectral differentiation!" << std::endl;
+					exit(-1);
+				}
+#endif
+			}
+		}
+
+		std::cout << "TEST E: DONE" << std::endl;
+
 	}
 
 	std::cout << "SUCCESSFULLY FINISHED" << std::endl;

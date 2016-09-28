@@ -50,7 +50,7 @@ public:
 	/**
 	 * setup the light for rendering
 	 */
-	void setupUniforms(	CGlMaterial	&material,
+	void setupUniforms(	GlMaterial	&material,
 						Lights &lights,
 						const GLSL::vec3 &light_view_pos3,
 						const GLSL::mat4 &shadow_map_matrix
@@ -73,7 +73,7 @@ public:
 	/**
 	 * setup the uniforms for rendering
 	 */
-	void setupUniformsMaterial(	CGlMaterial	&material	)
+	void setupUniformsMaterial(	GlMaterial	&material	)
 	{
 		CShaderBlinnSkeleton::setupUniformsMaterial(material);
 

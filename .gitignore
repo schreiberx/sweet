@@ -15,3 +15,4 @@ python_mods/*.pyc
 /stabi_parallel.sh
 /stabi.sh
 /runscenarios.sh
+benchmarks/sl-rexi/*.csv

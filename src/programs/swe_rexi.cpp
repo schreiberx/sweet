@@ -19,6 +19,7 @@
 #include <sstream>
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "rexiswe/RexiSWE.hpp"
 
 
@@ -56,9 +57,13 @@ double param_rexi_helmholtz_solver_eps;
 bool param_rexi_zero_before_solving;
 int param_boundary_id;
 int param_nonlinear;
+bool param_linear_exp_analytical;
 
 double param_initial_freq_x_mul;
 double param_initial_freq_y_mul;
+
+//Diagnostic measures at initial stage
+double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
 
 class SimulationInstance
 #if SWEET_PARAREAL
@@ -70,11 +75,14 @@ public:
 	// Prognostic variables
 	DataArray<2> prog_h, prog_u, prog_v;
 
+	// beta plane
+	DataArray<2> beta_plane;
+
 	// Prognostic variables at time step t-dt
 	DataArray<2> prog_h_prev, prog_u_prev, prog_v_prev;
 
-	// Diagnostics - Vorticity and potential vorticity
-	DataArray<2> eta, q;
+	// Diagnostics - Vorticity, potential vorticity, divergence
+	DataArray<2> eta, q, div;
 
 	//visualization variable
 	DataArray<2> vis;
@@ -162,12 +170,15 @@ public:
 		prog_u(simVars.disc.res),
 		prog_v(simVars.disc.res),
 
+		beta_plane(simVars.disc.res),
+
 		prog_h_prev(simVars.disc.res),
 		prog_u_prev(simVars.disc.res),
 		prog_v_prev(simVars.disc.res),
 
 		eta(simVars.disc.res),
 		q(simVars.disc.res),
+		div(simVars.disc.res),
 
 		vis(simVars.disc.res),
 
@@ -188,7 +199,8 @@ public:
 		force_u(simVars.disc.res),
 		force_v(simVars.disc.res),
 
-		// @Martin: This should be added only when nonlinear model is ran. How to do that, since I can't put an if in the constructor?
+		//  This should be added only when nonlinear model is ran. How to do that, since I can't put an if in the constructor?
+		// ans: With pointers.	This can be made accessible as standard classes by using references to	pointers.
 		N_h(simVars.disc.res),
 		N_u(simVars.disc.res),
 		N_v(simVars.disc.res),
@@ -345,7 +357,7 @@ public:
 		//std::cout << "posx_a: " << posx_a.array_data_cartesian_space_valid << std::endl;
 		//std::cout << std::endl;
 
-		//@martin : Shouldn't this be in SWEValidationBenchmarks?
+		//Waves test case - separate from SWEValidationBench because it depends on certain local input parameters
 		auto return_h = [] (
 				SimulationVariables &i_parameters,
 				double x,
@@ -400,13 +412,31 @@ public:
 				if (param_use_staggering) // C-grid
 				{
 					{
-						// h
+						// h - lives in the center of the cell
 						double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
 						double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
 
 						prog_h.set(j, i, return_h(simVars, x, y));
 						t0_prog_h.set(j, i, return_h(simVars, x, y));
 						force_h.set(j, i, SWEValidationBenchmarks::return_force_h(simVars, x, y));
+
+						//Coriolis term - lives in the corner of the cells
+						if (param_nonlinear)
+						{
+							//PXT: had some -0.5 on i and j (why??)
+							double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+							double y = (((double)j)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+							beta_plane.set(j, i, SWEValidationBenchmarks::return_f(simVars, x, y));
+							if(j==0 && i==0 && simVars.sim.beta)
+								std::cerr << "WARNING: BETA PLANE ON C-GRID NOT TESTED FOR NON_LINEARITIES!" << std::endl;
+						}
+						else
+						{
+							std::cerr << "WARNING: BETA PLANE ON C-GRID NOT SUPPORTED!" << std::endl;
+							exit(-1);
+							// linear
+//							op.diff_b_x(H)
+						}
 					}
 
 					{
@@ -438,6 +468,8 @@ public:
 					prog_u.set(j, i, return_u(simVars, x, y));
 					prog_v.set(j, i, return_v(simVars, x, y));
 
+					beta_plane.set(j, i, SWEValidationBenchmarks::return_f(simVars, x, y));
+
 					t0_prog_h.set(j, i, return_h(simVars, x, y));
 					t0_prog_u.set(j, i, return_u(simVars, x, y));
 					t0_prog_v.set(j, i, return_v(simVars, x, y));
@@ -453,6 +485,7 @@ public:
 		prog_h_prev = prog_h;
 		prog_u_prev = prog_u;
 		prog_v_prev = prog_v;
+
 
 		//Nonlinear variables
 		// set to some values for first touch NUMA policy (HPC stuff)
@@ -595,7 +628,7 @@ public:
 
 
 		// Print info for REXI and setup REXI
-		if (param_timestepping_mode == 1) // This is not necessary: || param_timestepping_mode == 3)
+		if (param_timestepping_mode == 1 || param_timestepping_mode == 3 || param_timestepping_mode == 5)
 		{
 			if (simVars.misc.verbosity > 0)
 			{
@@ -663,9 +696,16 @@ public:
 				prog_h*prog_v*prog_v
 			).reduce_sum_quad()) * normalization;
 
-		// potential verticity and pot. enstropy
-		eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + simVars.sim.f0) / prog_h;
+		// potential vorticity and pot. enstropy
+		if (simVars.sim.beta == 0)
+			eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + simVars.sim.f0) / prog_h;
+		else
+			eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + beta_plane) / prog_h;
+
 		simVars.diag.total_potential_enstrophy = 0.5*(eta*eta*prog_h).reduce_sum_quad() * normalization;
+
+		//Divergence
+		div = (op.diff_c_x(prog_u) + op.diff_c_y(prog_v));
 	}
 
 
@@ -810,32 +850,21 @@ public:
 			}
 			else
 			{
-				double limit_speed = std::min(simVars.disc.cell_size[0]/i_u.reduce_maxAbs(), simVars.disc.cell_size[1]/i_v.reduce_maxAbs());
-				//	double hx = simVars.disc.cell_size[0];
-				//	double hy = simVars.disc.cell_size[1];
-
-				// limit by viscosity
-				double limit_visc = std::numeric_limits<double>::infinity();
-				/*
-				if (simVars.sim.viscosity > 0)
-					limit_visc = (hx*hx*hy*hy)/(4.0*simVars.sim.viscosity*simVars.sim.viscosity);
-				if (simVars.sim.viscosity_order > 0)
-					limit_visc = std::min((hx*hx*hx*hx*hy*hy*hy*hy)/(16.0*simVars.sim.viscosity_order*simVars.sim.viscosity_order), limit_visc);
-				 */
-				// limit by gravitational acceleration
-				double limit_gh = std::min(simVars.disc.cell_size[0], simVars.disc.cell_size[1])/std::sqrt(simVars.sim.g*i_h.reduce_maxAbs());
-
-				if (simVars.misc.verbosity > 2)
-					std::cerr << "limit_speed: " << limit_speed << ", limit_visc: " << limit_visc << ", limit_gh: " << limit_gh << std::endl;
-
-				o_dt = simVars.sim.CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
+				double k = 1.0/std::min(simVars.disc.cell_size[0], simVars.disc.cell_size[1]);
+				o_dt = simVars.sim.CFL /
+					std::sqrt(
+						(k*k)*simVars.sim.g*simVars.setup.h0
+						+
+						simVars.sim.f0*simVars.sim.f0
+					);
 			}
 		}
 
 		// A- grid method
 		if (!param_use_staggering)
 		{
-			if(param_nonlinear > 0){ //nonlinear case
+			if (param_nonlinear > 0)	 // nonlinear case
+			{
 				std::cout << "Only linear swe are setup for unstaggered grids " << std::endl;
 				exit(1);
 			}
@@ -845,82 +874,51 @@ public:
 			/*
 			 * linearized non-conservative (advective) formulation:
 			 *
-			 * h_t = -h0*u_x - h0*v_y
+			 * h_t = -h0*u_x - h0*v_ym
 			 * u_t = -g * h_x + f*v
 			 * v_t = -g * h_y - f*u
 			 */
-			o_u_t = -simVars.sim.g*op.diff_c_x(i_h) + simVars.sim.f0*i_v;
-			o_v_t = -simVars.sim.g*op.diff_c_y(i_h) - simVars.sim.f0*i_u;
 
+			o_u_t = -simVars.sim.g*op.diff_c_x(i_h);
+			o_v_t = -simVars.sim.g*op.diff_c_y(i_h);
 
-			if (simVars.sim.viscosity != 0)
+			if (simVars.sim.beta == 0.0)
 			{
-				o_u_t -= op.diffN_x(i_u, simVars.sim.viscosity_order)*simVars.sim.viscosity;
-				o_v_t -= op.diffN_y(i_v, simVars.sim.viscosity_order)*simVars.sim.viscosity;
-			}
-
-			boundary_action();
-
-			if (!simVars.disc.timestepping_leapfrog_like_update)
-			{
-				if (!simVars.disc.timestepping_up_and_downwinding)
-				{
-					// standard update
-					o_h_t = -(op.diff_c_x(i_u) + op.diff_c_y(i_v))*simVars.setup.h0;
-				}
-				else
-				{
-					// up/down winding
-					compute_upwinding_P_updates(
-							i_h,
-							i_u,
-							i_v,
-							o_h_t
-						);
-				}
+				o_u_t += simVars.sim.f0*i_v;
+				o_v_t -= simVars.sim.f0*i_u;
 			}
 			else
 			{
-				/*
-				 * a kind of leapfrog:
-				 *
-				 * We use the hew v and u values to compute the update for p
-				 *
-				 * compute updated u and v values without using it
-				 */
-				if (!simVars.disc.timestepping_up_and_downwinding)
-				{
-					// recompute U and V
-
-					// update based on new u and v values
-					o_h_t = -op.diff_c_x(
-								simVars.setup.h0*(i_u+o_dt*o_u_t)
-							)
-							-op.diff_c_y(
-									simVars.setup.h0*(i_v+o_dt*o_v_t)
-							);
-				}
-				else
-				{
-					// update based on new u and v values
-					compute_upwinding_P_updates(
-							i_h,
-							i_u+o_dt*o_u_t,
-							i_v+o_dt*o_v_t,
-							o_h_t
-						);
-				}
+				o_u_t += beta_plane*i_v;
+				o_v_t -= beta_plane*i_u;
 			}
+
+
+			//if (simVars.sim.viscosity != 0)
+			//{
+			//	o_u_t -= op.diffN_x(i_u, simVars.sim.viscosity_order)*simVars.sim.viscosity;
+			//	o_v_t -= op.diffN_y(i_v, simVars.sim.viscosity_order)*simVars.sim.viscosity;
+			//}
 
 			boundary_action();
 
-#if 0
-			if (simVars.sim.potential_viscosity != 0)
-				o_h_t -= op.diff2(i_h)*simVars.sim.potential_viscosity;
+			if (!simVars.disc.timestepping_up_and_downwinding)
+			{
+				// standard update
+				o_h_t = -(op.diff_c_x(i_u) + op.diff_c_y(i_v))*simVars.setup.h0;
+			}
+			else
+			{
+				// up/down winding
+				compute_upwinding_P_updates(
+						i_h,
+						i_u,
+						i_v,
+						o_h_t
+					);
+			}
 
-			if (simVars.sim.potential_hyper_viscosity != 0)
-				o_h_t -= op.diff4(i_h)*simVars.sim.potential_hyper_viscosity;
-#endif
+			boundary_action();
 		}
 		else // param_use_staggering = true
 		{
@@ -973,7 +971,7 @@ public:
 				H = simVars.sim.g*i_h;// + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
 
 
-			if(param_nonlinear > 0) //nonlinear case
+			if (param_nonlinear > 0) //nonlinear case
 			{
 				// Potential vorticity
 				if(op.avg_b_x(op.avg_b_y(i_h)).reduce_min() < 0.00000001)
@@ -981,7 +979,11 @@ public:
 					std::cerr << "Test case not adequate for vector invariant formulation. Null or negative water height" << std::endl;
 					exit(1);
 				}
-				q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + simVars.sim.f0) / op.avg_b_x(op.avg_b_y(i_h));
+
+				if (simVars.sim.beta == 0)
+					q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + simVars.sim.f0) / op.avg_b_x(op.avg_b_y(i_h));
+				else
+					q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + beta_plane) / op.avg_b_x(op.avg_b_y(i_h));
 
 				// u, v tendencies
 				// Energy conserving scheme
@@ -990,144 +992,53 @@ public:
 			}
 			else //linear case
 			{
-				o_u_t = op.avg_f_y(simVars.sim.f0*op.avg_b_x(i_v)) - op.diff_b_x(H);
-				o_v_t = -op.avg_f_x(simVars.sim.f0*op.avg_b_y(i_u)) - op.diff_b_y(H);
+				if (simVars.sim.beta == 0)
+				{
+					o_u_t = op.avg_f_y(simVars.sim.f0*op.avg_b_x(i_v)) - op.diff_b_x(H);
+					o_v_t = -op.avg_f_x(simVars.sim.f0*op.avg_b_y(i_u)) - op.diff_b_y(H);
+				}
+				else
+				{
+					o_u_t = op.avg_f_y(beta_plane*op.avg_b_x(i_v)) - op.diff_b_x(H);
+					o_v_t = -op.avg_f_x(beta_plane*op.avg_b_y(i_u)) - op.diff_b_y(H);
+				}
 			}
-
 
 			/*
 			 * VISCOSITY
 			 */
-			if (simVars.sim.viscosity != 0)
-			{
-				o_u_t -= op.diffN_x(i_u, simVars.sim.viscosity_order)*simVars.sim.viscosity;
-				o_v_t -= op.diffN_y(i_v, simVars.sim.viscosity_order)*simVars.sim.viscosity;
-			}
+			//if (simVars.sim.viscosity != 0)
+			//{
+			//	o_u_t -= op.diffN_x(i_u, simVars.sim.viscosity_order)*simVars.sim.viscosity;
+			//	o_v_t -= op.diffN_y(i_v, simVars.sim.viscosity_order)*simVars.sim.viscosity;
+			//}
 
 			/*
 			 * P UPDATE
 			 */
-			if (!simVars.disc.timestepping_leapfrog_like_update)
+			if (!simVars.disc.timestepping_up_and_downwinding)
 			{
-				if (!simVars.disc.timestepping_up_and_downwinding)
-				{
-					if(param_nonlinear > 0){ //full nonlinear divergence
-						// standard update
-						o_h_t = -op.diff_f_x(U) - op.diff_f_y(V);
-					}
-					else //use linear divergence
-					{
-						o_h_t = -op.diff_f_x(simVars.setup.h0*i_u) - op.diff_f_y(simVars.setup.h0*i_v);
-					}
+				if(param_nonlinear > 0){ //full nonlinear divergence
+					// standard update
+					o_h_t = -op.diff_f_x(U) - op.diff_f_y(V);
 				}
-				else
+				else //use linear divergence
 				{
-					// up/down winding
-					compute_upwinding_P_updates(
-							i_h,
-							i_u,
-							i_v,
-							o_h_t
-						);
+					o_h_t = -op.diff_f_x(simVars.setup.h0*i_u) - op.diff_f_y(simVars.setup.h0*i_v);
 				}
 			}
 			else
 			{
-				/*
-				 * a kind of leapfrog (this is not conserving anything! don't use it for production runs!):
-				 *
-				 * We use the new v and u values to compute the update for p
-				 *
-				 * compute updated u and v values without using it
-				 */
-				if (!simVars.disc.timestepping_up_and_downwinding)
-				{
-					// recompute U and V
-					U = op.avg_b_x(i_h)*(i_u+o_dt*o_u_t);
-					V = op.avg_b_y(i_h)*(i_v+o_dt*o_v_t);
-
-					// update based on new u and v values
-					o_h_t = -op.diff_f_x(U) - op.diff_f_y(V);
-				}
-				else
-				{
-					// update based on new u and v values
-					compute_upwinding_P_updates(
-							i_h,
-							i_u+o_dt*o_u_t,
-							i_v+o_dt*o_v_t,
-							o_h_t
-						);
-				}
+				// up/down winding
+				compute_upwinding_P_updates(
+						i_h,
+						i_u,
+						i_v,
+						o_h_t
+					);
 			}
-			//Add forcing, if non zero
-			o_h_t=o_h_t+force_h;
-			o_u_t=o_u_t+force_u;
-			o_v_t=o_v_t+force_v;
-
-#if 0
-			if (simVars.sim.potential_viscosity != 0)
-				o_h_t -= op.diff2(i_h)*simVars.sim.potential_viscosity;
-
-			if (simVars.sim.potential_hyper_viscosity != 0)
-				o_h_t -= op.diff4(i_h)*simVars.sim.potential_hyper_viscosity;
-#endif
 		}
 	}
-
-
-
-#if 0
-	// doesn't seem to be necessary
-	/**
-	 * wrapper to unify interfaces for REXI and analytical solution for L operator
-	 */
-	void rexi_run_timestep_wrapper(
-		DataArray<2> &io_h,
-		DataArray<2> &io_u,
-		DataArray<2> &io_v,
-
-		double i_local_timestep_size
-	)
-	{
-		switch(param_timestepping_mode)
-		{
-		case 1:
-			// REXI time stepping
-			assert(simVars.sim.CFL < 0);
-			rexiSWE.run_timestep(
-					prog_h, prog_u, prog_v,
-					i_local_timestep_size,
-					op,
-					simVars,
-					param_rexi_zero_before_solving
-			);
-			break;
-
-		case 2:
-			if (param_use_staggering)
-			{
-				std::cerr << "Direct solution on staggered grid not supported!" << std::endl;
-				exit(1);
-			}
-
-			// Analytical solution
-			rexiSWE.run_timestep_direct_solution(
-					prog_h, prog_u, prog_v,
-					i_local_timestep_size,
-					op,
-					simVars
-			);
-			break;
-
-		default:
-			assert(false);
-			std::cerr << "Timestepping method in this wrapper not supported" << std::endl;
-			exit(-1);
-		}
-	}
-#endif
-
 
 
 	/**
@@ -1165,152 +1076,32 @@ public:
 			// REXI time stepping for nonlinear eq - semi-lagrangian scheme (SL-REXI)
 			if (param_nonlinear>0)
 			{
-
-				//Calculate departure points
-				semiLagrangian.semi_lag_departure_points_settls(
-								prog_u_prev, prog_v_prev,
-								prog_u,	prog_v,
-								posx_a,	posy_a,
-								o_dt,
-								posx_d,	posy_d,
-								stag_displacement
-						);
-
-				//std::cout<<"Departure points movement (x,y): " << (posx_a-posx_d).reduce_maxAbs() << " " <<(posy_a-posy_d).reduce_maxAbs() << std::endl;
-
-				//Save current fields for next time step
-				prog_u_prev = prog_u;
-				prog_v_prev = prog_v;
-				prog_h_prev = prog_h;
-
-
-				DataArray<2>& U = tmp0;
-				DataArray<2>& V = tmp1;
-				DataArray<2>& H = tmp2;
-
-				U = prog_u;
-				V = prog_v;
-				H = prog_h;
-
-				/*
-				 *
-				std::cout<<"U"<<std::endl;
-				U.printArrayData();
-				std::cout<<"V"<<std::endl;
-				V.printArrayData();
-				std::cout<<"H"<<std::endl;
-				H.printArrayData();
-
-				std::cout<<"prog_u"<<std::endl;
-				prog_u.printArrayData();
-				std::cout<<"prog_v"<<std::endl;
-				prog_v.printArrayData();
-				std::cout<<"prog_h"<<std::endl;
-				prog_h.printArrayData();
-				std::cout<<std::endl;
-				*/
-
-				if(param_nonlinear==1) //Full nonlinear swe
-				{
-					// First calculate the linear part
-					rexiSWE.run_timestep( H, U, V, o_dt, op, simVars, param_rexi_zero_before_solving);
-					//rexiSWE.run_timestep_direct_solution( H, U, V, o_dt, op, simVars );
-
-					//Zero nonlinear vectors
-#if SWEET_USE_SPECTRAL_SPACE
-							N_h.set_spec_all(0, 0);
-							N_u.set_spec_all(0, 0);
-							N_v.set_spec_all(0, 0);
-#endif
-							N_h.set_all(0);
-							N_u.set_all(0);
-							N_v.set_all(0);
-
-					//Calculate divergence spectrally or with finite differences
-					//if(simVars.disc.use_spectral_basis_diffs) //Spectral derivatives
-					//	N_h=-prog_h*(op.diff_c_x(prog_u) + op.diff_c_y(prog_v));
-					//else //Finite differences - needs further averaging for A grid?
-					N_h=-prog_h*(op.diff_c_x(prog_u) + op.diff_c_y(prog_v));
-
-					//Calculate exp(Ldt/2 N(u))
-					rexiSWE.run_timestep( N_h, N_u, N_v, o_dt/2.0, op, simVars, param_rexi_zero_before_solving);
-
-					//Use previous step to calculate main term to be interpolated
-					H=H+(o_dt)*N_h-(o_dt/2.0)*N_h_prev;
-					U=U+(o_dt)*N_u-(o_dt/2.0)*N_u_prev;
-					V=V+(o_dt)*N_v-(o_dt/2.0)*N_v_prev;
-
-					//Now interpolate to the the departure points
-					//Departure points are set for physical space
-					sampler2D.bicubic_scalar( H, posx_d, posy_d, prog_h, stag_h[0],	stag_h[1]);
-					sampler2D.bicubic_scalar( U, posx_d, posy_d, prog_u, stag_u[0], stag_u[1]);
-					sampler2D.bicubic_scalar( V, posx_d, posy_d, prog_v, stag_v[0], stag_v[1]);
-
-					//Add nonlinear part attributed to arrival points
-					prog_h=prog_h+(o_dt/2.0)*N_h;
-					prog_u=prog_u+(o_dt/2.0)*N_u;
-					prog_v=prog_v+(o_dt/2.0)*N_v;
-
-					//Save current nonlinear values for next time step
-					N_h_prev=N_h;
-					N_u_prev=N_u;
-					N_v_prev=N_v;
-
-				}
-				else if(param_nonlinear==2) //Linear with nonlinear advection only (valid for nondivergent nonlinear sw flows)
-				{
-					// First calculate the linear part
-					rexiSWE.run_timestep( H, U, V, o_dt, op, simVars, param_rexi_zero_before_solving);
-					//rexiSWE.run_timestep_direct_solution( H, U, V, o_dt, op, simVars );
-
-					//std::cout<<std::endl;
-					//std::cout<<"Did a REXI step"<<std::endl;
-
-
-					/*
-					std::cout<<"U"<<std::endl;
-					U.printArrayData();
-					std::cout<<"V"<<std::endl;
-					V.printArrayData();
-					std::cout<<"H"<<std::endl;
-					H.printArrayData();
-					*/
-
-					//Now interpolate to the the departure points
-					//Departure points are set for physical space
-
-					sampler2D.bicubic_scalar( H, posx_d, posy_d, prog_h, stag_h[0],	stag_h[1]);
-					sampler2D.bicubic_scalar( U, posx_d, posy_d, prog_u, stag_u[0], stag_u[1]);
-					sampler2D.bicubic_scalar( V, posx_d, posy_d, prog_v, stag_v[0], stag_v[1]);
-
-					//std::cout<<"interpolated vars to dep points"<<std::endl;
-
-					/*
-					std::cout<<"prog_u"<<std::endl;
-					prog_u.printArrayData();
-					std::cout<<"prog_v"<<std::endl;
-					prog_v.printArrayData();
-					std::cout<<"prog_h"<<std::endl;
-					prog_h.printArrayData();
-					std::cout<<std::endl;
-					*/
-					//Debug force only linear part
-					//prog_u = U;
-					//prog_v = V;
-					//prog_h = H;
-
-				}
+				rexiSWE.run_timestep_slrexi(
+									prog_h, prog_u, prog_v,
+									prog_h_prev, prog_u_prev, prog_v_prev,
+									posx_a,	posy_a,
+									o_dt,
+									param_nonlinear,
+									param_rexi_zero_before_solving,
+									param_linear_exp_analytical,
+									simVars,
+									op,
+									sampler2D,
+									semiLagrangian
+							);
 
 			}
 			else // linear solver
 			{
 				rexiSWE.run_timestep( prog_h, prog_u, prog_v, o_dt,	op,	simVars, param_rexi_zero_before_solving	);
+
 			}
 
-			//Add forcing
-			prog_h=prog_h+force_h*o_dt;
-			prog_u=prog_u+force_u*o_dt;
-			prog_v=prog_v+force_v*o_dt;
+			//Add forcing --- this is now how it should be added!!!!!
+			//prog_h=prog_h+force_h*o_dt;
+			//prog_u=prog_u+force_u*o_dt;
+			//prog_v=prog_v+force_v*o_dt;
+
 		}
 		else if (param_timestepping_mode == 2) //Direct solution
 		{
@@ -1338,7 +1129,7 @@ public:
 			);
 		}
 		else if (param_timestepping_mode == 3)
-		{   //  Implicit time step - needs check...
+		{   //  Implicit time step - Backward Euler - checked - linear only
 			assert(simVars.sim.CFL < 0);
 
 			o_dt = -simVars.sim.CFL;
@@ -1350,10 +1141,13 @@ public:
 			);
 		}
 		else if (param_timestepping_mode == 4)
-		{ // Semi-Lagrangian with FD in space
+		{ // Semi-Lagrangian advection - velocities are kept constant, and
+			//  h is transported according to given initial wind
+			// *** Valid only for non-divergent velocity fields **//
+			// See test case scenario 17 for this ts mode
+
 			assert(simVars.sim.CFL < 0);
 			o_dt = -simVars.sim.CFL;
-
 
 			semiLagrangian.semi_lag_departure_points_settls(
 							prog_u_prev,
@@ -1368,8 +1162,8 @@ public:
 							stag_displacement
 					);
 
-			prog_u_prev = prog_u;
-			prog_v_prev = prog_v;
+			//prog_u_prev = prog_u;
+			//prog_v_prev = prog_v;
 			prog_h_prev = prog_h;
 
 			//Departure points are set for physical space
@@ -1384,13 +1178,45 @@ public:
 			);
 
 		}
+		else if (param_timestepping_mode == 5)
+		{   // Semi-Lagrangian Semi-implicit Spectral
+			assert(simVars.sim.CFL < 0);
+			o_dt = -simVars.sim.CFL;
+
+			rexiSWE.run_timestep_cn_sl_ts(
+					prog_h, prog_u, prog_v,
+					prog_h_prev, prog_u_prev, prog_v_prev,
+					posx_a,	posy_a,
+					o_dt,
+					param_nonlinear,
+					simVars,
+					op,
+					sampler2D,
+					semiLagrangian
+			);
+		}
 		else
 		{
 			std::cerr << "Invalid time stepping method" << std::endl;
 			exit(1);
 		}
 
-
+		//Apply viscosity at posteriori, for all methods explicit difusion for non spectral schemes and implicit for spectral
+		if (simVars.sim.viscosity != 0)
+		{
+#if !SWEET_USE_SPECTRAL_SPACE //TODO: this needs checking
+			prog_u = prog_u + pow(-1,simVars.sim.viscosity_order/2)* o_dt*op.diffN_x(prog_u, simVars.sim.viscosity_order)*simVars.sim.viscosity
+					+ pow(-1,simVars.sim.viscosity_order/2)*o_dt*op.diffN_y(prog_u, simVars.sim.viscosity_order)*simVars.sim.viscosity;
+			prog_v = prog_v + pow(-1,simVars.sim.viscosity_order/2)* o_dt*op.diffN_x(prog_v, simVars.sim.viscosity_order)*simVars.sim.viscosity
+					+ pow(-1,simVars.sim.viscosity_order/2)*o_dt*op.diffN_y(prog_v, simVars.sim.viscosity_order)*simVars.sim.viscosity;
+			prog_h = prog_h + pow(-1,simVars.sim.viscosity_order/2)* o_dt*op.diffN_x(prog_h, simVars.sim.viscosity_order)*simVars.sim.viscosity
+					+ pow(-1,simVars.sim.viscosity_order/2)*o_dt*op.diffN_y(prog_h, simVars.sim.viscosity_order)*simVars.sim.viscosity;
+#else
+			prog_u=op.implicit_diffusion(prog_u, o_dt*simVars.sim.viscosity,simVars.sim.viscosity_order );
+			prog_v=op.implicit_diffusion(prog_v, o_dt*simVars.sim.viscosity,simVars.sim.viscosity_order );
+			prog_h=op.implicit_diffusion(prog_h, o_dt*simVars.sim.viscosity,simVars.sim.viscosity_order );
+#endif
+		}
 
 		// provide information to parameters
 		simVars.timecontrol.current_timestep_size = o_dt;
@@ -1420,7 +1246,7 @@ public:
 				o_ostream << "T\tTOTAL_MASS\tTOTAL_ENERGY\tPOT_ENSTROPHY";
 
 				//if ((simVars.setup.scenario >= 0 && simVars.setup.scenario <= 4) || simVars.setup.scenario == 13)
-					o_ostream << "\tDIFF_H0\tDIFF_U0\tDIFF_V0";
+				o_ostream << "\tDIFF_H0\tDIFF_U0\tDIFF_V0";
 
 				if (param_compute_error && param_nonlinear==0){
 					o_ostream << "\tANAL_DIFF_RMS_P\tANAL_DIFF_RMS_U\tANAL_DIFF_RMS_V";
@@ -1438,8 +1264,9 @@ public:
 
 				if (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
 				{
-					while (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
-						simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
+					if (simVars.misc.output_each_sim_seconds > 0)
+						while (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
+							simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
 
 					double secs = simVars.timecontrol.current_simulation_time;
 					double msecs = 1000000.*(simVars.timecontrol.current_simulation_time - floor(simVars.timecontrol.current_simulation_time));
@@ -1461,6 +1288,18 @@ public:
 
 			//Print simulation time, energy and pot enstrophy
 			o_ostream << std::setprecision(8) << simVars.timecontrol.current_simulation_time << "\t" << simVars.diag.total_mass << "\t" << simVars.diag.total_energy << "\t" << simVars.diag.total_potential_enstrophy;
+
+
+			// PXT: I didn't know where to put this to work with and without GUI - if removed crashes when gui=enable
+			if (diagnostics_mass_start==0)
+				diagnostics_mass_start=simVars.diag.total_mass;
+
+			if ( std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) > 10000.0 ) {
+				std::cout << "\n DIAGNOSTICS BENCHMARK DIFF H:\t" << "INF" << std::endl;
+				//std::cout << "\n DIAGNOSTICS MASS DIFF:\t" << diagnostics_mass_start << " "<< simVars.diag.total_mass << " "<<std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) << std::endl;
+				std::cerr << "\n DIAGNOSTICS MASS DIFF TOO LARGE:\t" << std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) << std::endl;
+				exit(1);
+			}
 
 			// Print max abs difference of vars to initial conditions (this gives the error in steady state cases)
 			//if ((simVars.setup.scenario >= 0 && simVars.setup.scenario <= 4) || simVars.setup.scenario == 13)
@@ -1552,7 +1391,7 @@ public:
 			//Temporary displacement for V points
 			//sampler2D.bilinear_scalar(t_v, tmp, pos_y, ts_v, stag_h[0], stag_h[1]);
 			//t_v=op.avg_b_y(t0_v); //equiv to bilinear
-			sampler2D.bicubic_scalar(t_v, tmp, pos_y, ts_v, stag_h[0]+0.5, stag_h[1]);
+			sampler2D.bicubic_scalar(t_v, pos_x, pos_y, ts_v, stag_h[0]+0.5, stag_h[1]);
 		}
 
 		benchmark_analytical_error_rms_h = (ts_h-prog_h).reduce_rms_quad();
@@ -1602,12 +1441,13 @@ public:
 	/**
 	 * Arrays for online visualisation and their textual description
 	 */
-	VisStuff vis_arrays[4] =
+	VisStuff vis_arrays[5] =
 	{
 			{&prog_h,	"h"},
 			{&prog_u,	"u"},
 			{&prog_v,	"v"},
-			{&eta,		"eta"}
+			{&eta,		"eta"},
+			{&div,		"div"}
 	};
 
 
@@ -1639,8 +1479,13 @@ public:
 			case -2:
 				vis = t_h-prog_h;	// difference to exact solution
 				break;
+
 			case -3:
 				vis = t0_prog_h-prog_h;	// difference to initial condition
+				break;
+
+			case -4:					// beta plane
+				vis = beta_plane;
 				break;
 			}
 
@@ -2106,7 +1951,7 @@ public:
 
 
 
-int main(int i_argc, char *i_argv[])
+int main2(int i_argc, char *i_argv[])
 {
 #if __MIC__
 	std::cout << "Compiled for MIC" << std::endl;
@@ -2129,7 +1974,7 @@ int main(int i_argc, char *i_argv[])
 
 #endif
 
-	NUMABlockAlloc::setup();
+	MemBlockAlloc::setup();
 
 	//input parameter names (specific ones for this program)
 	const char *bogus_var_names[] = {
@@ -2145,10 +1990,10 @@ int main(int i_argc, char *i_argv[])
 			"rexi-helmholtz-solver-eps",		/// error threshold for solver
 			"boundary-id",
 			"rexi-zero-before-solving",
-			"nonlinear",    /// form of equations
-
-			"initial-freq-x-mul",		// frequency multipliers for special scenario setup
+			"nonlinear",                 /// form of equations
+			"initial-freq-x-mul",		/// frequency multipliers for special scenario setup
 			"initial-freq-y-mul",
+			"lin-exp-analyt",
 			nullptr
 	};
 
@@ -2160,15 +2005,15 @@ int main(int i_argc, char *i_argv[])
 	simVars.bogus.var[4] = 0;	// timestepping mode - default is RK
 	simVars.bogus.var[5] = 0;	// compute error - default no
 	simVars.bogus.var[6] = 0;	// stag - default A grid
-	simVars.bogus.var[7] = 0;	// Use spec diff per default for complex array
+	simVars.bogus.var[7] = 1;	// Use spec diff per default for complex array
 	simVars.bogus.var[8] = 0;	// Use spectral solver id
 	simVars.bogus.var[9] = 1e-7;	// Error threshold
 	simVars.bogus.var[10] = 0; 	//boundary
 	simVars.bogus.var[11] = 1;	// zero rexi
 	simVars.bogus.var[12] = 0;	// nonlinear
-
-	simVars.bogus.var[13] = 0;
-	simVars.bogus.var[14] = 0;
+	simVars.bogus.var[13] = 0;  //frequency in x for waves test case
+	simVars.bogus.var[14] = 0;  //frequency in y for waves test case
+	simVars.bogus.var[15] = 0;  // Use analytical linear operator exponential
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
@@ -2181,12 +2026,13 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "" << std::endl;
 		std::cout << "	--rexi-half [0/1]	Reduce rexi computations to its half, default:1 " << std::endl;
 		std::cout << "" << std::endl;
-		std::cout << "	--timestepping-mode [0/1/2/3/4]	Timestepping method to use" << std::endl;
+		std::cout << "	--timestepping-mode [0/1/2/3/4/5]	Timestepping method to use" << std::endl;
 		std::cout << "	                            0: RKn with Finite-difference (default)" << std::endl;
-		std::cout << "	                            1: REXI" << std::endl;
+		std::cout << "	                            1: REXI (SL-REXI if nonlinear)" << std::endl;
 		std::cout << "	                            2: Direct solution in spectral space" << std::endl;
-		std::cout << "	                            3: Implicit Finite-difference (needs checking)" << std::endl;
-		std::cout << "	                            4: Semi-Lagrangian with Finite-difference" << std::endl;
+		std::cout << "	                            3: Implicit Euler Spectral " << std::endl;
+		std::cout << "	                            4: Semi-Lagrangian Advection only" << std::endl;
+		std::cout << "	                            5: Semi-Lagrangian Semi-implicit Spectral" << std::endl;
 		std::cout << "" << std::endl;
 		std::cout << "	--compute-error [0/1]	Compute the errors" << std::endl;
 		std::cout << "" << std::endl;
@@ -2209,6 +2055,8 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "						     0: Linear SWE (default)" << std::endl;
 		std::cout << "						     1: Full nonlinear SWE" << std::endl;
 		std::cout << "						     2: Linear SWE + nonlinear advection only (needs -H to be set)" << std::endl;
+		std::cout << std::endl;
+		std::cout << "	--lin-exp-analyt [0/1]	Use analytical exponential of linear operator (default=0)" << std::endl;
 		std::cout << std::endl;
 
 
@@ -2246,9 +2094,11 @@ int main(int i_argc, char *i_argv[])
 	// Linear vs nonlinear swe
 	param_nonlinear = simVars.bogus.var[12];
 
+	//Frequency for certain initial conditions
 	param_initial_freq_x_mul = simVars.bogus.var[13];
 	param_initial_freq_y_mul = simVars.bogus.var[14];
 
+	param_linear_exp_analytical = simVars.bogus.var[15];
 
 	//Print header
 	std::cout << std::endl;
@@ -2263,7 +2113,7 @@ int main(int i_argc, char *i_argv[])
 	}
 
 	std::cout << "-----------------------------" << std::endl;
-	std::cout << "Method to be used (timestepping_mode): "; // << param_timestepping_mode << std::endl;
+	std::cout << "Time stepping method to be used (timestepping_mode): "; // << param_timestepping_mode << std::endl;
 	switch(param_timestepping_mode)
 	{
 		case 0:
@@ -2273,18 +2123,28 @@ int main(int i_argc, char *i_argv[])
 		case 2:
 				std::cout << " 2: Direct solution in spectral space" << std::endl; break;
 		case 3:
-				std::cout << " 3: Implicit method - needs checking!" << std::endl; break;
+				std::cout << " 3: Implicit method (Euler) - Linear only" << std::endl; break;
 		case 4:
-				std::cout << " 4: Semi-Lag with FD - needs checking!" << std::endl; break;
+				std::cout << " 4: Semi-Lag - pure advection " << std::endl; break;
+		case 5:
+				std::cout << " 5: Semi-Lag Semi-Implicit Spectral " << std::endl; break;
 		default:
 			std::cerr << "Timestepping unknowkn" << std::endl;
 			return -1;
 	}
+	std::cout << "Viscosity: " << simVars.sim.viscosity << std::endl;
 	std::cout << "Staggered grid? " << param_use_staggering << std::endl;
 	std::cout << "Computing error? " << param_compute_error << std::endl;
+	std::cout << "Dealiasing: " <<
+#if SWEET_USE_SPECTRAL_DEALIASING
+			1
+#else
+			0
+#endif
+			<< std::endl;
 	std::cout << "Verbosity: " << simVars.misc.verbosity << std::endl;
-
-
+	std::cout << "Parareal: " << SWEET_PARAREAL << std::endl;
+	std::cout << "Linear exponential analytical: " << param_linear_exp_analytical << std::endl;
 	std::ostringstream buf;
 	buf << std::setprecision(14);
 
@@ -2334,7 +2194,7 @@ int main(int i_argc, char *i_argv[])
 			Stopwatch time;
 
 			//Diagnostic measures at initial stage
-			double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
+			//double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
 
 			// Initialize diagnostics
 			if (simVars.misc.verbosity > 0)
@@ -2404,7 +2264,7 @@ int main(int i_argc, char *i_argv[])
 				std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) << std::endl;
 				std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs((simVars.diag.total_potential_enstrophy-diagnostics_potential_entrophy_start)/diagnostics_potential_entrophy_start) << std::endl;
 
-				if (simVars.setup.scenario == 2 || simVars.setup.scenario == 3 || simVars.setup.scenario == 4 || simVars.setup.scenario == 13  )
+				if (param_compute_error)
 				{
 					std::cout << "DIAGNOSTICS BENCHMARK DIFF H:\t" << simulationSWE->benchmark_diff_h << std::endl;
 					std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationSWE->benchmark_diff_u << std::endl;
@@ -2487,4 +2347,13 @@ int main(int i_argc, char *i_argv[])
 #endif
 
 	return 0;
+}
+
+int main(int i_argc, char *i_argv[])
+{
+	int retval = main2(i_argc, i_argv);
+
+	DataArray<2>::checkRefCounters();
+
+	return retval;
 }

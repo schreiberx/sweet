@@ -4,8 +4,8 @@
  *  Created on: 14 Sep 2015
  *      Author: Martin Schreiber <schreiberx@gmail.com>
  */
-#ifndef SRC_INCLUDE_SWEET_NUMABLOCKALLOC_HPP_
-#define SRC_INCLUDE_SWEET_NUMABLOCKALLOC_HPP_
+#ifndef SRC_INCLUDE_SWEET_MEMBLOCKALLOC_HPP_
+#define SRC_INCLUDE_SWEET_MEMBLOCKALLOC_HPP_
 
 /**
  * define granularity of allocation
@@ -56,7 +56,7 @@
  *
  * The idea is to avoid freeing blocks directly.
  */
-class NUMABlockAlloc
+class MemBlockAlloc
 {
 	/**
 	 * Number of allocation domains
@@ -150,7 +150,7 @@ private:
 
 
 public:
-	NUMABlockAlloc()	:
+	MemBlockAlloc()	:
 		setup_done(false)
 	{
 		p_setup();
@@ -298,7 +298,7 @@ private:
 
 
 private:
-	~NUMABlockAlloc()
+	~MemBlockAlloc()
 	{
 		if (verbosity > 1)
 			std::cout << "NUMABlockAlloc EXIT" << std::endl;
@@ -325,7 +325,7 @@ private:
 public:
 	static
 	inline
-	NUMABlockAlloc& getSingletonRef()
+	MemBlockAlloc& getSingletonRef()
 	{
 		/*
 		 * Compilation details:
@@ -339,7 +339,7 @@ public:
 		 * 		ret ...
 		 * '
 		 */
-		static NUMABlockAlloc memManager;
+		static MemBlockAlloc memManager;
 		return memManager;
 	}
 
@@ -355,7 +355,7 @@ public:
 			std::size_t i_size				///< size of blocks
 	)
 	{
-		NUMABlockAlloc &n = NUMABlockAlloc::getSingletonRef();
+		MemBlockAlloc &n = MemBlockAlloc::getSingletonRef();
 
 		assert(n.getThreadLocalDomainIdRef() < (int)n.domain_block_groups.size());
 
@@ -376,6 +376,26 @@ public:
 		return block_groups.back().free_blocks;
 	}
 
+
+	/**
+	 * Explicitly write data to the areas instead of relying on
+	 * the program to apply a first touch policy
+	 */
+	template <typename T=void>
+	static
+	T *first_touch_init(
+			T *i_data,
+			std::size_t i_size
+	)
+	{
+		char *data = (char*)i_data;
+
+#pragma omp parallel for OPENMP_PAR_SIMD
+		for (std::size_t i = 0; i < i_size; i++)
+			data[i] = 0;
+
+		return i_data;
+	}
 
 
 public:
@@ -412,7 +432,7 @@ public:
 		if (data != nullptr)
 			return data;
 
-		return (T*)numa_alloc(i_size);
+		return (T*)first_touch_init(numa_alloc(i_size), i_size);
 
 #elif NUMA_BLOCK_ALLOCATOR_TYPE == 3
 
@@ -440,6 +460,7 @@ public:
 			exit(-1);
 		}
 
+		first_touch_init(data, i_size);
 		return data;
 
 #else
@@ -456,6 +477,7 @@ public:
 			exit(-1);
 		}
 
+		first_touch_init(data, i_size);
 		return data;
 
 #endif
@@ -495,4 +517,4 @@ public:
 };
 
 
-#endif /* SRC_INCLUDE_SWEET_NUMABLOCKALLOC_HPP_ */
+#endif /* SRC_INCLUDE_SWEET_MEMBLOCKALLOC_HPP_ */

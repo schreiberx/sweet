@@ -343,52 +343,20 @@ public:
 		/*
 		 * P UPDATE
 		 */
-		if (!simVars.disc.timestepping_leapfrog_like_update)
+		if (!simVars.disc.timestepping_up_and_downwinding)
 		{
-			if (!simVars.disc.timestepping_up_and_downwinding)
-			{
-				// standard update
-				o_h_t = -op.diff_c_x(U) - op.diff_c_y(V);
-			}
-			else
-			{
-				// up/down winding
-				compute_upwinding_P_updates(
-						i_h,
-						i_u,
-						i_v,
-						o_h_t
-					);
-			}
+			// standard update
+			o_h_t = -op.diff_c_x(U) - op.diff_c_y(V);
 		}
 		else
 		{
-			/*
-			 * a kind of leapfrog:
-			 *
-			 * We use the new u and v values to compute the update for p
-			 *
-			 * compute updated u and v values without using it
-			 */
-			if (!simVars.disc.timestepping_up_and_downwinding)
-			{
-				// recompute U and V
-				U = i_h*(i_u+o_dt*o_u_t);
-				V = i_h*(i_v+o_dt*o_v_t);
-
-				// update based on new u and v values
-				o_h_t = -op.diff_c_x(U) - op.diff_c_y(V);
-			}
-			else
-			{
-				// update based on new u and v values
-				compute_upwinding_P_updates(
-						i_h,
-						i_u+o_dt*o_u_t,
-						i_v+o_dt*o_v_t,
-						o_h_t
-					);
-			}
+			// up/down winding
+			compute_upwinding_P_updates(
+					i_h,
+					i_u,
+					i_v,
+					o_h_t
+				);
 		}
 #if 0
 		if (simVars.sim.potential_viscosity != 0)

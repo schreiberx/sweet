@@ -138,6 +138,61 @@ public:
 		return tv;
 	}
 
+#if SWEET_USE_SPECTRAL_SPACE
+	/**
+	 * Diffusion or hyperviscosity coefficients
+	 * Simply calculates the spectral coefficients
+	 *  see "Numerical Techniques for Global Atmospheric Models", page 500
+	 *
+	 * i_order (q) needs to be even!!! (second or forth order usually)
+	 *
+	 * Returns operator D^q
+	 *
+	 */
+	inline DataArray<2> diffusion_coef(
+			int i_order
+	)
+	{
+		//Check if even
+		assert( i_order % 2 == 0);
+		assert( i_order > 0);
+		DataArray<2> out = diff2_c_x+diff2_c_y;
+
+		for (int i = 1; i < i_order/2; i++)
+			out = pow(-1, i)*(diff2_c_x(out)+diff2_c_y(out));
+
+		return out;
+	}
+
+	/**
+	 * Calculates implicit diffusion (applies 1/(1-mu*dt*D^q) to spectrum)
+	 *  see "Numerical Techniques for Global Atmospheric Models", page 500
+	 *
+	 * i_order (q) needs to be even!!! (second or forth order usually)
+	 * i_coef is mu*dt
+	 *
+	 * Only works in spectral space
+	 *
+	 */
+	inline DataArray<2> implicit_diffusion(
+			const DataArray<2> &i_data,
+			double i_coef,
+			int i_order
+	)
+	{
+		DataArray<2> out=i_data;
+
+		//Get diffusion coefficients (these are the -mu*dt*D^q, where q is the order
+		DataArray<2> diff = -i_coef*diffusion_coef(i_order);
+		//Sum 1 to get denominator
+		diff=diff.spec_addScalarAll(1.0);
+		//Invert
+		diff=diff.spec_invert();
+		//apply to data
+		out=diff(out);
+		return out;
+	}
+#endif
 
 	Operators2D(
 		std::size_t res[2],		///< resolution
@@ -246,12 +301,13 @@ public:
 
 			/*
 			 * Note, that there's a last column which is set to 0 (Nyquist freq, noise in signal)
+			 * PXT: removed this setting to zero (changed < to <=), because of 2nd and higher order differentiation
 			 */
 			diff_c_x.set_spec_all(0, 0);
 
-			for (int j = 0; j < (int)diff_c_x.resolution[1]/2; j++)
+			for (int j = 0; j <= (int)diff_c_x.resolution[1]/2; j++)
 			{
-				for (int i = 0; i < (int)diff_c_x.resolution[0]/2; i++)
+				for (int i = 0; i <= (int)diff_c_x.resolution[0]/2; i++)
 				{
 					diff_c_x.set_spec(
 							j, i,
@@ -272,9 +328,9 @@ public:
 			 */
 			diff_c_y.set_spec_all(0, 0);
 			// TODO: shift j for loop by +1
-			for (int j = 0; j < (int)diff_c_y.resolution[1]/2-1; j++)
+			for (int j = 0; j <= (int)diff_c_y.resolution[1]/2-1; j++)
 			{
-				for (int i = 0; i < (int)diff_c_y.resolution[0]/2; i++)
+				for (int i = 0; i <= (int)diff_c_y.resolution[0]/2; i++)
 				{
 					diff_c_y.set_spec(
 							j+1, i,
@@ -324,8 +380,56 @@ public:
 			diff_b_y.kernel_stencil_setup(d_b_y_kernel, 1.0/h[1]);
 
 
+
+#if 1
+			/*
+			 * 2nd order differential operators
+			 */
+			diff2_c_x.set_spec_all(0, 0);
+
+			for (int j = 0; j <= (int)diff_c_x.resolution[1]/2; j++)
+			{
+				for (int i = 0; i <= (int)diff_c_x.resolution[0]/2; i++)
+				{
+					double fac = (double)i*2.0*M_PIl/(double)i_domain_size[0];
+
+					diff2_c_x.set_spec(
+							j, i,
+							-fac*fac,
+							0
+						);
+					diff2_c_x.set_spec(
+							diff_c_x.resolution[1]-1-j, i,
+							-fac*fac,
+							0
+						);
+				}
+			}
+
+
+			diff2_c_y.set_spec_all(0, 0);
+
+			for (int j = 0; j <= (int)diff_c_y.resolution[1]/2-1; j++)
+			{
+				for (int i = 0; i <= (int)diff_c_y.resolution[0]/2; i++)
+				{
+					double fac = (double)(j+1)*2.0*M_PIl/(double)i_domain_size[1];
+					diff2_c_y.set_spec(
+							j+1, i,
+							-fac*fac,
+							0
+						);
+					diff2_c_y.set_spec(
+							diff_c_y.resolution[1]-(j+1), i,
+							-fac*fac,
+							0
+						);
+				}
+			}
+#else
 			diff2_c_x = diff_c_x(diff_c_x);
 			diff2_c_y = diff_c_y(diff_c_y);
+#endif
 
 #endif
 		}

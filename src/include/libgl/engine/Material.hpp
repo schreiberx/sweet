@@ -28,7 +28,7 @@
 #include <libgl/core/GlTexture.hpp>
 #include "libmath/CGlSlMath.hpp"
 
-class CGlMaterial
+class GlMaterial
 {
 public:
 	std::string name;			///< name for material (just for convenience)
@@ -41,7 +41,7 @@ public:
 	GlTexture *texture0;
 	GlTexture *normal0;
 
-	CGlMaterial()	:
+	GlMaterial()	:
 		ambient_color3(0.2,0.2,0.2),
 		diffuse_color3(0.6,0.6,0.6),
 		specular_exponent(20),
@@ -85,7 +85,7 @@ public:
 		}
 	}
 
-	~CGlMaterial()
+	~GlMaterial()
 	{
 		cleanup();
 	}

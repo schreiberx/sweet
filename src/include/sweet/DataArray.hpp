@@ -24,7 +24,7 @@
 #include <iostream>
 #include <string.h>
 #include <sweet/openmp_helper.hpp>
-#include <sweet/NUMABlockAlloc.hpp>
+#include "MemBlockAlloc.hpp"
 
 #ifndef SWEET_USE_SPECTRAL_SPACE
 	#define SWEET_USE_SPECTRAL_SPACE	1
@@ -117,7 +117,7 @@ public:
 	 *
 	 * This is then followed by an assignment of this data to h.
 	 */
-	bool temporary_data;
+//	bool temporary_data;
 
 
 #if 0
@@ -177,12 +177,12 @@ private:
 			bool i_first_touch_initialize = true	///< true: initialize the data buffers with dummy data for first touch policy of page allocation on shared-memory systems
 	)
 	{
-		NUMABlockAlloc::free(array_data_cartesian_space, array_data_cartesian_length*sizeof(double));
-		array_data_cartesian_space = NUMABlockAlloc::alloc<double>(array_data_cartesian_length*sizeof(double));
+		MemBlockAlloc::free(array_data_cartesian_space, array_data_cartesian_length*sizeof(double));
+		array_data_cartesian_space = MemBlockAlloc::alloc<double>(array_data_cartesian_length*sizeof(double));
 
 #if SWEET_USE_SPECTRAL_SPACE
-		NUMABlockAlloc::free(array_data_spectral_space, array_data_cartesian_length*sizeof(double));
-		array_data_spectral_space = NUMABlockAlloc::alloc<double>(array_data_spectral_length*sizeof(double));
+		MemBlockAlloc::free(array_data_spectral_space, array_data_cartesian_length*sizeof(double));
+		array_data_spectral_space = MemBlockAlloc::alloc<double>(array_data_spectral_length*sizeof(double));
 #endif
 
 		if (i_first_touch_initialize)
@@ -329,14 +329,14 @@ public:
 			plan_backward_output_length = i_dataArray.array_data_cartesian_length;
 			plan_forward_output_length = i_dataArray.array_data_spectral_length;
 
-			double *data_cartesian = NUMABlockAlloc::alloc<double>(i_dataArray.array_data_cartesian_length*sizeof(double));
+			double *data_cartesian = MemBlockAlloc::alloc<double>(i_dataArray.array_data_cartesian_length*sizeof(double));
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 			for (std::size_t i = 0; i < i_dataArray.array_data_cartesian_length; i++)
 				data_cartesian[i] = -123;	// dummy data
 
-			double *data_spectral = NUMABlockAlloc::alloc<double>(i_dataArray.array_data_spectral_length*sizeof(double));
+			double *data_spectral = MemBlockAlloc::alloc<double>(i_dataArray.array_data_spectral_length*sizeof(double));
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
@@ -394,8 +394,8 @@ public:
 			fftw_export_wisdom_to_filename(fftw_load_wisdom_filename);
 #endif
 
-			NUMABlockAlloc::free(data_cartesian, i_dataArray.array_data_cartesian_length*sizeof(double));
-			NUMABlockAlloc::free(data_spectral, i_dataArray.array_data_spectral_length*sizeof(double));
+			MemBlockAlloc::free(data_cartesian, i_dataArray.array_data_cartesian_length*sizeof(double));
+			MemBlockAlloc::free(data_spectral, i_dataArray.array_data_spectral_length*sizeof(double));
 		}
 
 		void fft_forward(
@@ -478,13 +478,13 @@ public:
 	DataArray(
 			const DataArray<D> &i_dataArray
 	)	:
-		array_data_cartesian_space(nullptr),
+		array_data_cartesian_space(nullptr)
 #if SWEET_USE_SPECTRAL_SPACE
-		array_data_spectral_space(nullptr),
-		aliasing_scaled(i_dataArray.aliasing_scaled),
+		,array_data_spectral_space(nullptr),
+		aliasing_scaled(i_dataArray.aliasing_scaled)
 #endif
 
-		temporary_data(false)
+//		,temporary_data(false)
 	{
 		for (int i = 0; i < D; i++)
 		{
@@ -537,8 +537,16 @@ public:
 				array_data_spectral_space[i] = i_dataArray.array_data_spectral_space[i];
 		}
 
-		FFTWSingletonClass* fft_ptr = *fftGetSingletonPtr();
-		fft_ptr->ref_counter++;
+		if (aliasing_scaled)
+		{
+			FFTWSingletonClass* fft_ptr = *fftAliasingGetSingletonPtr();
+			fft_ptr->ref_counter++;
+		}
+
+		{
+			FFTWSingletonClass* fft_ptr = *fftGetSingletonPtr();
+			fft_ptr->ref_counter++;
+		}
 #endif
 	}
 
@@ -551,12 +559,12 @@ public:
 	DataArray(
 			DataArray<D> &&i_dataArray
 	)	:
-		array_data_cartesian_space(nullptr),
+		array_data_cartesian_space(nullptr)
 #if SWEET_USE_SPECTRAL_SPACE
-		array_data_spectral_space(nullptr),
-		aliasing_scaled(i_dataArray.aliasing_scaled),
+		,array_data_spectral_space(nullptr),
+		aliasing_scaled(i_dataArray.aliasing_scaled)
 #endif
-		temporary_data(false)
+//		,temporary_data(false)
 	{
 		for (int i = 0; i < D; i++)
 		{
@@ -589,13 +597,21 @@ public:
 		array_data_spectral_space_valid = i_dataArray.array_data_spectral_space_valid;
 		i_dataArray.array_data_spectral_space_valid = false;
 
-		auto fft_ptr = *fftGetSingletonPtr();
-		fft_ptr->ref_counter++;
+		if (aliasing_scaled)
+		{
+			FFTWSingletonClass* fft_ptr = *fftAliasingGetSingletonPtr();
+			fft_ptr->ref_counter++;
+		}
+
+		{
+			FFTWSingletonClass* fft_ptr = *fftGetSingletonPtr();
+			fft_ptr->ref_counter++;
+		}
 #endif
 	}
 
 
-
+#if 0
 	/**
 	 * special empty constructor
 	 *
@@ -613,13 +629,14 @@ public:
 		temporary_data(false)
 	{
 	}
+#endif
 
 
 public:
 	inline
 	void checkConsistency(bool debug = false)	const
 	{
-#if SWEET_USE_SPECTRAL_SPACE && SWEET_DEBUG_MODE==1
+#if SWEET_USE_SPECTRAL_SPACE && SWEET_DEBUG_MODE==1 && 0
 
 		static bool volatile inCheck = false;
 
@@ -735,7 +752,8 @@ public:
 	 */
 public:
 	void setup(
-			const std::size_t i_resolution[D]	///< size of array
+			const std::size_t i_resolution[D],	///< size of array
+			bool i_anti_aliasing = false		///< set to true if this should be used as an anti-aliasing dataArray
 	)
 	{
 		assert(array_data_cartesian_space == nullptr);
@@ -757,6 +775,10 @@ public:
 #if SWEET_USE_SPECTRAL_SPACE
 		// initialize fft if not yet done
 		fftTestAndInit(*this);
+
+		aliasing_scaled = i_anti_aliasing;
+		if (i_anti_aliasing)
+			fftAliasingTestAndInit(*this);
 #endif
 
 		checkConsistency();
@@ -768,30 +790,49 @@ public:
 	 */
 public:
 	DataArray(
-		const std::size_t i_resolution[D]	///< size of array
+		const std::size_t i_resolution[D],	///< size of array for each dimension,
+		bool i_anti_aliasing = false		///< set to true if this should be used as an anti-aliasing dataArray
 	)	:
-		array_data_cartesian_space(nullptr),
+		array_data_cartesian_space(nullptr)
 #if SWEET_USE_SPECTRAL_SPACE
-		array_data_spectral_space(nullptr),
-		aliasing_scaled(false),
+		,array_data_spectral_space(nullptr),
+		aliasing_scaled(false)
 #endif
-		temporary_data(false)
+//		,temporary_data(false)
 	{
-		setup(i_resolution);
+		setup(i_resolution, i_anti_aliasing);
 	}
 
 
 
 	~DataArray()
 	{
-		NUMABlockAlloc::free(array_data_cartesian_space, array_data_cartesian_length*sizeof(double));
+		MemBlockAlloc::free(array_data_cartesian_space, array_data_cartesian_length*sizeof(double));
 
 #if SWEET_USE_SPECTRAL_SPACE
+		MemBlockAlloc::free(array_data_spectral_space, array_data_spectral_length*sizeof(double));
 
-		NUMABlockAlloc::free(array_data_spectral_space, array_data_spectral_length*sizeof(double));
+		/*
+		 * If this is an aliasing DataArray, reduce the reference counter of this array
+		 */
+		if (aliasing_scaled)
+		{
+			FFTWSingletonClass* fft_anti_ptr = *fftAliasingGetSingletonPtr();
+			if (fft_anti_ptr == nullptr)
+			{
+				std::cerr << "FFTS for aliasing DataArrays still existing, but no FFTW handlers!" << std::endl;
+				exit(1);
+			}
+			fft_anti_ptr->ref_counter--;
+
+			/*
+			 * NOTE: The aliasing plans are not free'd here. See below for the reason
+			 */
+		}
 
 		{
-			auto fft_ptr = *fftGetSingletonPtr();
+			FFTWSingletonClass* fft_ptr = *fftGetSingletonPtr();
+			assert(fft_ptr != nullptr);
 			fft_ptr->ref_counter--;
 
 			assert(fft_ptr->ref_counter >= 0);
@@ -800,26 +841,57 @@ public:
 				delete *fftGetSingletonPtr();
 				*fftGetSingletonPtr() = nullptr;
 
-				// also free the aliasing stuff
-//				if (fft_ptr->ref_counter == 0)
 				{
-					delete *fftAliasingGetSingletonPtr();
-					*fftAliasingGetSingletonPtr() = nullptr;
+					/*
+					 * Handle anti-aliasing stuff here.
+					 * We don't free the Anti-aliasing FFTW plans if their reference counter is zero
+					 * since these this reference counter could get 0 during each time step.
+					 * This frequent plan creation would significantly slow down the program.
+					 */
+
+					// also free the aliasing stuff
+					FFTWSingletonClass* fft_anti_ptr = *fftAliasingGetSingletonPtr();
+					if (fft_anti_ptr != nullptr)
+					{
+						if (fft_anti_ptr->ref_counter != 0)
+						{
+							std::cerr << "SWEET requires all DataArrays which were used for Antialiasing to be freed before the standard DataArrays!" << std::endl;
+							assert(false);
+							exit(1);
+						}
+
+						delete fft_anti_ptr;
+						*fftAliasingGetSingletonPtr() = nullptr;
+					}
 				}
 			}
 		}
 
-		if (aliasing_scaled)
-		{
-			auto fft_ptr = *fftAliasingGetSingletonPtr();
-			fft_ptr->ref_counter--;
-		}
 
 #else
-		NUMABlockAlloc::free(kernel_data, sizeof(double)*kernel_size*kernel_size);
+		MemBlockAlloc::free(kernel_data, sizeof(double)*kernel_size*kernel_size);
 #endif
 	}
 
+
+	static void checkRefCounters()
+	{
+#if SWEET_USE_SPECTRAL_DEALIASING
+		if (*DataArray<D>::fftGetSingletonPtr() != nullptr)
+		{
+			std::cerr << "FFT plans not yet released." << std::endl;
+			std::cerr << "This typically means a memory leak if this is the end of the program and all classes deconstructors have been called" << std::endl;
+			std::cerr << " Reference counter: " << (*DataArray<D>::fftGetSingletonPtr())->ref_counter << std::endl;
+		}
+
+		if (*DataArray<D>::fftAliasingGetSingletonPtr() != nullptr)
+		{
+			std::cerr << "FFT plans for ANTI ALIASING not yet released." << std::endl;
+			std::cerr << "This typically means a memory leak if this is the end of the program and all classes deconstructors have been called" << std::endl;
+			std::cerr << " Reference counter: " << (*DataArray<D>::fftAliasingGetSingletonPtr())->ref_counter << std::endl;
+		}
+#endif
+	}
 
 
 	inline
@@ -1382,7 +1454,7 @@ public:
 
 
 private:
-	FFTWSingletonClass** fftGetSingletonPtr()	const
+	static FFTWSingletonClass** fftGetSingletonPtr()
 	{
 		static FFTWSingletonClass *fftw_singleton_data = nullptr;
 		return &fftw_singleton_data;
@@ -1390,7 +1462,7 @@ private:
 
 
 private:
-	FFTWSingletonClass* fftTestAndInit(
+	static FFTWSingletonClass* fftTestAndInit(
 		DataArray<D> &i_dataArray
 	)
 	{
@@ -1410,7 +1482,10 @@ private:
 	}
 
 private:
-	FFTWSingletonClass** fftAliasingGetSingletonPtr()	const
+	/**
+	 * TODO: Replace this with returning a reference
+	 */
+	static FFTWSingletonClass** fftAliasingGetSingletonPtr()
 	{
 		static FFTWSingletonClass *fftw_singleton_data = nullptr;
 		return &fftw_singleton_data;
@@ -1421,6 +1496,8 @@ private:
 		DataArray<D> &i_dataArray
 	)	const
 	{
+		assert(i_dataArray.aliasing_scaled);
+
 		FFTWSingletonClass **fftw_singleton_data = fftAliasingGetSingletonPtr();
 
 		if (*fftw_singleton_data != nullptr)
@@ -1438,7 +1515,7 @@ private:
 
 public:
 	inline
-	void requestDataInSpectralSpace()	const
+	const DataArray<D>& requestDataInSpectralSpace() const
 	{
 #if SWEET_USE_SPECTRAL_SPACE==0
 		std::cerr << "requestDataInSpectralSpace: spectral space is disabled" << std::endl;
@@ -1457,7 +1534,7 @@ public:
 #endif
 
 		if (array_data_spectral_space_valid)
-			return;		// nothing to do
+			return *this;		// nothing to do
 
 		if (!array_data_cartesian_space_valid)
 		{
@@ -1481,26 +1558,27 @@ public:
 //		rw_array_data->array_data_cartesian_space_valid = false;
 		checkConsistency();
 #endif
+		return *this;
 	}
 
 
 	inline
-	void requestDataInCartesianSpace()	const
+	const DataArray<D>& requestDataInCartesianSpace() const
 	{
 #if SWEET_USE_SPECTRAL_SPACE==1
 		checkConsistency();
 
 		if (array_data_cartesian_space_valid)
-			return;		// nothing to do
+			return *this;		// nothing to do
 
 		assert(array_data_spectral_space_valid == true);
 
 		DataArray<D> *rw_array_data = (DataArray<D>*)this;
 
-		if (aliasing_scaled)
-			(*fftAliasingGetSingletonPtr())->fft_backward(*rw_array_data);
-		else
+		if (!aliasing_scaled)
 			(*fftGetSingletonPtr())->fft_backward(*rw_array_data);
+		else
+			(*fftAliasingGetSingletonPtr())->fft_backward(*rw_array_data);
 
 		rw_array_data->array_data_cartesian_space_valid = true;
 
@@ -1511,6 +1589,7 @@ public:
 
 		checkConsistency();
 #endif
+	return *this;
 	}
 
 
@@ -1518,7 +1597,7 @@ public:
 	DataArray<D> return_one_if_positive()
 	{
 		DataArray<D> out(this->resolution);
-		out.temporary_data = true;
+//		out.temporary_data = true;
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
@@ -1540,7 +1619,7 @@ public:
 	DataArray<D> return_value_if_positive()	const
 	{
 		DataArray<D> out(this->resolution);
-		out.temporary_data = true;
+//		out.temporary_data = true;
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
@@ -1561,7 +1640,7 @@ public:
 	DataArray<D> return_one_if_negative()	const
 	{
 		DataArray<D> out(this->resolution);
-		out.temporary_data = true;
+//		out.temporary_data = true;
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
@@ -1582,7 +1661,7 @@ public:
 	DataArray<D> return_value_if_negative()	const
 	{
 		DataArray<D> out(this->resolution);
-		out.temporary_data = true;
+//		out.temporary_data = true;
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
@@ -1838,7 +1917,7 @@ public:
 
 
 	/**
-	 * return the maximum of all absolute values
+	 * return the sqrt of the sum of the squared values
 	 */
 	double reduce_norm2()	const
 	{
@@ -1858,7 +1937,7 @@ public:
 
 
 	/**
-	 * return the maximum of all absolute values, use quad precision for reduction
+	 * return the sqrt of the sum of the squared values, use quad precision for reduction
 	 */
 	double reduce_norm2_quad()	const
 	{
@@ -1991,7 +2070,7 @@ public:
 #if SWEET_USE_SPECTRAL_SPACE == 0
 
 		kernel_size = S;
-		kernel_data = NUMABlockAlloc::alloc<double>(sizeof(double)*S*S);
+		kernel_data = MemBlockAlloc::alloc<double>(sizeof(double)*S*S);
 		for (int y = 0; y < S; y++)
 			for (int x = 0; x < S; x++)
 				kernel_data[y*S+x] = i_kernel_array[S-1-y][x];
@@ -2292,7 +2371,7 @@ public:
 	)	const
 	{
 		DataArray<D> out(this->resolution);
-		out.temporary_data = true;
+//		out.temporary_data = true;
 
 		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
 
@@ -2364,6 +2443,7 @@ public:
 	{
 		std::size_t new_resolution[D];
 
+		//Resolution for augmented cartesian space arrays (3N/2)
 		if (i_new_resolution == nullptr)
 		{
 			for (int i = 0; i < D; i++)
@@ -2387,12 +2467,19 @@ public:
 				new_resolution[i] = i_new_resolution[i];
 		}
 
+		// Augmented array (temporary)
 		DataArray<D> out(new_resolution);
-		out.temporary_data = false;
+//		out.temporary_data = false;
 		out.aliasing_scaled = true;
 
+		/*
+		 * Test if the FFTW plans for aliasing were initialized before.
+		 * If not, then initialize them.
+		 * These FFTW plans are of higher resolution than the standard ones.
+		 */
 		fftAliasingTestAndInit(out);
 
+		//Get spectral data
 		requestDataInSpectralSpace();
 
 		if (D != 2)
@@ -2401,6 +2488,7 @@ public:
 			exit(-1);
 		}
 
+		//Zero temporary array
 		out.set_spec_all(0, 0);
 
 		// TODO: this does not work once distributed memory is available
@@ -2409,7 +2497,13 @@ public:
 #endif
 		for (std::size_t j = 0; j < resolution_spec[1]/2; j++)
 		{
-			// lower quadrant
+			/*
+			 * Copy the spectrum of data_array to the temporary array
+			 *    --> this will leave blank the high modes of the tmp array, since it has 3N/2 modes instead of N
+			 * We use memcpy, since there are typically optimized routines available.
+			 * Writing this as a for loop can result in similar or even better performance.
+			 * lower quadrant
+			 */
 			memcpy(
 					out.array_data_spectral_space+(j*out.range_spec_size[0])*2,
 					array_data_spectral_space+(j*range_spec_size[0])*2,
@@ -2431,6 +2525,7 @@ public:
 				);
 		}
 
+		//Scale for temporary array for the correct Fourier constant relative to resolution
 		double scale = ((double)new_resolution[0]*(double)new_resolution[1])/((double)resolution[0]*(double)resolution[1]);
 
 #if SWEET_THREADING
@@ -2444,6 +2539,14 @@ public:
 
 
 		checkConsistency();
+
+		/*
+		 *The temporary array becomes the main array, but this means that it will have 3N/2 modes and ...
+		 * The Cartesian space data is lost.
+		 * In general, both data sets have to match when converted forward or backward or only one of them is valid.
+		 * If they are not consistently matching (converting forward/backward), this would result in an exception.
+		 */
+
 		return out;
 	}
 
@@ -2451,13 +2554,14 @@ public:
 			std::size_t *i_new_resolution
 	)
 	{
-		aliasing_scaled = true;
+		assert(aliasing_scaled == true);
+//		aliasing_scaled = true;
 
 		DataArray<D> out(i_new_resolution);
-		out.temporary_data = false;
+//		out.temporary_data = false;
 		out.aliasing_scaled = false;
 
-		fftAliasingTestAndInit(out);
+//		fftAliasingTestAndInit(out);
 
 		requestDataInSpectralSpace();
 
@@ -2498,14 +2602,6 @@ public:
 		out.array_data_spectral_space_valid = true;
 		out.array_data_cartesian_space_valid = false;
 
-/*
-		std::cout << "1 LJASDLKFJAKJLSDF" << std::endl;
-		this->printSpectrum();
-		std::cout << "2 LJASDLKFJAKJLSDF" << std::endl;
-		out.printSpectrum();
-		std::cout << "3 LJASDLKFJAKJLSDF" << std::endl;
-*/
-
 
 		double scale = ((double)i_new_resolution[0]*(double)i_new_resolution[1])/((double)resolution[0]*(double)resolution[1]);
 
@@ -2520,9 +2616,119 @@ public:
 		checkConsistency();
 		return out;
 	}
-
 #endif
 
+
+#if SWEET_USE_SPECTRAL_SPACE
+	/**
+	 * Zero high frequency modes (beyond 2N/3)
+	 *
+	 *Example of Spectrum with N=16: all high modes will be set to zero
+	 * 	(0, 1, Low )	(1, 1, Low )	(2, 1, Low )	(3, 1, Low )	(4, 1, Low )	(5, 1, Low )	(6, 1, High)	(7, 1, High)	(8, 1, High)
+	 * 	(0, 2, Low )	(1, 2, Low )	(2, 2, Low )	(3, 2, Low )	(4, 2, Low )	(5, 2, Low )	(6, 2, High)	(7, 2, High)	(8, 2, High)
+	 * 	(0, 3, Low )	(1, 3, Low )	(2, 3, Low )	(3, 3, Low )	(4, 3, Low )	(5, 3, Low )	(6, 3, High)	(7, 3, High)	(8, 3, High)
+	 *	(0, 4, Low )	(1, 4, Low )	(2, 4, Low )	(3, 4, Low )	(4, 4, Low )	(5, 4, Low )	(6, 4, High)	(7, 4, High)	(8, 4, High)
+	 *	(0, 5, Low )	(1, 5, Low )	(2, 5, Low )	(3, 5, Low )	(4, 5, Low )	(5, 5, Low )	(6, 5, High)	(7, 5, High)	(8, 5, High)
+	 *	(0, 6, High)	(1, 6, High)	(2, 6, High)	(3, 6, High)	(4, 6, High)	(5, 6, High)	(6, 6, High)	(7, 6, High)	(8, 6, High)
+	 *	(0, 7, High)	(1, 7, High)	(2, 7, High)	(3, 7, High)	(4, 7, High)	(5, 7, High)	(6, 7, High)	(7, 7, High)	(8, 7, High)
+	 *	(0, 8, High)	(1, 8, High)	(2, 8, High)	(3, 8, High)	(4, 8, High)	(5, 8, High)	(6, 8, High)	(7, 8, High)	(8, 8, High)
+	 *	(0, 7, High)	(1, 7, High)	(2, 7, High)	(3, 7, High)	(4, 7, High)	(5, 7, High)	(6, 7, High)	(7, 7, High)	(8, 7, High)
+	 *	(0, 6, High)	(1, 6, High)	(2, 6, High)	(3, 6, High)	(4, 6, High)	(5, 6, High)	(6, 6, High)	(7, 6, High)	(8, 6, High)
+	 *	(0, 5, Low)		(1, 5, Low)		(2, 5, Low)		(3, 5, Low)		(4, 5, Low)		(5, 5, Low)		(6, 5, High)	(7, 5, High)	(8, 5, High)
+	 *	(0, 4, Low)		(1, 4, Low)		(2, 4, Low)		(3, 4, Low)		(4, 4, Low)		(5, 4, Low)		(6, 4, High)	(7, 4, High)	(8, 4, High)
+	 *	(0, 3, Low)		(1, 3, Low)		(2, 3, Low)		(3, 3, Low)		(4, 3, Low)		(5, 3, Low)		(6, 3, High)	(7, 3, High)	(8, 3, High)
+	 *	(0, 2, Low)		(1, 2, Low)		(2, 2, Low)		(3, 2, Low)		(4, 2, Low)		(5, 2, Low)		(6, 2, High)	(7, 2, High)	(8, 2, High)
+	 *	(0, 1, Low)		(1, 1, Low)		(2, 1, Low)		(3, 1, Low)		(4, 1, Low)		(5, 1, Low)		(6, 1, High)	(7, 1, High)	(8, 1, High)
+	 *	(0, 0, Low)		(1, 0, Low)		(2, 0, Low)		(3, 0, Low)		(4, 0, Low)		(5, 0, Low)		(6, 0, High)	(7, 0, High)	(8, 0, High)
+	 *
+	 *
+	 */
+	inline
+	DataArray<D>& aliasing_zero_high_modes()
+	{
+		//std::cout<<"Cartesian"<<std::endl;
+		//printArrayData();
+		//Get spectral data
+		requestDataInSpectralSpace();
+		//std::cout<<"Spectral input data"<<std::endl;
+		//printSpectrum();
+
+		if (D != 2)
+		{
+			std::cerr << "TODO: Only 2D so far supported" << std::endl;
+			exit(-1);
+		}
+
+		//Upper part
+		std::size_t i=1; //modenumber in x
+		std::size_t j=1; //modenumber in y
+
+		// TODO: this does not work once distributed memory is available
+#if SWEET_THREADING
+//#pragma omp parallel for OPENMP_PAR_SIMD
+#endif
+		for (std::size_t y = resolution_spec[1]-1; y > resolution_spec[1]/2; y--)
+		{
+			i=0;
+			for (std::size_t x = 0; x < resolution_spec[0]; x++)
+			{
+
+				//double value_re = spec_getRe(y, x);
+				//double value_im = spec_getIm(y, x);
+				if( x > 2*(resolution_spec[0]-1)/3 || j > 2*(resolution_spec[1]/2)/3 )
+				//if( x > 2*(resolution_spec[0]-1)/3-1 || j > 2*(resolution_spec[1]/2)/3-1 )
+				{
+					set_spec( y, x, 0.0, 0.0);
+					//std::cout << "(" << i << ", " << j << ", High)\t";
+				}
+				else
+				{
+					//std::cout << "(" << i << ", " << j << ", Low )\t";
+				}
+				i++;
+			}
+			j++;
+			//std::cout << std::endl;
+		}
+
+
+		//Lower part
+		i=0; //modenumber in x
+		j=resolution_spec[1]/2; //modenumber in y
+		// TODO: this does not work once distributed memory is available
+#if SWEET_THREADING
+//#pragma omp parallel for OPENMP_PAR_SIMD
+#endif
+		for (int y = (int) resolution_spec[1]/2; y >= 0; y--)
+		{
+			i=0;
+			for (std::size_t x = 0; x < resolution_spec[0]; x++)
+			{
+				//double value_re = spec_getRe(y, x);
+				//double value_im = spec_getIm(y, x);
+				if( x > 2*(resolution_spec[0]-1)/3 ||  y > 2*((int) resolution_spec[1]/2)/3 )
+				//if( x > 2*(resolution_spec[0]-1)/3-1 ||  y > 2*((int) resolution_spec[1]/2)/3-1 )
+				{
+					set_spec( y, x, 0.0, 0.0);
+					//std::cout << "(" << i << ", " << j << ", High)\t";
+				}
+				else
+				{
+					//std::cout << "(" << i << ", " << j << ", Low)\t";
+				}
+				i++;
+			}
+			j--;
+			//std::cout << std::endl;
+		}
+
+		requestDataInCartesianSpace();
+
+		checkConsistency();
+
+		return *this;
+	}
+#endif
 
 
 public:
@@ -2584,11 +2790,11 @@ public:
 			/**
 			 * If this data was generated based on temporary data sets (e.g. via h = hu/u), then only swap pointers.
 			 */
-			if (i_dataArray.temporary_data)
-			{
-				std::swap(array_data_cartesian_space, ((DataArray<D> &)i_dataArray).array_data_cartesian_space);
-			}
-			else
+//			if (i_dataArray.temporary_data)
+//			{
+//				std::swap(array_data_cartesian_space, ((DataArray<D> &)i_dataArray).array_data_cartesian_space);
+//			}
+//			else
 			{
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
@@ -2609,11 +2815,11 @@ public:
 		if (i_dataArray.array_data_spectral_space_valid)
 		{
 			array_data_spectral_space_valid = true;
-			if (i_dataArray.temporary_data)
-			{
-				std::swap(array_data_spectral_space, ((DataArray<D> &)i_dataArray).array_data_spectral_space);
-			}
-			else
+//			if (i_dataArray.temporary_data)
+//			{
+//				std::swap(array_data_spectral_space, ((DataArray<D> &)i_dataArray).array_data_spectral_space);
+//			}
+//			else
 			{
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
@@ -2642,7 +2848,7 @@ public:
 	)	const
 	{
 		DataArray<D> out(this->resolution);
-		out.temporary_data = true;
+//		out.temporary_data = true;
 
 #if SWEET_USE_SPECTRAL_SPACE
 		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
@@ -2916,7 +3122,7 @@ public:
 		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
 
 		DataArray<D> out(this->resolution);
-		out.temporary_data = true;
+//		out.temporary_data = true;
 
 #if SWEET_USE_SPECTRAL_SPACE
 
@@ -2963,7 +3169,7 @@ public:
 	)	const
 	{
 		DataArray<D> out(this->resolution);
-		out.temporary_data = true;
+//		out.temporary_data = true;
 
 #if SWEET_USE_SPECTRAL_SPACE
 
@@ -3208,7 +3414,7 @@ public:
 		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
 
 		DataArray<D> out(resolution);
-		out.temporary_data = true;
+//		out.temporary_data = true;
 
 #if SWEET_USE_SPECTRAL_SPACE
 
@@ -3257,7 +3463,7 @@ public:
 	)	const
 	{
 		DataArray<D> out(this->resolution);
-		out.temporary_data = true;
+//		out.temporary_data = true;
 
 #if SWEET_USE_SPECTRAL_SPACE
 
@@ -3317,7 +3523,7 @@ public:
 	)	const
 	{
 		DataArray<D> out(this->resolution);
-		out.temporary_data = true;
+//		out.temporary_data = true;
 
 #if SWEET_USE_SPECTRAL_SPACE
 
@@ -3355,8 +3561,10 @@ public:
 	 * Invert sign
 	 */
 	inline
-	DataArray<D>& operator-()
+	DataArray<D> operator-()
 	{
+		DataArray<D> out(this->resolution);
+
 #if SWEET_USE_SPECTRAL_SPACE
 
 		requestDataInSpectralSpace();
@@ -3365,23 +3573,23 @@ public:
 		#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 		for (std::size_t i = 0; i < array_data_spectral_length; i++)
-			array_data_spectral_space[i] = -array_data_spectral_space[i];
+			out.array_data_spectral_space[i] = -array_data_spectral_space[i];
 
-		array_data_cartesian_space_valid = false;
-		array_data_spectral_space_valid = true;
+		out.array_data_cartesian_space_valid = false;
+		out.array_data_spectral_space_valid = true;
 
 #else
 
 		requestDataInCartesianSpace();
 
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			array_data_cartesian_space[i] = -array_data_cartesian_space[i];
+			out.array_data_cartesian_space[i] = -array_data_cartesian_space[i];
 
 #endif
 
 
-		checkConsistency();
-		return *this;
+		out.checkConsistency();
+		return out;
 	}
 
 
@@ -3391,27 +3599,42 @@ public:
 	 */
 	inline
 	DataArray<D> operator*(
-			const DataArray<D> &i_array_data
+			const DataArray<D> &i_array_data	///< this class times i_array_data
 	)	const
 	{
+
+		// Call as
+		// 		data_array.operator*(i_array_data)
+		// which is identical to
+		//		data_array * i_array_data
 		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
 
+		//This is the actual product result, with the correct N resolution
 		DataArray<D> out(i_array_data.resolution);
-		out.temporary_data = true;
+//		out.temporary_data = true;
 
 #if SWEET_USE_SPECTRAL_SPACE && SWEET_USE_SPECTRAL_DEALIASING
 
+		// Array on the left of *, augmented to 3N/2 with zeros on high end spectrum
+		// Any previous data in cartesian space will be lost?
 		DataArray<D> u = aliasing_scaleUp();
-		DataArray<D> v = rw_array_data.aliasing_scaleUp();
+		assert(u.aliasing_scaled);
 
+		// The input array (right of *) augmented to 3N/2 with zeros on high end spectrum
+		DataArray<D> v = rw_array_data.aliasing_scaleUp();
+		assert(v.aliasing_scaled);
+
+		//Convert to cartesian
 		u.requestDataInCartesianSpace();
 		v.requestDataInCartesianSpace();
 
-		DataArray<D> scaled_output(u.resolution);
+		// This array is augmented to 3N/2, since u is
+		DataArray<D> scaled_output(u.resolution, true);
 
 #if SWEET_THREADING
 		#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
+		//Calculate the product element wise in cartesian space
 		for (std::size_t i = 0; i < scaled_output.array_data_cartesian_length; i++)
 			scaled_output.array_data_cartesian_space[i] =
 					u.array_data_cartesian_space[i]*
@@ -3420,6 +3643,8 @@ public:
 		scaled_output.array_data_cartesian_space_valid = true;
 		scaled_output.array_data_spectral_space_valid = false;
 
+		//Copies the spectrum of the product to the output data_array, which has the correct resolution N
+		// As a consequence, all high modes are ignored (beyond N to 3N/2)
 		out = scaled_output.aliasing_scaleDown(out.resolution);
 
 		out.array_data_cartesian_space_valid = false;
@@ -3448,6 +3673,55 @@ public:
 		return out;
 	}
 
+	/**
+	 * Compute element-wise multiplication in cartesian space
+	 * if de-aliasing activated, do a 2/3 truncation in spectrum before and after multiplication
+	 *
+	 *  *** This is not equivalent to operator* with dealiasing !! It kill more modes than necessary.
+	 */
+	inline
+	DataArray<D> mult(
+			const DataArray<D> &i_array_data	///< this class times i_array_data
+	)	const
+	{
+
+		// Call as
+		// 		data_array.mult(i_array_data)
+		// to represent
+		//      data_array*i_array_data
+
+		//This is the actual product result, with the correct de-aliasing
+//		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
+		const DataArray<D> &data_in1_const= *this;
+		const DataArray<D> &data_in2_const= i_array_data;
+
+		DataArray<D> out(i_array_data.resolution);
+//		out.temporary_data = true;
+
+#if SWEET_USE_SPECTRAL_SPACE && SWEET_USE_SPECTRAL_DEALIASING
+		// Truncate arrays to 2N/3 high end spectrum
+
+		DataArray<D> data_in1 = data_in1_const;
+		data_in1.aliasing_zero_high_modes();
+
+		DataArray<D> data_in2 = data_in2_const;
+		data_in2.aliasing_zero_high_modes();
+
+		out=data_in1*data_in2;
+		//Truncate the product, since the high modes could contain alias
+		out=out.aliasing_zero_high_modes();
+#else
+		out=data_in1_const*data_in2_const;
+#endif
+
+#if SWEET_USE_SPECTRAL_SPACE
+		out.array_data_cartesian_space_valid = true;
+		out.array_data_spectral_space_valid = false;
+#endif
+
+		out.checkConsistency();
+		return out;
+	}
 
 
 	/**
@@ -3459,7 +3733,7 @@ public:
 	)	const
 	{
 		DataArray<D> out(resolution);
-		out.temporary_data = true;
+//		out.temporary_data = true;
 
 #if SWEET_USE_SPECTRAL_SPACE
 
@@ -3513,7 +3787,7 @@ public:
 	)	const
 	{
 		DataArray<D> out(this->resolution);
-		out.temporary_data = true;
+//		out.temporary_data = true;
 
 #if SWEET_USE_SPECTRAL_SPACE
 		if (array_data_cartesian_space_valid)
@@ -3524,11 +3798,9 @@ public:
 #endif
 			for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 				out.array_data_cartesian_space[i] = array_data_cartesian_space[i] / i_value;
-
+#if SWEET_USE_SPECTRAL_SPACE
 			out.array_data_cartesian_space_valid = true;
 			out.array_data_spectral_space_valid = false;
-
-#if SWEET_USE_SPECTRAL_SPACE
 		}
 		else
 		{
@@ -3563,7 +3835,7 @@ public:
 		DataArray<D> &rw_array_data = (DataArray<D>&)i_array_data;
 
 		DataArray<D> out(this->resolution);
-		out.temporary_data = true;
+//		out.temporary_data = true;
 
 #if SWEET_USE_SPECTRAL_SPACE && SWEET_USE_SPECTRAL_DEALIASING
 
@@ -3573,7 +3845,7 @@ public:
 		u.requestDataInCartesianSpace();
 		v.requestDataInCartesianSpace();
 
-		DataArray<D> scaled_output(u.resolution);
+		DataArray<D> scaled_output(u.resolution, true);
 
 #if SWEET_THREADING
 		#pragma omp parallel for OPENMP_PAR_SIMD
@@ -3676,6 +3948,69 @@ public:
 	}
 
 
+#if SWEET_USE_SPECTRAL_SPACE
+	/**
+	 * Add scalar to all spectral modes
+	 */
+	inline
+	DataArray<D> spec_addScalarAll(
+			const double &i_value
+	)	const
+	{
+		DataArray<D> out(this->resolution);
+//		out.temporary_data = true;
+
+		requestDataInSpectralSpace();
+
+#if SWEET_THREADING
+#pragma omp parallel for OPENMP_PAR_SIMD
+#endif
+		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
+			out.array_data_spectral_space[i] = array_data_spectral_space[i] + i_value;
+
+		out.array_data_cartesian_space_valid = false;
+		out.array_data_spectral_space_valid = true;
+
+		out.checkConsistency();
+		return out;
+	}
+#endif
+
+#if SWEET_USE_SPECTRAL_SPACE
+	/**
+	 * Invert all spectral coefficients a+bi --> 1/(a+bi)
+	 */
+	inline
+	DataArray<D> spec_invert(
+	)	const
+	{
+		DataArray<D> out(this->resolution);
+//		out.temporary_data = true;
+
+		requestDataInSpectralSpace();
+
+#if SWEET_THREADING
+#pragma omp parallel for OPENMP_PAR_SIMD
+#endif
+		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
+		{
+			//get spectral coefficient ar+i*ai
+			double ar = array_data_spectral_space[i];
+			double ai = array_data_spectral_space[i+1];
+			double norm=ar*ar+ai*ai;
+			// Calculate 1/(ar+i*ai) and split into real and imag parts
+			out.array_data_spectral_space[i] = ar/norm;
+			out.array_data_spectral_space[i+1] = -ai/norm;
+		}
+
+		out.array_data_cartesian_space_valid = false;
+		out.array_data_spectral_space_valid = true;
+
+		out.checkConsistency();
+		return out;
+	}
+#endif
+
 
 	inline
 	void printSpectrum()	const
@@ -3704,16 +4039,105 @@ public:
 	}
 #endif
 
+	inline
+	void printSpectrumIndex()	const
+	{
+
+		checkConsistency();
+		DataArray<D> &rw_array_data = (DataArray<D>&)*this;
+
+		rw_array_data.requestDataInSpectralSpace();
+
+		assert(D == 2);
+		if (D == 2)
+		{
+			for (int y = rw_array_data.resolution_spec[1]-1; y >= 0; y--)
+			{
+				for (std::size_t x = 0; x < rw_array_data.resolution_spec[0]; x++)
+				{
+					double value_re = rw_array_data.spec_getRe(y, x);
+					double value_im = rw_array_data.spec_getIm(y, x);
+					//if(std::abs(value_re)<1.0e-13)
+						//value_re=0.0;
+					//if(std::abs(value_im)<1.0e-13)
+						//value_im=0.0;
+
+					std::cout << "(" << x << ", "<< y << ", "<< value_re << ", " << value_im << ")\t";
+				}
+				std::cout << std::endl;
+			}
+			std::cout << std::endl;
+		}
+
+	}
+
+	inline
+	void printSpectrumNonZero()	const
+	{
+
+		checkConsistency();
+		DataArray<D> &rw_array_data = (DataArray<D>&)*this;
+
+		rw_array_data.requestDataInSpectralSpace();
+
+		assert(D == 2);
+		if (D == 2)
+		{
+			for (int y = rw_array_data.resolution_spec[1]-1; y >= 0; y--)
+			{
+				for (std::size_t x = 0; x < rw_array_data.resolution_spec[0]; x++)
+				{
+					double value_re = rw_array_data.spec_getRe(y, x);
+					double value_im = rw_array_data.spec_getIm(y, x);
+					if(value_re*value_re+value_im*value_im>1.0e-13)
+						std::cout << "(" << x << ", "<< y << ", "<< value_re << ", " << value_im << ")" <<std::endl;;
+				}
+				//std::cout << std::endl;
+			}
+			//std::cout << std::endl;
+		}
+
+	}
+
+
+	inline //TODO - print for each K^2+l^2 the energy in the spectrum
+		void printSpectrumEnergy_y()	const
+		{
+
+			checkConsistency();
+			DataArray<D> &rw_array_data = (DataArray<D>&)*this;
+
+			rw_array_data.requestDataInSpectralSpace();
+			std::cout << "Energy (sqr)" <<std::endl;
+			assert(D == 2);
+			if (D == 2)
+			{
+				for (int y = rw_array_data.resolution_spec[1]/2; y >= 0; y--)
+				{
+				//	for (std::size_t x = 0; x < rw_array_data.resolution_spec[0]; x++)
+					std::size_t x=0;
+					{
+						double value_re = rw_array_data.spec_getRe(y, x);
+						double value_im = rw_array_data.spec_getIm(y, x);
+						//std::cout << "(" << x << ", " << y << ", "<< value_re << ", "<< value_im*value_im << ")\t";
+						double energy=value_re*value_re + value_im*value_im;
+						if(energy>1e-14)
+							std::cout << "(" << x << ", " << y << ", "<< energy << ")" <<std::endl;
+					}
+					//std::cout << std::endl;
+				}
+			}
+		}
 
 
 	/**
-	 * Write data to ASCII file
+	 * Print data
 	 *
 	 * Each array row is stored to a line.
 	 * Per default, a tab separator is used in each line to separate the values.
 	 */
 	bool printArrayData(
-			int i_precision = 6		///< number of floating point digits
+			int i_precision = 8		///< number of floating point digits
 			)	const
 	{
 

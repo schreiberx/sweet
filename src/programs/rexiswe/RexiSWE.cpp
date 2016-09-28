@@ -251,6 +251,7 @@ void RexiSWE::setup(
 		perThreadVars[i]->h_sum.setAll(0, 0);
 		perThreadVars[i]->u_sum.setAll(0, 0);
 		perThreadVars[i]->v_sum.setAll(0, 0);
+
 	}
 
 
@@ -264,7 +265,7 @@ void RexiSWE::setup(
 
 
 /**
- * Solve REXI with implicit time stepping
+ * Solve SWE with implicit time stepping
  *
  * U_t = L U(0)
  *
@@ -333,6 +334,359 @@ bool RexiSWE::run_timestep_implicit_ts(
 	eta.toCart().toDataArrays_Real(io_h);
 	u1.toCart().toDataArrays_Real(io_u);
 	v1.toCart().toDataArrays_Real(io_v);
+
+	return true;
+}
+
+
+/**
+ * Solve  SWE with Crank-Nicolson implicit time stepping
+ *  (spectral formulation for Helmholtz eq) with semi-Lagrangian
+ *   SL-SI-SP
+ * U_t = L U(0)
+ * Fully implicit version
+ * (U(tau) - U(0)) / tau = 0.5*(L U(tau)+L U(0))
+ *
+ * <=> U(tau) - U(0) =  tau * 0.5*(L U(tau)+L U(0))
+ *
+ * <=> U(tau) - 0.5* L tau U(tau) = U(0) + tau * 0.5*L U(0)
+ *
+ * <=> (1 - 0.5 L tau) U(tau) = (1+tau*0.5*L) U(0)
+ *
+ * <=> (2/tau - L) U(tau) = (2/tau+L) U(0)
+ *
+ * Semi-implicit has coriolis term as totally explicit
+ *
+ *Semi-Lagrangian:
+ *  U(tau) is on arrival points
+ *  U(0) is on departure points
+ *
+ * Nonlinear term is added following Hortal (2002)
+ *
+ */
+bool RexiSWE::run_timestep_cn_sl_ts(
+	DataArray<2> &io_h,  ///< Current and past fields
+	DataArray<2> &io_u,
+	DataArray<2> &io_v,
+	DataArray<2> &io_h_prev,
+	DataArray<2> &io_u_prev,
+	DataArray<2> &io_v_prev,
+
+	DataArray<2> &i_posx_a, //Arrival point positions in x and y (this is basically the grid)
+	DataArray<2> &i_posy_a,
+
+	double i_timestep_size,	///< timestep size
+	int i_param_nonlinear, ///< degree of nonlinearity (0-linear, 1-full nonlinear, 2-only nonlinear adv)
+
+	const SimulationVariables &i_simVars, ///< Parameters for simulation
+
+	Operators2D &op,     ///< Operator class
+	Sampler2D &sampler2D, ///< Interpolation class
+	SemiLagrangian &semiLagrangian  ///< Semi-Lag class
+)
+{
+
+	//Out vars
+	DataArray<2> h(io_h.resolution);
+	DataArray<2> u(io_h.resolution);
+	DataArray<2> v(io_h.resolution);
+
+	//Departure points and arrival points
+	DataArray<2> posx_d(io_h.resolution);
+	DataArray<2> posy_d(io_h.resolution);
+
+	//Parameters
+	double h_bar = i_simVars.setup.h0;
+	double g = i_simVars.sim.g;
+	double f0 = i_simVars.sim.f0;
+	double dt = i_timestep_size;
+	double alpha = 2.0/dt;
+	double kappa = alpha*alpha;
+	double kappa_bar = kappa;
+	double stag_displacement[4] = {-0.5,-0.5,-0.5,-0.5}; //A grid staggering - centred cell
+	kappa += f0*f0;
+	kappa_bar -= f0*f0;
+	posx_d=i_posx_a;
+	posy_d=i_posy_a;
+
+#if SWEET_USE_SPECTRAL_SPACE
+	if(i_param_nonlinear==1){
+		//Truncate spectral modes to avoid aliasing effects in the h*div term
+		io_h.aliasing_zero_high_modes();
+		io_u.aliasing_zero_high_modes();
+		io_v.aliasing_zero_high_modes();
+		io_h_prev.aliasing_zero_high_modes();
+		io_u_prev.aliasing_zero_high_modes();
+		io_v_prev.aliasing_zero_high_modes();
+	}
+#endif
+
+
+	if(i_param_nonlinear>0)
+	{
+		//Calculate departure points
+		semiLagrangian.semi_lag_departure_points_settls(
+				io_u_prev, io_v_prev,
+				io_u,	io_v,
+				i_posx_a,	i_posy_a,
+				dt,
+				posx_d,	posy_d,
+				stag_displacement
+		);
+
+	}
+
+	//Calculate Divergence and vorticity spectrally
+	DataArray<2> div = op.diff_c_x(io_u) + op.diff_c_y(io_v) ;
+	//this could be pre-stored
+	DataArray<2> div_prev = op.diff_c_x(io_u_prev) + op.diff_c_y(io_v_prev) ;
+
+	//Calculate the RHS
+	DataArray<2> rhs_u = alpha * io_u + f0 * io_v    - g * op.diff_c_x(io_h);
+	DataArray<2> rhs_v =  - f0 * io_u + alpha * io_v - g * op.diff_c_y(io_h);
+	DataArray<2> rhs_h = alpha * io_h  - h_bar * div;
+
+	if(i_param_nonlinear>0){
+		// all the RHS are to be evaluated at the departure points
+		rhs_u=sampler2D.bicubic_scalar(rhs_u, posx_d, posy_d, -0.5, -0.5);
+		rhs_v=sampler2D.bicubic_scalar(rhs_v, posx_d, posy_d, -0.5, -0.5);
+		rhs_h=sampler2D.bicubic_scalar(rhs_h, posx_d, posy_d, -0.5, -0.5);
+		//Get data in spectral space
+		rhs_u.requestDataInSpectralSpace();
+		rhs_v.requestDataInSpectralSpace();
+		rhs_h.requestDataInSpectralSpace();
+	}
+
+	//Calculate nonlinear term at half timestep and add to RHS of h eq.
+	if(i_param_nonlinear==1)
+	{
+		// Calculate nonlinear term interpolated to departure points
+		// h*div is calculate in cartesian space (pseudo-spectrally)
+		//div.aliasing_zero_high_modes();
+		//div_prev.aliasing_zero_high_modes();
+		DataArray<2> hdiv = 2.0 * io_h * div - io_h_prev * div_prev;
+		//hdiv.aliasing_zero_high_modes();
+		//std::cout<<offcent<<std::endl;
+		DataArray<2> nonlin = 0.5 * io_h * div +
+				0.5 * sampler2D.bicubic_scalar(hdiv, posx_d, posy_d, -0.5, -0.5);
+		//add diffusion
+		//nonlin.printSpectrumEnergy_y();
+		//nonlin.printSpectrumIndex();
+
+		//nonlin.aliasing_zero_high_modes();
+		//nonlin.printSpectrumEnergy_y();
+		//nonlin.printSpectrumIndex();
+		//nonlin=diff(nonlin);
+		//nonlin=op.implicit_diffusion(nonlin,i_simVars.sim.viscosity,i_simVars.sim.viscosity_order );
+		//nonlin.printSpectrumIndex();
+		//nonlin.aliasing_zero_high_modes();
+		//nonlin.printSpectrumIndex();
+
+		//std::cout << "blocked: "  << std::endl;
+		//nonlin.printSpectrumEnergy();
+		//std::cout << "Nonlinear error: " << nonlin.reduce_maxAbs() << std::endl;
+		//std::cout << "Div: " << div.reduce_maxAbs() << std::endl;
+		//nonlin=0;
+		rhs_h = rhs_h - 2.0*nonlin;
+		rhs_h.requestDataInSpectralSpace();
+	}
+
+
+	//Build Helmholtz eq.
+	DataArray<2> rhs_div =op.diff_c_x(rhs_u)+op.diff_c_y(rhs_v);
+	DataArray<2> rhs_vort=op.diff_c_x(rhs_v)-op.diff_c_y(rhs_u);
+	DataArray<2> rhs     = kappa* rhs_h / alpha - h_bar * rhs_div - f0 * h_bar * rhs_vort / alpha;
+
+	// Helmholtz solver
+	helmholtz_spectral_solver(kappa, g*h_bar, rhs, h, op);
+
+	//Update u and v
+	u = (1/kappa)*
+			( alpha *rhs_u + f0 * rhs_v
+					- g * alpha * op.diff_c_x(h)
+					- g * f0 * op.diff_c_y(h))
+					;
+
+	v = (1/kappa)*
+			( alpha *rhs_v - f0 * rhs_u
+					+ g * f0 * op.diff_c_x(h)
+					- g * alpha * op.diff_c_y(h))
+					;
+
+
+	//Set time (n) as time (n-1)
+	io_h_prev=io_h;
+	io_u_prev=io_u;
+	io_v_prev=io_v;
+
+	//output data
+	io_h=h;
+	io_u=u;
+	io_v=v;
+
+	return true;
+}
+
+
+/**
+ * Solve  SWE with the novel Semi-Lagrangian Exponential Integrator
+ *  SL-REXI
+ *
+ *  See documentation for details
+ *
+ */
+bool RexiSWE::run_timestep_slrexi(
+	DataArray<2> &io_h,  ///< Current and past fields
+	DataArray<2> &io_u,
+	DataArray<2> &io_v,
+	DataArray<2> &io_h_prev,
+	DataArray<2> &io_u_prev,
+	DataArray<2> &io_v_prev,
+
+	DataArray<2> &i_posx_a, //Arrival point positions in x and y (this is basically the grid)
+	DataArray<2> &i_posy_a,
+
+	double i_timestep_size,	///< timestep size
+	int i_param_nonlinear, ///< degree of nonlinearity (0-linear, 1-full nonlinear, 2-only nonlinear adv)
+	bool i_iterative_solver_always_init_zero_solution, //
+	bool i_linear_exp_analytical, //
+
+	const SimulationVariables &i_simVars, ///< Parameters for simulation
+
+	Operators2D &op,     ///< Operator class
+	Sampler2D &sampler2D, ///< Interpolation class
+	SemiLagrangian &semiLagrangian  ///< Semi-Lag class
+)
+{
+
+	//Out vars
+	DataArray<2> h(io_h.resolution);
+	DataArray<2> u(io_h.resolution);
+	DataArray<2> v(io_h.resolution);
+	DataArray<2> N_h(io_h.resolution);
+	DataArray<2> N_u(io_h.resolution);
+	DataArray<2> N_v(io_h.resolution);
+	DataArray<2> hdiv(io_h.resolution);
+
+	//Departure points and arrival points
+	DataArray<2> posx_d(io_h.resolution);
+	DataArray<2> posy_d(io_h.resolution);
+
+	//Parameters
+	double dt = i_timestep_size;
+	double stag_displacement[4] = {-0.5,-0.5,-0.5,-0.5}; //A grid staggering - centred cell
+
+#if SWEET_USE_SPECTRAL_SPACE
+	if(i_param_nonlinear==1){
+		//Truncate spectral modes to avoid aliasing effects in the h*div term
+		io_h.aliasing_zero_high_modes();
+		io_u.aliasing_zero_high_modes();
+		io_v.aliasing_zero_high_modes();
+		io_h_prev.aliasing_zero_high_modes();
+		io_u_prev.aliasing_zero_high_modes();
+		io_v_prev.aliasing_zero_high_modes();
+	}
+#endif
+
+
+	if(i_param_nonlinear>0)
+	{
+		//Calculate departure points
+		semiLagrangian.semi_lag_departure_points_settls(
+				io_u_prev, io_v_prev,
+				io_u,	io_v,
+				i_posx_a,	i_posy_a,
+				dt,
+				posx_d,	posy_d,
+				stag_displacement
+		);
+
+	}
+
+	u = io_u;
+	//std::cout<< "u" << std::endl;
+	//u.printArrayData();
+	v = io_v;
+	//std::cout<< "v" << std::endl;
+	//v.printArrayData();
+	h = io_h;
+	//std::cout<< "h" << std::endl;
+	//h.printArrayData();
+
+	N_u.set_all(0);
+	N_v.set_all(0);
+	N_h.set_all(0);
+	hdiv.set_all(0);
+
+	//Calculate nonlinear terms
+	if(i_param_nonlinear==1)
+	{
+		//Calculate Divergence and vorticity spectrally
+		hdiv =  - io_h * (op.diff_c_x(io_u) + op.diff_c_y(io_v));
+
+		// Calculate nonlinear term for the previous time step
+		// h*div is calculate in cartesian space (pseudo-spectrally)
+		N_h =  - io_h_prev * (op.diff_c_x(io_u_prev) + op.diff_c_y(io_v_prev));
+
+		//Calculate exp(Ldt)N(n-1), relative to previous timestep
+		//Calculate the V{n-1} term as in documentation, with the exponential integrator
+		if(i_linear_exp_analytical)
+		{
+			run_timestep_direct_solution( N_h, N_u, N_v, dt, op, i_simVars );
+		}
+		else
+		{
+			run_timestep( N_h, N_u, N_v, dt, op, i_simVars, i_iterative_solver_always_init_zero_solution);
+		}
+
+		//Use N_h to store now the nonlinearity of the current time (prev will not be required anymore)
+		//Update the nonlinear terms with the constants relative to dt
+		N_u = -0.5 * dt * N_u; // N^n of u term is zero
+		N_v = -0.5 * dt * N_v; // N^n of v term is zero
+		N_h = dt * hdiv - 0.5 * dt * N_h ; //N^n of h has the nonlin term
+	}
+
+
+
+	if(i_param_nonlinear>0){
+		//Build variables to be interpolated to dep. points
+		// This is the W^n term in documentation
+		u = u + N_u;
+		v = v + N_v;
+		h = h + N_h;
+
+		// Interpolate W to departure points
+		u = sampler2D.bicubic_scalar(u, posx_d, posy_d, -0.5, -0.5);
+		v = sampler2D.bicubic_scalar(v, posx_d, posy_d, -0.5, -0.5);
+		h = sampler2D.bicubic_scalar(h, posx_d, posy_d, -0.5, -0.5);
+	}
+
+	//Calculate the exp(Ldt) W{n}_* term as in documentation, with the exponential integrator
+	//run_timestep( h, u, v, dt, op, i_simVars, i_iterative_solver_always_init_zero_solution);
+	//run_timestep_direct_solution( h, u, v, dt, op, i_simVars );
+	if(i_linear_exp_analytical)
+	{
+		run_timestep_direct_solution( h, u, v, dt, op, i_simVars );
+	}
+	else
+	{
+		run_timestep( h, u, v, dt, op, i_simVars, i_iterative_solver_always_init_zero_solution);
+	}
+
+	if(i_param_nonlinear==1){
+		// Add nonlinearity in h
+		h = h + 0.5 * dt * hdiv;
+	}
+
+	//Set time (n) as time (n-1)
+	io_h_prev=io_h;
+	io_u_prev=io_u;
+	io_v_prev=io_v;
+
+	//output data
+	io_h=h;
+	io_u=u;
+	io_v=v;
 
 	return true;
 }
@@ -481,8 +835,12 @@ bool RexiSWE::run_timestep(
 
 			// precompute a bunch of values
 			// this would belong to a serial part according to Amdahls law
+			//
+			// (kappa + lhs_a)\eta = kappa/alpha*\eta_0 - (i_parameters.sim.f0*eta_bar/alpha) * rhs_b + rhs_a
+			//
 			Complex2DArrayFFT rhs_a = eta_bar*(op_diff_c_x(u0) + op_diff_c_y(v0));
 			Complex2DArrayFFT rhs_b = (op_diff_c_x(v0) - op_diff_c_y(u0));
+
 			Complex2DArrayFFT lhs_a = (-g*eta_bar)*(perThreadVars[i]->op_diff2_c_x + perThreadVars[i]->op_diff2_c_y);
 
 #if SWEET_BENCHMARK_REXI
@@ -495,25 +853,24 @@ bool RexiSWE::run_timestep(
 				stopwatch_solve_rexi_terms.start();
 #endif
 
-
 			for (std::size_t n = start; n < end; n++)
 			{
 				// load alpha (a) and scale by inverse of tau
 				// we flip the sign to account for the -L used in exp(\tau (-L))
-				complex alpha = -rexi.alpha[n]/i_timestep_size;
-				complex beta = -rexi.beta_re[n];
+				complex alpha = rexi.alpha[n]/i_timestep_size;
+				complex beta = rexi.beta_re[n];
 
 				// load kappa (k)
 				complex kappa = alpha*alpha + i_parameters.sim.f0*i_parameters.sim.f0;
 
 				/*
-/				 * TODO: we can even get more performance out of this operations
+				 * TODO: we can even get more performance out of this operations
 				 * by partly using the real Fourier transformation
 				 */
 				Complex2DArrayFFT rhs =
 						(kappa/alpha) * eta0
-						- rhs_a
-						- (i_parameters.sim.f0*eta_bar/alpha) * rhs_b
+						+ (-i_parameters.sim.f0*eta_bar/alpha) * rhs_b
+						+ rhs_a
 					;
 
 #if 0
@@ -523,11 +880,13 @@ bool RexiSWE::run_timestep(
 				rhs.spec_div_element_wise(lhs, eta);
 #endif
 
-				Complex2DArrayFFT uh = u0 - g*op_diff_c_x(eta);
-				Complex2DArrayFFT vh = v0 - g*op_diff_c_y(eta);
+				Complex2DArrayFFT uh = u0 + g*op_diff_c_x(eta);
+				Complex2DArrayFFT vh = v0 + g*op_diff_c_y(eta);
 
-				Complex2DArrayFFT u1 = alpha/kappa * uh     + i_parameters.sim.f0/kappa * vh;
-				Complex2DArrayFFT v1 =    -i_parameters.sim.f0/kappa * uh + alpha/kappa * vh;
+				Complex2DArrayFFT u1 = (alpha/kappa) * uh     - (i_parameters.sim.f0/kappa) * vh;
+				Complex2DArrayFFT v1 = (i_parameters.sim.f0/kappa) * uh + (alpha/kappa) * vh;
+
+				DataArray<2> tmp(h_sum.resolution);
 
 				h_sum += eta.toCart()*beta;
 				u_sum += u1.toCart()*beta;

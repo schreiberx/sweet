@@ -10,10 +10,11 @@
 
 #include <fftw3.h>
 #include <sweet/DataArray.hpp>
-#include <sweet/NUMABlockAlloc.hpp>
 #include <cstddef>
 #include <complex>
+#include <cassert>
 #include <sweet/openmp_helper.hpp>
+#include "MemBlockAlloc.hpp"
 
 
 
@@ -118,7 +119,7 @@ public:
 			// IMPORTANT! if we use the same array for input/output,
 			// a plan will be created with does not support out-of-place
 			// FFTs, see http://www.fftw.org/doc/New_002darray-Execute-Functions.html
-			double *dummy_data = NUMABlockAlloc::alloc<double>(sizeof(double)*resolution[0]*resolution[1]*2);
+			double *dummy_data = MemBlockAlloc::alloc<double>(sizeof(double)*resolution[0]*resolution[1]*2);
 
 			fft_getSingleton_Plans().to_spec =
 					fftw_plan_dft_2d(
@@ -159,12 +160,12 @@ public:
 				exit(-1);
 			}
 
-			NUMABlockAlloc::free(dummy_data, sizeof(double)*resolution[0]*resolution[1]*2);
+			MemBlockAlloc::free(dummy_data, sizeof(double)*resolution[0]*resolution[1]*2);
 		}
 
 		{
-			double *dummy_data_aliasing_in = NUMABlockAlloc::alloc<double>(sizeof(double)*resolution[0]*resolution[1]*2*4);
-			double *dummy_data_aliasing_out = NUMABlockAlloc::alloc<double>(sizeof(double)*resolution[0]*resolution[1]*2*4);
+			double *dummy_data_aliasing_in = MemBlockAlloc::alloc<double>(sizeof(double)*resolution[0]*resolution[1]*2*4);
+			double *dummy_data_aliasing_out = MemBlockAlloc::alloc<double>(sizeof(double)*resolution[0]*resolution[1]*2*4);
 
 			fft_getSingleton_Plans().to_spec_aliasing =
 					fftw_plan_dft_2d(
@@ -208,8 +209,8 @@ public:
 			}
 
 
-			NUMABlockAlloc::free(dummy_data_aliasing_out, sizeof(double)*resolution[0]*resolution[1]*2*4);
-			NUMABlockAlloc::free(dummy_data_aliasing_in, sizeof(double)*resolution[0]*resolution[1]*2*4);
+			MemBlockAlloc::free(dummy_data_aliasing_out, sizeof(double)*resolution[0]*resolution[1]*2*4);
+			MemBlockAlloc::free(dummy_data_aliasing_in, sizeof(double)*resolution[0]*resolution[1]*2*4);
 		}
 	}
 
@@ -278,7 +279,7 @@ public:
 		resolution[0] = i_res[0];
 		resolution[1] = i_res[1];
 
-		data = NUMABlockAlloc::alloc<double>(sizeof(double)*resolution[0]*resolution[1]*2);
+		data = MemBlockAlloc::alloc<double>(sizeof(double)*resolution[0]*resolution[1]*2);
 
 		fft_setup();
 	}
@@ -299,7 +300,7 @@ public:
 		if (data)
 			cleanup();
 
-		data = NUMABlockAlloc::alloc<double>(sizeof(double)*resolution[0]*resolution[1]*2);
+		data = MemBlockAlloc::alloc<double>(sizeof(double)*resolution[0]*resolution[1]*2);
 
 		if (!is_fft_data_initialized)
 			fft_setup();
@@ -309,7 +310,7 @@ public:
 
 	void cleanup()
 	{
-		NUMABlockAlloc::free(data, sizeof(double)*resolution[0]*resolution[1]*2);
+		MemBlockAlloc::free(data, sizeof(double)*resolution[0]*resolution[1]*2);
 		data = nullptr;
 	}
 
@@ -331,7 +332,7 @@ public:
 
 		aliased_scaled = i_testArray.aliased_scaled;
 
-		data = NUMABlockAlloc::alloc<double>(sizeof(double)*resolution[0]*resolution[1]*2);
+		data = MemBlockAlloc::alloc<double>(sizeof(double)*resolution[0]*resolution[1]*2);
 
 		fft_setup();
 
@@ -398,6 +399,7 @@ public:
 					(fftw_complex*)this->data,
 					(fftw_complex*)o_testArray.data
 				);
+
 		}
 		else
 		{
@@ -409,6 +411,7 @@ public:
 					(fftw_complex*)this->data,
 					(fftw_complex*)o_testArray.data
 				);
+
 		}
 
 		return o_testArray;
@@ -1517,11 +1520,10 @@ public:
 #endif
 	}
 
-
-#if 0
-	DataArray<2> toDataArrays_Imag()	const
+	void toDataArrays_Imag(
+			DataArray<2> &o_out
+	)	const
 	{
-		DataArray<2> out(resolution);
 
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
@@ -1530,16 +1532,19 @@ public:
 		{
 			for (std::size_t i = 0; i < resolution[0]; i++)
 			{
-				out.set(
-					j, i,
-					getIm(j, i)
-				);
+				o_out.array_data_cartesian_space[
+									(j-o_out.range_start[1])*o_out.range_size[0]+
+									(i-o_out.range_start[0])
+								] =
+					data[(j*resolution[0]+i)*2+1];
 			}
 		}
 
-		return out;
-	}
+#if SWEET_USE_SPECTRAL_SPACE
+		o_out.array_data_cartesian_space_valid = true;
+		o_out.array_data_spectral_space_valid = false;
 #endif
+	}
 
 
 	/**
