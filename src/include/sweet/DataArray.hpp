@@ -3779,7 +3779,10 @@ public:
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
+		{
 			out.array_data_spectral_space[i] = array_data_spectral_space[i] + i_value;
+			out.array_data_spectral_space[i+1] = array_data_spectral_space[i+1];
+		}
 
 		out.array_data_cartesian_space_valid = false;
 		out.array_data_spectral_space_valid = true;
