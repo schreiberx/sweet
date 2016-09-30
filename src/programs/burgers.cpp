@@ -725,13 +725,16 @@ public:
 
 		// Only fixed time stepping supported with the Burgers equation
 		assert(simVars.sim.CFL < 0);
-		dt = -simVars.sim.CFL;
-		//Padding for last time step
-		if (simVars.timecontrol.current_simulation_time+dt > simVars.timecontrol.max_simulation_time)
-			dt = simVars.timecontrol.max_simulation_time-simVars.timecontrol.current_simulation_time;
+		simVars.timecontrol.current_timestep_size = -simVars.sim.CFL;
+
 
 		if (param_semilagrangian)
 		{
+			dt = -simVars.sim.CFL;
+			//Padding for last time step
+			if (simVars.timecontrol.current_simulation_time+dt > simVars.timecontrol.max_simulation_time)
+				dt = simVars.timecontrol.max_simulation_time-simVars.timecontrol.current_simulation_time;
+
 			//Calculate departure points
 			semiLagrangian.semi_lag_departure_points_settls(
 							prog_u_prev, prog_v_prev,
