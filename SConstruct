@@ -448,7 +448,7 @@ if env['compiler'] == 'gnu':
             env.Append(LIBS=['gfortran'])
 
     #  env.Replace(CXX = 'g++-4.7')
-       env.Replace(CXX = 'g++')
+        env.Replace(CXX = 'g++')
 
 
 if env['compiler'] == 'intel':
