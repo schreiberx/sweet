@@ -2215,6 +2215,9 @@ public:
 			const double *i_kernel_data
 	)
 	{
+		DataArray<D> out = *this;
+
+#if SWEET_USE_SPECTRAL_SPACE
 		bool was_spectral = false;
 		if (this->array_data_spectral_space_valid)
 		{
@@ -2225,8 +2228,9 @@ public:
 			std::cout << "Uninitialized DataArray in op_stencil_Re_3x3" << std::endl;
 			exit(-1);
 		}
+		out.array_data_spectral_space_valid=false;
+#endif
 
-		DataArray<D> out = *this;
 
 		int res_x = resolution[0];
 		int res_y = resolution[1];
@@ -2273,11 +2277,13 @@ public:
 			}
 		}
 
+#if SWEET_USE_SPECTRAL_SPACE
 		if (was_spectral)
 		{
 			this->requestDataInSpectralSpace();
 			out.requestDataInSpectralSpace();
 		}
+#endif
 
 		return out;
 	}
@@ -2290,6 +2296,8 @@ public:
 			const double *i_kernel_data
 	)
 	{
+		DataArray<2> out(resolution);
+#if SWEET_USE_SPECTRAL_SPACE
 		bool was_spectral = false;
 		if (this->array_data_spectral_space_valid)
 		{
@@ -2300,9 +2308,9 @@ public:
 			std::cout << "Uninitialized DataArray in op_stencil_Re_3x3" << std::endl;
 			exit(-1);
 		}
-
-		DataArray<2> out(resolution);
 		out.array_data_spectral_space_valid=false;
+#endif
+
 		int res_x = resolution[0];
 		int res_y = resolution[1];
 
@@ -2348,11 +2356,13 @@ public:
 			}
 		}
 
+#if SWEET_USE_SPECTRAL_SPACE
 		if (was_spectral)
 		{
 			this->requestDataInSpectralSpace();
 			out.requestDataInSpectralSpace();
 		}
+#endif
 
 		return out;
 	}
@@ -3973,7 +3983,6 @@ public:
 		out.checkConsistency();
 		return out;
 	}
-#endif
 
 
 	inline
@@ -4090,6 +4099,7 @@ public:
 				}
 			}
 		}
+#endif
 
 
 	/**
@@ -4167,6 +4177,7 @@ public:
 	}
 
 
+#if SWEET_USE_SPECTRAL_SPACE
 	/**
 	 * Write data to ASCII file
 	 *
@@ -4208,6 +4219,7 @@ public:
 		checkConsistency();
 		return true;
 	}
+#endif
 
 
 	/**
