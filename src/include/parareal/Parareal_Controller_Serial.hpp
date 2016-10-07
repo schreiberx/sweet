@@ -123,7 +123,7 @@ public:
 
 		parareal_simulationInstances = new Parareal_SimulationInstance*[pVars->coarse_slices];
 
-		//std::cout << pVars->coarse_slices << std::endl;
+		std::cout << pVars->coarse_slices << std::endl;
 
 		CONSOLEPREFIX.start("[MAIN] ");
 		std::cout << "Resetting simulation instances" << std::endl;
@@ -233,8 +233,8 @@ public:
 			 * 2) Compute output + convergence check
 			 * 3) Forward to next frame
 			 */
-//			for (int i = k; i < pVars->coarse_slices; i++)
 			double max_convergence = -2;
+//			for (int i = k; i < pVars->coarse_slices; i++)
 			for (int i = 0; i < pVars->coarse_slices; i++)
 			{
 				CONSOLEPREFIX_start(i);

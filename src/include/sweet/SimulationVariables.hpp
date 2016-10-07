@@ -609,7 +609,7 @@ public:
 						"Control:",
 						"	-t [time]	maximum simulation time, default=-1 (infinity)",
 						"	-T [stepnr]	maximum number of time steps, default=-1 (infinity)",
-						"	-o [time]	timesteps at which output should be written",
+						"	-o [time]	time intervall at which output should be written",
 						"",
 						"Misc options",
 						"	-v [int]	verbosity level",
