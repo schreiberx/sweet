@@ -23,6 +23,60 @@ int main(int i_argc, char *i_argv[])
 	double max_error_threshold = 1e-9;
 	double max_error_threshold_machine = 1e-12;
 
+
+#if 1
+	if (1)
+	{
+		std::cout << "******************************************************" << std::endl;
+		std::cout << "REXI real: Test for partition of unity" << std::endl;
+		std::cout << "******************************************************" << std::endl;
+
+		for (double h = 0.2; h >= 0.05; h *= 0.5)
+		{
+			for (int M = 256; M < 1024; M *= 2)
+			{
+				REXI rexi(h, M, 0, false);
+
+				// REXI approximates the interval [-M*h;M*h] but gets inaccurate close to the interval boundaries
+				double start = -M*h*0.95;
+				double end = -start;
+				double step_size = 0.0001;
+
+				double max_error = 0;
+
+				for (double x = start; x < end; x += step_size)
+				{
+	//				std::cout << std::endl;
+	//				std::cout << "x: " << x << std::endl;
+	//				std::cout << "exp(ix): " << rexi.eval_e_ix(x).real() << std::endl;
+	//				std::cout << "approx. exp(ix): " << rexi.approx_e_ix(x).real() << std::endl;
+
+					double correct = rexi.eval_e_ix(x).real();
+					double approx = rexi.approx_e_ix_returnReal(x);
+
+					if (std::abs(approx) > 1.0)
+					{
+						std::cerr << "approx value " << approx << " not bounded by unity!" << std::endl;
+//						exit(-1);
+					}
+					double error_real = std::abs(correct - approx);
+
+	//				std::cout << x << ": " << error_real << std::endl;
+					max_error = std::max(max_error, error_real);
+				}
+
+				std::cout << "max_error: " << max_error << " for h " << h << " and M " << M << std::endl;
+
+				if (std::abs(max_error) > max_error_threshold)
+				{
+					std::cerr << "MAX ERROR THRESHOLD EXCEEDED!" << std::endl;
+					exit(-1);
+				}
+			}
+		}
+	}
+#endif
+
 #if 1
 	if (1)
 	{
@@ -137,38 +191,44 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "REXI real" << std::endl;
 		std::cout << "******************************************************" << std::endl;
 
-		for (double h = 0.2; h > 0.005; h *= 0.5)
+//		for (int k = 0; k < 1; k++)
 		{
-			int M = 256/h;
-
-			REXI rexi(h, M, 0, false);
-
-			double start = -2.0;
-			double end = 2.0;
-			double step_size = 0.01;
-
-			double max_error = 0;
-
-			for (double x = start; x < end; x += step_size)
+			// using only half of the poles does not work for e(ix)
+			bool half = false;
+			for (double h = 0.2; h > 0.005; h *= 0.5)
 			{
-//				std::cout << std::endl;
-//				std::cout << "x: " << x << std::endl;
-//				std::cout << "exp(ix): " << rexi.eval_e_ix(x).real() << std::endl;
-//				std::cout << "approx. exp(ix): " << rexi.approx_e_ix(x).real() << std::endl;
-				double error_real = std::abs(rexi.eval_e_ix(x).real() - rexi.approx_e_ix_returnReal(x));
-				max_error = std::max(max_error, error_real);
-			}
+				int M = 256/h;
 
-			std::cout << "max_error: " << max_error << " for h " << h << " and M " << M << std::endl;
+				REXI rexi(h, M, 0, half);
 
-			if (std::abs(max_error) > max_error_threshold)
-			{
-				std::cerr << "MAX ERROR THRESHOLD EXCEEDED!" << std::endl;
-				exit(-1);
+				double start = -2.0;
+				double end = 2.0;
+				double step_size = 0.01;
+
+				double max_error = 0;
+
+				for (double x = start; x < end; x += step_size)
+				{
+	//				std::cout << std::endl;
+	//				std::cout << "x: " << x << std::endl;
+	//				std::cout << "exp(ix): " << rexi.eval_e_ix(x).real() << std::endl;
+	//				std::cout << "approx. exp(ix): " << rexi.approx_e_ix(x).real() << std::endl;
+					double error_real = std::abs(rexi.eval_e_ix(x).real() - rexi.approx_e_ix_returnReal(x));
+					max_error = std::max(max_error, error_real);
+				}
+
+				std::cout << "max_error: " << max_error << " for h " << h << " and M " << M << std::endl;
+
+				if (std::abs(max_error) > max_error_threshold)
+				{
+					std::cerr << "MAX ERROR THRESHOLD EXCEEDED!" << std::endl;
+					exit(-1);
+				}
 			}
-		}
+			}
 	}
 #endif
+
 
 #if 1
 	if (1)
@@ -177,30 +237,35 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "REXI imag" << std::endl;
 		std::cout << "******************************************************" << std::endl;
 
-		for (double h = 1; h > 0.005; h *= 0.5)
+
+		for (int k = 0; k < 2; k++)
 		{
-			int M = 256.0/h;
-
-			REXI rexi(h, M, 0, false);
-
-			double start = -2.0;
-			double end = 2.0;
-			double step_size = 0.01;
-
-			double max_error = 0;
-
-			for (double x = start; x < end; x += step_size)
+			bool half = k;
+			for (double h = 1; h > 0.005; h *= 0.5)
 			{
-				double error_imag = std::abs(rexi.eval_e_ix(x).imag() - rexi.approx_e_ix_returnImag(x));
-				max_error = std::max(max_error, error_imag);
-			}
+				int M = 256.0/h;
 
-			std::cout << "max_error: " << max_error << " for h " << h << " and M " << M << std::endl;
+				REXI rexi(h, M, 0, half);
 
-			if (std::abs(max_error) > max_error_threshold)
-			{
-				std::cerr << "MAX ERROR THRESHOLD EXCEEDED!" << std::endl;
-				exit(-1);
+				double start = -2.0;
+				double end = 2.0;
+				double step_size = 0.01;
+
+				double max_error = 0;
+
+				for (double x = start; x < end; x += step_size)
+				{
+					double error_imag = std::abs(rexi.eval_e_ix(x).imag() - rexi.approx_e_ix_returnImag(x));
+					max_error = std::max(max_error, error_imag);
+				}
+
+				std::cout << "max_error: " << max_error << " for h " << h << " and M " << M << std::endl;
+
+				if (std::abs(max_error) > max_error_threshold)
+				{
+					std::cerr << "MAX ERROR THRESHOLD EXCEEDED!" << std::endl;
+					exit(-1);
+				}
 			}
 		}
 	}
