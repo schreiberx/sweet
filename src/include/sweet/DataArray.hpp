@@ -1566,7 +1566,6 @@ public:
 	const DataArray<D>& requestDataInCartesianSpace() const
 	{
 #if SWEET_USE_SPECTRAL_SPACE==1
-
 		checkConsistency();
 
 		if (array_data_cartesian_space_valid)
@@ -1693,6 +1692,7 @@ public:
 #endif
 		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
 			isallfinite = isallfinite && std::isfinite(array_data_cartesian_space[i]);
+//			isallfinite = isallfinite && (array_data_cartesian_space[i]<1000);
 
 
 		return isallfinite;
@@ -2208,6 +2208,155 @@ public:
 	}
 
 
+	/**
+	 * apply a 3x3 stencil
+	 */
+	DataArray<D> op_stencil_Re_3x3(
+			const double *i_kernel_data
+	)
+	{
+		bool was_spectral = false;
+		if (this->array_data_spectral_space_valid)
+		{
+			this->requestDataInCartesianSpace();
+			was_spectral = true;
+			this->array_data_spectral_space_valid=false;
+		}else if(!this->array_data_cartesian_space_valid){
+			std::cout << "Uninitialized DataArray in op_stencil_Re_3x3" << std::endl;
+			exit(-1);
+		}
+
+		DataArray<D> out = *this;
+
+		int res_x = resolution[0];
+		int res_y = resolution[1];
+
+
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#	pragma omp parallel for OPENMP_PAR_SIMD shared(res_x, res_y, out, i_kernel_data)
+#endif
+		for (int y = 0; y < res_y; y++)
+		{
+			for (int x = 0; x < res_x; x++)
+			{
+				double *data_out = &out.array_data_cartesian_space[(y*res_x+x)];
+				data_out[0] = 0;
+
+				for (int j = -1; j <= 1; j++)
+				{
+					int pos_y = y+j;
+
+					pos_y -= (pos_y >= res_y ? res_y : 0);
+					pos_y += (pos_y < 0 ? res_y : 0);
+
+					assert(pos_y >= 0 && pos_y < res_y);
+
+					for (int i = -1; i <= 1; i++)
+					{
+						int pos_x = x+i;
+
+						pos_x -= (pos_x >= res_x ? res_x : 0);
+						pos_x += (pos_x < 0 ? res_x : 0);
+
+						assert(pos_x >= 0 && pos_x < res_x);
+
+						int idx = (j+1)*3+(i+1);
+						assert(idx >= 0 && idx < 9);
+
+						double kre = i_kernel_data[idx];
+
+						double dre = array_data_cartesian_space[(pos_y*res_x+pos_x)];
+
+						data_out[0] += dre*kre;
+					}
+				}
+			}
+		}
+
+		if (was_spectral)
+		{
+			this->requestDataInSpectralSpace();
+			out.requestDataInSpectralSpace();
+		}
+
+		return out;
+	}
+
+
+	/**
+	 * apply a 3x3 stencil with updates
+	 */
+	DataArray<D> op_stencil_Re_3x3_update(
+			const double *i_kernel_data
+	)
+	{
+		bool was_spectral = false;
+		if (this->array_data_spectral_space_valid)
+		{
+			this->requestDataInCartesianSpace();
+			was_spectral = true;
+			this->array_data_spectral_space_valid=false;
+		}else if(!this->array_data_cartesian_space_valid){
+			std::cout << "Uninitialized DataArray in op_stencil_Re_3x3" << std::endl;
+			exit(-1);
+		}
+
+		DataArray<2> out(resolution);
+		out.array_data_spectral_space_valid=false;
+		int res_x = resolution[0];
+		int res_y = resolution[1];
+
+
+#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#	pragma omp parallel for OPENMP_PAR_SIMD shared(res_x, res_y, out, i_kernel_data)
+#endif
+		for (int y = 0; y < res_y; y++)
+		{
+			for (int x = 0; x < res_x; x++)
+			{
+				double *data_out = &out.array_data_cartesian_space[(y*res_x+x)];
+				data_out[0] = 0;
+
+				for (int j = -1; j <= 1; j++)
+				{
+					int pos_y = y+j;
+
+					pos_y -= (pos_y >= res_y ? res_y : 0);
+					pos_y += (pos_y < 0 ? res_y : 0);
+
+					assert(pos_y >= 0 && pos_y < res_y);
+
+					for (int i = -1; i <= 1; i++)
+					{
+						int pos_x = x+i;
+
+						pos_x -= (pos_x >= res_x ? res_x : 0);
+						pos_x += (pos_x < 0 ? res_x : 0);
+
+						assert(pos_x >= 0 && pos_x < res_x);
+
+						int idx = (j+1)*3+(i+1);
+						assert(idx >= 0 && idx < 9);
+
+						double kre = i_kernel_data[idx];
+
+						double dre = array_data_cartesian_space[(pos_y*res_x+pos_x)];
+
+						data_out[0] += dre*kre;
+					}
+				}
+			}
+		}
+
+		if (was_spectral)
+		{
+			this->requestDataInSpectralSpace();
+			out.requestDataInSpectralSpace();
+		}
+
+		return out;
+	}
+
 
 #if SWEET_USE_SPECTRAL_SPACE
 	/**
@@ -2233,9 +2382,12 @@ public:
 		rw_array_data.requestDataInSpectralSpace();
 
 		// determine maximum value for tolerance
-		double max_value = i_array_data.reduce_spec_maxAbs();
-		i_tolerance *= max_value;
-		i_tolerance *= (resolution[0]+resolution[1]);	// the larger the matrix, the less the accuracy
+		if (i_tolerance != 0.0)
+		{
+			double max_value = i_array_data.reduce_spec_maxAbs();
+			i_tolerance *= max_value;
+			i_tolerance *= (resolution[0]+resolution[1]);	// the larger the matrix, the less the accuracy
+		}
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
@@ -2244,10 +2396,17 @@ public:
 		{
 			double ar = array_data_spectral_space[i];
 			double ai = array_data_spectral_space[i+1];
+//			std::cout << "ar: " << ar << "+" << ai << std::endl;
+
 			double br = i_array_data.array_data_spectral_space[i];
 			double bi = i_array_data.array_data_spectral_space[i+1];
+//			std::cout << "br: " << br << "+" << bi << std::endl;
 
 			double den = (br*br+bi*bi);
+
+			/* Used for debugging
+			*/
+//			std::cout << "Den l r: " << den << "\t" << ar << "+" << ai << "\t" << br << "+" << bi << std::endl;
 
 			if (std::abs(den) <= i_tolerance)
 			{
@@ -2674,7 +2833,6 @@ public:
 			array_data_spectral_space_valid = false;
 		}
 #endif
-
 
 		checkConsistency();
 		return *this;
@@ -3827,7 +3985,7 @@ public:
 	}
 #endif
 
-
+#if SWEET_USE_SPECTRAL_SPACE
 	inline
 	void printSpectrum()	const
 	{
@@ -3850,8 +4008,10 @@ public:
 				}
 				std::cout << std::endl;
 			}
+			std::cout << std::endl;
 		}
 	}
+#endif
 
 	inline
 	void printSpectrumIndex()	const
@@ -3961,6 +4121,7 @@ public:
 		std::ostream &o_ostream = std::cout;
 
 		o_ostream << std::setprecision(i_precision);
+
 		for (int y = resolution[1]-1; y >= 0; y--)
 		{
 			for (std::size_t x = 0; x < resolution[0]; x++)
@@ -4018,9 +4179,51 @@ public:
 	}
 
 
-
 	/**
 	 * Write data to ASCII file
+	 *
+	 * Each array row is stored to a line.
+	 * Per default, a tab separator is used in each line to separate the values.
+	 */
+	bool file_saveSpectralData_ascii(
+			const char *i_filename,		///< Name of file to store data to
+			char i_separator = '\t',	///< separator to use for each line
+			int i_precision = 12		///< number of floating point digits
+	)
+	{
+
+		checkConsistency();
+		requestDataInSpectralSpace();
+
+		std::ofstream file(i_filename, std::ios_base::trunc);
+		file << std::setprecision(i_precision);
+
+		assert(D == 2);
+		if (D == 2)
+		{
+			for (int y = resolution_spec[1]-1; y >= 0; y--)
+			{
+				for (std::size_t x = 0; x < resolution_spec[0]; x++)
+				{
+					double value_re = spec_getRe(y, x);
+					double value_im = spec_getIm(y, x);
+					//file << "(" << value_re << ", " << value_im << ")";
+					file << sqrt(value_re*value_re+value_im*value_im);
+					if (x < resolution_spec[0]-1)
+						file << i_separator;
+					else
+						file << std::endl;
+				}
+			}
+		}
+
+		checkConsistency();
+		return true;
+	}
+
+
+	/**
+	 * Write data to VTK file
 	 *
 	 * Each array row is stored to a line.
 	 * Per default, a tab separator is used in each line to separate the values.
