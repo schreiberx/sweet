@@ -1,0 +1,603 @@
+#LyX 2.1 created this file. For more info see http://www.lyx.org/
+\lyxformat 474
+\begin_document
+\begin_header
+\textclass article
+\begin_preamble
+\usepackage[
+% these settings create hierarchical bookmarks which follow the
+% document hierarchy
+        bookmarks=true,
+        bookmarksopen=true,
+        bookmarksnumbered=true,
+% theese parameters are useful only if you build a pdf file
+% pdftitle={ DOCUMENT TITLE },
+% pdfauthor={ YOUR INFO },
+% pdfcreator={LyX, the LaTeX frontend with hyperref},
+% pdfkeywords={ DOCUMENT KEYWORDS },
+% pdfsubject={ DOCUMENT SUBJECT },
+% see http://www.tex.ac.uk/cgi-bin/texfaq2html?label=pdfpagelabels
+        pdfpagelabels, plainpages=false,
+% these settings remove all colours around any kind of link
+        colorlinks=true,
+        linkcolor=black,
+        urlcolor=black,
+        filecolor=black,
+        citecolor=black,
+]{hyperref}
+\end_preamble
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_math auto
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Simulation data spectral/physical conversion, processing and storage
+\end_layout
+
+\begin_layout Author
+Martin Schreiber
+\end_layout
+
+\begin_layout Date
+05/10/16
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Standard
+This document provides the information on the reasons how the simulation
+ data is stored, processed and converted to/from spectral/physical space.
+ The suggested changes are intended to get into SWEET within a few weeks
+ after creating this document.
+\end_layout
+
+\begin_layout Standard
+With the intended extension of supporting simulations on the plane with
+ the double-Fourier and on the sphere with Spherical Harmonics, also the
+ way how data is stored and processed should be made more clear.
+ Several requirements arise from mathematics, 3rd party library and software
+ design.
+ After giving an overview on these requirements and discussion different
+ ways of how to cope with the issue, we provide a conclusion in the end
+ on the suggested changes in SWEET.
+\end_layout
+
+\begin_layout Section
+Requirements
+\end_layout
+
+\begin_layout Subsection
+Mathematics
+\end_layout
+
+\begin_layout Enumerate
+Support for anti-aliasing
+\end_layout
+
+\begin_layout Enumerate
+Support of different resolutions in spectral and physical space
+\end_layout
+
+\begin_layout Subsection
+Software framework
+\end_layout
+
+\begin_layout Enumerate
+Support operator-styled arithmetic operations (e.g.
+ a+b where a and b are data arrays)
+\end_layout
+
+\begin_layout Enumerate
+Hide iteration loops and anti-aliasing if requested
+\end_layout
+
+\begin_layout Enumerate
+Support sphere with SPH and plane data with FFT in a similar way
+\end_layout
+
+\begin_layout Subsection
+HPC
+\end_layout
+
+\begin_layout Enumerate
+Efficient implementation on nowadays HPC shared-memory systems (e.g.
+ caring about NUMA awareness)
+\end_layout
+
+\begin_layout Enumerate
+No additional memory consumption
+\end_layout
+
+\begin_layout Section
+FFT vs.
+ SPH
+\end_layout
+
+\begin_layout Standard
+Converting data from spectral to physical space, we rely on existing libraries.
+ Libraries for the FFTW have restrictions which is the reason for this discussio
+n document.
+\end_layout
+
+\begin_layout Subsection
+Requirements for spectral/physical conversions
+\end_layout
+
+\begin_layout Standard
+Let 
+\begin_inset Formula $(N,M)$
+\end_inset
+
+ be the number of modes in spectral space and 
+\begin_inset Formula $(X,Y)$
+\end_inset
+
+ the resolution in physical space.
+ For the FFT used for simulations on the plane, we use the FFTW.
+ For the SPH for simulations on the sphere we use the SHTns library.
+ We directly encounter a restriction by using the FFTW.
+ This only supports transformations if with 
+\begin_inset Formula $X=N$
+\end_inset
+
+ and 
+\begin_inset Formula $Y=M$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+On the other hand, SHTns and also related libraries for spherical harmonics
+ support different size of spectral and physical spaces with 
+\begin_inset Formula $X!=N$
+\end_inset
+
+ and 
+\begin_inset Formula $Y!=M$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Comment on 
+\begin_inset Quotes eld
+\end_inset
+
+plans
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Both libraries require the creation of 
+\begin_inset Quotes eld
+\end_inset
+
+plans
+\begin_inset Quotes erd
+\end_inset
+
+.
+ These plans should be created only once and then reused.
+ A reference counter is used to free plans if they are not required anymore.
+\end_layout
+
+\begin_layout Subsection
+(Anti-)aliasing
+\end_layout
+
+\begin_layout Subsubsection
+No anti-aliasing
+\end_layout
+
+\begin_layout Standard
+Without anti-aliasing it is sufficient to have the same number of modes
+ in spectral space as the resolution is in physical space: 
+\begin_inset Formula $X=N$
+\end_inset
+
+ and 
+\begin_inset Formula $Y=M$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+SPH Anti-aliasing
+\end_layout
+
+\begin_layout Standard
+Anti-aliasing treatment is required for evaluating non-linearities.
+ Even for a linear operators, such non-linearities might be required to
+ multiply e.g.
+ with 
+\begin_inset Formula $(1-\mu^{2})^{-1}$
+\end_inset
+
+ which is done in physical space if using spherical harmonics.
+ We only focus on implementations which support a fixed physical resolution
+ for a given number of modes.
+ (In the current implementation the physical space is always 
+\begin_inset Formula $X=N$
+\end_inset
+
+ and 
+\begin_inset Formula $Y=M$
+\end_inset
+
+ which might result in certain issues regarding anti-aliasing modes.)
+\end_layout
+
+\begin_layout Standard
+Using SPH libraries, they typically support resolutions and a maximum number
+ of modes which are not equivalent and we can easily support anti-aliasing.
+ Here, the 
+\begin_inset Formula $2/3$
+\end_inset
+
+ rule can be directly realized by using different sizes for the spatial/spectral
+ space.
+ Just by choosing a lower number of modes allows using only one buffer for
+ spectral space of size 
+\begin_inset Formula $N\times M$
+\end_inset
+
+ and another buffer for the data in spatial space of size 
+\begin_inset Formula $X\times Y$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+FFTW anti-aliasing
+\end_layout
+
+\begin_layout Standard
+However, FFTW requires to have identical spatial resolution and number of
+ spectral modes, hence 
+\begin_inset Formula $X=N$
+\end_inset
+
+ and 
+\begin_inset Formula $Y=M$
+\end_inset
+
+.
+ To cope with anti-aliasing, we require to run a FFT with a larger spectrum
+ but with the higher modes set to zero before each of these FFTs.
+ The size of the spectrum is given by 
+\begin_inset Formula $(NL,ML)$
+\end_inset
+
+ and is typically 
+\begin_inset Formula $(NL,ML)=(N3/2,M3/2)$
+\end_inset
+
+.
+ We also discuss how to handle the operators (add, sub) in spectral space.
+ We continue to discuss different methods to cope with this issue:
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Two buffers with padding:
+\series default
+
+\begin_inset Newline newline
+\end_inset
+
+MUL: There are two separate buffers of size 
+\begin_inset Formula $(N,M)$
+\end_inset
+
+ and 
+\begin_inset Formula $(NL,ML)$
+\end_inset
+
+.
+ Computing a multiplication in physical space is then accomplished by
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Copy data from 
+\begin_inset Formula $(N,M)$
+\end_inset
+
+ to 
+\begin_inset Formula $(NL,ML$
+\end_inset
+
+) and use
+\emph on
+ zero padding
+\emph default
+.
+\end_layout
+
+\begin_layout Enumerate
+Use FFT with 
+\begin_inset Formula $(NL=X,ML=Y)$
+\end_inset
+
+ to compute representation in physical space
+\end_layout
+
+\begin_layout Enumerate
+[multiplication in physical space]
+\end_layout
+
+\begin_layout Enumerate
+Use inverse FFT with 
+\begin_inset Formula $(NL=X,ML=Y)$
+\end_inset
+
+ to compute representation in spectral space
+\end_layout
+
+\begin_layout Enumerate
+Copy corresponding modes from 
+\begin_inset Formula $(NL,ML)$
+\end_inset
+
+ to 
+\begin_inset Formula $(N,M)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+ADD/SUB: All other operators such as adding two spectral representations
+ can be then realized by a single for loop without knowing about boundaries
+ of 
+\begin_inset Formula $(N,M)$
+\end_inset
+
+ and 
+\begin_inset Formula $(NL,ML)$
+\end_inset
+
+ but just of 
+\begin_inset Formula $I=N\times M$
+\end_inset
+
+.
+\begin_inset Newline newline
+\end_inset
+
+DRAWBACKS: Handling of two buffers and either always allocating an additional
+ buffer or requiring to allocate a buffer if required.
+\begin_inset Newline newline
+\end_inset
+
+ADVANTAGES: Optimal application of spectral operators due to the single
+ for loop.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\series bold
+Merged buffers to single one with padding:
+\series default
+
+\begin_inset Newline newline
+\end_inset
+
+This idea is basically the same one as the one before.
+ However, the difference is that both buffers are shared.
+\begin_inset Newline newline
+\end_inset
+
+DRAWBACKS: Copy data from 
+\begin_inset Formula $(N,M)$
+\end_inset
+
+ to 
+\begin_inset Formula $(NL,ML$
+\end_inset
+
+) and use zero padding might not be accomplished in parallel
+\begin_inset Newline newline
+\end_inset
+
+ADVANTAGES: Avoid using 2nd buffer, optimal application of spectral operators.
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Use only single spectral buffer with special loop iterations:
+\series default
+
+\begin_inset Newline newline
+\end_inset
+
+Here, we allocate a buffer of size 
+\begin_inset Formula $(NL,ML)$
+\end_inset
+
+ and handle all ADD/SUB of spectral data by only partial loop intervals
+ 
+\begin_inset Formula $(N,M)$
+\end_inset
+
+.
+ Computing a multiplication in physical space is then accomplished by
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Zero out modes 
+\begin_inset Formula $(>N,>M)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Enumerate
+Use FFT with 
+\begin_inset Formula $(NL=X,ML=Y)$
+\end_inset
+
+ to compute representation in physical space
+\end_layout
+
+\begin_layout Enumerate
+[multiplication in physical space]
+\end_layout
+
+\begin_layout Enumerate
+Use inverse FFT with 
+\begin_inset Formula $(NL=X,ML=Y)$
+\end_inset
+
+ to compute representation in spectral space
+\end_layout
+
+\begin_layout Standard
+ADD/SUB: A special treatment is required to handle the iterations in spectral
+ space in order to avoid iterating over 
+\begin_inset Formula $(NL,ML)$
+\end_inset
+
+ since only an iteration over 
+\begin_inset Formula $(N,M)$
+\end_inset
+
+ is required.
+\begin_inset Newline newline
+\end_inset
+
+DRAWBACKS: Special iteration in spectral space required, maybe not optimal
+\begin_inset Newline newline
+\end_inset
+
+ADVANTAGES: Only a single buffer, reassembles the SPH implementation
+\end_layout
+
+\end_deeper
+\begin_layout Section
+Suggestion (which gets the final decision)
+\end_layout
+
+\begin_layout Standard
+We focus on changing the current implementation to the last suggested implementa
+tion to use only a single spectral buffer and a special loop seems to be
+ the best decision.
+\end_layout
+
+\begin_layout Itemize
+Mathematics: All requirements of the mathematical issues are met.
+\end_layout
+
+\begin_layout Itemize
+Software framework: The software framework will get significantly simplified.
+ This only requires support for a single plan for a particular resolution.
+ All other requirements are also met.
+\end_layout
+
+\begin_layout Itemize
+HPC: NUMA domains will be supported.
+ There will be also no additional memory consumption for this.
+\end_layout
+
+\begin_layout Standard
+The performance for the spectral operations might be less optimal but that's
+ the price to pay to get clearer interfaces.
+ Each x-related component (C storage layout) can be still handled in a single
+ loop.
+\end_layout
+
+\begin_layout Standard
+Additionally, once anti-aliasing is activated, the physical space follows
+ entirely the 
+\begin_inset Formula $2/3$
+\end_inset
+
+ rule also for the other conversion (e.g.
+ for input/output and setup routines) to the physical space.
+\end_layout
+
+\begin_layout Standard
+This also makes 
+\series bold
+all
+\series default
+ truncation functions exposed to the user obsolete!
+\end_layout
+
+\end_body
+\end_document
