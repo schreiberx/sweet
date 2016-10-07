@@ -1,0 +1,74 @@
+OMP_NUM_THREADS=28
+
+SWEET environment variables loaded
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Using REXI parallel sum, hence using only single FFT threadLoading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Using REXI parallel sum, hence using only single FFT threadFFTW_WISDOM_nofreq_T0
+
+Using REXI parallel sum, hence using only single FFT threadLoading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0
+
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Simulation time (seconds): 3.960286
+Number of time steps: 10
+Time per time step: 0.3960286 sec/ts
+Last time step size: 5
+REXI alpha.size(): 268
+DIAGNOSTICS ANALYTICAL RMS H:	0.658488436954
+DIAGNOSTICS ANALYTICAL RMS U:	0.354759022707
+DIAGNOSTICS ANALYTICAL RMS V:	0.244862929208
+DIAGNOSTICS ANALYTICAL MAXABS H:	1.64785516454
+DIAGNOSTICS ANALYTICAL MAXABS U:	0.839540444203
+DIAGNOSTICS ANALYTICAL MAXABS V:	0.555588022447
+real 9.57
+user 0.08
+sys 0.24

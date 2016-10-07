@@ -1,0 +1,18 @@
+#TI Threads vs. simulation time N^2=32^2, DT=50, A=1
+#TX Simulation type
+#TY number of threads (compact)
+threads\SimType	nr_fd_cart_cgrid
+1 cores (1 ranks / 1 threads)	5.008202
+2 cores (1 ranks / 2 threads)	4.158475
+4 cores (1 ranks / 4 threads)	4.000653
+6 cores (1 ranks / 6 threads)	4.265243
+8 cores (1 ranks / 8 threads)	4.456337
+10 cores (1 ranks / 10 threads)	4.689221
+12 cores (1 ranks / 12 threads)	4.829834
+14 cores (1 ranks / 14 threads)	4.968953
+16 cores (1 ranks / 16 threads)	4.888314
+18 cores (1 ranks / 18 threads)	5.301295
+20 cores (1 ranks / 20 threads)	5.391856
+22 cores (1 ranks / 22 threads)	5.459349
+24 cores (1 ranks / 24 threads)	5.523102
+28 cores (1 ranks / 28 threads)	5.809263

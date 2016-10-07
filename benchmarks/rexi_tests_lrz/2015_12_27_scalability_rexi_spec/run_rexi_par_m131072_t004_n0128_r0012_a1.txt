@@ -1,0 +1,42 @@
+OMP_NUM_THREADS=4
+
+SWEET environment variables loaded
+Using REXI parallel sum, hence using only single FFT thread
+Using REXI parallel sum, hence using only single FFT threadLoading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+FFTW_WISDOM_nofreq_T0
+
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Simulation time (seconds): 78.153749
+Number of time steps: 10
+Time per time step: 7.8153749 sec/ts
+Last time step size: 5
+REXI alpha.size(): 131084
+DIAGNOSTICS ANALYTICAL RMS H:	3.98289814353e-07
+DIAGNOSTICS ANALYTICAL RMS U:	5.03977430999e-07
+DIAGNOSTICS ANALYTICAL RMS V:	1.6557384526e-07
+DIAGNOSTICS ANALYTICAL MAXABS H:	9.69799716088e-07
+DIAGNOSTICS ANALYTICAL MAXABS U:	1.33465383903e-06
+DIAGNOSTICS ANALYTICAL MAXABS V:	4.64310140197e-07
+real 82.81
+user 0.02
+sys 0.02

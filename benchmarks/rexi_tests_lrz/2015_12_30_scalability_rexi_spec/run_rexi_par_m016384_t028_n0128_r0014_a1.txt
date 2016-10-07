@@ -1,0 +1,46 @@
+OMP_NUM_THREADS=28
+
+SWEET environment variables loaded
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0Using REXI parallel sum, hence using only single FFT thread
+
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Simulation time (seconds): 1.755848
+Number of time steps: 10
+Time per time step: 0.1755848 sec/ts
+Last time step size: 5
+REXI alpha.size(): 16396
+DIAGNOSTICS ANALYTICAL RMS H:	6.36206177163e-06
+DIAGNOSTICS ANALYTICAL RMS U:	8.04654201727e-06
+DIAGNOSTICS ANALYTICAL RMS V:	2.67694408287e-06
+DIAGNOSTICS ANALYTICAL MAXABS H:	1.53535438682e-05
+DIAGNOSTICS ANALYTICAL MAXABS U:	2.13242036014e-05
+DIAGNOSTICS ANALYTICAL MAXABS V:	7.51115631326e-06
+real 6.17
+user 0.03
+sys 0.12

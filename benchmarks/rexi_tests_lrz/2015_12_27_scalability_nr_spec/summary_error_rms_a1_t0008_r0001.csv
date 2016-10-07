@@ -1,0 +1,8 @@
+#TI RMS Error vs. resolution, MPI ranks=1, threads=8
+#TX Simulation type
+#TY Resolution
+N\SimType	nr_spec_spec_agrid
+32	0.000770900902442
+64	5.71241267532e-05
+128	3.85741589643e-06
+256	2.50440377732e-07

@@ -1,0 +1,66 @@
+OMP_NUM_THREADS=14
+
+SWEET environment variables loaded
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+
+
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+
+
+
+
+
+
+
+
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0
+
+
+
+
+
+
+
+
+
+
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+
+
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadLoading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+
+
+FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=
+
+
+FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0Using REXI parallel sum, hence using only single FFT threadFFTW_WISDOM_nofreq_T0Using REXI parallel sum, hence using only single FFT thread
+
+
+
+
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0
+
+Using REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT threadUsing REXI parallel sum, hence using only single FFT thread
+
+
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0FFTW_WISDOM_nofreq_T0
+
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Simulation time (seconds): 0.159864
+Number of time steps: 10
+Time per time step: 0.0159864 sec/ts
+Last time step size: 5
+REXI alpha.size(): 8204
+DIAGNOSTICS ANALYTICAL RMS H:	0.000116396508585
+DIAGNOSTICS ANALYTICAL RMS U:	0.000147394689997
+DIAGNOSTICS ANALYTICAL RMS V:	4.89519142268e-05
+DIAGNOSTICS ANALYTICAL MAXABS H:	0.000279582389879
+DIAGNOSTICS ANALYTICAL MAXABS U:	0.000386015855145
+DIAGNOSTICS ANALYTICAL MAXABS V:	0.000136394634739
+real 4.51
+user 0.05
+sys 0.07

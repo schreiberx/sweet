@@ -9,7 +9,6 @@ runscript.sh
 .pydevproject
 .sconsign.dblite
 python_mods/*.pyc
-*.txt
 /tmp*/
 /runSL.sh
 /stabi_parallel.sh

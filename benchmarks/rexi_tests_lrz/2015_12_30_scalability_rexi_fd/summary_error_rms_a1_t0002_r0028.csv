@@ -1,0 +1,5 @@
+#TI RMS Error vs. resolution, MPI ranks=28, threads=2
+#TX Simulation type
+#TY Resolution
+N\SimType	nr_fd_cart_cgrid	rexi_fd_m0064	rexi_fd_par_m0064	rexi_fd_m0092	rexi_fd_par_m0092	rexi_fd_m0128	rexi_fd_par_m0128	rexi_fd_m0256	rexi_fd_par_m0256	rexi_fd_m0512	rexi_fd_par_m0512
+128	-	0.658430877129	0.658430877129	1.38038629806	1.38038629806	0.491721375069	0.491721375069	0.492472824377	0.492472824377	0.471737230525	0.471737230525

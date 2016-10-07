@@ -1,0 +1,20 @@
+OMP_NUM_THREADS=28
+
+SWEET environment variables loaded
+Using REXI parallel sum, hence using only single FFT thread
+Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=FFTW_WISDOM_nofreq_T0
+Using REXI parallel sum, hence using only single FFT thread
+Simulation time (seconds): 2.006484
+Number of time steps: 10
+Time per time step: 0.2006484 sec/ts
+Last time step size: 5
+REXI alpha.size(): 8204
+DIAGNOSTICS ANALYTICAL RMS H:	0.877287816555
+DIAGNOSTICS ANALYTICAL RMS U:	0.251357195545
+DIAGNOSTICS ANALYTICAL RMS V:	0.154005123041
+DIAGNOSTICS ANALYTICAL MAXABS H:	1.90342315086
+DIAGNOSTICS ANALYTICAL MAXABS U:	0.472536943135
+DIAGNOSTICS ANALYTICAL MAXABS V:	0.364404448697
+real 6.56
+user 0.02
+sys 0.02
