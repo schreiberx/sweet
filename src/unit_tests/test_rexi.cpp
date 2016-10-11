@@ -56,7 +56,7 @@ int main(int i_argc, char *i_argv[])
 
 					if (std::abs(approx) > 1.0)
 					{
-						std::cerr << "approx value " << approx << " not bounded by unity!" << std::endl;
+						std::cerr << "approx value " << approx << " not bounded by unity (just a warning and not a problem)" << std::endl;
 //						exit(-1);
 					}
 					double error_real = std::abs(correct - approx);
@@ -122,8 +122,8 @@ int main(int i_argc, char *i_argv[])
 			int M = 32/h;
 			ExponentialApproximation ea(h, M);
 
-			double start = -2.0;
-			double end = 2.0;
+			double start = -M*h*0.95;
+			double end = -start;
 			double step_size = 0.01;
 
 			double max_error = 0;
@@ -158,8 +158,8 @@ int main(int i_argc, char *i_argv[])
 
 			REXI rexi(h, M, 0, false);
 
-			double start = -2.0;
-			double end = 2.0;
+			double start = -M*h*0.95;
+			double end = -start;
 			double step_size = 0.01;
 
 			double max_error = 0;
@@ -201,8 +201,8 @@ int main(int i_argc, char *i_argv[])
 
 				REXI rexi(h, M, 0, half);
 
-				double start = -2.0;
-				double end = 2.0;
+				double start = -M*h*0.95;
+				double end = -start;
 				double step_size = 0.01;
 
 				double max_error = 0;
@@ -247,8 +247,8 @@ int main(int i_argc, char *i_argv[])
 
 				REXI rexi(h, M, 0, half);
 
-				double start = -2.0;
-				double end = 2.0;
+				double start = -M*h*0.95;
+				double end = -start;
 				double step_size = 0.01;
 
 				double max_error = 0;
