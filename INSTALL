@@ -1,10 +1,14 @@
 
-******************
-Note:
-******************
+******************************************************
+READ THIS CAREFULLY!!! DON'T SKIP ANY PARTS!!!
+******************************************************
 
 There are scripts in the directory 'local_software' to make handling
-external software requirements easier.
+external software requirements easier. Not all software packages are
+required on all platforms. E.g. installing Autoconf is only required
+if the version on the platform is too old.
+
+The scripts are named as follows:
 
  * ./install_*.sh
    Build and install the 3rd party software automatically
@@ -15,9 +19,11 @@ external software requirements easier.
    This script sets up all the environment variables to compile and run SWEET
 
 After installing the software, you can use
+
 	source ./local_software/env_vars.sh
+
 from the SWEET source code directory to setup your
-environment variables correctly
+environment variables correctly.
 
 ================
 Autoconf:

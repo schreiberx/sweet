@@ -4,9 +4,11 @@ SWEET
 **************************
 Shallow Water Equation Environment for Tests, Awesome!
 
-!!!
-Please have a look into the INSTALL instructions to see required libraries.
-!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Please have a look into the INSTALL instructions to see required libraries !
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 File structure:
 
@@ -36,9 +38,22 @@ Coding:
 	These conventions are suggestions.
 
 
-Once installed scons, you can have a look at the possible compilation options:
+Compilation:
 
-	scons --help
+	First of all, setup the environment variables correctly
+	(see also INSTALL file):
+
+	$ source ./local_software/env_vars.sh
+
+	The compilation is then done by calling 'scons' which is a
+	makefile alternative and offers the flexibility of Python.
+
+	$ scons --program=swe_staggered_vector_invariant
+
+
+	The possible compilation options are visible via
+
+	$ scons --help
 
 	The program to be compiled can be specified via -program=...
 	with the list of programs given in src/examples
