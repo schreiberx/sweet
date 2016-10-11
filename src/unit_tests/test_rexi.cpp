@@ -238,9 +238,11 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "******************************************************" << std::endl;
 
 
-		for (int k = 0; k < 2; k++)
+//		for (int k = 0; k < 2; k++)
 		{
-			bool half = k;
+			// halving does only work for linear operator
+			//bool half = k;
+			bool half = false;
 			for (double h = 1; h > 0.005; h *= 0.5)
 			{
 				int M = 256.0/h;
