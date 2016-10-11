@@ -163,6 +163,7 @@ public:
 		bool no_bold_font_found = false;
 		if (i_bold)
 		{
+			if (!trySetupFont(ft_library, "/usr/share/fonts/truetype/DejaVuSans-Bold.ttf", ft_face))
 			if (!trySetupFont(ft_library, "/usr/share/fonts/truetype/ubuntu-font-family/Ubuntu-B.ttf", ft_face))
 			if (!trySetupFont(ft_library, "/usr/share/fonts/truetype/freefont/FreeSansBold.ttf", ft_face))
 			if (!trySetupFont(ft_library, "/usr/share/fonts/truetype/msttcorefonts/arialbd.ttf", ft_face))
@@ -177,6 +178,7 @@ public:
 
 		if (no_bold_font_found)
 		{
+			if (!trySetupFont(ft_library, "/usr/share/fonts/truetype/DejaVuSans.ttf", ft_face))
 			if (!trySetupFont(ft_library, "/usr/share/fonts/truetype/ubuntu-font-family/Ubuntu-R.ttf", ft_face))
 			if (!trySetupFont(ft_library, "/usr/share/fonts/truetype/freefont/FreeSans.ttf", ft_face))
 			if (!trySetupFont(ft_library, "/usr/share/fonts/truetype/msttcorefonts/arial.ttf", ft_face))

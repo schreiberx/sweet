@@ -2,3 +2,6 @@ build
 FFTW_*
 *.txt
 benchmarks/sl-rexi/*.csv
+res
+tmp
+burgersscripts
