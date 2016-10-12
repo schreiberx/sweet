@@ -1229,7 +1229,7 @@ public:
 	 * return the data after running computations with the fine timestepping:
 	 * return Y^F
 	 */
-	Parareal_Data& get_data_timestep_fine()
+	Parareal_Data& get_reference_to_data_timestep_fine()
 	{
 		if (simVars.parareal.verbosity > 2)
 			std::cout << "get_data_timestep_fine()" << std::endl;
@@ -1405,7 +1405,7 @@ public:
 	 * return the solution after the coarse timestepping:
 	 * return Y^C
 	 */
-	Parareal_Data& get_data_timestep_coarse()
+	Parareal_Data& get_reference_to_data_timestep_coarse()
 	{
 		if (simVars.parareal.verbosity > 2)
 			std::cout << "get_data_timestep_coarse()" << std::endl;
@@ -1488,7 +1488,7 @@ public:
 	 * Return the data to be forwarded to the next coarse time step interval:
 	 * return Y^O
 	 */
-	Parareal_Data& get_output_data()
+	Parareal_Data& get_reference_to_output_data()
 	{
 		if (simVars.parareal.verbosity > 2)
 			std::cout << "get_output_data()" << std::endl;

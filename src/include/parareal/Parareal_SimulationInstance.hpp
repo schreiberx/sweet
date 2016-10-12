@@ -70,7 +70,7 @@ public:
 	 * return Y^F
 	 */
 	virtual
-	Parareal_Data& get_data_timestep_fine() = 0;
+	Parareal_Data& get_reference_to_data_timestep_fine() = 0;
 
 
 	/**
@@ -86,7 +86,7 @@ public:
 	 * return Y^C
 	 */
 	virtual
-	Parareal_Data& get_data_timestep_coarse() = 0;
+	Parareal_Data& get_reference_to_data_timestep_coarse() = 0;
 
 
 	/**
@@ -115,7 +115,7 @@ public:
 	 * return Y^O
 	 */
 	virtual
-	Parareal_Data& get_output_data() = 0;
+	Parareal_Data& get_reference_to_output_data() = 0;
 
 	virtual
 	void output_data_console(

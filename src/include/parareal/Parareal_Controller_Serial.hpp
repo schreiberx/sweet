@@ -181,7 +181,7 @@ public:
 		for (int i = 1; i < pVars->coarse_slices; i++)
 		{
 			CONSOLEPREFIX_start(i-1);
-			Parareal_Data &tmp = parareal_simulationInstances[i-1]->get_data_timestep_coarse();
+			Parareal_Data &tmp = parareal_simulationInstances[i-1]->get_reference_to_data_timestep_coarse();
 
 				// use coarse time step output data as initial data of next coarse time step
 			CONSOLEPREFIX_start(i);
@@ -247,14 +247,14 @@ public:
 					max_convergence = (convergence==-1)?(convergence):(std::max(max_convergence,convergence));
 
 				parareal_simulationInstances[i]->output_data_file(
-						parareal_simulationInstances[i]->get_output_data(),
+						parareal_simulationInstances[i]->get_reference_to_output_data(),
 						k,
 						i
 					);
 
 				CONSOLEPREFIX.start(i);
 				parareal_simulationInstances[i]->output_data_console(
-						parareal_simulationInstances[i]->get_output_data(),
+						parareal_simulationInstances[i]->get_reference_to_output_data(),
 						k,
 						i
 					);
@@ -282,7 +282,7 @@ public:
 				if (i < pVars->coarse_slices-1)
 				{
 					CONSOLEPREFIX_start(i);
-					Parareal_Data &tmp = parareal_simulationInstances[i]->get_output_data();
+					Parareal_Data &tmp = parareal_simulationInstances[i]->get_reference_to_output_data();
 
 					CONSOLEPREFIX_start(i+1);
 					parareal_simulationInstances[i+1]->sim_set_data(tmp);
