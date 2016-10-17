@@ -10,7 +10,7 @@
 
 
 #include <parareal/Parareal_Data.hpp>
-#include <sweet/DataArray.hpp>
+#include "../sweet/plane/PlaneData.hpp"
 
 
 /**

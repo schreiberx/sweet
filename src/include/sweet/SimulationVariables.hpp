@@ -13,6 +13,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <limits>
+#include <sweet/sweetmath.hpp>
 
 #ifndef SWEET_PARAREAL
 #	define SWEET_PARAREAL 1
@@ -163,8 +165,11 @@ public:
 	 */
 	struct Discretization
 	{
-		/// resolution
-		std::size_t res[2] = {128, 128};
+		/// resolution in physical space (grid cells)
+		std::size_t res_physical[2] = {128, 128};
+
+		/// resolution in spectral space (number of modes)
+		std::size_t res_spectral[2] = {128, 128};
 
 		/// size of cell (hx, hy)
 		/// this is computed based on disc.res and sim.domain_size
@@ -179,6 +184,45 @@ public:
 		// use spectral differential operators
 		bool use_spectral_basis_diffs = false;
 	} disc;
+
+
+	/**
+	 * SPH Specific
+	 */
+	struct SPHDiscretization
+	{
+		// Use Robert function formulation
+		bool use_robert_functions = true;
+
+	} discSPH;
+
+
+	/**
+	 * REXI
+	 */
+	struct REXI
+	{
+		/**
+		 * REXI parameter h
+		 */
+		double rexi_h = 0.2;
+
+		/**
+		 * REXI parameter M
+		 */
+		int rexi_M = 128;
+
+		/**
+		 * Use only half of the poles for REXI
+		 */
+		bool rexi_use_half_poles = true;
+
+		/**
+		 * Extend modes for certain operations
+		 */
+		int rexi_use_extended_modes = 0;
+
+	} rexi;
 
 
 	/**
@@ -276,14 +320,14 @@ public:
 	 */
 	void reset()
 	{
-		disc.cell_size[0] = sim.domain_size[0]/(double)disc.res[0];
-		disc.cell_size[1] = sim.domain_size[1]/(double)disc.res[1];
+		disc.cell_size[0] = sim.domain_size[0]/(double)disc.res_physical[0];
+		disc.cell_size[1] = sim.domain_size[1]/(double)disc.res_physical[1];
 
 		timecontrol.current_timestep_size = -1;
 		timecontrol.current_timestep_nr = 0;
 		timecontrol.current_simulation_time = 0;
 
-		if ((disc.res[0] & 1) || (disc.res[1] & 1))
+		if ((disc.res_physical[0] & 1) || (disc.res_physical[1] & 1))
 			std::cout << "WARNING: Typically there are only even resolutions supported!" << std::endl;
 	}
 
@@ -293,18 +337,14 @@ public:
 	 * setup the variables based on program parameters
 	 */
 	bool setupFromMainParameters(
-			int i_argc,				///< argc from main()
-			char *i_argv[],			///< argv from main()
+			int i_argc,					///< argc from main()
+			char *const i_argv[],		///< argv from main()
 			const char *bogus_var_names[] = nullptr			///< list of strings of simulation-specific variables, has to be terminated by nullptr
 	)
 	{
 		int next_free_program_option = 0;
 		const int max_options = 30;
         static struct option long_options[max_options+1] = {
-//    			{"test-initial-freq-x-mul", required_argument, 0, 256+'a'+0}, // 0
-//    			{"test-initial-freq-y-mul", required_argument, 0, 256+'a'+1}, // 1
-//    			{"initial-coord-x", required_argument, 0, 256+'a'+2}, // 2
-//    			{"initial-coord-y", required_argument, 0, 256+'a'+3}, // 3
     			{0, 0, 0, 0}, // 0
     			{0, 0, 0, 0}, // 1
     			{0, 0, 0, 0}, // 2
@@ -383,7 +423,8 @@ public:
 		int opt;
 		while (1)
 		{
-			opt = getopt_long(	i_argc, i_argv,
+			opt = getopt_long(
+							i_argc, i_argv,
 							"N:n:m:C:u:U:s:X:Y:f:b:x:y:t:i:T:v:V:O:o:H:r:R:W:F:S:g:p:P:G:d:z",
 							long_options, &option_index
 					);
@@ -441,16 +482,16 @@ public:
 				break;
 
 			case 'N':
-				disc.res[0] = atoi(optarg);
-				disc.res[1] = disc.res[0];
+				disc.res_physical[0] = atoi(optarg);
+				disc.res_physical[1] = disc.res_physical[0];
 				break;
 
 			case 'n':
-				disc.res[0] = atoi(optarg);
+				disc.res_physical[0] = atoi(optarg);
 				break;
 
 			case 'm':
-				disc.res[1] = atoi(optarg);
+				disc.res_physical[1] = atoi(optarg);
 				break;
 
 			case 'C':
@@ -598,7 +639,7 @@ public:
 						"	-N [res]	resolution in x and y direction, default=128",
 						"	-n [resx]	resolution in x direction, default=128",
 						"	-m [resy]	resolution in y direction, default=128",
-						"	-S [0/1]	Control Operator discretization for DataArrays",
+						"	-S [0/1]	Control Operator discretization for PlaneDatas",
 						"               0: FD, 1: spectral derivatives, default:0",
 						"  >Time:",
 						"	-W [0/1]	use up- and downwinding, default:0",

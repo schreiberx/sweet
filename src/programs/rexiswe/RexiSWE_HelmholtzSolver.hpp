@@ -7,7 +7,7 @@
 #ifndef SRC_PROGRAMS_REXISWE_REXISWE_HELMHOLTZSOLVER_HPP_
 #define SRC_PROGRAMS_REXISWE_REXISWE_HELMHOLTZSOLVER_HPP_
 
-#include <sweet/Complex2DArrayFFT.hpp>
+#include "../../include/sweet/plane/PlaneDataComplex.hpp"
 
 
 class RexiSWE_HelmholtzSolver
@@ -17,8 +17,8 @@ class RexiSWE_HelmholtzSolver
 	bool (*smoother_fun)(
 			std::complex<double> i_kappa,
 			double i_gh0,
-			const Complex2DArrayFFT &i_rhs,
-			Complex2DArrayFFT &io_x,
+			const PlaneDataComplex &i_rhs,
+			PlaneDataComplex &io_x,
 			double *i_domain_size,
 			double i_error_threshold,
 			int i_max_iters,
@@ -38,8 +38,8 @@ public:
 	bool smoother_jacobi(
 			std::complex<double> i_kappa,
 			double i_gh0,
-			const Complex2DArrayFFT &i_rhs,
-			Complex2DArrayFFT &io_x,
+			const PlaneDataComplex &i_rhs,
+			PlaneDataComplex &io_x,
 			double *i_domain_size,
 			double i_error_threshold = 0.000001,
 			int i_max_iters = 999999999,
@@ -74,23 +74,23 @@ public:
 		if (i_verbosity > 3)
 			std::cout << "inv_diag: " << inv_diag << std::endl;
 
-		Complex2DArrayFFT new_x(i_rhs.resolution);
+		PlaneDataComplex new_x(i_rhs.resolution);
 		int i = 0;
 		double residual = 0;
 		for (i = 0; i < i_max_iters; i++)
 		{
-			Complex2DArrayFFT tmp = io_x;
+			PlaneDataComplex tmp = io_x;
 #if 0
-			Complex2DArrayFFT y = (i_rhs + i_gh0*io_x.op_stencil_Re_X(scalar_Dx, scalar_Dy));
+			PlaneDataComplex y = (i_rhs + i_gh0*io_x.op_stencil_Re_X(scalar_Dx, scalar_Dy));
 
-			Complex2DArrayFFT y_re = y;
+			PlaneDataComplex y_re = y;
 			y_re.setAllIm(0);
 
-			Complex2DArrayFFT y_im = y;
+			PlaneDataComplex y_im = y;
 			y_im.setAllRe(0);
 
-			Complex2DArrayFFT t = y_re*inv_diag_re + y_im*inv_diag_im;
-//			Complex2DArrayFFT t = (y_re+y_im)*inv_diag;
+			PlaneDataComplex t = y_re*inv_diag_re + y_im*inv_diag_im;
+//			PlaneDataComplex t = (y_re+y_im)*inv_diag;
 			io_x = (1.0-i_omega)*io_x + i_omega*t;
 
 #else
@@ -125,8 +125,8 @@ public:
 	bool smoother_conjugate_gradient(
 			std::complex<double> i_kappa,
 			double i_gh0,
-			const Complex2DArrayFFT &i_rhs,
-			Complex2DArrayFFT &io_x,
+			const PlaneDataComplex &i_rhs,
+			PlaneDataComplex &io_x,
 			double *i_domain_size,
 			double i_error_threshold = 0.000001,
 			int i_max_iters = 999999999,
@@ -134,8 +134,8 @@ public:
 			int i_verbosity = 0
 	)
 	{
-		const Complex2DArrayFFT &b = i_rhs;
-		Complex2DArrayFFT &x = io_x;
+		const PlaneDataComplex &b = i_rhs;
+		PlaneDataComplex &x = io_x;
 
 		double inv_helm_h[2];
 		inv_helm_h[0] = (double)i_rhs.resolution[0]/(double)i_domain_size[0];
@@ -168,9 +168,9 @@ public:
 
 //#define Ci(x)	(x)
 
-		Complex2DArrayFFT r = b - A(x);
-		Complex2DArrayFFT w = Ci(r);
-		Complex2DArrayFFT v = Ci(w);
+		PlaneDataComplex r = b - A(x);
+		PlaneDataComplex w = Ci(r);
+		PlaneDataComplex v = Ci(w);
 
 		// TODO: should we maybe use the conjugate dot product?
 		std::complex<double> alpha = w.dotProd(w);
@@ -185,7 +185,7 @@ public:
 //			if (v.reduce_rms() < i_error_threshold)
 //				return true;
 
-			Complex2DArrayFFT u = A(v);
+			PlaneDataComplex u = A(v);
 			std::complex<double> t = alpha / (v.dotProd(u));
 
 			x = x + t*v;
@@ -233,8 +233,8 @@ public:
 	bool smoother_conjugate_gradient_real(
 			std::complex<double> i_kappa,
 			double i_gh0,
-			const Complex2DArrayFFT &i_rhs,
-			Complex2DArrayFFT &io_x,
+			const PlaneDataComplex &i_rhs,
+			PlaneDataComplex &io_x,
 			Operators2D &op,
 			double *i_domain_size,
 			double i_error_threshold = 0.000001,
@@ -243,20 +243,20 @@ public:
 			int i_verbosity = 0
 	)
 	{
-		DataArray<2> b_re = i_rhs.toDataArrays_Real();
-		DataArray<2> b_im = i_rhs.toDataArrays_Imag();
+		PlaneData b_re = i_rhs.toPlaneDatas_Real();
+		PlaneData b_im = i_rhs.toPlaneDatas_Imag();
 
-		DataArray<2> x_re = io_x.toDataArrays_Real();
-		DataArray<2> x_im = io_x.toDataArrays_Imag();
+		PlaneData x_re = io_x.toPlaneDatas_Real();
+		PlaneData x_im = io_x.toPlaneDatas_Imag();
 
 #define A_re(x_re, x_im)	((x_re)*i_kappa.real() - (x_im)*(i_kappa.imag()) - i_gh0*(op.diff2_c_x(x_re) + op.diff2_c_y(x_re)))
 #define A_im(x_re, x_im)	((x_re)*i_kappa.imag() + (x_im)*(i_kappa.real()) - i_gh0*(op.diff2_c_x(x_im) + op.diff2_c_y(x_im)))
 
-		DataArray<2> r_re = b_re - A_re(x_re, x_im);
-		DataArray<2> r_im = b_im - A_im(x_re, x_im);
+		PlaneData r_re = b_re - A_re(x_re, x_im);
+		PlaneData r_im = b_im - A_im(x_re, x_im);
 
-		DataArray<2> v_re = r_re;
-		DataArray<2> v_im = r_im;
+		PlaneData v_re = r_re;
+		PlaneData v_im = r_im;
 		double alpha = (v_re*v_re).reduce_sum() + (v_im*v_im).reduce_sum();
 
 		int i = 0;
@@ -264,8 +264,8 @@ public:
 		{
 			if (i_verbosity > 3)
 			{
-				DataArray<2> r_re = b_re - A_re(x_re, x_im);
-				DataArray<2> r_im = b_im - A_im(x_re, x_im);
+				PlaneData r_re = b_re - A_re(x_re, x_im);
+				PlaneData r_im = b_im - A_im(x_re, x_im);
 
 				std::cout << "RESIDUAL: " << std::sqrt(((r_re*r_re).reduce_sum() + (r_im*r_im).reduce_sum())/(double)(x_re.resolution[0]*x_re.resolution[1])) << std::endl;
 			}
@@ -273,8 +273,8 @@ public:
 //			if (v.reduce_rms() < i_error_threshold)
 //				return true;
 
-			DataArray<2> u_re = A_re(v_re, v_im);
-			DataArray<2> u_im = A_im(v_re, v_im);
+			PlaneData u_re = A_re(v_re, v_im);
+			PlaneData u_im = A_im(v_re, v_im);
 			double t = alpha / ((v_re*u_re).reduce_sum() + (v_im*u_im).reduce_sum());
 
 			x_re = x_re + t*v_re;
@@ -293,7 +293,7 @@ public:
 					if (i_verbosity > 0)
 						std::cout << "FIN RESIDUAL: " << res << " after " << i << " iterations" << std::endl;
 
-					io_x.loadRealAndImagFromDataArrays(x_re, x_im);
+					io_x.loadRealAndImagFromPlaneDatas(x_re, x_im);
 					return true;
 				}
 			}
@@ -317,8 +317,8 @@ public:
 	bool multigrid(
 			std::complex<double> i_kappa,
 			double i_gh0,
-			const Complex2DArrayFFT &i_rhs,
-			Complex2DArrayFFT &io_x,
+			const PlaneDataComplex &i_rhs,
+			PlaneDataComplex &io_x,
 			smoother_fun i_smoother_fun,
 			double *i_domain_size,
 			double i_error_threshold = 0.000001,
@@ -342,8 +342,8 @@ public:
 			exit(1);
 		}
 
-		std::vector<Complex2DArrayFFT> rhs;
-		std::vector<Complex2DArrayFFT> x;
+		std::vector<PlaneDataComplex> rhs;
+		std::vector<PlaneDataComplex> x;
 		rhs.resize(levels-level_restriction);
 		x.resize(levels-level_restriction);
 
@@ -356,24 +356,24 @@ public:
 			{
 				std::stringstream ss;
 				ss << "mg_" << l << "_x_re_a_down_pre.csv";
-				x[l].toDataArrays_Real().file_saveData_ascii(ss.str().c_str());
+				x[l].toPlaneDatas_Real().file_saveData_ascii(ss.str().c_str());
 			}
 			{
 				std::stringstream ss;
 				ss << "mg_" << l << "_x_im_a_down_pre.csv";
-				x[l].toDataArrays_Imag().file_saveData_ascii(ss.str().c_str());
+				x[l].toPlaneDatas_Imag().file_saveData_ascii(ss.str().c_str());
 			}
 
-			Complex2DArrayFFT residual = helmholtz_iterative_get_residual(i_kappa, i_gh0, rhs[l], x[l], i_domain_size);
+			PlaneDataComplex residual = helmholtz_iterative_get_residual(i_kappa, i_gh0, rhs[l], x[l], i_domain_size);
 			{
 				std::stringstream ss;
 				ss << "mg_" << l << "_residual_re_a_down_pre.csv";
-				residual.toDataArrays_Real().file_saveData_ascii(ss.str().c_str());
+				residual.toPlaneDatas_Real().file_saveData_ascii(ss.str().c_str());
 			}
 			{
 				std::stringstream ss;
 				ss << "mg_" << l << "_residual_im_a_down_pre.csv";
-				residual.toDataArrays_Imag().file_saveData_ascii(ss.str().c_str());
+				residual.toPlaneDatas_Imag().file_saveData_ascii(ss.str().c_str());
 			}
 
 			std::cout << "PRESMOOTH " << l << " with resolution " << rhs[l].resolution[0] << "x" << rhs[l].resolution[1] << std::endl;
@@ -401,24 +401,24 @@ public:
 			{
 				std::stringstream ss;
 				ss << "mg_" << l << "_x_re_b_down_post.csv";
-				x[l].toDataArrays_Real().file_saveData_ascii(ss.str().c_str());
+				x[l].toPlaneDatas_Real().file_saveData_ascii(ss.str().c_str());
 			}
 			{
 				std::stringstream ss;
 				ss << "mg_" << l << "_x_im_b_down_post.csv";
-				x[l].toDataArrays_Imag().file_saveData_ascii(ss.str().c_str());
+				x[l].toPlaneDatas_Imag().file_saveData_ascii(ss.str().c_str());
 			}
 
 			residual = helmholtz_iterative_get_residual(i_kappa, i_gh0, rhs[l], x[l], i_domain_size);
 			{
 				std::stringstream ss;
 				ss << "mg_" << l << "_residual_re_b_down_post.csv";
-				residual.toDataArrays_Real().file_saveData_ascii(ss.str().c_str());
+				residual.toPlaneDatas_Real().file_saveData_ascii(ss.str().c_str());
 			}
 			{
 				std::stringstream ss;
 				ss << "mg_" << l << "_residual_im_b_down_post.csv";
-				residual.toDataArrays_Imag().file_saveData_ascii(ss.str().c_str());
+				residual.toPlaneDatas_Imag().file_saveData_ascii(ss.str().c_str());
 			}
 #endif
 
@@ -463,24 +463,24 @@ public:
 			{
 				std::stringstream ss;
 				ss << "mg_" << l-1 << "_x_re_c_up_pre.csv";
-				x[l-1].toDataArrays_Real().file_saveData_ascii(ss.str().c_str());
+				x[l-1].toPlaneDatas_Real().file_saveData_ascii(ss.str().c_str());
 			}
 			{
 				std::stringstream ss;
 				ss << "mg_" << l-1 << "_x_im_c_up_pre.csv";
-				x[l-1].toDataArrays_Imag().file_saveData_ascii(ss.str().c_str());
+				x[l-1].toPlaneDatas_Imag().file_saveData_ascii(ss.str().c_str());
 			}
 
-			Complex2DArrayFFT residual = helmholtz_iterative_get_residual(i_kappa, i_gh0, rhs[l-1], x[l-1], i_domain_size);
+			PlaneDataComplex residual = helmholtz_iterative_get_residual(i_kappa, i_gh0, rhs[l-1], x[l-1], i_domain_size);
 			{
 				std::stringstream ss;
 				ss << "mg_" << l-1 << "_residual_re_c_up_pre.csv";
-				residual.toDataArrays_Real().file_saveData_ascii(ss.str().c_str());
+				residual.toPlaneDatas_Real().file_saveData_ascii(ss.str().c_str());
 			}
 			{
 				std::stringstream ss;
 				ss << "mg_" << l-1 << "_residual_im_c_up_pre.csv";
-				residual.toDataArrays_Imag().file_saveData_ascii(ss.str().c_str());
+				residual.toPlaneDatas_Imag().file_saveData_ascii(ss.str().c_str());
 			}
 #endif
 
@@ -519,12 +519,12 @@ public:
 			{
 				std::stringstream ss;
 				ss << "mg_" << l-1 << "_x_re_d_up_post.csv";
-				x[l-1].toDataArrays_Real().file_saveData_ascii(ss.str().c_str());
+				x[l-1].toPlaneDatas_Real().file_saveData_ascii(ss.str().c_str());
 			}
 			{
 				std::stringstream ss;
 				ss << "mg_" << l-1 << "_x_im_d_up_post.csv";
-				x[l-1].toDataArrays_Imag().file_saveData_ascii(ss.str().c_str());
+				x[l-1].toPlaneDatas_Imag().file_saveData_ascii(ss.str().c_str());
 			}
 
 
@@ -532,12 +532,12 @@ public:
 			{
 				std::stringstream ss;
 				ss << "mg_" << l-1 << "_residual_re_d_up_post.csv";
-				residual.toDataArrays_Real().file_saveData_ascii(ss.str().c_str());
+				residual.toPlaneDatas_Real().file_saveData_ascii(ss.str().c_str());
 			}
 			{
 				std::stringstream ss;
 				ss << "mg_" << l-1 << "_residual_im_d_up_post.csv";
-				residual.toDataArrays_Imag().file_saveData_ascii(ss.str().c_str());
+				residual.toPlaneDatas_Imag().file_saveData_ascii(ss.str().c_str());
 			}
 #endif
 
@@ -557,8 +557,8 @@ public:
 	double helmholtz_iterative_get_residual_rms(
 			std::complex<double> i_kappa,
 			double i_gh0,
-			Complex2DArrayFFT &i_rhs,
-			Complex2DArrayFFT &io_x,
+			PlaneDataComplex &i_rhs,
+			PlaneDataComplex &io_x,
 			double *i_domain_size
 	)
 	{
@@ -589,11 +589,11 @@ public:
 
 
 	static
-	Complex2DArrayFFT helmholtz_iterative_get_residual(
+	PlaneDataComplex helmholtz_iterative_get_residual(
 			std::complex<double> i_kappa,
 			double i_gh0,
-			Complex2DArrayFFT &i_rhs,
-			Complex2DArrayFFT &io_x,
+			PlaneDataComplex &i_rhs,
+			PlaneDataComplex &io_x,
 			double *i_domain_size
 	)
 	{

@@ -12,8 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- *      Author: Martin Schreiber (schreiberx@gmail.com)
  */
 
 /**
@@ -21,6 +19,7 @@
  *
  * 2008-10-28: martin schreiber
  * 	created
+ *
  */
 
 #ifndef __CMATRIX_HH
@@ -40,19 +39,12 @@ class CMatrix4;
 
 /**
  * \brief	3x3 Matrix Handler
- *
- * note: this is everything else than an optimized implementation
- *
- * use expression templates if this operations are frequently used in
- * your program!.
  */
 template <typename T>
 class CMatrix3
 {
 public:
 	T matrix[3][3];	///< storage for data
-
-
 
 /******************************************************
  ******************* CONSTRUCTORS *********************
@@ -109,11 +101,10 @@ public:
 
 	}
 
-
-
 /******************************************************
  ******************* GENERAL FUNCTIONS ****************
  ******************************************************/
+
 
 	/**
 	 * load identity matrix
@@ -177,7 +168,7 @@ public:
 	 *
 	 * the inversion makes use of cramers rule
 	 */
-	inline CMatrix3<T> getInverse() const
+	CMatrix3<T> getInverse() const
 	{
 	    CMatrix3<T> nm(
 	             (matrix[1][1]*matrix[2][2] - matrix[1][2]*matrix[2][1]), -(matrix[0][1]*matrix[2][2] - matrix[0][2]*matrix[2][1]),  (matrix[0][1]*matrix[1][2] - matrix[0][2]*matrix[1][1]),
@@ -206,7 +197,9 @@ public:
 	 */
 	CMatrix3<T> getInverseTranspose() const
 	{
-		return getInverse().getTranspose();
+		// TODO: optimize me
+		CMatrix3<T> m = getInverse();
+		return m.getTranspose();
 	}
 
 

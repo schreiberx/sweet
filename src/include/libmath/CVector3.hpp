@@ -12,8 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- *      Author: Martin Schreiber (schreiberx@gmail.com)
  */
 
 
@@ -38,7 +36,7 @@
 #define __CVECTOR3_HH
 
 #include <iostream>
-#include <cassert>
+#include <assert.h>
 #include <cmath>
 
 
@@ -196,7 +194,7 @@ public:
 	inline T dist(const CVector<3,T> &v)	const
 	{
 		CVector<3,T> d = CVector<3,T>(v.data[0] - data[0], v.data[1] - data[1], v.data[2] - data[2]);
-		return std::sqrt(d[0]*d[0] + d[1]*d[1] + d[2]*d[2]);
+		return std::sqrt<T>(d[0]*d[0] + d[1]*d[1] + d[2]*d[2]);
 	}
 
 	/**

@@ -10,13 +10,13 @@
 
 #include <complex>
 #include <rexi/REXI.hpp>
-#include <sweet/DataArray.hpp>
-#include <sweet/Operators2D.hpp>
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/Complex2DArrayFFT.hpp>
-#include <sweet/Sampler2D.hpp>
-#include <sweet/SemiLagrangian.hpp>
-#include "../rexiswe/RexiSWE_HelmholtzSolver.hpp"
+#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneDataComplex.hpp>
+#include <sweet/plane/PlaneDataSemiLagrangian.hpp>
+#include <sweet/plane/PlaneOperators.hpp>
+#include <sweet/plane/PlaneDataSampler.hpp>
+#include "RexiSWE_HelmholtzSolver.hpp"
 //#include <sweet/SWEValidationBenchmarks.hpp>
 
 #define SWEET_BENCHMARK_REXI	0
@@ -68,18 +68,18 @@ class RexiSWE
 	class PerThreadVars
 	{
 	public:
-		Complex2DArrayFFT op_diff_c_x, op_diff_c_y;
-		Complex2DArrayFFT op_diff2_c_x, op_diff2_c_y;
+		PlaneDataComplex op_diff_c_x, op_diff_c_y;
+		PlaneDataComplex op_diff2_c_x, op_diff2_c_y;
 
-		Complex2DArrayFFT eta;
+		PlaneDataComplex eta;
 
-		Complex2DArrayFFT eta0;
-		Complex2DArrayFFT u0;
-		Complex2DArrayFFT v0;
+		PlaneDataComplex eta0;
+		PlaneDataComplex u0;
+		PlaneDataComplex v0;
 
-		Complex2DArrayFFT h_sum;
-		Complex2DArrayFFT u_sum;
-		Complex2DArrayFFT v_sum;
+		PlaneDataComplex h_sum;
+		PlaneDataComplex u_sum;
+		PlaneDataComplex v_sum;
 	};
 
 	// per-thread allocated variables to avoid NUMA domain effects
@@ -146,8 +146,8 @@ public:
 	void helmholtz_spectral_solver_cart(
 			std::complex<double> i_kappa,
 			double i_gh0,
-			const Complex2DArrayFFT &i_rhs,
-			Complex2DArrayFFT &io_x,
+			const PlaneDataComplex &i_rhs,
+			PlaneDataComplex &io_x,
 			int i_thread_id = 0
 	)
 	{
@@ -157,7 +157,7 @@ public:
 		// This is *NOT* straightforward and different to adding a constant for computations.
 		// We account for this by seeing the LHS as a set of operators which have to be joint later by a sum.
 
-		Complex2DArrayFFT lhs = ((-i_gh0)*(perThreadVars[i_thread_id]->op_diff2_c_x + perThreadVars[i_thread_id]->op_diff2_c_y)).addScalar_Cart(i_kappa);
+		PlaneDataComplex lhs = ((-i_gh0)*(perThreadVars[i_thread_id]->op_diff2_c_x + perThreadVars[i_thread_id]->op_diff2_c_y)).addScalar_Cart(i_kappa);
 
 		io_x = ((i_rhs.toSpec()).spec_div_element_wise(lhs)).toCart();
 	}
@@ -176,8 +176,8 @@ public:
 	void helmholtz_spectral_solver_spec(
 			std::complex<double> i_kappa,
 			double i_gh0,
-			const Complex2DArrayFFT &i_rhs,
-			Complex2DArrayFFT &io_x,
+			const PlaneDataComplex &i_rhs,
+			PlaneDataComplex &io_x,
 			int i_thread_id = 0
 	)
 	{
@@ -187,7 +187,7 @@ public:
 		// This is *NOT* straightforward and different to adding a constant for computations.
 		// We account for this by seeing the LHS as a set of operators which have to be joint later by a sum.
 
-		Complex2DArrayFFT lhs = (-i_gh0*(perThreadVars[i_thread_id]->op_diff2_c_x + perThreadVars[i_thread_id]->op_diff2_c_y)).addScalar_Cart(i_kappa);
+		PlaneDataComplex lhs = (-i_gh0*(perThreadVars[i_thread_id]->op_diff2_c_x + perThreadVars[i_thread_id]->op_diff2_c_y)).addScalar_Cart(i_kappa);
 		//std::cout << lhs << std::endl;
 		io_x = i_rhs.spec_div_element_wise(lhs);
 	}
@@ -205,9 +205,9 @@ public:
 	void helmholtz_spectral_solver(
 			double i_kappa,
 			double i_gh0,
-			const DataArray<2> &i_rhs,
-			DataArray<2> &io_x,
-			Operators2D &op     ///< Operator class
+			const PlaneData &i_rhs,
+			PlaneData &io_x,
+			PlaneOperators &op     ///< Operator class
 	)
 	{
 
@@ -218,9 +218,9 @@ public:
 		// We account for this by seeing the LHS as a set of operators which have to be joint later by a sum.
 
 
-#if SWEET_USE_SPECTRAL_SPACE
-		DataArray<2> laplacian = -i_gh0*op.diff2_c_x -i_gh0*op.diff2_c_y;
-		DataArray<2> lhs = laplacian.spec_addScalarAll(i_kappa);
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+		PlaneData laplacian = -i_gh0*op.diff2_c_x -i_gh0*op.diff2_c_y;
+		PlaneData lhs = laplacian.spec_addScalarAll(i_kappa);
 
 		io_x = i_rhs.spec_div_element_wise(lhs);
 #else
@@ -237,13 +237,13 @@ public:
 	 */
 public:
 	bool run_timestep_implicit_ts(
-		DataArray<2> &io_h,
-		DataArray<2> &io_u,
-		DataArray<2> &io_v,
+		PlaneData &io_h,
+		PlaneData &io_u,
+		PlaneData &io_v,
 
 		double i_timestep_size,	///< timestep size
 
-		Operators2D &op,
+		PlaneOperators &op,
 		const SimulationVariables &i_parameters
 	);
 
@@ -254,23 +254,23 @@ public:
 	 */
 public:
 	bool run_timestep_cn_sl_ts(
-			DataArray<2> &io_h,  ///< Current and past fields
-			DataArray<2> &io_u,
-			DataArray<2> &io_v,
-			DataArray<2> &io_h_prev,
-			DataArray<2> &io_u_prev,
-			DataArray<2> &io_v_prev,
+			PlaneData &io_h,  ///< Current and past fields
+			PlaneData &io_u,
+			PlaneData &io_v,
+			PlaneData &io_h_prev,
+			PlaneData &io_u_prev,
+			PlaneData &io_v_prev,
 
-			DataArray<2> &i_posx_a, //Arrival point positions in x and y (this is basically the grid)
-			DataArray<2> &i_posy_a,
+			PlaneData &i_posx_a, //Arrival point positions in x and y (this is basically the grid)
+			PlaneData &i_posy_a,
 
 			double i_timestep_size,	///< timestep size
 			int i_param_nonlinear, ///< degree of nonlinearity (0-linear, 1-full nonlinear, 2-only nonlinear adv)
 
 			const SimulationVariables &i_simVars, ///< Parameters for simulation
 
-			Operators2D &op,     ///< Operator class
-			Sampler2D &sampler2D, ///< Interpolation class
+			PlaneOperators &op,     ///< Operator class
+			PlaneDataSampler &sampler2D, ///< Interpolation class
 			SemiLagrangian &semiLagrangian  ///< Semi-Lag class
 	);
 
@@ -283,15 +283,15 @@ public:
 	 */
 public:
 	bool run_timestep_slrexi(
-		DataArray<2> &io_h,  ///< Current and past fields
-		DataArray<2> &io_u,
-		DataArray<2> &io_v,
-		DataArray<2> &io_h_prev,
-		DataArray<2> &io_u_prev,
-		DataArray<2> &io_v_prev,
+		PlaneData &io_h,  ///< Current and past fields
+		PlaneData &io_u,
+		PlaneData &io_v,
+		PlaneData &io_h_prev,
+		PlaneData &io_u_prev,
+		PlaneData &io_v_prev,
 
-		DataArray<2> &i_posx_a, //Arrival point positions in x and y (this is basically the grid)
-		DataArray<2> &i_posy_a,
+		PlaneData &i_posx_a, //Arrival point positions in x and y (this is basically the grid)
+		PlaneData &i_posy_a,
 
 		double i_timestep_size,	///< timestep size
 		int i_param_nonlinear, ///< degree of nonlinearity (0-linear, 1-full nonlinear, 2-only nonlinear adv)
@@ -300,8 +300,8 @@ public:
 
 		const SimulationVariables &i_simVars, ///< Parameters for simulation
 
-		Operators2D &op,     ///< Operator class
-		Sampler2D &sampler2D, ///< Interpolation class
+		PlaneOperators &op,     ///< Operator class
+		PlaneDataSampler &sampler2D, ///< Interpolation class
 		SemiLagrangian &semiLagrangian  ///< Semi-Lag class
 	);
 
@@ -314,13 +314,13 @@ public:
 	 */
 public:
 	bool run_timestep(
-		DataArray<2> &io_h,
-		DataArray<2> &io_u,
-		DataArray<2> &io_v,
+		PlaneData &io_h,
+		PlaneData &io_u,
+		PlaneData &io_v,
 
 		double i_timestep_size,	///< timestep size
 
-		Operators2D &op,
+		PlaneOperators &op,
 		const SimulationVariables &i_parameters,
 		bool i_iterative_solver_zero_solution = false
 	);
@@ -339,13 +339,13 @@ public:
 	 */
 public:
 	void run_timestep_direct_solution(
-			DataArray<2> &io_h,
-			DataArray<2> &io_u,
-			DataArray<2> &io_v,
+			PlaneData &io_h,
+			PlaneData &io_u,
+			PlaneData &io_v,
 
 			double i_timestep_size,	///< timestep size
 
-			Operators2D &op,
+			PlaneOperators &op,
 			const SimulationVariables &i_parameters
 	);
 
@@ -358,7 +358,7 @@ public:
 	)
 	{
 #if SWEET_MPI
-	DataArray<2> dummyData(i_resolution);
+	PlaneData dummyData(i_resolution);
 	dummyData.set_all(NAN);
 
 	MPI_Bcast(dummyData.array_data_cartesian_space, dummyData.resolution[0]*dummyData.resolution[1], MPI_DOUBLE, 0, MPI_COMM_WORLD);

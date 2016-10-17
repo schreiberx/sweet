@@ -12,9 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- *      Author: Martin Schreiber (schreiberx@gmail.com)
  */
+
 /*
  * CHANGELOG:
  *
@@ -134,7 +133,7 @@ public:
 	 */
 	inline T length()
 	{
-		return std::sqrt(data[0]*data[0] + data[1]*data[1]);
+		return std::sqrt<T>(data[0]*data[0] + data[1]*data[1]);
 	}
 
 	/**

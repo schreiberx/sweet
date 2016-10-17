@@ -7,7 +7,7 @@
 #ifndef SRC_INCLUDE_REXI_GAUSSIANAPPROXIMATION_HPP_
 #define SRC_INCLUDE_REXI_GAUSSIANAPPROXIMATION_HPP_
 
-#include <sweetmath.hpp>
+#include <sweet/sweetmath.hpp>
 #include <iostream>
 #include <complex>
 #include <vector>

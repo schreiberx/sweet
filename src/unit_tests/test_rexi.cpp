@@ -9,10 +9,13 @@
 #include <rexi/GaussianApproximation.hpp>
 #include <rexi/ExponentialApproximation.hpp>
 #include <rexi/REXI.hpp>
-#include <sweet/Complex2DArrayFFT.hpp>
 #include <sweet/SimulationVariables.hpp>
+#include "../include/sweet/plane/PlaneDataComplex.hpp"
 
-int main(int i_argc, char *i_argv[])
+int main(
+		int i_argc,
+		char *const i_argv[]
+)
 {
 	SimulationVariables simVars;
 	if (!simVars.setupFromMainParameters(i_argc, i_argv))
@@ -281,12 +284,12 @@ int main(int i_argc, char *i_argv[])
 		double eta_bar = simVars.setup.h0;
 		double g = simVars.sim.g;
 
-		Complex2DArrayFFT eta0(simVars.disc.res);
-		Complex2DArrayFFT u0(simVars.disc.res);
-		Complex2DArrayFFT v0(simVars.disc.res);
+		PlaneDataComplex eta0(simVars.disc.res);
+		PlaneDataComplex u0(simVars.disc.res);
+		PlaneDataComplex v0(simVars.disc.res);
 
-		Complex2DArrayFFT op_diff_c_x(simVars.disc.res), op_diff_c_y(simVars.disc.res);
-		Complex2DArrayFFT op_diff2_c_x(simVars.disc.res), op_diff2_c_y(simVars.disc.res);
+		PlaneDataComplex op_diff_c_x(simVars.disc.res), op_diff_c_y(simVars.disc.res);
+		PlaneDataComplex op_diff2_c_x(simVars.disc.res), op_diff2_c_y(simVars.disc.res);
 
 		op_diff_c_x.op_setup_diff_x(simVars.sim.domain_size);
 		op_diff_c_y.op_setup_diff_y(simVars.sim.domain_size);
@@ -341,14 +344,14 @@ int main(int i_argc, char *i_argv[])
 				{
 					std::complex<double> alpha = rexi.alpha[n];
 
-					Complex2DArrayFFT test_eta0(simVars.disc.res);
-					Complex2DArrayFFT test_eta(simVars.disc.res);
-					Complex2DArrayFFT test_diff1(simVars.disc.res);
-					Complex2DArrayFFT test_diff2(simVars.disc.res);
+					PlaneDataComplex test_eta0(simVars.disc.res);
+					PlaneDataComplex test_eta(simVars.disc.res);
+					PlaneDataComplex test_diff1(simVars.disc.res);
+					PlaneDataComplex test_diff2(simVars.disc.res);
 
-					Complex2DArrayFFT test_step1(simVars.disc.res);
-					Complex2DArrayFFT test_step2(simVars.disc.res);
-					Complex2DArrayFFT test_step3(simVars.disc.res);
+					PlaneDataComplex test_step1(simVars.disc.res);
+					PlaneDataComplex test_step2(simVars.disc.res);
+					PlaneDataComplex test_step3(simVars.disc.res);
 
 					double k1 = 2.0*M_PIl*1.0;
 					double k2 = 2.0*M_PIl*2.0;
@@ -394,8 +397,8 @@ int main(int i_argc, char *i_argv[])
 
 					{
 						// Test LHS with alpha=0, step 1
-//						Complex2DArrayFFT lhs = ((-1.0*(op_diff2_c_x + op_diff2_c_y)).addScalar_Spec(alpha*alpha))(test_eta.toSpec());
-						Complex2DArrayFFT lhs = ((-1.0*(op_diff2_c_x + op_diff2_c_y)))(test_eta.toSpec());
+//						PlaneDataComplex lhs = ((-1.0*(op_diff2_c_x + op_diff2_c_y)).addScalar_Spec(alpha*alpha))(test_eta.toSpec());
+						PlaneDataComplex lhs = ((-1.0*(op_diff2_c_x + op_diff2_c_y)))(test_eta.toSpec());
 						lhs = lhs + test_eta.toSpec()*(alpha*alpha);
 						double error_0 = (lhs.toCart()-test_step1).reduce_norm2_quad()/(simVars.disc.res[0]*simVars.disc.res[1]);
 						std::cout << "ERROR 0 step1: " << error_0 << std::endl;
@@ -410,7 +413,7 @@ int main(int i_argc, char *i_argv[])
 
 					{
 						// Test LHS with alpha and by multiplying in, step 2
-						Complex2DArrayFFT lhs = test_eta.toSpec()*(alpha*alpha);
+						PlaneDataComplex lhs = test_eta.toSpec()*(alpha*alpha);
 						double error_0 = (lhs.toCart()-test_step2).reduce_norm2_quad()/(simVars.disc.res[0]*simVars.disc.res[1]);
 						std::cout << "ERROR 0 step2: " << error_0 << std::endl;
 
@@ -425,8 +428,8 @@ int main(int i_argc, char *i_argv[])
 						// Test LHS with alpha and by joining operators, step 3
 						// NOTE!!!! Here we use addScalar_Cart, since \eta has to be scaled by alpha.
 						// If we would use addScalar_Spec, only the zero mode would be scaled which would be PLAIN WRONG!!!
-						Complex2DArrayFFT lhs = ((-1.0*(op_diff2_c_x + op_diff2_c_y)).addScalar_Cart(alpha*alpha))(test_eta.toSpec());
-	//					Complex2DArrayFFT lhs = ((-1.0*(op_diff2_c_x + op_diff2_c_y)))(test_eta.toSpec())
+						PlaneDataComplex lhs = ((-1.0*(op_diff2_c_x + op_diff2_c_y)).addScalar_Cart(alpha*alpha))(test_eta.toSpec());
+	//					PlaneDataComplex lhs = ((-1.0*(op_diff2_c_x + op_diff2_c_y)))(test_eta.toSpec())
 	//											 + test_eta.toSpec()*(alpha*alpha);
 
 						double error_0 = (lhs.toCart()-test_step1).reduce_norm2_quad()/(simVars.disc.res[0]*simVars.disc.res[1]);
@@ -444,9 +447,9 @@ int main(int i_argc, char *i_argv[])
 						// NOTE!!!!
 						// Here we use addScalar_Cart, since \eta has to be scaled by alpha, see comment above for 'step 3'
 						// If we would use addScalar_Spec, only the zero mode would be scaled
-						Complex2DArrayFFT lhs = (-1.0*(op_diff2_c_x + op_diff2_c_y)).addScalar_Cart(alpha*alpha);
-						Complex2DArrayFFT rhs =	test_eta0.toSpec()*alpha;
-						Complex2DArrayFFT eta = rhs.spec_div_element_wise(lhs).toCart();
+						PlaneDataComplex lhs = (-1.0*(op_diff2_c_x + op_diff2_c_y)).addScalar_Cart(alpha*alpha);
+						PlaneDataComplex rhs =	test_eta0.toSpec()*alpha;
+						PlaneDataComplex eta = rhs.spec_div_element_wise(lhs).toCart();
 
 						// Test SOLVER
 						double error_1 = (eta - test_eta).reduce_norm2_quad()/(simVars.disc.res[0]*simVars.disc.res[1]);
@@ -497,7 +500,7 @@ int main(int i_argc, char *i_argv[])
 
 					{
 						std::complex<double> test_value(0.7, -2.0);
-						Complex2DArrayFFT test_a(simVars.disc.res);
+						PlaneDataComplex test_a(simVars.disc.res);
 
 						// test add scalar spec
 						test_a.set_all(test_value);
@@ -513,7 +516,7 @@ int main(int i_argc, char *i_argv[])
 
 					{
 						std::complex<double> test_value(0.7, -2.0);
-						Complex2DArrayFFT test_a(simVars.disc.res);
+						PlaneDataComplex test_a(simVars.disc.res);
 
 						// test add scalar cart
 						test_a.set_all(test_value);

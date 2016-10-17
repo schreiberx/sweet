@@ -1,12 +1,12 @@
 
-#include <sweet/DataArray.hpp>
+#include "../include/sweet/plane/PlaneData.hpp"
 #if SWEET_GUI
 	#include <sweet/VisSweet.hpp>
 #endif
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/TimesteppingRK.hpp>
-#include <sweet/SWEValidationBenchmarks.hpp>
-#include <sweet/Operators2D.hpp>
+#include <sweet/plane/PlaneDataPlaneDataTimesteppingRK.hpp>
+#include <benchmarks_plane/SWEPlaneBenchmarks.hpp>
+#include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/Stopwatch.hpp>
 
 #include <ostream>
@@ -25,13 +25,13 @@ int timestepping_runge_kutta_order = 0;
 class SimulationTestRK
 {
 public:
-	DataArray<2> prog_h;
-	DataArray<2> prog_u;
-	DataArray<2> prog_v;
+	PlaneData prog_h;
+	PlaneData prog_u;
+	PlaneData prog_v;
 
-	Operators2D op;
+	PlaneOperators op;
 
-	TimesteppingRK timestepping;
+	PlaneDataTimesteppingRK timestepping;
 
 
 	/**
@@ -105,11 +105,11 @@ public:
 
 public:
 	SimulationTestRK()	:
-		prog_h(simVars.disc.res),
-		prog_u(simVars.disc.res),
-		prog_v(simVars.disc.res),
+		prog_h(simVars.disc.res_physical),
+		prog_u(simVars.disc.res_physical),
+		prog_v(simVars.disc.res_physical),
 
-		op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
+		op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
 	{
 		reset();
 	}
@@ -126,13 +126,13 @@ public:
 
 
 	void p_run_euler_timestep_update(
-			const DataArray<2> &i_h,	///< prognostic variables
-			const DataArray<2> &i_u,	///< prognostic variables
-			const DataArray<2> &i_v,	///< prognostic variables
+			const PlaneData &i_h,	///< prognostic variables
+			const PlaneData &i_u,	///< prognostic variables
+			const PlaneData &i_v,	///< prognostic variables
 
-			DataArray<2> &o_h_t,	///< time updates
-			DataArray<2> &o_u_t,	///< time updates
-			DataArray<2> &o_v_t,	///< time updates
+			PlaneData &o_h_t,	///< time updates
+			PlaneData &o_u_t,	///< time updates
+			PlaneData &o_v_t,	///< time updates
 
 			double &o_dt,			///< time step restriction
 			double i_fixed_dt = 0,	///< if this value is not equal to 0, use this time step size instead of computing one
@@ -206,7 +206,7 @@ public:
 
 
 	void vis_get_vis_data_array(
-			const DataArray<2> **o_dataArray,
+			const PlaneData **o_dataArray,
 			double *o_aspect_ratio
 	)
 	{
@@ -259,7 +259,7 @@ public:
 
 int main(
 		int i_argc,
-		char *i_argv[]
+		char *const i_argv[]
 )
 {
 	const char *bogus_var_names[] = {
@@ -326,7 +326,7 @@ int main(
 
 				if (simVars.timecontrol.max_simulation_time < simVars.timecontrol.current_simulation_time)
 				{
-					DataArray<2> benchmark_h(simVars.disc.res);
+					PlaneData benchmark_h(simVars.disc.res_physical);
 
 					benchmark_h.set_all(simulationTestRK->test_function(time_test_function_order, simVars.timecontrol.current_simulation_time));
 

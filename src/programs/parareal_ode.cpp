@@ -9,15 +9,15 @@
 #	error "Parareal not activated"
 #endif
 
-#include <stdlib.h>
-#include <cmath>
 #include <limits>
+#include <stdlib.h>
 
 #include <parareal/Parareal.hpp>
 #include <parareal/Parareal_Data.hpp>
 #include <parareal/Parareal_Data_Scalar.hpp>
 #include <parareal/Parareal_Controller_Serial.hpp>
 
+#include <sweet/sweetmath.hpp>
 #include <sweet/SimulationVariables.hpp>
 
 SimulationVariables simVars;

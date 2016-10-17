@@ -1,12 +1,12 @@
 
-#include <sweet/DataArray.hpp>
+#include "../include/sweet/plane/PlaneData.hpp"
 #if SWEET_GUI
 	#include <sweet/VisSweet.hpp>
 #endif
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/TimesteppingRK.hpp>
-#include <sweet/SWEValidationBenchmarks.hpp>
-#include <sweet/Operators2D.hpp>
+#include "../include/sweet/plane/PlaneDataPlaneDataTimesteppingRK.hpp"
+#include <benchmarks_plane/SWEPlaneBenchmarks.hpp>
+#include "../include/sweet/plane/PlaneOperators.hpp"
 #include <sweet/Stopwatch.hpp>
 
 #include <ostream>
@@ -28,18 +28,18 @@ SimulationVariables simVars;
 class SimulationAdvection
 {
 public:
-	DataArray<2> prog_h;
-	DataArray<2> prog_u;
-	DataArray<2> prog_v;
+	PlaneData prog_h;
+	PlaneData prog_u;
+	PlaneData prog_v;
 
-	DataArray<2> hu;
-	DataArray<2> hv;
+	PlaneData hu;
+	PlaneData hv;
 
-	DataArray<2> tmp;
+	PlaneData tmp;
 
-	Operators2D op;
+	PlaneOperators op;
 
-	TimesteppingRK timestepping;
+	PlaneDataTimesteppingRK timestepping;
 
 #if ADV_FUNCTION==1
 	double freq_x = 4.0;
@@ -49,29 +49,29 @@ public:
 
 public:
 	SimulationAdvection()	:
-		prog_h(simVars.disc.res),
-		prog_u(simVars.disc.res),
-		prog_v(simVars.disc.res),
+		prog_h(simVars.disc.res_physical),
+		prog_u(simVars.disc.res_physical),
+		prog_v(simVars.disc.res_physical),
 
-		hu(simVars.disc.res),
-		hv(simVars.disc.res),
+		hu(simVars.disc.res_physical),
+		hv(simVars.disc.res_physical),
 
-		tmp(simVars.disc.res),
+		tmp(simVars.disc.res_physical),
 
-		op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
+		op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
 	{
 		reset();
 	}
 
 
-	DataArray<2> get_advected_solution(
+	PlaneData get_advected_solution(
 		double i_timestamp
 	)
 	{
-		DataArray<2> ret_h(prog_h.resolution);
+		PlaneData ret_h(prog_h.resolution);
 
-		double adv_x = (std::isinf(simVars.bogus.var[0]) ? 0 : -simVars.bogus.var[0]*i_timestamp);
-		double adv_y = (std::isinf(simVars.bogus.var[1]) ? 0 : -simVars.bogus.var[1]*i_timestamp);
+		double adv_x = (std::isinf(simVars.bogus.var[0]) != 0 ? 0 : -simVars.bogus.var[0]*i_timestamp);
+		double adv_y = (std::isinf(simVars.bogus.var[1]) != 0 ? 0 : -simVars.bogus.var[1]*i_timestamp);
 
 		double radius = simVars.setup.radius_scale*
 			std::sqrt(
@@ -79,14 +79,14 @@ public:
 				+(double)simVars.sim.domain_size[1]*(double)simVars.sim.domain_size[1]
 			);
 
-		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+		for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 		{
-			for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+			for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 			{
 #if ADV_FUNCTION==0
 
-				double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-				double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
 				x += adv_x;
 				y += adv_y;
@@ -107,8 +107,8 @@ public:
 				ret_h.set(j, i, value);
 
 #elif ADV_FUNCTION==1
-				double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-				double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
 				x += adv_x;
 				y += adv_y;
@@ -132,14 +132,14 @@ public:
 
 
 
-	DataArray<2> get_advected_solution_diffx(
+	PlaneData get_advected_solution_diffx(
 		double i_timestamp
 	)
 	{
-		DataArray<2> ret_h(prog_h.resolution);
+		PlaneData ret_h(prog_h.resolution);
 
-		double adv_x = (std::isinf(simVars.bogus.var[0]) ? 0 : -simVars.bogus.var[0]*i_timestamp);
-		double adv_y = (std::isinf(simVars.bogus.var[1]) ? 0 : -simVars.bogus.var[1]*i_timestamp);
+		double adv_x = (std::isinf(simVars.bogus.var[0]) != 0 ? 0 : -simVars.bogus.var[0]*i_timestamp);
+		double adv_y = (std::isinf(simVars.bogus.var[1]) != 0 ? 0 : -simVars.bogus.var[1]*i_timestamp);
 
 		double radius_scale = std::sqrt(
 				 (double)simVars.sim.domain_size[0]*(double)simVars.sim.domain_size[0]
@@ -148,14 +148,14 @@ public:
 
 		double radius = simVars.setup.radius_scale*radius_scale;
 
-		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+		for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 		{
-			for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+			for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 			{
 #if ADV_FUNCTION==0
 
-				double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-				double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
 				x += adv_x;
 				y += adv_y;
@@ -179,8 +179,8 @@ public:
 
 #elif ADV_FUNCTION==1
 
-				double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-				double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
 				x += adv_x;
 				y += adv_y;
@@ -204,14 +204,14 @@ public:
 
 
 
-	DataArray<2> get_advected_solution_diffy(
+	PlaneData get_advected_solution_diffy(
 		double i_timestamp
 	)
 	{
-		DataArray<2> ret_h(prog_h.resolution);
+		PlaneData ret_h(prog_h.resolution);
 
-		double adv_x = (std::isinf(simVars.bogus.var[0]) ? 0 : -simVars.bogus.var[0]*i_timestamp);
-		double adv_y = (std::isinf(simVars.bogus.var[1]) ? 0 : -simVars.bogus.var[1]*i_timestamp);
+		double adv_x = (std::isinf(simVars.bogus.var[0]) != 0 ? 0 : -simVars.bogus.var[0]*i_timestamp);
+		double adv_y = (std::isinf(simVars.bogus.var[1]) != 0 ? 0 : -simVars.bogus.var[1]*i_timestamp);
 
 		double radius_scale = std::sqrt(
 				 (double)simVars.sim.domain_size[0]*(double)simVars.sim.domain_size[0]
@@ -220,14 +220,14 @@ public:
 
 		double radius = simVars.setup.radius_scale*radius_scale;
 
-		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+		for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 		{
-			for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+			for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 			{
 #if ADV_FUNCTION==0
 
-				double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-				double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
 				x += adv_x;
 				y += adv_y;
@@ -251,8 +251,8 @@ public:
 
 #elif ADV_FUNCTION==1
 
-				double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-				double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
 				x += adv_x;
 				y += adv_y;
@@ -282,12 +282,12 @@ public:
 		simVars.timecontrol.current_simulation_time = 0;
 		simVars.timecontrol.current_timestep_size = -1;
 
-		if (std::isinf(simVars.bogus.var[0]))
+		if (std::isinf(simVars.bogus.var[0]) != 0)
 			prog_u.set_all(0);
 		else
 			prog_u.set_all(simVars.bogus.var[0]);
 
-		if (std::isinf(simVars.bogus.var[1]))
+		if (std::isinf(simVars.bogus.var[1]) != 0)
 			prog_v.set_all(0);
 		else
 			prog_v.set_all(simVars.bogus.var[1]);
@@ -298,13 +298,13 @@ public:
 
 
 	void p_run_euler_timestep_update(
-			const DataArray<2> &i_h,	///< prognostic variables
-			const DataArray<2> &i_u,	///< prognostic variables
-			const DataArray<2> &i_v,	///< prognostic variables
+			const PlaneData &i_h,	///< prognostic variables
+			const PlaneData &i_u,	///< prognostic variables
+			const PlaneData &i_v,	///< prognostic variables
 
-			DataArray<2> &o_h_t,		///< time updates
-			DataArray<2> &o_u_t,		///< time updates
-			DataArray<2> &o_v_t,		///< time updates
+			PlaneData &o_h_t,		///< time updates
+			PlaneData &o_u_t,		///< time updates
+			PlaneData &o_v_t,		///< time updates
 
 			double &o_dt,				///< time step restriction
 			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
@@ -314,7 +314,7 @@ public:
 		if (simVars.bogus.var[2] == 0)
 		{
 			// UP/DOWNWINDING
-#if SWEET_USE_SPECTRAL_SPACE
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 			static bool output_given = false;
 			if (!output_given)
 			{
@@ -478,7 +478,7 @@ public:
 
 
 	void vis_get_vis_data_array(
-			const DataArray<2> **o_dataArray,
+			const PlaneData **o_dataArray,
 			double *o_aspect_ratio
 	)
 	{
@@ -572,7 +572,7 @@ double compute_current_error(
 		SimulationAdvection *simulationAdvection
 )
 {
-	DataArray<2> benchmark_h = simulationAdvection->get_advected_solution(simVars.timecontrol.current_simulation_time);
+	PlaneData benchmark_h = simulationAdvection->get_advected_solution(simVars.timecontrol.current_simulation_time);
 
 	return (simulationAdvection->prog_h-benchmark_h).reduce_rms_quad();
 }
@@ -618,12 +618,12 @@ int main(
 	}
 
 	double u, v;
-	if (std::isinf(simVars.bogus.var[0]))
+	if (std::isinf(simVars.bogus.var[0]) != 0)
 		u = 0;
 	else
 		u = simVars.bogus.var[0];
 
-	if (std::isinf(simVars.bogus.var[1]))
+	if (std::isinf(simVars.bogus.var[1]) != 0)
 		v = 0;
 	else
 		v = simVars.bogus.var[1];
@@ -690,8 +690,8 @@ int main(
 		double *computed_errors = new double[1024];
 		double *conv_rate = new double[1024];
 
-		std::size_t res_x = simVars.disc.res[0];
-		std::size_t res_y = simVars.disc.res[1];
+		std::size_t res_x = simVars.disc.res_physical[0];
+		std::size_t res_y = simVars.disc.res_physical[1];
 
 		std::size_t max_res = 128;
 
@@ -710,8 +710,8 @@ int main(
 			std::cout << "Testing convergence with resolution " << res_x << " x " << res_y << " and RK order " << simVars.disc.timestepping_runge_kutta_order << std::endl;
 			std::cout << "*******************************************************************************" << std::endl;
 
-			simVars.disc.res[0] = res_x;
-			simVars.disc.res[1] = res_y;
+			simVars.disc.res_physical[0] = res_x;
+			simVars.disc.res_physical[1] = res_y;
 			simVars.reset();
 
 			SimulationAdvection *simulationAdvection = new SimulationAdvection;
@@ -810,8 +810,8 @@ int main(
 		double *computed_errors = new double[1024];
 		double *conv_rate = new double[1024];
 
-		std::size_t res_x = simVars.disc.res[0];
-		std::size_t res_y = simVars.disc.res[1];
+		std::size_t res_x = simVars.disc.res_physical[0];
+		std::size_t res_y = simVars.disc.res_physical[1];
 
 		double cfl_limitation = simVars.sim.CFL;
 

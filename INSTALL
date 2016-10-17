@@ -5,7 +5,7 @@ READ THIS CAREFULLY!!! DON'T SKIP ANY PARTS!!!
 
 There are scripts in the directory 'local_software' to make handling
 external software requirements easier. Not all software packages are
-required on all platforms. E.g. installing Autoconf is only required
+required on all platforms. E.g. installing `autoconf` is only required
 if the version on the platform is too old.
 
 The scripts are named as follows:
@@ -24,6 +24,8 @@ After installing the software, you can use
 
 from the SWEET source code directory to setup your
 environment variables correctly.
+
+
 
 ================
 Autoconf:
@@ -44,7 +46,7 @@ SCons:
 	
 
 ================
-FFTW (Optional, but mandatory if Fourier space is required):
+FFTW (optional): mandatory if Fourier space is required
 ================
 	http://www.fftw.org/download.html
 	fftw-3.3.4.tar.gz
@@ -63,6 +65,25 @@ FFTW (Optional, but mandatory if Fourier space is required):
 	OR
 	apt-get install libfftw3-dev
 
+
+================
+SHTNS (optional): Required for Spherical Harmonics
+================
+
+	If you like to run simulations with spherical harmonics, you
+	need to install the SHTNS library:
+	
+	$ ./install_shtns.sh
+
+
+================
+LAPACK (optional): Required for REXI on the sphere for spectral space solver
+================
+
+	Lapack is required to solve the diagonal-blocked partitions of the spectral
+	matrix. Instsall with
+
+	$ ./install_lapack.sh
 
 
 ================
@@ -85,7 +106,7 @@ SDL (optional): Graphical user interface to simulations
 
 
 ================
-NUMA (optional): optimized memory allocation
+NUMA (optional): Optimized memory allocation
 ================
 	Get libnuma from
 	ftp://oss.sgi.com/www/projects/libnuma/download/numactl-2.0.10.tar.gz

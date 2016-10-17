@@ -119,14 +119,14 @@ env['debug_symbols'] = GetOption('debug_symbols')
 
 
 
-AddOption(	'--spectral-space',
-		dest='spectral_space',
+AddOption(	'--plane-spectral-space',
+		dest='plane_spectral_space',
 		type='choice',
 		choices=['enable', 'disable'],
 		default='disable',
 		help="Use spectral space for operations such as folding [default: %default]"
 )
-env['spectral_space'] = GetOption('spectral_space')
+env['plane_spectral_space'] = GetOption('plane_spectral_space')
 
 
 AddOption(	'--libfft',
@@ -176,14 +176,14 @@ if env['libxml'] == 'enable':
 	env.ParseConfig("xml2-config --cflags --libs")
 
 
-AddOption(	'--spectral-dealiasing',
-		dest='spectral_dealiasing',
+AddOption(	'--plane-spectral-dealiasing',
+		dest='plane_spectral_dealiasing',
 		type='choice',
 		choices=['enable','disable'],
 		default='disable',
 		help='spectral dealiasing (3N/2-1 rule): enable, disable [default: %default]'
 )
-env['spectral_dealiasing'] = GetOption('spectral_dealiasing')
+env['plane_spectral_dealiasing'] = GetOption('plane_spectral_dealiasing')
 
 
 AddOption(	'--gui',
@@ -323,14 +323,14 @@ env.Append(CXXFLAGS = ' -DSWEET_PROGRAM_NAME='+env['program_name'])
 exec_name=env['program_name']
 
 
-if env['spectral_space'] == 'enable':
+if env['plane_spectral_space'] == 'enable':
 	if env['libfft'] != 'enable':
 		print("Option --libfft is disabled!")
 		Exit(1)
-	env.Append(CXXFLAGS = ' -DSWEET_USE_SPECTRAL_SPACE=1')
+	env.Append(CXXFLAGS = ' -DSWEET_USE_PLANE_SPECTRAL_SPACE=1')
 	exec_name+='_spectral'
 else:
-	env.Append(CXXFLAGS = ' -DSWEET_USE_SPECTRAL_SPACE=0')
+	env.Append(CXXFLAGS = ' -DSWEET_USE_PLANE_SPECTRAL_SPACE=0')
 
 if env['libfft'] == 'enable':
 	env.Append(CXXFLAGS = ' -DSWEET_USE_LIBFFT=1')
@@ -347,11 +347,11 @@ else:
 
 
 
-if env['spectral_dealiasing'] == 'enable':
-	env.Append(CXXFLAGS = ' -DSWEET_USE_SPECTRAL_DEALIASING=1')
+if env['plane_spectral_dealiasing'] == 'enable':
+	env.Append(CXXFLAGS = ' -DSWEET_USE_PLANE_SPECTRAL_DEALIASING=1')
 	exec_name+='_dealiasing'
 else:
-	env.Append(CXXFLAGS = ' -DSWEET_USE_SPECTRAL_DEALIASING=0')
+	env.Append(CXXFLAGS = ' -DSWEET_USE_PLANE_SPECTRAL_DEALIASING=0')
 	
 
 if env['parareal'] == 'none':

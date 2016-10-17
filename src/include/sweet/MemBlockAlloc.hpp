@@ -297,7 +297,7 @@ private:
 
 
 
-private:
+public:
 	~MemBlockAlloc()
 	{
 		if (verbosity > 1)

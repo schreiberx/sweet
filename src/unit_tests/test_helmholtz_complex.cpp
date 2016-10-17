@@ -1,5 +1,5 @@
 
-#if !SWEET_USE_SPECTRAL_SPACE
+#if !SWEET_USE_PLANE_SPECTRAL_SPACE
 	#error "Spectral space not activated"
 #endif
 
@@ -8,8 +8,8 @@
 #endif
 
 #include <sweet/Stopwatch.hpp>
-#include <sweet/DataArray.hpp>
-#include <sweet/Complex2DArrayFFT.hpp>
+#include "../include/sweet/plane/PlaneData.hpp"
+#include "../include/sweet/plane/PlaneDataComplex.hpp"
 #include <sweet/SimulationVariables.hpp>
 
 #include <math.h>
@@ -104,8 +104,8 @@ int main(int i_argc, char *i_argv[])
 	/*
 	 * iterate over resolutions, starting by res[0] given e.g. by program parameter -n
 	 */
-	std::size_t res_x = simVars.disc.res[0];
-	std::size_t res_y = simVars.disc.res[1];
+	std::size_t res_x = simVars.disc.res_physical[0];
+	std::size_t res_y = simVars.disc.res_physical[1];
 
 	std::size_t max_res = 2048;
 
@@ -129,8 +129,8 @@ int main(int i_argc, char *i_argv[])
 		std::size_t res[2] = {res_x, res_y};
 
 
-		simVars.disc.res[0] = res[0];
-		simVars.disc.res[1] = res[1];
+		simVars.disc.res_physical[0] = res[0];
+		simVars.disc.res_physical[1] = res[1];
 		simVars.reset();
 
 
@@ -138,7 +138,7 @@ int main(int i_argc, char *i_argv[])
 		/*
 		 * keep h in the outer regions to allocate it only once and avoid reinitialization of FFTW
 		 */
-		Complex2DArrayFFT h_cart(res);
+		PlaneDataComplex h_cart(res);
 
 
 
@@ -147,17 +147,17 @@ int main(int i_argc, char *i_argv[])
 		 */
 		{
 
-			Complex2DArrayFFT h_diff2_x(res);
-			Complex2DArrayFFT h_diff2_y(res);
+			PlaneDataComplex h_diff2_x(res);
+			PlaneDataComplex h_diff2_y(res);
 
 //			Operators2D op(parameters.discretization.res, parameters.sim.domain_size, parameters.disc.use_spectral_diffs);
 
-			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
-					double x = ((double)i+0.5)/(double)simVars.disc.res[0];
-					double y = ((double)j+0.5)/(double)simVars.disc.res[1];
+					double x = ((double)i+0.5)/(double)simVars.disc.res_physical[0];
+					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
 
 					// H to reconstruct
 					h_cart.set(
@@ -198,8 +198,8 @@ int main(int i_argc, char *i_argv[])
 				);
 
 
-			Complex2DArrayFFT op_diff2_c_x(res);
-			Complex2DArrayFFT op_diff2_c_y(res);
+			PlaneDataComplex op_diff2_c_x(res);
+			PlaneDataComplex op_diff2_c_y(res);
 			op_diff2_c_x.op_setup_diff2_x(simVars.sim.domain_size, use_spectral_differences_for_complex_array);
 			op_diff2_c_y.op_setup_diff2_y(simVars.sim.domain_size, use_spectral_differences_for_complex_array);
 
@@ -212,12 +212,12 @@ int main(int i_argc, char *i_argv[])
 			double scalar_Dy = inv_helm_h[1]*inv_helm_h[1];
 			double scalar_C = -(2.0*(inv_helm_h[0]*inv_helm_h[0]) + 2.0*(inv_helm_h[1]*inv_helm_h[1]));
 
-			Complex2DArrayFFT h(res);
+			PlaneDataComplex h(res);
 			h.setAll(0, 0);
 
 			double tau = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 1);
 
-			Operators2D op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
+			PlaneOperators op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
 			for (std::size_t i = 0; i < rexiSWE.rexi.alpha.size(); i++)
 			{
@@ -231,7 +231,7 @@ int main(int i_argc, char *i_argv[])
 				std::cout << "gh: " << gh << std::endl;
 
 				// compute RHS
-				Complex2DArrayFFT rhs(res);
+				PlaneDataComplex rhs(res);
 
 				// analytical rhs
 				//rhs = kappa*h_cart - gh*(h_diff2_x + h_diff2_y);

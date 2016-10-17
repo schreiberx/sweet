@@ -5,7 +5,7 @@
  *      Author: Martin Schreiber <schreiberx@gmail.com>
  */
 #include "RexiSWE.hpp"
-#include <cmath>
+#include <sweet/sweetmath.hpp>
 
 
 
@@ -280,25 +280,25 @@ void RexiSWE::setup(
  * <=> (1/tau - L) U(tau) = U(0)/tau
  */
 bool RexiSWE::run_timestep_implicit_ts(
-	DataArray<2> &io_h,
-	DataArray<2> &io_u,
-	DataArray<2> &io_v,
+	PlaneData &io_h,
+	PlaneData &io_u,
+	PlaneData &io_v,
 
 	double i_timestep_size,	///< timestep size
 
-	Operators2D &op,
+	PlaneOperators &op,
 	const SimulationVariables &i_simVars
 )
 {
-	Complex2DArrayFFT eta(io_h.resolution);
+	PlaneDataComplex eta(io_h.resolution);
 
-	Complex2DArrayFFT eta0(io_h.resolution);
-	Complex2DArrayFFT u0(io_u.resolution);
-	Complex2DArrayFFT v0(io_v.resolution);
+	PlaneDataComplex eta0(io_h.resolution);
+	PlaneDataComplex u0(io_u.resolution);
+	PlaneDataComplex v0(io_v.resolution);
 
-	eta0.loadRealFromDataArray(io_h);
-	u0.loadRealFromDataArray(io_u);
-	v0.loadRealFromDataArray(io_v);
+	eta0.loadRealFromPlaneData(io_h);
+	u0.loadRealFromPlaneData(io_u);
+	v0.loadRealFromPlaneData(io_v);
 
 	double alpha = 1.0/i_timestep_size;
 
@@ -314,10 +314,10 @@ bool RexiSWE::run_timestep_implicit_ts(
 
 	assert(perThreadVars.size() != 0);
 	assert(perThreadVars[0] != nullptr);
-	Complex2DArrayFFT &op_diff_c_x = perThreadVars[0]->op_diff_c_x;
-	Complex2DArrayFFT &op_diff_c_y = perThreadVars[0]->op_diff_c_y;
+	PlaneDataComplex &op_diff_c_x = perThreadVars[0]->op_diff_c_x;
+	PlaneDataComplex &op_diff_c_y = perThreadVars[0]->op_diff_c_y;
 
-	Complex2DArrayFFT rhs =
+	PlaneDataComplex rhs =
 			(kappa/alpha) * eta0
 			- eta_bar*(op_diff_c_x(u0) + op_diff_c_y(v0))
 			- (i_simVars.sim.f0*eta_bar/alpha) * (op_diff_c_x(v0) - op_diff_c_y(u0))
@@ -325,15 +325,15 @@ bool RexiSWE::run_timestep_implicit_ts(
 
 	helmholtz_spectral_solver_spec(kappa, g*eta_bar, rhs, eta, 0);
 
-	Complex2DArrayFFT uh = u0 - g*op_diff_c_x(eta);
-	Complex2DArrayFFT vh = v0 - g*op_diff_c_y(eta);
+	PlaneDataComplex uh = u0 - g*op_diff_c_x(eta);
+	PlaneDataComplex vh = v0 - g*op_diff_c_y(eta);
 
-	Complex2DArrayFFT u1 = alpha/kappa * uh     + i_simVars.sim.f0/kappa * vh;
-	Complex2DArrayFFT v1 =    -i_simVars.sim.f0/kappa * uh + alpha/kappa * vh;
+	PlaneDataComplex u1 = alpha/kappa * uh     + i_simVars.sim.f0/kappa * vh;
+	PlaneDataComplex v1 =    -i_simVars.sim.f0/kappa * uh + alpha/kappa * vh;
 
-	eta.toCart().toDataArrays_Real(io_h);
-	u1.toCart().toDataArrays_Real(io_u);
-	v1.toCart().toDataArrays_Real(io_v);
+	eta.toCart().toPlaneDatas_Real(io_h);
+	u1.toCart().toPlaneDatas_Real(io_u);
+	v1.toCart().toPlaneDatas_Real(io_v);
 
 	return true;
 }
@@ -365,35 +365,35 @@ bool RexiSWE::run_timestep_implicit_ts(
  *
  */
 bool RexiSWE::run_timestep_cn_sl_ts(
-	DataArray<2> &io_h,  ///< Current and past fields
-	DataArray<2> &io_u,
-	DataArray<2> &io_v,
-	DataArray<2> &io_h_prev,
-	DataArray<2> &io_u_prev,
-	DataArray<2> &io_v_prev,
+	PlaneData &io_h,  ///< Current and past fields
+	PlaneData &io_u,
+	PlaneData &io_v,
+	PlaneData &io_h_prev,
+	PlaneData &io_u_prev,
+	PlaneData &io_v_prev,
 
-	DataArray<2> &i_posx_a, //Arrival point positions in x and y (this is basically the grid)
-	DataArray<2> &i_posy_a,
+	PlaneData &i_posx_a, //Arrival point positions in x and y (this is basically the grid)
+	PlaneData &i_posy_a,
 
 	double i_timestep_size,	///< timestep size
 	int i_param_nonlinear, ///< degree of nonlinearity (0-linear, 1-full nonlinear, 2-only nonlinear adv)
 
 	const SimulationVariables &i_simVars, ///< Parameters for simulation
 
-	Operators2D &op,     ///< Operator class
-	Sampler2D &sampler2D, ///< Interpolation class
+	PlaneOperators &op,     ///< Operator class
+	PlaneDataSampler &sampler2D, ///< Interpolation class
 	SemiLagrangian &semiLagrangian  ///< Semi-Lag class
 )
 {
 
 	//Out vars
-	DataArray<2> h(io_h.resolution);
-	DataArray<2> u(io_h.resolution);
-	DataArray<2> v(io_h.resolution);
+	PlaneData h(io_h.resolution);
+	PlaneData u(io_h.resolution);
+	PlaneData v(io_h.resolution);
 
 	//Departure points and arrival points
-	DataArray<2> posx_d(io_h.resolution);
-	DataArray<2> posy_d(io_h.resolution);
+	PlaneData posx_d(io_h.resolution);
+	PlaneData posy_d(io_h.resolution);
 
 	//Parameters
 	double h_bar = i_simVars.setup.h0;
@@ -409,7 +409,7 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	posx_d=i_posx_a;
 	posy_d=i_posy_a;
 
-#if SWEET_USE_SPECTRAL_SPACE
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 	if(i_param_nonlinear==1){
 		//Truncate spectral modes to avoid aliasing effects in the h*div term
 		io_h.aliasing_zero_high_modes();
@@ -437,14 +437,14 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	}
 
 	//Calculate Divergence and vorticity spectrally
-	DataArray<2> div = op.diff_c_x(io_u) + op.diff_c_y(io_v) ;
+	PlaneData div = op.diff_c_x(io_u) + op.diff_c_y(io_v) ;
 	//this could be pre-stored
-	DataArray<2> div_prev = op.diff_c_x(io_u_prev) + op.diff_c_y(io_v_prev) ;
+	PlaneData div_prev = op.diff_c_x(io_u_prev) + op.diff_c_y(io_v_prev) ;
 
 	//Calculate the RHS
-	DataArray<2> rhs_u = alpha * io_u + f0 * io_v    - g * op.diff_c_x(io_h);
-	DataArray<2> rhs_v =  - f0 * io_u + alpha * io_v - g * op.diff_c_y(io_h);
-	DataArray<2> rhs_h = alpha * io_h  - h_bar * div;
+	PlaneData rhs_u = alpha * io_u + f0 * io_v    - g * op.diff_c_x(io_h);
+	PlaneData rhs_v =  - f0 * io_u + alpha * io_v - g * op.diff_c_y(io_h);
+	PlaneData rhs_h = alpha * io_h  - h_bar * div;
 
 	if(i_param_nonlinear>0){
 		// all the RHS are to be evaluated at the departure points
@@ -464,10 +464,10 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 		// h*div is calculate in cartesian space (pseudo-spectrally)
 		//div.aliasing_zero_high_modes();
 		//div_prev.aliasing_zero_high_modes();
-		DataArray<2> hdiv = 2.0 * io_h * div - io_h_prev * div_prev;
+		PlaneData hdiv = 2.0 * io_h * div - io_h_prev * div_prev;
 		//hdiv.aliasing_zero_high_modes();
 		//std::cout<<offcent<<std::endl;
-		DataArray<2> nonlin = 0.5 * io_h * div +
+		PlaneData nonlin = 0.5 * io_h * div +
 				0.5 * sampler2D.bicubic_scalar(hdiv, posx_d, posy_d, -0.5, -0.5);
 		//add diffusion
 		//nonlin.printSpectrumEnergy_y();
@@ -493,9 +493,9 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 
 
 	//Build Helmholtz eq.
-	DataArray<2> rhs_div =op.diff_c_x(rhs_u)+op.diff_c_y(rhs_v);
-	DataArray<2> rhs_vort=op.diff_c_x(rhs_v)-op.diff_c_y(rhs_u);
-	DataArray<2> rhs     = kappa* rhs_h / alpha - h_bar * rhs_div - f0 * h_bar * rhs_vort / alpha;
+	PlaneData rhs_div =op.diff_c_x(rhs_u)+op.diff_c_y(rhs_v);
+	PlaneData rhs_vort=op.diff_c_x(rhs_v)-op.diff_c_y(rhs_u);
+	PlaneData rhs     = kappa* rhs_h / alpha - h_bar * rhs_div - f0 * h_bar * rhs_vort / alpha;
 
 	// Helmholtz solver
 	helmholtz_spectral_solver(kappa, g*h_bar, rhs, h, op);
@@ -536,15 +536,15 @@ bool RexiSWE::run_timestep_cn_sl_ts(
  *
  */
 bool RexiSWE::run_timestep_slrexi(
-	DataArray<2> &io_h,  ///< Current and past fields
-	DataArray<2> &io_u,
-	DataArray<2> &io_v,
-	DataArray<2> &io_h_prev,
-	DataArray<2> &io_u_prev,
-	DataArray<2> &io_v_prev,
+	PlaneData &io_h,  ///< Current and past fields
+	PlaneData &io_u,
+	PlaneData &io_v,
+	PlaneData &io_h_prev,
+	PlaneData &io_u_prev,
+	PlaneData &io_v_prev,
 
-	DataArray<2> &i_posx_a, //Arrival point positions in x and y (this is basically the grid)
-	DataArray<2> &i_posy_a,
+	PlaneData &i_posx_a, //Arrival point positions in x and y (this is basically the grid)
+	PlaneData &i_posy_a,
 
 	double i_timestep_size,	///< timestep size
 	int i_param_nonlinear, ///< degree of nonlinearity (0-linear, 1-full nonlinear, 2-only nonlinear adv)
@@ -553,30 +553,30 @@ bool RexiSWE::run_timestep_slrexi(
 
 	const SimulationVariables &i_simVars, ///< Parameters for simulation
 
-	Operators2D &op,     ///< Operator class
-	Sampler2D &sampler2D, ///< Interpolation class
+	PlaneOperators &op,     ///< Operator class
+	PlaneDataSampler &sampler2D, ///< Interpolation class
 	SemiLagrangian &semiLagrangian  ///< Semi-Lag class
 )
 {
 
 	//Out vars
-	DataArray<2> h(io_h.resolution);
-	DataArray<2> u(io_h.resolution);
-	DataArray<2> v(io_h.resolution);
-	DataArray<2> N_h(io_h.resolution);
-	DataArray<2> N_u(io_h.resolution);
-	DataArray<2> N_v(io_h.resolution);
-	DataArray<2> hdiv(io_h.resolution);
+	PlaneData h(io_h.resolution);
+	PlaneData u(io_h.resolution);
+	PlaneData v(io_h.resolution);
+	PlaneData N_h(io_h.resolution);
+	PlaneData N_u(io_h.resolution);
+	PlaneData N_v(io_h.resolution);
+	PlaneData hdiv(io_h.resolution);
 
 	//Departure points and arrival points
-	DataArray<2> posx_d(io_h.resolution);
-	DataArray<2> posy_d(io_h.resolution);
+	PlaneData posx_d(io_h.resolution);
+	PlaneData posy_d(io_h.resolution);
 
 	//Parameters
 	double dt = i_timestep_size;
 	double stag_displacement[4] = {-0.5,-0.5,-0.5,-0.5}; //A grid staggering - centred cell
 
-#if SWEET_USE_SPECTRAL_SPACE
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 	if(i_param_nonlinear==1){
 		//Truncate spectral modes to avoid aliasing effects in the h*div term
 		io_h.aliasing_zero_high_modes();
@@ -700,13 +700,13 @@ bool RexiSWE::run_timestep_slrexi(
  * for further information
  */
 bool RexiSWE::run_timestep(
-	DataArray<2> &io_h,
-	DataArray<2> &io_u,
-	DataArray<2> &io_v,
+	PlaneData &io_h,
+	PlaneData &io_u,
+	PlaneData &io_v,
 
 	double i_timestep_size,	///< timestep size
 
-	Operators2D &op,
+	PlaneOperators &op,
 	const SimulationVariables &i_parameters,
 	bool i_iterative_solver_always_init_zero_solution
 )
@@ -769,20 +769,20 @@ bool RexiSWE::run_timestep(
 		double eta_bar = i_parameters.setup.h0;
 		double g = i_parameters.sim.g;
 
-		Complex2DArrayFFT &op_diff_c_x = perThreadVars[i]->op_diff_c_x;
-		Complex2DArrayFFT &op_diff_c_y = perThreadVars[i]->op_diff_c_y;
-//		Complex2DArrayFFT &op_diff2_c_x = perThreadVars[i]->op_diff2_c_x;
-//		Complex2DArrayFFT &op_diff2_c_y = perThreadVars[i]->op_diff2_c_y;
+		PlaneDataComplex &op_diff_c_x = perThreadVars[i]->op_diff_c_x;
+		PlaneDataComplex &op_diff_c_y = perThreadVars[i]->op_diff_c_y;
+//		PlaneDataComplex &op_diff2_c_x = perThreadVars[i]->op_diff2_c_x;
+//		PlaneDataComplex &op_diff2_c_y = perThreadVars[i]->op_diff2_c_y;
 
-		Complex2DArrayFFT &eta0 = perThreadVars[i]->eta0;
-		Complex2DArrayFFT &u0 = perThreadVars[i]->u0;
-		Complex2DArrayFFT &v0 = perThreadVars[i]->v0;
+		PlaneDataComplex &eta0 = perThreadVars[i]->eta0;
+		PlaneDataComplex &u0 = perThreadVars[i]->u0;
+		PlaneDataComplex &v0 = perThreadVars[i]->v0;
 
-		Complex2DArrayFFT &h_sum = perThreadVars[i]->h_sum;
-		Complex2DArrayFFT &u_sum = perThreadVars[i]->u_sum;
-		Complex2DArrayFFT &v_sum = perThreadVars[i]->v_sum;
+		PlaneDataComplex &h_sum = perThreadVars[i]->h_sum;
+		PlaneDataComplex &u_sum = perThreadVars[i]->u_sum;
+		PlaneDataComplex &v_sum = perThreadVars[i]->v_sum;
 
-		Complex2DArrayFFT &eta = perThreadVars[i]->eta;
+		PlaneDataComplex &eta = perThreadVars[i]->eta;
 
 
 		/*
@@ -792,9 +792,9 @@ bool RexiSWE::run_timestep(
 		u_sum.setAll(0, 0);
 		v_sum.setAll(0, 0);
 
-		eta0.loadRealFromDataArray(io_h);
-		u0.loadRealFromDataArray(io_u);
-		v0.loadRealFromDataArray(io_v);
+		eta0.loadRealFromPlaneData(io_h);
+		u0.loadRealFromPlaneData(io_u);
+		v0.loadRealFromPlaneData(io_v);
 
 		if (helmholtz_solver == 0)
 		{
@@ -838,10 +838,10 @@ bool RexiSWE::run_timestep(
 			//
 			// (kappa + lhs_a)\eta = kappa/alpha*\eta_0 - (i_parameters.sim.f0*eta_bar/alpha) * rhs_b + rhs_a
 			//
-			Complex2DArrayFFT rhs_a = eta_bar*(op_diff_c_x(u0) + op_diff_c_y(v0));
-			Complex2DArrayFFT rhs_b = (op_diff_c_x(v0) - op_diff_c_y(u0));
+			PlaneDataComplex rhs_a = eta_bar*(op_diff_c_x(u0) + op_diff_c_y(v0));
+			PlaneDataComplex rhs_b = (op_diff_c_x(v0) - op_diff_c_y(u0));
 
-			Complex2DArrayFFT lhs_a = (-g*eta_bar)*(perThreadVars[i]->op_diff2_c_x + perThreadVars[i]->op_diff2_c_y);
+			PlaneDataComplex lhs_a = (-g*eta_bar)*(perThreadVars[i]->op_diff2_c_x + perThreadVars[i]->op_diff2_c_y);
 
 #if SWEET_BENCHMARK_REXI
 			if (stopwatch_measure)
@@ -867,7 +867,7 @@ bool RexiSWE::run_timestep(
 				 * TODO: we can even get more performance out of this operations
 				 * by partly using the real Fourier transformation
 				 */
-				Complex2DArrayFFT rhs =
+				PlaneDataComplex rhs =
 						(kappa/alpha) * eta0
 						+ (-i_parameters.sim.f0*eta_bar/alpha) * rhs_b
 						+ rhs_a
@@ -876,17 +876,17 @@ bool RexiSWE::run_timestep(
 #if 0
 				helmholtz_spectral_solver_spec(kappa, g*eta_bar, rhs, eta, i);
 #else
-				Complex2DArrayFFT lhs = lhs_a.addScalar_Cart(kappa);
+				PlaneDataComplex lhs = lhs_a.addScalar_Cart(kappa);
 				rhs.spec_div_element_wise(lhs, eta);
 #endif
 
-				Complex2DArrayFFT uh = u0 + g*op_diff_c_x(eta);
-				Complex2DArrayFFT vh = v0 + g*op_diff_c_y(eta);
+				PlaneDataComplex uh = u0 + g*op_diff_c_x(eta);
+				PlaneDataComplex vh = v0 + g*op_diff_c_y(eta);
 
-				Complex2DArrayFFT u1 = (alpha/kappa) * uh     - (i_parameters.sim.f0/kappa) * vh;
-				Complex2DArrayFFT v1 = (i_parameters.sim.f0/kappa) * uh + (alpha/kappa) * vh;
+				PlaneDataComplex u1 = (alpha/kappa) * uh     - (i_parameters.sim.f0/kappa) * vh;
+				PlaneDataComplex v1 = (i_parameters.sim.f0/kappa) * uh + (alpha/kappa) * vh;
 
-				DataArray<2> tmp(h_sum.resolution);
+				PlaneData tmp(h_sum.resolution);
 
 				h_sum += eta.toCart()*beta;
 				u_sum += u1.toCart()*beta;
@@ -940,8 +940,8 @@ bool RexiSWE::run_timestep(
 			/*
 			 * DO SUM IN PARALLEL
 			 */
-			Complex2DArrayFFT rhs_a = eta_bar*(op_diff_c_x(u0) + op_diff_c_y(v0));
-			Complex2DArrayFFT rhs_b = (op_diff_c_x(v0) - op_diff_c_y(u0));
+			PlaneDataComplex rhs_a = eta_bar*(op_diff_c_x(u0) + op_diff_c_y(v0));
+			PlaneDataComplex rhs_b = (op_diff_c_x(v0) - op_diff_c_y(u0));
 
 #if SWEET_BENCHMARK_REXI
 		if (stopwatch_measure)
@@ -967,7 +967,7 @@ bool RexiSWE::run_timestep(
 				 * TODO: we can even get more performance out of this operations
 				 * by partly using the real Fourier transformation
 				 */
-				Complex2DArrayFFT rhs =
+				PlaneDataComplex rhs =
 						(kappa/alpha) * eta0
 						- rhs_a
 						- (i_parameters.sim.f0*eta_bar/alpha) * rhs_b
@@ -975,7 +975,7 @@ bool RexiSWE::run_timestep(
 
 				rhs = rhs.toCart();
 
-				Complex2DArrayFFT eta(rhs.resolution);
+				PlaneDataComplex eta(rhs.resolution);
 
 				// don't reuse old solution?
 				if (i_iterative_solver_always_init_zero_solution)
@@ -1091,11 +1091,11 @@ bool RexiSWE::run_timestep(
 
 				eta = eta.toSpec();
 
-				Complex2DArrayFFT uh = u0 - g*op_diff_c_x(eta);
-				Complex2DArrayFFT vh = v0 - g*op_diff_c_y(eta);
+				PlaneDataComplex uh = u0 - g*op_diff_c_x(eta);
+				PlaneDataComplex vh = v0 - g*op_diff_c_y(eta);
 
-				Complex2DArrayFFT u1 = (alpha/kappa) * uh	+ (i_parameters.sim.f0/kappa) * vh;
-				Complex2DArrayFFT v1 =    (-i_parameters.sim.f0/kappa) * uh	+ (alpha/kappa) * vh;
+				PlaneDataComplex u1 = (alpha/kappa) * uh	+ (i_parameters.sim.f0/kappa) * vh;
+				PlaneDataComplex v1 =    (-i_parameters.sim.f0/kappa) * uh	+ (alpha/kappa) * vh;
 
 				h_sum += eta.toCart()*beta;
 				u_sum += u1.toCart()*beta;
@@ -1137,15 +1137,15 @@ bool RexiSWE::run_timestep(
 
 #else
 
-	io_h = perThreadVars[0]->h_sum.getRealWithDataArray();
-	io_u = perThreadVars[0]->u_sum.getRealWithDataArray();
-	io_v = perThreadVars[0]->v_sum.getRealWithDataArray();
+	io_h = perThreadVars[0]->h_sum.getRealWithPlaneData();
+	io_u = perThreadVars[0]->u_sum.getRealWithPlaneData();
+	io_v = perThreadVars[0]->v_sum.getRealWithPlaneData();
 
 #endif
 
 
 #if SWEET_MPI
-	DataArray<2> tmp(io_h.resolution);
+	PlaneData tmp(io_h.resolution);
 
 	int retval = MPI_Reduce(io_h.array_data_cartesian_space, tmp.array_data_cartesian_space, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 	if (retval != MPI_SUCCESS)
@@ -1193,13 +1193,13 @@ inline std::complex<double> conj(const std::complex<double> &v)
  * the required coefficients on-the-fly which is expensive.
  */
 void RexiSWE::run_timestep_direct_solution(
-		DataArray<2> &io_h,
-		DataArray<2> &io_u,
-		DataArray<2> &io_v,
+		PlaneData &io_h,
+		PlaneData &io_u,
+		PlaneData &io_v,
 
 		double i_timestep_size,	///< timestep size
 
-		Operators2D &op,
+		PlaneOperators &op,
 		const SimulationVariables &i_simVars
 )
 {
@@ -1210,21 +1210,21 @@ void RexiSWE::run_timestep_direct_solution(
 	double f = i_simVars.sim.f0;
 	complex I(0.0,1.0);
 
-	Complex2DArrayFFT i_h(io_h.resolution);
-	Complex2DArrayFFT i_u(io_h.resolution);
-	Complex2DArrayFFT i_v(io_h.resolution);
+	PlaneDataComplex i_h(io_h.resolution);
+	PlaneDataComplex i_u(io_h.resolution);
+	PlaneDataComplex i_v(io_h.resolution);
 
-	Complex2DArrayFFT o_h(io_h.resolution);
-	Complex2DArrayFFT o_u(io_h.resolution);
-	Complex2DArrayFFT o_v(io_h.resolution);
+	PlaneDataComplex o_h(io_h.resolution);
+	PlaneDataComplex o_u(io_h.resolution);
+	PlaneDataComplex o_v(io_h.resolution);
 
-	i_h.loadRealFromDataArray(io_h);
+	i_h.loadRealFromPlaneData(io_h);
 	i_h = i_h.toSpec();
 
-	i_u.loadRealFromDataArray(io_u);
+	i_u.loadRealFromPlaneData(io_u);
 	i_u = i_u.toSpec();
 
-	i_v.loadRealFromDataArray(io_v);
+	i_v.loadRealFromPlaneData(io_v);
 	i_v = i_v.toSpec();
 
 	double s0 = i_simVars.sim.domain_size[0];
@@ -1427,16 +1427,16 @@ void RexiSWE::run_timestep_direct_solution(
 				for (int i = 0; i < 3; i++)
 				{
 					if (
-							std::isnan(eigenvectors[j][i].real()) || std::isinf(eigenvectors[j][i].real())	||
-							std::isnan(eigenvectors[j][i].imag()) || std::isinf(eigenvectors[j][i].imag())
+							std::isnan(eigenvectors[j][i].real()) || std::isinf(eigenvectors[j][i].real()) != 0	||
+							std::isnan(eigenvectors[j][i].imag()) || std::isinf(eigenvectors[j][i].imag()) != 0
 					)
 					{
 						std::cerr << "Invalid number in Eigenvector " << j << " detected: " << eigenvectors[j][0] << ", " << eigenvectors[j][1] << ", " << eigenvectors[j][2] << std::endl;
 					}
 
 					if (
-							std::isnan(eigenvectors_inv[j][i].real()) || std::isinf(eigenvectors_inv[j][i].real())	||
-							std::isnan(eigenvectors_inv[j][i].imag()) || std::isinf(eigenvectors_inv[j][i].imag())
+							std::isnan(eigenvectors_inv[j][i].real()) || std::isinf(eigenvectors_inv[j][i].real()) != 0	||
+							std::isnan(eigenvectors_inv[j][i].imag()) || std::isinf(eigenvectors_inv[j][i].imag()) != 0
 					)
 					{
 						std::cerr << "Invalid number in inverse of Eigenvector " << j << " detected: " << eigenvectors_inv[j][0] << ", " << eigenvectors_inv[j][1] << ", " << eigenvectors_inv[j][2] << std::endl;
@@ -1475,9 +1475,9 @@ void RexiSWE::run_timestep_direct_solution(
 		}
 	}
 
-	io_h = o_h.toCart().getRealWithDataArray();
-	io_u = o_u.toCart().getRealWithDataArray();
-	io_v = o_v.toCart().getRealWithDataArray();
+	io_h = o_h.toCart().getRealWithPlaneData();
+	io_u = o_u.toCart().getRealWithPlaneData();
+	io_v = o_v.toCart().getRealWithPlaneData();
 }
 
 

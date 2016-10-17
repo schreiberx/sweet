@@ -1,5 +1,5 @@
 
-#if !SWEET_USE_SPECTRAL_SPACE
+#if !SWEET_USE_PLANE_SPECTRAL_SPACE
 	#error "Spectral space not activated"
 #endif
 
@@ -8,8 +8,8 @@
 #endif
 
 #include <sweet/Stopwatch.hpp>
-#include <sweet/DataArray.hpp>
-#include <sweet/Complex2DArrayFFT.hpp>
+#include "../include/sweet/plane/PlaneData.hpp"
+#include "../include/sweet/plane/PlaneDataComplex.hpp"
 #include <sweet/SimulationVariables.hpp>
 
 #include <math.h>
@@ -84,8 +84,8 @@ int main(int i_argc, char *i_argv[])
 	/*
 	 * iterate over resolutions, starting by res[0] given e.g. by program parameter -n
 	 */
-	std::size_t res_x = simVars.disc.res[0];
-	std::size_t res_y = simVars.disc.res[1];
+	std::size_t res_x = simVars.disc.res_physical[0];
+	std::size_t res_y = simVars.disc.res_physical[1];
 
 	std::size_t max_res = 2048;
 
@@ -141,15 +141,15 @@ int main(int i_argc, char *i_argv[])
 		std::size_t res[2] = {res_x, res_y};
 
 
-		simVars.disc.res[0] = res[0];
-		simVars.disc.res[1] = res[1];
+		simVars.disc.res_physical[0] = res[0];
+		simVars.disc.res_physical[1] = res[1];
 		simVars.reset();
 
 
 		/*
 		 * keep h in the outer regions to allocate it only once and avoid reinitialization of FFTW
 		 */
-		Complex2DArrayFFT h_cart(res);
+		PlaneDataComplex h_cart(res);
 
 
 		{
@@ -160,9 +160,9 @@ int main(int i_argc, char *i_argv[])
 			std::cout << "error tol = " << eps << std::endl;
 			std::cout << "**********************************************" << std::endl;
 
-			Complex2DArrayFFT zero_cart(res);
-			Complex2DArrayFFT two_cart(res);
-			Complex2DArrayFFT five_cart(res);
+			PlaneDataComplex zero_cart(res);
+			PlaneDataComplex two_cart(res);
+			PlaneDataComplex five_cart(res);
 
 			zero_cart.setAll(0.0, 0.0);
 			two_cart.setAll(2.0, 0.0);
@@ -269,9 +269,9 @@ int main(int i_argc, char *i_argv[])
 
 
 			// create sinus curve
-			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
 					double x = ((double)i)/(double)res[0];
 					double y = ((double)j)/(double)res[1];
@@ -301,8 +301,8 @@ int main(int i_argc, char *i_argv[])
 				exit(-1);
 			}
 
-			Complex2DArrayFFT h_spec = h_cart.toSpec();
-			Complex2DArrayFFT two_spec = two_cart.toSpec();
+			PlaneDataComplex h_spec = h_cart.toSpec();
+			PlaneDataComplex two_spec = two_cart.toSpec();
 
 			double sin_test_zero_mul = (h_spec*two_spec).reduce_sum_re_quad()/res2;
 			error = sin_test_zero_mul;
@@ -321,29 +321,29 @@ int main(int i_argc, char *i_argv[])
 		 * Tests for basic operators which are not amplifying the solution depending on the domain size
 		 */
 		{
-			Complex2DArrayFFT u(res);
-			Complex2DArrayFFT v(res);
+			PlaneDataComplex u(res);
+			PlaneDataComplex v(res);
 
 //			Operators2D op(parameters.discretization.res, parameters.sim.domain_size, parameters.disc.use_spectral_diffs);
 
-			Complex2DArrayFFT op_diff2_c_x(res);
-			Complex2DArrayFFT op_diff2_c_y(res);
+			PlaneDataComplex op_diff2_c_x(res);
+			PlaneDataComplex op_diff2_c_y(res);
 			op_diff2_c_x.op_setup_diff2_x(simVars.sim.domain_size, use_spectral_differences_for_complex_array);
 			op_diff2_c_y.op_setup_diff2_y(simVars.sim.domain_size, use_spectral_differences_for_complex_array);
 
-			Complex2DArrayFFT op_diff_c_x(res);
+			PlaneDataComplex op_diff_c_x(res);
 			op_diff_c_x.op_setup_diff_x(simVars.sim.domain_size, use_spectral_differences_for_complex_array);
 
-			Complex2DArrayFFT op_diff_c_y(res);
+			PlaneDataComplex op_diff_c_y(res);
 			op_diff_c_y.op_setup_diff_y(simVars.sim.domain_size, use_spectral_differences_for_complex_array);
 
 
-			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
-					double x = ((double)i+0.5)/(double)simVars.disc.res[0];
-					double y = ((double)j+0.5)/(double)simVars.disc.res[1];
+					double x = ((double)i+0.5)/(double)simVars.disc.res_physical[0];
+					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
 
 					u.set(j, i, sin(freq_x*M_PIl*x), 0.0);
 					v.set(j, i, cos(freq_y*M_PIl*y), 0.0);
@@ -424,25 +424,25 @@ int main(int i_argc, char *i_argv[])
 		 * Tests for 1st order differential operator
 		 */
 		{
-			Complex2DArrayFFT op_diff_c_x(res);
+			PlaneDataComplex op_diff_c_x(res);
 			op_diff_c_x.op_setup_diff_x(simVars.sim.domain_size, use_spectral_differences_for_complex_array);
 
-			Complex2DArrayFFT op_diff_c_y(res);
+			PlaneDataComplex op_diff_c_y(res);
 			op_diff_c_y.op_setup_diff_y(simVars.sim.domain_size, use_spectral_differences_for_complex_array);
 
-			Complex2DArrayFFT u(res);
-			Complex2DArrayFFT v(res);
-			Complex2DArrayFFT h_diff_x(res);
-			Complex2DArrayFFT h_diff_y(res);
+			PlaneDataComplex u(res);
+			PlaneDataComplex v(res);
+			PlaneDataComplex h_diff_x(res);
+			PlaneDataComplex h_diff_y(res);
 
 //			Operators2D op(parameters.discretization.res, parameters.sim.domain_size, parameters.disc.use_spectral_diffs);
 
-			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
-					double x = ((double)i+0.5)/(double)simVars.disc.res[0];
-					double y = ((double)j+0.5)/(double)simVars.disc.res[1];
+					double x = ((double)i+0.5)/(double)simVars.disc.res_physical[0];
+					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
 //					double x = ((double)i)/(double)parameters.discretization.res[0];
 //					double y = ((double)j)/(double)parameters.discretization.res[1];
 
@@ -470,7 +470,7 @@ int main(int i_argc, char *i_argv[])
 			}
 
 
-			double res_normalization = std::sqrt(1.0/(simVars.disc.res[0]*simVars.disc.res[1]));
+			double res_normalization = std::sqrt(1.0/(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]));
 
 			// normalization for diff = 2 pi / L
 			double err_x = (op_diff_c_x(h_cart.toSpec()).toCart()-h_diff_x).reduce_norm2_quad()*res_normalization*simVars.sim.domain_size[0]/(2.0*M_PIl);
@@ -480,10 +480,10 @@ int main(int i_argc, char *i_argv[])
 			std::cout << "error diff x = " << err_x << std::endl;
 			std::cout << "error diff y = " << err_y << std::endl;
 
-			Complex2DArrayFFT h_spec = h_cart.toSpec();
-			Complex2DArrayFFT h_diff_xy_spec = op_diff_c_x(h_spec) + op_diff_c_y(h_spec);
-			Complex2DArrayFFT op_diff_c_x_y = op_diff_c_x + op_diff_c_y;
-			Complex2DArrayFFT h_diff_xy_spec_split = op_diff_c_x_y(h_spec);
+			PlaneDataComplex h_spec = h_cart.toSpec();
+			PlaneDataComplex h_diff_xy_spec = op_diff_c_x(h_spec) + op_diff_c_y(h_spec);
+			PlaneDataComplex op_diff_c_x_y = op_diff_c_x + op_diff_c_y;
+			PlaneDataComplex h_diff_xy_spec_split = op_diff_c_x_y(h_spec);
 
 			double err_xy = (
 								h_diff_xy_spec.toCart()
@@ -605,17 +605,17 @@ int main(int i_argc, char *i_argv[])
 		 * diff(sin(2 pi x / size), x, x) = 4.0 pi^2 sin(2 pi x / size) / size^2
 		 */
 		{
-			Complex2DArrayFFT h_diff2_x(res);
-			Complex2DArrayFFT h_diff2_y(res);
+			PlaneDataComplex h_diff2_x(res);
+			PlaneDataComplex h_diff2_y(res);
 
 //			Operators2D op(parameters.discretization.res, parameters.sim.domain_size, parameters.disc.use_spectral_diffs);
 
-			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
-					double x = ((double)i+0.5)/(double)simVars.disc.res[0];
-					double y = ((double)j+0.5)/(double)simVars.disc.res[1];
+					double x = ((double)i+0.5)/(double)simVars.disc.res_physical[0];
+					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
 
 					h_cart.set(
 						j, i,
@@ -637,10 +637,10 @@ int main(int i_argc, char *i_argv[])
 				}
 			}
 
-			double normalization = sqrt(1.0/(simVars.disc.res[0]*simVars.disc.res[1]));
+			double normalization = sqrt(1.0/(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]));
 
-			Complex2DArrayFFT op_diff2_c_x(res);
-			Complex2DArrayFFT op_diff2_c_y(res);
+			PlaneDataComplex op_diff2_c_x(res);
+			PlaneDataComplex op_diff2_c_y(res);
 			op_diff2_c_x.op_setup_diff2_x(simVars.sim.domain_size, use_spectral_differences_for_complex_array);
 			op_diff2_c_y.op_setup_diff2_y(simVars.sim.domain_size, use_spectral_differences_for_complex_array);
 

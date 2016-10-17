@@ -7,16 +7,15 @@
 #ifndef SRC_EXAMPLES_VISSWEET_HPP_
 #define SRC_EXAMPLES_VISSWEET_HPP_
 
-#include <sweet/DataArray.hpp>
-
-#include <libgl/core/GlTexture.hpp>
 #include <sweet/VisSweetHUD.hpp>
-#include <libgl/draw/GlDrawQuad.hpp>
-#include <libgl/draw/GlDrawCube.hpp>
-#include <libgl/hud/GlFreeType.hpp>
-#include <libgl/hud/GlRenderOStream.hpp>
-#include <libgl/VisualizationEngine.hpp>
-#include <libgl/shaders/shader_blinn/CShaderBlinn.hpp>
+#include "../libgl/draw/GlDrawCube.hpp"
+#include "../libgl/shaders/shader_blinn/CShaderBlinn.hpp"
+#include "../libgl/VisualizationEngine.hpp"
+#include "../libgl/core/GlTexture.hpp"
+#include "../libgl/draw/GlDrawQuad.hpp"
+#include "../libgl/hud/GlFreeType.hpp"
+#include "../libgl/hud/GlRenderOStream.hpp"
+#include "PlaneData.hpp"
 
 
 
@@ -84,11 +83,11 @@ class VisSweet	:
 
 	void vis_render()
 	{
-		const DataArray<2> *ro_visData;
+		const PlaneData *ro_visData;
 		double aspect_ratio = 0;
 		simulation->vis_get_vis_data_array(&ro_visData, &aspect_ratio);
 
-		DataArray<2> &visData = (DataArray<2>&)*ro_visData;
+		PlaneData &visData = (PlaneData&)*ro_visData;
 
 		if (glTexture == nullptr)
 		{

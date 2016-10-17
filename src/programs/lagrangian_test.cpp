@@ -6,15 +6,15 @@
  */
 
 
-#include <sweet/DataArray.hpp>
+#include "../include/sweet/plane/PlaneData.hpp"
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/SWEValidationBenchmarks.hpp>
-#include <sweet/Operators2D.hpp>
-#include <sweet/Sampler2D.hpp>
-#include <sweet/SemiLagrangian.hpp>
+#include <benchmarks_plane/SWEPlaneBenchmarks.hpp>
+#include "../include/sweet/plane/PlaneOperators.hpp"
+#include "../include/sweet/plane/PlaneDataSampler.hpp"
+#include "../include/sweet/plane/PlaneDataSemiLagrangian.hpp"
 #include <unistd.h>
 #include <stdio.h>
 #include <vector>
@@ -29,49 +29,49 @@ double param_velocity_v;
 class SimulationSWE
 {
 public:
-	DataArray<2> prog_h;
+	PlaneData prog_h;
 
-	DataArray<2> prog_u, prog_v;
-	DataArray<2> prog_u_prev, prog_v_prev;
+	PlaneData prog_u, prog_v;
+	PlaneData prog_u_prev, prog_v_prev;
 
 
-	DataArray<2> posx_a, posy_a;
-	DataArray<2> *pos_a[2];
+	PlaneData posx_a, posy_a;
+	PlaneData *pos_a[2];
 
-//	DataArray<2> interpol_values;
-//	DataArray<2> hu;
-//	DataArray<2> hv;
+//	PlaneData interpol_values;
+//	PlaneData hu;
+//	PlaneData hv;
 
-	DataArray<2> h_t;
+	PlaneData h_t;
 
-	Operators2D op;
+	PlaneOperators op;
 
-	Sampler2D sampler2D;
+	PlaneDataSampler sampler2D;
 	SemiLagrangian semiLagrangian;
 
 
 
 public:
 	SimulationSWE()	:
-		prog_h(simVars.disc.res),
+		prog_h(simVars.disc.res_physical),
 
-		prog_u(simVars.disc.res),
-		prog_v(simVars.disc.res),
+		prog_u(simVars.disc.res_physical),
+		prog_v(simVars.disc.res_physical),
 
-		prog_u_prev(simVars.disc.res),
-		prog_v_prev(simVars.disc.res),
+		prog_u_prev(simVars.disc.res_physical),
+		prog_v_prev(simVars.disc.res_physical),
 
-		posx_a(simVars.disc.res),
-		posy_a(simVars.disc.res),
+		posx_a(simVars.disc.res_physical),
+		posy_a(simVars.disc.res_physical),
 
 //		interpol_values(simVars.disc.res),
 
 //		hu(simVars.disc.res),
 //		hv(simVars.disc.res),
 
-		h_t(simVars.disc.res),
+		h_t(simVars.disc.res_physical),
 
-		op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
+		op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
 	{
 		reset();
 	}
@@ -84,7 +84,7 @@ public:
 #if 0
 		prog_h.set_all(simVars.setup.h0);
 
-		if (std::isinf(simVars.bogus.var[0]))
+		if (std::isinf(simVars.bogus.var[0]) != 0)
 		{
 			prog_u.set_all(0);
 			prog_v.set_all(0);
@@ -97,16 +97,16 @@ public:
 #endif
 
 
-		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+		for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 		{
-			for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+			for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 			{
 				//				double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
 				//				double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
-				double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-				double y = (((double)j)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+				double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+				double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-				prog_h.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
+				prog_h.set(j, i, SWEPlaneBenchmarks::return_h(simVars, x, y));
 //				prog_u.set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
 //				prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
 			}
@@ -126,19 +126,19 @@ public:
 
 		// setup some test sampling points
 		// we use 2 arrays - one for each sampling position
-		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+		for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 		{
-			for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+			for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 			{
-				posx_a.set(j, i, ((double)i)*((double)simVars.sim.domain_size[0]/(double)simVars.disc.res[0]));
-				posy_a.set(j, i, ((double)j)*((double)simVars.sim.domain_size[1]/(double)simVars.disc.res[1]));
+				posx_a.set(j, i, ((double)i)*((double)simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0]));
+				posy_a.set(j, i, ((double)j)*((double)simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1]));
 			}
 		}
 
-		sampler2D.setup(simVars.sim.domain_size, simVars.disc.res);
+		sampler2D.setup(simVars.sim.domain_size, simVars.disc.res_physical);
 
 		//PXT- This just calls sampler2D.setup, so any reason for having it?
-		semiLagrangian.setup(simVars.sim.domain_size, simVars.disc.res);
+		semiLagrangian.setup(simVars.sim.domain_size, simVars.disc.res_physical);
 	}
 
 
@@ -160,14 +160,14 @@ public:
 		prog_v = param_velocity_v;
 
 		// velocities at t
-		DataArray<2>* vel[2] = {&prog_u, &prog_v};
+		PlaneData* vel[2] = {&prog_u, &prog_v};
 		// velocities at t-1
-		DataArray<2>* vel_prev[2] = {&prog_u_prev, &prog_v_prev};
+		PlaneData* vel_prev[2] = {&prog_u_prev, &prog_v_prev};
 
 		// position of departure points at t
-		DataArray<2> posx_d(prog_h.resolution);
-		DataArray<2> posy_d(prog_h.resolution);
-		DataArray<2>* pos_d[2] = {&posx_d, &posy_d};
+		PlaneData posx_d(prog_h.resolution);
+		PlaneData posy_d(prog_h.resolution);
+		PlaneData* pos_d[2] = {&posx_d, &posy_d};
 
 #if 0
 		*pos_d[0] = *pos_a[0];
@@ -185,7 +185,7 @@ public:
 		prog_u_prev = prog_u;
 		prog_v_prev = prog_v;
 
-		DataArray<2> new_prog_h(prog_h.resolution);
+		PlaneData new_prog_h(prog_h.resolution);
 		sampler2D.bicubic_scalar(
 				prog_h,
 				posx_d,
@@ -196,16 +196,16 @@ public:
 		prog_h = new_prog_h;
 
 #if 0
-		DataArray<2> *x[2] = {&data_x, &data_y};
+		PlaneData *x[2] = {&data_x, &data_y};
 
 		// setup some test sampling points
 		// we use 2 arrays - one for each sampling position
-		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+		for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 		{
-			for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+			for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 			{
-				x[0]->set(j, i, ((double)i)*(simVars.sim.domain_size[0]/(double)simVars.disc.res[0])+simVars.timecontrol.current_timestep_nr);
-				x[1]->set(j, i, ((double)j)*(simVars.sim.domain_size[1]/(double)simVars.disc.res[1])+simVars.timecontrol.current_timestep_nr*2);
+				x[0]->set(j, i, ((double)i)*(simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0])+simVars.timecontrol.current_timestep_nr);
+				x[1]->set(j, i, ((double)j)*(simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1])+simVars.timecontrol.current_timestep_nr*2);
 			}
 		}
 
@@ -242,7 +242,7 @@ public:
 
 
 	void vis_get_vis_data_array(
-			const DataArray<2> **o_dataArray,
+			const PlaneData **o_dataArray,
 			double *o_aspect_ratio
 	)
 	{
@@ -312,7 +312,7 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 	}
 
-	if (std::isinf(simVars.bogus.var[0]) || std::isinf(simVars.bogus.var[1]))
+	if (std::isinf(simVars.bogus.var[0]) != 0 || std::isinf(simVars.bogus.var[1]) != 0)
 	{
 		std::cout << "Both velocities have to be set, see parameters --velocity-u, --velocity-v" << std::endl;
 		return -1;

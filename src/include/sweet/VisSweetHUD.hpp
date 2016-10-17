@@ -26,10 +26,10 @@
 #ifndef VISSWEET_HUD_HPP_
 #define VISSWEET_HUD_HPP_
 
-#include <libgl/hud/GlWindow.hpp>
-#include <libgl/hud/GlHudConfig.hpp>
-#include <libgl/hud/GlFreeType.hpp>
-#include <libgl/hud/GlRenderOStream.hpp>
+#include "../libgl/hud/GlFreeType.hpp"
+#include "../libgl/hud/GlHudConfig.hpp"
+#include "../libgl/hud/GlRenderOStream.hpp"
+#include "../libgl/hud/GlWindow.hpp"
 
 /*
  * callback handler helper precompiler definitions

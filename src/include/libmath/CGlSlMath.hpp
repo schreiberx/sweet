@@ -18,7 +18,7 @@
  * CGlSlMath.hpp
  *
  *  Created on: Mar 5, 2010
- *      Author: Martin Schreiber (schreiberx@gmail.com)
+ *      Author: martin
  */
 
 #ifndef CGLSLMATH_HPP_
@@ -52,15 +52,14 @@ namespace GLSL
 	/**
 	 * return the opengl translation matrix
 	 */
-	template <typename T = float>
-	inline CMatrix4<T> translate(
-			CVector<3,T> i_t	///< translation
-	)
+	inline mat4 translate(
+					vec3 t	///< translation
+				)
 	{
-		CMatrix4<T> m;
-		m[0][3] = i_t[0];
-		m[1][3] = i_t[1];
-		m[2][3] = i_t[2];
+		mat4 m;
+		m[0][3] = t[0];
+		m[1][3] = t[1];
+		m[2][3] = t[2];
 
 		return m;
 	}
@@ -68,14 +67,12 @@ namespace GLSL
 	/**
 	 * return the opengl translation matrix
 	 */
-	template <typename T = float>
-	inline CMatrix4<T> translate(
-			T tx,	///< x translation
-			T ty,	///< y translation
-			T tz	///< z translation
-	)
+	inline mat4 translate(	float tx,	///< x translation
+							float ty,	///< y translation
+							float tz	///< z translation
+				)
 	{
-		CMatrix4<T> m;
+		mat4 m;
 		m[0][3] = tx;
 		m[1][3] = ty;
 		m[2][3] = tz;
@@ -87,13 +84,12 @@ namespace GLSL
 	/**
 	 * return the opengl scaling matrix
 	 */
-	template <typename T = float>
-	inline CMatrix4<T> scale(
-			T sx,	///< x scale
-			T sy,	///< y scale
-			T sz	///< z scale
-	)	{
-		CMatrix4<T> m;
+	inline mat4 scale(	float sx,	///< x scale
+						float sy,	///< y scale
+						float sz	///< z scale
+				)
+	{
+		mat4 m;
 		m.loadIdentity();
 
 		m[0][0] = sx;
@@ -106,24 +102,22 @@ namespace GLSL
 	/**
 	 * return the opengl rotation matrix
 	 */
-	template <typename T = float>
-	inline CMatrix4<T> rotate(
-			T angle,	///< rotation angle
-			T x,		///< x component of rotation axis
-			T y,		///< y component of rotation axis
-			T z			///< z component of rotation axis
-	)
+	inline mat4 rotate(	float angle,	///< rotation angle
+						float x,		///< x component of rotation axis
+						float y,		///< y component of rotation axis
+						float z			///< z component of rotation axis
+					)
 	{
 		// normalize rotation axis
-		T div = 1.0/std::sqrt(x*x+y*y+z*z);
+		float div = 1.0/std::sqrt(x*x+y*y+z*z);
 
 		x *= div;
 		y *= div;
 		z *= div;
 
-		T mul = (T)M_PI/180.0f;
-		T c = std::cos(angle*mul);
-		T s = std::sin(angle*mul);
+		float mul = M_PI/180.0f;
+		float c = std::cos(angle*mul);
+		float s = std::sin(angle*mul);
 
 		mat4 m;
 		m[0][0] = x*x*(1-c)+c;
@@ -290,46 +284,42 @@ namespace GLSL
 	 *
 	 * http://www.opengl.org/sdk/docs/man/xhtml/glFrustum.xml
 	 */
-	template <typename T>
-	inline CMatrix4<T> frustum(
-			T left,
-			T right,
-			T bottom,
-			T top,
-			T nearval,
-			T farval
-		)
+	inline mat4 frustum(	float left,
+							float right,
+							float bottom,
+							float top,
+							float nearval,
+							float farval
+					)
 	{
-		CMatrix4<T> m;
+		mat4 m;
 
-		m[0][0] = (T)2.0*nearval/(right-left);
+		m[0][0] = 2.0*nearval/(right-left);
 		m[0][1] = 0;
 		m[0][2] = (right+left)/(right-left);
 		m[0][3] = 0;
 
 		m[1][0] = 0;
-		m[1][1] = (T)2.0*nearval/(top-bottom);
+		m[1][1] = 2.0*nearval/(top-bottom);
 		m[1][2] = (top+bottom)/(top-bottom);
 		m[1][3] = 0;
 
 		m[2][0] = 0;
 		m[2][1] = 0;
 		m[2][2] = -(farval+nearval)/(farval-nearval);
-		m[2][3] = -(T)2.0*farval*nearval/(farval-nearval);
+		m[2][3] = -2.0*farval*nearval/(farval-nearval);
 
 		m[3][0] = 0;
 		m[3][1] = 0;
-		m[3][2] = -(T)1.0;
+		m[3][2] = -1;
 		m[3][3] = 0;
 
 		return m;
 	}
 
-
 	/**
 	 * create lookat matrix (same as gluLookAt)
 	 */
-	template <typename T>
 	inline mat4 const lookAt(	const vec3 &eye,
 								const vec3 &center,
 								const vec3 &up

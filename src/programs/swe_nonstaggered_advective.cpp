@@ -1,12 +1,12 @@
 
-#include <sweet/DataArray.hpp>
+#include "../include/sweet/plane/PlaneData.hpp"
 #if SWEET_GUI
 	#include <sweet/VisSweet.hpp>
 #endif
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/TimesteppingRK.hpp>
-#include <sweet/SWEValidationBenchmarks.hpp>
-#include <sweet/Operators2D.hpp>
+#include <sweet/plane/PlaneDataPlaneDataTimesteppingRK.hpp>
+#include <sweet/plane/PlaneOperators.hpp>
+#include <benchmarks_plane/SWEPlaneBenchmarks.hpp>
 #include <sweet/Stopwatch.hpp>
 
 #include <ostream>
@@ -24,17 +24,17 @@ double next_timestep_output = 0;
 class SimulationSWE
 {
 public:
-	DataArray<2> prog_h, prog_u, prog_v;
+	PlaneData prog_h, prog_u, prog_v;
 	// beta plane
-	DataArray<2> beta_plane;
+	PlaneData beta_plane;
 
-	DataArray<2> eta;
-	DataArray<2> tmp;
+	PlaneData eta;
+	PlaneData tmp;
 
 
-	Operators2D op;
+	PlaneOperators op;
 
-	TimesteppingRK timestepping;
+	PlaneDataTimesteppingRK timestepping;
 
 	int last_timestep_nr_update_diagnostics = -1;
 
@@ -44,16 +44,16 @@ public:
 
 public:
 	SimulationSWE()	:
-		prog_h(simVars.disc.res),
-		prog_u(simVars.disc.res),
-		prog_v(simVars.disc.res),
+		prog_h(simVars.disc.res_physical),
+		prog_u(simVars.disc.res_physical),
+		prog_v(simVars.disc.res_physical),
 
-		beta_plane(simVars.disc.res),
+		beta_plane(simVars.disc.res_physical),
 
-		eta(simVars.disc.res),
-		tmp(simVars.disc.res),
+		eta(simVars.disc.res_physical),
+		tmp(simVars.disc.res_physical),
 
-		op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
+		op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
 	{
 		reset();
 	}
@@ -76,20 +76,20 @@ public:
 		prog_u.set_all(0);
 		prog_v.set_all(0);
 
-		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+		for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 		{
-			for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+			for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 			{
-				double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-				double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-				prog_h.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
-				prog_u.set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
-				prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
+				prog_h.set(j, i, SWEPlaneBenchmarks::return_h(simVars, x, y));
+				prog_u.set(j, i, SWEPlaneBenchmarks::return_u(simVars, x, y));
+				prog_v.set(j, i, SWEPlaneBenchmarks::return_v(simVars, x, y));
 
 				{
 					// beta plane
-					double y_beta = (((double)j+0.5)/(double)simVars.disc.res[1]);
+					double y_beta = (((double)j+0.5)/(double)simVars.disc.res_physical[1]);
 					beta_plane.set(j, i, simVars.sim.f0+simVars.sim.beta*y_beta);
 				}
 			}
@@ -121,7 +121,7 @@ public:
 		last_timestep_nr_update_diagnostics = simVars.timecontrol.current_timestep_nr;
 
 		double normalization = (simVars.sim.domain_size[0]*simVars.sim.domain_size[1]) /
-								((double)simVars.disc.res[0]*(double)simVars.disc.res[1]);
+								((double)simVars.disc.res_physical[0]*(double)simVars.disc.res_physical[1]);
 
 		// mass
 		simVars.diag.total_mass = prog_h.reduce_sum_quad() * normalization;
@@ -144,11 +144,11 @@ public:
 
 
 	void compute_upwinding_P_updates(
-			const DataArray<2> &i_h,		///< prognostic variables (at T=tn)
-			const DataArray<2> &i_u,		///< prognostic variables (at T=tn+dt)
-			const DataArray<2> &i_v,		///< prognostic variables (at T=tn+dt)
+			const PlaneData &i_h,		///< prognostic variables (at T=tn)
+			const PlaneData &i_u,		///< prognostic variables (at T=tn+dt)
+			const PlaneData &i_v,		///< prognostic variables (at T=tn+dt)
 
-			DataArray<2> &o_P_t				///< time updates (at T=tn+dt)
+			PlaneData &o_P_t				///< time updates (at T=tn+dt)
 	)
 	{
 		std::cerr << "TODO: implement, is this really possible for non-staggered grid? (averaging of velocities required)" << std::endl;
@@ -186,13 +186,13 @@ public:
 
 
 	void p_run_euler_timestep_update(
-			const DataArray<2> &i_h,	///< prognostic variables
-			const DataArray<2> &i_u,	///< prognostic variables
-			const DataArray<2> &i_v,	///< prognostic variables
+			const PlaneData &i_h,	///< prognostic variables
+			const PlaneData &i_u,	///< prognostic variables
+			const PlaneData &i_v,	///< prognostic variables
 
-			DataArray<2> &o_h_t,	///< time updates
-			DataArray<2> &o_u_t,	///< time updates
-			DataArray<2> &o_v_t,	///< time updates
+			PlaneData &o_h_t,	///< time updates
+			PlaneData &o_u_t,	///< time updates
+			PlaneData &o_v_t,	///< time updates
 
 			double &o_dt,			///< time step restriction
 			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
@@ -217,14 +217,14 @@ public:
 			 *
 			 * WARNING: This probably does not conserve the quantities
 			 */
-			((DataArray<2>&)i_v).set_row(0, 0);		// zero velocities
-			((DataArray<2>&)i_v).set_row(-1, 0);
+			((PlaneData&)i_v).set_row(0, 0);		// zero velocities
+			((PlaneData&)i_v).set_row(-1, 0);
 
-			((DataArray<2>&)i_u).copy_row(1, 0);	// slip boundaries
-			((DataArray<2>&)i_u).copy_row(-2, -1);
+			((PlaneData&)i_u).copy_row(1, 0);	// slip boundaries
+			((PlaneData&)i_u).copy_row(-2, -1);
 
-			((DataArray<2>&)i_h).copy_row(1, 0);	// make smooth
-			((DataArray<2>&)i_h).copy_row(-2, -1);
+			((PlaneData&)i_h).copy_row(1, 0);	// make smooth
+			((PlaneData&)i_h).copy_row(-2, -1);
 		}
 
 		/*
@@ -394,44 +394,44 @@ public:
 
 			if (simVars.setup.scenario == 2 || simVars.setup.scenario == 3 || simVars.setup.scenario == 4)
 			{
-				for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
-					for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+				for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
+					for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 					{
 						// h
-						double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-						double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-						tmp.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
+						tmp.set(j, i, SWEPlaneBenchmarks::return_h(simVars, x, y));
 					}
 
-				benchmark_diff_h = (prog_h-tmp).reduce_norm1_quad() / (double)(simVars.disc.res[0]*simVars.disc.res[1]);
+				benchmark_diff_h = (prog_h-tmp).reduce_norm1_quad() / (double)(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]);
 				o_ostream << "\t" << benchmark_diff_h;
 
 				// set data to something to overcome assertion error
-				for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
-					for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+				for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
+					for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 					{
 						// u space
-						double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-						double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-						tmp.set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
+						tmp.set(j, i, SWEPlaneBenchmarks::return_u(simVars, x, y));
 					}
 
-				benchmark_diff_u = (prog_u-tmp).reduce_norm1_quad() / (double)(simVars.disc.res[0]*simVars.disc.res[1]);
+				benchmark_diff_u = (prog_u-tmp).reduce_norm1_quad() / (double)(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]);
 				o_ostream << "\t" << benchmark_diff_u;
 
-				for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
-					for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+				for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
+					for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 					{
 						// v space
-						double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-						double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-						tmp.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
+						tmp.set(j, i, SWEPlaneBenchmarks::return_v(simVars, x, y));
 					}
 
-				benchmark_diff_v = (prog_v-tmp).reduce_norm1_quad() / (double)(simVars.disc.res[0]*simVars.disc.res[1]);
+				benchmark_diff_v = (prog_v-tmp).reduce_norm1_quad() / (double)(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]);
 				o_ostream << "\t" << benchmark_diff_v;
 			}
 
@@ -469,7 +469,7 @@ public:
 
 	struct VisStuff
 	{
-		const DataArray<2>* data;
+		const PlaneData* data;
 		const char *description;
 	};
 
@@ -484,7 +484,7 @@ public:
 
 
 	void vis_get_vis_data_array(
-			const DataArray<2> **o_dataArray,
+			const PlaneData **o_dataArray,
 			double *o_aspect_ratio
 	)
 	{
@@ -492,7 +492,7 @@ public:
 		*o_dataArray = vis_arrays[id].data;
 		*o_aspect_ratio = simVars.sim.domain_size[1] / simVars.sim.domain_size[0];
 #if 0
-		DataArray<2> &o = (DataArray<2> &)*vis_arrays[id].data;
+		PlaneData &o = (PlaneData &)*vis_arrays[id].data;
 		o.spec_setAll(0, 0);
 		o.spec_set(0, 0, 1, 0);
 

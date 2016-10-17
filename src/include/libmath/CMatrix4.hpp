@@ -12,8 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- *      Author: Martin Schreiber (schreiberx@gmail.com)
  */
 
 
@@ -46,6 +44,7 @@
 #include <iostream>
 #include <cmath>
 #include "CVector.hpp"
+#include <assert.h>
 
 /**
  * \brief	4x4 matrix class which offers the functionality to use it with OpenGL
@@ -323,7 +322,9 @@ public:
 	 */
 	CMatrix4<T> getInverseTranspose() const
 	{
-		return getInverse().getTranspose();
+		// TODO: optimize me
+		CMatrix4<T> m = getInverse();
+		return m.getTranspose();
 	}
 
 	/**
@@ -335,7 +336,9 @@ public:
 	 */
 	CMatrix3<T> getInverseTranspose3x3() const
 	{
-		return getInverse3x3().getTranspose();
+		// TODO: optimize me
+		CMatrix3<T> m = getInverse3x3();
+		return m.getTranspose();
 	}
 
 

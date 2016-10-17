@@ -6,14 +6,14 @@
  */
 
 
-#include <sweet/DataArray.hpp>
+#include "../include/sweet/plane/PlaneData.hpp"
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/SWEValidationBenchmarks.hpp>
-#include <sweet/Operators2D.hpp>
-#include <sweet/Sampler2D.hpp>
+#include <benchmarks_plane/SWEPlaneBenchmarks.hpp>
+#include "../include/sweet/plane/PlaneOperators.hpp"
+#include "../include/sweet/plane/PlaneDataSampler.hpp"
 #include <unistd.h>
 #include <stdio.h>
 #include <vector>
@@ -21,7 +21,10 @@
 
 SimulationVariables simVars;
 
-int main(int i_argc, char *i_argv[])
+int main(
+		int i_argc,
+		char *const i_argv[]
+)
 {
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, nullptr))
 		return -1;
@@ -29,8 +32,8 @@ int main(int i_argc, char *i_argv[])
 	/*
 	 * iterate over resolutions, starting by res[0] given e.g. by program parameter -n
 	 */
-	std::size_t res_x = simVars.disc.res[0];
-	std::size_t res_y = simVars.disc.res[1];
+	std::size_t res_x = simVars.disc.res_physical[0];
+	std::size_t res_y = simVars.disc.res_physical[1];
 
 	std::size_t max_res = 2048;
 
@@ -45,12 +48,12 @@ int main(int i_argc, char *i_argv[])
 
 	for (; res_x <= max_res && res_y <= max_res; res_x *= 2, res_y *= 2)
 	{
-		simVars.disc.res[0] = res_x;
-		simVars.disc.res[1] = res_y;
+		simVars.disc.res_physical[0] = res_x;
+		simVars.disc.res_physical[1] = res_y;
 
 		std::size_t res[2] = {res_x, res_y};
 
-		DataArray<2> prog_h(res);
+		PlaneData prog_h(res);
 
 		// setup initial conditions
 		for (std::size_t j = 0; j < res[1]; j++)
@@ -60,7 +63,7 @@ int main(int i_argc, char *i_argv[])
 				double x = (double)i*(simVars.sim.domain_size[0]/(double)res[0]);
 				double y = (double)j*(simVars.sim.domain_size[1]/(double)res[1]);
 
-				prog_h.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
+				prog_h.set(j, i, SWEPlaneBenchmarks::return_h(simVars, x, y));
 			}
 		}
 
@@ -69,12 +72,12 @@ int main(int i_argc, char *i_argv[])
 
 		std::size_t res3[2] = {res_x*(int)resolution_factor, res_y*(int)resolution_factor};
 
-		DataArray<2> prog_h3(res3);
+		PlaneData prog_h3(res3);
 
 		// setup initial conditions
 		{
-			simVars.disc.res[0] = res3[0];
-			simVars.disc.res[1] = res3[1];
+			simVars.disc.res_physical[0] = res3[0];
+			simVars.disc.res_physical[1] = res3[1];
 
 			for (std::size_t j = 0; j < res3[1]; j++)
 			{
@@ -83,19 +86,19 @@ int main(int i_argc, char *i_argv[])
 					double x = ((double)i/resolution_factor)*(simVars.sim.domain_size[0]/(double)res3[0]);
 					double y = ((double)j/resolution_factor)*(simVars.sim.domain_size[1]/(double)res3[1]);
 
-					prog_h3.set(j, i, SWEValidationBenchmarks::return_h(simVars, x, y));
+					prog_h3.set(j, i, SWEPlaneBenchmarks::return_h(simVars, x, y));
 				}
 			}
 
-			simVars.disc.res[0] = res[0];
-			simVars.disc.res[1] = res[1];
+			simVars.disc.res_physical[0] = res[0];
+			simVars.disc.res_physical[1] = res[1];
 		}
 
 		/*
 		 * Sampling points with different resolution
 		 */
-		DataArray<2> px(res3);
-		DataArray<2> py(res3);
+		PlaneData px(res3);
+		PlaneData py(res3);
 
 		// setup some test sampling points
 		// we use 2 arrays - one for each sampling position
@@ -112,7 +115,7 @@ int main(int i_argc, char *i_argv[])
 		/*
 		 * setup sampler
 		 */
-		Sampler2D sampler2D;
+		PlaneDataSampler sampler2D;
 		sampler2D.setup(simVars.sim.domain_size, res);
 
 
@@ -120,7 +123,7 @@ int main(int i_argc, char *i_argv[])
 			/*
 			 * sample with BiLinear interpolation
 			 */
-			DataArray<2> prog_h3_bilinear(res3);
+			PlaneData prog_h3_bilinear(res3);
 
 			sampler2D.bilinear_scalar(
 					prog_h,	///< input scalar field
@@ -161,7 +164,7 @@ int main(int i_argc, char *i_argv[])
 			/*
 			 * sample with BiCubic interpolation
 			 */
-			DataArray<2> prog_h3_bicubic(res3);
+			PlaneData prog_h3_bicubic(res3);
 
 			sampler2D.bicubic_scalar(
 					prog_h,	///< input scalar field

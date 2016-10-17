@@ -3,18 +3,20 @@
  *
  */
 
-#include <sweet/DataArray.hpp>
+#include "../include/sweet/plane/PlaneData.hpp"
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/TimesteppingRK.hpp>
-#include <sweet/BurgersValidationBenchmarks.hpp>
-#include <sweet/Operators2D.hpp>
-#include <sweet/Stopwatch.hpp>
-#include <sweet/Sampler2D.hpp>
-#include <sweet/SemiLagrangian.hpp>
+#include <sweet/plane/PlaneDataPlaneDataTimesteppingRK.hpp>
+#include <benchmarks_plane/BurgersValidationBenchmarks.hpp>
+#include <sweet/plane/PlaneOperators.hpp>
+#include <sweet/plane/PlaneDataSampler.hpp>
+#include <sweet/plane/PlaneDataSemiLagrangian.hpp>
+
 #include <programs/burgers_HelmholtzSolver.hpp>
+
+#include <sweet/Stopwatch.hpp>
 #include <ostream>
 #include <algorithm>
 #include <sstream>
@@ -51,23 +53,23 @@ class SimulationInstance
 {
 public:
 	// Prognostic variables
-	DataArray<2> prog_u, prog_v;
+	PlaneData prog_u, prog_v;
 
 	// Prognostic variables at time step t-dt
-	DataArray<2> prog_u_prev, prog_v_prev;
+	PlaneData prog_u_prev, prog_v_prev;
 
 	// temporary variables - may be overwritten, use locally
-	DataArray<2> tmp;
+	PlaneData tmp;
 
 	// Points mapping [0,simVars.sim.domain_size[0])x[0,simVars.sim.domain_size[1])
 	// with resolution simVars.sim.resolution
-	DataArray<2> pos_x, pos_y;
+	PlaneData pos_x, pos_y;
 
 	// Arrival points for semi-lag
-	DataArray<2> posx_a, posy_a;
+	PlaneData posx_a, posy_a;
 
 	// Departure points for semi-lag
-	DataArray<2> posx_d, posy_d;
+	PlaneData posx_d, posy_d;
 
 	//Staggering displacement array (use 0.5 for each displacement)
 	// [0] - delta x of u variable
@@ -88,7 +90,7 @@ public:
 	double benchmark_diff_u;
 	double benchmark_diff_v;
 
-	DataArray<2> benchmark_analytical_error;
+	PlaneData benchmark_analytical_error;
 
 	// Error measures L2 norm
 	double benchmark_analytical_error_rms_u;
@@ -99,13 +101,13 @@ public:
 	double benchmark_analytical_error_maxabs_v;
 
 	// Finite difference operators
-	Operators2D op;
+	PlaneOperators op;
 
 	// Runge-Kutta stuff
-	TimesteppingRK timestepping;
+	PlaneDataTimesteppingRK timestepping;
 
 	// Interpolation stuff
-	Sampler2D sampler2D;
+	PlaneDataSampler sampler2D;
 
 	// Semi-Lag stuff
 	SemiLagrangian semiLagrangian;
@@ -129,34 +131,34 @@ public:
 public:
 	SimulationInstance()	:
 		// Constructor to initialize the class - all variables in the SW are setup
-		prog_u(simVars.disc.res),	// velocity (x-direction)
-		prog_v(simVars.disc.res),	// velocity (y-direction)
+		prog_u(simVars.disc.res_physical),	// velocity (x-direction)
+		prog_v(simVars.disc.res_physical),	// velocity (y-direction)
 
-		prog_u_prev(simVars.disc.res),
-		prog_v_prev(simVars.disc.res),
+		prog_u_prev(simVars.disc.res_physical),
+		prog_v_prev(simVars.disc.res_physical),
 
-		tmp(simVars.disc.res),
+		tmp(simVars.disc.res_physical),
 
-		pos_x(simVars.disc.res),
-		pos_y(simVars.disc.res),
+		pos_x(simVars.disc.res_physical),
+		pos_y(simVars.disc.res_physical),
 
-		posx_a(simVars.disc.res),
-		posy_a(simVars.disc.res),
+		posx_a(simVars.disc.res_physical),
+		posy_a(simVars.disc.res_physical),
 
-		posx_d(simVars.disc.res),
-		posy_d(simVars.disc.res),
+		posx_d(simVars.disc.res_physical),
+		posy_d(simVars.disc.res_physical),
 
-		benchmark_analytical_error(simVars.disc.res),
+		benchmark_analytical_error(simVars.disc.res_physical),
 
 		// Init operators
-		op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
+		op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
 #if SWEET_PARAREAL != 0
 		,
-		_parareal_data_start_u(simVars.disc.res), _parareal_data_start_v(simVars.disc.res),
-		_parareal_data_fine_u(simVars.disc.res), _parareal_data_fine_v(simVars.disc.res),
-		_parareal_data_coarse_u(simVars.disc.res), _parareal_data_coarse_v(simVars.disc.res),
-		_parareal_data_output_u(simVars.disc.res), _parareal_data_output_v(simVars.disc.res),
-		_parareal_data_error_u(simVars.disc.res), _parareal_data_error_v(simVars.disc.res)
+		_parareal_data_start_u(simVars.disc.res_physical), _parareal_data_start_v(simVars.disc.res_physical),
+		_parareal_data_fine_u(simVars.disc.res_physical), _parareal_data_fine_v(simVars.disc.res_physical),
+		_parareal_data_coarse_u(simVars.disc.res_physical), _parareal_data_coarse_v(simVars.disc.res_physical),
+		_parareal_data_output_u(simVars.disc.res_physical), _parareal_data_output_v(simVars.disc.res_physical),
+		_parareal_data_error_u(simVars.disc.res_physical), _parareal_data_error_v(simVars.disc.res_physical)
 #endif
 	{
 		// Calls initialization of the run (e.g. sets u, v)
@@ -184,7 +186,7 @@ public:
 		simVars.reset();
 
 		// set to some values for first touch NUMA policy (HPC stuff)
-#if SWEET_USE_SPECTRAL_SPACE
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 		prog_u.set_spec_all(0,0);
 		prog_v.set_spec_all(0,0);
 #endif
@@ -237,19 +239,19 @@ public:
 		}
 
 		//Setup sampler for future interpolations
-		sampler2D.setup(simVars.sim.domain_size, simVars.disc.res);
+		sampler2D.setup(simVars.sim.domain_size, simVars.disc.res_physical);
 
 		//Setup semi-lag
-		semiLagrangian.setup(simVars.sim.domain_size, simVars.disc.res);
+		semiLagrangian.setup(simVars.sim.domain_size, simVars.disc.res_physical);
 
 		//Setup general (x,y) grid with position points
-		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+		for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 		{
-			for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+			for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 			{
 		    	/* Equivalent to q position on C-grid */
-				pos_x.set(j, i, ((double)i)*simVars.sim.domain_size[0]/simVars.disc.res[0]); //*simVars.sim.domain_size[0];
-				pos_y.set(j, i, ((double)j)*simVars.sim.domain_size[1]/simVars.disc.res[1]); //*simVars.sim.domain_size[1];
+				pos_x.set(j, i, ((double)i)*simVars.sim.domain_size[0]/simVars.disc.res_physical[0]); //*simVars.sim.domain_size[0];
+				pos_y.set(j, i, ((double)j)*simVars.sim.domain_size[1]/simVars.disc.res_physical[1]); //*simVars.sim.domain_size[1];
 				//std::cout << i << " " << j << " " << pos_x.get(j,i) << std::endl;
 			}
 		}
@@ -259,31 +261,31 @@ public:
 		posy_a = pos_y+0.5*simVars.disc.cell_size[1];
 
 		// Set initial conditions
-		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+		for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 		{
-			for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+			for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 			{
 
 				if (param_use_staggering)
 				{
 					{
 						// u space
-						double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-						double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+						double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 						prog_u.set(j,i, BurgersValidationBenchmarks::return_u(simVars, x, y));
 					}
 
 					{
 						// v space
-						double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-						double y = (((double)j)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+						double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 						prog_v.set(j, i, BurgersValidationBenchmarks::return_v(simVars, x, y));
 					}
 				}
 				else
 				{
-					double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-					double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+					double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+					double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
 					prog_u.set(j, i, BurgersValidationBenchmarks::return_u(simVars, x, y));
 					prog_v.set(j, i, BurgersValidationBenchmarks::return_v(simVars, x, y));
@@ -336,7 +338,7 @@ public:
 
 
 		double normalization = (simVars.sim.domain_size[0]*simVars.sim.domain_size[1]) /
-								((double)simVars.disc.res[0]*(double)simVars.disc.res[1]);
+								((double)simVars.disc.res_physical[0]*(double)simVars.disc.res_physical[1]);
 
 		// energy
 		simVars.diag.total_energy =
@@ -356,7 +358,7 @@ public:
 	}
 
 
-	void set_source( DataArray<2> &o_u_t )
+	void set_source( PlaneData &o_u_t )
 	{
 		double t = simVars.timecontrol.current_simulation_time;
 		double tp = 2.0*M_PIl;
@@ -373,17 +375,17 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
 					// u space
 					double x = 0.0;
 					if (param_use_staggering)
 					{
-						x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+						x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 					}else{
-						x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+						x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 					}
 					double tmpvar = tp * std::sin(tp*k*x)*std::cos(tp*k*t)
 								  + tp*std::sin(tp*k*x)*std::sin(tp*k*t) * std::cos(tp*k*x)*std::sin(tp*k*t)
@@ -406,17 +408,17 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
 					// u space
 					double x = 0.0;
 					if (param_use_staggering)
 					{
-						x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+						x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 					}else{
-						x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+						x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 					}
 					double tmpvar = 2*tp * std::sin(tp*k*x)*std::cos(tp*k*t)
 								  + 4*tp*std::sin(tp*k*x)*std::sin(tp*k*t) * std::cos(tp*k*x)*std::sin(tp*k*t)
@@ -442,17 +444,17 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
 					// u space
 					double x = 0.0;
 					if (param_use_staggering)
 					{
-						x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+						x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 					}else{
-						x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+						x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 					}
 					double tmpvar = tp*std::sin(tp*x)*std::cos(tp*t)+tp*std::sin(tp*k*x)*std::cos(tp*k*t)
 					              + (std::sin(tp*x)*std::sin(tp*t)+1/k*std::sin(tp*k*x)*std::sin(tp*k*t))
@@ -505,17 +507,17 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
 					// u space
 					double x = 0.0;
 					if (param_use_staggering)
 					{
-						x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+						x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 					}else{
-						x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+						x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 					}
 					double tmpvar = 1000*std::sin(tp*x)+1000*1000*t*std::sin(tp*x)*t*std::cos(tp*x)*tp
 							      - 1000*simVars.sim.viscosity*(-tp*tp*t*std::sin(tp*x));
@@ -556,17 +558,17 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
 					// u space
 					double x = 0.0;
 					if (param_use_staggering)
 					{
-						x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+						x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 					}else{
-						x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+						x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 					}
 					double tmpvar = std::sin(tp*x)*std::cos(tp*x)*tp
 							      - simVars.sim.viscosity*(-tp*tp*std::sin(tp*x));
@@ -586,17 +588,17 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
 					// u space
 					double x = 0.0;
 					if (param_use_staggering)
 					{
-						x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+						x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 					}else{
-						x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+						x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 					}
 					double tmpvar = (1+tp*tp)*std::sin(tp*x);
 
@@ -619,17 +621,17 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
 					// u space
 					double x = 0.0;
 					if (param_use_staggering)
 					{
-						x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+						x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 					}else{
-						x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
+						x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 					}
 					double tmpvar = 0;
 					for (int k = 1; k < kmax; k++)
@@ -659,13 +661,13 @@ public:
 	 * u_t and v_t
 	 */
 	void p_run_euler_timestep_update(
-			const DataArray<2> &i_tmp,	///< prognostic variables
-			const DataArray<2> &i_u,	///< prognostic variables
-			const DataArray<2> &i_v,	///< prognostic variables
+			const PlaneData &i_tmp,	///< prognostic variables
+			const PlaneData &i_u,	///< prognostic variables
+			const PlaneData &i_v,	///< prognostic variables
 
-			DataArray<2> &o_tmp_t,		///< time updates
-			DataArray<2> &o_u_t,		///< time updates
-			DataArray<2> &o_v_t,		///< time updates
+			PlaneData &o_tmp_t,		///< time updates
+			PlaneData &o_u_t,		///< time updates
+			PlaneData &o_v_t,		///< time updates
 
 			double &o_dt,				///< time step restriction
 			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
@@ -679,7 +681,7 @@ public:
 
 		//TODO: staggering vs. non staggering
 
-		DataArray<2> f(i_u.resolution);
+		PlaneData f(i_u.resolution);
 		set_source(f);
 
 		/*
@@ -907,34 +909,34 @@ public:
 				return;
 
 			//Analytical solution at specific time on original grid (stag or not)
-			DataArray<2> ts_u(simVars.disc.res);
-			DataArray<2> ts_v(simVars.disc.res);
+			PlaneData ts_u(simVars.disc.res_physical);
+			PlaneData ts_v(simVars.disc.res_physical);
 
 			// Set solution
-			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
 					if (param_use_staggering)
 					{
 						{
 							// u space
-							double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-							double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+							double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+							double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 							ts_u.set(j,i, BurgersValidationBenchmarks::return_u(simVars, x, y));
 						}
 
 						{
 							// v space
-							double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-							double y = (((double)j)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+							double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+							double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 							ts_v.set(j, i, BurgersValidationBenchmarks::return_v(simVars, x, y));
 						}
 					}
 					else
 					{
-						double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-						double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
 						ts_u.set(j, i, BurgersValidationBenchmarks::return_u(simVars, x, y));
 						ts_v.set(j, i, BurgersValidationBenchmarks::return_v(simVars, x, y));
@@ -981,7 +983,7 @@ public:
 
 	struct VisStuff
 	{
-		const DataArray<2>* data;
+		const PlaneData* data;
 		const char *description;
 	};
 
@@ -995,7 +997,7 @@ public:
 	};
 
 	void vis_get_vis_data_array(
-			const DataArray<2> **o_dataArray,
+			const PlaneData **o_dataArray,
 			double *o_aspect_ratio
 	)
 	{
@@ -1068,20 +1070,20 @@ public:
 	 ******************************************************
 	 ******************************************************/
 
-	DataArray<2> _parareal_data_start_u, _parareal_data_start_v;
-	Parareal_Data_DataArrays<2> parareal_data_start;
+	PlaneData _parareal_data_start_u, _parareal_data_start_v;
+	Parareal_Data_PlaneData<2> parareal_data_start;
 
-	DataArray<2> _parareal_data_fine_u, _parareal_data_fine_v;
-	Parareal_Data_DataArrays<2> parareal_data_fine;
+	PlaneData _parareal_data_fine_u, _parareal_data_fine_v;
+	Parareal_Data_PlaneData<2> parareal_data_fine;
 
-	DataArray<2> _parareal_data_coarse_u, _parareal_data_coarse_v;
-	Parareal_Data_DataArrays<2> parareal_data_coarse;
+	PlaneData _parareal_data_coarse_u, _parareal_data_coarse_v;
+	Parareal_Data_PlaneData<2> parareal_data_coarse;
 
-	DataArray<2> _parareal_data_output_u, _parareal_data_output_v;
-	Parareal_Data_DataArrays<2> parareal_data_output;
+	PlaneData _parareal_data_output_u, _parareal_data_output_v;
+	Parareal_Data_PlaneData<2> parareal_data_output;
 
-	DataArray<2> _parareal_data_error_u, _parareal_data_error_v;
-	Parareal_Data_DataArrays<2> parareal_data_error;
+	PlaneData _parareal_data_error_u, _parareal_data_error_v;
+	Parareal_Data_PlaneData<2> parareal_data_error;
 
 	double timeframe_start = -1;
 	double timeframe_end = -1;
@@ -1091,27 +1093,27 @@ public:
 	void parareal_setup()
 	{
 		{
-			DataArray<2>* data_array[2] = {&_parareal_data_start_u, &_parareal_data_start_v};
+			PlaneData* data_array[2] = {&_parareal_data_start_u, &_parareal_data_start_v};
 			parareal_data_start.setup(data_array);
 		}
 
 		{
-			DataArray<2>* data_array[2] = {&_parareal_data_fine_u, &_parareal_data_fine_v};
+			PlaneData* data_array[2] = {&_parareal_data_fine_u, &_parareal_data_fine_v};
 			parareal_data_fine.setup(data_array);
 		}
 
 		{
-			DataArray<2>* data_array[2] = {&_parareal_data_coarse_u, &_parareal_data_coarse_v};
+			PlaneData* data_array[2] = {&_parareal_data_coarse_u, &_parareal_data_coarse_v};
 			parareal_data_coarse.setup(data_array);
 		}
 
 		{
-			DataArray<2>* data_array[2] = {&_parareal_data_output_u, &_parareal_data_output_v};
+			PlaneData* data_array[2] = {&_parareal_data_output_u, &_parareal_data_output_v};
 			parareal_data_output.setup(data_array);
 		}
 
 		{
-			DataArray<2>* data_array[2] = {&_parareal_data_error_u, &_parareal_data_error_v};
+			PlaneData* data_array[2] = {&_parareal_data_error_u, &_parareal_data_error_v};
 			parareal_data_error.setup(data_array);
 		}
 
@@ -1169,7 +1171,7 @@ public:
 		// copy to buffers
 		parareal_data_start = i_pararealData;
 
-		// cast to pararealDataArray stuff
+		// cast to pararealPlaneData stuff
 	}
 
 	/**
@@ -1250,23 +1252,23 @@ public:
 	 * for u(t+\tau).
 	 */
 	bool run_timestep_imex(
-			DataArray<2> &io_u,
-			DataArray<2> &io_v,
+			PlaneData &io_u,
+			PlaneData &io_v,
 
 			double& o_dt,			///< return time step size for the computed time step
 			double i_timestep_size,	///< timestep size
 
-			Operators2D &op,
+			PlaneOperators &op,
 			const SimulationVariables &i_simVars,
 
 			double i_max_simulation_time = std::numeric_limits<double>::infinity()	///< limit the maximum simulation time
 			)
 	{
-		DataArray<2> u=io_u;
-		DataArray<2> v=io_v;
+		PlaneData u=io_u;
+		PlaneData v=io_v;
 
 		// Initialize and set timestep dependent source for manufactured solution
-		DataArray<2> f(io_u.resolution);
+		PlaneData f(io_u.resolution);
 		set_source(f);
 		f.requestDataInSpectralSpace();
 
@@ -1278,8 +1280,8 @@ public:
 			t = i_max_simulation_time-simVars.timecontrol.current_simulation_time;
 
 		// Setting explicit right hand side and operator of the left hand side
-		DataArray<2> rhs_u = u;
-		DataArray<2> rhs_v = v;
+		PlaneData rhs_u = u;
+		PlaneData rhs_v = v;
 
 		if (param_semilagrangian)
 		{
@@ -1291,7 +1293,7 @@ public:
 
 		if (simVars.disc.use_spectral_basis_diffs) //spectral
 		{
-			DataArray<2> lhs = u;
+			PlaneData lhs = u;
 			if (param_semilagrangian)
 			{
 				lhs = ((-t)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spec_addScalarAll(1.0);
@@ -1348,8 +1350,8 @@ public:
 
 
 #else	// making the second step of the IMEX-RK1 scheme
-		DataArray<2> u1 = rhs_u.spec_div_element_wise(lhs);
-		DataArray<2> v1 = rhs_v.spec_div_element_wise(lhs);
+		PlaneData u1 = rhs_u.spec_div_element_wise(lhs);
+		PlaneData v1 = rhs_v.spec_div_element_wise(lhs);
 
 		io_u = u + t*simVars.sim.viscosity*(op.diff2_c_x(u1)+op.diff2_c_y(u1))
 				- t*(u*op.diff_c_x(u)+v*op.diff_c_y(u)) +f*t;
@@ -1503,7 +1505,7 @@ public:
 			int time_slice_id
 	)
 	{
-		Parareal_Data_DataArrays<2>& data = (Parareal_Data_DataArrays<2>&)i_data;
+		Parareal_Data_PlaneData<2>& data = (Parareal_Data_PlaneData<2>&)i_data;
 
 		std::ostringstream ss;
 		ss << simVars.misc.output_file_name_prefix << "_iter" << iteration_id << "_slice" << time_slice_id << ".csv";

@@ -1,5 +1,5 @@
 
-#if !SWEET_USE_SPECTRAL_SPACE
+#if !SWEET_USE_PLANE_SPECTRAL_SPACE
 	#error "Spectral space not activated"
 #endif
 
@@ -8,9 +8,9 @@
 #endif
 
 #include <sweet/Stopwatch.hpp>
-#include <sweet/DataArray.hpp>
+#include "../include/sweet/plane/PlaneData.hpp"
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/Operators2D.hpp>
+#include "../include/sweet/plane/PlaneOperators.hpp"
 
 #include <math.h>
 #include <ostream>
@@ -58,8 +58,8 @@ int main(int i_argc, char *i_argv[])
 	/*
 	 * iterate over resolutions, starting by res[0] given e.g. by program parameter -n
 	 */
-	std::size_t res_x = simVars.disc.res[0];
-	std::size_t res_y = simVars.disc.res[1];
+	std::size_t res_x = simVars.disc.res_physical[0];
+	std::size_t res_y = simVars.disc.res_physical[1];
 
 	std::size_t max_res = 2048;
 
@@ -83,18 +83,18 @@ int main(int i_argc, char *i_argv[])
 		std::size_t res[2] = {res_x, res_y};
 
 
-		simVars.disc.res[0] = res[0];
-		simVars.disc.res[1] = res[1];
+		simVars.disc.res_physical[0] = res[0];
+		simVars.disc.res_physical[1] = res[1];
 		simVars.reset();
 
 
 		/*
 		 * keep u,v in the outer regions to allocate it only once and avoid reinitialization of FFTW
 		 */
-		DataArray<2> u_ana(res);
-		DataArray<2> v_ana(res);
-		DataArray<2> f(res);
-		DataArray<2> g(res);
+		PlaneData u_ana(res);
+		PlaneData v_ana(res);
+		PlaneData f(res);
+		PlaneData g(res);
 
 		/**
 		 * Test iterative solver for Helmholtz problem
@@ -106,12 +106,12 @@ int main(int i_argc, char *i_argv[])
 		 * v = cos(2*PI*x)*sin(2*PI*y)
 		 */
 		{
-			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
-					double x = ((double)i+0.5)/(double)simVars.disc.res[0];
-					double y = ((double)j+0.5)/(double)simVars.disc.res[1];
+					double x = ((double)i+0.5)/(double)simVars.disc.res_physical[0];
+					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
 
 					// u and v to reconstruct
 					u_ana.set(
@@ -138,22 +138,22 @@ int main(int i_argc, char *i_argv[])
 			}
 
 
-			DataArray<2> u(res);
-			DataArray<2> v(res);
+			PlaneData u(res);
+			PlaneData v(res);
 			u.set_all(0);
 			v.set_all(0);
 
-			Operators2D op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
+			PlaneOperators op(simVars.disc.res_phys, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
-			DataArray<2> rhs_u = u_ana;
-			DataArray<2> rhs_v = v_ana;
+			PlaneData rhs_u = u_ana;
+			PlaneData rhs_v = v_ana;
 			f.requestDataInSpectralSpace();
 			g.requestDataInSpectralSpace();
 			rhs_u = op.diff_c_x(rhs_u)+op.diff_c_y(rhs_u);
 			rhs_u += f;
 			rhs_v = op.diff_c_x(rhs_v)+op.diff_c_y(rhs_v);
 			rhs_v += g;
-			DataArray<2> lhs = (-(op.diff2_c_x + op.diff2_c_y)).addScalar_Cart(1.0);
+			PlaneData lhs = (-(op.diff2_c_x + op.diff2_c_y)).addScalar_Cart(1.0);
 
 			Stopwatch watch;
 			watch.start();

@@ -4,13 +4,25 @@ SWEET
 **************************
 Shallow Water Equation Environment for Tests, Awesome!
 
+This library supports various kinds of simulations (not only Shallow Water)
+on 2D surfaces. The currently supported surfaces are
+  * the 2D torus (bi-periodic plane) and
+  * the sphere
+
+For discretization, we use the double FFT for the plane and Spherical Harmonics
+on the sphere.
+
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! Please have a look into the INSTALL instructions to see required libraries !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+
+**************************
 File structure:
+**************************
 
 	benchmarks/	Test scripts for running analytical benchmarks
 	build/		Build directory, note, that also /tmp is used for storing object files
@@ -25,6 +37,7 @@ File structure:
 	src/include/libgl	Some visualization helper tools
 	src/include/libmath	Some mathematical routines
 	src/include/sweet	DUDE! That's SWEET!
+	src/include/...		Plenty of other stuff
 
 	run_tests_compile_all.sh	Test script to check compilation of programs
 	run_tests_validation.sh		Test script to validate computations
@@ -33,12 +46,18 @@ File structure:
 	TODO		TODO list
 
 
+**************************
 Coding:
+**************************
+
 	Please read the coding conventions in doc/coding_conventions
 	These conventions are suggestions.
 
 
+
+**************************
 Compilation:
+**************************
 
 	First of all, setup the environment variables correctly
 	(see also INSTALL file):
@@ -57,4 +76,5 @@ Compilation:
 
 	The program to be compiled can be specified via -program=...
 	with the list of programs given in src/examples
+
 

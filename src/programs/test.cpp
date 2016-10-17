@@ -1,4 +1,4 @@
-#include <sweet/DataArray.hpp>
+#include "../include/sweet/plane/PlaneData.hpp"
 
 
 double param_rexi_h;
@@ -19,5 +19,5 @@ double param_initial_freq_y_mul;
 
 int main()
 {
-	DataArray<2> asdf;
+	PlaneData asdf;
 }

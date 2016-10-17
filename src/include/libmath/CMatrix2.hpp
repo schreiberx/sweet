@@ -12,8 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- *      Author: Martin Schreiber (schreiberx@gmail.com)
  */
 
 /**
@@ -123,7 +121,9 @@ public:
 	 */
 	CMatrix2<T> getInverseTranspose() const
 	{
-		return getInverse().getTranspose();
+		// TODO: optimize me
+		CMatrix2<T> m = getInverse();
+		return m.getTranspose();
 	}
 
 

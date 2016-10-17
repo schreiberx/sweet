@@ -25,7 +25,7 @@ if true; then
 	echo "TEST SPECTRAL OPS (release) $X x $Y"
 	echo "***********************************************"
 	make clean
-	scons --threading=omp --unit-test=test_complexarray_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=disable
+	scons --threading=omp --unit-test=test_complexarray_ops --gui=disable --plane-spectral-space=enable --mode=release --plane-spectral-dealiasing=disable
 	EXEC="./build/test_complexarray_ops_spectral_libfft_omp_gnu_release  -X $X -Y $Y -S 0 --use-specdiff-for-complex-array=0"
 	echo "$EXEC"
 	$EXEC || exit
@@ -40,7 +40,7 @@ echo "***********************************************"
 echo "TEST SPECTRAL (complex array) OPS (release) $X"
 echo "***********************************************"
 make clean
-scons --threading=omp --unit-test=test_complexarray_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=disable
+scons --threading=omp --unit-test=test_complexarray_ops --gui=disable --plane-spectral-space=enable --mode=release --plane-spectral-dealiasing=disable
 EXEC="./build/test_complexarray_ops_spectral_libfft_omp_gnu_release -n 128 -m 128 -X $X -Y $X -S 1 --use-specdiff-for-complex-array=1"
 echo "$EXEC"
 
@@ -50,7 +50,7 @@ echo "***********************************************"
 echo "TEST SPECTRAL (complexarray) OPS (release) $X"
 echo "***********************************************"
 make clean
-scons --threading=omp --unit-test=test_complexarray_ops --gui=disable --spectral-space=enable --mode=release --spectral-dealiasing=disable
+scons --threading=omp --unit-test=test_complexarray_ops --gui=disable --plane-spectral-space=enable --mode=release --plane-spectral-dealiasing=disable
 ./build/test_complexarray_ops_spectral_libfft_omp_gnu_release -n 128 -m 128 -X $X -Y $X -S 1 --use-specdiff-for-complex-array=1 || exit
 
 

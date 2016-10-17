@@ -7,7 +7,7 @@
 #ifndef SRC_INCLUDE_REXI_EXPONENTIALAPPROXIMATION_HPP_
 #define SRC_INCLUDE_REXI_EXPONENTIALAPPROXIMATION_HPP_
 
-#include <cmath>
+#include <sweet/sweetmath.hpp>
 #include "GaussianApproximation.hpp"
 
 

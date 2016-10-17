@@ -1,5 +1,0 @@
-
-
-Small math library supporting matrices, vectors, quaternions, basic intersection tests, etc.
-
-Warning: This is not an efficient implementation, e.g. objects are copied when using operator overloading

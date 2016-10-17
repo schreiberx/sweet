@@ -826,7 +826,7 @@ e^{ix}\approx\sum_{n=-N}^{N}Re\left(\frac{\beta_{n}^{Re}}{ix+\alpha_{n}}\right)+
 \end_layout
 
 \begin_layout Subsection
-Example coefficents
+Example coefficients
 \end_layout
 
 \begin_layout Standard

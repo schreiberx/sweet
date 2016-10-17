@@ -1,10 +1,10 @@
 
-#include <sweet/DataArray.hpp>
+#include "../include/sweet/plane/PlaneData.hpp"
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
 #include <sweet/SimulationVariables.hpp>
-#include "sweet/Operators2D.hpp"
+#include "../include/sweet/plane/PlaneOperators.hpp"
 #include <unistd.h>
 #include <stdio.h>
 
@@ -14,29 +14,29 @@ SimulationVariables simVars;
 class SimulationSWE
 {
 public:
-	DataArray<2> h;
-	DataArray<2> u;
-	DataArray<2> v;
+	PlaneData h;
+	PlaneData u;
+	PlaneData v;
 
-	DataArray<2> hu;
-	DataArray<2> hv;
+	PlaneData hu;
+	PlaneData hv;
 
-	DataArray<2> h_t;
+	PlaneData h_t;
 
-	Operators2D op;
+	PlaneOperators op;
 
 public:
 	SimulationSWE()	:
-		h(simVars.disc.res),
-		u(simVars.disc.res),
-		v(simVars.disc.res),
+		h(simVars.disc.res_physical),
+		u(simVars.disc.res_physical),
+		v(simVars.disc.res_physical),
 
-		hu(simVars.disc.res),
-		hv(simVars.disc.res),
+		hu(simVars.disc.res_physical),
+		hv(simVars.disc.res_physical),
 
-		h_t(simVars.disc.res),
+		h_t(simVars.disc.res_physical),
 
-		op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
+		op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
 	{
 		reset();
 	}
@@ -49,7 +49,7 @@ public:
 
 		h.set_all(simVars.setup.h0);
 
-		if (std::isinf(simVars.bogus.var[0]))
+		if (std::isinf(simVars.bogus.var[0]) != 0)
 		{
 			u.set_all(0);
 			v.set_all(0);
@@ -69,12 +69,12 @@ public:
 			 * radial dam break
 			 */
 			double radius = 0.2;
-			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
-					double x = ((double)i+0.5)/(double)simVars.disc.res[0];
-					double y = ((double)j+0.5)/(double)simVars.disc.res[1];
+					double x = ((double)i+0.5)/(double)simVars.disc.res_physical[0];
+					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
 
 					double dx = x-center_x;
 					double dy = y-center_y;
@@ -90,12 +90,12 @@ public:
 			/*
 			 * fun with Gaussian
 			 */
-			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
-					double x = ((double)i+0.5)/(double)simVars.disc.res[0];
-					double y = ((double)j+0.5)/(double)simVars.disc.res[1];
+					double x = ((double)i+0.5)/(double)simVars.disc.res_physical[0];
+					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
 
 					double dx = x-center_x;
 					double dy = y-center_y;
@@ -110,16 +110,16 @@ public:
 
 	void run_timestep()
 	{
-        double dt = simVars.sim.CFL*std::min(simVars.disc.cell_size[0]/u.reduce_maxAbs(), simVars.disc.cell_size[1]/v.reduce_maxAbs());
+		double dt = simVars.sim.CFL*std::min(simVars.disc.cell_size[0]/u.reduce_maxAbs(), simVars.disc.cell_size[1]/v.reduce_maxAbs());
 
-        if (std::isinf(dt))
-        	dt = simVars.sim.CFL*simVars.disc.cell_size[0]/0.000001;
+		if (std::isinf(dt) != 0)
+			dt = simVars.sim.CFL*simVars.disc.cell_size[0]/0.000001;
 
 		simVars.timecontrol.current_timestep_size = dt;
 
-        // 0: staggered
-        // 1: non-staggered
-        // 2: up/downwinding
+		// 0: staggered
+		// 1: non-staggered
+		// 2: up/downwinding
 
 #define GRID_LAYOUT_AND_ADVECTION	2
 
@@ -186,7 +186,7 @@ public:
 
 
 	void vis_get_vis_data_array(
-			const DataArray<2> **o_dataArray,
+			const PlaneData **o_dataArray,
 			double *o_aspect_ratio
 	)
 	{
@@ -256,7 +256,7 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 	}
 
-	if (std::isinf(simVars.bogus.var[0]) || std::isinf(simVars.bogus.var[1]))
+	if (std::isinf(simVars.bogus.var[0]) != 0 || std::isinf(simVars.bogus.var[1]) != 0)
 	{
 		std::cout << "Both velocities have to be set, see parameters --velocity-u, --velocity-v" << std::endl;
 		return -1;

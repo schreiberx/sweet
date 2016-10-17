@@ -12,22 +12,21 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- *      Author: Martin Schreiber (schreiberx@gmail.com)
  */
 
+
+
+#ifndef __CVECTOR_HH
+#define __CVECTOR_HH
 /*
  * CHANGELOG:
  *
  * 2008-10-22: martin schreiber
  * 	created this class to handle vectors in CVector<number of elements><type> way
  *
- * 	this should make it easier to create more flexible filters like gradient
- * 	independent on the vectorsize
+ * 	this should make it easyer to create more flexible filters like gradient
+ * 	independend on the vectorsize
  */
-
-#ifndef __CVECTOR_HH
-#define __CVECTOR_HH
 
 
 /// template nD vector handler

@@ -1,5 +1,5 @@
 
-//#if !SWEET_USE_SPECTRAL_SPACE
+//#if !SWEET_USE_PLANE_SPECTRAL_SPACE
 //	#error "Spectral space not activated"
 //#endif
 
@@ -9,9 +9,9 @@
 
 
 
-#include <sweet/DataArray.hpp>
+#include <sweet/plane/PlaneData.hpp>
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/Operators2D.hpp>
+#include <sweet/plane/PlaneOperators.hpp>
 
 #include <math.h>
 #include <ostream>
@@ -32,6 +32,7 @@ trapfpe ()
   feenableexcept (FE_INVALID|FE_DIVBYZERO|FE_OVERFLOW);
 }
 #endif
+
 
 int main(int i_argc, char *i_argv[])
 {
@@ -65,8 +66,8 @@ int main(int i_argc, char *i_argv[])
 	/*
 	 * iterate over resolutions, starting by res[0] given e.g. by program parameter -n
 	 */
-	std::size_t res_x = simVars.disc.res[0];
-	std::size_t res_y = simVars.disc.res[1];
+	std::size_t res_x = simVars.disc.res_physical[0];
+	std::size_t res_y = simVars.disc.res_physical[1];
 
 	std::size_t max_res = 2048;
 
@@ -107,6 +108,13 @@ int main(int i_argc, char *i_argv[])
 		 */
 		double tolerance_increase = sqrt(res_x) + sqrt(res_y);
 
+
+		double max_aspect = simVars.sim.domain_size[0] / simVars.sim.domain_size[1];
+		if (max_aspect < 1.0)
+			max_aspect = 1.0/max_aspect;
+
+		tolerance_increase *= max_aspect;
+
 		/*
 		 * error tolerance for machine accuracy
 		 *
@@ -121,7 +129,7 @@ int main(int i_argc, char *i_argv[])
 		 * are not really representable in the Fouerier space where the discretization errors
 		 * are dominating.
 		 */
-		double eps_convergence = 1e-4;
+		double eps_convergence = 1e-4*tolerance_increase;
 
 
 		std::cout << "*************************************************************" << std::endl;
@@ -129,14 +137,15 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "*************************************************************" << std::endl;
 		std::size_t res[2] = {res_x, res_y};
 
-		simVars.disc.res[0] = res[0];
-		simVars.disc.res[1] = res[1];
+		simVars.disc.res_physical[0] = res[0];
+		simVars.disc.res_physical[1] = res[1];
 		simVars.reset();
+
 
 		/*
 		 * keep h in the outer regions to allocate it only once and avoid reinitialization of FFTW
 		 */
-		DataArray<2> h(res);
+		PlaneData h(res);
 
 
 		{
@@ -147,9 +156,9 @@ int main(int i_argc, char *i_argv[])
 			std::cout << "error tol = " << eps << std::endl;
 			std::cout << "**********************************************" << std::endl;
 
-			DataArray<2> zero(res);
-			DataArray<2> two(res);
-			DataArray<2> five(res);
+			PlaneData zero(res);
+			PlaneData two(res);
+			PlaneData five(res);
 
 			zero.set_all(0);
 			two.set_all(2);
@@ -206,9 +215,9 @@ int main(int i_argc, char *i_argv[])
 			}
 
 			// create sinus curve
-			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
 					double x = ((double)i)/(double)res[0];
 					double y = ((double)j)/(double)res[1];
@@ -256,17 +265,20 @@ int main(int i_argc, char *i_argv[])
 		 * Tests for basic operators which are not amplifying the solution depending on the domain size
 		 */
 		{
-			DataArray<2> u(res);
-			DataArray<2> v(res);
+			PlaneData u(res);
+			PlaneData v(res);
 
-			Operators2D op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
-
-			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+			PlaneOperators op(
+					simVars.disc.res_physical,
+					simVars.sim.domain_size,
+					simVars.disc.use_spectral_basis_diffs
+			);
+			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
-					double x = ((double)i+0.5)/(double)simVars.disc.res[0];
-					double y = ((double)j+0.5)/(double)simVars.disc.res[1];
+					double x = ((double)i+0.5)/(double)simVars.disc.res_physical[0];
+					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
 
 #define FUN_ID	1
 
@@ -293,7 +305,7 @@ int main(int i_argc, char *i_argv[])
 				}
 			}
 
-#if SWEET_USE_SPECTRAL_SPACE
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 			// force forward/backward conversion
 			u.requestDataInSpectralSpace();
 			u.array_data_cartesian_space_valid = false;
@@ -317,7 +329,7 @@ int main(int i_argc, char *i_argv[])
 				}
 #endif
 
-#if SWEET_USE_SPECTRAL_SPACE
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 				double err3_laplace =
 					(
 							h-
@@ -355,20 +367,20 @@ int main(int i_argc, char *i_argv[])
 		 * Tests for 1st order differential operator
 		 */
 		{
-			DataArray<2> u(res);
-			DataArray<2> v(res);
-			DataArray<2> h_diff_x(res);
-			DataArray<2> h_diff_y(res);
+			PlaneData u(res);
+			PlaneData v(res);
+			PlaneData h_diff_x(res);
+			PlaneData h_diff_y(res);
 
-			Operators2D op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
+			PlaneOperators op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
-			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
 #define FUN_ID	1
-					double x = ((double)i+0.5)/(double)simVars.disc.res[0];
-					double y = ((double)j+0.5)/(double)simVars.disc.res[1];
+					double x = ((double)i+0.5)/(double)simVars.disc.res_physical[0];
+					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
 
 	#if FUN_ID==1
 					u.set(j, i, sin(freq_x*M_PIl*x));
@@ -414,7 +426,7 @@ int main(int i_argc, char *i_argv[])
 				}
 			}
 
-#if SWEET_USE_SPECTRAL_SPACE
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 			// force forward/backward conversion
 			u.requestDataInSpectralSpace();
 			u.array_data_cartesian_space_valid = false;
@@ -424,7 +436,7 @@ int main(int i_argc, char *i_argv[])
 			v.array_data_cartesian_space_valid = false;
 #endif
 
-			double res_normalization = sqrt(1.0/(simVars.disc.res[0]*simVars.disc.res[1]));
+			double res_normalization = sqrt(1.0/(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]));
 
 			// normalization for diff = 2 pi / L
 			double err_x = (op.diff_c_x(h)-h_diff_x).reduce_norm2()*res_normalization*simVars.sim.domain_size[0]/(2.0*M_PIl);
@@ -458,7 +470,7 @@ int main(int i_argc, char *i_argv[])
 				}
 #endif
 
-#if SWEET_USE_SPECTRAL_SPACE
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 				double err_int_x = (h-h_diff_x.spec_div_element_wise(op.diff_c_x)).reduce_norm2_quad()*res_normalization;
 				std::cout << "Testing spectral inverse x " << err_int_x << std::endl;
 
@@ -530,17 +542,17 @@ int main(int i_argc, char *i_argv[])
 		 * diff(sin(2 pi x / size), x, x) = 4.0 pi^2 sin(2 pi x / size) / size^2
 		 */
 		{
-			DataArray<2> h_diff2_x(res);
-			DataArray<2> h_diff2_y(res);
+			PlaneData h_diff2_x(res);
+			PlaneData h_diff2_y(res);
 
-			Operators2D op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
+			PlaneOperators op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
-			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
-					double x = ((double)i+0.5)/(double)simVars.disc.res[0];
-					double y = ((double)j+0.5)/(double)simVars.disc.res[1];
+					double x = ((double)i+0.5)/(double)simVars.disc.res_physical[0];
+					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
 #define FUN_ID 1
 					h.set(
 						j, i,
@@ -578,7 +590,7 @@ int main(int i_argc, char *i_argv[])
 				}
 			}
 
-			double normalization = sqrt(1.0/(simVars.disc.res[0]*simVars.disc.res[1]));
+			double normalization = sqrt(1.0/(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]));
 
 			// diff2 normalization = 4.0 pi^2 / L^2
 			double err2_x = (op.diff2_c_x(h)-h_diff2_x).reduce_norm2_quad()*normalization*(simVars.sim.domain_size[0]*simVars.sim.domain_size[0])/(4.0*M_PIl*M_PIl);
@@ -637,17 +649,17 @@ int main(int i_argc, char *i_argv[])
 		 * Tests for helmholtz solver
 		 */
 		{
-			DataArray<2> u(res);
-			DataArray<2> v(res);
+			PlaneData u(res);
+			PlaneData v(res);
 
-			Operators2D op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
+			PlaneOperators op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
-			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
-					double x = ((double)i+0.5)/(double)simVars.disc.res[0];
-					double y = ((double)j+0.5)/(double)simVars.disc.res[1];
+					double x = ((double)i+0.5)/(double)simVars.disc.res_physical[0];
+					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
 
 #define FUN_ID	3
 					h.set(
@@ -670,15 +682,15 @@ int main(int i_argc, char *i_argv[])
 				double kappa = 406.666;
 				double a = 2.0;
 				double b = 5.0;
-#if SWEET_USE_SPECTRAL_SPACE
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 				/**
 				 * Solve
 				 *   ( kappa*h - c * (diff2x(h) + diff2y(h))) =
 				 *   ( kappa - c*diff2x - c*diff2y) * h = rhs;
 				 */
-				DataArray<2> helmholtz_operator = (-a*b*(op.diff2_c_x + op.diff2_c_y)).spec_addScalarAll(kappa);
+				PlaneData helmholtz_operator = (-a*b*(op.diff2_c_x + op.diff2_c_y)).spec_addScalarAll(kappa);
 
-				DataArray<2> rhs =  kappa*h - a*b*(op.diff2_c_x(h) + op.diff2_c_y(h));
+				PlaneData rhs =  kappa*h - a*b*(op.diff2_c_x(h) + op.diff2_c_y(h));
 
 				double err3_helmholtz =
 					(

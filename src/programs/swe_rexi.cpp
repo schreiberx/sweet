@@ -3,17 +3,18 @@
  *
  */
 
-#include <sweet/DataArray.hpp>
+#include "../include/sweet/plane/PlaneData.hpp"
 #if SWEET_GUI
 	#include <sweet/VisSweet.hpp>
 #endif
+
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/TimesteppingRK.hpp>
-#include <sweet/SWEValidationBenchmarks.hpp>
-#include <sweet/Operators2D.hpp>
+#include <sweet/plane/PlaneDataPlaneDataTimesteppingRK.hpp>
+#include <sweet/plane/PlaneOperators.hpp>
+#include <sweet/plane/PlaneDataSampler.hpp>
+#include <sweet/plane/PlaneDataSemiLagrangian.hpp>
 #include <sweet/Stopwatch.hpp>
-#include <sweet/Sampler2D.hpp>
-#include <sweet/SemiLagrangian.hpp>
+#include <benchmarks_plane/SWEPlaneBenchmarks.hpp>
 #include <ostream>
 #include <algorithm>
 #include <sstream>
@@ -73,47 +74,47 @@ class SimulationInstance
 {
 public:
 	// Prognostic variables
-	DataArray<2> prog_h, prog_u, prog_v;
+	PlaneData prog_h, prog_u, prog_v;
 
 	// beta plane
-	DataArray<2> beta_plane;
+	PlaneData beta_plane;
 
 	// Prognostic variables at time step t-dt
-	DataArray<2> prog_h_prev, prog_u_prev, prog_v_prev;
+	PlaneData prog_h_prev, prog_u_prev, prog_v_prev;
 
 	// Diagnostics - Vorticity, potential vorticity, divergence
-	DataArray<2> eta, q, div;
+	PlaneData eta, q, div;
 
 	//visualization variable
-	DataArray<2> vis;
+	PlaneData vis;
 
 	// temporary variables - may be overwritten, use locally
-	DataArray<2> tmp, tmp0, tmp1, tmp2, tmp3;
+	PlaneData tmp, tmp0, tmp1, tmp2, tmp3;
 
 	// Variables to keep track of boundary
-	DataArray<2> boundary_mask;
-	DataArray<2> boundary_mask_inv;
+	PlaneData boundary_mask;
+	PlaneData boundary_mask_inv;
 
 	// Initial values for comparison with analytical solution
-	DataArray<2> t0_prog_h, t0_prog_u, t0_prog_v;
+	PlaneData t0_prog_h, t0_prog_u, t0_prog_v;
 
 	// Forcings
-	DataArray<2> force_h, force_u, force_v;
+	PlaneData force_h, force_u, force_v;
 
 	// Nonlinear terms relative to h, u, v and its previous values
 	//    These have already exp(dtL/2) applied to them.
-	DataArray<2> N_h, N_u, N_v;
-	DataArray<2> N_h_prev, N_u_prev, N_v_prev;
+	PlaneData N_h, N_u, N_v;
+	PlaneData N_h_prev, N_u_prev, N_v_prev;
 
 	// Points mapping [0,simVars.sim.domain_size[0])x[0,simVars.sim.domain_size[1])
 	// with resolution simVars.sim.resolution
-	DataArray<2> pos_x, pos_y;
+	PlaneData pos_x, pos_y;
 
 	// Arrival points for semi-lag
-	DataArray<2> posx_a, posy_a;
+	PlaneData posx_a, posy_a;
 
 	// Departure points for semi-lag
-	DataArray<2> posx_d, posy_d;
+	PlaneData posx_d, posy_d;
 
 
 	//Staggering displacement array (use 0.5 for each displacement)
@@ -147,16 +148,16 @@ public:
 	double benchmark_analytical_error_maxabs_v;
 
 	// Finite difference operators
-	Operators2D op;
+	PlaneOperators op;
 
 	// Runge-Kutta stuff
-	TimesteppingRK timestepping;
+	PlaneDataTimesteppingRK timestepping;
 
 	// Rexi stuff
 	RexiSWE rexiSWE;
 
 	// Interpolation stuff
-	Sampler2D sampler2D;
+	PlaneDataSampler sampler2D;
 
 	// Semi-Lag stuff
 	SemiLagrangian semiLagrangian;
@@ -166,69 +167,69 @@ public:
 	// Constructor to initialize the class - all variables in the SW are setup
 
 		// Variable dimensions (mem. allocation)
-		prog_h(simVars.disc.res),
-		prog_u(simVars.disc.res),
-		prog_v(simVars.disc.res),
+		prog_h(simVars.disc.res_physical),
+		prog_u(simVars.disc.res_physical),
+		prog_v(simVars.disc.res_physical),
 
-		beta_plane(simVars.disc.res),
+		beta_plane(simVars.disc.res_physical),
 
-		prog_h_prev(simVars.disc.res),
-		prog_u_prev(simVars.disc.res),
-		prog_v_prev(simVars.disc.res),
+		prog_h_prev(simVars.disc.res_physical),
+		prog_u_prev(simVars.disc.res_physical),
+		prog_v_prev(simVars.disc.res_physical),
 
-		eta(simVars.disc.res),
-		q(simVars.disc.res),
-		div(simVars.disc.res),
+		eta(simVars.disc.res_physical),
+		q(simVars.disc.res_physical),
+		div(simVars.disc.res_physical),
 
-		vis(simVars.disc.res),
+		vis(simVars.disc.res_physical),
 
-		tmp(simVars.disc.res),
-		tmp0(simVars.disc.res),
-		tmp1(simVars.disc.res),
-		tmp2(simVars.disc.res),
-		tmp3(simVars.disc.res),
+		tmp(simVars.disc.res_physical),
+		tmp0(simVars.disc.res_physical),
+		tmp1(simVars.disc.res_physical),
+		tmp2(simVars.disc.res_physical),
+		tmp3(simVars.disc.res_physical),
 
-		boundary_mask(simVars.disc.res),
-		boundary_mask_inv(simVars.disc.res),
+		boundary_mask(simVars.disc.res_physical),
+		boundary_mask_inv(simVars.disc.res_physical),
 
-		t0_prog_h(simVars.disc.res),
-		t0_prog_u(simVars.disc.res),
-		t0_prog_v(simVars.disc.res),
+		t0_prog_h(simVars.disc.res_physical),
+		t0_prog_u(simVars.disc.res_physical),
+		t0_prog_v(simVars.disc.res_physical),
 
-		force_h(simVars.disc.res),
-		force_u(simVars.disc.res),
-		force_v(simVars.disc.res),
+		force_h(simVars.disc.res_physical),
+		force_u(simVars.disc.res_physical),
+		force_v(simVars.disc.res_physical),
 
 		//  This should be added only when nonlinear model is ran. How to do that, since I can't put an if in the constructor?
 		// ans: With pointers.	This can be made accessible as standard classes by using references to	pointers.
-		N_h(simVars.disc.res),
-		N_u(simVars.disc.res),
-		N_v(simVars.disc.res),
+		N_h(simVars.disc.res_physical),
+		N_u(simVars.disc.res_physical),
+		N_v(simVars.disc.res_physical),
 
-		N_h_prev(simVars.disc.res),
-		N_u_prev(simVars.disc.res),
-		N_v_prev(simVars.disc.res),
+		N_h_prev(simVars.disc.res_physical),
+		N_u_prev(simVars.disc.res_physical),
+		N_v_prev(simVars.disc.res_physical),
 
-		pos_x(simVars.disc.res),
-		pos_y(simVars.disc.res),
+		pos_x(simVars.disc.res_physical),
+		pos_y(simVars.disc.res_physical),
 
-		posx_a(simVars.disc.res),
-		posy_a(simVars.disc.res),
+		posx_a(simVars.disc.res_physical),
+		posy_a(simVars.disc.res_physical),
 
-		posx_d(simVars.disc.res),
-		posy_d(simVars.disc.res),
+		posx_d(simVars.disc.res_physical),
+		posy_d(simVars.disc.res_physical),
 
 		//h_t(simVars.disc.res),
 
 		// Initialises operators
-		op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
+		op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
 #if SWEET_PARAREAL != 0
 		,
-		_parareal_data_start_h(simVars.disc.res), _parareal_data_start_u(simVars.disc.res), _parareal_data_start_v(simVars.disc.res),
-		_parareal_data_fine_h(simVars.disc.res), _parareal_data_fine_u(simVars.disc.res), _parareal_data_fine_v(simVars.disc.res),
-		_parareal_data_coarse_h(simVars.disc.res), _parareal_data_coarse_u(simVars.disc.res), _parareal_data_coarse_v(simVars.disc.res),
-		_parareal_data_output_h(simVars.disc.res), _parareal_data_output_u(simVars.disc.res), _parareal_data_output_v(simVars.disc.res),
-		_parareal_data_error_h(simVars.disc.res), _parareal_data_error_u(simVars.disc.res), _parareal_data_error_v(simVars.disc.res)
+		_parareal_data_start_h(simVars.disc.res_physical), _parareal_data_start_u(simVars.disc.res_physical), _parareal_data_start_v(simVars.disc.res_physical),
+		_parareal_data_fine_h(simVars.disc.res_physical), _parareal_data_fine_u(simVars.disc.res_physical), _parareal_data_fine_v(simVars.disc.res_physical),
+		_parareal_data_coarse_h(simVars.disc.res_physical), _parareal_data_coarse_u(simVars.disc.res_physical), _parareal_data_coarse_v(simVars.disc.res_physical),
+		_parareal_data_output_h(simVars.disc.res_physical), _parareal_data_output_u(simVars.disc.res_physical), _parareal_data_output_v(simVars.disc.res_physical),
+		_parareal_data_error_h(simVars.disc.res_physical), _parareal_data_error_u(simVars.disc.res_physical), _parareal_data_error_v(simVars.disc.res_physical)
 #endif
 	{
 		// Calls initialisation of the run (e.g. sets u, v, h)
@@ -267,7 +268,7 @@ public:
 		simVars.timecontrol.current_simulation_time = 0;
 
 		// set to some values for first touch NUMA policy (HPC stuff)
-#if SWEET_USE_SPECTRAL_SPACE
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 		prog_h.set_spec_all(0, 0);
 		prog_u.set_spec_all(0, 0);
 		prog_v.set_spec_all(0, 0);
@@ -332,19 +333,19 @@ public:
 		}
 
 		//Setup sampler for future interpolations
-		sampler2D.setup(simVars.sim.domain_size, simVars.disc.res);
+		sampler2D.setup(simVars.sim.domain_size, simVars.disc.res_physical);
 
 		//Setup semi-lag
-		semiLagrangian.setup(simVars.sim.domain_size, simVars.disc.res);
+		semiLagrangian.setup(simVars.sim.domain_size, simVars.disc.res_physical);
 
 		//Setup general (x,y) grid with position points
-		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+		for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 		{
-			for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+			for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 			{
 		    	/* Equivalent to q position on C-grid */
-				pos_x.set(j, i, ((double)i)*simVars.sim.domain_size[0]/simVars.disc.res[0]); //*simVars.sim.domain_size[0];
-				pos_y.set(j, i, ((double)j)*simVars.sim.domain_size[1]/simVars.disc.res[1]); //*simVars.sim.domain_size[1];
+				pos_x.set(j, i, ((double)i)*simVars.sim.domain_size[0]/simVars.disc.res_physical[0]); //*simVars.sim.domain_size[0];
+				pos_y.set(j, i, ((double)j)*simVars.sim.domain_size[1]/simVars.disc.res_physical[1]); //*simVars.sim.domain_size[1];
 				//std::cout << i << " " << j << " " << pos_x.get(j,i) << std::endl;
 			}
 		}
@@ -365,7 +366,7 @@ public:
 		) -> double
 		{
 			if (param_initial_freq_x_mul == 0)
-				return SWEValidationBenchmarks::return_h(simVars, x, y);
+				return SWEPlaneBenchmarks::return_h(simVars, x, y);
 
 			// Waves scenario
 			// Remember to set up initial_freq_x_mul and initial_freq_y_mul
@@ -382,7 +383,7 @@ public:
 		) -> double
 		{
 			if (param_initial_freq_x_mul == 0)
-				return SWEValidationBenchmarks::return_u(simVars, x, y);
+				return SWEPlaneBenchmarks::return_u(simVars, x, y);
 
 			double dx = x/i_parameters.sim.domain_size[0]*param_initial_freq_x_mul*M_PIl;
 			double dy = y/i_parameters.sim.domain_size[1]*param_initial_freq_y_mul*M_PIl;
@@ -397,7 +398,7 @@ public:
 		) -> double
 		{
 			if (param_initial_freq_x_mul == 0)
-				return SWEValidationBenchmarks::return_v(simVars, x, y);
+				return SWEPlaneBenchmarks::return_v(simVars, x, y);
 
 			double dx = x/i_parameters.sim.domain_size[0]*param_initial_freq_x_mul*M_PIl;
 			double dy = y/i_parameters.sim.domain_size[1]*param_initial_freq_y_mul*M_PIl;
@@ -405,28 +406,28 @@ public:
 		};
 
 		// Set initial conditions given from SWEValidationBenchmarks
-		for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+		for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 		{
-			for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+			for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 			{
 				if (param_use_staggering) // C-grid
 				{
 					{
 						// h - lives in the center of the cell
-						double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-						double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
 						prog_h.set(j, i, return_h(simVars, x, y));
 						t0_prog_h.set(j, i, return_h(simVars, x, y));
-						force_h.set(j, i, SWEValidationBenchmarks::return_force_h(simVars, x, y));
+						force_h.set(j, i, SWEPlaneBenchmarks::return_force_h(simVars, x, y));
 
 						//Coriolis term - lives in the corner of the cells
 						if (param_nonlinear)
 						{
 							//PXT: had some -0.5 on i and j (why??)
-							double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-							double y = (((double)j)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
-							beta_plane.set(j, i, SWEValidationBenchmarks::return_f(simVars, x, y));
+							double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+							double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+							beta_plane.set(j, i, SWEPlaneBenchmarks::return_f(simVars, x, y));
 							if(j==0 && i==0 && simVars.sim.beta)
 								std::cerr << "WARNING: BETA PLANE ON C-GRID NOT TESTED FOR NON_LINEARITIES!" << std::endl;
 						}
@@ -441,42 +442,42 @@ public:
 
 					{
 						// u space
-						double x = (((double)i)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-						double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+						double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
 						prog_u.set(j,i, return_u(simVars, x, y));
 						t0_prog_u.set(j, i, return_u(simVars, x, y));
-						force_u.set(j, i, SWEValidationBenchmarks::return_force_u(simVars, x, y));
+						force_u.set(j, i, SWEPlaneBenchmarks::return_force_u(simVars, x, y));
 					}
 
 					{
 						// v space
-						double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-						double y = (((double)j)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+						double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
 						prog_v.set(j, i, return_v(simVars, x, y));
 						t0_prog_v.set(j, i, return_v(simVars, x, y));
-						force_v.set(j, i, SWEValidationBenchmarks::return_force_v(simVars, x, y));
+						force_v.set(j, i, SWEPlaneBenchmarks::return_force_v(simVars, x, y));
 					}
 				}
 				else // A-Grid (colocated grid)
 				{
-					double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-					double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
+					double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+					double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
 					prog_h.set(j, i, return_h(simVars, x, y));
 					prog_u.set(j, i, return_u(simVars, x, y));
 					prog_v.set(j, i, return_v(simVars, x, y));
 
-					beta_plane.set(j, i, SWEValidationBenchmarks::return_f(simVars, x, y));
+					beta_plane.set(j, i, SWEPlaneBenchmarks::return_f(simVars, x, y));
 
 					t0_prog_h.set(j, i, return_h(simVars, x, y));
 					t0_prog_u.set(j, i, return_u(simVars, x, y));
 					t0_prog_v.set(j, i, return_v(simVars, x, y));
 
-					force_h.set(j, i, SWEValidationBenchmarks::return_force_h(simVars, x, y));
-					force_u.set(j, i, SWEValidationBenchmarks::return_force_u(simVars, x, y));
-					force_v.set(j, i, SWEValidationBenchmarks::return_force_v(simVars, x, y));
+					force_h.set(j, i, SWEPlaneBenchmarks::return_force_h(simVars, x, y));
+					force_u.set(j, i, SWEPlaneBenchmarks::return_force_u(simVars, x, y));
+					force_v.set(j, i, SWEPlaneBenchmarks::return_force_v(simVars, x, y));
 				}
 			}
 		}
@@ -489,7 +490,7 @@ public:
 
 		//Nonlinear variables
 		// set to some values for first touch NUMA policy (HPC stuff)
-#if SWEET_USE_SPECTRAL_SPACE
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 		N_h.set_spec_all(0, 0);
 		N_u.set_spec_all(0, 0);
 		N_v.set_spec_all(0, 0);
@@ -505,9 +506,9 @@ public:
 		// Set boundary stuff
 		if (param_boundary_id != 0)
 		{
-			for (std::size_t j = 0; j < simVars.disc.res[1]; j++)
+			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res[0]; i++)
+				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
 					int boundary_flag = 0;
 					switch(param_boundary_id)
@@ -517,48 +518,48 @@ public:
 
 					case 1:
 						boundary_flag =
-								(i >= simVars.disc.res[0]*1/4) &&
-								(i < simVars.disc.res[0]*3/4) &&
-								(j >= simVars.disc.res[1]*1/4) &&
-								(j < simVars.disc.res[1]*3/4)
+								(i >= simVars.disc.res_physical[0]*1/4) &&
+								(i < simVars.disc.res_physical[0]*3/4) &&
+								(j >= simVars.disc.res_physical[1]*1/4) &&
+								(j < simVars.disc.res_physical[1]*3/4)
 							;
 						break;
 
 
 					case 2:
 						boundary_flag =
-								(i >= simVars.disc.res[0]*3/8) &&
-								(i < simVars.disc.res[0]*5/8) &&
-								(j >= simVars.disc.res[1]*3/8) &&
-								(j < simVars.disc.res[1]*5/8)
+								(i >= simVars.disc.res_physical[0]*3/8) &&
+								(i < simVars.disc.res_physical[0]*5/8) &&
+								(j >= simVars.disc.res_physical[1]*3/8) &&
+								(j < simVars.disc.res_physical[1]*5/8)
 							;
 						break;
 
 
 					case 3:
 						boundary_flag |=
-								(i >= simVars.disc.res[0]*1/8) &&
-								(i < simVars.disc.res[0]*3/8) &&
-								(j >= simVars.disc.res[1]*1/8) &&
-								(j < simVars.disc.res[1]*3/8)
+								(i >= simVars.disc.res_physical[0]*1/8) &&
+								(i < simVars.disc.res_physical[0]*3/8) &&
+								(j >= simVars.disc.res_physical[1]*1/8) &&
+								(j < simVars.disc.res_physical[1]*3/8)
 							;
 						boundary_flag |=
-								(i >= simVars.disc.res[0]*1/8) &&
-								(i < simVars.disc.res[0]*3/8) &&
-								(j >= simVars.disc.res[1]*5/8) &&
-								(j < simVars.disc.res[1]*7/8)
+								(i >= simVars.disc.res_physical[0]*1/8) &&
+								(i < simVars.disc.res_physical[0]*3/8) &&
+								(j >= simVars.disc.res_physical[1]*5/8) &&
+								(j < simVars.disc.res_physical[1]*7/8)
 							;
 						boundary_flag |=
-								(i >= simVars.disc.res[0]*5/8) &&
-								(i < simVars.disc.res[0]*7/8) &&
-								(j >= simVars.disc.res[1]*5/8) &&
-								(j < simVars.disc.res[1]*7/8)
+								(i >= simVars.disc.res_physical[0]*5/8) &&
+								(i < simVars.disc.res_physical[0]*7/8) &&
+								(j >= simVars.disc.res_physical[1]*5/8) &&
+								(j < simVars.disc.res_physical[1]*7/8)
 							;
 						boundary_flag |=
-								(i >= simVars.disc.res[0]*5/8) &&
-								(i < simVars.disc.res[0]*7/8) &&
-								(j >= simVars.disc.res[1]*	1/8) &&
-								(j < simVars.disc.res[1]*3/8)
+								(i >= simVars.disc.res_physical[0]*5/8) &&
+								(i < simVars.disc.res_physical[0]*7/8) &&
+								(j >= simVars.disc.res_physical[1]*	1/8) &&
+								(j < simVars.disc.res_physical[1]*3/8)
 							;
 						break;
 
@@ -566,28 +567,28 @@ public:
 
 					case 4:
 						boundary_flag |=
-								(i >= simVars.disc.res[0]*0/8) &&
-								(i < simVars.disc.res[0]*2/8) &&
-								(j >= simVars.disc.res[1]*0/8) &&
-								(j < simVars.disc.res[1]*2/8)
+								(i >= simVars.disc.res_physical[0]*0/8) &&
+								(i < simVars.disc.res_physical[0]*2/8) &&
+								(j >= simVars.disc.res_physical[1]*0/8) &&
+								(j < simVars.disc.res_physical[1]*2/8)
 							;
 						boundary_flag |=
-								(i >= simVars.disc.res[0]*1/8) &&
-								(i < simVars.disc.res[0]*3/8) &&
-								(j >= simVars.disc.res[1]*5/8) &&
-								(j < simVars.disc.res[1]*7/8)
+								(i >= simVars.disc.res_physical[0]*1/8) &&
+								(i < simVars.disc.res_physical[0]*3/8) &&
+								(j >= simVars.disc.res_physical[1]*5/8) &&
+								(j < simVars.disc.res_physical[1]*7/8)
 							;
 						boundary_flag |=
-								(i >= simVars.disc.res[0]*5/8) &&
-								(i < simVars.disc.res[0]*7/8) &&
-								(j >= simVars.disc.res[1]*6/8) &&
-								(j < simVars.disc.res[1]*8/8)
+								(i >= simVars.disc.res_physical[0]*5/8) &&
+								(i < simVars.disc.res_physical[0]*7/8) &&
+								(j >= simVars.disc.res_physical[1]*6/8) &&
+								(j < simVars.disc.res_physical[1]*8/8)
 							;
 						boundary_flag |=
-								(i >= simVars.disc.res[0]*5/8) &&
-								(i < simVars.disc.res[0]*7/8) &&
-								(j >= simVars.disc.res[1]*	1/8) &&
-								(j < simVars.disc.res[1]*3/8)
+								(i >= simVars.disc.res_physical[0]*5/8) &&
+								(i < simVars.disc.res_physical[0]*7/8) &&
+								(j >= simVars.disc.res_physical[1]*	1/8) &&
+								(j < simVars.disc.res_physical[1]*3/8)
 							;
 						break;
 
@@ -647,7 +648,7 @@ public:
 					param_rexi_h,
 					param_rexi_m,
 					param_rexi_l,
-					simVars.disc.res,
+					simVars.disc.res_physical,
 					simVars.sim.domain_size,
 					param_rexi_half,
 					param_rexi_use_spectral_differences_for_complex_array,
@@ -683,7 +684,7 @@ public:
 		last_timestep_nr_update_diagnostics = simVars.timecontrol.current_timestep_nr;
 
 		double normalization = (simVars.sim.domain_size[0]*simVars.sim.domain_size[1]) /
-								((double)simVars.disc.res[0]*(double)simVars.disc.res[1]);
+								((double)simVars.disc.res_physical[0]*(double)simVars.disc.res_physical[1]);
 
 
 		// mass
@@ -710,11 +711,11 @@ public:
 
 
 	void compute_upwinding_P_updates(
-			const DataArray<2> &i_h,		///< prognostic variables (at T=tn)
-			const DataArray<2> &i_u,		///< prognostic variables (at T=tn+dt)
-			const DataArray<2> &i_v,		///< prognostic variables (at T=tn+dt)
+			const PlaneData &i_h,		///< prognostic variables (at T=tn)
+			const PlaneData &i_u,		///< prognostic variables (at T=tn+dt)
+			const PlaneData &i_v,		///< prognostic variables (at T=tn+dt)
 
-			DataArray<2> &o_P_t				///< time updates (at T=tn+dt)
+			PlaneData &o_P_t				///< time updates (at T=tn+dt)
 	)
 	{
 		std::cerr << "TODO: implement, is this really possible for non-staggered grid? (averaging of velocities required)" << std::endl;
@@ -818,13 +819,13 @@ public:
 
 	// Main routine for method to be used in case of finite differences
 	void p_run_euler_timestep_update(
-			const DataArray<2> &i_h,	///< prognostic variables
-			const DataArray<2> &i_u,	///< prognostic variables
-			const DataArray<2> &i_v,	///< prognostic variables
+			const PlaneData &i_h,	///< prognostic variables
+			const PlaneData &i_u,	///< prognostic variables
+			const PlaneData &i_v,	///< prognostic variables
 
-			DataArray<2> &o_h_t,	///< time updates
-			DataArray<2> &o_u_t,	///< time updates
-			DataArray<2> &o_v_t,	///< time updates
+			PlaneData &o_h_t,	///< time updates
+			PlaneData &o_u_t,	///< time updates
+			PlaneData &o_v_t,	///< time updates
 
 			double &o_dt,			///< time step restriction
 			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
@@ -926,9 +927,9 @@ public:
 
 			// STAGGERED GRID
 
-			DataArray<2>& U = tmp0;
-			DataArray<2>& V = tmp1;
-			DataArray<2>& H = tmp2;
+			PlaneData& U = tmp0;
+			PlaneData& V = tmp1;
+			PlaneData& H = tmp2;
 
 			/* Sadourny energy conserving scheme
 			 *
@@ -1204,7 +1205,7 @@ public:
 		//Apply viscosity at posteriori, for all methods explicit difusion for non spectral schemes and implicit for spectral
 		if (simVars.sim.viscosity != 0)
 		{
-#if !SWEET_USE_SPECTRAL_SPACE //TODO: this needs checking
+#if !SWEET_USE_PLANE_SPECTRAL_SPACE //TODO: this needs checking
 			prog_u = prog_u + pow(-1,simVars.sim.viscosity_order/2)* o_dt*op.diffN_x(prog_u, simVars.sim.viscosity_order)*simVars.sim.viscosity
 					+ pow(-1,simVars.sim.viscosity_order/2)*o_dt*op.diffN_y(prog_u, simVars.sim.viscosity_order)*simVars.sim.viscosity;
 			prog_v = prog_v + pow(-1,simVars.sim.viscosity_order/2)* o_dt*op.diffN_x(prog_v, simVars.sim.viscosity_order)*simVars.sim.viscosity
@@ -1342,19 +1343,19 @@ public:
 		// Compute exact solution for linear part and compare with numerical solution
 
 		// Initial conditions (may be in a stag grid)
-		DataArray<2> t0_h = t0_prog_h;
-		DataArray<2> t0_u = t0_prog_u;
-		DataArray<2> t0_v = t0_prog_v;
+		PlaneData t0_h = t0_prog_h;
+		PlaneData t0_u = t0_prog_u;
+		PlaneData t0_v = t0_prog_v;
 
 		//Variables on unstaggered A-grid
-		DataArray<2> t_h(simVars.disc.res);
-		DataArray<2> t_u(simVars.disc.res);
-		DataArray<2> t_v(simVars.disc.res);
+		PlaneData t_h(simVars.disc.res_physical);
+		PlaneData t_u(simVars.disc.res_physical);
+		PlaneData t_v(simVars.disc.res_physical);
 
 		//Analytical solution at specific time on orginal grid (stag or not)
-		DataArray<2> ts_h(simVars.disc.res);
-		DataArray<2> ts_u(simVars.disc.res);
-		DataArray<2> ts_v(simVars.disc.res);
+		PlaneData ts_h(simVars.disc.res_physical);
+		PlaneData ts_u(simVars.disc.res_physical);
+		PlaneData ts_v(simVars.disc.res_physical);
 
 		//The direct spectral solution can only be calculated for A grid
 		t_h=t0_h;
@@ -1434,7 +1435,7 @@ public:
 
 	struct VisStuff
 	{
-		const DataArray<2>* data;
+		const PlaneData* data;
 		const char *description;
 	};
 
@@ -1453,15 +1454,15 @@ public:
 
 
 	void vis_get_vis_data_array(
-			const DataArray<2> **o_dataArray,
+			const PlaneData **o_dataArray,
 			double *o_aspect_ratio
 	)
 	{
 		if (simVars.misc.vis_id < 0)
 		{
-			DataArray<2> t_h = t0_prog_h;
-			DataArray<2> t_u = t0_prog_u;
-			DataArray<2> t_v = t0_prog_v;
+			PlaneData t_h = t0_prog_h;
+			PlaneData t_u = t0_prog_u;
+			PlaneData t_v = t0_prog_v;
 
 			rexiSWE.run_timestep_direct_solution(
 					t_h, t_u, t_v,
@@ -1615,20 +1616,20 @@ public:
 	 ******************************************************
 	 ******************************************************/
 
-	DataArray<2> _parareal_data_start_h, _parareal_data_start_u, _parareal_data_start_v;
-	Parareal_Data_DataArrays<3> parareal_data_start;
+	PlaneData _parareal_data_start_h, _parareal_data_start_u, _parareal_data_start_v;
+	Parareal_Data_PlaneData<3> parareal_data_start;
 
-	DataArray<2> _parareal_data_fine_h, _parareal_data_fine_u, _parareal_data_fine_v;
-	Parareal_Data_DataArrays<3> parareal_data_fine;
+	PlaneData _parareal_data_fine_h, _parareal_data_fine_u, _parareal_data_fine_v;
+	Parareal_Data_PlaneData<3> parareal_data_fine;
 
-	DataArray<2> _parareal_data_coarse_h, _parareal_data_coarse_u, _parareal_data_coarse_v;
-	Parareal_Data_DataArrays<3> parareal_data_coarse;
+	PlaneData _parareal_data_coarse_h, _parareal_data_coarse_u, _parareal_data_coarse_v;
+	Parareal_Data_PlaneData<3> parareal_data_coarse;
 
-	DataArray<2> _parareal_data_output_h, _parareal_data_output_u, _parareal_data_output_v;
-	Parareal_Data_DataArrays<3> parareal_data_output;
+	PlaneData _parareal_data_output_h, _parareal_data_output_u, _parareal_data_output_v;
+	Parareal_Data_PlaneData<3> parareal_data_output;
 
-	DataArray<2> _parareal_data_error_h, _parareal_data_error_u, _parareal_data_error_v;
-	Parareal_Data_DataArrays<3> parareal_data_error;
+	PlaneData _parareal_data_error_h, _parareal_data_error_u, _parareal_data_error_v;
+	Parareal_Data_PlaneData<3> parareal_data_error;
 
 	double timeframe_start = -1;
 	double timeframe_end = -1;
@@ -1638,27 +1639,27 @@ public:
 	void parareal_setup()
 	{
 		{
-			DataArray<2>* data_array[3] = {&_parareal_data_start_h, &_parareal_data_start_u, &_parareal_data_start_v};
+			PlaneData* data_array[3] = {&_parareal_data_start_h, &_parareal_data_start_u, &_parareal_data_start_v};
 			parareal_data_start.setup(data_array);
 		}
 
 		{
-			DataArray<2>* data_array[3] = {&_parareal_data_fine_h, &_parareal_data_fine_u, &_parareal_data_fine_v};
+			PlaneData* data_array[3] = {&_parareal_data_fine_h, &_parareal_data_fine_u, &_parareal_data_fine_v};
 			parareal_data_fine.setup(data_array);
 		}
 
 		{
-			DataArray<2>* data_array[3] = {&_parareal_data_coarse_h, &_parareal_data_coarse_u, &_parareal_data_coarse_v};
+			PlaneData* data_array[3] = {&_parareal_data_coarse_h, &_parareal_data_coarse_u, &_parareal_data_coarse_v};
 			parareal_data_coarse.setup(data_array);
 		}
 
 		{
-			DataArray<2>* data_array[3] = {&_parareal_data_output_h, &_parareal_data_output_u, &_parareal_data_output_v};
+			PlaneData* data_array[3] = {&_parareal_data_output_h, &_parareal_data_output_u, &_parareal_data_output_v};
 			parareal_data_output.setup(data_array);
 		}
 
 		{
-			DataArray<2>* data_array[3] = {&_parareal_data_error_h, &_parareal_data_error_u, &_parareal_data_error_v};
+			PlaneData* data_array[3] = {&_parareal_data_error_h, &_parareal_data_error_u, &_parareal_data_error_v};
 			parareal_data_error.setup(data_array);
 		}
 
@@ -1668,7 +1669,7 @@ public:
 				param_rexi_m,
 				param_rexi_l,
 
-				simVars.disc.res,
+				simVars.disc.res_physical,
 				simVars.sim.domain_size,
 				param_rexi_half,
 				param_rexi_use_spectral_differences_for_complex_array,
@@ -1731,7 +1732,7 @@ public:
 		// copy to buffers
 		parareal_data_start = i_pararealData;
 
-		// cast to pararealDataArray stuff
+		// cast to pararealPlaneData stuff
 	}
 
 	/**
@@ -1926,7 +1927,7 @@ public:
 			int time_slice_id
 	)
 	{
-		Parareal_Data_DataArrays<3>& data = (Parareal_Data_DataArrays<3>&)i_data;
+		Parareal_Data_PlaneData<3>& data = (Parareal_Data_PlaneData<3>&)i_data;
 
 		std::ostringstream ss;
 		ss << "output_iter" << iteration_id << "_slice" << time_slice_id << ".vtk";
@@ -2136,7 +2137,7 @@ int main2(int i_argc, char *i_argv[])
 	std::cout << "Staggered grid? " << param_use_staggering << std::endl;
 	std::cout << "Computing error? " << param_compute_error << std::endl;
 	std::cout << "Dealiasing: " <<
-#if SWEET_USE_SPECTRAL_DEALIASING
+#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 			1
 #else
 			0
@@ -2301,7 +2302,7 @@ int main2(int i_argc, char *i_argv[])
 					param_rexi_h,
 					param_rexi_m,
 					param_rexi_l,
-					simVars.disc.res,
+					simVars.disc.res_physical,
 					simVars.sim.domain_size,
 					param_rexi_half,
 					param_rexi_use_spectral_differences_for_complex_array,
@@ -2311,11 +2312,11 @@ int main2(int i_argc, char *i_argv[])
 
 			bool run = true;
 
-			DataArray<2> prog_h(simVars.disc.res);
-			DataArray<2> prog_u(simVars.disc.res);
-			DataArray<2> prog_v(simVars.disc.res);
+			PlaneData prog_h(simVars.disc.res_physical);
+			PlaneData prog_u(simVars.disc.res_physical);
+			PlaneData prog_v(simVars.disc.res_physical);
 
-			Operators2D op(simVars.disc.res, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
+			PlaneOperators op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
 			MPI_Barrier(MPI_COMM_WORLD);
 
@@ -2340,7 +2341,7 @@ int main2(int i_argc, char *i_argv[])
 	{
 		// synchronize REXI
 		if (rank == 0)
-			RexiSWE::MPI_quitWorkers(simVars.disc.res);
+			RexiSWE::MPI_quitWorkers(simVars.disc.res_physical);
 	}
 
 	MPI_Finalize();
@@ -2353,7 +2354,7 @@ int main(int i_argc, char *i_argv[])
 {
 	int retval = main2(i_argc, i_argv);
 
-	DataArray<2>::checkRefCounters();
+	PlaneData::checkRefCounters();
 
 	return retval;
 }
