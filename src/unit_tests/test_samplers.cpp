@@ -19,6 +19,14 @@
 #include <vector>
 #include <array>
 
+// Plane data config
+PlaneDataConfig planeDataConfigInstance;
+PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
+
+// Plane data config
+PlaneDataConfig planeDataConfigInstance3;
+PlaneDataConfig *planeDataConfig3 = &planeDataConfigInstance3;
+
 SimulationVariables simVars;
 
 int main(
@@ -50,10 +58,12 @@ int main(
 	{
 		simVars.disc.res_physical[0] = res_x;
 		simVars.disc.res_physical[1] = res_y;
-
 		std::size_t res[2] = {res_x, res_y};
 
-		PlaneData prog_h(res);
+		//simVars.reset();
+		planeDataConfigInstance.setupAutoSpectralSpace(res);
+
+		PlaneData prog_h(planeDataConfig);
 
 		// setup initial conditions
 		for (std::size_t j = 0; j < res[1]; j++)
@@ -72,7 +82,11 @@ int main(
 
 		std::size_t res3[2] = {res_x*(int)resolution_factor, res_y*(int)resolution_factor};
 
-		PlaneData prog_h3(res3);
+
+		//simVars.reset();
+		planeDataConfigInstance3.setupAutoSpectralSpace(res3);
+
+		PlaneData prog_h3(planeDataConfig3);
 
 		// setup initial conditions
 		{
@@ -97,8 +111,8 @@ int main(
 		/*
 		 * Sampling points with different resolution
 		 */
-		PlaneData px(res3);
-		PlaneData py(res3);
+		PlaneData px(planeDataConfig3);
+		PlaneData py(planeDataConfig3);
 
 		// setup some test sampling points
 		// we use 2 arrays - one for each sampling position
@@ -116,14 +130,14 @@ int main(
 		 * setup sampler
 		 */
 		PlaneDataSampler sampler2D;
-		sampler2D.setup(simVars.sim.domain_size, res);
+		sampler2D.setup(simVars.sim.domain_size, planeDataConfig);
 
 
 		{
 			/*
 			 * sample with BiLinear interpolation
 			 */
-			PlaneData prog_h3_bilinear(res3);
+			PlaneData prog_h3_bilinear(planeDataConfig3);
 
 			sampler2D.bilinear_scalar(
 					prog_h,	///< input scalar field
@@ -164,7 +178,7 @@ int main(
 			/*
 			 * sample with BiCubic interpolation
 			 */
-			PlaneData prog_h3_bicubic(res3);
+			PlaneData prog_h3_bicubic(planeDataConfig3);
 
 			sampler2D.bicubic_scalar(
 					prog_h,	///< input scalar field

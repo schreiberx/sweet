@@ -14,7 +14,7 @@
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/PlaneDataSemiLagrangian.hpp>
 
-#include <programs/burgers_HelmholtzSolver.hpp>
+#include "burgers/burgers_HelmholtzSolver.hpp"
 
 #include <sweet/Stopwatch.hpp>
 #include <ostream>
@@ -31,6 +31,13 @@
 #if SWEET_PARAREAL
 #	include <parareal/Parareal.hpp>
 #endif
+
+
+// Plane data config
+PlaneDataConfig planeDataConfigInstance;
+PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
+
+
 
 // Input parameters (cmd line)
 
@@ -131,34 +138,34 @@ public:
 public:
 	SimulationInstance()	:
 		// Constructor to initialize the class - all variables in the SW are setup
-		prog_u(simVars.disc.res_physical),	// velocity (x-direction)
-		prog_v(simVars.disc.res_physical),	// velocity (y-direction)
+		prog_u(planeDataConfig),	// velocity (x-direction)
+		prog_v(planeDataConfig),	// velocity (y-direction)
 
-		prog_u_prev(simVars.disc.res_physical),
-		prog_v_prev(simVars.disc.res_physical),
+		prog_u_prev(planeDataConfig),
+		prog_v_prev(planeDataConfig),
 
-		tmp(simVars.disc.res_physical),
+		tmp(planeDataConfig),
 
-		pos_x(simVars.disc.res_physical),
-		pos_y(simVars.disc.res_physical),
+		pos_x(planeDataConfig),
+		pos_y(planeDataConfig),
 
-		posx_a(simVars.disc.res_physical),
-		posy_a(simVars.disc.res_physical),
+		posx_a(planeDataConfig),
+		posy_a(planeDataConfig),
 
-		posx_d(simVars.disc.res_physical),
-		posy_d(simVars.disc.res_physical),
+		posx_d(planeDataConfig),
+		posy_d(planeDataConfig),
 
-		benchmark_analytical_error(simVars.disc.res_physical),
+		benchmark_analytical_error(planeDataConfig),
 
 		// Init operators
 		op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
 #if SWEET_PARAREAL != 0
 		,
-		_parareal_data_start_u(simVars.disc.res_physical), _parareal_data_start_v(simVars.disc.res_physical),
-		_parareal_data_fine_u(simVars.disc.res_physical), _parareal_data_fine_v(simVars.disc.res_physical),
-		_parareal_data_coarse_u(simVars.disc.res_physical), _parareal_data_coarse_v(simVars.disc.res_physical),
-		_parareal_data_output_u(simVars.disc.res_physical), _parareal_data_output_v(simVars.disc.res_physical),
-		_parareal_data_error_u(simVars.disc.res_physical), _parareal_data_error_v(simVars.disc.res_physical)
+		_parareal_data_start_u(planeDataConfig), _parareal_data_start_v(planeDataConfig),
+		_parareal_data_fine_u(planeDataConfig), _parareal_data_fine_v(planeDataConfig),
+		_parareal_data_coarse_u(planeDataConfig), _parareal_data_coarse_v(planeDataConfig),
+		_parareal_data_output_u(planeDataConfig), _parareal_data_output_v(planeDataConfig),
+		_parareal_data_error_u(planeDataConfig), _parareal_data_error_v(planeDataConfig)
 #endif
 	{
 		// Calls initialization of the run (e.g. sets u, v)
@@ -909,8 +916,8 @@ public:
 				return;
 
 			//Analytical solution at specific time on original grid (stag or not)
-			PlaneData ts_u(simVars.disc.res_physical);
-			PlaneData ts_v(simVars.disc.res_physical);
+			PlaneData ts_u(planeDataConfig);
+			PlaneData ts_v(planeDataConfig);
 
 			// Set solution
 			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
@@ -1596,6 +1603,7 @@ int main(int i_argc, char *i_argv[])
 	param_semilagrangian = simVars.bogus.var[3];
 	param_time_scheme_coarse = simVars.bogus.var[4];
 
+	planeDataConfigInstance.setup(simVars.disc.res_physical, simVars.disc.res_spectral);
 
 	std::ostringstream buf;
 	buf << std::setprecision(14);

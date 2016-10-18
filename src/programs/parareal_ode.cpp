@@ -20,6 +20,7 @@
 #include <sweet/sweetmath.hpp>
 #include <sweet/SimulationVariables.hpp>
 
+
 SimulationVariables simVars;
 
 double param_parareal_fine_dt = -1;

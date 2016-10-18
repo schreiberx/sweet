@@ -15,6 +15,7 @@
 #include <sweet/sphere/SphBandedMatrix.hpp>
 
 
+
 class AppSWE
 {
 public:

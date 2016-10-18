@@ -15,6 +15,10 @@
 #include <iomanip>
 #include <stdio.h>
 
+// Plane data config
+PlaneDataConfig planeDataConfigInstance;
+PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
+
 
 SimulationVariables simVars;
 
@@ -49,16 +53,16 @@ public:
 
 public:
 	SimulationAdvection()	:
-		prog_h(simVars.disc.res_physical),
-		prog_u(simVars.disc.res_physical),
-		prog_v(simVars.disc.res_physical),
+		prog_h(planeDataConfig),
+		prog_u(planeDataConfig),
+		prog_v(planeDataConfig),
 
-		hu(simVars.disc.res_physical),
-		hv(simVars.disc.res_physical),
+		hu(planeDataConfig),
+		hv(planeDataConfig),
 
-		tmp(simVars.disc.res_physical),
+		tmp(planeDataConfig),
 
-		op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
+		op(	planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
 	{
 		reset();
 	}
@@ -68,7 +72,7 @@ public:
 		double i_timestamp
 	)
 	{
-		PlaneData ret_h(prog_h.resolution);
+		PlaneData ret_h(planeDataConfig);
 
 		double adv_x = (std::isinf(simVars.bogus.var[0]) != 0 ? 0 : -simVars.bogus.var[0]*i_timestamp);
 		double adv_y = (std::isinf(simVars.bogus.var[1]) != 0 ? 0 : -simVars.bogus.var[1]*i_timestamp);
@@ -136,7 +140,7 @@ public:
 		double i_timestamp
 	)
 	{
-		PlaneData ret_h(prog_h.resolution);
+		PlaneData ret_h(planeDataConfig);
 
 		double adv_x = (std::isinf(simVars.bogus.var[0]) != 0 ? 0 : -simVars.bogus.var[0]*i_timestamp);
 		double adv_y = (std::isinf(simVars.bogus.var[1]) != 0 ? 0 : -simVars.bogus.var[1]*i_timestamp);
@@ -208,7 +212,7 @@ public:
 		double i_timestamp
 	)
 	{
-		PlaneData ret_h(prog_h.resolution);
+		PlaneData ret_h(planeDataConfig);
 
 		double adv_x = (std::isinf(simVars.bogus.var[0]) != 0 ? 0 : -simVars.bogus.var[0]*i_timestamp);
 		double adv_y = (std::isinf(simVars.bogus.var[1]) != 0 ? 0 : -simVars.bogus.var[1]*i_timestamp);
@@ -617,6 +621,7 @@ int main(
 		return -1;
 	}
 
+
 	double u, v;
 	if (std::isinf(simVars.bogus.var[0]) != 0)
 		u = 0;
@@ -713,6 +718,8 @@ int main(
 			simVars.disc.res_physical[0] = res_x;
 			simVars.disc.res_physical[1] = res_y;
 			simVars.reset();
+
+			planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical);
 
 			SimulationAdvection *simulationAdvection = new SimulationAdvection;
 

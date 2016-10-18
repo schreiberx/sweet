@@ -27,9 +27,10 @@
 #include <sweet/openmp_helper.hpp>
 #include <sweet/MemBlockAlloc.hpp>
 #include <sweet/plane/PlaneDataConfig.hpp>
+#include <sweet/FatalError.hpp>
 
 #ifndef SWEET_USE_PLANE_SPECTRAL_SPACE
-	#define SWEET_USE_PLANE_SPECTRAL_SPACE	1
+	#define SWEET_USE_PLANE_SPECTRAL_SPACE	0
 #endif
 
 #ifndef SWEET_USE_PLANE_SPECTRAL_DEALIASING
@@ -109,9 +110,11 @@ private:
 
 //		std::cout << planeDataConfig->physical_array_data_number_of_elements << ", " << planeDataConfig->spectral_array_data_number_of_elements << std::endl;
 
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 		spectral_space_data = MemBlockAlloc::alloc< std::complex<double> >(
 				planeDataConfig->spectral_array_data_number_of_elements*sizeof(std::complex<double>)
 		);
+#endif
 	}
 
 
@@ -276,7 +279,7 @@ public:
 	{
 		requestDataInCartesianSpace();
 
-		return physical_space_data[j*planeDataConfig->spectral_data_size[0]+i];
+		return physical_space_data[j*planeDataConfig->physical_data_size[0]+i];
 	}
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
@@ -706,13 +709,15 @@ public:
 #endif
 
 
+#endif
+
+
 public:
 	inline
-	const PlaneData& requestDataInSpectralSpace() const
+	const void requestDataInSpectralSpace() const
 	{
 #if SWEET_USE_PLANE_SPECTRAL_SPACE==0
-		std::cerr << "requestDataInSpectralSpace: spectral space is disabled" << std::endl;
-		exit(-1);
+		FatalError("requestDataInSpectralSpace: spectral space is disabled");
 #else
 
 
@@ -730,11 +735,7 @@ public:
 			return *this;		// nothing to do
 
 		if (!physical_space_data_valid)
-		{
-			std::cerr << "Spectral data not available! Is this maybe a non-initialized operator?" << std::endl;
-			assert(false);
-			exit(1);
-		}
+			FatalError("Spectral data not available! Is this maybe a non-initialized operator?");
 
 		PlaneData *rw_array_data = (PlaneData*)this;
 
@@ -744,12 +745,11 @@ public:
 		rw_array_data->physical_space_data_valid = false;
 
 #endif
-		return *this;
 	}
 
 
 	inline
-	const PlaneData& requestDataInCartesianSpace() const
+	const void requestDataInCartesianSpace() const
 	{
 #if SWEET_USE_PLANE_SPECTRAL_SPACE==1
 
@@ -765,10 +765,7 @@ public:
 		rw_array_data->spectral_space_data_valid = false;
 		rw_array_data->physical_space_data_valid = true;
 #endif
-	return *this;
 	}
-
-#endif
 
 
 	inline
@@ -1318,9 +1315,9 @@ public:
 			this->requestDataInCartesianSpace();
 			was_spectral = true;
 			this->spectral_space_data_valid=false;
-		}else if(!this->physical_space_data_valid){
-			std::cout << "Uninitialized PlaneData in op_stencil_Re_3x3" << std::endl;
-			exit(-1);
+		} else if (!this->physical_space_data_valid)
+		{
+			FatalError("Uninitialized PlaneData in op_stencil_Re_3x3");
 		}
 		out.spectral_space_data_valid=false;
 #endif
@@ -1399,9 +1396,9 @@ public:
 			this->requestDataInCartesianSpace();
 			was_spectral = true;
 			this->spectral_space_data_valid=false;
-		}else if(!this->physical_space_data_valid){
-			std::cout << "Uninitialized PlaneData in op_stencil_Re_3x3" << std::endl;
-			exit(-1);
+		}else if(!this->physical_space_data_valid)
+		{
+			FatalError("Uninitialized PlaneData in op_stencil_Re_3x3");
 		}
 		out.spectral_space_data_valid=false;
 #endif
@@ -1745,8 +1742,8 @@ public:
 		 *  - if branching elimination
 		 *  - etc.....
 		 */
-		int res_x = resolution[0];
-		int res_y = resolution[1];
+		int res_x = planeDataConfig->physical_data_size[0];
+		int res_y = planeDataConfig->physical_data_size[1];
 
 		if (kernel_size == 3)
 		{
@@ -1760,7 +1757,7 @@ public:
 				{
 					for (int x = 0; x < res_x; x++)
 					{
-						double &data_out = out.physical_space[y*res_x+x];
+						double &data_out = out.physical_space_data[y*res_x+x];
 						data_out = 0;
 
 						int pos_y = y;
@@ -2018,7 +2015,7 @@ public:
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			out.physical_space_data[i] = array_data_cartesian_space[i] + i_array_data.physical_space[i];
+			out.physical_space_data[i] = physical_space_data[i] + i_array_data.physical_space_data[i];
 
 #endif
 
@@ -2064,7 +2061,7 @@ public:
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			out.array_data_cartesian_space[i] = physical_space_data[i]+i_value;
+			out.physical_space_data[i] = physical_space_data[i]+i_value;
 
 #endif
 
@@ -2104,7 +2101,7 @@ public:
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			array_data_cartesian_space[i] += i_array_data.physical_space_data[i];
+			physical_space_data[i] += i_array_data.physical_space_data[i];
 #endif
 
 		return *this;
@@ -2254,7 +2251,7 @@ public:
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			array_data_cartesian_space[i] -= i_array_data.physical_space[i];
+			physical_space_data[i] -= i_array_data.physical_space_data[i];
 
 #endif
 
@@ -2300,7 +2297,7 @@ public:
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 			out.physical_space_data[i] =
-					array_data_cartesian_space[i]-
+					physical_space_data[i]-
 					i_array_data.physical_space_data[i];
 
 #endif
@@ -2345,7 +2342,7 @@ public:
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			out.array_data_cartesian_space[i] =
+			out.physical_space_data[i] =
 					physical_space_data[i]-i_value;
 
 #endif
@@ -2388,7 +2385,7 @@ public:
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			out.physical_space_data[i] = i_value - physical_space[i];
+			out.physical_space_data[i] = i_value - physical_space_data[i];
 
 #endif
 
@@ -2421,7 +2418,7 @@ public:
 		requestDataInCartesianSpace();
 
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			out.array_data_cartesian_space[i] = -physical_space_data[i];
+			out.physical_space_data[i] = -physical_space_data[i];
 
 #endif
 
@@ -2582,8 +2579,7 @@ public:
 		#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			out.array_data_cartesian_space[i] =
-					physical_space_data[i]*i_value;
+			out.physical_space_data[i] = physical_space_data[i]*i_value;
 #endif
 
 		return out;
@@ -3022,10 +3018,8 @@ public:
 			std::ifstream file(i_filename, std::ios::binary);
 
 			if (!file)
-			{
-				std::cerr << "Failed to open file " << i_filename << std::endl;
-				exit(-1);
-			}
+				FatalError(std::string("Failed to open file ")+i_filename);
+
 			file.seekg(0, std::ios::end);
 			std::size_t size = file.tellg();
 			file.seekg(0, std::ios::beg);
@@ -3037,13 +3031,13 @@ public:
 			{
 				std::cerr << "Error while loading data from file " << i_filename << ":" << std::endl;
 				std::cerr << "Size of file " << size << " does not match expected size of " << expected_size << std::endl;
-				exit(-1);
+				FatalError("EXIT");
 			}
 
 			if (!file.read((char*)physical_space_data, expected_size))
 			{
 				std::cerr << "Error while loading data from file " << i_filename << std::endl;
-				exit(1);
+				FatalError("EXIT");
 			}
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE

@@ -20,8 +20,12 @@
 #include <stdio.h>
 #include <complex>
 
-#include "../programs/rexi/RexiSWE.hpp"
-#include "../programs/rexi/RexiSWE_HelmholtzSolver.hpp"
+#include "../programs/rexiswe/RexiSWE.hpp"
+#include "../programs/rexiswe/RexiSWE_HelmholtzSolver.hpp"
+
+// Plane data config
+PlaneDataConfig planeDataConfigInstance;
+PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
 
 SimulationVariables simVars;
 
@@ -78,6 +82,7 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 	}
 
+
 	/*
 	 * use finite differences for differential operators in complex array
 	 */
@@ -133,7 +138,7 @@ int main(int i_argc, char *i_argv[])
 		simVars.disc.res_physical[1] = res[1];
 		simVars.reset();
 
-
+		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical);
 
 		/*
 		 * keep h in the outer regions to allocate it only once and avoid reinitialization of FFTW

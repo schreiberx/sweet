@@ -23,6 +23,10 @@
 #include <stdlib.h>
 #include "rexiswe/RexiSWE.hpp"
 
+// Plane data config
+PlaneDataConfig planeDataConfigInstance;
+PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
+
 
 
 #ifndef SWEET_MPI
@@ -230,11 +234,11 @@ public:
 		op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
 #if SWEET_PARAREAL != 0
 		,
-		_parareal_data_start_h(simVars.disc.res_physical), _parareal_data_start_u(simVars.disc.res_physical), _parareal_data_start_v(simVars.disc.res_physical),
-		_parareal_data_fine_h(simVars.disc.res_physical), _parareal_data_fine_u(simVars.disc.res_physical), _parareal_data_fine_v(simVars.disc.res_physical),
-		_parareal_data_coarse_h(simVars.disc.res_physical), _parareal_data_coarse_u(simVars.disc.res_physical), _parareal_data_coarse_v(simVars.disc.res_physical),
-		_parareal_data_output_h(simVars.disc.res_physical), _parareal_data_output_u(simVars.disc.res_physical), _parareal_data_output_v(simVars.disc.res_physical),
-		_parareal_data_error_h(simVars.disc.res_physical), _parareal_data_error_u(simVars.disc.res_physical), _parareal_data_error_v(simVars.disc.res_physical)
+		_parareal_data_start_h(planeDataConfig), _parareal_data_start_u(planeDataConfig), _parareal_data_start_v(planeDataConfig),
+		_parareal_data_fine_h(planeDataConfig), _parareal_data_fine_u(planeDataConfig), _parareal_data_fine_v(planeDataConfig),
+		_parareal_data_coarse_h(planeDataConfig), _parareal_data_coarse_u(planeDataConfig), _parareal_data_coarse_v(planeDataConfig),
+		_parareal_data_output_h(planeDataConfig), _parareal_data_output_u(planeDataConfig), _parareal_data_output_v(planeDataConfig),
+		_parareal_data_error_h(planeDataConfig), _parareal_data_error_u(planeDataConfig), _parareal_data_error_v(planeDataConfig)
 #endif
 	{
 		// Calls initialisation of the run (e.g. sets u, v, h)
@@ -2320,9 +2324,9 @@ int main2(int i_argc, char *i_argv[])
 
 			bool run = true;
 
-			PlaneData prog_h(simVars.disc.res_physical);
-			PlaneData prog_u(simVars.disc.res_physical);
-			PlaneData prog_v(simVars.disc.res_physical);
+			PlaneData prog_h(planeDataConfig);
+			PlaneData prog_u(planeDataConfig);
+			PlaneData prog_v(planeDataConfig);
 
 			PlaneOperators op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
@@ -2349,7 +2353,7 @@ int main2(int i_argc, char *i_argv[])
 	{
 		// synchronize REXI
 		if (rank == 0)
-			RexiSWE::MPI_quitWorkers(simVars.disc.res_physical);
+			RexiSWE::MPI_quitWorkers(planeDataConfig);
 	}
 
 	MPI_Finalize();

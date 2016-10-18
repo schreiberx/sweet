@@ -15,6 +15,10 @@
 #include <iomanip>
 #include <stdio.h>
 
+// Plane data config
+PlaneDataConfig planeDataConfigInstance;
+PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
+
 
 
 SimulationVariables simVars;
@@ -276,6 +280,8 @@ int main(
 		return -1;
 	}
 
+
+	planeDataConfigInstance.setup(simVars.disc.res_physical, simVars.disc.res_spectral);
 
 #if SWEET_GUI
 	if (simVars.misc.gui_enabled)

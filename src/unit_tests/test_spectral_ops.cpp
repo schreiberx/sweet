@@ -20,6 +20,10 @@
 #include <iomanip>
 #include <stdio.h>
 
+// Plane data config
+PlaneDataConfig planeDataConfigInstance;
+PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
+
 SimulationVariables simVars;
 
 #if SWEET_DEBUG_MODE
@@ -141,11 +145,13 @@ int main(int i_argc, char *i_argv[])
 		simVars.disc.res_physical[1] = res[1];
 		simVars.reset();
 
+		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical);
+
 
 		/*
 		 * keep h in the outer regions to allocate it only once and avoid reinitialization of FFTW
 		 */
-		PlaneData h(res);
+		PlaneData h(planeDataConfig);
 
 
 		{
@@ -156,9 +162,9 @@ int main(int i_argc, char *i_argv[])
 			std::cout << "error tol = " << eps << std::endl;
 			std::cout << "**********************************************" << std::endl;
 
-			PlaneData zero(res);
-			PlaneData two(res);
-			PlaneData five(res);
+			PlaneData zero(planeDataConfig);
+			PlaneData two(planeDataConfig);
+			PlaneData five(planeDataConfig);
 
 			zero.physical_set_all(0);
 			two.physical_set_all(2);
@@ -265,11 +271,11 @@ int main(int i_argc, char *i_argv[])
 		 * Tests for basic operators which are not amplifying the solution depending on the domain size
 		 */
 		{
-			PlaneData u(res);
-			PlaneData v(res);
+			PlaneData u(planeDataConfig);
+			PlaneData v(planeDataConfig);
 
 			PlaneOperators op(
-					simVars.disc.res_physical,
+					planeDataConfig,
 					simVars.sim.domain_size,
 					simVars.disc.use_spectral_basis_diffs
 			);
@@ -367,12 +373,12 @@ int main(int i_argc, char *i_argv[])
 		 * Tests for 1st order differential operator
 		 */
 		{
-			PlaneData u(res);
-			PlaneData v(res);
-			PlaneData h_diff_x(res);
-			PlaneData h_diff_y(res);
+			PlaneData u(planeDataConfig);
+			PlaneData v(planeDataConfig);
+			PlaneData h_diff_x(planeDataConfig);
+			PlaneData h_diff_y(planeDataConfig);
 
-			PlaneOperators op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
+			PlaneOperators op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
 			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
@@ -542,10 +548,10 @@ int main(int i_argc, char *i_argv[])
 		 * diff(sin(2 pi x / size), x, x) = 4.0 pi^2 sin(2 pi x / size) / size^2
 		 */
 		{
-			PlaneData h_diff2_x(res);
-			PlaneData h_diff2_y(res);
+			PlaneData h_diff2_x(planeDataConfig);
+			PlaneData h_diff2_y(planeDataConfig);
 
-			PlaneOperators op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
+			PlaneOperators op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
 			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
@@ -649,10 +655,10 @@ int main(int i_argc, char *i_argv[])
 		 * Tests for helmholtz solver
 		 */
 		{
-			PlaneData u(res);
-			PlaneData v(res);
+			PlaneData u(planeDataConfig);
+			PlaneData v(planeDataConfig);
 
-			PlaneOperators op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
+			PlaneOperators op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
 			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 			{

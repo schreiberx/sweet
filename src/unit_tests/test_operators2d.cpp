@@ -20,6 +20,10 @@
 #include <iomanip>
 #include <stdio.h>
 
+// Plane data config
+PlaneDataConfig planeDataConfigInstance;
+PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
+
 SimulationVariables simVars;
 
 #if SWEET_DEBUG_MODE
@@ -75,7 +79,6 @@ int main(int i_argc, char *i_argv[])
 
 	for (; res_x <= max_res && res_y <= max_res; res_x *= 2, res_y *= 2)
 	{
-
 		double tolerance_increase = sqrt(res_x) + sqrt(res_y);
 
 		double max_aspect = simVars.sim.domain_size[0] / simVars.sim.domain_size[1];
@@ -110,10 +113,13 @@ int main(int i_argc, char *i_argv[])
 		simVars.disc.res_physical[1] = res[1];
 		simVars.reset();
 
+		planeDataConfigInstance.setup(simVars.disc.res_physical, simVars.disc.res_spectral);
+
+
 		/*
 		 * keep h in the outer regions to allocate it only once and avoid reinitialization of FFTW
 		 */
-		PlaneData h(res);
+		PlaneData h(planeDataConfig);
 
 
 		{
@@ -137,13 +143,13 @@ int main(int i_argc, char *i_argv[])
 				std::cout << std::endl;
 				std::cout << " Testing differentiation for different frequencies (including Nyquist)" << std::endl;
 
-				PlaneData h_diff2_x(res);
-				PlaneData h_diff2_y(res);
-				PlaneData h_diff_x(res);
-				PlaneData h_diff_y(res);
-				PlaneData h_bilaplace(res);
+				PlaneData h_diff2_x(planeDataConfig);
+				PlaneData h_diff2_y(planeDataConfig);
+				PlaneData h_diff_x(planeDataConfig);
+				PlaneData h_diff_y(planeDataConfig);
+				PlaneData h_bilaplace(planeDataConfig);
 
-				PlaneOperators op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
+				PlaneOperators op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
 				double freq_x = 0;
 				double freq_y = 0;
@@ -284,16 +290,16 @@ int main(int i_argc, char *i_argv[])
 				std::cout << std::endl;
 				std::cout << " Testing multiplication and de-aliasing" << std::endl;
 				std::cout << " ----------------------------------------" << std::endl;
-				PlaneData h1(res);
-				PlaneData h2(res);
-				PlaneData h12(res);
-				PlaneData h12_dealiased(res);
-				PlaneData h12_alias(res);
-				PlaneData h12_noalias(res);
-				PlaneData h12_truncated(res);
+				PlaneData h1(planeDataConfig);
+				PlaneData h2(planeDataConfig);
+				PlaneData h12(planeDataConfig);
+				PlaneData h12_dealiased(planeDataConfig);
+				PlaneData h12_alias(planeDataConfig);
+				PlaneData h12_noalias(planeDataConfig);
+				PlaneData h12_truncated(planeDataConfig);
 
 
-				PlaneOperators op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
+				PlaneOperators op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
 				//Nyquist freq
 				std::size_t nyq=simVars.disc.res_physical[0]/2;

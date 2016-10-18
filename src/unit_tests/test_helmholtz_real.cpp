@@ -19,6 +19,10 @@
 #include <iomanip>
 #include <stdio.h>
 
+// Plane data config
+PlaneDataConfig planeDataConfigInstance;
+PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
+
 
 SimulationVariables simVars;
 
@@ -87,14 +91,16 @@ int main(int i_argc, char *i_argv[])
 		simVars.disc.res_physical[1] = res[1];
 		simVars.reset();
 
+		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical);
+
 
 		/*
 		 * keep u,v in the outer regions to allocate it only once and avoid reinitialization of FFTW
 		 */
-		PlaneData u_ana(res);
-		PlaneData v_ana(res);
-		PlaneData f(res);
-		PlaneData g(res);
+		PlaneData u_ana(planeDataConfig);
+		PlaneData v_ana(planeDataConfig);
+		PlaneData f(planeDataConfig);
+		PlaneData g(planeDataConfig);
 
 		/**
 		 * Test iterative solver for Helmholtz problem
@@ -138,12 +144,12 @@ int main(int i_argc, char *i_argv[])
 			}
 
 
-			PlaneData u(res);
-			PlaneData v(res);
+			PlaneData u(planeDataConfig);
+			PlaneData v(planeDataConfig);
 			u.physical_set_all(0);
 			v.physical_set_all(0);
 
-			PlaneOperators op(simVars.disc.res_phys, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
+			PlaneOperators op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
 			PlaneData rhs_u = u_ana;
 			PlaneData rhs_v = v_ana;

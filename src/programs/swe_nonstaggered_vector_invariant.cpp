@@ -15,6 +15,11 @@
 #include <iomanip>
 #include <stdio.h>
 
+// Plane data config
+PlaneDataConfig planeDataConfigInstance;
+PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
+
+
 SimulationVariables simVars;
 
 double next_timestep_output = 0;

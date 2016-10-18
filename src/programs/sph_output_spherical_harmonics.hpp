@@ -13,6 +13,8 @@
 #include <sweet/sphere/SphereDataConfig.hpp>
 #include <sweet/sphere/SphereData.hpp>
 
+
+// TODO: GET MAIN AND SETUP EVERYTHING
 class AppOutputSphericalHarmonics
 {
 public:

@@ -20,6 +20,10 @@
 #include <stdio.h>
 #include <complex>
 
+// Plane data config
+PlaneDataConfig planeDataConfigInstance;
+PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
+
 
 SimulationVariables simVars;
 
@@ -60,6 +64,7 @@ int main(int i_argc, char *i_argv[])
 		std::cout << std::endl;
 		return -1;
 	}
+
 
 	/*
 	 * use finite differences for differential operators in complex array
@@ -144,6 +149,8 @@ int main(int i_argc, char *i_argv[])
 		simVars.disc.res_physical[0] = res[0];
 		simVars.disc.res_physical[1] = res[1];
 		simVars.reset();
+
+		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical);
 
 
 		/*

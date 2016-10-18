@@ -1,12 +1,18 @@
 
-#include "../include/sweet/plane/PlaneData.hpp"
+#include <sweet/plane/PlaneData.hpp>
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
 #include <sweet/SimulationVariables.hpp>
-#include "../include/sweet/plane/PlaneOperators.hpp"
+#include <sweet/plane/PlaneOperators.hpp>
 #include <unistd.h>
 #include <stdio.h>
+
+// Plane data config
+PlaneDataConfig planeDataConfigInstance;
+PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
+
+
 
 SimulationVariables simVars;
 
@@ -27,16 +33,16 @@ public:
 
 public:
 	SimulationSWE()	:
-		h(simVars.disc.res_physical),
-		u(simVars.disc.res_physical),
-		v(simVars.disc.res_physical),
+		h(planeDataConfig),
+		u(planeDataConfig),
+		v(planeDataConfig),
 
-		hu(simVars.disc.res_physical),
-		hv(simVars.disc.res_physical),
+		hu(planeDataConfig),
+		hv(planeDataConfig),
 
-		h_t(simVars.disc.res_physical),
+		h_t(planeDataConfig),
 
-		op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
+		op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
 	{
 		reset();
 	}
@@ -262,6 +268,7 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 	}
 
+	planeDataConfigInstance.setup(simVars.disc.res_physical, simVars.disc.res_spectral);
 
 	SimulationSWE *simulationSWE = new SimulationSWE;
 

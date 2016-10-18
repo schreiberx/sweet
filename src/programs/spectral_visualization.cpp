@@ -9,8 +9,8 @@
 #endif
 
 
-#include "../include/sweet/plane/PlaneData.hpp"
-#include "../include/sweet/plane/PlaneOperators.hpp"
+#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/VisSweet.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/Stopwatch.hpp>
@@ -20,6 +20,12 @@
 #include <unistd.h>
 #include <iomanip>
 #include <stdio.h>
+
+// Plane data config
+PlaneDataConfig planeDataConfigInstance;
+PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
+
+
 
 SimulationVariables simVars;
 
@@ -42,9 +48,9 @@ public:
 
 public:
 	TestSpectral()	:
-		tmp(simVars.disc.res_physical),
+		tmp(planeDataConfig),
 
-		op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
+		op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
 	{
 		stopwatch.reset();
 	}
@@ -153,7 +159,7 @@ public:
 			return;
 		}
 
-		PlaneData dataArray(simVars.disc.res_physical);
+		PlaneData dataArray(planeDataConfig);
 
 		double max = 1.0;
 		double shift = stopwatch.getTimeSinceStart()*0.1;
@@ -218,6 +224,7 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 	}
 
+	planeDataConfigInstance.setup(simVars.disc.res_physical, simVars.disc.res_spectral);
 
 	TestSpectral *testSpectral = new TestSpectral;
 

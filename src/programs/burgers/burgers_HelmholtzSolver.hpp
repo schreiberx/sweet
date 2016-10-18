@@ -11,6 +11,12 @@
 #include "../include/sweet/plane/PlaneData.hpp"
 
 
+// Plane data config
+PlaneDataConfig planeDataConfigInstance;
+PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
+
+
+
 class burgers_HelmholtzSolver
 {
 

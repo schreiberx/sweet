@@ -23,7 +23,11 @@
 
 
 #ifndef SWEET_USE_PLANE_SPECTRAL_SPACE
-	#define SWEET_USE_PLANE_SPECTRAL_SPACE	1
+	#define SWEET_USE_PLANE_SPECTRAL_SPACE	0
+#endif
+
+#ifndef SWEET_USE_LIBFFT
+	#define SWEET_USE_LIBFFT	1
 #endif
 
 #ifndef SWEET_USE_PLANE_SPECTRAL_DEALIASING
@@ -52,7 +56,7 @@ public:
 
 private:
 
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
+#if SWEET_USE_LIBFFT
 
 	/// number of spectral modes
 	std::size_t spectral_modes[2];
@@ -86,9 +90,9 @@ private:
 	fftw_plan	fftw_plan_complex_forward;
 	fftw_plan	fftw_plan_complex_backward;
 
-	bool initialized;
-
 #endif
+
+	bool initialized;
 
 
 
@@ -139,8 +143,10 @@ public:
 	{
 		physical_res[0] = 0;
 		physical_res[1] = 0;
+#if SWEET_USE_LIBFFT
 		spectral_modes[0] = 0;
 		spectral_modes[1] = 0;
+#endif
 
 		initialized = false;
 
@@ -157,6 +163,12 @@ private:
 			cleanup();
 		}
 
+		physical_data_size[0] = physical_res[0];
+		physical_data_size[1] = physical_res[1];
+
+		physical_array_data_number_of_elements = physical_res[0]*physical_res[1];
+
+#if SWEET_USE_LIBFFT
 		if (	physical_res[0] < spectral_modes[0]	||
 				physical_res[1] < spectral_modes[1]
 		)
@@ -164,10 +176,6 @@ private:
 			std::cerr << "Lower physical resolution than spectral resolution not supported!" << std::endl;
 			exit(-1);
 		}
-
-
-		physical_data_size[0] = physical_res[0];
-		physical_data_size[1] = physical_res[1];
 
 		// real-to-complex storage representation
 		spectral_data_size[0] = spectral_modes[0]/2+1;
@@ -183,7 +191,6 @@ private:
 		spectral_data_iteration_end[1] = spectral_data_size[1];
 #endif
 
-		physical_array_data_number_of_elements = physical_res[0]*physical_res[1];
 		spectral_array_data_number_of_elements = spectral_data_size[0]*spectral_data_size[1];
 
 
@@ -347,10 +354,12 @@ private:
 			MemBlockAlloc::free(data_physical, physical_array_data_number_of_elements*sizeof(std::complex<double>));
 			MemBlockAlloc::free(data_spectral, spectral_complex_array_data_number_of_elements*sizeof(std::complex<double>));
 		}
+#endif
 	}
 
 
 
+#if SWEET_USE_LIBFFT
 	void fft_physical_to_spectral(
 			double *i_physical_data,
 			std::complex<double> *o_spectral_data
@@ -382,7 +391,7 @@ private:
 		for (std::size_t i = 0; i < physical_array_data_number_of_elements; i++)
 			o_physical_data[i] *= fftw_backward_scale_factor;
 	}
-
+#endif
 
 public:
 	void setup(
@@ -396,8 +405,10 @@ public:
 		physical_res[0] = i_physical_res_x;
 		physical_res[1] = i_physical_res_y;
 
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 		spectral_modes[0] = i_spectral_modes_x;
 		spectral_modes[1] = i_spectral_modes_y;
+#endif
 
 		setup_internal_data();
 	}
@@ -445,6 +456,14 @@ public:
 
 public:
 	void setupAutoSpectralSpace(
+			std::size_t i_physical_res[2]
+	)
+	{
+		setupAutoSpectralSpace(i_physical_res[0], i_physical_res[1]);
+	}
+
+public:
+	void setupAutoSpectralSpace(
 			int i_physical_res_x,
 			int i_physical_res_y
 	)
@@ -459,8 +478,10 @@ public:
 
 #else
 
+	#if SWEET_USE_PLANE_SPECTRAL_SPACE
 		spectral_modes[0] = physical_res[0];
 		spectral_modes[1] = physical_res[1];
+	#endif
 
 #endif
 
@@ -471,6 +492,8 @@ public:
 
 	void cleanup()
 	{
+
+#if SWEET_USE_LIBFFT
 //		assert(refCounter() >= 0);
 
 //		if (refCounter() == 0)
@@ -486,6 +509,7 @@ public:
 #endif
 			fftw_cleanup();
 		}
+#endif
 	}
 
 

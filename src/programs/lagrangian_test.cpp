@@ -20,6 +20,13 @@
 #include <vector>
 #include <array>
 
+
+// Plane data config
+PlaneDataConfig planeDataConfigInstance;
+PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
+
+
+
 SimulationVariables simVars;
 
 double param_velocity_u;
@@ -53,25 +60,25 @@ public:
 
 public:
 	SimulationSWE()	:
-		prog_h(simVars.disc.res_physical),
+		prog_h(planeDataConfig),
 
-		prog_u(simVars.disc.res_physical),
-		prog_v(simVars.disc.res_physical),
+		prog_u(planeDataConfig),
+		prog_v(planeDataConfig),
 
-		prog_u_prev(simVars.disc.res_physical),
-		prog_v_prev(simVars.disc.res_physical),
+		prog_u_prev(planeDataConfig),
+		prog_v_prev(planeDataConfig),
 
-		posx_a(simVars.disc.res_physical),
-		posy_a(simVars.disc.res_physical),
+		posx_a(planeDataConfig),
+		posy_a(planeDataConfig),
 
 //		interpol_values(simVars.disc.res),
 
 //		hu(simVars.disc.res),
 //		hv(simVars.disc.res),
 
-		h_t(simVars.disc.res_physical),
+		h_t(planeDataConfig),
 
-		op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
+		op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
 	{
 		reset();
 	}
@@ -320,6 +327,8 @@ int main(int i_argc, char *i_argv[])
 
 	param_velocity_u = simVars.bogus.var[0];
 	param_velocity_v = simVars.bogus.var[1];
+
+	planeDataConfigInstance.setup(simVars.disc.res_physical, simVars.disc.res_spectral);
 
 
 	SimulationSWE *simulationSWE = new SimulationSWE;

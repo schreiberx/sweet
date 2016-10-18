@@ -354,14 +354,14 @@ public:
 	inline
 	static
 	void MPI_quitWorkers(
-			std::size_t i_resolution[2]
+			PlaneDataConfig *i_planeDataConfig
 	)
 	{
 #if SWEET_MPI
-	PlaneData dummyData(i_resolution);
+	PlaneData dummyData(i_planeDataConfig);
 	dummyData.set_all(NAN);
 
-	MPI_Bcast(dummyData.array_data_cartesian_space, dummyData.resolution[0]*dummyData.resolution[1], MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	MPI_Bcast(dummyData.physical_space_data, dummyData.planeDataConfig->physical_array_data_number_of_elements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
 #endif
 	}

@@ -17,6 +17,12 @@
 #include <iomanip>
 #include <stdio.h>
 
+// Plane data config
+PlaneDataConfig planeDataConfigInstance;
+PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
+
+
+
 SimulationVariables simVars;
 
 double next_timestep_output = 0;
@@ -81,7 +87,7 @@ public:
 
 		tmp(simVars.disc.res_physical),
 
-		op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
+		op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
 	{
 		reset();
 	}
@@ -625,6 +631,9 @@ int main(int i_argc, char *i_argv[])
 		std::cerr << "Spectral differentiation not yet supported for staggered grid!" << std::endl;
 		return -1;
 	}
+
+	planeDataConfigInstance.setup(simVars.disc.res_physical, simVars.disc.res_spectral);
+
 
 	std::ostringstream buf;
 	buf << std::setprecision(14);

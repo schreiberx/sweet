@@ -16,6 +16,11 @@ bool param_rexi_zero_before_solving;
 double param_initial_freq_x_mul;
 double param_initial_freq_y_mul;
 
+// Plane data config
+PlaneDataConfig planeDataConfigInstance;
+PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
+
+
 
 int main()
 {

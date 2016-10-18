@@ -44,16 +44,16 @@ public:
 
 public:
 	SimulationSWE()	:
-		prog_h(simVars.disc.res_physical),
-		prog_u(simVars.disc.res_physical),
-		prog_v(simVars.disc.res_physical),
+		prog_h(planeDataConfig),
+		prog_u(planeDataConfig),
+		prog_v(planeDataConfig),
 
-		beta_plane(simVars.disc.res_physical),
+		beta_plane(planeDataConfig),
 
-		eta(simVars.disc.res_physical),
-		tmp(simVars.disc.res_physical),
+		eta(planeDataConfig),
+		tmp(planeDataConfig),
 
-		op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
+		op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
 	{
 		reset();
 	}
