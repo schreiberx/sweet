@@ -41,9 +41,9 @@ public:
 
 		for (int i = 0; i < N; i++)
 		{
-			RK_h_t[i] = new PlaneData(i_test_buffer.resolution);
-			RK_u_t[i] = new PlaneData(i_test_buffer.resolution);
-			RK_v_t[i] = new PlaneData(i_test_buffer.resolution);
+			RK_h_t[i] = new PlaneData(i_test_buffer.planeDataConfig);
+			RK_u_t[i] = new PlaneData(i_test_buffer.planeDataConfig);
+			RK_v_t[i] = new PlaneData(i_test_buffer.planeDataConfig);
 		}
 	}
 

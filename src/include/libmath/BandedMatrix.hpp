@@ -2,7 +2,7 @@
  * SPHMatrix.hpp
  *
  *  Created on: 24 Aug 2016
- *      Author: martin
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SRC_INCLUDE_SPH_BANDEDMATRIX_HPP_

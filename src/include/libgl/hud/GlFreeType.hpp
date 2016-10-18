@@ -19,7 +19,7 @@
  * GlFreeType.hpp
  *
  *  Created on: Mar 21, 2010
- *      Author: martin
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef CGLFREETYPE_HPP_

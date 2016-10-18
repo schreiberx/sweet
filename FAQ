@@ -1,0 +1,9 @@
+
+
+* SWEET takes long to startup
+
+  FFTW can take some seconts to setup the plans.
+  To overcome this, set the environemtn variable SWEET_FFTW_ESTIMATE
+
+
+

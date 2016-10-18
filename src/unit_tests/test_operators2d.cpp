@@ -172,19 +172,19 @@ int main(int i_argc, char *i_argv[])
 						{
 							double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 							double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-							h.set(j, i,	sin(2.0*freq_x*M_PIl*x)*sin(2.0*freq_y*M_PIl*y)	);
-							h_diff_x.set(j, i,
+							h.physical_set(j, i,	sin(2.0*freq_x*M_PIl*x)*sin(2.0*freq_y*M_PIl*y)	);
+							h_diff_x.physical_set(j, i,
 									2.0*freq_x*M_PIl*cos(2.0*freq_x*M_PIl*x)*sin(2.0*freq_y*M_PIl*y)/(simVars.sim.domain_size[0])
 							);
 
-							h_diff_y.set(j, i,
+							h_diff_y.physical_set(j, i,
 									2.0*freq_y*M_PIl*sin(2.0*freq_x*M_PIl*x)*cos(2.0*freq_y*M_PIl*y)/(simVars.sim.domain_size[1])
 							);
-							h_diff2_x.set(j, i,
+							h_diff2_x.physical_set(j, i,
 									4.0*freq_x*freq_x*M_PIl*M_PIl*(-1.0)*sin(2.0*freq_x*M_PIl*x)*sin(2.0*freq_y*M_PIl*y)/(simVars.sim.domain_size[0]*simVars.sim.domain_size[0])
 							);
 
-							h_diff2_y.set(j, i,
+							h_diff2_y.physical_set(j, i,
 									4.0*freq_y*freq_y*M_PIl*M_PIl*(-1.0)*sin(2.0*freq_x*M_PIl*x)*sin(2.0*freq_y*M_PIl*y)/(simVars.sim.domain_size[1]*simVars.sim.domain_size[1])
 							);
 						}
@@ -379,18 +379,18 @@ int main(int i_argc, char *i_argv[])
 						{
 							double x = (double)i * dx;
 							double y = (double)j * dy;
-							h1.set(j, i,	cos(2.0*freq_1*M_PIl*x)*cos(2.0*freq_1*M_PIl*y)	);
-							h2.set(j, i,	cos(2.0*freq_2*M_PIl*x)*cos(2.0*freq_2*M_PIl*y)	);
+							h1.physical_set(j, i,	cos(2.0*freq_1*M_PIl*x)*cos(2.0*freq_1*M_PIl*y)	);
+							h2.physical_set(j, i,	cos(2.0*freq_2*M_PIl*x)*cos(2.0*freq_2*M_PIl*y)	);
 
 							//                            ok                      aliased
-							h12.set(j, i,	0.5*(cos(2.0*(freq_sub)*M_PIl*x)+cos(2.0*(freq_sum)*M_PIl*x))
+							h12.physical_set(j, i,	0.5*(cos(2.0*(freq_sub)*M_PIl*x)+cos(2.0*(freq_sum)*M_PIl*x))
 									*0.5*(cos(2.0*(freq_sub)*M_PIl*y)+cos(2.0*(freq_sum)*M_PIl*y)));
 
 							// just the representable wave
-							h12_noalias.set(j, i,	0.5*( cos(2.0*(freq_sub)*M_PIl*x)+trunc_sum*cos(2.0*(freq_sum)*M_PIl*x))
+							h12_noalias.physical_set(j, i,	0.5*( cos(2.0*(freq_sub)*M_PIl*x)+trunc_sum*cos(2.0*(freq_sum)*M_PIl*x))
 									*0.5*( cos(2.0*(freq_sub)*M_PIl*y)+trunc_sum*cos(2.0*(freq_sum)*M_PIl*y)));
 
-							h12_truncated.set(j, i,	trunc_freq1*trunc_freq2*0.5*( cos(2.0*(freq_sub)*M_PIl*x)+trunc_freq_sum*cos(2.0*(freq_sum)*M_PIl*x))
+							h12_truncated.physical_set(j, i,	trunc_freq1*trunc_freq2*0.5*( cos(2.0*(freq_sub)*M_PIl*x)+trunc_freq_sum*cos(2.0*(freq_sum)*M_PIl*x))
 									*0.5*( cos(2.0*(freq_sub)*M_PIl*y)+trunc_freq_sum*cos(2.0*(freq_sum)*M_PIl*y)));
 						}
 					}

@@ -19,7 +19,7 @@
  * CGlLights.hpp
  *
  *  Created on: Mar 27, 2010
- *      Author: martin
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #include <array>

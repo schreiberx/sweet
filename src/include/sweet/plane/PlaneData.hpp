@@ -26,6 +26,7 @@
 #include <sweet/sweetmath.hpp>
 #include <sweet/openmp_helper.hpp>
 #include <sweet/MemBlockAlloc.hpp>
+#include <sweet/plane/PlaneDataConfig.hpp>
 
 #ifndef SWEET_USE_PLANE_SPECTRAL_SPACE
 	#define SWEET_USE_PLANE_SPECTRAL_SPACE	1
@@ -64,375 +65,26 @@
 class PlaneData
 {
 public:
-	/**
-	 * global size of allocated array
-	 * (x,y[,z])
-	 */
-	std::size_t resolution[2];
+	PlaneDataConfig *planeDataConfig;
+
 
 	/**
 	 * local data in cartesian space
 	 */
-	std::size_t array_data_cartesian_length;
-	double *array_data_cartesian_space;
+	double *physical_space_data;
 
 #if SWEET_USE_LIBFFT || SWEET_USE_PLANE_SPECTRAL_SPACE
-	std::size_t resolution_spec[2];
-	bool array_data_cartesian_space_valid;
+	bool physical_space_data_valid;
 
-	/**
-	 * local data in spectral space
-	 */
-	std::size_t array_data_spectral_length;
-	double *array_data_spectral_space;
-	bool array_data_spectral_space_valid;
-
-	bool aliasing_scaled;
+	std::complex<double> *spectral_space_data;
+	bool spectral_space_data_valid;
 #endif
 
-	/**
-	 * local ranges
-	 */
-	std::size_t range_start[2];
-	std::size_t range_end[2];
-	std::size_t range_size[2];
 
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-	std::size_t range_spec_start[2];
-	std::size_t range_spec_end[2];
-	std::size_t range_spec_size[2];
-#else
+#if !SWEET_USE_PLANE_SPECTRAL_SPACE
 	int kernel_size = -1;
 	double *kernel_data = nullptr;
 	int kernel_id = -1;
-#endif
-
-	/**
-	 * temporary data?
-	 *
-	 * Temporary data can be created if e.g. operators are evaluated:
-	 * h = hu/h
-	 *
-	 * This first creates a temporary PlaneData to compute hu/h.
-	 *
-	 * This is then followed by an assignment of this data to h.
-	 */
-//	bool temporary_data;
-
-
-#if 0
-private:
-	// http://stackoverflow.com/questions/124856/how-do-i-prevent-a-class-from-being-allocated-via-the-new-operator-id-like
-	// Prevent heap allocation
-	void *operator new(std::size_t);
-	void *operator new[](std::size_t);
-	void operator delete(void*);
-	void operator delete[](void*);
-#endif
-
-#if 0
-	/**
-	 * allocator which allocated memory blocks aligned at 128 byte boundaries
-	 */
-public:
-	template <typename T=void>
-	static
-	T *alloc_aligned_mem(
-			std::size_t i_size
-	)
-	{
-		T *data;
-		int retval = posix_memalign((void**)&data, 128, i_size);
-		if (retval != 0)
-		{
-			std::cerr << "Unable to allocate memory" << std::endl;
-			assert(false);
-			exit(-1);
-		}
-		return data;
-	}
-
-
-	/**
-	 * Free memory which was previously allocated
-	 */
-public:
-	template <typename T>
-	void free(T *i_ptr)
-	{
-		::free(i_ptr);
-	}
-#endif
-
-
-
-	/**
-	 * allocate buffers
-	 *
-	 * The size is given in array_data_cartesian_length and array_data_spectral_length
-	 */
-private:
-	inline
-	void p_allocate_buffers(
-			bool i_first_touch_initialize = true	///< true: initialize the data buffers with dummy data for first touch policy of page allocation on shared-memory systems
-	)
-	{
-		MemBlockAlloc::free(array_data_cartesian_space, array_data_cartesian_length*sizeof(double));
-		array_data_cartesian_space = MemBlockAlloc::alloc<double>(array_data_cartesian_length*sizeof(double));
-
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		MemBlockAlloc::free(array_data_spectral_space, array_data_cartesian_length*sizeof(double));
-		array_data_spectral_space = MemBlockAlloc::alloc<double>(array_data_spectral_length*sizeof(double));
-#endif
-
-		if (i_first_touch_initialize)
-		{
-			// use parallel setup for first touch policy!
-#if SWEET_THREADING
-			#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-			for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-				array_data_cartesian_space[i] = -12345;	// dummy data
-
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-#if SWEET_THREADING
-			#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-			for (std::size_t i = 0; i < array_data_spectral_length; i++)
-				array_data_spectral_space[i] = -12345;	// dummy data
-#endif
-		}
-	}
-
-
-
-	/**
-	 * request that the buffers are allocated with the specified resolution
-	 */
-private:
-	void p_request_buffers_with_resolution(
-		const std::size_t i_resolution[2]		///< requested resolution
-	)
-	{
-		// check if the resolution is maybe already the same as requested
-		int i = 0;
-		for (; i < 2; i++)
-			if (resolution[i] != i_resolution[i])
-				break;
-
-		if (i == 2)
-			return;
-
-		array_data_cartesian_length = 1;
-		for (int i = 0; i < 2; i++)
-		{
-			array_data_cartesian_length *= i_resolution[i];
-
-			resolution[i] = i_resolution[i];
-			range_start[i] = 0;
-			range_end[i] = i_resolution[i];
-			range_size[i] = range_end[i]-range_start[i];
-		}
-
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		array_data_cartesian_space_valid = false;
-
-		array_data_spectral_length = array_data_cartesian_length/i_resolution[0];	/// see FFTW documentation for allocation of memory buffers
-		array_data_spectral_length *= 2*(i_resolution[0]/2+1);
-
-		for (int i = 0; i < 2; i++)
-		{
-			if (i == 0)
-				resolution_spec[0] = (resolution[0]/2+1);
-			else
-				resolution_spec[i] = resolution[i];
-
-			range_spec_start[i] = 0;
-			range_spec_end[i] = resolution_spec[i];
-			range_spec_size[i] = resolution_spec[i];
-		}
-
-		array_data_spectral_space_valid = false;
-#endif
-
-		p_allocate_buffers(false);
-	}
-
-
-#if SWEET_USE_LIBFFT || SWEET_USE_PLANE_SPECTRAL_SPACE
-
-public:
-	class FFTWSingletonClass
-	{
-	public:
-		int ref_counter;
-
-	private:
-		fftw_plan	plan_forward;
-		std::size_t plan_forward_output_length;
-
-		fftw_plan	plan_backward;
-		std::size_t plan_backward_output_length;
-
-	public:
-		static
-		bool loadWisdom()
-		{
-
-			// only initialize it, if this class is not called to initialize aliasing
-#if SWEET_REXI_THREAD_PARALLEL_SUM
-			std::cout << "Using REXI parallel sum, hence using only single FFT thread" << std::endl;
-			// only use serial FFT in case of REXI parallel sum
-			// automatically use single-threaded fftw only
-//#if SWEET_THREADING
-//#	error "Incompatible/unsupported compile flags detected"
-//#endif
-			//fftw_init_threads();
-			//fftw_plan_with_nthreads(1);
-#else
-
-	#if SWEET_THREADING
-			// support threading
-			fftw_init_threads();
-			fftw_plan_with_nthreads(omp_get_max_threads());
-	#endif
-
-#endif
-			static const char *load_wisdom_from_file = nullptr;
-
-			if (load_wisdom_from_file != nullptr)
-				return false;
-
-			load_wisdom_from_file = getenv("SWEET_FFTW_LOAD_WISDOM_FROM_FILE");
-
-			if (load_wisdom_from_file == nullptr)
-				return false;
-
-			std::cout << "Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=" << load_wisdom_from_file << std::endl;
-
-			int wisdom_plan_loaded = fftw_import_wisdom_from_filename(load_wisdom_from_file);
-			if (wisdom_plan_loaded == 0)
-			{
-				std::cerr << "Failed to load FFTW wisdom from file " << load_wisdom_from_file << std::endl;
-				exit(1);
-			}
-
-			return true;
-		}
-
-	public:
-		FFTWSingletonClass(
-				PlaneData &i_dataArray
-		)	:
-			ref_counter(0)
-		{
-			plan_backward_output_length = i_dataArray.array_data_cartesian_length;
-			plan_forward_output_length = i_dataArray.array_data_spectral_length;
-
-			double *data_cartesian = MemBlockAlloc::alloc<double>(i_dataArray.array_data_cartesian_length*sizeof(double));
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-			for (std::size_t i = 0; i < i_dataArray.array_data_cartesian_length; i++)
-				data_cartesian[i] = -123;	// dummy data
-
-			double *data_spectral = MemBlockAlloc::alloc<double>(i_dataArray.array_data_spectral_length*sizeof(double));
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-			for (std::size_t i = 0; i < i_dataArray.array_data_spectral_length; i++)
-				data_spectral[i] = -123;	// dummy data
-
-			// allow to search for a good plan only for 60 seconds
-//			fftw_set_timelimit(60);
-
-
-			/*
-			 * FFT WISDOM INIT
-			 */
-			bool wisdom_loaded = loadWisdom();
-
-			plan_forward =
-					fftw_plan_dft_r2c_2d(
-						i_dataArray.resolution[1],	// n0 = ny
-						i_dataArray.resolution[0],	// n1 = nx
-						data_cartesian,
-						(fftw_complex*)data_spectral,
-//						FFTW_PRESERVE_INPUT
-						(!wisdom_loaded ? FFTW_PRESERVE_INPUT : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
-					);
-
-//			fftw_print_plan(plan_forward);
-			if (plan_forward == nullptr)
-			{
-				std::cerr << "Failed to create forward plan for fftw" << std::endl;
-				std::cerr << "r2c preverse_input forward " << i_dataArray.resolution[0] << " x " << i_dataArray.resolution[1] << std::endl;
-				std::cerr << "fftw-wisdom plan: rf" << i_dataArray.resolution[0] << "x" << i_dataArray.resolution[1] << std::endl;
-				exit(-1);
-			}
-
-			plan_backward =
-					fftw_plan_dft_c2r_2d(
-						i_dataArray.resolution[1],	// n0 = ny
-						i_dataArray.resolution[0],	// n1 = nx
-						(fftw_complex*)data_spectral,
-						data_cartesian,
-						(!wisdom_loaded ? 0 : FFTW_WISDOM_ONLY)
-					);
-
-			if (plan_backward == nullptr)
-			{
-				std::cerr << "Failed to create backward plan for fftw" << std::endl;
-				std::cerr << "r2c backward " << i_dataArray.resolution[0] << " x " << i_dataArray.resolution[1] << std::endl;
-				std::cerr << "fftw-wisdom plan: rb" << i_dataArray.resolution[0] << "x" << i_dataArray.resolution[1] << std::endl;
-				exit(-1);
-			}
-
-			// always store plans - maybe they got extended with another one
-//			if (wisdom_plan_loaded == 0)
-#if 0
-			fftw_export_wisdom_to_filename(fftw_load_wisdom_filename);
-#endif
-
-			MemBlockAlloc::free(data_cartesian, i_dataArray.array_data_cartesian_length*sizeof(double));
-			MemBlockAlloc::free(data_spectral, i_dataArray.array_data_spectral_length*sizeof(double));
-		}
-
-		void fft_forward(
-				PlaneData &io_dataArray
-		)
-		{
-			fftw_execute_dft_r2c(plan_forward, io_dataArray.array_data_cartesian_space, (fftw_complex*)io_dataArray.array_data_spectral_space);
-		}
-
-		void fft_backward(
-				PlaneData &io_dataArray
-		)
-		{
-			fftw_execute_dft_c2r(plan_backward, (fftw_complex*)io_dataArray.array_data_spectral_space, io_dataArray.array_data_cartesian_space);
-			// spectral data is not valid anymore, since c2r is destructive!
-			io_dataArray.array_data_spectral_space_valid = false;
-
-			double scale = (1.0/(double)plan_backward_output_length);
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-			for (std::size_t i = 0; i < plan_backward_output_length; i++)
-				io_dataArray.array_data_cartesian_space[i] *= scale;
-		}
-
-		~FFTWSingletonClass()
-		{
-			fftw_destroy_plan(plan_forward);
-			fftw_destroy_plan(plan_backward);
-
-#if SWEET_THREADING
-			fftw_cleanup_threads();
-#endif
-
-			fftw_cleanup();
-		}
-	};
 #endif
 
 
@@ -441,29 +93,26 @@ public:
 	 * prohibit empty initialization by making this method private
 	 */
 private:
-	PlaneData()
-#if 1
-	{}
-#else
+	PlaneData()	:
+		planeDataConfig(nullptr)
 	{
-		resolution[0] = 0;
-		resolution[1] = 0;
-
-		temporary_data = false;
-
-		array_data_cartesian_space = nullptr;
-		array_data_cartesian_length = 0;
-
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		array_data_cartesian_space_valid = false;
-
-		array_data_spectral_space = nullptr;
-		array_data_spectral_space_valid = false;
-		array_data_spectral_length = 0;
-#endif
 	}
-#endif
 
+
+
+private:
+	void p_allocate_buffers()
+	{
+		physical_space_data = MemBlockAlloc::alloc<double>(
+				planeDataConfig->physical_array_data_number_of_elements*sizeof(double)
+		);
+
+//		std::cout << planeDataConfig->physical_array_data_number_of_elements << ", " << planeDataConfig->spectral_array_data_number_of_elements << std::endl;
+
+		spectral_space_data = MemBlockAlloc::alloc< std::complex<double> >(
+				planeDataConfig->spectral_array_data_number_of_elements*sizeof(std::complex<double>)
+		);
+	}
 
 
 
@@ -477,270 +126,41 @@ public:
 	 */
 	PlaneData(
 			const PlaneData &i_dataArray
-	)	:
-		array_data_cartesian_space(nullptr)
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		,array_data_spectral_space(nullptr),
-		aliasing_scaled(i_dataArray.aliasing_scaled)
-#endif
-
-//		,temporary_data(false)
+	)
 	{
-		for (int i = 0; i < 2; i++)
-		{
-			resolution[i] = i_dataArray.resolution[i];
+		planeDataConfig = i_dataArray.planeDataConfig;
 
-			range_start[i] = i_dataArray.range_start[i];
-			range_end[i] = i_dataArray.range_end[i];
-			range_size[i] = i_dataArray.range_size[i];
+		p_allocate_buffers();
+
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-			resolution_spec[i] = i_dataArray.resolution_spec[i];
-
-			range_spec_start[i] = i_dataArray.range_spec_start[i];
-			range_spec_end[i] = i_dataArray.range_spec_end[i];
-			range_spec_size[i] = i_dataArray.range_spec_size[i];
-#endif
-		}
-
-		array_data_cartesian_length = i_dataArray.array_data_cartesian_length;
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		array_data_spectral_length = i_dataArray.array_data_spectral_length;
-#endif
-
-		p_allocate_buffers(false);
-
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		array_data_cartesian_space_valid = i_dataArray.array_data_cartesian_space_valid;
-		if (array_data_cartesian_space_valid)
+		physical_space_data_valid = i_dataArray.physical_space_data_valid;
+		if (physical_space_data_valid)
 #endif
 		{
 			// use parallel copy for first touch policy!
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-			for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-				array_data_cartesian_space[i] = i_dataArray.array_data_cartesian_space[i];
+			for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+				physical_space_data[i] = i_dataArray.physical_space_data[i];
 		}
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		array_data_spectral_length = i_dataArray.array_data_spectral_length;
-		array_data_spectral_space_valid = i_dataArray.array_data_spectral_space_valid;
+		spectral_space_data_valid = i_dataArray.spectral_space_data_valid;
 
-		if (array_data_spectral_space_valid)
+		if (spectral_space_data_valid)
 		{
 			// use parallel copy for first touch policy!
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-			for (std::size_t i = 0; i < array_data_spectral_length; i++)
-				array_data_spectral_space[i] = i_dataArray.array_data_spectral_space[i];
-		}
-
-		if (aliasing_scaled)
-		{
-			FFTWSingletonClass* fft_ptr = *fftAliasingGetSingletonPtr();
-			fft_ptr->ref_counter++;
-		}
-
-		{
-			FFTWSingletonClass* fft_ptr = *fftGetSingletonPtr();
-			fft_ptr->ref_counter++;
+			for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
+				spectral_space_data[i] = i_dataArray.spectral_space_data[i];
 		}
 #endif
 	}
 
-
-
-public:
-	/**
-	 * Move constructor
-	 */
-	PlaneData(
-			PlaneData &&i_dataArray
-	)	:
-		array_data_cartesian_space(nullptr)
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		,array_data_spectral_space(nullptr),
-		aliasing_scaled(i_dataArray.aliasing_scaled)
-#endif
-//		,temporary_data(false)
-	{
-		for (int i = 0; i < 2; i++)
-		{
-			resolution[i] = i_dataArray.resolution[i];
-
-			range_start[i] = i_dataArray.range_start[i];
-			range_end[i] = i_dataArray.range_end[i];
-			range_size[i] = i_dataArray.range_size[i];
-
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-			resolution_spec[i] = i_dataArray.resolution_spec[i];
-
-			range_spec_start[i] = i_dataArray.range_spec_start[i];
-			range_spec_end[i] = i_dataArray.range_spec_end[i];
-			range_spec_size[i] = i_dataArray.range_spec_size[i];
-#endif
-		}
-
-		array_data_cartesian_length = i_dataArray.array_data_cartesian_length;
-		array_data_cartesian_space = i_dataArray.array_data_cartesian_space;
-		i_dataArray.array_data_cartesian_space = nullptr;
-
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		array_data_cartesian_space_valid = i_dataArray.array_data_cartesian_space_valid;
-		i_dataArray.array_data_cartesian_space_valid = false;
-
-		array_data_spectral_length = i_dataArray.array_data_spectral_length;
-		array_data_spectral_space = i_dataArray.array_data_spectral_space;
-		i_dataArray.array_data_spectral_space = nullptr;
-		array_data_spectral_space_valid = i_dataArray.array_data_spectral_space_valid;
-		i_dataArray.array_data_spectral_space_valid = false;
-
-		if (aliasing_scaled)
-		{
-			FFTWSingletonClass* fft_ptr = *fftAliasingGetSingletonPtr();
-			fft_ptr->ref_counter++;
-		}
-
-		{
-			FFTWSingletonClass* fft_ptr = *fftGetSingletonPtr();
-			fft_ptr->ref_counter++;
-		}
-#endif
-	}
-
-
-#if 0
-	/**
-	 * special empty constructor
-	 *
-	 * note, that the class may only be used after calling the setup() method.
-	 */
-public:
-	PlaneData(
-		int i_int
-	)	:
-		array_data_cartesian_space(nullptr),
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		array_data_spectral_space(nullptr),
-		aliasing_scaled(false),
-#endif
-		temporary_data(false)
-	{
-	}
-#endif
-
-
-public:
-	inline
-	void checkConsistency(bool debug = false)	const
-	{
-#if SWEET_USE_PLANE_SPECTRAL_SPACE && SWEET_DEBUG_MODE==1 && 0
-
-		static bool volatile inCheck = false;
-
-		bool shouldReturn = false;
-
-#pragma omp critical
-		{
-			if (inCheck)
-				shouldReturn = true;
-			else
-				inCheck = true;
-		}
-
-
-		if (shouldReturn)
-			return;
-
-		if (array_data_cartesian_space_valid == true && array_data_spectral_space_valid == true)
-		{
-			{
-				PlaneData a(*this);
-				a.array_data_cartesian_space_valid = false;
-				a.requestDataInCartesianSpace();
-
-				if (debug)
-				{
-					std::cout << "DEBUG: PRINT CART DATA" << std::endl;
-					a.printArrayData();
-				}
-
-				double sum = 0;
-				for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-					sum += std::abs(a.array_data_cartesian_space[i] - array_data_cartesian_space[i]);
-
-				sum /= (double)array_data_cartesian_length;
-
-				if (sum > 1e-6)
-				{
-					std::cout << std::endl;
-					std::cout << "CARTESIAN COMPARISON: Inconsistent data detected" << std::endl;
-					std::cout << std::endl;
-					std::cout << "************************************" << std::endl;
-					std::cout << "Cart data:" << std::endl;
-					printArrayData();
-					std::cout << std::endl;
-					std::cout << "************************************" << std::endl;
-
-					std::cout << "************************************" << std::endl;
-					std::cout << "Spec data:" << std::endl;
-					printSpectrum();
-					std::cout << "************************************" << std::endl;
-
-					assert(false);
-					exit(1);
-				}
-			}
-
-
-			{
-				PlaneData a(*this);
-				a.array_data_spectral_space_valid = false;
-				a.requestDataInSpectralSpace();
-
-
-				double sum_re = 0;
-				double sum_im = 0;
-				for (std::size_t i = 0; i < array_data_cartesian_length/2; i++)
-				{
-					sum_re += std::abs(a.array_data_spectral_space[2*i+0] - array_data_spectral_space[2*i+0]);
-					sum_im += std::abs(a.array_data_spectral_space[2*i+1] - array_data_spectral_space[2*i+1]);
-				}
-
-				sum_re /= (double)(array_data_spectral_length/2);
-				sum_im /= (double)(array_data_spectral_length/2);
-
-				if (sum_re > 1e-6|| sum_im > 1e-6)
-				{
-					std::cout << "************************************" << std::endl;
-					std::cout << "SPECTRUM COMPARISON: Inconsistent data detected" << std::endl;
-					std::cout << "sumerr: " << sum_re << ", " << sum_im << std::endl;
-					a.printSpectrum();
-					std::cout << std::endl;
-					std::cout << "************************************" << std::endl;
-					std::cout << "Cart data:" << std::endl;
-					printArrayData();
-					std::cout << std::endl;
-					std::cout << "************************************" << std::endl;
-
-					std::cout << "************************************" << std::endl;
-					std::cout << "Spec data:" << std::endl;
-					printSpectrum();
-					std::cout << "************************************" << std::endl;
-
-					assert(false);
-					exit(1);
-				}
-			}
-		}
-
-		inCheck = false;
-
-//		assert(!(array_data_cartesian_space_valid == true && array_data_spectral_space_valid == true));
-#endif
-	}
 
 
 public:
@@ -752,37 +172,14 @@ public:
 	 */
 public:
 	void setup(
-			const std::size_t i_resolution[2],	///< size of array
-			bool i_anti_aliasing = false		///< set to true if this should be used as an anti-aliasing dataArray
+			PlaneDataConfig *i_planeDataConfig
 	)
 	{
-		assert(array_data_cartesian_space == nullptr);
+		planeDataConfig = i_planeDataConfig;
 
-		for (int i = 0; i < 2; i++)
-		{
-			resolution[i] = 0;
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-			if (i_resolution[i] & 1)
-			{
-				std::cerr << "Sorry - only even resolution supported for spectral space, makes the life much easier!" << std::endl;
-				exit(1);
-			}
-#endif
-		}
-
-		p_request_buffers_with_resolution(i_resolution);
-
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		// initialize fft if not yet done
-		fftTestAndInit(*this);
-
-		aliasing_scaled = i_anti_aliasing;
-		if (i_anti_aliasing)
-			fftAliasingTestAndInit(*this);
-#endif
-
-		checkConsistency();
+		p_allocate_buffers();
 	}
+
 
 
 	/**
@@ -790,255 +187,177 @@ public:
 	 */
 public:
 	PlaneData(
-		const std::size_t i_resolution[2],	///< size of array for each dimension,
-		bool i_anti_aliasing = false		///< set to true if this should be used as an anti-aliasing dataArray
-	)	:
-		array_data_cartesian_space(nullptr)
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		,array_data_spectral_space(nullptr),
-		aliasing_scaled(false)
+		PlaneDataConfig *i_planeDataConfig
+	)
+#if SWEET_DEBUG
+		:
+		planeDataConfig(nullptr)
 #endif
-//		,temporary_data(false)
 	{
-		setup(i_resolution, i_anti_aliasing);
+		setup(i_planeDataConfig);
 	}
 
 
 
+public:
 	~PlaneData()
 	{
-		MemBlockAlloc::free(array_data_cartesian_space, array_data_cartesian_length*sizeof(double));
+		MemBlockAlloc::free(physical_space_data, planeDataConfig->physical_array_data_number_of_elements*sizeof(double));
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		MemBlockAlloc::free(array_data_spectral_space, array_data_spectral_length*sizeof(double));
-
-		/*
-		 * If this is an aliasing PlaneData, reduce the reference counter of this array
-		 */
-		if (aliasing_scaled)
-		{
-			FFTWSingletonClass* fft_anti_ptr = *fftAliasingGetSingletonPtr();
-			if (fft_anti_ptr == nullptr)
-			{
-				std::cerr << "FFTS for aliasing PlaneDatas still existing, but no FFTW handlers!" << std::endl;
-				exit(1);
-			}
-			fft_anti_ptr->ref_counter--;
-
-			/*
-			 * NOTE: The aliasing plans are not free'd here. See below for the reason
-			 */
-		}
-
-		{
-			FFTWSingletonClass* fft_ptr = *fftGetSingletonPtr();
-			assert(fft_ptr != nullptr);
-			fft_ptr->ref_counter--;
-
-			assert(fft_ptr->ref_counter >= 0);
-			if (fft_ptr->ref_counter == 0)
-			{
-				delete *fftGetSingletonPtr();
-				*fftGetSingletonPtr() = nullptr;
-
-				{
-					/*
-					 * Handle anti-aliasing stuff here.
-					 * We don't free the Anti-aliasing FFTW plans if their reference counter is zero
-					 * since these this reference counter could get 0 during each time step.
-					 * This frequent plan creation would significantly slow down the program.
-					 */
-
-					// also free the aliasing stuff
-					FFTWSingletonClass* fft_anti_ptr = *fftAliasingGetSingletonPtr();
-					if (fft_anti_ptr != nullptr)
-					{
-						if (fft_anti_ptr->ref_counter != 0)
-						{
-							std::cerr << "SWEET requires all PlaneDatas which were used for Antialiasing to be freed before the standard PlaneDatas!" << std::endl;
-							assert(false);
-							exit(1);
-						}
-
-						delete fft_anti_ptr;
-						*fftAliasingGetSingletonPtr() = nullptr;
-					}
-				}
-			}
-		}
-
-
+		MemBlockAlloc::free(spectral_space_data, planeDataConfig->spectral_array_data_number_of_elements*sizeof(std::complex<double>));
 #else
 		MemBlockAlloc::free(kernel_data, sizeof(double)*kernel_size*kernel_size);
 #endif
 	}
 
 
+
 	inline
-	void set(
+	void physical_set(
 			std::size_t j,
 			std::size_t i,
 			double i_value
 	)
 	{
-		assert(i >= range_start[0] && i < range_end[0]);
-		assert(j >= range_start[1] && j < range_end[1]);
-
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		array_data_cartesian_space_valid = true;
-		array_data_spectral_space_valid = false;
+		physical_space_data_valid = true;
+		spectral_space_data_valid = false;
 #endif
 
-		array_data_cartesian_space[
-							(j-range_start[1])*range_size[0]+
-							(i-range_start[0])
-						] = i_value;
-
-
-		checkConsistency();
+		physical_space_data[j*planeDataConfig->physical_data_size[0]+i] = i_value;
 	}
 
 
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 	inline
-	void set_spec(
+	void spectral_set(
 			std::size_t j,
 			std::size_t i,
 			std::complex<double> &i_value
 	)
 	{
-		assert(i >= range_spec_start[0] && i < range_spec_end[0]);
-		assert(j >= range_spec_start[1] && j < range_spec_end[1]);
-
 //		requestDataInSpectralSpace();
 
-		array_data_cartesian_space_valid = false;
-		array_data_spectral_space_valid = true;
+		physical_space_data_valid = false;
+		spectral_space_data_valid = true;
 
-		std::size_t idx = ((j-range_spec_start[1])*range_spec_size[0]+(i-range_spec_start[0]))*2;
-		array_data_spectral_space[idx] = i_value.real();
-		array_data_spectral_space[idx+1] = i_value.imag();
+		std::size_t idx = (j*planeDataConfig->spectral_data_size[0])+i;
+		spectral_space_data[idx] = i_value;
+	}
 
-		checkConsistency();
+	inline
+	void spectral_set(
+			std::size_t j,
+			std::size_t i,
+			double i_a,
+			double i_b
+	)
+	{
+//		requestDataInSpectralSpace();
+
+		physical_space_data_valid = false;
+		spectral_space_data_valid = true;
+
+		std::size_t idx = (j*planeDataConfig->spectral_data_size[0])+i;
+		spectral_space_data[idx].real(i_a);
+		spectral_space_data[idx].imag(i_b);
 	}
 #endif
 
 
 
 	inline
-	double get(
+	double physical_get(
 			std::size_t j,
 			std::size_t i
 	)	const
 	{
 		requestDataInCartesianSpace();
 
-		assert(i >= range_start[0] && i < range_end[0]);
-		assert(j >= range_start[1] && j < range_end[1]);
-
-		return array_data_cartesian_space[
-							(j-range_start[1])*range_size[0]+
-							(i-range_start[0])
-						];
-
-		checkConsistency();
+		return physical_space_data[j*planeDataConfig->spectral_data_size[0]+i];
 	}
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 	inline
-	std::complex<double> get_spec(
+	const std::complex<double>& spectral_get(
 			std::size_t j,
 			std::size_t i
 	)	const
 	{
 		requestDataInSpectralSpace();
 
-		((PlaneData*)this)->array_data_spectral_space_valid = true;
-
-		assert(i >= range_spec_start[0] && i < range_spec_end[0]);
-		assert(j >= range_spec_start[1] && j < range_spec_end[1]);
-
-		std::size_t idx = ((j-range_spec_start[1])*range_spec_size[0]+(i-range_spec_start[0]))*2;
-		return std::complex<double>(array_data_spectral_space[idx], array_data_spectral_space[idx+1]);
-
-		checkConsistency();
+		return spectral_space_data[j*planeDataConfig->spectral_data_size[0]+i];
 	}
 #endif
 
 
 	inline
-	void set_all(
+	void physical_set_all(
 			double i_value
 	)
 	{
-		// TODO: implement this in spectral space!
-
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			array_data_cartesian_space[i] = i_value;
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			physical_space_data[i] = i_value;
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		array_data_cartesian_space_valid = true;
-		array_data_spectral_space_valid = false;
+		physical_space_data_valid = true;
+		spectral_space_data_valid = false;
 #endif
-
-		checkConsistency();
 	}
+
 
 
 	/**
 	 * Set the values in the specified row
 	 */
 	inline
-	void set_row(
+	void physical_set_row(
 			int i_row,
 			double i_value
 	)
 	{
 		if (i_row < 0)
-			i_row += resolution[1];
+			i_row += planeDataConfig->physical_data_size[1];
 
 		requestDataInCartesianSpace();
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < resolution[0]; i++)
-			array_data_cartesian_space[i_row*resolution[0]+i] = i_value;
-
-		checkConsistency();
+		for (std::size_t i = 0; i < planeDataConfig->physical_data_size[0]; i++)
+			physical_space_data[i_row*planeDataConfig->physical_data_size[0]+i] = i_value;
 	}
 
 	/**
 	 * Copy values from another row and flip sign
 	 */
 	inline
-	void copy_row_inv_sign(
+	void physical_copy_row_inv_sign(
 			int i_src_row,
 			int i_dst_row
 	)
 	{
 		if (i_src_row < 0)
-			i_src_row += resolution[1];
+			i_src_row += planeDataConfig->physical_data_size[1];
 
 		if (i_dst_row < 0)
-			i_dst_row += resolution[1];
+			i_dst_row += planeDataConfig->physical_data_size[1];
 
 		requestDataInCartesianSpace();
 
-		std::size_t src_idx = i_src_row*resolution[0];
-		std::size_t dst_idx = i_dst_row*resolution[0];
+		std::size_t src_idx = i_src_row*planeDataConfig->physical_data_size[0];
+		std::size_t dst_idx = i_dst_row*planeDataConfig->physical_data_size[0];
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < resolution[0]; i++)
-			array_data_cartesian_space[dst_idx+i] = -array_data_cartesian_space[src_idx+i];
-
-		checkConsistency();
+		for (std::size_t i = 0; i < planeDataConfig->physical_data_size[0]; i++)
+			physical_space_data[dst_idx+i] = -physical_space_data[src_idx+i];
 	}
 
 
@@ -1046,29 +365,27 @@ public:
 	 * Copy values from another row
 	 */
 	inline
-	void copy_row(
+	void physical_copy_row(
 			int i_src_row,
 			int i_dst_row
 	)
 	{
 		if (i_src_row < 0)
-			i_src_row = resolution[1]+i_src_row;
+			i_src_row = planeDataConfig->physical_data_size[1]+i_src_row;
 
 		if (i_dst_row < 0)
-			i_dst_row = resolution[1]+i_dst_row;
+			i_dst_row = planeDataConfig->physical_data_size[1]+i_dst_row;
 
 		requestDataInCartesianSpace();
 
-		std::size_t src_idx = i_src_row*resolution[0];
-		std::size_t dst_idx = i_dst_row*resolution[0];
+		std::size_t src_idx = i_src_row*planeDataConfig->physical_data_size[0];
+		std::size_t dst_idx = i_dst_row*planeDataConfig->physical_data_size[0];
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < resolution[0]; i++)
-			array_data_cartesian_space[dst_idx+i] = array_data_cartesian_space[src_idx+i];
-
-		checkConsistency();
+		for (std::size_t i = 0; i < planeDataConfig->physical_data_size[0]; i++)
+			physical_space_data[dst_idx+i] = physical_space_data[src_idx+i];
 	}
 
 
@@ -1086,14 +403,7 @@ public:
 	{
 		requestDataInSpectralSpace();
 
-		assert(i >= range_spec_start[0] && i < range_spec_end[0]);
-		assert(j >= range_spec_start[1] && j < range_spec_end[1]);
-
-		std::size_t idx =	(j-range_spec_start[1])*range_spec_size[0]+
-							(i-range_spec_start[0]);
-
-		checkConsistency();
-		return array_data_spectral_space[idx*2+0];
+		return spectral_space_data[j*planeDataConfig->spectral_data_size[0]+i].real();
 	}
 
 
@@ -1106,14 +416,7 @@ public:
 	{
 		requestDataInSpectralSpace();
 
-		assert(i >= range_spec_start[0] && i < range_spec_end[0]);
-		assert(j >= range_spec_start[1] && j < range_spec_end[1]);
-
-		std::size_t idx =	(j-range_spec_start[1])*range_spec_size[0]+
-							(i-range_spec_start[0]);
-
-		checkConsistency();
-		return array_data_spectral_space[idx*2+1];
+		return spectral_space_data[j*planeDataConfig->spectral_data_size[0]+i].imag();
 	}
 
 
@@ -1125,19 +428,13 @@ public:
 			double i_value_im
 	)
 	{
-		assert(i >= range_spec_start[0] && i < range_spec_end[0]);
-		assert(j >= range_spec_start[1] && j < range_spec_end[1]);
+		std::size_t idx =	j*planeDataConfig->spectral_data_size[0]+i;
 
-		std::size_t idx =	(j-range_spec_start[1])*range_spec_size[0]+
-							(i-range_spec_start[0]);
+		spectral_space_data[idx].real(i_value_re);
+		spectral_space_data[idx].imag(i_value_im);
 
-		array_data_spectral_space[idx*2+0] = i_value_re;
-		array_data_spectral_space[idx*2+1] = i_value_im;
-
-		array_data_cartesian_space_valid = false;
-		array_data_spectral_space_valid = true;
-
-		checkConsistency();
+		physical_space_data_valid = false;
+		spectral_space_data_valid = true;
 	}
 
 
@@ -1151,20 +448,18 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
 		{
-			array_data_spectral_space[i+0] = i_value_re;
-			array_data_spectral_space[i+1] = i_value_im;
+			spectral_space_data[i].real(i_value_re);
+			spectral_space_data[i].imag(i_value_im);
 		}
 
-		array_data_cartesian_space_valid = false;
-		array_data_spectral_space_valid = true;
-
-		checkConsistency();
+		physical_space_data_valid = false;
+		spectral_space_data_valid = true;
 	}
 
 
-
+#if 0
 	/**
 	 * Set the spectrum of a frequency.
 	 *
@@ -1181,9 +476,6 @@ public:
 			double i_value_im
 	)
 	{
-		assert(i >= range_spec_start[0] && i < range_spec_end[0]);
-		assert(j >= range_spec_start[1] && j < range_spec_end[1]);
-
 		/*
 		 * Note the padding in the x-direction:
 		 *
@@ -1207,25 +499,25 @@ public:
 		assert(j >= 0 && j < resolution[1]/2);
 
 		{	// lower part of y
-			std::size_t idx =	(j-range_spec_start[1])*range_spec_size[0]+
-								(i-range_spec_start[0]);
+			std::size_t idx =	j*planeDataConfig->spectral_data_size[0]+
+								(i);
 
-			array_data_spectral_space[idx*2+0] = i_value_re;
-			array_data_spectral_space[idx*2+1] = i_value_im;
+			spectral_space_data[idx*2+0] = i_value_re;
+			spectral_space_data[idx*2+1] = i_value_im;
 		}
 
 		if (j != 0)
 		{	// upper part of y
-			std::size_t idx =	((resolution[1]-j)-range_spec_start[1])*range_spec_size[0]+
-								(i-range_spec_start[0]);
+			std::size_t idx =	((resolution[1]-j))*spectral_data_size[0]+
+								(i);
 
-			array_data_spectral_space[idx*2+0] = i_value_re;
+			spectral_space_data[idx*2+0] = i_value_re;
 			// IMPORTANT! the imaginary component is mirrored!!!
-			array_data_spectral_space[idx*2+1] = i_value_im;
+			spectral_space_data[idx*2+1] = i_value_im;
 		}
 
-		array_data_cartesian_space_valid = false;
-		array_data_spectral_space_valid = true;
+		physical_space_data_valid = false;
+		spectral_space_data_valid = true;
 
 		checkConsistency();
 	}
@@ -1245,16 +537,12 @@ public:
 			double i_value_phase_shift	///< phase shift in [0;1[
 	)
 	{
-		assert(i >= range_spec_start[0] && i < range_spec_end[0]);
-		assert(j >= range_spec_start[1] && j < range_spec_end[1]);
-
 		double c = cos(2.0*M_PIl*i_value_phase_shift)*i_value_amplitude;
 		double s = sin(2.0*M_PIl*i_value_phase_shift)*i_value_amplitude;
 
 		set_spec_spectrum(j, i, c, s);
-
-		checkConsistency();
 	}
+#endif
 
 
 	/**
@@ -1271,9 +559,6 @@ public:
 			double i_value_im	///< phase shift in [0;1[
 	)
 	{
-		assert(i >= range_spec_start[0] && i < range_spec_end[0]);
-		assert(j >= range_spec_start[1] && j < range_spec_end[1]);
-
 		/*
 		 * Note the padding in the x-direction:
 		 *
@@ -1293,31 +578,27 @@ public:
 		 *
 		 * Setting the frequency for N/2 to zero is a kind of obvious
 		 */
-		assert(i >= 0 && i < resolution[0]/2);
-		assert(j >= 0 && j < resolution[1]/2);
+		assert(i >= 0 && i < planeDataConfig->spectral_data_size[0]/2);
+		assert(j >= 0 && j < planeDataConfig->spectral_data_size[1]/2);
 
 		{	// lower part of y
-			std::size_t idx =	(j-range_spec_start[1])*range_spec_size[0]+
-								(i-range_spec_start[0]);
+			std::size_t idx = j*planeDataConfig->spectral_data_size[0]+i;
 
-			array_data_spectral_space[idx*2+0] = i_value_re;
-			array_data_spectral_space[idx*2+1] = i_value_im;
+			spectral_space_data[idx*2+0] = i_value_re;
+			spectral_space_data[idx*2+1] = i_value_im;
 		}
 
 		if (j != 0)
 		{	// upper part of y
-			std::size_t idx =	((resolution[1]-j)-range_spec_start[1])*range_spec_size[0]+
-								(i-range_spec_start[0]);
+			std::size_t idx =	(planeDataConfig->spectral_data_size[1]-j)*planeDataConfig->spectral_data_size[0]+i;
 
-			array_data_spectral_space[idx*2+0] = i_value_re;
+			spectral_space_data[idx*2+0] = i_value_re;
 			// IMPORTANT! the imaginary component is mirrored!!!
-			array_data_spectral_space[idx*2+1] = -i_value_im;
+			spectral_space_data[idx*2+1] = -i_value_im;
 		}
 
-		array_data_cartesian_space_valid = false;
-		array_data_spectral_space_valid = true;
-
-		checkConsistency();
+		physical_space_data_valid = false;
+		spectral_space_data_valid = true;
 	}
 
 
@@ -1335,9 +616,6 @@ public:
 			double i_value_im	///< phase shift in [0;1[
 	)
 	{
-		assert(i >= range_spec_start[0] && i < range_spec_end[0]);
-		assert(j >= range_spec_start[1] && j < range_spec_end[1]);
-
 		/*
 		 * Note the padding in the x-direction:
 		 *
@@ -1357,24 +635,21 @@ public:
 		 *
 		 * Setting the frequency for N/2 to zero is a kind of obvious
 		 */
-		assert(i >= 0 && i < resolution[0]/2);
-		assert(j >= 0 && j < resolution[1]/2);
+		assert(i >= 0 && i < planeDataConfig->spectral_data_size[0]/2);
+		assert(j >= 0 && j < planeDataConfig->spectral_data_size[1]/2);
 
 		{	// lower part of y
-			std::size_t idx =	(j-range_spec_start[1])*range_spec_size[0]+
-								(i-range_spec_start[0]);
+			std::size_t idx = j*planeDataConfig->spectral_data_size[0]+i;
 
-			array_data_spectral_space[idx*2+0] = i_value_re;
-			array_data_spectral_space[idx*2+1] = i_value_im;
+			spectral_space_data[idx*2+0] = i_value_re;
+			spectral_space_data[idx*2+1] = i_value_im;
 		}
 
-		array_data_cartesian_space_valid = false;
-		array_data_spectral_space_valid = true;
-
-		checkConsistency();
+		physical_space_data_valid = false;
+		spectral_space_data_valid = true;
 	}
 
-
+#if 0
 	/**
 	 * Set the spectrum of a frequency with amplitude and phase.
 	 *
@@ -1416,111 +691,20 @@ public:
 
 		if (j != 0)
 		{	// upper part of y
-			std::size_t idx =	((resolution[1]-j)-range_spec_start[1])*range_spec_size[0]+
-								(i-range_spec_start[0]);
+			std::size_t idx =	(resolution[1]-j)*spectral_data_size[0]+i;
 
-			array_data_spectral_space[idx*2+0] = i_value_re;
+			spectral_space_data[idx*2+0] = i_value_re;
 			// IMPORTANT! the imaginary component is mirrored!!!
-			array_data_spectral_space[idx*2+1] = -i_value_im;
+			spectral_space_data[idx*2+1] = -i_value_im;
 		}
 
-		array_data_cartesian_space_valid = false;
-		array_data_spectral_space_valid = true;
+		physical_space_data_valid = false;
+		spectral_space_data_valid = true;
 
 		checkConsistency();
 	}
-
-
-
-
-private:
-	static FFTWSingletonClass** fftGetSingletonPtr()
-	{
-		static FFTWSingletonClass *fftw_singleton_data = nullptr;
-		return &fftw_singleton_data;
-	}
-
-
-private:
-	static FFTWSingletonClass* fftTestAndInit(
-		PlaneData &i_dataArray
-	)
-	{
-		FFTWSingletonClass **fftw_singleton_data = fftGetSingletonPtr();
-
-		if (*fftw_singleton_data != nullptr)
-		{
-			(*fftw_singleton_data)->ref_counter++;
-			return *fftw_singleton_data;
-		}
-
-
-		*fftw_singleton_data = new FFTWSingletonClass(i_dataArray);
-		(*fftw_singleton_data)->ref_counter++;
-
-		return *fftw_singleton_data;
-	}
-
-private:
-	/**
-	 * TODO: Replace this with returning a reference
-	 */
-	static FFTWSingletonClass** fftAliasingGetSingletonPtr()
-	{
-		static FFTWSingletonClass *fftw_singleton_data = nullptr;
-		return &fftw_singleton_data;
-	}
-
-private:
-	FFTWSingletonClass* fftAliasingTestAndInit(
-		PlaneData &i_dataArray
-	)	const
-	{
-		assert(i_dataArray.aliasing_scaled);
-
-		FFTWSingletonClass **fftw_singleton_data = fftAliasingGetSingletonPtr();
-
-		if (*fftw_singleton_data != nullptr)
-		{
-			(*fftw_singleton_data)->ref_counter++;
-			return *fftw_singleton_data;
-		}
-
-		*fftw_singleton_data = new FFTWSingletonClass(i_dataArray);
-		(*fftw_singleton_data)->ref_counter++;
-
-		return *fftw_singleton_data;
-	}
-
-public:
-	static void checkRefCounters()
-	{
-#if SWEET_USE_PLANE_SPECTRAL_DEALIASING || SWEET_USE_PLANE_SPECTRAL_SPACE
-		if (*PlaneData::fftGetSingletonPtr() != nullptr)
-		{
-			std::cerr << "FFT plans not yet released." << std::endl;
-			std::cerr << "This typically means a memory leak if this is the end of the program and all classes deconstructors have been called" << std::endl;
-			std::cerr << " Reference counter: " << (*PlaneData::fftGetSingletonPtr())->ref_counter << std::endl;
-		}
-
-		if (*PlaneData::fftAliasingGetSingletonPtr() != nullptr)
-		{
-			std::cerr << "FFT plans for ANTI ALIASING not yet released." << std::endl;
-			std::cerr << "This typically means a memory leak if this is the end of the program and all classes deconstructors have been called" << std::endl;
-			std::cerr << " Reference counter: " << (*PlaneData::fftAliasingGetSingletonPtr())->ref_counter << std::endl;
-		}
 #endif
-	}
 
-#else
-
-
-public:
-	static void checkRefCounters()
-	{
-	}
-
-#endif
 
 public:
 	inline
@@ -1542,10 +726,10 @@ public:
 	#endif
 #endif
 
-		if (array_data_spectral_space_valid)
+		if (spectral_space_data_valid)
 			return *this;		// nothing to do
 
-		if (!array_data_cartesian_space_valid)
+		if (!physical_space_data_valid)
 		{
 			std::cerr << "Spectral data not available! Is this maybe a non-initialized operator?" << std::endl;
 			assert(false);
@@ -1554,18 +738,11 @@ public:
 
 		PlaneData *rw_array_data = (PlaneData*)this;
 
-		if (aliasing_scaled)
-			(*fftAliasingGetSingletonPtr())->fft_forward(*rw_array_data);
-		else
-			(*fftGetSingletonPtr())->fft_forward(*rw_array_data);
+		planeDataConfig->fft_physical_to_spectral(rw_array_data->physical_space_data, rw_array_data->spectral_space_data);
 
-		rw_array_data->array_data_spectral_space_valid = true;
+		rw_array_data->spectral_space_data_valid = true;
+		rw_array_data->physical_space_data_valid = false;
 
-		/*
-		 * TODO: this is only a debugging helper
-		 */
-//		rw_array_data->array_data_cartesian_space_valid = false;
-		checkConsistency();
 #endif
 		return *this;
 	}
@@ -1575,50 +752,39 @@ public:
 	const PlaneData& requestDataInCartesianSpace() const
 	{
 #if SWEET_USE_PLANE_SPECTRAL_SPACE==1
-		checkConsistency();
 
-		if (array_data_cartesian_space_valid)
+		if (physical_space_data_valid)
 			return *this;		// nothing to do
 
-		assert(array_data_spectral_space_valid == true);
+		assert(spectral_space_data_valid == true);
 
 		PlaneData *rw_array_data = (PlaneData*)this;
 
-		if (!aliasing_scaled)
-			(*fftGetSingletonPtr())->fft_backward(*rw_array_data);
-		else
-			(*fftAliasingGetSingletonPtr())->fft_backward(*rw_array_data);
+		planeDataConfig->fft_spectral_to_physical(rw_array_data->spectral_space_data, rw_array_data->physical_space_data);
 
-		rw_array_data->array_data_cartesian_space_valid = true;
-
-		/*
-		 * TODO: this is only a debugging helper
-		 */
-//		rw_array_data->array_data_spectral_space_valid = false;
-
-		checkConsistency();
+		rw_array_data->spectral_space_data_valid = false;
+		rw_array_data->physical_space_data_valid = true;
 #endif
 	return *this;
 	}
+
+#endif
 
 
 	inline
 	PlaneData return_one_if_positive()
 	{
-		PlaneData out(this->resolution);
-//		out.temporary_data = true;
+		PlaneData out(planeDataConfig);
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			out.array_data_cartesian_space[i] = (array_data_cartesian_space[i] > 0 ? 1 : 0);
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			out.physical_space_data[i] = (physical_space_data[i] > 0 ? 1 : 0);
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		out.array_data_cartesian_space_valid = true;
+		out.physical_space_data_valid = true;
 #endif
-
-		out.checkConsistency();
 		return out;
 	}
 
@@ -1627,20 +793,17 @@ public:
 	inline
 	PlaneData return_value_if_positive()	const
 	{
-		PlaneData out(this->resolution);
-//		out.temporary_data = true;
+		PlaneData out(planeDataConfig);
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			out.array_data_cartesian_space[i] = (array_data_cartesian_space[i] > 0 ? array_data_cartesian_space[i] : 0);
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			out.physical_space_data[i] = (physical_space_data[i] > 0 ? physical_space_data[i] : 0);
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		out.array_data_cartesian_space_valid = true;
+		out.physical_space_data_valid = true;
 #endif
-
-		out.checkConsistency();
 		return out;
 	}
 
@@ -1648,20 +811,17 @@ public:
 	inline
 	PlaneData return_one_if_negative()	const
 	{
-		PlaneData out(this->resolution);
-//		out.temporary_data = true;
+		PlaneData out(planeDataConfig);
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			out.array_data_cartesian_space[i] = (array_data_cartesian_space[i] < 0 ? 1 : 0);
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			out.physical_space_data[i] = (physical_space_data[i] < 0 ? 1 : 0);
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		out.array_data_cartesian_space_valid = true;
+		out.physical_space_data_valid = true;
 #endif
-
-		out.checkConsistency();
 		return out;
 	}
 
@@ -1669,20 +829,17 @@ public:
 	inline
 	PlaneData return_value_if_negative()	const
 	{
-		PlaneData out(this->resolution);
-//		out.temporary_data = true;
+		PlaneData out(planeDataConfig);
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			out.array_data_cartesian_space[i] = (array_data_cartesian_space[i] < 0 ? array_data_cartesian_space[i] : 0);
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			out.physical_space_data[i] = (physical_space_data[i] < 0 ? physical_space_data[i] : 0);
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		out.array_data_cartesian_space_valid = true;
+		out.physical_space_data_valid = true;
 #endif
-
-		out.checkConsistency();
 		return out;
 	}
 
@@ -1699,9 +856,9 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for reduction(&&:isallfinite)
 #endif
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			isallfinite = isallfinite && std::isfinite(array_data_cartesian_space[i]);
-//			isallfinite = isallfinite && (array_data_cartesian_space[i]<1000);
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			isallfinite = isallfinite && std::isfinite(physical_space_data[i]);
+//			isallfinite = isallfinite && (physical_space[i]<1000);
 
 
 		return isallfinite;
@@ -1720,11 +877,9 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for reduction(max:maxabs)
 #endif
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			maxabs = std::max(maxabs, std::abs(array_data_cartesian_space[i]));
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			maxabs = std::max(maxabs, std::abs(physical_space_data[i]));
 
-
-		checkConsistency();
 		return maxabs;
 	}
 
@@ -1741,12 +896,11 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for reduction(+:sum)
 #endif
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			sum += array_data_cartesian_space[i]*array_data_cartesian_space[i];
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			sum += physical_space_data[i]*physical_space_data[i];
 
-		sum = std::sqrt(sum/double(array_data_cartesian_length));
+		sum = std::sqrt(sum/(double)(planeDataConfig->physical_array_data_number_of_elements));
 
-		checkConsistency();
 		return sum;
 	}
 
@@ -1764,9 +918,9 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for reduction(+:sum,c)
 #endif
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 		{
-			double value = array_data_cartesian_space[i]*array_data_cartesian_space[i];
+			double value = physical_space_data[i]*physical_space_data[i];
 
 			// Use Kahan summation
 			double y = value - c;
@@ -1777,9 +931,8 @@ public:
 
 		sum -= c;
 
-		sum = std::sqrt(sum/double(array_data_cartesian_length));
+		sum = std::sqrt(sum/(double)(planeDataConfig->physical_array_data_number_of_elements));
 
-		checkConsistency();
 		return sum;
 	}
 
@@ -1796,11 +949,9 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for reduction(max:maxvalue)
 #endif
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			maxvalue = std::max(maxvalue, array_data_cartesian_space[i]);
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			maxvalue = std::max(maxvalue, physical_space_data[i]);
 
-
-		checkConsistency();
 		return maxvalue;
 	}
 
@@ -1816,11 +967,9 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for reduction(min:minvalue)
 #endif
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			minvalue = std::min(minvalue, array_data_cartesian_space[i]);
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			minvalue = std::min(minvalue, physical_space_data[i]);
 
-
-		checkConsistency();
 		return minvalue;
 	}
 
@@ -1836,11 +985,9 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for reduction(+:sum)
 #endif
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			sum += array_data_cartesian_space[i];
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			sum += physical_space_data[i];
 
-
-		checkConsistency();
 		return sum;
 	}
 
@@ -1857,9 +1004,9 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for reduction(+:sum,c)
 #endif
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 		{
-			double value = array_data_cartesian_space[i];
+			double value = physical_space_data[i];
 
 			// Use Kahan summation
 			double y = value - c;
@@ -1870,8 +1017,6 @@ public:
 
 		sum -= c;
 
-
-		checkConsistency();
 		return sum;
 	}
 
@@ -1886,11 +1031,10 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for reduction(+:sum)
 #endif
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			sum += std::abs(array_data_cartesian_space[i]);
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			sum += std::abs(physical_space_data[i]);
 
 
-		checkConsistency();
 		return sum;
 	}
 
@@ -1906,10 +1050,10 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for reduction(+:sum,c)
 #endif
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 		{
 
-			double value = std::abs(array_data_cartesian_space[i]);
+			double value = std::abs(physical_space_data[i]);
 			// Use Kahan summation
 			double y = value - c;
 			double t = sum + y;
@@ -1919,8 +1063,6 @@ public:
 
 		sum -= c;
 
-
-		checkConsistency();
 		return sum;
 	}
 
@@ -1936,11 +1078,10 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for reduction(+:sum)
 #endif
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			sum += array_data_cartesian_space[i]*array_data_cartesian_space[i];
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			sum += physical_space_data[i]*physical_space_data[i];
 
 
-		checkConsistency();
 		return std::sqrt(sum);
 	}
 
@@ -1958,9 +1099,9 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for reduction(+:sum,c)
 #endif
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 		{
-			double value = array_data_cartesian_space[i]*array_data_cartesian_space[i];
+			double value = physical_space_data[i]*physical_space_data[i];
 
 			// Use Kahan summation
 			double y = value - c;
@@ -1971,8 +1112,6 @@ public:
 
 		sum -= c;
 
-
-		checkConsistency();
 		return std::sqrt(sum);
 	}
 
@@ -1990,57 +1129,18 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for reduction(max:maxabs)
 #endif
-		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
 		{
-			double re = array_data_spectral_space[i];
-			double im = array_data_spectral_space[i+1];
+			double re = spectral_space_data[i].real();
+			double im = spectral_space_data[i].imag();
 			maxabs = std::max(maxabs, std::sqrt(re*re + im*im));
 		}
 
-
-		checkConsistency();
 		return maxabs;
 	}
 
-
-	/**
-	 * return centroid of frequency:
-	 *
-	 * Note, that the centroid is given in logarithmic space
-	 */
-	double reduce_spec_getPolvaniCentroid()	const
-	{
-		requestDataInSpectralSpace();
-
-		double nom = 0;
-		double denom = 0;
-
-		for (std::size_t j = 0; j < resolution_spec[1]; j++)
-		{
-			for (std::size_t i = 0; i < resolution_spec[0]; i++)
-			{
-				double re = spec_getRe(j, i);
-				double im = spec_getIm(j, i);
-
-				std::size_t ka = i;
-//				std::size_t ka = (i < resolution_spec[0] ? i : resolution_spec[0]-i);
-
-				// consider mirroring in y direction
-				std::size_t kb = (j < resolution_spec[1]/2 ? j : resolution_spec[1]-j);
-
-				double k = std::sqrt((double)(ka*ka)+(double)(kb*kb));
-				double value = std::sqrt(re*re+im*im);
-
-				nom += k*value;
-				denom += value;
-			}
-		}
-
-
-		checkConsistency();
-		return nom/denom;
-	}
 #endif
+
 
 	constexpr
 	static
@@ -2121,7 +1221,7 @@ public:
 		// radius of kernel (half size)
 		std::size_t R = S>>1;
 
-		set_all(0);
+		physical_set_all(0);
 
 		// left lower corner
 		//kernel_cart[    0:R[0]+1,       0:R[0]+1    ] = conv_kernel[    R[0]:,  R[0]:   ]
@@ -2132,12 +1232,12 @@ public:
 				std::size_t cy = ky-R;
 				std::size_t cx = kx-R;
 
-				if (range_start[0] > cx || range_end[0] <= cx)
+				if (0 > cx || planeDataConfig->physical_data_size[0] <= cx)
 					continue;
-				if (range_start[1] > cy || range_end[1] <= cy)
+				if (0 > cy || planeDataConfig->physical_data_size[1] <= cy)
 					continue;
 
-				set(cy, cx, inv_kernel_array[ky][kx]);
+				physical_set(cy, cx, inv_kernel_array[ky][kx]);
 			}
 
 
@@ -2148,14 +1248,14 @@ public:
 			{
 				// coordinates in Cartesian space
 				std::size_t cy = ky-R;
-				std::size_t cx = resolution[0] - R + kx;
+				std::size_t cx = planeDataConfig->physical_data_size[0] - R + kx;
 
-				if (range_start[0] > cx || range_end[0] <= cx)
+				if (0 > cx || planeDataConfig->physical_data_size[0] <= cx)
 					continue;
-				if (range_start[1] > cy || range_end[1] <= cy)
+				if (0 > cy || planeDataConfig->physical_data_size[1] <= cy)
 					continue;
 
-				set(cy, cx, inv_kernel_array[ky][kx]);
+				physical_set(cy, cx, inv_kernel_array[ky][kx]);
 			}
 
 
@@ -2165,15 +1265,15 @@ public:
 			for (std::size_t kx = R; kx < S; kx++)
 			{
 				// coordinates in Cartesian space
-				std::size_t cy = resolution[1] - R + ky;
+				std::size_t cy = planeDataConfig->physical_data_size[1] - R + ky;
 				std::size_t cx = kx-R;
 
-				if (range_start[0] > cx || range_end[0] <= cx)
+				if (0 > cx || planeDataConfig->physical_data_size[0] <= cx)
 					continue;
-				if (range_start[1] > cy || range_end[1] <= cy)
+				if (0 > cy || planeDataConfig->physical_data_size[1] <= cy)
 					continue;
 
-				set(cy, cx, inv_kernel_array[ky][kx]);
+				physical_set(cy, cx, inv_kernel_array[ky][kx]);
 			}
 
 
@@ -2183,24 +1283,22 @@ public:
 			for (std::size_t kx = 0; kx < R; kx++)
 			{
 				// coordinates in Cartesian space
-				std::size_t cy = resolution[1] - R + ky;
-				std::size_t cx = resolution[0] - R + kx;
+				std::size_t cy = planeDataConfig->physical_data_size[1] - R + ky;
+				std::size_t cx = planeDataConfig->physical_data_size[0] - R + kx;
 
-				if (range_start[0] > cx || range_end[0] <= cx)
+				if (0 > cx || planeDataConfig->physical_data_size[0] <= cx)
 					continue;
-				if (range_start[1] > cy || range_end[1] <= cy)
+				if (0 > cy || planeDataConfig->physical_data_size[1] <= cy)
 					continue;
 
-				set(cy, cx, inv_kernel_array[ky][kx]);
+				physical_set(cy, cx, inv_kernel_array[ky][kx]);
 			}
 
-		array_data_cartesian_space_valid = true;
-		array_data_spectral_space_valid = false;
+		physical_space_data_valid = true;
+		spectral_space_data_valid = false;
 
 		requestDataInSpectralSpace();	/// convert kernel_data; to spectral space
 #endif
-
-		checkConsistency();
 	}
 
 
@@ -2215,21 +1313,21 @@ public:
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 		bool was_spectral = false;
-		if (this->array_data_spectral_space_valid)
+		if (this->spectral_space_data_valid)
 		{
 			this->requestDataInCartesianSpace();
 			was_spectral = true;
-			this->array_data_spectral_space_valid=false;
-		}else if(!this->array_data_cartesian_space_valid){
+			this->spectral_space_data_valid=false;
+		}else if(!this->physical_space_data_valid){
 			std::cout << "Uninitialized PlaneData in op_stencil_Re_3x3" << std::endl;
 			exit(-1);
 		}
-		out.array_data_spectral_space_valid=false;
+		out.spectral_space_data_valid=false;
 #endif
 
 
-		int res_x = resolution[0];
-		int res_y = resolution[1];
+		int res_x = planeDataConfig->physical_data_size[0];
+		int res_y = planeDataConfig->physical_data_size[1];
 
 
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
@@ -2239,7 +1337,7 @@ public:
 		{
 			for (int x = 0; x < res_x; x++)
 			{
-				double *data_out = &out.array_data_cartesian_space[(y*res_x+x)];
+				double *data_out = &out.physical_space_data[(y*res_x+x)];
 				data_out[0] = 0;
 
 				for (int j = -1; j <= 1; j++)
@@ -2265,7 +1363,7 @@ public:
 
 						double kre = i_kernel_data[idx];
 
-						double dre = array_data_cartesian_space[(pos_y*res_x+pos_x)];
+						double dre = physical_space_data[(pos_y*res_x+pos_x)];
 
 						data_out[0] += dre*kre;
 					}
@@ -2292,23 +1390,24 @@ public:
 			const double *i_kernel_data
 	)
 	{
-		PlaneData out(resolution);
+		PlaneData out(planeDataConfig);
+
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 		bool was_spectral = false;
-		if (this->array_data_spectral_space_valid)
+		if (this->spectral_space_data_valid)
 		{
 			this->requestDataInCartesianSpace();
 			was_spectral = true;
-			this->array_data_spectral_space_valid=false;
-		}else if(!this->array_data_cartesian_space_valid){
+			this->spectral_space_data_valid=false;
+		}else if(!this->physical_space_data_valid){
 			std::cout << "Uninitialized PlaneData in op_stencil_Re_3x3" << std::endl;
 			exit(-1);
 		}
-		out.array_data_spectral_space_valid=false;
+		out.spectral_space_data_valid=false;
 #endif
 
-		int res_x = resolution[0];
-		int res_y = resolution[1];
+		int res_x = planeDataConfig->physical_data_size[0];
+		int res_y = planeDataConfig->physical_data_size[1];
 
 
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
@@ -2318,7 +1417,7 @@ public:
 		{
 			for (int x = 0; x < res_x; x++)
 			{
-				double *data_out = &out.array_data_cartesian_space[(y*res_x+x)];
+				double *data_out = &out.physical_space_data[(y*res_x+x)];
 				data_out[0] = 0;
 
 				for (int j = -1; j <= 1; j++)
@@ -2344,7 +1443,7 @@ public:
 
 						double kre = i_kernel_data[idx];
 
-						double dre = array_data_cartesian_space[(pos_y*res_x+pos_x)];
+						double dre = physical_space_data[(pos_y*res_x+pos_x)];
 
 						data_out[0] += dre*kre;
 					}
@@ -2376,13 +1475,12 @@ public:
 			double i_tolerance = 0.0			///< set tolerance to 0, since we setup the values in the spectral operator directly
 	)	const
 	{
-		PlaneData out(this->resolution);
-//		out.temporary_data = true;
+		PlaneData out(planeDataConfig);
 
 		PlaneData &rw_array_data = (PlaneData&)i_array_data;
 
 		// only makes sense, if this is an operator created in spectral space
-		assert(i_array_data.array_data_spectral_space_valid == true);
+		assert(i_array_data.spectral_space_data_valid == true);
 
 		requestDataInSpectralSpace();
 		rw_array_data.requestDataInSpectralSpace();
@@ -2390,220 +1488,44 @@ public:
 		// determine maximum value for tolerance
 		double max_value = i_array_data.reduce_spec_maxAbs();
 		i_tolerance *= max_value;
-		i_tolerance *= (resolution[0]+resolution[1]);	// the larger the matrix, the less the accuracy
+		i_tolerance *= (planeDataConfig->physical_data_size[0]+planeDataConfig->physical_data_size[1]);	// the larger the matrix, the less the accuracy
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
 		{
-			double ar = array_data_spectral_space[i];
-			double ai = array_data_spectral_space[i+1];
-			double br = i_array_data.array_data_spectral_space[i];
-			double bi = i_array_data.array_data_spectral_space[i+1];
+			double ar = spectral_space_data[i].real();
+			double ai = spectral_space_data[i].imag();
+			double br = i_array_data.spectral_space_data[i].real();
+			double bi = i_array_data.spectral_space_data[i].imag();
 
 			double den = (br*br+bi*bi);
 
 			if (std::abs(den) <= i_tolerance)
 			{
 				// For inverting differential operators, this is the integration constant C
-				out.array_data_spectral_space[i] = ar*i_denom_zeros_scalar;
-				out.array_data_spectral_space[i+1] = ai*i_denom_zeros_scalar;
+				out.spectral_space_data[i] = ar*i_denom_zeros_scalar;
+				out.spectral_space_data[i+1] = ai*i_denom_zeros_scalar;
 			}
 			else
 			{
-				out.array_data_spectral_space[i] = (ar*br + ai*bi)/den;
-				out.array_data_spectral_space[i+1] = (ai*br - ar*bi)/den;
+				out.spectral_space_data[i].real((ar*br + ai*bi)/den);
+				out.spectral_space_data[i].imag((ai*br - ar*bi)/den);
 			}
 		}
 
-		out.array_data_spectral_space_valid = true;
-		out.array_data_cartesian_space_valid = false;
-
-
-		checkConsistency();
-		return out;
-	}
-#endif
-
-
-#if SWEET_USE_PLANE_SPECTRAL_DEALIASING && SWEET_USE_PLANE_SPECTRAL_SPACE
-
-	/**
-	 * scale the solution to avoid aliasing effects for handling non-linear terms
-	 */
-	inline
-	PlaneData aliasing_scaleUp(
-			std::size_t *i_new_resolution = nullptr
-	)	const
-	{
-		std::size_t new_resolution[2];
-
-		//Resolution for augmented cartesian space arrays (3N/2)
-		if (i_new_resolution == nullptr)
-		{
-			for (int i = 0; i < 2; i++)
-			{
-				// TODO
-//				new_resolution[i] = (this->resolution[i]*4)/2;
-				new_resolution[i] = (this->resolution[i]*3)/2;
-//				new_resolution[i] = (this->resolution[i]*3)/2-1;
-//				new_resolution[i] = (this->resolution[i]*2);
-
-				if ((new_resolution[i] & 1) != 0)
-				{
-					std::cerr << "Odd resolution for dealiasing not supported, please change your resolution" << std::endl;
-					exit(-1);
-				}
-			}
-		}
-		else
-		{
-			for (int i = 0; i < 2; i++)
-				new_resolution[i] = i_new_resolution[i];
-		}
-
-		// Augmented array (temporary)
-		PlaneData out(new_resolution);
-//		out.temporary_data = false;
-		out.aliasing_scaled = true;
-
-		/*
-		 * Test if the FFTW plans for aliasing were initialized before.
-		 * If not, then initialize them.
-		 * These FFTW plans are of higher resolution than the standard ones.
-		 */
-		fftAliasingTestAndInit(out);
-
-		//Get spectral data
-		requestDataInSpectralSpace();
-
-		//Zero temporary array
-		out.set_spec_all(0, 0);
-
-		// TODO: this does not work once distributed memory is available
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t j = 0; j < resolution_spec[1]/2; j++)
-		{
-			/*
-			 * Copy the spectrum of data_array to the temporary array
-			 *    --> this will leave blank the high modes of the tmp array, since it has 3N/2 modes instead of N
-			 * We use memcpy, since there are typically optimized routines available.
-			 * Writing this as a for loop can result in similar or even better performance.
-			 * lower quadrant
-			 */
-			memcpy(
-					out.array_data_spectral_space+(j*out.range_spec_size[0])*2,
-					array_data_spectral_space+(j*range_spec_size[0])*2,
-					sizeof(double)*(range_spec_size[0]*2-2)
-				);
-		}
-
-		std::size_t disp = out.range_spec_size[1] - range_spec_size[1];
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t j = resolution_spec[1]/2+1; j < resolution_spec[1]; j++)
-		{
-			// top quadrant
-			memcpy(
-					out.array_data_spectral_space+((j+disp)*out.range_spec_size[0])*2,
-					array_data_spectral_space+(j*range_spec_size[0])*2,
-					sizeof(double)*(range_spec_size[0]*2-2)
-				);
-		}
-
-		//Scale for temporary array for the correct Fourier constant relative to resolution
-		double scale = ((double)new_resolution[0]*(double)new_resolution[1])/((double)resolution[0]*(double)resolution[1]);
-
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < out.array_data_spectral_length; i++)
-			out.array_data_spectral_space[i] *= scale;
-
-		out.array_data_spectral_space_valid = true;
-		out.array_data_cartesian_space_valid = false;
-
-
-		checkConsistency();
-
-		/*
-		 *The temporary array becomes the main array, but this means that it will have 3N/2 modes and ...
-		 * The Cartesian space data is lost.
-		 * In general, both data sets have to match when converted forward or backward or only one of them is valid.
-		 * If they are not consistently matching (converting forward/backward), this would result in an exception.
-		 */
+		out.spectral_space_data_valid = true;
+		out.physical_space_data_valid = false;
 
 		return out;
 	}
-
-	PlaneData aliasing_scaleDown(
-			std::size_t *i_new_resolution
-	)
-	{
-		assert(aliasing_scaled == true);
-//		aliasing_scaled = true;
-
-		PlaneData out(i_new_resolution);
-//		out.temporary_data = false;
-		out.aliasing_scaled = false;
-
-//		fftAliasingTestAndInit(out);
-
-		requestDataInSpectralSpace();
-
-		out.set_spec_all(0, 0);
-
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t j = 0; j < out.resolution_spec[1]/2; j++)
-		{
-			// lower quadrant
-			memcpy(
-					out.array_data_spectral_space+(j*out.range_spec_size[0])*2,
-					array_data_spectral_space+(j*range_spec_size[0])*2,
-					sizeof(double)*(out.range_spec_size[0]*2-2)
-				);
-		}
 
-		std::size_t disp = range_spec_size[1] - out.range_spec_size[1];
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t j = out.resolution_spec[1]/2+1; j < out.resolution_spec[1]; j++)
-		{
-			// top quadrant
-			memcpy(
-					out.array_data_spectral_space+(j*out.range_spec_size[0])*2,
-					array_data_spectral_space+((j+disp)*range_spec_size[0])*2,
-					sizeof(double)*(out.range_spec_size[0]*2-2)
-				);
-		}
-		out.array_data_spectral_space_valid = true;
-		out.array_data_cartesian_space_valid = false;
-
-
-		double scale = ((double)i_new_resolution[0]*(double)i_new_resolution[1])/((double)resolution[0]*(double)resolution[1]);
-
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < out.array_data_spectral_length; i++)
-			out.array_data_spectral_space[i] *= scale;
-
-
-
-		checkConsistency();
-		return out;
-	}
-#endif
 
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
+#if 0
 	/**
 	 * Zero high frequency modes (beyond 2N/3)
 	 *
@@ -2645,10 +1567,10 @@ public:
 #if SWEET_THREADING
 //#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t y = resolution_spec[1]-1; y > resolution_spec[1]/2; y--)
+		for (std::size_t y = planeDataConfig->spectral_data_size[1]-1; y > planeDataConfig->spectral_data_size[1]/2; y--)
 		{
 			i=0;
-			for (std::size_t x = 0; x < resolution_spec[0]; x++)
+			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
 			{
 
 				//double value_re = spec_getRe(y, x);
@@ -2656,7 +1578,7 @@ public:
 				if( x > 2*(resolution_spec[0]-1)/3 || j > 2*(resolution_spec[1]/2)/3 )
 				//if( x > 2*(resolution_spec[0]-1)/3-1 || j > 2*(resolution_spec[1]/2)/3-1 )
 				{
-					set_spec( y, x, 0.0, 0.0);
+					spectral_set( y, x, 0.0, 0.0);
 					//std::cout << "(" << i << ", " << j << ", High)\t";
 				}
 				else
@@ -2672,7 +1594,7 @@ public:
 
 		//Lower part
 		i=0; //modenumber in x
-		j=resolution_spec[1]/2; //modenumber in y
+		j=planeDataConfig->spectral_data_size[1]/2; //modenumber in y
 		// TODO: this does not work once distributed memory is available
 #if SWEET_THREADING
 //#pragma omp parallel for OPENMP_PAR_SIMD
@@ -2687,7 +1609,7 @@ public:
 				if( x > 2*(resolution_spec[0]-1)/3 ||  y > 2*((int) resolution_spec[1]/2)/3 )
 				//if( x > 2*(resolution_spec[0]-1)/3-1 ||  y > 2*((int) resolution_spec[1]/2)/3-1 )
 				{
-					set_spec( y, x, 0.0, 0.0);
+					spectral_set( y, x, 0.0, 0.0);
 					//std::cout << "(" << i << ", " << j << ", High)\t";
 				}
 				else
@@ -2702,10 +1624,10 @@ public:
 
 		requestDataInCartesianSpace();
 
-		checkConsistency();
-
 		return *this;
 	}
+#endif
+
 #endif
 
 
@@ -2715,9 +1637,8 @@ public:
 	 */
 	PlaneData &operator=(double i_value)
 	{
-		set_all(i_value);
+		physical_set_all(i_value);
 
-		checkConsistency();
 		return *this;
 	}
 
@@ -2728,9 +1649,8 @@ public:
 	 */
 	PlaneData &operator=(int i_value)
 	{
-		set_all(i_value);
+		physical_set_all(i_value);
 
-		checkConsistency();
 		return *this;
 	}
 
@@ -2745,74 +1665,48 @@ public:
 			const PlaneData &i_dataArray
 	)
 	{
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		aliasing_scaled = i_dataArray.aliasing_scaled;
-#endif
+		planeDataConfig = i_dataArray.planeDataConfig;
 
-		for (int i = 0; i < 2; i++)
-		{
-			resolution[i] = i_dataArray.resolution[i];
-
-			range_start[i] = i_dataArray.range_start[i];
-			range_end[i] = i_dataArray.range_end[i];
-			range_size[i] = i_dataArray.range_size[i];
-		}
-
-		array_data_cartesian_length = i_dataArray.array_data_cartesian_length;
+		planeDataConfig->physical_array_data_number_of_elements = i_dataArray.planeDataConfig->physical_array_data_number_of_elements;
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		if (i_dataArray.array_data_cartesian_space_valid)
+		if (i_dataArray.physical_space_data_valid)
 		{
-			array_data_cartesian_space_valid = true;
+			physical_space_data_valid = true;
 #endif
-			/**
+			/*
 			 * If this data was generated based on temporary data sets (e.g. via h = hu/u), then only swap pointers.
 			 */
-//			if (i_dataArray.temporary_data)
-//			{
-//				std::swap(array_data_cartesian_space, ((PlaneData &)i_dataArray).array_data_cartesian_space);
-//			}
-//			else
-			{
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-				for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-					array_data_cartesian_space[i] = i_dataArray.array_data_cartesian_space[i];
-			}
+			for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+				physical_space_data[i] = i_dataArray.physical_space_data[i];
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 		}
 		else
 		{
-			array_data_cartesian_space_valid = false;
+			physical_space_data_valid = false;
 		}
 
-		array_data_spectral_length = i_dataArray.array_data_spectral_length;
+		planeDataConfig->spectral_array_data_number_of_elements = i_dataArray.planeDataConfig->spectral_array_data_number_of_elements;
 
-		if (i_dataArray.array_data_spectral_space_valid)
+		if (i_dataArray.spectral_space_data_valid)
 		{
-			array_data_spectral_space_valid = true;
-//			if (i_dataArray.temporary_data)
-//			{
-//				std::swap(array_data_spectral_space, ((PlaneData &)i_dataArray).array_data_spectral_space);
-//			}
-//			else
-			{
+			spectral_space_data_valid = true;
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-				for (std::size_t i = 0; i < array_data_spectral_length; i++)
-					array_data_spectral_space[i] = i_dataArray.array_data_spectral_space[i];
-			}
+			for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
+				spectral_space_data[i] = i_dataArray.spectral_space_data[i];
 		}
 		else
 		{
-			array_data_spectral_space_valid = false;
+			spectral_space_data_valid = false;
 		}
 #endif
 
-		checkConsistency();
 		return *this;
 	}
 
@@ -2825,8 +1719,7 @@ public:
 			const PlaneData &i_array_data
 	)	const
 	{
-		PlaneData out(this->resolution);
-//		out.temporary_data = true;
+		PlaneData out(planeDataConfig);
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 		PlaneData &rw_array_data = (PlaneData&)i_array_data;
@@ -2837,19 +1730,11 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
-		{
-			double ar = array_data_spectral_space[i];
-			double ai = array_data_spectral_space[i+1];
-			double br = i_array_data.array_data_spectral_space[i];
-			double bi = i_array_data.array_data_spectral_space[i+1];
+		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
+			out.spectral_space_data[i] = spectral_space_data[i]*i_array_data.spectral_space_data[i];
 
-			out.array_data_spectral_space[i] = ar*br - ai*bi;
-			out.array_data_spectral_space[i+1] = ar*bi + ai*br;
-		}
-
-		out.array_data_spectral_space_valid = true;
-		out.array_data_cartesian_space_valid = false;
+		out.spectral_space_data_valid = true;
+		out.physical_space_data_valid = false;
 
 #else
 
@@ -2875,7 +1760,7 @@ public:
 				{
 					for (int x = 0; x < res_x; x++)
 					{
-						double &data_out = out.array_data_cartesian_space[y*res_x+x];
+						double &data_out = out.physical_space[y*res_x+x];
 						data_out = 0;
 
 						int pos_y = y;
@@ -2884,7 +1769,7 @@ public:
 						if (x > 0 && x < res_x-1)
 						{
 							double *kernel_scalar_ptr = &kernel_data[3];
-							double *data_scalar_ptr = &i_array_data.array_data_cartesian_space[pos_y*res_x+x-1];
+							double *data_scalar_ptr = &i_array_data.physical_space_data[pos_y*res_x+x-1];
 
 							data_out += kernel_scalar_ptr[0]*data_scalar_ptr[0];
 							data_out += kernel_scalar_ptr[2]*data_scalar_ptr[2];
@@ -2898,7 +1783,7 @@ public:
 								pos_x += (pos_x < 0 ? res_x : 0);
 								int idx = i+4;
 								double kernel_scalar = kernel_data[idx];
-								double data_scalar = i_array_data.array_data_cartesian_space[pos_y*res_x+pos_x];
+								double data_scalar = i_array_data.physical_space_data[pos_y*res_x+pos_x];
 
 								data_out += kernel_scalar*data_scalar;
 							}
@@ -2917,7 +1802,7 @@ public:
 					{
 						for (int x = 0; x < res_x; x++)
 						{
-							double &data_out = out.array_data_cartesian_space[y*res_x+x];
+							double &data_out = out.physical_space_data[y*res_x+x];
 							data_out = 0;
 
 							int pos_y = y+res_y;
@@ -2929,7 +1814,7 @@ public:
 							if (x > 0 && x < res_x-1)
 							{
 								double *kernel_scalar_ptr = &kernel_data[3];
-								double *data_scalar_ptr = &i_array_data.array_data_cartesian_space[pos_y*res_x+x-1];
+								double *data_scalar_ptr = &i_array_data.physical_space_data[pos_y*res_x+x-1];
 
 								data_out += kernel_scalar_ptr[0]*data_scalar_ptr[0];
 								data_out += kernel_scalar_ptr[1]*data_scalar_ptr[1];
@@ -2944,7 +1829,7 @@ public:
 									pos_x += (pos_x < 0 ? res_x : 0);
 									int idx = i+4;
 									double kernel_scalar = kernel_data[idx];
-									double data_scalar = i_array_data.array_data_cartesian_space[pos_y*res_x+pos_x];
+									double data_scalar = i_array_data.physical_space_data[pos_y*res_x+pos_x];
 
 									data_out += kernel_scalar*data_scalar;
 								}
@@ -2961,13 +1846,13 @@ public:
 					{
 						for (int x = 0; x < res_x; x++)
 						{
-							double &data_out = out.array_data_cartesian_space[y*res_x+x];
+							double &data_out = out.physical_space_data[y*res_x+x];
 							data_out = 0;
 
 							if (y > 0 && y < res_y-1)
 							{
 								double *kernel_scalar_ptr = &kernel_data[1];
-								double *data_scalar_ptr = &i_array_data.array_data_cartesian_space[(y-1)*res_x+x];
+								double *data_scalar_ptr = &i_array_data.physical_space_data[(y-1)*res_x+x];
 
 								data_out += kernel_scalar_ptr[0]*data_scalar_ptr[0];
 								data_out += kernel_scalar_ptr[6]*data_scalar_ptr[2*res_x];
@@ -2984,7 +1869,7 @@ public:
 									int idx = (j+1)*3+1;
 
 									double kernel_scalar = kernel_data[idx];
-									double data_scalar = i_array_data.array_data_cartesian_space[pos_y*res_x+x];
+									double data_scalar = i_array_data.physical_space_data[pos_y*res_x+x];
 
 									data_out += kernel_scalar*data_scalar;
 								}
@@ -3001,13 +1886,13 @@ public:
 					{
 						for (int x = 0; x < res_x; x++)
 						{
-							double &data_out = out.array_data_cartesian_space[y*res_x+x];
+							double &data_out = out.physical_space_data[y*res_x+x];
 							data_out = 0;
 
 							if (y > 0 && y < res_y-1)
 							{
 								double *kernel_scalar_ptr = &kernel_data[1];
-								double *data_scalar_ptr = &i_array_data.array_data_cartesian_space[(y-1)*res_x+x];
+								double *data_scalar_ptr = &i_array_data.physical_space_data[(y-1)*res_x+x];
 
 								data_out += kernel_scalar_ptr[0]*data_scalar_ptr[0];
 								data_out += kernel_scalar_ptr[3]*data_scalar_ptr[res_x];
@@ -3025,7 +1910,7 @@ public:
 									int idx = (j+1)*3+1;
 
 									double kernel_scalar = kernel_data[idx];
-									double data_scalar = i_array_data.array_data_cartesian_space[pos_y*res_x+x];
+									double data_scalar = i_array_data.physical_space_data[pos_y*res_x+x];
 
 									data_out += kernel_scalar*data_scalar;
 								}
@@ -3042,7 +1927,7 @@ public:
 				{
 					for (int x = 0; x < res_x; x++)
 					{
-						double &data_out = out.array_data_cartesian_space[y*res_x+x];
+						double &data_out = out.physical_space_data[y*res_x+x];
 						data_out = 0;
 
 						for (int j = -1; j <= 1; j++)
@@ -3067,7 +1952,7 @@ public:
 								assert(idx >= 0 && idx < 9);
 
 								double kernel_scalar = kernel_data[idx];
-								double data_scalar = i_array_data.array_data_cartesian_space[pos_y*res_x+pos_x];
+								double data_scalar = i_array_data.physical_space_data[pos_y*res_x+pos_x];
 
 								data_out += kernel_scalar*data_scalar;
 							}
@@ -3083,7 +1968,6 @@ public:
 #endif
 
 
-		out.checkConsistency();
 		return out;
 	}
 
@@ -3099,8 +1983,7 @@ public:
 	{
 		PlaneData &rw_array_data = (PlaneData&)i_array_data;
 
-		PlaneData out(this->resolution);
-//		out.temporary_data = true;
+		PlaneData out(planeDataConfig);
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
@@ -3110,13 +1993,21 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_spectral_length; i++)
-			out.array_data_spectral_space[i] =
-					array_data_spectral_space[i]+
-					i_array_data.array_data_spectral_space[i];
+		for (std::size_t j = 0; j < planeDataConfig->spectral_data_size[1]; j++)
+		{
+			std::size_t idx = j*planeDataConfig->spectral_data_size[0];
 
-		out.array_data_spectral_space_valid = true;
-		out.array_data_cartesian_space_valid = false;
+			std::complex<double> *src1 = &spectral_space_data[idx];
+			std::complex<double> *src2 = &i_array_data.spectral_space_data[idx];
+
+			std::complex<double> *dst = &out.spectral_space_data[idx];
+
+			for (std::size_t i = 0; i < planeDataConfig->spectral_data_size[0]; i++)
+				dst[i] = src1[i] + src2[i];
+		}
+
+		out.spectral_space_data_valid = true;
+		out.physical_space_data_valid = false;
 
 #else
 
@@ -3126,12 +2017,11 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			out.array_data_cartesian_space[i] = array_data_cartesian_space[i] + i_array_data.array_data_cartesian_space[i];
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			out.physical_space_data[i] = array_data_cartesian_space[i] + i_array_data.physical_space[i];
 
 #endif
 
-		out.checkConsistency();
 
 		return out;
 	}
@@ -3146,8 +2036,7 @@ public:
 			const double i_value
 	)	const
 	{
-		PlaneData out(this->resolution);
-//		out.temporary_data = true;
+		PlaneData out(planeDataConfig);
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
@@ -3157,14 +2046,14 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-			for (std::size_t i = 0; i < array_data_spectral_length; i++)
-				out.array_data_spectral_space[i] = array_data_spectral_space[i];
+			for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
+				out.spectral_space_data[i] = spectral_space_data[i];
 
-			double scale = resolution[0]*resolution[1];
-			out.array_data_spectral_space[0] += i_value*scale;
+			double scale = planeDataConfig->spectral_data_size[0]*planeDataConfig->spectral_data_size[1];
+			out.spectral_space_data[0] += i_value*scale;
 
-			out.array_data_cartesian_space_valid = false;
-			out.array_data_spectral_space_valid = true;
+			out.physical_space_data_valid = false;
+			out.spectral_space_data_valid = true;
 		}
 
 #else
@@ -3174,12 +2063,11 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			out.array_data_cartesian_space[i] = array_data_cartesian_space[i]+i_value;
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			out.array_data_cartesian_space[i] = physical_space_data[i]+i_value;
 
 #endif
 
-		out.checkConsistency();
 		return out;
 	}
 
@@ -3203,24 +2091,22 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_spectral_length; i++)
-			array_data_spectral_space[i] +=
-					i_array_data.array_data_spectral_space[i];
+		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
+			spectral_space_data[i] +=
+					i_array_data.spectral_space_data[i];
 
-		array_data_spectral_space_valid = true;
-		array_data_cartesian_space_valid = false;
+		spectral_space_data_valid = true;
+		physical_space_data_valid = false;
 
 #else
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			array_data_cartesian_space[i] += i_array_data.array_data_cartesian_space[i];
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			array_data_cartesian_space[i] += i_array_data.physical_space_data[i];
 #endif
 
-
-		checkConsistency();
 		return *this;
 	}
 
@@ -3238,11 +2124,11 @@ public:
 
 		requestDataInSpectralSpace();
 
-		double scale = resolution[0]*resolution[1];
-		array_data_spectral_space[0] += i_value*scale;
+		double scale = planeDataConfig->spectral_array_data_number_of_elements;
+		spectral_space_data[0] += i_value*scale;
 
-		array_data_spectral_space_valid = true;
-		array_data_cartesian_space_valid = false;
+		spectral_space_data_valid = true;
+		physical_space_data_valid = false;
 
 #else
 
@@ -3251,12 +2137,11 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			array_data_cartesian_space[i] += i_value;
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			physical_space_data[i] += i_value;
 
 #endif
 
-		checkConsistency();
 		return *this;
 	}
 
@@ -3277,11 +2162,11 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_spectral_length; i++)
-			array_data_spectral_space[i] *= i_value;
+		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
+			spectral_space_data[i] *= i_value;
 
-		array_data_spectral_space_valid = true;
-		array_data_cartesian_space_valid = false;
+		spectral_space_data_valid = true;
+		physical_space_data_valid = false;
 
 #else
 
@@ -3290,12 +2175,11 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			array_data_cartesian_space[i] *= i_value;
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			physical_space_data[i] *= i_value;
 
 #endif
 
-		checkConsistency();
 		return *this;
 	}
 
@@ -3315,12 +2199,12 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_spectral_length; i++)
-			array_data_spectral_space[i] /= i_value;
+		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
+			spectral_space_data[i] /= i_value;
 
 
-		array_data_spectral_space_valid = true;
-		array_data_cartesian_space_valid = false;
+		spectral_space_data_valid = true;
+		physical_space_data_valid = false;
 
 #else
 
@@ -3329,12 +2213,11 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			array_data_cartesian_space[i] /= i_value;
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			physical_space_data[i] /= i_value;
 
 #endif
 
-		checkConsistency();
 		return *this;
 	}
 
@@ -3356,12 +2239,12 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_spectral_length; i++)
-			array_data_spectral_space[i] -=
-					i_array_data.array_data_spectral_space[i];
+		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
+			spectral_space_data[i] -=
+					i_array_data.spectral_space_data[i];
 
-		array_data_cartesian_space_valid = false;
-		array_data_spectral_space_valid = true;
+		physical_space_data_valid = false;
+		spectral_space_data_valid = true;
 #else
 
 		requestDataInCartesianSpace();
@@ -3370,13 +2253,11 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			array_data_cartesian_space[i] -= i_array_data.array_data_cartesian_space[i];
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			array_data_cartesian_space[i] -= i_array_data.physical_space[i];
 
 #endif
 
-
-		checkConsistency();
 		return *this;
 	}
 
@@ -3391,8 +2272,7 @@ public:
 	{
 		PlaneData &rw_array_data = (PlaneData&)i_array_data;
 
-		PlaneData out(resolution);
-//		out.temporary_data = true;
+		PlaneData out(planeDataConfig);
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
@@ -3402,13 +2282,13 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_spectral_length; i++)
-			out.array_data_spectral_space[i] =
-					array_data_spectral_space[i]-
-					i_array_data.array_data_spectral_space[i];
+		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
+			out.spectral_space_data[i] =
+					spectral_space_data[i]-
+					i_array_data.spectral_space_data[i];
 
-		out.array_data_cartesian_space_valid = false;
-		out.array_data_spectral_space_valid = true;
+		out.physical_space_data_valid = false;
+		out.spectral_space_data_valid = true;
 
 #else
 
@@ -3418,15 +2298,13 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			out.array_data_cartesian_space[i] =
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			out.physical_space_data[i] =
 					array_data_cartesian_space[i]-
-					i_array_data.array_data_cartesian_space[i];
+					i_array_data.physical_space_data[i];
 
 #endif
 
-
-		checkConsistency();
 		return out;
 	}
 
@@ -3440,40 +2318,25 @@ public:
 			const double i_value
 	)	const
 	{
-		PlaneData out(this->resolution);
-//		out.temporary_data = true;
+		PlaneData out(planeDataConfig);
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
-//		if (array_data_spectral_space_valid)
-//		{
-			requestDataInSpectralSpace();
+		requestDataInSpectralSpace();
 
 //#pragma error "TOOD: make this depending on rexi_par_sum!"
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-			for (std::size_t i = 0; i < array_data_spectral_length; i++)
-				out.array_data_spectral_space[i] = array_data_spectral_space[i];
+		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
+			out.spectral_space_data[i] = spectral_space_data[i];
 
-			double scale = resolution[0]*resolution[1];
-			out.array_data_spectral_space[0] -= i_value*scale;
+		double scale = planeDataConfig->spectral_data_size[0]*planeDataConfig->spectral_data_size[1];
+		out.spectral_space_data[0] -= i_value*scale;
 
-			out.array_data_cartesian_space_valid = false;
-			out.array_data_spectral_space_valid = true;
-//		}
-//		else
-//		{
-//#if SWEET_THREADING
-//#pragma omp parallel for OPENMP_PAR_SIMD
-//#endif
-//			for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-//				out.array_data_cartesian_space[i] =
-//						array_data_cartesian_space[i]-i_value;
-//
-//			out.array_data_cartesian_space_valid = true;
-//			out.array_data_spectral_space_valid = false;
-//		}
+		out.physical_space_data_valid = false;
+		out.spectral_space_data_valid = true;
+
 #else
 
 		requestDataInCartesianSpace();
@@ -3481,13 +2344,12 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 			out.array_data_cartesian_space[i] =
-					array_data_cartesian_space[i]-i_value;
+					physical_space_data[i]-i_value;
 
 #endif
 
-		out.checkConsistency();
 		return out;
 	}
 
@@ -3500,8 +2362,7 @@ public:
 			const double i_value
 	)	const
 	{
-		PlaneData out(this->resolution);
-//		out.temporary_data = true;
+		PlaneData out(planeDataConfig);
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
@@ -3510,14 +2371,14 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_spectral_length; i++)
-			out.array_data_spectral_space[i] = -array_data_spectral_space[i];
+		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
+			out.spectral_space_data[i] = -spectral_space_data[i];
 
-		double scale = resolution[0]*resolution[1];
-		out.array_data_spectral_space[0] = i_value*scale + out.array_data_spectral_space[0];
+		double scale = planeDataConfig->physical_data_size[0]*planeDataConfig->physical_data_size[1];
+		out.spectral_space_data[0] = i_value*scale + out.spectral_space_data[0];
 
-		out.array_data_cartesian_space_valid = false;
-		out.array_data_spectral_space_valid = true;
+		out.physical_space_data_valid = false;
+		out.spectral_space_data_valid = true;
 
 #else
 
@@ -3526,12 +2387,11 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			out.array_data_cartesian_space[i] = i_value - array_data_cartesian_space[i];
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			out.physical_space_data[i] = i_value - physical_space[i];
 
 #endif
 
-		out.checkConsistency();
 		return out;
 	}
 
@@ -3541,7 +2401,7 @@ public:
 	inline
 	PlaneData operator-()
 	{
-		PlaneData out(this->resolution);
+		PlaneData out(planeDataConfig);
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
@@ -3550,23 +2410,21 @@ public:
 #if SWEET_THREADING
 		#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_spectral_length; i++)
-			out.array_data_spectral_space[i] = -array_data_spectral_space[i];
+		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
+			out.spectral_space_data[i] = -spectral_space_data[i];
 
-		out.array_data_cartesian_space_valid = false;
-		out.array_data_spectral_space_valid = true;
+		out.physical_space_data_valid = false;
+		out.spectral_space_data_valid = true;
 
 #else
 
 		requestDataInCartesianSpace();
 
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			out.array_data_cartesian_space[i] = -array_data_cartesian_space[i];
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			out.array_data_cartesian_space[i] = -physical_space_data[i];
 
 #endif
 
-
-		out.checkConsistency();
 		return out;
 	}
 
@@ -3580,77 +2438,56 @@ public:
 			const PlaneData &i_array_data	///< this class times i_array_data
 	)	const
 	{
+		PlaneData out(planeDataConfig);
 
-		// Call as
-		// 		data_array.operator*(i_array_data)
-		// which is identical to
-		//		data_array * i_array_data
-		PlaneData &rw_array_data = (PlaneData&)i_array_data;
-
-		//This is the actual product result, with the correct N resolution
-		PlaneData out(i_array_data.resolution);
-//		out.temporary_data = true;
-
-#if SWEET_USE_PLANE_SPECTRAL_SPACE && SWEET_USE_PLANE_SPECTRAL_DEALIASING
-
-		// Array on the left of *, augmented to 3N/2 with zeros on high end spectrum
-		// Any previous data in cartesian space will be lost?
-		PlaneData u = aliasing_scaleUp();
-		assert(u.aliasing_scaled);
-
-		// The input array (right of *) augmented to 3N/2 with zeros on high end spectrum
-		PlaneData v = rw_array_data.aliasing_scaleUp();
-		assert(v.aliasing_scaled);
-
-		//Convert to cartesian
-		u.requestDataInCartesianSpace();
-		v.requestDataInCartesianSpace();
-
-		// This array is augmented to 3N/2, since u is
-		PlaneData scaled_output(u.resolution, true);
-
-#if SWEET_THREADING
-		#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		//Calculate the product element wise in cartesian space
-		for (std::size_t i = 0; i < scaled_output.array_data_cartesian_length; i++)
-			scaled_output.array_data_cartesian_space[i] =
-					u.array_data_cartesian_space[i]*
-					v.array_data_cartesian_space[i];
-
-		scaled_output.array_data_cartesian_space_valid = true;
-		scaled_output.array_data_spectral_space_valid = false;
-
-		//Copies the spectrum of the product to the output data_array, which has the correct resolution N
-		// As a consequence, all high modes are ignored (beyond N to 3N/2)
-		out = scaled_output.aliasing_scaleDown(out.resolution);
-
-		out.array_data_cartesian_space_valid = false;
-		out.array_data_spectral_space_valid = true;
-
-#else
 		requestDataInCartesianSpace();
-		rw_array_data.requestDataInCartesianSpace();
+		i_array_data.requestDataInCartesianSpace();
 
 #if SWEET_THREADING
 		#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			out.array_data_cartesian_space[i] =
-					array_data_cartesian_space[i]*
-					i_array_data.array_data_cartesian_space[i];
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			out.physical_space_data[i] =
+					physical_space_data[i]*
+					i_array_data.physical_space_data[i];
 
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		out.array_data_cartesian_space_valid = true;
-		out.array_data_spectral_space_valid = false;
-#endif
+	#if SWEET_USE_PLANE_SPECTRAL_SPACE
+		out.physical_space_data_valid = true;
+		out.spectral_space_data_valid = false;
+	#endif
 
-#endif
-
-		out.checkConsistency();
 		return out;
 	}
 
+	/**
+	 * Compute element-wise multiplication
+	 */
+	inline
+	PlaneData operator/(
+			const PlaneData &i_array_data	///< this class times i_array_data
+	)	const
+	{
+		PlaneData out(planeDataConfig);
+
+		requestDataInCartesianSpace();
+		i_array_data.requestDataInCartesianSpace();
+
+#if SWEET_THREADING
+		#pragma omp parallel for OPENMP_PAR_SIMD
+#endif
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			out.physical_space_data[i] = physical_space_data[i]/i_array_data.physical_space_data[i];
+
+	#if SWEET_USE_PLANE_SPECTRAL_SPACE
+		out.physical_space_data_valid = true;
+		out.spectral_space_data_valid = false;
+	#endif
+
+		return out;
+	}
+
+
+#if 0
 	/**
 	 * Compute element-wise multiplication in cartesian space
 	 * if de-aliasing activated, do a 2/3 truncation in spectrum before and after multiplication
@@ -3673,8 +2510,7 @@ public:
 		const PlaneData &data_in1_const= *this;
 		const PlaneData &data_in2_const= i_array_data;
 
-		PlaneData out(i_array_data.resolution);
-//		out.temporary_data = true;
+		PlaneData out(planeDataConfig);
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE && SWEET_USE_PLANE_SPECTRAL_DEALIASING
 		// Truncate arrays to 2N/3 high end spectrum
@@ -3693,13 +2529,13 @@ public:
 #endif
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		out.array_data_cartesian_space_valid = true;
-		out.array_data_spectral_space_valid = false;
+		out.physical_space_data_valid = true;
+		out.spectral_space_data_valid = false;
 #endif
 
-		out.checkConsistency();
 		return out;
 	}
+#endif
 
 
 	/**
@@ -3710,48 +2546,46 @@ public:
 			const double i_value
 	)	const
 	{
-		PlaneData out(resolution);
-//		out.temporary_data = true;
+		PlaneData out(planeDataConfig);
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
-		if (array_data_spectral_space_valid)
+		if (spectral_space_data_valid)
 		{
 #if SWEET_THREADING
 			#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-			for (std::size_t i = 0; i < array_data_spectral_length; i++)
-				out.array_data_spectral_space[i] =
-						array_data_spectral_space[i]*i_value;
+			for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
+				out.spectral_space_data[i] =
+						spectral_space_data[i]*i_value;
 
-			out.array_data_cartesian_space_valid = false;
-			out.array_data_spectral_space_valid = true;
+			out.physical_space_data_valid = false;
+			out.spectral_space_data_valid = true;
 		}
 		else
 		{
-			assert(array_data_cartesian_space_valid);
+			assert(physical_space_data_valid);
 
 #if SWEET_THREADING
 			#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-			for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-				out.array_data_cartesian_space[i] =
-						array_data_cartesian_space[i]*i_value;
+			for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+				out.physical_space_data[i] =
+						physical_space_data[i]*i_value;
 
-			out.array_data_cartesian_space_valid = true;
-			out.array_data_spectral_space_valid = false;
+			out.physical_space_data_valid = true;
+			out.spectral_space_data_valid = false;
 		}
 
 #else
 #if SWEET_THREADING
 		#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 			out.array_data_cartesian_space[i] =
-					array_data_cartesian_space[i]*i_value;
+					physical_space_data[i]*i_value;
 #endif
 
-		out.checkConsistency();
 		return out;
 	}
 
@@ -3764,43 +2598,41 @@ public:
 			const double &i_value
 	)	const
 	{
-		PlaneData out(this->resolution);
-//		out.temporary_data = true;
+		PlaneData out(planeDataConfig);
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		if (array_data_cartesian_space_valid)
+		if (physical_space_data_valid)
 		{
 #endif
 #if SWEET_THREADING
 			#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-			for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-				out.array_data_cartesian_space[i] = array_data_cartesian_space[i] / i_value;
+			for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+				out.physical_space_data[i] = physical_space_data[i] / i_value;
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-			out.array_data_cartesian_space_valid = true;
-			out.array_data_spectral_space_valid = false;
+			out.physical_space_data_valid = true;
+			out.spectral_space_data_valid = false;
 		}
 		else
 		{
-			assert(array_data_spectral_space_valid);
+			assert(spectral_space_data_valid);
 
 #if SWEET_THREADING
 			#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-			for (std::size_t i = 0; i < array_data_spectral_length; i++)
-				out.array_data_spectral_space[i] = array_data_spectral_space[i] / i_value;
+			for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
+				out.spectral_space_data[i] = spectral_space_data[i] / i_value;
 
-			out.array_data_cartesian_space_valid = false;
-			out.array_data_spectral_space_valid = true;
+			out.physical_space_data_valid = false;
+			out.spectral_space_data_valid = true;
 		}
 #endif
 
-
-		out.checkConsistency();
 		return out;
 	}
 
 
+#if 0
 	/**
 	 * Compute element-wise division
 	 */
@@ -3812,8 +2644,7 @@ public:
 		checkConsistency();
 		PlaneData &rw_array_data = (PlaneData&)i_array_data;
 
-		PlaneData out(this->resolution);
-//		out.temporary_data = true;
+		PlaneData out(planeDataConfig);
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE && SWEET_USE_PLANE_SPECTRAL_DEALIASING
 
@@ -3828,18 +2659,18 @@ public:
 #if SWEET_THREADING
 		#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < scaled_output.array_data_cartesian_length; i++)
-			scaled_output.array_data_cartesian_space[i] =
-					u.array_data_cartesian_space[i]/
-					v.array_data_cartesian_space[i];
+		for (std::size_t i = 0; i < scaled_output.planeDataConfig->physical_array_data_number_of_elements; i++)
+			scaled_output.physical_space_data[i] =
+					u.physical_space_data[i]/
+					v.physical_space_data[i];
 
-		scaled_output.array_data_cartesian_space_valid = true;
-		scaled_output.array_data_spectral_space_valid = false;
+		scaled_output.physical_space_data_valid = true;
+		scaled_output.spectral_space_data_valid = false;
 
 		out = scaled_output.aliasing_scaleDown(out.resolution);
 
-		out.array_data_cartesian_space_valid = false;
-		out.array_data_spectral_space_valid = true;
+		out.physical_space_data_valid = false;
+		out.spectral_space_data_valid = true;
 
 #else
 		requestDataInCartesianSpace();
@@ -3848,14 +2679,14 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			out.array_data_cartesian_space[i] =
-					array_data_cartesian_space[i]/
-					i_array_data.array_data_cartesian_space[i];
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			out.physical_space_data[i] =
+					physical_space_data[i]/
+					i_array_data.physical_space_data[i];
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		out.array_data_cartesian_space_valid = true;
-		out.array_data_spectral_space_valid = false;
+		out.physical_space_data_valid = true;
+		out.spectral_space_data_valid = false;
 #endif
 
 #endif
@@ -3863,6 +2694,7 @@ public:
 		out.checkConsistency();
 		return out;
 	}
+#endif
 
 
 	friend
@@ -3876,11 +2708,11 @@ public:
 
 		rw_array_data.requestDataInCartesianSpace();
 
-		for (int y = rw_array_data.resolution[1]-1; y >= 0; y--)
+		for (int y = rw_array_data.planeDataConfig->physical_data_size[1]-1; y >= 0; y--)
 		{
-			for (std::size_t x = 0; x < rw_array_data.resolution[0]; x++)
+			for (std::size_t x = 0; x < rw_array_data.planeDataConfig->physical_data_size[0]; x++)
 			{
-				double value = rw_array_data.get(y, x);
+				double value = rw_array_data.physical_get(y, x);
 //					if (std::abs(value) < 1e-13)
 //						value = 0;
 				std::cout << value << "\t";
@@ -3888,7 +2720,6 @@ public:
 			std::cout << std::endl;
 		}
 
-		i_dataArray.checkConsistency();
 		return o_ostream;
 	}
 
@@ -3902,59 +2733,43 @@ public:
 			const double &i_value
 	)	const
 	{
-		PlaneData out(this->resolution);
-//		out.temporary_data = true;
+		PlaneData out(planeDataConfig);
 
 		requestDataInSpectralSpace();
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
-		{
-			out.array_data_spectral_space[i] = array_data_spectral_space[i] + i_value;
-			out.array_data_spectral_space[i+1] = array_data_spectral_space[i+1];
-		}
+		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
+			out.spectral_space_data[i] = spectral_space_data[i] + i_value;
 
-		out.array_data_cartesian_space_valid = false;
-		out.array_data_spectral_space_valid = true;
+		out.physical_space_data_valid = false;
+		out.spectral_space_data_valid = true;
 
-		out.checkConsistency();
 		return out;
 	}
 #endif
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 	/**
-	 * Invert all spectral coefficients a+bi --> 1/(a+bi)
+	 * Return Plane Array with all spectral coefficients a+bi --> 1/(a+bi)
 	 */
 	inline
-	PlaneData spec_invert(
-	)	const
+	PlaneData spec_invert()	const
 	{
-		PlaneData out(this->resolution);
-//		out.temporary_data = true;
+		PlaneData out(planeDataConfig);
 
 		requestDataInSpectralSpace();
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < array_data_spectral_length; i+=2)
-		{
-			//get spectral coefficient ar+i*ai
-			double ar = array_data_spectral_space[i];
-			double ai = array_data_spectral_space[i+1];
-			double norm=ar*ar+ai*ai;
-			// Calculate 1/(ar+i*ai) and split into real and imag parts
-			out.array_data_spectral_space[i] = ar/norm;
-			out.array_data_spectral_space[i+1] = -ai/norm;
-		}
+		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
+			out.spectral_space_data[i] = 1.0/spectral_space_data[i];
 
-		out.array_data_cartesian_space_valid = false;
-		out.array_data_spectral_space_valid = true;
+		out.physical_space_data_valid = false;
+		out.spectral_space_data_valid = true;
 
-		out.checkConsistency();
 		return out;
 	}
 
@@ -3962,15 +2777,13 @@ public:
 	inline
 	void printSpectrum()	const
 	{
-
-		checkConsistency();
 		PlaneData &rw_array_data = (PlaneData&)*this;
 
 		rw_array_data.requestDataInSpectralSpace();
 
-		for (int y = rw_array_data.resolution_spec[1]-1; y >= 0; y--)
+		for (int y = planeDataConfig->spectral_data_size[1]-1; y >= 0; y--)
 		{
-			for (std::size_t x = 0; x < rw_array_data.resolution_spec[0]; x++)
+			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
 			{
 				double value_re = rw_array_data.spec_getRe(y, x);
 				double value_im = rw_array_data.spec_getIm(y, x);
@@ -3983,15 +2796,13 @@ public:
 	inline
 	void printSpectrumIndex()	const
 	{
-
-		checkConsistency();
 		PlaneData &rw_array_data = (PlaneData&)*this;
 
 		rw_array_data.requestDataInSpectralSpace();
 
-		for (int y = rw_array_data.resolution_spec[1]-1; y >= 0; y--)
+		for (int y = planeDataConfig->spectral_data_size[1]-1; y >= 0; y--)
 		{
-			for (std::size_t x = 0; x < rw_array_data.resolution_spec[0]; x++)
+			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
 			{
 				double value_re = rw_array_data.spec_getRe(y, x);
 				double value_im = rw_array_data.spec_getIm(y, x);
@@ -4011,15 +2822,13 @@ public:
 	inline
 	void printSpectrumNonZero()	const
 	{
-
-		checkConsistency();
 		PlaneData &rw_array_data = (PlaneData&)*this;
 
 		rw_array_data.requestDataInSpectralSpace();
 
-		for (int y = rw_array_data.resolution_spec[1]-1; y >= 0; y--)
+		for (int y = planeDataConfig->spectral_data_size[1]-1; y >= 0; y--)
 		{
-			for (std::size_t x = 0; x < rw_array_data.resolution_spec[0]; x++)
+			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
 			{
 				double value_re = rw_array_data.spec_getRe(y, x);
 				double value_im = rw_array_data.spec_getIm(y, x);
@@ -4029,35 +2838,8 @@ public:
 			//std::cout << std::endl;
 		}
 		//std::cout << std::endl;
-
 	}
 
-
-	inline //TODO - print for each K^2+l^2 the energy in the spectrum
-		void printSpectrumEnergy_y()	const
-		{
-
-			checkConsistency();
-			PlaneData &rw_array_data = (PlaneData&)*this;
-
-			rw_array_data.requestDataInSpectralSpace();
-			std::cout << "Energy (sqr)" <<std::endl;
-
-			for (int y = rw_array_data.resolution_spec[1]/2; y >= 0; y--)
-			{
-			//	for (std::size_t x = 0; x < rw_array_data.resolution_spec[0]; x++)
-				std::size_t x=0;
-				{
-					double value_re = rw_array_data.spec_getRe(y, x);
-					double value_im = rw_array_data.spec_getIm(y, x);
-					//std::cout << "(" << x << ", " << y << ", "<< value_re << ", "<< value_im*value_im << ")\t";
-					double energy=value_re*value_re + value_im*value_im;
-					if(energy>1e-14)
-						std::cout << "(" << x << ", " << y << ", "<< energy << ")" <<std::endl;
-				}
-				//std::cout << std::endl;
-			}
-		}
 #endif
 
 
@@ -4071,28 +2853,25 @@ public:
 			int i_precision = 8		///< number of floating point digits
 			)	const
 	{
-
-		checkConsistency();
 		requestDataInCartesianSpace();
 
 		std::ostream &o_ostream = std::cout;
 
 		o_ostream << std::setprecision(i_precision);
 
-		for (int y = resolution[1]-1; y >= 0; y--)
+		for (int y = planeDataConfig->physical_data_size[1]-1; y >= 0; y--)
 		{
-			for (std::size_t x = 0; x < resolution[0]; x++)
+			for (std::size_t x = 0; x < planeDataConfig->physical_data_size[0]; x++)
 			{
-				o_ostream << get(y, x);
+				o_ostream << physical_get(y, x);
 
-				if (x < resolution[0]-1)
+				if (x < planeDataConfig->physical_data_size[0]-1)
 					o_ostream << '\t';
 				else
 					o_ostream << std::endl;
 			}
 		}
 
-		checkConsistency();
 		return true;
 	}
 
@@ -4110,32 +2889,29 @@ public:
 			int i_precision = 12		///< number of floating point digits
 	)
 	{
-
-		checkConsistency();
 		requestDataInCartesianSpace();
 
 		std::ofstream file(i_filename, std::ios_base::trunc);
 		file << std::setprecision(i_precision);
 
-		for (int y = resolution[1]-1; y >= 0; y--)
+		for (int y = planeDataConfig->physical_res[1]-1; y >= 0; y--)
 		{
-			for (std::size_t x = 0; x < resolution[0]; x++)
+			for (std::size_t x = 0; x < planeDataConfig->physical_res[0]; x++)
 			{
-				file << get(y, x);
+				file << physical_get(y, x);
 
-				if (x < resolution[0]-1)
+				if (x < planeDataConfig->physical_res[0]-1)
 					file << i_separator;
 				else
 					file << std::endl;
 			}
 		}
 
-
-		checkConsistency();
 		return true;
 	}
 
 
+#if 0
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 	/**
 	 * Write data to ASCII file
@@ -4175,7 +2951,7 @@ public:
 		return true;
 	}
 #endif
-
+#endif
 
 	/**
 	 * Write data to VTK file
@@ -4189,8 +2965,6 @@ public:
 			int i_precision = 12		///< number of floating point digits
 	)
 	{
-
-		checkConsistency();
 		requestDataInCartesianSpace();
 
 		std::ofstream file(i_filename, std::ios_base::trunc);
@@ -4200,15 +2974,15 @@ public:
 		file << "Rectangular solid example" << std::endl;
 		file << "ASCII" << std::endl;
 		file << "DATASET RECTILINEAR_GRID" << std::endl;
-		file << "DIMENSIONS " << resolution[0]+1 << " " << resolution[1]+1 << " 1" << std::endl;
+		file << "DIMENSIONS " << planeDataConfig->physical_res[0]+1 << " " << planeDataConfig->physical_res[1]+1 << " 1" << std::endl;
 
-		file << "X_COORDINATES " << resolution[0]+1 << " float" << std::endl;
-		for (std::size_t x = 0; x < resolution[0]+1; x++)
-			file << (double)x/((double)resolution[0]+1) << std::endl;
+		file << "X_COORDINATES " << planeDataConfig->physical_res[0]+1 << " float" << std::endl;
+		for (std::size_t x = 0; x < planeDataConfig->physical_res[0]+1; x++)
+			file << (double)x/((double)planeDataConfig->physical_res[0]+1) << std::endl;
 
-		file << "Y_COORDINATES " << resolution[1]+1 << " float" << std::endl;
-		for (std::size_t y = 0; y < resolution[1]+1; y++)
-			file << (double)y/((double)resolution[1]+1) << std::endl;
+		file << "Y_COORDINATES " << planeDataConfig->physical_res[1]+1 << " float" << std::endl;
+		for (std::size_t y = 0; y < planeDataConfig->physical_res[1]+1; y++)
+			file << (double)y/((double)planeDataConfig->physical_res[1]+1) << std::endl;
 
 		file << "Z_COORDINATES 1 float" << std::endl;
 		file << "0" << std::endl;
@@ -4216,15 +2990,13 @@ public:
 
 		std::string title = i_title;
 		std::replace(title.begin(), title.end(), ' ', '_');
-		file << "CELL_DATA " << resolution[0]*resolution[1] << std::endl;
+		file << "CELL_DATA " << planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1] << std::endl;
 		file << "SCALARS " << title << " float 1" << std::endl;
 		file << "LOOKUP_TABLE default" << std::endl;
 
-		for (std::size_t i = 0; i < array_data_cartesian_length; i++)
-			file << array_data_cartesian_space[i] << std::endl;
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			file << physical_space_data[i] << std::endl;
 
-
-		checkConsistency();
 		return true;
 	}
 
@@ -4240,12 +3012,11 @@ public:
 	 *
 	 * \return true if data was successfully read
 	 */
-	bool file_loadData(
+	bool file_loadData_physical(
 			const char *i_filename,		///< Name of file to load data from
 			bool i_binary_data = false	///< load as binary data (disabled per default)
 	)
 	{
-		checkConsistency();
 		if (i_binary_data)
 		{
 			std::ifstream file(i_filename, std::ios::binary);
@@ -4260,7 +3031,7 @@ public:
 			file.seekg(0, std::ios::beg);
 
 
-			std::size_t expected_size = sizeof(double)*resolution[0]*resolution[1];
+			std::size_t expected_size = sizeof(double)*planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1];
 
 			if (size != expected_size)
 			{
@@ -4269,21 +3040,21 @@ public:
 				exit(-1);
 			}
 
-			if (!file.read((char*)array_data_cartesian_space, expected_size))
+			if (!file.read((char*)physical_space_data, expected_size))
 			{
 				std::cerr << "Error while loading data from file " << i_filename << std::endl;
 				exit(1);
 			}
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-			array_data_cartesian_space_valid = true;
-			array_data_spectral_space_valid = false;
+			physical_space_data_valid = true;
+			spectral_space_data_valid = false;
 #endif
 			return true;
 		}
 		std::ifstream file(i_filename);
 
-		for (std::size_t row = 0; row < resolution[1]; row++)
+		for (std::size_t row = 0; row < planeDataConfig->physical_res[1]; row++)
 		{
 			std::string line;
 			std::getline(file, line);
@@ -4305,20 +3076,19 @@ public:
 
 				double i_value = atof(strvalue.c_str());
 
-				set(resolution[1]-row-1, col, i_value);
+				physical_set(planeDataConfig->physical_res[1]-row-1, col, i_value);
 
 				col++;
 				last_pos = pos+1;
 		    }
 
-			if (col < resolution[0])
+			if (col < planeDataConfig->physical_res[0])
 			{
 				std::cerr << "Failed to read data from file " << i_filename << " in line " << row << ", column " << col << std::endl;
 				return false;
 			}
 		}
 
-		checkConsistency();
 		return true;
 	}
 };
@@ -4339,7 +3109,6 @@ PlaneData operator*(
 		const PlaneData &i_array_data
 )
 {
-	i_array_data.checkConsistency();
 	return ((PlaneData&)i_array_data)*i_value;
 }
 
@@ -4358,7 +3127,6 @@ PlaneData operator-(
 		const PlaneData &i_array_data
 )
 {
-	i_array_data.checkConsistency();
 	return ((PlaneData&)i_array_data).valueMinusThis(i_value);
 //	return -(((PlaneData&)i_array_data).operator-(i_value));
 }
@@ -4377,7 +3145,6 @@ PlaneData operator+(
 		const PlaneData &i_array_data
 )
 {
-	i_array_data.checkConsistency();
 	return ((PlaneData&)i_array_data)+i_value;
 }
 

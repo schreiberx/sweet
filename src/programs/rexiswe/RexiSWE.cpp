@@ -290,11 +290,11 @@ bool RexiSWE::run_timestep_implicit_ts(
 	const SimulationVariables &i_simVars
 )
 {
-	PlaneDataComplex eta(io_h.resolution);
+	PlaneDataComplex eta(io_h.planeDataConfig);
 
-	PlaneDataComplex eta0(io_h.resolution);
-	PlaneDataComplex u0(io_u.resolution);
-	PlaneDataComplex v0(io_v.resolution);
+	PlaneDataComplex eta0(io_h.planeDataConfig);
+	PlaneDataComplex u0(io_u.planeDataConfig);
+	PlaneDataComplex v0(io_v.planeDataConfig);
 
 	eta0.loadRealFromPlaneData(io_h);
 	u0.loadRealFromPlaneData(io_u);
@@ -387,13 +387,13 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 {
 
 	//Out vars
-	PlaneData h(io_h.resolution);
-	PlaneData u(io_h.resolution);
-	PlaneData v(io_h.resolution);
+	PlaneData h(io_h.planeDataConfig);
+	PlaneData u(io_h.planeDataConfig);
+	PlaneData v(io_h.planeDataConfig);
 
 	//Departure points and arrival points
-	PlaneData posx_d(io_h.resolution);
-	PlaneData posy_d(io_h.resolution);
+	PlaneData posx_d(io_h.planeDataConfig);
+	PlaneData posy_d(io_h.planeDataConfig);
 
 	//Parameters
 	double h_bar = i_simVars.setup.h0;
@@ -560,17 +560,17 @@ bool RexiSWE::run_timestep_slrexi(
 {
 
 	//Out vars
-	PlaneData h(io_h.resolution);
-	PlaneData u(io_h.resolution);
-	PlaneData v(io_h.resolution);
-	PlaneData N_h(io_h.resolution);
-	PlaneData N_u(io_h.resolution);
-	PlaneData N_v(io_h.resolution);
-	PlaneData hdiv(io_h.resolution);
+	PlaneData h(io_h.planeDataConfig);
+	PlaneData u(io_h.planeDataConfig);
+	PlaneData v(io_h.planeDataConfig);
+	PlaneData N_h(io_h.planeDataConfig);
+	PlaneData N_u(io_h.planeDataConfig);
+	PlaneData N_v(io_h.planeDataConfig);
+	PlaneData hdiv(io_h.planeDataConfig);
 
 	//Departure points and arrival points
-	PlaneData posx_d(io_h.resolution);
-	PlaneData posy_d(io_h.resolution);
+	PlaneData posx_d(io_h.planeDataConfig);
+	PlaneData posy_d(io_h.planeDataConfig);
 
 	//Parameters
 	double dt = i_timestep_size;
@@ -613,10 +613,10 @@ bool RexiSWE::run_timestep_slrexi(
 	//std::cout<< "h" << std::endl;
 	//h.printArrayData();
 
-	N_u.set_all(0);
-	N_v.set_all(0);
-	N_h.set_all(0);
-	hdiv.set_all(0);
+	N_u.physical_set_all(0);
+	N_v.physical_set_all(0);
+	N_h.physical_set_all(0);
+	hdiv.physical_set_all(0);
 
 	//Calculate nonlinear terms
 	if(i_param_nonlinear==1)
@@ -728,14 +728,14 @@ bool RexiSWE::run_timestep(
 #endif
 
 	std::size_t data_size = io_h.resolution[0]*io_h.resolution[1];
-	MPI_Bcast(io_h.array_data_cartesian_space, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	MPI_Bcast(io_h.array_data_physical_space, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
 	if (std::isnan(io_h.get(0,0)))
 		return false;
 
 
-	MPI_Bcast(io_u.array_data_cartesian_space, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-	MPI_Bcast(io_v.array_data_cartesian_space, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	MPI_Bcast(io_u.array_data_physical_space, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	MPI_Bcast(io_v.array_data_physical_space, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
 #if SWEET_BENCHMARK_REXI
 	if (mpi_rank == 0)
@@ -886,7 +886,7 @@ bool RexiSWE::run_timestep(
 				PlaneDataComplex u1 = (alpha/kappa) * uh     - (i_parameters.sim.f0/kappa) * vh;
 				PlaneDataComplex v1 = (i_parameters.sim.f0/kappa) * uh + (alpha/kappa) * vh;
 
-				PlaneData tmp(h_sum.resolution);
+				PlaneData tmp(h_sum.planeDataConfig);
 
 				h_sum += eta.toCart()*beta;
 				u_sum += u1.toCart()*beta;
@@ -975,7 +975,7 @@ bool RexiSWE::run_timestep(
 
 				rhs = rhs.toCart();
 
-				PlaneDataComplex eta(rhs.resolution);
+				PlaneDataComplex eta(rhs.planeDataConfig);
 
 				// don't reuse old solution?
 				if (i_iterative_solver_always_init_zero_solution)
@@ -1115,24 +1115,24 @@ bool RexiSWE::run_timestep(
 
 
 #if SWEET_REXI_THREAD_PARALLEL_SUM
-	io_h.set_all(0);
-	io_u.set_all(0);
-	io_v.set_all(0);
+	io_h.physical_set_all(0);
+	io_u.physical_set_all(0);
+	io_v.physical_set_all(0);
 
 	for (int n = 0; n < num_local_rexi_par_threads; n++)
 	{
 		// sum real-valued elements
 		#pragma omp parallel for schedule(static)
 		for (std::size_t i = 0; i < io_h.array_data_cartesian_length; i++)
-			io_h.array_data_cartesian_space[i] += perThreadVars[n]->h_sum.data[i<<1];
+			io_h.array_data_physical_space[i] += perThreadVars[n]->h_sum.data[i<<1];
 
 		#pragma omp parallel for schedule(static)
 		for (std::size_t i = 0; i < io_h.array_data_cartesian_length; i++)
-			io_u.array_data_cartesian_space[i] += perThreadVars[n]->u_sum.data[i<<1];
+			io_u.array_data_physical_space[i] += perThreadVars[n]->u_sum.data[i<<1];
 
 		#pragma omp parallel for schedule(static)
 		for (std::size_t i = 0; i < io_h.array_data_cartesian_length; i++)
-			io_v.array_data_cartesian_space[i] += perThreadVars[n]->v_sum.data[i<<1];
+			io_v.array_data_physical_space[i] += perThreadVars[n]->v_sum.data[i<<1];
 	}
 
 #else
@@ -1147,20 +1147,20 @@ bool RexiSWE::run_timestep(
 #if SWEET_MPI
 	PlaneData tmp(io_h.resolution);
 
-	int retval = MPI_Reduce(io_h.array_data_cartesian_space, tmp.array_data_cartesian_space, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	int retval = MPI_Reduce(io_h.array_data_physical_space, tmp.array_data_physical_space, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 	if (retval != MPI_SUCCESS)
 	{
 		std::cerr << "MPI FAILED!" << std::endl;
 		exit(1);
 	}
 
-	std::swap(io_h.array_data_cartesian_space, tmp.array_data_cartesian_space);
+	std::swap(io_h.array_data_physical_space, tmp.array_data_physical_space);
 
-	MPI_Reduce(io_u.array_data_cartesian_space, tmp.array_data_cartesian_space, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-	std::swap(io_u.array_data_cartesian_space, tmp.array_data_cartesian_space);
+	MPI_Reduce(io_u.array_data_physical_space, tmp.array_data_physical_space, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	std::swap(io_u.array_data_physical_space, tmp.array_data_physical_space);
 
-	MPI_Reduce(io_v.array_data_cartesian_space, tmp.array_data_cartesian_space, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-	std::swap(io_v.array_data_cartesian_space, tmp.array_data_cartesian_space);
+	MPI_Reduce(io_v.array_data_physical_space, tmp.array_data_physical_space, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	std::swap(io_v.array_data_physical_space, tmp.array_data_physical_space);
 #endif
 
 
@@ -1210,13 +1210,13 @@ void RexiSWE::run_timestep_direct_solution(
 	double f = i_simVars.sim.f0;
 	complex I(0.0,1.0);
 
-	PlaneDataComplex i_h(io_h.resolution);
-	PlaneDataComplex i_u(io_h.resolution);
-	PlaneDataComplex i_v(io_h.resolution);
+	PlaneDataComplex i_h(io_h.planeDataConfig);
+	PlaneDataComplex i_u(io_h.planeDataConfig);
+	PlaneDataComplex i_v(io_h.planeDataConfig);
 
-	PlaneDataComplex o_h(io_h.resolution);
-	PlaneDataComplex o_u(io_h.resolution);
-	PlaneDataComplex o_v(io_h.resolution);
+	PlaneDataComplex o_h(io_h.planeDataConfig);
+	PlaneDataComplex o_u(io_h.planeDataConfig);
+	PlaneDataComplex o_v(io_h.planeDataConfig);
 
 	i_h.loadRealFromPlaneData(io_h);
 	i_h = i_h.toSpec();
@@ -1236,9 +1236,9 @@ void RexiSWE::run_timestep_direct_solution(
 		{
 			if (ik0 == i_h.resolution[0]/2 || ik1 == i_h.resolution[1]/2)
 			{
-				o_h.set(ik1, ik0, 0, 0);
-				o_u.set(ik1, ik0, 0, 0);
-				o_v.set(ik1, ik0, 0, 0);
+				o_h.physical_set(ik1, ik0, 0, 0);
+				o_u.physical_set(ik1, ik0, 0, 0);
+				o_v.physical_set(ik1, ik0, 0, 0);
 			}
 
 			complex U_hat[3];
@@ -1469,9 +1469,9 @@ void RexiSWE::run_timestep_direct_solution(
 					U_hat_sp[k] += eigenvectors[j][k] * omega[j] * UEV0_sp[j];
 			}
 
-			o_h.set(ik1, ik0, U_hat_sp[0]);
-			o_u.set(ik1, ik0, U_hat_sp[1]);
-			o_v.set(ik1, ik0, U_hat_sp[2]);
+			o_h.physical_set(ik1, ik0, U_hat_sp[0]);
+			o_u.physical_set(ik1, ik0, U_hat_sp[1]);
+			o_v.physical_set(ik1, ik0, U_hat_sp[2]);
 		}
 	}
 

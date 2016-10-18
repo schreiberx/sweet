@@ -2,7 +2,7 @@
  * BenchmarkGalewsky.hpp
  *
  *  Created on: 16 Aug 2016
- *      Author: martin
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SRC_BENCHMARKGALEWSKY_HPP_

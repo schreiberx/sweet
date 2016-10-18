@@ -2,7 +2,7 @@
  * parareal_ode.cpp
  *
  *  Created on: 18 Apr 2016
- *      Author: martin
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #if !SWEET_PARAREAL

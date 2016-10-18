@@ -104,7 +104,7 @@ public:
 				dy /= radius;
 
 				double value = simVars.setup.h0+std::exp(-50.0*(dx*dx + dy*dy));
-				ret_h.set(j, i, value);
+				ret_h.physical_set(j, i, value);
 
 #elif ADV_FUNCTION==1
 				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
@@ -122,7 +122,7 @@ public:
 				x /= simVars.sim.domain_size[0];
 				y /= simVars.sim.domain_size[1];
 
-				ret_h.set(j, i, std::sin(freq_x*M_PIl*x)*std::sin(freq_x*M_PIl*y));
+				ret_h.physical_set(j, i, std::sin(freq_x*M_PIl*x)*std::sin(freq_x*M_PIl*y));
 #endif
 			}
 		}
@@ -175,7 +175,7 @@ public:
 				double value = -50.0*2.0*dx*std::exp(-50.0*(dx*dx + dy*dy));
 				value /= radius_scale;
 
-				ret_h.set(j, i, value);
+				ret_h.physical_set(j, i, value);
 
 #elif ADV_FUNCTION==1
 
@@ -194,7 +194,7 @@ public:
 				x /= simVars.sim.domain_size[0];
 				y /= simVars.sim.domain_size[1];
 
-				ret_h.set(j, i, freq_x*M_PIl*std::cos(freq_x*M_PIl*x)*std::sin(freq_y*M_PIl*y)/simVars.sim.domain_size[0]);
+				ret_h.physical_set(j, i, freq_x*M_PIl*std::cos(freq_x*M_PIl*x)*std::sin(freq_y*M_PIl*y)/simVars.sim.domain_size[0]);
 #endif
 			}
 		}
@@ -247,7 +247,7 @@ public:
 				double value = -50.0*2.0*dy*std::exp(-50.0*(dx*dx + dy*dy));
 				value /= radius_scale;
 
-				ret_h.set(j, i, value);
+				ret_h.physical_set(j, i, value);
 
 #elif ADV_FUNCTION==1
 
@@ -266,7 +266,7 @@ public:
 				x /= simVars.sim.domain_size[0];
 				y /= simVars.sim.domain_size[1];
 
-				ret_h.set(j, i, freq_y*M_PIl*std::sin(freq_x*M_PIl*x)*std::cos(freq_y*M_PIl*y)/simVars.sim.domain_size[1]);
+				ret_h.physical_set(j, i, freq_y*M_PIl*std::sin(freq_x*M_PIl*x)*std::cos(freq_y*M_PIl*y)/simVars.sim.domain_size[1]);
 #endif
 			}
 		}
@@ -283,14 +283,14 @@ public:
 		simVars.timecontrol.current_timestep_size = -1;
 
 		if (std::isinf(simVars.bogus.var[0]) != 0)
-			prog_u.set_all(0);
+			prog_u.physical_set_all(0);
 		else
-			prog_u.set_all(simVars.bogus.var[0]);
+			prog_u.physical_set_all(simVars.bogus.var[0]);
 
 		if (std::isinf(simVars.bogus.var[1]) != 0)
-			prog_v.set_all(0);
+			prog_v.physical_set_all(0);
 		else
-			prog_v.set_all(simVars.bogus.var[1]);
+			prog_v.physical_set_all(simVars.bogus.var[1]);
 
 		prog_h = get_advected_solution(0);
 	}
@@ -389,7 +389,7 @@ public:
 		else  if (simVars.bogus.var[2] == 3)
 		{
 			// NO H UPDATE
-			o_h_t.set_all(0);
+			o_h_t.physical_set_all(0);
 		}
 		else
 		{
@@ -418,8 +418,8 @@ public:
 
 		}
 
-		o_u_t.set_all(0);
-		o_v_t.set_all(0);
+		o_u_t.physical_set_all(0);
+		o_v_t.physical_set_all(0);
 
 		simVars.timecontrol.current_timestep_nr++;
 	}

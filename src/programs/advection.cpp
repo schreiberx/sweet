@@ -47,17 +47,17 @@ public:
 	{
 		simVars.timecontrol.current_timestep_nr = 0;
 
-		h.set_all(simVars.setup.h0);
+		h.physical_set_all(simVars.setup.h0);
 
 		if (std::isinf(simVars.bogus.var[0]) != 0)
 		{
-			u.set_all(0);
-			v.set_all(0);
+			u.physical_set_all(0);
+			v.physical_set_all(0);
 		}
 		else
 		{
-			u.set_all(simVars.bogus.var[0]);
-			v.set_all(simVars.bogus.var[1]);
+			u.physical_set_all(simVars.bogus.var[0]);
+			v.physical_set_all(simVars.bogus.var[1]);
 		}
 
 		double center_x = 0.7;
@@ -80,7 +80,7 @@ public:
 					double dy = y-center_y;
 
 					if (radius*radius >= dx*dx+dy*dy)
-						h.set(j,i, simVars.setup.h0+1.0);
+						h.physical_set(j,i, simVars.setup.h0+1.0);
 				}
 			}
 		}
@@ -100,7 +100,7 @@ public:
 					double dx = x-center_x;
 					double dy = y-center_y;
 
-					h.set(j,i, simVars.setup.h0+std::exp(-50.0*(dx*dx + dy*dy)));
+					h.physical_set(j,i, simVars.setup.h0+std::exp(-50.0*(dx*dx + dy*dy)));
 				}
 			}
 		}

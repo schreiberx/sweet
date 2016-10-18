@@ -20,6 +20,11 @@ SimulationVariables simVars;
 double next_timestep_output = 0;
 
 
+// Plane data config
+PlaneDataConfig planeDataConfigInstance;
+PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
+
+
 class SimulationSWECovariant
 {
 public:
@@ -67,20 +72,24 @@ public:
 public:
 	SimulationSWECovariant(
 	)	:
-		prog_P(simVars.disc.res_physical),	// density/pressure
-		prog_u(simVars.disc.res_physical),	// velocity (x-direction)
-		prog_v(simVars.disc.res_physical),	// velocity (y-direction)
+		prog_P(planeDataConfig),	// density/pressure
+		prog_u(planeDataConfig),	// velocity (x-direction)
+		prog_v(planeDataConfig),	// velocity (y-direction)
 
-		H(simVars.disc.res_physical),	//
-		U(simVars.disc.res_physical),	// mass flux (x-direction)
-		V(simVars.disc.res_physical),	// mass flux (y-direction)
+		H(planeDataConfig),	//
+		U(planeDataConfig),	// mass flux (x-direction)
+		V(planeDataConfig),	// mass flux (y-direction)
 
-		q(simVars.disc.res_physical),
-		beta_plane(simVars.disc.res_physical),
+		q(planeDataConfig),
+		beta_plane(planeDataConfig),
 
-		tmp(simVars.disc.res_physical),
+		tmp(planeDataConfig),
 
-		op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
+		op(
+				planeDataConfig,
+				simVars.sim.domain_size,
+				simVars.disc.use_spectral_basis_diffs
+		)
 	{
 		reset();
 	}
@@ -103,9 +112,9 @@ public:
 
 		simVars.reset();
 
-		prog_P.set_all(simVars.setup.h0);
-		prog_u.set_all(0);
-		prog_v.set_all(0);
+		prog_P.physical_set_all(simVars.setup.h0);
+		prog_u.physical_set_all(0);
+		prog_v.physical_set_all(0);
 
 		for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 		{
@@ -116,7 +125,7 @@ public:
 					double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 					double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-					prog_P.set(j, i, SWEPlaneBenchmarks::return_h(simVars, x, y));
+					prog_P.physical_set(j, i, SWEPlaneBenchmarks::return_h(simVars, x, y));
 				}
 
 				{
@@ -124,7 +133,7 @@ public:
 					double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 					double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-					prog_u.set(j,i, SWEPlaneBenchmarks::return_u(simVars, x, y));
+					prog_u.physical_set(j,i, SWEPlaneBenchmarks::return_u(simVars, x, y));
 				}
 
 				{
@@ -132,25 +141,25 @@ public:
 					double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 					double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-					prog_v.set(j, i, SWEPlaneBenchmarks::return_v(simVars, x, y));
+					prog_v.physical_set(j, i, SWEPlaneBenchmarks::return_v(simVars, x, y));
 				}
 
 				{
 					// beta plane
 					double y_beta = (((double)j+0.5)/(double)simVars.disc.res_physical[1]);
-					beta_plane.set(j, i, simVars.sim.f0+simVars.sim.beta*y_beta);
+					beta_plane.physical_set(j, i, simVars.sim.f0+simVars.sim.beta*y_beta);
 				}
 			}
 		}
 
 		if (simVars.setup.input_data_filenames.size() > 0)
-			prog_P.file_loadData(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
+			prog_P.file_loadData_physical(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
 
 		if (simVars.setup.input_data_filenames.size() > 1)
-			prog_u.file_loadData(simVars.setup.input_data_filenames[1].c_str(), simVars.setup.input_data_binary);
+			prog_u.file_loadData_physical(simVars.setup.input_data_filenames[1].c_str(), simVars.setup.input_data_binary);
 
 		if (simVars.setup.input_data_filenames.size() > 2)
-			prog_v.file_loadData(simVars.setup.input_data_filenames[2].c_str(), simVars.setup.input_data_binary);
+			prog_v.file_loadData_physical(simVars.setup.input_data_filenames[2].c_str(), simVars.setup.input_data_binary);
 
 		if (simVars.misc.gui_enabled)
 			timestep_output();
@@ -324,8 +333,8 @@ public:
 			{
 				double limit_speed = std::min(simVars.disc.cell_size[0]/i_u.reduce_maxAbs(), simVars.disc.cell_size[1]/i_v.reduce_maxAbs());
 
-				double hx = simVars.disc.cell_size[0];
-				double hy = simVars.disc.cell_size[1];
+//				double hx = simVars.disc.cell_size[0];
+//				double hy = simVars.disc.cell_size[1];
 
 				// limit by re
 				double limit_visc = std::numeric_limits<double>::infinity();
@@ -458,7 +467,7 @@ public:
 						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-						tmp.set(j, i, SWEPlaneBenchmarks::return_h(simVars, x, y));
+						tmp.physical_set(j, i, SWEPlaneBenchmarks::return_h(simVars, x, y));
 					}
 
 				benchmark_diff_h = (prog_P-tmp).reduce_norm1() / (double)(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]);
@@ -472,7 +481,7 @@ public:
 						double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-						tmp.set(j, i, SWEPlaneBenchmarks::return_u(simVars, x, y));
+						tmp.physical_set(j, i, SWEPlaneBenchmarks::return_u(simVars, x, y));
 					}
 
 				benchmark_diff_u = (prog_u-tmp).reduce_norm1() / (double)(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]);
@@ -485,7 +494,7 @@ public:
 						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 						double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-						tmp.set(j,i, SWEPlaneBenchmarks::return_v(simVars, x, y));
+						tmp.physical_set(j,i, SWEPlaneBenchmarks::return_v(simVars, x, y));
 					}
 
 				benchmark_diff_v = (prog_v-tmp).reduce_norm1() / (double)(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]);
@@ -610,6 +619,8 @@ int main(int i_argc, char *i_argv[])
 {
 	if (!simVars.setupFromMainParameters(i_argc, i_argv))
 		return -1;
+
+	planeDataConfigInstance.setup(simVars.disc.res_physical, simVars.disc.res_spectral);
 
 	SimulationSWECovariant *simulationSWE = new SimulationSWECovariant;
 

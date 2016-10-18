@@ -160,19 +160,19 @@ int main(int i_argc, char *i_argv[])
 					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
 
 					// H to reconstruct
-					h_cart.set(
+					h_cart.physical_set(
 						j, i,
 						sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y),
 						sin(2.0*freq_y*M_PIl*y)*cos(2.0*freq_x*M_PIl*x)
 					);
 
-					h_diff2_x.set(
+					h_diff2_x.physical_set(
 						j, i,
 						freq_x*freq_x*M_PIl*M_PIl*(-1.0)*sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)/(simVars.sim.domain_size[0]*simVars.sim.domain_size[0]),
 						-sin(2.0*freq_y*M_PIl*y)*2.0*freq_x*M_PIl*2.0*freq_x*M_PIl*cos(2.0*freq_x*M_PIl*x)/(simVars.sim.domain_size[1]*simVars.sim.domain_size[1])
 					);
 
-					h_diff2_y.set(
+					h_diff2_y.physical_set(
 						j, i,
 						-sin(freq_x*M_PIl*x)*freq_y*M_PIl*freq_y*M_PIl*cos(freq_y*M_PIl*y)/(simVars.sim.domain_size[1]*simVars.sim.domain_size[1]),
 						2.0*freq_y*2.0*freq_y*M_PIl*M_PIl*(-1.0)*sin(2.0*freq_y*M_PIl*y)*cos(2.0*freq_x*M_PIl*x)/(simVars.sim.domain_size[0]*simVars.sim.domain_size[0])

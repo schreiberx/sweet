@@ -2,7 +2,7 @@
  * PararealSimulationVariables.hpp
  *
  *  Created on: 18 Apr 2016
- *      Author: martin
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SRC_INCLUDE_PARAREAL_PARAREAL_SIMULATIONVARIABLES_HPP_

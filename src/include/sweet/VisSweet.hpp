@@ -15,7 +15,7 @@
 #include "../libgl/draw/GlDrawQuad.hpp"
 #include "../libgl/hud/GlFreeType.hpp"
 #include "../libgl/hud/GlRenderOStream.hpp"
-#include "PlaneData.hpp"
+#include <sweet/plane/PlaneData.hpp>
 
 
 
@@ -93,10 +93,10 @@ class VisSweet	:
 		{
 			glTexture = new GlTexture(GL_TEXTURE_2D, GL_RED, GL_RED, GL_UNSIGNED_BYTE);
 			glTexture->bind();
-			glTexture->resize(visData.resolution[0], visData.resolution[1]);
+			glTexture->resize(visData.planeDataConfig->physical_data_size[0], visData.planeDataConfig->physical_data_size[1]);
 			glTexture->unbind();
 
-			texture_data = new unsigned char[visData.array_data_cartesian_length];
+			texture_data = new unsigned char[visData.planeDataConfig->physical_array_data_number_of_elements];
 		}
 
 		visData.requestDataInCartesianSpace();
@@ -113,9 +113,9 @@ class VisSweet	:
 		double inv_delta = 1.0/real_delta;
 
 #pragma omp parallel for OPENMP_PAR_SIMD
-		for (std::size_t i = 0; i < visData.array_data_cartesian_length; i++)
+		for (std::size_t i = 0; i < visData.planeDataConfig->physical_array_data_number_of_elements; i++)
 		{
-			double value = (visData.array_data_cartesian_space[i]-vis_min)*inv_delta;
+			double value = (visData.physical_space_data[i]-vis_min)*inv_delta;
 			value *= 255.0;
 
 			texture_data[i] = (unsigned char)std::min(255.0, std::max(0.0, value));

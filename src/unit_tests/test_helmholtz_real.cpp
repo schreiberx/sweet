@@ -114,23 +114,23 @@ int main(int i_argc, char *i_argv[])
 					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
 
 					// u and v to reconstruct
-					u_ana.set(
+					u_ana.physical_set(
 						j, i,
 						sin(2*M_PIl*x)*cos(2*M_PIl*y)
 					);
 
-					v_ana.set(
+					v_ana.physical_set(
 						j, i,
 						cos(2*M_PIl*x)*sin(2*M_PIl*y)
 					);
 
 					// sources for the right hand side to fulfill the equation system for given u and v
-					f.set(
+					f.physical_set(
 						j, i,
 						(1+8*M_PIl*M_PIl)*sin(2*M_PIl*x)*cos(2*M_PIl*y)-2*M_PIl*cos(2*M_PIl*x)*cos(2*M_PIl*y)+2*M_PIl*sin(2*M_PIl*x)*sin(2*M_PIl*y)
 					);
 
-					g.set(
+					g.physical_set(
 						j, i,
 						(1+8*M_PIl*M_PIl)*cos(2*M_PIl*x)*sin(2*M_PIl*y)-2*M_PIl*cos(2*M_PIl*x)*cos(2*M_PIl*y)+2*M_PIl*sin(2*M_PIl*x)*sin(2*M_PIl*y)
 					);
@@ -140,8 +140,8 @@ int main(int i_argc, char *i_argv[])
 
 			PlaneData u(res);
 			PlaneData v(res);
-			u.set_all(0);
-			v.set_all(0);
+			u.physical_set_all(0);
+			v.physical_set_all(0);
 
 			PlaneOperators op(simVars.disc.res_phys, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 

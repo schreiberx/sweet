@@ -106,9 +106,9 @@ public:
 				double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 				double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-				prog_h.set(j, i, SWEPlaneBenchmarks::return_h(simVars, x, y));
-//				prog_u.set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
-//				prog_v.set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
+				prog_h.physical_set(j, i, SWEPlaneBenchmarks::return_h(simVars, x, y));
+//				prog_u.physical_set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
+//				prog_v.physical_set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
 			}
 		}
 
@@ -130,8 +130,8 @@ public:
 		{
 			for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 			{
-				posx_a.set(j, i, ((double)i)*((double)simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0]));
-				posy_a.set(j, i, ((double)j)*((double)simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1]));
+				posx_a.physical_set(j, i, ((double)i)*((double)simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0]));
+				posy_a.physical_set(j, i, ((double)j)*((double)simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1]));
 			}
 		}
 

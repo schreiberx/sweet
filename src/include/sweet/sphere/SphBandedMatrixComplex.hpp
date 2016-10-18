@@ -2,7 +2,7 @@
  * SPHSolverComplex.hpp
  *
  *  Created on: 31 Aug 2016
- *      Author: martin
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SRC_INCLUDE_SPH_SPHSOLVER_COMPLEX_HPP_

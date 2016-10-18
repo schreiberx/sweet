@@ -14,6 +14,7 @@ class PlaneDataSampler
 public:
 	double domain_size[2];
 	int res[2];
+	PlaneDataConfig *planeDataConfig;
 
 private:
 	double scale_factor[2];
@@ -22,11 +23,13 @@ private:
 public:
 	PlaneDataSampler(
 		double i_domain_size[2],
-		std::size_t i_res[2]
+		PlaneDataConfig *i_planeDataConfig
 	)
 	{
-		setup(i_domain_size, i_res);
+		planeDataConfig = i_planeDataConfig;
+		setup(i_domain_size, planeDataConfig);
 	}
+
 
 	PlaneDataSampler()
 	{
@@ -44,17 +47,17 @@ public:
 public:
 	void setup(
 		double i_domain_size[2],
-		std::size_t i_res[2]
+		PlaneDataConfig *i_planeDataConfig
 	)
 	{
 		domain_size[0] = i_domain_size[0];
 		domain_size[1] = i_domain_size[1];
 
-		res[0] = i_res[0];
-		res[1] = i_res[1];
+		res[0] = i_planeDataConfig->physical_res[0];
+		res[1] = i_planeDataConfig->physical_res[1];
 
-		scale_factor[0] = (double)i_res[0] / i_domain_size[0];
-		scale_factor[1] = (double)i_res[1] / i_domain_size[1];
+		scale_factor[0] = (double)i_planeDataConfig->physical_res[0] / i_domain_size[0];
+		scale_factor[1] = (double)i_planeDataConfig->physical_res[1] / i_domain_size[1];
 	}
 
 public:
@@ -90,8 +93,8 @@ public:
 	)
 	{
 		// position of A grid points (h)
-		PlaneData pos_x(i_u.resolution);
-		PlaneData pos_y(i_u.resolution);
+		PlaneData pos_x(i_u.planeDataConfig);
+		PlaneData pos_y(i_u.planeDataConfig);
 
 		//Initialise output
 		o_u=i_u;
@@ -111,8 +114,8 @@ public:
 			for (int i = 0; i < res[0]; i++)
 			{
 		    	// h position - A grid
-				pos_x.set(j, i, ((double)i+0.5)/scale_factor[0]); //*simVars.sim.domain_size[0];
-				pos_y.set(j, i, ((double)j+0.5)/scale_factor[1]); //*simVars.sim.domain_size[1];
+				pos_x.physical_set(j, i, ((double)i+0.5)/scale_factor[0]); //*simVars.sim.domain_size[0];
+				pos_y.physical_set(j, i, ((double)j+0.5)/scale_factor[1]); //*simVars.sim.domain_size[1];
 				//std::cout<< "i " << i << " j " << j << " x " << x <<" y "<< y <<std::endl;
 			}
 		}
@@ -147,7 +150,7 @@ public:
 		assert(res[0] > 0);
 		assert(scale_factor[0] > 0);
 
-		const std::size_t size = i_pos_x.resolution[0]*i_pos_x.resolution[1];
+		const std::size_t size = i_pos_x.planeDataConfig->physical_array_data_number_of_elements;
 
 		i_data.requestDataInCartesianSpace();
 
@@ -175,8 +178,8 @@ public:
 			 */
 			//double pos_x = i_pos[0]->array_data_cartesian_space[pos_idx]*scale_factor[0] + i_shift_x;
 			//double pos_y = i_pos[1]->array_data_cartesian_space[pos_idx]*scale_factor[1] + i_shift_y;
-			double pos_x = wrapPeriodic(i_pos_x.array_data_cartesian_space[pos_idx]*scale_factor[0] + i_shift_x, (double)res[0]);
-			double pos_y = wrapPeriodic(i_pos_y.array_data_cartesian_space[pos_idx]*scale_factor[1] + i_shift_y, (double)res[1]);
+			double pos_x = wrapPeriodic(i_pos_x.physical_space_data[pos_idx]*scale_factor[0] + i_shift_x, (double)res[0]);
+			double pos_y = wrapPeriodic(i_pos_y.physical_space_data[pos_idx]*scale_factor[1] + i_shift_y, (double)res[1]);
 			//std::cout << pos_idx << " x " << pos_x << " y " << pos_y << " res " << res[1] << std::endl;
 			/**
 			 * For the interpolation, we assume node-aligned values
@@ -223,10 +226,10 @@ public:
 			{
 				double p[4];
 
-				p[0] = i_data.get(idx_j, idx_i[0]);
-				p[1] = i_data.get(idx_j, idx_i[1]);
-				p[2] = i_data.get(idx_j, idx_i[2]);
-				p[3] = i_data.get(idx_j, idx_i[3]);
+				p[0] = i_data.physical_get(idx_j, idx_i[0]);
+				p[1] = i_data.physical_get(idx_j, idx_i[1]);
+				p[2] = i_data.physical_get(idx_j, idx_i[2]);
+				p[3] = i_data.physical_get(idx_j, idx_i[3]);
 
 				q[kj] = p[1] + 0.5 * x*(p[2] - p[0] + x*(2.0*p[0] - 5.0*p[1] + 4.0*p[2] - p[3] + x*(3.0*(p[1] - p[2]) + p[3] - p[0])));
 				//std::cout << idx_j << " "<< q[kj] << std::endl;
@@ -237,12 +240,12 @@ public:
 			double value = q[1] + 0.5 * y*(q[2] - q[0] + y*(2.0*q[0] - 5.0*q[1] + 4.0*q[2] - q[3] + y*(3.0*(q[1] - q[2]) + q[3] - q[0])));
 			//std::cout << value << std::endl;
 			//std::cout  << std::endl;
-			o_data.array_data_cartesian_space[pos_idx] = value;
+			o_data.physical_space_data[pos_idx] = value;
 		}
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		o_data.array_data_cartesian_space_valid = true;
-		o_data.array_data_spectral_space_valid = false;
+		o_data.physical_space_data_valid = true;
+		o_data.spectral_space_data_valid = false;
 #endif
 	}
 
@@ -265,12 +268,10 @@ public:
 		 *  and this shift has to be removed for the interpolation
 		 */
 
-
-		const std::size_t size = i_pos_x.resolution[0]*i_pos_x.resolution[1];
-
 		assert(size != 0);
 
 		i_data.requestDataInCartesianSpace();
+		std::size_t size = i_pos_x.planeDataConfig->physical_array_data_number_of_elements;
 
 		// iterate over all positions
 //#pragma omp parallel for OPENMP_PAR_SIMD
@@ -278,8 +279,8 @@ public:
 		for (std::size_t pos_idx = 0; pos_idx < size; pos_idx++)
 		{
 			// load position to interpolate
-			double pos_x = wrapPeriodic(i_pos_x.array_data_cartesian_space[pos_idx]*scale_factor[0] + i_shift_x, (double)res[0]);
-			double pos_y = wrapPeriodic(i_pos_y.array_data_cartesian_space[pos_idx]*scale_factor[1] + i_shift_y, (double)res[0]);
+			double pos_x = wrapPeriodic(i_pos_x.physical_space_data[pos_idx]*scale_factor[0] + i_shift_x, (double)res[0]);
+			double pos_y = wrapPeriodic(i_pos_y.physical_space_data[pos_idx]*scale_factor[1] + i_shift_y, (double)res[0]);
 
 			/**
 			 * See http://www.paulinternet.nl/?page=bicubic
@@ -308,8 +309,8 @@ public:
 			for (int kj = 0; kj < 2; kj++)
 			{
 				double p[2];
-				p[0] = i_data.get(idx_j, idx_i[0]);
-				p[1] = i_data.get(idx_j, idx_i[1]);
+				p[0] = i_data.physical_get(idx_j, idx_i[0]);
+				p[1] = i_data.physical_get(idx_j, idx_i[1]);
 
 				q[kj] = p[0] + x*(p[1]-p[0]);
 
@@ -319,12 +320,12 @@ public:
 
 			double value = q[0] + y*(q[1]-q[0]);
 
-			o_data.array_data_cartesian_space[pos_idx] = value;
+			o_data.physical_space_data[pos_idx] = value;
 		}
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		o_data.array_data_cartesian_space_valid = true;
-		o_data.array_data_spectral_space_valid = false;
+		o_data.physical_space_data_valid = true;
+		o_data.spectral_space_data_valid = false;
 #endif
 	}
 
@@ -339,7 +340,7 @@ public:
 			double i_shift_y = 0.0
 	)
 	{
-		PlaneData out(i_data.resolution);
+		PlaneData out(planeDataConfig);
 		bilinear_scalar(i_data, i_pos_x, i_pos_y, out, i_shift_x, i_shift_y);
 		return out;
 	}
@@ -354,7 +355,7 @@ public:
 			double i_shift_y = 0.0
 	)
 	{
-		PlaneData out(i_data.resolution);
+		PlaneData out(planeDataConfig);
 		bicubic_scalar(i_data, i_pos_x, i_pos_y, out, i_shift_x, i_shift_y);
 		return out;
 	}
@@ -376,11 +377,11 @@ public:
 	)
 	{
 
-		PlaneData data(i_data.resolution); //i_data in real data_array structure
-		PlaneData out(i_data.resolution); // interpolated data in real data_array structure
-		PlaneDataComplex out_cmp(i_data.resolution); // complex output of interpolated data
+		PlaneData data(planeDataConfig); //i_data in real data_array structure
+		PlaneData out(planeDataConfig); // interpolated data in real data_array structure
+		PlaneDataComplex out_cmp(planeDataConfig); // complex output of interpolated data
 
-		// The data needs to be cartesian space!!
+		// The data needs to be Cartesian space!!
 		//data_cmp=i_data.toCart(); // do not use, since not secure
 
 		//Put data into a Real PlaneData - called data

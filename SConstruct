@@ -180,7 +180,7 @@ AddOption(	'--plane-spectral-dealiasing',
 		dest='plane_spectral_dealiasing',
 		type='choice',
 		choices=['enable','disable'],
-		default='disable',
+		default='enable',
 		help='spectral dealiasing (3N/2-1 rule): enable, disable [default: %default]'
 )
 env['plane_spectral_dealiasing'] = GetOption('plane_spectral_dealiasing')

@@ -19,7 +19,7 @@
  * CGlDrawFboQuad.hpp
  *
  *  Created on: Jan 30, 2010
- *      Author: martin
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef CGLDRAWFBOQUAD_HPP_

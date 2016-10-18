@@ -19,7 +19,7 @@
  * GlHudConfig.hpp
  *
  *  Created on: Mar 22, 2010
- *      Author: martin
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef CGLHUDCONFIG_HPP_

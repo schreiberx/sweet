@@ -1,5 +1,5 @@
 /*
- * Operators.hpp
+ * PlaneOperators.hpp
  *
  *  Created on: 30 Jun 2015
  *      Author: Martin Schreiber <schreiberx@gmail.com>
@@ -9,14 +9,17 @@
 
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-	#include <sweet/plane/PlaneDataComplex.hpp>
+//	#include <sweet/plane/PlaneDataComplex.hpp>
 #endif
 
 #include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneDataConfig.hpp>
 
 
 class PlaneOperators
 {
+	PlaneDataConfig *planeDataConfig;
+
 public:
 	// differential operators (central / forward / backward)
 	PlaneData diff_c_x, diff_c_y;
@@ -118,6 +121,7 @@ public:
 		return tv;
 	}
 
+
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 	/**
 	 * Diffusion or hyperviscosity coefficients
@@ -174,33 +178,39 @@ public:
 	}
 #endif
 
+
 	PlaneOperators(
-		std::size_t res[2],		///< resolution
-		double i_domain_size[2],	///< domain size
+		PlaneDataConfig *i_planeDataConfig,
+		const double i_domain_size[2],	///< domain size
 		bool i_use_spectral_basis_diffs
 	)	:
-		diff_c_x(res),
-		diff_c_y(res),
+		planeDataConfig(i_planeDataConfig),
 
-		diff_f_x(res),
-		diff_f_y(res),
-		diff_b_x(res),
-		diff_b_y(res),
+		diff_c_x(i_planeDataConfig),
+		diff_c_y(i_planeDataConfig),
 
-		diff2_c_x(res),
-		diff2_c_y(res),
+		diff_f_x(i_planeDataConfig),
+		diff_f_y(i_planeDataConfig),
+		diff_b_x(i_planeDataConfig),
+		diff_b_y(i_planeDataConfig),
 
-		avg_f_x(res),
-		avg_f_y(res),
-		avg_b_x(res),
-		avg_b_y(res),
+		diff2_c_x(i_planeDataConfig),
+		diff2_c_y(i_planeDataConfig),
 
-		shift_left(res),
-		shift_right(res),
-		shift_up(res),
-		shift_down(res)
+		avg_f_x(i_planeDataConfig),
+		avg_f_y(i_planeDataConfig),
+		avg_b_x(i_planeDataConfig),
+		avg_b_y(i_planeDataConfig),
+
+		shift_left(i_planeDataConfig),
+		shift_right(i_planeDataConfig),
+		shift_up(i_planeDataConfig),
+		shift_down(i_planeDataConfig)
 	{
-		double h[2] = {(double)i_domain_size[0] / (double)res[0], (double)i_domain_size[1] / (double)res[1]};
+		double h[2] = {
+				(double)i_domain_size[0] / (double)planeDataConfig->physical_res[0],
+				(double)i_domain_size[1] / (double)planeDataConfig->physical_res[1]
+		};
 
 /////////////////////////////////////////////////////////////////////
 
@@ -285,9 +295,9 @@ public:
 			 */
 			diff_c_x.set_spec_all(0, 0);
 
-			for (int j = 0; j <= (int)diff_c_x.resolution[1]/2; j++)
+			for (int j = 0; j <= (int)diff_c_x.planeDataConfig->spectral_data_size[1]/2; j++)
 			{
-				for (int i = 0; i <= (int)diff_c_x.resolution[0]/2; i++)
+				for (int i = 0; i <= (int)diff_c_x.planeDataConfig->spectral_data_size[0]/2; i++)
 				{
 					diff_c_x.set_spec(
 							j, i,
@@ -295,7 +305,7 @@ public:
 							(double)i*2.0*M_PIl/(double)i_domain_size[0]
 						);
 					diff_c_x.set_spec(
-							diff_c_x.resolution[1]-1-j, i,
+							diff_c_x.planeDataConfig->spectral_data_size[1]-1-j, i,
 							0,
 							(double)i*2.0*M_PIl/(double)i_domain_size[0]
 						);
@@ -308,9 +318,9 @@ public:
 			 */
 			diff_c_y.set_spec_all(0, 0);
 			// TODO: shift j for loop by +1
-			for (int j = 0; j <= (int)diff_c_y.resolution[1]/2-1; j++)
+			for (int j = 0; j <= (int)diff_c_y.planeDataConfig->spectral_data_size[1]/2-1; j++)
 			{
-				for (int i = 0; i <= (int)diff_c_y.resolution[0]/2; i++)
+				for (int i = 0; i <= (int)diff_c_y.planeDataConfig->spectral_data_size[0]/2; i++)
 				{
 					diff_c_y.set_spec(
 							j+1, i,
@@ -318,7 +328,7 @@ public:
 							(double)(j+1)*2.0*M_PIl/(double)i_domain_size[1]
 						);
 					diff_c_y.set_spec(
-							diff_c_y.resolution[1]-(j+1), i,
+							diff_c_y.planeDataConfig->spectral_data_size[1]-(j+1), i,
 							0,
 							-(double)(j+1)*2.0*M_PIl/(double)i_domain_size[1]
 						);
@@ -367,9 +377,9 @@ public:
 			 */
 			diff2_c_x.set_spec_all(0, 0);
 
-			for (int j = 0; j <= (int)diff_c_x.resolution[1]/2; j++)
+			for (int j = 0; j <= (int)diff_c_x.planeDataConfig->spectral_data_size[1]/2; j++)
 			{
-				for (int i = 0; i <= (int)diff_c_x.resolution[0]/2; i++)
+				for (int i = 0; i <= (int)diff_c_x.planeDataConfig->spectral_data_size[0]/2; i++)
 				{
 					double fac = (double)i*2.0*M_PIl/(double)i_domain_size[0];
 
@@ -379,7 +389,7 @@ public:
 							0
 						);
 					diff2_c_x.set_spec(
-							diff_c_x.resolution[1]-1-j, i,
+							diff_c_x.planeDataConfig->spectral_data_size[1]-1-j, i,
 							-fac*fac,
 							0
 						);
@@ -389,18 +399,20 @@ public:
 
 			diff2_c_y.set_spec_all(0, 0);
 
-			for (int j = 0; j <= (int)diff_c_y.resolution[1]/2-1; j++)
+			for (int j = 0; j <= (int)diff_c_y.planeDataConfig->spectral_data_size[1]/2-1; j++)
 			{
-				for (int i = 0; i <= (int)diff_c_y.resolution[0]/2; i++)
+				for (int i = 0; i <= (int)diff_c_y.planeDataConfig->spectral_data_size[0]/2; i++)
 				{
 					double fac = (double)(j+1)*2.0*M_PIl/(double)i_domain_size[1];
+
 					diff2_c_y.set_spec(
 							j+1, i,
 							-fac*fac,
 							0
 						);
+
 					diff2_c_y.set_spec(
-							diff_c_y.resolution[1]-(j+1), i,
+							diff_c_y.planeDataConfig->spectral_data_size[1]-(j+1), i,
 							-fac*fac,
 							0
 						);

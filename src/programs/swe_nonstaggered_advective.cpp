@@ -16,6 +16,10 @@
 #include <stdio.h>
 
 
+// Plane data config
+PlaneDataConfig planeDataConfigInstance;
+PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
+
 
 SimulationVariables simVars;
 
@@ -44,16 +48,20 @@ public:
 
 public:
 	SimulationSWE()	:
-		prog_h(simVars.disc.res_physical),
-		prog_u(simVars.disc.res_physical),
-		prog_v(simVars.disc.res_physical),
+		prog_h(planeDataConfig),
+		prog_u(planeDataConfig),
+		prog_v(planeDataConfig),
 
-		beta_plane(simVars.disc.res_physical),
+		beta_plane(planeDataConfig),
 
-		eta(simVars.disc.res_physical),
-		tmp(simVars.disc.res_physical),
+		eta(planeDataConfig),
+		tmp(planeDataConfig),
 
-		op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
+		op(
+				planeDataConfig,
+				simVars.sim.domain_size,
+				simVars.disc.use_spectral_basis_diffs
+		)
 	{
 		reset();
 	}
@@ -72,9 +80,9 @@ public:
 		simVars.timecontrol.current_timestep_nr = 0;
 		simVars.timecontrol.current_simulation_time = 0;
 
-		prog_h.set_all(simVars.setup.h0);
-		prog_u.set_all(0);
-		prog_v.set_all(0);
+		prog_h.physical_set_all(simVars.setup.h0);
+		prog_u.physical_set_all(0);
+		prog_v.physical_set_all(0);
 
 		for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 		{
@@ -83,14 +91,14 @@ public:
 				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-				prog_h.set(j, i, SWEPlaneBenchmarks::return_h(simVars, x, y));
-				prog_u.set(j, i, SWEPlaneBenchmarks::return_u(simVars, x, y));
-				prog_v.set(j, i, SWEPlaneBenchmarks::return_v(simVars, x, y));
+				prog_h.physical_set(j, i, SWEPlaneBenchmarks::return_h(simVars, x, y));
+				prog_u.physical_set(j, i, SWEPlaneBenchmarks::return_u(simVars, x, y));
+				prog_v.physical_set(j, i, SWEPlaneBenchmarks::return_v(simVars, x, y));
 
 				{
 					// beta plane
 					double y_beta = (((double)j+0.5)/(double)simVars.disc.res_physical[1]);
-					beta_plane.set(j, i, simVars.sim.f0+simVars.sim.beta*y_beta);
+					beta_plane.physical_set(j, i, simVars.sim.f0+simVars.sim.beta*y_beta);
 				}
 			}
 		}
@@ -98,13 +106,13 @@ public:
 
 
 		if (simVars.setup.input_data_filenames.size() > 0)
-			prog_h.file_loadData(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
+			prog_h.file_loadData_spatial(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
 
 		if (simVars.setup.input_data_filenames.size() > 1)
-			prog_u.file_loadData(simVars.setup.input_data_filenames[1].c_str(), simVars.setup.input_data_binary);
+			prog_u.file_loadData_spatial(simVars.setup.input_data_filenames[1].c_str(), simVars.setup.input_data_binary);
 
 		if (simVars.setup.input_data_filenames.size() > 2)
-			prog_v.file_loadData(simVars.setup.input_data_filenames[2].c_str(), simVars.setup.input_data_binary);
+			prog_v.file_loadData_spatial(simVars.setup.input_data_filenames[2].c_str(), simVars.setup.input_data_binary);
 
 		if (simVars.misc.gui_enabled)
 			timestep_output();
@@ -217,14 +225,14 @@ public:
 			 *
 			 * WARNING: This probably does not conserve the quantities
 			 */
-			((PlaneData&)i_v).set_row(0, 0);		// zero velocities
-			((PlaneData&)i_v).set_row(-1, 0);
+			((PlaneData&)i_v).physical_set_row(0, 0);		// zero velocities
+			((PlaneData&)i_v).physical_set_row(-1, 0);
 
-			((PlaneData&)i_u).copy_row(1, 0);	// slip boundaries
-			((PlaneData&)i_u).copy_row(-2, -1);
+			((PlaneData&)i_u).physical_copy_row(1, 0);	// slip boundaries
+			((PlaneData&)i_u).physical_copy_row(-2, -1);
 
-			((PlaneData&)i_h).copy_row(1, 0);	// make smooth
-			((PlaneData&)i_h).copy_row(-2, -1);
+			((PlaneData&)i_h).physical_copy_row(1, 0);	// make smooth
+			((PlaneData&)i_h).physical_copy_row(-2, -1);
 		}
 
 		/*
@@ -247,8 +255,8 @@ public:
 			o_u_t += beta_plane*i_v;
 			o_v_t -= beta_plane*i_u;
 
-			o_v_t.set_row(0, 0);
-			o_v_t.set_row(-1, 0);
+			o_v_t.physical_set_row(0, 0);
+			o_v_t.physical_set_row(-1, 0);
 		}
 
 #if 0
@@ -309,7 +317,6 @@ public:
 				);
 		}
 	}
-
 
 
 	void run_timestep()
@@ -401,7 +408,7 @@ public:
 						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-						tmp.set(j, i, SWEPlaneBenchmarks::return_h(simVars, x, y));
+						tmp.physical_set(j, i, SWEPlaneBenchmarks::return_h(simVars, x, y));
 					}
 
 				benchmark_diff_h = (prog_h-tmp).reduce_norm1_quad() / (double)(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]);
@@ -415,7 +422,7 @@ public:
 						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-						tmp.set(j, i, SWEPlaneBenchmarks::return_u(simVars, x, y));
+						tmp.physical_set(j, i, SWEPlaneBenchmarks::return_u(simVars, x, y));
 					}
 
 				benchmark_diff_u = (prog_u-tmp).reduce_norm1_quad() / (double)(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]);
@@ -428,7 +435,7 @@ public:
 						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-						tmp.set(j, i, SWEPlaneBenchmarks::return_v(simVars, x, y));
+						tmp.physical_set(j, i, SWEPlaneBenchmarks::return_v(simVars, x, y));
 					}
 
 				benchmark_diff_v = (prog_v-tmp).reduce_norm1_quad() / (double)(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]);
@@ -582,6 +589,7 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 	}
 
+	planeDataConfigInstance.setup(simVars.disc.res_physical, simVars.disc.res_spectral);
 
 	SimulationSWE *simulationSWE = new SimulationSWE;
 

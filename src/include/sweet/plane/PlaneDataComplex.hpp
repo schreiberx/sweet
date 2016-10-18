@@ -31,226 +31,13 @@ class PlaneDataComplex
 
 public:
 	/**
-	 * resolution of data array
-	 */
-	std::size_t resolution[2];
-
-	/**
-	 * Is this an aliased version?
-	 * Then this uses different FFTW plans
-	 */
-	bool aliased_scaled = false;
-
-	/**
 	 * Data associated to this complex array
 	 */
 	double *data;
 
-	/**
-	 * Flag which is true if this is the initializer class of the FFTW library
-	 */
-	bool is_fft_data_initialized;
-
-
-	/**
-	 * container for different plans supported by this class
-	 */
-	class Plans
-	{
-	public:
-		fftw_plan to_cart;
-		fftw_plan to_spec;
-		fftw_plan to_cart_aliasing;
-		fftw_plan to_spec_aliasing;
-
-		std::size_t resolution[2];
-		std::size_t resolution_aliasing[2];
-	};
-
-
-	/**
-	 * Singleton of plans
-	 */
-	Plans &fft_getSingleton_Plans()	const
-	{
-		static Plans plans;
-		return plans;
-	}
-
-
-	/**
-	 * Singleton of reference counter
-	 */
-	int &fft_getSingleton_RefCounter()
-	{
-		static int ref_counter = 0;
-		return ref_counter;
-	}
-
-
-
-	/**
-	 * Setup the FFTW
-	 *
-	 * This may be only called once
-	 */
-	void fft_setup()
-	{
-		assert(!is_fft_data_initialized);
-		is_fft_data_initialized = true;
-
-		assert(fft_getSingleton_RefCounter() >= 0);
-
-		int &ref_counter = fft_getSingleton_RefCounter();
-
-#if SWEET_REXI_THREAD_PARALLEL_SUM
-#	pragma omp atomic
-#endif
-
-		ref_counter++;
-
-		if (ref_counter != 1)
-			return;
-
-		bool wisdom_loaded = PlaneData::FFTWSingletonClass::loadWisdom();
-
-		{
-			// create dummy array for plan creation
-			// IMPORTANT! if we use the same array for input/output,
-			// a plan will be created with does not support out-of-place
-			// FFTs, see http://www.fftw.org/doc/New_002darray-Execute-Functions.html
-			double *dummy_data = MemBlockAlloc::alloc<double>(sizeof(double)*resolution[0]*resolution[1]*2);
-
-			fft_getSingleton_Plans().to_spec =
-					fftw_plan_dft_2d(
-						resolution[1],	// n0 = ny
-						resolution[0],	// n1 = nx
-						(fftw_complex*)data,
-						(fftw_complex*)dummy_data,
-						FFTW_FORWARD,
-						(!wisdom_loaded ? FFTW_PRESERVE_INPUT : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
-					);
-
-			if (fft_getSingleton_Plans().to_spec == nullptr)
-			{
-				std::cerr << "Failed to create plan_forward for fftw" << std::endl;
-				std::cerr << "complex forward preverse_input forward " << resolution[0] << " x " << resolution[1] << std::endl;
-				std::cerr << "fftw-wisdom plan: cf" << resolution[0] << "x" << resolution[1] << std::endl;
-				exit(-1);
-			}
-
-			fft_getSingleton_Plans().to_cart =
-					fftw_plan_dft_2d(
-						resolution[1],	// n0 = ny
-						resolution[0],	// n1 = nx
-						(fftw_complex*)data,
-						(fftw_complex*)dummy_data,
-						FFTW_BACKWARD,
-						(!wisdom_loaded ? FFTW_PRESERVE_INPUT : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
-					);
-
-			fft_getSingleton_Plans().resolution[0] = resolution[0];
-			fft_getSingleton_Plans().resolution[1] = resolution[1];
-
-			if (fft_getSingleton_Plans().to_cart == nullptr)
-			{
-				std::cerr << "Failed to create plan_backward for fftw" << std::endl;
-				std::cerr << "complex backward preverse_input forward " << resolution[0] << " x " << resolution[1] << std::endl;
-				std::cerr << "fftw-wisdom plan: cf" << resolution[0] << "x" << resolution[1] << std::endl;
-				exit(-1);
-			}
-
-			MemBlockAlloc::free(dummy_data, sizeof(double)*resolution[0]*resolution[1]*2);
-		}
-
-		{
-			double *dummy_data_aliasing_in = MemBlockAlloc::alloc<double>(sizeof(double)*resolution[0]*resolution[1]*2*4);
-			double *dummy_data_aliasing_out = MemBlockAlloc::alloc<double>(sizeof(double)*resolution[0]*resolution[1]*2*4);
-
-			fft_getSingleton_Plans().to_spec_aliasing =
-					fftw_plan_dft_2d(
-						resolution[1]*2,	// n0 = ny
-						resolution[0]*2,	// n1 = nx
-						(fftw_complex*)dummy_data_aliasing_in,
-						(fftw_complex*)dummy_data_aliasing_out,
-						FFTW_FORWARD,
-						(!wisdom_loaded ? FFTW_PRESERVE_INPUT : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
-					);
-
-			if (fft_getSingleton_Plans().to_spec_aliasing == nullptr)
-			{
-				std::cerr << "Failed to create plan_forward for aliasing fftw" << std::endl;
-				std::cerr << "complex backward preverse_input forward " << resolution[0]*2 << " x " << resolution[1]*2 << std::endl;
-				std::cerr << "fftw-wisdom plan: cf" << resolution[0]*2 << "x" << resolution[1]*2 << std::endl;
-				exit(-1);
-			}
-
-
-			fft_getSingleton_Plans().to_cart_aliasing =
-					fftw_plan_dft_2d(
-						resolution[1]*2,	// n0 = ny
-						resolution[0]*2,	// n1 = nx
-						(fftw_complex*)dummy_data_aliasing_out,
-						(fftw_complex*)dummy_data_aliasing_in,
-						FFTW_BACKWARD,
-						(!wisdom_loaded ? FFTW_PRESERVE_INPUT : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
-					);
-
-			fft_getSingleton_Plans().resolution_aliasing[0] = resolution[0]*2;
-			fft_getSingleton_Plans().resolution_aliasing[1] = resolution[1]*2;
-
-
-			if (fft_getSingleton_Plans().to_cart_aliasing == nullptr)
-			{
-				std::cerr << "Failed to create plan_backward for aliasing fftw" << std::endl;
-				std::cerr << "complex backward preverse_input forward " << resolution[0]*2 << " x " << resolution[1]*2 << std::endl;
-				std::cerr << "fftw-wisdom plan: cf" << resolution[0]*2 << "x" << resolution[1]*2 << std::endl;
-				exit(-1);
-			}
-
-
-			MemBlockAlloc::free(dummy_data_aliasing_out, sizeof(double)*resolution[0]*resolution[1]*2*4);
-			MemBlockAlloc::free(dummy_data_aliasing_in, sizeof(double)*resolution[0]*resolution[1]*2*4);
-		}
-	}
-
-	void fftw_shutdown()
-	{
-		if (!is_fft_data_initialized)
-			return;
-
-		is_fft_data_initialized = false;
-
-		int &ref_counter = fft_getSingleton_RefCounter();
-
-#if SWEET_REXI_THREAD_PARALLEL_SUM
-#	pragma omp atomic
-#endif
-		ref_counter--;
-
-		if (ref_counter > 0)
-			return;
-
-		assert(ref_counter >= 0);
-
-		fftw_destroy_plan(fft_getSingleton_Plans().to_spec);
-		fftw_destroy_plan(fft_getSingleton_Plans().to_cart);
-
-		fftw_destroy_plan(fft_getSingleton_Plans().to_spec_aliasing);
-		fftw_destroy_plan(fft_getSingleton_Plans().to_cart_aliasing);
-
-		fft_getSingleton_Plans().resolution[0] = 0;
-		fft_getSingleton_Plans().resolution[1] = 0;
-
-		fft_getSingleton_Plans().resolution_aliasing[0] = 0;
-		fft_getSingleton_Plans().resolution_aliasing[1] = 0;
-	}
-
-
 
 	PlaneDataComplex()	:
-		data(nullptr),
-		is_fft_data_initialized(false)
+		data(nullptr)
 	{
 
 #if !SWEET_USE_LIBFFT
@@ -264,20 +51,13 @@ public:
 
 public:
 	PlaneDataComplex(
-			const std::size_t i_res[2],
-			bool i_aliased_scaled = false
-	)	:
-		is_fft_data_initialized(false)
+			PlaneDataConfig *i_planeDataConfig
+	)
 	{
 #if !SWEET_USE_LIBFFT
 		std::cerr << "This class only makes sense with FFT" << std::endl;
 		exit(1);
 #endif
-
-		aliased_scaled = i_aliased_scaled;
-
-		resolution[0] = i_res[0];
-		resolution[1] = i_res[1];
 
 		data = MemBlockAlloc::alloc<double>(sizeof(double)*resolution[0]*resolution[1]*2);
 
@@ -288,12 +68,9 @@ public:
 
 public:
 	void setup(
-			const std::size_t i_res[2],
-			bool i_aliased_scaled = false
+			const std::size_t i_res[2]
 	)
 	{
-		aliased_scaled = i_aliased_scaled;
-
 		resolution[0] = i_res[0];
 		resolution[1] = i_res[1];
 
@@ -301,9 +78,6 @@ public:
 			cleanup();
 
 		data = MemBlockAlloc::alloc<double>(sizeof(double)*resolution[0]*resolution[1]*2);
-
-		if (!is_fft_data_initialized)
-			fft_setup();
 	}
 
 
@@ -329,8 +103,6 @@ public:
 
 		resolution[0] = i_testArray.resolution[0];
 		resolution[1] = i_testArray.resolution[1];
-
-		aliased_scaled = i_testArray.aliased_scaled;
 
 		data = MemBlockAlloc::alloc<double>(sizeof(double)*resolution[0]*resolution[1]*2);
 
@@ -369,10 +141,9 @@ public:
 				resolution[1] != i_testArray.resolution[1]
 		)
 		{
-			setup(i_testArray.resolution, aliased_scaled);
+			setup(i_testArray.resolution);
 		}
 
-		aliased_scaled = i_testArray.aliased_scaled;
 		resolution[0] = i_testArray.resolution[0];
 		resolution[1] = i_testArray.resolution[1];
 
@@ -387,32 +158,17 @@ public:
 
 	PlaneDataComplex toSpec()	const
 	{
-		PlaneDataComplex o_testArray(resolution, aliased_scaled);
+		PlaneDataComplex o_testArray(resolution);
 
-		if (aliased_scaled)
-		{
-			assert(resolution[0] == fft_getSingleton_Plans().resolution_aliasing[0]);
-			assert(resolution[1] == fft_getSingleton_Plans().resolution_aliasing[1]);
 
-			fftw_execute_dft(
-					fft_getSingleton_Plans().to_spec_aliasing,
-					(fftw_complex*)this->data,
-					(fftw_complex*)o_testArray.data
-				);
+		assert(resolution[0] == fft_getSingleton_Plans().resolution[0]);
+		assert(resolution[1] == fft_getSingleton_Plans().resolution[1]);
 
-		}
-		else
-		{
-			assert(resolution[0] == fft_getSingleton_Plans().resolution[0]);
-			assert(resolution[1] == fft_getSingleton_Plans().resolution[1]);
-
-			fftw_execute_dft(
-					fft_getSingleton_Plans().to_spec,
-					(fftw_complex*)this->data,
-					(fftw_complex*)o_testArray.data
-				);
-
-		}
+		fftw_execute_dft(
+				fft_getSingleton_Plans().to_spec,
+				(fftw_complex*)this->data,
+				(fftw_complex*)o_testArray.data
+			);
 
 		return o_testArray;
 	}
@@ -420,24 +176,13 @@ public:
 
 	PlaneDataComplex toCart()
 	{
-		PlaneDataComplex o_testArray(resolution, aliased_scaled);
+		PlaneDataComplex o_testArray(resolution);
 
-		if (aliased_scaled)
-		{
-			fftw_execute_dft(
-					fft_getSingleton_Plans().to_cart_aliasing,
-					(fftw_complex*)this->data,
-					(fftw_complex*)o_testArray.data
-				);
-		}
-		else
-		{
-			fftw_execute_dft(
-					fft_getSingleton_Plans().to_cart,
-					(fftw_complex*)this->data,
-					(fftw_complex*)o_testArray.data
-				);
-		}
+		fftw_execute_dft(
+				fft_getSingleton_Plans().to_cart,
+				(fftw_complex*)this->data,
+				(fftw_complex*)o_testArray.data
+			);
 
 		/*
 		 * do the scaling only if we convert the data back to cartesian space
@@ -1376,7 +1121,7 @@ public:
 #pragma omp OPENMP_SIMD
 			for (std::size_t i = 0; i < resolution[0]; i++)
 			{
-				out.array_data_cartesian_space[
+				out.array_data_physical_space[
 									(j-out.range_start[1])*out.range_size[0]+
 									(i-out.range_start[0])
 								]
@@ -1385,8 +1130,8 @@ public:
 		}
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		out.array_data_cartesian_space_valid = true;
-		out.array_data_spectral_space_valid = false;
+		out.physical_space_data_valid = true;
+		out.spectral_space_data_valid = false;
 #endif
 
 		return out;
@@ -1403,7 +1148,7 @@ public:
 		{
 			for (std::size_t i = 0; i < resolution[0]; i++)
 			{
-				out.set(j, i, getIm(j, i));
+				out.physical_set(j, i, getIm(j, i));
 			}
 		}
 
@@ -1430,7 +1175,7 @@ public:
 			for (std::size_t i = 0; i < resolution[0]; i++)
 			{
 				data[(j*resolution[0]+i)*2+0] =
-						i_dataArray_Real.array_data_cartesian_space[
+						i_dataArray_Real.array_data_physical_space[
 								(j-i_dataArray_Real.range_start[1])*i_dataArray_Real.range_size[0]+
 								(i-i_dataArray_Real.range_start[0])
 							];
@@ -1483,7 +1228,7 @@ public:
 		{
 			for (std::size_t i = 0; i < resolution[0]; i++)
 			{
-				out.set(
+				out.physical_set(
 					j, i,
 					getRe(j, i)
 				);
@@ -1506,7 +1251,7 @@ public:
 		{
 			for (std::size_t i = 0; i < resolution[0]; i++)
 			{
-				o_out.array_data_cartesian_space[
+				o_out.array_data_physical_space[
 									(j-o_out.range_start[1])*o_out.range_size[0]+
 									(i-o_out.range_start[0])
 								] =
@@ -1515,8 +1260,8 @@ public:
 		}
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		o_out.array_data_cartesian_space_valid = true;
-		o_out.array_data_spectral_space_valid = false;
+		o_out.physical_space_data_valid = true;
+		o_out.spectral_space_data_valid = false;
 #endif
 	}
 
@@ -1532,7 +1277,7 @@ public:
 		{
 			for (std::size_t i = 0; i < resolution[0]; i++)
 			{
-				o_out.array_data_cartesian_space[
+				o_out.array_data_physical_space[
 									(j-o_out.range_start[1])*o_out.range_size[0]+
 									(i-o_out.range_start[0])
 								] =
@@ -1541,8 +1286,8 @@ public:
 		}
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		o_out.array_data_cartesian_space_valid = true;
-		o_out.array_data_spectral_space_valid = false;
+		o_out.physical_space_data_valid = true;
+		o_out.spectral_space_data_valid = false;
 #endif
 	}
 

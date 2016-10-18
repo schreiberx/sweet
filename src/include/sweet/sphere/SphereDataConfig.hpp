@@ -2,7 +2,7 @@
  * SPHSetup.hpp
  *
  *  Created on: 12 Aug 2016
- *      Author: martin
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SPHSETUP_HPP_
@@ -217,6 +217,8 @@ private:
 				exit(1);
 			}
 		}
+
+
 
 		/**
 		 * TEST: iteration over the modes n,m for complex-valued physical space

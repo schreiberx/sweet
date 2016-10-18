@@ -166,10 +166,10 @@ public:
 	struct Discretization
 	{
 		/// resolution in physical space (grid cells)
-		std::size_t res_physical[2] = {128, 128};
+		std::size_t res_physical[2] = {0, 0};
 
 		/// resolution in spectral space (number of modes)
-		std::size_t res_spectral[2] = {128, 128};
+		std::size_t res_spectral[2] = {0, 0};
 
 		/// size of cell (hx, hy)
 		/// this is computed based on disc.res and sim.domain_size
@@ -676,6 +676,14 @@ public:
 				std::cerr << "Unknown option '" << (char)opt << "'" << std::endl;
 				return false;
 			}
+		}
+
+		if (	(disc.res_physical[0] == 0 || disc.res_physical[1] == 0)	&&
+				(disc.res_spectral[0] == 0 || disc.res_spectral[1] == 0)
+			)
+		{
+			std::cerr << "Select physical resolution or spectral modes" << std::endl;
+			exit(-1);
 		}
 
 		reset();

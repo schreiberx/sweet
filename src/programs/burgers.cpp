@@ -192,8 +192,8 @@ public:
 #endif
 
 		//Setup prog vars
-		prog_u.set_all(0);
-		prog_v.set_all(0);
+		prog_u.physical_set_all(0);
+		prog_v.physical_set_all(0);
 
 		//Check if input parameters are adequate for this simulation
 		if (param_use_staggering && simVars.disc.use_spectral_basis_diffs)
@@ -250,8 +250,8 @@ public:
 			for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 			{
 		    	/* Equivalent to q position on C-grid */
-				pos_x.set(j, i, ((double)i)*simVars.sim.domain_size[0]/simVars.disc.res_physical[0]); //*simVars.sim.domain_size[0];
-				pos_y.set(j, i, ((double)j)*simVars.sim.domain_size[1]/simVars.disc.res_physical[1]); //*simVars.sim.domain_size[1];
+				pos_x.physical_set(j, i, ((double)i)*simVars.sim.domain_size[0]/simVars.disc.res_physical[0]); //*simVars.sim.domain_size[0];
+				pos_y.physical_set(j, i, ((double)j)*simVars.sim.domain_size[1]/simVars.disc.res_physical[1]); //*simVars.sim.domain_size[1];
 				//std::cout << i << " " << j << " " << pos_x.get(j,i) << std::endl;
 			}
 		}
@@ -272,14 +272,14 @@ public:
 						// u space
 						double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-						prog_u.set(j,i, BurgersValidationBenchmarks::return_u(simVars, x, y));
+						prog_u.physical_set(j,i, BurgersValidationBenchmarks::return_u(simVars, x, y));
 					}
 
 					{
 						// v space
 						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 						double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-						prog_v.set(j, i, BurgersValidationBenchmarks::return_v(simVars, x, y));
+						prog_v.physical_set(j, i, BurgersValidationBenchmarks::return_v(simVars, x, y));
 					}
 				}
 				else
@@ -287,8 +287,8 @@ public:
 					double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 					double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-					prog_u.set(j, i, BurgersValidationBenchmarks::return_u(simVars, x, y));
-					prog_v.set(j, i, BurgersValidationBenchmarks::return_v(simVars, x, y));
+					prog_u.physical_set(j, i, BurgersValidationBenchmarks::return_u(simVars, x, y));
+					prog_v.physical_set(j, i, BurgersValidationBenchmarks::return_v(simVars, x, y));
 
 				}
 
@@ -391,7 +391,7 @@ public:
 								  + tp*std::sin(tp*k*x)*std::sin(tp*k*t) * std::cos(tp*k*x)*std::sin(tp*k*t)
 								  + simVars.sim.viscosity * (tp*tp*k* std::sin(tp*k*x)*std::sin(tp*k*t));
 
-					o_u_t.set(j,i, tmpvar);
+					o_u_t.physical_set(j,i, tmpvar);
 				}
 			}
 		}
@@ -424,7 +424,7 @@ public:
 								  + 4*tp*std::sin(tp*k*x)*std::sin(tp*k*t) * std::cos(tp*k*x)*std::sin(tp*k*t)
 								  + 2*simVars.sim.viscosity * (tp*tp*k* std::sin(tp*k*x)*std::sin(tp*k*t));
 
-					o_u_t.set(j,i, tmpvar);
+					o_u_t.physical_set(j,i, tmpvar);
 				}
 			}
 		}
@@ -462,7 +462,7 @@ public:
 								  - simVars.sim.viscosity*(-tp*tp*std::sin(tp*x)*std::sin(tp*t)
 								  - tp*tp*k*std::sin(tp*k*x)*std::sin(tp*k*t));
 
-					o_u_t.set(j,i, tmpvar);
+					o_u_t.physical_set(j,i, tmpvar);
 				}
 			}
 		}
@@ -474,7 +474,7 @@ public:
 		 */
 		if (simVars.setup.scenario == 51)
 		{
-			o_u_t.set_all(1.0);
+			o_u_t.physical_set_all(1.0);
 		}
 
 		/*
@@ -484,7 +484,7 @@ public:
 		 */
 		if (simVars.setup.scenario == 52)
 		{
-			o_u_t.set_all(2.0*t);
+			o_u_t.physical_set_all(2.0*t);
 		}
 
 		/*
@@ -494,7 +494,7 @@ public:
 		 */
 		if (simVars.setup.scenario == 53)
 		{
-			o_u_t.set_all(3.0*t*t);
+			o_u_t.physical_set_all(3.0*t*t);
 		}
 
 		/*
@@ -522,7 +522,7 @@ public:
 					double tmpvar = 1000*std::sin(tp*x)+1000*1000*t*std::sin(tp*x)*t*std::cos(tp*x)*tp
 							      - 1000*simVars.sim.viscosity*(-tp*tp*t*std::sin(tp*x));
 
-					o_u_t.set(j,i, tmpvar);
+					o_u_t.physical_set(j,i, tmpvar);
 				}
 			}
 		}
@@ -534,7 +534,7 @@ public:
 		 */
 		if (simVars.setup.scenario == 55)
 		{
-			o_u_t.set_all(tp*std::cos(tp*t));
+			o_u_t.physical_set_all(tp*std::cos(tp*t));
 		}
 
 		/*
@@ -545,7 +545,7 @@ public:
 		if (simVars.setup.scenario == 56)
 		{
 			double k=simVars.sim.f0;
-			o_u_t.set_all(tp*std::cos(tp*k*t));
+			o_u_t.physical_set_all(tp*std::cos(tp*k*t));
 		}
 
 		/*
@@ -573,7 +573,7 @@ public:
 					double tmpvar = std::sin(tp*x)*std::cos(tp*x)*tp
 							      - simVars.sim.viscosity*(-tp*tp*std::sin(tp*x));
 
-					o_u_t.set(j,i, tmpvar);
+					o_u_t.physical_set(j,i, tmpvar);
 				}
 			}
 		}
@@ -602,7 +602,7 @@ public:
 					}
 					double tmpvar = (1+tp*tp)*std::sin(tp*x);
 
-					o_u_t.set(j,i, tmpvar);
+					o_u_t.physical_set(j,i, tmpvar);
 				}
 			}
 		}
@@ -646,13 +646,13 @@ public:
 					}
 
 					tmpvar *= 0.25;
-					o_u_t.set(j,i, tmpvar);
+					o_u_t.physical_set(j,i, tmpvar);
 				}
 			}
 		}
 
 		if (simVars.setup.scenario == 63)
-			o_u_t.set_all(0.0);
+			o_u_t.physical_set_all(0.0);
 
 	}
 
@@ -923,14 +923,14 @@ public:
 							// u space
 							double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 							double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-							ts_u.set(j,i, BurgersValidationBenchmarks::return_u(simVars, x, y));
+							ts_u.physical_set(j,i, BurgersValidationBenchmarks::return_u(simVars, x, y));
 						}
 
 						{
 							// v space
 							double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 							double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-							ts_v.set(j, i, BurgersValidationBenchmarks::return_v(simVars, x, y));
+							ts_v.physical_set(j, i, BurgersValidationBenchmarks::return_v(simVars, x, y));
 						}
 					}
 					else
@@ -938,8 +938,8 @@ public:
 						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-						ts_u.set(j, i, BurgersValidationBenchmarks::return_u(simVars, x, y));
-						ts_v.set(j, i, BurgersValidationBenchmarks::return_v(simVars, x, y));
+						ts_u.physical_set(j, i, BurgersValidationBenchmarks::return_u(simVars, x, y));
+						ts_v.physical_set(j, i, BurgersValidationBenchmarks::return_v(simVars, x, y));
 
 					}
 

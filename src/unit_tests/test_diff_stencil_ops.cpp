@@ -165,14 +165,14 @@ int main(int i_argc, char *i_argv[])
 #define FUN_ID	1
 
 	#if FUN_ID==1
-					u.set(j, i, sin(freq_x*M_PIl*x));
-					v.set(j, i, cos(freq_y*M_PIl*y));
+					u.physical_set(j, i, sin(freq_x*M_PIl*x));
+					v.physical_set(j, i, cos(freq_y*M_PIl*y));
 	#elif FUN_ID==2
-					u.set(j, i, sin(freq_x*M_PIl*x));
-					v.set(j, i, 1.0/(cos(freq_y*M_PIl*y)+2.0));
+					u.physical_set(j, i, sin(freq_x*M_PIl*x));
+					v.physical_set(j, i, 1.0/(cos(freq_y*M_PIl*y)+2.0));
 	#endif
 
-					h.set(
+					h.physical_set(
 						j, i,
 	#if FUN_ID==1
 						sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)
@@ -220,14 +220,14 @@ int main(int i_argc, char *i_argv[])
 					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
 
 	#if FUN_ID==1
-					u.set(j, i, sin(freq_x*M_PIl*x));
-					v.set(j, i, cos(freq_y*M_PIl*y));
+					u.physical_set(j, i, sin(freq_x*M_PIl*x));
+					v.physical_set(j, i, cos(freq_y*M_PIl*y));
 	#elif FUN_ID==2
-					u.set(j, i, sin(freq_x*M_PIl*x));
-					v.set(j, i, 1.0/(cos(freq_y*M_PIl*y)+2.0));
+					u.physical_set(j, i, sin(freq_x*M_PIl*x));
+					v.physical_set(j, i, 1.0/(cos(freq_y*M_PIl*y)+2.0));
 	#endif
 
-					h.set(
+					h.physical_set(
 						j, i,
 	#if FUN_ID==1
 						sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)
@@ -238,7 +238,7 @@ int main(int i_argc, char *i_argv[])
 	#endif
 					);
 
-					h_diff_x.set(
+					h_diff_x.physical_set(
 						j, i,
 	#if FUN_ID==1
 						freq_x*M_PIl*cos(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)/(double)simVars.sim.domain_size[0]
@@ -249,7 +249,7 @@ int main(int i_argc, char *i_argv[])
 	#endif
 					);
 
-					h_diff_y.set(
+					h_diff_y.physical_set(
 						j, i,
 	#if FUN_ID==1
 						-sin(freq_x*M_PIl*x)*freq_y*M_PIl*sin(freq_y*M_PIl*y)/(double)simVars.sim.domain_size[1]
@@ -331,7 +331,7 @@ int main(int i_argc, char *i_argv[])
 					double x = ((double)i+0.5)/(double)simVars.disc.res_physical[0];
 					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
 
-					h.set(
+					h.physical_set(
 						j, i,
 	#if FUN_ID==1
 						sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)
@@ -342,7 +342,7 @@ int main(int i_argc, char *i_argv[])
 	#endif
 					);
 
-					h_diff2_x.set(
+					h_diff2_x.physical_set(
 						j, i,
 	#if FUN_ID==1
 						freq_x*freq_x*M_PIl*M_PIl*(-1.0)*sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)/(simVars.sim.domain_size[0]*simVars.sim.domain_size[0])
@@ -353,7 +353,7 @@ int main(int i_argc, char *i_argv[])
 	#endif
 					);
 
-					h_diff2_y.set(
+					h_diff2_y.physical_set(
 						j, i,
 	#if FUN_ID==1
 						-sin(freq_x*M_PIl*x)*freq_y*M_PIl*freq_y*M_PIl*cos(freq_y*M_PIl*y)/(simVars.sim.domain_size[1]*simVars.sim.domain_size[1])

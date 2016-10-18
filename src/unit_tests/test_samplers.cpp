@@ -63,7 +63,7 @@ int main(
 				double x = (double)i*(simVars.sim.domain_size[0]/(double)res[0]);
 				double y = (double)j*(simVars.sim.domain_size[1]/(double)res[1]);
 
-				prog_h.set(j, i, SWEPlaneBenchmarks::return_h(simVars, x, y));
+				prog_h.physical_set(j, i, SWEPlaneBenchmarks::return_h(simVars, x, y));
 			}
 		}
 
@@ -86,7 +86,7 @@ int main(
 					double x = ((double)i/resolution_factor)*(simVars.sim.domain_size[0]/(double)res3[0]);
 					double y = ((double)j/resolution_factor)*(simVars.sim.domain_size[1]/(double)res3[1]);
 
-					prog_h3.set(j, i, SWEPlaneBenchmarks::return_h(simVars, x, y));
+					prog_h3.physical_set(j, i, SWEPlaneBenchmarks::return_h(simVars, x, y));
 				}
 			}
 
@@ -106,8 +106,8 @@ int main(
 		{
 			for (std::size_t i = 0; i < res3[0]; i++)
 			{
-				px.set(j, i, ((double)i/resolution_factor)*(simVars.sim.domain_size[0]/(double)res3[0]));
-				py.set(j, i, ((double)j/resolution_factor)*(simVars.sim.domain_size[1]/(double)res3[1]));
+				px.physical_set(j, i, ((double)i/resolution_factor)*(simVars.sim.domain_size[0]/(double)res3[0]));
+				py.physical_set(j, i, ((double)j/resolution_factor)*(simVars.sim.domain_size[1]/(double)res3[1]));
 			}
 		}
 

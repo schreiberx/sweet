@@ -13,19 +13,22 @@
 class SemiLagrangian
 {
 	PlaneDataSampler sample2D;
+	PlaneDataConfig *planeDataConfig;
 
 public:
-	SemiLagrangian()
+	SemiLagrangian()	:
+		planeDataConfig(nullptr)
 	{
 	}
 
 
 	void setup(
 		double i_domain_size[2],
-		std::size_t i_res[2]
+		PlaneDataConfig *i_planeDataConfig
 	)
 	{
-		sample2D.setup(i_domain_size, i_res);
+		planeDataConfig = i_planeDataConfig;
+		sample2D.setup(i_domain_size, planeDataConfig);
 	}
 
 
@@ -66,19 +69,19 @@ public:
 		PlaneData &rx_d = *o_pos_departure[0];
 		PlaneData &ry_d = *o_pos_departure[1];
 
-		rx_d.set(0,0,0);
-		ry_d.set(0,0,0);
+		rx_d.physical_set(0,0,0);
+		ry_d.physical_set(0,0,0);
 
 		double dt = i_dt;
 
-		PlaneData vx_iter(vx_n_prev.resolution);
-		PlaneData vy_iter(vx_n_prev.resolution);
+		PlaneData vx_iter(vx_n_prev.planeDataConfig);
+		PlaneData vy_iter(vx_n_prev.planeDataConfig);
 
 		vx_iter = dt * vx_n - dt*0.5 * vx_n_prev;
 		vy_iter = dt * vy_n - dt*0.5 * vy_n_prev;
 
-		PlaneData rx_d_new(vx_n_prev.resolution);
-		PlaneData ry_d_new(vx_n_prev.resolution);
+		PlaneData rx_d_new(vx_n_prev.planeDataConfig);
+		PlaneData ry_d_new(vx_n_prev.planeDataConfig);
 
 		PlaneData rx_d_prev = rx_a;
 		PlaneData ry_d_prev = rx_a;	// TODO: is rx_a correct or should it be ry_a?
@@ -104,8 +107,8 @@ public:
 
 			for (std::size_t i = 0; i < rx_d.resolution[0]*rx_d.resolution[1]; i++)
 			{
-				rx_d.array_data_cartesian_space[i] = sample2D.wrapPeriodic(rx_d_new.array_data_cartesian_space[i], sample2D.domain_size[0]);
-				ry_d.array_data_cartesian_space[i] = sample2D.wrapPeriodic(ry_d_new.array_data_cartesian_space[i], sample2D.domain_size[1]);
+				rx_d.physical_space_data[i] = sample2D.wrapPeriodic(rx_d_new.physical_space_data[i], sample2D.domain_size[0]);
+				ry_d.physical_space_data[i] = sample2D.wrapPeriodic(ry_d_new.physical_space_data[i], sample2D.domain_size[1]);
 			}
 
 			if (diff < 1e-8)
@@ -152,8 +155,8 @@ public:
 		}
 
 		//Init departure points
-		o_posx_d.set(0,0,0);
-		o_posy_d.set(0,0,0);
+		o_posx_d.physical_set(0,0,0);
+		o_posy_d.physical_set(0,0,0);
 
 		//local dt
 		double dt = i_dt;
@@ -189,19 +192,19 @@ public:
 		//i_posy_a.printArrayData();
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		o_posx_d.array_data_cartesian_space_valid = true;
-		o_posy_d.array_data_cartesian_space_valid = true;
-		o_posx_d.array_data_spectral_space_valid = false;
-		o_posy_d.array_data_spectral_space_valid = false;
+		o_posx_d.physical_space_data_valid = true;
+		o_posy_d.physical_space_data_valid = true;
+		o_posx_d.spectral_space_data_valid = false;
+		o_posy_d.spectral_space_data_valid = false;
 
-		assert(i_posx_a.array_data_cartesian_space_valid);
-		assert(i_posy_a.array_data_cartesian_space_valid);
+		assert(i_posx_a.physical_space_data_valid);
+		assert(i_posy_a.physical_space_data_valid);
 
-		assert(i_u.array_data_cartesian_space_valid);
-		assert(i_v.array_data_cartesian_space_valid);
+		assert(i_u.physical_space_data_valid);
+		assert(i_v.physical_space_data_valid);
 
-		assert(i_u_prev.array_data_cartesian_space_valid);
-		assert(i_v_prev.array_data_cartesian_space_valid);
+		assert(i_u_prev.physical_space_data_valid);
+		assert(i_v_prev.physical_space_data_valid);
 #endif
 
 		int iters = 0;
@@ -225,11 +228,11 @@ public:
 			ry_d_new.requestDataInCartesianSpace();
 
 
-			for (std::size_t i = 0; i < o_posx_d.resolution[0]*o_posx_d.resolution[1]; i++)
+			for (std::size_t i = 0; i < o_posx_d.planeDataConfig->physical_array_data_number_of_elements; i++)
 			{
-				o_posx_d.array_data_cartesian_space[i] = sample2D.wrapPeriodic(rx_d_new.array_data_cartesian_space[i], sample2D.domain_size[0]);
+				o_posx_d.physical_space_data[i] = sample2D.wrapPeriodic(rx_d_new.physical_space_data[i], sample2D.domain_size[0]);
 				 //std::cout<<i<<'\t'<<o_posx_d.array_data_cartesian_space[i]<<'\t'<< rx_d_new.array_data_cartesian_space[i] << '\t'<< sample2D.domain_size[0] <<std::endl;
-				o_posy_d.array_data_cartesian_space[i] = sample2D.wrapPeriodic(ry_d_new.array_data_cartesian_space[i], sample2D.domain_size[1]);
+				o_posy_d.physical_space_data[i] = sample2D.wrapPeriodic(ry_d_new.physical_space_data[i], sample2D.domain_size[1]);
 			}
 
 			//std::cout<<"Departure_x"<<std::endl;

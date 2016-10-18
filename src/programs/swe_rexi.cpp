@@ -66,6 +66,11 @@ double param_initial_freq_y_mul;
 //Diagnostic measures at initial stage
 double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
 
+// Plane data config
+PlaneDataConfig planeDataConfigInstance;
+PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
+
+
 class SimulationInstance
 #if SWEET_PARAREAL
 		:
@@ -167,62 +172,62 @@ public:
 	// Constructor to initialize the class - all variables in the SW are setup
 
 		// Variable dimensions (mem. allocation)
-		prog_h(simVars.disc.res_physical),
-		prog_u(simVars.disc.res_physical),
-		prog_v(simVars.disc.res_physical),
+		prog_h(planeDataConfig),
+		prog_u(planeDataConfig),
+		prog_v(planeDataConfig),
 
-		beta_plane(simVars.disc.res_physical),
+		beta_plane(planeDataConfig),
 
-		prog_h_prev(simVars.disc.res_physical),
-		prog_u_prev(simVars.disc.res_physical),
-		prog_v_prev(simVars.disc.res_physical),
+		prog_h_prev(planeDataConfig),
+		prog_u_prev(planeDataConfig),
+		prog_v_prev(planeDataConfig),
 
-		eta(simVars.disc.res_physical),
-		q(simVars.disc.res_physical),
-		div(simVars.disc.res_physical),
+		eta(planeDataConfig),
+		q(planeDataConfig),
+		div(planeDataConfig),
 
-		vis(simVars.disc.res_physical),
+		vis(planeDataConfig),
 
-		tmp(simVars.disc.res_physical),
-		tmp0(simVars.disc.res_physical),
-		tmp1(simVars.disc.res_physical),
-		tmp2(simVars.disc.res_physical),
-		tmp3(simVars.disc.res_physical),
+		tmp(planeDataConfig),
+		tmp0(planeDataConfig),
+		tmp1(planeDataConfig),
+		tmp2(planeDataConfig),
+		tmp3(planeDataConfig),
 
-		boundary_mask(simVars.disc.res_physical),
-		boundary_mask_inv(simVars.disc.res_physical),
+		boundary_mask(planeDataConfig),
+		boundary_mask_inv(planeDataConfig),
 
-		t0_prog_h(simVars.disc.res_physical),
-		t0_prog_u(simVars.disc.res_physical),
-		t0_prog_v(simVars.disc.res_physical),
+		t0_prog_h(planeDataConfig),
+		t0_prog_u(planeDataConfig),
+		t0_prog_v(planeDataConfig),
 
-		force_h(simVars.disc.res_physical),
-		force_u(simVars.disc.res_physical),
-		force_v(simVars.disc.res_physical),
+		force_h(planeDataConfig),
+		force_u(planeDataConfig),
+		force_v(planeDataConfig),
 
 		//  This should be added only when nonlinear model is ran. How to do that, since I can't put an if in the constructor?
 		// ans: With pointers.	This can be made accessible as standard classes by using references to	pointers.
-		N_h(simVars.disc.res_physical),
-		N_u(simVars.disc.res_physical),
-		N_v(simVars.disc.res_physical),
+		N_h(planeDataConfig),
+		N_u(planeDataConfig),
+		N_v(planeDataConfig),
 
-		N_h_prev(simVars.disc.res_physical),
-		N_u_prev(simVars.disc.res_physical),
-		N_v_prev(simVars.disc.res_physical),
+		N_h_prev(planeDataConfig),
+		N_u_prev(planeDataConfig),
+		N_v_prev(planeDataConfig),
 
-		pos_x(simVars.disc.res_physical),
-		pos_y(simVars.disc.res_physical),
+		pos_x(planeDataConfig),
+		pos_y(planeDataConfig),
 
-		posx_a(simVars.disc.res_physical),
-		posy_a(simVars.disc.res_physical),
+		posx_a(planeDataConfig),
+		posy_a(planeDataConfig),
 
-		posx_d(simVars.disc.res_physical),
-		posy_d(simVars.disc.res_physical),
+		posx_d(planeDataConfig),
+		posy_d(planeDataConfig),
 
 		//h_t(simVars.disc.res),
 
 		// Initialises operators
-		op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
+		op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
 #if SWEET_PARAREAL != 0
 		,
 		_parareal_data_start_h(simVars.disc.res_physical), _parareal_data_start_u(simVars.disc.res_physical), _parareal_data_start_v(simVars.disc.res_physical),
@@ -276,10 +281,10 @@ public:
 #endif
 
 		//Setup prog vars
-		prog_h.set_all(simVars.setup.h0);
-		prog_u.set_all(0);
-		prog_v.set_all(0);
-		boundary_mask.set_all(0);
+		prog_h.physical_set_all(simVars.setup.h0);
+		prog_u.physical_set_all(0);
+		prog_v.physical_set_all(0);
+		boundary_mask.physical_set_all(0);
 
 		//Check if input parameters are adequate for this simulation
 		if (param_use_staggering && simVars.disc.use_spectral_basis_diffs)
@@ -332,20 +337,20 @@ public:
 			stag_v[1] = -0.0;
 		}
 
-		//Setup sampler for future interpolations
-		sampler2D.setup(simVars.sim.domain_size, simVars.disc.res_physical);
+		// Setup sampler for future interpolations
+		sampler2D.setup(simVars.sim.domain_size, planeDataConfig);
 
-		//Setup semi-lag
-		semiLagrangian.setup(simVars.sim.domain_size, simVars.disc.res_physical);
+		// Setup semi-lag
+		semiLagrangian.setup(simVars.sim.domain_size, planeDataConfig);
 
-		//Setup general (x,y) grid with position points
+		// Setup general (x,y) grid with position points
 		for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 		{
 			for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 			{
 		    	/* Equivalent to q position on C-grid */
-				pos_x.set(j, i, ((double)i)*simVars.sim.domain_size[0]/simVars.disc.res_physical[0]); //*simVars.sim.domain_size[0];
-				pos_y.set(j, i, ((double)j)*simVars.sim.domain_size[1]/simVars.disc.res_physical[1]); //*simVars.sim.domain_size[1];
+				pos_x.physical_set(j, i, ((double)i)*simVars.sim.domain_size[0]/simVars.disc.res_physical[0]); //*simVars.sim.domain_size[0];
+				pos_y.physical_set(j, i, ((double)j)*simVars.sim.domain_size[1]/simVars.disc.res_physical[1]); //*simVars.sim.domain_size[1];
 				//std::cout << i << " " << j << " " << pos_x.get(j,i) << std::endl;
 			}
 		}
@@ -417,9 +422,9 @@ public:
 						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-						prog_h.set(j, i, return_h(simVars, x, y));
-						t0_prog_h.set(j, i, return_h(simVars, x, y));
-						force_h.set(j, i, SWEPlaneBenchmarks::return_force_h(simVars, x, y));
+						prog_h.physical_set(j, i, return_h(simVars, x, y));
+						t0_prog_h.physical_set(j, i, return_h(simVars, x, y));
+						force_h.physical_set(j, i, SWEPlaneBenchmarks::return_force_h(simVars, x, y));
 
 						//Coriolis term - lives in the corner of the cells
 						if (param_nonlinear)
@@ -427,7 +432,7 @@ public:
 							//PXT: had some -0.5 on i and j (why??)
 							double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 							double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-							beta_plane.set(j, i, SWEPlaneBenchmarks::return_f(simVars, x, y));
+							beta_plane.physical_set(j, i, SWEPlaneBenchmarks::return_f(simVars, x, y));
 							if(j==0 && i==0 && simVars.sim.beta)
 								std::cerr << "WARNING: BETA PLANE ON C-GRID NOT TESTED FOR NON_LINEARITIES!" << std::endl;
 						}
@@ -445,9 +450,9 @@ public:
 						double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-						prog_u.set(j,i, return_u(simVars, x, y));
-						t0_prog_u.set(j, i, return_u(simVars, x, y));
-						force_u.set(j, i, SWEPlaneBenchmarks::return_force_u(simVars, x, y));
+						prog_u.physical_set(j,i, return_u(simVars, x, y));
+						t0_prog_u.physical_set(j, i, return_u(simVars, x, y));
+						force_u.physical_set(j, i, SWEPlaneBenchmarks::return_force_u(simVars, x, y));
 					}
 
 					{
@@ -455,9 +460,9 @@ public:
 						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 						double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-						prog_v.set(j, i, return_v(simVars, x, y));
-						t0_prog_v.set(j, i, return_v(simVars, x, y));
-						force_v.set(j, i, SWEPlaneBenchmarks::return_force_v(simVars, x, y));
+						prog_v.physical_set(j, i, return_v(simVars, x, y));
+						t0_prog_v.physical_set(j, i, return_v(simVars, x, y));
+						force_v.physical_set(j, i, SWEPlaneBenchmarks::return_force_v(simVars, x, y));
 					}
 				}
 				else // A-Grid (colocated grid)
@@ -465,19 +470,19 @@ public:
 					double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 					double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-					prog_h.set(j, i, return_h(simVars, x, y));
-					prog_u.set(j, i, return_u(simVars, x, y));
-					prog_v.set(j, i, return_v(simVars, x, y));
+					prog_h.physical_set(j, i, return_h(simVars, x, y));
+					prog_u.physical_set(j, i, return_u(simVars, x, y));
+					prog_v.physical_set(j, i, return_v(simVars, x, y));
 
-					beta_plane.set(j, i, SWEPlaneBenchmarks::return_f(simVars, x, y));
+					beta_plane.physical_set(j, i, SWEPlaneBenchmarks::return_f(simVars, x, y));
 
-					t0_prog_h.set(j, i, return_h(simVars, x, y));
-					t0_prog_u.set(j, i, return_u(simVars, x, y));
-					t0_prog_v.set(j, i, return_v(simVars, x, y));
+					t0_prog_h.physical_set(j, i, return_h(simVars, x, y));
+					t0_prog_u.physical_set(j, i, return_u(simVars, x, y));
+					t0_prog_v.physical_set(j, i, return_v(simVars, x, y));
 
-					force_h.set(j, i, SWEPlaneBenchmarks::return_force_h(simVars, x, y));
-					force_u.set(j, i, SWEPlaneBenchmarks::return_force_u(simVars, x, y));
-					force_v.set(j, i, SWEPlaneBenchmarks::return_force_v(simVars, x, y));
+					force_h.physical_set(j, i, SWEPlaneBenchmarks::return_force_h(simVars, x, y));
+					force_u.physical_set(j, i, SWEPlaneBenchmarks::return_force_u(simVars, x, y));
+					force_v.physical_set(j, i, SWEPlaneBenchmarks::return_force_v(simVars, x, y));
 				}
 			}
 		}
@@ -495,9 +500,9 @@ public:
 		N_u.set_spec_all(0, 0);
 		N_v.set_spec_all(0, 0);
 #endif
-		N_h.set_all(0);
-		N_u.set_all(0);
-		N_v.set_all(0);
+		N_h.physical_set_all(0);
+		N_u.physical_set_all(0);
+		N_v.physical_set_all(0);
 
 		N_h_prev=N_h;
 		N_u_prev=N_u;
@@ -597,19 +602,19 @@ public:
 						exit(1);
 					}
 
-					boundary_mask.set(j, i, boundary_flag);
-					boundary_mask_inv.set(j, i, 1.0-boundary_flag);
+					boundary_mask.physical_set(j, i, boundary_flag);
+					boundary_mask_inv.physical_set(j, i, 1.0-boundary_flag);
 				}
 			}
 		}
 
 		// Load data, if requested
 		if (simVars.setup.input_data_filenames.size() > 0)
-			prog_h.file_loadData(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
+			prog_h.file_loadData_physical(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
 
 		if (simVars.setup.input_data_filenames.size() > 1)
 		{
-			prog_u.file_loadData(simVars.setup.input_data_filenames[1].c_str(), simVars.setup.input_data_binary);
+			prog_u.file_loadData_physical(simVars.setup.input_data_filenames[1].c_str(), simVars.setup.input_data_binary);
 			if (param_use_staggering && param_compute_error)
 			{
 				std::cerr << "Warning: Computing analytical solution with staggered grid based on loaded data not supported!" << std::endl;
@@ -619,7 +624,7 @@ public:
 
 		if (simVars.setup.input_data_filenames.size() > 2)
 		{
-			prog_v.file_loadData(simVars.setup.input_data_filenames[2].c_str(), simVars.setup.input_data_binary);
+			prog_v.file_loadData_physical(simVars.setup.input_data_filenames[2].c_str(), simVars.setup.input_data_binary);
 			if (param_use_staggering && param_compute_error)
 			{
 				std::cerr << "Warning: Computing analytical solution with staggered grid based on loaded data not supported!" << std::endl;
@@ -853,11 +858,12 @@ public:
 			{
 				double k = 1.0/std::min(simVars.disc.cell_size[0], simVars.disc.cell_size[1]);
 				o_dt = simVars.sim.CFL /
-					std::sqrt(
+					std::sqrt((double)
+					(
 						(k*k)*simVars.sim.g*simVars.setup.h0
 						+
 						simVars.sim.f0*simVars.sim.f0
-					);
+					));
 			}
 		}
 
@@ -1270,7 +1276,7 @@ public:
 							simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
 
 					double secs = simVars.timecontrol.current_simulation_time;
-					double msecs = 1000000.*(simVars.timecontrol.current_simulation_time - floor(simVars.timecontrol.current_simulation_time));
+					double msecs = 1000000.*(simVars.timecontrol.current_simulation_time - std::floor(simVars.timecontrol.current_simulation_time));
 					char t_buf[256];
 					sprintf(	t_buf,
 								"%08d.%06d",
@@ -1348,14 +1354,14 @@ public:
 		PlaneData t0_v = t0_prog_v;
 
 		//Variables on unstaggered A-grid
-		PlaneData t_h(simVars.disc.res_physical);
-		PlaneData t_u(simVars.disc.res_physical);
-		PlaneData t_v(simVars.disc.res_physical);
+		PlaneData t_h(planeDataConfig);
+		PlaneData t_u(planeDataConfig);
+		PlaneData t_v(planeDataConfig);
 
 		//Analytical solution at specific time on orginal grid (stag or not)
-		PlaneData ts_h(simVars.disc.res_physical);
-		PlaneData ts_u(simVars.disc.res_physical);
-		PlaneData ts_v(simVars.disc.res_physical);
+		PlaneData ts_h(planeDataConfig);
+		PlaneData ts_u(planeDataConfig);
+		PlaneData ts_v(planeDataConfig);
 
 		//The direct spectral solution can only be calculated for A grid
 		t_h=t0_h;
@@ -1591,9 +1597,9 @@ public:
 
 		case 'l':
 			// load data arrays
-			prog_h.file_loadData("swe_rexi_dump_h.csv", simVars.setup.input_data_binary);
-			prog_u.file_loadData("swe_rexi_dump_u.csv", simVars.setup.input_data_binary);
-			prog_v.file_loadData("swe_rexi_dump_v.csv", simVars.setup.input_data_binary);
+			prog_h.file_loadData_physical("swe_rexi_dump_h.csv", simVars.setup.input_data_binary);
+			prog_u.file_loadData_physical("swe_rexi_dump_u.csv", simVars.setup.input_data_binary);
+			prog_v.file_loadData_physical("swe_rexi_dump_v.csv", simVars.setup.input_data_binary);
 			break;
 		}
 	}
@@ -2101,6 +2107,8 @@ int main2(int i_argc, char *i_argv[])
 
 	param_linear_exp_analytical = simVars.bogus.var[15];
 
+	planeDataConfigInstance.setup(simVars.disc.res_physical, simVars.disc.res_spectral);
+
 	//Print header
 	std::cout << std::endl;
 	if(param_nonlinear == 1)
@@ -2354,7 +2362,7 @@ int main(int i_argc, char *i_argv[])
 {
 	int retval = main2(i_argc, i_argv);
 
-	PlaneData::checkRefCounters();
+	assert(PlaneDataConfig::refCounters() == 0);
 
 	return retval;
 }
