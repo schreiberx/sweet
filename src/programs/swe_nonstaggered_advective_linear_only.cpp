@@ -274,11 +274,11 @@ public:
 
 				std::string ss = simVars.misc.output_file_name_prefix+"_t"+t_buf;
 
-				prog_h.file_saveData_ascii((ss+"_h.csv").c_str());
-				prog_u.file_saveData_ascii((ss+"_u.csv").c_str());
-				prog_v.file_saveData_ascii((ss+"_v.csv").c_str());
+				prog_h.file_physical_saveData_ascii((ss+"_h.csv").c_str());
+				prog_u.file_physical_saveData_ascii((ss+"_u.csv").c_str());
+				prog_v.file_physical_saveData_ascii((ss+"_v.csv").c_str());
 
-				(op.diff_c_x(prog_v) - op.diff_c_y(prog_u)).file_saveData_ascii((ss+"_q.csv").c_str());
+				(op.diff_c_x(prog_v) - op.diff_c_y(prog_u)).file_physical_saveData_ascii((ss+"_q.csv").c_str());
 			}
 
 			if (simVars.timecontrol.current_timestep_nr == 0)
@@ -444,9 +444,9 @@ public:
 
 	bool instability_detected()
 	{
-		return !(	prog_h.reduce_all_finite() &&
-					prog_u.reduce_all_finite() &&
-					prog_v.reduce_all_finite()
+		return !(	prog_h.reduce_boolean_all_finite() &&
+					prog_u.reduce_boolean_all_finite() &&
+					prog_v.reduce_boolean_all_finite()
 				);
 	}
 };

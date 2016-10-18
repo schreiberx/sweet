@@ -15,6 +15,8 @@
 #include <vector>
 #include <limits>
 #include <sweet/sweetmath.hpp>
+#include <sweet/FatalError.hpp>
+
 
 #ifndef SWEET_PARAREAL
 #	define SWEET_PARAREAL 1
@@ -682,8 +684,7 @@ public:
 				(disc.res_spectral[0] == 0 || disc.res_spectral[1] == 0)
 			)
 		{
-			std::cerr << "Select physical resolution or spectral modes" << std::endl;
-			exit(-1);
+			FatalError("Select physical resolution or spectral modes");
 		}
 
 		reset();

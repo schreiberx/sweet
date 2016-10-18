@@ -230,22 +230,22 @@ public:
 			(
 				(
 					// u is positive
-					op.shift_right(i_P)*i_u.return_value_if_positive()	// inflow
-					-i_P*op.shift_left(i_u.return_value_if_positive())					// outflow
+					op.shift_right(i_P)*i_u.physical_query_return_value_if_positive()	// inflow
+					-i_P*op.shift_left(i_u.physical_query_return_value_if_positive())					// outflow
 
 					// u is negative
-					+(i_P*i_u.return_value_if_negative())	// outflow
-					-op.shift_left(i_P*i_u.return_value_if_negative())		// inflow
+					+(i_P*i_u.physical_query_return_value_if_negative())	// outflow
+					-op.shift_left(i_P*i_u.physical_query_return_value_if_negative())		// inflow
 				)*(1.0/simVars.disc.cell_size[0])	// here we see a finite-difference-like formulation
 				+
 				(
 					// v is positive
-					op.shift_up(i_P)*i_v.return_value_if_positive()		// inflow
-					-i_P*op.shift_down(i_v.return_value_if_positive())					// outflow
+					op.shift_up(i_P)*i_v.physical_query_return_value_if_positive()		// inflow
+					-i_P*op.shift_down(i_v.physical_query_return_value_if_positive())					// outflow
 
 					// v is negative
-					+(i_P*i_v.return_value_if_negative())	// outflow
-					-op.shift_down(i_P*i_v.return_value_if_negative())	// inflow
+					+(i_P*i_v.physical_query_return_value_if_negative())	// outflow
+					-op.shift_down(i_P*i_v.physical_query_return_value_if_negative())	// inflow
 				)*(1.0/simVars.disc.cell_size[1])
 			);
 	}
@@ -442,11 +442,11 @@ public:
 				std::string ss = simVars.misc.output_file_name_prefix+"_t"+t_buf;
 
 
-				prog_P.file_saveData_ascii((ss+"_h.csv").c_str());
-				prog_u.file_saveData_ascii((ss+"_u.csv").c_str());
-				prog_v.file_saveData_ascii((ss+"_v.csv").c_str());
+				prog_P.file_physical_saveData_ascii((ss+"_h.csv").c_str());
+				prog_u.file_physical_saveData_ascii((ss+"_u.csv").c_str());
+				prog_v.file_physical_saveData_ascii((ss+"_v.csv").c_str());
 
-				(op.diff_c_x(prog_v) - op.diff_c_y(prog_u)).file_saveData_ascii((ss+"_q.csv").c_str());
+				(op.diff_c_x(prog_v) - op.diff_c_y(prog_u)).file_physical_saveData_ascii((ss+"_q.csv").c_str());
 			}
 
 			if (simVars.timecontrol.current_timestep_nr == 0)
@@ -613,7 +613,7 @@ public:
 
 	bool instability_detected()
 	{
-		return !(prog_P.reduce_all_finite() && prog_u.reduce_all_finite() && prog_v.reduce_all_finite());
+		return !(prog_P.reduce_boolean_all_finite() && prog_u.reduce_boolean_all_finite() && prog_v.reduce_boolean_all_finite());
 	}
 };
 

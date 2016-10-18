@@ -614,11 +614,11 @@ public:
 
 		// Load data, if requested
 		if (simVars.setup.input_data_filenames.size() > 0)
-			prog_h.file_loadData_physical(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
+			prog_h.file_physical_loadData(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
 
 		if (simVars.setup.input_data_filenames.size() > 1)
 		{
-			prog_u.file_loadData_physical(simVars.setup.input_data_filenames[1].c_str(), simVars.setup.input_data_binary);
+			prog_u.file_physical_loadData(simVars.setup.input_data_filenames[1].c_str(), simVars.setup.input_data_binary);
 			if (param_use_staggering && param_compute_error)
 			{
 				std::cerr << "Warning: Computing analytical solution with staggered grid based on loaded data not supported!" << std::endl;
@@ -628,7 +628,7 @@ public:
 
 		if (simVars.setup.input_data_filenames.size() > 2)
 		{
-			prog_v.file_loadData_physical(simVars.setup.input_data_filenames[2].c_str(), simVars.setup.input_data_binary);
+			prog_v.file_physical_loadData(simVars.setup.input_data_filenames[2].c_str(), simVars.setup.input_data_binary);
 			if (param_use_staggering && param_compute_error)
 			{
 				std::cerr << "Warning: Computing analytical solution with staggered grid based on loaded data not supported!" << std::endl;
@@ -739,22 +739,22 @@ public:
 			(
 				(
 					// u is positive
-					simVars.setup.h0*i_u.return_value_if_positive()	// inflow
-					-simVars.setup.h0*op.shift_left(i_u.return_value_if_positive())					// outflow
+					simVars.setup.h0*i_u.physical_query_return_value_if_positive()	// inflow
+					-simVars.setup.h0*op.shift_left(i_u.physical_query_return_value_if_positive())					// outflow
 
 					// u is negative
-					+(simVars.setup.h0*i_u.return_value_if_negative())	// outflow
-					-op.shift_left(simVars.setup.h0*i_u.return_value_if_negative())		// inflow
+					+(simVars.setup.h0*i_u.physical_query_return_value_if_negative())	// outflow
+					-op.shift_left(simVars.setup.h0*i_u.physical_query_return_value_if_negative())		// inflow
 				)*(1.0/simVars.disc.cell_size[0])	// here we see a finite-difference-like formulation
 				+
 				(
 					// v is positive
-					simVars.setup.h0*i_v.return_value_if_positive()		// inflow
-					-simVars.setup.h0*op.shift_down(i_v.return_value_if_positive())					// outflow
+					simVars.setup.h0*i_v.physical_query_return_value_if_positive()		// inflow
+					-simVars.setup.h0*op.shift_down(i_v.physical_query_return_value_if_positive())					// outflow
 
 					// v is negative
-					+(simVars.setup.h0*i_v.return_value_if_negative())	// outflow
-					-op.shift_down(simVars.setup.h0*i_v.return_value_if_negative())	// inflow
+					+(simVars.setup.h0*i_v.physical_query_return_value_if_negative())	// outflow
+					-op.shift_down(simVars.setup.h0*i_v.physical_query_return_value_if_negative())	// inflow
 				)*(1.0/simVars.disc.cell_size[1])
 			);
 	}
@@ -1289,11 +1289,11 @@ public:
 
 					std::string ss = simVars.misc.output_file_name_prefix+"_t"+t_buf;
 
-					prog_h.file_saveData_ascii((ss+"_h.csv").c_str());
-					prog_u.file_saveData_ascii((ss+"_u.csv").c_str());
-					prog_v.file_saveData_ascii((ss+"_v.csv").c_str());
+					prog_h.file_physical_saveData_ascii((ss+"_h.csv").c_str());
+					prog_u.file_physical_saveData_ascii((ss+"_u.csv").c_str());
+					prog_v.file_physical_saveData_ascii((ss+"_v.csv").c_str());
 
-					(op.diff_c_x(prog_v) - op.diff_c_y(prog_u)).file_saveData_ascii((ss+"_q.csv").c_str());
+					(op.diff_c_x(prog_v) - op.diff_c_y(prog_u)).file_physical_saveData_ascii((ss+"_q.csv").c_str());
 				}
 			}
 
@@ -1587,23 +1587,23 @@ public:
 
 		case 'c':
 			// dump data arrays
-			prog_h.file_saveData_ascii("swe_rexi_dump_h.csv");
-			prog_u.file_saveData_ascii("swe_rexi_dump_u.csv");
-			prog_v.file_saveData_ascii("swe_rexi_dump_v.csv");
+			prog_h.file_physical_saveData_ascii("swe_rexi_dump_h.csv");
+			prog_u.file_physical_saveData_ascii("swe_rexi_dump_u.csv");
+			prog_v.file_physical_saveData_ascii("swe_rexi_dump_v.csv");
 			break;
 
 		case 'C':
 			// dump data arrays to VTK
-			prog_h.file_saveData_vtk("swe_rexi_dump_h.vtk", "Height");
-			prog_u.file_saveData_vtk("swe_rexi_dump_u.vtk", "U-Velocity");
-			prog_v.file_saveData_vtk("swe_rexi_dump_v.vtk", "V-Velocity");
+			prog_h.file_physical_saveData_vtk("swe_rexi_dump_h.vtk", "Height");
+			prog_u.file_physical_saveData_vtk("swe_rexi_dump_u.vtk", "U-Velocity");
+			prog_v.file_physical_saveData_vtk("swe_rexi_dump_v.vtk", "V-Velocity");
 			break;
 
 		case 'l':
 			// load data arrays
-			prog_h.file_loadData_physical("swe_rexi_dump_h.csv", simVars.setup.input_data_binary);
-			prog_u.file_loadData_physical("swe_rexi_dump_u.csv", simVars.setup.input_data_binary);
-			prog_v.file_loadData_physical("swe_rexi_dump_v.csv", simVars.setup.input_data_binary);
+			prog_h.file_physical_loadData("swe_rexi_dump_h.csv", simVars.setup.input_data_binary);
+			prog_u.file_physical_loadData("swe_rexi_dump_u.csv", simVars.setup.input_data_binary);
+			prog_v.file_physical_loadData("swe_rexi_dump_v.csv", simVars.setup.input_data_binary);
 			break;
 		}
 	}
@@ -1611,9 +1611,9 @@ public:
 
 	bool instability_detected()
 	{
-		return !(	prog_h.reduce_all_finite() &&
-					prog_u.reduce_all_finite() &&
-					prog_v.reduce_all_finite()
+		return !(	prog_h.reduce_boolean_all_finite() &&
+					prog_u.reduce_boolean_all_finite() &&
+					prog_v.reduce_boolean_all_finite()
 				);
 	}
 
@@ -1945,7 +1945,7 @@ public:
 		std::string filename = ss.str();
 
 //		std::cout << "filename: " << filename << std::endl;
-		data.data_arrays[0]->file_saveData_vtk(filename.c_str(), filename.c_str());
+		data.data_arrays[0]->file_physical_saveData_vtk(filename.c_str(), filename.c_str());
 	}
 
 

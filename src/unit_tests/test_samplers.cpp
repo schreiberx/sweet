@@ -66,12 +66,12 @@ int main(
 		PlaneData prog_h(planeDataConfig);
 
 		// setup initial conditions
-		for (std::size_t j = 0; j < res[1]; j++)
+		for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
 		{
-			for (std::size_t i = 0; i < res[0]; i++)
+			for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
 			{
-				double x = (double)i*(simVars.sim.domain_size[0]/(double)res[0]);
-				double y = (double)j*(simVars.sim.domain_size[1]/(double)res[1]);
+				double x = (double)i*(simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0]);
+				double y = (double)j*(simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1]);
 
 				prog_h.physical_set(j, i, SWEPlaneBenchmarks::return_h(simVars, x, y));
 			}
@@ -90,8 +90,8 @@ int main(
 
 		// setup initial conditions
 		{
-			simVars.disc.res_physical[0] = res3[0];
-			simVars.disc.res_physical[1] = res3[1];
+//			simVars.disc.res_physical[0] = res3[0];
+//			simVars.disc.res_physical[1] = res3[1];
 
 			for (std::size_t j = 0; j < res3[1]; j++)
 			{
@@ -104,8 +104,8 @@ int main(
 				}
 			}
 
-			simVars.disc.res_physical[0] = res[0];
-			simVars.disc.res_physical[1] = res[1];
+//			simVars.disc.res_physical[0] = res[0];
+//			simVars.disc.res_physical[1] = res[1];
 		}
 
 		/*

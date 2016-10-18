@@ -50,19 +50,22 @@ public:
 	double freq_y = 4.0;
 #endif
 
+	PlaneDataConfig *planeDataConfig;
+
 
 public:
-	SimulationAdvection()	:
-		prog_h(planeDataConfig),
-		prog_u(planeDataConfig),
-		prog_v(planeDataConfig),
+	SimulationAdvection(PlaneDataConfig *i_planeDataConfig)	:
+		planeDataConfig(i_planeDataConfig),
+		prog_h(i_planeDataConfig),
+		prog_u(i_planeDataConfig),
+		prog_v(i_planeDataConfig),
 
-		hu(planeDataConfig),
-		hv(planeDataConfig),
+		hu(i_planeDataConfig),
+		hv(i_planeDataConfig),
 
-		tmp(planeDataConfig),
+		tmp(i_planeDataConfig),
 
-		op(	planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
+		op(	i_planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
 	{
 		reset();
 	}
@@ -331,22 +334,22 @@ public:
 				(
 					(
 						// u is positive
-						op.shift_right(i_h)*i_u.return_value_if_positive()	// inflow
-						-i_h*op.shift_left(i_u.return_value_if_positive())	// outflow
+						op.shift_right(i_h)*i_u.physical_query_return_value_if_positive()	// inflow
+						-i_h*op.shift_left(i_u.physical_query_return_value_if_positive())	// outflow
 
 						// u is negative
-						+(i_h*i_u.return_value_if_negative())					// outflow
-						-op.shift_left(i_h*i_u.return_value_if_negative())	// inflow
+						+(i_h*i_u.physical_query_return_value_if_negative())					// outflow
+						-op.shift_left(i_h*i_u.physical_query_return_value_if_negative())	// inflow
 					)*(1.0/simVars.disc.cell_size[0])				// here we see a finite-difference-like formulation
 					+
 					(
 						// v is positive
-						op.shift_up(i_h)*i_v.return_value_if_positive()		// inflow
-						-i_h*op.shift_down(i_v.return_value_if_positive())	// outflow
+						op.shift_up(i_h)*i_v.physical_query_return_value_if_positive()		// inflow
+						-i_h*op.shift_down(i_v.physical_query_return_value_if_positive())	// outflow
 
 						// v is negative
-						+(i_h*i_v.return_value_if_negative())					// outflow
-						-op.shift_down(i_h*i_v.return_value_if_negative())	// inflow
+						+(i_h*i_v.physical_query_return_value_if_negative())					// outflow
+						-op.shift_down(i_h*i_v.physical_query_return_value_if_negative())	// inflow
 					)*(1.0/simVars.disc.cell_size[1])
 				);
 		}
@@ -564,9 +567,9 @@ public:
 
 	bool instability_detected()
 	{
-		return !(	prog_h.reduce_all_finite() &&
-					prog_u.reduce_all_finite() &&
-					prog_v.reduce_all_finite()
+		return !(	prog_h.reduce_boolean_all_finite() &&
+					prog_u.reduce_boolean_all_finite() &&
+					prog_v.reduce_boolean_all_finite()
 				);
 	}
 };
@@ -721,7 +724,7 @@ int main(
 
 			planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical);
 
-			SimulationAdvection *simulationAdvection = new SimulationAdvection;
+			SimulationAdvection *simulationAdvection = new SimulationAdvection(planeDataConfig);
 
 			Stopwatch time;
 			time.reset();
@@ -820,6 +823,8 @@ int main(
 		std::size_t res_x = simVars.disc.res_physical[0];
 		std::size_t res_y = simVars.disc.res_physical[1];
 
+		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical);
+
 		double cfl_limitation = simVars.sim.CFL;
 
 		double end_cfl = 0.0025;
@@ -838,7 +843,8 @@ int main(
 			std::cout << "Testing time convergence with CFL " << simVars.sim.CFL << " and RK order " << simVars.disc.timestepping_runge_kutta_order << std::endl;
 			std::cout << "*********************************************************************************************************" << std::endl;
 
-			SimulationAdvection *simulationAdvection = new SimulationAdvection;
+			SimulationAdvection *simulationAdvection = new SimulationAdvection(planeDataConfig);
+			simulationAdvection->reset();
 
 			Stopwatch time;
 			time.reset();

@@ -406,7 +406,11 @@ int main(int i_argc, char *i_argv[])
 					//Multiplication with dealiasing from * operator
 					double err_mult_dealias = (h1*h2-h12_noalias).reduce_maxAbs();
 					//Multiplication with dealiasing from mult function (truncation)
-					double err_mult_dealias2 = (h1.mult(h2)-h12_truncated).reduce_maxAbs();
+/// TODO: CHECK THIS
+/// TODO: CHECK THIS
+/// TODO: CHECK THIS
+					//double err_mult_dealias2 = (h1.mult(h2)-h12_truncated).reduce_maxAbs();
+					double err_mult_dealias2 = 0;
 
 
 #if 0

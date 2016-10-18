@@ -109,11 +109,11 @@ public:
 
 public:
 	SimulationTestRK()	:
-		prog_h(simVars.disc.res_physical),
-		prog_u(simVars.disc.res_physical),
-		prog_v(simVars.disc.res_physical),
+		prog_h(planeDataConfig),
+		prog_u(planeDataConfig),
+		prog_v(planeDataConfig),
 
-		op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
+		op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
 	{
 		reset();
 	}
@@ -252,9 +252,9 @@ public:
 
 	bool instability_detected()
 	{
-		return !(	prog_h.reduce_all_finite() &&
-					prog_u.reduce_all_finite() &&
-					prog_v.reduce_all_finite()
+		return !(	prog_h.reduce_boolean_all_finite() &&
+					prog_u.reduce_boolean_all_finite() &&
+					prog_v.reduce_boolean_all_finite()
 				);
 	}
 };
@@ -320,7 +320,7 @@ int main(
 			while(true)
 			{
 				if (simVars.misc.verbosity > 2)
-					std::cout << simVars.timecontrol.current_simulation_time << ": " << simulationTestRK->prog_h.get(0,0) << std::endl;
+					std::cout << simVars.timecontrol.current_simulation_time << ": " << simulationTestRK->prog_h.physical_get(0,0) << std::endl;
 
 				simulationTestRK->run_timestep();
 
@@ -332,7 +332,7 @@ int main(
 
 				if (simVars.timecontrol.max_simulation_time < simVars.timecontrol.current_simulation_time)
 				{
-					PlaneData benchmark_h(simVars.disc.res_physical);
+					PlaneData benchmark_h(planeDataConfig);
 
 					benchmark_h.physical_set_all(simulationTestRK->test_function(time_test_function_order, simVars.timecontrol.current_simulation_time));
 

@@ -22,14 +22,23 @@
 
 
 
+/*
+ * This precompiler directive should !!! NEVER !!! be used
+ */
 #ifndef SWEET_USE_PLANE_SPECTRAL_SPACE
-	#define SWEET_USE_PLANE_SPECTRAL_SPACE	0
+	#define SWEET_USE_PLANE_SPECTRAL_SPACE	1
 #endif
 
+/*
+ * Activating this option via the precompiler also activates the FFTW library
+ */
 #ifndef SWEET_USE_LIBFFT
 	#define SWEET_USE_LIBFFT	1
 #endif
 
+/*
+ * Activating the dealiasing creates plans and additional information for dealiasing strategies
+ */
 #ifndef SWEET_USE_PLANE_SPECTRAL_DEALIASING
 	#define SWEET_USE_PLANE_SPECTRAL_DEALIASING 1
 #endif
@@ -177,12 +186,18 @@ private:
 			exit(-1);
 		}
 
+		assert(physical_res[0] > 0);
+		assert(physical_res[1] > 0);
+
+		assert(spectral_modes[0] > 0);
+		assert(spectral_modes[1] > 0);
+
 		// real-to-complex storage representation
 		spectral_data_size[0] = spectral_modes[0]/2+1;
 		spectral_data_size[1] = spectral_modes[1];
 
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
-#error "TODO: check all that stuff"
+//#error "TODO: check all that stuff"
 		// TODO: setup dealiasing limitations correctly
 		spectral_data_iteration_end[0] = spectral_data_size[0]*2/3-1;
 		spectral_data_iteration_end[1] = spectral_data_size[1]*2/3-1;
@@ -240,12 +255,12 @@ private:
 
 			fftw_plan_forward =
 					fftw_plan_dft_r2c_2d(
-						physical_res[1],	// n0 = ny
-						physical_res[0],	// n1 = nx
+						physical_data_size[1],	// n0 = ny
+						physical_data_size[0],	// n1 = nx
 						data_physical,
 						(fftw_complex*)data_spectral,
 						//(!wisdom_loaded ? FFTW_PRESERVE_INPUT : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
-						(!wisdom_loaded ? fftw_estimate_plan : fftw_estimate_plan | FFTW_WISDOM_ONLY)
+						(!wisdom_loaded ? fftw_estimate_plan | FFTW_PRESERVE_INPUT : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
 					);
 
 			if (fftw_plan_forward == nullptr)
@@ -262,7 +277,7 @@ private:
 						physical_res[0],	// n1 = nx
 						(fftw_complex*)data_spectral,
 						data_physical,
-						(!wisdom_loaded ? fftw_estimate_plan : fftw_estimate_plan | FFTW_WISDOM_ONLY)
+						(!wisdom_loaded ? fftw_estimate_plan : FFTW_WISDOM_ONLY)
 					);
 
 			if (fftw_plan_backward == nullptr)
@@ -319,7 +334,7 @@ private:
 						(fftw_complex*)data_physical,
 						(fftw_complex*)data_spectral,
 						FFTW_FORWARD,
-						(!wisdom_loaded ? fftw_estimate_plan : fftw_estimate_plan | FFTW_WISDOM_ONLY)
+						(!wisdom_loaded ? FFTW_PRESERVE_INPUT | fftw_estimate_plan : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
 //						(!wisdom_loaded ? FFTW_PRESERVE_INPUT : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
 					);
 
@@ -338,7 +353,7 @@ private:
 						(fftw_complex*)data_spectral,
 						(fftw_complex*)data_physical,
 						FFTW_BACKWARD,
-						(!wisdom_loaded ? fftw_estimate_plan : fftw_estimate_plan | FFTW_WISDOM_ONLY)
+						(!wisdom_loaded ? FFTW_PRESERVE_INPUT | fftw_estimate_plan : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
 //						(!wisdom_loaded ? FFTW_PRESERVE_INPUT : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
 					);
 
@@ -405,7 +420,7 @@ public:
 		physical_res[0] = i_physical_res_x;
 		physical_res[1] = i_physical_res_y;
 
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
+#if SWEET_USE_LIBFFT
 		spectral_modes[0] = i_spectral_modes_x;
 		spectral_modes[1] = i_spectral_modes_y;
 #endif
@@ -472,13 +487,14 @@ public:
 		physical_res[1] = i_physical_res_y;
 
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
+
 		// REDUCTION IN EFFECTIVE SPECTRAL MODE RESOLUTION TO CUT OFF ANTI-ALIASED MODES
 		spectral_modes[0] = physical_res[0]/2+1;
 		spectral_modes[1] = physical_res[1];
 
 #else
 
-	#if SWEET_USE_PLANE_SPECTRAL_SPACE
+	#if SWEET_USE_LIBFFT
 		spectral_modes[0] = physical_res[0];
 		spectral_modes[1] = physical_res[1];
 	#endif

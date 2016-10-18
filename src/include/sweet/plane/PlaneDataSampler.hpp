@@ -7,7 +7,7 @@
 #ifndef SRC_INCLUDE_SWEET_PLANEDATASAMPLER_HPP_
 #define SRC_INCLUDE_SWEET_PLANEDATASAMPLER_HPP_
 
-#include "PlaneDataComplex.hpp"
+//#include "PlaneDataComplex.hpp"
 
 class PlaneDataSampler
 {
@@ -26,6 +26,8 @@ public:
 		PlaneDataConfig *i_planeDataConfig
 	)
 	{
+		assert(i_planeDataConfig != nullptr);
+
 		planeDataConfig = i_planeDataConfig;
 		setup(i_domain_size, planeDataConfig);
 	}
@@ -50,6 +52,9 @@ public:
 		PlaneDataConfig *i_planeDataConfig
 	)
 	{
+		assert(i_planeDataConfig != nullptr);
+		planeDataConfig = i_planeDataConfig;
+
 		domain_size[0] = i_domain_size[0];
 		domain_size[1] = i_domain_size[1];
 
@@ -152,7 +157,7 @@ public:
 
 		const std::size_t size = i_pos_x.planeDataConfig->physical_array_data_number_of_elements;
 
-		i_data.requestDataInCartesianSpace();
+		i_data.requestDataInPhysicalSpace();
 
 		// iterate over all positions
 //#pragma omp parallel for OPENMP_PAR_SIMD
@@ -261,17 +266,19 @@ public:
 			double i_shift_y = 0.0
 	)
 	{
-		/* SHIFT - important
+		/*
+		 * SHIFT - important
 		 * for C grid, to interpolate given u data, use i_shift_x = 0.0,  i_shift_y = -0.5
 		 *             to interpolate given v data, use i_shift_y = -0.5, i_shift_y = 0.0
 		 *  pay attention to the negative shift, which is necessary because the staggered grids are positively shifted
 		 *  and this shift has to be removed for the interpolation
 		 */
 
-		assert(size != 0);
 
-		i_data.requestDataInCartesianSpace();
+		i_data.requestDataInPhysicalSpace();
 		std::size_t size = i_pos_x.planeDataConfig->physical_array_data_number_of_elements;
+
+		assert(size != 0);
 
 		// iterate over all positions
 //#pragma omp parallel for OPENMP_PAR_SIMD
@@ -340,7 +347,7 @@ public:
 			double i_shift_y = 0.0
 	)
 	{
-		PlaneData out(planeDataConfig);
+		PlaneData out(i_data.planeDataConfig);
 		bilinear_scalar(i_data, i_pos_x, i_pos_y, out, i_shift_x, i_shift_y);
 		return out;
 	}
@@ -360,6 +367,7 @@ public:
 		return out;
 	}
 
+#if 0
 	/*
 	 *
 	 *  Bicubic interpolation routine
@@ -395,7 +403,7 @@ public:
 
 		return out_cmp;
 	}
-
+#endif
 };
 
 

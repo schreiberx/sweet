@@ -13,6 +13,7 @@
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/PlaneDataSemiLagrangian.hpp>
+#include <sweet/plane/PlaneDataConfig.hpp>
 
 #include "burgers/burgers_HelmholtzSolver.hpp"
 
@@ -33,11 +34,15 @@
 #endif
 
 
+#ifndef SWEET_PARAREAL
+#error "ACTIVATE PARAREAL compile option!"
+#endif
+
+
+
 // Plane data config
 PlaneDataConfig planeDataConfigInstance;
 PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
-
-
 
 // Input parameters (cmd line)
 
@@ -158,7 +163,7 @@ public:
 		benchmark_analytical_error(planeDataConfig),
 
 		// Init operators
-		op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
+		op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
 #if SWEET_PARAREAL != 0
 		,
 		_parareal_data_start_u(planeDataConfig), _parareal_data_start_v(planeDataConfig),
@@ -194,8 +199,8 @@ public:
 
 		// set to some values for first touch NUMA policy (HPC stuff)
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		prog_u.set_spec_all(0,0);
-		prog_v.set_spec_all(0,0);
+		prog_u.spectral_set_all(0,0);
+		prog_v.spectral_set_all(0,0);
 #endif
 
 		//Setup prog vars
@@ -246,10 +251,10 @@ public:
 		}
 
 		//Setup sampler for future interpolations
-		sampler2D.setup(simVars.sim.domain_size, simVars.disc.res_physical);
+		sampler2D.setup(simVars.sim.domain_size, planeDataConfig);
 
 		//Setup semi-lag
-		semiLagrangian.setup(simVars.sim.domain_size, simVars.disc.res_physical);
+		semiLagrangian.setup(simVars.sim.domain_size, planeDataConfig);
 
 		//Setup general (x,y) grid with position points
 		for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
@@ -310,7 +315,7 @@ public:
 		// Load data, if requested
 		if (simVars.setup.input_data_filenames.size() > 0)
 		{
-			prog_u.file_loadData(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
+			prog_u.file_physical_loadData(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
 			if (param_use_staggering && param_compute_error)
 			{
 				std::cerr << "Warning: Computing analytical solution with staggered grid based on loaded data not supported!" << std::endl;
@@ -320,7 +325,7 @@ public:
 
 		if (simVars.setup.input_data_filenames.size() > 1)
 		{
-			prog_v.file_loadData(simVars.setup.input_data_filenames[1].c_str(), simVars.setup.input_data_binary);
+			prog_v.file_physical_loadData(simVars.setup.input_data_filenames[1].c_str(), simVars.setup.input_data_binary);
 			if (param_use_staggering && param_compute_error)
 			{
 				std::cerr << "Warning: Computing analytical solution with staggered grid based on loaded data not supported!" << std::endl;
@@ -681,14 +686,15 @@ public:
 			double i_simulation_timestamp = -1
 	)
 	{
-		/* 2D Burgers equation [with source term]
+		/*
+		 * 2D Burgers equation [with source term]
 		 * u_t + u*u_x + v*u_y = nu*(u_xx + u_yy) [+ f(t,x,y)]
 		 * v_t + u*v_x + v*v_y = nu*(v_xx + v_yy) [+ g(t,x,y)]
 		 */
 
 		//TODO: staggering vs. non staggering
 
-		PlaneData f(i_u.resolution);
+		PlaneData f(planeDataConfig);
 		set_source(f);
 
 		/*
@@ -701,7 +707,9 @@ public:
 			// Delete this line if no source is used.
 			o_u_t += f;
 			o_v_t = simVars.sim.viscosity*(op.diff2_c_x(i_v)+op.diff2_c_y(i_v));
-		}else{
+		}
+		else
+		{
 			o_u_t = -(i_u*op.diff_c_x(i_u) + i_v*op.diff_c_y(i_u));
 			o_u_t += simVars.sim.viscosity*(op.diff2_c_x(i_u)+op.diff2_c_y(i_u));
 			// Delete this line if no source is used.
@@ -709,6 +717,8 @@ public:
 			o_v_t = -(i_u*op.diff_c_x(i_v) + i_v*op.diff_c_y(i_v));
 			o_v_t += simVars.sim.viscosity*(op.diff2_c_x(i_v)+op.diff2_c_y(i_v));
 		}
+
+		o_tmp_t.physical_set_all(0);
 
 		/*
 		 * TIME STEP SIZE
@@ -765,6 +775,9 @@ public:
 
 			if (simVars.disc.timestepping_runge_kutta_order>=0)
 			{
+				// setup dummy data
+				tmp.physical_set_all(0);
+
 				// run standard Runge Kutta
 				timestepping.run_rk_timestep(
 						this,
@@ -794,6 +807,9 @@ public:
 
 			if (simVars.disc.timestepping_runge_kutta_order>=0)
 			{
+				// setup dummy data
+				tmp.physical_set_all(0);
+
 				// run standard Runge Kutta
 				timestepping.run_rk_timestep(
 						this,
@@ -887,15 +903,17 @@ public:
 
 
 					// write velocity field u to file
-					prog_u.file_saveData_ascii((ss+"_u.csv").c_str());
-					prog_u.file_saveSpectralData_ascii((ss+"_u_spec.csv").c_str());
+					prog_u.file_physical_saveData_ascii((ss+"_u.csv").c_str());
+// TODO
+//					prog_u.file_saveSpectralData_ascii((ss+"_u_spec.csv").c_str());
 					// write velocity field v to file
 					//prog_v.file_saveData_ascii((ss+"_v.csv").c_str());
 
 					if (param_compute_error)
 					{
-						benchmark_analytical_error.file_saveData_ascii((ss+".err").c_str());
-						benchmark_analytical_error.file_saveSpectralData_ascii((ss+"_spec.err").c_str());
+						benchmark_analytical_error.file_physical_saveData_ascii((ss+".err").c_str());
+// TODO
+//						benchmark_analytical_error.file_saveSpectralData_ascii((ss+"_spec.err").c_str());
 					}
 
 				}
@@ -912,7 +930,7 @@ public:
 			// Compute exact solution for linear part and compare with numerical solution
 
 			// Only possible for manufactured solutions
-			if (simVars.setup.scenario<51 && simVars.setup.scenario>59)
+			if (simVars.setup.scenario < 51 && simVars.setup.scenario > 59)
 				return;
 
 			//Analytical solution at specific time on original grid (stag or not)
@@ -1065,7 +1083,7 @@ public:
 
 	bool instability_detected()
 	{
-		return !(prog_u.reduce_all_finite() && prog_v.reduce_all_finite());
+		return !(prog_u.reduce_boolean_all_finite() && prog_v.reduce_boolean_all_finite());
 	}
 
 
@@ -1275,7 +1293,7 @@ public:
 		PlaneData v=io_v;
 
 		// Initialize and set timestep dependent source for manufactured solution
-		PlaneData f(io_u.resolution);
+		PlaneData f(planeDataConfig);
 		set_source(f);
 		f.requestDataInSpectralSpace();
 
@@ -1303,9 +1321,9 @@ public:
 			PlaneData lhs = u;
 			if (param_semilagrangian)
 			{
-				lhs = ((-t)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spec_addScalarAll(1.0);
+				lhs = ((-t)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
 			}else{
-				lhs = ((-t)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spec_addScalarAll(1.0);
+				lhs = ((-t)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
 			}
 
 #if 1   // solving the system directly by inverting the left hand side operator
@@ -1520,7 +1538,7 @@ public:
 		std::string filename = ss.str();
 
 //		std::cout << "filename: " << filename << std::endl;
-		data.data_arrays[0]->file_saveData_ascii(filename.c_str());
+		data.data_arrays[0]->file_physical_saveData_ascii(filename.c_str());
 		//data.data_arrays[0]->file_saveSpectralData_ascii(filename.c_str());
 
 		std::ostringstream ss2;
@@ -1530,7 +1548,7 @@ public:
 
 		compute_errors();
 
-		benchmark_analytical_error.file_saveSpectralData_ascii(filename2.c_str());
+		benchmark_analytical_error.file_physical_saveData_ascii(filename2.c_str());
 
 		//data.data_arrays[0]->file_saveData_vtk(filename.c_str(), filename.c_str());
 	}
@@ -1603,7 +1621,7 @@ int main(int i_argc, char *i_argv[])
 	param_semilagrangian = simVars.bogus.var[3];
 	param_time_scheme_coarse = simVars.bogus.var[4];
 
-	planeDataConfigInstance.setup(simVars.disc.res_physical, simVars.disc.res_spectral);
+	planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical);
 
 	std::ostringstream buf;
 	buf << std::setprecision(14);

@@ -26,18 +26,31 @@
 #include <sweet/sweetmath.hpp>
 #include <sweet/openmp_helper.hpp>
 #include <sweet/MemBlockAlloc.hpp>
-#include <sweet/plane/PlaneDataConfig.hpp>
 #include <sweet/FatalError.hpp>
 
-#ifndef SWEET_USE_PLANE_SPECTRAL_SPACE
-	#define SWEET_USE_PLANE_SPECTRAL_SPACE	0
+#include <sweet/plane/PlaneDataConfig.hpp>
+
+
+#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
+#error "NOT YET PROPERLY IMPLEMENTED!!!"
 #endif
 
+/*
+ * this option activates if data has to be allocated for the spectral space
+ */
+#ifndef SWEET_USE_PLANE_SPECTRAL_SPACE
+	#define SWEET_USE_PLANE_SPECTRAL_SPACE	1
+#endif
+
+/*
+ * This option should !!! NEVER !!! show up here in this file
+ */
 #ifndef SWEET_USE_PLANE_SPECTRAL_DEALIASING
 	#define SWEET_USE_PLANE_SPECTRAL_DEALIASING 1
 #endif
 
-#if SWEET_USE_PLANE_SPECTRAL_SPACE || SWEET_USE_LIBFFT
+
+#if SWEET_USE_LIBFFT
 #	include <fftw3.h>
 #endif
 
@@ -63,6 +76,7 @@
  * 		A[Y0...YN-1][X0...XN-1]
  *
  */
+
 class PlaneData
 {
 public:
@@ -70,13 +84,16 @@ public:
 
 
 	/**
-	 * local data in cartesian space
+	 * physical space data
 	 */
 	double *physical_space_data;
 
-#if SWEET_USE_LIBFFT || SWEET_USE_PLANE_SPECTRAL_SPACE
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 	bool physical_space_data_valid;
 
+	/**
+	 * spectral space data
+	 */
 	std::complex<double> *spectral_space_data;
 	bool spectral_space_data_valid;
 #endif
@@ -131,6 +148,8 @@ public:
 			const PlaneData &i_dataArray
 	)
 	{
+		assert(i_dataArray.planeDataConfig != nullptr);
+
 		planeDataConfig = i_dataArray.planeDataConfig;
 
 		p_allocate_buffers();
@@ -233,51 +252,14 @@ public:
 
 
 
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-	inline
-	void spectral_set(
-			std::size_t j,
-			std::size_t i,
-			std::complex<double> &i_value
-	)
-	{
-//		requestDataInSpectralSpace();
-
-		physical_space_data_valid = false;
-		spectral_space_data_valid = true;
-
-		std::size_t idx = (j*planeDataConfig->spectral_data_size[0])+i;
-		spectral_space_data[idx] = i_value;
-	}
-
-	inline
-	void spectral_set(
-			std::size_t j,
-			std::size_t i,
-			double i_a,
-			double i_b
-	)
-	{
-//		requestDataInSpectralSpace();
-
-		physical_space_data_valid = false;
-		spectral_space_data_valid = true;
-
-		std::size_t idx = (j*planeDataConfig->spectral_data_size[0])+i;
-		spectral_space_data[idx].real(i_a);
-		spectral_space_data[idx].imag(i_b);
-	}
-#endif
-
-
-
 	inline
 	double physical_get(
 			std::size_t j,
 			std::size_t i
 	)	const
 	{
-		requestDataInCartesianSpace();
+#warning "REPLACE WITH LAMBDA"
+		requestDataInPhysicalSpace();
 
 		return physical_space_data[j*planeDataConfig->physical_data_size[0]+i];
 	}
@@ -289,6 +271,7 @@ public:
 			std::size_t i
 	)	const
 	{
+#warning "REPLACE WITH LAMBDA"
 		requestDataInSpectralSpace();
 
 		return spectral_space_data[j*planeDataConfig->spectral_data_size[0]+i];
@@ -327,7 +310,7 @@ public:
 		if (i_row < 0)
 			i_row += planeDataConfig->physical_data_size[1];
 
-		requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
@@ -351,7 +334,7 @@ public:
 		if (i_dst_row < 0)
 			i_dst_row += planeDataConfig->physical_data_size[1];
 
-		requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
 
 		std::size_t src_idx = i_src_row*planeDataConfig->physical_data_size[0];
 		std::size_t dst_idx = i_dst_row*planeDataConfig->physical_data_size[0];
@@ -379,7 +362,7 @@ public:
 		if (i_dst_row < 0)
 			i_dst_row = planeDataConfig->physical_data_size[1]+i_dst_row;
 
-		requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
 
 		std::size_t src_idx = i_src_row*planeDataConfig->physical_data_size[0];
 		std::size_t dst_idx = i_dst_row*planeDataConfig->physical_data_size[0];
@@ -394,12 +377,10 @@ public:
 
 
 
-
-
-#if SWEET_USE_PLANE_SPECTRAL_SPACE==1
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 
 	inline
-	double spec_getRe(
+	double spectral_getRe(
 			std::size_t j,
 			std::size_t i
 	)	const
@@ -412,7 +393,7 @@ public:
 
 
 	inline
-	double spec_getIm(
+	double spectral_getIm(
 			std::size_t j,
 			std::size_t i
 	)	const
@@ -424,13 +405,31 @@ public:
 
 
 	inline
-	void set_spec(
+	void spectral_set(
+			std::size_t j,
+			std::size_t i,
+			std::complex<double> &i_value
+	)
+	{
+//		requestDataInSpectralSpace();
+
+		physical_space_data_valid = false;
+		spectral_space_data_valid = true;
+
+		std::size_t idx = (j*planeDataConfig->spectral_data_size[0])+i;
+		spectral_space_data[idx] = i_value;
+	}
+
+	inline
+	void spectral_set(
 			std::size_t j,
 			std::size_t i,
 			double i_value_re,
 			double i_value_im
 	)
 	{
+//		requestDataInSpectralSpace();
+
 		std::size_t idx =	j*planeDataConfig->spectral_data_size[0]+i;
 
 		spectral_space_data[idx].real(i_value_re);
@@ -443,7 +442,7 @@ public:
 
 
 	inline
-	void set_spec_all(
+	void spectral_set_all(
 			double i_value_re,
 			double i_value_im
 	)
@@ -461,283 +460,40 @@ public:
 		spectral_space_data_valid = true;
 	}
 
-
-#if 0
-	/**
-	 * Set the spectrum of a frequency.
-	 *
-	 * This is different to the default spec_set function, since
-	 * it directly sets up the y-mirrored frequencies as well.
-	 *
-	 * Note, that the x-frequencies are already mirrored.
-	 */
-	inline
-	void set_spec_diff(
-			std::size_t j,		///< j in [0, res[1]/2-1]
-			std::size_t i,		///< i in [0, res[0]/2-1]
-			double i_value_re,
-			double i_value_im
-	)
-	{
-		/*
-		 * Note the padding in the x-direction:
-		 *
-		 * res_spec_x = 2 * (nx/2 + 1)
-		 *
-		 * SWEET (so far) only supports even resolution.
-		 * Hence we have a padding of 1 complex value in the end.
-		 *
-		 * The frequencies in the x direction are then arranged in the following way:
-		 *     [0, 1, 2, 3, ..., N/2-1, "padding=0"]
-		 *
-		 * Note, that setting a frequency here also sets the frequency on the "virtually mirrored" side.
-		 *
-		 * For the y-axis, the frequencies are given as follows (vector is transposed):
-		 *
-		 *     [0, 1, 2, 3, ..., N/2-1, N/2, N/2-1..., 3, 2, 1]
-		 *
-		 * Setting the frequency for N/2 to zero is a kind of obvious
-		 */
-		assert(i >= 0 && i < resolution[0]/2);
-		assert(j >= 0 && j < resolution[1]/2);
-
-		{	// lower part of y
-			std::size_t idx =	j*planeDataConfig->spectral_data_size[0]+
-								(i);
-
-			spectral_space_data[idx*2+0] = i_value_re;
-			spectral_space_data[idx*2+1] = i_value_im;
-		}
-
-		if (j != 0)
-		{	// upper part of y
-			std::size_t idx =	((resolution[1]-j))*spectral_data_size[0]+
-								(i);
-
-			spectral_space_data[idx*2+0] = i_value_re;
-			// IMPORTANT! the imaginary component is mirrored!!!
-			spectral_space_data[idx*2+1] = i_value_im;
-		}
-
-		physical_space_data_valid = false;
-		spectral_space_data_valid = true;
-
-		checkConsistency();
-	}
-
-
-	/**
-	 * Set the spectrum of a frequency with amplitude and phase.
-	 *
-	 * The amplitude specifies the magnitude in real space.
-	 * The phase specifies the shift from one amplitude to another one.
-	 */
-	inline
-	void set_spec_spectrum_with_ampl_and_phase(
-			std::size_t j,		///< j in [0, res[1]/2-1]
-			std::size_t i,		///< i in [0, res[0]/2-1]
-			double i_value_amplitude,	///< amplitude in |R
-			double i_value_phase_shift	///< phase shift in [0;1[
-	)
-	{
-		double c = cos(2.0*M_PIl*i_value_phase_shift)*i_value_amplitude;
-		double s = sin(2.0*M_PIl*i_value_phase_shift)*i_value_amplitude;
-
-		set_spec_spectrum(j, i, c, s);
-	}
 #endif
 
-
-	/**
-	 * Set the spectrum of a frequency with amplitude and phase.
-	 *
-	 * The amplitude specifies the magnitude in real space.
-	 * The phase specifies the shift from one amplitude to another one.
-	 */
-	inline
-	void set_spec_spectrum(
-			std::size_t j,		///< j in [0, res[1]/2-1]
-			std::size_t i,		///< i in [0, res[0]/2-1]
-			double i_value_re,	///< amplitude in |R
-			double i_value_im	///< phase shift in [0;1[
-	)
-	{
-		/*
-		 * Note the padding in the x-direction:
-		 *
-		 * res_spec_x = 2 * (nx/2 + 1)
-		 *
-		 * SWEET (so far) only supports even resolution.
-		 * Hence we have a padding of 1 complex value in the end.
-		 *
-		 * The frequencies in the x direction are then arranged in the following way:
-		 *     [0, 1, 2, 3, ..., N/2-1, "padding=0"]
-		 *
-		 * Note, that setting a frequency here also sets the frequency on the "virtually mirrored" side.
-		 *
-		 * For the y-axis, the frequencies are given as follows (vector is transposed):
-		 *
-		 *     [0, 1, 2, 3, ..., N/2-1, N/2, N/2-1..., 3, 2, 1]
-		 *
-		 * Setting the frequency for N/2 to zero is a kind of obvious
-		 */
-		assert(i >= 0 && i < planeDataConfig->spectral_data_size[0]/2);
-		assert(j >= 0 && j < planeDataConfig->spectral_data_size[1]/2);
-
-		{	// lower part of y
-			std::size_t idx = j*planeDataConfig->spectral_data_size[0]+i;
-
-			spectral_space_data[idx*2+0] = i_value_re;
-			spectral_space_data[idx*2+1] = i_value_im;
-		}
-
-		if (j != 0)
-		{	// upper part of y
-			std::size_t idx =	(planeDataConfig->spectral_data_size[1]-j)*planeDataConfig->spectral_data_size[0]+i;
-
-			spectral_space_data[idx*2+0] = i_value_re;
-			// IMPORTANT! the imaginary component is mirrored!!!
-			spectral_space_data[idx*2+1] = -i_value_im;
-		}
-
-		physical_space_data_valid = false;
-		spectral_space_data_valid = true;
-	}
-
-
-	/**
-	 * Set the spectrum of a frequency with amplitude and phase.
-	 *
-	 * The amplitude specifies the magnitude in real space.
-	 * The phase specifies the shift from one amplitude to another one.
-	 */
-	inline
-	void set_spec_spectrum_A(
-			std::size_t j,		///< j in [0, res[1]/2-1]
-			std::size_t i,		///< i in [0, res[0]/2-1]
-			double i_value_re,	///< amplitude in |R
-			double i_value_im	///< phase shift in [0;1[
-	)
-	{
-		/*
-		 * Note the padding in the x-direction:
-		 *
-		 * res_spec_x = 2 * (nx/2 + 1)
-		 *
-		 * SWEET (so far) only supports even resolution.
-		 * Hence we have a padding of 1 complex value in the end.
-		 *
-		 * The frequencies in the x direction are then arranged in the following way:
-		 *     [0, 1, 2, 3, ..., N/2-1, "padding=0"]
-		 *
-		 * Note, that setting a frequency here also sets the frequency on the "virtually mirrored" side.
-		 *
-		 * For the y-axis, the frequencies are given as follows (vector is transposed):
-		 *
-		 *     [0, 1, 2, 3, ..., N/2-1, N/2, N/2-1..., 3, 2, 1]
-		 *
-		 * Setting the frequency for N/2 to zero is a kind of obvious
-		 */
-		assert(i >= 0 && i < planeDataConfig->spectral_data_size[0]/2);
-		assert(j >= 0 && j < planeDataConfig->spectral_data_size[1]/2);
-
-		{	// lower part of y
-			std::size_t idx = j*planeDataConfig->spectral_data_size[0]+i;
-
-			spectral_space_data[idx*2+0] = i_value_re;
-			spectral_space_data[idx*2+1] = i_value_im;
-		}
-
-		physical_space_data_valid = false;
-		spectral_space_data_valid = true;
-	}
-
-#if 0
-	/**
-	 * Set the spectrum of a frequency with amplitude and phase.
-	 *
-	 * The amplitude specifies the magnitude in real space.
-	 * The phase specifies the shift from one amplitude to another one.
-	 */
-	inline
-	void set_spec_spectrum_B(
-			std::size_t j,		///< j in [0, res[1]/2-1]
-			std::size_t i,		///< i in [0, res[0]/2-1]
-			double i_value_re,	///< amplitude in |R
-			double i_value_im	///< phase shift in [0;1[
-	)
-	{
-		assert(i >= range_spec_start[0] && i < range_spec_end[0]);
-		assert(j >= range_spec_start[1] && j < range_spec_end[1]);
-
-		/*
-		 * Note the padding in the x-direction:
-		 *
-		 * res_spec_x = 2 * (nx/2 + 1)
-		 *
-		 * SWEET (so far) only supports even resolution.
-		 * Hence we have a padding of 1 complex value in the end.
-		 *
-		 * The frequencies in the x direction are then arranged in the following way:
-		 *     [0, 1, 2, 3, ..., N/2-1, "padding=0"]
-		 *
-		 * Note, that setting a frequency here also sets the frequency on the "virtually mirrored" side.
-		 *
-		 * For the y-axis, the frequencies are given as follows (vector is transposed):
-		 *
-		 *     [0, 1, 2, 3, ..., N/2-1, N/2, N/2-1..., 3, 2, 1]
-		 *
-		 * Setting the frequency for N/2 to zero is a kind of obvious
-		 */
-		assert(i >= 0 && i < resolution[0]/2);
-		assert(j >= 0 && j < resolution[1]/2);
-
-		if (j != 0)
-		{	// upper part of y
-			std::size_t idx =	(resolution[1]-j)*spectral_data_size[0]+i;
-
-			spectral_space_data[idx*2+0] = i_value_re;
-			// IMPORTANT! the imaginary component is mirrored!!!
-			spectral_space_data[idx*2+1] = -i_value_im;
-		}
-
-		physical_space_data_valid = false;
-		spectral_space_data_valid = true;
-
-		checkConsistency();
-	}
-#endif
-
-
-#endif
 
 
 public:
 	inline
 	const void requestDataInSpectralSpace() const
 	{
-#if SWEET_USE_PLANE_SPECTRAL_SPACE==0
-		FatalError("requestDataInSpectralSpace: spectral space is disabled");
-#else
+#if !SWEET_USE_PLANE_SPECTRAL_SPACE
 
+		FatalError("requestDataInSpectralSpace: spectral space is disabled");
+
+#else
 
 #if SWEET_DEBUG
 	#if SWEET_THREADING
 		if (omp_get_num_threads() > 0)
-		{
-			std::cerr << "Threading race conditions likely" << std::endl;
-			assert(false);
-		}
+			FatalError("Threading race conditions likely");
 	#endif
 #endif
 
 		if (spectral_space_data_valid)
-			return *this;		// nothing to do
+			return;		// nothing to do
+
+		PlaneData *rw_array_data = (PlaneData*)this;
+
+/*		if (!physical_space_data_valid)
+		{
+			rw_array_data->spectral_space_data_valid = true;
+			return;		// nothing to do
+		}*/
 
 		if (!physical_space_data_valid)
 			FatalError("Spectral data not available! Is this maybe a non-initialized operator?");
-
-		PlaneData *rw_array_data = (PlaneData*)this;
 
 		planeDataConfig->fft_physical_to_spectral(rw_array_data->physical_space_data, rw_array_data->spectral_space_data);
 
@@ -749,16 +505,23 @@ public:
 
 
 	inline
-	const void requestDataInCartesianSpace() const
+	const void requestDataInPhysicalSpace() const
 	{
-#if SWEET_USE_PLANE_SPECTRAL_SPACE==1
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 
 		if (physical_space_data_valid)
-			return *this;		// nothing to do
+			return;		// nothing to do
+
+		PlaneData *rw_array_data = (PlaneData*)this;
+
+/*		if (!spectral_space_data_valid)
+		{
+			rw_array_data->physical_space_data_valid = true;
+			return;		// nothing to do
+		}*/
 
 		assert(spectral_space_data_valid == true);
 
-		PlaneData *rw_array_data = (PlaneData*)this;
 
 		planeDataConfig->fft_spectral_to_physical(rw_array_data->spectral_space_data, rw_array_data->physical_space_data);
 
@@ -768,8 +531,9 @@ public:
 	}
 
 
+
 	inline
-	PlaneData return_one_if_positive()
+	PlaneData physical_query_return_one_if_positive()
 	{
 		PlaneData out(planeDataConfig);
 
@@ -788,7 +552,7 @@ public:
 
 
 	inline
-	PlaneData return_value_if_positive()	const
+	PlaneData physical_query_return_value_if_positive()	const
 	{
 		PlaneData out(planeDataConfig);
 
@@ -806,7 +570,7 @@ public:
 
 
 	inline
-	PlaneData return_one_if_negative()	const
+	PlaneData physical_query_return_one_if_negative()	const
 	{
 		PlaneData out(planeDataConfig);
 
@@ -824,7 +588,7 @@ public:
 
 
 	inline
-	PlaneData return_value_if_negative()	const
+	PlaneData physical_query_return_value_if_negative()	const
 	{
 		PlaneData out(planeDataConfig);
 
@@ -845,9 +609,9 @@ public:
 	/**
 	 * return true, if any value is infinity
 	 */
-	bool reduce_all_finite() const
+	bool reduce_boolean_all_finite() const
 	{
-		requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
 
 		bool isallfinite = true;
 #if SWEET_THREADING
@@ -868,7 +632,7 @@ public:
 	 */
 	double reduce_maxAbs()	const
 	{
-		requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
 
 		double maxabs = -1;
 #if SWEET_THREADING
@@ -887,7 +651,7 @@ public:
 	 */
 	double reduce_rms()
 	{
-		requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
 
 		double sum = 0;
 #if SWEET_THREADING
@@ -907,7 +671,7 @@ public:
 	 */
 	double reduce_rms_quad()
 	{
-		requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
 
 		double sum = 0;
 		double c = 0;
@@ -940,7 +704,7 @@ public:
 	 */
 	double reduce_max()	const
 	{
-		requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
 
 		double maxvalue = -std::numeric_limits<double>::max();
 #if SWEET_THREADING
@@ -958,7 +722,7 @@ public:
 	 */
 	double reduce_min()	const
 	{
-		requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
 
 		double minvalue = std::numeric_limits<double>::max();
 #if SWEET_THREADING
@@ -976,7 +740,7 @@ public:
 	 */
 	double reduce_sum()	const
 	{
-		requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
 
 		double sum = 0;
 #if SWEET_THREADING
@@ -994,7 +758,7 @@ public:
 	 */
 	double reduce_sum_quad()	const
 	{
-		requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
 
 		double sum = 0;
 		double c = 0;
@@ -1022,7 +786,7 @@ public:
 	 */
 	double reduce_norm1()	const
 	{
-		requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
 
 		double sum = 0;
 #if SWEET_THREADING
@@ -1040,7 +804,7 @@ public:
 	 */
 	double reduce_norm1_quad()	const
 	{
-		requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
 
 		double sum = 0;
 		double c = 0;
@@ -1069,7 +833,7 @@ public:
 	 */
 	double reduce_norm2()	const
 	{
-		requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
 
 		double sum = 0;
 #if SWEET_THREADING
@@ -1088,7 +852,7 @@ public:
 	 */
 	double reduce_norm2_quad()	const
 	{
-		requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
 
 		double sum = 0.0;
 		double c = 0.0;
@@ -1111,32 +875,6 @@ public:
 
 		return std::sqrt(sum);
 	}
-
-
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-
-	/**
-	 * return the maximum of all absolute values
-	 */
-	double reduce_spec_maxAbs()	const
-	{
-		requestDataInSpectralSpace();
-
-		double maxabs = -1;
-#if SWEET_THREADING
-#pragma omp parallel for reduction(max:maxabs)
-#endif
-		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
-		{
-			double re = spectral_space_data[i].real();
-			double im = spectral_space_data[i].imag();
-			maxabs = std::max(maxabs, std::sqrt(re*re + im*im));
-		}
-
-		return maxabs;
-	}
-
-#endif
 
 
 	constexpr
@@ -1312,7 +1050,7 @@ public:
 		bool was_spectral = false;
 		if (this->spectral_space_data_valid)
 		{
-			this->requestDataInCartesianSpace();
+			this->requestDataInPhysicalSpace();
 			was_spectral = true;
 			this->spectral_space_data_valid=false;
 		} else if (!this->physical_space_data_valid)
@@ -1393,7 +1131,7 @@ public:
 		bool was_spectral = false;
 		if (this->spectral_space_data_valid)
 		{
-			this->requestDataInCartesianSpace();
+			this->requestDataInPhysicalSpace();
 			was_spectral = true;
 			this->spectral_space_data_valid=false;
 		}else if(!this->physical_space_data_valid)
@@ -1468,8 +1206,7 @@ public:
 	inline
 	PlaneData spec_div_element_wise(
 			const PlaneData &i_array_data,	///< operator
-			double i_denom_zeros_scalar = 0.0,
-			double i_tolerance = 0.0			///< set tolerance to 0, since we setup the values in the spectral operator directly
+			double i_denom_zeros_scalar = 0.0
 	)	const
 	{
 		PlaneData out(planeDataConfig);
@@ -1481,11 +1218,6 @@ public:
 
 		requestDataInSpectralSpace();
 		rw_array_data.requestDataInSpectralSpace();
-
-		// determine maximum value for tolerance
-		double max_value = i_array_data.reduce_spec_maxAbs();
-		i_tolerance *= max_value;
-		i_tolerance *= (planeDataConfig->physical_data_size[0]+planeDataConfig->physical_data_size[1]);	// the larger the matrix, the less the accuracy
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
@@ -1499,17 +1231,8 @@ public:
 
 			double den = (br*br+bi*bi);
 
-			if (std::abs(den) <= i_tolerance)
-			{
-				// For inverting differential operators, this is the integration constant C
-				out.spectral_space_data[i] = ar*i_denom_zeros_scalar;
-				out.spectral_space_data[i+1] = ai*i_denom_zeros_scalar;
-			}
-			else
-			{
-				out.spectral_space_data[i].real((ar*br + ai*bi)/den);
-				out.spectral_space_data[i].imag((ai*br - ar*bi)/den);
-			}
+			out.spectral_space_data[i].real((ar*br + ai*bi)/den);
+			out.spectral_space_data[i].imag((ai*br - ar*bi)/den);
 		}
 
 		out.spectral_space_data_valid = true;
@@ -1619,7 +1342,7 @@ public:
 			//std::cout << std::endl;
 		}
 
-		requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
 
 		return *this;
 	}
@@ -2008,8 +1731,8 @@ public:
 
 #else
 
-		requestDataInCartesianSpace();
-		rw_array_data.requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
+		rw_array_data.requestDataInPhysicalSpace();
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
@@ -2055,7 +1778,7 @@ public:
 
 #else
 
-		requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
@@ -2067,7 +1790,6 @@ public:
 
 		return out;
 	}
-
 
 
 
@@ -2129,7 +1851,7 @@ public:
 
 #else
 
-		requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
@@ -2167,7 +1889,7 @@ public:
 
 #else
 
-		requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
@@ -2179,6 +1901,7 @@ public:
 
 		return *this;
 	}
+
 
 
 	/**
@@ -2205,7 +1928,7 @@ public:
 
 #else
 
-		requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
@@ -2217,6 +1940,7 @@ public:
 
 		return *this;
 	}
+
 
 
 	/**
@@ -2244,8 +1968,8 @@ public:
 		spectral_space_data_valid = true;
 #else
 
-		requestDataInCartesianSpace();
-		rw_array_data.requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
+		rw_array_data.requestDataInPhysicalSpace();
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
@@ -2289,8 +2013,8 @@ public:
 
 #else
 
-		requestDataInCartesianSpace();
-		rw_array_data.requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
+		rw_array_data.requestDataInPhysicalSpace();
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
@@ -2336,7 +2060,7 @@ public:
 
 #else
 
-		requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
@@ -2349,6 +2073,7 @@ public:
 
 		return out;
 	}
+
 
 
 	/**
@@ -2379,7 +2104,7 @@ public:
 
 #else
 
-		requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
@@ -2391,6 +2116,8 @@ public:
 
 		return out;
 	}
+
+
 
 	/**
 	 * Invert sign
@@ -2415,7 +2142,7 @@ public:
 
 #else
 
-		requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
 
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 			out.physical_space_data[i] = -physical_space_data[i];
@@ -2437,8 +2164,8 @@ public:
 	{
 		PlaneData out(planeDataConfig);
 
-		requestDataInCartesianSpace();
-		i_array_data.requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
+		i_array_data.requestDataInPhysicalSpace();
 
 #if SWEET_THREADING
 		#pragma omp parallel for OPENMP_PAR_SIMD
@@ -2456,6 +2183,8 @@ public:
 		return out;
 	}
 
+
+
 	/**
 	 * Compute element-wise multiplication
 	 */
@@ -2466,8 +2195,8 @@ public:
 	{
 		PlaneData out(planeDataConfig);
 
-		requestDataInCartesianSpace();
-		i_array_data.requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
+		i_array_data.requestDataInPhysicalSpace();
 
 #if SWEET_THREADING
 		#pragma omp parallel for OPENMP_PAR_SIMD
@@ -2482,6 +2211,7 @@ public:
 
 		return out;
 	}
+
 
 
 #if 0
@@ -2597,14 +2327,17 @@ public:
 		PlaneData out(planeDataConfig);
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
+
 		if (physical_space_data_valid)
 		{
 #endif
+
 #if SWEET_THREADING
 			#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 			for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 				out.physical_space_data[i] = physical_space_data[i] / i_value;
+
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 			out.physical_space_data_valid = true;
 			out.spectral_space_data_valid = false;
@@ -2647,8 +2380,8 @@ public:
 		PlaneData u = aliasing_scaleUp();
 		PlaneData v = rw_array_data.aliasing_scaleUp();
 
-		u.requestDataInCartesianSpace();
-		v.requestDataInCartesianSpace();
+		u.requestDataInPhysicalSpace();
+		v.requestDataInPhysicalSpace();
 
 		PlaneData scaled_output(u.resolution, true);
 
@@ -2669,8 +2402,8 @@ public:
 		out.spectral_space_data_valid = true;
 
 #else
-		requestDataInCartesianSpace();
-		rw_array_data.requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
+		rw_array_data.requestDataInPhysicalSpace();
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
@@ -2702,16 +2435,13 @@ public:
 	{
 		PlaneData &rw_array_data = (PlaneData&)i_dataArray;
 
-		rw_array_data.requestDataInCartesianSpace();
+		rw_array_data.requestDataInPhysicalSpace();
 
-		for (int y = rw_array_data.planeDataConfig->physical_data_size[1]-1; y >= 0; y--)
+		for (int j = rw_array_data.planeDataConfig->physical_data_size[1]-1; j >= 0; j--)
 		{
-			for (std::size_t x = 0; x < rw_array_data.planeDataConfig->physical_data_size[0]; x++)
+			for (std::size_t i = 0; i < rw_array_data.planeDataConfig->physical_data_size[0]; i++)
 			{
-				double value = rw_array_data.physical_get(y, x);
-//					if (std::abs(value) < 1e-13)
-//						value = 0;
-				std::cout << value << "\t";
+				std::cout << i_dataArray.physical_space_data[j*i_dataArray.planeDataConfig->physical_data_size[0]+i] << "\t";
 			}
 			std::cout << std::endl;
 		}
@@ -2725,7 +2455,7 @@ public:
 	 * Add scalar to all spectral modes
 	 */
 	inline
-	PlaneData spec_addScalarAll(
+	PlaneData spectral_addScalarAll(
 			const double &i_value
 	)	const
 	{
@@ -2744,14 +2474,13 @@ public:
 
 		return out;
 	}
-#endif
 
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
+
 	/**
 	 * Return Plane Array with all spectral coefficients a+bi --> 1/(a+bi)
 	 */
 	inline
-	PlaneData spec_invert()	const
+	PlaneData spectral_invert()	const
 	{
 		PlaneData out(planeDataConfig);
 
@@ -2771,7 +2500,7 @@ public:
 
 
 	inline
-	void printSpectrum()	const
+	void print_spectralData()	const
 	{
 		PlaneData &rw_array_data = (PlaneData&)*this;
 
@@ -2781,8 +2510,8 @@ public:
 		{
 			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
 			{
-				double value_re = rw_array_data.spec_getRe(y, x);
-				double value_im = rw_array_data.spec_getIm(y, x);
+				double value_re = rw_array_data.spectral_getRe(y, x);
+				double value_im = rw_array_data.spectral_getIm(y, x);
 				std::cout << "(" << value_re << ", " << value_im << ")\t";
 			}
 			std::cout << std::endl;
@@ -2790,7 +2519,7 @@ public:
 	}
 
 	inline
-	void printSpectrumIndex()	const
+	void print_spectralIndex()	const
 	{
 		PlaneData &rw_array_data = (PlaneData&)*this;
 
@@ -2800,8 +2529,8 @@ public:
 		{
 			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
 			{
-				double value_re = rw_array_data.spec_getRe(y, x);
-				double value_im = rw_array_data.spec_getIm(y, x);
+				double value_re = rw_array_data.spectral_getRe(y, x);
+				double value_im = rw_array_data.spectral_getIm(y, x);
 				//if(std::abs(value_re)<1.0e-13)
 					//value_re=0.0;
 				//if(std::abs(value_im)<1.0e-13)
@@ -2816,7 +2545,7 @@ public:
 	}
 
 	inline
-	void printSpectrumNonZero()	const
+	void print_spectralNonZero()	const
 	{
 		PlaneData &rw_array_data = (PlaneData&)*this;
 
@@ -2826,8 +2555,8 @@ public:
 		{
 			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
 			{
-				double value_re = rw_array_data.spec_getRe(y, x);
-				double value_im = rw_array_data.spec_getIm(y, x);
+				double value_re = rw_array_data.spectral_getRe(y, x);
+				double value_im = rw_array_data.spectral_getIm(y, x);
 				if(value_re*value_re+value_im*value_im>1.0e-13)
 					std::cout << "(" << x << ", "<< y << ", "<< value_re << ", " << value_im << ")" <<std::endl;;
 			}
@@ -2845,11 +2574,11 @@ public:
 	 * Each array row is stored to a line.
 	 * Per default, a tab separator is used in each line to separate the values.
 	 */
-	bool printArrayData(
+	bool print_physicalArrayData(
 			int i_precision = 8		///< number of floating point digits
 			)	const
 	{
-		requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
 
 		std::ostream &o_ostream = std::cout;
 
@@ -2879,13 +2608,13 @@ public:
 	 * Each array row is stored to a line.
 	 * Per default, a tab separator is used in each line to separate the values.
 	 */
-	bool file_saveData_ascii(
+	bool file_physical_saveData_ascii(
 			const char *i_filename,		///< Name of file to store data to
 			char i_separator = '\t',	///< separator to use for each line
 			int i_precision = 12		///< number of floating point digits
 	)
 	{
-		requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
 
 		std::ofstream file(i_filename, std::ios_base::trunc);
 		file << std::setprecision(i_precision);
@@ -2907,47 +2636,6 @@ public:
 	}
 
 
-#if 0
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-	/**
-	 * Write data to ASCII file
-	 *
-	 * Each array row is stored to a line.
-	 * Per default, a tab separator is used in each line to separate the values.
-	 */
-	bool file_saveSpectralData_ascii(
-			const char *i_filename,		///< Name of file to store data to
-			char i_separator = '\t',	///< separator to use for each line
-			int i_precision = 12		///< number of floating point digits
-	)
-	{
-
-		checkConsistency();
-		requestDataInSpectralSpace();
-
-		std::ofstream file(i_filename, std::ios_base::trunc);
-		file << std::setprecision(i_precision);
-
-		for (int y = resolution_spec[1]-1; y >= 0; y--)
-		{
-			for (std::size_t x = 0; x < resolution_spec[0]; x++)
-			{
-				double value_re = spec_getRe(y, x);
-				double value_im = spec_getIm(y, x);
-				//file << "(" << value_re << ", " << value_im << ")";
-				file << sqrt(value_re*value_re+value_im*value_im);
-				if (x < resolution_spec[0]-1)
-					file << i_separator;
-				else
-					file << std::endl;
-			}
-		}
-
-		checkConsistency();
-		return true;
-	}
-#endif
-#endif
 
 	/**
 	 * Write data to VTK file
@@ -2955,13 +2643,13 @@ public:
 	 * Each array row is stored to a line.
 	 * Per default, a tab separator is used in each line to separate the values.
 	 */
-	bool file_saveData_vtk(
+	bool file_physical_saveData_vtk(
 			const char *i_filename,		///< Name of file to store data to
 			const char *i_title,		///< Title of scalars
 			int i_precision = 12		///< number of floating point digits
 	)
 	{
-		requestDataInCartesianSpace();
+		requestDataInPhysicalSpace();
 
 		std::ofstream file(i_filename, std::ios_base::trunc);
 		file << std::setprecision(i_precision);
@@ -2997,6 +2685,7 @@ public:
 	}
 
 
+
 	/**
 	 * Load data from ASCII file.
 	 * This is a non-bullet proof implementation, so be careful for invalid file formats.
@@ -3008,7 +2697,7 @@ public:
 	 *
 	 * \return true if data was successfully read
 	 */
-	bool file_loadData_physical(
+	bool file_physical_loadData(
 			const char *i_filename,		///< Name of file to load data from
 			bool i_binary_data = false	///< load as binary data (disabled per default)
 	)
@@ -3085,6 +2774,7 @@ public:
 
 		return true;
 	}
+
 };
 
 
@@ -3141,5 +2831,9 @@ PlaneData operator+(
 {
 	return ((PlaneData&)i_array_data)+i_value;
 }
+
+
+
+
 
 #endif /* SRC_DATAARRAY_HPP_ */

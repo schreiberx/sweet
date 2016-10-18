@@ -29,6 +29,8 @@ class PlaneDataComplex
 {
 	typedef std::complex<double> complex;
 
+	PlaneDataConfig *planeDataConfig;
+
 public:
 	/**
 	 * Data associated to this complex array
@@ -54,12 +56,13 @@ public:
 			PlaneDataConfig *i_planeDataConfig
 	)
 	{
+		planeDataConfig = i_planeDataConfig;
 #if !SWEET_USE_LIBFFT
 		std::cerr << "This class only makes sense with FFT" << std::endl;
 		exit(1);
 #endif
 
-		data = MemBlockAlloc::alloc<double>(sizeof(double)*resolution[0]*resolution[1]*2);
+		data = MemBlockAlloc::alloc<double>(sizeof(double)*planeDataConfig->spectral_complex_data_size[0]*planeDataConfig->spectral_complex_data_size[1]*2);
 
 		fft_setup();
 	}
@@ -1163,7 +1166,7 @@ public:
 			const PlaneData &i_dataArray_Real
 	)
 	{
-		i_dataArray_Real.requestDataInCartesianSpace();
+		i_dataArray_Real.requestDataInPhysicalSpace();
 
 // TODO: Make this SIMD
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
@@ -1194,8 +1197,8 @@ public:
 			const PlaneData &i_dataArray_Imag
 	)
 	{
-		i_dataArray_Real.requestDataInCartesianSpace();
-		i_dataArray_Imag.requestDataInCartesianSpace();
+		i_dataArray_Real.requestDataInPhysicalSpace();
+		i_dataArray_Imag.requestDataInPhysicalSpace();
 
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD

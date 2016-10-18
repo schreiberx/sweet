@@ -26,10 +26,10 @@ if true; then
 	echo "***********************************************"
 	make clean
 	scons --threading=omp --unit-test=test_spectral_ops --gui=disable --plane-spectral-space=enable --mode=release --plane-spectral-dealiasing=disable
-	EXEC="./build/test_spectral_ops_spectral_libfft_omp_gnu_release  -X $X -Y $Y -S 0"
+	EXEC="./build/test_spectral_ops_spectral_libfft_omp_gnu_release -n 128 -m 128 -X $X -Y $Y -S 0"
 	echo "$EXEC"
 	$EXEC || exit
-	EXEC="./build/test_spectral_ops_spectral_libfft_omp_gnu_release  -X $X -Y $Y -S 1"
+	EXEC="./build/test_spectral_ops_spectral_libfft_omp_gnu_release -n 128 -m 128 -X $X -Y $Y -S 1"
 	echo "$EXEC"
 	$EXEC || exit
 fi

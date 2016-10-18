@@ -11,11 +11,6 @@
 #include "../include/sweet/plane/PlaneData.hpp"
 
 
-// Plane data config
-PlaneDataConfig planeDataConfigInstance;
-PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
-
-
 
 class burgers_HelmholtzSolver
 {
@@ -53,8 +48,8 @@ public:
 	)
 	{
 		double inv_helm_h[2];
-		inv_helm_h[0] = (double)i_rhs.resolution[0]/(double)i_domain_size[0];
-		inv_helm_h[1] = (double)i_rhs.resolution[1]/(double)i_domain_size[1];
+		inv_helm_h[0] = (double)i_rhs.planeDataConfig->physical_data_size[0]/(double)i_domain_size[0];
+		inv_helm_h[1] = (double)i_rhs.planeDataConfig->physical_data_size[1]/(double)i_domain_size[1];
 		double scalar_Dx = inv_helm_h[0]*inv_helm_h[0];
 		double scalar_Dy = inv_helm_h[1]*inv_helm_h[1];
 		double scalar_C = -(2.0*scalar_Dx+2.0*scalar_Dy);
@@ -186,8 +181,8 @@ public:
 		PlaneData &x = io_x;
 
 		double inv_helm_h[2];
-		inv_helm_h[0] = (double)i_rhs.resolution[0]/(double)i_domain_size[0];
-		inv_helm_h[1] = (double)i_rhs.resolution[1]/(double)i_domain_size[1];
+		inv_helm_h[0] = (double)i_rhs.planeDataConfig->physical_data_size[0]/(double)i_domain_size[0];
+		inv_helm_h[1] = (double)i_rhs.planeDataConfig->physical_data_size[1]/(double)i_domain_size[1];
 
 		double scalar_Dx = 1.0*(inv_helm_h[0]*inv_helm_h[0]);
 		double scalar_Dy = 1.0*(inv_helm_h[1]*inv_helm_h[1]);
@@ -250,8 +245,8 @@ public:
 			}
 
 			//if (i_verbosity > 3)
-			x.printArrayData();
-			r.printArrayData();
+			x.print_physicalArrayData();
+			r.print_physicalArrayData();
 				std::cout << "RESIDUAL: " << r.reduce_rms() << std::endl;
 
 			double s = beta / alpha;

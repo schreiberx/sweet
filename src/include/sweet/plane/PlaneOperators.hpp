@@ -133,7 +133,7 @@ public:
 	 * Returns operator D^q
 	 *
 	 */
-	inline PlaneData diffusion_coef(
+	inline PlaneData diffusion_coefficient(
 			int i_order
 	)
 	{
@@ -166,13 +166,15 @@ public:
 	{
 		PlaneData out=i_data;
 
-		//Get diffusion coefficients (these are the -mu*dt*D^q, where q is the order
-		PlaneData diff = -i_coef*diffusion_coef(i_order);
-		//Sum 1 to get denominator
-		diff=diff.spec_addScalarAll(1.0);
-		//Invert
-		diff=diff.spec_invert();
-		//apply to data
+		// Get diffusion coefficients (these are the -mu*dt*D^q, where q is the order
+		PlaneData diff = -i_coef*diffusion_coefficient(i_order);
+
+		// Add 1 to get denominator
+		diff = diff.spectral_addScalarAll(1.0);
+
+		// Invert
+		diff = diff.spectral_invert();
+		// apply to data
 		out=diff(out);
 		return out;
 	}
@@ -293,18 +295,18 @@ public:
 			 * Note, that there's a last column which is set to 0 (Nyquist freq, noise in signal)
 			 * PXT: removed this setting to zero (changed < to <=), because of 2nd and higher order differentiation
 			 */
-			diff_c_x.set_spec_all(0, 0);
+			diff_c_x.spectral_set_all(0, 0);
 
 			for (int j = 0; j <= (int)diff_c_x.planeDataConfig->spectral_data_size[1]/2; j++)
 			{
-				for (int i = 0; i <= (int)diff_c_x.planeDataConfig->spectral_data_size[0]/2; i++)
+				for (int i = 0; i <= (int)diff_c_x.planeDataConfig->spectral_data_size[0]; i++)
 				{
-					diff_c_x.set_spec(
+					diff_c_x.spectral_set(
 							j, i,
 							0,
 							(double)i*2.0*M_PIl/(double)i_domain_size[0]
 						);
-					diff_c_x.set_spec(
+					diff_c_x.spectral_set(
 							diff_c_x.planeDataConfig->spectral_data_size[1]-1-j, i,
 							0,
 							(double)i*2.0*M_PIl/(double)i_domain_size[0]
@@ -316,18 +318,18 @@ public:
 			/*
 			 * DIFF operator in y axis
 			 */
-			diff_c_y.set_spec_all(0, 0);
+			diff_c_y.spectral_set_all(0, 0);
 			// TODO: shift j for loop by +1
 			for (int j = 0; j <= (int)diff_c_y.planeDataConfig->spectral_data_size[1]/2-1; j++)
 			{
-				for (int i = 0; i <= (int)diff_c_y.planeDataConfig->spectral_data_size[0]/2; i++)
+				for (int i = 0; i <= (int)diff_c_y.planeDataConfig->spectral_data_size[0]; i++)
 				{
-					diff_c_y.set_spec(
+					diff_c_y.spectral_set(
 							j+1, i,
 							0,
 							(double)(j+1)*2.0*M_PIl/(double)i_domain_size[1]
 						);
-					diff_c_y.set_spec(
+					diff_c_y.spectral_set(
 							diff_c_y.planeDataConfig->spectral_data_size[1]-(j+1), i,
 							0,
 							-(double)(j+1)*2.0*M_PIl/(double)i_domain_size[1]
@@ -375,20 +377,20 @@ public:
 			/*
 			 * 2nd order differential operators
 			 */
-			diff2_c_x.set_spec_all(0, 0);
+			diff2_c_x.spectral_set_all(0, 0);
 
 			for (int j = 0; j <= (int)diff_c_x.planeDataConfig->spectral_data_size[1]/2; j++)
 			{
-				for (int i = 0; i <= (int)diff_c_x.planeDataConfig->spectral_data_size[0]/2; i++)
+				for (int i = 0; i <= (int)diff_c_x.planeDataConfig->spectral_data_size[0]; i++)
 				{
 					double fac = (double)i*2.0*M_PIl/(double)i_domain_size[0];
 
-					diff2_c_x.set_spec(
+					diff2_c_x.spectral_set(
 							j, i,
 							-fac*fac,
 							0
 						);
-					diff2_c_x.set_spec(
+					diff2_c_x.spectral_set(
 							diff_c_x.planeDataConfig->spectral_data_size[1]-1-j, i,
 							-fac*fac,
 							0
@@ -397,21 +399,21 @@ public:
 			}
 
 
-			diff2_c_y.set_spec_all(0, 0);
+			diff2_c_y.spectral_set_all(0, 0);
 
 			for (int j = 0; j <= (int)diff_c_y.planeDataConfig->spectral_data_size[1]/2-1; j++)
 			{
-				for (int i = 0; i <= (int)diff_c_y.planeDataConfig->spectral_data_size[0]/2; i++)
+				for (int i = 0; i <= (int)diff_c_y.planeDataConfig->spectral_data_size[0]; i++)
 				{
 					double fac = (double)(j+1)*2.0*M_PIl/(double)i_domain_size[1];
 
-					diff2_c_y.set_spec(
+					diff2_c_y.spectral_set(
 							j+1, i,
 							-fac*fac,
 							0
 						);
 
-					diff2_c_y.set_spec(
+					diff2_c_y.spectral_set(
 							diff_c_y.planeDataConfig->spectral_data_size[1]-(j+1), i,
 							-fac*fac,
 							0

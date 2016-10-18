@@ -106,13 +106,13 @@ public:
 
 
 		if (simVars.setup.input_data_filenames.size() > 0)
-			prog_h.file_loadData_spatial(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
+			prog_h.file_loadData_physical(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
 
 		if (simVars.setup.input_data_filenames.size() > 1)
-			prog_u.file_loadData_spatial(simVars.setup.input_data_filenames[1].c_str(), simVars.setup.input_data_binary);
+			prog_u.file_loadData_physical(simVars.setup.input_data_filenames[1].c_str(), simVars.setup.input_data_binary);
 
 		if (simVars.setup.input_data_filenames.size() > 2)
-			prog_v.file_loadData_spatial(simVars.setup.input_data_filenames[2].c_str(), simVars.setup.input_data_binary);
+			prog_v.file_loadData_physical(simVars.setup.input_data_filenames[2].c_str(), simVars.setup.input_data_binary);
 
 		if (simVars.misc.gui_enabled)
 			timestep_output();
@@ -171,22 +171,22 @@ public:
 			(
 				(
 					// u is positive
-					op.shift_right(i_h)*i_u.return_value_if_positive()	// inflow
-					-i_h*op.shift_left(i_u.return_value_if_positive())					// outflow
+					op.shift_right(i_h)*i_u.physical_query_return_value_if_positive()	// inflow
+					-i_h*op.shift_left(i_u.physical_query_return_value_if_positive())					// outflow
 
 					// u is negative
-					+(i_h*i_u.return_value_if_negative())	// outflow
-					-op.shift_left(i_h*i_u.return_value_if_negative())		// inflow
+					+(i_h*i_u.physical_query_return_value_if_negative())	// outflow
+					-op.shift_left(i_h*i_u.physical_query_return_value_if_negative())		// inflow
 				)*(1.0/simVars.disc.cell_size[0])	// here we see a finite-difference-like formulation
 				+
 				(
 					// v is positive
-					op.shift_up(i_h)*i_v.return_value_if_positive()		// inflow
-					-i_h*op.shift_down(i_v.return_value_if_positive())					// outflow
+					op.shift_up(i_h)*i_v.physical_query_return_value_if_positive()		// inflow
+					-i_h*op.shift_down(i_v.physical_query_return_value_if_positive())					// outflow
 
 					// v is negative
-					+(i_h*i_v.return_value_if_negative())	// outflow
-					-op.shift_down(i_h*i_v.return_value_if_negative())	// inflow
+					+(i_h*i_v.physical_query_return_value_if_negative())	// outflow
+					-op.shift_down(i_h*i_v.physical_query_return_value_if_negative())	// inflow
 				)*(1.0/simVars.disc.cell_size[1])
 			);
 	}
@@ -380,11 +380,11 @@ public:
 
 				std::string ss = simVars.misc.output_file_name_prefix+"_t"+t_buf;
 
-				prog_h.file_saveData_ascii((ss+"_h.csv").c_str());
-				prog_u.file_saveData_ascii((ss+"_u.csv").c_str());
-				prog_v.file_saveData_ascii((ss+"_v.csv").c_str());
+				prog_h.file_physical_saveData_ascii((ss+"_h.csv").c_str());
+				prog_u.file_physical_saveData_ascii((ss+"_u.csv").c_str());
+				prog_v.file_physical_saveData_ascii((ss+"_v.csv").c_str());
 
-				(op.diff_c_x(prog_v) - op.diff_c_y(prog_u)).file_saveData_ascii((ss+"_q.csv").c_str());
+				(op.diff_c_x(prog_v) - op.diff_c_y(prog_u)).file_physical_saveData_ascii((ss+"_q.csv").c_str());
 			}
 
 			if (simVars.timecontrol.current_timestep_nr == 0)
@@ -573,9 +573,9 @@ public:
 
 	bool instability_detected()
 	{
-		return !(	prog_h.reduce_all_finite() &&
-					prog_u.reduce_all_finite() &&
-					prog_v.reduce_all_finite()
+		return !(	prog_h.reduce_boolean_all_finite() &&
+					prog_u.reduce_boolean_all_finite() &&
+					prog_v.reduce_boolean_all_finite()
 				);
 	}
 };

@@ -98,6 +98,7 @@ public:
 			// r_d = r_a - dt/2 * v_n(r_d) - v^{iter}(r_d)
 			rx_d_new = rx_a - dt*0.5 * vx_n - sample2D.bilinear_scalar(vx_iter, rx_d, ry_d, i_staggering[0], i_staggering[1]);
 			ry_d_new = ry_a - dt*0.5 * vy_n - sample2D.bilinear_scalar(vy_iter, rx_d, ry_d, i_staggering[2], i_staggering[3]);
+			//std::cout << "WHATS GOING ON HERE?!?" << std::endl;
 			std::cout << rx_d_new << std::endl;
 			exit(1);
 
@@ -105,7 +106,10 @@ public:
 			rx_d_prev = rx_d_new;
 			ry_d_prev = ry_d_new;
 
-			for (std::size_t i = 0; i < rx_d.resolution[0]*rx_d.resolution[1]; i++)
+			for (	std::size_t i = 0;
+					i < rx_d.planeDataConfig->physical_data_size[0]*rx_d.planeDataConfig->physical_data_size[1];
+					i++
+			)
 			{
 				rx_d.physical_space_data[i] = sample2D.wrapPeriodic(rx_d_new.physical_space_data[i], sample2D.domain_size[0]);
 				ry_d.physical_space_data[i] = sample2D.wrapPeriodic(ry_d_new.physical_space_data[i], sample2D.domain_size[1]);
@@ -141,12 +145,12 @@ public:
 			double *i_staggering = nullptr	///< staggering, if any (ux, uy, vx, vy)
 	)
 	{
-		i_u_prev.requestDataInCartesianSpace();
-		i_v_prev.requestDataInCartesianSpace();
-		i_u.requestDataInCartesianSpace();
-		i_v.requestDataInCartesianSpace();
-		i_posx_a.requestDataInCartesianSpace();
-		i_posy_a.requestDataInCartesianSpace();
+		i_u_prev.requestDataInPhysicalSpace();
+		i_v_prev.requestDataInPhysicalSpace();
+		i_u.requestDataInPhysicalSpace();
+		i_v.requestDataInPhysicalSpace();
+		i_posx_a.requestDataInPhysicalSpace();
+		i_posy_a.requestDataInPhysicalSpace();
 
 		if (i_staggering == nullptr)
 		{
@@ -162,16 +166,16 @@ public:
 		double dt = i_dt;
 
 		//Velocity for iterations
-		PlaneData u_iter(i_u.resolution);
-		PlaneData v_iter(i_v.resolution);
+		PlaneData u_iter(i_u.planeDataConfig);
+		PlaneData v_iter(i_v.planeDataConfig);
 
 		//Time Extrapolation
 		u_iter = dt * i_u - dt*0.5 * i_u_prev;
 		v_iter = dt * i_v - dt*0.5 * i_v_prev;
 
 		//Departure point tmp
-		PlaneData rx_d_new(i_u.resolution);
-		PlaneData ry_d_new(i_v.resolution);
+		PlaneData rx_d_new(i_u.planeDataConfig);
+		PlaneData ry_d_new(i_v.planeDataConfig);
 
 		//Previous departure point
 		PlaneData rx_d_prev = i_posx_a;
@@ -224,8 +228,8 @@ public:
 			rx_d_prev = rx_d_new;
 			ry_d_prev = ry_d_new;
 
-			rx_d_new.requestDataInCartesianSpace();
-			ry_d_new.requestDataInCartesianSpace();
+			rx_d_new.requestDataInPhysicalSpace();
+			ry_d_new.requestDataInPhysicalSpace();
 
 
 			for (std::size_t i = 0; i < o_posx_d.planeDataConfig->physical_array_data_number_of_elements; i++)

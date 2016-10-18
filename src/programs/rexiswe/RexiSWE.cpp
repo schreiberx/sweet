@@ -715,9 +715,9 @@ bool RexiSWE::run_timestep(
 
 	std::size_t N = rexi.alpha.size();
 
-	io_h.requestDataInCartesianSpace();
-	io_u.requestDataInCartesianSpace();
-	io_v.requestDataInCartesianSpace();
+	io_h.requestDataInPhysicalSpace();
+	io_u.requestDataInPhysicalSpace();
+	io_v.requestDataInPhysicalSpace();
 
 
 #if SWEET_MPI

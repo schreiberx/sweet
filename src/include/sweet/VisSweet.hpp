@@ -99,7 +99,7 @@ class VisSweet	:
 			texture_data = new unsigned char[visData.planeDataConfig->physical_array_data_number_of_elements];
 		}
 
-		visData.requestDataInCartesianSpace();
+		visData.requestDataInPhysicalSpace();
 
 		vis_min = visData.reduce_min();
 		vis_max = visData.reduce_max();
