@@ -69,8 +69,6 @@ public:
 		PlaneData &rx_d = *o_pos_departure[0];
 		PlaneData &ry_d = *o_pos_departure[1];
 
-		rx_d.physical_set(0,0,0);
-		ry_d.physical_set(0,0,0);
 
 		double dt = i_dt;
 
@@ -84,7 +82,7 @@ public:
 		PlaneData ry_d_new(vx_n_prev.planeDataConfig);
 
 		PlaneData rx_d_prev = rx_a;
-		PlaneData ry_d_prev = rx_a;	// TODO: is rx_a correct or should it be ry_a?
+		PlaneData ry_d_prev = ry_a;	// TODO: is rx_a correct or should it be ry_a?
 
 		//PlaneData* r_d[2] = {&rx_d, &ry_d};
 
@@ -98,9 +96,10 @@ public:
 			// r_d = r_a - dt/2 * v_n(r_d) - v^{iter}(r_d)
 			rx_d_new = rx_a - dt*0.5 * vx_n - sample2D.bilinear_scalar(vx_iter, rx_d, ry_d, i_staggering[0], i_staggering[1]);
 			ry_d_new = ry_a - dt*0.5 * vy_n - sample2D.bilinear_scalar(vy_iter, rx_d, ry_d, i_staggering[2], i_staggering[3]);
+
 			//std::cout << "WHATS GOING ON HERE?!?" << std::endl;
-			std::cout << rx_d_new << std::endl;
-			exit(1);
+//			std::cout << rx_d_new << std::endl;
+//			exit(1);
 
 			double diff = (rx_d_new - rx_d_prev).reduce_maxAbs() + (ry_d_new - ry_d_prev).reduce_maxAbs();
 			rx_d_prev = rx_d_new;
@@ -145,22 +144,18 @@ public:
 			double *i_staggering = nullptr	///< staggering, if any (ux, uy, vx, vy)
 	)
 	{
-		i_u_prev.requestDataInPhysicalSpace();
-		i_v_prev.requestDataInPhysicalSpace();
-		i_u.requestDataInPhysicalSpace();
-		i_v.requestDataInPhysicalSpace();
-		i_posx_a.requestDataInPhysicalSpace();
-		i_posy_a.requestDataInPhysicalSpace();
+		i_u_prev.request_data_physical();
+		i_v_prev.request_data_physical();
+		i_u.request_data_physical();
+		i_v.request_data_physical();
+		i_posx_a.request_data_physical();
+		i_posy_a.request_data_physical();
 
 		if (i_staggering == nullptr)
 		{
 			static double constzerostuff[4] = {0,0,0,0};
 			i_staggering = constzerostuff;
 		}
-
-		//Init departure points
-		o_posx_d.physical_set(0,0,0);
-		o_posy_d.physical_set(0,0,0);
 
 		//local dt
 		double dt = i_dt;
@@ -228,8 +223,8 @@ public:
 			rx_d_prev = rx_d_new;
 			ry_d_prev = ry_d_new;
 
-			rx_d_new.requestDataInPhysicalSpace();
-			ry_d_new.requestDataInPhysicalSpace();
+			rx_d_new.request_data_physical();
+			ry_d_new.request_data_physical();
 
 
 			for (std::size_t i = 0; i < o_posx_d.planeDataConfig->physical_array_data_number_of_elements; i++)

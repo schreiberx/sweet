@@ -89,7 +89,7 @@ public:
 	{
 		simVars.timecontrol.current_timestep_nr = 0;
 #if 0
-		prog_h.set_all(simVars.setup.h0);
+		prog_h.set_all(simVars.sim.h0);
 
 		if (std::isinf(simVars.bogus.var[0]) != 0)
 		{
@@ -104,20 +104,15 @@ public:
 #endif
 
 
-		for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
-		{
-			for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+		prog_h.physical_update_lambda_array_indices(
+			[&](int i, int j, double &io_data)
 			{
-				//				double x = (((double)i+0.5)/(double)simVars.disc.res[0])*simVars.sim.domain_size[0];
-				//				double y = (((double)j+0.5)/(double)simVars.disc.res[1])*simVars.sim.domain_size[1];
 				double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 				double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-				prog_h.physical_set(j, i, SWEPlaneBenchmarks::return_h(simVars, x, y));
-//				prog_u.physical_set(j, i, SWEValidationBenchmarks::return_u(simVars, x, y));
-//				prog_v.physical_set(j, i, SWEValidationBenchmarks::return_v(simVars, x, y));
+				io_data = SWEPlaneBenchmarks::return_h(simVars, x, y);
 			}
-		}
+		);
 
 //		prog_u += 4.0;
 //		prog_v += 4.0;
@@ -133,19 +128,24 @@ public:
 
 		// setup some test sampling points
 		// we use 2 arrays - one for each sampling position
-		for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
-		{
-			for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
-			{
-				posx_a.physical_set(j, i, ((double)i)*((double)simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0]));
-				posy_a.physical_set(j, i, ((double)j)*((double)simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1]));
-			}
-		}
 
-		sampler2D.setup(simVars.sim.domain_size, simVars.disc.res_physical);
+		posx_a.physical_update_lambda_array_indices(
+			[&](int i, int j, double &io_data)
+			{
+				io_data = ((double)i)*((double)simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0]);
+			}
+		);
+		posy_a.physical_update_lambda_array_indices(
+			[&](int i, int j, double &io_data)
+			{
+				io_data = ((double)j)*((double)simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1]);
+			}
+		);
+
+		sampler2D.setup(simVars.sim.domain_size, planeDataConfig);
 
 		//PXT- This just calls sampler2D.setup, so any reason for having it?
-		semiLagrangian.setup(simVars.sim.domain_size, simVars.disc.res_physical);
+		semiLagrangian.setup(simVars.sim.domain_size, planeDataConfig);
 	}
 
 
@@ -153,8 +153,8 @@ public:
 	void run_timestep()
 	{
 		double dt = std::min(
-				std::abs((double)prog_h.resolution[0]/param_velocity_u),
-				std::abs((double)prog_h.resolution[1]/param_velocity_v)
+				std::abs((double)planeDataConfig->physical_res[0]/param_velocity_u),
+				std::abs((double)planeDataConfig->physical_res[1]/param_velocity_v)
 			)*simVars.sim.CFL;
 
 		if ((param_velocity_u == 0) && (param_velocity_v == 0))
@@ -172,8 +172,8 @@ public:
 		PlaneData* vel_prev[2] = {&prog_u_prev, &prog_v_prev};
 
 		// position of departure points at t
-		PlaneData posx_d(prog_h.resolution);
-		PlaneData posy_d(prog_h.resolution);
+		PlaneData posx_d(planeDataConfig);
+		PlaneData posy_d(planeDataConfig);
 		PlaneData* pos_d[2] = {&posx_d, &posy_d};
 
 #if 0
@@ -192,7 +192,7 @@ public:
 		prog_u_prev = prog_u;
 		prog_v_prev = prog_v;
 
-		PlaneData new_prog_h(prog_h.resolution);
+		PlaneData new_prog_h(planeDataConfig);
 		sampler2D.bicubic_scalar(
 				prog_h,
 				posx_d,
@@ -207,9 +207,9 @@ public:
 
 		// setup some test sampling points
 		// we use 2 arrays - one for each sampling position
-		for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
+		for (int j = 0; j < simVars.disc.res_physical[1]; j++)
 		{
-			for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+			for (int i = 0; i < simVars.disc.res_physical[0]; i++)
 			{
 				x[0]->set(j, i, ((double)i)*(simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0])+simVars.timecontrol.current_timestep_nr);
 				x[1]->set(j, i, ((double)j)*(simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1])+simVars.timecontrol.current_timestep_nr*2);
@@ -329,7 +329,6 @@ int main(int i_argc, char *i_argv[])
 	param_velocity_v = simVars.bogus.var[1];
 
 	planeDataConfigInstance.setup(simVars.disc.res_physical, simVars.disc.res_spectral);
-
 
 	SimulationSWE *simulationSWE = new SimulationSWE;
 

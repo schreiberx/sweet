@@ -42,11 +42,7 @@ RexiSWE::RexiSWE()	:
 
 #if SWEET_REXI_THREAD_PARALLEL_SUM
 
-//#if SWEET_THREADING || 1
 	num_local_rexi_par_threads = omp_get_max_threads();
-//#else
-//	num_local_rexi_par_threads = 1;
-//#endif
 
 	if (num_local_rexi_par_threads == 0)
 	{
@@ -309,8 +305,8 @@ bool RexiSWE::run_timestep_implicit_ts(
 	// load kappa (k)
 	double kappa = alpha*alpha + i_simVars.sim.f0*i_simVars.sim.f0;
 
-	double eta_bar = i_simVars.setup.h0;
-	double g = i_simVars.sim.g;
+	double eta_bar = i_simVars.sim.h0;
+	double g = i_simVars.sim.gravitation;
 
 	assert(perThreadVars.size() != 0);
 	assert(perThreadVars[0] != nullptr);
@@ -396,8 +392,8 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	PlaneData posy_d(io_h.planeDataConfig);
 
 	//Parameters
-	double h_bar = i_simVars.setup.h0;
-	double g = i_simVars.sim.g;
+	double h_bar = i_simVars.sim.h0;
+	double g = i_simVars.sim.gravitation;
 	double f0 = i_simVars.sim.f0;
 	double dt = i_timestep_size;
 	double alpha = 2.0/dt;
@@ -446,19 +442,21 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	PlaneData rhs_v =  - f0 * io_u + alpha * io_v - g * op.diff_c_y(io_h);
 	PlaneData rhs_h = alpha * io_h  - h_bar * div;
 
-	if(i_param_nonlinear>0){
+	if (i_param_nonlinear > 0)
+	{
 		// all the RHS are to be evaluated at the departure points
 		rhs_u=sampler2D.bicubic_scalar(rhs_u, posx_d, posy_d, -0.5, -0.5);
 		rhs_v=sampler2D.bicubic_scalar(rhs_v, posx_d, posy_d, -0.5, -0.5);
 		rhs_h=sampler2D.bicubic_scalar(rhs_h, posx_d, posy_d, -0.5, -0.5);
+
 		//Get data in spectral space
-		rhs_u.requestDataInSpectralSpace();
-		rhs_v.requestDataInSpectralSpace();
-		rhs_h.requestDataInSpectralSpace();
+		rhs_u.request_data_spectral();
+		rhs_v.request_data_spectral();
+		rhs_h.request_data_spectral();
 	}
 
 	//Calculate nonlinear term at half timestep and add to RHS of h eq.
-	if(i_param_nonlinear==1)
+	if (i_param_nonlinear == 1)
 	{
 		// Calculate nonlinear term interpolated to departure points
 		// h*div is calculate in cartesian space (pseudo-spectrally)
@@ -488,13 +486,13 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 		//std::cout << "Div: " << div.reduce_maxAbs() << std::endl;
 		//nonlin=0;
 		rhs_h = rhs_h - 2.0*nonlin;
-		rhs_h.requestDataInSpectralSpace();
+		rhs_h.request_data_spectral();
 	}
 
 
 	//Build Helmholtz eq.
-	PlaneData rhs_div =op.diff_c_x(rhs_u)+op.diff_c_y(rhs_v);
-	PlaneData rhs_vort=op.diff_c_x(rhs_v)-op.diff_c_y(rhs_u);
+	PlaneData rhs_div = op.diff_c_x(rhs_u)+op.diff_c_y(rhs_v);
+	PlaneData rhs_vort = op.diff_c_x(rhs_v)-op.diff_c_y(rhs_u);
 	PlaneData rhs     = kappa* rhs_h / alpha - h_bar * rhs_div - f0 * h_bar * rhs_vort / alpha;
 
 	// Helmholtz solver
@@ -715,9 +713,9 @@ bool RexiSWE::run_timestep(
 
 	std::size_t N = rexi.alpha.size();
 
-	io_h.requestDataInPhysicalSpace();
-	io_u.requestDataInPhysicalSpace();
-	io_v.requestDataInPhysicalSpace();
+	io_h.request_data_physical();
+	io_u.request_data_physical();
+	io_v.request_data_physical();
 
 
 #if SWEET_MPI
@@ -766,8 +764,8 @@ bool RexiSWE::run_timestep(
 			stopwatch_preprocessing.start();
 #endif
 
-		double eta_bar = i_parameters.setup.h0;
-		double g = i_parameters.sim.g;
+		double eta_bar = i_parameters.sim.h0;
+		double g = i_parameters.sim.gravitation;
 
 		PlaneDataComplex &op_diff_c_x = perThreadVars[i]->op_diff_c_x;
 		PlaneDataComplex &op_diff_c_y = perThreadVars[i]->op_diff_c_y;
@@ -874,7 +872,7 @@ bool RexiSWE::run_timestep(
 					;
 
 #if 0
-				helmholtz_spectral_solver_spec(kappa, g*eta_bar, rhs, eta, i);
+				helmholtz_spectral_solver_spec(kappa, gravitation*eta_bar, rhs, eta, i);
 #else
 				PlaneDataComplex lhs = lhs_a.addScalar_Cart(kappa);
 				rhs.spec_div_element_wise(lhs, eta);
@@ -1205,8 +1203,8 @@ void RexiSWE::run_timestep_direct_solution(
 {
 	typedef std::complex<double> complex;
 
-	double eta_bar = i_simVars.setup.h0;
-	double g = i_simVars.sim.g;
+	double eta_bar = i_simVars.sim.h0;
+	double g = i_simVars.sim.gravitation;
 	double f = i_simVars.sim.f0;
 	complex I(0.0,1.0);
 
@@ -1236,9 +1234,9 @@ void RexiSWE::run_timestep_direct_solution(
 		{
 			if (ik0 == i_h.resolution[0]/2 || ik1 == i_h.resolution[1]/2)
 			{
-				o_h.physical_set(ik1, ik0, 0, 0);
-				o_u.physical_set(ik1, ik0, 0, 0);
-				o_v.physical_set(ik1, ik0, 0, 0);
+				o_h.p_physical_set(ik1, ik0, 0, 0);
+				o_u.p_physical_set(ik1, ik0, 0, 0);
+				o_v.p_physical_set(ik1, ik0, 0, 0);
 			}
 
 			complex U_hat[3];
@@ -1469,9 +1467,9 @@ void RexiSWE::run_timestep_direct_solution(
 					U_hat_sp[k] += eigenvectors[j][k] * omega[j] * UEV0_sp[j];
 			}
 
-			o_h.physical_set(ik1, ik0, U_hat_sp[0]);
-			o_u.physical_set(ik1, ik0, U_hat_sp[1]);
-			o_v.physical_set(ik1, ik0, U_hat_sp[2]);
+			o_h.p_physical_set(ik1, ik0, U_hat_sp[0]);
+			o_u.p_physical_set(ik1, ik0, U_hat_sp[1]);
+			o_v.p_physical_set(ik1, ik0, U_hat_sp[2]);
 		}
 	}
 

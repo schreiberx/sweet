@@ -86,10 +86,10 @@ public:
 				+(double)simVars.sim.domain_size[1]*(double)simVars.sim.domain_size[1]
 			);
 
-		for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
-		{
-			for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+		ret_h.physical_update_lambda_array_indices(
+			[&](int i, int j, double &io_data)
 			{
+
 #if ADV_FUNCTION==0
 
 				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
@@ -111,7 +111,7 @@ public:
 				dy /= radius;
 
 				double value = simVars.setup.h0+std::exp(-50.0*(dx*dx + dy*dy));
-				ret_h.physical_set(j, i, value);
+				io_data = value;
 
 #elif ADV_FUNCTION==1
 				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
@@ -129,10 +129,10 @@ public:
 				x /= simVars.sim.domain_size[0];
 				y /= simVars.sim.domain_size[1];
 
-				ret_h.physical_set(j, i, std::sin(freq_x*M_PIl*x)*std::sin(freq_x*M_PIl*y));
+				io_data = std::sin(freq_x*M_PIl*x)*std::sin(freq_x*M_PIl*y);
 #endif
 			}
-		}
+		);
 
 		return ret_h;
 	}
@@ -155,9 +155,9 @@ public:
 
 		double radius = simVars.setup.radius_scale*radius_scale;
 
-		for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
-		{
-			for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+
+		ret_h.physical_update_lambda_array_indices(
+			[&](int i, int j, double &io_data)
 			{
 #if ADV_FUNCTION==0
 
@@ -182,7 +182,7 @@ public:
 				double value = -50.0*2.0*dx*std::exp(-50.0*(dx*dx + dy*dy));
 				value /= radius_scale;
 
-				ret_h.physical_set(j, i, value);
+				io_data = value;
 
 #elif ADV_FUNCTION==1
 
@@ -201,10 +201,10 @@ public:
 				x /= simVars.sim.domain_size[0];
 				y /= simVars.sim.domain_size[1];
 
-				ret_h.physical_set(j, i, freq_x*M_PIl*std::cos(freq_x*M_PIl*x)*std::sin(freq_y*M_PIl*y)/simVars.sim.domain_size[0]);
+				io_data = freq_x*M_PIl*std::cos(freq_x*M_PIl*x)*std::sin(freq_y*M_PIl*y)/simVars.sim.domain_size[0];
 #endif
 			}
-		}
+		);
 
 		return ret_h;
 	}
@@ -227,9 +227,9 @@ public:
 
 		double radius = simVars.setup.radius_scale*radius_scale;
 
-		for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
-		{
-			for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+
+		ret_h.physical_update_lambda_array_indices(
+			[&](int i, int j, double &io_data)
 			{
 #if ADV_FUNCTION==0
 
@@ -254,7 +254,7 @@ public:
 				double value = -50.0*2.0*dy*std::exp(-50.0*(dx*dx + dy*dy));
 				value /= radius_scale;
 
-				ret_h.physical_set(j, i, value);
+				io_data = value;
 
 #elif ADV_FUNCTION==1
 
@@ -273,10 +273,9 @@ public:
 				x /= simVars.sim.domain_size[0];
 				y /= simVars.sim.domain_size[1];
 
-				ret_h.physical_set(j, i, freq_y*M_PIl*std::sin(freq_x*M_PIl*x)*std::cos(freq_y*M_PIl*y)/simVars.sim.domain_size[1]);
+				io_data = freq_y*M_PIl*std::sin(freq_x*M_PIl*x)*std::cos(freq_y*M_PIl*y)/simVars.sim.domain_size[1];
 #endif
-			}
-		}
+		});
 
 		return ret_h;
 	}

@@ -71,7 +71,7 @@ public:
 		 * Use test function as expected result
 		 */
 		SphereDataComplex x_result(i_sphConfig);
-		x_result.spat_update_lambda_gaussian_grid(
+		x_result.physical_update_lambda_gaussian_grid(
 				[&](double lat, double mu, std::complex<double> &io_data){
 					double tmp;
 					testSolutions.test_function__grid_gaussian(lat,mu,tmp);
@@ -112,7 +112,7 @@ public:
 				 * Setup RHS = scalar_a * phi(lambda,mu)
 				 */
 				SphereDataComplex b(i_sphConfig);
-				b.spat_update_lambda_gaussian_grid(
+				b.physical_update_lambda_gaussian_grid(
 						[&](double lat, double mu, std::complex<double> &io_data)
 						{
 							double tmp;
@@ -123,7 +123,7 @@ public:
 
 				SphereDataComplex x_numerical = sphSolver.solve(b);
 
-				double error_max = x_numerical.spat_reduce_error_max(x_result);
+				double error_max = x_numerical.physical_reduce_error_max(x_result);
 				std::cout << " ||| Error: " << error_max << std::endl;
 				test_threshold(error_max);
 			}
@@ -143,7 +143,7 @@ public:
 //				sphSolver.lhs.print();
 
 				SphereDataComplex b(i_sphConfig);
-				b.spat_update_lambda_gaussian_grid(
+				b.physical_update_lambda_gaussian_grid(
 						[&](double lat, double mu, std::complex<double> &io_data)
 						{
 							double fun;
@@ -159,7 +159,7 @@ public:
 //				x_result.spat_write_file("O_result.csv");
 //				(x_result-x_numerical).spat_write_file("O_diff.csv");
 
-				double error_max = x_numerical.spat_reduce_error_max(x_result);
+				double error_max = x_numerical.physical_reduce_error_max(x_result);
 				std::cout << " ||| Error: " << error_max << std::endl;
 				test_threshold(error_max);
 			}
@@ -179,7 +179,7 @@ public:
 				sphSolver.solver_component_one_minus_mu_mu_diff_mu_phi();
 
 				SphereDataComplex b(i_sphConfig);
-				b.spat_update_lambda_gaussian_grid(
+				b.physical_update_lambda_gaussian_grid(
 						[&](double lat, double mu, std::complex<double> &io_data)
 						{
 							double fun;
@@ -194,7 +194,7 @@ public:
 
 				SphereDataComplex x_numerical = sphSolver.solve(b);
 
-				double error_max = x_numerical.spat_reduce_error_max(x_result);
+				double error_max = x_numerical.physical_reduce_error_max(x_result);
 				std::cout << " ||| Error: " << error_max << std::endl;
 				test_threshold(error_max);
 			}
@@ -219,7 +219,7 @@ public:
 				sphSolver.solver_component_rexi_z1(scalar, r);
 
 				SphereDataComplex b(i_sphConfig);
-				b.spat_update_lambda_gaussian_grid(
+				b.physical_update_lambda_gaussian_grid(
 						[&](double lat, double mu, std::complex<double> &io_data)
 						{
 							double tmp;
@@ -230,7 +230,7 @@ public:
 
 				SphereDataComplex x_numerical = sphSolver.solve(b);
 
-				double error_max = x_numerical.spat_reduce_error_max(x_result);
+				double error_max = x_numerical.physical_reduce_error_max(x_result);
 				std::cout << " ||| Error: " << error_max << std::endl;
 				test_threshold(error_max);
 			}
@@ -250,7 +250,7 @@ public:
 				sphSolver.solver_component_rexi_z2(scalar, r);
 
 				SphereDataComplex b(i_sphConfig);
-				b.spat_update_lambda_gaussian_grid(
+				b.physical_update_lambda_gaussian_grid(
 						[&](double lat, double mu, std::complex<double> &io_data){
 							double tmp;
 							testSolutions.test_function__grid_gaussian(lat,mu,tmp);
@@ -260,7 +260,7 @@ public:
 
 				SphereDataComplex x_numerical = sphSolver.solve(b);
 
-				double error_max = x_numerical.spat_reduce_error_max(x_result);
+				double error_max = x_numerical.physical_reduce_error_max(x_result);
 				std::cout << " ||| Error: " << error_max << std::endl;
 				test_threshold(error_max);
 			}
@@ -281,7 +281,7 @@ public:
 				sphSolver.solver_component_rexi_z3(scalar, r);
 
 				SphereDataComplex b(i_sphConfig);
-				b.spat_update_lambda_gaussian_grid(
+				b.physical_update_lambda_gaussian_grid(
 						[&](double lat, double mu, std::complex<double> &io_data)
 						{
 							double tmp;
@@ -292,7 +292,7 @@ public:
 
 				SphereDataComplex x_numerical = sphSolver.solve(b);
 
-				double error_max = x_numerical.spat_reduce_error_max(x_result);
+				double error_max = x_numerical.physical_reduce_error_max(x_result);
 				std::cout << " ||| Error: " << error_max << std::endl;
 				test_threshold(error_max);
 			}
@@ -315,7 +315,7 @@ public:
 				sphSolver.solver_component_scalar_phi(alpha);
 
 				SphereDataComplex b(i_sphConfig);
-				b.spat_update_lambda_gaussian_grid(
+				b.physical_update_lambda_gaussian_grid(
 						[&](double lat, double mu, std::complex<double> &io_data)
 						{
 							double fun;
@@ -330,7 +330,7 @@ public:
 
 				SphereDataComplex x_numerical = sphSolver.solve(b);
 
-				double error_max = x_numerical.spat_reduce_error_max(x_result);
+				double error_max = x_numerical.physical_reduce_error_max(x_result);
 				std::cout << " ||| Error: " << error_max << std::endl;
 				test_threshold(error_max);
 			}
@@ -353,7 +353,7 @@ public:
 				sphSolver.solver_component_scalar_phi(alpha);
 
 				SphereDataComplex b(i_sphConfig);
-				b.spat_update_lambda_gaussian_grid(
+				b.physical_update_lambda_gaussian_grid(
 						[&](double lat, double mu, std::complex<double> &io_data)
 						{
 							double fun;
@@ -368,7 +368,7 @@ public:
 
 				SphereDataComplex x_numerical = sphSolver.solve(b);
 
-				double error_max = x_numerical.spat_reduce_error_max(x_result);
+				double error_max = x_numerical.physical_reduce_error_max(x_result);
 				std::cout << " ||| Error: " << error_max << std::endl;
 				test_threshold(error_max);
 			}
@@ -391,7 +391,7 @@ public:
 				sphSolver.solver_component_scalar_phi(alpha);
 
 				SphereDataComplex b(i_sphConfig);
-				b.spat_update_lambda_gaussian_grid(
+				b.physical_update_lambda_gaussian_grid(
 						[&](double lat, double mu, std::complex<double> &io_data)
 						{
 							double fun;
@@ -406,7 +406,7 @@ public:
 
 				SphereDataComplex x_numerical = sphSolver.solve(b);
 
-				double error_max = x_numerical.spat_reduce_error_max(x_result);
+				double error_max = x_numerical.physical_reduce_error_max(x_result);
 				std::cout << " ||| Error: " << error_max << std::endl;
 				test_threshold(error_max);
 			}
@@ -429,7 +429,7 @@ public:
 				sphSolver.solver_component_scalar_phi(alpha);
 
 				SphereDataComplex b(i_sphConfig);
-				b.spat_update_lambda_gaussian_grid(
+				b.physical_update_lambda_gaussian_grid(
 						[&](double lat, double mu, std::complex<double> &io_data)
 						{
 							double tmp;
@@ -442,7 +442,7 @@ public:
 
 				SphereDataComplex x_numerical = sphSolver.solve(b);
 
-				double error_max = x_numerical.spat_reduce_error_max(x_result);
+				double error_max = x_numerical.physical_reduce_error_max(x_result);
 				std::cout << " ||| Error: " << error_max << std::endl;
 				test_threshold(error_max);
 			}
@@ -466,7 +466,7 @@ public:
 				sphSolver.solver_component_scalar_phi(alpha);
 
 				SphereDataComplex b(i_sphConfig);
-				b.spat_update_lambda_gaussian_grid(
+				b.physical_update_lambda_gaussian_grid(
 						[&](double lat, double mu, std::complex<double> &io_data)
 						{
 							double tmp;
@@ -479,7 +479,7 @@ public:
 
 				SphereDataComplex x_numerical = sphSolver.solve(b);
 
-				double error_max = x_numerical.spat_reduce_error_max(x_result);
+				double error_max = x_numerical.physical_reduce_error_max(x_result);
 				std::cout << " ||| Error: " << error_max << std::endl;
 				test_threshold(error_max);
 			}
@@ -494,7 +494,7 @@ public:
 				std::cout << "Test Zx = a + b*laplace";
 
 				SphereDataComplex testb(i_sphConfig);
-				testb.spat_update_lambda_gaussian_grid(
+				testb.physical_update_lambda_gaussian_grid(
 						[&](double lat, double mu, std::complex<double> &io_data)
 						{
 							double tmp;
@@ -514,7 +514,7 @@ public:
 				//testb.spat_print();
 				//x_numerical.spat_print();
 
-				double error_max = x_numerical.spat_reduce_error_max(x_result);
+				double error_max = x_numerical.physical_reduce_error_max(x_result);
 				std::cout << " ||| Error: " << error_max << std::endl;
 				test_threshold(error_max);
 			}

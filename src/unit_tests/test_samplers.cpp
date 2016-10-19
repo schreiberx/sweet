@@ -66,9 +66,9 @@ int main(
 		PlaneData prog_h(planeDataConfig);
 
 		// setup initial conditions
-		for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
+		for (int j = 0; j < simVars.disc.res_physical[1]; j++)
 		{
-			for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+			for (int i = 0; i < simVars.disc.res_physical[0]; i++)
 			{
 				double x = (double)i*(simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0]);
 				double y = (double)j*(simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1]);

@@ -124,9 +124,19 @@ AddOption(	'--plane-spectral-space',
 		type='choice',
 		choices=['enable', 'disable'],
 		default='disable',
-		help="Use spectral space for operations such as folding [default: %default]"
+		help="Activate spectral space for data on the plane (2D FFT) [default: %default]"
 )
 env['plane_spectral_space'] = GetOption('plane_spectral_space')
+
+AddOption(	'--sphere-spectral-space',
+		dest='sphere_spectral_space',
+		type='choice',
+		choices=['enable', 'disable'],
+		default='disable',
+		help="Activate spectral space for data on the sphere (Spherical Harmonics) [default: %default]"
+)
+env['sphere_spectral_space'] = GetOption('sphere_spectral_space')
+
 
 
 AddOption(	'--libfft',
@@ -134,9 +144,19 @@ AddOption(	'--libfft',
 		type='choice',
 		choices=['enable', 'disable'],
 		default='enable',
-		help="Enable libFFT [default: %default]"
+		help="Enable compiling and linking with FFT library [default: %default]"
 )
 env['libfft'] = GetOption('libfft')
+
+
+AddOption(	'--libsph',
+		dest='libsph',
+		type='choice',
+		choices=['enable', 'disable'],
+		default='enable',
+		help="Enable compiling and linking with SPH library [default: %default]"
+)
+env['libsph'] = GetOption('libsph')
 
 
 AddOption(	'--mkl',
@@ -266,7 +286,7 @@ AddOption(	'--threading',
 		dest='threading',
 		type='choice',
 		choices=threading_constraints,
-		default='off',
+		default='omp',
 		help='Threading to use '+' / '.join(threading_constraints)+', default: off'
 )
 env['threading'] = GetOption('threading')
@@ -709,6 +729,27 @@ if env['threading'] == 'omp':
 	env.Append(CXXFLAGS=' -DSWEET_THREADING=1')
 else:
 	env.Append(CXXFLAGS=' -DSWEET_THREADING=0')
+
+
+if env['plane_spectral_space'] == 'enable':
+	env['libsph'] = 'enable'
+
+
+if env['libsph'] == 'enable':
+	# activate linking with libfft!
+	env['libfft'] = 'enable'
+
+	if env['threading'] == 'omp':
+		env.Append(LIBS=['shtns_omp'])
+	else:
+		env.Append(LIBS=['shtns'])
+
+	# Add LAPACK libraries
+	env.Append(LIBS=['lapack'])
+	env.Append(LIBS=['refblas'])
+
+	if env['compiler'] == 'gnu':
+		env.Append(LIBS=['gfortran'])
 
 
 if env['libfft'] == 'enable':

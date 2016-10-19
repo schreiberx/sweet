@@ -5,8 +5,8 @@
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#ifndef SPHSETUP_HPP_
-#define SPHSETUP_HPP_
+#ifndef PLANE_DATA_CONFIG_HPP_
+#define PLANE_DATA_CONFIG_HPP_
 
 /*
  * DOCUMENTATION:
@@ -18,9 +18,9 @@
 #include <libmath/shtns_inc.hpp>
 #include <fftw3.h>
 #include <iostream>
-#include <sweet/sweetmath.hpp>
 #include <stdlib.h>
 #include <iostream>
+#include <sweet/sweetmath.hpp>
 
 
 
@@ -28,12 +28,6 @@
 #	include <omp.h>
 #endif
 
-
-#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
-	#warning "NOT YET PROPERLY IMPLEMENTED!!!"
-	#undef SWEET_USE_PLANE_SPECTRAL_DEALIASING
-	#define SWEET_USE_PLANE_SPECTRAL_DEALIASING 0
-#endif
 
 
 /*
@@ -79,13 +73,13 @@ public:
 
 
 
-private:
+public:
 
 #if SWEET_USE_LIBFFT
 
 	/// number of spectral modes
 	/// this is not related to the storage size!
-	std::size_t spectral_modes[2];
+	std::size_t spectral_efficient_modes[2];
 
 	/// allocated size for spectral data for each modes
 	/// This storage size is for the real-to-complex transformation
@@ -100,7 +94,7 @@ private:
 	/// total number of complex-valued data elements in spectral space
 	std::size_t spectral_array_data_number_of_elements;
 
-
+private:
 	/*
 	 * FFTW related stuff
 	 */
@@ -184,8 +178,8 @@ public:
 		physical_res[0] = 0;
 		physical_res[1] = 0;
 #if SWEET_USE_LIBFFT
-		spectral_modes[0] = 0;
-		spectral_modes[1] = 0;
+		spectral_efficient_modes[0] = 0;
+		spectral_efficient_modes[1] = 0;
 #endif
 
 		initialized = false;
@@ -197,9 +191,7 @@ private:
 	void setup_internal_data()
 	{
 		if (initialized)
-		{
 			cleanup();
-		}
 
 		physical_data_size[0] = physical_res[0];
 		physical_data_size[1] = physical_res[1];
@@ -207,19 +199,18 @@ private:
 		physical_array_data_number_of_elements = physical_res[0]*physical_res[1];
 
 #if SWEET_USE_LIBFFT
-		if (	physical_res[0] < spectral_modes[0]	||
-				physical_res[1] < spectral_modes[1]
+		if (	physical_res[0] < spectral_efficient_modes[0]	||
+				physical_res[1] < spectral_efficient_modes[1]
 		)
 		{
-			std::cerr << "Lower physical resolution than spectral resolution not supported!" << std::endl;
-			exit(-1);
+			FatalError("Lower physical resolution than spectral resolution not supported!");
 		}
 
 		assert(physical_res[0] > 0);
 		assert(physical_res[1] > 0);
 
-		assert(spectral_modes[0] > 0);
-		assert(spectral_modes[1] > 0);
+		assert(spectral_efficient_modes[0] > 0);
+		assert(spectral_efficient_modes[1] > 0);
 
 		/*
 		 * Load existing wisdom
@@ -240,49 +231,30 @@ private:
 		 * REAL PHYSICAL SPACE DATA (REAL to COMPLEX FFT)
 		 */
 		{
-
 			// real-to-complex storage representation
-			spectral_data_size[0] = spectral_modes[0]/2+1;
-			spectral_data_size[1] = spectral_modes[1];
+			spectral_data_size[0] = physical_data_size[0]/2+1;
+			spectral_data_size[1] = physical_data_size[1];
 
 
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
-
-#if 1
-
-#warning "TODO: REMOVE THIS. || 1 IS ONLY ACTIVATED FOR TEST CASES!!!"
-
-
-			spectral_data_iteration_ranges[0][0][0] = 0;
-			spectral_data_iteration_ranges[0][0][1] = spectral_data_size[0];
-			spectral_data_iteration_ranges[0][1][0] = 0;
-			spectral_data_iteration_ranges[0][1][1] = spectral_data_size[1]/2;
-
-			spectral_data_iteration_ranges[1][0][0] = 0;
-			spectral_data_iteration_ranges[1][0][1] = spectral_data_size[0];
-			spectral_data_iteration_ranges[1][1][0] = spectral_data_size[1]/2;
-			spectral_data_iteration_ranges[1][1][1] = spectral_data_size[1];
-
-
-#else
-
 
 			/*
 			 * For more information, have a look at
 			 * doc/antialiasing/implementation_strategy.pdf
 			 */
 
+			int M = spectral_data_size[0];
+			int N = spectral_data_size[1];
+
 			spectral_data_iteration_ranges[0][0][0] = 0;
-			spectral_data_iteration_ranges[0][0][1] = spectral_data_size[0]*2/3-1;
+			spectral_data_iteration_ranges[0][0][1] = 2*(M-1)/3+1;
 			spectral_data_iteration_ranges[0][1][0] = 0;
-			spectral_data_iteration_ranges[0][1][1] = spectral_data_size[1]/2;
+			spectral_data_iteration_ranges[0][1][1] = N/3+1;
 
 			spectral_data_iteration_ranges[1][0][0] = 0;
-			spectral_data_iteration_ranges[1][0][1] = spectral_data_size[0]*2/3-1;
-			spectral_data_iteration_ranges[1][1][0] = spectral_data_size[1]-spectral_data_size[1]/2;
-			spectral_data_iteration_ranges[1][1][1] = spectral_data_size[1];
-
-#endif
+			spectral_data_iteration_ranges[1][0][1] = 2*(M-1)/3+1;
+			spectral_data_iteration_ranges[1][1][0] = N-N/3;
+			spectral_data_iteration_ranges[1][1][1] = N;
 
 #else
 
@@ -366,7 +338,7 @@ private:
 			MemBlockAlloc::free(data_spectral, spectral_array_data_number_of_elements*sizeof(std::complex<double>));
 
 			// Backward scaling factor
-			fftw_backward_scale_factor = 1.0/((double)(spectral_modes[0]*spectral_modes[1]));
+			fftw_backward_scale_factor = 1.0/((double)(spectral_efficient_modes[0]*spectral_efficient_modes[1]));
 		}
 
 
@@ -426,7 +398,7 @@ private:
 
 #endif
 
-			spectral_complex_array_data_number_of_elements = spectral_modes[0]*spectral_modes[1];
+			spectral_complex_array_data_number_of_elements = spectral_efficient_modes[0]*spectral_efficient_modes[1];
 
 			/*
 			 * Physical space data
@@ -545,8 +517,8 @@ public:
 		physical_res[1] = i_physical_res_y;
 
 #if SWEET_USE_LIBFFT
-		spectral_modes[0] = i_spectral_modes_x;
-		spectral_modes[1] = i_spectral_modes_y;
+		spectral_efficient_modes[0] = i_spectral_modes_x;
+		spectral_efficient_modes[1] = i_spectral_modes_y;
 #endif
 
 		setup_internal_data();
@@ -556,8 +528,8 @@ public:
 
 public:
 	void setup(
-			std::size_t i_physical_res[2],
-			std::size_t i_spectral_modes[2]
+			int i_physical_res[2],
+			int i_spectral_modes[2]
 	)
 	{
 		if (i_spectral_modes[0] <= 0)
@@ -582,20 +554,11 @@ public:
 		}
 	}
 
-#if 0
-public:
-	int& refCounter()
-	{
-		static int ref_counter = 0;
-		return ref_counter;
-	}
-#endif
-
 
 
 public:
 	void setupAutoSpectralSpace(
-			std::size_t i_physical_res[2]
+			int i_physical_res[2]
 	)
 	{
 		setupAutoSpectralSpace(i_physical_res[0], i_physical_res[1]);
@@ -615,14 +578,14 @@ public:
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 
 		// REDUCTION IN EFFECTIVE SPECTRAL MODE RESOLUTION TO CUT OFF ANTI-ALIASED MODES
-		spectral_modes[0] = physical_res[0]/2+1;
-		spectral_modes[1] = physical_res[1];
+		spectral_efficient_modes[0] = physical_res[0]*2/3;
+		spectral_efficient_modes[1] = physical_res[1]*2/3;
 
 #else
 
 	#if SWEET_USE_LIBFFT
-		spectral_modes[0] = physical_res[0];
-		spectral_modes[1] = physical_res[1];
+		spectral_efficient_modes[0] = physical_res[0];
+		spectral_efficient_modes[1] = physical_res[1];
 	#endif
 
 #endif
@@ -636,21 +599,16 @@ public:
 	{
 
 #if SWEET_USE_LIBFFT
-//		assert(refCounter() >= 0);
+		fftw_destroy_plan(fftw_plan_forward);
+		fftw_destroy_plan(fftw_plan_backward);
 
-//		if (refCounter() == 0)
-		{
-			fftw_destroy_plan(fftw_plan_forward);
-			fftw_destroy_plan(fftw_plan_backward);
-
-			fftw_destroy_plan(fftw_plan_complex_forward);
-			fftw_destroy_plan(fftw_plan_complex_backward);
+		fftw_destroy_plan(fftw_plan_complex_forward);
+		fftw_destroy_plan(fftw_plan_complex_backward);
 
 #if SWEET_THREADING
-			fftw_cleanup_threads();
+		fftw_cleanup_threads();
 #endif
-			fftw_cleanup();
-		}
+		fftw_cleanup();
 #endif
 	}
 
@@ -658,11 +616,10 @@ public:
 
 	~PlaneDataConfig()
 	{
-//		refCounter()--;
 		cleanup();
 	}
 };
 
 
 
-#endif /* SPHSETUP_HPP_ */
+#endif

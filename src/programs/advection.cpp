@@ -53,7 +53,7 @@ public:
 	{
 		simVars.timecontrol.current_timestep_nr = 0;
 
-		h.physical_set_all(simVars.setup.h0);
+		h.physical_set_all(simVars.sim.h0);
 
 		if (std::isinf(simVars.bogus.var[0]) != 0)
 		{
@@ -69,15 +69,15 @@ public:
 		double center_x = 0.7;
 		double center_y = 0.6;
 
-		if (simVars.setup.scenario == 0)
+		if (simVars.setup.benchmark_scenario_id == 0)
 		{
 			/*
 			 * radial dam break
 			 */
 			double radius = 0.2;
-			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
-			{
-				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+
+			h.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
 				{
 					double x = ((double)i+0.5)/(double)simVars.disc.res_physical[0];
 					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
@@ -86,19 +86,19 @@ public:
 					double dy = y-center_y;
 
 					if (radius*radius >= dx*dx+dy*dy)
-						h.physical_set(j,i, simVars.setup.h0+1.0);
+						io_data = simVars.sim.h0+1.0;
 				}
-			}
+			);
 		}
 
-		if (simVars.setup.scenario == 1)
+		if (simVars.setup.benchmark_scenario_id == 1)
 		{
 			/*
 			 * fun with Gaussian
 			 */
-			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
-			{
-				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+
+			h.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
 				{
 					double x = ((double)i+0.5)/(double)simVars.disc.res_physical[0];
 					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
@@ -106,9 +106,9 @@ public:
 					double dx = x-center_x;
 					double dy = y-center_y;
 
-					h.physical_set(j,i, simVars.setup.h0+std::exp(-50.0*(dx*dx + dy*dy)));
+					io_data = simVars.sim.h0+std::exp(-50.0*(dx*dx + dy*dy));
 				}
-			}
+			);
 		}
 	}
 

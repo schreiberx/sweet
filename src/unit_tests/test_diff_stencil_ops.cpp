@@ -160,9 +160,9 @@ int main(int i_argc, char *i_argv[])
 
 			PlaneOperators op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
-			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
+			for (int j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+				for (int i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
 					double x = ((double)i+0.5)/(double)simVars.disc.res_physical[0];
 					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
@@ -217,9 +217,9 @@ int main(int i_argc, char *i_argv[])
 
 			PlaneOperators op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
-			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
+			for (int j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+				for (int i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
 					double x = ((double)i+0.5)/(double)simVars.disc.res_physical[0];
 					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
@@ -329,9 +329,9 @@ int main(int i_argc, char *i_argv[])
 
 			PlaneOperators op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
-			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
+			for (int j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+				for (int i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
 					double x = ((double)i+0.5)/(double)simVars.disc.res_physical[0];
 					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];

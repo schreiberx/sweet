@@ -9,6 +9,10 @@
 #define SRC_INCLUDE_GAUSSQUADRATURE_HPP_
 
 #include <functional>
+#include <cmath>
+#include <limits>
+#include <iostream>
+#include <sweet/FatalError.hpp>
 
 
 class GaussQuadrature
@@ -24,18 +28,18 @@ public:
 		// https://en.wikipedia.org/wiki/Gaussian_quadrature
 		static double x[5] = {
 				0,
-				-1.0/3.0*sqrt(5.0-2.0*sqrt(10.0/7.0)),
-				+1.0/3.0*sqrt(5.0-2.0*sqrt(10.0/7.0)),
-				-1.0/3.0*sqrt(5.0+2.0*sqrt(10.0/7.0)),
-				+1.0/3.0*sqrt(5.0+2.0*sqrt(10.0/7.0)),
+				-1.0/3.0*std::sqrt(5.0-2.0*std::sqrt(10.0/7.0)),
+				+1.0/3.0*std::sqrt(5.0-2.0*std::sqrt(10.0/7.0)),
+				-1.0/3.0*std::sqrt(5.0+2.0*std::sqrt(10.0/7.0)),
+				+1.0/3.0*std::sqrt(5.0+2.0*std::sqrt(10.0/7.0)),
 		};
 
 		static double w[5] = {
 				128.0/225.0,
-				(322.0+13.0*sqrt(70.0))/900.0,
-				(322.0+13.0*sqrt(70.0))/900.0,
-				(322.0-13.0*sqrt(70.0))/900.0,
-				(322.0-13.0*sqrt(70.0))/900.0
+				(322.0+13.0*std::sqrt(70.0))/900.0,
+				(322.0+13.0*std::sqrt(70.0))/900.0,
+				(322.0-13.0*std::sqrt(70.0))/900.0,
+				(322.0-13.0*std::sqrt(70.0))/900.0
 		};
 
 		double accum = 0;
@@ -70,7 +74,7 @@ public:
 			double i_error_threshold = 10e-13
 	)
 	{
-		double delta = std::numeric_limits<double>::infinity();
+//		double delta = std::numeric_limits<double>::infinity();
 		double prev_value = std::numeric_limits<double>::infinity();
 
 		int max_intervals = 1024*128;
@@ -85,9 +89,8 @@ public:
 			prev_value = value;
 		}
 
-		std::cerr << "No convergence reached for integrate5_intervals_adaptive" << std::endl;
-		assert(false);
-		exit(1);
+		FatalError("No convergence reached for integrate5_intervals_adaptive");
+		return -1;
 	}
 };
 

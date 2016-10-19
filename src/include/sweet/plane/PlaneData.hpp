@@ -35,53 +35,69 @@
 /*
  * Precompiler helper functions to handle loops in spectral and physical space
  */
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 
-#if SWEET_THREADING
-	#define PLANE_DATA_SPECTRAL_FOR_IDX(CORE)					\
-		_Pragma("omp parallel for proc_bind(spread)")			\
-		for (int r = 0; r < 2; r++)								\
-		{														\
-			_Pragma("omp parallel for proc_bind(close)")		\
-			for (std::size_t jj = planeDataConfig->spectral_data_iteration_ranges[r][1][0]; jj < planeDataConfig->spectral_data_iteration_ranges[r][1][1]; jj++)		\
-			{				\
-				for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[r][0][0]; ii < planeDataConfig->spectral_data_iteration_ranges[r][0][1]; ii++)	\
-				{			\
-					std::size_t idx = jj*planeDataConfig->spectral_data_size[0]+ii;	\
-					CORE	\
-				}			\
-			}				\
-		}
+	#if SWEET_THREADING
+		#define PLANE_DATA_SPECTRAL_FOR_IDX(CORE)					\
+			_Pragma("omp parallel for proc_bind(spread)")			\
+			for (int r = 0; r < 2; r++)								\
+			{														\
+				_Pragma("omp parallel for OPENMP_PAR_SIMD proc_bind(close) collapse(2)")		\
+				for (std::size_t jj = planeDataConfig->spectral_data_iteration_ranges[r][1][0]; jj < planeDataConfig->spectral_data_iteration_ranges[r][1][1]; jj++)		\
+				{				\
+					for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[r][0][0]; ii < planeDataConfig->spectral_data_iteration_ranges[r][0][1]; ii++)	\
+					{			\
+						std::size_t idx = jj*planeDataConfig->spectral_data_size[0]+ii;	\
+						CORE	\
+					}			\
+				}				\
+			}
 
-#else
+	#else
 
-	#define PLANE_DATA_SPECTRAL_FOR_IDX(CORE)					\
-		for (int r = 0; r < 2; r++)								\
-		{														\
-			for (std::size_t jj = planeDataConfig->spectral_data_iteration_ranges[r][1][0]; jj < planeDataConfig->spectral_data_iteration_ranges[r][1][1]; jj++)		\
-			{				\
-				for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[r][0][0]; ii < planeDataConfig->spectral_data_iteration_ranges[r][0][1]; ii++)	\
-				{			\
-					std::size_t idx = jj*planeDataConfig->spectral_data_size[0]+ii;	\
-					CORE	\
-				}			\
-			}				\
-		}
+		#define PLANE_DATA_SPECTRAL_FOR_IDX(CORE)					\
+			for (int r = 0; r < 2; r++)								\
+			{														\
+				for (std::size_t jj = planeDataConfig->spectral_data_iteration_ranges[r][1][0]; jj < planeDataConfig->spectral_data_iteration_ranges[r][1][1]; jj++)		\
+				{				\
+					for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[r][0][0]; ii < planeDataConfig->spectral_data_iteration_ranges[r][0][1]; ii++)	\
+					{			\
+						std::size_t idx = jj*planeDataConfig->spectral_data_size[0]+ii;	\
+						CORE	\
+					}			\
+				}				\
+			}
 
+	#endif
 #endif
 
 
 #if SWEET_THREADING
 	#define PLANE_DATA_PHYSICAL_FOR_IDX(CORE)				\
-		_Pragma("omp parallel for proc_bind(close)")	\
+		_Pragma("omp parallel for OPENMP_PAR_SIMD proc_bind(close)")	\
 			for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)	\
 			{	CORE;	}
 
 
 
 	#define PLANE_DATA_PHYSICAL_FOR_IDX_REDUCTION(CORE, REDUCTION)				\
-		_Pragma("omp parallel for "##REDUCTION##" proc_bind(close)")	\
+		_Pragma("omp parallel for OPENMP_PAR_SIMD "##REDUCTION##" proc_bind(close)")	\
 			for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)	\
 			{	CORE;	}
+
+
+
+	#define PLANE_DATA_SPECTRAL_FOR_2D_IDX(CORE)										\
+			_Pragma("omp parallel for OPENMP_PAR_SIMD proc_bind(close) collapse(2)")	\
+			for (std::size_t j = 0; j < planeDataConfig->physical_data_size[1]; j++)						\
+			{				\
+				for (std::size_t i = 0; i < planeDataConfig->physical_data_size[0]; i++)	\
+				{			\
+					std::size_t idx = j*planeDataConfig->physical_data_size[0]+i;	\
+					CORE;	\
+				}			\
+			}
+
 #else
 
 	#define PLANE_DATA_PHYSICAL_FOR_IDX(CORE)				\
@@ -190,7 +206,6 @@ private:
 	}
 
 
-
 public:
 	/**
 	 * copy constructor, used e.g. in
@@ -281,15 +296,13 @@ public:
 	}
 
 
-
 	inline
-	void physical_set(
+	void p_physical_set(
 			std::size_t j,
 			std::size_t i,
 			double i_value
 	)
 	{
-#warning "REPLACE WITH LAMBDA"
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 		physical_space_data_valid = true;
 		spectral_space_data_valid = false;
@@ -299,6 +312,25 @@ public:
 	}
 
 
+	void physical_update_lambda_array_indices(
+			std::function<void(int,int,double&)> i_lambda	///< lambda function to return value for lat/mu
+	)
+	{
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+		if (spectral_space_data_valid)
+			request_data_physical();
+#endif
+
+		PLANE_DATA_SPECTRAL_FOR_2D_IDX(
+				i_lambda(i, j, physical_space_data[idx])
+		);
+
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+		physical_space_data_valid = true;
+		spectral_space_data_valid = false;
+#endif
+	}
+
 
 	inline
 	double physical_get(
@@ -306,23 +338,20 @@ public:
 			std::size_t i
 	)	const
 	{
-#warning "REPLACE WITH LAMBDA"
-		requestDataInPhysicalSpace();
+		request_data_physical();
 
 		return physical_space_data[j*planeDataConfig->physical_data_size[0]+i];
 	}
+
 
 	inline
 	void physical_set_all(
 			double i_value
 	)
 	{
-#warning "REPLACE WITH LAMBDA"
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			physical_space_data[i] = i_value;
+		PLANE_DATA_PHYSICAL_FOR_IDX(
+				physical_space_data[idx] = i_value;
+		);
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 		physical_space_data_valid = true;
@@ -344,7 +373,7 @@ public:
 		if (i_row < 0)
 			i_row += planeDataConfig->physical_data_size[1];
 
-		requestDataInPhysicalSpace();
+		request_data_physical();
 
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
@@ -368,7 +397,7 @@ public:
 		if (i_dst_row < 0)
 			i_dst_row += planeDataConfig->physical_data_size[1];
 
-		requestDataInPhysicalSpace();
+		request_data_physical();
 
 		std::size_t src_idx = i_src_row*planeDataConfig->physical_data_size[0];
 		std::size_t dst_idx = i_dst_row*planeDataConfig->physical_data_size[0];
@@ -396,7 +425,7 @@ public:
 		if (i_dst_row < 0)
 			i_dst_row = planeDataConfig->physical_data_size[1]+i_dst_row;
 
-		requestDataInPhysicalSpace();
+		request_data_physical();
 
 		std::size_t src_idx = i_src_row*planeDataConfig->physical_data_size[0];
 		std::size_t dst_idx = i_dst_row*planeDataConfig->physical_data_size[0];
@@ -413,20 +442,55 @@ public:
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
+	void spectral_zeroAliasingModes()
+	{
+#if SWEET_THREADING
+//#pragma omp parallel for proc_bind(spread)
+#endif
+		for (int k = 0; k < 2; k++)
+		{
+			if (k == 0)
+			{
+				/*
+				 * First process part between top and bottom spectral data blocks
+				 */
+#if SWEET_THREADING
+//#pragma omp parallel for OPENMP_PAR_SIMD proc_bind(close) collapse(2)
+#endif
+				for (std::size_t jj = planeDataConfig->spectral_data_iteration_ranges[0][1][1]; jj < planeDataConfig->spectral_data_iteration_ranges[1][1][0]; jj++)
+					for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[0][0][0]; ii < planeDataConfig->spectral_data_iteration_ranges[0][0][1]; ii++)
+						spectral_space_data[jj*planeDataConfig->spectral_data_size[0]+ii] = 0;
+
+			}
+			else
+			{
+				/*
+				 * Then process the aliasing block on the right side
+				 */
+#if SWEET_THREADING
+//#pragma omp parallel for OPENMP_PAR_SIMD proc_bind(close) collapse(2)
+#endif
+				for (std::size_t jj = 0; jj < planeDataConfig->spectral_data_size[1]; jj++)
+					for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[0][0][1]; ii < planeDataConfig->spectral_data_size[0]; ii++)
+						spectral_space_data[jj*planeDataConfig->spectral_data_size[0]+ii] = 0;
+			}
+		}
+
+	}
+
 	inline
 	const std::complex<double>& spectral_get(
 			std::size_t j,
 			std::size_t i
 	)	const
 	{
-#warning "REPLACE WITH LAMBDA"
-		requestDataInSpectralSpace();
+		request_data_spectral();
 
 		return spectral_space_data[j*planeDataConfig->spectral_data_size[0]+i];
 	}
 
 
-
+#if 0
 	inline
 	double spectral_getRe(
 			std::size_t j,
@@ -434,7 +498,7 @@ public:
 	)	const
 	{
 #warning "REMOVE AND REPLACE WITH compelx valued return value spectral_get"
-		requestDataInSpectralSpace();
+		request_data_spectral();
 
 		return spectral_space_data[j*planeDataConfig->spectral_data_size[0]+i].real();
 	}
@@ -447,21 +511,21 @@ public:
 			std::size_t i
 	)	const
 	{
-		requestDataInSpectralSpace();
+		request_data_spectral();
 
 		return spectral_space_data[j*planeDataConfig->spectral_data_size[0]+i].imag();
 	}
+#endif
 
-
+#if 1
 	inline
-	void spectral_set(
+	void p_spectral_set(
 			std::size_t j,
 			std::size_t i,
-			std::complex<double> &i_value
+			const std::complex<double> &i_value
 	)
 	{
-#warning "REPLACE WITH LAMBDA"
-//		requestDataInSpectralSpace();
+//		request_data_spectral();
 
 		physical_space_data_valid = false;
 		spectral_space_data_valid = true;
@@ -469,26 +533,7 @@ public:
 		std::size_t idx = (j*planeDataConfig->spectral_data_size[0])+i;
 		spectral_space_data[idx] = i_value;
 	}
-
-	inline
-	void spectral_set(
-			std::size_t j,
-			std::size_t i,
-			double i_value_re,
-			double i_value_im
-	)
-	{
-#warning "REMOVE"
-//		requestDataInSpectralSpace();
-
-		std::size_t idx =	j*planeDataConfig->spectral_data_size[0]+i;
-
-		spectral_space_data[idx].real(i_value_re);
-		spectral_space_data[idx].imag(i_value_im);
-
-		physical_space_data_valid = false;
-		spectral_space_data_valid = true;
-	}
+#endif
 
 
 
@@ -498,7 +543,6 @@ public:
 			double i_value_im
 	)
 	{
-#warning "REPLACE WITH LAMBDA"
 		PLANE_DATA_SPECTRAL_FOR_IDX(
 				spectral_space_data[idx].real(i_value_re);
 				spectral_space_data[idx].imag(i_value_im);
@@ -514,11 +558,11 @@ public:
 
 public:
 	inline
-	const void requestDataInSpectralSpace() const
+	void request_data_spectral() const
 	{
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
 
-		FatalError("requestDataInSpectralSpace: spectral space is disabled");
+		FatalError("request_data_spectral: spectral space is disabled");
 
 #else
 
@@ -550,7 +594,7 @@ public:
 
 
 	inline
-	const void requestDataInPhysicalSpace() const
+	void request_data_physical() const
 	{
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
@@ -644,7 +688,7 @@ public:
 	 */
 	bool reduce_boolean_all_finite() const
 	{
-		requestDataInPhysicalSpace();
+		request_data_physical();
 
 		bool isallfinite = true;
 
@@ -665,7 +709,7 @@ public:
 	 */
 	double reduce_maxAbs()	const
 	{
-		requestDataInPhysicalSpace();
+		request_data_physical();
 
 		double maxabs = -1;
 #if SWEET_THREADING
@@ -684,7 +728,7 @@ public:
 	 */
 	double reduce_rms()
 	{
-		requestDataInPhysicalSpace();
+		request_data_physical();
 
 		double sum = 0;
 #if SWEET_THREADING
@@ -704,7 +748,7 @@ public:
 	 */
 	double reduce_rms_quad()
 	{
-		requestDataInPhysicalSpace();
+		request_data_physical();
 
 		double sum = 0;
 		double c = 0;
@@ -737,7 +781,7 @@ public:
 	 */
 	double reduce_max()	const
 	{
-		requestDataInPhysicalSpace();
+		request_data_physical();
 
 		double maxvalue = -std::numeric_limits<double>::max();
 #if SWEET_THREADING
@@ -755,7 +799,7 @@ public:
 	 */
 	double reduce_min()	const
 	{
-		requestDataInPhysicalSpace();
+		request_data_physical();
 
 		double minvalue = std::numeric_limits<double>::max();
 #if SWEET_THREADING
@@ -773,7 +817,7 @@ public:
 	 */
 	double reduce_sum()	const
 	{
-		requestDataInPhysicalSpace();
+		request_data_physical();
 
 		double sum = 0;
 #if SWEET_THREADING
@@ -791,7 +835,7 @@ public:
 	 */
 	double reduce_sum_quad()	const
 	{
-		requestDataInPhysicalSpace();
+		request_data_physical();
 
 		double sum = 0;
 		double c = 0;
@@ -819,7 +863,7 @@ public:
 	 */
 	double reduce_norm1()	const
 	{
-		requestDataInPhysicalSpace();
+		request_data_physical();
 
 		double sum = 0;
 #if SWEET_THREADING
@@ -837,7 +881,7 @@ public:
 	 */
 	double reduce_norm1_quad()	const
 	{
-		requestDataInPhysicalSpace();
+		request_data_physical();
 
 		double sum = 0;
 		double c = 0;
@@ -866,7 +910,7 @@ public:
 	 */
 	double reduce_norm2()	const
 	{
-		requestDataInPhysicalSpace();
+		request_data_physical();
 
 		double sum = 0;
 #if SWEET_THREADING
@@ -885,7 +929,7 @@ public:
 	 */
 	double reduce_norm2_quad()	const
 	{
-		requestDataInPhysicalSpace();
+		request_data_physical();
 
 		double sum = 0.0;
 		double c = 0.0;
@@ -930,7 +974,7 @@ public:
 		physical_space_data_valid = true;
 		spectral_space_data_valid = false;
 
-		requestDataInSpectralSpace();
+		request_data_spectral();
 #endif
 	}
 
@@ -953,8 +997,8 @@ public:
 		// only makes sense, if this is an operator created in spectral space
 		assert(i_array_data.spectral_space_data_valid == true);
 
-		requestDataInSpectralSpace();
-		rw_array_data.requestDataInSpectralSpace();
+		request_data_spectral();
+		rw_array_data.request_data_spectral();
 
 		PLANE_DATA_SPECTRAL_FOR_IDX(
 
@@ -1071,8 +1115,8 @@ public:
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 		PlaneData &rw_array_data = (PlaneData&)i_array_data;
 
-		requestDataInSpectralSpace();
-		rw_array_data.requestDataInSpectralSpace();
+		request_data_spectral();
+		rw_array_data.request_data_spectral();
 
 		PLANE_DATA_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = spectral_space_data[idx]*i_array_data.spectral_space_data[idx];
@@ -1114,8 +1158,8 @@ public:
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
-		requestDataInSpectralSpace();
-		rw_array_data.requestDataInSpectralSpace();
+		request_data_spectral();
+		rw_array_data.request_data_spectral();
 
 		PLANE_DATA_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = spectral_space_data[idx] + i_array_data.spectral_space_data[idx];
@@ -1126,8 +1170,8 @@ public:
 
 #else
 
-		requestDataInPhysicalSpace();
-		rw_array_data.requestDataInPhysicalSpace();
+		request_data_physical();
+		rw_array_data.request_data_physical();
 
 		PLANE_DATA_PHYSICAL_FOR_IDX(
 				out.physical_space_data[idx] = physical_space_data[idx] + i_array_data.physical_space_data[idx];
@@ -1146,14 +1190,12 @@ public:
 			const double i_value
 	)	const
 	{
-		requestDataInSpectralSpace();
+		request_data_spectral();
 		PlaneData out = *this;
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
-		PLANE_DATA_SPECTRAL_FOR_IDX(
-				out.spectral_space_data[idx] += i_value*(double)planeDataConfig->physical_array_data_number_of_elements;
-		);
+		out.spectral_space_data[0] += i_value*(double)planeDataConfig->physical_array_data_number_of_elements;
 
 		out.physical_space_data_valid = false;
 		out.spectral_space_data_valid = true;
@@ -1182,8 +1224,8 @@ public:
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 		PlaneData &rw_array_data = (PlaneData&)i_array_data;
 
-		requestDataInSpectralSpace();
-		rw_array_data.requestDataInSpectralSpace();
+		request_data_spectral();
+		rw_array_data.request_data_spectral();
 
 		PLANE_DATA_SPECTRAL_FOR_IDX(
 				spectral_space_data[idx] += i_array_data.spectral_space_data[idx];
@@ -1215,7 +1257,7 @@ public:
 	{
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
-		requestDataInSpectralSpace();
+		request_data_spectral();
 
 		double scale = planeDataConfig->spectral_array_data_number_of_elements;
 		spectral_space_data[0] += i_value*scale;
@@ -1225,7 +1267,7 @@ public:
 
 #else
 
-		requestDataInPhysicalSpace();
+		request_data_physical();
 
 		PLANE_DATA_PHYSICAL_FOR_IDX(
 			physical_space_data[idx] += i_value;
@@ -1248,7 +1290,7 @@ public:
 	{
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
-		requestDataInSpectralSpace();
+		request_data_spectral();
 
 		PLANE_DATA_SPECTRAL_FOR_IDX(
 				spectral_space_data[idx] *= i_value;
@@ -1259,7 +1301,7 @@ public:
 
 #else
 
-		requestDataInPhysicalSpace();
+		request_data_physical();
 
 		PLANE_DATA_PHYSICAL_FOR_IDX(
 			physical_space_data[idx] *= i_value;
@@ -1282,7 +1324,7 @@ public:
 	{
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
-		requestDataInSpectralSpace();
+		request_data_spectral();
 
 		PLANE_DATA_SPECTRAL_FOR_IDX(
 				spectral_space_data[idx] /= i_value;
@@ -1293,7 +1335,7 @@ public:
 
 #else
 
-		requestDataInPhysicalSpace();
+		request_data_physical();
 
 		PLANE_DATA_PHYSICAL_FOR_IDX(
 			physical_space_data[idx] /= i_value;
@@ -1318,8 +1360,8 @@ public:
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
-		requestDataInSpectralSpace();
-		rw_array_data.requestDataInSpectralSpace();
+		request_data_spectral();
+		rw_array_data.request_data_spectral();
 
 		PLANE_DATA_SPECTRAL_FOR_IDX(
 				spectral_space_data[idx] -= i_array_data.spectral_space_data[idx];
@@ -1330,8 +1372,8 @@ public:
 
 #else
 
-		requestDataInPhysicalSpace();
-		rw_array_data.requestDataInPhysicalSpace();
+		request_data_physical();
+		rw_array_data.request_data_physical();
 
 		PLANE_DATA_PHYSICAL_FOR_IDX(
 				physical_space_data[idx] -= i_array_data.physical_space_data[idx];
@@ -1357,8 +1399,8 @@ public:
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
-		requestDataInSpectralSpace();
-		rw_array_data.requestDataInSpectralSpace();
+		request_data_spectral();
+		rw_array_data.request_data_spectral();
 
 		PLANE_DATA_SPECTRAL_FOR_IDX(
 			out.spectral_space_data[idx] = spectral_space_data[idx] - i_array_data.spectral_space_data[idx];
@@ -1369,8 +1411,8 @@ public:
 
 #else
 
-		requestDataInPhysicalSpace();
-		rw_array_data.requestDataInPhysicalSpace();
+		request_data_physical();
+		rw_array_data.request_data_physical();
 
 		PLANE_DATA_PHYSICAL_FOR_IDX(
 				out.physical_space_data[idx] = physical_space_data[idx]-i_array_data.physical_space_data[idx];
@@ -1394,7 +1436,7 @@ public:
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
-		requestDataInSpectralSpace();
+		request_data_spectral();
 		PlaneData out = *this;
 
 		double scale = planeDataConfig->spectral_data_size[0]*planeDataConfig->spectral_data_size[1];
@@ -1406,7 +1448,7 @@ public:
 #else
 		PlaneData out(planeDataConfig);
 
-		requestDataInPhysicalSpace();
+		request_data_physical();
 
 		PLANE_DATA_PHYSICAL_FOR_IDX(out.physical_space_data[idx] = physical_space_data[idx]-i_value;)
 
@@ -1429,7 +1471,7 @@ public:
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
-		requestDataInSpectralSpace();
+		request_data_spectral();
 
 		PLANE_DATA_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = -spectral_space_data[idx];
@@ -1443,7 +1485,7 @@ public:
 
 #else
 
-		requestDataInPhysicalSpace();
+		request_data_physical();
 
 		PLANE_DATA_PHYSICAL_FOR_IDX(
 				out.physical_space_data[idx] = i_value - physical_space_data[idx];
@@ -1466,7 +1508,7 @@ public:
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
-		requestDataInSpectralSpace();
+		request_data_spectral();
 
 		PLANE_DATA_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = -spectral_space_data[idx];
@@ -1477,7 +1519,7 @@ public:
 
 #else
 
-		requestDataInPhysicalSpace();
+		request_data_physical();
 
 		PLANE_DATA_PHYSICAL_FOR_IDX(
 			out.physical_space_data[idx] = -physical_space_data[idx];
@@ -1506,8 +1548,8 @@ public:
 		// zero out modes
 #endif
 
-		requestDataInPhysicalSpace();
-		i_array_data.requestDataInPhysicalSpace();
+		request_data_physical();
+		i_array_data.request_data_physical();
 
 		PLANE_DATA_PHYSICAL_FOR_IDX(
 				out.physical_space_data[idx] = physical_space_data[idx]*i_array_data.physical_space_data[idx];
@@ -1540,8 +1582,8 @@ public:
 	{
 		PlaneData out(planeDataConfig);
 
-		requestDataInPhysicalSpace();
-		i_array_data.requestDataInPhysicalSpace();
+		request_data_physical();
+		i_array_data.request_data_physical();
 
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 #warning "TODO"
@@ -1572,11 +1614,14 @@ public:
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
-		requestDataInSpectralSpace();
+		request_data_spectral();
 
 		PLANE_DATA_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = spectral_space_data[idx]*i_value;
 		);
+
+		out.spectral_space_data_valid = true;
+		out.physical_space_data_valid = false;
 
 #else
 
@@ -1601,7 +1646,7 @@ public:
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
-		requestDataInSpectralSpace();
+		request_data_spectral();
 
 		PLANE_DATA_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = spectral_space_data[idx] / i_value;
@@ -1612,7 +1657,7 @@ public:
 
 #else
 
-		PLANE_DATA_SPECTRAL_FOR_IDX(
+		PLANE_DATA_PHYSICAL_FOR_IDX(
 				out.physical_space_data[idx] = physical_space_data[idx] / i_value;
 		);
 
@@ -1636,9 +1681,9 @@ public:
 	{
 		PlaneData out(planeDataConfig);
 
-		requestDataInSpectralSpace();
+		request_data_spectral();
 
-		PLANE_DATA_PHYSICAL_FOR_IDX(
+		PLANE_DATA_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = spectral_space_data[idx] + i_value;
 		);
 
@@ -1657,9 +1702,9 @@ public:
 	{
 		PlaneData out(planeDataConfig);
 
-		requestDataInSpectralSpace();
+		request_data_spectral();
 
-		PLANE_DATA_PHYSICAL_FOR_IDX(
+		PLANE_DATA_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = 1.0/spectral_space_data[idx];
 		);
 
@@ -1675,15 +1720,14 @@ public:
 	{
 		PlaneData &rw_array_data = (PlaneData&)*this;
 
-		rw_array_data.requestDataInSpectralSpace();
+		rw_array_data.request_data_spectral();
 
 		for (int y = planeDataConfig->spectral_data_size[1]-1; y >= 0; y--)
 		{
 			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
 			{
-				double value_re = rw_array_data.spectral_getRe(y, x);
-				double value_im = rw_array_data.spectral_getIm(y, x);
-				std::cout << "(" << value_re << ", " << value_im << ")\t";
+				const std::complex<double> &value = rw_array_data.spectral_get(y, x);
+				std::cout << "(" << value.real() << ", " << value.imag() << ")\t";
 			}
 			std::cout << std::endl;
 		}
@@ -1694,16 +1738,14 @@ public:
 	{
 		PlaneData &rw_array_data = (PlaneData&)*this;
 
-		rw_array_data.requestDataInSpectralSpace();
+		rw_array_data.request_data_spectral();
 
 		for (int y = planeDataConfig->spectral_data_size[1]-1; y >= 0; y--)
 		{
 			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
 			{
-				double value_re = rw_array_data.spectral_getRe(y, x);
-				double value_im = rw_array_data.spectral_getIm(y, x);
-
-				std::cout << "(" << x << ", "<< y << ", "<< value_re << ", " << value_im << ")\t";
+				const std::complex<double> &value = rw_array_data.spectral_get(y, x);
+				std::cout << "(" << x << ", "<< y << ", "<< value.real() << ", " << value.imag() << ")\t";
 			}
 			std::cout << std::endl;
 		}
@@ -1716,16 +1758,15 @@ public:
 	{
 		PlaneData &rw_array_data = (PlaneData&)*this;
 
-		rw_array_data.requestDataInSpectralSpace();
+		rw_array_data.request_data_spectral();
 
 		for (int y = planeDataConfig->spectral_data_size[1]-1; y >= 0; y--)
 		{
 			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
 			{
-				double value_re = rw_array_data.spectral_getRe(y, x);
-				double value_im = rw_array_data.spectral_getIm(y, x);
-				if(value_re*value_re+value_im*value_im>1.0e-13)
-					std::cout << "(" << x << ", "<< y << ", "<< value_re << ", " << value_im << ")" <<std::endl;;
+				const std::complex<double> &value = rw_array_data.spectral_get(y, x);
+				if (value.real()*value.real()+value.imag()*value.imag() > 1.0e-13)
+					std::cout << "(" << x << ", "<< y << ", "<< value.real() << ", " << value.imag() << ")" <<std::endl;;
 			}
 			//std::cout << std::endl;
 		}
@@ -1745,7 +1786,7 @@ public:
 			int i_precision = 8		///< number of floating point digits
 			)	const
 	{
-		requestDataInPhysicalSpace();
+		request_data_physical();
 
 		std::ostream &o_ostream = std::cout;
 
@@ -1777,7 +1818,7 @@ public:
 	{
 		PlaneData &rw_array_data = (PlaneData&)i_dataArray;
 
-		rw_array_data.requestDataInPhysicalSpace();
+		rw_array_data.request_data_physical();
 
 		for (int j = rw_array_data.planeDataConfig->physical_data_size[1]-1; j >= 0; j--)
 		{
@@ -1803,7 +1844,7 @@ public:
 			int i_precision = 12		///< number of floating point digits
 	)
 	{
-		requestDataInPhysicalSpace();
+		request_data_physical();
 
 		std::ofstream file(i_filename, std::ios_base::trunc);
 		file << std::setprecision(i_precision);
@@ -1838,7 +1879,7 @@ public:
 			int i_precision = 12		///< number of floating point digits
 	)
 	{
-		requestDataInPhysicalSpace();
+		request_data_physical();
 
 		std::ofstream file(i_filename, std::ios_base::trunc);
 		file << std::setprecision(i_precision);
@@ -1948,7 +1989,7 @@ public:
 
 				double i_value = atof(strvalue.c_str());
 
-				physical_set(planeDataConfig->physical_res[1]-row-1, col, i_value);
+				p_physical_set(planeDataConfig->physical_res[1]-row-1, col, i_value);
 
 				col++;
 				last_pos = pos+1;

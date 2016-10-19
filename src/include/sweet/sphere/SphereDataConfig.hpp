@@ -86,8 +86,8 @@ public:
 public:
 	SphereDataConfig()	:
 		shtns(nullptr),
-		spat_num_lat(-1),
 		spat_num_lon(-1),
+		spat_num_lat(-1),
 		spat_num_elems(-1),
 
 		spec_n_max(-1),

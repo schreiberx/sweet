@@ -17,6 +17,7 @@
 #include <iomanip>
 #include <stdio.h>
 
+
 // Plane data config
 PlaneDataConfig planeDataConfigInstance;
 PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
@@ -74,18 +75,18 @@ public:
 	 */
 public:
 	SimulationSWEStaggered()	:
-		prog_P(simVars.disc.res_physical),	// density/pressure
-		prog_u(simVars.disc.res_physical),	// velocity (x-direction)
-		prog_v(simVars.disc.res_physical),	// velocity (y-direction)
+		prog_P(planeDataConfig),	// density/pressure
+		prog_u(planeDataConfig),	// velocity (x-direction)
+		prog_v(planeDataConfig),	// velocity (y-direction)
 
-		H(simVars.disc.res_physical),	//
-		U(simVars.disc.res_physical),	// mass flux (x-direction)
-		V(simVars.disc.res_physical),	// mass flux (y-direction)
+		H(planeDataConfig),	//
+		U(planeDataConfig),	// mass flux (x-direction)
+		V(planeDataConfig),	// mass flux (y-direction)
 		
-		q(simVars.disc.res_physical),
-		beta_plane(simVars.disc.res_physical),
+		q(planeDataConfig),
+		beta_plane(planeDataConfig),
 
-		tmp(simVars.disc.res_physical),
+		tmp(planeDataConfig),
 
 		op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
 	{
@@ -109,54 +110,50 @@ public:
 
 		simVars.reset();
 
-		prog_P.physical_set_all(simVars.setup.h0);
-		prog_u.physical_set_all(0);
-		prog_v.physical_set_all(0);
-
-		for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
-		{
-			for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+		prog_P.physical_update_lambda_array_indices(
+			[&](int i, int j, double &io_data)
 			{
-				{
-					// h
-					double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-					double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-
-					prog_P.physical_set(j, i, SWEPlaneBenchmarks::return_h(simVars, x, y));
-				}
-
-				{
-					// u space
-					double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-					double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-
-					prog_u.physical_set(j,i, SWEPlaneBenchmarks::return_u(simVars, x, y));
-				}
-
-				{
-					// v space
-					double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-					double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-
-					prog_v.physical_set(j, i, SWEPlaneBenchmarks::return_v(simVars, x, y));
-				}
-
-				{
-					// beta plane
-					double y_beta = (((double)j+0.5)/(double)simVars.disc.res_physical[1]);
-					beta_plane.physical_set(j, i, simVars.sim.f0+simVars.sim.beta*y_beta);
-				}
+				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+				io_data = SWEPlaneBenchmarks::return_h(simVars, x, y);
 			}
-		}
+		);
+
+		prog_u.physical_update_lambda_array_indices(
+			[&](int i, int j, double &io_data)
+			{
+				double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+				io_data = SWEPlaneBenchmarks::return_u(simVars, x, y);
+			}
+		);
+
+		prog_v.physical_update_lambda_array_indices(
+			[&](int i, int j, double &io_data)
+			{
+				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+				double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+				io_data = SWEPlaneBenchmarks::return_v(simVars, x, y);
+			}
+		);
+
+		beta_plane.physical_update_lambda_array_indices(
+			[&](int i, int j, double &io_data)
+			{
+				double y_beta = (((double)j+0.5)/(double)simVars.disc.res_physical[1]);
+				io_data = simVars.sim.f0+simVars.sim.beta*y_beta;
+			}
+		);
+
 
 		if (simVars.setup.input_data_filenames.size() > 0)
-			prog_P.file_loadData(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
+			prog_P.file_physical_loadData(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
 
 		if (simVars.setup.input_data_filenames.size() > 1)
-			prog_u.file_loadData(simVars.setup.input_data_filenames[1].c_str(), simVars.setup.input_data_binary);
+			prog_u.file_physical_loadData(simVars.setup.input_data_filenames[1].c_str(), simVars.setup.input_data_binary);
 
 		if (simVars.setup.input_data_filenames.size() > 2)
-			prog_v.file_loadData(simVars.setup.input_data_filenames[2].c_str(), simVars.setup.input_data_binary);
+			prog_v.file_physical_loadData(simVars.setup.input_data_filenames[2].c_str(), simVars.setup.input_data_binary);
 
 
 		if (simVars.misc.gui_enabled)
@@ -285,7 +282,7 @@ public:
 		U = op.avg_b_x(i_h)*i_u;
 		V = op.avg_b_y(i_h)*i_v;
 
-		H = simVars.sim.g*i_h + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
+		H = simVars.sim.gravitation*i_h + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
 
 		if (simVars.sim.beta != 0.0)
 		{
@@ -343,7 +340,7 @@ public:
 #endif
 
 				// limit by gravitational acceleration
-				double limit_gh = std::min(simVars.disc.cell_size[0], simVars.disc.cell_size[1])/std::sqrt(simVars.sim.g*i_h.reduce_maxAbs());
+				double limit_gh = std::min(simVars.disc.cell_size[0], simVars.disc.cell_size[1])/std::sqrt(simVars.sim.gravitation*i_h.reduce_maxAbs());
 
 				if (simVars.misc.verbosity > 2)
 					std::cerr << "limit_speed: " << limit_speed << ", limit_visc: " << limit_visc << ", limit_gh: " << limit_gh << std::endl;
@@ -452,7 +449,7 @@ public:
 			{
 				o_ostream << "T\tTOTAL_MASS\tTOTAL_ENERGY\tPOT_ENSTROPHY";
 
-				if (simVars.setup.scenario == 2 || simVars.setup.scenario == 3 || simVars.setup.scenario == 4)
+				if (simVars.setup.benchmark_scenario_id == 2 || simVars.setup.benchmark_scenario_id == 3 || simVars.setup.benchmark_scenario_id == 4)
 					o_ostream << "\tABS_P_DT\tABS_U_DT\tABS_V_DT";
 
 				o_ostream << std::endl;
@@ -461,47 +458,52 @@ public:
 			o_ostream << simVars.timecontrol.current_simulation_time << "\t" << simVars.diag.total_mass << "\t" << simVars.diag.total_energy << "\t" << simVars.diag.total_potential_enstrophy;
 
 			// this should be zero for the steady state test
-			if (simVars.setup.scenario == 2 || simVars.setup.scenario == 3 || simVars.setup.scenario == 4)
+			if (simVars.setup.benchmark_scenario_id == 2 || simVars.setup.benchmark_scenario_id == 3 || simVars.setup.benchmark_scenario_id == 4)
 			{
-				// set data to something to overcome assertion error
-				for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
-					for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+
+				tmp.physical_update_lambda_array_indices(
+					[&](int i, int j, double &io_data)
 					{
-						// h
 						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-						tmp.physical_set(j, i, SWEPlaneBenchmarks::return_h(simVars, x, y));
+						io_data = SWEPlaneBenchmarks::return_h(simVars, x, y);
 					}
+				);
 
-				benchmark_diff_h = (prog_P-tmp).reduce_norm1() / (double)(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]);
+				benchmark_diff_h = (prog_h-tmp).reduce_norm1_quad() / (double)(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]);
 				o_ostream << "\t" << benchmark_diff_h;
 
+
 				// set data to something to overcome assertion error
-				for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
-					for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+
+				tmp.physical_update_lambda_array_indices(
+					[&](int i, int j, double &io_data)
 					{
 						// u space
-						double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-						tmp.physical_set(j, i, SWEPlaneBenchmarks::return_u(simVars, x, y));
+						io_data = SWEPlaneBenchmarks::return_u(simVars, x, y);
 					}
+				);
 
-				benchmark_diff_u = (prog_u-tmp).reduce_norm1() / (double)(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]);
-				o_ostream << "\t" << benchmark_diff_v;
+				benchmark_diff_u = (prog_u-tmp).reduce_norm1_quad() / (double)(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]);
+				o_ostream << "\t" << benchmark_diff_u;
 
-				for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
-					for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+
+				tmp.physical_update_lambda_array_indices(
+					[&](int i, int j, double &io_data)
 					{
 						// v space
 						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-						double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-						tmp.physical_set(j,i, SWEPlaneBenchmarks::return_v(simVars, x, y));
+						io_data = SWEPlaneBenchmarks::return_v(simVars, x, y);
 					}
+				);
 
-				benchmark_diff_v = (prog_v-tmp).reduce_norm1() / (double)(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]);
+				benchmark_diff_v = (prog_v-tmp).reduce_norm1_quad() / (double)(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]);
 				o_ostream << "\t" << benchmark_diff_v;
 			}
 
@@ -703,7 +705,7 @@ int main(int i_argc, char *i_argv[])
 			std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs(simVars.diag.total_mass-diagnostics_mass_start) << std::endl;
 			std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs(simVars.diag.total_potential_enstrophy-diagnostics_potential_entrophy_start) << std::endl;
 
-			if (simVars.setup.scenario == 2 || simVars.setup.scenario == 3 || simVars.setup.scenario == 4)
+			if (simVars.setup.benchmark_scenario_id == 2 || simVars.setup.benchmark_scenario_id == 3 || simVars.setup.benchmark_scenario_id == 4)
 			{
 				std::cout << "DIAGNOSTICS BENCHMARK DIFF H:\t" << simulationSWE->benchmark_diff_h << std::endl;
 				std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationSWE->benchmark_diff_u << std::endl;

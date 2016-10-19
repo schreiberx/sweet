@@ -5,12 +5,12 @@
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#ifndef SRC_INCLUDE_SPHERE_SPHBANDEDMATRIXSOLVER_HPP_
-#define SRC_INCLUDE_SPHERE_SPHBANDEDMATRIXSOLVER_HPP_
+#ifndef SRC_INCLUDE_SPHERE_SPHBANDEDMATRIX_HPP_
+#define SRC_INCLUDE_SPHERE_SPHBANDEDMATRIX_HPP_
 
-#include "../libmath/LapackBandedMatrixSolver.hpp"
-#include "../libmath/BandedMatrix.hpp"
-#include "../sphere/SphereSPHIdentities.hpp"
+#include <sweet/sphere/SphereSPHIdentities.hpp>
+#include <libmath/LapackBandedMatrixSolver.hpp>
+#include <libmath/BandedMatrix.hpp>
 
 
 
@@ -36,7 +36,7 @@ public:
 	/**
 	 * Solver for banded matrix
 	 */
-	SphBandedMatrix< std::complex<double> > bandedMatrixSolver;
+	LapackBandedMatrixSolver< std::complex<double> > bandedMatrixSolver;
 
 
 	/**
@@ -329,7 +329,7 @@ public:
 				for (int i = 0; i < lhs.num_diagonals; i++)
 				{
 					int delta = i-lhs.halosize_off_diagonal;
-					out.data_spec[idx] += lhs.rowElement_getRef(row, n, m, delta)*i_x.spec_get(n+delta, m);
+					out.data_spec[idx] += lhs.rowElement_getRef(row, n, m, delta)*i_x.spectral_get(n+delta, m);
 				}
 
 				idx++;
@@ -371,4 +371,4 @@ public:
 };
 
 
-#endif /* SRC_INCLUDE_SPHERE_SPHBANDEDMATRIXSOLVER_HPP_ */
+#endif

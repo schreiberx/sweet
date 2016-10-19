@@ -8,10 +8,10 @@
 #ifndef SPHERE_HELPER_HPP_
 #define SPHERE_HELPER_HPP_
 
-#include <complex.h>
+#include <complex>
 #include <functional>
 #include <array>
-#include <string.h>
+#include <cstring>
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -22,6 +22,7 @@
 #include <sweet/MemBlockAlloc.hpp>
 #include <sweet/sphere/SphereDataConfig.hpp>
 
+#include <sweet/openmp_helper.hpp>
 
 
 class SphereData
@@ -30,11 +31,10 @@ class SphereData
 
 public:
 	SphereDataConfig *sphConfig;
-//	shtns_cfg shtns;
 
 public:
-	std::complex<double> *data_spec;
 	double *data_spat;
+	std::complex<double> *data_spec;
 
 	bool data_spec_valid;
 	bool data_spat_valid;
@@ -105,7 +105,7 @@ public:
 
 
 public:
-	const SphereData& spec_copyToDifferentModes(
+	const SphereData& spectral_copyToDifferentModes(
 			SphereData &o_sph_data
 	)	const
 	{
@@ -167,7 +167,7 @@ public:
 			 */
 
 			// zero all values
-			o_sph_data.spec_set_zero();
+			o_sph_data.spectral_set_zero();
 
 #pragma omp parallel for
 			for (int m = 0; m <= sphConfig->spec_m_max; m++)
@@ -472,7 +472,7 @@ public:
 	 * (a + b D^2) x = rhs
 	 */
 	inline
-	SphereData spec_solve_helmholtz(
+	SphereData spectral_solve_helmholtz(
 			const double &i_a,
 			const double &i_b,
 			double r
@@ -483,7 +483,7 @@ public:
 		const double a = i_a;
 		const double b = i_b/(r*r);
 
-		out.spec_update_lambda(
+		out.spectral_update_lambda(
 			[&](
 				int n, int m,
 				std::complex<double> &io_data
@@ -496,7 +496,7 @@ public:
 		return out;
 	}
 
-
+#if 0
 public:
 	/**
 	 * Truncate modes which are not representable in spectral space
@@ -531,9 +531,10 @@ public:
 
 		return out_sph_data;
 	}
+#endif
 
 
-	void spec_update_lambda(
+	void spectral_update_lambda(
 			std::function<void(int,int,cplx&)> i_lambda
 	)
 	{
@@ -557,7 +558,7 @@ public:
 
 
 
-	bool isAnyNaNorInf()
+	bool physical_isAnyNaNorInf()
 	{
 		for (int i = 0; i < sphConfig->spat_num_elems; i++)
 		{
@@ -569,7 +570,7 @@ public:
 	}
 
 
-	const std::complex<double>& spec_get(
+	const std::complex<double>& spectral_get(
 			int in,
 			int im
 	)	const
@@ -595,37 +596,10 @@ public:
 	}
 
 
-#if 0
-	void spec_getElement_enum(
-			int n,
-			int m,
-			std::complex<double> &o_mode_scalar
-	)	const
-	{
-//		if (!data_spec_valid)
-//			request_data_spectral();
-		assert(data_spec_valid);
-
-		if (	n < 0 ||
-				n > sphConfig->spec_n_max	||
-				m < 0 ||
-				m > sphConfig->spec_m_max	||
-				m > n
-		)
-		{
-			o_mode_scalar = {0,0};
-			return;
-		}
-
-		o_mode_scalar = data_spec[sphConfig->getArrayIndexByModes(n, m)];
-	}
-#endif
-
-
 	/*
 	 * Set all values to zero
 	 */
-	void spec_set_zero()
+	void spectral_set_zero()
 	{
 #pragma omp parallel for
 		for (int i = 0; i < sphConfig->spec_num_elems; i++)
@@ -642,7 +616,7 @@ public:
 	 *
 	 * lambda function parameters: (longitude \in [0;2*pi], Gaussian latitude \in [-M_PI/2;M_PI/2])
 	 */
-	void spat_update_lambda(
+	void physical_update_lambda(
 			std::function<void(double,double,double&)> i_lambda	///< lambda function to return value for lat/mu
 	)
 	{
@@ -680,7 +654,7 @@ public:
 	 *
 	 * lambda function parameters: (longitude \in [0;2*pi], Gaussian latitude sin(phi) \in [-1;1])
 	 */
-	void spat_update_lambda_gaussian_grid(
+	void physical_update_lambda_gaussian_grid(
 			std::function<void(double,double,double&)> i_lambda	///< lambda function to return value for lat/mu
 	)
 	{
@@ -713,8 +687,7 @@ public:
 	 * lambda function parameters:
 	 *   (longitude \in [0;2*pi], Cogaussian latitude cos(phi) \in [0;1])
 	 */
-
-	void spat_update_lambda_cogaussian_grid(
+	void physical_update_lambda_cogaussian_grid(
 			std::function<void(double,double,double&)> i_lambda	///< lambda function to return value for lat/mu
 	)
 	{
@@ -746,18 +719,18 @@ public:
 	}
 
 
-	void spat_update_lambda_sinphi_grid(
+	void physical_update_lambda_sinphi_grid(
 			std::function<void(double,double,double&)> i_lambda	///< lambda function to return value for lat/mu
 	)
 	{
-		spat_update_lambda_gaussian_grid(i_lambda);
+		physical_update_lambda_gaussian_grid(i_lambda);
 	}
 
-	void spat_update_lambda_cosphi_grid(
+	void physical_update_lambda_cosphi_grid(
 			std::function<void(double,double,double&)> i_lambda	///< lambda function to return value for lat/mu
 	)
 	{
-		spat_update_lambda_cogaussian_grid(i_lambda);
+		physical_update_lambda_cogaussian_grid(i_lambda);
 	}
 
 
@@ -765,7 +738,7 @@ public:
 	/*
 	 * Set all values to zero
 	 */
-	void spat_set_zero()
+	void physical_set_zero()
 	{
 #pragma omp parallel for
 		for (int i = 0; i < sphConfig->spat_num_lon; i++)
@@ -780,7 +753,7 @@ public:
 	/*
 	 * Set all values to a specific value
 	 */
-	void spat_set_value(
+	void physical_set_value(
 			double i_value
 	)
 	{
@@ -797,7 +770,7 @@ public:
 	/**
 	 * Return the maximum error norm between this and the given data in physical space
 	 */
-	double spat_reduce_error_max(
+	double physical_reduce_error_max(
 			const SphereData &i_sph_data
 	)
 	{
@@ -824,7 +797,7 @@ public:
 	/**
 	 * Return the maximum absolute value
 	 */
-	double spat_reduce_abs_max()
+	double reduce_abs_max()
 	{
 		request_data_physical();
 
@@ -844,7 +817,7 @@ public:
 	/**
 	 * Return the maximum value
 	 */
-	double spat_reduce_min()
+	double reduce_min()
 	{
 		request_data_physical();
 
@@ -861,7 +834,7 @@ public:
 	/**
 	 * Return the minimum value
 	 */
-	double spat_reduce_max()
+	double reduce_max()
 	{
 		request_data_physical();
 
@@ -875,7 +848,7 @@ public:
 	}
 
 
-	void spec_print(int i_precision = 8)	const
+	void spectral_print(int i_precision = 8)	const
 	{
 		request_data_spectral();
 
@@ -894,33 +867,14 @@ public:
 	}
 
 
-	void spat_print(int i_precision = 8)	const
+	void physical_print(int i_precision = 8)	const
 	{
 		request_data_physical();
 
 		std::cout << std::setprecision(i_precision);
 
-#if 0
-		for (std::size_t i = 0; i < sphConfig->spat_num_lon; i++)
-		{
-			double lon_degree = ((double)i/(double)sphConfig->spat_num_lon)*2.0*M_PI;
-			lon_degree = lon_degree/M_PI*180.0;
-
-			std::cout << lon_degree;
-			if (i < sphConfig->spat_num_lon-1)
-				std::cout << "\t";
-		}
-		std::cout << std::endl;
-#endif
-
         for (int j = sphConfig->spat_num_lat-1; j >= 0; j--)
         {
-#if 0
-        		double lat_degree = sphConfig->lat[j];
-        		lat_degree = lat_degree/M_PI*180.0;
-
-        		std::cout << lat_degree << "\t";
-#endif
         		for (int i = 0; i < sphConfig->spat_num_lon; i++)
         		{
         			std::cout << data_spat[i*sphConfig->spat_num_lat+j];
@@ -932,7 +886,7 @@ public:
 	}
 
 
-	void spat_write_file(
+	void file_physical_writeFile(
 			const char *i_filename,
 			const char *i_title = "",
 			int i_precision = 8
@@ -951,7 +905,7 @@ public:
 		// Use 0 to make it processable by python
 		file << "0\t";
 
-		for (std::size_t i = 0; i < sphConfig->spat_num_lon; i++)
+		for (int i = 0; i < sphConfig->spat_num_lon; i++)
 		{
 //			double lon_degree = ((double)i/(double)sphConfig->spat_num_lon)*2.0*M_PI;
 			double lon_degree = ((double)i/(double)sphConfig->spat_num_lon)*2.0*M_PI;
@@ -982,7 +936,7 @@ public:
         file.close();
 	}
 
-	void spat_write_file_lon_pi_shifted(
+	void file_physical_writeFile_lon_pi_shifted(
 			const char *i_filename,
 			std::string i_title = "",
 			int i_precision = 8
@@ -1001,7 +955,7 @@ public:
 		// Use 0 to make it processable by python
 		file << "0\t";
 
-		for (std::size_t i = 0; i < sphConfig->spat_num_lon; i++)
+		for (int i = 0; i < sphConfig->spat_num_lon; i++)
 		{
 //			double lon_degree = ((double)i/(double)sphConfig->spat_num_lon)*2.0*M_PI;
 			double lon_degree = ((double)i/(double)sphConfig->spat_num_lon)*2.0*M_PI;

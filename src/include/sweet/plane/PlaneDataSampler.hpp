@@ -108,22 +108,17 @@ public:
 		assert(res[0] > 0);
 		assert(scale_factor[0] > 0);
 
-		/* std::cout<< "test " << res[0] << scale_factor[0] <<std::endl;
-		* std::cout<< i_u <<std::endl;
-		* std::cout<<std::endl;
-		* std::cout<< i_v <<std::endl;
-		* std::cout<<std::endl;
-		*/
-		for (int j = 0; j < res[1]; j++)
-		{
-			for (int i = 0; i < res[0]; i++)
+
+		pos_x.physical_update_lambda_array_indices(
+			[&](int i, int j, double &io_data)
 			{
-		    	// h position - A grid
-				pos_x.physical_set(j, i, ((double)i+0.5)/scale_factor[0]); //*simVars.sim.domain_size[0];
-				pos_y.physical_set(j, i, ((double)j+0.5)/scale_factor[1]); //*simVars.sim.domain_size[1];
-				//std::cout<< "i " << i << " j " << j << " x " << x <<" y "<< y <<std::endl;
-			}
-		}
+				io_data = ((double)i+0.5)/scale_factor[0];
+			});
+		pos_y.physical_update_lambda_array_indices(
+			[&](int i, int j, double &io_data)
+			{
+				io_data = ((double)j+0.5)/scale_factor[1];
+			});
 
 
 		if(i_method>0){
@@ -157,7 +152,7 @@ public:
 
 		const std::size_t size = i_pos_x.planeDataConfig->physical_array_data_number_of_elements;
 
-		i_data.requestDataInPhysicalSpace();
+		i_data.request_data_physical();
 
 		// iterate over all positions
 //#pragma omp parallel for OPENMP_PAR_SIMD
@@ -275,7 +270,7 @@ public:
 		 */
 
 
-		i_data.requestDataInPhysicalSpace();
+		i_data.request_data_physical();
 		std::size_t size = i_pos_x.planeDataConfig->physical_array_data_number_of_elements;
 
 		assert(size != 0);

@@ -157,9 +157,9 @@ int main(int i_argc, char *i_argv[])
 
 //			Operators2D op(parameters.discretization.res, parameters.sim.domain_size, parameters.disc.use_spectral_diffs);
 
-			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
+			for (int j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+				for (int i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
 					double x = ((double)i+0.5)/(double)simVars.disc.res_physical[0];
 					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
@@ -229,7 +229,7 @@ int main(int i_argc, char *i_argv[])
 				std::complex<double> alpha = -rexiSWE.rexi.alpha[i]/tau;
 				std::complex<double> kappa = alpha*alpha + simVars.sim.f0*simVars.sim.f0;
 
-				double gh = simVars.sim.g * simVars.setup.h0;
+				double gh = simVars.sim.gravitation * simVars.setup.h0;
 
 				std::cout << "TAU: " << tau << std::endl;
 				std::cout << "KAPPA: " << kappa << std::endl;
@@ -262,7 +262,7 @@ int main(int i_argc, char *i_argv[])
 
 						rexiSWE.helmholtz_spectral_solver_cart(	// DIRECT SPECTRAL SOLVER
 								kappa,
-								simVars.sim.g * simVars.setup.h0,
+								simVars.sim.gravitation * simVars.setup.h0,
 								rhs,
 								h
 							);
@@ -274,7 +274,7 @@ int main(int i_argc, char *i_argv[])
 
 						retval = RexiSWE_HelmholtzSolver::smoother_jacobi(	// ITERATIVE JACOBI SOLVER
 								kappa,
-								simVars.sim.g * simVars.setup.h0,
+								simVars.sim.gravitation * simVars.setup.h0,
 								rhs,
 								h,
 								simVars.sim.domain_size,
@@ -291,7 +291,7 @@ int main(int i_argc, char *i_argv[])
 
 						retval = RexiSWE_HelmholtzSolver::smoother_conjugate_gradient(	// CONJUGATE GRADIENT ITERATIVE SOLVER
 							kappa,
-							simVars.sim.g * simVars.setup.h0,
+							simVars.sim.gravitation * simVars.setup.h0,
 							rhs,
 							h,
 							simVars.sim.domain_size,
@@ -308,7 +308,7 @@ int main(int i_argc, char *i_argv[])
 
 						retval = RexiSWE_HelmholtzSolver::multigrid(	// MG with jacobi
 							kappa,
-							simVars.sim.g * simVars.setup.h0,
+							simVars.sim.gravitation * simVars.setup.h0,
 							rhs,
 							h,
 							RexiSWE_HelmholtzSolver::smoother_jacobi,
@@ -327,7 +327,7 @@ int main(int i_argc, char *i_argv[])
 
 						retval = RexiSWE_HelmholtzSolver::multigrid(	// MG with CG
 							kappa,
-							simVars.sim.g * simVars.setup.h0,
+							simVars.sim.gravitation * simVars.setup.h0,
 							rhs,
 							h,
 							RexiSWE_HelmholtzSolver::smoother_conjugate_gradient,
@@ -347,7 +347,7 @@ int main(int i_argc, char *i_argv[])
 
 						retval = RexiSWE_HelmholtzSolver::smoother_conjugate_gradient_real(	// CONJUGATE GRADIENT ITERATIVE SOLVER
 							kappa,
-							simVars.sim.g * simVars.setup.h0,
+							simVars.sim.gravitation * simVars.setup.h0,
 							rhs,
 							h,
 							op,
@@ -371,7 +371,7 @@ int main(int i_argc, char *i_argv[])
 
 				double residual = RexiSWE_HelmholtzSolver::helmholtz_iterative_get_residual_rms(
 						kappa,
-						simVars.sim.g * simVars.setup.h0,
+						simVars.sim.gravitation * simVars.setup.h0,
 						rhs,
 						h,
 						simVars.sim.domain_size
@@ -381,7 +381,7 @@ int main(int i_argc, char *i_argv[])
 				double error_analytical = (h_cart-h).reduce_rms();
 
 				// compare with numerical solution (has to be close to requested numerical accuracy)
-				double error_numerical = ((h * kappa - simVars.sim.g * simVars.setup.h0 * (h.op_stencil_Re_X_C(scalar_Dx, scalar_Dy, scalar_C))) - rhs*tau).reduce_rms();
+				double error_numerical = ((h * kappa - simVars.sim.gravitation * simVars.setup.h0 * (h.op_stencil_Re_X_C(scalar_Dx, scalar_Dy, scalar_C))) - rhs*tau).reduce_rms();
 
 				std::cout << "    Computed solution with residual " << residual << " in " << watch() << " seconds" << std::endl;
 				std::cout << "                           RMS error on h (analytical): " << error_analytical << std::endl;

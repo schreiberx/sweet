@@ -112,9 +112,9 @@ int main(int i_argc, char *i_argv[])
 		 * v = cos(2*PI*x)*sin(2*PI*y)
 		 */
 		{
-			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
+			for (int j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+				for (int i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
 					double x = ((double)i+0.5)/(double)simVars.disc.res_physical[0];
 					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
@@ -153,8 +153,8 @@ int main(int i_argc, char *i_argv[])
 
 			PlaneData rhs_u = u_ana;
 			PlaneData rhs_v = v_ana;
-			f.requestDataInSpectralSpace();
-			g.requestDataInSpectralSpace();
+			f.request_data_spectral();
+			g.request_data_spectral();
 			rhs_u = op.diff_c_x(rhs_u)+op.diff_c_y(rhs_u);
 			rhs_u += f;
 			rhs_v = op.diff_c_x(rhs_v)+op.diff_c_y(rhs_v);

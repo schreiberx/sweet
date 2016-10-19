@@ -8,7 +8,7 @@
 #ifndef SPHDATACOMPLEX_HPP_
 #define SPHDATACOMPLEX_HPP_
 
-#include <complex.h>
+#include <complex>
 #include <functional>
 #include <array>
 #include <string.h>
@@ -17,9 +17,9 @@
 #include <iomanip>
 #include <cassert>
 
+#include <sweet/sphere/SphereDataConfig.hpp>
+#include <sweet/sphere/SphereData.hpp>
 #include <sweet/MemBlockAlloc.hpp>
-#include "../sphere/SphereData.hpp"
-#include "../sphere/SphereDataConfig.hpp"
 
 
 
@@ -100,7 +100,7 @@ public:
 
 		assert(sphConfig == i_sph_data.sphConfig);
 
-		spat_fromSPHData(i_sph_data);
+		physical_fromSphereData(i_sph_data);
 		return *this;
 	}
 
@@ -126,7 +126,7 @@ public:
 
 
 public:
-	void spat_RealToSPHData(
+	void physical_RealToSphereData(
 			SphereData &o_sph_data
 	)
 	{
@@ -134,7 +134,7 @@ public:
 
 		request_data_physical();
 
-		for (std::size_t i = 0; i < sphConfig->spat_num_elems; i++)
+		for (int i = 0; i < sphConfig->spat_num_elems; i++)
 			o_sph_data.data_spat[i] = data_spat[i].real();
 
 		o_sph_data.data_spec_valid = false;
@@ -142,7 +142,7 @@ public:
 	}
 
 public:
-	void spat_ImagToSPHData(
+	void physical_ImagToSphereData(
 			SphereData &o_sph_data
 	)
 	{
@@ -150,7 +150,7 @@ public:
 
 		request_data_physical();
 
-		for (std::size_t i = 0; i < sphConfig->spat_num_elems; i++)
+		for (int i = 0; i < sphConfig->spat_num_elems; i++)
 			o_sph_data.data_spat[i] = data_spat[i].imag();
 
 		o_sph_data.data_spec_valid = false;
@@ -159,7 +159,7 @@ public:
 
 
 public:
-	void spat_fromSPHData(
+	void physical_fromSphereData(
 			const SphereData &i_sph_data
 	)
 	{
@@ -167,7 +167,7 @@ public:
 
 		i_sph_data.request_data_physical();
 
-		for (std::size_t i = 0; i < sphConfig->spat_num_elems; i++)
+		for (int i = 0; i < sphConfig->spat_num_elems; i++)
 			data_spat[i] = i_sph_data.data_spat[i];
 
 		data_spec_valid = false;
@@ -457,41 +457,6 @@ public:
 	}
 
 
-public:
-	/**
-	 * Truncate modes which are not representable in spectral space
-	 */
-	SphereDataComplex spat_truncate()
-	{
-		request_data_physical();
-
-		SphereDataComplex out_sph_data(sphConfig);
-		spat_cplx_to_SH(sphConfig->shtns, data_spat, out_sph_data.data_spec);
-		SH_to_spat_cplx(sphConfig->shtns, out_sph_data.data_spec, out_sph_data.data_spat);
-
-		out_sph_data.data_spat_valid = true;
-		out_sph_data.data_spec_valid = false;
-
-		return out_sph_data;
-	}
-
-	/**
-	 * Truncate modes which are not representable in spectral space
-	 */
-	SphereDataComplex spec_truncate()
-	{
-		request_data_spectral();
-
-		SphereDataComplex out_sph_data(sphConfig);
-		SH_to_spat_cplx(sphConfig->shtns, data_spec, out_sph_data.data_spat);
-		spat_cplx_to_SH(sphConfig->shtns, out_sph_data.data_spat, out_sph_data.data_spec);
-
-		out_sph_data.data_spat_valid = false;
-		out_sph_data.data_spec_valid = true;
-
-		return out_sph_data;
-	}
-
 
 private:
 	void setup(SphereDataConfig *i_sphConfig)
@@ -520,7 +485,7 @@ public:
 	 * (a + b D^2) x = rhs
 	 */
 	inline
-	SphereDataComplex spec_solve_helmholtz(
+	SphereDataComplex spectral_solve_helmholtz(
 			const std::complex<double> &i_a,
 			const std::complex<double> &i_b,
 			double r
@@ -531,7 +496,7 @@ public:
 		const std::complex<double> a = i_a;
 		const std::complex<double> b = i_b/(r*r);
 
-		out.spec_update_lambda(
+		out.spectral_update_lambda(
 			[&](
 				int n, int m,
 				std::complex<double> &io_data
@@ -546,7 +511,7 @@ public:
 
 
 	inline
-	void spec_update_lambda(
+	void spectral_update_lambda(
 			std::function<void(int,int,cplx&)> i_lambda
 	)
 	{
@@ -571,24 +536,24 @@ public:
 
 
 
-	void spat_update_lambda_sinphi_grid(
-			std::function<void(double,double,std::complex<double>&)> i_lambda	///< lambda function to return value for lat/mu
+	void physical_update_lambda_sinphi_grid(
+			std::function< void(double,double,std::complex<double>&) > i_lambda	///< lambda function to return value for lat/mu
 	)
 	{
-		spat_update_lambda_gaussian_grid(i_lambda);
+		physical_update_lambda_gaussian_grid(i_lambda);
 	}
 
-	void spat_update_lambda_cosphi_grid(
+	void physical_update_lambda_cosphi_grid(
 			std::function<void(double,double,std::complex<double>&)> i_lambda	///< lambda function to return value for lat/mu
 	)
 	{
-		spat_update_lambda_cogaussian_grid(i_lambda);
+		physical_update_lambda_cogaussian_grid(i_lambda);
 	}
 
 
 
 	inline
-	const std::complex<double>& spec_get(
+	const std::complex<double>& spectral_get(
 			int in,
 			int im
 	)	const
@@ -621,7 +586,7 @@ public:
 	 * lambda function parameters: (longitude \in [0;2*pi], Gaussian latitude \in [-M_PI/2;M_PI/2])
 	 */
 public:
-	void spat_update_lambda(
+	void physical_update_lambda(
 			std::function<void(double,double,cplx&)> i_lambda	///< lambda function to return value for lat/mu
 	)
 	{
@@ -659,7 +624,7 @@ public:
 	 *
 	 * lambda function parameters: (longitude \in [0;2*pi], Gaussian latitude \in [-1;1])
 	 */
-	void spat_update_lambda_gaussian_grid(
+	void physical_update_lambda_gaussian_grid(
 			std::function<void(double,double,cplx&)> i_lambda	///< lambda function to return value for lat/mu
 	)
 	{
@@ -692,7 +657,7 @@ public:
 	 * lambda function parameters: (longitude \in [0;2*pi], Gaussian latitude \in [-1;1])
 	 */
 
-	void spat_update_lambda_cogaussian_grid(
+	void physical_update_lambda_cogaussian_grid(
 			std::function<void(double,double,cplx&)> i_lambda	///< lambda function to return value for lat/mu
 	)
 	{
@@ -726,7 +691,7 @@ public:
 	/*
 	 * Set all values to zero
 	 */
-	void spat_set_zero()
+	void physical_set_zero()
 	{
 #pragma omp parallel for
 		for (int i = 0; i < sphConfig->spat_num_lon; i++)
@@ -741,7 +706,7 @@ public:
 	/**
 	 * Return the maximum error norm
 	 */
-	double spat_reduce_error_max(
+	double physical_reduce_error_max(
 			const SphereDataComplex &i_sph_data
 	)
 	{
@@ -776,7 +741,7 @@ public:
 	/**
 	 * Return the maximum error norm
 	 */
-	double spat_reduce_error_max()
+	double physical_reduce_error_max()
 	{
 		request_data_physical();
 
@@ -798,7 +763,7 @@ public:
 		return error;
 	}
 
-	void spec_print(
+	void spectral_print(
 			int i_precision = 8
 	)	const
 	{
@@ -821,7 +786,7 @@ public:
 	}
 
 
-	void spat_print(
+	void physical_print(
 			int i_precision = 8
 	)	const
 	{
@@ -864,7 +829,7 @@ public:
 
 public:
 
-	void spat_write_file(
+	void physical_write_file(
 			const char *i_filename,
 			const char *i_title = "",
 			int i_precision = 8
@@ -883,7 +848,7 @@ public:
 		// Use 0 to make it processable by python
 		file << "0\t";
 
-		for (std::size_t i = 0; i < sphConfig->spat_num_lon; i++)
+		for (int i = 0; i < sphConfig->spat_num_lon; i++)
 		{
 //			double lon_degree = ((double)i/(double)sphConfig->spat_num_lon)*2.0*M_PI;
 			double lon_degree = ((double)i/(double)sphConfig->spat_num_lon)*2.0*M_PI;
@@ -914,7 +879,7 @@ public:
         file.close();
 	}
 
-	void spat_write_file_lon_pi_shifted(
+	void physical_write_file_lon_pi_shifted(
 			const char *i_filename,
 			std::string i_title = "",
 			int i_precision = 8
@@ -933,7 +898,7 @@ public:
 		// Use 0 to make it processable by python
 		file << "0\t";
 
-		for (std::size_t i = 0; i < sphConfig->spat_num_lon; i++)
+		for (int i = 0; i < sphConfig->spat_num_lon; i++)
 		{
 //			double lon_degree = ((double)i/(double)sphConfig->spat_num_lon)*2.0*M_PI;
 			double lon_degree = ((double)i/(double)sphConfig->spat_num_lon)*2.0*M_PI;

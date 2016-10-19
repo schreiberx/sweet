@@ -228,7 +228,6 @@ public:
 		posx_d(planeDataConfig),
 		posy_d(planeDataConfig),
 
-		//h_t(simVars.disc.res),
 
 		// Initialises operators
 		op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
@@ -285,7 +284,7 @@ public:
 #endif
 
 		//Setup prog vars
-		prog_h.physical_set_all(simVars.setup.h0);
+		prog_h.physical_set_all(simVars.sim.h0);
 		prog_u.physical_set_all(0);
 		prog_v.physical_set_all(0);
 		boundary_mask.physical_set_all(0);
@@ -347,17 +346,19 @@ public:
 		// Setup semi-lag
 		semiLagrangian.setup(simVars.sim.domain_size, planeDataConfig);
 
-		// Setup general (x,y) grid with position points
-		for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
-		{
-			for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+
+		pos_x.physical_update_lambda_array_indices(
+			[&](int i, int j, double &io_data)
 			{
-		    	/* Equivalent to q position on C-grid */
-				pos_x.physical_set(j, i, ((double)i)*simVars.sim.domain_size[0]/simVars.disc.res_physical[0]); //*simVars.sim.domain_size[0];
-				pos_y.physical_set(j, i, ((double)j)*simVars.sim.domain_size[1]/simVars.disc.res_physical[1]); //*simVars.sim.domain_size[1];
-				//std::cout << i << " " << j << " " << pos_x.get(j,i) << std::endl;
+				io_data = ((double)i)*simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
 			}
-		}
+		);
+		pos_y.physical_update_lambda_array_indices(
+			[&](int i, int j, double &io_data)
+			{
+				io_data = ((double)j)*simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
+			}
+		);
 
 		//Initialize arrival points with h position
 		posx_a = pos_x+0.5*simVars.disc.cell_size[0];
@@ -381,7 +382,7 @@ public:
 			// Remember to set up initial_freq_x_mul and initial_freq_y_mul
 			double dx = x/i_parameters.sim.domain_size[0]*param_initial_freq_x_mul*M_PIl;
 			double dy = y/i_parameters.sim.domain_size[1]*param_initial_freq_y_mul*M_PIl;
-			return std::sin(2.0*dx)*std::cos(2.0*dy) - (1.0/5.0)*std::cos(2.0*dx)*std::sin(4.0*dy) + i_parameters.setup.h0;
+			return std::sin(2.0*dx)*std::cos(2.0*dy) - (1.0/5.0)*std::cos(2.0*dx)*std::sin(4.0*dy) + i_parameters.sim.h0;
 		};
 
 
@@ -415,9 +416,9 @@ public:
 		};
 
 		// Set initial conditions given from SWEValidationBenchmarks
-		for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
+		for (int j = 0; j < simVars.disc.res_physical[1]; j++)
 		{
-			for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+			for (int i = 0; i < simVars.disc.res_physical[0]; i++)
 			{
 				if (param_use_staggering) // C-grid
 				{
@@ -515,9 +516,9 @@ public:
 		// Set boundary stuff
 		if (param_boundary_id != 0)
 		{
-			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
+			for (int j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+				for (int i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
 					int boundary_flag = 0;
 					switch(param_boundary_id)
@@ -606,8 +607,8 @@ public:
 						exit(1);
 					}
 
-					boundary_mask.physical_set(j, i, boundary_flag);
-					boundary_mask_inv.physical_set(j, i, 1.0-boundary_flag);
+					boundary_mask.p_physical_set(j, i, boundary_flag);
+					boundary_mask_inv.p_physical_set(j, i, 1.0-boundary_flag);
 				}
 			}
 		}
@@ -739,22 +740,22 @@ public:
 			(
 				(
 					// u is positive
-					simVars.setup.h0*i_u.physical_query_return_value_if_positive()	// inflow
-					-simVars.setup.h0*op.shift_left(i_u.physical_query_return_value_if_positive())					// outflow
+					simVars.sim.h0*i_u.physical_query_return_value_if_positive()	// inflow
+					-simVars.sim.h0*op.shift_left(i_u.physical_query_return_value_if_positive())					// outflow
 
 					// u is negative
-					+(simVars.setup.h0*i_u.physical_query_return_value_if_negative())	// outflow
-					-op.shift_left(simVars.setup.h0*i_u.physical_query_return_value_if_negative())		// inflow
+					+(simVars.sim.h0*i_u.physical_query_return_value_if_negative())	// outflow
+					-op.shift_left(simVars.sim.h0*i_u.physical_query_return_value_if_negative())		// inflow
 				)*(1.0/simVars.disc.cell_size[0])	// here we see a finite-difference-like formulation
 				+
 				(
 					// v is positive
-					simVars.setup.h0*i_v.physical_query_return_value_if_positive()		// inflow
-					-simVars.setup.h0*op.shift_down(i_v.physical_query_return_value_if_positive())					// outflow
+					simVars.sim.h0*i_v.physical_query_return_value_if_positive()		// inflow
+					-simVars.sim.h0*op.shift_down(i_v.physical_query_return_value_if_positive())					// outflow
 
 					// v is negative
-					+(simVars.setup.h0*i_v.physical_query_return_value_if_negative())	// outflow
-					-op.shift_down(simVars.setup.h0*i_v.physical_query_return_value_if_negative())	// inflow
+					+(simVars.sim.h0*i_v.physical_query_return_value_if_negative())	// outflow
+					-op.shift_down(simVars.sim.h0*i_v.physical_query_return_value_if_negative())	// inflow
 				)*(1.0/simVars.disc.cell_size[1])
 			);
 	}
@@ -797,7 +798,7 @@ public:
 					// right boundary
 					- op.shift_down(prog_v)*boundary_mask_inv*op.shift_up(boundary_mask);
 
-			prog_h = boundary_mask_inv*prog_h + boundary_mask*simVars.setup.h0;
+			prog_h = boundary_mask_inv*prog_h + boundary_mask*simVars.sim.h0;
 		}
 		else
 		{
@@ -822,7 +823,7 @@ public:
 					;
 #endif
 
-			prog_h = boundary_mask_inv*prog_h + boundary_mask*simVars.setup.h0;
+			prog_h = boundary_mask_inv*prog_h + boundary_mask*simVars.sim.h0;
 		}
 	}
 
@@ -864,7 +865,7 @@ public:
 				o_dt = simVars.sim.CFL /
 					std::sqrt((double)
 					(
-						(k*k)*simVars.sim.g*simVars.setup.h0
+						(k*k)*simVars.sim.gravitation*simVars.sim.h0
 						+
 						simVars.sim.f0*simVars.sim.f0
 					));
@@ -890,8 +891,8 @@ public:
 			 * v_t = -g * h_y - f*u
 			 */
 
-			o_u_t = -simVars.sim.g*op.diff_c_x(i_h);
-			o_v_t = -simVars.sim.g*op.diff_c_y(i_h);
+			o_u_t = -simVars.sim.gravitation*op.diff_c_x(i_h);
+			o_v_t = -simVars.sim.gravitation*op.diff_c_y(i_h);
 
 			if (simVars.sim.beta == 0.0)
 			{
@@ -916,7 +917,7 @@ public:
 			if (!simVars.disc.timestepping_up_and_downwinding)
 			{
 				// standard update
-				o_h_t = -(op.diff_c_x(i_u) + op.diff_c_y(i_v))*simVars.setup.h0;
+				o_h_t = -(op.diff_c_x(i_u) + op.diff_c_y(i_v))*simVars.sim.h0;
 			}
 			else
 			{
@@ -972,14 +973,14 @@ public:
 			}
 			else // linear case
 			{
-				U = simVars.setup.h0*i_u;
-				V = simVars.setup.h0*i_v;
+				U = simVars.sim.h0*i_u;
+				V = simVars.sim.h0*i_v;
 			}
 
 			if(param_nonlinear > 0) //nonlinear case
-				H = simVars.sim.g*i_h + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
+				H = simVars.sim.gravitation*i_h + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
 			else //linear case
-				H = simVars.sim.g*i_h;// + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
+				H = simVars.sim.gravitation*i_h;// + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
 
 
 			if (param_nonlinear > 0) //nonlinear case
@@ -1035,7 +1036,7 @@ public:
 				}
 				else //use linear divergence
 				{
-					o_h_t = -op.diff_f_x(simVars.setup.h0*i_u) - op.diff_f_y(simVars.setup.h0*i_v);
+					o_h_t = -op.diff_f_x(simVars.sim.h0*i_u) - op.diff_f_y(simVars.sim.h0*i_v);
 				}
 			}
 			else

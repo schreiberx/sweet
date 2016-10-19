@@ -42,7 +42,7 @@ class SWEPlaneBenchmarks
 		double sx = i_parameters.sim.domain_size[0];
 		double sy = i_parameters.sim.domain_size[1];
 
-		if (i_parameters.setup.scenario == 0)
+		if (i_parameters.setup.benchmark_scenario_id == 0)
 		{
 			// radial dam break
 			double dx = x-i_parameters.setup.setup_coord_x*sx;
@@ -52,9 +52,9 @@ class SWEPlaneBenchmarks
 			{
 				double radius = i_parameters.setup.radius_scale*sqrt(sx*sx+sy*sy);
 				if (dx*dx+dy*dy < radius*radius)
-					return i_parameters.setup.h0+1.0;
+					return i_parameters.sim.h0+1.0;
 				else
-					return i_parameters.setup.h0;
+					return i_parameters.sim.h0;
 			}
 			else if (i_variable_id == 1) // velocity u
 			{
@@ -74,7 +74,7 @@ class SWEPlaneBenchmarks
 			}
 		}
 
-		if (i_parameters.setup.scenario == 1)
+		if (i_parameters.setup.benchmark_scenario_id == 1)
 		{
 			// Gaussian
 			double dx = x-i_parameters.setup.setup_coord_x*sx;
@@ -86,7 +86,7 @@ class SWEPlaneBenchmarks
 				dx /= radius;
 				dy /= radius;
 
-				return i_parameters.setup.h0+std::exp(-50.0*(dx*dx + dy*dy));
+				return i_parameters.sim.h0+std::exp(-50.0*(dx*dx + dy*dy));
 			}
 			else if (i_variable_id == 1) // velocity u
 			{
@@ -106,13 +106,13 @@ class SWEPlaneBenchmarks
 			}
 		}
 
-		if (i_parameters.setup.scenario == 2)
+		if (i_parameters.setup.benchmark_scenario_id == 2)
 		{
 			// Steady state (linear and nonlinear) with dominant meridional (y) flow
 
 			if (i_variable_id == 0)
 			{
-				return std::sin(2.0*M_PI*x/sx) + i_parameters.setup.h0;
+				return std::sin(2.0*M_PI*x/sx) + i_parameters.sim.h0;
 			}
 			else if (i_variable_id == 1) // velocity u
 			{
@@ -124,7 +124,7 @@ class SWEPlaneBenchmarks
 			{
 				if (f == 0)
 					error("f-value is equal to zero!");
-				return i_parameters.sim.g/f*2.0*M_PIl*std::cos(2.0*M_PIl*x/sx)/sx;
+				return i_parameters.sim.gravitation/f*2.0*M_PIl*std::cos(2.0*M_PIl*x/sx)/sx;
 			}
 			else if (i_variable_id == 6) // f-term
 			{
@@ -136,19 +136,19 @@ class SWEPlaneBenchmarks
 			}
 		}
 
-		if (i_parameters.setup.scenario == 3)
+		if (i_parameters.setup.benchmark_scenario_id == 3)
 		{
 			// Steady state (linear and nonlinear) with dominant zonal (x) flow
 
 			if (i_variable_id == 0)
 			{
-				return std::sin(2.0*M_PI*y/sy) + i_parameters.setup.h0;
+				return std::sin(2.0*M_PI*y/sy) + i_parameters.sim.h0;
 			}
 			else if (i_variable_id == 1) // velocity u
 			{
 				if (f == 0)
 					error("f-value is equal to zero! Cannot run this case scenario.");
-				return -i_parameters.sim.g*2.0*M_PI*std::cos(2.0*M_PI*y/sy)/(f*sy);
+				return -i_parameters.sim.gravitation*2.0*M_PI*std::cos(2.0*M_PI*y/sy)/(f*sy);
 			}
 			else if (i_variable_id == 2) // velocity v
 			{
@@ -168,14 +168,14 @@ class SWEPlaneBenchmarks
 			}
 		}
 
-		if (i_parameters.setup.scenario == 4)
+		if (i_parameters.setup.benchmark_scenario_id == 4)
 		{
 				double dx = x/sx;
 				double dy = y/sy;
 
 			if (i_variable_id == 0)
 			{
-				return i_parameters.setup.h0 + (std::abs(dx-0.5) < 0.3)*(std::abs(dy-0.5) < 0.1);
+				return i_parameters.sim.h0 + (std::abs(dx-0.5) < 0.3)*(std::abs(dy-0.5) < 0.1);
 			}
 			else if (i_variable_id == 1) // velocity u
 			{
@@ -195,7 +195,7 @@ class SWEPlaneBenchmarks
 			}
 		}
 
-		if (i_parameters.setup.scenario == 5)
+		if (i_parameters.setup.benchmark_scenario_id == 5)
 		{
 			double dx = x/sx;
 			double dy = y/sy;
@@ -203,7 +203,7 @@ class SWEPlaneBenchmarks
 
 			if (i_variable_id == 0)
 			{
-				return std::sin(6.0*M_PIl*dx)*std::cos(4.0*M_PIl*dy) - (1.0/5.0)*std::cos(4.0*M_PIl*dx)*std::sin(2.0*M_PIl*dy) + i_parameters.setup.h0;
+				return std::sin(6.0*M_PIl*dx)*std::cos(4.0*M_PIl*dy) - (1.0/5.0)*std::cos(4.0*M_PIl*dx)*std::sin(2.0*M_PIl*dy) + i_parameters.sim.h0;
 			}
 			else if (i_variable_id == 1) // velocity u
 			{
@@ -230,7 +230,7 @@ class SWEPlaneBenchmarks
 		}
 
 
-		if (i_parameters.setup.scenario == 6)
+		if (i_parameters.setup.benchmark_scenario_id == 6)
 		{
 			// Gaussian
 			double dx = x-i_parameters.setup.setup_coord_x*sx;
@@ -244,12 +244,12 @@ class SWEPlaneBenchmarks
 
 			if (i_variable_id == 0)
 			{
-				return i_parameters.setup.h0+std::exp(-e*(dx*dx + dy*dy));
+				return i_parameters.sim.h0+std::exp(-e*(dx*dx + dy*dy));
 			}
 			else if (i_variable_id == 1) // velocity u
 			{
 				double dh = std::exp(-e*(dx*dx + dy*dy));
-				return i_parameters.sim.g/f*e*2.0*dy*dh;
+				return i_parameters.sim.gravitation/f*e*2.0*dy*dh;
 			}
 			else if (i_variable_id == 2) // velocity v
 			{
@@ -263,7 +263,7 @@ class SWEPlaneBenchmarks
 				dy /= radius;
 
 				double dh = std::exp(-e*(dx*dx + dy*dy));
-				return -i_parameters.sim.g/f*e*2.0*dx*dh;
+				return -i_parameters.sim.gravitation/f*e*2.0*dx*dh;
 			}
 			else if (i_variable_id == 6) // f-term
 			{
@@ -275,7 +275,7 @@ class SWEPlaneBenchmarks
 			}
 		}
 
-		if (i_parameters.setup.scenario == 8)
+		if (i_parameters.setup.benchmark_scenario_id == 8)
 		{
 			// gaussian in x
 			double dx = x-i_parameters.setup.setup_coord_x*sx;
@@ -286,7 +286,7 @@ class SWEPlaneBenchmarks
 				double radius = i_parameters.setup.radius_scale*sx;
 				dx /= radius;
 
-				return i_parameters.setup.h0+std::exp(-50.0*(dx*dx));
+				return i_parameters.sim.h0+std::exp(-50.0*(dx*dx));
 			}
 			else if (i_variable_id == 1) // velocity u
 			{
@@ -307,12 +307,12 @@ class SWEPlaneBenchmarks
 		}
 
 
-		if (i_parameters.setup.scenario == 9)
+		if (i_parameters.setup.benchmark_scenario_id == 9)
 		{
 
 			if (i_variable_id == 0)
 			{
-				return i_parameters.setup.h0;
+				return i_parameters.sim.h0;
 			}
 			else if (i_variable_id == 1) // velocity u
 			{
@@ -332,14 +332,14 @@ class SWEPlaneBenchmarks
 			}
 		}
 
-		if (i_parameters.setup.scenario == 10)
+		if (i_parameters.setup.benchmark_scenario_id == 10)
 		{
 			// beta plane
 			// use e.g. parameters -N 64 -C 0.5 -R 4 -f 0.000001  -g 9.81 -H 1000 -X 100000 -Y 100000 -b 0.0000001 -z -S 1 -s 10
 
 			if (i_variable_id == 0)
 			{
-				return i_parameters.setup.h0;
+				return i_parameters.sim.h0;
 			}
 			else if (i_variable_id == 1) // velocity u
 			{
@@ -368,25 +368,25 @@ class SWEPlaneBenchmarks
 		}
 
 		//Forced nonlinear case - trigonometric
-		if (i_parameters.setup.scenario == 13)
+		if (i_parameters.setup.benchmark_scenario_id == 13)
 		{
 
 			if (i_variable_id == 0)
 			{
-				return std::cos(2.0*M_PI*x/sx)*std::sin(2.0*M_PI*y/sy) + i_parameters.setup.h0;
+				return std::cos(2.0*M_PI*x/sx)*std::sin(2.0*M_PI*y/sy) + i_parameters.sim.h0;
 			}
 			else if (i_variable_id == 1) // velocity u
 			{
 				if (f == 0)
 					error("f-value is equal to zero! Cannot run this case scenario.");
 
-				double factor = -i_parameters.sim.g*2.0*M_PI/(f*sy);
+				double factor = -i_parameters.sim.gravitation*2.0*M_PI/(f*sy);
 
 				return factor*std::cos(2.0*M_PI*x/sx)*std::cos(2.0*M_PI*y/sy);
 			}
 			else if (i_variable_id == 2) // velocity v
 			{
-				double factor = -i_parameters.sim.g*2.0*M_PI/(f*sx);
+				double factor = -i_parameters.sim.gravitation*2.0*M_PI/(f*sx);
 				return factor*std::sin(2.0*M_PI*x/sx)*std::sin(2.0*M_PI*y/sy);
 			}
 			else if (i_variable_id == 3) // forcing h
@@ -395,12 +395,12 @@ class SWEPlaneBenchmarks
 			}
 			else if (i_variable_id == 4) // forcing u
 			{
-				double factor = i_parameters.sim.g*2.0*M_PI/(f*sy);
+				double factor = i_parameters.sim.gravitation*2.0*M_PI/(f*sy);
 				return -factor*factor*(M_PI/sx)*std::sin(4.0*M_PI*x/sx);
 			}
 			else if (i_variable_id == 5) // forcing v
 			{
-				double factor = i_parameters.sim.g*2.0*M_PI/(f*sx);
+				double factor = i_parameters.sim.gravitation*2.0*M_PI/(f*sx);
 				return factor*factor*(M_PI/sy)*std::sin(4.0*M_PI*y/sy);
 			}
 			else if (i_variable_id == 6) // f-term
@@ -414,23 +414,23 @@ class SWEPlaneBenchmarks
 		}
 
 		//Rotated steady state
-		if (i_parameters.setup.scenario == 14)
+		if (i_parameters.setup.benchmark_scenario_id == 14)
 		{
 			if (i_variable_id == 0)
 			{
-				return std::cos(2.0*M_PI*(x/sx+y/sy)) + i_parameters.setup.h0;
+				return std::cos(2.0*M_PI*(x/sx+y/sy)) + i_parameters.sim.h0;
 			}
 			else if (i_variable_id == 1) // velocity u
 			{
 				if (f == 0)
 					error("f-value is equal to zero! Cannot run this case scenario.");
 
-				double factor = i_parameters.sim.g*2.0*M_PI/(f*sy);
+				double factor = i_parameters.sim.gravitation*2.0*M_PI/(f*sy);
 				return factor*std::sin(2.0*M_PI*(x/sx+y/sy));
 			}
 			else if (i_variable_id == 2) // velocity v
 			{
-				double factor = -i_parameters.sim.g*2.0*M_PI/(f*sx);
+				double factor = -i_parameters.sim.gravitation*2.0*M_PI/(f*sx);
 				return factor*std::sin(2.0*M_PI*(x/sx+y/sy));
 			}
 			else if (i_variable_id == 6) // f-term
@@ -446,7 +446,7 @@ class SWEPlaneBenchmarks
 
 
 		// Beta plane steady state A
-		if (i_parameters.setup.scenario == 15)
+		if (i_parameters.setup.benchmark_scenario_id == 15)
 		{
 			if (i_parameters.sim.beta == 0)
 			{
@@ -455,7 +455,7 @@ class SWEPlaneBenchmarks
 			}
 
 			double phi = (y-0.5)*2.0*M_PI;
-			double a = 1;//i_parameters.setup.h0;
+			double a = 1;//i_parameters.sim.h0;
 
 			if (i_variable_id == 0)
 			{
@@ -483,7 +483,7 @@ class SWEPlaneBenchmarks
 		}
 
 		//Waves scenario for fixed frequencies
-		if (i_parameters.setup.scenario == 16)
+		if (i_parameters.setup.benchmark_scenario_id == 16)
 		{
 			double param_initial_freq_x_mul=1.0;
 			double param_initial_freq_y_mul=1.0;
@@ -492,9 +492,9 @@ class SWEPlaneBenchmarks
 
 			if (i_variable_id == 0) // height
 			{
-				//return std::sin(2.0*dx)*std::cos(2.0*dy) - (1.0/5.0)*std::cos(2.0*dx)*std::sin(4.0*dy) + i_parameters.setup.h0; // original
-				return std::sin(2.0*dx)*std::cos(2.0*dy) + i_parameters.setup.h0; //simpler
-				//return std::cos(2.0*M_PI*(x/sx+y/sy)) + i_parameters.setup.h0;
+				//return std::sin(2.0*dx)*std::cos(2.0*dy) - (1.0/5.0)*std::cos(2.0*dx)*std::sin(4.0*dy) + i_parameters.sim.h0; // original
+				return std::sin(2.0*dx)*std::cos(2.0*dy) + i_parameters.sim.h0; //simpler
+				//return std::cos(2.0*M_PI*(x/sx+y/sy)) + i_parameters.sim.h0;
 			}
 			else if (i_variable_id == 1) // velocity u
 			{
@@ -521,7 +521,7 @@ class SWEPlaneBenchmarks
 		}
 
 		//Diagonal advection
-		if (i_parameters.setup.scenario == 17)
+		if (i_parameters.setup.benchmark_scenario_id == 17)
 		{
 
 			// Gaussian
@@ -534,7 +534,7 @@ class SWEPlaneBenchmarks
 				dx /= radius;
 				dy /= radius;
 
-				return i_parameters.setup.h0+std::exp(-50.0*(dx*dx + dy*dy));
+				return i_parameters.sim.h0+std::exp(-50.0*(dx*dx + dy*dy));
 			}
 			else if (i_variable_id == 1) // velocity u
 			{
@@ -553,16 +553,16 @@ class SWEPlaneBenchmarks
 				return 0;
 			}
 		}
-		if (i_parameters.setup.scenario == 18)
+		if (i_parameters.setup.benchmark_scenario_id == 18)
 		{
 			// Preparation for flow over mountain
 			double u0 = 20.0; //mean constant velocity
-			double g = i_parameters.sim.g; // gravity
+			double g = i_parameters.sim.gravitation; // gravity
 			double f = i_parameters.sim.f0; // gravity
 
 			if (i_variable_id == 0)
 			{
-				return -std::sin(2.0*M_PI*y/sy)*f*u0*(0.5*sy/M_PI)/g + i_parameters.setup.h0;
+				return -std::sin(2.0*M_PI*y/sy)*f*u0*(0.5*sy/M_PI)/g + i_parameters.sim.h0;
 			}
 			else if (i_variable_id == 1) // velocity u
 			{
@@ -583,7 +583,7 @@ class SWEPlaneBenchmarks
 		}
 
 
-		std::cerr << "Invalid setup scenario id " << i_parameters.setup.scenario << std::endl;
+		std::cerr << "Invalid setup scenario id " << i_parameters.setup.benchmark_scenario_id << std::endl;
 		exit(1);
 		return 0;
 	}
@@ -675,49 +675,49 @@ public:
 				SimulationVariables &i_parameters
 	)
 	{
-		if (i_parameters.setup.scenario == 0)// radial dam break
+		if (i_parameters.setup.benchmark_scenario_id == 0)// radial dam break
 			return false;
 
 
-		if (i_parameters.setup.scenario == 1) // Gaussian
+		if (i_parameters.setup.benchmark_scenario_id == 1) // Gaussian
 			return false;
 
-		if (i_parameters.setup.scenario == 2) // Steady state (linear and nonlinear) with dominant zonal (x) flow
+		if (i_parameters.setup.benchmark_scenario_id == 2) // Steady state (linear and nonlinear) with dominant zonal (x) flow
 			return true;
 
-		if (i_parameters.setup.scenario == 3) // Steady state (linear and nonlinear) with dominant meridional (y) flow
+		if (i_parameters.setup.benchmark_scenario_id == 3) // Steady state (linear and nonlinear) with dominant meridional (y) flow
 			return true;
 
-		if (i_parameters.setup.scenario == 4)// Square break
+		if (i_parameters.setup.benchmark_scenario_id == 4)// Square break
 			return false;
 
 
-		if (i_parameters.setup.scenario == 5) // Trigonometric
+		if (i_parameters.setup.benchmark_scenario_id == 5) // Trigonometric
 			return false;
 
-		if (i_parameters.setup.scenario == 6) // Gaussian
+		if (i_parameters.setup.benchmark_scenario_id == 6) // Gaussian
 			return false;
 
-		if (i_parameters.setup.scenario == 8)// gaussian in x
+		if (i_parameters.setup.benchmark_scenario_id == 8)// gaussian in x
 			return false;
 
-		if (i_parameters.setup.scenario == 9)//Constant
+		if (i_parameters.setup.benchmark_scenario_id == 9)//Constant
 			return false;
 
-		if (i_parameters.setup.scenario == 10) // beta plane
+		if (i_parameters.setup.benchmark_scenario_id == 10) // beta plane
 			return false;
 
-		if (i_parameters.setup.scenario == 13)//Forced nonlinear case - trigonometric
+		if (i_parameters.setup.benchmark_scenario_id == 13)//Forced nonlinear case - trigonometric
 			return true;
 
 
-		if (i_parameters.setup.scenario == 14) //Rotated steady state
+		if (i_parameters.setup.benchmark_scenario_id == 14) //Rotated steady state
 			return true;
 
-		if (i_parameters.setup.scenario == 15) // Beta plane
+		if (i_parameters.setup.benchmark_scenario_id == 15) // Beta plane
 			return true;
 
-		if (i_parameters.setup.scenario == 16) // Waves
+		if (i_parameters.setup.benchmark_scenario_id == 16) // Waves
 			return false;
 
 		return false;

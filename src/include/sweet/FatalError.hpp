@@ -9,11 +9,14 @@
 #define SRC_INCLUDE_SWEET_FATALERROR_HPP_
 
 
+#include <cassert>
+
 class FatalError
 {
 public:
 	FatalError(const std::string i_error)
 	{
+		std::cerr << std::flush << std::endl;
 		std::cerr << i_error << std::endl;
 		assert(false);
 		exit(-1);

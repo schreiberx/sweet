@@ -198,7 +198,6 @@ int main(int i_argc, char *i_argv[])
 			}
 
 			double add_test_ten = ((five+two)+3.0).reduce_rms_quad();
-			std::cout << add_test_ten << std::endl;
 
 			error = std::abs(add_test_ten-10.0);
 			std::cout << "Add test ten ||_2 = " << error << std::endl;
@@ -225,9 +224,9 @@ int main(int i_argc, char *i_argv[])
 			}
 
 			// create sinus curve
-			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
+			for (int j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+				for (int i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
 					double x = ((double)i)/(double)res[0];
 					double y = ((double)j)/(double)res[1];
@@ -283,9 +282,9 @@ int main(int i_argc, char *i_argv[])
 					simVars.sim.domain_size,
 					simVars.disc.use_spectral_basis_diffs
 			);
-			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
+			for (int j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+				for (int i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
 					double x = ((double)i+0.5)/(double)simVars.disc.res_physical[0];
 					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
@@ -317,11 +316,11 @@ int main(int i_argc, char *i_argv[])
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 			// force forward/backward conversion
-			u.requestDataInSpectralSpace();
+			u.request_data_spectral();
 			u.physical_space_data_valid = false;
 
 			// force forward/backward conversion
-			v.requestDataInSpectralSpace();
+			v.request_data_spectral();
 			v.physical_space_data_valid = false;
 #endif
 
@@ -378,9 +377,9 @@ int main(int i_argc, char *i_argv[])
 
 			PlaneOperators op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
-			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
+			for (int j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+				for (int i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
 #define FUN_ID	1
 					double x = ((double)i+0.5)/(double)simVars.disc.res_physical[0];
@@ -432,11 +431,11 @@ int main(int i_argc, char *i_argv[])
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 			// force forward/backward conversion
-			u.requestDataInSpectralSpace();
+			u.request_data_spectral();
 			u.physical_space_data_valid = false;
 
 			// force forward/backward conversion
-			v.requestDataInSpectralSpace();
+			v.request_data_spectral();
 			v.physical_space_data_valid = false;
 #endif
 
@@ -543,9 +542,9 @@ int main(int i_argc, char *i_argv[])
 
 			PlaneOperators op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
-			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
+			for (int j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+				for (int i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
 					double x = ((double)i+0.5)/(double)simVars.disc.res_physical[0];
 					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
@@ -650,9 +649,9 @@ int main(int i_argc, char *i_argv[])
 
 			PlaneOperators op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
-			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
+			for (int j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+				for (int i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
 					double x = ((double)i+0.5)/(double)simVars.disc.res_physical[0];
 					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];

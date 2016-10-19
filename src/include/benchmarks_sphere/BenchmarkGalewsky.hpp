@@ -9,6 +9,9 @@
 #define SRC_BENCHMARKGALEWSKY_HPP_
 
 #include <libmath/GaussQuadrature.hpp>
+#include <sweet/SimulationVariables.hpp>
+#include <sweet/sphere/SphereDataConfig.hpp>
+#include <sweet/sphere/SphereData.hpp>
 
 class BenchmarkGalewsky
 {
@@ -33,10 +36,10 @@ class BenchmarkGalewsky
 	const double h_hat = 120.0;
 
 
-	SimVars &simVars;
+	SimulationVariables &simVars;
 
 public:
-	BenchmarkGalewsky(SimVars &i_simVars)	:
+	BenchmarkGalewsky(SimulationVariables &i_simVars)	:
 		simVars(i_simVars)
 	{
 
@@ -70,14 +73,14 @@ private:
 	};
 
 
-	static double to_int_fun(const double phi)
+	static double to_int_fun(double phi)
 	{
 		BenchmarkGalewsky* t = T();
 
 		double u_phi = t->initial_condition_u(0, phi);
 
-		return t->simVars.earth_radius*u_phi*
-				(2.0*t->simVars.coriolis_omega*sin(phi)+(tan(phi)/t->simVars.earth_radius)*u_phi);
+		return t->simVars.sim.earth_radius*u_phi*
+				(2.0*t->simVars.sim.coriolis_omega*std::sin(phi)+(std::tan(phi)/t->simVars.sim.earth_radius)*u_phi);
 	};
 
 	double error_threshold = 1.e-13;
@@ -199,12 +202,12 @@ public:
 		}
 		assert(h_area > 0);
 
-		double h_sum = hg_sum / simVars.gravitation;
+		double h_sum = hg_sum / simVars.sim.gravitation;
 		double h_comp_avg = h_sum / h_area;
 
 		// shift to 10km
 		for (int j = 0; j < sphConfig->spat_num_lat; j++)
-			hg_cached[j] = hg_cached[j]/simVars.gravitation + (h_avg-h_comp_avg);
+			hg_cached[j] = hg_cached[j]/simVars.sim.gravitation + (h_avg-h_comp_avg);
 
 		// update data
 		for (int i = 0; i < sphConfig->spat_num_lon; i++)
@@ -220,7 +223,7 @@ public:
 
 	void setup_initial_h_add_bump(SphereData &o_h)
 	{
-		o_h.spat_update_lambda(
+		o_h.physical_update_lambda(
 				[&](double lambda, double phi, double &io_data)
 				{
 					io_data += h_hat*cos(phi)*exp(-pow((lambda-M_PI)/alpha, 2.0))*exp(-pow((phi2-phi)/beta, 2.0));
@@ -231,7 +234,7 @@ public:
 
 	void setup_initial_u(SphereData &o_u)
 	{
-		o_u.spat_update_lambda(
+		o_u.physical_update_lambda(
 				[&](double lon, double lat, double &o_data)
 				{
 					initial_condition_u(lon, lat, o_data);
@@ -242,7 +245,7 @@ public:
 
 	void setup_initial_v(SphereData &o_v)
 	{
-		o_v.spat_set_zero();
+		o_v.physical_set_zero();
 	}
 
 };

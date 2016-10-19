@@ -66,7 +66,7 @@ public:
 
 		SphereDataComplex out_sph_data = spec_one_minus_mu_squared_diff_lat_mu(i_sph_data);
 
-		out_sph_data.spat_update_lambda_gaussian_grid(
+		out_sph_data.physical_update_lambda_gaussian_grid(
 				[](double lambda, double mu, std::complex<double> &o_data)
 				{
 					o_data /= (1.0-mu*mu);
@@ -103,7 +103,7 @@ public:
 	{
 		SphereDataComplex out_sph_data = diff_lon(i_sph_data);
 
-		out_sph_data.spat_update_lambda_gaussian_grid(
+		out_sph_data.physical_update_lambda_gaussian_grid(
 				[](double lambda, double mu, std::complex<double> &o_data)
 				{
 					double cos_phi = sqrt(1.0-mu*mu);
@@ -133,8 +133,8 @@ public:
 			for (int m = -n; m <= n; m++)
 			{
 				out_sph_data.data_spec[idx] =
-						((-n+1.0)*R(n-1,m))*i_sph_data.spec_get(n-1, m) +
-						((n+2.0)*S(n+1,m))*i_sph_data.spec_get(n+1, m);
+						((-n+1.0)*R(n-1,m))*i_sph_data.spectral_get(n-1, m) +
+						((n+2.0)*S(n+1,m))*i_sph_data.spectral_get(n+1, m);
 
 				idx++;
 			}
@@ -168,8 +168,8 @@ public:
 			for (int m = -n; m <= n; m++)
 			{
 				out_sph_data.data_spec[idx] =
-					R(n-1,m)*i_sph_data.spec_get(n-1, m)
-					+ S(n+1,m)*i_sph_data.spec_get(n+1, m);
+					R(n-1,m)*i_sph_data.spectral_get(n-1, m)
+					+ S(n+1,m)*i_sph_data.spectral_get(n+1, m);
 
 				idx++;
 			}
@@ -202,9 +202,9 @@ public:
 			for (int m = -n; m <= n; m++)
 			{
 				out_sph_data.data_spec[idx] =
-						+A(n-2,m)*i_sph_data.spec_get(n-2, m)
-						+B(n+0,m)*i_sph_data.spec_get(n+0, m)
-						+C(n+2,m)*i_sph_data.spec_get(n+2, m)
+						+A(n-2,m)*i_sph_data.spectral_get(n-2, m)
+						+B(n+0,m)*i_sph_data.spectral_get(n+0, m)
+						+C(n+2,m)*i_sph_data.spectral_get(n+2, m)
 						;
 				idx++;
 			}
@@ -237,10 +237,10 @@ public:
 		SphereDataComplex out_sph_data = spec_one_minus_mu_squared_diff_lat_mu(i_sph_data);
 
 		out_sph_data.request_data_physical();
-		out_sph_data.spat_update_lambda_gaussian_grid(
+		out_sph_data.physical_update_lambda_gaussian_grid(
 				[](double lambda, double mu, std::complex<double> &o_data)
 				{
-					double phi = asin(mu);
+					//double phi = asin(mu);
 
 					//o_data /= sin(M_PI*0.5-phi);
 					//o_data /= ::cos(phi);
@@ -256,7 +256,7 @@ public:
 		 */
 		// undo the sin(theta) and multiply with sqrt(1-mu*mu)
 		out_sph_data.request_data_physical();
-		out_sph_data.spat_update_lambda_gaussian_grid(
+		out_sph_data.physical_update_lambda_gaussian_grid(
 				[this](double lambda, double mu, double &o_data)
 				{
 					double phi = asin(mu);
@@ -303,7 +303,7 @@ public:
 	{
 		SphereDataComplex out_sph_data(i_sph_data);
 
-		out_sph_data.spat_update_lambda_cogaussian_grid(
+		out_sph_data.physical_update_lambda_cogaussian_grid(
 				[](double lambda, double mu, std::complex<double> &o_data)
 				{
 					//o_data *= cos(phi);
@@ -316,7 +316,7 @@ public:
 
 		// undo the sin(theta) which is cos(phi)
 #if 0
-		out_sph_data.spat_update_lambda_cogaussian_grid(
+		out_sph_data.physical_update_lambda_cogaussian_grid(
 				[](double lambda, double mu, std::complex<double> &o_data)
 				{
 					o_data /= mu;
@@ -324,7 +324,7 @@ public:
 				}
 			);
 #else
-		out_sph_data.spat_update_lambda(
+		out_sph_data.physical_update_lambda(
 				[](double lambda, double phi, std::complex<double> &o_data)
 				{
 					//o_data /= mu;
@@ -350,7 +350,7 @@ public:
 	{
 		SphereDataComplex out = diff_lon(i_sph_data);
 
-		out.spat_update_lambda_cosphi_grid(
+		out.physical_update_lambda_cosphi_grid(
 				[](double lambda, double cos_phi, std::complex<double> &o_data)
 				{
 					o_data /= cos_phi*cos_phi;
@@ -379,7 +379,7 @@ public:
 		 */
 		SphereDataComplex out = spec_cosphi_squared_diff_lat_mu(i_sph_data);
 
-		out.spat_update_lambda_cosphi_grid(
+		out.physical_update_lambda_cosphi_grid(
 				[](double lambda, double cos_phi, std::complex<double> &o_data)
 				{
 					o_data /= cos_phi*cos_phi;
@@ -459,7 +459,7 @@ public:
 
 		SphereDataComplex out(i_sph_data);
 
-		out.spec_update_lambda(
+		out.spectral_update_lambda(
 				[](int n, int m, std::complex<double> &o_data)
 				{
 					o_data *= -(double)n*((double)n+1.0);
@@ -538,7 +538,7 @@ public:
 		// Only compute division once
 		SphereDataComplex out = diff_lon(i_lon) + spec_cosphi_squared_diff_lat_mu(i_lat);
 
-		out.spat_update_lambda_cosphi_grid(
+		out.physical_update_lambda_cosphi_grid(
 				[](double lambda, double cos_phi, std::complex<double> &o_data)
 				{
 					o_data /= cos_phi*cos_phi;

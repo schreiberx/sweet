@@ -1,10 +1,27 @@
 
 
+********************************************************
 * SWEET takes long to startup
+********************************************************
 
   FFTW can take some seconts to setup the plans.
   To overcome this, set the environemtn variable SWEET_FFTW_ESTIMATE
 
-* SWEET is very slow
+********************************************************
+* SWEET behaves differently in performance everytime it's executed
+********************************************************
 
+  One of the reasons can be that FFTW is choosing different plans
+  everytime you start a program with SWEET.
+  To avoid this, SWEET supports loading plans from wisdom files.
+  Set the environment variable SWEET_FFTW_LOAD_WISDOM_FROM_FILE to
+  the wisdom file which you can generate with `fftw-wisdom`
+
+  Another reason can be a pinning problem of the threads to the cores.
+  If you run simulations on multi-socket machines, this can easily
+  result in varying performance.
+  Use OMP_PROC_BIND=TRUE to bind threads to cores
+
+  In case of activated frequency scaling, it might be necessary
+  to deactivate this.
 

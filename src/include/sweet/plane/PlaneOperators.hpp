@@ -298,10 +298,16 @@ public:
 			 */
 			diff_c_x.spectral_set_all(0, 0);
 
-			for (int j = 0; j <= (int)diff_c_x.planeDataConfig->spectral_data_size[1]/2; j++)
+			for (int j = 0; j <= (int)planeDataConfig->spectral_data_size[1]/2; j++)
 			{
-				for (int i = 0; i < (int)diff_c_x.planeDataConfig->spectral_data_size[0]; i++)
+				for (int i = 0; i < (int)planeDataConfig->spectral_data_size[0]; i++)
 				{
+					std::size_t idxa = ((j)*planeDataConfig->spectral_data_size[0])+(i);
+					diff_c_x.spectral_space_data[idxa] = {0.0, (double)(((double)i)*2.0*M_PIl/(double)i_domain_size[0])};
+
+					std::size_t idxb = ((diff_c_x.planeDataConfig->spectral_data_size[1]-1-j)*planeDataConfig->spectral_data_size[0])+(i);
+					diff_c_x.spectral_space_data[idxb] = {0.0, (double)((double)i*2.0*M_PIl/(double)i_domain_size[0])};
+#if 0
 					diff_c_x.spectral_set(
 							j, i,
 							0,
@@ -312,6 +318,7 @@ public:
 							0,
 							(double)i*2.0*M_PIl/(double)i_domain_size[0]
 						);
+#endif
 				}
 			}
 
@@ -325,6 +332,13 @@ public:
 			{
 				for (int i = 0; i < (int)diff_c_y.planeDataConfig->spectral_data_size[0]; i++)
 				{
+					std::size_t idxa = ((j+1)*planeDataConfig->spectral_data_size[0])+(i);
+					diff_c_y.spectral_space_data[idxa] = {0, (double)((double)(j+1)*2.0*M_PIl/(double)i_domain_size[1])};
+
+					std::size_t idxb = ((diff_c_y.planeDataConfig->spectral_data_size[1]-(j+1))*planeDataConfig->spectral_data_size[0])+(i);
+					diff_c_y.spectral_space_data[idxb] = {0, (double)(-(double)(j+1)*2.0*M_PIl/(double)i_domain_size[1])};
+
+#if 0
 					diff_c_y.spectral_set(
 							j+1, i,
 							0,
@@ -335,6 +349,7 @@ public:
 							0,
 							-(double)(j+1)*2.0*M_PIl/(double)i_domain_size[1]
 						);
+#endif
 				}
 			}
 
@@ -386,6 +401,13 @@ public:
 				{
 					double fac = (double)i*2.0*M_PIl/(double)i_domain_size[0];
 
+					std::size_t idxa = ((j)*planeDataConfig->spectral_data_size[0])+(i);
+					diff2_c_x.spectral_space_data[idxa] = {-fac*fac, 0.0};
+
+					std::size_t idxb = ((diff_c_x.planeDataConfig->spectral_data_size[1]-1-j)*planeDataConfig->spectral_data_size[0])+(i);
+					diff2_c_x.spectral_space_data[idxb] = {-fac*fac, 0.0};
+
+#if 0
 					diff2_c_x.spectral_set(
 							j, i,
 							-fac*fac,
@@ -396,6 +418,7 @@ public:
 							-fac*fac,
 							0
 						);
+#endif
 				}
 			}
 
@@ -408,6 +431,13 @@ public:
 				{
 					double fac = (double)(j+1)*2.0*M_PIl/(double)i_domain_size[1];
 
+					std::size_t idxa = ((j+1)*planeDataConfig->spectral_data_size[0])+(i);
+					diff2_c_y.spectral_space_data[idxa] = {-fac*fac, 0.0};
+
+					std::size_t idxb = ((diff_c_y.planeDataConfig->spectral_data_size[1]-(j+1))*planeDataConfig->spectral_data_size[0])+(i);
+					diff2_c_y.spectral_space_data[idxb] = {-fac*fac, 0.0};
+
+#if 0
 					diff2_c_y.spectral_set(
 							j+1, i,
 							-fac*fac,
@@ -419,6 +449,7 @@ public:
 							-fac*fac,
 							0
 						);
+#endif
 				}
 			}
 #else

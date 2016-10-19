@@ -187,7 +187,7 @@ public:
 };
 
 template <typename T>
-class SphBandedMatrix	:
+class LapackBandedMatrixSolver	:
 		public BandedMatrixSolverCommon<T>
 {
 public:
@@ -214,7 +214,7 @@ public:
 
 
 template <>
-class SphBandedMatrix<std::complex<double>>	:
+class LapackBandedMatrixSolver<std::complex<double>>	:
 		public BandedMatrixSolverCommon<std::complex<double>>
 {
 	typedef std::complex<double> T;
@@ -401,7 +401,7 @@ public:
 		int i_size
 	)
 	{
-		assert(num_diagonals & 1 == 1);
+		assert((num_diagonals & 1) == 1);
 		assert(AB != nullptr);
 
 		int info;

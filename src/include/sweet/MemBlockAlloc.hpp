@@ -7,6 +7,8 @@
 #ifndef SRC_INCLUDE_SWEET_MEMBLOCKALLOC_HPP_
 #define SRC_INCLUDE_SWEET_MEMBLOCKALLOC_HPP_
 
+#include <sweet/openmp_helper.hpp>
+
 /**
  * define granularity of allocation
  *
@@ -388,6 +390,9 @@ public:
 			std::size_t i_size
 	)
 	{
+#if 1
+		return i_data;
+#else
 		char *data = (char*)i_data;
 
 #pragma omp parallel for OPENMP_PAR_SIMD
@@ -395,6 +400,7 @@ public:
 			data[i] = 0;
 
 		return i_data;
+#endif
 	}
 
 

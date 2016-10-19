@@ -9,7 +9,7 @@
 #define SRC_INCLUDE_SPH_BANDEDMATRIX_HPP_
 
 #include <sweet/MemBlockAlloc.hpp>
-#include "../sph/SphereDataConfig.hpp"
+#include <sweet/sphere/SphereDataConfig.hpp>
 
 
 
@@ -66,7 +66,7 @@ public:
 	 */
 	void zeroAll()
 	{
-		for (std::size_t i = 0; i < sphConfig->spec_num_elems*num_diagonals; i++)
+		for (int i = 0; i < sphConfig->spec_num_elems*num_diagonals; i++)
 			data[i] = T(0);
 	}
 

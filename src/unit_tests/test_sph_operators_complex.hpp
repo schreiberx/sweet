@@ -66,17 +66,17 @@ public:
 			);
 			result.request_data_spectral();
 
-			h.spat_write_file("O_SPHbasis_test_function.csv");
+			h.physical_write_file("O_SPHbasis_test_function.csv");
 
 
 			// one_minus_mu_squared_diff_lat
 			h = opComplex.spec_one_minus_mu_squared_diff_lat_mu(h);
-			h.spat_write_file("O_SPHbasis_one_minus_mu_squared_diff_mu_sph_result.csv");
+			h.physical_write_file("O_SPHbasis_one_minus_mu_squared_diff_mu_sph_result.csv");
 
-			result.spat_write_file("O_SPHbasis_one_minus_mu_squared_diff_mu_correct_result.csv");
+			result.physical_write_file("O_SPHbasis_one_minus_mu_squared_diff_mu_correct_result.csv");
 
 
-			double error_max = h.spat_reduce_error_max(result);
+			double error_max = h.physical_reduce_error_max(result);
 			std::cout << "TEST SPHbasis (1-mu*mu)*d/dmu - max error: " << error_max << std::endl;
 		}
 
@@ -90,7 +90,7 @@ public:
 			{
 				std::complex<double> scalar = {12.0, 34.0};
 				SphereDataComplex data(i_sphConfig);
-				data.spat_update_lambda(
+				data.physical_update_lambda(
 						[&](double x, double y, cplx &io_data)
 						{
 							io_data = y;
@@ -98,25 +98,25 @@ public:
 				);
 
 				data = data*scalar;
-				data.spec_truncate();
+				data.physical_truncate();
 
 				SphereDataComplex data2(i_sphConfig);
-				data2.spat_update_lambda(
+				data2.physical_update_lambda(
 						[&](double x, double y, cplx &io_data)
 						{
 							io_data = y*scalar;
 						}
 				);
-				data2.spec_truncate();
+				data2.physical_truncate();
 
-				double error = data.spat_reduce_error_max(data2);
+				double error = data.physical_reduce_error_max(data2);
 				std::cout << "ERROR operator*" << scalar << ": " << error << std::endl;
 			}
 
 			if (true)
 			{
 				SphereDataComplex data(i_sphConfig);
-				data.spat_update_lambda(
+				data.physical_update_lambda(
 						[&](double x, double y, std::complex<double> &io_data)
 						{
 							io_data = y;
@@ -124,18 +124,18 @@ public:
 				);
 
 				data = data + 100.0;
-				data.spec_truncate();
+				data.physical_truncate();
 
 				SphereDataComplex data2(i_sphConfig);
-				data2.spat_update_lambda(
+				data2.physical_update_lambda(
 						[&](double x, double y, std::complex<double> &io_data)
 						{
 							io_data = y+100.0;
 						}
 				);
-				data2.spec_truncate();
+				data2.physical_truncate();
 
-				double error = data.spat_reduce_error_max(data2);
+				double error = data.physical_reduce_error_max(data2);
 				std::cout << "ERROR operator+(double): " << error << std::endl;
 			}
 
@@ -144,7 +144,7 @@ public:
 				std::complex<double> offset(200.0, 100.0);
 
 				SphereDataComplex data(i_sphConfig);
-				data.spat_update_lambda(
+				data.physical_update_lambda(
 						[&](double x, double y, std::complex<double> &io_data)
 						{
 							io_data.real(x*y);
@@ -153,20 +153,20 @@ public:
 				);
 
 				data = data+offset;
-				data.spec_truncate();
+				data.physical_truncate();
 
 
 				SphereDataComplex data2(i_sphConfig);
-				data2.spat_update_lambda(
+				data2.physical_update_lambda(
 						[&](double x, double y, std::complex<double> &io_data)
 						{
 							io_data.real(x*y+offset.real());
 							io_data.imag(x+y+offset.imag());
 						}
 				);
-				data2.spec_truncate();
+				data2.physical_truncate();
 
-				double error = data.spat_reduce_error_max(data2);
+				double error = data.physical_reduce_error_max(data2);
 				std::cout << "ERROR operator+(cplx): " << error << std::endl;
 			}
 
@@ -183,10 +183,10 @@ public:
 							c = tmp;
 						}
 				);
-				h.spat_write_file("O_test_function.csv");
+				h.physical_write_file("O_test_function.csv");
 
 				SphereDataComplex hphi(i_sphConfig);
-				hphi.spat_update_lambda(
+				hphi.physical_update_lambda(
 						[&](double a, double b, std::complex<double> &c)
 						{
 							double tmp;
@@ -194,9 +194,9 @@ public:
 							c = tmp;
 						}
 				);
-				hphi.spat_write_file("O_test_function_phi.csv");
+				hphi.physical_write_file("O_test_function_phi.csv");
 
-				double error_max = h.spat_reduce_error_max(hphi);
+				double error_max = h.physical_reduce_error_max(hphi);
 				std::cout << "TEST PHI vs. MU: max error: " << error_max << std::endl;
 			}
 
@@ -225,7 +225,7 @@ public:
 				);
 				//result = result.spat_truncate();
 
-				double error_max = h.spat_reduce_error_max(result);
+				double error_max = h.physical_reduce_error_max(result);
 
 				std::cout << "TEST IDENTITY: max error: " << error_max << std::endl;
 			}
@@ -247,7 +247,7 @@ public:
 
 				h = opComplex.diff_lon(h);
 
-				h.spat_write_file("O_diff_lambda_sph_result.csv");
+				h.physical_write_file("O_diff_lambda_sph_result.csv");
 
 				SphereDataComplex result(i_sphConfig);
 				result.spat_update_lambda_gaussian_grid(
@@ -259,9 +259,9 @@ public:
 						}
 				);
 				//result = result.spat_truncate();
-				result.spat_write_file("O_diff_lambda_correct_result.csv");
+				result.physical_write_file("O_diff_lambda_correct_result.csv");
 
-				double error_max = h.spat_reduce_error_max(result);
+				double error_max = h.physical_reduce_error_max(result);
 				std::cout << "TEST DIFF LON - max error: " << error_max << std::endl;
 			}
 
@@ -279,7 +279,7 @@ public:
 						}
 				);
 				h = opComplex.diff_lat_phi(h);
-				h.spat_write_file("O_diff_phi_sph_result.csv");
+				h.physical_write_file("O_diff_phi_sph_result.csv");
 
 				SphereDataComplex result(i_sphConfig);
 				result.spat_update_lambda_gaussian_grid(
@@ -291,9 +291,9 @@ public:
 						}
 				);
 				//result = result.spat_truncate();
-				result.spat_write_file("O_diff_phi_correct_result.csv");
+				result.physical_write_file("O_diff_phi_correct_result.csv");
 
-				double error_max = h.spat_reduce_error_max(result);
+				double error_max = h.physical_reduce_error_max(result);
 				std::cout << "TEST DIFF PHI - max error: " << error_max << std::endl;
 			}
 
@@ -312,7 +312,7 @@ public:
 				);
 				h = opComplex.diff_lat_mu(h);
 				//h = h.spat_truncate();
-				h.spat_write_file("O_diff_mu_sph_result.csv");
+				h.physical_write_file("O_diff_mu_sph_result.csv");
 
 				SphereDataComplex result(i_sphConfig);
 				result.spat_update_lambda_gaussian_grid(
@@ -324,9 +324,9 @@ public:
 						}
 				);
 				//result = result.spat_truncate();
-				result.spat_write_file("O_diff_mu_correct_result.csv");
+				result.physical_write_file("O_diff_mu_correct_result.csv");
 
-				double error_max = h.spat_reduce_error_max(result);
+				double error_max = h.physical_reduce_error_max(result);
 				std::cout << "TEST DIFF LAT MU - max error: " << error_max << std::endl;
 			}
 
@@ -345,7 +345,7 @@ public:
 				);
 				h = opComplex.grad_lon(h);
 				//h = h.spat_truncate();
-				h.spat_write_file("O_grad_lambda_sph_result.csv");
+				h.physical_write_file("O_grad_lambda_sph_result.csv");
 
 				SphereDataComplex result(i_sphConfig);
 				result.spat_update_lambda_gaussian_grid(
@@ -357,9 +357,9 @@ public:
 						}
 				);
 				//result = result.spat_truncate();
-				result.spat_write_file("O_grad_lambda_correct_result.csv");
+				result.physical_write_file("O_grad_lambda_correct_result.csv");
 
-				double error_max = h.spat_reduce_error_max(result);
+				double error_max = h.physical_reduce_error_max(result);
 				std::cout << "TEST GRAD LON - max error: " << error_max << std::endl;
 			}
 
@@ -377,7 +377,7 @@ public:
 						}
 				);
 				h = opComplex.mu(h);
-				h.spat_write_file("O_mu_sph_result.csv");
+				h.physical_write_file("O_mu_sph_result.csv");
 
 				SphereDataComplex result(i_sphConfig);
 				result.spat_update_lambda_gaussian_grid(
@@ -388,9 +388,9 @@ public:
 							c = tmp;
 						}
 				);
-				result.spat_write_file("O_mu_correct_result.csv");
+				result.physical_write_file("O_mu_correct_result.csv");
 
-				double error_max = h.spat_reduce_error_max(result);
+				double error_max = h.physical_reduce_error_max(result);
 				std::cout << "TEST mu*() - max error: " << error_max << std::endl;
 			}
 
@@ -407,7 +407,7 @@ public:
 						}
 				);
 				h = opComplex.mu2(h);
-				h.spat_write_file("O_mu2_sph_result.csv");
+				h.physical_write_file("O_mu2_sph_result.csv");
 
 				SphereDataComplex result(i_sphConfig);
 				result.spat_update_lambda_gaussian_grid(
@@ -419,9 +419,9 @@ public:
 							i_data *= mu*mu;
 						}
 				);
-				result.spat_write_file("O_mu2_correct_result.csv");
+				result.physical_write_file("O_mu2_correct_result.csv");
 
-				double error_max = h.spat_reduce_error_max(result);
+				double error_max = h.physical_reduce_error_max(result);
 				std::cout << "TEST mu*mu*() - max error: " << error_max << std::endl;
 			}
 
@@ -439,7 +439,7 @@ public:
 						}
 				);
 				h = opComplex.spec_one_minus_mu_squared_diff_lat_mu(h);
-				h.spat_write_file("O_one_minus_mu_squared_diff_mu_sph_result.csv");
+				h.physical_write_file("O_one_minus_mu_squared_diff_mu_sph_result.csv");
 
 				SphereDataComplex result(i_sphConfig);
 				result.spat_update_lambda_gaussian_grid(
@@ -451,9 +451,9 @@ public:
 						}
 				);
 
-				result.spat_write_file("O_one_minus_mu_squared_diff_mu_correct_result.csv");
+				result.physical_write_file("O_one_minus_mu_squared_diff_mu_correct_result.csv");
 
-				double error_max = h.spat_reduce_error_max(result);
+				double error_max = h.physical_reduce_error_max(result);
 				std::cout << "TEST (1-mu*mu)*d/dmu - max error: " << error_max << std::endl;
 			}
 
@@ -472,7 +472,7 @@ public:
 				);
 				h = opComplex.grad_lat(h);
 				//h = h.spat_truncate();
-				h.spat_write_file("O_grad_phi_sph_result.csv");
+				h.physical_write_file("O_grad_phi_sph_result.csv");
 
 				SphereDataComplex result(i_sphConfig);
 				result.spat_update_lambda_gaussian_grid(
@@ -484,9 +484,9 @@ public:
 						}
 				);
 
-				result.spat_write_file("O_grad_phi_correct_result.csv");
+				result.physical_write_file("O_grad_phi_correct_result.csv");
 
-				double error_max = h.spat_reduce_error_max(result);
+				double error_max = h.physical_reduce_error_max(result);
 				std::cout << "TEST GRAD LAT - max error: " << error_max << std::endl;
 			}
 
@@ -505,7 +505,7 @@ public:
 				);
 				h = opComplex.div_lon(h);
 				//h = h.spat_truncate();
-				h.spat_write_file("O_div_lambda_sph_result.csv");
+				h.physical_write_file("O_div_lambda_sph_result.csv");
 
 				SphereDataComplex result(i_sphConfig);
 				result.spat_update_lambda_gaussian_grid(
@@ -517,9 +517,9 @@ public:
 						}
 				);
 				//result = result.spat_truncate();
-				result.spat_write_file("O_div_lambda_correct_result.csv");
+				result.physical_write_file("O_div_lambda_correct_result.csv");
 
-				double error_max = h.spat_reduce_error_max(result);
+				double error_max = h.physical_reduce_error_max(result);
 				std::cout << "TEST DIV LON  - max error: " << error_max << std::endl;
 			}
 
@@ -538,7 +538,7 @@ public:
 				);
 				h = opComplex.div_lat(h);
 				//h = h.spat_truncate();
-				h.spat_write_file("O_div_mu_sph_result.csv");
+				h.physical_write_file("O_div_mu_sph_result.csv");
 
 				SphereDataComplex result(i_sphConfig);
 				result.spat_update_lambda_gaussian_grid(
@@ -551,11 +551,11 @@ public:
 				);
 				//result = result.spat_truncate();
 
-				result.spat_write_file("O_div_mu_correct_result.csv");
+				result.physical_write_file("O_div_mu_correct_result.csv");
 
-				(h-result).spat_write_file("O_div_mu_correct_diff.csv");
+				(h-result).physical_write_file("O_div_mu_correct_diff.csv");
 
-				double error_max = h.spat_reduce_error_max(result);
+				double error_max = h.physical_reduce_error_max(result);
 				std::cout << "TEST DIV LAT  - max error: " << error_max << std::endl;
 			}
 
@@ -579,7 +579,7 @@ public:
 				//h = opComplex.mu2(h);
 				//h = opComplex.mu2(h);
 
-				h.spat_write_file("O_laplace_div_grad_result.csv");
+				h.physical_write_file("O_laplace_div_grad_result.csv");
 
 				SphereDataComplex result(i_sphConfig);
 				result.spat_update_lambda_gaussian_grid(
@@ -595,14 +595,14 @@ public:
 				//result = opComplex.mu2(result);
 				//result = opComplex.mu2(result);
 
-				result.spat_write_file("O_laplace_laplace_result.csv");
+				result.physical_write_file("O_laplace_laplace_result.csv");
 
-				(h-result).spat_write_file("O_laplace_laplace_z_diff.csv");
+				(h-result).physical_write_file("O_laplace_laplace_z_diff.csv");
 
-				result.spec_truncate();
-				h.spec_truncate();
+				result.physical_truncate();
+				h.physical_truncate();
 
-				double error_max = (h-result).spat_reduce_error_max();
+				double error_max = (h-result).physical_reduce_error_max();
 				std::cout << "TEST LAPLACE  - max error: " << error_max << std::endl;
 			}
 		}

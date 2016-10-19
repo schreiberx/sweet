@@ -5,12 +5,12 @@
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#ifndef SRC_INCLUDE_SPH_SPHSOLVER_COMPLEX_HPP_
-#define SRC_INCLUDE_SPH_SPHSOLVER_COMPLEX_HPP_
+#ifndef SRC_INCLUDE_SPH_BANDED_MATRIX_COMPLEX_HPP_
+#define SRC_INCLUDE_SPH_BANDED_MATRIX_COMPLEX_HPP_
 
-#include "../libmath/LapackBandedMatrixSolver.hpp"
-#include "../sphere/SphereSPHIdentities.hpp"
-#include "BandedMatrixComplex.hpp"
+#include <sweet/sphere/SphereSPHIdentities.hpp>
+#include <libmath/LapackBandedMatrixSolver.hpp>
+#include <libmath/BandedMatrixComplex.hpp>
 
 
 
@@ -30,12 +30,12 @@ public:
 	/**
 	 * SPH configuration
 	 */
-	SphereDataConfig *sphConfig;
+	SphereDataConfig *sphereDataConfig;
 
 	/**
 	 * Solver for banded matrix
 	 */
-	SphBandedMatrix< std::complex<double> > bandedMatrixSolver;
+	LapackBandedMatrixSolver< std::complex<double> > bandedMatrixSolver;
 
 	/**
 	 * Buffer to compactify the N-varying for a particular M
@@ -52,19 +52,19 @@ public:
 			int i_halosize_offdiagonal	///< Size of the halo around. A value of 2 allocates data for 5 diagonals.
 	)
 	{
-		sphConfig = i_sphConfig;
+		sphereDataConfig = i_sphConfig;
 
-		lhs.setup(sphConfig, i_halosize_offdiagonal);
+		lhs.setup(sphereDataConfig, i_halosize_offdiagonal);
 
 		bandedMatrixSolver.setup(i_sphConfig->spec_n_max+1, i_halosize_offdiagonal);
 
-		buffer_in = MemBlockAlloc::alloc< std::complex<double> >(sphConfig->spec_n_max+1);
-		buffer_out = MemBlockAlloc::alloc< std::complex<double> >(sphConfig->spec_n_max+1);
+		buffer_in = MemBlockAlloc::alloc< std::complex<double> >(sphereDataConfig->spec_n_max+1);
+		buffer_out = MemBlockAlloc::alloc< std::complex<double> >(sphereDataConfig->spec_n_max+1);
 	}
 
 
 	SphBandedMatrixComplex()	:
-		sphConfig(nullptr),
+		sphereDataConfig(nullptr),
 		buffer_in(nullptr),
 		buffer_out(nullptr)
 	{
@@ -75,8 +75,8 @@ public:
 	{
 		if (buffer_in != nullptr)
 		{
-			MemBlockAlloc::free(buffer_in, sphConfig->spec_num_elems);
-			MemBlockAlloc::free(buffer_out, sphConfig->spec_num_elems);
+			MemBlockAlloc::free(buffer_in, sphereDataConfig->spec_num_elems);
+			MemBlockAlloc::free(buffer_out, sphereDataConfig->spec_num_elems);
 		}
 	}
 
@@ -90,9 +90,9 @@ public:
 	)
 	{
 #pragma omp parallel for
-		for (int m = -sphConfig->spec_m_max; m <= sphConfig->spec_m_max; m++)
+		for (int m = -sphereDataConfig->spec_m_max; m <= sphereDataConfig->spec_m_max; m++)
 		{
-			for (int n = std::abs(m); n <= sphConfig->spec_n_max; n++)
+			for (int n = std::abs(m); n <= sphereDataConfig->spec_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 				lhs.rowElement_add(row, n, m, 0, i_value);
@@ -111,9 +111,9 @@ public:
 	)
 	{
 #pragma omp parallel for
-		for (int m = -sphConfig->spec_m_max; m <= sphConfig->spec_m_max; m++)
+		for (int m = -sphereDataConfig->spec_m_max; m <= sphereDataConfig->spec_m_max; m++)
 		{
-			for (int n = std::abs(m); n <= sphConfig->spec_n_max; n++)
+			for (int n = std::abs(m); n <= sphereDataConfig->spec_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 				lhs.rowElement_add(row, n, m, -1, R(n-1,m)*i_scalar);
@@ -131,9 +131,9 @@ public:
 	void solver_component_one_minus_mu_mu_diff_mu_phi()
 	{
 #pragma omp parallel for
-		for (int m = -sphConfig->spec_m_max; m <= sphConfig->spec_m_max; m++)
+		for (int m = -sphereDataConfig->spec_m_max; m <= sphereDataConfig->spec_m_max; m++)
 		{
-			for (int n = std::abs(m); n <= sphConfig->spec_n_max; n++)
+			for (int n = std::abs(m); n <= sphereDataConfig->spec_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 				lhs.rowElement_add(row, n, m, -1, (-(double)n+1.0)*R(n-1,m));
@@ -168,9 +168,9 @@ public:
 	)
 	{
 #pragma omp parallel for
-		for (int m = -sphConfig->spec_m_max; m <= sphConfig->spec_m_max; m++)
+		for (int m = -sphereDataConfig->spec_m_max; m <= sphereDataConfig->spec_m_max; m++)
 		{
-			for (int n = std::abs(m); n <= sphConfig->spec_n_max; n++)
+			for (int n = std::abs(m); n <= sphereDataConfig->spec_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 #if 0
@@ -198,9 +198,9 @@ public:
 	)
 	{
 #pragma omp parallel for
-		for (int m = -sphConfig->spec_m_max; m <= sphConfig->spec_m_max; m++)
+		for (int m = -sphereDataConfig->spec_m_max; m <= sphereDataConfig->spec_m_max; m++)
 		{
-			for (int n = std::abs(m); n <= sphConfig->spec_n_max; n++)
+			for (int n = std::abs(m); n <= sphereDataConfig->spec_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 
@@ -224,9 +224,9 @@ public:
 	)
 	{
 #pragma omp parallel for
-		for (int m = -sphConfig->spec_m_max; m <= sphConfig->spec_m_max; m++)
+		for (int m = -sphereDataConfig->spec_m_max; m <= sphereDataConfig->spec_m_max; m++)
 		{
-			for (int n = std::abs(m); n <= sphConfig->spec_n_max; n++)
+			for (int n = std::abs(m); n <= sphereDataConfig->spec_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 				lhs.rowElement_add(row, n, m,  0, 1.0/(i_r*i_r)*i_scalar*T(0, m));
@@ -246,10 +246,10 @@ public:
 	)
 	{
 #pragma omp parallel for
-		for (int m = -sphConfig->spec_m_max; m <= sphConfig->spec_m_max; m++)
+		for (int m = -sphereDataConfig->spec_m_max; m <= sphereDataConfig->spec_m_max; m++)
 		{
 			std::complex<double> fac = 1.0/(i_r*i_r)*i_scalar*T(0, m);
-			for (int n = std::abs(m); n <= sphConfig->spec_n_max; n++)
+			for (int n = std::abs(m); n <= sphereDataConfig->spec_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 				lhs.rowElement_add(row, n, m, -2, -fac*A(n-2,m));
@@ -271,9 +271,9 @@ public:
 	)
 	{
 #pragma omp parallel for
-		for (int m = -sphConfig->spec_m_max; m <= sphConfig->spec_m_max; m++)
+		for (int m = -sphereDataConfig->spec_m_max; m <= sphereDataConfig->spec_m_max; m++)
 		{
-			for (int n = std::abs(m); n <= sphConfig->spec_n_max; n++)
+			for (int n = std::abs(m); n <= sphereDataConfig->spec_n_max; n++)
 			{
 				std::complex<double> fac = 1.0/(i_r*i_r)*i_scalar*T(0, m);
 
@@ -296,10 +296,10 @@ public:
 	)
 	{
 #pragma omp parallel for
-		for (int m = -sphConfig->spec_m_max; m <= sphConfig->spec_m_max; m++)
+		for (int m = -sphereDataConfig->spec_m_max; m <= sphereDataConfig->spec_m_max; m++)
 		{
 			std::complex<double> fac = 1.0/(i_r*i_r)*i_scalar*T(0, m);
-			for (int n = std::abs(m); n <= sphConfig->spec_n_max; n++)
+			for (int n = std::abs(m); n <= sphereDataConfig->spec_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 				lhs.rowElement_add(row, n, m,  -2,    -fac*(A(n-2, m)*A(n-4, m))    );
@@ -323,9 +323,9 @@ public:
 	)
 	{
 #pragma omp parallel for
-		for (int m = -sphConfig->spec_m_max; m <= sphConfig->spec_m_max; m++)
+		for (int m = -sphereDataConfig->spec_m_max; m <= sphereDataConfig->spec_m_max; m++)
 		{
-			for (int n = std::abs(m); n <= sphConfig->spec_n_max; n++)
+			for (int n = std::abs(m); n <= sphereDataConfig->spec_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 				lhs.rowElement_add(row, n, m,  -2, -1.0/(i_r*i_r)*i_scalar*(D(n-1,m)*R(n-2,m) + (E(n,m)-3.0)*A(n-2,m)));
@@ -345,10 +345,10 @@ public:
 	)
 	{
 #pragma omp parallel for
-		for (int m = -sphConfig->spec_m_max; m <= sphConfig->spec_m_max; m++)
+		for (int m = -sphereDataConfig->spec_m_max; m <= sphereDataConfig->spec_m_max; m++)
 		{
 			std::complex<double> s = 1.0/(i_r*i_r)*i_scalar*(double)m;
-			for (int n = std::abs(m); n <= sphConfig->spec_n_max; n++)
+			for (int n = std::abs(m); n <= sphereDataConfig->spec_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 
@@ -382,9 +382,9 @@ public:
 	)
 	{
 #pragma omp parallel for
-		for (int m = -sphConfig->spec_m_max; m <= sphConfig->spec_m_max; m++)
+		for (int m = -sphereDataConfig->spec_m_max; m <= sphereDataConfig->spec_m_max; m++)
 		{
-			for (int n = std::abs(m); n <= sphConfig->spec_n_max; n++)
+			for (int n = std::abs(m); n <= sphereDataConfig->spec_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 				lhs.rowElement_add(row, n, m, 0, -1.0/(i_r*i_r)*i_scalar*(double)n*((double)n+1.0));
@@ -403,9 +403,9 @@ public:
 	)
 	{
 #pragma omp parallel for
-		for (int m = -sphConfig->spec_m_max; m <= sphConfig->spec_m_max; m++)
+		for (int m = -sphereDataConfig->spec_m_max; m <= sphereDataConfig->spec_m_max; m++)
 		{
-			for (int n = std::abs(m); n <= sphConfig->spec_n_max; n++)
+			for (int n = std::abs(m); n <= sphereDataConfig->spec_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 
@@ -431,12 +431,12 @@ public:
 			const SphereDataComplex &i_x	///< solution to be searched
 	)
 	{
-		SphereDataComplex out(sphConfig);
+		SphereDataComplex out(sphereDataConfig);
 
 #pragma omp parallel for
-		for (int n = 0; n <= sphConfig->spec_n_max; n++)
+		for (int n = 0; n <= sphereDataConfig->spec_n_max; n++)
 		{
-			int idx = sphConfig->getArrayIndexByModes_Complex(n, -n);
+			int idx = sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
 			for (int m = -n; m <= n; m++)
 			{
 				out.data_spec[idx] = 0;
@@ -445,7 +445,7 @@ public:
 				for (int i = 0; i < lhs.num_diagonals; i++)
 				{
 					int delta = i-lhs.halosize_off_diagonal;
-					out.data_spec[idx] += lhs.rowElement_getRef(row, n, m, delta)*i_x.spec_get(n+delta, m);
+					out.data_spec[idx] += lhs.rowElement_getRef(row, n, m, delta)*i_x.spectral_get(n+delta, m);
 				}
 
 				idx++;
@@ -465,20 +465,20 @@ public:
 	{
 		i_rhs.request_data_spectral();
 
-		SphereDataComplex out(sphConfig);
+		SphereDataComplex out(sphereDataConfig);
 
-		for (int m = -sphConfig->spec_m_max; m <= sphConfig->spec_m_max; m++)
+		for (int m = -sphereDataConfig->spec_m_max; m <= sphereDataConfig->spec_m_max; m++)
 		{
-			int idx = sphConfig->getArrayIndexByModes_Complex_NCompact(std::abs(m),m);
+			int idx = sphereDataConfig->getArrayIndexByModes_Complex_NCompact(std::abs(m),m);
 
 			/*
 			 * Compactify RHS coefficients
 			 */
 			{
 				int buffer_idx = 0;
-				for (int n = std::abs(m); n <= sphConfig->spec_n_max; n++)
+				for (int n = std::abs(m); n <= sphereDataConfig->spec_n_max; n++)
 				{
-					buffer_in[buffer_idx] = i_rhs.data_spec[sphConfig->getArrayIndexByModes_Complex(n,m)];
+					buffer_in[buffer_idx] = i_rhs.data_spec[sphereDataConfig->getArrayIndexByModes_Complex(n,m)];
 					buffer_idx++;
 				}
 			}
@@ -487,7 +487,7 @@ public:
 							&lhs.data[idx*lhs.num_diagonals],
 							buffer_in,
 							buffer_out,
-							sphConfig->spec_n_max+1-std::abs(m)	// size of block (same as for SPHSolver)
+							sphereDataConfig->spec_n_max+1-std::abs(m)	// size of block (same as for SPHSolver)
 					);
 
 
@@ -496,9 +496,9 @@ public:
 			 */
 			{
 				int buffer_idx = 0;
-				for (int n = std::abs(m); n <= sphConfig->spec_n_max; n++)
+				for (int n = std::abs(m); n <= sphereDataConfig->spec_n_max; n++)
 				{
-					out.data_spec[sphConfig->getArrayIndexByModes_Complex(n,m)] = buffer_out[buffer_idx];
+					out.data_spec[sphereDataConfig->getArrayIndexByModes_Complex(n,m)] = buffer_out[buffer_idx];
 					buffer_idx++;
 				}
 			}

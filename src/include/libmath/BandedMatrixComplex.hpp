@@ -9,7 +9,7 @@
 #define SRC_INCLUDE_SPH_SPHMATRIX_COMPLEX_HPP_
 
 #include <sweet/MemBlockAlloc.hpp>
-#include "../sph/SphereDataConfig.hpp"
+#include <sweet/sphere/SphereDataConfig.hpp>
 
 
 
@@ -68,7 +68,7 @@ public:
 	 */
 	void zeroAll()
 	{
-		for (std::size_t i = 0; i < sphConfig->cplx_spec_num_elems*num_diagonals; i++)
+		for (int i = 0; i < sphConfig->cplx_spec_num_elems*num_diagonals; i++)
 			data[i] = T(0);
 	}
 

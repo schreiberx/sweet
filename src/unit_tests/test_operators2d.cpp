@@ -150,6 +150,7 @@ int main(int i_argc, char *i_argv[])
 
 				PlaneOperators op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
+
 				double freq_x = 0;
 				double freq_y = 0;
 
@@ -170,33 +171,33 @@ int main(int i_argc, char *i_argv[])
 						freq_y = ((double)k* (double) nyq)/ 4.0;
 					}
 
-					//std::cout << freq_x << std::endl;
-					for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
+					for (int j = 0; j < simVars.disc.res_physical[1]; j++)
 					{
-						for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+						for (int i = 0; i < simVars.disc.res_physical[0]; i++)
 						{
 							double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 							double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-							h.physical_set(j, i,	sin(2.0*freq_x*M_PIl*x)*sin(2.0*freq_y*M_PIl*y)	);
-							h_diff_x.physical_set(j, i,
+							h.p_physical_set(j, i,	sin(2.0*freq_x*M_PIl*x)*sin(2.0*freq_y*M_PIl*y)	);
+							h_diff_x.p_physical_set(j, i,
 									2.0*freq_x*M_PIl*cos(2.0*freq_x*M_PIl*x)*sin(2.0*freq_y*M_PIl*y)/(simVars.sim.domain_size[0])
 							);
 
-							h_diff_y.physical_set(j, i,
+							h_diff_y.p_physical_set(j, i,
 									2.0*freq_y*M_PIl*sin(2.0*freq_x*M_PIl*x)*cos(2.0*freq_y*M_PIl*y)/(simVars.sim.domain_size[1])
 							);
-							h_diff2_x.physical_set(j, i,
+							h_diff2_x.p_physical_set(j, i,
 									4.0*freq_x*freq_x*M_PIl*M_PIl*(-1.0)*sin(2.0*freq_x*M_PIl*x)*sin(2.0*freq_y*M_PIl*y)/(simVars.sim.domain_size[0]*simVars.sim.domain_size[0])
 							);
 
-							h_diff2_y.physical_set(j, i,
+							h_diff2_y.p_physical_set(j, i,
 									4.0*freq_y*freq_y*M_PIl*M_PIl*(-1.0)*sin(2.0*freq_x*M_PIl*x)*sin(2.0*freq_y*M_PIl*y)/(simVars.sim.domain_size[1]*simVars.sim.domain_size[1])
 							);
 						}
 					}
 
+
 					//This assumes freq_x = freq_y
-//					h_bilaplace=8.0*freq_x*freq_x*M_PIl*M_PIl*8.0*freq_x*freq_x*M_PIl*M_PIl*h;
+					h_bilaplace=8.0*freq_x*freq_x*M_PIl*M_PIl*8.0*freq_x*freq_x*M_PIl*M_PIl*h;
 
 					double err_x = (op.diff_c_x(h)-h_diff_x).reduce_maxAbs()/(2.0*freq_x*M_PIl); // .reduce_norm2_quad();//*normalization*(simVars.sim.domain_size[0])/(2.0*M_PIl);
 					double err_y = (op.diff_c_y(h)-h_diff_y).reduce_maxAbs()/(2.0*freq_y*M_PIl); //.reduce_norm2_quad();//*normalization*(simVars.sim.domain_size[1])/(2.0*M_PIl);
@@ -206,7 +207,8 @@ int main(int i_argc, char *i_argv[])
 
 					double err_laplace = (op.laplace(h)-h_diff2_x-h_diff2_y).reduce_maxAbs()/(2.0*freq_y*M_PIl)/(2.0*freq_y*M_PIl);
 
-//					double err_bilaplace = (op.laplace(op.laplace(h))-h_bilaplace).reduce_maxAbs()/(8.0*freq_x*freq_x*M_PIl*M_PIl*8.0*freq_x*freq_x*M_PIl*M_PIl);
+					double err_bilaplace = (op.laplace(op.laplace(h))-h_bilaplace).reduce_maxAbs()/(8.0*freq_x*freq_x*M_PIl*M_PIl*8.0*freq_x*freq_x*M_PIl*M_PIl);
+					err_bilaplace /= res[0]*res[1];
 
 					if (simVars.disc.use_spectral_basis_diffs)
 					{
@@ -216,15 +218,15 @@ int main(int i_argc, char *i_argv[])
 						std::cout << "error diff2 x = " << err2_x << std::endl;
 						std::cout << "error diff2 y = " << err2_y << std::endl;
 						std::cout << "error laplace = " << err_laplace << std::endl;
-//						std::cout << "error bilaplace = " << err_bilaplace << std::endl;
+						std::cout << "error bilaplace = " << err_bilaplace << std::endl;
 
-						if ( std::max({err_x, err_y, err2_x, err2_y, err_laplace})  > eps)
+						if ( std::max({err_x, err_y, err2_x, err2_y, err_laplace, err_bilaplace})  > eps)
 						{
 							std::cerr << "SPEC: Error threshold for diff operators too high for spectral differentiation!" << std::endl;
 							exit(-1);
 						}
-#if 0
-						if ( err_bilaplace  > eps*10000) //there is more error associated because of the magnitude of round off errors (forth order operator)?
+#if 1
+						if ( err_bilaplace  > eps) //there is more error associated because of the magnitude of round off errors (forth order operator)?
 						{
 							std::cerr << "SPEC: Error threshold for diff operator bilaplacian too high for spectral differentiation!" << std::endl;
 							exit(-1);
@@ -380,24 +382,24 @@ int main(int i_argc, char *i_argv[])
 						std::cout << "No aliasing present on truncated multiplication spectrum" << std::endl;
 
 					//cos(a x) cos(b x)  = 1/2 (cos( (a-b) x)+cos( (a+b) x))
-					for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
+					for (int j = 0; j < simVars.disc.res_physical[1]; j++)
 					{
-						for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+						for (int i = 0; i < simVars.disc.res_physical[0]; i++)
 						{
 							double x = (double)i * dx;
 							double y = (double)j * dy;
-							h1.physical_set(j, i,	cos(2.0*freq_1*M_PIl*x)*cos(2.0*freq_1*M_PIl*y)	);
-							h2.physical_set(j, i,	cos(2.0*freq_2*M_PIl*x)*cos(2.0*freq_2*M_PIl*y)	);
+							h1.p_physical_set(j, i,	cos(2.0*freq_1*M_PIl*x)*cos(2.0*freq_1*M_PIl*y)	);
+							h2.p_physical_set(j, i,	cos(2.0*freq_2*M_PIl*x)*cos(2.0*freq_2*M_PIl*y)	);
 
 							//                            ok                      aliased
-							h12.physical_set(j, i,	0.5*(cos(2.0*(freq_sub)*M_PIl*x)+cos(2.0*(freq_sum)*M_PIl*x))
+							h12.p_physical_set(j, i,	0.5*(cos(2.0*(freq_sub)*M_PIl*x)+cos(2.0*(freq_sum)*M_PIl*x))
 									*0.5*(cos(2.0*(freq_sub)*M_PIl*y)+cos(2.0*(freq_sum)*M_PIl*y)));
 
 							// just the representable wave
-							h12_noalias.physical_set(j, i,	0.5*( cos(2.0*(freq_sub)*M_PIl*x)+trunc_sum*cos(2.0*(freq_sum)*M_PIl*x))
+							h12_noalias.p_physical_set(j, i,	0.5*( cos(2.0*(freq_sub)*M_PIl*x)+trunc_sum*cos(2.0*(freq_sum)*M_PIl*x))
 									*0.5*( cos(2.0*(freq_sub)*M_PIl*y)+trunc_sum*cos(2.0*(freq_sum)*M_PIl*y)));
 
-							h12_truncated.physical_set(j, i,	trunc_freq1*trunc_freq2*0.5*( cos(2.0*(freq_sub)*M_PIl*x)+trunc_freq_sum*cos(2.0*(freq_sum)*M_PIl*x))
+							h12_truncated.p_physical_set(j, i,	trunc_freq1*trunc_freq2*0.5*( cos(2.0*(freq_sub)*M_PIl*x)+trunc_freq_sum*cos(2.0*(freq_sum)*M_PIl*x))
 									*0.5*( cos(2.0*(freq_sub)*M_PIl*y)+trunc_freq_sum*cos(2.0*(freq_sum)*M_PIl*y)));
 						}
 					}

@@ -67,11 +67,8 @@ public:
 	 */
 	struct Setup
 	{
-		/// average height for initialization
-		double h0 = 1000.0;
-
 		/// setup scenario
-		int scenario = 1;
+		int benchmark_scenario_id = 1;
 
 		/// radius
 		double radius_scale = 1;
@@ -121,8 +118,8 @@ public:
 	 */
 	struct Coefficients
 	{
-		/// gravitational constant
-		double g = 9.81;
+		/// average height for initialization
+		double h0 = 1000.0;
 
 		/// For more information on viscosity,
 		/// see 13.3.1 "Generic Form of the Explicit Diffusion Mechanism"
@@ -151,6 +148,23 @@ public:
 		/// here, y_N is the normalized y coordinate \in [0;1]
 		double beta = 0.0;
 
+		// constants from Galwesky et al. paper
+
+		/**
+		 * Earth radius for simulations on the sphere
+		 */
+		double earth_radius = 6.37122e6;
+
+		/**
+		 * Coriolis effect
+		 */
+		double coriolis_omega = 7.292e-5;
+
+		/**
+		 * Gravitational constant
+		 */
+		double gravitation = 9.80616;
+
 		/// zero out the v-component at the top and bottom layer
 		bool top_bottom_zero_v_velocity = false;
 
@@ -168,10 +182,10 @@ public:
 	struct Discretization
 	{
 		/// resolution in physical space (grid cells)
-		std::size_t res_physical[2] = {0, 0};
+		int res_physical[2] = {0, 0};
 
 		/// resolution in spectral space (number of modes)
-		std::size_t res_spectral[2] = {0, 0};
+		int res_spectral[2] = {0, 0};
 
 		/// size of cell (hx, hy)
 		/// this is computed based on disc.res and sim.domain_size
@@ -183,20 +197,10 @@ public:
 		/// order of Runge-Kutta scheme for time stepping
 		double timestepping_runge_kutta_order = 4;
 
-		// use spectral differential operators
-		bool use_spectral_basis_diffs = false;
+		/// use spectral differential operators
+		bool use_spectral_basis_diffs = true;
 	} disc;
 
-
-	/**
-	 * SPH Specific
-	 */
-	struct SPHDiscretization
-	{
-		// Use Robert function formulation
-		bool use_robert_functions = true;
-
-	} discSPH;
 
 
 	/**
@@ -204,6 +208,11 @@ public:
 	 */
 	struct REXI
 	{
+		/**
+		 * Activate REXI instead of standard time stepping
+		 */
+		bool use_rexi = false;
+
 		/**
 		 * REXI parameter h
 		 */
@@ -213,6 +222,11 @@ public:
 		 * REXI parameter M
 		 */
 		int rexi_M = 128;
+
+		/**
+		 * REXI parameter L
+		 */
+		int rexi_L = 0;
 
 		/**
 		 * Use only half of the poles for REXI
@@ -282,11 +296,19 @@ public:
 		/// prefix of filename for output of data
 		double output_each_sim_seconds = -1;
 
-		/// Last simulation seconds of output
+		/// Simulation seconds for next output
 		double output_next_sim_seconds = 0;
 
 		/// id for visualization
 		int vis_id = 0;
+
+		/// Use non-linear equations for simulations
+		bool use_nonlinear_equations = true;
+
+
+		/// Use robert function formulation on the sphere
+		bool sphere_use_robert_functions = true;
+
 	} misc;
 
 
@@ -383,14 +405,32 @@ public:
 				{0, 0, 0, 0} // NULL
         };
 
-        long_options[next_free_program_option] = {"initial-coord-x", required_argument, 0, 256+'a'+0};
-        next_free_program_option++;
+        int c=0;
 
-        long_options[next_free_program_option] = {"initial-coord-y", required_argument, 0, 256+'a'+1};
-        next_free_program_option++;
+        long_options[next_free_program_option] = {"initial-coord-x", required_argument, 0, 256+'a'+c};
+        next_free_program_option++;	c++;
 
-//        long_options[next_free_program_option++] = {"test-initial-freq-x-mul", required_argument, 0, 256+'a'+2};
-//        long_options[next_free_program_option++] = {"test-initial-freq-y-mul", required_argument, 0, 256+'a'+3};
+        long_options[next_free_program_option] = {"initial-coord-y", required_argument, 0, 256+'a'+c};
+        next_free_program_option++;	c++;
+
+        long_options[next_free_program_option] = {"rexi-h", required_argument, 0, 256+'a'+c};
+        next_free_program_option++;	c++;
+
+        long_options[next_free_program_option] = {"rexi-m", required_argument, 0, 256+'a'+c};
+        next_free_program_option++;	c++;
+
+        long_options[next_free_program_option] = {"rexi-l", required_argument, 0, 256+'a'+c};
+        next_free_program_option++;	c++;
+
+        long_options[next_free_program_option] = {"rexi-half", required_argument, 0, 256+'a'+c};
+        next_free_program_option++;	c++;
+
+        long_options[next_free_program_option] = {"rexi", required_argument, 0, 256+'a'+c};
+        next_free_program_option++;	c++;
+
+        long_options[next_free_program_option] = {"rexi-ext-modes", required_argument, 0, 256+'a'+c};
+        next_free_program_option++;	c++;
+
 
 #if SWEET_PARAREAL
         int parareal_start_option_index = next_free_program_option;
@@ -427,7 +467,7 @@ public:
 		{
 			opt = getopt_long(
 							i_argc, i_argv,
-							"N:n:m:C:u:U:s:X:Y:f:b:x:y:t:i:T:v:V:O:o:H:r:R:W:F:S:g:p:P:G:d:z",
+							"N:M:n:m:C:u:U:s:X:Y:f:b:x:y:k:l:t:i:T:v:V:O:o:H:r:R:W:F:S:g:p:G:d:z",
 							long_options, &option_index
 					);
 
@@ -445,10 +485,15 @@ public:
 				{
 					switch(i)
 					{
-						case 0:		setup.setup_coord_x = atof(optarg);	break;
-						case 1:		setup.setup_coord_y = atof(optarg);	break;
-//						case 2:		setup.initial_freq_x_mul = atof(optarg);	break;
-//						case 3:		setup.initial_freq_y_mul = atof(optarg);	break;
+					case 0:		setup.setup_coord_x = atof(optarg);	break;
+					case 1:		setup.setup_coord_y = atof(optarg);	break;
+
+					case 2:		rexi.rexi_h = atof(optarg);	break;
+					case 3:		rexi.rexi_M = atoi(optarg);	break;
+					case 4:		rexi.rexi_L = atoi(optarg);	break;
+					case 5:		rexi.rexi_use_half_poles = atoi(optarg);	break;
+					case 6:		rexi.use_rexi = atoi(optarg);	break;
+					case 7:		rexi.rexi_use_extended_modes = atoi(optarg);	break;
 
 						default:
 #if SWEET_PARAREAL
@@ -488,6 +533,11 @@ public:
 				disc.res_physical[1] = disc.res_physical[0];
 				break;
 
+			case 'M':
+				disc.res_spectral[0] = atoi(optarg);
+				disc.res_spectral[1] = disc.res_spectral[0];
+				break;
+
 			case 'n':
 				disc.res_physical[0] = atoi(optarg);
 				break;
@@ -519,17 +569,13 @@ public:
 			case 'U':
 				sim.viscosity_order = atoi(optarg);
 				break;
-#if 0
+
 			case 'p':
-				sim.potential_viscosity = atof(optarg);
+				rexi.use_rexi = atoi(optarg);
 				break;
 
-			case 'P':
-				sim.potential_viscosity_order = atof(optarg);
-				break;
-#endif
 			case 's':
-				setup.scenario = atoi(optarg);
+				setup.benchmark_scenario_id = atoi(optarg);
 				break;
 
 			case 'S':
@@ -568,8 +614,16 @@ public:
 				misc.gui_enabled = atoi(optarg);
 				break;
 
+			case 'k':
+				misc.use_nonlinear_equations = atoi(optarg);
+				break;
+
+			case 'l':
+				misc.sphere_use_robert_functions = atoi(optarg);
+				break;
+
 			case 'g':
-				sim.g = atof(optarg);
+				sim.gravitation = atof(optarg);
 				break;
 
 			case 'v':
@@ -589,7 +643,7 @@ public:
 				break;
 
 			case 'H':
-				setup.h0 = atof(optarg);
+				sim.h0 = atof(optarg);
 				break;
 
 			case 'R':
@@ -638,9 +692,10 @@ public:
 						"",
 						"Discretization:",
 						"  >Space:",
-						"	-N [res]	resolution in x and y direction, default=128",
-						"	-n [resx]	resolution in x direction, default=128",
-						"	-m [resy]	resolution in y direction, default=128",
+						"	-N [res]	resolution in x and y direction, default=0",
+						"	-n [resx]	resolution in x direction, default=0",
+						"	-m [resy]	resolution in y direction, default=0",
+						"	-M [modes]	modes in x/y or lon/lat direction, default=0",
 						"	-S [0/1]	Control Operator discretization for PlaneDatas",
 						"               0: FD, 1: spectral derivatives, default:0",
 						"  >Time:",
@@ -660,9 +715,20 @@ public:
 						"	-G [0/1]	graphical user interface",
 						"	-O [string]	string prefix for filename of output of simulation data",
 						"	-d [int]	accuracy of floating point output",
+						"	-k [bool]	Use non-linear (1) if available or linear (0) formulation",
+						"	-l [bool]	Use Robert function formulation for velocities on the sphere",
 						"	-i [file0][;file1][;file3]...	string with filenames for initial conditions",
 						"	            specify BINARY; as first file name to read files as binary raw data",
 						"",
+						"Rexi",
+						"	-rexi [bool]	Use REXI time stepping",
+						"	-rexi-h [float]	REXI parameter h",
+						"	-rexi-m [int]	REXI parameter M",
+						"	-rexi-l [int]	REXI parameter L",
+						"	-rexi-half [bool]	Use half REXI poles, default:1",
+						"	-rexi-ext-modes [int]	Use this number of extended modes in spherical harmonics",
+						"",
+
 				};
 
 				std::cerr << "Usage information: " << std::endl;

@@ -258,56 +258,65 @@ public:
 		semiLagrangian.setup(simVars.sim.domain_size, planeDataConfig);
 
 		//Setup general (x,y) grid with position points
-		for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
-		{
-			for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+
+		pos_x.physical_update_lambda_array_indices(
+			[&](int i, int j, double &io_data)
 			{
-		    	/* Equivalent to q position on C-grid */
-				pos_x.physical_set(j, i, ((double)i)*simVars.sim.domain_size[0]/simVars.disc.res_physical[0]); //*simVars.sim.domain_size[0];
-				pos_y.physical_set(j, i, ((double)j)*simVars.sim.domain_size[1]/simVars.disc.res_physical[1]); //*simVars.sim.domain_size[1];
-				//std::cout << i << " " << j << " " << pos_x.get(j,i) << std::endl;
+				io_data = ((double)i)*(double)simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
 			}
-		}
+		);
+
+		pos_y.physical_update_lambda_array_indices(
+			[&](int i, int j, double &io_data)
+			{
+				io_data = ((double)j)*(double)simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
+			}
+		);
 
 		//Initialize arrival points with h position
 		posx_a = pos_x+0.5*simVars.disc.cell_size[0];
 		posy_a = pos_y+0.5*simVars.disc.cell_size[1];
 
-		// Set initial conditions
-		for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
+
+		if (param_use_staggering)
 		{
-			for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
-			{
-
-				if (param_use_staggering)
+			prog_u.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
 				{
-					{
-						// u space
-						double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-						prog_u.physical_set(j,i, BurgersValidationBenchmarks::return_u(simVars, x, y));
-					}
-
-					{
-						// v space
-						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-						double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-						prog_v.physical_set(j, i, BurgersValidationBenchmarks::return_v(simVars, x, y));
-					}
+					double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+					double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+					io_data = BurgersValidationBenchmarks::return_u(simVars, x, y);
 				}
-				else
+			);
+			prog_v.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
+				{
+					double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+					double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+					io_data = BurgersValidationBenchmarks::return_v(simVars, x, y);
+				}
+			);
+		}
+		else
+		{
+			prog_u.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
 				{
 					double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 					double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-
-					prog_u.physical_set(j, i, BurgersValidationBenchmarks::return_u(simVars, x, y));
-					prog_v.physical_set(j, i, BurgersValidationBenchmarks::return_v(simVars, x, y));
-
+					io_data = BurgersValidationBenchmarks::return_u(simVars, x, y);
 				}
+			);
 
-			}
+			prog_v.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
+				{
+					double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+					double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+					io_data = BurgersValidationBenchmarks::return_v(simVars, x, y);
+				}
+			);
 		}
-
 
 		//Initialize t-dt time step with initial condition
 		prog_u_prev = prog_u;
@@ -382,31 +391,30 @@ public:
 		 * matching to:
 		 * u(t,x,y) = 1/k * sin(2*PI*k*x)*sin(2*PI*k*t)
 		 */
-		if (simVars.setup.scenario == 57)
+		if (simVars.setup.benchmark_scenario_id == 57)
 		{
 			double k = simVars.sim.f0;
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
-			{
-				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+
+			o_u_t.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
 				{
 					// u space
 					double x = 0.0;
 					if (param_use_staggering)
 					{
 						x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-					}else{
+					}
+					else
+					{
 						x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 					}
 					double tmpvar = tp * std::sin(tp*k*x)*std::cos(tp*k*t)
 								  + tp*std::sin(tp*k*x)*std::sin(tp*k*t) * std::cos(tp*k*x)*std::sin(tp*k*t)
 								  + simVars.sim.viscosity * (tp*tp*k* std::sin(tp*k*x)*std::sin(tp*k*t));
 
-					o_u_t.physical_set(j,i, tmpvar);
+					io_data = tmpvar;
 				}
-			}
+			);
 		}
 
 		/*
@@ -415,15 +423,13 @@ public:
 		 * matching to:
 		 * u(t,x,y) = 2/k * sin(2*PI*k*x)*sin(2*PI*k*t)
 		 */
-		if (simVars.setup.scenario == 59)
+		if (simVars.setup.benchmark_scenario_id == 59)
 		{
 			double k = simVars.sim.f0;
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
-			{
-				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+
+
+			o_u_t.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
 				{
 					// u space
 					double x = 0.0;
@@ -437,9 +443,9 @@ public:
 								  + 4*tp*std::sin(tp*k*x)*std::sin(tp*k*t) * std::cos(tp*k*x)*std::sin(tp*k*t)
 								  + 2*simVars.sim.viscosity * (tp*tp*k* std::sin(tp*k*x)*std::sin(tp*k*t));
 
-					o_u_t.physical_set(j,i, tmpvar);
+					io_data = tmpvar;
 				}
-			}
+			);
 		}
 
 		/*
@@ -451,15 +457,12 @@ public:
 		 * matching to:
 		 * u(t,x,y) = sin(2*PI*x)*sin(2*PI*t)+1/k*sin(2*PI*k*x)*sin(2*PI*k*t)
 		 */
-		if (simVars.setup.scenario == 58)
+		if (simVars.setup.benchmark_scenario_id == 58)
 		{
 			double k = simVars.sim.f0;
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
-			{
-				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+
+			o_u_t.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
 				{
 					// u space
 					double x = 0.0;
@@ -475,9 +478,9 @@ public:
 								  - simVars.sim.viscosity*(-tp*tp*std::sin(tp*x)*std::sin(tp*t)
 								  - tp*tp*k*std::sin(tp*k*x)*std::sin(tp*k*t));
 
-					o_u_t.physical_set(j,i, tmpvar);
+					io_data = tmpvar;
 				}
-			}
+			);
 		}
 
 		/*
@@ -485,7 +488,7 @@ public:
 		 * matching to:
 		 * u(t,x,y) = t
 		 */
-		if (simVars.setup.scenario == 51)
+		if (simVars.setup.benchmark_scenario_id == 51)
 		{
 			o_u_t.physical_set_all(1.0);
 		}
@@ -495,7 +498,7 @@ public:
 		 * matching to:
 		 * u(t,x,y) = t^2
 		 */
-		if (simVars.setup.scenario == 52)
+		if (simVars.setup.benchmark_scenario_id == 52)
 		{
 			o_u_t.physical_set_all(2.0*t);
 		}
@@ -505,7 +508,7 @@ public:
 		 * matching to:
 		 * u(t,x,y) = t^3
 		 */
-		if (simVars.setup.scenario == 53)
+		if (simVars.setup.benchmark_scenario_id == 53)
 		{
 			o_u_t.physical_set_all(3.0*t*t);
 		}
@@ -515,14 +518,11 @@ public:
 		 * matching to:
 		 * u(t,x,y) = 1000*t*sin(2*PI*x)
 		 */
-		if (simVars.setup.scenario == 54)
+		if (simVars.setup.benchmark_scenario_id == 54)
 		{
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
-			{
-				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+
+			o_u_t.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
 				{
 					// u space
 					double x = 0.0;
@@ -533,11 +533,11 @@ public:
 						x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 					}
 					double tmpvar = 1000*std::sin(tp*x)+1000*1000*t*std::sin(tp*x)*t*std::cos(tp*x)*tp
-							      - 1000*simVars.sim.viscosity*(-tp*tp*t*std::sin(tp*x));
+								  - 1000*simVars.sim.viscosity*(-tp*tp*t*std::sin(tp*x));
 
-					o_u_t.physical_set(j,i, tmpvar);
+					io_data = tmpvar;
 				}
-			}
+			);
 		}
 
 		/*
@@ -545,7 +545,7 @@ public:
 		 * matching to:
 		 * u(t,x,y) = sin(2*PI*t)
 		 */
-		if (simVars.setup.scenario == 55)
+		if (simVars.setup.benchmark_scenario_id == 55)
 		{
 			o_u_t.physical_set_all(tp*std::cos(tp*t));
 		}
@@ -555,7 +555,7 @@ public:
 		 * matching to:
 		 * u(t,x,y) = 1/k*sin(2*PI*k*t)
 		 */
-		if (simVars.setup.scenario == 56)
+		if (simVars.setup.benchmark_scenario_id == 56)
 		{
 			double k=simVars.sim.f0;
 			o_u_t.physical_set_all(tp*std::cos(tp*k*t));
@@ -566,14 +566,11 @@ public:
 		 * matching to:
 		 * u(t,x,y) = sin(2*PI*x)
 		 */
-		if (simVars.setup.scenario == 60)
+		if (simVars.setup.benchmark_scenario_id == 60)
 		{
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
-			{
-				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+
+			o_u_t.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
 				{
 					// u space
 					double x = 0.0;
@@ -586,9 +583,9 @@ public:
 					double tmpvar = std::sin(tp*x)*std::cos(tp*x)*tp
 							      - simVars.sim.viscosity*(-tp*tp*std::sin(tp*x));
 
-					o_u_t.physical_set(j,i, tmpvar);
+					io_data = tmpvar;
 				}
-			}
+			);
 		}
 
 		/* Test for 2u-grad(u)=F
@@ -596,14 +593,11 @@ public:
 		 * matching to:
 		 * u(t,x,y) = sin(2*PI*x)
 		 */
-		if (simVars.setup.scenario == 61)
+		if (simVars.setup.benchmark_scenario_id == 61)
 		{
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
-			{
-				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+
+			o_u_t.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
 				{
 					// u space
 					double x = 0.0;
@@ -615,9 +609,9 @@ public:
 					}
 					double tmpvar = (1+tp*tp)*std::sin(tp*x);
 
-					o_u_t.physical_set(j,i, tmpvar);
+					o_u_t = tmpvar;
 				}
-			}
+			);
 		}
 
 		/*
@@ -627,16 +621,14 @@ public:
 		 * matching to:
 		 * u(t,x,y) = 0.5*SUM_(k=1)^(k_max) sin(2*PI*k*x-PI*k*t+PI*k)*EPS/sinh(0.5*PI*k*EPS)
 		 */
-		if (simVars.setup.scenario == 62)
+		if (simVars.setup.benchmark_scenario_id == 62)
 		{
 			int kmax = 100;
 			double eps = 0.1;
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
-			{
-				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
+
+
+			o_u_t.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
 				{
 					// u space
 					double x = 0.0;
@@ -659,12 +651,12 @@ public:
 					}
 
 					tmpvar *= 0.25;
-					o_u_t.physical_set(j,i, tmpvar);
+					io_data = tmpvar;
 				}
-			}
+			);
 		}
 
-		if (simVars.setup.scenario == 63)
+		if (simVars.setup.benchmark_scenario_id == 63)
 			o_u_t.physical_set_all(0.0);
 
 	}
@@ -931,46 +923,56 @@ public:
 			// Compute exact solution for linear part and compare with numerical solution
 
 			// Only possible for manufactured solutions
-			if (simVars.setup.scenario < 51 && simVars.setup.scenario > 59)
+			if (simVars.setup.benchmark_scenario_id < 51 && simVars.setup.benchmark_scenario_id > 59)
 				return;
 
 			//Analytical solution at specific time on original grid (stag or not)
 			PlaneData ts_u(planeDataConfig);
 			PlaneData ts_v(planeDataConfig);
 
-			// Set solution
-			for (std::size_t j = 0; j < simVars.disc.res_physical[1]; j++)
+			if (param_use_staggering)
 			{
-				for (std::size_t i = 0; i < simVars.disc.res_physical[0]; i++)
-				{
-					if (param_use_staggering)
+				ts_u.physical_update_lambda_array_indices(
+					[&](int i, int j, double &io_data)
 					{
-						{
-							// u space
-							double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-							double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-							ts_u.physical_set(j,i, BurgersValidationBenchmarks::return_u(simVars, x, y));
-						}
-
-						{
-							// v space
-							double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-							double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-							ts_v.physical_set(j, i, BurgersValidationBenchmarks::return_v(simVars, x, y));
-						}
+						double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+						io_data = BurgersValidationBenchmarks::return_u(simVars, x, y);
 					}
-					else
+				);
+
+				ts_v.physical_update_lambda_array_indices(
+					[&](int i, int j, double &io_data)
+					{
+						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+						double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+						io_data = BurgersValidationBenchmarks::return_v(simVars, x, y);
+					}
+				);
+			}
+			else
+			{
+				ts_u.physical_update_lambda_array_indices(
+					[&](int i, int j, double &io_data)
 					{
 						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-						ts_u.physical_set(j, i, BurgersValidationBenchmarks::return_u(simVars, x, y));
-						ts_v.physical_set(j, i, BurgersValidationBenchmarks::return_v(simVars, x, y));
-
+						io_data = BurgersValidationBenchmarks::return_u(simVars, x, y);
 					}
+				);
 
-				}
+				ts_v.physical_update_lambda_array_indices(
+					[&](int i, int j, double &io_data)
+					{
+						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+
+						io_data = BurgersValidationBenchmarks::return_v(simVars, x, y);
+					}
+				);
 			}
+
 
 			benchmark_analytical_error = ts_u-prog_u;
 
@@ -1296,7 +1298,7 @@ public:
 		// Initialize and set timestep dependent source for manufactured solution
 		PlaneData f(planeDataConfig);
 		set_source(f);
-		f.requestDataInSpectralSpace();
+		f.request_data_spectral();
 
 		// Modify timestep to final time if necessary
 		double& t = o_dt;
@@ -1729,7 +1731,7 @@ int main(int i_argc, char *i_argv[])
 				std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs(simVars.diag.total_mass-diagnostics_mass_start) << std::endl;
 				std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs(simVars.diag.total_potential_enstrophy-diagnostics_potential_entrophy_start) << std::endl;
 
-				if (simVars.setup.scenario == 2 || simVars.setup.scenario == 3 || simVars.setup.scenario == 4)
+				if (simVars.setup.benchmark_scenario_id == 2 || simVars.setup.benchmark_scenario_id == 3 || simVars.setup.benchmark_scenario_id == 4)
 				{
 					std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationBurgers->benchmark_diff_u << std::endl;
 					std::cout << "DIAGNOSTICS BENCHMARK DIFF V:\t" << simulationBurgers->benchmark_diff_v << std::endl;

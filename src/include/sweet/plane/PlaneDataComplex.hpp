@@ -1139,26 +1139,6 @@ public:
 
 		return out;
 	}
-#if 0
-	PlaneData getImagWithPlaneData()
-	{
-		PlaneData out(resolution);
-
-#if !SWEET_REXI_THREAD_PARALLEL_SUM
-#		pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t j = 0; j < resolution[1]; j++)
-		{
-			for (std::size_t i = 0; i < resolution[0]; i++)
-			{
-				out.physical_set(j, i, getIm(j, i));
-			}
-		}
-
-
-		return out;
-	}
-#endif
 
 
 #if 1
@@ -1166,7 +1146,7 @@ public:
 			const PlaneData &i_dataArray_Real
 	)
 	{
-		i_dataArray_Real.requestDataInPhysicalSpace();
+		i_dataArray_Real.request_data_physical();
 
 // TODO: Make this SIMD
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
@@ -1197,8 +1177,8 @@ public:
 			const PlaneData &i_dataArray_Imag
 	)
 	{
-		i_dataArray_Real.requestDataInPhysicalSpace();
-		i_dataArray_Imag.requestDataInPhysicalSpace();
+		i_dataArray_Real.request_data_physical();
+		i_dataArray_Imag.request_data_physical();
 
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
@@ -1218,29 +1198,6 @@ public:
 	}
 #endif
 
-
-#if 0
-	PlaneData toPlaneDatas_Real()	const
-	{
-		PlaneData out(resolution);
-
-#if !SWEET_REXI_THREAD_PARALLEL_SUM
-#		pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t j = 0; j < resolution[1]; j++)
-		{
-			for (std::size_t i = 0; i < resolution[0]; i++)
-			{
-				out.physical_set(
-					j, i,
-					getRe(j, i)
-				);
-			}
-		}
-
-		return out;
-	}
-#endif
 
 	void toPlaneDatas_Real(
 			PlaneData &o_out
