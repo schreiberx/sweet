@@ -294,12 +294,13 @@ public:
 			/*
 			 * Note, that there's a last column which is set to 0 (Nyquist freq, noise in signal)
 			 * PXT: removed this setting to zero (changed < to <=), because of 2nd and higher order differentiation
+			 * MaS: changed <= to < for the x-axis because of invalid memory access...
 			 */
 			diff_c_x.spectral_set_all(0, 0);
 
 			for (int j = 0; j <= (int)diff_c_x.planeDataConfig->spectral_data_size[1]/2; j++)
 			{
-				for (int i = 0; i <= (int)diff_c_x.planeDataConfig->spectral_data_size[0]; i++)
+				for (int i = 0; i < (int)diff_c_x.planeDataConfig->spectral_data_size[0]; i++)
 				{
 					diff_c_x.spectral_set(
 							j, i,
@@ -322,7 +323,7 @@ public:
 			// TODO: shift j for loop by +1
 			for (int j = 0; j <= (int)diff_c_y.planeDataConfig->spectral_data_size[1]/2-1; j++)
 			{
-				for (int i = 0; i <= (int)diff_c_y.planeDataConfig->spectral_data_size[0]; i++)
+				for (int i = 0; i < (int)diff_c_y.planeDataConfig->spectral_data_size[0]; i++)
 				{
 					diff_c_y.spectral_set(
 							j+1, i,
@@ -381,7 +382,7 @@ public:
 
 			for (int j = 0; j <= (int)diff_c_x.planeDataConfig->spectral_data_size[1]/2; j++)
 			{
-				for (int i = 0; i <= (int)diff_c_x.planeDataConfig->spectral_data_size[0]; i++)
+				for (int i = 0; i < (int)diff_c_x.planeDataConfig->spectral_data_size[0]; i++)
 				{
 					double fac = (double)i*2.0*M_PIl/(double)i_domain_size[0];
 
@@ -403,7 +404,7 @@ public:
 
 			for (int j = 0; j <= (int)diff_c_y.planeDataConfig->spectral_data_size[1]/2-1; j++)
 			{
-				for (int i = 0; i <= (int)diff_c_y.planeDataConfig->spectral_data_size[0]; i++)
+				for (int i = 0; i < (int)diff_c_y.planeDataConfig->spectral_data_size[0]; i++)
 				{
 					double fac = (double)(j+1)*2.0*M_PIl/(double)i_domain_size[1];
 

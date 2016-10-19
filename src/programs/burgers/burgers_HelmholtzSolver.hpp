@@ -35,6 +35,7 @@ public:
 	 *
 	 * (1 - \nu*D2) X = B
 	 */
+#if 0
 	static
 	bool smoother_jacobi(
 			double i_tvis,
@@ -96,6 +97,7 @@ public:
 
 		return false;
 	}
+#endif
 
 #if 0
 
@@ -165,6 +167,7 @@ public:
 	 *
 	 * See "Numerical Analysis", page 474
 	 */
+#if 0
 	static
 	bool smoother_conjugate_gradient(
 			double i_tvis,
@@ -261,6 +264,7 @@ public:
 
 		return false;
 	}
+#endif
 
 #if 0
 

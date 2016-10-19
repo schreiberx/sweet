@@ -71,8 +71,7 @@ int main(int i_argc, char *i_argv[])
 	std::size_t res_x = simVars.disc.res_physical[0];
 	std::size_t res_y = simVars.disc.res_physical[1];
 
-	//std::size_t max_res = 2048;
-	std::size_t max_res = 128;
+	std::size_t max_res = 2048;
 
 	if (res_x > max_res || res_y > max_res)
 		max_res = std::max(res_x, res_y);
@@ -195,8 +194,9 @@ int main(int i_argc, char *i_argv[])
 							);
 						}
 					}
+
 					//This assumes freq_x = freq_y
-					h_bilaplace=8.0*freq_x*freq_x*M_PIl*M_PIl*8.0*freq_x*freq_x*M_PIl*M_PIl*h;
+//					h_bilaplace=8.0*freq_x*freq_x*M_PIl*M_PIl*8.0*freq_x*freq_x*M_PIl*M_PIl*h;
 
 					double err_x = (op.diff_c_x(h)-h_diff_x).reduce_maxAbs()/(2.0*freq_x*M_PIl); // .reduce_norm2_quad();//*normalization*(simVars.sim.domain_size[0])/(2.0*M_PIl);
 					double err_y = (op.diff_c_y(h)-h_diff_y).reduce_maxAbs()/(2.0*freq_y*M_PIl); //.reduce_norm2_quad();//*normalization*(simVars.sim.domain_size[1])/(2.0*M_PIl);
@@ -206,7 +206,7 @@ int main(int i_argc, char *i_argv[])
 
 					double err_laplace = (op.laplace(h)-h_diff2_x-h_diff2_y).reduce_maxAbs()/(2.0*freq_y*M_PIl)/(2.0*freq_y*M_PIl);
 
-					double err_bilaplace = (op.laplace(op.laplace(h))-h_bilaplace).reduce_maxAbs()/(8.0*freq_x*freq_x*M_PIl*M_PIl*8.0*freq_x*freq_x*M_PIl*M_PIl);
+//					double err_bilaplace = (op.laplace(op.laplace(h))-h_bilaplace).reduce_maxAbs()/(8.0*freq_x*freq_x*M_PIl*M_PIl*8.0*freq_x*freq_x*M_PIl*M_PIl);
 
 					if (simVars.disc.use_spectral_basis_diffs)
 					{
@@ -216,19 +216,20 @@ int main(int i_argc, char *i_argv[])
 						std::cout << "error diff2 x = " << err2_x << std::endl;
 						std::cout << "error diff2 y = " << err2_y << std::endl;
 						std::cout << "error laplace = " << err_laplace << std::endl;
-						std::cout << "error bilaplace = " << err_bilaplace << std::endl;
+//						std::cout << "error bilaplace = " << err_bilaplace << std::endl;
 
 						if ( std::max({err_x, err_y, err2_x, err2_y, err_laplace})  > eps)
 						{
 							std::cerr << "SPEC: Error threshold for diff operators too high for spectral differentiation!" << std::endl;
 							exit(-1);
 						}
+#if 0
 						if ( err_bilaplace  > eps*10000) //there is more error associated because of the magnitude of round off errors (forth order operator)?
 						{
 							std::cerr << "SPEC: Error threshold for diff operator bilaplacian too high for spectral differentiation!" << std::endl;
 							exit(-1);
 						}
-
+#endif
 					}
 					else
 					{

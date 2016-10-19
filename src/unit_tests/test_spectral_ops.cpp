@@ -12,6 +12,7 @@
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
+#include <sweet/FatalError.hpp>
 
 #include <math.h>
 #include <ostream>
@@ -174,34 +175,37 @@ int main(int i_argc, char *i_argv[])
 			double res2 = (double)(res[0]*res[1]);
 
 			double add_test_two = (zero+two).reduce_rms_quad();
-			double add_test_seven = (five+two).reduce_rms_quad();
-			double add_test_ten = ((five+two)+3.0).reduce_rms_quad();
 			double add_test_ten2 = (3.0+(five+two)).reduce_rms_quad();
 			double add_test_ten3 = (17.0-(five+two)).reduce_rms_quad();
 			double error = 0;
 
+			std::cout << two.reduce_max() << std::endl;
 			error = std::abs(add_test_two-2.0);
 			std::cout << "Add test two ||_2 = " << error << std::endl;
 			if (error > eps)
 			{
 				std::cout << "FAILED with error " << error;
-				exit(-1);
+				FatalError("EXIT");
 			}
 
+			double add_test_seven = (five+two).reduce_rms_quad();
 			error = std::abs(add_test_seven-7.0);
 			std::cout << "Add test seven ||_2 = " << error << std::endl;
 			if (error > eps)
 			{
 				std::cout << "FAILED with error " << error;
-				exit(-1);
+				FatalError("EXIT");
 			}
+
+			double add_test_ten = ((five+two)+3.0).reduce_rms_quad();
+			std::cout << add_test_ten << std::endl;
 
 			error = std::abs(add_test_ten-10.0);
 			std::cout << "Add test ten ||_2 = " << error << std::endl;
 			if (error > eps)
 			{
 				std::cout << "FAILED with error " << error;
-				exit(-1);
+				FatalError("EXIT");
 			}
 
 			error = std::abs(add_test_ten2-10.0);
@@ -209,7 +213,7 @@ int main(int i_argc, char *i_argv[])
 			if (error > eps)
 			{
 				std::cout << "FAILED with error " << error;
-				exit(-1);
+				FatalError("EXIT");
 			}
 
 			error = std::abs(add_test_ten3-10.0);
@@ -217,7 +221,7 @@ int main(int i_argc, char *i_argv[])
 			if (error > eps)
 			{
 				std::cout << "FAILED with error " << error;
-				exit(-1);
+				FatalError("EXIT");
 			}
 
 			// create sinus curve
@@ -240,7 +244,7 @@ int main(int i_argc, char *i_argv[])
 			{
 				std::cout << "FAILED with error " << error;
 				std::cout << "ERROR THRESHOLDS ARE UNKNOWN for summation without abs(), may depend on N!!!" << std::endl;
-				exit(-1);
+				FatalError("EXIT");
 			}
 
 			double sin_test_six = (h+6.0).reduce_sum_quad()/res2;
@@ -250,7 +254,7 @@ int main(int i_argc, char *i_argv[])
 			{
 				std::cout << "FAILED Sin test add six ||_2 with error " << error << std::endl;
 				std::cout << "FAILED with error " << sin_test_six << std::endl;
-				exit(-1);
+				FatalError("EXIT");
 			}
 
 			double sin_test_zero_mul = (h*two).reduce_sum_quad()/res2;
@@ -259,7 +263,7 @@ int main(int i_argc, char *i_argv[])
 			if (error > eps)
 			{
 				std::cout << "FAILED with error " << error;
-				exit(-1);
+				FatalError("EXIT");
 			}
 		}
 
@@ -328,10 +332,10 @@ int main(int i_argc, char *i_argv[])
 				std::cout << "error (mul*mul-fun) = " << err_z << std::endl;
 
 #if FUN_ID == 1
-				if (err_z > eps)
+				if (err_z > eps || std::isnan(err_z))
 				{
-					std::cerr << "SPEC: Error threshold exceeded for err_z!" << std::endl;
-					exit(-1);
+					FatalError("SPEC: Error threshold exceeded for err_z!");
+					FatalError("EXIT");
 				}
 #endif
 
@@ -340,26 +344,20 @@ int main(int i_argc, char *i_argv[])
 					(
 							h-
 							(op.diff2_c_x(h)+op.diff2_c_y(h)).
-								spec_div_element_wise(op.diff2_c_x+op.diff2_c_y)
+								spectral_div_element_wise(op.diff2_c_x+op.diff2_c_y)
 					).reduce_rms_quad();
 
 				std::cout << "SPEC: Error threshold for Laplace and its inverse: " << err3_laplace << std::endl;
-				if (err3_laplace > eps)
-				{
-					std::cerr << "SPEC: Error threshold for Laplace too high for spectral differentiation!" << std::endl;
-					exit(-1);
-				}
+				if (err3_laplace > eps || std::isnan(err3_laplace))
+					FatalError("SPEC: Error threshold for Laplace too high for spectral differentiation!");
 #endif
 			}
 			else
 			{
 
 #if FUN_ID == 1
-				if (err_z > eps)
-				{
-					std::cerr << "SPEC: Error threshold exceeded for err_z!" << std::endl;
-					exit(-1);
-				}
+				if (err_z > eps || std::isnan(err_z))
+					FatalError("SPEC: Error threshold exceeded for err_z!");
 #endif
 
 				prev_error_diff_z = err_z;
@@ -456,45 +454,37 @@ int main(int i_argc, char *i_argv[])
 				std::cout << "error (mul*mul-fun) = " << err_z << std::endl;
 				std::cout << "err tol = " << eps << std::endl;
 
-				if (err_x > eps)
-				{
-					std::cerr << "SPEC: Error threshold for diff-X too high for spectral differentiation!" << std::endl;
-					exit(-1);
-				}
+				if (err_x > eps || std::isnan(err_x))
+					FatalError("SPEC: Error threshold for diff-X too high for spectral differentiation!");
 
-				if (err_y > eps)
-				{
-					std::cerr << "SPEC: Error threshold for diff-Y too high for spectral differentiation!" << std::endl;
-					exit(-1);
-				}
+				if (err_y > eps || std::isnan(err_y))
+					FatalError("SPEC: Error threshold for diff-Y too high for spectral differentiation!");
 
 #if FUN_ID == 1
-				if (err_z > eps)
+				if (err_z > eps || std::isnan(err_z))
 				{
 					std::cerr << "SPEC: Error threshold exceeded for err_z, value = " << err_z << std::endl;
-					exit(-1);
+					FatalError("EXIT");
 				}
 #endif
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-				double err_int_x = (h-h_diff_x.spec_div_element_wise(op.diff_c_x)).reduce_norm2_quad()*res_normalization;
+				double err_int_x = (h-h_diff_x.spectral_div_element_wise(op.diff_c_x)).reduce_norm2_quad()*res_normalization;
 				std::cout << "Testing spectral inverse x " << err_int_x << std::endl;
 
-				if (err_int_x > eps)
+				if (err_int_x > eps || std::isnan(err_int_x))
 				{
-					std::cerr << "SPEC: Error threshold for integration in x too high for spectral integration!" << std::endl;
 					std::cout << err_int_x << std::endl;
-					exit(-1);
+					FatalError(std::string("SPEC: Error threshold for integration in x too high for spectral integration! "));
 				}
 
-				double err_int_y = (h-h_diff_y.spec_div_element_wise(op.diff_c_y)).reduce_norm2_quad()*res_normalization;
+				double err_int_y = (h-h_diff_y.spectral_div_element_wise(op.diff_c_y)).reduce_norm2_quad()*res_normalization;
 				std::cout << "Testing spectral inverse y " << err_int_y << std::endl;
 
-				if (err_int_y > eps)
+				if (err_int_y > eps || std::isnan(err_int_y))
 				{
 					std::cout << err_int_y << std::endl;
-					std::cerr << "SPEC: Error threshold for integration in y too high for spectral integration!" << std::endl;
-					exit(-1);
+					FatalError(std::string("SPEC: Error threshold for integration in y too high for spectral integration! "));
 				}
 #endif
 			}
@@ -514,20 +504,20 @@ int main(int i_argc, char *i_argv[])
 				if (abs(conv_x-4.0) > eps_convergence)
 				{
 					std::cerr << "Cart: Error threshold exceeded for conv_x, no convergence given!" << std::endl;
-					exit(-1);
+					FatalError("EXIT");
 				}
 
 				if (conv_y != 0)
 				if (abs(conv_y-4.0) > eps_convergence)
 				{
 					std::cerr << "Cart: Error threshold exceeded for conv_y, no convergence given!" << std::endl;
-					exit(-1);
+					FatalError("EXIT");
 				}
 
 				if (abs(err_z) > eps)
 				{
 					std::cerr << "Cart: Error threshold exceeded for err_z!" << std::endl;
-					exit(-1);
+					FatalError("EXIT");
 				}
 
 				prev_error_diff_x = err_x;
@@ -610,13 +600,13 @@ int main(int i_argc, char *i_argv[])
 				if (err2_x > eps)
 				{
 					std::cerr << "SPEC: Error threshold for diff2-X too high for spectral differentiation!" << std::endl;
-					exit(-1);
+					FatalError("EXIT");
 				}
 
 				if (err2_y > eps)
 				{
 					std::cerr << "SPEC: Error threshold for diff2-Y too high for spectral differentiation!" << std::endl;
-					exit(-1);
+					FatalError("EXIT");
 				}
 			}
 			else
@@ -632,14 +622,14 @@ int main(int i_argc, char *i_argv[])
 				if (abs(conv2_x-4.0) > eps_convergence)
 				{
 					std::cerr << "Cart: Error threshold exceeded for conv2_x, no convergence given!" << std::endl;
-					exit(-1);
+					FatalError("EXIT");
 				}
 
 				if (conv2_y != 0)
 				if (abs(conv2_y-4.0) > eps_convergence)
 				{
 					std::cerr << "Cart: Error threshold exceeded for conv2_y, no convergence given!" << std::endl;
-					exit(-1);
+					FatalError("EXIT");
 				}
 
 				prev_error_diff2_x = err2_x;
@@ -685,29 +675,29 @@ int main(int i_argc, char *i_argv[])
 
 			if (simVars.disc.use_spectral_basis_diffs)
 			{
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 				double kappa = 406.666;
 				double a = 2.0;
 				double b = 5.0;
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
 				/**
 				 * Solve
 				 *   ( kappa*h - c * (diff2x(h) + diff2y(h))) =
 				 *   ( kappa - c*diff2x - c*diff2y) * h = rhs;
 				 */
-				PlaneData helmholtz_operator = (-a*b*(op.diff2_c_x + op.diff2_c_y)).spec_addScalarAll(kappa);
+				PlaneData helmholtz_operator = (-a*b*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(kappa);
 
 				PlaneData rhs =  kappa*h - a*b*(op.diff2_c_x(h) + op.diff2_c_y(h));
 
 				double err3_helmholtz =
 					(
-							h-rhs.spec_div_element_wise(helmholtz_operator)
+							h-rhs.spectral_div_element_wise(helmholtz_operator)
 					).reduce_rms_quad();
 
 				std::cout << "SPEC: Error threshold for Helmholtz operator with kappa = " << kappa << " and its inverse: " << err3_helmholtz << std::endl;
 				if (err3_helmholtz > eps)
 				{
 					std::cerr << "SPEC: Error threshold for Laplace too high for spectral differentiation!" << std::endl;
-					exit(-1);
+					FatalError("EXIT");
 				}
 #endif
 			}

@@ -8,6 +8,12 @@
 #ifndef SPHSETUP_HPP_
 #define SPHSETUP_HPP_
 
+/*
+ * DOCUMENTATION:
+ *
+ * The aliasing strategies are described in the folder
+ * 		doc/antialiasing/
+ */
 
 #include <libmath/shtns_inc.hpp>
 #include <fftw3.h>
@@ -16,10 +22,18 @@
 #include <stdlib.h>
 #include <iostream>
 
+
+
 #if SWEET_THREADING
 #	include <omp.h>
 #endif
 
+
+#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
+	#warning "NOT YET PROPERLY IMPLEMENTED!!!"
+	#undef SWEET_USE_PLANE_SPECTRAL_DEALIASING
+	#define SWEET_USE_PLANE_SPECTRAL_DEALIASING 0
+#endif
 
 
 /*
@@ -63,21 +77,27 @@ public:
 	/// number of real valued data
 	std::size_t physical_array_data_number_of_elements;
 
+
+
 private:
 
 #if SWEET_USE_LIBFFT
 
 	/// number of spectral modes
+	/// this is not related to the storage size!
 	std::size_t spectral_modes[2];
 
-	/// allocated size for spectral data
+	/// allocated size for spectral data for each modes
+	/// This storage size is for the real-to-complex transformation
 	std::size_t spectral_data_size[2];
 
-	/// iteration end for updating data in spectrum:
-	/// This is different in case of anti-aliasing
-	std::size_t spectral_data_iteration_end[2];
+	/// iteration ranges for updating data in spectrum
+	/// 1st index (left): the id of the range,
+	/// 2nd index (middle): dimension the range,
+	/// 3rd index (last one): start and end (exclusive) index
+	std::size_t spectral_data_iteration_ranges[2][2][2];
 
-	/// number of complex-valued data
+	/// total number of complex-valued data elements in spectral space
 	std::size_t spectral_array_data_number_of_elements;
 
 
@@ -87,14 +107,24 @@ private:
 	fftw_plan	fftw_plan_forward;
 	fftw_plan	fftw_plan_backward;
 
+	/// FFTW scaling related stuff for backward transformation
+	/// WARNING: FFTW doesn't implement a symmetric FFTW
+	/// We only to the rescaling for the backward transformation
 	double fftw_backward_scale_factor;
 
 
 
 	/// allocated size for spectral data in case of complex data in physical space
 	std::size_t spectral_complex_data_size[2];
-	std::size_t spectral_complex_data_iteration_end[2];
+
+	/// total number of elements in spectrum
 	std::size_t spectral_complex_array_data_number_of_elements;
+
+	/// iteration range for complex valued space
+	/// 1st index (left): the id of the range,
+	/// 2nd index (middle): dimension the range,
+	/// 3rd index (last one): start and end (exclusive) index
+	std::size_t spectral_complex_data_iteration_ranges[4][2][2];
 
 	fftw_plan	fftw_plan_complex_forward;
 	fftw_plan	fftw_plan_complex_backward;
@@ -116,13 +146,14 @@ public:
 
 #else
 
-#if SWEET_THREADING
+	#if SWEET_THREADING
 		// initialise FFTW with spatial parallelization
 		fftw_init_threads();
 		fftw_plan_with_nthreads(omp_get_max_threads());
-#endif
+	#endif
 
 #endif
+
 		static const char *load_wisdom_from_file = nullptr;
 
 		if (load_wisdom_from_file != nullptr)
@@ -158,8 +189,6 @@ public:
 #endif
 
 		initialized = false;
-
-//		refCounter()++;
 	}
 
 
@@ -192,23 +221,6 @@ private:
 		assert(spectral_modes[0] > 0);
 		assert(spectral_modes[1] > 0);
 
-		// real-to-complex storage representation
-		spectral_data_size[0] = spectral_modes[0]/2+1;
-		spectral_data_size[1] = spectral_modes[1];
-
-#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
-//#error "TODO: check all that stuff"
-		// TODO: setup dealiasing limitations correctly
-		spectral_data_iteration_end[0] = spectral_data_size[0]*2/3-1;
-		spectral_data_iteration_end[1] = spectral_data_size[1]*2/3-1;
-#else
-		spectral_data_iteration_end[0] = spectral_data_size[0];
-		spectral_data_iteration_end[1] = spectral_data_size[1];
-#endif
-
-		spectral_array_data_number_of_elements = spectral_data_size[0]*spectral_data_size[1];
-
-
 		/*
 		 * Load existing wisdom
 		 */
@@ -228,6 +240,68 @@ private:
 		 * REAL PHYSICAL SPACE DATA (REAL to COMPLEX FFT)
 		 */
 		{
+
+			// real-to-complex storage representation
+			spectral_data_size[0] = spectral_modes[0]/2+1;
+			spectral_data_size[1] = spectral_modes[1];
+
+
+#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
+
+#if 1
+
+#warning "TODO: REMOVE THIS. || 1 IS ONLY ACTIVATED FOR TEST CASES!!!"
+
+
+			spectral_data_iteration_ranges[0][0][0] = 0;
+			spectral_data_iteration_ranges[0][0][1] = spectral_data_size[0];
+			spectral_data_iteration_ranges[0][1][0] = 0;
+			spectral_data_iteration_ranges[0][1][1] = spectral_data_size[1]/2;
+
+			spectral_data_iteration_ranges[1][0][0] = 0;
+			spectral_data_iteration_ranges[1][0][1] = spectral_data_size[0];
+			spectral_data_iteration_ranges[1][1][0] = spectral_data_size[1]/2;
+			spectral_data_iteration_ranges[1][1][1] = spectral_data_size[1];
+
+
+#else
+
+
+			/*
+			 * For more information, have a look at
+			 * doc/antialiasing/implementation_strategy.pdf
+			 */
+
+			spectral_data_iteration_ranges[0][0][0] = 0;
+			spectral_data_iteration_ranges[0][0][1] = spectral_data_size[0]*2/3-1;
+			spectral_data_iteration_ranges[0][1][0] = 0;
+			spectral_data_iteration_ranges[0][1][1] = spectral_data_size[1]/2;
+
+			spectral_data_iteration_ranges[1][0][0] = 0;
+			spectral_data_iteration_ranges[1][0][1] = spectral_data_size[0]*2/3-1;
+			spectral_data_iteration_ranges[1][1][0] = spectral_data_size[1]-spectral_data_size[1]/2;
+			spectral_data_iteration_ranges[1][1][1] = spectral_data_size[1];
+
+#endif
+
+#else
+
+			spectral_data_iteration_ranges[0][0][0] = 0;
+			spectral_data_iteration_ranges[0][0][1] = spectral_data_size[0];
+			spectral_data_iteration_ranges[0][1][0] = 0;
+			spectral_data_iteration_ranges[0][1][1] = spectral_data_size[1]/2;
+
+			spectral_data_iteration_ranges[1][0][0] = 0;
+			spectral_data_iteration_ranges[1][0][1] = spectral_data_size[0];
+			spectral_data_iteration_ranges[1][1][0] = spectral_data_size[1]/2;
+			spectral_data_iteration_ranges[1][1][1] = spectral_data_size[1];
+
+#endif
+
+			spectral_array_data_number_of_elements = spectral_data_size[0]*spectral_data_size[1];
+
+
+
 			/*
 			 * Physical space data
 			 */
@@ -300,9 +374,59 @@ private:
 		 * COMPLEX PHYSICAL SPACE DATA
 		 */
 		{
+
+#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
+
+			/*
+			 * For more information, have a look at
+			 * doc/antialiasing/implementation_strategy.pdf
+			 */
+
+			spectral_complex_data_iteration_ranges[0][0][0] = 0;
+			spectral_complex_data_iteration_ranges[0][0][1] = spectral_data_size[0]*2/3-1;
+			spectral_complex_data_iteration_ranges[0][1][0] = 0;
+			spectral_complex_data_iteration_ranges[0][1][1] = spectral_data_size[1]/3;
+
+			spectral_complex_data_iteration_ranges[1][0][0] = 0;
+			spectral_complex_data_iteration_ranges[1][0][1] = spectral_data_size[0]*2/3-1;
+			spectral_complex_data_iteration_ranges[1][1][0] = spectral_data_size[1]-spectral_data_size[1]/3;
+			spectral_complex_data_iteration_ranges[1][1][1] = spectral_data_size[1];
+
+			spectral_complex_data_iteration_ranges[2][0][0] = spectral_data_size[0] - (spectral_data_size[0]*2/3-1);	// TODO: check this start index
+			spectral_complex_data_iteration_ranges[2][0][1] = spectral_data_size[0];
+			spectral_complex_data_iteration_ranges[2][1][0] = 0;
+			spectral_complex_data_iteration_ranges[2][1][1] = spectral_data_size[1]/3;
+
+			spectral_complex_data_iteration_ranges[3][0][0] = spectral_data_size[0] - (spectral_data_size[0]*2/3-1);	// TODO: check this start index
+			spectral_complex_data_iteration_ranges[3][0][1] = spectral_data_size[0];
+			spectral_complex_data_iteration_ranges[3][1][0] = spectral_data_size[1]-spectral_data_size[1]/3;
+			spectral_complex_data_iteration_ranges[3][1][1] = spectral_data_size[1];
+
+#else
+
+			spectral_complex_data_iteration_ranges[0][0][0] = 0;
+			spectral_complex_data_iteration_ranges[0][0][1] = spectral_data_size[0]/2;
+			spectral_complex_data_iteration_ranges[0][1][0] = 0;
+			spectral_complex_data_iteration_ranges[0][1][1] = spectral_data_size[1]/2;
+
+			spectral_complex_data_iteration_ranges[1][0][0] = 0;
+			spectral_complex_data_iteration_ranges[1][0][1] = spectral_data_size[0]/2;
+			spectral_complex_data_iteration_ranges[1][1][0] = spectral_data_size[1]/2;
+			spectral_complex_data_iteration_ranges[1][1][1] = spectral_data_size[1];
+
+			spectral_complex_data_iteration_ranges[2][0][0] = spectral_data_size[0]/2;
+			spectral_complex_data_iteration_ranges[2][0][1] = spectral_data_size[0];
+			spectral_complex_data_iteration_ranges[2][1][0] = 0;
+			spectral_complex_data_iteration_ranges[2][1][1] = spectral_data_size[1]/2;
+
+			spectral_complex_data_iteration_ranges[3][0][0] = spectral_data_size[0]/2;
+			spectral_complex_data_iteration_ranges[3][0][1] = spectral_data_size[0];
+			spectral_complex_data_iteration_ranges[3][1][0] = spectral_data_size[1]/2;
+			spectral_complex_data_iteration_ranges[3][1][1] = spectral_data_size[1];
+
+#endif
+
 			spectral_complex_array_data_number_of_elements = spectral_modes[0]*spectral_modes[1];
-			spectral_complex_data_iteration_end[0] = spectral_modes[0];
-			spectral_complex_data_iteration_end[1] = spectral_modes[1];
 
 			/*
 			 * Physical space data
@@ -465,8 +589,8 @@ public:
 		static int ref_counter = 0;
 		return ref_counter;
 	}
-
 #endif
+
 
 
 public:
@@ -476,6 +600,8 @@ public:
 	{
 		setupAutoSpectralSpace(i_physical_res[0], i_physical_res[1]);
 	}
+
+
 
 public:
 	void setupAutoSpectralSpace(

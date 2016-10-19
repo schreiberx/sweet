@@ -29,11 +29,72 @@
 #include <sweet/FatalError.hpp>
 
 #include <sweet/plane/PlaneDataConfig.hpp>
+#include <sweet/plane/PlaneData_Kernels.hpp>
 
 
-#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
-#error "NOT YET PROPERLY IMPLEMENTED!!!"
+/*
+ * Precompiler helper functions to handle loops in spectral and physical space
+ */
+
+#if SWEET_THREADING
+	#define PLANE_DATA_SPECTRAL_FOR_IDX(CORE)					\
+		_Pragma("omp parallel for proc_bind(spread)")			\
+		for (int r = 0; r < 2; r++)								\
+		{														\
+			_Pragma("omp parallel for proc_bind(close)")		\
+			for (std::size_t jj = planeDataConfig->spectral_data_iteration_ranges[r][1][0]; jj < planeDataConfig->spectral_data_iteration_ranges[r][1][1]; jj++)		\
+			{				\
+				for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[r][0][0]; ii < planeDataConfig->spectral_data_iteration_ranges[r][0][1]; ii++)	\
+				{			\
+					std::size_t idx = jj*planeDataConfig->spectral_data_size[0]+ii;	\
+					CORE	\
+				}			\
+			}				\
+		}
+
+#else
+
+	#define PLANE_DATA_SPECTRAL_FOR_IDX(CORE)					\
+		for (int r = 0; r < 2; r++)								\
+		{														\
+			for (std::size_t jj = planeDataConfig->spectral_data_iteration_ranges[r][1][0]; jj < planeDataConfig->spectral_data_iteration_ranges[r][1][1]; jj++)		\
+			{				\
+				for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[r][0][0]; ii < planeDataConfig->spectral_data_iteration_ranges[r][0][1]; ii++)	\
+				{			\
+					std::size_t idx = jj*planeDataConfig->spectral_data_size[0]+ii;	\
+					CORE	\
+				}			\
+			}				\
+		}
+
 #endif
+
+
+#if SWEET_THREADING
+	#define PLANE_DATA_PHYSICAL_FOR_IDX(CORE)				\
+		_Pragma("omp parallel for proc_bind(close)")	\
+			for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)	\
+			{	CORE;	}
+
+
+
+	#define PLANE_DATA_PHYSICAL_FOR_IDX_REDUCTION(CORE, REDUCTION)				\
+		_Pragma("omp parallel for "##REDUCTION##" proc_bind(close)")	\
+			for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)	\
+			{	CORE;	}
+#else
+
+	#define PLANE_DATA_PHYSICAL_FOR_IDX(CORE)				\
+			for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)	\
+			{	CORE;	}
+
+
+	#define PLANE_DATA_PHYSICAL_FOR_IDX_REDUCTION(CORE, REDUCTION)				\
+			for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)	\
+			{	CORE;	}
+#endif
+
+
 
 /*
  * this option activates if data has to be allocated for the spectral space
@@ -78,6 +139,10 @@
  */
 
 class PlaneData
+#if !SWEET_USE_PLANE_SPECTRAL_SPACE
+		:
+		private PlaneData_Kernels
+#endif
 {
 public:
 	PlaneDataConfig *planeDataConfig;
@@ -99,14 +164,6 @@ public:
 #endif
 
 
-#if !SWEET_USE_PLANE_SPECTRAL_SPACE
-	int kernel_size = -1;
-	double *kernel_data = nullptr;
-	int kernel_id = -1;
-#endif
-
-
-
 	/**
 	 * prohibit empty initialization by making this method private
 	 */
@@ -124,8 +181,6 @@ private:
 		physical_space_data = MemBlockAlloc::alloc<double>(
 				planeDataConfig->physical_array_data_number_of_elements*sizeof(double)
 		);
-
-//		std::cout << planeDataConfig->physical_array_data_number_of_elements << ", " << planeDataConfig->spectral_array_data_number_of_elements << std::endl;
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 		spectral_space_data = MemBlockAlloc::alloc< std::complex<double> >(
@@ -160,12 +215,9 @@ public:
 		if (physical_space_data_valid)
 #endif
 		{
-			// use parallel copy for first touch policy!
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-			for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-				physical_space_data[i] = i_dataArray.physical_space_data[i];
+			PLANE_DATA_PHYSICAL_FOR_IDX(
+					physical_space_data[idx] = i_dataArray.physical_space_data[idx];
+			);
 		}
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
@@ -173,12 +225,9 @@ public:
 
 		if (spectral_space_data_valid)
 		{
-			// use parallel copy for first touch policy!
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-			for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
-				spectral_space_data[i] = i_dataArray.spectral_space_data[i];
+			PLANE_DATA_SPECTRAL_FOR_IDX(
+					spectral_space_data[idx] = i_dataArray.spectral_space_data[idx];
+			);
 		}
 #endif
 	}
@@ -228,8 +277,6 @@ public:
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 		MemBlockAlloc::free(spectral_space_data, planeDataConfig->spectral_array_data_number_of_elements*sizeof(std::complex<double>));
-#else
-		MemBlockAlloc::free(kernel_data, sizeof(double)*kernel_size*kernel_size);
 #endif
 	}
 
@@ -242,6 +289,7 @@ public:
 			double i_value
 	)
 	{
+#warning "REPLACE WITH LAMBDA"
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 		physical_space_data_valid = true;
 		spectral_space_data_valid = false;
@@ -264,26 +312,12 @@ public:
 		return physical_space_data[j*planeDataConfig->physical_data_size[0]+i];
 	}
 
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-	inline
-	const std::complex<double>& spectral_get(
-			std::size_t j,
-			std::size_t i
-	)	const
-	{
-#warning "REPLACE WITH LAMBDA"
-		requestDataInSpectralSpace();
-
-		return spectral_space_data[j*planeDataConfig->spectral_data_size[0]+i];
-	}
-#endif
-
-
 	inline
 	void physical_set_all(
 			double i_value
 	)
 	{
+#warning "REPLACE WITH LAMBDA"
 #if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
@@ -380,11 +414,26 @@ public:
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
 	inline
+	const std::complex<double>& spectral_get(
+			std::size_t j,
+			std::size_t i
+	)	const
+	{
+#warning "REPLACE WITH LAMBDA"
+		requestDataInSpectralSpace();
+
+		return spectral_space_data[j*planeDataConfig->spectral_data_size[0]+i];
+	}
+
+
+
+	inline
 	double spectral_getRe(
 			std::size_t j,
 			std::size_t i
 	)	const
 	{
+#warning "REMOVE AND REPLACE WITH compelx valued return value spectral_get"
 		requestDataInSpectralSpace();
 
 		return spectral_space_data[j*planeDataConfig->spectral_data_size[0]+i].real();
@@ -411,6 +460,7 @@ public:
 			std::complex<double> &i_value
 	)
 	{
+#warning "REPLACE WITH LAMBDA"
 //		requestDataInSpectralSpace();
 
 		physical_space_data_valid = false;
@@ -428,6 +478,7 @@ public:
 			double i_value_im
 	)
 	{
+#warning "REMOVE"
 //		requestDataInSpectralSpace();
 
 		std::size_t idx =	j*planeDataConfig->spectral_data_size[0]+i;
@@ -447,14 +498,11 @@ public:
 			double i_value_im
 	)
 	{
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
-		{
-			spectral_space_data[i].real(i_value_re);
-			spectral_space_data[i].imag(i_value_im);
-		}
+#warning "REPLACE WITH LAMBDA"
+		PLANE_DATA_SPECTRAL_FOR_IDX(
+				spectral_space_data[idx].real(i_value_re);
+				spectral_space_data[idx].imag(i_value_im);
+		);
 
 		physical_space_data_valid = false;
 		spectral_space_data_valid = true;
@@ -484,16 +532,13 @@ public:
 		if (spectral_space_data_valid)
 			return;		// nothing to do
 
+		// cast to writable PlaneData
 		PlaneData *rw_array_data = (PlaneData*)this;
 
-/*		if (!physical_space_data_valid)
-		{
-			rw_array_data->spectral_space_data_valid = true;
-			return;		// nothing to do
-		}*/
-
+#if SWEET_DEBUG
 		if (!physical_space_data_valid)
 			FatalError("Spectral data not available! Is this maybe a non-initialized operator?");
+#endif
 
 		planeDataConfig->fft_physical_to_spectral(rw_array_data->physical_space_data, rw_array_data->spectral_space_data);
 
@@ -514,14 +559,10 @@ public:
 
 		PlaneData *rw_array_data = (PlaneData*)this;
 
-/*		if (!spectral_space_data_valid)
-		{
-			rw_array_data->physical_space_data_valid = true;
-			return;		// nothing to do
-		}*/
-
-		assert(spectral_space_data_valid == true);
-
+#if SWEET_DEBUG
+		if (!spectral_space_data_valid)
+			FatalError("Physical data not available and no spectral data!");
+#endif
 
 		planeDataConfig->fft_spectral_to_physical(rw_array_data->spectral_space_data, rw_array_data->physical_space_data);
 
@@ -537,11 +578,9 @@ public:
 	{
 		PlaneData out(planeDataConfig);
 
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			out.physical_space_data[i] = (physical_space_data[i] > 0 ? 1 : 0);
+		PLANE_DATA_PHYSICAL_FOR_IDX(
+				out.physical_space_data[idx] = (physical_space_data[idx] > 0 ? 1 : 0);
+			);
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 		out.physical_space_data_valid = true;
@@ -556,11 +595,9 @@ public:
 	{
 		PlaneData out(planeDataConfig);
 
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			out.physical_space_data[i] = (physical_space_data[i] > 0 ? physical_space_data[i] : 0);
+		PLANE_DATA_PHYSICAL_FOR_IDX(
+				out.physical_space_data[idx] = (physical_space_data[idx] > 0 ? physical_space_data[idx] : 0);
+			);
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 		out.physical_space_data_valid = true;
@@ -574,11 +611,9 @@ public:
 	{
 		PlaneData out(planeDataConfig);
 
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			out.physical_space_data[i] = (physical_space_data[i] < 0 ? 1 : 0);
+		PLANE_DATA_PHYSICAL_FOR_IDX(
+				out.physical_space_data[idx] = (physical_space_data[idx] < 0 ? 1 : 0);
+			);
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 		out.physical_space_data_valid = true;
@@ -592,11 +627,9 @@ public:
 	{
 		PlaneData out(planeDataConfig);
 
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			out.physical_space_data[i] = (physical_space_data[i] < 0 ? physical_space_data[i] : 0);
+		PLANE_DATA_PHYSICAL_FOR_IDX(
+				out.physical_space_data[idx] = (physical_space_data[idx] < 0 ? physical_space_data[idx] : 0);
+			);
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 		out.physical_space_data_valid = true;
@@ -614,12 +647,12 @@ public:
 		requestDataInPhysicalSpace();
 
 		bool isallfinite = true;
+
 #if SWEET_THREADING
-#pragma omp parallel for reduction(&&:isallfinite)
+#pragma omp parallel for proc_bind(close) reduction(&&:isallfinite)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 			isallfinite = isallfinite && std::isfinite(physical_space_data[i]);
-//			isallfinite = isallfinite && (physical_space[i]<1000);
 
 
 		return isallfinite;
@@ -636,7 +669,7 @@ public:
 
 		double maxabs = -1;
 #if SWEET_THREADING
-#pragma omp parallel for reduction(max:maxabs)
+#pragma omp parallel for proc_bind(close) reduction(max:maxabs)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 			maxabs = std::max(maxabs, std::abs(physical_space_data[i]));
@@ -655,7 +688,7 @@ public:
 
 		double sum = 0;
 #if SWEET_THREADING
-#pragma omp parallel for reduction(+:sum)
+#pragma omp parallel for proc_bind(close) reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 			sum += physical_space_data[i]*physical_space_data[i];
@@ -677,7 +710,7 @@ public:
 		double c = 0;
 
 #if SWEET_THREADING
-#pragma omp parallel for reduction(+:sum,c)
+#pragma omp parallel for proc_bind(close) reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 		{
@@ -708,7 +741,7 @@ public:
 
 		double maxvalue = -std::numeric_limits<double>::max();
 #if SWEET_THREADING
-#pragma omp parallel for reduction(max:maxvalue)
+#pragma omp parallel for proc_bind(close) reduction(max:maxvalue)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 			maxvalue = std::max(maxvalue, physical_space_data[i]);
@@ -726,7 +759,7 @@ public:
 
 		double minvalue = std::numeric_limits<double>::max();
 #if SWEET_THREADING
-#pragma omp parallel for reduction(min:minvalue)
+#pragma omp parallel for proc_bind(close) reduction(min:minvalue)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 			minvalue = std::min(minvalue, physical_space_data[i]);
@@ -744,7 +777,7 @@ public:
 
 		double sum = 0;
 #if SWEET_THREADING
-#pragma omp parallel for reduction(+:sum)
+#pragma omp parallel for proc_bind(close) reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 			sum += physical_space_data[i];
@@ -763,7 +796,7 @@ public:
 		double sum = 0;
 		double c = 0;
 #if SWEET_THREADING
-#pragma omp parallel for reduction(+:sum,c)
+#pragma omp parallel for proc_bind(close) reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 		{
@@ -790,7 +823,7 @@ public:
 
 		double sum = 0;
 #if SWEET_THREADING
-#pragma omp parallel for reduction(+:sum)
+#pragma omp parallel for proc_bind(close) reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 			sum += std::abs(physical_space_data[i]);
@@ -809,7 +842,7 @@ public:
 		double sum = 0;
 		double c = 0;
 #if SWEET_THREADING
-#pragma omp parallel for reduction(+:sum,c)
+#pragma omp parallel for proc_bind(close) reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 		{
@@ -837,7 +870,7 @@ public:
 
 		double sum = 0;
 #if SWEET_THREADING
-#pragma omp parallel for reduction(+:sum)
+#pragma omp parallel for proc_bind(close) reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 			sum += physical_space_data[i]*physical_space_data[i];
@@ -858,7 +891,7 @@ public:
 		double c = 0.0;
 
 #if SWEET_THREADING
-#pragma omp parallel for reduction(+:sum,c)
+#pragma omp parallel for proc_bind(close) reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 		{
@@ -877,33 +910,6 @@ public:
 	}
 
 
-	constexpr
-	static
-	int get_kernel_mask3x3(
-			int i_0,
-			int i_1,
-			int i_2,
-			int i_3,
-			int i_4,
-			int i_5,
-			int i_6,
-			int i_7,
-			int i_8
-	)
-	{
-		return
-				(i_0 << 0) |
-				(i_1 << 1) |
-				(i_2 << 2) |
-				(i_3 << 3) |
-				(i_4 << 4) |
-				(i_5 << 5) |
-				(i_6 << 6) |
-				(i_7 << 7) |
-				(i_8 << 8);
-	}
-
-
 public:
 	template <int S>
 	void kernel_stencil_setup(
@@ -911,291 +917,23 @@ public:
 			double i_scale = 1.0
 	)
 	{
-#if SWEET_USE_PLANE_SPECTRAL_SPACE == 0
-
-		kernel_size = S;
-		kernel_data = MemBlockAlloc::alloc<double>(sizeof(double)*S*S);
-		for (int y = 0; y < S; y++)
-			for (int x = 0; x < S; x++)
-				kernel_data[y*S+x] = i_kernel_array[S-1-y][x];
-
-		for (int i = 0; i < S*S; i++)
-			kernel_data[i] *= i_scale;
+		((PlaneData_Kernels&)*this).kernel_stencil_setup(
+				i_kernel_array,
+				i_scale,
 
 
-		if (S == 3)
-		{
-			kernel_id = get_kernel_mask3x3(
-					kernel_data[0] != 0,
-					kernel_data[1] != 0,
-					kernel_data[2] != 0,
-					kernel_data[3] != 0,
-					kernel_data[4] != 0,
-					kernel_data[5] != 0,
-					kernel_data[6] != 0,
-					kernel_data[7] != 0,
-					kernel_data[8] != 0
-				);
-		}
-		else
-		{
-			kernel_id = -1;
-		}
+				planeDataConfig,
+				physical_space_data
+			);
 
-#else
-
-		double inv_kernel_array[S][S];
-
-		for (int j = 0; j < S; j++)
-			for (int i = 0; i < S; i++)
-				inv_kernel_array[j][i] = i_kernel_array[j][S-i-1]*i_scale;
-
-		// assure symmetric kernel
-		assert((S & 1) == 1);
-
-		// radius of kernel (half size)
-		std::size_t R = S>>1;
-
-		physical_set_all(0);
-
-		// left lower corner
-		//kernel_cart[    0:R[0]+1,       0:R[0]+1    ] = conv_kernel[    R[0]:,  R[0]:   ]
-		for (std::size_t ky = R; ky < S; ky++)
-			for (std::size_t kx = R; kx < S; kx++)
-			{
-				// coordinates in Cartesian space
-				std::size_t cy = ky-R;
-				std::size_t cx = kx-R;
-
-				if (0 > cx || planeDataConfig->physical_data_size[0] <= cx)
-					continue;
-				if (0 > cy || planeDataConfig->physical_data_size[1] <= cy)
-					continue;
-
-				physical_set(cy, cx, inv_kernel_array[ky][kx]);
-			}
-
-
-		// right bottom corner
-		//kernel_cart[    0:R[0]+1,       res-R[0]:   ] = conv_kernel[    R[0]:,  0:R[0]  ]
-		for (std::size_t ky = R; ky < S; ky++)
-			for (std::size_t kx = 0; kx < R; kx++)
-			{
-				// coordinates in Cartesian space
-				std::size_t cy = ky-R;
-				std::size_t cx = planeDataConfig->physical_data_size[0] - R + kx;
-
-				if (0 > cx || planeDataConfig->physical_data_size[0] <= cx)
-					continue;
-				if (0 > cy || planeDataConfig->physical_data_size[1] <= cy)
-					continue;
-
-				physical_set(cy, cx, inv_kernel_array[ky][kx]);
-			}
-
-
-		// left top corner
-		//kernel_cart[    res-R[0]:,      0:R[0]+1   ] = conv_kernel[    0:R[0],  R[0]:  ]
-		for (std::size_t ky = 0; ky < R; ky++)
-			for (std::size_t kx = R; kx < S; kx++)
-			{
-				// coordinates in Cartesian space
-				std::size_t cy = planeDataConfig->physical_data_size[1] - R + ky;
-				std::size_t cx = kx-R;
-
-				if (0 > cx || planeDataConfig->physical_data_size[0] <= cx)
-					continue;
-				if (0 > cy || planeDataConfig->physical_data_size[1] <= cy)
-					continue;
-
-				physical_set(cy, cx, inv_kernel_array[ky][kx]);
-			}
-
-
-		// right top corner
-		//kernel_cart[    res-R[0]:,      res-R[0]:   ] = conv_kernel[    0:R[0], 0:R[0]  ]
-		for (std::size_t ky = 0; ky < R; ky++)
-			for (std::size_t kx = 0; kx < R; kx++)
-			{
-				// coordinates in Cartesian space
-				std::size_t cy = planeDataConfig->physical_data_size[1] - R + ky;
-				std::size_t cx = planeDataConfig->physical_data_size[0] - R + kx;
-
-				if (0 > cx || planeDataConfig->physical_data_size[0] <= cx)
-					continue;
-				if (0 > cy || planeDataConfig->physical_data_size[1] <= cy)
-					continue;
-
-				physical_set(cy, cx, inv_kernel_array[ky][kx]);
-			}
-
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 		physical_space_data_valid = true;
 		spectral_space_data_valid = false;
 
-		requestDataInSpectralSpace();	/// convert kernel_data; to spectral space
+		requestDataInSpectralSpace();
 #endif
 	}
 
-
-	/**
-	 * apply a 3x3 stencil
-	 */
-	PlaneData op_stencil_Re_3x3(
-			const double *i_kernel_data
-	)
-	{
-		PlaneData out = *this;
-
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		bool was_spectral = false;
-		if (this->spectral_space_data_valid)
-		{
-			this->requestDataInPhysicalSpace();
-			was_spectral = true;
-			this->spectral_space_data_valid=false;
-		} else if (!this->physical_space_data_valid)
-		{
-			FatalError("Uninitialized PlaneData in op_stencil_Re_3x3");
-		}
-		out.spectral_space_data_valid=false;
-#endif
-
-
-		int res_x = planeDataConfig->physical_data_size[0];
-		int res_y = planeDataConfig->physical_data_size[1];
-
-
-#if !SWEET_REXI_THREAD_PARALLEL_SUM
-#	pragma omp parallel for OPENMP_PAR_SIMD shared(res_x, res_y, out, i_kernel_data)
-#endif
-		for (int y = 0; y < res_y; y++)
-		{
-			for (int x = 0; x < res_x; x++)
-			{
-				double *data_out = &out.physical_space_data[(y*res_x+x)];
-				data_out[0] = 0;
-
-				for (int j = -1; j <= 1; j++)
-				{
-					int pos_y = y+j;
-
-					pos_y -= (pos_y >= res_y ? res_y : 0);
-					pos_y += (pos_y < 0 ? res_y : 0);
-
-					assert(pos_y >= 0 && pos_y < res_y);
-
-					for (int i = -1; i <= 1; i++)
-					{
-						int pos_x = x+i;
-
-						pos_x -= (pos_x >= res_x ? res_x : 0);
-						pos_x += (pos_x < 0 ? res_x : 0);
-
-						assert(pos_x >= 0 && pos_x < res_x);
-
-						int idx = (j+1)*3+(i+1);
-						assert(idx >= 0 && idx < 9);
-
-						double kre = i_kernel_data[idx];
-
-						double dre = physical_space_data[(pos_y*res_x+pos_x)];
-
-						data_out[0] += dre*kre;
-					}
-				}
-			}
-		}
-
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		if (was_spectral)
-		{
-			this->requestDataInSpectralSpace();
-			out.requestDataInSpectralSpace();
-		}
-#endif
-
-		return out;
-	}
-
-
-	/**
-	 * apply a 3x3 stencil with updates
-	 */
-	PlaneData op_stencil_Re_3x3_update(
-			const double *i_kernel_data
-	)
-	{
-		PlaneData out(planeDataConfig);
-
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		bool was_spectral = false;
-		if (this->spectral_space_data_valid)
-		{
-			this->requestDataInPhysicalSpace();
-			was_spectral = true;
-			this->spectral_space_data_valid=false;
-		}else if(!this->physical_space_data_valid)
-		{
-			FatalError("Uninitialized PlaneData in op_stencil_Re_3x3");
-		}
-		out.spectral_space_data_valid=false;
-#endif
-
-		int res_x = planeDataConfig->physical_data_size[0];
-		int res_y = planeDataConfig->physical_data_size[1];
-
-
-#if !SWEET_REXI_THREAD_PARALLEL_SUM
-#	pragma omp parallel for OPENMP_PAR_SIMD shared(res_x, res_y, out, i_kernel_data)
-#endif
-		for (int y = 0; y < res_y; y++)
-		{
-			for (int x = 0; x < res_x; x++)
-			{
-				double *data_out = &out.physical_space_data[(y*res_x+x)];
-				data_out[0] = 0;
-
-				for (int j = -1; j <= 1; j++)
-				{
-					int pos_y = y+j;
-
-					pos_y -= (pos_y >= res_y ? res_y : 0);
-					pos_y += (pos_y < 0 ? res_y : 0);
-
-					assert(pos_y >= 0 && pos_y < res_y);
-
-					for (int i = -1; i <= 1; i++)
-					{
-						int pos_x = x+i;
-
-						pos_x -= (pos_x >= res_x ? res_x : 0);
-						pos_x += (pos_x < 0 ? res_x : 0);
-
-						assert(pos_x >= 0 && pos_x < res_x);
-
-						int idx = (j+1)*3+(i+1);
-						assert(idx >= 0 && idx < 9);
-
-						double kre = i_kernel_data[idx];
-
-						double dre = physical_space_data[(pos_y*res_x+pos_x)];
-
-						data_out[0] += dre*kre;
-					}
-				}
-			}
-		}
-
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		if (was_spectral)
-		{
-			this->requestDataInSpectralSpace();
-			out.requestDataInSpectralSpace();
-		}
-#endif
-
-		return out;
-	}
 
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
@@ -1204,9 +942,8 @@ public:
 	 * The operator is given in i_array_data
 	 */
 	inline
-	PlaneData spec_div_element_wise(
-			const PlaneData &i_array_data,	///< operator
-			double i_denom_zeros_scalar = 0.0
+	PlaneData spectral_div_element_wise(
+			const PlaneData &i_array_data	///< operator
 	)	const
 	{
 		PlaneData out(planeDataConfig);
@@ -1219,21 +956,26 @@ public:
 		requestDataInSpectralSpace();
 		rw_array_data.requestDataInSpectralSpace();
 
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
-		{
-			double ar = spectral_space_data[i].real();
-			double ai = spectral_space_data[i].imag();
-			double br = i_array_data.spectral_space_data[i].real();
-			double bi = i_array_data.spectral_space_data[i].imag();
+		PLANE_DATA_SPECTRAL_FOR_IDX(
 
-			double den = (br*br+bi*bi);
+				double ar = spectral_space_data[idx].real();
+				double ai = spectral_space_data[idx].imag();
+				double br = i_array_data.spectral_space_data[idx].real();
+				double bi = i_array_data.spectral_space_data[idx].imag();
 
-			out.spectral_space_data[i].real((ar*br + ai*bi)/den);
-			out.spectral_space_data[i].imag((ai*br - ar*bi)/den);
-		}
+				double den = br*br+bi*bi;
+
+				if (den == 0)
+				{
+					out.spectral_space_data[idx].real(0);
+					out.spectral_space_data[idx].imag(0);
+				}
+				else
+				{
+					out.spectral_space_data[idx].real((ar*br + ai*bi)/den);
+					out.spectral_space_data[idx].imag((ai*br - ar*bi)/den);
+				}
+		);
 
 		out.spectral_space_data_valid = true;
 		out.physical_space_data_valid = false;
@@ -1242,113 +984,6 @@ public:
 	}
 #endif
 
-
-
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-#if 0
-	/**
-	 * Zero high frequency modes (beyond 2N/3)
-	 *
-	 *Example of Spectrum with N=16: all high modes will be set to zero
-	 * 	(0, 1, Low )	(1, 1, Low )	(2, 1, Low )	(3, 1, Low )	(4, 1, Low )	(5, 1, Low )	(6, 1, High)	(7, 1, High)	(8, 1, High)
-	 * 	(0, 2, Low )	(1, 2, Low )	(2, 2, Low )	(3, 2, Low )	(4, 2, Low )	(5, 2, Low )	(6, 2, High)	(7, 2, High)	(8, 2, High)
-	 * 	(0, 3, Low )	(1, 3, Low )	(2, 3, Low )	(3, 3, Low )	(4, 3, Low )	(5, 3, Low )	(6, 3, High)	(7, 3, High)	(8, 3, High)
-	 *	(0, 4, Low )	(1, 4, Low )	(2, 4, Low )	(3, 4, Low )	(4, 4, Low )	(5, 4, Low )	(6, 4, High)	(7, 4, High)	(8, 4, High)
-	 *	(0, 5, Low )	(1, 5, Low )	(2, 5, Low )	(3, 5, Low )	(4, 5, Low )	(5, 5, Low )	(6, 5, High)	(7, 5, High)	(8, 5, High)
-	 *	(0, 6, High)	(1, 6, High)	(2, 6, High)	(3, 6, High)	(4, 6, High)	(5, 6, High)	(6, 6, High)	(7, 6, High)	(8, 6, High)
-	 *	(0, 7, High)	(1, 7, High)	(2, 7, High)	(3, 7, High)	(4, 7, High)	(5, 7, High)	(6, 7, High)	(7, 7, High)	(8, 7, High)
-	 *	(0, 8, High)	(1, 8, High)	(2, 8, High)	(3, 8, High)	(4, 8, High)	(5, 8, High)	(6, 8, High)	(7, 8, High)	(8, 8, High)
-	 *	(0, 7, High)	(1, 7, High)	(2, 7, High)	(3, 7, High)	(4, 7, High)	(5, 7, High)	(6, 7, High)	(7, 7, High)	(8, 7, High)
-	 *	(0, 6, High)	(1, 6, High)	(2, 6, High)	(3, 6, High)	(4, 6, High)	(5, 6, High)	(6, 6, High)	(7, 6, High)	(8, 6, High)
-	 *	(0, 5, Low)		(1, 5, Low)		(2, 5, Low)		(3, 5, Low)		(4, 5, Low)		(5, 5, Low)		(6, 5, High)	(7, 5, High)	(8, 5, High)
-	 *	(0, 4, Low)		(1, 4, Low)		(2, 4, Low)		(3, 4, Low)		(4, 4, Low)		(5, 4, Low)		(6, 4, High)	(7, 4, High)	(8, 4, High)
-	 *	(0, 3, Low)		(1, 3, Low)		(2, 3, Low)		(3, 3, Low)		(4, 3, Low)		(5, 3, Low)		(6, 3, High)	(7, 3, High)	(8, 3, High)
-	 *	(0, 2, Low)		(1, 2, Low)		(2, 2, Low)		(3, 2, Low)		(4, 2, Low)		(5, 2, Low)		(6, 2, High)	(7, 2, High)	(8, 2, High)
-	 *	(0, 1, Low)		(1, 1, Low)		(2, 1, Low)		(3, 1, Low)		(4, 1, Low)		(5, 1, Low)		(6, 1, High)	(7, 1, High)	(8, 1, High)
-	 *	(0, 0, Low)		(1, 0, Low)		(2, 0, Low)		(3, 0, Low)		(4, 0, Low)		(5, 0, Low)		(6, 0, High)	(7, 0, High)	(8, 0, High)
-	 *
-	 *
-	 */
-	inline
-	PlaneData& aliasing_zero_high_modes()
-	{
-		//std::cout<<"Cartesian"<<std::endl;
-		//printArrayData();
-		//Get spectral data
-		requestDataInSpectralSpace();
-		//std::cout<<"Spectral input data"<<std::endl;
-		//printSpectrum();
-
-		//Upper part
-		std::size_t i=1; //modenumber in x
-		std::size_t j=1; //modenumber in y
-
-		// TODO: this does not work once distributed memory is available
-#if SWEET_THREADING
-//#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t y = planeDataConfig->spectral_data_size[1]-1; y > planeDataConfig->spectral_data_size[1]/2; y--)
-		{
-			i=0;
-			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
-			{
-
-				//double value_re = spec_getRe(y, x);
-				//double value_im = spec_getIm(y, x);
-				if( x > 2*(resolution_spec[0]-1)/3 || j > 2*(resolution_spec[1]/2)/3 )
-				//if( x > 2*(resolution_spec[0]-1)/3-1 || j > 2*(resolution_spec[1]/2)/3-1 )
-				{
-					spectral_set( y, x, 0.0, 0.0);
-					//std::cout << "(" << i << ", " << j << ", High)\t";
-				}
-				else
-				{
-					//std::cout << "(" << i << ", " << j << ", Low )\t";
-				}
-				i++;
-			}
-			j++;
-			//std::cout << std::endl;
-		}
-
-
-		//Lower part
-		i=0; //modenumber in x
-		j=planeDataConfig->spectral_data_size[1]/2; //modenumber in y
-		// TODO: this does not work once distributed memory is available
-#if SWEET_THREADING
-//#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (int y = (int) resolution_spec[1]/2; y >= 0; y--)
-		{
-			i=0;
-			for (std::size_t x = 0; x < resolution_spec[0]; x++)
-			{
-				//double value_re = spec_getRe(y, x);
-				//double value_im = spec_getIm(y, x);
-				if( x > 2*(resolution_spec[0]-1)/3 ||  y > 2*((int) resolution_spec[1]/2)/3 )
-				//if( x > 2*(resolution_spec[0]-1)/3-1 ||  y > 2*((int) resolution_spec[1]/2)/3-1 )
-				{
-					spectral_set( y, x, 0.0, 0.0);
-					//std::cout << "(" << i << ", " << j << ", High)\t";
-				}
-				else
-				{
-					//std::cout << "(" << i << ", " << j << ", Low)\t";
-				}
-				i++;
-			}
-			j--;
-			//std::cout << std::endl;
-		}
-
-		requestDataInPhysicalSpace();
-
-		return *this;
-	}
-#endif
-
-#endif
 
 
 public:
@@ -1394,14 +1029,10 @@ public:
 		{
 			physical_space_data_valid = true;
 #endif
-			/*
-			 * If this data was generated based on temporary data sets (e.g. via h = hu/u), then only swap pointers.
-			 */
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-			for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-				physical_space_data[i] = i_dataArray.physical_space_data[i];
+
+			PLANE_DATA_PHYSICAL_FOR_IDX(
+					physical_space_data[idx] = i_dataArray.physical_space_data[idx];
+			);
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 		}
@@ -1410,16 +1041,13 @@ public:
 			physical_space_data_valid = false;
 		}
 
-		planeDataConfig->spectral_array_data_number_of_elements = i_dataArray.planeDataConfig->spectral_array_data_number_of_elements;
-
 		if (i_dataArray.spectral_space_data_valid)
 		{
 			spectral_space_data_valid = true;
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-			for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
-				spectral_space_data[i] = i_dataArray.spectral_space_data[i];
+
+			PLANE_DATA_SPECTRAL_FOR_IDX(
+					spectral_space_data[idx] = i_dataArray.spectral_space_data[idx];
+				);
 		}
 		else
 		{
@@ -1429,7 +1057,6 @@ public:
 
 		return *this;
 	}
-
 
 	/**
 	 * Apply a linear operator given by this class to the input data array.
@@ -1447,244 +1074,24 @@ public:
 		requestDataInSpectralSpace();
 		rw_array_data.requestDataInSpectralSpace();
 
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
-			out.spectral_space_data[i] = spectral_space_data[i]*i_array_data.spectral_space_data[i];
+		PLANE_DATA_SPECTRAL_FOR_IDX(
+				out.spectral_space_data[idx] = spectral_space_data[idx]*i_array_data.spectral_space_data[idx];
+		);
 
 		out.spectral_space_data_valid = true;
 		out.physical_space_data_valid = false;
 
 #else
 
-		/**
-		 * TODO: optimize this!!!
-		 *
-		 *  - cache blocking
-		 *  - if branching elimination
-		 *  - etc.....
-		 */
-		int res_x = planeDataConfig->physical_data_size[0];
-		int res_y = planeDataConfig->physical_data_size[1];
+		PlaneData &rw_array_data = (PlaneData&)i_array_data;
 
-		if (kernel_size == 3)
-		{
-			switch (kernel_id)
-			{
-			case get_kernel_mask3x3(0, 0, 0, 1, 0, 1, 0, 0, 0):	// (X, 0, X)
-#if SWEET_THREADING
-#pragma omp parallel for schedule(static)
-#endif
-				for (int y = 0; y < res_y; y++)
-				{
-					for (int x = 0; x < res_x; x++)
-					{
-						double &data_out = out.physical_space_data[y*res_x+x];
-						data_out = 0;
+		kernel_apply(
+				planeDataConfig->physical_data_size[0],
+				planeDataConfig->physical_data_size[1],
+				rw_array_data.physical_space_data,
 
-						int pos_y = y;
-						assert(pos_y >= 0 && pos_y < res_y);
-
-						if (x > 0 && x < res_x-1)
-						{
-							double *kernel_scalar_ptr = &kernel_data[3];
-							double *data_scalar_ptr = &i_array_data.physical_space_data[pos_y*res_x+x-1];
-
-							data_out += kernel_scalar_ptr[0]*data_scalar_ptr[0];
-							data_out += kernel_scalar_ptr[2]*data_scalar_ptr[2];
-						}
-						else
-						{
-							for (int i = -1; i <= 1; i+=2)
-							{
-								int pos_x = x+i;
-								pos_x -= (pos_x >= res_x ? res_x : 0);
-								pos_x += (pos_x < 0 ? res_x : 0);
-								int idx = i+4;
-								double kernel_scalar = kernel_data[idx];
-								double data_scalar = i_array_data.physical_space_data[pos_y*res_x+pos_x];
-
-								data_out += kernel_scalar*data_scalar;
-							}
-						}
-					}
-				}
-				break;
-
-
-
-			case get_kernel_mask3x3(0, 0, 0, 1, 1, 1, 0, 0, 0):	// (X, X, X)
-#if SWEET_THREADING
-#pragma omp parallel for schedule(static)
-#endif
-					for (int y = 0; y < res_y; y++)
-					{
-						for (int x = 0; x < res_x; x++)
-						{
-							double &data_out = out.physical_space_data[y*res_x+x];
-							data_out = 0;
-
-							int pos_y = y+res_y;
-							pos_y -= (pos_y >= res_y ? res_y : 0);
-							pos_y += (pos_y < 0 ? res_y : 0);
-
-							assert(pos_y >= 0 && pos_y < res_y);
-
-							if (x > 0 && x < res_x-1)
-							{
-								double *kernel_scalar_ptr = &kernel_data[3];
-								double *data_scalar_ptr = &i_array_data.physical_space_data[pos_y*res_x+x-1];
-
-								data_out += kernel_scalar_ptr[0]*data_scalar_ptr[0];
-								data_out += kernel_scalar_ptr[1]*data_scalar_ptr[1];
-								data_out += kernel_scalar_ptr[2]*data_scalar_ptr[2];
-							}
-							else
-							{
-								for (int i = -1; i <= 1; i++)
-								{
-									int pos_x = (x+i);
-									pos_x -= (pos_x >= res_x ? res_x : 0);
-									pos_x += (pos_x < 0 ? res_x : 0);
-									int idx = i+4;
-									double kernel_scalar = kernel_data[idx];
-									double data_scalar = i_array_data.physical_space_data[pos_y*res_x+pos_x];
-
-									data_out += kernel_scalar*data_scalar;
-								}
-							}
-						}
-					}
-					break;
-
-			case get_kernel_mask3x3(0, 1, 0, 0, 0, 0, 0, 1, 0):	// (X, 0, X)^T
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-					for (int y = 0; y < res_y; y++)
-					{
-						for (int x = 0; x < res_x; x++)
-						{
-							double &data_out = out.physical_space_data[y*res_x+x];
-							data_out = 0;
-
-							if (y > 0 && y < res_y-1)
-							{
-								double *kernel_scalar_ptr = &kernel_data[1];
-								double *data_scalar_ptr = &i_array_data.physical_space_data[(y-1)*res_x+x];
-
-								data_out += kernel_scalar_ptr[0]*data_scalar_ptr[0];
-								data_out += kernel_scalar_ptr[6]*data_scalar_ptr[2*res_x];
-							}
-							else
-							{
-								for (int j = -1; j <= 1; j+=2)
-								{
-									int pos_y = y+j;
-
-									pos_y -= (pos_y >= res_y ? res_y : 0);
-									pos_y += (pos_y < 0 ? res_y : 0);
-
-									int idx = (j+1)*3+1;
-
-									double kernel_scalar = kernel_data[idx];
-									double data_scalar = i_array_data.physical_space_data[pos_y*res_x+x];
-
-									data_out += kernel_scalar*data_scalar;
-								}
-							}
-						}
-					}
-					break;
-
-			case get_kernel_mask3x3(0, 1, 0, 0, 1, 0, 0, 1, 0):	// (X, 0, X)^T
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-					for (int y = 0; y < res_y; y++)
-					{
-						for (int x = 0; x < res_x; x++)
-						{
-							double &data_out = out.physical_space_data[y*res_x+x];
-							data_out = 0;
-
-							if (y > 0 && y < res_y-1)
-							{
-								double *kernel_scalar_ptr = &kernel_data[1];
-								double *data_scalar_ptr = &i_array_data.physical_space_data[(y-1)*res_x+x];
-
-								data_out += kernel_scalar_ptr[0]*data_scalar_ptr[0];
-								data_out += kernel_scalar_ptr[3]*data_scalar_ptr[res_x];
-								data_out += kernel_scalar_ptr[6]*data_scalar_ptr[2*res_x];
-							}
-							else
-							{
-								for (int j = -1; j <= 1; j++)
-								{
-									int pos_y = y+j;
-
-									pos_y -= (pos_y >= res_y ? res_y : 0);
-									pos_y += (pos_y < 0 ? res_y : 0);
-
-									int idx = (j+1)*3+1;
-
-									double kernel_scalar = kernel_data[idx];
-									double data_scalar = i_array_data.physical_space_data[pos_y*res_x+x];
-
-									data_out += kernel_scalar*data_scalar;
-								}
-							}
-						}
-					}
-					break;
-
-			default:
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-				for (int y = 0; y < res_y; y++)
-				{
-					for (int x = 0; x < res_x; x++)
-					{
-						double &data_out = out.physical_space_data[y*res_x+x];
-						data_out = 0;
-
-						for (int j = -1; j <= 1; j++)
-						{
-							int pos_y = y+j;
-
-							pos_y -= (pos_y >= res_y ? res_y : 0);
-							pos_y += (pos_y < 0 ? res_y : 0);
-
-							assert(pos_y >= 0 && pos_y < res_y);
-
-							for (int i = -1; i <= 1; i++)
-							{
-								int pos_x = x+i;
-
-								pos_x -= (pos_x >= res_x ? res_x : 0);
-								pos_x += (pos_x < 0 ? res_x : 0);
-
-								assert(pos_x >= 0 && pos_x < res_x);
-
-								int idx = (j+1)*3+(i+1);
-								assert(idx >= 0 && idx < 9);
-
-								double kernel_scalar = kernel_data[idx];
-								double data_scalar = i_array_data.physical_space_data[pos_y*res_x+pos_x];
-
-								data_out += kernel_scalar*data_scalar;
-							}
-						}
-					}
-				}
-			}
-		}
-		else
-		{
-			std::cerr << "Not yet implemented" << std::endl;
-		}
+				out.physical_space_data
+			);
 #endif
 
 
@@ -1710,21 +1117,9 @@ public:
 		requestDataInSpectralSpace();
 		rw_array_data.requestDataInSpectralSpace();
 
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t j = 0; j < planeDataConfig->spectral_data_size[1]; j++)
-		{
-			std::size_t idx = j*planeDataConfig->spectral_data_size[0];
-
-			std::complex<double> *src1 = &spectral_space_data[idx];
-			std::complex<double> *src2 = &i_array_data.spectral_space_data[idx];
-
-			std::complex<double> *dst = &out.spectral_space_data[idx];
-
-			for (std::size_t i = 0; i < planeDataConfig->spectral_data_size[0]; i++)
-				dst[i] = src1[i] + src2[i];
-		}
+		PLANE_DATA_SPECTRAL_FOR_IDX(
+				out.spectral_space_data[idx] = spectral_space_data[idx] + i_array_data.spectral_space_data[idx];
+			);
 
 		out.spectral_space_data_valid = true;
 		out.physical_space_data_valid = false;
@@ -1734,15 +1129,10 @@ public:
 		requestDataInPhysicalSpace();
 		rw_array_data.requestDataInPhysicalSpace();
 
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
+		PLANE_DATA_PHYSICAL_FOR_IDX(
+				out.physical_space_data[idx] = physical_space_data[idx] + i_array_data.physical_space_data[idx];
+			);
 #endif
-		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			out.physical_space_data[i] = physical_space_data[i] + i_array_data.physical_space_data[i];
-
-#endif
-
-
 		return out;
 	}
 
@@ -1756,35 +1146,23 @@ public:
 			const double i_value
 	)	const
 	{
-		PlaneData out(planeDataConfig);
+		requestDataInSpectralSpace();
+		PlaneData out = *this;
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
-		{
-			requestDataInSpectralSpace();
+		PLANE_DATA_SPECTRAL_FOR_IDX(
+				out.spectral_space_data[idx] += i_value*(double)planeDataConfig->physical_array_data_number_of_elements;
+		);
 
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-			for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
-				out.spectral_space_data[i] = spectral_space_data[i];
-
-			double scale = planeDataConfig->spectral_data_size[0]*planeDataConfig->spectral_data_size[1];
-			out.spectral_space_data[0] += i_value*scale;
-
-			out.physical_space_data_valid = false;
-			out.spectral_space_data_valid = true;
-		}
+		out.physical_space_data_valid = false;
+		out.spectral_space_data_valid = true;
 
 #else
 
-		requestDataInPhysicalSpace();
-
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			out.physical_space_data[i] = physical_space_data[i]+i_value;
+		PLANE_DATA_PHYSICAL_FOR_IDX(
+				out.physical_space_data[idx] = physical_space_data[idx]+i_value;
+				);
 
 #endif
 
@@ -1807,23 +1185,19 @@ public:
 		requestDataInSpectralSpace();
 		rw_array_data.requestDataInSpectralSpace();
 
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
-			spectral_space_data[i] +=
-					i_array_data.spectral_space_data[i];
+		PLANE_DATA_SPECTRAL_FOR_IDX(
+				spectral_space_data[idx] += i_array_data.spectral_space_data[idx];
+		);
 
-		spectral_space_data_valid = true;
-		physical_space_data_valid = false;
+		//spectral_space_data_valid = true;
+		//physical_space_data_valid = false;
 
 #else
 
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			physical_space_data[i] += i_array_data.physical_space_data[i];
+		PLANE_DATA_PHYSICAL_FOR_IDX(
+				physical_space_data[idx] += i_array_data.physical_space_data[idx];
+			);
+
 #endif
 
 		return *this;
@@ -1853,11 +1227,9 @@ public:
 
 		requestDataInPhysicalSpace();
 
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			physical_space_data[i] += i_value;
+		PLANE_DATA_PHYSICAL_FOR_IDX(
+			physical_space_data[idx] += i_value;
+		);
 
 #endif
 
@@ -1878,11 +1250,9 @@ public:
 
 		requestDataInSpectralSpace();
 
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
-			spectral_space_data[i] *= i_value;
+		PLANE_DATA_SPECTRAL_FOR_IDX(
+				spectral_space_data[idx] *= i_value;
+			);
 
 		spectral_space_data_valid = true;
 		physical_space_data_valid = false;
@@ -1891,11 +1261,9 @@ public:
 
 		requestDataInPhysicalSpace();
 
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			physical_space_data[i] *= i_value;
+		PLANE_DATA_PHYSICAL_FOR_IDX(
+			physical_space_data[idx] *= i_value;
+		);
 
 #endif
 
@@ -1916,12 +1284,9 @@ public:
 
 		requestDataInSpectralSpace();
 
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
-			spectral_space_data[i] /= i_value;
-
+		PLANE_DATA_SPECTRAL_FOR_IDX(
+				spectral_space_data[idx] /= i_value;
+			);
 
 		spectral_space_data_valid = true;
 		physical_space_data_valid = false;
@@ -1930,11 +1295,9 @@ public:
 
 		requestDataInPhysicalSpace();
 
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			physical_space_data[i] /= i_value;
+		PLANE_DATA_PHYSICAL_FOR_IDX(
+			physical_space_data[idx] /= i_value;
+		);
 
 #endif
 
@@ -1954,28 +1317,25 @@ public:
 		PlaneData &rw_array_data = (PlaneData&)i_array_data;
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
+
 		requestDataInSpectralSpace();
 		rw_array_data.requestDataInSpectralSpace();
 
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
-			spectral_space_data[i] -=
-					i_array_data.spectral_space_data[i];
+		PLANE_DATA_SPECTRAL_FOR_IDX(
+				spectral_space_data[idx] -= i_array_data.spectral_space_data[idx];
+			);
 
 		physical_space_data_valid = false;
 		spectral_space_data_valid = true;
+
 #else
 
 		requestDataInPhysicalSpace();
 		rw_array_data.requestDataInPhysicalSpace();
 
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			physical_space_data[i] -= i_array_data.physical_space_data[i];
+		PLANE_DATA_PHYSICAL_FOR_IDX(
+				physical_space_data[idx] -= i_array_data.physical_space_data[idx];
+			);
 
 #endif
 
@@ -2000,13 +1360,9 @@ public:
 		requestDataInSpectralSpace();
 		rw_array_data.requestDataInSpectralSpace();
 
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
-			out.spectral_space_data[i] =
-					spectral_space_data[i]-
-					i_array_data.spectral_space_data[i];
+		PLANE_DATA_SPECTRAL_FOR_IDX(
+			out.spectral_space_data[idx] = spectral_space_data[idx] - i_array_data.spectral_space_data[idx];
+		);
 
 		out.physical_space_data_valid = false;
 		out.spectral_space_data_valid = true;
@@ -2016,13 +1372,9 @@ public:
 		requestDataInPhysicalSpace();
 		rw_array_data.requestDataInPhysicalSpace();
 
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			out.physical_space_data[i] =
-					physical_space_data[i]-
-					i_array_data.physical_space_data[i];
+		PLANE_DATA_PHYSICAL_FOR_IDX(
+				out.physical_space_data[idx] = physical_space_data[idx]-i_array_data.physical_space_data[idx];
+				);
 
 #endif
 
@@ -2039,35 +1391,24 @@ public:
 			const double i_value
 	)	const
 	{
-		PlaneData out(planeDataConfig);
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
 		requestDataInSpectralSpace();
-
-//#pragma error "TOOD: make this depending on rexi_par_sum!"
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
-			out.spectral_space_data[i] = spectral_space_data[i];
+		PlaneData out = *this;
 
 		double scale = planeDataConfig->spectral_data_size[0]*planeDataConfig->spectral_data_size[1];
 		out.spectral_space_data[0] -= i_value*scale;
 
-		out.physical_space_data_valid = false;
-		out.spectral_space_data_valid = true;
+		//out.physical_space_data_valid = false;
+		//out.spectral_space_data_valid = true;
 
 #else
+		PlaneData out(planeDataConfig);
 
 		requestDataInPhysicalSpace();
 
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			out.physical_space_data[i] =
-					physical_space_data[i]-i_value;
+		PLANE_DATA_PHYSICAL_FOR_IDX(out.physical_space_data[idx] = physical_space_data[idx]-i_value;)
 
 #endif
 
@@ -2090,11 +1431,9 @@ public:
 
 		requestDataInSpectralSpace();
 
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
-			out.spectral_space_data[i] = -spectral_space_data[i];
+		PLANE_DATA_SPECTRAL_FOR_IDX(
+				out.spectral_space_data[idx] = -spectral_space_data[idx];
+			);
 
 		double scale = planeDataConfig->physical_data_size[0]*planeDataConfig->physical_data_size[1];
 		out.spectral_space_data[0] = i_value*scale + out.spectral_space_data[0];
@@ -2106,11 +1445,9 @@ public:
 
 		requestDataInPhysicalSpace();
 
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			out.physical_space_data[i] = i_value - physical_space_data[i];
+		PLANE_DATA_PHYSICAL_FOR_IDX(
+				out.physical_space_data[idx] = i_value - physical_space_data[idx];
+			);
 
 #endif
 
@@ -2131,11 +1468,9 @@ public:
 
 		requestDataInSpectralSpace();
 
-#if SWEET_THREADING
-		#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
-			out.spectral_space_data[i] = -spectral_space_data[i];
+		PLANE_DATA_SPECTRAL_FOR_IDX(
+				out.spectral_space_data[idx] = -spectral_space_data[idx];
+			);
 
 		out.physical_space_data_valid = false;
 		out.spectral_space_data_valid = true;
@@ -2144,8 +1479,9 @@ public:
 
 		requestDataInPhysicalSpace();
 
-		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			out.physical_space_data[i] = -physical_space_data[i];
+		PLANE_DATA_PHYSICAL_FOR_IDX(
+			out.physical_space_data[idx] = -physical_space_data[idx];
+		);
 
 #endif
 
@@ -2164,21 +1500,30 @@ public:
 	{
 		PlaneData out(planeDataConfig);
 
+#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
+#warning "TODO"
+		// assure that data is available in spectral space
+		// zero out modes
+#endif
+
 		requestDataInPhysicalSpace();
 		i_array_data.requestDataInPhysicalSpace();
 
-#if SWEET_THREADING
-		#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			out.physical_space_data[i] =
-					physical_space_data[i]*
-					i_array_data.physical_space_data[i];
+		PLANE_DATA_PHYSICAL_FOR_IDX(
+				out.physical_space_data[idx] = physical_space_data[idx]*i_array_data.physical_space_data[idx];
+			);
 
-	#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		out.physical_space_data_valid = true;
-		out.spectral_space_data_valid = false;
-	#endif
+
+#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
+#warning "TODO"
+		// convert to spectral space
+		// zero out modes
+#endif
+
+		#if SWEET_USE_PLANE_SPECTRAL_SPACE
+			out.physical_space_data_valid = true;
+			out.spectral_space_data_valid = false;
+		#endif
 
 		return out;
 	}
@@ -2186,7 +1531,7 @@ public:
 
 
 	/**
-	 * Compute element-wise multiplication
+	 * Compute element-wise division
 	 */
 	inline
 	PlaneData operator/(
@@ -2198,11 +1543,12 @@ public:
 		requestDataInPhysicalSpace();
 		i_array_data.requestDataInPhysicalSpace();
 
-#if SWEET_THREADING
-		#pragma omp parallel for OPENMP_PAR_SIMD
+#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
+#warning "TODO"
 #endif
-		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			out.physical_space_data[i] = physical_space_data[i]/i_array_data.physical_space_data[i];
+		PLANE_DATA_PHYSICAL_FOR_IDX(
+				out.physical_space_data[idx] = physical_space_data[idx]/i_array_data.physical_space_data[idx];
+		);
 
 	#if SWEET_USE_PLANE_SPECTRAL_SPACE
 		out.physical_space_data_valid = true;
@@ -2212,57 +1558,6 @@ public:
 		return out;
 	}
 
-
-
-#if 0
-	/**
-	 * Compute element-wise multiplication in cartesian space
-	 * if de-aliasing activated, do a 2/3 truncation in spectrum before and after multiplication
-	 *
-	 *  *** This is not equivalent to operator* with dealiasing !! It kill more modes than necessary.
-	 */
-	inline
-	PlaneData mult(
-			const PlaneData &i_array_data	///< this class times i_array_data
-	)	const
-	{
-
-		// Call as
-		// 		data_array.mult(i_array_data)
-		// to represent
-		//      data_array*i_array_data
-
-		//This is the actual product result, with the correct de-aliasing
-//		PlaneData &rw_array_data = (PlaneData&)i_array_data;
-		const PlaneData &data_in1_const= *this;
-		const PlaneData &data_in2_const= i_array_data;
-
-		PlaneData out(planeDataConfig);
-
-#if SWEET_USE_PLANE_SPECTRAL_SPACE && SWEET_USE_PLANE_SPECTRAL_DEALIASING
-		// Truncate arrays to 2N/3 high end spectrum
-
-		PlaneData data_in1 = data_in1_const;
-		data_in1.aliasing_zero_high_modes();
-
-		PlaneData data_in2 = data_in2_const;
-		data_in2.aliasing_zero_high_modes();
-
-		out=data_in1*data_in2;
-		//Truncate the product, since the high modes could contain alias
-		out=out.aliasing_zero_high_modes();
-#else
-		out=data_in1_const*data_in2_const;
-#endif
-
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		out.physical_space_data_valid = true;
-		out.spectral_space_data_valid = false;
-#endif
-
-		return out;
-	}
-#endif
 
 
 	/**
@@ -2277,39 +1572,17 @@ public:
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
-		if (spectral_space_data_valid)
-		{
-#if SWEET_THREADING
-			#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-			for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
-				out.spectral_space_data[i] =
-						spectral_space_data[i]*i_value;
+		requestDataInSpectralSpace();
 
-			out.physical_space_data_valid = false;
-			out.spectral_space_data_valid = true;
-		}
-		else
-		{
-			assert(physical_space_data_valid);
-
-#if SWEET_THREADING
-			#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-			for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-				out.physical_space_data[i] =
-						physical_space_data[i]*i_value;
-
-			out.physical_space_data_valid = true;
-			out.spectral_space_data_valid = false;
-		}
+		PLANE_DATA_SPECTRAL_FOR_IDX(
+				out.spectral_space_data[idx] = spectral_space_data[idx]*i_value;
+		);
 
 #else
-#if SWEET_THREADING
-		#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			out.physical_space_data[i] = physical_space_data[i]*i_value;
+
+		PLANE_DATA_PHYSICAL_FOR_IDX(
+			out.physical_space_data[idx] = physical_space_data[idx]*i_value;
+		);
 #endif
 
 		return out;
@@ -2328,126 +1601,28 @@ public:
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
-		if (physical_space_data_valid)
-		{
-#endif
+		requestDataInSpectralSpace();
 
-#if SWEET_THREADING
-			#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-			for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-				out.physical_space_data[i] = physical_space_data[i] / i_value;
+		PLANE_DATA_SPECTRAL_FOR_IDX(
+				out.spectral_space_data[idx] = spectral_space_data[idx] / i_value;
+		);
 
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-			out.physical_space_data_valid = true;
-			out.spectral_space_data_valid = false;
-		}
-		else
-		{
-			assert(spectral_space_data_valid);
-
-#if SWEET_THREADING
-			#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-			for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
-				out.spectral_space_data[i] = spectral_space_data[i] / i_value;
-
-			out.physical_space_data_valid = false;
-			out.spectral_space_data_valid = true;
-		}
-#endif
-
-		return out;
-	}
-
-
-#if 0
-	/**
-	 * Compute element-wise division
-	 */
-	inline
-	PlaneData operator/(
-			const PlaneData &i_array_data
-	)	const
-	{
-		checkConsistency();
-		PlaneData &rw_array_data = (PlaneData&)i_array_data;
-
-		PlaneData out(planeDataConfig);
-
-#if SWEET_USE_PLANE_SPECTRAL_SPACE && SWEET_USE_PLANE_SPECTRAL_DEALIASING
-
-		PlaneData u = aliasing_scaleUp();
-		PlaneData v = rw_array_data.aliasing_scaleUp();
-
-		u.requestDataInPhysicalSpace();
-		v.requestDataInPhysicalSpace();
-
-		PlaneData scaled_output(u.resolution, true);
-
-#if SWEET_THREADING
-		#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < scaled_output.planeDataConfig->physical_array_data_number_of_elements; i++)
-			scaled_output.physical_space_data[i] =
-					u.physical_space_data[i]/
-					v.physical_space_data[i];
-
-		scaled_output.physical_space_data_valid = true;
-		scaled_output.spectral_space_data_valid = false;
-
-		out = scaled_output.aliasing_scaleDown(out.resolution);
-
-		out.physical_space_data_valid = false;
 		out.spectral_space_data_valid = true;
+		out.physical_space_data_valid = false;
 
 #else
-		requestDataInPhysicalSpace();
-		rw_array_data.requestDataInPhysicalSpace();
 
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			out.physical_space_data[i] =
-					physical_space_data[i]/
-					i_array_data.physical_space_data[i];
-
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		out.physical_space_data_valid = true;
-		out.spectral_space_data_valid = false;
-#endif
+		PLANE_DATA_SPECTRAL_FOR_IDX(
+				out.physical_space_data[idx] = physical_space_data[idx] / i_value;
+		);
 
 #endif
 
-		out.checkConsistency();
 		return out;
 	}
-#endif
 
 
-	friend
-	inline
-	std::ostream& operator<<(
-			std::ostream &o_ostream,
-			const PlaneData &i_dataArray
-	)
-	{
-		PlaneData &rw_array_data = (PlaneData&)i_dataArray;
 
-		rw_array_data.requestDataInPhysicalSpace();
-
-		for (int j = rw_array_data.planeDataConfig->physical_data_size[1]-1; j >= 0; j--)
-		{
-			for (std::size_t i = 0; i < rw_array_data.planeDataConfig->physical_data_size[0]; i++)
-			{
-				std::cout << i_dataArray.physical_space_data[j*i_dataArray.planeDataConfig->physical_data_size[0]+i] << "\t";
-			}
-			std::cout << std::endl;
-		}
-
-		return o_ostream;
-	}
 
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
@@ -2463,11 +1638,9 @@ public:
 
 		requestDataInSpectralSpace();
 
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
-			out.spectral_space_data[i] = spectral_space_data[i] + i_value;
+		PLANE_DATA_PHYSICAL_FOR_IDX(
+				out.spectral_space_data[idx] = spectral_space_data[idx] + i_value;
+		);
 
 		out.physical_space_data_valid = false;
 		out.spectral_space_data_valid = true;
@@ -2486,11 +1659,9 @@ public:
 
 		requestDataInSpectralSpace();
 
-#if SWEET_THREADING
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
-		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
-			out.spectral_space_data[i] = 1.0/spectral_space_data[i];
+		PLANE_DATA_PHYSICAL_FOR_IDX(
+				out.spectral_space_data[idx] = 1.0/spectral_space_data[idx];
+		);
 
 		out.physical_space_data_valid = false;
 		out.spectral_space_data_valid = true;
@@ -2531,10 +1702,6 @@ public:
 			{
 				double value_re = rw_array_data.spectral_getRe(y, x);
 				double value_im = rw_array_data.spectral_getIm(y, x);
-				//if(std::abs(value_re)<1.0e-13)
-					//value_re=0.0;
-				//if(std::abs(value_im)<1.0e-13)
-					//value_im=0.0;
 
 				std::cout << "(" << x << ", "<< y << ", "<< value_re << ", " << value_im << ")\t";
 			}
@@ -2601,6 +1768,28 @@ public:
 	}
 
 
+	friend
+	inline
+	std::ostream& operator<<(
+			std::ostream &o_ostream,
+			const PlaneData &i_dataArray
+	)
+	{
+		PlaneData &rw_array_data = (PlaneData&)i_dataArray;
+
+		rw_array_data.requestDataInPhysicalSpace();
+
+		for (int j = rw_array_data.planeDataConfig->physical_data_size[1]-1; j >= 0; j--)
+		{
+			for (std::size_t i = 0; i < rw_array_data.planeDataConfig->physical_data_size[0]; i++)
+			{
+				std::cout << i_dataArray.physical_space_data[j*i_dataArray.planeDataConfig->physical_data_size[0]+i] << "\t";
+			}
+			std::cout << std::endl;
+		}
+
+		return o_ostream;
+	}
 
 	/**
 	 * Write data to ASCII file

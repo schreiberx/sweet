@@ -14,6 +14,7 @@
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/PlaneDataSemiLagrangian.hpp>
 #include <sweet/plane/PlaneDataConfig.hpp>
+#include <sweet/FatalError.hpp>
 
 #include "burgers/burgers_HelmholtzSolver.hpp"
 
@@ -1327,14 +1328,16 @@ public:
 			}
 
 #if 1   // solving the system directly by inverting the left hand side operator
-			io_u = rhs_u.spec_div_element_wise(lhs);
-			io_v = rhs_v.spec_div_element_wise(lhs);
+			io_u = rhs_u.spectral_div_element_wise(lhs);
+			io_v = rhs_v.spectral_div_element_wise(lhs);
 		} else { //Jacobi
 			/*
 			 * TODO:
 			 * set these values non manually
 			 */
 
+			FatalError("NOT available");
+/*
 			bool retval=false;
 			int max_iters = 26000;
 			double eps = 1e-7;
@@ -1370,13 +1373,13 @@ public:
 				std::cout << "Did not converge!!!" << std::endl;
 				exit(-1);
 			}
-
+*/
 		}
 
 
 #else	// making the second step of the IMEX-RK1 scheme
-		PlaneData u1 = rhs_u.spec_div_element_wise(lhs);
-		PlaneData v1 = rhs_v.spec_div_element_wise(lhs);
+		PlaneData u1 = rhs_u.spectral_div_element_wise(lhs);
+		PlaneData v1 = rhs_v.spectral_div_element_wise(lhs);
 
 		io_u = u + t*simVars.sim.viscosity*(op.diff2_c_x(u1)+op.diff2_c_y(u1))
 				- t*(u*op.diff_c_x(u)+v*op.diff_c_y(u)) +f*t;
