@@ -125,10 +125,13 @@ public:
 	{
 		double a = param_parareal_function_a;
 		double b = param_parareal_function_b;
-		double y0 = param_parareal_function_y0;
 
-//		return b*sin(t) / (1 - a*sin(y0));
+#if 0
+		double y0 = param_parareal_function_y0;
+		return b*sin(t) / (1 - a*sin(y0));
+#else
 		return a * std::sin(y) + b * std::sin(t);
+#endif
 	}
 
 /*

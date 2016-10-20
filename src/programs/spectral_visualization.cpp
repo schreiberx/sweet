@@ -154,7 +154,7 @@ public:
 			int id = simVars.misc.vis_id % (sizeof(spec_array)/sizeof(spec_array[0]));
 
 			sprintf(vis_description, "spec_coord (j, i) = (%i, %i), value = %i + i*%i", spec_array[id][0], spec_array[id][1], spec_array[id][2], spec_array[id][3]);
-			tmp.p_spectral_set(spec_array[id][0], spec_array[id][1], {spec_array[id][2], spec_array[id][3]});
+			tmp.p_spectral_set(spec_array[id][0], spec_array[id][1], {(double)spec_array[id][2], (double)spec_array[id][3]});
 
 			return;
 		}

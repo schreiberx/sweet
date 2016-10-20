@@ -1547,11 +1547,13 @@ public:
 	{
 		PlaneData out(planeDataConfig);
 
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 		if (spectral_space_data_valid)
 			spectral_zeroAliasingModes();
 		if (i_array_data.spectral_space_data_valid)
 			i_array_data.spectral_zeroAliasingModes();
+#endif
 #endif
 
 		request_data_physical();
@@ -1588,18 +1590,18 @@ public:
 	{
 		PlaneData out(planeDataConfig);
 
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 		if (spectral_space_data_valid)
 			spectral_zeroAliasingModes();
 		if (i_array_data.spectral_space_data_valid)
 			i_array_data.spectral_zeroAliasingModes();
 #endif
+#endif
+
 		request_data_physical();
 		i_array_data.request_data_physical();
 
-#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
-#warning "TODO"
-#endif
 		PLANE_DATA_PHYSICAL_FOR_IDX(
 				out.physical_space_data[idx] = physical_space_data[idx]/i_array_data.physical_space_data[idx];
 		);
