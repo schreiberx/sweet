@@ -50,6 +50,8 @@ PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
 //general parameters
 SimulationVariables simVars;
 
+const int NUM_OF_UNKNOWNS=2;
+
 //specific parameters
 int param_time_scheme = -1;
 bool param_compute_error = 0;
@@ -103,6 +105,7 @@ public:
 	double benchmark_diff_u;
 	double benchmark_diff_v;
 
+	// Error to analytical solution, if it exists
 	PlaneData benchmark_analytical_error;
 
 	// Error measures L2 norm
@@ -168,9 +171,12 @@ public:
 #if SWEET_PARAREAL != 0
 		,
 		_parareal_data_start_u(planeDataConfig), _parareal_data_start_v(planeDataConfig),
+		_parareal_data_start_u_prev(planeDataConfig), _parareal_data_start_v_prev(planeDataConfig),
 		_parareal_data_fine_u(planeDataConfig), _parareal_data_fine_v(planeDataConfig),
 		_parareal_data_coarse_u(planeDataConfig), _parareal_data_coarse_v(planeDataConfig),
+		_parareal_data_coarse_u_prev(planeDataConfig), _parareal_data_coarse_v_prev(planeDataConfig),
 		_parareal_data_output_u(planeDataConfig), _parareal_data_output_v(planeDataConfig),
+		_parareal_data_output_u_prev(planeDataConfig), _parareal_data_output_v_prev(planeDataConfig),
 		_parareal_data_error_u(planeDataConfig), _parareal_data_error_v(planeDataConfig)
 #endif
 	{
@@ -200,6 +206,7 @@ public:
 
 		// set to some values for first touch NUMA policy (HPC stuff)
 
+		tmp.physical_set_all(0);
 		//Setup prog vars
 		prog_u.physical_set_all(0);
 		prog_v.physical_set_all(0);
@@ -250,7 +257,7 @@ public:
 		//Setup sampler for future interpolations
 		sampler2D.setup(simVars.sim.domain_size, planeDataConfig);
 
-		//Setup semi-lag
+		//Setup semi-lagrangian
 		semiLagrangian.setup(simVars.sim.domain_size, planeDataConfig);
 
 		//Setup general (x,y) grid with position points
@@ -364,21 +371,12 @@ public:
 					prog_u*prog_u +
 					prog_v*prog_v
 				).reduce_sum_quad()) * normalization;
-		/*
-		 * Not used with the Burgers equation
-		 *
-		 * // mass
-		 * simVars.diag.total_mass = -1;
-		 *
-		 * // potential enstropy
-		 * simVars.diag.total_potential_enstrophy = -1;
-		 */
 	}
 
 
-	void set_source( PlaneData &o_u_t )
+	void set_source( PlaneData &o_u_t, double i_simulation_time )
 	{
-		double t = simVars.timecontrol.current_simulation_time;
+		double t = i_simulation_time;
 		double tp = 2.0*M_PIl;
 
 		/*
@@ -684,7 +682,8 @@ public:
 		//TODO: staggering vs. non staggering
 
 		PlaneData f(planeDataConfig);
-		set_source(f);
+		set_source(f,i_simulation_timestamp);
+		o_tmp_t.physical_set_all(0);
 
 		/*
 		 * u and v updates
@@ -725,7 +724,128 @@ public:
 
 	}
 
+	/**
+	 * IMEX time stepping for the coarse timestepping method
+	 *
+	 * The IMEX RK schemes combine an implicit and explicit time discretization.
+	 * The diffusive, stiff term gets treated implicitly and the convective, non-
+	 * stiff term gets treated explicitly. This results in the following system,
+	 * which is solved by this routine:
+	 * (I-\nu\Delta) u(t+\tau) = u(t) - \tau (u(t)*\nabla(u(t))
+	 * for u(t+\tau).
+	 */
+	bool run_timestep_imex(
+			PlaneData &io_u,
+			PlaneData &io_v,
 
+			double& o_dt,			///< return time step size for the computed time step
+			double i_timestep_size,	///< timestep size
+
+			PlaneOperators &op,
+			const SimulationVariables &i_simVars,
+
+			double i_max_simulation_time = std::numeric_limits<double>::infinity()	///< limit the maximum simulation time
+			)
+	{
+		PlaneData u=io_u;
+		PlaneData v=io_v;
+
+		// Initialize and set timestep dependent source for manufactured solution
+		PlaneData f(planeDataConfig);
+		set_source(f,simVars.timecontrol.current_simulation_time);
+		f.request_data_spectral();
+
+		// Modify timestep to final time if necessary
+		double& t = o_dt;
+		if (simVars.timecontrol.current_simulation_time+i_timestep_size < i_max_simulation_time)
+			t = i_timestep_size;
+		else
+			t = i_max_simulation_time-simVars.timecontrol.current_simulation_time;
+
+		// Setting explicit right hand side and operator of the left hand side
+		PlaneData rhs_u = u;
+		PlaneData rhs_v = v;
+
+		if (param_semilagrangian)
+		{
+			rhs_u += t*f;
+		}else{
+			rhs_u += - t*(u*op.diff_c_x(u)+v*op.diff_c_y(u)) + t*f;
+			rhs_v += - t*(u*op.diff_c_x(v)+v*op.diff_c_y(v));
+		}
+
+		if (simVars.disc.use_spectral_basis_diffs) //spectral
+		{
+			PlaneData lhs = u;
+			if (param_semilagrangian)
+			{
+				lhs = ((-t)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
+			}else{
+				lhs = ((-t)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
+			}
+
+#if 1   // solving the system directly by inverting the left hand side operator
+			io_u = rhs_u.spectral_div_element_wise(lhs);
+			io_v = rhs_v.spectral_div_element_wise(lhs);
+		} else { //Jacobi
+			/*
+			 * TODO:
+			 * set these values non manually
+			 */
+
+			FatalError("NOT available");
+/*
+			bool retval=false;
+			int max_iters = 26000;
+			double eps = 1e-7;
+			double* domain_size = simVars.sim.domain_size;
+			double omega = 1.0;
+			retval = burgers_HelmholtzSolver::smoother_jacobi( // Velocity u
+										simVars.sim.viscosity*t,
+										rhs_u,
+										io_u,
+										domain_size,
+										eps,
+										max_iters,
+										omega,
+										0
+									);
+			if (!retval)
+			{
+				std::cout << "Did not converge!!!" << std::endl;
+				exit(-1);
+			}
+			retval = burgers_HelmholtzSolver::smoother_jacobi( // Velocity v
+										simVars.sim.viscosity*t,
+										rhs_v,
+										io_v,
+										domain_size,
+										eps,
+										max_iters,
+										omega,
+										0
+									);
+			if (!retval)
+			{
+				std::cout << "Did not converge!!!" << std::endl;
+				exit(-1);
+			}
+*/
+		}
+
+
+#else	// making the second step of the IMEX-RK1 scheme
+		PlaneData u1 = rhs_u.spectral_div_element_wise(lhs);
+		PlaneData v1 = rhs_v.spectral_div_element_wise(lhs);
+
+		io_u = u + t*simVars.sim.viscosity*(op.diff2_c_x(u1)+op.diff2_c_y(u1))
+				- t*(u*op.diff_c_x(u)+v*op.diff_c_y(u)) +f*t;
+		io_v = v + t*simVars.sim.viscosity*(op.diff2_c_x(v1)+op.diff2_c_y(v1))
+				- t*(u*op.diff_c_x(v)+v*op.diff_c_y(v));
+#endif
+
+		return true;
+	}
 
 	void run_timestep()
 	{
@@ -1014,7 +1134,7 @@ public:
 	/**
 	 * Arrays for online visualisation and their textual description
 	 */
-	VisStuff vis_arrays[2] =
+	VisStuff vis_arrays[NUM_OF_UNKNOWNS] =
 	{
 			{&prog_u,	"u"},
 			{&prog_v,	"v"}
@@ -1067,7 +1187,7 @@ public:
 		{
 		case 'v':
 			simVars.misc.vis_id++;
-			if (simVars.misc.vis_id >= 2)
+			if (simVars.misc.vis_id >= NUM_OF_UNKNOWNS)
 				simVars.misc.vis_id = 0;
 			break;
 
@@ -1094,20 +1214,23 @@ public:
 	 ******************************************************
 	 ******************************************************/
 
-	PlaneData _parareal_data_start_u, _parareal_data_start_v;
-	Parareal_Data_PlaneData<2> parareal_data_start;
+	PlaneData _parareal_data_start_u, _parareal_data_start_v,
+		_parareal_data_start_u_prev, _parareal_data_start_v_prev;
+	Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2> parareal_data_start;
 
 	PlaneData _parareal_data_fine_u, _parareal_data_fine_v;
-	Parareal_Data_PlaneData<2> parareal_data_fine;
+	Parareal_Data_PlaneData<NUM_OF_UNKNOWNS> parareal_data_fine;
 
-	PlaneData _parareal_data_coarse_u, _parareal_data_coarse_v;
-	Parareal_Data_PlaneData<2> parareal_data_coarse;
+	PlaneData _parareal_data_coarse_u, _parareal_data_coarse_v,
+		_parareal_data_coarse_u_prev, _parareal_data_coarse_v_prev;
+	Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2> parareal_data_coarse;
 
-	PlaneData _parareal_data_output_u, _parareal_data_output_v;
-	Parareal_Data_PlaneData<2> parareal_data_output;
+	PlaneData _parareal_data_output_u, _parareal_data_output_v,
+		_parareal_data_output_u_prev, _parareal_data_output_v_prev;
+	Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2> parareal_data_output;
 
 	PlaneData _parareal_data_error_u, _parareal_data_error_v;
-	Parareal_Data_PlaneData<2> parareal_data_error;
+	Parareal_Data_PlaneData<NUM_OF_UNKNOWNS> parareal_data_error;
 
 	double timeframe_start = -1;
 	double timeframe_end = -1;
@@ -1117,27 +1240,30 @@ public:
 	void parareal_setup()
 	{
 		{
-			PlaneData* data_array[2] = {&_parareal_data_start_u, &_parareal_data_start_v};
+			PlaneData* data_array[NUM_OF_UNKNOWNS*2] = {&_parareal_data_start_u, &_parareal_data_start_v,
+					&_parareal_data_start_u_prev, &_parareal_data_start_v_prev};
 			parareal_data_start.setup(data_array);
 		}
 
 		{
-			PlaneData* data_array[2] = {&_parareal_data_fine_u, &_parareal_data_fine_v};
+			PlaneData* data_array[NUM_OF_UNKNOWNS] = {&_parareal_data_fine_u, &_parareal_data_fine_v};
 			parareal_data_fine.setup(data_array);
 		}
 
 		{
-			PlaneData* data_array[2] = {&_parareal_data_coarse_u, &_parareal_data_coarse_v};
+			PlaneData* data_array[NUM_OF_UNKNOWNS*2] = {&_parareal_data_coarse_u, &_parareal_data_coarse_v,
+					&_parareal_data_coarse_u_prev, &_parareal_data_coarse_v_prev};
 			parareal_data_coarse.setup(data_array);
 		}
 
 		{
-			PlaneData* data_array[2] = {&_parareal_data_output_u, &_parareal_data_output_v};
+			PlaneData* data_array[NUM_OF_UNKNOWNS*2] = {&_parareal_data_output_u, &_parareal_data_output_v,
+					&_parareal_data_output_u_prev, &_parareal_data_output_v_prev};
 			parareal_data_output.setup(data_array);
 		}
 
 		{
-			PlaneData* data_array[2] = {&_parareal_data_error_u, &_parareal_data_error_v};
+			PlaneData* data_array[NUM_OF_UNKNOWNS] = {&_parareal_data_error_u, &_parareal_data_error_v};
 			parareal_data_error.setup(data_array);
 		}
 
@@ -1177,6 +1303,8 @@ public:
 
 		*parareal_data_start.data_arrays[0] = prog_u;
 		*parareal_data_start.data_arrays[1] = prog_v;
+		*parareal_data_start.data_arrays[2] = prog_u_prev;
+		*parareal_data_start.data_arrays[3] = prog_v_prev;
 
 	}
 
@@ -1265,129 +1393,6 @@ public:
 
 #endif
 
-	/**
-	 * IMEX time stepping for the coarse timestepping method
-	 *
-	 * The IMEX RK schemes combine an implicit and explicit time discretization.
-	 * The diffusive, stiff term gets treated implicitly and the convective, non-
-	 * stiff term gets treated explicitly. This results in the following system, 
-	 * which is solved by this routine:
-	 * (I-\nu\Delta) u(t+\tau) = u(t) - \tau (u(t)*\nabla(u(t))
-	 * for u(t+\tau).
-	 */
-	bool run_timestep_imex(
-			PlaneData &io_u,
-			PlaneData &io_v,
-
-			double& o_dt,			///< return time step size for the computed time step
-			double i_timestep_size,	///< timestep size
-
-			PlaneOperators &op,
-			const SimulationVariables &i_simVars,
-
-			double i_max_simulation_time = std::numeric_limits<double>::infinity()	///< limit the maximum simulation time
-			)
-	{
-		PlaneData u=io_u;
-		PlaneData v=io_v;
-
-		// Initialize and set timestep dependent source for manufactured solution
-		PlaneData f(planeDataConfig);
-		set_source(f);
-		f.request_data_spectral();
-
-		// Modify timestep to final time if necessary
-		double& t = o_dt;
-		if (simVars.timecontrol.current_simulation_time+i_timestep_size < i_max_simulation_time)
-			t = i_timestep_size;
-		else
-			t = i_max_simulation_time-simVars.timecontrol.current_simulation_time;
-
-		// Setting explicit right hand side and operator of the left hand side
-		PlaneData rhs_u = u;
-		PlaneData rhs_v = v;
-
-		if (param_semilagrangian)
-		{
-			rhs_u += t*f;
-		}else{
-			rhs_u += - t*(u*op.diff_c_x(u)+v*op.diff_c_y(u)) + t*f;
-			rhs_v += - t*(u*op.diff_c_x(v)+v*op.diff_c_y(v));
-		}
-
-		if (simVars.disc.use_spectral_basis_diffs) //spectral
-		{
-			PlaneData lhs = u;
-			if (param_semilagrangian)
-			{
-				lhs = ((-t)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
-			}else{
-				lhs = ((-t)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
-			}
-
-#if 1   // solving the system directly by inverting the left hand side operator
-			io_u = rhs_u.spectral_div_element_wise(lhs);
-			io_v = rhs_v.spectral_div_element_wise(lhs);
-		} else { //Jacobi
-			/*
-			 * TODO:
-			 * set these values non manually
-			 */
-
-			FatalError("NOT available");
-/*
-			bool retval=false;
-			int max_iters = 26000;
-			double eps = 1e-7;
-			double* domain_size = simVars.sim.domain_size;
-			double omega = 1.0;
-			retval = burgers_HelmholtzSolver::smoother_jacobi( // Velocity u
-										simVars.sim.viscosity*t,
-										rhs_u,
-										io_u,
-										domain_size,
-										eps,
-										max_iters,
-										omega,
-										0
-									);
-			if (!retval)
-			{
-				std::cout << "Did not converge!!!" << std::endl;
-				exit(-1);
-			}
-			retval = burgers_HelmholtzSolver::smoother_jacobi( // Velocity v
-										simVars.sim.viscosity*t,
-										rhs_v,
-										io_v,
-										domain_size,
-										eps,
-										max_iters,
-										omega,
-										0
-									);
-			if (!retval)
-			{
-				std::cout << "Did not converge!!!" << std::endl;
-				exit(-1);
-			}
-*/
-		}
-
-
-#else	// making the second step of the IMEX-RK1 scheme
-		PlaneData u1 = rhs_u.spectral_div_element_wise(lhs);
-		PlaneData v1 = rhs_v.spectral_div_element_wise(lhs);
-
-		io_u = u + t*simVars.sim.viscosity*(op.diff2_c_x(u1)+op.diff2_c_y(u1))
-				- t*(u*op.diff_c_x(u)+v*op.diff_c_y(u)) +f*t;
-		io_v = v + t*simVars.sim.viscosity*(op.diff2_c_x(v1)+op.diff2_c_y(v1))
-				- t*(u*op.diff_c_x(v)+v*op.diff_c_y(v));
-#endif
-
-		return true;
-	}
-
 #if SWEET_PARAREAL
 
 	/**
@@ -1401,6 +1406,14 @@ public:
 
 		prog_u = *parareal_data_start.data_arrays[0];
 		prog_v = *parareal_data_start.data_arrays[1];
+		prog_u_prev = *parareal_data_start.data_arrays[2];
+		prog_v_prev = *parareal_data_start.data_arrays[3];
+
+		//Preserve parareal_data_start for next timestep to be prog_u_prev
+		*parareal_data_output.data_arrays[2] = prog_u;
+		*parareal_data_output.data_arrays[3] = prog_v;
+		*parareal_data_coarse.data_arrays[2] = prog_u;
+		*parareal_data_coarse.data_arrays[3] = prog_v;
 
 		// reset simulation time
 		simVars.timecontrol.current_simulation_time = timeframe_start;
@@ -1469,14 +1482,14 @@ public:
 			bool i_compute_convergence_test
 	)
 	{
-		if (simVars.parareal.verbosity > 2)
+		if (simVars.parareal.verbosity > NUM_OF_UNKNOWNS)
 			std::cout << "compute_output_data()" << std::endl;
 
 		double convergence = -1;
 
 		if (!i_compute_convergence_test || !output_data_valid)
 		{
-			for (int k = 0; k < 2; k++)
+			for (int k = 0; k < NUM_OF_UNKNOWNS; k++)
 				*parareal_data_output.data_arrays[k] = *parareal_data_coarse.data_arrays[k] + *parareal_data_error.data_arrays[k];
 
 			output_data_valid = true;
@@ -1531,14 +1544,13 @@ public:
 			int time_slice_id
 	)
 	{
-		Parareal_Data_PlaneData<2>& data = (Parareal_Data_PlaneData<2>&)i_data;
+		Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2>& data = (Parareal_Data_PlaneData<2>&)i_data;
 
 		std::ostringstream ss;
 		ss << simVars.misc.output_file_name_prefix << "_iter" << iteration_id << "_slice" << time_slice_id << ".csv";
 
 		std::string filename = ss.str();
 
-//		std::cout << "filename: " << filename << std::endl;
 		data.data_arrays[0]->file_physical_saveData_ascii(filename.c_str());
 		//data.data_arrays[0]->file_saveSpectralData_ascii(filename.c_str());
 
@@ -1603,10 +1615,11 @@ int main(int i_argc, char *i_argv[])
 		std::cout << std::endl;
 		std::cout << "Special parameters:" << std::endl;
 		std::cout << "	--timestepping-scheme [int]	-n: Use IMEX time stepping of order n (Right now only -1)" << std::endl;
-		std::cout << "					 n: Use explicit Runge-Kutta time stepping of order n (n in 1..4), default:-1" << std::endl;
-		std::cout << "	--compute-error [0/1]		Compute the errors, default:0" << std::endl;
-		std::cout << "	--staggering [0/1]		Use staggered grid, default:0" << std::endl;
-		std::cout << "	--semi-lagrangian [0/1]		Use semi-lagrangian formulation, default:0" << std::endl;
+		std::cout << "					 n: Use explicit Runge-Kutta time stepping of order n (n in 1..4), default=-1" << std::endl;
+		std::cout << "	--ts2 [int]		Coarse time stepping scheme. Settings as above." << std::endl;
+		std::cout << "	--compute-error [0/1]		Compute the errors, default=0" << std::endl;
+		std::cout << "	--staggering [0/1]		Use staggered grid, default=0" << std::endl;
+		std::cout << "	--semi-lagrangian [0/1]		Use semi-lagrangian formulation, default=0" << std::endl;
 		std::cout << std::endl;
 
 #if SWEET_PARAREAL
