@@ -148,7 +148,7 @@ public:
 	}
 
 
-	void physical_update_lambda_array_indices(
+	void update_lambda_array_indices(
 			std::function<void(int,double&)> i_lambda	///< lambda function to return value for lat/mu
 	)
 	{

@@ -41,13 +41,8 @@ public:
 	PlaneData prog_u, prog_v;
 	PlaneData prog_u_prev, prog_v_prev;
 
-
-	PlaneData posx_a, posy_a;
-	PlaneData *pos_a[2];
-
-//	PlaneData interpol_values;
-//	PlaneData hu;
-//	PlaneData hv;
+	ScalarDataArray posx_a, posy_a;
+	ScalarDataArray *input_pos_arrival[2];
 
 	PlaneData h_t;
 
@@ -68,13 +63,8 @@ public:
 		prog_u_prev(planeDataConfig),
 		prog_v_prev(planeDataConfig),
 
-		posx_a(planeDataConfig),
-		posy_a(planeDataConfig),
-
-//		interpol_values(simVars.disc.res),
-
-//		hu(simVars.disc.res),
-//		hv(simVars.disc.res),
+		posx_a(planeDataConfig->physical_array_data_number_of_elements),
+		posy_a(planeDataConfig->physical_array_data_number_of_elements),
 
 		h_t(planeDataConfig),
 
@@ -123,21 +113,27 @@ public:
 		prog_u_prev = prog_u;
 		prog_v_prev = prog_v;
 
-		pos_a[0] = &posx_a;
-		pos_a[1] = &posy_a;
+		input_pos_arrival[0] = &posx_a;
+		input_pos_arrival[1] = &posy_a;
 
 		// setup some test sampling points
 		// we use 2 arrays - one for each sampling position
 
-		posx_a.physical_update_lambda_array_indices(
-			[&](int i, int j, double &io_data)
+		posx_a.update_lambda_array_indices(
+			[&](int idx, double &io_data)
 			{
+				int i = idx % planeDataConfig->physical_data_size[0];
+				//int j = idx / planeDataConfig->physical_data_size[0];
+
 				io_data = ((double)i)*((double)simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0]);
 			}
 		);
-		posy_a.physical_update_lambda_array_indices(
-			[&](int i, int j, double &io_data)
+		posy_a.update_lambda_array_indices(
+				[&](int idx, double &io_data)
 			{
+				//int i = idx % planeDataConfig->physical_data_size[0];
+				int j = idx / planeDataConfig->physical_data_size[0];
+
 				io_data = ((double)j)*((double)simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1]);
 			}
 		);
@@ -172,20 +168,20 @@ public:
 		PlaneData* vel_prev[2] = {&prog_u_prev, &prog_v_prev};
 
 		// position of departure points at t
-		PlaneData posx_d(planeDataConfig);
-		PlaneData posy_d(planeDataConfig);
-		PlaneData* pos_d[2] = {&posx_d, &posy_d};
+		ScalarDataArray posx_d(planeDataConfig->physical_array_data_number_of_elements);
+		ScalarDataArray posy_d(planeDataConfig->physical_array_data_number_of_elements);
+		ScalarDataArray* output_pos_departure[2] = {&posx_d, &posy_d};
 
 #if 0
-		*pos_d[0] = *pos_a[0];
-		*pos_d[1] = *pos_a[1];
+		*output_pos_departure[0] = *input_pos_arrival[0];
+		*output_pos_departure[1] = *input_pos_arrival[1];
 #else
 		semiLagrangian.compute_departure_points_settls(
 				vel_prev,
 				vel,
-				pos_a,
+				input_pos_arrival,
 				dt,
-				pos_d
+				output_pos_departure
 		);
 #endif
 

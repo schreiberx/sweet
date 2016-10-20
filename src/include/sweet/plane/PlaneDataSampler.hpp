@@ -7,22 +7,29 @@
 #ifndef SRC_INCLUDE_SWEET_PLANEDATASAMPLER_HPP_
 #define SRC_INCLUDE_SWEET_PLANEDATASAMPLER_HPP_
 
+#include <sweet/ScalarDataArray.hpp>
 //#include "PlaneDataComplex.hpp"
 
+
+/**
+ * this is a sampler class which provides method to provide
+ * interpolated sampled values on 2D physical data which
+ * is provided by PlaneData
+ */
 class PlaneDataSampler
 {
 public:
-	double domain_size[2];
-	int res[2];
+	double domain_size[2];			/// real physical size of the domain
+	int res[2];						/// resolution of domain
 	PlaneDataConfig *planeDataConfig;
 
 private:
-	double scale_factor[2];
+	double cached_scale_factor[2];			/// cached parameters for sampling
 
 
 public:
 	PlaneDataSampler(
-		double i_domain_size[2],
+		double i_domain_size[2],	/// real physical size of the domain
 		PlaneDataConfig *i_planeDataConfig
 	)
 	{
@@ -35,20 +42,23 @@ public:
 
 	PlaneDataSampler()
 	{
+		planeDataConfig = nullptr;
+
 		res[0] = -1;
 		res[1] = -1;
 
-		scale_factor[0] = -1;
-		scale_factor[1] = -1;
+		cached_scale_factor[0] = -1;
+		cached_scale_factor[1] = -1;
 
 		domain_size[0] = -1;
 		domain_size[1] = -1;
 	}
 
 
+
 public:
 	void setup(
-		double i_domain_size[2],
+		double i_domain_size[2],	/// real physical size of the domain
 		PlaneDataConfig *i_planeDataConfig
 	)
 	{
@@ -61,8 +71,8 @@ public:
 		res[0] = i_planeDataConfig->physical_res[0];
 		res[1] = i_planeDataConfig->physical_res[1];
 
-		scale_factor[0] = (double)i_planeDataConfig->physical_res[0] / i_domain_size[0];
-		scale_factor[1] = (double)i_planeDataConfig->physical_res[1] / i_domain_size[1];
+		cached_scale_factor[0] = (double)i_planeDataConfig->physical_res[0] / i_domain_size[0];
+		cached_scale_factor[1] = (double)i_planeDataConfig->physical_res[1] / i_domain_size[1];
 	}
 
 public:
@@ -73,11 +83,12 @@ public:
 	inline
 	T wrapPeriodic(T i, T i_res)
 	{
+		/*
+		 * TODO: replace this with efficient hardware operation (if available)
+		 */
 		while (i < 0)
-		{
 			i += i_res;
-//			std::cout << i << std::endl;
-		}
+
 		while (i >= i_res)
 			i -= i_res;
 
@@ -86,15 +97,15 @@ public:
 		return i;
 	}
 
-
+#if 0
 public:
-	// NOT NEEDED AND PRO, just use directly the interpolation rotines with shifts...
+	// NOT NEEDED AND PRO, just use directly the interpolation routines with shifts...
 	void remap_gridC2A(
 			PlaneData &i_u,				///< u data in C-grid
 			PlaneData &i_v,				///< v data in C-grid
 			PlaneData &o_u,				///< u data in A-grid
 			PlaneData &o_v,				///< v data in A-grid
-			int i_method=0
+			int i_method = 0			///< 0: linear, >0: bilinear
 	)
 	{
 		// position of A grid points (h)
@@ -106,22 +117,21 @@ public:
 		o_v=i_v;
 
 		assert(res[0] > 0);
-		assert(scale_factor[0] > 0);
-
+		assert(cached_scale_factor[0] > 0);
 
 		pos_x.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
-				io_data = ((double)i+0.5)/scale_factor[0];
+				io_data = ((double)i+0.5)/cached_scale_factor[0];
 			});
+
 		pos_y.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
-				io_data = ((double)j+0.5)/scale_factor[1];
+				io_data = ((double)j+0.5)/cached_scale_factor[1];
 			});
 
-
-		if(i_method>0){
+		if(i_method > 0){
 			//Do bicubic interpolation
 			bicubic_scalar(i_u, pos_x, pos_y, o_u, 0.0, -0.5);
 			bicubic_scalar(i_v, pos_x, pos_y, o_v, -0.5, 0.0);
@@ -130,34 +140,39 @@ public:
 			bilinear_scalar(i_u, pos_x, pos_y, o_u, 0.0, -0.5);
 			bilinear_scalar(i_v, pos_x, pos_y, o_v, -0.5, 0.0);
 		}
-
-		//std::cout<< o_u <<std::endl;
-		//std::cout<< o_v <<std::endl;
 	}
+#endif
 
 
 public:
 	void bicubic_scalar(
 			PlaneData &i_data,				///< sampling data
+
+#if 1
+			ScalarDataArray &i_pos_x,				///< x positions of interpolation points
+			ScalarDataArray &i_pos_y,				///< y positions of interpolation points
+
+			PlaneData &o_data,				///< output values
+#else
 			PlaneData &i_pos_x,				///< x positions of interpolation points
 			PlaneData &i_pos_y,				///< y positions of interpolation points
-			//PlaneData* i_pos[2],	            ///< sampling position
+
 			PlaneData &o_data,				///< output values
+#endif
 			double i_shift_x = 0.0,            ///< shift in x for staggered grids
 			double i_shift_y = 0.0				///< shift in y for staggered grids
 	)
 	{
 		assert(res[0] > 0);
-		assert(scale_factor[0] > 0);
-
-		const std::size_t size = i_pos_x.planeDataConfig->physical_array_data_number_of_elements;
+		assert(cached_scale_factor[0] > 0);
+		assert(i_pos_x.number_of_elements == i_pos_y.number_of_elements);
+		assert(i_pos_x.number_of_elements == o_data.planeDataConfig->physical_array_data_number_of_elements);
 
 		i_data.request_data_physical();
 
-		// iterate over all positions
-//#pragma omp parallel for OPENMP_PAR_SIMD
+		// iterate over all positions in parallel
 #pragma omp parallel for
-		for (std::size_t pos_idx = 0; pos_idx < size; pos_idx++)
+		for (std::size_t pos_idx = 0; pos_idx < i_pos_x.number_of_elements; pos_idx++)
 		{
 			/*
 			 * load position to interpolate
@@ -176,11 +191,9 @@ public:
 			 *  pay attention to the negative shift, which is necessary because the staggered grids are positively shifted
 			 *  and this shift has to be removed for the interpolation
 			 */
-			//double pos_x = i_pos[0]->array_data_cartesian_space[pos_idx]*scale_factor[0] + i_shift_x;
-			//double pos_y = i_pos[1]->array_data_cartesian_space[pos_idx]*scale_factor[1] + i_shift_y;
-			double pos_x = wrapPeriodic(i_pos_x.physical_space_data[pos_idx]*scale_factor[0] + i_shift_x, (double)res[0]);
-			double pos_y = wrapPeriodic(i_pos_y.physical_space_data[pos_idx]*scale_factor[1] + i_shift_y, (double)res[1]);
-			//std::cout << pos_idx << " x " << pos_x << " y " << pos_y << " res " << res[1] << std::endl;
+			double pos_x = wrapPeriodic(i_pos_x.scalar_data[pos_idx]*cached_scale_factor[0] + i_shift_x, (double)res[0]);
+			double pos_y = wrapPeriodic(i_pos_y.scalar_data[pos_idx]*cached_scale_factor[1] + i_shift_y, (double)res[1]);
+
 			/**
 			 * For the interpolation, we assume node-aligned values
 			 *
@@ -214,7 +227,7 @@ public:
 				i = wrapPeriodic(i+1, res[0]);
 				idx_i[3] = wrapPeriodic(i, res[0]);
 			}
-			//std::cout << idx_i[0] << idx_i[1] <<idx_i[2] << idx_i[3]<< std::endl;
+
 			/**
 			 * iterate over rows and interpolate over the columns in the x direction
 			 */
@@ -232,31 +245,30 @@ public:
 				p[3] = i_data.physical_get(idx_j, idx_i[3]);
 
 				q[kj] = p[1] + 0.5 * x*(p[2] - p[0] + x*(2.0*p[0] - 5.0*p[1] + 4.0*p[2] - p[3] + x*(3.0*(p[1] - p[2]) + p[3] - p[0])));
-				//std::cout << idx_j << " "<< q[kj] << std::endl;
-				idx_j = wrapPeriodic(idx_j+1, res[1]);
 
+				idx_j = wrapPeriodic(idx_j+1, res[1]);
 			}
-			//std::cout << q[0] << " " << q[1] <<  " " << q[2] <<  " " <<  q[3] <<  " " << y << std::endl;
 			double value = q[1] + 0.5 * y*(q[2] - q[0] + y*(2.0*q[0] - 5.0*q[1] + 4.0*q[2] - q[3] + y*(3.0*(q[1] - q[2]) + q[3] - q[0])));
-			//std::cout << value << std::endl;
-			//std::cout  << std::endl;
+
 			o_data.physical_space_data[pos_idx] = value;
 		}
 
+
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 		o_data.physical_space_data_valid = true;
-		o_data.spectral_space_data_valid = false;
+		o_data.spectral_space_data_valid = true;
 #endif
 	}
 
 
 public:
 	void bilinear_scalar(
-			PlaneData &i_data,				///< sampling data
-			PlaneData &i_pos_x,				///< x positions of interpolation points
-			PlaneData &i_pos_y,				///< y positions of interpolation points
-			//PlaneData* i_pos[2],	///< sampling position
-			PlaneData &o_data,				///< output values
+			const PlaneData &i_data,				///< sampling data
+
+			const ScalarDataArray &i_pos_x,				///< x positions of interpolation points
+			const ScalarDataArray &i_pos_y,				///< y positions of interpolation points
+
+			ScalarDataArray &o_data,				///< output values
 			double i_shift_x = 0.0,
 			double i_shift_y = 0.0
 	)
@@ -271,10 +283,8 @@ public:
 
 
 		i_data.request_data_physical();
-		i_pos_x.request_data_physical();
-		i_pos_y.request_data_physical();
 
-		std::size_t size = i_pos_x.planeDataConfig->physical_array_data_number_of_elements;
+		std::size_t size = i_pos_x.number_of_elements;
 
 		assert(size != 0);
 
@@ -284,8 +294,8 @@ public:
 		for (std::size_t pos_idx = 0; pos_idx < size; pos_idx++)
 		{
 			// load position to interpolate
-			double pos_x = wrapPeriodic(i_pos_x.physical_space_data[pos_idx]*scale_factor[0] + i_shift_x, (double)res[0]);
-			double pos_y = wrapPeriodic(i_pos_y.physical_space_data[pos_idx]*scale_factor[1] + i_shift_y, (double)res[0]);
+			double pos_x = wrapPeriodic(i_pos_x.scalar_data[pos_idx]*cached_scale_factor[0] + i_shift_x, (double)res[0]);
+			double pos_y = wrapPeriodic(i_pos_y.scalar_data[pos_idx]*cached_scale_factor[1] + i_shift_y, (double)res[0]);
 
 			/**
 			 * See http://www.paulinternet.nl/?page=bicubic
@@ -325,27 +335,23 @@ public:
 
 			double value = q[0] + y*(q[1]-q[0]);
 
-			o_data.physical_space_data[pos_idx] = value;
+			o_data.scalar_data[pos_idx] = value;
 		}
-
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		o_data.physical_space_data_valid = true;
-		o_data.spectral_space_data_valid = false;
-#endif
 	}
 
 
 public:
-	const PlaneData bilinear_scalar(
-			PlaneData &i_data,				///< sampling data
-			PlaneData &i_pos_x,				///< x positions of interpolation points
-			PlaneData &i_pos_y,				///< y positions of interpolation points
-			//PlaneData* i_pos[2],	///< sampling position
+	const ScalarDataArray bilinear_scalar(
+			const PlaneData &i_data,				///< sampling data
+
+			ScalarDataArray &i_pos_x,				///< x positions of interpolation points
+			ScalarDataArray &i_pos_y,				///< y positions of interpolation points
+
 			double i_shift_x = 0.0,
 			double i_shift_y = 0.0
 	)
 	{
-		PlaneData out(i_data.planeDataConfig);
+		ScalarDataArray out(i_data.planeDataConfig->physical_array_data_number_of_elements);
 		bilinear_scalar(i_data, i_pos_x, i_pos_y, out, i_shift_x, i_shift_y);
 		return out;
 	}
@@ -353,8 +359,9 @@ public:
 public:
 	const PlaneData bicubic_scalar(
 			PlaneData &i_data,				///< sampling data
-			PlaneData &i_pos_x,				///< x positions of interpolation points
-			PlaneData &i_pos_y,				///< y positions of interpolation points
+
+			ScalarDataArray &i_pos_x,				///< x positions of interpolation points
+			ScalarDataArray &i_pos_y,				///< y positions of interpolation points
 			//PlaneData* i_pos[2],	///< sampling position
 			double i_shift_x = 0.0,
 			double i_shift_y = 0.0
