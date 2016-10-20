@@ -271,6 +271,9 @@ public:
 
 
 		i_data.request_data_physical();
+		i_pos_x.request_data_physical();
+		i_pos_y.request_data_physical();
+
 		std::size_t size = i_pos_x.planeDataConfig->physical_array_data_number_of_elements;
 
 		assert(size != 0);

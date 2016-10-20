@@ -29,6 +29,7 @@ class PlaneDataComplex
 {
 	typedef std::complex<double> complex;
 
+public:
 	PlaneDataConfig *planeDataConfig;
 
 public:
@@ -74,20 +75,20 @@ public:
 			const std::size_t i_res[2]
 	)
 	{
-		resolution[0] = i_res[0];
-		resolution[1] = i_res[1];
+		planeDataConfig->physical_res[0] = i_res[0];
+		planeDataConfig->physical_res[1] = i_res[1];
 
 		if (data)
 			cleanup();
 
-		data = MemBlockAlloc::alloc<double>(sizeof(double)*resolution[0]*resolution[1]*2);
+		data = MemBlockAlloc::alloc<double>(sizeof(double)*planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2);
 	}
 
 
 
 	void cleanup()
 	{
-		MemBlockAlloc::free(data, sizeof(double)*resolution[0]*resolution[1]*2);
+		MemBlockAlloc::free(data, sizeof(double)*planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2);
 		data = nullptr;
 	}
 
@@ -104,14 +105,14 @@ public:
 		exit(1);
 #endif
 
-		resolution[0] = i_testArray.resolution[0];
-		resolution[1] = i_testArray.resolution[1];
+		planeDataConfig->physical_res[0] = i_testArray.planeDataConfig->physical_res[0];
+		planeDataConfig->physical_res[1] = i_testArray.planeDataConfig->physical_res[1];
 
-		data = MemBlockAlloc::alloc<double>(sizeof(double)*resolution[0]*resolution[1]*2);
+		data = MemBlockAlloc::alloc<double>(sizeof(double)*planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2);
 
 		fft_setup();
 
-		par_doublecopy(data, i_testArray.data, resolution[0]*resolution[1]*2);
+		par_doublecopy(data, i_testArray.data, planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2);
 	}
 
 
@@ -140,20 +141,20 @@ public:
 	)
 	{
 		if (	data == nullptr ||
-				resolution[0] != i_testArray.resolution[0] ||
-				resolution[1] != i_testArray.resolution[1]
+				planeDataConfig->physical_res[0] != i_testArray.planeDataConfig->physical_res[0] ||
+				planeDataConfig->physical_res[1] != i_testArray.planeDataConfig->physical_res[1]
 		)
 		{
 			setup(i_testArray.resolution);
 		}
 
-		resolution[0] = i_testArray.resolution[0];
-		resolution[1] = i_testArray.resolution[1];
+		planeDataConfig->physical_res[0] = i_testArray.planeDataConfig->physical_res[0];
+		planeDataConfig->physical_res[1] = i_testArray.planeDataConfig->physical_res[1];
 
-		assert(resolution[0] == i_testArray.resolution[0]);
-		assert(resolution[1] == i_testArray.resolution[1]);
+		assert(planeDataConfig->physical_res[0] == i_testArray.planeDataConfig->physical_res[0]);
+		assert(planeDataConfig->physical_res[1] == i_testArray.planeDataConfig->physical_res[1]);
 
-		par_doublecopy(data, i_testArray.data, resolution[0]*resolution[1]*2);
+		par_doublecopy(data, i_testArray.data, planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2);
 		return *this;
 	}
 
@@ -164,8 +165,8 @@ public:
 		PlaneDataComplex o_testArray(resolution);
 
 
-		assert(resolution[0] == fft_getSingleton_Plans().resolution[0]);
-		assert(resolution[1] == fft_getSingleton_Plans().resolution[1]);
+		assert(planeDataConfig->physical_res[0] == fft_getSingleton_Plans().planeDataConfig->physical_res[0]);
+		assert(planeDataConfig->physical_res[1] == fft_getSingleton_Plans().planeDataConfig->physical_res[1]);
 
 		fftw_execute_dft(
 				fft_getSingleton_Plans().to_spec,
@@ -190,11 +191,11 @@ public:
 		/*
 		 * do the scaling only if we convert the data back to cartesian space
 		 */
-		double scale = (1.0/((double)resolution[0]*(double)resolution[1]));
+		double scale = (1.0/((double)planeDataConfig->physical_res[0]*(double)planeDataConfig->physical_res[1]));
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2; i+=2)
 		{
 			o_testArray.data[i] *= scale;
 			o_testArray.data[i+1] *= scale;
@@ -207,47 +208,55 @@ public:
 	inline
 	void set(int y, int x, double re, double im)
 	{
-		data[(y*resolution[0]+x)*2+0] = re;
-		data[(y*resolution[0]+x)*2+1] = im;
+		data[(y*planeDataConfig->physical_res[0]+x)*2+0] = re;
+		data[(y*planeDataConfig->physical_res[0]+x)*2+1] = im;
+	}
+
+
+	inline
+	void p_physical_set(int y, int x, std::complex<double> &i_value)
+	{
+		data[(y*planeDataConfig->physical_res[0]+x)*2+0] = i_value.real();
+		data[(y*planeDataConfig->physical_res[0]+x)*2+1] = i_value.imag();
 	}
 
 
 	inline
 	void set(int y, int x, const std::complex<double> &i_value)
 	{
-		data[(y*resolution[0]+x)*2+0] = i_value.real();
-		data[(y*resolution[0]+x)*2+1] = i_value.imag();
+		data[(y*planeDataConfig->physical_res[0]+x)*2+0] = i_value.real();
+		data[(y*planeDataConfig->physical_res[0]+x)*2+1] = i_value.imag();
 	}
 
 
 	inline
 	void setRe(int y, int x, double re)
 	{
-		data[(y*resolution[0]+x)*2+0] = re;
+		data[(y*planeDataConfig->physical_res[0]+x)*2+0] = re;
 	}
 
 	inline
 	void setIm(int y, int x, double im)
 	{
-		data[(y*resolution[0]+x)*2+1] = im;
+		data[(y*planeDataConfig->physical_res[0]+x)*2+1] = im;
 	}
 
 	inline
 	double getRe(int y, int x)	const
 	{
-		return data[(y*resolution[0]+x)*2+0];
+		return data[(y*planeDataConfig->physical_res[0]+x)*2+0];
 	}
 
 	inline
 	double getIm(int y, int x)	const
 	{
-		return data[(y*resolution[0]+x)*2+1];
+		return data[(y*planeDataConfig->physical_res[0]+x)*2+1];
 	}
 
 	inline
 	complex get(int y, int x)	const
 	{
-		std::size_t idx = (y*resolution[0]+x)*2;
+		std::size_t idx = (y*planeDataConfig->physical_res[0]+x)*2;
 
 		return complex(
 				data[idx+0],
@@ -260,7 +269,7 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2; i+=2)
 		{
 			data[i] = re;
 			data[i+1] = im;
@@ -273,7 +282,7 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2; i+=2)
 		{
 			data[i] = 0;
 			data[i+1] = 0;
@@ -291,7 +300,7 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2; i+=2)
 		{
 			data[i] = re;
 			data[i+1] = im;
@@ -303,7 +312,7 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2; i+=2)
 		{
 			data[i] = re;
 		}
@@ -314,7 +323,7 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2; i+=2)
 		{
 			data[i+1] = im;
 		}
@@ -326,8 +335,8 @@ public:
 	 */
 	double getNormSquared(int y, int x)	const
 	{
-		double re = data[(y*resolution[0]+x)*2+0];
-		double im = data[(y*resolution[0]+x)*2+1];
+		double re = data[(y*planeDataConfig->physical_res[0]+x)*2+0];
+		double im = data[(y*planeDataConfig->physical_res[0]+x)*2+1];
 
 		return std::abs(re*re+im*im);
 	}
@@ -343,9 +352,9 @@ public:
 		double nominator = 0;
 		double denominator = 0;
 
-		for (std::size_t kb = 0; kb < resolution[1]; kb++)
+		for (std::size_t kb = 0; kb < planeDataConfig->physical_res[1]; kb++)
 		{
-//			for (std::size_t ka = 0; ka < resolution[0]; ka++)
+//			for (std::size_t ka = 0; ka < planeDataConfig->physical_res[0]; ka++)
 //			{
 				double k = std::sqrt((double)(kb*kb));
 //				double k = std::sqrt((double)(ka*ka)+(double)(kb*kb));
@@ -361,7 +370,7 @@ public:
 
 		std::cout << nominator << std::endl;
 		return nominator/denominator;
-//		return nominator/(double)(resolution[0]*resolution[1]);
+//		return nominator/(double)(planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]);
 	}
 
 	/**
@@ -377,8 +386,8 @@ public:
 		double nominator = 0;
 		double denominator = 0;
 
-		for (std::size_t kb = 0; kb < resolution[1]; kb++)
-			for (std::size_t ka = 0; ka < resolution[0]; ka++)
+		for (std::size_t kb = 0; kb < planeDataConfig->physical_res[1]; kb++)
+			for (std::size_t ka = 0; ka < planeDataConfig->physical_res[0]; ka++)
 			{
 				double k = std::sqrt((double)(ka*ka)+(double)(kb*kb));
 
@@ -405,8 +414,8 @@ public:
 	{
 		PlaneDataComplex out(resolution, aliased_scaled);
 
-		int res_x = resolution[0];
-		int res_y = resolution[1];
+		int res_x = planeDataConfig->physical_res[0];
+		int res_y = planeDataConfig->physical_res[1];
 
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #	pragma omp parallel for OPENMP_PAR_SIMD shared(res_x, res_y, out, i_kernel_data)
@@ -466,8 +475,8 @@ public:
 	{
 		PlaneDataComplex out(resolution, aliased_scaled);
 
-		int res_x = resolution[0];
-		int res_y = resolution[1];
+		int res_x = planeDataConfig->physical_res[0];
+		int res_y = planeDataConfig->physical_res[1];
 
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #	pragma omp parallel for OPENMP_PAR_SIMD shared(res_x, res_y, out, i_kernel_data)
@@ -532,8 +541,8 @@ public:
 	{
 		PlaneDataComplex out(resolution, aliased_scaled);
 
-		int res_x = resolution[0];
-		int res_y = resolution[1];
+		int res_x = planeDataConfig->physical_res[0];
+		int res_y = planeDataConfig->physical_res[1];
 
 
 		// from right
@@ -641,8 +650,8 @@ public:
 	{
 		PlaneDataComplex out(resolution, aliased_scaled);
 
-		int res_x = resolution[0];
-		int res_y = resolution[1];
+		int res_x = planeDataConfig->physical_res[0];
+		int res_y = planeDataConfig->physical_res[1];
 
 		// from right
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
@@ -773,9 +782,9 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-			for (std::size_t j = 0; j < resolution[1]/2; j++)
+			for (std::size_t j = 0; j < planeDataConfig->physical_res[1]/2; j++)
 			{
-				for (std::size_t i = 1; i < resolution[0]/2; i++)
+				for (std::size_t i = 1; i < planeDataConfig->physical_res[0]/2; i++)
 				{
 					set(	j,
 							i,
@@ -783,20 +792,20 @@ public:
 							(double)i*scale
 						);
 					set(
-							resolution[1]-1-j,
+							planeDataConfig->physical_res[1]-1-j,
 							i,
 							0,
 							(double)i*scale
 						);
 
 					set(	j,
-							resolution[0]-i,
+							planeDataConfig->physical_res[0]-i,
 							0,
 							-(double)i*scale
 						);
 					set(
-							resolution[1]-1-j,
-							resolution[0]-i,
+							planeDataConfig->physical_res[1]-1-j,
+							planeDataConfig->physical_res[0]-i,
 							0,
 							-(double)i*scale
 						);
@@ -805,13 +814,13 @@ public:
 		}
 		else
 		{
-			double h[2] = {(double)i_domain_size[0] / (double)resolution[0], (double)i_domain_size[1] / (double)resolution[1]};
+			double h[2] = {(double)i_domain_size[0] / (double)planeDataConfig->physical_res[0], (double)i_domain_size[1] / (double)planeDataConfig->physical_res[1]};
 
 			/*
 			 * setup FD operator
 			 */
 			set(0, 1, -1.0/(2.0*h[0]), 0);
-			set(0, resolution[0]-1, 1.0/(2.0*h[0]), 0);
+			set(0, planeDataConfig->physical_res[0]-1, 1.0/(2.0*h[0]), 0);
 
 			*this = this->toSpec();
 			// TODO: maybe set highest modes to zero?
@@ -836,9 +845,9 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-			for (std::size_t j = 0; j < resolution[1]/2; j++)
+			for (std::size_t j = 0; j < planeDataConfig->physical_res[1]/2; j++)
 			{
-				for (std::size_t i = 1; i < resolution[0]/2; i++)
+				for (std::size_t i = 1; i < planeDataConfig->physical_res[0]/2; i++)
 				{
 					set(	j,
 							i,
@@ -846,20 +855,20 @@ public:
 							0
 						);
 					set(
-							resolution[1]-1-j,
+							planeDataConfig->physical_res[1]-1-j,
 							i,
 							-(double)i*scale*(double)i*scale,
 							0
 						);
 
 					set(	j,
-							resolution[0]-i,
+							planeDataConfig->physical_res[0]-i,
 							-(double)i*scale*(double)i*scale,
 							0
 						);
 					set(
-							resolution[1]-1-j,
-							resolution[0]-i,
+							planeDataConfig->physical_res[1]-1-j,
+							planeDataConfig->physical_res[0]-i,
 							-(double)i*scale*(double)i*scale,
 							0
 						);
@@ -870,8 +879,8 @@ public:
 		{
 
 			double h[2] = {
-					(double)i_domain_size[0] / (double)resolution[0],
-					(double)i_domain_size[1] / (double)resolution[1]
+					(double)i_domain_size[0] / (double)planeDataConfig->physical_res[0],
+					(double)i_domain_size[1] / (double)planeDataConfig->physical_res[1]
 			};
 
 			/*
@@ -881,7 +890,7 @@ public:
 					1.0/(h[0]*h[0]), 0);
 			set(0, 0,
 					-2.0/(h[0]*h[0]), 0);
-			set(0, resolution[0]-1,
+			set(0, planeDataConfig->physical_res[0]-1,
 					1.0/(h[0]*h[0]), 0);
 
 			*this = this->toSpec();
@@ -908,9 +917,9 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-			for (int j = 1; j < (int)resolution[1]/2; j++)
+			for (int j = 1; j < (int)planeDataConfig->physical_res[1]/2; j++)
 			{
-				for (int i = 0; i < (int)resolution[0]/2; i++)
+				for (int i = 0; i < (int)planeDataConfig->physical_res[0]/2; i++)
 				{
 					set(
 							j,
@@ -919,7 +928,7 @@ public:
 							(double)j*scale
 						);
 					set(
-							resolution[1]-j,
+							planeDataConfig->physical_res[1]-j,
 							i,
 							0,
 							-(double)j*scale
@@ -927,13 +936,13 @@ public:
 
 					set(
 							j,
-							resolution[0]-i-1,
+							planeDataConfig->physical_res[0]-i-1,
 							0,
 							(double)j*scale
 						);
 					set(
-							resolution[1]-j,
-							resolution[0]-i-1,
+							planeDataConfig->physical_res[1]-j,
+							planeDataConfig->physical_res[0]-i-1,
 							0,
 							-(double)j*scale
 						);
@@ -942,13 +951,13 @@ public:
 		}
 		else
 		{
-			double h[2] = {(double)i_domain_size[0] / (double)resolution[0], (double)i_domain_size[1] / (double)resolution[1]};
+			double h[2] = {(double)i_domain_size[0] / (double)planeDataConfig->physical_res[0], (double)i_domain_size[1] / (double)planeDataConfig->physical_res[1]};
 
 			/*
 			 * setup FD operator
 			 */
 			set(1, 0, -1.0/(2.0*h[1]), 0);
-			set(resolution[1]-1, 0, 1.0/(2.0*h[1]), 0);
+			set(planeDataConfig->physical_res[1]-1, 0, 1.0/(2.0*h[1]), 0);
 
 			*this = this->toSpec();
 			// TODO: maybe set highest modes to zero?
@@ -974,9 +983,9 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-			for (int j = 1; j < (int)resolution[1]/2; j++)
+			for (int j = 1; j < (int)planeDataConfig->physical_res[1]/2; j++)
 			{
-				for (int i = 0; i < (int)resolution[0]/2; i++)
+				for (int i = 0; i < (int)planeDataConfig->physical_res[0]/2; i++)
 				{
 					set(
 							j,
@@ -985,7 +994,7 @@ public:
 							0
 						);
 					set(
-							resolution[1]-j,
+							planeDataConfig->physical_res[1]-j,
 							i,
 							-(double)j*scale*(double)j*scale,
 							0
@@ -993,13 +1002,13 @@ public:
 
 					set(
 							j,
-							resolution[0]-i-1,
+							planeDataConfig->physical_res[0]-i-1,
 							-(double)j*scale*(double)j*scale,
 							0
 						);
 					set(
-							resolution[1]-j,
-							resolution[0]-i-1,
+							planeDataConfig->physical_res[1]-j,
+							planeDataConfig->physical_res[0]-i-1,
 							-(double)j*scale*(double)j*scale,
 							0
 						);
@@ -1009,14 +1018,14 @@ public:
 		else
 		{
 
-			double h[2] = {(double)i_domain_size[0] / (double)resolution[0], (double)i_domain_size[1] / (double)resolution[1]};
+			double h[2] = {(double)i_domain_size[0] / (double)planeDataConfig->physical_res[0], (double)i_domain_size[1] / (double)planeDataConfig->physical_res[1]};
 
 			/*
 			 * setup FD operator
 			 */
 			set(1, 0, 1.0/(h[1]*h[1]), 0);
 			set(0, 0, -2.0/(h[1]*h[1]), 0);
-			set(resolution[1]-1, 0, 1.0/(h[1]*h[1]), 0);
+			set(planeDataConfig->physical_res[1]-1, 0, 1.0/(h[1]*h[1]), 0);
 
 			*this = this->toSpec();
 			// TODO: maybe set highest modes to zero?
@@ -1029,9 +1038,9 @@ public:
 	inline
 	std::ostream& operator<<(std::ostream &o_ostream, const PlaneDataComplex &i_testArray)
 	{
-		for (int y = i_testArray.resolution[1]-1; y >= 0; y--)
+		for (int y = i_testArray.planeDataConfig->physical_res[1]-1; y >= 0; y--)
 		{
-			for (std::size_t x = 0; x < i_testArray.resolution[0]; x++)
+			for (std::size_t x = 0; x < i_testArray.planeDataConfig->physical_res[0]; x++)
 			{
 				double value_re = i_testArray.getRe(y, x);
 				double value_im = i_testArray.getIm(y, x);
@@ -1061,7 +1070,7 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2; i+=2)
 		{
 			double ar = data[i];
 			double ai = data[i+1];
@@ -1092,7 +1101,7 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2; i+=2)
 		{
 			double ar = data[i];
 			double ai = data[i+1];
@@ -1119,16 +1128,16 @@ public:
 #		pragma omp parallel for
 #endif
 
-		for (std::size_t j = 0; j < resolution[1]; j++)
+		for (std::size_t j = 0; j < planeDataConfig->physical_res[1]; j++)
 		{
 #pragma omp OPENMP_SIMD
-			for (std::size_t i = 0; i < resolution[0]; i++)
+			for (std::size_t i = 0; i < planeDataConfig->physical_res[0]; i++)
 			{
 				out.array_data_physical_space[
 									(j-out.range_start[1])*out.range_size[0]+
 									(i-out.range_start[0])
 								]
-								= data[(j*resolution[0]+i)*2+0];
+								= data[(j*planeDataConfig->physical_res[0]+i)*2+0];
 			}
 		}
 
@@ -1152,18 +1161,18 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for //OPENMP_PAR_SIMD
 #endif
-		for (std::size_t j = 0; j < resolution[1]; j++)
+		for (std::size_t j = 0; j < planeDataConfig->physical_res[1]; j++)
 		{
 			#pragma omp OPENMP_SIMD
-			for (std::size_t i = 0; i < resolution[0]; i++)
+			for (std::size_t i = 0; i < planeDataConfig->physical_res[0]; i++)
 			{
-				data[(j*resolution[0]+i)*2+0] =
+				data[(j*planeDataConfig->physical_res[0]+i)*2+0] =
 						i_dataArray_Real.array_data_physical_space[
 								(j-i_dataArray_Real.range_start[1])*i_dataArray_Real.range_size[0]+
 								(i-i_dataArray_Real.range_start[0])
 							];
 
-				data[(j*resolution[0]+i)*2+1] = 0;
+				data[(j*planeDataConfig->physical_res[0]+i)*2+1] = 0;
 			}
 		}
 
@@ -1183,9 +1192,9 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t j = 0; j < resolution[1]; j++)
+		for (std::size_t j = 0; j < planeDataConfig->physical_res[1]; j++)
 		{
-			for (std::size_t i = 0; i < resolution[0]; i++)
+			for (std::size_t i = 0; i < planeDataConfig->physical_res[0]; i++)
 			{
 				set(	j, i,
 						i_dataArray_Real.get(j, i),
@@ -1207,15 +1216,15 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t j = 0; j < resolution[1]; j++)
+		for (std::size_t j = 0; j < planeDataConfig->physical_res[1]; j++)
 		{
-			for (std::size_t i = 0; i < resolution[0]; i++)
+			for (std::size_t i = 0; i < planeDataConfig->physical_res[0]; i++)
 			{
 				o_out.array_data_physical_space[
 									(j-o_out.range_start[1])*o_out.range_size[0]+
 									(i-o_out.range_start[0])
 								] =
-					data[(j*resolution[0]+i)*2+0];
+					data[(j*planeDataConfig->physical_res[0]+i)*2+0];
 			}
 		}
 
@@ -1233,15 +1242,15 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t j = 0; j < resolution[1]; j++)
+		for (std::size_t j = 0; j < planeDataConfig->physical_res[1]; j++)
 		{
-			for (std::size_t i = 0; i < resolution[0]; i++)
+			for (std::size_t i = 0; i < planeDataConfig->physical_res[0]; i++)
 			{
 				o_out.array_data_physical_space[
 									(j-o_out.range_start[1])*o_out.range_size[0]+
 									(i-o_out.range_start[0])
 								] =
-					data[(j*resolution[0]+i)*2+1];
+					data[(j*planeDataConfig->physical_res[0]+i)*2+1];
 			}
 		}
 
@@ -1265,7 +1274,7 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2; i+=2)
 		{
 			double ar = data[i];
 			double ai = data[i+1];
@@ -1296,7 +1305,7 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2; i+=2)
 		{
 			double ar = data[i];
 			double ai = data[i+1];
@@ -1323,7 +1332,7 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2; i+=2)
 		{
 			out.data[i] = data[i] * i_real;
 			out.data[i+1] = data[i+1] * i_imag;
@@ -1346,7 +1355,7 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2; i+=2)
 		{
 			double ar = data[i];
 			double ai = data[i+1];
@@ -1372,7 +1381,7 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2; i+=2)
 		{
 			out.data[i] = data[i] + i_array_data.data[i];
 			out.data[i+1] = data[i+1] + i_array_data.data[i+1];
@@ -1395,7 +1404,7 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2; i+=2)
 		{
 			data[i] += i_array_data.data[i];
 			data[i+1] += i_array_data.data[i+1];
@@ -1419,7 +1428,7 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2; i+=2)
 		{
 			out.data[i] = data[i] - i_array_data.data[i];
 			out.data[i+1] = data[i+1] - i_array_data.data[i+1];
@@ -1444,13 +1453,13 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2; i+=2)
 		{
 			out.data[i] = data[i];
 			out.data[i+1] = data[i+1];
 		}
 
-		double scale = resolution[0]*resolution[1];
+		double scale = planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1];
 //		double scale = 1.0;
 		out.data[0] += i_value.real()*scale;
 		out.data[1] += i_value.imag()*scale;
@@ -1476,7 +1485,7 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2; i+=2)
 		{
 			out.data[i] = data[i]+re;
 			out.data[i+1] = data[i+1]+im;
@@ -1500,13 +1509,13 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2; i+=2)
 		{
 			out.data[i] = data[i];
 			out.data[i+1] = data[i+1];
 		}
 
-		double scale = resolution[0]*resolution[1];
+		double scale = planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1];
 		out.data[0] -= i_value.real()*scale;
 		out.data[1] -= i_value.imag()*scale;
 
@@ -1528,7 +1537,7 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2; i+=2)
 		{
 			out.data[i] = data[i]-i_value.real();
 			out.data[i+1] = data[i+1]-i_value.imag();
@@ -1546,12 +1555,12 @@ public:
 	PlaneDataComplex scale_down()	const
 	{
 		std::size_t res[2];
-		res[0] = resolution[0]>>1;
-		res[1] = resolution[1]>>1;
+		res[0] = planeDataConfig->physical_res[0]>>1;
+		res[1] = planeDataConfig->physical_res[1]>>1;
 
 		// check for power of 2
-		assert(res[0]*2 == resolution[0]);
-		assert(res[1]*2 == resolution[1]);
+		assert(res[0]*2 == planeDataConfig->physical_res[0]);
+		assert(res[1]*2 == planeDataConfig->physical_res[1]);
 
 		PlaneDataComplex out(res, aliased_scaled);
 
@@ -1563,9 +1572,9 @@ public:
 			double *o_data = &out.data[j*res[0]*2];
 
 			// first line
-			double *i_data1 = &data[j*2*resolution[0]*2];
+			double *i_data1 = &data[j*2*planeDataConfig->physical_res[0]*2];
 			// second line
-			double *i_data2 = &data[(j*2+1)*resolution[0]*2];
+			double *i_data2 = &data[(j*2+1)*planeDataConfig->physical_res[0]*2];
 
 			for (std::size_t i = 0; i < res[0]; i++)
 			{
@@ -1593,24 +1602,24 @@ public:
 	PlaneDataComplex scale_up()	const
 	{
 		std::size_t res[2];
-		res[0] = resolution[0]*2;
-		res[1] = resolution[1]*2;
+		res[0] = planeDataConfig->physical_res[0]*2;
+		res[1] = planeDataConfig->physical_res[1]*2;
 
 		PlaneDataComplex out(res, aliased_scaled);
 
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t j = 0; j < resolution[1]; j++)
+		for (std::size_t j = 0; j < planeDataConfig->physical_res[1]; j++)
 		{
 			// first line
 			double *o_data1 = &out.data[(j*2)*res[0]*2];
 			// second line
 			double *o_data2 = &out.data[(j*2+1)*res[0]*2];
 
-			double *i_data = &data[j*resolution[0]*2];
+			double *i_data = &data[j*planeDataConfig->physical_res[0]*2];
 
-			for (std::size_t i = 0; i < resolution[0]; i++)
+			for (std::size_t i = 0; i < planeDataConfig->physical_res[0]; i++)
 			{
 				o_data1[0] = i_data[0];
 				o_data1[1] = i_data[1];
@@ -1646,7 +1655,7 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2; i+=2)
 		{
 			out.data[i+0] = data[i]*i_array_data.data[i] - data[i+1]*i_array_data.data[i+1];
 			out.data[i+1] = data[i]*i_array_data.data[i+1] + data[i+1]*i_array_data.data[i];
@@ -1672,7 +1681,7 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for OPENMP_PAR_SIMD reduction (+:sum_re,sum_im)
 #endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2; i+=2)
 		{
 			sum_re += data[i]*i_array_data.data[i] - data[i+1]*i_array_data.data[i+1];
 			sum_im += data[i]*i_array_data.data[i+1] + data[i+1]*i_array_data.data[i];
@@ -1693,7 +1702,7 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for reduction(+:sum)
 #endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2; i+=2)
 			sum += std::abs(data[i])+std::abs(data[i+1]);
 
 		return sum;
@@ -1712,7 +1721,7 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for reduction(+:sum_re,sum_im)
 #endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2; i+=2)
 		{
 			sum_re += data[i+0];
 			sum_im += data[i+1];
@@ -1734,7 +1743,7 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for reduction(+:sum_re,sum_im)
 #endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2; i+=2)
 		{
 			sum_re += data[i+0];
 			sum_im += data[i+1];
@@ -1753,7 +1762,7 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for reduction(+:sum)
 #endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2; i+=2)
 			sum += data[i+0] + data[i+1];
 
 		return sum;
@@ -1772,7 +1781,7 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for reduction(+:sum,c)
 #endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2; i+=2)
 		{
 			double radius2 = data[i]*data[i]+data[i+1]*data[i+1];
 			//double value = std::sqrt(radius2);
@@ -1788,7 +1797,7 @@ public:
 
 		sum -= c;
 
-		sum = std::sqrt(sum/double(resolution[0]*resolution[1]));
+		sum = std::sqrt(sum/double(planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]));
 		return sum;
 	}
 
@@ -1804,10 +1813,10 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for reduction(+:sum)
 #endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2; i+=2)
 			sum += data[i]*data[i]+data[i+1]*data[i+1];
 
-		sum = std::sqrt(sum/double(resolution[0]*resolution[1]));
+		sum = std::sqrt(sum/double(planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]));
 		return sum;
 	}
 
@@ -1824,7 +1833,7 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for reduction(max:max_abs)
 #endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2; i+=2)
 			max_abs = std::max(std::max(max_abs, std::abs(data[i])), std::abs(data[i+1]));
 
 		return max_abs;
@@ -1844,7 +1853,7 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for reduction(+:sum,c)
 #endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2; i+=2)
 		{
 			double value = data[i];
 
@@ -1873,7 +1882,7 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for reduction(+:sum,c)
 #endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2; i+=2)
 		{
 			double value = data[i]*data[i]+data[i+1]*data[i+1];
 
@@ -1899,7 +1908,7 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for reduction(+:sum)
 #endif
-		for (std::size_t i = 0; i < resolution[0]*resolution[1]*2; i+=2)
+		for (std::size_t i = 0; i < planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1]*2; i+=2)
 			sum += data[i]*data[i]+data[i+1]*data[i+1];
 
 		return sum;
@@ -1923,7 +1932,7 @@ PlaneDataComplex operator*(
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 	#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-	for (std::size_t i = 0; i < i_array_data.resolution[0]*i_array_data.resolution[1]*2; i+=2)
+	for (std::size_t i = 0; i < i_array_data.planeDataConfig->physical_res[0]*i_array_data.planeDataConfig->physical_res[1]*2; i+=2)
 	{
 		double ar = i_array_data.data[i];
 		double ai = i_array_data.data[i+1];
@@ -1947,7 +1956,7 @@ PlaneDataComplex operator*(
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 	#pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-	for (std::size_t i = 0; i < i_array_data.resolution[0]*i_array_data.resolution[1]*2; i+=2)
+	for (std::size_t i = 0; i < i_array_data.planeDataConfig->physical_res[0]*i_array_data.planeDataConfig->physical_res[1]*2; i+=2)
 	{
 		double ar = i_array_data.data[i];
 		double ai = i_array_data.data[i+1];

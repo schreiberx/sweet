@@ -97,9 +97,8 @@ public:
 			rx_d_new = rx_a - dt*0.5 * vx_n - sample2D.bilinear_scalar(vx_iter, rx_d, ry_d, i_staggering[0], i_staggering[1]);
 			ry_d_new = ry_a - dt*0.5 * vy_n - sample2D.bilinear_scalar(vy_iter, rx_d, ry_d, i_staggering[2], i_staggering[3]);
 
-			//std::cout << "WHATS GOING ON HERE?!?" << std::endl;
-//			std::cout << rx_d_new << std::endl;
-//			exit(1);
+			rx_d_new.request_data_physical();
+			ry_d_new.request_data_physical();
 
 			double diff = (rx_d_new - rx_d_prev).reduce_maxAbs() + (ry_d_new - ry_d_prev).reduce_maxAbs();
 			rx_d_prev = rx_d_new;
@@ -114,11 +113,12 @@ public:
 				ry_d.physical_space_data[i] = sample2D.wrapPeriodic(ry_d_new.physical_space_data[i], sample2D.domain_size[1]);
 			}
 
+			rx_d.physical_space_data_valid = true;
+			rx_d.spectral_space_data_valid = false;
+
 			if (diff < 1e-8)
 				break;
-//			std::cout << iters << ": " << diff << std::endl;
 		}
-//		std::cout << iters << std::endl;
 	}
 
 	/**
@@ -144,13 +144,6 @@ public:
 			double *i_staggering = nullptr	///< staggering, if any (ux, uy, vx, vy)
 	)
 	{
-		i_u_prev.request_data_physical();
-		i_v_prev.request_data_physical();
-		i_u.request_data_physical();
-		i_v.request_data_physical();
-		i_posx_a.request_data_physical();
-		i_posy_a.request_data_physical();
-
 		if (i_staggering == nullptr)
 		{
 			static double constzerostuff[4] = {0,0,0,0};
@@ -161,12 +154,8 @@ public:
 		double dt = i_dt;
 
 		//Velocity for iterations
-		PlaneData u_iter(i_u.planeDataConfig);
-		PlaneData v_iter(i_v.planeDataConfig);
-
-		//Time Extrapolation
-		u_iter = dt * i_u - dt*0.5 * i_u_prev;
-		v_iter = dt * i_v - dt*0.5 * i_v_prev;
+		PlaneData u_iter = dt * i_u - dt*0.5 * i_u_prev;
+		PlaneData v_iter = dt * i_v - dt*0.5 * i_v_prev;
 
 		//Departure point tmp
 		PlaneData rx_d_new(i_u.planeDataConfig);
@@ -191,10 +180,20 @@ public:
 		//i_posy_a.printArrayData();
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		o_posx_d.physical_space_data_valid = true;
-		o_posy_d.physical_space_data_valid = true;
-		o_posx_d.spectral_space_data_valid = false;
-		o_posy_d.spectral_space_data_valid = false;
+		// request again storage in physical space
+		// this data could have been lost because of the previous operations
+		i_u.request_data_physical();
+		i_v.request_data_physical();
+
+		i_u_prev.request_data_physical();
+		i_v_prev.request_data_physical();
+
+		o_posx_d.request_data_physical();
+		o_posy_d.request_data_physical();
+
+		i_posx_a.request_data_physical();
+		i_posy_a.request_data_physical();
+
 
 		assert(i_posx_a.physical_space_data_valid);
 		assert(i_posy_a.physical_space_data_valid);
@@ -225,7 +224,6 @@ public:
 
 			rx_d_new.request_data_physical();
 			ry_d_new.request_data_physical();
-
 
 			for (std::size_t i = 0; i < o_posx_d.planeDataConfig->physical_array_data_number_of_elements; i++)
 			{

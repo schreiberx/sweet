@@ -29,7 +29,7 @@ PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
 
 SimulationVariables simVars;
 
-#if SWEET_DEBUG_MODE
+#if SWEET_DEBUG
 #include <fenv.h>
 static void __attribute__ ((constructor))
 trapfpe ()
@@ -45,7 +45,7 @@ typedef std::complex<double> complex;
 
 int main(int i_argc, char *i_argv[])
 {
-#if SWEET_DEBUG_MODE
+#if SWEET_DEBUG
 	trapfpe();
 #endif
 

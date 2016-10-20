@@ -199,10 +199,6 @@ public:
 		simVars.reset();
 
 		// set to some values for first touch NUMA policy (HPC stuff)
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		prog_u.spectral_set_all(0,0);
-		prog_v.spectral_set_all(0,0);
-#endif
 
 		//Setup prog vars
 		prog_u.physical_set_all(0);
@@ -262,7 +258,7 @@ public:
 		pos_x.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
-				io_data = ((double)i)*(double)simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
+				io_data = (double)i*(double)simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
 			}
 		);
 

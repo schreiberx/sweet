@@ -123,7 +123,7 @@ public:
 			int i_M,		///< number of sampling points
 			int i_L,		///< number of sampling points for Gaussian approx
 
-			std::size_t *i_resolution,			///< resolution of domain
+			int *i_resolution,			///< resolution of domain
 			const double *i_domain_size,		///< size of domain
 			bool i_rexi_half = true,			///< use half-pole reduction
 			bool i_use_finite_differences = false,		///< use finite-differences for derivatives,	///< use finite differences for REXI approximation

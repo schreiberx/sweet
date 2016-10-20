@@ -105,7 +105,7 @@ void RexiSWE::setup(
 		int i_L,						///< number of sampling points for Gaussian approx.
 										///< set to 0 for auto detection
 
-		std::size_t *i_resolution,		///< resolution of domain
+		int *i_resolution,		///< resolution of domain
 		const double *i_domain_size,	///< size of domain
 
 		bool i_rexi_half,				///< use half-pole reduction
@@ -177,17 +177,17 @@ void RexiSWE::setup(
 
 			perThreadVars[i] = new PerThreadVars;
 
-			perThreadVars[i]->op_diff_c_x.setup(i_resolution);
-			perThreadVars[i]->op_diff_c_y.setup(i_resolution);
-			perThreadVars[i]->op_diff2_c_x.setup(i_resolution);
-			perThreadVars[i]->op_diff2_c_y.setup(i_resolution);
-			perThreadVars[i]->eta.setup(i_resolution);
-			perThreadVars[i]->eta0.setup(i_resolution);
-			perThreadVars[i]->u0.setup(i_resolution);
-			perThreadVars[i]->v0.setup(i_resolution);
-			perThreadVars[i]->h_sum.setup(i_resolution);
-			perThreadVars[i]->u_sum.setup(i_resolution);
-			perThreadVars[i]->v_sum.setup(i_resolution);
+			perThreadVars[i]->op_diff_c_x.setup(planeDataConfig);
+			perThreadVars[i]->op_diff_c_y.setup(planeDataConfig);
+			perThreadVars[i]->op_diff2_c_x.setup(planeDataConfig);
+			perThreadVars[i]->op_diff2_c_y.setup(planeDataConfig);
+			perThreadVars[i]->eta.setup(planeDataConfig);
+			perThreadVars[i]->eta0.setup(planeDataConfig);
+			perThreadVars[i]->u0.setup(planeDataConfig);
+			perThreadVars[i]->v0.setup(planeDataConfig);
+			perThreadVars[i]->h_sum.setup(planeDataConfig);
+			perThreadVars[i]->u_sum.setup(planeDataConfig);
+			perThreadVars[i]->v_sum.setup(planeDataConfig);
 		}
 	}
 
@@ -725,7 +725,7 @@ bool RexiSWE::run_timestep(
 		stopwatch_broadcast.start();
 #endif
 
-	std::size_t data_size = io_h.resolution[0]*io_h.resolution[1];
+	std::size_t data_size = io_h.planeDataConfig->physical_res[0]*io_h.planeDataConfig->physical_res[1];
 	MPI_Bcast(io_h.array_data_physical_space, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
 	if (std::isnan(io_h.get(0,0)))
@@ -1228,11 +1228,11 @@ void RexiSWE::run_timestep_direct_solution(
 	double s0 = i_simVars.sim.domain_size[0];
 	double s1 = i_simVars.sim.domain_size[1];
 
-	for (std::size_t ik1 = 0; ik1 < i_h.resolution[1]; ik1++)
+	for (std::size_t ik1 = 0; ik1 < i_h.planeDataConfig->physical_res[1]; ik1++)
 	{
-		for (std::size_t ik0 = 0; ik0 < i_h.resolution[0]; ik0++)
+		for (std::size_t ik0 = 0; ik0 < i_h.planeDataConfig->physical_res[0]; ik0++)
 		{
-			if (ik0 == i_h.resolution[0]/2 || ik1 == i_h.resolution[1]/2)
+			if (ik0 == i_h.planeDataConfig->physical_res[0]/2 || ik1 == i_h.planeDataConfig->physical_res[1]/2)
 			{
 				o_h.p_physical_set(ik1, ik0, 0, 0);
 				o_u.p_physical_set(ik1, ik0, 0, 0);
@@ -1245,15 +1245,15 @@ void RexiSWE::run_timestep_direct_solution(
 			U_hat[2] = i_v.get(ik1, ik0);
 
 			double k0, k1;
-			if (ik0 < i_h.resolution[0]/2)
+			if (ik0 < i_h.planeDataConfig->physical_res[0]/2)
 				k0 = (double)ik0;
 			else
-				k0 = (double)((int)ik0-(int)i_h.resolution[0]);
+				k0 = (double)((int)ik0-(int)i_h.planeDataConfig->physical_res[0]);
 
-			if (ik1 < i_h.resolution[1]/2)
+			if (ik1 < i_h.planeDataConfig->physical_res[1]/2)
 				k1 = (double)ik1;
 			else
-				k1 = (double)((int)ik1-(int)i_h.resolution[1]);
+				k1 = (double)((int)ik1-(int)i_h.planeDataConfig->physical_res[1]);
 
 			/*
 			 * dimensionful formulation

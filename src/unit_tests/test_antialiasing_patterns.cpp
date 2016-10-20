@@ -67,7 +67,7 @@ int main(int i_argc, char *i_argv[])
 
 		std::cout << "PHYS RES: " << planeDataConfig->physical_res[0] << " x " << planeDataConfig->physical_res[1] << std::endl;
 		std::cout << "PHYS SIZE: " << planeDataConfig->physical_data_size[0] << " x " << planeDataConfig->physical_data_size[1] << std::endl;
-		std::cout << "SPEC MODES: " << planeDataConfig->spectral_efficient_modes[0] << " x " << planeDataConfig->spectral_efficient_modes[1] << std::endl;
+		std::cout << "SPEC MODES: " << planeDataConfig->spectral_modes[0] << " x " << planeDataConfig->spectral_modes[1] << std::endl;
 		std::cout << "SPEC SIZE: " << planeDataConfig->spectral_data_size[0] << " x " << planeDataConfig->spectral_data_size[1] << std::endl;
 		std::cout << std::endl;
 

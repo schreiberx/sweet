@@ -85,9 +85,7 @@
 			for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)	\
 			{	CORE;	}
 
-
-
-	#define PLANE_DATA_SPECTRAL_FOR_2D_IDX(CORE)										\
+	#define PLANE_DATA_PHYSICAL_FOR_2D_IDX(CORE)										\
 			_Pragma("omp parallel for OPENMP_PAR_SIMD proc_bind(close) collapse(2)")	\
 			for (std::size_t j = 0; j < planeDataConfig->physical_data_size[1]; j++)						\
 			{				\
@@ -104,10 +102,16 @@
 			for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)	\
 			{	CORE;	}
 
+	#define PLANE_DATA_PHYSICAL_FOR_2D_IDX(CORE)										\
+			for (std::size_t j = 0; j < planeDataConfig->physical_data_size[1]; j++)						\
+			{				\
+				for (std::size_t i = 0; i < planeDataConfig->physical_data_size[0]; i++)	\
+				{			\
+					std::size_t idx = j*planeDataConfig->physical_data_size[0]+i;	\
+					CORE;	\
+				}			\
+			}
 
-	#define PLANE_DATA_PHYSICAL_FOR_IDX_REDUCTION(CORE, REDUCTION)				\
-			for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)	\
-			{	CORE;	}
 #endif
 
 
@@ -186,6 +190,11 @@ public:
 private:
 	PlaneData()	:
 		planeDataConfig(nullptr)
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+		,
+		physical_space_data_valid(false),
+		spectral_space_data_valid(false)
+#endif
 	{
 	}
 
@@ -274,11 +283,13 @@ public:
 public:
 	PlaneData(
 		PlaneDataConfig *i_planeDataConfig
-	)
-#if SWEET_DEBUG
-		:
+	)	:
 		planeDataConfig(nullptr)
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+		,physical_space_data_valid(false),
+		spectral_space_data_valid(false)
 #endif
+
 	{
 		setup(i_planeDataConfig);
 	}
@@ -321,7 +332,7 @@ public:
 			request_data_physical();
 #endif
 
-		PLANE_DATA_SPECTRAL_FOR_2D_IDX(
+		PLANE_DATA_PHYSICAL_FOR_2D_IDX(
 				i_lambda(i, j, physical_space_data[idx])
 		);
 
@@ -568,7 +579,7 @@ public:
 
 #if SWEET_DEBUG
 	#if SWEET_THREADING
-		if (omp_get_num_threads() > 0)
+		if (omp_get_num_threads() > 1)
 			FatalError("Threading race conditions likely");
 	#endif
 #endif

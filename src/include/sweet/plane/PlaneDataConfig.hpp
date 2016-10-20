@@ -79,7 +79,7 @@ public:
 
 	/// number of spectral modes
 	/// this is not related to the storage size!
-	std::size_t spectral_efficient_modes[2];
+	std::size_t spectral_modes[2];
 
 	/// allocated size for spectral data for each modes
 	/// This storage size is for the real-to-complex transformation
@@ -178,8 +178,8 @@ public:
 		physical_res[0] = 0;
 		physical_res[1] = 0;
 #if SWEET_USE_LIBFFT
-		spectral_efficient_modes[0] = 0;
-		spectral_efficient_modes[1] = 0;
+		spectral_modes[0] = 0;
+		spectral_modes[1] = 0;
 #endif
 
 		initialized = false;
@@ -199,8 +199,8 @@ private:
 		physical_array_data_number_of_elements = physical_res[0]*physical_res[1];
 
 #if SWEET_USE_LIBFFT
-		if (	physical_res[0] < spectral_efficient_modes[0]	||
-				physical_res[1] < spectral_efficient_modes[1]
+		if (	physical_res[0] < spectral_modes[0]	||
+				physical_res[1] < spectral_modes[1]
 		)
 		{
 			FatalError("Lower physical resolution than spectral resolution not supported!");
@@ -209,8 +209,8 @@ private:
 		assert(physical_res[0] > 0);
 		assert(physical_res[1] > 0);
 
-		assert(spectral_efficient_modes[0] > 0);
-		assert(spectral_efficient_modes[1] > 0);
+		assert(spectral_modes[0] > 0);
+		assert(spectral_modes[1] > 0);
 
 		/*
 		 * Load existing wisdom
@@ -346,6 +346,8 @@ private:
 		 * COMPLEX PHYSICAL SPACE DATA
 		 */
 		{
+			spectral_complex_data_size[0] = physical_data_size[0];
+			spectral_complex_data_size[1] = physical_data_size[1];
 
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 
@@ -364,6 +366,7 @@ private:
 			spectral_complex_data_iteration_ranges[1][1][0] = spectral_data_size[1]-spectral_data_size[1]/3;
 			spectral_complex_data_iteration_ranges[1][1][1] = spectral_data_size[1];
 
+#warning "TODO: setup correct ranges"
 			spectral_complex_data_iteration_ranges[2][0][0] = spectral_data_size[0] - (spectral_data_size[0]*2/3-1);	// TODO: check this start index
 			spectral_complex_data_iteration_ranges[2][0][1] = spectral_data_size[0];
 			spectral_complex_data_iteration_ranges[2][1][0] = 0;
@@ -398,7 +401,7 @@ private:
 
 #endif
 
-			spectral_complex_array_data_number_of_elements = spectral_efficient_modes[0]*spectral_efficient_modes[1];
+			spectral_complex_array_data_number_of_elements = spectral_complex_data_size[0]*spectral_complex_data_size[1];
 
 			/*
 			 * Physical space data
@@ -517,8 +520,8 @@ public:
 		physical_res[1] = i_physical_res_y;
 
 #if SWEET_USE_LIBFFT
-		spectral_efficient_modes[0] = i_spectral_modes_x;
-		spectral_efficient_modes[1] = i_spectral_modes_y;
+		spectral_modes[0] = i_spectral_modes_x;
+		spectral_modes[1] = i_spectral_modes_y;
 #endif
 
 		setup_internal_data();
@@ -578,14 +581,14 @@ public:
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 
 		// REDUCTION IN EFFECTIVE SPECTRAL MODE RESOLUTION TO CUT OFF ANTI-ALIASED MODES
-		spectral_efficient_modes[0] = physical_res[0]*2/3;
-		spectral_efficient_modes[1] = physical_res[1]*2/3;
+		spectral_modes[0] = physical_res[0]*2/3;
+		spectral_modes[1] = physical_res[1]*2/3;
 
 #else
 
 	#if SWEET_USE_LIBFFT
-		spectral_efficient_modes[0] = physical_res[0];
-		spectral_efficient_modes[1] = physical_res[1];
+		spectral_modes[0] = physical_res[0];
+		spectral_modes[1] = physical_res[1];
 	#endif
 
 #endif

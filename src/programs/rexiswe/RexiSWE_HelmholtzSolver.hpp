@@ -54,8 +54,8 @@ public:
 #endif
 
 		double inv_helm_h[2];
-		inv_helm_h[0] = (double)i_rhs.resolution[0]/(double)i_domain_size[0];
-		inv_helm_h[1] = (double)i_rhs.resolution[1]/(double)i_domain_size[1];
+		inv_helm_h[0] = (double)i_rhs.planeDataConfig->physical_res[0]/(double)i_domain_size[0];
+		inv_helm_h[1] = (double)i_rhs.planeDataConfig->physical_res[1]/(double)i_domain_size[1];
 
 		double scalar_Dx = inv_helm_h[0]*inv_helm_h[0];
 		double scalar_Dy = inv_helm_h[1]*inv_helm_h[1];
@@ -74,7 +74,7 @@ public:
 		if (i_verbosity > 3)
 			std::cout << "inv_diag: " << inv_diag << std::endl;
 
-		PlaneDataComplex new_x(i_rhs.resolution);
+		PlaneDataComplex new_x(i_rhs.planeDataConfig);
 		int i = 0;
 		double residual = 0;
 		for (i = 0; i < i_max_iters; i++)
@@ -138,8 +138,8 @@ public:
 		PlaneDataComplex &x = io_x;
 
 		double inv_helm_h[2];
-		inv_helm_h[0] = (double)i_rhs.resolution[0]/(double)i_domain_size[0];
-		inv_helm_h[1] = (double)i_rhs.resolution[1]/(double)i_domain_size[1];
+		inv_helm_h[0] = (double)i_rhs.planeDataConfig->physical_res[0]/(double)i_domain_size[0];
+		inv_helm_h[1] = (double)i_rhs.planeDataConfig->physical_res[1]/(double)i_domain_size[1];
 
 		double scalar_Dx = 1.0*(inv_helm_h[0]*inv_helm_h[0]);
 		double scalar_Dy = 1.0*(inv_helm_h[1]*inv_helm_h[1]);
@@ -329,7 +329,7 @@ public:
 	)
 	{
 		int levels = 1;
-		while ((std::size_t)(1 << levels) < std::min(i_rhs.resolution[0], i_rhs.resolution[1]))
+		while ((std::size_t)(1 << levels) < std::min(i_rhs.planeDataConfig->physical_res[0], i_rhs.planeDataConfig->physical_res[1]))
 			levels++;
 
 		if (level_restriction < 0)
@@ -431,7 +431,7 @@ public:
 			assert(l > 0);
 
 			if (i_verbosity > 2)
-				std::cout << "MID SMOOTH " << l << " with resolution " << rhs[l].resolution[0] << "x" << rhs[l].resolution[1] << std::endl;
+				std::cout << "MID SMOOTH " << l << " with resolution " << rhs[l].planeDataConfig->physical_res[0] << "x" << rhs[l].planeDataConfig->physical_res[1] << std::endl;
 
 			bool retval = i_smoother_fun(
 					i_kappa,
@@ -496,7 +496,7 @@ public:
 
 			if (i_verbosity > 2)
 			{
-				std::cout << "POSTSMOOTH " << l-1 << " with resolution " << rhs[l-1].resolution[0] << "x" << rhs[l-1].resolution[1] << std::endl;
+				std::cout << "POSTSMOOTH " << l-1 << " with resolution " << rhs[l-1].planeDataConfig->physical_res[0] << "x" << rhs[l-1].planeDataConfig->physical_res[1] << std::endl;
 				std::cout << "           RESIDUAL START " << helmholtz_iterative_get_residual_rms(i_kappa, i_gh0, rhs[l-1], x[l-1], i_domain_size) << std::endl;
 			}
 
@@ -564,8 +564,8 @@ public:
 	{
 		double helm_h[2] =
 					{
-						(double)i_domain_size[0] / (double)i_rhs.resolution[0],
-						(double)i_domain_size[1] / (double)i_rhs.resolution[1]
+						(double)i_domain_size[0] / (double)i_rhs.planeDataConfig->physical_res[0],
+						(double)i_domain_size[1] / (double)i_rhs.planeDataConfig->physical_res[1]
 					};
 
 		std::complex<double> D2_kernel[3*3];
@@ -599,8 +599,8 @@ public:
 	{
 		double helm_h[2] =
 					{
-						(double)i_domain_size[0] / (double)i_rhs.resolution[0],
-						(double)i_domain_size[1] / (double)i_rhs.resolution[1]
+						(double)i_domain_size[0] / (double)i_rhs.planeDataConfig->physical_res[0],
+						(double)i_domain_size[1] / (double)i_rhs.planeDataConfig->physical_res[1]
 					};
 
 		std::complex<double> D2_kernel[3*3];

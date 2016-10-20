@@ -70,9 +70,6 @@ double param_initial_freq_y_mul;
 //Diagnostic measures at initial stage
 double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
 
-// Plane data config
-PlaneDataConfig planeDataConfigInstance;
-PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
 
 
 class SimulationInstance
@@ -427,9 +424,9 @@ public:
 						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-						prog_h.physical_set(j, i, return_h(simVars, x, y));
-						t0_prog_h.physical_set(j, i, return_h(simVars, x, y));
-						force_h.physical_set(j, i, SWEPlaneBenchmarks::return_force_h(simVars, x, y));
+						prog_h.p_physical_set(j, i, return_h(simVars, x, y));
+						t0_prog_h.p_physical_set(j, i, return_h(simVars, x, y));
+						force_h.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_h(simVars, x, y));
 
 						//Coriolis term - lives in the corner of the cells
 						if (param_nonlinear)
@@ -437,7 +434,7 @@ public:
 							//PXT: had some -0.5 on i and j (why??)
 							double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 							double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-							beta_plane.physical_set(j, i, SWEPlaneBenchmarks::return_f(simVars, x, y));
+							beta_plane.p_physical_set(j, i, SWEPlaneBenchmarks::return_f(simVars, x, y));
 							if(j==0 && i==0 && simVars.sim.beta)
 								std::cerr << "WARNING: BETA PLANE ON C-GRID NOT TESTED FOR NON_LINEARITIES!" << std::endl;
 						}
@@ -455,9 +452,9 @@ public:
 						double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-						prog_u.physical_set(j,i, return_u(simVars, x, y));
-						t0_prog_u.physical_set(j, i, return_u(simVars, x, y));
-						force_u.physical_set(j, i, SWEPlaneBenchmarks::return_force_u(simVars, x, y));
+						prog_u.p_physical_set(j,i, return_u(simVars, x, y));
+						t0_prog_u.p_physical_set(j, i, return_u(simVars, x, y));
+						force_u.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_u(simVars, x, y));
 					}
 
 					{
@@ -465,9 +462,9 @@ public:
 						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 						double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-						prog_v.physical_set(j, i, return_v(simVars, x, y));
-						t0_prog_v.physical_set(j, i, return_v(simVars, x, y));
-						force_v.physical_set(j, i, SWEPlaneBenchmarks::return_force_v(simVars, x, y));
+						prog_v.p_physical_set(j, i, return_v(simVars, x, y));
+						t0_prog_v.p_physical_set(j, i, return_v(simVars, x, y));
+						force_v.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_v(simVars, x, y));
 					}
 				}
 				else // A-Grid (colocated grid)
@@ -475,19 +472,19 @@ public:
 					double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 					double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-					prog_h.physical_set(j, i, return_h(simVars, x, y));
-					prog_u.physical_set(j, i, return_u(simVars, x, y));
-					prog_v.physical_set(j, i, return_v(simVars, x, y));
+					prog_h.p_physical_set(j, i, return_h(simVars, x, y));
+					prog_u.p_physical_set(j, i, return_u(simVars, x, y));
+					prog_v.p_physical_set(j, i, return_v(simVars, x, y));
 
-					beta_plane.physical_set(j, i, SWEPlaneBenchmarks::return_f(simVars, x, y));
+					beta_plane.p_physical_set(j, i, SWEPlaneBenchmarks::return_f(simVars, x, y));
 
-					t0_prog_h.physical_set(j, i, return_h(simVars, x, y));
-					t0_prog_u.physical_set(j, i, return_u(simVars, x, y));
-					t0_prog_v.physical_set(j, i, return_v(simVars, x, y));
+					t0_prog_h.p_physical_set(j, i, return_h(simVars, x, y));
+					t0_prog_u.p_physical_set(j, i, return_u(simVars, x, y));
+					t0_prog_v.p_physical_set(j, i, return_v(simVars, x, y));
 
-					force_h.physical_set(j, i, SWEPlaneBenchmarks::return_force_h(simVars, x, y));
-					force_u.physical_set(j, i, SWEPlaneBenchmarks::return_force_u(simVars, x, y));
-					force_v.physical_set(j, i, SWEPlaneBenchmarks::return_force_v(simVars, x, y));
+					force_h.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_h(simVars, x, y));
+					force_u.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_u(simVars, x, y));
+					force_v.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_v(simVars, x, y));
 				}
 			}
 		}
@@ -1963,7 +1960,7 @@ public:
 
 
 
-int main2(int i_argc, char *i_argv[])
+int main(int i_argc, char *i_argv[])
 {
 #if __MIC__
 	std::cout << "Compiled for MIC" << std::endl;
@@ -2363,11 +2360,3 @@ int main2(int i_argc, char *i_argv[])
 	return 0;
 }
 
-int main(int i_argc, char *i_argv[])
-{
-	int retval = main2(i_argc, i_argv);
-
-	assert(PlaneDataConfig::refCounters() == 0);
-
-	return retval;
-}
