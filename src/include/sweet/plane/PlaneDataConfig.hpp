@@ -338,7 +338,7 @@ private:
 			MemBlockAlloc::free(data_spectral, spectral_array_data_number_of_elements*sizeof(std::complex<double>));
 
 			// Backward scaling factor
-			fftw_backward_scale_factor = 1.0/((double)(spectral_efficient_modes[0]*spectral_efficient_modes[1]));
+			fftw_backward_scale_factor = 1.0/((double)(physical_data_size[0]*physical_data_size[1]));
 		}
 
 

@@ -368,30 +368,30 @@ int main(
 
 							// test function
 							// \eta := exp(i*(k1*x+k2*y))
-							test_eta.physical_set(j, i, eta_val);
+							test_eta.p_physical_set(j, i, eta_val);
 
 							double sim_size_scale_x = 1.0/(double)simVars.sim.domain_size[0];
 							double sim_size_scale_y = 1.0/(double)simVars.sim.domain_size[1];
 							std::complex<double> eta_fac = (alpha*alpha + (k1*k1*sim_size_scale_x*sim_size_scale_x + k2*k2*sim_size_scale_y*sim_size_scale_y))/(alpha*alpha) * alpha;
-							test_eta0.physical_set(j, i, eta_val * eta_fac);
+							test_eta0.p_physical_set(j, i, eta_val * eta_fac);
 
 							// \eta_x + \eta_y = (i k1 + i k2) \eta
 							std::complex<double> test_d1_fac(0, (k1*sim_size_scale_x + k2*sim_size_scale_y));
-							test_diff1.physical_set(j, i, eta_val * test_d1_fac);
+							test_diff1.p_physical_set(j, i, eta_val * test_d1_fac);
 
 							// D^2 \eta = -(k1^2 + k2^2) \eta
 							std::complex<double> test_d2_fac(-(k1*k1*sim_size_scale_x*sim_size_scale_x + k2*k2*sim_size_scale_y*sim_size_scale_y), 0);
-							test_diff2.physical_set(j, i, eta_val * test_d2_fac);
+							test_diff2.p_physical_set(j, i, eta_val * test_d2_fac);
 
 							std::complex<double> test_step1_fac(alpha*alpha + (k1*k1*sim_size_scale_x*sim_size_scale_x + k2*k2*sim_size_scale_y*sim_size_scale_y));
 //							std::complex<double> test_step1_fac((k1*k1 + k2*k2));
-							test_step1.physical_set(j, i, eta_val*test_step1_fac);
+							test_step1.p_physical_set(j, i, eta_val*test_step1_fac);
 
 							std::complex<double> test_step2_fac(alpha*alpha);
-							test_step2.physical_set(j, i, eta_val*test_step2_fac);
+							test_step2.p_physical_set(j, i, eta_val*test_step2_fac);
 
 							std::complex<double> test_step3_fac(alpha*alpha + (k1*k1*sim_size_scale_x*sim_size_scale_x + k2*k2*sim_size_scale_y*sim_size_scale_y));
-							test_step3.physical_set(j, i, eta_val*test_step3_fac);
+							test_step3.p_physical_set(j, i, eta_val*test_step3_fac);
 						}
 					}
 

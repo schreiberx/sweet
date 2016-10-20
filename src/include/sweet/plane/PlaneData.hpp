@@ -442,7 +442,7 @@ public:
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
-	void spectral_zeroAliasingModes()
+	void spectral_zeroAliasingModes()	const
 	{
 #if SWEET_THREADING
 //#pragma omp parallel for proc_bind(spread)
@@ -602,6 +602,10 @@ public:
 			return;		// nothing to do
 
 		PlaneData *rw_array_data = (PlaneData*)this;
+
+#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
+		spectral_zeroAliasingModes();
+#endif
 
 #if SWEET_DEBUG
 		if (!spectral_space_data_valid)
@@ -1543,9 +1547,8 @@ public:
 		PlaneData out(planeDataConfig);
 
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
-#warning "TODO"
-		// assure that data is available in spectral space
-		// zero out modes
+		if (spectral_space_data_valid)
+			spectral_zeroAliasingModes();
 #endif
 
 		request_data_physical();
@@ -1556,16 +1559,16 @@ public:
 			);
 
 
-#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
-#warning "TODO"
-		// convert to spectral space
-		// zero out modes
-#endif
-
 		#if SWEET_USE_PLANE_SPECTRAL_SPACE
 			out.physical_space_data_valid = true;
 			out.spectral_space_data_valid = false;
 		#endif
+
+		/*
+		 * Request data to be in spectral space again.
+		 * This automatically forces to cut off the aliasing modes when converting back to physical space
+		 */
+		out.request_data_spectral();
 
 		return out;
 	}

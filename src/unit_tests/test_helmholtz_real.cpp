@@ -120,23 +120,23 @@ int main(int i_argc, char *i_argv[])
 					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
 
 					// u and v to reconstruct
-					u_ana.physical_set(
+					u_ana.p_physical_set(
 						j, i,
 						sin(2*M_PIl*x)*cos(2*M_PIl*y)
 					);
 
-					v_ana.physical_set(
+					v_ana.p_physical_set(
 						j, i,
 						cos(2*M_PIl*x)*sin(2*M_PIl*y)
 					);
 
 					// sources for the right hand side to fulfill the equation system for given u and v
-					f.physical_set(
+					f.p_physical_set(
 						j, i,
 						(1+8*M_PIl*M_PIl)*sin(2*M_PIl*x)*cos(2*M_PIl*y)-2*M_PIl*cos(2*M_PIl*x)*cos(2*M_PIl*y)+2*M_PIl*sin(2*M_PIl*x)*sin(2*M_PIl*y)
 					);
 
-					g.physical_set(
+					g.p_physical_set(
 						j, i,
 						(1+8*M_PIl*M_PIl)*cos(2*M_PIl*x)*sin(2*M_PIl*y)-2*M_PIl*cos(2*M_PIl*x)*cos(2*M_PIl*y)+2*M_PIl*sin(2*M_PIl*x)*sin(2*M_PIl*y)
 					);

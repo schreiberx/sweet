@@ -179,7 +179,28 @@ int main(int i_argc, char *i_argv[])
 			double add_test_ten3 = (17.0-(five+two)).reduce_rms_quad();
 			double error = 0;
 
+#if 0
+			std::cout << "zero:" << std::endl;
+			std::cout << zero << std::endl;
+			zero.print_spectralData();
+			std::cout << std::endl;
+
+			std::cout << "two:" << std::endl;
+			std::cout << two << std::endl;
+			two.print_spectralData();
+			std::cout << std::endl;
+
+			PlaneData zero_two = (zero+two);
+			zero_two.spectral_zeroAliasingModes();
+			std::cout << "(zero+two):" << std::endl;
+			zero_two.print_spectralData();
+			std::cout << zero_two << std::endl;
+			zero_two.print_spectralData();
+			std::cout << std::endl;
+
 			std::cout << two.reduce_max() << std::endl;
+#endif
+
 			error = std::abs(add_test_two-2.0);
 			std::cout << "Add test two ||_2 = " << error << std::endl;
 			if (error > eps)
@@ -231,7 +252,7 @@ int main(int i_argc, char *i_argv[])
 					double x = ((double)i)/(double)res[0];
 					double y = ((double)j)/(double)res[1];
 
-					h.physical_set(j, i, sin(2.0*M_PIl*x)*cos(2.0*M_PIl*y));
+					h.p_physical_set(j, i, sin(2.0*M_PIl*x)*cos(2.0*M_PIl*y));
 				}
 			}
 
@@ -292,14 +313,14 @@ int main(int i_argc, char *i_argv[])
 #define FUN_ID	1
 
 	#if FUN_ID==1
-					u.physical_set(j, i, sin(freq_x*M_PIl*x));
-					v.physical_set(j, i, cos(freq_y*M_PIl*y));
+					u.p_physical_set(j, i, sin(freq_x*M_PIl*x));
+					v.p_physical_set(j, i, cos(freq_y*M_PIl*y));
 	#elif FUN_ID==2
-					u.physical_set(j, i, sin(freq_x*M_PIl*x));
-					v.physical_set(j, i, 1.0/(cos(freq_y*M_PIl*y)+2.0));
+					u.p_physical_set(j, i, sin(freq_x*M_PIl*x));
+					v.p_physical_set(j, i, 1.0/(cos(freq_y*M_PIl*y)+2.0));
 	#endif
 
-					h.physical_set(
+					h.p_physical_set(
 						j, i,
 	#if FUN_ID==1
 						sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)
@@ -386,14 +407,14 @@ int main(int i_argc, char *i_argv[])
 					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
 
 	#if FUN_ID==1
-					u.physical_set(j, i, sin(freq_x*M_PIl*x));
-					v.physical_set(j, i, cos(freq_y*M_PIl*y));
+					u.p_physical_set(j, i, sin(freq_x*M_PIl*x));
+					v.p_physical_set(j, i, cos(freq_y*M_PIl*y));
 	#elif FUN_ID==2
-					u.physical_set(j, i, sin(freq_x*M_PIl*x));
-					v.physical_set(j, i, 1.0/(cos(freq_y*M_PIl*y)+2.0));
+					u.p_physical_set(j, i, sin(freq_x*M_PIl*x));
+					v.p_physical_set(j, i, 1.0/(cos(freq_y*M_PIl*y)+2.0));
 	#endif
 
-					h.physical_set(
+					h.p_physical_set(
 						j, i,
 	#if FUN_ID==1
 						sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)
@@ -404,7 +425,7 @@ int main(int i_argc, char *i_argv[])
 	#endif
 					);
 
-					h_diff_x.physical_set(
+					h_diff_x.p_physical_set(
 						j, i,
 	#if FUN_ID==1
 						freq_x*M_PIl*cos(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)/(double)simVars.sim.domain_size[0]
@@ -415,7 +436,7 @@ int main(int i_argc, char *i_argv[])
 	#endif
 					);
 
-					h_diff_y.physical_set(
+					h_diff_y.p_physical_set(
 						j, i,
 	#if FUN_ID==1
 						-sin(freq_x*M_PIl*x)*freq_y*M_PIl*sin(freq_y*M_PIl*y)/(double)simVars.sim.domain_size[1]
@@ -549,7 +570,7 @@ int main(int i_argc, char *i_argv[])
 					double x = ((double)i+0.5)/(double)simVars.disc.res_physical[0];
 					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
 #define FUN_ID 1
-					h.physical_set(
+					h.p_physical_set(
 						j, i,
 	#if FUN_ID==1
 						sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)
@@ -560,7 +581,7 @@ int main(int i_argc, char *i_argv[])
 	#endif
 					);
 
-					h_diff2_x.physical_set(
+					h_diff2_x.p_physical_set(
 						j, i,
 	#if FUN_ID==1
 						freq_x*freq_x*M_PIl*M_PIl*(-1.0)*sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)/(simVars.sim.domain_size[0]*simVars.sim.domain_size[0])
@@ -571,7 +592,7 @@ int main(int i_argc, char *i_argv[])
 	#endif
 					);
 
-					h_diff2_y.physical_set(
+					h_diff2_y.p_physical_set(
 						j, i,
 	#if FUN_ID==1
 						-sin(freq_x*M_PIl*x)*freq_y*M_PIl*freq_y*M_PIl*cos(freq_y*M_PIl*y)/(simVars.sim.domain_size[1]*simVars.sim.domain_size[1])
@@ -657,7 +678,7 @@ int main(int i_argc, char *i_argv[])
 					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
 
 #define FUN_ID	3
-					h.physical_set(
+					h.p_physical_set(
 						j, i,
 	#if FUN_ID==1
 						sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)
