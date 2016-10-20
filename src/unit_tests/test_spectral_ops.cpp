@@ -179,27 +179,6 @@ int main(int i_argc, char *i_argv[])
 			double add_test_ten3 = (17.0-(five+two)).reduce_rms_quad();
 			double error = 0;
 
-#if 0
-			std::cout << "zero:" << std::endl;
-			std::cout << zero << std::endl;
-			zero.print_spectralData();
-			std::cout << std::endl;
-
-			std::cout << "two:" << std::endl;
-			std::cout << two << std::endl;
-			two.print_spectralData();
-			std::cout << std::endl;
-
-			PlaneData zero_two = (zero+two);
-			zero_two.spectral_zeroAliasingModes();
-			std::cout << "(zero+two):" << std::endl;
-			zero_two.print_spectralData();
-			std::cout << zero_two << std::endl;
-			zero_two.print_spectralData();
-			std::cout << std::endl;
-
-			std::cout << two.reduce_max() << std::endl;
-#endif
 
 			error = std::abs(add_test_two-2.0);
 			std::cout << "Add test two ||_2 = " << error << std::endl;

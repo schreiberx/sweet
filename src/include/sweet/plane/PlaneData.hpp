@@ -1194,17 +1194,18 @@ public:
 			const double i_value
 	)	const
 	{
-		request_data_spectral();
-		PlaneData out = *this;
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
+		request_data_spectral();
 
+		PlaneData out = *this;
 		out.spectral_space_data[0] += i_value*(double)planeDataConfig->physical_array_data_number_of_elements;
 
 		out.physical_space_data_valid = false;
 		out.spectral_space_data_valid = true;
 
 #else
+		PlaneData out = *this;
 
 		PLANE_DATA_PHYSICAL_FOR_IDX(
 				out.physical_space_data[idx] = physical_space_data[idx]+i_value;
@@ -1549,6 +1550,8 @@ public:
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 		if (spectral_space_data_valid)
 			spectral_zeroAliasingModes();
+		if (i_array_data.spectral_space_data_valid)
+			i_array_data.spectral_zeroAliasingModes();
 #endif
 
 		request_data_physical();
@@ -1558,17 +1561,17 @@ public:
 				out.physical_space_data[idx] = physical_space_data[idx]*i_array_data.physical_space_data[idx];
 			);
 
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+		out.physical_space_data_valid = true;
+		out.spectral_space_data_valid = false;
 
-		#if SWEET_USE_PLANE_SPECTRAL_SPACE
-			out.physical_space_data_valid = true;
-			out.spectral_space_data_valid = false;
-		#endif
 
 		/*
 		 * Request data to be in spectral space again.
 		 * This automatically forces to cut off the aliasing modes when converting back to physical space
 		 */
 		out.request_data_spectral();
+#endif
 
 		return out;
 	}
@@ -1585,6 +1588,12 @@ public:
 	{
 		PlaneData out(planeDataConfig);
 
+#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
+		if (spectral_space_data_valid)
+			spectral_zeroAliasingModes();
+		if (i_array_data.spectral_space_data_valid)
+			i_array_data.spectral_zeroAliasingModes();
+#endif
 		request_data_physical();
 		i_array_data.request_data_physical();
 
@@ -1595,10 +1604,17 @@ public:
 				out.physical_space_data[idx] = physical_space_data[idx]/i_array_data.physical_space_data[idx];
 		);
 
-	#if SWEET_USE_PLANE_SPECTRAL_SPACE
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 		out.physical_space_data_valid = true;
 		out.spectral_space_data_valid = false;
-	#endif
+
+
+		/*
+		 * Request data to be in spectral space again.
+		 * This automatically forces to cut off the aliasing modes when converting back to physical space
+		 */
+		out.request_data_spectral();
+#endif
 
 		return out;
 	}
