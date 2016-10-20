@@ -1,20 +1,108 @@
 #! /bin/bash
 
 for i in 0 1 2 3; do
-	scons --program=advection --numa-block-allocator=$i --threading=omp --mode=debug
+	SCONS="scons --program=advection --numa-block-allocator=$i --threading=omp --mode=debug"
+	echo "$SCONS"
+	$SCONS || exit
 done
 
-scons --program=burgers --parareal=serial --plane-spectral-space=enable --mode=debug || exit
+echo
+echo "ADVECTION"
 
-scons --program=swe_rexi --gui=disable --plane-spectral-space=enable --mode=debug || exit
+SCONS="scons --program=advection --plane-spectral-space=enable --mode=debug"
+echo "$SCONS"
+$SCONS || exit
 
-scons --program=advection --gui=disable --mode=debug || exit
-#scons --program=polvani --gui=disable --plane-spectral-space=enable || exit
+SCONS="scons --program=advection --plane-spectral-space=disable --mode=debug"
+echo "$SCONS"
+$SCONS || exit
 
-scons --program=spectral_visualization --plane-spectral-space=enable --gui=enable --mode=debug || exit
+echo
+echo "BURGERS"
 
-scons --program=swe_nonstaggered_advective --gui=enable --mode=debug || exit
-scons --program=swe_nonstaggered_advective --plane-spectral-space=enable --mode=debug || exit
-scons --program=swe_nonstaggered_vector_invariant --gui=enable --mode=debug || exit
-scons --program=swe_staggered_vector_invariant --gui=enable --mode=debug || exit
+SCONS="scons --program=burgers --parareal=serial --plane-spectral-space=enable --mode=debug"
+echo $SCONS
+$SCONS || exit
+
+echo
+echo "LAGRANGIAN TEST"
+SCONS="scons --program=lagrangian_test --gui=disable --plane-spectral-space=enable --mode=debug"
+echo "$SCONS"
+$SCONS || exit
+SCONS="scons --program=lagrangian_test --gui=disable --plane-spectral-space=disable --mode=debug" 
+echo "$SCONS"
+$SCONS || exit
+
+echo
+echo "PARAREAL ODE"
+SCONS="scons --program=parareal_ode --parareal=serial --gui=disable --plane-spectral-space=disable --mode=debug "
+echo "$SCONS"
+$SCONS || exit
+
+echo
+echo "SPECTRAL VISUALIZATION"
+SCONS="scons --program=spectral_visualization --gui=enable --plane-spectral-space=enable --mode=debug"
+echo "$SCONS"
+$SCONS  || exit
+
+
+echo
+echo "SPHERICAL HARMONICS OUTPUT"
+SCONS="scons --program=sph_output_spherical_harmonics --gui=disable --sphere-spectral-space=enable --mode=debug"
+echo "$SCONS"
+$SCONS  || exit
+
+
+echo
+echo "SWE nonstaggered_advective"
+SCONS="scons --program=swe_nonstaggered_advective --gui=enable --mode=debug"
+echo "$SCONS"
+$SCONS  || exit
+SCONS="scons --program=swe_nonstaggered_advective --plane-spectral-space=enable --mode=debug"
+echo "$SCONS"
+$SCONS  || exit
+
+
+echo
+echo "SWE nonstaggered_advective_linear_only"
+SCONS="scons --program=swe_nonstaggered_advective_linear_only --plane-spectral-space=disable --mode=debug"
+echo "$SCONS"
+$SCONS  || exit
+SCONS="scons --program=swe_nonstaggered_advective_linear_only --plane-spectral-space=enable --mode=debug"
+echo "$SCONS"
+$SCONS  || exit
+
+
+echo
+echo "SWE nonstaggered_vector_invariant"
+SCONS="scons --program=swe_nonstaggered_vector_invariant --gui=enable --mode=debug"
+echo "$SCONS"
+$SCONS  || exit
+
+echo
+echo "SWE REXI"
+SCONS="scons --program=swe_rexi --gui=disable --plane-spectral-space=enable --mode=debug"
+echo "$SCONS"
+$SCONS  || exit
+SCONS="scons --program=swe_rexi --gui=disable --plane-spectral-space=disable --mode=debug"
+echo "$SCONS"
+$SCONS  || exit
+SCONS="scons --program=swe_rexi --gui=disable --plane-spectral-space=enable --plane-spectral-dealiasing=disable --mode=debug"
+echo "$SCONS"
+$SCONS  || exit
+
+echo
+echo "SPHERICAL HARMONICS SWE AND REXI"
+SCONS="scons --program=swe_sph_and_rexi --gui=disable --plane-spectral-space=enable --mode=debug"
+echo "$SCONS"
+$SCONS  || exit
+
+echo
+echo "SWE staggered_vector_invariant"
+SCONS="scons --program=swe_staggered_vector_invariant --gui=enable --plane-spectral-space=enable --mode=debug"
+echo "$SCONS"
+$SCONS  || exit
+SCONS="scons --program=swe_staggered_vector_invariant --gui=enable --plane-spectral-space=disable --mode=debug"
+echo "$SCONS"
+$SCONS  || exit
 

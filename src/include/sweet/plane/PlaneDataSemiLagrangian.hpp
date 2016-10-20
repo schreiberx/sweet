@@ -9,6 +9,7 @@
 
 #include "PlaneData.hpp"
 #include "PlaneDataSampler.hpp"
+#include <sweet/ScalarDataArray.hpp>
 
 class SemiLagrangian
 {

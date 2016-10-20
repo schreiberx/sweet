@@ -123,7 +123,7 @@ AddOption(	'--plane-spectral-space',
 		dest='plane_spectral_space',
 		type='choice',
 		choices=['enable', 'disable'],
-		default='disable',
+		default='enable',
 		help="Activate spectral space for data on the plane (2D FFT) [default: %default]"
 )
 env['plane_spectral_space'] = GetOption('plane_spectral_space')
@@ -587,7 +587,7 @@ if env['compiler'] == 'llvm':
 
 
 if env['mode'] == 'debug':
-	env.Append(CXXFLAGS=' -DSWEET_DEBUG_MODE=1')
+	env.Append(CXXFLAGS=' -DSWEET_DEBUG=1')
 
 	if env['compiler'] == 'gnu':
 		env.Append(CXXFLAGS='-O0 -g3 -Wall')
@@ -616,7 +616,7 @@ if env['mode'] == 'debug':
 
 
 elif env['mode'] == 'release':
-	env.Append(CXXFLAGS=' -DSWEET_DEBUG_MODE=0')
+	env.Append(CXXFLAGS=' -DSWEET_DEBUG=0')
 
 	# deactivate assertion calls
 	env.Append(CXXFLAGS=' -DNDEBUG=1')
