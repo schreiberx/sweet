@@ -15,11 +15,11 @@ if false; then
 	SCONS="scons --unit-test=test_antialiasing_patterns --plane-spectral-space=enable --mode=release --plane-spectral-dealiasing=disable"
 	echo "$SCONS"
 	$SCONS
-	EXEC="./build/test_antialiasing_patterns_spectral_libfft_omp_gnu_release -N 16 -S 1"
+	EXEC="./build/test_antialiasing_patterns_planespectral_libfft_omp_gnu_release -N 16 -S 1"
 	echo "$EXEC"
 	$EXEC || exit
 
-	EXEC="./build/test_antialiasing_patterns_spectral_libfft_omp_gnu_release -N 16 -S 0"
+	EXEC="./build/test_antialiasing_patterns_planespectral_libfft_omp_gnu_release -N 16 -S 0"
 	echo "$EXEC"
 	$EXEC || exit
 fi
@@ -35,12 +35,12 @@ if true; then
 	$SCONS
 
 	# test spectral derivatives
-	EXEC="./build/test_antialiasing_patterns_spectral_libfft_dealiasing_omp_gnu_release -N 16 -S 1"
+	EXEC="./build/test_antialiasing_patterns_planespectral_libfft_dealiasing_omp_gnu_release -N 16 -S 1"
 	echo "$EXEC"
 	$EXEC || exit
 
 	# test cartesian derivatives
-	EXEC="./build/test_antialiasing_patterns_spectral_libfft_dealiasing_omp_gnu_release -N 16 -S 0"
+	EXEC="./build/test_antialiasing_patterns_planespectral_libfft_dealiasing_omp_gnu_release -N 16 -S 0"
 	echo "$EXEC"
 	$EXEC || exit
 

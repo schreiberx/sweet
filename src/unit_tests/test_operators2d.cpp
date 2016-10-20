@@ -112,7 +112,7 @@ int main(int i_argc, char *i_argv[])
 		simVars.disc.res_physical[1] = res[1];
 		simVars.reset();
 
-		planeDataConfigInstance.setup(simVars.disc.res_physical, simVars.disc.res_spectral);
+		planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
 
 
 		/*

@@ -980,7 +980,6 @@ public:
 				i_kernel_array,
 				i_scale,
 
-
 				planeDataConfig,
 				physical_space_data
 			);

@@ -471,7 +471,7 @@ public:
 					}
 				);
 
-				benchmark_diff_h = (prog_h-tmp).reduce_norm1_quad() / (double)(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]);
+				benchmark_diff_h = (prog_P-tmp).reduce_norm1_quad() / (double)(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]);
 				o_ostream << "\t" << benchmark_diff_h;
 
 
@@ -626,7 +626,9 @@ int main(int i_argc, char *i_argv[])
 	if (!simVars.setupFromMainParameters(i_argc, i_argv))
 		return -1;
 
-	SimulationSWEStaggered *simulationSWE = new SimulationSWEStaggered;
+
+	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
+
 
 	if (simVars.disc.use_spectral_basis_diffs)
 	{
@@ -634,7 +636,7 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 	}
 
-	planeDataConfigInstance.setup(simVars.disc.res_physical, simVars.disc.res_spectral);
+	SimulationSWEStaggered *simulationSWE = new SimulationSWEStaggered;
 
 
 	std::ostringstream buf;

@@ -1622,7 +1622,7 @@ int main(int i_argc, char *i_argv[])
 	param_semilagrangian = simVars.bogus.var[3];
 	param_time_scheme_coarse = simVars.bogus.var[4];
 
-	planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical);
+	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
 
 	std::ostringstream buf;
 	buf << std::setprecision(14);

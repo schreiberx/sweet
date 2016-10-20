@@ -328,7 +328,7 @@ int main(int i_argc, char *i_argv[])
 	param_velocity_u = simVars.bogus.var[0];
 	param_velocity_v = simVars.bogus.var[1];
 
-	planeDataConfigInstance.setup(simVars.disc.res_physical, simVars.disc.res_spectral);
+	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
 
 	SimulationSWE *simulationSWE = new SimulationSWE;
 

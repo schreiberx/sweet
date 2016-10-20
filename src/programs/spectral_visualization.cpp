@@ -224,7 +224,7 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 	}
 
-	planeDataConfigInstance.setup(simVars.disc.res_physical, simVars.disc.res_spectral);
+	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
 
 	TestSpectral *testSpectral = new TestSpectral;
 

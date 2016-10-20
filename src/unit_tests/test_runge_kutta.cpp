@@ -281,7 +281,7 @@ int main(
 	}
 
 
-	planeDataConfigInstance.setup(simVars.disc.res_physical, simVars.disc.res_spectral);
+	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
 
 #if SWEET_GUI
 	if (simVars.misc.gui_enabled)

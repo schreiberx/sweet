@@ -2109,7 +2109,7 @@ int main(int i_argc, char *i_argv[])
 
 	param_linear_exp_analytical = simVars.bogus.var[15];
 
-	planeDataConfigInstance.setup(simVars.disc.res_physical, simVars.disc.res_spectral);
+	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
 
 	//Print header
 	std::cout << std::endl;

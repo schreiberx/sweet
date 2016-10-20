@@ -348,9 +348,20 @@ if env['plane_spectral_space'] == 'enable':
 		print("Option --libfft is disabled!")
 		Exit(1)
 	env.Append(CXXFLAGS = ' -DSWEET_USE_PLANE_SPECTRAL_SPACE=1')
-	exec_name+='_spectral'
+	exec_name+='_planespectral'
 else:
 	env.Append(CXXFLAGS = ' -DSWEET_USE_PLANE_SPECTRAL_SPACE=0')
+
+	# override dealiasing
+	env['plane_spectral_dealiasing'] = 'disable'
+
+
+if env['sphere_spectral_space'] == 'enable':
+	nv.Append(CXXFLAGS = ' -DSWEET_USE_SPHERE_SPECTRAL_SPACE=1')
+	exec_name+='_spherespectral'
+else:
+	env.Append(CXXFLAGS = ' -DSWEET_USE_SPHERE_SPECTRAL_SPACE=0')
+
 
 if env['libfft'] == 'enable':
 	env.Append(CXXFLAGS = ' -DSWEET_USE_LIBFFT=1')

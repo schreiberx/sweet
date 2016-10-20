@@ -37,6 +37,12 @@
 	#define SWEET_USE_PLANE_SPECTRAL_SPACE	1
 #endif
 
+#if !SWEET_USE_PLANE_SPECTRAL_SPACE
+	#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
+		#error "Dealiasing only available with plane-spectral-space enabled"
+	#endif
+#endif
+
 /*
  * Activating this option via the precompiler also activates the FFTW library
  */
@@ -530,7 +536,7 @@ public:
 
 
 public:
-	void setup(
+	void setupAuto(
 			int i_physical_res[2],
 			int i_spectral_modes[2]
 	)
@@ -552,8 +558,7 @@ public:
 		}
 		else
 		{
-			std::cerr << "No resolution selected" << std::endl;
-			exit(-1);
+			FatalError("No resolution/modes selected");
 		}
 	}
 

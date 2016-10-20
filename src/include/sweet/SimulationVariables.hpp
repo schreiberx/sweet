@@ -198,7 +198,12 @@ public:
 		double timestepping_runge_kutta_order = 4;
 
 		/// use spectral differential operators
-		bool use_spectral_basis_diffs = true;
+		bool use_spectral_basis_diffs =
+#if SWEET_USE_PLANE_SPECTRAL_SPACE || SWEET_USE_SPHERE_SPECTRAL_SPACE
+				true;
+#else
+				false;
+#endif
 	} disc;
 
 
