@@ -407,22 +407,7 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	kappa += f0*f0;
 	kappa_bar -= f0*f0;
 
-
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-	if(i_param_nonlinear==1){
-#warning "Is this really necessary?"
-		//Truncate spectral modes to avoid aliasing effects in the h*div term
-		io_h.spectral_zeroAliasingModes();
-		io_u.spectral_zeroAliasingModes();
-		io_v.spectral_zeroAliasingModes();
-		io_h_prev.spectral_zeroAliasingModes();
-		io_u_prev.spectral_zeroAliasingModes();
-		io_v_prev.spectral_zeroAliasingModes();
-	}
-#endif
-
-
-	if(i_param_nonlinear>0)
+	if (i_param_nonlinear > 0)
 	{
 		//Calculate departure points
 		semiLagrangian.semi_lag_departure_points_settls(
@@ -578,21 +563,8 @@ bool RexiSWE::run_timestep_slrexi(
 	double stag_displacement[4] = {-0.5,-0.5,-0.5,-0.5}; //A grid staggering - centred cell
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-	if(i_param_nonlinear==1)
-	{
-#warning "is this really necessary?"
-		//Truncate spectral modes to avoid aliasing effects in the h*div term
-		io_h.spectral_zeroAliasingModes();
-		io_u.spectral_zeroAliasingModes();
-		io_v.spectral_zeroAliasingModes();
-		io_h_prev.spectral_zeroAliasingModes();
-		io_u_prev.spectral_zeroAliasingModes();
-		io_v_prev.spectral_zeroAliasingModes();
-	}
-#endif
 
-
-	if(i_param_nonlinear>0)
+	if (i_param_nonlinear > 0)
 	{
 		//Calculate departure points
 		semiLagrangian.semi_lag_departure_points_settls(
