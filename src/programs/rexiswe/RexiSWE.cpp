@@ -38,7 +38,6 @@
 
 
 RexiSWE::RexiSWE()	:
-	helmholtz_solver(0),
 	planeDataConfig(nullptr)
 {
 #if !SWEET_USE_LIBFFT
@@ -115,20 +114,13 @@ void RexiSWE::setup(
 		PlaneDataConfig *i_planeDataConfig,
 		const double *i_domain_size,	///< size of domain
 
-		bool i_rexi_half,				///< use half-pole reduction
-		bool i_use_spec_diffs_for_complex_array,	///< use spectral differences for complex arrays in REXI approximation
-		int i_helmholtz_solver,			///< Use iterative solver instead of direct solving it in spectral space
-		double i_eps					///< Error threshold
+		bool i_rexi_half				///< use half-pole reduction
 )
 {
 	planeDataConfig = i_planeDataConfig;
 
 	M = i_M;
 	h = i_h;
-
-	helmholtz_solver = i_helmholtz_solver;
-	eps = i_eps;
-	use_spec_diffs = i_use_spec_diffs_for_complex_array;
 
 	domain_size[0] = i_domain_size[0];
 	domain_size[1] = i_domain_size[1];
@@ -168,7 +160,7 @@ void RexiSWE::setup(
 	for (int j = 0; j < num_local_rexi_par_threads; j++)
 	{
 #if SWEET_REXI_THREAD_PARALLEL_SUM
-#	pragma omp parallel for schedule(static,1) default(none) shared(i_resolution,std::cout,j)
+#	pragma omp parallel for schedule(static,1) default(none) shared(planeDataConfig,i_domain_size,std::cout,j)
 #endif
 		for (int i = 0; i < num_local_rexi_par_threads; i++)
 		{
@@ -214,7 +206,7 @@ void RexiSWE::setup(
 	}
 
 #if SWEET_REXI_THREAD_PARALLEL_SUM
-#	pragma omp parallel for schedule(static,1) default(none)  shared(i_domain_size,i_use_spec_diffs_for_complex_array, std::cout)
+#	pragma omp parallel for schedule(static,1) default(none)  shared(i_domain_size,std::cout)
 #endif
 	for (int i = 0; i < num_local_rexi_par_threads; i++)
 	{
@@ -245,6 +237,7 @@ void RexiSWE::setup(
 		// initialize all values to account for first touch policy reason
 		perThreadVars[i]->eta.spectral_set_all(0, 0);
 		perThreadVars[i]->eta0.spectral_set_all(0, 0);
+
 		perThreadVars[i]->u0.spectral_set_all(0, 0);
 		perThreadVars[i]->v0.spectral_set_all(0, 0);
 
@@ -557,7 +550,7 @@ bool RexiSWE::run_timestep_slrexi(
 
 	double i_timestep_size,	///< timestep size
 	int i_param_nonlinear, ///< degree of nonlinearity (0-linear, 1-full nonlinear, 2-only nonlinear adv)
-	bool i_iterative_solver_always_init_zero_solution, //
+
 	bool i_linear_exp_analytical, //
 
 	const SimulationVariables &i_simVars, ///< Parameters for simulation
@@ -585,7 +578,8 @@ bool RexiSWE::run_timestep_slrexi(
 	double stag_displacement[4] = {-0.5,-0.5,-0.5,-0.5}; //A grid staggering - centred cell
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-	if(i_param_nonlinear==1){
+	if(i_param_nonlinear==1)
+	{
 #warning "is this really necessary?"
 		//Truncate spectral modes to avoid aliasing effects in the h*div term
 		io_h.spectral_zeroAliasingModes();
@@ -634,13 +628,9 @@ bool RexiSWE::run_timestep_slrexi(
 		//Calculate exp(Ldt)N(n-1), relative to previous timestep
 		//Calculate the V{n-1} term as in documentation, with the exponential integrator
 		if(i_linear_exp_analytical)
-		{
 			run_timestep_direct_solution( N_h, N_u, N_v, dt, op, i_simVars );
-		}
 		else
-		{
-			run_timestep( N_h, N_u, N_v, dt, op, i_simVars, i_iterative_solver_always_init_zero_solution);
-		}
+			run_timestep_rexi( N_h, N_u, N_v, dt, op, i_simVars);
 
 		//Use N_h to store now the nonlinearity of the current time (prev will not be required anymore)
 		//Update the nonlinear terms with the constants relative to dt
@@ -673,7 +663,7 @@ bool RexiSWE::run_timestep_slrexi(
 	if (i_linear_exp_analytical)
 		run_timestep_direct_solution(h, u, v, dt, op, i_simVars);
 	else
-		run_timestep(h, u, v, dt, op, i_simVars, i_iterative_solver_always_init_zero_solution);
+		run_timestep_rexi(h, u, v, dt, op, i_simVars);
 
 	if (i_param_nonlinear == 1)
 	{
@@ -702,7 +692,7 @@ bool RexiSWE::run_timestep_slrexi(
  * 		doc/rexi/understanding_rexi.pdf
  * for further information
  */
-bool RexiSWE::run_timestep(
+bool RexiSWE::run_timestep_rexi(
 	PlaneData &io_h,
 	PlaneData &io_u,
 	PlaneData &io_v,
@@ -710,8 +700,7 @@ bool RexiSWE::run_timestep(
 	double i_timestep_size,	///< timestep size
 
 	PlaneOperators &op,
-	const SimulationVariables &i_parameters,
-	bool i_iterative_solver_always_init_zero_solution
+	const SimulationVariables &i_parameters
 )
 {
 	typedef std::complex<double> complex;
@@ -722,6 +711,15 @@ bool RexiSWE::run_timestep(
 	io_u.request_data_physical();
 	io_v.request_data_physical();
 
+#if 0
+	std::cout << io_h << std::endl;
+	std::cout << std::endl;
+	std::cout << io_u << std::endl;
+	std::cout << std::endl;
+	std::cout << io_v << std::endl;
+	std::cout << std::endl;
+	exit(1);
+#endif
 
 #if SWEET_MPI
 
@@ -730,7 +728,7 @@ bool RexiSWE::run_timestep(
 		stopwatch_broadcast.start();
 #endif
 
-	std::size_t data_size = io_h.planeDataConfig->physical_res[0]*io_h.planeDataConfig->physical_res[1];
+	std::size_t data_size = io_h.planeDataConfig->physical_array_data_number_of_elements;
 	MPI_Bcast(io_h.array_data_physical_space, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
 	if (std::isnan(io_h.get(0,0)))
@@ -751,7 +749,7 @@ bool RexiSWE::run_timestep(
 
 
 #if SWEET_REXI_THREAD_PARALLEL_SUM
-#	pragma omp parallel for schedule(static,1) default(none) shared(i_parameters, i_timestep_size, io_h, io_u, io_v, N, std::cout, std::cerr, i_iterative_solver_always_init_zero_solution)
+#	pragma omp parallel for schedule(static,1) default(none) shared(i_parameters, i_timestep_size, io_h, io_u, io_v, N, std::cout, std::cerr)
 #endif
 	for (int i = 0; i < num_local_rexi_par_threads; i++)
 	{
@@ -826,7 +824,7 @@ bool RexiSWE::run_timestep(
 		// reuse result from previous computations
 		// this significantly speeds up the process
 		// initial guess
-		eta.spectral_set_all(0,0);
+//		eta.spectral_set_all(0,0);
 
 		/*
 		 * DO SUM IN PARALLEL
@@ -900,7 +898,6 @@ bool RexiSWE::run_timestep(
 		stopwatch_reduce.start();
 #endif
 
-
 #if SWEET_REXI_THREAD_PARALLEL_SUM
 	io_h.physical_set_all(0);
 	io_u.physical_set_all(0);
@@ -908,18 +905,22 @@ bool RexiSWE::run_timestep(
 
 	for (int n = 0; n < num_local_rexi_par_threads; n++)
 	{
+		perThreadVars[n]->h_sum.request_data_physical();
+		perThreadVars[n]->u_sum.request_data_physical();
+		perThreadVars[n]->v_sum.request_data_physical();
+
 		// sum real-valued elements
 		#pragma omp parallel for schedule(static)
-		for (std::size_t i = 0; i < io_h.array_data_cartesian_length; i++)
-			io_h.array_data_physical_space[i] += perThreadVars[n]->h_sum.data[i<<1];
+		for (std::size_t i = 0; i < io_h.planeDataConfig->physical_array_data_number_of_elements; i++)
+			io_h.physical_space_data[i] += perThreadVars[n]->h_sum.physical_space_data[i].real();
 
 		#pragma omp parallel for schedule(static)
-		for (std::size_t i = 0; i < io_h.array_data_cartesian_length; i++)
-			io_u.array_data_physical_space[i] += perThreadVars[n]->u_sum.data[i<<1];
+		for (std::size_t i = 0; i < io_h.planeDataConfig->physical_array_data_number_of_elements; i++)
+			io_u.physical_space_data[i] += perThreadVars[n]->u_sum.physical_space_data[i].real();
 
 		#pragma omp parallel for schedule(static)
-		for (std::size_t i = 0; i < io_h.array_data_cartesian_length; i++)
-			io_v.array_data_physical_space[i] += perThreadVars[n]->v_sum.data[i<<1];
+		for (std::size_t i = 0; i < io_h.planeDataConfig->physical_array_data_number_of_elements; i++)
+			io_v.physical_space_data[i] += perThreadVars[n]->v_sum.physical_space_data[i].real();
 	}
 
 #else
@@ -927,12 +928,14 @@ bool RexiSWE::run_timestep(
 	io_h = Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->h_sum);
 	io_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->u_sum);
 	io_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->v_sum);
+
 #endif
 
 
 #if SWEET_MPI
 	PlaneData tmp(io_h.resolution);
 
+	io_h.request_data_physical();
 	int retval = MPI_Reduce(io_h.array_data_physical_space, tmp.array_data_physical_space, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 	if (retval != MPI_SUCCESS)
 	{
@@ -942,9 +945,11 @@ bool RexiSWE::run_timestep(
 
 	std::swap(io_h.array_data_physical_space, tmp.array_data_physical_space);
 
+	io_u.request_data_physical();
 	MPI_Reduce(io_u.array_data_physical_space, tmp.array_data_physical_space, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 	std::swap(io_u.array_data_physical_space, tmp.array_data_physical_space);
 
+	io_v.request_data_physical();
 	MPI_Reduce(io_v.array_data_physical_space, tmp.array_data_physical_space, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 	std::swap(io_v.array_data_physical_space, tmp.array_data_physical_space);
 #endif

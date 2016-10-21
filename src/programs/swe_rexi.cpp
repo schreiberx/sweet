@@ -14,6 +14,7 @@
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/PlaneDataSemiLagrangian.hpp>
 #include <sweet/Stopwatch.hpp>
+#include <sweet/FatalError.hpp>
 #include <benchmarks_plane/SWEPlaneBenchmarks.hpp>
 #include <ostream>
 #include <algorithm>
@@ -52,17 +53,21 @@ PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
 SimulationVariables simVars;
 
 //specific parameters
-double param_rexi_h;
-double param_rexi_m;
-double param_rexi_l;
-bool param_rexi_half;
+/*
+double simVars.rexi.rexi_h;
+double simVars.rexi.rexi_m;
+double simVars.rexi.rexi_l;
+bool simVars.rexi.rexi_half;
+*/
 int param_timestepping_mode;
 bool param_compute_error;
 bool param_use_staggering;
+/*
 bool param_rexi_use_spectral_differences_for_complex_array;
 int param_rexi_helmholtz_solver_id;
 double param_rexi_helmholtz_solver_eps;
-bool param_rexi_zero_before_solving;
+*/
+
 int param_boundary_id;
 int param_nonlinear;
 bool param_linear_exp_analytical;
@@ -650,7 +655,7 @@ public:
 			if (simVars.misc.verbosity > 0)
 			{
 				std::cout << "REXI: Using REXI for time integration" << std::endl;
-				std::cout << "REXI: Using M=" << param_rexi_m << ", L=" << param_rexi_l << ", poles and sampling size h=" << param_rexi_h << std::endl;
+				std::cout << "REXI: Using M=" << simVars.rexi.rexi_M << ", L=" << simVars.rexi.rexi_L << ", poles and sampling size h=" << simVars.rexi.rexi_h << std::endl;
 			}
 
 			if (simVars.sim.CFL >= 0)
@@ -661,15 +666,12 @@ public:
 
 			// use REXI
 			rexiSWE.setup(
-					param_rexi_h,
-					param_rexi_m,
-					param_rexi_l,
+					simVars.rexi.rexi_h,
+					simVars.rexi.rexi_M,
+					simVars.rexi.rexi_L,
 					planeDataConfig,
 					simVars.sim.domain_size,
-					param_rexi_half,
-					param_rexi_use_spectral_differences_for_complex_array,
-					param_rexi_helmholtz_solver_id,
-					param_rexi_helmholtz_solver_eps
+					simVars.rexi.rexi_use_half_poles
 				);
 
 			if (simVars.misc.verbosity > 2)
@@ -1092,16 +1094,17 @@ public:
 			o_dt = -simVars.sim.CFL;
 
 			// REXI time stepping for nonlinear eq - semi-lagrangian scheme (SL-REXI)
-			if (param_nonlinear>0)
+			if (param_nonlinear > 0)
 			{
 				rexiSWE.run_timestep_slrexi(
 									prog_h, prog_u, prog_v,
 									prog_h_prev, prog_u_prev, prog_v_prev,
 									posx_a,	posy_a,
 									o_dt,
+
 									param_nonlinear,
-									param_rexi_zero_before_solving,
 									param_linear_exp_analytical,
+
 									simVars,
 									op,
 									sampler2D,
@@ -1110,29 +1113,16 @@ public:
 			}
 			else // linear solver
 			{
-				rexiSWE.run_timestep( prog_h, prog_u, prog_v, o_dt,	op,	simVars, param_rexi_zero_before_solving	);
+				rexiSWE.run_timestep_rexi( prog_h, prog_u, prog_v, o_dt, op,	simVars);
 			}
-
-			//Add forcing --- this is now how it should be added!!!!!
-			//prog_h=prog_h+force_h*o_dt;
-			//prog_u=prog_u+force_u*o_dt;
-			//prog_v=prog_v+force_v*o_dt;
-
 		}
 		else if (param_timestepping_mode == 2) //Direct solution
 		{
-//			assert(i_max_simulation_time < 0);
 			if (param_use_staggering)
-			{
-				std::cerr << "Direct solution on staggered grid not supported!" << std::endl;
-				exit(1);
-			}
+				FatalError("Direct solution on staggered grid not supported!");
 
 			if (param_nonlinear>0)
-			{
-				std::cerr << "Direct solution not available for nonlinear case!" << std::endl;
-				exit(1);
-			}
+				FatalError("Direct solution on staggered grid not supported!");
 
 			// Analytical solution
 			assert(simVars.sim.CFL < 0);
@@ -1680,16 +1670,16 @@ public:
 
 		// use REXI
 		rexiSWE.setup(
-				param_rexi_h,
-				param_rexi_m,
-				param_rexi_l,
+				simVars.rexi.rexi_h,
+				simVars.rexi.rexi_m,
+				simVars.rexi.rexi_l,
 
 				simVars.disc.res_physical,
 				simVars.sim.domain_size,
-				param_rexi_half,
-				param_rexi_use_spectral_differences_for_complex_array,
-				param_rexi_helmholtz_solver_id,
-				param_rexi_helmholtz_solver_eps
+				simVars.rexi.rexi_half,
+				simVars.rexi.rexi_use_spectral_differences_for_complex_array,
+				simVars.rexi.rexi_helmholtz_solver_id,
+				simVars.rexi.rexi_helmholtz_solver_eps
 			);
 
 		output_data_valid = false;
@@ -1994,18 +1984,10 @@ int main(int i_argc, char *i_argv[])
 
 	//input parameter names (specific ones for this program)
 	const char *bogus_var_names[] = {
-			"rexi-h",			///Rexi parameters
-			"rexi-m",
-			"rexi-l",
-			"rexi-half",
 			"timestepping-mode",			///Method to be used
 			"compute-error",
 			"staggering",						/// FD A-C grid
-			"use-specdiff-for-complex-array",	/// use finite differences for complex array
-			"rexi-helmholtz-solver-id",		/// use iterative solver for REXI
-			"rexi-helmholtz-solver-eps",		/// error threshold for solver
 			"boundary-id",
-			"rexi-zero-before-solving",
 			"nonlinear",                 /// form of equations
 			"initial-freq-x-mul",		/// frequency multipliers for special scenario setup
 			"initial-freq-y-mul",
@@ -2014,34 +1996,20 @@ int main(int i_argc, char *i_argv[])
 	};
 
 	// default values for specific input (for general input see SimulationVariables.hpp)
-	simVars.bogus.var[0] = 0.2;  // REXI h
-	simVars.bogus.var[1] = 256;	// M
-	simVars.bogus.var[2] = 0;	// L = 0: default - this gives L=11
-	simVars.bogus.var[3] = 1;	// param_rexi_half
-	simVars.bogus.var[4] = 0;	// timestepping mode - default is RK
-	simVars.bogus.var[5] = 0;	// compute error - default no
-	simVars.bogus.var[6] = 0;	// stag - default A grid
-	simVars.bogus.var[7] = 1;	// Use spec diff per default for complex array
-	simVars.bogus.var[8] = 0;	// Use spectral solver id
-	simVars.bogus.var[9] = 1e-7;	// Error threshold
-	simVars.bogus.var[10] = 0; 	//boundary
-	simVars.bogus.var[11] = 1;	// zero rexi
-	simVars.bogus.var[12] = 0;	// nonlinear
-	simVars.bogus.var[13] = 0;  //frequency in x for waves test case
-	simVars.bogus.var[14] = 0;  //frequency in y for waves test case
-	simVars.bogus.var[15] = 0;  // Use analytical linear operator exponential
+	simVars.bogus.var[0] = 0;	// timestepping mode - default is RK
+	simVars.bogus.var[1] = 0;	// compute error - default no
+	simVars.bogus.var[2] = 0;	// stag - default A grid
+	simVars.bogus.var[3] = 0; 	//boundary
+	simVars.bogus.var[4] = 0;	// nonlinear
+	simVars.bogus.var[5] = 0;  //frequency in x for waves test case
+	simVars.bogus.var[6] = 0;  //frequency in y for waves test case
+	simVars.bogus.var[7] = 0;  // Use analytical linear operator exponential
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
 		std::cout << std::endl;
 		std::cout << "Special parameters:" << std::endl;
-		std::cout << "	--rexi-h [h-value]	h-sampling distance for REXI, default:0.2" << std::endl;
-		std::cout << "" << std::endl;
-		std::cout << "	--rexi-m [m-value]	M-value for REXI (related to number of poles), default:256" << std::endl;
-		std::cout << "" << std::endl;
-		std::cout << "	--rexi-half [0/1]	Reduce rexi computations to its half, default:1 " << std::endl;
-		std::cout << "" << std::endl;
 		std::cout << "	--timestepping-mode [0/1/2/3/4/5]	Timestepping method to use" << std::endl;
 		std::cout << "	                            0: RKn with Finite-difference (default)" << std::endl;
 		std::cout << "	                            1: REXI (SL-REXI if nonlinear)" << std::endl;
@@ -2053,13 +2021,6 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "	--compute-error [0/1]	Compute the errors" << std::endl;
 		std::cout << "" << std::endl;
 		std::cout << "	--staggering [0/1]		Use staggered grid" << std::endl;
-		std::cout << std::endl;
-		std::cout << "	--use-specdiff-for-complex-array [0/1]	Controls the discretization of the derivative operations for Complex2DArrays:" << std::endl;
-		std::cout << "                                      0: Finite-difference derivatives" << std::endl;
-		std::cout << "                                      1: Spectral derivatives (default)" << std::endl;
-		std::cout << std::endl;
-		std::cout << "	--rexi-helmholtz-solver-id [int]	Use iterative solver for REXI" << std::endl;
-		std::cout << "	--rexi-helmholtz-solver-eps [err]	Error threshold for iterative solver" << std::endl;
 		std::cout << std::endl;
 		std::cout << "	--boundary-id [0,1,...]	    Boundary id" << std::endl;
 		std::cout << "                              0: no boundary (default)" << std::endl;
@@ -2081,40 +2042,31 @@ int main(int i_argc, char *i_argv[])
 #endif
 		return -1;
 	}
-
-	//Rexi parameters
-	param_rexi_h = simVars.bogus.var[0];
-    param_rexi_m = simVars.bogus.var[1];
-	param_rexi_l = simVars.bogus.var[2];
-	param_rexi_half = simVars.bogus.var[3];
-
 	// Method to be used
-	param_timestepping_mode = simVars.bogus.var[4];
+	param_timestepping_mode = simVars.bogus.var[0];
 
 	//Calculate error flag
-	param_compute_error = simVars.bogus.var[5];
+	param_compute_error = simVars.bogus.var[1];
 
 	// C- grid flag
-	param_use_staggering = simVars.bogus.var[6];
+	param_use_staggering = simVars.bogus.var[2];
 
 	// Linear solver
-	param_rexi_use_spectral_differences_for_complex_array = simVars.bogus.var[7];
-    param_rexi_helmholtz_solver_id = simVars.bogus.var[8];
-	param_rexi_helmholtz_solver_eps = simVars.bogus.var[9];
+//	param_rexi_use_spectral_differences_for_complex_array = simVars.bogus.var[3];
+//	param_rexi_helmholtz_solver_id = simVars.bogus.var[4];
+//	param_rexi_helmholtz_solver_eps = simVars.bogus.var[5];
 
 	//Boundary
-	param_boundary_id = simVars.bogus.var[10];
-
-	param_rexi_zero_before_solving = simVars.bogus.var[11];
+	param_boundary_id = simVars.bogus.var[3];
 
 	// Linear vs nonlinear swe
-	param_nonlinear = simVars.bogus.var[12];
+	param_nonlinear = simVars.bogus.var[4];
 
 	//Frequency for certain initial conditions
-	param_initial_freq_x_mul = simVars.bogus.var[13];
-	param_initial_freq_y_mul = simVars.bogus.var[14];
+	param_initial_freq_x_mul = simVars.bogus.var[5];
+	param_initial_freq_y_mul = simVars.bogus.var[6];
 
-	param_linear_exp_analytical = simVars.bogus.var[15];
+	param_linear_exp_analytical = simVars.bogus.var[7];
 
 	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
 
@@ -2151,8 +2103,8 @@ int main(int i_argc, char *i_argv[])
 			return -1;
 	}
 	std::cout << "Viscosity: " << simVars.sim.viscosity << std::endl;
-	std::cout << "Staggered grid? " << param_use_staggering << std::endl;
-	std::cout << "Computing error? " << param_compute_error << std::endl;
+	std::cout << "Staggered grid: " << param_use_staggering << std::endl;
+	std::cout << "Computing error: " << param_compute_error << std::endl;
 	std::cout << "Dealiasing: " <<
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 			1
@@ -2163,6 +2115,17 @@ int main(int i_argc, char *i_argv[])
 	std::cout << "Verbosity: " << simVars.misc.verbosity << std::endl;
 	std::cout << "Parareal: " << SWEET_PARAREAL << std::endl;
 	std::cout << "Linear exponential analytical: " << param_linear_exp_analytical << std::endl;
+	std::cout << std::endl;
+	std::cout << "simVars.rexi.rexi_h: " << simVars.rexi.rexi_h << std::endl;
+	std::cout << "simVars.rexi.rexi_M: " << simVars.rexi.rexi_M << std::endl;
+	std::cout << "simVars.rexi.rexi_L: " << simVars.rexi.rexi_L << std::endl;
+	std::cout << "simVars.rexi.rexi_half: " << simVars.rexi.rexi_use_half_poles << std::endl;
+	std::cout << std::endl;
+	std::cout << "g: " << simVars.sim.gravitation << std::endl;
+	std::cout << "f: " << simVars.sim.f0 << std::endl;
+	std::cout << "h: " << simVars.sim.h0 << std::endl;
+	std::cout << std::endl;
+
 	std::ostringstream buf;
 	buf << std::setprecision(14);
 
@@ -2317,15 +2280,15 @@ int main(int i_argc, char *i_argv[])
 			 * Setup our little dog REXI
 			 */
 			rexiSWE.setup(
-					param_rexi_h,
-					param_rexi_m,
-					param_rexi_l,
+					simVars.rexi.rexi_h,
+					simVars.rexi.rexi_m,
+					simVars.rexi.rexi_l,
 					simVars.disc.res_physical,
 					simVars.sim.domain_size,
-					param_rexi_half,
-					param_rexi_use_spectral_differences_for_complex_array,
-					param_rexi_helmholtz_solver_id,
-					param_rexi_helmholtz_solver_eps
+					simVars.rexi.rexi_half,
+					simVars.rexi.rexi_use_spectral_differences_for_complex_array,
+					simVars.rexi.rexi_helmholtz_solver_id,
+					simVars.rexi.rexi_helmholtz_solver_eps
 				);
 
 			bool run = true;
@@ -2341,12 +2304,11 @@ int main(int i_argc, char *i_argv[])
 			while (run)
 			{
 				// REXI time stepping
-				run = rexiSWE.run_timestep(
+				run = rexiSWE.run_timestep_rexi(
 						prog_h, prog_u, prog_v,
 						-simVars.sim.CFL,
 						op,
-						simVars,
-						param_rexi_zero_before_solving
+						simVars
 				);
 			}
 		}

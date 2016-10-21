@@ -199,7 +199,8 @@ public:
 			{
 				for (std::size_t i = 1; i < planeDataConfig->spectral_complex_data_size[0]/2; i++)
 				{
-					diff_c_x.p_spectral_set(	j,
+					diff_c_x.p_spectral_set(
+							j,
 							i,
 							0,
 							(double)i*scale
@@ -211,7 +212,8 @@ public:
 							(double)i*scale
 						);
 
-					diff_c_x.p_spectral_set(	j,
+					diff_c_x.p_spectral_set(
+							j,
 							planeDataConfig->spectral_complex_data_size[0]-i,
 							0,
 							-(double)i*scale

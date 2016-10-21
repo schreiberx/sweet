@@ -1551,7 +1551,7 @@ public:
 		request_data_spectral();
 		PlaneDataComplex out = *this;
 
-		double scale = planeDataConfig->spectral_complex_data_size[0]*planeDataConfig->spectral_complex_data_size[1];
+		double scale = planeDataConfig->spectral_complex_array_data_number_of_elements;
 		out.spectral_space_data[0] -= i_value*scale;
 
 		//out.physical_space_data_valid = false;
@@ -1624,7 +1624,7 @@ public:
 			);
 
 		double scale = planeDataConfig->physical_data_size[0]*planeDataConfig->physical_data_size[1];
-		out.spectral_space_data[0] = i_value*scale + out.spectral_space_data[0];
+		out.spectral_space_data[0] += i_value*scale;
 
 		out.physical_space_data_valid = false;
 		out.spectral_space_data_valid = true;
@@ -1663,7 +1663,7 @@ public:
 			);
 
 		double scale = planeDataConfig->physical_data_size[0]*planeDataConfig->physical_data_size[1];
-		out.spectral_space_data[0] = i_value*scale + out.spectral_space_data[0];
+		out.spectral_space_data[0] += i_value*scale;
 
 		out.physical_space_data_valid = false;
 		out.spectral_space_data_valid = true;
@@ -1973,7 +1973,7 @@ public:
 		PlaneDataComplex out(planeDataConfig);
 
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
-				out.spectral_space_data[0] = spectral_space_data[idx] + i_value;
+				out.spectral_space_data[idx] = spectral_space_data[idx] + i_value;
 		);
 
 		out.physical_space_data_valid = false;
@@ -2253,7 +2253,6 @@ public:
 			file.seekg(0, std::ios::end);
 			std::size_t size = file.tellg();
 			file.seekg(0, std::ios::beg);
-
 
 			std::size_t expected_size = sizeof(double)*planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1];
 

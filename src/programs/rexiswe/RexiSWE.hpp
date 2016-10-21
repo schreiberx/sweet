@@ -45,16 +45,10 @@ class RexiSWE
 	int M;
 
 	// ID of solver to use, specify -1 to print a list of solvers
-	int helmholtz_solver;
+//	int helmholtz_solver;
 
 	// simulation domain size
 	double domain_size[2];
-
-	// error threshold, e.g. for iterative solvers
-	double eps;
-
-	// use finite differences
-	bool use_spec_diffs;
 
 	std::size_t block_size;
 
@@ -129,10 +123,7 @@ public:
 
 			PlaneDataConfig *i_planeDataConfig,
 			const double *i_domain_size,		///< size of domain
-			bool i_rexi_half = true,			///< use half-pole reduction
-			bool i_use_finite_differences = false,		///< use finite-differences for derivatives,	///< use finite differences for REXI approximation
-			int i_helmholtz_solver = 0,		///< Helmholtz solver ID to use (0: spectral space)
-			double i_eps = 1e-7		///< error threshold
+			bool i_rexi_half = true			///< use half-pole reduction
 	);
 
 
@@ -299,7 +290,7 @@ public:
 
 		double i_timestep_size,	///< timestep size
 		int i_param_nonlinear, ///< degree of nonlinearity (0-linear, 1-full nonlinear, 2-only nonlinear adv)
-		bool i_iterative_solver_always_init_zero_solution, //
+
 		bool i_linear_exp_analytical, //
 
 		const SimulationVariables &i_simVars, ///< Parameters for simulation
@@ -317,7 +308,7 @@ public:
 	 * for further information
 	 */
 public:
-	bool run_timestep(
+	bool run_timestep_rexi(
 		PlaneData &io_h,
 		PlaneData &io_u,
 		PlaneData &io_v,
@@ -325,8 +316,7 @@ public:
 		double i_timestep_size,	///< timestep size
 
 		PlaneOperators &op,
-		const SimulationVariables &i_parameters,
-		bool i_iterative_solver_zero_solution = false
+		const SimulationVariables &i_parameters
 	);
 
 

@@ -47,12 +47,12 @@ int main(int i_argc, char *i_argv[])
 	std::size_t res_x = simVars.disc.res_physical[0];
 	std::size_t res_y = simVars.disc.res_physical[1];
 
-	std::size_t max_res = 125;
+	std::size_t max_res = 64;
 
 	if (res_x > max_res || res_y > max_res)
 		max_res = std::max(res_x, res_y);
 
-	for (; res_x <= max_res && res_y <= max_res; res_x++, res_y++)
+	for (; res_x <= max_res && res_y <= max_res; res_x+2, res_y+2)
 	{
 		std::cout << "*************************************************************" << std::endl;
 		std::cout << "Testing aliasing pattern with resolution " << res_x << " x " << res_y << std::endl;
