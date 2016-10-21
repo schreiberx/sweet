@@ -143,7 +143,7 @@ AddOption(	'--libfft',
 		dest='libfft',
 		type='choice',
 		choices=['enable', 'disable'],
-		default='enable',
+		default='disable',
 		help="Enable compiling and linking with FFT library [default: %default]"
 )
 env['libfft'] = GetOption('libfft')
@@ -344,9 +344,12 @@ exec_name=env['program_name']
 
 
 if env['plane_spectral_space'] == 'enable':
-	if env['libfft'] != 'enable':
-		print("Option --libfft is disabled!")
-		Exit(1)
+	# override libfft
+	env['libfft'] = 'enable'
+
+	#if env['libfft'] != 'enable':
+	#	print("Option --libfft is disabled!")
+	#	Exit(1)
 	env.Append(CXXFLAGS = ' -DSWEET_USE_PLANE_SPECTRAL_SPACE=1')
 	exec_name+='_planespectral'
 else:
@@ -357,7 +360,9 @@ else:
 
 
 if env['sphere_spectral_space'] == 'enable':
-	nv.Append(CXXFLAGS = ' -DSWEET_USE_SPHERE_SPECTRAL_SPACE=1')
+	env['libfft'] = 'enable'
+
+	env.Append(CXXFLAGS = ' -DSWEET_USE_SPHERE_SPECTRAL_SPACE=1')
 	exec_name+='_spherespectral'
 else:
 	env.Append(CXXFLAGS = ' -DSWEET_USE_SPHERE_SPECTRAL_SPACE=0')

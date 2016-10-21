@@ -113,7 +113,7 @@ private:
 	double fftw_backward_scale_factor;
 
 
-
+public:
 	/// allocated size for spectral data in case of complex data in physical space
 	std::size_t spectral_complex_data_size[2];
 
@@ -134,6 +134,39 @@ private:
 	bool initialized;
 
 
+	void printInformation()
+	{
+
+		std::cout << std::endl;
+		std::cout << "physical_res: " << physical_res[0] << ", " << physical_res[1] << std::endl;
+		std::cout << "physical_data_size: " << physical_data_size[0] << ", " << physical_data_size[1] << std::endl;
+		std::cout << "physical_array_data_number_of_elements: " << physical_array_data_number_of_elements << std::endl;
+
+#if SWEET_USE_LIBFFT
+		std::cout << std::endl;
+		std::cout << "spectral_modes: " << spectral_modes[0] << ", " << spectral_modes[1] << std::endl;
+		std::cout << "spectral_data_size: " << spectral_data_size[0] << ", " << spectral_data_size[1] << std::endl;
+		std::cout << "spectral_array_data_number_of_elements: " << spectral_array_data_number_of_elements << std::endl;
+		std::cout << std::endl;
+		std::cout << "spectral_data_iteration_ranges [0][0]: " << spectral_complex_data_iteration_ranges[0][0][0] << ", " << spectral_complex_data_iteration_ranges[0][0][1] << std::endl;
+		std::cout << "spectral_data_iteration_ranges [0][1]: " << spectral_complex_data_iteration_ranges[0][1][0] << ", " << spectral_complex_data_iteration_ranges[0][1][1] << std::endl;
+		std::cout << "spectral_data_iteration_ranges [1][0]: " << spectral_complex_data_iteration_ranges[1][0][0] << ", " << spectral_complex_data_iteration_ranges[1][0][1] << std::endl;
+		std::cout << "spectral_data_iteration_ranges [1][1]: " << spectral_complex_data_iteration_ranges[1][1][0] << ", " << spectral_complex_data_iteration_ranges[1][1][1] << std::endl;
+		std::cout << std::endl;
+		std::cout << "spectral_complex_data_size: " << spectral_complex_data_size[0] << ", " << spectral_complex_data_size[1] << std::endl;
+		std::cout << "spectral_complex_array_data_number_of_elements: " << spectral_complex_array_data_number_of_elements << std::endl;
+		std::cout << std::endl;
+		std::cout << "spectral_complex_data_iteration_ranges [0][0]: " << spectral_complex_data_iteration_ranges[0][0][0] << ", " << spectral_complex_data_iteration_ranges[0][0][1] << std::endl;
+		std::cout << "spectral_complex_data_iteration_ranges [0][1]: " << spectral_complex_data_iteration_ranges[0][1][0] << ", " << spectral_complex_data_iteration_ranges[0][1][1] << std::endl;
+		std::cout << "spectral_complex_data_iteration_ranges [1][0]: " << spectral_complex_data_iteration_ranges[1][0][0] << ", " << spectral_complex_data_iteration_ranges[1][0][1] << std::endl;
+		std::cout << "spectral_complex_data_iteration_ranges [1][1]: " << spectral_complex_data_iteration_ranges[1][1][0] << ", " << spectral_complex_data_iteration_ranges[1][1][1] << std::endl;
+		std::cout << "spectral_complex_data_iteration_ranges [2][0]: " << spectral_complex_data_iteration_ranges[2][0][0] << ", " << spectral_complex_data_iteration_ranges[2][0][1] << std::endl;
+		std::cout << "spectral_complex_data_iteration_ranges [2][1]: " << spectral_complex_data_iteration_ranges[2][1][0] << ", " << spectral_complex_data_iteration_ranges[2][1][1] << std::endl;
+		std::cout << "spectral_complex_data_iteration_ranges [3][0]: " << spectral_complex_data_iteration_ranges[3][0][0] << ", " << spectral_complex_data_iteration_ranges[3][0][1] << std::endl;
+		std::cout << "spectral_complex_data_iteration_ranges [3][1]: " << spectral_complex_data_iteration_ranges[3][1][0] << ", " << spectral_complex_data_iteration_ranges[3][1][1] << std::endl;
+		std::cout << std::endl;
+#endif
+	}
 
 public:
 	static
@@ -355,7 +388,7 @@ private:
 			spectral_complex_data_size[0] = physical_data_size[0];
 			spectral_complex_data_size[1] = physical_data_size[1];
 
-#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
+#if SWEET_USE_PLANE_SPECTRAL_DEALIASING && 0
 
 			/*
 			 * For more information, have a look at
@@ -363,47 +396,47 @@ private:
 			 */
 
 			spectral_complex_data_iteration_ranges[0][0][0] = 0;
-			spectral_complex_data_iteration_ranges[0][0][1] = spectral_data_size[0]*2/3-1;
+			spectral_complex_data_iteration_ranges[0][0][1] = spectral_complex_data_size[0]*2/3-1;
 			spectral_complex_data_iteration_ranges[0][1][0] = 0;
-			spectral_complex_data_iteration_ranges[0][1][1] = spectral_data_size[1]/3;
+			spectral_complex_data_iteration_ranges[0][1][1] = spectral_complex_data_size[1]/3;
 
 			spectral_complex_data_iteration_ranges[1][0][0] = 0;
-			spectral_complex_data_iteration_ranges[1][0][1] = spectral_data_size[0]*2/3-1;
-			spectral_complex_data_iteration_ranges[1][1][0] = spectral_data_size[1]-spectral_data_size[1]/3;
-			spectral_complex_data_iteration_ranges[1][1][1] = spectral_data_size[1];
+			spectral_complex_data_iteration_ranges[1][0][1] = spectral_complex_data_size[0]*2/3-1;
+			spectral_complex_data_iteration_ranges[1][1][0] = spectral_complex_data_size[1]-spectral_complex_data_size[1]/3;
+			spectral_complex_data_iteration_ranges[1][1][1] = spectral_complex_data_size[1];
 
 #warning "TODO: setup correct ranges"
-			spectral_complex_data_iteration_ranges[2][0][0] = spectral_data_size[0] - (spectral_data_size[0]*2/3-1);	// TODO: check this start index
-			spectral_complex_data_iteration_ranges[2][0][1] = spectral_data_size[0];
+			spectral_complex_data_iteration_ranges[2][0][0] = spectral_complex_data_size[0] - (spectral_complex_data_size[0]*2/3-1);	// TODO: check this start index
+			spectral_complex_data_iteration_ranges[2][0][1] = spectral_complex_data_size[0];
 			spectral_complex_data_iteration_ranges[2][1][0] = 0;
-			spectral_complex_data_iteration_ranges[2][1][1] = spectral_data_size[1]/3;
+			spectral_complex_data_iteration_ranges[2][1][1] = spectral_complex_data_size[1]/3;
 
-			spectral_complex_data_iteration_ranges[3][0][0] = spectral_data_size[0] - (spectral_data_size[0]*2/3-1);	// TODO: check this start index
-			spectral_complex_data_iteration_ranges[3][0][1] = spectral_data_size[0];
-			spectral_complex_data_iteration_ranges[3][1][0] = spectral_data_size[1]-spectral_data_size[1]/3;
-			spectral_complex_data_iteration_ranges[3][1][1] = spectral_data_size[1];
+			spectral_complex_data_iteration_ranges[3][0][0] = spectral_complex_data_size[0] - (spectral_complex_data_size[0]*2/3-1);	// TODO: check this start index
+			spectral_complex_data_iteration_ranges[3][0][1] = spectral_complex_data_size[0];
+			spectral_complex_data_iteration_ranges[3][1][0] = spectral_complex_data_size[1]-spectral_complex_data_size[1]/3;
+			spectral_complex_data_iteration_ranges[3][1][1] = spectral_complex_data_size[1];
 
 #else
 
 			spectral_complex_data_iteration_ranges[0][0][0] = 0;
-			spectral_complex_data_iteration_ranges[0][0][1] = spectral_data_size[0]/2;
+			spectral_complex_data_iteration_ranges[0][0][1] = spectral_complex_data_size[0]/2;
 			spectral_complex_data_iteration_ranges[0][1][0] = 0;
-			spectral_complex_data_iteration_ranges[0][1][1] = spectral_data_size[1]/2;
+			spectral_complex_data_iteration_ranges[0][1][1] = spectral_complex_data_size[1]/2;
 
 			spectral_complex_data_iteration_ranges[1][0][0] = 0;
-			spectral_complex_data_iteration_ranges[1][0][1] = spectral_data_size[0]/2;
-			spectral_complex_data_iteration_ranges[1][1][0] = spectral_data_size[1]/2;
-			spectral_complex_data_iteration_ranges[1][1][1] = spectral_data_size[1];
+			spectral_complex_data_iteration_ranges[1][0][1] = spectral_complex_data_size[0]/2;
+			spectral_complex_data_iteration_ranges[1][1][0] = spectral_complex_data_size[1]/2;
+			spectral_complex_data_iteration_ranges[1][1][1] = spectral_complex_data_size[1];
 
-			spectral_complex_data_iteration_ranges[2][0][0] = spectral_data_size[0]/2;
-			spectral_complex_data_iteration_ranges[2][0][1] = spectral_data_size[0];
+			spectral_complex_data_iteration_ranges[2][0][0] = spectral_complex_data_size[0]/2;
+			spectral_complex_data_iteration_ranges[2][0][1] = spectral_complex_data_size[0];
 			spectral_complex_data_iteration_ranges[2][1][0] = 0;
-			spectral_complex_data_iteration_ranges[2][1][1] = spectral_data_size[1]/2;
+			spectral_complex_data_iteration_ranges[2][1][1] = spectral_complex_data_size[1]/2;
 
-			spectral_complex_data_iteration_ranges[3][0][0] = spectral_data_size[0]/2;
-			spectral_complex_data_iteration_ranges[3][0][1] = spectral_data_size[0];
-			spectral_complex_data_iteration_ranges[3][1][0] = spectral_data_size[1]/2;
-			spectral_complex_data_iteration_ranges[3][1][1] = spectral_data_size[1];
+			spectral_complex_data_iteration_ranges[3][0][0] = spectral_complex_data_size[0]/2;
+			spectral_complex_data_iteration_ranges[3][0][1] = spectral_complex_data_size[0];
+			spectral_complex_data_iteration_ranges[3][1][0] = spectral_complex_data_size[1]/2;
+			spectral_complex_data_iteration_ranges[3][1][1] = spectral_complex_data_size[1];
 
 #endif
 
@@ -475,6 +508,8 @@ private:
 			MemBlockAlloc::free(data_spectral, spectral_complex_array_data_number_of_elements*sizeof(std::complex<double>));
 		}
 #endif
+
+//		printInformation();
 	}
 
 
@@ -503,6 +538,40 @@ private:
 				fftw_plan_backward,
 				(fftw_complex*)i_spectral_data,
 				o_physical_data
+			);
+
+#if SWEET_THREADING
+#pragma omp parallel for OPENMP_PAR_SIMD
+#endif
+		for (std::size_t i = 0; i < physical_array_data_number_of_elements; i++)
+			o_physical_data[i] *= fftw_backward_scale_factor;
+	}
+
+
+
+	void fft_complex_physical_to_spectral(
+			std::complex<double> *i_physical_data,
+			std::complex<double> *o_spectral_data
+	)
+	{
+		fftw_execute_dft(
+				fftw_plan_complex_forward,
+				(fftw_complex*)i_physical_data,
+				(fftw_complex*)o_spectral_data
+			);
+	}
+
+
+
+	void fft_spectral_to_complex_physical(
+			std::complex<double> *i_spectral_data,
+			std::complex<double> *o_physical_data
+	)
+	{
+		fftw_execute_dft(
+				fftw_plan_complex_backward,
+				(fftw_complex*)i_spectral_data,
+				(fftw_complex*)o_physical_data
 			);
 
 #if SWEET_THREADING

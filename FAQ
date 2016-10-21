@@ -7,6 +7,7 @@
   FFTW can take some seconts to setup the plans.
   To overcome this, set the environemtn variable SWEET_FFTW_ESTIMATE
 
+
 ********************************************************
 * SWEET behaves differently in performance everytime it's executed
 ********************************************************
@@ -24,4 +25,5 @@
 
   In case of activated frequency scaling, it might be necessary
   to deactivate this.
+
 

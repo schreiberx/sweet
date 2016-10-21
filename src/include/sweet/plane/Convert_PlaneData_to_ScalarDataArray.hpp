@@ -15,7 +15,7 @@ class Convert_PlaneData_To_ScalarDataArray
 {
 public:
 	static
-	ScalarDataArray convert(
+	ScalarDataArray physical_convert(
 			const PlaneData &i_planeData
 	)
 	{

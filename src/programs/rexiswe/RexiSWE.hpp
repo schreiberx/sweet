@@ -13,11 +13,11 @@
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneDataComplex.hpp>
+#include <sweet/plane/PlaneOperatorsComplex.hpp>
 #include <sweet/plane/PlaneDataSemiLagrangian.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>
-#include "RexiSWE_HelmholtzSolver.hpp"
-//#include <sweet/SWEValidationBenchmarks.hpp>
+
 
 #define SWEET_BENCHMARK_REXI	0
 
@@ -58,6 +58,8 @@ class RexiSWE
 
 	std::size_t block_size;
 
+	PlaneDataConfig *planeDataConfig;
+
 #if SWEET_BENCHMARK_REXI
 	Stopwatch stopwatch_preprocessing;
 	Stopwatch stopwatch_broadcast;
@@ -68,8 +70,10 @@ class RexiSWE
 	class PerThreadVars
 	{
 	public:
-		PlaneDataComplex op_diff_c_x, op_diff_c_y;
-		PlaneDataComplex op_diff2_c_x, op_diff2_c_y;
+		PlaneOperatorsComplex op;
+
+//		PlaneDataComplex op_diff_c_x, op_diff_c_y;
+//		PlaneDataComplex opc.diff2_c_x, opc.diff2_c_y;
 
 		PlaneDataComplex eta;
 
@@ -123,7 +127,7 @@ public:
 			int i_M,		///< number of sampling points
 			int i_L,		///< number of sampling points for Gaussian approx
 
-			int *i_resolution,			///< resolution of domain
+			PlaneDataConfig *i_planeDataConfig,
 			const double *i_domain_size,		///< size of domain
 			bool i_rexi_half = true,			///< use half-pole reduction
 			bool i_use_finite_differences = false,		///< use finite-differences for derivatives,	///< use finite differences for REXI approximation
@@ -157,9 +161,9 @@ public:
 		// This is *NOT* straightforward and different to adding a constant for computations.
 		// We account for this by seeing the LHS as a set of operators which have to be joint later by a sum.
 
-		PlaneDataComplex lhs = ((-i_gh0)*(perThreadVars[i_thread_id]->op_diff2_c_x + perThreadVars[i_thread_id]->op_diff2_c_y)).addScalar_Cart(i_kappa);
+		PlaneDataComplex lhs = ((-i_gh0)*(perThreadVars[i_thread_id]->op.diff2_c_x + perThreadVars[i_thread_id]->op.diff2_c_y)).spectral_addScalarAll(i_kappa);
 
-		io_x = ((i_rhs.toSpec()).spec_div_element_wise(lhs)).toCart();
+		io_x =i_rhs.spectral_div_element_wise(lhs);
 	}
 
 
@@ -187,9 +191,9 @@ public:
 		// This is *NOT* straightforward and different to adding a constant for computations.
 		// We account for this by seeing the LHS as a set of operators which have to be joint later by a sum.
 
-		PlaneDataComplex lhs = (-i_gh0*(perThreadVars[i_thread_id]->op_diff2_c_x + perThreadVars[i_thread_id]->op_diff2_c_y)).addScalar_Cart(i_kappa);
-		//std::cout << lhs << std::endl;
-		io_x = i_rhs.spec_div_element_wise(lhs);
+		PlaneDataComplex lhs = (-i_gh0*(perThreadVars[i_thread_id]->op.diff2_c_x + perThreadVars[i_thread_id]->op.diff2_c_y)).spectral_addScalarAll(i_kappa);
+
+		io_x = i_rhs.spectral_div_element_wise(lhs);
 	}
 
 	/**
@@ -220,9 +224,9 @@ public:
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 		PlaneData laplacian = -i_gh0*op.diff2_c_x -i_gh0*op.diff2_c_y;
-		PlaneData lhs = laplacian.spec_addScalarAll(i_kappa);
+		PlaneData lhs = laplacian.spectral_addScalarAll(i_kappa);
 
-		io_x = i_rhs.spec_div_element_wise(lhs);
+		io_x = i_rhs.spectral_div_element_wise(lhs);
 #else
 		std::cerr << "Cannot use helmholtz_spectral_solver if spectral space not enable in compilation time" << std::endl;
 		exit(1);
@@ -261,8 +265,8 @@ public:
 			PlaneData &io_u_prev,
 			PlaneData &io_v_prev,
 
-			PlaneData &i_posx_a, //Arrival point positions in x and y (this is basically the grid)
-			PlaneData &i_posy_a,
+			ScalarDataArray &i_posx_a, //Arrival point positions in x and y (this is basically the grid)
+			ScalarDataArray &i_posy_a,
 
 			double i_timestep_size,	///< timestep size
 			int i_param_nonlinear, ///< degree of nonlinearity (0-linear, 1-full nonlinear, 2-only nonlinear adv)
@@ -290,8 +294,8 @@ public:
 		PlaneData &io_u_prev,
 		PlaneData &io_v_prev,
 
-		PlaneData &i_posx_a, //Arrival point positions in x and y (this is basically the grid)
-		PlaneData &i_posy_a,
+		ScalarDataArray &i_posx_a, //Arrival point positions in x and y (this is basically the grid)
+		ScalarDataArray &i_posy_a,
 
 		double i_timestep_size,	///< timestep size
 		int i_param_nonlinear, ///< degree of nonlinearity (0-linear, 1-full nonlinear, 2-only nonlinear adv)

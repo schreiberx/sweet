@@ -439,7 +439,7 @@ int main(int i_argc, char *i_argv[])
 						else
 							std::cerr << "    Multiplication dealiasing affected spectrum without need" << std::endl;
 						std::cout << "    h1*h2 nonzero spectrum entries" << std::endl;
-						(h1*h2).printSpectrumNonZero();
+						(h1*h2).print_spectralNonZero();
 						assert(false);
 						//exit(-1);
 					}

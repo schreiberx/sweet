@@ -40,7 +40,10 @@ PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
 #ifndef SWEET_PARAREAL
 #	define SWEET_PARAREAL 1
 #endif
-#include <parareal/Parareal.hpp>
+
+#if SWEET_PARAREAL
+	#include <parareal/Parareal.hpp>
+#endif
 
 
 // Input parameters (cmd line)
@@ -114,13 +117,13 @@ public:
 
 	// Points mapping [0,simVars.sim.domain_size[0])x[0,simVars.sim.domain_size[1])
 	// with resolution simVars.sim.resolution
-	PlaneData pos_x, pos_y;
+	ScalarDataArray pos_x, pos_y;
 
 	// Arrival points for semi-lag
-	PlaneData posx_a, posy_a;
+	ScalarDataArray posx_a, posy_a;
 
 	// Departure points for semi-lag
-	PlaneData posx_d, posy_d;
+	ScalarDataArray posx_d, posy_d;
 
 
 	//Staggering displacement array (use 0.5 for each displacement)
@@ -216,14 +219,14 @@ public:
 		N_u_prev(planeDataConfig),
 		N_v_prev(planeDataConfig),
 
-		pos_x(planeDataConfig),
-		pos_y(planeDataConfig),
+		pos_x(planeDataConfig->physical_array_data_number_of_elements),
+		pos_y(planeDataConfig->physical_array_data_number_of_elements),
 
-		posx_a(planeDataConfig),
-		posy_a(planeDataConfig),
+		posx_a(planeDataConfig->physical_array_data_number_of_elements),
+		posy_a(planeDataConfig->physical_array_data_number_of_elements),
 
-		posx_d(planeDataConfig),
-		posy_d(planeDataConfig),
+		posx_d(planeDataConfig->physical_array_data_number_of_elements),
+		posy_d(planeDataConfig->physical_array_data_number_of_elements),
 
 
 		// Initialises operators
@@ -274,10 +277,10 @@ public:
 
 		// set to some values for first touch NUMA policy (HPC stuff)
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		prog_h.set_spec_all(0, 0);
-		prog_u.set_spec_all(0, 0);
-		prog_v.set_spec_all(0, 0);
-		boundary_mask.set_spec_all(0, 0);
+		prog_h.spectral_set_all(0, 0);
+		prog_u.spectral_set_all(0, 0);
+		prog_v.spectral_set_all(0, 0);
+		boundary_mask.spectral_set_all(0, 0);
 #endif
 
 		//Setup prog vars
@@ -344,18 +347,24 @@ public:
 		semiLagrangian.setup(simVars.sim.domain_size, planeDataConfig);
 
 
-		pos_x.physical_update_lambda_array_indices(
+		PlaneData tmp_x(planeDataConfig);
+		tmp_x.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
 				io_data = ((double)i)*simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
 			}
 		);
-		pos_y.physical_update_lambda_array_indices(
+		PlaneData tmp_y(planeDataConfig);
+		tmp_y.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
 				io_data = ((double)j)*simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
 			}
 		);
+
+		//Initialize arrival points with h position
+		pos_x = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_x);
+		pos_y = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_y);
 
 		//Initialize arrival points with h position
 		posx_a = pos_x+0.5*simVars.disc.cell_size[0];
@@ -498,9 +507,9 @@ public:
 		//Nonlinear variables
 		// set to some values for first touch NUMA policy (HPC stuff)
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		N_h.set_spec_all(0, 0);
-		N_u.set_spec_all(0, 0);
-		N_v.set_spec_all(0, 0);
+		N_h.spectral_set_all(0, 0);
+		N_u.spectral_set_all(0, 0);
+		N_v.spectral_set_all(0, 0);
 #endif
 		N_h.physical_set_all(0);
 		N_u.physical_set_all(0);
@@ -655,7 +664,7 @@ public:
 					param_rexi_h,
 					param_rexi_m,
 					param_rexi_l,
-					simVars.disc.res_physical,
+					planeDataConfig,
 					simVars.sim.domain_size,
 					param_rexi_half,
 					param_rexi_use_spectral_differences_for_complex_array,
@@ -1098,12 +1107,10 @@ public:
 									sampler2D,
 									semiLagrangian
 							);
-
 			}
 			else // linear solver
 			{
 				rexiSWE.run_timestep( prog_h, prog_u, prog_v, o_dt,	op,	simVars, param_rexi_zero_before_solving	);
-
 			}
 
 			//Add forcing --- this is now how it should be added!!!!!
@@ -2221,6 +2228,7 @@ int main(int i_argc, char *i_argv[])
 #endif
 			//Start counting time
 			time.reset();
+
 
 			//Main time loop
 			while(true)

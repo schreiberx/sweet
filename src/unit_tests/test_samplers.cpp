@@ -12,8 +12,9 @@
 #endif
 #include <sweet/SimulationVariables.hpp>
 #include <benchmarks_plane/SWEPlaneBenchmarks.hpp>
-#include "../include/sweet/plane/PlaneOperators.hpp"
-#include "../include/sweet/plane/PlaneDataSampler.hpp"
+#include <sweet/plane/PlaneOperators.hpp>
+#include <sweet/plane/PlaneDataSampler.hpp>
+#include <sweet/plane/Convert_PlaneData_to_ScalarDataArray.hpp>
 #include <unistd.h>
 #include <stdio.h>
 #include <vector>
@@ -40,10 +41,10 @@ int main(
 	/*
 	 * iterate over resolutions, starting by res[0] given e.g. by program parameter -n
 	 */
-	std::size_t res_x = simVars.disc.res_physical[0];
-	std::size_t res_y = simVars.disc.res_physical[1];
+	int res_x = simVars.disc.res_physical[0];
+	int res_y = simVars.disc.res_physical[1];
 
-	std::size_t max_res = 2048;
+	int max_res = 2048;
 
 	if (res_x > max_res || res_y > max_res)
 		max_res = std::max(res_x, res_y);
@@ -58,7 +59,7 @@ int main(
 	{
 		simVars.disc.res_physical[0] = res_x;
 		simVars.disc.res_physical[1] = res_y;
-		std::size_t res[2] = {res_x, res_y};
+		int res[2] = {res_x, res_y};
 
 		//simVars.reset();
 		planeDataConfigInstance.setupAutoSpectralSpace(res);
@@ -80,7 +81,7 @@ int main(
 
 		double resolution_factor = 2;
 
-		std::size_t res3[2] = {res_x*(int)resolution_factor, res_y*(int)resolution_factor};
+		int res3[2] = {res_x*(int)resolution_factor, res_y*(int)resolution_factor};
 
 
 		//simVars.reset();
@@ -141,8 +142,9 @@ int main(
 
 			sampler2D.bilinear_scalar(
 					prog_h,	///< input scalar field
-					px, py,		///< sampling positions
-					prog_h3_bilinear	///< output field
+					Convert_PlaneData_To_ScalarDataArray::physical_convert(px),
+					Convert_PlaneData_To_ScalarDataArray::physical_convert(py),
+					prog_h3_bilinear
 			);
 
 	//		double error_norm2 = (prog_h3_bicubic-prog_h3).reduce_norm2()/((double)res3[0] * (double)res3[1]);
@@ -162,13 +164,13 @@ int main(
 						rate_max < 3.9 || rate_max > 4
 				)
 				{
-					std::cout << "Bilinear: " << res_x << "x" << res_y << "\t" << error_rms << "\t" << error_max << "\t" << rate_rms << "\t" << rate_max << std::endl;
+					std::cout << "Bilinear: " << res_x << "x" << res_y << "\t" << error_rms << "\t" << error_max << "\trate_rms: " << rate_rms << "\trate_max: " << rate_max << std::endl;
 					std::cerr << "Convergence of 4 expected" << std::endl;
-//					exit(1);
+					exit(1);
 				}
 			}
 
-			std::cout << "Bilinear: " << res_x << "x" << res_y << "\t" << error_rms << "\t" << error_max << "\t" << rate_rms << "\t" << rate_max << std::endl;
+			std::cout << "Bilinear: " << res_x << "x" << res_y << "\t" << error_rms << "\t" << error_max << "\trate_rms: " << rate_rms << "\trate_max: " << rate_max << std::endl;
 
 			prev_linear_error_rms = error_rms;
 			prev_linear_error_max = error_max;
@@ -182,7 +184,8 @@ int main(
 
 			sampler2D.bicubic_scalar(
 					prog_h,	///< input scalar field
-					px, py,		///< sampling positions
+					Convert_PlaneData_To_ScalarDataArray::physical_convert(px),
+					Convert_PlaneData_To_ScalarDataArray::physical_convert(py),
 					prog_h3_bicubic	///< output field
 			);
 

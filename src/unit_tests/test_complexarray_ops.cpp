@@ -8,8 +8,9 @@
 #endif
 
 #include <sweet/Stopwatch.hpp>
-#include "../include/sweet/plane/PlaneData.hpp"
-#include "../include/sweet/plane/PlaneDataComplex.hpp"
+#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneDataComplex.hpp>
+#include <sweet/plane/PlaneOperatorsComplex.hpp>
 #include <sweet/SimulationVariables.hpp>
 
 #include <math.h>
@@ -51,32 +52,15 @@ int main(int i_argc, char *i_argv[])
 	simVars.disc.use_spectral_basis_diffs = 1;
 
 	const char *bogus_var_names[] = {
-			"use-specdiff-for-complex-array",	/// use finite differences for complex array
 			nullptr
 	};
-
-	simVars.bogus.var[0] = 0;	// don't use FD per default for complex array
 
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
 		std::cout << std::endl;
-		std::cout << "      --use-specdiff-for-complex-array=[0/1]	Use finite-differences for derivatives in spectral space" << std::endl;
-		std::cout << std::endl;
 		return -1;
 	}
 
-
-	/*
-	 * use finite differences for differential operators in complex array
-	 */
-	bool use_spectral_differences_for_complex_array = simVars.bogus.var[0];
-
-	if (!use_spectral_differences_for_complex_array)
-	{
-		std::cout << "********************************************************" << std::endl;
-		std::cout << "*** Using finite-differences for complex array" << std::endl;
-		std::cout << "********************************************************" << std::endl;
-	}
 
 	if (simVars.disc.use_spectral_basis_diffs)
 		std::cout << "Using spectral diffs" << std::endl;
@@ -156,7 +140,7 @@ int main(int i_argc, char *i_argv[])
 		/*
 		 * keep h in the outer regions to allocate it only once and avoid reinitialization of FFTW
 		 */
-		PlaneDataComplex h_cart(res);
+		PlaneDataComplex h_cart(planeDataConfig);
 
 
 		{
@@ -167,26 +151,26 @@ int main(int i_argc, char *i_argv[])
 			std::cout << "error tol = " << eps << std::endl;
 			std::cout << "**********************************************" << std::endl;
 
-			PlaneDataComplex zero_cart(res);
-			PlaneDataComplex two_cart(res);
-			PlaneDataComplex five_cart(res);
+			PlaneDataComplex zero_cart(planeDataConfig);
+			PlaneDataComplex two_cart(planeDataConfig);
+			PlaneDataComplex five_cart(planeDataConfig);
 
-			zero_cart.setAll(0.0, 0.0);
-			two_cart.setAll(2.0, 0.0);
-			five_cart.setAll(5.0, 0.0);
-			h_cart.setAll(0.0, 0.0);
+			zero_cart.physical_set_all(0.0);
+			two_cart.physical_set_all(2.0, 0.0);
+			five_cart.physical_set_all(5.0, 0.0);
+			h_cart.physical_set_all(0.0, 0.0);
 
 			double res2 = (double)(res[0]*res[1]);
 
 			double add_test_two = (zero_cart+two_cart).reduce_rms_quad();
 			double add_test_seven = (five_cart+two_cart).reduce_rms_quad();
 
-			double add_test_four = (five_cart+two_cart).subScalar_Cart(complex(3.0,0.0)).reduce_rms_quad();
-			double add_test_four_spec = (five_cart.toSpec()+two_cart.toSpec()).subScalar_Spec(complex(3.0,0.0)).toCart().reduce_rms_quad();
+			double add_test_four = ((five_cart+two_cart)-complex(3.0,0.0)).reduce_rms_quad();
+			double add_test_four_spec = ((five_cart+two_cart)-complex(3.0,0.0)).reduce_rms_quad();
 
-			double add_test_seven_spec = (five_cart.toSpec()+two_cart.toSpec()).toCart().reduce_rms_quad();
-			double add_test_ten = ((five_cart+two_cart).addScalar_Cart(complex(3.0, 0.0))).reduce_rms_quad();
-			double add_test_ten_spec = ((five_cart.toSpec()+two_cart.toSpec()).addScalar_Spec(complex(3.0, 0.0))).toCart().reduce_rms_quad();
+			double add_test_seven_spec = (five_cart+two_cart).reduce_rms_quad();
+			double add_test_ten = ((five_cart+two_cart)+complex(3.0, 0.0)).reduce_rms_quad();
+			double add_test_ten_spec = ((five_cart+two_cart)+complex(3.0, 0.0)).reduce_rms_quad();
 			double error = 0;
 
 			error = std::abs(add_test_two-2.0);
@@ -245,7 +229,7 @@ int main(int i_argc, char *i_argv[])
 				exit(-1);
 			}
 
-			double add_test_three_imaginary = ((five_cart+two_cart).addScalar_Cart(complex(-7.0, 3.0))).reduce_rms_quad();
+			double add_test_three_imaginary = ((five_cart+two_cart)+complex(-7.0, 3.0)).reduce_rms_quad();
 			std::cout << "add_test_three_imaginary ||_2 = " << add_test_three_imaginary << std::endl;
 			error = std::abs(add_test_three_imaginary-3.0);
 			if (error > eps)
@@ -254,7 +238,7 @@ int main(int i_argc, char *i_argv[])
 				exit(-1);
 			}
 
-			double add_test_two_two_spec = ((five_cart.toSpec()+two_cart.toSpec()).addScalar_Spec(complex(-7.0-3.0, 4.0))).toCart().reduce_rms_quad();
+			double add_test_two_two_spec = ((five_cart+two_cart)+complex(-7.0-3.0, 4.0)).reduce_rms_quad();
 			std::cout << "add_test_two_two_spec ||_2 = " << add_test_two_two_spec << std::endl;
 			error = std::abs(add_test_two_two_spec-5.0);
 			if (error > eps)
@@ -263,7 +247,7 @@ int main(int i_argc, char *i_argv[])
 				exit(-1);
 			}
 
-			double mul_test_two_times_two_spec = ((two_cart.toSpec()*complex(2.0, 0.0))).toCart().reduce_rms_quad();
+			double mul_test_two_times_two_spec = ((two_cart*complex(2.0, 0.0))).reduce_rms_quad();
 			std::cout << "mul_test_two_times_two_spec ||_2 = " << mul_test_two_times_two_spec << std::endl;
 			error = std::abs(mul_test_two_times_two_spec-4.0);
 			if (error > eps)
@@ -283,7 +267,7 @@ int main(int i_argc, char *i_argv[])
 					double x = ((double)i)/(double)res[0];
 					double y = ((double)j)/(double)res[1];
 
-					h_cart.p_physical_set(j, i, sin(2.0*M_PIl*x)*cos(2.0*M_PIl*y), 0);
+					h_cart.p_physical_set(j, i, (double)(sin(2.0*M_PIl*x)*cos(2.0*M_PIl*y)), 0.0);
 				}
 			}
 
@@ -298,7 +282,7 @@ int main(int i_argc, char *i_argv[])
 				exit(-1);
 			}
 
-			double sin_test_six = (h_cart.addScalar_Cart(complex(6.0,0.0))).reduce_sum_re_quad()/res2;
+			double sin_test_six = (h_cart+complex(6.0,0.0)).reduce_sum_re_quad()/res2;
 			error = std::abs(sin_test_six-6.0);
 			std::cout << "Sin test add six ||_2 = " << error << std::endl;
 			if (error > eps)
@@ -308,8 +292,8 @@ int main(int i_argc, char *i_argv[])
 				exit(-1);
 			}
 
-			PlaneDataComplex h_spec = h_cart.toSpec();
-			PlaneDataComplex two_spec = two_cart.toSpec();
+			PlaneDataComplex h_spec = h_cart;
+			PlaneDataComplex two_spec = two_cart;
 
 			double sin_test_zero_mul = (h_spec*two_spec).reduce_sum_re_quad()/res2;
 			error = sin_test_zero_mul;
@@ -328,22 +312,10 @@ int main(int i_argc, char *i_argv[])
 		 * Tests for basic operators which are not amplifying the solution depending on the domain size
 		 */
 		{
-			PlaneDataComplex u(res);
-			PlaneDataComplex v(res);
+			PlaneDataComplex u(planeDataConfig);
+			PlaneDataComplex v(planeDataConfig);
 
-//			Operators2D op(parameters.discretization.res, parameters.sim.domain_size, parameters.disc.use_spectral_diffs);
-
-			PlaneDataComplex op_diff2_c_x(res);
-			PlaneDataComplex op_diff2_c_y(res);
-			op_diff2_c_x.op_setup_diff2_x(simVars.sim.domain_size, use_spectral_differences_for_complex_array);
-			op_diff2_c_y.op_setup_diff2_y(simVars.sim.domain_size, use_spectral_differences_for_complex_array);
-
-			PlaneDataComplex op_diff_c_x(res);
-			op_diff_c_x.op_setup_diff_x(simVars.sim.domain_size, use_spectral_differences_for_complex_array);
-
-			PlaneDataComplex op_diff_c_y(res);
-			op_diff_c_y.op_setup_diff_y(simVars.sim.domain_size, use_spectral_differences_for_complex_array);
-
+			PlaneOperatorsComplex op(planeDataConfig, simVars.sim.domain_size);
 
 			for (int j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
@@ -373,14 +345,13 @@ int main(int i_argc, char *i_argv[])
 				std::cerr << "SPEC: Error threshold exceeded for err_z!" << std::endl;
 				exit(-1);
 			}
-
 			double err3_laplace =
 				(
 						h_cart-
 							(
-								((op_diff2_c_x+op_diff2_c_y)(h_cart.toSpec())).
-								spec_div_element_wise(op_diff2_c_x+op_diff2_c_y)
-							).toCart()
+								((op.diff2_c_x+op.diff2_c_y)(h_cart)).
+								spectral_div_element_wise(op.diff2_c_x+op.diff2_c_y)
+							)
 				).reduce_rms_quad();
 
 			std::cout << "SPEC: Error threshold for Laplace and its inverse: " << err3_laplace << std::endl;
@@ -394,33 +365,16 @@ int main(int i_argc, char *i_argv[])
 			double err3_laplace_check =
 				(
 						h_cart-
-							((op_diff_c_x*op_diff_c_x+op_diff_c_y*op_diff_c_y)(h_cart.toSpec())).
-							spec_div_element_wise(op_diff2_c_x+op_diff2_c_y).toCart()
+							((op.diff_c_x.spectral_mul_element_wise(op.diff_c_x)+op.diff_c_y.spectral_mul_element_wise(op.diff_c_y))(h_cart)).
+							spectral_div_element_wise(op.diff2_c_x+op.diff2_c_y)
 				).reduce_rms_quad();
 
 			std::cout << "Error for Laplace (diff*diff()) and its inverse (check): " << err3_laplace_check << std::endl;
 
-			if (!use_spectral_differences_for_complex_array)
+			if (err3_laplace_check > eps)
 			{
-				if (err3_laplace_check_prev != -1)
-				{
-					double conv = err3_laplace_check_prev/err3_laplace_check;
-					std::cout << " + Convergence: " << conv << std::endl;
-					if (std::abs(conv-4.0) > eps_conv)
-					{
-						std::cerr << "Convergence of laplace operator expected to be 4 ... aborting" << std::endl;
-						exit(-1);
-					}
-				}
-				err3_laplace_check_prev = err3_laplace_check;
-			}
-			else
-			{
-				if (err3_laplace_check > eps)
-				{
-					std::cerr << "SPEC: Error threshold for Laplace check too high for spectral differentiation!" << std::endl;
-					exit(-1);
-				}
+				std::cerr << "SPEC: Error threshold for Laplace check too high for spectral differentiation!" << std::endl;
+				exit(-1);
 			}
 		}
 
@@ -431,16 +385,12 @@ int main(int i_argc, char *i_argv[])
 		 * Tests for 1st order differential operator
 		 */
 		{
-			PlaneDataComplex op_diff_c_x(res);
-			op_diff_c_x.op_setup_diff_x(simVars.sim.domain_size, use_spectral_differences_for_complex_array);
+			PlaneOperatorsComplex op(planeDataConfig, simVars.sim.domain_size);
 
-			PlaneDataComplex op_diff_c_y(res);
-			op_diff_c_y.op_setup_diff_y(simVars.sim.domain_size, use_spectral_differences_for_complex_array);
-
-			PlaneDataComplex u(res);
-			PlaneDataComplex v(res);
-			PlaneDataComplex h_diff_x(res);
-			PlaneDataComplex h_diff_y(res);
+			PlaneDataComplex u(planeDataConfig);
+			PlaneDataComplex v(planeDataConfig);
+			PlaneDataComplex h_diff_x(planeDataConfig);
+			PlaneDataComplex h_diff_y(planeDataConfig);
 
 //			Operators2D op(parameters.discretization.res, parameters.sim.domain_size, parameters.disc.use_spectral_diffs);
 
@@ -480,274 +430,80 @@ int main(int i_argc, char *i_argv[])
 			double res_normalization = std::sqrt(1.0/(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]));
 
 			// normalization for diff = 2 pi / L
-			double err_x = (op_diff_c_x(h_cart.toSpec()).toCart()-h_diff_x).reduce_norm2_quad()*res_normalization*simVars.sim.domain_size[0]/(2.0*M_PIl);
-			double err_y = (op_diff_c_y(h_cart.toSpec()).toCart()-h_diff_y).reduce_norm2_quad()*res_normalization*simVars.sim.domain_size[1]/(2.0*M_PIl);
+			double err_x = (op.diff_c_x(h_cart)-h_diff_x).reduce_norm2_quad()*res_normalization*simVars.sim.domain_size[0]/(2.0*M_PIl);
+			double err_y = (op.diff_c_y(h_cart)-h_diff_y).reduce_norm2_quad()*res_normalization*simVars.sim.domain_size[1]/(2.0*M_PIl);
 			double err_z = (u*v-h_cart).reduce_norm2_quad()*res_normalization;
 
 			std::cout << "error diff x = " << err_x << std::endl;
 			std::cout << "error diff y = " << err_y << std::endl;
 
-			PlaneDataComplex h_spec = h_cart.toSpec();
-			PlaneDataComplex h_diff_xy_spec = op_diff_c_x(h_spec) + op_diff_c_y(h_spec);
-			PlaneDataComplex op_diff_c_x_y = op_diff_c_x + op_diff_c_y;
-			PlaneDataComplex h_diff_xy_spec_split = op_diff_c_x_y(h_spec);
+			PlaneDataComplex h_spec = h_cart;
+			PlaneDataComplex h_diff_xy_spec = op.diff_c_x(h_spec) + op.diff_c_y(h_spec);
+			PlaneDataComplex h_diff_xy_spec_split = (op.diff_c_x + op.diff_c_y)(h_spec);
 
 			double err_xy = (
-								h_diff_xy_spec.toCart()
+								h_diff_xy_spec
 								-h_diff_x-h_diff_y
 						).reduce_norm2_quad()*res_normalization/(2.0*M_PIl);
 
 			double err_xy_split = (
-								h_diff_xy_spec_split.toCart()
+								h_diff_xy_spec_split
 								-h_diff_x-h_diff_y
 						).reduce_norm2_quad()*res_normalization/(2.0*M_PIl);
 
-			if (!use_spectral_differences_for_complex_array)
+			if (err_x > eps)
 			{
-				static double err_x_prev = -1;
-				if (err_x_prev != -1)
-				{
-					double conv = err_x_prev/err_x;
-					std::cout << " + Convergence: " << conv << std::endl;
-					if (std::abs(conv-4.0) > eps_conv)
-					{
-						std::cerr << "Convergence of diff-x operator expected to be 4 ... aborting" << std::endl;
-						exit(-1);
-					}
-				}
-				err_x_prev = err_x;
-
-				static double err_y_prev = -1;
-				if (err_y_prev != -1)
-				{
-					double conv = err_y_prev/err_y;
-					std::cout << " + Convergence: " << conv << std::endl;
-					if (std::abs(conv-4.0) > eps_conv)
-					{
-						std::cerr << "Convergence of diff-y operator expected to be 4 ... aborting" << std::endl;
-						exit(-1);
-					}
-				}
-				err_y_prev = err_y;
-
-				static double err_xy_prev = -1;
-				if (err_xy_prev != -1)
-				{
-					double conv = err_xy_prev/err_xy;
-					std::cout << " + Convergence: " << conv << std::endl;
-					if (std::abs(conv-4.0) > eps_conv)
-					{
-						std::cerr << "Convergence of diff-xy operator expected to be 4 ... aborting" << std::endl;
-						exit(-1);
-					}
-				}
-				err_xy_prev = err_xy;
-
+				std::cerr << "SPEC: Error threshold for diff-X too high for spectral differentiation!" << std::endl;
+				exit(-1);
 			}
-			else
+
+			if (err_y > eps)
 			{
-				if (err_x > eps)
-				{
-					std::cerr << "SPEC: Error threshold for diff-X too high for spectral differentiation!" << std::endl;
-					exit(-1);
-				}
+				std::cerr << "SPEC: Error threshold for diff-Y too high for spectral differentiation!" << std::endl;
+				exit(-1);
+			}
 
-				if (err_y > eps)
-				{
-					std::cerr << "SPEC: Error threshold for diff-Y too high for spectral differentiation!" << std::endl;
-					exit(-1);
-				}
+			if (err_xy > eps)
+			{
+				std::cerr << "SPEC: Error threshold for diff-X+Y too high for spectral differentiation!" << std::endl;
+				exit(-1);
+			}
 
-				if (err_xy > eps)
-				{
-					std::cerr << "SPEC: Error threshold for diff-X+Y too high for spectral differentiation!" << std::endl;
-					exit(-1);
-				}
+			if (err_xy_split > eps)
+			{
+				std::cerr << "SPEC: Error threshold for diff-X+Y split too high for spectral differentiation!" << std::endl;
+				exit(-1);
+			}
 
-				if (err_xy_split > eps)
-				{
-					std::cerr << "SPEC: Error threshold for diff-X+Y split too high for spectral differentiation!" << std::endl;
-					exit(-1);
-				}
+			if (err_z > eps)
+			{
+				std::cerr << "SPEC: Error threshold exceeded for err_z, value = " << err_z << std::endl;
+				exit(-1);
+			}
 
-				if (err_z > eps)
-				{
-					std::cerr << "SPEC: Error threshold exceeded for err_z, value = " << err_z << std::endl;
-					exit(-1);
-				}
+			double err_int_x = (h_cart-h_diff_x.spectral_div_element_wise(op.diff_c_x)).reduce_norm2_quad()*res_normalization;
+			std::cout << "Testing spectral inverse x " << err_int_x << std::endl;
 
-				double err_int_x = (h_cart-h_diff_x.toSpec().spec_div_element_wise(op_diff_c_x).toCart()).reduce_norm2_quad()*res_normalization;
-				std::cout << "Testing spectral inverse x " << err_int_x << std::endl;
+			if (err_int_x > eps)
+			{
+				std::cerr << "SPEC: Error threshold for integration in x too high for spectral integration!" << std::endl;
+				std::cout << err_int_x << std::endl;
+				exit(-1);
+			}
 
-				if (err_int_x > eps)
-				{
-					std::cerr << "SPEC: Error threshold for integration in x too high for spectral integration!" << std::endl;
-					std::cout << err_int_x << std::endl;
-					exit(-1);
-				}
+			double err_int_y = (h_cart-h_diff_y.spectral_div_element_wise(op.diff_c_y)).reduce_norm2_quad()*res_normalization;
+			std::cout << "Testing spectral inverse y " << err_int_y << std::endl;
 
-				double err_int_y = (h_cart-h_diff_y.toSpec().spec_div_element_wise(op_diff_c_y).toCart()).reduce_norm2_quad()*res_normalization;
-				std::cout << "Testing spectral inverse y " << err_int_y << std::endl;
-
-				if (err_int_y > eps)
-				{
-					std::cout << err_int_y << std::endl;
-					std::cerr << "SPEC: Error threshold for integration in y too high for spectral integration!" << std::endl;
-					exit(-1);
-				}
+			if (err_int_y > eps)
+			{
+				std::cout << err_int_y << std::endl;
+				std::cerr << "SPEC: Error threshold for integration in y too high for spectral integration!" << std::endl;
+				exit(-1);
 			}
 		}
 
 		std::cout << "TEST C: DONE" << std::endl;
 
-
-
-
-		/**
-		 * 2nd order differential operator
-		 *
-		 * note, that the function on which the 2nd diff operator is computed on has
-		 * to be scaled up be a factor of domain_size^2, since e.g.
-		 *
-		 * diff(sin(2 pi x / size), x, x) = 4.0 pi^2 sin(2 pi x / size) / size^2
-		 */
-		{
-			PlaneDataComplex h_diff2_x(res);
-			PlaneDataComplex h_diff2_y(res);
-
-//			Operators2D op(parameters.discretization.res, parameters.sim.domain_size, parameters.disc.use_spectral_diffs);
-
-			for (int j = 0; j < simVars.disc.res_physical[1]; j++)
-			{
-				for (int i = 0; i < simVars.disc.res_physical[0]; i++)
-				{
-					double x = ((double)i+0.5)/(double)simVars.disc.res_physical[0];
-					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
-
-					h_cart.p_physical_set(
-						j, i,
-						sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y),
-						0
-					);
-
-					h_diff2_x.p_physical_set(
-						j, i,
-						freq_x*freq_x*M_PIl*M_PIl*(-1.0)*sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)/(simVars.sim.domain_size[0]*simVars.sim.domain_size[0]),
-						0
-					);
-
-					h_diff2_y.p_physical_set(
-						j, i,
-						-sin(freq_x*M_PIl*x)*freq_y*M_PIl*freq_y*M_PIl*cos(freq_y*M_PIl*y)/(simVars.sim.domain_size[1]*simVars.sim.domain_size[1]),
-						0
-					);
-				}
-			}
-
-			double normalization = sqrt(1.0/(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]));
-
-			PlaneDataComplex op_diff2_c_x(res);
-			PlaneDataComplex op_diff2_c_y(res);
-			op_diff2_c_x.op_setup_diff2_x(simVars.sim.domain_size, use_spectral_differences_for_complex_array);
-			op_diff2_c_y.op_setup_diff2_y(simVars.sim.domain_size, use_spectral_differences_for_complex_array);
-
-			// diff2 normalization = 4.0 pi^2 / L^2
-			double err2_x = (op_diff2_c_x(h_cart.toSpec()).toCart()-h_diff2_x).reduce_norm2_quad()*normalization*(simVars.sim.domain_size[0]*simVars.sim.domain_size[0])/(4.0*M_PIl*M_PIl);
-			double err2_y = (op_diff2_c_y(h_cart.toSpec()).toCart()-h_diff2_y).reduce_norm2_quad()*normalization*(simVars.sim.domain_size[1]*simVars.sim.domain_size[1])/(4.0*M_PIl*M_PIl);
-
-			std::cout << "error diff2 x = " << err2_x << std::endl;
-			std::cout << "error diff2 y = " << err2_y << std::endl;
-
-
-			if (!use_spectral_differences_for_complex_array)
-			{
-				static double err2_x_prev = -1;
-				if (err2_x_prev != -1)
-				{
-					double conv = err2_x_prev/err2_x;
-					std::cout << " + Convergence: " << conv << std::endl;
-					if (std::abs(conv-4.0) > eps_conv)
-					{
-						std::cerr << "Convergence of diff2-x operator expected to be 4 ... aborting" << std::endl;
-						exit(-1);
-					}
-				}
-				err2_x_prev = err2_x;
-
-
-				static double err2_y_prev = -1;
-				if (err2_y_prev != -1)
-				{
-					double conv = err2_y_prev/err2_y;
-					std::cout << " + Convergence: " << conv << std::endl;
-					if (std::abs(conv-4.0) > eps_conv)
-					{
-						std::cerr << "Convergence of diff2-y operator expected to be 4 ... aborting" << std::endl;
-						exit(-1);
-					}
-				}
-				err2_y_prev = err2_y;
-
-
-				double D2_re_kernel[3*3];
-
-				{
-					double h[2] = {
-							(double)simVars.sim.domain_size[0] / (double)res[0],
-							(double)simVars.sim.domain_size[1] / (double)res[1]
-					};
-
-					D2_re_kernel[0] = 0;
-					D2_re_kernel[1] = 1.0/(h[1]*h[1]);
-					D2_re_kernel[2] = 0;
-
-					D2_re_kernel[3] = 1.0/(h[0]*h[0]);
-					D2_re_kernel[4] = -(2.0/(h[0]*h[0]) + 2.0/(h[1]*h[1]));
-					D2_re_kernel[5] = 1.0/(h[0]*h[0]);
-
-					D2_re_kernel[6] = 0;
-					D2_re_kernel[7] = 1.0/(h[1]*h[1]);
-					D2_re_kernel[8] = 0;
-				}
-
-				// diff2 normalization = 4.0 pi^2 / L^2
-				double err2 = (
-							h_cart.op_stencil_Re_3x3(D2_re_kernel)
-							-(h_diff2_x+h_diff2_y)
-						).reduce_norm2_quad()*normalization*(simVars.sim.domain_size[0]*simVars.sim.domain_size[1])/(4.0*M_PIl*M_PIl);
-
-				std::cout << "error diff2 xy = " << err2 << std::endl;
-
-				static double err2_prev = -1;
-				if (err2_prev != -1)
-				{
-					double conv = err2_prev/err2;
-					std::cout << " + Convergence: " << conv << std::endl;
-					if (std::abs(conv-4.0) > eps_conv)
-					{
-						std::cerr << "Convergence of diff2 operator expected to be 4 ... aborting" << std::endl;
-						exit(-1);
-					}
-				}
-				err2_prev = err2;
-			}
-			else
-			{
-				if (err2_x > eps)
-				{
-					std::cerr << "SPEC: Error threshold for diff2-X too high for spectral differentiation!" << std::endl;
-					exit(-1);
-				}
-
-				if (err2_y > eps)
-				{
-					std::cerr << "SPEC: Error threshold for diff2-Y too high for spectral differentiation!" << std::endl;
-					exit(-1);
-				}
-			}
-		}
-
-		std::cout << "TEST D: DONE" << std::endl;
 	}
 
 

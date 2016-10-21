@@ -456,7 +456,7 @@ public:
 	void spectral_zeroAliasingModes()	const
 	{
 #if SWEET_THREADING
-//#pragma omp parallel for proc_bind(spread)
+#pragma omp parallel for proc_bind(spread)
 #endif
 		for (int k = 0; k < 2; k++)
 		{
@@ -466,7 +466,7 @@ public:
 				 * First process part between top and bottom spectral data blocks
 				 */
 #if SWEET_THREADING
-//#pragma omp parallel for OPENMP_PAR_SIMD proc_bind(close) collapse(2)
+#pragma omp parallel for OPENMP_PAR_SIMD proc_bind(close) collapse(2)
 #endif
 				for (std::size_t jj = planeDataConfig->spectral_data_iteration_ranges[0][1][1]; jj < planeDataConfig->spectral_data_iteration_ranges[1][1][0]; jj++)
 					for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[0][0][0]; ii < planeDataConfig->spectral_data_iteration_ranges[0][0][1]; ii++)
@@ -479,7 +479,7 @@ public:
 				 * Then process the aliasing block on the right side
 				 */
 #if SWEET_THREADING
-//#pragma omp parallel for OPENMP_PAR_SIMD proc_bind(close) collapse(2)
+#pragma omp parallel for OPENMP_PAR_SIMD proc_bind(close) collapse(2)
 #endif
 				for (std::size_t jj = 0; jj < planeDataConfig->spectral_data_size[1]; jj++)
 					for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[0][0][1]; ii < planeDataConfig->spectral_data_size[0]; ii++)
@@ -501,32 +501,6 @@ public:
 	}
 
 
-#if 0
-	inline
-	double spectral_getRe(
-			std::size_t j,
-			std::size_t i
-	)	const
-	{
-#warning "REMOVE AND REPLACE WITH compelx valued return value spectral_get"
-		request_data_spectral();
-
-		return spectral_space_data[j*planeDataConfig->spectral_data_size[0]+i].real();
-	}
-
-
-
-	inline
-	double spectral_getIm(
-			std::size_t j,
-			std::size_t i
-	)	const
-	{
-		request_data_spectral();
-
-		return spectral_space_data[j*planeDataConfig->spectral_data_size[0]+i].imag();
-	}
-#endif
 
 #if 1
 	inline
@@ -635,6 +609,8 @@ public:
 	inline
 	PlaneData physical_query_return_one_if_positive()
 	{
+		request_data_physical();
+
 		PlaneData out(planeDataConfig);
 
 		PLANE_DATA_PHYSICAL_FOR_IDX(
@@ -652,6 +628,8 @@ public:
 	inline
 	PlaneData physical_query_return_value_if_positive()	const
 	{
+		request_data_physical();
+
 		PlaneData out(planeDataConfig);
 
 		PLANE_DATA_PHYSICAL_FOR_IDX(
@@ -668,6 +646,8 @@ public:
 	inline
 	PlaneData physical_query_return_one_if_negative()	const
 	{
+		request_data_physical();
+
 		PlaneData out(planeDataConfig);
 
 		PLANE_DATA_PHYSICAL_FOR_IDX(
@@ -684,6 +664,8 @@ public:
 	inline
 	PlaneData physical_query_return_value_if_negative()	const
 	{
+		request_data_physical();
+
 		PlaneData out(planeDataConfig);
 
 		PLANE_DATA_PHYSICAL_FOR_IDX(

@@ -70,11 +70,11 @@ public:
 		 * to ScalarDataArray
 		 */
 
-		ScalarDataArray vx_n_prev = Convert_PlaneData_To_ScalarDataArray::convert(*i_velocity_field_t_prev[0]);
-		ScalarDataArray vy_n_prev = Convert_PlaneData_To_ScalarDataArray::convert(*i_velocity_field_t_prev[1]);
+		ScalarDataArray vx_n_prev = Convert_PlaneData_To_ScalarDataArray::physical_convert(*i_velocity_field_t_prev[0]);
+		ScalarDataArray vy_n_prev = Convert_PlaneData_To_ScalarDataArray::physical_convert(*i_velocity_field_t_prev[1]);
 
-		ScalarDataArray vx_n = Convert_PlaneData_To_ScalarDataArray::convert(*i_velocity_field_t[0]);
-		ScalarDataArray vy_n = Convert_PlaneData_To_ScalarDataArray::convert(*i_velocity_field_t[1]);
+		ScalarDataArray vx_n = Convert_PlaneData_To_ScalarDataArray::physical_convert(*i_velocity_field_t[0]);
+		ScalarDataArray vy_n = Convert_PlaneData_To_ScalarDataArray::physical_convert(*i_velocity_field_t[1]);
 
 		ScalarDataArray &rx_a = *i_pos_arrival[0];
 		ScalarDataArray &ry_a = *i_pos_arrival[1];
@@ -169,11 +169,11 @@ public:
 
 		std::size_t num_points = i_posx_a.number_of_elements;
 
-		ScalarDataArray u_prev = Convert_PlaneData_To_ScalarDataArray::convert(i_u_prev);
-		ScalarDataArray v_prev = Convert_PlaneData_To_ScalarDataArray::convert(i_v_prev);
+		ScalarDataArray u_prev = Convert_PlaneData_To_ScalarDataArray::physical_convert(i_u_prev);
+		ScalarDataArray v_prev = Convert_PlaneData_To_ScalarDataArray::physical_convert(i_v_prev);
 
-		ScalarDataArray u = Convert_PlaneData_To_ScalarDataArray::convert(i_u);
-		ScalarDataArray v = Convert_PlaneData_To_ScalarDataArray::convert(i_v);
+		ScalarDataArray u = Convert_PlaneData_To_ScalarDataArray::physical_convert(i_u);
+		ScalarDataArray v = Convert_PlaneData_To_ScalarDataArray::physical_convert(i_v);
 
 		//local dt
 		double dt = i_dt;

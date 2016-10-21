@@ -8,6 +8,12 @@
 #include <sweet/sweetmath.hpp>
 
 
+#include <sweet/plane/PlaneDataComplex.hpp>
+#include <sweet/plane/PlaneOperatorsComplex.hpp>
+
+
+#include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
+#include <sweet/plane/Convert_PlaneDataComplex_to_PlaneData.hpp>
 
 #ifndef SWEET_REXI_THREAD_PARALLEL_SUM
 #	define SWEET_REXI_THREAD_PARALLEL_SUM 1
@@ -32,7 +38,8 @@
 
 
 RexiSWE::RexiSWE()	:
-	helmholtz_solver(0)
+	helmholtz_solver(0),
+	planeDataConfig(nullptr)
 {
 #if !SWEET_USE_LIBFFT
 	std::cerr << "Spectral space required for solvers, use compile option --libfft=enable" << std::endl;
@@ -105,7 +112,7 @@ void RexiSWE::setup(
 		int i_L,						///< number of sampling points for Gaussian approx.
 										///< set to 0 for auto detection
 
-		int *i_resolution,		///< resolution of domain
+		PlaneDataConfig *i_planeDataConfig,
 		const double *i_domain_size,	///< size of domain
 
 		bool i_rexi_half,				///< use half-pole reduction
@@ -114,6 +121,8 @@ void RexiSWE::setup(
 		double i_eps					///< Error threshold
 )
 {
+	planeDataConfig = i_planeDataConfig;
+
 	M = i_M;
 	h = i_h;
 
@@ -177,10 +186,8 @@ void RexiSWE::setup(
 
 			perThreadVars[i] = new PerThreadVars;
 
-			perThreadVars[i]->op_diff_c_x.setup(planeDataConfig);
-			perThreadVars[i]->op_diff_c_y.setup(planeDataConfig);
-			perThreadVars[i]->op_diff2_c_x.setup(planeDataConfig);
-			perThreadVars[i]->op_diff2_c_y.setup(planeDataConfig);
+			perThreadVars[i]->op.setup(planeDataConfig, i_domain_size);
+
 			perThreadVars[i]->eta.setup(planeDataConfig);
 			perThreadVars[i]->eta0.setup(planeDataConfig);
 			perThreadVars[i]->u0.setup(planeDataConfig);
@@ -199,7 +206,7 @@ void RexiSWE::setup(
 
 	for (int i = 0; i < num_local_rexi_par_threads; i++)
 	{
-		if (perThreadVars[i]->op_diff_c_x.data == nullptr)
+		if (perThreadVars[i]->op.diff_c_x.physical_space_data == nullptr)
 		{
 			std::cerr << "ARRAY NOT INITIALIZED!!!!" << std::endl;
 			exit(-1);
@@ -227,26 +234,23 @@ void RexiSWE::setup(
 
 #endif
 
-		if (perThreadVars[i]->op_diff_c_x.data == nullptr)
+		if (perThreadVars[i]->eta.physical_space_data == nullptr)
 		{
 			std::cout << "ERROR, data == nullptr" << std::endl;
 			exit(-1);
 		}
 
-		perThreadVars[i]->op_diff_c_x.op_setup_diff_x(i_domain_size, i_use_spec_diffs_for_complex_array);
-		perThreadVars[i]->op_diff_c_y.op_setup_diff_y(i_domain_size, i_use_spec_diffs_for_complex_array);
-		perThreadVars[i]->op_diff2_c_x.op_setup_diff2_x(i_domain_size, i_use_spec_diffs_for_complex_array);
-		perThreadVars[i]->op_diff2_c_y.op_setup_diff2_y(i_domain_size, i_use_spec_diffs_for_complex_array);
+		perThreadVars[i]->op.setup(planeDataConfig, i_domain_size);
 
 		// initialize all values to account for first touch policy reason
-		perThreadVars[i]->eta.setAll(0, 0);
-		perThreadVars[i]->eta0.setAll(0, 0);
-		perThreadVars[i]->u0.setAll(0, 0);
-		perThreadVars[i]->v0.setAll(0, 0);
+		perThreadVars[i]->eta.spectral_set_all(0, 0);
+		perThreadVars[i]->eta0.spectral_set_all(0, 0);
+		perThreadVars[i]->u0.spectral_set_all(0, 0);
+		perThreadVars[i]->v0.spectral_set_all(0, 0);
 
-		perThreadVars[i]->h_sum.setAll(0, 0);
-		perThreadVars[i]->u_sum.setAll(0, 0);
-		perThreadVars[i]->v_sum.setAll(0, 0);
+		perThreadVars[i]->h_sum.spectral_set_all(0, 0);
+		perThreadVars[i]->u_sum.spectral_set_all(0, 0);
+		perThreadVars[i]->v_sum.spectral_set_all(0, 0);
 
 	}
 
@@ -288,6 +292,7 @@ bool RexiSWE::run_timestep_implicit_ts(
 {
 	PlaneDataComplex eta(io_h.planeDataConfig);
 
+#if 0
 	PlaneDataComplex eta0(io_h.planeDataConfig);
 	PlaneDataComplex u0(io_u.planeDataConfig);
 	PlaneDataComplex v0(io_v.planeDataConfig);
@@ -295,12 +300,18 @@ bool RexiSWE::run_timestep_implicit_ts(
 	eta0.loadRealFromPlaneData(io_h);
 	u0.loadRealFromPlaneData(io_u);
 	v0.loadRealFromPlaneData(io_v);
+#else
+	PlaneDataComplex eta0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_h);
+	PlaneDataComplex u0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_u);
+	PlaneDataComplex v0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_v);
+
+#endif
 
 	double alpha = 1.0/i_timestep_size;
 
-	eta0 = eta0.toSpec() * alpha;
-	u0 = u0.toSpec() * alpha;
-	v0 = v0.toSpec() * alpha;
+	eta0 *= alpha;
+	u0 *= alpha;
+	v0 *= alpha;
 
 	// load kappa (k)
 	double kappa = alpha*alpha + i_simVars.sim.f0*i_simVars.sim.f0;
@@ -310,26 +321,25 @@ bool RexiSWE::run_timestep_implicit_ts(
 
 	assert(perThreadVars.size() != 0);
 	assert(perThreadVars[0] != nullptr);
-	PlaneDataComplex &op_diff_c_x = perThreadVars[0]->op_diff_c_x;
-	PlaneDataComplex &op_diff_c_y = perThreadVars[0]->op_diff_c_y;
+	PlaneOperatorsComplex &opc = perThreadVars[0]->op;
 
 	PlaneDataComplex rhs =
 			(kappa/alpha) * eta0
-			- eta_bar*(op_diff_c_x(u0) + op_diff_c_y(v0))
-			- (i_simVars.sim.f0*eta_bar/alpha) * (op_diff_c_x(v0) - op_diff_c_y(u0))
+			- eta_bar*(opc.diff_c_x(u0) + opc.diff_c_y(v0))
+			- (i_simVars.sim.f0*eta_bar/alpha) * (opc.diff_c_x(v0) - opc.diff_c_y(u0))
 		;
 
 	helmholtz_spectral_solver_spec(kappa, g*eta_bar, rhs, eta, 0);
 
-	PlaneDataComplex uh = u0 - g*op_diff_c_x(eta);
-	PlaneDataComplex vh = v0 - g*op_diff_c_y(eta);
+	PlaneDataComplex uh = u0 - g*opc.diff_c_x(eta);
+	PlaneDataComplex vh = v0 - g*opc.diff_c_y(eta);
 
 	PlaneDataComplex u1 = alpha/kappa * uh     + i_simVars.sim.f0/kappa * vh;
 	PlaneDataComplex v1 =    -i_simVars.sim.f0/kappa * uh + alpha/kappa * vh;
 
-	eta.toCart().toPlaneDatas_Real(io_h);
-	u1.toCart().toPlaneDatas_Real(io_u);
-	v1.toCart().toPlaneDatas_Real(io_v);
+	io_h = Convert_PlaneDataComplex_To_PlaneData::physical_convert(eta);
+	io_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(u1);
+	io_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(v1);
 
 	return true;
 }
@@ -368,8 +378,8 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	PlaneData &io_u_prev,
 	PlaneData &io_v_prev,
 
-	PlaneData &i_posx_a, //Arrival point positions in x and y (this is basically the grid)
-	PlaneData &i_posy_a,
+	ScalarDataArray &i_posx_a, //Arrival point positions in x and y (this is basically the grid)
+	ScalarDataArray &i_posy_a,
 
 	double i_timestep_size,	///< timestep size
 	int i_param_nonlinear, ///< degree of nonlinearity (0-linear, 1-full nonlinear, 2-only nonlinear adv)
@@ -388,8 +398,9 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	PlaneData v(io_h.planeDataConfig);
 
 	//Departure points and arrival points
-	PlaneData posx_d(io_h.planeDataConfig);
-	PlaneData posy_d(io_h.planeDataConfig);
+
+	ScalarDataArray posx_d = i_posx_a;
+	ScalarDataArray posy_d = i_posy_a;
 
 	//Parameters
 	double h_bar = i_simVars.sim.h0;
@@ -402,18 +413,18 @@ bool RexiSWE::run_timestep_cn_sl_ts(
 	double stag_displacement[4] = {-0.5,-0.5,-0.5,-0.5}; //A grid staggering - centred cell
 	kappa += f0*f0;
 	kappa_bar -= f0*f0;
-	posx_d=i_posx_a;
-	posy_d=i_posy_a;
+
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 	if(i_param_nonlinear==1){
+#warning "Is this really necessary?"
 		//Truncate spectral modes to avoid aliasing effects in the h*div term
-		io_h.aliasing_zero_high_modes();
-		io_u.aliasing_zero_high_modes();
-		io_v.aliasing_zero_high_modes();
-		io_h_prev.aliasing_zero_high_modes();
-		io_u_prev.aliasing_zero_high_modes();
-		io_v_prev.aliasing_zero_high_modes();
+		io_h.spectral_zeroAliasingModes();
+		io_u.spectral_zeroAliasingModes();
+		io_v.spectral_zeroAliasingModes();
+		io_h_prev.spectral_zeroAliasingModes();
+		io_u_prev.spectral_zeroAliasingModes();
+		io_v_prev.spectral_zeroAliasingModes();
 	}
 #endif
 
@@ -541,8 +552,8 @@ bool RexiSWE::run_timestep_slrexi(
 	PlaneData &io_u_prev,
 	PlaneData &io_v_prev,
 
-	PlaneData &i_posx_a, //Arrival point positions in x and y (this is basically the grid)
-	PlaneData &i_posy_a,
+	ScalarDataArray &i_posx_a, //Arrival point positions in x and y (this is basically the grid)
+	ScalarDataArray &i_posy_a,
 
 	double i_timestep_size,	///< timestep size
 	int i_param_nonlinear, ///< degree of nonlinearity (0-linear, 1-full nonlinear, 2-only nonlinear adv)
@@ -556,7 +567,6 @@ bool RexiSWE::run_timestep_slrexi(
 	SemiLagrangian &semiLagrangian  ///< Semi-Lag class
 )
 {
-
 	//Out vars
 	PlaneData h(io_h.planeDataConfig);
 	PlaneData u(io_h.planeDataConfig);
@@ -567,8 +577,8 @@ bool RexiSWE::run_timestep_slrexi(
 	PlaneData hdiv(io_h.planeDataConfig);
 
 	//Departure points and arrival points
-	PlaneData posx_d(io_h.planeDataConfig);
-	PlaneData posy_d(io_h.planeDataConfig);
+	ScalarDataArray posx_d(io_h.planeDataConfig->physical_array_data_number_of_elements);
+	ScalarDataArray posy_d(io_h.planeDataConfig->physical_array_data_number_of_elements);
 
 	//Parameters
 	double dt = i_timestep_size;
@@ -576,13 +586,14 @@ bool RexiSWE::run_timestep_slrexi(
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 	if(i_param_nonlinear==1){
+#warning "is this really necessary?"
 		//Truncate spectral modes to avoid aliasing effects in the h*div term
-		io_h.aliasing_zero_high_modes();
-		io_u.aliasing_zero_high_modes();
-		io_v.aliasing_zero_high_modes();
-		io_h_prev.aliasing_zero_high_modes();
-		io_u_prev.aliasing_zero_high_modes();
-		io_v_prev.aliasing_zero_high_modes();
+		io_h.spectral_zeroAliasingModes();
+		io_u.spectral_zeroAliasingModes();
+		io_v.spectral_zeroAliasingModes();
+		io_h_prev.spectral_zeroAliasingModes();
+		io_u_prev.spectral_zeroAliasingModes();
+		io_v_prev.spectral_zeroAliasingModes();
 	}
 #endif
 
@@ -595,21 +606,15 @@ bool RexiSWE::run_timestep_slrexi(
 				io_u,	io_v,
 				i_posx_a,	i_posy_a,
 				dt,
-				posx_d,	posy_d,
+				posx_d,	posy_d,			// output
 				stag_displacement
 		);
 
 	}
 
 	u = io_u;
-	//std::cout<< "u" << std::endl;
-	//u.printArrayData();
 	v = io_v;
-	//std::cout<< "v" << std::endl;
-	//v.printArrayData();
 	h = io_h;
-	//std::cout<< "h" << std::endl;
-	//h.printArrayData();
 
 	N_u.physical_set_all(0);
 	N_v.physical_set_all(0);
@@ -646,7 +651,8 @@ bool RexiSWE::run_timestep_slrexi(
 
 
 
-	if(i_param_nonlinear>0){
+	if (i_param_nonlinear > 0)
+	{
 		//Build variables to be interpolated to dep. points
 		// This is the W^n term in documentation
 		u = u + N_u;
@@ -656,35 +662,34 @@ bool RexiSWE::run_timestep_slrexi(
 		// Interpolate W to departure points
 		u = sampler2D.bicubic_scalar(u, posx_d, posy_d, -0.5, -0.5);
 		v = sampler2D.bicubic_scalar(v, posx_d, posy_d, -0.5, -0.5);
+
 		h = sampler2D.bicubic_scalar(h, posx_d, posy_d, -0.5, -0.5);
+
 	}
 
-	//Calculate the exp(Ldt) W{n}_* term as in documentation, with the exponential integrator
-	//run_timestep( h, u, v, dt, op, i_simVars, i_iterative_solver_always_init_zero_solution);
-	//run_timestep_direct_solution( h, u, v, dt, op, i_simVars );
-	if(i_linear_exp_analytical)
-	{
-		run_timestep_direct_solution( h, u, v, dt, op, i_simVars );
-	}
+	/*
+	 * Calculate the exp(Ldt) W{n}_* term as in documentation, with the exponential integrator?
+	 */
+	if (i_linear_exp_analytical)
+		run_timestep_direct_solution(h, u, v, dt, op, i_simVars);
 	else
-	{
-		run_timestep( h, u, v, dt, op, i_simVars, i_iterative_solver_always_init_zero_solution);
-	}
+		run_timestep(h, u, v, dt, op, i_simVars, i_iterative_solver_always_init_zero_solution);
 
-	if(i_param_nonlinear==1){
+	if (i_param_nonlinear == 1)
+	{
 		// Add nonlinearity in h
 		h = h + 0.5 * dt * hdiv;
 	}
 
-	//Set time (n) as time (n-1)
-	io_h_prev=io_h;
-	io_u_prev=io_u;
-	io_v_prev=io_v;
+	// Set time (n) as time (n-1)
+	io_h_prev = io_h;
+	io_u_prev = io_u;
+	io_v_prev = io_v;
 
-	//output data
-	io_h=h;
-	io_u=u;
-	io_v=v;
+	// output data
+	io_h = h;
+	io_u = u;
+	io_v = v;
 
 	return true;
 }
@@ -767,10 +772,7 @@ bool RexiSWE::run_timestep(
 		double eta_bar = i_parameters.sim.h0;
 		double g = i_parameters.sim.gravitation;
 
-		PlaneDataComplex &op_diff_c_x = perThreadVars[i]->op_diff_c_x;
-		PlaneDataComplex &op_diff_c_y = perThreadVars[i]->op_diff_c_y;
-//		PlaneDataComplex &op_diff2_c_x = perThreadVars[i]->op_diff2_c_x;
-//		PlaneDataComplex &op_diff2_c_y = perThreadVars[i]->op_diff2_c_y;
+		PlaneOperatorsComplex &opc = perThreadVars[i]->op;
 
 		PlaneDataComplex &eta0 = perThreadVars[i]->eta0;
 		PlaneDataComplex &u0 = perThreadVars[i]->u0;
@@ -786,160 +788,59 @@ bool RexiSWE::run_timestep(
 		/*
 		 * INITIALIZATION - THIS IS THE NON-PARALLELIZABLE PART!
 		 */
-		h_sum.setAll(0, 0);
-		u_sum.setAll(0, 0);
-		v_sum.setAll(0, 0);
+		h_sum.spectral_set_all(0, 0);
+		u_sum.spectral_set_all(0, 0);
+		v_sum.spectral_set_all(0, 0);
 
-		eta0.loadRealFromPlaneData(io_h);
-		u0.loadRealFromPlaneData(io_u);
-		v0.loadRealFromPlaneData(io_v);
-
-		if (helmholtz_solver == 0)
-		{
-			/**
-			 * SPECTRAL SOLVER - DO EVERYTHING IN SPECTRAL SPACE
-			 */
-			// convert to spectral space
-			// scale with inverse of tau
-			eta0 = eta0.toSpec()*(1.0/i_timestep_size);
-			u0 = u0.toSpec()*(1.0/i_timestep_size);
-			v0 = v0.toSpec()*(1.0/i_timestep_size);
-
-#if SWEET_REXI_THREAD_PARALLEL_SUM || SWEET_MPI
-
-#if SWEET_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
-			int local_thread_id = omp_get_thread_num();
-#else
-			int local_thread_id = 0;
-#endif
-			int global_thread_id = local_thread_id + num_local_rexi_par_threads*mpi_rank;
-
-			std::size_t start = block_size*global_thread_id;
-			std::size_t end = std::min(N, start+block_size);
-#else
-			std::size_t start = 0;
-			std::size_t end = N;
-#endif
+		eta0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_h);
+		u0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_u);
+		v0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_v);
 
 
-			// reuse result from previous computations
-			// this significantly speeds up the process
-			// initial guess
-			eta.setAll(0,0);
-
-			/*
-			 * DO SUM IN PARALLEL
-			 */
-
-			// precompute a bunch of values
-			// this would belong to a serial part according to Amdahls law
-			//
-			// (kappa + lhs_a)\eta = kappa/alpha*\eta_0 - (i_parameters.sim.f0*eta_bar/alpha) * rhs_b + rhs_a
-			//
-			PlaneDataComplex rhs_a = eta_bar*(op_diff_c_x(u0) + op_diff_c_y(v0));
-			PlaneDataComplex rhs_b = (op_diff_c_x(v0) - op_diff_c_y(u0));
-
-			PlaneDataComplex lhs_a = (-g*eta_bar)*(perThreadVars[i]->op_diff2_c_x + perThreadVars[i]->op_diff2_c_y);
-
-#if SWEET_BENCHMARK_REXI
-			if (stopwatch_measure)
-				stopwatch_preprocessing.stop();
-#endif
-
-#if SWEET_BENCHMARK_REXI
-			if (stopwatch_measure)
-				stopwatch_solve_rexi_terms.start();
-#endif
-
-			for (std::size_t n = start; n < end; n++)
-			{
-				// load alpha (a) and scale by inverse of tau
-				// we flip the sign to account for the -L used in exp(\tau (-L))
-				complex alpha = rexi.alpha[n]/i_timestep_size;
-				complex beta = rexi.beta_re[n];
-
-				// load kappa (k)
-				complex kappa = alpha*alpha + i_parameters.sim.f0*i_parameters.sim.f0;
-
-				/*
-				 * TODO: we can even get more performance out of this operations
-				 * by partly using the real Fourier transformation
-				 */
-				PlaneDataComplex rhs =
-						(kappa/alpha) * eta0
-						+ (-i_parameters.sim.f0*eta_bar/alpha) * rhs_b
-						+ rhs_a
-					;
-
-#if 0
-				helmholtz_spectral_solver_spec(kappa, gravitation*eta_bar, rhs, eta, i);
-#else
-				PlaneDataComplex lhs = lhs_a.addScalar_Cart(kappa);
-				rhs.spec_div_element_wise(lhs, eta);
-#endif
-
-				PlaneDataComplex uh = u0 + g*op_diff_c_x(eta);
-				PlaneDataComplex vh = v0 + g*op_diff_c_y(eta);
-
-				PlaneDataComplex u1 = (alpha/kappa) * uh     - (i_parameters.sim.f0/kappa) * vh;
-				PlaneDataComplex v1 = (i_parameters.sim.f0/kappa) * uh + (alpha/kappa) * vh;
-
-				PlaneData tmp(h_sum.planeDataConfig);
-
-				h_sum += eta.toCart()*beta;
-				u_sum += u1.toCart()*beta;
-				v_sum += v1.toCart()*beta;
-			}
-
-#if SWEET_BENCHMARK_REXI
-			if (stopwatch_measure)
-				stopwatch_solve_rexi_terms.stop();
-#endif
-
-		}
-		else
-		{
-			/*
-			 * Use FD solver in CARTESIAN SPACE ONLY
-			 */
-			if (use_spec_diffs)
-			{
-				std::cerr << "Using FD solvers only makes sense if spectral diffs is NOT activated for REXI!" << std::endl;
-				exit(-1);
-			}
-
-			// convert to spectral space
-			// scale with inverse of tau
-			eta0 = eta0.toSpec()*(1.0/i_timestep_size);
-			u0 = u0.toSpec()*(1.0/i_timestep_size);
-			v0 = v0.toSpec()*(1.0/i_timestep_size);
+		/**
+		 * SPECTRAL SOLVER - DO EVERYTHING IN SPECTRAL SPACE
+		 */
+		// convert to spectral space
+		// scale with inverse of tau
+		eta0 = eta0*(1.0/i_timestep_size);
+		u0 = u0*(1.0/i_timestep_size);
+		v0 = v0*(1.0/i_timestep_size);
 
 #if SWEET_REXI_THREAD_PARALLEL_SUM || SWEET_MPI
 
 #if SWEET_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
-			int local_thread_id = omp_get_thread_num();
+		int local_thread_id = omp_get_thread_num();
 #else
-			int local_thread_id = 0;
+		int local_thread_id = 0;
 #endif
-			int global_thread_id = local_thread_id + num_local_rexi_par_threads*mpi_rank;
+		int global_thread_id = local_thread_id + num_local_rexi_par_threads*mpi_rank;
 
-			std::size_t start = block_size*global_thread_id;
-			std::size_t end = std::min(N, start+block_size);
-
+		std::size_t start = block_size*global_thread_id;
+		std::size_t end = std::min(N, start+block_size);
 #else
-			std::size_t start = 0;
-			std::size_t end = N;
+		std::size_t start = 0;
+		std::size_t end = N;
 #endif
 
-			// only at the beginning
-			if (!i_iterative_solver_always_init_zero_solution)
-				eta.setAll(0,0);
 
-			/*
-			 * DO SUM IN PARALLEL
-			 */
-			PlaneDataComplex rhs_a = eta_bar*(op_diff_c_x(u0) + op_diff_c_y(v0));
-			PlaneDataComplex rhs_b = (op_diff_c_x(v0) - op_diff_c_y(u0));
+		// reuse result from previous computations
+		// this significantly speeds up the process
+		// initial guess
+		eta.spectral_set_all(0,0);
+
+		/*
+		 * DO SUM IN PARALLEL
+		 */
+
+		// precompute a bunch of values
+		// this would belong to a serial part according to Amdahls law
+		//
+		// (kappa + lhs_a)\eta = kappa/alpha*\eta_0 - (i_parameters.sim.f0*eta_bar/alpha) * rhs_b + rhs_a
+		//
+		PlaneDataComplex rhs_a = eta_bar*(opc.diff_c_x(u0) + opc.diff_c_y(v0));
+		PlaneDataComplex rhs_b = (opc.diff_c_x(v0) - opc.diff_c_y(u0));
+
+		PlaneDataComplex lhs_a = (-g*eta_bar)*(perThreadVars[i]->op.diff2_c_x + perThreadVars[i]->op.diff2_c_y);
 
 #if SWEET_BENCHMARK_REXI
 		if (stopwatch_measure)
@@ -947,163 +848,51 @@ bool RexiSWE::run_timestep(
 #endif
 
 #if SWEET_BENCHMARK_REXI
-			if (stopwatch_measure)
-				stopwatch_solve_rexi_terms.start();
+		if (stopwatch_measure)
+			stopwatch_solve_rexi_terms.start();
 #endif
 
-			for (std::size_t n = start; n < end; n++)
-			{
-				// load alpha (a) and scale by inverse of tau
-				// we flip the sign to account for the -L used in exp(\tau (-L))
-				complex alpha = -rexi.alpha[n]/i_timestep_size;
-				complex beta = -rexi.beta_re[n];
+		for (std::size_t n = start; n < end; n++)
+		{
+			// load alpha (a) and scale by inverse of tau
+			// we flip the sign to account for the -L used in exp(\tau (-L))
+			complex alpha = rexi.alpha[n]/i_timestep_size;
+			complex beta = rexi.beta_re[n];
 
-				// load kappa (k)
-				complex kappa = alpha*alpha + i_parameters.sim.f0*i_parameters.sim.f0;
+			// load kappa (k)
+			complex kappa = alpha*alpha + i_parameters.sim.f0*i_parameters.sim.f0;
 
-				/*
-				 * TODO: we can even get more performance out of this operations
-				 * by partly using the real Fourier transformation
-				 */
-				PlaneDataComplex rhs =
-						(kappa/alpha) * eta0
-						- rhs_a
-						- (i_parameters.sim.f0*eta_bar/alpha) * rhs_b
-					;
+			/*
+			 * TODO: we can even get more performance out of this operations
+			 * by partly using the real Fourier transformation
+			 */
+			PlaneDataComplex rhs =
+					(kappa/alpha) * eta0
+					+ (-i_parameters.sim.f0*eta_bar/alpha) * rhs_b
+					+ rhs_a
+				;
 
-				rhs = rhs.toCart();
+			PlaneDataComplex lhs = lhs_a.spectral_addScalarAll(kappa);
+//			rhs.spectral_div_element_wise(lhs, eta);
+			eta = rhs.spectral_div_element_wise(lhs);
 
-				PlaneDataComplex eta(rhs.planeDataConfig);
+			PlaneDataComplex uh = u0 + g*opc.diff_c_x(eta);
+			PlaneDataComplex vh = v0 + g*opc.diff_c_y(eta);
 
-				// don't reuse old solution?
-				if (i_iterative_solver_always_init_zero_solution)
-					eta.setAll(0,0);
+			PlaneDataComplex u1 = (alpha/kappa) * uh     - (i_parameters.sim.f0/kappa) * vh;
+			PlaneDataComplex v1 = (i_parameters.sim.f0/kappa) * uh + (alpha/kappa) * vh;
 
-				int max_iters = 2000;
+			PlaneData tmp(h_sum.planeDataConfig);
 
-				bool retval = true;
-				switch (helmholtz_solver)
-				{
-				default:
-					{
-						{
-						std::cout << "Helmholtz solver IDs:" << std::endl;
-						std::cout << "	0: Spectral solver" << std::endl;
-						std::cout << "	1: Jacobi" << std::endl;
-						std::cout << "	2: CG" << std::endl;
-						std::cout << "	3: MG: Jacobi" << std::endl;
-						std::cout << "	4: MG: CG" << std::endl;
-						}
-					}
-					exit(-1);
-					break;
-/*
-
-				case 0:
-					helmholtz_spectral_solver_spec(kappa, g*eta_bar, rhs, eta, i);
-					break;
-*/
-
-				case 1:
-					max_iters *= 10;
-//					std::cout << "kappa: " << kappa << std::endl;
-					retval = RexiSWE_HelmholtzSolver::smoother_jacobi(
-							kappa,
-							g*eta_bar,
-							rhs,
-							eta,
-							domain_size,
-							eps,
-							max_iters,
-							0.5,
-							0
-						);
-
-					break;
-
-				case 2:
-					retval = RexiSWE_HelmholtzSolver::smoother_conjugate_gradient(
-							kappa,
-							g*eta_bar,
-							rhs,
-							eta,
-							domain_size,
-							eps,
-							max_iters,
-							1.0,
-							0
-						);
-
-					break;
-
-				case 3:
-					retval = RexiSWE_HelmholtzSolver::multigrid(	// MG with jacobi
-						kappa,
-						g*eta_bar,
-						rhs,
-						eta,
-						RexiSWE_HelmholtzSolver::smoother_jacobi,
-						domain_size,
-						eps,
-						max_iters,
-						1.0,
-						2,
-						0//simVars.misc.verbosity
-					);
-
-					break;
-
-				case 4:
-					retval = RexiSWE_HelmholtzSolver::multigrid(	// MG with jacobi
-						kappa,
-						g*eta_bar,
-						rhs,
-						eta,
-						RexiSWE_HelmholtzSolver::smoother_conjugate_gradient,
-						domain_size,
-						eps,
-						max_iters,
-						1.0,
-						2,
-						0//simVars.misc.verbosity
-					);
-
-					break;
-				}
-
-				if (!retval)
-				{
-					double residual = RexiSWE_HelmholtzSolver::helmholtz_iterative_get_residual_rms(
-							kappa,
-							g*eta_bar,
-							rhs,
-							eta,
-							domain_size
-						);
-
-					std::cerr << "NO CONVERGENCE AFTER " << max_iters << " iterations for K=" << kappa << ", gh=" << g*eta_bar << ", eps=" << eps << ", residual=" << residual << std::endl;
-					std::cerr << "alpha: " << alpha << std::endl;
-					std::cerr << "kappa: " << kappa << std::endl;
-					exit(-1);
-				}
-
-				eta = eta.toSpec();
-
-				PlaneDataComplex uh = u0 - g*op_diff_c_x(eta);
-				PlaneDataComplex vh = v0 - g*op_diff_c_y(eta);
-
-				PlaneDataComplex u1 = (alpha/kappa) * uh	+ (i_parameters.sim.f0/kappa) * vh;
-				PlaneDataComplex v1 =    (-i_parameters.sim.f0/kappa) * uh	+ (alpha/kappa) * vh;
-
-				h_sum += eta.toCart()*beta;
-				u_sum += u1.toCart()*beta;
-				v_sum += v1.toCart()*beta;
-			}
-#if SWEET_BENCHMARK_REXI
-			if (stopwatch_measure)
-				stopwatch_solve_rexi_terms.stop();
-#endif
+			h_sum += eta*beta;
+			u_sum += u1*beta;
+			v_sum += v1*beta;
 		}
+
+#if SWEET_BENCHMARK_REXI
+		if (stopwatch_measure)
+			stopwatch_solve_rexi_terms.stop();
+#endif
 	}
 
 #if SWEET_BENCHMARK_REXI
@@ -1135,10 +924,9 @@ bool RexiSWE::run_timestep(
 
 #else
 
-	io_h = perThreadVars[0]->h_sum.getRealWithPlaneData();
-	io_u = perThreadVars[0]->u_sum.getRealWithPlaneData();
-	io_v = perThreadVars[0]->v_sum.getRealWithPlaneData();
-
+	io_h = Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->h_sum);
+	io_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->u_sum);
+	io_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->v_sum);
 #endif
 
 
@@ -1208,52 +996,54 @@ void RexiSWE::run_timestep_direct_solution(
 	double f = i_simVars.sim.f0;
 	complex I(0.0,1.0);
 
-	PlaneDataComplex i_h(io_h.planeDataConfig);
-	PlaneDataComplex i_u(io_h.planeDataConfig);
-	PlaneDataComplex i_v(io_h.planeDataConfig);
+	PlaneDataComplex i_h = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_h);
+	PlaneDataComplex i_u = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_u);
+	PlaneDataComplex i_v = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_v);
 
 	PlaneDataComplex o_h(io_h.planeDataConfig);
 	PlaneDataComplex o_u(io_h.planeDataConfig);
 	PlaneDataComplex o_v(io_h.planeDataConfig);
 
-	i_h.loadRealFromPlaneData(io_h);
-	i_h = i_h.toSpec();
-
-	i_u.loadRealFromPlaneData(io_u);
-	i_u = i_u.toSpec();
-
-	i_v.loadRealFromPlaneData(io_v);
-	i_v = i_v.toSpec();
-
 	double s0 = i_simVars.sim.domain_size[0];
 	double s1 = i_simVars.sim.domain_size[1];
 
-	for (std::size_t ik1 = 0; ik1 < i_h.planeDataConfig->physical_res[1]; ik1++)
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+	o_h.spectral_space_data_valid = true;
+	o_h.physical_space_data_valid = false;
+
+	o_u.spectral_space_data_valid = true;
+	o_u.physical_space_data_valid = false;
+
+	o_v.spectral_space_data_valid = true;
+	o_v.physical_space_data_valid = false;
+#endif
+
+	for (std::size_t ik1 = 0; ik1 < i_h.planeDataConfig->spectral_complex_data_size[1]; ik1++)
 	{
-		for (std::size_t ik0 = 0; ik0 < i_h.planeDataConfig->physical_res[0]; ik0++)
+		for (std::size_t ik0 = 0; ik0 < i_h.planeDataConfig->spectral_complex_data_size[0]; ik0++)
 		{
-			if (ik0 == i_h.planeDataConfig->physical_res[0]/2 || ik1 == i_h.planeDataConfig->physical_res[1]/2)
+			if (ik0 == i_h.planeDataConfig->spectral_complex_data_size[0]/2 || ik1 == i_h.planeDataConfig->spectral_complex_data_size[1]/2)
 			{
-				o_h.p_physical_set(ik1, ik0, 0, 0);
-				o_u.p_physical_set(ik1, ik0, 0, 0);
-				o_v.p_physical_set(ik1, ik0, 0, 0);
+				o_h.p_spectral_set(ik1, ik0, 0, 0);
+				o_u.p_spectral_set(ik1, ik0, 0, 0);
+				o_v.p_spectral_set(ik1, ik0, 0, 0);
 			}
 
 			complex U_hat[3];
-			U_hat[0] = i_h.get(ik1, ik0);
-			U_hat[1] = i_u.get(ik1, ik0);
-			U_hat[2] = i_v.get(ik1, ik0);
+			U_hat[0] = i_h.spectral_get(ik1, ik0);
+			U_hat[1] = i_u.spectral_get(ik1, ik0);
+			U_hat[2] = i_v.spectral_get(ik1, ik0);
 
 			double k0, k1;
-			if (ik0 < i_h.planeDataConfig->physical_res[0]/2)
+			if (ik0 < i_h.planeDataConfig->spectral_complex_data_size[0]/2)
 				k0 = (double)ik0;
 			else
-				k0 = (double)((int)ik0-(int)i_h.planeDataConfig->physical_res[0]);
+				k0 = (double)((int)ik0-(int)i_h.planeDataConfig->spectral_complex_data_size[0]);
 
-			if (ik1 < i_h.planeDataConfig->physical_res[1]/2)
+			if (ik1 < i_h.planeDataConfig->spectral_complex_data_size[1]/2)
 				k1 = (double)ik1;
 			else
-				k1 = (double)((int)ik1-(int)i_h.planeDataConfig->physical_res[1]);
+				k1 = (double)((int)ik1-(int)i_h.planeDataConfig->spectral_complex_data_size[1]);
 
 			/*
 			 * dimensionful formulation
@@ -1467,15 +1257,15 @@ void RexiSWE::run_timestep_direct_solution(
 					U_hat_sp[k] += eigenvectors[j][k] * omega[j] * UEV0_sp[j];
 			}
 
-			o_h.p_physical_set(ik1, ik0, U_hat_sp[0]);
-			o_u.p_physical_set(ik1, ik0, U_hat_sp[1]);
-			o_v.p_physical_set(ik1, ik0, U_hat_sp[2]);
+			o_h.p_spectral_set(ik1, ik0, U_hat_sp[0]);
+			o_u.p_spectral_set(ik1, ik0, U_hat_sp[1]);
+			o_v.p_spectral_set(ik1, ik0, U_hat_sp[2]);
 		}
 	}
 
-	io_h = o_h.toCart().getRealWithPlaneData();
-	io_u = o_u.toCart().getRealWithPlaneData();
-	io_v = o_v.toCart().getRealWithPlaneData();
+	io_h = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_h);
+	io_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_u);
+	io_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_v);
 }
 
 

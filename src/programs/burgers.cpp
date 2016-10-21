@@ -14,6 +14,8 @@
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/PlaneDataSemiLagrangian.hpp>
 #include <sweet/plane/PlaneDataConfig.hpp>
+#include <sweet/plane/Convert_PlaneData_to_ScalarDataArray.hpp>
+#include <sweet/plane/Convert_ScalarDataArray_to_PlaneData.hpp>
 #include <sweet/FatalError.hpp>
 
 #include "burgers/burgers_HelmholtzSolver.hpp"
@@ -863,15 +865,22 @@ public:
 			if (simVars.timecontrol.current_simulation_time+dt > simVars.timecontrol.max_simulation_time)
 				dt = simVars.timecontrol.max_simulation_time-simVars.timecontrol.current_simulation_time;
 
+			ScalarDataArray posx_d_tmp(planeDataConfig->physical_array_data_number_of_elements);
+			ScalarDataArray posy_d_tmp(planeDataConfig->physical_array_data_number_of_elements);
+
 			//Calculate departure points
 			semiLagrangian.semi_lag_departure_points_settls(
 							prog_u_prev, prog_v_prev,
 							prog_u,	prog_v,
-							posx_a,	posy_a,
+							Convert_PlaneData_To_ScalarDataArray::physical_convert(posx_a),
+							Convert_PlaneData_To_ScalarDataArray::physical_convert(posy_a),
 							dt,
-							posx_d,	posy_d,
+							posx_d_tmp,	posy_d_tmp,
 							stag_displacement
 					);
+
+			posx_d = Convert_ScalarDataArray_to_PlaneData::convert(posx_d_tmp, planeDataConfig);
+			posy_d = Convert_ScalarDataArray_to_PlaneData::convert(posy_d_tmp, planeDataConfig);
 
 			// Save old velocities
 			prog_u_prev = prog_u;
@@ -879,8 +888,19 @@ public:
 
 			//Now interpolate to the the departure points
 			//Departure points are set for physical space
-			prog_u = sampler2D.bicubic_scalar( prog_u, posx_d, posy_d, stag_u[0], stag_u[1]);
-			prog_v = sampler2D.bicubic_scalar( prog_v, posx_d, posy_d, stag_v[0], stag_v[1]);
+			prog_u = sampler2D.bicubic_scalar(
+					prog_u,
+					Convert_PlaneData_To_ScalarDataArray::physical_convert(posx_d),
+					Convert_PlaneData_To_ScalarDataArray::physical_convert(posy_d),
+					stag_u[0], stag_u[1]
+			);
+
+			prog_v = sampler2D.bicubic_scalar(
+					prog_v,
+					Convert_PlaneData_To_ScalarDataArray::physical_convert(posx_d),
+					Convert_PlaneData_To_ScalarDataArray::physical_convert(posy_d),
+					stag_v[0], stag_v[1]
+			);
 
 			if (simVars.disc.timestepping_runge_kutta_order>=0)
 			{
@@ -1544,7 +1564,7 @@ public:
 			int time_slice_id
 	)
 	{
-		Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2>& data = (Parareal_Data_PlaneData<2>&)i_data;
+		Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2>& data = (Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2>&)i_data;
 
 		std::ostringstream ss;
 		ss << simVars.misc.output_file_name_prefix << "_iter" << iteration_id << "_slice" << time_slice_id << ".csv";
