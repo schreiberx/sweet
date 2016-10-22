@@ -321,6 +321,7 @@ env.Append(LINKFLAGS = env['ld_flags'])
 
 env['fortran_source'] = 'disable'
 
+llvm_gnu_override = False
 llvm_omp_override = False
 
 ###########################################
@@ -466,6 +467,7 @@ if env['compiler'] == 'gnu':
 			print("LLVM not detected")
 			sys.exit(1)
 
+		llvm_gnu_override = True
 		env['compiler'] = 'llvm'
 
 	else:
@@ -753,10 +755,10 @@ if env['sweet_mpi'] == 'enable':
 
 if env['threading'] in ['omp']:
 	exec_name+='_'+env['threading']
-
-if llvm_omp_override:
-	print("WARNING: adding _omp despite program was not compiled with OpenMP activated. This is for compatibility reasons only!")
-	exec_name+='_omp'
+else:
+	if llvm_omp_override:
+		print("WARNING: adding _omp despite program was not compiled with OpenMP activated. This is for compatibility reasons only!")
+		exec_name+='_omp'
 	
 
 if env['rexi_parallel_sum']=='enable':
@@ -864,7 +866,12 @@ if env['debug_symbols'] == 'enable':
 		env.Append(LINKFLAGS = ' -shared-intel  -shared-libgcc -debug inline-debug-info')
 
 
-exec_name += '_'+env['compiler']
+if llvm_gnu_override:
+	print("WARNING: adding _omp despite program was not compiled with LLVM. This is for compatibility reasons only!")
+	exec_name += '_gnu'
+else:
+	exec_name += '_'+env['compiler']
+	
 exec_name += '_'+env['mode']
 
 
