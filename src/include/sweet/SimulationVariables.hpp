@@ -439,6 +439,9 @@ public:
         long_options[next_free_program_option] = {"nonlinear", required_argument, 0, 256+'a'+c};
         next_free_program_option++;	c++;
 
+        long_options[next_free_program_option] = {"use-robert-functions", required_argument, 0, 256+'a'+c};
+        next_free_program_option++;	c++;
+
 
 #if SWEET_PARAREAL
         int parareal_start_option_index = next_free_program_option;
@@ -475,7 +478,7 @@ public:
 		{
 			opt = getopt_long(
 							i_argc, i_argv,
-							"N:M:n:m:C:u:U:s:X:Y:f:b:x:y:l:t:i:T:v:V:O:o:H:r:R:W:F:S:g:G:d:z",
+							"N:M:n:m:C:u:U:s:X:Y:f:b:x:y:t:i:T:v:V:O:o:H:r:R:W:F:S:g:G:d:z",
 							long_options, &option_index
 					);
 
@@ -503,7 +506,7 @@ public:
 					case 6:		rexi.use_rexi = atoi(optarg);	break;
 					case 7:		rexi.rexi_use_extended_modes = atoi(optarg);	break;
 					case 8:		misc.use_nonlinear_equations = atoi(optarg);	break;
-
+					case 9:		misc.sphere_use_robert_functions = atoi(optarg);	break;
 						default:
 #if SWEET_PARAREAL
 							parareal.setup_longOptionValue(i-parareal_start_option_index, optarg);
@@ -619,10 +622,6 @@ public:
 				misc.gui_enabled = atoi(optarg);
 				break;
 
-			case 'l':
-				misc.sphere_use_robert_functions = atoi(optarg);
-				break;
-
 			case 'g':
 				sim.gravitation = atof(optarg);
 				break;
@@ -716,9 +715,9 @@ public:
 						"	-G [0/1]	graphical user interface",
 						"	-O [string]	string prefix for filename of output of simulation data",
 						"	-d [int]	accuracy of floating point output",
-						"	-l [bool]	Use Robert function formulation for velocities on the sphere",
 						"	-i [file0][;file1][;file3]...	string with filenames for initial conditions",
 						"	            specify BINARY; as first file name to read files as binary raw data",
+						"	--use-robert-functions [bool]	Use Robert function formulation for velocities on the sphere",
 						"	--nonlinear [bool]	Use non-linear (1) if available or linear (0) formulation, default: 1",
 						"",
 						"Rexi",

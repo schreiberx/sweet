@@ -38,10 +38,14 @@ public:
 	LapackBandedMatrixSolver< std::complex<double> > bandedMatrixSolver;
 
 	/**
+	 * Size of buffers
+	 */
+	std::size_t buffer_size;
+
+	/**
 	 * Buffer to compactify the N-varying for a particular M
 	 */
 	std::complex<double> *buffer_in, *buffer_out;
-
 
 	/**
 	 * Setup the SPH solver
@@ -58,13 +62,16 @@ public:
 
 		bandedMatrixSolver.setup(i_sphConfig->spec_n_max+1, i_halosize_offdiagonal);
 
-		buffer_in = MemBlockAlloc::alloc< std::complex<double> >(sphereDataConfig->spec_n_max+1);
-		buffer_out = MemBlockAlloc::alloc< std::complex<double> >(sphereDataConfig->spec_n_max+1);
+		buffer_size = (sphereDataConfig->spec_n_max+1)*sizeof(std::complex<double>);
+
+		buffer_in = MemBlockAlloc::alloc< std::complex<double> >(buffer_size);
+		buffer_out = MemBlockAlloc::alloc< std::complex<double> >(buffer_size);
 	}
 
 
 	SphBandedMatrixComplex()	:
 		sphereDataConfig(nullptr),
+		buffer_size(0),
 		buffer_in(nullptr),
 		buffer_out(nullptr)
 	{
@@ -75,8 +82,8 @@ public:
 	{
 		if (buffer_in != nullptr)
 		{
-			MemBlockAlloc::free(buffer_in, sphereDataConfig->spec_num_elems);
-			MemBlockAlloc::free(buffer_out, sphereDataConfig->spec_num_elems);
+			MemBlockAlloc::free(buffer_in, buffer_size);
+			MemBlockAlloc::free(buffer_out, buffer_size);
 		}
 	}
 
@@ -478,6 +485,7 @@ public:
 				int buffer_idx = 0;
 				for (int n = std::abs(m); n <= sphereDataConfig->spec_n_max; n++)
 				{
+					assert(buffer_idx < sphereDataConfig->spec_n_max+1);
 					buffer_in[buffer_idx] = i_rhs.data_spec[sphereDataConfig->getArrayIndexByModes_Complex(n,m)];
 					buffer_idx++;
 				}

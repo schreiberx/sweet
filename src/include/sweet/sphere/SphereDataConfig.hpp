@@ -166,7 +166,7 @@ private:
 		spec_n_max = shtns->lmax;
 		spec_m_max = shtns->mmax;
 		spec_num_elems = shtns->nlm;
-		cplx_spec_num_elems = (spec_n_max+1)*(spec_n_max+1);
+		cplx_spec_num_elems = (spec_n_max+1)*(spec_m_max+1);
 
 		if (spec_n_max != spec_m_max)
 		{
