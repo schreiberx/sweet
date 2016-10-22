@@ -153,7 +153,7 @@ AddOption(	'--libsph',
 		dest='libsph',
 		type='choice',
 		choices=['enable', 'disable'],
-		default='enable',
+		default='disable',
 		help="Enable compiling and linking with SPH library [default: %default]"
 )
 env['libsph'] = GetOption('libsph')
@@ -372,7 +372,7 @@ else:
 
 
 if env['sphere_spectral_space'] == 'enable':
-	env['libfft'] = 'enable'
+	env['libsph'] = 'enable'
 
 	env.Append(CXXFLAGS = ' -DSWEET_USE_SPHERE_SPECTRAL_SPACE=1')
 	exec_name+='_spherespectral'
@@ -391,14 +391,6 @@ else:
 		sys.exit(-1)
 
 	env.Append(CXXFLAGS = ' -DSWEET_USE_SPHERE_SPECTRAL_DEALIASING=0')
-
-
-
-if env['libfft'] == 'enable':
-	env.Append(CXXFLAGS = ' -DSWEET_USE_LIBFFT=1')
-	exec_name+='_libfft'
-else:
-	env.Append(CXXFLAGS = ' -DSWEET_USE_LIBFFT=0')
 
 
 
@@ -763,9 +755,6 @@ if env['numa_block_allocator'] in ['1', '2']:
 	env.Append(LIBS=['numa'])
 
 
-exec_name += '_'+env['compiler']
-exec_name += '_'+env['mode']
-
 if env['threading'] == 'omp':
 	env.Append(CXXFLAGS=['-fopenmp'])
 	env.Append(LINKFLAGS=['-fopenmp'])
@@ -797,6 +786,9 @@ if env['libsph'] == 'enable':
 
 if env['libfft'] == 'enable':
 
+	env.Append(CXXFLAGS = ' -DSWEET_USE_LIBFFT=1')
+	exec_name+='_libfft'
+
 	if env['mkl'] == 'enable':
 		print("INFO: Using Intel MKL instead of FFTW");
 
@@ -816,6 +808,8 @@ if env['libfft'] == 'enable':
 
 		if env['threading'] == 'omp':
 			env.Append(LIBS=['fftw3_omp'])
+else:
+	env.Append(CXXFLAGS = ' -DSWEET_USE_LIBFFT=0')
 
 
 if env['mic'] == 'enable':
@@ -855,6 +849,9 @@ if env['debug_symbols'] == 'enable':
 		env.Append(CXXFLAGS = ' -shared-intel -shared-libgcc -debug inline-debug-info')
 		env.Append(LINKFLAGS = ' -shared-intel  -shared-libgcc -debug inline-debug-info')
 
+
+exec_name += '_'+env['compiler']
+exec_name += '_'+env['mode']
 
 
 #

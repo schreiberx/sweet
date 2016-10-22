@@ -99,7 +99,6 @@ public:
 		lat_gaussian(nullptr),
 		lat_cogaussian(nullptr)
 	{
-		refCounter()++;
 	}
 
 
@@ -354,12 +353,6 @@ public:
 	}
 
 
-	int& refCounter()
-	{
-		static int ref_counter = 0;
-		return ref_counter;
-	}
-
 
 	/**
 	 * Setup with given modes.
@@ -438,20 +431,16 @@ public:
 		fftw_free(lat_cogaussian);
 		lat_cogaussian = nullptr;
 
-		assert(refCounter() >= 0);
-
-		if (refCounter() == 0)
-		{
-			fftw_cleanup_threads();
-			fftw_cleanup();
-		}
+#if SWEET_USE_THREADING
+		fftw_cleanup_threads();
+#endif
+		fftw_cleanup();
 	}
 
 
 
 	~SphereDataConfig()
 	{
-		refCounter()--;
 		shutdown();
 	}
 };

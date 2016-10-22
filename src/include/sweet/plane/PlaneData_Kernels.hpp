@@ -95,9 +95,9 @@ public:
 				int cy = ky-R;
 				int cx = kx-R;
 
-				if (0 > cx || planeDataConfig->physical_data_size[0] <= cx)
+				if (0 > cx || (int)planeDataConfig->physical_data_size[0] <= cx)
 					continue;
-				if (0 > cy || planeDataConfig->physical_data_size[1] <= cy)
+				if (0 > cy || (int)planeDataConfig->physical_data_size[1] <= cy)
 					continue;
 
 				KERNEL_physical_set(cy, cx, inv_kernel_array[ky][kx]);
@@ -113,9 +113,9 @@ public:
 				int cy = ky-R;
 				int cx = planeDataConfig->physical_data_size[0] - R + kx;
 
-				if (0 > cx || planeDataConfig->physical_data_size[0] <= cx)
+				if (0 > cx || (int)planeDataConfig->physical_data_size[0] <= cx)
 					continue;
-				if (0 > cy || planeDataConfig->physical_data_size[1] <= cy)
+				if (0 > cy || (int)planeDataConfig->physical_data_size[1] <= cy)
 					continue;
 
 				KERNEL_physical_set(cy, cx, inv_kernel_array[ky][kx]);
@@ -131,9 +131,9 @@ public:
 				int cy = planeDataConfig->physical_data_size[1] - R + ky;
 				int cx = kx-R;
 
-				if (0 > cx || planeDataConfig->physical_data_size[0] <= cx)
+				if (0 > cx || (int)planeDataConfig->physical_data_size[0] <= cx)
 					continue;
-				if (0 > cy || planeDataConfig->physical_data_size[1] <= cy)
+				if (0 > cy || (int)planeDataConfig->physical_data_size[1] <= cy)
 					continue;
 
 				KERNEL_physical_set(cy, cx, inv_kernel_array[ky][kx]);
@@ -149,9 +149,9 @@ public:
 				int cy = planeDataConfig->physical_data_size[1] - R + ky;
 				int cx = planeDataConfig->physical_data_size[0] - R + kx;
 
-				if (0 > cx || planeDataConfig->physical_data_size[0] <= cx)
+				if (0 > cx || (int)planeDataConfig->physical_data_size[0] <= cx)
 					continue;
-				if (0 > cy || planeDataConfig->physical_data_size[1] <= cy)
+				if (0 > cy || (int)planeDataConfig->physical_data_size[1] <= cy)
 					continue;
 
 				KERNEL_physical_set(cy, cx, inv_kernel_array[ky][kx]);
