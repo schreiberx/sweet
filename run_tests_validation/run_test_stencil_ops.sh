@@ -26,7 +26,7 @@ if false; then
 	echo "***********************************************"
 	make clean
 	scons --threading=omp --unit-test=test_diff_stencil_ops --gui=disable --plane-spectral-space=disable --mode=release --plane-spectral-dealiasing=disable
-	EXEC="./build/test_diff_stencil_ops_omp_gnu_release  -X $X -Y $Y -S 0"
+	EXEC="./build/test_diff_stencil_ops_*_release  -X $X -Y $Y -S 0"
 	echo "$EXEC"
 	$EXEC || exit 1
 fi
@@ -39,7 +39,7 @@ echo "TEST CART DIFF OPS (release) $X"
 echo "***********************************************"
 make clean
 scons --threading=omp --unit-test=test_diff_stencil_ops --gui=disable --plane-spectral-space=disable --mode=release --plane-spectral-dealiasing=disable
-EXEC="./build/test_diff_stencil_ops_omp_gnu_release -n 128 -m 128 -X $X -Y $X -S 0"
+EXEC="./build/test_diff_stencil_ops_*_release -n 128 -m 128 -X $X -Y $X -S 0"
 $EXEC || exit 1
 
 X=$MIN_SCALE
@@ -49,7 +49,7 @@ echo "TEST CART DIFF OPS (release) $X"
 echo "***********************************************"
 make clean
 scons --threading=omp --unit-test=test_diff_stencil_ops --gui=disable --plane-spectral-space=disable --mode=release --plane-spectral-dealiasing=disable
-./build/test_diff_stencil_ops_omp_gnu_release -n 128 -m 128 -X $X -Y $X -S 0 || exit 1
+./build/test_diff_stencil_ops_*_release -n 128 -m 128 -X $X -Y $X -S 0 || exit 1
 
 X=$MAX_SCALE
 echo
@@ -58,7 +58,7 @@ echo "TEST CART DIFF OPS (release) ALIASING CONTROL $X"
 echo "***********************************************"
 make clean
 scons --threading=omp --unit-test=test_diff_stencil_ops --gui=disable --plane-spectral-space=enable --mode=release --plane-spectral-dealiasing=enable
-./build/test_diff_stencil_ops_planespectral_libfft_dealiasing_omp_gnu_release -n 128 -m 128 -X $X -Y $X -S 0 || exit 1
+./build/test_diff_stencil_ops_*_release -n 128 -m 128 -X $X -Y $X -S 0 || exit 1
 
 X=$MIN_SCALE
 echo
@@ -67,7 +67,7 @@ echo "TEST CART DIFF OPS (release) ALIASING CONTROL $X"
 echo "***********************************************"
 make clean
 scons --threading=omp --unit-test=test_diff_stencil_ops --gui=disable --plane-spectral-space=enable --mode=release --plane-spectral-dealiasing=enable
-./build/test_diff_stencil_ops_planespectral_libfft_dealiasing_omp_gnu_release -n 128 -m 128 -X $X -Y $X -S 0 || exit 1
+./build/test_diff_stencil_ops_*_release -n 128 -m 128 -X $X -Y $X -S 0 || exit 1
 
 
 

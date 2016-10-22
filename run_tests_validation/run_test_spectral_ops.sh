@@ -26,8 +26,8 @@ echo "***********************************************"
 make clean
 SCONS="scons --threading=omp --unit-test=test_spectral_ops --gui=disable --plane-spectral-space=enable --mode=release --plane-spectral-dealiasing=enable"
 $SCONS
-./build/test_spectral_ops_planespectral_libfft_dealiasing_omp_gnu_release -n 128 -m 128 -X $X -Y $X -S 0 || exit
-./build/test_spectral_ops_planespectral_libfft_dealiasing_omp_gnu_release -n 32 -m 32 -X $X -Y $X -S 1 || exit
+./build/test_spectral_ops_*_release -n 128 -m 128 -X $X -Y $X -S 0 || exit
+./build/test_spectral_ops_*_release -n 32 -m 32 -X $X -Y $X -S 1 || exit
 
 X=$MIN_SCALE
 echo
@@ -37,8 +37,8 @@ echo "***********************************************"
 make clean
 SCONS="scons --threading=omp --unit-test=test_spectral_ops --gui=disable --plane-spectral-space=enable --mode=release --plane-spectral-dealiasing=enable"
 $SCONS
-./build/test_spectral_ops_planespectral_libfft_dealiasing_omp_gnu_release -n 128 -m 128 -X $X -Y $X -S 0 || exit
-./build/test_spectral_ops_planespectral_libfft_dealiasing_omp_gnu_release -n 128 -m 128 -X $X -Y $X -S 1 || exit
+./build/test_spectral_ops_*_release -n 128 -m 128 -X $X -Y $X -S 0 || exit
+./build/test_spectral_ops_*_release -n 128 -m 128 -X $X -Y $X -S 1 || exit
 
 
 
@@ -51,10 +51,10 @@ echo "***********************************************"
 make clean
 SCONS="scons --threading=omp --unit-test=test_spectral_ops --gui=disable --plane-spectral-space=enable --mode=release --plane-spectral-dealiasing=disable"
 $SCONS
-EXEC="./build/test_spectral_ops_planespectral_libfft_omp_gnu_release -n 128 -m 128 -X $X -Y $Y -S 0"
+EXEC="./build/test_spectral_ops_*_release -n 128 -m 128 -X $X -Y $Y -S 0"
 echo "$EXEC"
 $EXEC || exit
-EXEC="./build/test_spectral_ops_planespectral_libfft_omp_gnu_release -n 128 -m 128 -X $X -Y $Y -S 1"
+EXEC="./build/test_spectral_ops_*_release -n 128 -m 128 -X $X -Y $Y -S 1"
 echo "$EXEC"
 $EXEC || exit
 
@@ -66,10 +66,10 @@ echo "***********************************************"
 make clean
 SCONS="scons --threading=omp --unit-test=test_spectral_ops --gui=disable --plane-spectral-space=enable --mode=release --plane-spectral-dealiasing=disable"
 $SCONS
-EXEC="./build/test_spectral_ops_planespectral_libfft_omp_gnu_release -n 128 -m 128 -X $X -Y $X -S 1"
+EXEC="./build/test_spectral_ops_*_release -n 128 -m 128 -X $X -Y $X -S 1"
 echo "$EXEC"
 $EXEC || exit
-EXEC="./build/test_spectral_ops_planespectral_libfft_omp_gnu_release -n 128 -m 128 -X $X -Y $X -S 0"
+EXEC="./build/test_spectral_ops_*_release -n 128 -m 128 -X $X -Y $X -S 0"
 $EXEC || exit
 
 X=$MIN_SCALE
@@ -80,8 +80,8 @@ echo "***********************************************"
 make clean
 SCONS="scons --threading=omp --unit-test=test_spectral_ops --gui=disable --plane-spectral-space=enable --mode=release --plane-spectral-dealiasing=disable"
 $SCONS
-./build/test_spectral_ops_planespectral_libfft_omp_gnu_release -n 128 -m 128 -X $X -Y $X -S 1 || exit
-./build/test_spectral_ops_planespectral_libfft_omp_gnu_release -n 128 -m 128 -X $X -Y $X -S 0 || exit
+./build/test_spectral_ops_*_release -n 128 -m 128 -X $X -Y $X -S 1 || exit
+./build/test_spectral_ops_*_release -n 128 -m 128 -X $X -Y $X -S 0 || exit
 
 
 

@@ -17,7 +17,7 @@ echo "TEST ADVECTION: convergence in space (release) $X"
 echo "***********************************************"
 make clean
 scons --threading=omp --unit-test=test_rexi --gui=disable
-EXEC="./build/test_rexi_planespectral_libfft_dealiasing_omp_gnu_release -N 64"
+EXEC="./build/test_rexi_*_release -N 64"
 echo "$EXEC"
 $EXEC || exit
 

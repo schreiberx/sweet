@@ -26,7 +26,7 @@ if true; then
 	echo "***********************************************"
 	make clean
 	scons --threading=omp --unit-test=test_complexarray_ops --gui=disable --plane-spectral-space=enable --mode=release --plane-spectral-dealiasing=disable
-	EXEC="./build/test_complexarray_ops_planespectral_libfft_omp_gnu_release -N 64 -X $X -Y $Y -S 0"
+	EXEC="./build/test_complexarray_ops_*_release -N 64 -X $X -Y $Y -S 0"
 	echo "$EXEC"
 	$EXEC || exit
 fi
@@ -38,7 +38,7 @@ echo "TEST SPECTRAL (complex array) OPS (release) $X"
 echo "***********************************************"
 make clean
 scons --threading=omp --unit-test=test_complexarray_ops --gui=disable --plane-spectral-space=enable --mode=release --plane-spectral-dealiasing=disable
-EXEC="./build/test_complexarray_ops_planespectral_libfft_omp_gnu_release -N 64 -n 128 -m 128 -X $X -Y $X -S 1"
+EXEC="./build/test_complexarray_ops_*_release -N 64 -n 128 -m 128 -X $X -Y $X -S 1"
 echo "$EXEC"
 
 X=$MIN_SCALE
@@ -48,7 +48,7 @@ echo "TEST SPECTRAL (complexarray) OPS (release) $X"
 echo "***********************************************"
 make clean
 scons --threading=omp --unit-test=test_complexarray_ops --gui=disable --plane-spectral-space=enable --mode=release --plane-spectral-dealiasing=disable
-./build/test_complexarray_ops_planespectral_libfft_omp_gnu_release -N 64 -n 128 -m 128 -X $X -Y $X -S 1 || exit
+./build/test_complexarray_ops_*_release -N 64 -n 128 -m 128 -X $X -Y $X -S 1 || exit
 
 
 echo "***********************************************"
