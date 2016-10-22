@@ -92,8 +92,8 @@ public:
 			for (std::size_t kx = R; kx < S; kx++)
 			{
 				// coordinates in Cartesian space
-				std::size_t cy = ky-R;
-				std::size_t cx = kx-R;
+				int cy = ky-R;
+				int cx = kx-R;
 
 				if (0 > cx || planeDataConfig->physical_data_size[0] <= cx)
 					continue;
@@ -110,8 +110,8 @@ public:
 			for (std::size_t kx = 0; kx < R; kx++)
 			{
 				// coordinates in Cartesian space
-				std::size_t cy = ky-R;
-				std::size_t cx = planeDataConfig->physical_data_size[0] - R + kx;
+				int cy = ky-R;
+				int cx = planeDataConfig->physical_data_size[0] - R + kx;
 
 				if (0 > cx || planeDataConfig->physical_data_size[0] <= cx)
 					continue;
@@ -128,8 +128,8 @@ public:
 			for (std::size_t kx = R; kx < S; kx++)
 			{
 				// coordinates in Cartesian space
-				std::size_t cy = planeDataConfig->physical_data_size[1] - R + ky;
-				std::size_t cx = kx-R;
+				int cy = planeDataConfig->physical_data_size[1] - R + ky;
+				int cx = kx-R;
 
 				if (0 > cx || planeDataConfig->physical_data_size[0] <= cx)
 					continue;
@@ -146,8 +146,8 @@ public:
 			for (std::size_t kx = 0; kx < R; kx++)
 			{
 				// coordinates in Cartesian space
-				std::size_t cy = planeDataConfig->physical_data_size[1] - R + ky;
-				std::size_t cx = planeDataConfig->physical_data_size[0] - R + kx;
+				int cy = planeDataConfig->physical_data_size[1] - R + ky;
+				int cx = planeDataConfig->physical_data_size[0] - R + kx;
 
 				if (0 > cx || planeDataConfig->physical_data_size[0] <= cx)
 					continue;

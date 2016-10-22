@@ -205,6 +205,9 @@ AddOption(	'--plane-spectral-dealiasing',
 )
 env['plane_spectral_dealiasing'] = GetOption('plane_spectral_dealiasing')
 
+# Use always dealiasing for sphere
+env['sphere_spectral_dealiasing'] = 'enable'
+
 
 AddOption(	'--gui',
 		dest='gui',
@@ -359,6 +362,15 @@ else:
 	env['plane_spectral_dealiasing'] = 'disable'
 
 
+if env['plane_spectral_dealiasing'] == 'enable':
+	env.Append(CXXFLAGS = ' -DSWEET_USE_PLANE_SPECTRAL_DEALIASING=1')
+	exec_name+='_planedealiasing'
+else:
+	env.Append(CXXFLAGS = ' -DSWEET_USE_PLANE_SPECTRAL_DEALIASING=0')
+
+
+
+
 if env['sphere_spectral_space'] == 'enable':
 	env['libfft'] = 'enable'
 
@@ -366,6 +378,20 @@ if env['sphere_spectral_space'] == 'enable':
 	exec_name+='_spherespectral'
 else:
 	env.Append(CXXFLAGS = ' -DSWEET_USE_SPHERE_SPECTRAL_SPACE=0')
+
+	env['sphere_spectral_dealiasing'] = 'disable'
+
+
+if env['sphere_spectral_dealiasing'] == 'enable':
+	env.Append(CXXFLAGS = ' -DSWEET_USE_SPHERE_SPECTRAL_DEALIASING=1')
+	exec_name+='_spheredealiasing'
+else:
+	if env['sphere_spectral_space'] == 'enable':
+		print("No anti-aliasing on sphere not supported!")
+		sys.exit(-1)
+
+	env.Append(CXXFLAGS = ' -DSWEET_USE_SPHERE_SPECTRAL_DEALIASING=0')
+
 
 
 if env['libfft'] == 'enable':
@@ -383,12 +409,6 @@ else:
 
 
 
-if env['plane_spectral_dealiasing'] == 'enable':
-	env.Append(CXXFLAGS = ' -DSWEET_USE_PLANE_SPECTRAL_DEALIASING=1')
-	exec_name+='_dealiasing'
-else:
-	env.Append(CXXFLAGS = ' -DSWEET_USE_PLANE_SPECTRAL_DEALIASING=0')
-	
 
 if env['parareal'] == 'none':
 	env.Append(CXXFLAGS = ' -DSWEET_PARAREAL=0')
@@ -445,7 +465,7 @@ if env['compiler'] == 'gnu':
 		print(search_string+" not found... testing if this is LLVM on MacOSX")
 		found = False
 		for l in gccv:
-			if clanc in l:
+			if 'Apple LLVM' in l:
 				found = True
 				break
 		if not found:
@@ -592,6 +612,13 @@ if env['compiler'] == 'llvm':
 	env.Append(CXXFLAGS=' -pipe')
 
 	# activate gnu C++ compiler
+
+	if env['threading'] == 'omp':
+		print()
+		print('WARNING: OpenMP with LLVM not supported, deactivating')
+		print()
+
+		env['threading'] = 'off'
 
 	# todo: fix me also for intel mpicxx compiler
 	env.Replace(CXX = 'clang++')

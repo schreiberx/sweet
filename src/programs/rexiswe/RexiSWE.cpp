@@ -562,8 +562,6 @@ bool RexiSWE::run_timestep_slrexi(
 	double dt = i_timestep_size;
 	double stag_displacement[4] = {-0.5,-0.5,-0.5,-0.5}; //A grid staggering - centred cell
 
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-
 	if (i_param_nonlinear > 0)
 	{
 		//Calculate departure points
