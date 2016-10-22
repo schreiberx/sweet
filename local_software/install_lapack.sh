@@ -23,7 +23,7 @@ if [ ! -e "$DST_DIR/lib/liblapack.a"  -o "$1" != "" ]; then
 
 	#./configure --prefix="$DST_DIR" || exit 1
 
-	ulimit -s 100000 || exit 1
+	ulimit -s 100000 || echo "FAILED TO INCREASE ULIMIT & now ignoring this problem"
 	make blaslib || exit 1
 	make || exit 1
 
