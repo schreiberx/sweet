@@ -312,7 +312,8 @@ AddOption(	'--ld-flags',
 		default='',
 		help='Additional ld-flags, default: ""'
 )
-env['ld_flags'] = GetOption('ld_flags')
+
+
 
 env['ld_flags'] = GetOption('ld_flags')
 env.Append(LINKFLAGS = env['ld_flags'])
@@ -320,6 +321,7 @@ env.Append(LINKFLAGS = env['ld_flags'])
 
 env['fortran_source'] = 'disable'
 
+llvm_omp_override = False
 
 ###########################################
 # Compile options
@@ -605,17 +607,24 @@ if env['compiler'] == 'llvm':
 
 	# activate gnu C++ compiler
 
+
+	if env['sphere_spectral_space'] == 'enable':
+		# append gfortran library
+		env.Append(LIBS=['gfortran'])
+
 	if env['threading'] == 'omp':
 		print()
 		print('WARNING: OpenMP with LLVM not supported, deactivating')
 		print()
 
+		llvm_omp_override = True
 		env['threading'] = 'off'
 
 	# todo: fix me also for intel mpicxx compiler
 	env.Replace(CXX = 'clang++')
 
 	if env['fortran_source'] == 'enable':
+		#env.Append(LIBS=['gfortran'])
 		print "TODO: LLVM compiler not yet supported with fortran enabled"
 		Exit(-1)
 
@@ -744,6 +753,11 @@ if env['sweet_mpi'] == 'enable':
 
 if env['threading'] in ['omp']:
 	exec_name+='_'+env['threading']
+
+if llvm_omp_override:
+	print("WARNING: adding _omp despite program was not compiled with OpenMP activated. This is for compatibility reasons only!")
+	exec_name+='_omp'
+	
 
 if env['rexi_parallel_sum']=='enable':
 	exec_name+='_rexipar'
