@@ -436,6 +436,9 @@ public:
         long_options[next_free_program_option] = {"rexi-ext-modes", required_argument, 0, 256+'a'+c};
         next_free_program_option++;	c++;
 
+        long_options[next_free_program_option] = {"nonlinear", required_argument, 0, 256+'a'+c};
+        next_free_program_option++;	c++;
+
 
 #if SWEET_PARAREAL
         int parareal_start_option_index = next_free_program_option;
@@ -472,7 +475,7 @@ public:
 		{
 			opt = getopt_long(
 							i_argc, i_argv,
-							"N:M:n:m:C:u:U:s:X:Y:f:b:x:y:k:l:t:i:T:v:V:O:o:H:r:R:W:F:S:g:p:G:d:z",
+							"N:M:n:m:C:u:U:s:X:Y:f:b:x:y:l:t:i:T:v:V:O:o:H:r:R:W:F:S:g:G:d:z",
 							long_options, &option_index
 					);
 
@@ -499,6 +502,7 @@ public:
 					case 5:		rexi.rexi_use_half_poles = atoi(optarg);	break;
 					case 6:		rexi.use_rexi = atoi(optarg);	break;
 					case 7:		rexi.rexi_use_extended_modes = atoi(optarg);	break;
+					case 8:		misc.use_nonlinear_equations = atoi(optarg);	break;
 
 						default:
 #if SWEET_PARAREAL
@@ -575,10 +579,6 @@ public:
 				sim.viscosity_order = atoi(optarg);
 				break;
 
-			case 'p':
-				rexi.use_rexi = atoi(optarg);
-				break;
-
 			case 's':
 				setup.benchmark_scenario_id = atoi(optarg);
 				break;
@@ -617,10 +617,6 @@ public:
 
 			case 'G':
 				misc.gui_enabled = atoi(optarg);
-				break;
-
-			case 'k':
-				misc.use_nonlinear_equations = atoi(optarg);
 				break;
 
 			case 'l':
@@ -720,13 +716,13 @@ public:
 						"	-G [0/1]	graphical user interface",
 						"	-O [string]	string prefix for filename of output of simulation data",
 						"	-d [int]	accuracy of floating point output",
-						"	-k [bool]	Use non-linear (1) if available or linear (0) formulation",
 						"	-l [bool]	Use Robert function formulation for velocities on the sphere",
 						"	-i [file0][;file1][;file3]...	string with filenames for initial conditions",
 						"	            specify BINARY; as first file name to read files as binary raw data",
+						"	--nonlinear [bool]	Use non-linear (1) if available or linear (0) formulation, default: 1",
 						"",
 						"Rexi",
-						"	-rexi [bool]	Use REXI time stepping",
+						"	-rexi [bool]	Use REXI time stepping (1). default: 0",
 						"	-rexi-h [float]	REXI parameter h",
 						"	-rexi-m [int]	REXI parameter M",
 						"	-rexi-l [int]	REXI parameter L",

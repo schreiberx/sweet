@@ -7,7 +7,7 @@ SPHROOT="../../../"
 cd "$SPHROOT"
 
 make clean
-scons --program=swe_sph_and_rexi --gui=disable --sphere-spectral-space=enable --threading=omp --mode=release -j4
+scons --program=swe_sph_and_rexi --gui=disable --plane-spectral-space=disable --sphere-spectral-space=enable --threading=omp --mode=release || exit 1
 
 cd "$BASEDIR"
 
@@ -39,7 +39,7 @@ VISCOSITY=100000
 SIMTIME=720000
 
 
-$SPHROOT/build/swe_sph_and_rexi_libfft_dealiasing_omp_gnu_release -M $RES -p $USE_REXI -k $NONLINEAR -C -$TS -o $OTS -u $VISCOSITY -t $SIMTIME --rexi=0 --rexi-m=$REXI_M --rexi-h=$REXI_H --rexi-half=$REXI_HALF_POLES -s $BENCH_ID -l $USE_ROBERT_FUNS --rexi-ext-modes $REXI_EXTENDED_MODES
+$SPHROOT/build/swe_sph_and_rexi_spherespectral_spheredealiasing_libfft_omp_gnu_release -M $RES --nonlinear $NONLINEAR -C -$TS -o $OTS -u $VISCOSITY -t $SIMTIME --rexi=$USE_REXI --rexi-m=$REXI_M --rexi-h=$REXI_H --rexi-half=$REXI_HALF_POLES -s $BENCH_ID --use-robert-functions $USE_ROBERT_FUNS --rexi-ext-modes $REXI_EXTENDED_MODES || exit 1
 
 
 #mv prog_* "$BASEDIR"
