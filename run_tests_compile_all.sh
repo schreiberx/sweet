@@ -90,7 +90,7 @@ $SCONS  || exit
 
 echo
 echo "SPHERICAL HARMONICS SWE AND REXI"
-SCONS="scons --program=swe_sph_and_rexi --gui=disable --plane-spectral-space=enable --mode=debug"
+SCONS="scons --program=swe_sph_and_rexi --gui=disable --sphere-spectral-space=enable --mode=debug"
 echo "$SCONS"
 $SCONS  || exit
 
