@@ -780,7 +780,7 @@ else:
 
 
 if env['plane_spectral_space'] == 'enable':
-	env['libsph'] = 'enable'
+	env['libfft'] = 'enable'
 
 
 if env['libsph'] == 'enable':
