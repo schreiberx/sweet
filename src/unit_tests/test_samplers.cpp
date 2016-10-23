@@ -94,9 +94,9 @@ int main(
 //			simVars.disc.res_physical[0] = res3[0];
 //			simVars.disc.res_physical[1] = res3[1];
 
-			for (std::size_t j = 0; j < res3[1]; j++)
+			for (int j = 0; j < res3[1]; j++)
 			{
-				for (std::size_t i = 0; i < res3[0]; i++)
+				for (int i = 0; i < res3[0]; i++)
 				{
 					double x = ((double)i/resolution_factor)*(simVars.sim.domain_size[0]/(double)res3[0]);
 					double y = ((double)j/resolution_factor)*(simVars.sim.domain_size[1]/(double)res3[1]);
@@ -117,9 +117,9 @@ int main(
 
 		// setup some test sampling points
 		// we use 2 arrays - one for each sampling position
-		for (std::size_t j = 0; j < res3[1]; j++)
+		for (int j = 0; j < res3[1]; j++)
 		{
-			for (std::size_t i = 0; i < res3[0]; i++)
+			for (int i = 0; i < res3[0]; i++)
 			{
 				px.p_physical_set(j, i, ((double)i/resolution_factor)*(simVars.sim.domain_size[0]/(double)res3[0]));
 				py.p_physical_set(j, i, ((double)j/resolution_factor)*(simVars.sim.domain_size[1]/(double)res3[1]));

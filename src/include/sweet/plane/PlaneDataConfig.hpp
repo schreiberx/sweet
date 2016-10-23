@@ -172,21 +172,6 @@ public:
 	static
 	bool loadWisdom()
 	{
-#if SWEET_REXI_THREAD_PARALLEL_SUM
-
-		// Threaded time parallel sum
-		std::cout << "Using REXI parallel sum, hence using only single FFT thread" << std::endl;
-
-#else
-
-	#if SWEET_THREADING
-		// initialise FFTW with spatial parallelization
-		fftw_init_threads();
-		fftw_plan_with_nthreads(omp_get_max_threads());
-	#endif
-
-#endif
-
 		static const char *load_wisdom_from_file = nullptr;
 
 		if (load_wisdom_from_file != nullptr)
@@ -210,6 +195,18 @@ public:
 	}
 
 
+public:
+	int& refCounterFftwPlans()
+	{
+#if SWEET_THREADING
+		if (omp_get_level() != 0)
+			FatalError("PlaneDataConfig is not threadsafe, but called inside parallel region with more than one thread!!!");
+#endif
+
+		static int ref_counter = 0;
+		return ref_counter;
+	}
+
 
 public:
 	PlaneDataConfig()
@@ -230,9 +227,21 @@ private:
 	void setup_internal_data()
 	{
 		if (initialized)
+		{
+			//
+			// refCounter()--;
+			// is inside cleanup!
 			cleanup();
+		}
+		else
+		{
+			// use REF counter in case of multiple plans
+			// this allows a clean cleanup of fftw library
+			initialized = true;
+		}
 
-		initialized = true;
+		// FFTW PLANS are allocated below
+		refCounterFftwPlans()++;
 
 		physical_data_size[0] = physical_res[0];
 		physical_data_size[1] = physical_res[1];
@@ -252,6 +261,27 @@ private:
 
 		assert(spectral_modes[0] > 0);
 		assert(spectral_modes[1] > 0);
+
+
+#if SWEET_REXI_THREAD_PARALLEL_SUM
+
+		// Threaded time parallel sum
+		std::cout << "Using REXI parallel sum, hence using only single FFT thread" << std::endl;
+
+#else
+
+	#if SWEET_THREADING
+		// Is this the first instance?
+		if (refCounterFftwPlans() == 1)
+		{
+			// initialise FFTW with spatial parallelization
+			fftw_init_threads();
+			fftw_plan_with_nthreads(omp_get_max_threads());
+		}
+	#endif
+
+#endif
+
 
 		/*
 		 * Load existing wisdom
@@ -676,19 +706,27 @@ public:
 
 	void cleanup()
 	{
-
+		if (initialized)
+		{
 #if SWEET_USE_LIBFFT
-		fftw_destroy_plan(fftw_plan_forward);
-		fftw_destroy_plan(fftw_plan_backward);
+			fftw_destroy_plan(fftw_plan_forward);
+			fftw_destroy_plan(fftw_plan_backward);
 
-		fftw_destroy_plan(fftw_plan_complex_forward);
-		fftw_destroy_plan(fftw_plan_complex_backward);
+			fftw_destroy_plan(fftw_plan_complex_forward);
+			fftw_destroy_plan(fftw_plan_complex_backward);
 
+			refCounterFftwPlans()--;
+			assert(refCounterFftwPlans() >= 0);
+
+			if (refCounterFftwPlans() == 0)
+			{
 #if SWEET_THREADING
-		fftw_cleanup_threads();
+				fftw_cleanup_threads();
 #endif
-		fftw_cleanup();
+				fftw_cleanup();
+			}
 #endif
+		}
 	}
 
 
