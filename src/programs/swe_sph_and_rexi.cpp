@@ -575,6 +575,15 @@ public:
 					exit(1);
 				}
 
+#if 1
+				double max_abs_value = 10.0;
+				if (prog_h.reduce_abs_max() > max_abs_value)
+				{
+					std::cerr << "Instability detected (max abs value of h > " << max_abs_value << ")" << std::endl;
+					assert(false);
+					exit(1);
+				}
+#endif
 				simVars.timecontrol.current_simulation_time += simVars.timecontrol.current_timestep_size;
 			}
 			write_output();

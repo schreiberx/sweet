@@ -52,7 +52,7 @@ int main(int i_argc, char *i_argv[])
 	if (res_x > max_res || res_y > max_res)
 		max_res = std::max(res_x, res_y);
 
-	for (; res_x <= max_res && res_y <= max_res; res_x+2, res_y+2)
+	for (; res_x <= max_res && res_y <= max_res; res_x+=2, res_y+=2)
 	{
 		std::cout << "*************************************************************" << std::endl;
 		std::cout << "Testing aliasing pattern with resolution " << res_x << " x " << res_y << std::endl;
@@ -84,14 +84,16 @@ int main(int i_argc, char *i_argv[])
 			h.spectral_space_data[i] = {1.0,0.0};
 
 		h = h.spectral_addScalarAll(1.0);
+#define PRINT_SPECCTRUM	0
 
+#if PRINT_SPECCTRUM
 		if (res[0] < res_max && res[1] < res_max)
 		{
 			std::cout << "All one spectrum:" << std::endl;
 			h.print_spectralData();
 			std::cout << std::endl;
 		}
-
+#endif
 		/////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////
@@ -102,24 +104,29 @@ int main(int i_argc, char *i_argv[])
 		h.spectral_space_data_valid = true;
 		h.physical_space_data_valid = true;
 
+#if PRINT_SPECCTRUM
 		if (res[0] < res_max && res[1] < res_max)
 		{
 			std::cout << "All one spectrum:" << std::endl;
 			h.print_spectralData();
 			std::cout << std::endl;
 		}
+#endif
 
 		h.spectral_zeroAliasingModes();
 
+#if PRINT_SPECCTRUM
 		if (res[0] < res_max && res[1] < res_max)
 		{
 			std::cout << "Zero aliasing spectrum:" << std::endl;
 			h.print_spectralData();
 			std::cout << std::endl;
 		}
+#endif
 
 		h = h.spectral_addScalarAll(1.0);
 
+#if PRINT_SPECCTRUM
 		if (res[0] < res_max && res[1] < res_max)
 		{
 			std::cout << "Add scalar 1 to non-aliasing spectrum:" << std::endl;
@@ -127,6 +134,7 @@ int main(int i_argc, char *i_argv[])
 			std::cout << std::endl;
 			std::cout << "(There should be only 2 and 0)" << std::endl;
 		}
+#endif
 
 		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
 		{

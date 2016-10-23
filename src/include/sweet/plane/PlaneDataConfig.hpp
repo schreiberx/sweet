@@ -232,6 +232,8 @@ private:
 		if (initialized)
 			cleanup();
 
+		initialized = true;
+
 		physical_data_size[0] = physical_res[0];
 		physical_data_size[1] = physical_res[1];
 
