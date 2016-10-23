@@ -60,7 +60,7 @@ int main(int i_argc, char *i_argv[])
 
 	double prev_error_diff_x = 0;
 	double prev_error_diff_y = 0;
-	double prev_error_diff_z = 0;
+	//double prev_error_diff_z = 0;
 
 	double prev_error_diff2_x = 0;
 	double prev_error_diff2_y = 0;
@@ -324,11 +324,12 @@ int main(int i_argc, char *i_argv[])
 			v.physical_space_data_valid = false;
 #endif
 
-			double err_z = (u*v-h).reduce_rms_quad();
+//			double err_z = (u*v-h).reduce_rms_quad();
 
 			if (simVars.disc.use_spectral_basis_diffs)
 			{
-				std::cout << "error (mul*mul-fun) = " << err_z << std::endl;
+#if 0
+//				std::cout << "error (mul*mul-fun) = " << err_z << std::endl;
 
 #if FUN_ID == 1
 				if (err_z > eps || std::isnan(err_z))
@@ -336,6 +337,7 @@ int main(int i_argc, char *i_argv[])
 					FatalError("SPEC: Error threshold exceeded for err_z!");
 					FatalError("EXIT");
 				}
+#endif
 #endif
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
@@ -354,12 +356,14 @@ int main(int i_argc, char *i_argv[])
 			else
 			{
 
+#if 0
 #if FUN_ID == 1
 				if (err_z > eps || std::isnan(err_z))
 					FatalError("SPEC: Error threshold exceeded for err_z!");
 #endif
+#endif
 
-				prev_error_diff_z = err_z;
+				//prev_error_diff_z = err_z;
 			}
 		}
 
@@ -491,13 +495,13 @@ int main(int i_argc, char *i_argv[])
 			{
 				double conv_x = prev_error_diff_x/err_x;
 				double conv_y = prev_error_diff_y/err_y;
-				double conv_z = prev_error_diff_z/err_z;
+				//double conv_z = prev_error_diff_z/err_z;
 				std::cout << "error diff x = " << err_x << std::endl;
 				std::cout << "error diff y = " << err_y << std::endl;
-				std::cout << "error diff z = " << err_z << std::endl;
+				//std::cout << "error diff z = " << err_z << std::endl;
 				std::cout << "conv x = " << conv_x << std::endl;
 				std::cout << "conv y = " << conv_y << std::endl;
-				std::cout << "conv z = " << conv_z << std::endl;
+				//std::cout << "conv z = " << conv_z << std::endl;
 
 				if (conv_x != 0)
 				if (abs(conv_x-4.0) > eps_convergence)
@@ -512,12 +516,13 @@ int main(int i_argc, char *i_argv[])
 					std::cerr << "Cart: Error threshold exceeded for conv_y, no convergence given!" << std::endl;
 					FatalError("EXIT");
 				}
-
+#if 0
 				if (abs(err_z) > eps)
 				{
 					std::cerr << "Cart: Error threshold exceeded for err_z!" << std::endl;
 					FatalError("EXIT");
 				}
+#endif
 
 				prev_error_diff_x = err_x;
 				prev_error_diff_y = err_y;

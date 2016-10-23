@@ -273,18 +273,18 @@ int main(int i_argc, char *i_argv[])
 			// normalization for diff = 2 pi / L
 			double err_x = (op.diff_c_x(h)-h_diff_x).reduce_norm2()*res_normalization*simVars.sim.domain_size[0]/(2.0*M_PIl);
 			double err_y = (op.diff_c_y(h)-h_diff_y).reduce_norm2()*res_normalization*simVars.sim.domain_size[1]/(2.0*M_PIl);
-			double err_z = (u*v-h).reduce_norm2()*res_normalization;
+//			double err_z = (u*v-h).reduce_norm2()*res_normalization;
 
 			{
 				double conv_x = prev_error_diff_x/err_x;
 				double conv_y = prev_error_diff_y/err_y;
-				double conv_z = prev_error_diff_z/err_z;
+//				double conv_z = prev_error_diff_z/err_z;
 				std::cout << "error diff x = " << err_x << std::endl;
 				std::cout << "error diff y = " << err_y << std::endl;
-				std::cout << "error diff z = " << err_z << std::endl;
+//				std::cout << "error diff z = " << err_z << std::endl;
 				std::cout << "conv x = " << conv_x << std::endl;
 				std::cout << "conv y = " << conv_y << std::endl;
-				std::cout << "conv z = " << conv_z << std::endl;
+//				std::cout << "conv z = " << conv_z << std::endl;
 
 				if (conv_x != 0)
 				if (abs(conv_x-4.0) > eps_convergence)
@@ -299,13 +299,13 @@ int main(int i_argc, char *i_argv[])
 					std::cerr << "Cart: Error threshold exceeded for conv_y, no convergence given!" << std::endl;
 					exit(-1);
 				}
-
+#if 0
 				if (abs(err_z) > eps)
 				{
 					std::cerr << "Cart: Error threshold exceeded for err_z!" << std::endl;
 					exit(-1);
 				}
-
+#endif
 				prev_error_diff_x = err_x;
 				prev_error_diff_y = err_y;
 			}
