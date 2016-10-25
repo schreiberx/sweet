@@ -19,9 +19,9 @@ if env['program_name'] in ['swe_rexi'] or env['unit_test'] in ['test_helmholtz']
 		env_omp = env.Clone()
 #		env_omp.Append(CCFLAGS = ' -fopenmp')
 		env_omp.Append(CXXFLAGS = ' -fopenmp')
-		env.src_files.append(env_omp.Object('src/programs/rexiswe/RexiSWE.cpp'))
+		env.src_files.append(env_omp.Object('src/programs/swe_plane_rexi/SWE_Plane_REXI.cpp'))
 	else:
-		env.src_files.append(env.Object('src/programs/rexiswe/RexiSWE.cpp'))
+		env.src_files.append(env.Object('src/programs/swe_plane_rexi/SWE_Plane_REXI.cpp'))
 
 
 Export('env')

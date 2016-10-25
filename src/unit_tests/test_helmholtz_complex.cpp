@@ -20,7 +20,7 @@
 #include <stdio.h>
 #include <complex>
 
-#include "../programs/rexiswe/RexiSWE.hpp"
+#include "../programs/swe_plane_rexi/SWE_Plane_REXI.hpp"
 #include "../programs/rexiswe/RexiSWE_HelmholtzSolver.hpp"
 
 // Plane data config

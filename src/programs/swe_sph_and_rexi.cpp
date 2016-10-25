@@ -146,6 +146,23 @@ public:
 
 
 
+	void advance_simulation_time()
+	{
+		// calculate new time step size (last time step might be smaller)
+		simVars.timecontrol.current_timestep_size =
+				std::min(
+						simVars.timecontrol.current_timestep_size,
+						simVars.timecontrol.max_simulation_time - simVars.timecontrol.current_simulation_time
+					);
+		assert(simVars.timecontrol.current_timestep_size > 0);
+
+		// compute new current simulation time
+		simVars.timecontrol.current_simulation_time += simVars.timecontrol.current_timestep_size;
+
+	}
+
+
+
 	void run()
 	{
 		// one month runtime
@@ -174,16 +191,9 @@ public:
 
 			// time step size
 			if (sphereDataConfig->spat_num_lat < 256)
-			{
-	//			simVars.sim.viscosity2 = 1e5;
 				simVars.timecontrol.current_timestep_size = 0.002*simVars.sim.earth_radius/(double)sphereDataConfig->spat_num_lat;
-			}
 			else
-			{
-	//			simVars.sim.viscosity2 = 1e5;
 				simVars.timecontrol.current_timestep_size = 0.001*simVars.sim.earth_radius/(double)sphereDataConfig->spat_num_lat;
-			}
-			//simVars.timecontrol.current_timestep_size = 30;
 		}
 
 		if (simVars.misc.output_each_sim_seconds <= 0)
@@ -220,7 +230,6 @@ public:
 		}
 		else if (simVars.setup.benchmark_scenario_id == 2 || simVars.setup.benchmark_scenario_id == 3)
 		{
-			// Non-dimensional stuff
 #if 0
 			if (simVars.timecontrol.current_timestep_size <= 0)
 			{
@@ -230,26 +239,9 @@ public:
 			}
 #endif
 
-			simVars.sim.h0 = 1;
-			simVars.sim.gravitation = 1;
-			simVars.sim.earth_radius = 1;
-
-			simVars.misc.use_nonlinear_equations = 0;
-
 			if (simVars.setup.benchmark_scenario_id == 2)
 			{
 				setup_initial_conditions_gaussian(0);
-#if 0
-	//			prog_h.spat_set_value(simVars.sim.h0);
-				prog_v.physical_set_zero();
-				prog_u.spat_update_lambda_cogaussian_grid(
-						[](double lon, double comu, double &io_data)
-						{
-							io_data = 1*comu;
-						}
-					);
-				//prog_u.spat_set_zero();
-#endif
 			}
 			else if (simVars.setup.benchmark_scenario_id == 3)
 			{
@@ -261,21 +253,24 @@ public:
 		}
 
 
-		bool with_coriolis = false;
+		/*
+		 * This allows running REXI including Coriolis-related terms but just by setting f to 0
+		 */
+		bool use_coriolis_rexi_formulation = false;
 
 		if (simVars.sim.coriolis_omega != 0)
-			with_coriolis = true;
+			use_coriolis_rexi_formulation = true;
 
 		std::cout << "Using time step size dt = " << simVars.timecontrol.current_timestep_size << std::endl;
 		std::cout << "Running simulation until t_end = " << simVars.timecontrol.max_simulation_time << std::endl;
 		std::cout << "Parameters:" << std::endl;
-		std::cout << " + gravity: " << simVars.sim.gravitation << std::endl;
-		std::cout << " + earth_radius: " << simVars.sim.earth_radius << std::endl;
-		std::cout << " + average height: " << simVars.sim.h0 << std::endl;
-		std::cout << " + coriolis_omega: " << simVars.sim.coriolis_omega << std::endl;
-		std::cout << " + viscosity D: " << simVars.sim.viscosity << std::endl;
+		std::cout << " + Gravity: " << simVars.sim.gravitation << std::endl;
+		std::cout << " + Earth_radius: " << simVars.sim.earth_radius << std::endl;
+		std::cout << " + Average height: " << simVars.sim.h0 << std::endl;
+		std::cout << " + Coriolis_omega: " << simVars.sim.coriolis_omega << std::endl;
+		std::cout << " + Viscosity D: " << simVars.sim.viscosity << std::endl;
 		std::cout << " + use_nonlinear: " << simVars.misc.use_nonlinear_equations << std::endl;
-		std::cout << " + Coriolis: " << with_coriolis << std::endl;
+		std::cout << " + Use REXI Coriolis formulation: " << (use_coriolis_rexi_formulation ? "true" : "false") << std::endl;
 		std::cout << std::endl;
 		std::cout << " + Benchmark scenario id: " << simVars.setup.benchmark_scenario_id << std::endl;
 		std::cout << " + Use robert functions: " << simVars.misc.sphere_use_robert_functions << std::endl;
@@ -307,7 +302,7 @@ public:
 		if (simVars.rexi.use_rexi == false)
 		{
 			simVars.timecontrol.current_simulation_time = 0;
-			while (simVars.timecontrol.current_simulation_time < simVars.timecontrol.max_simulation_time)
+			while (simVars.timecontrol.current_simulation_time <= simVars.timecontrol.max_simulation_time)
 			{
 				if (simVars.timecontrol.current_simulation_time >= simVars.misc.output_next_sim_seconds)
 				{
@@ -340,7 +335,10 @@ public:
 					exit(1);
 				}
 
-				simVars.timecontrol.current_simulation_time += simVars.timecontrol.current_timestep_size;
+				if (simVars.timecontrol.current_simulation_time >= simVars.timecontrol.max_simulation_time)
+					break;
+
+				advance_simulation_time();
 			}
 
 			std::cout << std::endl;
@@ -407,7 +405,7 @@ public:
 								simVars.sim.coriolis_omega, //*inv_sqrt_avg_geopo,
 								simVars.sim.h0*simVars.sim.gravitation,
 								simVars.timecontrol.current_timestep_size, //*sqrt_avg_geopo
-								with_coriolis
+								use_coriolis_rexi_formulation
 						);
 					}
 					else
@@ -420,14 +418,14 @@ public:
 								simVars.sim.coriolis_omega, //*inv_sqrt_avg_geopo,
 								simVars.sim.h0*simVars.sim.gravitation,
 								simVars.timecontrol.current_timestep_size, //*sqrt_avg_geopo
-								with_coriolis
+								use_coriolis_rexi_formulation
 						);
 					}
 				}
 			}
 
 			simVars.timecontrol.current_simulation_time = 0;
-			while (simVars.timecontrol.current_simulation_time < simVars.timecontrol.max_simulation_time)
+			while (simVars.timecontrol.current_simulation_time <= simVars.timecontrol.max_simulation_time)
 			{
 				if (simVars.timecontrol.current_simulation_time >= simVars.misc.output_next_sim_seconds)
 				{
@@ -488,7 +486,7 @@ public:
 										simVars.sim.coriolis_omega, //*inv_sqrt_avg_geopo,
 										simVars.sim.h0*simVars.sim.gravitation,
 										simVars.timecontrol.current_timestep_size, //*sqrt_avg_geopo
-										with_coriolis
+										use_coriolis_rexi_formulation
 								);
 
 								rexiSPHRobert.solve(
@@ -519,7 +517,7 @@ public:
 										simVars.sim.coriolis_omega,
 										simVars.sim.h0*simVars.sim.gravitation,
 										simVars.timecontrol.current_timestep_size,
-										with_coriolis
+										use_coriolis_rexi_formulation
 								);
 
 								rexiSPH.solve(
@@ -584,8 +582,12 @@ public:
 					exit(1);
 				}
 #endif
-				simVars.timecontrol.current_simulation_time += simVars.timecontrol.current_timestep_size;
+				if (simVars.timecontrol.current_simulation_time >= simVars.timecontrol.max_simulation_time)
+					break;
+
+				advance_simulation_time();
 			}
+
 			write_output();
 			std::cout << std::endl;
 		}

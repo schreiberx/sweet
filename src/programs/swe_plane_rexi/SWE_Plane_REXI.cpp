@@ -4,7 +4,8 @@
  *  Created on: 24 Jul 2015
  *      Author: Martin Schreiber <schreiberx@gmail.com>
  */
-#include "RexiSWE.hpp"
+#include "SWE_Plane_REXI.hpp"
+
 #include <sweet/sweetmath.hpp>
 
 

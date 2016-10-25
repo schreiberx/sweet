@@ -19,8 +19,22 @@ The scripts are named as follows:
    This script sets up all the environment variables to compile and run SWEET
 
 After installing the software, you can use
-
 	source ./local_software/env_vars.sh
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! FIRST THING TO DO!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+First run the
+  $ ./env_vars.sh
+script in your current environment e.g. by using
+  $ source ./local_software/env_vars.sh
+Otherwise the scripts are maybe using the system-wide installed
+software packages
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 from the SWEET source code directory to setup your
 environment variables correctly.

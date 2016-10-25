@@ -447,6 +447,7 @@ if env['compiler'] == 'gnu':
 			break
 
 	if not found:
+		print(search_string+" not found... testing for next search string")
 		search_string = 'gcc-Version '
 		for l in gccv:
 			if l[:len(search_string)] == search_string:

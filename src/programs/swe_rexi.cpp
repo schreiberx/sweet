@@ -8,6 +8,7 @@
 	#include <sweet/VisSweet.hpp>
 #endif
 
+
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneDataPlaneDataTimesteppingRK.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
@@ -22,7 +23,9 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "rexiswe/RexiSWE.hpp"
+#include "swe_plane_rexi/SWE_Plane_REXI.hpp"
+
+
 
 // Plane data config
 PlaneDataConfig planeDataConfigInstance;
@@ -1224,7 +1227,7 @@ public:
 #endif
 		}
 
-		// provide information to parameters
+		// advance time step and provide information to parameters
 		simVars.timecontrol.current_timestep_size = o_dt;
 		simVars.timecontrol.current_simulation_time += o_dt;
 		simVars.timecontrol.current_timestep_nr++;
@@ -2193,10 +2196,10 @@ int main(int i_argc, char *i_argv[])
 			time.reset();
 
 
-			//Main time loop
+			// Main time loop
 			while(true)
 			{
-				//Output data
+				// Output data
 				if (simVars.misc.verbosity > 1)
 				{
 					simulationSWE->timestep_output(buf);
@@ -2204,22 +2207,22 @@ int main(int i_argc, char *i_argv[])
 					std::string output = buf.str();
 					buf.str("");
 
-					//This is an output printed on screen or buffered to files if > used
+					// This is an output printed on screen or buffered to files if > used
 					std::cout << output;
 
-					//This is an output only printed on screen, not buffered to files if > used
+					// This is an output only printed on screen, not buffered to files if > used
 					if (simVars.misc.verbosity > 2)
 						std::cerr << output;
 				}
 
-				//Stop simulation if requested
+				// Stop simulation if requested
 				if (simulationSWE->should_quit())
 					break;
 
-				//Main call for timestep run
+				// Main call for timestep run
 				simulationSWE->run_timestep();
 
-				//Instability
+				// Instability
 				if (simulationSWE->instability_detected())
 				{
 					std::cout << "INSTABILITY DETECTED" << std::endl;
@@ -2227,12 +2230,12 @@ int main(int i_argc, char *i_argv[])
 				}
 			}
 
-			//Stop counting time
+			// Stop counting time
 			time.stop();
 
 			double seconds = time();
 
-			//End of run output results
+			// End of run output results
 			std::cout << "Simulation time (seconds): " << seconds << std::endl;
 			std::cout << "Number of time steps: " << simVars.timecontrol.current_timestep_nr << std::endl;
 			std::cout << "Time per time step: " << seconds/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;

@@ -142,7 +142,7 @@ public:
 		double CFL = 0.05;
 
 		/// Coriolis frequency f0
-		double f0 = 0.0;
+		double f0 = 0.01;
 
 		/// Beta coefficient for f(y_N) = f0 + y_N*beta
 		/// here, y_N is the normalized y coordinate \in [0;1]
@@ -158,7 +158,7 @@ public:
 		/**
 		 * Coriolis effect
 		 */
-		double coriolis_omega = 7.292e-5;
+		double &coriolis_omega = f0;
 
 		/**
 		 * Gravitational constant
@@ -478,7 +478,7 @@ public:
 		{
 			opt = getopt_long(
 							i_argc, i_argv,
-							"N:M:n:m:C:u:U:s:X:Y:f:b:x:y:t:i:T:v:V:O:o:H:r:R:W:F:S:g:G:d:z",
+							"N:M:n:m:C:u:U:s:X:Y:f:b:x:y:t:i:T:v:V:O:o:H:r:a:R:W:F:S:g:G:d:z",
 							long_options, &option_index
 					);
 
@@ -610,6 +610,10 @@ public:
 				sim.f0 = atof(optarg);
 				break;
 
+			case 'a':
+				sim.earth_radius = atof(optarg);
+				break;
+
 			case 'b':
 				sim.beta = atof(optarg);
 				break;
@@ -668,10 +672,12 @@ public:
 						"	-U [visc]	viscosity order, default=2",
 						//"	-p [visc]	potential viscosity, default=0",
 						//"	-P [visc]	potential hyperviscosity, default=0",
-						"	-f [float]	f-parameter for f-plane, default=0",
+						"	-f [float]	f-parameter for f-plane or coriolis omega term, default=0",
 						"	-b [float]	beta-parameter for beta-plane, default=0",
 						"	            Use -1 to set f*sin(phi) with phi in [-pi/2;pi/2] in y",
 						"	-g [float]	gravity, default=9.81",
+						"	-a [float]	earth radius, default=1",
+						"	-H [float]	average (initial) height of water, default=1000",
 						"",
 						"Simulation setup parameters",
 						"	-s [scen]	scenario id, default=1",
@@ -683,7 +689,6 @@ public:
 						"	            11: Waves",
 						"	-x [float]	x coordinate for setup \\in [0;1], default=0.5",
 						"	-y [float]	y coordinate for setup \\in [0;1], default=0.5",
-						"	-H [float]	average (initial) height of water, default=1000",
 						"	-r [radius]	scale factor of radius for initial condition, default=1",
 						"	--initial-freq-x-mul [float]	Frequency for the waves initial conditions in x, default=2",
 						"	--initial-freq-y-mul [float]	Frequency for the waves initial conditions in y, default=1",
@@ -700,7 +705,6 @@ public:
 						"               0: FD, 1: spectral derivatives, default:0",
 						"  >Time:",
 						"	-W [0/1]	use up- and downwinding, default:0",
-//						"	-F [0/1]	use leapfrog-like algorithm, default:0",
 						"	-R [1-RKn]	order of Runge-Kutta method, default:4",
 						"	-C [cfl]	CFL condition, use negative value for fixed time step size, default=0.05",
 						"",

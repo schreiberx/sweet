@@ -939,7 +939,7 @@ public:
 	void file_physical_writeFile_lon_pi_shifted(
 			const char *i_filename,
 			std::string i_title = "",
-			int i_precision = 8
+			int i_precision = 14
 	)
 	{
 		request_data_physical();

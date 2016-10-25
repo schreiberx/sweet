@@ -19,7 +19,7 @@ if [ ! -e "$DST_DIR/bin/gcc"  -o "$1" != "" ]; then
 
 	if [ ! -e "$BASENAME" ]; then
 		echo "Uncompressing $FILENAME"
-		tar xjf "$FILENAME"
+		tar xjf "$FILENAME" || exit 1
 	else
 		echo "Not uncompressing $FILENAME"
 	fi
@@ -44,7 +44,7 @@ if [ ! -e "$DST_DIR/bin/gcc"  -o "$1" != "" ]; then
 	fi
 
 	if [ ! -e "$BASENAME/$LIB_BASENAME" ]; then
-		tar xjf "$LIB_FILENAME"
+		tar xjf "$LIB_FILENAME" || exit 1
 	fi
 
 	mv "$LIB_BASENAME" "$BASENAME/"
@@ -65,7 +65,7 @@ if [ ! -e "$DST_DIR/bin/gcc"  -o "$1" != "" ]; then
 	fi
 
 	if [ ! -e "$BASENAME/$LIB_BASENAME" ]; then
-		tar xjf "$LIB_FILENAME"
+		tar xjf "$LIB_FILENAME" || exit 1
 	fi
 
 	mv "$LIB_BASENAME" "$BASENAME/"
@@ -88,7 +88,7 @@ if [ ! -e "$DST_DIR/bin/gcc"  -o "$1" != "" ]; then
 	fi
 	
 	if [ ! -e "$BASENAME/$LIB_BASENAME" ]; then
-		tar xzf "$LIB_FILENAME"
+		tar xzf "$LIB_FILENAME" || exit 1
 	fi
 
 	mv "$LIB_BASENAME" "$BASENAME/"
@@ -110,7 +110,7 @@ if [ ! -e "$DST_DIR/bin/gcc"  -o "$1" != "" ]; then
 	fi
 
 	if [ ! -e "$BASENAME/$LIB_BASENAME" ]; then
-		tar xzf "$LIB_FILENAME"
+		tar xzf "$LIB_FILENAME" || exit 1
 	fi
 
 	mv "$LIB_BASENAME" "$BASENAME/"
