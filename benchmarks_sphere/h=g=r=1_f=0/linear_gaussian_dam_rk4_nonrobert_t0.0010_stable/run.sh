@@ -36,7 +36,7 @@ USE_ROBERT_FUNS=0
 
 G=1	# gravity
 H=1	# avg height
-F=1	# omega
+F=0	# omega
 R=1	# radius
 
 NONLINEAR=0

@@ -29,14 +29,14 @@ RES=64
 OTS=0.01
 
 USE_REXI=1
-REXI_M=$((256))
+REXI_M=256
 REXI_H=0.2
 REXI_HALF_POLES=1
 REXI_EXTENDED_MODES=0
 
 G=1	# gravity
 H=1	# avg height
-F=1	# omega
+F=0	# omega
 R=1	# radius
 
 BENCH_ID=3
