@@ -221,6 +221,12 @@ public:
 		}
 		else if (simVars.setup.benchmark_scenario_id == 1)
 		{
+			/// setup galewski parameters
+			simVars.sim.coriolis_omega = 7.292e-5;
+			simVars.sim.gravitation = 9.80616;
+			simVars.sim.earth_radius = 6.37122e6;
+			simVars.sim.h0 = 10000.0;
+
 			benchmarkGalewsky.setup_initial_h(prog_h);
 //			prog_h.spat_set_zero();
 			benchmarkGalewsky.setup_initial_h_add_bump(prog_h);

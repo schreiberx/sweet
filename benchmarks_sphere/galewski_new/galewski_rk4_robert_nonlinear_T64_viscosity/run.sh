@@ -39,7 +39,9 @@ VISCOSITY=100000
 SIMTIME=720000
 
 
-$SPHROOT/build/swe_sph_and_rexi_spherespectral_spheredealiasing_*_release -M $RES --nonlinear $NONLINEAR -C -$TS -o $OTS -u $VISCOSITY -t $SIMTIME --rexi=$USE_REXI --rexi-m=$REXI_M --rexi-h=$REXI_H --rexi-half=$REXI_HALF_POLES -s $BENCH_ID --use-robert-functions $USE_ROBERT_FUNS --rexi-ext-modes $REXI_EXTENDED_MODES || exit 1
+EXEC="$SPHROOT/build/swe_sph_and_rexi_spherespectral_spheredealiasing_*_release -M $RES --nonlinear $NONLINEAR -C -$TS -o $OTS -u $VISCOSITY -t $SIMTIME --rexi=$USE_REXI --rexi-m=$REXI_M --rexi-h=$REXI_H --rexi-half=$REXI_HALF_POLES -s $BENCH_ID --use-robert-functions $USE_ROBERT_FUNS --rexi-ext-modes $REXI_EXTENDED_MODES"
+echo "$EXEC"
+$EXEC || exit 1
 
 
 #mv prog_* "$BASEDIR"
