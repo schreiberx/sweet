@@ -110,6 +110,8 @@ void SWE_Sphere_REXI::get_workload_start_end(
 		std::size_t &o_end
 )
 {
+	std::size_t max_N = rexi.alpha.size();
+
 #if SWEET_REXI_THREAD_PARALLEL_SUM || SWEET_MPI
 
 #if SWEET_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
@@ -123,13 +125,13 @@ void SWE_Sphere_REXI::get_workload_start_end(
 	assert(block_size >= 0);
 	assert(global_thread_id >= 0);
 
-	o_start = block_size*global_thread_id;
-	o_end = std::min(rexi.alpha.size(), o_start+block_size);
+	o_start = std::min(max_N, block_size*global_thread_id);
+	o_end = std::min(max_N, o_start+block_size);
 
 #else
 
 	o_start = 0;
-	o_end = rexi.alpha.size();
+	o_end = max_N;
 
 #endif
 }
@@ -244,10 +246,13 @@ void SWE_Sphere_REXI::setup(
 
 			std::size_t start, end;
 			get_workload_start_end(start, end);
-			std::size_t local_size = end-start;
+			int local_size = (int)end-(int)start;
+
+#pragma omp critical
+			std::cout << start << "\t" << end << "\t" << local_size << "\t" << block_size << std::endl;
 
 #if SWEET_DEBUG
-			if (local_size >= 0)
+			if (local_size < 0)
 				FatalError("local_size < 0");
 #endif
 
