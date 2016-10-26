@@ -219,7 +219,7 @@ void SWE_Sphere_REXI::setup(
 	for (int j = 0; j < num_local_rexi_par_threads; j++)
 	{
 #if SWEET_REXI_THREAD_PARALLEL_SUM
-#	pragma omp parallel for schedule(static,1) default(none) shared(sphereDataConfigRexi,std::cout,j)
+#	pragma omp parallel for schedule(static,1) default(none) shared(std::cout,j)
 #endif
 		for (int i = 0; i < num_local_rexi_par_threads; i++)
 		{
@@ -402,7 +402,6 @@ bool SWE_Sphere_REXI::run_timestep_rexi(
 		/*
 		 * DO SUM IN PARALLEL
 		 */
-
 		SphereData thread_prog_phi0(sphereDataConfigRexi);
 		SphereData thread_prog_u0(sphereDataConfigRexi);
 		SphereData thread_prog_v0(sphereDataConfigRexi);
@@ -556,21 +555,21 @@ bool SWE_Sphere_REXI::run_timestep_rexi(
 
 			perThreadVars[thread_id]->accum_phi.request_data_physical();
 
-			#pragma omp parallel for schedule(static) default(none) shared(io_prog_h0, perThreadVars, thread_id)
+			#pragma omp parallel for schedule(static) default(none) shared(io_prog_h0, thread_id)
 			for (int i = 0; i < io_prog_h0.sphereDataConfig->physical_array_data_number_of_elements; i++)
 				io_prog_h0.physical_space_data[i] += perThreadVars[thread_id]->accum_phi.physical_space_data[i];
 
 
 			perThreadVars[thread_id]->accum_u.request_data_physical();
 
-			#pragma omp parallel for schedule(static) default(none) shared(io_prog_u0, perThreadVars, thread_id)
+			#pragma omp parallel for schedule(static) default(none) shared(io_prog_u0, thread_id)
 			for (int i = 0; i < io_prog_u0.sphereDataConfig->physical_array_data_number_of_elements; i++)
 				io_prog_u0.physical_space_data[i] += perThreadVars[thread_id]->accum_u.physical_space_data[i];
 
 
 			perThreadVars[thread_id]->accum_v.request_data_physical();
 
-			#pragma omp parallel for schedule(static) default(none) shared(io_prog_v0, perThreadVars, thread_id)
+			#pragma omp parallel for schedule(static) default(none) shared(io_prog_v0, thread_id)
 			for (int i = 0; i < io_prog_v0.sphereDataConfig->physical_array_data_number_of_elements; i++)
 				io_prog_v0.physical_space_data[i] += perThreadVars[thread_id]->accum_v.physical_space_data[i];
 		}
