@@ -3,6 +3,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
+import math
 
 
 def loadDataFromFile(filename):
@@ -27,6 +28,6 @@ for filename in sys.argv[2:]:
 			value = cmp_data[j,i]-ref_data[j,i]
 			norm_value += value*value
 
-	norm_value /= sqrt(size_i*size_j)
+	norm_value /= math.sqrt(size_i*size_j)
 
 	print(filename+"\t"+str(norm_value))
