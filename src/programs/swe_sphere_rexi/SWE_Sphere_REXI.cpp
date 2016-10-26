@@ -110,8 +110,6 @@ void SWE_Sphere_REXI::get_workload_start_end(
 		std::size_t &o_end
 )
 {
-	std::size_t N = rexi.alpha.size();
-
 #if SWEET_REXI_THREAD_PARALLEL_SUM || SWEET_MPI
 
 #if SWEET_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
@@ -122,13 +120,16 @@ void SWE_Sphere_REXI::get_workload_start_end(
 
 	int global_thread_id = local_thread_id + num_local_rexi_par_threads*mpi_rank;
 
+	assert(block_size >= 0);
+	assert(global_thread_id >= 0);
+
 	o_start = block_size*global_thread_id;
-	o_end = std::min(N, o_start+block_size);
+	o_end = std::min(rexi.alpha.size(), o_start+block_size);
 
 #else
 
 	o_start = 0;
-	o_end = N;
+	o_end = rexi.alpha.size();
 
 #endif
 }
@@ -244,6 +245,11 @@ void SWE_Sphere_REXI::setup(
 			std::size_t start, end;
 			get_workload_start_end(start, end);
 			std::size_t local_size = end-start;
+
+#if SWEET_DEBUG
+			if (local_size >= 0)
+				FatalError("local_size < 0");
+#endif
 
 			perThreadVars[i]->alpha.resize(local_size);
 			perThreadVars[i]->beta_re.resize(local_size);
