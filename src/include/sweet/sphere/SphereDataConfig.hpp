@@ -29,38 +29,38 @@ private:
 	 * Number of longitudes
 	 */
 public:
-	int spat_num_lon;
+	int physical_num_lon;
 
 	/**
 	 * Number of latitudes
 	 */
 public:
-	int spat_num_lat;
+	int physical_num_lat;
 
 	/**
 	 * Number of total longitudes and latitudes
 	 */
 public:
-	int spat_num_elems;
+	int physical_array_data_number_of_elements;
 
 
 	/**
 	 * Number of modes
 	 */
 public:
-	int spec_n_max;
-	int spec_m_max;
+	int spectral_modes_n_max;
+	int spectral_modes_m_max;
 
 	/**
 	 * Number of total mode variations
 	 */
-	int spec_num_elems;
+	int spectral_array_data_number_of_elements;
 
 	/**
 	 * Number of elements for SPH which is based on
 	 * complex-valued physical data
 	 */
-	int cplx_spec_num_elems;
+	int spectral_complex_array_data_number_of_elements;
 
 
 	/**
@@ -86,14 +86,14 @@ public:
 public:
 	SphereDataConfig()	:
 		shtns(nullptr),
-		spat_num_lon(-1),
-		spat_num_lat(-1),
-		spat_num_elems(-1),
+		physical_num_lon(-1),
+		physical_num_lat(-1),
+		physical_array_data_number_of_elements(-1),
 
-		spec_n_max(-1),
-		spec_m_max(-1),
-		spec_num_elems(-1),
-		cplx_spec_num_elems(-1),
+		spectral_modes_n_max(-1),
+		spectral_modes_m_max(-1),
+		spectral_array_data_number_of_elements(-1),
+		spectral_complex_array_data_number_of_elements(-1),
 
 		lat(nullptr),
 		lat_gaussian(nullptr),
@@ -111,7 +111,7 @@ public:
 		assert(n >= m);
 
 //		return (spec_n_max-im)*im + ((im+1)*im)/2+l;
-		return (m*(2*spec_n_max-m+1)>>1)+n;
+		return (m*(2*spectral_modes_n_max-m+1)>>1)+n;
 	}
 
 
@@ -142,15 +142,15 @@ public:
 
 		if (m < 0)
 		{
-			int minc = spec_m_max+m;
+			int minc = spectral_modes_m_max+m;
 			int row_idx = (((minc-1)*minc)>>1) + minc;
 			int idx =  row_idx + (n+m);
 			return idx;
 		}
 		else
 		{
-			int rel_idx = (m*(2*spec_n_max-m+1)>>1)+n;
-			return ((spec_n_max*(spec_n_max+1))>>1)+rel_idx;
+			int rel_idx = (m*(2*spectral_modes_n_max-m+1)>>1)+n;
+			return ((spectral_modes_n_max*(spectral_modes_n_max+1))>>1)+rel_idx;
 		}
 	}
 
@@ -158,16 +158,16 @@ public:
 private:
 	void setup_data()
 	{
-		spat_num_lat = shtns->nlat;
-		spat_num_lon = shtns->nphi;
-		spat_num_elems = shtns->nspat;
+		physical_num_lat = shtns->nlat;
+		physical_num_lon = shtns->nphi;
+		physical_array_data_number_of_elements = shtns->nspat;
 
-		spec_n_max = shtns->lmax;
-		spec_m_max = shtns->mmax;
-		spec_num_elems = shtns->nlm;
-		cplx_spec_num_elems = (spec_n_max+1)*(spec_m_max+1);
+		spectral_modes_n_max = shtns->lmax;
+		spectral_modes_m_max = shtns->mmax;
+		spectral_array_data_number_of_elements = shtns->nlm;
+		spectral_complex_array_data_number_of_elements = (spectral_modes_n_max+1)*(spectral_modes_m_max+1);
 
-		if (spec_n_max != spec_m_max)
+		if (spectral_modes_n_max != spectral_modes_m_max)
 		{
 			std::cerr << "only spec_n_max == spec_m_max currently supported!" << std::endl;
 			assert(false);
@@ -183,7 +183,7 @@ private:
 		 */
 		{
 			int idx = 0;
-			for (int m = 0; m <= spec_m_max; m++)
+			for (int m = 0; m <= spectral_modes_m_max; m++)
 			{
 
 				int test_idx = getArrayIndexByModes(m,m);
@@ -195,7 +195,7 @@ private:
 					exit(1);
 				}
 
-				for (int n = m; n <= spec_n_max; n++)
+				for (int n = m; n <= spectral_modes_n_max; n++)
 				{
 
 					int test_idx2 = getArrayIndexByModes(n,m);
@@ -209,7 +209,7 @@ private:
 				}
 			}
 
-			if (idx != spec_num_elems)
+			if (idx != spectral_array_data_number_of_elements)
 			{
 				std::cerr << "INTERNAL SPH ERROR (real-valued physical transformation)" << std::endl;
 				assert(false);
@@ -226,7 +226,7 @@ private:
 		 */
 		{
 			int idx = 0;
-			for (int n = 0; n <= spec_n_max; n++)
+			for (int n = 0; n <= spectral_modes_n_max; n++)
 			{
 				int test_idx = getArrayIndexByModes_Complex(n,-n);
 
@@ -257,7 +257,7 @@ private:
 			}
 
 
-			if (idx != cplx_spec_num_elems)
+			if (idx != spectral_complex_array_data_number_of_elements)
 			{
 				std::cerr << "INTERNAL SPH ERROR" << std::endl;
 				assert(false);
@@ -273,7 +273,7 @@ private:
 		 */
 		{
 			int idx = 0;
-			for (int m = -spec_m_max; m <= spec_m_max; m++)
+			for (int m = -spectral_modes_m_max; m <= spectral_modes_m_max; m++)
 			{
 				int test_idx = getArrayIndexByModes_Complex_NCompact(std::abs(m),m);
 
@@ -285,7 +285,7 @@ private:
 				}
 
 
-				for (int n = std::abs(m); n <= spec_n_max; n++)
+				for (int n = std::abs(m); n <= spectral_modes_n_max; n++)
 				{
 					int test_idx2 = getArrayIndexByModes_Complex_NCompact(n,m);
 
@@ -404,10 +404,10 @@ public:
 		assert(shtns == nullptr);
 
 		setupAutoPhysicalSpace(
-				i_sphConfig->spec_m_max + i_additional_modes_longitude,
-				i_sphConfig->spec_n_max + i_additional_modes_latitude,
-				&spat_num_lon,
-				&spat_num_lat
+				i_sphConfig->spectral_modes_m_max + i_additional_modes_longitude,
+				i_sphConfig->spectral_modes_n_max + i_additional_modes_latitude,
+				&physical_num_lon,
+				&physical_num_lat
 		);
 	}
 

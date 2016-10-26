@@ -62,7 +62,7 @@ public:
 
 		SphereTestSolutions_Gaussian testSolutions;
 
-		if (sphConfig->spec_n_max < 32)
+		if (sphConfig->spectral_modes_n_max < 32)
 		{
 			std::cerr << "WARNING: AT LEAST 32 MODES REQUIRED for proper accuracy!!!" << std::endl;
 		}

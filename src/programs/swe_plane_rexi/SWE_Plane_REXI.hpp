@@ -39,7 +39,7 @@
  * This allows using a OpenMP parallelization only in the RexiSWE class to check this degree of
  * parallelism.
  */
-class RexiSWE
+class SWE_Plane_REXI
 {
 	double h;
 	int M;
@@ -109,7 +109,7 @@ private:
 	void cleanup();
 
 public:
-	RexiSWE();
+	SWE_Plane_REXI();
 
 
 	/**
@@ -360,7 +360,7 @@ public:
 #endif
 	}
 
-	~RexiSWE();
+	~SWE_Plane_REXI();
 };
 
 #endif /* SRC_PROGRAMS_REXISWE_HPP_ */

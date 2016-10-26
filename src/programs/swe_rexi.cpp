@@ -171,7 +171,7 @@ public:
 	PlaneDataTimesteppingRK timestepping;
 
 	// Rexi stuff
-	RexiSWE rexiSWE;
+	SWE_Plane_REXI swe_plane_rexi;
 
 	// Interpolation stuff
 	PlaneDataSampler sampler2D;
@@ -668,7 +668,7 @@ public:
 			}
 
 			// use REXI
-			rexiSWE.setup(
+			swe_plane_rexi.setup(
 					simVars.rexi.rexi_h,
 					simVars.rexi.rexi_M,
 					simVars.rexi.rexi_L,
@@ -680,12 +680,12 @@ public:
 			if (simVars.misc.verbosity > 2)
 			{
 				std::cout << "ALPHA:" << std::endl;
-				for (std::size_t n = 0; n < rexiSWE.rexi.alpha.size(); n++)
-					std::cout << rexiSWE.rexi.alpha[n] << std::endl;
+				for (std::size_t n = 0; n < swe_plane_rexi.rexi.alpha.size(); n++)
+					std::cout << swe_plane_rexi.rexi.alpha[n] << std::endl;
 
 				std::cout << "BETA:" << std::endl;
-				for (std::size_t n = 0; n < rexiSWE.rexi.beta_re.size(); n++)
-					std::cout << rexiSWE.rexi.beta_re[n] << std::endl;
+				for (std::size_t n = 0; n < swe_plane_rexi.rexi.beta_re.size(); n++)
+					std::cout << swe_plane_rexi.rexi.beta_re[n] << std::endl;
 			}
 		}
 
@@ -1099,7 +1099,7 @@ public:
 			// REXI time stepping for nonlinear eq - semi-lagrangian scheme (SL-REXI)
 			if (param_nonlinear > 0)
 			{
-				rexiSWE.run_timestep_slrexi(
+				swe_plane_rexi.run_timestep_slrexi(
 									prog_h, prog_u, prog_v,
 									prog_h_prev, prog_u_prev, prog_v_prev,
 									posx_a,	posy_a,
@@ -1116,7 +1116,7 @@ public:
 			}
 			else // linear solver
 			{
-				rexiSWE.run_timestep_rexi( prog_h, prog_u, prog_v, o_dt, op,	simVars);
+				swe_plane_rexi.run_timestep_rexi( prog_h, prog_u, prog_v, o_dt, op,	simVars);
 			}
 		}
 		else if (param_timestepping_mode == 2) //Direct solution
@@ -1130,7 +1130,7 @@ public:
 			// Analytical solution
 			assert(simVars.sim.CFL < 0);
 			o_dt = -simVars.sim.CFL;
-			rexiSWE.run_timestep_direct_solution(
+			swe_plane_rexi.run_timestep_direct_solution(
 					prog_h, prog_u, prog_v,
 					-simVars.sim.CFL,
 					op,
@@ -1142,7 +1142,7 @@ public:
 			assert(simVars.sim.CFL < 0);
 
 			o_dt = -simVars.sim.CFL;
-			rexiSWE.run_timestep_implicit_ts(
+			swe_plane_rexi.run_timestep_implicit_ts(
 					prog_h, prog_u, prog_v,
 					o_dt,
 					op,
@@ -1192,7 +1192,7 @@ public:
 			assert(simVars.sim.CFL < 0);
 			o_dt = -simVars.sim.CFL;
 
-			rexiSWE.run_timestep_cn_sl_ts(
+			swe_plane_rexi.run_timestep_cn_sl_ts(
 					prog_h, prog_u, prog_v,
 					prog_h_prev, prog_u_prev, prog_v_prev,
 					posx_a,	posy_a,
@@ -1382,7 +1382,7 @@ public:
 		}
 
 		//Run exact solution for linear case
-		rexiSWE.run_timestep_direct_solution(t_h, t_u, t_v, simVars.timecontrol.current_simulation_time, op, simVars);
+		swe_plane_rexi.run_timestep_direct_solution(t_h, t_u, t_v, simVars.timecontrol.current_simulation_time, op, simVars);
 
 		// Recover data in C grid using interpolations
 		ts_h=t_h;
@@ -1472,7 +1472,7 @@ public:
 			PlaneData t_u = t0_prog_u;
 			PlaneData t_v = t0_prog_v;
 
-			rexiSWE.run_timestep_direct_solution(
+			swe_plane_rexi.run_timestep_direct_solution(
 					t_h, t_u, t_v,
 					simVars.timecontrol.current_simulation_time,
 					op,
@@ -1672,7 +1672,7 @@ public:
 		}
 
 		// use REXI
-		rexiSWE.setup(
+		swe_plane_rexi.setup(
 				simVars.rexi.rexi_h,
 				simVars.rexi.rexi_m,
 				simVars.rexi.rexi_l,
@@ -1816,7 +1816,7 @@ public:
 //		assert(i_max_simulation_time < 0);
 //		assert(simVars.sim.CFL < 0);
 
-		rexiSWE.run_timestep_implicit_ts(
+		swe_plane_rexi.run_timestep_implicit_ts(
 				prog_h, prog_u, prog_v,
 				timeframe_end - timeframe_start,
 				op,
@@ -2241,7 +2241,7 @@ int main(int i_argc, char *i_argv[])
 			std::cout << "Time per time step: " << seconds/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
 			std::cout << "Last time step size: " << simVars.timecontrol.current_timestep_size << std::endl;
 			if (param_timestepping_mode != 0)
-				std::cout << "REXI alpha.size(): " << simulationSWE->rexiSWE.rexi.alpha.size() << std::endl;
+				std::cout << "REXI alpha.size(): " << simulationSWE->swe_plane_rexi.rexi.alpha.size() << std::endl;
 
 			if (simVars.misc.verbosity > 0)
 			{
@@ -2277,7 +2277,7 @@ int main(int i_argc, char *i_argv[])
 	{
 		if (param_timestepping_mode == 1)
 		{
-			RexiSWE rexiSWE;
+			SWE_Plane_REXI rexiSWE;
 
 			/*
 			 * Setup our little dog REXI
@@ -2324,7 +2324,7 @@ int main(int i_argc, char *i_argv[])
 	{
 		// synchronize REXI
 		if (rank == 0)
-			RexiSWE::MPI_quitWorkers(planeDataConfig);
+			SWE_Plane_REXI::MPI_quitWorkers(planeDataConfig);
 	}
 
 	MPI_Finalize();

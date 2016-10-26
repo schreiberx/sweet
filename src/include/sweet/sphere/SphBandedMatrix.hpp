@@ -52,7 +52,7 @@ public:
 
 		lhs.setup(sphConfig, i_halosize_offdiagonal);
 
-		bandedMatrixSolver.setup(i_sphConfig->spec_n_max+1, i_halosize_offdiagonal);
+		bandedMatrixSolver.setup(i_sphConfig->spectral_modes_n_max+1, i_halosize_offdiagonal);
 	}
 
 
@@ -65,9 +65,9 @@ public:
 			const std::complex<double> &i_value
 	)
 	{
-		for (int m = 0; m <= sphConfig->spec_m_max; m++)
+		for (int m = 0; m <= sphConfig->spectral_modes_m_max; m++)
 		{
-			for (int n = m; n <= sphConfig->spec_n_max; n++)
+			for (int n = m; n <= sphConfig->spectral_modes_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 				lhs.rowElement_add(row, n, m, 0, i_value);
@@ -83,9 +83,9 @@ public:
 	 */
 	void solver_component_mu_phi()
 	{
-		for (int m = 0; m <= sphConfig->spec_m_max; m++)
+		for (int m = 0; m <= sphConfig->spectral_modes_m_max; m++)
 		{
-			for (int n = m; n <= sphConfig->spec_n_max; n++)
+			for (int n = m; n <= sphConfig->spectral_modes_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 				lhs.rowElement_add(row, n, m, -1, R(n-1,m));
@@ -103,9 +103,9 @@ public:
 	 */
 	void solver_component_one_minus_mu_mu_diff_mu_phi()
 	{
-		for (int m = 0; m <= sphConfig->spec_m_max; m++)
+		for (int m = 0; m <= sphConfig->spectral_modes_m_max; m++)
 		{
-			for (int n = m; n <= sphConfig->spec_n_max; n++)
+			for (int n = m; n <= sphConfig->spectral_modes_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 				lhs.rowElement_add(row, n, m, -1, (-(double)n+1.0)*R(n-1,m));
@@ -141,9 +141,9 @@ public:
 			double i_r
 	)
 	{
-		for (int m = 0; m <= sphConfig->spec_m_max; m++)
+		for (int m = 0; m <= sphConfig->spectral_modes_m_max; m++)
 		{
-			for (int n = m; n <= sphConfig->spec_n_max; n++)
+			for (int n = m; n <= sphConfig->spectral_modes_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 #if 0
@@ -170,9 +170,9 @@ public:
 			double i_r
 	)
 	{
-		for (int m = 0; m <= sphConfig->spec_m_max; m++)
+		for (int m = 0; m <= sphConfig->spectral_modes_m_max; m++)
 		{
-			for (int n = m; n <= sphConfig->spec_n_max; n++)
+			for (int n = m; n <= sphConfig->spectral_modes_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 #if 0
@@ -202,9 +202,9 @@ public:
 			double i_r
 	)
 	{
-		for (int m = 0; m <= sphConfig->spec_m_max; m++)
+		for (int m = 0; m <= sphConfig->spectral_modes_m_max; m++)
 		{
-			for (int n = m; n <= sphConfig->spec_n_max; n++)
+			for (int n = m; n <= sphConfig->spectral_modes_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 				lhs.rowElement_add(row, n, m,  0, 1.0/(i_r*i_r)*i_scalar*T(0, m));
@@ -223,9 +223,9 @@ public:
 			double i_r
 	)
 	{
-		for (int m = 0; m <= sphConfig->spec_m_max; m++)
+		for (int m = 0; m <= sphConfig->spectral_modes_m_max; m++)
 		{
-			for (int n = m; n <= sphConfig->spec_n_max; n++)
+			for (int n = m; n <= sphConfig->spectral_modes_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 				lhs.rowElement_add(row, n, m,  -2, 1.0/(i_r*i_r)*i_scalar*T(0, m)*A(n-2,m));
@@ -246,9 +246,9 @@ public:
 			double i_r
 	)
 	{
-		for (int m = 0; m <= sphConfig->spec_m_max; m++)
+		for (int m = 0; m <= sphConfig->spectral_modes_m_max; m++)
 		{
-			for (int n = m; n <= sphConfig->spec_n_max; n++)
+			for (int n = m; n <= sphConfig->spectral_modes_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 				lhs.rowElement_add(row, n, m,  -2, -1.0/(i_r*i_r)*i_scalar*(D(n-1,m)*R(n-2,m) + (E(n,m)-3.0)*A(n-2,m)));
@@ -268,9 +268,9 @@ public:
 			double i_r
 	)
 	{
-		for (int m = 0; m <= sphConfig->spec_m_max; m++)
+		for (int m = 0; m <= sphConfig->spectral_modes_m_max; m++)
 		{
-			for (int n = m; n <= sphConfig->spec_n_max; n++)
+			for (int n = m; n <= sphConfig->spectral_modes_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 				lhs.rowElement_add(row, n, m, 0, -1.0/(i_r*i_r)*i_scalar*(double)n*((double)n+1.0));
@@ -288,9 +288,9 @@ public:
 			double i_r
 	)
 	{
-		for (int m = 0; m <= sphConfig->spec_m_max; m++)
+		for (int m = 0; m <= sphConfig->spectral_modes_m_max; m++)
 		{
-			for (int n = m; n <= sphConfig->spec_n_max; n++)
+			for (int n = m; n <= sphConfig->spectral_modes_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 
@@ -318,26 +318,26 @@ public:
 	{
 		SphereData out(sphConfig);
 
-		for (int m = 0; m <= sphConfig->spec_m_max; m++)
+		for (int m = 0; m <= sphConfig->spectral_modes_m_max; m++)
 		{
 			std::size_t idx = sphConfig->getArrayIndexByModes(m, m);
-			for (int n = m; n <= sphConfig->spec_n_max; n++)
+			for (int n = m; n <= sphConfig->spectral_modes_n_max; n++)
 			{
-				out.data_spec[idx] = 0;
+				out.spectral_space_data[idx] = 0;
 
 				std::complex<double> *row = lhs.getMatrixRow(n, m);
 				for (int i = 0; i < lhs.num_diagonals; i++)
 				{
 					int delta = i-lhs.halosize_off_diagonal;
-					out.data_spec[idx] += lhs.rowElement_getRef(row, n, m, delta)*i_x.spectral_get(n+delta, m);
+					out.spectral_space_data[idx] += lhs.rowElement_getRef(row, n, m, delta)*i_x.spectral_get(n+delta, m);
 				}
 
 				idx++;
 			}
 		}
 
-		out.data_spat_valid = false;
-		out.data_spec_valid = true;
+		out.physical_space_data_valid = false;
+		out.spectral_space_data_valid = true;
 
 		return out;
 	}
@@ -351,20 +351,20 @@ public:
 
 		SphereData out(sphConfig);
 
-		for (int m = 0; m <= sphConfig->spec_m_max; m++)
+		for (int m = 0; m <= sphConfig->spectral_modes_m_max; m++)
 		{
 			int idx = sphConfig->getArrayIndexByModes(m,m);
 
 			bandedMatrixSolver.solve_diagBandedInverse_Carray(
 							&lhs.data[idx*lhs.num_diagonals],
-							&i_rhs.data_spec[idx],
-							&out.data_spec[idx],
-							sphConfig->spec_n_max+1-m	// size of block
+							&i_rhs.spectral_space_data[idx],
+							&out.spectral_space_data[idx],
+							sphConfig->spectral_modes_n_max+1-m	// size of block
 					);
 		}
 
-		out.data_spec_valid = true;
-		out.data_spat_valid = false;
+		out.spectral_space_data_valid = true;
+		out.physical_space_data_valid = false;
 
 		return out;
 	}

@@ -38,7 +38,7 @@
 #endif
 
 
-RexiSWE::RexiSWE()	:
+SWE_Plane_REXI::SWE_Plane_REXI()	:
 	planeDataConfig(nullptr)
 {
 #if !SWEET_USE_LIBFFT
@@ -73,7 +73,7 @@ RexiSWE::RexiSWE()	:
 
 
 
-void RexiSWE::cleanup()
+void SWE_Plane_REXI::cleanup()
 {
 	for (std::vector<PerThreadVars*>::iterator iter = perThreadVars.begin(); iter != perThreadVars.end(); iter++)
 	{
@@ -86,7 +86,7 @@ void RexiSWE::cleanup()
 
 
 
-RexiSWE::~RexiSWE()
+SWE_Plane_REXI::~SWE_Plane_REXI()
 {
 	cleanup();
 
@@ -106,7 +106,7 @@ RexiSWE::~RexiSWE()
 /**
  * setup the REXI
  */
-void RexiSWE::setup(
+void SWE_Plane_REXI::setup(
 		double i_h,						///< sampling size
 		int i_M,						///< number of sampling points
 		int i_L,						///< number of sampling points for Gaussian approx.
@@ -273,7 +273,7 @@ void RexiSWE::setup(
  *
  * <=> (1/tau - L) U(tau) = U(0)/tau
  */
-bool RexiSWE::run_timestep_implicit_ts(
+bool SWE_Plane_REXI::run_timestep_implicit_ts(
 	PlaneData &io_h,
 	PlaneData &io_u,
 	PlaneData &io_v,
@@ -364,7 +364,7 @@ bool RexiSWE::run_timestep_implicit_ts(
  * Nonlinear term is added following Hortal (2002)
  *
  */
-bool RexiSWE::run_timestep_cn_sl_ts(
+bool SWE_Plane_REXI::run_timestep_cn_sl_ts(
 	PlaneData &io_h,  ///< Current and past fields
 	PlaneData &io_u,
 	PlaneData &io_v,
@@ -523,7 +523,7 @@ bool RexiSWE::run_timestep_cn_sl_ts(
  *  See documentation for details
  *
  */
-bool RexiSWE::run_timestep_slrexi(
+bool SWE_Plane_REXI::run_timestep_slrexi(
 	PlaneData &io_h,  ///< Current and past fields
 	PlaneData &io_u,
 	PlaneData &io_v,
@@ -663,7 +663,7 @@ bool RexiSWE::run_timestep_slrexi(
  * 		doc/rexi/understanding_rexi.pdf
  * for further information
  */
-bool RexiSWE::run_timestep_rexi(
+bool SWE_Plane_REXI::run_timestep_rexi(
 	PlaneData &io_h,
 	PlaneData &io_u,
 	PlaneData &io_v,
@@ -954,7 +954,7 @@ inline std::complex<double> conj(const std::complex<double> &v)
  * Don't use this function to frequently, since it always computes
  * the required coefficients on-the-fly which is expensive.
  */
-void RexiSWE::run_timestep_direct_solution(
+void SWE_Plane_REXI::run_timestep_direct_solution(
 		PlaneData &io_h,
 		PlaneData &io_u,
 		PlaneData &io_v,

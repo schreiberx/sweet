@@ -48,6 +48,7 @@ VISCOSITY=0
 SIMTIME=4
 
 EXEC="$SWEETROOT/build/swe_sph_and_rexi_*_release -g $G -H $H -f $F -a $R -M $RES $NONLINEAR -C -$TS -o $OTS -u $VISCOSITY -t $SIMTIME --nonlinear=$NONLINEAR --rexi=$USE_REXI --rexi-m=$REXI_M --rexi-h=$REXI_H --rexi-half=$REXI_HALF_POLES -s $BENCH_ID --use-robert-functions $USE_ROBERT_FUNS --rexi-ext-modes $REXI_EXTENDED_MODES"
+echo "$EXEC"
 $EXEC
 
 

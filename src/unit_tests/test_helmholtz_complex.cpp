@@ -187,7 +187,7 @@ int main(int i_argc, char *i_argv[])
 
 
 
-			RexiSWE rexiSWE;
+			SWE_Plane_REXI rexiSWE;
 			rexiSWE.setup(
 					1,			// time step size
 					0.2,		// h

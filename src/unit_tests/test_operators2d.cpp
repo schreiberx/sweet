@@ -440,13 +440,13 @@ int main(int i_argc, char *i_argv[])
 							std::cerr << "    Multiplication dealiasing affected spectrum without need" << std::endl;
 						std::cout << "    h1*h2 nonzero spectrum entries" << std::endl;
 						(h1*h2).print_spectralNonZero();
-						assert(false);
-						//exit(-1);
+						FatalError("EXIT");
 					}
 
 					if (err_mult_dealias2  > eps)
 					{
 						std::cerr << " WARNING: error for multiplication function 'mult' too high !" << std::endl;
+						FatalError("EXIT");
 					}
 
 #else
@@ -456,7 +456,7 @@ int main(int i_argc, char *i_argv[])
 					if (err_mult  > eps)
 					{
 						std::cerr << " Error threshold for multiplication operator too high !" << std::endl;
-						//exit(-1);
+						FatalError("EXIT");
 					}
 #endif
 

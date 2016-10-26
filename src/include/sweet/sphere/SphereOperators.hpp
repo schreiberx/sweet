@@ -33,22 +33,24 @@ public:
 	{
 		i_sph_data.request_data_spectral();
 
-		SphereData out_sph_data(i_sph_data.sphConfig);
+		SphereData out_sph_data(i_sph_data.sphereDataConfig);
 
 		// compute d/dlambda in spectral space
+#if SWEET_THREADING
 #pragma omp parallel for
-		for (int m = 0; m <= i_sph_data.sphConfig->spec_m_max; m++)
+#endif
+		for (int m = 0; m <= i_sph_data.sphereDataConfig->spectral_modes_m_max; m++)
 		{
-			int idx = i_sph_data.sphConfig->getArrayIndexByModes(m, m);
+			int idx = i_sph_data.sphereDataConfig->getArrayIndexByModes(m, m);
 
-			for (int n = m; n <= i_sph_data.sphConfig->spec_n_max; n++)
+			for (int n = m; n <= i_sph_data.sphereDataConfig->spectral_modes_n_max; n++)
 			{
-				out_sph_data.data_spec[idx] = i_sph_data.data_spec[idx]*std::complex<double>(0, m);
+				out_sph_data.spectral_space_data[idx] = i_sph_data.spectral_space_data[idx]*std::complex<double>(0, m);
 				idx++;
 			}
 		}
-		out_sph_data.data_spec_valid = true;
-		out_sph_data.data_spat_valid = false;
+		out_sph_data.spectral_space_data_valid = true;
+		out_sph_data.physical_space_data_valid = false;
 
 		return out_sph_data;
 	}
@@ -236,25 +238,27 @@ public:
 	)	const
 	{
 		i_sph_data.request_data_spectral();
-		SphereDataConfig *sphConfig = i_sph_data.sphConfig;
+		SphereDataConfig *sphConfig = i_sph_data.sphereDataConfig;
 
 		SphereData out_sph_data = SphereData(sphConfig);
 
+#if SWEET_THREADING
 #pragma omp parallel for
-		for (int m = 0; m <= i_sph_data.sphConfig->spec_m_max; m++)
+#endif
+		for (int m = 0; m <= i_sph_data.sphereDataConfig->spectral_modes_m_max; m++)
 		{
-			int idx = i_sph_data.sphConfig->getArrayIndexByModes(m, m);
+			int idx = i_sph_data.sphereDataConfig->getArrayIndexByModes(m, m);
 
-			for (int n = m; n <= i_sph_data.sphConfig->spec_n_max; n++)
+			for (int n = m; n <= i_sph_data.sphereDataConfig->spectral_modes_n_max; n++)
 			{
-				out_sph_data.data_spec[idx] =	((-n+1.0)*R(n-1,m))*i_sph_data.spectral_get(n-1, m) +
+				out_sph_data.spectral_space_data[idx] =	((-n+1.0)*R(n-1,m))*i_sph_data.spectral_get(n-1, m) +
 												((n+2.0)*S(n+1,m))*i_sph_data.spectral_get(n+1, m);
 				idx++;
 			}
 		}
 
-		out_sph_data.data_spec_valid = true;
-		out_sph_data.data_spat_valid = false;
+		out_sph_data.spectral_space_data_valid = true;
+		out_sph_data.physical_space_data_valid = false;
 
 		return out_sph_data;
 	}
@@ -269,20 +273,22 @@ public:
 			const SphereData &i_sph_data
 	)	const
 	{
-		SphereDataConfig *sphConfig = i_sph_data.sphConfig;
+		SphereDataConfig *sphConfig = i_sph_data.sphereDataConfig;
 		i_sph_data.request_data_spectral();
 
 		SphereData out_sph_data = SphereData(sphConfig);
 
 
+#if SWEET_THREADING
 #pragma omp parallel for
-		for (int m = 0; m <= i_sph_data.sphConfig->spec_m_max; m++)
+#endif
+		for (int m = 0; m <= i_sph_data.sphereDataConfig->spectral_modes_m_max; m++)
 		{
-			int idx = i_sph_data.sphConfig->getArrayIndexByModes(m, m);
+			int idx = i_sph_data.sphereDataConfig->getArrayIndexByModes(m, m);
 
-			for (int n = m; n <= i_sph_data.sphConfig->spec_n_max; n++)
+			for (int n = m; n <= i_sph_data.sphereDataConfig->spectral_modes_n_max; n++)
 			{
-				out_sph_data.data_spec[idx] =
+				out_sph_data.spectral_space_data[idx] =
 							R(n-1,m)*i_sph_data.spectral_get(n-1, m)
 							+ S(n+1,m)*i_sph_data.spectral_get(n+1, m);
 
@@ -290,8 +296,8 @@ public:
 			}
 		}
 
-		out_sph_data.data_spec_valid = true;
-		out_sph_data.data_spat_valid = false;
+		out_sph_data.spectral_space_data_valid = true;
+		out_sph_data.physical_space_data_valid = false;
 
 		return out_sph_data;
 	}
@@ -304,20 +310,22 @@ public:
 			const SphereData &i_sph_data
 	)	const
 	{
-		SphereDataConfig *sphConfig = i_sph_data.sphConfig;
+		SphereDataConfig *sphConfig = i_sph_data.sphereDataConfig;
 		i_sph_data.request_data_spectral();
 
 		SphereData out_sph_data = SphereData(sphConfig);
 
 
+#if SWEET_THREADING
 #pragma omp parallel for
-		for (int m = 0; m <= i_sph_data.sphConfig->spec_m_max; m++)
+#endif
+		for (int m = 0; m <= i_sph_data.sphereDataConfig->spectral_modes_m_max; m++)
 		{
-			int idx = i_sph_data.sphConfig->getArrayIndexByModes(m, m);
+			int idx = i_sph_data.sphereDataConfig->getArrayIndexByModes(m, m);
 
-			for (int n = m; n <= i_sph_data.sphConfig->spec_n_max; n++)
+			for (int n = m; n <= i_sph_data.sphereDataConfig->spectral_modes_n_max; n++)
 			{
-				out_sph_data.data_spec[idx] =
+				out_sph_data.spectral_space_data[idx] =
 						+A(n-2,m)*i_sph_data.spectral_get(n-2, m)
 						+B(n+0,m)*i_sph_data.spectral_get(n+0, m)
 						+C(n+2,m)*i_sph_data.spectral_get(n+2, m)
@@ -326,8 +334,8 @@ public:
 			}
 		}
 
-		out_sph_data.data_spec_valid = true;
-		out_sph_data.data_spat_valid = false;
+		out_sph_data.spectral_space_data_valid = true;
+		out_sph_data.physical_space_data_valid = false;
 
 		return out_sph_data;
 	}

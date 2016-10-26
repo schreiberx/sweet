@@ -42,9 +42,9 @@ public:
 
 		for (int i = 0; i < N; i++)
 		{
-			RK_h_t[i] = new SphereData(i_test_buffer.sphConfig);
-			RK_u_t[i] = new SphereData(i_test_buffer.sphConfig);
-			RK_v_t[i] = new SphereData(i_test_buffer.sphConfig);
+			RK_h_t[i] = new SphereData(i_test_buffer.sphereDataConfig);
+			RK_u_t[i] = new SphereData(i_test_buffer.sphereDataConfig);
+			RK_v_t[i] = new SphereData(i_test_buffer.sphereDataConfig);
 		}
 	}
 

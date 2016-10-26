@@ -16,6 +16,38 @@ class SphereOperatorsComplex	:
 {
 	friend SphereDataConfig;
 
+	/**
+	 * Dummy constructor
+	 */
+public:
+	SphereOperatorsComplex(
+			SphereDataConfig *i_sphereDataConfig
+	)
+	{
+	}
+
+
+	/**
+	 * Dummy constructor
+	 */
+public:
+	SphereOperatorsComplex()
+	{
+	}
+
+
+
+	/**
+	 * Dummy setup
+	 */
+public:
+	void setup(
+			SphereDataConfig *i_sphereDataConfig,
+			const double i_domain_size[2]
+	)
+	{
+	}
+
 
 public:
 	/**
@@ -30,21 +62,23 @@ public:
 	{
 		i_sph_data.request_data_spectral();
 
-		SphereDataComplex out_sph_data(i_sph_data.sphConfig);
+		SphereDataComplex out_sph_data(i_sph_data.sphereDataConfig);
 
 		// compute d/dlambda in spectral space
+#if SWEET_THREADING
 #pragma omp parallel for
-		for (int n = 0; n <= i_sph_data.sphConfig->spec_n_max; n++)
+#endif
+		for (int n = 0; n <= i_sph_data.sphereDataConfig->spectral_modes_n_max; n++)
 		{
-			int idx = i_sph_data.sphConfig->getArrayIndexByModes_Complex(n, -n);
+			int idx = i_sph_data.sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
 			for (int m = -n; m <= n; m++)
 			{
-				out_sph_data.data_spec[idx] = i_sph_data.data_spec[idx]*std::complex<double>(0, m);
+				out_sph_data.spectral_space_data[idx] = i_sph_data.spectral_space_data[idx]*std::complex<double>(0, m);
 				idx++;
 			}
 		}
-		out_sph_data.data_spec_valid = true;
-		out_sph_data.data_spat_valid = false;
+		out_sph_data.physical_space_data_valid = true;
+		out_sph_data.spectral_space_data_valid = false;
 
 		return out_sph_data;
 	}
@@ -121,18 +155,20 @@ public:
 	)
 	{
 		i_sph_data.request_data_spectral();
-		SphereDataConfig *sphConfig = i_sph_data.sphConfig;
+		SphereDataConfig *sphConfig = i_sph_data.sphereDataConfig;
 
 		SphereDataComplex out_sph_data = SphereDataComplex(sphConfig);
 
 
+#if SWEET_THREADING
 #pragma omp parallel for
-		for (int n = 0; n <= i_sph_data.sphConfig->spec_n_max; n++)
+#endif
+		for (int n = 0; n <= i_sph_data.sphereDataConfig->spectral_modes_n_max; n++)
 		{
-			int idx = i_sph_data.sphConfig->getArrayIndexByModes_Complex(n, -n);
+			int idx = i_sph_data.sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
 			for (int m = -n; m <= n; m++)
 			{
-				out_sph_data.data_spec[idx] =
+				out_sph_data.spectral_space_data[idx] =
 						((-n+1.0)*R(n-1,m))*i_sph_data.spectral_get(n-1, m) +
 						((n+2.0)*S(n+1,m))*i_sph_data.spectral_get(n+1, m);
 
@@ -140,8 +176,8 @@ public:
 			}
 		}
 
-		out_sph_data.data_spec_valid = true;
-		out_sph_data.data_spat_valid = false;
+		out_sph_data.physical_space_data_valid = true;
+		out_sph_data.spectral_space_data_valid = false;
 
 		return out_sph_data;
 	}
@@ -156,18 +192,20 @@ public:
 			const SphereDataComplex &i_sph_data
 	)
 	{
-		SphereDataConfig *sphConfig = i_sph_data.sphConfig;
+		SphereDataConfig *sphConfig = i_sph_data.sphereDataConfig;
 		i_sph_data.request_data_spectral();
 
 		SphereDataComplex out_sph_data = SphereDataComplex(sphConfig);
 
+#if SWEET_THREADING
 #pragma omp parallel for
-		for (int n = 0; n <= i_sph_data.sphConfig->spec_n_max; n++)
+#endif
+		for (int n = 0; n <= i_sph_data.sphereDataConfig->spectral_modes_n_max; n++)
 		{
-			int idx = i_sph_data.sphConfig->getArrayIndexByModes_Complex(n, -n);
+			int idx = i_sph_data.sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
 			for (int m = -n; m <= n; m++)
 			{
-				out_sph_data.data_spec[idx] =
+				out_sph_data.spectral_space_data[idx] =
 					R(n-1,m)*i_sph_data.spectral_get(n-1, m)
 					+ S(n+1,m)*i_sph_data.spectral_get(n+1, m);
 
@@ -175,8 +213,8 @@ public:
 			}
 		}
 
-		out_sph_data.data_spec_valid = true;
-		out_sph_data.data_spat_valid = false;
+		out_sph_data.physical_space_data_valid = true;
+		out_sph_data.spectral_space_data_valid = false;
 
 		return out_sph_data;
 	}
@@ -190,18 +228,20 @@ public:
 			const SphereDataComplex &i_sph_data
 	)
 	{
-		SphereDataConfig *sphConfig = i_sph_data.sphConfig;
+		SphereDataConfig *sphConfig = i_sph_data.sphereDataConfig;
 		i_sph_data.request_data_spectral();
 
 		SphereDataComplex out_sph_data = SphereDataComplex(sphConfig);
 
+#if SWEET_THREADING
 #pragma omp parallel for
-		for (int n = 0; n <= i_sph_data.sphConfig->spec_n_max; n++)
+#endif
+		for (int n = 0; n <= i_sph_data.sphereDataConfig->spectral_modes_n_max; n++)
 		{
-			int idx = i_sph_data.sphConfig->getArrayIndexByModes_Complex(n, -n);
+			int idx = i_sph_data.sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
 			for (int m = -n; m <= n; m++)
 			{
-				out_sph_data.data_spec[idx] =
+				out_sph_data.spectral_space_data[idx] =
 						+A(n-2,m)*i_sph_data.spectral_get(n-2, m)
 						+B(n+0,m)*i_sph_data.spectral_get(n+0, m)
 						+C(n+2,m)*i_sph_data.spectral_get(n+2, m)
@@ -210,8 +250,8 @@ public:
 			}
 		}
 
-		out_sph_data.data_spec_valid = true;
-		out_sph_data.data_spat_valid = false;
+		out_sph_data.physical_space_data_valid = true;
+		out_sph_data.spectral_space_data_valid = false;
 
 		return out_sph_data;
 	}

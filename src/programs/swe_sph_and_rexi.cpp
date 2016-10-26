@@ -15,9 +15,9 @@
 #include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/sphere/SphereOperatorsComplex.hpp>
 
-#include <rexi/REXI.hpp>
-#include <rexi/SWERexi_SPH.hpp>
-#include <rexi/SWERexi_SPHRobert.hpp>
+#include "swe_sphere_rexi/SWE_Sphere_REXI.hpp"
+
+
 
 SimulationVariables simVars;
 
@@ -40,6 +40,8 @@ public:
 
 	// Runge-Kutta stuff
 	SphereDataTimesteppingRK timestepping;
+
+	SWE_Sphere_REXI swe_sphere_rexi;
 
 
 	SphereData prog_h;
@@ -190,10 +192,10 @@ public:
 			// TRY to guess optimal time step size
 
 			// time step size
-			if (sphereDataConfig->spat_num_lat < 256)
-				simVars.timecontrol.current_timestep_size = 0.002*simVars.sim.earth_radius/(double)sphereDataConfig->spat_num_lat;
+			if (sphereDataConfig->physical_num_lat < 256)
+				simVars.timecontrol.current_timestep_size = 0.002*simVars.sim.earth_radius/(double)sphereDataConfig->physical_num_lat;
 			else
-				simVars.timecontrol.current_timestep_size = 0.001*simVars.sim.earth_radius/(double)sphereDataConfig->spat_num_lat;
+				simVars.timecontrol.current_timestep_size = 0.001*simVars.sim.earth_radius/(double)sphereDataConfig->physical_num_lat;
 		}
 
 		if (simVars.misc.output_each_sim_seconds <= 0)
@@ -299,11 +301,11 @@ public:
 			);
 
 
-		// This class is only used in case of added modes
-		SphereDataConfig sphereConfigRexiAddedModes;
+//		// This class is only used in case of added modes
+//		SphereDataConfig sphereDataConfigRexiAddedModes;
 
 		// Pointer to SPH configuration for REXI computations
-		SphereDataConfig *sphereConfigRexi = nullptr;
+//		SphereDataConfig *sphereDataConfigRexi = nullptr;
 
 		if (simVars.rexi.use_rexi == false)
 		{
@@ -353,35 +355,49 @@ public:
 		}
 		else
 		{
+#if 1
+			swe_sphere_rexi.setup(
+					simVars.rexi.rexi_h,
+					simVars.rexi.rexi_M,
+					simVars.rexi.rexi_L,
+
+					sphereDataConfig,
+					&simVars.sim,
+					simVars.timecontrol.current_timestep_size,
+
+					simVars.rexi.rexi_use_half_poles,
+					simVars.misc.sphere_use_robert_functions,
+					simVars.rexi.rexi_use_extended_modes,
+					use_coriolis_rexi_formulation
+				);
+
+#else
 			if (simVars.rexi.rexi_use_extended_modes == 0)
 			{
-				sphereConfigRexi = sphereDataConfig;
+				sphereDataConfigRexi = sphereDataConfig;
 			}
 			else
 			{
 				// Add modes only along latitude since these are the "problematic" modes
-				sphereConfigRexiAddedModes.setupAdditionalModes(
+				sphereDataConfigRexiAddedModes.setupAdditionalModes(
 						sphereDataConfig,
 						simVars.rexi.rexi_use_extended_modes,	// TODO: Extend SPH wrapper to also support m != n to set this guy to 0
 						simVars.rexi.rexi_use_extended_modes
 				);
-				sphereConfigRexi = &sphereConfigRexiAddedModes;
+				sphereDataConfigRexi = &sphereDataConfigRexiAddedModes;
 			}
-
-			SphBandedMatrix<double> sphSolver;
-			sphSolver.setup(sphereDataConfig, 4);
 
 			rexi.setup(simVars.rexi.rexi_h, simVars.rexi.rexi_M, 0, simVars.rexi.rexi_use_half_poles);
 
 			std::cout << "REXI poles: " << rexi.alpha.size() << std::endl;
 
-			SphereData tmp_prog_phi(sphereConfigRexi);
-			SphereData tmp_prog_u(sphereConfigRexi);
-			SphereData tmp_prog_v(sphereConfigRexi);
+			SphereData tmp_prog_phi(sphereDataConfigRexi);
+			SphereData tmp_prog_u(sphereDataConfigRexi);
+			SphereData tmp_prog_v(sphereDataConfigRexi);
 
-			SphereData accum_prog_phi(sphereConfigRexi);
-			SphereData accum_prog_u(sphereConfigRexi);
-			SphereData accum_prog_v(sphereConfigRexi);
+			SphereData accum_prog_phi(sphereDataConfigRexi);
+			SphereData accum_prog_u(sphereDataConfigRexi);
+			SphereData accum_prog_v(sphereDataConfigRexi);
 
 			std::vector<SWERexi_SPHRobert> rexiSPHRobert_vector;
 			std::vector<SWERexi_SPH> rexiSPH_vector;
@@ -404,7 +420,7 @@ public:
 					if (simVars.misc.sphere_use_robert_functions)
 					{
 						rexiSPHRobert_vector[i].setup(
-								sphereConfigRexi,
+								sphereDataConfigRexi,
 								alpha,
 								beta,
 								simVars.sim.earth_radius,
@@ -417,7 +433,7 @@ public:
 					else
 					{
 						rexiSPH_vector[i].setup(
-								sphereConfigRexi,
+								sphereDataConfigRexi,
 								alpha,
 								beta,
 								simVars.sim.earth_radius,
@@ -429,7 +445,7 @@ public:
 					}
 				}
 			}
-
+#endif
 			simVars.timecontrol.current_simulation_time = 0;
 			while (simVars.timecontrol.current_simulation_time <= simVars.timecontrol.max_simulation_time)
 			{
@@ -443,11 +459,17 @@ public:
 				}
 
 
+#if 1
+
+				swe_sphere_rexi.run_timestep_rexi(prog_h, prog_u, prog_v, simVars.timecontrol.current_timestep_size, simVars);
+
+#else
+
 				{
 					// convert to geopotential
-					SphereData prog_phi_rexi(sphereConfigRexi);
-					SphereData prog_u_rexi(sphereConfigRexi);
-					SphereData prog_v_rexi(sphereConfigRexi);
+					SphereData prog_phi_rexi(sphereDataConfigRexi);
+					SphereData prog_u_rexi(sphereDataConfigRexi);
+					SphereData prog_v_rexi(sphereDataConfigRexi);
 
 					if (simVars.rexi.rexi_use_extended_modes == 0)
 					{
@@ -553,6 +575,7 @@ public:
 					}
 				}
 
+#endif
 
 				std::cout << "." << std::flush;
 
@@ -692,7 +715,7 @@ public:
 };
 
 
-int main2(int i_argc, char *i_argv[])
+int main(int i_argc, char *i_argv[])
 {
 	MemBlockAlloc::setup();
 
@@ -728,12 +751,6 @@ int main2(int i_argc, char *i_argv[])
 	return 0;
 }
 
-int main(int i_argc, char *i_argv[])
-{
-	int retval = main2(i_argc, i_argv);
-
-	return retval;
-}
 
 
 #endif /* SRC_TESTSWE_HPP_ */

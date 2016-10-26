@@ -28,9 +28,9 @@ public:
 
 		int counter = 0;
 		// iterate over modes
-		for (int n = 0; n <= sphereConfig->spec_n_max; n++)
+		for (int n = 0; n <= sphereConfig->spectral_modes_n_max; n++)
 		{
-			for (int m = 0; m <= std::min((int)sphereConfig->spec_m_max, n); m++)
+			for (int m = 0; m <= std::min((int)sphereConfig->spectral_modes_m_max, n); m++)
 			{
 				h.spectral_update_lambda(
 						[&](int i_n, int i_m, std::complex<double> &o_data)
@@ -51,7 +51,7 @@ public:
 			}
 		}
 
-		assert(counter == sphereConfig->spec_num_elems);
+		assert(counter == sphereConfig->spectral_array_data_number_of_elements);
 	}
 
 

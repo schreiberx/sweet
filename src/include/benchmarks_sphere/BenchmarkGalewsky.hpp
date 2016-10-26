@@ -107,7 +107,7 @@ public:
 
 		// use this static pointer to allow using an existing quadrature code
 		*getPtrT() = this;
-		SphereDataConfig *sphConfig = o_h.sphConfig;
+		SphereDataConfig *sphConfig = o_h.sphereDataConfig;
 
 
 		/*
@@ -120,14 +120,14 @@ public:
 		 *
 		 * Metric correction terms based on John Thuburn's code
 		 */
-		const unsigned short nlat = sphConfig->spat_num_lat;
+		const unsigned short nlat = sphConfig->physical_num_lat;
 		double *hg_cached =  new double[nlat];
 
 		double h_area = 0;
 		double hg_sum = 0;
 		double int_start, int_end, int_delta;
 
-		int j = sphConfig->spat_num_lat-1;
+		int j = sphConfig->physical_num_lat-1;
 
 		// start/end of first integration interval
 		{
@@ -206,16 +206,16 @@ public:
 		double h_comp_avg = h_sum / h_area;
 
 		// shift to 10km
-		for (int j = 0; j < sphConfig->spat_num_lat; j++)
+		for (int j = 0; j < sphConfig->physical_num_lat; j++)
 			hg_cached[j] = hg_cached[j]/simVars.sim.gravitation + (h_avg-h_comp_avg);
 
 		// update data
-		for (int i = 0; i < sphConfig->spat_num_lon; i++)
-			for (int j = 0; j < sphConfig->spat_num_lat; j++)
-				o_h.data_spat[i*sphConfig->spat_num_lat + j] = hg_cached[j];
+		for (int i = 0; i < sphConfig->physical_num_lon; i++)
+			for (int j = 0; j < sphConfig->physical_num_lat; j++)
+				o_h.physical_space_data[i*sphConfig->physical_num_lat + j] = hg_cached[j];
 
-		o_h.data_spat_valid = true;
-		o_h.data_spec_valid = false;
+		o_h.physical_space_data_valid = true;
+		o_h.spectral_space_data_valid = false;
 
 		delete [] hg_cached;
 	}

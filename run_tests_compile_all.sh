@@ -84,9 +84,15 @@ echo "SWE REXI"
 SCONS="scons --program=swe_rexi --gui=disable --plane-spectral-space=enable --mode=debug"
 echo "$SCONS"
 $SCONS  || exit
+
 SCONS="scons --program=swe_rexi --gui=disable --plane-spectral-space=enable --plane-spectral-dealiasing=disable --mode=debug"
 echo "$SCONS"
 $SCONS  || exit
+
+SCONS="scons --program=swe_rexi --rexi-parallel-sum=enable --threading=off"
+echo "$SCONS"
+$SCONS  || exit
+
 
 echo
 echo "SPHERICAL HARMONICS SWE AND REXI"

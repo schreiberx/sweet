@@ -30,22 +30,22 @@ class SphereData
 	friend class SphereDataComplex;
 
 public:
-	SphereDataConfig *sphConfig;
+	SphereDataConfig *sphereDataConfig;
 
 public:
-	double *data_spat;
-	std::complex<double> *data_spec;
+	double *physical_space_data;
+	std::complex<double> *spectral_space_data;
 
-	bool data_spec_valid;
-	bool data_spat_valid;
+	bool spectral_space_data_valid;
+	bool physical_space_data_valid;
 
 public:
 	SphereData(
 			SphereDataConfig *i_sphConfig
 	)	:
-		sphConfig(i_sphConfig),
-		data_spat(nullptr),
-		data_spec(nullptr)
+		sphereDataConfig(i_sphConfig),
+		physical_space_data(nullptr),
+		spectral_space_data(nullptr)
 	{
 		assert(i_sphConfig != 0);
 
@@ -54,14 +54,23 @@ public:
 
 
 public:
+	SphereData()	:
+		sphereDataConfig(nullptr),
+		physical_space_data(nullptr),
+		spectral_space_data(nullptr)
+	{
+	}
+
+
+public:
 	SphereData(
 			const SphereData &i_sph_data
 	)	:
-		sphConfig(i_sph_data.sphConfig),
-		data_spat(nullptr),
-		data_spec(nullptr)
+		sphereDataConfig(i_sph_data.sphereDataConfig),
+		physical_space_data(nullptr),
+		spectral_space_data(nullptr)
 	{
-		setup(i_sph_data.sphConfig);
+		setup(i_sph_data.sphereDataConfig);
 
 		operator=(i_sph_data);
 	}
@@ -74,11 +83,11 @@ public:
 public:
 	inline void check(SphereDataConfig *i_sphConfig)	const
 	{
-		assert(sphConfig->spat_num_lat == i_sphConfig->spat_num_lat);
-		assert(sphConfig->spat_num_lon == i_sphConfig->spat_num_lon);
+		assert(sphereDataConfig->physical_num_lat == i_sphConfig->physical_num_lat);
+		assert(sphereDataConfig->physical_num_lon == i_sphConfig->physical_num_lon);
 
-		assert(sphConfig->spec_m_max == i_sphConfig->spec_m_max);
-		assert(sphConfig->spec_n_max == i_sphConfig->spec_n_max);
+		assert(sphereDataConfig->spectral_modes_m_max == i_sphConfig->spectral_modes_m_max);
+		assert(sphereDataConfig->spectral_modes_n_max == i_sphConfig->spectral_modes_n_max);
 	}
 
 
@@ -88,16 +97,16 @@ public:
 			const SphereData &i_sph_data
 	)
 	{
-		check(i_sph_data.sphConfig);
+		check(i_sph_data.sphereDataConfig);
 
-		if (i_sph_data.data_spat_valid)
-			memcpy(data_spat, i_sph_data.data_spat, sizeof(double)*sphConfig->spat_num_elems);
+		if (i_sph_data.physical_space_data_valid)
+			memcpy(physical_space_data, i_sph_data.physical_space_data, sizeof(double)*sphereDataConfig->physical_array_data_number_of_elements);
 
-		if (i_sph_data.data_spec_valid)
-			memcpy(data_spec, i_sph_data.data_spec, sizeof(cplx)*sphConfig->spec_num_elems);
+		if (i_sph_data.spectral_space_data_valid)
+			memcpy(spectral_space_data, i_sph_data.spectral_space_data, sizeof(cplx)*sphereDataConfig->spectral_array_data_number_of_elements);
 
-		data_spec_valid = i_sph_data.data_spec_valid;
-		data_spat_valid = i_sph_data.data_spat_valid;
+		spectral_space_data_valid = i_sph_data.spectral_space_data_valid;
+		physical_space_data_valid = i_sph_data.physical_space_data_valid;
 
 		return *this;
 	}
@@ -111,7 +120,7 @@ public:
 	{
 		request_data_spectral();
 
-		assert (o_sph_data.sphConfig != sphConfig);
+		assert (o_sph_data.sphereDataConfig != sphereDataConfig);
 
 		/*
 		 *  0 = invalid
@@ -120,23 +129,23 @@ public:
 		 */
 		int scaling_mode = 0;
 
-		if (sphConfig->spec_m_max < o_sph_data.sphConfig->spec_m_max)
+		if (sphereDataConfig->spectral_modes_m_max < o_sph_data.sphereDataConfig->spectral_modes_m_max)
 		{
 			scaling_mode = 1;
 		}
-		else if (sphConfig->spec_m_max > o_sph_data.sphConfig->spec_m_max)
+		else if (sphereDataConfig->spectral_modes_m_max > o_sph_data.sphereDataConfig->spectral_modes_m_max)
 		{
 			scaling_mode = -1;
 		}
 //		assert(scaling_mode != 0);
 
 
-		if (sphConfig->spec_n_max < o_sph_data.sphConfig->spec_n_max)
+		if (sphereDataConfig->spectral_modes_n_max < o_sph_data.sphereDataConfig->spectral_modes_n_max)
 		{
 			assert(scaling_mode != -1);
 			scaling_mode = 1;
 		}
-		else if (sphConfig->spec_n_max > o_sph_data.sphConfig->spec_n_max)
+		else if (sphereDataConfig->spectral_modes_n_max > o_sph_data.sphereDataConfig->spectral_modes_n_max)
 		{
 			assert(scaling_mode != 1);
 			scaling_mode = -1;
@@ -150,13 +159,15 @@ public:
 			 * more modes -> less modes
 			 */
 
+#if SWEET_THREADING
 #pragma omp parallel for
-			for (int m = 0; m <= o_sph_data.sphConfig->spec_m_max; m++)
+#endif
+			for (int m = 0; m <= o_sph_data.sphereDataConfig->spectral_modes_m_max; m++)
 			{
-				cplx *dst = &o_sph_data.data_spec[o_sph_data.sphConfig->getArrayIndexByModes(m, m)];
-				cplx *src = &data_spec[sphConfig->getArrayIndexByModes(m, m)];
+				cplx *dst = &o_sph_data.spectral_space_data[o_sph_data.sphereDataConfig->getArrayIndexByModes(m, m)];
+				cplx *src = &spectral_space_data[sphereDataConfig->getArrayIndexByModes(m, m)];
 
-				std::size_t size = sizeof(cplx)*(o_sph_data.sphConfig->spec_n_max-m+1);
+				std::size_t size = sizeof(cplx)*(o_sph_data.sphereDataConfig->spectral_modes_n_max-m+1);
 				memcpy(dst, src, size);
 			}
 		}
@@ -169,19 +180,21 @@ public:
 			// zero all values
 			o_sph_data.spectral_set_zero();
 
+#if SWEET_THREADING
 #pragma omp parallel for
-			for (int m = 0; m <= sphConfig->spec_m_max; m++)
+#endif
+			for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 			{
-				cplx *dst = &o_sph_data.data_spec[o_sph_data.sphConfig->getArrayIndexByModes(m, m)];
-				cplx *src = &data_spec[sphConfig->getArrayIndexByModes(m, m)];
+				cplx *dst = &o_sph_data.spectral_space_data[o_sph_data.sphereDataConfig->getArrayIndexByModes(m, m)];
+				cplx *src = &spectral_space_data[sphereDataConfig->getArrayIndexByModes(m, m)];
 
-				std::size_t size = sizeof(cplx)*(sphConfig->spec_n_max-m+1);
+				std::size_t size = sizeof(cplx)*(sphereDataConfig->spectral_modes_n_max-m+1);
 				memcpy(dst, src, size);
 			}
 		}
 
-		o_sph_data.data_spat_valid = false;
-		o_sph_data.data_spec_valid = true;
+		o_sph_data.physical_space_data_valid = false;
+		o_sph_data.spectral_space_data_valid = true;
 
 		return *this;
 	}
@@ -189,41 +202,41 @@ public:
 
 	void request_data_spectral()	const
 	{
-		if (data_spec_valid)
+		if (spectral_space_data_valid)
 			return;
 
-		assert(data_spat_valid);
+		assert(physical_space_data_valid);
 
 		/**
 		 * Warning: This is an in-situ operation.
 		 * Therefore, the data in the source array will be destroyed.
 		 */
-		spat_to_SH(sphConfig->shtns, data_spat, data_spec);
+		spat_to_SH(sphereDataConfig->shtns, physical_space_data, spectral_space_data);
 
 		SphereData *this_var = (SphereData*)this;
 
-		this_var->data_spat_valid = false;
-		this_var->data_spec_valid = true;
+		this_var->physical_space_data_valid = false;
+		this_var->spectral_space_data_valid = true;
 	}
 
 
 	void request_data_physical()	const
 	{
-		if (data_spat_valid)
+		if (physical_space_data_valid)
 			return;
 
-		assert(data_spec_valid);
+		assert(spectral_space_data_valid);
 
 		/**
 		 * Warning: This is an in-situ operation.
 		 * Therefore, the data in the source array will be destroyed.
 		 */
-		SH_to_spat(sphConfig->shtns, data_spec, data_spat);
+		SH_to_spat(sphereDataConfig->shtns, spectral_space_data, physical_space_data);
 
 		SphereData *this_var = (SphereData*)this;
 
-		this_var->data_spec_valid = false;
-		this_var->data_spat_valid = true;
+		this_var->spectral_space_data_valid = false;
+		this_var->physical_space_data_valid = true;
 	}
 
 
@@ -232,19 +245,23 @@ public:
 			const SphereData &i_sph_data
 	)
 	{
-		check(i_sph_data.sphConfig);
+		check(i_sph_data.sphereDataConfig);
 
 		request_data_spectral();
 		i_sph_data.request_data_spectral();
 
-		SphereData out_sph_data(sphConfig);
+		SphereData out_sph_data(sphereDataConfig);
 
+
+#if SWEET_THREADING
 #pragma omp parallel for
-		for (int idx = 0; idx < sphConfig->spec_num_elems; idx++)
-			out_sph_data.data_spec[idx] = data_spec[idx] + i_sph_data.data_spec[idx];
+#endif
 
-		out_sph_data.data_spec_valid = true;
-		out_sph_data.data_spat_valid = false;
+		for (int idx = 0; idx < sphereDataConfig->spectral_array_data_number_of_elements; idx++)
+			out_sph_data.spectral_space_data[idx] = spectral_space_data[idx] + i_sph_data.spectral_space_data[idx];
+
+		out_sph_data.spectral_space_data_valid = true;
+		out_sph_data.physical_space_data_valid = false;
 
 		return out_sph_data;
 	}
@@ -255,17 +272,20 @@ public:
 			const SphereData &i_sph_data
 	)
 	{
-		check(i_sph_data.sphConfig);
+		check(i_sph_data.sphereDataConfig);
 
 		request_data_spectral();
 		i_sph_data.request_data_spectral();
 
+#if SWEET_THREADING
 #pragma omp parallel for
-		for (int idx = 0; idx < sphConfig->spec_num_elems; idx++)
-			data_spec[idx] += i_sph_data.data_spec[idx];
+#endif
 
-		data_spec_valid = true;
-		data_spat_valid = false;
+		for (int idx = 0; idx < sphereDataConfig->spectral_array_data_number_of_elements; idx++)
+			spectral_space_data[idx] += i_sph_data.spectral_space_data[idx];
+
+		spectral_space_data_valid = true;
+		physical_space_data_valid = false;
 
 		return *this;
 	}
@@ -275,17 +295,20 @@ public:
 			const SphereData &i_sph_data
 	)
 	{
-		check(i_sph_data.sphConfig);
+		check(i_sph_data.sphereDataConfig);
 
 		request_data_spectral();
 		i_sph_data.request_data_spectral();
 
+#if SWEET_THREADING
 #pragma omp parallel for
-		for (int idx = 0; idx < sphConfig->spec_num_elems; idx++)
-			data_spec[idx] -= i_sph_data.data_spec[idx];
+#endif
 
-		data_spec_valid = true;
-		data_spat_valid = false;
+		for (int idx = 0; idx < sphereDataConfig->spectral_array_data_number_of_elements; idx++)
+			spectral_space_data[idx] -= i_sph_data.spectral_space_data[idx];
+
+		spectral_space_data_valid = true;
+		physical_space_data_valid = false;
 
 		return *this;
 	}
@@ -296,19 +319,22 @@ public:
 			const SphereData &i_sph_data
 	)
 	{
-		check(i_sph_data.sphConfig);
+		check(i_sph_data.sphereDataConfig);
 
 		request_data_spectral();
 		i_sph_data.request_data_spectral();
 
-		SphereData out_sph_data(sphConfig);
+		SphereData out_sph_data(sphereDataConfig);
 
+#if SWEET_THREADING
 #pragma omp parallel for
-		for (int idx = 0; idx < sphConfig->spec_num_elems; idx++)
-			out_sph_data.data_spec[idx] = data_spec[idx] - i_sph_data.data_spec[idx];
+#endif
 
-		out_sph_data.data_spec_valid = true;
-		out_sph_data.data_spat_valid = false;
+		for (int idx = 0; idx < sphereDataConfig->spectral_array_data_number_of_elements; idx++)
+			out_sph_data.spectral_space_data[idx] = spectral_space_data[idx] - i_sph_data.spectral_space_data[idx];
+
+		out_sph_data.spectral_space_data_valid = true;
+		out_sph_data.physical_space_data_valid = false;
 
 		return out_sph_data;
 	}
@@ -318,14 +344,17 @@ public:
 	{
 		request_data_spectral();
 
-		SphereData out_sph_data(sphConfig);
+		SphereData out_sph_data(sphereDataConfig);
 
+#if SWEET_THREADING
 #pragma omp parallel for
-		for (int idx = 0; idx < sphConfig->spec_num_elems; idx++)
-			out_sph_data.data_spec[idx] = -data_spec[idx];
+#endif
 
-		out_sph_data.data_spec_valid = true;
-		out_sph_data.data_spat_valid = false;
+		for (int idx = 0; idx < sphereDataConfig->spectral_array_data_number_of_elements; idx++)
+			out_sph_data.spectral_space_data[idx] = -spectral_space_data[idx];
+
+		out_sph_data.spectral_space_data_valid = true;
+		out_sph_data.physical_space_data_valid = false;
 
 		return out_sph_data;
 	}
@@ -335,19 +364,22 @@ public:
 			const SphereData &i_sph_data
 	)	const
 	{
-		check(i_sph_data.sphConfig);
+		check(i_sph_data.sphereDataConfig);
 
 		request_data_physical();
 		i_sph_data.request_data_physical();
 
-		SphereData out_sph_data(sphConfig);
+		SphereData out_sph_data(sphereDataConfig);
 
+#if SWEET_THREADING
 #pragma omp parallel for
-		for (int i = 0; i < sphConfig->spat_num_elems; i++)
-			out_sph_data.data_spat[i] = i_sph_data.data_spat[i]*data_spat[i];
+#endif
 
-		out_sph_data.data_spec_valid = false;
-		out_sph_data.data_spat_valid = true;
+		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+			out_sph_data.physical_space_data[i] = i_sph_data.physical_space_data[i]*physical_space_data[i];
+
+		out_sph_data.spectral_space_data_valid = false;
+		out_sph_data.physical_space_data_valid = true;
 
 		return out_sph_data;
 	}
@@ -360,14 +392,17 @@ public:
 	{
 		request_data_spectral();
 
-		SphereData out_sph_data(sphConfig);
+		SphereData out_sph_data(sphereDataConfig);
 
+#if SWEET_THREADING
 #pragma omp parallel for
-		for (int idx = 0; idx < sphConfig->spec_num_elems; idx++)
-			out_sph_data.data_spec[idx] = data_spec[idx]*i_value;
+#endif
 
-		out_sph_data.data_spec_valid = true;
-		out_sph_data.data_spat_valid = false;
+		for (int idx = 0; idx < sphereDataConfig->spectral_array_data_number_of_elements; idx++)
+			out_sph_data.spectral_space_data[idx] = spectral_space_data[idx]*i_value;
+
+		out_sph_data.spectral_space_data_valid = true;
+		out_sph_data.physical_space_data_valid = false;
 
 		return out_sph_data;
 	}
@@ -381,9 +416,12 @@ public:
 	{
 		request_data_spectral();
 
+#if SWEET_THREADING
 #pragma omp parallel for
-		for (int idx = 0; idx < sphConfig->spec_num_elems; idx++)
-			data_spec[idx] *= i_value;
+#endif
+
+		for (int idx = 0; idx < sphereDataConfig->spectral_array_data_number_of_elements; idx++)
+			spectral_space_data[idx] *= i_value;
 
 		return *this;
 	}
@@ -398,9 +436,12 @@ public:
 	{
 		request_data_spectral();
 
+#if SWEET_THREADING
 #pragma omp parallel for
-		for (int idx = 0; idx < sphConfig->spec_num_elems; idx++)
-			data_spec[idx] *= i_value;
+#endif
+
+		for (int idx = 0; idx < sphereDataConfig->spectral_array_data_number_of_elements; idx++)
+			spectral_space_data[idx] *= i_value;
 
 		return *this;
 	}
@@ -413,14 +454,17 @@ public:
 	{
 		request_data_spectral();
 
-		SphereData out_sph_data(sphConfig);
+		SphereData out_sph_data(sphereDataConfig);
 
+#if SWEET_THREADING
 #pragma omp parallel for
-		for (int idx = 0; idx < sphConfig->spec_num_elems; idx++)
-			out_sph_data.data_spec[idx] = data_spec[idx]/i_value;
+#endif
 
-		out_sph_data.data_spec_valid = true;
-		out_sph_data.data_spat_valid = false;
+		for (int idx = 0; idx < sphereDataConfig->spectral_array_data_number_of_elements; idx++)
+			out_sph_data.spectral_space_data[idx] = spectral_space_data[idx]/i_value;
+
+		out_sph_data.spectral_space_data_valid = true;
+		out_sph_data.physical_space_data_valid = false;
 
 		return out_sph_data;
 	}
@@ -434,10 +478,10 @@ public:
 
 		SphereData out_sph_data(*this);
 
-		out_sph_data.data_spec[0] += i_value*std::sqrt(4.0*M_PI);
+		out_sph_data.spectral_space_data[0] += i_value*std::sqrt(4.0*M_PI);
 
-		out_sph_data.data_spec_valid = true;
-		out_sph_data.data_spat_valid = false;
+		out_sph_data.spectral_space_data_valid = true;
+		out_sph_data.physical_space_data_valid = false;
 
 		return out_sph_data;
 	}
@@ -445,24 +489,24 @@ public:
 
 
 
-private:
+public:
 	void setup(SphereDataConfig *i_sphConfig)
 	{
-		sphConfig = i_sphConfig;
+		sphereDataConfig = i_sphConfig;
 
-		data_spec_valid = false;
-		data_spat_valid = false;
+		spectral_space_data_valid = false;
+		physical_space_data_valid = false;
 
-		data_spat = MemBlockAlloc::alloc<double>(sphConfig->spat_num_elems * sizeof(double));
-		data_spec = MemBlockAlloc::alloc<cplx>(sphConfig->spec_num_elems * sizeof(cplx));
+		physical_space_data = MemBlockAlloc::alloc<double>(sphereDataConfig->physical_array_data_number_of_elements * sizeof(double));
+		spectral_space_data = MemBlockAlloc::alloc<cplx>(sphereDataConfig->spectral_array_data_number_of_elements * sizeof(cplx));
 	}
 
 
 public:
 	~SphereData()
 	{
-		MemBlockAlloc::free(data_spat, sphConfig->spat_num_elems * sizeof(double));
-		MemBlockAlloc::free(data_spec, sphConfig->spec_num_elems * sizeof(cplx));
+		MemBlockAlloc::free(physical_space_data, sphereDataConfig->physical_array_data_number_of_elements * sizeof(double));
+		MemBlockAlloc::free(spectral_space_data, sphereDataConfig->spectral_array_data_number_of_elements * sizeof(cplx));
 	}
 
 
@@ -505,12 +549,12 @@ public:
 	{
 		request_data_physical();
 
-		SphereData out_sph_data(sphConfig);
-		spat_to_SH(sphConfig->shtns, data_spat, out_sph_data.data_spec);
-		SH_to_spat(sphConfig->shtns, out_sph_data.data_spec, out_sph_data.data_spat);
+		SphereData out_sph_data(sphereDataConfig);
+		spat_to_SH(sphereDataConfig->shtns, physical_space_data, out_sph_data.spectral_space_data);
+		SH_to_spat(sphereDataConfig->shtns, out_sph_data.spectral_space_data, out_sph_data.physical_space_data);
 
-		out_sph_data.data_spat_valid = true;
-		out_sph_data.data_spec_valid = false;
+		out_sph_data.physical_space_data_valid = true;
+		out_sph_data.spectral_space_data_valid = false;
 
 		return out_sph_data;
 	}
@@ -522,12 +566,12 @@ public:
 	{
 		request_data_spectral();
 
-		SphereData out_sph_data(sphConfig);
-		SH_to_spat(sphConfig->shtns, data_spec, out_sph_data.data_spat);
-		spat_to_SH(sphConfig->shtns, out_sph_data.data_spat, out_sph_data.data_spec);
+		SphereData out_sph_data(sphereDataConfig);
+		SH_to_spat(sphereDataConfig->shtns, spectral_space_data, out_sph_data.physical_space_data);
+		spat_to_SH(sphereDataConfig->shtns, out_sph_data.physical_space_data, out_sph_data.spectral_space_data);
 
-		out_sph_data.data_spat_valid = false;
-		out_sph_data.data_spec_valid = true;
+		out_sph_data.physical_space_data_valid = false;
+		out_sph_data.spectral_space_data_valid = true;
 
 		return out_sph_data;
 	}
@@ -538,31 +582,34 @@ public:
 			std::function<void(int,int,cplx&)> i_lambda
 	)
 	{
-		if (data_spat_valid)
+		if (physical_space_data_valid)
 			request_data_spectral();
 
+#if SWEET_THREADING
 #pragma omp parallel for
-		for (int m = 0; m <= sphConfig->spec_m_max; m++)
+#endif
+
+		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
-			std::size_t idx = sphConfig->getArrayIndexByModes(m, m);
-			for (int n = m; n <= sphConfig->spec_n_max; n++)
+			std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
+			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
 			{
-				i_lambda(n, m, data_spec[idx]);
+				i_lambda(n, m, spectral_space_data[idx]);
 				idx++;
 			}
 		}
 
-		data_spat_valid = false;
-		data_spec_valid = true;
+		physical_space_data_valid = false;
+		spectral_space_data_valid = true;
 	}
 
 
 
 	bool physical_isAnyNaNorInf()
 	{
-		for (int i = 0; i < sphConfig->spat_num_elems; i++)
+		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 		{
-			if (std::isnan(data_spat[i]) || std::isinf(data_spat[i]) != 0)
+			if (std::isnan(physical_space_data[i]) || std::isinf(physical_space_data[i]) != 0)
 				return true;
 		}
 
@@ -577,22 +624,22 @@ public:
 	{
 		static const std::complex<double> zero = {0,0};
 
-		assert(data_spec_valid);
+		assert(spectral_space_data_valid);
 
 		if (in < 0 ||  im < 0)
 			return zero;
 
-		if (in > sphConfig->spec_n_max)
+		if (in > sphereDataConfig->spectral_modes_n_max)
 			return zero;
 
-		if (im > sphConfig->spec_m_max)
+		if (im > sphereDataConfig->spectral_modes_m_max)
 			return zero;
 
 		if (im > in)
 			return zero;
 
-		assert (im <= sphConfig->spec_m_max);
-		return data_spec[sphConfig->getArrayIndexByModes(in, im)];
+		assert (im <= sphereDataConfig->spectral_modes_m_max);
+		return spectral_space_data[sphereDataConfig->getArrayIndexByModes(in, im)];
 	}
 
 
@@ -601,12 +648,14 @@ public:
 	 */
 	void spectral_set_zero()
 	{
+#if SWEET_THREADING
 #pragma omp parallel for
-		for (int i = 0; i < sphConfig->spec_num_elems; i++)
-			data_spec[i] = {0,0};
+#endif
+		for (int i = 0; i < sphereDataConfig->spectral_array_data_number_of_elements; i++)
+			spectral_space_data[i] = {0,0};
 
-		data_spat_valid = false;
-		data_spec_valid = true;
+		physical_space_data_valid = false;
+		spectral_space_data_valid = true;
 	}
 
 
@@ -620,15 +669,18 @@ public:
 			std::function<void(double,double,double&)> i_lambda	///< lambda function to return value for lat/mu
 	)
 	{
-		if (data_spec_valid)
+		if (spectral_space_data_valid)
 			request_data_physical();
 
+#if SWEET_THREADING
 #pragma omp parallel for
-		for (int i = 0; i < sphConfig->spat_num_lon; i++)
-		{
-			double lon_degree = ((double)i/(double)sphConfig->spat_num_lon)*2.0*M_PI;
+#endif
 
-			for (int j = 0; j < sphConfig->spat_num_lat; j++)
+		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
+		{
+			double lon_degree = ((double)i/(double)sphereDataConfig->physical_num_lon)*2.0*M_PI;
+
+			for (int j = 0; j < sphereDataConfig->physical_num_lat; j++)
 			{
 				//double colatitude = acos(shtns->ct[j]);
 
@@ -638,14 +690,14 @@ public:
 				 * WARNING: The latitude degrees are not equidistant spaced in the angles!!!! We have to use the shtns->ct lookup table
 				 */
 				//double lat_degree = M_PI*0.5 - colatitude;
-				double lat_degree = sphConfig->lat[j];
+				double lat_degree = sphereDataConfig->lat[j];
 
-				i_lambda(lon_degree, lat_degree, data_spat[i*sphConfig->spat_num_lat + j]);
+				i_lambda(lon_degree, lat_degree, physical_space_data[i*sphereDataConfig->physical_num_lat + j]);
 			}
 		}
 
-		data_spat_valid = true;
-		data_spec_valid = false;
+		physical_space_data_valid = true;
+		spectral_space_data_valid = false;
 	}
 
 
@@ -658,24 +710,27 @@ public:
 			std::function<void(double,double,double&)> i_lambda	///< lambda function to return value for lat/mu
 	)
 	{
-		if (data_spec_valid)
+		if (spectral_space_data_valid)
 			request_data_physical();
 
+#if SWEET_THREADING
 #pragma omp parallel for
-		for (int i = 0; i < sphConfig->spat_num_lon; i++)
+#endif
+
+		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
 		{
-			double lon_degree = ((double)i/(double)sphConfig->spat_num_lon)*2.0*M_PI;
+			double lon_degree = ((double)i/(double)sphereDataConfig->physical_num_lon)*2.0*M_PI;
 
-			for (int j = 0; j < sphConfig->spat_num_lat; j++)
+			for (int j = 0; j < sphereDataConfig->physical_num_lat; j++)
 			{
-				double sin_phi = sphConfig->lat_gaussian[j];
+				double sin_phi = sphereDataConfig->lat_gaussian[j];
 
-				i_lambda(lon_degree, sin_phi, data_spat[i*sphConfig->spat_num_lat + j]);
+				i_lambda(lon_degree, sin_phi, physical_space_data[i*sphereDataConfig->physical_num_lat + j]);
 			}
 		}
 
-		data_spat_valid = true;
-		data_spec_valid = false;
+		physical_space_data_valid = true;
+		spectral_space_data_valid = false;
 	}
 
 
@@ -691,17 +746,20 @@ public:
 			std::function<void(double,double,double&)> i_lambda	///< lambda function to return value for lat/mu
 	)
 	{
-		if (data_spec_valid)
+		if (spectral_space_data_valid)
 			request_data_physical();
 
+#if SWEET_THREADING
 #pragma omp parallel for
-		for (int i = 0; i < sphConfig->spat_num_lon; i++)
-		{
-			double lon_degree = (((double)i)/(double)sphConfig->spat_num_lon)*2.0*M_PI;
+#endif
 
-			for (int j = 0; j < sphConfig->spat_num_lat; j++)
+		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
+		{
+			double lon_degree = (((double)i)/(double)sphereDataConfig->physical_num_lon)*2.0*M_PI;
+
+			for (int j = 0; j < sphereDataConfig->physical_num_lat; j++)
 			{
-				double cos_phi = sphConfig->lat_cogaussian[j];
+				double cos_phi = sphereDataConfig->lat_cogaussian[j];
 
 //				std::cout << cos_phi << std::endl;
 				/*
@@ -710,12 +768,12 @@ public:
 				double comu = sqrt(1.0-mu*mu);
 				*/
 
-				i_lambda(lon_degree, cos_phi, data_spat[i*sphConfig->spat_num_lat + j]);
+				i_lambda(lon_degree, cos_phi, physical_space_data[i*sphereDataConfig->physical_num_lat + j]);
 			}
 		}
 
-		data_spat_valid = true;
-		data_spec_valid = false;
+		physical_space_data_valid = true;
+		spectral_space_data_valid = false;
 	}
 
 
@@ -740,13 +798,16 @@ public:
 	 */
 	void physical_set_zero()
 	{
+#if SWEET_THREADING
 #pragma omp parallel for
-		for (int i = 0; i < sphConfig->spat_num_lon; i++)
-			for (int j = 0; j < sphConfig->spat_num_lat; j++)
-				data_spat[i*sphConfig->spat_num_lat + j] = 0;
+#endif
 
-		data_spat_valid = true;
-		data_spec_valid = false;
+		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
+			for (int j = 0; j < sphereDataConfig->physical_num_lat; j++)
+				physical_space_data[i*sphereDataConfig->physical_num_lat + j] = 0;
+
+		physical_space_data_valid = true;
+		spectral_space_data_valid = false;
 	}
 
 
@@ -757,13 +818,16 @@ public:
 			double i_value
 	)
 	{
+#if SWEET_THREADING
 #pragma omp parallel for
-		for (int i = 0; i < sphConfig->spat_num_lon; i++)
-			for (int j = 0; j < sphConfig->spat_num_lat; j++)
-				data_spat[i*sphConfig->spat_num_lat + j] = i_value;
+#endif
 
-		data_spat_valid = true;
-		data_spec_valid = false;
+		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
+			for (int j = 0; j < sphereDataConfig->physical_num_lat; j++)
+				physical_space_data[i*sphereDataConfig->physical_num_lat + j] = i_value;
+
+		physical_space_data_valid = true;
+		spectral_space_data_valid = false;
 	}
 
 
@@ -774,19 +838,19 @@ public:
 			const SphereData &i_sph_data
 	)
 	{
-		check(i_sph_data.sphConfig);
+		check(i_sph_data.sphereDataConfig);
 
 		request_data_physical();
 		i_sph_data.request_data_physical();
 
 		double error = -1;
 
-		for (int j = 0; j < sphConfig->spat_num_elems; j++)
+		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
 		{
 			error = std::max(
 						error,
 						std::abs(
-								data_spat[j] - i_sph_data.data_spat[j]
+								physical_space_data[j] - i_sph_data.physical_space_data[j]
 							)
 						);
 		}
@@ -803,11 +867,11 @@ public:
 
 		double error = -1;
 
-		for (int j = 0; j < sphConfig->spat_num_elems; j++)
+		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
 		{
 			error = std::max(
 						error,
-						std::abs(data_spat[j])
+						std::abs(physical_space_data[j])
 						);
 		}
 		return error;
@@ -823,9 +887,9 @@ public:
 
 		double error = std::numeric_limits<double>::infinity();
 
-		for (int j = 0; j < sphConfig->spat_num_elems; j++)
+		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
 		{
-			error = std::min(error, data_spat[j]);
+			error = std::min(error, physical_space_data[j]);
 		}
 		return error;
 	}
@@ -840,9 +904,9 @@ public:
 
 		double error = -std::numeric_limits<double>::infinity();
 
-		for (int j = 0; j < sphConfig->spat_num_elems; j++)
+		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
 		{
-			error = std::max(error, data_spat[j]);
+			error = std::max(error, physical_space_data[j]);
 		}
 		return error;
 	}
@@ -854,12 +918,12 @@ public:
 
 		std::cout << std::setprecision(i_precision);
 
-		for (int m = 0; m <= sphConfig->spec_m_max; m++)
+		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
-			std::size_t idx = sphConfig->getArrayIndexByModes(m, m);
-			for (int n = m; n <= sphConfig->spec_n_max; n++)
+			std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
+			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
 			{
-				std::cout << data_spec[idx] << "\t";
+				std::cout << spectral_space_data[idx] << "\t";
 				idx++;
 			}
 			std::cout << std::endl;
@@ -873,12 +937,12 @@ public:
 
 		std::cout << std::setprecision(i_precision);
 
-        for (int j = sphConfig->spat_num_lat-1; j >= 0; j--)
+        for (int j = sphereDataConfig->physical_num_lat-1; j >= 0; j--)
         {
-        		for (int i = 0; i < sphConfig->spat_num_lon; i++)
+        		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
         		{
-        			std::cout << data_spat[i*sphConfig->spat_num_lat+j];
-        			if (i < sphConfig->spat_num_lon-1)
+        			std::cout << physical_space_data[i*sphereDataConfig->physical_num_lat+j];
+        			if (i < sphereDataConfig->physical_num_lon-1)
         				std::cout << "\t";
         		}
         		std::cout << std::endl;
@@ -905,30 +969,30 @@ public:
 		// Use 0 to make it processable by python
 		file << "0\t";
 
-		for (int i = 0; i < sphConfig->spat_num_lon; i++)
+		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
 		{
 //			double lon_degree = ((double)i/(double)sphConfig->spat_num_lon)*2.0*M_PI;
-			double lon_degree = ((double)i/(double)sphConfig->spat_num_lon)*2.0*M_PI;
+			double lon_degree = ((double)i/(double)sphereDataConfig->physical_num_lon)*2.0*M_PI;
 			lon_degree = lon_degree/M_PI*180.0;
 
 			file << lon_degree;
-			if (i < sphConfig->spat_num_lon-1)
+			if (i < sphereDataConfig->physical_num_lon-1)
 				file << "\t";
 		}
 		file << std::endl;
 
-        for (int j = sphConfig->spat_num_lat-1; j >= 0; j--)
+        for (int j = sphereDataConfig->physical_num_lat-1; j >= 0; j--)
         {
 //        		double lat_degree =  M_PI*0.5 - acos(shtns->ct[j]);
-        		double lat_degree = sphConfig->lat[j];
+        		double lat_degree = sphereDataConfig->lat[j];
         		lat_degree = lat_degree/M_PI*180.0;
 
         		file << lat_degree << "\t";
 
-        		for (int i = 0; i < sphConfig->spat_num_lon; i++)
+        		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
         		{
-        			file << data_spat[i*sphConfig->spat_num_lat+j];
-        			if (i < sphConfig->spat_num_lon-1)
+        			file << physical_space_data[i*sphereDataConfig->physical_num_lat+j];
+        			if (i < sphereDataConfig->physical_num_lon-1)
         				file << "\t";
         		}
         		file << std::endl;
@@ -955,34 +1019,34 @@ public:
 		// Use 0 to make it processable by python
 		file << "0\t";
 
-		for (int i = 0; i < sphConfig->spat_num_lon; i++)
+		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
 		{
 //			double lon_degree = ((double)i/(double)sphConfig->spat_num_lon)*2.0*M_PI;
-			double lon_degree = ((double)i/(double)sphConfig->spat_num_lon)*2.0*M_PI;
+			double lon_degree = ((double)i/(double)sphereDataConfig->physical_num_lon)*2.0*M_PI;
 			lon_degree = (lon_degree-M_PI)/M_PI*180.0;
 
 			file << lon_degree;
-			if (i < sphConfig->spat_num_lon-1)
+			if (i < sphereDataConfig->physical_num_lon-1)
 				file << "\t";
 		}
 		file << std::endl;
 
-        for (int j = sphConfig->spat_num_lat-1; j >= 0; j--)
+        for (int j = sphereDataConfig->physical_num_lat-1; j >= 0; j--)
         {
 //        		double lat_degree =  M_PI*0.5 - acos(shtns->ct[j]);
-        		double lat_degree = sphConfig->lat[j];
+        		double lat_degree = sphereDataConfig->lat[j];
         		lat_degree = lat_degree/M_PI*180.0;
 
         		file << lat_degree << "\t";
 
-        		for (int i = 0; i < sphConfig->spat_num_lon; i++)
+        		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
         		{
-        			int ia = i+sphConfig->spat_num_lon/2;
-        			if (ia >= sphConfig->spat_num_lon)
-        				ia -= sphConfig->spat_num_lon;
+        			int ia = i+sphereDataConfig->physical_num_lon/2;
+        			if (ia >= sphereDataConfig->physical_num_lon)
+        				ia -= sphereDataConfig->physical_num_lon;
 
-        			file << data_spat[ia*sphConfig->spat_num_lat+j];
-        			if (i < sphConfig->spat_num_lon-1)
+        			file << physical_space_data[ia*sphereDataConfig->physical_num_lat+j];
+        			if (i < sphereDataConfig->physical_num_lon-1)
         				file << "\t";
         		}
         		file << std::endl;
