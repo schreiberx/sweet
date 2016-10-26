@@ -676,7 +676,7 @@ bool SWE_Plane_REXI::run_timestep_rexi(
 {
 	typedef std::complex<double> complex;
 
-	std::size_t N = rexi.alpha.size();
+	std::size_t max_N = rexi.alpha.size();
 
 	io_h.request_data_physical();
 	io_u.request_data_physical();
@@ -784,11 +784,11 @@ bool SWE_Plane_REXI::run_timestep_rexi(
 #endif
 		int global_thread_id = local_thread_id + num_local_rexi_par_threads*mpi_rank;
 
-		std::size_t start = block_size*global_thread_id;
-		std::size_t end = std::min(N, start+block_size);
+		std::size_t start = std::min(max_N, block_size*global_thread_id);
+		std::size_t end = std::min(max_N, start+block_size);
 #else
 		std::size_t start = 0;
-		std::size_t end = N;
+		std::size_t end = max_N;
 #endif
 
 

@@ -240,10 +240,6 @@ void SWE_Sphere_REXI::setup(
 
 			perThreadVars[i] = new PerThreadVars;
 
-			int a, b;
-			perThreadVars[i]->sphereDataConfig.setupAutoPhysicalSpace(sphereDataConfigRexi->spectral_modes_m_max, sphereDataConfigRexi->spectral_modes_n_max, &a, &b);
-			SphereDataConfig *sphereDataConfigRexi = &perThreadVars[i]->sphereDataConfig;
-
 			std::size_t start, end;
 			get_workload_start_end(start, end);
 			int local_size = (int)end-(int)start;
@@ -406,9 +402,6 @@ bool SWE_Sphere_REXI::run_timestep_rexi(
 
 		std::size_t start, end;
 		get_workload_start_end(start, end);
-
-		SphereDataConfig *sphereDataConfigRexi = &perThreadVars[thread_id]->sphereDataConfig;
-
 
 		/*
 		 * DO SUM IN PARALLEL

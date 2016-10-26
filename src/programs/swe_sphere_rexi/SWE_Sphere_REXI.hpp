@@ -82,8 +82,6 @@ class SWE_Sphere_REXI
 		SphereData accum_phi;
 		SphereData accum_u;
 		SphereData accum_v;
-
-		SphereDataConfig sphereDataConfig;
 	};
 
 	// per-thread allocated variables to avoid NUMA domain effects
