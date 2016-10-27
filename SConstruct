@@ -419,6 +419,7 @@ else:
 if env['gui']=='enable':
 	exec_name+='_gui'
 
+
 #if env['program_binary_name_override'] != '':
 #	exec_name = env['program_binary_name_override']
 
@@ -705,6 +706,9 @@ if env['gui'] == 'enable':
 	# compile flags
 	env.Append(CXXFLAGS=' -I'+os.environ['HOME']+'/local/include')
 	env.Append(CXXFLAGS=' -DSWEET_GUI=1')
+
+	# Virtual box libGL location fix
+	env.Append(LINKFLAGS=['-L/var/lib/VBoxGuestAdditions/lib/'])
 
 	# linker flags
 
