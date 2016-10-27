@@ -716,7 +716,11 @@ if env['gui'] == 'enable':
 #		env.Append(LIBPATH=['/usr/lib/nvidia-current/'])
 
 #	env.Append(LIBPATH=[os.environ['HOME']+'/local/lib'])
-	env.Append(LIBS=['GL'])
+	if commands.getoutput('uname -i') == "Darwin":
+		# ASSUME MACOSX SYSTEM
+		env.ParseConfig("-framework OpenGL")
+	else:
+		env.Append(LIBS=['GL'])
 
 	reqversion = [2,0,0]
 	sdlversion = commands.getoutput('sdl2-config --version').split('.')
