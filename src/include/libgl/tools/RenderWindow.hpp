@@ -186,7 +186,7 @@ public:
 			int i_initial_window_width = 800,
 			int i_initial_window_height = 600,
 			int i_request_opengl_major_version = 3,		///< major version of opengl context to request
-			int i_request_opengl_minor_version = 3		///< minor version of opengl context to request
+			int i_request_opengl_minor_version = 2		///< minor version of opengl context to request
 	)
 	{
 		if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_NOPARACHUTE) < 0) /* Initialize SDL's Video subsystem */
