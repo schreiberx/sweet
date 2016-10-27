@@ -15,7 +15,6 @@
  * 		doc/antialiasing/
  */
 
-#include <libmath/shtns_inc.hpp>
 #include <fftw3.h>
 #include <iostream>
 #include <stdlib.h>
