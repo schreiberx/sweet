@@ -244,8 +244,8 @@ void SWE_Sphere_REXI::setup(
 			get_workload_start_end(start, end);
 			int local_size = (int)end-(int)start;
 
-#pragma omp critical
-			std::cout << start << "\t" << end << "\t" << local_size << "\t" << block_size << std::endl;
+//#pragma omp critical
+//			std::cout << start << "\t" << end << "\t" << local_size << "\t" << block_size << std::endl;
 
 #if SWEET_DEBUG
 			if (local_size < 0)

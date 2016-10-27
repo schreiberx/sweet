@@ -211,6 +211,111 @@ public:
 
 
 public:
+	void bicubic_scalar(
+			const PlaneData &i_data,				///< sampling data
+
+			const ScalarDataArray &i_pos_x,			///< x positions of interpolation points
+			const ScalarDataArray &i_pos_y,			///< y positions of interpolation points
+
+			ScalarDataArray &o_data,				///< output values
+
+			double i_shift_x = 0.0,            ///< shift in x for staggered grids
+			double i_shift_y = 0.0				///< shift in y for staggered grids
+	)
+	{
+		assert(res[0] > 0);
+		assert(cached_scale_factor[0] > 0);
+		assert(i_pos_x.number_of_elements == i_pos_y.number_of_elements);
+		assert(i_pos_x.number_of_elements == o_data.number_of_elements);
+
+		i_data.request_data_physical();
+
+		// iterate over all positions in parallel
+#pragma omp parallel for
+		for (std::size_t pos_idx = 0; pos_idx < i_pos_x.number_of_elements; pos_idx++)
+		{
+			/*
+			 * load position to interpolate
+			 * posx stores all x-coordinates of the arrival points
+			 * posy stores all y-coordinates of the arrival points
+			 *
+			 * Both are arrays and matching array indices (pos_idx) below index the coordinates for the same point.
+			 *
+			 * Scale factor (Nx/dx, Ny/dy) maps from the physical space to the array space.
+			 * The array space is from [0; N[
+			 *
+			 * shift_x/y is operating in array space. Hence, staggered grid can be
+			 * implemented by setting this to 0.5 or -0.5
+			 * for C grid, to interpolate given u data, use i_shift_x = 0.0,  i_shift_y = -0.5
+			 *             to interpolate given v data, use i_shift_y = -0.5, i_shift_y = 0.0
+			 *  pay attention to the negative shift, which is necessary because the staggered grids are positively shifted
+			 *  and this shift has to be removed for the interpolation
+			 */
+			double pos_x = wrapPeriodic(i_pos_x.scalar_data[pos_idx]*cached_scale_factor[0] + i_shift_x, (double)res[0]);
+			double pos_y = wrapPeriodic(i_pos_y.scalar_data[pos_idx]*cached_scale_factor[1] + i_shift_y, (double)res[1]);
+
+			/**
+			 * For the interpolation, we assume node-aligned values
+			 *
+			 * x0  x1  x2  x3
+			 * |---|---|---|---
+			 * 0   2   4   6    <- positions and associated values e.g. for domain size 8
+			 */
+
+			/**
+			 * See http://www.paulinternet.nl/?page=bicubic
+			 */
+			// compute x/y position
+			double x = pos_x - floor(pos_x);
+			double y = pos_y - floor(pos_y);
+
+			// precompute x-position indices since they are reused 4 times
+			int idx_i[4];
+			{
+
+				int i = (int)pos_x-1;
+
+				i = wrapPeriodic(i, res[0]);
+				idx_i[0] = wrapPeriodic(i, res[0]);
+
+				i = wrapPeriodic(i+1, res[0]);
+				idx_i[1] = wrapPeriodic(i, res[0]);
+
+				i = wrapPeriodic(i+1, res[0]);
+				idx_i[2] = wrapPeriodic(i, res[0]);
+
+				i = wrapPeriodic(i+1, res[0]);
+				idx_i[3] = wrapPeriodic(i, res[0]);
+			}
+
+			/**
+			 * iterate over rows and interpolate over the columns in the x direction
+			 */
+			// start at this row
+			int idx_j = wrapPeriodic((int)pos_y-1, res[1]);
+
+			double q[4];
+			for (int kj = 0; kj < 4; kj++)
+			{
+				double p[4];
+
+				p[0] = i_data.physical_get(idx_j, idx_i[0]);
+				p[1] = i_data.physical_get(idx_j, idx_i[1]);
+				p[2] = i_data.physical_get(idx_j, idx_i[2]);
+				p[3] = i_data.physical_get(idx_j, idx_i[3]);
+
+				q[kj] = p[1] + 0.5 * x*(p[2] - p[0] + x*(2.0*p[0] - 5.0*p[1] + 4.0*p[2] - p[3] + x*(3.0*(p[1] - p[2]) + p[3] - p[0])));
+
+				idx_j = wrapPeriodic(idx_j+1, res[1]);
+			}
+			double value = q[1] + 0.5 * y*(q[2] - q[0] + y*(2.0*q[0] - 5.0*q[1] + 4.0*q[2] - q[3] + y*(3.0*(q[1] - q[2]) + q[3] - q[0])));
+
+			o_data.scalar_data[pos_idx] = value;
+		}
+	}
+
+
+public:
 	void bilinear_scalar(
 			const PlaneData &i_data,				///< sampling data
 

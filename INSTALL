@@ -101,22 +101,42 @@ LAPACK (optional): Required for REXI on the sphere for spectral space solver
 
 
 ================
-SDL (optional): Graphical user interface to simulations
+GUI:
 ================
-	The GUI depends on libSDL2
-	https://www.libsdl.org/
 
-	apt-get install libsdl2-dev
 
-	OR
-	
-	Download  http://libsdl.org/release/SDL2-2.X.X.tar.gz
-	./configure --prefix=$HOME/local/SDL2-2.0.3
-	make -j 4
-	make install
-	Add the SDL2-2.0.3 to manually installed libraries 
-	 enviromental variables to import them.
-	 (Such as in $HOME/bin/local_vars.sh).
+	================
+	SDL (optional): Graphical user interface to simulations
+	================
+		The GUI depends on libSDL2
+		https://www.libsdl.org/
+
+		apt-get install libsdl2-dev
+
+		OR
+		
+		Download  http://libsdl.org/release/SDL2-2.X.X.tar.gz
+		./configure --prefix=$HOME/local/SDL2-2.0.3
+		make -j 4
+		make install
+		Add the SDL2-2.0.3 to manually installed libraries 
+		 enviromental variables to import them.
+		 (Such as in $HOME/bin/local_vars.sh).
+
+	================
+	Freetype: Font library
+	================
+		You also need to install the freetype library.
+		On Ubuntu Linux systems the developer libraries
+		can be installed e.g. with
+		$ sudo apt-get install libfreetype6-dev
+
+	================
+	Mesa 3D libs
+	================
+		You require the GL MESA drivers on Linux system.
+		Install them on Ubuntu systems e.g. by using
+		$ sudo apt-get install libgl1-mesa-dev
 
 
 ================

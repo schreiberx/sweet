@@ -595,13 +595,6 @@ public:
 					prog_v = prog_v.spectral_solve_helmholtz(1.0, -scalar, r);
 				}
 
-				if (prog_h.physical_isAnyNaNorInf())
-				{
-					std::cerr << "Instability detected (NaN value in H)" << std::endl;
-					assert(false);
-					exit(1);
-				}
-
 #if 1
 				double max_abs_value = 10.0;
 				if (prog_h.reduce_abs_max() > max_abs_value)
@@ -619,6 +612,14 @@ public:
 
 			write_output();
 			std::cout << std::endl;
+
+
+			if (prog_h.physical_isAnyNaNorInf())
+			{
+				std::cerr << "Instability detected (NaN value in H)" << std::endl;
+				assert(false);
+				exit(1);
+			}
 		}
 	}
 
