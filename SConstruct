@@ -707,8 +707,6 @@ if env['gui'] == 'enable':
 	env.Append(CXXFLAGS=' -I'+os.environ['HOME']+'/local/include')
 	env.Append(CXXFLAGS=' -DSWEET_GUI=1')
 
-	# Virtual box libGL location fix
-	env.Append(LINKFLAGS=['-L/var/lib/VBoxGuestAdditions/lib/'])
 
 	# linker flags
 
@@ -731,8 +729,7 @@ if env['gui'] == 'enable':
 			Exit(1)
 
 	env.ParseConfig("sdl2-config --cflags --libs")
-#	env.ParseConfig("pkg-config SDL2_image --cflags --libs")
-	env.ParseConfig("pkg-config freetype2 --cflags --libs")
+	env.ParseConfig("freetype-config --cflags --libs")
 else:
 	env.Append(CXXFLAGS=' -DSWEET_GUI=0')
 
