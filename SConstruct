@@ -718,7 +718,7 @@ if env['gui'] == 'enable':
 #	env.Append(LIBPATH=[os.environ['HOME']+'/local/lib'])
 	if commands.getoutput('uname -s') == "Darwin":
 		# ASSUME MACOSX SYSTEM
-		env.Append(LINKFLAGS=["-framework OpenGL"])
+		env.Append(LINKFLAGS='-framework OpenGL')
 	else:
 		env.Append(LIBS=['GL'])
 
