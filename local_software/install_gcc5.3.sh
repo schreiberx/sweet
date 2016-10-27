@@ -53,7 +53,7 @@ if [ ! -e "$DST_DIR/bin/gcc"  -o "$1" != "" ]; then
 	##########################
 	# MPFR
 	##########################
-	LIB_LINK="http://www.mpfr.org/mpfr-current/mpfr-3.1.3.tar.bz2"
+	LIB_LINK="https://ftp.gnu.org/gnu/mpfr/mpfr-3.1.3.tar.bz2"
 	LIB_FILENAME="`basename $LIB_LINK`"
 	LIB_BASENAME="mpfr-3.1.3"
 	LIB_BASENAME_SHORT="mpfr"
