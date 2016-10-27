@@ -716,9 +716,9 @@ if env['gui'] == 'enable':
 #		env.Append(LIBPATH=['/usr/lib/nvidia-current/'])
 
 #	env.Append(LIBPATH=[os.environ['HOME']+'/local/lib'])
-	if commands.getoutput('uname -i') == "Darwin":
+	if commands.getoutput('uname -s') == "Darwin":
 		# ASSUME MACOSX SYSTEM
-		env.ParseConfig("-framework OpenGL")
+		env.Append(LINKFLAGS=["-framework OpenGL"])
 	else:
 		env.Append(LIBS=['GL'])
 
