@@ -75,6 +75,8 @@ public:
 	{
 		char buffer[1024];
 
+		std::cout << "Simulation time: " << simVars.timecontrol.current_simulation_time << std::endl;
+
 		sprintf(buffer, "prog_h_t%020.8f.csv", simVars.timecontrol.current_simulation_time/(60*60));
 		if (simVars.setup.benchmark_scenario_id == 0)
 			prog_h.file_physical_writeFile_lon_pi_shifted(buffer);
@@ -198,6 +200,7 @@ public:
 				simVars.timecontrol.current_timestep_size = 0.001*simVars.sim.earth_radius/(double)sphereDataConfig->physical_num_lat;
 		}
 
+
 		if (simVars.misc.output_each_sim_seconds <= 0)
 		{
 			simVars.misc.output_each_sim_seconds = 60*30;	// output every 1/2 hour
@@ -216,6 +219,7 @@ public:
 
 			simVars.misc.use_nonlinear_equations = 0;
 		}
+
 
 		if (simVars.setup.benchmark_scenario_id == 0)
 		{
@@ -288,6 +292,7 @@ public:
 		std::cout << " + REXI use half poles: " << simVars.rexi.rexi_use_half_poles << std::endl;
 		std::cout << " + REXI additional modes: " << simVars.rexi.rexi_use_extended_modes << std::endl;
 		std::cout << std::endl;
+		std::cout << " + RK order: " << simVars.disc.timestepping_runge_kutta_order << std::endl;
 		std::cout << " + timestep size: " << simVars.timecontrol.current_timestep_size << std::endl;
 		std::cout << " + output timestep size: " << simVars.misc.output_each_sim_seconds << std::endl;
 

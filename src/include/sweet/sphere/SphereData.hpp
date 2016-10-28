@@ -912,7 +912,9 @@ public:
 	}
 
 
-	void spectral_print(int i_precision = 8)	const
+	void spectral_print(
+			int i_precision = 20
+	)	const
 	{
 		request_data_spectral();
 
@@ -931,7 +933,9 @@ public:
 	}
 
 
-	void physical_print(int i_precision = 8)	const
+	void physical_print(
+			int i_precision = 20
+	)	const
 	{
 		request_data_physical();
 
@@ -953,7 +957,7 @@ public:
 	void file_physical_writeFile(
 			const char *i_filename,
 			const char *i_title = "",
-			int i_precision = 8
+			int i_precision = 20
 	)	const
 	{
 		request_data_physical();
@@ -1003,7 +1007,7 @@ public:
 	void file_physical_writeFile_lon_pi_shifted(
 			const char *i_filename,
 			std::string i_title = "",
-			int i_precision = 14
+			int i_precision = 20
 	)
 	{
 		request_data_physical();
