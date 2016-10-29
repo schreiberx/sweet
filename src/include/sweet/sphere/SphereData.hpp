@@ -205,6 +205,58 @@ public:
 	}
 
 
+#if 0
+public:
+	void physical_RealToSphereData(
+			SphereData &o_sph_data
+	)
+	{
+		check_sphereDataConfig_identical_res(o_sph_data.sphereDataConfig);
+
+		request_data_physical();
+
+		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+			o_sph_data.physical_space_data[i] = physical_space_data[i].real();
+
+		o_sph_data.physical_space_data_valid = true;
+		o_sph_data.spectral_space_data_valid = false;
+	}
+
+public:
+	void physical_ImagToSphereData(
+			SphereData &o_sph_data
+	)
+	{
+		check_sphereDataConfig_identical_res(o_sph_data.sphereDataConfig);
+
+		request_data_physical();
+
+		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+			o_sph_data.physical_space_data[i] = physical_space_data[i].imag();
+
+		o_sph_data.physical_space_data_valid = true;
+		o_sph_data.spectral_space_data_valid = false;
+	}
+
+
+public:
+	void physical_fromSphereData(
+			const SphereData &i_sph_data
+	)
+	{
+		check_sphereDataConfig_identical_res(i_sph_data.sphereDataConfig);
+
+		i_sph_data.request_data_physical();
+
+		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+			physical_space_data[i] = i_sph_data.physical_space_data[i];
+
+		physical_space_data_valid = true;
+		spectral_space_data_valid = false;
+	}
+#endif
+
+
 	void request_data_spectral()	const
 	{
 		if (spectral_space_data_valid)

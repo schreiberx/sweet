@@ -20,9 +20,9 @@ public:
 			const SphereDataComplex &i_sphereData
 	)
 	{
-		SphereData out(i_sphereData.sphereDataConfig);
-
 		i_sphereData.request_data_physical();
+
+		SphereData out(i_sphereData.sphereDataConfig);
 
 #if SWEET_THREADING
 #pragma omp parallel for

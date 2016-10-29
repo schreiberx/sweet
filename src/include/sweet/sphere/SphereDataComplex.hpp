@@ -72,20 +72,6 @@ public:
 	}
 
 
-public:
-	SphereDataComplex(
-			const SphereData &i_sph_data
-	)	:
-		sphereDataConfig(nullptr),
-		physical_space_data(nullptr),
-		spectral_space_data(nullptr)
-	{
-		setup(i_sph_data.sphereDataConfig);
-
-		operator=(i_sph_data);
-	}
-
-
 	/**
 	 * Run validation checks to make sure that the physical and spectral spaces match in size
 	 */
@@ -139,7 +125,7 @@ public:
 	}
 
 
-
+#if 0
 public:
 	void physical_RealToSphereData(
 			SphereData &o_sph_data
@@ -188,6 +174,7 @@ public:
 		physical_space_data_valid = true;
 		spectral_space_data_valid = false;
 	}
+#endif
 
 
 public:

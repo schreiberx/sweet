@@ -12,6 +12,9 @@
 #include <sweet/sphere/SphereOperatorsComplex.hpp>
 #include <sweet/sphere/SphereDataConfig.hpp>
 
+#include <sweet/sphere/Convert_SphereData_to_SphereDataComplex.hpp>
+#include <sweet/sphere/Convert_SphereDataComplex_to_SphereData.hpp>
+
 
 /**
  * REXI solver for SWE based on Robert function formulation
@@ -152,9 +155,9 @@ public:
 				}
 			);
 
-		SphereDataComplex phi0(i_phi0);
-		SphereDataComplex u0(i_u0);
-		SphereDataComplex v0(i_v0);
+		SphereDataComplex phi0 = Convert_SphereData_To_SphereDataComplex::physical_convert(i_phi0);
+		SphereDataComplex u0 = Convert_SphereData_To_SphereDataComplex::physical_convert(i_u0);
+		SphereDataComplex v0 = Convert_SphereData_To_SphereDataComplex::physical_convert(i_v0);
 
 		SphereDataComplex div0 = ir*SphereOperatorsComplex::div(u0, v0);
 		SphereDataComplex eta0 = ir*SphereOperatorsComplex::vort(u0, v0);
@@ -185,7 +188,7 @@ public:
 #endif
 
 			SphereDataComplex foo = 	avg_geopotential*(div0 - two_omega*(1.0/alpha)*SphereOperatorsComplex::mu(eta0)) +
-									(alpha*i_phi0 + two_omega*two_omega*(1.0/alpha)*SphereOperatorsComplex::mu2(i_phi0));
+									(alpha*phi0 + two_omega*two_omega*(1.0/alpha)*SphereOperatorsComplex::mu2(phi0));
 
 			SphereDataComplex rhs =	alpha*alpha*foo +
 									two_omega*two_omega*SphereOperatorsComplex::mu2(foo) +
@@ -222,7 +225,7 @@ public:
 
 #else
 
-			SphereDataComplex rhs = avg_geopotential*div0 + alpha*i_phi0;
+			SphereDataComplex rhs = avg_geopotential*div0 + alpha*phi0;
 			phi = rhs.spectral_solve_helmholtz(alpha*alpha, -avg_geopotential, r);
 
 			u = (1.0/alpha) * (u0 + ir*SphereOperatorsComplex::grad_lon(phi));
@@ -235,9 +238,9 @@ public:
 		u *= beta;
 		v *= beta;
 
-		phi.physical_RealToSphereData(o_phi);
-		u.physical_RealToSphereData(o_u);
-		v.physical_RealToSphereData(o_v);
+		o_phi = Convert_SphereDataComplex_To_SphereData::physical_convert(phi);
+		o_u = Convert_SphereDataComplex_To_SphereData::physical_convert(u);
+		o_v = Convert_SphereDataComplex_To_SphereData::physical_convert(v);
 	}
 };
 
