@@ -37,8 +37,8 @@ void run_tests(
 	{
 		SphereTestSolutions_SPH testSolutionsSph(2,1);
 
-		int tn = 1;
-		int tm = 0;
+		//int tn = 1;
+		//int tm = 0;
 		SphereData h(sphConfig);
 		h.physical_update_lambda_gaussian_grid(
 				[&](double a, double b, double &c){testSolutionsSph.test_function__grid_gaussian(a,b,c);}

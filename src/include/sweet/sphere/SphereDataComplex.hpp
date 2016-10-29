@@ -99,6 +99,8 @@ public:
 		assert(sphereDataConfig->spectral_modes_n_max == i_sphConfig->spectral_modes_n_max);
 	}
 
+
+
 #if 0
 public:
 	SphereDataComplex& operator=(
@@ -114,6 +116,8 @@ public:
 		return *this;
 	}
 #endif
+
+
 
 public:
 	SphereDataComplex& operator=(
@@ -148,8 +152,8 @@ public:
 		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 			o_sph_data.physical_space_data[i] = physical_space_data[i].real();
 
-		o_sph_data.spectral_space_data_valid = false;
 		o_sph_data.physical_space_data_valid = true;
+		o_sph_data.spectral_space_data_valid = false;
 	}
 
 public:
@@ -561,6 +565,45 @@ public:
 	}
 
 
+
+public:
+	/**
+	 * Truncate modes which are not representable in spectral space
+	 */
+	SphereDataComplex physical_truncate()
+	{
+		request_data_physical();
+
+		SphereDataComplex out_sph_data(sphereDataConfig);
+		spat_cplx_to_SH(sphereDataConfig->shtns, physical_space_data, out_sph_data.spectral_space_data);
+		SH_to_spat_cplx(sphereDataConfig->shtns, out_sph_data.spectral_space_data, out_sph_data.physical_space_data);
+
+		out_sph_data.physical_space_data_valid = true;
+		out_sph_data.spectral_space_data_valid = false;
+
+		return out_sph_data;
+	}
+
+
+
+	/**
+	 * Truncate modes which are not representable in spectral space
+	 */
+	SphereDataComplex spectral_truncate()
+	{
+		request_data_spectral();
+
+		SphereDataComplex out_sph_data(sphereDataConfig);
+		SH_to_spat_cplx(sphereDataConfig->shtns, spectral_space_data, out_sph_data.physical_space_data);
+		spat_cplx_to_SH(sphereDataConfig->shtns, out_sph_data.physical_space_data, out_sph_data.spectral_space_data);
+
+		out_sph_data.physical_space_data_valid = false;
+		out_sph_data.spectral_space_data_valid = true;
+
+		return out_sph_data;
+	}
+
+
 	inline
 	void spectral_update_lambda(
 			std::function<void(int,int,cplx&)> i_lambda
@@ -701,8 +744,8 @@ public:
 			}
 		}
 
-		spectral_space_data_valid = false;
 		physical_space_data_valid = true;
+		spectral_space_data_valid = false;
 	}
 
 
@@ -742,8 +785,8 @@ public:
 			}
 		}
 
-		spectral_space_data_valid = false;
 		physical_space_data_valid = true;
+		spectral_space_data_valid = false;
 	}
 
 
@@ -761,8 +804,8 @@ public:
 			for (int j = 0; j < sphereDataConfig->physical_num_lat; j++)
 				physical_space_data[i*sphereDataConfig->physical_num_lat + j] = 0;
 
-		spectral_space_data_valid = false;
 		physical_space_data_valid = true;
+		spectral_space_data_valid = false;
 	}
 
 

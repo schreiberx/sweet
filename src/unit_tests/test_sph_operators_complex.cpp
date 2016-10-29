@@ -221,7 +221,7 @@ void run_tests(
 						c = tmp;
 					}
 			);
-			//h = h.physical_truncate();
+			h = h.physical_truncate();
 
 			SphereDataComplex result(sphConfig);
 			result.physical_update_lambda_gaussian_grid(
@@ -232,7 +232,7 @@ void run_tests(
 						c = tmp;
 					}
 			);
-			//result = result.physical_truncate();
+			result = result.physical_truncate();
 
 			double error_max = h.physical_reduce_error_max(result);
 
@@ -255,7 +255,7 @@ void run_tests(
 						c = tmp;
 					}
 			);
-			//h = h.physical_truncate();
+			h = h.physical_truncate();
 
 			h = opComplex.diff_lon(h);
 
@@ -270,7 +270,7 @@ void run_tests(
 						c = tmp;
 					}
 			);
-			//result = result.physical_truncate();
+			result = result.physical_truncate();
 //			result.physical_write_file("O_diff_lambda_correct_result.csv");
 
 			double error_max = h.physical_reduce_error_max(result);
@@ -294,6 +294,7 @@ void run_tests(
 					}
 			);
 			h = opComplex.diff_lat_phi(h);
+			h = h.physical_truncate();
 //			h.physical_write_file("O_diff_phi_sph_result.csv");
 
 			SphereDataComplex result(sphConfig);
@@ -305,7 +306,7 @@ void run_tests(
 						c = tmp;
 					}
 			);
-			//result = result.physical_truncate();
+			result = result.physical_truncate();
 //			result.physical_write_file("O_diff_phi_correct_result.csv");
 
 			double error_max = h.physical_reduce_error_max(result);
@@ -329,7 +330,7 @@ void run_tests(
 					}
 			);
 			h = opComplex.diff_lat_mu(h);
-			//h = h.physical_truncate();
+			h = h.physical_truncate();
 //			h.physical_write_file("O_diff_mu_sph_result.csv");
 
 			SphereDataComplex result(sphConfig);
@@ -341,7 +342,7 @@ void run_tests(
 						c = tmp;
 					}
 			);
-			//result = result.physical_truncate();
+			result = result.physical_truncate();
 //			result.physical_write_file("O_diff_mu_correct_result.csv");
 
 			double error_max = h.physical_reduce_error_max(result);
@@ -365,7 +366,7 @@ void run_tests(
 					}
 			);
 			h = opComplex.grad_lon(h);
-			//h = h.physical_truncate();
+			h = h.physical_truncate();
 //			h.physical_write_file("O_grad_lambda_sph_result.csv");
 
 			SphereDataComplex result(sphConfig);
@@ -377,7 +378,7 @@ void run_tests(
 						c = tmp;
 					}
 			);
-			//result = result.physical_truncate();
+			result = result.physical_truncate();
 //			result.physical_write_file("O_grad_lambda_correct_result.csv");
 
 			double error_max = h.physical_reduce_error_max(result);
@@ -504,7 +505,7 @@ void run_tests(
 					}
 			);
 			h = opComplex.grad_lat(h);
-			//h = h.physical_truncate();
+			h = h.physical_truncate();
 //			h.physical_write_file("O_grad_phi_sph_result.csv");
 
 			SphereDataComplex result(sphConfig);
@@ -516,6 +517,7 @@ void run_tests(
 						c = tmp;
 					}
 			);
+			result = result.physical_truncate();
 
 //			result.physical_write_file("O_grad_phi_correct_result.csv");
 
@@ -540,7 +542,8 @@ void run_tests(
 					}
 			);
 			h = opComplex.div_lon(h);
-			//h = h.physical_truncate();
+			h = h.physical_truncate();
+
 //			h.physical_write_file("O_div_lambda_sph_result.csv");
 
 			SphereDataComplex result(sphConfig);
@@ -552,7 +555,7 @@ void run_tests(
 						c = tmp;
 					}
 			);
-			//result = result.physical_truncate();
+			result = result.physical_truncate();
 //			result.physical_write_file("O_div_lambda_correct_result.csv");
 
 			double error_max = h.physical_reduce_error_max(result);
@@ -576,7 +579,8 @@ void run_tests(
 					}
 			);
 			h = opComplex.div_lat(h);
-			//h = h.physical_truncate();
+			h = h.physical_truncate();
+
 //			h.physical_write_file("O_div_mu_sph_result.csv");
 
 			SphereDataComplex result(sphConfig);
@@ -588,7 +592,7 @@ void run_tests(
 						c = tmp;
 					}
 			);
-			//result = result.physical_truncate();
+			result = result.physical_truncate();
 
 //			result.physical_write_file("O_div_mu_correct_result.csv");
 
@@ -621,6 +625,8 @@ void run_tests(
 			h = opComplex.div_lon(opComplex.grad_lon(h))
 				+ opComplex.div_lat(opComplex.grad_lat(h));
 
+			h.physical_truncate();
+
 			//h = opComplex.mu2(h);
 			//h = opComplex.mu2(h);
 
@@ -635,7 +641,10 @@ void run_tests(
 						c = tmp;
 					}
 			);
+
 			result = opComplex.laplace(result);
+
+			result.physical_truncate();
 
 			//result = opComplex.mu2(result);
 			//result = opComplex.mu2(result);

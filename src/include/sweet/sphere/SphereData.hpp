@@ -114,13 +114,11 @@ public:
 
 
 public:
-	const SphereData& spectral_copyToDifferentModes(
+	const void spectral_copyToDifferentModes(
 			SphereData &o_sph_data
 	)	const
 	{
-		request_data_spectral();
-
-		assert (o_sph_data.sphereDataConfig != sphereDataConfig);
+		//assert (o_sph_data.sphereDataConfig != sphereDataConfig);
 
 		/*
 		 *  0 = invalid
@@ -150,8 +148,15 @@ public:
 			assert(scaling_mode != 1);
 			scaling_mode = -1;
 		}
-		assert(scaling_mode != 0);
 
+		if (scaling_mode == 0)
+		{
+			// Just copy the data
+			o_sph_data = *this;
+			return;
+		}
+
+		request_data_spectral();
 
 		if (scaling_mode == -1)
 		{
@@ -196,7 +201,7 @@ public:
 		o_sph_data.physical_space_data_valid = false;
 		o_sph_data.spectral_space_data_valid = true;
 
-		return *this;
+		return;
 	}
 
 
@@ -303,7 +308,6 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for
 #endif
-
 		for (int idx = 0; idx < sphereDataConfig->spectral_array_data_number_of_elements; idx++)
 			spectral_space_data[idx] -= i_sph_data.spectral_space_data[idx];
 
@@ -374,12 +378,11 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for
 #endif
-
 		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 			out_sph_data.physical_space_data[i] = i_sph_data.physical_space_data[i]*physical_space_data[i];
 
-		out_sph_data.spectral_space_data_valid = false;
 		out_sph_data.physical_space_data_valid = true;
+		out_sph_data.spectral_space_data_valid = false;
 
 		return out_sph_data;
 	}
@@ -459,7 +462,6 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for
 #endif
-
 		for (int idx = 0; idx < sphereDataConfig->spectral_array_data_number_of_elements; idx++)
 			out_sph_data.spectral_space_data[idx] = spectral_space_data[idx]/i_value;
 
@@ -502,12 +504,14 @@ public:
 	}
 
 
+
 public:
 	~SphereData()
 	{
 		MemBlockAlloc::free(physical_space_data, sphereDataConfig->physical_array_data_number_of_elements * sizeof(double));
 		MemBlockAlloc::free(spectral_space_data, sphereDataConfig->spectral_array_data_number_of_elements * sizeof(cplx));
 	}
+
 
 
 	/**
@@ -541,6 +545,7 @@ public:
 	}
 
 
+
 public:
 	/**
 	 * Truncate modes which are not representable in spectral space
@@ -559,6 +564,8 @@ public:
 		return out_sph_data;
 	}
 
+
+
 	/**
 	 * Truncate modes which are not representable in spectral space
 	 */
@@ -575,6 +582,8 @@ public:
 
 		return out_sph_data;
 	}
+
+
 
 
 	void spectral_update_lambda(
@@ -728,8 +737,8 @@ public:
 			}
 		}
 
-		spectral_space_data_valid = false;
 		physical_space_data_valid = true;
+		spectral_space_data_valid = false;
 	}
 
 
@@ -771,8 +780,8 @@ public:
 			}
 		}
 
-		spectral_space_data_valid = false;
 		physical_space_data_valid = true;
+		spectral_space_data_valid = false;
 	}
 
 
@@ -1002,6 +1011,8 @@ public:
         }
         file.close();
 	}
+
+
 
 	void file_physical_writeFile_lon_pi_shifted(
 			const char *i_filename,
