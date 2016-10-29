@@ -494,8 +494,8 @@ public:
 			}
 		}
 
-		out.spectral_space_data_valid = false;
-		out.physical_space_data_valid = true;
+		out.physical_space_data_valid = false;
+		out.spectral_space_data_valid = true;
 
 		return out;
 	}
@@ -547,8 +547,8 @@ public:
 			}
 		}
 
-		out.physical_space_data_valid = true;
-		out.spectral_space_data_valid = false;
+		out.physical_space_data_valid = false;
+		out.spectral_space_data_valid = true;
 
 		return out;
 	}

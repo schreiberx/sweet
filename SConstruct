@@ -1,7 +1,4 @@
-#! /usr/bin/env python
-
 import os
-
 import commands
 import re
 import sys
@@ -20,7 +17,7 @@ env = Environment(ENV = os.environ)
 # fix LD LIB PATH
 ###################################################################
 if 'LD_LIBRARY_PATH' in os.environ:
-	env.Append(LIBPATH=[os.environ['LD_LIBRARY_PATH'].split(':')])
+	env.Append(LIBPATH=os.environ['LD_LIBRARY_PATH'].split(':'))
 
 files = os.listdir('src/programs/')
 files = sorted(files)
@@ -561,31 +558,6 @@ if env['compiler'] == 'intel':
 		env.Append(F90FLAGS=' -fpp')
 
 
-if env['compiler'] == 'pgi':
-	# activate pgi
-	env.Replace(CXX = 'pgc++')
-
-	# c++0x flag
-	env.Append(CXXFLAGS=' --c++11')
-
-	# last gcc compatible version: 4.6
-#	gnu_compat_version = commands.getoutput("`g++-4.6 -v 2>&1 | grep ' version ' | cut -d' ' -f3")
-
-	# set gnu version
-#	env.Append(CXXFLAGS=' --gnu_version '+gnu_compat_version)
-#	env.Append(CXXFLAGS=' --gnu_version 4.8.0')
-	env.Append(CXXFLAGS=' -D__GXX_EXPERIMENTAL_CXX0X__ --gnu_extensions')
-
-	# be pedantic to avoid stupid programming errors
-#	env.Append(CXXFLAGS=' -pedantic')
-
-	# speedup compilation - remove this when compiler slows down or segfaults by running out of memory
-#	env.Append(CXXFLAGS=' -pipe')
-
-	if env['fortran_source'] == 'enable':
-		print "TODO: PGI compiler not yet supported with fortran enabled"
-		Exit(-1)
-
 
 # WARNING: don't use 'elif' here wince llvm may be activated via the 'gnu' compiler option
 if env['compiler'] == 'llvm':
@@ -681,9 +653,6 @@ elif env['mode'] == 'release':
 		if env['mic'] != 'enable':
 			env.Append(CXXFLAGS=' -xHost')
 
-#		env.Append(CXXFLAGS=' -ipo')
-#		env.Append(CXXFLAGS=' -fast')
-
 	elif env['compiler'] == 'pgi':
 		env.Append(CXXFLAGS='-O3 -fast -Mipa=fast,inline -Msmartalloc')
 
@@ -694,10 +663,6 @@ elif env['mode'] == 'release':
 		elif env['compiler'] == 'intel':
 			env.Append(FORTRANFLAGS=' -O2')
 			env.Append(F90FLAGS=' -O2')
-#			env.Append(FORTRANFLAGS=' -ipo')
-#			env.Append(F90FLAGS=' -ipo')
-#			env.Append(FORTRANFLAGS='-fast')
-#			env.Append(F90FLAGS=' -fast')
 
 
 
@@ -710,12 +675,6 @@ if env['gui'] == 'enable':
 
 	# linker flags
 
-	# add nvidia lib path when running on atsccs* workstation
-#	hostname = commands.getoutput('uname -n')
-#	if re.match("atsccs.*", hostname) or  re.match("laptop.*", hostname):
-#		env.Append(LIBPATH=['/usr/lib/nvidia-current/'])
-
-#	env.Append(LIBPATH=[os.environ['HOME']+'/local/lib'])
 	if commands.getoutput('uname -s') == "Darwin":
 		# ASSUME MACOSX SYSTEM
 		env.Append(LINKFLAGS='-framework OpenGL')

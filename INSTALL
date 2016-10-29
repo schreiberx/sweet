@@ -36,6 +36,32 @@ software packages
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+	**** MAC OSX USERS ****
+	**** MAC OSX USERS ****
+	**** MAC OSX USERS ****
+
+	xcode-select --install
+
+	FIRST:
+	Install GNU compiler with local_software scripts
+
+	SECOND:
+	Don't use the python version which is installed on MacOSX.
+	Install it with the installation scripts
+
+	THIRD:
+	SCons is executed with /usr/bin/env
+	This basically removes all [DY]LD_LIBRARY_PATH variables
+	which makes plenty of trouble.
+	Edit the file local_software/local/bin/scons and replace
+	the first line with
+	#! [SWEET INSTALL DIR]/local_software/local/bin/python
+
+	**** MAC OSX USERS ****
+	**** MAC OSX USERS ****
+	**** MAC OSX USERS ****
+
+
 from the SWEET source code directory to setup your
 environment variables correctly.
 
@@ -57,6 +83,8 @@ SCons:
 
 	OR
 	apt-get install scons
+
+	
 	
 
 ================

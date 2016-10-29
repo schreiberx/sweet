@@ -105,8 +105,8 @@ public:
 		if (i_sph_data.spectral_space_data_valid)
 			memcpy(spectral_space_data, i_sph_data.spectral_space_data, sizeof(cplx)*sphereDataConfig->spectral_array_data_number_of_elements);
 
-		spectral_space_data_valid = i_sph_data.spectral_space_data_valid;
 		physical_space_data_valid = i_sph_data.physical_space_data_valid;
+		spectral_space_data_valid = i_sph_data.spectral_space_data_valid;
 
 		return *this;
 	}
@@ -235,8 +235,8 @@ public:
 
 		SphereData *this_var = (SphereData*)this;
 
-		this_var->spectral_space_data_valid = false;
 		this_var->physical_space_data_valid = true;
+		this_var->spectral_space_data_valid = false;
 	}
 
 
@@ -260,8 +260,8 @@ public:
 		for (int idx = 0; idx < sphereDataConfig->spectral_array_data_number_of_elements; idx++)
 			out_sph_data.spectral_space_data[idx] = spectral_space_data[idx] + i_sph_data.spectral_space_data[idx];
 
-		out_sph_data.spectral_space_data_valid = true;
 		out_sph_data.physical_space_data_valid = false;
+		out_sph_data.spectral_space_data_valid = true;
 
 		return out_sph_data;
 	}
@@ -284,8 +284,8 @@ public:
 		for (int idx = 0; idx < sphereDataConfig->spectral_array_data_number_of_elements; idx++)
 			spectral_space_data[idx] += i_sph_data.spectral_space_data[idx];
 
-		spectral_space_data_valid = true;
 		physical_space_data_valid = false;
+		spectral_space_data_valid = true;
 
 		return *this;
 	}
@@ -307,8 +307,8 @@ public:
 		for (int idx = 0; idx < sphereDataConfig->spectral_array_data_number_of_elements; idx++)
 			spectral_space_data[idx] -= i_sph_data.spectral_space_data[idx];
 
-		spectral_space_data_valid = true;
 		physical_space_data_valid = false;
+		spectral_space_data_valid = true;
 
 		return *this;
 	}
@@ -333,8 +333,8 @@ public:
 		for (int idx = 0; idx < sphereDataConfig->spectral_array_data_number_of_elements; idx++)
 			out_sph_data.spectral_space_data[idx] = spectral_space_data[idx] - i_sph_data.spectral_space_data[idx];
 
-		out_sph_data.spectral_space_data_valid = true;
 		out_sph_data.physical_space_data_valid = false;
+		out_sph_data.spectral_space_data_valid = true;
 
 		return out_sph_data;
 	}
@@ -353,8 +353,8 @@ public:
 		for (int idx = 0; idx < sphereDataConfig->spectral_array_data_number_of_elements; idx++)
 			out_sph_data.spectral_space_data[idx] = -spectral_space_data[idx];
 
-		out_sph_data.spectral_space_data_valid = true;
 		out_sph_data.physical_space_data_valid = false;
+		out_sph_data.spectral_space_data_valid = true;
 
 		return out_sph_data;
 	}
@@ -401,8 +401,8 @@ public:
 		for (int idx = 0; idx < sphereDataConfig->spectral_array_data_number_of_elements; idx++)
 			out_sph_data.spectral_space_data[idx] = spectral_space_data[idx]*i_value;
 
-		out_sph_data.spectral_space_data_valid = true;
 		out_sph_data.physical_space_data_valid = false;
+		out_sph_data.spectral_space_data_valid = true;
 
 		return out_sph_data;
 	}
@@ -463,8 +463,8 @@ public:
 		for (int idx = 0; idx < sphereDataConfig->spectral_array_data_number_of_elements; idx++)
 			out_sph_data.spectral_space_data[idx] = spectral_space_data[idx]/i_value;
 
-		out_sph_data.spectral_space_data_valid = true;
 		out_sph_data.physical_space_data_valid = false;
+		out_sph_data.spectral_space_data_valid = true;
 
 		return out_sph_data;
 	}
@@ -480,8 +480,8 @@ public:
 
 		out_sph_data.spectral_space_data[0] += i_value*std::sqrt(4.0*M_PI);
 
-		out_sph_data.spectral_space_data_valid = true;
 		out_sph_data.physical_space_data_valid = false;
+		out_sph_data.spectral_space_data_valid = true;
 
 		return out_sph_data;
 	}
@@ -540,12 +540,12 @@ public:
 		return out;
 	}
 
-#if 0
+
 public:
 	/**
 	 * Truncate modes which are not representable in spectral space
 	 */
-	SphereData spat_truncate()
+	SphereData physical_truncate()
 	{
 		request_data_physical();
 
@@ -562,7 +562,7 @@ public:
 	/**
 	 * Truncate modes which are not representable in spectral space
 	 */
-	SphereData spec_truncate()
+	SphereData spectral_truncate()
 	{
 		request_data_spectral();
 
@@ -575,7 +575,6 @@ public:
 
 		return out_sph_data;
 	}
-#endif
 
 
 	void spectral_update_lambda(
@@ -729,8 +728,8 @@ public:
 			}
 		}
 
-		physical_space_data_valid = true;
 		spectral_space_data_valid = false;
+		physical_space_data_valid = true;
 	}
 
 
@@ -772,8 +771,8 @@ public:
 			}
 		}
 
-		physical_space_data_valid = true;
 		spectral_space_data_valid = false;
+		physical_space_data_valid = true;
 	}
 
 
@@ -954,7 +953,7 @@ public:
 	}
 
 
-	void file_physical_writeFile(
+	void physical_write_file(
 			const char *i_filename,
 			const char *i_title = "",
 			int i_precision = 20

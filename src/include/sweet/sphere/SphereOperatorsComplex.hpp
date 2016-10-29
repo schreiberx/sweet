@@ -77,8 +77,8 @@ public:
 				idx++;
 			}
 		}
-		out_sph_data.physical_space_data_valid = true;
-		out_sph_data.spectral_space_data_valid = false;
+		out_sph_data.spectral_space_data_valid = true;
+		out_sph_data.physical_space_data_valid = false;
 
 		return out_sph_data;
 	}
@@ -98,7 +98,7 @@ public:
 	)
 	{
 
-		SphereDataComplex out_sph_data = spec_one_minus_mu_squared_diff_lat_mu(i_sph_data);
+		SphereDataComplex out_sph_data = spectral_one_minus_mu_squared_diff_lat_mu(i_sph_data);
 
 		out_sph_data.physical_update_lambda_gaussian_grid(
 				[](double lambda, double mu, std::complex<double> &o_data)
@@ -150,14 +150,14 @@ public:
 
 
 	static
-	SphereDataComplex spec_one_minus_mu_squared_diff_lat_mu(
+	SphereDataComplex spectral_one_minus_mu_squared_diff_lat_mu(
 			const SphereDataComplex &i_sph_data
 	)
 	{
 		i_sph_data.request_data_spectral();
 		SphereDataConfig *sphConfig = i_sph_data.sphereDataConfig;
 
-		SphereDataComplex out_sph_data = SphereDataComplex(sphConfig);
+		SphereDataComplex out_sph_data(sphConfig);
 
 
 #if SWEET_THREADING
@@ -176,8 +176,8 @@ public:
 			}
 		}
 
-		out_sph_data.physical_space_data_valid = true;
-		out_sph_data.spectral_space_data_valid = false;
+		out_sph_data.physical_space_data_valid = false;
+		out_sph_data.spectral_space_data_valid = true;
 
 		return out_sph_data;
 	}
@@ -213,8 +213,8 @@ public:
 			}
 		}
 
-		out_sph_data.physical_space_data_valid = true;
-		out_sph_data.spectral_space_data_valid = false;
+		out_sph_data.physical_space_data_valid = false;
+		out_sph_data.spectral_space_data_valid = true;
 
 		return out_sph_data;
 	}
@@ -250,8 +250,8 @@ public:
 			}
 		}
 
-		out_sph_data.physical_space_data_valid = true;
-		out_sph_data.spectral_space_data_valid = false;
+		out_sph_data.physical_space_data_valid = false;
+		out_sph_data.spectral_space_data_valid = true;
 
 		return out_sph_data;
 	}
@@ -274,7 +274,7 @@ public:
 		 * 	second multiply by sqrt(1-mu*mu)
 		 */
 //		SPHDataComplex out_sph_data = spec_sinD(i_sph_data);
-		SphereDataComplex out_sph_data = spec_one_minus_mu_squared_diff_lat_mu(i_sph_data);
+		SphereDataComplex out_sph_data = spectral_one_minus_mu_squared_diff_lat_mu(i_sph_data);
 
 		out_sph_data.request_data_physical();
 		out_sph_data.physical_update_lambda_gaussian_grid(
@@ -417,7 +417,7 @@ public:
 		 * Compute
 		 *   cos^2(phi) * d/d mu  f(lambda,mu)
 		 */
-		SphereDataComplex out = spec_cosphi_squared_diff_lat_mu(i_sph_data);
+		SphereDataComplex out = spectral_cosphi_squared_diff_lat_mu(i_sph_data);
 
 		out.physical_update_lambda_cosphi_grid(
 				[](double lambda, double cos_phi, std::complex<double> &o_data)
@@ -460,29 +460,29 @@ public:
 			const SphereDataComplex &i_sph_data
 	)
 	{
-		return spec_cosphi_squared_diff_lat_mu(i_sph_data);
+		return spectral_cosphi_squared_diff_lat_mu(i_sph_data);
 	}
 
 
 
 	inline
 	static
-	SphereDataComplex spec_one_minus_sinphi_squared_diff_lat_mu(
+	SphereDataComplex spectral_one_minus_sinphi_squared_diff_lat_mu(
 			const SphereDataComplex &i_sph_data
 	)
 	{
-		return spec_one_minus_mu_squared_diff_lat_mu(i_sph_data);
+		return spectral_one_minus_mu_squared_diff_lat_mu(i_sph_data);
 	}
 
 
 
 	inline
 	static
-	SphereDataComplex spec_cosphi_squared_diff_lat_mu(
+	SphereDataComplex spectral_cosphi_squared_diff_lat_mu(
 			const SphereDataComplex &i_sph_data
 	)
 	{
-		return spec_one_minus_mu_squared_diff_lat_mu(i_sph_data);
+		return spectral_one_minus_mu_squared_diff_lat_mu(i_sph_data);
 	}
 
 
@@ -576,7 +576,7 @@ public:
 		return robert_div_lon(i_lon) + robert_div_lat(i_lat);
 #else
 		// Only compute division once
-		SphereDataComplex out = diff_lon(i_lon) + spec_cosphi_squared_diff_lat_mu(i_lat);
+		SphereDataComplex out = diff_lon(i_lon) + spectral_cosphi_squared_diff_lat_mu(i_lat);
 
 		out.physical_update_lambda_cosphi_grid(
 				[](double lambda, double cos_phi, std::complex<double> &o_data)

@@ -81,21 +81,21 @@ public:
 		if (simVars.setup.benchmark_scenario_id == 0)
 			prog_h.file_physical_writeFile_lon_pi_shifted(buffer);
 		else
-			prog_h.file_physical_writeFile(buffer);
+			prog_h.physical_write_file(buffer);
 		std::cout << buffer << " (min: " << prog_h.reduce_min() << ", max: " << prog_h.reduce_max() << ")" << std::endl;
 
 		sprintf(buffer, "prog_u_t%020.8f.csv", simVars.timecontrol.current_simulation_time/(60*60));
 		if (simVars.setup.benchmark_scenario_id == 0)
 			prog_u.file_physical_writeFile_lon_pi_shifted(buffer);
 		else
-			prog_u.file_physical_writeFile(buffer);
+			prog_u.physical_write_file(buffer);
 		std::cout << buffer << std::endl;
 
 		sprintf(buffer, "prog_v_t%020.8f.csv", simVars.timecontrol.current_simulation_time/(60*60));
 		if (simVars.setup.benchmark_scenario_id == 0)
 			prog_v.file_physical_writeFile_lon_pi_shifted(buffer);
 		else
-			prog_v.file_physical_writeFile(buffer);
+			prog_v.physical_write_file(buffer);
 		std::cout << buffer << std::endl;
 
 		sprintf(buffer, "prog_eta_t%020.8f.csv", simVars.timecontrol.current_simulation_time/(60*60));
@@ -103,7 +103,7 @@ public:
 		if (simVars.setup.benchmark_scenario_id == 0)
 			vort.file_physical_writeFile_lon_pi_shifted(buffer, "vorticity, lon pi shifted");
 		else
-			vort.file_physical_writeFile(buffer);
+			vort.physical_write_file(buffer);
 		std::cout << buffer << std::endl;
 	}
 

@@ -81,15 +81,17 @@ public:
 	 * Solver for
 	 * 	mu*phi(lambda,mu)
 	 */
-	void solver_component_mu_phi()
+	void solver_component_mu_phi(
+			const std::complex<double> &i_scalar = 1.0
+	)
 	{
 		for (int m = 0; m <= sphConfig->spectral_modes_m_max; m++)
 		{
 			for (int n = m; n <= sphConfig->spectral_modes_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
-				lhs.rowElement_add(row, n, m, -1, R(n-1,m));
-				lhs.rowElement_add(row, n, m, +1, S(n+1,m));
+				lhs.rowElement_add(row, n, m, -1, R(n-1,m)*i_scalar);
+				lhs.rowElement_add(row, n, m, +1, S(n+1,m)*i_scalar);
 			}
 		}
 	}
@@ -363,8 +365,8 @@ public:
 					);
 		}
 
-		out.spectral_space_data_valid = true;
 		out.physical_space_data_valid = false;
+		out.spectral_space_data_valid = true;
 
 		return out;
 	}

@@ -45,7 +45,7 @@ public:
 				char buffer[1024];
 				sprintf(buffer, "SPH_n%i_m%i.csv", n, m);
 
-				h.file_physical_writeFile(buffer);
+				h.physical_write_file(buffer);
 
 				counter++;
 			}

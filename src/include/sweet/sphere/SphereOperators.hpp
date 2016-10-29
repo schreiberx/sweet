@@ -257,8 +257,8 @@ public:
 			}
 		}
 
-		out_sph_data.spectral_space_data_valid = true;
 		out_sph_data.physical_space_data_valid = false;
+		out_sph_data.spectral_space_data_valid = true;
 
 		return out_sph_data;
 	}
@@ -296,8 +296,8 @@ public:
 			}
 		}
 
-		out_sph_data.spectral_space_data_valid = true;
 		out_sph_data.physical_space_data_valid = false;
+		out_sph_data.spectral_space_data_valid = true;
 
 		return out_sph_data;
 	}
@@ -334,8 +334,8 @@ public:
 			}
 		}
 
-		out_sph_data.spectral_space_data_valid = true;
 		out_sph_data.physical_space_data_valid = false;
+		out_sph_data.spectral_space_data_valid = true;
 
 		return out_sph_data;
 	}

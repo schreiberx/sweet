@@ -301,24 +301,29 @@ private:
 			}
 		}
 
-		lat = (double*)fftw_malloc(sizeof(double)*shtns->nlat);
+		lat = (double*)fftw_malloc(sizeof(double)*physical_num_lat);
 
 		/*
 		 * Colatitude is 0 at the north pole and 180 at the south pole
 		 *
-		 * WARNING: The latitude degrees are not equidistant spaced in the angles!!!! We have to use the shtns->ct lookup table
+		 * WARNING: The latitude degrees are not aequidistnat spaced in the angles!!!!
+		 * Those points are computed for optimal Gauss quadrature.
+		 * They are close to aequidistnat spacing, but not fully aequidistant.
+		 *
+		 * We have to use the shtns->ct lookup table
 		 */
-		for (int i = 0; i < shtns->nlat; i++)
-			lat[i] = M_PI*0.5 - ::acos(shtns->ct[i]);
+		for (int i = 0; i < physical_num_lat; i++)
+			lat[i] = M_PI_2 - ::acos(shtns->ct[i]);
 
 		lat_gaussian = (double*)fftw_malloc(sizeof(double)*shtns->nlat);
-		for (int i = 0; i < shtns->nlat; i++)
+		for (int i = 0; i < physical_num_lat; i++)
 			lat_gaussian[i] = shtns->ct[i];		/// sin(phi) (SHTNS stores cos(phi))
 
 		lat_cogaussian = (double*)fftw_malloc(sizeof(double)*shtns->nlat);
-		for (int i = 0; i < shtns->nlat; i++)
+		for (int i = 0; i < physical_num_lat; i++)
 			lat_cogaussian[i] = shtns->st[i];	/// cos(phi) (SHTNS stores sin(phi))
 	}
+
 
 
 public:
