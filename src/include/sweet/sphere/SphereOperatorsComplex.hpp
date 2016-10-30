@@ -572,7 +572,7 @@ public:
 			const SphereDataComplex &i_lat
 	)
 	{
-#if 0
+#if 1
 		return robert_div_lon(i_lon) + robert_div_lat(i_lat);
 #else
 		// Only compute division once

@@ -40,7 +40,7 @@ class SWERexi_SPHRobert
 	/// REXI beta
 	std::complex<double> beta;
 
-	bool include_coriolis_effect;
+	bool use_formulation_with_coriolis_effect;
 
 	/// timestep size
 	double timestep_size;
@@ -78,10 +78,10 @@ public:
 			double i_coriolis_omega,
 			double i_avg_geopotential,
 			double i_timestep_size,
-			bool i_include_coriolis_effect = true
+			bool i_use_formulation_with_coriolis_effect = true
 	)
 	{
-		include_coriolis_effect = i_include_coriolis_effect;
+		use_formulation_with_coriolis_effect = i_use_formulation_with_coriolis_effect;
 		timestep_size = i_timestep_size;
 
 		alpha = i_alpha/timestep_size;
@@ -114,7 +114,7 @@ public:
 		sphSolverPhi.setup(sphConfig, 4);
 		sphSolverPhi.solver_component_rexi_z1(	(alpha*alpha)*(alpha*alpha), r);
 
-		if (include_coriolis_effect)
+		if (use_formulation_with_coriolis_effect)
 		{
 			sphSolverPhi.solver_component_rexi_z2(	2.0*two_omega*two_omega*alpha*alpha, r);
 			sphSolverPhi.solver_component_rexi_z3(	(two_omega*two_omega)*(two_omega*two_omega), r);
@@ -123,14 +123,14 @@ public:
 			sphSolverPhi.solver_component_rexi_z6robert(	avg_geopotential*2.0*two_omega*two_omega, r);
 		}
 		sphSolverPhi.solver_component_rexi_z7(	-avg_geopotential*alpha*alpha, r);
-		if (include_coriolis_effect)
+		if (use_formulation_with_coriolis_effect)
 		{
 			sphSolverPhi.solver_component_rexi_z8(	-avg_geopotential*two_omega*two_omega, r);
 		}
 
 		sphSolverVel.setup(sphConfig, 2);
 		sphSolverVel.solver_component_rexi_z1(	alpha*alpha, r);
-		if (include_coriolis_effect)
+		if (use_formulation_with_coriolis_effect)
 		{
 			sphSolverVel.solver_component_rexi_z2(	two_omega*two_omega, r);
 		}
@@ -173,7 +173,7 @@ public:
 		SphereDataComplex u(sphConfig);
 		SphereDataComplex v(sphConfig);
 
-		if (include_coriolis_effect)
+		if (use_formulation_with_coriolis_effect)
 		{
 
 #if 1

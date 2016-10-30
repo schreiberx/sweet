@@ -410,37 +410,36 @@ public:
 				{0, 0, 0, 0} // NULL
         };
 
-        int c=0;
 
-        long_options[next_free_program_option] = {"initial-coord-x", required_argument, 0, 256+'a'+c};
-        next_free_program_option++;	c++;
+        long_options[next_free_program_option] = {"initial-coord-x", required_argument, 0, 256+'a'+next_free_program_option};
+        next_free_program_option++;
 
-        long_options[next_free_program_option] = {"initial-coord-y", required_argument, 0, 256+'a'+c};
-        next_free_program_option++;	c++;
+        long_options[next_free_program_option] = {"initial-coord-y", required_argument, 0, 256+'a'+next_free_program_option};
+        next_free_program_option++;
 
-        long_options[next_free_program_option] = {"rexi-h", required_argument, 0, 256+'a'+c};
-        next_free_program_option++;	c++;
+        long_options[next_free_program_option] = {"rexi-h", required_argument, 0, 256+'a'+next_free_program_option};
+        next_free_program_option++;
 
-        long_options[next_free_program_option] = {"rexi-m", required_argument, 0, 256+'a'+c};
-        next_free_program_option++;	c++;
+        long_options[next_free_program_option] = {"rexi-m", required_argument, 0, 256+'a'+next_free_program_option};
+        next_free_program_option++;
 
-        long_options[next_free_program_option] = {"rexi-l", required_argument, 0, 256+'a'+c};
-        next_free_program_option++;	c++;
+        long_options[next_free_program_option] = {"rexi-l", required_argument, 0, 256+'a'+next_free_program_option};
+        next_free_program_option++;
 
-        long_options[next_free_program_option] = {"rexi-half", required_argument, 0, 256+'a'+c};
-        next_free_program_option++;	c++;
+        long_options[next_free_program_option] = {"rexi-half", required_argument, 0, 256+'a'+next_free_program_option};
+        next_free_program_option++;
 
-        long_options[next_free_program_option] = {"rexi", required_argument, 0, 256+'a'+c};
-        next_free_program_option++;	c++;
+        long_options[next_free_program_option] = {"rexi", required_argument, 0, 256+'a'+next_free_program_option};
+        next_free_program_option++;
 
-        long_options[next_free_program_option] = {"rexi-ext-modes", required_argument, 0, 256+'a'+c};
-        next_free_program_option++;	c++;
+        long_options[next_free_program_option] = {"rexi-ext-modes", required_argument, 0, 256+'a'+next_free_program_option};
+        next_free_program_option++;
 
-        long_options[next_free_program_option] = {"nonlinear", required_argument, 0, 256+'a'+c};
-        next_free_program_option++;	c++;
+        long_options[next_free_program_option] = {"nonlinear", required_argument, 0, 256+'a'+next_free_program_option};
+        next_free_program_option++;
 
-        long_options[next_free_program_option] = {"use-robert-functions", required_argument, 0, 256+'a'+c};
-        next_free_program_option++;	c++;
+        long_options[next_free_program_option] = {"use-robert-functions", required_argument, 0, 256+'a'+next_free_program_option};
+        next_free_program_option++;
 
 
 #if SWEET_PARAREAL

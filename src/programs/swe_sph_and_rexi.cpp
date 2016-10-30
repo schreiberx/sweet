@@ -22,11 +22,18 @@
 SimulationVariables simVars;
 
 //Diagnostic measures at initial stage
-double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
+//double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
 
 // Plane data config
 SphereDataConfig sphereDataConfigInstance;
 SphereDataConfig *sphereDataConfig = &sphereDataConfigInstance;
+
+
+
+/*
+ * This allows running REXI including Coriolis-related terms but just by setting f to 0
+ */
+bool param_rexi_use_coriolis_formulation = false;
 
 
 
@@ -265,13 +272,9 @@ public:
 		}
 
 
-		/*
-		 * This allows running REXI including Coriolis-related terms but just by setting f to 0
-		 */
-		bool use_coriolis_rexi_formulation = false;
 
 		if (simVars.sim.coriolis_omega != 0)
-			use_coriolis_rexi_formulation = true;
+			param_rexi_use_coriolis_formulation = true;
 
 		std::cout << "Using time step size dt = " << simVars.timecontrol.current_timestep_size << std::endl;
 		std::cout << "Running simulation until t_end = " << simVars.timecontrol.max_simulation_time << std::endl;
@@ -282,7 +285,7 @@ public:
 		std::cout << " + Coriolis_omega: " << simVars.sim.coriolis_omega << std::endl;
 		std::cout << " + Viscosity D: " << simVars.sim.viscosity << std::endl;
 		std::cout << " + use_nonlinear: " << simVars.misc.use_nonlinear_equations << std::endl;
-		std::cout << " + Use REXI Coriolis formulation: " << (use_coriolis_rexi_formulation ? "true" : "false") << std::endl;
+		std::cout << " + Use REXI Coriolis formulation: " << (param_rexi_use_coriolis_formulation ? "true" : "false") << std::endl;
 		std::cout << std::endl;
 		std::cout << " + Benchmark scenario id: " << simVars.setup.benchmark_scenario_id << std::endl;
 		std::cout << " + Use robert functions: " << simVars.misc.sphere_use_robert_functions << std::endl;
@@ -341,6 +344,15 @@ public:
 
 				std::cout << "." << std::flush;
 
+#if 1
+				double max_abs_value = std::abs(simVars.sim.h0)*2.0+1.0;
+				if (prog_h.reduce_abs_max() > max_abs_value)
+				{
+					std::cerr << "Instability detected (max abs value of h > " << max_abs_value << ")" << std::endl;
+					assert(false);
+					exit(1);
+				}
+#endif
 				if (prog_h.physical_isAnyNaNorInf())
 				{
 					std::cerr << "Instability detected (NaN value in H)" << std::endl;
@@ -373,7 +385,7 @@ public:
 					simVars.rexi.rexi_use_half_poles,
 					simVars.misc.sphere_use_robert_functions,
 					simVars.rexi.rexi_use_extended_modes,
-					use_coriolis_rexi_formulation
+					param_rexi_use_coriolis_formulation
 				);
 
 #else
@@ -432,7 +444,7 @@ public:
 								simVars.sim.coriolis_omega, //*inv_sqrt_avg_geopo,
 								simVars.sim.h0*simVars.sim.gravitation,
 								simVars.timecontrol.current_timestep_size, //*sqrt_avg_geopo
-								use_coriolis_rexi_formulation
+								param_rexi_use_coriolis_formulation
 						);
 					}
 					else
@@ -445,7 +457,7 @@ public:
 								simVars.sim.coriolis_omega, //*inv_sqrt_avg_geopo,
 								simVars.sim.h0*simVars.sim.gravitation,
 								simVars.timecontrol.current_timestep_size, //*sqrt_avg_geopo
-								use_coriolis_rexi_formulation
+								param_rexi_use_coriolis_formulation
 						);
 					}
 				}
@@ -519,7 +531,7 @@ public:
 										simVars.sim.coriolis_omega, //*inv_sqrt_avg_geopo,
 										simVars.sim.h0*simVars.sim.gravitation,
 										simVars.timecontrol.current_timestep_size, //*sqrt_avg_geopo
-										use_coriolis_rexi_formulation
+										param_rexi_use_coriolis_formulation
 								);
 
 								rexiSPHRobert.solve(
@@ -550,7 +562,7 @@ public:
 										simVars.sim.coriolis_omega,
 										simVars.sim.h0*simVars.sim.gravitation,
 										simVars.timecontrol.current_timestep_size,
-										use_coriolis_rexi_formulation
+										param_rexi_use_coriolis_formulation
 								);
 
 								rexiSPH.solve(
@@ -601,7 +613,7 @@ public:
 				}
 
 #if 1
-				double max_abs_value = 10.0;
+				double max_abs_value = std::abs(simVars.sim.h0)*2.0+1.0;
 				if (prog_h.reduce_abs_max() > max_abs_value)
 				{
 					std::cerr << "Instability detected (max abs value of h > " << max_abs_value << ")" << std::endl;
@@ -727,11 +739,12 @@ int main(int i_argc, char *i_argv[])
 
 	//input parameter names (specific ones for this program)
 	const char *bogus_var_names[] = {
+			"rexi-use-coriolis-formulation",
 			nullptr
 	};
 
 	// default values for specific input (for general input see SimulationVariables.hpp)
-	//simVars.bogus.var[0] = 0.2;
+	simVars.bogus.var[0] = 0;
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
@@ -741,6 +754,9 @@ int main(int i_argc, char *i_argv[])
 #endif
 		return -1;
 	}
+
+	param_rexi_use_coriolis_formulation = simVars.bogus.var[0];
+	assert (param_rexi_use_coriolis_formulation == 0 || param_rexi_use_coriolis_formulation == 1);
 
 
 	sphereDataConfigInstance.setupAutoPhysicalSpace(
