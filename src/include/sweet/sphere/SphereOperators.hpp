@@ -107,12 +107,11 @@ public:
 
 		SphereData out_sph_data = diff_lon(i_sph_data);
 
-		out_sph_data.request_data_physical();
-
+		// physical space already requested if spectral space data is valid
 		out_sph_data.physical_update_lambda_gaussian_grid(
 				[this](double lambda, double mu, double &o_data)
 				{
-					double cos_phi = sqrt(1.0-mu*mu);
+					double cos_phi = std::sqrt(1.0-mu*mu);
 					o_data /= cos_phi;
 				}
 		);

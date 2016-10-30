@@ -185,6 +185,8 @@ public:
 			if (!trySetupFont(ft_library, "/usr/share/fonts/corefonts/arial.ttf", ft_face))
 			if (!trySetupFont(ft_library, "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf", ft_face))
 			if (!trySetupFont(ft_library, "/usr/share/fonts/dejavu/DejaVuSans.ttf", ft_face))
+			if (!trySetupFont(ft_library, "/Library/Fonts/Arial.ttf", ft_face))
+			if (!trySetupFont(ft_library, "/Library/Fonts/Impact.ttf", ft_face))
 			{
 				std::cerr << "ERROR: Could not find valid font file... aborting" << std::endl;
 				return;
