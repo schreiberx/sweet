@@ -1586,6 +1586,7 @@ public:
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 		if (spectral_space_data_valid)
 			spectral_zeroAliasingModes();
+
 		if (i_array_data.spectral_space_data_valid)
 			i_array_data.spectral_zeroAliasingModes();
 #endif

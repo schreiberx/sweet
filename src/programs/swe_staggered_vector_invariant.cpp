@@ -415,11 +415,11 @@ public:
 		if (simVars.timecontrol.current_simulation_time < next_timestep_output)
 			return;
 
-		if (simVars.misc.be_verbose_after_this_simulation_time_period != 0)
+		if (simVars.misc.output_each_sim_seconds != 0)
 		{
 			// advance to next time step output
 			while (next_timestep_output <= simVars.timecontrol.current_simulation_time)
-				next_timestep_output += simVars.misc.be_verbose_after_this_simulation_time_period;
+				next_timestep_output += simVars.misc.output_each_sim_seconds;
 		}
 
 		if (simVars.misc.verbosity > 0)
@@ -474,8 +474,6 @@ public:
 				benchmark_diff_h = (prog_P-tmp).reduce_norm1_quad() / (double)(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]);
 				o_ostream << "\t" << benchmark_diff_h;
 
-
-				// set data to something to overcome assertion error
 
 				tmp.physical_update_lambda_array_indices(
 					[&](int i, int j, double &io_data)

@@ -378,9 +378,6 @@ public:
 		posx_a = pos_x+0.5*simVars.disc.cell_size[0];
 		posy_a = pos_y+0.5*simVars.disc.cell_size[1];
 
-		//std::cout << std::endl;
-		//std::cout << "posx_a: " << posx_a.array_data_cartesian_space_valid << std::endl;
-		//std::cout << std::endl;
 
 		//Waves test case - separate from SWEValidationBench because it depends on certain local input parameters
 		auto return_h = [] (
@@ -1221,9 +1218,9 @@ public:
 			prog_h = prog_h + pow(-1,simVars.sim.viscosity_order/2)* o_dt*op.diffN_x(prog_h, simVars.sim.viscosity_order)*simVars.sim.viscosity
 					+ pow(-1,simVars.sim.viscosity_order/2)*o_dt*op.diffN_y(prog_h, simVars.sim.viscosity_order)*simVars.sim.viscosity;
 #else
-			prog_u=op.implicit_diffusion(prog_u, o_dt*simVars.sim.viscosity,simVars.sim.viscosity_order );
-			prog_v=op.implicit_diffusion(prog_v, o_dt*simVars.sim.viscosity,simVars.sim.viscosity_order );
-			prog_h=op.implicit_diffusion(prog_h, o_dt*simVars.sim.viscosity,simVars.sim.viscosity_order );
+			prog_u=op.implicit_diffusion(prog_u, o_dt*simVars.sim.viscosity, simVars.sim.viscosity_order );
+			prog_v=op.implicit_diffusion(prog_v, o_dt*simVars.sim.viscosity, simVars.sim.viscosity_order );
+			prog_h=op.implicit_diffusion(prog_h, o_dt*simVars.sim.viscosity, simVars.sim.viscosity_order );
 #endif
 		}
 

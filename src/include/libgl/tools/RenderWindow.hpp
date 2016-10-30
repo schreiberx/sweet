@@ -186,7 +186,7 @@ public:
 			int i_initial_window_width = 800,
 			int i_initial_window_height = 600,
 			int i_request_opengl_major_version = 3,		///< major version of opengl context to request
-			int i_request_opengl_minor_version = 2		///< minor version of opengl context to request
+			int i_request_opengl_minor_version = 1		///< minor version of opengl context to request
 	)
 	{
 		if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_NOPARACHUTE) < 0) /* Initialize SDL's Video subsystem */
@@ -206,7 +206,7 @@ public:
 		checkSDLError(__LINE__);
 
 		/*
-		 * set the opengl version number to create the context for (p_request_opengl_major_version, p_request_opengl_minor_version)
+		 * set the OpenGL version number to create the context for (p_request_opengl_major_version, p_request_opengl_minor_version)
 		 */
 		if (SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, i_request_opengl_major_version) == -1)
 		{
@@ -221,7 +221,11 @@ public:
 		}
 
 		// Specifically request core mode for MacOSX systems
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+		if (SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE) == -1)
+		{
+			std::cerr << "unable to set CORE profile context" << i_request_opengl_minor_version << std::endl;
+			return false;
+		}
 
 		/*
 		 * Turn on double buffering with a 24bit Z buffer.
@@ -251,9 +255,10 @@ public:
 
 		checkSDLError(__LINE__);
 
-		if (!window) /* Die if creation failed */
+		if (window == 0) /* Die if creation failed */
 		{
 			std::cerr << "Unable to create window: " << SDL_GetError();
+			std::cerr << "Requested OpenGL core profile with version " << i_request_opengl_major_version << "." << i_request_opengl_minor_version << std::endl;
 			std::cerr << std::endl;
 			return false;
 		}
@@ -265,7 +270,8 @@ public:
 		glContext = SDL_GL_CreateContext(window);
 		if (!glContext)
 		{
-			std::cerr << "Unable to create GL context: " << SDL_GetError();
+			std::cerr << "Unable to create GL context, SDL error message: " << SDL_GetError() << std::endl;
+			std::cerr << "Requested OpenGL core profile with version " << i_request_opengl_major_version << "." << i_request_opengl_minor_version << std::endl;
 			std::cerr << std::endl;
 			SDL_DestroyWindow(window);
 			return false;
@@ -311,7 +317,7 @@ public:
 			int p_window_height = 600,					///< initial height of window in window mode
 			bool p_fullscreen = false,					///< set to true to enable fullscreen mode on window creation
 			int p_request_opengl_major_version = 3,		///< major version of opengl context to request
-			int p_request_opengl_minor_version = 2		///< minor version of opengl context to request
+			int p_request_opengl_minor_version = 1		///< minor version of opengl context to request
 	)
 	{
 		windowEventCallbacksImplementation = nullptr;
