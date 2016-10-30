@@ -220,6 +220,9 @@ public:
 			return false;
 		}
 
+		// Specifically request core mode for MacOSX systems
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
 		/*
 		 * Turn on double buffering with a 24bit Z buffer.
 		 * You may need to change this to 16 or 32 for your system.
