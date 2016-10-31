@@ -456,7 +456,7 @@ public:
 			}
 		}
 
-		std::cout << "Advancing time from " << simVars.timecontrol.current_simulation_time;
+//		std::cout << "Advancing time from " << simVars.timecontrol.current_simulation_time;
 
 		// advance time step and provide information to parameters
 		simVars.timecontrol.current_timestep_size = o_dt;
