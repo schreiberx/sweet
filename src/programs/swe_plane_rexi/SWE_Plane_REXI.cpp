@@ -718,7 +718,6 @@ bool SWE_Plane_REXI::run_timestep_rexi(
 
 
 
-
 #if SWEET_REXI_THREAD_PARALLEL_SUM
 #	pragma omp parallel for schedule(static,1) default(none) shared(i_parameters, i_timestep_size, io_h, io_u, io_v, max_N, std::cout, std::cerr)
 #endif

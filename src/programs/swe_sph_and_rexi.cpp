@@ -403,9 +403,10 @@ public:
 
 	void run_timestep()
 	{
+		double o_dt;
+
 		if (simVars.rexi.use_rexi == false)
 		{
-			double o_dt;
 			timestepping.run_rk_timestep(
 					this,
 					&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
@@ -419,7 +420,9 @@ public:
 		}
 		else
 		{
-			double o_dt = simVars.timecontrol.current_timestep_size;
+			o_dt = simVars.timecontrol.current_timestep_size;
+			assert(o_dt >= 0);
+
 			// padding to max simulation time if exceeding the maximum
 			if (simVars.timecontrol.max_simulation_time >= 0)
 				if (o_dt + simVars.timecontrol.current_simulation_time > simVars.timecontrol.max_simulation_time)
@@ -449,12 +452,12 @@ public:
 				prog_u = prog_u.spectral_solve_helmholtz(1.0, -scalar, r);
 				prog_v = prog_v.spectral_solve_helmholtz(1.0, -scalar, r);
 			}
-
-			// advance time step and provide information to parameters
-			simVars.timecontrol.current_timestep_size = o_dt;
-			simVars.timecontrol.current_simulation_time += o_dt;
-			simVars.timecontrol.current_timestep_nr++;
 		}
+
+		// advance time step and provide information to parameters
+		simVars.timecontrol.current_timestep_size = o_dt;
+		simVars.timecontrol.current_simulation_time += o_dt;
+		simVars.timecontrol.current_timestep_nr++;
 
 #if SWEET_GUI
 		timestep_output();
