@@ -8,12 +8,23 @@
 #ifndef SRC_TESTSWE_HPP_
 #define SRC_TESTSWE_HPP_
 
+#if SWEET_GUI
+	#include <sweet/VisSweet.hpp>
+	#include <sweet/plane/PlaneDataConfig.hpp>
+	#include <sweet/plane/PlaneData.hpp>
+	#include <sweet/Convert_SphereData_To_PlaneData.hpp>
+#endif
+
 #include <benchmarks_sphere/BenchmarkGalewsky.hpp>
-#include <sweet/sphere/SphereDataComplex.hpp>
+#include <sweet/sphere/SphereData.hpp>
 #include <sweet/sphere/SphereDataTimesteppingRK.hpp>
-#include <sweet/sphere/SphBandedMatrix.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/sphere/SphereOperatorsComplex.hpp>
+#include <sweet/sphere/SphereDataComplex.hpp>
+#include <sweet/sphere/SphBandedMatrix.hpp>
+#include <sweet/Stopwatch.hpp>
+#include <sweet/FatalError.hpp>
+
 
 #include "swe_sphere_rexi/SWE_Sphere_REXI.hpp"
 
@@ -29,6 +40,10 @@ SphereDataConfig sphereDataConfigInstance;
 SphereDataConfig *sphereDataConfig = &sphereDataConfigInstance;
 
 
+#if SWEET_GUI
+	PlaneDataConfig planeDataConfigInstance;
+	PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
+#endif
 
 /*
  * This allows running REXI including Coriolis-related terms but just by setting f to 0
@@ -37,13 +52,11 @@ bool param_rexi_use_coriolis_formulation = false;
 
 
 
-class SWE_and_REXI
+class SimulationInstance
 {
 public:
 	SphereOperators op;
 	SphereOperatorsComplex opComplex;
-
-	SphereDataConfig *sphereDataConfig;
 
 	// Runge-Kutta stuff
 	SphereDataTimesteppingRK timestepping;
@@ -54,31 +67,34 @@ public:
 	SphereData prog_h;
 	SphereData prog_u;
 	SphereData prog_v;
-	SphereData fdata;
 
 
 	BenchmarkGalewsky benchmarkGalewsky;
 
 	REXI rexi;
 
+#if SWEET_GUI
+	PlaneData viz_plane_data;
+#endif
 
 
 public:
-	SWE_and_REXI(
-			SphereDataConfig *i_sphereConfig
-	)	:
-		sphereDataConfig(i_sphereConfig),
-		prog_h(i_sphereConfig),
-		prog_u(i_sphereConfig),
-		prog_v(i_sphereConfig),
-		fdata(i_sphereConfig),
+	SimulationInstance()	:
+		prog_h(sphereDataConfig),
+		prog_u(sphereDataConfig),
+		prog_v(sphereDataConfig),
 		benchmarkGalewsky(::simVars)
+
+#if SWEET_GUI
+		,viz_plane_data(planeDataConfig)
+#endif
 	{
+		reset();
 	}
 
 
 
-	void write_output()
+	void write_file_output()
 	{
 		char buffer[1024];
 
@@ -151,30 +167,15 @@ public:
 
 	SphereData f(SphereData i_sphData)
 	{
-//		return op.coriolis(i_sphData, simVars.sim.coriolis_omega);
-		return fdata*i_sphData*2.0*simVars.sim.coriolis_omega;
+		return op.mu(i_sphData*2.0*simVars.sim.coriolis_omega);
 	}
 
 
-
-	void advance_simulation_time()
+	void update_diagnostics()
 	{
-		// calculate new time step size (last time step might be smaller)
-		simVars.timecontrol.current_timestep_size =
-				std::min(
-						simVars.timecontrol.current_timestep_size,
-						simVars.timecontrol.max_simulation_time - simVars.timecontrol.current_simulation_time
-					);
-		assert(simVars.timecontrol.current_timestep_size > 0);
-
-		// compute new current simulation time
-		simVars.timecontrol.current_simulation_time += simVars.timecontrol.current_timestep_size;
-
 	}
 
-
-
-	void run()
+	void reset()
 	{
 		// one month runtime
 		if (simVars.timecontrol.max_simulation_time == -1)
@@ -301,12 +302,169 @@ public:
 
 		std::cout << std::endl;
 
-		fdata.physical_update_lambda_gaussian_grid(
-				[&](double lon, double mu, double &o_data)
-				{
-					o_data = mu;
+		if (simVars.rexi.use_rexi)
+		{
+			swe_sphere_rexi.setup(
+					simVars.rexi.rexi_h,
+					simVars.rexi.rexi_M,
+					simVars.rexi.rexi_L,
+
+					sphereDataConfig,
+					&simVars.sim,
+					simVars.timecontrol.current_timestep_size,
+
+					simVars.rexi.rexi_use_half_poles,
+					simVars.misc.sphere_use_robert_functions,
+					simVars.rexi.rexi_use_extended_modes,
+					param_rexi_use_coriolis_formulation
+				);
+		}
+	}
+
+
+public:
+	bool timestep_output(
+			std::ostream &o_ostream = std::cout
+	)
+	{
+		std::cout << "." << std::flush;
+
+		// output each time step
+		if (simVars.misc.output_each_sim_seconds < 0)
+			return false;
+
+		if (simVars.misc.output_next_sim_seconds > simVars.timecontrol.current_simulation_time)
+			return false;
+
+		write_file_output();
+
+		if (simVars.misc.verbosity > 0)
+		{
+			update_diagnostics();
+
+			// Print header
+			if (simVars.timecontrol.current_timestep_nr == 0)
+			{
+				o_ostream << "T\tTOTAL_MASS\tTOTAL_ENERGY\tPOT_ENSTROPHY";
+
+				//if ((simVars.setup.scenario >= 0 && simVars.setup.scenario <= 4) || simVars.setup.scenario == 13)
+				o_ostream << "\tDIFF_H0\tDIFF_U0\tDIFF_V0";
+
+				if (simVars.misc.use_nonlinear_equations==0){
+					o_ostream << "\tANAL_DIFF_RMS_P\tANAL_DIFF_RMS_U\tANAL_DIFF_RMS_V";
+					o_ostream << "\tANAL_DIFF_MAX_P\tANAL_DIFF_MAX_U\tANAL_DIFF_MAX_V";
 				}
-			);
+				o_ostream << std::endl;
+			}
+
+			//Print simulation time, energy and pot enstrophy
+			o_ostream << std::setprecision(8) << simVars.timecontrol.current_simulation_time << "\t" << simVars.diag.total_mass << "\t" << simVars.diag.total_energy << "\t" << simVars.diag.total_potential_enstrophy;
+		}
+
+
+		if (simVars.misc.output_each_sim_seconds > 0)
+			while (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
+				simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
+
+		return true;
+	}
+
+public:
+	bool should_quit()
+	{
+		if (simVars.timecontrol.max_timesteps_nr != -1 && simVars.timecontrol.max_timesteps_nr <= simVars.timecontrol.current_timestep_nr)
+			return true;
+
+		if (simVars.timecontrol.max_simulation_time != -1 && simVars.timecontrol.max_simulation_time <= simVars.timecontrol.current_simulation_time)
+			return true;
+
+		return false;
+	}
+
+
+	bool instability_detected()
+	{
+		double max_abs_value = std::abs(simVars.sim.h0)*2.0+1.0;
+		if (prog_h.reduce_abs_max() > max_abs_value)
+		{
+			std::cerr << "Instability detected (max abs value of h > " << max_abs_value << ")" << std::endl;
+			return true;
+		}
+
+		if (prog_h.physical_isAnyNaNorInf())
+		{
+			std::cerr << "Inf value detected" << std::endl;
+			return true;
+		}
+
+		return false;
+	}
+
+
+	void run_timestep()
+	{
+		if (simVars.rexi.use_rexi == false)
+		{
+			double o_dt;
+			timestepping.run_rk_timestep(
+					this,
+					&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
+					prog_h, prog_u, prog_v,
+					o_dt,
+					simVars.timecontrol.current_timestep_size,
+					simVars.disc.timestepping_runge_kutta_order,
+					simVars.timecontrol.current_simulation_time,
+					simVars.timecontrol.max_simulation_time
+				);
+		}
+		else
+		{
+			double o_dt = simVars.timecontrol.current_timestep_size;
+			// padding to max simulation time if exceeding the maximum
+			if (simVars.timecontrol.max_simulation_time >= 0)
+				if (o_dt + simVars.timecontrol.current_simulation_time > simVars.timecontrol.max_simulation_time)
+					o_dt = simVars.timecontrol.max_simulation_time-simVars.timecontrol.current_simulation_time;
+
+
+			swe_sphere_rexi.run_timestep_rexi(
+					prog_h,
+					prog_u,
+					prog_v,
+					o_dt,
+					simVars
+				);
+
+			/*
+			 * Add implicit viscosity
+			 */
+			if (simVars.sim.viscosity != 0)
+			{
+				double scalar = simVars.sim.viscosity*simVars.timecontrol.current_timestep_size;
+				double r = simVars.sim.earth_radius;
+
+				/*
+				 * (1-dt*visc*D2)p(t+dt) = p(t)
+				 */
+				prog_h = prog_h.spectral_solve_helmholtz(1.0, -scalar, r);
+				prog_u = prog_u.spectral_solve_helmholtz(1.0, -scalar, r);
+				prog_v = prog_v.spectral_solve_helmholtz(1.0, -scalar, r);
+			}
+
+			// advance time step and provide information to parameters
+			simVars.timecontrol.current_timestep_size = o_dt;
+			simVars.timecontrol.current_simulation_time += o_dt;
+			simVars.timecontrol.current_timestep_nr++;
+		}
+
+#if SWEET_GUI
+		timestep_output();
+#endif
+	}
+
+#if 0
+	void run()
+	{
+		reset();
 
 
 //		// This class is only used in case of added modes
@@ -315,15 +473,22 @@ public:
 		// Pointer to SPH configuration for REXI computations
 //		SphereDataConfig *sphereDataConfigRexi = nullptr;
 
+
+		// Main time loop
+		while(true)
+		{
+
+		}
+
 		if (simVars.rexi.use_rexi == false)
 		{
 			simVars.timecontrol.current_simulation_time = 0;
-			while (simVars.timecontrol.current_simulation_time <= simVars.timecontrol.max_simulation_time)
+			while (!should_quit())
 			{
 				if (simVars.timecontrol.current_simulation_time >= simVars.misc.output_next_sim_seconds)
 				{
 					std::cout << std::endl;
-					write_output();
+					write_file_output();
 
 					simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
 					if (simVars.misc.output_next_sim_seconds < simVars.timecontrol.current_simulation_time)
@@ -333,7 +498,7 @@ public:
 				double o_dt;
 				timestepping.run_rk_timestep(
 						this,
-						&SWE_and_REXI::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
+						&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
 						prog_h, prog_u, prog_v,
 						o_dt,
 						simVars.timecontrol.current_timestep_size,
@@ -367,7 +532,7 @@ public:
 			}
 
 			std::cout << std::endl;
-			write_output();
+			write_file_output();
 			std::cout << std::endl;
 		}
 		else
@@ -468,7 +633,7 @@ public:
 			{
 				if (simVars.timecontrol.current_simulation_time >= simVars.misc.output_next_sim_seconds)
 				{
-					write_output();
+					write_file_output();
 
 					simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
 					if (simVars.misc.output_next_sim_seconds < simVars.timecontrol.current_simulation_time)
@@ -627,7 +792,7 @@ public:
 				advance_simulation_time();
 			}
 
-			write_output();
+			write_file_output();
 			std::cout << std::endl;
 
 
@@ -639,7 +804,7 @@ public:
 			}
 		}
 	}
-
+#endif
 
 
 	// Main routine for method to be used in case of finite differences
@@ -730,6 +895,155 @@ public:
 			o_v_t += op.laplace(i_v)*scalar;
 		}
 	}
+
+#if SWEET_GUI
+
+
+	/**
+	 * postprocessing of frame: do time stepping
+	 */
+	void vis_post_frame_processing(
+			int i_num_iterations
+	)
+	{
+		if (simVars.timecontrol.run_simulation_timesteps)
+			for (int i = 0; i < i_num_iterations; i++)
+				run_timestep();
+	}
+
+
+
+	void vis_get_vis_data_array(
+			const PlaneData **o_dataArray,
+			double *o_aspect_ratio
+	)
+	{
+		int id = simVars.misc.vis_id % 4;
+		switch (id)
+		{
+		default:
+		case 0:
+			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(prog_h, planeDataConfig);
+			break;
+
+		case 1:
+			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(prog_u, planeDataConfig);
+			break;
+
+		case 2:
+			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(prog_v, planeDataConfig);
+			break;
+
+		case 3:
+			if (simVars.misc.sphere_use_robert_functions)
+				viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(op.vort(prog_u, prog_v), planeDataConfig);
+			else
+				viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(op.robert_vort(prog_u, prog_v), planeDataConfig);
+			break;
+
+		}
+
+		*o_dataArray = &viz_plane_data;
+		*o_aspect_ratio = 0.5;
+	}
+
+
+
+	/**
+	 * return status string for window title
+	 */
+	const char* vis_get_status_string()
+	{
+		// first, update diagnostic values if required
+		update_diagnostics();
+
+		const char* description = "";
+
+		int id = simVars.misc.vis_id % 4;
+		switch (id)
+		{
+		default:
+		case 0:
+			description = "H";
+			break;
+
+		case 1:
+			description = "U";
+			break;
+
+		case 2:
+			description = "V";
+			break;
+
+		case 3:
+			description = "eta";
+			break;
+		}
+
+		static char title_string[2048];
+
+		//sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %.14e, Vis: %s, Mass: %.14e, Energy: %.14e, Potential Entrophy: %.14e",
+		sprintf(title_string, "Time (days): %f (%.2f d), k: %i, dt: %.3e, Vis: %s, TMass: %.6e, TEnergy: %.6e, PotEnstrophy: %.6e, MaxVal: %.6e, MinVal: %.6e ",
+				simVars.timecontrol.current_simulation_time,
+				simVars.timecontrol.current_simulation_time/(60.0*60.0*24.0),
+				simVars.timecontrol.current_timestep_nr,
+				simVars.timecontrol.current_timestep_size,
+				description,
+				simVars.diag.total_mass,
+				simVars.diag.total_energy,
+				simVars.diag.total_potential_enstrophy,
+				viz_plane_data.reduce_max(),
+				viz_plane_data.reduce_min()
+		);
+
+		return title_string;
+	}
+
+
+
+	void vis_pause()
+	{
+		simVars.timecontrol.run_simulation_timesteps = !simVars.timecontrol.run_simulation_timesteps;
+	}
+
+
+
+	void vis_keypress(int i_key)
+	{
+		switch(i_key)
+		{
+		case 'v':
+			simVars.misc.vis_id++;
+			break;
+
+		case 'V':
+			simVars.misc.vis_id--;
+			break;
+#if 0
+		case 'c':
+			// dump data arrays
+			prog_h.file_physical_saveData_ascii("swe_rexi_dump_h.csv");
+			prog_u.file_physical_saveData_ascii("swe_rexi_dump_u.csv");
+			prog_v.file_physical_saveData_ascii("swe_rexi_dump_v.csv");
+			break;
+
+		case 'C':
+			// dump data arrays to VTK
+			prog_h.file_physical_saveData_vtk("swe_rexi_dump_h.vtk", "Height");
+			prog_u.file_physical_saveData_vtk("swe_rexi_dump_u.vtk", "U-Velocity");
+			prog_v.file_physical_saveData_vtk("swe_rexi_dump_v.vtk", "V-Velocity");
+			break;
+
+		case 'l':
+			// load data arrays
+			prog_h.file_physical_loadData("swe_rexi_dump_h.csv", simVars.setup.input_data_binary);
+			prog_u.file_physical_loadData("swe_rexi_dump_u.csv", simVars.setup.input_data_binary);
+			prog_v.file_physical_loadData("swe_rexi_dump_v.csv", simVars.setup.input_data_binary);
+			break;
+#endif
+		}
+	}
+#endif
 };
 
 
@@ -767,9 +1081,217 @@ int main(int i_argc, char *i_argv[])
 			);
 
 
-	SWE_and_REXI test_swe(sphereDataConfig);
-	test_swe.run();
+#if SWEET_GUI
+	planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical);
+#endif
 
+
+	std::ostringstream buf;
+	buf << std::setprecision(14);
+
+#if 0
+	SimulationInstance test_swe(sphereDataConfig);
+	test_swe.run();
+#else
+
+#if SWEET_MPI
+	int rank;
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+	// only start simulation and time stepping for first rank
+	if (rank == 0)
+#endif
+	{
+#if SWEET_PARAREAL
+		if (simVars.parareal.enabled)
+		{
+			/*
+			 * Allocate parareal controller and provide class
+			 * which implement the parareal features
+			 */
+			Parareal_Controller_Serial<SimulationInstance> parareal_Controller_Serial;
+
+			// setup controller. This initializes several simulation instances
+			parareal_Controller_Serial.setup(&simVars.parareal);
+
+			// execute the simulation
+			parareal_Controller_Serial.run();
+		}
+		else
+#endif
+
+#if SWEET_GUI // The VisSweet directly calls simulationSWE->reset() and output stuff
+		if (simVars.misc.gui_enabled)
+		{
+			SimulationInstance *simulationSWE = new SimulationInstance;
+			VisSweet<SimulationInstance> visSweet(simulationSWE);
+			delete simulationSWE;
+		}
+		else
+#endif
+		{
+			SimulationInstance *simulationSWE = new SimulationInstance;
+			//Setting initial conditions and workspace - in case there is no GUI
+
+			simulationSWE->reset();
+
+			//Time counter
+			Stopwatch time;
+
+			//Diagnostic measures at initial stage
+			//double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
+
+			// Initialize diagnostics
+			if (simVars.misc.verbosity > 0)
+			{
+				simulationSWE->update_diagnostics();
+#if 0
+				diagnostics_energy_start = simVars.diag.total_energy;
+				diagnostics_mass_start = simVars.diag.total_mass;
+				diagnostics_potential_entrophy_start = simVars.diag.total_potential_enstrophy;
+#endif
+			}
+
+#if SWEET_MPI
+			MPI_Barrier(MPI_COMM_WORLD);
+#endif
+			//Start counting time
+			time.reset();
+
+
+			// Main time loop
+			while(true)
+			{
+				if (simulationSWE->timestep_output(buf))
+				{
+					// string output data
+
+					std::string output = buf.str();
+					buf.str("");
+
+					// This is an output printed on screen or buffered to files if > used
+					std::cout << output;
+				}
+
+				// Stop simulation if requested
+				if (simulationSWE->should_quit())
+					break;
+
+				// Main call for timestep run
+				simulationSWE->run_timestep();
+
+				// Instability
+				if (simulationSWE->instability_detected())
+				{
+					std::cout << "INSTABILITY DETECTED" << std::endl;
+					break;
+				}
+			}
+
+			// Stop counting time
+			time.stop();
+
+			double seconds = time();
+
+			// End of run output results
+			std::cout << "Simulation time (seconds): " << seconds << std::endl;
+			std::cout << "Number of time steps: " << simVars.timecontrol.current_timestep_nr << std::endl;
+			std::cout << "Time per time step: " << seconds/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
+			std::cout << "Last time step size: " << simVars.timecontrol.current_timestep_size << std::endl;
+#if 0
+			if (param_timestepping_mode != 0)
+				std::cout << "REXI alpha.size(): " << simulationSWE->swe_plane_rexi.rexi.alpha.size() << std::endl;
+
+			if (simVars.misc.verbosity > 0)
+			{
+				std::cout << "DIAGNOSTICS ENERGY DIFF:\t" << std::abs((simVars.diag.total_energy-diagnostics_energy_start)/diagnostics_energy_start) << std::endl;
+				std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) << std::endl;
+				std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs((simVars.diag.total_potential_enstrophy-diagnostics_potential_entrophy_start)/diagnostics_potential_entrophy_start) << std::endl;
+
+				if (param_compute_error)
+				{
+					std::cout << "DIAGNOSTICS BENCHMARK DIFF H:\t" << simulationSWE->benchmark_diff_h << std::endl;
+					std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationSWE->benchmark_diff_u << std::endl;
+					std::cout << "DIAGNOSTICS BENCHMARK DIFF V:\t" << simulationSWE->benchmark_diff_v << std::endl;
+				}
+			}
+
+			if (param_compute_error && param_nonlinear==0)
+			{
+				simulationSWE->compute_errors();
+				std::cout << "DIAGNOSTICS ANALYTICAL RMS H:\t" << simulationSWE->benchmark_analytical_error_rms_h << std::endl;
+				std::cout << "DIAGNOSTICS ANALYTICAL RMS U:\t" << simulationSWE->benchmark_analytical_error_rms_u << std::endl;
+				std::cout << "DIAGNOSTICS ANALYTICAL RMS V:\t" << simulationSWE->benchmark_analytical_error_rms_v << std::endl;
+
+				std::cout << "DIAGNOSTICS ANALYTICAL MAXABS H:\t" << simulationSWE->benchmark_analytical_error_maxabs_h << std::endl;
+				std::cout << "DIAGNOSTICS ANALYTICAL MAXABS U:\t" << simulationSWE->benchmark_analytical_error_maxabs_u << std::endl;
+				std::cout << "DIAGNOSTICS ANALYTICAL MAXABS V:\t" << simulationSWE->benchmark_analytical_error_maxabs_v << std::endl;
+			}
+
+#endif
+
+			delete simulationSWE;
+		}
+	}
+#if SWEET_MPI
+	else
+	{
+		if (param_timestepping_mode == 1)
+		{
+			SWE_Plane_REXI rexiSWE;
+
+			/*
+			 * Setup our little dog REXI
+			 */
+			rexiSWE.setup(
+					simVars.rexi.rexi_h,
+					simVars.rexi.rexi_m,
+					simVars.rexi.rexi_l,
+					simVars.disc.res_physical,
+					simVars.sim.domain_size,
+					simVars.rexi.rexi_half,
+					simVars.rexi.rexi_use_spectral_differences_for_complex_array,
+					simVars.rexi.rexi_helmholtz_solver_id,
+					simVars.rexi.rexi_helmholtz_solver_eps
+				);
+
+			bool run = true;
+
+			PlaneData prog_h(planeDataConfig);
+			PlaneData prog_u(planeDataConfig);
+			PlaneData prog_v(planeDataConfig);
+
+			PlaneOperators op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
+
+			MPI_Barrier(MPI_COMM_WORLD);
+
+			while (run)
+			{
+				// REXI time stepping
+				run = rexiSWE.run_timestep_rexi(
+						prog_h, prog_u, prog_v,
+						-simVars.sim.CFL,
+						op,
+						simVars
+				);
+			}
+		}
+	}
+#endif
+
+
+#if SWEET_MPI
+	if (param_timestepping_mode > 0)
+	{
+		// synchronize REXI
+		if (rank == 0)
+			SWE_Plane_REXI::MPI_quitWorkers(planeDataConfig);
+	}
+
+	MPI_Finalize();
+#endif
+
+#endif
 	return 0;
 }
 

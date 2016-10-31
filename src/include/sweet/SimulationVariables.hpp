@@ -308,7 +308,7 @@ public:
 		int vis_id = 0;
 
 		/// Use non-linear equations for simulations
-		bool use_nonlinear_equations = true;
+		int use_nonlinear_equations = 1;
 
 
 		/// Use robert function formulation on the sphere

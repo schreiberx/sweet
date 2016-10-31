@@ -185,7 +185,7 @@ public:
 	{
 		static char output_string[2048];
 
-		sprintf(output_string, "%i: %s, res x/y: %lu/%lu, inv: %f", simVars.misc.vis_id, vis_description, simVars.disc.res_physical[0], simVars.disc.res_physical[1], 1.0/(double)(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]));
+		sprintf(output_string, "%i: %s, res x/y: %i/%i, inv: %f", simVars.misc.vis_id, vis_description, simVars.disc.res_physical[0], simVars.disc.res_physical[1], 1.0/(double)(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]));
 		return output_string;
 	}
 

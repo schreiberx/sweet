@@ -72,7 +72,6 @@ double param_rexi_helmholtz_solver_eps;
 */
 
 int param_boundary_id;
-int param_nonlinear;
 bool param_linear_exp_analytical;
 
 double param_initial_freq_x_mul;
@@ -312,7 +311,7 @@ public:
 		if (param_use_staggering && param_compute_error)
 			std::cerr << "Warning: Staggered data will be interpolated to/from A-grid for exact linear solution" << std::endl;
 
-		if(param_nonlinear > 0 && param_compute_error)
+		if (simVars.misc.use_nonlinear_equations > 0 && param_compute_error)
 			std::cout << "Warning: Exact solution not possible in general for nonlinear swe. Using exact solution for linear case instead." << std::endl;
 
 		if (param_use_staggering)
@@ -443,7 +442,7 @@ public:
 						force_h.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_h(simVars, x, y));
 
 						//Coriolis term - lives in the corner of the cells
-						if (param_nonlinear)
+						if (simVars.misc.use_nonlinear_equations)
 						{
 							//PXT: had some -0.5 on i and j (why??)
 							double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
@@ -883,7 +882,7 @@ public:
 		// A- grid method
 		if (!param_use_staggering)
 		{
-			if (param_nonlinear > 0)	 // nonlinear case
+			if (simVars.misc.use_nonlinear_equations > 0)	 // nonlinear case
 			{
 				std::cout << "Only linear swe are setup for unstaggered grids " << std::endl;
 				exit(1);
@@ -974,7 +973,7 @@ public:
 			/*
 			 * U and V updates
 			 */
-			if(param_nonlinear > 0) //nonlinear case
+			if (simVars.misc.use_nonlinear_equations > 0) //nonlinear case
 			{
 				U = op.avg_b_x(i_h)*i_u;
 				V = op.avg_b_y(i_h)*i_v;
@@ -985,13 +984,13 @@ public:
 				V = simVars.sim.h0*i_v;
 			}
 
-			if(param_nonlinear > 0) //nonlinear case
+			if (simVars.misc.use_nonlinear_equations > 0) //nonlinear case
 				H = simVars.sim.gravitation*i_h + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
 			else //linear case
 				H = simVars.sim.gravitation*i_h;// + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
 
 
-			if (param_nonlinear > 0) //nonlinear case
+			if (simVars.misc.use_nonlinear_equations > 0) //nonlinear case
 			{
 				// Potential vorticity
 				if(op.avg_b_x(op.avg_b_y(i_h)).reduce_min() < 0.00000001)
@@ -1038,7 +1037,7 @@ public:
 			 */
 			if (!simVars.disc.timestepping_up_and_downwinding)
 			{
-				if(param_nonlinear > 0){ //full nonlinear divergence
+				if (simVars.misc.use_nonlinear_equations > 0){ //full nonlinear divergence
 					// standard update
 					o_h_t = -op.diff_f_x(U) - op.diff_f_y(V);
 				}
@@ -1064,9 +1063,7 @@ public:
 	/**
 	 * Execute a single simulation time step
 	 */
-	void run_timestep(
-//			double i_max_simulation_time
-	)
+	void run_timestep()
 	{
 		double o_dt;
 
@@ -1094,7 +1091,7 @@ public:
 			o_dt = -simVars.sim.CFL;
 
 			// REXI time stepping for nonlinear eq - semi-lagrangian scheme (SL-REXI)
-			if (param_nonlinear > 0)
+			if (simVars.misc.use_nonlinear_equations > 0)
 			{
 				swe_plane_rexi.run_timestep_slrexi(
 									prog_h, prog_u, prog_v,
@@ -1102,7 +1099,7 @@ public:
 									posx_a,	posy_a,
 									o_dt,
 
-									param_nonlinear,
+									simVars.misc.use_nonlinear_equations,
 									param_linear_exp_analytical,
 
 									simVars,
@@ -1121,7 +1118,7 @@ public:
 			if (param_use_staggering)
 				FatalError("Direct solution on staggered grid not supported!");
 
-			if (param_nonlinear>0)
+			if (simVars.misc.use_nonlinear_equations>0)
 				FatalError("Direct solution on staggered grid not supported!");
 
 			// Analytical solution
@@ -1194,7 +1191,7 @@ public:
 					prog_h_prev, prog_u_prev, prog_v_prev,
 					posx_a,	posy_a,
 					o_dt,
-					param_nonlinear,
+					simVars.misc.use_nonlinear_equations,
 					simVars,
 					op,
 					sampler2D,
@@ -1237,10 +1234,37 @@ public:
 
 
 public:
-	void timestep_output(
+	bool timestep_output(
 			std::ostream &o_ostream = std::cout
 	)
 	{
+		// output each time step
+		if (simVars.misc.output_each_sim_seconds < 0)
+			return false;
+
+		if (simVars.misc.output_next_sim_seconds > simVars.timecontrol.current_simulation_time)
+			return false;
+
+		//Dump  data in csv, if requested
+		if (simVars.misc.output_file_name_prefix.size() > 0)
+		{
+			double secs = simVars.timecontrol.current_simulation_time;
+			double msecs = 1000000.*(simVars.timecontrol.current_simulation_time - std::floor(simVars.timecontrol.current_simulation_time));
+			char t_buf[256];
+			sprintf(	t_buf,
+						"%08d.%06d",
+						(int)secs, (int)msecs
+				);
+
+			std::string ss = simVars.misc.output_file_name_prefix+"_t"+t_buf;
+
+			prog_h.file_physical_saveData_ascii((ss+"_h.csv").c_str());
+			prog_u.file_physical_saveData_ascii((ss+"_u.csv").c_str());
+			prog_v.file_physical_saveData_ascii((ss+"_v.csv").c_str());
+
+			(op.diff_c_x(prog_v) - op.diff_c_y(prog_u)).file_physical_saveData_ascii((ss+"_q.csv").c_str());
+		}
+
 
 		if (simVars.misc.verbosity > 0)
 		{
@@ -1254,42 +1278,11 @@ public:
 				//if ((simVars.setup.scenario >= 0 && simVars.setup.scenario <= 4) || simVars.setup.scenario == 13)
 				o_ostream << "\tDIFF_H0\tDIFF_U0\tDIFF_V0";
 
-				if (param_compute_error && param_nonlinear==0){
+				if (param_compute_error && simVars.misc.use_nonlinear_equations==0){
 					o_ostream << "\tANAL_DIFF_RMS_P\tANAL_DIFF_RMS_U\tANAL_DIFF_RMS_V";
 					o_ostream << "\tANAL_DIFF_MAX_P\tANAL_DIFF_MAX_U\tANAL_DIFF_MAX_V";
 				}
 				o_ostream << std::endl;
-			}
-
-			//Dump  data in csv, if requested
-			if (simVars.misc.output_file_name_prefix.size() > 0)
-			{
-				// output each time step
-				if (simVars.misc.output_each_sim_seconds < 0)
-					simVars.misc.output_next_sim_seconds = 0;
-
-				if (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
-				{
-					if (simVars.misc.output_each_sim_seconds > 0)
-						while (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
-							simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
-
-					double secs = simVars.timecontrol.current_simulation_time;
-					double msecs = 1000000.*(simVars.timecontrol.current_simulation_time - std::floor(simVars.timecontrol.current_simulation_time));
-					char t_buf[256];
-					sprintf(	t_buf,
-								"%08d.%06d",
-								(int)secs, (int)msecs
-						);
-
-					std::string ss = simVars.misc.output_file_name_prefix+"_t"+t_buf;
-
-					prog_h.file_physical_saveData_ascii((ss+"_h.csv").c_str());
-					prog_u.file_physical_saveData_ascii((ss+"_u.csv").c_str());
-					prog_v.file_physical_saveData_ascii((ss+"_v.csv").c_str());
-
-					(op.diff_c_x(prog_v) - op.diff_c_y(prog_u)).file_physical_saveData_ascii((ss+"_q.csv").c_str());
-				}
 			}
 
 			//Print simulation time, energy and pot enstrophy
@@ -1323,7 +1316,7 @@ public:
 			o_ostream << "\t" << benchmark_diff_v;
 			//}
 
-			if (param_compute_error && param_nonlinear==0)
+			if (param_compute_error && simVars.misc.use_nonlinear_equations==0)
 			{
 				compute_errors();
 
@@ -1338,8 +1331,13 @@ public:
 
 			o_ostream << std::endl;
 		}
-	}
 
+		if (simVars.misc.output_each_sim_seconds > 0)
+			while (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
+				simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
+
+		return true;
+	}
 
 
 public:
@@ -1902,7 +1900,7 @@ public:
 		prog_u = *parareal_data_output.data_arrays[1];
 		prog_v = *parareal_data_output.data_arrays[2];
 
-		if (param_compute_error && param_nonlinear==0){
+		if (param_compute_error && simVars.misc.use_nonlinear_equations==0){
 			compute_errors();
 			std::cout << "maxabs error compared to analytical solution: " << benchmark_analytical_error_maxabs_h << std::endl;
 		}
@@ -1988,7 +1986,6 @@ int main(int i_argc, char *i_argv[])
 			"compute-error",
 			"staggering",						/// FD A-C grid
 			"boundary-id",
-			"nonlinear",                 /// form of equations
 			"initial-freq-x-mul",		/// frequency multipliers for special scenario setup
 			"initial-freq-y-mul",
 			"lin-exp-analyt",
@@ -2000,10 +1997,9 @@ int main(int i_argc, char *i_argv[])
 	simVars.bogus.var[1] = 0;	// compute error - default no
 	simVars.bogus.var[2] = 0;	// stag - default A grid
 	simVars.bogus.var[3] = 0; 	//boundary
-	simVars.bogus.var[4] = 0;	// nonlinear
-	simVars.bogus.var[5] = 0;  //frequency in x for waves test case
-	simVars.bogus.var[6] = 0;  //frequency in y for waves test case
-	simVars.bogus.var[7] = 0;  // Use analytical linear operator exponential
+	simVars.bogus.var[4] = 0;  //frequency in x for waves test case
+	simVars.bogus.var[5] = 0;  //frequency in y for waves test case
+	simVars.bogus.var[6] = 0;  // Use analytical linear operator exponential
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
@@ -2051,32 +2047,24 @@ int main(int i_argc, char *i_argv[])
 	// C- grid flag
 	param_use_staggering = simVars.bogus.var[2];
 
-	// Linear solver
-//	param_rexi_use_spectral_differences_for_complex_array = simVars.bogus.var[3];
-//	param_rexi_helmholtz_solver_id = simVars.bogus.var[4];
-//	param_rexi_helmholtz_solver_eps = simVars.bogus.var[5];
-
 	//Boundary
 	param_boundary_id = simVars.bogus.var[3];
 
-	// Linear vs nonlinear swe
-	param_nonlinear = simVars.bogus.var[4];
-
 	//Frequency for certain initial conditions
-	param_initial_freq_x_mul = simVars.bogus.var[5];
-	param_initial_freq_y_mul = simVars.bogus.var[6];
+	param_initial_freq_x_mul = simVars.bogus.var[4];
+	param_initial_freq_y_mul = simVars.bogus.var[5];
 
-	param_linear_exp_analytical = simVars.bogus.var[7];
+	param_linear_exp_analytical = simVars.bogus.var[6];
 
 	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
 
 	//Print header
 	std::cout << std::endl;
-	if(param_nonlinear == 1)
+	if (simVars.misc.use_nonlinear_equations == 1)
 		std::cout << "Solving full nonlinear SW equations" << std::endl;
 	else
 	{
-		if(param_nonlinear == 2)
+		if (simVars.misc.use_nonlinear_equations == 2)
 				std::cout << "Solving linear SWE with nonlinear advection" << std::endl;
 		else
 			std::cout << "Solving linear SW equations" << std::endl;
@@ -2196,20 +2184,15 @@ int main(int i_argc, char *i_argv[])
 			// Main time loop
 			while(true)
 			{
-				// Output data
-				if (simVars.misc.verbosity > 1)
+				if (simulationSWE->timestep_output(buf))
 				{
-					simulationSWE->timestep_output(buf);
+					// string output data
 
 					std::string output = buf.str();
 					buf.str("");
 
 					// This is an output printed on screen or buffered to files if > used
 					std::cout << output;
-
-					// This is an output only printed on screen, not buffered to files if > used
-					if (simVars.misc.verbosity > 2)
-						std::cerr << output;
 				}
 
 				// Stop simulation if requested
@@ -2254,7 +2237,7 @@ int main(int i_argc, char *i_argv[])
 				}
 			}
 
-			if (param_compute_error && param_nonlinear==0)
+			if (param_compute_error && simVars.misc.use_nonlinear_equations == 0)
 			{
 				simulationSWE->compute_errors();
 				std::cout << "DIAGNOSTICS ANALYTICAL RMS H:\t" << simulationSWE->benchmark_analytical_error_rms_h << std::endl;

@@ -8,8 +8,8 @@
 #ifndef SPHEREOPERATORS_COMPLEX_HPP_
 #define SPHEREOPERATORS_COMPLEX_HPP_
 
-#include "../sphere/SphereData.hpp"
-#include "../sphere/SphereSPHIdentities.hpp"
+#include <sweet/sphere/SphereDataComplex.hpp>
+#include <sweet/sphere/SphereSPHIdentities.hpp>
 
 class SphereOperatorsComplex	:
 		public SphereSPHIdentities
@@ -140,7 +140,7 @@ public:
 		out_sph_data.physical_update_lambda_gaussian_grid(
 				[](double lambda, double mu, std::complex<double> &o_data)
 				{
-					double cos_phi = sqrt(1.0-mu*mu);
+					double cos_phi = std::sqrt(1.0-mu*mu);
 					o_data /= cos_phi;
 				}
 		);

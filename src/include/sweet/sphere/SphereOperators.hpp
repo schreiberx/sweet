@@ -520,6 +520,21 @@ public:
 	}
 
 
+public:
+	/**
+	 * Compute vorticity
+	 *
+	 * \eta = robert_grad_lat(V_lon) - robert_grad_lon(V_lat)
+	 */
+	SphereData robert_vort(
+			const SphereData &i_lon,
+			const SphereData &i_lat
+	)	const
+	{
+		return robert_grad_lon(i_lat) - robert_grad_lat(i_lon);
+	}
+
+
 
 public:
 	/**
@@ -533,6 +548,21 @@ public:
 	)	const
 	{
 		return div_lon(i_lon) + div_lat(i_lat);
+	}
+
+
+public:
+	/**
+	 * Compute divergence
+	 *
+	 * \delta = robert_div_lon(i_lon) + robert_div_lan(i_lan)
+	 */
+	SphereData robert_div(
+			const SphereData &i_lon,
+			const SphereData &i_lat
+	)	const
+	{
+		return robert_div_lon(i_lon) + robert_div_lat(i_lat);
 	}
 };
 

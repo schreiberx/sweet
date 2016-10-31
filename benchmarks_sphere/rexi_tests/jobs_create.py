@@ -6,7 +6,7 @@ import stat
 
 
 class default_params:
-	timestep_size = 0.01
+	timestep_size = 0.001
 	mode_res = 64
 	output_timestep_size = 0.1
 	rk_order = 4
@@ -152,7 +152,7 @@ $EXEC || exit 1
 
 
 p = default_params()
-p.simtime = 0.1
+p.simtime = 1
 p.mode_res = 64
 
 
@@ -160,15 +160,25 @@ p.mode_res = 64
 ####################################
 
 if True:
+	p.timestep_size = 0.001
+	p.rexi_par = 1
+	p.rexi_use_coriolis_formulation = 0
+
+	for p.rexi_m in [64, 128, 256, 512]:
+		p.gen_script('script'+p.create_job_id(), 'run.sh')
+
+if True:
 	p.timestep_size = 0.01
 	p.rexi_par = 1
 	p.rexi_use_coriolis_formulation = 0
 
-	for p.rexi_m in [128, 256, 512, 1024]:
+	for p.rexi_m in [64, 128, 256, 512]:
 		p.gen_script('script'+p.create_job_id(), 'run.sh')
 
 
-if True:
+
+
+if False:
 	p.timestep_size = 0.01
 	p.rexi_par = 1
 	p.rexi_use_coriolis_formulation = 1
@@ -177,7 +187,7 @@ if True:
 		p.gen_script('script'+p.create_job_id(), 'run.sh')
 
 
-if True:
+if False:
 	p.timestep_size = 0.01
 	p.rexi_par = 1
 	p.rexi_use_coriolis_formulation = 0
@@ -187,7 +197,7 @@ if True:
 			p.gen_script('script'+p.create_job_id(), 'run.sh')
 
 
-if True:
+if False:
 	p.timestep_size = 0.01
 	p.rexi_par = 1
 	p.rexi_use_coriolis_formulation = 1
@@ -226,8 +236,9 @@ if False:
 # RK
 ####################################
 
+#if False:
 if True:
-	p.timestep_size = 0.01
+	p.timestep_size = 0.001
 	p.use_rexi = 0
 
 	for p.rk_order in [1, 2, 3, 4]:
