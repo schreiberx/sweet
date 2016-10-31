@@ -464,7 +464,7 @@ public:
 		simVars.timecontrol.current_timestep_nr++;
 
 
-		std::cout << " to " << simVars.timecontrol.current_simulation_time << " with time step size " << simVars.timecontrol.current_timestep_size << std::endl ;
+//		std::cout << " to " << simVars.timecontrol.current_simulation_time << " with time step size " << simVars.timecontrol.current_timestep_size << std::endl ;
 
 #if SWEET_GUI
 		timestep_output();
