@@ -287,7 +287,7 @@ public:
 		int verbosity = 0;
 
 		/// precision for floating point output to std::cout and std::endl
-		int output_floating_point_precision = 12;
+		int output_floating_point_precision = 20;
 
 		/// activate GUI mode?
 		bool gui_enabled = (SWEET_GUI == 0 ? false : true);
@@ -313,6 +313,10 @@ public:
 
 		/// Use robert function formulation on the sphere
 		bool sphere_use_robert_functions = true;
+
+		/// time scaling for output
+		/// e.g. use scaling by 1.0/(60*60) to output days instead of seconds
+		double output_time_scale = 1.0;
 
 	} misc;
 
@@ -340,6 +344,7 @@ public:
 
 		/// maximum simulation time to execute the simulation for
 		double max_simulation_time = -1;
+
 	} timecontrol;
 
 

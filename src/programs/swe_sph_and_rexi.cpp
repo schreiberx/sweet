@@ -100,28 +100,28 @@ public:
 
 		std::cout << "Simulation time: " << simVars.timecontrol.current_simulation_time << std::endl;
 
-		sprintf(buffer, "prog_h_t%020.8f.csv", simVars.timecontrol.current_simulation_time/(60*60));
+		sprintf(buffer, "prog_h_t%020.8f.csv", simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
 		if (simVars.setup.benchmark_scenario_id == 0)
 			prog_h.file_physical_writeFile_lon_pi_shifted(buffer);
 		else
 			prog_h.physical_write_file(buffer);
 		std::cout << buffer << " (min: " << prog_h.reduce_min() << ", max: " << prog_h.reduce_max() << ")" << std::endl;
 
-		sprintf(buffer, "prog_u_t%020.8f.csv", simVars.timecontrol.current_simulation_time/(60*60));
+		sprintf(buffer, "prog_u_t%020.8f.csv", simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
 		if (simVars.setup.benchmark_scenario_id == 0)
 			prog_u.file_physical_writeFile_lon_pi_shifted(buffer);
 		else
 			prog_u.physical_write_file(buffer);
 		std::cout << buffer << std::endl;
 
-		sprintf(buffer, "prog_v_t%020.8f.csv", simVars.timecontrol.current_simulation_time/(60*60));
+		sprintf(buffer, "prog_v_t%020.8f.csv", simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
 		if (simVars.setup.benchmark_scenario_id == 0)
 			prog_v.file_physical_writeFile_lon_pi_shifted(buffer);
 		else
 			prog_v.physical_write_file(buffer);
 		std::cout << buffer << std::endl;
 
-		sprintf(buffer, "prog_eta_t%020.8f.csv", simVars.timecontrol.current_simulation_time/(60*60));
+		sprintf(buffer, "prog_eta_t%020.8f.csv", simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
 		SphereData vort = op.vort(prog_u, prog_v)/simVars.sim.earth_radius;
 		if (simVars.setup.benchmark_scenario_id == 0)
 			vort.file_physical_writeFile_lon_pi_shifted(buffer, "vorticity, lon pi shifted");
@@ -241,6 +241,8 @@ public:
 			simVars.sim.earth_radius = 6.37122e6;
 			simVars.sim.h0 = 10000.0;
 
+			simVars.misc.output_time_scale = 1.0/(60.0*60.0);
+
 			benchmarkGalewsky.setup_initial_h(prog_h);
 //			prog_h.spat_set_zero();
 			benchmarkGalewsky.setup_initial_h_add_bump(prog_h);
@@ -358,7 +360,7 @@ public:
 			}
 
 			//Print simulation time, energy and pot enstrophy
-			o_ostream << std::setprecision(8) << simVars.timecontrol.current_simulation_time << "\t" << simVars.diag.total_mass << "\t" << simVars.diag.total_energy << "\t" << simVars.diag.total_potential_enstrophy;
+			o_ostream << std::setprecision(simVars.misc.output_floating_point_precision) << simVars.timecontrol.current_simulation_time << "\t" << simVars.diag.total_mass << "\t" << simVars.diag.total_energy << "\t" << simVars.diag.total_potential_enstrophy;
 		}
 
 
@@ -454,360 +456,20 @@ public:
 			}
 		}
 
+		std::cout << "Advancing time from " << simVars.timecontrol.current_simulation_time;
+
 		// advance time step and provide information to parameters
 		simVars.timecontrol.current_timestep_size = o_dt;
 		simVars.timecontrol.current_simulation_time += o_dt;
 		simVars.timecontrol.current_timestep_nr++;
 
+
+		std::cout << " to " << simVars.timecontrol.current_simulation_time << " with time step size " << simVars.timecontrol.current_timestep_size << std::endl ;
+
 #if SWEET_GUI
 		timestep_output();
 #endif
 	}
-
-#if 0
-	void run()
-	{
-		reset();
-
-
-//		// This class is only used in case of added modes
-//		SphereDataConfig sphereDataConfigRexiAddedModes;
-
-		// Pointer to SPH configuration for REXI computations
-//		SphereDataConfig *sphereDataConfigRexi = nullptr;
-
-
-		// Main time loop
-		while(true)
-		{
-
-		}
-
-		if (simVars.rexi.use_rexi == false)
-		{
-			simVars.timecontrol.current_simulation_time = 0;
-			while (!should_quit())
-			{
-				if (simVars.timecontrol.current_simulation_time >= simVars.misc.output_next_sim_seconds)
-				{
-					std::cout << std::endl;
-					write_file_output();
-
-					simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
-					if (simVars.misc.output_next_sim_seconds < simVars.timecontrol.current_simulation_time)
-						simVars.misc.output_next_sim_seconds = simVars.timecontrol.current_simulation_time;
-				}
-
-				double o_dt;
-				timestepping.run_rk_timestep(
-						this,
-						&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
-						prog_h, prog_u, prog_v,
-						o_dt,
-						simVars.timecontrol.current_timestep_size,
-						simVars.disc.timestepping_runge_kutta_order,
-						simVars.timecontrol.current_simulation_time,
-						simVars.timecontrol.max_simulation_time
-					);
-
-				std::cout << "." << std::flush;
-
-#if 1
-				double max_abs_value = std::abs(simVars.sim.h0)*2.0+1.0;
-				if (prog_h.reduce_abs_max() > max_abs_value)
-				{
-					std::cerr << "Instability detected (max abs value of h > " << max_abs_value << ")" << std::endl;
-					assert(false);
-					exit(1);
-				}
-#endif
-				if (prog_h.physical_isAnyNaNorInf())
-				{
-					std::cerr << "Instability detected (NaN value in H)" << std::endl;
-					assert(false);
-					exit(1);
-				}
-
-				if (simVars.timecontrol.current_simulation_time >= simVars.timecontrol.max_simulation_time)
-					break;
-
-				advance_simulation_time();
-			}
-
-			std::cout << std::endl;
-			write_file_output();
-			std::cout << std::endl;
-		}
-		else
-		{
-#if 1
-			swe_sphere_rexi.setup(
-					simVars.rexi.rexi_h,
-					simVars.rexi.rexi_M,
-					simVars.rexi.rexi_L,
-
-					sphereDataConfig,
-					&simVars.sim,
-					simVars.timecontrol.current_timestep_size,
-
-					simVars.rexi.rexi_use_half_poles,
-					simVars.misc.sphere_use_robert_functions,
-					simVars.rexi.rexi_use_extended_modes,
-					param_rexi_use_coriolis_formulation
-				);
-
-#else
-			if (simVars.rexi.rexi_use_extended_modes == 0)
-			{
-				sphereDataConfigRexi = sphereDataConfig;
-			}
-			else
-			{
-				// Add modes only along latitude since these are the "problematic" modes
-				sphereDataConfigRexiAddedModes.setupAdditionalModes(
-						sphereDataConfig,
-						simVars.rexi.rexi_use_extended_modes,	// TODO: Extend SPH wrapper to also support m != n to set this guy to 0
-						simVars.rexi.rexi_use_extended_modes
-				);
-				sphereDataConfigRexi = &sphereDataConfigRexiAddedModes;
-			}
-
-			rexi.setup(simVars.rexi.rexi_h, simVars.rexi.rexi_M, 0, simVars.rexi.rexi_use_half_poles);
-
-			std::cout << "REXI poles: " << rexi.alpha.size() << std::endl;
-
-			SphereData tmp_prog_phi(sphereDataConfigRexi);
-			SphereData tmp_prog_u(sphereDataConfigRexi);
-			SphereData tmp_prog_v(sphereDataConfigRexi);
-
-			SphereData accum_prog_phi(sphereDataConfigRexi);
-			SphereData accum_prog_u(sphereDataConfigRexi);
-			SphereData accum_prog_v(sphereDataConfigRexi);
-
-			std::vector<SWERexi_SPHRobert> rexiSPHRobert_vector;
-			std::vector<SWERexi_SPH> rexiSPH_vector;
-
-			bool use_rexi_preallocaation = true;
-
-			if (use_rexi_preallocaation)
-			{
-				if (simVars.misc.sphere_use_robert_functions)
-					rexiSPHRobert_vector.resize(rexi.alpha.size());
-				else
-					rexiSPH_vector.resize(rexi.alpha.size());
-
-
-				for (std::size_t i = 0; i < rexi.alpha.size(); i++)
-				{
-					std::complex<double> &alpha = rexi.alpha[i];
-					std::complex<double> &beta = rexi.beta_re[i];
-
-					if (simVars.misc.sphere_use_robert_functions)
-					{
-						rexiSPHRobert_vector[i].setup(
-								sphereDataConfigRexi,
-								alpha,
-								beta,
-								simVars.sim.earth_radius,
-								simVars.sim.coriolis_omega, //*inv_sqrt_avg_geopo,
-								simVars.sim.h0*simVars.sim.gravitation,
-								simVars.timecontrol.current_timestep_size, //*sqrt_avg_geopo
-								param_rexi_use_coriolis_formulation
-						);
-					}
-					else
-					{
-						rexiSPH_vector[i].setup(
-								sphereDataConfigRexi,
-								alpha,
-								beta,
-								simVars.sim.earth_radius,
-								simVars.sim.coriolis_omega, //*inv_sqrt_avg_geopo,
-								simVars.sim.h0*simVars.sim.gravitation,
-								simVars.timecontrol.current_timestep_size, //*sqrt_avg_geopo
-								param_rexi_use_coriolis_formulation
-						);
-					}
-				}
-			}
-#endif
-			simVars.timecontrol.current_simulation_time = 0;
-			while (simVars.timecontrol.current_simulation_time <= simVars.timecontrol.max_simulation_time)
-			{
-				if (simVars.timecontrol.current_simulation_time >= simVars.misc.output_next_sim_seconds)
-				{
-					write_file_output();
-
-					simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
-					if (simVars.misc.output_next_sim_seconds < simVars.timecontrol.current_simulation_time)
-						simVars.misc.output_next_sim_seconds = simVars.timecontrol.current_simulation_time;
-				}
-
-
-#if 1
-
-				swe_sphere_rexi.run_timestep_rexi(prog_h, prog_u, prog_v, simVars.timecontrol.current_timestep_size, simVars);
-
-#else
-
-				{
-					// convert to geopotential
-					SphereData prog_phi_rexi(sphereDataConfigRexi);
-					SphereData prog_u_rexi(sphereDataConfigRexi);
-					SphereData prog_v_rexi(sphereDataConfigRexi);
-
-					if (simVars.rexi.rexi_use_extended_modes == 0)
-					{
-						prog_phi_rexi = prog_h*simVars.sim.gravitation;
-						prog_u_rexi = prog_u;
-						prog_v_rexi = prog_v;
-					}
-					else
-					{
-						(prog_h*simVars.sim.gravitation).spectral_copyToDifferentModes(prog_phi_rexi);
-						prog_u.spectral_copyToDifferentModes(prog_u_rexi);
-						prog_v.spectral_copyToDifferentModes(prog_v_rexi);
-					}
-
-					accum_prog_phi.physical_set_zero();
-					accum_prog_u.physical_set_zero();
-					accum_prog_v.physical_set_zero();
-
-					for (std::size_t i = 0; i < rexi.alpha.size(); i++)
-					{
-						std::complex<double> &alpha = rexi.alpha[i];
-						std::complex<double> &beta = rexi.beta_re[i];
-
-						if (simVars.misc.sphere_use_robert_functions)
-						{
-							if (use_rexi_preallocaation)
-							{
-								rexiSPHRobert_vector[i].solve(
-										prog_phi_rexi, prog_u_rexi, prog_v_rexi,
-										tmp_prog_phi, tmp_prog_u, tmp_prog_v,
-										opComplex
-									);
-							}
-							else
-							{
-								SWERexi_SPHRobert rexiSPHRobert;
-								rexiSPHRobert.setup(
-										sphereDataConfig,
-										alpha,
-										beta,
-										simVars.sim.earth_radius,
-										simVars.sim.coriolis_omega, //*inv_sqrt_avg_geopo,
-										simVars.sim.h0*simVars.sim.gravitation,
-										simVars.timecontrol.current_timestep_size, //*sqrt_avg_geopo
-										param_rexi_use_coriolis_formulation
-								);
-
-								rexiSPHRobert.solve(
-										prog_phi_rexi, prog_u_rexi, prog_v_rexi,
-										tmp_prog_phi, tmp_prog_u, tmp_prog_v,
-										opComplex
-									);
-							}
-						}
-						else
-						{
-							if (use_rexi_preallocaation)
-							{
-								rexiSPH_vector[i].solve(
-										prog_phi_rexi, prog_u_rexi, prog_v_rexi,
-										tmp_prog_phi, tmp_prog_u, tmp_prog_v,
-										opComplex
-									);
-							}
-							else
-							{
-								SWERexi_SPH rexiSPH;
-								rexiSPH.setup(
-										sphereDataConfig,
-										alpha,
-										beta,
-										simVars.sim.earth_radius,
-										simVars.sim.coriolis_omega,
-										simVars.sim.h0*simVars.sim.gravitation,
-										simVars.timecontrol.current_timestep_size,
-										param_rexi_use_coriolis_formulation
-								);
-
-								rexiSPH.solve(
-										prog_phi_rexi, prog_u_rexi, prog_v_rexi,
-										tmp_prog_phi, tmp_prog_u, tmp_prog_v,
-										opComplex
-									);
-							}
-						}
-
-						accum_prog_phi += tmp_prog_phi;
-						accum_prog_u += tmp_prog_u;
-						accum_prog_v += tmp_prog_v;
-					}
-
-					if (simVars.rexi.rexi_use_extended_modes == 0)
-					{
-						prog_h = accum_prog_phi*(1.0/simVars.sim.gravitation);
-						prog_u = accum_prog_u;
-						prog_v = accum_prog_v;
-					}
-					else
-					{
-						(accum_prog_phi*(1.0/simVars.sim.gravitation)).spectral_copyToDifferentModes(prog_h);
-						accum_prog_u.spectral_copyToDifferentModes(prog_u);
-						accum_prog_v.spectral_copyToDifferentModes(prog_v);
-					}
-				}
-
-#endif
-
-				std::cout << "." << std::flush;
-
-				/*
-				 * Add implicit viscosity
-				 */
-				if (simVars.sim.viscosity != 0)
-				{
-					double scalar = simVars.sim.viscosity*simVars.timecontrol.current_timestep_size;
-					double r = simVars.sim.earth_radius;
-
-					/*
-					 * (1-dt*visc*D2)p(t+dt) = p(t)
-					 */
-					prog_h = prog_h.spectral_solve_helmholtz(1.0, -scalar, r);
-					prog_u = prog_u.spectral_solve_helmholtz(1.0, -scalar, r);
-					prog_v = prog_v.spectral_solve_helmholtz(1.0, -scalar, r);
-				}
-
-#if 1
-				double max_abs_value = std::abs(simVars.sim.h0)*2.0+1.0;
-				if (prog_h.reduce_abs_max() > max_abs_value)
-				{
-					std::cerr << "Instability detected (max abs value of h > " << max_abs_value << ")" << std::endl;
-					assert(false);
-					exit(1);
-				}
-#endif
-				if (simVars.timecontrol.current_simulation_time >= simVars.timecontrol.max_simulation_time)
-					break;
-
-				advance_simulation_time();
-			}
-
-			write_file_output();
-			std::cout << std::endl;
-
-
-			if (prog_h.physical_isAnyNaNorInf())
-			{
-				std::cerr << "Instability detected (NaN value in H)" << std::endl;
-				assert(false);
-				exit(1);
-			}
-		}
-	}
-#endif
 
 
 	// Main routine for method to be used in case of finite differences
@@ -1022,15 +684,13 @@ public:
 		case 'V':
 			simVars.misc.vis_id--;
 			break;
-#if 0
+
 		case 'c':
-			// dump data arrays
-			prog_h.file_physical_saveData_ascii("swe_rexi_dump_h.csv");
-			prog_u.file_physical_saveData_ascii("swe_rexi_dump_u.csv");
-			prog_v.file_physical_saveData_ascii("swe_rexi_dump_v.csv");
+			write_file_output();
 			break;
 
-		case 'C':
+#if 0
+case 'C':
 			// dump data arrays to VTK
 			prog_h.file_physical_saveData_vtk("swe_rexi_dump_h.vtk", "Height");
 			prog_u.file_physical_saveData_vtk("swe_rexi_dump_u.vtk", "U-Velocity");
@@ -1190,6 +850,9 @@ int main(int i_argc, char *i_argv[])
 					break;
 				}
 			}
+
+			// Always write or overwrite final time step output!
+			simulationSWE->write_file_output();
 
 			// Stop counting time
 			time.stop();

@@ -137,51 +137,6 @@ public:
 				if (dt+i_simulation_time > i_max_simulation_time)
 					dt = i_max_simulation_time-i_simulation_time;
 
-#if 0
-			char asdf[1024];
-
-			SphereData a(io_h);
-			a.spat_truncate();
-
-			SphereData tmp1 = dt**RK_h_t[0];
-			SphereData tmp2(io_h);
-			tmp2 = tmp2+tmp1;
-			SphereData tmp3(io_h);
-			tmp3 += dt**RK_h_t[0];
-
-
-			static int i = 0;
-
-			sprintf(asdf, "prog_BLARG_a_%i_x.csv", i);
-			a.spat_write_file(asdf);
-
-			sprintf(asdf, "prog_BLARG_tmp1_%i_x.csv", i);
-			tmp1.spat_write_file(asdf);
-
-			sprintf(asdf, "prog_BLARG_tmp2_%i_x.csv", i);
-			tmp2.spat_write_file(asdf);
-
-			sprintf(asdf, "prog_BLARG_tmp3_%i_x.csv", i);
-			tmp3.spat_write_file(asdf);
-
-			exit(1);
-
-			i++;
-#endif
-
-#if 0
-			sprintf(asdf, "prog_BLARG_io_h_%i_x.csv", i);
-			io_h.spat_write_file(asdf);
-
-			sprintf(asdf, "prog_BLARG_io_h_%i_T.csv", i);
-			tmp.spat_write_file(asdf);
-
-			sprintf(asdf, "prog_BLARG_io_h_%i_y.csv", i);
-			io_h.spat_write_file(asdf);
-
-			i++;
-#endif
-
 
 			io_h += dt**RK_h_t[0];
 			io_u += dt**RK_u_t[0];
