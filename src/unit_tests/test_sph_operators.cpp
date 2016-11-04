@@ -35,6 +35,81 @@ void run_tests(
 
 	if (true)
 	{
+		// div mu
+		SphereData h(sphConfig);
+		h.physical_update_lambda_gaussian_grid(
+				[&](double a, double mu, double &c){
+					c = mu/sqrt(1.0-mu*mu);
+				}
+		);
+
+		h.file_physical_writeFile_lon_pi_shifted("o_test_initial_pretrunc.csv");
+//		h.physical_truncate();
+		h.file_physical_writeFile_lon_pi_shifted("o_test_initial_trunc.csv");
+
+		h = op.div_lat(h);
+		h.physical_truncate();
+
+		h.file_physical_writeFile_lon_pi_shifted("o_test_postdiv.csv");
+
+		SphereData result(sphConfig);
+		result.physical_update_lambda_gaussian_grid(
+				[&](double a, double b, double &c){
+					c = 1;
+				}
+		);
+		result.physical_truncate();
+
+		result.file_physical_writeFile_lon_pi_shifted("o_test_result.csv");
+
+		double error_max = (h-result).reduce_abs_max();
+		std::cout << "TEST SPECIAL DIV LAT  - max error: " << error_max << std::endl;
+//		exit(1);
+	}
+
+
+
+	if (true)
+	{
+		// diff mu
+		SphereData h(sphConfig);
+		h.physical_update_lambda_gaussian_grid(
+				[&](double lambda, double mu, double &io_data)
+				{
+					io_data = mu;	// sin(phi)
+				}
+		);
+//		h.physical_write_file("O_mu_sph_result.csv");
+//		h.spectral_truncate();
+
+		h = op.diff_lat_mu(h);
+//		h.spectral_truncate();
+//		h.physical_write_file("O_diff_mu_sph_result.csv");
+
+		SphereData result(sphConfig);
+		result.physical_update_lambda_gaussian_grid(
+				[&](double a, double b, double &io_data){
+					io_data = 1.0;
+				}
+		);
+
+//		result.spectral_truncate();
+//		result.physical_write_file("O_diff_mu_correct_result.csv");
+//		(h-result).physical_write_file("O_diff_mu_correct_diff.csv");
+
+		double error_max = h.physical_reduce_error_max(result);
+		std::cout << "TEST DIFF LAT  - max error: " << error_max << std::endl;
+
+		if (error_max > epsilon)
+		{
+			std::cerr << "EXCEEDED ERROR THRESHOLD IGNORED" << std::endl;
+//				FatalError("ERROR THRESHOLD EXCEEDED!");
+		}
+	}
+
+
+	if (true)
+	{
 		SphereTestSolutions_SPH testSolutionsSph(2,1);
 
 		//int tn = 1;
@@ -256,33 +331,6 @@ void run_tests(
 				FatalError("ERROR THRESHOLD EXCEEDED!");
 		}
 
-
-		if (true)
-		{
-			// grad lambda
-			SphereData h(sphConfig);
-			h.physical_update_lambda_gaussian_grid(
-					[&](double a, double b, double &c){testSolutions.test_function__grid_gaussian(a,b,c);}
-			);
-			h = op.grad_lon(h);
-			//h = h.spat_truncate();
-//			h.file_physical_writeFile("O_grad_lambda_sph_result.csv");
-
-			SphereData result(sphConfig);
-			result.physical_update_lambda_gaussian_grid(
-					[&](double a, double b, double &c){testSolutions.correct_result_grad_lambda__grid_gaussian(a,b,c);}
-			);
-			//result = result.spat_truncate();
-//			result.file_physical_writeFile("O_grad_lambda_correct_result.csv");
-
-			double error_max = h.physical_reduce_error_max(result);
-			std::cout << "TEST GRAD LON - max error: " << error_max << std::endl;
-
-			if (error_max > epsilon)
-				FatalError("ERROR THRESHOLD EXCEEDED!");
-		}
-
-
 		if (true)
 		{
 			// mu*F(\lambda,\mu)
@@ -360,6 +408,32 @@ void run_tests(
 
 		if (true)
 		{
+			// grad lambda
+			SphereData h(sphConfig);
+			h.physical_update_lambda_gaussian_grid(
+					[&](double a, double b, double &c){testSolutions.test_function__grid_gaussian(a,b,c);}
+			);
+			h = op.grad_lon(h);
+			//h = h.spat_truncate();
+//			h.file_physical_writeFile("O_grad_lambda_sph_result.csv");
+
+			SphereData result(sphConfig);
+			result.physical_update_lambda_gaussian_grid(
+					[&](double a, double b, double &c){testSolutions.correct_result_grad_lambda__grid_gaussian(a,b,c);}
+			);
+			//result = result.spat_truncate();
+//			result.file_physical_writeFile("O_grad_lambda_correct_result.csv");
+
+			double error_max = h.physical_reduce_error_max(result);
+			std::cout << "TEST GRAD LON - max error: " << error_max << std::endl;
+
+			if (error_max > epsilon)
+				FatalError("ERROR THRESHOLD EXCEEDED!");
+		}
+
+
+		if (true)
+		{
 			// grad mu
 			SphereData h(sphConfig);
 			h.physical_update_lambda_gaussian_grid(
@@ -412,20 +486,25 @@ void run_tests(
 			// div mu
 			SphereData h(sphConfig);
 			h.physical_update_lambda_gaussian_grid(
-					[&](double a, double b, double &c){testSolutions.test_function__grid_gaussian(a,b,c);}
+					[&](double a, double b, double &c){
+						testSolutions.test_function__grid_gaussian(a,b,c);
+					}
 			);
+			h.physical_write_file("O_div_mu_initial_sph.csv");
+
 			h = op.div_lat(h);
-			h.spectral_truncate();
-//			h.file_physical_writeFile("O_div_mu_sph_result.csv");
+//			h.spectral_truncate();
+			h.physical_write_file("O_div_mu_sph_result.csv");
 
 			SphereData result(sphConfig);
 			result.physical_update_lambda_gaussian_grid(
-					[&](double a, double b, double &c){testSolutions.correct_result_div_mu__grid_gaussian(a,b,c);}
+					[&](double a, double b, double &c){
+						testSolutions.correct_result_div_mu__grid_gaussian(a,b,c);
+					}
 			);
-
-			result.spectral_truncate();
-//			result.file_physical_writeFile("O_div_mu_correct_result.csv");
-//			(h-result).file_physical_writeFile("O_div_mu_correct_diff.csv");
+//			result.spectral_truncate();
+			result.physical_write_file("O_div_mu_correct_result.csv");
+			(h-result).physical_write_file("O_div_mu_correct_diff.csv");
 
 			double error_max = h.physical_reduce_error_max(result);
 			std::cout << "TEST DIV LAT  - max error: " << error_max << std::endl;

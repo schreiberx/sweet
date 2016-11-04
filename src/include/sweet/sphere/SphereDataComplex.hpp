@@ -87,22 +87,6 @@ public:
 
 
 
-#if 0
-public:
-	SphereDataComplex& operator=(
-			const SphereData &i_sph_data
-	)
-	{
-		check_sphereDataConfig_identical_res(i_sph_data.sphereDataConfig);
-
-		assert(sphereDataConfig == i_sph_data.sphereDataConfig);
-
-#warning	"TODO: maybe replace this with assignment in spectral space!"
-		physical_fromSphereData(i_sph_data);
-		return *this;
-	}
-#endif
-
 
 
 public:
@@ -123,6 +107,110 @@ public:
 
 		return *this;
 	}
+
+
+
+public:
+	SphereDataComplex spectral_returnWithDifferentModes(
+			SphereDataConfig *i_sphereDataConfigNew
+	)	const
+	{
+		SphereDataComplex out(i_sphereDataConfigNew);
+
+		/*
+		 *  0 = invalid
+		 * -1 = scale down
+		 *  1 = scale up
+		 */
+		int scaling_mode = 0;
+
+		if (sphereDataConfig->spectral_modes_m_max < out.sphereDataConfig->spectral_modes_m_max)
+		{
+			scaling_mode = 1;
+		}
+		else if (sphereDataConfig->spectral_modes_m_max > out.sphereDataConfig->spectral_modes_m_max)
+		{
+			scaling_mode = -1;
+		}
+
+
+		if (sphereDataConfig->spectral_modes_n_max < out.sphereDataConfig->spectral_modes_n_max)
+		{
+			assert(scaling_mode != -1);
+			scaling_mode = 1;
+		}
+		else if (sphereDataConfig->spectral_modes_n_max > out.sphereDataConfig->spectral_modes_n_max)
+		{
+			assert(scaling_mode != 1);
+			scaling_mode = -1;
+		}
+
+		if (scaling_mode == 0)
+		{
+			// Just copy the data
+			out = *this;
+			return out;
+		}
+
+		request_data_spectral();
+
+		if (scaling_mode == -1)
+		{
+			/*
+			 * more modes -> less modes
+			 */
+
+#if SWEET_THREADING
+#pragma omp parallel for
+#endif
+
+			for (int n = 0; n <= out.sphereDataConfig->spectral_modes_n_max; n++)
+			{
+				int src_idx = sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
+				int dst_idx = out.sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
+
+				for (int m = -n; m <= n; m++)
+				{
+					out.spectral_space_data[dst_idx] = spectral_space_data[src_idx];
+					src_idx++;
+					dst_idx++;
+				}
+			}
+		}
+		else
+		{
+			/*
+			 * less modes -> more modes
+			 */
+
+			// zero all values
+			out.spectral_set_zero();
+
+#if SWEET_THREADING
+#pragma omp parallel for
+#endif
+
+			for (int n = 0; n <= sphereDataConfig->spectral_modes_n_max; n++)
+			{
+				int src_idx = sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
+				int dst_idx = out.sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
+
+				for (int m = -n; m <= n; m++)
+				{
+					out.spectral_space_data[dst_idx] = spectral_space_data[src_idx];
+					src_idx++;
+					dst_idx++;
+				}
+			}
+		}
+
+		out.physical_space_data_valid = false;
+		out.spectral_space_data_valid = true;
+
+		return out;
+	}
+
+
 
 
 #if 0
@@ -220,7 +308,7 @@ public:
 
 	SphereDataComplex operator+(
 			const SphereDataComplex &i_sph_data
-	)
+	)	const
 	{
 		check_sphereDataConfig_identical_res(i_sph_data.sphereDataConfig);
 
@@ -292,7 +380,7 @@ public:
 
 	SphereDataComplex operator-(
 			const SphereDataComplex &i_sph_data
-	)
+	)	const
 	{
 		check_sphereDataConfig_identical_res(i_sph_data.sphereDataConfig);
 
@@ -350,7 +438,7 @@ public:
 #pragma omp parallel for
 #endif
 
-		for (int i = 0; i < sphereDataConfig->spectral_complex_array_data_number_of_elements; i++)
+		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 			out_sph_data.physical_space_data[i] = i_sph_data.physical_space_data[i]*physical_space_data[i];
 
 		out_sph_data.spectral_space_data_valid = false;
@@ -854,6 +942,22 @@ public:
 		}
 
 		return error;
+	}
+
+
+	double physical_reduce_error_rms()
+	{
+		request_data_physical();
+
+		double error = 0;
+
+		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
+		{
+			std::complex<double> &d = physical_space_data[j];
+			error += std::sqrt(d.real()*d.real()+d.imag()*d.imag());
+		}
+
+		return error / std::sqrt((double)sphereDataConfig->physical_array_data_number_of_elements);
 	}
 
 

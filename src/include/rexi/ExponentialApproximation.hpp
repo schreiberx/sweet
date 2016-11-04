@@ -48,7 +48,7 @@ public:
 
 	ExponentialApproximation(
 			double i_h,
-			int i_M = -1
+			int i_M
 	)
 	{
 		h = i_h;

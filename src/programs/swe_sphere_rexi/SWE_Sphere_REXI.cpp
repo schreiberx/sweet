@@ -328,6 +328,8 @@ void SWE_Sphere_REXI::setup(
 
 
 
+
+
 /**
  * Solve the REXI of \f$ U(t) = exp(L*t) \f$
  *
@@ -426,18 +428,9 @@ bool SWE_Sphere_REXI::run_timestep_rexi(
 		}
 #endif
 
-		if (rexi_use_extended_modes == 0)
-		{
-			thread_prog_phi0 = io_prog_h0*simCoeffs->gravitation;
-			thread_prog_u0 = io_prog_u0;
-			thread_prog_v0 = io_prog_v0;
-		}
-		else
-		{
-			(io_prog_h0*simCoeffs->gravitation).spectral_copyToDifferentModes(thread_prog_phi0);
-			io_prog_u0.spectral_copyToDifferentModes(thread_prog_u0);
-			io_prog_v0.spectral_copyToDifferentModes(thread_prog_v0);
-		}
+		thread_prog_phi0 = (io_prog_h0*simCoeffs->gravitation).spectral_returnWithDifferentModes(thread_prog_phi0.sphereDataConfig);
+		thread_prog_u0 = io_prog_u0.spectral_returnWithDifferentModes(thread_prog_u0.sphereDataConfig);
+		thread_prog_v0 = io_prog_v0.spectral_returnWithDifferentModes(thread_prog_v0.sphereDataConfig);
 
 
 		SphereData tmp_prog_phi(sphereDataConfigRexi);
@@ -584,21 +577,21 @@ bool SWE_Sphere_REXI::run_timestep_rexi(
 			SphereData tmp(sphereDataConfig);
 
 
-			perThreadVars[thread_id]->accum_phi.spectral_copyToDifferentModes(tmp);
+			tmp = perThreadVars[thread_id]->accum_phi.spectral_returnWithDifferentModes(tmp.sphereDataConfig);
 			tmp.request_data_physical();
 			#pragma omp parallel for schedule(static) default(none) shared(io_prog_h0, tmp)
 			for (int i = 0; i < io_prog_h0.sphereDataConfig->physical_array_data_number_of_elements; i++)
 				io_prog_h0.physical_space_data[i] += tmp.physical_space_data[i]*(1.0/simCoeffs->gravitation);
 
 
-			perThreadVars[thread_id]->accum_u.spectral_copyToDifferentModes(tmp);
+			tmp = perThreadVars[thread_id]->accum_u.spectral_returnWithDifferentModes(tmp.sphereDataConfig);
 			tmp.request_data_physical();
 			#pragma omp parallel for schedule(static) default(none) shared(io_prog_u0, tmp)
 			for (int i = 0; i < io_prog_u0.sphereDataConfig->physical_array_data_number_of_elements; i++)
 				io_prog_u0.physical_space_data[i] += tmp.physical_space_data[i];
 
 
-			perThreadVars[thread_id]->accum_v.spectral_copyToDifferentModes(tmp);
+			tmp = perThreadVars[thread_id]->accum_v.spectral_returnWithDifferentModes(tmp.sphereDataConfig);
 			tmp.request_data_physical();
 			#pragma omp parallel for schedule(static) default(none) shared(io_prog_v0, tmp)
 			for (int i = 0; i < io_prog_v0.sphereDataConfig->physical_array_data_number_of_elements; i++)
@@ -608,18 +601,9 @@ bool SWE_Sphere_REXI::run_timestep_rexi(
 
 #else
 
-	if (rexi_use_extended_modes == 0)
-	{
-		io_prog_h0 = perThreadVars[0]->accum_phi*(1.0/simCoeffs->gravitation);
-		io_prog_u0 = perThreadVars[0]->accum_u;
-		io_prog_v0 = perThreadVars[0]->accum_v;
-	}
-	else
-	{
-		(perThreadVars[0]->accum_phi*(1.0/simCoeffs->gravitation)).spectral_copyToDifferentModes(io_prog_h0);
-		perThreadVars[0]->accum_u.spectral_copyToDifferentModes(io_prog_u0);
-		perThreadVars[0]->accum_v.spectral_copyToDifferentModes(io_prog_v0);
-	}
+	io_prog_h0 = (perThreadVars[0]->accum_phi*(1.0/simCoeffs->gravitation)).spectral_returnWithDifferentModes(io_prog_h0.sphereDataConfig);
+	io_prog_u0 = perThreadVars[0]->accum_u.spectral_returnWithDifferentModes(io_prog_u0.sphereDataConfig);
+	io_prog_v0 = perThreadVars[0]->accum_v.spectral_returnWithDifferentModes(io_prog_v0.sphereDataConfig);
 
 #endif
 

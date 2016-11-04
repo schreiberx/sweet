@@ -148,7 +148,7 @@ public:
 	 */
 public:
 	bool run_timestep_rexi(
-		SphereData &io_h,
+		SphereData &io_h0,
 		SphereData &io_u,
 		SphereData &io_v,
 
@@ -156,6 +156,7 @@ public:
 
 		const SimulationVariables &i_parameters
 	);
+
 
 
 

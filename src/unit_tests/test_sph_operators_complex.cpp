@@ -24,7 +24,7 @@ void run_tests(
 		SphereDataConfig *sphConfig
 )
 {
-	double epsilon = 1e-12;
+	double epsilon = 1e-11;
 	epsilon *= (sphConfig->spectral_modes_n_max);
 	std::cout << "Using max allowed error of " << epsilon << std::endl;
 
@@ -209,6 +209,137 @@ void run_tests(
 				FatalError("ERROR THRESHOLD EXCEEDED!");
 		}
 
+
+
+		if (true)
+		{
+			SphereDataComplex h(sphConfig);
+			h.physical_update_lambda_gaussian_grid(
+					[&](double a, double b, std::complex<double> &c)
+					{
+						double tmp;
+						testSolutions.test_function__grid_gaussian(a,b,tmp);
+						c = {tmp, 0};
+					}
+			);
+			h = opComplex.robert_div_lon(h);
+
+			SphereDataComplex hphi(sphConfig);
+			hphi.physical_update_lambda_gaussian_grid(
+			[&](double lambda, double mu, std::complex<double> &c)
+					{
+						double tmp;
+						testSolutions.correct_result_diff_lambda__grid_gaussian(lambda, mu, tmp);
+						double phi = asin(mu);
+						tmp /= cos(phi)*cos(phi);
+						c = {tmp, 0};
+					}
+			);
+
+			double error_max = h.physical_reduce_error_max(hphi);
+			std::cout << "ROBERT DIV LONGITUDE: " << error_max << std::endl;
+
+			if (error_max > epsilon)
+				FatalError("ERROR THRESHOLD EXCEEDED!");
+		}
+
+
+		if (true)
+		{
+			SphereDataComplex h(sphConfig);
+			h.physical_update_lambda_gaussian_grid(
+					[&](double a, double b, std::complex<double> &c)
+					{
+						double tmp;
+						testSolutions.test_function__grid_gaussian(a,b,tmp);
+						c = {tmp, 0};
+					}
+			);
+			h = opComplex.robert_div_lat(h);
+
+			SphereDataComplex hphi(sphConfig);
+			hphi.physical_update_lambda_gaussian_grid(
+			[&](double a, double b, std::complex<double> &c)
+					{
+						double tmp;
+						testSolutions.correct_result_diff_mu__grid_gaussian(a, b, tmp);
+						c = {tmp, 0};
+					}
+			);
+
+			double error_max = h.physical_reduce_error_max(hphi);
+			std::cout << "ROBERT DIV LATITUDE: " << error_max << std::endl;
+
+			if (error_max > epsilon)
+				FatalError("ERROR THRESHOLD EXCEEDED!");
+		}
+
+
+
+		if (true)
+		{
+			SphereDataComplex h(sphConfig);
+			h.physical_update_lambda_gaussian_grid(
+					[&](double a, double b, std::complex<double> &c)
+					{
+						double tmp;
+						testSolutions.test_function__grid_gaussian(a,b,tmp);
+						c = {tmp, 0};
+					}
+			);
+			h = opComplex.robert_grad_lon(h);
+
+			SphereDataComplex hphi(sphConfig);
+			hphi.physical_update_lambda_gaussian_grid(
+			[&](double lambda, double mu, std::complex<double> &c)
+					{
+						double tmp;
+						testSolutions.correct_result_diff_lambda__grid_gaussian(lambda, mu, tmp);
+						c = {tmp, 0};
+					}
+			);
+
+			double error_max = h.physical_reduce_error_max(hphi);
+			std::cout << "ROBERT GRAD LONGITUDE: " << error_max << std::endl;
+
+			if (error_max > epsilon)
+				FatalError("ERROR THRESHOLD EXCEEDED!");
+		}
+
+
+		if (true)
+		{
+			SphereDataComplex h(sphConfig);
+			h.physical_update_lambda_gaussian_grid(
+					[&](double a, double b, std::complex<double> &c)
+					{
+						double tmp;
+						testSolutions.test_function__grid_gaussian(a,b,tmp);
+						c = {tmp, 0};
+					}
+			);
+			h = opComplex.robert_grad_lat(h);
+
+			SphereDataComplex hphi(sphConfig);
+			hphi.physical_update_lambda_gaussian_grid(
+			[&](double lambda, double mu, std::complex<double> &c)
+					{
+						double tmp;
+						testSolutions.correct_result_diff_mu__grid_gaussian(lambda, mu, tmp);
+						double phi = asin(mu);
+						tmp *= cos(phi)*cos(phi);
+						c = {tmp, 0};
+					}
+			);
+
+			double error_max = h.physical_reduce_error_max(hphi);
+			std::cout << "ROBERT GRAD LATITUDE: " << error_max << std::endl;
+
+			if (error_max > epsilon)
+				FatalError("ERROR THRESHOLD EXCEEDED!");
+		}
+
+
 		if (true)
 		{
 			// identity
@@ -355,42 +486,6 @@ void run_tests(
 
 		if (true)
 		{
-			// grad lambda
-			SphereDataComplex h(sphConfig);
-			h.physical_update_lambda_gaussian_grid(
-					[&](double a, double b, std::complex<double> &c)
-					{
-						double tmp;
-						testSolutions.test_function__grid_gaussian(a,b,tmp);
-						c = tmp;
-					}
-			);
-			h = opComplex.grad_lon(h);
-			h = h.physical_truncate();
-//			h.physical_write_file("O_grad_lambda_sph_result.csv");
-
-			SphereDataComplex result(sphConfig);
-			result.physical_update_lambda_gaussian_grid(
-					[&](double a, double b, std::complex<double> &c)
-					{
-						double tmp;
-						testSolutions.correct_result_grad_lambda__grid_gaussian(a,b,tmp);
-						c = tmp;
-					}
-			);
-			result = result.physical_truncate();
-//			result.physical_write_file("O_grad_lambda_correct_result.csv");
-
-			double error_max = h.physical_reduce_error_max(result);
-			std::cout << "TEST GRAD LON - max error: " << error_max << std::endl;
-
-			if (error_max > epsilon)
-				FatalError("ERROR THRESHOLD EXCEEDED!");
-		}
-
-
-		if (true)
-		{
 			// mu*F(\lambda,\mu)
 			SphereDataComplex h(sphConfig);
 			h.physical_update_lambda_gaussian_grid(
@@ -486,6 +581,43 @@ void run_tests(
 
 			double error_max = h.physical_reduce_error_max(result);
 			std::cout << "TEST (1-mu*mu)*d/dmu - max error: " << error_max << std::endl;
+
+			if (error_max > epsilon)
+				FatalError("ERROR THRESHOLD EXCEEDED!");
+		}
+
+
+
+		if (true)
+		{
+			// grad lambda
+			SphereDataComplex h(sphConfig);
+			h.physical_update_lambda_gaussian_grid(
+					[&](double a, double b, std::complex<double> &c)
+					{
+						double tmp;
+						testSolutions.test_function__grid_gaussian(a,b,tmp);
+						c = tmp;
+					}
+			);
+			h = opComplex.grad_lon(h);
+			h = h.physical_truncate();
+//			h.physical_write_file("O_grad_lambda_sph_result.csv");
+
+			SphereDataComplex result(sphConfig);
+			result.physical_update_lambda_gaussian_grid(
+					[&](double a, double b, std::complex<double> &c)
+					{
+						double tmp;
+						testSolutions.correct_result_grad_lambda__grid_gaussian(a,b,tmp);
+						c = tmp;
+					}
+			);
+			result = result.physical_truncate();
+//			result.physical_write_file("O_grad_lambda_correct_result.csv");
+
+			double error_max = h.physical_reduce_error_max(result);
+			std::cout << "TEST GRAD LON - max error: " << error_max << std::endl;
 
 			if (error_max > epsilon)
 				FatalError("ERROR THRESHOLD EXCEEDED!");

@@ -235,7 +235,7 @@ public:
 		}
 		else if (simVars.setup.benchmark_scenario_id == 1)
 		{
-			/// setup galewski parameters
+			/// Setup Galewski parameters
 			simVars.sim.coriolis_omega = 7.292e-5;
 			simVars.sim.gravitation = 9.80616;
 			simVars.sim.earth_radius = 6.37122e6;

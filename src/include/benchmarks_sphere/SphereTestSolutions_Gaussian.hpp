@@ -23,8 +23,13 @@ class SphereTestSolutions_Gaussian
 
 
 public:
-	SphereTestSolutions_Gaussian()
+	SphereTestSolutions_Gaussian(
+			double i_lon = M_PI/5.0,
+			double i_lat = M_PI/4.0
+	)
 	{
+		center_lon = i_lon;
+		center_lat = i_lat;
 	}
 
 

@@ -269,27 +269,27 @@ public:
 	 * mu*F(\lambda,\mu)
 	 */
 	SphereData mu(
-			const SphereData &i_sph_data
+			const SphereData &i_sphere_data
 	)	const
 	{
-		SphereDataConfig *sphConfig = i_sph_data.sphereDataConfig;
-		i_sph_data.request_data_spectral();
+		SphereDataConfig *sphereDataConfig = i_sphere_data.sphereDataConfig;
+		i_sphere_data.request_data_spectral();
 
-		SphereData out_sph_data = SphereData(sphConfig);
+		SphereData out_sph_data = SphereData(sphereDataConfig);
 
 
 #if SWEET_THREADING
 #pragma omp parallel for
 #endif
-		for (int m = 0; m <= i_sph_data.sphereDataConfig->spectral_modes_m_max; m++)
+		for (int m = 0; m <= i_sphere_data.sphereDataConfig->spectral_modes_m_max; m++)
 		{
-			int idx = i_sph_data.sphereDataConfig->getArrayIndexByModes(m, m);
+			int idx = i_sphere_data.sphereDataConfig->getArrayIndexByModes(m, m);
 
-			for (int n = m; n <= i_sph_data.sphereDataConfig->spectral_modes_n_max; n++)
+			for (int n = m; n <= i_sphere_data.sphereDataConfig->spectral_modes_n_max; n++)
 			{
 				out_sph_data.spectral_space_data[idx] =
-							R(n-1,m)*i_sph_data.spectral_get(n-1, m)
-							+ S(n+1,m)*i_sph_data.spectral_get(n+1, m);
+							R(n-1,m)*i_sphere_data.spectral_get(n-1, m)
+							+ S(n+1,m)*i_sphere_data.spectral_get(n+1, m);
 
 				idx++;
 			}
@@ -419,14 +419,94 @@ public:
 			const SphereData &i_sph_data
 	)	const
 	{
-		SphereData out_sph_data(i_sph_data);
+#if 0
+		SphereDataConfig sphereDataConfigExt;
 
-		// TODO: replace this with a recurrence identity
-		out_sph_data.physical_update_lambda_cogaussian_grid(
+		sphereDataConfigExt.setupAdditionalModes(i_sph_data.sphereDataConfig, 32, 32);
+
+		SphereData data = i_sph_data.spectral_returnWithDifferentModes(&sphereDataConfigExt);
+
+		SphereData a(&sphereDataConfigExt);
+		a.physical_update_lambda_gaussian_grid(
 				[](double lambda, double mu, double &o_data)
 				{
+					o_data = std::sqrt(1.0-mu*mu);
+				}
+			);
+
+		SphereData b(&sphereDataConfigExt);
+		b.physical_update_lambda_gaussian_grid(
+				[](double lambda, double mu, double &o_data)
+				{
+					o_data = 1.0/(1.0-mu*mu);
+				}
+			);
+
+
+		data = data*a;
+
+		data = spec_one_minus_mu_squared_diff_lat_mu(data);
+
+		data = data*b;
+
+		return data.spectral_returnWithDifferentModes(i_sph_data.sphereDataConfig);
+
+#else
+		SphereData out_sph_data(i_sph_data);
+
+//		out_sph_data.spectral_truncate();
+
+		SphereData a(i_sph_data);
+		a.physical_update_lambda_gaussian_grid(
+				[](double lambda, double mu, double &o_data)
+				{
+					o_data = std::sqrt(1.0-mu*mu);
+				}
+			);
+//		a.physical_truncate();
+
+		SphereData b(i_sph_data);
+		b.physical_update_lambda_gaussian_grid(
+				[](double lambda, double mu, double &o_data)
+				{
+					o_data = 1.0/(1.0-mu*mu);
+				}
+			);
+//		b.physical_truncate();
+
+
+#if 1
+/*
+		out_sph_data.physical_update_lambda_gaussian_grid(
+				[](double lambda, double mu, double &o_data)
+				{
+					o_data *= std::sqrt(1.0-mu*mu);
+				}
+			);
+*/
+		out_sph_data = out_sph_data*a;
+
+		out_sph_data = spec_one_minus_mu_squared_diff_lat_mu(out_sph_data);
+
+		out_sph_data = out_sph_data*b;
+/*
+		// undo the sin(theta) which is cos(phi)
+		out_sph_data.physical_update_lambda_gaussian_grid(
+				[](double lambda, double mu, double &o_data)
+				{
+					o_data /= (1.0-mu*mu);
+				}
+			);
+*/
+
+#else
+
+		// TODO: replace this with a recurrence identity if possible
+		out_sph_data.physical_update_lambda_cogaussian_grid(
+				[](double lambda, double comu, double &o_data)
+				{
 					//o_data *= cos(phi);
-					o_data *= mu;
+					o_data *= comu;
 				}
 			);
 
@@ -435,14 +515,17 @@ public:
 
 		// undo the sin(theta) which is cos(phi)
 		out_sph_data.physical_update_lambda_cogaussian_grid(
-				[](double lambda, double mu, double &o_data)
+				[](double lambda, double comu, double &o_data)
 				{
-					o_data /= mu;
+					o_data /= comu;
 					//o_data /= cos(phi);
 				}
 			);
 
+#endif
+
 		return out_sph_data;
+#endif
 	}
 
 #if 0

@@ -18,14 +18,13 @@
 #include <sweet/sphere/Convert_SphereDataComplex_to_SphereData.hpp>
 
 
-
 /**
  * REXI solver for SWE based on Robert function formulation
  */
 class SWERexi_SPHRobert
 {
 	/// SPH configuration
-	SphereDataConfig *sphConfig;
+	SphereDataConfig *sphereDataConfig;
 
 	/// Solver for given alpha
 	SphBandedMatrixComplex< std::complex<double> > sphSolverPhi;
@@ -62,7 +61,7 @@ class SWERexi_SPHRobert
 
 public:
 	SWERexi_SPHRobert()	:
-		sphConfig(nullptr)
+		sphereDataConfig(nullptr)
 	{
 	}
 
@@ -71,7 +70,7 @@ public:
 	 * Setup the SWE REXI solver with SPH
 	 */
 	void setup(
-			SphereDataConfig *i_sphConfig,
+			SphereDataConfig *i_sphereDataConfig,
 			const std::complex<double> &i_alpha,
 			const std::complex<double> &i_beta,
 			double i_radius,
@@ -109,9 +108,9 @@ public:
 		two_omega = 2.0*coriolis_omega;
 		avg_geopotential = i_avg_geopotential;
 
-		sphConfig = i_sphConfig;
+		sphereDataConfig = i_sphereDataConfig;
 
-		sphSolverPhi.setup(sphConfig, 4);
+		sphSolverPhi.setup(sphereDataConfig, 4);
 		sphSolverPhi.solver_component_rexi_z1(	(alpha*alpha)*(alpha*alpha), r);
 
 		if (use_formulation_with_coriolis_effect)
@@ -128,7 +127,7 @@ public:
 			sphSolverPhi.solver_component_rexi_z8(	-avg_geopotential*two_omega*two_omega, r);
 		}
 
-		sphSolverVel.setup(sphConfig, 2);
+		sphSolverVel.setup(sphereDataConfig, 2);
 		sphSolverVel.solver_component_rexi_z1(	alpha*alpha, r);
 		if (use_formulation_with_coriolis_effect)
 		{
@@ -141,6 +140,7 @@ public:
 	/**
 	 * Solve a REXI time step for the given initial conditions
 	 */
+	inline
 	void solve(
 			const SphereData &i_phi0,
 			const SphereData &i_u0,
@@ -151,7 +151,33 @@ public:
 			SphereData &o_v
 	)
 	{
-#if 1
+		solve_complexRHS(
+				Convert_SphereData_To_SphereDataComplex::physical_convert(i_phi0),
+				Convert_SphereData_To_SphereDataComplex::physical_convert(i_u0),
+				Convert_SphereData_To_SphereDataComplex::physical_convert(i_v0),
+
+				o_phi,
+				o_u,
+				o_v
+			);
+	}
+
+
+
+	/**
+	 * Solve a REXI time step for the given initial conditions
+	 */
+	void solve_complexRHS(
+			const SphereDataComplex &i_phi0,
+			const SphereDataComplex &i_u0,
+			const SphereDataComplex &i_v0,
+
+			SphereData &o_phi,
+			SphereData &o_u,
+			SphereData &o_v
+	)
+	{
+#if 0
 		// TODO: replace with spectral operation
 		SphereDataComplex mu(i_phi0.sphereDataConfig);
 		mu.physical_update_lambda_gaussian_grid(
@@ -162,16 +188,16 @@ public:
 			);
 #endif
 
-		SphereDataComplex phi0 = Convert_SphereData_To_SphereDataComplex::physical_convert(i_phi0);
-		SphereDataComplex u0 = Convert_SphereData_To_SphereDataComplex::physical_convert(i_u0);
-		SphereDataComplex v0 = Convert_SphereData_To_SphereDataComplex::physical_convert(i_v0);
+		const SphereDataComplex &phi0 = i_phi0;
+		const SphereDataComplex &u0 = i_u0;
+		const SphereDataComplex &v0 = i_v0;
 
 		SphereDataComplex div0 = inv_r*SphereOperatorsComplex::robert_div(u0, v0);
 		SphereDataComplex eta0 = inv_r*SphereOperatorsComplex::robert_vort(u0, v0);
 
-		SphereDataComplex phi(sphConfig);
-		SphereDataComplex u(sphConfig);
-		SphereDataComplex v(sphConfig);
+		SphereDataComplex phi(sphereDataConfig);
+		SphereDataComplex u(sphereDataConfig);
+		SphereDataComplex v(sphereDataConfig);
 
 		if (use_formulation_with_coriolis_effect)
 		{

@@ -51,8 +51,9 @@ public:
 	static double R(double k, double m)
 	{
 		double n=k+1;
-//		if (n < 0)
-//			n = -n-1;
+//		assert(n >= 0);
+		if (n < 0)
+			n = -n-1;
 		if (n < 0)
 			return 0;
 		if (n < std::abs(m))
@@ -68,8 +69,9 @@ public:
 	static double S(double k, double m)
 	{
 		double n=k-1;
-//		if (n < 0)
-//			n = -n-1;
+//		assert(n >= 0);
+		if (n < 0)
+			n = -n-1;
 		if (n < 0)
 			return 0;
 		if (n < std::abs(m))

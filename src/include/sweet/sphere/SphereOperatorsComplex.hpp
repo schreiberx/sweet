@@ -155,19 +155,23 @@ public:
 	)
 	{
 		i_sph_data.request_data_spectral();
-		SphereDataConfig *sphConfig = i_sph_data.sphereDataConfig;
 
-		SphereDataComplex out_sph_data(sphConfig);
+		SphereDataConfig *sphereDataConfig = i_sph_data.sphereDataConfig;
+
+		SphereDataComplex out_sph_data(sphereDataConfig);
 
 
 #if SWEET_THREADING
 #pragma omp parallel for
 #endif
-		for (int n = 0; n <= i_sph_data.sphereDataConfig->spectral_modes_n_max; n++)
+		for (int n = 0; n <= sphereDataConfig->spectral_modes_n_max; n++)
 		{
-			int idx = i_sph_data.sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
+			int idx = sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
 			for (int m = -n; m <= n; m++)
 			{
+				/**
+				 * TODO: Optimize me!
+				 */
 				out_sph_data.spectral_space_data[idx] =
 						((-n+1.0)*R(n-1,m))*i_sph_data.spectral_get(n-1, m) +
 						((n+2.0)*S(n+1,m))*i_sph_data.spectral_get(n+1, m);
@@ -273,10 +277,8 @@ public:
 		 * 	first divide by sin(M_PI*0.5-phi) and
 		 * 	second multiply by sqrt(1-mu*mu)
 		 */
-//		SPHDataComplex out_sph_data = spec_sinD(i_sph_data);
 		SphereDataComplex out_sph_data = spectral_one_minus_mu_squared_diff_lat_mu(i_sph_data);
 
-		out_sph_data.request_data_physical();
 		out_sph_data.physical_update_lambda_gaussian_grid(
 				[](double lambda, double mu, std::complex<double> &o_data)
 				{
@@ -343,6 +345,7 @@ public:
 	{
 		SphereDataComplex out_sph_data(i_sph_data);
 
+#if 1
 		out_sph_data.physical_update_lambda_cogaussian_grid(
 				[](double lambda, double mu, std::complex<double> &o_data)
 				{
@@ -350,8 +353,30 @@ public:
 					o_data *= mu;
 				}
 			);
-
+#else
+		out_sph_data.physical_update_lambda_gaussian_grid(
+				[](double lambda, double mu, std::complex<double> &o_data)
+				{
+					//o_data *= cos(phi);
+					o_data *= std::sqrt(1.0-mu*mu);
+				}
+			);
+#endif
 		// grad_lat = diff_lat_phi
+
+#if 1
+
+		out_sph_data = spectral_one_minus_mu_squared_diff_lat_mu(out_sph_data);
+
+		out_sph_data.physical_update_lambda_gaussian_grid(
+				[](double lambda, double mu, std::complex<double> &o_data)
+				{
+					//o_data /= mu;
+					o_data /= (1.0-mu*mu);
+				}
+			);
+
+#else
 		out_sph_data = grad_lat(out_sph_data);
 
 		// undo the sin(theta) which is cos(phi)
@@ -372,6 +397,8 @@ public:
 				}
 			);
 #endif
+#endif
+
 		return out_sph_data;
 	}
 
@@ -390,6 +417,7 @@ public:
 	{
 		SphereDataComplex out = diff_lon(i_sph_data);
 
+		// TODO: replace by colatitude function
 		out.physical_update_lambda_cosphi_grid(
 				[](double lambda, double cos_phi, std::complex<double> &o_data)
 				{
@@ -419,12 +447,28 @@ public:
 		 */
 		SphereDataComplex out = spectral_cosphi_squared_diff_lat_mu(i_sph_data);
 
+#if 0
+
+		SphereDataComplex a(i_sph_data.sphereDataConfig);
+
+		a.physical_update_lambda_cosphi_grid(
+				[](double lambda, double cos_phi, std::complex<double> &o_data)
+				{
+					o_data = 1.0/(cos_phi*cos_phi);
+				}
+			);
+		a.physical_truncate();
+		out = out*a;
+
+#else
+
 		out.physical_update_lambda_cosphi_grid(
 				[](double lambda, double cos_phi, std::complex<double> &o_data)
 				{
 					o_data /= cos_phi*cos_phi;
 				}
 			);
+#endif
 
 		return out;
 	}
@@ -436,7 +480,6 @@ public:
 	 *
 	 * This computes
 	 * 		d/dlambda Phi
-	 * with Phi the geopotential
 	 */
 	static
 	SphereDataComplex robert_grad_lon(
@@ -462,7 +505,6 @@ public:
 	{
 		return spectral_cosphi_squared_diff_lat_mu(i_sph_data);
 	}
-
 
 
 	inline
@@ -514,7 +556,7 @@ public:
 	/**
 	 * Compute vorticity
 	 *
-	 * \eta = grad_lat(V_lon) - grad_lon(V_lat)
+	 * \eta = div_lat(V_lon) - div_lon(V_lat)
 	 */
 	static
 	SphereDataComplex vort(
@@ -522,7 +564,7 @@ public:
 			const SphereDataComplex &i_lat
 	)
 	{
-		return grad_lon(i_lat) - grad_lat(i_lon);
+		return div_lon(i_lat) - div_lat(i_lon);
 	}
 
 
@@ -538,7 +580,7 @@ public:
 			const SphereDataComplex &i_lat
 	)
 	{
-		return robert_grad_lon(i_lat) - robert_grad_lat(i_lon);
+		return robert_div_lon(i_lat) - robert_div_lat(i_lon);
 	}
 
 

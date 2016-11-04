@@ -23,7 +23,7 @@ if env['program_name'] == 'swe_rexi' or env['unit_test'] == 'test_helmholtz':
 		env.src_files.append(env.Object('programs/swe_plane_rexi/SWE_Plane_REXI.cpp'))
 
 
-if env['program_name'] == 'swe_sph_and_rexi':
+if env['program_name'] == 'swe_sph_and_rexi' or env['unit_test'] in ['test_sph_rexi_solver']:
 	if env['rexi_parallel_sum']=='enable':
 		env_omp = env.Clone()
 		env_omp.Append(CCFLAGS = ' -fopenmp')

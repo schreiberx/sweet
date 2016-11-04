@@ -113,6 +113,7 @@ public:
 	} setup;
 
 
+
 	/**
 	 * simulation coefficients
 	 */
@@ -729,12 +730,12 @@ public:
 						"	--nonlinear [bool]	Use non-linear (1) if available or linear (0) formulation, default: 1",
 						"",
 						"Rexi",
-						"	-rexi [bool]	Use REXI time stepping (1). default: 0",
-						"	-rexi-h [float]	REXI parameter h",
-						"	-rexi-m [int]	REXI parameter M",
-						"	-rexi-l [int]	REXI parameter L",
-						"	-rexi-half [bool]	Use half REXI poles, default:1",
-						"	-rexi-ext-modes [int]	Use this number of extended modes in spherical harmonics",
+						"	--rexi [bool]	Use REXI time stepping (1). default: 0",
+						"	--rexi-h [float]	REXI parameter h",
+						"	--rexi-m [int]	REXI parameter M",
+						"	--rexi-l [int]	REXI parameter L",
+						"	--rexi-half [bool]	Use half REXI poles, default:1",
+						"	--rexi-ext-modes [int]	Use this number of extended modes in spherical harmonics",
 						"",
 
 				};

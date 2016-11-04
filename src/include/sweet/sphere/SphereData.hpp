@@ -112,13 +112,12 @@ public:
 	}
 
 
-
 public:
-	const void spectral_copyToDifferentModes(
-			SphereData &o_sph_data
+	SphereData spectral_returnWithDifferentModes(
+			SphereDataConfig *i_sphereDataConfig
 	)	const
 	{
-		//assert (o_sph_data.sphereDataConfig != sphereDataConfig);
+		SphereData out(i_sphereDataConfig);
 
 		/*
 		 *  0 = invalid
@@ -127,23 +126,23 @@ public:
 		 */
 		int scaling_mode = 0;
 
-		if (sphereDataConfig->spectral_modes_m_max < o_sph_data.sphereDataConfig->spectral_modes_m_max)
+		if (sphereDataConfig->spectral_modes_m_max < out.sphereDataConfig->spectral_modes_m_max)
 		{
 			scaling_mode = 1;
 		}
-		else if (sphereDataConfig->spectral_modes_m_max > o_sph_data.sphereDataConfig->spectral_modes_m_max)
+		else if (sphereDataConfig->spectral_modes_m_max > out.sphereDataConfig->spectral_modes_m_max)
 		{
 			scaling_mode = -1;
 		}
 //		assert(scaling_mode != 0);
 
 
-		if (sphereDataConfig->spectral_modes_n_max < o_sph_data.sphereDataConfig->spectral_modes_n_max)
+		if (sphereDataConfig->spectral_modes_n_max < out.sphereDataConfig->spectral_modes_n_max)
 		{
 			assert(scaling_mode != -1);
 			scaling_mode = 1;
 		}
-		else if (sphereDataConfig->spectral_modes_n_max > o_sph_data.sphereDataConfig->spectral_modes_n_max)
+		else if (sphereDataConfig->spectral_modes_n_max > out.sphereDataConfig->spectral_modes_n_max)
 		{
 			assert(scaling_mode != 1);
 			scaling_mode = -1;
@@ -152,8 +151,8 @@ public:
 		if (scaling_mode == 0)
 		{
 			// Just copy the data
-			o_sph_data = *this;
-			return;
+			out = *this;
+			return out;
 		}
 
 		request_data_spectral();
@@ -167,12 +166,12 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for
 #endif
-			for (int m = 0; m <= o_sph_data.sphereDataConfig->spectral_modes_m_max; m++)
+			for (int m = 0; m <= out.sphereDataConfig->spectral_modes_m_max; m++)
 			{
-				cplx *dst = &o_sph_data.spectral_space_data[o_sph_data.sphereDataConfig->getArrayIndexByModes(m, m)];
+				cplx *dst = &out.spectral_space_data[out.sphereDataConfig->getArrayIndexByModes(m, m)];
 				cplx *src = &spectral_space_data[sphereDataConfig->getArrayIndexByModes(m, m)];
 
-				std::size_t size = sizeof(cplx)*(o_sph_data.sphereDataConfig->spectral_modes_n_max-m+1);
+				std::size_t size = sizeof(cplx)*(out.sphereDataConfig->spectral_modes_n_max-m+1);
 				memcpy(dst, src, size);
 			}
 		}
@@ -183,14 +182,14 @@ public:
 			 */
 
 			// zero all values
-			o_sph_data.spectral_set_zero();
+			out.spectral_set_zero();
 
 #if SWEET_THREADING
 #pragma omp parallel for
 #endif
 			for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 			{
-				cplx *dst = &o_sph_data.spectral_space_data[o_sph_data.sphereDataConfig->getArrayIndexByModes(m, m)];
+				cplx *dst = &out.spectral_space_data[out.sphereDataConfig->getArrayIndexByModes(m, m)];
 				cplx *src = &spectral_space_data[sphereDataConfig->getArrayIndexByModes(m, m)];
 
 				std::size_t size = sizeof(cplx)*(sphereDataConfig->spectral_modes_n_max-m+1);
@@ -198,10 +197,10 @@ public:
 			}
 		}
 
-		o_sph_data.physical_space_data_valid = false;
-		o_sph_data.spectral_space_data_valid = true;
+		out.physical_space_data_valid = false;
+		out.spectral_space_data_valid = true;
 
-		return;
+		return out;
 	}
 
 
@@ -602,18 +601,12 @@ public:
 	/**
 	 * Truncate modes which are not representable in spectral space
 	 */
-	SphereData physical_truncate()
+	void physical_truncate()
 	{
 		request_data_physical();
 
-		SphereData out_sph_data(sphereDataConfig);
-		spat_to_SH(sphereDataConfig->shtns, physical_space_data, out_sph_data.spectral_space_data);
-		SH_to_spat(sphereDataConfig->shtns, out_sph_data.spectral_space_data, out_sph_data.physical_space_data);
-
-		out_sph_data.physical_space_data_valid = true;
-		out_sph_data.spectral_space_data_valid = false;
-
-		return out_sph_data;
+		spat_to_SH(sphereDataConfig->shtns, physical_space_data, spectral_space_data);
+		SH_to_spat(sphereDataConfig->shtns, spectral_space_data, physical_space_data);
 	}
 
 
@@ -621,18 +614,12 @@ public:
 	/**
 	 * Truncate modes which are not representable in spectral space
 	 */
-	SphereData spectral_truncate()
+	void spectral_truncate()	const
 	{
 		request_data_spectral();
 
-		SphereData out_sph_data(sphereDataConfig);
-		SH_to_spat(sphereDataConfig->shtns, spectral_space_data, out_sph_data.physical_space_data);
-		spat_to_SH(sphereDataConfig->shtns, out_sph_data.physical_space_data, out_sph_data.spectral_space_data);
-
-		out_sph_data.physical_space_data_valid = false;
-		out_sph_data.spectral_space_data_valid = true;
-
-		return out_sph_data;
+		SH_to_spat(sphereDataConfig->shtns, spectral_space_data, physical_space_data);
+		spat_to_SH(sphereDataConfig->shtns, physical_space_data, spectral_space_data);
 	}
 
 
