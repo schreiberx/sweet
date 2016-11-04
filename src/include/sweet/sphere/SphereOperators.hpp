@@ -599,7 +599,7 @@ public:
 			const SphereData &i_lat
 	)	const
 	{
-		return grad_lon(i_lat) - grad_lat(i_lon);
+		return div_lon(i_lat) - div_lat(i_lon);
 	}
 
 
@@ -614,7 +614,7 @@ public:
 			const SphereData &i_lat
 	)	const
 	{
-		return robert_grad_lon(i_lat) - robert_grad_lat(i_lon);
+		return robert_div_lon(i_lat) - robert_div_lat(i_lon);
 	}
 
 
