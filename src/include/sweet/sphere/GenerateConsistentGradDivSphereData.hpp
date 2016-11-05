@@ -45,6 +45,8 @@ private:
 public:
 	SphereData prog_h, prog_u, prog_v;
 
+	double center_lon, center_lat;
+
 
 private:
 	// Main routine for method to be used in case of finite differences
@@ -266,7 +268,7 @@ public:
 			std::cerr << "Failed to load file from at least one file... regenerating data" << std::endl;;
 		}
 
-		p_setup_initial_conditions_gaussian(M_PI/3, M_PI/3);
+		p_setup_initial_conditions_gaussian(center_lon, center_lat);
 
 		prog_h.physical_file_write(prefix_string+"_initial_prog_h.csv");
 		prog_u.physical_file_write(prefix_string+"_initial_prog_u.csv");
@@ -296,7 +298,11 @@ public:
 			SimulationVariables &i_simVars,
 
 			SphereDataConfig *i_sphereDataConfig,
-			SphereOperators &i_op
+			SphereOperators &i_op,
+
+			double i_center_lon =  M_PI/3,
+			double i_center_lat = M_PI/3,
+			std::string i_prefix_string=""
 	)	:
 		simVars(i_simVars),
 		sphereDataConfig(i_sphereDataConfig),
@@ -306,7 +312,13 @@ public:
 		prog_u.setup(sphereDataConfig);
 		prog_v.setup(sphereDataConfig);
 
-		prefix_string = std::string("gen_divgrad_data_")+sphereDataConfig->getUniqueIDString();
+		center_lon = i_center_lon;
+		center_lat = i_center_lat;
+
+		if (i_prefix_string != "")
+			prefix_string = i_prefix_string;
+		else
+			prefix_string = std::string("gen_divgrad_data_")+sphereDataConfig->getUniqueIDString();
 	}
 };
 

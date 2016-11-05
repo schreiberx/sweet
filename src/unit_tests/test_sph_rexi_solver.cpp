@@ -141,17 +141,35 @@ void run_tests()
 			{
 				SphereOperators op;
 
-				GenerateConsistentGradDivSphereData g(
+				GenerateConsistentGradDivSphereData g_real(
 						simVars,
 						sphereDataConfig,
-						op
+						op,
+						M_PI/3, M_PI/3,
+						std::string("gen_divgrad_data_re_")+sphereDataConfig->getUniqueIDString()
 				);
 
-				g.generate();
+				g_real.generate();
 
-				prog_phi_cplx = Convert_SphereData_To_SphereDataComplex::physical_convert(g.prog_h*simVars.sim.gravitation);
-				prog_u_cplx = Convert_SphereData_To_SphereDataComplex::physical_convert(g.prog_u);
-				prog_v_cplx = Convert_SphereData_To_SphereDataComplex::physical_convert(g.prog_v);
+				prog_phi_cplx = Convert_SphereData_To_SphereDataComplex::physical_convert(g_real.prog_h*simVars.sim.gravitation);
+				prog_u_cplx = Convert_SphereData_To_SphereDataComplex::physical_convert(g_real.prog_u);
+				prog_v_cplx = Convert_SphereData_To_SphereDataComplex::physical_convert(g_real.prog_v);
+
+
+				GenerateConsistentGradDivSphereData g_imag(
+						simVars,
+						sphereDataConfig,
+						op,
+						M_PI/4, M_PI/2,
+						std::string("gen_divgrad_data_im_")+sphereDataConfig->getUniqueIDString()
+				);
+
+				g_imag.generate();
+
+				prog_phi_cplx = prog_phi_cplx + Convert_SphereData_To_SphereDataComplex::physical_convert(g_imag.prog_h*simVars.sim.gravitation)*std::complex<double>(0,1);
+				prog_u_cplx = prog_u_cplx + Convert_SphereData_To_SphereDataComplex::physical_convert(g_imag.prog_u)*std::complex<double>(0,1);
+				prog_v_cplx = prog_v_cplx + Convert_SphereData_To_SphereDataComplex::physical_convert(g_imag.prog_v)*std::complex<double>(0,1);
+
 
 				prog_phi_cplx.spectral_truncate();
 				prog_u_cplx.spectral_truncate();
@@ -222,14 +240,15 @@ void run_tests()
 				/*
 				 * Test correct mode extensions for sphere data with complex physical data
 				 */
-				SphereDataComplex test =
-						  prog_u0_cplx_ext.spectral_returnWithDifferentModes(sphereDataConfig)
-						- prog_u0_cplx_ext.spectral_returnWithTruncatedModes(sphereDataConfigRexi).spectral_returnWithDifferentModes(sphereDataConfig);
+				SphereDataComplex lhs = prog_u0_cplx_ext.spectral_returnWithDifferentModes(sphereDataConfig);
+				SphereDataComplex rhs = prog_u0_cplx_ext.spectral_returnWithTruncatedModes(sphereDataConfigRexi).spectral_returnWithDifferentModes(sphereDataConfig);
 
-				double error = test.physical_reduce_error_max_abs();
-				std::cout << "+ error for mode extensions: " << error << std::endl;
+				SphereDataComplex lhsr = lhs.spectral_returnWithDifferentModes(sphereDataConfig);
+				SphereDataComplex rhsr = rhs.spectral_returnWithDifferentModes(sphereDataConfig);
 
-				if (error > 10e-10)
+				std::cout << "+ error for mode extensions: " << (lhsr-rhsr).physical_reduce_error_max_abs() << "\t" << (lhsr-rhsr).physical_reduce_error_rms() << std::endl;
+
+				if ((lhsr-rhsr).physical_reduce_error_max_abs() > 10e-10)
 					FatalError("Threshold exceeded");
 			}
 
@@ -255,7 +274,7 @@ void run_tests()
 
 
 
-				SphereDataComplex &phi0 = prog_phi0_cplx_ext;
+//				SphereDataComplex &phi0 = prog_phi0_cplx_ext;
 				SphereDataComplex &u0 = prog_u0_cplx_ext;
 				SphereDataComplex &v0 = prog_v0_cplx_ext;
 
@@ -301,14 +320,13 @@ void run_tests()
 					Convert_SphereDataComplex_To_SphereData::physical_convert(rhs).physical_file_write("test_rhs.csv");
 
 
-					double error = (
-										lhs.spectral_returnWithDifferentModes(sphereDataConfig)
-										- rhs.spectral_returnWithDifferentModes(sphereDataConfig)
-									).physical_reduce_error_max_abs();
 
-					std::cout << "ERROR Identity for non-Robert formulation: " << error << std::endl;
+					SphereDataComplex lhsr = lhs.spectral_returnWithDifferentModes(sphereDataConfig);
+					SphereDataComplex rhsr = rhs.spectral_returnWithDifferentModes(sphereDataConfig);
 
-					if (error > epsilon)
+					std::cout << "ERROR Identity for non-Robert formulation: " << (lhsr-rhsr).physical_reduce_error_max_abs() << "\t" << (lhsr-rhsr).physical_reduce_error_rms() <<std::endl;
+
+					if ((lhsr-rhsr).physical_reduce_error_max_abs() > epsilon)
 						FatalError("Error too large");
 				}
 			}
@@ -414,11 +432,9 @@ void run_tests()
 					SphereDataComplex lhsr = lhs.spectral_returnWithDifferentModes(sphereDataConfig);
 					SphereDataComplex rhsr = rhs.spectral_returnWithDifferentModes(sphereDataConfig);
 
-					double error = (lhsr-rhsr).physical_reduce_error_max_abs();
+					std::cout << "ERROR IDENTITY D.(fA): " << (lhsr-rhsr).physical_reduce_error_max_abs() << "\t" << (lhsr-rhsr).physical_reduce_error_rms() <<std::endl;
 
-					std::cout << "ERROR IDENTITY D.(fA): " << error << std::endl;
-
-					if (error > epsilon*10e+4)
+					if ((lhsr-rhsr).physical_reduce_error_max_abs() > epsilon*10e+4)
 					{
 						if (simVars.rexi.rexi_use_extended_modes >= 2)
 						{
@@ -445,11 +461,9 @@ void run_tests()
 					SphereDataComplex lhsr = lhs.spectral_returnWithDifferentModes(sphereDataConfig);
 					SphereDataComplex rhsr = rhs.spectral_returnWithDifferentModes(sphereDataConfig);
 
-					double error = (lhsr-rhsr).physical_reduce_error_max_abs();
+					std::cout << "ERROR laplace: " << (lhsr-rhsr).physical_reduce_error_max_abs() << "\t" << (lhsr-rhsr).physical_reduce_error_rms() <<std::endl;
 
-					std::cout << "ERROR laplace: " << error << std::endl;
-
-					if (error > epsilon*10e+4)
+					if ((lhsr-rhsr).physical_reduce_error_max_abs() > epsilon*10e+4)
 					{
 						Convert_SphereDataComplex_To_SphereData::physical_convert(lhsr).physical_file_write("o_error_lhs.csv");
 						Convert_SphereDataComplex_To_SphereData::physical_convert(rhsr).physical_file_write("o_error_rhs.csv");
@@ -470,11 +484,9 @@ void run_tests()
 					SphereDataComplex lhsr = lhs.spectral_returnWithDifferentModes(sphereDataConfig);
 					SphereDataComplex rhsr = rhs.spectral_returnWithDifferentModes(sphereDataConfig);
 
-					double error = (lhsr-rhsr).physical_reduce_error_max_abs();
+					std::cout << "ERROR 0:\t" << (lhsr-rhsr).physical_reduce_error_max_abs() << "\t" << (lhsr-rhsr).physical_reduce_error_rms() <<std::endl;
 
-					std::cout << "ERROR 0: " << error << std::endl;
-
-					if (error > epsilon*10e+4)
+					if ((lhsr-rhsr).physical_reduce_error_max_abs() > epsilon*10e+4)
 					{
 						Convert_SphereDataComplex_To_SphereData::physical_convert(lhsr).physical_file_write("o_error_lhs.csv");
 						Convert_SphereDataComplex_To_SphereData::physical_convert(rhsr).physical_file_write("o_error_rhs.csv");
@@ -494,11 +506,9 @@ void run_tests()
 					SphereDataComplex lhsr = lhs.spectral_returnWithDifferentModes(sphereDataConfig);
 					SphereDataComplex rhsr = rhs.spectral_returnWithDifferentModes(sphereDataConfig);
 
-					double error = (lhsr-rhsr).physical_reduce_error_max_abs();
+					std::cout << "ERROR 0b: " << (lhsr-rhsr).physical_reduce_error_max_abs() << "\t" << (lhsr-rhsr).physical_reduce_error_rms() <<std::endl;
 
-					std::cout << "ERROR 0b: " << error << std::endl;
-
-					if (error > epsilon*10e+4)
+					if ((lhsr-rhsr).physical_reduce_error_max_abs() > epsilon*10e+4)
 					{
 						Convert_SphereDataComplex_To_SphereData::physical_convert(lhsr).physical_file_write("o_error_lhs.csv");
 						Convert_SphereDataComplex_To_SphereData::physical_convert(rhsr).physical_file_write("o_error_rhs.csv");
@@ -517,11 +527,9 @@ void run_tests()
 					SphereDataComplex lhsr = lhs.spectral_returnWithDifferentModes(sphereDataConfig);
 					SphereDataComplex rhsr = rhs.spectral_returnWithDifferentModes(sphereDataConfig);
 
-					double error = (lhsr-rhsr).physical_reduce_error_max_abs();
+					std::cout << "ERROR 0c: " << (lhsr-rhsr).physical_reduce_error_max_abs() << "\t" << (lhsr-rhsr).physical_reduce_error_rms() <<std::endl;
 
-					std::cout << "ERROR 0c: " << error << std::endl;
-
-					if (error > epsilon*10e+4)
+					if ((lhsr-rhsr).physical_reduce_error_max_abs() > epsilon*10e+4)
 					{
 						Convert_SphereDataComplex_To_SphereData::physical_convert(lhsr).physical_file_write("o_error_lhs.csv");
 						Convert_SphereDataComplex_To_SphereData::physical_convert(rhsr).physical_file_write("o_error_rhs.csv");
@@ -536,11 +544,9 @@ void run_tests()
 					SphereDataComplex lhsr = lhs.spectral_returnWithDifferentModes(sphereDataConfig);
 					SphereDataComplex rhsr = rhs.spectral_returnWithDifferentModes(sphereDataConfig);
 
-					double error = (lhsr-rhsr).physical_reduce_error_max_abs();
+					std::cout << "ERROR 0d: " << (lhsr-rhsr).physical_reduce_error_max_abs() << "\t" << (lhsr-rhsr).physical_reduce_error_rms() <<std::endl;
 
-					std::cout << "ERROR 0d: " << error << std::endl;
-
-					if (error > epsilon*10e+4)
+					if ((lhsr-rhsr).physical_reduce_error_max_abs() > epsilon*10e+4)
 					{
 						Convert_SphereDataComplex_To_SphereData::physical_convert(lhsr).physical_file_write("o_error_lhs.csv");
 						Convert_SphereDataComplex_To_SphereData::physical_convert(rhsr).physical_file_write("o_error_rhs.csv");
@@ -555,11 +561,9 @@ void run_tests()
 					SphereDataComplex lhsr = lhs.spectral_returnWithDifferentModes(sphereDataConfig);
 					SphereDataComplex rhsr = rhs.spectral_returnWithDifferentModes(sphereDataConfig);
 
-					double error = (lhsr-rhsr).physical_reduce_error_max_abs();
+					std::cout << "ERROR 0e: " << (lhsr-rhsr).physical_reduce_error_max_abs() << "\t" << (lhsr-rhsr).physical_reduce_error_rms() <<std::endl;
 
-					std::cout << "ERROR 0e: " << error << std::endl;
-
-					if (error > epsilon*10e+4)
+					if ((lhsr-rhsr).physical_reduce_error_max_abs() > epsilon*10e+4)
 					{
 						Convert_SphereDataComplex_To_SphereData::physical_convert(lhsr).physical_file_write("o_error_lhs.csv");
 						Convert_SphereDataComplex_To_SphereData::physical_convert(rhsr).physical_file_write("o_error_rhs.csv");
@@ -576,24 +580,17 @@ void run_tests()
 					 * D.(fA) = f(D.A) + A.one_over_cos2phi*(Df)
 					 */
 
-					lhs = opComplex.robert_div(f*u, f*v);
+					lhs = ir*opComplex.robert_div(f*u, f*v);
 
-					rhs =	  f*opComplex.robert_div(u, v)
-							+ one_over_cos2phi*
-							(
-								  u*opComplex.robert_grad_lon(f)
-								+ v*opComplex.robert_grad_lat(f)
-							);
-
+					rhs =	f*ir*opComplex.robert_div(u, v)
+							+ u*fi + v*fj;
 
 					SphereDataComplex lhsr = lhs.spectral_returnWithDifferentModes(sphereDataConfig);
 					SphereDataComplex rhsr = rhs.spectral_returnWithDifferentModes(sphereDataConfig);
 
-					double error = (lhsr-rhsr).physical_reduce_error_max_abs();
+					std::cout << "ERROR 0f: " << (lhsr-rhsr).physical_reduce_error_max_abs() << "\t" << (lhsr-rhsr).physical_reduce_error_rms() <<std::endl;
 
-					std::cout << "ERROR 0f: " << error << std::endl;
-
-					if (error > epsilon*10e+4)
+					if ((lhsr-rhsr).physical_reduce_error_max_abs() > epsilon*10e+4)
 					{
 						if (simVars.rexi.rexi_use_extended_modes >= 2)
 						{
@@ -626,11 +623,9 @@ void run_tests()
 					SphereDataComplex lhsr = lhs.spectral_returnWithDifferentModes(sphereDataConfig);
 					SphereDataComplex rhsr = rhs.spectral_returnWithDifferentModes(sphereDataConfig);
 
-					double error = (lhsr-rhsr).physical_reduce_error_max_abs();
+					std::cout << "ERROR 1aa: " << (lhsr-rhsr).physical_reduce_error_max_abs() << "\t" << (lhsr-rhsr).physical_reduce_error_rms() <<std::endl;
 
-					std::cout << "ERROR 1aa: " << error << std::endl;
-
-					if (error > epsilon*10e+3)
+					if ((lhsr-rhsr).physical_reduce_error_max_abs() > epsilon*10e+3)
 					{
 						Convert_SphereDataComplex_To_SphereData::physical_convert(lhsr).physical_file_write("o_error_lhs.csv");
 						Convert_SphereDataComplex_To_SphereData::physical_convert(rhsr).physical_file_write("o_error_rhs.csv");
@@ -654,11 +649,9 @@ void run_tests()
 					SphereDataComplex lhsr = lhs.spectral_returnWithDifferentModes(sphereDataConfig);
 					SphereDataComplex rhsr = rhs.spectral_returnWithDifferentModes(sphereDataConfig);
 
-					double error = (lhsr-rhsr).physical_reduce_error_max_abs();
+					std::cout << "ERROR 1ab: " << (lhsr-rhsr).physical_reduce_error_max_abs() << "\t" << (lhsr-rhsr).physical_reduce_error_rms() <<std::endl;
 
-					std::cout << "ERROR 1ab: " << error << std::endl;
-
-					if (error > epsilon*10e+4)
+					if ((lhsr-rhsr).physical_reduce_error_max_abs() > epsilon*10e+4)
 					{
 						Convert_SphereDataComplex_To_SphereData::physical_convert(lhsr).physical_file_write("o_error_lhs.csv");
 						Convert_SphereDataComplex_To_SphereData::physical_convert(rhsr).physical_file_write("o_error_rhs.csv");
@@ -685,11 +678,9 @@ void run_tests()
 					SphereDataComplex lhsr = lhs.spectral_returnWithDifferentModes(sphereDataConfig);
 					SphereDataComplex rhsr = rhs.spectral_returnWithDifferentModes(sphereDataConfig);
 
-					double error = (lhsr-rhsr).physical_reduce_error_max_abs();
+					std::cout << "ERROR 1a: " << (lhsr-rhsr).physical_reduce_error_max_abs() << "\t" << (lhsr-rhsr).physical_reduce_error_rms() <<std::endl;
 
-					std::cout << "ERROR 1a: " << error << std::endl;
-
-					if (error > epsilon*10e+4)
+					if ((lhsr-rhsr).physical_reduce_error_max_abs() > epsilon*10e+4)
 					{
 						Convert_SphereDataComplex_To_SphereData::physical_convert(lhsr).physical_file_write("o_error_lhs.csv");
 						Convert_SphereDataComplex_To_SphereData::physical_convert(rhsr).physical_file_write("o_error_rhs.csv");
@@ -718,11 +709,9 @@ void run_tests()
 					SphereDataComplex lhsr = lhs.spectral_returnWithDifferentModes(sphereDataConfig);
 					SphereDataComplex rhsr = rhs.spectral_returnWithDifferentModes(sphereDataConfig);
 
-					double error = (lhsr-rhsr).physical_reduce_error_max_abs();
+					std::cout << "ERROR 1ba: " << (lhsr-rhsr).physical_reduce_error_max_abs() << "\t" << (lhsr-rhsr).physical_reduce_error_rms() <<std::endl;
 
-					std::cout << "ERROR 1ba: " << error << std::endl;
-
-					if (error > epsilon*10e+2)
+					if ((lhsr-rhsr).physical_reduce_error_max_abs() > epsilon*10e+2)
 					{
 						Convert_SphereDataComplex_To_SphereData::physical_convert(lhsr).physical_file_write("o_error_lhs.csv");
 						Convert_SphereDataComplex_To_SphereData::physical_convert(rhsr).physical_file_write("o_error_rhs.csv");
@@ -749,11 +738,9 @@ void run_tests()
 					SphereDataComplex lhsr = lhs.spectral_returnWithDifferentModes(sphereDataConfig);
 					SphereDataComplex rhsr = rhs.spectral_returnWithDifferentModes(sphereDataConfig);
 
-					double error = (lhsr-rhsr).physical_reduce_error_max_abs();
+					std::cout << "ERROR 1bb: " << (lhsr-rhsr).physical_reduce_error_max_abs() << "\t" << (lhsr-rhsr).physical_reduce_error_rms() <<std::endl;
 
-					std::cout << "ERROR 1bb: " << error << std::endl;
-
-					if (error > epsilon*10e+2)
+					if ((lhsr-rhsr).physical_reduce_error_max_abs() > epsilon*10e+2)
 					{
 						Convert_SphereDataComplex_To_SphereData::physical_convert(lhsr).physical_file_write("o_error_lhs.csv");
 						Convert_SphereDataComplex_To_SphereData::physical_convert(rhsr).physical_file_write("o_error_rhs.csv");
@@ -781,11 +768,9 @@ void run_tests()
 					SphereDataComplex lhsr = lhs.spectral_returnWithDifferentModes(sphereDataConfig);
 					SphereDataComplex rhsr = rhs.spectral_returnWithDifferentModes(sphereDataConfig);
 
-					double error = (lhsr-rhsr).physical_reduce_error_max_abs();
+					std::cout << "ERROR 1ca: " << (lhsr-rhsr).physical_reduce_error_max_abs() << "\t" << (lhsr-rhsr).physical_reduce_error_rms() <<std::endl;
 
-					std::cout << "ERROR 1ca: " << error << std::endl;
-
-					if (error > epsilon*10e+2)
+					if ((lhsr-rhsr).physical_reduce_error_max_abs() > epsilon*10e+2)
 					{
 						Convert_SphereDataComplex_To_SphereData::physical_convert(lhsr).physical_file_write("o_error_lhs.csv");
 						Convert_SphereDataComplex_To_SphereData::physical_convert(rhsr).physical_file_write("o_error_rhs.csv");
@@ -818,11 +803,9 @@ void run_tests()
 					SphereDataComplex lhsr = lhs.spectral_returnWithDifferentModes(sphereDataConfig);
 					SphereDataComplex rhsr = rhs.spectral_returnWithDifferentModes(sphereDataConfig);
 
-					double error = (lhsr-rhsr).physical_reduce_error_max_abs();
+					std::cout << "ERROR 1c: " << (lhsr-rhsr).physical_reduce_error_max_abs() << "\t" << (lhsr-rhsr).physical_reduce_error_rms() <<std::endl;
 
-					std::cout << "ERROR 1c: " << error << std::endl;
-
-					if (error > epsilon*10e+2)
+					if ((lhsr-rhsr).physical_reduce_error_max_abs() > epsilon*10e+2)
 					{
 						Convert_SphereDataComplex_To_SphereData::physical_convert(lhsr).physical_file_write("o_error_lhs.csv");
 						Convert_SphereDataComplex_To_SphereData::physical_convert(rhsr).physical_file_write("o_error_rhs.csv");
@@ -843,14 +826,13 @@ void run_tests()
 					lhs = -alpha*eta + f*div + fj*v + fi*u;
 					rhs = -eta0;
 
-					double error = (
-										lhs.spectral_returnWithDifferentModes(sphereDataConfig)
-										- rhs.spectral_returnWithDifferentModes(sphereDataConfig)
-									).physical_reduce_error_max_abs();
 
-					std::cout << "ERROR 2: " << error << std::endl;
+					SphereDataComplex lhsr = lhs.spectral_returnWithDifferentModes(sphereDataConfig);
+					SphereDataComplex rhsr = rhs.spectral_returnWithDifferentModes(sphereDataConfig);
 
-					if (error > epsilon*10e+3)
+					std::cout << "ERROR 2: " << (lhsr-rhsr).physical_reduce_error_max_abs() << "\t" << (lhsr-rhsr).physical_reduce_error_rms() <<std::endl;
+
+					if ((lhsr-rhsr).physical_reduce_error_max_abs() > epsilon*10e+3)
 					{
 						if (simVars.rexi.rexi_use_extended_modes < 2)
 							std::cerr << "Ignoring error since extended modes < 2" << std::endl;
@@ -870,14 +852,13 @@ void run_tests()
 					lhs = div;
 					rhs = 1.0/phi_bar*(phi*alpha-phi0);
 
-					double error = (
-										lhs.spectral_returnWithDifferentModes(sphereDataConfig)
-										- rhs.spectral_returnWithDifferentModes(sphereDataConfig)
-									).physical_reduce_error_max_abs();
 
-					std::cout << "ERROR 3: " << error << std::endl;
+					SphereDataComplex lhsr = lhs.spectral_returnWithDifferentModes(sphereDataConfig);
+					SphereDataComplex rhsr = rhs.spectral_returnWithDifferentModes(sphereDataConfig);
 
-					if (error > epsilon*10e+3)
+					std::cout << "ERROR 3: " << (lhsr-rhsr).physical_reduce_error_max_abs() << "\t" << (lhsr-rhsr).physical_reduce_error_rms() <<std::endl;
+
+					if ((lhsr-rhsr).physical_reduce_error_max_abs() > epsilon*10e+3)
 						FatalError("Error too large");
 				}
 
@@ -896,14 +877,12 @@ void run_tests()
 
 					rhs =	div0 + 1.0/phi_bar * alpha * phi0;
 
-					double error = (
-										lhs.spectral_returnWithDifferentModes(sphereDataConfig)
-										- rhs.spectral_returnWithDifferentModes(sphereDataConfig)
-									).physical_reduce_error_max_abs();
+					SphereDataComplex lhsr = lhs.spectral_returnWithDifferentModes(sphereDataConfig);
+					SphereDataComplex rhsr = rhs.spectral_returnWithDifferentModes(sphereDataConfig);
 
-					std::cout << "ERROR 4a: " << error << std::endl;
+					std::cout << "ERROR 4a: " << (lhsr-rhsr).physical_reduce_error_max_abs() << "\t" << (lhsr-rhsr).physical_reduce_error_rms() <<std::endl;
 
-					if (error > epsilon*10e+3)
+					if ((lhsr-rhsr).physical_reduce_error_max_abs() > epsilon*10e+3)
 					{
 
 						if (simVars.rexi.rexi_use_extended_modes < 2)
@@ -923,14 +902,14 @@ void run_tests()
 					lhs = -alpha*eta + 1.0/phi_bar * f * phi * alpha + fj*v + fi*u;
 					rhs = -eta0 + 1.0/phi_bar * f * phi0;
 
-					double error = (
-										lhs.spectral_returnWithDifferentModes(sphereDataConfig)
-										- rhs.spectral_returnWithDifferentModes(sphereDataConfig)
-									).physical_reduce_error_max_abs();
 
-					std::cout << "ERROR 4ba: " << error << std::endl;
+					SphereDataComplex lhsr = lhs.spectral_returnWithDifferentModes(sphereDataConfig);
+					SphereDataComplex rhsr = rhs.spectral_returnWithDifferentModes(sphereDataConfig);
 
-					if (error > epsilon*10e+1)
+
+					std::cout << "ERROR 4ba: " << (lhsr-rhsr).physical_reduce_error_max_abs() << "\t" << (lhsr-rhsr).physical_reduce_error_rms() <<std::endl;
+
+					if ((lhsr-rhsr).physical_reduce_error_max_abs() > epsilon*10e+1)
 					{
 
 						if (simVars.rexi.rexi_use_extended_modes < 2)
@@ -957,11 +936,9 @@ void run_tests()
 					SphereDataComplex lhsr = lhs.spectral_returnWithDifferentModes(sphereDataConfig);
 					SphereDataComplex rhsr = rhs.spectral_returnWithDifferentModes(sphereDataConfig);
 
-					double error = (lhsr-rhsr).physical_reduce_error_max_abs();
+					std::cout << "ERROR 5: " << (lhsr-rhsr).physical_reduce_error_max_abs() << "\t" << (lhsr-rhsr).physical_reduce_error_rms() <<std::endl;
 
-					std::cout << "ERROR 5: " << error << std::endl;
-
-					if (error > epsilon*10e+2)
+					if ((lhsr-rhsr).physical_reduce_error_max_abs() > epsilon*10e+2)
 					{
 						Convert_SphereDataComplex_To_SphereData::physical_convert(lhsr).physical_file_write("o_error_lhs.csv");
 						Convert_SphereDataComplex_To_SphereData::physical_convert(rhsr).physical_file_write("o_error_rhs.csv");
@@ -999,11 +976,9 @@ void run_tests()
 					SphereDataComplex lhsr = lhs.spectral_returnWithDifferentModes(sphereDataConfig);
 					SphereDataComplex rhsr = rhs.spectral_returnWithDifferentModes(sphereDataConfig);
 
-					double error = (lhsr-rhsr).physical_reduce_error_max_abs();
+					std::cout << "ERROR 5_blarg: " << (lhsr-rhsr).physical_reduce_error_max_abs() << "\t" << (lhsr-rhsr).physical_reduce_error_rms() <<std::endl;
 
-					std::cout << "ERROR 6: " << error << std::endl;
-
-					if (error > epsilon*10e+4)
+					if ((lhsr-rhsr).physical_reduce_error_max_abs() > epsilon*10e+4)
 					{
 						Convert_SphereDataComplex_To_SphereData::physical_convert(lhsr).physical_file_write("o_error_lhs.csv");
 						Convert_SphereDataComplex_To_SphereData::physical_convert(rhsr).physical_file_write("o_error_rhs.csv");
@@ -1014,6 +989,36 @@ void run_tests()
 							FatalError("Error too large");
 					}
 				}
+#if 0
+				{
+					/*
+					 * REXI SPH document ver 15, Section 8 at the end
+					 */
+					lhs = (
+							(alpha*alpha+f*f)*phi
+							+phi_var/alpha*Fp*opComplex.grad/*nonsense*/(phi)
+							+phi_bar*opComplex.laplace(phi)
+						);
+
+					rhs = phi_bar*(div0 - two_omega*opComplex.mu((1.0/alpha)*eta0)) + (alpha*phi0+(1.0/alpha)*two_omega*two_omega*opComplex.mu2(phi0));
+
+					SphereDataComplex lhsr = lhs.spectral_returnWithDifferentModes(sphereDataConfig);
+					SphereDataComplex rhsr = rhs.spectral_returnWithDifferentModes(sphereDataConfig);
+
+					std::cout << "ERROR 8: " << (lhsr-rhsr).physical_reduce_error_max_abs() << "\t" << (lhsr-rhsr).physical_reduce_error_rms() <<std::endl;
+
+					if ((lhsr-rhsr).physical_reduce_error_max_abs() > epsilon*10e+4)
+					{
+						Convert_SphereDataComplex_To_SphereData::physical_convert(lhsr).physical_file_write("o_error_lhs.csv");
+						Convert_SphereDataComplex_To_SphereData::physical_convert(rhsr).physical_file_write("o_error_rhs.csv");
+						Convert_SphereDataComplex_To_SphereData::physical_convert(lhsr-rhsr).physical_file_write("o_error_diff.csv");
+						if (simVars.rexi.rexi_use_extended_modes < 2)
+							std::cerr << "Ignoring error since extended modes < 2" << std::endl;
+						else
+							FatalError("Error too large");
+					}
+				}
+#endif
 
 			}
 #endif
