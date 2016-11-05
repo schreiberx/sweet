@@ -110,6 +110,14 @@ public:
 
 
 
+	SphereDataComplex spectral_returnWithTruncatedModes(
+			SphereDataConfig *i_sphereDataConfigNew
+	)	const
+	{
+		return spectral_returnWithDifferentModes(i_sphereDataConfigNew).spectral_returnWithDifferentModes(sphereDataConfig);
+	}
+
+
 public:
 	SphereDataComplex spectral_returnWithDifferentModes(
 			SphereDataConfig *i_sphereDataConfigNew
@@ -163,7 +171,6 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for
 #endif
-
 			for (int n = 0; n <= out.sphereDataConfig->spectral_modes_n_max; n++)
 			{
 				int src_idx = sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
@@ -189,7 +196,6 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for
 #endif
-
 			for (int n = 0; n <= sphereDataConfig->spectral_modes_n_max; n++)
 			{
 				int src_idx = sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
@@ -645,18 +651,17 @@ public:
 	/**
 	 * Truncate modes which are not representable in spectral space
 	 */
-	SphereDataComplex physical_truncate()
+	SphereDataComplex& physical_truncate()
 	{
 		request_data_physical();
 
-		SphereDataComplex out_sph_data(sphereDataConfig);
-		spat_cplx_to_SH(sphereDataConfig->shtns, physical_space_data, out_sph_data.spectral_space_data);
-		SH_to_spat_cplx(sphereDataConfig->shtns, out_sph_data.spectral_space_data, out_sph_data.physical_space_data);
+		spat_cplx_to_SH(sphereDataConfig->shtns, physical_space_data, spectral_space_data);
+		SH_to_spat_cplx(sphereDataConfig->shtns, spectral_space_data, physical_space_data);
 
-		out_sph_data.physical_space_data_valid = true;
-		out_sph_data.spectral_space_data_valid = false;
+		physical_space_data_valid = true;
+		spectral_space_data_valid = false;
 
-		return out_sph_data;
+		return *this;
 	}
 
 
@@ -664,18 +669,17 @@ public:
 	/**
 	 * Truncate modes which are not representable in spectral space
 	 */
-	SphereDataComplex spectral_truncate()
+	SphereDataComplex& spectral_truncate()
 	{
 		request_data_spectral();
 
-		SphereDataComplex out_sph_data(sphereDataConfig);
-		SH_to_spat_cplx(sphereDataConfig->shtns, spectral_space_data, out_sph_data.physical_space_data);
-		spat_cplx_to_SH(sphereDataConfig->shtns, out_sph_data.physical_space_data, out_sph_data.spectral_space_data);
+		SH_to_spat_cplx(sphereDataConfig->shtns, spectral_space_data, physical_space_data);
+		spat_cplx_to_SH(sphereDataConfig->shtns, physical_space_data, spectral_space_data);
 
-		out_sph_data.physical_space_data_valid = false;
-		out_sph_data.spectral_space_data_valid = true;
+		physical_space_data_valid = false;
+		spectral_space_data_valid = true;
 
-		return out_sph_data;
+		return *this;
 	}
 
 
@@ -922,7 +926,7 @@ public:
 	/**
 	 * Return the maximum error norm
 	 */
-	double physical_reduce_error_max()
+	double physical_reduce_error_max_abs()
 	{
 		request_data_physical();
 
@@ -1053,7 +1057,7 @@ public:
 
 public:
 
-	void physical_write_file(
+	void physical_file_write(
 			const char *i_filename,
 			const char *i_title = "",
 			int i_precision = 8
@@ -1103,7 +1107,59 @@ public:
         file.close();
 	}
 
-	void physical_write_file_lon_pi_shifted(
+
+
+	void physical_file_write_real(
+			const char *i_filename,
+			const char *i_title = "",
+			int i_precision = 8
+	)	const
+	{
+		request_data_physical();
+
+		std::ofstream file(i_filename, std::ios_base::trunc);
+
+		file << std::setprecision(i_precision);
+		file << "#TI " << i_title << std::endl;
+		file << "#TX Longitude" << std::endl;
+		file << "#TY Latitude" << std::endl;
+
+		//file << "lat\\lon\t";
+		// Use 0 to make it processable by python
+		file << "0\t";
+
+		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
+		{
+			double lon_degree = ((double)i/(double)sphereDataConfig->physical_num_lon)*2.0*M_PI;
+			lon_degree = lon_degree/M_PI*180.0;
+
+			file << lon_degree;
+			if (i < sphereDataConfig->physical_num_lon-1)
+				file << "\t";
+		}
+		file << std::endl;
+
+        for (int j = sphereDataConfig->physical_num_lat-1; j >= 0; j--)
+        {
+        		double lat_degree = sphereDataConfig->lat[j];
+        		lat_degree = lat_degree/M_PI*180.0;
+
+        		file << lat_degree << "\t";
+
+        		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
+        		{
+        			file << physical_space_data[i*sphereDataConfig->physical_num_lat+j].real();
+        			if (i < sphereDataConfig->physical_num_lon-1)
+        				file << "\t";
+        		}
+        		file << std::endl;
+        }
+        file.close();
+	}
+
+
+
+	void physical_file_write_lon_pi_shifted(
 			const char *i_filename,
 			std::string i_title = "",
 			int i_precision = 8

@@ -32,7 +32,7 @@ void run_tests(
 	epsilon *= (sphConfig->spectral_modes_n_max);
 	std::cout << "Using max allowed error of " << epsilon << std::endl;
 
-
+#if 0
 	if (true)
 	{
 		// div mu
@@ -43,14 +43,14 @@ void run_tests(
 				}
 		);
 
-		h.file_physical_writeFile_lon_pi_shifted("o_test_initial_pretrunc.csv");
+		h.physical_file_write_lon_pi_shifted("o_test_initial_pretrunc.csv");
 //		h.physical_truncate();
-		h.file_physical_writeFile_lon_pi_shifted("o_test_initial_trunc.csv");
+		h.physical_file_write_lon_pi_shifted("o_test_initial_trunc.csv");
 
 		h = op.div_lat(h);
 		h.physical_truncate();
 
-		h.file_physical_writeFile_lon_pi_shifted("o_test_postdiv.csv");
+		h.physical_file_write_lon_pi_shifted("o_test_postdiv.csv");
 
 		SphereData result(sphConfig);
 		result.physical_update_lambda_gaussian_grid(
@@ -60,9 +60,9 @@ void run_tests(
 		);
 		result.physical_truncate();
 
-		result.file_physical_writeFile_lon_pi_shifted("o_test_result.csv");
+		result.physical_file_write_lon_pi_shifted("o_test_result.csv");
 
-		double error_max = (h-result).reduce_abs_max();
+		double error_max = (h-result).physical_reduce_max_abs();
 		std::cout << "TEST SPECIAL DIV LAT  - max error: " << error_max << std::endl;
 //		exit(1);
 	}
@@ -101,12 +101,9 @@ void run_tests(
 		std::cout << "TEST DIFF LAT  - max error: " << error_max << std::endl;
 
 		if (error_max > epsilon)
-		{
-			std::cerr << "EXCEEDED ERROR THRESHOLD IGNORED" << std::endl;
-//				FatalError("ERROR THRESHOLD EXCEEDED!");
-		}
+			FatalError("ERROR THRESHOLD EXCEEDED!");
 	}
-
+#endif
 
 	if (true)
 	{
@@ -118,6 +115,7 @@ void run_tests(
 		h.physical_update_lambda_gaussian_grid(
 				[&](double a, double b, double &c){testSolutionsSph.test_function__grid_gaussian(a,b,c);}
 		);
+		h.physical_truncate();
 		h.request_data_spectral();
 
 
@@ -126,16 +124,10 @@ void run_tests(
 				[&](double a, double b, double &c){testSolutionsSph.correct_result_diff_mu__grid_gaussian(a,b,c);}
 		);
 		result.request_data_spectral();
-
-//		h.file_physical_writeFile("O_SPHbasis_test_function.csv");
-
+		result.physical_truncate();
 
 		// one_minus_mu_squared_diff_lat
 		h = op.spec_one_minus_mu_squared_diff_lat_mu(h);
-//		h.file_physical_writeFile("O_SPHbasis_one_minus_mu_squared_diff_mu_sph_result.csv");
-
-//		result.file_physical_writeFile("O_SPHbasis_one_minus_mu_squared_diff_mu_correct_result.csv");
-
 
 		double error_max = h.physical_reduce_error_max(result);
 		std::cout << "TEST SPHbasis (1-mu*mu)*d/dmu - max error: " << error_max << std::endl;
@@ -490,11 +482,11 @@ void run_tests(
 						testSolutions.test_function__grid_gaussian(a,b,c);
 					}
 			);
-			h.physical_write_file("O_div_mu_initial_sph.csv");
+			h.physical_file_write("O_div_mu_initial_sph.csv");
 
 			h = op.div_lat(h);
 //			h.spectral_truncate();
-			h.physical_write_file("O_div_mu_sph_result.csv");
+			h.physical_file_write("O_div_mu_sph_result.csv");
 
 			SphereData result(sphConfig);
 			result.physical_update_lambda_gaussian_grid(
@@ -503,15 +495,15 @@ void run_tests(
 					}
 			);
 //			result.spectral_truncate();
-			result.physical_write_file("O_div_mu_correct_result.csv");
-			(h-result).physical_write_file("O_div_mu_correct_diff.csv");
+			result.physical_file_write("O_div_mu_correct_result.csv");
+			(h-result).physical_file_write("O_div_mu_correct_diff.csv");
 
 			double error_max = h.physical_reduce_error_max(result);
 			std::cout << "TEST DIV LAT  - max error: " << error_max << std::endl;
 
 			if (error_max > epsilon)
 			{
-				std::cerr << "EXCEEDED ERROR THRESHOLD IGNORED" << std::endl;
+				std::cerr << "EXCEEDED ERROR THRESHOLD IGNORED since DIV should be only applied to a vector field, however we do this on a scalar field" << std::endl;
 //				FatalError("ERROR THRESHOLD EXCEEDED!");
 			}
 		}
@@ -588,7 +580,7 @@ void run_tests(
 
 			if (error_max > epsilon)
 			{
-				std::cerr << "EXCEEDED ERROR THRESHOLD IGNORED" << std::endl;
+				std::cerr << "EXCEEDED ERROR THRESHOLD IGNORED since DIV should be only applied to a vector field, however we do this on a scalar field" << std::endl;
 				//FatalError("ERROR THRESHOLD EXCEEDED!");
 			}
 		}
@@ -629,7 +621,7 @@ void run_tests(
 
 			if (error_max > epsilon)
 			{
-				std::cerr << "EXCEEDED ERROR THRESHOLD IGNORED" << std::endl;
+				std::cerr << "EXCEEDED ERROR THRESHOLD IGNORED since DIV should be only applied to a vector field, however we do this on a scalar field" << std::endl;
 				//FatalError("ERROR THRESHOLD EXCEEDED!");
 			}
 		}
@@ -663,8 +655,7 @@ void run_tests(
 
 			if (error_max > epsilon)
 			{
-				std::cerr << "EXCEEDED ERROR THRESHOLD IGNORED" << std::endl;
-				//FatalError("ERROR THRESHOLD EXCEEDED!");
+				std::cerr << "EXCEEDED ERROR THRESHOLD IGNORED since DIV should be only applied to a vector field, however we do this on a scalar field" << std::endl;
 			}
 		}
 	}

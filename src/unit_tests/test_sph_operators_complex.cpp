@@ -788,7 +788,7 @@ void run_tests(
 			//result.physical_truncate();
 			//h.physical_truncate();
 
-			double error_max = (h-result).physical_reduce_error_max();
+			double error_max = (h-result).physical_reduce_error_max_abs();
 			std::cout << "TEST LAPLACE  - max error: " << error_max << std::endl;
 
 			if (error_max > epsilon)

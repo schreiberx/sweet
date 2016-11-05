@@ -21,7 +21,7 @@
 #include <sweet/sweetmath.hpp>
 #include <sweet/MemBlockAlloc.hpp>
 #include <sweet/sphere/SphereDataConfig.hpp>
-
+#include <sweet/FatalError.hpp>
 #include <sweet/openmp_helper.hpp>
 
 
@@ -542,6 +542,25 @@ public:
 
 
 
+	SphereData operator-(
+			double i_value
+	)	const
+	{
+		request_data_spectral();
+
+		SphereData out_sph_data(*this);
+
+		out_sph_data.spectral_space_data[0] -= i_value*std::sqrt(4.0*M_PI);
+
+		out_sph_data.physical_space_data_valid = false;
+		out_sph_data.spectral_space_data_valid = true;
+
+		return out_sph_data;
+	}
+
+
+
+
 public:
 	void setup(SphereDataConfig *i_sphConfig)
 	{
@@ -808,7 +827,6 @@ public:
 			{
 				double cos_phi = sphereDataConfig->lat_cogaussian[j];
 
-//				std::cout << cos_phi << std::endl;
 				/*
 				 * IDENTITAL FORMULATION
 				double mu = shtns->ct[j];
@@ -861,7 +879,7 @@ public:
 	/*
 	 * Set all values to a specific value
 	 */
-	void physical_set_value(
+	void physical_set_all_value(
 			double i_value
 	)
 	{
@@ -872,6 +890,25 @@ public:
 		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
 			for (int j = 0; j < sphereDataConfig->physical_num_lat; j++)
 				physical_space_data[i*sphereDataConfig->physical_num_lat + j] = i_value;
+
+		physical_space_data_valid = true;
+		spectral_space_data_valid = false;
+	}
+
+
+	/*
+	 * Set all values to a specific value
+	 */
+	void physical_set_value(
+			int i_lon_idx,
+			int i_lat_idx,
+			double i_value
+	)
+	{
+		if (spectral_space_data_valid)
+			request_data_physical();
+
+		physical_space_data[i_lon_idx*sphereDataConfig->physical_num_lat + i_lat_idx] = i_value;
 
 		physical_space_data_valid = true;
 		spectral_space_data_valid = false;
@@ -908,7 +945,7 @@ public:
 	/**
 	 * Return the maximum absolute value
 	 */
-	double reduce_abs_max()
+	double physical_reduce_max_abs()
 	{
 		request_data_physical();
 
@@ -926,18 +963,17 @@ public:
 
 
 	/**
-	 * Return the maximum value
+	 * Return the minimum value
 	 */
-	double reduce_min()
+	double physical_reduce_min()
 	{
 		request_data_physical();
 
 		double error = std::numeric_limits<double>::infinity();
 
 		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
-		{
 			error = std::min(error, physical_space_data[j]);
-		}
+
 		return error;
 	}
 
@@ -945,18 +981,41 @@ public:
 	/**
 	 * Return the minimum value
 	 */
-	double reduce_max()
+	double physical_reduce_max()
 	{
 		request_data_physical();
 
 		double error = -std::numeric_limits<double>::infinity();
 
 		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
-		{
 			error = std::max(error, physical_space_data[j]);
-		}
+
 		return error;
 	}
+
+
+	/**
+	 * Rescale data so that max_abs returns the given value
+	 */
+	SphereData physical_rescale_to_max_abs(
+			double i_new_max_abs
+	)
+	{
+		double max_abs = physical_reduce_max_abs();
+		double scale = i_new_max_abs/max_abs;
+
+		SphereData out(sphereDataConfig);
+		request_data_physical();
+
+		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
+			out.physical_space_data[j] = physical_space_data[j]*scale;
+
+		out.physical_space_data_valid = true;
+		out.spectral_space_data_valid = false;
+
+		return out;
+	}
+
 
 
 	void spectral_print(
@@ -1001,8 +1060,8 @@ public:
 	}
 
 
-	void physical_write_file(
-			const char *i_filename,
+	void physical_file_write(
+			const std::string &i_filename,
 			const char *i_title = "",
 			int i_precision = 20
 	)	const
@@ -1053,7 +1112,7 @@ public:
 
 
 
-	void file_physical_writeFile_lon_pi_shifted(
+	void physical_file_write_lon_pi_shifted(
 			const char *i_filename,
 			std::string i_title = "",
 			int i_precision = 20
@@ -1106,6 +1165,135 @@ public:
         }
         file.close();
 	}
+
+
+	bool physical_file_load(
+			const std::string &i_filename,		///< Name of file to load data from
+			bool i_binary_data = false	///< load as binary data (disabled per default)
+	)
+	{
+		if (i_binary_data)
+		{
+			std::ifstream file(i_filename, std::ios::binary);
+
+			if (!file)
+				FatalError(std::string("Failed to open file ")+i_filename);
+
+			file.seekg(0, std::ios::end);
+			std::size_t size = file.tellg();
+			file.seekg(0, std::ios::beg);
+
+
+			std::size_t expected_size = sizeof(double)*sphereDataConfig->physical_array_data_number_of_elements;
+
+			if (size != expected_size)
+			{
+				std::cerr << "Error while loading data from file " << i_filename << ":" << std::endl;
+				std::cerr << "Size of file " << size << " does not match expected size of " << expected_size << std::endl;
+				FatalError("EXIT");
+			}
+
+			if (!file.read((char*)physical_space_data, expected_size))
+			{
+				std::cerr << "Error while loading data from file " << i_filename << std::endl;
+				FatalError("EXIT");
+			}
+
+#if SWEET_USE_SPHERE_SPECTRAL_SPACE
+			physical_space_data_valid = true;
+			spectral_space_data_valid = false;
+#endif
+			return true;
+		}
+
+
+		std::ifstream file(i_filename);
+		std::string line;
+
+		bool first_data_line = true;
+
+
+		/*
+		 * set physical data to be valid right here!!!
+		 * otherwise it might happen that physical_set_value always requests
+		 * data to be converted to physical data, hence overwriting data
+		 */
+#if SWEET_USE_SPHERE_SPECTRAL_SPACE
+		physical_space_data_valid = true;
+		spectral_space_data_valid = false;
+#endif
+
+		int row = 0;
+		while (row < sphereDataConfig->physical_num_lat)
+		{
+			std::getline(file, line);
+			if (!file.good())
+			{
+				std::cerr << "ERROR: EOF - Failed to read data from file " << i_filename << " in line " << row << std::endl;
+				return false;
+			}
+
+			// skip comment lines
+			if (line[0] == '#')
+				continue;
+
+			int last_pos = 0;
+			int col = 0;
+
+			if (first_data_line)
+			{
+				// skip first data line since these are the coordinates
+				first_data_line = false;
+				continue;
+			}
+
+			for (int pos = 0; pos < (int)line.size()+1; pos++)
+			{
+				if (pos < (int)line.size())
+					if (line[pos] != '\t' && line[pos] != ' ')
+						continue;
+
+				// skip first element!
+				if (last_pos > 0)
+				{
+					std::string strvalue = line.substr(last_pos, pos-last_pos);
+					double i_value = atof(strvalue.c_str());
+					int lon = col;
+					int lat = sphereDataConfig->physical_num_lat-row-1;
+
+					if (lon > sphereDataConfig->physical_num_lon)
+						return false;
+
+					if (lat > sphereDataConfig->physical_num_lat)
+						return false;
+
+					physical_set_value(lon, lat, i_value);
+
+					col++;
+				}
+
+				last_pos = pos+1;
+		    }
+
+			if (col != sphereDataConfig->physical_num_lon)
+			{
+				std::cerr << "ERROR: column mismatch - Failed to read data from file " << i_filename << " in line " << row << ", column " << col << std::endl;
+				return false;
+			}
+
+			row++;
+		}
+
+		if (row != sphereDataConfig->physical_num_lat)
+		{
+			std::cerr << "ERROR: rows mismatch - Failed to read data from file " << i_filename << " in line " << row << std::endl;
+			return false;
+		}
+
+
+		return true;
+	}
+
 };
 
 

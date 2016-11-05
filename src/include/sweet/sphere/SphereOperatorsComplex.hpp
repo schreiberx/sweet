@@ -435,6 +435,8 @@ public:
 	 *
 	 * This computes
 	 * 		d/dmu V
+	 *
+	 * There's no other metric term involved!
 	 */
 	static
 	SphereDataComplex robert_div_lat(
@@ -447,27 +449,17 @@ public:
 		 */
 		SphereDataComplex out = spectral_cosphi_squared_diff_lat_mu(i_sph_data);
 
-#if 0
-
-		SphereDataComplex a(i_sph_data.sphereDataConfig);
-
-		a.physical_update_lambda_cosphi_grid(
-				[](double lambda, double cos_phi, std::complex<double> &o_data)
-				{
-					o_data = 1.0/(cos_phi*cos_phi);
-				}
-			);
-		a.physical_truncate();
-		out = out*a;
-
-#else
-
+#if 1
 		out.physical_update_lambda_cosphi_grid(
 				[](double lambda, double cos_phi, std::complex<double> &o_data)
 				{
 					o_data /= cos_phi*cos_phi;
 				}
 			);
+
+#else
+//		out.physical_truncate();
+		out = out - mu2(out);
 #endif
 
 		return out;
@@ -503,7 +495,7 @@ public:
 			const SphereDataComplex &i_sph_data
 	)
 	{
-		return spectral_cosphi_squared_diff_lat_mu(i_sph_data);
+		return spectral_one_minus_mu_squared_diff_lat_mu(i_sph_data);
 	}
 
 

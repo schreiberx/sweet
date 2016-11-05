@@ -102,31 +102,31 @@ public:
 
 		sprintf(buffer, "prog_h_t%020.8f.csv", simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
 		if (simVars.setup.benchmark_scenario_id == 0)
-			prog_h.file_physical_writeFile_lon_pi_shifted(buffer);
+			prog_h.physical_file_write_lon_pi_shifted(buffer);
 		else
-			prog_h.physical_write_file(buffer);
-		std::cout << buffer << " (min: " << prog_h.reduce_min() << ", max: " << prog_h.reduce_max() << ")" << std::endl;
+			prog_h.physical_file_write(buffer);
+		std::cout << buffer << " (min: " << prog_h.physical_reduce_min() << ", max: " << prog_h.physical_reduce_max() << ")" << std::endl;
 
 		sprintf(buffer, "prog_u_t%020.8f.csv", simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
 		if (simVars.setup.benchmark_scenario_id == 0)
-			prog_u.file_physical_writeFile_lon_pi_shifted(buffer);
+			prog_u.physical_file_write_lon_pi_shifted(buffer);
 		else
-			prog_u.physical_write_file(buffer);
+			prog_u.physical_file_write(buffer);
 		std::cout << buffer << std::endl;
 
 		sprintf(buffer, "prog_v_t%020.8f.csv", simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
 		if (simVars.setup.benchmark_scenario_id == 0)
-			prog_v.file_physical_writeFile_lon_pi_shifted(buffer);
+			prog_v.physical_file_write_lon_pi_shifted(buffer);
 		else
-			prog_v.physical_write_file(buffer);
+			prog_v.physical_file_write(buffer);
 		std::cout << buffer << std::endl;
 
 		sprintf(buffer, "prog_eta_t%020.8f.csv", simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
 		SphereData vort = op.vort(prog_u, prog_v)/simVars.sim.earth_radius;
 		if (simVars.setup.benchmark_scenario_id == 0)
-			vort.file_physical_writeFile_lon_pi_shifted(buffer, "vorticity, lon pi shifted");
+			vort.physical_file_write_lon_pi_shifted(buffer, "vorticity, lon pi shifted");
 		else
-			vort.physical_write_file(buffer);
+			vort.physical_file_write(buffer);
 		std::cout << buffer << std::endl;
 	}
 
@@ -387,7 +387,7 @@ public:
 	bool instability_detected()
 	{
 		double max_abs_value = std::abs(simVars.sim.h0)*2.0+1.0;
-		if (prog_h.reduce_abs_max() > max_abs_value)
+		if (prog_h.physical_reduce_max_abs() > max_abs_value)
 		{
 			std::cerr << "Instability detected (max abs value of h > " << max_abs_value << ")" << std::endl;
 			return true;
@@ -405,6 +405,7 @@ public:
 
 	void run_timestep()
 	{
+		// output of time step size
 		double o_dt;
 
 		if (simVars.rexi.use_rexi == false)
@@ -423,7 +424,7 @@ public:
 		else
 		{
 			o_dt = simVars.timecontrol.current_timestep_size;
-			assert(o_dt >= 0);
+			assert(o_dt > 0);
 
 			// padding to max simulation time if exceeding the maximum
 			if (simVars.timecontrol.max_simulation_time >= 0)
@@ -525,6 +526,13 @@ public:
 		{
 			assert(simVars.sim.earth_radius > 0);
 			assert(simVars.sim.gravitation);
+
+			if (simVars.misc.sphere_use_robert_functions)
+			{
+				FatalError("Only non-robert formulation is supported so far for non-linear SWE on sphere!");
+				// TODO: rewrite for robert functions
+				// TODO: Also initialize velocities correctly
+			}
 
 			/*
 			 * Height

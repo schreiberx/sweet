@@ -101,6 +101,13 @@ public:
 	{
 	}
 
+	std::string getUniqueIDString()
+	{
+		std::ostringstream buf;
+		buf << "M" << spectral_modes_m_max << "," << spectral_modes_n_max << "_N" << physical_num_lon << "," << physical_num_lat;
+		return buf.str();
+	}
+
 
 	std::size_t getArrayIndexByModes(
 			int n,
