@@ -21,7 +21,7 @@
 #include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/sphere/SphereOperatorsComplex.hpp>
 #include <sweet/sphere/SphereDataComplex.hpp>
-#include <sweet/sphere/SphBandedMatrix.hpp>
+#include <sweet/sphere/SphBandedMatrixPhysicalComplex.hpp>
 #include <sweet/Stopwatch.hpp>
 #include <sweet/FatalError.hpp>
 

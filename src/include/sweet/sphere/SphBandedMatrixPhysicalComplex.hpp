@@ -19,7 +19,7 @@
  * phi(lambda,mu) denotes the solution
  */
 template <typename T>	// T: complex valued single or double precision method
-class SphBandedMatrixComplex	:
+class SphBandedMatrixPhysicalComplex	:
 		SphereSPHIdentities
 {
 public:
@@ -70,7 +70,7 @@ public:
 	}
 
 
-	SphBandedMatrixComplex()	:
+	SphBandedMatrixPhysicalComplex()	:
 		sphereDataConfig(nullptr),
 		buffer_size(0),
 		buffer_in(nullptr),
@@ -79,7 +79,7 @@ public:
 	}
 
 
-	~SphBandedMatrixComplex()
+	~SphBandedMatrixPhysicalComplex()
 	{
 		if (buffer_in != nullptr)
 		{
@@ -265,6 +265,7 @@ public:
 	/**
 	 * Solver for
 	 * Z4robert := grad_j(mu) * grad_i(phi)
+	 *           = im/(r*r) * F_n^m(Phi)
 	 */
 	void solver_component_rexi_z4robert(
 			const std::complex<double> &i_scalar,
@@ -280,9 +281,7 @@ public:
 			for (int n = std::abs(m); n <= sphereDataConfig->spectral_modes_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
-				lhs.rowElement_add(row, n, m, -2, -fac*A(n-2,m));
-				lhs.rowElement_add(row, n, m,  0, -fac*B(n,m) + fac);
-				lhs.rowElement_add(row, n, m, +2, -fac*C(n+2,m));
+				lhs.rowElement_add(row, n, m,  0, fac);
 			}
 		}
 	}
@@ -318,13 +317,34 @@ public:
 
 	/**
 	 * Solver for
+	 *
 	 * Z5robert := grad_j(mu) * mu^2 * grad_i(phi)
+	 *           = i*m/(r*r) * F_n^m(mu^2 \phi)
 	 */
 	void solver_component_rexi_z5robert(
 			const std::complex<double> &i_scalar,
 			double i_r
 	)
 	{
+#if SWEET_THREADING
+#pragma omp parallel for
+#endif
+
+		for (int m = -sphereDataConfig->spectral_modes_m_max; m <= sphereDataConfig->spectral_modes_m_max; m++)
+		{
+			std::complex<double> fac = i_scalar;
+			fac *= std::complex<double>(0, m);
+
+			for (int n = std::abs(m); n <= sphereDataConfig->spectral_modes_n_max; n++)
+			{
+				T *row = lhs.getMatrixRow(n, m);
+				lhs.rowElement_add(row, n, m, -2, fac*R(n-1,m)*R(n-2,m));
+				lhs.rowElement_add(row, n, m,  0, fac*R(n-1,m)*S(n,m) + S(n+1,m)*R(n,m));
+				lhs.rowElement_add(row, n, m, +2, fac*S(n+1,m)*S(n+2,m));
+			}
+		}
+
+#if 0
 #if SWEET_THREADING
 #pragma omp parallel for
 #endif
@@ -341,6 +361,7 @@ public:
 				lhs.rowElement_add(row, n, m,  -2,    -fac*(C(n+2, m)*C(n+4, m))    );
 			}
 		}
+#endif
 	}
 
 
@@ -369,40 +390,44 @@ public:
 		}
 	}
 
+
+
 	/**
 	 * Solver for
 	 * Z6robert := grad_j(mu) * mu * grad_j(phi)
+	 *           =
 	 */
 	void solver_component_rexi_z6robert(
 			const std::complex<double> &i_scalar,
 			double i_r
 	)
 	{
+		/*
+		 * First part
+		 */
+		// phi
+		solver_component_rexi_z1(-i_scalar/(i_r*i_r), i_r);
+
+		// mu^2*phi
+		solver_component_rexi_z2(3.0*i_scalar/(i_r*i_r), i_r);
+
+
+		/*
+		 * Second part
+		 */
 #if SWEET_THREADING
 #pragma omp parallel for
 #endif
 		for (int m = -sphereDataConfig->spectral_modes_m_max; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
-			std::complex<double> s = 1.0/(i_r*i_r)*i_scalar*(double)m;
+			std::complex<double> fac = -1.0/(i_r*i_r)*i_scalar;
 			for (int n = std::abs(m); n <= sphereDataConfig->spectral_modes_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 
-				lhs.rowElement_add(row, n, m,  -2, s*(G(n-1,m)*R(n-2,m))	);
-				lhs.rowElement_add(row, n, m,   0, s*(G(n-1,m)*S(n,m) + H(n+1,m)*R(n,m))	);
-				lhs.rowElement_add(row, n, m,  +2, s*(H(n+1,m)*S(n+2,m))	);
-
-				lhs.rowElement_add(row, n, m,  -4, s*(-A(n-4,m)*(G(n-1,m)*R(n-2,m)))	);
-				lhs.rowElement_add(row, n, m,  -2, s*(-B(n-2,m)*(G(n-1,m)*R(n-2,m)))	);
-				lhs.rowElement_add(row, n, m,   0, s*(-C(n+0,m)*(G(n-1,m)*R(n-2,m)))	);
-
-				lhs.rowElement_add(row, n, m,  -2, s*(-A(n-2,m)*(G(n-1,m)*S(n,m) + H(n+1,m)*R(n,m)))	);
-				lhs.rowElement_add(row, n, m,   0, s*(-B(n+0,m)*(G(n-1,m)*S(n,m) + H(n+1,m)*R(n,m)))	);
-				lhs.rowElement_add(row, n, m,  +2, s*(-C(n+2,m)*(G(n-1,m)*S(n,m) + H(n+1,m)*R(n,m)))	);
-
-				lhs.rowElement_add(row, n, m,   0, s*(-A(n+0,m)*(H(n+1,m)*S(n+2,m)))	);
-				lhs.rowElement_add(row, n, m,  +2, s*(-B(n+2,m)*(H(n+1,m)*S(n+2,m)))	);
-				lhs.rowElement_add(row, n, m,  +4, s*(-C(n+4,m)*(H(n+1,m)*S(n+2,m)))	);
+				lhs.rowElement_add(row, n, m,  -2, fac*(G(n-1,m)*R(n-2,m))	);
+				lhs.rowElement_add(row, n, m,   0, fac*(G(n-1,m)*S(n,m) + H(n+1,m)*R(n,m))	);
+				lhs.rowElement_add(row, n, m,  +2, fac*(H(n+1,m)*S(n+2,m))	);
 			}
 		}
 	}

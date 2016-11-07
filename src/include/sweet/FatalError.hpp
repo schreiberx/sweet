@@ -27,4 +27,31 @@ public:
 };
 
 
+
+class AssertFatalError
+{
+public:
+#ifdef NDEBUG
+	AssertFatalError(bool i_assertion, const std::string i_error)	{}
+#elif !SWEET_DEBUG
+	AssertFatalError(bool i_assertion, const std::string i_error)	{}
+#else
+	AssertFatalError(bool i_assertion, const std::string i_error)
+	{
+		if (i_assertion)
+			return;
+
+		std::cerr << std::flush << std::endl;
+		std::cerr << "********************************************" << std::endl;
+		std::cerr << "ASSERT ERROR: " << i_error << std::endl;
+		std::cerr << "********************************************" << std::endl;
+		std::cerr << std::endl;
+		assert(false);
+		exit(-1);
+	}
+#endif
+
+};
+
+
 #endif /* SRC_INCLUDE_SWEET_FATALERROR_HPP_ */

@@ -8,12 +8,12 @@
 #ifndef SRC_SWEREXI_SPH_HPP_
 #define SRC_SWEREXI_SPH_HPP_
 
-#include <sweet/sphere/SphBandedMatrixComplex.hpp>
 #include <sweet/sphere/SphereOperatorsComplex.hpp>
 #include <sweet/sphere/SphereDataConfig.hpp>
 
 #include <sweet/sphere/Convert_SphereData_to_SphereDataComplex.hpp>
 #include <sweet/sphere/Convert_SphereDataComplex_to_SphereData.hpp>
+#include <sweet/sphere/SphBandedMatrixPhysicalComplex.hpp>
 
 
 /**
@@ -25,8 +25,8 @@ class SWERexi_SPH
 	SphereDataConfig *sphereDataConfig;
 
 	/// Solver for given alpha
-	SphBandedMatrixComplex< std::complex<double> > sphSolverPhi;
-	SphBandedMatrixComplex< std::complex<double> > sphSolverVel;
+	SphBandedMatrixPhysicalComplex< std::complex<double> > sphSolverPhi;
+	SphBandedMatrixPhysicalComplex< std::complex<double> > sphSolverVel;
 
 	/// scalar infront of RHS
 	std::complex<double> rhs_scalar;

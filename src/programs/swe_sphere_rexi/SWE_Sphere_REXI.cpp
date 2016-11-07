@@ -359,10 +359,10 @@ bool SWE_Sphere_REXI::run_timestep_rexi(
 	 * TODO: Maybe we should measure this for the 2nd rank!!!
 	 * The reason could be since Bcast might already return before the packages were actually received!
 	 */
-	#if SWEET_BENCHMARK_REXI
+#if SWEET_BENCHMARK_REXI
 	if (mpi_rank == 0)
 		stopwatch_broadcast.start();
-	#endif
+#endif
 
 	std::size_t data_size = io_prog_h0.sphereDataConfigRexi->spectral_array_data_number_of_elements*2;
 
@@ -374,10 +374,10 @@ bool SWE_Sphere_REXI::run_timestep_rexi(
 	MPI_Bcast(io_prog_u0.array_data_spectral_space, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	MPI_Bcast(io_prog_v0.array_data_spectral_space, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-	#if SWEET_BENCHMARK_REXI
+#if SWEET_BENCHMARK_REXI
 	if (mpi_rank == 0)
 		stopwatch_broadcast.stop();
-	#endif
+#endif
 
 #endif
 

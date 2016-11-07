@@ -16,9 +16,9 @@
 #include <sweet/sphere/SphereData.hpp>
 #include <sweet/sphere/SphereDataComplex.hpp>
 #include <sweet/sphere/SphereOperatorsComplex.hpp>
-#include <sweet/sphere/SphBandedMatrixComplex.hpp>
 #include <rexi/REXI.hpp>
 #include <libmath/BandedMatrixComplex.hpp>
+#include <sweet/sphere/SphBandedMatrixPhysicalComplex.hpp>
 
 
 
@@ -85,7 +85,7 @@ void run_tests(
 		{
 			std::cout << "Test Zx = c*Phi(mu)";
 
-			SphBandedMatrixComplex<std::complex<double>> sphSolver;
+			SphBandedMatrixPhysicalComplex<std::complex<double>> sphSolver;
 			sphSolver.setup(sphereDataConfig, 2);
 
 			sphSolver.solver_component_scalar_phi(alpha);
@@ -105,7 +105,7 @@ void run_tests(
 
 			SphereDataComplex x_numerical = sphSolver.solve(b);
 
-			double error_max = x_numerical.physical_reduce_error_max(x_result);
+			double error_max = x_numerical.physical_reduce_max(x_result);
 			std::cout << " ||| Error: " << error_max << std::endl;
 
 			if (error_max > epsilon)
@@ -119,7 +119,7 @@ void run_tests(
 		{
 			std::cout << "Test Zx = mu*Phi(lam,mu) + a*Phi(lam,mu)";
 
-			SphBandedMatrixComplex<std::complex<double>> sphSolver;
+			SphBandedMatrixPhysicalComplex<std::complex<double>> sphSolver;
 			sphSolver.setup(sphereDataConfig, 2);
 
 			sphSolver.solver_component_scalar_phi(alpha);
@@ -143,7 +143,7 @@ void run_tests(
 //				x_result.spat_write_file("O_result.csv");
 //				(x_result-x_numerical).spat_write_file("O_diff.csv");
 
-			double error_max = x_numerical.physical_reduce_error_max(x_result);
+			double error_max = x_numerical.physical_reduce_max(x_result);
 			std::cout << " ||| Error: " << error_max << std::endl;
 
 			if (error_max > epsilon)
@@ -157,7 +157,7 @@ void run_tests(
 		{
 			std::cout << "Test Zx = (1-mu*mu)*d/dmu Phi(lam,mu) + a*Phi(lam,mu)";
 
-			SphBandedMatrixComplex<std::complex<double>> sphSolver;
+			SphBandedMatrixPhysicalComplex<std::complex<double>> sphSolver;
 			sphSolver.setup(sphereDataConfig, 2);
 
 			std::complex<double> a(alpha);
@@ -180,7 +180,7 @@ void run_tests(
 
 			SphereDataComplex x_numerical = sphSolver.solve(b);
 
-			double error_max = x_numerical.physical_reduce_error_max(x_result);
+			double error_max = x_numerical.physical_reduce_max(x_result);
 			std::cout << " ||| Error: " << error_max << std::endl;
 
 			if (error_max > epsilon)
@@ -200,7 +200,7 @@ void run_tests(
 		{
 			std::cout << "Test Z1 = alpha^4*Phi(mu)";
 
-			SphBandedMatrixComplex<std::complex<double>> sphSolver;
+			SphBandedMatrixPhysicalComplex<std::complex<double>> sphSolver;
 			sphSolver.setup(sphereDataConfig, 2);
 
 			std::complex<double> scalar = (alpha*alpha)*(alpha*alpha);
@@ -218,7 +218,7 @@ void run_tests(
 
 			SphereDataComplex x_numerical = sphSolver.solve(b);
 
-			double error_max = x_numerical.physical_reduce_error_max(x_result);
+			double error_max = x_numerical.physical_reduce_max(x_result);
 			std::cout << " ||| Error: " << error_max << std::endl;
 
 			if (error_max > epsilon)
@@ -232,7 +232,7 @@ void run_tests(
 		{
 			std::cout << "Test Z2 = mu^2*Phi(lam,mu)";
 
-			SphBandedMatrixComplex<std::complex<double>> sphSolver;
+			SphBandedMatrixPhysicalComplex<std::complex<double>> sphSolver;
 			sphSolver.setup(sphereDataConfig, 2);
 
 			std::complex<double> scalar = alpha*alpha*two_omega*two_omega;
@@ -250,7 +250,7 @@ void run_tests(
 
 			SphereDataComplex x_numerical = sphSolver.solve(b);
 
-			double error_max = x_numerical.physical_reduce_error_max(x_result);
+			double error_max = x_numerical.physical_reduce_max(x_result);
 			std::cout << " ||| Error: " << error_max << std::endl;
 
 			if (error_max > epsilon)
@@ -265,7 +265,7 @@ void run_tests(
 		{
 			std::cout << "Test Z3 = mu^4*Phi(lam,mu)";
 
-			SphBandedMatrixComplex<std::complex<double>> sphSolver;
+			SphBandedMatrixPhysicalComplex<std::complex<double>> sphSolver;
 			sphSolver.setup(sphereDataConfig, 4);
 
 			std::complex<double> scalar = two_omega*two_omega*two_omega*two_omega;
@@ -284,7 +284,7 @@ void run_tests(
 
 			SphereDataComplex x_numerical = sphSolver.solve(b);
 
-			double error_max = x_numerical.physical_reduce_error_max(x_result);
+			double error_max = x_numerical.physical_reduce_max(x_result);
 			std::cout << " ||| Error: " << error_max << std::endl;
 
 			if (error_max > epsilon)
@@ -299,7 +299,7 @@ void run_tests(
 		{
 			std::cout << "Test Z4 = grad_j(mu) grad_i(Phi(lam,mu)) = d/dlambda Phi(lam,mu)";
 
-			SphBandedMatrixComplex<std::complex<double>> sphSolver;
+			SphBandedMatrixPhysicalComplex<std::complex<double>> sphSolver;
 			sphSolver.setup(sphereDataConfig, 2);
 
 			std::complex<double> scalar = -alpha*alpha*two_omega;
@@ -324,7 +324,7 @@ void run_tests(
 
 			SphereDataComplex x_numerical = sphSolver.solve(b);
 
-			double error_max = x_numerical.physical_reduce_error_max(x_result);
+			double error_max = x_numerical.physical_reduce_max(x_result);
 			std::cout << " ||| Error: " << error_max << std::endl;
 
 			if (error_max > epsilon)
@@ -339,7 +339,7 @@ void run_tests(
 		{
 			std::cout << "Test Z5 = grad_j(mu) mu^2 grad_i(Phi(lam,mu))";
 
-			SphBandedMatrixComplex<std::complex<double>> sphSolver;
+			SphBandedMatrixPhysicalComplex<std::complex<double>> sphSolver;
 			sphSolver.setup(sphereDataConfig, 2);
 
 			std::complex<double> scalar = two_omega*two_omega*two_omega;
@@ -364,7 +364,7 @@ void run_tests(
 
 			SphereDataComplex x_numerical = sphSolver.solve(b);
 
-			double error_max = x_numerical.physical_reduce_error_max(x_result);
+			double error_max = x_numerical.physical_reduce_max(x_result);
 			std::cout << " ||| Error: " << error_max << std::endl;
 
 			if (error_max > epsilon)
@@ -379,7 +379,7 @@ void run_tests(
 		{
 			std::cout << "Test Z6 = grad_j(mu) mu grad_j(Phi(lam,mu))";
 
-			SphBandedMatrixComplex<std::complex<double>> sphSolver;
+			SphBandedMatrixPhysicalComplex<std::complex<double>> sphSolver;
 			sphSolver.setup(sphereDataConfig, 2);
 
 			std::complex<double> scalar = 2.0*alpha*two_omega*two_omega;
@@ -404,7 +404,7 @@ void run_tests(
 
 			SphereDataComplex x_numerical = sphSolver.solve(b);
 
-			double error_max = x_numerical.physical_reduce_error_max(x_result);
+			double error_max = x_numerical.physical_reduce_max(x_result);
 			std::cout << " ||| Error: " << error_max << std::endl;
 
 			if (error_max > epsilon)
@@ -419,7 +419,7 @@ void run_tests(
 		{
 			std::cout << "Test Z7 = laplace(Phi(lam,mu))";
 
-			SphBandedMatrixComplex<std::complex<double>> sphSolver;
+			SphBandedMatrixPhysicalComplex<std::complex<double>> sphSolver;
 			sphSolver.setup(sphereDataConfig, 2);
 
 			std::complex<double> scalar = 1.0;
@@ -442,7 +442,7 @@ void run_tests(
 
 			SphereDataComplex x_numerical = sphSolver.solve(b);
 
-			double error_max = x_numerical.physical_reduce_error_max(x_result);
+			double error_max = x_numerical.physical_reduce_max(x_result);
 			std::cout << " ||| Error: " << error_max << std::endl;
 
 			if (error_max > epsilon)
@@ -458,7 +458,7 @@ void run_tests(
 		{
 			std::cout << "Test Z8 = mu*mu*laplace(Phi(lam,mu))";
 
-			SphBandedMatrixComplex<std::complex<double>> sphSolver;
+			SphBandedMatrixPhysicalComplex<std::complex<double>> sphSolver;
 			sphSolver.setup(sphereDataConfig, 2);
 
 			std::complex<double> scalar = 1.0;
@@ -481,7 +481,7 @@ void run_tests(
 
 			SphereDataComplex x_numerical = sphSolver.solve(c);
 
-			double error_max = x_numerical.physical_reduce_error_max(x_result);
+			double error_max = x_numerical.physical_reduce_max(x_result);
 			std::cout << " ||| Error: " << error_max << std::endl;
 
 			if (error_max > epsilon)
@@ -515,7 +515,7 @@ void run_tests(
 
 			SphereDataComplex x_numerical = testc.spectral_solve_helmholtz(a, b, r);
 
-			double error_max = x_numerical.physical_reduce_error_max(x_result);
+			double error_max = x_numerical.physical_reduce_max(x_result);
 			std::cout << " ||| Error: " << error_max << std::endl;
 
 			if (error_max > epsilon)

@@ -10,12 +10,12 @@
 
 #include <complex>
 #include <sweet/sphere/SphereDataConfig.hpp>
-#include <sweet/sphere/SphBandedMatrixComplex.hpp>
 #include <sweet/sphere/SphereOperatorsComplex.hpp>
 #include <sweet/sphere/SphereDataConfig.hpp>
 
 #include <sweet/sphere/Convert_SphereData_to_SphereDataComplex.hpp>
 #include <sweet/sphere/Convert_SphereDataComplex_to_SphereData.hpp>
+#include <sweet/sphere/SphBandedMatrixPhysicalComplex.hpp>
 
 
 /**
@@ -27,8 +27,8 @@ class SWERexi_SPHRobert
 	SphereDataConfig *sphereDataConfig;
 
 	/// Solver for given alpha
-	SphBandedMatrixComplex< std::complex<double> > sphSolverPhi;
-	SphBandedMatrixComplex< std::complex<double> > sphSolverVel;
+	SphBandedMatrixPhysicalComplex< std::complex<double> > sphSolverPhi;
+	SphBandedMatrixPhysicalComplex< std::complex<double> > sphSolverVel;
 
 	/// scalar infront of RHS
 	std::complex<double> rhs_scalar;
@@ -201,34 +201,51 @@ public:
 
 		if (use_formulation_with_coriolis_effect)
 		{
-
 #if 1
-
-#if 1
-			// VERSION A
 			// only valid for Robert formulation!
-			SphereDataComplex tmp = (
-					-(alpha*alpha*u0 - two_omega*two_omega*SphereOperatorsComplex::mu2(u0)) +
-					2.0*alpha*two_omega*SphereOperatorsComplex::mu(v0)
-				);
-
-			SphereDataComplex Fc_k =	two_omega*inv_r*(tmp-SphereOperatorsComplex::mu2(tmp));
-
-#else
-			// VERSION B
-			SphereDataComplex Fc_k =	two_omega*inv_r*SphereOperatorsComplex::robert_grad_lat(mu)*(
+			SphereDataComplex Fc_k =	two_omega*inv_r*(
 										-(alpha*alpha*u0 - two_omega*two_omega*SphereOperatorsComplex::mu2(u0)) +
 										2.0*alpha*two_omega*SphereOperatorsComplex::mu(v0)
 									);
 
-#endif
-
 			SphereDataComplex foo = 	avg_geopotential*(div0 - two_omega*(1.0/alpha)*SphereOperatorsComplex::mu(eta0)) +
-									(alpha*phi0 + two_omega*two_omega*(1.0/alpha)*SphereOperatorsComplex::mu2(phi0));
+										(alpha*phi0 + two_omega*two_omega*(1.0/alpha)*SphereOperatorsComplex::mu2(phi0));
 
 			SphereDataComplex rhs =	alpha*alpha*foo +
 									two_omega*two_omega*SphereOperatorsComplex::mu2(foo) +
 									(avg_geopotential/alpha)*Fc_k;
+#else
+
+			double fi = 0;
+			double fj = inv_r*two_omega;
+			double phi_bar = avg_geopotential;
+
+			SphereDataComplex f(sphereDataConfig);
+			f.physical_update_lambda_gaussian_grid(
+					[&](double lon, double mu, std::complex<double> &o_data)
+					{
+						o_data = mu*two_omega;
+					}
+				);
+
+			SphereDataComplex one(sphereDataConfig);
+			one.physical_set_zero();
+			one = one+1.0;
+
+			SphereDataComplex kappa = alpha*alpha+f*f;
+			SphereDataComplex inv_kappa = one/kappa;
+
+			SphereDataComplex Fp_i = fj*(-(alpha*alpha-f*f));
+			SphereDataComplex Fp_j = fj*(2.0*alpha*f);
+
+			SphereDataComplex Fc = Fp_i*u0 + Fp_j*v0;
+
+			SphereDataComplex rhs =
+					kappa*phi_bar*(div0 - f*(1.0/alpha)*eta0)
+					+ kappa*(alpha + f*f*(1.0/alpha))*phi0
+					- phi_bar/alpha*Fc;
+
+#endif
 
 
 			phi = sphSolverPhi.solve(rhs);
@@ -241,32 +258,6 @@ public:
 
 			u = sphSolverVel.solve(rhsa);
 			v = sphSolverVel.solve(rhsb);
-
-#else
-
-			SphereDataComplex Fc_k =	two_omega*inv_r*SphereOperatorsComplex::robert_grad_lon(mu)*(
-										-(alpha*alpha*u0 - two_omega*two_omega*mu*mu*u0) +
-										2.0*alpha*two_omega*mu*v0
-									);
-
-			SphereDataComplex foo = 	avg_geopotential*(div0 - two_omega*(1.0/alpha)*mu*eta0) +
-									(alpha*i_phi0 + two_omega*two_omega*(1.0/alpha)*mu*mu*i_phi0);
-
-			SphereDataComplex rhs =	alpha*alpha*foo +
-									two_omega*two_omega*mu*mu*foo +
-									(1.0/alpha)*Fc_k;
-
-			phi = sphSolverPhi.solve(rhs);
-
-			SphereDataComplex a = u0 + inv_r*SphereOperatorsComplex::robert_grad_lon(phi);
-			SphereDataComplex b = v0 + inv_r*SphereOperatorsComplex::robert_grad_lat(phi);
-
-			SphereDataComplex rhsa = alpha*a - two_omega*mu*b;
-			SphereDataComplex rhsb = two_omega*mu*a + alpha*b;
-
-			u = sphSolverVel.solve(rhsa);
-			v = sphSolverVel.solve(rhsb);
-#endif
 		}
 		else
 		{

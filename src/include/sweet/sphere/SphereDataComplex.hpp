@@ -409,7 +409,7 @@ public:
 	}
 
 
-	SphereDataComplex operator-()
+	SphereDataComplex operator-()	const
 	{
 		request_data_spectral();
 
@@ -418,7 +418,6 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for
 #endif
-
 		for (int idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
 			out_sph_data.spectral_space_data[idx] = -spectral_space_data[idx];
 
@@ -443,9 +442,32 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for
 #endif
-
 		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 			out_sph_data.physical_space_data[i] = i_sph_data.physical_space_data[i]*physical_space_data[i];
+
+		out_sph_data.spectral_space_data_valid = false;
+		out_sph_data.physical_space_data_valid = true;
+
+		return out_sph_data;
+	}
+
+
+	SphereDataComplex operator/(
+			const SphereDataComplex &i_sph_data
+	)	const
+	{
+		check_sphereDataConfig_identical_res(i_sph_data.sphereDataConfig);
+
+		request_data_physical();
+		i_sph_data.request_data_physical();
+
+		SphereDataComplex out_sph_data(sphereDataConfig);
+
+#if SWEET_THREADING
+#pragma omp parallel for
+#endif
+		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+			out_sph_data.physical_space_data[i] = physical_space_data[i]/i_sph_data.physical_space_data[i];
 
 		out_sph_data.spectral_space_data_valid = false;
 		out_sph_data.physical_space_data_valid = true;
@@ -558,6 +580,25 @@ public:
 
 		out_sph_data.request_data_spectral();
 		out_sph_data.spectral_space_data[0] += i_value*std::sqrt(4.0*M_PI);
+
+		out_sph_data.physical_space_data_valid = false;
+		out_sph_data.spectral_space_data_valid = true;
+
+		return out_sph_data;
+	}
+
+
+
+	SphereDataComplex operator-(
+			const std::complex<double> &i_value
+	)	const
+	{
+		std::cout << "MINUS OPERATOR" << std::endl;
+
+		SphereDataComplex out_sph_data(*this);
+		out_sph_data.request_data_spectral();
+
+		out_sph_data.spectral_space_data[0] -= i_value*std::sqrt(4.0*M_PI);
 
 		out_sph_data.physical_space_data_valid = false;
 		out_sph_data.spectral_space_data_valid = true;
@@ -875,6 +916,8 @@ public:
 	 */
 	void physical_set_zero()
 	{
+		AssertFatalError(sphereDataConfig != nullptr, "sphereDataConfig not initialized!");
+
 #if SWEET_THREADING
 #pragma omp parallel for
 #endif
@@ -891,7 +934,7 @@ public:
 	/**
 	 * Return the maximum error norm
 	 */
-	double physical_reduce_error_max(
+	double physical_reduce_max(
 			const SphereDataComplex &i_data
 	)
 	{
@@ -926,7 +969,7 @@ public:
 	/**
 	 * Return the maximum error norm
 	 */
-	double physical_reduce_error_max_abs()
+	double physical_reduce_max_abs()
 	{
 		request_data_physical();
 
@@ -949,7 +992,7 @@ public:
 	}
 
 
-	double physical_reduce_error_rms()
+	double physical_reduce_rms()
 	{
 		request_data_physical();
 
@@ -1298,6 +1341,32 @@ SphereDataComplex operator+(
 )
 {
 	return i_array_data+i_value;
+}
+
+inline
+static
+SphereDataComplex operator-(
+		const std::complex<double> &i_value,
+		const SphereDataComplex &i_array_data
+)
+{
+	i_array_data.request_data_spectral();
+
+	SphereDataComplex out_sph_data(i_array_data.sphereDataConfig);
+
+#if SWEET_THREADING
+#pragma omp parallel for
+#endif
+	for (int idx = 0; idx < i_array_data.sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
+		out_sph_data.spectral_space_data[idx] = -i_array_data.spectral_space_data[idx];
+
+	out_sph_data.spectral_space_data[0] += i_value*std::sqrt(4.0*M_PI);
+
+	out_sph_data.physical_space_data_valid = false;
+	out_sph_data.spectral_space_data_valid = true;
+
+	return out_sph_data;
+
 }
 
 #endif /* SPHDATA_HPP_ */

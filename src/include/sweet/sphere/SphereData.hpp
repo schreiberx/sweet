@@ -918,7 +918,7 @@ public:
 	/**
 	 * Return the maximum error norm between this and the given data in physical space
 	 */
-	double physical_reduce_error_max(
+	double physical_reduce_max(
 			const SphereData &i_sph_data
 	)
 	{
@@ -940,6 +940,23 @@ public:
 		}
 		return error;
 	}
+
+
+	double physical_reduce_rms()
+	{
+		request_data_physical();
+
+		double error = 0;
+
+		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
+		{
+			double &d = physical_space_data[j];
+			error += std::sqrt(d*d);
+		}
+
+		return error / std::sqrt((double)sphereDataConfig->physical_array_data_number_of_elements);
+	}
+
 
 
 	/**

@@ -15,11 +15,12 @@
 
 
 /**
- *
  * phi(lambda,mu) denotes the solution
+ *
+ * WARNING: This is only for real-valued physical space!
  */
 template <typename T>
-class SphBandedMatrix	:
+class SphBandedMatrixPhysicalReal	:
 		SphereSPHIdentities
 {
 public:

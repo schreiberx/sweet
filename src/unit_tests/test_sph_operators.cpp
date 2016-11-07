@@ -32,78 +32,6 @@ void run_tests(
 	epsilon *= (sphConfig->spectral_modes_n_max);
 	std::cout << "Using max allowed error of " << epsilon << std::endl;
 
-#if 0
-	if (true)
-	{
-		// div mu
-		SphereData h(sphConfig);
-		h.physical_update_lambda_gaussian_grid(
-				[&](double a, double mu, double &c){
-					c = mu/sqrt(1.0-mu*mu);
-				}
-		);
-
-		h.physical_file_write_lon_pi_shifted("o_test_initial_pretrunc.csv");
-//		h.physical_truncate();
-		h.physical_file_write_lon_pi_shifted("o_test_initial_trunc.csv");
-
-		h = op.div_lat(h);
-		h.physical_truncate();
-
-		h.physical_file_write_lon_pi_shifted("o_test_postdiv.csv");
-
-		SphereData result(sphConfig);
-		result.physical_update_lambda_gaussian_grid(
-				[&](double a, double b, double &c){
-					c = 1;
-				}
-		);
-		result.physical_truncate();
-
-		result.physical_file_write_lon_pi_shifted("o_test_result.csv");
-
-		double error_max = (h-result).physical_reduce_max_abs();
-		std::cout << "TEST SPECIAL DIV LAT  - max error: " << error_max << std::endl;
-//		exit(1);
-	}
-
-
-
-	if (true)
-	{
-		// diff mu
-		SphereData h(sphConfig);
-		h.physical_update_lambda_gaussian_grid(
-				[&](double lambda, double mu, double &io_data)
-				{
-					io_data = mu;	// sin(phi)
-				}
-		);
-//		h.physical_write_file("O_mu_sph_result.csv");
-//		h.spectral_truncate();
-
-		h = op.diff_lat_mu(h);
-//		h.spectral_truncate();
-//		h.physical_write_file("O_diff_mu_sph_result.csv");
-
-		SphereData result(sphConfig);
-		result.physical_update_lambda_gaussian_grid(
-				[&](double a, double b, double &io_data){
-					io_data = 1.0;
-				}
-		);
-
-//		result.spectral_truncate();
-//		result.physical_write_file("O_diff_mu_correct_result.csv");
-//		(h-result).physical_write_file("O_diff_mu_correct_diff.csv");
-
-		double error_max = h.physical_reduce_error_max(result);
-		std::cout << "TEST DIFF LAT  - max error: " << error_max << std::endl;
-
-		if (error_max > epsilon)
-			FatalError("ERROR THRESHOLD EXCEEDED!");
-	}
-#endif
 
 	if (true)
 	{
@@ -129,7 +57,7 @@ void run_tests(
 		// one_minus_mu_squared_diff_lat
 		h = op.spec_one_minus_mu_squared_diff_lat_mu(h);
 
-		double error_max = h.physical_reduce_error_max(result);
+		double error_max = h.physical_reduce_max(result);
 		std::cout << "TEST SPHbasis (1-mu*mu)*d/dmu - max error: " << error_max << std::endl;
 
 		if (error_max > epsilon)
@@ -163,7 +91,7 @@ void run_tests(
 			);
 			data2.spectral_truncate();
 
-			double error = data.physical_reduce_error_max(data2);
+			double error = data.physical_reduce_max(data2);
 			std::cout << "ERROR operator*123.0: " << error << std::endl;
 
 			if (error > epsilon)
@@ -192,7 +120,7 @@ void run_tests(
 			);
 			data2.spectral_truncate();
 
-			double error = data.physical_reduce_error_max(data2);
+			double error = data.physical_reduce_max(data2);
 			std::cout << "ERROR operator+(double): " << error << std::endl;
 
 			if (error > epsilon)
@@ -214,7 +142,7 @@ void run_tests(
 			);
 //			hphi.file_physical_writeFile("O_test_function_phi.csv");
 
-			double error_max = h.physical_reduce_error_max(hphi);
+			double error_max = h.physical_reduce_max(hphi);
 			std::cout << "TEST PHI vs. MU: max error: " << error_max << std::endl;
 
 			if (error_max > epsilon)
@@ -236,7 +164,7 @@ void run_tests(
 			);
 			//result = result.spat_truncate();
 
-			double error_max = h.physical_reduce_error_max(result);
+			double error_max = h.physical_reduce_max(result);
 
 			std::cout << "TEST IDENTITY: max error: " << error_max << std::endl;
 
@@ -265,7 +193,7 @@ void run_tests(
 			//result = result.spat_truncate();
 //			result.file_physical_writeFile("O_diff_lambda_correct_result.csv");
 
-			double error_max = h.physical_reduce_error_max(result);
+			double error_max = h.physical_reduce_max(result);
 			std::cout << "TEST DIFF LON - max error: " << error_max << std::endl;
 
 			if (error_max > epsilon)
@@ -290,7 +218,7 @@ void run_tests(
 			//result = result.spat_truncate();
 //			result.file_physical_writeFile("O_diff_phi_correct_result.csv");
 
-			double error_max = h.physical_reduce_error_max(result);
+			double error_max = h.physical_reduce_max(result);
 			std::cout << "TEST DIFF PHI - max error: " << error_max << std::endl;
 
 			if (error_max > epsilon)
@@ -316,7 +244,7 @@ void run_tests(
 			//result = result.spat_truncate();
 //			result.file_physical_writeFile("O_diff_mu_correct_result.csv");
 
-			double error_max = h.physical_reduce_error_max(result);
+			double error_max = h.physical_reduce_max(result);
 			std::cout << "TEST DIFF LAT MU - max error: " << error_max << std::endl;
 
 			if (error_max > epsilon)
@@ -339,7 +267,7 @@ void run_tests(
 			);
 //			result.file_physical_writeFile("O_mu_correct_result.csv");
 
-			double error_max = h.physical_reduce_error_max(result);
+			double error_max = h.physical_reduce_max(result);
 			std::cout << "TEST mu*() - max error: " << error_max << std::endl;
 
 			if (error_max > epsilon)
@@ -365,7 +293,7 @@ void run_tests(
 			);
 //			result.file_physical_writeFile("O_mu2_correct_result.csv");
 
-			double error_max = h.physical_reduce_error_max(result);
+			double error_max = h.physical_reduce_max(result);
 			std::cout << "TEST mu*mu*() - max error: " << error_max << std::endl;
 
 			if (error_max > epsilon)
@@ -390,7 +318,7 @@ void run_tests(
 
 //			result.file_physical_writeFile("O_one_minus_mu_squared_diff_mu_correct_result.csv");
 
-			double error_max = h.physical_reduce_error_max(result);
+			double error_max = h.physical_reduce_max(result);
 			std::cout << "TEST (1-mu*mu)*d/dmu - max error: " << error_max << std::endl;
 
 			if (error_max > epsilon)
@@ -416,7 +344,7 @@ void run_tests(
 			//result = result.spat_truncate();
 //			result.file_physical_writeFile("O_grad_lambda_correct_result.csv");
 
-			double error_max = h.physical_reduce_error_max(result);
+			double error_max = h.physical_reduce_max(result);
 			std::cout << "TEST GRAD LON - max error: " << error_max << std::endl;
 
 			if (error_max > epsilon)
@@ -441,7 +369,7 @@ void run_tests(
 
 //			result.file_physical_writeFile("O_grad_phi_correct_result.csv");
 
-			double error_max = h.physical_reduce_error_max(result);
+			double error_max = h.physical_reduce_max(result);
 			std::cout << "TEST GRAD LAT - max error: " << error_max << std::endl;
 
 			if (error_max > epsilon)
@@ -465,7 +393,7 @@ void run_tests(
 			);
 //			result.file_physical_writeFile("O_div_lambda_correct_result.csv");
 
-			double error_max = h.physical_reduce_error_max(result);
+			double error_max = h.physical_reduce_max(result);
 			std::cout << "TEST DIV LON  - max error: " << error_max << std::endl;
 
 			if (error_max > epsilon)
@@ -498,7 +426,7 @@ void run_tests(
 			result.physical_file_write("O_div_mu_correct_result.csv");
 			(h-result).physical_file_write("O_div_mu_correct_diff.csv");
 
-			double error_max = h.physical_reduce_error_max(result);
+			double error_max = h.physical_reduce_max(result);
 			std::cout << "TEST DIV LAT  - max error: " << error_max << std::endl;
 
 			if (error_max > epsilon)
@@ -540,7 +468,7 @@ void run_tests(
 			result.file_physical_writeFile("O_div_mu_TEST_correct_result.csv");
 			(h-result).file_physical_writeFile("O_div_mu_TEST_correct_diff.csv");
 
-			double error_max = h.physical_reduce_error_max(result);
+			double error_max = h.physical_reduce_max(result);
 			std::cout << "TEST DIV TEST LAT  - max error: " << error_max << std::endl;
 		}
 #endif
@@ -575,7 +503,7 @@ void run_tests(
 
 //			(h-result).file_physical_writeFile("O_divergence_correct_diff.csv");
 
-			double error_max = h.physical_reduce_error_max(result);
+			double error_max = h.physical_reduce_max(result);
 			std::cout << "TEST DIVERGENCE - max error: " << error_max << std::endl;
 
 			if (error_max > epsilon)
@@ -616,7 +544,7 @@ void run_tests(
 
 //			(h-result).file_physical_writeFile("O_vort_correct_diff.csv");
 
-			double error_max = h.physical_reduce_error_max(result);
+			double error_max = h.physical_reduce_max(result);
 			std::cout << "TEST VORTICITY - max error: " << error_max << std::endl;
 
 			if (error_max > epsilon)
@@ -650,7 +578,7 @@ void run_tests(
 
 //			(h-result).file_physical_writeFile("O_laplace_laplace_z_diff.csv");
 
-			double error_max = h.physical_reduce_error_max(result);
+			double error_max = h.physical_reduce_max(result);
 			std::cout << "TEST LAPLACE (div.grad vs. sph laplace) - max error: " << error_max << std::endl;
 
 			if (error_max > epsilon)
