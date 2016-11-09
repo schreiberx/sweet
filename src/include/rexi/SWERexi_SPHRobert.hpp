@@ -127,6 +127,8 @@ public:
 			sphSolverPhi.solver_component_rexi_z8(	-avg_geopotential*two_omega*two_omega, r);
 		}
 
+
+
 		sphSolverVel.setup(sphereDataConfig, 2);
 		sphSolverVel.solver_component_rexi_z1(	alpha*alpha, r);
 		if (use_formulation_with_coriolis_effect)

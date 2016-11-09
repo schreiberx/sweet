@@ -61,7 +61,7 @@ void errorCheck(
 	double rel_max_abs = diff.physical_reduce_max_abs() / normalize_fac;
 	double rel_rms = diff.physical_reduce_rms() / normalize_fac;
 
-	std::cout << "Error = " << i_id << ":\t" << rel_max_abs << "\t" << rel_rms << "\t\tThreshold: " << i_error_threshold << std::endl;
+	std::cout << "Error for " << i_id << ": \t" << rel_max_abs << "\t" << rel_rms << "\t\tThreshold: " << i_error_threshold << std::endl;
 
 	if (rel_max_abs > i_error_threshold)
 	{
@@ -101,7 +101,7 @@ void errorCheck(
 	double rel_max_abs = diff.physical_reduce_max_abs() / normalize_fac;
 	double rel_rms = diff.physical_reduce_rms() / normalize_fac;
 
-	std::cout << "Error = " << i_id << ":\t" << rel_max_abs << "\t" << rel_rms << "\t\tThreshold: " << i_error_threshold << std::endl;
+	std::cout << "Error for " << i_id << ": \t" << rel_max_abs << "\t" << rel_rms << "\t\tThreshold: " << i_error_threshold << std::endl;
 
 	if (rel_max_abs > i_error_threshold)
 	{

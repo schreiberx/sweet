@@ -465,6 +465,8 @@ public:
 			double i_r
 	)
 	{
+		std::complex<double> fac = (1.0/(i_r*i_r))*i_scalar;
+
 #if SWEET_THREADING
 #pragma omp parallel for
 #endif
@@ -474,12 +476,23 @@ public:
 			{
 				T *row = lhs.getMatrixRow(n, m);
 
-				lhs.rowElement_add(row, n, m, 0, 1.0/(i_r*i_r)*i_scalar*2.0);
+				// eq (D) in REXI SH document section 8.1.11 ver. 15
+				std::complex<double> a = fac*(-(double)n*((double)n+1.0));
+				lhs.rowElement_add(row, n, m, -2, a*A(n-2,m));
+				lhs.rowElement_add(row, n, m,  0, a*B(n,m));
+				lhs.rowElement_add(row, n, m, +2, a*C(n+2,m));
 
-				double fac = -1.0/(i_r*i_r)*((double)m*m-(double)n*(n+1.0));
-				lhs.rowElement_add(row, n, m, -2, i_scalar*fac*A(n-2,m));
-				lhs.rowElement_add(row, n, m,  0, i_scalar*fac*B(n,m));
-				lhs.rowElement_add(row, n, m, +2, i_scalar*fac*C(n+2,m));
+				// eq (Ba+Aa) in REXI SH document section 8.1.11 ver. 15
+				lhs.rowElement_add(row, n, m, -2, 4.0*fac*( R(n-2,m)*G(n-1,m)) );
+				lhs.rowElement_add(row, n, m,  0, 4.0*fac*( S(n,m)*G(n-1,m) + R(n,m)*H(n+1,m)) );
+				lhs.rowElement_add(row, n, m, +2, 4.0*fac*( S(n+2,m)*H(n+1,m)) );
+
+				// eq (Ab) in REXI SH document section 8.1.11 ver. 15
+				lhs.rowElement_add(row, n, m, 0, 2.0*fac);
+
+				lhs.rowElement_add(row, n, m, -2, -6.0*fac*A(n-2,m));
+				lhs.rowElement_add(row, n, m,  0, -6.0*fac*B(n,m));
+				lhs.rowElement_add(row, n, m, +2, -6.0*fac*C(n+2,m));
 			}
 		}
 	}
