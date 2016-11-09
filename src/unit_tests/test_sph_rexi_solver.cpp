@@ -134,7 +134,6 @@ void run_tests()
 	std::cout << " + Coriolis_omega: " << simVars.sim.coriolis_omega << std::endl;
 	std::cout << " + Viscosity D: " << simVars.sim.viscosity << std::endl;
 	std::cout << " + use_nonlinear: " << simVars.misc.use_nonlinear_equations << std::endl;
-	std::cout << " + Use REXI Coriolis formulation: " << (param_rexi_use_coriolis_formulation ? "true" : "false") << std::endl;
 	std::cout << std::endl;
 	std::cout << " + Benchmark scenario id: " << simVars.setup.benchmark_scenario_id << std::endl;
 	std::cout << " + Use robert functions: " << simVars.misc.sphere_use_robert_functions << std::endl;
@@ -143,6 +142,7 @@ void run_tests()
 	std::cout << " + REXI M: " << simVars.rexi.rexi_M << std::endl;
 	std::cout << " + REXI use half poles: " << simVars.rexi.rexi_use_half_poles << std::endl;
 	std::cout << " + REXI additional modes: " << simVars.rexi.rexi_use_extended_modes << std::endl;
+	std::cout << " + Use REXI Coriolis formulation: " << (param_rexi_use_coriolis_formulation ? "true" : "false") << std::endl;
 	std::cout << std::endl;
 	std::cout << " + RK order: " << simVars.disc.timestepping_runge_kutta_order << std::endl;
 	std::cout << " + timestep size: " << simVars.timecontrol.current_timestep_size << std::endl;
@@ -194,7 +194,7 @@ void run_tests()
 
 	std::complex<double> beta(1.0, 0.0);
 
-	for (int use_complex_valued_solver = 0; use_complex_valued_solver < 2; use_complex_valued_solver++)
+	for (int use_complex_valued_solver = 1; use_complex_valued_solver < 2; use_complex_valued_solver++)
 	{
 		for (std::size_t i = 0; i < rexi.alpha.size(); i++)
 		{
@@ -999,25 +999,22 @@ void run_tests()
 					one = one+1.0;
 
 					SphereDataComplex kappa = alpha*alpha+f*f;
-					SphereDataComplex inv_kappa = one/kappa;
+//					SphereDataComplex inv_kappa = one/kappa;
 
 					SphereDataComplex Fp_i = fj*(-(alpha*alpha-f*f));
 					SphereDataComplex Fp_j = fj*(2.0*alpha*f);
 
 					SphereDataComplex Fc = Fp_i*u0 + Fp_j*v0;
 
-					SphereDataComplex F_lhs =
+					SphereDataComplex lhs =
 							  kappa*kappa*phi
 							+ phi_bar/alpha*(Fp_i*ir*opComplex.robert_grad_lon(phi) + Fp_j*ir*opComplex.robert_grad_lat(phi))
 							- kappa*phi_bar*ir*ir*opComplex.laplace(phi);
 
-					SphereDataComplex F_rhs =
+					SphereDataComplex rhs =
 							kappa*phi_bar*(div0 - f*(1.0/alpha)*eta0)
 							+ kappa*(alpha + f*f*(1.0/alpha))*phi0
 							- phi_bar/alpha*Fc;
-
-					lhs = F_lhs;
-					rhs = F_rhs;
 
 					errorCheck(lhs, rhs, "7a", epsilon, simVars.rexi.rexi_use_extended_modes < 2);
 				}
@@ -1103,10 +1100,99 @@ void run_tests()
 
 					errorCheck(lhs, rhs, "8b", epsilon, simVars.rexi.rexi_use_extended_modes < 2);
 				}
-
-
 			}
 #endif
+
+
+			if (false)
+			{
+
+				SphereDataComplex f(sphereDataConfig);
+				f.physical_update_lambda_gaussian_grid(
+						[&](double lon, double mu, std::complex<double> &o_data)
+						{
+							o_data = mu*two_omega;
+						}
+					);
+
+				SphereDataComplex &phi0 = prog_phi0_cplx;
+				SphereDataComplex &u0 = prog_u0_cplx;
+				SphereDataComplex &v0 = prog_v0_cplx;
+
+				SphereDataComplex phi = prog_phi_cplx;
+				SphereDataComplex u = prog_u_cplx;
+				SphereDataComplex v = prog_v_cplx;
+
+
+				SphereDataComplex div0 = ir*opComplex.robert_div(u0, v0);
+				SphereDataComplex eta0 = ir*opComplex.robert_vort(u0, v0);
+
+				SphereDataComplex div = ir*opComplex.robert_div(u, v);
+				SphereDataComplex eta = ir*opComplex.robert_vort(u, v);
+
+
+				/*
+				 * REXI SPH document ver 15, Section 5.3.6
+				 *
+				 * eq. V= A^{-1} (V0 + GRAD(PHI)) = A^{-1} T
+				 */
+				SphereDataComplex one(sphereDataConfig);
+				one.physical_set_zero();
+				one = one+1.0;
+
+				SphereDataComplex kappa = alpha*alpha+f*f;
+				SphereDataComplex inv_kappa = one/kappa;
+
+#if 1
+				SphereDataComplex Ti = u0 + ir*opComplex.robert_grad_lon(prog_phi_cplx);
+				SphereDataComplex Tj = v0 + ir*opComplex.robert_grad_lat(prog_phi_cplx);
+#else
+				SphereDataComplex Ti = u0 + ir*opComplex.robert_grad_lon(Convert_SphereData_To_SphereDataComplex::physical_convert(rexi_prog_phi));
+				SphereDataComplex Tj = v0 + ir*opComplex.robert_grad_lat(Convert_SphereData_To_SphereDataComplex::physical_convert(rexi_prog_phi));
+#endif
+
+				SphereDataComplex lhs = u;
+				SphereDataComplex rhs =	inv_kappa*(
+							alpha*Ti
+							- two_omega*opComplex.mu(Tj)
+						);
+
+				errorCheck(lhs, rhs, "VEL (phi) REXI u", epsilon, simVars.rexi.rexi_use_extended_modes < 2);
+
+				lhs = v;
+				rhs =	inv_kappa*(
+						  two_omega*opComplex.mu(Ti)
+						+ alpha*Tj
+						);
+
+				errorCheck(lhs, rhs, "VEL (phi) REXI v", epsilon, simVars.rexi.rexi_use_extended_modes < 2);
+
+
+				{
+					SphBandedMatrixPhysicalComplex< std::complex<double> > sphSolverVel;
+
+					sphSolverVel.setup(sphereDataConfig, 2);
+					sphSolverVel.solver_component_rexi_z1(	alpha*alpha, r);
+					sphSolverVel.solver_component_rexi_z2(	two_omega*two_omega, r);
+
+
+					double inv_r = ir;
+					SphereDataComplex a = u0 + inv_r*SphereOperatorsComplex::robert_grad_lon(prog_phi_cplx);
+					SphereDataComplex b = v0 + inv_r*SphereOperatorsComplex::robert_grad_lat(prog_phi_cplx);
+
+					SphereDataComplex rhsa = alpha*a - two_omega*SphereOperatorsComplex::mu(b);
+					SphereDataComplex rhsb = two_omega*SphereOperatorsComplex::mu(a) + alpha*b;
+
+					SphereDataComplex u_cplx = sphSolverVel.solve(rhsa);
+					SphereDataComplex v_cplx = sphSolverVel.solve(rhsb);
+
+
+					errorCheck(u_cplx, prog_u_cplx, "VEL (phi) u_cplx", epsilon, simVars.rexi.rexi_use_extended_modes < 2);
+					errorCheck(v_cplx, prog_v_cplx, "VEL (phi) v", epsilon, simVars.rexi.rexi_use_extended_modes < 2);
+				}
+			}
+
+
 			/*
 			 * Output of REXI (ext modes)
 			 */
@@ -1227,94 +1313,6 @@ void run_tests()
 			errorCheck(rexi_prog_phi, prog_phi, "prog_phi", epsilon*1e+1);
 
 
-			{
-
-				SphereDataComplex f(sphereDataConfig);
-				f.physical_update_lambda_gaussian_grid(
-						[&](double lon, double mu, std::complex<double> &o_data)
-						{
-							o_data = mu*two_omega;
-						}
-					);
-
-				SphereDataComplex &phi0 = prog_phi0_cplx;
-				SphereDataComplex &u0 = prog_u0_cplx;
-				SphereDataComplex &v0 = prog_v0_cplx;
-
-				SphereDataComplex phi = prog_phi_cplx;
-				SphereDataComplex u = prog_u_cplx;
-				SphereDataComplex v = prog_v_cplx;
-
-
-				SphereDataComplex div0 = ir*opComplex.robert_div(u0, v0);
-				SphereDataComplex eta0 = ir*opComplex.robert_vort(u0, v0);
-
-				SphereDataComplex div = ir*opComplex.robert_div(u, v);
-				SphereDataComplex eta = ir*opComplex.robert_vort(u, v);
-
-
-				/*
-				 * REXI SPH document ver 15, Section 5.3.6
-				 *
-				 * eq. V= A^{-1} (V0 + GRAD(PHI)) = A^{-1} T
-				 */
-				SphereDataComplex one(sphereDataConfig);
-				one.physical_set_zero();
-				one = one+1.0;
-
-				SphereDataComplex kappa = alpha*alpha+f*f;
-				SphereDataComplex inv_kappa = one/kappa;
-
-#if 1
-				SphereDataComplex Ti = u0 + ir*opComplex.robert_grad_lon(prog_phi_cplx);
-				SphereDataComplex Tj = v0 + ir*opComplex.robert_grad_lat(prog_phi_cplx);
-#else
-				SphereDataComplex Ti = u0 + ir*opComplex.robert_grad_lon(Convert_SphereData_To_SphereDataComplex::physical_convert(rexi_prog_phi));
-				SphereDataComplex Tj = v0 + ir*opComplex.robert_grad_lat(Convert_SphereData_To_SphereDataComplex::physical_convert(rexi_prog_phi));
-#endif
-
-				SphereDataComplex lhs = u;
-				SphereDataComplex rhs =	inv_kappa*(
-							alpha*Ti
-							- two_omega*opComplex.mu(Tj)
-						);
-
-				errorCheck(lhs, rhs, "VEL (phi) REXI u", epsilon, simVars.rexi.rexi_use_extended_modes < 2);
-
-				lhs = v;
-				rhs =	inv_kappa*(
-						  two_omega*opComplex.mu(Ti)
-						+ alpha*Tj
-						);
-
-				errorCheck(lhs, rhs, "VEL (phi) REXI v", epsilon, simVars.rexi.rexi_use_extended_modes < 2);
-
-
-				{
-					SphBandedMatrixPhysicalComplex< std::complex<double> > sphSolverVel;
-
-					sphSolverVel.setup(sphereDataConfig, 2);
-					sphSolverVel.solver_component_rexi_z1(	alpha*alpha, r);
-					sphSolverVel.solver_component_rexi_z2(	two_omega*two_omega, r);
-
-
-					double inv_r = ir;
-					SphereDataComplex a = u0 + inv_r*SphereOperatorsComplex::robert_grad_lon(prog_phi_cplx);
-					SphereDataComplex b = v0 + inv_r*SphereOperatorsComplex::robert_grad_lat(prog_phi_cplx);
-
-					SphereDataComplex rhsa = alpha*a - two_omega*SphereOperatorsComplex::mu(b);
-					SphereDataComplex rhsb = two_omega*SphereOperatorsComplex::mu(a) + alpha*b;
-
-					SphereData u = Convert_SphereDataComplex_To_SphereData::physical_convert(sphSolverVel.solve(rhsa));
-					SphereData v = Convert_SphereDataComplex_To_SphereData::physical_convert(sphSolverVel.solve(rhsb));
-
-
-					errorCheck(u, prog_u, "VEL (phi) u", epsilon, simVars.rexi.rexi_use_extended_modes < 2);
-					errorCheck(v, prog_v, "VEL (phi) v", epsilon, simVars.rexi.rexi_use_extended_modes < 2);
-				}
-			}
-
-
 
 			errorCheck(rexi_prog_u, prog_u, "prog_u", epsilon*1e+1);
 			errorCheck(rexi_prog_v, prog_v, "prog_v", epsilon*1e+1);
@@ -1341,11 +1339,13 @@ int main(
 	};
 
 	// default values for specific input (for general input see SimulationVariables.hpp)
-	simVars.bogus.var[0] = 0;
+	simVars.bogus.var[0] = 1;
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
+		std::cout << "	--rexi-use-coriolis-formulation [0/1]	Use REXI formulation with coriolis effect" << std::endl;
+
 #if SWEET_PARAREAL
 		simVars.parareal.setup_printOptions();
 #endif

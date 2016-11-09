@@ -91,20 +91,6 @@ public:
 
 		coriolis_omega = i_coriolis_omega;
 
-#if 0
-		/*
-		 * ACTIVATE THIS FOR DEBUGGING PURPOSE ONLY!!!
-		 *
-		 * Setting this to zero is useful to check the
-		 * (a*a+f*f)^{-1} oriented solver without any
-		 * Coriolis effect it in
-		 */
-		// TODO: REMOVE ME!!!!
-		// TODO: REMOVE ME!!!!
-		// TODO: REMOVE ME!!!!
-		coriolis_omega = 0;
-#endif
-
 		two_omega = 2.0*coriolis_omega;
 		avg_geopotential = i_avg_geopotential;
 
@@ -179,17 +165,6 @@ public:
 			SphereData &o_v
 	)
 	{
-#if 0
-		// TODO: replace with spectral operation
-		SphereDataComplex mu(i_phi0.sphereDataConfig);
-		mu.physical_update_lambda_gaussian_grid(
-				[&](double lon, double mu, std::complex<double> &o_data)
-				{
-					o_data = mu;
-				}
-			);
-#endif
-
 		const SphereDataComplex &phi0 = i_phi0;
 		const SphereDataComplex &u0 = i_u0;
 		const SphereDataComplex &v0 = i_v0;
@@ -203,7 +178,10 @@ public:
 
 		if (use_formulation_with_coriolis_effect)
 		{
-#if 1
+#if 0
+			/**
+			 * THE VERSION BELOW IS MORE ACCURATE
+			 */
 			// only valid for Robert formulation!
 			SphereDataComplex Fc_k =	two_omega*inv_r*(
 										-(alpha*alpha*u0 - two_omega*two_omega*SphereOperatorsComplex::mu2(u0)) +
@@ -217,8 +195,9 @@ public:
 									two_omega*two_omega*SphereOperatorsComplex::mu2(foo) +
 									(avg_geopotential/alpha)*Fc_k;
 #else
-
-			double fi = 0;
+			/**
+			 * THIS PRODUCES HIGHER ACCURATE RESULTS - TODO: WHY?
+			 */
 			double fj = inv_r*two_omega;
 			double phi_bar = avg_geopotential;
 
@@ -230,12 +209,7 @@ public:
 					}
 				);
 
-			SphereDataComplex one(sphereDataConfig);
-			one.physical_set_zero();
-			one = one+1.0;
-
 			SphereDataComplex kappa = alpha*alpha+f*f;
-			SphereDataComplex inv_kappa = one/kappa;
 
 			SphereDataComplex Fp_i = fj*(-(alpha*alpha-f*f));
 			SphereDataComplex Fp_j = fj*(2.0*alpha*f);

@@ -193,15 +193,10 @@ public:
 			for (int n = std::abs(m); n <= sphereDataConfig->spectral_modes_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
-#if 0
-				lhs.rowElement_add(row, n, m, -2, i_scalar*R(n-1,m)*R(n-2,m));
-				lhs.rowElement_add(row, n, m,  0, i_scalar*R(n-1,m)*S(n,m) + S(n+1,m)*R(n,m));
-				lhs.rowElement_add(row, n, m, +2, i_scalar*S(n+1,m)*S(n+2,m));
-#else
+
 				lhs.rowElement_add(row, n, m, -2, i_scalar*A(n-2,m));
 				lhs.rowElement_add(row, n, m,  0, i_scalar*B(n,m));
 				lhs.rowElement_add(row, n, m, +2, i_scalar*C(n+2,m));
-#endif
 			}
 		}
 	}
@@ -332,15 +327,14 @@ public:
 
 		for (int m = -sphereDataConfig->spectral_modes_m_max; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
-			std::complex<double> fac = i_scalar;
-			fac *= std::complex<double>(0, m);
+			std::complex<double> fac = i_scalar*std::complex<double>(0, m)*1.0/(i_r*i_r);
 
 			for (int n = std::abs(m); n <= sphereDataConfig->spectral_modes_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
-				lhs.rowElement_add(row, n, m, -2, fac*R(n-1,m)*R(n-2,m));
-				lhs.rowElement_add(row, n, m,  0, fac*R(n-1,m)*S(n,m) + S(n+1,m)*R(n,m));
-				lhs.rowElement_add(row, n, m, +2, fac*S(n+1,m)*S(n+2,m));
+				lhs.rowElement_add(row, n, m, -2, fac*(R(n-1,m)*R(n-2,m)));
+				lhs.rowElement_add(row, n, m,  0, fac*(R(n-1,m)*S(n,m) + S(n+1,m)*R(n,m)));
+				lhs.rowElement_add(row, n, m, +2, fac*(S(n+1,m)*S(n+2,m)));
 			}
 		}
 
