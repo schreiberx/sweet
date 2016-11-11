@@ -167,6 +167,7 @@ private:
 	}
 
 
+
 private:
 	void p_run_timesteps(
 			double i_timestep_size,
@@ -275,7 +276,10 @@ public:
 		prog_v.physical_file_write(prefix_string+"_initial_prog_v.csv");
 
 		// NOTE: This is only a very rough approximation of the time step size
-		double timestep_size = simVars.sim.earth_radius/(std::max(simVars.disc.res_physical[0], simVars.disc.res_physical[1])*simVars.sim.h0);
+		double timestep_size = simVars.sim.earth_radius/(
+				std::max(simVars.disc.res_physical[0], simVars.disc.res_physical[1])*
+					std::max(simVars.sim.gravitation, std::max(simVars.sim.h0, simVars.sim.coriolis_omega))
+		);
 
 		// run 200 time steps
 		double simtime = timestep_size * 100;

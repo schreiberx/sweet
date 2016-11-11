@@ -107,7 +107,7 @@ public:
 
 		// use this static pointer to allow using an existing quadrature code
 		*getPtrT() = this;
-		SphereDataConfig *sphConfig = o_h.sphereDataConfig;
+		const SphereDataConfig *sphereDataConfig = o_h.sphereDataConfig;
 
 
 		/*
@@ -120,23 +120,23 @@ public:
 		 *
 		 * Metric correction terms based on John Thuburn's code
 		 */
-		const unsigned short nlat = sphConfig->physical_num_lat;
+		const unsigned short nlat = sphereDataConfig->physical_num_lat;
 		double *hg_cached =  new double[nlat];
 
 		double h_area = 0;
 		double hg_sum = 0;
 		double int_start, int_end, int_delta;
 
-		int j = sphConfig->physical_num_lat-1;
+		int j = sphereDataConfig->physical_num_lat-1;
 
 		// start/end of first integration interval
 		{
-			assert(sphConfig->lat[j] < 0);
+			assert(sphereDataConfig->lat[j] < 0);
 
 			// start at the south pole
 			int_start = -M_PI*0.5;
 			// first latitude gaussian point
-			int_end = sphConfig->lat[j];
+			int_end = sphereDataConfig->lat[j];
 			// 1d area of integration
 			int_delta = int_end - int_start;
 
@@ -166,7 +166,7 @@ public:
 
 		for (; j >= 0; j--)
 		{
-			double int_end = sphConfig->lat[j];
+			double int_end = sphereDataConfig->lat[j];
 			int_delta = int_end - int_start;
 			assert(int_delta > 0);
 
@@ -206,13 +206,13 @@ public:
 		double h_comp_avg = h_sum / h_area;
 
 		// shift to 10km
-		for (int j = 0; j < sphConfig->physical_num_lat; j++)
+		for (int j = 0; j < sphereDataConfig->physical_num_lat; j++)
 			hg_cached[j] = hg_cached[j]/simVars.sim.gravitation + (h_avg-h_comp_avg);
 
 		// update data
-		for (int i = 0; i < sphConfig->physical_num_lon; i++)
-			for (int j = 0; j < sphConfig->physical_num_lat; j++)
-				o_h.physical_space_data[i*sphConfig->physical_num_lat + j] = hg_cached[j];
+		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
+			for (int j = 0; j < sphereDataConfig->physical_num_lat; j++)
+				o_h.physical_space_data[i*sphereDataConfig->physical_num_lat + j] = hg_cached[j];
 
 		o_h.physical_space_data_valid = true;
 		o_h.spectral_space_data_valid = false;

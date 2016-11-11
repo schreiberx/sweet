@@ -283,6 +283,7 @@ void SWE_Sphere_REXI::setup(
 					{
 						perThreadVars[i]->rexiSPHRobert_vector[thread_local_idx].setup(
 								sphereDataConfigRexi,
+								sphereDataConfig,
 								perThreadVars[i]->alpha[thread_local_idx],
 								perThreadVars[i]->beta_re[thread_local_idx],
 								simCoeffs->earth_radius,
@@ -464,7 +465,8 @@ bool SWE_Sphere_REXI::run_timestep_rexi(
 					SWERexi_SPHRobert rexiSPHRobert;
 
 					rexiSPHRobert.setup(
-							sphereDataConfigRexi,
+							sphereDataConfigRexi,	///< sphere data for input data
+							sphereDataConfig,		///< sphereData for solver (should be truncated!)
 							alpha,
 							beta_re,
 							simCoeffs->earth_radius,

@@ -537,6 +537,8 @@ public:
 			const SphereDataComplex &i_rhs
 	)
 	{
+		i_rhs.check_sphereDataConfig_identical_res(sphereDataConfig);
+
 		i_rhs.request_data_spectral();
 
 		SphereDataComplex out(sphereDataConfig);

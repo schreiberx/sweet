@@ -156,7 +156,7 @@ public:
 	{
 		i_sph_data.request_data_spectral();
 
-		SphereDataConfig *sphereDataConfig = i_sph_data.sphereDataConfig;
+		const SphereDataConfig *sphereDataConfig = i_sph_data.sphereDataConfig;
 
 		SphereDataComplex out_sph_data(sphereDataConfig);
 
@@ -196,7 +196,7 @@ public:
 			const SphereDataComplex &i_sph_data
 	)
 	{
-		SphereDataConfig *sphConfig = i_sph_data.sphereDataConfig;
+		const SphereDataConfig *sphConfig = i_sph_data.sphereDataConfig;
 		i_sph_data.request_data_spectral();
 
 		SphereDataComplex out_sph_data = SphereDataComplex(sphConfig);
@@ -232,7 +232,7 @@ public:
 			const SphereDataComplex &i_sph_data
 	)
 	{
-		SphereDataConfig *sphConfig = i_sph_data.sphereDataConfig;
+		const SphereDataConfig *sphConfig = i_sph_data.sphereDataConfig;
 		i_sph_data.request_data_spectral();
 
 		SphereDataComplex out_sph_data = SphereDataComplex(sphConfig);

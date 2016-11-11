@@ -26,7 +26,7 @@
 class SphereDataComplex
 {
 public:
-	SphereDataConfig *sphereDataConfig;
+	const SphereDataConfig *sphereDataConfig;
 
 public:
 	std::complex<double> *physical_space_data;
@@ -46,7 +46,7 @@ public:
 
 public:
 	SphereDataComplex(
-			SphereDataConfig *i_sphConfig
+			const SphereDataConfig *i_sphConfig
 	)	:
 		sphereDataConfig(nullptr),
 		physical_space_data(nullptr),
@@ -76,7 +76,7 @@ public:
 	 * Run validation checks to make sure that the physical and spectral spaces match in size
 	 */
 public:
-	inline void check_sphereDataConfig_identical_res(SphereDataConfig *i_sphConfig)	const
+	inline void check_sphereDataConfig_identical_res(const SphereDataConfig *i_sphConfig)	const
 	{
 		assert(sphereDataConfig->physical_num_lat == i_sphConfig->physical_num_lat);
 		assert(sphereDataConfig->physical_num_lon == i_sphConfig->physical_num_lon);
@@ -111,16 +111,16 @@ public:
 
 
 	SphereDataComplex spectral_returnWithTruncatedModes(
-			SphereDataConfig *i_sphereDataConfigNew
+			const SphereDataConfig *i_sphereDataConfigTargetTruncation
 	)	const
 	{
-		return spectral_returnWithDifferentModes(i_sphereDataConfigNew).spectral_returnWithDifferentModes(sphereDataConfig);
+		return spectral_returnWithDifferentModes(i_sphereDataConfigTargetTruncation).spectral_returnWithDifferentModes(sphereDataConfig);
 	}
 
 
 public:
 	SphereDataComplex spectral_returnWithDifferentModes(
-			SphereDataConfig *i_sphereDataConfigNew
+			const SphereDataConfig *i_sphereDataConfigNew
 	)	const
 	{
 		SphereDataComplex out(i_sphereDataConfigNew);
@@ -631,7 +631,9 @@ public:
 
 
 public:
-	void setup(SphereDataConfig *i_sphConfig)
+	void setup(
+			const SphereDataConfig *i_sphConfig
+	)
 	{
 		// assure that the initialization is not done twice!
 		assert(sphereDataConfig == nullptr);

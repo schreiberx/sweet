@@ -59,10 +59,6 @@ void run_tests(
 
 		// one_minus_mu_squared_diff_lat
 		h = opComplex.spectral_one_minus_mu_squared_diff_lat_mu(h);
-//		h.physical_write_file("O_SPHbasis_one_minus_mu_squared_diff_mu_sph_result.csv");
-
-//		result.physical_write_file("O_SPHbasis_one_minus_mu_squared_diff_mu_correct_result.csv");
-
 
 		double error_max = h.physical_reduce_max(result);
 		std::cout << "TEST SPHbasis (1-mu*mu)*d/dmu - max error: " << error_max << std::endl;

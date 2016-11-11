@@ -18,6 +18,7 @@
 #include <sweet/sphere/SphBandedMatrixPhysicalComplex.hpp>
 
 
+
 /**
  * REXI solver for SWE based on Robert function formulation
  */
@@ -25,6 +26,9 @@ class SWERexi_SPHRobert
 {
 	/// SPH configuration
 	SphereDataConfig *sphereDataConfig;
+
+	/// SPH configuration
+	SphereDataConfig *sphereDataConfigSolver;
 
 	/// Solver for given alpha
 	SphBandedMatrixPhysicalComplex< std::complex<double> > sphSolverPhi;
@@ -61,7 +65,8 @@ class SWERexi_SPHRobert
 
 public:
 	SWERexi_SPHRobert()	:
-		sphereDataConfig(nullptr)
+		sphereDataConfig(nullptr),
+		sphereDataConfigSolver(nullptr)
 	{
 	}
 
@@ -71,6 +76,7 @@ public:
 	 */
 	void setup(
 			SphereDataConfig *i_sphereDataConfig,
+			SphereDataConfig *i_sphereDataConfigSolver,
 			const std::complex<double> &i_alpha,
 			const std::complex<double> &i_beta,
 			double i_radius,
@@ -80,6 +86,9 @@ public:
 			bool i_use_formulation_with_coriolis_effect = true
 	)
 	{
+		sphereDataConfig = i_sphereDataConfig;
+		sphereDataConfigSolver = i_sphereDataConfigSolver;
+
 		use_formulation_with_coriolis_effect = i_use_formulation_with_coriolis_effect;
 		timestep_size = i_timestep_size;
 
@@ -94,19 +103,20 @@ public:
 		two_omega = 2.0*coriolis_omega;
 		avg_geopotential = i_avg_geopotential;
 
-		sphereDataConfig = i_sphereDataConfig;
 
-		sphSolverPhi.setup(sphereDataConfig, 4);
+		sphSolverPhi.setup(sphereDataConfigSolver, 4);
 		sphSolverPhi.solver_component_rexi_z1(	(alpha*alpha)*(alpha*alpha), r);
 
 		if (use_formulation_with_coriolis_effect)
 		{
 			sphSolverPhi.solver_component_rexi_z2(	2.0*two_omega*two_omega*alpha*alpha, r);
 			sphSolverPhi.solver_component_rexi_z3(	(two_omega*two_omega)*(two_omega*two_omega), r);
+
 			sphSolverPhi.solver_component_rexi_z4robert(	-avg_geopotential*alpha*two_omega, r);
 			sphSolverPhi.solver_component_rexi_z5robert(	avg_geopotential/alpha*two_omega*two_omega*two_omega, r);
 			sphSolverPhi.solver_component_rexi_z6robert(	avg_geopotential*2.0*two_omega*two_omega, r);
 		}
+
 		sphSolverPhi.solver_component_rexi_z7(	-avg_geopotential*alpha*alpha, r);
 		if (use_formulation_with_coriolis_effect)
 		{
@@ -115,12 +125,150 @@ public:
 
 
 
-		sphSolverVel.setup(sphereDataConfig, 2);
+		sphSolverVel.setup(sphereDataConfigSolver, 2);
 		sphSolverVel.solver_component_rexi_z1(	alpha*alpha, r);
 		if (use_formulation_with_coriolis_effect)
 		{
 			sphSolverVel.solver_component_rexi_z2(	two_omega*two_omega, r);
 		}
+	}
+
+
+
+
+	SphereDataComplex kappa(
+			const SphereDataComplex &i_data
+	)	const
+	{
+		return (alpha*alpha)*i_data + two_omega*two_omega*SphereOperatorsComplex::mu2(i_data);
+	}
+
+
+	/**
+	 * Solve a REXI time step for the given initial conditions
+	 */
+	void solve_complex(
+			const SphereDataComplex &i_phi0,
+			const SphereDataComplex &i_u0,
+			const SphereDataComplex &i_v0,
+
+			SphereDataComplex &o_phi,
+			SphereDataComplex &o_u,
+			SphereDataComplex &o_v
+	)
+	{
+		const SphereDataComplex &phi0 = i_phi0;
+		const SphereDataComplex &u0 = i_u0;
+		const SphereDataComplex &v0 = i_v0;
+
+		SphereDataComplex div0 = inv_r*SphereOperatorsComplex::robert_div(u0, v0);
+		SphereDataComplex eta0 = inv_r*SphereOperatorsComplex::robert_vort(u0, v0);
+
+		SphereDataComplex phi(sphereDataConfig);
+		SphereDataComplex u(sphereDataConfig);
+		SphereDataComplex v(sphereDataConfig);
+
+		if (use_formulation_with_coriolis_effect)
+		{
+#if 1
+			/**
+			 * Both versions (this and the version below) results of similar accuracy
+			 */
+			// only valid for Robert formulation!
+			SphereDataComplex Fc_k =	two_omega*inv_r*(
+										-(alpha*alpha*u0 - two_omega*two_omega*SphereOperatorsComplex::mu2(u0)) +
+										2.0*alpha*two_omega*SphereOperatorsComplex::mu(v0)
+									);
+
+			SphereDataComplex foo = 	avg_geopotential*(div0 - two_omega*(1.0/alpha)*SphereOperatorsComplex::mu(eta0)) +
+										(alpha*phi0 + two_omega*two_omega*(1.0/alpha)*SphereOperatorsComplex::mu2(phi0));
+
+			SphereDataComplex rhs =	alpha*alpha*foo +
+									two_omega*two_omega*SphereOperatorsComplex::mu2(foo)
+									- (avg_geopotential/alpha)*Fc_k;
+
+#else
+
+			double fj = inv_r*two_omega;
+			double phi_bar = avg_geopotential;
+
+			SphereDataComplex f(sphereDataConfig);
+			f.physical_update_lambda_gaussian_grid(
+					[&](double lon, double mu, std::complex<double> &o_data)
+					{
+						o_data = mu*two_omega;
+					}
+				);
+
+			SphereDataComplex Fp_i = fj*(-(alpha*alpha-f*f));
+			SphereDataComplex Fp_j = fj*(2.0*alpha*f);
+
+			SphereDataComplex Fck = Fp_i*u0 + Fp_j*v0;
+
+			SphereDataComplex rhs =
+					kappa(
+							phi_bar*(div0 - f*(1.0/alpha)*eta0)
+							+ (alpha + f*f*(1.0/alpha))*phi0
+					)
+					- phi_bar/alpha*Fck;
+
+#endif
+
+			phi = sphSolverPhi.solve(rhs.spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
+
+			SphereDataComplex a = u0 + inv_r*SphereOperatorsComplex::robert_grad_lon(phi);
+			SphereDataComplex b = v0 + inv_r*SphereOperatorsComplex::robert_grad_lat(phi);
+
+			SphereDataComplex rhsa = alpha*a - two_omega*SphereOperatorsComplex::mu(b);
+			SphereDataComplex rhsb = two_omega*SphereOperatorsComplex::mu(a) + alpha*b;
+
+			u = sphSolverVel.solve(rhsa.spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
+			v = sphSolverVel.solve(rhsb.spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
+		}
+		else
+		{
+			SphereDataComplex rhs = avg_geopotential*div0 + alpha*phi0;
+			phi = rhs.spectral_solve_helmholtz(alpha*alpha, -avg_geopotential, r);
+
+			u = (1.0/alpha) * (u0 + inv_r*SphereOperatorsComplex::robert_grad_lon(phi));
+			v = (1.0/alpha) * (v0 + inv_r*SphereOperatorsComplex::robert_grad_lat(phi));
+		}
+
+		o_phi = phi * beta;
+		o_u = u * beta;
+		o_v = v * beta;
+	}
+
+
+	/**
+	 * Solve a REXI time step for the given initial conditions
+	 */
+	void solve_complexRHS(
+			const SphereDataComplex &i_phi0,
+			const SphereDataComplex &i_u0,
+			const SphereDataComplex &i_v0,
+
+			SphereData &o_phi,
+			SphereData &o_u,
+			SphereData &o_v
+	)
+	{
+		SphereDataComplex phi(sphereDataConfig);
+		SphereDataComplex u(sphereDataConfig);
+		SphereDataComplex v(sphereDataConfig);
+
+		solve_complex(
+				i_phi0,
+				i_u0,
+				i_v0,
+				phi,
+				u,
+				v
+			);
+
+		o_phi = Convert_SphereDataComplex_To_SphereData::physical_convert(phi);
+		o_u = Convert_SphereDataComplex_To_SphereData::physical_convert(u);
+		o_v = Convert_SphereDataComplex_To_SphereData::physical_convert(v);
 	}
 
 
@@ -150,108 +298,6 @@ public:
 			);
 	}
 
-
-
-	/**
-	 * Solve a REXI time step for the given initial conditions
-	 */
-	void solve_complexRHS(
-			const SphereDataComplex &i_phi0,
-			const SphereDataComplex &i_u0,
-			const SphereDataComplex &i_v0,
-
-			SphereData &o_phi,
-			SphereData &o_u,
-			SphereData &o_v
-	)
-	{
-		const SphereDataComplex &phi0 = i_phi0;
-		const SphereDataComplex &u0 = i_u0;
-		const SphereDataComplex &v0 = i_v0;
-
-		SphereDataComplex div0 = inv_r*SphereOperatorsComplex::robert_div(u0, v0);
-		SphereDataComplex eta0 = inv_r*SphereOperatorsComplex::robert_vort(u0, v0);
-
-		SphereDataComplex phi(sphereDataConfig);
-		SphereDataComplex u(sphereDataConfig);
-		SphereDataComplex v(sphereDataConfig);
-
-		if (use_formulation_with_coriolis_effect)
-		{
-#if 0
-			/**
-			 * THE VERSION BELOW IS MORE ACCURATE
-			 */
-			// only valid for Robert formulation!
-			SphereDataComplex Fc_k =	two_omega*inv_r*(
-										-(alpha*alpha*u0 - two_omega*two_omega*SphereOperatorsComplex::mu2(u0)) +
-										2.0*alpha*two_omega*SphereOperatorsComplex::mu(v0)
-									);
-
-			SphereDataComplex foo = 	avg_geopotential*(div0 - two_omega*(1.0/alpha)*SphereOperatorsComplex::mu(eta0)) +
-										(alpha*phi0 + two_omega*two_omega*(1.0/alpha)*SphereOperatorsComplex::mu2(phi0));
-
-			SphereDataComplex rhs =	alpha*alpha*foo +
-									two_omega*two_omega*SphereOperatorsComplex::mu2(foo) +
-									(avg_geopotential/alpha)*Fc_k;
-#else
-			/**
-			 * THIS PRODUCES HIGHER ACCURATE RESULTS - TODO: WHY?
-			 */
-			double fj = inv_r*two_omega;
-			double phi_bar = avg_geopotential;
-
-			SphereDataComplex f(sphereDataConfig);
-			f.physical_update_lambda_gaussian_grid(
-					[&](double lon, double mu, std::complex<double> &o_data)
-					{
-						o_data = mu*two_omega;
-					}
-				);
-
-			SphereDataComplex kappa = alpha*alpha+f*f;
-
-			SphereDataComplex Fp_i = fj*(-(alpha*alpha-f*f));
-			SphereDataComplex Fp_j = fj*(2.0*alpha*f);
-
-			SphereDataComplex Fc = Fp_i*u0 + Fp_j*v0;
-
-			SphereDataComplex rhs =
-					kappa*phi_bar*(div0 - f*(1.0/alpha)*eta0)
-					+ kappa*(alpha + f*f*(1.0/alpha))*phi0
-					- phi_bar/alpha*Fc;
-
-#endif
-
-
-			phi = sphSolverPhi.solve(rhs);
-
-			SphereDataComplex a = u0 + inv_r*SphereOperatorsComplex::robert_grad_lon(phi);
-			SphereDataComplex b = v0 + inv_r*SphereOperatorsComplex::robert_grad_lat(phi);
-
-			SphereDataComplex rhsa = alpha*a - two_omega*SphereOperatorsComplex::mu(b);
-			SphereDataComplex rhsb = two_omega*SphereOperatorsComplex::mu(a) + alpha*b;
-
-			u = sphSolverVel.solve(rhsa);
-			v = sphSolverVel.solve(rhsb);
-		}
-		else
-		{
-			SphereDataComplex rhs = avg_geopotential*div0 + alpha*phi0;
-			phi = rhs.spectral_solve_helmholtz(alpha*alpha, -avg_geopotential, r);
-
-			u = (1.0/alpha) * (u0 + inv_r*SphereOperatorsComplex::robert_grad_lon(phi));
-			v = (1.0/alpha) * (v0 + inv_r*SphereOperatorsComplex::robert_grad_lat(phi));
-		}
-
-		phi *= beta;
-		u *= beta;
-		v *= beta;
-
-		o_phi = Convert_SphereDataComplex_To_SphereData::physical_convert(phi);
-		o_u = Convert_SphereDataComplex_To_SphereData::physical_convert(u);
-		o_v = Convert_SphereDataComplex_To_SphereData::physical_convert(v);
-	}
 };
 
 

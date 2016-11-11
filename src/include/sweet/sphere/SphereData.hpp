@@ -30,7 +30,7 @@ class SphereData
 	friend class SphereDataComplex;
 
 public:
-	SphereDataConfig *sphereDataConfig;
+	const SphereDataConfig *sphereDataConfig;
 
 public:
 	double *physical_space_data;
@@ -41,7 +41,7 @@ public:
 
 public:
 	SphereData(
-			SphereDataConfig *i_sphConfig
+			const SphereDataConfig *i_sphConfig
 	)	:
 		sphereDataConfig(i_sphConfig),
 		physical_space_data(nullptr),
@@ -81,7 +81,9 @@ public:
 	 * Run validation checks to make sure that the physical and spectral spaces match in size
 	 */
 public:
-	inline void check(SphereDataConfig *i_sphConfig)	const
+	inline void check(
+			const SphereDataConfig *i_sphConfig
+	)	const
 	{
 		assert(sphereDataConfig->physical_num_lat == i_sphConfig->physical_num_lat);
 		assert(sphereDataConfig->physical_num_lon == i_sphConfig->physical_num_lon);
@@ -114,7 +116,7 @@ public:
 
 public:
 	SphereData spectral_returnWithDifferentModes(
-			SphereDataConfig *i_sphereDataConfig
+			const SphereDataConfig *i_sphereDataConfig
 	)	const
 	{
 		SphereData out(i_sphereDataConfig);
@@ -562,7 +564,9 @@ public:
 
 
 public:
-	void setup(SphereDataConfig *i_sphConfig)
+	void setup(
+			const SphereDataConfig *i_sphConfig
+	)
 	{
 		sphereDataConfig = i_sphConfig;
 

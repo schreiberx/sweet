@@ -84,7 +84,10 @@ public:
 			double delta = std::abs(prev_value - value);
 
 			if (delta <= i_error_threshold)
+			{
+//				std::cout << value << std::endl;
 				return value;
+			}
 
 			prev_value = value;
 		}
