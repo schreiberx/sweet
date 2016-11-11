@@ -188,7 +188,7 @@ void SWE_Sphere_REXI::setup(
 	}
 
 
-	rexi.setup(h, M, i_L, i_rexi_half);
+	rexi.setup(0, h, M, i_L, i_rexi_half);
 
 	std::size_t N = rexi.alpha.size();
 	block_size = N/num_global_threads;

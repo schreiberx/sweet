@@ -307,6 +307,7 @@ public:
 		if (simVars.rexi.use_rexi)
 		{
 			swe_sphere_rexi.setup(
+					0,
 					simVars.rexi.rexi_h,
 					simVars.rexi.rexi_M,
 					simVars.rexi.rexi_L,

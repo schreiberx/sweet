@@ -123,7 +123,9 @@ int main(
 		for (double h = 0.2; h > 0.005; h *= 0.5)
 		{
 			int M = 32/h;
+			std::cout << "Setting up scalars..." << std::flush;
 			Phi1Approximation ea(h, M);
+			std::cout << "OK" << std::endl;
 
 			double start = -M*h*0.95;
 			double end = -start;
@@ -309,7 +311,7 @@ int main(
 			std::cout << "REXI setup: M=" << M << ", h=" << h << ", tau=" << tau << ", f=" << f << std::endl;
 
 			REXI rexi;
-			rexi.setup(h, M);
+			rexi.setup(0, h, M);
 
 			std::size_t N = rexi.alpha.size();
 			for (std::size_t n = 0; n < N; n++)

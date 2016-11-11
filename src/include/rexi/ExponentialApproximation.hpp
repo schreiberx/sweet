@@ -132,7 +132,8 @@ public:
 		}
 	}
 
-	complex eval_e_ix(
+	static
+	complex eval(
 			double i_x
 	)
 	{
@@ -140,7 +141,7 @@ public:
 	}
 
 
-	complex approx_e_ix(
+	complex approx(
 			double i_x
 	)
 	{

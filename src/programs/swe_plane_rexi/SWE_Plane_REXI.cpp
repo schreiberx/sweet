@@ -126,7 +126,7 @@ void SWE_Plane_REXI::setup(
 	domain_size[0] = i_domain_size[0];
 	domain_size[1] = i_domain_size[1];
 
-	rexi.setup(h, M, i_L, i_rexi_half);
+	rexi.setup(0, h, M, i_L, i_rexi_half);
 
 	std::size_t N = rexi.alpha.size();
 	block_size = N/num_global_threads;

@@ -49,7 +49,7 @@ public:
 
 		for (int m = -i_M; m < i_M+1; m++)
 		{
-			double real = gQ.integrate5_intervals_adaptive(
+			double real = gQ.integrate5_intervals_adaptive_recursive(
 							//std::max(-1.0/(2.0*h), -1.0/(2.0*M_PI)),	// start of quadrature
 							-1.0/(2.0*M_PI),	// start of quadrature
 							0,		// end of quadrature
@@ -63,7 +63,7 @@ public:
 							}
 						);
 
-			double imag = gQ.integrate5_intervals_adaptive(
+			double imag = gQ.integrate5_intervals_adaptive_recursive(
 							//std::max(-1.0/(2.0*h), -1.0/(2.0*M_PI)),	// start of quadrature
 							-1.0/(2.0*M_PI),	// start of quadrature
 							0,		// end of quadrature
@@ -92,6 +92,7 @@ public:
 		}
 	}
 
+	static
 	complex eval(
 			double i_x
 	)

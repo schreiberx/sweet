@@ -94,7 +94,7 @@ private:
 		static AdaptiveIntegrator<double(const double)> integration_helper;
 		return integration_helper.integrate(to_int_fun, int_start, int_end, error_threshold);
 #else
-		return GaussQuadrature::integrate5_intervals_adaptive(int_start, int_end, to_int_fun, error_threshold);
+		return GaussQuadrature::integrate5_intervals_adaptive_linear(int_start, int_end, to_int_fun, error_threshold);
 //		return GaussQuadrature::integrate5_intervals(int_start, int_end, to_int_fun, 5);
 #endif
 	}

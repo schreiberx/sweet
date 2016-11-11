@@ -182,8 +182,7 @@ void run_tests()
 		sphereDataConfigExt = &sphereDataConfigRexiAddedModes;
 	}
 
-	REXI rexi;
-	rexi.setup(simVars.rexi.rexi_h, simVars.rexi.rexi_M);
+	REXI rexi(0, simVars.rexi.rexi_h, simVars.rexi.rexi_M);
 
 	if (!simVars.misc.sphere_use_robert_functions)
 	{

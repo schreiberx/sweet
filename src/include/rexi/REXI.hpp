@@ -16,13 +16,37 @@
 
 #include "ExponentialApproximation.hpp"
 #include "GaussianApproximation.hpp"
+#include "Phi1Approximation.hpp"
 
 
 
+/**
+ * This class provides the abstraction layer for various forms
+ * of REXI.
+ * (This is now the extended form beyond e^{ix}.)
+ *
+ * After calling the setup, the rational approximation can be calculated
+ * in the following way:
+ *
+ * \sum_i Re( (rexi.alpha[i]*I + L)^{-1} * rexi.beta_re[i] )
+ *
+ * where 'rexi' is an instantiation of the REXI class.
+ *
+ * The different supported phi functions are as follows
+ * (see also Terry et al. paper)
+ *
+ * 	phi0(x) = e^{ix}
+ * 	phi1(x) = (e^{ix} - 1)/(ix)
+ * 	phi2(x) = (e^{ix} - ix - 1)/(ix)^2
+ *
+ * All these functions play an important role in the context
+ * of exponential integrators.
+ */
 class REXI
 {
 	typedef std::complex<double> complex;
 
+	int phi_id;
 
 public:
 	std::vector<complex> alpha;
@@ -38,18 +62,20 @@ public:
 
 public:
 	REXI(
+			int i_phi_id,	///< ID of Phi function to be approximated
 			double i_h,	///< sampling width
 			int i_M,	///< approximation area
 			int i_L = 0,	///< L, see Gaussian approximation
 			bool i_reduce_to_half = true
 	)
 	{
-		setup(i_h, i_M, i_L, i_reduce_to_half);
+		setup(i_phi_id, i_h, i_M, i_L, i_reduce_to_half);
 	}
 
 
 public:
 	void setup(
+		int i_phi_id,			///< Phi function id
 		double i_h,				///< sampling width
 		int i_M,				///< approximation area
 		int i_L = 0,			///< L value for Gaussian approximation, use 0 for autodetection
@@ -57,8 +83,8 @@ public:
 	)
 	{
 		GaussianApproximation ga(i_L);
-		ExponentialApproximation ea(i_h, i_M);
 
+		phi_id = i_phi_id;
 		int L = ga.L;
 		int N = i_M+ga.L;
 		int M = i_M;
@@ -66,6 +92,25 @@ public:
 		alpha.resize(2*N+1);
 		beta_re.resize(2*N+1);
 		beta_im.resize(2*N+1);
+
+		/// temporary storage vector for generalization
+		/// over phi functions
+		std::vector<complex> b;
+
+		if (phi_id == 0)
+		{
+			ExponentialApproximation ea(i_h, i_M);
+			b = ea.b;
+		}
+		else if (phi_id == 1)
+		{
+			Phi1Approximation phia(i_h, i_M);
+			b = phia.b;
+		}
+		else
+		{
+			FatalError("Unknown phi function ID");
+		}
 
 #if 1
 		for (int n = 0; n < 2*N+1; n++)
@@ -82,8 +127,8 @@ public:
 				int n = l+m;
 				alpha[n+N] = i_h*(ga.mu + complex(0, n));
 
-				beta_re[n+N] += ea.b[m+M].real()*i_h*ga.a[l+L];
-				beta_im[n+N] += ea.b[m+M].imag()*i_h*ga.a[l+L];
+				beta_re[n+N] += b[m+M].real()*i_h*ga.a[l+L];
+				beta_im[n+N] += b[m+M].imag()*i_h*ga.a[l+L];
 			}
 		}
 
@@ -110,7 +155,6 @@ public:
 		}
 #endif
 
-
 		if (i_reduce_to_half)
 		{
 			/**
@@ -134,18 +178,27 @@ public:
 	/**
 	 * \return \f$ cos(x) + i*sin(x) \f$
 	 */
-	complex eval_e_ix(
+	complex eval(
 			double i_x	///< sampling position
 	)
 	{
-		return std::exp(complex(0,i_x));
+		switch(phi_id)
+		{
+		case 0:
+			return ExponentialApproximation::eval(i_x);
+		case 1:
+			return Phi1Approximation::eval(i_x);
+		default:
+			FatalError("Unknown phi function id");
+		}
+		return complex(0,0);
 	}
 
 
 	/**
 	 * compute the approximated value of e^{ix}
 	 */
-	complex approx_e_ix(
+	complex approx(
 			double i_x	///< sampling position
 	)
 	{
@@ -169,7 +222,7 @@ public:
 	/**
 	 * \return \f$ Re(cos(x) + i*sin(x)) = cos(x) \f$
 	 */
-	double approx_e_ix_returnReal(
+	double approx_returnReal(
 			double i_x
 	)
 	{
@@ -188,18 +241,16 @@ public:
 	 *
 	 * we simply use a phase shift of M_PI and use the returnReal variant
 	 */
-	double approx_e_ix_returnImag(
+	double approx_returnImag(
 			double i_x		///< sampling position
 	)
 	{
-#if 1
-		return approx_e_ix_returnReal(i_x-M_PIl*0.5);
-#else
+		std::size_t S = alpha.size();
+
 		double sum = 0;
-		for (int n = 0; n < 2*N+1; n++)
+		for (std::size_t n = 0; n < S; n++)
 			sum += (beta_im[n] / (complex(0, i_x) + alpha[n])).real();
 		return sum;
-#endif
 	}
 };
 

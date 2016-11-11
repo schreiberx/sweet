@@ -67,14 +67,13 @@ public:
 		return accum;
 	}
 
-	static double integrate5_intervals_adaptive(
+	static double integrate5_intervals_adaptive_linear(
 			double i_start,
 			double i_end,
 			std::function<double(double)> i_fun,
 			double i_error_threshold = 10e-13
 	)
 	{
-//		double delta = std::numeric_limits<double>::infinity();
 		double prev_value = std::numeric_limits<double>::infinity();
 
 		int max_intervals = 1024*128;
@@ -84,16 +83,129 @@ public:
 			double delta = std::abs(prev_value - value);
 
 			if (delta <= i_error_threshold)
-			{
-//				std::cout << value << std::endl;
 				return value;
-			}
 
 			prev_value = value;
 		}
 
 		FatalError("No convergence reached for integrate5_intervals_adaptive");
 		return -1;
+	}
+
+
+	static double p_integrate5_intervals_adaptive_recursive(
+			double i_start,
+			double i_end,
+
+			int i_current_depth,	///< current depth of recursion
+			int i_min_depth,		///< minimum depth for recursion
+			int i_max_depth,		///< maximum depth of recursion
+
+			std::function<double(double)> i_fun,
+			double i_rel_error_threshold = 10e-13,
+			double i_prev_value = std::numeric_limits<double>::infinity()
+	)
+	{
+		assert(i_end > i_start);
+
+		double mid = 0.5*(i_end + i_start);
+
+		if (i_current_depth > i_max_depth)
+			return std::numeric_limits<double>::infinity();
+
+		if (i_current_depth >= i_min_depth)
+		{
+			double left_value = integrate5(
+					i_start,
+					mid,
+					i_fun
+				);
+
+			double right_value = integrate5(
+					mid,
+					i_end,
+					i_fun
+				);
+
+			double sum = left_value + right_value;
+
+			if (std::abs(sum-i_prev_value)/(i_end-i_start) < i_rel_error_threshold)
+				return sum;
+
+
+			double recursive_left_value = p_integrate5_intervals_adaptive_recursive(
+					i_start,
+					mid,
+					i_current_depth+1,
+					i_min_depth,
+					i_max_depth,
+					i_fun,
+					i_rel_error_threshold,
+					left_value
+				);
+
+			double recursive_right_value = p_integrate5_intervals_adaptive_recursive(
+					mid,
+					i_end,
+					i_current_depth+1,
+					i_min_depth,
+					i_max_depth,
+					i_fun,
+					i_rel_error_threshold,
+					right_value
+				);
+
+			return recursive_left_value + recursive_right_value;
+		}
+		else
+		{
+
+			double recursive_left_value = p_integrate5_intervals_adaptive_recursive(
+					i_start,
+					mid,
+					i_current_depth+1,
+					i_min_depth,
+					i_max_depth,
+					i_fun,
+					i_rel_error_threshold
+				);
+
+			double recursive_right_value = p_integrate5_intervals_adaptive_recursive(
+					mid,
+					i_end,
+					i_current_depth+1,
+					i_min_depth,
+					i_max_depth,
+					i_fun,
+					i_rel_error_threshold
+				);
+
+			return recursive_left_value + recursive_right_value;
+		}
+	}
+
+
+	static double integrate5_intervals_adaptive_recursive(
+			double i_start,
+			double i_end,
+			std::function<double(double)> i_fun,
+			double i_rel_error_threshold = 10e-12
+	)
+	{
+		double approx_integral = p_integrate5_intervals_adaptive_recursive(
+				i_start,
+				i_end,
+				0,		/// current depth
+				4,		/// min depth
+				32,		/// max depth
+				i_fun,
+				i_rel_error_threshold
+			);
+
+		if (std::isinf(approx_integral))
+			FatalError("No convergence reached for integrate5_intervals_adaptive");
+
+		return approx_integral;
 	}
 };
 

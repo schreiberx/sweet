@@ -102,8 +102,7 @@ void run_tests()
 	double two_omega = 2.0*simVars.sim.coriolis_omega;
 
 
-	REXI rexi;
-	rexi.setup(0.2, 64);
+	REXI rexi(0, 0.2, 64);
 
 
 	for (std::size_t i = 0; i < rexi.alpha.size(); i++)

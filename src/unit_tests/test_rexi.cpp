@@ -54,8 +54,8 @@ int main(
 	//				std::cout << "exp(ix): " << rexi.eval_e_ix(x).real() << std::endl;
 	//				std::cout << "approx. exp(ix): " << rexi.approx_e_ix(x).real() << std::endl;
 
-					double correct = rexi.eval_e_ix(x).real();
-					double approx = rexi.approx_e_ix_returnReal(x);
+					double correct = rexi.eval(x).real();
+					double approx = rexi.approx_returnReal(x);
 
 					if (std::abs(approx) > 1.0)
 					{
@@ -133,7 +133,7 @@ int main(
 
 			for (double x = start; x < end; x += step_size)
 			{
-				double error = std::abs(ea.eval_e_ix(x) - ea.approx_e_ix(x));
+				double error = std::abs(ea.eval(x) - ea.approx(x));
 				max_error = std::max(max_error, error);
 			}
 
@@ -172,7 +172,7 @@ int main(
 //				std::cout << "x: " << x << std::endl;
 //				std::cout << "exp(ix): " << rexi.eval_e_ix(x) << std::endl;
 //				std::cout << "approx. exp(ix): " << rexi.approx_e_ix(x) << std::endl;
-				double error = std::abs(rexi.eval_e_ix(x) - rexi.approx_e_ix(x));
+				double error = std::abs(rexi.eval(x) - rexi.approx(x));
 				max_error = std::max(max_error, error);
 			}
 
@@ -216,7 +216,7 @@ int main(
 	//				std::cout << "x: " << x << std::endl;
 	//				std::cout << "exp(ix): " << rexi.eval_e_ix(x).real() << std::endl;
 	//				std::cout << "approx. exp(ix): " << rexi.approx_e_ix(x).real() << std::endl;
-					double error_real = std::abs(rexi.eval_e_ix(x).real() - rexi.approx_e_ix_returnReal(x));
+					double error_real = std::abs(rexi.eval(x).real() - rexi.approx_returnReal(x));
 					max_error = std::max(max_error, error_real);
 				}
 
@@ -260,7 +260,7 @@ int main(
 
 				for (double x = start; x < end; x += step_size)
 				{
-					double error_imag = std::abs(rexi.eval_e_ix(x).imag() - rexi.approx_e_ix_returnImag(x));
+					double error_imag = std::abs(rexi.eval(x).imag() - rexi.approx_returnImag(x));
 					max_error = std::max(max_error, error_imag);
 				}
 
@@ -308,7 +308,7 @@ int main(
 			std::cout << "REXI setup: M=" << M << ", h=" << h << ", tau=" << tau << ", f=" << f << std::endl;
 
 			REXI rexi;
-			rexi.setup(h, M);
+			rexi.setup(0, h, M);
 
 			std::size_t N = rexi.alpha.size();
 			for (std::size_t n = 0; n < N; n++)

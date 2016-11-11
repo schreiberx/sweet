@@ -665,6 +665,7 @@ public:
 
 			// use REXI
 			swe_plane_rexi.setup(
+					0,
 					simVars.rexi.rexi_h,
 					simVars.rexi.rexi_M,
 					simVars.rexi.rexi_L,
@@ -1668,6 +1669,7 @@ public:
 
 		// use REXI
 		swe_plane_rexi.setup(
+				0,
 				simVars.rexi.rexi_h,
 				simVars.rexi.rexi_m,
 				simVars.rexi.rexi_l,
