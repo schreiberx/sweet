@@ -702,7 +702,7 @@ void run_tests()
 					lhs = -alpha*eta + f*div + fj*v + fi*u;
 					rhs = -eta0;
 
-					errorCheck(lhs, rhs, "2", epsilon, simVars.rexi.rexi_use_extended_modes < 2);
+					errorCheck(lhs, rhs, "2", epsilon*10e+2, simVars.rexi.rexi_use_extended_modes < 2);
 				}
 
 
@@ -747,7 +747,7 @@ void run_tests()
 					lhs = -alpha*eta + 1.0/phi_bar * f * phi * alpha + fj*v + fi*u;
 					rhs = -eta0 + 1.0/phi_bar * f * phi0;
 
-					errorCheck(lhs, rhs, "4ba", epsilon, simVars.rexi.rexi_use_extended_modes < 2);
+					errorCheck(lhs, rhs, "4ba", epsilon*10e+2, simVars.rexi.rexi_use_extended_modes < 2);
 				}
 
 
@@ -764,7 +764,7 @@ void run_tests()
 							+ 1.0/alpha * fj*v
 							+ 1.0/alpha * fi*u;
 
-					errorCheck(lhs, rhs, "5", epsilon, simVars.rexi.rexi_use_extended_modes < 2);
+					errorCheck(lhs, rhs, "5", epsilon*10e+2, simVars.rexi.rexi_use_extended_modes < 2);
 				}
 
 
@@ -790,7 +790,7 @@ void run_tests()
 
 					rhs =	div0 + 1.0/phi_bar * alpha * phi0;
 
-					errorCheck(lhs, rhs, "5b", epsilon*1e3, simVars.rexi.rexi_use_extended_modes < 2);
+					errorCheck(lhs, rhs, "5b", epsilon, simVars.rexi.rexi_use_extended_modes < 2);
 				}
 
 
@@ -1219,6 +1219,7 @@ void run_tests()
 								+ phi_bar/alpha*(Fp_i*ir*opComplex.robert_grad_lon(phi) + Fp_j*ir*opComplex.robert_grad_lat(phi))
 								- kappa*phi_bar*ir*ir*opComplex.laplace(phi);
 #endif
+
 						SphereDataComplex phi_reduced = phi.spectral_returnWithDifferentModes(sphereDataConfig);
 
 						errorCheck(computed_phi_lhs_direct, phi_reduced, "test Z solvers LHS phi", epsilon, true);

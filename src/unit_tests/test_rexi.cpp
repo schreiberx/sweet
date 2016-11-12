@@ -1,5 +1,5 @@
 /*
- * rexi.cpp
+ * test_rexi.cpp
  *
  *  Created on: 2 Aug 2015
  *      Author: Martin Schreiber <schreiberx@gmail.com>
