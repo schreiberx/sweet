@@ -1009,7 +1009,7 @@ void run_tests()
 							+ kappa*(alpha + f*f*(1.0/alpha))*phi0
 							- phi_bar/alpha*Fc;
 
-					errorCheck(lhs, rhs, "7a", epsilon, simVars.rexi.rexi_use_extended_modes < 2);
+					errorCheck(lhs, rhs, "7a", epsilon*10e+2, simVars.rexi.rexi_use_extended_modes < 2);
 				}
 
 				{
