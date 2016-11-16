@@ -790,7 +790,7 @@ void run_tests()
 
 					rhs =	div0 + 1.0/phi_bar * alpha * phi0;
 
-					errorCheck(lhs, rhs, "5b", epsilon, simVars.rexi.rexi_use_extended_modes < 2);
+					errorCheck(lhs, rhs, "5b", epsilon*10e+2, simVars.rexi.rexi_use_extended_modes < 2);
 				}
 
 
@@ -817,7 +817,7 @@ void run_tests()
 					rhs =	div0
 							+ 1.0/phi_bar * alpha * phi0;
 
-					errorCheck(lhs, rhs, "5c", epsilon, simVars.rexi.rexi_use_extended_modes < 2);
+					errorCheck(lhs, rhs, "5c", epsilon*10e+2, simVars.rexi.rexi_use_extended_modes < 2);
 				}
 
 
@@ -842,7 +842,7 @@ void run_tests()
 
 #endif
 
-					errorCheck(lhs, rhs, "5d", epsilon, simVars.rexi.rexi_use_extended_modes < 2);
+					errorCheck(lhs, rhs, "5d", epsilon*10e+2, simVars.rexi.rexi_use_extended_modes < 2);
 				}
 
 				{

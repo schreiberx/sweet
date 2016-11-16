@@ -299,6 +299,37 @@ public:
 
 
 
+	SphereData robert_convertToRobert()
+	{
+		SphereData out_sph_data = *this;
+
+		out_sph_data.physical_update_lambda(
+				[](double i_lon, double i_lat, double &io_data)
+				{
+					io_data *= std::cos(i_lat);
+				}
+		);
+
+		return out_sph_data;
+	}
+
+
+
+	SphereData robert_convertToNonRobert()
+	{
+		SphereData out_sph_data = *this;
+
+		out_sph_data.physical_update_lambda(
+				[](double i_lon, double i_lat, double &io_data)
+				{
+					io_data /= std::cos(i_lat);
+				}
+		);
+
+		return out_sph_data;
+	}
+
+
 	SphereData operator+(
 			const SphereData &i_sph_data
 	)

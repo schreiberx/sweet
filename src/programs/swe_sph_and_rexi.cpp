@@ -24,6 +24,7 @@
 #include <sweet/sphere/SphBandedMatrixPhysicalComplex.hpp>
 #include <sweet/Stopwatch.hpp>
 #include <sweet/FatalError.hpp>
+#include <sweet/sphere/SphBandedMatrixPhysicalReal.hpp>
 
 
 #include "swe_sphere_rexi/SWE_Sphere_REXI.hpp"
@@ -49,6 +50,7 @@ SphereDataConfig *sphereDataConfig = &sphereDataConfigInstance;
  * This allows running REXI including Coriolis-related terms but just by setting f to 0
  */
 bool param_rexi_use_coriolis_formulation = false;
+bool param_compute_error = false;
 
 
 
@@ -274,6 +276,99 @@ public:
 			}
 		}
 
+		double inv_r = 1.0/simVars.sim.earth_radius;
+
+		if (simVars.setup.benchmark_scenario_id == 4)
+		{
+
+			if (simVars.misc.sphere_use_robert_functions)
+			{
+#if 1
+				prog_v.spectral_set_zero();
+
+				prog_u.physical_set_all_value(1.0);
+
+				prog_u.physical_update_lambda(
+						[&](double i_lon, double i_lat, double &io_data)
+						{
+							io_data = std::cos(i_lat)*std::cos(i_lat);
+						}
+				);
+
+				prog_h.physical_update_lambda(
+						[&](double i_lon, double i_lat, double &io_data)
+						{
+							io_data = simVars.sim.earth_radius*simVars.sim.coriolis_omega*std::cos(i_lat)*std::cos(i_lat)/simVars.sim.gravitation;
+						}
+				);
+
+				double h_max_error = (-inv_r*op.robert_div_lon(prog_u) -inv_r*op.robert_div_lat(prog_v)).physical_reduce_max_abs();
+				double u_max_error = (-inv_r*op.robert_grad_lon(prog_h*simVars.sim.gravitation) + 2.0*simVars.sim.coriolis_omega*op.mu(prog_v)).physical_reduce_max_abs();
+				double v_max_error = (-inv_r*op.robert_grad_lat(prog_h*simVars.sim.gravitation) - 2.0*simVars.sim.coriolis_omega*op.mu(prog_u)).physical_reduce_max_abs();
+
+				std::cout << "h_max_error for geostrophic balance case: " << h_max_error << std::endl;
+				std::cout << "u_max_error for geostrophic balance case: " << u_max_error << std::endl;
+				std::cout << "v_max_error for geostrophic balance case: " << v_max_error << std::endl;
+#else
+
+				prog_v.spectral_set_zero();
+
+				prog_u.physical_update_lambda(
+						[&](double i_lon, double i_lat, double &io_data)
+						{
+							//io_data = simVars.sim.earth_radius*2.0*simVars.sim.coriolis_omega*std::cos(i_lat)/simVars.sim.gravitation;
+							io_data = std::cos(i_lat);
+						}
+				);
+
+				prog_h.physical_update_lambda(
+						[&](double i_lon, double i_lat, double &io_data)
+						{
+							io_data = simVars.sim.earth_radius*simVars.sim.coriolis_omega*std::cos(i_lat)*std::cos(i_lat)/simVars.sim.gravitation;
+						}
+				);
+
+				prog_u = prog_u.robert_convertToRobert();
+				prog_v = prog_v.robert_convertToRobert();
+
+				double h_max_error = (-inv_r*op.div_lon(prog_u) -inv_r*op.div_lat(prog_v)).physical_reduce_max_abs();
+				double u_max_error = (-inv_r*op.grad_lon(prog_h*simVars.sim.gravitation) + 2.0*simVars.sim.coriolis_omega*op.mu(prog_v)).physical_reduce_max_abs();
+				double v_max_error = (-inv_r*op.grad_lat(prog_h*simVars.sim.gravitation) - 2.0*simVars.sim.coriolis_omega*op.mu(prog_u)).physical_reduce_max_abs();
+
+				std::cout << "h_max_error for geostrophic balance case: " << h_max_error << std::endl;
+				std::cout << "u_max_error for geostrophic balance case: " << u_max_error << std::endl;
+				std::cout << "v_max_error for geostrophic balance case: " << v_max_error << std::endl;
+#endif
+			}
+			else
+			{
+				prog_v.spectral_set_zero();
+
+				prog_u.physical_update_lambda(
+						[&](double i_lon, double i_lat, double &io_data)
+						{
+							//io_data = simVars.sim.earth_radius*2.0*simVars.sim.coriolis_omega*std::cos(i_lat)/simVars.sim.gravitation;
+							io_data = std::cos(i_lat);
+						}
+				);
+
+				prog_h.physical_update_lambda(
+						[&](double i_lon, double i_lat, double &io_data)
+						{
+							io_data = simVars.sim.earth_radius*simVars.sim.coriolis_omega*std::cos(i_lat)*std::cos(i_lat)/simVars.sim.gravitation;
+						}
+				);
+
+				double h_max_error = (-inv_r*op.div_lon(prog_u) -inv_r*op.div_lat(prog_v)).physical_reduce_max_abs();
+				double u_max_error = (-inv_r*op.grad_lon(prog_h*simVars.sim.gravitation) + 2.0*simVars.sim.coriolis_omega*op.mu(prog_v)).physical_reduce_max_abs();
+				double v_max_error = (-inv_r*op.grad_lat(prog_h*simVars.sim.gravitation) - 2.0*simVars.sim.coriolis_omega*op.mu(prog_u)).physical_reduce_max_abs();
+
+				std::cout << "h_max_error for geostrophic balance case: " << h_max_error << std::endl;
+				std::cout << "u_max_error for geostrophic balance case: " << u_max_error << std::endl;
+				std::cout << "v_max_error for geostrophic balance case: " << v_max_error << std::endl;
+
+			}
+		}
 
 
 		if (simVars.sim.coriolis_omega != 0)
@@ -307,7 +402,6 @@ public:
 		if (simVars.rexi.use_rexi)
 		{
 			swe_sphere_rexi.setup(
-					0,
 					simVars.rexi.rexi_h,
 					simVars.rexi.rexi_M,
 					simVars.rexi.rexi_L,
@@ -468,9 +562,9 @@ public:
 
 //		std::cout << " to " << simVars.timecontrol.current_simulation_time << " with time step size " << simVars.timecontrol.current_timestep_size << std::endl ;
 
-#if SWEET_GUI
-		timestep_output();
-#endif
+//#if SWEET_GUI
+//		timestep_output();
+//#endif
 	}
 
 
@@ -601,11 +695,17 @@ public:
 			break;
 
 		case 1:
-			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(prog_u, planeDataConfig);
+			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(
+					prog_u
+//					simVars.misc.sphere_use_robert_functions ? prog_u.robert_convertToNonRobert() : prog_u
+					, planeDataConfig);
 			break;
 
 		case 2:
-			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(prog_v, planeDataConfig);
+			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(
+					prog_v
+//					simVars.misc.sphere_use_robert_functions ? prog_v.robert_convertToNonRobert() : prog_v
+					, planeDataConfig);
 			break;
 
 		case 3:
@@ -726,11 +826,13 @@ int main(int i_argc, char *i_argv[])
 	//input parameter names (specific ones for this program)
 	const char *bogus_var_names[] = {
 			"rexi-use-coriolis-formulation",
+			"compute-error",
 			nullptr
 	};
 
 	// default values for specific input (for general input see SimulationVariables.hpp)
 	simVars.bogus.var[0] = 0;
+	simVars.bogus.var[1] = 0;
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
@@ -744,6 +846,7 @@ int main(int i_argc, char *i_argv[])
 	param_rexi_use_coriolis_formulation = simVars.bogus.var[0];
 	assert (param_rexi_use_coriolis_formulation == 0 || param_rexi_use_coriolis_formulation == 1);
 
+	param_compute_error = simVars.bogus.var[1];
 
 	sphereDataConfigInstance.setupAutoPhysicalSpace(
 					simVars.disc.res_spectral[0],
@@ -873,37 +976,23 @@ int main(int i_argc, char *i_argv[])
 			std::cout << "Number of time steps: " << simVars.timecontrol.current_timestep_nr << std::endl;
 			std::cout << "Time per time step: " << seconds/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
 			std::cout << "Last time step size: " << simVars.timecontrol.current_timestep_size << std::endl;
-#if 0
-			if (param_timestepping_mode != 0)
-				std::cout << "REXI alpha.size(): " << simulationSWE->swe_plane_rexi.rexi.alpha.size() << std::endl;
 
-			if (simVars.misc.verbosity > 0)
+			if (param_compute_error && simVars.misc.use_nonlinear_equations == 0)
 			{
-				std::cout << "DIAGNOSTICS ENERGY DIFF:\t" << std::abs((simVars.diag.total_energy-diagnostics_energy_start)/diagnostics_energy_start) << std::endl;
-				std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) << std::endl;
-				std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs((simVars.diag.total_potential_enstrophy-diagnostics_potential_entrophy_start)/diagnostics_potential_entrophy_start) << std::endl;
+				SphereData backup_h = simulationSWE->prog_h;
+				SphereData backup_u = simulationSWE->prog_u;
+				SphereData backup_v = simulationSWE->prog_v;
 
-				if (param_compute_error)
-				{
-					std::cout << "DIAGNOSTICS BENCHMARK DIFF H:\t" << simulationSWE->benchmark_diff_h << std::endl;
-					std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationSWE->benchmark_diff_u << std::endl;
-					std::cout << "DIAGNOSTICS BENCHMARK DIFF V:\t" << simulationSWE->benchmark_diff_v << std::endl;
-				}
+				simulationSWE->reset();
+
+				std::cout << "DIAGNOSTICS ANALYTICAL RMS H:\t" << (backup_h-simulationSWE->prog_h).physical_reduce_rms() << std::endl;
+				std::cout << "DIAGNOSTICS ANALYTICAL RMS U:\t" << (backup_u-simulationSWE->prog_u).physical_reduce_rms() << std::endl;
+				std::cout << "DIAGNOSTICS ANALYTICAL RMS V:\t" << (backup_v-simulationSWE->prog_v).physical_reduce_rms() << std::endl;
+
+				std::cout << "DIAGNOSTICS ANALYTICAL MAXABS H:\t" << (backup_h-simulationSWE->prog_h).physical_reduce_max_abs() << std::endl;
+				std::cout << "DIAGNOSTICS ANALYTICAL MAXABS U:\t" << (backup_u-simulationSWE->prog_u).physical_reduce_max_abs() << std::endl;
+				std::cout << "DIAGNOSTICS ANALYTICAL MAXABS V:\t" << (backup_v-simulationSWE->prog_v).physical_reduce_max_abs() << std::endl;
 			}
-
-			if (param_compute_error && param_nonlinear==0)
-			{
-				simulationSWE->compute_errors();
-				std::cout << "DIAGNOSTICS ANALYTICAL RMS H:\t" << simulationSWE->benchmark_analytical_error_rms_h << std::endl;
-				std::cout << "DIAGNOSTICS ANALYTICAL RMS U:\t" << simulationSWE->benchmark_analytical_error_rms_u << std::endl;
-				std::cout << "DIAGNOSTICS ANALYTICAL RMS V:\t" << simulationSWE->benchmark_analytical_error_rms_v << std::endl;
-
-				std::cout << "DIAGNOSTICS ANALYTICAL MAXABS H:\t" << simulationSWE->benchmark_analytical_error_maxabs_h << std::endl;
-				std::cout << "DIAGNOSTICS ANALYTICAL MAXABS U:\t" << simulationSWE->benchmark_analytical_error_maxabs_u << std::endl;
-				std::cout << "DIAGNOSTICS ANALYTICAL MAXABS V:\t" << simulationSWE->benchmark_analytical_error_maxabs_v << std::endl;
-			}
-
-#endif
 
 			delete simulationSWE;
 		}

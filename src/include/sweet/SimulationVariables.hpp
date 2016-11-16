@@ -143,7 +143,8 @@ public:
 		double CFL = 0.05;
 
 		/// Coriolis frequency f0
-		double f0 = 0.01;
+		/// 7.292 × 10 −5
+		double f0 = 0.00007292;
 
 		/// Beta coefficient for f(y_N) = f0 + y_N*beta
 		/// here, y_N is the normalized y coordinate \in [0;1]
