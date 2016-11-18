@@ -13,6 +13,10 @@
 #include "../libgl/VisualizationEngine.hpp"
 #include "../libgl/core/GlTexture.hpp"
 #include "../libgl/draw/GlDrawQuad.hpp"
+
+#if SWEET_USE_SPHERE_SPECTRAL_SPACE
+	#include "../libgl/draw/GlDrawSphereSph.hpp"
+#endif
 #include "../libgl/hud/GlFreeType.hpp"
 #include "../libgl/hud/GlRenderOStream.hpp"
 #include <sweet/plane/PlaneData.hpp>
@@ -34,8 +38,12 @@ class VisSweet	:
 	 */
 	SimT *simulation;
 
-
 	GlDrawQuad *glDrawQuad;
+
+#if SWEET_USE_SPHERE_SPECTRAL_SPACE
+	GlDrawSphereSph *glDrawSphereSph;
+#endif
+
 	GlTexture *glTexture = nullptr;
 	unsigned char *texture_data = nullptr;
 
@@ -57,6 +65,9 @@ class VisSweet	:
 		visualizationEngine = i_visualizationEngine;
 
 		glDrawQuad = new GlDrawQuad;
+#if SWEET_USE_SPHERE_SPECTRAL_SPACE
+		glDrawSphereSph = nullptr;
+#endif
 
 		glFreeType = new GlFreeType;
 		glFreeType->loadFont(14, false);
@@ -83,11 +94,20 @@ class VisSweet	:
 
 	void vis_render()
 	{
-		const PlaneData *ro_visData;
+		const PlaneData *ro_visPlaneData;
 		double aspect_ratio = 0;
-		simulation->vis_get_vis_data_array(&ro_visData, &aspect_ratio);
+		int render_primitive = 0;
+		void *bogus_data;
 
-		PlaneData &visData = (PlaneData&)*ro_visData;
+		simulation->vis_get_vis_data_array(
+				&ro_visPlaneData,
+				&aspect_ratio,
+				&render_primitive,
+				&bogus_data
+		);
+
+		PlaneData &visData = (PlaneData&)*ro_visPlaneData;
+
 
 		if (glTexture == nullptr)
 		{
@@ -127,23 +147,54 @@ class VisSweet	:
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-			double scale_x = 1.0;
-			double scale_y = aspect_ratio;
+			visualizationEngine->engineState->commonShaderPrograms.shaderTexturizeRainbowmap.use();
+//			visualizationEngine->engineState->commonShaderPrograms.shaderBlinn.use();
 
-			if (aspect_ratio > 1.0)
+			if (render_primitive == 0)
 			{
-				scale_x /= aspect_ratio;
-				scale_y = 1.0;
+				double scale_x = 1.0;
+				double scale_y = aspect_ratio;
+
+				if (aspect_ratio > 1.0)
+				{
+					scale_x /= aspect_ratio;
+					scale_y = 1.0;
+				}
+
+				visualizationEngine->engineState->commonShaderPrograms.shaderTexturizeRainbowmap.pvm_matrix_uniform.set(
+						visualizationEngine->engineState->matrices.pvm*GLSL::scale((float)scale_x, (float)scale_y, (float)1.0)
+				);
+
+//				visualizationEngine->engineState->commonShaderPrograms.shaderBlinn.pvm_matrix_uniform.set(
+//						visualizationEngine->engineState->matrices.pvm*GLSL::scale((float)scale_x, (float)scale_y, (float)1.0)
+//				);
+
+				glDrawQuad->renderWithoutProgram();
+			}
+			else
+			{
+#if SWEET_USE_SPHERE_SPECTRAL_SPACE
+
+
+				VisualizationEngine::EngineState::Matrices &m = visualizationEngine->engineState->matrices;
+				visualizationEngine->engineState->commonShaderPrograms.shaderTexturizeRainbowmap.pvm_matrix_uniform.set(
+						m.pvm
+				);
+
+				if (glDrawSphereSph == nullptr)
+				{
+					SphereDataConfig *sphereDataConfig = (SphereDataConfig*)bogus_data;
+
+					glDrawSphereSph = new GlDrawSphereSph;
+					glDrawSphereSph->initSphere(sphereDataConfig);
+				}
+
+				glDrawSphereSph->renderWithoutProgram();
+
+#endif
 			}
 
-			visualizationEngine->engineState->commonShaderPrograms.shaderTexturizeRainbowmap.use();
-			visualizationEngine->engineState->commonShaderPrograms.shaderTexturizeRainbowmap.pvm_matrix_uniform.set(
-					visualizationEngine->engineState->matrices.pvm*GLSL::scale((float)scale_x, (float)scale_y, (float)1.0)
-			);
-
-				glDrawQuad->render();
-
-				visualizationEngine->engineState->commonShaderPrograms.shaderTexturizeRainbowmap.disable();
+			visualizationEngine->engineState->commonShaderPrograms.shaderTexturizeRainbowmap.disable();
 
 		glTexture->unbind();
 
@@ -178,7 +229,6 @@ class VisSweet	:
 
 	void vis_keypress(char i_key)
 	{
-//		std::cout << "> " << i_key << " < " << std::endl;
 		if (i_key >= '1' && i_key <= '9')
 		{
 			sim_runs_per_frame = std::pow(2, i_key-'1');
@@ -219,6 +269,10 @@ class VisSweet	:
 
 		delete [] texture_data;
 		delete glTexture;
+
+#if SWEET_USE_SPHERE_SPECTRAL_SPACE
+		delete glDrawSphereSph;
+#endif
 		delete glDrawQuad;
 	}
 
@@ -227,6 +281,9 @@ class VisSweet	:
 public:
 	VisSweet(SimT *i_simulation)	:
 		glDrawQuad(nullptr),
+#if SWEET_USE_SPHERE_SPECTRAL_SPACE
+		glDrawSphereSph(nullptr),
+#endif
 
 		visSweetHUD(nullptr),
 		glFreeType(0),

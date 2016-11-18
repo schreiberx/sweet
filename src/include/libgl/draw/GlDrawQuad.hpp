@@ -37,11 +37,18 @@ public:
 
 	GlDrawQuad()
 	{
-		static const float vertices[4][4] = {
-					{-1.0, -1.0, -1.0, 1.0},
-					{ 1.0, -1.0, -1.0, 1.0},
-					{-1.0,  1.0, -1.0, 1.0},
-					{ 1.0,  1.0, -1.0, 1.0},
+		static const float vertices[4][3] = {
+					{-1.0, -1.0, -1.0},
+					{ 1.0, -1.0, -1.0},
+					{-1.0,  1.0, -1.0},
+					{ 1.0,  1.0, -1.0},
+				};
+
+		static const float normals[4][3] = {
+					{ 0.0,  0.0, -1.0},
+					{ 0.0,  0.0, -1.0},
+					{ 0.0,  0.0, -1.0},
+					{ 0.0,  0.0, -1.0},
 				};
 
 		static const float texcoords[4][2] = {
@@ -54,26 +61,35 @@ public:
 		vao.bind();
 
 			buffer.bind();
-			buffer.resize(sizeof(vertices)+sizeof(texcoords), GL_DYNAMIC_DRAW);
-			buffer.subData(0, sizeof(vertices), vertices);
-			buffer.subData(sizeof(vertices), sizeof(texcoords), texcoords);
+			buffer.resize(sizeof(vertices)+sizeof(normals)+sizeof(texcoords));
 
-			glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+			buffer.subData(0, sizeof(vertices), vertices);
+			buffer.subData(sizeof(vertices), sizeof(normals), normals);
+			buffer.subData(sizeof(vertices) + sizeof(normals), sizeof(texcoords), texcoords);
+
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 			glEnableVertexAttribArray(0);
-			glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)sizeof(vertices));
+
+			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(sizeof(vertices)));
 			glEnableVertexAttribArray(1);
+
+			glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(sizeof(vertices)+sizeof(normals)));
+			glEnableVertexAttribArray(2);
 
 		vao.unbind();
 
 		CGlErrorCheck();
 	}
-	/**
+
+
+
+	/*
 	 * render the quad
 	 */
-	void render()
+	void renderWithoutProgram()
 	{
 		vao.bind();
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 		vao.unbind();
 		CGlErrorCheck();
 	}

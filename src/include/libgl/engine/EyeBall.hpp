@@ -205,7 +205,7 @@ public:
 	 * rotate view around axis with angle alpha
 	 */
 	void rotate(	T alpha,			// rotation angle
-					CVector<3,T> &axis	// axis to rotate around
+					const CVector<3,T> &axis	// axis to rotate around
 					)
 	{
 //		std::cout << axis << std::endl;

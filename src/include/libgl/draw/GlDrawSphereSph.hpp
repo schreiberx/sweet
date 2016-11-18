@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Martin Schreiber
+ * Copyright 2016 Martin Schreiber
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,18 +15,25 @@
  */
 
 
-#ifndef CGL_DRAW_SPHERE_HPP
-#define CGL_DRAW_SPHERE_HPP
+#ifndef CGL_DRAW_SPHERE_SPH_HPP
+#define CGL_DRAW_SPHERE_SPH_HPP
 
 #include <libgl/core/GlBuffer.hpp>
 #include <libgl/core/GlProgram.hpp>
 #include <libgl/core/GlVertexArrayObject.hpp>
 #include "libmath/CGlSlMath.hpp"
 
+#if !SWEET_USE_SPHERE_SPECTRAL_SPACE
+	#error "SWEET_USE_SPHERE_SPECTRAL_SPACE not activated"
+#endif
+
+#include <sweet/sphere/SphereDataConfig.hpp>
+
 /**
- * \brief	create and render a sphere with polygons
+ * \brief	create and render a sphere with polygons and
+ * the latitudes placed with SPH ALP nodal points
  */
-class GlDrawSphere
+class GlDrawSphereSph
 {
 	GlBuffer vertex_buffer;
 	GlBuffer texture_coord_buffer;
@@ -41,10 +48,12 @@ public:
 	 * initialize OpenGL buffers to render a sphere with the given parameters
 	 */
 	void initBuffers(
-			GLuint hsegments = 30,		///< number of horizontal segments
-			GLuint vsegments = 15		///< number of vertical segments
+			SphereDataConfig *i_sphereDataConfig
 	)
 	{
+		int hsegments = i_sphereDataConfig->physical_num_lon;
+		int vsegments = i_sphereDataConfig->physical_num_lat;
+
 		triangle_strip_indices_count = (hsegments+1)*2*vsegments;
 		GLuint vertices_count = hsegments*(vsegments+1);
 
@@ -56,9 +65,9 @@ public:
 		// create triangle indices
 		GLuint *t = triangle_strip_indices;
 		int count = 0;
-		for (GLuint dbeta = 0; dbeta < vsegments; dbeta++)
+		for (int dbeta = 0; dbeta < vsegments; dbeta++)
 		{
-			for (GLuint dalpha = 0; dalpha < hsegments; dalpha++)
+			for (int dalpha = 0; dalpha < hsegments; dalpha++)
 			{
 				*t = dalpha+dbeta*hsegments;
 				t++;
@@ -79,13 +88,30 @@ public:
 		GLfloat *v = vertices;
 		GLfloat *tc = texture_coords;
 		int vcount = 0;
-		for (GLuint dbeta = 0; dbeta <= vsegments; dbeta++)
+		for (int dbeta = 0; dbeta <= vsegments; dbeta++)
 		{
-			float y = ((float)dbeta/(float)vsegments) * M_PI;
+			float y;
 
-			for (GLuint dalpha = 0; dalpha < hsegments; dalpha++)
+			if (dbeta == 0)
 			{
-				float r = ((float)dalpha/(float)hsegments) * 2.0 * M_PI;
+				// first cell edge
+				y = 0;
+			}
+			else if (dbeta == vsegments)
+			{
+				// last cell edge
+				y = M_PI;
+			}
+			else
+			{
+				// compute average between two Gaussian latitude sampling points
+				y = M_PI*0.5 - 0.5*(i_sphereDataConfig->lat[dbeta-1]+i_sphereDataConfig->lat[dbeta]);
+			}
+
+
+			for (int dalpha = 0; dalpha < hsegments; dalpha++)
+			{
+				float r = ((float)dalpha/(float)hsegments) * 2.0 * M_PI + M_PI;
 
 				float scale = std::sin(y);
 				v[0] = std::sin(r)*scale;
@@ -93,13 +119,24 @@ public:
 				v[2] = -std::cos(r)*scale;
 				v += 3;
 
-				tc[0] = (float)dalpha/(float)hsegments;
-				tc[1] = (float)dbeta/(float)vsegments;
+				tc[0] = ((float)dalpha+0.5)/(float)hsegments;
+				tc[1] = ((float)dbeta+0.5)/(float)vsegments;
+
+				tc[0] = -tc[0];
+
+				tc[0] += 0.5;
+				while (tc[0] > 1.0)
+					tc[0]--;
+				while (tc[0] < 0.0)
+					tc[0]++;
+
+//				std::cout << tc[0] << ", " << tc[1] << std::endl;
 
 				tc += 2;
 
 				vcount++;
 			}
+			std::cout << std::endl;
 		}
 
 		GLuint *pt = triangle_strip_indices;
@@ -114,8 +151,10 @@ public:
 
 			vertex_buffer.bind();
 			vertex_buffer.data(vertices_count*3*sizeof(GLfloat), vertices);
+
 			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 			glEnableVertexAttribArray(0);
+
 			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 			glEnableVertexAttribArray(1);
 
@@ -135,22 +174,8 @@ public:
 	}
 
 
-	/**
-	 * initialize the buffers to render a sphere
-	 */
-	GlDrawSphere(
-			GLuint hsegments,	///< number of horizontal segments
-			GLuint vsegments	///< number of vertical segments
-	)	:
-		vertex_buffer(GL_ARRAY_BUFFER),
-		texture_coord_buffer(GL_ARRAY_BUFFER),
-		index_buffer(GL_ELEMENT_ARRAY_BUFFER)
-	{
-		initBuffers(hsegments, vsegments);
-	}
 
-
-	GlDrawSphere()	:
+	GlDrawSphereSph()	:
 		vertex_buffer(GL_ARRAY_BUFFER),
 		texture_coord_buffer(GL_ARRAY_BUFFER),
 		index_buffer(GL_ELEMENT_ARRAY_BUFFER),
@@ -159,16 +184,17 @@ public:
 	}
 
 
+
 	/**
 	 * initialize buffers to render sphere with given parameters
 	 */
 	void initSphere(
-			GLuint i_hsegments = 30,	///< number of horizontal segments
-			GLuint i_vsegments = 15		///< number of vertical segments
+			SphereDataConfig *i_sphereDataConfig
 	)
 	{
-		initBuffers(i_hsegments, i_vsegments);
+		initBuffers(i_sphereDataConfig);
 	}
+
 
 
 	/**
@@ -177,7 +203,7 @@ public:
 	void renderWithoutProgram()
 	{
 		vao.bind();
-		glDrawElements(GL_TRIANGLE_STRIP, triangle_strip_indices_count, GL_UNSIGNED_INT, 0);
+			glDrawElements(GL_TRIANGLE_STRIP, triangle_strip_indices_count, GL_UNSIGNED_INT, 0);
 		vao.unbind();
 
 		CGlErrorCheck();

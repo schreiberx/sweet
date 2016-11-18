@@ -113,7 +113,7 @@ public:
 };
 
 
-#if C3S_DEBUG_MODE
+#if SWEET_DEBUG
 	/**
 	 * check for gl error and output the line and function where the error occured
 	 */

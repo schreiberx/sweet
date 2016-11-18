@@ -23,7 +23,15 @@ public:
 			return;
 		}
 
-		setupUniform(pvm_matrix_uniform, "pvm_matrix");
+		use();
+
+			setupUniform(pvm_matrix_uniform, "pvm_matrix");
+
+			bindAttribLocation(0, "vertex_position4");
+			bindAttribLocation(1, "vertex_normal3");
+			bindAttribLocation(2, "vertex_texture_coord2");
+
+		disable();
 	}
 
 	~GlShaderTexturizeRainbowmap()

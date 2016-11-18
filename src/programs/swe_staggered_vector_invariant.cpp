@@ -555,7 +555,9 @@ public:
 
 	void vis_get_vis_data_array(
 			const PlaneData **o_dataArray,
-			double *o_aspect_ratio
+			double *o_aspect_ratio,
+			int *o_render_primitive,
+			void **o_bogus_data
 	)
 	{
 		int id = simVars.misc.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));

@@ -64,7 +64,7 @@ public:
 
 
 	/**
-	 * Array with latitude phi angles
+	 * Array with latitude phi angle values
 	 *
 	 * WARNING: Phi is not the phi from SHTNS
 	 */

@@ -665,7 +665,6 @@ public:
 
 			// use REXI
 			swe_plane_rexi.setup(
-					0,
 					simVars.rexi.rexi_h,
 					simVars.rexi.rexi_M,
 					simVars.rexi.rexi_L,
@@ -1459,7 +1458,9 @@ public:
 
 	void vis_get_vis_data_array(
 			const PlaneData **o_dataArray,
-			double *o_aspect_ratio
+			double *o_aspect_ratio,
+			int *o_render_primitive,
+			void **o_bogus_data
 	)
 	{
 		if (simVars.misc.vis_id < 0)

@@ -165,7 +165,7 @@ public:
 
 	void checkSDLError(int line = -1)
 	{
-#if C3S_DEBUG_MODE
+#if SWEET_DEBUG
 		const char *error = SDL_GetError();
 		if (*error != '\0')
 		{
@@ -292,7 +292,7 @@ public:
 
 		checkSDLError(__LINE__);
 
-#if C3S_DEBUG_MODE
+#if SWEET_DEBUG
 		std::cout << "GL Version: " << glGetString(GL_VERSION) << std::endl;
 		std::cout << "GL Vendor: " << glGetString(GL_VENDOR) << std::endl;
 		std::cout << "GL Renderer: " << glGetString(GL_RENDERER) << std::endl;

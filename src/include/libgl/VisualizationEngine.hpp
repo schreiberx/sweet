@@ -158,6 +158,9 @@ public:
 		EngineState *engineState;
 		RenderWindow *renderWindow;
 
+		// last mouse position
+		float old_mouse_x, old_mouse_y;
+
 
 		WindowEventCallbacks(
 				ProgramCallbacks *i_engineCallback,
@@ -168,6 +171,8 @@ public:
 			engineState(i_engineState),
 			renderWindow(i_renderWindow)
 		{
+			old_mouse_x = -1;
+			old_mouse_y = -1;
 		}
 
 
@@ -246,6 +251,7 @@ public:
 		}
 
 
+
 		void callback_mouse_motion(
 				int i_x,
 				int i_y
@@ -253,24 +259,33 @@ public:
 		{
 			engineState->inputStateMouse.update((float)i_x*2.0/(float)renderWindow->window_width-1.0, (float)i_y*2.0/(float)renderWindow->window_height-1.0);
 
-			if (engineState->inputStateMouse.mouse_buttons[RenderWindow::MOUSE_BUTTON_LEFT])
+			if (old_mouse_x != -1)
 			{
-				float b = engineState->zoom*10.0*engineState->common_scale;
+				if (engineState->inputStateMouse.mouse_buttons[RenderWindow::MOUSE_BUTTON_LEFT])
+				{
+					float b = engineState->zoom*10.0*engineState->common_scale;
 
-				engineState->camera1stPerson.rotate(
-						-engineState->inputStateMouse.relative_mouse_y*b,
-						-engineState->inputStateMouse.relative_mouse_x*b,
-						0
-					);
+					engineState->camera1stPerson.rotate(
+							-engineState->inputStateMouse.relative_mouse_y*b,
+							-engineState->inputStateMouse.relative_mouse_x*b,
+							0
+						);
+				}
+				else if (engineState->inputStateMouse.mouse_buttons[RenderWindow::MOUSE_BUTTON_RIGHT])
+				{
+					double speed = 0.1;
+					engineState->modelEyeBall.rotate(speed*(-old_mouse_x + i_x), engineState->modelEyeBall.up);
+//					engineState->modelEyeBall.rotate(speed*(-old_mouse_x + i_x), GLSL::vec3(0, 1, 0));
+					engineState->modelEyeBall.rotate(speed*(-old_mouse_y + i_y), engineState->modelEyeBall.right);
+				}
+				else if (engineState->inputStateMouse.mouse_buttons[RenderWindow::MOUSE_BUTTON_MIDDLE])
+				{
+					engineState->perspective_zoom += (float)(engineState->inputStateMouse.relative_mouse_y);
+				}
+			}
 
-			}
-			else if (engineState->inputStateMouse.mouse_buttons[RenderWindow::MOUSE_BUTTON_RIGHT])
-			{
-			}
-			else if (engineState->inputStateMouse.mouse_buttons[RenderWindow::MOUSE_BUTTON_MIDDLE])
-			{
-				engineState->perspective_zoom += (float)(engineState->inputStateMouse.relative_mouse_y);
-			}
+			old_mouse_x = i_x;
+			old_mouse_y = i_y;
 		}
 
 		void callback_mouse_button_down(int i_button_nr)
@@ -393,7 +408,9 @@ public:
 			/*
 			 * MATRICES
 			 */
+			engineState->modelEyeBall.reconstructRotationMatrix();
 			engineState->matrices.model = engineState->modelEyeBall.rotationMatrix;
+
 			engineState->matrices.view = engineState->camera1stPerson.view_matrix;
 			engineState->matrices.projection = engineState->camera1stPerson.projection_matrix;
 
@@ -404,7 +421,7 @@ public:
 			/*
 			 * LIGHTING
 			 */
-			auto v = engineState->camera1stPerson.view_matrix
+			GLSL::vec4 v = engineState->camera1stPerson.view_matrix
 					*GLSL::vec3(
 							engineState->lights.lights[0].world_pos3[0],
 							engineState->lights.lights[0].world_pos3[1],

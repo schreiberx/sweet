@@ -419,10 +419,9 @@ public:
 	 */
 	static inline 	void disable()
 	{
-#if DEBUG==1
 		glUseProgram(0);
+
 		CGlErrorCheck();
-#endif
 	}
 
 	/**

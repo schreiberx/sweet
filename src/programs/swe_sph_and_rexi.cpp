@@ -79,6 +79,8 @@ public:
 	PlaneData viz_plane_data;
 #endif
 
+	int render_primitive_id;
+
 
 public:
 	SimulationInstance()	:
@@ -179,6 +181,8 @@ public:
 
 	void reset()
 	{
+		render_primitive_id = 1;
+
 		// one month runtime
 		if (simVars.timecontrol.max_simulation_time == -1)
 		{
@@ -683,9 +687,15 @@ public:
 
 	void vis_get_vis_data_array(
 			const PlaneData **o_dataArray,
-			double *o_aspect_ratio
+			double *o_aspect_ratio,
+			int *o_render_primitive_id,
+			void **o_bogus_data
 	)
 	{
+		// request rendering of sphere
+		*o_render_primitive_id = render_primitive_id;
+		*o_bogus_data = sphereDataConfig;
+
 		int id = simVars.misc.vis_id % 4;
 		switch (id)
 		{
@@ -792,6 +802,10 @@ public:
 
 		case 'V':
 			simVars.misc.vis_id--;
+			break;
+
+		case 'b':
+			render_primitive_id = (render_primitive_id + 1) % 2;
 			break;
 
 		case 'c':
