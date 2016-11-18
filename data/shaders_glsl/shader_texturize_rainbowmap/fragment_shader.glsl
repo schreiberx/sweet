@@ -1,10 +1,11 @@
 #version 150
 
-in vec2 rast_texture_coord;
+in vec3 frag_vertex_normal3;
+in vec2 frag_texture_coord2;
 
 out vec3 frag_data;
 
-uniform sampler2D sampler;
+uniform sampler2D dataTexture;
 
 /**
  * computation of rainbow color map from
@@ -19,8 +20,12 @@ vec3 blend2ndOrder(vec3 f)
 
 void main(void)
 {
-	float red_value = texture(sampler, rast_texture_coord).r;
-//	red_value = rast_texture_coord.x;
+//	frag_data.xyz = vec3(0);
+//	frag_data.x = frag_texture_coord2.y;
+//	return;
+
+	float red_value = texture(dataTexture, frag_texture_coord2).r;
+//	red_value = frag_texture_coord2.x;
 
 	float limited_height = max(0.0, min(1.0, red_value));
 #if 1
@@ -32,5 +37,7 @@ void main(void)
 					vec3(3.0)*(limited_height-vec3(1.0, 0.5, 0.0))
 				);
 #endif
+//	frag_data.z = 0;
+//	frag_data.xy = frag_texture_coord2;
 	return;
 }

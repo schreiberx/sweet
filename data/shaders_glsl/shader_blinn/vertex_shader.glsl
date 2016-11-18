@@ -19,8 +19,6 @@ void main(void)
 	gl_Position = pvm_matrix*vertex_position;
 
 	frag_normal3 = view_model_normal_matrix3*vertex_normal3;
-
 	frag_texture_coord2 = vertex_texture_coord2;
-
 	frag_position3 = vec3(view_model_matrix*vertex_position);
 }
