@@ -234,6 +234,19 @@ public:
 			simVars.misc.use_nonlinear_equations = 0;
 		}
 
+		if (simVars.setup.benchmark_scenario_id <= 0)
+		{
+			std::cout << std::endl;
+			std::cout << "Benchmark scenario not selected (option -s [id])" << std::endl;
+			std::cout << "Available benchmark scenarios:" << std::endl;
+			std::cout << "	1: Galweski" << std::endl;
+			std::cout << "	2: Use Gaussian bump initial conditions (pi/3, pi/3)" << std::endl;
+			std::cout << "	3: Use Gaussian bump initial conditions (0, pi/3)" << std::endl;
+			std::cout << "	4: Use geostrophic balance test case" << std::endl;
+			std::cout << std::endl;
+			FatalError("Benchmark scenario not selected");
+		}
+
 
 		if (simVars.setup.benchmark_scenario_id == 0)
 		{

@@ -68,7 +68,7 @@ public:
 	struct Setup
 	{
 		/// setup scenario
-		int benchmark_scenario_id = 1;
+		int benchmark_scenario_id = -1;
 
 		/// radius
 		double radius_scale = 1;
@@ -686,13 +686,7 @@ public:
 						"	-H [float]	average (initial) height of water, default=1000",
 						"",
 						"Simulation setup parameters",
-						"	-s [scen]	scenario id, default=1",
-						"	            0 : radial dam break",
-						"	            1 : Gaussian dam break",
-						"	            2 : balanced state x",
-						"	            3 : balanced state y",
-						"	            9 : h=H0, v=0, u=0",
-						"	            11: Waves",
+						"	-s [scen]	scenario id, set to -1 for overview"
 						"	-x [float]	x coordinate for setup \\in [0;1], default=0.5",
 						"	-y [float]	y coordinate for setup \\in [0;1], default=0.5",
 						"	-r [radius]	scale factor of radius for initial condition, default=1",

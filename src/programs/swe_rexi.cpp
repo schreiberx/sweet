@@ -264,6 +264,14 @@ public:
 
 	void reset()
 	{
+		if (simVars.setup.benchmark_scenario_id < 0)
+		{
+			std::cout << std::endl;
+			std::cout << "Benchmark scenario not selected (option -s [id])" << std::endl;
+			SWEPlaneBenchmarks::printScenarioInformation();
+			FatalError("Benchmark scenario not selected");
+		}
+
 		// Initialise diagnostics
 		last_timestep_nr_update_diagnostics = -1;
 
@@ -369,16 +377,16 @@ public:
 			}
 		);
 
-		//Initialize arrival points with h position
+		// Initialize arrival points with h position
 		pos_x = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_x);
 		pos_y = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_y);
 
-		//Initialize arrival points with h position
+		// Initialize arrival points with h position
 		posx_a = pos_x+0.5*simVars.disc.cell_size[0];
 		posy_a = pos_y+0.5*simVars.disc.cell_size[1];
 
 
-		//Waves test case - separate from SWEValidationBench because it depends on certain local input parameters
+		// Waves test case - separate from SWEValidationBench because it depends on certain local input parameters
 		auto return_h = [] (
 				SimulationVariables &i_parameters,
 				double x,
@@ -2044,16 +2052,16 @@ int main(int i_argc, char *i_argv[])
 	// Method to be used
 	param_timestepping_mode = simVars.bogus.var[0];
 
-	//Calculate error flag
+	// Calculate error flag
 	param_compute_error = simVars.bogus.var[1];
 
 	// C- grid flag
 	param_use_staggering = simVars.bogus.var[2];
 
-	//Boundary
+	// Boundary
 	param_boundary_id = simVars.bogus.var[3];
 
-	//Frequency for certain initial conditions
+	// Frequency for certain initial conditions
 	param_initial_freq_x_mul = simVars.bogus.var[4];
 	param_initial_freq_y_mul = simVars.bogus.var[5];
 
@@ -2061,7 +2069,7 @@ int main(int i_argc, char *i_argv[])
 
 	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
 
-	//Print header
+	// Print header
 	std::cout << std::endl;
 	if (simVars.misc.use_nonlinear_equations == 1)
 		std::cout << "Solving full nonlinear SW equations" << std::endl;

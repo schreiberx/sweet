@@ -724,6 +724,16 @@ public:
 		return false;
 	}
 
+	static void printScenarioInformation()
+	{
+		std::cout << "Available benchmark scenarios:" << std::endl;
+		std::cout << "		0 : radial dam break" << std::endl;
+		std::cout << "		1 : Gaussian dam break" << std::endl;
+		std::cout << "		2 : balanced state x" << std::endl;
+		std::cout << "		3 : balanced state y" << std::endl;
+		std::cout << "		9 : h=H0, v=0, u=0" << std::endl;
+		std::cout << "		11: Waves" << std::endl;
+	}
 
 };
 
