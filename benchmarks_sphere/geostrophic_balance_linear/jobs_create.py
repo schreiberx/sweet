@@ -188,7 +188,6 @@ if True:
 
 if True:
 	p.timestep_size = 0.00002
-	p.simtime = 5
 	p.use_rexi = 0
 	p.rexi_par = 0
 
