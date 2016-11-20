@@ -32,7 +32,7 @@ class default_params:
 	nonlinear = 0
 	viscosity = 0
 
-	simtime = 4
+	simtime = 1
 
 	rexi_par = 1
 	postprocessing = 0
@@ -108,8 +108,14 @@ $EXEC || exit 1
 
 		return content
 
+
 	def create_job_id(self):
 		idstr = ''
+
+		if self.use_rexi:
+			idstr += '_REXI'
+		else:
+			idstr += '_RK'+str(self.rk_order)
 
 		idstr += '_modes'+str(self.mode_res).zfill(3)
 		idstr += '_bench'+str(self.bench_id)
@@ -121,7 +127,6 @@ $EXEC || exit 1
 		idstr += '_a'+str(self.r)
 		idstr += '_u'+str(self.viscosity)
 
-
 		if self.use_rexi:
 			idstr += '_rexim'+str(self.rexi_m).zfill(5)
 			idstr += '_rexih'+str(self.rexi_h)
@@ -129,8 +134,6 @@ $EXEC || exit 1
 			idstr += '_rexiextmodes'+str(self.rexi_extended_modes).zfill(2)
 			idstr += '_rexipar'+str(1 if self.rexi_par else 0)
 			idstr += '_rexiusecoriolisformulation'+str(1 if self.rexi_use_coriolis_formulation else 0)
-		else:
-			idstr += '_RK'+str(self.rk_order)
 
 		idstr += '_C'+str(self.timestep_size).zfill(8)
 		idstr += '_t'+str(self.simtime).zfill(8)
@@ -139,6 +142,7 @@ $EXEC || exit 1
 		idstr += '_robert'+str(self.use_robert_functions)
 
 		return idstr
+
 
 	def gen_script(self, dirname, scriptname):
 		if not os.path.exists(dirname):
@@ -157,23 +161,23 @@ $EXEC || exit 1
 
 
 p = default_params()
-p.simtime = 4
-p.mode_res = 64
 
 
 ####################################
+# REXI
 ####################################
 
 if True:
-#if False:
-	p.timestep_size = 0.001
+	# 10 times larger than RK4 time step size
+	p.timestep_size = 0.0002
 	p.use_rexi = 1
 	p.rexi_par = 1
 	p.rexi_use_coriolis_formulation = 1
 
-	for p.mode_res in [32, 64, 128, 256]:
-		for p.rexi_m in [64, 128, 256, 512]:
-			p.gen_script('script'+p.create_job_id(), 'run.sh')
+	for p.rexi_extended_modes in [2,4]:
+		for p.mode_res in [32, 64, 128, 256]:
+			for p.rexi_m in [64, 128, 256, 512, 1024, 2048]:
+				p.gen_script('script'+p.create_job_id(), 'run.sh')
 
 
 
