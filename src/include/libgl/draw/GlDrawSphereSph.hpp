@@ -130,13 +130,10 @@ public:
 				while (tc[0] < 0.0)
 					tc[0]++;
 
-//				std::cout << tc[0] << ", " << tc[1] << std::endl;
-
 				tc += 2;
 
 				vcount++;
 			}
-			std::cout << std::endl;
 		}
 
 		GLuint *pt = triangle_strip_indices;

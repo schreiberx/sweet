@@ -731,7 +731,7 @@ public:
 		simVars.diag.total_potential_enstrophy = 0.5*(eta*eta*prog_h).reduce_sum_quad() * normalization;
 
 		//Divergence
-		div = (op.diff_c_x(prog_u) + op.diff_c_y(prog_v));
+//		div = (op.diff_c_x(prog_u) + op.diff_c_y(prog_v));
 	}
 
 

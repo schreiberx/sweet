@@ -87,10 +87,14 @@ class VisSweet	:
 
 	}
 
+
+
 	bool should_quit()
 	{
 		return simulation->should_quit();
 	}
+
+
 
 	void vis_render()
 	{
@@ -215,6 +219,8 @@ class VisSweet	:
 		simulation->vis_post_frame_processing(sim_runs_per_frame);
 	}
 
+
+
 	const char* vis_getStatusString()
 	{
 		static char title_string[1024];
@@ -222,10 +228,14 @@ class VisSweet	:
 		return title_string;
 	}
 
+
+
 	void vis_viewportChanged(int i_width, int i_height)
 	{
 
 	}
+
+
 
 	void vis_keypress(char i_key)
 	{
@@ -290,7 +300,9 @@ public:
 		glRenderOStream(nullptr)
 	{
 		simulation = i_simulation;
+
 		VisualizationEngine(this, "SWEET");
+
 	}
 
 };

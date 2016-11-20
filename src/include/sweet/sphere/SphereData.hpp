@@ -417,7 +417,6 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for
 #endif
-
 		for (int idx = 0; idx < sphereDataConfig->spectral_array_data_number_of_elements; idx++)
 			out_sph_data.spectral_space_data[idx] = spectral_space_data[idx] - i_sph_data.spectral_space_data[idx];
 
@@ -426,6 +425,7 @@ public:
 
 		return out_sph_data;
 	}
+
 
 
 	SphereData operator-()
@@ -437,7 +437,6 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for
 #endif
-
 		for (int idx = 0; idx < sphereDataConfig->spectral_array_data_number_of_elements; idx++)
 			out_sph_data.spectral_space_data[idx] = -spectral_space_data[idx];
 
@@ -446,6 +445,7 @@ public:
 
 		return out_sph_data;
 	}
+
 
 
 	SphereData operator*(
@@ -464,6 +464,31 @@ public:
 #endif
 		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 			out_sph_data.physical_space_data[i] = i_sph_data.physical_space_data[i]*physical_space_data[i];
+
+		out_sph_data.physical_space_data_valid = true;
+		out_sph_data.spectral_space_data_valid = false;
+
+		return out_sph_data;
+	}
+
+
+
+	SphereData operator/(
+			const SphereData &i_sph_data
+	)	const
+	{
+		check(i_sph_data.sphereDataConfig);
+
+		request_data_physical();
+		i_sph_data.request_data_physical();
+
+		SphereData out_sph_data(sphereDataConfig);
+
+#if SWEET_THREADING
+#pragma omp parallel for
+#endif
+		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+			out_sph_data.physical_space_data[i] = i_sph_data.physical_space_data[i]/physical_space_data[i];
 
 		out_sph_data.physical_space_data_valid = true;
 		out_sph_data.spectral_space_data_valid = false;
@@ -911,6 +936,7 @@ public:
 	}
 
 
+
 	/*
 	 * Set all values to a specific value
 	 */
@@ -931,6 +957,7 @@ public:
 	}
 
 
+
 	/*
 	 * Set all values to a specific value
 	 */
@@ -948,6 +975,7 @@ public:
 		physical_space_data_valid = true;
 		spectral_space_data_valid = false;
 	}
+
 
 
 	/**
@@ -977,6 +1005,7 @@ public:
 	}
 
 
+
 	double physical_reduce_rms()
 	{
 		request_data_physical();
@@ -990,6 +1019,35 @@ public:
 		}
 
 		return error / std::sqrt((double)sphereDataConfig->physical_array_data_number_of_elements);
+	}
+
+
+
+	double physical_reduce_sum()
+	{
+		request_data_physical();
+
+		double sum = 0;
+		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
+			sum += physical_space_data[j];
+
+		return sum;
+	}
+
+
+
+	double physical_reduce_sum_metric()
+	{
+		request_data_physical();
+
+		FatalError("TODO: Implement metric-scaled summation");
+		double sum = 0;
+		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
+		{
+			sum += physical_space_data[j];
+		}
+
+		return sum;
 	}
 
 

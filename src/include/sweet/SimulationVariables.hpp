@@ -298,7 +298,7 @@ public:
 		double be_verbose_after_this_simulation_time_period = 0;
 
 		/// prefix of filename for output of data
-		std::string output_file_name_prefix;
+		std::string output_file_name_prefix = "prog_%s_t%020.8f.csv";
 
 		/// prefix of filename for output of data
 		double output_each_sim_seconds = -1;
