@@ -76,7 +76,7 @@ cd "$BASEDIR"
 		content += ' -M '+str(self.mode_res)
 		content += ' -C '+str(-self.timestep_size)
 		content += ' -o '+str(self.output_timestep_size)
-		content += ' -O ""'	# deactivate file output
+		content += ' -O -'	# deactivate file output
 		content += ' -u '+str(self.viscosity)
 		content += ' -t '+str(self.simtime)
 		content += ' -R '+str(self.rk_order)

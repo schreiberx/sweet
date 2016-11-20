@@ -289,7 +289,7 @@ public:
 		int verbosity = 0;
 
 		/// precision for floating point output to std::cout and std::endl
-		int output_floating_point_precision = 20;
+		int output_floating_point_precision = 18;
 
 		/// activate GUI mode?
 		bool gui_enabled = (SWEET_GUI == 0 ? false : true);
@@ -778,6 +778,9 @@ public:
 		 * This is not related to the simulation variables but makes it very convenient
 		 * to specify it in all other programs.
 		 */
+
+		if (misc.output_file_name_prefix == "-")
+			misc.output_file_name_prefix = "";
 
 		std::cout << std::setprecision(misc.output_floating_point_precision);
 		std::cerr << std::setprecision(misc.output_floating_point_precision);

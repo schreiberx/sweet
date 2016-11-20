@@ -5,9 +5,6 @@
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#ifndef SRC_TESTSWE_HPP_
-#define SRC_TESTSWE_HPP_
-
 #if SWEET_GUI
 	#include <sweet/VisSweet.hpp>
 	#include <sweet/plane/PlaneDataConfig.hpp>
@@ -1198,7 +1195,3 @@ int main(int i_argc, char *i_argv[])
 #endif
 	return 0;
 }
-
-
-
-#endif /* SRC_TESTSWE_HPP_ */
