@@ -554,6 +554,24 @@ public:
 	}
 
 
+	const SphereDataComplex& operator/=(
+			const std::complex<double> &i_value
+	)	const
+	{
+		request_data_spectral();
+
+#if SWEET_THREADING
+#pragma omp parallel for
+#endif
+
+		for (int idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
+			spectral_space_data[idx] /= i_value;
+
+		return *this;
+	}
+
+
+
 	SphereDataComplex operator+(
 			double i_value
 	)	const
@@ -1006,7 +1024,7 @@ public:
 			error += std::sqrt(d.real()*d.real()+d.imag()*d.imag());
 		}
 
-		return error / std::sqrt((double)sphereDataConfig->physical_array_data_number_of_elements);
+		return std::sqrt(error / (double)sphereDataConfig->physical_array_data_number_of_elements);
 	}
 
 

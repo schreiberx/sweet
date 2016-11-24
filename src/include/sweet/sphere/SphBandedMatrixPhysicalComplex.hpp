@@ -18,7 +18,7 @@
 /**
  * phi(lambda,mu) denotes the solution
  */
-template <typename T>	// T: complex valued single or double precision method
+template < typename T = std::complex<double> >	// T: complex valued single or double precision method
 class SphBandedMatrixPhysicalComplex	:
 		SphereSPHIdentities
 {
@@ -297,10 +297,10 @@ public:
 #endif
 		for (int m = -sphereDataConfig->spectral_modes_m_max; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
+			T fac = std::complex<double>(1.0/(i_r*i_r))*i_scalar*T(0, m);
+
 			for (int n = std::abs(m); n <= sphereDataConfig->spectral_modes_n_max; n++)
 			{
-				std::complex<double> fac = 1.0/(i_r*i_r)*i_scalar*T(0, m);
-
 				T *row = lhs.getMatrixRow(n, m);
 				lhs.rowElement_add(row, n, m,  -2, fac*A(n-2,m)	);
 				lhs.rowElement_add(row, n, m,   0, fac*B(n+0,m)	);
@@ -327,14 +327,14 @@ public:
 
 		for (int m = -sphereDataConfig->spectral_modes_m_max; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
-			std::complex<double> fac = i_scalar*std::complex<double>(0, m)*1.0/(i_r*i_r);
+			std::complex<double> fac = (i_scalar/(i_r*i_r))*std::complex<double>(0, m);
 
 			for (int n = std::abs(m); n <= sphereDataConfig->spectral_modes_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
-				lhs.rowElement_add(row, n, m, -2, fac*(R(n-1,m)*R(n-2,m)));
-				lhs.rowElement_add(row, n, m,  0, fac*(R(n-1,m)*S(n,m) + S(n+1,m)*R(n,m)));
-				lhs.rowElement_add(row, n, m, +2, fac*(S(n+1,m)*S(n+2,m)));
+				lhs.rowElement_add(row, n, m, -2, fac*A(n-2,m));
+				lhs.rowElement_add(row, n, m,  0, fac*B(n,m));
+				lhs.rowElement_add(row, n, m, +2, fac*C(n+2,m));
 			}
 		}
 

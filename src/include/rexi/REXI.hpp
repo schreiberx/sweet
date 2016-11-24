@@ -79,7 +79,8 @@ public:
 		double i_h,				///< sampling width
 		int i_M,				///< approximation area
 		int i_L = 0,			///< L value for Gaussian approximation, use 0 for autodetection
-		bool i_reduce_to_half = true	///< reduce the number of poles to half
+		bool i_reduce_to_half = true,	///< reduce the number of poles to half
+		bool i_normalization = true
 	)
 	{
 		GaussianApproximation ga(i_L);
@@ -170,6 +171,29 @@ public:
 			{
 				beta_re[i] *= 2.0;
 				beta_im[i] *= 2.0;
+			}
+		}
+
+		if (i_normalization)
+		{
+			if (phi_id == 0)
+			{
+				/*
+				 * Only available for e^{ix}
+				 */
+				/*
+				 * Apply normalization to beta coefficients
+				 * This assures no over/undershooting
+				 */
+				std::complex<double> sum = 0;
+				for (std::size_t n = 0; n < alpha.size(); n++)
+					sum += beta_re[n]/alpha[n];
+
+				double normalization = sum.real();
+				std::cout << "Using REXI normalization: " << 1.0/normalization << std::endl;
+
+				for (std::size_t n = 0; n < beta_re.size(); n++)
+					beta_re[n] /= normalization;
 			}
 		}
 	}

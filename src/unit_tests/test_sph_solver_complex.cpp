@@ -29,31 +29,46 @@ SimulationVariables simVars;
 SphereOperatorsComplex opComplex;
 
 
-void errorCheck(
+bool errorCheck(
 		SphereDataComplex &i_lhs,
 		SphereDataComplex &i_rhs,
 		const std::string &i_id,
 		double i_error_threshold = 1.0,
-		double i_ignore_error = false
+		bool i_ignore_error = false,
+		bool i_normalization = true
 )
 {
 	SphereDataComplex lhsr = i_lhs.spectral_returnWithDifferentModes(sphereDataConfig);
 	SphereDataComplex rhsr = i_rhs.spectral_returnWithDifferentModes(sphereDataConfig);
 
-	double normalize_fac = std::min(lhsr.physical_reduce_max_abs(), rhsr.physical_reduce_max_abs());
 
 	SphereDataComplex diff = lhsr-rhsr;
 	diff.physical_reduce_max_abs();
 
-	if (normalize_fac == 0)
+	double lhs_maxabs = lhsr.physical_reduce_max_abs();
+	double rhs_maxabs = rhsr.physical_reduce_max_abs();
+
+	double normalize_fac;
+
+	if (i_normalization)
 	{
-		std::cout << "Error computation for '" << i_id << "' ignored since both fields are Zero" << std::endl;
-		return;
+		normalize_fac = std::min(lhs_maxabs, rhs_maxabs);
+
+		if (std::max(lhs_maxabs, rhs_maxabs) < i_error_threshold)
+		{
+			std::cout << "Error computation for '" << i_id << "' ignored since both fields are below threshold tolerance" << std::endl;
+			return false;
+		}
 	}
+	else
+	{
+		normalize_fac = 1.0;
+	}
+
 	double rel_max_abs = diff.physical_reduce_max_abs() / normalize_fac;
 	double rel_rms = diff.physical_reduce_rms() / normalize_fac;
 
-	std::cout << "Error for " << i_id << ": \t" << rel_max_abs << "\t" << rel_rms << "\t\tThreshold: " << i_error_threshold << std::endl;
+	std::cout << "Error for " << i_id << ": \t" << rel_max_abs << "\t" << rel_rms << "\t\tThreshold: " << i_error_threshold << " with normalization factor " << normalize_fac << std::endl;
 
 	if (rel_max_abs > i_error_threshold)
 	{
@@ -65,7 +80,10 @@ void errorCheck(
 			std::cerr << "Error ignored (probably because extended modes not >= 2)" << std::endl;
 		else
 			FatalError("Error too large");
+
+		return true;
 	}
+	return false;
 }
 
 /**
@@ -73,8 +91,11 @@ void errorCheck(
  */
 void run_tests()
 {
-	double epsilon = 1e-11;
-	epsilon *= (sphereDataConfig->spectral_modes_n_max);
+	double max_scalar = std::max(std::max(simVars.sim.gravitation, simVars.sim.h0), simVars.sim.f0);
+
+	double epsilon = 1e-11*max_scalar;
+	epsilon *= std::sqrt(sphereDataConfig->spectral_modes_n_max);
+
 	std::cout << "Using max allowed error of " << epsilon << std::endl;
 
 	std::cout << std::setprecision(10);
@@ -313,6 +334,37 @@ void run_tests()
 			SphereDataComplex x_numerical = sphSolver.solve(b);
 			errorCheck(x_numerical, x_result, "Test Z4 = grad_j(mu) grad_i(Phi(lam,mu)) = d/dlambda Phi(lam,mu)", epsilon);
 		}
+		/*
+		 * Test Z4robert = grad_j(mu) grad_i(Phi(lam,mu)) = d/dlambda Phi(lam,mu)
+		 */
+		if (true)
+		{
+			SphBandedMatrixPhysicalComplex<std::complex<double>> sphSolver;
+			sphSolver.setup(sphereDataConfig, 2);
+
+			std::complex<double> scalar = -alpha*alpha*two_omega;
+			sphSolver.solver_component_rexi_z4robert(scalar, r);
+
+			// ADD OFFSET FOR NON-SINGULAR SOLUTION
+			sphSolver.solver_component_scalar_phi(alpha);
+
+			SphereDataComplex b(sphereDataConfig);
+			b.physical_update_lambda_gaussian_grid(
+					[&](double lat, double mu, std::complex<double> &io_data)
+					{
+						double fun;
+						testSolutions.test_function__grid_gaussian(lat, mu, fun);
+
+						double dlambda_fun;
+						testSolutions.correct_result_diff_lambda__grid_gaussian(lat, mu, dlambda_fun);
+
+						io_data = scalar/(r*r)*dlambda_fun + fun*alpha;
+					}
+			);
+
+			SphereDataComplex x_numerical = sphSolver.solve(b);
+			errorCheck(x_numerical, x_result, "Test Z4robert = grad_j(mu) grad_i(Phi(lam,mu)) = d/dlambda Phi(lam,mu)", epsilon);
+		}
 
 
 		/*
@@ -339,12 +391,48 @@ void run_tests()
 						double dgrad_lambda_fun;
 						testSolutions.correct_result_grad_lambda__grid_gaussian(lat, mu, dgrad_lambda_fun);
 
-						io_data = scalar/(r*r)*std::sqrt(1.0-mu*mu)*mu*mu*dgrad_lambda_fun + fun*alpha;
+						io_data = (scalar/(r*r))*std::sqrt(1.0-mu*mu)*mu*mu*dgrad_lambda_fun + fun*alpha;
 					}
 			);
 
 			SphereDataComplex x_numerical = sphSolver.solve(b);
-			errorCheck(x_numerical, x_result, "Test Z5 = grad_j(mu) mu^2 grad_i(Phi(lam,mu))", epsilon);
+			std::cout << "WARNING: This component is very sensitive to small alpha values vs. large two_omega^3 !" << std::endl;
+			errorCheck(x_numerical, x_result, "Test Z5 = grad_j(mu) mu^2 grad_i(Phi(lam,mu))", epsilon, two_omega>=100000);
+		}
+
+
+		/*
+		 * Test Z5robert = grad_j(mu) mu^2 grad_i(Phi(lam,mu))
+		 */
+		if (true)
+		{
+			SphBandedMatrixPhysicalComplex<std::complex<double>> sphSolver;
+			sphSolver.setup(sphereDataConfig, 2);
+
+			std::complex<double> scalar = two_omega*two_omega*two_omega;
+			scalar = two_omega*two_omega;//*two_omega;
+			sphSolver.solver_component_rexi_z5robert(scalar, r);
+
+			// ADD OFFSET FOR NON-SINGULAR SOLUTION
+			sphSolver.solver_component_scalar_phi(alpha);
+
+			SphereDataComplex b(sphereDataConfig);
+			b.physical_update_lambda_gaussian_grid(
+					[&](double lat, double mu, std::complex<double> &io_data)
+					{
+						double fun;
+						testSolutions.test_function__grid_gaussian(lat, mu, fun);
+
+						double dgrad_lambda_fun;
+						testSolutions.correct_result_diff_lambda__grid_gaussian(lat, mu, dgrad_lambda_fun);
+
+						io_data = (scalar/(r*r))*mu*mu*dgrad_lambda_fun + fun*alpha;
+					}
+			);
+
+			SphereDataComplex x_numerical = sphSolver.solve(b);
+			std::cout << "WARNING: This component is very sensitive to small alpha values vs. large two_omega^3 !" << std::endl;
+			errorCheck(x_numerical, x_result, "Test Z5robert = grad_j(mu) mu^2 grad_i(Phi(lam,mu))", epsilon);
 		}
 
 
@@ -378,6 +466,39 @@ void run_tests()
 
 			SphereDataComplex x_numerical = sphSolver.solve(b);
 			errorCheck(x_numerical, x_result, "Test Z6 = grad_j(mu) mu grad_j(Phi(lam,mu))", epsilon);
+		}
+
+
+		/*
+		 * Test Z6robert = grad_j(mu) mu grad_j(Phi(lam,mu))
+		 */
+		if (true)
+		{
+			SphBandedMatrixPhysicalComplex<std::complex<double>> sphSolver;
+			sphSolver.setup(sphereDataConfig, 2);
+
+			std::complex<double> scalar = 2.0*alpha*two_omega*two_omega;
+			sphSolver.solver_component_rexi_z6robert(scalar, r);
+
+			// ADD OFFSET FOR NON-SINGULAR SOLUTION
+			sphSolver.solver_component_scalar_phi(alpha);
+
+			SphereDataComplex b(sphereDataConfig);
+			b.physical_update_lambda_gaussian_grid(
+					[&](double lat, double mu, std::complex<double> &io_data)
+					{
+						double fun;
+						testSolutions.test_function__grid_gaussian(lat, mu, fun);
+
+						double dgrad_mu_fun;
+						testSolutions.correct_result_diff_mu__grid_gaussian(lat, mu, dgrad_mu_fun);
+
+						io_data = scalar/(r*r)*mu*(1-mu*mu)*dgrad_mu_fun + fun*alpha;
+					}
+			);
+
+			SphereDataComplex x_numerical = sphSolver.solve(b);
+			errorCheck(x_numerical, x_result, "Test Z6robert = grad_j(mu) mu grad_j(Phi(lam,mu))", epsilon);
 		}
 
 
@@ -431,6 +552,7 @@ void run_tests()
 
 			errorCheck(x_numerical, x_result, "Test Z8 = mu*mu*laplace(Phi(lam,mu))", epsilon);
 		}
+
 
 
 		/*

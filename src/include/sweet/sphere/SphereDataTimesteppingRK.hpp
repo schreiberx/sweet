@@ -87,13 +87,13 @@ public:
 					const SphereData &i_u,	///< prognostic variables
 					const SphereData &i_v,	///< prognostic variables
 
-					SphereData &o_P_t,	///< time updates
-					SphereData &o_u_t,	///< time updates
-					SphereData &o_v_t,	///< time updates
+					SphereData &o_P_t,		///< time updates
+					SphereData &o_u_t,		///< time updates
+					SphereData &o_v_t,		///< time updates
 
-					double &o_dt,			///< time step restriction
-					double i_use_fixed_dt,	///< if this value is not equal to 0,
-											///< use this time step size instead of computing one
+					double &o_dt,				///< time step restriction
+					double i_use_fixed_dt,		///< if this value is not equal to 0,
+												///< use this time step size instead of computing one
 					double i_simulation_time	///< simulation time, e.g. for tidal waves
 			),
 

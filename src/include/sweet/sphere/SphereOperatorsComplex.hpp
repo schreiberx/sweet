@@ -449,7 +449,6 @@ public:
 		 */
 		SphereDataComplex out = spectral_cosphi_squared_diff_lat_mu(i_sph_data);
 
-#if 1
 		out.physical_update_lambda_cosphi_grid(
 				[](double lambda, double cos_phi, std::complex<double> &o_data)
 				{
@@ -457,10 +456,21 @@ public:
 				}
 			);
 
-#else
-//		out.physical_truncate();
-		out = out - mu2(out);
-#endif
+		return out;
+	}
+
+
+
+	static
+	SphereDataComplex robert_cos2phi_div_lat(
+			const SphereDataComplex &i_sph_data
+	)
+	{
+		/*
+		 * Compute
+		 *   d/d mu  f(lambda,mu)
+		 */
+		SphereDataComplex out = spectral_cosphi_squared_diff_lat_mu(i_sph_data);
 
 		return out;
 	}

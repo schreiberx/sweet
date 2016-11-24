@@ -37,31 +37,52 @@ SphereDataConfig *sphereDataConfigExt = &sphereDataConfigRexiAddedModes;
 bool param_rexi_use_coriolis_formulation = true;
 
 
-void errorCheck(
+bool errorCheck(
 		const SphereDataComplex &i_lhs,
 		const SphereDataComplex &i_rhs,
 		const std::string &i_id,
 		double i_error_threshold = 1.0,
-		double i_ignore_error = false
+		bool i_ignore_error = false,
+		bool i_normalization = true
 )
 {
 	SphereDataComplex lhsr = i_lhs.spectral_returnWithDifferentModes(sphereDataConfig);
 	SphereDataComplex rhsr = i_rhs.spectral_returnWithDifferentModes(sphereDataConfig);
 
-	double normalize_fac = std::min(lhsr.physical_reduce_max_abs(), rhsr.physical_reduce_max_abs());
-
 	SphereDataComplex diff = lhsr-rhsr;
 	diff.physical_reduce_max_abs();
 
-	if (normalize_fac == 0)
+
+	double normalize_fac;
+
+	if (i_normalization)
 	{
-		std::cout << "Error computation for '" << i_id << "' ignored since both fields are Zero" << std::endl;
-		return;
+		double lhs_maxabs = lhsr.physical_reduce_max_abs();
+		double rhs_maxabs = rhsr.physical_reduce_max_abs();
+
+		if (std::max(lhs_maxabs, rhs_maxabs) < i_error_threshold)
+		{
+			std::cout << "Error for " << i_id << "' ignored since both fields are below threshold tolerance" << std::endl;
+			return false;
+		}
+
+		normalize_fac = std::min(lhsr.physical_reduce_max_abs(), rhsr.physical_reduce_max_abs());
+
+		if (normalize_fac == 0)
+		{
+			std::cout << "Error for " << i_id << "' ignored since at least one field is Zero" << std::endl;
+			return false;
+		}
 	}
+	else
+	{
+		normalize_fac = 1.0;
+	}
+
 	double rel_max_abs = diff.physical_reduce_max_abs() / normalize_fac;
 	double rel_rms = diff.physical_reduce_rms() / normalize_fac;
 
-	std::cout << "Error for " << i_id << ": \t" << rel_max_abs << "\t" << rel_rms << "\t\tThreshold: " << i_error_threshold << std::endl;
+	std::cout << "Error for " << i_id << ": \t" << rel_max_abs << "\t" << rel_rms << "\t\tError threshold: " << i_error_threshold << " with normalization factor " << normalize_fac << std::endl;
 
 	if (rel_max_abs > i_error_threshold)
 	{
@@ -73,7 +94,10 @@ void errorCheck(
 			std::cerr << "Error ignored (probably because extended modes not >= 2)" << std::endl;
 		else
 			FatalError("Error too large");
+
+		return true;
 	}
+	return false;
 }
 
 
@@ -81,27 +105,32 @@ void errorCheck(
 		const SphereData &i_lhs,
 		const SphereData &i_rhs,
 		const std::string &i_id,
-		double i_error_threshold = 1.0,
-		double i_ignore_error = false
+		double i_error_threshold,// = 1.0,
+		double i_ignore_error,// = false,
+		bool i_normalization// = true
 )
 {
 	SphereData lhsr = i_lhs.spectral_returnWithDifferentModes(sphereDataConfig);
 	SphereData rhsr = i_rhs.spectral_returnWithDifferentModes(sphereDataConfig);
 
-	double normalize_fac = std::min(lhsr.physical_reduce_max_abs(), rhsr.physical_reduce_max_abs());
+	double lhs_maxabs = lhsr.physical_reduce_max_abs();
+	double rhs_maxabs = rhsr.physical_reduce_max_abs();
+
+	double normalize_fac = std::min(lhs_maxabs, rhs_maxabs);
+
+	if (std::max(lhs_maxabs, rhs_maxabs) < i_error_threshold)
+	{
+		std::cout << "Error computation for '" << i_id << "' ignored since both fields are below threshold tolerance" << std::endl;
+		return;
+	}
 
 	SphereData diff = lhsr-rhsr;
 	diff.physical_reduce_max_abs();
 
-	if (normalize_fac == 0)
-	{
-		std::cout << "Error computation for '" << i_id << "' ignored since both fields are Zero" << std::endl;
-		return;
-	}
 	double rel_max_abs = diff.physical_reduce_max_abs() / normalize_fac;
 	double rel_rms = diff.physical_reduce_rms() / normalize_fac;
 
-	std::cout << "Error for " << i_id << ": \t" << rel_max_abs << "\t" << rel_rms << "\t\tThreshold: " << i_error_threshold << std::endl;
+	std::cout << "Error for " << i_id << ": \t" << rel_max_abs << "\t" << rel_rms << "\t\tError threshold: " << i_error_threshold << "\tNormalization factor " << normalize_fac << std::endl;
 
 	if (rel_max_abs > i_error_threshold)
 	{
@@ -150,9 +179,10 @@ void run_tests()
 	std::cout << " + timestep size: " << simVars.timecontrol.current_timestep_size << std::endl;
 	std::cout << " + output timestep size: " << simVars.misc.output_each_sim_seconds << std::endl;
 
+	double max_scalar = std::max(std::max(simVars.sim.gravitation, simVars.sim.h0), simVars.sim.f0);
 
-	double epsilon = 1e-10;
-	epsilon *= (sphereDataConfig->spectral_modes_n_max);
+	double epsilon = 1e-10*max_scalar;
+	epsilon *= std::sqrt(sphereDataConfig->spectral_modes_n_max);
 
 	std::cout << std::setprecision(20);
 
@@ -193,6 +223,7 @@ void run_tests()
 
 	std::cout << "Using generic max allowed error value of " << epsilon << " (problem specific scaled)" << std::endl;
 
+
 	std::complex<double> beta(1.0, 0.0);
 
 	for (int use_complex_valued_solver = 1; use_complex_valued_solver < 2; use_complex_valued_solver++)
@@ -225,7 +256,9 @@ void run_tests()
 			SphereDataComplex prog_v_cplx(sphereDataConfig);
 
 
+			if (simVars.setup.benchmark_scenario_id <= 0)
 			{
+				std::cout << "SETUP: Computing solution based on time stepping scheme" << std::endl;
 				SphereOperators op;
 
 				GenerateConsistentGradDivSphereData g_real(
@@ -253,6 +286,7 @@ void run_tests()
 
 				g_imag.generate();
 
+				// Combine real and imaginary data
 				prog_phi_cplx = prog_phi_cplx + Convert_SphereData_To_SphereDataComplex::physical_convert(g_imag.prog_h*simVars.sim.gravitation)*std::complex<double>(0,1);
 				prog_u_cplx = prog_u_cplx + Convert_SphereData_To_SphereDataComplex::physical_convert(g_imag.prog_u)*std::complex<double>(0,1);
 				prog_v_cplx = prog_v_cplx + Convert_SphereData_To_SphereDataComplex::physical_convert(g_imag.prog_v)*std::complex<double>(0,1);
@@ -261,6 +295,50 @@ void run_tests()
 				prog_phi_cplx.spectral_truncate();
 				prog_u_cplx.spectral_truncate();
 				prog_v_cplx.spectral_truncate();
+			}
+			else if (simVars.setup.benchmark_scenario_id == 1)
+			{
+				std::cout << "SETUP: Computing steady state solution" << std::endl;
+
+				if (simVars.misc.sphere_use_robert_functions)
+				{
+					prog_u_cplx.physical_update_lambda(
+							[&](double i_lon, double i_lat, std::complex<double> &io_data)
+							{
+								io_data = std::cos(i_lat)*std::cos(i_lat);
+							}
+					);
+				}
+				else
+				{
+					prog_u_cplx.physical_update_lambda(
+							[&](double i_lon, double i_lat, std::complex<double> &io_data)
+							{
+								io_data = std::cos(i_lat);
+							}
+					);
+				}
+
+				prog_v_cplx.spectral_set_zero();
+
+				prog_phi_cplx.physical_update_lambda(
+						[&](double i_lon, double i_lat, std::complex<double> &io_data)
+						{
+							io_data = (simVars.sim.earth_radius*simVars.sim.coriolis_omega)*(std::cos(i_lat)*std::cos(i_lat));///simVars.sim.gravitation;
+						}
+				);
+
+				prog_phi_cplx *= alpha;
+				prog_u_cplx *= alpha;
+				prog_v_cplx *= alpha;
+
+				prog_phi_cplx.spectral_truncate();
+				prog_u_cplx.spectral_truncate();
+				prog_v_cplx.spectral_truncate();
+			}
+			else
+			{
+				FatalError("Benchmark scenario not chosen");
 			}
 
 			SphereDataComplex prog_phi_cplx_ext = prog_phi_cplx.spectral_returnWithDifferentModes(sphereDataConfigExt);
@@ -297,7 +375,6 @@ void run_tests()
 							- ir*opComplex.robert_grad_lat(prog_phi_cplx_ext)
 							- two_omega*opComplex.mu(prog_u_cplx_ext)
 							+ alpha*prog_v_cplx_ext;
-
 			}
 			else
 			{
@@ -317,14 +394,152 @@ void run_tests()
 							+ alpha*prog_v_cplx_ext;
 			}
 
-//			prog_phi0_cplx_ext.spectral_returnWithTruncatedModes(sphereDataConfig);
-//			prog_u0_cplx_ext.spectral_returnWithTruncatedModes(sphereDataConfig);
-//			prog_v0_cplx_ext.spectral_returnWithTruncatedModes(sphereDataConfig);
+#if 0
+			prog_phi0_cplx_ext.spectral_returnWithTruncatedModes(sphereDataConfig);
+			prog_u0_cplx_ext.spectral_returnWithTruncatedModes(sphereDataConfig);
+			prog_v0_cplx_ext.spectral_returnWithTruncatedModes(sphereDataConfig);
+#endif
 
 			SphereDataComplex prog_phi0_cplx = prog_phi0_cplx_ext.spectral_returnWithDifferentModes(sphereDataConfig);
 			SphereDataComplex prog_u0_cplx = prog_u0_cplx_ext.spectral_returnWithDifferentModes(sphereDataConfig);
 			SphereDataComplex prog_v0_cplx = prog_v0_cplx_ext.spectral_returnWithDifferentModes(sphereDataConfig);
 
+			if (simVars.setup.benchmark_scenario_id == 1)
+			{
+				SphereDataComplex zero(sphereDataConfig);
+				zero.physical_set_zero();
+
+				// Check for geostrophic balance
+				errorCheck(prog_phi0_cplx_ext, prog_phi_cplx_ext*alpha, "ERROR Geostrophic balance phi", epsilon, false);
+				errorCheck(prog_u0_cplx_ext, prog_u_cplx_ext*alpha, "ERROR Geostrophic balance u", epsilon, false);
+				errorCheck(prog_v0_cplx_ext, prog_v_cplx_ext*alpha, "ERROR Geostrophic balance v", epsilon, false);
+
+				errorCheck(prog_v0_cplx_ext, zero, "ERROR Geostrophic balance v", epsilon, false);
+			}
+
+			if (simVars.setup.benchmark_scenario_id == 1)
+			{
+				SphereDataComplex zero(sphereDataConfig);
+				zero.physical_set_zero();
+
+
+				SphereDataComplex f(sphereDataConfig);
+				f.physical_update_lambda_gaussian_grid(
+						[&](double lon, double mu, std::complex<double> &o_data)
+						{
+							o_data = mu*two_omega;
+						}
+					);
+
+
+				SphereDataComplex data_inv_f(sphereDataConfig);
+				data_inv_f.physical_update_lambda_gaussian_grid(
+						[&](double lon, double mu, std::complex<double> &o_data)
+						{
+							o_data = 1.0/(mu*two_omega);
+						}
+					);
+				auto inv_f = [&](const SphereDataComplex &i_data)	-> SphereDataComplex
+				{
+					return data_inv_f*i_data;
+				};
+
+
+				SphereDataComplex data_inv_cos2phi(sphereDataConfig);
+				data_inv_cos2phi.physical_update_lambda(
+						[&](double lon, double phi, std::complex<double> &o_data)
+						{
+							o_data = 1.0/(cos(phi)*cos(phi));
+						}
+					);
+				auto inv_cos2phi = [&](const SphereDataComplex &i_data)	-> SphereDataComplex
+				{
+					return data_inv_f*i_data;
+				};
+
+
+				if (simVars.misc.sphere_use_robert_functions)
+				{
+					/*
+					 * Test equations in geostrophic balance test case
+					 * Section 5.2, SPREXI ver 15
+					 */
+					{
+						SphereDataComplex lhs = -opComplex.robert_div_lon(prog_u_cplx) - opComplex.robert_div_lat(prog_v_cplx);
+						errorCheck(lhs, zero, "ERROR Geostrophic balance test a", epsilon, false, false);
+					}
+
+					{
+						// Equation (1)
+						SphereDataComplex lhs = -opComplex.robert_grad_lon(prog_phi_cplx) + f*prog_v_cplx;
+						SphereDataComplex rhs = zero;
+						errorCheck(lhs, rhs, "ERROR Geostrophic balance test 1", epsilon, false, false);
+					}
+
+					{
+						// Equation (1b)
+						SphereDataComplex lhs = prog_v_cplx;
+						SphereDataComplex rhs = inv_f(opComplex.robert_grad_lon(prog_phi_cplx));
+						errorCheck(lhs, rhs, "ERROR Geostrophic balance test 1b", epsilon, false, false);
+					}
+
+					{
+						// Equation (2)
+						SphereDataComplex lhs = -opComplex.robert_grad_lat(prog_phi_cplx) - f*prog_u_cplx;
+						SphereDataComplex rhs = zero;
+						errorCheck(lhs, rhs, "ERROR Geostrophic balance test 2", epsilon, false, false);
+					}
+
+					{
+						// Equation (2b)
+						SphereDataComplex lhs = prog_u_cplx;
+						SphereDataComplex rhs = -inv_f(opComplex.robert_grad_lat(prog_phi_cplx));
+						errorCheck(lhs, rhs, "ERROR Geostrophic balance test 2b", epsilon, false, false);
+					}
+
+					{
+						SphereDataComplex lhs =
+								opComplex.robert_div_lon(-inv_f(opComplex.robert_grad_lat(prog_phi_cplx)))
+								+ opComplex.robert_div_lat(inv_f(opComplex.robert_grad_lon(prog_phi_cplx)));
+						SphereDataComplex rhs = zero;
+						errorCheck(lhs, rhs, "ERROR Geostrophic balance test 3", epsilon, false, false);
+					}
+
+					{
+						SphereDataComplex lhs =
+								-opComplex.robert_grad_lat(prog_phi_cplx)*inv_cos2phi(opComplex.robert_grad_lon(data_inv_f))
+								+opComplex.robert_grad_lon(prog_phi_cplx)*inv_cos2phi(opComplex.robert_grad_lat(data_inv_f));
+						SphereDataComplex rhs = zero;
+						errorCheck(lhs, rhs, "ERROR Geostrophic balance test 4", epsilon, false, false);
+					}
+#if 0
+					{
+						SphereDataComplex lhs =
+								-inv_cos2phi(opComplex.robert_grad_lon(prog_phi_cplx))
+								+f*prog_v_cplx;
+						SphereDataComplex rhs = zero;
+						errorCheck(lhs, rhs, "ERROR Geostrophic balance test 5a", epsilon, false, false);
+					}
+
+					{
+						SphereDataComplex lhs = inv_cos2phi(opComplex.robert_grad_lat(prog_phi_cplx));
+						SphereDataComplex rhs = -two_omega*opComplex.mu(prog_u_cplx);
+						errorCheck(lhs, rhs, "ERROR Geostrophic balance test 5b", epsilon, false, false);
+					}
+#endif
+
+					{
+						SphereDataComplex lhs =
+								//inv_cos2phi
+								(
+										opComplex.robert_grad_lat(prog_phi_cplx)
+								)
+								;
+						SphereDataComplex rhs = -f*prog_u_cplx;
+						errorCheck(lhs, rhs, "ERROR Geostrophic balance test robert", epsilon, false, false);
+					}
+				}
+			}
 
 			{
 				/*
@@ -371,7 +586,6 @@ void run_tests()
 				phi = prog_phi_cplx.spectral_returnWithDifferentModes(sphereDataConfigExt);
 				u = prog_u_cplx.spectral_returnWithDifferentModes(sphereDataConfigExt);
 				v = prog_v_cplx.spectral_returnWithDifferentModes(sphereDataConfigExt);
-
 
 
 //				SphereDataComplex &phi0 = prog_phi0_cplx_ext;
@@ -436,8 +650,46 @@ void run_tests()
 				SphereDataComplex div0 = ir*opComplex.robert_div(u0, v0);
 				SphereDataComplex eta0 = ir*opComplex.robert_vort(u0, v0);
 
+//				Convert_SphereDataComplex_To_SphereData::physical_convert(u0).physical_file_write("o_u0.csv");
+//				Convert_SphereDataComplex_To_SphereData::physical_convert(v0).physical_file_write("o_v0.csv");
+//				Convert_SphereDataComplex_To_SphereData::physical_convert(div0).physical_file_write("o_div0.csv");
+//				Convert_SphereDataComplex_To_SphereData::physical_convert(eta0).physical_file_write("o_eta0.csv");
+
 				SphereDataComplex div = ir*opComplex.robert_div(u, v);
 				SphereDataComplex eta = ir*opComplex.robert_vort(u, v);
+
+
+				if (simVars.setup.benchmark_scenario_id == 1)
+				{
+					/*
+					 * Test for geostrophic balance
+					 */
+					{
+						SphereDataComplex lhs = prog_phi_cplx*alpha;
+						SphereDataComplex rhs = prog_phi0_cplx;
+						errorCheck(lhs, rhs, "ERROR Geostrophic balance test alpha*phi", epsilon, false);
+					}
+					{
+						SphereDataComplex lhs = prog_u_cplx*alpha;
+						SphereDataComplex rhs = prog_u0_cplx;
+						errorCheck(lhs, rhs, "ERROR Geostrophic balance test alpha*u", epsilon, false);
+					}
+					{
+						SphereDataComplex lhs = prog_v_cplx*alpha;
+						SphereDataComplex rhs = prog_v0_cplx;
+						errorCheck(lhs, rhs, "ERROR Geostrophic balance test alpha*v", epsilon, false);
+					}
+					{
+						SphereDataComplex lhs = eta*alpha;
+						SphereDataComplex rhs = eta0;
+						errorCheck(lhs, rhs, "ERROR Geostrophic balance test alpha*eta", epsilon, false);
+					}
+					{
+						SphereDataComplex lhs = div*alpha;
+						SphereDataComplex rhs = div0;
+						errorCheck(lhs, rhs, "ERROR Geostrophic balance test alpha*div", epsilon, false);
+					}
+				}
 
 
 				/*
@@ -519,43 +771,43 @@ void run_tests()
 
 				{
 					/*
-					 * REXI SPH document ver 14, Section 5.2, eq (2)
+					 * REXI SPH document ver 15, Section 5.3, eq (2)
 					 */
 
 					lhs = -ir*opComplex.robert_grad_lon(phi) + alpha*u + f*v;
 					rhs = u0;
 
-					errorCheck(lhs, rhs, "0b", epsilon);
+					errorCheck(lhs, rhs, "0b", epsilon, false);
 				}
 
 				{
 					/*
-					 * REXI SPH document ver 14, Section 5.2, eq (3)
+					 * REXI SPH document ver 15, Section 5.3, eq (3)
 					 */
 
 					lhs = -ir*opComplex.robert_grad_lat(phi) - f*u + alpha*v;
 					rhs = v0;
 
-					errorCheck(lhs, rhs, "0c", epsilon);
+					errorCheck(lhs, rhs, "0c", epsilon, false);
 				}
 
 				{
 					lhs = div;
 					rhs = ir*opComplex.robert_div_lon(u) + ir*opComplex.robert_div_lat(v);
 
-					errorCheck(lhs, rhs, "0d", epsilon);
+					errorCheck(lhs, rhs, "0d", epsilon, false);
 				}
 
 				{
 					lhs = eta;
 					rhs = ir*opComplex.robert_div_lon(v) - ir*opComplex.robert_div_lat(u);
 
-					errorCheck(lhs, rhs, "0e", epsilon);
+					errorCheck(lhs, rhs, "0e", epsilon, false);
 				}
 
 				{
 					/*
-					 * REXI SPH document ver 14, Section 5.2.1
+					 * REXI SPH document ver 15, Section 5.3.1
 					 * Check Identity relation
 					 *
 					 * D.(fA) = f(D.A) + A.one_over_cos2phi*(Df)
@@ -570,11 +822,10 @@ void run_tests()
 				}
 
 
-
 				{
 					/*
-					 * REXI SPH document ver 14, Section 5.2.1
-					 * 1st/1st equation in this section
+					 * REXI SPH document ver 15, Section 5.3.1
+					 * div lon (2)
 					 */
 					lhs = ir*opComplex.robert_div_lon(
 								-ir*opComplex.robert_grad_lon(phi) + alpha*u + two_omega*opComplex.mu(v)
@@ -582,42 +833,53 @@ void run_tests()
 
 					rhs = ir*opComplex.robert_div_lon(u0);
 
-					errorCheck(lhs, rhs, "1aa", epsilon);
+					errorCheck(lhs, rhs, "1aa", epsilon, false);
 				}
 
 				{
 					/*
-					 * REXI SPH document ver 14, Section 5.2.1
-					 * 1st/2nd equation in this section
+					 * REXI SPH document ver 15, Section 5.3.1
+					 * div lat (3)
 					 */
-
+#if 0
 					lhs = ir*opComplex.robert_div_lat(v0);
 
 					rhs = ir*opComplex.robert_div_lat(
-							-ir*opComplex.robert_grad_lat(phi) - f*u + alpha*v
+							-ir*opComplex.robert_grad_lat(phi)
+							-f*u
+							+ alpha*v
 						  );
+#else
+					// we use this formulation for the error checks since div by cos2phi would amplify errors
+					lhs = ir*opComplex.robert_cos2phi_div_lat(v0);
 
-					errorCheck(lhs, rhs, "1ab", epsilon);
+					rhs = ir*opComplex.robert_cos2phi_div_lat(
+							-ir*opComplex.robert_grad_lat(phi)
+							-two_omega*opComplex.mu(u)
+							+ alpha*v
+						  );
+#endif
+					errorCheck(lhs, rhs, "1ab", epsilon, false);
 				}
 
 				{
 					/*
-					 * REXI SPH document ver 14, Section 5.2.1
-					 * 1st equation in this section
+					 * REXI SPH document ver 15, Section 5.3.1
 					 */
 
 					lhs = div0;
 
 					rhs =	ir*opComplex.robert_div_lon(
-								-ir*opComplex.robert_grad_lon(phi) + alpha*u + f*v
+								(-ir*opComplex.robert_grad_lon(phi) + f*v) + alpha*u
 							  )
 							+ ir*opComplex.robert_div_lat(
-								-ir*opComplex.robert_grad_lat(phi) + alpha*v - f*u
+								(-ir*opComplex.robert_grad_lat(phi) - f*u) + alpha*v
 							  );
 
-					errorCheck(lhs, rhs, "1a", epsilon);
+					errorCheck(lhs, rhs, "1a", epsilon, false);
 				}
 
+#if 0
 				{
 					/*
 					 * REXI SPH document ver 14, Section 5.2.1
@@ -635,7 +897,7 @@ void run_tests()
 							+ ir*opComplex.robert_div_lat(	-f*u	)
 							;
 
-					errorCheck(lhs, rhs, "1ba", epsilon);
+					errorCheck(lhs, rhs, "1ba", epsilon, false, true);
 				}
 
 				{
@@ -653,7 +915,7 @@ void run_tests()
 							+ ir*opComplex.robert_div(	f*v	, -f*u	)
 							;
 
-					errorCheck(lhs, rhs, "1bb", epsilon, simVars.rexi.rexi_use_extended_modes < 2);
+					errorCheck(lhs, rhs, "1bb", epsilon, simVars.rexi.rexi_use_extended_modes < 2, true);
 				}
 
 				{
@@ -671,7 +933,7 @@ void run_tests()
 									- u*ir*opComplex.robert_grad_lat(f)
 								);
 
-					errorCheck(lhs, rhs, "1ca", epsilon, simVars.rexi.rexi_use_extended_modes < 2);
+					errorCheck(lhs, rhs, "1ca", epsilon, simVars.rexi.rexi_use_extended_modes < 2, true);
 				}
 
 				{
@@ -690,9 +952,9 @@ void run_tests()
 
 					rhs = div0;
 
-					errorCheck(lhs, rhs, "1c", epsilon, simVars.rexi.rexi_use_extended_modes < 2);
+					errorCheck(lhs, rhs, "1c", epsilon, simVars.rexi.rexi_use_extended_modes < 2, simVars.setup.benchmark_scenario_id != 1);
 				}
-
+#endif
 				{
 					/*
 					 * REXI SPH document ver 14, Section 5.2.2
@@ -716,7 +978,7 @@ void run_tests()
 					lhs = div;
 					rhs = 1.0/phi_bar*(phi*alpha-phi0);
 
-					errorCheck(lhs, rhs, "3", epsilon*10e+2);
+					errorCheck(lhs, rhs, "3", epsilon*10e+2, false);
 				}
 
 
@@ -740,11 +1002,11 @@ void run_tests()
 
 				{
 					/*
-					 * REXI SPH document ver 14, Section 5.2.4
+					 * REXI SPH document ver 15, Section 5.3.4
 					 * between eq. (7) and (8)
 					 */
 
-					lhs = -alpha*eta + 1.0/phi_bar * f * phi * alpha + fj*v + fi*u;
+					lhs = -alpha*eta + 1.0/phi_bar * alpha * f * phi + fj*v + fi*u;
 					rhs = -eta0 + 1.0/phi_bar * f * phi0;
 
 					errorCheck(lhs, rhs, "4ba", epsilon*10e+2, simVars.rexi.rexi_use_extended_modes < 2);
@@ -792,7 +1054,6 @@ void run_tests()
 
 					errorCheck(lhs, rhs, "5b", epsilon*10e+2, simVars.rexi.rexi_use_extended_modes < 2);
 				}
-
 
 
 				{
@@ -979,38 +1240,6 @@ void run_tests()
 					errorCheck(lhs, rhs, "6 F(u,v) = F(u0,v0,phi)", epsilon, simVars.rexi.rexi_use_extended_modes < 2);
 				}
 
-				{
-					/*
-					 * Test F=... formulation, |*kappa scaled lhs and rhs
-					 *
-					 * rexi sph ver 15, sec. 5.3.7
-					 * Solution for geopotential
-					 */
-
-					SphereDataComplex one(sphereDataConfigExt);
-					one.physical_set_zero();
-					one = one+1.0;
-
-					SphereDataComplex kappa = alpha*alpha+f*f;
-//					SphereDataComplex inv_kappa = one/kappa;
-
-					SphereDataComplex Fp_i = fj*(-(alpha*alpha-f*f));
-					SphereDataComplex Fp_j = fj*(2.0*alpha*f);
-
-					SphereDataComplex Fc = Fp_i*u0 + Fp_j*v0;
-
-					SphereDataComplex lhs =
-							  kappa*kappa*phi
-							+ phi_bar/alpha*(Fp_i*ir*opComplex.robert_grad_lon(phi) + Fp_j*ir*opComplex.robert_grad_lat(phi))
-							- kappa*phi_bar*ir*ir*opComplex.laplace(phi);
-
-					SphereDataComplex rhs =
-							kappa*phi_bar*(div0 - f*(1.0/alpha)*eta0)
-							+ kappa*(alpha + f*f*(1.0/alpha))*phi0
-							- phi_bar/alpha*Fc;
-
-					errorCheck(lhs, rhs, "7a", epsilon*10e+2, simVars.rexi.rexi_use_extended_modes < 2);
-				}
 
 				{
 					/*
@@ -1045,10 +1274,85 @@ void run_tests()
 					lhs = F_lhs;
 					rhs = F_rhs;
 
-					std::cout << "ERRORS IGNORED WITH 1/kappa formulation!" << std::endl;
-					errorCheck(lhs, rhs, "7b", epsilon, true);
+					if (errorCheck(lhs, rhs, "7a", epsilon, true, simVars.setup.benchmark_scenario_id != 1))
+						std::cout << "ERRORS IGNORED WITH 1/kappa formulation!" << std::endl;
 				}
 
+#if 0
+				{
+					/*
+					 * Test F=... formulation
+					 *
+					 * rexi sph ver 15, sec. 5.3.7
+					 * Solution for geopotential
+					 */
+
+					SphereDataComplex one(sphereDataConfigExt);
+					one.physical_set_zero();
+					one = one+1.0;
+
+					SphereDataComplex kappa = alpha*alpha+f*f;
+					SphereDataComplex inv_kappa = one/kappa;
+
+					SphereDataComplex Fp_i = inv_kappa*fj*(-(alpha*alpha-f*f));
+					SphereDataComplex Fp_j = inv_kappa*fj*(2.0*alpha*f);
+
+					SphereDataComplex Fc = Fp_i*u0 + Fp_j*v0;
+
+					SphereDataComplex F_lhs =
+							  kappa*phi
+							+ phi_bar/alpha*(Fp_i*ir*opComplex.robert_grad_lon(phi) + Fp_j*ir*opComplex.robert_grad_lat(phi))
+							- phi_bar*ir*ir*opComplex.laplace(phi);
+
+					SphereDataComplex F_rhs =
+							  phi_bar*(div0 - f*(1.0/alpha)*eta0)
+							+ (alpha + f*f*(1.0/alpha))*phi0
+							- phi_bar/alpha*Fc;
+
+					// Multiply with mu2 to generate modes which are not representable
+					lhs = opComplex.mu2(F_lhs);
+					rhs = opComplex.mu2(F_rhs);
+
+					std::cout << "This should trigger an error with ext_modes <= 3!" << std::endl;
+					errorCheck(lhs, rhs, "7ab", epsilon, true);
+				}
+#endif
+
+				{
+					/*
+					 * Test F=... formulation, |*kappa scaled lhs and rhs
+					 *
+					 * rexi sph ver 15, sec. 5.3.7
+					 * Solution for geopotential
+					 */
+
+					SphereDataComplex one(sphereDataConfigExt);
+					one.physical_update_lambda(
+							[&](double i_lon, double i_lat, std::complex<double> &o_data)
+							{
+								o_data = 1.0;
+							}
+					);
+
+					SphereDataComplex kappa = alpha*alpha+f*f;
+
+					SphereDataComplex Fkp_i = fj*(-(alpha*alpha-f*f));
+					SphereDataComplex Fkp_j = fj*(2.0*alpha*f);
+
+					SphereDataComplex Fkc = Fkp_i*u0 + Fkp_j*v0;
+
+					SphereDataComplex lhs =
+							  kappa*kappa*phi
+							+ phi_bar/alpha*(Fkp_i*ir*opComplex.robert_grad_lon(phi) + Fkp_j*ir*opComplex.robert_grad_lat(phi))
+							- kappa*phi_bar*ir*ir*opComplex.laplace(phi);
+
+					SphereDataComplex rhs =
+							kappa*phi_bar*(div0 - f*(1.0/alpha)*eta0)
+							+ kappa*(alpha + f*f*(1.0/alpha))*phi0
+							- phi_bar/alpha*Fkc;
+
+					errorCheck(lhs, rhs, "7b", epsilon*10e+2, simVars.rexi.rexi_use_extended_modes < 4);
+				}
 
 				{
 					SphereDataComplex one(sphereDataConfigExt);
@@ -1528,9 +1832,9 @@ void run_tests()
 			 * REXI results stored in rexi_prog_*
 			 * These should match prog_*
 			 */
-			errorCheck(rexi_prog_phi, prog_phi, "prog_phi", epsilon*1e+1);
-			errorCheck(rexi_prog_u, prog_u, "prog_u", epsilon*1e+1);
-			errorCheck(rexi_prog_v, prog_v, "prog_v", epsilon*1e+1);
+			errorCheck(rexi_prog_phi, prog_phi, "prog_phi", epsilon*1e+1, false, simVars.setup.benchmark_scenario_id != 1);
+			errorCheck(rexi_prog_u, prog_u, "prog_u", epsilon*1e+1, false, simVars.setup.benchmark_scenario_id != 1);
+			errorCheck(rexi_prog_v, prog_v, "prog_v", epsilon*1e+1, false, simVars.setup.benchmark_scenario_id != 1);
 		}
 	}
 }

@@ -245,6 +245,11 @@ public:
 		 */
 		int rexi_use_extended_modes = 0;
 
+		/**
+		 * Normalize REXI for geostrophic balance
+		 */
+		bool rexi_normalization = false;
+
 	} rexi;
 
 
@@ -439,6 +444,9 @@ public:
         long_options[next_free_program_option] = {"rexi", required_argument, 0, 256+'a'+next_free_program_option};
         next_free_program_option++;
 
+        long_options[next_free_program_option] = {"rexi-normalization", required_argument, 0, 256+'a'+next_free_program_option};
+        next_free_program_option++;
+
         long_options[next_free_program_option] = {"rexi-ext-modes", required_argument, 0, 256+'a'+next_free_program_option};
         next_free_program_option++;
 
@@ -510,9 +518,10 @@ public:
 					case 4:		rexi.rexi_L = atoi(optarg);	break;
 					case 5:		rexi.rexi_use_half_poles = atoi(optarg);	break;
 					case 6:		rexi.use_rexi = atoi(optarg);	break;
-					case 7:		rexi.rexi_use_extended_modes = atoi(optarg);	break;
-					case 8:		misc.use_nonlinear_equations = atoi(optarg);	break;
-					case 9:		misc.sphere_use_robert_functions = atoi(optarg);	break;
+					case 7:		rexi.rexi_normalization = atoi(optarg);	break;
+					case 8:		rexi.rexi_use_extended_modes = atoi(optarg);	break;
+					case 9:		misc.use_nonlinear_equations = atoi(optarg);	break;
+					case 10:		misc.sphere_use_robert_functions = atoi(optarg);	break;
 						default:
 #if SWEET_PARAREAL
 							parareal.setup_longOptionValue(i-parareal_start_option_index, optarg);

@@ -154,6 +154,7 @@ void SWE_Sphere_REXI::setup(
 		bool i_rexi_half,				///< use half-pole reduction
 		bool i_use_robert_functions,	///< use Robert functions
 		int i_rexi_use_extended_modes,
+		int i_rexi_normalization,
 		bool i_use_coriolis_rexi_formulation
 )
 {
@@ -161,6 +162,7 @@ void SWE_Sphere_REXI::setup(
 
 	M = i_M;
 	h = i_h;
+	normalization = i_rexi_normalization;
 
 	sphereDataConfig = i_sphereDataConfig;
 	simCoeffs = i_simCoeffs;
@@ -188,7 +190,7 @@ void SWE_Sphere_REXI::setup(
 	}
 
 
-	rexi.setup(0, h, M, i_L, i_rexi_half);
+	rexi.setup(0, h, M, i_L, i_rexi_half, normalization);
 
 	std::size_t N = rexi.alpha.size();
 	block_size = N/num_global_threads;
@@ -330,6 +332,113 @@ void SWE_Sphere_REXI::setup(
 
 
 
+#if 0
+/**
+ * Solve the REXI of \f$ U(t) = exp(L*t) \f$
+ *
+ * See
+ * 		doc/rexi/understanding_rexi.pdf
+ *
+ * for further information
+ */
+bool SWE_Sphere_REXI::run_timestep_rexi(
+	SphereData &io_prog_h0,
+	SphereData &io_prog_u0,
+	SphereData &io_prog_v0,
+
+	double i_timestep_size,	///< timestep size
+
+	const SimulationVariables &i_parameters
+)
+{
+	SphereData backup_prog_h0 = io_prog_h0;
+	SphereData backup_prog_u0 = io_prog_u0;
+	SphereData backup_prog_v0 = io_prog_v0;
+
+
+	io_prog_h0.request_data_spectral();
+	io_prog_u0.request_data_spectral();
+	io_prog_v0.request_data_spectral();
+
+
+	int thread_id = 0;
+
+	std::size_t start = 0;
+	std::size_t end = rexi.alpha.size();
+
+		/*
+		 * DO SUM IN PARALLEL
+		 */
+		SphereData thread_prog_phi0(sphereDataConfigRexi);
+		SphereData thread_prog_u0(sphereDataConfigRexi);
+		SphereData thread_prog_v0(sphereDataConfigRexi);
+
+		thread_prog_phi0 = (io_prog_h0*simCoeffs->gravitation).spectral_returnWithDifferentModes(thread_prog_phi0.sphereDataConfig);
+		thread_prog_u0 = io_prog_u0.spectral_returnWithDifferentModes(thread_prog_u0.sphereDataConfig);
+		thread_prog_v0 = io_prog_v0.spectral_returnWithDifferentModes(thread_prog_v0.sphereDataConfig);
+
+
+		SphereData tmp_prog_phi(sphereDataConfigRexi);
+		SphereData tmp_prog_u(sphereDataConfigRexi);
+		SphereData tmp_prog_v(sphereDataConfigRexi);
+
+		perThreadVars[thread_id]->accum_phi.spectral_set_zero();
+		perThreadVars[thread_id]->accum_u.spectral_set_zero();
+		perThreadVars[thread_id]->accum_v.spectral_set_zero();
+
+
+		for (std::size_t workload_idx = start; workload_idx < end; workload_idx++)
+		{
+			std::complex<double> &alpha = rexi.alpha[workload_idx];
+			std::complex<double> &beta_re = rexi.beta_re[workload_idx];
+
+
+			SWERexi_SPHRobert rexiSPHRobert;
+
+			rexiSPHRobert.setup(
+					sphereDataConfigRexi,	///< sphere data for input data
+					sphereDataConfig,		///< sphereData for solver (should be truncated!)
+					alpha,
+					beta_re,
+					simCoeffs->earth_radius,
+					simCoeffs->coriolis_omega,
+					simCoeffs->h0*simCoeffs->gravitation,
+					i_timestep_size,
+					use_coriolis_rexi_formulation
+			);
+
+			rexiSPHRobert.solve(
+					thread_prog_phi0, thread_prog_u0, thread_prog_v0,
+					tmp_prog_phi, tmp_prog_u, tmp_prog_v
+				);
+
+			perThreadVars[thread_id]->accum_phi += tmp_prog_phi;
+			perThreadVars[thread_id]->accum_u += tmp_prog_u;
+			perThreadVars[thread_id]->accum_v += tmp_prog_v;
+		}
+
+
+	io_prog_h0 = (perThreadVars[0]->accum_phi*(1.0/simCoeffs->gravitation)).spectral_returnWithDifferentModes(io_prog_h0.sphereDataConfig);
+	io_prog_u0 = perThreadVars[0]->accum_u.spectral_returnWithDifferentModes(io_prog_u0.sphereDataConfig);
+	io_prog_v0 = perThreadVars[0]->accum_v.spectral_returnWithDifferentModes(io_prog_v0.sphereDataConfig);
+
+	static int i = 0;
+	char buffer[1024];
+
+	sprintf(buffer, "diff_%s_%04i.csv", "h", i);
+	(backup_prog_h0-io_prog_h0).physical_file_write(buffer);
+
+	sprintf(buffer, "diff_%s_%04i.csv", "u", i);
+	(backup_prog_u0-io_prog_u0).physical_file_write(buffer);
+
+	sprintf(buffer, "diff_%s_%04i.csv", "v", i);
+	(backup_prog_v0-io_prog_v0).physical_file_write(buffer);
+
+	i++;
+	return true;
+}
+
+#else
 
 /**
  * Solve the REXI of \f$ U(t) = exp(L*t) \f$
@@ -349,6 +458,11 @@ bool SWE_Sphere_REXI::run_timestep_rexi(
 	const SimulationVariables &i_parameters
 )
 {
+	SphereData backup_prog_h0 = io_prog_h0;
+	SphereData backup_prog_u0 = io_prog_u0;
+	SphereData backup_prog_v0 = io_prog_v0;
+
+
 	io_prog_h0.request_data_spectral();
 	io_prog_u0.request_data_spectral();
 	io_prog_v0.request_data_spectral();
@@ -356,31 +470,31 @@ bool SWE_Sphere_REXI::run_timestep_rexi(
 
 #if SWEET_MPI
 
-	/*
-	 * TODO: Maybe we should measure this for the 2nd rank!!!
-	 * The reason could be since Bcast might already return before the packages were actually received!
-	 */
-#if SWEET_BENCHMARK_REXI
-	if (mpi_rank == 0)
-		stopwatch_broadcast.start();
-#endif
+		/*
+		 * TODO: Maybe we should measure this for the 2nd rank!!!
+		 * The reason could be since Bcast might already return before the packages were actually received!
+		 */
+	#if SWEET_BENCHMARK_REXI
+		if (mpi_rank == 0)
+			stopwatch_broadcast.start();
+	#endif
 
-	std::size_t data_size = io_prog_h0.sphereDataConfigRexi->spectral_array_data_number_of_elements*2;
+		std::size_t data_size = io_prog_h0.sphereDataConfigRexi->spectral_array_data_number_of_elements*2;
 
-	MPI_Bcast(io_prog_h0.array_data_spectral_space, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		MPI_Bcast(io_prog_h0.array_data_spectral_space, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-	if (std::isnan(io_prog_h0.spectral_get(0,0)))
-		return false;
+		if (std::isnan(io_prog_h0.spectral_get(0,0)))
+			return false;
 
-	MPI_Bcast(io_prog_u0.array_data_spectral_space, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-	MPI_Bcast(io_prog_v0.array_data_spectral_space, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		MPI_Bcast(io_prog_u0.array_data_spectral_space, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		MPI_Bcast(io_prog_v0.array_data_spectral_space, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-#if SWEET_BENCHMARK_REXI
-	if (mpi_rank == 0)
-		stopwatch_broadcast.stop();
-#endif
+	#if SWEET_BENCHMARK_REXI
+		if (mpi_rank == 0)
+			stopwatch_broadcast.stop();
+	#endif
 
-#endif
+#endif	// SWEET_MPI
 
 
 #if SWEET_REXI_THREAD_PARALLEL_SUM
@@ -638,11 +752,23 @@ bool SWE_Sphere_REXI::run_timestep_rexi(
 		stopwatch_reduce.stop();
 #endif
 
+	static int i = 0;
+	char buffer[1024];
 
+	sprintf(buffer, "diff_%s_%04i.csv", "h", i);
+	(backup_prog_h0-io_prog_h0).physical_file_write(buffer);
+
+	sprintf(buffer, "diff_%s_%04i.csv", "u", i);
+	(backup_prog_u0-io_prog_u0).physical_file_write(buffer);
+
+	sprintf(buffer, "diff_%s_%04i.csv", "v", i);
+	(backup_prog_v0-io_prog_v0).physical_file_write(buffer);
+
+	i++;
 	return true;
 }
 
-
+#endif
 
 inline std::complex<double> conj(const std::complex<double> &v)
 {

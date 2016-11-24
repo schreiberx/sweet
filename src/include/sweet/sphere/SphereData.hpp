@@ -1226,7 +1226,7 @@ public:
 			const char *i_filename,
 			std::string i_title = "",
 			int i_precision = 20
-	)
+	)	const
 	{
 		request_data_physical();
 

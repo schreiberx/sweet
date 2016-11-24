@@ -28,6 +28,7 @@ class SWE_Sphere_REXI
 
 	double h;
 	int M;
+	bool normalization;
 
 	SphereDataConfig *sphereDataConfig;
 	SphereDataConfig *sphereDataConfigRexi;
@@ -128,6 +129,7 @@ public:
 			bool i_rexi_half,				///< use half-pole reduction
 			bool i_use_robert_functions,	///< use Robert functions
 			int i_rexi_use_extended_modes,
+			int i_rexi_normalization,
 			bool i_use_coriolis_rexi_formulation
 	);
 
