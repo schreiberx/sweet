@@ -248,7 +248,7 @@ public:
 		/**
 		 * Normalize REXI for geostrophic balance
 		 */
-		bool rexi_normalization = false;
+		bool rexi_normalization = true;
 
 	} rexi;
 
