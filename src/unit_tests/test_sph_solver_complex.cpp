@@ -94,7 +94,7 @@ void run_tests()
 	double max_scalar = std::max(std::max(simVars.sim.gravitation, simVars.sim.h0), simVars.sim.f0);
 
 	double epsilon = 1e-11*max_scalar;
-	epsilon *= std::sqrt(sphereDataConfig->spectral_modes_n_max);
+	epsilon *= (sphereDataConfig->spectral_modes_n_max);
 
 	std::cout << "Using max allowed error of " << epsilon << std::endl;
 
