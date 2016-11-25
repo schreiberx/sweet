@@ -751,7 +751,7 @@ bool SWE_Sphere_REXI::run_timestep_rexi(
 	if (mpi_rank == 0)
 		stopwatch_reduce.stop();
 #endif
-
+#if 0
 	static int i = 0;
 	char buffer[1024];
 
@@ -765,6 +765,7 @@ bool SWE_Sphere_REXI::run_timestep_rexi(
 	(backup_prog_v0-io_prog_v0).physical_file_write(buffer);
 
 	i++;
+#endif
 	return true;
 }
 
