@@ -731,8 +731,8 @@ void run_tests(
 
 			if (error_max > epsilon)
 			{
-				std::cerr << "EXCEEDED ERROR THRESHOLD IGNORED" << std::endl;
-//				FatalError("ERROR THRESHOLD EXCEEDED!");
+				std::cerr << "EXCEEDED ERROR THRESHOLD IGNORED since dataset is incompatible to divergence" << std::endl;
+				std::cerr << "This is no problem for real simulations since such fields would not exist" << std::endl;
 			}
 		}
 
@@ -789,8 +789,8 @@ void run_tests(
 
 			if (error_max > epsilon)
 			{
-				std::cerr << "EXCEEDED ERROR THRESHOLD IGNORED" << std::endl;
-//				FatalError("ERROR THRESHOLD EXCEEDED!");
+				std::cerr << "EXCEEDED ERROR THRESHOLD IGNORED since dataset is incompatible to divergence" << std::endl;
+				std::cerr << "This is no problem for real simulations since such fields would not exist" << std::endl;
 			}
 		}
 	}

@@ -86,15 +86,17 @@ bool errorCheck(
 
 	if (rel_max_abs > i_error_threshold)
 	{
+		if (i_ignore_error)
+		{
+			std::cerr << "Error ignored (probably because extended modes not >= 2)" << std::endl;
+			return false;
+		}
+
 		Convert_SphereDataComplex_To_SphereData::physical_convert(lhsr).physical_file_write("o_error_lhs.csv");
 		Convert_SphereDataComplex_To_SphereData::physical_convert(rhsr).physical_file_write("o_error_rhs.csv");
 		Convert_SphereDataComplex_To_SphereData::physical_convert(lhsr-rhsr).physical_file_write("o_error_diff.csv");
 
-		if (i_ignore_error)
-			std::cerr << "Error ignored (probably because extended modes not >= 2)" << std::endl;
-		else
-			FatalError("Error too large");
-
+		FatalError("Error too large");
 		return true;
 	}
 	return false;
@@ -134,14 +136,17 @@ void errorCheck(
 
 	if (rel_max_abs > i_error_threshold)
 	{
+		if (i_ignore_error)
+		{
+			std::cerr << "Error ignored (probably because extended modes not >= 2)" << std::endl;
+			return;
+		}
+
 		lhsr.physical_file_write("o_error_lhs.csv");
 		rhsr.physical_file_write("o_error_rhs.csv");
 		(lhsr-rhsr).physical_file_write("o_error_diff.csv");
 
-		if (i_ignore_error)
-			std::cerr << "Error ignored (probably because extended modes not >= 2)" << std::endl;
-		else
-			FatalError("Error too large");
+		FatalError("Error too large");
 	}
 }
 
@@ -228,8 +233,50 @@ void run_tests()
 
 	for (int use_complex_valued_solver = 1; use_complex_valued_solver < 2; use_complex_valued_solver++)
 	{
+		SphereDataComplex prog_phi_cplx_setup(sphereDataConfig);
+		SphereDataComplex prog_u_cplx_setup(sphereDataConfig);
+		SphereDataComplex prog_v_cplx_setup(sphereDataConfig);
+
+		if (simVars.setup.benchmark_scenario_id <= 0)
+		{
+			std::cout << "SETUP: Computing solution based on time stepping scheme" << std::endl;
+			SphereOperators op;
+
+			GenerateConsistentGradDivSphereData g_real(
+					simVars,
+					sphereDataConfig,
+					op,
+					M_PI/3, M_PI/3,
+					std::string("gen_divgrad_data_re_")+sphereDataConfig->getUniqueIDString()
+			);
+
+			GenerateConsistentGradDivSphereData g_imag(
+					simVars,
+					sphereDataConfig,
+					op,
+					M_PI/4, M_PI/2,
+					std::string("gen_divgrad_data_im_")+sphereDataConfig->getUniqueIDString()
+			);
+
+			g_real.generate();
+			g_imag.generate();
+
+			prog_phi_cplx_setup = Convert_SphereData_To_SphereDataComplex::physical_convert(g_real.prog_h*simVars.sim.gravitation);
+			prog_u_cplx_setup = Convert_SphereData_To_SphereDataComplex::physical_convert(g_real.prog_u);
+			prog_v_cplx_setup = Convert_SphereData_To_SphereDataComplex::physical_convert(g_real.prog_v);
+
+
+			// Combine real and imaginary data
+			prog_phi_cplx_setup = prog_phi_cplx_setup + Convert_SphereData_To_SphereDataComplex::physical_convert(g_imag.prog_h*simVars.sim.gravitation)*std::complex<double>(0,1);
+			prog_u_cplx_setup = prog_u_cplx_setup + Convert_SphereData_To_SphereDataComplex::physical_convert(g_imag.prog_u)*std::complex<double>(0,1);
+			prog_v_cplx_setup = prog_v_cplx_setup + Convert_SphereData_To_SphereDataComplex::physical_convert(g_imag.prog_v)*std::complex<double>(0,1);
+
+			prog_phi_cplx_setup.spectral_truncate();
+			prog_u_cplx_setup.spectral_truncate();
+			prog_v_cplx_setup.spectral_truncate();
+		}
+
 		for (int i = rexi.alpha.size()-1; i >= 0; i--)
-//		for (int i = 0; i < rexi.alpha.size(); i++)
 		{
 			std::complex<double> &alpha = rexi.alpha[i];
 
@@ -258,43 +305,9 @@ void run_tests()
 
 			if (simVars.setup.benchmark_scenario_id <= 0)
 			{
-				std::cout << "SETUP: Computing solution based on time stepping scheme" << std::endl;
-				SphereOperators op;
-
-				GenerateConsistentGradDivSphereData g_real(
-						simVars,
-						sphereDataConfig,
-						op,
-						M_PI/3, M_PI/3,
-						std::string("gen_divgrad_data_re_")+sphereDataConfig->getUniqueIDString()
-				);
-
-				g_real.generate();
-
-				prog_phi_cplx = Convert_SphereData_To_SphereDataComplex::physical_convert(g_real.prog_h*simVars.sim.gravitation);
-				prog_u_cplx = Convert_SphereData_To_SphereDataComplex::physical_convert(g_real.prog_u);
-				prog_v_cplx = Convert_SphereData_To_SphereDataComplex::physical_convert(g_real.prog_v);
-
-
-				GenerateConsistentGradDivSphereData g_imag(
-						simVars,
-						sphereDataConfig,
-						op,
-						M_PI/4, M_PI/2,
-						std::string("gen_divgrad_data_im_")+sphereDataConfig->getUniqueIDString()
-				);
-
-				g_imag.generate();
-
-				// Combine real and imaginary data
-				prog_phi_cplx = prog_phi_cplx + Convert_SphereData_To_SphereDataComplex::physical_convert(g_imag.prog_h*simVars.sim.gravitation)*std::complex<double>(0,1);
-				prog_u_cplx = prog_u_cplx + Convert_SphereData_To_SphereDataComplex::physical_convert(g_imag.prog_u)*std::complex<double>(0,1);
-				prog_v_cplx = prog_v_cplx + Convert_SphereData_To_SphereDataComplex::physical_convert(g_imag.prog_v)*std::complex<double>(0,1);
-
-
-				prog_phi_cplx.spectral_truncate();
-				prog_u_cplx.spectral_truncate();
-				prog_v_cplx.spectral_truncate();
+				prog_phi_cplx = prog_phi_cplx_setup;
+				prog_u_cplx = prog_u_cplx_setup;
+				prog_v_cplx = prog_v_cplx_setup;
 			}
 			else if (simVars.setup.benchmark_scenario_id == 1)
 			{

@@ -410,11 +410,11 @@ void run_tests(
 						testSolutions.test_function__grid_gaussian(a,b,c);
 					}
 			);
-			h.physical_file_write("O_div_mu_initial_sph.csv");
+			//h.physical_file_write("O_div_mu_initial_sph.csv");
 
 			h = op.div_lat(h);
 //			h.spectral_truncate();
-			h.physical_file_write("O_div_mu_sph_result.csv");
+			//h.physical_file_write("O_div_mu_sph_result.csv");
 
 			SphereData result(sphConfig);
 			result.physical_update_lambda_gaussian_grid(
@@ -423,8 +423,8 @@ void run_tests(
 					}
 			);
 //			result.spectral_truncate();
-			result.physical_file_write("O_div_mu_correct_result.csv");
-			(h-result).physical_file_write("O_div_mu_correct_diff.csv");
+			//result.physical_file_write("O_div_mu_correct_result.csv");
+			//(h-result).physical_file_write("O_div_mu_correct_diff.csv");
 
 			double error_max = h.physical_reduce_max(result);
 			std::cout << "TEST DIV LAT  - max error: " << error_max << std::endl;

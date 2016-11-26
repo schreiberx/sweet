@@ -248,13 +248,18 @@ private:
 public:
 	void generate()
 	{
-		bool load_from_file = false;
+		bool load_and_read_from_file = false;
 
 		char *envvar = getenv("SWEET_HACK_123_BLARG");
-		if (envvar != nullptr)
-			load_from_file = atoi(envvar);
 
-		if (load_from_file)
+		if (envvar != nullptr)
+		{
+			std::cout << envvar << std::endl;
+			exit(1);
+			load_and_read_from_file = atoi(envvar);
+		}
+
+		if (load_and_read_from_file)
 		{
 			std::cout << "Using SWEET_HACK_123_BLARG hack... loading data from cached files" << std::endl;
 
@@ -271,9 +276,12 @@ public:
 
 		p_setup_initial_conditions_gaussian(center_lon, center_lat);
 
-		prog_h.physical_file_write(prefix_string+"_initial_prog_h.csv");
-		prog_u.physical_file_write(prefix_string+"_initial_prog_u.csv");
-		prog_v.physical_file_write(prefix_string+"_initial_prog_v.csv");
+		if (load_and_read_from_file)
+		{
+			prog_h.physical_file_write(prefix_string+"_initial_prog_h.csv");
+			prog_u.physical_file_write(prefix_string+"_initial_prog_u.csv");
+			prog_v.physical_file_write(prefix_string+"_initial_prog_v.csv");
+		}
 
 		// NOTE: This is only a very rough approximation of the time step size
 		double timestep_size = simVars.sim.earth_radius/(
@@ -293,9 +301,12 @@ public:
 		prog_u = prog_u.physical_rescale_to_max_abs(1.0);
 		prog_v = prog_v.physical_rescale_to_max_abs(1.0);
 
-		prog_h.physical_file_write(prefix_string+"_final_prog_h.csv");
-		prog_u.physical_file_write(prefix_string+"_final_prog_u.csv");
-		prog_v.physical_file_write(prefix_string+"_final_prog_v.csv");
+		if (load_and_read_from_file)
+		{
+			prog_h.physical_file_write(prefix_string+"_final_prog_h.csv");
+			prog_u.physical_file_write(prefix_string+"_final_prog_u.csv");
+			prog_v.physical_file_write(prefix_string+"_final_prog_v.csv");
+		}
 	}
 
 	GenerateConsistentGradDivSphereData(
