@@ -217,14 +217,6 @@ public:
 		}
 		else if (simVars.setup.benchmark_scenario_id == 1)
 		{
-			/// Setup Galewski parameters
-			simVars.sim.coriolis_omega = 7.292e-5;
-			simVars.sim.gravitation = 9.80616;
-			simVars.sim.earth_radius = 6.37122e6;
-			simVars.sim.h0 = 10000.0;
-
-			simVars.misc.output_time_scale = 1.0/(60.0*60.0);
-
 			benchmarkGalewsky.setup_initial_h(o_h);
 //			o_h.spat_set_zero();
 			benchmarkGalewsky.setup_initial_h_add_bump(o_h);
@@ -460,6 +452,7 @@ public:
 
 		std::cout << "Simulation time: " << simVars.timecontrol.current_simulation_time << std::endl;
 
+
 		output_filename = write_file(prog_h, "h", simVars.setup.benchmark_scenario_id == 0);
 		std::cout << output_filename << " (min: " << prog_h.physical_reduce_min() << ", max: " << prog_h.physical_reduce_max() << ")" << std::endl;
 
@@ -478,7 +471,7 @@ public:
 		 */
 		if (	param_compute_error &&
 				simVars.misc.use_nonlinear_equations == 0 &&
-				simVars.setup.benchmark_scenario_id
+				simVars.setup.benchmark_scenario_id == 4
 		)
 		{
 			SphereData test_h(sphereDataConfig);
@@ -486,6 +479,7 @@ public:
 			SphereData test_v(sphereDataConfig);
 
 			setupInitialConditions(test_h, test_u, test_v);
+
 
 			output_filename = write_file(test_h, "reference_h", simVars.setup.benchmark_scenario_id == 0);
 			std::cout << output_filename << std::endl;
@@ -507,7 +501,6 @@ public:
 			output_filename = write_file((prog_v-test_v), "ref_diff_v", simVars.setup.benchmark_scenario_id == 0);
 			std::cout << output_filename << std::endl;
 		}
-
 	}
 
 
@@ -540,10 +533,15 @@ public:
 		}
 #endif
 
+		if (simVars.misc.verbosity > 0)
+		{
+			std::cout << "prog_h min/max:\t" << prog_h.physical_reduce_min() << ", " << prog_h.physical_reduce_max() << std::endl;
+		}
+
 
 		if (	param_compute_error &&
 				simVars.misc.use_nonlinear_equations == 0 &&
-				simVars.setup.benchmark_scenario_id
+				simVars.setup.benchmark_scenario_id == 4
 		)
 		{
 			SphereData test_h(sphereDataConfig);
@@ -951,7 +949,27 @@ case 'C':
 
 int main(int i_argc, char *i_argv[])
 {
-	MemBlockAlloc::setup();
+
+#if __MIC__
+	std::cout << "Compiled for MIC" << std::endl;
+#endif
+
+#if SWEET_MPI
+
+	#if SWEET_THREADING
+		int provided;
+		MPI_Init_thread(&i_argc, &i_argv, MPI_THREAD_MULTIPLE, &provided);
+
+		if (provided != MPI_THREAD_MULTIPLE)
+		{
+				std::cerr << "MPI_THREAD_MULTIPLE not available! Try to get an MPI version with multi-threading support or compile without OMP/TBB support. Good bye..." << std::endl;
+				exit(-1);
+		}
+	#else
+		MPI_Init(&i_argc, &i_argv);
+	#endif
+
+#endif
 
 	//input parameter names (specific ones for this program)
 	const char *bogus_var_names[] = {
@@ -990,19 +1008,24 @@ int main(int i_argc, char *i_argv[])
 					&simVars.disc.res_physical[1]
 			);
 
-
 #if SWEET_GUI
 	planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical);
 #endif
 
-
 	std::ostringstream buf;
 	buf << std::setprecision(14);
 
-#if 0
-	SimulationInstance test_swe(sphereDataConfig);
-	test_swe.run();
-#else
+	if (simVars.setup.benchmark_scenario_id == 1)
+	{
+		/// Setup Galewski parameters
+		simVars.sim.coriolis_omega = 7.292e-5;
+		simVars.sim.gravitation = 9.80616;
+		simVars.sim.earth_radius = 6.37122e6;
+		simVars.sim.h0 = 10000.0;
+
+		simVars.misc.output_time_scale = 1.0/(60.0*60.0);
+	}
+
 
 #if SWEET_MPI
 	int rank;
@@ -1073,15 +1096,6 @@ int main(int i_argc, char *i_argv[])
 			// Main time loop
 			while(true)
 			{
-				/*
-				 * First, we truncate the spectrum to assure no unphysical-space modes
-				 */
-#if 0
-				simulationSWE->prog_h.spectral_truncate();
-				simulationSWE->prog_u.spectral_truncate();
-				simulationSWE->prog_v.spectral_truncate();
-#endif
-
 				simulationSWE->timestep_check_output();
 
 				// Stop simulation if requested
@@ -1119,32 +1133,39 @@ int main(int i_argc, char *i_argv[])
 #if SWEET_MPI
 	else
 	{
-		if (param_timestepping_mode == 1)
+		if (simVars.rexi.use_rexi)
 		{
-			SWE_Plane_REXI rexiSWE;
+			SWE_Sphere_REXI rexiSWE;
 
 			/*
 			 * Setup our little dog REXI
 			 */
 			rexiSWE.setup(
 					simVars.rexi.rexi_h,
-					simVars.rexi.rexi_m,
-					simVars.rexi.rexi_l,
-					simVars.disc.res_physical,
-					simVars.sim.domain_size,
-					simVars.rexi.rexi_half,
-					simVars.rexi.rexi_use_spectral_differences_for_complex_array,
-					simVars.rexi.rexi_helmholtz_solver_id,
-					simVars.rexi.rexi_helmholtz_solver_eps
+					simVars.rexi.rexi_M,
+					simVars.rexi.rexi_L,
+
+					sphereDataConfig,
+					&simVars.sim,
+					simVars.timecontrol.current_timestep_size,
+
+					simVars.rexi.rexi_use_half_poles,
+					simVars.misc.sphere_use_robert_functions,
+					simVars.rexi.rexi_use_extended_modes,
+					simVars.rexi.rexi_normalization,
+					param_rexi_use_coriolis_formulation
 				);
 
 			bool run = true;
 
-			PlaneData prog_h(planeDataConfig);
-			PlaneData prog_u(planeDataConfig);
-			PlaneData prog_v(planeDataConfig);
+			SphereData prog_h(sphereDataConfig);
+			SphereData prog_u(sphereDataConfig);
+			SphereData prog_v(sphereDataConfig);
 
-			PlaneOperators op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
+			// initialize with dummy data
+			prog_h.spectral_set_zero();
+			prog_u.spectral_set_zero();
+			prog_v.spectral_set_zero();
 
 			MPI_Barrier(MPI_COMM_WORLD);
 
@@ -1154,7 +1175,6 @@ int main(int i_argc, char *i_argv[])
 				run = rexiSWE.run_timestep_rexi(
 						prog_h, prog_u, prog_v,
 						-simVars.sim.CFL,
-						op,
 						simVars
 				);
 			}
@@ -1164,16 +1184,15 @@ int main(int i_argc, char *i_argv[])
 
 
 #if SWEET_MPI
-	if (param_timestepping_mode > 0)
+	if (simVars.rexi.use_rexi)
 	{
 		// synchronize REXI
 		if (rank == 0)
-			SWE_Plane_REXI::MPI_quitWorkers(planeDataConfig);
+			SWE_Sphere_REXI::MPI_quitWorkers(sphereDataConfig);
 	}
 
 	MPI_Finalize();
 #endif
 
-#endif
 	return 0;
 }

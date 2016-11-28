@@ -8,6 +8,12 @@
 #ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_REXI_HPP_
 #define SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_REXI_HPP_
 
+
+#ifndef SWEET_MPI
+#define SWEET_MPI 1
+#endif
+
+
 #include <complex>
 #include <rexi/REXI.hpp>
 #include <sweet/SimulationVariables.hpp>
@@ -19,6 +25,9 @@
 #include <sweet/sphere/SphereOperatorsComplex.hpp>
 #include <rexi/SWERexi_SPH.hpp>
 #include <rexi/SWERexi_SPHRobert.hpp>
+#if SWEET_MPI
+	#include <mpi.h>
+#endif
 
 
 
@@ -162,22 +171,11 @@ public:
 
 
 
-
 public:
-	inline
 	static
 	void MPI_quitWorkers(
 			SphereDataConfig *i_sphereDataConfig
-	)
-	{
-#if SWEET_MPI
-	SphereData dummyData(i_sphereDataConfig);
-	dummyData.set_all(NAN);
-
-	MPI_Bcast(dummyData.physical_space_data, dummyData.sphereDataConfig->physical_array_data_number_of_elements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-
-#endif
-	}
+	);
 
 	~SWE_Sphere_REXI();
 };

@@ -52,7 +52,7 @@ public:
 	int spectral_modes_m_max;
 
 	/**
-	 * Number of total mode variations
+	 * Number of total number of modes (complex valued)
 	 */
 	int spectral_array_data_number_of_elements;
 

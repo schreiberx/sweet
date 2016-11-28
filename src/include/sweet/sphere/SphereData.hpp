@@ -786,6 +786,26 @@ public:
 
 
 
+
+	/*
+	 * Set all values to value
+	 */
+	void spectral_set_value(
+			const std::complex<double> &i_value
+	)
+	{
+#if SWEET_THREADING
+#pragma omp parallel for
+#endif
+		for (int i = 0; i < sphereDataConfig->spectral_array_data_number_of_elements; i++)
+			spectral_space_data[i] = i_value;
+
+		physical_space_data_valid = false;
+		spectral_space_data_valid = true;
+	}
+
+
+
 	/*
 	 * Set values for all latitude and longitude degrees
 	 *
