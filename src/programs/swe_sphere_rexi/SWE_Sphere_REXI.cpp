@@ -635,9 +635,9 @@ bool SWE_Sphere_REXI::run_timestep_rexi(
 	io_prog_v0.request_data_physical();
 
 
+#if SWEET_MPI
 	std::size_t physical_data_num_doubles = io_prog_h0.sphereDataConfig->physical_array_data_number_of_elements;
 
-#if SWEET_MPI
 	SphereData tmp(sphereDataConfig);
 
 	int retval = MPI_Reduce(io_prog_h0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);

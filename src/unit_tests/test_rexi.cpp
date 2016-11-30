@@ -49,6 +49,8 @@ int main(
 
 					double max_error = 0;
 
+//					std::cout << rexi.approx_returnReal(0) << std::endl;
+//					exit(1);
 					for (double x = start; x < end; x += step_size)
 					{
 						double correct = rexi.eval(x).real();

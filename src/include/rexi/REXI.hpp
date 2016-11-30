@@ -72,6 +72,14 @@ public:
 		setup(i_phi_id, i_h, i_M, i_L, i_reduce_to_half);
 	}
 
+	static
+	std::complex<double> conj(
+			const std::complex<double> &i
+	)
+	{
+		return std::complex<double>(i.real(), -i.imag());
+	}
+
 
 public:
 	void setup(
@@ -158,6 +166,26 @@ public:
 
 		if (i_reduce_to_half)
 		{
+#if 1
+			/*
+			 * This is slightly more accurate
+			 */
+			for (int i = 0; i < N; i++)
+			{
+//				std::cout << alpha[i] << ", " << alpha[N*2-i] << std::endl;
+//				std::cout << beta_re[i] << ", " << beta_re[N*2-i] << std::endl;
+//				std::cout << std::endl;
+
+//				alpha[i] = (alpha[i] + alpha[N*2-i])*0.5;
+				beta_re[i] += conj(beta_re[N*2-i]);
+				beta_im[i] += conj(beta_im[N*2-i]);
+			}
+			alpha.resize(N+1);
+			beta_re.resize(N+1);
+			beta_im.resize(N+1);
+#elif 0
+
+#else
 			/**
 			 * reduce the computational amount to its half,
 			 * see understanding REXI in the documentation folder
@@ -172,6 +200,7 @@ public:
 				beta_re[i] *= 2.0;
 				beta_im[i] *= 2.0;
 			}
+#endif
 		}
 
 		if (i_normalization)
