@@ -1,13 +1,13 @@
 
-#ifndef TIMESTEPPING_RK_HPP
-#define TIMESTEPPING_RK_HPP
+#ifndef TIMESTEPPING_EXPLICIT_RK_HPP
+#define TIMESTEPPING_EXPLICIT_RK_HPP
 
 #include <sweet/sphere/SphereData.hpp>
 #include <limits>
 
-class SphereDataTimesteppingRK
+class SphereDataTimesteppingExplicitRK
 {
-	// runge kutta data storages
+	// Runge-Kutta data storages
 	SphereData** RK_h_t;
 	SphereData** RK_u_t;
 	SphereData** RK_v_t;
@@ -15,7 +15,7 @@ class SphereDataTimesteppingRK
 	int runge_kutta_order;
 
 public:
-	SphereDataTimesteppingRK()	:
+	SphereDataTimesteppingExplicitRK()	:
 		RK_h_t(nullptr),
 		RK_u_t(nullptr),
 		RK_v_t(nullptr),
@@ -50,7 +50,7 @@ public:
 
 
 
-	~SphereDataTimesteppingRK()
+	~SphereDataTimesteppingExplicitRK()
 	{
 		int N = runge_kutta_order;
 

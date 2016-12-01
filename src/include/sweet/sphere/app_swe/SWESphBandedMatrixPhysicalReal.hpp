@@ -1,32 +1,33 @@
 /*
- * SPHSolverComplex.hpp
+ * SPHSolver.hpp
  *
- *  Created on: 31 Aug 2016
+ *  Created on: 24 Aug 2016
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#ifndef SRC_INCLUDE_SPH_BANDED_MATRIX_COMPLEX_HPP_
-#define SRC_INCLUDE_SPH_BANDED_MATRIX_COMPLEX_HPP_
+#ifndef SRC_INCLUDE_SPH_BANDED_MATRIX_REAL_HPP_
+#define SRC_INCLUDE_SPH_BANDED_MATRIX_REAL_HPP_
 
+#include <libmath/BandedMatrixPhysicalReal.hpp>
 #include <sweet/sphere/SphereSPHIdentities.hpp>
-#include <sweet/sphere/SphereDataComplex.hpp>
 #include <libmath/LapackBandedMatrixSolver.hpp>
-#include <libmath/BandedMatrixComplex.hpp>
 
 
 
 /**
  * phi(lambda,mu) denotes the solution
+ *
+ * WARNING: This is only for real-valued physical space!
  */
-template < typename T = std::complex<double> >	// T: complex valued single or double precision method
-class SphBandedMatrixPhysicalComplex	:
+template <typename T = std::complex<double> >
+class SphBandedMatrixPhysicalReal	:
 		SphereSPHIdentities
 {
 public:
 	/**
 	 * Matrix on left-hand side
 	 */
-	BandedMatrixComplex<T> lhs;
+	BandedMatrixPhysicalReal<T> lhs;
 
 	/**
 	 * SPH configuration
@@ -37,16 +38,6 @@ public:
 	 * Solver for banded matrix
 	 */
 	LapackBandedMatrixSolver< std::complex<double> > bandedMatrixSolver;
-
-	/**
-	 * Size of buffers
-	 */
-	std::size_t buffer_size;
-
-	/**
-	 * Buffer to compactify the N-varying for a particular M
-	 */
-	std::complex<double> *buffer_in, *buffer_out;
 
 	/**
 	 * Setup the SPH solver
@@ -62,30 +53,12 @@ public:
 		lhs.setup(sphereDataConfig, i_halosize_offdiagonal);
 
 		bandedMatrixSolver.setup(i_sphConfig->spectral_modes_n_max+1, i_halosize_offdiagonal);
-
-		buffer_size = (sphereDataConfig->spectral_modes_n_max+1)*sizeof(std::complex<double>);
-
-		buffer_in = MemBlockAlloc::alloc< std::complex<double> >(buffer_size);
-		buffer_out = MemBlockAlloc::alloc< std::complex<double> >(buffer_size);
 	}
 
 
-	SphBandedMatrixPhysicalComplex()	:
-		sphereDataConfig(nullptr),
-		buffer_size(0),
-		buffer_in(nullptr),
-		buffer_out(nullptr)
+	SphBandedMatrixPhysicalReal()	:
+		sphereDataConfig(nullptr)
 	{
-	}
-
-
-	~SphBandedMatrixPhysicalComplex()
-	{
-		if (buffer_in != nullptr)
-		{
-			MemBlockAlloc::free(buffer_in, buffer_size);
-			MemBlockAlloc::free(buffer_out, buffer_size);
-		}
 	}
 
 
@@ -101,9 +74,9 @@ public:
 #pragma omp parallel for
 #endif
 
-		for (int m = -sphereDataConfig->spectral_modes_m_max; m <= sphereDataConfig->spectral_modes_m_max; m++)
+		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
-			for (int n = std::abs(m); n <= sphereDataConfig->spectral_modes_n_max; n++)
+			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 				lhs.rowElement_add(row, n, m, 0, i_value);
@@ -124,10 +97,9 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for
 #endif
-
-		for (int m = -sphereDataConfig->spectral_modes_m_max; m <= sphereDataConfig->spectral_modes_m_max; m++)
+		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
-			for (int n = std::abs(m); n <= sphereDataConfig->spectral_modes_n_max; n++)
+			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 				lhs.rowElement_add(row, n, m, -1, R(n-1,m)*i_scalar);
@@ -138,19 +110,16 @@ public:
 
 
 
+
 	/**
 	 * Solver for
 	 * 	(1-mu*mu)*d/dmu phi(lambda,mu)
 	 */
 	void solver_component_one_minus_mu_mu_diff_mu_phi()
 	{
-#if SWEET_THREADING
-#pragma omp parallel for
-#endif
-
-		for (int m = -sphereDataConfig->spectral_modes_m_max; m <= sphereDataConfig->spectral_modes_m_max; m++)
+		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
-			for (int n = std::abs(m); n <= sphereDataConfig->spectral_modes_n_max; n++)
+			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 				lhs.rowElement_add(row, n, m, -1, (-(double)n+1.0)*R(n-1,m));
@@ -174,6 +143,30 @@ public:
 	}
 
 
+#if 0
+	/**
+	 * Solver for
+	 * 	(1-mu^2)*d/dphi(lambda,mu)
+	 */
+	void solver_component_rexi_zGmu(
+			const std::complex<double> &i_scalar,
+			double i_r
+	)
+	{
+//		std::cout << "TODO: CHECK SOLUTION" << std::endl;
+		std::complex<double> fac = 1.0/i_r*i_scalar;
+		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
+		{
+			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
+			{
+				T *row = lhs.getMatrixRow(n, m);
+				lhs.rowElement_add(row, n, m, -1, fac*(-n+1.0)*R(n-1,m));
+				lhs.rowElement_add(row, n, m, +1, fac*(n+2.0)*S(n+1,m));
+			}
+		}
+	}
+#endif
+
 
 	/**
 	 * Solver for
@@ -184,13 +177,9 @@ public:
 			double i_r
 	)
 	{
-#if SWEET_THREADING
-#pragma omp parallel for
-#endif
-
-		for (int m = -sphereDataConfig->spectral_modes_m_max; m <= sphereDataConfig->spectral_modes_m_max; m++)
+		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
-			for (int n = std::abs(m); n <= sphereDataConfig->spectral_modes_n_max; n++)
+			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 
@@ -216,9 +205,9 @@ public:
 #pragma omp parallel for
 #endif
 
-		for (int m = -sphereDataConfig->spectral_modes_m_max; m <= sphereDataConfig->spectral_modes_m_max; m++)
+		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
-			for (int n = std::abs(m); n <= sphereDataConfig->spectral_modes_n_max; n++)
+			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 
@@ -245,9 +234,9 @@ public:
 #pragma omp parallel for
 #endif
 
-		for (int m = -sphereDataConfig->spectral_modes_m_max; m <= sphereDataConfig->spectral_modes_m_max; m++)
+		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
-			for (int n = std::abs(m); n <= sphereDataConfig->spectral_modes_n_max; n++)
+			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 				lhs.rowElement_add(row, n, m,  0, 1.0/(i_r*i_r)*i_scalar*T(0, m));
@@ -270,10 +259,10 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for
 #endif
-		for (int m = -sphereDataConfig->spectral_modes_m_max; m <= sphereDataConfig->spectral_modes_m_max; m++)
+		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
 			std::complex<double> fac = 1.0/(i_r*i_r)*i_scalar*T(0, m);
-			for (int n = std::abs(m); n <= sphereDataConfig->spectral_modes_n_max; n++)
+			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 				lhs.rowElement_add(row, n, m,  0, fac);
@@ -295,11 +284,11 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for
 #endif
-		for (int m = -sphereDataConfig->spectral_modes_m_max; m <= sphereDataConfig->spectral_modes_m_max; m++)
+		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
 			T fac = std::complex<double>(1.0/(i_r*i_r))*i_scalar*T(0, m);
 
-			for (int n = std::abs(m); n <= sphereDataConfig->spectral_modes_n_max; n++)
+			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 				lhs.rowElement_add(row, n, m,  -2, fac*A(n-2,m)	);
@@ -337,25 +326,6 @@ public:
 				lhs.rowElement_add(row, n, m, +2, fac*C(n+2,m));
 			}
 		}
-
-#if 0
-#if SWEET_THREADING
-#pragma omp parallel for
-#endif
-		for (int m = -sphereDataConfig->spectral_modes_m_max; m <= sphereDataConfig->spectral_modes_m_max; m++)
-		{
-			std::complex<double> fac = 1.0/(i_r*i_r)*i_scalar*T(0, m);
-			for (int n = std::abs(m); n <= sphereDataConfig->spectral_modes_n_max; n++)
-			{
-				T *row = lhs.getMatrixRow(n, m);
-				lhs.rowElement_add(row, n, m,  -2,    -fac*(A(n-2, m)*A(n-4, m))    );
-				lhs.rowElement_add(row, n, m,  -2,    -fac*(A(n-2, m)*B(n-2, m) + B(n, m)*A(n-2, m))                 + fac*A(n-2, m)        );
-				lhs.rowElement_add(row, n, m,  -2,    -fac*(A(n-2, m)*C(n, m) + B(n, m)*B(n, m) + C(n+2, m)*A(n, m)) + fac*B(n, m)          );
-				lhs.rowElement_add(row, n, m,  -2,    -fac*(B(n, m)*C(n+2, m) + C(n+2, m)*B(n+2, m))                 + fac*C(n+2, m)        );
-				lhs.rowElement_add(row, n, m,  -2,    -fac*(C(n+2, m)*C(n+4, m))    );
-			}
-		}
-#endif
 	}
 
 
@@ -372,9 +342,10 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for
 #endif
-		for (int m = -sphereDataConfig->spectral_modes_m_max; m <= sphereDataConfig->spectral_modes_m_max; m++)
+
+		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
-			for (int n = std::abs(m); n <= sphereDataConfig->spectral_modes_n_max; n++)
+			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 				lhs.rowElement_add(row, n, m,  -2, -1.0/(i_r*i_r)*i_scalar*(D(n-1,m)*R(n-2,m) + (E(n,m)-3.0)*A(n-2,m)));
@@ -427,6 +398,7 @@ public:
 	}
 
 
+
 	/**
 	 * Solver for
 	 * Z7 := laplace(phi)
@@ -439,9 +411,9 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for
 #endif
-		for (int m = -sphereDataConfig->spectral_modes_m_max; m <= sphereDataConfig->spectral_modes_m_max; m++)
+		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
-			for (int n = std::abs(m); n <= sphereDataConfig->spectral_modes_n_max; n++)
+			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 				lhs.rowElement_add(row, n, m, 0, -1.0/(i_r*i_r)*i_scalar*(double)n*((double)n+1.0));
@@ -464,9 +436,10 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for
 #endif
-		for (int m = -sphereDataConfig->spectral_modes_m_max; m <= sphereDataConfig->spectral_modes_m_max; m++)
+
+		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
-			for (int n = std::abs(m); n <= sphereDataConfig->spectral_modes_n_max; n++)
+			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 
@@ -499,19 +472,16 @@ public:
 	 * WARNING: This only multiplies the i_x values with the matrix.
 	 * Use solve(...) to solve for the matrix
 	 */
-	SphereDataComplex apply(
-			const SphereDataComplex &i_x	///< solution to be searched
+	SphereData apply(
+			const SphereData &i_x	///< solution to be searched
 	)
 	{
-		SphereDataComplex out(sphereDataConfig);
+		SphereData out(sphereDataConfig);
 
-#if SWEET_THREADING
-#pragma omp parallel for
-#endif
-		for (int n = 0; n <= sphereDataConfig->spectral_modes_n_max; n++)
+		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
-			int idx = sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
-			for (int m = -n; m <= n; m++)
+			std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
+			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
 			{
 				out.spectral_space_data[idx] = 0;
 
@@ -533,52 +503,24 @@ public:
 	}
 
 
-	SphereDataComplex solve(
-			const SphereDataComplex &i_rhs
+	SphereData solve(
+			const SphereData &i_rhs
 	)
 	{
-		i_rhs.check_sphereDataConfig_identical_res(sphereDataConfig);
-
 		i_rhs.request_data_spectral();
 
-		SphereDataComplex out(sphereDataConfig);
+		SphereData out(sphereDataConfig);
 
-		for (int m = -sphereDataConfig->spectral_modes_m_max; m <= sphereDataConfig->spectral_modes_m_max; m++)
+		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
-			int idx = sphereDataConfig->getArrayIndexByModes_Complex_NCompact(std::abs(m),m);
-
-			/*
-			 * Compactify RHS coefficients
-			 */
-			{
-				int buffer_idx = 0;
-				for (int n = std::abs(m); n <= sphereDataConfig->spectral_modes_n_max; n++)
-				{
-					assert(buffer_idx < sphereDataConfig->spectral_modes_n_max+1);
-					buffer_in[buffer_idx] = i_rhs.spectral_space_data[sphereDataConfig->getArrayIndexByModes_Complex(n,m)];
-					buffer_idx++;
-				}
-			}
+			int idx = sphereDataConfig->getArrayIndexByModes(m,m);
 
 			bandedMatrixSolver.solve_diagBandedInverse_Carray(
 							&lhs.data[idx*lhs.num_diagonals],
-							buffer_in,
-							buffer_out,
-							sphereDataConfig->spectral_modes_n_max+1-std::abs(m)	// size of block (same as for SPHSolver)
+							&i_rhs.spectral_space_data[idx],
+							&out.spectral_space_data[idx],
+							sphereDataConfig->spectral_modes_n_max+1-m	// size of block
 					);
-
-
-			/*
-			 * Compactify RHS coefficients
-			 */
-			{
-				int buffer_idx = 0;
-				for (int n = std::abs(m); n <= sphereDataConfig->spectral_modes_n_max; n++)
-				{
-					out.spectral_space_data[sphereDataConfig->getArrayIndexByModes_Complex(n,m)] = buffer_out[buffer_idx];
-					buffer_idx++;
-				}
-			}
 		}
 
 		out.physical_space_data_valid = false;
@@ -589,4 +531,4 @@ public:
 };
 
 
-#endif /* SRC_INCLUDE_SPH_SPHSOLVER_HPP_ */
+#endif

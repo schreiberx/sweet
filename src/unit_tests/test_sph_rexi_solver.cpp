@@ -16,9 +16,10 @@
 #include <sweet/sphere/SphereData.hpp>
 #include <sweet/sphere/Convert_SphereDataComplex_to_SphereData.hpp>
 #include <sweet/sphere/Convert_SphereData_to_SphereDataComplex.hpp>
-#include <rexi/SWERexi_SPHRobert.hpp>
-#include <rexi/SWERexi_SPH.hpp>
 #include <rexi/REXI.hpp>
+#include <rexi/SWERexiTerm_SPH.hpp>
+#include <rexi/SWERexiTerm_SPHRobert.hpp>
+
 #include <../programs/swe_sphere_rexi/SWE_Sphere_REXI.hpp>
 
 #include <sweet/sphere/GenerateConsistentGradDivSphereData.hpp>
@@ -1722,7 +1723,7 @@ void run_tests()
 			if (simVars.misc.sphere_use_robert_functions)
 			{
 				{
-					SWERexi_SPHRobert rexiSPHRobert;
+					SWERexiTerm_SPHRobert rexiSPHRobert;
 
 					rexiSPHRobert.setup(
 							sphereDataConfigExt,
@@ -1783,7 +1784,7 @@ void run_tests()
 			{
 
 				{
-					SWERexi_SPH rexiSPH;
+					SWERexiTerm_SPH rexiSPH;
 
 					rexiSPH.setup(
 							sphereDataConfigExt,

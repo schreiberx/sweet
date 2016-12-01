@@ -27,9 +27,10 @@ public:
 	 *
 	 * d/d lambda f(lambda,mu)
 	 */
+	static
 	SphereData diff_lon(
 			const SphereData &i_sph_data
-	)	const
+	)
 	{
 		i_sph_data.request_data_spectral();
 
@@ -64,14 +65,15 @@ public:
 	 *
 	 * sqrt(1-mu*mu)*d/dmu P_n^m = ...
 	 */
+	static
 	SphereData diff_lat_mu(
 			const SphereData &i_sph_data
-	)	const
+	)
 	{
 		SphereData out_sph_data = spec_one_minus_mu_squared_diff_lat_mu(i_sph_data);
 
 		out_sph_data.physical_update_lambda_gaussian_grid(
-				[this](double lambda, double mu, double &o_data)
+				[](double lambda, double mu, double &o_data)
 				{
 					o_data /= (1.0-mu*mu);
 				}
@@ -87,9 +89,10 @@ public:
 	 *
 	 * Compute d/d phi f(lambda,mu)
 	 */
+	static
 	SphereData diff_lat_phi(
 			const SphereData &i_sph_data
-	)	const
+	)
 	{
 		return grad_lat(i_sph_data);
 	}
@@ -99,9 +102,10 @@ public:
 	/**
 	 * Compute gradient component along longitude (lambda)
 	 */
+	static
 	SphereData grad_lon(
 			const SphereData &i_sph_data
-	)	const
+	)
 	{
 		i_sph_data.request_data_spectral();
 
@@ -109,7 +113,7 @@ public:
 
 		// physical space already requested if spectral space data is valid
 		out_sph_data.physical_update_lambda_gaussian_grid(
-				[this](double lambda, double mu, double &o_data)
+				[](double lambda, double mu, double &o_data)
 				{
 					double cos_phi = std::sqrt(1.0-mu*mu);
 					o_data /= cos_phi;
@@ -127,9 +131,10 @@ public:
 	 * This computes
 	 * 	1/cos^2(phi)  d/dlambda U
 	 */
+	static
 	SphereData robert_div_lon(
 			const SphereData &i_sph_data
-	)	const
+	)
 	{
 		// Entirely in spectral space
 		SphereData out = diff_lon(i_sph_data);
@@ -153,9 +158,10 @@ public:
 	 * This computes
 	 * 		d/dmu V
 	 */
+	static
 	SphereData robert_div_lat(
 			const SphereData &i_sph_data
-	)	const
+	)
 	{
 		/*
 		 * Compute
@@ -184,9 +190,10 @@ public:
 	 * 		d/dlambda Phi
 	 * with Phi the geopotential
 	 */
+	static
 	SphereData robert_grad_lon(
 			const SphereData &i_sph_data
-	)	const
+	)
 	{
 		// Entirely in spectral space
 		return diff_lon(i_sph_data);
@@ -201,9 +208,10 @@ public:
 	 *
 	 * with Phi the geopotential
 	 */
+	static
 	SphereData robert_grad_lat(
 			const SphereData &i_sph_data
-	)	const
+	)
 	{
 		// Entirely in spectral space
 		//return spec_cosphi_squared_diff_lat_mu(i_sph_data);
@@ -213,9 +221,10 @@ public:
 
 
 	inline
+	static
 	SphereData spec_one_minus_sinphi_squared_diff_lat_mu(
 			const SphereData &i_sph_data
-	)	const
+	)
 	{
 		return spec_one_minus_mu_squared_diff_lat_mu(i_sph_data);
 	}
@@ -223,18 +232,20 @@ public:
 
 
 	inline
+	static
 	SphereData spec_cosphi_squared_diff_lat_mu(
 			const SphereData &i_sph_data
-	)	const
+	)
 	{
 		return spec_one_minus_mu_squared_diff_lat_mu(i_sph_data);
 	}
 
 
 
+	static
 	SphereData spec_one_minus_mu_squared_diff_lat_mu(
 			const SphereData &i_sph_data
-	)	const
+	)
 	{
 		i_sph_data.request_data_spectral();
 		const SphereDataConfig *sphConfig = i_sph_data.sphereDataConfig;
@@ -268,9 +279,10 @@ public:
 	 * Compute
 	 * mu*F(\lambda,\mu)
 	 */
+	static
 	SphereData mu(
 			const SphereData &i_sphere_data
-	)	const
+	)
 	{
 		const SphereDataConfig *sphereDataConfig = i_sphere_data.sphereDataConfig;
 		i_sphere_data.request_data_spectral();
@@ -305,9 +317,10 @@ public:
 	 * Compute
 	 * mu*F(\lambda,\mu)
 	 */
+	static
 	SphereData mu2(
 			const SphereData &i_sph_data
-	)	const
+	)
 	{
 		const SphereDataConfig *sphConfig = i_sph_data.sphereDataConfig;
 		i_sph_data.request_data_spectral();
@@ -343,9 +356,10 @@ public:
 	/**
 	 * Compute gradient component along latitude
 	 */
+	static
 	SphereData grad_lat(
 			const SphereData &i_sph_data
-	)	const
+	)
 	{
 		/*
 		 * compute sin(theta)*d/d theta
@@ -359,13 +373,13 @@ public:
 
 		out_sph_data.request_data_physical();
 		out_sph_data.physical_update_lambda_gaussian_grid(
-				[this](double lambda, double mu, double &o_data)
+				[](double lambda, double mu, double &o_data)
 				{
 					//double phi = asin(mu);
 
 					//o_data /= sin(M_PI*0.5-phi);
 					//o_data /= ::cos(phi);
-					o_data /= sqrt(1.0-mu*mu);
+					o_data /= std::sqrt(1.0-mu*mu);
 				}
 		);
 
@@ -401,9 +415,10 @@ public:
 	 *
 	 * Identical to gradient operator along longitude
 	 */
+	static
 	SphereData div_lon(
 			const SphereData &i_sph_data
-	)	const
+	)
 	{
 		return grad_lon(i_sph_data);
 	}
@@ -415,9 +430,10 @@ public:
 	 *
 	 * d(sqrt(1-mu*mu)*F)/dmu
 	 */
+	static
 	SphereData div_lat(
 			const SphereData &i_sph_data
-	)	const
+	)
 	{
 #if 0
 		SphereDataConfig sphereDataConfigExt;
@@ -569,9 +585,10 @@ public:
 	/**
 	 * Laplace operator
 	 */
+	static
 	SphereData laplace(
 			const SphereData &i_sph_data
-	)	const
+	)
 	{
 		i_sph_data.request_data_spectral();
 
@@ -594,10 +611,11 @@ public:
 	 *
 	 * \eta = grad_lat(V_lon) - grad_lon(V_lat)
 	 */
+	static
 	SphereData vort(
 			const SphereData &i_lon,
 			const SphereData &i_lat
-	)	const
+	)
 	{
 		return div_lon(i_lat) - div_lat(i_lon);
 	}
@@ -609,10 +627,11 @@ public:
 	 *
 	 * \eta = robert_grad_lat(V_lon) - robert_grad_lon(V_lat)
 	 */
+	static
 	SphereData robert_vort(
 			const SphereData &i_lon,
 			const SphereData &i_lat
-	)	const
+	)
 	{
 		return robert_div_lon(i_lat) - robert_div_lat(i_lon);
 	}
@@ -625,10 +644,11 @@ public:
 	 *
 	 * \delta = div_lon(i_lon) + div_lan(i_lan)
 	 */
+	static
 	SphereData div(
 			const SphereData &i_lon,
 			const SphereData &i_lat
-	)	const
+	)
 	{
 		return div_lon(i_lon) + div_lat(i_lat);
 	}
@@ -640,10 +660,11 @@ public:
 	 *
 	 * \delta = robert_div_lon(i_lon) + robert_div_lan(i_lan)
 	 */
+	static
 	SphereData robert_div(
 			const SphereData &i_lon,
 			const SphereData &i_lat
-	)	const
+	)
 	{
 		return robert_div_lon(i_lon) + robert_div_lat(i_lat);
 	}

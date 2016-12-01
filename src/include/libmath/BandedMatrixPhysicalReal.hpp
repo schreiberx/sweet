@@ -17,7 +17,7 @@
  * Matrix to store coefficients related to Spherical Harmonics
  */
 template <typename T>
-class BandedMatrix
+class BandedMatrixPhysicalReal
 {
 	/**
 	 * Data stores the diagonal and off-diagonal components for a matrix which is to be inverted.
@@ -50,7 +50,7 @@ public:
 
 
 public:
-	BandedMatrix()	:
+	BandedMatrixPhysicalReal()	:
 		data(nullptr),
 		fortran_data(nullptr),
 		halosize_off_diagonal(-1),
@@ -222,7 +222,7 @@ public:
 
 
 
-	~BandedMatrix()
+	~BandedMatrixPhysicalReal()
 	{
 		shutdown();
 	}

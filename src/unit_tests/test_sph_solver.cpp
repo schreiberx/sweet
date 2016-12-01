@@ -12,12 +12,12 @@
 #include <sweet/SimulationVariables.hpp>
 #include <benchmarks_sphere/SphereTestSolutions_Gaussian.hpp>
 #include <benchmarks_sphere/SphereTestSolutions_SPH.hpp>
+#include <libmath/BandedMatrixPhysicalReal.hpp>
 #include <sweet/sphere/SphereDataConfig.hpp>
 #include <sweet/sphere/SphereData.hpp>
 #include <sweet/sphere/SphereDataComplex.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
-#include <libmath/BandedMatrix.hpp>
-#include <sweet/sphere/SphBandedMatrixPhysicalReal.hpp>
+#include <sweet/sphere/SWESphBandedMatrixPhysicalReal.hpp>
 
 
 SimulationVariables simVars;

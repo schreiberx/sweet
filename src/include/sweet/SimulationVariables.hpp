@@ -218,7 +218,7 @@ public:
 		/**
 		 * Activate REXI instead of standard time stepping
 		 */
-		bool use_rexi = false;
+		int use_rexi = 0;
 
 		/**
 		 * REXI parameter h
@@ -720,7 +720,7 @@ public:
 						"Control:",
 						"	-t [time]	maximum simulation time, default=-1 (infinity)",
 						"	-T [stepnr]	maximum number of time steps, default=-1 (infinity)",
-						"	-o [time]	time intervall at which output should be written",
+						"	-o [time]	time interval at which output should be written",
 						"",
 						"Misc options",
 						"	-v [int]	verbosity level",
@@ -734,7 +734,7 @@ public:
 						"	--nonlinear [bool]	Use non-linear (1) if available or linear (0) formulation, default: 1",
 						"",
 						"Rexi",
-						"	--rexi [bool]	Use REXI time stepping (1). default: 0",
+						"	--rexi [bool]	Time stepping method: 0: explicit, 1: REXI, -1: implicit",
 						"	--rexi-h [float]	REXI parameter h",
 						"	--rexi-m [int]	REXI parameter M",
 						"	--rexi-l [int]	REXI parameter L",

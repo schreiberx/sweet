@@ -13,13 +13,13 @@
 
 #include <sweet/sphere/Convert_SphereData_to_SphereDataComplex.hpp>
 #include <sweet/sphere/Convert_SphereDataComplex_to_SphereData.hpp>
-#include <sweet/sphere/SphBandedMatrixPhysicalComplex.hpp>
+#include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalComplex.hpp>
 
 
 /**
  * REXI solver for SWE based on Robert function formulation
  */
-class SWERexi_SPH
+class SWERexiTerm_SPH
 {
 	/// SPH configuration
 	SphereDataConfig *sphereDataConfig;
@@ -58,7 +58,7 @@ class SWERexi_SPH
 	double avg_geopotential;
 
 public:
-	SWERexi_SPH()	:
+	SWERexiTerm_SPH()	:
 		sphereDataConfig(nullptr)
 	{
 	}

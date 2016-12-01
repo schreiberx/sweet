@@ -19,7 +19,7 @@
  * This version is for complex physical valued transformations
  */
 template <typename T>
-class BandedMatrixComplex
+class BandedMatrixPhysicalComplex
 {
 	/**
 	 * Data stores the diagonal and off-diagonal components for a matrix which is to be inverted.
@@ -52,7 +52,7 @@ public:
 
 
 public:
-	BandedMatrixComplex()	:
+	BandedMatrixPhysicalComplex()	:
 		data(nullptr),
 		fortran_data(nullptr),
 		halosize_off_diagonal(-1),
@@ -60,7 +60,6 @@ public:
 		sphConfig(nullptr)
 	{
 	}
-
 
 
 	/**
@@ -224,7 +223,7 @@ public:
 
 
 
-	~BandedMatrixComplex()
+	~BandedMatrixPhysicalComplex()
 	{
 		shutdown();
 	}

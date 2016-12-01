@@ -332,7 +332,7 @@ public:
 
 	SphereData operator+(
 			const SphereData &i_sph_data
-	)
+	)	const
 	{
 		check(i_sph_data.sphereDataConfig);
 
@@ -405,7 +405,7 @@ public:
 
 	SphereData operator-(
 			const SphereData &i_sph_data
-	)
+	)	const
 	{
 		check(i_sph_data.sphereDataConfig);
 

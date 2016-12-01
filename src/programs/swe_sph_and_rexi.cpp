@@ -15,14 +15,20 @@
 #include <benchmarks_sphere/BenchmarkCombined.hpp>
 
 #include <sweet/sphere/SphereData.hpp>
-#include <sweet/sphere/SphereDataTimesteppingRK.hpp>
+
+// explicit time stepping
+#include <sweet/sphere/SphereDataTimesteppingExplicitRK.hpp>
+
+// implicit time stepping for SWE
+#include <sweet/sphere/app_swe/SWEImplicit_SPHRobert.hpp>
+
 #include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/sphere/SphereOperatorsComplex.hpp>
 #include <sweet/sphere/SphereDataComplex.hpp>
-#include <sweet/sphere/SphBandedMatrixPhysicalComplex.hpp>
+#include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalComplex.hpp>
+#include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalReal.hpp>
 #include <sweet/Stopwatch.hpp>
 #include <sweet/FatalError.hpp>
-#include <sweet/sphere/SphBandedMatrixPhysicalReal.hpp>
 
 
 #include "swe_sphere_rexi/SWE_Sphere_REXI.hpp"
@@ -37,6 +43,11 @@ SimulationVariables simVars;
 // Plane data config
 SphereDataConfig sphereDataConfigInstance;
 SphereDataConfig *sphereDataConfig = &sphereDataConfigInstance;
+
+// Plane data config
+SphereDataConfig sphereDataConfigInstanceExt;
+SphereDataConfig *sphereDataConfigExt = &sphereDataConfigInstanceExt;
+
 
 
 #if SWEET_GUI
@@ -60,7 +71,10 @@ public:
 	SphereOperatorsComplex opComplex;
 
 	// Runge-Kutta stuff
-	SphereDataTimesteppingRK timestepping;
+	SphereDataTimesteppingExplicitRK timestepping_explicit;
+
+	// Implicit timestepping solver
+	SWEImplicit_SPHRobert timestepping_implicit_swe;
 
 	SWE_Sphere_REXI swe_sphere_rexi;
 
@@ -158,7 +172,6 @@ public:
 	{
 		render_primitive_id = 1;
 
-
 		// one month runtime
 		if (simVars.timecontrol.max_simulation_time == -1)
 		{
@@ -213,6 +226,7 @@ public:
 			simVars.misc.use_nonlinear_equations = 0;
 		}
 
+
 		BenchmarkCombined::setupInitialConditions(prog_h, prog_u, prog_v, simVars, op);
 
 		if (simVars.sim.coriolis_omega != 0)
@@ -231,7 +245,7 @@ public:
 		std::cout << std::endl;
 		std::cout << " + Benchmark scenario id: " << simVars.setup.benchmark_scenario_id << std::endl;
 		std::cout << " + Use robert functions: " << simVars.misc.sphere_use_robert_functions << std::endl;
-		std::cout << " + Use REXI: " << simVars.rexi.use_rexi << std::endl;
+		std::cout << " + Use REXI: " << simVars.rexi.use_rexi << " (0: explicit TS, 1: REXI, 2: implicit)" << std::endl;
 		std::cout << " + REXI h: " << simVars.rexi.rexi_h << std::endl;
 		std::cout << " + REXI M: " << simVars.rexi.rexi_M << std::endl;
 		std::cout << " + REXI use half poles: " << simVars.rexi.rexi_use_half_poles << std::endl;
@@ -244,7 +258,7 @@ public:
 
 		std::cout << std::endl;
 
-		if (simVars.rexi.use_rexi)
+		if (simVars.rexi.use_rexi == 1)
 		{
 			swe_sphere_rexi.setup(
 					simVars.rexi.rexi_h,
@@ -262,6 +276,24 @@ public:
 					param_rexi_use_coriolis_formulation
 				);
 		}
+		else if (simVars.rexi.use_rexi == -1)
+		{
+			if (simVars.sim.CFL >= 0)
+				FatalError("CFL >= 0: Set negative CFL for constant time step size");
+
+			timestepping_implicit_swe.setup(
+					sphereDataConfig,
+					sphereDataConfigExt,
+
+					simVars.sim.earth_radius,
+					simVars.sim.coriolis_omega,
+					simVars.sim.gravitation*simVars.sim.h0,
+					-simVars.sim.CFL,
+
+					param_rexi_use_coriolis_formulation
+				);
+		}
+
 	}
 
 
@@ -476,9 +508,9 @@ public:
 		// output of time step size
 		double o_dt;
 
-		if (simVars.rexi.use_rexi == false)
+		if (simVars.rexi.use_rexi == 0)
 		{
-			timestepping.run_rk_timestep(
+			timestepping_explicit.run_rk_timestep(
 					this,
 					&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
 					prog_h, prog_u, prog_v,
@@ -488,6 +520,21 @@ public:
 					simVars.timecontrol.current_simulation_time,
 					simVars.timecontrol.max_simulation_time
 				);
+		}
+		else if (simVars.rexi.use_rexi == -1)
+		{
+			SphereData o_prog_h(sphereDataConfig);
+			SphereData o_prog_u(sphereDataConfig);
+			SphereData o_prog_v(sphereDataConfig);
+
+			timestepping_implicit_swe.solve(
+					prog_h*simVars.sim.gravitation, prog_u, prog_v,
+					o_prog_h, o_prog_u, o_prog_v
+				);
+
+			prog_h = o_prog_h / simVars.sim.gravitation;
+			prog_u = o_prog_u;
+			prog_v = o_prog_v;
 		}
 		else
 		{
@@ -853,6 +900,12 @@ int main(int i_argc, char *i_argv[])
 					&simVars.disc.res_physical[1]
 			);
 
+	sphereDataConfigInstanceExt.setupAdditionalModes(
+			&sphereDataConfigInstance,
+			simVars.rexi.rexi_use_extended_modes,
+			simVars.rexi.rexi_use_extended_modes
+		);
+
 #if SWEET_GUI
 	planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical);
 #endif
@@ -978,7 +1031,7 @@ int main(int i_argc, char *i_argv[])
 #if SWEET_MPI
 	else
 	{
-		if (simVars.rexi.use_rexi)
+		if (simVars.rexi.use_rexi == 1)
 		{
 			SWE_Sphere_REXI rexiSWE;
 
@@ -1029,7 +1082,7 @@ int main(int i_argc, char *i_argv[])
 
 
 #if SWEET_MPI
-	if (simVars.rexi.use_rexi)
+	if (simVars.rexi.use_rexi == 1)
 	{
 		// synchronize REXI
 		if (rank == 0)

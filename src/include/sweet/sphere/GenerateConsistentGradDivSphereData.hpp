@@ -10,7 +10,7 @@
 
 
 #include <sweet/sphere/SphereData.hpp>
-#include <sweet/sphere/SphereDataTimesteppingRK.hpp>
+#include <sweet/sphere/SphereDataTimesteppingExplicitRK.hpp>
 
 
 
@@ -184,7 +184,7 @@ private:
 		std::cout << "using timestep size: " << current_timestep_size << std::endl;
 		std::cout << "max sim time: " << max_simulation_time << std::endl;
 
-		SphereDataTimesteppingRK timestepping;
+		SphereDataTimesteppingExplicitRK timestepping;
 
 		std::cout << max_simulation_time << ", " << current_simulation_time << std::endl;
 		while (max_simulation_time > 0.0 && max_simulation_time > current_simulation_time)

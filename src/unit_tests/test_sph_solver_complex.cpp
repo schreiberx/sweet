@@ -12,6 +12,7 @@
 #include <sweet/SimulationVariables.hpp>
 #include <benchmarks_sphere/SphereTestSolutions_Gaussian.hpp>
 #include <benchmarks_sphere/SphereTestSolutions_SPH.hpp>
+#include <libmath/BandedMatrixPhysicalComplex.hpp>
 #include <sweet/sphere/SphereDataConfig.hpp>
 #include <sweet/sphere/SphereData.hpp>
 #include <sweet/sphere/Convert_SphereDataComplex_to_SphereData.hpp>
@@ -19,8 +20,7 @@
 #include <sweet/sphere/SphereDataComplex.hpp>
 #include <sweet/sphere/SphereOperatorsComplex.hpp>
 #include <rexi/REXI.hpp>
-#include <libmath/BandedMatrixComplex.hpp>
-#include <sweet/sphere/SphBandedMatrixPhysicalComplex.hpp>
+#include <sweet/sphere/SWESphBandedMatrixPhysicalComplex.hpp>
 
 
 SphereDataConfig *sphereDataConfig;

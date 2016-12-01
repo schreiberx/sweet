@@ -471,7 +471,7 @@ bool SWE_Sphere_REXI::run_timestep_rexi(
 				}
 				else
 				{
-					SWERexi_SPHRobert rexiSPHRobert;
+					SWERexiTerm_SPHRobert rexiSPHRobert;
 
 					std::complex<double> &alpha = perThreadVars[thread_id]->alpha[local_idx];
 					std::complex<double> &beta_re = perThreadVars[thread_id]->beta_re[local_idx];
@@ -515,7 +515,7 @@ bool SWE_Sphere_REXI::run_timestep_rexi(
 					std::complex<double> &alpha = perThreadVars[thread_id]->alpha[local_idx];
 					std::complex<double> &beta_re = perThreadVars[thread_id]->beta_re[local_idx];
 
-					SWERexi_SPH rexiSPH;
+					SWERexiTerm_SPH rexiSPH;
 					rexiSPH.setup(
 							sphereDataConfigRexi,
 							alpha,
