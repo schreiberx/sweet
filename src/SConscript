@@ -14,7 +14,7 @@ elif env['unit_test'] != '':
 # This rexi parallel sum part has to be done here since it relies on the entire environment
 # WARNING!
 #
-if env['program_name'] == 'swe_rexi' or env['unit_test'] == 'test_helmholtz':
+if env['program_name'] in ['swe_rexi', 'pfasst_swe_plane_rexi'] or env['unit_test'] == 'test_helmholtz':
 	if env['rexi_parallel_sum']=='enable':
 		env_omp = env.Clone()
 		env_omp.Append(CCFLAGS = ' -fopenmp')

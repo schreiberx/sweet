@@ -102,6 +102,17 @@ AddOption(	'--simd',
 )
 env['simd'] = GetOption('simd')
 
+
+AddOption(	'--pfasst',
+		dest='pfasst',
+		type='choice',
+		choices=['enable', 'disable'],
+		default='enable',
+		help="Activate utilization of PFASST [default: %default]"
+)
+env['pfasst'] = GetOption('pfasst')
+
+
 env.Append(CXXFLAGS=' -DSWEET_SIMD_ENABLE='+('1' if env['simd']=='enable' else '0'))
 
 
@@ -748,6 +759,12 @@ if env['plane_spectral_space'] == 'enable':
 	env['libfft'] = 'enable'
 
 
+if env['pfasst'] == 'enable':
+	env.Append(CXXFLAGS=['-Ilocal_software/local/include/eigen3'])
+	env.Append(CXXFLAGS=['-DSWEET_PFASST=1'])
+else:
+	env.Append(CXXFLAGS=['-DSWEET_PFASST=0'])
+
 if env['libsph'] == 'enable':
 	# activate linking with libfft!
 	env['libfft'] = 'enable'
@@ -870,7 +887,6 @@ env.Append(LINKFLAGS=['-L./local_software/local/lib'])
 env.Append(CPPPATH=['./local_software/local/include'])
 
 if env['program_name'] != 'DUMMY':
-
 
 	Export('env')
 #	SConscript('src/SConscript', variant_dir=build_dir, duplicate=0)

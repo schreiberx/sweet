@@ -4,7 +4,7 @@
 	#include <sweet/VisSweet.hpp>
 #endif
 #include <sweet/SimulationVariables.hpp>
-#include "../include/sweet/plane/PlaneDataPlaneDataTimesteppingRK.hpp"
+#include <sweet/plane/PlaneDataTimesteppingRK.hpp>
 #include <benchmarks_plane/SWEPlaneBenchmarks.hpp>
 #include "../include/sweet/plane/PlaneOperators.hpp"
 #include <sweet/Stopwatch.hpp>
