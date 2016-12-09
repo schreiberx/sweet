@@ -5,8 +5,8 @@
  *      Author: martin
  */
 
-#ifndef SRC_INCLUDE_BENCHMARKS_SPHERE_BENCHMARKCOMBINED_HPP_
-#define SRC_INCLUDE_BENCHMARKS_SPHERE_BENCHMARKCOMBINED_HPP_
+#ifndef SRC_INCLUDE_BENCHMARKS_SPHERE_SPHEREBENCHMARKSCOMBINED_HPP_
+#define SRC_INCLUDE_BENCHMARKS_SPHERE_SPHEREBENCHMARKSCOMBINED_HPP_
 
 #include <sweet/sphere/SphereData.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
@@ -14,7 +14,7 @@
 #include <benchmarks_sphere/BenchmarkGalewsky.hpp>
 #include <benchmarks_sphere/BenchmarkGaussianDam.hpp>
 
-class BenchmarkCombined
+class SphereBenchmarksCombined
 {
 public:
 	static
@@ -142,4 +142,4 @@ public:
 
 
 
-#endif /* SRC_INCLUDE_BENCHMARKS_SPHERE_BENCHMARKCOMBINED_HPP_ */
+#endif /* SRC_INCLUDE_BENCHMARKS_SPHERE_SPHEREBENCHMARKSCOMBINED_HPP_ */

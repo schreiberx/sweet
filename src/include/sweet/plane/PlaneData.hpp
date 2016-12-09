@@ -198,6 +198,20 @@ private:
 	{
 	}
 
+	/**
+	 * dummy initialization by handing over an unused integer
+	 */
+public:
+	PlaneData(int i)	:
+		planeDataConfig(nullptr)
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+		,
+		physical_space_data_valid(false),
+		spectral_space_data_valid(false)
+#endif
+	{
+	}
+
 
 
 private:
@@ -263,7 +277,8 @@ public:
 	 * setup the PlaneData in case that the special
 	 * empty constructor with int as a parameter was used.
 	 *
-	 * Calling this setup function should be in general avoided.
+	 * Calling this setup function should be in general avoided
+	 * except in very rare circumstances
 	 */
 public:
 	void setup(
@@ -1652,7 +1667,7 @@ public:
 	 * Compute element-wise division
 	 */
 	inline
-	PlaneData operator/(
+	const PlaneData operator/(
 			const double &i_value
 	)	const
 	{

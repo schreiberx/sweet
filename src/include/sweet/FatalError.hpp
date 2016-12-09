@@ -10,6 +10,8 @@
 
 
 #include <cassert>
+#include <string>
+#include <iostream>
 
 class FatalError
 {

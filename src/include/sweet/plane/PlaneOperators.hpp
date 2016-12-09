@@ -180,35 +180,73 @@ public:
 	}
 #endif
 
+	PlaneOperators()	:
+		planeDataConfig(nullptr),
 
-	PlaneOperators(
-		PlaneDataConfig *i_planeDataConfig,
-		const double i_domain_size[2],	///< domain size
-		bool i_use_spectral_basis_diffs
-	)	:
-		planeDataConfig(i_planeDataConfig),
+		diff_c_x(1),
+		diff_c_y(1),
 
-		diff_c_x(i_planeDataConfig),
-		diff_c_y(i_planeDataConfig),
+		diff_f_x(1),
+		diff_f_y(1),
+		diff_b_x(1),
+		diff_b_y(1),
 
-		diff_f_x(i_planeDataConfig),
-		diff_f_y(i_planeDataConfig),
-		diff_b_x(i_planeDataConfig),
-		diff_b_y(i_planeDataConfig),
+		diff2_c_x(1),
+		diff2_c_y(1),
 
-		diff2_c_x(i_planeDataConfig),
-		diff2_c_y(i_planeDataConfig),
+		avg_f_x(1),
+		avg_f_y(1),
+		avg_b_x(1),
+		avg_b_y(1),
 
-		avg_f_x(i_planeDataConfig),
-		avg_f_y(i_planeDataConfig),
-		avg_b_x(i_planeDataConfig),
-		avg_b_y(i_planeDataConfig),
-
-		shift_left(i_planeDataConfig),
-		shift_right(i_planeDataConfig),
-		shift_up(i_planeDataConfig),
-		shift_down(i_planeDataConfig)
+		shift_left(1),
+		shift_right(1),
+		shift_up(1),
+		shift_down(1)
 	{
+
+	}
+
+
+	void setup(
+		PlaneDataConfig *i_planeDataConfig,		///< data config setup for spectral transformations
+		const double i_domain_size[2],			///< domain size
+		bool i_use_spectral_basis_diffs = true	///< use spectral differentiation (d/dx e^ix)
+	)
+	{
+		planeDataConfig = i_planeDataConfig;
+
+		diff_c_x.setup(i_planeDataConfig);
+		diff_c_y.setup(i_planeDataConfig);
+
+		diff_f_x.setup(i_planeDataConfig);
+		diff_f_y.setup(i_planeDataConfig);
+		diff_b_x.setup(i_planeDataConfig);
+		diff_b_y.setup(i_planeDataConfig);
+
+		diff2_c_x.setup(i_planeDataConfig);
+		diff2_c_y.setup(i_planeDataConfig);
+
+		avg_f_x.setup(i_planeDataConfig);
+		avg_f_y.setup(i_planeDataConfig);
+		avg_b_x.setup(i_planeDataConfig);
+		avg_b_y.setup(i_planeDataConfig);
+
+		shift_left.setup(i_planeDataConfig);
+		shift_right.setup(i_planeDataConfig);
+		shift_up.setup(i_planeDataConfig);
+		shift_down.setup(i_planeDataConfig);
+
+		setup(i_domain_size, i_use_spectral_basis_diffs);
+	}
+
+
+	void setup(
+			const double i_domain_size[2],
+			bool i_use_spectral_basis_diffs
+	)
+	{
+
 		double h[2] = {
 				(double)i_domain_size[0] / (double)planeDataConfig->physical_res[0],
 				(double)i_domain_size[1] / (double)planeDataConfig->physical_res[1]
@@ -520,6 +558,37 @@ public:
 			diff2_c_y.kernel_stencil_setup(diff2_y_kernel, 1.0/(h[1]*h[1]));
 		}
 
+	}
+
+	PlaneOperators(
+		PlaneDataConfig *i_planeDataConfig,		///< data config setup for spectral transformations
+		const double i_domain_size[2],			///< domain size
+		bool i_use_spectral_basis_diffs = true	///< use spectral differentiation (d/dx e^ix)
+	)	:
+		planeDataConfig(i_planeDataConfig),
+
+		diff_c_x(i_planeDataConfig),
+		diff_c_y(i_planeDataConfig),
+
+		diff_f_x(i_planeDataConfig),
+		diff_f_y(i_planeDataConfig),
+		diff_b_x(i_planeDataConfig),
+		diff_b_y(i_planeDataConfig),
+
+		diff2_c_x(i_planeDataConfig),
+		diff2_c_y(i_planeDataConfig),
+
+		avg_f_x(i_planeDataConfig),
+		avg_f_y(i_planeDataConfig),
+		avg_b_x(i_planeDataConfig),
+		avg_b_y(i_planeDataConfig),
+
+		shift_left(i_planeDataConfig),
+		shift_right(i_planeDataConfig),
+		shift_up(i_planeDataConfig),
+		shift_down(i_planeDataConfig)
+	{
+		setup(i_domain_size, i_use_spectral_basis_diffs);
 	}
 };
 

@@ -10,7 +10,7 @@
 
 
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/plane/PlaneDataPlaneDataTimesteppingRK.hpp>
+#include <sweet/plane/PlaneDataTimesteppingRK.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/PlaneDataSemiLagrangian.hpp>

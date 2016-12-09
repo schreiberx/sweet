@@ -700,14 +700,14 @@ bool SWE_Plane_REXI::run_timestep_rexi(
 #endif
 
 	std::size_t data_size = io_h.planeDataConfig->physical_array_data_number_of_elements;
-	MPI_Bcast(io_h.array_data_physical_space, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	MPI_Bcast(io_h.physical_space_data, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-	if (std::isnan(io_h.get(0,0)))
+	if (std::isnan(io_h.physical_get(0,0)))
 		return false;
 
 
-	MPI_Bcast(io_u.array_data_physical_space, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-	MPI_Bcast(io_v.array_data_physical_space, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	MPI_Bcast(io_u.physical_space_data, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	MPI_Bcast(io_v.physical_space_data, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
 #if SWEET_BENCHMARK_REXI
 	if (mpi_rank == 0)
@@ -903,25 +903,25 @@ bool SWE_Plane_REXI::run_timestep_rexi(
 
 
 #if SWEET_MPI
-	PlaneData tmp(io_h.resolution);
+	PlaneData tmp(io_h.planeDataConfig);
 
 	io_h.request_data_physical();
-	int retval = MPI_Reduce(io_h.array_data_physical_space, tmp.array_data_physical_space, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	int retval = MPI_Reduce(io_h.physical_space_data, tmp.physical_space_data, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 	if (retval != MPI_SUCCESS)
 	{
 		std::cerr << "MPI FAILED!" << std::endl;
 		exit(1);
 	}
 
-	std::swap(io_h.array_data_physical_space, tmp.array_data_physical_space);
+	std::swap(io_h.physical_space_data, tmp.physical_space_data);
 
 	io_u.request_data_physical();
-	MPI_Reduce(io_u.array_data_physical_space, tmp.array_data_physical_space, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-	std::swap(io_u.array_data_physical_space, tmp.array_data_physical_space);
+	MPI_Reduce(io_u.physical_space_data, tmp.physical_space_data, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	std::swap(io_u.physical_space_data, tmp.physical_space_data);
 
 	io_v.request_data_physical();
-	MPI_Reduce(io_v.array_data_physical_space, tmp.array_data_physical_space, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-	std::swap(io_v.array_data_physical_space, tmp.array_data_physical_space);
+	MPI_Reduce(io_v.physical_space_data, tmp.physical_space_data, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	std::swap(io_v.physical_space_data, tmp.physical_space_data);
 #endif
 
 
@@ -939,6 +939,7 @@ inline std::complex<double> conj(const std::complex<double> &v)
 {
 	return std::complex<double>(v.real(), -v.imag());
 }
+
 
 
 
@@ -1243,4 +1244,30 @@ void SWE_Plane_REXI::run_timestep_direct_solution(
 	io_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_v);
 }
 
+
+
+void SWE_Plane_REXI::run_timestep_direct_solution_geopotential_formulation(
+		PlaneData &io_phi,	///< geopotential
+		PlaneData &io_u,
+		PlaneData &io_v,
+
+		double i_timestep_size,	///< timestep size
+
+		PlaneOperators &op,
+		const SimulationVariables &i_simVars
+)
+{
+	io_phi /= i_simVars.sim.gravitation;
+
+	run_timestep_direct_solution(
+			io_phi,
+			io_u,
+			io_v,
+			i_timestep_size,
+			op,
+			i_simVars
+	);
+
+	io_phi *= i_simVars.sim.gravitation;
+}
 

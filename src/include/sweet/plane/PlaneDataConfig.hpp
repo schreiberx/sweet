@@ -702,6 +702,88 @@ public:
 	}
 
 
+	void setupAutoSpectralSpace(
+			int i_physical_res_x,
+			int i_physical_res_y,
+			int *o_spectral_res_x,
+			int *o_spectral_res_y
+	)
+	{
+		setupAutoSpectralSpace(i_physical_res_x, i_physical_res_y);
+
+
+#if SWEET_USE_LIBFFT
+		*o_spectral_res_x = spectral_modes[0];
+		*o_spectral_res_y = spectral_modes[1];
+#endif
+	}
+
+
+
+#if SWEET_USE_LIBFFT
+
+public:
+	void setupAutoPhysicalSpace(
+			int i_spectral_res_x,
+			int i_spectral_res_y
+	)
+	{
+		spectral_modes[0] = i_spectral_res_x;
+		spectral_modes[1] = i_spectral_res_y;
+
+#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
+
+		// REDUCTION IN EFFECTIVE SPECTRAL MODE RESOLUTION TO CUT OFF ANTI-ALIASED MODES
+		// TODO: check for correct anti-aliasing rule
+		physical_res[0] = (spectral_modes[0]*3+1)/2;
+		physical_res[1] = (spectral_modes[1]*3+1)/2;
+
+#else
+
+	#if SWEET_USE_LIBFFT
+		physical_res[0] = spectral_modes[0];
+		physical_res[1] = spectral_modes[1];
+	#endif
+
+#endif
+
+		setup_internal_data();
+	}
+
+
+public:
+	void setupAutoPhysicalSpace(
+			int i_spectral_res_x,
+			int i_spectral_res_y,
+			int *o_physical_res_x,
+			int *o_physical_res_y
+	)
+	{
+		setupAutoPhysicalSpace(
+				i_spectral_res_x,
+				i_spectral_res_y
+		);
+
+		*o_physical_res_x = physical_res[0];
+		*o_physical_res_y = physical_res[1];
+	}
+
+	void setupAdditionalModes(
+			PlaneDataConfig *i_planeConfig,
+			int i_additional_modes_x,
+			int i_additional_modes_y
+	)
+	{
+		setupAutoPhysicalSpace(
+				i_planeConfig->spectral_modes[0] + i_additional_modes_x,
+				i_planeConfig->spectral_modes[1] + i_additional_modes_y
+		);
+	}
+
+
+#endif
+
+
 
 	void cleanup()
 	{

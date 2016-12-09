@@ -344,6 +344,21 @@ public:
 	);
 
 
+
+public:
+	void run_timestep_direct_solution_geopotential_formulation(
+			PlaneData &io_phi,
+			PlaneData &io_u,
+			PlaneData &io_v,
+
+			double i_timestep_size,	///< timestep size
+
+			PlaneOperators &op,
+			const SimulationVariables &i_parameters
+	);
+
+
+
 public:
 	inline
 	static
@@ -353,7 +368,7 @@ public:
 	{
 #if SWEET_MPI
 	PlaneData dummyData(i_planeDataConfig);
-	dummyData.set_all(NAN);
+	dummyData.physical_set_all(NAN);
 
 	MPI_Bcast(dummyData.physical_space_data, dummyData.planeDataConfig->physical_array_data_number_of_elements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 

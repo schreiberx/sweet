@@ -12,7 +12,7 @@
 	#include <sweet/Convert_SphereData_To_PlaneData.hpp>
 #endif
 
-#include <benchmarks_sphere/BenchmarkCombined.hpp>
+#include <benchmarks_sphere/SphereBenchmarksCombined.hpp>
 
 #include <sweet/sphere/SphereData.hpp>
 
@@ -227,7 +227,7 @@ public:
 		}
 
 
-		BenchmarkCombined::setupInitialConditions(prog_h, prog_u, prog_v, simVars, op);
+		SphereBenchmarksCombined::setupInitialConditions(prog_h, prog_u, prog_v, simVars, op);
 
 		if (simVars.sim.coriolis_omega != 0)
 			param_rexi_use_coriolis_formulation = true;
@@ -355,7 +355,7 @@ public:
 			SphereData test_u(sphereDataConfig);
 			SphereData test_v(sphereDataConfig);
 
-			BenchmarkCombined::setupInitialConditions(test_h, test_u, test_v, simVars, op);
+			SphereBenchmarksCombined::setupInitialConditions(test_h, test_u, test_v, simVars, op);
 
 
 			output_filename = write_file(test_h, "reference_h", simVars.setup.benchmark_scenario_id == 0);
@@ -425,7 +425,7 @@ public:
 			SphereData test_u(sphereDataConfig);
 			SphereData test_v(sphereDataConfig);
 
-			BenchmarkCombined::setupInitialConditions(test_h, test_u, test_v, simVars, op);
+			SphereBenchmarksCombined::setupInitialConditions(test_h, test_u, test_v, simVars, op);
 
 			std::cout << "ERRORS - time, RMS(h,u,v), MAXABS(h,u,v):\t";
 			std::cout << simVars.timecontrol.current_simulation_time << "\t";

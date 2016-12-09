@@ -8,7 +8,7 @@
 	#include "sweet/VisSweet.hpp"
 #endif
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/plane/PlaneDataPlaneDataTimesteppingRK.hpp>
+#include <sweet/plane/PlaneDataTimesteppingRK.hpp>
 #include <benchmarks_plane/BurgersValidationBenchmarks.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>
