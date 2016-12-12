@@ -17,26 +17,27 @@
 #include <sweet/sphere/SphereData.hpp>
 #include <sweet/sphere/SphereDataComplex.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
-#include <sweet/sphere/SWESphBandedMatrixPhysicalReal.hpp>
+#include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalReal.hpp>
 
 
 SimulationVariables simVars;
-SphereOperators op;
 
 void run_tests(
-		SphereDataConfig *sphConfig
+		SphereDataConfig *sphereDataConfig
 )
 {
 	double epsilon = 1e-12;
-	epsilon *= (sphConfig->spectral_modes_n_max);
+	epsilon *= (sphereDataConfig->spectral_modes_n_max);
 	std::cout << "Using max allowed error of " << epsilon << std::endl;
 
 	std::cout << std::setprecision(10);
 
+	SphereOperators op(sphereDataConfig);
+
 	{
 		SphereTestSolutions_Gaussian testSolutions;
 
-		if (sphConfig->spectral_modes_n_max < 32)
+		if (sphereDataConfig->spectral_modes_n_max < 32)
 		{
 			std::cerr << "WARNING: AT LEAST 32 MODES REQUIRED for proper accuracy!!!" << std::endl;
 		}
@@ -44,7 +45,7 @@ void run_tests(
 		/**
 		 * Use test function as expected result
 		 */
-		SphereData x_result(sphConfig);
+		SphereData x_result(sphereDataConfig);
 		x_result.physical_update_lambda_gaussian_grid(
 				[&](double lat, double mu, double &io_data){
 					testSolutions.test_function__grid_gaussian(lat,mu,io_data);
@@ -65,14 +66,14 @@ void run_tests(
 			std::cout << "Test Zx = c*Phi(mu)";
 
 			SphBandedMatrixPhysicalReal<std::complex<double>> sphSolver;
-			sphSolver.setup(sphConfig, 2);
+			sphSolver.setup(sphereDataConfig, 2);
 
 			sphSolver.solver_component_scalar_phi(alpha);
 
 			/*
 			 * Setup RHS = scalar_a * phi(lambda,mu)
 			 */
-			SphereData b(sphConfig);
+			SphereData b(sphereDataConfig);
 			b.physical_update_lambda_gaussian_grid(
 					[&](double lat, double mu, double &io_data)
 					{
@@ -99,13 +100,13 @@ void run_tests(
 			std::cout << "Test Zx = mu*Phi(lam,mu) + a*Phi(lam,mu)";
 
 			SphBandedMatrixPhysicalReal<std::complex<double>> sphSolver;
-			sphSolver.setup(sphConfig, 2);
+			sphSolver.setup(sphereDataConfig, 2);
 
 			sphSolver.solver_component_scalar_phi(alpha);
 			sphSolver.solver_component_mu_phi();
 //				sphSolver.lhs.print();
 
-			SphereData b(sphConfig);
+			SphereData b(sphereDataConfig);
 			b.physical_update_lambda_gaussian_grid(
 					[&](double lat, double mu, double &io_data)
 					{
@@ -137,13 +138,13 @@ void run_tests(
 			std::cout << "Test Zx = (1-mu*mu)*d/dmu Phi(lam,mu) + a*Phi(lam,mu)";
 
 			SphBandedMatrixPhysicalReal<std::complex<double>> sphSolver;
-			sphSolver.setup(sphConfig, 2);
+			sphSolver.setup(sphereDataConfig, 2);
 
 			std::complex<double> a(alpha.real());
 			sphSolver.solver_component_scalar_phi(a);
 			sphSolver.solver_component_one_minus_mu_mu_diff_mu_phi();
 
-			SphereData b(sphConfig);
+			SphereData b(sphereDataConfig);
 			b.physical_update_lambda_gaussian_grid(
 					[&](double lat, double mu, double &io_data)
 					{
@@ -180,12 +181,12 @@ void run_tests(
 			std::cout << "Test Z1 = alpha^4*Phi(mu)";
 
 			SphBandedMatrixPhysicalReal<std::complex<double>> sphSolver;
-			sphSolver.setup(sphConfig, 2);
+			sphSolver.setup(sphereDataConfig, 2);
 
 			std::complex<double> scalar = (alpha*alpha)*(alpha*alpha);
 			sphSolver.solver_component_rexi_z1(scalar, r);
 
-			SphereData b(sphConfig);
+			SphereData b(sphereDataConfig);
 			b.physical_update_lambda_gaussian_grid(
 					[&](double lat, double mu, double &io_data)
 					{
@@ -211,13 +212,13 @@ void run_tests(
 			std::cout << "Test Z2 = mu^2*Phi(lam,mu)";
 
 			SphBandedMatrixPhysicalReal<std::complex<double>> sphSolver;
-			sphSolver.setup(sphConfig, 2);
+			sphSolver.setup(sphereDataConfig, 2);
 
 			std::complex<double> scalar = alpha*alpha*two_omega*two_omega;
 			//sphSolver.solver_component_scalar_phi(scalar_a);
 			sphSolver.solver_component_rexi_z2(scalar, r);
 
-			SphereData b(sphConfig);
+			SphereData b(sphereDataConfig);
 			b.physical_update_lambda_gaussian_grid(
 					[&](double lat, double mu, double &io_data){
 						testSolutions.test_function__grid_gaussian(lat,mu,io_data);
@@ -243,7 +244,7 @@ void run_tests(
 			std::cout << "Test Z2 = mu^2*Phi(lam,mu) (DOUBLE MODES)";
 
 			SphereDataConfig sphConfigDouble;
-			sphConfigDouble.setupDouble(sphConfig);
+			sphConfigDouble.setupDouble(sphereDataConfig);
 
 			SphBandedMatrixPhysicalReal< std::complex<double> > sphSolver;
 			sphSolver.setup(&sphConfigDouble, 2);
@@ -261,7 +262,7 @@ void run_tests(
 
 			SphereData x_numerical_double = sphSolver.solve(b);
 
-			SphereData x_numerical(sphConfig);
+			SphereData x_numerical(sphereDataConfig);
 
 			x_numerical.spec_set_zero();
 			x_numerical.spec_update_lambda(
@@ -288,13 +289,13 @@ void run_tests(
 			std::cout << "Test Z3 = mu^4*Phi(lam,mu)";
 
 			SphBandedMatrixPhysicalReal<std::complex<double>> sphSolver;
-			sphSolver.setup(sphConfig, 4);
+			sphSolver.setup(sphereDataConfig, 4);
 
 			std::complex<double> scalar = two_omega*two_omega*two_omega*two_omega;
 			//sphSolver.solver_component_scalar_phi(scalar_a);
 			sphSolver.solver_component_rexi_z3(scalar, r);
 
-			SphereData b(sphConfig);
+			SphereData b(sphereDataConfig);
 			b.physical_update_lambda_gaussian_grid(
 					[&](double lat, double mu, double &io_data){
 						testSolutions.test_function__grid_gaussian(lat,mu,io_data);
@@ -320,7 +321,7 @@ void run_tests(
 			std::cout << "Test Z4 = grad_j(mu) grad_i(Phi(lam,mu)) = d/dlambda Phi(lam,mu)";
 
 			SphBandedMatrixPhysicalReal<std::complex<double>> sphSolver;
-			sphSolver.setup(sphConfig, 2);
+			sphSolver.setup(sphereDataConfig, 2);
 
 			std::complex<double> scalar = -alpha*alpha*two_omega;
 			sphSolver.solver_component_rexi_z4(scalar, r);
@@ -328,7 +329,7 @@ void run_tests(
 			// ADD OFFSET FOR NON-SINGULAR SOLUTION
 			sphSolver.solver_component_scalar_phi(alpha);
 
-			SphereData b(sphConfig);
+			SphereData b(sphereDataConfig);
 			b.physical_update_lambda_gaussian_grid(
 					[&](double lat, double mu, double &io_data)
 					{
@@ -360,7 +361,7 @@ void run_tests(
 			std::cout << "Test Z5 = grad_j(mu) mu^2 grad_i(Phi(lam,mu))";
 
 			SphBandedMatrixPhysicalReal<std::complex<double>> sphSolver;
-			sphSolver.setup(sphConfig, 2);
+			sphSolver.setup(sphereDataConfig, 2);
 
 			std::complex<double> scalar = two_omega*two_omega*two_omega;
 			sphSolver.solver_component_rexi_z5(scalar, r);
@@ -368,7 +369,7 @@ void run_tests(
 			// ADD OFFSET FOR NON-SINGULAR SOLUTION
 			sphSolver.solver_component_scalar_phi(alpha);
 
-			SphereData b(sphConfig);
+			SphereData b(sphereDataConfig);
 			b.physical_update_lambda_gaussian_grid(
 					[&](double lat, double mu, double &io_data)
 					{
@@ -400,7 +401,7 @@ void run_tests(
 			std::cout << "Test Z6 = grad_j(mu) mu grad_j(Phi(lam,mu))";
 
 			SphBandedMatrixPhysicalReal<std::complex<double>> sphSolver;
-			sphSolver.setup(sphConfig, 2);
+			sphSolver.setup(sphereDataConfig, 2);
 
 			std::complex<double> scalar = 2.0*alpha*two_omega*two_omega;
 			sphSolver.solver_component_rexi_z6(scalar, r);
@@ -408,7 +409,7 @@ void run_tests(
 			// ADD OFFSET FOR NON-SINGULAR SOLUTION
 			sphSolver.solver_component_scalar_phi(alpha);
 
-			SphereData b(sphConfig);
+			SphereData b(sphereDataConfig);
 			b.physical_update_lambda_gaussian_grid(
 					[&](double lat, double mu, double &io_data)
 					{
@@ -440,7 +441,7 @@ void run_tests(
 			std::cout << "Test Z7 = laplace(Phi(lam,mu))";
 
 			SphBandedMatrixPhysicalReal<std::complex<double>> sphSolver;
-			sphSolver.setup(sphConfig, 2);
+			sphSolver.setup(sphereDataConfig, 2);
 
 			std::complex<double> scalar = 1.0;
 			sphSolver.solver_component_rexi_z7(scalar, r);
@@ -448,7 +449,7 @@ void run_tests(
 			// ADD OFFSET FOR NON-SINGULAR SOLUTION
 			sphSolver.solver_component_scalar_phi(alpha);
 
-			SphereData b(sphConfig);
+			SphereData b(sphereDataConfig);
 			b.physical_update_lambda_gaussian_grid(
 					[&](double lat, double mu, double &io_data)
 					{
@@ -477,7 +478,7 @@ void run_tests(
 			std::cout << "Test Z8 = mu*mu*laplace(Phi(lam,mu))";
 
 			SphBandedMatrixPhysicalReal<std::complex<double>> sphSolver;
-			sphSolver.setup(sphConfig, 2);
+			sphSolver.setup(sphereDataConfig, 2);
 
 			std::complex<double> scalar = 1.0;
 			sphSolver.solver_component_rexi_z8(scalar, r);
@@ -485,7 +486,7 @@ void run_tests(
 			// ADD OFFSET FOR NON-SINGULAR SOLUTION
 			sphSolver.solver_component_scalar_phi(alpha);
 
-			SphereData b(sphConfig);
+			SphereData b(sphereDataConfig);
 			b.physical_update_lambda_gaussian_grid(
 					[&](double lat, double mu, double &io_data)
 					{

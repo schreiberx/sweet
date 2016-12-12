@@ -18,69 +18,72 @@
 class GaussQuadrature
 {
 public:
-	static double integrate5(
-			double i_start,
-			double i_end,
-			std::function<double(double)> i_fun
+	template <typename T = double>
+	static T integrate5(
+			T i_start,
+			T i_end,
+			std::function<T(T)> i_fun
 	)
 	{
 		// see wikipedia
 		// https://en.wikipedia.org/wiki/Gaussian_quadrature
-		static double x[5] = {
+		static T x[5] = {
 				0,
-				-1.0/3.0*std::sqrt(5.0-2.0*std::sqrt(10.0/7.0)),
-				+1.0/3.0*std::sqrt(5.0-2.0*std::sqrt(10.0/7.0)),
-				-1.0/3.0*std::sqrt(5.0+2.0*std::sqrt(10.0/7.0)),
-				+1.0/3.0*std::sqrt(5.0+2.0*std::sqrt(10.0/7.0)),
+				-(T)1.0/(T)3.0*std::sqrt((T)5.0-(T)2.0*std::sqrt((T)10.0/(T)7.0)),
+				+(T)1.0/(T)3.0*std::sqrt((T)5.0-(T)2.0*std::sqrt((T)10.0/(T)7.0)),
+				-(T)1.0/(T)3.0*std::sqrt((T)5.0+(T)2.0*std::sqrt((T)10.0/(T)7.0)),
+				+(T)1.0/(T)3.0*std::sqrt((T)5.0+(T)2.0*std::sqrt((T)10.0/(T)7.0)),
 		};
 
-		static double w[5] = {
-				128.0/225.0,
-				(322.0+13.0*std::sqrt(70.0))/900.0,
-				(322.0+13.0*std::sqrt(70.0))/900.0,
-				(322.0-13.0*std::sqrt(70.0))/900.0,
-				(322.0-13.0*std::sqrt(70.0))/900.0
+		static T w[5] = {
+				(T)128.0/(T)225.0,
+				((T)322.0+(T)13.0*std::sqrt((T)70.0))/(T)900.0,
+				((T)322.0+(T)13.0*std::sqrt((T)70.0))/(T)900.0,
+				((T)322.0-(T)13.0*std::sqrt((T)70.0))/(T)900.0,
+				((T)322.0-(T)13.0*std::sqrt((T)70.0))/(T)900.0
 		};
 
-		double accum = 0;
+		T accum = 0;
 		for (int i = 0; i < 5; i++)
 		{
-			accum += w[i]*i_fun((i_end-i_start)*0.5*x[i]+ (i_end+i_start)*0.5);
+			accum += w[i]*i_fun((i_end-i_start)*(T)0.5*x[i]+ (i_end+i_start)*(T)0.5);
 		}
-		return accum*(i_end-i_start)*0.5;
+		return accum*(i_end-i_start)*(T)0.5;
 	}
 
 
-	static double integrate5_intervals(
-			double i_start,
-			double i_end,
-			std::function<double(double)> i_fun,
+	template <typename T = double>
+	static T integrate5_intervals(
+			T i_start,
+			T i_end,
+			std::function<T(T)> i_fun,
 			int n_strips
 	)
 	{
-		double sub_interval = (i_end - i_start)/(double)n_strips;
+		T sub_interval = (i_end - i_start)/(T)n_strips;
 
-		double accum = 0;
+		T accum = 0;
 		for (int i = 0; i < n_strips; i++)
-			accum += integrate5(i_start + sub_interval*(double)i, i_start + sub_interval*(double)(i+1), i_fun);
+			accum += integrate5(i_start + sub_interval*(T)i, i_start + sub_interval*(T)((T)i+(T)1.0), i_fun);
 
 		return accum;
 	}
 
-	static double integrate5_intervals_adaptive_linear(
-			double i_start,
-			double i_end,
-			std::function<double(double)> i_fun,
-			double i_error_threshold = 10e-13
+	template <typename T = double>
+	static T integrate5_intervals_adaptive_linear(
+			T i_start,
+			T i_end,
+			std::function<T(T)> i_fun,
+			T i_error_threshold = 10e-13
 	)
 	{
-		double prev_value = std::numeric_limits<double>::infinity();
+		T prev_value = std::numeric_limits<T>::infinity();
 
 		int max_intervals = 1024*128;
 		for (int num_intervals = 1; num_intervals < max_intervals; num_intervals++)
 		{
-			double value = integrate5_intervals(i_start, i_end, i_fun, num_intervals);
-			double delta = std::abs(prev_value - value);
+			T value = integrate5_intervals(i_start, i_end, i_fun, num_intervals);
+			T delta = std::abs(prev_value - value);
 
 			if (delta <= i_error_threshold)
 				return value;
@@ -93,47 +96,48 @@ public:
 	}
 
 
-	static double p_integrate5_intervals_adaptive_recursive(
-			double i_start,
-			double i_end,
+	template <typename T = double>
+	static T p_integrate5_intervals_adaptive_recursive(
+			T i_start,
+			T i_end,
 
 			int i_current_depth,	///< current depth of recursion
 			int i_min_depth,		///< minimum depth for recursion
 			int i_max_depth,		///< maximum depth of recursion
 
-			std::function<double(double)> i_fun,
-			double i_rel_error_threshold = 10e-13,
-			double i_prev_value = std::numeric_limits<double>::infinity()
+			std::function<T(T)> i_fun,
+			T i_rel_error_threshold = 10e-13,
+			T i_prev_value = std::numeric_limits<T>::infinity()
 	)
 	{
 		assert(i_end > i_start);
 
-		double mid = 0.5*(i_end + i_start);
+		T mid = 0.5*(i_end + i_start);
 
 		if (i_current_depth > i_max_depth)
-			return std::numeric_limits<double>::infinity();
+			return std::numeric_limits<T>::infinity();
 
 		if (i_current_depth >= i_min_depth)
 		{
-			double left_value = integrate5(
+			T left_value = integrate5(
 					i_start,
 					mid,
 					i_fun
 				);
 
-			double right_value = integrate5(
+			T right_value = integrate5(
 					mid,
 					i_end,
 					i_fun
 				);
 
-			double sum = left_value + right_value;
+			T sum = left_value + right_value;
 
 			if (std::abs(sum-i_prev_value)/(i_end-i_start) < i_rel_error_threshold)
 				return sum;
 
 
-			double recursive_left_value = p_integrate5_intervals_adaptive_recursive(
+			T recursive_left_value = p_integrate5_intervals_adaptive_recursive(
 					i_start,
 					mid,
 					i_current_depth+1,
@@ -144,7 +148,7 @@ public:
 					left_value
 				);
 
-			double recursive_right_value = p_integrate5_intervals_adaptive_recursive(
+			T recursive_right_value = p_integrate5_intervals_adaptive_recursive(
 					mid,
 					i_end,
 					i_current_depth+1,
@@ -160,7 +164,7 @@ public:
 		else
 		{
 
-			double recursive_left_value = p_integrate5_intervals_adaptive_recursive(
+			T recursive_left_value = p_integrate5_intervals_adaptive_recursive(
 					i_start,
 					mid,
 					i_current_depth+1,
@@ -170,7 +174,7 @@ public:
 					i_rel_error_threshold
 				);
 
-			double recursive_right_value = p_integrate5_intervals_adaptive_recursive(
+			T recursive_right_value = p_integrate5_intervals_adaptive_recursive(
 					mid,
 					i_end,
 					i_current_depth+1,
@@ -185,14 +189,15 @@ public:
 	}
 
 
-	static double integrate5_intervals_adaptive_recursive(
-			double i_start,
-			double i_end,
-			std::function<double(double)> i_fun,
-			double i_rel_error_threshold = 10e-12
+	template <typename T = double>
+	static T integrate5_intervals_adaptive_recursive(
+			T i_start,
+			T i_end,
+			std::function<T(T)> i_fun,
+			T i_rel_error_threshold = 10e-12
 	)
 	{
-		double approx_integral = p_integrate5_intervals_adaptive_recursive(
+		T approx_integral = p_integrate5_intervals_adaptive_recursive(
 				i_start,
 				i_end,
 				0,		/// current depth

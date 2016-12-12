@@ -323,54 +323,6 @@ private:
 
 
 
-#if 0
-int main(int argc, char *argv[])
-{
-  auto const quad_type = pfasst::quadrature::QuadratureType::GaussLobatto;
-
-  auto transfer = make_shared<BilinearTransfer1D<>>();
-
-  auto const nlevels   = pfasst::config::get_value<int>("nlevels", 1);
-  auto const nnodes    = pfasst::config::get_value<int>("nnodes", 3);
-  auto const nspace    = pfasst::config::get_value<int>("nspace", 8193);
-  auto const nsteps    = pfasst::config::get_value<int>("nsteps", 16);
-  auto const niters    = pfasst::config::get_value<int>("niters", 4);
-  auto const dt        = pfasst::config::get_value<double>("dt", 0.1);
-
-  auto quad    = pfasst::quadrature::quadrature_factory(nnodes, quad_type);
-  auto factory = make_shared<pfasst::encap::VectorFactory<double>>(nspace);
-  auto sweeper = make_shared<ImplicitHeatSweeper<double>>();
-
-  sweeper->set_quadrature(quad);
-  sweeper->set_factory(factory);
-
-  pf.set_comm(&comm);
-  pf.add_level(sweeper, transfer);
-
-  if (nlevels > 1) {
-    auto quad    = pfasst::quadrature::quadrature_factory((nnodes-1)/2+1, quad_type);
-    auto factory = make_shared<pfasst::encap::VectorFactory<double>>((nspace-1)/2+1);
-    auto sweeper = make_shared<ImplicitHeatSweeper<double>>();
-    sweeper->set_quadrature(quad);
-    sweeper->set_factory(factory);
-    pf.add_level(sweeper, transfer);
-  }
-
-  pf.set_duration(0.0, nsteps*dt, dt, niters);
-  pf.setup();
-
-  auto q0 = sweeper->get_start_state();
-  sweeper->exact(q0, 0.0);
-
-  pf.run();
-
-  return 0;
-}
-#endif
-
-
-
-
 
 int main(int i_argc, char *i_argv[])
 {
@@ -386,14 +338,6 @@ int main(int i_argc, char *i_argv[])
 #endif
 
 #if 0
-	// TODO: encapsulate this in sweet SimVars
-	auto const nlevels   = pfasst::config::get_value<int>("nlevels", 1);
-	auto const nnodes    = pfasst::config::get_value<int>("nnodes", 3);
-	auto const nspace    = pfasst::config::get_value<int>("nspace", 8193);
-	auto const nsteps    = pfasst::config::get_value<int>("nsteps", 16);
-	auto const niters    = pfasst::config::get_value<int>("niters", 4);
-	auto const dt        = pfasst::config::get_value<double>("dt", 0.1);
-
 	auto quad    = pfasst::quadrature::quadrature_factory(nnodes, quad_type);
 	auto factory = make_shared<pfasst::encap::VectorFactory<double>>(nspace);
 	auto sweeper = make_shared<ImplicitHeatSweeper<double>>();
@@ -422,7 +366,7 @@ int main(int i_argc, char *i_argv[])
 #endif
 
 
-	//input parameter names (specific ones for this program)
+	// input parameter names (specific ones for this program)
 	const char *bogus_var_names[] = {
 			"rexi-use-coriolis-formulation",
 			"compute-error",
@@ -448,6 +392,8 @@ int main(int i_argc, char *i_argv[])
 
 	if (simVars.setup.benchmark_scenario_id == 1)
 	{
+		std::cout << "WARNING: OVERRIDING PARAMETERS FOR GALEWSKI BENCHMARK" << std::endl;
+
 		/// Setup Galewski parameters
 		simVars.sim.coriolis_omega = 7.292e-5;
 		simVars.sim.gravitation = 9.80616;
@@ -518,52 +464,3 @@ int main(int i_argc, char *i_argv[])
 #endif
 }
 
-
-#if 0
-
-/*
- * Explicit time step
- */
-void eval_f1(
-		void *y,	///< TODO: Is this the handler to the simulation data?
-		double dt,	///< TODO: Is this the double valued time step size?
-		int level,	///< TODO: Is this the level of resolution? Is 0 the finest level?
-		void *ctx,	///< TODO: User pointer to time slice/level specific data
-		void *f1ptr	///< TODO: ?!?
-)
-{
-	SimulationInstance &simulationInstance = *(SimulationInstance*)y;
-
-	double o_dt;
-	simulationInstance.timestepping.run_rk_timestep(
-			&simulationInstance,
-			&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
-			simulationInstance.prog_phi,
-			simulationInstance.prog_u,
-			simulationInstance.prog_v,
-			o_dt,	/// output variable for calculcated time step size
-			dt,	/// current time step size
-			simVars.disc.timestepping_runge_kutta_order,
-			simVars.timecontrol.current_simulation_time,
-			simVars.timecontrol.max_simulation_time
-		);
-}
-
-
-
-/*
- * Implicit time step
- */
-void eval_f2(
-		void *y,
-		double dt,
-		int level,
-		void *ctx,
-		void *f1ptr
-)
-{
-	SimulationInstance &simulationInstance = *(SimulationInstance*)y;
-
-
-}
-#endif

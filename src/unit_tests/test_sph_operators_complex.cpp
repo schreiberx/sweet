@@ -18,7 +18,6 @@
 
 
 SimulationVariables simVars;
-SphereOperatorsComplex opComplex;
 
 void run_tests(
 		SphereDataConfig *sphConfig
@@ -28,6 +27,7 @@ void run_tests(
 	epsilon *= (sphConfig->spectral_modes_n_max);
 	std::cout << "Using max allowed error of " << epsilon << std::endl;
 
+	SphereOperatorsComplex opComplex(sphConfig);
 
 	if (true)
 	{

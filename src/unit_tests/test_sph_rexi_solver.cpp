@@ -26,7 +26,6 @@
 
 
 SimulationVariables simVars;
-SphereOperatorsComplex opComplex;
 
 SphereDataConfig sphereDataConfigInstance;
 SphereDataConfig *sphereDataConfig = &sphereDataConfigInstance;
@@ -161,6 +160,7 @@ void errorCheck(
  */
 void run_tests()
 {
+	SphereOperatorsComplex opComplex(sphereDataConfig);
 
 	std::cout << "Using time step size dt = " << simVars.timecontrol.current_timestep_size << std::endl;
 	std::cout << "Running simulation until t_end = " << simVars.timecontrol.max_simulation_time << std::endl;
@@ -241,7 +241,7 @@ void run_tests()
 		if (simVars.setup.benchmark_scenario_id <= 0)
 		{
 			std::cout << "SETUP: Computing solution based on time stepping scheme" << std::endl;
-			SphereOperators op;
+			SphereOperators op(sphereDataConfig);
 
 			GenerateConsistentGradDivSphereData g_real(
 					simVars,
@@ -1136,7 +1136,7 @@ void run_tests()
 					rhs =	  alpha*Ti
 							- two_omega*opComplex.mu(Tj);
 
-					errorCheck(lhs, rhs, "6 lemma u", epsilon, simVars.rexi.rexi_use_extended_modes < 2);
+					errorCheck(lhs, rhs, "6 lemma u", epsilon*1e+2, simVars.rexi.rexi_use_extended_modes < 2);
 
 
 					lhs =	  alpha*alpha*v
@@ -1145,7 +1145,7 @@ void run_tests()
 					rhs =	  two_omega*opComplex.mu(Ti)
 							+ alpha*Tj;
 
-					errorCheck(lhs, rhs, "6 lemma v", epsilon, simVars.rexi.rexi_use_extended_modes < 2);
+					errorCheck(lhs, rhs, "6 lemma v", epsilon*1e+2, simVars.rexi.rexi_use_extended_modes < 2);
 				}
 
 				{
@@ -1171,7 +1171,7 @@ void run_tests()
 								- two_omega*opComplex.mu(Tj)
 							);
 
-					errorCheck(lhs, rhs, "6 lemma inv_kappa u", epsilon, simVars.rexi.rexi_use_extended_modes < 2);
+					errorCheck(lhs, rhs, "6 lemma inv_kappa u", epsilon*10e+2, simVars.rexi.rexi_use_extended_modes < 2);
 
 
 					lhs = v;
@@ -1181,7 +1181,7 @@ void run_tests()
 							+ alpha*Tj
 							);
 
-					errorCheck(lhs, rhs, "6 lemma inv_kappa v", epsilon, simVars.rexi.rexi_use_extended_modes < 2);
+					errorCheck(lhs, rhs, "6 lemma inv_kappa v", epsilon*10e+2, simVars.rexi.rexi_use_extended_modes < 2);
 				}
 
 
@@ -1208,7 +1208,7 @@ void run_tests()
 								- f*Tj
 							);
 
-					errorCheck(lhs, rhs, "6 lemma inv_kappa f u", epsilon, simVars.rexi.rexi_use_extended_modes < 2);
+					errorCheck(lhs, rhs, "6 lemma inv_kappa f u", epsilon*10e+2, simVars.rexi.rexi_use_extended_modes < 2);
 
 
 					lhs = v;
@@ -1218,7 +1218,7 @@ void run_tests()
 							+ alpha*Tj
 							);
 
-					errorCheck(lhs, rhs, "6 lemma inv_kappa f v", epsilon, simVars.rexi.rexi_use_extended_modes < 2);
+					errorCheck(lhs, rhs, "6 lemma inv_kappa f v", epsilon*10e+2, simVars.rexi.rexi_use_extended_modes < 2);
 				}
 
 				{
@@ -1251,7 +1251,7 @@ void run_tests()
 					lhs = F_lhs;
 					rhs = F_rhs;
 
-					errorCheck(lhs, rhs, "6 F(u,v) = F(u0,v0,phi)", epsilon, simVars.rexi.rexi_use_extended_modes < 2);
+					errorCheck(lhs, rhs, "6 F(u,v) = F(u0,v0,phi)", epsilon*10e+1, simVars.rexi.rexi_use_extended_modes < 2);
 				}
 
 
@@ -1387,7 +1387,7 @@ void run_tests()
 
 					rhs = alpha*a -f*b;
 
-					errorCheck(lhs, rhs, "8a", epsilon, simVars.rexi.rexi_use_extended_modes < 2);
+					errorCheck(lhs, rhs, "8a", epsilon*10e+2, simVars.rexi.rexi_use_extended_modes < 2);
 				}
 
 				{
@@ -1409,7 +1409,7 @@ void run_tests()
 
 					rhs = f*a + alpha*b;
 
-					errorCheck(lhs, rhs, "8b", epsilon, simVars.rexi.rexi_use_extended_modes < 2);
+					errorCheck(lhs, rhs, "8b", epsilon*10e+2, simVars.rexi.rexi_use_extended_modes < 2);
 				}
 #endif
 

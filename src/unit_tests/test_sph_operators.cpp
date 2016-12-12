@@ -21,16 +21,17 @@
 
 
 SimulationVariables simVars;
-SphereOperators op;
 
 
 void run_tests(
-		SphereDataConfig *sphConfig
+		SphereDataConfig *sphereDataConfig
 )
 {
 	double epsilon = 1e-11;
-	epsilon *= (sphConfig->spectral_modes_n_max);
+	epsilon *= (sphereDataConfig->spectral_modes_n_max);
 	std::cout << "Using max allowed error of " << epsilon << std::endl;
+
+	SphereOperators op(sphereDataConfig);
 
 
 	if (true)
@@ -39,7 +40,7 @@ void run_tests(
 
 		//int tn = 1;
 		//int tm = 0;
-		SphereData h(sphConfig);
+		SphereData h(sphereDataConfig);
 		h.physical_update_lambda_gaussian_grid(
 				[&](double a, double b, double &c){testSolutionsSph.test_function__grid_gaussian(a,b,c);}
 		);
@@ -47,7 +48,7 @@ void run_tests(
 		h.request_data_spectral();
 
 
-		SphereData result(sphConfig);
+		SphereData result(sphereDataConfig);
 		result.physical_update_lambda_gaussian_grid(
 				[&](double a, double b, double &c){testSolutionsSph.correct_result_diff_mu__grid_gaussian(a,b,c);}
 		);
@@ -71,7 +72,7 @@ void run_tests(
 
 		if (true)
 		{
-			SphereData data(sphConfig);
+			SphereData data(sphereDataConfig);
 			data.physical_update_lambda(
 					[&](double x, double y, double &io_data)
 					{
@@ -82,7 +83,7 @@ void run_tests(
 			data = data*123.0;
 			data.spectral_truncate();
 
-			SphereData data2(sphConfig);
+			SphereData data2(sphereDataConfig);
 			data2.physical_update_lambda(
 					[&](double x, double y, double &io_data)
 					{
@@ -100,7 +101,7 @@ void run_tests(
 
 		if (true)
 		{
-			SphereData data(sphConfig);
+			SphereData data(sphereDataConfig);
 			data.physical_update_lambda(
 					[&](double x, double y, double &io_data)
 					{
@@ -111,7 +112,7 @@ void run_tests(
 			data = data + 100.0;
 			data.spectral_truncate();
 
-			SphereData data2(sphConfig);
+			SphereData data2(sphereDataConfig);
 			data2.physical_update_lambda(
 					[&](double x, double y, double &io_data)
 					{
@@ -130,13 +131,13 @@ void run_tests(
 
 		if (true)
 		{
-			SphereData h(sphConfig);
+			SphereData h(sphereDataConfig);
 			h.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.test_function__grid_gaussian(a,b,c);}
 			);
 //			h.file_physical_writeFile("O_test_function.csv");
 
-			SphereData hphi(sphConfig);
+			SphereData hphi(sphereDataConfig);
 			hphi.physical_update_lambda(
 					[&](double a, double b, double &c){testSolutions.test_function_phi__grid_phi(a,b,c);}
 			);
@@ -152,13 +153,13 @@ void run_tests(
 		if (true)
 		{
 			// identity
-			SphereData h(sphConfig);
+			SphereData h(sphereDataConfig);
 			h.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.test_function__grid_gaussian(a,b,c);}
 			);
 			//h = h.spat_truncate();
 
-			SphereData result(sphConfig);
+			SphereData result(sphereDataConfig);
 			result.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.test_function__grid_gaussian(a,b,c);}
 			);
@@ -176,7 +177,7 @@ void run_tests(
 		if (true)
 		{
 			// d/d lambda
-			SphereData h(sphConfig);
+			SphereData h(sphereDataConfig);
 			h.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.test_function__grid_gaussian(a,b,c);}
 			);
@@ -186,7 +187,7 @@ void run_tests(
 
 //			h.file_physical_writeFile("O_diff_lambda_sph_result.csv");
 
-			SphereData result(sphConfig);
+			SphereData result(sphereDataConfig);
 			result.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.correct_result_diff_lambda__grid_gaussian(a,b,c);}
 			);
@@ -204,14 +205,14 @@ void run_tests(
 		if (true)
 		{
 			// d/d phi
-			SphereData h(sphConfig);
+			SphereData h(sphereDataConfig);
 			h.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.test_function__grid_gaussian(a,b,c);}
 			);
 			h = op.diff_lat_phi(h);
 //			h.file_physical_writeFile("O_diff_phi_sph_result.csv");
 
-			SphereData result(sphConfig);
+			SphereData result(sphereDataConfig);
 			result.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.correct_result_diff_phi__grid_gaussian(a,b,c);}
 			);
@@ -229,7 +230,7 @@ void run_tests(
 		if (true)
 		{
 			// d/d mu
-			SphereData h(sphConfig);
+			SphereData h(sphereDataConfig);
 			h.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.test_function__grid_gaussian(a,b,c);}
 			);
@@ -237,7 +238,7 @@ void run_tests(
 			//h = h.spat_truncate();
 //			h.file_physical_writeFile("O_diff_mu_sph_result.csv");
 
-			SphereData result(sphConfig);
+			SphereData result(sphereDataConfig);
 			result.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.correct_result_diff_mu__grid_gaussian(a,b,c);}
 			);
@@ -254,14 +255,14 @@ void run_tests(
 		if (true)
 		{
 			// mu*F(\lambda,\mu)
-			SphereData h(sphConfig);
+			SphereData h(sphereDataConfig);
 			h.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.test_function__grid_gaussian(a,b,c);}
 			);
 			h = op.mu(h);
 //			h.file_physical_writeFile("O_mu_sph_result.csv");
 
-			SphereData result(sphConfig);
+			SphereData result(sphereDataConfig);
 			result.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.correct_result_mu__grid_gaussian(a,b,c);}
 			);
@@ -277,14 +278,14 @@ void run_tests(
 		if (true)
 		{
 			// mu*mu*F(\lambda,\mu)
-			SphereData h(sphConfig);
+			SphereData h(sphereDataConfig);
 			h.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.test_function__grid_gaussian(a,b,c);}
 			);
 			h = op.mu2(h);
 //			h.file_physical_writeFile("O_mu2_sph_result.csv");
 
-			SphereData result(sphConfig);
+			SphereData result(sphereDataConfig);
 			result.physical_update_lambda_gaussian_grid(
 					[&](double lat, double mu, double &i_data){
 						testSolutions.test_function__grid_gaussian(lat, mu, i_data);
@@ -304,14 +305,14 @@ void run_tests(
 		if (true)
 		{
 			// one_minus_mu_squared_diff_lat
-			SphereData h(sphConfig);
+			SphereData h(sphereDataConfig);
 			h.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.test_function__grid_gaussian(a,b,c);}
 			);
 			h = op.spec_one_minus_mu_squared_diff_lat_mu(h);
 //			h.file_physical_writeFile("O_one_minus_mu_squared_diff_mu_sph_result.csv");
 
-			SphereData result(sphConfig);
+			SphereData result(sphereDataConfig);
 			result.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.correct_result_one_minus_mu_squared_diff_lat_mu__grid_gaussian(a,b,c);}
 			);
@@ -329,7 +330,7 @@ void run_tests(
 		if (true)
 		{
 			// grad lambda
-			SphereData h(sphConfig);
+			SphereData h(sphereDataConfig);
 			h.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.test_function__grid_gaussian(a,b,c);}
 			);
@@ -337,7 +338,7 @@ void run_tests(
 			//h = h.spat_truncate();
 //			h.file_physical_writeFile("O_grad_lambda_sph_result.csv");
 
-			SphereData result(sphConfig);
+			SphereData result(sphereDataConfig);
 			result.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.correct_result_grad_lambda__grid_gaussian(a,b,c);}
 			);
@@ -355,14 +356,14 @@ void run_tests(
 		if (true)
 		{
 			// grad mu
-			SphereData h(sphConfig);
+			SphereData h(sphereDataConfig);
 			h.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.test_function__grid_gaussian(a,b,c);}
 			);
 			h = op.grad_lat(h);
 //			h.file_physical_writeFile("O_grad_phi_sph_result.csv");
 
-			SphereData result(sphConfig);
+			SphereData result(sphereDataConfig);
 			result.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.correct_result_grad_phi__grid_gaussian(a,b,c);}
 			);
@@ -380,14 +381,14 @@ void run_tests(
 		if (true)
 		{
 			// div lambda
-			SphereData h(sphConfig);
+			SphereData h(sphereDataConfig);
 			h.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.test_function__grid_gaussian(a,b,c);}
 			);
 			h = op.div_lon(h);
 //			h.file_physical_writeFile("O_div_lambda_sph_result.csv");
 
-			SphereData result(sphConfig);
+			SphereData result(sphereDataConfig);
 			result.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.correct_result_div_lambda__grid_gaussian(a,b,c);}
 			);
@@ -404,7 +405,7 @@ void run_tests(
 		if (true)
 		{
 			// div mu
-			SphereData h(sphConfig);
+			SphereData h(sphereDataConfig);
 			h.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){
 						testSolutions.test_function__grid_gaussian(a,b,c);
@@ -416,7 +417,7 @@ void run_tests(
 //			h.spectral_truncate();
 			//h.physical_file_write("O_div_mu_sph_result.csv");
 
-			SphereData result(sphConfig);
+			SphereData result(sphereDataConfig);
 			result.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){
 						testSolutions.correct_result_div_mu__grid_gaussian(a,b,c);
@@ -435,12 +436,12 @@ void run_tests(
 //				FatalError("ERROR THRESHOLD EXCEEDED!");
 			}
 		}
-#if 0
 
+#if 0
 		if (true)
 		{
 			// div mu TEST
-			SphereData h(sphConfig);
+			SphereData h(sphereDataConfig);
 			h.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.test_function__grid_gaussian(a,b,c);}
 			);
@@ -453,7 +454,7 @@ void run_tests(
 					}
 			);
 #endif
-			SphereData result(sphConfig);
+			SphereData result(sphereDataConfig);
 			result.physical_update_lambda_gaussian_grid(
 					[&](double a, double mu, double &c){
 						testSolutions.correct_result_div_mu__grid_gaussian(a,mu,c);
@@ -476,7 +477,7 @@ void run_tests(
 		if (true)
 		{
 			// divergence
-			SphereData h(sphConfig);
+			SphereData h(sphereDataConfig);
 			h.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.test_function__grid_gaussian(a,b,c);}
 			);
@@ -484,7 +485,7 @@ void run_tests(
 //				h.spat_update_lambda_gaussian_grid([&](double a, double mu, double &c){c *= mu*mu*mu*mu;});
 //			h.file_physical_writeFile("O_divergence_sph_result.csv");
 
-			SphereData result(sphConfig);
+			SphereData result(sphereDataConfig);
 			result.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){
 
@@ -517,7 +518,7 @@ void run_tests(
 		if (true)
 		{
 			// vorticity
-			SphereData h(sphConfig);
+			SphereData h(sphereDataConfig);
 			h.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.test_function__grid_gaussian(a,b,c);}
 			);
@@ -525,15 +526,15 @@ void run_tests(
 			//h = h.spat_truncate();
 //			h.file_physical_writeFile("O_vort_sph_result.csv");
 
-			SphereData result(sphConfig);
+			SphereData result(sphereDataConfig);
 			result.physical_update_lambda_gaussian_grid(
-					[&](double a, double b, double &c){
+					[&](double lambda, double mu, double &c){
 
 						double data1;
-						testSolutions.correct_result_grad_lambda__grid_gaussian(a,b,data1);
+						testSolutions.correct_result_div_lambda__grid_gaussian(lambda,mu,data1);
 
 						double data2;
-						testSolutions.correct_result_grad_phi__grid_gaussian(a,b,data2);
+						testSolutions.correct_result_div_mu__grid_gaussian(lambda,mu,data2);
 
 						c = data1 - data2;
 					}
@@ -558,7 +559,7 @@ void run_tests(
 		if (true)
 		{
 			// Laplace
-			SphereData h(sphConfig);
+			SphereData h(sphereDataConfig);
 			h.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.test_function__grid_gaussian(a,b,c);}
 			);
@@ -568,7 +569,7 @@ void run_tests(
 
 //			h.file_physical_writeFile("O_laplace_div_grad_result.csv");
 
-			SphereData result(sphConfig);
+			SphereData result(sphereDataConfig);
 			result.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.test_function__grid_gaussian(a,b,c);}
 			);

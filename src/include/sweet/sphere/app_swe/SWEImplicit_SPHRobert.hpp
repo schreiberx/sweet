@@ -22,6 +22,9 @@
  */
 class SWEImplicit_SPHRobert
 {
+	/// Operators for sphere
+	SphereOperators &op;
+
 	/// SPH configuration
 	SphereDataConfig *sphereDataConfig;
 
@@ -61,7 +64,8 @@ class SWEImplicit_SPHRobert
 
 
 public:
-	SWEImplicit_SPHRobert()	:
+	SWEImplicit_SPHRobert(SphereOperators &i_op)	:
+		op(i_op),
 		sphereDataConfig(nullptr),
 		sphereDataConfigSolver(nullptr)
 	{
@@ -133,7 +137,7 @@ public:
 			const SphereData &i_data
 	)	const
 	{
-		return i_data + two_omega*two_omega*SphereOperators::mu2(i_data);
+		return i_data + two_omega*two_omega*op.mu2(i_data);
 	}
 
 
@@ -154,8 +158,8 @@ public:
 		const SphereData &u0 = i_u0;
 		const SphereData &v0 = i_v0;
 
-		SphereData div0 = inv_r*SphereOperators::robert_div(u0, v0);
-		SphereData eta0 = inv_r*SphereOperators::robert_vort(u0, v0);
+		SphereData div0 = inv_r*op.robert_div(u0, v0);
+		SphereData eta0 = inv_r*op.robert_vort(u0, v0);
 
 		SphereData phi(sphereDataConfig);
 		SphereData u(sphereDataConfig);
@@ -169,15 +173,15 @@ public:
 			 */
 			// only valid for Robert formulation!
 			SphereData Fc_k =	two_omega*inv_r*(
-										-(u0 - two_omega*two_omega*SphereOperators::mu2(u0)) +
-										2.0*two_omega*SphereOperators::mu(v0)
+										-(u0 - two_omega*two_omega*op.mu2(u0)) +
+										2.0*two_omega*op.mu(v0)
 									);
 
-			SphereData foo = 	avg_geopotential*(div0 - two_omega*SphereOperators::mu(eta0)) +
-										(phi0 + two_omega*two_omega*SphereOperators::mu2(phi0));
+			SphereData foo = 	avg_geopotential*(div0 - two_omega*op.mu(eta0)) +
+										(phi0 + two_omega*two_omega*op.mu2(phi0));
 
 			SphereData rhs =	foo +
-									two_omega*two_omega*SphereOperators::mu2(foo)
+									two_omega*two_omega*op.mu2(foo)
 									- avg_geopotential*Fc_k;
 
 #else
@@ -209,11 +213,11 @@ public:
 
 			phi = sphSolverPhi.solve(rhs.spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
 
-			SphereData a = u0 + inv_r*SphereOperators::robert_grad_lon(phi);
-			SphereData b = v0 + inv_r*SphereOperators::robert_grad_lat(phi);
+			SphereData a = u0 + inv_r*op.robert_grad_lon(phi);
+			SphereData b = v0 + inv_r*op.robert_grad_lat(phi);
 
-			SphereData rhsa = a - two_omega*SphereOperators::mu(b);
-			SphereData rhsb = two_omega*SphereOperators::mu(a) + b;
+			SphereData rhsa = a - two_omega*op.mu(b);
+			SphereData rhsb = two_omega*op.mu(a) + b;
 
 			u = sphSolverVel.solve(rhsa.spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
 			v = sphSolverVel.solve(rhsb.spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
@@ -225,8 +229,8 @@ public:
 			SphereData rhs = avg_geopotential*div0 + phi0;
 			phi = rhs.spectral_solve_helmholtz(I, -avg_geopotential, r);
 
-			u = (u0 + inv_r*SphereOperators::robert_grad_lon(phi));
-			v = (v0 + inv_r*SphereOperators::robert_grad_lat(phi));
+			u = (u0 + inv_r*op.robert_grad_lon(phi));
+			v = (v0 + inv_r*op.robert_grad_lat(phi));
 #endif
 		}
 

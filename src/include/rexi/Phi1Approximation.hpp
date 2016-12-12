@@ -29,7 +29,6 @@ class Phi1Approximation
 
 	GaussianApproximation ga;
 
-	GaussQuadrature gQ;
 
 	double h;
 	int M;
@@ -49,10 +48,10 @@ public:
 
 		for (int m = -i_M; m < i_M+1; m++)
 		{
-			double real = gQ.integrate5_intervals_adaptive_recursive(
+			double real = GaussQuadrature::integrate5_intervals_adaptive_recursive<double>(
 							//std::max(-1.0/(2.0*h), -1.0/(2.0*M_PI)),	// start of quadrature
 							-1.0/(2.0*M_PI),	// start of quadrature
-							0,		// end of quadrature
+							0.0,		// end of quadrature
 							[&](double xi) -> double
 							{
 								return (h*std::exp(-2.0*M_PI*complex(0.0,1.0)*(double)m*h*xi)*
@@ -63,10 +62,10 @@ public:
 							}
 						);
 
-			double imag = gQ.integrate5_intervals_adaptive_recursive(
+			double imag = GaussQuadrature::integrate5_intervals_adaptive_recursive<double>(
 							//std::max(-1.0/(2.0*h), -1.0/(2.0*M_PI)),	// start of quadrature
 							-1.0/(2.0*M_PI),	// start of quadrature
-							0,		// end of quadrature
+							0.0,		// end of quadrature
 							[&](double xi) -> double
 							{
 								return (h*std::exp(-2.0*M_PI*complex(0.0,1.0)*(double)m*h*xi)*
@@ -77,9 +76,7 @@ public:
 							}
 						);
 
-			b[m+M] = std::complex<double>(imag, real);	/// TODO: REAL AND IMAG PARTS ARE SWAPPED!!!
-//			b[m+M] = std::complex<double>(real, imag);
-
+			b[m+M] = std::complex<double>(imag, real);	/// TODO: REAL AND IMAG PARTS ARE SWAPPED - WHY?!!!
 		}
 	}
 

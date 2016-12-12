@@ -20,13 +20,12 @@
 #include <sweet/sphere/SphereDataComplex.hpp>
 #include <sweet/sphere/SphereOperatorsComplex.hpp>
 #include <rexi/REXI.hpp>
-#include <sweet/sphere/SWESphBandedMatrixPhysicalComplex.hpp>
+#include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalComplex.hpp>
 
 
 SphereDataConfig *sphereDataConfig;
 
 SimulationVariables simVars;
-SphereOperatorsComplex opComplex;
 
 
 bool errorCheck(
@@ -126,6 +125,8 @@ void run_tests()
 
 
 	REXI rexi(0, 0.2, 64);
+
+	SphereOperatorsComplex opComplex(sphereDataConfig);
 
 
 	for (std::size_t i = 0; i < rexi.alpha.size(); i++)

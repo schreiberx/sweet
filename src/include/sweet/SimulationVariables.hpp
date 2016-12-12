@@ -26,6 +26,10 @@
 #	define SWEET_GUI 1
 #endif
 
+#ifndef SWEET_PFASST
+#	define SWEET_PFASST 1
+#endif
+
 #if SWEET_PARAREAL
 #	include <parareal/Parareal_SimulationVariables.hpp>
 #endif
@@ -252,6 +256,27 @@ public:
 
 	} rexi;
 
+#if SWEET_PFASST
+	struct Pfasst
+	{
+		int nlevels;
+		int nnodes;
+		int nspace;
+		int nsteps;
+		int niters;
+		double dt;
+#if 0
+		// TODO: encapsulate this in sweet SimVars
+		auto const nlevels   = pfasst::config::get_value<int>("nlevels", 1);
+		auto const nnodes    = pfasst::config::get_value<int>("nnodes", 3);
+		auto const nspace    = pfasst::config::get_value<int>("nspace", 8193);
+		auto const nsteps    = pfasst::config::get_value<int>("nsteps", 16);
+		auto const niters    = pfasst::config::get_value<int>("niters", 4);
+		auto const dt        = pfasst::config::get_value<double>("dt", 0.1);
+#endif
+	} pfasst;
+#endif
+
 
 	/**
 	 * program parameters without specific association.
@@ -384,7 +409,7 @@ public:
 	)
 	{
 		int next_free_program_option = 0;
-		const int max_options = 30;
+		const int max_options = 50;
         static struct option long_options[max_options+1] = {
     			{0, 0, 0, 0}, // 0
     			{0, 0, 0, 0}, // 1
@@ -418,6 +443,28 @@ public:
 				{0, 0, 0, 0}, // 7
 				{0, 0, 0, 0}, // 8
 				{0, 0, 0, 0}, // 9	Option Nr. 30
+
+				{0, 0, 0, 0}, // 0
+				{0, 0, 0, 0}, // 1
+				{0, 0, 0, 0}, // 2
+				{0, 0, 0, 0}, // 3
+				{0, 0, 0, 0}, // 4
+				{0, 0, 0, 0}, // 5
+				{0, 0, 0, 0}, // 6
+				{0, 0, 0, 0}, // 7
+				{0, 0, 0, 0}, // 8
+				{0, 0, 0, 0}, // 9	Option Nr. 40
+
+				{0, 0, 0, 0}, // 0
+				{0, 0, 0, 0}, // 1
+				{0, 0, 0, 0}, // 2
+				{0, 0, 0, 0}, // 3
+				{0, 0, 0, 0}, // 4
+				{0, 0, 0, 0}, // 5
+				{0, 0, 0, 0}, // 6
+				{0, 0, 0, 0}, // 7
+				{0, 0, 0, 0}, // 8
+				{0, 0, 0, 0}, // 9	Option Nr. 50
 
 				{0, 0, 0, 0} // NULL
         };
@@ -456,6 +503,25 @@ public:
         long_options[next_free_program_option] = {"use-robert-functions", required_argument, 0, 256+'a'+next_free_program_option};
         next_free_program_option++;
 
+#if SWEET_PFASST
+        long_options[next_free_program_option] = {"pfasst-nlevels", required_argument, 0, 256+'a'+next_free_program_option};
+        next_free_program_option++;
+
+        long_options[next_free_program_option] = {"pfasst-nnodes", required_argument, 0, 256+'a'+next_free_program_option};
+        next_free_program_option++;
+
+        long_options[next_free_program_option] = {"pfasst-nspace", required_argument, 0, 256+'a'+next_free_program_option};
+        next_free_program_option++;
+
+        long_options[next_free_program_option] = {"pfasst-nsteps", required_argument, 0, 256+'a'+next_free_program_option};
+        next_free_program_option++;
+
+        long_options[next_free_program_option] = {"pfasst-niters", required_argument, 0, 256+'a'+next_free_program_option};
+        next_free_program_option++;
+
+        long_options[next_free_program_option] = {"pfasst-dt", required_argument, 0, 256+'a'+next_free_program_option};
+        next_free_program_option++;
+#endif
 
 #if SWEET_PARAREAL
         int parareal_start_option_index = next_free_program_option;
@@ -521,12 +587,20 @@ public:
 					case 7:		rexi.rexi_normalization = atoi(optarg);	break;
 					case 8:		rexi.rexi_use_extended_modes = atoi(optarg);	break;
 					case 9:		misc.use_nonlinear_equations = atoi(optarg);	break;
-					case 10:		misc.sphere_use_robert_functions = atoi(optarg);	break;
-						default:
+					case 10:	misc.sphere_use_robert_functions = atoi(optarg);	break;
+
+					case 11:	pfasst.nlevels = atoi(optarg);	break;
+					case 12:	pfasst.nnodes = atoi(optarg);	break;
+					case 13:	pfasst.nspace = atoi(optarg);	break;
+					case 14:	pfasst.nsteps = atoi(optarg);	break;
+					case 15:	pfasst.niters = atoi(optarg);	break;
+					case 16:	pfasst.dt = atof(optarg);	break;
+
+					default:
 #if SWEET_PARAREAL
-							parareal.setup_longOptionValue(i-parareal_start_option_index, optarg);
+						parareal.setup_longOptionValue(i-parareal_start_option_index, optarg);
 #endif
-							break;
+						break;
 					}
 				}
 				else

@@ -97,6 +97,9 @@ public:
 
 public:
 	SimulationInstance()	:
+		op(sphereDataConfig),
+		opComplex(sphereDataConfig),
+		timestepping_implicit_swe(op),
 		prog_h(sphereDataConfig),
 		prog_u(sphereDataConfig),
 		prog_v(sphereDataConfig)

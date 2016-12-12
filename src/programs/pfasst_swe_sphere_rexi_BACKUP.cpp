@@ -48,13 +48,13 @@ public:
 
 	LevelSingleton *levelSingleton;
 
-
+#if 0
 	inline
 	PlaneData f(PlaneData i_sphData)
 	{
 		return levelSingletons[level].op.mu(i_sphData*2.0*simVars.sim.coriolis_omega);
 	}
-
+#endif
 	// Main routine for method to be used in case of finite differences
 	void p_run_euler_timestep_update(
 			const PlaneData &i_h,	///< prognostic variables
@@ -204,14 +204,6 @@ int main(int i_argc, char *i_argv[])
 #endif
 
 #if 0
-	// TODO: encapsulate this in sweet SimVars
-	auto const nlevels   = pfasst::config::get_value<int>("nlevels", 1);
-	auto const nnodes    = pfasst::config::get_value<int>("nnodes", 3);
-	auto const nspace    = pfasst::config::get_value<int>("nspace", 8193);
-	auto const nsteps    = pfasst::config::get_value<int>("nsteps", 16);
-	auto const niters    = pfasst::config::get_value<int>("niters", 4);
-	auto const dt        = pfasst::config::get_value<double>("dt", 0.1);
-
 	auto quad    = pfasst::quadrature::quadrature_factory(nnodes, quad_type);
 	auto factory = make_shared<pfasst::encap::VectorFactory<double>>(nspace);
 	auto sweeper = make_shared<ImplicitHeatSweeper<double>>();
@@ -322,50 +314,3 @@ int main(int i_argc, char *i_argv[])
 }
 
 
-
-
-/*
- * Explicit time step
- */
-void eval_f1(
-		void *y,	///< TODO: Is this the handler to the simulation data?
-		double dt,	///< TODO: Is this the double valued time step size?
-		int level,	///< TODO: Is this the level of resolution? Is 0 the finest level?
-		void *ctx,	///< TODO: User pointer to time slice/level specific data
-		void *f1ptr	///< TODO: ?!?
-)
-{
-	SimulationInstance &simulationInstance = *(SimulationInstance*)y;
-
-	double o_dt;
-	simulationInstance.timestepping.run_rk_timestep(
-			&simulationInstance,
-			&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
-			simulationInstance.prog_phi,
-			simulationInstance.prog_u,
-			simulationInstance.prog_v,
-			o_dt,	/// output variable for calculcated time step size
-			dt,	/// current time step size
-			simVars.disc.timestepping_runge_kutta_order,
-			simVars.timecontrol.current_simulation_time,
-			simVars.timecontrol.max_simulation_time
-		);
-}
-
-
-
-/*
- * Implicit time step
- */
-void eval_f2(
-		void *y,
-		double dt,
-		int level,
-		void *ctx,
-		void *f1ptr
-)
-{
-	SimulationInstance &simulationInstance = *(SimulationInstance*)y;
-
-
-}

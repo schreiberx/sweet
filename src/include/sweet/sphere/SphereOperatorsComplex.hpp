@@ -16,22 +16,18 @@ class SphereOperatorsComplex	:
 {
 	friend SphereDataConfig;
 
+	SphereDataConfig *sphereDataConfig;
+
+
+
 	/**
 	 * Dummy constructor
 	 */
 public:
 	SphereOperatorsComplex(
 			SphereDataConfig *i_sphereDataConfig
-	)
-	{
-	}
-
-
-	/**
-	 * Dummy constructor
-	 */
-public:
-	SphereOperatorsComplex()
+	)	:
+		sphereDataConfig(i_sphereDataConfig)
 	{
 	}
 
