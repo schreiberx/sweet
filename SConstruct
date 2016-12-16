@@ -514,7 +514,7 @@ if env['compiler'] == 'gnu':
 
 if env['compiler'] == 'intel':
 	reqversion = [12,1]
-	iccversion_line = commands.getoutput('icpc -dumpversion')
+	iccversion_line = commands.getoutput('icpc -dumpversion -w')
 
 	if iccversion_line != 'Mainline':
 		iccversion = iccversion_line.split('.')
