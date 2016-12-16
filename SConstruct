@@ -429,9 +429,6 @@ if env['gui']=='enable':
 	exec_name+='_gui'
 
 
-#if env['program_binary_name_override'] != '':
-#	exec_name = env['program_binary_name_override']
-
 
 
 if env['compiler'] == 'gnu':
@@ -838,9 +835,6 @@ else:
 	env.Append(CXXFLAGS=' -DSWEET_REXI_THREAD_PARALLEL_SUM=0')
 
 
-if env['program_binary_name'] != '':
-	exec_name = env['program_binary_name']
-
 if env['debug_symbols'] == 'enable':
 	env.Append(CXXFLAGS = '-g')
 	env.Append(LINKFLAGS = '-g')
@@ -857,6 +851,11 @@ else:
 	exec_name += '_'+env['compiler']
 	
 exec_name += '_'+env['mode']
+
+
+if env['program_binary_name'] != '':
+	exec_name = env['program_binary_name']
+
 
 
 #
