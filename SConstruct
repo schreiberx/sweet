@@ -49,6 +49,7 @@ if env['xml_config'] != '':
 
 
 
+
 ################################################################
 # Compile options
 ################################################################
@@ -727,6 +728,7 @@ if env['sweet_mpi'] == 'enable':
 		env.Append(LINKFLAGS=' -mt_mpi')
 
 
+env.Append(LIBS=['quadmath'])
 
 
 if env['threading'] in ['omp']:
