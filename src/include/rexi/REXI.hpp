@@ -42,16 +42,22 @@
  * All these functions play an important role in the context
  * of exponential integrators.
  */
+template <
+	typename TEvaluation = double,	///< evaluation accuracy of coefficients
+	typename TStorageAndProcessing = double	///< storage precision of coefficients - use quad precision per default
+>
 class REXI
 {
-	typedef std::complex<double> complex;
+	typedef std::complex<TEvaluation> complexEvaluation;
+	typedef std::complex<TStorageAndProcessing> complexProcessingAndStorage;
 
 	int phi_id;
 
+
 public:
-	std::vector<complex> alpha;
-	std::vector<complex> beta_re;
-	std::vector<complex> beta_im;
+	std::vector<complexProcessingAndStorage> alpha;
+	std::vector<complexProcessingAndStorage> beta_re;
+	std::vector<complexProcessingAndStorage> beta_im;
 
 
 public:
@@ -63,35 +69,39 @@ public:
 public:
 	REXI(
 			int i_phi_id,	///< ID of Phi function to be approximated
-			double i_h,	///< sampling width
-			int i_M,	///< approximation area
+			TStorageAndProcessing i_h,	///< sampling width
+			int i_M,		///< approximation area
 			int i_L = 0,	///< L, see Gaussian approximation
-			bool i_reduce_to_half = true
+			bool i_reduce_to_half = true,
+			bool i_normalization = true
 	)
 	{
-		setup(i_phi_id, i_h, i_M, i_L, i_reduce_to_half);
+		setup(i_phi_id, i_h, i_M, i_L, i_reduce_to_half, i_normalization);
 	}
 
+
+
 	static
-	std::complex<double> conj(
-			const std::complex<double> &i
+	std::complex<TStorageAndProcessing> conj(
+			const std::complex<TStorageAndProcessing> &i
 	)
 	{
-		return std::complex<double>(i.real(), -i.imag());
+		return std::complex<TStorageAndProcessing>(i.real(), -i.imag());
 	}
+
 
 
 public:
 	void setup(
 		int i_phi_id,			///< Phi function id
-		double i_h,				///< sampling width
+		TStorageAndProcessing i_h,				///< sampling width
 		int i_M,				///< approximation area
 		int i_L = 0,			///< L value for Gaussian approximation, use 0 for autodetection
 		bool i_reduce_to_half = true,	///< reduce the number of poles to half
 		bool i_normalization = true
 	)
 	{
-		GaussianApproximation ga(i_L);
+		GaussianApproximation<TEvaluation,TStorageAndProcessing> ga(i_L);
 
 		phi_id = i_phi_id;
 		int L = ga.L;
@@ -104,16 +114,16 @@ public:
 
 		/// temporary storage vector for generalization
 		/// over phi functions
-		std::vector<complex> b;
+		std::vector<complexProcessingAndStorage> b;
 
 		if (phi_id == 0)
 		{
-			ExponentialApproximation ea(i_h, i_M);
+			ExponentialApproximation<TEvaluation, TStorageAndProcessing> ea(i_h, i_M);
 			b = ea.b;
 		}
 		else if (phi_id == 1)
 		{
-			Phi1Approximation phia(i_h, i_M);
+			Phi1Approximation<TEvaluation,TStorageAndProcessing> phia(i_h, i_M);
 			b = phia.b;
 		}
 		else
@@ -134,7 +144,7 @@ public:
 			for (int m = -M; m < M+1; m++)
 			{
 				int n = l+m;
-				alpha[n+N] = i_h*(ga.mu + complex(0, n));
+				alpha[n+N] = i_h*(ga.mu + complexProcessingAndStorage(0, n));
 
 				beta_re[n+N] += b[m+M].real()*i_h*ga.a[l+L];
 				beta_im[n+N] += b[m+M].imag()*i_h*ga.a[l+L];
@@ -144,7 +154,7 @@ public:
 #else
 		for (int n = -N; n < N+1; n++)
 		{
-			alpha[n+N] = i_h*(ga.mu + complex(0, n));
+			alpha[n+N] = i_h*(ga.mu + complexEvaluation(0, n));
 
 			int L1 = std::max(-L, n-M);
 			int L2 = std::min(L, n+M);
@@ -214,12 +224,12 @@ public:
 				 * Apply normalization to beta coefficients
 				 * This assures no over/undershooting
 				 */
-				std::complex<double> sum = 0;
+				std::complex<TStorageAndProcessing> sum = 0;
 				for (std::size_t n = 0; n < alpha.size(); n++)
 					sum += beta_re[n]/alpha[n];
 
-				double normalization = sum.real();
-				std::cout << "Using REXI normalization: " << 1.0/normalization << std::endl;
+				TStorageAndProcessing normalization = sum.real();
+				std::cout << "Using REXI normalization: " << (double)((TStorageAndProcessing)1.0/normalization) << std::endl;
 
 				for (std::size_t n = 0; n < beta_re.size(); n++)
 					beta_re[n] /= normalization;
@@ -231,60 +241,62 @@ public:
 	/**
 	 * \return \f$ cos(x) + i*sin(x) \f$
 	 */
-	complex eval(
-			double i_x	///< sampling position
+	complexEvaluation eval(
+			TEvaluation i_x	///< sampling position
 	)
 	{
 		switch(phi_id)
 		{
 		case 0:
-			return ExponentialApproximation::eval(i_x);
+			return ExponentialApproximation<TEvaluation,TStorageAndProcessing>::eval(i_x);
+
 		case 1:
-			return Phi1Approximation::eval(i_x);
+			return Phi1Approximation<TEvaluation,TStorageAndProcessing>::eval(i_x);
+
 		default:
 			FatalError("Unknown phi function id");
 		}
-		return complex(0,0);
+		return complexEvaluation(0,0);
 	}
 
 
 	/**
 	 * compute the approximated value of e^{ix}
 	 */
-	complex approx(
-			double i_x	///< sampling position
+	complexEvaluation approx(
+			TEvaluation i_x	///< sampling position
 	)
 	{
-		double sum_re = 0;
-		double sum_im = 0;
+		TEvaluation sum_re = 0;
+		TEvaluation sum_im = 0;
 
 		std::size_t S = alpha.size();
 
 		// Split computation into real part of \f$ cos(x) \f$ and imaginary part \f$ sin(x) \f$
 		for (std::size_t n = 0; n < S; n++)
 		{
-			complex denom = (complex(0, i_x) + alpha[n]);
-			sum_re += (beta_re[n] / denom).real();
-			sum_im += (beta_im[n] / denom).real();
+			complexEvaluation denom = (complexEvaluation(0, i_x) + DQStuff::convertComplex<TEvaluation>(alpha[n]));
+			sum_re += (DQStuff::convertComplex<TEvaluation>(beta_re[n]) / denom).real();
+			sum_im += (DQStuff::convertComplex<TEvaluation>(beta_im[n]) / denom).real();
 		}
 
-		return complex(sum_re, sum_im);
+		return complexEvaluation(sum_re, sum_im);
 	}
 
 
 	/**
 	 * \return \f$ Re(cos(x) + i*sin(x)) = cos(x) \f$
 	 */
-	double approx_returnReal(
-			double i_x
+	TEvaluation approx_returnReal(
+			TEvaluation i_x
 	)
 	{
-		double sum = 0;
+		TEvaluation sum = 0;
 
 		std::size_t S = alpha.size();
 
 		for (std::size_t n = 0; n < S; n++)
-			sum += (beta_re[n] / (complex(0, i_x) + alpha[n])).real();
+			sum += (DQStuff::convertComplex<TEvaluation>(beta_re[n]) / (complexEvaluation(0, i_x) + DQStuff::convertComplex<TEvaluation>(alpha[n]))).real();
 
 		return sum;
 	}
@@ -294,15 +306,15 @@ public:
 	 *
 	 * we simply use a phase shift of M_PI and use the returnReal variant
 	 */
-	double approx_returnImag(
-			double i_x		///< sampling position
+	TEvaluation approx_returnImag(
+			TEvaluation i_x		///< sampling position
 	)
 	{
 		std::size_t S = alpha.size();
 
-		double sum = 0;
+		TEvaluation sum = 0;
 		for (std::size_t n = 0; n < S; n++)
-			sum += (beta_im[n] / (complex(0, i_x) + alpha[n])).real();
+			sum += (DQStuff::convertComplex<TEvaluation>(beta_im[n]) / (complexEvaluation(0, i_x) + DQStuff::convertComplex<TEvaluation>(alpha[n]))).real();
 		return sum;
 	}
 };

@@ -12,6 +12,11 @@
 #include <sweet/SimulationVariables.hpp>
 #include "../include/sweet/plane/PlaneDataComplex.hpp"
 
+
+typedef double TEvaluation;
+typedef double TStorageAndProcessing;
+//typedef double TStorageAndProcessing;
+
 int main(
 		int i_argc,
 		char *const i_argv[]
@@ -24,91 +29,13 @@ int main(
 	}
 
 	double max_error_threshold = 1e-9;
-	double max_error_threshold_machine = 1e-12;
+//	double max_error_threshold_machine = 1e-12;
 
 
 	for (int fun_id = 0; fun_id <= 1; fun_id++)
 	{
-	#if 1
-		if (1)
-		{
-			std::cout << "******************************************************" << std::endl;
-			std::cout << "PHI " << fun_id << " - REXI real: Test for partition of unity" << std::endl;
-			std::cout << "******************************************************" << std::endl;
 
-			for (double h = 0.2; h >= 0.05; h *= 0.5)
-			{
-				for (int M = 128; M < 512; M *= 2)
-				{
-					REXI rexi(fun_id, h, M, 0, false);
-
-					// REXI approximates the interval [-M*h;M*h] but gets inaccurate close to the interval boundaries
-					double start = -M*h*0.9;
-					double end = -start;
-					double step_size = 0.001;
-
-					double max_error = 0;
-
-//					std::cout << rexi.approx_returnReal(0) << std::endl;
-//					exit(1);
-					for (double x = start; x < end; x += step_size)
-					{
-						double correct = rexi.eval(x).real();
-						double approx = rexi.approx_returnReal(x);
-
-						if (std::abs(approx) > 1.0)
-							std::cerr << "approx value " << approx << " not bounded by unity (just a warning and not a problem) at x=" << x << std::endl;
-						double error_real = std::abs(correct - approx);
-
-						max_error = std::max(max_error, error_real);
-					}
-
-					std::cout << "max_error: " << max_error << " for h " << h << " and M " << M << std::endl;
-
-					if (std::abs(max_error) > max_error_threshold)
-					{
-						std::cerr << "MAX ERROR THRESHOLD EXCEEDED!" << std::endl;
-						exit(-1);
-					}
-				}
-			}
-		}
-	#endif
-
-	#if 1
-		if (1)
-		{
-			std::cout << "******************************************************" << std::endl;
-			std::cout << "PHI " << fun_id << " - EVALUATING GAUSSIAN APPROXIMATION (real)" << std::endl;
-			std::cout << "******************************************************" << std::endl;
-			GaussianApproximation ga;
-
-			for (double h = 0.2; h > 0.001; h *= 0.5)
-			{
-				double start = -100.0;
-				double end = 100.0;
-				double step_size = 0.001;
-
-				double max_error = 0;
-
-				for (double x = start; x < end; x += step_size)
-				{
-					double error = std::abs(ga.evalGaussian(x, h) - ga.approxGaussian(x, h));
-					max_error = std::max(max_error, error);
-				}
-
-				std::cout << "max_error: " << max_error << " for h " << h << std::endl;
-
-				if (std::abs(max_error) > max_error_threshold)
-				{
-					std::cerr << "MAX ERROR THRESHOLD EXCEEDED!" << std::endl;
-					exit(-1);
-				}
-			}
-		}
-	#endif
-
-	#if 1
+#if 1
 		if (1)
 		{
 			std::cout << "******************************************************" << std::endl;
@@ -118,30 +45,105 @@ int main(
 			for (double h = 0.2; h > 0.01; h *= 0.5)
 			{
 				int M = 32/h;
-				ExponentialApproximation ea(h, M);
+				ExponentialApproximation<TEvaluation, TStorageAndProcessing> ea(h, M);
 
 				double start = -M*h*0.95;
 				double end = -start;
 				double step_size = 0.01;
 
-				double max_error = 0;
+				TEvaluation max_error = 0;
 
 				for (double x = start; x < end; x += step_size)
 				{
-					double error = std::abs(ea.eval(x) - ea.approx(x));
-					max_error = std::max(max_error, error);
+					std::complex<TEvaluation> diff = ea.eval(x) - ea.approx(x);
+					TEvaluation error = DQStuff::max(DQStuff::abs(diff.real()), DQStuff::abs(diff.imag()));
+					max_error = DQStuff::max(max_error, error);
 				}
 
-				std::cout << "max_error: " << max_error << " for h " << h << " and M " << M << std::endl;
+				std::cout << "max_error: " << (double)max_error << " for h " << h << " and M " << M << std::endl;
 
-				if (std::abs(max_error) > max_error_threshold)
+				if (DQStuff::abs(max_error) > max_error_threshold)
 				{
 					std::cerr << "MAX ERROR THRESHOLD EXCEEDED!" << std::endl;
 					exit(-1);
 				}
 			}
 		}
-	#endif
+#endif
+
+		if (1)
+		{
+			std::cout << "******************************************************" << std::endl;
+			std::cout << "PHI " << fun_id << " - REXI real: Test for partition of unity" << std::endl;
+			std::cout << "******************************************************" << std::endl;
+
+			for (TEvaluation h = 0.2; h >= 0.05; h *= 0.5)
+			{
+				for (int M = 128; M < 512; M *= 2)
+				{
+					REXI<TEvaluation, TStorageAndProcessing> rexi(fun_id, h, M, simVars.rexi.rexi_L, false, simVars.rexi.rexi_normalization);
+
+					// REXI approximates the interval [-M*h;M*h] but gets inaccurate close to the interval boundaries
+					double start = -M*h*0.9;
+					double end = -start;
+					double step_size = 0.001;
+
+					TEvaluation max_error = 0;
+
+					for (double x = start; x < end; x += step_size)
+					{
+						TEvaluation correct = rexi.eval(x).real();
+						TEvaluation approx = rexi.approx_returnReal(x);
+
+						if (DQStuff::abs(approx) > 1.0)
+							std::cerr << "approx value " << (double)approx << " not bounded by unity (just a warning and not a problem) at x=" << x << std::endl;
+						TEvaluation error_real = DQStuff::abs(correct - approx);
+
+						max_error = DQStuff::max(max_error, error_real);
+					}
+
+					std::cout << "max_error: " << (double)max_error << " for h " << (double)h << " and M " << M << std::endl;
+
+					if (DQStuff::abs(max_error) > max_error_threshold)
+					{
+						std::cerr << "MAX ERROR THRESHOLD EXCEEDED!" << std::endl;
+						exit(-1);
+					}
+				}
+			}
+		}
+
+
+		if (1)
+		{
+			std::cout << "******************************************************" << std::endl;
+			std::cout << "PHI " << fun_id << " - EVALUATING GAUSSIAN APPROXIMATION (real)" << std::endl;
+			std::cout << "******************************************************" << std::endl;
+			GaussianApproximation<TEvaluation, TStorageAndProcessing> ga(simVars.rexi.rexi_L);
+
+			for (double h = 0.2; h > 0.001; h *= 0.5)
+			{
+				double start = -100.0;
+				double end = 100.0;
+				double step_size = 0.001;
+
+				double max_error = 0.0;
+
+				for (double x = start; x < end; x += step_size)
+				{
+					double error = DQStuff::abs(ga.evalGaussian(x, h) - ga.approxGaussian(x, h));
+					max_error = DQStuff::max(max_error, error);
+				}
+
+				std::cout << "max_error: " << max_error << " for h " << h << std::endl;
+
+				if (DQStuff::abs(max_error) > max_error_threshold)
+				{
+					std::cerr << "MAX ERROR THRESHOLD EXCEEDED!" << std::endl;
+					exit(-1);
+				}
+			}
+		}
 
 	#if 1
 		if (1)
@@ -154,7 +156,7 @@ int main(
 			{
 				int M = 32/h;
 
-				REXI rexi(fun_id, h, M, 0, false);
+				REXI<TEvaluation, TStorageAndProcessing> rexi(fun_id, h, M, simVars.rexi.rexi_L, false, simVars.rexi.rexi_normalization);
 
 				double start = -M*h*0.9;
 				double end = -start;
@@ -164,13 +166,14 @@ int main(
 
 				for (double x = start; x < end; x += step_size)
 				{
-					double error = std::abs(rexi.eval(x) - rexi.approx(x));
-					max_error = std::max(max_error, error);
+					std::complex<TEvaluation> diff = rexi.eval(x) - rexi.approx(x);
+					double error = DQStuff::max(DQStuff::abs(diff.real()), DQStuff::abs(diff.imag()));
+					max_error = DQStuff::max(max_error, error);
 				}
 
 				std::cout << "max_error: " << max_error << " for h " << h << " and M " << M << std::endl;
 
-				if (std::abs(max_error) > max_error_threshold)
+				if (DQStuff::abs(max_error) > max_error_threshold)
 				{
 					std::cerr << "MAX ERROR THRESHOLD EXCEEDED!" << std::endl;
 					exit(-1);
@@ -194,7 +197,7 @@ int main(
 				{
 					int M = 32/h;
 
-					REXI rexi(fun_id, h, M, 0, half);
+					REXI<TEvaluation, TStorageAndProcessing> rexi(fun_id, h, M, simVars.rexi.rexi_L, half, simVars.rexi.rexi_normalization);
 
 					double start = -M*h*0.9;
 					double end = -start;
@@ -204,13 +207,13 @@ int main(
 
 					for (double x = start; x < end; x += step_size)
 					{
-						double error_real = std::abs(rexi.eval(x).real() - rexi.approx_returnReal(x));
-						max_error = std::max(max_error, error_real);
+						double error_real = DQStuff::abs(rexi.eval(x).real() - rexi.approx_returnReal(x));
+						max_error = DQStuff::max(max_error, error_real);
 					}
 
 					std::cout << "max_error: " << max_error << " for h " << h << " and M " << M << std::endl;
 
-					if (std::abs(max_error) > max_error_threshold)
+					if (DQStuff::abs(max_error) > max_error_threshold)
 					{
 						std::cerr << "MAX ERROR THRESHOLD EXCEEDED!" << std::endl;
 						exit(-1);
@@ -232,13 +235,12 @@ int main(
 	//		for (int k = 0; k < 2; k++)
 			{
 				// halving does only work for linear operator
-				//bool half = k;
 				bool half = false;
 				for (double h = 0.2; h > 0.005; h *= 0.5)
 				{
 					int M = 32/h;
 
-					REXI rexi(fun_id, h, M, 0, half);
+					REXI<TEvaluation, TStorageAndProcessing> rexi(fun_id, h, M, simVars.rexi.rexi_L, half, simVars.rexi.rexi_normalization);
 
 					double start = -M*h*0.9;
 					double end = -start;
@@ -248,13 +250,13 @@ int main(
 
 					for (double x = start; x < end; x += step_size)
 					{
-						double error_imag = std::abs(rexi.eval(x).imag() - rexi.approx_returnImag(x));
-						max_error = std::max(max_error, error_imag);
+						double error_imag = DQStuff::abs(rexi.eval(x).imag() - rexi.approx_returnImag(x));
+						max_error = DQStuff::max(max_error, error_imag);
 					}
 
 					std::cout << "max_error: " << max_error << " for h " << h << " and M " << M << std::endl;
 
-					if (std::abs(max_error) > max_error_threshold)
+					if (DQStuff::abs(max_error) > max_error_threshold)
 					{
 						std::cerr << "MAX ERROR THRESHOLD EXCEEDED!" << std::endl;
 						exit(-1);
@@ -295,7 +297,7 @@ int main(
 
 				std::cout << "REXI setup: M=" << M << ", h=" << h << ", tau=" << tau << ", f=" << f << std::endl;
 
-				REXI rexi(fun_id, 0, h, M);
+				REXI<TEvaluation, TStorageAndProcessing> rexi(fun_id, 0, h, M, false, simVars.rexi.rexi_normalization);
 
 				std::size_t N = rexi.alpha.size();
 				for (std::size_t n = 0; n < N; n++)
@@ -390,7 +392,7 @@ int main(
 							double error_0 = (lhs.toCart()-test_step1).reduce_norm2_quad()/(simVars.disc.res[0]*simVars.disc.res[1]);
 							std::cout << "ERROR 0 step1: " << error_0 << std::endl;
 
-							if (std::abs(error_0) > max_error_threshold_machine)
+							if (DQStuff::abs(error_0) > max_error_threshold_machine)
 							{
 								std::cerr << "MAX ERROR THRESHOLD EXCEEDED!" << std::endl;
 								exit(-1);
@@ -404,7 +406,7 @@ int main(
 							double error_0 = (lhs.toCart()-test_step2).reduce_norm2_quad()/(simVars.disc.res[0]*simVars.disc.res[1]);
 							std::cout << "ERROR 0 step2: " << error_0 << std::endl;
 
-							if (std::abs(error_0) > max_error_threshold_machine)
+							if (DQStuff::abs(error_0) > max_error_threshold_machine)
 							{
 								std::cerr << "MAX ERROR THRESHOLD EXCEEDED!" << std::endl;
 								exit(-1);
@@ -422,7 +424,7 @@ int main(
 							double error_0 = (lhs.toCart()-test_step1).reduce_norm2_quad()/(simVars.disc.res[0]*simVars.disc.res[1]);
 							std::cout << "ERROR 0 step3: " << error_0 << std::endl;
 
-							if (std::abs(error_0) > max_error_threshold_machine)
+							if (DQStuff::abs(error_0) > max_error_threshold_machine)
 							{
 								std::cerr << "MAX ERROR THRESHOLD EXCEEDED!" << std::endl;
 								exit(-1);
@@ -442,7 +444,7 @@ int main(
 							double error_1 = (eta - test_eta).reduce_norm2_quad()/(simVars.disc.res[0]*simVars.disc.res[1]);
 							std::cout << "ERROR 1: " << error_1 << std::endl;
 
-							if (std::abs(error_1) > max_error_threshold_machine)
+							if (DQStuff::abs(error_1) > max_error_threshold_machine)
 							{
 								std::cerr << "MAX ERROR THRESHOLD EXCEEDED!" << std::endl;
 								exit(-1);
@@ -454,7 +456,7 @@ int main(
 							double error_2 = ((op_diff_c_x + op_diff_c_y)(test_eta.toSpec()).toCart()-test_diff1).reduce_norm2_quad()/(simVars.disc.res[0]*simVars.disc.res[1]);
 							std::cout << "ERROR 2: " << error_2 << std::endl;
 
-							if (std::abs(error_2) > max_error_threshold_machine)
+							if (DQStuff::abs(error_2) > max_error_threshold_machine)
 							{
 								std::cerr << "MAX ERROR THRESHOLD EXCEEDED!" << std::endl;
 								exit(-1);
@@ -466,7 +468,7 @@ int main(
 							double error_3 = ((op_diff2_c_x + op_diff2_c_y)(test_eta.toSpec()).toCart()-test_diff2).reduce_norm2_quad()/(simVars.disc.res[0]*simVars.disc.res[1]);
 							std::cout << "ERROR 3: " << error_3 << std::endl;
 
-							if (std::abs(error_3) > max_error_threshold_machine)
+							if (DQStuff::abs(error_3) > max_error_threshold_machine)
 							{
 								std::cerr << "MAX ERROR THRESHOLD EXCEEDED!" << std::endl;
 								exit(-1);
@@ -478,7 +480,7 @@ int main(
 							double error_3b = (test_diff2.toSpec().spec_div_element_wise(op_diff2_c_x + op_diff2_c_y).toCart() - test_eta).reduce_norm2_quad()/(simVars.disc.res[0]*simVars.disc.res[1]);
 							std::cout << "ERROR 3b: " << error_3b << std::endl;
 
-							if (std::abs(error_3b) > max_error_threshold_machine)
+							if (DQStuff::abs(error_3b) > max_error_threshold_machine)
 							{
 								std::cerr << "MAX ERROR THRESHOLD EXCEEDED!" << std::endl;
 								exit(-1);
@@ -494,7 +496,7 @@ int main(
 							double error_4 = (test_a.toSpec().addScalar_Spec(-test_value)).toCart().reduce_norm2_quad()/(simVars.disc.res[0]*simVars.disc.res[1]);
 							std::cout << "ERROR 4: " << error_4 << std::endl;
 
-							if (std::abs(error_4) > max_error_threshold_machine)
+							if (DQStuff::abs(error_4) > max_error_threshold_machine)
 							{
 								std::cerr << "MAX ERROR THRESHOLD EXCEEDED!" << std::endl;
 								exit(-1);
@@ -510,7 +512,7 @@ int main(
 							double error_5 = (test_a.addScalar_Cart(-test_value)).reduce_norm2_quad()/(simVars.disc.res[0]*simVars.disc.res[1]);
 							std::cout << "ERROR 5: " << error_5 << std::endl;
 
-							if (std::abs(error_5) > max_error_threshold_machine)
+							if (DQStuff::abs(error_5) > max_error_threshold_machine)
 							{
 								std::cerr << "MAX ERROR THRESHOLD EXCEEDED!" << std::endl;
 								exit(-1);

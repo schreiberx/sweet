@@ -683,6 +683,9 @@ public:
 
 			if (simVars.misc.verbosity > 2)
 			{
+#ifdef __INTEL_COMPILER
+				std::cout << "Intel compiler issues, have fun" << std::endl;
+#else
 				std::cout << "ALPHA:" << std::endl;
 				for (std::size_t n = 0; n < swe_plane_rexi.rexi.alpha.size(); n++)
 					std::cout << swe_plane_rexi.rexi.alpha[n] << std::endl;
@@ -690,6 +693,7 @@ public:
 				std::cout << "BETA:" << std::endl;
 				for (std::size_t n = 0; n < swe_plane_rexi.rexi.beta_re.size(); n++)
 					std::cout << swe_plane_rexi.rexi.beta_re[n] << std::endl;
+#endif
 			}
 		}
 

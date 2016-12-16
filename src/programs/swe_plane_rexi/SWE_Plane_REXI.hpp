@@ -97,7 +97,7 @@ class SWE_Plane_REXI
 
 public:
 	//REXI stuff
-	REXI rexi;
+	REXI<> rexi;
 
 	// Interpolation stuff
 	//Sampler2D sampler2D;

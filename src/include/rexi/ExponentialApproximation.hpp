@@ -7,7 +7,9 @@
 #ifndef SRC_INCLUDE_REXI_EXPONENTIALAPPROXIMATION_HPP_
 #define SRC_INCLUDE_REXI_EXPONENTIALAPPROXIMATION_HPP_
 
+#include <libmath/DQStuff.hpp>
 #include <sweet/sweetmath.hpp>
+#include <quadmath.h>
 #include "GaussianApproximation.hpp"
 
 
@@ -34,25 +36,32 @@
  *
  * with F and \f$ \psi \f$ the functions f and \f$ \psi \f$ in Fourier space
  */
+template <
+	typename TEvaluation,	///< evaluation accuracy of coefficients
+	typename TStorageAndProcessing	///< storage precision of coefficients - use quad precision per default
+>
 class ExponentialApproximation
 {
-	typedef std::complex<double> complex;
+	typedef std::complex<TEvaluation> complexEvaluation;
+	typedef std::complex<TStorageAndProcessing> complexStorage;
 
-	GaussianApproximation ga;
+	GaussianApproximation<TEvaluation, TStorageAndProcessing> ga;
 
-	double h;
+	TStorageAndProcessing h;
 	int M;
 
 public:
-	std::vector<complex> b;
+	std::vector<complexStorage> b;
+
+
 
 	ExponentialApproximation(
-			double i_h,
+			TStorageAndProcessing i_h,
 			int i_M
 	)
 	{
 		h = i_h;
-		M = (i_M == -1 ? (double)i_M/h : i_M);
+		M = (i_M == -1 ? (TStorageAndProcessing)(i_M/h+1) : i_M);
 
 		b.resize(i_M*2+1);
 
@@ -116,10 +125,11 @@ public:
 			 * \f$
 			 *    c_m := e^{h^2} * e^{-i*m*h}
 			 * \f$
-			 *
-			 * Let's hope, that these equations are right.
 			 */
-			b[m+M] = std::exp(h*h)*std::exp(-complex(0, 1)*((double)m*h));
+
+			b[m+M] = DQStuff::exp(
+					complexStorage(h*h, -(TStorageAndProcessing)m*h)
+				);
 		}
 	}
 
@@ -133,25 +143,25 @@ public:
 	}
 
 	static
-	complex eval(
-			double i_x
+	complexEvaluation eval(
+			TEvaluation i_x
 	)
 	{
-		return std::exp(complex(0,1)*i_x);
+		return DQStuff::expIm(i_x);
 	}
 
 
-	complex approx(
-			double i_x
+	complexEvaluation approx(
+			TEvaluation i_x
 	)
 	{
-		complex sum = 0;
+		complexEvaluation sum = 0;
 
 		/// \f$ \sum_{m=-M}^{M}{b_m \psi_h(x+m*h)} \f$
 
 		for (int m = -M; m < M+1; m++)
 		{
-			sum += b[m+M] * ga.approxGaussian(i_x+((double)m)*h, h);
+			sum += DQStuff::convertComplex<TEvaluation>(b[m+M]) * ga.approxGaussian(i_x+(TEvaluation)m*h, h);
 		}
 		return sum;
 	}

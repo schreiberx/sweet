@@ -112,8 +112,8 @@ class SWE_Sphere_REXI
 	int num_global_threads;
 
 public:
-	//REXI stuff
-	REXI rexi;
+	// REXI stuff
+	REXI<> rexi;
 
 
 private:

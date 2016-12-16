@@ -8,6 +8,7 @@
 #define SRC_INCLUDE_REXI_GAUSSIANAPPROXIMATION_HPP_
 
 #include <sweet/sweetmath.hpp>
+#include <libmath/DQStuff.hpp>
 #include <iostream>
 #include <complex>
 #include <vector>
@@ -26,14 +27,24 @@
  *
  * See e.g. Near optimal rational approximations of large data sets, Damle et. al.
  */
+template <
+	typename Tevaluation,	///< evaluation accuracy of coefficients
+	typename TStorage		///< storage precision of coefficients - use quad precision per default
+>
 class GaussianApproximation
 {
-	typedef std::complex<double> complex;
+	typedef std::complex<Tevaluation> complex;
+	typedef std::complex<TStorage> complexStorage;
+
+	const TStorage pi = DQStuff::fromString<TStorage>("3.14159265358979323846264338327950288");
+	const TStorage pi2 = pi*DQStuff::fromString<TStorage>("2.0");
+	const TStorage pi4 = pi*DQStuff::fromString<TStorage>("4.0");
+	const TStorage sqrtpi4 = DQStuff::sqrt(pi4);
 
 public:
-	complex mu;				///< average
-	std::vector<complex> a;	///< weights for approximation
-	int L;					///< 2*L+1 = number of weights
+	TStorage mu;					///< average
+	std::vector<complexStorage> a;	///< weights for approximation
+	int L;							///< 2*L+1 = number of weights
 
 	GaussianApproximation(
 			int i_L = 11	///< L
@@ -50,10 +61,37 @@ public:
 		 */
 		if (L == 11)
 		{
-			mu = {	-4.315321510875024, 0};
+			mu = DQStuff::fromString<TStorage>("-4.315321510875024");
 
 			L = 11;
 			a.resize(L*2+1);
+
+#if 1
+			a[0].real(DQStuff::fromString<TStorage>("-1.0845749544592896e-7"));		a[0].imag(DQStuff::fromString<TStorage>("2.77075431662228e-8"));
+			a[1].real(DQStuff::fromString<TStorage>("1.858753344202957e-8"));		a[1].imag(DQStuff::fromString<TStorage>("-9.105375434750162e-7"));
+			a[2].real(DQStuff::fromString<TStorage>("3.6743713227243024e-6"));		a[2].imag(DQStuff::fromString<TStorage>("7.073284346322969e-7"));
+			a[3].real(DQStuff::fromString<TStorage>("-2.7990058083347696e-6"));		a[3].imag(DQStuff::fromString<TStorage>("0.0000112564827639346"));
+			a[4].real(DQStuff::fromString<TStorage>("0.000014918577548849352"));	a[4].imag(DQStuff::fromString<TStorage>("-0.0000316278486761932"));
+			a[5].real(DQStuff::fromString<TStorage>("-0.0010751767283285608"));		a[5].imag(DQStuff::fromString<TStorage>("-0.00047282220513073084"));
+			a[6].real(DQStuff::fromString<TStorage>("0.003816465653840016"));		a[6].imag(DQStuff::fromString<TStorage>("0.017839810396560574"));
+			a[7].real(DQStuff::fromString<TStorage>("0.12124105653274578"));		a[7].imag(DQStuff::fromString<TStorage>("-0.12327042473830248"));
+			a[8].real(DQStuff::fromString<TStorage>("-0.9774980792734348"));		a[8].imag(DQStuff::fromString<TStorage>("-0.1877130220537587"));
+			a[9].real(DQStuff::fromString<TStorage>("1.3432866123333178"));			a[9].imag(DQStuff::fromString<TStorage>("3.2034715228495942"));
+			a[10].real(DQStuff::fromString<TStorage>("4.072408546157305"));			a[10].imag(DQStuff::fromString<TStorage>("-6.123755543580666"));
+			a[11].real(DQStuff::fromString<TStorage>("-9.442699917778205"));		a[11].imag(DQStuff::fromString<TStorage>("0.0"));
+			a[12].real(DQStuff::fromString<TStorage>("4.072408620272648"));			a[12].imag(DQStuff::fromString<TStorage>("6.123755841848161"));
+			a[13].real(DQStuff::fromString<TStorage>("1.3432860877712938"));		a[13].imag(DQStuff::fromString<TStorage>("-3.2034712658530275"));
+			a[14].real(DQStuff::fromString<TStorage>("-0.9774985292598916"));		a[14].imag(DQStuff::fromString<TStorage>("0.18771238018072134"));
+			a[15].real(DQStuff::fromString<TStorage>("0.1212417070363373"));		a[15].imag(DQStuff::fromString<TStorage>("0.12326987628935386"));
+			a[16].real(DQStuff::fromString<TStorage>("0.0038169724770333343"));		a[16].imag(DQStuff::fromString<TStorage>("-0.017839242222443888"));
+			a[17].real(DQStuff::fromString<TStorage>("-0.0010756025812659208"));	a[17].imag(DQStuff::fromString<TStorage>("0.0004731874917343858"));
+			a[18].real(DQStuff::fromString<TStorage>("0.000014713754789095218"));	a[18].imag(DQStuff::fromString<TStorage>("0.000031358475831136815"));
+			a[19].real(DQStuff::fromString<TStorage>("-2.659323898804944e-6"));		a[19].imag(DQStuff::fromString<TStorage>("-0.000011341571201752273"));
+			a[20].real(DQStuff::fromString<TStorage>("3.6970377676364553e-6"));		a[20].imag(DQStuff::fromString<TStorage>("-6.517457477594937e-7"));
+			a[21].real(DQStuff::fromString<TStorage>("3.883933649142257e-9"));		a[21].imag(DQStuff::fromString<TStorage>("9.128496023863376e-7"));
+			a[22].real(DQStuff::fromString<TStorage>("-1.0816457995911385e-7"));	a[22].imag(DQStuff::fromString<TStorage>("-2.954309729192276e-8"));
+
+#else
 			a = {
 					{	-1.0845749544592896e-7,		2.77075431662228e-8		},
 					{	1.858753344202957e-8,		-9.105375434750162e-7	},
@@ -79,13 +117,14 @@ public:
 					{	3.883933649142257e-9,		9.128496023863376e-7	},
 					{	-1.0816457995911385e-7,		-2.954309729192276e-8	}
 			};
+#endif
 		}
 		else if (L == -11)
 		{
 			/**
 			 * Recomputed coefficients with higher accuracy
 			 */
-			mu = {	-4.315321510875024024755930440733209252357, 0};
+			mu = -4.315321510875024024755930440733209252357;
 
 			L = 11;
 			a.resize(L*2+1);
@@ -127,12 +166,12 @@ public:
 	/**
 	 * directly evaluate basis function which is to be approximated
 	 */
-	double evalGaussian(
-			double x,	///< x-coefficient for Gaussian basis function
-			double h	///< h-coefficient for Gaussian basis function
+	Tevaluation evalGaussian(
+			Tevaluation x,	///< x-coefficient for Gaussian basis function
+			Tevaluation h	///< h-coefficient for Gaussian basis function
 	)
 	{
-		return std::exp(-(x*x)/(4*h*h))/std::sqrt(4.0*M_PIl);
+		return DQStuff::exp(-(x*x)/(4.0*h*h))/sqrtpi4;
 	}
 
 
@@ -141,23 +180,25 @@ public:
 	 *
 	 * with sum of complex rational functions
 	 */
-	double approxGaussian(
-			double x,	///< x-coefficient for Gaussian basis function
-			double h	///< h-coefficient for Gaussian basis function
+	Tevaluation approxGaussian(
+			Tevaluation x,	///< x-coefficient for Gaussian basis function
+			Tevaluation h	///< h-coefficient for Gaussian basis function
 	)
 	{
 		// scale x, since it depends linearly on h:
 		// x^2 ~ h^2
 		x /= h;
 
-		double sum = 0;
+		Tevaluation sum = 0;
 
 		for (int l = 0; l < 2*L+1; l++)
 		{
 			int j = l-L;
 
+			std::complex<Tevaluation> aEval(a[l].real(), a[l].imag());
+
 			// WORKS with max error 7.15344e-13
-			sum += (a[l]/(complex(0, x) + mu + complex(0, j))).real();
+			sum += (aEval/(complex(0, x) + (Tevaluation)mu + complex(0, j))).real();
 		}
 
 		return sum;

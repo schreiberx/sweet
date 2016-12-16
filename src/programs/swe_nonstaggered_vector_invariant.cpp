@@ -65,7 +65,9 @@ public:
 	 *   ______________
 	 *   |            |
 	 *   |    u0,1    |
+	 *   |            |
 	 *   v0,0 P0,0 v1,0
+	 *   |            |
 	 *   |    u0,0    |
 	 *   |____________|
 	 */
@@ -122,8 +124,8 @@ public:
 		prog_P.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
-			double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-			double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 				io_data = SWEPlaneBenchmarks::return_h(simVars, x, y);
 			}
 		);
@@ -131,8 +133,8 @@ public:
 		prog_u.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
-			double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-			double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+				double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 				io_data = SWEPlaneBenchmarks::return_u(simVars, x, y);
 			}
 		);
@@ -140,8 +142,8 @@ public:
 		prog_v.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
-			double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-			double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+				double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 				io_data = SWEPlaneBenchmarks::return_v(simVars, x, y);
 			}
 		);

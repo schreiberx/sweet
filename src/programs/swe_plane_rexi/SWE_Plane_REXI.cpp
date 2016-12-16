@@ -157,11 +157,13 @@ void SWE_Plane_REXI::setup(
 	}
 #endif
 
+	PlaneDataConfig *planeDataConfig_local = this->planeDataConfig;
+
 	// use a kind of serialization of the input to avoid threading conflicts in the ComplexFFT generation
 	for (int j = 0; j < num_local_rexi_par_threads; j++)
 	{
 #if SWEET_REXI_THREAD_PARALLEL_SUM
-#	pragma omp parallel for schedule(static,1) default(none) shared(planeDataConfig,i_domain_size,std::cout,j)
+#	pragma omp parallel for schedule(static,1) default(none) shared(planeDataConfig_local, i_domain_size,std::cout,j)
 #endif
 		for (int i = 0; i < num_local_rexi_par_threads; i++)
 		{
@@ -179,15 +181,15 @@ void SWE_Plane_REXI::setup(
 
 			perThreadVars[i] = new PerThreadVars;
 
-			perThreadVars[i]->op.setup(planeDataConfig, i_domain_size);
+			perThreadVars[i]->op.setup(planeDataConfig_local, i_domain_size);
 
-			perThreadVars[i]->eta.setup(planeDataConfig);
-			perThreadVars[i]->eta0.setup(planeDataConfig);
-			perThreadVars[i]->u0.setup(planeDataConfig);
-			perThreadVars[i]->v0.setup(planeDataConfig);
-			perThreadVars[i]->h_sum.setup(planeDataConfig);
-			perThreadVars[i]->u_sum.setup(planeDataConfig);
-			perThreadVars[i]->v_sum.setup(planeDataConfig);
+			perThreadVars[i]->eta.setup(planeDataConfig_local);
+			perThreadVars[i]->eta0.setup(planeDataConfig_local);
+			perThreadVars[i]->u0.setup(planeDataConfig_local);
+			perThreadVars[i]->v0.setup(planeDataConfig_local);
+			perThreadVars[i]->h_sum.setup(planeDataConfig_local);
+			perThreadVars[i]->u_sum.setup(planeDataConfig_local);
+			perThreadVars[i]->v_sum.setup(planeDataConfig_local);
 		}
 	}
 
@@ -207,7 +209,7 @@ void SWE_Plane_REXI::setup(
 	}
 
 #if SWEET_REXI_THREAD_PARALLEL_SUM
-#	pragma omp parallel for schedule(static,1) default(none)  shared(i_domain_size,std::cout)
+#	pragma omp parallel for schedule(static,1) default(none)  shared(planeDataConfig_local, i_domain_size,std::cout)
 #endif
 	for (int i = 0; i < num_local_rexi_par_threads; i++)
 	{
@@ -233,7 +235,7 @@ void SWE_Plane_REXI::setup(
 			exit(-1);
 		}
 
-		perThreadVars[i]->op.setup(planeDataConfig, i_domain_size);
+		perThreadVars[i]->op.setup(planeDataConfig_local, i_domain_size);
 
 		// initialize all values to account for first touch policy reason
 		perThreadVars[i]->eta.spectral_set_all(0, 0);
@@ -824,8 +826,8 @@ bool SWE_Plane_REXI::run_timestep_rexi(
 		{
 			// load alpha (a) and scale by inverse of tau
 			// we flip the sign to account for the -L used in exp(\tau (-L))
-			complex alpha = rexi.alpha[n]/i_timestep_size;
-			complex beta = rexi.beta_re[n];
+			complex alpha = DQStuff::convertComplex<double>(rexi.alpha[n])/i_timestep_size;
+			complex beta = DQStuff::convertComplex<double>(rexi.beta_re[n]);
 
 			// load kappa (k)
 			complex kappa = alpha*alpha + i_parameters.sim.f0*i_parameters.sim.f0;

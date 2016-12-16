@@ -13,6 +13,7 @@
 #include <limits>
 #include <iostream>
 #include <sweet/FatalError.hpp>
+#include <libmath/DQStuff.hpp>
 
 
 class GaussQuadrature
@@ -29,18 +30,18 @@ public:
 		// https://en.wikipedia.org/wiki/Gaussian_quadrature
 		static T x[5] = {
 				0,
-				-(T)1.0/(T)3.0*std::sqrt((T)5.0-(T)2.0*std::sqrt((T)10.0/(T)7.0)),
-				+(T)1.0/(T)3.0*std::sqrt((T)5.0-(T)2.0*std::sqrt((T)10.0/(T)7.0)),
-				-(T)1.0/(T)3.0*std::sqrt((T)5.0+(T)2.0*std::sqrt((T)10.0/(T)7.0)),
-				+(T)1.0/(T)3.0*std::sqrt((T)5.0+(T)2.0*std::sqrt((T)10.0/(T)7.0)),
+				-(T)1.0/(T)3.0*DQStuff::sqrt((T)5.0-(T)2.0*DQStuff::sqrt((T)10.0/(T)7.0)),
+				+(T)1.0/(T)3.0*DQStuff::sqrt((T)5.0-(T)2.0*DQStuff::sqrt((T)10.0/(T)7.0)),
+				-(T)1.0/(T)3.0*DQStuff::sqrt((T)5.0+(T)2.0*DQStuff::sqrt((T)10.0/(T)7.0)),
+				+(T)1.0/(T)3.0*DQStuff::sqrt((T)5.0+(T)2.0*DQStuff::sqrt((T)10.0/(T)7.0)),
 		};
 
 		static T w[5] = {
 				(T)128.0/(T)225.0,
-				((T)322.0+(T)13.0*std::sqrt((T)70.0))/(T)900.0,
-				((T)322.0+(T)13.0*std::sqrt((T)70.0))/(T)900.0,
-				((T)322.0-(T)13.0*std::sqrt((T)70.0))/(T)900.0,
-				((T)322.0-(T)13.0*std::sqrt((T)70.0))/(T)900.0
+				((T)322.0+(T)13.0*DQStuff::sqrt((T)70.0))/(T)900.0,
+				((T)322.0+(T)13.0*DQStuff::sqrt((T)70.0))/(T)900.0,
+				((T)322.0-(T)13.0*DQStuff::sqrt((T)70.0))/(T)900.0,
+				((T)322.0-(T)13.0*DQStuff::sqrt((T)70.0))/(T)900.0
 		};
 
 		T accum = 0;
@@ -112,7 +113,7 @@ public:
 	{
 		assert(i_end > i_start);
 
-		T mid = 0.5*(i_end + i_start);
+		T mid = (T)0.5*(i_end + i_start);
 
 		if (i_current_depth > i_max_depth)
 			return std::numeric_limits<T>::infinity();
@@ -133,7 +134,7 @@ public:
 
 			T sum = left_value + right_value;
 
-			if (std::abs(sum-i_prev_value)/(i_end-i_start) < i_rel_error_threshold)
+			if (DQStuff::abs(sum-i_prev_value)/(i_end-i_start) < i_rel_error_threshold)
 				return sum;
 
 
@@ -207,7 +208,7 @@ public:
 				i_rel_error_threshold
 			);
 
-		if (std::isinf(approx_integral))
+		if (std::isinf((double)approx_integral))
 			FatalError("No convergence reached for integrate5_intervals_adaptive");
 
 		return approx_integral;
