@@ -332,7 +332,6 @@ public:
 
 		std::cout << "Simulation time: " << simVars.timecontrol.current_simulation_time << std::endl;
 
-
 		output_filename = write_file(prog_h, "h", simVars.setup.benchmark_scenario_id == 0);
 		std::cout << output_filename << " (min: " << prog_h.physical_reduce_min() << ", max: " << prog_h.physical_reduce_max() << ")" << std::endl;
 
@@ -465,13 +464,22 @@ public:
 		return true;
 	}
 
+
 public:
 	bool should_quit()
 	{
 		if (simVars.timecontrol.max_timesteps_nr != -1 && simVars.timecontrol.max_timesteps_nr <= simVars.timecontrol.current_timestep_nr)
 			return true;
 
-		if (simVars.timecontrol.max_simulation_time != -1 && simVars.timecontrol.max_simulation_time <= simVars.timecontrol.current_simulation_time)
+		double diff = std::abs(simVars.timecontrol.max_simulation_time - simVars.timecontrol.current_simulation_time);
+
+		if (	simVars.timecontrol.max_simulation_time != -1 &&
+				(
+						simVars.timecontrol.max_simulation_time <= simVars.timecontrol.current_simulation_time
+						||
+						diff/simVars.timecontrol.max_simulation_time < 1e-14	// avoid numerical issues in time stepping if current time step is 1e-14 smaller than max time step
+				)
+			)
 			return true;
 
 		return false;
@@ -994,10 +1002,15 @@ int main(int i_argc, char *i_argv[])
 			time.reset();
 
 
+			bool output_written = false;
+
 			// Main time loop
 			while(true)
 			{
-				simulationSWE->timestep_check_output();
+				if (simulationSWE->timestep_check_output())
+					output_written = true;
+				else
+					output_written = false;
 
 				// Stop simulation if requested
 				if (simulationSWE->should_quit())
@@ -1014,8 +1027,9 @@ int main(int i_argc, char *i_argv[])
 				}
 			}
 
-			// Always write or overwrite final time step output!
-			simulationSWE->timestep_do_output();
+			// Output final time step if not yet done!
+			if (!output_written)
+				simulationSWE->timestep_do_output();
 
 			// Stop counting time
 			time.stop();
