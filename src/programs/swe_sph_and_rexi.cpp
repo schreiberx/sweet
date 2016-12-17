@@ -1027,7 +1027,7 @@ int main(int i_argc, char *i_argv[])
 				}
 			}
 
-			// Output final time step if not yet done!
+			// Output final time step output!
 			if (!output_written)
 				simulationSWE->timestep_do_output();
 

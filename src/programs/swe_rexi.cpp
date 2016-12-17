@@ -2134,13 +2134,15 @@ int main(int i_argc, char *i_argv[])
 
 
 #if SWEET_MPI
-	int rank;
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	int mpi_rank;
+	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 
 	// only start simulation and time stepping for first rank
-	if (rank == 0)
+	if (mpi_rank == 0)
 #endif
 	{
+		std::cout << "MPI_RANK: " << mpi_rank << std::endl;
+
 #if SWEET_PARAREAL
 		if (simVars.parareal.enabled)
 		{
@@ -2318,7 +2320,7 @@ int main(int i_argc, char *i_argv[])
 	if (param_timestepping_mode > 0)
 	{
 		// synchronize REXI
-		if (rank == 0)
+		if (mpi_rank == 0)
 			SWE_Plane_REXI::MPI_quitWorkers(planeDataConfig);
 	}
 
