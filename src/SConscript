@@ -15,7 +15,7 @@ elif env['unit_test'] != '':
 # WARNING!
 #
 if env['program_name'] in ['swe_rexi', 'pfasst_swe_plane_rexi'] or env['unit_test'] == 'test_helmholtz':
-	if env['rexi_parallel_sum']=='enable':
+	if env['rexi_thread_parallel_sum']=='enable':
 		env_omp = env.Clone()
 		env_omp.Append(CCFLAGS = ' -fopenmp')
 		env.src_files.append(env_omp.Object('programs/swe_plane_rexi/SWE_Plane_REXI.cpp'))
@@ -24,7 +24,7 @@ if env['program_name'] in ['swe_rexi', 'pfasst_swe_plane_rexi'] or env['unit_tes
 
 
 if env['program_name'] == 'swe_sph_and_rexi' or env['unit_test'] in ['test_sph_rexi_solver']:
-	if env['rexi_parallel_sum']=='enable':
+	if env['rexi_thread_parallel_sum']=='enable':
 		env_omp = env.Clone()
 		env_omp.Append(CCFLAGS = ' -fopenmp')
 		env.src_files.append(env_omp.Object('programs/swe_sphere_rexi/SWE_Sphere_REXI.cpp'))
