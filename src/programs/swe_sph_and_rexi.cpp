@@ -388,6 +388,8 @@ public:
 	{
 		write_file_output();
 
+		// output line break
+		std::cout << std::endl;
 #if 0
 		if (simVars.misc.verbosity > 0)
 		{
@@ -936,13 +938,18 @@ int main(int i_argc, char *i_argv[])
 	}
 
 
+
 #if SWEET_MPI
-	int rank;
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+	int mpi_rank;
+	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+
+	std::cout << "MPI RANK: " << mpi_rank << std::endl;
 
 	// only start simulation and time stepping for first rank
-	if (rank == 0)
+	if (mpi_rank == 0)
 #endif
+
 	{
 #if SWEET_PARAREAL
 		if (simVars.parareal.enabled)
@@ -1102,7 +1109,7 @@ int main(int i_argc, char *i_argv[])
 	if (simVars.rexi.use_rexi == 1)
 	{
 		// synchronize REXI
-		if (rank == 0)
+		if (mpi_rank == 0)
 			SWE_Sphere_REXI::MPI_quitWorkers(sphereDataConfig);
 	}
 
