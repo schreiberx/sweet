@@ -13,6 +13,8 @@ hostname = hostname.replace("\r", '')
 
 env = Environment(ENV = os.environ)
 
+
+
 ###################################################################
 # fix LD LIB PATH
 ###################################################################
@@ -23,7 +25,8 @@ files = os.listdir('src/programs/')
 files = sorted(files)
 example_programs = []
 for f in files:
-	example_programs.append(f[0:-4])
+	if os.path.isfile('src/programs/'+f):
+		example_programs.append(f[0:-4])
 env['example_programs'] = example_programs
 
 
@@ -230,14 +233,14 @@ env['gui'] = GetOption('gui')
 
 
 
-AddOption(	'--rexi-parallel-sum',
-		dest='rexi_parallel_sum',
+AddOption(	'--rexi-thread-parallel-sum',
+		dest='rexi_thread_parallel_sum',
 		type='choice',
 		choices=['enable','disable'],
 		default='disable',
 		help='Use a par for loop over the sum in REXI: enable, disable [default: %default]\n\tWARNING: This also disables the parallelization-in-space with OpenMP'
 )
-env['rexi_parallel_sum'] = GetOption('rexi_parallel_sum')
+env['rexi_thread_parallel_sum'] = GetOption('rexi_thread_parallel_sum')
 
 
 AddOption(	'--sweet-mpi',
@@ -736,7 +739,7 @@ else:
 		exec_name+='_omp'
 	
 
-if env['rexi_parallel_sum']=='enable':
+if env['rexi_thread_parallel_sum']=='enable':
 	exec_name+='_rexipar'
 
 env.Append(CXXFLAGS=' -DNUMA_BLOCK_ALLOCATOR_TYPE='+env['numa_block_allocator'])
@@ -814,7 +817,7 @@ if env['mic'] == 'enable':
 	env.Append(LINKFLAGS=['-mmic'])
 
 
-if env['rexi_parallel_sum'] == 'enable' and env['threading'] == 'omp':
+if env['rexi_thread_parallel_sum'] == 'enable' and env['threading'] == 'omp':
 	print 'ERROR: "REXI Parallel Sum" and "Threading" is both activated'
 	sys.exit(1)
 
@@ -823,7 +826,7 @@ if env['rexi_parallel_sum'] == 'enable' and env['threading'] == 'omp':
 # If SWEET_REXI_THREAD_PARALLEL_SUM is activated, the REXI sum is computed
 # with parallel for over the sum terms
 #
-if env['rexi_parallel_sum'] == 'enable':
+if env['rexi_thread_parallel_sum'] == 'enable':
 	# Same for gcc/icpc
 	env.Append(LINKFLAGS=['-fopenmp'])
 
