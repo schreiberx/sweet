@@ -34,8 +34,8 @@ public:
 			std::cout << "Benchmark scenario not selected (option -s [id])" << std::endl;
 			std::cout << "Available benchmark scenarios:" << std::endl;
 			std::cout << "	1: Galweski" << std::endl;
-			std::cout << "	2: Use Gaussian bump initial conditions (pi/3, pi/3)" << std::endl;
-			std::cout << "	3: Use Gaussian bump initial conditions (0, pi/3)" << std::endl;
+			std::cout << "	2: Use Gaussian bump initial conditions (0, pi/3)" << std::endl;
+			std::cout << "	3: Use Gaussian bump initial conditions (pi/3, pi/3)" << std::endl;
 			std::cout << "	4: Use geostrophic balance test case" << std::endl;
 			std::cout << std::endl;
 			FatalError("Benchmark scenario not selected");
@@ -68,11 +68,11 @@ public:
 
 			if (i_simVars.setup.benchmark_scenario_id == 2)
 			{
-				BenchmarkGaussianDam::setup_initial_conditions_gaussian(o_h, o_u, o_v, i_simVars, 0);
+				BenchmarkGaussianDam::setup_initial_conditions_gaussian(o_h, o_u, o_v, i_simVars, 0, M_PI/3.0);
 			}
 			else if (i_simVars.setup.benchmark_scenario_id == 3)
 			{
-				BenchmarkGaussianDam::setup_initial_conditions_gaussian(o_h, o_u, o_v, i_simVars, M_PI/3.0);
+				BenchmarkGaussianDam::setup_initial_conditions_gaussian(o_h, o_u, o_v, i_simVars, M_PI/3.0, M_PI/3.0);
 				//setup_initial_conditions_gaussian(M_PI, M_PI);
 //				setup_initial_conditions_gaussian(M_PI*0.5, M_PI*0.5);
 //				setup_initial_conditions_gaussian(-M_PI/3.0);
