@@ -383,8 +383,12 @@ public:
 			int *o_nlat		/// physical resolution along latitude
 	)
 	{
-		shtns_verbose(1);			// displays informations during initialization.
-		shtns_use_threads(0);		// enable multi-threaded transforms (if supported).
+		shtns_verbose(0);			// displays informations during initialization.
+#if SWEET_THREADING
+		shtns_use_threads(0);	// automatically choose number of threads
+#else
+		shtns_use_threads(1);	// value of 1 disables threading
+#endif
 
 
 		shtns = shtns_create(
