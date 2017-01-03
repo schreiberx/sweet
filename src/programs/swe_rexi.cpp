@@ -2141,7 +2141,9 @@ int main(int i_argc, char *i_argv[])
 	if (mpi_rank == 0)
 #endif
 	{
+#if SWEET_MPI
 		std::cout << "MPI_RANK: " << mpi_rank << std::endl;
+#endif
 
 #if SWEET_PARAREAL
 		if (simVars.parareal.enabled)
