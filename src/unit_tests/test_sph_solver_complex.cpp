@@ -124,7 +124,7 @@ void run_tests()
 	double two_omega = 2.0*simVars.sim.coriolis_omega;
 
 
-	REXI rexi(0, 0.2, 64);
+	REXI<> rexi(0, 0.2, 64);
 
 	SphereOperatorsComplex opComplex(sphereDataConfig);
 
