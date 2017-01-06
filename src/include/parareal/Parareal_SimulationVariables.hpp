@@ -60,19 +60,19 @@ public:
 			int i_max_options					///< maximum number of options
 	)
 	{
-		io_long_options[io_next_free_program_option] = {"parareal-coarse-slices", required_argument, 0, (int)256+'a'+io_next_free_program_option};
+		io_long_options[io_next_free_program_option] = {"parareal-coarse-slices", required_argument, 0, (int)256+io_next_free_program_option};
 		io_next_free_program_option++;
 
-		io_long_options[io_next_free_program_option] = {"parareal-convergence-threshold", required_argument, 0, (int)256+'a'+io_next_free_program_option};
+		io_long_options[io_next_free_program_option] = {"parareal-convergence-threshold", required_argument, 0, (int)256+io_next_free_program_option};
 		io_next_free_program_option++;
 
-		io_long_options[io_next_free_program_option] = {"parareal-verbosity", required_argument, 0, (int)256+'a'+io_next_free_program_option};
+		io_long_options[io_next_free_program_option] = {"parareal-verbosity", required_argument, 0, (int)256+io_next_free_program_option};
 		io_next_free_program_option++;
 
-		io_long_options[io_next_free_program_option] = {"parareal-enabled", required_argument, 0, (int)256+'a'+io_next_free_program_option};
+		io_long_options[io_next_free_program_option] = {"parareal-enabled", required_argument, 0, (int)256+io_next_free_program_option};
 		io_next_free_program_option++;
 
-		io_long_options[io_next_free_program_option] = {"parareal-max-simulation-time", required_argument, 0, (int)256+'a'+io_next_free_program_option};
+		io_long_options[io_next_free_program_option] = {"parareal-max-simulation-time", required_argument, 0, (int)256+io_next_free_program_option};
 		io_next_free_program_option++;
 
 		if (io_next_free_program_option > i_max_options)

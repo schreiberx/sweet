@@ -89,6 +89,7 @@ public:
 		/// use "BINARY;filename1;filename2" to specify that the binary files should be read in binary format
 		bool input_data_binary = false;
 
+
 		void setup_initial_condition_filenames(
 				const std::string i_string
 		)
@@ -408,7 +409,6 @@ public:
 			const char *bogus_var_names[] = nullptr			///< list of strings of simulation-specific variables, has to be terminated by nullptr
 	)
 	{
-		int next_free_program_option = 0;
 		const int max_options = 50;
         static struct option long_options[max_options+1] = {
     			{0, 0, 0, 0}, // 0
@@ -469,59 +469,61 @@ public:
 				{0, 0, 0, 0} // NULL
         };
 
+		int next_free_program_option = 0;
 
-        long_options[next_free_program_option] = {"initial-coord-x", required_argument, 0, 256+'a'+next_free_program_option};
+        long_options[next_free_program_option] = {"initial-coord-x", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        long_options[next_free_program_option] = {"initial-coord-y", required_argument, 0, 256+'a'+next_free_program_option};
+        long_options[next_free_program_option] = {"initial-coord-y", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        long_options[next_free_program_option] = {"rexi-h", required_argument, 0, 256+'a'+next_free_program_option};
+        long_options[next_free_program_option] = {"rexi-h", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        long_options[next_free_program_option] = {"rexi-m", required_argument, 0, 256+'a'+next_free_program_option};
+        long_options[next_free_program_option] = {"rexi-m", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        long_options[next_free_program_option] = {"rexi-l", required_argument, 0, 256+'a'+next_free_program_option};
+        long_options[next_free_program_option] = {"rexi-l", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        long_options[next_free_program_option] = {"rexi-half", required_argument, 0, 256+'a'+next_free_program_option};
+        long_options[next_free_program_option] = {"rexi-half", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        long_options[next_free_program_option] = {"rexi", required_argument, 0, 256+'a'+next_free_program_option};
+        long_options[next_free_program_option] = {"rexi", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        long_options[next_free_program_option] = {"rexi-normalization", required_argument, 0, 256+'a'+next_free_program_option};
+        long_options[next_free_program_option] = {"rexi-normalization", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        long_options[next_free_program_option] = {"rexi-ext-modes", required_argument, 0, 256+'a'+next_free_program_option};
+        long_options[next_free_program_option] = {"rexi-ext-modes", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        long_options[next_free_program_option] = {"nonlinear", required_argument, 0, 256+'a'+next_free_program_option};
+        long_options[next_free_program_option] = {"nonlinear", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        long_options[next_free_program_option] = {"use-robert-functions", required_argument, 0, 256+'a'+next_free_program_option};
+        long_options[next_free_program_option] = {"use-robert-functions", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
 #if SWEET_PFASST
-        long_options[next_free_program_option] = {"pfasst-nlevels", required_argument, 0, 256+'a'+next_free_program_option};
+        long_options[next_free_program_option] = {"pfasst-nlevels", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        long_options[next_free_program_option] = {"pfasst-nnodes", required_argument, 0, 256+'a'+next_free_program_option};
+        long_options[next_free_program_option] = {"pfasst-nnodes", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        long_options[next_free_program_option] = {"pfasst-nspace", required_argument, 0, 256+'a'+next_free_program_option};
+        long_options[next_free_program_option] = {"pfasst-nspace", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        long_options[next_free_program_option] = {"pfasst-nsteps", required_argument, 0, 256+'a'+next_free_program_option};
+        long_options[next_free_program_option] = {"pfasst-nsteps", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        long_options[next_free_program_option] = {"pfasst-niters", required_argument, 0, 256+'a'+next_free_program_option};
+        long_options[next_free_program_option] = {"pfasst-niters", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        long_options[next_free_program_option] = {"pfasst-dt", required_argument, 0, 256+'a'+next_free_program_option};
+        long_options[next_free_program_option] = {"pfasst-dt", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 #endif
+
 
 #if SWEET_PARAREAL
         int parareal_start_option_index = next_free_program_option;
@@ -539,7 +541,7 @@ public:
 				long_options[opt_nr].name = bogus_var_names[opt_nr-next_free_program_option];
 				long_options[opt_nr].has_arg = required_argument;
 				long_options[opt_nr].flag = 0;
-				long_options[opt_nr].val = 256+'a'+opt_nr;
+				long_options[opt_nr].val = 256+opt_nr;
 			}
 
 			if (opt_nr == max_options)
@@ -551,7 +553,6 @@ public:
 
 		// index into long_options for determined argument
 		int option_index = 0;
-
 
 		int opt;
 		while (1)
@@ -568,35 +569,35 @@ public:
 			/*
 			 * LONG OPTIONS
 			 */
-			if (opt >= 256+'a' && opt <= 256+'z')
+			if (opt >= 256)
 			{
-				int i = (int)opt-((int)256+'a');
+				int i = opt-256;
 
 				if (i < next_free_program_option)
 				{
 					switch(i)
 					{
-					case 0:		setup.setup_coord_x = atof(optarg);	break;
-					case 1:		setup.setup_coord_y = atof(optarg);	break;
+						case 0:		setup.setup_coord_x = atof(optarg);	break;
+						case 1:		setup.setup_coord_y = atof(optarg);	break;
 
-					case 2:		rexi.rexi_h = atof(optarg);	break;
-					case 3:		rexi.rexi_M = atoi(optarg);	break;
-					case 4:		rexi.rexi_L = atoi(optarg);	break;
-					case 5:		rexi.rexi_use_half_poles = atoi(optarg);	break;
-					case 6:		rexi.use_rexi = atoi(optarg);	break;
-					case 7:		rexi.rexi_normalization = atoi(optarg);	break;
-					case 8:		rexi.rexi_use_extended_modes = atoi(optarg);	break;
-					case 9:		misc.use_nonlinear_equations = atoi(optarg);	break;
-					case 10:	misc.sphere_use_robert_functions = atoi(optarg);	break;
+						case 2:		rexi.rexi_h = atof(optarg);	break;
+						case 3:		rexi.rexi_M = atoi(optarg);	break;
+						case 4:		rexi.rexi_L = atoi(optarg);	break;
+						case 5:		rexi.rexi_use_half_poles = atoi(optarg);	break;
+						case 6:		rexi.use_rexi = atoi(optarg);	break;
+						case 7:		rexi.rexi_normalization = atoi(optarg);	break;
+						case 8:		rexi.rexi_use_extended_modes = atoi(optarg);	break;
+						case 9:		misc.use_nonlinear_equations = atoi(optarg);	break;
+						case 10:	misc.sphere_use_robert_functions = atoi(optarg);	break;
 
-					case 11:	pfasst.nlevels = atoi(optarg);	break;
-					case 12:	pfasst.nnodes = atoi(optarg);	break;
-					case 13:	pfasst.nspace = atoi(optarg);	break;
-					case 14:	pfasst.nsteps = atoi(optarg);	break;
-					case 15:	pfasst.niters = atoi(optarg);	break;
-					case 16:	pfasst.dt = atof(optarg);	break;
+						case 11:	pfasst.nlevels = atoi(optarg);	break;
+						case 12:	pfasst.nnodes = atoi(optarg);	break;
+						case 13:	pfasst.nspace = atoi(optarg);	break;
+						case 14:	pfasst.nsteps = atoi(optarg);	break;
+						case 15:	pfasst.niters = atoi(optarg);	break;
+						case 16:	pfasst.dt = atof(optarg);	break;
 
-					default:
+						default:
 #if SWEET_PARAREAL
 						parareal.setup_longOptionValue(i-parareal_start_option_index, optarg);
 #endif
@@ -605,6 +606,17 @@ public:
 				}
 				else
 				{
+					int bogus_id = i-next_free_program_option;
+
+					if (bogus_id >= max_options)
+					{
+						std::cout << std::endl;
+						std::cout << "SERIOUS ERROR" << std::endl;
+						std::cout << " + long option: " << i_argv[option_index] << std::endl;
+						std::cout << " + bogus id " << bogus_id << std::endl;
+						std::cout << std::endl;
+						exit(1);
+					}
 					bogus.var[i-next_free_program_option] = atof(optarg);
 				}
 				continue;
