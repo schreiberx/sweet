@@ -82,6 +82,8 @@ public:
 		/// setup coordinate of e.g. radial breaking dam, y-placement \in [0;1]
 		double setup_coord_y = 0.5;
 
+		/// rotation angle for advection equation
+		double advection_rotation_angle = 0;
 
 		/// filenames of input data for setup (this has to be setup by each application individually)
 		std::vector<std::string> input_data_filenames;
@@ -122,10 +124,11 @@ public:
 	/**
 	 * simulation coefficients
 	 */
-	struct Coefficients
+	struct SimulationCoefficients
 	{
 		/// average height for initialization
 		double h0 = 1000.0;
+
 
 		/// For more information on viscosity,
 		/// see 13.3.1 "Generic Form of the Explicit Diffusion Mechanism"
@@ -504,6 +507,9 @@ public:
         long_options[next_free_program_option] = {"use-robert-functions", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
+        long_options[next_free_program_option] = {"sphere-advection-angle", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
 #if SWEET_PFASST
         long_options[next_free_program_option] = {"pfasst-nlevels", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
@@ -587,15 +593,18 @@ public:
 						case 6:		rexi.use_rexi = atoi(optarg);	break;
 						case 7:		rexi.rexi_normalization = atoi(optarg);	break;
 						case 8:		rexi.rexi_use_extended_modes = atoi(optarg);	break;
+
 						case 9:		misc.use_nonlinear_equations = atoi(optarg);	break;
 						case 10:	misc.sphere_use_robert_functions = atoi(optarg);	break;
 
-						case 11:	pfasst.nlevels = atoi(optarg);	break;
-						case 12:	pfasst.nnodes = atoi(optarg);	break;
-						case 13:	pfasst.nspace = atoi(optarg);	break;
-						case 14:	pfasst.nsteps = atoi(optarg);	break;
-						case 15:	pfasst.niters = atoi(optarg);	break;
-						case 16:	pfasst.dt = atof(optarg);	break;
+						case 11:	setup.advection_rotation_angle = atof(optarg);	break;
+
+						case 12:	pfasst.nlevels = atoi(optarg);	break;
+						case 13:	pfasst.nnodes = atoi(optarg);	break;
+						case 14:	pfasst.nspace = atoi(optarg);	break;
+						case 15:	pfasst.nsteps = atoi(optarg);	break;
+						case 16:	pfasst.niters = atoi(optarg);	break;
+						case 17:	pfasst.dt = atof(optarg);	break;
 
 						default:
 #if SWEET_PARAREAL

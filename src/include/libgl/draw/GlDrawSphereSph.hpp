@@ -119,17 +119,19 @@ public:
 				v[2] = -std::cos(r)*scale;
 				v += 3;
 
-				tc[0] = ((float)dalpha+0.5)/(float)hsegments;
-				tc[1] = ((float)dbeta+0.5)/(float)vsegments;
+				tc[0] = ((float)dalpha)/(float)hsegments;
+				tc[1] = ((float)dbeta)/(float)vsegments;
 
 				tc[0] = -tc[0];
 
-				tc[0] += 0.5;
+#if 1
+//				tc[0] += 0.5;
+				tc[0] += 0.75;
 				while (tc[0] > 1.0)
 					tc[0]--;
 				while (tc[0] < 0.0)
 					tc[0]++;
-
+#endif
 				tc += 2;
 
 				vcount++;

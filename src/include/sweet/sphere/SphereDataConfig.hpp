@@ -15,6 +15,7 @@
 #include <sweet/sweetmath.hpp>
 
 
+
 class SphereDataConfig
 {
 	friend class SphereOperators;
@@ -102,6 +103,11 @@ public:
 	}
 
 	std::string getUniqueIDString()
+	{
+		return getConfigInformationString();
+	}
+
+	std::string getConfigInformationString()
 	{
 		std::ostringstream buf;
 		buf << "M" << spectral_modes_m_max << "," << spectral_modes_n_max << "_N" << physical_num_lon << "," << physical_num_lat;

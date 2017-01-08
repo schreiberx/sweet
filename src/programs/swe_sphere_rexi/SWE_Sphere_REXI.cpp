@@ -153,7 +153,7 @@ void SWE_Sphere_REXI::setup(
 										///< set to 0 for auto detection
 
 		SphereDataConfig *i_sphereDataConfig,
-		SimulationVariables::Coefficients *i_simCoeffs,
+		SimulationVariables::SimulationCoefficients *i_simCoeffs,
 		double i_timestep_size,
 
 		bool i_rexi_half,				///< use half-pole reduction

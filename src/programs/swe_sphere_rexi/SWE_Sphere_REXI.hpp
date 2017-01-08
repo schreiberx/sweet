@@ -46,7 +46,7 @@ class SWE_Sphere_REXI
 	/*
 	 * Simulation coefficients
 	 */
-	SimulationVariables::Coefficients *simCoeffs;
+	SimulationVariables::SimulationCoefficients *simCoeffs;
 
 	bool use_robert_functions;
 
@@ -133,7 +133,7 @@ public:
 			int i_L,		///< number of sampling points for Gaussian approx
 
 			SphereDataConfig *i_sphereDataConfig,
-			SimulationVariables::Coefficients *i_simCoeffs,
+			SimulationVariables::SimulationCoefficients *i_simCoeffs,
 			double i_timestep_size,
 
 			bool i_rexi_half,				///< use half-pole reduction

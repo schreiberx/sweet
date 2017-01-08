@@ -62,6 +62,12 @@ bool param_rexi_use_coriolis_formulation = true;
 bool param_compute_error = false;
 double param_geostr_balance_freq_multiplier = 1.0;
 
+/**
+ * ID of PDE to solve
+ * 0: SWE
+ * 1: advection
+ */
+bool param_pde_id = 0;
 
 
 class SimulationInstance
@@ -85,6 +91,9 @@ public:
 	SphereData prog_u;
 	SphereData prog_v;
 
+	SphereData advection_u;
+	SphereData advection_v;
+
 	REXI<> rexi;
 
 #if SWEET_GUI
@@ -102,7 +111,10 @@ public:
 		timestepping_implicit_swe(op),
 		prog_h(sphereDataConfig),
 		prog_u(sphereDataConfig),
-		prog_v(sphereDataConfig)
+		prog_v(sphereDataConfig),
+
+		advection_u(sphereDataConfig),
+		advection_v(sphereDataConfig)
 
 #if SWEET_GUI
 		,viz_plane_data(planeDataConfig)
@@ -178,14 +190,13 @@ public:
 		// one month runtime
 		if (simVars.timecontrol.max_simulation_time == -1)
 		{
-			simVars.timecontrol.max_simulation_time = 31*60*60*24;
+			if (simVars.setup.benchmark_scenario_id == 4)
+			{
+				simVars.timecontrol.max_simulation_time = 31*60*60*24;
 
-			// 144 h
-			//simVars.timecontrol.max_simulation_time = 144*60*60;
-
-			// 200 h
-			simVars.timecontrol.max_simulation_time = 200*60*60;
-	//		simVars.timecontrol.max_simulation_time = 1;
+				// 200 h
+				simVars.timecontrol.max_simulation_time = 200*60*60;
+			}
 		}
 
 		// Diagnostics measures
@@ -232,6 +243,16 @@ public:
 
 		SphereBenchmarksCombined::setupInitialConditions(prog_h, prog_u, prog_v, simVars, op);
 
+		if (simVars.setup.benchmark_scenario_id == 5)
+		{
+			advection_u = prog_u;
+			prog_u.physical_set_zero();
+
+			advection_v = prog_v;
+			prog_v.physical_set_zero();
+		}
+
+
 		if (simVars.sim.coriolis_omega != 0)
 			param_rexi_use_coriolis_formulation = true;
 
@@ -258,6 +279,8 @@ public:
 		std::cout << " + RK order: " << simVars.disc.timestepping_runge_kutta_order << std::endl;
 		std::cout << " + timestep size: " << simVars.timecontrol.current_timestep_size << std::endl;
 		std::cout << " + output timestep size: " << simVars.misc.output_each_sim_seconds << std::endl;
+		std::cout << " + max simulation time: " << simVars.timecontrol.max_simulation_time << std::endl;
+		std::cout << " + max timestep nr: " << simVars.timecontrol.max_timesteps_nr << std::endl;
 
 		std::cout << std::endl;
 
@@ -591,8 +614,98 @@ public:
 	}
 
 
+
 	// Main routine for method to be used in case of finite differences
 	void p_run_euler_timestep_update(
+			const SphereData &i_h,	///< prognostic variables
+			const SphereData &i_u,	///< prognostic variables
+			const SphereData &i_v,	///< prognostic variables
+
+			SphereData &o_h_t,	///< time updates
+			SphereData &o_u_t,	///< time updates
+			SphereData &o_v_t,	///< time updates
+
+			double &o_dt,				///< time step restriction
+			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_simulation_timestamp = -1
+	)
+	{
+		switch (param_pde_id)
+		{
+		case 0:
+			p_run_euler_timestep_update_swe(
+					i_h, i_u, i_v,
+					o_h_t, o_u_t, o_v_t,
+					o_dt,
+					i_fixed_dt,
+					i_simulation_timestamp
+			);
+			break;
+
+		case 1:
+			p_run_euler_timestep_update_advection(
+					i_h, i_u, i_v,
+					o_h_t, o_u_t, o_v_t,
+					o_dt,
+					i_fixed_dt,
+					i_simulation_timestamp
+			);
+			break;
+		}
+	}
+
+
+	/**
+	 * Euler time step for advection along the longitude
+	 */
+	void p_run_euler_timestep_update_advection(
+			const SphereData &i_h,	///< prognostic variables
+			const SphereData &i_u,	///< prognostic variables
+			const SphereData &i_v,	///< prognostic variables
+
+			SphereData &o_h_t,	///< time updates
+			SphereData &o_u_t,	///< time updates
+			SphereData &o_v_t,	///< time updates
+
+			double &o_dt,				///< time step restriction
+			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_simulation_timestamp = -1
+	)
+	{
+		o_dt = simVars.timecontrol.current_timestep_size;
+
+		if (simVars.misc.use_nonlinear_equations)
+		{
+			FatalError("Advection equation is only possible without non-linearities and with robert functions");
+		}
+
+
+		if (simVars.misc.sphere_use_robert_functions)
+		{
+			o_h_t = -(op.robert_div_lon(advection_u*i_h)+op.robert_div_lat(advection_v*i_h))*(1.0/simVars.sim.earth_radius);
+		}
+		else
+		{
+			o_h_t = -(op.div_lon(advection_u*i_h)+op.div_lat(advection_v*i_h))*(1.0/simVars.sim.earth_radius);
+		}
+
+
+		o_u_t.spectral_set_zero();
+		o_v_t.spectral_set_zero();
+
+		assert(simVars.sim.viscosity_order == 2);
+		if (simVars.sim.viscosity != 0)
+		{
+			double scalar = simVars.sim.viscosity/(simVars.sim.earth_radius*simVars.sim.earth_radius);
+
+			o_h_t += op.laplace(i_h)*scalar;
+		}
+
+	}
+
+
+	// Main routine for method to be used in case of finite differences
+	void p_run_euler_timestep_update_swe(
 			const SphereData &i_h,	///< prognostic variables
 			const SphereData &i_u,	///< prognostic variables
 			const SphereData &i_v,	///< prognostic variables
@@ -725,15 +838,13 @@ public:
 
 		case 1:
 			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(
-					prog_u
-//					simVars.misc.sphere_use_robert_functions ? prog_u.robert_convertToNonRobert() : prog_u
+					(param_pde_id == 0 ? prog_u : advection_u)
 					, planeDataConfig);
 			break;
 
 		case 2:
 			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(
-					prog_v
-//					simVars.misc.sphere_use_robert_functions ? prog_v.robert_convertToNonRobert() : prog_v
+					(param_pde_id == 0 ? prog_v : advection_v)
 					, planeDataConfig);
 			break;
 
@@ -880,13 +991,14 @@ int main(int i_argc, char *i_argv[])
 	const char *bogus_var_names[] = {
 			"rexi-use-coriolis-formulation",
 			"compute-error",
+			"pde-id",
 			nullptr
 	};
 
 	// default values for specific input (for general input see SimulationVariables.hpp)
 	simVars.bogus.var[0] = 1;
 	simVars.bogus.var[1] = 1;
-	simVars.bogus.var[2] = 1;
+	simVars.bogus.var[2] = 0;
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
@@ -896,7 +1008,7 @@ int main(int i_argc, char *i_argv[])
 #endif
 		std::cout << "	--compute-error [0/1]	Output errors (if available, default: 1)" << std::endl;
 		std::cout << "	--rexi-use-coriolis-formulation [0/1]	Use Coriolisincluding  solver for REXI (default: 1)" << std::endl;
-		std::cout << "	--benchmark-geostrophic-balance-freq-multiplier [int]	(default: 1)" << std::endl;
+		std::cout << "	--pde-id [0/1]			PDE to solve (0: SWE, 1: advection)" << std::endl;
 		return -1;
 	}
 
@@ -904,7 +1016,8 @@ int main(int i_argc, char *i_argv[])
 	assert (param_rexi_use_coriolis_formulation == 0 || param_rexi_use_coriolis_formulation == 1);
 
 	param_compute_error = simVars.bogus.var[1];
-	param_geostr_balance_freq_multiplier = simVars.bogus.var[2];
+	param_pde_id = simVars.bogus.var[2];
+
 
 	sphereDataConfigInstance.setupAutoPhysicalSpace(
 					simVars.disc.res_spectral[0],
@@ -926,18 +1039,6 @@ int main(int i_argc, char *i_argv[])
 	std::ostringstream buf;
 	buf << std::setprecision(14);
 
-	if (simVars.setup.benchmark_scenario_id == 1)
-	{
-		/// Setup Galewski parameters
-		simVars.sim.coriolis_omega = 7.292e-5;
-		simVars.sim.gravitation = 9.80616;
-		simVars.sim.earth_radius = 6.37122e6;
-		simVars.sim.h0 = 10000.0;
-
-		simVars.misc.output_time_scale = 1.0/(60.0*60.0);
-	}
-
-
 
 #if SWEET_MPI
 
@@ -951,6 +1052,8 @@ int main(int i_argc, char *i_argv[])
 #endif
 
 	{
+		std::cout << "SPH config string: " << sphereDataConfigInstance.getConfigInformationString() << std::endl;
+
 #if SWEET_PARAREAL
 		if (simVars.parareal.enabled)
 		{

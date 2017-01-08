@@ -272,6 +272,29 @@ public:
 	}
 
 
+
+	/**
+	 * Special formulation for Robert gradient,
+	 * see REXI with spherical harmonics
+	 */
+	SphereData robert_grad_lon_M(
+			const SphereData &i_sph_data
+	)
+	{
+		SphereData retval = robert_grad_lon(i_sph_data);
+
+		retval.physical_update_lambda(
+				[](double i_lon, double i_lat, double &io_data)
+				{
+					double cos = std::cos(i_lat);
+					io_data /= cos*cos;
+				}
+		);
+
+		return retval;
+	}
+
+
 	/**
 	 * Compute gradient component along latitude for Robert function formulation
 	 *
@@ -288,6 +311,30 @@ public:
 		//return spec_cosphi_squared_diff_lat_mu(i_sph_data);
 		return spec_one_minus_mu_squared_diff_lat_mu(i_sph_data);
 	}
+
+
+
+	/**
+	 * Special formulation for Robert gradient,
+	 * see REXI with spherical harmonics
+	 */
+	SphereData robert_grad_lat_M(
+			const SphereData &i_sph_data
+	)
+	{
+		SphereData retval = robert_grad_lat(i_sph_data);
+
+		retval.physical_update_lambda(
+				[](double i_lon, double i_lat, double &io_data)
+				{
+					double cos = std::cos(i_lat);
+					io_data /= cos*cos;
+				}
+		);
+
+		return retval;
+	}
+
 
 
 	SphereData spec_one_minus_sinphi_squared_diff_lat_mu(
