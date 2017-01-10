@@ -6,6 +6,12 @@
 # It assumes that you install all your libraries in subdirectories in $HOME/local
 #
 
+if [ "`basename $SHELL`" != "bash" ]; then
+	echo "ERROR"
+	echo "ERROR: These scripts are only compatible to the bash shell"
+	echo "ERROR"
+fi
+
 
 BACKDIR="$PWD"
 
