@@ -15,7 +15,7 @@ SCONS="scons --threading=omp --unit-test=test_sph_operators --gui=disable --plan
 echo "$SCONS"
 $SCONS
 
-./build/test_sph_operators*_debug -M 128 || exit
+time ./build/test_sph_operators*_debug -M 128 || exit
 
 
 

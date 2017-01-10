@@ -18,6 +18,7 @@ $SCONS
 rm gen_*
 #export SWEET_HACK_123_BLARG=1
 
+
 for f in 0.1 1 10; do
 	for g in 0.1 10 100; do
 		for h in 0.1 10 100; do
