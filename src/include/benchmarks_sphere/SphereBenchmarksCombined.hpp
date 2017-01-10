@@ -228,6 +228,10 @@ public:
 				);
 			}
 
+			o_h.physical_truncate();
+			o_u.physical_truncate();
+			o_v.physical_truncate();
+
 			std::cout << "!!! WARNING !!!" << std::endl;
 			std::cout << "!!! WARNING: Storing advection in output velocities !!!" << std::endl;
 			std::cout << "!!! WARNING !!!" << std::endl;
@@ -235,7 +239,118 @@ public:
 
 			io_simVars.misc.output_time_scale = 1.0/(60.0*60.0);
 
-			std::cout << "advection_rotation_angle: " << io_simVars.setup.advection_rotation_angle << std::endl;		}
+			std::cout << "advection_rotation_angle: " << io_simVars.setup.advection_rotation_angle << std::endl;
+		}
+		else if (io_simVars.setup.benchmark_scenario_id == 6)
+		{
+			/**
+			 * See Williamson test case, eq. (75), (76)
+			 */
+
+			std::cout << "!!! WARNING !!!" << std::endl;
+			std::cout << "!!! WARNING: Overriding simulation parameters for this benchmark !!!" << std::endl;
+			std::cout << "!!! WARNING !!!" << std::endl;
+
+			io_simVars.sim.coriolis_omega = 7.292e-5;
+			io_simVars.sim.gravitation = 9.80616;
+			io_simVars.sim.earth_radius = 6.37122e6;
+			io_simVars.sim.h0 = 1000.0;
+
+			double lambda_c = 3.0*M_PI/2.0;
+			double theta_c = 0;
+			double a = io_simVars.sim.earth_radius;
+
+			double R = a/3.0;
+			double u0 = (2.0*M_PI*a)/(12.0*24.0*60.0*60.0);
+
+			o_h.physical_update_lambda(
+				[&](double i_lambda, double i_theta, double &io_data)
+				{
+					double r = a * std::acos(
+							std::sin(theta_c)*std::sin(i_theta) +
+							std::cos(theta_c)*std::cos(i_theta)*std::cos(i_lambda-lambda_c)
+					);
+
+					if (r < R)
+						io_data = io_simVars.sim.h0/2.0*(1.0+std::cos(M_PI*r/R));
+					else
+						io_data = 0;
+				}
+			);
+
+
+			if (io_simVars.misc.sphere_use_robert_functions)
+			{
+				o_u.physical_update_lambda(
+					[&](double i_lon, double i_lat, double &io_data)
+					{
+						double i_theta = i_lat;
+						double i_lambda = i_lon;
+						io_data =
+								u0*(
+									std::cos(i_theta)*std::cos(io_simVars.setup.advection_rotation_angle) +
+									std::sin(i_theta)*std::cos(i_lambda)*std::sin(io_simVars.setup.advection_rotation_angle)
+							);
+
+						io_data /= std::cos(i_lat);
+					}
+				);
+
+				o_v.physical_update_lambda(
+					[&](double i_lon, double i_lat, double &io_data)
+					{
+						double i_phi = i_lat;
+						double i_lambda = i_lon;
+						io_data =
+							-u0*(
+									std::sin(i_lambda)*std::sin(io_simVars.setup.advection_rotation_angle)
+							);
+
+						io_data /= std::cos(i_lat);
+					}
+				);
+			}
+			else
+			{
+				o_u.physical_update_lambda(
+					[&](double i_lon, double i_lat, double &io_data)
+					{
+						double i_theta = i_lat;
+						double i_lambda = i_lon;
+						io_data =
+								u0*(
+									std::cos(i_theta)*std::cos(io_simVars.setup.advection_rotation_angle) +
+									std::sin(i_theta)*std::cos(i_lambda)*std::sin(io_simVars.setup.advection_rotation_angle)
+							);
+					}
+				);
+
+				o_v.physical_update_lambda(
+					[&](double i_lon, double i_lat, double &io_data)
+					{
+						double i_phi = i_lat;
+						double i_lambda = i_lon;
+						io_data =
+							-u0*(
+									std::sin(i_lambda)*std::sin(io_simVars.setup.advection_rotation_angle)
+							);
+					}
+				);
+			}
+
+			o_h.physical_truncate();
+			o_u.physical_truncate();
+			o_v.physical_truncate();
+
+			std::cout << "!!! WARNING !!!" << std::endl;
+			std::cout << "!!! WARNING: Storing advection in output velocities !!!" << std::endl;
+			std::cout << "!!! WARNING !!!" << std::endl;
+
+
+			io_simVars.misc.output_time_scale = 1.0/(60.0*60.0);
+
+			std::cout << "advection_rotation_angle: " << io_simVars.setup.advection_rotation_angle << std::endl;
+		}
 		else
 		{
 			FatalError("Unknown scenario id");
