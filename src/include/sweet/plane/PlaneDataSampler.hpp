@@ -349,7 +349,7 @@ public:
 		{
 			// load position to interpolate
 			double pos_x = wrapPeriodic(i_pos_x.scalar_data[pos_idx]*cached_scale_factor[0] + i_shift_x, (double)res[0]);
-			double pos_y = wrapPeriodic(i_pos_y.scalar_data[pos_idx]*cached_scale_factor[1] + i_shift_y, (double)res[0]);
+			double pos_y = wrapPeriodic(i_pos_y.scalar_data[pos_idx]*cached_scale_factor[1] + i_shift_y, (double)res[1]);
 
 			/**
 			 * See http://www.paulinternet.nl/?page=bicubic
@@ -430,7 +430,7 @@ public:
 		{
 			// load position to interpolate
 			double pos_x = wrapPeriodic(i_pos_x.scalar_data[pos_idx]*cached_scale_factor[0] + i_shift_x, (double)res[0]);
-			double pos_y = wrapPeriodic(i_pos_y.scalar_data[pos_idx]*cached_scale_factor[1] + i_shift_y, (double)res[0]);
+			double pos_y = wrapPeriodic(i_pos_y.scalar_data[pos_idx]*cached_scale_factor[1] + i_shift_y, (double)res[1]);
 
 			/**
 			 * See http://www.paulinternet.nl/?page=bicubic
