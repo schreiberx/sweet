@@ -1871,7 +1871,7 @@ public:
 			const char *i_filename,		///< Name of file to store data to
 			char i_separator = '\t',	///< separator to use for each line
 			int i_precision = 12		///< number of floating point digits
-	)
+	)	const
 	{
 		request_data_physical();
 
@@ -1906,7 +1906,7 @@ public:
 			const char *i_filename,		///< Name of file to store data to
 			const char *i_title,		///< Title of scalars
 			int i_precision = 12		///< number of floating point digits
-	)
+	)	const
 	{
 		request_data_physical();
 

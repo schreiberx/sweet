@@ -262,6 +262,23 @@ public:
 #endif
 	}
 
+	/**
+	 * Write file to data and return string of file name
+	 */
+	std::string write_file(
+			const PlaneData &i_planeData,
+			const char* i_name	///< name of output variable
+		)
+	{
+		char buffer[1024];
+
+		const char* filename_template = simVars.misc.output_file_name_prefix.c_str();
+		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
+		i_planeData.file_physical_saveData_ascii(buffer);
+
+		return buffer;
+	}
+
 
 
 public:
@@ -285,21 +302,11 @@ public:
 
 			if (simVars.misc.output_file_name_prefix.size() > 0)
 			{
-				int secs = std::floor(simVars.timecontrol.current_simulation_time);
-				int msecs = std::floor(1000000.*(simVars.timecontrol.current_simulation_time - floor(simVars.timecontrol.current_simulation_time)));
-				char t_buf[256];
-				sprintf(	t_buf,
-							"%08d.%06d",
-							secs, msecs
-					);
+				write_file(prog_h, "h");
+				write_file(prog_u, "u");
+				write_file(prog_v, "v");
 
-				std::string ss = simVars.misc.output_file_name_prefix+"_t"+t_buf;
-
-				prog_h.file_physical_saveData_ascii((ss+"_h.csv").c_str());
-				prog_u.file_physical_saveData_ascii((ss+"_u.csv").c_str());
-				prog_v.file_physical_saveData_ascii((ss+"_v.csv").c_str());
-
-				(op.diff_c_x(prog_v) - op.diff_c_y(prog_u)).file_physical_saveData_ascii((ss+"_q.csv").c_str());
+				write_file(op.diff_c_x(prog_v) - op.diff_c_y(prog_u), "q");
 			}
 
 			if (simVars.timecontrol.current_timestep_nr == 0)

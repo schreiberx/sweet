@@ -48,6 +48,7 @@ public:
 #endif
 
 
+
 public:
 	/**
 	 * Diagnostic variables
@@ -56,11 +57,12 @@ public:
 	{
 		/// total mass
 		double total_mass = 0;
+
 		/// total energy
 		double total_energy = 0;
+
 		/// total potential enstropy
 		double total_potential_enstrophy = 0;
-
 	} diag;
 
 
@@ -79,6 +81,7 @@ public:
 
 		/// setup coordinate of e.g. radial breaking dam, x-placement \in [0;1]
 		double setup_coord_x = 0.5;
+
 		/// setup coordinate of e.g. radial breaking dam, y-placement \in [0;1]
 		double setup_coord_y = 0.5;
 
@@ -179,7 +182,6 @@ public:
 		bool top_bottom_zero_v_velocity = false;
 
 		/// domain size
-//		double domain_size[2] = {1000.0*1000.0, 1000.0*1000.0};
 		double domain_size[2] = {1.0, 1.0};
 	} sim;
 
@@ -259,6 +261,7 @@ public:
 		bool rexi_normalization = true;
 
 	} rexi;
+
 
 #if SWEET_PFASST
 	struct Pfasst
@@ -572,6 +575,7 @@ public:
 			if (opt == -1)
 				break;
 
+
 			/*
 			 * LONG OPTIONS
 			 */
@@ -806,7 +810,13 @@ public:
 						"	-m [resy]	resolution in y direction, default=0",
 						"	-M [modes]	modes in x/y or lon/lat direction, default=0",
 						"	-S [0/1]	Control Operator discretization for PlaneDatas",
-						"               0: FD, 1: spectral derivatives, default:0",
+						"               0: FD, 1: spectral derivatives, default:"
+#if SWEET_USE_PLANE_SPECTRAL_SPACE || SWEET_USE_SPHERE_SPECTRAL_SPACE
+				"1"
+#else
+				"0"
+#endif
+						,
 						"  >Time:",
 						"	-W [0/1]	use up- and downwinding, default:0",
 						"	-R [1-RKn]	order of Runge-Kutta method, default:4",
@@ -864,6 +874,7 @@ public:
 		reset();
 
 
+
 #if SWEET_PARAREAL
 		// if max simulation time was not set for parareal, copy max simulation time from default parameters to parareal parameters.
 		if (parareal.max_simulation_time <= 0)
@@ -892,9 +903,6 @@ public:
 		return true;
 	}
 };
-
-
-
 
 
 

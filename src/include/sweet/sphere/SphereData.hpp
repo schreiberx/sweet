@@ -693,12 +693,14 @@ public:
 	/**
 	 * Truncate modes which are not representable in spectral space
 	 */
-	void spectral_truncate()	const
+	const SphereData& spectral_truncate()	const
 	{
 		request_data_spectral();
 
 		SH_to_spat(sphereDataConfig->shtns, spectral_space_data, physical_space_data);
 		spat_to_SH(sphereDataConfig->shtns, physical_space_data, spectral_space_data);
+
+		return *this;
 	}
 
 

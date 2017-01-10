@@ -67,7 +67,7 @@ double param_geostr_balance_freq_multiplier = 1.0;
  * 0: SWE
  * 1: advection
  */
-bool param_pde_id = 0;
+int param_pde_id = 0;
 
 
 class SimulationInstance
@@ -243,7 +243,7 @@ public:
 
 		SphereBenchmarksCombined::setupInitialConditions(prog_h, prog_u, prog_v, simVars, op);
 
-		if (simVars.setup.benchmark_scenario_id == 5)
+		if (simVars.setup.benchmark_scenario_id == 5 || simVars.setup.benchmark_scenario_id == 6)
 		{
 			advection_u = prog_u;
 			prog_u.physical_set_zero();
@@ -325,11 +325,11 @@ public:
 
 
 	/**
-	 *
+	 * Write file to data and return string of file name
 	 */
 	std::string write_file(
 			const SphereData &i_sphereData,
-			const char* i_name,
+			const char* i_name,	///< name of output variable
 			bool i_phi_shifted
 		)
 	{
@@ -358,10 +358,10 @@ public:
 		output_filename = write_file(prog_h, "h", simVars.setup.benchmark_scenario_id == 0);
 		std::cout << output_filename << " (min: " << prog_h.physical_reduce_min() << ", max: " << prog_h.physical_reduce_max() << ")" << std::endl;
 
-		output_filename = write_file(prog_h, "u", simVars.setup.benchmark_scenario_id == 0);
+		output_filename = write_file(prog_u, "u", simVars.setup.benchmark_scenario_id == 0);
 		std::cout << output_filename << std::endl;
 
-		output_filename = write_file(prog_h, "v", simVars.setup.benchmark_scenario_id == 0);
+		output_filename = write_file(prog_v, "v", simVars.setup.benchmark_scenario_id == 0);
 		std::cout << output_filename << std::endl;
 
 		output_filename = write_file(op.vort(prog_u, prog_v)/simVars.sim.earth_radius, "eta", simVars.setup.benchmark_scenario_id == 0);
@@ -651,6 +651,16 @@ public:
 					i_simulation_timestamp
 			);
 			break;
+
+		case 2:
+			p_run_euler_timestep_update_advection_div_free(
+					i_h, i_u, i_v,
+					o_h_t, o_u_t, o_v_t,
+					o_dt,
+					i_fixed_dt,
+					i_simulation_timestamp
+			);
+			break;
 		}
 	}
 
@@ -682,13 +692,57 @@ public:
 
 		if (simVars.misc.sphere_use_robert_functions)
 		{
-			o_h_t = -(op.robert_div_lon(advection_u*i_h)+op.robert_div_lat(advection_v*i_h))*(1.0/simVars.sim.earth_radius);
+			o_h_t =
+				-(
+					op.robert_div_lon(advection_u*i_h).spectral_truncate()+
+					op.robert_div_lat(advection_v*i_h).spectral_truncate()
+				)*(1.0/simVars.sim.earth_radius);
+
+			o_h_t.spectral_truncate();
 		}
 		else
 		{
 			o_h_t = -(op.div_lon(advection_u*i_h)+op.div_lat(advection_v*i_h))*(1.0/simVars.sim.earth_radius);
 		}
 
+
+		o_u_t.spectral_set_zero();
+		o_v_t.spectral_set_zero();
+
+		assert(simVars.sim.viscosity_order == 2);
+		if (simVars.sim.viscosity != 0)
+		{
+			double scalar = simVars.sim.viscosity/(simVars.sim.earth_radius*simVars.sim.earth_radius);
+
+			o_h_t += op.laplace(i_h)*scalar;
+		}
+
+	}
+
+
+	void p_run_euler_timestep_update_advection_div_free(
+			const SphereData &i_h,	///< prognostic variables
+			const SphereData &i_u,	///< prognostic variables
+			const SphereData &i_v,	///< prognostic variables
+
+			SphereData &o_h_t,	///< time updates
+			SphereData &o_u_t,	///< time updates
+			SphereData &o_v_t,	///< time updates
+
+			double &o_dt,				///< time step restriction
+			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_simulation_timestamp = -1
+	)
+	{
+		o_dt = simVars.timecontrol.current_timestep_size;
+
+		if (simVars.misc.use_nonlinear_equations)
+			FatalError("Advection equation is only possible without non-linearities and with robert functions");
+
+		if (simVars.misc.sphere_use_robert_functions)
+			o_h_t = -(advection_u*op.robert_grad_lon_M(i_h)+advection_v*op.robert_grad_lat_M(i_h))*(1.0/simVars.sim.earth_radius);
+		else
+			o_h_t = -(advection_u*op.grad_lon(i_h)+advection_v*op.grad_lat(i_h))*(1.0/simVars.sim.earth_radius);
 
 		o_u_t.spectral_set_zero();
 		o_v_t.spectral_set_zero();
