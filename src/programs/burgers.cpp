@@ -198,6 +198,14 @@ public:
 
 	void reset()
 	{
+		if (simVars.setup.benchmark_scenario_id <0)
+		{
+			std::cout << std::endl;
+			std::cout << "Benchmark scenario not selected (option -s [id])" << std::endl;
+			BurgersValidationBenchmarks::printScenarioInformation();
+			FatalError("Benchmark scenario not selected");
+		}
+		// Initialize diagnostics
 		last_timestep_nr_update_diagnostics = -1;
 
 		benchmark_diff_u = 0;
@@ -977,10 +985,46 @@ public:
 #endif
 	}
 
-	void timestep_output(
+
+	/**
+	 * Write file to data and return string of file name
+	 */
+	std::string write_file(
+			const PlaneData &i_planeData,
+			const char* i_name	///< name of output variable
+		)
+	{
+		char buffer[1024];
+
+		const char* filename_template = simVars.misc.output_file_name_prefix.c_str();
+		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
+		i_planeData.file_physical_saveData_ascii(buffer);
+
+		return buffer;
+	}
+
+
+public:
+	bool timestep_output(
 			std::ostream &o_ostream = std::cout
 	)
 	{
+		// output each time step
+		if (simVars.misc.output_each_sim_seconds < 0)
+			return false;
+
+		if (simVars.misc.output_next_sim_seconds > simVars.timecontrol.current_simulation_time)
+			return false;
+
+		// Dump data in csv, if requested
+		if (simVars.misc.output_file_name_prefix.size() > 0)
+		{
+			write_file(prog_u, "u");
+			write_file(prog_v, "v");
+			if (param_compute_error)
+				write_file(benchmark_analytical_error, "error");
+		}
+
 		if (simVars.misc.verbosity > 0)
 		{
 			update_diagnostics();
@@ -1005,51 +1049,14 @@ public:
 				o_ostream << std::setprecision(8) << "\t" << benchmark_analytical_error_maxabs_u << "\t" << benchmark_analytical_error_rms_u << "\t" << prog_u.reduce_max();
 			}
 
-			if ((simVars.misc.output_file_name_prefix.size() > 0) && !simVars.parareal.enabled)
-			{
-				// output each time step
-				if (simVars.misc.output_each_sim_seconds < 0)
-					simVars.misc.output_next_sim_seconds = 0;
-
-				if ((simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time) ||
-						(simVars.timecontrol.current_simulation_time == simVars.timecontrol.max_simulation_time))
-				{
-					if (simVars.misc.output_each_sim_seconds > 0)
-					{
-						while (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
-							simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
-					}
-
-					double secs = simVars.timecontrol.current_simulation_time;
-					double msecs = 1000000.*(simVars.timecontrol.current_simulation_time - floor(simVars.timecontrol.current_simulation_time));
-					char t_buf[256];
-					sprintf(	t_buf,
-								"%08d.%06d",
-								(int)secs, (int)msecs
-						);
-
-					std::string ss = simVars.misc.output_file_name_prefix+"_t"+t_buf;
-
-
-					// write velocity field u to file
-					prog_u.file_physical_saveData_ascii((ss+"_u.csv").c_str());
-// TODO
-//					prog_u.file_saveSpectralData_ascii((ss+"_u_spec.csv").c_str());
-					// write velocity field v to file
-					//prog_v.file_saveData_ascii((ss+"_v.csv").c_str());
-
-					if (param_compute_error)
-					{
-						benchmark_analytical_error.file_physical_saveData_ascii((ss+".err").c_str());
-// TODO
-//						benchmark_analytical_error.file_saveSpectralData_ascii((ss+"_spec.err").c_str());
-					}
-
-				}
-			}
-
+			o_ostream << std::endl;
 		}
-		o_ostream << std::endl;
+
+		if (simVars.misc.output_each_sim_seconds > 0)
+			while (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
+				simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
+
+		return true;
 	}
 
 
@@ -1719,14 +1726,14 @@ int main(int i_argc, char *i_argv[])
 			while(true)
 			{
 				//Output data
-				if (simVars.misc.verbosity > 1)
+				if (simulationBurgers->timestep_output(buf))
 				{
-					simulationBurgers->timestep_output(buf);
-
+					// string output data
 					std::string output = buf.str();
 					buf.str("");
 
-					std::cout << output << std::flush;
+					// This is an output printed on screen or buffered to files if > used
+					std::cout << output;
 				}
 
 				//Stop simulation if requested
