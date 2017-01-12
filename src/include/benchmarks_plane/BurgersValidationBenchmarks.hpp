@@ -13,6 +13,16 @@
 
 class BurgersValidationBenchmarks
 {
+#if 1
+	static
+	void error(const char *i_string)
+	{
+		std::cerr << "ERROR: " << i_string << std::endl;
+		assert(false);
+		exit(1);
+	}
+#endif
+
 public:
 	static
 	double return_u(
@@ -115,6 +125,12 @@ public:
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup.benchmark_scenario_id << std::endl;
 		exit(1);
 		return 0;
+	}
+
+	static void printScenarioInformation()
+	{
+		std::cout << "Available benchmark scenarios:" << std::endl;
+		std::cout << "		58 : sin(2*PI*x)*sin(2*PI*t) + sin(2*PI*x*k)*sin(2*PI*t*k)/k" << std::endl;
 	}
 
 };
