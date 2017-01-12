@@ -21,13 +21,14 @@ The scripts are named as follows:
 After installing the software, you can use
 	source ./local_software/env_vars.sh
 
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! FIRST THING TO DO!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-First run the
-  $ ./env_vars.sh
-script in your current environment e.g. by using
+First include the content of
+  local_softare/env_vars.sh
+in your current environment e.g. by using
   $ source ./local_software/env_vars.sh
 Otherwise the scripts are maybe using the system-wide installed
 software packages
@@ -67,6 +68,9 @@ environment variables correctly.
 
 
 
+
+Alternative installation options
+
 ================
 Autoconf:
 ================
@@ -90,19 +94,7 @@ SCons:
 ================
 FFTW (optional): mandatory if Fourier space is required
 ================
-	http://www.fftw.org/download.html
-	fftw-3.3.4.tar.gz
-
-	tar xzf fftw-3.3.4.tar.gz
-	Without MPI:
-	./configure --prefix=$HOME/local/sweet_support --with-our-malloc16 --enable-openmp --enable-avx --enable-shared
-	With MPI:
-	./configure --prefix=$HOME/local/sweet_support --with-our-malloc16 --enable-openmp --enable-avx --enable-mpi --enable-shared
-	make -j 4 install
-
-	For intel compiler, use e.g.:
-	./configure CC=icc CFLAGS="-gcc -xHost" --with-our-malloc16 --enable-openmp --enable-avx --prefix=$HOME/local/fftw-3.3.4
-	make install
+	$ ./install_fftw3.sh
 
 	OR
 	apt-get install libfftw3-dev
@@ -184,16 +176,3 @@ MPI - (Optional)
 	tar xzf openmpi-1.8.6.tar.bz2
 	./configure --prefix=$HOME/local/sweet_support
 	make -j 4 install
-
-
-================
-PFFT
-================
-	NOT YET REQUIRED (future work):
-	Get PFFT from the following website:
-	https://www-user.tu-chemnitz.de/~mpip/software.php#pfft
-	pfft-1.0.8-alpha.tar.gz
-
-	tar xzf pfft-1.0.8-alpha.tar.gz
-	./configure --prefix=$HOME/local/sweet_support
-	
