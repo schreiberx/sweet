@@ -24,11 +24,14 @@ on the sphere.
 File structure:
 **************************
 
-	benchmarks/	Test scripts for running analytical benchmarks
+	archive/	Old stuff which should be still visible when checking out repository
+	benchmarks_sphere/	Scripts for running benchmarks (numerical and HPC) on the sphere
+	benchmarks_plane/	Scripts for running benchmarks (numerical and HPC) on the plane
 	build/		Build directory, note, that also /tmp is used for storing object files
 	data/		Data such as OpenGL shaders
 	doc/		Documentation
-	local_software	3rd party software with installer scripts
+	local_software/	3rd party software with installer scripts
+			If you get compile errors, please checkout this directory
 	package/	Used for creating tarballs to deploy to servers
 	python_mods/	Python helper files
 	src/		Source folder
@@ -46,6 +49,7 @@ File structure:
 	TODO		TODO list
 
 
+
 **************************
 Coding:
 **************************
@@ -60,9 +64,12 @@ Compilation:
 **************************
 
 	First of all, setup the environment variables correctly
-	(see also INSTALL file):
+	( !!!!!!!!!!!!!!!!!!!!! )
+	( see also INSTALL file )
+	( !!!!!!!!!!!!!!!!!!!!! )
 
 	$ source ./local_software/env_vars.sh
+
 
 	The compilation is then done by calling 'scons' which is a
 	makefile alternative and offers the flexibility of Python.
@@ -70,7 +77,7 @@ Compilation:
 	$ scons --program=swe_staggered_vector_invariant
 
 
-	The possible compilation options are visible via
+	The possible compilation (maybe not complete) options are visible via
 
 	$ scons --help
 
