@@ -15,6 +15,7 @@ if [ ! -e "$DST_DIR/include/pfasst.hpp"  -o "$1" != "" ]; then
 
 	cd "$BASENAME"
 
+	mkdir -p "$DST_DIR/include/"
 	cp -v -f "include/pfasst.hpp" "$DST_DIR/include/"
 	cp -v -f -r "include/pfasst" "$DST_DIR/include/"
 

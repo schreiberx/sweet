@@ -17,6 +17,7 @@ if [ ! -e "$DST_DIR/lib/libpfasst.a"  -o "$1" != "" ]; then
 
 	make || exit 1
 
+	mkdir -p "$DST_DIR/lib/"
 	cp -v -f "./lib/libpfasst.a" "$DST_DIR/lib/"
 	echo "DONE"
 
