@@ -6,10 +6,23 @@
 # It assumes that you install all your libraries in subdirectories in $HOME/local
 #
 
+if [ "`basename $0`" != "bash" ]; then
+	echo "ERROR|"
+	echo "ERROR| THIS SCRIPT MAY NOT BE EXECUTED, BUT INCLUDED IN THE ENVIRONMENT VARIABLES!"
+	echo "ERROR| Use e.g. "
+	echo "     |"
+	echo "     |    $ source ./env_vars.sh"
+	echo "     |"
+	echo "ERROR| to setup the environment variables correctly"
+	echo "ERROR|"
+	exit -1
+fi
+
 if [ "`basename $SHELL`" != "bash" ]; then
 	echo "ERROR"
 	echo "ERROR: These scripts are only compatible to the bash shell"
 	echo "ERROR"
+	exit -1
 fi
 
 
