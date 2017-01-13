@@ -12,26 +12,96 @@ The scripts are named as follows:
 
  * ./install_*.sh
    Build and install the 3rd party software automatically
-   Please note that this does not generate highly optimized 3rd party
-   software, but focusses on getting SWEET running.
+   Please note that this does not necessarily generate highly optimized
+   3rd party software, but focusses on getting SWEET running.
 
  * ./env_vars.sh (See below for more information on how to use this script!)
-   This script sets up all the environment variables to compile and run SWEET
+   This script sets up all the environment variables to compile and run SWEET.
 
-After installing the software, you can use
+After installing the software, you can setup your environment variable via
 	source ./local_software/env_vars.sh
 
+or inside the local_software directory via
+	source ./env_vars.sh
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! FIRST THING TO DO!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!   FIRST THING TO DO BEFORE COMPILING ANYTHING    !!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 First include the content of
+
   local_softare/env_vars.sh
+
 in your current environment e.g. by using
+
   $ source ./local_software/env_vars.sh
+
 Otherwise the scripts are maybe using the system-wide installed
-software packages
+software packages which is also fine.
+
+
+
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!! RECOMMENDED PACKAGES !!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+This is a list of recommended scripts to trigger for installation.
+First of all, include the environment variables which make the
+installed software available to the other install scripts:
+
+  $ source ./local_software/env_vars.sh
+
+Once going into the local_software directory
+  $ cd ./local_software
+install the following packages if required:
+
+If python2 is not available, then trigger
+  $ ./install_python2.sh
+
+If your compiler is older than gcc 5.3 (check with gcc --version), then
+  $ ./install_gcc5.3.sh	# GNU compiler
+
+The other librar(ies)/y can be installed via:
+  $ ./install_scons.sh	# Makefile replacement
+  $ ./install_numa.sh	# NUMA aware memory allocation
+
+Packages required for simulations on the plane:
+  $ ./install_fftw3.sh	# Fast Fourier library
+
+Packages required for simulations on the sphere:
+  $ ./install_shtns.sh	# Spherical Harmonics library
+  $ ./install_lapack.sh # Linear algebra package
+
+Packages required for pfasst++ (C++ PFASST):
+  $ ./install_eigen3.sh	# Eigen library
+  $ ./install_pfast++.sh	# Eigen library
+
+Packages required for libpfasst (Fortran PFASST):
+  $ ./install_libpfasst.sh
+
+
+If there are any compilation problems, please send the last
+lines of the output and more information on the used system to
+
+	Martin Schreiber <M.Schreiber@exeter.ac.uk>
+
+
+
+
+
+
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Additional information for users with special environments
+
+Most users don't have to read through this
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
