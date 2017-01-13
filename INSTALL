@@ -71,6 +71,13 @@ The other librar(ies)/y can be installed via:
 Packages required for simulations on the plane:
   $ ./install_fftw3.sh	# Fast Fourier library
 
+(
+   After installing the above mentioned software, you should
+   be able to compile an example program such as with
+
+      $ scons --program=swe_nonstaggered_advective
+)
+
 Packages required for simulations on the sphere:
   $ ./install_shtns.sh	# Spherical Harmonics library
   $ ./install_lapack.sh # Linear algebra package
