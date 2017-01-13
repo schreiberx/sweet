@@ -14,8 +14,8 @@ if [ ! -e "$DST_DIR/bin/scons"  -o "$1" != "" ]; then
 	if [ ! -e "$FILENAME" ]; then
 		curl "$SRC_LINK" -o "$FILENAME" || exit 1
 	fi
-	tar xzf "$FILENAME"
-	cd "$BASENAME"
+	tar xzf "$FILENAME" || exit 1
+	cd "$BASENAME" || exit 1
 
 	python setup.py install --prefix="$DST_DIR" || exit 1
 
