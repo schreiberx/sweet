@@ -26,8 +26,8 @@
 #	define SWEET_GUI 1
 #endif
 
-#ifndef SWEET_PFASST
-#	define SWEET_PFASST 1
+#ifndef SWEET_PFASST_CPP
+#	define SWEET_PFASST_CPP 1
 #endif
 
 #if SWEET_PARAREAL
@@ -263,7 +263,7 @@ public:
 	} rexi;
 
 
-#if SWEET_PFASST
+#if SWEET_PFASST_CPP
 	struct Pfasst
 	{
 		int nlevels;
@@ -513,7 +513,7 @@ public:
         long_options[next_free_program_option] = {"sphere-advection-angle", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-#if SWEET_PFASST
+#if SWEET_PFASST_CPP
         long_options[next_free_program_option] = {"pfasst-nlevels", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 

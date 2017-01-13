@@ -50,7 +50,6 @@ class SWEPlaneBenchmarks
 
 			if (i_variable_id == 0)	// height
 			{
-				std::cout << i_parameters.setup.radius_scale*sqrt(sx*sx+sy*sy)  << std::endl;
 				double radius = i_parameters.setup.radius_scale*sqrt(sx*sx+sy*sy);
 				if (dx*dx+dy*dy < radius*radius)
 					return i_parameters.sim.h0+1.0;

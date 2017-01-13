@@ -23,6 +23,7 @@
 #include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalComplex.hpp>
 
 
+
 SphereDataConfig *sphereDataConfig;
 
 SimulationVariables simVars;

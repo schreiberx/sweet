@@ -23,6 +23,62 @@
 SimulationVariables simVars;
 
 
+bool errorCheck(
+		SphereData &i_lhs,
+		SphereData &i_rhs,
+		const std::string &i_id,
+		double i_error_threshold = 1.0,
+		bool i_ignore_error = false,
+		bool i_normalization = true
+)
+{
+	SphereData diff = i_lhs-i_rhs;
+	diff.physical_reduce_max_abs();
+
+	double lhs_maxabs = i_lhs.physical_reduce_max_abs();
+	double rhs_maxabs = i_rhs.physical_reduce_max_abs();
+
+	double normalize_fac;
+
+	if (i_normalization)
+	{
+		normalize_fac = std::min(lhs_maxabs, rhs_maxabs);
+
+		if (std::max(lhs_maxabs, rhs_maxabs) < i_error_threshold)
+		{
+			std::cout << "Error computation for '" << i_id << "' ignored since both fields are below threshold tolerance" << std::endl;
+			normalize_fac = 1.0;
+			//return false;
+		}
+	}
+	else
+	{
+		normalize_fac = 1.0;
+	}
+
+	double rel_max_abs = diff.physical_reduce_max_abs() / normalize_fac;
+	double rel_rms = diff.physical_reduce_rms() / normalize_fac;
+
+	std::cout << "Error for " << i_id << ": \t" << rel_max_abs << "\t" << rel_rms << "\t\terror threshold: " << i_error_threshold << " with normalization factor " << normalize_fac << std::endl;
+
+	if (rel_max_abs > i_error_threshold)
+	{
+		i_lhs.physical_file_write("o_error_lhs.csv");
+		i_rhs.physical_file_write("o_error_rhs.csv");
+		(i_lhs-i_rhs).physical_file_write("o_error_diff.csv");
+
+		if (i_ignore_error)
+			std::cerr << "Error ignored" << std::endl;
+		else
+			FatalError("Error too large");
+
+		return true;
+	}
+	return false;
+}
+
+
+
 void run_tests(
 		SphereDataConfig *sphereDataConfig
 )
@@ -32,6 +88,286 @@ void run_tests(
 	std::cout << "Using max allowed error of " << epsilon << std::endl;
 
 	SphereOperators op(sphereDataConfig);
+
+
+#if 1
+	if (true)
+	{
+		double lambda_c = 3.0*M_PI/2.0;
+//		double theta_c = 0;
+		double theta_c = M_PI/3.0;
+		double a = 6.37122e6;
+
+		double R = a/3.0;
+		double u0 = (2.0*M_PI*a)/(12.0*24.0*60.0*60.0);
+
+//		double alpha[] = {0, M_PI/3, M_PI/2};
+		double alpha[] = {M_PI/3, M_PI/2};
+
+		for (int i = 0; i < 3; i++)
+		{
+			double advection_rotation_angle = alpha[i];
+
+			std::cout << "Using rotation angle " << advection_rotation_angle << std::endl;
+
+			SphereData phi(sphereDataConfig);
+			phi.physical_update_lambda(
+				[&](double i_lambda, double i_theta, double &io_data)
+				{
+					double r = a * std::acos(
+							std::sin(theta_c)*std::sin(i_theta) +
+							std::cos(theta_c)*std::cos(i_theta)*std::cos(i_lambda-lambda_c)
+					);
+
+					if (r < R)
+						io_data = simVars.sim.h0/2.0*(1.0+std::cos(M_PI*r/R));
+					else
+						io_data = 0;
+				}
+			);
+
+
+			SphereData u(sphereDataConfig);
+			u.physical_update_lambda(
+				[&](double i_lon, double i_lat, double &io_data)
+				{
+					double i_theta = i_lat;
+					double i_lambda = i_lon;
+					io_data =
+							u0*(
+								std::cos(i_theta)*std::cos(advection_rotation_angle) +
+								std::sin(i_theta)*std::cos(i_lambda)*std::sin(advection_rotation_angle)
+						);
+
+					io_data *= std::cos(i_lat);
+				}
+			);
+
+			SphereData v(sphereDataConfig);
+			v.physical_update_lambda(
+				[&](double i_lon, double i_lat, double &io_data)
+				{
+					double i_theta = i_lat;
+					double i_lambda = i_lon;
+					io_data =
+						-u0*(
+								std::sin(i_lambda)*std::sin(advection_rotation_angle)
+						);
+
+					io_data *= std::cos(i_lat);
+				}
+			);
+
+			SphereData zero(sphereDataConfig);
+			zero.physical_set_zero();
+
+			phi.physical_truncate();
+			u.physical_truncate();
+			v.physical_truncate();
+
+			{
+				SphereData ret = op.robert_div(u, v)*(1.0/a);
+
+				errorCheck(ret, zero, "TEST div freeness", epsilon);
+			}
+
+			(op.robert_grad_lon(phi)*u).physical_file_write("o_grad_lon_phi.csv");
+			(op.robert_grad_lat(phi)*v).physical_file_write("o_grad_lat_phi.csv");
+
+			(op.robert_grad_lon_M(phi)*u).physical_file_write("o_grad_lon_M_phi.csv");
+			(op.robert_grad_lat_M(phi)*v).physical_file_write("o_grad_lat_M_phi.csv");
+
+			exit(1);
+
+			{
+#if 1
+				// LHS = div(U*phi)
+				SphereData lhs = op.robert_div(u*phi, v*phi)*(1.0/a);
+
+				// RHS = div(U)*phi + grad(phi)*U = grad(phi)*U  (divergence free)
+				SphereData rhs = (op.robert_grad_lon_M(phi)*u + op.robert_grad_lat_M(phi)*v)*(1.0/a);
+#else
+				u = zero;
+//				v = zero;
+				SphereData lhs = op.robert_div(u*phi, v*phi);
+				SphereData rhs = op.robert_grad_lon_M(phi)*u + op.robert_grad_lat_M(phi)*v;
+#endif
+
+				errorCheck(lhs, rhs, "TEST div(U*phi) - grad(phi)*u with Robert formulation", epsilon);
+			}
+		}
+	}
+#endif
+
+#if 0
+	if (true)
+	{
+		double lambda_c = 3.0*M_PI/2.0;
+		double theta_c = 0;
+		double a = 6.37122e6;
+
+		double R = a/3.0;
+		double u0 = (2.0*M_PI*a)/(12.0*24.0*60.0*60.0);
+
+		double alpha[] = {0, M_PI/3, M_PI/2};
+
+		for (int i = 0; i < 3; i++)
+		{
+			double advection_rotation_angle = alpha[i];
+
+			std::cout << "Using rotation angle " << advection_rotation_angle << std::endl;
+
+			SphereData phi(sphereDataConfig);
+			phi.physical_update_lambda(
+				[&](double i_lambda, double i_theta, double &io_data)
+				{
+					double r = a * std::acos(
+							std::sin(theta_c)*std::sin(i_theta) +
+							std::cos(theta_c)*std::cos(i_theta)*std::cos(i_lambda-lambda_c)
+					);
+
+					if (r < R)
+						io_data = simVars.sim.h0/2.0*(1.0+std::cos(M_PI*r/R));
+					else
+						io_data = 0;
+				}
+			);
+
+			SphereData u(sphereDataConfig);
+			u.physical_update_lambda(
+				[&](double i_lon, double i_lat, double &io_data)
+				{
+					double i_theta = i_lat;
+					double i_lambda = i_lon;
+					io_data =
+							u0*(
+								std::cos(i_theta)*std::cos(advection_rotation_angle) +
+								std::sin(i_theta)*std::cos(i_lambda)*std::sin(advection_rotation_angle)
+						);
+
+					io_data /= std::cos(i_lat);
+				}
+			);
+
+			SphereData v(sphereDataConfig);
+			v.physical_update_lambda(
+				[&](double i_lon, double i_lat, double &io_data)
+				{
+					double i_phi = i_lat;
+					double i_lambda = i_lon;
+					io_data =
+						-u0*(
+								std::sin(i_lambda)*std::sin(advection_rotation_angle)
+						);
+
+					io_data /= std::cos(i_lat);
+				}
+			);
+
+			phi.physical_truncate();
+			u.physical_truncate();
+			v.physical_truncate();
+
+			{
+				// LHS = div(U*phi)
+				SphereData lhs = op.robert_div(u*phi, v*phi);
+
+				// RHS = div(U)*phi + grad(phi)*U = grad(phi)*U  (divergence free)
+				SphereData rhs = op.robert_grad_lon(phi)*u + op.robert_grad_lat(phi)*v;
+
+				errorCheck(lhs, rhs, "TEST div(U*phi) with Robert formulation", epsilon);
+			}
+		}
+	}
+#endif
+
+#if 0
+	if (true)
+	{
+		double lambda_c = 3.0*M_PI/2.0;
+		double theta_c = 0;
+		double a = 6.37122e6;
+
+		double R = a/3.0;
+		double u0 = (2.0*M_PI*a)/(12.0*24.0*60.0*60.0);
+
+		double alpha[] = {0, M_PI/3, M_PI/2};
+
+		SphereData zero(sphereDataConfig);
+		zero.physical_set_zero();
+
+		for (int i = 0; i < 3; i++)
+		{
+			double advection_rotation_angle = alpha[i];
+
+			std::cout << "Using rotation angle " << advection_rotation_angle << std::endl;
+
+			SphereData phi(sphereDataConfig);
+			phi.physical_update_lambda(
+				[&](double i_lambda, double i_theta, double &io_data)
+				{
+					double r = a * std::acos(
+							std::sin(theta_c)*std::sin(i_theta) +
+							std::cos(theta_c)*std::cos(i_theta)*std::cos(i_lambda-lambda_c)
+					);
+
+					if (r < R)
+						io_data = simVars.sim.h0/2.0*(1.0+std::cos(M_PI*r/R));
+					else
+						io_data = 0;
+				}
+			);
+
+			SphereData u(sphereDataConfig);
+			u.physical_update_lambda(
+				[&](double i_lon, double i_lat, double &io_data)
+				{
+					double i_theta = i_lat;
+					double i_lambda = i_lon;
+					io_data =
+							u0*(
+								std::cos(i_theta)*std::cos(advection_rotation_angle) +
+								std::sin(i_theta)*std::cos(i_lambda)*std::sin(advection_rotation_angle)
+						);
+				}
+			);
+
+			SphereData v(sphereDataConfig);
+			v.physical_update_lambda(
+				[&](double i_lon, double i_lat, double &io_data)
+				{
+					double i_phi = i_lat;
+					double i_lambda = i_lon;
+					io_data =
+						-u0*(
+								std::sin(i_lambda)*std::sin(advection_rotation_angle)
+						);
+				}
+			);
+
+			{
+				double normalization = std::max(
+						u.physical_reduce_max_abs(),
+						v.physical_reduce_max_abs()
+					);
+
+				SphereData lhs = op.div(u, v);
+
+				errorCheck(lhs, zero, "TEST div freeness NORobert formulation", epsilon);
+			}
+
+			{
+				// LHS = div(U*phi)
+				SphereData lhs = op.div(u*phi, v*phi);
+
+				// RHS = div(U)*phi + grad(phi)*U = grad(phi)*U  (divergence free)
+				SphereData rhs = op.grad_lon(phi)*u + op.grad_lat(phi)*v;
+
+				errorCheck(lhs, rhs, "DIV(U*phi) NORobert", epsilon);
+			}
+		}
+	}
+#endif
 
 
 	if (true)
@@ -437,6 +773,7 @@ void run_tests(
 			}
 		}
 
+
 #if 0
 		if (true)
 		{
@@ -473,6 +810,7 @@ void run_tests(
 			std::cout << "TEST DIV TEST LAT  - max error: " << error_max << std::endl;
 		}
 #endif
+
 
 		if (true)
 		{

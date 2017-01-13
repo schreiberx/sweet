@@ -18,7 +18,7 @@
  * This class generates data which is consistent with SPH div/grad operators.
  *
  * One of the main problems by using SPH is, that the data has to fulfill
- * certain consistenty requirements.
+ * certain consistency requirements.
  *
  * E.g. the GRAD operator should be computed on scalar fields only.
  * However, applying the DIV operator to a scalar field might result in
