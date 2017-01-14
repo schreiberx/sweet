@@ -16,13 +16,14 @@
 #include <sweet/sphere/SphereData.hpp>
 #include <sweet/sphere/Convert_SphereDataComplex_to_SphereData.hpp>
 #include <sweet/sphere/Convert_SphereData_to_SphereDataComplex.hpp>
-#include <rexi/REXI.hpp>
+
 #include <sweet/sphere/app_swe/SWERexiTerm_SPH.hpp>
 #include <sweet/sphere/app_swe/SWERexiTerm_SPHRobert.hpp>
 
-#include <../programs/swe_sphere_rexi/SWE_Sphere_REXI.hpp>
-
 #include <sweet/sphere/GenerateConsistentGradDivSphereData.hpp>
+
+#include <rexi/REXI.hpp>
+#include <rexi/swe_sphere_rexi/SWE_Sphere_REXI.hpp>
 
 
 SimulationVariables simVars;

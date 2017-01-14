@@ -442,7 +442,7 @@ elif env['parareal'] == 'serial':
 elif env['parareal'] == 'mpi':
 	env.Append(CXXFLAGS = ' -DSWEET_PARAREAL=2')
 else:
-	print "Invalid option '"+str(env['parareal'])+"' for parareal method"
+	print("Invalid option '"+str(env['parareal'])+"' for parareal method")
 	sys.exit(1)
 	
 
@@ -504,7 +504,7 @@ if env['compiler'] == 'gnu':
 			if (int(gccversion[i]) > int(reqversion[i])):
 				break
 			if (int(gccversion[i]) < int(reqversion[i])):
-				print 'At least GCC Version 4.6.1 necessary.'
+				print('At least GCC Version 4.6.1 necessary.')
 				Exit(1)
 
 	if env['compiler'] == 'gnu':
@@ -543,7 +543,7 @@ if env['compiler'] == 'intel':
 			if (int(iccversion[i]) > int(reqversion[i])):
 				break
 			if (int(iccversion[i]) < int(reqversion[i])):
-				print 'ICPC Version 12.1 necessary.'
+				print('ICPC Version 12.1 necessary.')
 				Exit(1)
 
 	# override g++ called by intel compiler to determine location of header files
@@ -619,9 +619,9 @@ if env['compiler'] == 'llvm':
 		env.Append(LIBS=['gfortran'])
 
 	if env['threading'] == 'omp':
-		print()
+		print("")
 		print('WARNING: OpenMP with LLVM not supported, deactivating')
-		print()
+		print("")
 
 		llvm_omp_override = True
 		env['threading'] = 'off'
@@ -631,7 +631,7 @@ if env['compiler'] == 'llvm':
 
 	if env['fortran_source'] == 'enable':
 		#env.Append(LIBS=['gfortran'])
-		print "TODO: LLVM compiler not yet supported with fortran enabled"
+		print("TODO: LLVM compiler not yet supported with fortran enabled")
 		Exit(-1)
 
 
@@ -718,7 +718,7 @@ if env['gui'] == 'enable':
 		if (int(sdlversion[i]) > int(reqversion[i])):
 			break;
 		if (int(sdlversion[i]) < int(reqversion[i])):
-			print 'libSDL Version 2.0.0 necessary.'
+			print('libSDL Version 2.0.0 necessary.')
 			Exit(1)
 
 	env.ParseConfig("sdl2-config --cflags --libs")
@@ -730,8 +730,8 @@ else:
 
 
 if env['sweet_mpi'] == 'enable':
-	print "Enabling MPI for REXI"
-	print "Warning: Compiler checks not done"
+	print("Enabling MPI for REXI")
+	print("Warning: Compiler checks not done")
 
 	if env['compiler'] == 'gnu':
 		env.Replace(CXX = 'mpiCC')
@@ -843,7 +843,7 @@ if env['mic'] == 'enable':
 
 
 if env['rexi_thread_parallel_sum'] == 'enable' and env['threading'] == 'omp':
-	print 'ERROR: "REXI Parallel Sum" and "Threading" is both activated'
+	print('ERROR: "REXI Parallel Sum" and "Threading" is both activated')
 	sys.exit(1)
 
 
@@ -890,7 +890,11 @@ if env['program_binary_name'] != '':
 # BUILD directory
 #
 build_dir='/tmp/scons_build_'+exec_name+'/'
-#env['FORTRANMODDIR'] = build_dir+'lkjasdf'
+
+
+# TODO: Make sure that Fortran output directory is used as output for module files during compilation step
+env['FORTRANMODDIR'] = build_dir
+
 
 env.Append(CPPPATH = ['/usr/local/include', '/usr/include'])
 
@@ -939,10 +943,10 @@ if env['program_name'] != 'DUMMY':
 	SConscript('./sconscript', variant_dir=build_dir, duplicate=0)
 	Import('env')
 
-	print()
+	print('')
 	print('            Program: '+env['program_name'])
 	print('Building executable: '+exec_name)
-	print()
+	print('')
 
 	obj_files = []
 	for i in env.src_files:

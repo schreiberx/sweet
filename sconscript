@@ -3,62 +3,59 @@ import sys
 import glob
 
 Import('env')
+env.Append(CPPPATH = ['include'])
 
-env.Append(CPPPATH = ['include']) 
+
+sweet_root = env['SWEET_ROOT']+'/'
+
+
+mainsrcadddir = ''
 
 if env['compile_program'] != '':
-	env.src_files.append(env.Object('src/programs/'+env['compile_program']+'.cpp'))
-
+	mainsrcadddir = 'src/programs/'+env['compile_program']
 elif env['unit_test'] != '':
-	env.src_files.append(env.Object('src/unit_tests/'+env['unit_test']+'.cpp'))
+	mainsrcadddir = 'src/unit_tests/'+env['unit_test']
+else:
+	mainsrcadddir = ''
+
+if mainsrcadddir != '':
 
 
-#
-# WARNING!
-# This rexi parallel sum part has to be done here since it relies on the entire environment
-# WARNING!
-#
-if env['program_name'] in ['swe_rexi', 'pfasst_swe_plane_rexi'] or env['unit_test'] in ['test_helmholtz']:
-	if env['rexi_thread_parallel_sum']=='enable':
-		env_omp = env.Clone()
-#		env_omp.Append(CCFLAGS = ' -fopenmp')
-		env_omp.Append(CXXFLAGS = ' -fopenmp')
-		env.src_files.append(env_omp.Object('src/programs/swe_plane_rexi/SWE_Plane_REXI.cpp'))
-	else:
-		env.src_files.append(env.Object('src/programs/swe_plane_rexi/SWE_Plane_REXI.cpp'))
+	#
+	# Add main source file
+	#
+	env.src_files.append(env.Object(mainsrcadddir+'.cpp'))
 
 
-if env['program_name'] in ['swe_sph_and_rexi'] or env['unit_test'] in ['test_sph_rexi_solver']:
-	if env['rexi_thread_parallel_sum']=='enable':
-		env_omp = env.Clone()
-#		env_omp.Append(CCFLAGS = ' -fopenmp')
-		env_omp.Append(CXXFLAGS = ' -fopenmp')
-		env.src_files.append(env_omp.Object('src/programs/swe_sphere_rexi/SWE_Sphere_REXI.cpp'))
-	else:
-		env.src_files.append(env.Object('src/programs/swe_sphere_rexi/SWE_Sphere_REXI.cpp'))
+	real_foodir = sweet_root+mainsrcadddir
 
-
-#
-# Check for program specific source code files
-#    src/programs/[compile_program]/*
-#
-if env['compile_program'] != '':
-	foodir = 'src/programs/'+env['compile_program']
-	sweet_root = env['SWEET_ROOT']+'/'
-
-	real_foodir = sweet_root+'src/programs/'+env['compile_program']
-
+	#
+	# Check for program specific source code files in
+	#    src/programs/[compile_program]
+	#
 	if os.path.isdir(real_foodir):
-		cpp_files = glob.glob(foodir+'/*.cpp')
+
+		cpp_files = glob.glob(real_foodir+'/*.cpp')
 		for i in cpp_files:
-			file = i.replace(real_foodir, '')
-			env.src_files.append(env.Object(file))
+			filerelpath = i.replace(sweet_root, '')
 
-		fortran_files = glob.glob(foodir+'/*.f90')
+			# SWE PLANE REXI SPECIAL HANDLING
+			if os.path.basename(filerelpath) in ['SWE_Plane_REXI.cpp', 'SWE_Sphere_REXI.cpp']:
+				if env['rexi_thread_parallel_sum']=='enable':
+					env_omp = env.Clone()
+					env_omp.Append(CXXFLAGS = ' -fopenmp')
+					env_omp.src_files.append(env_omp.Object(filerelpath))
+				else:
+					env.src_files.append(env.Object(filerelpath))
+			else:
+				env.src_files.append(env.Object(filerelpath))
 
+		fortran_files = glob.glob(real_foodir+'/*.f90')
 		for i in fortran_files:
-			file = i.replace(real_foodir, '')
-			env.src_files.append(env.Object(file))
+			filerelpath = i.replace(sweet_root, '')
+
+			env.src_files.append(env.Object(filerelpath))
 
 
-Export('env')
+	Export('env')
+

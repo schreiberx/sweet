@@ -10,6 +10,7 @@
 
 
 #include <sweet/sphere/SphereData.hpp>
+#include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/sphere/SphereDataTimesteppingExplicitRK.hpp>
 
 

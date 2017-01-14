@@ -24,7 +24,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "swe_plane_rexi/SWE_Plane_REXI.hpp"
+#include "swe_rexi/SWE_Plane_REXI.hpp"
 
 
 
