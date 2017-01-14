@@ -17,12 +17,8 @@ if [ ! -e "$DST_DIR/bin/gcc"  -o "$1" != "" ]; then
 		echo "Using existing file $FILENAME"
 	fi
 
-	if [ ! -e "$BASENAME" ]; then
-		echo "Uncompressing $FILENAME"
-		tar xjf "$FILENAME" || exit 1
-	else
-		echo "Not uncompressing $FILENAME"
-	fi
+	echo "Uncompressing $FILENAME"
+	tar xjf "$FILENAME" || exit 1
 
 	if [ ! -e "$BASENAME" ]; then
 		echo "$BASENAME does not exist"

@@ -1,3 +1,6 @@
+import os
+import sys
+import glob
 
 Import('env')
 
@@ -8,6 +11,7 @@ if env['compile_program'] != '':
 
 elif env['unit_test'] != '':
 	env.src_files.append(env.Object('src/unit_tests/'+env['unit_test']+'.cpp'))
+
 
 #
 # WARNING!
@@ -34,5 +38,27 @@ if env['program_name'] in ['swe_sph_and_rexi'] or env['unit_test'] in ['test_sph
 		env.src_files.append(env.Object('src/programs/swe_sphere_rexi/SWE_Sphere_REXI.cpp'))
 
 
-Export('env')
+#
+# Check for program specific source code files
+#    src/programs/[compile_program]/*
+#
+if env['compile_program'] != '':
+	foodir = 'src/programs/'+env['compile_program']
+	sweet_root = env['SWEET_ROOT']+'/'
 
+	real_foodir = sweet_root+'src/programs/'+env['compile_program']
+
+	if os.path.isdir(real_foodir):
+		cpp_files = glob.glob(foodir+'/*.cpp')
+		for i in cpp_files:
+			file = i.replace(real_foodir, '')
+			env.src_files.append(env.Object(file))
+
+		fortran_files = glob.glob(foodir+'/*.f90')
+
+		for i in fortran_files:
+			file = i.replace(real_foodir, '')
+			env.src_files.append(env.Object(file))
+
+
+Export('env')

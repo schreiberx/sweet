@@ -7,6 +7,7 @@
  *      Author: martin
  */
 
+void foo_awesome();
 
 /*
  * See http://www.parallelintime.org/PFASST/index.html
@@ -18,30 +19,14 @@
 #include <sweet/plane/PlaneDataTimesteppingRK.hpp>
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
-#include "swe_plane_rexi/SWE_Plane_REXI.hpp"
+//#include "swe_plane_rexi/SWE_Plane_REXI.hpp"
 #include <benchmarks_plane/PlaneBenchmarksCombined.hpp>
-#include <mpi.h>
+//#include <mpi.h>
 
-#define WITH_MPI
-
-#include <pfasst.hpp>
-#include <pfasst/logging.hpp>
-#include <pfasst/quadrature.hpp>
-#include <pfasst/controller/sdc.hpp>
-#include <pfasst/controller/pfasst.hpp>
-#include <pfasst/mpi_communicator.hpp>
-#include <pfasst/encap/vector.hpp>
-#include <pfasst/encap/implicit_sweeper.hpp>
-#include <pfasst/encap/imex_sweeper.hpp>
-#include <pfasst/encap/poly_interp.hpp>
-
-#include <pfasst/interfaces.hpp>
-#include <pfasst/controller/pfasst.hpp>
-#include <pfasst/encap/encapsulation.hpp>
-#include <pfasst/encap/imex_sweeper.hpp>
+//#define WITH_MPI
 
 #if !SWEET_PFASST_CPP
-#	error "Use --pfasst=enable for this file"
+#	error "Use --pfasst-cpp=enable for this file"
 #endif
 
 /**
@@ -64,7 +49,7 @@ public:
 	PlaneOperators op;
 
 	// Rexi stuff
-	SWE_Plane_REXI swe_plane_rexi;
+//	SWE_Plane_REXI swe_plane_rexi;
 };
 
 std::vector<LevelSingleton> levelSingletons;
@@ -74,9 +59,7 @@ std::vector<LevelSingleton> levelSingletons;
  * Extend ImplicitSweeper in PFASST++
  * TODO: Why do we use IMEX and not Implicit?
  */
-template<typename time = pfasst::time_precision>
 class SimulationInstance
-		: public pfasst::encap::IMEXSweeper<time>
 {
     double xstart = 0.0;
     double xstop = M_PI;
@@ -100,19 +83,19 @@ public:
 
 	}
 
-
+#if 0
     /*
      * compute exact solution
      */
+#if 0
     void p_exact(
-    		shared_ptr<pfasst::encap::Encapsulation<time>> u_encap,
 			time t
 	)
     {
 //    	auto& u = pfasst::encap::as_vector<double, time>(u_encap);
 //      this->exact(u, t);
     }
-
+#endif
 
     void p_echo_error(time t)
     {
@@ -148,7 +131,7 @@ public:
       p_echo_error(t+dt);
 #endif
     }
-
+#endif
 
 
 	/**
@@ -166,13 +149,14 @@ public:
 	 *
 	 * @note This method must be implemented in derived sweepers.
 	 */
+#if 0
     void f_impl_eval(shared_ptr<pfasst::encap::Encapsulation<time>> io_f_impl_encap,
                      shared_ptr<pfasst::encap::Encapsulation<time>> i_u_encap,
                      time i_t
 	) override
     {
     }
-
+#endif
 
 	/**
 	 * PFASST
@@ -186,13 +170,14 @@ public:
 	 *
 	 * @note This method must be implemented in derived sweepers.
 	 */
+#if 0
     void f_expl_eval(shared_ptr<pfasst::encap::Encapsulation<time>> io_f_expl_encap,
                      shared_ptr<pfasst::encap::Encapsulation<time>> i_u_encap,
                      time i_t
 	)
     {
     }
-
+#endif
 
 
 	/**
@@ -291,6 +276,7 @@ private:
 		}
 		else if (param_timestepping_mode == 2) //Direct solution
 		{
+#if 0
 			if (simVars.misc.use_nonlinear_equations>0)
 				FatalError("Direct solution on staggered grid not supported!");
 
@@ -303,11 +289,12 @@ private:
 					levelSingleton->op,
 					simVars
 			);
+#endif
 		}
 		else if (param_timestepping_mode == 3)
 		{   //  Implicit time step - Backward Euler - checked - linear only
 			assert(simVars.sim.CFL < 0);
-
+#if 0
 			o_dt = -simVars.sim.CFL;
 			levelSingleton->swe_plane_rexi.run_timestep_implicit_ts(
 					prog_phi, io_prog_u, io_prog_v,
@@ -315,6 +302,7 @@ private:
 					levelSingleton->op,
 					simVars
 			);
+#endif
 		}
 	}
 
@@ -326,11 +314,11 @@ private:
 
 int main(int i_argc, char *i_argv[])
 {
-	MPI_Init(&i_argc, &i_argv);
-	pfasst::init(i_argc, i_argv);
+//	MPI_Init(&i_argc, &i_argv);
+//	pfasst::init(i_argc, i_argv);
 
-	pfasst::mpi::MPICommunicator comm(MPI_COMM_WORLD);
-	pfasst::PFASST<> pf;
+//	pfasst::mpi::MPICommunicator comm(MPI_COMM_WORLD);
+//	pfasst::PFASST<> pf;
 
 #if 0
 	// TODO: implement transfer class
@@ -441,7 +429,7 @@ int main(int i_argc, char *i_argv[])
 	/**********************************************************
 	 * SETUP top level data
 	 **********************************************************/
-
+#if 0
 	SimulationInstance<pfasst::time_precision> topLevelData;
 	topLevelData.prog_phi.setup(&levelSingletons[0].dataConfig);
 	topLevelData.prog_u.setup(&levelSingletons[0].dataConfig);
@@ -456,11 +444,13 @@ int main(int i_argc, char *i_argv[])
 		);
 
 	topLevelData.prog_phi = topLevelData.prog_phi*simVars.sim.gravitation;
-
+#endif
 
 #if 0
 	// TODO: setup the rest correctly
 	pf.run();
 #endif
+
+	foo_awesome();
 }
 

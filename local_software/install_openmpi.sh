@@ -17,12 +17,8 @@ if [ ! -e "$DST_DIR/bin/mpicc"  -o "$1" != "" ]; then
 		echo "Using existing file $FILENAME"
 	fi
 
-	if [ ! -e "$BASENAME" ]; then
-		echo "Uncompressing $FILENAME"
-		tar xjf "$FILENAME"
-	else
-		echo "Not uncompressing $FILENAME"
-	fi
+	echo "Uncompressing $FILENAME"
+	tar xjf "$FILENAME"
 
 	if [ ! -e "$BASENAME" ]; then
 		echo "$BASENAME does not exist"

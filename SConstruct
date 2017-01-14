@@ -12,6 +12,7 @@ hostname = hostname.replace("\n", '')
 hostname = hostname.replace("\r", '')
 
 env = Environment(ENV = os.environ)
+env['SWEET_ROOT'] = os.getcwd()
 
 
 
@@ -107,14 +108,24 @@ AddOption(	'--simd',
 env['simd'] = GetOption('simd')
 
 
-AddOption(	'--pfasst',
-		dest='pfasst',
+AddOption(	'--pfasst-cpp',
+		dest='pfasst_cpp',
 		type='choice',
 		choices=['enable', 'disable'],
 		default='enable',
-		help="Activate utilization of PFASST [default: %default]"
+		help="Activate utilization of PFASST++ (C++ version) [default: %default]"
 )
-env['pfasst'] = GetOption('pfasst')
+env['pfasst_cpp'] = GetOption('pfasst_cpp')
+
+
+AddOption(	'--libpfasst',
+		dest='libpfasst',
+		type='choice',
+		choices=['enable', 'disable'],
+		default='enable',
+		help="Activate utilization of libPFASST (Fucking Ortran version) [default: %default]"
+)
+env['libpfasst'] = GetOption('libpfasst')
 
 
 env.Append(CXXFLAGS=' -DSWEET_SIMD_ENABLE='+('1' if env['simd']=='enable' else '0'))
@@ -343,14 +354,19 @@ llvm_omp_override = False
 # set default to first example program
 if env['compile_program'] != '':
 	env['program_name'] = env['compile_program']
+
 elif env['unit_test'] != '':
 	env['program_name'] = env['unit_test']
+
 else:
 	env['program_name'] = 'DUMMY'
-	print("\n")
+	print("")
+	print("")
 	print("Neither a program name, nor a unit test is given:\n")
 	print("  use --program=[program name] to specify the program\n")
 	print("  or --unit-test=[unit test] to specify a unit test\n")
+	print("")
+	print("")
 
 
 
@@ -370,11 +386,13 @@ if env['plane_spectral_space'] == 'enable':
 	#	Exit(1)
 	env.Append(CXXFLAGS = ' -DSWEET_USE_PLANE_SPECTRAL_SPACE=1')
 	exec_name+='_planespectral'
+
 else:
 	env.Append(CXXFLAGS = ' -DSWEET_USE_PLANE_SPECTRAL_SPACE=0')
 
 	# override dealiasing
 	env['plane_spectral_dealiasing'] = 'disable'
+
 
 
 if env['plane_spectral_dealiasing'] == 'enable':
@@ -761,11 +779,18 @@ if env['plane_spectral_space'] == 'enable':
 	env['libfft'] = 'enable'
 
 
-if env['pfasst'] == 'enable':
+if env['pfasst_cpp'] == 'enable':
 	env.Append(CXXFLAGS=['-Ilocal_software/local/include/eigen3'])
-	env.Append(CXXFLAGS=['-DSWEET_PFASST=1'])
+	env.Append(CXXFLAGS=['-DSWEET_PFASST_CPP=1'])
 else:
-	env.Append(CXXFLAGS=['-DSWEET_PFASST=0'])
+	env.Append(CXXFLAGS=['-DSWEET_PFASST_CPP=0'])
+
+if env['libpfasst'] == 'enable':
+	env.Append(CXXFLAGS=['-Llibpfasst'])
+	env.Append(CXXFLAGS=['-DSWEET_LIBPFASST=1'])
+else:
+	env.Append(CXXFLAGS=['-DSWEET_LIBPFASST=0'])
+
 
 if env['libsph'] == 'enable':
 	# activate linking with libfft!
@@ -862,13 +887,30 @@ if env['program_binary_name'] != '':
 
 
 #
-# build directory
+# BUILD directory
 #
 build_dir='/tmp/scons_build_'+exec_name+'/'
+#env['FORTRANMODDIR'] = build_dir+'lkjasdf'
 
 env.Append(CPPPATH = ['/usr/local/include', '/usr/include'])
 
-# MAC CLUSTER
+
+
+#
+# FORTRAN stuff
+#
+
+#fortran_mod_dir = build_dir+'/fortran_mods'
+
+#if not os.path.exists(fortran_mod_dir):
+#    os.makedirs(fortran_mod_dir)
+#env = env.Clone(FORTRANMODDIR = fortran_mod_dir)
+
+
+#
+# MAC cluster
+#
+
 #print hostname
 if hostname[0:4] == "mac-":
 	env.Append(CPPPATH = ['/usr/local/include', '/usr/include', '/lrz/sys/libraries/fftw/3.3.3/avx/include'])
@@ -878,6 +920,7 @@ if hostname[0:4] == "mac-":
 
 # also include the 'src' directory to search for dependencies
 env.Append(CPPPATH = ['.', './src/', './src/include'])
+
 
 
 ######################
@@ -893,14 +936,19 @@ env.Append(CPPPATH=['./local_software/local/include'])
 if env['program_name'] != 'DUMMY':
 
 	Export('env')
-#	SConscript('src/SConscript', variant_dir=build_dir, duplicate=0)
 	SConscript('./sconscript', variant_dir=build_dir, duplicate=0)
 	Import('env')
 
-	print
-	print '            Program: '+env['program_name']
-	print 'Building executable: '+exec_name
-	print
+	print()
+	print('            Program: '+env['program_name'])
+	print('Building executable: '+exec_name)
+	print()
 
-	env.Program('build/'+exec_name, env.src_files)
+	obj_files = []
+	for i in env.src_files:
+		for a in i:
+			if str(a).split(".")[-1] == "o":
+				obj_files.append(str(a))
+
+	env.Program('build/'+exec_name, obj_files)
 
