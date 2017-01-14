@@ -31,7 +31,7 @@
 #include <sweet/FatalError.hpp>
 
 
-#include "swe_sphere_rexi/SWE_Sphere_REXI.hpp"
+#include <rexi/swe_sphere_rexi/SWE_Sphere_REXI.hpp>
 
 
 
