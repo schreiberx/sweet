@@ -7,6 +7,12 @@
   FFTW can take some seconts to setup the plans.
   To overcome this, set the environemtn variable SWEET_FFTW_ESTIMATE
 
+********************************************************
+* GL library not found during linking stage
+********************************************************
+  On Ubuntu systems, install the libgl1-mesa-dev package.
+  
+
 
 ********************************************************
 * SWEET behaves differently in performance everytime it's executed
