@@ -5,7 +5,8 @@ source config.sh
 
 echo "*** GCC5.3 ***"
 if [ ! -e "$DST_DIR/bin/gcc"  -o "$1" != "" ]; then
-	SRC_LINK="ftp://ftp.fu-berlin.de/unix/languages/gcc/releases/gcc-5.3.0/gcc-5.3.0.tar.bz2"
+	SRC_LINK="http://www.martin-schreiber.info/pub/sweet_local_software/gcc-5.3.0.tar.bz2"
+	#SRC_LINK="ftp://ftp.fu-berlin.de/unix/languages/gcc/releases/gcc-5.3.0/gcc-5.3.0.tar.bz2"
 	FILENAME="`basename $SRC_LINK`"
 	BASENAME="gcc-5.3.0"
 

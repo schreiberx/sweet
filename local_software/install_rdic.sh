@@ -5,7 +5,8 @@ source config.sh
 
 echo "*** RDIC ***"
 if [ ! -e "$DST_DIR/lib/librdic.so.0"  -o "$1" != "" ]; then
-	SRC_LINK="http://mathgeek.us/files/libridc-0.2.tar.gz"
+	SRC_LINK="http://www.martin-schreiber.info/pub/sweet_local_software/libridc-0.2.tar.gz"
+	#SRC_LINK="http://mathgeek.us/files/libridc-0.2.tar.gz"
 	FILENAME="`basename $SRC_LINK`"
 	BASENAME="libridc-0.2"
 

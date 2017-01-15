@@ -21,7 +21,8 @@ if [ "`uname -s`" != "Linux" ]; then
 else
 
 	if [ ! -e "$DST_DIR/lib/libnuma.so" -o "$1" != "" ]; then
-		SRC_LINK="ftp://oss.sgi.com/www/projects/libnuma/download/numactl-2.0.11.tar.gz"
+		SRC_LINK="http://www.martin-schreiber.info/pub/sweet_local_software/numactl-2.0.11.tar.gz"
+		#SRC_LINK="ftp://oss.sgi.com/www/projects/libnuma/download/numactl-2.0.11.tar.gz"
 		FILENAME="`basename $SRC_LINK`"
 		BASENAME="numactl-2.0.11"
 

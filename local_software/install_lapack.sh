@@ -5,7 +5,8 @@ source config.sh
 
 echo "*** LAPACK ***"
 if [ ! -e "$DST_DIR/lib/liblapack.a"  -o "$1" != "" ]; then
-	SRC_LINK="http://www.netlib.org/lapack/lapack-3.6.1.tgz"
+	SRC_LINK="http://www.martin-schreiber.info/pub/sweet_local_software/lapack-3.6.1.tgz"
+	#SRC_LINK="http://www.netlib.org/lapack/lapack-3.6.1.tgz"
 	FILENAME="`basename $SRC_LINK`"
 	BASENAME="lapack-3.6.1"
 

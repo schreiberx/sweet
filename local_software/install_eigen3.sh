@@ -5,7 +5,8 @@ source config.sh
 
 echo "*** EIGEN3 ***"
 if [ ! -e "$DST_DIR/include/librdic.so.0"  -o "$1" != "" ]; then
-	SRC_LINK="https://bitbucket.org/eigen/eigen/get/3.3.0.tar.bz2"
+	SRC_LINK="http://www.martin-schreiber.info/pub/sweet_local_software/eigen-3.3.0.tar.bz2"
+	#SRC_LINK="https://bitbucket.org/eigen/eigen/get/3.3.0.tar.bz2"
 	FILENAME="`basename $SRC_LINK`"
 	BASENAME="eigen-3.3.0"
 

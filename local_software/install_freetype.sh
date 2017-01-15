@@ -5,7 +5,8 @@ source config.sh
 
 echo "*** SHTNS ***"
 if [ ! -e "$DST_DIR/lib/libfreetype6.so"  -o "$1" != "" ]; then
-	SRC_LINK="http://mirror.yannic-bonenberger.com/nongnu/freetype/freetype-2.7.tar.bz2"
+	SRC_LINK="http://www.martin-schreiber.info/pub/sweet_local_software/freetype-2.7.tar.bz2"
+	#SRC_LINK="http://mirror.yannic-bonenberger.com/nongnu/freetype/freetype-2.7.tar.bz2"
 	FILENAME="`basename $SRC_LINK`"
 	BASENAME="freetype-2.7"
 

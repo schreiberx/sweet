@@ -6,7 +6,8 @@ source config.sh
 echo "*** SDL2 ***"
 
 if [ ! -e "$DST_DIR/lib/libSDL2.so"  -o "$1" != "" ]; then
-	SRC_LINK="https://www.libsdl.org/release/SDL2-2.0.3.tar.gz"
+	SRC_LINK="http://www.martin-schreiber.info/pub/sweet_local_software/SDL2-2.0.3.tar.gz"
+	#SRC_LINK="https://www.libsdl.org/release/SDL2-2.0.3.tar.gz"
 	FILENAME="`basename $SRC_LINK`"
 	BASENAME="SDL2-2.0.3"
 
@@ -26,4 +27,6 @@ if [ ! -e "$DST_DIR/lib/libSDL2.so"  -o "$1" != "" ]; then
 
 	echo "DONE"
 
+else
+	echo "SDL2 already installed"
 fi

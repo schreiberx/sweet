@@ -3,9 +3,10 @@
 source config.sh
 
 
-echo "*** GCC5.3 ***"
+echo "*** OpenMPI ***"
 if [ ! -e "$DST_DIR/bin/mpicc"  -o "$1" != "" ]; then
-	SRC_LINK="https://www.open-mpi.org/software/ompi/v1.10/downloads/openmpi-1.10.2.tar.bz2"
+	SRC_LINK="http://www.martin-schreiber.info/pub/sweet_local_software/openmpi-1.10.2.tar.bz2"
+	#SRC_LINK="https://www.open-mpi.org/software/ompi/v1.10/downloads/openmpi-1.10.2.tar.bz2"
 	FILENAME="`basename $SRC_LINK`"
 	BASENAME="openmpi-1.10.2"
 
