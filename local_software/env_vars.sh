@@ -15,14 +15,14 @@ if [ "`basename $0`" != "bash" ]; then
 	echo "     |"
 	echo "ERROR| to setup the environment variables correctly"
 	echo "ERROR|"
-	exit -1
+	return
 fi
 
 if [ "`basename $SHELL`" != "bash" ]; then
-	echo "ERROR"
-	echo "ERROR: These scripts are only compatible to the bash shell"
-	echo "ERROR"
-	exit -1
+	echo "ERROR|"
+	echo "ERROR| These scripts are only compatible to the bash shell"
+	echo "ERROR|"
+	return
 fi
 
 
@@ -34,8 +34,8 @@ SCRIPTDIR="`pwd`/local_software"
 
 if [ ! -d "$SCRIPTDIR" ]; then
 	echo
-	echo "ERROR: Execute this script only from the SWEET root directory"
-	echo "   source local_software/env_vars.sh"
+	echo "ERROR| Execute this script only from the SWEET root directory"
+	echo "     |   $ source local_software/env_vars.sh"
 	echo
 	return
 fi
@@ -52,3 +52,5 @@ export DYLD_LIBRARY_PATH="$SCRIPTDIR/local/lib64:$LD_LIBRARY_PATH"
 echo "SWEET environment variables loaded"
 
 cd "$BACKDIR"
+
+
