@@ -551,9 +551,9 @@ if env['compiler'] == 'intel':
 		env.Append(CXXFLAGS='-gxx-name='+env['gxx_toolchain'])
 		env.Append(LINKFLAGS='-gxx-name='+env['gxx_toolchain'])
 
-	env.Append(LINKFLAGS=' -shared-intel')
-	env.Append(LINKFLAGS=' -shared-libgcc')
-	env.Append(LINKFLAGS=' -debug inline-debug-info')
+	env.Append(LINKFLAGS='-shared-intel')
+	env.Append(LINKFLAGS='-shared-libgcc')
+	env.Append(LINKFLAGS='-debug inline-debug-info')
 
 	# eclipse specific flag
 	env.Append(CXXFLAGS=' -fmessage-length=0')
@@ -742,8 +742,8 @@ if env['sweet_mpi'] == 'enable':
 		env.Replace(LINK = 'mpiicpc')
 
 	if env['threading'] != 'off' and env['compiler'] == 'intel':
-		env.Append(CXXFLAGS=' -mt_mpi')
-		env.Append(LINKFLAGS=' -mt_mpi')
+		env.Append(CXXFLAGS='-mt_mpi')
+		env.Append(LINKFLAGS='-mt_mpi')
 
 
 env.Append(LIBS=['quadmath'])
