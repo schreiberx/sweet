@@ -1009,22 +1009,6 @@ public:
 			std::ostream &o_ostream = std::cout
 	)
 	{
-		// output each time step
-		if (simVars.misc.output_each_sim_seconds < 0)
-			return false;
-
-		if (simVars.misc.output_next_sim_seconds > simVars.timecontrol.current_simulation_time)
-			return false;
-
-		// Dump data in csv, if requested
-		if (simVars.misc.output_file_name_prefix.size() > 0)
-		{
-			write_file(prog_u, "u");
-			write_file(prog_v, "v");
-			if (param_compute_error)
-				write_file(benchmark_analytical_error, "error");
-		}
-
 		if (simVars.misc.verbosity > 0)
 		{
 			update_diagnostics();
@@ -1050,6 +1034,23 @@ public:
 			}
 
 			o_ostream << std::endl;
+		}
+
+		// output each time step
+		if (simVars.misc.output_each_sim_seconds < 0)
+			return false;
+
+		if (simVars.misc.output_next_sim_seconds > simVars.timecontrol.current_simulation_time)
+			if (simVars.timecontrol.current_simulation_time != simVars.timecontrol.max_simulation_time)
+				return false;
+
+		// Dump data in csv, if requested
+		if (simVars.misc.output_file_name_prefix.size() > 0)
+		{
+			write_file(prog_u, "u");
+			write_file(prog_v, "v");
+			if (param_compute_error)
+				write_file(benchmark_analytical_error, "error");
 		}
 
 		if (simVars.misc.output_each_sim_seconds > 0)
@@ -1511,7 +1512,7 @@ public:
 			bool i_compute_convergence_test
 	)
 	{
-		if (simVars.parareal.verbosity > NUM_OF_UNKNOWNS)
+		if (simVars.parareal.verbosity > 2)
 			std::cout << "compute_output_data()" << std::endl;
 
 		double convergence = -1;
@@ -1527,7 +1528,7 @@ public:
 
 
 
-		for (int k = 0; k < 2; k++)
+		for (int k = 0; k < NUM_OF_UNKNOWNS; k++)
 		{
 			tmp = *parareal_data_coarse.data_arrays[k] + *parareal_data_error.data_arrays[k];
 
