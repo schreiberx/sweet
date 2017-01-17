@@ -449,7 +449,10 @@ public:
 						prog_h.p_physical_set(j, i, return_h(simVars, x, y));
 						t0_prog_h.p_physical_set(j, i, return_h(simVars, x, y));
 						force_h.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_h(simVars, x, y));
+					}
 
+
+					{
 						//Coriolis term - lives in the corner of the cells
 						if (simVars.misc.use_nonlinear_equations)
 						{
@@ -458,14 +461,16 @@ public:
 							double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 							beta_plane.p_physical_set(j, i, SWEPlaneBenchmarks::return_f(simVars, x, y));
 							if(j==0 && i==0 && simVars.sim.beta)
+							{
 								std::cerr << "WARNING: BETA PLANE ON C-GRID NOT TESTED FOR NON_LINEARITIES!" << std::endl;
+							}
 						}
-						else
+						if(j==0 && i==0 && simVars.sim.beta)
 						{
 							std::cerr << "WARNING: BETA PLANE ON C-GRID NOT SUPPORTED!" << std::endl;
 							exit(-1);
 							// linear
-//							op.diff_b_x(H)
+							//	op.diff_b_x(H)
 						}
 					}
 
