@@ -201,7 +201,7 @@ public:
 
 
 	/**
-	 * Divergence Operator along longitude for robert function formlation
+	 * Divergence Operator along longitude for Robert function formulation
 	 *
 	 * This computes
 	 * 	1/cos^2(phi)  d/dlambda U

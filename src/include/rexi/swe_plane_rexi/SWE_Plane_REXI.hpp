@@ -123,7 +123,8 @@ public:
 
 			PlaneDataConfig *i_planeDataConfig,
 			const double *i_domain_size,		///< size of domain
-			bool i_rexi_half = true			///< use half-pole reduction
+			bool i_rexi_half = true,			///< use half-pole reduction
+			bool i_rexi_normalization = true
 	);
 
 

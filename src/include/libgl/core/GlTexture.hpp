@@ -599,6 +599,38 @@ public:
 		delete[] data;
 	}
 
+
+	/**
+	 * print red channel of a texture with internal type unsigned integer
+	 * \param level	mipmap level to read data
+	 */
+	void printR8UI(GLint level = 0)
+	{
+		int nwidth = this->width >> level;
+		int nheight = this->height >> level;
+
+		if (nwidth == 0)	nwidth = 1;
+		if (nheight == 0)	nheight = 1;
+
+		std::cout << nwidth << " x " << nheight << std::endl;
+
+		GLubyte *data = new GLubyte[nwidth*nheight];
+		bind();
+		glGetTexImage(GL_TEXTURE_2D, level, GL_RED, GL_UNSIGNED_BYTE, data);
+		glFinish();
+
+		for(int y = 0; y < nheight; y++)
+		{
+			for(int x = 0; x < nwidth; x++)
+				std::cout << (int)data[x+nwidth*y] << " ";
+			std::cout << std::endl;
+		}
+
+		unbind();
+
+		delete[] data;
+	}
+
 	/**
 	 * print red and green channel of a texture with internal type unsigned integer
 	 * \param level	mipmap level to read data

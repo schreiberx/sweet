@@ -47,7 +47,7 @@ public:
 	int L;							///< 2*L+1 = number of weights
 
 	GaussianApproximation(
-			int i_L = 11	///< L
+			int i_L = 0	///< L
 	)
 	{
 		L = i_L;
@@ -66,7 +66,7 @@ public:
 			L = 11;
 			a.resize(L*2+1);
 
-#if 1
+#if 0
 			a[0].real(DQStuff::fromString<TStorage>("-1.0845749544592896e-7"));		a[0].imag(DQStuff::fromString<TStorage>("2.77075431662228e-8"));
 			a[1].real(DQStuff::fromString<TStorage>("1.858753344202957e-8"));		a[1].imag(DQStuff::fromString<TStorage>("-9.105375434750162e-7"));
 			a[2].real(DQStuff::fromString<TStorage>("3.6743713227243024e-6"));		a[2].imag(DQStuff::fromString<TStorage>("7.073284346322969e-7"));

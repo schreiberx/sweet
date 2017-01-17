@@ -133,6 +133,19 @@ public:
 	bool initialized;
 
 
+	std::string getUniqueIDString()
+	{
+		return getConfigInformationString();
+	}
+
+	std::string getConfigInformationString()
+	{
+		std::ostringstream buf;
+		buf << "M" << spectral_modes[0] << "," << spectral_modes[1] << "_N" << physical_res[0] << "," << physical_res[1];
+		return buf.str();
+	}
+
+
 	void printInformation()
 	{
 
@@ -641,25 +654,39 @@ public:
 			int i_spectral_modes[2]
 	)
 	{
-		if (i_spectral_modes[0] <= 0)
-		{
-			setupAutoSpectralSpace(
-					i_physical_res[0],
-					i_physical_res[1]
-				);
-		}
-		else if (i_physical_res[0] > 0)
+		std::cout << i_physical_res[0] << ", " << i_physical_res[1] << std::endl;
+		std::cout << i_spectral_modes[0] << ", " << i_spectral_modes[1] << std::endl;
+
+		if (i_physical_res[0] > 0 && i_spectral_modes[0] > 0)
 		{
 			setup(	i_physical_res[0],
 					i_physical_res[1],
 					i_spectral_modes[0],
 					i_spectral_modes[1]
 				);
+			return;
 		}
-		else
+
+		if (i_physical_res[0] > 0)
 		{
-			FatalError("No resolution/modes selected");
+			setupAutoSpectralSpace(
+					i_physical_res[0],
+					i_physical_res[1]
+				);
+			return;
 		}
+
+		if (i_spectral_modes[0] > 0)
+		{
+			setupAutoPhysicalSpace(
+					i_spectral_modes[0],
+					i_spectral_modes[1]
+				);
+
+			return;
+		}
+
+		FatalError("No resolution/modes selected");
 	}
 
 

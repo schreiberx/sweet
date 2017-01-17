@@ -26,7 +26,6 @@ PlaneDataConfig planeDataConfigInstance;
 PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
 
 
-
 SimulationVariables simVars;
 
 double param_velocity_u;

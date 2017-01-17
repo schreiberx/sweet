@@ -136,13 +136,16 @@ class VisSweet	:
 
 		double inv_delta = 1.0/real_delta;
 
-//#pragma omp parallel for OPENMP_PAR_SIMD
-		for (std::size_t i = 0; i < visData.planeDataConfig->physical_array_data_number_of_elements; i++)
+#pragma omp parallel for OPENMP_PAR_SIMD
+		for (	std::size_t i = 0;
+				i < visData.planeDataConfig->physical_array_data_number_of_elements;
+				i++
+		)
 		{
 			double value = (visData.physical_space_data[i]-vis_min)*inv_delta;
 			value *= 255.0;
 
-			texture_data[i] = (unsigned char)std::min(255.0, std::max(0.0, value));
+			texture_data[i] = (unsigned char)std::min(255.0, std::max(0.0, value));//			texture_data[i] = 128;
 		}
 
 		glTexture->bind();
