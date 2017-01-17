@@ -1674,10 +1674,6 @@ int main(int i_argc, char *i_argv[])
 
 	std::cout << planeDataConfigInstance.getUniqueIDString() << std::endl;
 
-	// make sure to load physical resolution in case it's autodetermined
-	simVars.disc.res_physical[0] = planeDataConfigInstance.physical_res[0];
-	simVars.disc.res_physical[1] = planeDataConfigInstance.physical_res[1];
-
 
 	std::ostringstream buf;
 	buf << std::setprecision(14);

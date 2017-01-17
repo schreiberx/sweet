@@ -650,39 +650,44 @@ public:
 
 public:
 	void setupAuto(
-			int i_physical_res[2],
-			int i_spectral_modes[2]
+			int io_physical_res[2],
+			int io_spectral_modes[2]
 	)
 	{
-		std::cout << i_physical_res[0] << ", " << i_physical_res[1] << std::endl;
-		std::cout << i_spectral_modes[0] << ", " << i_spectral_modes[1] << std::endl;
+		std::cout << io_physical_res[0] << ", " << io_physical_res[1] << std::endl;
+		std::cout << io_spectral_modes[0] << ", " << io_spectral_modes[1] << std::endl;
 
-		if (i_physical_res[0] > 0 && i_spectral_modes[0] > 0)
+		if (io_physical_res[0] > 0 && io_spectral_modes[0] > 0)
 		{
-			setup(	i_physical_res[0],
-					i_physical_res[1],
-					i_spectral_modes[0],
-					i_spectral_modes[1]
+			setup(	io_physical_res[0],
+					io_physical_res[1],
+					io_spectral_modes[0],
+					io_spectral_modes[1]
 				);
 			return;
 		}
 
-		if (i_physical_res[0] > 0)
+		if (io_physical_res[0] > 0)
 		{
 			setupAutoSpectralSpace(
-					i_physical_res[0],
-					i_physical_res[1]
+					io_physical_res[0],
+					io_physical_res[1]
 				);
+
+			io_spectral_modes[0] = spectral_modes[0];
+			io_spectral_modes[1] = spectral_modes[1];
 			return;
 		}
 
-		if (i_spectral_modes[0] > 0)
+		if (io_spectral_modes[0] > 0)
 		{
 			setupAutoPhysicalSpace(
-					i_spectral_modes[0],
-					i_spectral_modes[1]
+					io_spectral_modes[0],
+					io_spectral_modes[1]
 				);
 
+			io_physical_res[0] = physical_res[0];
+			io_physical_res[1] = physical_res[1];
 			return;
 		}
 
