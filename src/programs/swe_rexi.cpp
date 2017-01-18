@@ -57,20 +57,10 @@ PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
 SimulationVariables simVars;
 
 //specific parameters
-/*
-double simVars.rexi.rexi_h;
-double simVars.rexi.rexi_m;
-double simVars.rexi.rexi_l;
-bool simVars.rexi.rexi_half;
-*/
+
 int param_timestepping_mode;
 bool param_compute_error;
 bool param_use_staggering;
-/*
-bool param_rexi_use_spectral_differences_for_complex_array;
-int param_rexi_helmholtz_solver_id;
-double param_rexi_helmholtz_solver_eps;
-*/
 
 int param_boundary_id;
 bool param_linear_exp_analytical;
@@ -684,8 +674,9 @@ public:
 					simVars.rexi.rexi_L,
 					planeDataConfig,
 					simVars.sim.domain_size,
-					simVars.rexi.rexi_use_half_poles
-				);
+					simVars.rexi.rexi_use_half_poles,
+					simVars.rexi.rexi_normalization
+			);
 
 			if (simVars.misc.verbosity > 2)
 			{

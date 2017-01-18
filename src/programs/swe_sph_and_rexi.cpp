@@ -45,8 +45,8 @@ SphereDataConfig sphereDataConfigInstance;
 SphereDataConfig *sphereDataConfig = &sphereDataConfigInstance;
 
 // Plane data config
-SphereDataConfig sphereDataConfigInstanceExt;
-SphereDataConfig *sphereDataConfigExt = &sphereDataConfigInstanceExt;
+SphereDataConfig sphereDataConfigExtInstance;
+SphereDataConfig *sphereDataConfigExt = &sphereDataConfigExtInstance;
 
 
 
@@ -91,9 +91,6 @@ public:
 	SphereData prog_u;
 	SphereData prog_v;
 
-	SphereData advection_u;
-	SphereData advection_v;
-
 	REXI<> rexi;
 
 #if SWEET_GUI
@@ -111,10 +108,7 @@ public:
 		timestepping_implicit_swe(op),
 		prog_h(sphereDataConfig),
 		prog_u(sphereDataConfig),
-		prog_v(sphereDataConfig),
-
-		advection_u(sphereDataConfig),
-		advection_v(sphereDataConfig)
+		prog_v(sphereDataConfig)
 
 #if SWEET_GUI
 		,viz_plane_data(planeDataConfig)
@@ -245,11 +239,11 @@ public:
 
 		if (simVars.setup.benchmark_scenario_id == 5 || simVars.setup.benchmark_scenario_id == 6)
 		{
-			advection_u = prog_u;
-			prog_u.physical_set_zero();
+//			prog_u = prog_u;
+//			prog_u.physical_set_zero();
 
-			advection_v = prog_v;
-			prog_v.physical_set_zero();
+//			prog_v = prog_v;
+//			prog_v.physical_set_zero();
 		}
 
 
@@ -546,16 +540,48 @@ public:
 
 		if (simVars.rexi.use_rexi == 0)
 		{
-			timestepping_explicit.run_rk_timestep(
-					this,
-					&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
-					prog_h, prog_u, prog_v,
-					o_dt,
-					simVars.timecontrol.current_timestep_size,
-					simVars.disc.timestepping_runge_kutta_order,
-					simVars.timecontrol.current_simulation_time,
-					simVars.timecontrol.max_simulation_time
-				);
+
+			switch (param_pde_id)
+			{
+			case 0:
+				timestepping_explicit.run_rk_timestep(
+						this,
+						&SimulationInstance::p_run_euler_timestep_update_swe,	///< pointer to function to compute euler time step updates
+						prog_h, prog_u, prog_v,
+						o_dt,
+						simVars.timecontrol.current_timestep_size,
+						simVars.disc.timestepping_runge_kutta_order,
+						simVars.timecontrol.current_simulation_time,
+						simVars.timecontrol.max_simulation_time
+					);
+				break;
+
+			case 1:
+				timestepping_explicit.run_rk_timestep(
+						this,
+						&SimulationInstance::p_run_euler_timestep_update_advection,	///< pointer to function to compute euler time step updates
+						prog_h,
+						o_dt,
+						simVars.timecontrol.current_timestep_size,
+						simVars.disc.timestepping_runge_kutta_order,
+						simVars.timecontrol.current_simulation_time,
+						simVars.timecontrol.max_simulation_time
+					);
+				break;
+
+			case 2:
+				timestepping_explicit.run_rk_timestep(
+						this,
+						&SimulationInstance::p_run_euler_timestep_update_advection_div_free,	///< pointer to function to compute euler time step updates
+						prog_h,
+						o_dt,
+						simVars.timecontrol.current_timestep_size,
+						simVars.disc.timestepping_runge_kutta_order,
+						simVars.timecontrol.current_simulation_time,
+						simVars.timecontrol.max_simulation_time
+					);
+				break;
+			}
 		}
 		else if (simVars.rexi.use_rexi == -1)
 		{
@@ -615,67 +641,12 @@ public:
 
 
 
-	// Main routine for method to be used in case of finite differences
-	void p_run_euler_timestep_update(
-			const SphereData &i_h,	///< prognostic variables
-			const SphereData &i_u,	///< prognostic variables
-			const SphereData &i_v,	///< prognostic variables
-
-			SphereData &o_h_t,	///< time updates
-			SphereData &o_u_t,	///< time updates
-			SphereData &o_v_t,	///< time updates
-
-			double &o_dt,				///< time step restriction
-			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
-			double i_simulation_timestamp = -1
-	)
-	{
-		switch (param_pde_id)
-		{
-		case 0:
-			p_run_euler_timestep_update_swe(
-					i_h, i_u, i_v,
-					o_h_t, o_u_t, o_v_t,
-					o_dt,
-					i_fixed_dt,
-					i_simulation_timestamp
-			);
-			break;
-
-		case 1:
-			p_run_euler_timestep_update_advection(
-					i_h, i_u, i_v,
-					o_h_t, o_u_t, o_v_t,
-					o_dt,
-					i_fixed_dt,
-					i_simulation_timestamp
-			);
-			break;
-
-		case 2:
-			p_run_euler_timestep_update_advection_div_free(
-					i_h, i_u, i_v,
-					o_h_t, o_u_t, o_v_t,
-					o_dt,
-					i_fixed_dt,
-					i_simulation_timestamp
-			);
-			break;
-		}
-	}
-
-
 	/**
 	 * Euler time step for advection along the longitude
 	 */
 	void p_run_euler_timestep_update_advection(
 			const SphereData &i_h,	///< prognostic variables
-			const SphereData &i_u,	///< prognostic variables
-			const SphereData &i_v,	///< prognostic variables
-
 			SphereData &o_h_t,	///< time updates
-			SphereData &o_u_t,	///< time updates
-			SphereData &o_v_t,	///< time updates
 
 			double &o_dt,				///< time step restriction
 			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
@@ -694,27 +665,29 @@ public:
 		{
 			o_h_t =
 				-(
-					op.robert_div_lon(advection_u*i_h).spectral_truncate()+
-					op.robert_div_lat(advection_v*i_h).spectral_truncate()
+					op.robert_div_lon(prog_u*i_h)+
+					op.robert_div_lat(prog_v*i_h)
 				)*(1.0/simVars.sim.earth_radius);
-
-			o_h_t.spectral_truncate();
 		}
 		else
 		{
-			o_h_t = -(op.div_lon(advection_u*i_h)+op.div_lat(advection_v*i_h))*(1.0/simVars.sim.earth_radius);
+			o_h_t = -(op.div_lon(prog_u*i_h)+op.div_lat(prog_v*i_h))*(1.0/simVars.sim.earth_radius);
 		}
 
 
-		o_u_t.spectral_set_zero();
-		o_v_t.spectral_set_zero();
-
-		assert(simVars.sim.viscosity_order == 2);
+		assert(simVars.sim.viscosity_order == 2 || simVars.sim.viscosity_order == 4);
 		if (simVars.sim.viscosity != 0)
 		{
-			double scalar = simVars.sim.viscosity/(simVars.sim.earth_radius*simVars.sim.earth_radius);
-
-			o_h_t += op.laplace(i_h)*scalar;
+			if (simVars.sim.viscosity_order == 2)
+			{
+				double scalar = simVars.sim.viscosity/(simVars.sim.earth_radius*simVars.sim.earth_radius);
+				o_h_t += op.laplace(i_h)*scalar;
+			}
+			else if (simVars.sim.viscosity_order == 4)
+			{
+				double scalar = simVars.sim.viscosity/(simVars.sim.earth_radius*simVars.sim.earth_radius);
+				o_h_t += op.laplace(op.laplace(i_h))*scalar*scalar;
+			}
 		}
 
 	}
@@ -722,12 +695,7 @@ public:
 
 	void p_run_euler_timestep_update_advection_div_free(
 			const SphereData &i_h,	///< prognostic variables
-			const SphereData &i_u,	///< prognostic variables
-			const SphereData &i_v,	///< prognostic variables
-
 			SphereData &o_h_t,	///< time updates
-			SphereData &o_u_t,	///< time updates
-			SphereData &o_v_t,	///< time updates
 
 			double &o_dt,				///< time step restriction
 			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
@@ -740,25 +708,32 @@ public:
 			FatalError("Advection equation is only possible without non-linearities and with robert functions");
 
 		if (simVars.misc.sphere_use_robert_functions)
-			o_h_t = -(advection_u*op.robert_grad_lon_M(i_h)+advection_v*op.robert_grad_lat_M(i_h))*(1.0/simVars.sim.earth_radius);
+			o_h_t = -(prog_u*op.robert_grad_lon_M(i_h)+prog_v*op.robert_grad_lat_M(i_h))*(1.0/simVars.sim.earth_radius);
 		else
-			o_h_t = -(advection_u*op.grad_lon(i_h)+advection_v*op.grad_lat(i_h))*(1.0/simVars.sim.earth_radius);
+			o_h_t = -(prog_u*op.grad_lon(i_h)+prog_v*op.grad_lat(i_h))*(1.0/simVars.sim.earth_radius);
 
-		o_u_t.spectral_set_zero();
-		o_v_t.spectral_set_zero();
-
-		assert(simVars.sim.viscosity_order == 2);
+		assert(simVars.sim.viscosity_order == 2 || simVars.sim.viscosity_order == 4);
 		if (simVars.sim.viscosity != 0)
 		{
-			double scalar = simVars.sim.viscosity/(simVars.sim.earth_radius*simVars.sim.earth_radius);
-
-			o_h_t += op.laplace(i_h)*scalar;
+			if (simVars.sim.viscosity_order == 2)
+			{
+				double scalar = simVars.sim.viscosity/(simVars.sim.earth_radius*simVars.sim.earth_radius);
+				o_h_t += op.laplace(i_h)*scalar;
+			}
+			else if (simVars.sim.viscosity_order == 4)
+			{
+				double scalar = simVars.sim.viscosity/(simVars.sim.earth_radius*simVars.sim.earth_radius);
+				o_h_t += op.laplace(op.laplace(i_h))*scalar*scalar;
+			}
 		}
-
 	}
 
 
-	// Main routine for method to be used in case of finite differences
+
+	/*
+	 * Shallow water time stepping
+	 * (Single stage realized with Euler)
+	 */
 	void p_run_euler_timestep_update_swe(
 			const SphereData &i_h,	///< prognostic variables
 			const SphereData &i_u,	///< prognostic variables
@@ -892,14 +867,14 @@ public:
 
 		case 1:
 			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(
-					(param_pde_id == 0 ? prog_u : advection_u)
-					, planeDataConfig);
+					prog_u,
+					planeDataConfig);
 			break;
 
 		case 2:
 			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(
-					(param_pde_id == 0 ? prog_v : advection_v)
-					, planeDataConfig);
+					prog_v,
+					planeDataConfig);
 			break;
 
 		case 3:
@@ -1080,7 +1055,7 @@ int main(int i_argc, char *i_argv[])
 					&simVars.disc.res_physical[1]
 			);
 
-	sphereDataConfigInstanceExt.setupAdditionalModes(
+	sphereDataConfigExtInstance.setupAdditionalModes(
 			&sphereDataConfigInstance,
 			simVars.rexi.rexi_use_extended_modes,
 			simVars.rexi.rexi_use_extended_modes

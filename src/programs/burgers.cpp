@@ -264,13 +264,13 @@ public:
 			stag_v[1] = -0.0;
 		}
 
-		//Setup sampler for future interpolations
+		// Setup sampler for future interpolations
 		sampler2D.setup(simVars.sim.domain_size, planeDataConfig);
 
-		//Setup semi-lagrangian
+		// Setup semi-Lagrangian
 		semiLagrangian.setup(simVars.sim.domain_size, planeDataConfig);
 
-		//Setup general (x,y) grid with position points
+		// Setup general (x,y) grid with position points
 
 		pos_x.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
@@ -286,10 +286,20 @@ public:
 			}
 		);
 
-		//Initialize arrival points with h position
-		posx_a = pos_x+0.5*simVars.disc.cell_size[0];
-		posy_a = pos_y+0.5*simVars.disc.cell_size[1];
+		// Initialize arrival points with h position
+		//posx_a = pos_x+0.5*simVars.disc.cell_size[0];
+		//posy_a = pos_y+0.5*simVars.disc.cell_size[1];
 
+      for (std::size_t idx=0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
+      {
+         posx_a.physical_space_data[idx] = pos_x.physical_space_data[idx]+0.5*simVars.disc.cell_size[0];
+         posy_a.physical_space_data[idx] = pos_y.physical_space_data[idx]+0.5*simVars.disc.cell_size[1];
+      }
+
+		std::cout << posx_a << std::endl;
+		std::cout << "*********************************" << std::endl;
+		std::cout << pos_y << std::endl;
+		std::cout << "*********************************" << std::endl;
 
 		if (param_use_staggering)
 		{
@@ -1666,6 +1676,9 @@ int main(int i_argc, char *i_argv[])
 	param_time_scheme_coarse = simVars.bogus.var[4];
 
 	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
+
+	std::cout << planeDataConfigInstance.getUniqueIDString() << std::endl;
+
 
 	std::ostringstream buf;
 	buf << std::setprecision(14);

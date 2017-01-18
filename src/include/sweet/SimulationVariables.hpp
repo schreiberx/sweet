@@ -847,6 +847,7 @@ public:
 						"	--rexi-m [int]	REXI parameter M",
 						"	--rexi-l [int]	REXI parameter L",
 						"	--rexi-half [bool]	Use half REXI poles, default:1",
+						"	--rexi-normalization [bool]	Use REXI normalization around geostrophic balance, default:1",
 						"	--rexi-ext-modes [int]	Use this number of extended modes in spherical harmonics",
 						"",
 

@@ -680,12 +680,14 @@ public:
 	/**
 	 * Truncate modes which are not representable in spectral space
 	 */
-	void physical_truncate()
+	const SphereData& physical_truncate()
 	{
 		request_data_physical();
 
 		spat_to_SH(sphereDataConfig->shtns, physical_space_data, spectral_space_data);
 		SH_to_spat(sphereDataConfig->shtns, spectral_space_data, physical_space_data);
+
+		return *this;
 	}
 
 

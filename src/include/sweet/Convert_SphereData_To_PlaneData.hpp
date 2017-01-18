@@ -40,6 +40,8 @@ public:
 		out.spectral_space_data_valid = false;
 #endif
 
+		out.file_physical_saveData_ascii("out.csv");
+
 		return out;
 	}
 };

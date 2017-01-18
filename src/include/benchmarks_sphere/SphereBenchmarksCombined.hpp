@@ -133,7 +133,7 @@ public:
 		}
 		else if (io_simVars.setup.benchmark_scenario_id == 5)
 		{
-			/**
+			/*
 			 * See Williamson test case, eq. (75), (76)
 			 */
 
@@ -168,38 +168,6 @@ public:
 				}
 			);
 
-			{
-				/***********************************************
-				 ***********************************************
-				 ***********************************************/
-
-				double exp_fac = 10.0;
-
-				double center_lat = 0;
-				double center_lon = 0;
-
-				auto initial_condition_h = [&](double lon, double mu, double &o_data)
-				{
-					// https://en.wikipedia.org/wiki/Great-circle_distance
-					// d = acos(sin(phi1)*sin(phi2) + cos(phi1)*cos(phi2)*cos(lon1-lon2))
-					// exp(-pow(acos(sin(phi1)*sin(phi2) + cos(phi1)*cos(phi2)*cos(lon1-lon2)), 2)*A)
-
-					double phi1 = asin(mu);
-					double phi2 = center_lat;
-					double lambda1 = lon;
-					double lambda2 = center_lon;
-
-					double d = acos(sin(phi1)*sin(phi2) + cos(phi1)*cos(phi2)*cos(lambda1-lambda2));
-
-					o_data = exp(-d*d*exp_fac)*0.1*100 + 100;
-				};
-
-				o_h.physical_update_lambda_gaussian_grid(initial_condition_h);
-
-				/***********************************************
-				 ***********************************************
-				 ***********************************************/
-			}
 
 			if (io_simVars.misc.sphere_use_robert_functions)
 			{
@@ -259,10 +227,11 @@ public:
 					}
 				);
 			}
-
+/*
 			o_h.physical_truncate();
 			o_u.physical_truncate();
 			o_v.physical_truncate();
+*/
 
 			std::cout << "!!! WARNING !!!" << std::endl;
 			std::cout << "!!! WARNING: Storing advection in output velocities !!!" << std::endl;
