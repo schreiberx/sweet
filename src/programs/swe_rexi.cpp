@@ -1222,7 +1222,7 @@ public:
 			exit(1);
 		}
 
-		//Apply viscosity at posteriori, for all methods explicit difusion for non spectral schemes and implicit for spectral
+		//Apply viscosity at posteriori, for all methods explicit diffusion for non spectral schemes and implicit for spectral
 		if (simVars.sim.viscosity != 0)
 		{
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE //TODO: this needs checking
@@ -2053,11 +2053,11 @@ int main(int i_argc, char *i_argv[])
 		std::cout << std::endl;
 		std::cout << "	--rexi-zero-before-solving [0/1]	Zero the solution for the iterative solver (default=0)" << std::endl;
 		std::cout << std::endl;
-		std::cout << "	--nonlinear [0/1/2]	   Form of equations:" << std::endl;
-		std::cout << "						     0: Linear SWE (default)" << std::endl;
-		std::cout << "						     1: Full nonlinear SWE" << std::endl;
-		std::cout << "						     2: Linear SWE + nonlinear advection only (needs -H to be set)" << std::endl;
-		std::cout << std::endl;
+		//std::cout << "	--nonlinear [0/1/2]	   Form of equations:" << std::endl;
+		//std::cout << "						     0: Linear SWE (default)" << std::endl;
+		//std::cout << "						     1: Full nonlinear SWE" << std::endl;
+		//std::cout << "						     2: Linear SWE + nonlinear advection only (needs -H to be set)" << std::endl;
+		//std::cout << std::endl;
 		std::cout << "	--lin-exp-analyt [0/1]	Use analytical exponential of linear operator (default=0)" << std::endl;
 		std::cout << std::endl;
 
