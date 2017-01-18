@@ -1,0 +1,68 @@
+Linear - Rotated steady state
+--------------------------------------------------
+
+Analytical Exp Integrator
+./build/swe_rexi_planespectral_planedealiasing_gui_omp_libfft_gnu_release -N 128 -s 14 -G 1 --nonlinear 0 --staggering 0 -S 1 -b 0 -f 1 -g 1 -H 100 --timestepping-mode 2 -C -0.01 --compute-error 1 --lin-exp-analyt 1  -v 2 -o -0 -O ""
+==> Errors 10e-13
+
+REXI
+./build/swe_rexi_planespectral_planedealiasing_gui_omp_libfft_gnu_release -N 128 -s 14 -G 1 --nonlinear 0 --staggering 0 -S 1 -b 0 -f 1 -g 1 -H 100 --timestepping-mode 1 -C -0.01 --compute-error 1 --lin-exp-analyt 1  -v 2 -o -0 -O ""
+==> Errors 10e-13
+
+SL-SI-SP
+./build/swe_rexi_planespectral_planedealiasing_gui_omp_libfft_gnu_release -N 128 -s 14 -G 1 --nonlinear 0 --staggering 0 -S 1 -b 0 -f 1 -g 1 -H 100 --timestepping-mode 5 -C -0.01 --compute-error 1 --lin-exp-analyt 1  -v 2 -o -0 -O ""
+==> Errors 10e-13
+
+Non-Linear - Rotated steady state
+----------------------------------------------------
+
+RK4-C-Grid FD
+./build/swe_rexi_planespectral_planedealiasing_gui_omp_libfft_gnu_release -N 128 -s 14 -G 1 --nonlinear 1 --staggering 1 -S 0 -b 0 -f 1 -g 1 -H 100 --timestepping-mode 0 -C -0.01 --compute-error 1 --lin-exp-analyt 1  -v 2 -o -0 -O ""
+===> Unstable
+Reduce time step size /20
+./build/swe_rexi_planespectral_planedealiasing_gui_omp_libfft_gnu_release -N 128 -s 14 -G 1 --nonlinear 1 --staggering 1 -S 0 -b 0 -f 1 -g 1 -H 100 --timestepping-mode 0 -C -0.0001 --compute-error 1 --lin-exp-analyt 1  -v 2 -o -0 -O ""
+====> Stable dynamics! Numerical geostrophic mode regime.
+
+
+SL-SI-SP
+./build/swe_rexi_planespectral_planedealiasing_gui_omp_libfft_gnu_release -N 128 -s 14 -G 1 --nonlinear 1 --staggering 0 -S 1 -b 0 -f 1 -g 1 -H 100 --timestepping-mode 5 -C -0.01 --compute-error 1 --lin-exp-analyt 1  -v 2 -o -0 -O ""
+===> Turbulence? (less than 1 day)
+
+SL-REXI with analytical exp integrator
+./build/swe_rexi_planespectral_planedealiasing_gui_omp_libfft_gnu_release -N 128 -s 14 -G 1 --nonlinear 1 --staggering 0 -S 1 -b 0 -f 1 -g 1 -H 100 --timestepping-mode 1 -C -0.01 --compute-error 1 --lin-exp-analyt 1  -v 2 -o -0 -O "" 
+===> Unstable! Semi-implicit scheme "stabilizes" the method?
+
+
+Nonlinear advection only - Rotated steady state
+------------------------------------------------------
+
+SL-SI-SP
+./build/swe_rexi_planespectral_planedealiasing_gui_omp_libfft_gnu_release -N 128 -s 14 -G 1 --nonlinear 2 --staggering 0 -S 1 -b 0 -f 1 -g 1 -H 100 --timestepping-mode 5 -C -0.01 --compute-error 1 --lin-exp-analyt 1  -v 2 -o -0 -O "" 
+===> Takes much longer to trigger turbulence (8 days)!! Errors initially 10e-5, due to sl.  
+
+SL-REXI with analytical exp integrator
+./build/swe_rexi_planespectral_planedealiasing_gui_omp_libfft_gnu_release -N 128 -s 14 -G 1 --nonlinear 2 --staggering 0 -S 1 -b 0 -f 1 -g 1 -H 100 --timestepping-mode 1 -C -0.01 --compute-error 1 --lin-exp-analyt 1  -v 2 -o -0 -O "" 
+===> Turbulence after 3 days, but stable!
+
+Non-Linear - Rotated steady state - added viscosity
+----------------------------------------------------
+SL-SI-SP
+ ./build/swe_rexi_planespectral_planedealiasing_gui_omp_libfft_gnu_release -N 128 -s 14 -G 1 --nonlinear 1 --staggering 0 -S 1 -b 0 -f 1 -g 1 -H 100 --timestepping-mode 5 -C -0.01 --compute-error 1 --lin-exp-analyt 1  -v 2 -o -0 -O "" -u 0.000001 -U 4
+===>
+
+SL-REXI with analytical exp integrator
+ ./build/swe_rexi_planespectral_planedealiasing_gui_omp_libfft_gnu_release -N 128 -s 14 -G 1 --nonlinear 1 --staggering 0 -S 1 -b 0 -f 1 -g 1 -H 100 --timestepping-mode 1 -C -0.01 --compute-error 1 --lin-exp-analyt 1  -v 2 -o -0 -O "" -u 0.000001 -U 4
+===>Stable and turbulent
+
+
+To do:
+Analyse spectrum base on Polvani's reference solutions.
+Consider 
+
+
+
+
+
+
+
+
