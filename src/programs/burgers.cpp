@@ -296,10 +296,10 @@ public:
          posy_a.physical_space_data[idx] = pos_y.physical_space_data[idx]+0.5*simVars.disc.cell_size[1];
       }
 
-		std::cout << posx_a << std::endl;
-		std::cout << "*********************************" << std::endl;
-		std::cout << pos_y << std::endl;
-		std::cout << "*********************************" << std::endl;
+      posx_a.physical_space_data_valid = true;
+      posx_a.spectral_space_data_valid = false;
+      posy_a.physical_space_data_valid = true;
+      posy_a.physical_space_data_valid = false;
 
 		if (param_use_staggering)
 		{
