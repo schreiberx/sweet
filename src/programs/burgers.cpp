@@ -286,15 +286,20 @@ public:
 			}
 		);
 
-		//Initialize arrival points with h position
-		posx_a = pos_x+0.5*simVars.disc.cell_size[0];
-		posy_a = pos_y+0.5*simVars.disc.cell_size[1];
+		// Initialize arrival points with h position
+		//posx_a = pos_x+0.5*simVars.disc.cell_size[0];
+		//posy_a = pos_y+0.5*simVars.disc.cell_size[1];
 
+      for (std::size_t idx=0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
+      {
+         posx_a.physical_space_data[idx] = pos_x.physical_space_data[idx]+0.5*simVars.disc.cell_size[0];
+         posy_a.physical_space_data[idx] = pos_y.physical_space_data[idx]+0.5*simVars.disc.cell_size[1];
+      }
 
-		std::cout << posx_a << std::endl;
-		std::cout << "*********************************" << std::endl;
-		std::cout << pos_y << std::endl;
-		std::cout << "*********************************" << std::endl;
+      posx_a.physical_space_data_valid = true;
+      posx_a.spectral_space_data_valid = false;
+      posy_a.physical_space_data_valid = true;
+      posy_a.physical_space_data_valid = false;
 
 		if (param_use_staggering)
 		{
