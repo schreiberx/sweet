@@ -2110,6 +2110,7 @@ int main(int i_argc, char *i_argv[])
 			std::cerr << "Timestepping unknowkn" << std::endl;
 			return -1;
 	}
+
 	std::cout << "Viscosity: " << simVars.sim.viscosity << std::endl;
 	std::cout << "Staggered grid: " << param_use_staggering << std::endl;
 	std::cout << "Computing error: " << param_compute_error << std::endl;

@@ -63,6 +63,16 @@ public:
 
 		/// total potential enstropy
 		double total_potential_enstrophy = 0;
+
+		void output()
+		{
+			std::cout << std::endl;
+			std::cout << "DIAGNOSTICS:" << std::endl;
+			std::cout << " + total_mass: " << total_mass << std::endl;
+			std::cout << " + total_energy: " << total_energy << std::endl;
+			std::cout << " + total_potential_enstrophy: " << total_potential_enstrophy << std::endl;
+			std::cout << std::endl;
+		}
 	} diag;
 
 
@@ -119,6 +129,22 @@ public:
 					input_data_binary = true;
 				}
 			}
+		}
+
+		void output()
+		{
+			std::cout << std::endl;
+			std::cout << "SETUP:" << std::endl;
+			std::cout << " + benchmark_scenario_id: " << benchmark_scenario_id << std::endl;
+			std::cout << " + radius_scale: " << radius_scale << std::endl;
+			std::cout << " + setup_coord_x: " << setup_coord_x << std::endl;
+			std::cout << " + setup_coord_y: " << setup_coord_y << std::endl;
+			std::cout << " + advection_rotation_angle: " << advection_rotation_angle << std::endl;
+			std::cout << " + input_data_filenames:" << std::endl;
+			for (int i = 0; i < input_data_filenames.size(); i++)
+				std::cout << "    - filename " << i << " " << input_data_filenames[i] << std::endl;
+			std::cout << " + input_data_binary: " << input_data_binary << std::endl;
+			std::cout << std::endl;
 		}
 	} setup;
 
@@ -183,6 +209,25 @@ public:
 
 		/// domain size
 		double domain_size[2] = {1.0, 1.0};
+
+
+		void output()
+		{
+			std::cout << std::endl;
+			std::cout << "SIMULATION COEFFICIENTS:" << std::endl;
+			std::cout << " + h0: " << h0 << std::endl;
+			std::cout << " + viscosity: " << viscosity << std::endl;
+			std::cout << " + viscosity_order: " << viscosity_order << std::endl;
+			std::cout << " + CFL: " << CFL << std::endl;
+			std::cout << " + f0: " << f0 << std::endl;
+			std::cout << " + beta: " << beta << std::endl;
+			std::cout << " + earth_radius: " << earth_radius << std::endl;
+			std::cout << " + coriolis_omega: " << coriolis_omega << std::endl;
+			std::cout << " + gravitation: " << gravitation << std::endl;
+			std::cout << " + top_bottom_zero_v_velocity: " << top_bottom_zero_v_velocity << std::endl;
+			std::cout << " + domain_size: " << domain_size[0] << " x " << domain_size[1] << std::endl;
+			std::cout << std::endl;
+		}
 	} sim;
 
 
@@ -216,6 +261,19 @@ public:
 #else
 				false;
 #endif
+
+		void output()
+		{
+			std::cout << std::endl;
+			std::cout << "DISCRETIZATION:" << std::endl;
+			std::cout << " + res_physical: " << res_physical[0] << " x " << res_physical[1] << std::endl;
+			std::cout << " + res_spectral: " << res_spectral[0] << " x " << res_spectral[1] << std::endl;
+			std::cout << " + cell_size: " << res_physical[0] << " x " << cell_size[1] << std::endl;
+			std::cout << " + timestepping_up_and_downwinding: " << timestepping_up_and_downwinding << std::endl;
+			std::cout << " + timestepping_runge_kutta_order: " << timestepping_runge_kutta_order << std::endl;
+			std::cout << " + use_spectral_basis_diffs: " << use_spectral_basis_diffs << std::endl;
+			std::cout << std::endl;
+		}
 	} disc;
 
 
@@ -260,6 +318,19 @@ public:
 		 */
 		bool rexi_normalization = true;
 
+		void output()
+		{
+			std::cout << std::endl;
+			std::cout << "REXI:" << std::endl;
+			std::cout << " + use_rexi: " << use_rexi << std::endl;
+			std::cout << " + rexi_h: " << rexi_h << std::endl;
+			std::cout << " + rexi_M: " << rexi_M << std::endl;
+			std::cout << " + rexi_L: " << rexi_L << std::endl;
+			std::cout << " + rexi_use_half_poles: " << rexi_use_half_poles << std::endl;
+			std::cout << " + rexi_use_extended_modes: " << rexi_use_extended_modes << std::endl;
+			std::cout << " + rexi_normalization: " << rexi_normalization << std::endl;
+			std::cout << std::endl;
+		}
 	} rexi;
 
 
@@ -281,6 +352,13 @@ public:
 		auto const niters    = pfasst::config::get_value<int>("niters", 4);
 		auto const dt        = pfasst::config::get_value<double>("dt", 0.1);
 #endif
+		void output()
+		{
+			std::cout << std::endl;
+			std::cout << "PFASST:" << std::endl;
+			std::cout << " [TODO]" << std::endl;
+			std::cout << std::endl;
+		}
 	} pfasst;
 #endif
 
@@ -322,6 +400,24 @@ public:
 	 */
 	struct Misc
 	{
+		void output()
+		{
+			std::cout << std::endl;
+			std::cout << "MISC:" << std::endl;
+			std::cout << " + verbosity: " << verbosity << std::endl;
+			std::cout << " + output_floating_point_precision: " << output_floating_point_precision << std::endl;
+			std::cout << " + gui_enabled: " << gui_enabled << std::endl;
+			std::cout << " + be_verbose_after_this_simulation_time_period: " << be_verbose_after_this_simulation_time_period << std::endl;
+			std::cout << " + output_file_name_prefix: " << output_file_name_prefix << std::endl;
+			std::cout << " + output_each_sim_seconds: " << output_each_sim_seconds << std::endl;
+			std::cout << " + output_next_sim_seconds: " << output_next_sim_seconds << std::endl;
+			std::cout << " + vis_id: " << vis_id << std::endl;
+			std::cout << " + use_nonlinear_equations: " << use_nonlinear_equations << std::endl;
+			std::cout << " + sphere_use_robert_functions: " << sphere_use_robert_functions << std::endl;
+			std::cout << " + output_time_scale: " << output_time_scale << std::endl;
+			std::cout << std::endl;
+		}
+
 		/// set verbosity of simulation
 		int verbosity = 0;
 
@@ -384,8 +480,39 @@ public:
 		/// maximum simulation time to execute the simulation for
 		double max_simulation_time = -1;
 
+
+		void output()
+		{
+			std::cout << std::endl;
+			std::cout << "TIMECONTROL:" << std::endl;
+			std::cout << " + run_simulation_timesteps: " << run_simulation_timesteps << std::endl;
+			std::cout << " + current_timestep_nr: " << current_timestep_nr << std::endl;
+			std::cout << " + current_timestep_size: " << current_timestep_size << std::endl;
+			std::cout << " + current_simulation_time: " << current_simulation_time << std::endl;
+			std::cout << " + max_timesteps_nr: " << max_timesteps_nr << std::endl;
+			std::cout << " + max_simulation_time: " << max_simulation_time << std::endl;
+			std::cout << std::endl;
+		}
 	} timecontrol;
 
+
+	void output()
+	{
+		sim.output();
+		disc.output();
+		setup.output();
+		timecontrol.output();
+
+		rexi.output();
+		misc.output();
+		diag.output();
+
+#if SWEET_PARAREAL
+		parareal.output();
+#endif
+
+		pfasst.output();
+	}
 
 
 	/**
@@ -754,6 +881,8 @@ public:
 
 			case 'O':
 				misc.output_file_name_prefix = optarg;
+				if (misc.output_file_name_prefix == "-")
+					misc.output_file_name_prefix = "";
 				break;
 
 			case 'o':
