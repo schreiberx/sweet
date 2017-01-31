@@ -55,11 +55,9 @@ SimulationVariables simVars;
 const int NUM_OF_UNKNOWNS=2;
 
 //specific parameters
-int param_time_scheme = -1;
 bool param_compute_error = 0;
 bool param_use_staggering = 0;
 bool param_semilagrangian = 0;
-int param_time_scheme_coarse = -1;
 
 
 class SimulationInstance
@@ -272,7 +270,7 @@ public:
 
 		// Setup general (x,y) grid with position points
 
-      PlaneData tmp_x(planeDataConfig);
+		PlaneData tmp_x(planeDataConfig);
 		tmp_x.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
@@ -280,7 +278,7 @@ public:
 			}
 		);
 
-      PlaneData tmp_y(planeDataConfig);
+		PlaneData tmp_y(planeDataConfig);
 		tmp_y.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
@@ -288,8 +286,8 @@ public:
 			}
 		);
 
-      pos_x = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_x);
-      pos_y = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_y);
+		pos_x = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_x);
+		pos_y = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_y);
 
 		// Initialize arrival points with h position
 		posx_a = pos_x+0.5*simVars.disc.cell_size[0];
@@ -602,7 +600,7 @@ public:
 			semiLagrangian.semi_lag_departure_points_settls(
 							prog_u_prev, prog_v_prev,
 							prog_u, prog_v,
-                     posx_a, posy_a,
+							posx_a, posy_a,
 							dt,
 							posx_d, posy_d,
 							stag_displacement
@@ -616,21 +614,21 @@ public:
 			//Departure points are set for physical space
 			prog_u = sampler2D.bicubic_scalar(
 					prog_u,
-               posx_d,
-               posy_d,
+					posx_d,
+					posy_d,
 					stag_u[0],
-               stag_u[1]
+					stag_u[1]
 			);
 
 			prog_v = sampler2D.bicubic_scalar(
 					prog_v,
-               posx_d,
-               posy_d,
+					posx_d,
+					posy_d,
 					stag_v[0],
-               stag_v[1]
+					stag_v[1]
 			);
 
-			if (simVars.disc.timestepping_order>=0)
+			if (simVars.disc.timestepping_method == 1)
 			{
 				// setup dummy data
 				tmp.physical_set_all(0);
@@ -647,7 +645,7 @@ public:
 						simVars.timecontrol.max_simulation_time
 					);
 			}
-			else
+			else if (simVars.disc.timestepping_method == 4)
 			{
 				// run IMEX Runge Kutta
 				run_timestep_imex(
@@ -659,10 +657,12 @@ public:
 						simVars.timecontrol.max_simulation_time
 				);
 			}
-
-		}else{
-
-			if (simVars.disc.timestepping_order>=0)
+			else
+				FatalError("Chosen time stepping method not available!");
+		}
+		else
+		{
+			if (simVars.disc.timestepping_method == 1)
 			{
 				// setup dummy data
 				tmp.physical_set_all(0);
@@ -679,7 +679,7 @@ public:
 						simVars.timecontrol.max_simulation_time
 					);
 			}
-			else
+			else if (simVars.disc.timestepping_method == 4)
 			{
 				// run IMEX Runge Kutta
 				run_timestep_imex(
@@ -691,6 +691,8 @@ public:
 						simVars.timecontrol.max_simulation_time
 				);
 			}
+			else
+				FatalError("Chosen time stepping method not available!");
 		}
 
 		//dt = simVars.timecontrol.current_timestep_size;
@@ -1108,8 +1110,6 @@ public:
 		simVars.timecontrol.max_simulation_time = timeframe_end;
 		simVars.timecontrol.current_timestep_nr = 0;
 
-		simVars.disc.timestepping_order = param_time_scheme;
-
 		bool was_sl = false;
 		if (param_semilagrangian)
 		{
@@ -1174,7 +1174,10 @@ public:
 		simVars.timecontrol.current_timestep_nr = 0;
 
 		// set Runge-Kutta scheme to the chosen one for coarse time stepping
-		simVars.disc.timestepping_order=param_time_scheme_coarse;
+		int tmpScheme = simVars.disc.timestepping_method;
+		int tmpOrder = simVars.disc.timestepping_order;
+		simVars.disc.timestepping_method = simVars.disc.timestepping_method2;
+		simVars.disc.timestepping_order = simVars.disc.timestepping_order2;
 		// save the fine delta t to restore it later
 		double tmpCFL = simVars.sim.CFL;
 		simVars.sim.CFL=timeframe_start-timeframe_end;
@@ -1186,8 +1189,10 @@ public:
 			assert(simVars.timecontrol.current_simulation_time <= timeframe_end);
 		}
 
-		// restore fine delta t
+		// restore fine delta t and time stepping scheme
 		simVars.sim.CFL = tmpCFL;
+		simVars.disc.timestepping_method = tmpScheme;
+		simVars.disc.timestepping_order = tmpOrder;
 		// copy to buffers
 		*parareal_data_coarse.data_arrays[0] = prog_u;
 		*parareal_data_coarse.data_arrays[1] = prog_v;
@@ -1312,7 +1317,7 @@ public:
 
 		std::string filename2 = ss2.str();
 
-		compute_errors(*data.data_arrays[0], data.data_arrays[1]);
+		compute_errors(*data.data_arrays[0], *data.data_arrays[1]);
 
 		benchmark_analytical_error.file_physical_saveData_ascii(filename2.c_str());
 
@@ -1347,29 +1352,22 @@ int main(int i_argc, char *i_argv[])
 
 	// program specific input parameter names
 	const char *bogus_var_names[] = {
-			"timestepping-scheme",
 			"compute-error",
 			"staggering",
 			"semi-lagrangian",
-			"ts2",
 			nullptr
 	};
 
 	// default values for program specific parameter
-	simVars.bogus.var[0] = param_time_scheme; // time stepping scheme
-	simVars.bogus.var[1] = param_compute_error; // compute-error
-	simVars.bogus.var[2] = param_use_staggering; // staggering
-	simVars.bogus.var[3] = param_semilagrangian; // semi-lagrangian
-	simVars.bogus.var[4] = param_time_scheme_coarse; //timestepping scheme for parareal coarse
+	simVars.bogus.var[0] = param_compute_error; // compute-error
+	simVars.bogus.var[1] = param_use_staggering; // staggering
+	simVars.bogus.var[2] = param_semilagrangian; // semi-lagrangian
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
 		std::cout << std::endl;
 		std::cout << "Special parameters:" << std::endl;
-		std::cout << "	--timestepping-scheme [int]	-n: Use IMEX time stepping of order n (Right now only -1)" << std::endl;
-		std::cout << "					 n: Use explicit Runge-Kutta time stepping of order n (n in 1..4), default=-1" << std::endl;
-		std::cout << "	--ts2 [int]		Coarse time stepping scheme. Settings as above." << std::endl;
 		std::cout << "	--compute-error [0/1]		Compute the errors, default=0" << std::endl;
 		std::cout << "	--staggering [0/1]		Use staggered grid, default=0" << std::endl;
 		std::cout << "	--semi-lagrangian [0/1]		Use semi-lagrangian formulation, default=0" << std::endl;
@@ -1382,11 +1380,9 @@ int main(int i_argc, char *i_argv[])
 	}
 
 	//Burgers parameters
-	param_time_scheme = simVars.bogus.var[0];
-	param_compute_error = simVars.bogus.var[1];
-	param_use_staggering = simVars.bogus.var[2];
-	param_semilagrangian = simVars.bogus.var[3];
-	param_time_scheme_coarse = simVars.bogus.var[4];
+	param_compute_error = simVars.bogus.var[0];
+	param_use_staggering = simVars.bogus.var[1];
+	param_semilagrangian = simVars.bogus.var[2];
 
 	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
 

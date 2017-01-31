@@ -276,6 +276,7 @@ public:
 			RUNGE_KUTTA_EXPLICIT = 1,
 			LEAPFROG_EXPLICIT = 2,
 			EULER_IMPLICIT = 3,
+			RUNGE_KUTTA_IMEX = 4,
 
 			REXI = 100,
 		};
@@ -297,6 +298,9 @@ public:
 
 			case EULER_IMPLICIT:
 				return "EULER_IMPLICIT";
+
+			case RUNGE_KUTTA_IMEX:
+				return "RUNGE_KUTTA_IMEX";
 
 			case REXI:
 				return "REXI";
@@ -378,7 +382,7 @@ public:
 			std::cout << "	-C [cfl]	CFL condition, use negative value for fixed time step size, default=0.05" << std::endl;
 			std::cout << "  --timestepping-method	Specify time stepping method (";
 
-			for (int i = 1; i <= 3; i++)
+			for (int i = 1; i <= 4; i++)
 				std::cout << i << ": " << getTimesteppingMethodString(i) << ", ";
 
 			std::cout << "...)" << std::endl;
