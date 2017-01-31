@@ -80,13 +80,13 @@ public:
 
 	// Points mapping [0,simVars.sim.domain_size[0])x[0,simVars.sim.domain_size[1])
 	// with resolution simVars.sim.resolution
-	PlaneData pos_x, pos_y;
+	ScalarDataArray pos_x, pos_y;
 
 	// Arrival points for semi-lag
-	PlaneData posx_a, posy_a;
+	ScalarDataArray posx_a, posy_a;
 
 	// Departure points for semi-lag
-	PlaneData posx_d, posy_d;
+	ScalarDataArray posx_d, posy_d;
 
 	//Staggering displacement array (use 0.5 for each displacement)
 	// [0] - delta x of u variable
@@ -157,14 +157,14 @@ public:
 
 		tmp(planeDataConfig),
 
-		pos_x(planeDataConfig),
-		pos_y(planeDataConfig),
+		pos_x(planeDataConfig->physical_array_data_number_of_elements),
+		pos_y(planeDataConfig->physical_array_data_number_of_elements),
 
-		posx_a(planeDataConfig),
-		posy_a(planeDataConfig),
+		posx_a(planeDataConfig->physical_array_data_number_of_elements),
+		posy_a(planeDataConfig->physical_array_data_number_of_elements),
 
-		posx_d(planeDataConfig),
-		posy_d(planeDataConfig),
+		posx_d(planeDataConfig->physical_array_data_number_of_elements),
+		posy_d(planeDataConfig->physical_array_data_number_of_elements),
 
 		benchmark_analytical_error(planeDataConfig),
 
@@ -272,34 +272,28 @@ public:
 
 		// Setup general (x,y) grid with position points
 
-		pos_x.physical_update_lambda_array_indices(
+      PlaneData tmp_x(planeDataConfig);
+		tmp_x.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
 				io_data = (double)i*(double)simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
 			}
 		);
 
-		pos_y.physical_update_lambda_array_indices(
+      PlaneData tmp_y(planeDataConfig);
+		tmp_y.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
 				io_data = ((double)j)*(double)simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
 			}
 		);
 
+      pos_x = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_x);
+      pos_y = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_y);
+
 		// Initialize arrival points with h position
-		//posx_a = pos_x+0.5*simVars.disc.cell_size[0];
-		//posy_a = pos_y+0.5*simVars.disc.cell_size[1];
-
-      for (std::size_t idx=0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
-      {
-         posx_a.physical_space_data[idx] = pos_x.physical_space_data[idx]+0.5*simVars.disc.cell_size[0];
-         posy_a.physical_space_data[idx] = pos_y.physical_space_data[idx]+0.5*simVars.disc.cell_size[1];
-      }
-
-      posx_a.physical_space_data_valid = true;
-      posx_a.spectral_space_data_valid = false;
-      posy_a.physical_space_data_valid = true;
-      posy_a.physical_space_data_valid = false;
+		posx_a = pos_x+0.5*simVars.disc.cell_size[0];
+		posy_a = pos_y+0.5*simVars.disc.cell_size[1];
 
 		if (param_use_staggering)
 		{
@@ -394,287 +388,6 @@ public:
 	}
 
 
-	void set_source( PlaneData &o_u_t, double i_simulation_time )
-	{
-		double t = i_simulation_time;
-		double tp = 2.0*M_PIl;
-
-		/*
-		 * f(t,x,y) = 2*PI*sin(2*PI*k*x)*cos(2*PI*k*t)+2*PI*sin(2*PI*k*x)*cos(2*PI*k*x)*sin^2(2*PI*k*t)
-		 *          - nu(-4*PI^2*k*sin(2*PI*k*x)*sin(2*PI*k*t))
-		 * matching to:
-		 * u(t,x,y) = 1/k * sin(2*PI*k*x)*sin(2*PI*k*t)
-		 */
-		if (simVars.setup.benchmark_scenario_id == 57)
-		{
-			double k = simVars.sim.f0;
-
-			o_u_t.physical_update_lambda_array_indices(
-				[&](int i, int j, double &io_data)
-				{
-					// u space
-					double x = 0.0;
-					if (param_use_staggering)
-					{
-						x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-					}
-					else
-					{
-						x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-					}
-					double tmpvar = tp * std::sin(tp*k*x)*std::cos(tp*k*t)
-								  + tp*std::sin(tp*k*x)*std::sin(tp*k*t) * std::cos(tp*k*x)*std::sin(tp*k*t)
-								  + simVars.sim.viscosity * (tp*tp*k* std::sin(tp*k*x)*std::sin(tp*k*t));
-
-					io_data = tmpvar;
-				}
-			);
-		}
-
-		/*
-		 * f(t,x,y) = 2*2*PI*sin(2*PI*k*x)*cos(2*PI*k*t)+4*2*PI*sin(2*PI*k*x)*cos(2*PI*k*x)*sin^2(2*PI*k*t)
-		 *          - 2*nu(-4*PI^2*k*sin(2*PI*k*x)*sin(2*PI*k*t))
-		 * matching to:
-		 * u(t,x,y) = 2/k * sin(2*PI*k*x)*sin(2*PI*k*t)
-		 */
-		if (simVars.setup.benchmark_scenario_id == 59)
-		{
-			double k = simVars.sim.f0;
-
-
-			o_u_t.physical_update_lambda_array_indices(
-				[&](int i, int j, double &io_data)
-				{
-					// u space
-					double x = 0.0;
-					if (param_use_staggering)
-					{
-						x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-					}else{
-						x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-					}
-					double tmpvar = 2*tp * std::sin(tp*k*x)*std::cos(tp*k*t)
-								  + 4*tp*std::sin(tp*k*x)*std::sin(tp*k*t) * std::cos(tp*k*x)*std::sin(tp*k*t)
-								  + 2*simVars.sim.viscosity * (tp*tp*k* std::sin(tp*k*x)*std::sin(tp*k*t));
-
-					io_data = tmpvar;
-				}
-			);
-		}
-
-		/*
-		 * f(t,x,y) = 2*PI*sin(2*PI*x)*cos(2*PI*t)+2*PI*sin(2*PI*k*x)*cos(2*PI*k*t)
-		 *			+ [sin(2*PI*x)*sin(2*PI*t)+1/k*sin(2*PI*k*x)*sin(2*PI*k*t)]
-		 *			* [2*PI*cos(2*PI*x)*sin(2*PI*t)+2*PI*cos(2*PI*k*x)*sin(2*PI*k*t)]
-		 *          - NU*[-4*PI*PI*sin(2*PI*x)*sin(2*PI*t)
-		 *          - 4*PI*PI*k*sin(2*PI*k*x)*sin(2*PI*k*t)]
-		 * matching to:
-		 * u(t,x,y) = sin(2*PI*x)*sin(2*PI*t)+1/k*sin(2*PI*k*x)*sin(2*PI*k*t)
-		 */
-		if (simVars.setup.benchmark_scenario_id == 58)
-		{
-			double k = simVars.sim.f0;
-
-			o_u_t.physical_update_lambda_array_indices(
-				[&](int i, int j, double &io_data)
-				{
-					// u space
-					double x = 0.0;
-					if (param_use_staggering)
-					{
-						x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-					}else{
-						x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-					}
-					double tmpvar = tp*std::sin(tp*x)*std::cos(tp*t)+tp*std::sin(tp*k*x)*std::cos(tp*k*t)
-					              + (std::sin(tp*x)*std::sin(tp*t)+1/k*std::sin(tp*k*x)*std::sin(tp*k*t))
-					              * (tp*std::cos(tp*x)*std::sin(tp*t)+tp*std::cos(tp*k*x)*std::sin(tp*k*t))
-								  - simVars.sim.viscosity*(-tp*tp*std::sin(tp*x)*std::sin(tp*t)
-								  - tp*tp*k*std::sin(tp*k*x)*std::sin(tp*k*t));
-
-					io_data = tmpvar;
-				}
-			);
-		}
-
-		/*
-		 * f(t,x,y) = 1
-		 * matching to:
-		 * u(t,x,y) = t
-		 */
-		if (simVars.setup.benchmark_scenario_id == 51)
-		{
-			o_u_t.physical_set_all(1.0);
-		}
-
-		/*
-		 * f(t,x,y) = 2*t
-		 * matching to:
-		 * u(t,x,y) = t^2
-		 */
-		if (simVars.setup.benchmark_scenario_id == 52)
-		{
-			o_u_t.physical_set_all(2.0*t);
-		}
-
-		/*
-		 * f(t,x,y) = 3*t^2
-		 * matching to:
-		 * u(t,x,y) = t^3
-		 */
-		if (simVars.setup.benchmark_scenario_id == 53)
-		{
-			o_u_t.physical_set_all(3.0*t*t);
-		}
-
-		/*
-		 * f(t,x,y) = 1000*sin(2*PI*x) + 1000^2*t*sin(2*PI*x)*t*cos(2*PI*x)*2*PI - 1000*NU*(-4*PI*PI*t*sin(2*PI*x))
-		 * matching to:
-		 * u(t,x,y) = 1000*t*sin(2*PI*x)
-		 */
-		if (simVars.setup.benchmark_scenario_id == 54)
-		{
-
-			o_u_t.physical_update_lambda_array_indices(
-				[&](int i, int j, double &io_data)
-				{
-					// u space
-					double x = 0.0;
-					if (param_use_staggering)
-					{
-						x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-					}else{
-						x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-					}
-					double tmpvar = 1000*std::sin(tp*x)+1000*1000*t*std::sin(tp*x)*t*std::cos(tp*x)*tp
-								  - 1000*simVars.sim.viscosity*(-tp*tp*t*std::sin(tp*x));
-
-					io_data = tmpvar;
-				}
-			);
-		}
-
-		/*
-		 * f(t,x,y) = 2*PI*cos(2*PI*t)
-		 * matching to:
-		 * u(t,x,y) = sin(2*PI*t)
-		 */
-		if (simVars.setup.benchmark_scenario_id == 55)
-		{
-			o_u_t.physical_set_all(tp*std::cos(tp*t));
-		}
-
-		/*
-		 * f(t,x,y) = 2*PI*cos(2*PI*k*t)
-		 * matching to:
-		 * u(t,x,y) = 1/k*sin(2*PI*k*t)
-		 */
-		if (simVars.setup.benchmark_scenario_id == 56)
-		{
-			double k=simVars.sim.f0;
-			o_u_t.physical_set_all(tp*std::cos(tp*k*t));
-		}
-
-		/*
-		 * f(t,x,y) = sin(2*PI*x)*cos(2*PI*x)*2*PI - NU*(-4*PI*PI*sin(2*PI*x))
-		 * matching to:
-		 * u(t,x,y) = sin(2*PI*x)
-		 */
-		if (simVars.setup.benchmark_scenario_id == 60)
-		{
-
-			o_u_t.physical_update_lambda_array_indices(
-				[&](int i, int j, double &io_data)
-				{
-					// u space
-					double x = 0.0;
-					if (param_use_staggering)
-					{
-						x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-					}else{
-						x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-					}
-					double tmpvar = std::sin(tp*x)*std::cos(tp*x)*tp
-							      - simVars.sim.viscosity*(-tp*tp*std::sin(tp*x));
-
-					io_data = tmpvar;
-				}
-			);
-		}
-
-		/* Test for 2u-grad(u)=F
-		 * f(t,x,y) = (1+4*PI*PI)sin(2*PI*x)
-		 * matching to:
-		 * u(t,x,y) = sin(2*PI*x)
-		 */
-		if (simVars.setup.benchmark_scenario_id == 61)
-		{
-
-			o_u_t.physical_update_lambda_array_indices(
-				[&](int i, int j, double &io_data)
-				{
-					// u space
-					double x = 0.0;
-					if (param_use_staggering)
-					{
-						x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-					}else{
-						x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-					}
-					double tmpvar = (1+tp*tp)*std::sin(tp*x);
-
-					o_u_t = tmpvar;
-				}
-			);
-		}
-
-		/*
-		 * f(t,x,y) = 0.25*[SUM (cos(**)*(-PI*k)+sin(**)*(2*PI*k)^2)*# + 0.25*SUM sin(**)*# * SUM cos(**)*2*PI*k*#]
-		 * mit: ** = 2*PI*k*x-PI*k*t+PI*k
-		 * und: #  = EPS/sinh(0.5*PI*k*EPS)
-		 * matching to:
-		 * u(t,x,y) = 0.5*SUM_(k=1)^(k_max) sin(2*PI*k*x-PI*k*t+PI*k)*EPS/sinh(0.5*PI*k*EPS)
-		 */
-		if (simVars.setup.benchmark_scenario_id == 62)
-		{
-			int kmax = 100;
-			double eps = 0.1;
-
-
-			o_u_t.physical_update_lambda_array_indices(
-				[&](int i, int j, double &io_data)
-				{
-					// u space
-					double x = 0.0;
-					if (param_use_staggering)
-					{
-						x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-					}else{
-						x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-					}
-					double tmpvar = 0;
-					for (int k = 1; k < kmax; k++)
-					{
-						double argument = tp*k*x - M_PIl*k*t + M_PIl*k;
-						tmpvar += cos(argument)*(-M_PIl*k) + sin(argument)*(tp*k)*(tp*k)*eps/sinh(M_PIl*k*eps/2);
-						for (int l = 1; l < kmax; l++)
-						{
-							double argument2 = tp*l*x - M_PIl*l*t + M_PIl*l;
-							tmpvar += sin(argument)*eps/sinh(M_PIl*k*eps/2)*cos(argument2)*eps/sinh(M_PIl*l*eps/2)*tp*l;
-						}
-					}
-
-					tmpvar *= 0.25;
-					io_data = tmpvar;
-				}
-			);
-		}
-
-		if (simVars.setup.benchmark_scenario_id == 63)
-			o_u_t.physical_set_all(0.0);
-
-	}
-
 	/**
 	 * Compute derivative for time stepping and store it to
 	 * u_t and v_t
@@ -702,7 +415,7 @@ public:
 		//TODO: staggering vs. non staggering
 
 		PlaneData f(planeDataConfig);
-		set_source(f,i_simulation_timestamp);
+		BurgersValidationBenchmarks::set_source(i_simulation_timestamp,simVars,param_use_staggering,f);
 		o_tmp_t.physical_set_all(0);
 
 		/*
@@ -772,7 +485,7 @@ public:
 
 		// Initialize and set timestep dependent source for manufactured solution
 		PlaneData f(planeDataConfig);
-		set_source(f,simVars.timecontrol.current_simulation_time);
+		BurgersValidationBenchmarks::set_source(simVars.timecontrol.current_simulation_time,simVars,param_use_staggering,f);
 		f.request_data_spectral();
 
 		// Modify timestep to final time if necessary
@@ -875,7 +588,6 @@ public:
 		assert(simVars.sim.CFL < 0);
 		simVars.timecontrol.current_timestep_size = -simVars.sim.CFL;
 
-
 		if (param_semilagrangian)
 		{
 			dt = -simVars.sim.CFL;
@@ -889,16 +601,12 @@ public:
 			//Calculate departure points
 			semiLagrangian.semi_lag_departure_points_settls(
 							prog_u_prev, prog_v_prev,
-							prog_u,	prog_v,
-							Convert_PlaneData_To_ScalarDataArray::physical_convert(posx_a),
-							Convert_PlaneData_To_ScalarDataArray::physical_convert(posy_a),
+							prog_u, prog_v,
+                     posx_a, posy_a,
 							dt,
-							posx_d_tmp,	posy_d_tmp,
+							posx_d, posy_d,
 							stag_displacement
 					);
-
-			posx_d = Convert_ScalarDataArray_to_PlaneData::convert(posx_d_tmp, planeDataConfig);
-			posy_d = Convert_ScalarDataArray_to_PlaneData::convert(posy_d_tmp, planeDataConfig);
 
 			// Save old velocities
 			prog_u_prev = prog_u;
@@ -908,16 +616,18 @@ public:
 			//Departure points are set for physical space
 			prog_u = sampler2D.bicubic_scalar(
 					prog_u,
-					Convert_PlaneData_To_ScalarDataArray::physical_convert(posx_d),
-					Convert_PlaneData_To_ScalarDataArray::physical_convert(posy_d),
-					stag_u[0], stag_u[1]
+               posx_d,
+               posy_d,
+					stag_u[0],
+               stag_u[1]
 			);
 
 			prog_v = sampler2D.bicubic_scalar(
 					prog_v,
-					Convert_PlaneData_To_ScalarDataArray::physical_convert(posx_d),
-					Convert_PlaneData_To_ScalarDataArray::physical_convert(posy_d),
-					stag_v[0], stag_v[1]
+               posx_d,
+               posy_d,
+					stag_v[0],
+               stag_v[1]
 			);
 
 			if (simVars.disc.timestepping_order>=0)
@@ -1026,9 +736,9 @@ public:
 			// Print header
 			if (simVars.timecontrol.current_timestep_nr == 0)
 			{
-				o_ostream << "TIME\t\t\t\tTOT_ENERGY";
+				o_ostream << "TIME\t\t\tTOT_ENERGY";
 				if (param_compute_error){
-					o_ostream << "\tMAX_ABS_U\tMAX_RMS_U";
+					o_ostream << "\tMAX_ABS_U\tMAX_RMS_U\tMAX_U";
 				}
 
 				o_ostream << std::endl;
@@ -1039,7 +749,7 @@ public:
 			o_ostream << std::setprecision(8) << std::fixed << simVars.timecontrol.current_simulation_time << "\t" << simVars.diag.total_energy;
 
 			if (param_compute_error){
-				compute_errors();
+				compute_errors(prog_u, prog_v);
 				o_ostream << std::setprecision(8) << "\t" << benchmark_analytical_error_maxabs_u << "\t" << benchmark_analytical_error_rms_u << "\t" << prog_u.reduce_max();
 			}
 
@@ -1072,7 +782,10 @@ public:
 
 
 public:
-	void compute_errors()
+	void compute_errors(
+         const PlaneData &i_planeData_u,
+         const PlaneData &i_planeData_v
+   )
 	{
 			// Compute exact solution for linear part and compare with numerical solution
 
@@ -1128,13 +841,13 @@ public:
 			}
 
 
-			benchmark_analytical_error = ts_u-prog_u;
+			benchmark_analytical_error = ts_u-i_planeData_u;
 
-			benchmark_analytical_error_rms_u = (ts_u-prog_u).reduce_rms_quad();
-			benchmark_analytical_error_rms_v = (ts_v-prog_v).reduce_rms_quad();
+			benchmark_analytical_error_rms_u = (ts_u-i_planeData_u).reduce_rms_quad();
+			benchmark_analytical_error_rms_v = (ts_v-i_planeData_v).reduce_rms_quad();
 
-			benchmark_analytical_error_maxabs_u = (ts_u-prog_u).reduce_maxAbs();
-			benchmark_analytical_error_maxabs_v = (ts_v-prog_v).reduce_maxAbs();
+			benchmark_analytical_error_maxabs_u = (ts_u-i_planeData_u).reduce_maxAbs();
+			benchmark_analytical_error_maxabs_v = (ts_v-i_planeData_v).reduce_maxAbs();
 		}
 
 
@@ -1555,7 +1268,7 @@ public:
 		prog_v = *parareal_data_output.data_arrays[1];
 
 		if (param_compute_error){
-			compute_errors();
+			compute_errors(prog_u, prog_v);
 			std::cout << "maxabs error compared to analytical solution: " << benchmark_analytical_error_maxabs_u << std::endl;
 		}
 
@@ -1599,7 +1312,7 @@ public:
 
 		std::string filename2 = ss2.str();
 
-		compute_errors();
+		compute_errors(*data.data_arrays[0], data.data_arrays[1]);
 
 		benchmark_analytical_error.file_physical_saveData_ascii(filename2.c_str());
 
