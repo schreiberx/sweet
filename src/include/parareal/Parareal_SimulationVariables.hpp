@@ -99,6 +99,21 @@ public:
 	}
 
 
+
+	void outputConfig()
+	{
+		std::cout << std::endl;
+		std::cout << "Parareal" << std::endl;
+		std::cout << " + enabled: " << enabled << std::endl;
+		std::cout << " + coarse_slices: " << coarse_slices << std::endl;
+		std::cout << " + verbosity: " << verbosity << std::endl;
+		std::cout << " + convergence_error_threshold: " << convergence_error_threshold << std::endl;
+		std::cout << " + max_simulation_time: " << max_simulation_time << std::endl;
+		std::cout << std::endl;
+	}
+
+
+
 	/**
 	 * Callback method to setup the values for the option with given index.
 	 */

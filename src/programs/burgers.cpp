@@ -920,7 +920,7 @@ public:
 					stag_v[0], stag_v[1]
 			);
 
-			if (simVars.disc.timestepping_runge_kutta_order>=0)
+			if (simVars.disc.timestepping_order>=0)
 			{
 				// setup dummy data
 				tmp.physical_set_all(0);
@@ -932,7 +932,7 @@ public:
 						tmp, prog_u, prog_v, ///< tmp is used to make use of the swe version of run_rk_timestep
 						dt,
 						simVars.timecontrol.current_timestep_size,
-						simVars.disc.timestepping_runge_kutta_order,
+						simVars.disc.timestepping_order,
 						simVars.timecontrol.current_simulation_time,
 						simVars.timecontrol.max_simulation_time
 					);
@@ -952,7 +952,7 @@ public:
 
 		}else{
 
-			if (simVars.disc.timestepping_runge_kutta_order>=0)
+			if (simVars.disc.timestepping_order>=0)
 			{
 				// setup dummy data
 				tmp.physical_set_all(0);
@@ -964,7 +964,7 @@ public:
 						tmp, prog_u, prog_v, ///< tmp is used to make use of the swe version of run_rk_timestep
 						dt,
 						simVars.timecontrol.current_timestep_size,
-						simVars.disc.timestepping_runge_kutta_order,
+						simVars.disc.timestepping_order,
 						simVars.timecontrol.current_simulation_time,
 						simVars.timecontrol.max_simulation_time
 					);
@@ -1395,7 +1395,7 @@ public:
 		simVars.timecontrol.max_simulation_time = timeframe_end;
 		simVars.timecontrol.current_timestep_nr = 0;
 
-		simVars.disc.timestepping_runge_kutta_order = param_time_scheme;
+		simVars.disc.timestepping_order = param_time_scheme;
 
 		bool was_sl = false;
 		if (param_semilagrangian)
@@ -1461,7 +1461,7 @@ public:
 		simVars.timecontrol.current_timestep_nr = 0;
 
 		// set Runge-Kutta scheme to the chosen one for coarse time stepping
-		simVars.disc.timestepping_runge_kutta_order=param_time_scheme_coarse;
+		simVars.disc.timestepping_order=param_time_scheme_coarse;
 		// save the fine delta t to restore it later
 		double tmpCFL = simVars.sim.CFL;
 		simVars.sim.CFL=timeframe_start-timeframe_end;

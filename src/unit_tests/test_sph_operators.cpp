@@ -22,6 +22,12 @@
 
 SimulationVariables simVars;
 
+SphereDataConfig sphereDataConfigInstance;
+SphereDataConfig sphereDataConfigExtInstance;
+
+SphereDataConfig *sphereDataConfig = &sphereDataConfigInstance;
+SphereDataConfig *sphereDataConfigExt = &sphereDataConfigExtInstance;
+
 
 bool errorCheck(
 		SphereData &i_lhs,
@@ -79,9 +85,7 @@ bool errorCheck(
 
 
 
-void run_tests(
-		SphereDataConfig *sphereDataConfig
-)
+void run_tests()
 {
 	double epsilon = 1e-11;
 	epsilon *= (sphereDataConfig->spectral_modes_n_max);
@@ -89,6 +93,206 @@ void run_tests(
 
 	SphereOperators op(sphereDataConfig);
 
+
+#if 0
+	if (true)
+	{
+		SphereData phi(sphereDataConfig);
+		phi.physical_update_lambda(
+			[&](double i_lambda, double i_theta, double &io_data)
+			{
+				io_data = 1;
+			}
+		);
+		//phi.physical_truncate();
+
+		SphereData lhs(sphereDataConfig);
+		lhs.physical_update_lambda(
+			[&](double i_lambda, double i_theta, double &io_data)
+			{
+				io_data = 1.0/(std::cos(i_theta)*std::cos(i_theta));
+			}
+		);
+
+		SphereData rhs = phi;
+		rhs.physical_update_lambda_cosphi_grid(
+				[](double lambda, double cos_phi, double &o_data)
+				{
+					o_data /= cos_phi*cos_phi;
+				}
+			);
+
+		errorCheck(lhs, rhs, "TEST 1/cc", epsilon);
+	}
+#endif
+
+
+#if 0
+	if (true)
+	{
+		SphereData phi(sphereDataConfig);
+		phi.physical_update_lambda_cosphi_grid(
+			[&](double i_lambda, double cos_phi, double &io_data)
+			{
+				io_data = cos_phi;
+			}
+		);
+		phi.physical_truncate();
+
+		SphereData rhs = phi;
+		rhs.physical_update_lambda_cosphi_grid(
+				[](double lambda, double cos_phi, double &o_data)
+				{
+					o_data /= cos_phi*cos_phi;
+				}
+			);
+		rhs.physical_truncate();
+
+
+		SphereData lhs(sphereDataConfig);
+		lhs.physical_update_lambda_cosphi_grid(
+			[&](double i_lambda, double cos_phi, double &io_data)
+			{
+				io_data = 1.0/cos_phi;
+			}
+		);
+		lhs.physical_truncate();
+
+		errorCheck(lhs, rhs, "TEST 1/cc", epsilon);
+	}
+#endif
+
+
+#if 0
+	if (true)
+	{
+		SphereData phi(sphereDataConfig);
+		phi.physical_update_lambda(
+			[&](double i_lambda, double i_theta, double &io_data)
+			{
+				io_data =	  std::cos(i_theta)*std::cos(i_theta)
+							* std::cos(i_lambda)*std::sin(i_lambda);
+			}
+		);
+		phi.physical_truncate();
+
+		phi.physical_file_write("o_phi.csv");
+
+		SphereData div_lon_phi(sphereDataConfig);
+		div_lon_phi.physical_update_lambda(
+			[&](double i_lambda, double i_theta, double &io_data)
+			{
+				io_data =	  std::cos(2*i_lambda);
+			}
+		);
+		div_lon_phi.physical_truncate();
+
+		SphereData lhs_ext = op.robert_div_lon(phi.spectral_returnWithDifferentModes(sphereDataConfigExt));
+		SphereData rhs_ext = div_lon_phi.spectral_returnWithDifferentModes(sphereDataConfigExt);
+
+		SphereData lhs = lhs_ext.spectral_returnWithDifferentModes(sphereDataConfig).physical_truncate();
+		SphereData rhs = rhs_ext.spectral_returnWithDifferentModes(sphereDataConfig).physical_truncate();
+
+		errorCheck(lhs, rhs, "TEST div_i(phi) with Robert formulation", epsilon);
+	}
+#endif
+
+#if 1
+	if (true)
+	{
+		SphereData phi(sphereDataConfig);
+		phi.physical_update_lambda(
+			[&](double i_lambda, double i_theta, double &io_data)
+			{
+				io_data =	  std::cos(i_theta)*std::cos(i_theta)*std::cos(i_theta)
+							* std::cos(i_lambda)*std::sin(i_lambda);
+			}
+		);
+		phi.physical_truncate();
+
+		phi.physical_file_write("o_phi.csv");
+
+		SphereData div_lon_phi(sphereDataConfig);
+		div_lon_phi.physical_update_lambda(
+			[&](double i_lambda, double i_theta, double &io_data)
+			{
+				io_data =	  std::cos(i_theta)*std::cos(i_theta)*std::cos(i_theta)
+							* std::cos(2*i_lambda);
+			}
+		);
+		div_lon_phi.physical_truncate();
+
+		SphereData lhs_ext = op.diff_lon(phi.spectral_returnWithDifferentModes(sphereDataConfigExt));
+		SphereData rhs_ext = div_lon_phi.spectral_returnWithDifferentModes(sphereDataConfigExt);
+
+		SphereData lhs = lhs_ext.spectral_returnWithDifferentModes(sphereDataConfig).physical_truncate();
+		SphereData rhs = rhs_ext.spectral_returnWithDifferentModes(sphereDataConfig).physical_truncate();
+
+		errorCheck(lhs, rhs, "TEST diff_lon(phi) with Robert formulation", epsilon);
+	}
+#endif
+
+#if 1
+	if (true)
+	{
+		SphereData phi(sphereDataConfig);
+		phi.physical_update_lambda(
+			[&](double i_lambda, double i_theta, double &io_data)
+			{
+				io_data =	  std::cos(i_theta)*std::cos(i_theta)
+							* std::cos(i_lambda)*std::sin(i_lambda);
+			}
+		);
+
+		SphereData div_lon_phi(sphereDataConfig);
+		div_lon_phi.physical_update_lambda(
+			[&](double i_lambda, double i_theta, double &io_data)
+			{
+				io_data =	std::cos(2*i_lambda);
+			}
+		);
+
+		SphereData lhs = op.robert_div_lon(phi);
+		SphereData rhs = div_lon_phi;
+
+		lhs.spectral_truncate();
+		rhs.spectral_truncate();
+
+		errorCheck(lhs, rhs, "TEST div_i(phi) with Robert formulation", epsilon);
+	}
+#endif
+
+#if 1
+	if (true)
+	{
+		SphereData phi(sphereDataConfig);
+		phi.physical_update_lambda(
+			[&](double i_lambda, double i_theta, double &io_data)
+			{
+				io_data = std::cos(i_theta)*std::cos(i_theta)*std::cos(i_theta) * std::cos(i_lambda);
+			}
+		);
+
+		SphereData div_lon_phi(sphereDataConfig);
+		div_lon_phi.physical_update_lambda(
+			[&](double i_lambda, double i_theta, double &io_data)
+			{
+				io_data = -std::cos(i_theta)*std::cos(i_theta)*std::sin(i_lambda);
+			}
+		);
+
+		SphereData lhs = op.div_lon(phi);
+		SphereData rhs = div_lon_phi;
+
+		lhs.spectral_truncate();
+		rhs.spectral_truncate();
+
+		errorCheck(lhs, rhs, "TEST div_i(phi) with NON Robert formulation", epsilon);
+	}
+#endif
+
+	std::cout << "OK" << std::endl;
+	exit(0);
 
 #if 1
 	if (true)
@@ -946,15 +1150,20 @@ int main(
 	if (simVars.disc.res_spectral[0] == 0)
 		FatalError("Set number of spectral modes to use SPH!");
 
-	SphereDataConfig sphereDataConfig;
-	sphereDataConfig.setupAutoPhysicalSpace(
+	sphereDataConfigInstance.setupAutoPhysicalSpace(
 					simVars.disc.res_spectral[0],
 					simVars.disc.res_spectral[1],
 					&simVars.disc.res_physical[0],
 					&simVars.disc.res_physical[1]
 			);
 
-	run_tests(&sphereDataConfig);
+	sphereDataConfigExtInstance.setupAdditionalModes(
+			&sphereDataConfigInstance,
+			simVars.rexi.rexi_use_extended_modes,
+			simVars.rexi.rexi_use_extended_modes
+		);
+
+	run_tests();
 }
 
 

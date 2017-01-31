@@ -77,7 +77,7 @@ public:
 	SphereOperatorsComplex opComplex;
 
 	// Runge-Kutta stuff
-	SphereDataTimesteppingExplicitRK timestepping_explicit;
+	SphereDataTimesteppingExplicitRK timestepping_explicit_rk;
 
 	// Implicit timestepping solver
 	SWEImplicit_SPHRobert timestepping_implicit_swe;
@@ -179,6 +179,9 @@ public:
 
 	void reset()
 	{
+		// reset the RK time stepping buffers
+		timestepping_explicit_rk.setupBuffers(prog_h, simVars.disc.timestepping_order);
+
 		render_primitive_id = 1;
 
 		// one month runtime
@@ -221,8 +224,12 @@ public:
 		}
 
 
-		if (simVars.rexi.use_rexi == 1)
+		if (simVars.disc.timestepping_method == simVars.disc.REXI)
+//		if (simVars.rexi.use_rexi == 1)
 		{
+			{
+
+			}
 			// Override for REXI
 			if (simVars.timecontrol.current_timestep_size <= 0)
 			{
@@ -263,14 +270,13 @@ public:
 		std::cout << std::endl;
 		std::cout << " + Benchmark scenario id: " << simVars.setup.benchmark_scenario_id << std::endl;
 		std::cout << " + Use robert functions: " << simVars.misc.sphere_use_robert_functions << std::endl;
-		std::cout << " + Use REXI: " << simVars.rexi.use_rexi << " (0: explicit TS, 1: REXI, 2: implicit)" << std::endl;
 		std::cout << " + REXI h: " << simVars.rexi.rexi_h << std::endl;
 		std::cout << " + REXI M: " << simVars.rexi.rexi_M << std::endl;
 		std::cout << " + REXI use half poles: " << simVars.rexi.rexi_use_half_poles << std::endl;
 		std::cout << " + REXI normalization: " << simVars.rexi.rexi_normalization << std::endl;
 		std::cout << " + REXI additional modes: " << simVars.rexi.rexi_use_extended_modes << std::endl;
 		std::cout << std::endl;
-		std::cout << " + RK order: " << simVars.disc.timestepping_runge_kutta_order << std::endl;
+		std::cout << " + RK order: " << simVars.disc.timestepping_order << std::endl;
 		std::cout << " + timestep size: " << simVars.timecontrol.current_timestep_size << std::endl;
 		std::cout << " + output timestep size: " << simVars.misc.output_each_sim_seconds << std::endl;
 		std::cout << " + max simulation time: " << simVars.timecontrol.max_simulation_time << std::endl;
@@ -278,7 +284,7 @@ public:
 
 		std::cout << std::endl;
 
-		if (simVars.rexi.use_rexi == 1)
+		if (simVars.disc.timestepping_method == simVars.disc.REXI)
 		{
 			swe_sphere_rexi.setup(
 					simVars.rexi.rexi_h,
@@ -296,10 +302,14 @@ public:
 					param_rexi_use_coriolis_formulation
 				);
 		}
-		else if (simVars.rexi.use_rexi == -1)
+
+		if (simVars.disc.timestepping_method == simVars.disc.EULER_IMPLICIT)
 		{
 			if (simVars.sim.CFL >= 0)
 				FatalError("CFL >= 0: Set negative CFL for constant time step size");
+
+			if (simVars.disc.timestepping_order != 1)
+				FatalError("Only first order implicit Euler (backward) supported");
 
 			timestepping_implicit_swe.setup(
 					sphereDataConfig,
@@ -538,52 +548,52 @@ public:
 		// output of time step size
 		double o_dt;
 
-		if (simVars.rexi.use_rexi == 0)
+		if (simVars.disc.timestepping_method == simVars.disc.RUNGE_KUTTA_EXPLICIT)
 		{
 
 			switch (param_pde_id)
 			{
 			case 0:
-				timestepping_explicit.run_rk_timestep(
+				timestepping_explicit_rk.run_rk_timestep(
 						this,
 						&SimulationInstance::p_run_euler_timestep_update_swe,	///< pointer to function to compute euler time step updates
 						prog_h, prog_u, prog_v,
 						o_dt,
 						simVars.timecontrol.current_timestep_size,
-						simVars.disc.timestepping_runge_kutta_order,
+						simVars.disc.timestepping_order,
 						simVars.timecontrol.current_simulation_time,
 						simVars.timecontrol.max_simulation_time
 					);
 				break;
 
 			case 1:
-				timestepping_explicit.run_rk_timestep(
+				timestepping_explicit_rk.run_rk_timestep(
 						this,
 						&SimulationInstance::p_run_euler_timestep_update_advection,	///< pointer to function to compute euler time step updates
 						prog_h,
 						o_dt,
 						simVars.timecontrol.current_timestep_size,
-						simVars.disc.timestepping_runge_kutta_order,
+						simVars.disc.timestepping_order,
 						simVars.timecontrol.current_simulation_time,
 						simVars.timecontrol.max_simulation_time
 					);
 				break;
 
 			case 2:
-				timestepping_explicit.run_rk_timestep(
+				timestepping_explicit_rk.run_rk_timestep(
 						this,
 						&SimulationInstance::p_run_euler_timestep_update_advection_div_free,	///< pointer to function to compute euler time step updates
 						prog_h,
 						o_dt,
 						simVars.timecontrol.current_timestep_size,
-						simVars.disc.timestepping_runge_kutta_order,
+						simVars.disc.timestepping_order,
 						simVars.timecontrol.current_simulation_time,
 						simVars.timecontrol.max_simulation_time
 					);
 				break;
 			}
 		}
-		else if (simVars.rexi.use_rexi == -1)
+		else if (simVars.disc.timestepping_method == simVars.disc.EULER_IMPLICIT)
 		{
 			SphereData o_prog_h(sphereDataConfig);
 			SphereData o_prog_u(sphereDataConfig);
@@ -598,7 +608,7 @@ public:
 			prog_u = o_prog_u;
 			prog_v = o_prog_v;
 		}
-		else
+		else if (simVars.disc.timestepping_method == simVars.disc.REXI)
 		{
 			o_dt = simVars.timecontrol.current_timestep_size;
 			assert(o_dt > 0);
@@ -631,6 +641,10 @@ public:
 				prog_u = prog_u.spectral_solve_helmholtz(1.0, -scalar, r);
 				prog_v = prog_v.spectral_solve_helmholtz(1.0, -scalar, r);
 			}
+		}
+		else
+		{
+			FatalError("Timestepping method is not supported!");
 		}
 
 		// advance time step and provide information to parameters
@@ -1037,7 +1051,6 @@ int main(int i_argc, char *i_argv[])
 #endif
 		std::cout << "	--compute-error [0/1]	Output errors (if available, default: 1)" << std::endl;
 		std::cout << "	--rexi-use-coriolis-formulation [0/1]	Use Coriolisincluding  solver for REXI (default: 1)" << std::endl;
-		std::cout << "	--pde-id [0/1]			PDE to solve (0: SWE, 1: advection)" << std::endl;
 		return -1;
 	}
 

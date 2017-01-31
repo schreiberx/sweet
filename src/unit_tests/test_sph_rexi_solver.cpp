@@ -175,14 +175,13 @@ void run_tests()
 	std::cout << std::endl;
 	std::cout << " + Benchmark scenario id: " << simVars.setup.benchmark_scenario_id << std::endl;
 	std::cout << " + Use robert functions: " << simVars.misc.sphere_use_robert_functions << std::endl;
-	std::cout << " + Use REXI: " << simVars.rexi.use_rexi << std::endl;
 	std::cout << " + REXI h: " << simVars.rexi.rexi_h << std::endl;
 	std::cout << " + REXI M: " << simVars.rexi.rexi_M << std::endl;
 	std::cout << " + REXI use half poles: " << simVars.rexi.rexi_use_half_poles << std::endl;
 	std::cout << " + REXI additional modes: " << simVars.rexi.rexi_use_extended_modes << std::endl;
 	std::cout << " + Use REXI Coriolis formulation: " << (param_rexi_use_coriolis_formulation ? "true" : "false") << std::endl;
 	std::cout << std::endl;
-	std::cout << " + RK order: " << simVars.disc.timestepping_runge_kutta_order << std::endl;
+	std::cout << " + RK order: " << simVars.disc.timestepping_order << std::endl;
 	std::cout << " + timestep size: " << simVars.timecontrol.current_timestep_size << std::endl;
 	std::cout << " + output timestep size: " << simVars.misc.output_each_sim_seconds << std::endl;
 

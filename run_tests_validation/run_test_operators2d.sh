@@ -12,14 +12,14 @@ echo "***********************************************"
 cd ..
 make clean
 scons  --unit-test=test_operators2d --plane-spectral-space=enable --mode=release --plane-spectral-dealiasing=disable
-EXEC="./build/test_operators2d_*_release -N 16 -S 1"
+EXEC="./build/test_operators2d_*_release -N 16 -S 1 --timestepping-method=1 --timestepping-order 4"
 echo "$EXEC"
 $EXEC || exit
 
 echo "***********************************************"
 echo "Running tests for Operators2d operations > SPECTRAL SPACE, STENCIL OPERATORS"
 echo "***********************************************"
-EXEC="./build/test_operators2d_*_release -N 16 -S 0"
+EXEC="./build/test_operators2d_*_release -N 16 -S 0 --timestepping-method=1 --timestepping-order 4"
 echo "$EXEC"
 $EXEC || exit
 
@@ -31,7 +31,7 @@ echo "***********************************************"
 echo "Running tests for Operators2d operations > SPECTRAL SPACE, SPECTRAL OPERATORS, DEALIASING"
 echo "***********************************************"
 # test spectral derivatives
-EXEC="./build/test_operators2d_*_release -N 16 -S 1"
+EXEC="./build/test_operators2d_*_release -N 16 -S 1 --timestepping-method=1 --timestepping-order 4"
 echo "$EXEC"
 $EXEC || exit
 
@@ -39,7 +39,7 @@ $EXEC || exit
 echo "***********************************************"
 echo "Running tests for Operators2d operations > SPECTRAL SPACE, STENCIL OPERATORS, DEALIASING"
 echo "***********************************************"
-EXEC="./build/test_operators2d_*_release -N 16 -S 0"
+EXEC="./build/test_operators2d_*_release -N 16 -S 0 --timestepping-method=1 --timestepping-order 4"
 echo "$EXEC"
 $EXEC || exit
 

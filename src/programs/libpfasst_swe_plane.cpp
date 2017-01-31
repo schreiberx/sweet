@@ -259,7 +259,7 @@ private:
 					io_prog_phi, io_prog_u, io_prog_v,
 					o_dt,
 					simVars.timecontrol.current_timestep_size,
-					simVars.disc.timestepping_runge_kutta_order,
+					simVars.disc.timestepping_order,
 					simVars.timecontrol.current_simulation_time,
 					simVars.timecontrol.max_simulation_time
 				);

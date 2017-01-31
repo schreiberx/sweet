@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <sweet/sweetmath.hpp>
+#include <sweet/FatalError.hpp>
 
 
 
@@ -141,7 +142,13 @@ public:
 	std::string getConfigInformationString()
 	{
 		std::ostringstream buf;
-		buf << "M" << spectral_modes[0] << "," << spectral_modes[1] << "_N" << physical_res[0] << "," << physical_res[1];
+		buf <<
+
+#if SWEET_USE_LIBFFT
+				"M" << spectral_modes[0] << "," << spectral_modes[1] << "_" <<
+#endif
+				"N" << physical_res[0] << "," << physical_res[1];
+
 		return buf.str();
 	}
 
@@ -674,13 +681,16 @@ public:
 					io_physical_res[1]
 				);
 
+#if SWEET_USE_LIBFFT
 			io_spectral_modes[0] = spectral_modes[0];
 			io_spectral_modes[1] = spectral_modes[1];
+#endif
 			return;
 		}
 
 		if (io_spectral_modes[0] > 0)
 		{
+#if SWEET_USE_LIBFFT
 			setupAutoPhysicalSpace(
 					io_spectral_modes[0],
 					io_spectral_modes[1]
@@ -688,6 +698,9 @@ public:
 
 			io_physical_res[0] = physical_res[0];
 			io_physical_res[1] = physical_res[1];
+#else
+			FatalError("Setup with spectral modes not enabled");
+#endif
 			return;
 		}
 

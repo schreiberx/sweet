@@ -453,7 +453,7 @@ public:
 				prog_h, prog_u, prog_v,
 				dt,
 				simVars.timecontrol.current_timestep_size,
-				simVars.disc.timestepping_runge_kutta_order,
+				simVars.disc.timestepping_order,
 				simVars.timecontrol.current_simulation_time
 			);
 
@@ -717,7 +717,7 @@ int main(
 			output_string_conv << res_x << "x" << res_y << "\t";
 
 			std::cout << "*******************************************************************************" << std::endl;
-			std::cout << "Testing convergence with resolution " << res_x << " x " << res_y << " and RK order " << simVars.disc.timestepping_runge_kutta_order << std::endl;
+			std::cout << "Testing convergence with resolution " << res_x << " x " << res_y << " and RK order " << simVars.disc.timestepping_order << std::endl;
 			std::cout << "*******************************************************************************" << std::endl;
 
 			simVars.disc.res_physical[0] = res_x;
@@ -773,7 +773,7 @@ int main(
 					{
 						double &prev_error_space = computed_errors[(res_iterator_id-1)];
 
-						double expected_conv_rate = std::pow(2.0, (double)(simVars.disc.timestepping_runge_kutta_order));
+						double expected_conv_rate = std::pow(2.0, (double)(simVars.disc.timestepping_order));
 						double this_conv_rate_space = prev_error_space / this_error;
 
 						std::cout << "          Norm2 convergence rate (space): " << this_conv_rate_space << ", expected: " << expected_conv_rate << std::endl;
@@ -842,7 +842,7 @@ int main(
 			output_string_conv << "CFL=" << simVars.sim.CFL << "\t";
 
 			std::cout << "*********************************************************************************************************" << std::endl;
-			std::cout << "Testing time convergence with CFL " << simVars.sim.CFL << " and RK order " << simVars.disc.timestepping_runge_kutta_order << std::endl;
+			std::cout << "Testing time convergence with CFL " << simVars.sim.CFL << " and RK order " << simVars.disc.timestepping_order << std::endl;
 			std::cout << "*********************************************************************************************************" << std::endl;
 
 			SimulationAdvection *simulationAdvection = new SimulationAdvection(planeDataConfig);
@@ -895,7 +895,7 @@ int main(
 					{
 						double &prev_error_space = computed_errors[(cfl_iterator_id-1)];
 
-						double expected_conv_rate = std::pow(2.0, (double)(simVars.disc.timestepping_runge_kutta_order));
+						double expected_conv_rate = std::pow(2.0, (double)(simVars.disc.timestepping_order));
 						double this_conv_rate_space = prev_error_space / this_error;
 
 						std::cout << "          Norm2 convergence rate (time): " << this_conv_rate_space << ", expected: " << expected_conv_rate << std::endl;

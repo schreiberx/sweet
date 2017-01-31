@@ -64,7 +64,7 @@ public:
 		/// total potential enstropy
 		double total_potential_enstrophy = 0;
 
-		void output()
+		void outputConfig()
 		{
 			std::cout << std::endl;
 			std::cout << "DIAGNOSTICS:" << std::endl;
@@ -74,6 +74,25 @@ public:
 			std::cout << std::endl;
 		}
 	} diag;
+
+
+public:
+	/**
+	 * Information on Partial Differential Equation
+	 */
+	struct PDE
+	{
+		/*
+		 * ID of PDE to use
+		 */
+		int id = 0;
+
+		void outputConfig()
+		{
+			std::cout << "PDE:" << std::endl;
+			std::cout << " + id: " << id << std::endl;
+		}
+	} pde;
 
 
 
@@ -131,7 +150,7 @@ public:
 			}
 		}
 
-		void output()
+		void outputConfig()
 		{
 			std::cout << std::endl;
 			std::cout << "SETUP:" << std::endl;
@@ -141,7 +160,7 @@ public:
 			std::cout << " + setup_coord_y: " << setup_coord_y << std::endl;
 			std::cout << " + advection_rotation_angle: " << advection_rotation_angle << std::endl;
 			std::cout << " + input_data_filenames:" << std::endl;
-			for (int i = 0; i < input_data_filenames.size(); i++)
+			for (std::size_t i = 0; i < input_data_filenames.size(); i++)
 				std::cout << "    - filename " << i << " " << input_data_filenames[i] << std::endl;
 			std::cout << " + input_data_binary: " << input_data_binary << std::endl;
 			std::cout << std::endl;
@@ -211,7 +230,7 @@ public:
 		double domain_size[2] = {1.0, 1.0};
 
 
-		void output()
+		void outputConfig()
 		{
 			std::cout << std::endl;
 			std::cout << "SIMULATION COEFFICIENTS:" << std::endl;
@@ -248,11 +267,69 @@ public:
 		/// this is computed based on disc.res and sim.domain_size
 		double cell_size[2] = {0,0};
 
+
+		/**
+		 * Extend this with new time stepping method IDs
+		 */
+		enum
+		{
+			RUNGE_KUTTA_EXPLICIT = 1,
+			LEAPFROG_EXPLICIT = 2,
+			EULER_IMPLICIT = 3,
+
+			REXI = 100,
+		};
+
+
+		static
+		std::string getTimesteppingMethodString
+		(
+				int i_method
+		)
+		{
+			switch(i_method)
+			{
+			case RUNGE_KUTTA_EXPLICIT:
+				return "RUNGE_KUTTA_EXPLICIT";
+
+			case LEAPFROG_EXPLICIT:
+				return "LEAPFROG_EXPLICIT";
+
+			case EULER_IMPLICIT:
+				return "EULER_IMPLICIT";
+
+			case REXI:
+				return "REXI";
+			}
+
+			return "[UNKWOWN]";
+		}
+
+
+		///
+		/// Specify time stepping method
+		/// 1: explicit RK
+		/// 2: explicit Leapfrog
+		///
+		/// exotic time stepping methods should start with 100
+		/// 100: REXI
+		///
+		/// Negative numbers are treated in a program-specific way.
+		///
+		int timestepping_method = 0;
+
+		/// 2nd choise for time stepping method, if required
+		int timestepping_method2 = 0;
+
+		/// Order of time stepping
+		double timestepping_order = -1;
+
+		/// Order of 2nd time stepping which might be used
+		double timestepping_order2 = 0;
+
 		/// use up/downwinding for the advection of h
 		bool timestepping_up_and_downwinding = false;
 
-		/// order of Runge-Kutta scheme for time stepping
-		double timestepping_runge_kutta_order = 4;
 
 		/// use spectral differential operators
 		bool use_spectral_basis_diffs =
@@ -262,17 +339,52 @@ public:
 				false;
 #endif
 
-		void output()
+		void outputConfig()
 		{
 			std::cout << std::endl;
 			std::cout << "DISCRETIZATION:" << std::endl;
 			std::cout << " + res_physical: " << res_physical[0] << " x " << res_physical[1] << std::endl;
 			std::cout << " + res_spectral: " << res_spectral[0] << " x " << res_spectral[1] << std::endl;
 			std::cout << " + cell_size: " << res_physical[0] << " x " << cell_size[1] << std::endl;
+			std::cout << " + timestepping_method: " << getTimesteppingMethodString(timestepping_method) << std::endl;
+			std::cout << " + timestepping_order: " << timestepping_order << std::endl;
+			std::cout << " + timestepping_method2: " << getTimesteppingMethodString(timestepping_method2) << std::endl;
+			std::cout << " + timestepping_order2: " << timestepping_order2 << std::endl;
 			std::cout << " + timestepping_up_and_downwinding: " << timestepping_up_and_downwinding << std::endl;
-			std::cout << " + timestepping_runge_kutta_order: " << timestepping_runge_kutta_order << std::endl;
 			std::cout << " + use_spectral_basis_diffs: " << use_spectral_basis_diffs << std::endl;
 			std::cout << std::endl;
+		}
+
+		void outputProgParams()
+		{
+			std::cout << "Discretization:" << std::endl;
+			std::cout << "  >Space:" << std::endl;
+			std::cout << "	-N [res]	resolution in x and y direction, default=0" << std::endl;
+			std::cout << "	-n [resx]	resolution in x direction, default=0" << std::endl;
+			std::cout << "	-m [resy]	resolution in y direction, default=0" << std::endl;
+			std::cout << "	-M [modes]	modes in x/y or lon/lat direction, default=0" << std::endl;
+			std::cout << "	-S [0/1]	Control Operator discretization for PlaneDatas" << std::endl;
+			std::cout << "               0: FD, 1: spectral derivatives, default:";
+
+#if SWEET_USE_PLANE_SPECTRAL_SPACE || SWEET_USE_SPHERE_SPECTRAL_SPACE
+	std::cout << "1"
+#else
+	std::cout << "0"
+#endif
+					,
+			std::cout << "  >Time:" << std::endl;
+			std::cout << "	-W [0/1]	use up- and downwinding, default:0" << std::endl;
+			std::cout << "	-R [1-RKn]	order of time stepping method, default:0" << std::endl;
+			std::cout << "	-C [cfl]	CFL condition, use negative value for fixed time step size, default=0.05" << std::endl;
+			std::cout << "  --timestepping-method	Specify time stepping method (";
+
+			for (int i = 1; i <= 3; i++)
+				std::cout << i << ": " << getTimesteppingMethodString(i) << ", ";
+
+			std::cout << "...)" << std::endl;
+			std::cout << "  --timestepping-order	Specify the order of the time stepping" << std::endl;
+			std::cout << "  --timestepping-method2	Alternative time stepping method" << std::endl;
+			std::cout << "  --timestepping-order2	Specify the order of the time stepping" << std::endl;
 		}
 	} disc;
 
@@ -286,7 +398,7 @@ public:
 		/**
 		 * Activate REXI instead of standard time stepping
 		 */
-		int use_rexi = 0;
+//		int use_rexi = 0;
 
 		/**
 		 * REXI parameter h
@@ -318,11 +430,10 @@ public:
 		 */
 		bool rexi_normalization = true;
 
-		void output()
+		void outputConfig()
 		{
 			std::cout << std::endl;
 			std::cout << "REXI:" << std::endl;
-			std::cout << " + use_rexi: " << use_rexi << std::endl;
 			std::cout << " + rexi_h: " << rexi_h << std::endl;
 			std::cout << " + rexi_M: " << rexi_M << std::endl;
 			std::cout << " + rexi_L: " << rexi_L << std::endl;
@@ -345,14 +456,14 @@ public:
 		double dt;
 #if 0
 		// TODO: encapsulate this in sweet SimVars
-		auto const nlevels   = pfasst::config::get_value<int>("nlevels", 1);
-		auto const nnodes    = pfasst::config::get_value<int>("nnodes", 3);
-		auto const nspace    = pfasst::config::get_value<int>("nspace", 8193);
-		auto const nsteps    = pfasst::config::get_value<int>("nsteps", 16);
-		auto const niters    = pfasst::config::get_value<int>("niters", 4);
-		auto const dt        = pfasst::config::get_value<double>("dt", 0.1);
+		auto const nlevels   = pfasst::config::get_value<int>("nlevels" << std::endl; 1);
+		auto const nnodes    = pfasst::config::get_value<int>("nnodes" << std::endl; 3);
+		auto const nspace    = pfasst::config::get_value<int>("nspace" << std::endl; 8193);
+		auto const nsteps    = pfasst::config::get_value<int>("nsteps" << std::endl; 16);
+		auto const niters    = pfasst::config::get_value<int>("niters" << std::endl; 4);
+		auto const dt        = pfasst::config::get_value<double>("dt" << std::endl; 0.1);
 #endif
-		void output()
+		void outputConfig()
 		{
 			std::cout << std::endl;
 			std::cout << "PFASST:" << std::endl;
@@ -400,7 +511,7 @@ public:
 	 */
 	struct Misc
 	{
-		void output()
+		void outputConfig()
 		{
 			std::cout << std::endl;
 			std::cout << "MISC:" << std::endl;
@@ -421,22 +532,22 @@ public:
 		/// set verbosity of simulation
 		int verbosity = 0;
 
-		/// precision for floating point output to std::cout and std::endl
+		/// precision for floating point outputConfig to std::cout and std::endl
 		int output_floating_point_precision = 18;
 
 		/// activate GUI mode?
 		bool gui_enabled = (SWEET_GUI == 0 ? false : true);
 
-		/// output verbose information every given period of simulation time.
+		/// outputConfig verbose information every given period of simulation time.
 		double be_verbose_after_this_simulation_time_period = 0;
 
-		/// prefix of filename for output of data
+		/// prefix of filename for outputConfig of data
 		std::string output_file_name_prefix = "prog_%s_t%020.8f.csv";
 
-		/// prefix of filename for output of data
+		/// prefix of filename for outputConfig of data
 		double output_each_sim_seconds = -1;
 
-		/// Simulation seconds for next output
+		/// Simulation seconds for next outputConfig
 		double output_next_sim_seconds = 0;
 
 		/// id for visualization
@@ -449,7 +560,7 @@ public:
 		/// Use robert function formulation on the sphere
 		bool sphere_use_robert_functions = true;
 
-		/// time scaling for output
+		/// time scaling for outputConfig
 		/// e.g. use scaling by 1.0/(60*60) to output days instead of seconds
 		double output_time_scale = 1.0;
 
@@ -457,7 +568,7 @@ public:
 
 
 	/**
-	 * timestepping
+	 * Timestepping
 	 */
 	struct TimestepControl
 	{
@@ -481,7 +592,7 @@ public:
 		double max_simulation_time = -1;
 
 
-		void output()
+		void outputConfig()
 		{
 			std::cout << std::endl;
 			std::cout << "TIMECONTROL:" << std::endl;
@@ -493,25 +604,26 @@ public:
 			std::cout << " + max_simulation_time: " << max_simulation_time << std::endl;
 			std::cout << std::endl;
 		}
+
 	} timecontrol;
 
 
-	void output()
+	void outputConfig()
 	{
-		sim.output();
-		disc.output();
-		setup.output();
-		timecontrol.output();
+		sim.outputConfig();
+		disc.outputConfig();
+		setup.outputConfig();
+		timecontrol.outputConfig();
 
-		rexi.output();
-		misc.output();
-		diag.output();
+		rexi.outputConfig();
+		misc.outputConfig();
+		diag.outputConfig();
 
 #if SWEET_PARAREAL
-		parareal.output();
+		parareal.outputConfig();
 #endif
 
-		pfasst.output();
+		pfasst.outputConfig();
 	}
 
 
@@ -604,6 +716,7 @@ public:
 
 		int next_free_program_option = 0;
 
+		// 0
         long_options[next_free_program_option] = {"initial-coord-x", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
@@ -622,15 +735,13 @@ public:
         long_options[next_free_program_option] = {"rexi-half", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        long_options[next_free_program_option] = {"rexi", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
         long_options[next_free_program_option] = {"rexi-normalization", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
         long_options[next_free_program_option] = {"rexi-ext-modes", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
+        // 8
         long_options[next_free_program_option] = {"nonlinear", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
@@ -640,24 +751,44 @@ public:
         long_options[next_free_program_option] = {"sphere-advection-angle", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
+        long_options[next_free_program_option] = {"pde-id", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
+        // 12
+        long_options[next_free_program_option] = {"timestepping-method", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
+        long_options[next_free_program_option] = {"timestepping-order", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
+        long_options[next_free_program_option] = {"timestepping-method2", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
+        long_options[next_free_program_option] = {"timestepping-order2", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
+
+// leave this commented to avoid mismatch with following parameters!
 #if SWEET_PFASST_CPP
-        long_options[next_free_program_option] = {"pfasst-nlevels", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
 
-        long_options[next_free_program_option] = {"pfasst-nnodes", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
+        // 16
+		long_options[next_free_program_option] = {"pfasst-nlevels", required_argument, 0, 256+next_free_program_option};
+		next_free_program_option++;
 
-        long_options[next_free_program_option] = {"pfasst-nspace", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
+		long_options[next_free_program_option] = {"pfasst-nnodes", required_argument, 0, 256+next_free_program_option};
+		next_free_program_option++;
 
-        long_options[next_free_program_option] = {"pfasst-nsteps", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
+		long_options[next_free_program_option] = {"pfasst-nspace", required_argument, 0, 256+next_free_program_option};
+		next_free_program_option++;
 
-        long_options[next_free_program_option] = {"pfasst-niters", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
+		long_options[next_free_program_option] = {"pfasst-nsteps", required_argument, 0, 256+next_free_program_option};
+		next_free_program_option++;
 
-        long_options[next_free_program_option] = {"pfasst-dt", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
+		long_options[next_free_program_option] = {"pfasst-niters", required_argument, 0, 256+next_free_program_option};
+		next_free_program_option++;
+
+		long_options[next_free_program_option] = {"pfasst-dt", required_argument, 0, 256+next_free_program_option};
+		next_free_program_option++;
 #endif
 
 
@@ -665,6 +796,7 @@ public:
         int parareal_start_option_index = next_free_program_option;
         parareal.setup_longOptionList(long_options, next_free_program_option, max_options);
 #endif
+
 
         if (bogus_var_names != nullptr)
         {
@@ -721,25 +853,34 @@ public:
 						case 3:		rexi.rexi_M = atoi(optarg);	break;
 						case 4:		rexi.rexi_L = atoi(optarg);	break;
 						case 5:		rexi.rexi_use_half_poles = atoi(optarg);	break;
-						case 6:		rexi.use_rexi = atoi(optarg);	break;
-						case 7:		rexi.rexi_normalization = atoi(optarg);	break;
-						case 8:		rexi.rexi_use_extended_modes = atoi(optarg);	break;
+						case 6:		rexi.rexi_normalization = atoi(optarg);	break;
+						case 7:		rexi.rexi_use_extended_modes = atoi(optarg);	break;
 
-						case 9:		misc.use_nonlinear_equations = atoi(optarg);	break;
-						case 10:	misc.sphere_use_robert_functions = atoi(optarg);	break;
+						case 8:		misc.use_nonlinear_equations = atoi(optarg);	break;
+						case 9:		misc.sphere_use_robert_functions = atoi(optarg);	break;
 
-						case 11:	setup.advection_rotation_angle = atof(optarg);	break;
+						case 10:	setup.advection_rotation_angle = atof(optarg);	break;
 
-						case 12:	pfasst.nlevels = atoi(optarg);	break;
-						case 13:	pfasst.nnodes = atoi(optarg);	break;
-						case 14:	pfasst.nspace = atoi(optarg);	break;
-						case 15:	pfasst.nsteps = atoi(optarg);	break;
-						case 16:	pfasst.niters = atoi(optarg);	break;
-						case 17:	pfasst.dt = atof(optarg);	break;
 
+						case 11:	pde.id = atoi(optarg);	break;
+
+						case 12:	disc.timestepping_method = atoi(optarg);	break;
+						case 13:	disc.timestepping_order = atoi(optarg);	break;
+						case 14:	disc.timestepping_method2 = atoi(optarg);	break;
+						case 15:	disc.timestepping_order2 = atoi(optarg);	break;
+
+
+#if SWEET_PFASST_CPP
+						case 16:	pfasst.nlevels = atoi(optarg);	break;
+						case 17:	pfasst.nnodes = atoi(optarg);	break;
+						case 18:	pfasst.nspace = atoi(optarg);	break;
+						case 19:	pfasst.nsteps = atoi(optarg);	break;
+						case 20:	pfasst.niters = atoi(optarg);	break;
+						case 21:	pfasst.dt = atof(optarg);	break;
+#endif
 						default:
 #if SWEET_PARAREAL
-						parareal.setup_longOptionValue(i-parareal_start_option_index, optarg);
+							parareal.setup_longOptionValue(i-parareal_start_option_index, optarg);
 #endif
 						break;
 					}
@@ -894,7 +1035,7 @@ public:
 				break;
 
 			case 'R':
-				disc.timestepping_runge_kutta_order = atoi(optarg);
+				disc.timestepping_order = atoi(optarg);
 				break;
 
 			case 'W':
@@ -907,84 +1048,64 @@ public:
 
 
 			default:
-				const char *help_strings[] = {
-						"Simulation runtime parameters",
-						"	-X [length]	length of simulation domain in x direction, default=1",
-						"	-Y [width]	width of simulation domain in y direction, default=1",
-						"	-u [visc]	viscosity, , default=0",
-						"	-U [visc]	viscosity order, default=2",
-						//"	-p [visc]	potential viscosity, default=0",
-						//"	-P [visc]	potential hyperviscosity, default=0",
-						"	-f [float]	f-parameter for f-plane or coriolis omega term, default=0",
-						"	-b [float]	beta-parameter for beta-plane, default=0",
-						"	            Use -1 to set f*sin(phi) with phi in [-pi/2;pi/2] in y",
-						"	-g [float]	gravity, default=9.81",
-						"	-a [float]	earth radius, default=1",
-						"	-H [float]	average (initial) height of water, default=1000",
-						"",
-						"Simulation setup parameters",
-						"	-s [scen]	scenario id, set to -1 for overview"
-						"	-x [float]	x coordinate for setup \\in [0;1], default=0.5",
-						"	-y [float]	y coordinate for setup \\in [0;1], default=0.5",
-						"	-r [radius]	scale factor of radius for initial condition, default=1",
-						"	--initial-freq-x-mul [float]	Frequency for the waves initial conditions in x, default=2",
-						"	--initial-freq-y-mul [float]	Frequency for the waves initial conditions in y, default=1",
-						"	--initial-coord-x [float]	Same as -x",
-						"	--initial-coord-y [float]	Same as -y",
-						"",
-						"Discretization:",
-						"  >Space:",
-						"	-N [res]	resolution in x and y direction, default=0",
-						"	-n [resx]	resolution in x direction, default=0",
-						"	-m [resy]	resolution in y direction, default=0",
-						"	-M [modes]	modes in x/y or lon/lat direction, default=0",
-						"	-S [0/1]	Control Operator discretization for PlaneDatas",
-						"               0: FD, 1: spectral derivatives, default:"
-#if SWEET_USE_PLANE_SPECTRAL_SPACE || SWEET_USE_SPHERE_SPECTRAL_SPACE
-				"1"
-#else
-				"0"
-#endif
-						,
-						"  >Time:",
-						"	-W [0/1]	use up- and downwinding, default:0",
-						"	-R [1-RKn]	order of Runge-Kutta method, default:4",
-						"	-C [cfl]	CFL condition, use negative value for fixed time step size, default=0.05",
-						"",
-						"Control:",
-						"	-t [time]	maximum simulation time, default=-1 (infinity)",
-						"	-T [stepnr]	maximum number of time steps, default=-1 (infinity)",
-						"	-o [time]	time interval at which output should be written",
-						"",
-						"Misc options",
-						"	-v [int]	verbosity level",
-						"	-V [double]	period of output",
-						"	-G [0/1]	graphical user interface",
-						"	-O [string]	string prefix for filename of output of simulation data",
-						"	-d [int]	accuracy of floating point output",
-						"	-i [file0][;file1][;file3]...	string with filenames for initial conditions",
-						"	            specify BINARY; as first file name to read files as binary raw data",
-						"	--use-robert-functions [bool]	Use Robert function formulation for velocities on the sphere",
-						"	--nonlinear [int]	Use non-linear (>=1) if available or linear (0) formulation, default: 1",
-						"						     0: Linear ",
-						"						     1: Nonlinear (default)",
-						"						     2: Linear + nonlinear advection only (needs -H to be set)",
-						"",
-						"Rexi",
-						"	--rexi [bool]	Time stepping method: 0: explicit, 1: REXI, -1: implicit",
-						"	--rexi-h [float]	REXI parameter h",
-						"	--rexi-m [int]	REXI parameter M",
-						"	--rexi-l [int]	REXI parameter L",
-						"	--rexi-half [bool]	Use half REXI poles, default:1",
-						"	--rexi-normalization [bool]	Use REXI normalization around geostrophic balance, default:1",
-						"	--rexi-ext-modes [int]	Use this number of extended modes in spherical harmonics",
-						"",
+				std::cout << "Simulation runtime parameters" << std::endl;
+				std::cout << "	-X [length]	length of simulation domain in x direction, default=1" << std::endl;
+				std::cout << "	-Y [width]	width of simulation domain in y direction, default=1" << std::endl;
+				std::cout << "	-u [visc]	viscosity, , default=0" << std::endl;
+				std::cout << "	-U [visc]	viscosity order, default=2" << std::endl;
+				std::cout << "	-f [float]	f-parameter for f-plane or coriolis omega term, default=0" << std::endl;
+				std::cout << "	-b [float]	beta-parameter for beta-plane, default=0" << std::endl;
+				std::cout << "	            Use -1 to set f*sin(phi) with phi in [-pi/2;pi/2] in y" << std::endl;
+				std::cout << "	-g [float]	gravity, default=9.81" << std::endl;
+				std::cout << "	-a [float]	earth radius, default=1" << std::endl;
+				std::cout << "	-H [float]	average (initial) height of water, default=1000" << std::endl;
+				std::cout << "" << std::endl;
+				std::cout << "Simulation setup parameters:" << std::endl;
+				std::cout << "	-s [scen]	scenario id, set to -1 for overview" << std::endl;
+				std::cout << "	-x [float]	x coordinate for setup \\in [0;1], default=0.5" << std::endl;
+				std::cout << "	-y [float]	y coordinate for setup \\in [0;1], default=0.5" << std::endl;
+				std::cout << "	-r [radius]	scale factor of radius for initial condition, default=1" << std::endl;
+				std::cout << "	--initial-freq-x-mul [float]	Frequency for the waves initial conditions in x, default=2" << std::endl;
+				std::cout << "	--initial-freq-y-mul [float]	Frequency for the waves initial conditions in y, default=1" << std::endl;
+				std::cout << "	--initial-coord-x [float]	Same as -x" << std::endl;
+				std::cout << "	--initial-coord-y [float]	Same as -y" << std::endl;
+				std::cout << "" << std::endl;
+				std::cout << "Partial differential equation:" << std::endl;
+				std::cout << "	--pde-id [0/1]	PDE to solve (0: SWE, 1: advection)" << std::endl;
+				std::cout << "" << std::endl;
 
-				};
+				disc.outputProgParams();
 
-				std::cerr << "Usage information: " << std::endl;
-				for (std::size_t i = 0; i < sizeof(help_strings)/sizeof(*help_strings); i++)
-					std::cerr << help_strings[i] << std::endl;
+				std::cout << "" << std::endl;
+				std::cout << "Control:" << std::endl;
+				std::cout << "	-t [time]	maximum simulation time, default=-1 (infinity)" << std::endl;
+				std::cout << "	-T [stepnr]	maximum number of time steps, default=-1 (infinity)" << std::endl;
+				std::cout << "	-o [time]	time interval at which output should be written" << std::endl;
+				std::cout << "" << std::endl;
+				std::cout << "Misc options" << std::endl;
+				std::cout << "	-v [int]	verbosity level" << std::endl;
+				std::cout << "	-V [double]	period of outputConfig" << std::endl;
+				std::cout << "	-G [0/1]	graphical user interface" << std::endl;
+				std::cout << "	-O [string]	string prefix for filename of output of simulation data" << std::endl;
+				std::cout << "	-d [int]	accuracy of floating point output" << std::endl;
+				std::cout << "	-i [file0][;file1][;file3]...	string with filenames for initial conditions" << std::endl;
+				std::cout << "	            specify BINARY; as first file name to read files as binary raw data" << std::endl;
+				std::cout << "	--use-robert-functions [bool]	Use Robert function formulation for velocities on the sphere" << std::endl;
+				std::cout << "	--nonlinear [int]	Use non-linear (>=1) if available or linear (0) formulation, default: 1" << std::endl;
+				std::cout << "						     0: Linear " << std::endl;
+				std::cout << "						     1: Nonlinear (default)" << std::endl;
+				std::cout << "						     2: Linear + nonlinear advection only (needs -H to be set)" << std::endl;
+				std::cout << "" << std::endl;
+				std::cout << "Rexi" << std::endl;
+				std::cout << "	--rexi [bool]	Time stepping method: 0: explicit, 1: REXI, -1: implicit" << std::endl;
+				std::cout << "	--rexi-h [float]	REXI parameter h" << std::endl;
+				std::cout << "	--rexi-m [int]	REXI parameter M" << std::endl;
+				std::cout << "	--rexi-l [int]	REXI parameter L" << std::endl;
+				std::cout << "	--rexi-half [bool]	Use half REXI poles, default:1" << std::endl;
+				std::cout << "	--rexi-normalization [bool]	Use REXI normalization around geostrophic balance, default:1" << std::endl;
+				std::cout << "	--rexi-ext-modes [int]	Use this number of extended modes in spherical harmonics" << std::endl;
+				std::cout << "" << std::endl;
+
 
 
 #if SWEET_PARAREAL

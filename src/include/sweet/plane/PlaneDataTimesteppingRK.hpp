@@ -35,6 +35,9 @@ public:
 		runge_kutta_order = i_rk_order;
 		int N = i_rk_order;
 
+		if (N <= 0 || N > 4)
+			FatalError("Invalid order for RK time stepping");
+
 		RK_h_t = new PlaneData*[N];
 		RK_u_t = new PlaneData*[N];
 		RK_v_t = new PlaneData*[N];

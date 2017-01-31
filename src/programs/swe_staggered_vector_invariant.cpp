@@ -394,7 +394,7 @@ public:
 				prog_P, prog_u, prog_v,
 				dt,
 				simVars.timecontrol.current_timestep_size,
-				simVars.disc.timestepping_runge_kutta_order,
+				simVars.disc.timestepping_order,
 				simVars.timecontrol.current_simulation_time
 			);
 

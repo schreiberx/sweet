@@ -1,43 +1,54 @@
 
-#ifndef TIMESTEPPING_EXPLICIT_RK_HPP
-#define TIMESTEPPING_EXPLICIT_RK_HPP
+#ifndef TIMESTEPPING_EXPLICIT_LEAPFROG_HPP
+#define TIMESTEPPING_EXPLICIT_LEAPFROG_HPP
 
 #include <sweet/sphere/SphereData.hpp>
 #include <limits>
 
-class SphereDataTimesteppingExplicitRK
+class SphereDataTimesteppingExplicitLeapfrog
 {
-	// Runge-Kutta data storages
+	// Leapfrog data storages
 	SphereData** RK_h_t;
 	SphereData** RK_u_t;
 	SphereData** RK_v_t;
 
-	int runge_kutta_order;
+	// Previous time step values
+	SphereData* RK_h_tp;
+	SphereData* RK_u_tp;
+	SphereData* RK_v_tp;
+
+	int leapfrog_order;
+	int timestep_id;
 
 public:
-	SphereDataTimesteppingExplicitRK()	:
+	SphereDataTimesteppingExplicitLeapfrog()	:
 		RK_h_t(nullptr),
 		RK_u_t(nullptr),
 		RK_v_t(nullptr),
-		runge_kutta_order(-1)
+		leapfrog_order(-1),
+		timestep_id(0)
 	{
 	}
 
 
 
-	void setupBuffers(
+	void resetAndSetup(
 			const SphereData &i_test_buffer,	///< array of example data to know dimensions of buffers
-			int i_rk_order			///< Order of Runge-Kutta method
+			int i_rk_order			///< Order of Leapfrog method
 	)
 	{
+		// reset the time step id
+		timestep_id = 0;
+
 		if (RK_h_t != nullptr)	///< already allocated?
 			return;
 
-		runge_kutta_order = i_rk_order;
-		int N = i_rk_order;
+		leapfrog_order = i_leapfrog_order;
 
-		if (N <= 0 || N > 4)
-			FatalError("Invalid order for RK time stepping");
+		if (N <= 0 || N > 1)
+			FatalError("Only 1st order leapfrog is currently supported!");
+
+		int N = i_leapfrog_order;
 
 		RK_h_t = new SphereData*[N];
 		RK_u_t = new SphereData*[N];
@@ -49,13 +60,17 @@ public:
 			RK_u_t[i] = new SphereData(i_test_buffer.sphereDataConfig);
 			RK_v_t[i] = new SphereData(i_test_buffer.sphereDataConfig);
 		}
+
+		RK_h_tp = new SphereData(i_test_buffer.sphereDataConfig);
+		RK_u_tp = new SphereData(i_test_buffer.sphereDataConfig);
+		RK_v_tp = new SphereData(i_test_buffer.sphereDataConfig);
 	}
 
 
 
-	~SphereDataTimesteppingExplicitRK()
+	~SphereDataTimesteppingExplicitLeapfrog()
 	{
-		int N = runge_kutta_order;
+		int N = leapfrog_order;
 
 		if (RK_h_t != nullptr)
 		{
@@ -73,6 +88,16 @@ public:
 			RK_h_t = nullptr;
 			RK_u_t = nullptr;
 			RK_v_t = nullptr;
+
+
+
+			delete RK_h_tp;
+			delete RK_u_tp;
+			delete RK_v_tp;
+
+			RK_h_tp = nullptr;
+			RK_u_tp = nullptr;
+			RK_v_tp = nullptr;
 		}
 	}
 
@@ -118,7 +143,7 @@ public:
 			double i_max_simulation_time = std::numeric_limits<double>::infinity()	///< limit the maximum simulation time
 	)
 	{
-		setupBuffers(io_h, i_runge_kutta_order);
+		resetAndSetup(io_h, i_runge_kutta_order);
 
 		double &dt = o_dt;
 		if (i_runge_kutta_order == 1)
@@ -396,7 +421,7 @@ public:
 			double i_max_simulation_time = std::numeric_limits<double>::infinity()	///< limit the maximum simulation time
 	)
 	{
-		setupBuffers(io_u, i_runge_kutta_order);
+		resetAndSetup(io_u, i_runge_kutta_order);
 
 		double &dt = o_dt;
 		if (i_runge_kutta_order == 1)
@@ -643,7 +668,7 @@ public:
 			double i_max_simulation_time = std::numeric_limits<double>::infinity()	///< limit the maximum simulation time
 	)
 	{
-		setupBuffers(io_h, i_runge_kutta_order);
+		resetAndSetup(io_h, i_runge_kutta_order);
 
 		double &dt = o_dt;
 		if (i_runge_kutta_order == 1)

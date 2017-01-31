@@ -15,11 +15,11 @@ if false; then
 	SCONS="scons --unit-test=test_antialiasing_patterns --plane-spectral-space=enable --mode=release --plane-spectral-dealiasing=disable"
 	echo "$SCONS"
 	$SCONS
-	EXEC="./build/test_antialiasing_patterns_*_release -N 16 -S 1"
+	EXEC="./build/test_antialiasing_patterns_*_release -N 16 -S 1 --timestepping-method=1 --timestepping-order 4"
 	echo "$EXEC"
 	$EXEC || exit
 
-	EXEC="./build/test_antialiasing_patterns_*_release -N 16 -S 0"
+	EXEC="./build/test_antialiasing_patterns_*_release -N 16 -S 0 --timestepping-method=1 --timestepping-order 4"
 	echo "$EXEC"
 	$EXEC || exit
 fi
@@ -35,12 +35,12 @@ if true; then
 	$SCONS
 
 	# test spectral derivatives
-	EXEC="./build/test_antialiasing_patterns_*_release -N 16 -S 1"
+	EXEC="./build/test_antialiasing_patterns_*_release -N 16 -S 1 --timestepping-method=1 --timestepping-order 4"
 	echo "$EXEC"
 	$EXEC || exit
 
 	# test cartesian derivatives
-	EXEC="./build/test_antialiasing_patterns_*_release -N 16 -S 0"
+	EXEC="./build/test_antialiasing_patterns_*_release -N 16 -S 0 --timestepping-method=1 --timestepping-order 4"
 	echo "$EXEC"
 	$EXEC || exit
 

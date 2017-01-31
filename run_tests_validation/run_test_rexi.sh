@@ -17,7 +17,7 @@ echo "TEST REXI: convergence in space (release) $X"
 echo "***********************************************"
 make clean
 scons --threading=omp --unit-test=test_rexi --gui=disable
-EXEC="./build/test_rexi_*_release -N 64 --rexi-l=11 --rexi-normalization 0"
+EXEC="./build/test_rexi_*_release -N 64 --rexi-l=11 --rexi-normalization 0 --timestepping-method=1 --timestepping-order 4"
 echo "$EXEC"
 $EXEC || exit
 
