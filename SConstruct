@@ -736,10 +736,14 @@ if env['sweet_mpi'] == 'enable':
 	if env['compiler'] == 'gnu':
 		env.Replace(CXX = 'mpiCC')
 		env.Replace(LINK = 'mpiCC')
+		env.Replace(FORTRAN = 'mpif90')
+		env.Replace(F90 = 'mpif90')
 
 	elif env['compiler'] == 'intel':
 		env.Replace(CXX = 'mpiicpc')
 		env.Replace(LINK = 'mpiicpc')
+		env.Replace(FORTRAN = 'mpif90')
+		env.Replace(F90 = 'mpif90')
 
 	if env['threading'] != 'off' and env['compiler'] == 'intel':
 		env.Append(CXXFLAGS='-mt_mpi')
