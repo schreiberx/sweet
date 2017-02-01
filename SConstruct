@@ -787,10 +787,11 @@ else:
 
 if env['libpfasst'] == 'enable':
 	env.Append(CXXFLAGS=['-Llibpfasst'])
-	env.Append(CXXFLAGS=['-Ilocal_software/local_src/libpfasst/include'])
 	env.Append(CXXFLAGS=['-DSWEET_LIBPFASST=1'])
+	env.Append(F90FLAGS = ['-Jlocal_software/local_src/libpfasst/include'])
 else:
 	env.Append(CXXFLAGS=['-DSWEET_LIBPFASST=0'])
+
 
 
 if env['libsph'] == 'enable':
@@ -894,7 +895,7 @@ build_dir='/tmp/scons_build_'+exec_name+'/'
 
 
 # TODO: Make sure that Fortran output directory is used as output for module files during compilation step
-env['FORTRANMODDIR'] = build_dir
+env.Append(FORTRANMODDIR = [build_dir])
 
 
 env.Append(CPPPATH = ['/usr/local/include', '/usr/include'])
