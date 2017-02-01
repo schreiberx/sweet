@@ -123,7 +123,7 @@ AddOption(	'--libpfasst',
 		type='choice',
 		choices=['enable', 'disable'],
 		default='enable',
-		help="Activate utilization of libPFASST (Fucking Ortran version) [default: %default]"
+		help="Activate utilization of libPFASST (FOortran version) [default: %default]"
 )
 env['libpfasst'] = GetOption('libpfasst')
 
@@ -787,6 +787,7 @@ else:
 
 if env['libpfasst'] == 'enable':
 	env.Append(CXXFLAGS=['-Llibpfasst'])
+	env.Append(CXXFLAGS=['-Ilocal_software/local_src/libpfasst/include'])
 	env.Append(CXXFLAGS=['-DSWEET_LIBPFASST=1'])
 else:
 	env.Append(CXXFLAGS=['-DSWEET_LIBPFASST=0'])
