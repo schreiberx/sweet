@@ -928,6 +928,8 @@ if hostname[0:4] == "mac-":
 
 # also include the 'src' directory to search for dependencies
 env.Append(CPPPATH = ['.', './src/', './src/include'])
+# also for Fortran!
+env.Append(F90PATH = ['.', './src/', './src/programs/libpfasst_swe_plane'])
 
 
 
@@ -943,7 +945,7 @@ env.Append(CPPPATH=['./local_software/local/include'])
 
 if env['program_name'] != 'DUMMY':
 
-	env.SConscript('./sconscript', variant_dir=build_dir, duplicate=0, exports=['env'])
+	env.SConscript('sconscript', variant_dir=build_dir, duplicate=0, exports=['env'])
 
 	print('')
 	print('            Program: '+env['program_name'])
