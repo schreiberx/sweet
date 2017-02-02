@@ -929,7 +929,7 @@ if hostname[0:4] == "mac-":
 # also include the 'src' directory to search for dependencies
 env.Append(CPPPATH = ['.', './src/', './src/include'])
 # also for Fortran!
-env.Append(F90PATH = ['.', './src/', './src/programs/libpfasst_swe_plane'])
+env.Append(F90PATH = ['.', './src/'])
 
 
 
