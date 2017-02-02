@@ -12,13 +12,24 @@ sweet_root = env['SWEET_ROOT']+'/'
 mainsrcadddir = ''
 
 if env['compile_program'] != '':
-	mainsrcadddir = 'src/programs/'+env['compile_program']
+	mainsrcadddir = 'programs/'+env['compile_program']
 elif env['unit_test'] != '':
-	mainsrcadddir = 'src/unit_tests/'+env['unit_test']
+	mainsrcadddir = 'unit_tests/'+env['unit_test']
 else:
 	mainsrcadddir = ''
 
 if mainsrcadddir != '':
+
+
+	#
+	# Add an action to move any module files
+	#
+	def moveModFiles(target=None, source=None, env=None):
+	    import glob, os, os.path
+	    targetdir = target[0].dir
+	    for t in target:
+		if t.name[-4:] == '.mod':
+		    os.rename(t.name,os.path.join(str(targetdir),t.name))
 
 
 	#
@@ -31,7 +42,7 @@ if mainsrcadddir != '':
 
 	#
 	# Check for program specific source code files in
-	#    src/programs/[compile_program]
+	#    programs/[compile_program]
 	#
 	if os.path.isdir(real_foodir):
 
@@ -54,7 +65,9 @@ if mainsrcadddir != '':
 		for i in fortran_files:
 			filerelpath = i.replace(sweet_root, '')
 
-			env.src_files.append(env.Object(filerelpath))
+			obj = env.Object(filerelpath)
+			env.src_files.append(obj)
+			#env.AddPostAction(obj, moveModFiles)
 
 
 	Export('env')
