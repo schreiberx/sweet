@@ -18,6 +18,7 @@
 
 // explicit time stepping
 #include <sweet/sphere/SphereDataTimesteppingExplicitRK.hpp>
+#include <sweet/sphere/SphereDataTimesteppingExplicitLeapfrog.hpp>
 
 // implicit time stepping for SWE
 #include <sweet/sphere/app_swe/SWEImplicit_SPHRobert.hpp>
@@ -60,14 +61,7 @@ SphereDataConfig *sphereDataConfigExt = &sphereDataConfigExtInstance;
  */
 bool param_rexi_use_coriolis_formulation = true;
 bool param_compute_error = false;
-double param_geostr_balance_freq_multiplier = 1.0;
 
-/**
- * ID of PDE to solve
- * 0: SWE
- * 1: advection
- */
-int param_pde_id = 0;
 
 
 class SimulationInstance
@@ -78,6 +72,9 @@ public:
 
 	// Runge-Kutta stuff
 	SphereDataTimesteppingExplicitRK timestepping_explicit_rk;
+
+	// Leapfrog
+	SphereDataTimesteppingExplicitLeapfrog timestepping_explicit_leapfrog;
 
 	// Implicit timestepping solver
 	SWEImplicit_SPHRobert timestepping_implicit_swe;
@@ -180,7 +177,16 @@ public:
 	void reset()
 	{
 		// reset the RK time stepping buffers
-		timestepping_explicit_rk.setupBuffers(prog_h, simVars.disc.timestepping_order);
+		switch (simVars.disc.timestepping_method)
+		{
+		case simVars.disc.RUNGE_KUTTA_EXPLICIT:
+			timestepping_explicit_rk.resetAndSetup(prog_h, simVars.disc.timestepping_order);
+			break;
+
+		case simVars.disc.LEAPFROG_EXPLICIT:
+			timestepping_explicit_leapfrog.resetAndSetup(prog_h, simVars.disc.timestepping_order, simVars.disc.leapfrog_robert_asselin_filter);
+			break;
+		}
 
 		render_primitive_id = 1;
 
@@ -225,7 +231,6 @@ public:
 
 
 		if (simVars.disc.timestepping_method == simVars.disc.REXI)
-//		if (simVars.rexi.use_rexi == 1)
 		{
 			{
 
@@ -257,32 +262,11 @@ public:
 		if (simVars.sim.coriolis_omega != 0)
 			param_rexi_use_coriolis_formulation = true;
 
-		std::cout << "Using time step size dt = " << simVars.timecontrol.current_timestep_size << std::endl;
-		std::cout << "Running simulation until t_end = " << simVars.timecontrol.max_simulation_time << std::endl;
-		std::cout << "Parameters:" << std::endl;
-		std::cout << " + Gravity: " << simVars.sim.gravitation << std::endl;
-		std::cout << " + Earth_radius: " << simVars.sim.earth_radius << std::endl;
-		std::cout << " + Average height: " << simVars.sim.h0 << std::endl;
-		std::cout << " + Coriolis_omega: " << simVars.sim.coriolis_omega << std::endl;
-		std::cout << " + Viscosity D: " << simVars.sim.viscosity << std::endl;
-		std::cout << " + use_nonlinear: " << simVars.misc.use_nonlinear_equations << std::endl;
-		std::cout << " + Use REXI Coriolis formulation: " << (param_rexi_use_coriolis_formulation ? "true" : "false") << std::endl;
-		std::cout << std::endl;
-		std::cout << " + Benchmark scenario id: " << simVars.setup.benchmark_scenario_id << std::endl;
-		std::cout << " + Use robert functions: " << simVars.misc.sphere_use_robert_functions << std::endl;
-		std::cout << " + REXI h: " << simVars.rexi.rexi_h << std::endl;
-		std::cout << " + REXI M: " << simVars.rexi.rexi_M << std::endl;
-		std::cout << " + REXI use half poles: " << simVars.rexi.rexi_use_half_poles << std::endl;
-		std::cout << " + REXI normalization: " << simVars.rexi.rexi_normalization << std::endl;
-		std::cout << " + REXI additional modes: " << simVars.rexi.rexi_use_extended_modes << std::endl;
-		std::cout << std::endl;
-		std::cout << " + RK order: " << simVars.disc.timestepping_order << std::endl;
-		std::cout << " + timestep size: " << simVars.timecontrol.current_timestep_size << std::endl;
-		std::cout << " + output timestep size: " << simVars.misc.output_each_sim_seconds << std::endl;
-		std::cout << " + max simulation time: " << simVars.timecontrol.max_simulation_time << std::endl;
-		std::cout << " + max timestep nr: " << simVars.timecontrol.max_timesteps_nr << std::endl;
+		simVars.outputConfig();
 
-		std::cout << std::endl;
+		std::cout << "LOCAL PARAMETERS:" << std::endl;
+		std::cout << " + param_compute_error: " << param_compute_error << std::endl;
+		std::cout << " + param_rexi_use_coriolis_formulation: " << param_rexi_use_coriolis_formulation << std::endl;
 
 		if (simVars.disc.timestepping_method == simVars.disc.REXI)
 		{
@@ -550,11 +534,10 @@ public:
 
 		if (simVars.disc.timestepping_method == simVars.disc.RUNGE_KUTTA_EXPLICIT)
 		{
-
-			switch (param_pde_id)
+			switch (simVars.pde.id)
 			{
 			case 0:
-				timestepping_explicit_rk.run_rk_timestep(
+				timestepping_explicit_rk.run_timestep(
 						this,
 						&SimulationInstance::p_run_euler_timestep_update_swe,	///< pointer to function to compute euler time step updates
 						prog_h, prog_u, prog_v,
@@ -567,7 +550,7 @@ public:
 				break;
 
 			case 1:
-				timestepping_explicit_rk.run_rk_timestep(
+				timestepping_explicit_rk.run_timestep(
 						this,
 						&SimulationInstance::p_run_euler_timestep_update_advection,	///< pointer to function to compute euler time step updates
 						prog_h,
@@ -580,7 +563,51 @@ public:
 				break;
 
 			case 2:
-				timestepping_explicit_rk.run_rk_timestep(
+				timestepping_explicit_rk.run_timestep(
+						this,
+						&SimulationInstance::p_run_euler_timestep_update_advection_div_free,	///< pointer to function to compute euler time step updates
+						prog_h,
+						o_dt,
+						simVars.timecontrol.current_timestep_size,
+						simVars.disc.timestepping_order,
+						simVars.timecontrol.current_simulation_time,
+						simVars.timecontrol.max_simulation_time
+					);
+				break;
+			}
+		}
+		else if (simVars.disc.timestepping_method == simVars.disc.LEAPFROG_EXPLICIT)
+		{
+			switch (simVars.pde.id)
+			{
+			case 0:
+				timestepping_explicit_leapfrog.run_timestep(
+						this,
+						&SimulationInstance::p_run_euler_timestep_update_swe,	///< pointer to function to compute euler time step updates
+						prog_h, prog_u, prog_v,
+						o_dt,
+						simVars.timecontrol.current_timestep_size,
+						simVars.disc.timestepping_order,
+						simVars.timecontrol.current_simulation_time,
+						simVars.timecontrol.max_simulation_time
+					);
+				break;
+
+			case 1:
+				timestepping_explicit_leapfrog.run_timestep(
+						this,
+						&SimulationInstance::p_run_euler_timestep_update_advection,	///< pointer to function to compute euler time step updates
+						prog_h,
+						o_dt,
+						simVars.timecontrol.current_timestep_size,
+						simVars.disc.timestepping_order,
+						simVars.timecontrol.current_simulation_time,
+						simVars.timecontrol.max_simulation_time
+					);
+				break;
+
+			case 2:
+				timestepping_explicit_leapfrog.run_timestep(
 						this,
 						&SimulationInstance::p_run_euler_timestep_update_advection_div_free,	///< pointer to function to compute euler time step updates
 						prog_h,
@@ -1034,14 +1061,12 @@ int main(int i_argc, char *i_argv[])
 	const char *bogus_var_names[] = {
 			"rexi-use-coriolis-formulation",
 			"compute-error",
-			"pde-id",
 			nullptr
 	};
 
 	// default values for specific input (for general input see SimulationVariables.hpp)
 	simVars.bogus.var[0] = 1;
 	simVars.bogus.var[1] = 1;
-	simVars.bogus.var[2] = 0;
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
@@ -1049,17 +1074,15 @@ int main(int i_argc, char *i_argv[])
 #if SWEET_PARAREAL
 		simVars.parareal.setup_printOptions();
 #endif
-		std::cout << "	--compute-error [0/1]	Output errors (if available, default: 1)" << std::endl;
 		std::cout << "	--rexi-use-coriolis-formulation [0/1]	Use Coriolisincluding  solver for REXI (default: 1)" << std::endl;
+		std::cout << "	--compute-error [0/1]	Output errors (if available, default: 1)" << std::endl;
+		std::cout << "	--pde-id [0/1]	PDE ID (0: SWE, 1: Advection, 2: Advection divergence free)" << std::endl;
 		return -1;
 	}
 
 	param_rexi_use_coriolis_formulation = simVars.bogus.var[0];
 	assert (param_rexi_use_coriolis_formulation == 0 || param_rexi_use_coriolis_formulation == 1);
-
 	param_compute_error = simVars.bogus.var[1];
-	param_pde_id = simVars.bogus.var[2];
-
 
 	sphereDataConfigInstance.setupAutoPhysicalSpace(
 					simVars.disc.res_spectral[0],

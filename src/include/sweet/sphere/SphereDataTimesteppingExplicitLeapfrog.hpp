@@ -5,51 +5,104 @@
 #include <sweet/sphere/SphereData.hpp>
 #include <limits>
 
+
+
 class SphereDataTimesteppingExplicitLeapfrog
 {
+#if 0
 	// Leapfrog data storages
 	SphereData** RK_h_t;
 	SphereData** RK_u_t;
 	SphereData** RK_v_t;
+#endif
 
 	// Previous time step values
-	SphereData* RK_h_tp;
-	SphereData* RK_u_tp;
-	SphereData* RK_v_tp;
+	SphereData* RK_h_prev;
+	SphereData* RK_u_prev;
+	SphereData* RK_v_prev;
+
+	// time step tendencies
+	SphereData* RK_h_dt;
+	SphereData* RK_u_dt;
+	SphereData* RK_v_dt;
+
+	// Temporary time step values
+	SphereData* RK_h_tmp;
+	SphereData* RK_u_tmp;
+	SphereData* RK_v_tmp;
+
+
+	/**
+	 * Robert-Asselin filter coefficient
+	 */
+	double leapfrog_robert_asselin_filter;
 
 	int leapfrog_order;
 	int timestep_id;
 
 public:
 	SphereDataTimesteppingExplicitLeapfrog()	:
-		RK_h_t(nullptr),
-		RK_u_t(nullptr),
-		RK_v_t(nullptr),
+		RK_h_prev(nullptr),
+		RK_u_prev(nullptr),
+		RK_v_prev(nullptr),
 		leapfrog_order(-1),
-		timestep_id(0)
+		timestep_id(0),
+		leapfrog_robert_asselin_filter(0)
 	{
 	}
 
 
+	void cleanup()
+	{
+		if (RK_h_prev)
+		{
+			delete RK_h_prev;
+			delete RK_u_prev;
+			delete RK_v_prev;
+
+			RK_h_prev = nullptr;
+			RK_u_prev = nullptr;
+			RK_v_prev = nullptr;
+
+			delete RK_h_dt;
+			delete RK_u_dt;
+			delete RK_v_dt;
+
+			RK_h_dt = nullptr;
+			RK_u_dt = nullptr;
+			RK_v_dt = nullptr;
+
+			delete RK_h_tmp;
+			delete RK_u_tmp;
+			delete RK_v_tmp;
+
+			RK_h_tmp = nullptr;
+			RK_u_tmp = nullptr;
+			RK_v_tmp = nullptr;
+		}
+	}
+
 
 	void resetAndSetup(
 			const SphereData &i_test_buffer,	///< array of example data to know dimensions of buffers
-			int i_rk_order			///< Order of Leapfrog method
+			int i_leapfrog_order,			///< Order of Leapfrog method
+			double i_leapfrog_robert_asselin_filter = 0	/// Filter value for Robert Asselin filter. Value of 0 means no filter
 	)
 	{
 		// reset the time step id
 		timestep_id = 0;
+		leapfrog_order = i_leapfrog_order;
+		leapfrog_robert_asselin_filter = i_leapfrog_robert_asselin_filter;
 
-		if (RK_h_t != nullptr)	///< already allocated?
+		if (RK_h_prev != nullptr)	///< already allocated?
 			return;
 
-		leapfrog_order = i_leapfrog_order;
+		int N = i_leapfrog_order;
 
 		if (N <= 0 || N > 1)
 			FatalError("Only 1st order leapfrog is currently supported!");
 
-		int N = i_leapfrog_order;
-
+#if 0
 		RK_h_t = new SphereData*[N];
 		RK_u_t = new SphereData*[N];
 		RK_v_t = new SphereData*[N];
@@ -60,10 +113,22 @@ public:
 			RK_u_t[i] = new SphereData(i_test_buffer.sphereDataConfig);
 			RK_v_t[i] = new SphereData(i_test_buffer.sphereDataConfig);
 		}
+#endif
 
-		RK_h_tp = new SphereData(i_test_buffer.sphereDataConfig);
-		RK_u_tp = new SphereData(i_test_buffer.sphereDataConfig);
-		RK_v_tp = new SphereData(i_test_buffer.sphereDataConfig);
+		// storage for previous time step
+		RK_h_prev = new SphereData(i_test_buffer.sphereDataConfig);
+		RK_u_prev = new SphereData(i_test_buffer.sphereDataConfig);
+		RK_v_prev = new SphereData(i_test_buffer.sphereDataConfig);
+
+		// storage for time step tendencies
+		RK_h_dt = new SphereData(i_test_buffer.sphereDataConfig);
+		RK_u_dt = new SphereData(i_test_buffer.sphereDataConfig);
+		RK_v_dt = new SphereData(i_test_buffer.sphereDataConfig);
+
+		// storage for temporary variables
+		RK_h_tmp = new SphereData(i_test_buffer.sphereDataConfig);
+		RK_u_tmp = new SphereData(i_test_buffer.sphereDataConfig);
+		RK_v_tmp = new SphereData(i_test_buffer.sphereDataConfig);
 	}
 
 
@@ -72,8 +137,9 @@ public:
 	{
 		int N = leapfrog_order;
 
-		if (RK_h_t != nullptr)
+		if (RK_h_prev != nullptr)
 		{
+#if 0
 			for (int i = 0; i < N; i++)
 			{
 				delete RK_h_t[i];
@@ -88,16 +154,9 @@ public:
 			RK_h_t = nullptr;
 			RK_u_t = nullptr;
 			RK_v_t = nullptr;
+#endif
 
-
-
-			delete RK_h_tp;
-			delete RK_u_tp;
-			delete RK_v_tp;
-
-			RK_h_tp = nullptr;
-			RK_u_tp = nullptr;
-			RK_v_tp = nullptr;
+			cleanup();
 		}
 	}
 
@@ -108,7 +167,7 @@ public:
 	 * specified in the simulation variables.
 	 */
 	template <class BaseClass>
-	void run_rk_timestep(
+	void run_timestep(
 			BaseClass *i_baseClass,
 			void (BaseClass::*i_compute_euler_timestep_update)(
 					const SphereData &i_P,	///< prognostic variables
@@ -143,243 +202,105 @@ public:
 			double i_max_simulation_time = std::numeric_limits<double>::infinity()	///< limit the maximum simulation time
 	)
 	{
-		resetAndSetup(io_h, i_runge_kutta_order);
+
 
 		double &dt = o_dt;
-		if (i_runge_kutta_order == 1)
+
+		SphereData &h_prev = *RK_h_prev;
+		SphereData &u_prev = *RK_u_prev;
+		SphereData &v_prev = *RK_v_prev;
+
+		SphereData &h_dt = *RK_h_dt;
+		SphereData &u_dt = *RK_u_dt;
+		SphereData &v_dt = *RK_v_dt;
+
+		SphereData &h_tmp = *RK_h_tmp;
+		SphereData &u_tmp = *RK_u_tmp;
+		SphereData &v_tmp = *RK_v_tmp;
+
+		(i_baseClass->*i_compute_euler_timestep_update)(
+				io_h,		// input
+				io_u,
+				io_v,
+				h_dt,	// output
+				u_dt,
+				v_dt,
+				dt,
+				i_use_fixed_dt,
+				i_simulation_time
+		);
+
+		if (leapfrog_robert_asselin_filter == 0)
 		{
-			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_h,	// input
-					io_u,
-					io_v,
-					*RK_h_t[0],	// output
-					*RK_u_t[0],
-					*RK_v_t[0],
-					dt,
-					i_use_fixed_dt,
-					i_simulation_time
-			);
+			if (timestep_id == 0)
+			{
+				h_prev = io_h;
+				u_prev = io_u;
+				v_prev = io_v;
 
-			// padding to max simulation time if exceeding the maximum
-			if (i_max_simulation_time >= 0)
-				if (dt+i_simulation_time > i_max_simulation_time)
-					dt = i_max_simulation_time-i_simulation_time;
+				// do standard Euler time step
+				io_h += dt * h_dt;
+				io_u += dt * u_dt;
+				io_v += dt * v_dt;
+			}
+			else
+			{
+				h_tmp.swap(io_h);
+				u_tmp.swap(io_u);
+				v_tmp.swap(io_v);
 
+				io_h = h_prev + 2.0*dt * h_dt;
+				io_u = u_prev + 2.0*dt * u_dt;
+				io_v = v_prev + 2.0*dt * v_dt;
 
-			io_h += dt**RK_h_t[0];
-			io_u += dt**RK_u_t[0];
-			io_v += dt**RK_v_t[0];
-
-		}
-		else if (i_runge_kutta_order == 2)
-		{
-			// See https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods#Explicit_Runge.E2.80.93Kutta_methods
-			// See https://de.wikipedia.org/wiki/Runge-Kutta-Verfahren
-			/*
-			 * c     a
-			 * 0   |
-			 * 1/2 | 1/2
-			 * --------------
-			 *     | 0   1    b
-			 */
-			double a2[1] = {0.5};
-			double b[2] = {0.0, 1.0};
-			double c[1] = {0.5};
-
-			double dummy_dt = -1;
-
-			// STAGE 1
-			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_h,
-					io_u,
-					io_v,
-					*RK_h_t[0],
-					*RK_u_t[0],
-					*RK_v_t[0],
-					dt,
-					i_use_fixed_dt,
-					i_simulation_time
-			);
-
-			// padding to max simulation time if exceeding the maximum
-			if (i_max_simulation_time >= 0)
-				if (dt+i_simulation_time > i_max_simulation_time)
-					dt = i_max_simulation_time-i_simulation_time;
-
-			// STAGE 2
-			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_h + ( dt*a2[0]*(*RK_h_t[0]) ),
-					io_u + ( dt*a2[0]*(*RK_u_t[0]) ),
-					io_v + ( dt*a2[0]*(*RK_v_t[0]) ),
-					*RK_h_t[1],
-					*RK_u_t[1],
-					*RK_v_t[1],
-					dummy_dt,
-					dt,
-					i_simulation_time + c[0]*dt
-			);
-
-			io_h += dt*(/* b[0]*(*RK_h_t[0]) +*/ b[1]*(*RK_h_t[1]) );
-			io_u += dt*(/* b[0]*(*RK_u_t[0]) +*/ b[1]*(*RK_u_t[1]) );
-			io_v += dt*(/* b[0]*(*RK_v_t[0]) +*/ b[1]*(*RK_v_t[1]) );
-		}
-		else if (i_runge_kutta_order == 3)
-		{
-			// See https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods#Explicit_Runge.E2.80.93Kutta_methods
-			// See https://de.wikipedia.org/wiki/Runge-Kutta-Verfahren
-			/*
-			 * c     a
-			 * 0   |
-			 * 1/3 | 1/3
-			 * 2/3 | 0    2/3
-			 * --------------
-			 *     | 1/4  0   3/4
-			 */
-			double a2[1] = {1.0/3.0};
-			double a3[2] = {0.0, 2.0/3.0};
-			double b[3] = {1.0/4.0, 0.0, 3.0/4.0};
-			double c[2] = {1.0/3.0, 2.0/3.0};
-
-			double dummy_dt;
-
-			// STAGE 1
-			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_h,
-					io_u,
-					io_v,
-					*RK_h_t[0],
-					*RK_u_t[0],
-					*RK_v_t[0],
-					dt,
-					i_use_fixed_dt,
-					i_simulation_time
-			);
-
-			// padding to max simulation time if exceeding the maximum
-			if (i_max_simulation_time >= 0)
-				if (dt+i_simulation_time > i_max_simulation_time)
-					dt = i_max_simulation_time-i_simulation_time;
-
-			// STAGE 2
-			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_h	+ dt*( a2[0]*(*RK_h_t[0]) ),
-					io_u	+ dt*( a2[0]*(*RK_u_t[0]) ),
-					io_v	+ dt*( a2[0]*(*RK_v_t[0]) ),
-					*RK_h_t[1],
-					*RK_u_t[1],
-					*RK_v_t[1],
-					dummy_dt,
-					dt,
-					i_simulation_time + c[0]*dt
-			);
-
-			// STAGE 3
-			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_h	+ dt*( a3[0]*(*RK_h_t[0]) + a3[1]*(*RK_h_t[1]) ),
-					io_u	+ dt*( a3[0]*(*RK_u_t[0]) + a3[1]*(*RK_u_t[1]) ),
-					io_v	+ dt*( a3[0]*(*RK_v_t[0]) + a3[1]*(*RK_v_t[1]) ),
-					*RK_h_t[2],
-					*RK_u_t[2],
-					*RK_v_t[2],
-					dummy_dt,
-					dt,
-					i_simulation_time + c[1]*dt
-			);
-
-			io_h += dt*( (b[0]*(*RK_h_t[0])) + (b[1]*(*RK_h_t[1]))  + (b[2]*(*RK_h_t[2])) );
-			io_u += dt*( (b[0]*(*RK_u_t[0])) + (b[1]*(*RK_u_t[1]))  + (b[2]*(*RK_u_t[2])) );
-			io_v += dt*( (b[0]*(*RK_v_t[0])) + (b[1]*(*RK_v_t[1]))  + (b[2]*(*RK_v_t[2])) );
-		}
-		else if (i_runge_kutta_order == 4)
-		{
-			// See https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods#Explicit_Runge.E2.80.93Kutta_methods
-			// See https://de.wikipedia.org/wiki/Runge-Kutta-Verfahren
-			/*
-			 * c     a
-			 * 0   |
-			 * 1/2 | 1/2
-			 * 1/2 | 0    1/2
-			 * 1   | 0    0    1
-			 * --------------
-			 *     | 1/6  1/3  1/3  1/6
-			 */
-			double a2[1] = {0.5};
-			double a3[2] = {0.0, 0.5};
-			double a4[3] = {0.0, 0.0, 1.0};
-			double b[4] = {1.0/6.0, 1.0/3.0, 1.0/3.0, 1.0/6.0};
-			double c[3] = {0.5, 0.5, 1.0};
-
-			double dummy_dt;
-
-			// STAGE 1
-			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_h,
-					io_u,
-					io_v,
-					*RK_h_t[0],
-					*RK_u_t[0],
-					*RK_v_t[0],
-					dt,
-					i_use_fixed_dt,
-					i_simulation_time
-			);
-
-			// padding to max simulation time if exceeding the maximum
-			if (i_max_simulation_time >= 0)
-				if (dt+i_simulation_time > i_max_simulation_time)
-					dt = i_max_simulation_time-i_simulation_time;
-
-			// STAGE 2
-			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_h	+ dt*( a2[0]*(*RK_h_t[0]) ),
-					io_u	+ dt*( a2[0]*(*RK_u_t[0]) ),
-					io_v	+ dt*( a2[0]*(*RK_v_t[0]) ),
-					*RK_h_t[1],
-					*RK_u_t[1],
-					*RK_v_t[1],
-					dummy_dt,
-					dt,
-					i_simulation_time + c[0]*dt
-			);
-
-			// STAGE 3
-			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_h	+ dt*( /*a3[0]*(*RK_P_t[0]) +*/ a3[1]*(*RK_h_t[1]) ),
-					io_u	+ dt*( /*a3[0]*(*RK_u_t[0]) +*/ a3[1]*(*RK_u_t[1]) ),
-					io_v	+ dt*( /*a3[0]*(*RK_v_t[0]) +*/ a3[1]*(*RK_v_t[1]) ),
-					*RK_h_t[2],
-					*RK_u_t[2],
-					*RK_v_t[2],
-					dummy_dt,
-					dt,
-					i_simulation_time + c[1]*dt
-			);
-
-			// STAGE 4
-			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_h	+ dt*( /*a4[0]*(*RK_P_t[0]) + a4[1]*(*RK_P_t[1]) +*/ a4[2]*(*RK_h_t[2]) ),
-					io_u	+ dt*( /*a4[0]*(*RK_u_t[0]) + a4[1]*(*RK_u_t[1]) +*/ a4[2]*(*RK_u_t[2]) ),
-					io_v	+ dt*( /*a4[0]*(*RK_v_t[0]) + a4[1]*(*RK_v_t[1]) +*/ a4[2]*(*RK_v_t[2]) ),
-					*RK_h_t[3],
-					*RK_u_t[3],
-					*RK_v_t[3],
-					dummy_dt,
-					dt,
-					i_simulation_time + c[2]*dt
-			);
-
-
-			io_h += dt*( (b[0]*(*RK_h_t[0])) + (b[1]*(*RK_h_t[1]))  + (b[2]*(*RK_h_t[2])) + (b[3]*(*RK_h_t[3])) );
-			io_u += dt*( (b[0]*(*RK_u_t[0])) + (b[1]*(*RK_u_t[1]))  + (b[2]*(*RK_u_t[2])) + (b[3]*(*RK_u_t[3])) );
-			io_v += dt*( (b[0]*(*RK_v_t[0])) + (b[1]*(*RK_v_t[1]))  + (b[2]*(*RK_v_t[2])) + (b[3]*(*RK_v_t[3])) );
+				h_prev.swap(h_tmp);
+				u_prev.swap(u_tmp);
+				v_prev.swap(v_tmp);
+			}
 		}
 		else
 		{
-			std::cerr << "This order of the Runge-Kutta time stepping is not supported!" << std::endl;
-			exit(-1);
-		}
-	}
+			/*
+			 * See Robert(1966)
+			 *
+			 * F*(t+dt) = F(t-dt) + 2 dt (dF/dt)*
+			 *
+			 * F(t) = F*(t) + v*[ f*(t+dt) + F(t-dt) - 2 F*(t) ]
+			 *
+			 * "*" denote preliminary values
+			 */
+			if (timestep_id == 0)
+			{
+				// backup previous values
+				h_prev = io_h;
+				u_prev = io_u;
+				v_prev = io_v;
 
+				// do standard Euler time step
+				io_h += dt * h_dt;
+				io_u += dt * u_dt;
+				io_v += dt * v_dt;
+			}
+			else
+			{
+				// F*(t+dt) = F(t-dt) + 2 dt (dF/dt)
+				h_tmp = h_prev + 2.0*dt*h_dt;
+				u_tmp = u_prev + 2.0*dt*u_dt;
+				v_tmp = v_prev + 2.0*dt*v_dt;
+
+				// F(t) = F*(t) + v*[ f*(t+dt) + F(t-dt) - 2 F*(t) ]
+				h_prev = io_h + leapfrog_robert_asselin_filter*(h_tmp + h_prev - 2.0*io_h);
+				u_prev = io_u + leapfrog_robert_asselin_filter*(u_tmp + u_prev - 2.0*io_u);
+				v_prev = io_v + leapfrog_robert_asselin_filter*(v_tmp + v_prev - 2.0*io_v);
+
+				io_h.swap(h_tmp);
+				io_u.swap(u_tmp);
+				io_v.swap(v_tmp);
+			}
+		}
+
+		timestep_id++;
+	}
 
 
 
@@ -389,7 +310,7 @@ public:
 	 * This routine is used for the Burgers equation.
 	 */
 	template <class BaseClass>
-	void run_rk_timestep(
+	void run_timestep(
 			BaseClass *i_baseClass,
 			void (BaseClass::*i_compute_euler_timestep_update)(
 					const SphereData &i_u,	///< prognostic variables
@@ -413,7 +334,7 @@ public:
 											///< Use this time step size instead of computing one
 											///< This also sets o_dt = i_use_fixed_dt
 
-			int i_runge_kutta_order = 1,	///< Order of RK time stepping
+			int i_leapfrog_order = 1,	///< Order of RK time stepping
 
 			double i_simulation_time = -1,	///< Current simulation time.
 											///< This gets e.g. important for tidal waves
@@ -421,216 +342,94 @@ public:
 			double i_max_simulation_time = std::numeric_limits<double>::infinity()	///< limit the maximum simulation time
 	)
 	{
-		resetAndSetup(io_u, i_runge_kutta_order);
+		/*
+		 * See
+		 * "Analysis of time filters used with the leapfrog scheme"
+		 * Yong Li, Catalin Trenchea
+		 */
+
 
 		double &dt = o_dt;
-		if (i_runge_kutta_order == 1)
+
+		SphereData &u_prev = *RK_u_prev;
+		SphereData &v_prev = *RK_v_prev;
+
+		SphereData &u_dt = *RK_u_dt;
+		SphereData &v_dt = *RK_v_dt;
+
+		SphereData &u_tmp = *RK_u_tmp;
+		SphereData &v_tmp = *RK_v_tmp;
+
+		(i_baseClass->*i_compute_euler_timestep_update)(
+				io_u,		// input
+				io_v,		// input
+				u_dt,	// output
+				v_dt,	// output
+				dt,
+				i_use_fixed_dt,
+				i_simulation_time
+		);
+
+		if (leapfrog_robert_asselin_filter == 0)
 		{
-			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_u,	// input
-					io_v,
-					*RK_u_t[0],	// output
-					*RK_v_t[0],
-					dt,
-					i_use_fixed_dt,
-					i_simulation_time
-			);
+			if (timestep_id == 0)
+			{
+				u_prev = io_u;
+				v_prev = io_v;
 
-			// padding to max simulation time if exceeding the maximum
-			if (i_max_simulation_time >= 0)
-				if (dt+i_simulation_time > i_max_simulation_time)
-					dt = i_max_simulation_time-i_simulation_time;
+				// do standard Euler time step
+				io_u += dt * u_dt;
+				io_v += dt * v_dt;
+			}
+			else
+			{
+				u_tmp.swap(io_u);
+				v_tmp.swap(io_v);
 
-			io_u += dt**RK_u_t[0];
-			io_v += dt**RK_v_t[0];
+				io_u = u_prev + 2.0*dt * u_dt;
+				io_v = v_prev + 2.0*dt * v_dt;
 
-		}
-		else if (i_runge_kutta_order == 2)
-		{
-			// See https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods#Explicit_Runge.E2.80.93Kutta_methods
-			// See https://de.wikipedia.org/wiki/Runge-Kutta-Verfahren
-			/*
-			 * c     a
-			 * 0   |
-			 * 1/2 | 1/2
-			 * --------------
-			 *     | 0   1    b
-			 */
-			double a2[1] = {0.5};
-			double b[2] = {0.0, 1.0};
-			double c[1] = {0.5};
-
-			double dummy_dt = -1;
-
-			// STAGE 1
-			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_u,
-					io_v,
-					*RK_u_t[0],
-					*RK_v_t[0],
-					dt,
-					i_use_fixed_dt,
-					i_simulation_time
-			);
-
-			// padding to max simulation time if exceeding the maximum
-			if (i_max_simulation_time >= 0)
-				if (dt+i_simulation_time > i_max_simulation_time)
-					dt = i_max_simulation_time-i_simulation_time;
-
-			// STAGE 2
-			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_u + ( dt*a2[0]*(*RK_u_t[0]) ),
-					io_v + ( dt*a2[0]*(*RK_v_t[0]) ),
-					*RK_u_t[1],
-					*RK_v_t[1],
-					dummy_dt,
-					dt,
-					i_simulation_time + c[0]*dt
-			);
-
-			io_u += dt*(/* b[0]*(*RK_u_t[0]) +*/ b[1]*(*RK_u_t[1]) );
-			io_v += dt*(/* b[0]*(*RK_v_t[0]) +*/ b[1]*(*RK_v_t[1]) );
-		}
-		else if (i_runge_kutta_order == 3)
-		{
-			// See https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods#Explicit_Runge.E2.80.93Kutta_methods
-			// See https://de.wikipedia.org/wiki/Runge-Kutta-Verfahren
-			/*
-			 * c     a
-			 * 0   |
-			 * 1/3 | 1/3
-			 * 2/3 | 0    2/3
-			 * --------------
-			 *     | 1/4  0   3/4
-			 */
-			double a2[1] = {1.0/3.0};
-			double a3[2] = {0.0, 2.0/3.0};
-			double b[3] = {1.0/4.0, 0.0, 3.0/4.0};
-			double c[2] = {1.0/3.0, 2.0/3.0};
-
-			double dummy_dt;
-
-			// STAGE 1
-			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_u,
-					io_v,
-					*RK_u_t[0],
-					*RK_v_t[0],
-					dt,
-					i_use_fixed_dt,
-					i_simulation_time
-			);
-
-			// padding to max simulation time if exceeding the maximum
-			if (i_max_simulation_time >= 0)
-				if (dt+i_simulation_time > i_max_simulation_time)
-					dt = i_max_simulation_time-i_simulation_time;
-
-			// STAGE 2
-			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_u	+ dt*( a2[0]*(*RK_u_t[0]) ),
-					io_v	+ dt*( a2[0]*(*RK_v_t[0]) ),
-					*RK_u_t[1],
-					*RK_v_t[1],
-					dummy_dt,
-					dt,
-					i_simulation_time + c[0]*dt
-			);
-
-			// STAGE 3
-			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_u	+ dt*( a3[0]*(*RK_u_t[0]) + a3[1]*(*RK_u_t[1]) ),
-					io_v	+ dt*( a3[0]*(*RK_v_t[0]) + a3[1]*(*RK_v_t[1]) ),
-					*RK_u_t[2],
-					*RK_v_t[2],
-					dummy_dt,
-					dt,
-					i_simulation_time + c[1]*dt
-			);
-
-			io_u += dt*( (b[0]*(*RK_u_t[0])) + (b[1]*(*RK_u_t[1]))  + (b[2]*(*RK_u_t[2])) );
-			io_v += dt*( (b[0]*(*RK_v_t[0])) + (b[1]*(*RK_v_t[1]))  + (b[2]*(*RK_v_t[2])) );
-		}
-		else if (i_runge_kutta_order == 4)
-		{
-			// See https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods#Explicit_Runge.E2.80.93Kutta_methods
-			// See https://de.wikipedia.org/wiki/Runge-Kutta-Verfahren
-			/*
-			 * c     a
-			 * 0   |
-			 * 1/2 | 1/2
-			 * 1/2 | 0    1/2
-			 * 1   | 0    0    1
-			 * --------------
-			 *     | 1/6  1/3  1/3  1/6
-			 */
-			double a2[1] = {0.5};
-			double a3[2] = {0.0, 0.5};
-			double a4[3] = {0.0, 0.0, 1.0};
-			double b[4] = {1.0/6.0, 1.0/3.0, 1.0/3.0, 1.0/6.0};
-			double c[3] = {0.5, 0.5, 1.0};
-
-			double dummy_dt;
-
-			// STAGE 1
-			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_u,
-					io_v,
-					*RK_u_t[0],
-					*RK_v_t[0],
-					dt,
-					i_use_fixed_dt,
-					i_simulation_time
-			);
-
-			// padding to max simulation time if exceeding the maximum
-			if (i_max_simulation_time >= 0)
-				if (dt+i_simulation_time > i_max_simulation_time)
-					dt = i_max_simulation_time-i_simulation_time;
-
-			// STAGE 2
-			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_u	+ dt*( a2[0]*(*RK_u_t[0]) ),
-					io_v	+ dt*( a2[0]*(*RK_v_t[0]) ),
-					*RK_u_t[1],
-					*RK_v_t[1],
-					dummy_dt,
-					dt,
-					i_simulation_time + c[0]*dt
-			);
-
-			// STAGE 3
-			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_u	+ dt*( /*a3[0]*(*RK_u_t[0]) +*/ a3[1]*(*RK_u_t[1]) ),
-					io_v	+ dt*( /*a3[0]*(*RK_v_t[0]) +*/ a3[1]*(*RK_v_t[1]) ),
-					*RK_u_t[2],
-					*RK_v_t[2],
-					dummy_dt,
-					dt,
-					i_simulation_time + c[1]*dt
-			);
-
-			// STAGE 4
-			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_u	+ dt*( /*a4[0]*(*RK_u_t[0]) + a4[1]*(*RK_u_t[1]) +*/ a4[2]*(*RK_u_t[2]) ),
-					io_v	+ dt*( /*a4[0]*(*RK_v_t[0]) + a4[1]*(*RK_v_t[1]) +*/ a4[2]*(*RK_v_t[2]) ),
-					*RK_u_t[3],
-					*RK_v_t[3],
-					dummy_dt,
-					dt,
-					i_simulation_time + c[2]*dt
-			);
-
-
-			io_u += dt*( (b[0]*(*RK_u_t[0])) + (b[1]*(*RK_u_t[1]))  + (b[2]*(*RK_u_t[2])) + (b[3]*(*RK_u_t[3])) );
-			io_v += dt*( (b[0]*(*RK_v_t[0])) + (b[1]*(*RK_v_t[1]))  + (b[2]*(*RK_v_t[2])) + (b[3]*(*RK_v_t[3])) );
+				u_prev.swap(u_tmp);
+				v_prev.swap(v_tmp);
+			}
 		}
 		else
 		{
-			std::cerr << "This order of the Runge-Kutta time stepping is not supported!" << std::endl;
-			exit(-1);
+			/*
+			 * See Robert(1966)
+			 *
+			 * F*(t+dt) = F(t-dt) + 2 dt (dF/dt)*
+			 *
+			 * F(t) = F*(t) + v*[ f*(t+dt) + F(t-dt) - 2 F*(t) ]
+			 *
+			 * "*" denote preliminary values
+			 */
+			if (timestep_id == 0)
+			{
+				// backup previous values
+				u_prev = io_u;
+				v_prev = io_v;
+
+				// do standard Euler time step
+				io_u += dt * u_dt;
+				io_v += dt * v_dt;
+			}
+			else
+			{
+				// F*(t+dt) = F(t-dt) + 2 dt (dF/dt)
+				u_tmp = u_prev + 2.0*dt*u_dt;
+				v_tmp = v_prev + 2.0*dt*v_dt;
+
+				// F(t) = F*(t) + v*[ f*(t+dt) + F(t-dt) - 2 F*(t) ]
+				u_prev = io_u + leapfrog_robert_asselin_filter*(u_tmp + u_prev - 2.0*io_u);
+				v_prev = io_v + leapfrog_robert_asselin_filter*(v_tmp + v_prev - 2.0*io_v);
+
+				io_u.swap(u_tmp);
+				io_v.swap(v_tmp);
+			}
 		}
+
+		timestep_id++;
 	}
 
 
@@ -640,7 +439,7 @@ public:
 	 * specified in the simulation variables.
 	 */
 	template <class BaseClass>
-	void run_rk_timestep(
+	void run_timestep(
 			BaseClass *i_baseClass,
 			void (BaseClass::*i_compute_euler_timestep_update)(
 					const SphereData &i_h,		///< prognostic variables
@@ -668,195 +467,62 @@ public:
 			double i_max_simulation_time = std::numeric_limits<double>::infinity()	///< limit the maximum simulation time
 	)
 	{
-		resetAndSetup(io_h, i_runge_kutta_order);
-
 		double &dt = o_dt;
-		if (i_runge_kutta_order == 1)
+
+		SphereData &h_prev = *RK_h_prev;
+		SphereData &h_dt = *RK_h_dt;
+		SphereData &h_tmp = *RK_h_tmp;
+
+		(i_baseClass->*i_compute_euler_timestep_update)(
+				io_h,		// input
+				h_dt,	// output
+				dt,
+				i_use_fixed_dt,
+				i_simulation_time
+		);
+
+		if (leapfrog_robert_asselin_filter == 0)
 		{
-			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_h,	// input
-					*RK_h_t[0],	// output
-					dt,
-					i_use_fixed_dt,
-					i_simulation_time
-			);
+			if (timestep_id == 0)
+			{
+				h_prev = io_h;
 
-			// padding to max simulation time if exceeding the maximum
-			if (i_max_simulation_time >= 0)
-				if (dt+i_simulation_time > i_max_simulation_time)
-					dt = i_max_simulation_time-i_simulation_time;
+				// do standard Euler time step
+				io_h += dt * h_dt;
+			}
+			else
+			{
+				h_tmp.swap(io_h);
 
+				io_h = h_prev + 2.0*dt * h_dt;
 
-			io_h += dt**RK_h_t[0];
-
-		}
-		else if (i_runge_kutta_order == 2)
-		{
-			// See https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods#Explicit_Runge.E2.80.93Kutta_methods
-			// See https://de.wikipedia.org/wiki/Runge-Kutta-Verfahren
-			/*
-			 * c     a
-			 * 0   |
-			 * 1/2 | 1/2
-			 * --------------
-			 *     | 0   1    b
-			 */
-			double a2[1] = {0.5};
-			double b[2] = {0.0, 1.0};
-			double c[1] = {0.5};
-
-			double dummy_dt = -1;
-
-			// STAGE 1
-			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_h,
-					*RK_h_t[0],
-					dt,
-					i_use_fixed_dt,
-					i_simulation_time
-			);
-
-			// padding to max simulation time if exceeding the maximum
-			if (i_max_simulation_time >= 0)
-				if (dt+i_simulation_time > i_max_simulation_time)
-					dt = i_max_simulation_time-i_simulation_time;
-
-			// STAGE 2
-			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_h + ( dt*a2[0]*(*RK_h_t[0]) ),
-					*RK_h_t[1],
-					dummy_dt,
-					dt,
-					i_simulation_time + c[0]*dt
-			);
-
-			io_h += dt*(/* b[0]*(*RK_h_t[0]) +*/ b[1]*(*RK_h_t[1]) );
-		}
-		else if (i_runge_kutta_order == 3)
-		{
-			// See https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods#Explicit_Runge.E2.80.93Kutta_methods
-			// See https://de.wikipedia.org/wiki/Runge-Kutta-Verfahren
-			/*
-			 * c     a
-			 * 0   |
-			 * 1/3 | 1/3
-			 * 2/3 | 0    2/3
-			 * --------------
-			 *     | 1/4  0   3/4
-			 */
-			double a2[1] = {1.0/3.0};
-			double a3[2] = {0.0, 2.0/3.0};
-			double b[3] = {1.0/4.0, 0.0, 3.0/4.0};
-			double c[2] = {1.0/3.0, 2.0/3.0};
-
-			double dummy_dt;
-
-			// STAGE 1
-			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_h,
-					*RK_h_t[0],
-					dt,
-					i_use_fixed_dt,
-					i_simulation_time
-			);
-
-			// padding to max simulation time if exceeding the maximum
-			if (i_max_simulation_time >= 0)
-				if (dt+i_simulation_time > i_max_simulation_time)
-					dt = i_max_simulation_time-i_simulation_time;
-
-			// STAGE 2
-			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_h	+ dt*( a2[0]*(*RK_h_t[0]) ),
-					*RK_h_t[1],
-					dummy_dt,
-					dt,
-					i_simulation_time + c[0]*dt
-			);
-
-			// STAGE 3
-			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_h	+ dt*( a3[0]*(*RK_h_t[0]) + a3[1]*(*RK_h_t[1]) ),
-					*RK_h_t[2],
-					dummy_dt,
-					dt,
-					i_simulation_time + c[1]*dt
-			);
-
-			io_h += dt*( (b[0]*(*RK_h_t[0])) + (b[1]*(*RK_h_t[1]))  + (b[2]*(*RK_h_t[2])) );
-		}
-		else if (i_runge_kutta_order == 4)
-		{
-			// See https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods#Explicit_Runge.E2.80.93Kutta_methods
-			// See https://de.wikipedia.org/wiki/Runge-Kutta-Verfahren
-			/*
-			 * c     a
-			 * 0   |
-			 * 1/2 | 1/2
-			 * 1/2 | 0    1/2
-			 * 1   | 0    0    1
-			 * --------------
-			 *     | 1/6  1/3  1/3  1/6
-			 */
-			double a2[1] = {0.5};
-			double a3[2] = {0.0, 0.5};
-			double a4[3] = {0.0, 0.0, 1.0};
-			double b[4] = {1.0/6.0, 1.0/3.0, 1.0/3.0, 1.0/6.0};
-			double c[3] = {0.5, 0.5, 1.0};
-
-			double dummy_dt;
-
-			// STAGE 1
-			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_h,
-					*RK_h_t[0],
-					dt,
-					i_use_fixed_dt,
-					i_simulation_time
-			);
-
-			// padding to max simulation time if exceeding the maximum
-			if (i_max_simulation_time >= 0)
-				if (dt+i_simulation_time > i_max_simulation_time)
-					dt = i_max_simulation_time-i_simulation_time;
-
-			// STAGE 2
-			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_h	+ dt*( a2[0]*(*RK_h_t[0]) ),
-					*RK_h_t[1],
-					dummy_dt,
-					dt,
-					i_simulation_time + c[0]*dt
-			);
-
-			// STAGE 3
-			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_h	+ dt*( /*a3[0]*(*RK_P_t[0]) +*/ a3[1]*(*RK_h_t[1]) ),
-					*RK_h_t[2],
-					dummy_dt,
-					dt,
-					i_simulation_time + c[1]*dt
-			);
-
-			// STAGE 4
-			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_h	+ dt*( /*a4[0]*(*RK_P_t[0]) + a4[1]*(*RK_P_t[1]) +*/ a4[2]*(*RK_h_t[2]) ),
-					*RK_h_t[3],
-					dummy_dt,
-					dt,
-					i_simulation_time + c[2]*dt
-			);
-
-
-			io_h += dt*( (b[0]*(*RK_h_t[0])) + (b[1]*(*RK_h_t[1]))  + (b[2]*(*RK_h_t[2])) + (b[3]*(*RK_h_t[3])) );
+				h_prev.swap(h_tmp);
+			}
 		}
 		else
 		{
-			std::cerr << "This order of the Runge-Kutta time stepping is not supported!" << std::endl;
-			exit(-1);
-		}
-	}
+			if (timestep_id == 0)
+			{
+				// backup previous values
+				h_prev = io_h;
 
+				// do standard Euler time step
+				io_h += dt * h_dt;
+			}
+			else
+			{
+				// F*(t+dt) = F(t-dt) + 2 dt (dF/dt)
+				h_tmp = h_prev + 2.0*dt*h_dt;
+
+				// F(t) = F*(t) + v*[ f*(t+dt) + F(t-dt) - 2 F*(t) ]
+				h_prev = io_h + leapfrog_robert_asselin_filter*(h_tmp + h_prev - 2.0*io_h);
+
+				io_h.swap(h_tmp);
+			}
+		}
+
+		timestep_id++;
+	}
 
 };
 

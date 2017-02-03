@@ -25,7 +25,7 @@ public:
 
 
 
-	void setupBuffers(
+	void resetAndSetup(
 			const SphereData &i_test_buffer,	///< array of example data to know dimensions of buffers
 			int i_rk_order			///< Order of Runge-Kutta method
 	)
@@ -83,7 +83,7 @@ public:
 	 * specified in the simulation variables.
 	 */
 	template <class BaseClass>
-	void run_rk_timestep(
+	void run_timestep(
 			BaseClass *i_baseClass,
 			void (BaseClass::*i_compute_euler_timestep_update)(
 					const SphereData &i_P,	///< prognostic variables
@@ -118,7 +118,7 @@ public:
 			double i_max_simulation_time = std::numeric_limits<double>::infinity()	///< limit the maximum simulation time
 	)
 	{
-		setupBuffers(io_h, i_runge_kutta_order);
+//		resetAndSetup(io_h, i_runge_kutta_order);
 
 		double &dt = o_dt;
 		if (i_runge_kutta_order == 1)
@@ -364,7 +364,7 @@ public:
 	 * This routine is used for the Burgers equation.
 	 */
 	template <class BaseClass>
-	void run_rk_timestep(
+	void run_timestep(
 			BaseClass *i_baseClass,
 			void (BaseClass::*i_compute_euler_timestep_update)(
 					const SphereData &i_u,	///< prognostic variables
@@ -396,7 +396,7 @@ public:
 			double i_max_simulation_time = std::numeric_limits<double>::infinity()	///< limit the maximum simulation time
 	)
 	{
-		setupBuffers(io_u, i_runge_kutta_order);
+//		resetAndSetup(io_u, i_runge_kutta_order);
 
 		double &dt = o_dt;
 		if (i_runge_kutta_order == 1)
@@ -615,7 +615,7 @@ public:
 	 * specified in the simulation variables.
 	 */
 	template <class BaseClass>
-	void run_rk_timestep(
+	void run_timestep(
 			BaseClass *i_baseClass,
 			void (BaseClass::*i_compute_euler_timestep_update)(
 					const SphereData &i_h,		///< prognostic variables
@@ -643,7 +643,7 @@ public:
 			double i_max_simulation_time = std::numeric_limits<double>::infinity()	///< limit the maximum simulation time
 	)
 	{
-		setupBuffers(io_h, i_runge_kutta_order);
+//		resetAndSetup(io_h, i_runge_kutta_order);
 
 		double &dt = o_dt;
 		if (i_runge_kutta_order == 1)

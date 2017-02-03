@@ -89,8 +89,10 @@ public:
 
 		void outputConfig()
 		{
+			std::cout << std::endl;
 			std::cout << "PDE:" << std::endl;
 			std::cout << " + id: " << id << std::endl;
+			std::cout << std::endl;
 		}
 	} pde;
 
@@ -309,6 +311,9 @@ public:
 			return "[UNKWOWN]";
 		}
 
+		/// Leapfrog: Robert Asselin filter
+		double leapfrog_robert_asselin_filter = 0;
+
 
 		///
 		/// Specify time stepping method
@@ -355,6 +360,7 @@ public:
 			std::cout << " + timestepping_method2: " << getTimesteppingMethodString(timestepping_method2) << std::endl;
 			std::cout << " + timestepping_order2: " << timestepping_order2 << std::endl;
 			std::cout << " + timestepping_up_and_downwinding: " << timestepping_up_and_downwinding << std::endl;
+			std::cout << " + leapfrog_robert_asselin_filter: " << leapfrog_robert_asselin_filter << std::endl;
 			std::cout << " + use_spectral_basis_diffs: " << use_spectral_basis_diffs << std::endl;
 			std::cout << std::endl;
 		}
@@ -380,15 +386,17 @@ public:
 			std::cout << "	-W [0/1]	use up- and downwinding, default:0" << std::endl;
 			std::cout << "	-R [1-RKn]	order of time stepping method, default:0" << std::endl;
 			std::cout << "	-C [cfl]	CFL condition, use negative value for fixed time step size, default=0.05" << std::endl;
-			std::cout << "  --timestepping-method	Specify time stepping method (";
+			std::cout << "	--timestepping-method	Specify time stepping method (";
 
 			for (int i = 1; i <= 4; i++)
 				std::cout << i << ": " << getTimesteppingMethodString(i) << ", ";
 
 			std::cout << "...)" << std::endl;
-			std::cout << "  --timestepping-order	Specify the order of the time stepping" << std::endl;
-			std::cout << "  --timestepping-method2	Alternative time stepping method" << std::endl;
-			std::cout << "  --timestepping-order2	Specify the order of the time stepping" << std::endl;
+			std::cout << "	--timestepping-order [int]	Specify the order of the time stepping" << std::endl;
+			std::cout << "	--timestepping-method2 [int]	Alternative time stepping method" << std::endl;
+			std::cout << "	--timestepping-order2 [int]	Specify the order of the time stepping" << std::endl;
+			std::cout << "	--leapfrog-robert-asselin-filter [0;1]	Damping parameter for Robert-Asselin filter" << std::endl;
+
 		}
 	} disc;
 
@@ -620,6 +628,7 @@ public:
 		timecontrol.outputConfig();
 
 		rexi.outputConfig();
+		pde.outputConfig();
 		misc.outputConfig();
 		diag.outputConfig();
 
@@ -658,7 +667,7 @@ public:
 			const char *bogus_var_names[] = nullptr			///< list of strings of simulation-specific variables, has to be terminated by nullptr
 	)
 	{
-		const int max_options = 50;
+		const int max_options = 60;
         static struct option long_options[max_options+1] = {
     			{0, 0, 0, 0}, // 0
     			{0, 0, 0, 0}, // 1
@@ -715,6 +724,17 @@ public:
 				{0, 0, 0, 0}, // 8
 				{0, 0, 0, 0}, // 9	Option Nr. 50
 
+				{0, 0, 0, 0}, // 0
+				{0, 0, 0, 0}, // 1
+				{0, 0, 0, 0}, // 2
+				{0, 0, 0, 0}, // 3
+				{0, 0, 0, 0}, // 4
+				{0, 0, 0, 0}, // 5
+				{0, 0, 0, 0}, // 6
+				{0, 0, 0, 0}, // 7
+				{0, 0, 0, 0}, // 8
+				{0, 0, 0, 0}, // 9	Option Nr. 60
+
 				{0, 0, 0, 0} // NULL
         };
 
@@ -752,7 +772,7 @@ public:
         long_options[next_free_program_option] = {"use-robert-functions", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        long_options[next_free_program_option] = {"sphere-advection-angle", required_argument, 0, 256+next_free_program_option};
+        long_options[next_free_program_option] = {"advection-rotation-angle", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
         long_options[next_free_program_option] = {"pde-id", required_argument, 0, 256+next_free_program_option};
@@ -771,11 +791,14 @@ public:
         long_options[next_free_program_option] = {"timestepping-order2", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
+        long_options[next_free_program_option] = {"leapfrog-robert-asselin-filter", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
 
 // leave this commented to avoid mismatch with following parameters!
 #if SWEET_PFASST_CPP
 
-        // 16
+        // 17
 		long_options[next_free_program_option] = {"pfasst-nlevels", required_argument, 0, 256+next_free_program_option};
 		next_free_program_option++;
 
@@ -873,18 +896,20 @@ public:
 						case 14:	disc.timestepping_method2 = atoi(optarg);	break;
 						case 15:	disc.timestepping_order2 = atoi(optarg);	break;
 
+						case 16:	disc.leapfrog_robert_asselin_filter = atof(optarg);	break;
 
 #if SWEET_PFASST_CPP
-						case 16:	pfasst.nlevels = atoi(optarg);	break;
-						case 17:	pfasst.nnodes = atoi(optarg);	break;
-						case 18:	pfasst.nspace = atoi(optarg);	break;
-						case 19:	pfasst.nsteps = atoi(optarg);	break;
-						case 20:	pfasst.niters = atoi(optarg);	break;
-						case 21:	pfasst.dt = atof(optarg);	break;
+						case 17:	pfasst.nlevels = atoi(optarg);	break;
+						case 18:	pfasst.nnodes = atoi(optarg);	break;
+						case 19:	pfasst.nspace = atoi(optarg);	break;
+						case 20:	pfasst.nsteps = atoi(optarg);	break;
+						case 21:	pfasst.niters = atoi(optarg);	break;
+						case 22:	pfasst.dt = atof(optarg);	break;
 #endif
+
 						default:
 #if SWEET_PARAREAL
-							parareal.setup_longOptionValue(i-parareal_start_option_index, optarg);
+						parareal.setup_longOptionValue(i-parareal_start_option_index, optarg);
 #endif
 						break;
 					}
@@ -1117,7 +1142,9 @@ public:
 #endif
 
 				std::cerr << std::endl;
-				std::cerr << "Unknown option '" << (char)opt << "'" << std::endl;
+
+				if ((char)opt != 'h')
+					std::cerr << "Unknown option '" << (char)opt << "'" << std::endl;
 				return false;
 			}
 		}

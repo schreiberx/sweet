@@ -268,7 +268,7 @@ private:
 			simVars.timecontrol.current_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
 
 			// standard time stepping
-			timestepping.run_rk_timestep(
+			timestepping.run_timestep(
 					this,
 					&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
 					io_prog_phi, io_prog_u, io_prog_v,

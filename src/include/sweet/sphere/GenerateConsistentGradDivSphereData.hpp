@@ -192,7 +192,7 @@ private:
 		{
 			double o_dt;
 
-			timestepping.run_rk_timestep(
+			timestepping.run_timestep(
 					this,
 					&GenerateConsistentGradDivSphereData::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
 					prog_h, prog_u, prog_v,

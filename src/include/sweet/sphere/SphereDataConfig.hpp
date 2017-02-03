@@ -356,6 +356,10 @@ public:
 		shtns_use_threads(1);	// value of 1 disables threading
 #endif
 
+
+		if (shtns != nullptr)
+			shtns_destroy(shtns);
+
 		shtns = shtns_create(
 				nmax,
 				mmax,
@@ -396,6 +400,9 @@ public:
 		shtns_use_threads(1);	// value of 1 disables threading
 #endif
 
+
+		if (shtns != nullptr)
+			shtns_destroy(shtns);
 
 		shtns = shtns_create(
 				i_nmax,

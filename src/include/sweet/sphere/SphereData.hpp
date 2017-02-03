@@ -36,8 +36,21 @@ public:
 	double *physical_space_data;
 	std::complex<double> *spectral_space_data;
 
-	bool spectral_space_data_valid;
 	bool physical_space_data_valid;
+	bool spectral_space_data_valid;
+
+
+	void swap(
+			SphereData &i_sphereData
+	)
+	{
+		assert(sphereDataConfig == i_sphereData);
+
+		std::swap(physical_space_data, i_sphereData.physical_space_data);
+		std::swap(spectral_space_data, i_sphereData.spectral_space_data);
+		std::swap(spectral_space_data_valid, i_sphereData.spectral_space_data_valid);
+		std::swap(physical_space_data_valid, i_sphereData.physical_space_data_valid);
+	}
 
 public:
 	SphereData(

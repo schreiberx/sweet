@@ -172,7 +172,7 @@ public:
 		// a positive value to use a fixed time step size
 		simVars.timecontrol.current_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
 
-		timestepping.run_rk_timestep(
+		timestepping.run_timestep(
 				this,
 				&SimulationTestRK::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
 				prog_h, prog_u, prog_v,
