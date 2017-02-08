@@ -1337,7 +1337,7 @@ int main(int i_argc, char *i_argv[])
 #if SWEET_MPI
 	else
 	{
-		if (simVars.rexi.use_rexi == 1)
+		if (simVars.disc.timestepping_method == 100)
 		{
 			SWE_Sphere_REXI rexiSWE;
 
@@ -1388,7 +1388,7 @@ int main(int i_argc, char *i_argv[])
 
 
 #if SWEET_MPI
-	if (simVars.rexi.use_rexi == 1)
+	if (simVars.disc.timestepping_method == 100)
 	{
 		// synchronize REXI
 		if (mpi_rank == 0)
