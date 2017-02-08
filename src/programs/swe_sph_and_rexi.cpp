@@ -213,7 +213,7 @@ public:
 		// one month runtime
 		if (simVars.timecontrol.max_simulation_time == -1)
 		{
-			if (simVars.setup.benchmark_scenario_id == 4)
+			if (simVars.setup.benchmark_scenario_id == 10)
 			{
 				simVars.timecontrol.max_simulation_time = 31*60*60*24;
 
@@ -395,7 +395,7 @@ public:
 		 */
 		if (	param_compute_error &&
 				simVars.misc.use_nonlinear_equations == 0 &&
-				simVars.setup.benchmark_scenario_id == 4
+				simVars.setup.benchmark_scenario_id == 10
 		)
 		{
 			SphereData test_h(sphereDataConfig);
@@ -467,7 +467,7 @@ public:
 
 		if (	param_compute_error &&
 				simVars.misc.use_nonlinear_equations == 0 &&
-				simVars.setup.benchmark_scenario_id == 4
+				simVars.setup.benchmark_scenario_id == 10
 		)
 		{
 			SphereData test_h(sphereDataConfig);
