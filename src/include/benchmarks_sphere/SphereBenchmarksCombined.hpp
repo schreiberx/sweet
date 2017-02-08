@@ -89,7 +89,11 @@ public:
 		}
 		else if (io_simVars.setup.benchmark_scenario_id == 6)
 		{
-			BenchmarkGaussianDam::setup_initial_conditions_gaussian(o_h, o_u, o_v, io_simVars, -M_PI, M_PI/4.0, 200.0);
+			BenchmarkGaussianDam::setup_initial_conditions_gaussian(o_h, o_u, o_v, io_simVars, M_PI/3.0, M_PI/3.0, 100.0);
+		}
+		else if (io_simVars.setup.benchmark_scenario_id == 7)
+		{
+			BenchmarkGaussianDam::setup_initial_conditions_gaussian(o_h, o_u, o_v, io_simVars, -M_PI, M_PI/4.0, 100.0);
 		}
 		else if (io_simVars.setup.benchmark_scenario_id == 10)
 		{
