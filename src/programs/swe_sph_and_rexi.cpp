@@ -1341,12 +1341,12 @@ int main(int i_argc, char *i_argv[])
 	{
 		if (simVars.disc.timestepping_method == 100)
 		{
-			SWE_Sphere_REXI rexiSWE;
+			SWE_Sphere_REXI swe_sphere_rexi;
 
 			/*
 			 * Setup our little dog REXI
 			 */
-			rexiSWE.setup(
+			swe_sphere_rexi.setup(
 					simVars.rexi.rexi_h,
 					simVars.rexi.rexi_M,
 					simVars.rexi.rexi_L,
@@ -1359,7 +1359,8 @@ int main(int i_argc, char *i_argv[])
 					simVars.misc.sphere_use_robert_functions,
 					simVars.rexi.rexi_use_extended_modes,
 					simVars.rexi.rexi_normalization,
-					param_use_coriolis_formulation
+					param_use_coriolis_formulation,
+					simVars.rexi.rexi_sphere_solver_preallocation
 				);
 
 			bool run = true;
@@ -1378,7 +1379,7 @@ int main(int i_argc, char *i_argv[])
 			while (run)
 			{
 				// REXI time stepping
-				run = rexiSWE.run_timestep_rexi(
+				run = swe_sphere_rexi.run_timestep_rexi(
 						prog_h, prog_u, prog_v,
 						-simVars.sim.CFL,
 						simVars
