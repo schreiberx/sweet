@@ -140,7 +140,8 @@ public:
 			bool i_use_robert_functions,	///< use Robert functions
 			int i_rexi_use_extended_modes,
 			int i_rexi_normalization,
-			bool i_use_coriolis_rexi_formulation
+			bool i_use_coriolis_rexi_formulation,
+			bool i_use_rexi_sphere_preallocation
 	);
 
 

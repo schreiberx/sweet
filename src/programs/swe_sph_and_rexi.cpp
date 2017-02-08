@@ -118,6 +118,7 @@ public:
 
 
 
+	inline
 	SphereData f(SphereData i_sphData)
 	{
 		return op.mu(i_sphData*(2.0*simVars.sim.coriolis_omega));
@@ -314,7 +315,8 @@ public:
 					simVars.rexi.rexi_use_extended_modes,
 					simVars.rexi.rexi_normalization,
 
-					param_use_coriolis_formulation
+					param_use_coriolis_formulation,
+					simVars.rexi.rexi_sphere_solver_preallocation
 				);
 		}
 

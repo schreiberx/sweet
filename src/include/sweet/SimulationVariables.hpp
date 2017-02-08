@@ -442,6 +442,12 @@ public:
 		 */
 		bool rexi_normalization = true;
 
+		/**
+		 * Use REXI preallocation
+		 */
+		bool rexi_sphere_solver_preallocation = true;
+
+
 		void outputConfig()
 		{
 			std::cout << std::endl;
@@ -762,6 +768,9 @@ public:
         long_options[next_free_program_option] = {"rexi-normalization", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
+        long_options[next_free_program_option] = {"rexi-sphere-preallocation", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
         long_options[next_free_program_option] = {"rexi-ext-modes", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
@@ -881,30 +890,30 @@ public:
 						case 4:		rexi.rexi_L = atoi(optarg);	break;
 						case 5:		rexi.rexi_use_half_poles = atoi(optarg);	break;
 						case 6:		rexi.rexi_normalization = atoi(optarg);	break;
-						case 7:		rexi.rexi_use_extended_modes = atoi(optarg);	break;
+						case 7:		rexi.rexi_sphere_solver_preallocation = atoi(optarg);	break;
+						case 8:		rexi.rexi_use_extended_modes = atoi(optarg);	break;
 
-						case 8:		misc.use_nonlinear_equations = atoi(optarg);	break;
-						case 9:		misc.sphere_use_robert_functions = atoi(optarg);	break;
+						case 9:		misc.use_nonlinear_equations = atoi(optarg);	break;
+						case 10:		misc.sphere_use_robert_functions = atoi(optarg);	break;
 
-						case 10:	setup.advection_rotation_angle = atof(optarg);	break;
+						case 11:	setup.advection_rotation_angle = atof(optarg);	break;
 
+						case 12:	pde.id = atoi(optarg);	break;
 
-						case 11:	pde.id = atoi(optarg);	break;
+						case 13:	disc.timestepping_method = atoi(optarg);	break;
+						case 14:	disc.timestepping_order = atoi(optarg);	break;
+						case 15:	disc.timestepping_method2 = atoi(optarg);	break;
+						case 16:	disc.timestepping_order2 = atoi(optarg);	break;
 
-						case 12:	disc.timestepping_method = atoi(optarg);	break;
-						case 13:	disc.timestepping_order = atoi(optarg);	break;
-						case 14:	disc.timestepping_method2 = atoi(optarg);	break;
-						case 15:	disc.timestepping_order2 = atoi(optarg);	break;
-
-						case 16:	disc.leapfrog_robert_asselin_filter = atof(optarg);	break;
+						case 17:	disc.leapfrog_robert_asselin_filter = atof(optarg);	break;
 
 #if SWEET_PFASST_CPP
-						case 17:	pfasst.nlevels = atoi(optarg);	break;
-						case 18:	pfasst.nnodes = atoi(optarg);	break;
-						case 19:	pfasst.nspace = atoi(optarg);	break;
-						case 20:	pfasst.nsteps = atoi(optarg);	break;
-						case 21:	pfasst.niters = atoi(optarg);	break;
-						case 22:	pfasst.dt = atof(optarg);	break;
+						case 18:	pfasst.nlevels = atoi(optarg);	break;
+						case 19:	pfasst.nnodes = atoi(optarg);	break;
+						case 20:	pfasst.nspace = atoi(optarg);	break;
+						case 21:	pfasst.nsteps = atoi(optarg);	break;
+						case 22:	pfasst.niters = atoi(optarg);	break;
+						case 23:	pfasst.dt = atof(optarg);	break;
 #endif
 
 						default:

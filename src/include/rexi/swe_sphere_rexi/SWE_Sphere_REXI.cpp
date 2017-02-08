@@ -160,7 +160,8 @@ void SWE_Sphere_REXI::setup(
 		bool i_use_robert_functions,	///< use Robert functions
 		int i_rexi_use_extended_modes,
 		int i_rexi_normalization,
-		bool i_use_coriolis_rexi_formulation
+		bool i_use_coriolis_rexi_formulation,
+		bool i_use_rexi_sphere_preallocation	///< preallocate all rexi coefficients (might fail because of memory limitations)
 )
 {
 	cleanup();
@@ -176,7 +177,7 @@ void SWE_Sphere_REXI::setup(
 	use_robert_functions = i_use_robert_functions;
 	rexi_use_extended_modes = i_rexi_use_extended_modes;
 	use_coriolis_rexi_formulation = i_use_coriolis_rexi_formulation;
-	use_rexi_preallocation = false;
+	use_rexi_preallocation = i_use_rexi_sphere_preallocation;
 
 
 	if (rexi_use_extended_modes == 0)

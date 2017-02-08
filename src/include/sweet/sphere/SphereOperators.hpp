@@ -18,7 +18,7 @@
  * 1: Start by direct computation and then use deltas [TODO: Not yet implemented]
  * 2: Use memory cached version
  */
-#define SWEET_SPH_ON_THE_FLY_MODE	0
+#define SWEET_SPH_ON_THE_FLY_MODE	2
 
 
 class SphereOperators	:
@@ -96,6 +96,9 @@ public:
 				mu__1[idx] = R(n-1,m);
 				mu__2[idx] = S(n+1,m);
 
+				mu__1[idx] = R(n-1,m);
+				mu__2[idx] = S(n+1,m);
+
 				mu2__1[idx] = A(n-2,m);
 				mu2__2[idx] = B(n+0,m);
 				mu2__3[idx] = C(n+2,m);
@@ -125,9 +128,9 @@ public:
 
 		// compute d/dlambda in spectral space
 #if SWEET_THREADING
-#pragma omp parallel for
+#pragma omp parallel for schedule(guided)
 #endif
-		for (int m = 0; m <= i_sph_data.sphereDataConfig->spectral_modes_m_max; m++)
+		for (int m = i_sph_data.sphereDataConfig->spectral_modes_m_max; m >= 0; m--)
 		{
 			int idx = i_sph_data.sphereDataConfig->getArrayIndexByModes(m, m);
 
@@ -210,32 +213,6 @@ public:
 	)
 	{
 		return inv_one_minus_mu2(diff_lon(i_sph_data));
-	}
-
-
-	SphereData sqrt_one_minus_mu(
-			const SphereData &i_sph_data
-	)
-	{
-		i_sph_data.request_data_spectral();
-
-		SphereData out(i_sph_data.sphereDataConfig);
-
-		// Physical space
-		out.spectral_update_lambda(
-				[&i_sph_data](int n, int m, std::complex<double> &o_data)
-				{
-					o_data = 1.0/(2.0*(double)n+1.0);
-
-					double A = -std::sqrt((2.0*n+1)*(n+m+2.0)*(n+m+1.0) / (2.0*n+3.0));
-					double B = std::sqrt((n-m-1.0)*(n-m));
-
-					o_data *= 	A*i_sph_data.spectral_get(n+1, m+1)
-								+ B*i_sph_data.spectral_get(n+1, m-1);
-				}
-			);
-
-		return out;
 	}
 
 
