@@ -196,6 +196,9 @@ public:
 
 	void reset()
 	{
+		if (simVars.misc.verbosity > 2)
+			std::cout << "reset()" << std::endl;
+
 		if (simVars.setup.benchmark_scenario_id <0)
 		{
 			std::cout << std::endl;
@@ -367,6 +370,9 @@ public:
 	// Calculate the model diagnostics
 	void update_diagnostics()
 	{
+		if (simVars.misc.verbosity > 2)
+			std::cout << "update_diagnostics()" << std::endl;
+
 		// assure, that the diagnostics are only updated for new time steps
 		if (last_timestep_nr_update_diagnostics == simVars.timecontrol.current_timestep_nr)
 			return;
@@ -404,6 +410,9 @@ public:
 			double i_simulation_timestamp = -1
 	)
 	{
+		if (simVars.misc.verbosity > 2)
+			std::cout << "p_run_euler_timestep_update()" << std::endl;
+
 		/*
 		 * 2D Burgers equation [with source term]
 		 * u_t + u*u_x + v*u_y = nu*(u_xx + u_yy) [+ f(t,x,y)]
@@ -478,6 +487,9 @@ public:
 			double i_max_simulation_time = std::numeric_limits<double>::infinity()	///< limit the maximum simulation time
 			)
 	{
+		if (simVars.misc.verbosity > 2)
+			std::cout << "run_timestep_imex()" << std::endl;
+
 		PlaneData u=io_u;
 		PlaneData v=io_v;
 
@@ -580,6 +592,9 @@ public:
 
 	void run_timestep()
 	{
+		if (simVars.misc.verbosity > 2)
+			std::cout << "run_timestep()" << std::endl;
+
 		double dt = 0.0;
 
 		// Only fixed time stepping supported with the Burgers equation
@@ -716,6 +731,9 @@ public:
 			const char* i_name	///< name of output variable
 		)
 	{
+		if (simVars.misc.verbosity > 2)
+			std::cout << "write_file()" << std::endl;
+
 		char buffer[1024];
 
 		const char* filename_template = simVars.misc.output_file_name_prefix.c_str();
@@ -731,6 +749,9 @@ public:
 			std::ostream &o_ostream = std::cout
 	)
 	{
+		if (simVars.misc.verbosity > 2)
+			std::cout << "timestep_output()" << std::endl;
+
 		if (simVars.misc.verbosity > 0)
 		{
 			update_diagnostics();
@@ -783,78 +804,89 @@ public:
 	}
 
 
+	/*
+	 * Compare manufactured solution with numerical solution
+	 */
 public:
 	void compute_errors(
          const PlaneData &i_planeData_u,
          const PlaneData &i_planeData_v
-   )
+	)
 	{
-			// Compute exact solution for linear part and compare with numerical solution
+		if (simVars.misc.verbosity > 2)
+			std::cout << "compute_errors()" << std::endl;
 
-			// Only possible for manufactured solutions
-			if (simVars.setup.benchmark_scenario_id < 51 && simVars.setup.benchmark_scenario_id > 59)
-				return;
+		// Necessary to circumvent FFTW transformations on i_planeData_u and i_planeData_v, which would lead to errors
+		PlaneData u = i_planeData_u;
+		PlaneData v = i_planeData_v;
 
-			//Analytical solution at specific time on original grid (stag or not)
-			PlaneData ts_u(planeDataConfig);
-			PlaneData ts_v(planeDataConfig);
+		// Only possible for manufactured solutions
+		if (simVars.setup.benchmark_scenario_id < 51 && simVars.setup.benchmark_scenario_id > 59)
+			return;
 
-			if (param_use_staggering)
-			{
-				ts_u.physical_update_lambda_array_indices(
-					[&](int i, int j, double &io_data)
-					{
-						double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-						io_data = BurgersValidationBenchmarks::return_u(simVars, x, y);
-					}
-				);
+		//Analytical solution at current time on original grid (stag or not)
+		PlaneData ts_u(planeDataConfig);
+		PlaneData ts_v(planeDataConfig);
 
-				ts_v.physical_update_lambda_array_indices(
-					[&](int i, int j, double &io_data)
-					{
-						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-						double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-						io_data = BurgersValidationBenchmarks::return_v(simVars, x, y);
-					}
-				);
-			}
-			else
-			{
-				ts_u.physical_update_lambda_array_indices(
-					[&](int i, int j, double &io_data)
-					{
-						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+		if (param_use_staggering)
+		{
+			ts_u.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
+				{
+					double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+					double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+					io_data = BurgersValidationBenchmarks::return_u(simVars, x, y);
+				}
+			);
 
-						io_data = BurgersValidationBenchmarks::return_u(simVars, x, y);
-					}
-				);
-
-				ts_v.physical_update_lambda_array_indices(
-					[&](int i, int j, double &io_data)
-					{
-						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-
-						io_data = BurgersValidationBenchmarks::return_v(simVars, x, y);
-					}
-				);
-			}
-
-
-			benchmark_analytical_error = ts_u-i_planeData_u;
-
-			benchmark_analytical_error_rms_u = (ts_u-i_planeData_u).reduce_rms_quad();
-			benchmark_analytical_error_rms_v = (ts_v-i_planeData_v).reduce_rms_quad();
-
-			benchmark_analytical_error_maxabs_u = (ts_u-i_planeData_u).reduce_maxAbs();
-			benchmark_analytical_error_maxabs_v = (ts_v-i_planeData_v).reduce_maxAbs();
+			ts_v.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
+				{
+					double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+					double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+					io_data = BurgersValidationBenchmarks::return_v(simVars, x, y);
+				}
+			);
 		}
+		else
+		{
+			ts_u.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
+				{
+					double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+					double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+
+					io_data = BurgersValidationBenchmarks::return_u(simVars, x, y);
+				}
+			);
+
+			ts_v.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
+				{
+					double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+					double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+
+					io_data = BurgersValidationBenchmarks::return_v(simVars, x, y);
+				}
+			);
+		}
+
+
+		benchmark_analytical_error = ts_u-u;
+
+		benchmark_analytical_error_rms_u = (ts_u-u).reduce_rms_quad();
+		benchmark_analytical_error_rms_v = (ts_v-v).reduce_rms_quad();
+
+		benchmark_analytical_error_maxabs_u = (ts_u-u).reduce_maxAbs();
+		benchmark_analytical_error_maxabs_v = (ts_v-v).reduce_maxAbs();
+	}
 
 
 	bool should_quit()
 	{
+		if (simVars.misc.verbosity > 2)
+			std::cout << "should_quit()" << std::endl;
+
 		if (simVars.timecontrol.max_timesteps_nr != -1 && simVars.timecontrol.max_timesteps_nr <= simVars.timecontrol.current_timestep_nr)
 			return true;
 
@@ -871,6 +903,9 @@ public:
 	 */
 	void vis_post_frame_processing(int i_num_iterations)
 	{
+		if (simVars.misc.verbosity > 2)
+			std::cout << "vis_post_frame_processing()" << std::endl;
+
 		if (simVars.timecontrol.run_simulation_timesteps)
 			for (int i = 0; i < i_num_iterations; i++)
 				run_timestep();
@@ -900,6 +935,9 @@ public:
 			void **o_bogus_data
 	)
 	{
+		if (simVars.misc.verbosity > 2)
+			std::cout << "vis_get_vis_data_array()" << std::endl;
+
 		int id = simVars.misc.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
 		*o_dataArray = vis_arrays[id].data;
 		*o_aspect_ratio = simVars.sim.domain_size[1] / simVars.sim.domain_size[0];
@@ -911,6 +949,9 @@ public:
 	 */
 	const char* vis_get_status_string()
 	{
+		if (simVars.misc.verbosity > 2)
+			std::cout << "vis_get_status_string()" << std::endl;
+
 		// first, update diagnostic values if required
 		update_diagnostics();
 
@@ -931,6 +972,9 @@ public:
 
 	void vis_pause()
 	{
+		if (simVars.misc.verbosity > 2)
+			std::cout << "vis_pause()" << std::endl;
+
 		simVars.timecontrol.run_simulation_timesteps = !simVars.timecontrol.run_simulation_timesteps;
 	}
 
@@ -938,6 +982,9 @@ public:
 
 	void vis_keypress(int i_key)
 	{
+		if (simVars.misc.verbosity > 2)
+			std::cout << "vis_keypress()" << std::endl;
+
 		switch(i_key)
 		{
 		case 'v':
@@ -957,7 +1004,14 @@ public:
 
 	bool instability_detected()
 	{
-		return !(prog_u.reduce_boolean_all_finite() && prog_v.reduce_boolean_all_finite());
+		if (simVars.misc.verbosity > 2)
+			std::cout << "instability_detected()" << std::endl;
+
+		// Necessary to circumvent FFTW transformations on prog_u and prog_v, which would lead to errors
+		PlaneData u = prog_u;
+		PlaneData v = prog_v;
+
+		return !(u.reduce_boolean_all_finite() && v.reduce_boolean_all_finite());
 	}
 
 
@@ -994,6 +1048,9 @@ public:
 
 	void parareal_setup()
 	{
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "parareal_setup()" << std::endl;
+
 		{
 			PlaneData* data_array[NUM_OF_UNKNOWNS*2] = {&_parareal_data_start_u, &_parareal_data_start_v,
 					&_parareal_data_start_u_prev, &_parareal_data_start_v_prev};
@@ -1302,6 +1359,9 @@ public:
 			int time_slice_id
 	)
 	{
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "output_data_file()" << std::endl;
+
 		Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2>& data = (Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2>&)i_data;
 
 		std::ostringstream ss;
@@ -1331,6 +1391,9 @@ public:
 			int time_slice_id
 	)
 	{
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "output_data_console()" << std::endl;
+
 		update_diagnostics();
 		// Print timestep data to console
 		std::cout << std::setprecision(8) << "Total energy: " << simVars.diag.total_energy << std::endl;
