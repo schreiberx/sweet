@@ -22,6 +22,17 @@ if mainsrcadddir != '':
 
 
 	#
+	# Add an action to move any module files
+	#
+	def moveModFiles(target=None, source=None, env=None):
+	    import glob, os, os.path
+	    targetdir = target[0].dir
+	    for t in target:
+		if t.name[-4:] == '.mod':
+		    os.rename(t.name,os.path.join(str(targetdir),t.name))
+
+
+	#
 	# Add main source file
 	#
 	env.src_files.append(env.Object(mainsrcadddir+'.cpp'))
@@ -54,7 +65,9 @@ if mainsrcadddir != '':
 		for i in fortran_files:
 			filerelpath = i.replace(sweet_root, '')
 
-			env.src_files.append(env.Object(filerelpath))
+			obj = env.Object(filerelpath)
+			env.src_files.append(obj)
+			#env.AddPostAction(obj, moveModFiles)
 
 
 	Export('env')

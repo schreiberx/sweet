@@ -53,15 +53,15 @@ public:
 	 */
 public:
 	void setup(
-			SphereDataConfig *i_sphConfig,		///< Handler to sphConfig
+			SphereDataConfig *i_sphereDataConfig,		///< Handler to sphereDataConfig
 			int i_halosize_offdiagonal	///< Size of the halo around. A value of 2 allocates data for 5 diagonals.
 	)
 	{
-		sphereDataConfig = i_sphConfig;
+		sphereDataConfig = i_sphereDataConfig;
 
 		lhs.setup(sphereDataConfig, i_halosize_offdiagonal);
 
-		bandedMatrixSolver.setup(i_sphConfig->spectral_modes_n_max+1, i_halosize_offdiagonal);
+		bandedMatrixSolver.setup(i_sphereDataConfig->spectral_modes_n_max+1, i_halosize_offdiagonal);
 
 		buffer_size = (sphereDataConfig->spectral_modes_n_max+1)*sizeof(std::complex<double>);
 

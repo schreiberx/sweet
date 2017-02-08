@@ -649,10 +649,10 @@ public:
 				tmp.physical_set_all(0);
 
 				// run standard Runge Kutta
-				timestepping.run_rk_timestep(
+				timestepping.run_timestep(
 						this,
 						&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
-						tmp, prog_u, prog_v, ///< tmp is used to make use of the swe version of run_rk_timestep
+						tmp, prog_u, prog_v, ///< tmp is used to make use of the swe version of run_timestep
 						dt,
 						simVars.timecontrol.current_timestep_size,
 						simVars.disc.timestepping_order,
@@ -683,10 +683,10 @@ public:
 				tmp.physical_set_all(0);
 
 				// run standard Runge Kutta
-				timestepping.run_rk_timestep(
+				timestepping.run_timestep(
 						this,
 						&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
-						tmp, prog_u, prog_v, ///< tmp is used to make use of the swe version of run_rk_timestep
+						tmp, prog_u, prog_v, ///< tmp is used to make use of the swe version of run_timestep
 						dt,
 						simVars.timecontrol.current_timestep_size,
 						simVars.disc.timestepping_order,

@@ -32,7 +32,7 @@ public:
 	/**
 	 * SPH configuration
 	 */
-	SphereDataConfig *sphereDataConfig;
+	const SphereDataConfig *sphereDataConfig;
 
 	/**
 	 * Solver for banded matrix
@@ -44,15 +44,15 @@ public:
 	 */
 public:
 	void setup(
-			SphereDataConfig *i_sphConfig,		///< Handler to sphConfig
+			const SphereDataConfig *i_sphereConfig,		///< Handler to sphereDataConfig
 			int i_halosize_offdiagonal	///< Size of the halo around. A value of 2 allocates data for 5 diagonals.
 	)
 	{
-		sphereDataConfig = i_sphConfig;
+		sphereDataConfig = i_sphereConfig;
 
 		lhs.setup(sphereDataConfig, i_halosize_offdiagonal);
 
-		bandedMatrixSolver.setup(i_sphConfig->spectral_modes_n_max+1, i_halosize_offdiagonal);
+		bandedMatrixSolver.setup(i_sphereConfig->spectral_modes_n_max+1, i_halosize_offdiagonal);
 	}
 
 
@@ -142,30 +142,6 @@ public:
 		solver_component_scalar_phi(i_scalar);
 	}
 
-
-#if 0
-	/**
-	 * Solver for
-	 * 	(1-mu^2)*d/dphi(lambda,mu)
-	 */
-	void solver_component_rexi_zGmu(
-			const std::complex<double> &i_scalar,
-			double i_r
-	)
-	{
-//		std::cout << "TODO: CHECK SOLUTION" << std::endl;
-		std::complex<double> fac = 1.0/i_r*i_scalar;
-		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
-		{
-			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
-			{
-				T *row = lhs.getMatrixRow(n, m);
-				lhs.rowElement_add(row, n, m, -1, fac*(-n+1.0)*R(n-1,m));
-				lhs.rowElement_add(row, n, m, +1, fac*(n+2.0)*S(n+1,m));
-			}
-		}
-	}
-#endif
 
 
 	/**
@@ -314,11 +290,11 @@ public:
 #pragma omp parallel for
 #endif
 
-		for (int m = -sphereDataConfig->spectral_modes_m_max; m <= sphereDataConfig->spectral_modes_m_max; m++)
+		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
 			std::complex<double> fac = (i_scalar/(i_r*i_r))*std::complex<double>(0, m);
 
-			for (int n = std::abs(m); n <= sphereDataConfig->spectral_modes_n_max; n++)
+			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 				lhs.rowElement_add(row, n, m, -2, fac*A(n-2,m));
@@ -383,10 +359,10 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for
 #endif
-		for (int m = -sphereDataConfig->spectral_modes_m_max; m <= sphereDataConfig->spectral_modes_m_max; m++)
+		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
 			std::complex<double> fac = -1.0/(i_r*i_r)*i_scalar;
-			for (int n = std::abs(m); n <= sphereDataConfig->spectral_modes_n_max; n++)
+			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 

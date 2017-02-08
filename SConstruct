@@ -7,7 +7,10 @@ import subprocess
 
 from python_mods import CompileXMLOptions
 
-hostname=subprocess.check_output('hostname')
+#
+# determine hostname
+#
+hostname = subprocess.check_output('hostname')
 hostname = hostname.replace("\n", '')
 hostname = hostname.replace("\r", '')
 
@@ -123,7 +126,7 @@ AddOption(	'--libpfasst',
 		type='choice',
 		choices=['enable', 'disable'],
 		default='enable',
-		help="Activate utilization of libPFASST (Fucking Ortran version) [default: %default]"
+		help="Activate utilization of libPFASST (FOortran version) [default: %default]"
 )
 env['libpfasst'] = GetOption('libpfasst')
 
@@ -523,9 +526,7 @@ if env['compiler'] == 'gnu':
 		# activate gnu C++ compiler
 
 		if env['fortran_source']=='enable':
-			env.Replace(FORTRAN='gfortran')
 			env.Replace(F90='gfortran')
-			env.Append(FORTRANFLAGS=' -cpp')
 			env.Append(F90FLAGS=' -cpp')
 			env.Append(LIBS=['gfortran'])
 
@@ -582,9 +583,7 @@ if env['compiler'] == 'intel':
 
 	if env['fortran_source'] == 'enable':
 		env.Append(LIBS=['ifcore'])
-		env.Replace(FORTRAN='ifort')
 		env.Replace(F90='ifort')
-		env.Append(FORTRANFLAGS=' -fpp')
 		env.Append(F90FLAGS=' -fpp')
 
 
@@ -658,10 +657,8 @@ if env['mode'] == 'debug':
 
 	if env['fortran_source'] == 'enable':
 		if env['compiler'] == 'gnu':
-			env.Append(FORTRANFLAGS='-g -O0')
 			env.Append(F90FLAGS='-g -O0')
 		elif env['compiler'] == 'intel':
-			env.Append(FORTRANFLAGS='-g -O0 -traceback')
 			env.Append(F90FLAGS='-g -O0 -traceback')
 
 
@@ -688,10 +685,8 @@ elif env['mode'] == 'release':
 
 	if env['fortran_source'] == 'enable':
 		if env['compiler'] == 'gnu':
-			env.Append(FORTRANFLAGS=' -O2')
 			env.Append(F90FLAGS=' -O2')
 		elif env['compiler'] == 'intel':
-			env.Append(FORTRANFLAGS=' -O2')
 			env.Append(F90FLAGS=' -O2')
 
 
@@ -736,10 +731,12 @@ if env['sweet_mpi'] == 'enable':
 	if env['compiler'] == 'gnu':
 		env.Replace(CXX = 'mpiCC')
 		env.Replace(LINK = 'mpiCC')
+		env.Replace(F90 = 'mpif90')
 
 	elif env['compiler'] == 'intel':
 		env.Replace(CXX = 'mpiicpc')
 		env.Replace(LINK = 'mpiicpc')
+		env.Replace(F90 = 'mpif90')
 
 	if env['threading'] != 'off' and env['compiler'] == 'intel':
 		env.Append(CXXFLAGS='-mt_mpi')
@@ -790,6 +787,7 @@ if env['libpfasst'] == 'enable':
 	env.Append(CXXFLAGS=['-DSWEET_LIBPFASST=1'])
 else:
 	env.Append(CXXFLAGS=['-DSWEET_LIBPFASST=0'])
+
 
 
 if env['libsph'] == 'enable':
@@ -891,9 +889,13 @@ if env['program_binary_name'] != '':
 #
 build_dir='/tmp/scons_build_'+exec_name+'/'
 
+if env['libpfasst'] == 'enable':
+	env.Append(F90FLAGS = ['-Ilocal_software/local_src/libpfasst/include'])
 
-# TODO: Make sure that Fortran output directory is used as output for module files during compilation step
-env['FORTRANMODDIR'] = build_dir
+#
+# USE build directory for Fortran module output
+#
+env.Append(F90FLAGS = '-J'+build_dir)
 
 
 env.Append(CPPPATH = ['/usr/local/include', '/usr/include'])
@@ -905,6 +907,8 @@ env.Append(CPPPATH = ['/usr/local/include', '/usr/include'])
 #
 
 #fortran_mod_dir = build_dir+'/fortran_mods'
+
+
 
 #if not os.path.exists(fortran_mod_dir):
 #    os.makedirs(fortran_mod_dir)
@@ -924,6 +928,8 @@ if hostname[0:4] == "mac-":
 
 # also include the 'src' directory to search for dependencies
 env.Append(CPPPATH = ['.', './src/', './src/include'])
+# also for Fortran!
+env.Append(F90PATH = ['.', './src/'])
 
 
 
@@ -939,9 +945,7 @@ env.Append(CPPPATH=['./local_software/local/include'])
 
 if env['program_name'] != 'DUMMY':
 
-	Export('env')
-	SConscript('./sconscript', variant_dir=build_dir, duplicate=0)
-	Import('env')
+	env.SConscript('sconscript', variant_dir=build_dir, duplicate=0, exports=['env'])
 
 	print('')
 	print('            Program: '+env['program_name'])

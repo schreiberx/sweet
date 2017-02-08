@@ -34,7 +34,7 @@ void foo_awesome();
  */
 SimulationVariables simVars;
 
-bool param_rexi_use_coriolis_formulation = true;
+bool param_use_coriolis_formulation = true;
 bool param_compute_error = false;
 double param_geostr_balance_freq_multiplier = 1.0;
 int param_timestepping_mode = 0.0;
@@ -253,7 +253,7 @@ private:
 			simVars.timecontrol.current_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
 
 			// standard time stepping
-			timestepping.run_rk_timestep(
+			timestepping.run_timestep(
 					this,
 					&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
 					io_prog_phi, io_prog_u, io_prog_v,
@@ -373,8 +373,8 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 	}
 
-	param_rexi_use_coriolis_formulation = simVars.bogus.var[0];
-	assert (param_rexi_use_coriolis_formulation == 0 || param_rexi_use_coriolis_formulation == 1);
+	param_use_coriolis_formulation = simVars.bogus.var[0];
+	assert (param_use_coriolis_formulation == 0 || param_use_coriolis_formulation == 1);
 	param_compute_error = simVars.bogus.var[1];
 
 

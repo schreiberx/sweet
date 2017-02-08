@@ -6,17 +6,22 @@
 # It assumes that you install all your libraries in subdirectories in $HOME/local
 #
 
-if [ "#$0" != "#-bash" ]; then
-	if [ "`basename $0`" != "bash" ]; then
-		echo "ERROR|"
-		echo "ERROR| THIS SCRIPT MAY NOT BE EXECUTED, BUT INCLUDED IN THE ENVIRONMENT VARIABLES!"
-		echo "ERROR| Use e.g. "
-		echo "     |"
-		echo "     |    $ source ./env_vars.sh"
-		echo "     |"
-		echo "ERROR| to setup the environment variables correctly"
-		echo "ERROR|"
-		return
+if [ "`basename $0`" == "env_vars.sh" ]; then
+	if [ "#$0" != "#-bash" ]; then
+		if [ "`basename $0`" != "bash" ]; then
+			if [ "`basename $0`" != "modules_env_yellowstone.inc" ]; then
+				echo "ERROR|"
+				echo "ERROR| >>> $0"
+				echo "ERROR| THIS SCRIPT MAY NOT BE EXECUTED, BUT INCLUDED IN THE ENVIRONMENT VARIABLES!"
+				echo "ERROR| Use e.g. "
+				echo "     |"
+				echo "     |    $ source ./env_vars.sh"
+				echo "     |"
+				echo "ERROR| to setup the environment variables correctly"
+				echo "ERROR|"
+				return
+			fi
+		fi
 	fi
 fi
 

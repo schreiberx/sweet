@@ -65,6 +65,7 @@ public:
 
 		o_data = exp(-d*d*exp_fac);
 	};
+
 	void correct_result_diff_lambda__grid_gaussian(double lon, double mu, double &o_data)
 	{
 		double phi1 = asin(mu);

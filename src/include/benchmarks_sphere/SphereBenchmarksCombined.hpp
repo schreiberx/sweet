@@ -36,8 +36,10 @@ public:
 			std::cout << "	1: Galweski" << std::endl;
 			std::cout << "	2: Use Gaussian bump initial conditions (0, pi/3)" << std::endl;
 			std::cout << "	3: Use Gaussian bump initial conditions (pi/3, pi/3)" << std::endl;
-			std::cout << "	4: Use geostrophic balance test case" << std::endl;
-			std::cout << "	5: Williamson test benchmark 1" << std::endl;
+			std::cout << "	4: Use Gaussian bump initial conditions (-pi/2, pi/4)" << std::endl;
+			std::cout << "	10: Use geostrophic balance test case" << std::endl;
+			std::cout << "	11: Williamson test benchmark 1 (DIV formulation)" << std::endl;
+			std::cout << "	12: Williamson test benchmark 1 (GRAD formulation)" << std::endl;
 			std::cout << std::endl;
 			FatalError("Benchmark scenario not selected");
 		}
@@ -79,34 +81,46 @@ public:
 		}
 		else if (io_simVars.setup.benchmark_scenario_id == 4)
 		{
+			BenchmarkGaussianDam::setup_initial_conditions_gaussian(o_h, o_u, o_v, io_simVars, -M_PI, M_PI/4.0);
+		}
+		else if (io_simVars.setup.benchmark_scenario_id == 5)
+		{
+			BenchmarkGaussianDam::setup_initial_conditions_gaussian(o_h, o_u, o_v, io_simVars, -M_PI, M_PI/4.0, 100.0);
+		}
+		else if (io_simVars.setup.benchmark_scenario_id == 6)
+		{
+			BenchmarkGaussianDam::setup_initial_conditions_gaussian(o_h, o_u, o_v, io_simVars, -M_PI, M_PI/4.0, 200.0);
+		}
+		else if (io_simVars.setup.benchmark_scenario_id == 10)
+		{
 			double inv_r = 1.0/io_simVars.sim.earth_radius;
 
 			o_v.spectral_set_zero();
 
 			o_h.physical_update_lambda(
-					[&](double i_lon, double i_lat, double &io_data)
-					{
-						io_data = io_simVars.sim.earth_radius*io_simVars.sim.coriolis_omega*std::cos(i_lat)*std::cos(i_lat)/io_simVars.sim.gravitation;
-					}
+				[&](double i_lon, double i_lat, double &io_data)
+				{
+					io_data = io_simVars.sim.earth_radius*io_simVars.sim.coriolis_omega*std::cos(i_lat)*std::cos(i_lat)/io_simVars.sim.gravitation;
+				}
 			);
 
 			if (io_simVars.misc.sphere_use_robert_functions)
 			{
 				o_u.physical_update_lambda(
-						[&](double i_lon, double i_lat, double &io_data)
-						{
-							io_data = std::cos(i_lat)*std::cos(i_lat);
-						}
+					[&](double i_lon, double i_lat, double &io_data)
+					{
+						io_data = std::cos(i_lat)*std::cos(i_lat);
+					}
 				);
 			}
 			else
 			{
 				o_u.physical_update_lambda(
-						[&](double i_lon, double i_lat, double &io_data)
-						{
-							//io_data = simVars.sim.earth_radius*2.0*simVars.sim.coriolis_omega*std::cos(i_lat)/simVars.sim.gravitation;
-							io_data = std::cos(i_lat);
-						}
+					[&](double i_lon, double i_lat, double &io_data)
+					{
+						//io_data = simVars.sim.earth_radius*2.0*simVars.sim.coriolis_omega*std::cos(i_lat)/simVars.sim.gravitation;
+						io_data = std::cos(i_lat);
+					}
 				);
 			}
 
@@ -131,10 +145,12 @@ public:
 				std::cout << "v_max_error for geostrophic balance case: " << v_max_error << std::endl;
 			}
 		}
-		else if (io_simVars.setup.benchmark_scenario_id == 5)
+		else if (io_simVars.setup.benchmark_scenario_id == 11)
 		{
 			/*
 			 * See Williamson test case, eq. (75), (76)
+			 *
+			 * phi_t = DIV (u phi)
 			 */
 
 			std::cout << "!!! WARNING !!!" << std::endl;
@@ -177,10 +193,10 @@ public:
 						double i_theta = i_lat;
 						double i_lambda = i_lon;
 						io_data =
-								u0*(
+							u0*(
 									std::cos(i_theta)*std::cos(io_simVars.setup.advection_rotation_angle) +
 									std::sin(i_theta)*std::cos(i_lambda)*std::sin(io_simVars.setup.advection_rotation_angle)
-							);
+								);
 
 						io_data *= std::cos(i_lat);
 					}
@@ -194,7 +210,7 @@ public:
 						io_data =
 							-u0*(
 									std::sin(i_lambda)*std::sin(io_simVars.setup.advection_rotation_angle)
-							);
+								);
 
 						io_data *= std::cos(i_lat);
 					}
@@ -208,10 +224,10 @@ public:
 						double i_theta = i_lat;
 						double i_lambda = i_lon;
 						io_data =
-								u0*(
-									std::cos(i_theta)*std::cos(io_simVars.setup.advection_rotation_angle) +
-									std::sin(i_theta)*std::cos(i_lambda)*std::sin(io_simVars.setup.advection_rotation_angle)
-							);
+							u0*(
+								std::cos(i_theta)*std::cos(io_simVars.setup.advection_rotation_angle) +
+								std::sin(i_theta)*std::cos(i_lambda)*std::sin(io_simVars.setup.advection_rotation_angle)
+								);
 					}
 				);
 
@@ -222,16 +238,11 @@ public:
 						double i_lambda = i_lon;
 						io_data =
 							-u0*(
-									std::sin(i_lambda)*std::sin(io_simVars.setup.advection_rotation_angle)
+								std::sin(i_lambda)*std::sin(io_simVars.setup.advection_rotation_angle)
 							);
 					}
 				);
 			}
-/*
-			o_h.physical_truncate();
-			o_u.physical_truncate();
-			o_v.physical_truncate();
-*/
 
 			std::cout << "!!! WARNING !!!" << std::endl;
 			std::cout << "!!! WARNING: Storing advection in output velocities !!!" << std::endl;
@@ -242,10 +253,12 @@ public:
 
 			std::cout << "advection_rotation_angle: " << io_simVars.setup.advection_rotation_angle << std::endl;
 		}
-		else if (io_simVars.setup.benchmark_scenario_id == 6)
+		else if (io_simVars.setup.benchmark_scenario_id == 12)
 		{
 			/**
 			 * See Williamson test case, eq. (75), (76)
+			 *
+			 * phi_t = phi GRAD u
 			 */
 
 			std::cout << "!!! WARNING !!!" << std::endl;
@@ -293,7 +306,7 @@ public:
 									std::sin(i_theta)*std::cos(i_lambda)*std::sin(io_simVars.setup.advection_rotation_angle)
 							);
 
-						io_data /= std::cos(i_lat);
+						io_data *= std::cos(i_lat);
 					}
 				);
 
@@ -307,7 +320,7 @@ public:
 									std::sin(i_lambda)*std::sin(io_simVars.setup.advection_rotation_angle)
 							);
 
-						io_data /= std::cos(i_lat);
+						io_data *= std::cos(i_lat);
 					}
 				);
 			}
@@ -351,6 +364,12 @@ public:
 			io_simVars.misc.output_time_scale = 1.0/(60.0*60.0);
 
 			std::cout << "advection_rotation_angle: " << io_simVars.setup.advection_rotation_angle << std::endl;
+		}
+		else if (io_simVars.setup.benchmark_scenario_id == 20)
+		{
+			o_h.physical_set_all_value(io_simVars.sim.h0);
+			o_u.physical_set_all_value(0);
+			o_v.physical_set_all_value(0);
 		}
 		else
 		{

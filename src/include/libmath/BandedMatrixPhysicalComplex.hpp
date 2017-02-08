@@ -48,7 +48,7 @@ public:
 	int halosize_off_diagonal;
 	int num_diagonals;
 
-	SphereDataConfig *sphConfig;
+	SphereDataConfig *sphereDataConfig;
 
 
 public:
@@ -57,7 +57,7 @@ public:
 		fortran_data(nullptr),
 		halosize_off_diagonal(-1),
 		num_diagonals(-1),
-		sphConfig(nullptr)
+		sphereDataConfig(nullptr)
 	{
 	}
 
@@ -67,7 +67,7 @@ public:
 	 */
 	void zeroAll()
 	{
-		for (int i = 0; i < sphConfig->spectral_complex_array_data_number_of_elements*num_diagonals; i++)
+		for (int i = 0; i < sphereDataConfig->spectral_complex_array_data_number_of_elements*num_diagonals; i++)
 			data[i] = T(0);
 	}
 
@@ -77,18 +77,18 @@ public:
 	 * Setup data storage
 	 */
 	void setup(
-			SphereDataConfig *i_sphConfig,				///< Handler to sphConfig
+			SphereDataConfig *i_sphereDataConfig,				///< Handler to sphereDataConfig
 			int i_halosize_offdiagonal = 0		///< Size of the halo around. A value of 2 allocates data for 5 diagonals.
 	)
 	{
 		assert(data == nullptr);
 
-		sphConfig = i_sphConfig;
+		sphereDataConfig = i_sphereDataConfig;
 
 		halosize_off_diagonal = i_halosize_offdiagonal;
 		num_diagonals = 2*halosize_off_diagonal+1;
 
-		data = MemBlockAlloc::alloc<T>( sizeof(T)*sphConfig->spectral_complex_array_data_number_of_elements*num_diagonals );
+		data = MemBlockAlloc::alloc<T>( sizeof(T)*sphereDataConfig->spectral_complex_array_data_number_of_elements*num_diagonals );
 
 		zeroAll();
 	}
@@ -103,7 +103,7 @@ public:
 			int m		///< row related to P Fourier mode n
 	)
 	{
-		std::size_t idx = sphConfig->getArrayIndexByModes_Complex_NCompact(n, m);
+		std::size_t idx = sphereDataConfig->getArrayIndexByModes_Complex_NCompact(n, m);
 		return data+idx*num_diagonals;
 	}
 
@@ -128,11 +128,11 @@ public:
 
 //		assert(i_row_n >= i_row_m);
 		//assert(i_row_m >= 0);
-		assert(i_row_m <= sphConfig->spectral_modes_m_max);
+		assert(i_row_m <= sphereDataConfig->spectral_modes_m_max);
 
 		int n = i_row_n+rel_n;
 
-		if (n < 0 || n < std::abs(i_row_m) || n > sphConfig->spectral_modes_n_max)
+		if (n < 0 || n < std::abs(i_row_m) || n > sphereDataConfig->spectral_modes_n_max)
 			return dummy;
 
 		int idx = rel_n + halosize_off_diagonal;
@@ -160,11 +160,11 @@ public:
 
 //		assert(i_row_n >= i_row_m);
 		//assert(i_row_m >= 0);
-		assert(i_row_m <= sphConfig->spectral_modes_m_max);
+		assert(i_row_m <= sphereDataConfig->spectral_modes_m_max);
 
 		int n = i_row_n+rel_n;
 
-		if (n < 0 || n < i_row_m || n > sphConfig->spectral_modes_n_max)
+		if (n < 0 || n < i_row_m || n > sphereDataConfig->spectral_modes_n_max)
 			return;
 
 		int idx = rel_n + halosize_off_diagonal;
@@ -191,11 +191,11 @@ public:
 
 //		assert(i_row_n >= i_row_m);
 		//assert(i_row_m >= 0);
-		assert(i_row_m <= sphConfig->spectral_modes_m_max);
+		assert(i_row_m <= sphereDataConfig->spectral_modes_m_max);
 
 		int n = i_row_n+rel_n;
 
-		if (n < 0 || n < i_row_m || n > sphConfig->spectral_modes_n_max)
+		if (n < 0 || n < i_row_m || n > sphereDataConfig->spectral_modes_n_max)
 			return;
 
 		int idx = rel_n + halosize_off_diagonal;
@@ -210,13 +210,13 @@ public:
 	{
 		if (data != nullptr)
 		{
-			MemBlockAlloc::free(data, sizeof(T)*sphConfig->spectral_complex_array_data_number_of_elements*num_diagonals);
+			MemBlockAlloc::free(data, sizeof(T)*sphereDataConfig->spectral_complex_array_data_number_of_elements*num_diagonals);
 			data = nullptr;
 		}
 
 		if (fortran_data != nullptr)
 		{
-			MemBlockAlloc::free(fortran_data, sizeof(T)*sphConfig->spectral_complex_array_data_number_of_elements*num_diagonals);
+			MemBlockAlloc::free(fortran_data, sizeof(T)*sphereDataConfig->spectral_complex_array_data_number_of_elements*num_diagonals);
 			fortran_data = nullptr;
 		}
 	}
@@ -233,11 +233,11 @@ public:
 	void convertToFortranArray()
 	{
 		if (fortran_data == nullptr)
-			fortran_data = MemBlockAlloc::alloc<T>(sizeof(T)*sphConfig->spectral_complex_array_data_number_of_elements*num_diagonals);
+			fortran_data = MemBlockAlloc::alloc<T>(sizeof(T)*sphereDataConfig->spectral_complex_array_data_number_of_elements*num_diagonals);
 
-		for (int j = 0; j < sphConfig->spectral_complex_array_data_number_of_elements; j++)
+		for (int j = 0; j < sphereDataConfig->spectral_complex_array_data_number_of_elements; j++)
 			for (int i = 0; i < num_diagonals; i++)
-				fortran_data[i*sphConfig->spectral_complex_array_data_number_of_elements + j] = data[j*num_diagonals + i];
+				fortran_data[i*sphereDataConfig->spectral_complex_array_data_number_of_elements + j] = data[j*num_diagonals + i];
 	}
 
 
@@ -245,11 +245,11 @@ public:
 	void print()
 	{
 		std::size_t idx = 0;
-		for (int m = -sphConfig->spectral_modes_m_max; m <= sphConfig->spectral_modes_m_max; m++)
+		for (int m = -sphereDataConfig->spectral_modes_m_max; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
-			std::cout << "Meridional block M=" << m << " with N=[" << m << ", " << sphConfig->spectral_modes_n_max << "]" << std::endl;
+			std::cout << "Meridional block M=" << m << " with N=[" << m << ", " << sphereDataConfig->spectral_modes_n_max << "]" << std::endl;
 
-			for (int n = std::abs(m); n <= sphConfig->spectral_modes_n_max; n++)
+			for (int n = std::abs(m); n <= sphereDataConfig->spectral_modes_n_max; n++)
 			{
 				if (n == m)
 				{
@@ -285,12 +285,12 @@ public:
 	void print_mblock(int m)
 	{
 //		std::size_t idx = 0;
-//		for (int m = 0; m <= sphConfig->spec_m_max; m++)
+//		for (int m = 0; m <= sphereDataConfig->spec_m_max; m++)
 		{
-			std::size_t idx = sphConfig->getArrayIndexByModes_Complex_NCompact(std::abs(m), m);
-			std::cout << "Meridional block M=" << m << " with N=[" << m << ", " << sphConfig->spectral_modes_n_max << "]" << std::endl;
+			std::size_t idx = sphereDataConfig->getArrayIndexByModes_Complex_NCompact(std::abs(m), m);
+			std::cout << "Meridional block M=" << m << " with N=[" << m << ", " << sphereDataConfig->spectral_modes_n_max << "]" << std::endl;
 
-			for (int n = std::abs(m); n <= sphConfig->spectral_modes_n_max; n++)
+			for (int n = std::abs(m); n <= sphereDataConfig->spectral_modes_n_max; n++)
 			{
 				if (n == m)
 				{
@@ -330,11 +330,11 @@ public:
 		assert(fortran_data != nullptr);
 
 		std::size_t idx = 0;
-		for (int m = -sphConfig->spectral_modes_m_max; m <= sphConfig->spectral_modes_m_max; m++)
+		for (int m = -sphereDataConfig->spectral_modes_m_max; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
-			std::cout << "Meridional block M=" << m << " with N=[" << m << ", " << sphConfig->spectral_modes_n_max << "]" << std::endl;
+			std::cout << "Meridional block M=" << m << " with N=[" << m << ", " << sphereDataConfig->spectral_modes_n_max << "]" << std::endl;
 
-			for (int n = std::abs(m); n <= sphConfig->spectral_modes_n_max; n++)
+			for (int n = std::abs(m); n <= sphereDataConfig->spectral_modes_n_max; n++)
 			{
 				if (n == std::abs(m))
 				{
@@ -357,7 +357,7 @@ public:
 
 				for (int i = 0; i < num_diagonals; i++)
 				{
-					std::cout << fortran_data[idx+i*sphConfig->spectral_complex_array_data_number_of_elements];
+					std::cout << fortran_data[idx+i*sphereDataConfig->spectral_complex_array_data_number_of_elements];
 					if (i != num_diagonals-1)
 						std::cout << "\t";
 				}

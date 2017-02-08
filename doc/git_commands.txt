@@ -1,0 +1,13 @@
+Overview of helpful git commands
+
+#git remote  set-url origin https://github.com/schreiberx/sweet.git
+
+# Add foobar repository with name foobar
+git remote add foobar https://github.com/foobar/sweet.git
+
+git checkout foobar
+git push foobar
+
+git merge foobar/master
+git fetch foobar
+git pull foobar

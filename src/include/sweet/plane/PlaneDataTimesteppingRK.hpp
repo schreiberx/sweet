@@ -82,7 +82,7 @@ public:
 	 * specified in the simulation variables.
 	 */
 	template <class BaseClass>
-	void run_rk_timestep(
+	void run_timestep(
 			BaseClass *i_baseClass,
 			void (BaseClass::*i_compute_euler_timestep_update)(
 					const PlaneData &i_P,	///< prognostic variables
