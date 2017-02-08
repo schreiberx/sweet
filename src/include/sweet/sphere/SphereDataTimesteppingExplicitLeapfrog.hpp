@@ -9,13 +9,6 @@
 
 class SphereDataTimesteppingExplicitLeapfrog
 {
-#if 0
-	// Leapfrog data storages
-	SphereData** RK_h_t;
-	SphereData** RK_u_t;
-	SphereData** RK_v_t;
-#endif
-
 	// Previous time step values
 	SphereData* RK_h_prev;
 	SphereData* RK_u_prev;
@@ -45,9 +38,9 @@ public:
 		RK_h_prev(nullptr),
 		RK_u_prev(nullptr),
 		RK_v_prev(nullptr),
+		leapfrog_robert_asselin_filter(0),
 		leapfrog_order(-1),
-		timestep_id(0),
-		leapfrog_robert_asselin_filter(0)
+		timestep_id(0)
 	{
 	}
 
@@ -102,18 +95,6 @@ public:
 		if (N <= 0 || N > 1)
 			FatalError("Only 1st order leapfrog is currently supported!");
 
-#if 0
-		RK_h_t = new SphereData*[N];
-		RK_u_t = new SphereData*[N];
-		RK_v_t = new SphereData*[N];
-
-		for (int i = 0; i < N; i++)
-		{
-			RK_h_t[i] = new SphereData(i_test_buffer.sphereDataConfig);
-			RK_u_t[i] = new SphereData(i_test_buffer.sphereDataConfig);
-			RK_v_t[i] = new SphereData(i_test_buffer.sphereDataConfig);
-		}
-#endif
 
 		// storage for previous time step
 		RK_h_prev = new SphereData(i_test_buffer.sphereDataConfig);
@@ -135,27 +116,8 @@ public:
 
 	~SphereDataTimesteppingExplicitLeapfrog()
 	{
-		int N = leapfrog_order;
-
 		if (RK_h_prev != nullptr)
 		{
-#if 0
-			for (int i = 0; i < N; i++)
-			{
-				delete RK_h_t[i];
-				delete RK_u_t[i];
-				delete RK_v_t[i];
-			}
-
-			delete [] RK_h_t;
-			delete [] RK_u_t;
-			delete [] RK_v_t;
-
-			RK_h_t = nullptr;
-			RK_u_t = nullptr;
-			RK_v_t = nullptr;
-#endif
-
 			cleanup();
 		}
 	}
@@ -206,9 +168,9 @@ public:
 
 		double &dt = o_dt;
 
-		SphereData &h_prev = *RK_h_prev;
-		SphereData &u_prev = *RK_u_prev;
-		SphereData &v_prev = *RK_v_prev;
+		SphereData &h_prev_u = *RK_h_prev;
+		SphereData &u_prev_u = *RK_u_prev;
+		SphereData &v_prev_u = *RK_v_prev;
 
 		SphereData &h_dt = *RK_h_dt;
 		SphereData &u_dt = *RK_u_dt;
@@ -234,14 +196,16 @@ public:
 		{
 			if (timestep_id == 0)
 			{
-				h_prev = io_h;
-				u_prev = io_u;
-				v_prev = io_v;
+				h_prev_u = io_h;
+				u_prev_u = io_u;
+				v_prev_u = io_v;
 
 				// do standard Euler time step
 				io_h += dt * h_dt;
 				io_u += dt * u_dt;
 				io_v += dt * v_dt;
+
+//				std::cout << SphereData(io_h).physical_reduce_sum() << "\t" << SphereData(io_u).physical_reduce_sum() << "\t" << SphereData(io_v).physical_reduce_sum() << std::endl;
 			}
 			else
 			{
@@ -249,13 +213,13 @@ public:
 				u_tmp.swap(io_u);
 				v_tmp.swap(io_v);
 
-				io_h = h_prev + 2.0*dt * h_dt;
-				io_u = u_prev + 2.0*dt * u_dt;
-				io_v = v_prev + 2.0*dt * v_dt;
+				io_h = h_prev_u + 2.0*dt * h_dt;
+				io_u = u_prev_u + 2.0*dt * u_dt;
+				io_v = v_prev_u + 2.0*dt * v_dt;
 
-				h_prev.swap(h_tmp);
-				u_prev.swap(u_tmp);
-				v_prev.swap(v_tmp);
+				h_prev_u.swap(h_tmp);
+				u_prev_u.swap(u_tmp);
+				v_prev_u.swap(v_tmp);
 			}
 		}
 		else
@@ -272,9 +236,9 @@ public:
 			if (timestep_id == 0)
 			{
 				// backup previous values
-				h_prev = io_h;
-				u_prev = io_u;
-				v_prev = io_v;
+				h_prev_u = io_h;
+				u_prev_u = io_u;
+				v_prev_u = io_v;
 
 				// do standard Euler time step
 				io_h += dt * h_dt;
@@ -284,14 +248,18 @@ public:
 			else
 			{
 				// F*(t+dt) = F(t-dt) + 2 dt (dF/dt)
-				h_tmp = h_prev + 2.0*dt*h_dt;
-				u_tmp = u_prev + 2.0*dt*u_dt;
-				v_tmp = v_prev + 2.0*dt*v_dt;
+
+				// V(t+dt) = U(t-dt) + 2 dt (dU/dt)
+				h_tmp = h_prev_u + 2.0*dt*h_dt;
+				u_tmp = u_prev_u + 2.0*dt*u_dt;
+				v_tmp = v_prev_u + 2.0*dt*v_dt;
 
 				// F(t) = F*(t) + v*[ f*(t+dt) + F(t-dt) - 2 F*(t) ]
-				h_prev = io_h + leapfrog_robert_asselin_filter*(h_tmp + h_prev - 2.0*io_h);
-				u_prev = io_u + leapfrog_robert_asselin_filter*(u_tmp + u_prev - 2.0*io_u);
-				v_prev = io_v + leapfrog_robert_asselin_filter*(v_tmp + v_prev - 2.0*io_v);
+
+				// U(t) = V(t) + 0.5*v*[ V(t+dt) + U(t-dt) - 2 V(t) ]
+				h_prev_u = io_h + leapfrog_robert_asselin_filter*0.5*(h_tmp + h_prev_u - 2.0*io_h);
+				u_prev_u = io_u + leapfrog_robert_asselin_filter*0.5*(u_tmp + u_prev_u - 2.0*io_u);
+				v_prev_u = io_v + leapfrog_robert_asselin_filter*0.5*(v_tmp + v_prev_u - 2.0*io_v);
 
 				io_h.swap(h_tmp);
 				io_u.swap(u_tmp);
@@ -421,8 +389,8 @@ public:
 				v_tmp = v_prev + 2.0*dt*v_dt;
 
 				// F(t) = F*(t) + v*[ f*(t+dt) + F(t-dt) - 2 F*(t) ]
-				u_prev = io_u + leapfrog_robert_asselin_filter*(u_tmp + u_prev - 2.0*io_u);
-				v_prev = io_v + leapfrog_robert_asselin_filter*(v_tmp + v_prev - 2.0*io_v);
+				u_prev = io_u + leapfrog_robert_asselin_filter*0.5*(u_tmp + u_prev - 2.0*io_u);
+				v_prev = io_v + leapfrog_robert_asselin_filter*0.5*(v_tmp + v_prev - 2.0*io_v);
 
 				io_u.swap(u_tmp);
 				io_v.swap(v_tmp);
@@ -515,7 +483,7 @@ public:
 				h_tmp = h_prev + 2.0*dt*h_dt;
 
 				// F(t) = F*(t) + v*[ f*(t+dt) + F(t-dt) - 2 F*(t) ]
-				h_prev = io_h + leapfrog_robert_asselin_filter*(h_tmp + h_prev - 2.0*io_h);
+				h_prev = io_h + leapfrog_robert_asselin_filter*0.5*(h_tmp + h_prev - 2.0*io_h);
 
 				io_h.swap(h_tmp);
 			}

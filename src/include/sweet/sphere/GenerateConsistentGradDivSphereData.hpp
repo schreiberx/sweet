@@ -187,6 +187,8 @@ private:
 
 		SphereDataTimesteppingExplicitRK timestepping;
 
+		timestepping.resetAndSetup(prog_h, 4);
+
 		std::cout << max_simulation_time << ", " << current_simulation_time << std::endl;
 		while (max_simulation_time > 0.0 && max_simulation_time > current_simulation_time)
 		{
@@ -288,10 +290,10 @@ public:
 		double timestep_size = simVars.sim.earth_radius/(
 				std::max(simVars.disc.res_physical[0], simVars.disc.res_physical[1])*
 					std::max(simVars.sim.gravitation, std::max(simVars.sim.h0, simVars.sim.coriolis_omega))
-		);
+		)*0.1;
 
 		// run 200 time steps
-		double simtime = timestep_size * 100;
+		double simtime = timestep_size * 10;
 
 		p_run_timesteps(timestep_size, simtime);
 

@@ -38,7 +38,8 @@ public:
 			std::cout << "	3: Use Gaussian bump initial conditions (pi/3, pi/3)" << std::endl;
 			std::cout << "	4: Use Gaussian bump initial conditions (-pi/2, pi/4)" << std::endl;
 			std::cout << "	10: Use geostrophic balance test case" << std::endl;
-			std::cout << "	11: Williamson test benchmark 1" << std::endl;
+			std::cout << "	11: Williamson test benchmark 1 (DIV formulation)" << std::endl;
+			std::cout << "	12: Williamson test benchmark 1 (GRAD formulation)" << std::endl;
 			std::cout << std::endl;
 			FatalError("Benchmark scenario not selected");
 		}
@@ -81,6 +82,14 @@ public:
 		else if (io_simVars.setup.benchmark_scenario_id == 4)
 		{
 			BenchmarkGaussianDam::setup_initial_conditions_gaussian(o_h, o_u, o_v, io_simVars, -M_PI, M_PI/4.0);
+		}
+		else if (io_simVars.setup.benchmark_scenario_id == 5)
+		{
+			BenchmarkGaussianDam::setup_initial_conditions_gaussian(o_h, o_u, o_v, io_simVars, -M_PI, M_PI/4.0, 100.0);
+		}
+		else if (io_simVars.setup.benchmark_scenario_id == 6)
+		{
+			BenchmarkGaussianDam::setup_initial_conditions_gaussian(o_h, o_u, o_v, io_simVars, -M_PI, M_PI/4.0, 200.0);
 		}
 		else if (io_simVars.setup.benchmark_scenario_id == 10)
 		{
@@ -297,7 +306,7 @@ public:
 									std::sin(i_theta)*std::cos(i_lambda)*std::sin(io_simVars.setup.advection_rotation_angle)
 							);
 
-						io_data /= std::cos(i_lat);
+						io_data *= std::cos(i_lat);
 					}
 				);
 
@@ -311,7 +320,7 @@ public:
 									std::sin(i_lambda)*std::sin(io_simVars.setup.advection_rotation_angle)
 							);
 
-						io_data /= std::cos(i_lat);
+						io_data *= std::cos(i_lat);
 					}
 				);
 			}
@@ -358,9 +367,9 @@ public:
 		}
 		else if (io_simVars.setup.benchmark_scenario_id == 20)
 		{
-			o_h.spectral_set_zero();
-			o_u.spectral_set_zero();
-			o_v.spectral_set_zero();
+			o_h.physical_set_all_value(io_simVars.sim.h0);
+			o_u.physical_set_all_value(0);
+			o_v.physical_set_all_value(0);
 		}
 		else
 		{

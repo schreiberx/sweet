@@ -18,6 +18,8 @@
 #include <sweet/sphere/SphereDataComplex.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalReal.hpp>
+#include <sweet/sphere/ErrorCheck.hpp>
+
 
 
 SimulationVariables simVars;
@@ -26,9 +28,9 @@ void run_tests(
 		SphereDataConfig *sphereDataConfig
 )
 {
-	double epsilon = 1e-12;
-	epsilon *= (sphereDataConfig->spectral_modes_n_max);
-	std::cout << "Using max allowed error of " << epsilon << std::endl;
+	double error_threshold = 1e-10;
+	error_threshold *= std::sqrt(sphereDataConfig->spectral_modes_n_max);
+	std::cout << "Using max allowed error of " << error_threshold << std::endl;
 
 	std::cout << std::setprecision(10);
 
@@ -58,17 +60,16 @@ void run_tests(
 
 
 
+
 		/*
 		 * Test Zx = c*Phi(mu)
 		 */
 		if (true)
 		{
-			std::cout << "Test Zx = c*Phi(mu)";
-
 			SphBandedMatrixPhysicalReal<std::complex<double>> sphSolver;
 			sphSolver.setup(sphereDataConfig, 2);
 
-			sphSolver.solver_component_scalar_phi(alpha);
+			sphSolver.solver_component_scalar_phi(alpha.real());
 
 			/*
 			 * Setup RHS = scalar_a * phi(lambda,mu)
@@ -85,11 +86,7 @@ void run_tests(
 
 			SphereData x_numerical = sphSolver.solve(b);
 
-			double error_max = x_numerical.physical_reduce_max(x_result);
-			std::cout << " ||| Error: " << error_max << std::endl;
-
-			if (error_max > epsilon)
-				FatalError("ERROR THRESHOLD EXCEEDED!");
+			ErrorCheck::check(x_numerical, x_result, "Test Zx = c*Phi(mu)", error_threshold);
 		}
 
 		/*
@@ -97,14 +94,11 @@ void run_tests(
 		 */
 		if (true)
 		{
-			std::cout << "Test Zx = mu*Phi(lam,mu) + a*Phi(lam,mu)";
-
-			SphBandedMatrixPhysicalReal<std::complex<double>> sphSolver;
+			SphBandedMatrixPhysicalReal< std::complex<double> > sphSolver;
 			sphSolver.setup(sphereDataConfig, 2);
 
-			sphSolver.solver_component_scalar_phi(alpha);
+			sphSolver.solver_component_scalar_phi(alpha.real());
 			sphSolver.solver_component_mu_phi();
-//				sphSolver.lhs.print();
 
 			SphereData b(sphereDataConfig);
 			b.physical_update_lambda_gaussian_grid(
@@ -119,15 +113,7 @@ void run_tests(
 
 			SphereData x_numerical = sphSolver.solve(b);
 
-//				x_numerical.spat_write_file("O_numerical.csv");
-//				x_result.spat_write_file("O_result.csv");
-//				(x_result-x_numerical).spat_write_file("O_diff.csv");
-
-			double error_max = x_numerical.physical_reduce_max(x_result);
-			std::cout << " ||| Error: " << error_max << std::endl;
-
-			if (error_max > epsilon)
-				FatalError("ERROR THRESHOLD EXCEEDED!");
+			ErrorCheck::check(x_numerical, x_result, "Test Zx = mu*Phi(lam,mu) + a*Phi(lam,mu)", error_threshold);
 		}
 
 		/*
@@ -135,8 +121,6 @@ void run_tests(
 		 */
 		if (true)
 		{
-			std::cout << "Test Zx = (1-mu*mu)*d/dmu Phi(lam,mu) + a*Phi(lam,mu)";
-
 			SphBandedMatrixPhysicalReal<std::complex<double>> sphSolver;
 			sphSolver.setup(sphereDataConfig, 2);
 
@@ -160,11 +144,7 @@ void run_tests(
 
 			SphereData x_numerical = sphSolver.solve(b);
 
-			double error_max = x_numerical.physical_reduce_max(x_result);
-			std::cout << " ||| Error: " << error_max << std::endl;
-
-			if (error_max > epsilon)
-				FatalError("ERROR THRESHOLD EXCEEDED!");
+			ErrorCheck::check(x_numerical, x_result, "Zx = (1-mu*mu)*d/dmu Phi(lam,mu) + a*Phi(lam,mu)", error_threshold);
 		}
 
 		std::cout << "************************************************************" << std::endl;
@@ -178,8 +158,6 @@ void run_tests(
 		 */
 		if (true)
 		{
-			std::cout << "Test Z1 = alpha^4*Phi(mu)";
-
 			SphBandedMatrixPhysicalReal<std::complex<double>> sphSolver;
 			sphSolver.setup(sphereDataConfig, 2);
 
@@ -197,11 +175,7 @@ void run_tests(
 
 			SphereData x_numerical = sphSolver.solve(b);
 
-			double error_max = x_numerical.physical_reduce_max(x_result);
-			std::cout << " ||| Error: " << error_max << std::endl;
-
-			if (error_max > epsilon)
-				FatalError("ERROR THRESHOLD EXCEEDED!");
+			ErrorCheck::check(x_numerical, x_result, "Test Z1 = alpha^4*Phi(mu)", error_threshold);
 		}
 
 		/*
@@ -228,11 +202,7 @@ void run_tests(
 
 			SphereData x_numerical = sphSolver.solve(b);
 
-			double error_max = x_numerical.physical_reduce_max(x_result);
-			std::cout << " ||| Error: " << error_max << std::endl;
-
-			if (error_max > epsilon)
-				FatalError("ERROR THRESHOLD EXCEEDED!");
+			ErrorCheck::check(x_numerical, x_result, "Test Z2 = mu^2*Phi(lam,mu)", error_threshold);
 		}
 
 		/*
@@ -243,16 +213,16 @@ void run_tests(
 		{
 			std::cout << "Test Z2 = mu^2*Phi(lam,mu) (DOUBLE MODES)";
 
-			SphereDataConfig sphConfigDouble;
-			sphConfigDouble.setupDouble(sphereDataConfig);
+			SphereDataConfig sphereDataConfigDouble;
+			sphereDataConfigDouble.setupDouble(sphereDataConfig);
 
 			SphBandedMatrixPhysicalReal< std::complex<double> > sphSolver;
-			sphSolver.setup(&sphConfigDouble, 2);
+			sphSolver.setup(&sphereDataConfigDouble, 2);
 
 			std::complex<double> scalar = alpha*alpha*two_omega*two_omega;
 			sphSolver.solver_component_rexi_z2(scalar, r);
 
-			SphereData b(&sphConfigDouble);
+			SphereData b(&sphereDataConfigDouble);
 			b.physical_update_lambda_gaussian_grid(
 					[&](double lat, double mu, double &io_data){
 						testSolutions.test_function__grid_gaussian(lat,mu,io_data);
@@ -275,7 +245,7 @@ void run_tests(
 			double error_max = x_numerical.physical_reduce_max(x_result);
 			std::cout << " ||| Error: " << error_max << std::endl;
 
-			if (error_max > epsilon)
+			if (error_max > error_threshold)
 				FatalError("ERROR THRESHOLD EXCEEDED!");
 		}
 
@@ -305,11 +275,7 @@ void run_tests(
 
 			SphereData x_numerical = sphSolver.solve(b);
 
-			double error_max = x_numerical.physical_reduce_max(x_result);
-			std::cout << " ||| Error: " << error_max << std::endl;
-
-			if (error_max > epsilon)
-				FatalError("ERROR THRESHOLD EXCEEDED!");
+			ErrorCheck::check(x_numerical, x_result, "Test Z3 = mu^4*Phi(lam,mu)", error_threshold);
 		}
 
 
@@ -345,11 +311,7 @@ void run_tests(
 
 			SphereData x_numerical = sphSolver.solve(b);
 
-			double error_max = x_numerical.physical_reduce_max(x_result);
-			std::cout << " ||| Error: " << error_max << std::endl;
-
-			if (error_max > epsilon)
-				FatalError("ERROR THRESHOLD EXCEEDED!");
+			ErrorCheck::check(x_numerical, x_result, "Test Z4 = grad_j(mu) grad_i(Phi(lam,mu)) = d/dlambda Phi(lam,mu)", error_threshold);
 		}
 
 
@@ -388,7 +350,7 @@ void run_tests(
 			double error_max = x_numerical.physical_reduce_max(x_result);
 			std::cout << " ||| Error: " << error_max << std::endl;
 
-			if (error_max > epsilon)
+			if (error_max > error_threshold)
 				FatalError("ERROR THRESHOLD EXCEEDED!");
 		}
 
@@ -428,7 +390,7 @@ void run_tests(
 			double error_max = x_numerical.physical_reduce_max(x_result);
 			std::cout << " ||| Error: " << error_max << std::endl;
 
-			if (error_max > epsilon)
+			if (error_max > error_threshold)
 				FatalError("ERROR THRESHOLD EXCEEDED!");
 		}
 
@@ -464,7 +426,7 @@ void run_tests(
 			double error_max = x_numerical.physical_reduce_max(x_result);
 			std::cout << " ||| Error: " << error_max << std::endl;
 
-			if (error_max > epsilon)
+			if (error_max > error_threshold)
 				FatalError("ERROR THRESHOLD EXCEEDED!");
 		}
 
@@ -501,7 +463,7 @@ void run_tests(
 			double error_max = x_numerical.physical_reduce_max(x_result);
 			std::cout << " ||| Error: " << error_max << std::endl;
 
-			if (error_max > epsilon)
+			if (error_max > error_threshold)
 				FatalError("ERROR THRESHOLD EXCEEDED!");
 		}
 

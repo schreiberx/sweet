@@ -49,7 +49,7 @@
  */
 SimulationVariables simVars;
 
-bool param_rexi_use_coriolis_formulation = true;
+bool param_use_coriolis_formulation = true;
 bool param_compute_error = false;
 double param_geostr_balance_freq_multiplier = 1.0;
 int param_timestepping_mode = 0.0;
@@ -385,8 +385,8 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 	}
 
-	param_rexi_use_coriolis_formulation = simVars.bogus.var[0];
-	assert (param_rexi_use_coriolis_formulation == 0 || param_rexi_use_coriolis_formulation == 1);
+	param_use_coriolis_formulation = simVars.bogus.var[0];
+	assert (param_use_coriolis_formulation == 0 || param_use_coriolis_formulation == 1);
 	param_compute_error = simVars.bogus.var[1];
 
 

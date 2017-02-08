@@ -95,7 +95,6 @@ private:
 		return integration_helper.integrate(to_int_fun, int_start, int_end, error_threshold);
 #else
 		return GaussQuadrature::integrate5_intervals_adaptive_linear<double>(int_start, int_end, to_int_fun, error_threshold);
-//		return GaussQuadrature::integrate5_intervals(int_start, int_end, to_int_fun, 5);
 #endif
 	}
 
@@ -135,8 +134,10 @@ public:
 
 			// start at the south pole
 			int_start = -M_PI*0.5;
+
 			// first latitude gaussian point
 			int_end = sphereDataConfig->lat[j];
+
 			// 1d area of integration
 			int_delta = int_end - int_start;
 

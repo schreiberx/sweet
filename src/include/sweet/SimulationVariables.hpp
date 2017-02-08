@@ -1126,7 +1126,6 @@ public:
 				std::cout << "						     2: Linear + nonlinear advection only (needs -H to be set)" << std::endl;
 				std::cout << "" << std::endl;
 				std::cout << "Rexi" << std::endl;
-				std::cout << "	--rexi [bool]	Time stepping method: 0: explicit, 1: REXI, -1: implicit" << std::endl;
 				std::cout << "	--rexi-h [float]	REXI parameter h" << std::endl;
 				std::cout << "	--rexi-m [int]	REXI parameter M" << std::endl;
 				std::cout << "	--rexi-l [int]	REXI parameter L" << std::endl;

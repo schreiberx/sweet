@@ -430,8 +430,9 @@ public:
 
 
 
+
 	void setupAdditionalModes(
-			SphereDataConfig *i_sphConfig,
+			SphereDataConfig *i_sphereDataConfig,
 			int i_additional_modes_longitude,
 			int i_additional_modes_latitude
 	)
@@ -439,8 +440,8 @@ public:
 		assert(shtns == nullptr);
 
 		setupAutoPhysicalSpace(
-				i_sphConfig->spectral_modes_m_max + i_additional_modes_longitude,
-				i_sphConfig->spectral_modes_n_max + i_additional_modes_latitude,
+				i_sphereDataConfig->spectral_modes_m_max + i_additional_modes_longitude,
+				i_sphereDataConfig->spectral_modes_n_max + i_additional_modes_latitude,
 				&physical_num_lon,
 				&physical_num_lat
 		);
@@ -450,7 +451,7 @@ public:
 
 	void shutdown()
 	{
-		// check if SPHConfig was initialized
+		// check if sphereDataConfig was initialized
 		if (shtns == nullptr)
 			return;
 

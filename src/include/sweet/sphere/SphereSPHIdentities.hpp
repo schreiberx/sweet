@@ -51,15 +51,17 @@ public:
 	static double R(double k, double m)
 	{
 		double n=k+1;
-//		assert(n >= 0);
-		if (n < 0)
-			n = -n-1;
+
+//		if (n < 0)
+//			n = -n-1;
+
 		if (n < 0)
 			return 0;
+
 		if (n < std::abs(m))
 			return 0;
-		if (n*n-m*m < 0)
-			return 0;
+
+		assert (n*n-m*m >= 0);
 
 		assert(n >= 0);
 		return std::sqrt((n*n-m*m)/(4.0*n*n-1.0));
@@ -69,18 +71,49 @@ public:
 	static double S(double k, double m)
 	{
 		double n=k-1;
-//		assert(n >= 0);
-		if (n < 0)
-			n = -n-1;
+
+//		if (n < 0)
+//			n = -n-1;
+
 		if (n < 0)
 			return 0;
+
 		if (n < std::abs(m))
 			return 0;
-		if (n*n-m*m < 0)
-			return 0;
+
+		assert (n*n-m*m >= 0);
 
 		assert(n >= 0);
 		return std::sqrt(((n+1.0)*(n+1.0)-m*m)/((2.0*n+1.0)*(2.0*n+3.0)));
+	}
+
+
+	inline
+	static std::complex<double> Rc(double k, double m)
+	{
+		double n=k+1;
+
+		if (n < std::abs(m))
+			return 0;
+
+		assert (n*n-m*m >= 0);
+
+		assert(n >= 0);
+		return std::sqrt(std::complex<double>((n*n-m*m)/(4.0*n*n-1.0)));
+	}
+
+	inline
+	static std::complex<double> Sc(double k, double m)
+	{
+		double n=k-1;
+
+		if (n < std::abs(m))
+			return 0;
+
+		assert (n*n-m*m >= 0);
+
+		assert(n >= 0);
+		return std::sqrt(std::complex<double>(((n+1.0)*(n+1.0)-m*m)/((2.0*n+1.0)*(2.0*n+3.0))));
 	}
 
 
@@ -102,6 +135,28 @@ public:
 	{
 		double n = k-2.0;
 		return S(n+1,m)*S(n+2,m);
+	}
+
+
+
+	inline
+	static std::complex<double> Ac(double k, double m)
+	{
+		double n = k+2.0;
+		return Rc(n-1,m)*Rc(n-2,m);
+	}
+
+	inline
+	static std::complex<double> Bc(double n, double m)
+	{
+		return Rc(n-1,m)*Sc(n,m) + Sc(n+1,m)*Rc(n,m);
+	}
+
+	inline
+	static std::complex<double> Cc(double k, double m)
+	{
+		double n = k-2.0;
+		return Sc(n+1,m)*Sc(n+2,m);
 	}
 
 

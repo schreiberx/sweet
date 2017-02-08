@@ -796,6 +796,7 @@ public:
 		request_data_physical();
 
 		double maxvalue = -std::numeric_limits<double>::max();
+
 #if SWEET_THREADING
 #pragma omp parallel for proc_bind(close) reduction(max:maxvalue)
 #endif
@@ -814,6 +815,7 @@ public:
 		request_data_physical();
 
 		double minvalue = std::numeric_limits<double>::max();
+
 #if SWEET_THREADING
 #pragma omp parallel for proc_bind(close) reduction(min:minvalue)
 #endif
