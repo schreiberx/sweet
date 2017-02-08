@@ -353,8 +353,6 @@ public:
 				int si = j+(num_halo_size_diagonals-i);
 				int sj = j;
 
-//				std::cout << sj << " " << si << std::endl;
-
 				if (si < 0 || si >= i_size)
 					continue;
 
@@ -432,42 +430,6 @@ public:
 			assert(false);
 			exit(1);
 		}
-
-#if 0
-		std::cout << std::endl;
-		for (int i = 0; i < i_size; i++)
-			std::cout << IPIV[i] << ", ";
-		std::cout << std::endl;
-
-		std::cout << std::endl;
-		for (int i = 0; i < i_size; i++)
-			std::cout << o_x[i] << ", ";
-		std::cout << std::endl;
-#endif
-
-#if 0
-		/**
-		 * TODO: This shouldn't be required since the solution is directly computed.
-		 *
-		 * TODO: Check pivotization
-		 */
-		int bvalue = true;
-		zlapmr_(
-				bvalue,	// true = forward permutation
-				one,	// rows
-				i_size,	// cols
-				o_x,	// data
-				i_size,	// leading dimension
-				IPIV
-			);
-#endif
-
-#if 0
-		std::cout << std::endl;
-		for (int i = 0; i < i_size; i++)
-			std::cout << o_x[i] << ", ";
-		std::cout << std::endl;
-#endif
 	}
 
 };

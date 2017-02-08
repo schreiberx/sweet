@@ -894,7 +894,7 @@ public:
 						case 8:		rexi.rexi_use_extended_modes = atoi(optarg);	break;
 
 						case 9:		misc.use_nonlinear_equations = atoi(optarg);	break;
-						case 10:		misc.sphere_use_robert_functions = atoi(optarg);	break;
+						case 10:	misc.sphere_use_robert_functions = atoi(optarg);	break;
 
 						case 11:	setup.advection_rotation_angle = atof(optarg);	break;
 
@@ -1140,6 +1140,7 @@ public:
 				std::cout << "	--rexi-l [int]	REXI parameter L" << std::endl;
 				std::cout << "	--rexi-half [bool]	Use half REXI poles, default:1" << std::endl;
 				std::cout << "	--rexi-normalization [bool]	Use REXI normalization around geostrophic balance, default:1" << std::endl;
+				std::cout << "	--rexi-sphere-preallocation [bool]	Use preallocation of SPH-REXI solver coefficients, default:1" << std::endl;
 				std::cout << "	--rexi-ext-modes [int]	Use this number of extended modes in spherical harmonics" << std::endl;
 				std::cout << "" << std::endl;
 

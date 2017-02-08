@@ -240,8 +240,6 @@ public:
 			v = (1.0/alpha) * (v0 + inv_r*opComplex.robert_grad_lat(phi));
 		}
 
-//		std::cout << beta << std::endl;
-
 		o_phi = phi * beta;
 		o_u = u * beta;
 		o_v = v * beta;
@@ -277,24 +275,6 @@ public:
 		o_phi = Convert_SphereDataComplex_To_SphereData::physical_convert(phi);
 		o_u = Convert_SphereDataComplex_To_SphereData::physical_convert(u);
 		o_v = Convert_SphereDataComplex_To_SphereData::physical_convert(v);
-
-#if 0
-		static int i = 0;
-		i++;
-
-		std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
-		char buffer[1024];
-
-		sprintf(buffer, "data_phi_%04i_%f_%f.csv", i, alpha.real(), alpha.imag());
-		(Convert_SphereDataComplex_To_SphereData::physical_convert(phi*alpha-i_phi0)).physical_file_write(buffer);
-
-		sprintf(buffer, "data_u_%04i_%f_%f.csv", i, alpha.real(), alpha.imag());
-		(Convert_SphereDataComplex_To_SphereData::physical_convert(u*alpha-i_u0)).physical_file_write(buffer);
-
-		sprintf(buffer, "data_v_%04i_%f_%f.csv", i, alpha.real(), alpha.imag());
-		(Convert_SphereDataComplex_To_SphereData::physical_convert(v*alpha-i_v0)).physical_file_write(buffer);
-#endif
-
 	}
 
 

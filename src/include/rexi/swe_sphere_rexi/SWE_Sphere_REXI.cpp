@@ -447,7 +447,6 @@ bool SWE_Sphere_REXI::run_timestep_rexi(
 		thread_prog_u0 = io_prog_u0.spectral_returnWithDifferentModes(thread_prog_u0.sphereDataConfig);
 		thread_prog_v0 = io_prog_v0.spectral_returnWithDifferentModes(thread_prog_v0.sphereDataConfig);
 
-
 		SphereData tmp_prog_phi(sphereDataConfigRexi);
 		SphereData tmp_prog_u(sphereDataConfigRexi);
 		SphereData tmp_prog_v(sphereDataConfigRexi);
