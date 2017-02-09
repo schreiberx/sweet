@@ -83,7 +83,7 @@ public:
 			SphereDataConfig *i_sphereDataConfig,
 			SphereDataConfig *i_sphereDataConfigSolver,
 
-			double i_radius,
+			double i_r,
 			double i_coriolis_omega,
 			double i_avg_geopotential,
 			double i_timestep_size,
@@ -100,7 +100,7 @@ public:
 		alpha = -1.0/timestep_size;
 		beta = -1.0/timestep_size;
 
-		r = i_radius;
+		r = i_r;
 		inv_r = 1.0/r;
 
 		coriolis_omega = i_coriolis_omega;

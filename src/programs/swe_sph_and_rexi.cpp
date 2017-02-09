@@ -662,6 +662,27 @@ public:
 			SphereData o_prog_u(sphereDataConfig);
 			SphereData o_prog_v(sphereDataConfig);
 
+			o_dt = -simVars.sim.CFL;
+
+			// padding to max simulation time if exceeding the maximum
+			if (simVars.timecontrol.max_simulation_time >= 0)
+				if (o_dt + simVars.timecontrol.current_simulation_time > simVars.timecontrol.max_simulation_time)
+				{
+					o_dt = simVars.timecontrol.max_simulation_time-simVars.timecontrol.current_simulation_time;
+
+					timestepping_implicit_swe.setup(
+							sphereDataConfig,
+							sphereDataConfigExt,
+
+							simVars.sim.earth_radius,
+							simVars.sim.coriolis_omega,
+							simVars.sim.gravitation*simVars.sim.h0,
+							o_dt,
+
+							param_use_coriolis_formulation
+						);
+				}
+
 			switch (simVars.pde.id)
 			{
 			case 0:

@@ -164,8 +164,6 @@ public:
 			double i_max_simulation_time = std::numeric_limits<double>::infinity()	///< limit the maximum simulation time
 	)
 	{
-
-
 		double &dt = o_dt;
 
 		SphereData &h_prev_u = *RK_h_prev;
@@ -191,6 +189,11 @@ public:
 				i_use_fixed_dt,
 				i_simulation_time
 		);
+
+		// padding to max simulation time if exceeding the maximum
+		if (i_max_simulation_time >= 0)
+			if (dt+i_simulation_time > i_max_simulation_time)
+				dt = i_max_simulation_time-i_simulation_time;
 
 		if (leapfrog_robert_asselin_filter == 0)
 		{
@@ -338,6 +341,11 @@ public:
 				i_simulation_time
 		);
 
+		// padding to max simulation time if exceeding the maximum
+		if (i_max_simulation_time >= 0)
+			if (dt+i_simulation_time > i_max_simulation_time)
+				dt = i_max_simulation_time-i_simulation_time;
+
 		if (leapfrog_robert_asselin_filter == 0)
 		{
 			if (timestep_id == 0)
@@ -448,6 +456,11 @@ public:
 				i_use_fixed_dt,
 				i_simulation_time
 		);
+
+		// padding to max simulation time if exceeding the maximum
+		if (i_max_simulation_time >= 0)
+			if (dt+i_simulation_time > i_max_simulation_time)
+				dt = i_max_simulation_time-i_simulation_time;
 
 		if (leapfrog_robert_asselin_filter == 0)
 		{
