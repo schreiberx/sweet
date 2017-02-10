@@ -104,7 +104,8 @@ public:
 	{
 		std::cout << std::endl;
 		std::cout << "Parareal" << std::endl;
-		std::cout << " + enabled: " << enabled << std::endl;
+		std::cout << " + enabled (compile time): " << SWEET_PARAREAL << std::endl;
+		std::cout << " + enabled (software flag): " << enabled << std::endl;
 		std::cout << " + coarse_slices: " << coarse_slices << std::endl;
 		std::cout << " + verbosity: " << verbosity << std::endl;
 		std::cout << " + convergence_error_threshold: " << convergence_error_threshold << std::endl;

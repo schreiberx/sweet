@@ -94,6 +94,14 @@ public:
 			std::cout << " + id: " << id << std::endl;
 			std::cout << std::endl;
 		}
+
+		void outputProgParams()
+		{
+			std::cout << std::endl;
+			std::cout << "Partial differential equation:" << std::endl;
+			std::cout << "	--pde-id [0/1]	PDE to solve (0: SWE, 1: advection)" << std::endl;
+			std::cout << "" << std::endl;
+		}
 	} pde;
 
 
@@ -166,6 +174,22 @@ public:
 				std::cout << "    - filename " << i << " " << input_data_filenames[i] << std::endl;
 			std::cout << " + input_data_binary: " << input_data_binary << std::endl;
 			std::cout << std::endl;
+		}
+
+
+		void outputProgParams()
+		{
+			std::cout << std::endl;
+			std::cout << "SIMULATION SETUP PARAMETERS:" << std::endl;
+			std::cout << "	-s [scen]	scenario id, set to -1 for overview" << std::endl;
+			std::cout << "	-x [float]	x coordinate for setup \\in [0;1], default=0.5" << std::endl;
+			std::cout << "	-y [float]	y coordinate for setup \\in [0;1], default=0.5" << std::endl;
+			std::cout << "	-r [radius]	scale factor of radius for initial condition, default=1" << std::endl;
+			std::cout << "	--initial-freq-x-mul [float]	Frequency for the waves initial conditions in x, default=2" << std::endl;
+			std::cout << "	--initial-freq-y-mul [float]	Frequency for the waves initial conditions in y, default=1" << std::endl;
+			std::cout << "	--initial-coord-x [float]	Same as -x" << std::endl;
+			std::cout << "	--initial-coord-y [float]	Same as -y" << std::endl;
+			std::cout << "" << std::endl;
 		}
 	} setup;
 
@@ -279,18 +303,40 @@ public:
 			LEAPFROG_EXPLICIT = 2,
 			EULER_IMPLICIT = 3,
 			RUNGE_KUTTA_IMEX = 4,
+			CRANK_NICOLSON = 5,
+
+			SEMI_LAGRANGIAN_ADVECTION_ONLY = 10,
+			SEMI_LAGRANGIAN_SEMI_IMPLICIT = 11,
 
 			REXI = 100,
+
+			ANALYTICAL_SOLUTION = 1000
+		};
+
+
+		int ts_method_ids[9] = {
+				RUNGE_KUTTA_EXPLICIT,
+				LEAPFROG_EXPLICIT,
+				EULER_IMPLICIT,
+				RUNGE_KUTTA_IMEX,
+				CRANK_NICOLSON,
+
+				SEMI_LAGRANGIAN_ADVECTION_ONLY,
+				SEMI_LAGRANGIAN_SEMI_IMPLICIT,
+
+				REXI,
+
+				ANALYTICAL_SOLUTION
 		};
 
 
 		static
 		std::string getTimesteppingMethodString
 		(
-				int i_method
+				int i_method_id
 		)
 		{
-			switch(i_method)
+			switch(i_method_id)
 			{
 			case RUNGE_KUTTA_EXPLICIT:
 				return "RUNGE_KUTTA_EXPLICIT";
@@ -304,8 +350,20 @@ public:
 			case RUNGE_KUTTA_IMEX:
 				return "RUNGE_KUTTA_IMEX";
 
+			case CRANK_NICOLSON:
+				return "CRANK_NICOLSON";
+
 			case REXI:
 				return "REXI";
+
+			case SEMI_LAGRANGIAN_ADVECTION_ONLY:
+				return "Semi-Lagrangian Advection only";
+
+			case SEMI_LAGRANGIAN_SEMI_IMPLICIT:
+				return "Semi-Lagrangian Semi-implicit";
+
+			case ANALYTICAL_SOLUTION:
+				return "Analytical solution";
 			}
 
 			return "[UNKWOWN]";
@@ -313,6 +371,9 @@ public:
 
 		/// Leapfrog: Robert Asselin filter
 		double leapfrog_robert_asselin_filter = 0;
+
+		/// Crank-Nicolson filter
+		double crank_nicolson_filter = 0.5;
 
 
 		///
@@ -339,7 +400,6 @@ public:
 		/// use up/downwinding for the advection of h
 		bool timestepping_up_and_downwinding = false;
 
-
 		/// use spectral differential operators
 		bool use_spectral_basis_diffs =
 #if SWEET_USE_PLANE_SPECTRAL_SPACE || SWEET_USE_SPHERE_SPECTRAL_SPACE
@@ -347,6 +407,9 @@ public:
 #else
 				false;
 #endif
+
+		bool use_staggering = false;
+
 
 		void outputConfig()
 		{
@@ -361,7 +424,17 @@ public:
 			std::cout << " + timestepping_order2: " << timestepping_order2 << std::endl;
 			std::cout << " + timestepping_up_and_downwinding: " << timestepping_up_and_downwinding << std::endl;
 			std::cout << " + leapfrog_robert_asselin_filter: " << leapfrog_robert_asselin_filter << std::endl;
+			std::cout << " + crank_nicolson_filter: " << crank_nicolson_filter << std::endl;
 			std::cout << " + use_spectral_basis_diffs: " << use_spectral_basis_diffs << std::endl;
+
+
+			std::cout << " + dealiasing (compile time): " <<
+		#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
+					1
+		#else
+					0
+		#endif
+					<< std::endl;
 			std::cout << std::endl;
 		}
 
@@ -369,6 +442,7 @@ public:
 		{
 			std::cout << "Discretization:" << std::endl;
 			std::cout << "  >Space:" << std::endl;
+			std::cout << "  --staggering [0/1]	Use staggering" << std::endl;
 			std::cout << "	-N [res]	resolution in x and y direction, default=0" << std::endl;
 			std::cout << "	-n [resx]	resolution in x direction, default=0" << std::endl;
 			std::cout << "	-m [resy]	resolution in y direction, default=0" << std::endl;
@@ -388,8 +462,8 @@ public:
 			std::cout << "	-C [cfl]	CFL condition, use negative value for fixed time step size, default=0.05" << std::endl;
 			std::cout << "	--timestepping-method	Specify time stepping method (";
 
-			for (int i = 1; i <= 4; i++)
-				std::cout << i << ": " << getTimesteppingMethodString(i) << ", ";
+			for (std::size_t i = 0; i < sizeof(ts_method_ids)/sizeof(ts_method_ids[0]); i++)
+				std::cout << ts_method_ids[i] << ": " << getTimesteppingMethodString(ts_method_ids[i]) << ", ";
 
 			std::cout << "...)" << std::endl;
 			std::cout << "	--timestepping-order [int]	Specify the order of the time stepping" << std::endl;
@@ -398,6 +472,8 @@ public:
 			std::cout << "	--leapfrog-robert-asselin-filter [0;1]	Damping parameter for Robert-Asselin filter" << std::endl;
 
 		}
+
+
 	} disc;
 
 
@@ -407,11 +483,6 @@ public:
 	 */
 	struct REXI
 	{
-		/**
-		 * Activate REXI instead of standard time stepping
-		 */
-//		int use_rexi = 0;
-
 		/**
 		 * REXI parameter h
 		 */
@@ -459,6 +530,20 @@ public:
 			std::cout << " + rexi_use_extended_modes: " << rexi_use_extended_modes << std::endl;
 			std::cout << " + rexi_normalization: " << rexi_normalization << std::endl;
 			std::cout << std::endl;
+		}
+
+		void outputProgParams()
+		{
+			std::cout << "" << std::endl;
+			std::cout << "Rexi" << std::endl;
+			std::cout << "	--rexi-h [float]	REXI parameter h" << std::endl;
+			std::cout << "	--rexi-m [int]	REXI parameter M" << std::endl;
+			std::cout << "	--rexi-l [int]	REXI parameter L" << std::endl;
+			std::cout << "	--rexi-half [bool]	Use half REXI poles, default:1" << std::endl;
+			std::cout << "	--rexi-normalization [bool]	Use REXI normalization around geostrophic balance, default:1" << std::endl;
+			std::cout << "	--rexi-sphere-preallocation [bool]	Use preallocation of SPH-REXI solver coefficients, default:1" << std::endl;
+			std::cout << "	--rexi-ext-modes [int]	Use this number of extended modes in spherical harmonics" << std::endl;
+			std::cout << "" << std::endl;
 		}
 	} rexi;
 
@@ -774,7 +859,7 @@ public:
         long_options[next_free_program_option] = {"rexi-ext-modes", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        // 8
+        // 9
         long_options[next_free_program_option] = {"nonlinear", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
@@ -787,7 +872,7 @@ public:
         long_options[next_free_program_option] = {"pde-id", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        // 12
+        // 13
         long_options[next_free_program_option] = {"timestepping-method", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
@@ -803,11 +888,19 @@ public:
         long_options[next_free_program_option] = {"leapfrog-robert-asselin-filter", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
+        long_options[next_free_program_option] = {"crank-nicolson-filter", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
+        long_options[next_free_program_option] = {"staggering", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
+        long_options[next_free_program_option] = {"dummy", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
 
 // leave this commented to avoid mismatch with following parameters!
 #if SWEET_PFASST_CPP
 
-        // 17
 		long_options[next_free_program_option] = {"pfasst-nlevels", required_argument, 0, 256+next_free_program_option};
 		next_free_program_option++;
 
@@ -858,6 +951,8 @@ public:
 		// index into long_options for determined argument
 		int option_index = 0;
 
+		double dummy = 0;
+
 		int opt;
 		while (1)
 		{
@@ -906,14 +1001,18 @@ public:
 						case 16:	disc.timestepping_order2 = atoi(optarg);	break;
 
 						case 17:	disc.leapfrog_robert_asselin_filter = atof(optarg);	break;
+						case 18:	disc.crank_nicolson_filter = atof(optarg);	break;
+						case 19:	disc.use_staggering = atof(optarg);	break;
+
+						case 20:	dummy = atof(optarg);	break;
 
 #if SWEET_PFASST_CPP
-						case 18:	pfasst.nlevels = atoi(optarg);	break;
-						case 19:	pfasst.nnodes = atoi(optarg);	break;
-						case 20:	pfasst.nspace = atoi(optarg);	break;
-						case 21:	pfasst.nsteps = atoi(optarg);	break;
-						case 22:	pfasst.niters = atoi(optarg);	break;
-						case 23:	pfasst.dt = atof(optarg);	break;
+						case 21:	pfasst.nlevels = atoi(optarg);	break;
+						case 22:	pfasst.nnodes = atoi(optarg);	break;
+						case 23:	pfasst.nspace = atoi(optarg);	break;
+						case 24:	pfasst.nsteps = atoi(optarg);	break;
+						case 25:	pfasst.niters = atoi(optarg);	break;
+						case 26:	pfasst.dt = atof(optarg);	break;
 #endif
 
 						default:
@@ -1098,20 +1197,10 @@ public:
 				std::cout << "	-a [float]	earth radius, default=1" << std::endl;
 				std::cout << "	-H [float]	average (initial) height of water, default=1000" << std::endl;
 				std::cout << "" << std::endl;
-				std::cout << "Simulation setup parameters:" << std::endl;
-				std::cout << "	-s [scen]	scenario id, set to -1 for overview" << std::endl;
-				std::cout << "	-x [float]	x coordinate for setup \\in [0;1], default=0.5" << std::endl;
-				std::cout << "	-y [float]	y coordinate for setup \\in [0;1], default=0.5" << std::endl;
-				std::cout << "	-r [radius]	scale factor of radius for initial condition, default=1" << std::endl;
-				std::cout << "	--initial-freq-x-mul [float]	Frequency for the waves initial conditions in x, default=2" << std::endl;
-				std::cout << "	--initial-freq-y-mul [float]	Frequency for the waves initial conditions in y, default=1" << std::endl;
-				std::cout << "	--initial-coord-x [float]	Same as -x" << std::endl;
-				std::cout << "	--initial-coord-y [float]	Same as -y" << std::endl;
-				std::cout << "" << std::endl;
-				std::cout << "Partial differential equation:" << std::endl;
-				std::cout << "	--pde-id [0/1]	PDE to solve (0: SWE, 1: advection)" << std::endl;
-				std::cout << "" << std::endl;
 
+
+				setup.outputProgParams();
+				pde.outputProgParams();
 				disc.outputProgParams();
 
 				std::cout << "" << std::endl;
@@ -1134,16 +1223,7 @@ public:
 				std::cout << "						     1: Nonlinear (default)" << std::endl;
 				std::cout << "						     2: Linear + nonlinear advection only (needs -H to be set)" << std::endl;
 				std::cout << "" << std::endl;
-				std::cout << "Rexi" << std::endl;
-				std::cout << "	--rexi-h [float]	REXI parameter h" << std::endl;
-				std::cout << "	--rexi-m [int]	REXI parameter M" << std::endl;
-				std::cout << "	--rexi-l [int]	REXI parameter L" << std::endl;
-				std::cout << "	--rexi-half [bool]	Use half REXI poles, default:1" << std::endl;
-				std::cout << "	--rexi-normalization [bool]	Use REXI normalization around geostrophic balance, default:1" << std::endl;
-				std::cout << "	--rexi-sphere-preallocation [bool]	Use preallocation of SPH-REXI solver coefficients, default:1" << std::endl;
-				std::cout << "	--rexi-ext-modes [int]	Use this number of extended modes in spherical harmonics" << std::endl;
-				std::cout << "" << std::endl;
-
+				rexi.outputProgParams();
 
 
 #if SWEET_PARAREAL
@@ -1158,6 +1238,15 @@ public:
 			}
 		}
 
+
+		if (dummy != 0)
+		{
+			// this is helpful for debugging purpose
+			std::cout << "DUMMY VALUE SET TO " << dummy << std::endl;
+			exit(1);
+		}
+
+
 		if (	(disc.res_physical[0] == 0 || disc.res_physical[1] == 0)	&&
 				(disc.res_spectral[0] == 0 || disc.res_spectral[1] == 0)
 			)
@@ -1166,7 +1255,6 @@ public:
 		}
 
 		reset();
-
 
 
 #if SWEET_PARAREAL
