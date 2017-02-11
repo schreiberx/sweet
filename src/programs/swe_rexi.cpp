@@ -656,7 +656,7 @@ public:
 
 		// Print info for REXI and setup REXI
 		if (	simVars.disc.timestepping_method == SimulationVariables::Discretization::REXI ||
-				simVars.disc.timestepping_method == SimulationVariables::Discretization::EULER_IMPLICIT ||
+				simVars.disc.timestepping_method == SimulationVariables::Discretization::IMPLICIT_TIMESTEP ||
 				simVars.disc.timestepping_method == SimulationVariables::Discretization::SEMI_LAGRANGIAN_SEMI_IMPLICIT
 		)
 		{
@@ -1145,7 +1145,7 @@ public:
 					simVars
 			);
 		}
-		else if (simVars.disc.timestepping_method == SimulationVariables::Discretization::EULER_IMPLICIT)
+		else if (simVars.disc.timestepping_method == SimulationVariables::Discretization::IMPLICIT_TIMESTEP)
 		{   //  Implicit time step - Backward Euler - checked - linear only
 			assert(simVars.sim.CFL < 0);
 

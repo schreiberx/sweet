@@ -1,12 +1,12 @@
 /*
- * SphereHelper.hpp
+ * SphereData.hpp
  *
  *  Created on: 9 Aug 2016
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#ifndef SPHERE_HELPER_HPP_
-#define SPHERE_HELPER_HPP_
+#ifndef SPHERE_DATA_HPP_
+#define SPHERE_DATA_HPP_
 
 #include <complex>
 #include <functional>
@@ -23,6 +23,7 @@
 #include <sweet/sphere/SphereDataConfig.hpp>
 #include <sweet/FatalError.hpp>
 #include <sweet/openmp_helper.hpp>
+
 
 
 class SphereData

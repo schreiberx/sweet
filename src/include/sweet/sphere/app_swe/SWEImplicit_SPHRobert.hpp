@@ -44,7 +44,16 @@ class SWEImplicit_SPHRobert
 	double alpha;
 	double beta;
 
+	/// Crank-Nicolson damping factor
+	double crank_nicolson_damping_factor = 0.5;
+
+	/// false if formulation with coriolis effect should NOT be used even if f != 0
 	bool use_formulation_with_coriolis_effect;
+
+	// order of time stepping.
+	// 1: backward Euler
+	// 2: Crank Nicolson
+	int timestepping_order;
 
 	/// timestep size
 	double timestep_size;
@@ -76,6 +85,16 @@ public:
 	}
 
 
+	inline
+	void setCrankNicolsonDampingFactor(
+			double i_crank_nicolson_damping_factor
+	)
+	{
+		crank_nicolson_damping_factor = i_crank_nicolson_damping_factor;
+	}
+
+
+
 	/**
 	 * Setup the SWE REXI solver with SPH
 	 */
@@ -88,17 +107,37 @@ public:
 			double i_avg_geopotential,
 			double i_timestep_size,
 
-			bool i_use_formulation_with_coriolis_effect = true
+			bool i_use_formulation_with_coriolis_effect,
+
+			int i_timestepping_order
 	)
 	{
 		sphereDataConfig = i_sphereDataConfig;
 		sphereDataConfigSolver = i_sphereDataConfigSolver;
 
-		use_formulation_with_coriolis_effect = i_use_formulation_with_coriolis_effect;
 		timestep_size = i_timestep_size;
+		use_formulation_with_coriolis_effect = i_use_formulation_with_coriolis_effect;
+
+		timestepping_order = i_timestepping_order;
 
 		alpha = -1.0/timestep_size;
 		beta = -1.0/timestep_size;
+
+		if (i_timestepping_order == 2)
+		{
+			/*
+			 * Crank-Nicolson method:
+			 *
+			 * (U(t+1) - q dt F(U(t+1))) = (U(t) + q dt F(U(t)))
+			 *
+			 * with q the CN damping facor with no damping for q=0.5
+			 */
+
+			// scale dt by the damping factor to reuse solver structure
+
+			alpha /= crank_nicolson_damping_factor;
+			beta /= crank_nicolson_damping_factor;
+		}
 
 		r = i_r;
 		inv_r = 1.0/r;
@@ -165,12 +204,45 @@ public:
 	{
 		o_dt = timestep_size;
 
-		const SphereData &phi0 = i_phi0;
-		const SphereData &u0 = i_u0;
-		const SphereData &v0 = i_v0;
+		SphereData phi0 = i_phi0;
+		SphereData u0 = i_u0;
+		SphereData v0 = i_v0;
+
+
+		/*
+		 * Crank-Nicolson method:
+		 *
+		 * (U(t+1) - q dt F(U(t+1))) = (U(t) + q dt F(U(t)))
+		 *
+		 * with q the CN damping facor with no damping for q=0.5
+		 */
+
+		if (timestepping_order == 2)
+		{
+			/**
+			 * Compute explicit time step
+			 */
+			SphereData o_phi_t =	-(op.robert_div_lon(i_u0)+op.robert_div_lat(i_v0)) * (avg_geopotential*inv_r);
+
+			SphereData o_u_t = -op.robert_grad_lon(i_phi0) * inv_r;
+			SphereData o_v_t = -op.robert_grad_lat(i_phi0) * inv_r;
+
+			if (coriolis_omega != 0)
+			{
+				o_u_t += f(i_v0);
+				o_v_t -= f(i_u0);
+			}
+
+			double fac = timestep_size*(1.0-crank_nicolson_damping_factor);
+			// run single time step for rhs
+
+			phi0 += fac*o_phi_t;
+			u0 += fac*o_u_t;
+			v0 += fac*o_v_t;
+		}
+
 
 		SphereData div0 = inv_r*op.robert_div(u0, v0);
-
 		SphereData eta0 = inv_r*op.robert_vort(u0, v0);
 
 		SphereData phi(sphereDataConfig);
@@ -246,6 +318,15 @@ public:
 		o_u = u * beta;
 		o_v = v * beta;
 	}
+
+
+	inline
+	SphereData f(const SphereData &i_sphData)
+	{
+		return op.mu(i_sphData*two_omega);
+	}
+
+
 
 
 

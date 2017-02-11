@@ -455,7 +455,7 @@ public:
 	 */
 	SphereData mu(
 			const SphereData &i_sphere_data
-	)
+	)	const
 	{
 		const SphereDataConfig *sphereDataConfig = i_sphere_data.sphereDataConfig;
 		i_sphere_data.request_data_spectral();

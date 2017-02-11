@@ -301,7 +301,7 @@ public:
 		{
 			RUNGE_KUTTA_EXPLICIT = 1,
 			LEAPFROG_EXPLICIT = 2,
-			EULER_IMPLICIT = 3,
+			IMPLICIT_TIMESTEP = 3,
 			RUNGE_KUTTA_IMEX = 4,
 			CRANK_NICOLSON = 5,
 
@@ -317,7 +317,7 @@ public:
 		int ts_method_ids[9] = {
 				RUNGE_KUTTA_EXPLICIT,
 				LEAPFROG_EXPLICIT,
-				EULER_IMPLICIT,
+				IMPLICIT_TIMESTEP,
 				RUNGE_KUTTA_IMEX,
 				CRANK_NICOLSON,
 
@@ -344,7 +344,7 @@ public:
 			case LEAPFROG_EXPLICIT:
 				return "LEAPFROG_EXPLICIT";
 
-			case EULER_IMPLICIT:
+			case IMPLICIT_TIMESTEP:
 				return "EULER_IMPLICIT";
 
 			case RUNGE_KUTTA_IMEX:
@@ -392,10 +392,10 @@ public:
 		int timestepping_method2 = 0;
 
 		/// Order of time stepping
-		double timestepping_order = -1;
+		int timestepping_order = -1;
 
 		/// Order of 2nd time stepping which might be used
-		double timestepping_order2 = 0;
+		int timestepping_order2 = 0;
 
 		/// use up/downwinding for the advection of h
 		bool timestepping_up_and_downwinding = false;

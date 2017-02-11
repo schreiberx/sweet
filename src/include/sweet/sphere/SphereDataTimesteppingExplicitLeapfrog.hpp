@@ -92,8 +92,8 @@ public:
 
 		int N = i_leapfrog_order;
 
-		if (N <= 0 || N > 1)
-			FatalError("Only 1st order leapfrog is currently supported!");
+		if (N != 2)
+			FatalError("Only 2nd order leapfrog is currently supported!");
 
 
 		// storage for previous time step

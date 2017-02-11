@@ -116,13 +116,12 @@ public:
 
 
 
-
-
 	inline
-	SphereData f(SphereData i_sphData)
+	SphereData f(const SphereData &i_sphData)	const
 	{
 		return op.mu(i_sphData*(2.0*simVars.sim.coriolis_omega));
 	}
+
 
 
 	void update_diagnostics()
@@ -320,13 +319,20 @@ public:
 				);
 		}
 
-		if (simVars.disc.timestepping_method == simVars.disc.EULER_IMPLICIT)
+		if (	simVars.disc.timestepping_method == simVars.disc.IMPLICIT_TIMESTEP ||
+				simVars.disc.timestepping_method == simVars.disc.CRANK_NICOLSON
+		)
 		{
 			if (simVars.sim.CFL >= 0)
 				FatalError("CFL >= 0: Set negative CFL for constant time step size");
 
-			if (simVars.disc.timestepping_order != 1)
-				FatalError("Only first order implicit Euler (backward) supported");
+			if (simVars.disc.timestepping_order != 1 && simVars.disc.timestepping_order != 2)
+				FatalError("Only order 1 implicit Euler (backward) and Crank Nicolson (order 2) supported");
+
+			// setup CN damping factor in case CN is used
+			timestepping_implicit_swe.setCrankNicolsonDampingFactor(
+					simVars.disc.crank_nicolson_filter
+			);
 
 			timestepping_implicit_swe.setup(
 					sphereDataConfig,
@@ -337,7 +343,9 @@ public:
 					simVars.sim.gravitation*simVars.sim.h0,
 					-simVars.sim.CFL,
 
-					param_use_coriolis_formulation
+					param_use_coriolis_formulation,
+
+					simVars.disc.timestepping_order
 				);
 		}
 
@@ -526,7 +534,7 @@ public:
 				(
 						simVars.timecontrol.max_simulation_time <= simVars.timecontrol.current_simulation_time
 						||
-						diff/simVars.timecontrol.max_simulation_time < 1e-14	// avoid numerical issues in time stepping if current time step is 1e-14 smaller than max time step
+						diff/simVars.timecontrol.max_simulation_time < 1e-11	// avoid numerical issues in time stepping if current time step is 1e-14 smaller than max time step
 				)
 			)
 			return true;
@@ -656,7 +664,7 @@ public:
 				break;
 			}
 		}
-		else if (simVars.disc.timestepping_method == simVars.disc.EULER_IMPLICIT)
+		else if (simVars.disc.timestepping_method == simVars.disc.IMPLICIT_TIMESTEP || simVars.disc.timestepping_method == simVars.disc.CRANK_NICOLSON)
 		{
 			SphereData o_prog_h(sphereDataConfig);
 			SphereData o_prog_u(sphereDataConfig);
@@ -666,9 +674,13 @@ public:
 
 			// padding to max simulation time if exceeding the maximum
 			if (simVars.timecontrol.max_simulation_time >= 0)
+			{
 				if (o_dt + simVars.timecontrol.current_simulation_time > simVars.timecontrol.max_simulation_time)
 				{
 					o_dt = simVars.timecontrol.max_simulation_time-simVars.timecontrol.current_simulation_time;
+
+					std::cout << "WARNING: IMPLICIT TS SETUP CALLED DURING SIMULATION TIME FRAME" << std::endl;
+					std::cerr << "WARNING: IMPLICIT TS SETUP CALLED DURING SIMULATION TIME FRAME" << std::endl;
 
 					timestepping_implicit_swe.setup(
 							sphereDataConfig,
@@ -679,9 +691,12 @@ public:
 							simVars.sim.gravitation*simVars.sim.h0,
 							o_dt,
 
-							param_use_coriolis_formulation
+							param_use_coriolis_formulation,
+
+							simVars.disc.timestepping_order
 						);
 				}
+			}
 
 			switch (simVars.pde.id)
 			{
@@ -719,16 +734,53 @@ public:
 
 			// padding to max simulation time if exceeding the maximum
 			if (simVars.timecontrol.max_simulation_time >= 0)
+			{
 				if (o_dt + simVars.timecontrol.current_simulation_time > simVars.timecontrol.max_simulation_time)
+				{
 					o_dt = simVars.timecontrol.max_simulation_time-simVars.timecontrol.current_simulation_time;
 
-			swe_sphere_rexi.run_timestep_rexi(
-					prog_h,
-					prog_u,
-					prog_v,
-					o_dt,
-					simVars
-				);
+					std::cout << "WARNING: REXI SETUP CALLED DURING SIMULATION TIME FRAME" << std::endl;
+					std::cerr << "WARNING: REXI SETUP CALLED DURING SIMULATION TIME FRAME" << std::endl;
+
+					swe_sphere_rexi.setup(
+							simVars.rexi.rexi_h,
+							simVars.rexi.rexi_M,
+							simVars.rexi.rexi_L,
+
+							sphereDataConfig,
+							&simVars.sim,
+							o_dt,
+
+							simVars.rexi.rexi_use_half_poles,
+							simVars.misc.sphere_use_robert_functions,
+							simVars.rexi.rexi_use_extended_modes,
+							simVars.rexi.rexi_normalization,
+							param_use_coriolis_formulation,
+							simVars.rexi.rexi_sphere_solver_preallocation
+						);
+				}
+			}
+
+
+
+			switch (simVars.pde.id)
+			{
+			case 0:
+				swe_sphere_rexi.run_timestep_rexi(
+						prog_h,
+						prog_u,
+						prog_v,
+						o_dt,
+						simVars
+					);
+				break;
+
+			default:
+				FatalError("PDE id not yet implemented");
+				break;
+			}
+
+
 
 			/*
 			 * Add implicit viscosity
@@ -745,6 +797,9 @@ public:
 				prog_u = prog_u.spectral_solve_helmholtz(1.0, -scalar, r);
 				prog_v = prog_v.spectral_solve_helmholtz(1.0, -scalar, r);
 			}
+		}
+		else if (simVars.disc.timestepping_method == simVars.disc.CRANK_NICOLSON)
+		{
 		}
 		else
 		{
