@@ -9,12 +9,6 @@ import sys
 
 first = True
 
-s = 2e-5
-eta_contour_levels = np.append(np.arange(-1e-4, 0, s), np.arange(s, 1e-4, s))
-
-hs = 5
-h_contour_levels = np.append(np.arange(900, 1000-hs, hs), np.arange(1000+hs, 1100, hs))
-
 zoom_lat = True
 zoom_lat = False
 
@@ -24,7 +18,23 @@ fontsize=8
 
 figsize=(9, 3)
 
-for filename in sys.argv[1:]:
+files = sys.argv[1:]
+
+refdataavailable = False
+
+if files[0] == 'reference':
+	reffilename = files[1]
+	files = files[2:]
+
+	print("Loading reference solution from '"+reffilename+"'")
+	refdata = np.loadtxt(reffilename, skiprows=3)
+	refdata = refdata[1:,1:]
+
+	refdataavailable = True
+
+
+#for filename in sys.argv[1:]:
+for filename in files:
 
 	print(filename)
 	data = np.loadtxt(filename, skiprows=3)
@@ -42,16 +52,6 @@ for filename in sys.argv[1:]:
 		while labelsy[-2] > 80:
 			labelsy = labelsy[0:-2]
 			data = data[0:-2]
-
-
-#		while labelsx[1] < 90:
-#			tmplabelsx = labelsx[0]
-#			labelsx[0:-1] = labelsx[1:]
-#			labelsx[-1] = tmplabelsx
-#
-#			tmpdata = data[:,0]
-#			data[:,0:-1] = data[:,1:]
-#			data[:,-1] = tmpdata
 
 	if first:
 		lon_min = labelsx[0]
@@ -71,6 +71,7 @@ for filename in sys.argv[1:]:
 		cmin = np.amin(data)
 		cmax = np.amax(data)
 
+
 		if 'eta' in filename:
 			cmin *= 1.2
 			cmax *= 1.2
@@ -80,12 +81,29 @@ for filename in sys.argv[1:]:
 			cmin = 0.96
 			cmax = 1.04
 			cmid = 0.5*(cmax-cmin)
-			h_contour_levels = np.append(np.arange(cmin, cmid-hs, hs), np.arange(cmid+hs, cmax, hs))
+			contour_levels = np.append(np.arange(cmin, cmid-hs, hs), np.arange(cmid+hs, cmax, hs))
+
+		elif cmax-cmin < 3000 and cmin > 9000 and cmax < 11000:
+			hs = 40
+			cmin = 9000
+			cmax = 11000
+			cmid = 0.5*(cmax-cmin)
+			contour_levels = np.append(np.arange(cmin, cmid-hs, hs), np.arange(cmid+hs, cmax, hs))
+		else:
+			if 'eta' in filename:
+				hs = 2e-5
+				contour_levels = np.append(np.arange(-1e-4, 0, s), np.arange(s, 1e-4, hs))
+
+			else:
+				hs = 5
+				contour_levels = np.append(np.arange(900, 1000-hs, hs), np.arange(1000+hs, 1100, hs))
+
 
 
 	extent = (labelsx[0], labelsx[-1], labelsy[0], labelsy[-1])
 
 	plt.figure(figsize=figsize)
+
 
 
 	plt.imshow(data, interpolation='nearest', extent=extent, origin='lower', aspect='auto')
@@ -96,15 +114,12 @@ for filename in sys.argv[1:]:
 
 	plt.title(filename, fontsize=fontsize)
 
+	if refdataavailable:
+		CS = plt.contour(refdata, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, levels=contour_levels, linewidths=0.5)
+		for c in CS.collections:
+			c.set_dashes([(0, (2.0, 2.0))])
 
-	if 'prog_eta' in filename:
-		plt.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, levels=eta_contour_levels, linewidths=0.5)
-	elif 'prog_h' in filename:
-		plt.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, levels=h_contour_levels, linewidths=0.5)
-	else:
-		if cmin != cmax:
-			pass
-			#plt.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, linewidths=0.5)
+	plt.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, levels=contour_levels, linewidths=0.5)
 
 	ax = plt.gca()
 	ax.xaxis.set_label_coords(0.5, -0.075)
