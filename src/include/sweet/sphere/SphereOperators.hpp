@@ -18,7 +18,7 @@
  * 1: Start by direct computation and then use deltas [TODO: Not yet implemented]
  * 2: Use memory cached version
  */
-#define SWEET_SPH_ON_THE_FLY_MODE	2
+#define SWEET_SPH_ON_THE_FLY_MODE	0
 
 
 class SphereOperators	:
@@ -43,13 +43,17 @@ class SphereOperators	:
 
 	SphBandedMatrixPhysicalReal< std::complex<double> > sphSolver_inv_one_minus_mu2;
 
+	double r;
+	double ir;
+
 
 public:
 	SphereOperators(
-		SphereDataConfig *i_sphereDataConfig
+		SphereDataConfig *i_sphereDataConfig,
+		double i_earth_radius
 	)
 	{
-		setup(i_sphereDataConfig);
+		setup(i_sphereDataConfig, i_earth_radius);
 	}
 
 
@@ -62,7 +66,8 @@ public:
 
 public:
 	void setup(
-		SphereDataConfig *i_sphereDataConfig
+		SphereDataConfig *i_sphereDataConfig,
+		double i_earth_radius
 	)
 	{
 		sphereDataConfig = i_sphereDataConfig;
@@ -71,6 +76,42 @@ public:
 		sphSolver_inv_one_minus_mu2.solver_component_rexi_z1(1.0, 1.0);	// (1.0
 		sphSolver_inv_one_minus_mu2.solver_component_rexi_z2(-1.0, 1.0);	//      - mu^2)
 
+		r = i_earth_radius;
+		ir = 1.0/r;
+
+#if 1
+		double *mx = new double[2*sphereDataConfig->shtns->nlm];
+		st_dt_matrix(sphereDataConfig->shtns, mx);
+
+		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
+		{
+			int idx = sphereDataConfig->getArrayIndexByModes(m, m);
+
+			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
+			{
+				double a = (-n+1.0)*R(n-1,m);
+				double b = (n+2.0)*S(n+1,m);
+
+				if (n+1 > sphereDataConfig->spectral_modes_n_max)
+					b = 0;
+
+				//std::cout << idx << ": " << a << "\t" << mx[idx*2+0] << std::endl;
+				//std::cout << idx << ": " << b << "\t" << mx[idx*2+1] << std::endl;
+
+				double errora = std::abs(a+mx[idx*2+0]);
+				double errorb = std::abs(b+mx[idx*2+1]);
+
+				if (errora > 1e-12 || errorb > 1e-12)
+				{
+					std::cout << idx << ": n=" << n << ", m=" << m << " | "<< errora << "\t" << errorb << std::endl;
+					FatalError("SAFETY CHECK NOT SUCCESSFUL");
+				}
+
+				idx++;
+			}
+		}
+		delete [] mx;
+#endif
 
 #if SWEET_SPH_ON_THE_FLY_MODE == 2
 		std::size_t storage_size = sphereDataConfig->spectral_complex_array_data_number_of_elements;
@@ -120,7 +161,7 @@ public:
 	 */
 	SphereData diff_lon(
 			const SphereData &i_sph_data
-	)
+	)	const
 	{
 		i_sph_data.request_data_spectral();
 
@@ -140,6 +181,7 @@ public:
 				idx++;
 			}
 		}
+
 		out_sph_data.spectral_space_data_valid = true;
 		out_sph_data.physical_space_data_valid = false;
 
@@ -157,7 +199,7 @@ public:
 	 */
 	SphereData diff_lat_mu(
 			const SphereData &i_sph_data
-	)
+	)	const
 	{
 		return inv_one_minus_mu2(spectral_one_minus_mu_squared_diff_lat_mu(i_sph_data));
 	}
@@ -171,7 +213,7 @@ public:
 	 */
 	SphereData diff_lat_phi(
 			const SphereData &i_sph_data
-	)
+	)	const
 	{
 		return grad_lat(i_sph_data);
 	}
@@ -181,9 +223,25 @@ public:
 	/**
 	 * Compute gradient component along longitude (lambda)
 	 */
+	SphereData grad(
+			const SphereData &i_phi,
+			const SphereData &i_u,
+			const SphereData &i_v
+	)	const
+	{
+		return i_u*grad_lon(i_phi) + i_v*grad_lat(i_phi);
+	}
+
+
+
+	/**
+	 * Compute gradient component along longitude (lambda)
+	 *
+	 * 1.0/sqrt(1-mu*mu) d/dlambda()
+	 */
 	SphereData grad_lon(
 			const SphereData &i_sph_data
-	)
+	)	const
 	{
 		i_sph_data.request_data_spectral();
 
@@ -207,25 +265,64 @@ public:
 	 *
 	 * This computes
 	 * 	1/cos^2(phi)  d/dlambda U
+	 *
+	 * 	= 1/(1-mu^2) d/dlambda U
 	 */
 	SphereData robert_div_lon(
 			const SphereData &i_sph_data
-	)
+	)	const
 	{
 		return inv_one_minus_mu2(diff_lon(i_sph_data));
 	}
 
 
+
+	SphereData toRobert(
+			const SphereData &i_sph_data
+	)	const
+	{
+		SphereData out(i_sph_data);
+
+		// Physical space
+		out.physical_update_lambda_cosphi_grid(
+				[](double lambda, double cos_phi, double &o_data)
+				{
+					o_data *= cos_phi;
+				}
+			);
+
+		return out;
+	}
+
+
+	SphereData fromRobert(
+			const SphereData &i_sph_data
+	)	const
+	{
+		SphereData out(i_sph_data);
+
+		// Physical space
+		out.physical_update_lambda_cosphi_grid(
+				[](double lambda, double cos_phi, double &o_data)
+				{
+					o_data /= cos_phi;
+				}
+			);
+
+		return out;
+	}
+
+
 	SphereData inv_one_minus_mu2(
 			const SphereData &i_sph_data
-	)
+	)	const
 	{
 #if 1
 
 		return sphSolver_inv_one_minus_mu2.solve(i_sph_data);
 
 #elif 1
-		i_sph_data.request_data_spectral();
+//		i_sph_data.request_data_spectral();
 
 
 		/*
@@ -244,45 +341,244 @@ public:
 			);
 
 		return out;
-
-#else
-		i_sph_data.request_data_spectral();
-
-
-		// TODO: This is wrong!!!
-		SphereData out(i_sph_data.sphereDataConfig);
-
-		// Physical space
-		out.spectral_update_lambda(
-			[&i_sph_data](
-					int n, int m,
-					std::complex<double> &o_data
-			)
-			{
-				if (m == 0)
-				{
-					o_data = 0;
-					return;
-				}
-
-				o_data = -1.0/(2.0*(double)m);
-
-				double A = std::sqrt(
-						(n+m+2.0)*(n+m+1.0)*(2.0*n+1.0)/(2.0*n+3.0)
-					);
-				double B = std::sqrt(
-						(n-m+2.0)*(n-m+1.0)*(2.0*n+1.0)/(2.0*n+3.0)
-					);
-
-				o_data *= 	A*i_sph_data.spectral_get(n+1, m+1)
-							+ B*i_sph_data.spectral_get(n+1, m-1);
-			}
-		);
-
-		return out;
 #endif
 	}
 
+
+
+	void uv_to_stream_potential(
+			const SphereData &i_u,
+			const SphereData &i_v,
+			SphereData &o_stream,
+			SphereData &o_potential
+
+	)	const
+	{
+		i_u.request_data_physical();
+		i_v.request_data_physical();
+
+		spat_to_SHsphtor(
+				sphereDataConfig->shtns,
+				i_u.physical_space_data,
+				i_v.physical_space_data,
+				o_stream.spectral_space_data,
+				o_potential.spectral_space_data
+		);
+
+		o_stream.physical_space_data_valid = false;
+		o_stream.spectral_space_data_valid = true;
+
+		o_potential.physical_space_data_valid = false;
+		o_potential.spectral_space_data_valid = true;
+	}
+
+
+
+	/**
+	 * Convert vorticity/divergence field to u,v velocity field
+	 */
+	void robert_vortdiv_to_uv(
+			const SphereData &i_vrt,
+			const SphereData &i_div,
+			SphereDataPhysical &o_u,
+			SphereDataPhysical &o_v
+
+	)	const
+	{
+		i_vrt.request_data_spectral();
+		i_div.request_data_spectral();
+
+		SphereData psi = inv_laplace(i_vrt)*ir;
+		SphereData chi = inv_laplace(i_div)*ir;
+
+		SHsphtor_to_spat(
+				sphereDataConfig->shtns,
+				psi.spectral_space_data,
+				chi.spectral_space_data,
+				o_u.physical_space_data,
+				o_v.physical_space_data
+		);
+
+
+		o_u.physical_update_lambda_cosphi_grid(
+			[&](double lon, double phi, double &o_data)
+			{
+				o_data *= phi;
+			}
+		);
+
+		o_v.physical_update_lambda_cosphi_grid(
+			[&](double lon, double phi, double &o_data)
+			{
+				o_data *= phi;
+			}
+		);
+	}
+
+	/**
+	 * Convert vorticity/divergence field to u,v velocity field
+	 */
+	void vortdiv_to_uv(
+			const SphereData &i_vrt,
+			const SphereData &i_div,
+			SphereDataPhysical &o_u,
+			SphereDataPhysical &o_v
+
+	)	const
+	{
+
+		i_vrt.request_data_spectral();
+		i_div.request_data_spectral();
+
+		SphereData psi = inv_laplace(i_vrt)*ir;
+		SphereData chi = inv_laplace(i_div)*ir;
+
+		SHsphtor_to_spat(
+				sphereDataConfig->shtns,
+				psi.spectral_space_data,
+				chi.spectral_space_data,
+				o_u.physical_space_data,
+				o_v.physical_space_data
+		);
+	}
+
+
+
+	SphereData robert_uv_to_vort(
+			const SphereDataPhysical &i_u,
+			const SphereDataPhysical &i_v
+
+	)	const
+	{
+		SphereDataPhysical ug = i_u;
+
+		ug.physical_update_lambda_cosphi_grid(
+			[&](double lon, double phi, double &o_data)
+			{
+				o_data /= phi;
+			}
+		);
+
+		SphereDataPhysical vg = i_v;
+		vg.physical_update_lambda_cosphi_grid(
+			[&](double lon, double phi, double &o_data)
+			{
+				o_data /= phi;
+			}
+		);
+
+		SphereData tmp(sphereDataConfig);
+		SphereData vort(sphereDataConfig);
+
+		spat_to_SHsphtor(
+				sphereDataConfig->shtns,
+				ug.physical_space_data,
+				vg.physical_space_data,
+				vort.spectral_space_data,
+				tmp.spectral_space_data
+		);
+
+		vort.physical_space_data_valid = false;
+		vort.spectral_space_data_valid = true;
+
+		return laplace(vort)*r;
+	}
+
+
+
+	SphereData uv_to_vort(
+			const SphereDataPhysical &i_u,
+			const SphereDataPhysical &i_v
+
+	)	const
+	{
+		SphereData tmp(sphereDataConfig);
+		SphereData vort(sphereDataConfig);
+
+		spat_to_SHsphtor(
+				sphereDataConfig->shtns,
+				i_u.physical_space_data,
+				i_v.physical_space_data,
+				vort.spectral_space_data,
+				tmp.spectral_space_data
+		);
+
+		vort.physical_space_data_valid = false;
+		vort.spectral_space_data_valid = true;
+
+		return laplace(vort)*r;
+	}
+
+
+	void robert_uv_to_vortdiv(
+			const SphereDataPhysical &i_u,
+			const SphereDataPhysical &i_v,
+			SphereData &o_stream,
+			SphereData &o_potential
+
+	)	const
+	{
+		SphereDataPhysical ug = i_u;
+
+		ug.physical_update_lambda_cosphi_grid(
+			[&](double lon, double phi, double &o_data)
+			{
+				o_data /= phi;
+			}
+		);
+
+		SphereDataPhysical vg = i_v;
+		vg.physical_update_lambda_cosphi_grid(
+			[&](double lon, double phi, double &o_data)
+			{
+				o_data /= phi;
+			}
+		);
+
+		spat_to_SHsphtor(
+				sphereDataConfig->shtns,
+				ug.physical_space_data,
+				vg.physical_space_data,
+				o_stream.spectral_space_data,
+				o_potential.spectral_space_data
+		);
+
+		o_stream.physical_space_data_valid = false;
+		o_stream.spectral_space_data_valid = true;
+
+		o_potential.physical_space_data_valid = false;
+		o_potential.spectral_space_data_valid = true;
+
+		o_stream = laplace(o_stream)*r;
+		o_potential = laplace(o_potential)*r;
+	}
+
+
+	void uv_to_vortdiv(
+			const SphereDataPhysical &i_u,
+			const SphereDataPhysical &i_v,
+			SphereData &o_stream,
+			SphereData &o_potential
+
+	)	const
+	{
+		spat_to_SHsphtor(
+				sphereDataConfig->shtns,
+				i_u.physical_space_data,
+				i_v.physical_space_data,
+				o_stream.spectral_space_data,
+				o_potential.spectral_space_data
+		);
+
+		o_stream.physical_space_data_valid = false;
+		o_stream.spectral_space_data_valid = true;
+
+		o_potential.physical_space_data_valid = false;
+		o_potential.spectral_space_data_valid = true;
+
+		o_stream = laplace(o_stream)*r;
+		o_potential = laplace(o_potential)*r;
+	}
 
 
 	/**
@@ -293,7 +589,7 @@ public:
 	 */
 	SphereData robert_div_lat(
 			const SphereData &i_sph_data
-	)
+	)	const
 	{
 		/*
 		 * Compute
@@ -313,7 +609,7 @@ public:
 	 */
 	SphereData robert_grad_lon(
 			const SphereData &i_sph_data
-	)
+	)	const
 	{
 		return diff_lon(i_sph_data);
 	}
@@ -323,10 +619,12 @@ public:
 	/**
 	 * Special formulation for Robert gradient,
 	 * see REXI with spherical harmonics
+	 *
+	 * 1.0/(1-mu*mu) d/dlambda Phi
 	 */
 	SphereData robert_grad_lon_M(
 			const SphereData &i_sph_data
-	)
+	)	const
 	{
 		return inv_one_minus_mu2(robert_grad_lon(i_sph_data));
 	}
@@ -342,7 +640,7 @@ public:
 	 */
 	SphereData robert_grad_lat(
 			const SphereData &i_sph_data
-	)
+	)	const
 	{
 		// Entirely in spectral space
 		return spectral_one_minus_mu_squared_diff_lat_mu(i_sph_data);
@@ -353,14 +651,30 @@ public:
 	/**
 	 * Special formulation for Robert gradient,
 	 * see REXI with spherical harmonics
+	 *
+	 * d/dmu Phi
 	 */
 	SphereData robert_grad_lat_M(
 			const SphereData &i_sph_data
-	)
+	)	const
 	{
 		return inv_one_minus_mu2(robert_grad_lat(i_sph_data));
 	}
 
+
+	/**
+	 */
+	SphereData robert_grad(
+			const SphereData &i_phi,
+			const SphereData &i_u,
+			const SphereData &i_v
+	)	const
+	{
+		return
+				diff_lon(i_phi)*i_u +
+				spectral_one_minus_mu_squared_diff_lat_mu(i_phi)*i_v
+			;
+	}
 
 	/**
 	 * Special formulation for Robert gradient,
@@ -370,7 +684,7 @@ public:
 			const SphereData &i_phi,
 			const SphereData &i_u,
 			const SphereData &i_v
-	)
+	)	const
 	{
 		return inv_one_minus_mu2(
 				diff_lon(i_phi)*i_u +
@@ -380,12 +694,31 @@ public:
 
 
 
+	/**
+	 * A function following Richies paper
+	 */
+	SphereData ritchie_A(
+			const SphereData &i_u,
+			const SphereData &i_v,
+			const SphereData &i_phi
+	)	const
+	{
+		return inv_one_minus_mu2(
+				(
+						i_u*diff_lon(i_phi) +
+						i_v*spectral_one_minus_mu_squared_diff_lat_mu(i_phi)
+				)
+			);
+	}
 
 
 
-	SphereData spec_one_minus_sinphi_squared_diff_lat_mu(
+
+
+
+	SphereData spectral_one_minus_sinphi_squared_diff_lat_mu(
 			const SphereData &i_sph_data
-	)
+	)	const
 	{
 		return spectral_one_minus_mu_squared_diff_lat_mu(i_sph_data);
 	}
@@ -394,7 +727,7 @@ public:
 
 	SphereData spectral_cosphi2_diff_lat_mu(
 			const SphereData &i_sph_data
-	)
+	)	const
 	{
 		return spectral_one_minus_mu_squared_diff_lat_mu(i_sph_data);
 	}
@@ -406,12 +739,12 @@ public:
 	 */
 	SphereData spectral_one_minus_mu_squared_diff_lat_mu(
 			const SphereData &i_sph_data
-	)
+	)	const
 	{
 		i_sph_data.request_data_spectral();
 		const SphereDataConfig *sphereDataConfig = i_sph_data.sphereDataConfig;
 
-		SphereData out_sph_data = SphereData(sphereDataConfig);
+		SphereData out_sph_data(sphereDataConfig);
 
 #if SWEET_THREADING
 #pragma omp parallel for
@@ -425,8 +758,8 @@ public:
 #if SWEET_SPH_ON_THE_FLY_MODE == 0
 
 				out_sph_data.spectral_space_data[idx] =
-						((-n+1.0)*R(n-1,m))*i_sph_data.spectral_get(n-1, m) +
-						((n+2.0)*S(n+1,m))*i_sph_data.spectral_get(n+1, m);
+						((double)(-n+1.0)*R(n-1,m))*i_sph_data.spectral_get(n-1, m) +
+						((double)(n+2.0)*S(n+1,m))*i_sph_data.spectral_get(n+1, m);
 
 #elif SWEET_SPH_ON_THE_FLY_MODE == 2
 
@@ -499,7 +832,7 @@ public:
 	 */
 	SphereData mu2(
 			const SphereData &i_sph_data
-	)
+	)	const
 	{
 		const SphereDataConfig *sphereDataConfig = i_sph_data.sphereDataConfig;
 		i_sph_data.request_data_spectral();
@@ -547,7 +880,7 @@ public:
 	 */
 	SphereData grad_lat(
 			const SphereData &i_sph_data
-	)
+	)	const
 	{
 		/*
 		 * compute sin(theta)*d/d theta
@@ -607,7 +940,7 @@ public:
 	 */
 	SphereData div_lon(
 			const SphereData &i_sph_data
-	)
+	)	const
 	{
 		return grad_lon(i_sph_data);
 	}
@@ -621,7 +954,7 @@ public:
 	 */
 	SphereData div_lat(
 			const SphereData &i_sph_data
-	)
+	)	const
 	{
 		SphereData out_sph_data(i_sph_data);
 
@@ -652,21 +985,21 @@ public:
 	}
 
 
+
 	/**
 	 * Laplace operator
 	 */
 	SphereData laplace(
 			const SphereData &i_sph_data
-	)
+	)	const
 	{
-		i_sph_data.request_data_spectral();
-
 		SphereData out_sph_data(i_sph_data);
+		out_sph_data.request_data_spectral();
 
 		out_sph_data.spectral_update_lambda(
-				[](int n, int m, std::complex<double> &o_data)
+				[&](int n, int m, std::complex<double> &o_data)
 				{
-					o_data *= -(double)n*((double)n+1.0);
+					o_data *= -(double)n*((double)n+1.0)*ir*ir;
 				}
 			);
 
@@ -674,16 +1007,40 @@ public:
 	}
 
 
+	/**
+	 * Laplace operator
+	 */
+	SphereData inv_laplace(
+			const SphereData &i_sph_data
+	)	const
+	{
+		SphereData out(i_sph_data);
+		out.request_data_spectral();
+
+		out.spectral_update_lambda(
+				[&](int n, int m, std::complex<double> &o_data)
+				{
+					if (n != 0)
+						o_data /= -(double)n*((double)n+1.0)*ir*ir;
+					else
+						o_data = 0;
+				}
+			);
+
+		return out;
+	}
+
+
 public:
 	/**
 	 * Compute vorticity
 	 *
-	 * \eta = grad_lat(V_lon) - grad_lon(V_lat)
+	 * \eta = div_lon(V_lat) - div_lat(V_lon)
 	 */
 	SphereData vort(
 			const SphereData &i_lon,
 			const SphereData &i_lat
-	)
+	)	const
 	{
 		return div_lon(i_lat) - div_lat(i_lon);
 	}
@@ -693,16 +1050,15 @@ public:
 	/**
 	 * Compute vorticity
 	 *
-	 * \eta = robert_grad_lat(V_lon) - robert_grad_lon(V_lat)
+	 * \eta = robert_div_lon(V_lat) - robert_div_lat(V_lon)
 	 */
 	SphereData robert_vort(
 			const SphereData &i_lon,
 			const SphereData &i_lat
-	)
+	)	const
 	{
 		return robert_div_lon(i_lat) - robert_div_lat(i_lon);
 	}
-
 
 
 public:
@@ -714,7 +1070,7 @@ public:
 	SphereData div(
 			const SphereData &i_lon,
 			const SphereData &i_lat
-	)
+	)	const
 	{
 		return div_lon(i_lon) + div_lat(i_lat);
 	}
@@ -729,12 +1085,11 @@ public:
 	SphereData robert_div(
 			const SphereData &i_lon,
 			const SphereData &i_lat
-	)
+	)	const
 	{
-#if 1
+#if 0
 
 		return robert_div_lon(i_lon) + robert_div_lat(i_lat);
-
 #else
 
 		return inv_one_minus_mu2(

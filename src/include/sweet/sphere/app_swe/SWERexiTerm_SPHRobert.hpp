@@ -108,7 +108,7 @@ public:
 		two_omega = 2.0*coriolis_omega;
 		avg_geopotential = i_avg_geopotential;
 
-		opComplex.setup(sphereDataConfig);
+		opComplex.setup(sphereDataConfig, r);
 
 		sphSolverPhi.setup(sphereDataConfigSolver, 4);
 		sphSolverPhi.solver_component_rexi_z1(	(alpha*alpha)*(alpha*alpha), r);

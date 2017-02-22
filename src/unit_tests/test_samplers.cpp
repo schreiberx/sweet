@@ -44,7 +44,7 @@ int main(
 	int res_x = simVars.disc.res_physical[0];
 	int res_y = simVars.disc.res_physical[1];
 
-	int max_res = 2048;
+	int max_res = 1024;
 
 	if (res_x > max_res || res_y > max_res)
 		max_res = std::max(res_x, res_y);

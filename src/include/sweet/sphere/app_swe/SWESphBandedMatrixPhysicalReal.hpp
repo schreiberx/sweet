@@ -481,7 +481,7 @@ public:
 
 	SphereData solve(
 			const SphereData &i_rhs
-	)
+	)	const
 	{
 		i_rhs.request_data_spectral();
 

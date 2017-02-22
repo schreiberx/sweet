@@ -183,10 +183,6 @@ public:
 			 */
 			for (int i = 0; i < N; i++)
 			{
-//				std::cout << alpha[i] << ", " << alpha[N*2-i] << std::endl;
-//				std::cout << beta_re[i] << ", " << beta_re[N*2-i] << std::endl;
-//				std::cout << std::endl;
-
 //				alpha[i] = (alpha[i] + alpha[N*2-i])*0.5;
 				beta_re[i] += conj(beta_re[N*2-i]);
 				beta_im[i] += conj(beta_im[N*2-i]);
@@ -236,6 +232,8 @@ public:
 					beta_re[n] /= normalization;
 			}
 		}
+
+		std::cout << "REXI - number of terms: " << alpha.size() << std::endl;
 	}
 
 

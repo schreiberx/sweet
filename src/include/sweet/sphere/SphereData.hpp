@@ -21,6 +21,7 @@
 #include <sweet/sweetmath.hpp>
 #include <sweet/MemBlockAlloc.hpp>
 #include <sweet/sphere/SphereDataConfig.hpp>
+#include <sweet/sphere/SphereDataPhysical.hpp>
 #include <sweet/FatalError.hpp>
 #include <sweet/openmp_helper.hpp>
 
@@ -297,6 +298,8 @@ public:
 		if (physical_space_data_valid)
 			return;
 
+//		std::cout << "request_data_physical successful" << std::endl;
+
 		assert(spectral_space_data_valid);
 
 		/**
@@ -309,6 +312,41 @@ public:
 
 		this_var->physical_space_data_valid = true;
 		this_var->spectral_space_data_valid = false;
+	}
+
+
+	SphereDataPhysical getSphereDataPhysical()	const
+	{
+		SphereDataPhysical out(sphereDataConfig);
+#if 1
+		if (physical_space_data_valid)
+		{
+			memcpy(out.physical_space_data, physical_space_data, sizeof(double)*sphereDataConfig->physical_array_data_number_of_elements);
+			return out;
+		}
+#endif
+		/*
+		 * WARNING:
+		 * We have to use a temporary array here because of destructive SH transformations
+		 */
+		SphereData tmp = *this;
+		tmp.request_data_spectral();
+		SH_to_spat(sphereDataConfig->shtns, tmp.spectral_space_data, out.physical_space_data);
+
+		return out;
+	}
+
+
+	SphereData(
+			const SphereDataPhysical &i_sph_data
+	)
+	{
+		setup(i_sph_data.sphereDataConfig);
+
+		memcpy(physical_space_data, i_sph_data.physical_space_data, sizeof(double)*sphereDataConfig->physical_array_data_number_of_elements);
+
+		physical_space_data_valid = true;
+		spectral_space_data_valid = false;
 	}
 
 
@@ -341,6 +379,41 @@ public:
 		);
 
 		return out;
+	}
+
+
+	void physical_add(
+			const SphereData &i_sph_data
+	)	const
+	{
+		check(i_sph_data.sphereDataConfig);
+
+		request_data_physical();
+		i_sph_data.request_data_physical();
+
+#if SWEET_THREADING
+#pragma omp parallel for
+#endif
+		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
+			physical_space_data[idx] += i_sph_data.physical_space_data[idx];
+	}
+
+
+
+	void physical_sub(
+			const SphereData &i_sph_data
+	)	const
+	{
+		check(i_sph_data.sphereDataConfig);
+
+		request_data_physical();
+		i_sph_data.request_data_physical();
+
+#if SWEET_THREADING
+#pragma omp parallel for
+#endif
+		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
+			physical_space_data[idx] -= i_sph_data.physical_space_data[idx];
 	}
 
 
@@ -468,6 +541,28 @@ public:
 	{
 		check(i_sph_data.sphereDataConfig);
 
+#if 1
+		SphereData a = *this;
+		SphereData b = i_sph_data;
+
+		a.request_data_physical();
+		b.request_data_physical();
+
+		SphereData out(sphereDataConfig);
+
+#if SWEET_THREADING
+#pragma omp parallel for
+#endif
+		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+			out.physical_space_data[i] = a.physical_space_data[i]*b.physical_space_data[i];
+
+		out.physical_space_data_valid = true;
+		out.spectral_space_data_valid = false;
+
+		// directly convert back to spectral space to truncate modes
+		//out.request_data_spectral();
+
+#else
 		request_data_physical();
 		i_sph_data.request_data_physical();
 
@@ -482,6 +577,10 @@ public:
 		out.physical_space_data_valid = true;
 		out.spectral_space_data_valid = false;
 
+		// directly convert back to spectral space to truncate modes
+		out.request_data_spectral();
+#endif
+
 		return out;
 	}
 
@@ -493,6 +592,29 @@ public:
 	{
 		check(i_sph_data.sphereDataConfig);
 
+#if 1
+		SphereData a = *this;
+		SphereData b = i_sph_data;
+
+		a.request_data_physical();
+		b.request_data_physical();
+
+		SphereData out(sphereDataConfig);
+
+#if SWEET_THREADING
+#pragma omp parallel for
+#endif
+		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+			out.physical_space_data[i] = a.physical_space_data[i]/b.physical_space_data[i];
+
+		out.physical_space_data_valid = true;
+		out.spectral_space_data_valid = false;
+
+		// directly convert back to spectral space to truncate modes
+		out.request_data_spectral();
+
+		return out;
+#else
 		request_data_physical();
 		i_sph_data.request_data_physical();
 
@@ -502,12 +624,16 @@ public:
 #pragma omp parallel for
 #endif
 		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
-			out.physical_space_data[i] = i_sph_data.physical_space_data[i]/physical_space_data[i];
+			out.physical_space_data[i] = physical_space_data[i]/i_sph_data.physical_space_data[i];
 
 		out.physical_space_data_valid = true;
 		out.spectral_space_data_valid = false;
 
+		// directly convert back to spectral space to truncate modes
+		out.request_data_spectral();
+
 		return out;
+#endif
 	}
 
 
@@ -690,6 +816,38 @@ public:
 
 
 
+	/**
+	 * Solve a Laplace problem given by
+	 *
+	 * (D^2) x = rhs
+	 */
+	inline
+	SphereData spectral_solve_laplace(
+			double r
+	)
+	{
+		SphereData out(*this);
+
+		const double b = 1.0/(r*r);
+
+		out.spectral_update_lambda(
+			[&](
+				int n, int m,
+				std::complex<double> &io_data
+			)
+			{
+				if (n == 0)
+					io_data = 0;
+				else
+					io_data /= (-b*(double)n*((double)n+1.0));
+			}
+		);
+
+		return out;
+	}
+
+
+
 public:
 	/**
 	 * Truncate modes which are not representable in spectral space
@@ -751,9 +909,12 @@ public:
 
 	bool physical_isAnyNaNorInf()
 	{
+		SphereData a = *this;
+		a.request_data_physical();
+
 		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 		{
-			if (std::isnan(physical_space_data[i]) || std::isinf(physical_space_data[i]) != 0)
+			if (std::isnan(a.physical_space_data[i]) || std::isinf(a.physical_space_data[i]) != 0)
 				return true;
 		}
 
@@ -770,8 +931,8 @@ public:
 
 		assert(spectral_space_data_valid);
 
-		if (i_n < 0)
-			i_n = i_n-1;
+//		if (i_n < 0)
+//			i_n = i_n-1;
 
 		if (i_n < 0 ||  i_m < 0)
 			return zero;
@@ -787,6 +948,21 @@ public:
 
 		assert (i_m <= sphereDataConfig->spectral_modes_m_max);
 		return spectral_space_data[sphereDataConfig->getArrayIndexByModes(i_n, i_m)];
+	}
+
+
+	const double physical_get(
+			int i_lon,
+			int i_lat
+	)	const
+	{
+		request_data_physical();
+
+#if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
+		return physical_space_data[i_lon*sphereDataConfig->physical_num_lat + i_lat];
+#else
+		return physical_space_data[i_lat*sphereDataConfig->physical_num_lon + i_lon];
+#endif
 	}
 
 
@@ -843,6 +1019,8 @@ public:
 #pragma omp parallel for
 #endif
 
+#if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
+
 		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
 		{
 			double lon_degree = ((double)i/(double)sphereDataConfig->physical_num_lon)*2.0*M_PI;
@@ -862,6 +1040,68 @@ public:
 				i_lambda(lon_degree, lat_degree, physical_space_data[i*sphereDataConfig->physical_num_lat + j]);
 			}
 		}
+
+#else
+
+		for (int jlat = 0; jlat < sphereDataConfig->physical_num_lat; jlat++)
+		{
+			double lat_degree = sphereDataConfig->lat[jlat];
+
+			for (int ilon = 0; ilon < sphereDataConfig->physical_num_lon; ilon++)
+			{
+				double lon_degree = ((double)ilon/(double)sphereDataConfig->physical_num_lon)*2.0*M_PI;
+
+				//double colatitude = acos(shtns->ct[j]);
+
+				/*
+				 * Colatitude is 0 at the north pole and 180 at the south pole
+				 *
+				 * WARNING: The latitude degrees are not equidistant spaced in the angles!!!! We have to use the shtns->ct lookup table
+				 */
+				//double lat_degree = M_PI*0.5 - colatitude;
+
+				i_lambda(lon_degree, lat_degree, physical_space_data[jlat*sphereDataConfig->physical_num_lon + ilon]);
+			}
+		}
+
+#endif
+		physical_space_data_valid = true;
+		spectral_space_data_valid = false;
+	}
+
+
+	void physical_update_lambda_array(
+			std::function<void(int,int,double&)> i_lambda	///< lambda function to return value for lat/mu
+	)
+	{
+		if (spectral_space_data_valid)
+			request_data_physical();
+
+#if SWEET_THREADING
+#pragma omp parallel for
+#endif
+
+#if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
+
+		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
+		{
+			for (int j = 0; j < sphereDataConfig->physical_num_lat; j++)
+			{
+				i_lambda(i, j, physical_space_data[i*sphereDataConfig->physical_num_lat + j]);
+			}
+		}
+
+#else
+
+		for (int jlat = 0; jlat < sphereDataConfig->physical_num_lat; jlat++)
+		{
+			for (int ilon = 0; ilon < sphereDataConfig->physical_num_lon; ilon++)
+			{
+				i_lambda(ilon, jlat, physical_space_data[jlat*sphereDataConfig->physical_num_lon + ilon]);
+			}
+		}
+
+#endif
 
 		physical_space_data_valid = true;
 		spectral_space_data_valid = false;
@@ -884,6 +1124,8 @@ public:
 #pragma omp parallel for
 #endif
 
+#if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
+
 		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
 		{
 			double lon_degree = ((double)i/(double)sphereDataConfig->physical_num_lon)*2.0*M_PI;
@@ -895,7 +1137,20 @@ public:
 				i_lambda(lon_degree, sin_phi, physical_space_data[i*sphereDataConfig->physical_num_lat + j]);
 			}
 		}
+#else
 
+		for (int jlat = 0; jlat < sphereDataConfig->physical_num_lat; jlat++)
+		{
+			double sin_phi = sphereDataConfig->lat_gaussian[jlat];
+
+			for (int ilon = 0; ilon < sphereDataConfig->physical_num_lon; ilon++)
+			{
+				double lon_degree = ((double)ilon/(double)sphereDataConfig->physical_num_lon)*2.0*M_PI;
+
+				i_lambda(lon_degree, sin_phi, physical_space_data[jlat*sphereDataConfig->physical_num_lon + ilon]);
+			}
+		}
+#endif
 		physical_space_data_valid = true;
 		spectral_space_data_valid = false;
 	}
@@ -920,6 +1175,7 @@ public:
 #pragma omp parallel for
 #endif
 
+#if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
 		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
 		{
 			double lon_degree = (((double)i)/(double)sphereDataConfig->physical_num_lon)*2.0*M_PI;
@@ -937,6 +1193,26 @@ public:
 				i_lambda(lon_degree, cos_phi, physical_space_data[i*sphereDataConfig->physical_num_lat + j]);
 			}
 		}
+#else
+
+		for (int jlat = 0; jlat < sphereDataConfig->physical_num_lat; jlat++)
+		{
+			double cos_phi = sphereDataConfig->lat_cogaussian[jlat];
+
+			for (int ilon = 0; ilon < sphereDataConfig->physical_num_lon; ilon++)
+			{
+				double lon_degree = (((double)ilon)/(double)sphereDataConfig->physical_num_lon)*2.0*M_PI;
+
+				/*
+				 * IDENTITAL FORMULATION
+				double mu = shtns->ct[j];
+				double comu = sqrt(1.0-mu*mu);
+				*/
+
+				i_lambda(lon_degree, cos_phi, physical_space_data[jlat*sphereDataConfig->physical_num_lon + ilon]);
+			}
+		}
+#endif
 
 		physical_space_data_valid = true;
 		spectral_space_data_valid = false;
@@ -970,7 +1246,7 @@ public:
 
 		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
 			for (int j = 0; j < sphereDataConfig->physical_num_lat; j++)
-				physical_space_data[i*sphereDataConfig->physical_num_lat + j] = 0;
+				physical_space_data[j*sphereDataConfig->physical_num_lon + i] = 0;
 
 		physical_space_data_valid = true;
 		spectral_space_data_valid = false;
@@ -991,7 +1267,7 @@ public:
 
 		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
 			for (int j = 0; j < sphereDataConfig->physical_num_lat; j++)
-				physical_space_data[i*sphereDataConfig->physical_num_lat + j] = i_value;
+				physical_space_data[j*sphereDataConfig->physical_num_lon + i] = i_value;
 
 		physical_space_data_valid = true;
 		spectral_space_data_valid = false;
@@ -1011,7 +1287,12 @@ public:
 		if (spectral_space_data_valid)
 			request_data_physical();
 
+
+#if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
 		physical_space_data[i_lon_idx*sphereDataConfig->physical_num_lat + i_lat_idx] = i_value;
+#else
+		physical_space_data[i_lat_idx*sphereDataConfig->physical_num_lon + i_lon_idx] = i_value;
+#endif
 
 		physical_space_data_valid = true;
 		spectral_space_data_valid = false;
@@ -1068,8 +1349,8 @@ public:
 	)	const
 	{
 		// make a copy to avoid modifications
-		SphereData a = SphereData(i_sphereData);
-		SphereData b = SphereData(*this);
+		SphereData a = i_sphereData;
+		SphereData b = *this;
 
 		a.request_data_physical();
 		b.request_data_physical();
@@ -1101,6 +1382,159 @@ public:
 		return sum;
 	}
 
+
+	/**
+	 * return the maximum of all absolute values, use quad precision for reduction
+	 */
+	double physical_reduce_sum_quad()	const
+	{
+		request_data_physical();
+
+		double sum = 0;
+		double c = 0;
+#if SWEET_THREADING
+#pragma omp parallel for proc_bind(close) reduction(+:sum,c)
+#endif
+		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+		{
+			double value = physical_space_data[i];
+
+			// Use Kahan summation
+			double y = value - c;
+			double t = sum + y;
+			c = (t - sum) - y;
+			sum = t;
+		}
+
+		sum -= c;
+
+		return sum;
+	}
+
+
+	/**
+	 * return the maximum of all absolute values, use quad precision for reduction
+	 */
+	double physical_reduce_sum_quad_increasing()	const
+	{
+		request_data_physical();
+
+		double sum = 0;
+		double c = 0;
+#if SWEET_THREADING
+#pragma omp parallel for proc_bind(close) reduction(+:sum,c)
+#endif
+		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+		{
+			double value = physical_space_data[i]*(double)i;
+
+			// Use Kahan summation
+			double y = value - c;
+			double t = sum + y;
+			c = (t - sum) - y;
+			sum = t;
+		}
+
+		sum -= c;
+
+		return sum;
+	}
+
+
+	/**
+	 * return the maximum of all absolute values, use quad precision for reduction
+	 */
+	std::complex<double> spectral_reduce_sum_quad_increasing()	const
+	{
+		request_data_spectral();
+
+		std::complex<double> sum = 0;
+		std::complex<double> c = 0;
+#if SWEET_THREADING
+//#pragma omp parallel for proc_bind(close) reduction(+:sum,c)
+#endif
+		for (int i = 0; i < sphereDataConfig->spectral_array_data_number_of_elements; i++)
+		{
+			std::complex<double> value = spectral_space_data[i]*(double)i;
+
+			// Use Kahan summation
+			std::complex<double> y = value - c;
+			std::complex<double> t = sum + y;
+			c = (t - sum) - y;
+			sum = t;
+		}
+
+		sum -= c;
+
+		return sum;
+	}
+
+
+	/**
+	 * return the maximum of all absolute values, use quad precision for reduction
+	 */
+	std::complex<double> spectral_reduce_sum_quad()	const
+	{
+		request_data_spectral();
+
+		std::complex<double> sum = 0;
+		std::complex<double> c = 0;
+#if SWEET_THREADING
+//#pragma omp parallel for proc_bind(close) reduction(+:sum,c)
+#endif
+		for (int i = 0; i < sphereDataConfig->spectral_array_data_number_of_elements; i++)
+		{
+			std::complex<double> value = spectral_space_data[i];
+
+			// Use Kahan summation
+			std::complex<double> y = value - c;
+			std::complex<double> t = sum + y;
+			c = (t - sum) - y;
+			sum = t;
+		}
+
+		sum -= c;
+
+		return sum;
+	}
+
+
+	/**
+	 * Return the minimum value
+	 */
+	std::complex<double> spectral_reduce_min()	const
+	{
+		request_data_spectral();
+
+		std::complex<double> error = std::numeric_limits<double>::infinity();
+
+		for (int j = 0; j < sphereDataConfig->spectral_array_data_number_of_elements; j++)
+		{
+			error.real(std::min(error.real(), spectral_space_data[j].real()));
+			error.imag(std::min(error.imag(), spectral_space_data[j].imag()));
+		}
+
+		return error;
+	}
+
+
+	/**
+	 * Return the minimum value
+	 */
+	std::complex<double> spectral_reduce_max()	const
+	{
+		request_data_spectral();
+
+		std::complex<double> error = -std::numeric_limits<double>::infinity();
+
+		for (int j = 0; j < sphereDataConfig->spectral_array_data_number_of_elements; j++)
+		{
+			error.real(std::max(error.real(), spectral_space_data[j].real()));
+			error.imag(std::max(error.imag(), spectral_space_data[j].imag()));
+		}
+
+		return error;
+	}
 
 
 	double physical_reduce_sum_metric()
@@ -1225,11 +1659,16 @@ public:
 
 		std::cout << std::setprecision(i_precision);
 
+
         for (int j = sphereDataConfig->physical_num_lat-1; j >= 0; j--)
         {
         		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
         		{
+#if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
         			std::cout << physical_space_data[i*sphereDataConfig->physical_num_lat+j];
+#else
+        			std::cout << physical_space_data[j*sphereDataConfig->physical_num_lon+i];
+#endif
         			if (i < sphereDataConfig->physical_num_lon-1)
         				std::cout << "\t";
         		}
@@ -1279,7 +1718,11 @@ public:
 
         		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
         		{
+#if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
         			file << physical_space_data[i*sphereDataConfig->physical_num_lat+j];
+#else
+        			file << physical_space_data[j*sphereDataConfig->physical_num_lon+i];
+#endif
         			if (i < sphereDataConfig->physical_num_lon-1)
         				file << "\t";
         		}
@@ -1335,7 +1778,11 @@ public:
         			if (ia >= sphereDataConfig->physical_num_lon)
         				ia -= sphereDataConfig->physical_num_lon;
 
+#if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
         			file << physical_space_data[ia*sphereDataConfig->physical_num_lat+j];
+#else
+        			file << physical_space_data[j*sphereDataConfig->physical_num_lon+ia];
+#endif
         			if (i < sphereDataConfig->physical_num_lon-1)
         				file << "\t";
         		}

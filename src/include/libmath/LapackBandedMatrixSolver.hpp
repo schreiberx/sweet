@@ -237,7 +237,7 @@ public:
 		const std::complex<double>* i_b,
 		std::complex<double>* o_x,
 		int i_size
-	)
+	)	const
 	{
 		assert(max_N >= i_size);
 
@@ -377,7 +377,7 @@ public:
 		const std::complex<double>* i_b,
 		std::complex<double>* o_x,
 		int i_size
-	)
+	)	const
 	{
 		/*
 		 * Make a copy of the array data since this is a destructive function
@@ -397,7 +397,7 @@ public:
 		std::complex<double>* io_A,		///< A of max size
 		std::complex<double>* io_b_x,	///< rhs and solution x
 		int i_size
-	)
+	)	const
 	{
 		assert((num_diagonals & 1) == 1);
 		assert(AB != nullptr);

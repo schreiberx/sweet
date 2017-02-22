@@ -16,6 +16,7 @@
 #include <limits>
 #include <sweet/sweetmath.hpp>
 #include <sweet/FatalError.hpp>
+#include <sweet/StringSplit.hpp>
 
 
 #ifndef SWEET_PARAREAL
@@ -189,6 +190,8 @@ public:
 			std::cout << "	--initial-freq-y-mul [float]	Frequency for the waves initial conditions in y, default=1" << std::endl;
 			std::cout << "	--initial-coord-x [float]	Same as -x" << std::endl;
 			std::cout << "	--initial-coord-y [float]	Same as -y" << std::endl;
+			std::cout << "	--advection-rotation-angle [float]	Rotation angle for e.g. advection test case" << std::endl;
+
 			std::cout << "" << std::endl;
 		}
 	} setup;
@@ -201,7 +204,8 @@ public:
 	struct SimulationCoefficients
 	{
 		/// average height for initialization
-		double h0 = 1000.0;
+		/// use value similar to Galewski benchmark
+		double h0 = 10000.0;
 
 
 		/// For more information on viscosity,
@@ -270,7 +274,7 @@ public:
 			std::cout << " + coriolis_omega: " << coriolis_omega << std::endl;
 			std::cout << " + gravitation: " << gravitation << std::endl;
 			std::cout << " + top_bottom_zero_v_velocity: " << top_bottom_zero_v_velocity << std::endl;
-			std::cout << " + domain_size: " << domain_size[0] << " x " << domain_size[1] << std::endl;
+			std::cout << " + domain_size (2D): " << domain_size[0] << " x " << domain_size[1] << std::endl;
 			std::cout << std::endl;
 		}
 	} sim;
@@ -417,7 +421,7 @@ public:
 			std::cout << "DISCRETIZATION:" << std::endl;
 			std::cout << " + res_physical: " << res_physical[0] << " x " << res_physical[1] << std::endl;
 			std::cout << " + res_spectral: " << res_spectral[0] << " x " << res_spectral[1] << std::endl;
-			std::cout << " + cell_size: " << res_physical[0] << " x " << cell_size[1] << std::endl;
+			std::cout << " + cell_size (2D): " << res_physical[0] << " x " << cell_size[1] << std::endl;
 			std::cout << " + timestepping_method: " << getTimesteppingMethodString(timestepping_method) << std::endl;
 			std::cout << " + timestepping_order: " << timestepping_order << std::endl;
 			std::cout << " + timestepping_method2: " << getTimesteppingMethodString(timestepping_method2) << std::endl;
@@ -619,6 +623,7 @@ public:
 			std::cout << std::endl;
 			std::cout << "MISC:" << std::endl;
 			std::cout << " + verbosity: " << verbosity << std::endl;
+			std::cout << " + stability_checks: " << stability_checks << std::endl;
 			std::cout << " + output_floating_point_precision: " << output_floating_point_precision << std::endl;
 			std::cout << " + gui_enabled: " << gui_enabled << std::endl;
 			std::cout << " + be_verbose_after_this_simulation_time_period: " << be_verbose_after_this_simulation_time_period << std::endl;
@@ -634,6 +639,9 @@ public:
 
 		/// set verbosity of simulation
 		int verbosity = 0;
+
+		/// do stability checks for simulation
+		int stability_checks = 1;
 
 		/// precision for floating point outputConfig to std::cout and std::endl
 		int output_floating_point_precision = 18;
@@ -859,7 +867,11 @@ public:
         long_options[next_free_program_option] = {"rexi-ext-modes", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
+
         // 9
+        long_options[next_free_program_option] = {"stability-checks", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
         long_options[next_free_program_option] = {"nonlinear", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
@@ -872,7 +884,7 @@ public:
         long_options[next_free_program_option] = {"pde-id", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        // 13
+        // 14
         long_options[next_free_program_option] = {"timestepping-method", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
@@ -988,31 +1000,32 @@ public:
 						case 7:		rexi.rexi_sphere_solver_preallocation = atoi(optarg);	break;
 						case 8:		rexi.rexi_use_extended_modes = atoi(optarg);	break;
 
-						case 9:		misc.use_nonlinear_equations = atoi(optarg);	break;
-						case 10:	misc.sphere_use_robert_functions = atoi(optarg);	break;
+						case 9:		misc.stability_checks = atoi(optarg);	break;
+						case 10:	misc.use_nonlinear_equations = atoi(optarg);	break;
+						case 11:	misc.sphere_use_robert_functions = atoi(optarg);	break;
 
-						case 11:	setup.advection_rotation_angle = atof(optarg);	break;
+						case 12:	setup.advection_rotation_angle = atof(optarg);	break;
 
-						case 12:	pde.id = atoi(optarg);	break;
+						case 13:	pde.id = atoi(optarg);	break;
 
-						case 13:	disc.timestepping_method = atoi(optarg);	break;
-						case 14:	disc.timestepping_order = atoi(optarg);	break;
-						case 15:	disc.timestepping_method2 = atoi(optarg);	break;
-						case 16:	disc.timestepping_order2 = atoi(optarg);	break;
+						case 14:	disc.timestepping_method = atoi(optarg);	break;
+						case 15:	disc.timestepping_order = atoi(optarg);	break;
+						case 16:	disc.timestepping_method2 = atoi(optarg);	break;
+						case 17:	disc.timestepping_order2 = atoi(optarg);	break;
 
-						case 17:	disc.leapfrog_robert_asselin_filter = atof(optarg);	break;
-						case 18:	disc.crank_nicolson_filter = atof(optarg);	break;
-						case 19:	disc.use_staggering = atof(optarg);	break;
+						case 18:	disc.leapfrog_robert_asselin_filter = atof(optarg);	break;
+						case 19:	disc.crank_nicolson_filter = atof(optarg);	break;
+						case 20:	disc.use_staggering = atof(optarg);	break;
 
-						case 20:	dummy = atof(optarg);	break;
+						case 21:	dummy = atof(optarg);	break;
 
 #if SWEET_PFASST_CPP
-						case 21:	pfasst.nlevels = atoi(optarg);	break;
-						case 22:	pfasst.nnodes = atoi(optarg);	break;
-						case 23:	pfasst.nspace = atoi(optarg);	break;
-						case 24:	pfasst.nsteps = atoi(optarg);	break;
-						case 25:	pfasst.niters = atoi(optarg);	break;
-						case 26:	pfasst.dt = atof(optarg);	break;
+						case 22:	pfasst.nlevels = atoi(optarg);	break;
+						case 23:	pfasst.nnodes = atoi(optarg);	break;
+						case 24:	pfasst.nspace = atoi(optarg);	break;
+						case 25:	pfasst.nsteps = atoi(optarg);	break;
+						case 26:	pfasst.niters = atoi(optarg);	break;
+						case 27:	pfasst.dt = atof(optarg);	break;
 #endif
 
 						default:
@@ -1060,13 +1073,55 @@ public:
 				break;
 
 			case 'N':
-				disc.res_physical[0] = atoi(optarg);
-				disc.res_physical[1] = disc.res_physical[0];
+				{
+					std::vector<std::string> res = StringSplit::split(optarg, ",");
+
+					int c = res.size();
+
+					if (c == 0)
+						FatalError("Invaild format for modes");
+
+					if (c == 1)
+					{
+						disc.res_physical[0] = atoi(res[0].c_str());
+						disc.res_physical[1] = disc.res_physical[0];
+					}
+					else if (c == 2)
+					{
+						disc.res_physical[0] = atoi(res[0].c_str());
+						disc.res_physical[1] = atoi(res[1].c_str());
+					}
+					else
+					{
+						FatalError("More than 2 max resolutions given");
+					}
+				}
 				break;
 
 			case 'M':
-				disc.res_spectral[0] = atoi(optarg);
-				disc.res_spectral[1] = disc.res_spectral[0];
+				{
+					std::vector<std::string> modes = StringSplit::split(optarg, ",");
+
+					int c = modes.size();
+
+					if (c == 0)
+						FatalError("Invaild format for modes");
+
+					if (c == 1)
+					{
+						disc.res_spectral[0] = atoi(modes[0].c_str());
+						disc.res_spectral[1] = disc.res_spectral[0];
+					}
+					else if (c == 2)
+					{
+						disc.res_spectral[0] = atoi(modes[0].c_str());
+						disc.res_spectral[1] = atoi(modes[1].c_str());
+					}
+					else
+					{
+						FatalError("More than 2 max modes given");
+					}
+				}
 				break;
 
 			case 'n':

@@ -661,8 +661,8 @@ public:
 			int io_spectral_modes[2]
 	)
 	{
-		std::cout << io_physical_res[0] << ", " << io_physical_res[1] << std::endl;
-		std::cout << io_spectral_modes[0] << ", " << io_spectral_modes[1] << std::endl;
+//		std::cout << io_physical_res[0] << ", " << io_physical_res[1] << std::endl;
+//		std::cout << io_spectral_modes[0] << ", " << io_spectral_modes[1] << std::endl;
 
 		if (io_physical_res[0] > 0 && io_spectral_modes[0] > 0)
 		{

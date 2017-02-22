@@ -28,10 +28,11 @@ public:
 	 */
 public:
 	SphereOperatorsComplex(
-			SphereDataConfig *i_sphereDataConfig
+			SphereDataConfig *i_sphereDataConfig,
+			double i_earth_radius
 	)
 	{
-		setup(i_sphereDataConfig);
+		setup(i_sphereDataConfig, i_earth_radius);
 	}
 
 
@@ -45,7 +46,8 @@ public:
 
 public:
 	void setup(
-			SphereDataConfig *i_sphereDataConfig
+			SphereDataConfig *i_sphereDataConfig,
+			double i_earth_radius
 	)
 	{
 		sphereDataConfig = i_sphereDataConfig;
@@ -64,7 +66,7 @@ public:
 	 */
 	SphereDataComplex diff_lon(
 			const SphereDataComplex &i_sph_data
-	)
+	)	const
 	{
 		i_sph_data.request_data_spectral();
 
@@ -171,7 +173,6 @@ public:
 	)
 	{
 		i_sph_data.request_data_spectral();
-
 		const SphereDataConfig *sphereDataConfig = i_sph_data.sphereDataConfig;
 
 		SphereDataComplex out(sphereDataConfig);
@@ -602,7 +603,7 @@ public:
 	)
 	{
 
-#if 0
+#if 1
 		return inv_one_minus_mu2(
 				diff_lon(i_lon)
 				+ spectral_cosphi2_diff_lat_mu(i_lat)

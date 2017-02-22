@@ -101,7 +101,7 @@ public:
 
 		sphereDataConfig = i_sphereDataConfig;
 
-		opComplex.setup(sphereDataConfig);
+		opComplex.setup(sphereDataConfig, r);
 
 		sphSolverPhi.setup(sphereDataConfig, 4);
 		sphSolverPhi.solver_component_rexi_z1(	(alpha*alpha)*(alpha*alpha), r);

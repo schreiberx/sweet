@@ -34,7 +34,7 @@ void run_tests(
 
 	std::cout << std::setprecision(10);
 
-	SphereOperators op(sphereDataConfig);
+	SphereOperators op(sphereDataConfig, 1);
 
 	{
 		SphereTestSolutions_Gaussian testSolutions;

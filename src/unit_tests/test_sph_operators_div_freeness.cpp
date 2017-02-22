@@ -38,8 +38,8 @@ void run_tests()
 	error_threshold *= (sphereDataConfig->spectral_modes_n_max);
 	std::cout << "Using max allowed error of " << error_threshold << std::endl;
 
-	SphereOperators op(sphereDataConfig);
-	SphereOperatorsComplex opComplex(sphereDataConfig);
+	SphereOperators op(sphereDataConfig, 1);
+	SphereOperatorsComplex opComplex(sphereDataConfig, 1);
 
 
 	if (true)

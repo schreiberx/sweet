@@ -70,7 +70,7 @@ void run_tests()
 
 	REXI<> rexi(0, 0.2, 64);
 
-	SphereOperatorsComplex opComplex(sphereDataConfig);
+	SphereOperatorsComplex opComplex(sphereDataConfig, 1);
 
 
 	for (std::size_t i = 0; i < rexi.alpha.size(); i++)

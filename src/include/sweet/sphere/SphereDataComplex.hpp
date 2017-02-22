@@ -217,60 +217,6 @@ public:
 	}
 
 
-
-
-#if 0
-public:
-	void physical_RealToSphereData(
-			SphereData &o_sph_data
-	)
-	{
-		check_sphereDataConfig_identical_res(o_sph_data.sphereDataConfig);
-
-		request_data_physical();
-
-		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
-			o_sph_data.physical_space_data[i] = physical_space_data[i].real();
-
-		o_sph_data.physical_space_data_valid = true;
-		o_sph_data.spectral_space_data_valid = false;
-	}
-
-public:
-	void physical_ImagToSphereData(
-			SphereData &o_sph_data
-	)
-	{
-		check_sphereDataConfig_identical_res(o_sph_data.sphereDataConfig);
-
-		request_data_physical();
-
-		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
-			o_sph_data.physical_space_data[i] = physical_space_data[i].imag();
-
-		o_sph_data.physical_space_data_valid = true;
-		o_sph_data.spectral_space_data_valid = false;
-	}
-
-
-public:
-	void physical_fromSphereData(
-			const SphereData &i_sph_data
-	)
-	{
-		check_sphereDataConfig_identical_res(i_sph_data.sphereDataConfig);
-
-		i_sph_data.request_data_physical();
-
-		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
-			physical_space_data[i] = i_sph_data.physical_space_data[i];
-
-		physical_space_data_valid = true;
-		spectral_space_data_valid = false;
-	}
-#endif
-
-
 public:
 	void request_data_spectral()	const
 	{
@@ -833,6 +779,9 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for
 #endif
+
+#if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
+
 		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
 		{
 			double lon_degree = ((double)i/(double)sphereDataConfig->physical_num_lon)*2.0*M_PI;
@@ -852,6 +801,29 @@ public:
 				i_lambda(lon_degree, lat_degree, physical_space_data[i*sphereDataConfig->physical_num_lat + j]);
 			}
 		}
+#else
+
+
+		for (int jlat = 0; jlat < sphereDataConfig->physical_num_lat; jlat++)
+		{
+			//double colatitude = acos(shtns->ct[j]);
+
+			/*
+			 * Colatitude is 0 at the north pole and 180 at the south pole
+			 *
+			 * WARNING: The latitude degrees are not aequidistantly spaced in the angles!!!! We have to use the shtns->ct lookup table
+			 */
+			//double lat_degree = M_PI*0.5 - colatitude;
+			double lat_degree = sphereDataConfig->lat[jlat];
+
+			for (int ilon = 0; ilon < sphereDataConfig->physical_num_lon; ilon++)
+			{
+				double lon_degree = ((double)ilon/(double)sphereDataConfig->physical_num_lon)*2.0*M_PI;
+
+				i_lambda(lon_degree, lat_degree, physical_space_data[jlat*sphereDataConfig->physical_num_lon + ilon]);
+			}
+		}
+#endif
 
 		physical_space_data_valid = true;
 		spectral_space_data_valid = false;
@@ -874,6 +846,7 @@ public:
 #pragma omp parallel for
 #endif
 
+#if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
 		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
 		{
 			double lon_degree = ((double)i/(double)sphereDataConfig->physical_num_lon)*2.0*M_PI;
@@ -885,6 +858,19 @@ public:
 				i_lambda(lon_degree, mu, physical_space_data[i*sphereDataConfig->physical_num_lat + j]);
 			}
 		}
+#else
+		for (int jlat = 0; jlat < sphereDataConfig->physical_num_lat; jlat++)
+		{
+			double mu = sphereDataConfig->lat_gaussian[jlat];
+
+			for (int ilon = 0; ilon < sphereDataConfig->physical_num_lon; ilon++)
+			{
+				double lon_degree = ((double)ilon/(double)sphereDataConfig->physical_num_lon)*2.0*M_PI;
+
+				i_lambda(lon_degree, mu, physical_space_data[jlat*sphereDataConfig->physical_num_lon + ilon]);
+			}
+		}
+#endif
 
 		physical_space_data_valid = true;
 		spectral_space_data_valid = false;
@@ -910,6 +896,7 @@ public:
 #pragma omp parallel for
 #endif
 
+#if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
 		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
 		{
 			double lon_degree = (((double)i)/(double)sphereDataConfig->physical_num_lon)*2.0*M_PI;
@@ -917,15 +904,23 @@ public:
 			for (int j = 0; j < sphereDataConfig->physical_num_lat; j++)
 			{
 				double comu = sphereDataConfig->shtns->st[j];
-				/*
-				 * IDENTITAL FORMULATION
-				double mu = shtns->ct[j];
-				double comu = sqrt(1.0-mu*mu);
-				*/
 
 				i_lambda(lon_degree, comu, physical_space_data[i*sphereDataConfig->physical_num_lat + j]);
 			}
 		}
+#else
+		for (int jlat = 0; jlat < sphereDataConfig->physical_num_lat; jlat++)
+		{
+			double comu = sphereDataConfig->shtns->st[jlat];
+
+			for (int ilon = 0; ilon < sphereDataConfig->physical_num_lon; ilon++)
+			{
+				double lon_degree = (((double)ilon)/(double)sphereDataConfig->physical_num_lon)*2.0*M_PI;
+
+				i_lambda(lon_degree, comu, physical_space_data[jlat*sphereDataConfig->physical_num_lon + ilon]);
+			}
+		}
+#endif
 
 		physical_space_data_valid = true;
 		spectral_space_data_valid = false;

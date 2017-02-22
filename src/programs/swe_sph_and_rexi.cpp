@@ -15,6 +15,7 @@
 #include <benchmarks_sphere/SphereBenchmarksCombined.hpp>
 
 #include <sweet/sphere/SphereData.hpp>
+#include <sweet/sphere/SphereDataPhysical.hpp>
 
 // explicit time stepping
 #include <sweet/sphere/SphereDataTimesteppingExplicitRK.hpp>
@@ -56,6 +57,7 @@ SphereDataConfig *sphereDataConfigExt = &sphereDataConfigExtInstance;
 	PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
 #endif
 
+
 /*
  * This allows running REXI including Coriolis-related terms but just by setting f to 0
  */
@@ -88,24 +90,32 @@ public:
 	SphereData prog_u;
 	SphereData prog_v;
 
+	SphereData &prog_phi = prog_h;
+	SphereData &prog_vort = prog_u;
+	SphereData &prog_div = prog_v;
+
+	SphereDataPhysical fg;
+
+
 	REXI<> rexi;
 
 #if SWEET_GUI
 	PlaneData viz_plane_data;
 #endif
 
-	int render_primitive_id;
+	int render_primitive_id = 1;
 
 
 
 public:
 	SimulationInstance()	:
-		op(sphereDataConfig),
-		opComplex(sphereDataConfig),
+		op(sphereDataConfig, simVars.sim.earth_radius),
+		opComplex(sphereDataConfig, simVars.sim.earth_radius),
 		timestepping_implicit_swe(op),
 		prog_h(sphereDataConfig),
 		prog_u(sphereDataConfig),
-		prog_v(sphereDataConfig)
+		prog_v(sphereDataConfig),
+		fg(sphereDataConfig)
 
 #if SWEET_GUI
 		,viz_plane_data(planeDataConfig)
@@ -182,6 +192,14 @@ public:
 	{
 		simVars.reset();
 
+		fg.physical_update_lambda_gaussian_grid(
+			[&](double lon, double mu, double &o_data)
+			{
+				o_data += mu*2.0*simVars.sim.coriolis_omega;
+			}
+		);
+
+
 		// reset the RK time stepping buffers
 		switch (simVars.disc.timestepping_method)
 		{
@@ -197,18 +215,15 @@ public:
 
 		switch (simVars.pde.id)
 		{
-		case 1:
+		case 2:
 			std::cout << "OVERRIDING BENCHMARK SCENARIO ID TO 11 to match PDE: Advection DIV(U.phi)" << std::endl;
 			simVars.setup.benchmark_scenario_id = 11;
 			break;
-		case 2:
+		case 3:
 			std::cout << "OVERRIDING BENCHMARK SCENARIO ID TO 12 to match PDE: Advection U.GRAD(phi)" << std::endl;
 //			simVars.setup.benchmark_scenario_id = 12;
 			break;
 		}
-
-
-		render_primitive_id = 1;
 
 		// one month runtime
 		if (simVars.timecontrol.max_simulation_time == -1)
@@ -252,9 +267,6 @@ public:
 
 		if (simVars.disc.timestepping_method == simVars.disc.REXI)
 		{
-			{
-
-			}
 			// Override for REXI
 			if (simVars.timecontrol.current_timestep_size <= 0)
 			{
@@ -268,6 +280,13 @@ public:
 
 
 		SphereBenchmarksCombined::setupInitialConditions(prog_h, prog_u, prog_v, simVars, op);
+
+#if 0
+		for (int i = 0; i < sphereDataConfig->physical_num_lat; i++)
+		{
+			std::cout << "h,u,v [" << i << "] = " << prog_h.physical_get(0, i) << ", " << prog_u.physical_get(0, i) << ", " << prog_v.physical_get(0, i) << std::endl;
+		}
+#endif
 
 //		if (simVars.sim.coriolis_omega != 0)
 //			param_use_coriolis_formulation = true;
@@ -285,13 +304,32 @@ public:
 		switch (simVars.pde.id)
 		{
 		case 0:
-			std::cout << "PDE: SWE" << std::endl;
+			std::cout << "PDE: SWE U-V formulation" << std::endl;
 			break;
+
 		case 1:
+			std::cout << "PDE: SWE VORT/DIV formulation" << std::endl;
+			{
+				SphereData tmp_vort(prog_vort);
+				SphereData tmp_div(prog_div);
+
+				if (simVars.misc.sphere_use_robert_functions)
+					op.robert_uv_to_vortdiv(prog_u.getSphereDataPhysical(), prog_v.getSphereDataPhysical(), tmp_vort, tmp_div);
+				else
+					op.uv_to_vortdiv(prog_u.getSphereDataPhysical(), prog_v.getSphereDataPhysical(), tmp_vort, tmp_div);
+
+				prog_vort = tmp_vort;
+				prog_div = tmp_div;
+				prog_phi = prog_h*simVars.sim.gravitation;
+			}
+			break;
+
+		case 2:
 			std::cout << "PDE: Advection DIV(U.phi)" << std::endl;
 			simVars.setup.benchmark_scenario_id = 11;
 			break;
-		case 2:
+
+		case 3:
 			std::cout << "PDE: Advection U.GRAD(phi)" << std::endl;
 			simVars.setup.benchmark_scenario_id = 12;
 			break;
@@ -387,17 +425,57 @@ public:
 
 		std::cout << "Simulation time: " << simVars.timecontrol.current_simulation_time << std::endl;
 
-		output_filename = write_file(prog_h, "h", simVars.setup.benchmark_scenario_id == 0);
-		std::cout << output_filename << " (min: " << SphereData(prog_h).physical_reduce_min() << ", max: " << SphereData(prog_h).physical_reduce_max() << ")" << std::endl;
+		switch(simVars.pde.id)
+		{
+		case 1:
+			{
+				output_filename = write_file(prog_h, "h", simVars.setup.benchmark_scenario_id == 0);
+				std::cout << output_filename << " (min: " << SphereData(prog_h).physical_reduce_min() << ", max: " << SphereData(prog_h).physical_reduce_max() << ")" << std::endl;
 
-		output_filename = write_file(prog_u, "u", simVars.setup.benchmark_scenario_id == 0);
-		std::cout << output_filename << std::endl;
+				SphereDataPhysical u(sphereDataConfig);
+				SphereDataPhysical v(sphereDataConfig);
 
-		output_filename = write_file(prog_v, "v", simVars.setup.benchmark_scenario_id == 0);
-		std::cout << output_filename << std::endl;
+				if (simVars.misc.sphere_use_robert_functions)
+					op.robert_vortdiv_to_uv(prog_vort, prog_div, u, v);
+				else
+					op.vortdiv_to_uv(prog_vort, prog_div, u, v);
 
-		output_filename = write_file(op.vort(SphereData(prog_u), SphereData(prog_v))/simVars.sim.earth_radius, "eta", simVars.setup.benchmark_scenario_id == 0);
-		std::cout << output_filename << std::endl;
+				output_filename = write_file(u, "u", simVars.setup.benchmark_scenario_id == 0);
+				std::cout << output_filename << std::endl;
+
+				output_filename = write_file(v, "v", simVars.setup.benchmark_scenario_id == 0);
+				std::cout << output_filename << std::endl;
+
+
+				output_filename = write_file(prog_vort, "eta", simVars.setup.benchmark_scenario_id == 0);
+				std::cout << output_filename << std::endl;
+			}
+			break;
+
+		default:
+			std::cout << "PDE: SWE VORT/DIV formulation" << std::endl;
+			{
+				SphereData tmp_vort(prog_vort);
+				SphereData tmp_div(prog_div);
+
+				output_filename = write_file(prog_h, "h", simVars.setup.benchmark_scenario_id == 0);
+				std::cout << output_filename << " (min: " << SphereData(prog_h).physical_reduce_min() << ", max: " << SphereData(prog_h).physical_reduce_max() << ")" << std::endl;
+
+				output_filename = write_file(prog_u, "u", simVars.setup.benchmark_scenario_id == 0);
+				std::cout << output_filename << std::endl;
+
+				output_filename = write_file(prog_v, "v", simVars.setup.benchmark_scenario_id == 0);
+				std::cout << output_filename << std::endl;
+
+
+				if (simVars.misc.sphere_use_robert_functions)
+					output_filename = write_file(op.robert_uv_to_vort(prog_u.getSphereDataPhysical(), prog_v.getSphereDataPhysical())/simVars.sim.earth_radius, "eta", simVars.setup.benchmark_scenario_id == 0);
+				else
+					output_filename = write_file(op.vort(SphereData(prog_u), SphereData(prog_v))/simVars.sim.earth_radius, "eta", simVars.setup.benchmark_scenario_id == 0);
+				std::cout << output_filename << std::endl;
+			}
+		}
+
 
 
 		/*
@@ -426,13 +504,13 @@ public:
 
 
 
-			output_filename = write_file((prog_h-test_h), "ref_diff_h", simVars.setup.benchmark_scenario_id == 0);
+			output_filename = write_file((SphereData(prog_h)-SphereData(test_h)), "ref_diff_h", simVars.setup.benchmark_scenario_id == 0);
 			std::cout << output_filename << std::endl;
 
-			output_filename = write_file((prog_u-test_u), "ref_diff_u", simVars.setup.benchmark_scenario_id == 0);
+			output_filename = write_file((SphereData(prog_u)-SphereData(test_u)), "ref_diff_u", simVars.setup.benchmark_scenario_id == 0);
 			std::cout << output_filename << std::endl;
 
-			output_filename = write_file((prog_v-test_v), "ref_diff_v", simVars.setup.benchmark_scenario_id == 0);
+			output_filename = write_file((SphereData(prog_v)-SphereData(test_v)), "ref_diff_v", simVars.setup.benchmark_scenario_id == 0);
 			std::cout << output_filename << std::endl;
 		}
 	}
@@ -489,13 +567,13 @@ public:
 			std::cout << "ERRORS - time, RMS(h,u,v), MAXABS(h,u,v):\t";
 			std::cout << simVars.timecontrol.current_simulation_time << "\t";
 
-			std::cout << (test_h-prog_h).physical_reduce_rms() << "\t";
-			std::cout << (test_u-prog_u).physical_reduce_rms() << "\t";
-			std::cout << (test_v-prog_v).physical_reduce_rms() << "\t";
+			std::cout << (SphereData(test_h)-SphereData(prog_h)).physical_reduce_rms() << "\t";
+			std::cout << (SphereData(test_u)-SphereData(prog_u)).physical_reduce_rms() << "\t";
+			std::cout << (SphereData(test_v)-SphereData(prog_v)).physical_reduce_rms() << "\t";
 
-			std::cout << (test_h-prog_h).physical_reduce_max_abs() << "\t";
-			std::cout << (test_u-prog_u).physical_reduce_max_abs() << "\t";
-			std::cout << (test_v-prog_v).physical_reduce_max_abs() << std::endl;
+			std::cout << (SphereData(test_h)-SphereData(prog_h)).physical_reduce_max_abs() << "\t";
+			std::cout << (SphereData(test_u)-SphereData(prog_u)).physical_reduce_max_abs() << "\t";
+			std::cout << (SphereData(test_v)-SphereData(prog_v)).physical_reduce_max_abs() << std::endl;
 		}
 
 
@@ -543,9 +621,16 @@ public:
 	}
 
 
-	bool instability_detected()
+	bool detect_instability()
 	{
-		double max_abs_value = std::abs(simVars.sim.h0)*2.0+1.0;
+		double max_abs_value = std::abs(simVars.sim.h0)*2.0;
+
+		switch (simVars.pde.id)
+		{
+		case 1:
+			max_abs_value *= simVars.sim.gravitation;
+		}
+
 		if (
 				SphereData(prog_h).physical_reduce_max_abs() > max_abs_value &&
 				simVars.setup.benchmark_scenario_id != 4
@@ -565,9 +650,37 @@ public:
 	}
 
 
+	void outInfo(const std::string &i_string, const SphereData &i_data)
+	{
+		std::cout << i_string << ": " << i_data.physical_reduce_min() << ", " << i_data.physical_reduce_max() << std::endl;
+	}
+
+	SphereData add_f(const SphereData &i_data)
+	const
+	{
+		SphereData d(i_data);
+
+		double two_omega = 2.0*simVars.sim.coriolis_omega;
+		d.physical_update_lambda_gaussian_grid(
+			[&](double lon, double mu, double &o_data)
+			{
+				o_data += mu*two_omega;
+			}
+		);
+
+		return d;
+	}
+
 
 	void run_timestep()
 	{
+#if 0
+		std::cout
+			<< prog_h.physical_reduce_min() << ", " << prog_h.physical_reduce_max() << "   "
+			<< prog_u.physical_reduce_min() << ", " << prog_u.physical_reduce_max() << "   "
+			<< prog_v.physical_reduce_min() << ", " << prog_v.physical_reduce_max() << std::endl;
+#endif
+
 #if SWEET_GUI
 		if (simVars.misc.gui_enabled)
 			timestep_check_output();
@@ -581,6 +694,7 @@ public:
 			switch (simVars.pde.id)
 			{
 			case 0:
+				// SWE, UV
 				timestepping_explicit_rk.run_timestep(
 						this,
 						&SimulationInstance::p_run_euler_timestep_update_swe,	///< pointer to function to compute euler time step updates
@@ -594,6 +708,20 @@ public:
 				break;
 
 			case 1:
+				// SWE, VORT/DIV
+				timestepping_explicit_rk.run_timestep(
+						this,
+						&SimulationInstance::p_run_euler_timestep_update_swe_vortdiv,	///< pointer to function to compute euler time step updates
+						prog_phi, prog_vort, prog_div,
+						o_dt,
+						simVars.timecontrol.current_timestep_size,
+						simVars.disc.timestepping_order,
+						simVars.timecontrol.current_simulation_time,
+						simVars.timecontrol.max_simulation_time
+					);
+				break;
+
+			case 2:
 				timestepping_explicit_rk.run_timestep(
 						this,
 						&SimulationInstance::p_run_euler_timestep_update_advection,	///< pointer to function to compute euler time step updates
@@ -606,10 +734,23 @@ public:
 					);
 				break;
 
-			case 2:
+			case 3:
 				timestepping_explicit_rk.run_timestep(
 						this,
 						&SimulationInstance::p_run_euler_timestep_update_advection_div_free,	///< pointer to function to compute euler time step updates
+						prog_h,
+						o_dt,
+						simVars.timecontrol.current_timestep_size,
+						simVars.disc.timestepping_order,
+						simVars.timecontrol.current_simulation_time,
+						simVars.timecontrol.max_simulation_time
+					);
+				break;
+
+			case 4:
+				timestepping_explicit_rk.run_timestep(
+						this,
+						&SimulationInstance::p_run_euler_timestep_update_advection_vortdiv,	///< pointer to function to compute euler time step updates
 						prog_h,
 						o_dt,
 						simVars.timecontrol.current_timestep_size,
@@ -640,8 +781,8 @@ public:
 			case 1:
 				timestepping_explicit_leapfrog.run_timestep(
 						this,
-						&SimulationInstance::p_run_euler_timestep_update_advection,	///< pointer to function to compute euler time step updates
-						prog_h,
+						&SimulationInstance::p_run_euler_timestep_update_swe_vortdiv,	///< pointer to function to compute euler time step updates
+						prog_phi, prog_vort, prog_div,
 						o_dt,
 						simVars.timecontrol.current_timestep_size,
 						simVars.disc.timestepping_order,
@@ -653,7 +794,33 @@ public:
 			case 2:
 				timestepping_explicit_leapfrog.run_timestep(
 						this,
+						&SimulationInstance::p_run_euler_timestep_update_advection,	///< pointer to function to compute euler time step updates
+						prog_h,
+						o_dt,
+						simVars.timecontrol.current_timestep_size,
+						simVars.disc.timestepping_order,
+						simVars.timecontrol.current_simulation_time,
+						simVars.timecontrol.max_simulation_time
+					);
+				break;
+
+			case 3:
+				timestepping_explicit_leapfrog.run_timestep(
+						this,
 						&SimulationInstance::p_run_euler_timestep_update_advection_div_free,	///< pointer to function to compute euler time step updates
+						prog_h,
+						o_dt,
+						simVars.timecontrol.current_timestep_size,
+						simVars.disc.timestepping_order,
+						simVars.timecontrol.current_simulation_time,
+						simVars.timecontrol.max_simulation_time
+					);
+				break;
+
+			case 4:
+				timestepping_explicit_leapfrog.run_timestep(
+						this,
+						&SimulationInstance::p_run_euler_timestep_update_advection_vortdiv,	///< pointer to function to compute euler time step updates
 						prog_h,
 						o_dt,
 						simVars.timecontrol.current_timestep_size,
@@ -713,7 +880,7 @@ public:
 
 				break;
 
-			case 1:
+			case 2:
 				timestepping_implicit_swe.solve_advection(
 						prog_h*simVars.sim.gravitation, prog_u, prog_v,
 						o_prog_h,
@@ -829,12 +996,6 @@ public:
 	{
 		o_dt = simVars.timecontrol.current_timestep_size;
 
-		if (simVars.misc.use_nonlinear_equations)
-		{
-			FatalError("Advection equation is only possible without non-linearities and with robert functions");
-		}
-
-
 		if (simVars.misc.sphere_use_robert_functions)
 		{
 			o_h_t =
@@ -857,13 +1018,13 @@ public:
 		{
 			if (simVars.sim.viscosity_order == 2)
 			{
-				double scalar = simVars.sim.viscosity/(simVars.sim.earth_radius*simVars.sim.earth_radius);
+				double scalar = simVars.sim.viscosity;
 				o_h_t += op.laplace(i_h)*scalar;
 			}
 			else if (simVars.sim.viscosity_order == 4)
 			{
-				double scalar = simVars.sim.viscosity/(simVars.sim.earth_radius*simVars.sim.earth_radius);
-				o_h_t += op.laplace(op.laplace(i_h))*scalar*scalar;
+				double scalar = simVars.sim.viscosity;
+				o_h_t += op.laplace(op.laplace(i_h))*scalar;
 			}
 		}
 	}
@@ -893,17 +1054,72 @@ public:
 		{
 			if (simVars.sim.viscosity_order == 2)
 			{
-				double scalar = simVars.sim.viscosity/(simVars.sim.earth_radius*simVars.sim.earth_radius);
-				o_h_t += op.laplace(i_h)*scalar;
+				o_h_t += op.laplace(i_h)*simVars.sim.viscosity;
 			}
 			else if (simVars.sim.viscosity_order == 4)
 			{
-				double scalar = simVars.sim.viscosity/(simVars.sim.earth_radius*simVars.sim.earth_radius);
-				o_h_t += op.laplace(op.laplace(i_h))*scalar*scalar;
+				o_h_t += op.laplace(op.laplace(i_h))*simVars.sim.viscosity;
 			}
 		}
 	}
 
+
+
+
+	/**
+	 * Euler time step for advection along the longitude
+	 */
+	void p_run_euler_timestep_update_advection_vortdiv(
+			const SphereData &i_h,	///< prognostic variables
+			SphereData &o_h_t,	///< time updates
+
+			double &o_dt,				///< time step restriction
+			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_simulation_timestamp = -1
+	)
+	{
+		o_dt = simVars.timecontrol.current_timestep_size;
+
+
+		if (simVars.misc.sphere_use_robert_functions)
+		{
+			SphereDataPhysical ug = prog_u.getSphereDataPhysical();
+			SphereDataPhysical vg = prog_v.getSphereDataPhysical();
+
+			SphereDataPhysical phig = i_h.getSphereDataPhysical();
+
+			SphereData tmpspec(sphereDataConfig);
+			op.robert_uv_to_vortdiv(ug*phig,vg*phig, tmpspec, o_h_t);
+
+			o_h_t *= -1.0;
+		}
+		else
+		{
+			SphereDataPhysical ug = prog_u.getSphereDataPhysical();
+			SphereDataPhysical vg = prog_v.getSphereDataPhysical();
+
+			SphereDataPhysical phig = i_h.getSphereDataPhysical();
+
+			SphereData tmpspec(sphereDataConfig);
+			op.uv_to_vortdiv(ug*phig,vg*phig, tmpspec, o_h_t);
+
+			o_h_t *= -1.0;
+		}
+
+
+		assert(simVars.sim.viscosity_order == 2 || simVars.sim.viscosity_order == 4);
+		if (simVars.sim.viscosity != 0)
+		{
+			if (simVars.sim.viscosity_order == 2)
+			{
+				o_h_t += op.laplace(i_h)*simVars.sim.viscosity;
+			}
+			else if (simVars.sim.viscosity_order == 4)
+			{
+				o_h_t += op.laplace(op.laplace(i_h))*simVars.sim.viscosity;
+			}
+		}
+	}
 
 
 	/*
@@ -924,34 +1140,214 @@ public:
 			double i_simulation_timestamp = -1
 	)
 	{
+
 		o_dt = simVars.timecontrol.current_timestep_size;
 
-		if (!simVars.misc.use_nonlinear_equations)
+
+		/*
+		 * NON-LINEARITIES
+		 */
+		assert(simVars.sim.earth_radius > 0);
+		assert(simVars.sim.gravitation);
+
+		if (simVars.misc.sphere_use_robert_functions)
 		{
 			/*
-			 * LINEAR EQUATOINS ONLY
+			 * ROBERT
 			 */
-			if (!simVars.misc.sphere_use_robert_functions)
+			if (simVars.misc.use_nonlinear_equations)
 			{
-				/*
-				 * NON-ROBERT FORMULATION
-				 */
-				o_h_t = -(op.div_lon(i_u)+op.div_lat(i_v))*(simVars.sim.h0/simVars.sim.earth_radius);
 
-				o_u_t = -op.grad_lon(i_h)*(simVars.sim.gravitation/simVars.sim.earth_radius);
-				o_v_t = -op.grad_lat(i_h)*(simVars.sim.gravitation/simVars.sim.earth_radius);
+				/*
+				 * NON-LINEAR
+				 */
+				SphereData o_phi_t(i_h.sphereDataConfig);
+
+				double i_r = 1.0/simVars.sim.earth_radius;
+//				double phi_avg = simVars.sim.h0*simVars.sim.gravitation;
+
+#define VERSION	1
+
+#if VERSION == 1
+				SphereData i_phi = i_h*simVars.sim.gravitation;
+
+				o_phi_t =
+#if 1
+						-i_r*op.robert_div(i_phi*i_u, i_phi*i_v)
+#else
+						-i_r*i_phi*op.robert_div(i_u, i_v)
+						-i_r*op.robert_grad_M(i_phi, i_u, i_v)
+#endif
+						;
+				o_u_t = -i_r*op.ritchie_A(i_u, i_v, i_u)
+						-i_r*op.robert_grad_lon(i_phi)
+						;
+
+				o_v_t = -i_r*op.ritchie_A(i_u, i_v, i_v)
+						-i_r*op.mu(i_u*i_u + i_v*i_v)
+						-i_r*op.robert_grad_lat(i_phi)
+						;
 
 				if (simVars.sim.coriolis_omega != 0)
 				{
 					o_u_t += f(i_v);
 					o_v_t -= f(i_u);
 				}
+
+				o_h_t = o_phi_t*(1.0/simVars.sim.gravitation);
+
+				o_h_t = -(op.robert_div_lon(i_h*i_u)+op.robert_div_lat(i_h*i_v))*(1.0/simVars.sim.earth_radius);
+#endif
+
+#if VERSION == 2
+				SphereData i_ur = op.fromRobert(i_u);
+				SphereData i_vr = op.fromRobert(i_v);
+
+
+				o_h_t = -(op.div_lon(i_h*i_ur)+op.div_lat(i_h*i_vr))*(1.0/simVars.sim.earth_radius);
+				o_u_t = op.toRobert(
+						-op.grad_lon(i_h)*(simVars.sim.gravitation/simVars.sim.earth_radius)
+						);
+				o_v_t = op.toRobert(
+						-op.grad_lat(i_h)*(simVars.sim.gravitation/simVars.sim.earth_radius)
+						);
+
+				if (simVars.sim.coriolis_omega != 0)
+				{
+					o_u_t += f(i_v);
+					o_v_t -= f(i_u);
+				}
+
+				o_u_t -= op.toRobert(
+						(i_ur*op.grad_lon(i_ur) + i_vr*op.grad_lat(i_ur))*(1.0/simVars.sim.earth_radius)
+						);
+				o_v_t -= op.toRobert(
+						(i_ur*op.grad_lon(i_vr) + i_vr*op.grad_lat(i_vr))*(1.0/simVars.sim.earth_radius)
+						);
+
+#endif
+
+
+#if VERSION == 3
+
+				SphereData i_phi = i_h*simVars.sim.gravitation;
+
+				SphereData i_ur = op.fromRobert(i_u);
+				SphereData i_vr = op.fromRobert(i_v);
+
+#if 0
+				o_h_t = -(1.0/simVars.sim.earth_radius)*
+						(
+							op.div_lon(i_h*i_ur)
+							+op.div_lat(i_h*i_vr)
+						);
+
+				o_u_t = -(1.0/simVars.sim.earth_radius)*
+						op.toRobert(
+								op.grad_lon(i_phi)
+								+ (i_ur*op.grad_lon(i_ur)
+								+ i_vr*op.grad_lat(i_ur))
+						);
+
+				o_v_t = -(1.0/simVars.sim.earth_radius)*
+						op.toRobert(
+								-op.grad_lat(i_phi)
+								+ (i_ur*op.grad_lon(i_vr)
+								+ i_vr*op.grad_lat(i_vr))
+						);
+
+				if (simVars.sim.coriolis_omega != 0)
+				{
+					o_u_t += f(i_v);
+					o_v_t -= f(i_u);
+				}
+
+#else
+
+
+				o_h_t = -(op.div_lon(i_h*i_ur)+op.div_lat(i_h*i_vr))*(1.0/simVars.sim.earth_radius);
+
+				o_u_t = op.toRobert(
+						-op.grad_lon(i_h)*(simVars.sim.gravitation/simVars.sim.earth_radius)
+						-(i_ur*op.grad_lon(i_ur) + i_vr*op.grad_lat(i_ur))*(1.0/simVars.sim.earth_radius)
+						);
+
+				o_v_t = op.toRobert(
+						-op.grad_lat(i_h)*(simVars.sim.gravitation/simVars.sim.earth_radius)
+						-(i_ur*op.grad_lon(i_vr) + i_vr*op.grad_lat(i_vr))*(1.0/simVars.sim.earth_radius)
+						);
+
+				if (simVars.sim.coriolis_omega != 0)
+				{
+					o_u_t += f(i_v);
+					o_v_t -= f(i_u);
+				}
+
+#endif
+
+				o_phi_t = -i_r*op.robert_div(i_phi*i_u, i_phi*i_v);
+				o_h_t = o_phi_t*(1.0/simVars.sim.gravitation);
+
+#endif
+
+#if VERSION == 4
+				SphereData i_phi = i_h*simVars.sim.gravitation;
+
+				double phi_avg = simVars.sim.h0*simVars.sim.gravitation;
+
+				/*
+				 * Split L(U) and N(U)
+				 */
+
+				/*
+				 * L(U)
+				 */
+				o_phi_t = -(phi_avg/simVars.sim.earth_radius)
+						*(
+							op.robert_div_lon(i_u)
+							+op.robert_div_lat(i_v)
+						);
+
+				o_u_t = -(1.0/simVars.sim.earth_radius)*op.robert_grad_lon(i_phi) + f(i_v);
+
+				o_v_t = -(1.0/simVars.sim.earth_radius)*op.robert_grad_lat(i_phi) - f(i_u);
+
+
+				/*
+				 * N(U)
+				 */
+				o_phi_t += -((i_phi-phi_avg)/simVars.sim.earth_radius)*(
+								op.robert_div_lon(i_u)
+								+op.robert_div_lat(i_v)
+							)
+							-(1.0/simVars.sim.earth_radius)*(
+								i_u*op.robert_grad_lon_M(i_phi)
+								+i_v*op.robert_grad_lat_M(i_phi)
+							);
+
+				o_u_t += -(1.0/simVars.sim.earth_radius)*
+							op.inv_one_minus_mu2(
+							i_u*op.robert_grad_lon(i_u)
+							+ i_v*op.robert_grad_lat(i_u)
+						);
+
+				o_v_t += -(1.0/simVars.sim.earth_radius)*
+							op.inv_one_minus_mu2(
+							i_u*op.robert_grad_lon(i_v)
+							+ i_v*op.robert_grad_lat(i_v)
+							+ op.mu(i_u*i_u + i_v*i_v)
+						);
+
+				o_h_t = o_phi_t*(1.0/simVars.sim.gravitation);
+#endif
+
 			}
 			else
 			{
 				/*
-				 * ROBERT FORMULATION
+				 * LINEAR
 				 */
+
 				o_h_t =
 					-(
 						op.robert_div_lon(i_u)+
@@ -975,26 +1371,17 @@ public:
 		else
 		{
 			/*
-			 * NON-LINEARITIES
+			 * NON-ROBERT
 			 */
-			assert(simVars.sim.earth_radius > 0);
-			assert(simVars.sim.gravitation);
-
-			if (!simVars.misc.sphere_use_robert_functions)
+			if (simVars.misc.use_nonlinear_equations)
 			{
 				/*
-				 * NON-Robert
+				 * NON-LINEAR
 				 */
-				/*
-				 * Height
-				 */
-				// non-linear equations
-				o_h_t = -(op.div_lon(i_h*i_u)+op.div_lat(i_h*i_v))*(1.0/simVars.sim.earth_radius);
+//				o_h_t = -(i_h*op.div(i_u, i_v) + op.grad(i_h, i_u, i_v))*(1.0/simVars.sim.earth_radius);
+//				o_h_t = -(i_h*op.div(i_u, i_h*i_v) + op.grad(i_h, i_u, i_v))*(1.0/simVars.sim.earth_radius);
 
-				/*
-				 * Velocity
-				 */
-				// linear terms
+				o_h_t = -(op.div_lon(i_h*i_u)+op.div_lat(i_h*i_v))*(1.0/simVars.sim.earth_radius);
 				o_u_t = -op.grad_lon(i_h)*(simVars.sim.gravitation/simVars.sim.earth_radius);
 				o_v_t = -op.grad_lat(i_h)*(simVars.sim.gravitation/simVars.sim.earth_radius);
 
@@ -1004,34 +1391,18 @@ public:
 					o_v_t -= f(i_u);
 				}
 
-				// non-linear terms
 				o_u_t -= (i_u*op.grad_lon(i_u) + i_v*op.grad_lat(i_u))*(1.0/simVars.sim.earth_radius);
 				o_v_t -= (i_u*op.grad_lon(i_v) + i_v*op.grad_lat(i_v))*(1.0/simVars.sim.earth_radius);
 			}
 			else
 			{
 				/*
-				 * ROBERT formulation
+				 * LINEAR
 				 */
+				o_h_t = -(op.div_lon(i_u)+op.div_lat(i_v))*(simVars.sim.h0/simVars.sim.earth_radius);
 
-				/*
-				 * NON-Robert
-				 */
-				/*
-				 * Height
-				 */
-
-				// TODO: CHECK ROBERT FORMULATION FOR THIS EQUATION!!!
-				// TODO: CHECK ROBERT FORMULATION FOR THIS EQUATION!!!
-				// TODO: CHECK ROBERT FORMULATION FOR THIS EQUATION!!!
-				o_h_t = -(op.robert_div_lon(i_h*i_u)+op.robert_div_lat(i_h*i_v))*(1.0/simVars.sim.earth_radius);
-
-				/*
-				 * Velocity
-				 */
-				// linear terms
-				o_u_t = -op.robert_grad_lon(i_h)*(simVars.sim.gravitation/simVars.sim.earth_radius);
-				o_v_t = -op.robert_grad_lat(i_h)*(simVars.sim.gravitation/simVars.sim.earth_radius);
+				o_u_t = -op.grad_lon(i_h)*(simVars.sim.gravitation/simVars.sim.earth_radius);
+				o_v_t = -op.grad_lat(i_h)*(simVars.sim.gravitation/simVars.sim.earth_radius);
 
 				if (simVars.sim.coriolis_omega != 0)
 				{
@@ -1039,30 +1410,187 @@ public:
 					o_v_t -= f(i_u);
 				}
 
-				// non-linear terms
-				// TODO: CHECK ROBERT FORMULATION FOR THIS EQUATION!!!
-				// TODO: CHECK ROBERT FORMULATION FOR THIS EQUATION!!!
-				// TODO: CHECK ROBERT FORMULATION FOR THIS EQUATION!!!
-				o_u_t -= (i_u*op.robert_grad_lon(i_u) + i_v*op.robert_grad_lat(i_u))*(1.0/simVars.sim.earth_radius);
-				o_v_t -= (i_u*op.robert_grad_lon(i_v) + i_v*op.robert_grad_lat(i_v))*(1.0/simVars.sim.earth_radius);
-
-				FatalError("NL with Robert functions is not yet implemented!");
 			}
 		}
 
 		assert(simVars.sim.viscosity_order == 2);
 		if (simVars.sim.viscosity != 0)
 		{
-			double scalar = simVars.sim.viscosity/(simVars.sim.earth_radius*simVars.sim.earth_radius);
-
-			o_h_t += op.laplace(i_h)*scalar;
-			o_u_t += op.laplace(i_u)*scalar;
-			o_v_t += op.laplace(i_v)*scalar;
+			o_h_t += op.laplace(i_h)*simVars.sim.viscosity;
+			o_u_t += op.laplace(i_u)*simVars.sim.viscosity;
+			o_v_t += op.laplace(i_v)*simVars.sim.viscosity;
 		}
 	}
 
-#if SWEET_GUI
 
+
+	SphereData add_f(const SphereData &i_input)
+	{
+		SphereData out(i_input);
+
+		out.physical_update_lambda_gaussian_grid(
+			[&](double lon, double mu, double &o_data)
+			{
+				o_data += mu*2.0*simVars.sim.coriolis_omega;
+			}
+		);
+		return out;
+	}
+
+
+	SphereDataPhysical add_f(const SphereDataPhysical &i_input)
+	{
+		SphereDataPhysical out(i_input);
+
+		out.physical_update_lambda_gaussian_grid(
+			[&](double lon, double mu, double &o_data)
+			{
+				o_data += mu*2.0*simVars.sim.coriolis_omega;
+			}
+		);
+		return out;
+	}
+
+
+	/*
+	 * Shallow water time stepping
+	 * (Single stage realized with Euler)
+	 * This formulation uses the vorticity/divergence formulation
+	 */
+	void p_run_euler_timestep_update_swe_vortdiv(
+			const SphereData &i_phispec,		///< prognostic variables
+			const SphereData &i_vortspec,	///< prognostic variables
+			const SphereData &i_divspec,	///< prognostic variables
+
+			SphereData &o_phi_t,	///< time updates
+			SphereData &o_vort_t,	///< time updates
+			SphereData &o_div_t,	///< time updates
+
+			double &o_dt,				///< time step restriction
+			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_simulation_timestamp = -1
+	)
+	{
+		o_dt = simVars.timecontrol.current_timestep_size;
+
+		/*
+		 * NON-LINEARITIES
+		 */
+		assert(simVars.sim.earth_radius > 0);
+		assert(simVars.sim.gravitation);
+
+#if 0
+		if (i_simulation_timestamp == 0)
+		{
+			i_phispec.physical_file_write("o_phi_0.csv");
+			i_vortspec.physical_file_write("o_vort_0.csv");
+			i_divspec.physical_file_write("o_div_0.csv");
+		}
+#endif
+
+		if (simVars.misc.sphere_use_robert_functions)
+		{
+			/*
+			 * ROBERT
+			 */
+			if (simVars.misc.use_nonlinear_equations)
+			{
+				/*
+				 * NON-LINEAR
+				 *
+				 * Follows Hack & Jakob formulation
+				 */
+
+				SphereDataPhysical ug(i_phispec.sphereDataConfig);
+				SphereDataPhysical vg(i_phispec.sphereDataConfig);
+
+				SphereDataPhysical vrtg = i_vortspec.getSphereDataPhysical();
+				SphereDataPhysical divg = i_divspec.getSphereDataPhysical();
+				op.robert_vortdiv_to_uv(i_vortspec, i_divspec, ug, vg);
+				SphereDataPhysical phig = i_phispec.getSphereDataPhysical();
+
+				SphereDataPhysical tmpg1 = ug*(vrtg+fg);
+				SphereDataPhysical tmpg2 = vg*(vrtg+fg);
+
+				op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
+
+				o_vort_t *= -1.0;
+
+				SphereDataPhysical tmpg = o_div_t.getSphereDataPhysical();
+
+				tmpg1 = ug*phig;
+				tmpg2 = vg*phig;
+
+				SphereData tmpspec(sphereDataConfig);
+				op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
+
+				o_phi_t *= -1.0;
+
+				tmpspec = (phig+0.5*(ug*ug+vg*vg));
+				tmpspec.request_data_spectral();
+				o_div_t += -op.laplace(tmpspec);
+			}
+			else
+			{
+				/*
+				 * LINEAR
+				 */
+
+				FatalError("DIV/VORT inear not supported");
+			}
+		}
+		else
+		{
+			if (simVars.misc.use_nonlinear_equations)
+			{
+				SphereDataPhysical ug(i_phispec.sphereDataConfig);
+				SphereDataPhysical vg(i_phispec.sphereDataConfig);
+
+				SphereDataPhysical vrtg = i_vortspec.getSphereDataPhysical();
+				SphereDataPhysical divg = i_divspec.getSphereDataPhysical();
+				op.vortdiv_to_uv(i_vortspec, i_divspec, ug, vg);
+				SphereDataPhysical phig = i_phispec.getSphereDataPhysical();
+
+				SphereDataPhysical tmpg1 = ug*(vrtg+fg);
+				SphereDataPhysical tmpg2 = vg*(vrtg+fg);
+
+				op.uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
+
+				o_vort_t *= -1.0;
+
+				SphereDataPhysical tmpg = o_div_t.getSphereDataPhysical();
+
+				tmpg1 = ug*phig;
+				tmpg2 = vg*phig;
+
+				SphereData tmpspec(sphereDataConfig);
+				op.uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
+
+				o_phi_t *= -1.0;
+
+				tmpspec = (phig+0.5*(ug*ug+vg*vg));
+				tmpspec.request_data_spectral();
+				o_div_t += -op.laplace(tmpspec);
+
+			}
+			else
+			{
+				FatalError("DIV/VORT inear not supported");
+			}
+		}
+
+		assert(simVars.sim.viscosity_order == 2);
+		if (simVars.sim.viscosity != 0)
+		{
+			o_phi_t += op.laplace(i_phispec)*simVars.sim.viscosity;
+			o_vort_t += op.laplace(i_vortspec)*simVars.sim.viscosity;
+			o_div_t += op.laplace(i_divspec)*simVars.sim.viscosity;
+		}
+	}
+
+
+
+#if SWEET_GUI
 
 	/**
 	 * postprocessing of frame: do time stepping
@@ -1095,26 +1623,58 @@ public:
 		default:
 		case 0:
 			// USE COPY TO AVOID FORWARD/BACKWARD TRANSFORMATION
-			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(SphereData(prog_h), planeDataConfig);
+			switch (simVars.pde.id)
+			{
+			case 1:
+				viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(SphereData(prog_phi)/simVars.sim.gravitation, planeDataConfig);
+				break;
+
+			default:
+				viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(SphereData(prog_h), planeDataConfig);
+			}
 			break;
 
 		case 1:
-			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(
-					SphereData(prog_u),
-					planeDataConfig);
+			switch (simVars.pde.id)
+			{
+			case 1:
+				viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(SphereData(prog_h), planeDataConfig);
+				break;
+
+			default:
+				viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(
+						SphereData(prog_u),
+						planeDataConfig);
+			}
 			break;
 
 		case 2:
-			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(
-					SphereData(prog_v),
-					planeDataConfig);
+			switch (simVars.pde.id)
+			{
+			case 1:
+				viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(SphereData(prog_h), planeDataConfig);
+				break;
+
+			default:
+				viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(
+						SphereData(prog_v),
+						planeDataConfig);
+			}
 			break;
 
 		case 3:
-			if (simVars.misc.sphere_use_robert_functions)
-				viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(op.vort(SphereData(prog_u), SphereData(prog_v)), planeDataConfig);
-			else
-				viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(op.robert_vort(SphereData(prog_u), SphereData(prog_v)), planeDataConfig);
+			switch (simVars.pde.id)
+			{
+			case 1:
+				viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(prog_vort, planeDataConfig);
+				break;
+
+			default:
+				if (simVars.misc.sphere_use_robert_functions)
+					viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(op.vort(SphereData(prog_u), SphereData(prog_v)), planeDataConfig);
+				else
+					viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(op.robert_vort(SphereData(prog_u), SphereData(prog_v)), planeDataConfig);
+			}
 			break;
 
 		}
@@ -1272,17 +1832,20 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 	}
 
+
 	param_use_coriolis_formulation = simVars.bogus.var[0];
-	assert (param_use_coriolis_formulation == 0 || param_use_coriolis_formulation == 1);
+	assert(param_use_coriolis_formulation == 0 || param_use_coriolis_formulation == 1);
 	param_compute_error = simVars.bogus.var[1];
 
+	sphereDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
+/*
 	sphereDataConfigInstance.setupAutoPhysicalSpace(
 					simVars.disc.res_spectral[0],
 					simVars.disc.res_spectral[1],
 					&simVars.disc.res_physical[0],
 					&simVars.disc.res_physical[1]
 			);
-
+*/
 	sphereDataConfigExtInstance.setupAdditionalModes(
 			&sphereDataConfigInstance,
 			simVars.rexi.rexi_use_extended_modes,
@@ -1387,10 +1950,13 @@ int main(int i_argc, char *i_argv[])
 				simulationSWE->run_timestep();
 
 				// Instability
-				if (simulationSWE->instability_detected())
+				if (simVars.misc.stability_checks)
 				{
-					std::cout << "INSTABILITY DETECTED" << std::endl;
-					break;
+					if (simulationSWE->detect_instability())
+					{
+						std::cout << "INSTABILITY DETECTED" << std::endl;
+						break;
+					}
 				}
 			}
 

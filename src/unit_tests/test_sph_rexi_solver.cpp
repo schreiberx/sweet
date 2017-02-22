@@ -84,8 +84,8 @@ void run_tests()
 		sphereDataConfigExt = &sphereDataConfigRexiAddedModes;
 	}
 
-	SphereOperatorsComplex opComplex(sphereDataConfig);
-	SphereOperatorsComplex opComplexExt(sphereDataConfigExt);
+	SphereOperatorsComplex opComplex(sphereDataConfig, 1);
+	SphereOperatorsComplex opComplexExt(sphereDataConfigExt, 1);
 
 	REXI<> rexi(0, simVars.rexi.rexi_h, simVars.rexi.rexi_M);
 
@@ -110,7 +110,7 @@ void run_tests()
 		if (simVars.setup.benchmark_scenario_id <= 0)
 		{
 			std::cout << "SETUP: Computing solution based on time stepping scheme." << std::endl;
-			SphereOperators op(sphereDataConfig);
+			SphereOperators op(sphereDataConfig, 1);
 
 			GenerateConsistentGradDivSphereData g_real(
 					simVars,
