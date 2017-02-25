@@ -2,7 +2,7 @@
  * SPHIdentities.hpp
  *
  *  Created on: 26 Aug 2016
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk> Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SRC_INCLUDE_SPHERE_SPHERESPHIDENTITIES_HPP_

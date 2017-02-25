@@ -2,7 +2,7 @@
  * SphereDataPhysical.hpp
  *
  *  Created on: 19 Feb Aug 2017
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk> Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SPHERE_DATA_PHYSICAL_HPP_

@@ -2,7 +2,7 @@
  * PlaneData_To_ScalarDataArray.cpp
  *
  *  Created on: 20 Oct 2016
- *      Author: martin
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SRC_INCLUDE_SWEET_PLANE_PLANEDATA_TO_SCALARDATAARRAY_HPP_

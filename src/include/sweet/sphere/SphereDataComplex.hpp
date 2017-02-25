@@ -2,7 +2,7 @@
  * SPHDataComplex.hpp
  *
  *  Created on: 9 Aug 2016
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk> Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SPHDATACOMPLEX_HPP_

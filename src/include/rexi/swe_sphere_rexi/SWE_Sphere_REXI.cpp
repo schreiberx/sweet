@@ -2,7 +2,7 @@
  * SWE_Sphere_REXI.cpp
  *
  *  Created on: 25 Oct 2016
- *      Author: martin
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #include <cassert>

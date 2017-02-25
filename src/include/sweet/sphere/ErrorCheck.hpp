@@ -2,7 +2,7 @@
  * ErrorCheck.hpp
  *
  *  Created on: 3 Feb 2017
- *      Author: martin
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SRC_INCLUDE_SWEET_SPHERE_ERRORCHECK_HPP_

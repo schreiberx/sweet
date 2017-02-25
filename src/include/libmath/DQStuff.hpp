@@ -2,7 +2,7 @@
  * DoubleAndQuadPrecisionStuff.hpp
  *
  *  Created on: 14 Dec 2016
- *      Author: martin
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SRC_INCLUDE_REXI_DQSTUFF_HPP_

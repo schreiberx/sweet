@@ -174,7 +174,7 @@ public:
 		last_timestep_nr_update_diagnostics = simVars.timecontrol.current_timestep_nr;
 
 
-		PlaneDiagnostics::update_staggered_h_u_v(
+		PlaneDiagnostics::update_staggered_huv_to_mass_energy_enstrophy(
 				op,
 				prog_h,
 				prog_u,

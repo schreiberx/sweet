@@ -2,7 +2,7 @@
  * rexi_swe.hpp
  *
  *  Created on: 24 Jul 2015
- *      Author: Martin Schreiber <schreiberx@gmail.com>
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk> Schreiber <schreiberx@gmail.com>
  */
 #ifndef SRC_PROGRAMS_REXISWE_HPP_
 #define SRC_PROGRAMS_REXISWE_HPP_

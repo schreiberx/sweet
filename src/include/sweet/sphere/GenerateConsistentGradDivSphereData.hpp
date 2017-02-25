@@ -2,7 +2,7 @@
  * GenerateConsistentGradDivSphereData.hpp
  *
  *  Created on: 4 Nov 2016
- *      Author: martin
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SRC_INCLUDE_SWEET_SPHERE_GENERATECONSISTENTGRADDIVSPHEREDATA_HPP_

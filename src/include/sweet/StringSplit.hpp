@@ -2,7 +2,7 @@
  * StringSplit.hpp
  *
  *  Created on: 12 Feb 2017
- *      Author: martin
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SRC_INCLUDE_SWEET_STRINGSPLIT_HPP_
