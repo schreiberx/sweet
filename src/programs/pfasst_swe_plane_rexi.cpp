@@ -18,6 +18,7 @@
 #include <sweet/plane/PlaneDataTimesteppingRK.hpp>
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
+#include <sweet/plane/PlaneDiagnostics.hpp>
 #include <rexi/swe_plane_rexi/SWE_Plane_REXI.hpp>
 #include <benchmarks_plane/PlaneBenchmarksCombined.hpp>
 #include <mpi.h>

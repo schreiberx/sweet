@@ -139,13 +139,10 @@ public:
 		// assure, that the diagnostics are only updated for new time steps
 		if (last_timestep_nr_update_diagnostics == simVars.timecontrol.current_timestep_nr)
 			return;
-
+#if 0
 		last_timestep_nr_update_diagnostics = simVars.timecontrol.current_timestep_nr;
 
 		// TODO: Calculate accurate normalization
-		FatalError("TODO: calculate accurate normalization");
-		double normalization = (simVars.sim.domain_size[0]*simVars.sim.domain_size[1]) /
-								((double)simVars.disc.res_physical[0]*(double)simVars.disc.res_physical[1]);
 
 		SphereData h = prog_h;
 		SphereData u = prog_u;
@@ -155,10 +152,10 @@ public:
 		simVars.diag.total_mass = h.physical_reduce_sum_metric() * normalization;
 
 		// energy
-		simVars.diag.total_energy = 0.5*((
-				h*h +
-				h*u*u +
-				h*v*v
+		simVars.diag.total_energy = 0.5*h((
+				h +
+				u*u +
+				v*v
 			).physical_reduce_sum_metric()) * normalization;
 
 		SphereData eta(sphereDataConfig);
@@ -183,7 +180,7 @@ public:
 		}
 
 		simVars.diag.total_potential_enstrophy = 0.5*(eta*eta*h).physical_reduce_sum_metric() * normalization;
-
+#endif
 	}
 
 
@@ -199,6 +196,7 @@ public:
 			}
 		);
 
+		std::cout << simVars.pde.id << std::endl;
 
 		// reset the RK time stepping buffers
 		switch (simVars.disc.timestepping_method)
@@ -429,6 +427,7 @@ public:
 		{
 		case 1:
 			{
+				SphereData prog_h = prog_phi*(1.0/simVars.sim.gravitation);
 				output_filename = write_file(prog_h, "h", simVars.setup.benchmark_scenario_id == 0);
 				std::cout << output_filename << " (min: " << SphereData(prog_h).physical_reduce_min() << ", max: " << SphereData(prog_h).physical_reduce_max() << ")" << std::endl;
 
@@ -453,7 +452,6 @@ public:
 			break;
 
 		default:
-			std::cout << "PDE: SWE VORT/DIV formulation" << std::endl;
 			{
 				SphereData tmp_vort(prog_vort);
 				SphereData tmp_div(prog_div);
@@ -523,7 +521,7 @@ public:
 
 		// output line break
 		std::cout << std::endl;
-#if 0
+#if 1
 		if (simVars.misc.verbosity > 0)
 		{
 			update_diagnostics();
@@ -1535,8 +1533,36 @@ public:
 				/*
 				 * LINEAR
 				 */
+				double gh = simVars.sim.gravitation * simVars.sim.h0;
 
-				FatalError("DIV/VORT inear not supported");
+				SphereDataPhysical ug(i_phispec.sphereDataConfig);
+				SphereDataPhysical vg(i_phispec.sphereDataConfig);
+
+//				SphereDataPhysical vrtg = i_vortspec.getSphereDataPhysical();
+//				SphereDataPhysical divg = i_divspec.getSphereDataPhysical();
+				op.robert_vortdiv_to_uv(i_vortspec, i_divspec, ug, vg);
+				SphereDataPhysical phig = i_phispec.getSphereDataPhysical();
+
+				SphereDataPhysical tmpg1 = ug*fg;
+				SphereDataPhysical tmpg2 = vg*fg;
+
+				op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
+
+				o_vort_t *= -1.0;
+
+//				SphereDataPhysical tmpg = o_div_t.getSphereDataPhysical();
+
+				tmpg1 = ug*gh;
+				tmpg2 = vg*gh;
+
+				SphereData tmpspec(sphereDataConfig);
+				op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
+
+				o_phi_t *= -1.0;
+
+				tmpspec = phig;
+				tmpspec.request_data_spectral();
+				o_div_t += -op.laplace(tmpspec);
 			}
 		}
 		else
@@ -1575,7 +1601,36 @@ public:
 			}
 			else
 			{
-				FatalError("DIV/VORT inear not supported");
+				double gh = simVars.sim.gravitation * simVars.sim.h0;
+
+				SphereDataPhysical ug(i_phispec.sphereDataConfig);
+				SphereDataPhysical vg(i_phispec.sphereDataConfig);
+
+//				SphereDataPhysical vrtg = i_vortspec.getSphereDataPhysical();
+//				SphereDataPhysical divg = i_divspec.getSphereDataPhysical();
+				op.vortdiv_to_uv(i_vortspec, i_divspec, ug, vg);
+				SphereDataPhysical phig = i_phispec.getSphereDataPhysical();
+
+				SphereDataPhysical tmpg1 = ug*fg;
+				SphereDataPhysical tmpg2 = vg*fg;
+
+				op.uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
+
+				o_vort_t *= -1.0;
+
+//				SphereDataPhysical tmpg = o_div_t.getSphereDataPhysical();
+
+				tmpg1 = ug*gh;
+				tmpg2 = vg*gh;
+
+				SphereData tmpspec(sphereDataConfig);
+				op.uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
+
+				o_phi_t *= -1.0;
+
+				tmpspec = phig;
+				tmpspec.request_data_spectral();
+				o_div_t += -op.laplace(tmpspec);
 			}
 		}
 

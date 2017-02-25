@@ -15,6 +15,7 @@
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/PlaneDataSemiLagrangian.hpp>
+#include <sweet/plane/PlaneDiagnostics.hpp>
 #include <sweet/Stopwatch.hpp>
 #include <sweet/FatalError.hpp>
 #include <benchmarks_plane/SWEPlaneBenchmarks.hpp>
@@ -445,6 +446,7 @@ public:
 
 
 					{
+#if 0
 						//Coriolis term - lives in the corner of the cells
 						if (simVars.misc.use_nonlinear_equations)
 						{
@@ -456,6 +458,7 @@ public:
 							{
 								std::cerr << "WARNING: BETA PLANE ON C-GRID NOT TESTED FOR NON_LINEARITIES!" << std::endl;
 							}
+
 						}
 						if(j==0 && i==0 && simVars.sim.beta)
 						{
@@ -464,6 +467,7 @@ public:
 							// linear
 							//	op.diff_b_x(H)
 						}
+#endif
 					}
 
 					{
@@ -714,30 +718,14 @@ public:
 
 		last_timestep_nr_update_diagnostics = simVars.timecontrol.current_timestep_nr;
 
-		double normalization = (simVars.sim.domain_size[0]*simVars.sim.domain_size[1]) /
-								((double)simVars.disc.res_physical[0]*(double)simVars.disc.res_physical[1]);
 
-
-		// mass
-		simVars.diag.total_mass = prog_h.reduce_sum_quad() * normalization;
-
-		// energy
-		simVars.diag.total_energy = 0.5*((
-				prog_h*prog_h +
-				prog_h*prog_u*prog_u +
-				prog_h*prog_v*prog_v
-			).reduce_sum_quad()) * normalization;
-
-		// potential vorticity and pot. enstropy
-		if (simVars.sim.beta == 0)
-			eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + simVars.sim.f0) / prog_h;
-		else
-			eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + beta_plane) / prog_h;
-
-		simVars.diag.total_potential_enstrophy = 0.5*(eta*eta*prog_h).reduce_sum_quad() * normalization;
-
-		//Divergence
-//		div = (op.diff_c_x(prog_u) + op.diff_c_y(prog_v));
+		PlaneDiagnostics::update_nonstaggered_h_u_v(
+				op,
+				prog_h,
+				prog_u,
+				prog_v,
+				simVars
+		);
 	}
 
 
@@ -915,17 +903,19 @@ public:
 			o_u_t = -simVars.sim.gravitation*op.diff_c_x(i_h);
 			o_v_t = -simVars.sim.gravitation*op.diff_c_y(i_h);
 
-			if (simVars.sim.beta == 0.0)
+
+//			if (simVars.sim.beta == 0.0)
 			{
 				o_u_t += simVars.sim.f0*i_v;
 				o_v_t -= simVars.sim.f0*i_u;
 			}
+#if 0
 			else
 			{
 				o_u_t += beta_plane*i_v;
 				o_v_t -= beta_plane*i_u;
 			}
-
+#endif
 
 			//if (simVars.sim.viscosity != 0)
 			//{
@@ -1013,10 +1003,10 @@ public:
 					exit(1);
 				}
 
-				if (simVars.sim.beta == 0)
+//				if (simVars.sim.beta == 0)
 					q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + simVars.sim.f0) / op.avg_b_x(op.avg_b_y(i_h));
-				else
-					q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + beta_plane) / op.avg_b_x(op.avg_b_y(i_h));
+//				else
+//					q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + beta_plane) / op.avg_b_x(op.avg_b_y(i_h));
 
 				// u, v tendencies
 				// Energy conserving scheme
@@ -1025,16 +1015,18 @@ public:
 			}
 			else //linear case
 			{
-				if (simVars.sim.beta == 0)
+//				if (simVars.sim.beta == 0)
 				{
 					o_u_t = op.avg_f_y(simVars.sim.f0*op.avg_b_x(i_v)) - op.diff_b_x(H);
 					o_v_t = -op.avg_f_x(simVars.sim.f0*op.avg_b_y(i_u)) - op.diff_b_y(H);
 				}
+#if 0
 				else
 				{
 					o_u_t = op.avg_f_y(beta_plane*op.avg_b_x(i_v)) - op.diff_b_x(H);
 					o_v_t = -op.avg_f_x(beta_plane*op.avg_b_y(i_u)) - op.diff_b_y(H);
 				}
+#endif
 			}
 
 			/*

@@ -448,12 +448,13 @@ class SWEPlaneBenchmarks
 		// Beta plane steady state A
 		if (i_parameters.setup.benchmark_scenario_id == 15)
 		{
+/*
 			if (i_parameters.sim.beta == 0)
 			{
 				std::cerr << "Set beta to non-zero value to activate varying f term" << std::endl;
 				exit(-1);
 			}
-
+*/
 			double phi = (y-0.5)*2.0*M_PI;
 			double a = 1;//i_parameters.sim.h0;
 
@@ -469,13 +470,15 @@ class SWEPlaneBenchmarks
 			{
 				return 0;
 			}
+/*
 			else if (i_variable_id == 6) // f term on beta plane
 			{
 				if (f == 0)
 					error("f-value is equal to zero! Cannot run this case scenario.");
 
-				return std::sin(phi);//*i_parameters.sim.f0;
+				return std::sin(phi);
 			}
+*/
 			else
 			{
 				return 0;
@@ -704,8 +707,8 @@ public:
 		if (i_parameters.setup.benchmark_scenario_id == 9)//Constant
 			return false;
 
-		if (i_parameters.setup.benchmark_scenario_id == 10) // beta plane
-			return false;
+//		if (i_parameters.setup.benchmark_scenario_id == 10) // beta plane
+//			return false;
 
 		if (i_parameters.setup.benchmark_scenario_id == 13)//Forced nonlinear case - trigonometric
 			return true;

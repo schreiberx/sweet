@@ -234,7 +234,7 @@ public:
 
 		/// Beta coefficient for f(y_N) = f0 + y_N*beta
 		/// here, y_N is the normalized y coordinate \in [0;1]
-		double beta = 0.0;
+//		double beta = 0.0;
 
 		// constants from Galwesky et al. paper
 
@@ -269,7 +269,7 @@ public:
 			std::cout << " + viscosity_order: " << viscosity_order << std::endl;
 			std::cout << " + CFL: " << CFL << std::endl;
 			std::cout << " + f0: " << f0 << std::endl;
-			std::cout << " + beta: " << beta << std::endl;
+//			std::cout << " + beta: " << beta << std::endl;
 			std::cout << " + earth_radius: " << earth_radius << std::endl;
 			std::cout << " + coriolis_omega: " << coriolis_omega << std::endl;
 			std::cout << " + gravitation: " << gravitation << std::endl;
@@ -735,7 +735,9 @@ public:
 		parareal.outputConfig();
 #endif
 
+#if SWEET_PFASST_CPP || SWEET_LIBPFASST
 		pfasst.outputConfig();
+#endif
 	}
 
 
@@ -1188,9 +1190,9 @@ public:
 				sim.earth_radius = atof(optarg);
 				break;
 
-			case 'b':
-				sim.beta = atof(optarg);
-				break;
+//			case 'b':
+//				sim.beta = atof(optarg);
+//				break;
 
 			case 'z':
 				sim.top_bottom_zero_v_velocity = true;
@@ -1246,8 +1248,8 @@ public:
 				std::cout << "	-u [visc]	viscosity, , default=0" << std::endl;
 				std::cout << "	-U [visc]	viscosity order, default=2" << std::endl;
 				std::cout << "	-f [float]	f-parameter for f-plane or coriolis omega term, default=0" << std::endl;
-				std::cout << "	-b [float]	beta-parameter for beta-plane, default=0" << std::endl;
-				std::cout << "	            Use -1 to set f*sin(phi) with phi in [-pi/2;pi/2] in y" << std::endl;
+//				std::cout << "	-b [float]	beta-parameter for beta-plane, default=0" << std::endl;
+//				std::cout << "	            Use -1 to set f*sin(phi) with phi in [-pi/2;pi/2] in y" << std::endl;
 				std::cout << "	-g [float]	gravity, default=9.81" << std::endl;
 				std::cout << "	-a [float]	earth radius, default=1" << std::endl;
 				std::cout << "	-H [float]	average (initial) height of water, default=1000" << std::endl;

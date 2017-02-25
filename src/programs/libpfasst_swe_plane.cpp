@@ -19,7 +19,7 @@ void foo_awesome();
 #include <sweet/plane/PlaneDataTimesteppingRK.hpp>
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
-//#include "swe_plane_rexi/SWE_Plane_REXI.hpp"
+#include <sweet/plane/PlaneDiagnostics.hpp>
 #include <benchmarks_plane/PlaneBenchmarksCombined.hpp>
 //#include <mpi.h>
 

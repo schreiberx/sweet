@@ -5,9 +5,10 @@
 #endif
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneDataTimesteppingRK.hpp>
-#include <benchmarks_plane/SWEPlaneBenchmarks.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
+#include <sweet/plane/PlaneDiagnostics.hpp>
 #include <sweet/Stopwatch.hpp>
+#include <benchmarks_plane/SWEPlaneBenchmarks.hpp>
 
 #include <ostream>
 #include <sstream>
@@ -29,7 +30,7 @@ class SimulationSWECovariant
 {
 public:
 	// prognostics
-	PlaneData prog_P, prog_u, prog_v;
+	PlaneData prog_h, prog_u, prog_v;
 
 	// temporary variables
 	PlaneData H, U, V;
@@ -74,7 +75,7 @@ public:
 public:
 	SimulationSWECovariant(
 	)	:
-		prog_P(planeDataConfig),	// density/pressure
+		prog_h(planeDataConfig),	// density/pressure
 		prog_u(planeDataConfig),	// velocity (x-direction)
 		prog_v(planeDataConfig),	// velocity (y-direction)
 
@@ -114,14 +115,14 @@ public:
 
 		simVars.reset();
 
-		prog_P.physical_set_all(simVars.sim.h0);
+		prog_h.physical_set_all(simVars.sim.h0);
 		prog_u.physical_set_all(0);
 		prog_v.physical_set_all(0);
 
 
 
 
-		prog_P.physical_update_lambda_array_indices(
+		prog_h.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
 				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
@@ -147,7 +148,7 @@ public:
 				io_data = SWEPlaneBenchmarks::return_v(simVars, x, y);
 			}
 		);
-
+/*
 		beta_plane.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
@@ -155,9 +156,9 @@ public:
 				io_data = simVars.sim.f0+simVars.sim.beta*y_beta;
 			}
 		);
-
+*/
 		if (simVars.setup.input_data_filenames.size() > 0)
-			prog_P.file_physical_loadData(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
+			prog_h.file_physical_loadData(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
 
 		if (simVars.setup.input_data_filenames.size() > 1)
 			prog_u.file_physical_loadData(simVars.setup.input_data_filenames[1].c_str(), simVars.setup.input_data_binary);
@@ -179,34 +180,14 @@ public:
 
 		last_timestep_nr_update_diagnostics = simVars.timecontrol.current_timestep_nr;
 
-		if (simVars.sim.beta != 0)
-		{
-			q = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + beta_plane) / prog_P;
-		}
-		else
-		{
-			q = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + simVars.sim.f0) / prog_P;
-		}
 
-		double normalization = (simVars.sim.domain_size[0]*simVars.sim.domain_size[1]) /
-								((double)simVars.disc.res_physical[0]*(double)simVars.disc.res_physical[1]);
-
-		// diagnostics_mass
-		simVars.diag.total_mass = prog_P.reduce_sum_quad() * normalization;
-
-		// diagnostics_energy
-		simVars.diag.total_energy =
-			0.5*(
-				prog_P*
-				(
-					prog_P +
-					(prog_u*prog_u) +
-					(prog_v*prog_v)
-				)
-			).reduce_sum_quad() * normalization;
-
-		// potential enstropy
-		simVars.diag.total_potential_enstrophy = 0.5*(q*q*(prog_P)).reduce_sum_quad() * normalization;
+		PlaneDiagnostics::update_nonstaggered_h_u_v(
+				op,
+				prog_h,
+				prog_u,
+				prog_v,
+				simVars
+		);
 	}
 
 
@@ -393,7 +374,7 @@ public:
 		timestepping.run_timestep(
 				this,
 				&SimulationSWECovariant::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
-				prog_P, prog_u, prog_v,
+				prog_h, prog_u, prog_v,
 				dt,
 				simVars.timecontrol.current_timestep_size,
 				simVars.disc.timestepping_order,
@@ -452,7 +433,7 @@ public:
 
 			if (simVars.misc.output_file_name_prefix.size() > 0)
 			{
-				write_file(prog_P, "P");
+				write_file(prog_h, "P");
 				write_file(prog_u, "u");
 				write_file(prog_v, "v");
 
@@ -485,7 +466,7 @@ public:
 					}
 				);
 
-				benchmark_diff_h = (prog_P-tmp).reduce_norm1_quad() / (double)(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]);
+				benchmark_diff_h = (prog_h-tmp).reduce_norm1_quad() / (double)(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]);
 				o_ostream << "\t" << benchmark_diff_h;
 
 
@@ -560,7 +541,7 @@ public:
 
 	VisStuff vis_arrays[7] =
 	{
-			{&prog_P,	"P"},
+			{&prog_h,	"P"},
 			{&prog_u,	"u"},
 			{&prog_v,	"v"},
 			{&H,		"H"},
@@ -630,7 +611,7 @@ public:
 
 	bool instability_detected()
 	{
-		return !(prog_P.reduce_boolean_all_finite() && prog_u.reduce_boolean_all_finite() && prog_v.reduce_boolean_all_finite());
+		return !(prog_h.reduce_boolean_all_finite() && prog_u.reduce_boolean_all_finite() && prog_v.reduce_boolean_all_finite());
 	}
 };
 
