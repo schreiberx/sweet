@@ -298,8 +298,6 @@ public:
 		if (physical_space_data_valid)
 			return;
 
-//		std::cout << "request_data_physical successful" << std::endl;
-
 		assert(spectral_space_data_valid);
 
 		/**
@@ -335,6 +333,7 @@ public:
 
 		return out;
 	}
+
 
 
 	SphereData(
@@ -1303,7 +1302,7 @@ public:
 	/**
 	 * Return the maximum error norm between this and the given data in physical space
 	 */
-	double physical_reduce_max(
+	double physical_reduce_max_abs(
 			const SphereData &i_sph_data
 	)
 	{
@@ -1370,7 +1369,9 @@ public:
 	}
 
 
-
+	/**
+	 * return the sum of all values=
+	 */
 	double physical_reduce_sum()
 	{
 		request_data_physical();
@@ -1384,7 +1385,7 @@ public:
 
 
 	/**
-	 * return the maximum of all absolute values, use quad precision for reduction
+	 * return the sum of all values, use quad precision for reduction
 	 */
 	double physical_reduce_sum_quad()	const
 	{
@@ -1413,9 +1414,11 @@ public:
 
 
 	/**
-	 * return the maximum of all absolute values, use quad precision for reduction
+	 * return the sum of all values multiplied with an increasing index, use quad precision for reduction
+	 *
+	 * This is only helpful for debugging purpose!
 	 */
-	double physical_reduce_sum_quad_increasing()	const
+	double physical_reduce_debug_sum_quad_mul_increasing()	const
 	{
 		request_data_physical();
 

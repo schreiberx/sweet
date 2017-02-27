@@ -606,7 +606,7 @@ void run_tests()
 		// one_minus_mu_squared_diff_lat
 		h = op.spectral_one_minus_mu_squared_diff_lat_mu(h);
 
-		double error_max = h.physical_reduce_max(result);
+		double error_max = h.physical_reduce_max_abs(result);
 		std::cout << "TEST SPHbasis (1-mu*mu)*d/dmu - max error: " << error_max << std::endl;
 
 		if (error_max > error_threshold)
@@ -915,7 +915,7 @@ void run_tests()
 					}
 			);
 
-			double error_max = h.physical_reduce_max(result);
+			double error_max = h.physical_reduce_max_abs(result);
 			std::cout << "TEST DIV LAT  - max error: " << error_max << std::endl;
 
 			if (error_max > error_threshold)
@@ -958,7 +958,7 @@ void run_tests()
 			result.file_physical_writeFile("O_div_mu_TEST_correct_result.csv");
 			(h-result).file_physical_writeFile("O_div_mu_TEST_correct_diff.csv");
 
-			double error_max = h.physical_reduce_max(result);
+			double error_max = h.physical_reduce_max_abs(result);
 			std::cout << "TEST DIV TEST LAT  - max error: " << error_max << std::endl;
 		}
 #endif
@@ -989,7 +989,7 @@ void run_tests()
 					}
 			);
 
-			double error_max = h.physical_reduce_max(result);
+			double error_max = h.physical_reduce_max_abs(result);
 			std::cout << "TEST DIVERGENCE - max error: " << error_max << std::endl;
 
 			if (error_max > error_threshold)
@@ -1023,7 +1023,7 @@ void run_tests()
 					}
 			);
 
-			double error_max = h.physical_reduce_max(result);
+			double error_max = h.physical_reduce_max_abs(result);
 			std::cout << "TEST VORTICITY - max error: " << error_max << std::endl;
 
 			if (error_max > error_threshold)
@@ -1057,7 +1057,7 @@ void run_tests()
 
 //			(h-result).file_physical_writeFile("O_laplace_laplace_z_diff.csv");
 
-			double error_max = h.physical_reduce_max(result);
+			double error_max = h.physical_reduce_max_abs(result);
 			std::cout << "TEST LAPLACE (div.grad vs. sph laplace) - max error: " << error_max << std::endl;
 
 			if (error_max > error_threshold)

@@ -32,7 +32,10 @@ public:
 		PlaneData pot_energy = i_prog_h*(io_simVars.sim.gravitation*normalization);
 		PlaneData kin_energy = i_prog_h*(i_prog_u*i_prog_u+i_prog_v*i_prog_v)*(0.5*normalization);
 
-		io_simVars.diag.total_energy = (pot_energy + kin_energy).reduce_sum_quad();
+		io_simVars.diag.potential_energy = pot_energy.reduce_sum_quad();
+		io_simVars.diag.kinetic_energy = kin_energy.reduce_sum_quad();
+
+		io_simVars.diag.total_energy = io_simVars.diag.kinetic_energy + io_simVars.diag.potential_energy;
 
 		// total vorticity
 		PlaneData eta = (op.diff_c_x(i_prog_v) - op.diff_c_y(i_prog_u) + io_simVars.sim.f0);

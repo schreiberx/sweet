@@ -769,6 +769,32 @@ public:
 
 
 
+
+	/**
+	 * Return the maximum error norm between this and the given data in physical space
+	 */
+	double physical_reduce_max_abs(
+			const SphereDataPhysical &i_sph_data
+	)	const
+	{
+		check(i_sph_data.sphereDataConfig);
+
+		double error = -1;
+
+		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
+		{
+			error = std::max(
+						error,
+						std::abs(
+								physical_space_data[j] - i_sph_data.physical_space_data[j]
+							)
+						);
+		}
+		return error;
+	}
+
+
+
 	/**
 	 * Return the maximum absolute value
 	 */

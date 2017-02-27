@@ -242,7 +242,7 @@ void run_tests(
 					}
 			);
 
-			double error_max = x_numerical.physical_reduce_max(x_result);
+			double error_max = x_numerical.physical_reduce_max_abs(x_result);
 			std::cout << " ||| Error: " << error_max << std::endl;
 
 			if (error_max > error_threshold)
@@ -347,7 +347,7 @@ void run_tests(
 
 			SphereData x_numerical = sphSolver.solve(b);
 
-			double error_max = x_numerical.physical_reduce_max(x_result);
+			double error_max = x_numerical.physical_reduce_max_abs(x_result);
 			std::cout << " ||| Error: " << error_max << std::endl;
 
 			if (error_max > error_threshold)
@@ -387,7 +387,7 @@ void run_tests(
 
 			SphereData x_numerical = sphSolver.solve(b);
 
-			double error_max = x_numerical.physical_reduce_max(x_result);
+			double error_max = x_numerical.physical_reduce_max_abs(x_result);
 			std::cout << " ||| Error: " << error_max << std::endl;
 
 			if (error_max > error_threshold)
@@ -423,7 +423,7 @@ void run_tests(
 
 			SphereData x_numerical = sphSolver.solve(b);
 
-			double error_max = x_numerical.physical_reduce_max(x_result);
+			double error_max = x_numerical.physical_reduce_max_abs(x_result);
 			std::cout << " ||| Error: " << error_max << std::endl;
 
 			if (error_max > error_threshold)
@@ -460,7 +460,7 @@ void run_tests(
 
 			SphereData x_numerical = sphSolver.solve(b);
 
-			double error_max = x_numerical.physical_reduce_max(x_result);
+			double error_max = x_numerical.physical_reduce_max_abs(x_result);
 			std::cout << " ||| Error: " << error_max << std::endl;
 
 			if (error_max > error_threshold)

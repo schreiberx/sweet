@@ -87,17 +87,21 @@ public:
 public:
 	double *lat;
 
+
 	/**
-	 * Array with mu = cos(phi) values
+	 * Array with mu = sin(phi) values
 	 */
 public:
 	double *lat_gaussian;
 
+
 	/**
-	 * Array with comu = sin(phi) values
+	 * Array with comu = cos(phi) values
 	 */
 public:
 	double *lat_cogaussian;
+
+
 
 public:
 	SphereDataConfig()	:

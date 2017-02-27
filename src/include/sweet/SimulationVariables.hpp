@@ -59,11 +59,25 @@ public:
 		/// total mass
 		double total_mass = 0;
 
+		/// kinetic energy
+		double kinetic_energy = 0;
+
+		/// potential energy
+		double potential_energy = 0;
+
 		/// total energy
 		double total_energy = 0;
 
 		/// total potential enstropy
 		double total_potential_enstrophy = 0;
+
+
+		double ref_total_mass = -1;
+		double ref_kinetic_energy = -1;
+		double ref_potential_energy = -1;
+		double ref_total_energy = -1;
+		double ref_total_potential_enstrophy = -1;
+
 
 		void outputConfig()
 		{
@@ -71,8 +85,19 @@ public:
 			std::cout << "DIAGNOSTICS:" << std::endl;
 			std::cout << " + total_mass: " << total_mass << std::endl;
 			std::cout << " + total_energy: " << total_energy << std::endl;
+			std::cout << " + kinetic_energy: " << kinetic_energy << std::endl;
+			std::cout << " + potential_energy: " << potential_energy << std::endl;
 			std::cout << " + total_potential_enstrophy: " << total_potential_enstrophy << std::endl;
 			std::cout << std::endl;
+		}
+
+		void backup_reference()
+		{
+			ref_total_mass = total_mass;
+			ref_kinetic_energy = kinetic_energy;
+			ref_potential_energy = potential_energy;
+			ref_total_energy = total_energy;
+			ref_total_potential_enstrophy = total_potential_enstrophy;
 		}
 	} diag;
 
@@ -414,6 +439,13 @@ public:
 
 		bool use_staggering = false;
 
+		/*
+		 * Do a normal mode analysis, see
+		 * Hillary Weller, John Thuburn, Collin J. Cotter,
+		 * "Computational Modes and Grid Imprinting on Five Quasi-Uniform Spherical C Grids"
+		 */
+		int normal_mode_analysis_generation = false;
+
 
 		void outputConfig()
 		{
@@ -430,6 +462,7 @@ public:
 			std::cout << " + leapfrog_robert_asselin_filter: " << leapfrog_robert_asselin_filter << std::endl;
 			std::cout << " + crank_nicolson_filter: " << crank_nicolson_filter << std::endl;
 			std::cout << " + use_spectral_basis_diffs: " << use_spectral_basis_diffs << std::endl;
+			std::cout << " + normal_mode_analysis_generation: " << normal_mode_analysis_generation << std::endl;
 
 
 			std::cout << " + dealiasing (compile time): " <<
@@ -474,6 +507,8 @@ public:
 			std::cout << "	--timestepping-method2 [int]	Alternative time stepping method" << std::endl;
 			std::cout << "	--timestepping-order2 [int]	Specify the order of the time stepping" << std::endl;
 			std::cout << "	--leapfrog-robert-asselin-filter [0;1]	Damping parameter for Robert-Asselin filter" << std::endl;
+			std::cout << "	--normal-mode-analysis-generation [0;1;2]	Generate output data for normal mode analysis" << std::endl;
+			std::cout << "                   (0: don't generate, 1: generate in physical space, 2: generate in spectral space)" << std::endl;
 
 		}
 
@@ -653,7 +688,7 @@ public:
 		double be_verbose_after_this_simulation_time_period = 0;
 
 		/// prefix of filename for outputConfig of data
-		std::string output_file_name_prefix = "prog_%s_t%020.8f.csv";
+		std::string output_file_name_prefix = "output_%s_t%020.8f.csv";
 
 		/// prefix of filename for outputConfig of data
 		double output_each_sim_seconds = -1;
@@ -674,7 +709,6 @@ public:
 		/// time scaling for outputConfig
 		/// e.g. use scaling by 1.0/(60*60) to output days instead of seconds
 		double output_time_scale = 1.0;
-
 	} misc;
 
 
@@ -902,6 +936,9 @@ public:
         long_options[next_free_program_option] = {"leapfrog-robert-asselin-filter", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
+        long_options[next_free_program_option] = {"normal-mode-analysis-generation", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
         long_options[next_free_program_option] = {"crank-nicolson-filter", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
@@ -1016,18 +1053,19 @@ public:
 						case 17:	disc.timestepping_order2 = atoi(optarg);	break;
 
 						case 18:	disc.leapfrog_robert_asselin_filter = atof(optarg);	break;
-						case 19:	disc.crank_nicolson_filter = atof(optarg);	break;
-						case 20:	disc.use_staggering = atof(optarg);	break;
+						case 19:	disc.normal_mode_analysis_generation = atoi(optarg);	break;
+						case 20:	disc.crank_nicolson_filter = atof(optarg);	break;
+						case 21:	disc.use_staggering = atof(optarg);	break;
 
-						case 21:	dummy = atof(optarg);	break;
+						case 22:	dummy = atof(optarg);	break;
 
 #if SWEET_PFASST_CPP
-						case 22:	pfasst.nlevels = atoi(optarg);	break;
-						case 23:	pfasst.nnodes = atoi(optarg);	break;
-						case 24:	pfasst.nspace = atoi(optarg);	break;
-						case 25:	pfasst.nsteps = atoi(optarg);	break;
-						case 26:	pfasst.niters = atoi(optarg);	break;
-						case 27:	pfasst.dt = atof(optarg);	break;
+						case 23:	pfasst.nlevels = atoi(optarg);	break;
+						case 24:	pfasst.nnodes = atoi(optarg);	break;
+						case 25:	pfasst.nspace = atoi(optarg);	break;
+						case 26:	pfasst.nsteps = atoi(optarg);	break;
+						case 27:	pfasst.niters = atoi(optarg);	break;
+						case 28:	pfasst.dt = atof(optarg);	break;
 #endif
 
 						default:

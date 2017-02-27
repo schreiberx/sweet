@@ -277,6 +277,9 @@ public:
 
 
 
+	/**
+	 * Multiply with cos(phi)
+	 */
 	SphereData toRobert(
 			const SphereData &i_sph_data
 	)	const
@@ -295,6 +298,9 @@ public:
 	}
 
 
+	/**
+	 * Divide by cos(phi)
+	 */
 	SphereData fromRobert(
 			const SphereData &i_sph_data
 	)	const
@@ -579,6 +585,7 @@ public:
 		o_stream = laplace(o_stream)*r;
 		o_potential = laplace(o_potential)*r;
 	}
+
 
 
 	/**
@@ -1030,7 +1037,7 @@ public:
 		return out;
 	}
 
-
+#if 1
 public:
 	/**
 	 * Compute vorticity
@@ -1059,7 +1066,7 @@ public:
 	{
 		return robert_div_lon(i_lat) - robert_div_lat(i_lon);
 	}
-
+#endif
 
 public:
 	/**

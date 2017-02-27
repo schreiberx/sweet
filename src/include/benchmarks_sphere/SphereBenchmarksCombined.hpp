@@ -28,11 +28,12 @@ public:
 	{
 		BenchmarkGalewsky benchmarkGalewsky(io_simVars);
 
-		if (io_simVars.setup.benchmark_scenario_id <= 0)
+		if (io_simVars.setup.benchmark_scenario_id < 0)
 		{
 			std::cout << std::endl;
 			std::cout << "Benchmark scenario not selected (option -s [id])" << std::endl;
 			std::cout << "Available benchmark scenarios:" << std::endl;
+			std::cout << "	0: Dummy" << std::endl;
 			std::cout << "	2: Use Gaussian bump initial conditions (0, pi/3)" << std::endl;
 			std::cout << "	3: Use Gaussian bump initial conditions (pi/3, pi/3)" << std::endl;
 			std::cout << "	4: Use Gaussian bump initial conditions (-pi/2, pi/4)" << std::endl;
@@ -73,6 +74,44 @@ public:
 		else if (io_simVars.setup.benchmark_scenario_id == 7)
 		{
 			BenchmarkGaussianDam::setup_initial_conditions_gaussian(o_h, o_u, o_v, io_simVars, -M_PI, M_PI/4.0, 100.0);
+		}
+		else if (io_simVars.setup.benchmark_scenario_id == 8)
+		{
+			/*
+			 * PAUL N. SWARZTRAUBER
+			 * Shallow Water Flow on the Sphere
+			 * 2004
+			 */
+			std::cout << "!!! WARNING !!!" << std::endl;
+			std::cout << "!!! WARNING: Overriding simulation parameters for this benchmark !!!" << std::endl;
+			std::cout << "!!! WARNING !!!" << std::endl;
+
+			if (io_simVars.sim.coriolis_omega != 0)
+				io_simVars.sim.coriolis_omega = 7.292e-5;
+
+			io_simVars.sim.gravitation = 9.80616;
+			io_simVars.sim.earth_radius = 6.37122e6;
+			io_simVars.sim.h0 = 29400.0;
+
+			o_u.spectral_set_zero();
+			o_v.spectral_set_zero();
+
+			double a = io_simVars.sim.earth_radius;
+			double A = 6000.0;
+			double alpha = 10;
+
+			o_h.physical_update_lambda(
+				[&](double i_lambda, double i_phi, double &io_data)
+				{
+					double x = a*std::cos(i_phi)*std::cos(i_lambda);
+					double y = a*std::cos(i_phi)*std::sin(i_lambda);
+					double z = a*std::sin(i_phi);
+
+					double d = std::sqrt(x*x+y*y+(z-a)*(z-a));
+
+					io_data = io_simVars.sim.h0 + A*std::exp(-alpha*(d/a)*(d/a));
+				}
+			);
 		}
 		else if (io_simVars.setup.benchmark_scenario_id == 10)
 		{
@@ -473,12 +512,20 @@ public:
 			);
 
 			SphereDataPhysical hbump(o_h.sphereDataConfig);
-			hbump.physical_update_lambda(
-				[&](double lon, double phi, double &o_data)
-				{
-					o_data = hamp*std::cos(phi)*std::exp(-(lon/alpha)*(lon/alpha))*std::exp(-(phi2-phi)*(phi2-phi)/beta);
-				}
-			);
+
+			if (io_simVars.setup.benchmark_scenario_id != 101)
+			{
+				hbump.physical_update_lambda(
+					[&](double lon, double phi, double &o_data)
+					{
+						o_data = hamp*std::cos(phi)*std::exp(-(lon/alpha)*(lon/alpha))*std::exp(-(phi2-phi)*(phi2-phi)/beta);
+					}
+				);
+			}
+			else
+			{
+				hbump.physical_set_zero();
+			}
 
 
 

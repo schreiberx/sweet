@@ -290,11 +290,11 @@ public:
 
 			if (simVars.misc.output_file_name_prefix.size() > 0)
 			{
-				write_file(prog_h, "h");
-				write_file(prog_u, "u");
-				write_file(prog_v, "v");
+				write_file(prog_h, "prog_h");
+				write_file(prog_u, "prog_u");
+				write_file(prog_v, "prog_v");
 
-				write_file(op.diff_c_x(prog_v) - op.diff_c_y(prog_u), "q");
+				write_file(op.diff_c_x(prog_v) - op.diff_c_y(prog_u), "prog_q");
 			}
 
 			if (simVars.timecontrol.current_timestep_nr == 0)

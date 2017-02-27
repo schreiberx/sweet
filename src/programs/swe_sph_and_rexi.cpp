@@ -16,6 +16,7 @@
 
 #include <sweet/sphere/SphereData.hpp>
 #include <sweet/sphere/SphereDataPhysical.hpp>
+#include <sweet/sphere/SphereDiagnostics.hpp>
 
 // explicit time stepping
 #include <sweet/sphere/SphereDataTimesteppingExplicitRK.hpp>
@@ -78,7 +79,7 @@ public:
 	// Leapfrog
 	SphereDataTimesteppingExplicitLeapfrog timestepping_explicit_leapfrog;
 
-	// Implicit timestepping solver
+	// Implicit time stepping solver
 	SWEImplicit_SPHRobert timestepping_implicit_swe;
 
 	SWE_Sphere_REXI swe_sphere_rexi;
@@ -105,7 +106,7 @@ public:
 
 	int render_primitive_id = 1;
 
-
+	SphereDiagnostics sphereDiagnostics;
 
 public:
 	SimulationInstance()	:
@@ -115,13 +116,23 @@ public:
 		prog_h(sphereDataConfig),
 		prog_u(sphereDataConfig),
 		prog_v(sphereDataConfig),
-		fg(sphereDataConfig)
+		fg(sphereDataConfig),
 
 #if SWEET_GUI
-		,viz_plane_data(planeDataConfig)
+		viz_plane_data(planeDataConfig),
 #endif
+		sphereDiagnostics(sphereDataConfig, simVars)
 	{
+#if 0
+		SphereData tmp(sphereDataConfig);
+		tmp.physical_set_all_value(2.0);
+
+		double a = sphereDiagnostics.compute_zylinder_integral_quad(tmp);
+		std::cout << a << std::endl;
+		exit(1);
+#endif
 		reset();
+
 	}
 
 
@@ -139,48 +150,47 @@ public:
 		// assure, that the diagnostics are only updated for new time steps
 		if (last_timestep_nr_update_diagnostics == simVars.timecontrol.current_timestep_nr)
 			return;
-#if 0
-		last_timestep_nr_update_diagnostics = simVars.timecontrol.current_timestep_nr;
 
-		// TODO: Calculate accurate normalization
-
-		SphereData h = prog_h;
-		SphereData u = prog_u;
-		SphereData v = prog_v;
-
-		// mass
-		simVars.diag.total_mass = h.physical_reduce_sum_metric() * normalization;
-
-		// energy
-		simVars.diag.total_energy = 0.5*h((
-				h +
-				u*u +
-				v*v
-			).physical_reduce_sum_metric()) * normalization;
-
-		SphereData eta(sphereDataConfig);
-
-		SphereData f(sphereDataConfig);
-		double two_omega = 2.0*simVars.sim.coriolis_omega;
-		f.physical_update_lambda_gaussian_grid(
-			[&](double lon, double mu, double &o_data)
-			{
-				o_data = mu*two_omega;
-			}
-		);
-
-		// potential vorticity and pot. enstropy
-		if (simVars.misc.sphere_use_robert_functions)
+		if (simVars.pde.id == 1)
 		{
-			eta = (op.robert_vort(u, v) + f) / h;
+#if 1
+			sphereDiagnostics.update_phi_vort_div_2_mass_energy_enstrophy_4_sphere(
+					op,
+					prog_phi,
+					prog_vort,
+					prog_div,
+					simVars
+			);
+#else
+			sphereDiagnostics.update_phi_vort_div_2_mass_energy_enstrophy_4_zylinder(
+					op,
+					prog_phi,
+					prog_vort,
+					prog_div,
+					simVars
+			);
+#endif
 		}
 		else
 		{
-			eta = (op.vort(u, v) + f) / h;
-		}
-
-		simVars.diag.total_potential_enstrophy = 0.5*(eta*eta*h).physical_reduce_sum_metric() * normalization;
+#if 1
+			sphereDiagnostics.update_h_u_v_2_mass_energy_enstrophy_4_sphere(
+					op,
+					prog_h,
+					prog_u,
+					prog_v,
+					simVars
+			);
+#else
+			sphereDiagnostics.update_phi_vort_div_2_mass_energy_enstrophy_4_zylinder(
+					op,
+					prog_h,
+					prog_u,
+					prog_v,
+					simVars
+			);
 #endif
+		}
 	}
 
 
@@ -192,11 +202,9 @@ public:
 		fg.physical_update_lambda_gaussian_grid(
 			[&](double lon, double mu, double &o_data)
 			{
-				o_data += mu*2.0*simVars.sim.coriolis_omega;
+				o_data = mu*2.0*simVars.sim.coriolis_omega;
 			}
 		);
-
-		std::cout << simVars.pde.id << std::endl;
 
 		// reset the RK time stepping buffers
 		switch (simVars.disc.timestepping_method)
@@ -385,6 +393,9 @@ public:
 				);
 		}
 
+		update_diagnostics();
+
+		simVars.diag.backup_reference();
 	}
 
 
@@ -427,9 +438,9 @@ public:
 		{
 		case 1:
 			{
-				SphereData prog_h = prog_phi*(1.0/simVars.sim.gravitation);
-				output_filename = write_file(prog_h, "h", simVars.setup.benchmark_scenario_id == 0);
-				std::cout << output_filename << " (min: " << SphereData(prog_h).physical_reduce_min() << ", max: " << SphereData(prog_h).physical_reduce_max() << ")" << std::endl;
+				SphereData h = prog_phi*(1.0/simVars.sim.gravitation);
+				output_filename = write_file(h, "prog_h", simVars.setup.benchmark_scenario_id == 0);
+				std::cout << output_filename << " (min: " << SphereData(h).physical_reduce_min() << ", max: " << SphereData(h).physical_reduce_max() << ")" << std::endl;
 
 				SphereDataPhysical u(sphereDataConfig);
 				SphereDataPhysical v(sphereDataConfig);
@@ -439,14 +450,13 @@ public:
 				else
 					op.vortdiv_to_uv(prog_vort, prog_div, u, v);
 
-				output_filename = write_file(u, "u", simVars.setup.benchmark_scenario_id == 0);
+				output_filename = write_file(u, "prog_u", simVars.setup.benchmark_scenario_id == 0);
 				std::cout << output_filename << std::endl;
 
-				output_filename = write_file(v, "v", simVars.setup.benchmark_scenario_id == 0);
+				output_filename = write_file(v, "prog_v", simVars.setup.benchmark_scenario_id == 0);
 				std::cout << output_filename << std::endl;
 
-
-				output_filename = write_file(prog_vort, "eta", simVars.setup.benchmark_scenario_id == 0);
+				output_filename = write_file(prog_vort, "prog_eta", simVars.setup.benchmark_scenario_id == 0);
 				std::cout << output_filename << std::endl;
 			}
 			break;
@@ -456,20 +466,20 @@ public:
 				SphereData tmp_vort(prog_vort);
 				SphereData tmp_div(prog_div);
 
-				output_filename = write_file(prog_h, "h", simVars.setup.benchmark_scenario_id == 0);
+				output_filename = write_file(prog_h, "prog_h", simVars.setup.benchmark_scenario_id == 0);
 				std::cout << output_filename << " (min: " << SphereData(prog_h).physical_reduce_min() << ", max: " << SphereData(prog_h).physical_reduce_max() << ")" << std::endl;
 
-				output_filename = write_file(prog_u, "u", simVars.setup.benchmark_scenario_id == 0);
+				output_filename = write_file(prog_u, "prog_u", simVars.setup.benchmark_scenario_id == 0);
 				std::cout << output_filename << std::endl;
 
-				output_filename = write_file(prog_v, "v", simVars.setup.benchmark_scenario_id == 0);
+				output_filename = write_file(prog_v, "prog_v", simVars.setup.benchmark_scenario_id == 0);
 				std::cout << output_filename << std::endl;
 
 
 				if (simVars.misc.sphere_use_robert_functions)
-					output_filename = write_file(op.robert_uv_to_vort(prog_u.getSphereDataPhysical(), prog_v.getSphereDataPhysical())/simVars.sim.earth_radius, "eta", simVars.setup.benchmark_scenario_id == 0);
+					output_filename = write_file(op.robert_uv_to_vort(prog_u.getSphereDataPhysical(), prog_v.getSphereDataPhysical())/simVars.sim.earth_radius, "prog_eta", simVars.setup.benchmark_scenario_id == 0);
 				else
-					output_filename = write_file(op.vort(SphereData(prog_u), SphereData(prog_v))/simVars.sim.earth_radius, "eta", simVars.setup.benchmark_scenario_id == 0);
+					output_filename = write_file(op.vort(SphereData(prog_u), SphereData(prog_v))/simVars.sim.earth_radius, "prog_eta", simVars.setup.benchmark_scenario_id == 0);
 				std::cout << output_filename << std::endl;
 			}
 		}
@@ -479,6 +489,7 @@ public:
 		/*
 		 * write reference solution
 		 */
+#if 0
 		if (	param_compute_error &&
 				simVars.misc.use_nonlinear_equations == 0 &&
 				simVars.setup.benchmark_scenario_id == 10
@@ -511,39 +522,118 @@ public:
 			output_filename = write_file((SphereData(prog_v)-SphereData(test_v)), "ref_diff_v", simVars.setup.benchmark_scenario_id == 0);
 			std::cout << output_filename << std::endl;
 		}
+#endif
 	}
-
 
 
 	void timestep_do_output()
 	{
+		if (param_compute_error)
+		{
+			if (
+					simVars.setup.benchmark_scenario_id != 10 &&
+					simVars.setup.benchmark_scenario_id != 101
+			)
+			{
+				FatalError("Analytical solution not available for this benchmark");
+			}
+
+			SphereData test_h(sphereDataConfig);
+			SphereData test_u(sphereDataConfig);
+			SphereData test_v(sphereDataConfig);
+
+			SphereBenchmarksCombined::setupInitialConditions(test_h, test_u, test_v, simVars, op);
+
+			double error_h = -1;
+			double error_u = -1;
+			double error_v = -1;
+
+			if (simVars.misc.sphere_use_robert_functions && simVars.pde.id == 1)
+			{
+				static int blarg = 0;
+				if (blarg == 0)
+				{
+					std::cerr << "WARNING!!!" << std::endl;
+					std::cerr << "WARNING!!!" << std::endl;
+					std::cerr << "WARNING: USING NON-ROBERT FORMULATION for PDE.id == 1 LEADS TO STRONG ERRORS AT THE POLES!!!" << std::endl;
+					std::cerr << "WARNING!!!" << std::endl;
+					std::cerr << "WARNING!!!" << std::endl;
+					blarg = 1;
+				}
+			}
+
+			switch(simVars.pde.id)
+			{
+			case 1:
+				{
+					SphereData h = prog_phi*(1.0/simVars.sim.gravitation);
+					SphereDataPhysical u(sphereDataConfig);
+					SphereDataPhysical v(sphereDataConfig);
+
+					if (simVars.misc.sphere_use_robert_functions)
+						op.robert_vortdiv_to_uv(prog_vort, prog_div, u, v);
+					else
+						op.vortdiv_to_uv(prog_vort, prog_div, u, v);
+
+					SphereDataPhysical test_ug = test_u.getSphereDataPhysical();
+					SphereDataPhysical test_vg = test_v.getSphereDataPhysical();
+
+//					error_h = (h-test_h).physical_reduce_max_abs();
+					error_h = h.physical_reduce_max_abs(test_h);
+					error_u = u.physical_reduce_max_abs(test_ug);
+					error_v = v.physical_reduce_max_abs(test_vg);
+				}
+				break;
+
+			default:
+				{
+					error_h = (prog_h-test_h).physical_reduce_max_abs();
+					error_u = (prog_u-test_u).physical_reduce_max_abs();
+					error_v = (prog_v-test_v).physical_reduce_max_abs();
+				}
+			}
+
+			std::cerr << "error (h,u,v):\t" << error_h << "\t" << error_u << "\t" << error_v << std::endl;
+		}
 		write_file_output();
 
 		// output line break
 		std::cout << std::endl;
-#if 1
-		if (simVars.misc.verbosity > 0)
+
+		if (simVars.misc.verbosity > 1)
 		{
 			update_diagnostics();
 
 			// Print header
 			if (simVars.timecontrol.current_timestep_nr == 0)
 			{
-//				std::cout << "T\tTOTAL_MASS\tTOTAL_ENERGY\tPOT_ENSTROPHY";
-//				std::cout << std::endl;
+				std::cerr << "T\tTOTAL_MASS\tPOT_ENERGY\tKIN_ENERGY\tTOT_ENERGY\tPOT_ENSTROPHY";
+				std::cerr << std::endl;
 			}
 
-			std::cout << std::setprecision(simVars.misc.output_floating_point_precision);
-			std::cout << std::endl;
-
+#if 0
 			//Print simulation time, energy and pot enstrophy
-			std::cout << "DIAGNOSTIC - time, mass, energy, potential_enstrophy ";
-			std::cout << simVars.timecontrol.current_simulation_time << "\t";
-			std::cout << simVars.diag.total_mass << "\t";
-			std::cout << simVars.diag.total_energy << "\t";
-			std::cout << simVars.diag.total_potential_enstrophy << std::endl;
-		}
+//			std::cerr << "DIAGNOSTIC - time, mass, energy, potential_enstrophy ";
+			std::cerr << simVars.timecontrol.current_simulation_time << "\t";
+			std::cerr << simVars.diag.total_mass << "\t";
+			std::cerr << simVars.diag.potential_energy << "\t";
+			std::cerr << simVars.diag.kinetic_energy << "\t";
+			std::cerr << simVars.diag.total_energy << "\t";
+			std::cerr << simVars.diag.total_potential_enstrophy << std::endl;
+#else
+
+			std::cerr << simVars.timecontrol.current_simulation_time << "\t";
+			std::cerr << (simVars.diag.total_mass-simVars.diag.ref_total_mass)/simVars.diag.total_mass << "\t";
+			std::cerr << (simVars.diag.potential_energy-simVars.diag.ref_potential_energy)/simVars.diag.potential_energy << "\t";
+			std::cerr << (simVars.diag.kinetic_energy-simVars.diag.ref_kinetic_energy)/simVars.diag.kinetic_energy << "\t";
+			std::cerr << (simVars.diag.total_energy-simVars.diag.total_energy)/simVars.diag.total_energy << "\t";
+			std::cerr << (simVars.diag.total_potential_enstrophy-simVars.diag.total_potential_enstrophy)/simVars.diag.total_potential_enstrophy << std::endl;
 #endif
+
+			static double start_tot_energy = -1;
+			if (start_tot_energy == -1)
+				start_tot_energy = simVars.diag.total_energy;
+		}
 
 		if (simVars.misc.verbosity > 0)
 		{
@@ -670,18 +760,128 @@ public:
 	}
 
 
+	void normal_mode_analysis()
+	{
+		// dummy time step to get time step size
+		run_timestep();
+
+		/*
+		 * Do a normal mode analysis, see
+		 * Hillary Weller, John Thuburn, Collin J. Cotter,
+		 * "Computational Modes and Grid Imprinting on Five Quasi-Uniform Spherical C Grids"
+		 */
+
+		char buffer[1024];
+		const char* filename = simVars.misc.output_file_name_prefix.c_str();
+		sprintf(buffer, filename, "normal_modes_physical", simVars.timecontrol.current_timestep_size*simVars.misc.output_time_scale);
+
+		std::ofstream file(buffer, std::ios_base::trunc);
+
+		std::cout << "Writing normal mode analysis to file '" << buffer << "'" << std::endl;
+		std::cout << "WARNING: OUTPUT IS TRANSPOSED!" << std::endl;
+
+		// use very high precision
+		file << std::setprecision(20);
+
+		SphereData* prog[3] = {&prog_h, &prog_u, &prog_v};
+
+		// iterate over all prognostic variables
+		for (int outer_prog_id = 0; outer_prog_id < 3; outer_prog_id++)
+		{
+			if (simVars.disc.normal_mode_analysis_generation == 1)
+			{
+				// iterate over physical space
+				for (int outer_i = 0; outer_i < sphereDataConfig->physical_array_data_number_of_elements; outer_i++)
+				{
+					std::cout << "normal mode analysis for prog " << outer_prog_id << ", idx " << outer_i << std::endl;
+
+					prog_h.physical_set_zero();
+					prog_u.physical_set_zero();
+					prog_v.physical_set_zero();
+
+					// activate mode
+					prog[outer_prog_id]->request_data_physical();
+					prog[outer_prog_id]->physical_space_data[outer_i] = 1;
+
+					/*
+					 * RUN timestep
+					 */
+					run_timestep();
+
+					for (int inner_prog_id = 0; inner_prog_id < 3; inner_prog_id++)
+					{
+						prog[inner_prog_id]->request_data_physical();
+						for (int k = 0; k < sphereDataConfig->physical_array_data_number_of_elements; k++)
+						{
+							file << prog[inner_prog_id]->physical_space_data[k];
+							if (inner_prog_id != 2 || k != sphereDataConfig->physical_array_data_number_of_elements-1)
+								file << "\t";
+							else
+								file << std::endl;
+						}
+					}
+				}
+			}
+			else
+			{
+
+				// iterate over physical space
+				for (int outer_i = 0; outer_i < sphereDataConfig->spectral_array_data_number_of_elements; outer_i++)
+				{
+					for (int imag_i = 0; imag_i < 2; imag_i++)
+					{
+						std::cout << "normal mode analysis for prog " << outer_prog_id << ", idx " << outer_i << std::endl;
+
+						prog_h.spectral_set_zero();
+						prog_u.spectral_set_zero();
+						prog_v.spectral_set_zero();
+
+						// activate mode
+						if (imag_i)
+							prog[outer_prog_id]->spectral_space_data[outer_i].imag(1);
+						else
+							prog[outer_prog_id]->spectral_space_data[outer_i].real(1);
+
+						/*
+						 * RUN timestep
+						 */
+						run_timestep();
+
+						for (int inner_prog_id = 0; inner_prog_id < 3; inner_prog_id++)
+						{
+							prog[inner_prog_id]->request_data_spectral();
+							for (int k = 0; k < sphereDataConfig->spectral_array_data_number_of_elements; k++)
+							{
+								file << prog[inner_prog_id]->spectral_space_data[k].real();
+								file << "\t";
+								file << prog[inner_prog_id]->spectral_space_data[k].imag();
+								if (inner_prog_id != 2 || k != sphereDataConfig->spectral_array_data_number_of_elements-1)
+									file << "\t";
+								else
+									file << std::endl;
+							}
+						}
+					}
+				}
+			}
+		}
+		file.close();
+	}
+
+
 	void run_timestep()
 	{
+
+#if SWEET_GUI
+			if (simVars.misc.gui_enabled)
+				timestep_check_output();
+#endif
+
 #if 0
 		std::cout
 			<< prog_h.physical_reduce_min() << ", " << prog_h.physical_reduce_max() << "   "
 			<< prog_u.physical_reduce_min() << ", " << prog_u.physical_reduce_max() << "   "
 			<< prog_v.physical_reduce_min() << ", " << prog_v.physical_reduce_max() << std::endl;
-#endif
-
-#if SWEET_GUI
-		if (simVars.misc.gui_enabled)
-			timestep_check_output();
 #endif
 
 		// output of time step size
@@ -1693,7 +1893,7 @@ public:
 			switch (simVars.pde.id)
 			{
 			case 1:
-				viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(SphereData(prog_h), planeDataConfig);
+				viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(SphereData(prog_vort), planeDataConfig);
 				break;
 
 			default:
@@ -1707,7 +1907,7 @@ public:
 			switch (simVars.pde.id)
 			{
 			case 1:
-				viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(SphereData(prog_h), planeDataConfig);
+				viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(SphereData(prog_div), planeDataConfig);
 				break;
 
 			default:
@@ -1734,6 +1934,34 @@ public:
 
 		}
 
+
+#if 0
+		{
+			SphereData test_h(sphereDataConfig);
+			SphereData test_u(sphereDataConfig);
+			SphereData test_v(sphereDataConfig);
+
+			SphereBenchmarksCombined::setupInitialConditions(test_h, test_u, test_v, simVars, op);
+
+
+			SphereData h = prog_phi*(1.0/simVars.sim.gravitation);
+			SphereDataPhysical u(sphereDataConfig);
+			SphereDataPhysical v(sphereDataConfig);
+
+			if (simVars.misc.sphere_use_robert_functions)
+				op.robert_vortdiv_to_uv(prog_vort, prog_div, u, v);
+			else
+				op.vortdiv_to_uv(prog_vort, prog_div, u, v);
+
+			SphereDataPhysical test_ug = test_u.getSphereDataPhysical();
+			SphereDataPhysical test_vg = test_v.getSphereDataPhysical();
+
+			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert((h-test_h), planeDataConfig);
+
+//			error_h = h.physical_reduce_max_abs(test_h);
+		}
+#endif
+
 		*o_dataArray = &viz_plane_data;
 		*o_aspect_ratio = 0.5;
 	}
@@ -1751,25 +1979,54 @@ public:
 		const char* description = "";
 
 		int id = simVars.misc.vis_id % 4;
-		switch (id)
+
+		switch(simVars.pde.id)
 		{
-		default:
-		case 0:
-			description = "H";
-			break;
-
 		case 1:
-			description = "U";
+			switch (id)
+			{
+			default:
+			case 0:
+				description = "H";
+				break;
+
+			case 1:
+				description = "vort";
+				break;
+
+			case 2:
+				description = "div";
+				break;
+
+			case 3:
+				description = "eta";
+				break;
+			}
 			break;
 
-		case 2:
-			description = "V";
-			break;
+		default:
+			switch (id)
+			{
+			default:
+			case 0:
+				description = "H";
+				break;
 
-		case 3:
-			description = "eta";
+			case 1:
+				description = "U";
+				break;
+
+			case 2:
+				description = "V";
+				break;
+
+			case 3:
+				description = "eta";
+				break;
+			}
 			break;
 		}
+
 
 		static char title_string[2048];
 
@@ -1987,37 +2244,41 @@ int main(int i_argc, char *i_argv[])
 			time.reset();
 
 
-			bool output_written = false;
-
-			// Main time loop
-			while(true)
+			if (simVars.disc.normal_mode_analysis_generation)
 			{
-				if (simulationSWE->timestep_check_output())
-					output_written = true;
-				else
-					output_written = false;
+				simulationSWE->normal_mode_analysis();
+			}
+			else
+			{
+				bool output_written = false;
 
-				// Stop simulation if requested
-				if (simulationSWE->should_quit())
-					break;
-
-				// Main call for timestep run
-				simulationSWE->run_timestep();
-
-				// Instability
-				if (simVars.misc.stability_checks)
+				// Main time loop
+				while(true)
 				{
-					if (simulationSWE->detect_instability())
-					{
-						std::cout << "INSTABILITY DETECTED" << std::endl;
+					output_written = simulationSWE->timestep_check_output();
+
+					// Stop simulation if requested
+					if (simulationSWE->should_quit())
 						break;
+
+					// Main call for timestep run
+					simulationSWE->run_timestep();
+
+					// Instability
+					if (simVars.misc.stability_checks)
+					{
+						if (simulationSWE->detect_instability())
+						{
+							std::cout << "INSTABILITY DETECTED" << std::endl;
+							break;
+						}
 					}
 				}
-			}
 
-			// Output final time step output!
-			if (!output_written)
-				simulationSWE->timestep_do_output();
+				// Output final time step output!
+				if (!output_written)
+					simulationSWE->timestep_do_output();
+			}
 
 			// Stop counting time
 			time.stop();

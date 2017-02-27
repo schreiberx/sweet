@@ -71,8 +71,10 @@ for filename in sys.argv[1:]:
 		cmax = np.amax(data)
 
 		if 'eta' in filename:
-			cmin *= 1.2
-			cmax *= 1.2
+			cmin = 1e-4
+			cmax = -1e-4
+			#cmin *= 1.2
+			#cmax *= 1.2
 
 	extent = (labelsx[0], labelsx[-1], labelsy[0], labelsy[-1])
 
@@ -92,6 +94,10 @@ for filename in sys.argv[1:]:
 		plt.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, levels=eta_contour_levels, linewidths=0.5)
 	elif 'prog_h' in filename:
 		plt.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, levels=h_contour_levels, linewidths=0.5)
+#	elif '_u' in filename:
+#		hs = 0.001
+#		h_contour_levels = np.append(np.arange(-0.1, 0-hs, hs), np.arange(hs, 0.1, hs))
+#		plt.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, levels=h_contour_levels, linewidths=0.5)
 	else:
 		if cmin != cmax:
 			pass
