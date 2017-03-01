@@ -14,6 +14,17 @@ filename = sys.argv[1]
 print("Loading data from "+filename)
 data = np.loadtxt(filename, skiprows=0).transpose()
 
+rows,cols = data.shape
+print("Loaded "+str(rows)+" rows")
+print("Loaded "+str(cols)+" cols")
+
+if data.shape[0] != data.shape[1]:
+	print("Assuming complex values => splitting them!")
+	data = data[:rows/2] + data[rows/2:]*1j
+
+if data.shape[0] != data.shape[1]:
+	print("Fatal error, non-square sized matrix!")
+
 if 1:
 	print("Computing EV decomposition with numpy")
 	w, v = np.linalg.eig(data)
@@ -24,18 +35,14 @@ else:
 	w = np.matrix(w)
 	v = np.matrix(v)	# TODO: fix this conversion
 
-f = filename+"_evalues_real.csv"
-print("Writing data to "+f)
-np.savetxt(f, w.real, delimiter='\t')
 
-f = filename+"_evalues_imag.csv"
+f = filename+"_evalues_complex.csv"
 print("Writing data to "+f)
-np.savetxt(f, w.imag, delimiter='\t')
+# simply append the imaginary parts as columns at the end of the real parts!
+np.savetxt(f, np.column_stack([w.real, w.imag]), delimiter='\t')
 
-f = filename+"_evectors_real.csv"
-print("Writing data to "+f)
-np.savetxt(f, v.real, delimiter='\t')
+if False:
+	f = filename+"_evectors_complex.csv"
+	print("Writing data to "+f)
+	np.savetxt(f, np.column_stack([v.real, v.imag]), delimiter='\t')
 
-f = filename+"_evectors_imag.csv"
-print("Writing data to "+f)
-np.savetxt(f, v.imag, delimiter='\t')

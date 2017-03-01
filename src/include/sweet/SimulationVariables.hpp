@@ -507,8 +507,8 @@ public:
 			std::cout << "	--timestepping-method2 [int]	Alternative time stepping method" << std::endl;
 			std::cout << "	--timestepping-order2 [int]	Specify the order of the time stepping" << std::endl;
 			std::cout << "	--leapfrog-robert-asselin-filter [0;1]	Damping parameter for Robert-Asselin filter" << std::endl;
-			std::cout << "	--normal-mode-analysis-generation [0;1;2]	Generate output data for normal mode analysis" << std::endl;
-			std::cout << "                   (0: don't generate, 1: generate in physical space, 2: generate in spectral space)" << std::endl;
+			std::cout << "	--normal-mode-analysis-generation [0;1;2;3]	Generate output data for normal mode analysis" << std::endl;
+			std::cout << "                   (0: don't generate, 1: generate in physical space, 2: generate in spectral space, 3: generate in spectral space with complex matrix)" << std::endl;
 
 		}
 
@@ -1288,9 +1288,9 @@ public:
 				std::cout << "	-f [float]	f-parameter for f-plane or coriolis omega term, default=0" << std::endl;
 //				std::cout << "	-b [float]	beta-parameter for beta-plane, default=0" << std::endl;
 //				std::cout << "	            Use -1 to set f*sin(phi) with phi in [-pi/2;pi/2] in y" << std::endl;
-				std::cout << "	-g [float]	gravity, default=9.81" << std::endl;
-				std::cout << "	-a [float]	earth radius, default=1" << std::endl;
-				std::cout << "	-H [float]	average (initial) height of water, default=1000" << std::endl;
+				std::cout << "	-g [float]	gravity" << std::endl;
+				std::cout << "	-a [float]	earth radius" << std::endl;
+				std::cout << "	-H [float]	average (initial) height of water" << std::endl;
 				std::cout << "" << std::endl;
 
 

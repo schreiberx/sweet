@@ -82,7 +82,7 @@ public:
 	/**
 	 * Array with latitude phi angle values
 	 *
-	 * WARNING: Phi is not the phi from SHTNS
+	 * WARNING: Phi is not the phi from SHTNS!
 	 */
 public:
 	double *lat;

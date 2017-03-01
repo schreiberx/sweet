@@ -336,15 +336,24 @@ private:
 			int M = spectral_data_size[0];
 			int N = spectral_data_size[1];
 
-			spectral_data_iteration_ranges[0][0][0] = 0;
-			spectral_data_iteration_ranges[0][0][1] = 2*(M-1)/3+1;
-			spectral_data_iteration_ranges[0][1][0] = 0;
-			spectral_data_iteration_ranges[0][1][1] = N/3+1;
+			if (	spectral_data_size[0] == physical_data_size[0] &&
+					spectral_data_size[1] == physical_data_size[1]
+			)
+			{
+				FatalError("Aliasing doesn't make sense since physical resolution is identical to spectral");
+			}
+			else
+			{
+				spectral_data_iteration_ranges[0][0][0] = 0;
+				spectral_data_iteration_ranges[0][0][1] = 2*(M-1)/3+1;
+				spectral_data_iteration_ranges[0][1][0] = 0;
+				spectral_data_iteration_ranges[0][1][1] = N/3+1;
 
-			spectral_data_iteration_ranges[1][0][0] = 0;
-			spectral_data_iteration_ranges[1][0][1] = 2*(M-1)/3+1;
-			spectral_data_iteration_ranges[1][1][0] = N-N/3;
-			spectral_data_iteration_ranges[1][1][1] = N;
+				spectral_data_iteration_ranges[1][0][0] = 0;
+				spectral_data_iteration_ranges[1][0][1] = 2*(M-1)/3+1;
+				spectral_data_iteration_ranges[1][1][0] = N-N/3;
+				spectral_data_iteration_ranges[1][1][1] = N;
+			}
 
 #else
 

@@ -42,7 +42,16 @@ public:
 		if (i_verbose > 0)
 			std::cout << "Setting up SphereDiagnostics" << std::endl;
 
-		shtns_gauss_wts(sphereDataConfig->shtns, gauss_weights.data());
+		int n = shtns_gauss_wts(sphereDataConfig->shtns, gauss_weights.data());
+
+		if (n*2 != sphereDataConfig->physical_num_lat)
+		{
+			std::cerr << "Returned " << n << " number of Gaussian quadrature point (halved)" << std::endl;
+			FatalError("Wrong number of Gaussian quadrature points given!");
+		}
+
+		for (int i = 0; i < sphereDataConfig->physical_num_lat/2; i++)
+			gauss_weights[sphereDataConfig->physical_num_lat-i-1] = gauss_weights[i];
 
 //		for (int i = 0; i < sphereDataConfig->physical_num_lat; i++)
 //			gauss_weights_cos_phi[i] = gauss_weights[i]*sphereDataConfig->lat_cogaussian[i];
@@ -92,6 +101,32 @@ public:
 				o_data = mu*2.0*i_simVars.sim.coriolis_omega;
 			}
 		);
+
+		/*
+		 * Test Gaussian quadrature
+		 *
+		 * Accurate for order (2n-1)
+		 *
+		 * test with y(x) = x^(2n-1)
+		 */
+		{
+			int n = sphereDataConfig->physical_num_lat;
+			double sum = 0;
+			for (int jlat = 0; jlat < sphereDataConfig->physical_num_lat; jlat++)
+			{
+				double x = sphereDataConfig->lat_gaussian[jlat];
+				double value = std::pow(x, 2.0*n-1.0) + std::pow(x, 2.0*n-2.0);
+
+				sum += value*gauss_weights[jlat];
+			}
+
+			double accurate = 0;
+			accurate += 1.0/(2.0*n)*(std::pow(1.0, 2.0*n)-std::pow(-1.0, 2.0*n));
+			accurate += 1.0/(2.0*n-1.0)*(std::pow(1.0, 2.0*n-1.0)-std::pow(-1.0, 2.0*n-1.0));
+
+			if (std::abs(accurate-sum) > 1e-10)
+				FatalError("Error in quadrature");
+		}
 	}
 
 
@@ -109,6 +144,20 @@ public:
 #error "TODO"
 #else
 
+#if 0
+		for (int ilon = 0; ilon < sphereDataConfig->physical_num_lon; ilon++)
+		{
+			double partsum = 0;
+			for (int jlat = 0; jlat < sphereDataConfig->physical_num_lat; jlat++)
+			{
+				double value = i_data.physical_space_data[jlat*sphereDataConfig->physical_num_lon + ilon];
+
+				partsum += value*gauss_weights[jlat];
+			}
+			std::cout << ilon << "\t" << partsum << std::endl;
+			sum += partsum;
+		}
+#else
 		for (int jlat = 0; jlat < sphereDataConfig->physical_num_lat; jlat++)
 		{
 			for (int ilon = 0; ilon < sphereDataConfig->physical_num_lon; ilon++)
@@ -120,6 +169,7 @@ public:
 				sum += value;
 			}
 		}
+#endif
 
 #endif
 
@@ -144,19 +194,15 @@ public:
 #if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
 #error "TODO"
 #else
-
 		for (int jlat = 0; jlat < sphereDataConfig->physical_num_lat; jlat++)
 		{
 			for (int ilon = 0; ilon < sphereDataConfig->physical_num_lon; ilon++)
 			{
 				double value = i_data.physical_space_data[jlat*sphereDataConfig->physical_num_lon + ilon];
 
-				value *= gauss_weights[jlat];//*sphereDataConfig->lat_cogaussian[jlat];
-
-				sum += value;
+				sum += value*gauss_weights[jlat];
 			}
 		}
-
 #endif
 		sum /= (double)sphereDataConfig->physical_num_lon;
 
@@ -341,7 +387,8 @@ public:
 		io_simVars.diag.total_mass = compute_zylinder_integral(h) * normalization;
 
 		// energy
-		SphereDataPhysical pot_energy = h*(io_simVars.sim.gravitation*normalization);
+		//SphereDataPhysical pot_energy = h*(io_simVars.sim.gravitation*normalization);
+		SphereDataPhysical pot_energy = h*h*0.5*normalization;
 		SphereDataPhysical kin_energy = h*(u*u+v*v)*(0.5*normalization);
 
 		io_simVars.diag.potential_energy = compute_zylinder_integral(pot_energy);
@@ -350,13 +397,13 @@ public:
 		/*
 		 * We follow the Williamson et al. equation (137) here
 		 */
-		double dummy_energy = compute_zylinder_integral(h*h*(0.5*normalization));
-		io_simVars.diag.total_energy = io_simVars.diag.kinetic_energy + dummy_energy;//io_simVars.diag.potential_energy;
-/*
-		io_simVars.diag.total_energy = compute_zylinder_integral(
-											0.5*h*((h-io_simVars.sim.h0) + u*u + v*v)
-										);
-*/
+//		double dummy_energy = compute_zylinder_integral(h*h*(0.5*normalization));
+//		io_simVars.diag.total_energy = io_simVars.diag.kinetic_energy + dummy_energy;//io_simVars.diag.potential_energy;
+
+		/*
+		 * We follow pot/kin energy here
+		 */
+		io_simVars.diag.total_energy = io_simVars.diag.kinetic_energy + io_simVars.diag.potential_energy;
 
 		// total vorticity
 		// TODO: maybe replace this with the i_vort parameter

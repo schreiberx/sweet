@@ -151,9 +151,9 @@ public:
 		if (last_timestep_nr_update_diagnostics == simVars.timecontrol.current_timestep_nr)
 			return;
 
-		if (simVars.pde.id == 1)
+		if (simVars.pde.id == 1 || simVars.pde.id == 4)
 		{
-#if 1
+#if 0
 			sphereDiagnostics.update_phi_vort_div_2_mass_energy_enstrophy_4_sphere(
 					op,
 					prog_phi,
@@ -173,7 +173,7 @@ public:
 		}
 		else
 		{
-#if 1
+#if 0
 			sphereDiagnostics.update_h_u_v_2_mass_energy_enstrophy_4_sphere(
 					op,
 					prog_h,
@@ -565,6 +565,7 @@ public:
 			switch(simVars.pde.id)
 			{
 			case 1:
+			case 4:
 				{
 					SphereData h = prog_phi*(1.0/simVars.sim.gravitation);
 					SphereDataPhysical u(sphereDataConfig);
@@ -607,11 +608,10 @@ public:
 			// Print header
 			if (simVars.timecontrol.current_timestep_nr == 0)
 			{
-				std::cerr << "T\tTOTAL_MASS\tPOT_ENERGY\tKIN_ENERGY\tTOT_ENERGY\tPOT_ENSTROPHY";
+				std::cerr << "T\tTOTAL_MASS\tPOT_ENERGY\tKIN_ENERGY\tTOT_ENERGY\tPOT_ENSTROPHY\tREL_TOTAL_MASS\tREL_POT_ENERGY\tREL_KIN_ENERGY\tREL_TOT_ENERGY\tREL_POT_ENSTROPHY";
 				std::cerr << std::endl;
 			}
 
-#if 0
 			//Print simulation time, energy and pot enstrophy
 //			std::cerr << "DIAGNOSTIC - time, mass, energy, potential_enstrophy ";
 			std::cerr << simVars.timecontrol.current_simulation_time << "\t";
@@ -619,16 +619,13 @@ public:
 			std::cerr << simVars.diag.potential_energy << "\t";
 			std::cerr << simVars.diag.kinetic_energy << "\t";
 			std::cerr << simVars.diag.total_energy << "\t";
-			std::cerr << simVars.diag.total_potential_enstrophy << std::endl;
-#else
+			std::cerr << simVars.diag.total_potential_enstrophy << "\t";
 
-			std::cerr << simVars.timecontrol.current_simulation_time << "\t";
 			std::cerr << (simVars.diag.total_mass-simVars.diag.ref_total_mass)/simVars.diag.total_mass << "\t";
 			std::cerr << (simVars.diag.potential_energy-simVars.diag.ref_potential_energy)/simVars.diag.potential_energy << "\t";
 			std::cerr << (simVars.diag.kinetic_energy-simVars.diag.ref_kinetic_energy)/simVars.diag.kinetic_energy << "\t";
 			std::cerr << (simVars.diag.total_energy-simVars.diag.total_energy)/simVars.diag.total_energy << "\t";
 			std::cerr << (simVars.diag.total_potential_enstrophy-simVars.diag.total_potential_enstrophy)/simVars.diag.total_potential_enstrophy << std::endl;
-#endif
 
 			static double start_tot_energy = -1;
 			if (start_tot_energy == -1)
@@ -670,6 +667,8 @@ public:
 				simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
 	}
 
+
+
 public:
 	bool timestep_check_output()
 	{
@@ -686,6 +685,7 @@ public:
 
 		return true;
 	}
+
 
 
 public:
@@ -707,6 +707,7 @@ public:
 
 		return false;
 	}
+
 
 
 	bool detect_instability()
@@ -738,10 +739,13 @@ public:
 	}
 
 
+
 	void outInfo(const std::string &i_string, const SphereData &i_data)
 	{
 		std::cout << i_string << ": " << i_data.physical_reduce_min() << ", " << i_data.physical_reduce_max() << std::endl;
 	}
+
+
 
 	SphereData add_f(const SphereData &i_data)
 	const
@@ -760,6 +764,7 @@ public:
 	}
 
 
+
 	void normal_mode_analysis()
 	{
 		// dummy time step to get time step size
@@ -770,14 +775,13 @@ public:
 		 * Hillary Weller, John Thuburn, Collin J. Cotter,
 		 * "Computational Modes and Grid Imprinting on Five Quasi-Uniform Spherical C Grids"
 		 */
-
-		char buffer[1024];
+		char buffer_real[1024];
 		const char* filename = simVars.misc.output_file_name_prefix.c_str();
-		sprintf(buffer, filename, "normal_modes_physical", simVars.timecontrol.current_timestep_size*simVars.misc.output_time_scale);
 
-		std::ofstream file(buffer, std::ios_base::trunc);
+		sprintf(buffer_real, filename, "normal_modes_physical", simVars.timecontrol.current_timestep_size*simVars.misc.output_time_scale);
+		std::ofstream file(buffer_real, std::ios_base::trunc);
+		std::cout << "Writing normal mode analysis to file '" << buffer_real << "'" << std::endl;
 
-		std::cout << "Writing normal mode analysis to file '" << buffer << "'" << std::endl;
 		std::cout << "WARNING: OUTPUT IS TRANSPOSED!" << std::endl;
 
 		// use very high precision
@@ -785,8 +789,23 @@ public:
 
 		SphereData* prog[3] = {&prog_h, &prog_u, &prog_v};
 
+		int max_prog_id = -1;
+
+		if (simVars.pde.id == 0 || simVars.pde.id == 1)
+		{
+			max_prog_id = 3;
+			prog_h.physical_set_zero();
+			prog_u.physical_set_zero();
+			prog_v.physical_set_zero();
+		}
+		else
+		{
+			max_prog_id = 1;
+			prog_h.physical_set_zero();
+		}
+
 		// iterate over all prognostic variables
-		for (int outer_prog_id = 0; outer_prog_id < 3; outer_prog_id++)
+		for (int outer_prog_id = 0; outer_prog_id < max_prog_id; outer_prog_id++)
 		{
 			if (simVars.disc.normal_mode_analysis_generation == 1)
 			{
@@ -795,9 +814,8 @@ public:
 				{
 					std::cout << "normal mode analysis for prog " << outer_prog_id << ", idx " << outer_i << std::endl;
 
-					prog_h.physical_set_zero();
-					prog_u.physical_set_zero();
-					prog_v.physical_set_zero();
+					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+						prog[inner_prog_id]->physical_set_zero();
 
 					// activate mode
 					prog[outer_prog_id]->request_data_physical();
@@ -808,13 +826,24 @@ public:
 					 */
 					run_timestep();
 
-					for (int inner_prog_id = 0; inner_prog_id < 3; inner_prog_id++)
+					/*
+					 * compute
+					 * 1/dt * (U(t+1) - U(t))
+					 */
+					prog[outer_prog_id]->request_data_physical();
+					prog[outer_prog_id]->physical_space_data[outer_i] -= 1.0;
+
+
+					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+						prog[inner_prog_id]->operator*=(1.0/simVars.timecontrol.current_timestep_size);
+
+					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
 					{
 						prog[inner_prog_id]->request_data_physical();
 						for (int k = 0; k < sphereDataConfig->physical_array_data_number_of_elements; k++)
 						{
 							file << prog[inner_prog_id]->physical_space_data[k];
-							if (inner_prog_id != 2 || k != sphereDataConfig->physical_array_data_number_of_elements-1)
+							if (inner_prog_id != max_prog_id-1 || k != sphereDataConfig->physical_array_data_number_of_elements-1)
 								file << "\t";
 							else
 								file << std::endl;
@@ -822,9 +851,8 @@ public:
 					}
 				}
 			}
-			else
+			else if (simVars.disc.normal_mode_analysis_generation == 2)
 			{
-
 				// iterate over physical space
 				for (int outer_i = 0; outer_i < sphereDataConfig->spectral_array_data_number_of_elements; outer_i++)
 				{
@@ -832,11 +860,11 @@ public:
 					{
 						std::cout << "normal mode analysis for prog " << outer_prog_id << ", idx " << outer_i << std::endl;
 
-						prog_h.spectral_set_zero();
-						prog_u.spectral_set_zero();
-						prog_v.spectral_set_zero();
+						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+							prog[inner_prog_id]->spectral_set_zero();
 
 						// activate mode
+						prog[outer_prog_id]->request_data_spectral();
 						if (imag_i)
 							prog[outer_prog_id]->spectral_space_data[outer_i].imag(1);
 						else
@@ -847,15 +875,35 @@ public:
 						 */
 						run_timestep();
 
-						for (int inner_prog_id = 0; inner_prog_id < 3; inner_prog_id++)
+
+						/*
+						 * compute
+						 * 1/dt * (U(t+1) - U(t))
+						 */
+						prog[outer_prog_id]->request_data_spectral();
+						prog[outer_prog_id]->spectral_space_data[outer_i] -= 1.0;
+
+						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+							prog[inner_prog_id]->operator*=(1.0/simVars.timecontrol.current_timestep_size);
+
+						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
 						{
 							prog[inner_prog_id]->request_data_spectral();
 							for (int k = 0; k < sphereDataConfig->spectral_array_data_number_of_elements; k++)
 							{
 								file << prog[inner_prog_id]->spectral_space_data[k].real();
 								file << "\t";
+							}
+						}
+
+						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+						{
+							prog[inner_prog_id]->request_data_spectral();
+
+							for (int k = 0; k < sphereDataConfig->spectral_array_data_number_of_elements; k++)
+							{
 								file << prog[inner_prog_id]->spectral_space_data[k].imag();
-								if (inner_prog_id != 2 || k != sphereDataConfig->spectral_array_data_number_of_elements-1)
+								if (inner_prog_id != max_prog_id-1 || k != sphereDataConfig->spectral_array_data_number_of_elements-1)
 									file << "\t";
 								else
 									file << std::endl;
@@ -864,8 +912,68 @@ public:
 					}
 				}
 			}
+			else if (simVars.disc.normal_mode_analysis_generation == 3)
+			{
+				// iterate over physical space
+				for (int outer_i = 0; outer_i < sphereDataConfig->spectral_array_data_number_of_elements; outer_i++)
+				{
+					std::cout << "normal mode analysis for prog " << outer_prog_id << ", idx " << outer_i << std::endl;
+
+					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+						prog[inner_prog_id]->spectral_set_zero();
+
+					// activate mode via real coefficient
+					prog[outer_prog_id]->request_data_spectral();
+					prog[outer_prog_id]->spectral_space_data[outer_i].real(1);
+
+					/*
+					 * RUN timestep
+					 */
+					run_timestep();
+
+					/*
+					 * compute
+					 * 1/dt * (U(t+1) - U(t))
+					 */
+					prog[outer_prog_id]->request_data_spectral();
+					prog[outer_prog_id]->spectral_space_data[outer_i] -= 1.0;
+
+					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+						prog[inner_prog_id]->operator*=(1.0/simVars.timecontrol.current_timestep_size);
+
+
+					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+					{
+						prog[inner_prog_id]->request_data_spectral();
+
+						// eliminate shift for zero mode since this is non-sense information
+//						for (int n = 0; n <= sphereDataConfig->spectral_modes_n_max; n++)
+//							prog[inner_prog_id]->spectral_space_data[n].imag(0);
+
+						for (int k = 0; k < sphereDataConfig->spectral_array_data_number_of_elements; k++)
+						{
+							file << prog[inner_prog_id]->spectral_space_data[k].real();
+							file << "\t";
+						}
+					}
+
+					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+					{
+						prog[inner_prog_id]->request_data_spectral();
+
+						for (int k = 0; k < sphereDataConfig->spectral_array_data_number_of_elements; k++)
+						{
+							file << prog[inner_prog_id]->spectral_space_data[k].imag();
+
+							if (inner_prog_id != max_prog_id-1 || k != sphereDataConfig->spectral_array_data_number_of_elements-1)
+								file << "\t";
+							else
+								file << std::endl;
+						}
+					}
+				}
+			}
 		}
-		file.close();
 	}
 
 
@@ -946,6 +1054,7 @@ public:
 				break;
 
 			case 4:
+				// ADVECTION, VORT/DIV
 				timestepping_explicit_rk.run_timestep(
 						this,
 						&SimulationInstance::p_run_euler_timestep_update_advection_vortdiv,	///< pointer to function to compute euler time step updates
@@ -2129,8 +2238,8 @@ int main(int i_argc, char *i_argv[])
 	};
 
 	// default values for specific input (for general input see SimulationVariables.hpp)
-	simVars.bogus.var[0] = 1;
-	simVars.bogus.var[1] = 1;
+	simVars.bogus.var[0] = param_use_coriolis_formulation;
+	simVars.bogus.var[1] = param_compute_error;
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
@@ -2147,7 +2256,7 @@ int main(int i_argc, char *i_argv[])
 
 	param_use_coriolis_formulation = simVars.bogus.var[0];
 	assert(param_use_coriolis_formulation == 0 || param_use_coriolis_formulation == 1);
-	param_compute_error = simVars.bogus.var[1];
+//	param_compute_error = simVars.bogus.var[1];
 
 	sphereDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
 /*

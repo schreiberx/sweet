@@ -836,6 +836,215 @@ public:
 		}
 	}
 
+
+
+	void normal_mode_analysis()
+	{
+		// dummy time step to get time step size
+		run_timestep();
+
+		/*
+		 * Do a normal mode analysis, see
+		 * Hillary Weller, John Thuburn, Collin J. Cotter,
+		 * "Computational Modes and Grid Imprinting on Five Quasi-Uniform Spherical C Grids"
+		 */
+		char buffer_real[1024];
+		const char* filename = simVars.misc.output_file_name_prefix.c_str();
+
+		sprintf(buffer_real, filename, "normal_modes_physical", simVars.timecontrol.current_timestep_size*simVars.misc.output_time_scale);
+		std::ofstream file(buffer_real, std::ios_base::trunc);
+		std::cout << "Writing normal mode analysis to file '" << buffer_real << "'" << std::endl;
+
+		std::cout << "WARNING: OUTPUT IS TRANSPOSED!" << std::endl;
+
+		// use very high precision
+		file << std::setprecision(20);
+
+		PlaneData* prog[3] = {&prog_h, &prog_u, &prog_v};
+
+		int max_prog_id = -1;
+
+		if (simVars.pde.id == 0 || simVars.pde.id == 1)
+		{
+			max_prog_id = 3;
+			prog_h.physical_set_zero();
+			prog_u.physical_set_zero();
+			prog_v.physical_set_zero();
+		}
+		else
+		{
+			max_prog_id = 1;
+			prog_h.physical_set_zero();
+		}
+
+		// iterate over all prognostic variables
+		for (int outer_prog_id = 0; outer_prog_id < max_prog_id; outer_prog_id++)
+		{
+			if (simVars.disc.normal_mode_analysis_generation == 1)
+			{
+				// iterate over physical space
+				for (std::size_t outer_i = 0; outer_i < planeDataConfig->physical_array_data_number_of_elements; outer_i++)
+				{
+					std::cout << "normal mode analysis for prog " << outer_prog_id << ", idx " << outer_i << std::endl;
+
+					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+						prog[inner_prog_id]->physical_set_zero();
+
+					// activate mode
+					prog[outer_prog_id]->request_data_physical();
+					prog[outer_prog_id]->physical_space_data[outer_i] = 1;
+
+					/*
+					 * RUN timestep
+					 */
+					run_timestep();
+
+					/*
+					 * compute
+					 * 1/dt * (U(t+1) - U(t))
+					 */
+					prog[outer_prog_id]->request_data_physical();
+					prog[outer_prog_id]->physical_space_data[outer_i] -= 1.0;
+
+
+					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+					{
+						prog[inner_prog_id]->request_data_physical();
+						for (std::size_t k = 0; k < planeDataConfig->physical_array_data_number_of_elements; k++)
+						{
+							file << prog[inner_prog_id]->physical_space_data[k];
+							if (inner_prog_id != max_prog_id-1 || k != planeDataConfig->physical_array_data_number_of_elements-1)
+								file << "\t";
+							else
+								file << std::endl;
+						}
+					}
+				}
+			}
+			else if (simVars.disc.normal_mode_analysis_generation == 2)
+			{
+				// iterate over physical space
+				for (std::size_t outer_i = 0; outer_i < planeDataConfig->spectral_array_data_number_of_elements; outer_i++)
+				{
+					for (int imag_i = 0; imag_i < 2; imag_i++)
+					{
+						std::cout << "normal mode analysis for prog " << outer_prog_id << ", idx " << outer_i << std::endl;
+
+						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+							prog[inner_prog_id]->spectral_set_zero();
+
+						// activate mode
+						if (imag_i)
+							prog[outer_prog_id]->spectral_space_data[outer_i].imag(1);
+						else
+							prog[outer_prog_id]->spectral_space_data[outer_i].real(1);
+
+						/*
+						 * RUN timestep
+						 */
+						run_timestep();
+
+
+						/*
+						 * compute
+						 * 1/dt * (U(t+1) - U(t))
+						 */
+						prog[outer_prog_id]->request_data_spectral();
+						prog[outer_prog_id]->spectral_space_data[outer_i] -= 1.0;
+
+						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+							prog[inner_prog_id]->operator*=(1.0/simVars.timecontrol.current_timestep_size);
+
+						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+						{
+							prog[inner_prog_id]->request_data_spectral();
+							for (std::size_t k = 0; k < planeDataConfig->spectral_array_data_number_of_elements; k++)
+							{
+								file << prog[inner_prog_id]->spectral_space_data[k].real();
+								file << "\t";
+							}
+						}
+
+						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+						{
+							prog[inner_prog_id]->request_data_spectral();
+							for (std::size_t k = 0; k < planeDataConfig->spectral_array_data_number_of_elements; k++)
+							{
+								file << prog[inner_prog_id]->spectral_space_data[k].imag();
+								if (inner_prog_id != max_prog_id-1 || k != planeDataConfig->spectral_array_data_number_of_elements-1)
+									file << "\t";
+								else
+									file << std::endl;
+							}
+						}
+					}
+				}
+			}
+			else if (simVars.disc.normal_mode_analysis_generation == 3)
+			{
+				// iterate over physical space
+				for (std::size_t outer_i = 0; outer_i < planeDataConfig->spectral_array_data_number_of_elements; outer_i++)
+				{
+					std::cout << "normal mode analysis for prog " << outer_prog_id << ", idx " << outer_i << std::endl;
+
+					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+						prog[inner_prog_id]->spectral_set_zero();
+
+					// activate mode via real coefficient
+					prog[outer_prog_id]->request_data_spectral();
+					prog[outer_prog_id]->spectral_space_data[outer_i].real(1);
+
+					/*
+					 * RUN timestep
+					 */
+					run_timestep();
+
+					/*
+					 * compute
+					 * 1/dt * (U(t+1) - U(t))
+					 */
+					prog[outer_prog_id]->request_data_spectral();
+					prog[outer_prog_id]->spectral_space_data[outer_i] -= 1.0;
+
+					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+						prog[inner_prog_id]->operator*=(1.0/simVars.timecontrol.current_timestep_size);
+
+
+					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+					{
+						prog[inner_prog_id]->request_data_spectral();
+
+						// eliminate shift for zero mode since this is non-sense information
+//						for (std::size_t n = 0; n <= planeDataConfig->spectral_modes_n_max; n++)
+//						prog[inner_prog_id]->spectral_space_data[0].imag(0);
+
+						for (std::size_t k = 0; k < planeDataConfig->spectral_array_data_number_of_elements; k++)
+						{
+							file << prog[inner_prog_id]->spectral_space_data[k].real();
+							file << "\t";
+						}
+					}
+
+					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+					{
+						prog[inner_prog_id]->request_data_spectral();
+
+						for (std::size_t k = 0; k < planeDataConfig->spectral_array_data_number_of_elements; k++)
+						{
+							file << prog[inner_prog_id]->spectral_space_data[k].imag();
+
+							if (inner_prog_id != max_prog_id-1 || k != planeDataConfig->spectral_array_data_number_of_elements-1)
+								file << "\t";
+							else
+								file << std::endl;
+						}
+					}
+				}
+			}
+		}
+	}
+
+
 	// Main routine for method to be used in case of finite differences
 	void p_run_euler_timestep_update(
 			const PlaneData &i_h,	///< prognostic variables
@@ -2148,32 +2357,39 @@ int main(int i_argc, char *i_argv[])
 			time.reset();
 
 
-			// Main time loop
-			while(true)
+			if (simVars.disc.normal_mode_analysis_generation)
 			{
-				if (simulationSWE->timestep_output(buf))
+				simulationSWE->normal_mode_analysis();
+			}
+			else
+			{
+				// Main time loop
+				while(true)
 				{
-					// string output data
+					if (simulationSWE->timestep_output(buf))
+					{
+						// string output data
 
-					std::string output = buf.str();
-					buf.str("");
+						std::string output = buf.str();
+						buf.str("");
 
-					// This is an output printed on screen or buffered to files if > used
-					std::cout << output;
-				}
+						// This is an output printed on screen or buffered to files if > used
+						std::cout << output;
+					}
 
-				// Stop simulation if requested
-				if (simulationSWE->should_quit())
-					break;
+					// Stop simulation if requested
+					if (simulationSWE->should_quit())
+						break;
 
-				// Main call for timestep run
-				simulationSWE->run_timestep();
+					// Main call for timestep run
+					simulationSWE->run_timestep();
 
-				// Instability
-				if (simulationSWE->instability_detected())
-				{
-					std::cout << "INSTABILITY DETECTED" << std::endl;
-					break;
+					// Instability
+					if (simulationSWE->instability_detected())
+					{
+						std::cout << "INSTABILITY DETECTED" << std::endl;
+						break;
+					}
 				}
 			}
 

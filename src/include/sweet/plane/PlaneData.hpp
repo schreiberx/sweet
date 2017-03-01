@@ -387,6 +387,21 @@ public:
 
 
 
+	inline
+	void physical_set_zero()
+	{
+		PLANE_DATA_PHYSICAL_FOR_IDX(
+				physical_space_data[idx] = 0;
+		);
+
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+		physical_space_data_valid = true;
+		spectral_space_data_valid = false;
+#endif
+	}
+
+
+
 	/**
 	 * Set the values in the specified row
 	 */
@@ -485,7 +500,9 @@ public:
 #endif
 				for (std::size_t jj = planeDataConfig->spectral_data_iteration_ranges[0][1][1]; jj < planeDataConfig->spectral_data_iteration_ranges[1][1][0]; jj++)
 					for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[0][0][0]; ii < planeDataConfig->spectral_data_iteration_ranges[0][0][1]; ii++)
+					{
 						spectral_space_data[jj*planeDataConfig->spectral_data_size[0]+ii] = 0;
+					}
 
 			}
 			else
@@ -498,7 +515,9 @@ public:
 #endif
 				for (std::size_t jj = 0; jj < planeDataConfig->spectral_data_size[1]; jj++)
 					for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[0][0][1]; ii < planeDataConfig->spectral_data_size[0]; ii++)
+					{
 						spectral_space_data[jj*planeDataConfig->spectral_data_size[0]+ii] = 0;
+					}
 			}
 		}
 
@@ -546,6 +565,19 @@ public:
 		PLANE_DATA_SPECTRAL_FOR_IDX(
 				spectral_space_data[idx].real(i_value_re);
 				spectral_space_data[idx].imag(i_value_im);
+		);
+
+		physical_space_data_valid = false;
+		spectral_space_data_valid = true;
+	}
+
+
+	inline
+	void spectral_set_zero()
+	{
+		PLANE_DATA_SPECTRAL_FOR_IDX(
+				spectral_space_data[idx].real(0);
+				spectral_space_data[idx].imag(0);
 		);
 
 		physical_space_data_valid = false;
