@@ -514,6 +514,16 @@ public:
 	}
 
 
+
+
+	SphereDataComplex solve(
+			const SphereDataPhysicalComplex &i_rhs
+	)
+	{
+		SphereDataComplex tmp = i_rhs;
+		return solve(tmp);
+	}
+
 	SphereDataComplex solve(
 			const SphereDataComplex &i_rhs
 	)

@@ -37,6 +37,32 @@ public:
 
 		return out;
 	}
+
+
+
+public:
+	static
+	SphereData physical_convert_imag(
+			const SphereDataComplex &i_sphereData
+	)
+	{
+		i_sphereData.request_data_physical();
+
+		SphereData out(i_sphereData.sphereDataConfig);
+
+#if SWEET_THREADING
+#pragma omp parallel for
+#endif
+		for (int i = 0; i < out.sphereDataConfig->physical_array_data_number_of_elements; i++)
+			out.physical_space_data[i] = i_sphereData.physical_space_data[i].imag();
+
+#if SWEET_USE_SPHERE_SPECTRAL_SPACE
+		out.physical_space_data_valid = true;
+		out.spectral_space_data_valid = false;
+#endif
+
+		return out;
+	}
 };
 
 

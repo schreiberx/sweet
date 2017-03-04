@@ -22,6 +22,7 @@
 #include <sweet/MemBlockAlloc.hpp>
 #include <sweet/sphere/SphereDataConfig.hpp>
 #include <sweet/sphere/SphereDataPhysical.hpp>
+#include <sweet/sphere/SphereDataPhysicalComplex.hpp>
 #include <sweet/FatalError.hpp>
 #include <sweet/openmp_helper.hpp>
 
@@ -114,7 +115,8 @@ public:
 			const SphereData &i_sph_data
 	)
 	{
-		check(i_sph_data.sphereDataConfig);
+		if (sphereDataConfig == nullptr)
+			setup(i_sph_data.sphereDataConfig);
 
 		if (i_sph_data.physical_space_data_valid)
 			memcpy(physical_space_data, i_sph_data.physical_space_data, sizeof(double)*sphereDataConfig->physical_array_data_number_of_elements);
@@ -335,6 +337,33 @@ public:
 	}
 
 
+	SphereDataPhysicalComplex getSphereDataPhysicalComplex()	const
+	{
+		SphereDataPhysicalComplex out(sphereDataConfig);
+#if 1
+		if (physical_space_data_valid)
+		{
+			for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+				out.physical_space_data[i] = physical_space_data[i];
+//			memcpy(out.physical_space_data, physical_space_data, sizeof(double)*sphereDataConfig->physical_array_data_number_of_elements);
+			return out;
+		}
+#endif
+		/*
+		 * WARNING:
+		 * We have to use a temporary array here because of destructive SH transformations
+		 */
+		SphereData tmp = *this;
+		tmp.request_data_spectral();
+		SH_to_spat(sphereDataConfig->shtns, tmp.spectral_space_data, tmp.physical_space_data);
+
+		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+			out.physical_space_data[i] = tmp.physical_space_data[i];
+
+		return out;
+	}
+
+
 
 	SphereData(
 			const SphereDataPhysical &i_sph_data
@@ -343,6 +372,23 @@ public:
 		setup(i_sph_data.sphereDataConfig);
 
 		memcpy(physical_space_data, i_sph_data.physical_space_data, sizeof(double)*sphereDataConfig->physical_array_data_number_of_elements);
+
+		physical_space_data_valid = true;
+		spectral_space_data_valid = false;
+	}
+
+
+
+	SphereData(
+			const SphereDataPhysicalComplex &i_sph_data
+	)
+	{
+		setup(i_sph_data.sphereDataConfig);
+
+		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+			physical_space_data[i] = i_sph_data.physical_space_data[i].real();
+
+//		memcpy(physical_space_data, i_sph_data.physical_space_data, sizeof(double)*sphereDataConfig->physical_array_data_number_of_elements);
 
 		physical_space_data_valid = true;
 		spectral_space_data_valid = false;

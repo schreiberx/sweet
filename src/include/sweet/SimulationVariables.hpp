@@ -274,6 +274,11 @@ public:
 		double &coriolis_omega = f0;
 
 		/**
+		 * Simulation on f-sphere? (constant f0 term over entire sphere)
+		 */
+		bool f_sphere = false;
+
+		/**
 		 * Gravitational constant
 		 */
 		double gravitation = 9.80616;
@@ -297,10 +302,30 @@ public:
 //			std::cout << " + beta: " << beta << std::endl;
 			std::cout << " + earth_radius: " << earth_radius << std::endl;
 			std::cout << " + coriolis_omega: " << coriolis_omega << std::endl;
+			std::cout << " + f_sphere: " << f_sphere << std::endl;
 			std::cout << " + gravitation: " << gravitation << std::endl;
 			std::cout << " + top_bottom_zero_v_velocity: " << top_bottom_zero_v_velocity << std::endl;
 			std::cout << " + domain_size (2D): " << domain_size[0] << " x " << domain_size[1] << std::endl;
 			std::cout << std::endl;
+		}
+
+
+		void outputProgParams()
+		{
+			std::cout << "Simulation parameters" << std::endl;
+			std::cout << "	-X [length]	length of simulation domain in x direction, default=1" << std::endl;
+			std::cout << "	-Y [width]	width of simulation domain in y direction, default=1" << std::endl;
+			std::cout << "	-u [visc]	viscosity, , default=0" << std::endl;
+			std::cout << "	-U [visc]	viscosity order, default=2" << std::endl;
+			std::cout << "	-f [float]	f-parameter for f-plane or coriolis omega term, default=0" << std::endl;
+			std::cout << "	-F [int]	Simulation on f-sphere, default=0" << std::endl;
+//				std::cout << "	-b [float]	beta-parameter for beta-plane, default=0" << std::endl;
+//				std::cout << "	            Use -1 to set f*sin(phi) with phi in [-pi/2;pi/2] in y" << std::endl;
+			std::cout << "	-g [float]	gravity" << std::endl;
+			std::cout << "	-a [float]	earth radius" << std::endl;
+			std::cout << "	-H [float]	average (initial) height of water" << std::endl;
+			std::cout << "" << std::endl;
+
 		}
 	} sim;
 
@@ -320,7 +345,7 @@ public:
 
 		/// size of cell (hx, hy)
 		/// this is computed based on disc.res and sim.domain_size
-		double cell_size[2] = {0,0};
+		double cell_size[2] = {0, 0};
 
 
 		/**
@@ -1009,7 +1034,7 @@ public:
 		{
 			opt = getopt_long(
 							i_argc, i_argv,
-							"N:M:n:m:C:u:U:s:X:Y:f:b:x:y:t:i:T:v:V:O:o:H:r:a:R:W:F:S:g:G:d:z",
+							"N:M:n:m:C:u:U:s:X:Y:f:F:b:x:y:t:i:T:v:V:O:o:H:r:a:R:W:F:S:g:G:d:z",
 							long_options, &option_index
 					);
 
@@ -1224,6 +1249,10 @@ public:
 				sim.f0 = atof(optarg);
 				break;
 
+			case 'F':
+				sim.f_sphere = atoi(optarg);
+				break;
+
 			case 'a':
 				sim.earth_radius = atof(optarg);
 				break;
@@ -1280,20 +1309,7 @@ public:
 
 
 			default:
-				std::cout << "Simulation runtime parameters" << std::endl;
-				std::cout << "	-X [length]	length of simulation domain in x direction, default=1" << std::endl;
-				std::cout << "	-Y [width]	width of simulation domain in y direction, default=1" << std::endl;
-				std::cout << "	-u [visc]	viscosity, , default=0" << std::endl;
-				std::cout << "	-U [visc]	viscosity order, default=2" << std::endl;
-				std::cout << "	-f [float]	f-parameter for f-plane or coriolis omega term, default=0" << std::endl;
-//				std::cout << "	-b [float]	beta-parameter for beta-plane, default=0" << std::endl;
-//				std::cout << "	            Use -1 to set f*sin(phi) with phi in [-pi/2;pi/2] in y" << std::endl;
-				std::cout << "	-g [float]	gravity" << std::endl;
-				std::cout << "	-a [float]	earth radius" << std::endl;
-				std::cout << "	-H [float]	average (initial) height of water" << std::endl;
-				std::cout << "" << std::endl;
-
-
+				sim.outputProgParams();
 				setup.outputProgParams();
 				pde.outputProgParams();
 				disc.outputProgParams();

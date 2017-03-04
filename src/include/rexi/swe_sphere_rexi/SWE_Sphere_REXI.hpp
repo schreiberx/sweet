@@ -161,10 +161,29 @@ public:
 	 * for further information
 	 */
 public:
-	bool run_timestep_rexi(
-		SphereData &io_h0,
+	bool run_timestep_rexi_advection_progphiuv(
+		SphereData &io_phi0,
 		SphereData &io_u,
 		SphereData &io_v,
+
+		double i_timestep_size,	///< timestep size
+
+		const SimulationVariables &i_parameters
+	);
+
+
+	/**
+	 * Solve the REXI of \f$ U(t) = exp(L*t) \f$
+	 *
+	 * See
+	 * 		doc/rexi/understanding_rexi.pdf
+	 * for further information
+	 */
+public:
+	bool run_timestep_rexi_vectorinvariant_progphivortdiv(
+		SphereData &io_phi0,
+		SphereData &io_u0,
+		SphereData &io_v0,
 
 		double i_timestep_size,	///< timestep size
 

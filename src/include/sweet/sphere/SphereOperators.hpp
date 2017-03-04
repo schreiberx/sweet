@@ -328,6 +328,9 @@ public:
 		return sphSolver_inv_one_minus_mu2.solve(i_sph_data);
 
 #elif 1
+		/*
+		 * WARNING: THIS VERSION RESULTS IN REAL EIGENVALUES!!!!
+		 */
 //		i_sph_data.request_data_spectral();
 
 
@@ -519,8 +522,8 @@ public:
 	void robert_uv_to_vortdiv(
 			const SphereDataPhysical &i_u,
 			const SphereDataPhysical &i_v,
-			SphereData &o_stream,
-			SphereData &o_potential
+			SphereData &o_vort,
+			SphereData &o_div
 
 	)	const
 	{
@@ -545,19 +548,21 @@ public:
 				sphereDataConfig->shtns,
 				ug.physical_space_data,
 				vg.physical_space_data,
-				o_stream.spectral_space_data,
-				o_potential.spectral_space_data
+				o_vort.spectral_space_data,
+				o_div.spectral_space_data
 		);
 
-		o_stream.physical_space_data_valid = false;
-		o_stream.spectral_space_data_valid = true;
+		o_vort.physical_space_data_valid = false;
+		o_vort.spectral_space_data_valid = true;
 
-		o_potential.physical_space_data_valid = false;
-		o_potential.spectral_space_data_valid = true;
+		o_div.physical_space_data_valid = false;
+		o_div.spectral_space_data_valid = true;
 
-		o_stream = laplace(o_stream)*r;
-		o_potential = laplace(o_potential)*r;
+		o_vort = laplace(o_vort)*r;
+		o_div = laplace(o_div)*r;
 	}
+
+
 
 
 	void uv_to_vortdiv(

@@ -877,6 +877,18 @@ public:
 			prog_h.physical_set_zero();
 		}
 
+
+		if (simVars.disc.timestepping_method == SimulationVariables::Discretization::LEAPFROG_EXPLICIT)
+		{
+			FatalError("Not yet tested and supported");
+			std::cout << "WARNING: Leapfrog time stepping doesn't make real sense since 1st step is based on RK-like method" << std::endl;
+			std::cout << "We'll do two Leapfrog time steps here to take the LF errors into account!" << std::endl;
+			std::cout << "Therefore, we also halve the time step size here" << std::endl;
+
+			simVars.timecontrol.current_timestep_size = 0.5*simVars.sim.CFL;
+			simVars.sim.CFL = -simVars.timecontrol.current_timestep_size;
+		}
+
 		// iterate over all prognostic variables
 		for (int outer_prog_id = 0; outer_prog_id < max_prog_id; outer_prog_id++)
 		{
@@ -894,9 +906,18 @@ public:
 					prog[outer_prog_id]->request_data_physical();
 					prog[outer_prog_id]->physical_space_data[outer_i] = 1;
 
+					// In case of a multi-step scheme, reset it!
+					if (simVars.disc.timestepping_method == SimulationVariables::Discretization::LEAPFROG_EXPLICIT)
+					{
+						FatalError("Not yet implemented");
+						//timestepping_explicit_leapfrog.resetAndSetup(prog_h, simVars.disc.timestepping_order, simVars.disc.leapfrog_robert_asselin_filter);
+						run_timestep();
+					}
+
 					/*
 					 * RUN timestep
 					 */
+
 					run_timestep();
 
 					/*
@@ -938,6 +959,14 @@ public:
 							prog[outer_prog_id]->spectral_space_data[outer_i].imag(1);
 						else
 							prog[outer_prog_id]->spectral_space_data[outer_i].real(1);
+
+						// In case of a multi-step scheme, reset it!
+						if (simVars.disc.timestepping_method == SimulationVariables::Discretization::LEAPFROG_EXPLICIT)
+						{
+							FatalError("Not yet implemented");
+							//timestepping_explicit_leapfrog.resetAndSetup(prog_h, simVars.disc.timestepping_order, simVars.disc.leapfrog_robert_asselin_filter);
+							run_timestep();
+						}
 
 						/*
 						 * RUN timestep
@@ -993,6 +1022,14 @@ public:
 					// activate mode via real coefficient
 					prog[outer_prog_id]->request_data_spectral();
 					prog[outer_prog_id]->spectral_space_data[outer_i].real(1);
+
+					// In case of a multi-step scheme, reset it!
+					if (simVars.disc.timestepping_method == SimulationVariables::Discretization::LEAPFROG_EXPLICIT)
+					{
+						FatalError("Not yet implemented");
+						//timestepping_explicit_leapfrog.resetAndSetup(prog_h, simVars.disc.timestepping_order, simVars.disc.leapfrog_robert_asselin_filter);
+						run_timestep();
+					}
 
 					/*
 					 * RUN timestep

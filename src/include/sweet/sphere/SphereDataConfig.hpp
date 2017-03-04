@@ -121,15 +121,19 @@ public:
 	{
 	}
 
-	std::string getUniqueIDString()
+	const
+	std::string getUniqueIDString()	const
 	{
 		return getConfigInformationString();
 	}
 
-	std::string getConfigInformationString()
+
+	const
+	std::string getConfigInformationString()	const
 	{
 		std::ostringstream buf;
 		buf << "M" << spectral_modes_m_max << "," << spectral_modes_n_max << "_N" << physical_num_lon << "," << physical_num_lat;
+		buf << " total_spec_modes: " << spectral_array_data_number_of_elements;
 		return buf.str();
 	}
 

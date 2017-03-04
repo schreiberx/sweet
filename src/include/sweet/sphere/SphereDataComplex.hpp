@@ -19,6 +19,7 @@
 
 #include <sweet/sphere/SphereDataConfig.hpp>
 #include <sweet/sphere/SphereData.hpp>
+#include <sweet/sphere/SphereDataPhysicalComplex.hpp>
 #include <sweet/MemBlockAlloc.hpp>
 
 
@@ -72,6 +73,29 @@ public:
 	}
 
 
+
+
+	SphereDataComplex(
+			const SphereDataPhysicalComplex &i_sph_data
+	):
+		sphereDataConfig(nullptr),
+		physical_space_data(nullptr),
+		spectral_space_data(nullptr)
+	{
+		setup(i_sph_data.sphereDataConfig);
+
+		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+			physical_space_data[i] = i_sph_data.physical_space_data[i];
+
+//		memcpy(physical_space_data, i_sph_data.physical_space_data, sizeof(double)*sphereDataConfig->physical_array_data_number_of_elements);
+
+		physical_space_data_valid = true;
+		spectral_space_data_valid = false;
+	}
+
+
+
+
 	/**
 	 * Run validation checks to make sure that the physical and spectral spaces match in size
 	 */
@@ -94,7 +118,8 @@ public:
 			const SphereDataComplex &i_sph_data
 	)
 	{
-		check_sphereDataConfig_identical_res(i_sph_data.sphereDataConfig);
+		if (sphereDataConfig == nullptr)
+			setup(i_sph_data.sphereDataConfig);
 
 		if (i_sph_data.physical_space_data_valid)
 			memcpy(physical_space_data, i_sph_data.physical_space_data, sizeof(cplx)*sphereDataConfig->physical_array_data_number_of_elements);
@@ -212,6 +237,33 @@ public:
 
 		out.physical_space_data_valid = false;
 		out.spectral_space_data_valid = true;
+
+		return out;
+	}
+
+
+	SphereDataPhysicalComplex getSphereDataPhysicalComplex()	const
+	{
+		SphereDataPhysicalComplex out(sphereDataConfig);
+#if 1
+		if (physical_space_data_valid)
+		{
+			for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+				out.physical_space_data[i] = physical_space_data[i];
+//			memcpy(out.physical_space_data, physical_space_data, sizeof(double)*sphereDataConfig->physical_array_data_number_of_elements);
+			return out;
+		}
+#endif
+		/*
+		 * WARNING:
+		 * We have to use a temporary array here because of destructive SH transformations
+		 */
+		SphereDataComplex tmp = *this;
+		tmp.request_data_spectral();
+		SH_to_spat_cplx(sphereDataConfig->shtns, tmp.spectral_space_data, tmp.physical_space_data);
+
+		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+			out.physical_space_data[i] = tmp.physical_space_data[i];
 
 		return out;
 	}

@@ -20,6 +20,7 @@
 
 // explicit time stepping
 #include <sweet/sphere/SphereDataTimesteppingExplicitRK.hpp>
+#include <sweet/sphere/SphereDataPhysicalTimesteppingExplicitRK.hpp>
 #include <sweet/sphere/SphereDataTimesteppingExplicitLeapfrog.hpp>
 
 // implicit time stepping for SWE
@@ -74,10 +75,11 @@ public:
 	SphereOperatorsComplex opComplex;
 
 	// Runge-Kutta stuff
-	SphereDataTimesteppingExplicitRK timestepping_explicit_rk;
+	SphereDataTimesteppingExplicitRK spheredata_timestepping_explicit_rk;
+	SphereDataPhysicalTimesteppingExplicitRK spheredataphysical_timestepping_explicit_rk;
 
 	// Leapfrog
-	SphereDataTimesteppingExplicitLeapfrog timestepping_explicit_leapfrog;
+	SphereDataTimesteppingExplicitLeapfrog spheredata_timestepping_explicit_leapfrog;
 
 	// Implicit time stepping solver
 	SWEImplicit_SPHRobert timestepping_implicit_swe;
@@ -94,6 +96,11 @@ public:
 	SphereData &prog_phi = prog_h;
 	SphereData &prog_vort = prog_u;
 	SphereData &prog_div = prog_v;
+
+	SphereDataPhysical prog_phys_phi;
+	SphereDataPhysical prog_phys_u;
+	SphereDataPhysical prog_phys_v;
+
 
 	SphereDataPhysical fg;
 
@@ -116,6 +123,9 @@ public:
 		prog_h(sphereDataConfig),
 		prog_u(sphereDataConfig),
 		prog_v(sphereDataConfig),
+		prog_phys_phi(sphereDataConfig),
+		prog_phys_u(sphereDataConfig),
+		prog_phys_v(sphereDataConfig),
 		fg(sphereDataConfig),
 
 #if SWEET_GUI
@@ -137,12 +147,31 @@ public:
 
 
 
+#if 1
+
 	inline
 	SphereData f(const SphereData &i_sphData)	const
 	{
 		return op.mu(i_sphData*(2.0*simVars.sim.coriolis_omega));
 	}
 
+#else
+	inline
+	SphereData f(const SphereData &i_sphData)	const
+	{
+		SphereData out(i_sphData);
+
+		out.physical_update_lambda_gaussian_grid(
+				[&](double lam, double sin_phi, double &io_data)
+				{
+					io_data *= sin_phi*2.0*simVars.sim.coriolis_omega;
+				}
+		);
+
+		return out;
+//		return op.mu(i_sphData*(2.0*simVars.sim.coriolis_omega));
+	}
+#endif
 
 
 	void update_diagnostics()
@@ -151,7 +180,7 @@ public:
 		if (last_timestep_nr_update_diagnostics == simVars.timecontrol.current_timestep_nr)
 			return;
 
-		if (simVars.pde.id == 1 || simVars.pde.id == 4)
+		if (simVars.pde.id == 1 || simVars.pde.id == 14)
 		{
 #if 0
 			sphereDiagnostics.update_phi_vort_div_2_mass_energy_enstrophy_4_sphere(
@@ -171,12 +200,32 @@ public:
 			);
 #endif
 		}
+		else if (simVars.pde.id == 2)
+		{
+#if 0
+			sphereDiagnostics.update_h_u_v_2_mass_energy_enstrophy_4_sphere(
+					op,
+					(prog_phi*(1.0/simVars.sim.gravitation)).getSphereDataPhysical(),
+					prog_u.getSphereDataPhysical(),
+					prog_v.getSphereDataPhysical(),
+					simVars
+			);
+#else
+			sphereDiagnostics.update_phi_vort_div_2_mass_energy_enstrophy_4_zylinder(
+					op,
+					(prog_phi*(1.0/simVars.sim.gravitation)).getSphereDataPhysical(),
+					prog_u.getSphereDataPhysical(),
+					prog_v.getSphereDataPhysical(),
+					simVars
+			);
+#endif
+		}
 		else
 		{
 #if 0
 			sphereDiagnostics.update_h_u_v_2_mass_energy_enstrophy_4_sphere(
 					op,
-					prog_h,
+					(simVars.pde.id == 2 ? prog_phi*(1.0/simVars.sim.gravitation) : prog_h),
 					prog_u,
 					prog_v,
 					simVars
@@ -184,7 +233,7 @@ public:
 #else
 			sphereDiagnostics.update_phi_vort_div_2_mass_energy_enstrophy_4_zylinder(
 					op,
-					prog_h,
+					(simVars.pde.id == 2 ? prog_phi*(1.0/simVars.sim.gravitation) : prog_h),
 					prog_u,
 					prog_v,
 					simVars
@@ -199,33 +248,47 @@ public:
 	{
 		simVars.reset();
 
-		fg.physical_update_lambda_gaussian_grid(
-			[&](double lon, double mu, double &o_data)
-			{
-				o_data = mu*2.0*simVars.sim.coriolis_omega;
-			}
-		);
+		if (simVars.sim.f_sphere)
+		{
+			fg.physical_update_lambda_gaussian_grid(
+				[&](double lon, double mu, double &o_data)
+				{
+					o_data = simVars.sim.f0;
+				}
+			);
+		}
+		else
+		{
+			fg.physical_update_lambda_gaussian_grid(
+				[&](double lon, double mu, double &o_data)
+				{
+					o_data = mu*2.0*simVars.sim.coriolis_omega;
+				}
+			);
+		}
 
 		// reset the RK time stepping buffers
 		switch (simVars.disc.timestepping_method)
 		{
 		case simVars.disc.RUNGE_KUTTA_EXPLICIT:
-			timestepping_explicit_rk.resetAndSetup(prog_h, simVars.disc.timestepping_order);
+			spheredata_timestepping_explicit_rk.resetAndSetup(sphereDataConfig, simVars.disc.timestepping_order);
+			spheredataphysical_timestepping_explicit_rk.resetAndSetup(sphereDataConfig, simVars.disc.timestepping_order);
 			break;
 
 		case simVars.disc.LEAPFROG_EXPLICIT:
-			timestepping_explicit_leapfrog.resetAndSetup(prog_h, simVars.disc.timestepping_order, simVars.disc.leapfrog_robert_asselin_filter);
+			spheredata_timestepping_explicit_leapfrog.resetAndSetup(prog_h, simVars.disc.timestepping_order, simVars.disc.leapfrog_robert_asselin_filter);
 			break;
 		}
 
 
 		switch (simVars.pde.id)
 		{
-		case 2:
+		case 12:
 			std::cout << "OVERRIDING BENCHMARK SCENARIO ID TO 11 to match PDE: Advection DIV(U.phi)" << std::endl;
 			simVars.setup.benchmark_scenario_id = 11;
 			break;
-		case 3:
+
+		case 13:
 			std::cout << "OVERRIDING BENCHMARK SCENARIO ID TO 12 to match PDE: Advection U.GRAD(phi)" << std::endl;
 //			simVars.setup.benchmark_scenario_id = 12;
 			break;
@@ -287,16 +350,6 @@ public:
 
 		SphereBenchmarksCombined::setupInitialConditions(prog_h, prog_u, prog_v, simVars, op);
 
-#if 0
-		for (int i = 0; i < sphereDataConfig->physical_num_lat; i++)
-		{
-			std::cout << "h,u,v [" << i << "] = " << prog_h.physical_get(0, i) << ", " << prog_u.physical_get(0, i) << ", " << prog_v.physical_get(0, i) << std::endl;
-		}
-#endif
-
-//		if (simVars.sim.coriolis_omega != 0)
-//			param_use_coriolis_formulation = true;
-
 
 		simVars.outputConfig();
 
@@ -331,11 +384,20 @@ public:
 			break;
 
 		case 2:
+			std::cout << "PDE: SWE Advective formulation" << std::endl;
+			prog_phys_phi = prog_h.getSphereDataPhysical()*simVars.sim.gravitation;
+			prog_phys_u = prog_u.getSphereDataPhysical();
+			prog_phys_v = prog_v.getSphereDataPhysical();
+
+			prog_phi = prog_h*simVars.sim.gravitation;
+			break;
+
+		case 12:
 			std::cout << "PDE: Advection DIV(U.phi)" << std::endl;
 			simVars.setup.benchmark_scenario_id = 11;
 			break;
 
-		case 3:
+		case 13:
 			std::cout << "PDE: Advection U.GRAD(phi)" << std::endl;
 			simVars.setup.benchmark_scenario_id = 12;
 			break;
@@ -565,7 +627,7 @@ public:
 			switch(simVars.pde.id)
 			{
 			case 1:
-			case 4:
+			case 14:
 				{
 					SphereData h = prog_phi*(1.0/simVars.sim.gravitation);
 					SphereDataPhysical u(sphereDataConfig);
@@ -579,10 +641,20 @@ public:
 					SphereDataPhysical test_ug = test_u.getSphereDataPhysical();
 					SphereDataPhysical test_vg = test_v.getSphereDataPhysical();
 
-//					error_h = (h-test_h).physical_reduce_max_abs();
 					error_h = h.physical_reduce_max_abs(test_h);
 					error_u = u.physical_reduce_max_abs(test_ug);
 					error_v = v.physical_reduce_max_abs(test_vg);
+				}
+				break;
+
+
+			case 2:
+				{
+					SphereData h = prog_phi*(1.0/simVars.sim.gravitation);
+
+					error_h = h.physical_reduce_max_abs(test_h);
+					error_u = prog_u.physical_reduce_max_abs(test_u);
+					error_v = prog_v.physical_reduce_max_abs(test_v);
 				}
 				break;
 
@@ -613,7 +685,6 @@ public:
 			}
 
 			//Print simulation time, energy and pot enstrophy
-//			std::cerr << "DIAGNOSTIC - time, mass, energy, potential_enstrophy ";
 			std::cerr << simVars.timecontrol.current_simulation_time << "\t";
 			std::cerr << simVars.diag.total_mass << "\t";
 			std::cerr << simVars.diag.potential_energy << "\t";
@@ -717,6 +788,7 @@ public:
 		switch (simVars.pde.id)
 		{
 		case 1:
+		case 2:
 			max_abs_value *= simVars.sim.gravitation;
 		}
 
@@ -746,6 +818,7 @@ public:
 	}
 
 
+/*
 
 	SphereData add_f(const SphereData &i_data)
 	const
@@ -762,12 +835,14 @@ public:
 
 		return d;
 	}
+*/
 
 
 
 	void normal_mode_analysis()
 	{
 		// dummy time step to get time step size
+		reset();
 		run_timestep();
 
 		/*
@@ -791,29 +866,61 @@ public:
 
 		int max_prog_id = -1;
 
-		if (simVars.pde.id == 0 || simVars.pde.id == 1)
+		switch(simVars.pde.id)
 		{
+		case 0:
+		case 1:
+		case 2:
 			max_prog_id = 3;
 			prog_h.physical_set_zero();
 			prog_u.physical_set_zero();
 			prog_v.physical_set_zero();
-		}
-		else
-		{
+			break;
+
+		default:
 			max_prog_id = 1;
 			prog_h.physical_set_zero();
+			break;
 		}
+
+		int leapfrog_start_num_timesteps = 16;
+		double leapfrog_start_timesteps_size;
+		double leapfrog_end_timestep_size;
+		double leapfrog_original_cfl;
+		if (simVars.disc.timestepping_method == SimulationVariables::Discretization::LEAPFROG_EXPLICIT)
+		{
+			std::cout << "WARNING: Leapfrog time stepping doesn't make real sense since 1st step is based on RK-like method" << std::endl;
+			std::cout << "We'll do two Leapfrog time steps here to take the LF errors into account!" << std::endl;
+			std::cout << "Therefore, we also halve the time step size here" << std::endl;
+
+			leapfrog_original_cfl = simVars.sim.CFL;
+			// do 2 leapfrog time steps -> half time step size
+			simVars.sim.CFL *= 0.5;
+			simVars.timecontrol.current_timestep_size = -simVars.sim.CFL;
+
+			leapfrog_start_timesteps_size = simVars.timecontrol.current_timestep_size/(double)leapfrog_start_num_timesteps;
+			leapfrog_end_timestep_size = simVars.timecontrol.current_timestep_size;
+		}
+
+		int num_timesteps = 1;
+		if (simVars.disc.normal_mode_analysis_generation >= 10)
+		{
+			if (simVars.timecontrol.max_timesteps_nr > 0)
+				num_timesteps = simVars.timecontrol.max_timesteps_nr;
+		}
+
+		file << "# " << (num_timesteps*(-simVars.sim.CFL)) << std::endl;
 
 		// iterate over all prognostic variables
 		for (int outer_prog_id = 0; outer_prog_id < max_prog_id; outer_prog_id++)
 		{
-			if (simVars.disc.normal_mode_analysis_generation == 1)
+			std::cout << "normal mode analysis for prog " << outer_prog_id << std::endl;
+
+			if (simVars.disc.normal_mode_analysis_generation == 1 || simVars.disc.normal_mode_analysis_generation == 11)
 			{
 				// iterate over physical space
 				for (int outer_i = 0; outer_i < sphereDataConfig->physical_array_data_number_of_elements; outer_i++)
 				{
-					std::cout << "normal mode analysis for prog " << outer_prog_id << ", idx " << outer_i << std::endl;
-
 					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
 						prog[inner_prog_id]->physical_set_zero();
 
@@ -824,18 +931,57 @@ public:
 					/*
 					 * RUN timestep
 					 */
-					run_timestep();
 
-					/*
-					 * compute
-					 * 1/dt * (U(t+1) - U(t))
-					 */
-					prog[outer_prog_id]->request_data_physical();
-					prog[outer_prog_id]->physical_space_data[outer_i] -= 1.0;
+					if (simVars.pde.id == 2)
+					{
+						prog_phys_phi = prog_phi.getSphereDataPhysical();
+						prog_phys_u = prog_u.getSphereDataPhysical();
+						prog_phys_v = prog_v.getSphereDataPhysical();
+					}
+
+					// In case of a multi-step scheme, reset it!
+					if (simVars.disc.timestepping_method == SimulationVariables::Discretization::LEAPFROG_EXPLICIT)
+					{
+						spheredata_timestepping_explicit_leapfrog.resetAndSetup(prog_h, simVars.disc.timestepping_order, simVars.disc.leapfrog_robert_asselin_filter);
+
+						simVars.sim.CFL = -leapfrog_start_timesteps_size;
+						simVars.timecontrol.current_timestep_size = leapfrog_start_timesteps_size;
+
+						for (int i = 0; i < leapfrog_start_num_timesteps; i++)
+							run_timestep();
+
+						simVars.sim.CFL = -leapfrog_end_timestep_size;
+						simVars.timecontrol.current_timestep_size = leapfrog_end_timestep_size;
+
+						run_timestep();
+
+						simVars.sim.CFL = leapfrog_original_cfl;
+						simVars.timecontrol.current_timestep_size = -simVars.sim.CFL;
+					}
+					else
+					{
+						run_timestep();
+					}
+
+					for (int i = 1; i < num_timesteps; i++)
+					{
+						std::cout << "Timestep " << i << std::endl;
+						run_timestep();
+					}
 
 
-					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-						prog[inner_prog_id]->operator*=(1.0/simVars.timecontrol.current_timestep_size);
+					if (simVars.disc.normal_mode_analysis_generation == 1)
+					{
+						/*
+						 * compute
+						 * 1/dt * (U(t+1) - U(t))
+						 */
+						prog[outer_prog_id]->request_data_physical();
+						prog[outer_prog_id]->physical_space_data[outer_i] -= 1.0;
+
+						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+							prog[inner_prog_id]->operator*=(1.0/simVars.timecontrol.current_timestep_size);
+					}
 
 					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
 					{
@@ -851,15 +997,14 @@ public:
 					}
 				}
 			}
-			else if (simVars.disc.normal_mode_analysis_generation == 2)
+			else if (simVars.disc.normal_mode_analysis_generation == 2 || simVars.disc.normal_mode_analysis_generation == 12)
 			{
+
 				// iterate over physical space
 				for (int outer_i = 0; outer_i < sphereDataConfig->spectral_array_data_number_of_elements; outer_i++)
 				{
 					for (int imag_i = 0; imag_i < 2; imag_i++)
 					{
-						std::cout << "normal mode analysis for prog " << outer_prog_id << ", idx " << outer_i << std::endl;
-
 						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
 							prog[inner_prog_id]->spectral_set_zero();
 
@@ -870,21 +1015,60 @@ public:
 						else
 							prog[outer_prog_id]->spectral_space_data[outer_i].real(1);
 
-						/*
-						 * RUN timestep
-						 */
-						run_timestep();
+
+						if (simVars.pde.id == 2)
+						{
+							prog_phys_phi = prog_phi.getSphereDataPhysical();
+							prog_phys_u = prog_u.getSphereDataPhysical();
+							prog_phys_v = prog_v.getSphereDataPhysical();
+						}
 
 
-						/*
-						 * compute
-						 * 1/dt * (U(t+1) - U(t))
-						 */
-						prog[outer_prog_id]->request_data_spectral();
-						prog[outer_prog_id]->spectral_space_data[outer_i] -= 1.0;
+						// In case of a multi-step scheme, reset it!
+						if (simVars.disc.timestepping_method == SimulationVariables::Discretization::LEAPFROG_EXPLICIT)
+						{
+							spheredata_timestepping_explicit_leapfrog.resetAndSetup(prog_h, simVars.disc.timestepping_order, simVars.disc.leapfrog_robert_asselin_filter);
 
-						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-							prog[inner_prog_id]->operator*=(1.0/simVars.timecontrol.current_timestep_size);
+							simVars.sim.CFL = -leapfrog_start_timesteps_size;
+							simVars.timecontrol.current_timestep_size = leapfrog_start_timesteps_size;
+
+							for (int i = 0; i < leapfrog_start_num_timesteps; i++)
+								run_timestep();
+
+							simVars.sim.CFL = -leapfrog_end_timestep_size;
+							simVars.timecontrol.current_timestep_size = leapfrog_end_timestep_size;
+
+							run_timestep();
+
+							simVars.sim.CFL = leapfrog_original_cfl;
+							simVars.timecontrol.current_timestep_size = -simVars.sim.CFL;
+						}
+						else
+						{
+							run_timestep();
+						}
+
+						for (int i = 1; i < num_timesteps; i++)
+						{
+							std::cout << "Timestep " << i << std::endl;
+							run_timestep();
+						}
+
+
+
+
+						if (simVars.disc.normal_mode_analysis_generation == 2)
+						{
+							/*
+							 * compute
+							 * 1/dt * (U(t+1) - U(t))
+							 */
+							prog[outer_prog_id]->request_data_spectral();
+							prog[outer_prog_id]->spectral_space_data[outer_i] -= 1.0;
+
+							for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+								prog[inner_prog_id]->operator*=(1.0/simVars.timecontrol.current_timestep_size);
+						}
 
 						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
 						{
@@ -912,13 +1096,11 @@ public:
 					}
 				}
 			}
-			else if (simVars.disc.normal_mode_analysis_generation == 3)
+			else if (simVars.disc.normal_mode_analysis_generation == 3 || simVars.disc.normal_mode_analysis_generation == 13)
 			{
 				// iterate over physical space
 				for (int outer_i = 0; outer_i < sphereDataConfig->spectral_array_data_number_of_elements; outer_i++)
 				{
-					std::cout << "normal mode analysis for prog " << outer_prog_id << ", idx " << outer_i << std::endl;
-
 					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
 						prog[inner_prog_id]->spectral_set_zero();
 
@@ -926,29 +1108,103 @@ public:
 					prog[outer_prog_id]->request_data_spectral();
 					prog[outer_prog_id]->spectral_space_data[outer_i].real(1);
 
-					/*
-					 * RUN timestep
-					 */
-					run_timestep();
 
-					/*
-					 * compute
-					 * 1/dt * (U(t+1) - U(t))
-					 */
-					prog[outer_prog_id]->request_data_spectral();
-					prog[outer_prog_id]->spectral_space_data[outer_i] -= 1.0;
+					if (simVars.pde.id == 2)
+					{
+						prog_phys_phi = prog_phi.getSphereDataPhysical();
+						prog_phys_u = prog_u.getSphereDataPhysical();
+						prog_phys_v = prog_v.getSphereDataPhysical();
 
-					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-						prog[inner_prog_id]->operator*=(1.0/simVars.timecontrol.current_timestep_size);
+						/*
+						 * This is the vort/div formulation which uses the velocities as
+						 * prognostic values
+						 *
+						 * We assume that the delta function was applied to the vorticity/divergence
+						 * and convert this to the velocity
+						 */
+						if (simVars.misc.sphere_use_robert_functions)
+							op.robert_vortdiv_to_uv(prog_phys_u, prog_phys_v, prog_phys_u, prog_phys_v);
+						else
+							op.vortdiv_to_uv(prog_phys_u, prog_phys_v, prog_phys_u, prog_phys_v);
+					}
 
+					// In case of a multi-step scheme, reset it!
+					if (simVars.disc.timestepping_method == SimulationVariables::Discretization::LEAPFROG_EXPLICIT)
+					{
+						spheredata_timestepping_explicit_leapfrog.resetAndSetup(prog_h, simVars.disc.timestepping_order, simVars.disc.leapfrog_robert_asselin_filter);
+
+						simVars.sim.CFL = -leapfrog_start_timesteps_size;
+						simVars.timecontrol.current_timestep_size = leapfrog_start_timesteps_size;
+
+						for (int i = 0; i < leapfrog_start_num_timesteps; i++)
+							run_timestep();
+
+						simVars.sim.CFL = -leapfrog_end_timestep_size;
+						simVars.timecontrol.current_timestep_size = leapfrog_end_timestep_size;
+
+						run_timestep();
+
+						simVars.sim.CFL = leapfrog_original_cfl;
+						simVars.timecontrol.current_timestep_size = -simVars.sim.CFL;
+
+						if (num_timesteps > 1)
+							FatalError("Doesn't make sense because the previous time step is half the time step size in advance");
+					}
+					else
+					{
+						run_timestep();
+					}
+
+					for (int i = 1; i < num_timesteps; i++)
+					{
+						std::cout << "Timestep " << i << std::endl;
+						run_timestep();
+					}
+
+					if (simVars.pde.id == 2)
+					{
+						/*
+						 * This is the vort/div formulation which uses the velocities as
+						 * prognostic values
+						 *
+						 * We assume that the delta function was applied to the vorticity/divergence
+						 * and convert this to the velocity
+						 */
+						if (simVars.misc.sphere_use_robert_functions)
+							op.robert_uv_to_vortdiv(prog_phys_u, prog_phys_v, prog_u, prog_v);
+						else
+							op.uv_to_vortdiv(prog_phys_u, prog_phys_v, prog_u, prog_v);
+					}
+
+					if (simVars.disc.normal_mode_analysis_generation == 3)
+					{
+						/*
+						 * Compute
+						 *    1/dt * (U(t+1) - U(t))
+						 * for linearization
+						 */
+						prog[outer_prog_id]->request_data_spectral();
+						prog[outer_prog_id]->spectral_space_data[outer_i] -= 1.0;
+
+						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+							prog[inner_prog_id]->operator*=(1.0/simVars.timecontrol.current_timestep_size);
+					}
 
 					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
 					{
 						prog[inner_prog_id]->request_data_spectral();
 
 						// eliminate shift for zero mode since this is non-sense information
-//						for (int n = 0; n <= sphereDataConfig->spectral_modes_n_max; n++)
-//							prog[inner_prog_id]->spectral_space_data[n].imag(0);
+						// TODO: Are we really allowed to do this?
+						for (int n = 0; n <= sphereDataConfig->spectral_modes_n_max; n++)
+						{
+							if (std::abs(prog[inner_prog_id]->spectral_space_data[n].imag()) > 1e-10)
+							{
+								std::cerr << "Phase shift at mode " << n << " too large: " << prog[inner_prog_id]->spectral_space_data[n].imag() << std::endl;
+								std::cerr << "This is not an error" << std::endl;
+								FatalError("Phase shift");
+							}
+						}
 
 						for (int k = 0; k < sphereDataConfig->spectral_array_data_number_of_elements; k++)
 						{
@@ -977,6 +1233,7 @@ public:
 	}
 
 
+
 	void run_timestep()
 	{
 
@@ -1001,9 +1258,9 @@ public:
 			{
 			case 0:
 				// SWE, UV
-				timestepping_explicit_rk.run_timestep(
+				spheredata_timestepping_explicit_rk.run_timestep(
 						this,
-						&SimulationInstance::p_run_euler_timestep_update_swe,	///< pointer to function to compute euler time step updates
+						&SimulationInstance::p_run_euler_timestep_update_swe_advective_proguv,	///< pointer to function to compute euler time step updates
 						prog_h, prog_u, prog_v,
 						o_dt,
 						simVars.timecontrol.current_timestep_size,
@@ -1015,9 +1272,9 @@ public:
 
 			case 1:
 				// SWE, VORT/DIV
-				timestepping_explicit_rk.run_timestep(
+				spheredata_timestepping_explicit_rk.run_timestep(
 						this,
-						&SimulationInstance::p_run_euler_timestep_update_swe_vortdiv,	///< pointer to function to compute euler time step updates
+						&SimulationInstance::p_run_euler_timestep_update_swe_vectorinvariant_progvortdiv,	///< pointer to function to compute euler time step updates
 						prog_phi, prog_vort, prog_div,
 						o_dt,
 						simVars.timecontrol.current_timestep_size,
@@ -1027,8 +1284,29 @@ public:
 					);
 				break;
 
+
 			case 2:
-				timestepping_explicit_rk.run_timestep(
+			{
+				// Advective formulation
+				spheredataphysical_timestepping_explicit_rk.run_timestep(
+						this,
+						&SimulationInstance::p_run_euler_timestep_update_swe_vectorinvariant_proguv,	///< pointer to function to compute euler time step updates
+						prog_phys_phi, prog_phys_u, prog_phys_v,
+						o_dt,
+						simVars.timecontrol.current_timestep_size,
+						simVars.disc.timestepping_order,
+						simVars.timecontrol.current_simulation_time,
+						simVars.timecontrol.max_simulation_time
+					);
+
+				prog_phi = prog_phys_phi;
+				prog_u = prog_phys_u;
+				prog_v = prog_phys_v;
+			}
+				break;
+
+			case 12:
+				spheredata_timestepping_explicit_rk.run_timestep(
 						this,
 						&SimulationInstance::p_run_euler_timestep_update_advection,	///< pointer to function to compute euler time step updates
 						prog_h,
@@ -1040,8 +1318,8 @@ public:
 					);
 				break;
 
-			case 3:
-				timestepping_explicit_rk.run_timestep(
+			case 13:
+				spheredata_timestepping_explicit_rk.run_timestep(
 						this,
 						&SimulationInstance::p_run_euler_timestep_update_advection_div_free,	///< pointer to function to compute euler time step updates
 						prog_h,
@@ -1053,9 +1331,9 @@ public:
 					);
 				break;
 
-			case 4:
+			case 14:
 				// ADVECTION, VORT/DIV
-				timestepping_explicit_rk.run_timestep(
+				spheredata_timestepping_explicit_rk.run_timestep(
 						this,
 						&SimulationInstance::p_run_euler_timestep_update_advection_vortdiv,	///< pointer to function to compute euler time step updates
 						prog_h,
@@ -1073,9 +1351,9 @@ public:
 			switch (simVars.pde.id)
 			{
 			case 0:
-				timestepping_explicit_leapfrog.run_timestep(
+				spheredata_timestepping_explicit_leapfrog.run_timestep(
 						this,
-						&SimulationInstance::p_run_euler_timestep_update_swe,	///< pointer to function to compute euler time step updates
+						&SimulationInstance::p_run_euler_timestep_update_swe_advective_proguv,	///< pointer to function to compute euler time step updates
 						prog_h, prog_u, prog_v,
 						o_dt,
 						simVars.timecontrol.current_timestep_size,
@@ -1086,9 +1364,9 @@ public:
 				break;
 
 			case 1:
-				timestepping_explicit_leapfrog.run_timestep(
+				spheredata_timestepping_explicit_leapfrog.run_timestep(
 						this,
-						&SimulationInstance::p_run_euler_timestep_update_swe_vortdiv,	///< pointer to function to compute euler time step updates
+						&SimulationInstance::p_run_euler_timestep_update_swe_vectorinvariant_progvortdiv,	///< pointer to function to compute euler time step updates
 						prog_phi, prog_vort, prog_div,
 						o_dt,
 						simVars.timecontrol.current_timestep_size,
@@ -1099,7 +1377,23 @@ public:
 				break;
 
 			case 2:
-				timestepping_explicit_leapfrog.run_timestep(
+				FatalError("TODO");
+#if 0
+				spheredata_timestepping_explicit_leapfrog.run_timestep(
+						this,
+						&SimulationInstance::p_run_euler_timestep_update_swe_vectorinvariant_proguv,	///< pointer to function to compute euler time step updates
+						prog_phi, prog_u, prog_v,
+						o_dt,
+						simVars.timecontrol.current_timestep_size,
+						simVars.disc.timestepping_order,
+						simVars.timecontrol.current_simulation_time,
+						simVars.timecontrol.max_simulation_time
+					);
+#endif
+				break;
+
+			case 12:
+				spheredata_timestepping_explicit_leapfrog.run_timestep(
 						this,
 						&SimulationInstance::p_run_euler_timestep_update_advection,	///< pointer to function to compute euler time step updates
 						prog_h,
@@ -1111,8 +1405,8 @@ public:
 					);
 				break;
 
-			case 3:
-				timestepping_explicit_leapfrog.run_timestep(
+			case 13:
+				spheredata_timestepping_explicit_leapfrog.run_timestep(
 						this,
 						&SimulationInstance::p_run_euler_timestep_update_advection_div_free,	///< pointer to function to compute euler time step updates
 						prog_h,
@@ -1124,8 +1418,8 @@ public:
 					);
 				break;
 
-			case 4:
-				timestepping_explicit_leapfrog.run_timestep(
+			case 14:
+				spheredata_timestepping_explicit_leapfrog.run_timestep(
 						this,
 						&SimulationInstance::p_run_euler_timestep_update_advection_vortdiv,	///< pointer to function to compute euler time step updates
 						prog_h,
@@ -1187,7 +1481,7 @@ public:
 
 				break;
 
-			case 2:
+			case 12:
 				timestepping_implicit_swe.solve_advection(
 						prog_h*simVars.sim.gravitation, prog_u, prog_v,
 						o_prog_h,
@@ -1236,17 +1530,33 @@ public:
 			}
 
 
-
 			switch (simVars.pde.id)
 			{
 			case 0:
-				swe_sphere_rexi.run_timestep_rexi(
-						prog_h,
+				// REXI time stepping
+				prog_h *= simVars.sim.gravitation;
+				swe_sphere_rexi.run_timestep_rexi_advection_progphiuv(
+						prog_h,	// phi
 						prog_u,
 						prog_v,
 						o_dt,
 						simVars
 					);
+				prog_h *= (1.0/simVars.sim.gravitation);
+				break;
+
+
+			case 1:
+				// REXI time stepping
+				prog_h *= simVars.sim.gravitation;
+				swe_sphere_rexi.run_timestep_rexi_vectorinvariant_progphivortdiv(
+						prog_h,	// phi
+						prog_vort,
+						prog_div,
+						o_dt,
+						simVars
+					);
+				prog_h *= (1.0/simVars.sim.gravitation);
 				break;
 
 			default:
@@ -1429,11 +1739,26 @@ public:
 	}
 
 
+	SphereDataPhysical add_f(const SphereDataPhysical &i_input)
+	{
+		SphereDataPhysical out(i_input);
+
+		out.physical_update_lambda_gaussian_grid(
+			[&](double lon, double mu, double &o_data)
+			{
+				o_data += mu*2.0*simVars.sim.coriolis_omega;
+			}
+		);
+		return out;
+	}
+
+
+
 	/*
 	 * Shallow water time stepping
 	 * (Single stage realized with Euler)
 	 */
-	void p_run_euler_timestep_update_swe(
+	void p_run_euler_timestep_update_swe_advective_proguv(
 			const SphereData &i_h,	///< prognostic variables
 			const SphereData &i_u,	///< prognostic variables
 			const SphereData &i_v,	///< prognostic variables
@@ -1471,11 +1796,7 @@ public:
 				SphereData o_phi_t(i_h.sphereDataConfig);
 
 				double i_r = 1.0/simVars.sim.earth_radius;
-//				double phi_avg = simVars.sim.h0*simVars.sim.gravitation;
 
-#define VERSION	1
-
-#if VERSION == 1
 				SphereData i_phi = i_h*simVars.sim.gravitation;
 
 				o_phi_t =
@@ -1486,6 +1807,7 @@ public:
 						-i_r*op.robert_grad_M(i_phi, i_u, i_v)
 #endif
 						;
+
 				o_u_t = -i_r*op.ritchie_A(i_u, i_v, i_u)
 						-i_r*op.robert_grad_lon(i_phi)
 						;
@@ -1495,158 +1817,23 @@ public:
 						-i_r*op.robert_grad_lat(i_phi)
 						;
 
-				if (simVars.sim.coriolis_omega != 0)
+				if (simVars.sim.coriolis_omega != 0 && param_use_coriolis_formulation)
 				{
-					o_u_t += f(i_v);
-					o_v_t -= f(i_u);
+					if (simVars.sim.f_sphere)
+					{
+						o_u_t += simVars.sim.f0*i_v;
+						o_v_t -= simVars.sim.f0*i_u;
+					}
+					else
+					{
+						o_u_t += f(i_v);
+						o_v_t -= f(i_u);
+					}
 				}
 
 				o_h_t = o_phi_t*(1.0/simVars.sim.gravitation);
 
 				o_h_t = -(op.robert_div_lon(i_h*i_u)+op.robert_div_lat(i_h*i_v))*(1.0/simVars.sim.earth_radius);
-#endif
-
-#if VERSION == 2
-				SphereData i_ur = op.fromRobert(i_u);
-				SphereData i_vr = op.fromRobert(i_v);
-
-
-				o_h_t = -(op.div_lon(i_h*i_ur)+op.div_lat(i_h*i_vr))*(1.0/simVars.sim.earth_radius);
-				o_u_t = op.toRobert(
-						-op.grad_lon(i_h)*(simVars.sim.gravitation/simVars.sim.earth_radius)
-						);
-				o_v_t = op.toRobert(
-						-op.grad_lat(i_h)*(simVars.sim.gravitation/simVars.sim.earth_radius)
-						);
-
-				if (simVars.sim.coriolis_omega != 0)
-				{
-					o_u_t += f(i_v);
-					o_v_t -= f(i_u);
-				}
-
-				o_u_t -= op.toRobert(
-						(i_ur*op.grad_lon(i_ur) + i_vr*op.grad_lat(i_ur))*(1.0/simVars.sim.earth_radius)
-						);
-				o_v_t -= op.toRobert(
-						(i_ur*op.grad_lon(i_vr) + i_vr*op.grad_lat(i_vr))*(1.0/simVars.sim.earth_radius)
-						);
-
-#endif
-
-
-#if VERSION == 3
-
-				SphereData i_phi = i_h*simVars.sim.gravitation;
-
-				SphereData i_ur = op.fromRobert(i_u);
-				SphereData i_vr = op.fromRobert(i_v);
-
-#if 0
-				o_h_t = -(1.0/simVars.sim.earth_radius)*
-						(
-							op.div_lon(i_h*i_ur)
-							+op.div_lat(i_h*i_vr)
-						);
-
-				o_u_t = -(1.0/simVars.sim.earth_radius)*
-						op.toRobert(
-								op.grad_lon(i_phi)
-								+ (i_ur*op.grad_lon(i_ur)
-								+ i_vr*op.grad_lat(i_ur))
-						);
-
-				o_v_t = -(1.0/simVars.sim.earth_radius)*
-						op.toRobert(
-								-op.grad_lat(i_phi)
-								+ (i_ur*op.grad_lon(i_vr)
-								+ i_vr*op.grad_lat(i_vr))
-						);
-
-				if (simVars.sim.coriolis_omega != 0)
-				{
-					o_u_t += f(i_v);
-					o_v_t -= f(i_u);
-				}
-
-#else
-
-
-				o_h_t = -(op.div_lon(i_h*i_ur)+op.div_lat(i_h*i_vr))*(1.0/simVars.sim.earth_radius);
-
-				o_u_t = op.toRobert(
-						-op.grad_lon(i_h)*(simVars.sim.gravitation/simVars.sim.earth_radius)
-						-(i_ur*op.grad_lon(i_ur) + i_vr*op.grad_lat(i_ur))*(1.0/simVars.sim.earth_radius)
-						);
-
-				o_v_t = op.toRobert(
-						-op.grad_lat(i_h)*(simVars.sim.gravitation/simVars.sim.earth_radius)
-						-(i_ur*op.grad_lon(i_vr) + i_vr*op.grad_lat(i_vr))*(1.0/simVars.sim.earth_radius)
-						);
-
-				if (simVars.sim.coriolis_omega != 0)
-				{
-					o_u_t += f(i_v);
-					o_v_t -= f(i_u);
-				}
-
-#endif
-
-				o_phi_t = -i_r*op.robert_div(i_phi*i_u, i_phi*i_v);
-				o_h_t = o_phi_t*(1.0/simVars.sim.gravitation);
-
-#endif
-
-#if VERSION == 4
-				SphereData i_phi = i_h*simVars.sim.gravitation;
-
-				double phi_avg = simVars.sim.h0*simVars.sim.gravitation;
-
-				/*
-				 * Split L(U) and N(U)
-				 */
-
-				/*
-				 * L(U)
-				 */
-				o_phi_t = -(phi_avg/simVars.sim.earth_radius)
-						*(
-							op.robert_div_lon(i_u)
-							+op.robert_div_lat(i_v)
-						);
-
-				o_u_t = -(1.0/simVars.sim.earth_radius)*op.robert_grad_lon(i_phi) + f(i_v);
-
-				o_v_t = -(1.0/simVars.sim.earth_radius)*op.robert_grad_lat(i_phi) - f(i_u);
-
-
-				/*
-				 * N(U)
-				 */
-				o_phi_t += -((i_phi-phi_avg)/simVars.sim.earth_radius)*(
-								op.robert_div_lon(i_u)
-								+op.robert_div_lat(i_v)
-							)
-							-(1.0/simVars.sim.earth_radius)*(
-								i_u*op.robert_grad_lon_M(i_phi)
-								+i_v*op.robert_grad_lat_M(i_phi)
-							);
-
-				o_u_t += -(1.0/simVars.sim.earth_radius)*
-							op.inv_one_minus_mu2(
-							i_u*op.robert_grad_lon(i_u)
-							+ i_v*op.robert_grad_lat(i_u)
-						);
-
-				o_v_t += -(1.0/simVars.sim.earth_radius)*
-							op.inv_one_minus_mu2(
-							i_u*op.robert_grad_lon(i_v)
-							+ i_v*op.robert_grad_lat(i_v)
-							+ op.mu(i_u*i_u + i_v*i_v)
-						);
-
-				o_h_t = o_phi_t*(1.0/simVars.sim.gravitation);
-#endif
 
 			}
 			else
@@ -1668,10 +1855,48 @@ public:
 						-op.robert_grad_lat(i_h)*
 						(simVars.sim.gravitation/simVars.sim.earth_radius);
 
-				if (simVars.sim.coriolis_omega != 0)
+				if (simVars.sim.coriolis_omega != 0 && param_use_coriolis_formulation)
 				{
-					o_u_t += f(i_v);
-					o_v_t -= f(i_u);
+					// This creates an instability!!!
+#if 0
+
+					// This doesn't solve the instability
+					SphereDataPhysical vg = i_v.getSphereDataPhysical();
+					SphereDataPhysical ug = i_u.getSphereDataPhysical();
+
+					o_u_t = o_u_t.getSphereDataPhysical() + vg*fg;
+					o_v_t = o_v_t.getSphereDataPhysical() - ug*fg;
+#elif 0
+
+					SphereDataPhysical vg = i_v.getSphereDataPhysical();
+					SphereDataPhysical ug = i_u.getSphereDataPhysical();
+
+					SphereDataPhysical tmpg1 = ug*(fg);
+					SphereDataPhysical tmpg2 = vg*(fg);
+					SphereData o_div_t(sphereDataConfig);
+					SphereData o_vort_t(sphereDataConfig);
+
+					op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
+					o_vort_t *= -1.0;
+
+					SphereData null(sphereDataConfig);
+					null.spectral_set_zero();
+					op.robert_vortdiv_to_uv(o_vort_t, null, ug, vg);
+
+					o_u_t += ug;
+					o_v_t += vg;
+#else
+					if (simVars.sim.f_sphere)
+					{
+						o_u_t += simVars.sim.f0*i_v;
+						o_v_t -= simVars.sim.f0*i_u;
+					}
+					else
+					{
+						o_u_t += f(i_v);
+						o_v_t -= f(i_u);
+					}
+#endif
 				}
 			}
 		}
@@ -1685,17 +1910,22 @@ public:
 				/*
 				 * NON-LINEAR
 				 */
-//				o_h_t = -(i_h*op.div(i_u, i_v) + op.grad(i_h, i_u, i_v))*(1.0/simVars.sim.earth_radius);
-//				o_h_t = -(i_h*op.div(i_u, i_h*i_v) + op.grad(i_h, i_u, i_v))*(1.0/simVars.sim.earth_radius);
-
 				o_h_t = -(op.div_lon(i_h*i_u)+op.div_lat(i_h*i_v))*(1.0/simVars.sim.earth_radius);
 				o_u_t = -op.grad_lon(i_h)*(simVars.sim.gravitation/simVars.sim.earth_radius);
 				o_v_t = -op.grad_lat(i_h)*(simVars.sim.gravitation/simVars.sim.earth_radius);
 
 				if (simVars.sim.coriolis_omega != 0)
 				{
-					o_u_t += f(i_v);
-					o_v_t -= f(i_u);
+					if (simVars.sim.f_sphere)
+					{
+						o_u_t += simVars.sim.f0*i_v;
+						o_v_t -= simVars.sim.f0*i_u;
+					}
+					else
+					{
+						o_u_t += f(i_v);
+						o_v_t -= f(i_u);
+					}
 				}
 
 				o_u_t -= (i_u*op.grad_lon(i_u) + i_v*op.grad_lat(i_u))*(1.0/simVars.sim.earth_radius);
@@ -1713,8 +1943,16 @@ public:
 
 				if (simVars.sim.coriolis_omega != 0)
 				{
-					o_u_t += f(i_v);
-					o_v_t -= f(i_u);
+					if (simVars.sim.f_sphere)
+					{
+						o_u_t += simVars.sim.f0*i_v;
+						o_v_t -= simVars.sim.f0*i_u;
+					}
+					else
+					{
+						o_u_t += f(i_v);
+						o_v_t -= f(i_u);
+					}
 				}
 
 			}
@@ -1731,40 +1969,13 @@ public:
 
 
 
-	SphereData add_f(const SphereData &i_input)
-	{
-		SphereData out(i_input);
-
-		out.physical_update_lambda_gaussian_grid(
-			[&](double lon, double mu, double &o_data)
-			{
-				o_data += mu*2.0*simVars.sim.coriolis_omega;
-			}
-		);
-		return out;
-	}
-
-
-	SphereDataPhysical add_f(const SphereDataPhysical &i_input)
-	{
-		SphereDataPhysical out(i_input);
-
-		out.physical_update_lambda_gaussian_grid(
-			[&](double lon, double mu, double &o_data)
-			{
-				o_data += mu*2.0*simVars.sim.coriolis_omega;
-			}
-		);
-		return out;
-	}
-
 
 	/*
 	 * Shallow water time stepping
 	 * (Single stage realized with Euler)
 	 * This formulation uses the vorticity/divergence formulation
 	 */
-	void p_run_euler_timestep_update_swe_vortdiv(
+	void p_run_euler_timestep_update_swe_vectorinvariant_progvortdiv(
 			const SphereData &i_phispec,		///< prognostic variables
 			const SphereData &i_vortspec,	///< prognostic variables
 			const SphereData &i_divspec,	///< prognostic variables
@@ -1954,6 +2165,227 @@ public:
 
 
 
+	/*
+	 * Shallow water time stepping
+	 * This formulation uses the vorticity/divergence formulation but the velocities as prognostic variables
+	 */
+	void p_run_euler_timestep_update_swe_vectorinvariant_proguv(
+			const SphereDataPhysical &i_phi,	///< prognostic variables
+			const SphereDataPhysical &i_u,		///< prognostic variables
+			const SphereDataPhysical &i_v,		///< prognostic variables
+
+			SphereDataPhysical &o_phi_t,	///< time updates
+			SphereDataPhysical &o_u_t,		///< time updates
+			SphereDataPhysical &o_v_t,		///< time updates
+
+			double &o_dt,				///< time step restriction
+			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_simulation_timestamp = -1
+	)
+	{
+		SphereData i_vortspec(i_phi.sphereDataConfig);
+		SphereData i_divspec(i_phi.sphereDataConfig);
+
+		SphereData o_vort_t(i_phi.sphereDataConfig);
+		SphereData o_div_t(i_phi.sphereDataConfig);
+
+		SphereData i_phispec = i_phi;
+		SphereData o_phispec_t(i_phi.sphereDataConfig);
+
+		if (simVars.misc.sphere_use_robert_functions)
+			op.robert_uv_to_vortdiv(i_u, i_v, i_vortspec, i_divspec);
+		else
+			op.uv_to_vortdiv(i_u, i_v, i_vortspec, i_divspec);
+
+		o_dt = simVars.timecontrol.current_timestep_size;
+
+		/*
+		 * NON-LINEARITIES
+		 */
+		assert(simVars.sim.earth_radius > 0);
+		assert(simVars.sim.gravitation);
+
+
+		if (simVars.misc.sphere_use_robert_functions)
+		{
+			/*
+			 * ROBERT
+			 */
+			if (simVars.misc.use_nonlinear_equations)
+			{
+				FatalError("TODO");
+				/*
+				 * NON-LINEAR
+				 *
+				 * Follows Hack & Jakob formulation
+				 */
+
+				SphereDataPhysical ug(i_phispec.sphereDataConfig);
+				SphereDataPhysical vg(i_phispec.sphereDataConfig);
+
+				SphereDataPhysical vrtg = i_vortspec.getSphereDataPhysical();
+				SphereDataPhysical divg = i_divspec.getSphereDataPhysical();
+				op.robert_vortdiv_to_uv(i_vortspec, i_divspec, ug, vg);
+				SphereDataPhysical phig = i_phispec.getSphereDataPhysical();
+
+				SphereDataPhysical tmpg1 = ug*(vrtg+fg);
+				SphereDataPhysical tmpg2 = vg*(vrtg+fg);
+
+				op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
+
+				o_vort_t *= -1.0;
+
+				SphereDataPhysical tmpg = o_div_t.getSphereDataPhysical();
+
+				tmpg1 = ug*phig;
+				tmpg2 = vg*phig;
+
+				SphereData tmpspec(sphereDataConfig);
+				op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phispec_t);
+
+				o_phispec_t *= -1.0;
+
+				tmpspec = (phig+0.5*(ug*ug+vg*vg));
+				tmpspec.request_data_spectral();
+				o_div_t += -op.laplace(tmpspec);
+			}
+			else
+			{
+				/*
+				 * LINEAR
+				 */
+				double gh = simVars.sim.gravitation * simVars.sim.h0;
+
+#if 1
+				SphereDataPhysical tmpg1 = i_u*fg;
+				SphereDataPhysical tmpg2 = i_v*fg;
+
+				op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
+
+				o_vort_t *= -1.0;
+
+				tmpg1 = i_u*gh;
+				tmpg2 = i_v*gh;
+
+				SphereData tmpspec(sphereDataConfig);
+				op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phispec_t);
+
+				o_phispec_t *= -1.0;
+
+				tmpspec = i_phi;
+				tmpspec.request_data_spectral();
+				o_div_t += -op.laplace(tmpspec);
+
+#else
+
+				SphereDataPhysical ug(i_phispec.sphereDataConfig);
+				SphereDataPhysical vg(i_phispec.sphereDataConfig);
+
+//				SphereDataPhysical vrtg = i_vortspec.getSphereDataPhysical();
+//				SphereDataPhysical divg = i_divspec.getSphereDataPhysical();
+				op.robert_vortdiv_to_uv(i_vortspec, i_divspec, ug, vg);
+				SphereDataPhysical phig = i_phispec.getSphereDataPhysical();
+
+				SphereDataPhysical tmpg1 = ug*fg;
+				SphereDataPhysical tmpg2 = vg*fg;
+
+				op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
+
+				o_vort_t *= -1.0;
+
+//				SphereDataPhysical tmpg = o_div_t.getSphereDataPhysical();
+
+				tmpg1 = ug*gh;
+				tmpg2 = vg*gh;
+
+				SphereData tmpspec(sphereDataConfig);
+				op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phispec_t);
+
+				o_phispec_t *= -1.0;
+
+				tmpspec = phig;
+				tmpspec.request_data_spectral();
+				o_div_t += -op.laplace(tmpspec);
+#endif
+			}
+		}
+		else
+		{
+			if (simVars.misc.use_nonlinear_equations)
+			{
+				SphereDataPhysical ug(i_phispec.sphereDataConfig);
+				SphereDataPhysical vg(i_phispec.sphereDataConfig);
+
+				SphereDataPhysical vrtg = i_vortspec.getSphereDataPhysical();
+				SphereDataPhysical divg = i_divspec.getSphereDataPhysical();
+				op.vortdiv_to_uv(i_vortspec, i_divspec, ug, vg);
+				SphereDataPhysical phig = i_phispec.getSphereDataPhysical();
+
+				SphereDataPhysical tmpg1 = ug*(vrtg+fg);
+				SphereDataPhysical tmpg2 = vg*(vrtg+fg);
+
+				op.uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
+
+				o_vort_t *= -1.0;
+
+				SphereDataPhysical tmpg = o_div_t.getSphereDataPhysical();
+
+				tmpg1 = ug*phig;
+				tmpg2 = vg*phig;
+
+				SphereData tmpspec(sphereDataConfig);
+				op.uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phispec_t);
+
+				o_phispec_t *= -1.0;
+
+				tmpspec = (phig+0.5*(ug*ug+vg*vg));
+				tmpspec.request_data_spectral();
+				o_div_t += -op.laplace(tmpspec);
+
+			}
+			else
+			{
+				double gh = simVars.sim.gravitation * simVars.sim.h0;
+
+				SphereDataPhysical tmpg1 = i_u*fg;
+				SphereDataPhysical tmpg2 = i_v*fg;
+
+				op.uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
+
+				o_vort_t *= -1.0;
+
+				tmpg1 = i_u*gh;
+				tmpg2 = i_v*gh;
+
+				SphereData tmpspec(sphereDataConfig);
+				op.uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phispec_t);
+
+				o_phispec_t *= -1.0;
+
+				tmpspec = i_phi;
+				tmpspec.request_data_spectral();
+				o_div_t += -op.laplace(tmpspec);
+			}
+		}
+
+		assert(simVars.sim.viscosity_order == 2);
+		if (simVars.sim.viscosity != 0)
+		{
+			o_phispec_t += op.laplace(i_phispec)*simVars.sim.viscosity;
+			o_vort_t += op.laplace(i_vortspec)*simVars.sim.viscosity;
+			o_div_t += op.laplace(i_divspec)*simVars.sim.viscosity;
+		}
+
+		if (simVars.misc.sphere_use_robert_functions)
+			op.robert_vortdiv_to_uv(o_vort_t, o_div_t, o_u_t, o_v_t);
+		else
+			op.vortdiv_to_uv(o_vort_t, o_div_t, o_u_t, o_v_t);
+
+		o_phi_t = o_phispec_t.getSphereDataPhysical();
+	}
+
+
+
 #if SWEET_GUI
 
 	/**
@@ -1990,6 +2422,7 @@ public:
 			switch (simVars.pde.id)
 			{
 			case 1:
+			case 2:
 				viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(SphereData(prog_phi)/simVars.sim.gravitation, planeDataConfig);
 				break;
 
@@ -2103,11 +2536,11 @@ public:
 				description = "vort";
 				break;
 
-			case 2:
+			case 12:
 				description = "div";
 				break;
 
-			case 3:
+			case 13:
 				description = "eta";
 				break;
 			}
@@ -2353,7 +2786,7 @@ int main(int i_argc, char *i_argv[])
 			time.reset();
 
 
-			if (simVars.disc.normal_mode_analysis_generation)
+			if (simVars.disc.normal_mode_analysis_generation > 0)
 			{
 				simulationSWE->normal_mode_analysis();
 			}
@@ -2446,11 +2879,13 @@ int main(int i_argc, char *i_argv[])
 			while (run)
 			{
 				// REXI time stepping
+				prog_h *= simVars.sim.gravitation;
 				run = swe_sphere_rexi.run_timestep_rexi(
 						prog_h, prog_u, prog_v,
 						-simVars.sim.CFL,
 						simVars
 				);
+				prog_h *= (1.0/simVars.sim.gravitation);
 			}
 		}
 	}

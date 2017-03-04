@@ -1,21 +1,22 @@
 
-#ifndef TIMESTEPPING_EXPLICIT_RK_HPP
-#define TIMESTEPPING_EXPLICIT_RK_HPP
+#ifndef SPHEREDATAPHYSICAL_TIMESTEPPING_EXPLICIT_RK_HPP
+#define SPHEREDATAPHYSICAL_TIMESTEPPING_EXPLICIT_RK_HPP
 
-#include <sweet/sphere/SphereData.hpp>
+#include <sweet/sphere/SphereDataPhysical.hpp>
 #include <limits>
 
-class SphereDataTimesteppingExplicitRK
+class SphereDataPhysicalTimesteppingExplicitRK
 {
 	// Runge-Kutta data storages
-	SphereData** RK_h_t;
-	SphereData** RK_u_t;
-	SphereData** RK_v_t;
+	SphereDataPhysical** RK_h_t;
+	SphereDataPhysical** RK_u_t;
+	SphereDataPhysical** RK_v_t;
 
 	int runge_kutta_order;
 
+
 public:
-	SphereDataTimesteppingExplicitRK()	:
+	SphereDataPhysicalTimesteppingExplicitRK()	:
 		RK_h_t(nullptr),
 		RK_u_t(nullptr),
 		RK_v_t(nullptr),
@@ -26,7 +27,7 @@ public:
 
 
 	void resetAndSetup(
-			const SphereData &i_test_buffer,	///< array of example data to know dimensions of buffers
+			SphereDataConfig *i_sphereDataConfig,
 			int i_rk_order			///< Order of Runge-Kutta method
 	)
 	{
@@ -39,21 +40,21 @@ public:
 		if (N <= 0 || N > 4)
 			FatalError("Invalid order for RK time stepping");
 
-		RK_h_t = new SphereData*[N];
-		RK_u_t = new SphereData*[N];
-		RK_v_t = new SphereData*[N];
+		RK_h_t = new SphereDataPhysical*[N];
+		RK_u_t = new SphereDataPhysical*[N];
+		RK_v_t = new SphereDataPhysical*[N];
 
 		for (int i = 0; i < N; i++)
 		{
-			RK_h_t[i] = new SphereData(i_test_buffer.sphereDataConfig);
-			RK_u_t[i] = new SphereData(i_test_buffer.sphereDataConfig);
-			RK_v_t[i] = new SphereData(i_test_buffer.sphereDataConfig);
+			RK_h_t[i] = new SphereDataPhysical(i_sphereDataConfig);
+			RK_u_t[i] = new SphereDataPhysical(i_sphereDataConfig);
+			RK_v_t[i] = new SphereDataPhysical(i_sphereDataConfig);
 		}
 	}
 
 
 
-	~SphereDataTimesteppingExplicitRK()
+	~SphereDataPhysicalTimesteppingExplicitRK()
 	{
 		int N = runge_kutta_order;
 
@@ -86,13 +87,13 @@ public:
 	void run_timestep(
 			BaseClass *i_baseClass,
 			void (BaseClass::*i_compute_euler_timestep_update)(
-					const SphereData &i_P,	///< prognostic variables
-					const SphereData &i_u,	///< prognostic variables
-					const SphereData &i_v,	///< prognostic variables
+					const SphereDataPhysical &i_P,	///< prognostic variables
+					const SphereDataPhysical &i_u,	///< prognostic variables
+					const SphereDataPhysical &i_v,	///< prognostic variables
 
-					SphereData &o_P_t,		///< time updates
-					SphereData &o_u_t,		///< time updates
-					SphereData &o_v_t,		///< time updates
+					SphereDataPhysical &o_P_t,		///< time updates
+					SphereDataPhysical &o_u_t,		///< time updates
+					SphereDataPhysical &o_v_t,		///< time updates
 
 					double &o_dt,				///< time step restriction
 					double i_use_fixed_dt,		///< if this value is not equal to 0,
@@ -100,9 +101,9 @@ public:
 					double i_simulation_time	///< simulation time, e.g. for tidal waves
 			),
 
-			SphereData &io_h,
-			SphereData &io_u,
-			SphereData &io_v,
+			SphereDataPhysical &io_h,
+			SphereDataPhysical &io_u,
+			SphereDataPhysical &io_v,
 
 			double &o_dt,					///< return time step size for the computed time step
 
@@ -142,9 +143,9 @@ public:
 
 
 #if 0
-			io_h = io_h.getSphereDataPhysical() + dt*(*RK_h_t[0]).getSphereDataPhysical();
-			io_u = io_u.getSphereDataPhysical() + dt*(*RK_u_t[0]).getSphereDataPhysical();
-			io_v = io_v.getSphereDataPhysical() + dt*(*RK_v_t[0]).getSphereDataPhysical();
+			io_h = io_h.getSphereDataPhysicalPhysical() + dt*(*RK_h_t[0]).getSphereDataPhysicalPhysical();
+			io_u = io_u.getSphereDataPhysicalPhysical() + dt*(*RK_u_t[0]).getSphereDataPhysicalPhysical();
+			io_v = io_v.getSphereDataPhysicalPhysical() + dt*(*RK_v_t[0]).getSphereDataPhysicalPhysical();
 #else
 			io_h += dt**RK_h_t[0];
 			io_u += dt**RK_u_t[0];
@@ -372,11 +373,11 @@ public:
 	void run_timestep(
 			BaseClass *i_baseClass,
 			void (BaseClass::*i_compute_euler_timestep_update)(
-					const SphereData &i_u,	///< prognostic variables
-					const SphereData &i_v,	///< prognostic variables
+					const SphereDataPhysical &i_u,	///< prognostic variables
+					const SphereDataPhysical &i_v,	///< prognostic variables
 
-					SphereData &o_u_t,	///< time updates
-					SphereData &o_v_t,	///< time updates
+					SphereDataPhysical &o_u_t,	///< time updates
+					SphereDataPhysical &o_v_t,	///< time updates
 
 					double &o_dt,			///< time step restriction
 					double i_use_fixed_dt,	///< if this value is not equal to 0,
@@ -384,8 +385,8 @@ public:
 					double i_simulation_time	///< simulation time, e.g. for tidal waves
 			),
 
-			SphereData &io_u,
-			SphereData &io_v,
+			SphereDataPhysical &io_u,
+			SphereDataPhysical &io_v,
 
 			double &o_dt,					///< return time step size for the computed time step
 
@@ -623,8 +624,8 @@ public:
 	void run_timestep(
 			BaseClass *i_baseClass,
 			void (BaseClass::*i_compute_euler_timestep_update)(
-					const SphereData &i_h,		///< prognostic variables
-					SphereData &o_h_t,			///< time updates
+					const SphereDataPhysical &i_h,		///< prognostic variables
+					SphereDataPhysical &o_h_t,			///< time updates
 
 					double &o_dt,				///< time step restriction
 					double i_use_fixed_dt,		///< if this value is not equal to 0,
@@ -632,7 +633,7 @@ public:
 					double i_simulation_time	///< simulation time, e.g. for tidal waves
 			),
 
-			SphereData &io_h,
+			SphereDataPhysical &io_h,
 
 			double &o_dt,					///< return time step size for the computed time step
 
