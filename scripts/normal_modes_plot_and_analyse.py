@@ -19,6 +19,8 @@ rows,cols = data.shape
 print("Loaded "+str(rows)+" rows")
 print("Loaded "+str(cols)+" cols")
 
+alim=[-0.000001,0.000001]
+
 if cols > 2:
 	print("Fatal error, cols > 2!")
 
@@ -26,38 +28,10 @@ if cols == 2:
 	print("Assuming complex values => splitting them!")
 	data = data[:,0] + data[:,1]*1j
 
-
-
-if True:
-	print("Plotting exp(lambda)")
-
-	datap = np.exp(data)
-
-	fig, ax = plt.subplots()
-	ax.grid(True)
-	ax.scatter(
-		datap.real,
-		datap.imag,
-		c='blue',
-		s=3,
-		alpha=0.3,
-		edgecolors='blue'
-	)
-	ax.set_xlabel('Re(exp(lambda))')
-	ax.set_ylabel('Im(exp(lambda))')
-
-
-	if len(sys.argv) >= 3:
-		plt.title("Eigenvalues exp(lambda) - "+sys.argv[2], fontsize=10)
-
-	plt.savefig("output_e_lambda.png", dpi=300)
-
-
-
 if True:
 	print("Plotting lambdas")
 
-	datap = data
+	datap = data[:]
 
 	fig, ax = plt.subplots()
 	ax.grid(True)
@@ -67,11 +41,22 @@ if True:
 		c='blue',
 		s=3,
 		alpha=0.3,
-		edgecolors='blue'
+		edgecolors='none'
 	)
 	ax.set_xlabel('Re(lambda)')
 	ax.set_ylabel('Im(lambda)')
 
+	minx = min(datap.real)*1.1
+	maxx = max(datap.real)*1.1
+
+	miny = min(datap.imag)*1.1
+	maxy = max(datap.imag)*1.1
+
+	if abs(minx-maxx) > 1e-9:
+		plt.xlim([minx, maxx])
+
+	if abs(miny-maxy) > 1e-9:
+		plt.ylim([miny, maxy])
 
 	if len(sys.argv) >= 3:
 		plt.title("Eigenvalues lambda - "+sys.argv[2], fontsize=10)
@@ -80,8 +65,61 @@ if True:
 
 
 
+
+if True:
+	print("Plotting exp(lambda)")
+	#
+	# INFORMATION
+	#
+	# If the eigenvalues are too small, nothing will be plotted!
+	#
+
+	datap = np.exp(data)
+
+#	for i in range(0, len(datap)):
+#		print(str(datap[i].real)+"\t"+str(datap[i].imag))
+
+	fig, ax = plt.subplots()
+
+	ax.set_xlabel('Re(exp(lambda))')
+	ax.set_ylabel('Im(exp(lambda))')
+
+	minx = min(datap.real)*1.1
+	maxx = max(datap.real)*1.1
+
+	miny = min(datap.imag)*1.1
+	maxy = max(datap.imag)*1.1
+
+	if abs(minx-maxx) > 1e-9:
+		plt.xlim([minx, maxx])
+	else:
+		plt.xlim(alim)
+
+	if abs(miny-maxy) > 1e-9:
+		plt.ylim([miny, maxy])
+	else:
+		plt.ylim(alim)
+
+	if len(sys.argv) >= 3:
+		plt.title("Eigenvalues exp(lambda) - "+sys.argv[2], fontsize=10)
+
+	ax.scatter(
+		datap.real,
+		datap.imag,
+		c='blue',
+		s=3,
+		alpha=0.3,
+		edgecolors='none'
+	)
+	ax.grid(True)
+
+	plt.savefig("output_exp_lambda.png", dpi=300)
+
+
+
 num_threshold=1e-10
-lowhigh_threshold=1e-4
+#lowhigh_threshold=1e-4
+lowhigh_threshold=0
 
 #
 # Compute artificial solution for f-plane
@@ -98,7 +136,7 @@ N = 0
 t = 0
 while t < k:
 	t += N+1
-	print("T: "+str(t))
+#	print("T: "+str(t))
 	N = N+1
 
 if t != k:
@@ -119,13 +157,14 @@ for n in range(0, N):
 		from sympy import Symbol, solve
 		w = Symbol("w")
 		s = solve(w*(w*w-f*f-n*(n+1)*h/(a*a)))
-	print(str(n)+str(": ")+str(w))
+#	print(str(n)+str(": ")+str(w))
 
 	for i in range(0, n+1):
 		non_geostrophic_modes.append(w)
 		non_geostrophic_modes.append(-w)
 
 non_geostrophic_modes.sort()
+
 
 
 stat_modes=[]
@@ -153,7 +192,7 @@ if True:
 	#print(stat_modes)
 
 
-if True:
+if lowhigh_threshold != 0:
 	print("Low frequency modes: "+str(len(low_freq_modes)))
 	#print(low_freq_modes)
 
@@ -167,7 +206,7 @@ if True:
 		c='blue',
 		s=3,
 		alpha=0.3,
-		edgecolors='blue'
+		edgecolors='none'
 	)
 	ax.set_xlabel('Modes')
 	ax.set_ylabel('Eigenvalue (imaginary)')

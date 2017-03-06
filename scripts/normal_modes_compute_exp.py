@@ -52,10 +52,10 @@ w = np.log(w)/time
 f = filename+"_evalues_complex.csv"
 print("Writing data to "+f)
 # simply append the imaginary parts as columns at the end of the real parts!
-np.savetxt(f, np.column_stack([w.real, w.imag]), delimiter='\t', header=headerstr)
+np.savetxt(f, np.column_stack([w.real, w.imag]), delimiter='\t', header=headerstr[1:])
 
 if False:
 	f = filename+"_evectors_complex.csv"
 	print("Writing data to "+f)
-	np.savetxt(f, np.column_stack([v.real, v.imag]), delimiter='\t', header=headerstr)
+	np.savetxt(f, np.column_stack([v.real, v.imag]), delimiter='\t', header=headerstr[1:])
 

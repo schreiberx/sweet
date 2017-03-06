@@ -70,8 +70,11 @@ class SWE_Sphere_REXI
 
 	bool use_coriolis_rexi_formulation;
 
+	bool use_f_sphere;
+
 	bool use_rexi_preallocation;
 
+	int pde_id;
 
 	std::size_t block_size;
 
@@ -138,9 +141,13 @@ public:
 
 			bool i_rexi_half,				///< use half-pole reduction
 			bool i_use_robert_functions,	///< use Robert functions
+			int i_pde_id,
+
 			int i_rexi_use_extended_modes,
 			int i_rexi_normalization,
 			bool i_use_coriolis_rexi_formulation,
+			bool i_use_f_sphere,
+
 			bool i_use_rexi_sphere_preallocation
 	);
 

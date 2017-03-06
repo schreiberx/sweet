@@ -152,7 +152,10 @@ public:
 	inline
 	SphereData f(const SphereData &i_sphData)	const
 	{
-		return op.mu(i_sphData*(2.0*simVars.sim.coriolis_omega));
+		if (simVars.sim.f_sphere)
+			return i_sphData*simVars.sim.f0;
+		else
+			return op.mu(i_sphData)*(2.0*simVars.sim.coriolis_omega);
 	}
 
 #else
@@ -417,10 +420,13 @@ public:
 
 					simVars.rexi.rexi_use_half_poles,
 					simVars.misc.sphere_use_robert_functions,
+					simVars.pde.id,
+
 					simVars.rexi.rexi_use_extended_modes,
 					simVars.rexi.rexi_normalization,
 
 					param_use_coriolis_formulation,
+					simVars.sim.f_sphere,
 					simVars.rexi.rexi_sphere_solver_preallocation
 				);
 		}
@@ -965,7 +971,7 @@ public:
 
 					for (int i = 1; i < num_timesteps; i++)
 					{
-						std::cout << "Timestep " << i << std::endl;
+//						std::cout << "Timestep " << i << std::endl;
 						run_timestep();
 					}
 
@@ -1050,7 +1056,7 @@ public:
 
 						for (int i = 1; i < num_timesteps; i++)
 						{
-							std::cout << "Timestep " << i << std::endl;
+//							std::cout << "Timestep " << i << std::endl;
 							run_timestep();
 						}
 
@@ -1157,7 +1163,7 @@ public:
 
 					for (int i = 1; i < num_timesteps; i++)
 					{
-						std::cout << "Timestep " << i << std::endl;
+//						std::cout << "Timestep " << i << std::endl;
 						run_timestep();
 					}
 
@@ -1521,9 +1527,13 @@ public:
 
 							simVars.rexi.rexi_use_half_poles,
 							simVars.misc.sphere_use_robert_functions,
+							simVars.pde.id,
+
 							simVars.rexi.rexi_use_extended_modes,
 							simVars.rexi.rexi_normalization,
+
 							param_use_coriolis_formulation,
+							simVars.sim.f_sphere,
 							simVars.rexi.rexi_sphere_solver_preallocation
 						);
 				}
@@ -2053,36 +2063,55 @@ public:
 				/*
 				 * LINEAR
 				 */
-				double gh = simVars.sim.gravitation * simVars.sim.h0;
+				if (simVars.sim.f_sphere)
+				{
+					double gh = simVars.sim.gravitation * simVars.sim.h0;
 
-				SphereDataPhysical ug(i_phispec.sphereDataConfig);
-				SphereDataPhysical vg(i_phispec.sphereDataConfig);
+					o_phi_t = -gh*i_divspec;
+					o_div_t = -op.laplace(i_phispec);
 
-//				SphereDataPhysical vrtg = i_vortspec.getSphereDataPhysical();
-//				SphereDataPhysical divg = i_divspec.getSphereDataPhysical();
-				op.robert_vortdiv_to_uv(i_vortspec, i_divspec, ug, vg);
-				SphereDataPhysical phig = i_phispec.getSphereDataPhysical();
+					if (simVars.sim.coriolis_omega != 0 && param_use_coriolis_formulation)
+					{
+						o_vort_t = -f(i_divspec);
+						o_div_t += f(i_vortspec);
+					}
+					else
+					{
+						o_vort_t.spectral_set_zero();
+					}
+				}
+				else
+				{
 
-				SphereDataPhysical tmpg1 = ug*fg;
-				SphereDataPhysical tmpg2 = vg*fg;
+					double gh = simVars.sim.gravitation * simVars.sim.h0;
 
-				op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
+					SphereDataPhysical ug(i_phispec.sphereDataConfig);
+					SphereDataPhysical vg(i_phispec.sphereDataConfig);
 
-				o_vort_t *= -1.0;
+	//				SphereDataPhysical vrtg = i_vortspec.getSphereDataPhysical();
+	//				SphereDataPhysical divg = i_divspec.getSphereDataPhysical();
+					op.robert_vortdiv_to_uv(i_vortspec, i_divspec, ug, vg);
+					SphereDataPhysical phig = i_phispec.getSphereDataPhysical();
 
-//				SphereDataPhysical tmpg = o_div_t.getSphereDataPhysical();
+					SphereDataPhysical tmpg1 = ug*fg;
+					SphereDataPhysical tmpg2 = vg*fg;
 
-				tmpg1 = ug*gh;
-				tmpg2 = vg*gh;
+					op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
 
-				SphereData tmpspec(sphereDataConfig);
-				op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
+					o_vort_t *= -1.0;
 
-				o_phi_t *= -1.0;
+					tmpg1 = ug*gh;
+					tmpg2 = vg*gh;
 
-				tmpspec = phig;
-				tmpspec.request_data_spectral();
-				o_div_t += -op.laplace(tmpspec);
+					SphereData tmpspec(sphereDataConfig);
+					op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
+
+					o_phi_t *= -1.0;
+
+					tmpspec = phig;
+					tmpspec.request_data_spectral();
+					o_div_t += -op.laplace(tmpspec);
+				}
 			}
 		}
 		else
@@ -2857,9 +2886,13 @@ int main(int i_argc, char *i_argv[])
 
 					simVars.rexi.rexi_use_half_poles,
 					simVars.misc.sphere_use_robert_functions,
+					simVars.pde.id,
+
 					simVars.rexi.rexi_use_extended_modes,
 					simVars.rexi.rexi_normalization,
+
 					param_use_coriolis_formulation,
+					simVars.sim.f_sphere,
 					simVars.rexi.rexi_sphere_solver_preallocation
 				);
 

@@ -244,6 +244,7 @@ void run_tests()
 			 */
 			if (simVars.misc.sphere_use_robert_functions)
 			{
+				alpha.imag(0);
 				prog_phi0_cplx_ext =
 							+ alpha*prog_phi_cplx_ext
 							- phi_bar*ir*opComplexExt.robert_div_lon(prog_u_cplx_ext)
@@ -1679,25 +1680,28 @@ void run_tests()
 				{
 					SWERexiTerm_SPHRobert rexiSPHRobert;
 
-					rexiSPHRobert.setup(
+					rexiSPHRobert.setup_velocityformulation_progphiuv(
 							sphereDataConfigExt,
 							sphereDataConfig,
 							alpha,
 							beta,
+
 							simVars.sim.earth_radius,
 							simVars.sim.coriolis_omega,
 							phi_bar,
 							timestep_size,
-							param_use_coriolis_formulation
+
+							param_use_coriolis_formulation,
+							simVars.sim.f_sphere
 					);
 
 					if (use_complex_valued_solver)
 					{
 #if 1
-						rexiSPHRobert.solve_complexRHS(
-								prog_phi0_cplx_ext,
-								prog_u0_cplx_ext,
-								prog_v0_cplx_ext,
+						rexiSPHRobert.solve_velocityformulation_progphiuv(
+								prog_phi0_ext,
+								prog_u0_ext,
+								prog_v0_ext,
 
 								rexi_prog_phi_ext,
 								rexi_prog_u_ext,
@@ -1721,7 +1725,7 @@ void run_tests()
 					{
 						FatalError("");
 
-						rexiSPHRobert.solve(
+						rexiSPHRobert.solve_velocityformulation_progphiuv(
 								prog_phi0_ext,
 								prog_u0_ext,
 								prog_v0_ext,
@@ -1744,11 +1748,14 @@ void run_tests()
 							sphereDataConfigExt,
 							alpha,
 							beta,
+
 							simVars.sim.earth_radius,
 							simVars.sim.coriolis_omega,
 							phi_bar,
 							timestep_size,
-							param_use_coriolis_formulation
+
+							param_use_coriolis_formulation,
+							simVars.sim.f_sphere
 					);
 
 					if (use_complex_valued_solver)

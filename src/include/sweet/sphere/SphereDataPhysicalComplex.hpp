@@ -114,7 +114,7 @@ public:
 		if (sphereDataConfig == nullptr)
 			setup(i_sph_data.sphereDataConfig);
 
-		memcpy(physical_space_data, i_sph_data.physical_space_data, sizeof(double)*sphereDataConfig->physical_array_data_number_of_elements);
+		memcpy(physical_space_data, i_sph_data.physical_space_data, sizeof(std::complex<double>)*sphereDataConfig->physical_array_data_number_of_elements);
 
 		return *this;
 	}

@@ -593,6 +593,7 @@ public:
 			std::cout << " + rexi_use_half_poles: " << rexi_use_half_poles << std::endl;
 			std::cout << " + rexi_use_extended_modes: " << rexi_use_extended_modes << std::endl;
 			std::cout << " + rexi_normalization: " << rexi_normalization << std::endl;
+			std::cout << " + rexi_sphere_solver_preallocation: " << rexi_sphere_solver_preallocation << std::endl;
 			std::cout << std::endl;
 		}
 

@@ -158,9 +158,13 @@ void SWE_Sphere_REXI::setup(
 
 		bool i_rexi_half,				///< use half-pole reduction
 		bool i_use_robert_functions,	///< use Robert functions
+		int i_pde_id,
+
 		int i_rexi_use_extended_modes,
 		int i_rexi_normalization,
 		bool i_use_coriolis_rexi_formulation,
+		bool i_use_f_sphere,
+
 		bool i_use_rexi_sphere_preallocation	///< preallocate all rexi coefficients (might fail because of memory limitations)
 )
 {
@@ -177,7 +181,10 @@ void SWE_Sphere_REXI::setup(
 	use_robert_functions = i_use_robert_functions;
 	rexi_use_extended_modes = i_rexi_use_extended_modes;
 	use_coriolis_rexi_formulation = i_use_coriolis_rexi_formulation;
+	use_f_sphere = i_use_f_sphere;
 	use_rexi_preallocation = i_use_rexi_sphere_preallocation;
+
+	pde_id = i_pde_id;
 
 
 	if (rexi_use_extended_modes == 0)
@@ -294,30 +301,57 @@ void SWE_Sphere_REXI::setup(
 //#pragma omp critical
 //						std::cout << mpi_rank << " - thread_local_idx: " << thread_local_idx << "        alpha: " << perThreadVars[i]->alpha[thread_local_idx] << std::endl;
 
-						perThreadVars[i]->rexiSPHRobert_vector[thread_local_idx].setup(
-								sphereDataConfigRexi,
-								sphereDataConfig,
-								perThreadVars[i]->alpha[thread_local_idx],
-								perThreadVars[i]->beta_re[thread_local_idx],
-								simCoeffs->earth_radius,
-								simCoeffs->coriolis_omega,
-								simCoeffs->h0 * simCoeffs->gravitation,
-								timestep_size,
-								use_coriolis_rexi_formulation
-						);
+						if (pde_id == 1)
+						{
+							perThreadVars[i]->rexiSPHRobert_vector[thread_local_idx].setup_vectorinvariant_progphivortdiv(
+									sphereDataConfigRexi,
+									sphereDataConfig,
+									perThreadVars[i]->alpha[thread_local_idx],
+									perThreadVars[i]->beta_re[thread_local_idx],
+									simCoeffs->earth_radius,
+									simCoeffs->coriolis_omega,
+									simCoeffs->h0 * simCoeffs->gravitation,
+									timestep_size,
+									use_coriolis_rexi_formulation,
+									use_f_sphere
+							);
+						}
+						else
+						{
+							perThreadVars[i]->rexiSPHRobert_vector[thread_local_idx].setup_velocityformulation_progphiuv(
+									sphereDataConfigRexi,
+									sphereDataConfig,
+									perThreadVars[i]->alpha[thread_local_idx],
+									perThreadVars[i]->beta_re[thread_local_idx],
+									simCoeffs->earth_radius,
+									simCoeffs->coriolis_omega,
+									simCoeffs->h0 * simCoeffs->gravitation,
+									timestep_size,
+									use_coriolis_rexi_formulation,
+									use_f_sphere
+							);
+						}
 					}
 					else
 					{
-						perThreadVars[i]->rexiSPH_vector[thread_local_idx].setup(
-								sphereDataConfigRexi,
-								perThreadVars[i]->alpha[thread_local_idx],
-								perThreadVars[i]->beta_re[thread_local_idx],
-								simCoeffs->earth_radius,
-								simCoeffs->coriolis_omega,
-								simCoeffs->h0*simCoeffs->gravitation,
-								timestep_size,
-								use_coriolis_rexi_formulation
-						);
+						if (pde_id == 1)
+						{
+							FatalError("Non-Robert not supported");
+						}
+						else
+						{
+							perThreadVars[i]->rexiSPH_vector[thread_local_idx].setup(
+									sphereDataConfigRexi,
+									perThreadVars[i]->alpha[thread_local_idx],
+									perThreadVars[i]->beta_re[thread_local_idx],
+									simCoeffs->earth_radius,
+									simCoeffs->coriolis_omega,
+									simCoeffs->h0*simCoeffs->gravitation,
+									timestep_size,
+									use_coriolis_rexi_formulation,
+									use_f_sphere
+							);
+						}
 					}
 				}
 			}
@@ -397,7 +431,7 @@ bool SWE_Sphere_REXI::run_timestep_rexi_advection_progphiuv(
 
 
 #if SWEET_REXI_THREAD_PARALLEL_SUM
-#	pragma omp parallel for schedule(static,1) default(none) shared(i_parameters, i_timestep_size, io_prog_h0, io_prog_u0, io_prog_v0, std::cout, std::cerr)
+#	pragma omp parallel for schedule(static,1) default(none) shared(i_parameters, i_timestep_size, io_prog_phi0, io_prog_u0, io_prog_v0, std::cout, std::cerr)
 #endif
 	for (int thread_id = 0; thread_id < num_local_rexi_par_threads; thread_id++)
 	{
@@ -464,10 +498,20 @@ bool SWE_Sphere_REXI::run_timestep_rexi_advection_progphiuv(
 			{
 				if (use_rexi_preallocation)
 				{
-					perThreadVars[thread_id]->rexiSPHRobert_vector[local_idx].solve_advection_progphiuv_ver2(
-							thread_prog_phi0, thread_prog_u0, thread_prog_v0,
-							tmp_prog_phi, tmp_prog_u, tmp_prog_v
-						);
+					if (pde_id == 1)
+					{
+						perThreadVars[thread_id]->rexiSPHRobert_vector[local_idx].solve_vectorinvariant_progphivortdiv(
+								thread_prog_phi0, thread_prog_u0, thread_prog_v0,
+								tmp_prog_phi, tmp_prog_u, tmp_prog_v
+							);
+					}
+					else
+					{
+						perThreadVars[thread_id]->rexiSPHRobert_vector[local_idx].solve_velocityformulation_progphiuv(
+								thread_prog_phi0, thread_prog_u0, thread_prog_v0,
+								tmp_prog_phi, tmp_prog_u, tmp_prog_v
+							);
+					}
 				}
 				else
 				{
@@ -476,22 +520,47 @@ bool SWE_Sphere_REXI::run_timestep_rexi_advection_progphiuv(
 					std::complex<double> &alpha = perThreadVars[thread_id]->alpha[local_idx];
 					std::complex<double> &beta_re = perThreadVars[thread_id]->beta_re[local_idx];
 
-					rexiSPHRobert.setup(
-							sphereDataConfigRexi,	///< sphere data for input data
-							sphereDataConfig,		///< sphereData for solver (should be truncated!)
-							alpha,
-							beta_re,
-							simCoeffs->earth_radius,
-							simCoeffs->coriolis_omega,
-							simCoeffs->h0*simCoeffs->gravitation,
-							i_timestep_size,
-							use_coriolis_rexi_formulation
-					);
-
-					rexiSPHRobert.solve_advection_progphiuv_ver2(
-							thread_prog_phi0, thread_prog_u0, thread_prog_v0,
-							tmp_prog_phi, tmp_prog_u, tmp_prog_v
+					if (pde_id == 1)
+					{
+						rexiSPHRobert.setup_vectorinvariant_progphivortdiv(
+								sphereDataConfigRexi,	///< sphere data for input data
+								sphereDataConfig,		///< sphereData for solver (should be truncated!)
+								alpha,
+								beta_re,
+								simCoeffs->earth_radius,
+								simCoeffs->coriolis_omega,
+								simCoeffs->h0*simCoeffs->gravitation,
+								i_timestep_size,
+								use_coriolis_rexi_formulation,
+								use_f_sphere
 						);
+
+						rexiSPHRobert.solve_vectorinvariant_progphivortdiv(
+								thread_prog_phi0, thread_prog_u0, thread_prog_v0,
+								tmp_prog_phi, tmp_prog_u, tmp_prog_v
+							);
+					}
+					else
+					{
+
+						rexiSPHRobert.setup_velocityformulation_progphiuv(
+								sphereDataConfigRexi,	///< sphere data for input data
+								sphereDataConfig,		///< sphereData for solver (should be truncated!)
+								alpha,
+								beta_re,
+								simCoeffs->earth_radius,
+								simCoeffs->coriolis_omega,
+								simCoeffs->h0*simCoeffs->gravitation,
+								i_timestep_size,
+								use_coriolis_rexi_formulation,
+								use_f_sphere
+						);
+
+						rexiSPHRobert.solve_velocityformulation_progphiuv(
+								thread_prog_phi0, thread_prog_u0, thread_prog_v0,
+								tmp_prog_phi, tmp_prog_u, tmp_prog_v
+							);
+					}
 #if 0
 #pragma omp critical
 					{
@@ -526,7 +595,8 @@ bool SWE_Sphere_REXI::run_timestep_rexi_advection_progphiuv(
 							simCoeffs->coriolis_omega,
 							simCoeffs->h0*simCoeffs->gravitation,
 							i_timestep_size,
-							use_coriolis_rexi_formulation
+							use_coriolis_rexi_formulation,
+							use_f_sphere
 					);
 
 					rexiSPH.solve(
@@ -578,7 +648,7 @@ bool SWE_Sphere_REXI::run_timestep_rexi_advection_progphiuv(
 
 			perThreadVars[thread_id]->accum_phi.request_data_physical();
 
-			#pragma omp parallel for schedule(static) default(none) shared(io_prog_h0, thread_id)
+			#pragma omp parallel for schedule(static) default(none) shared(io_prog_phi0, thread_id)
 			for (int i = 0; i < io_prog_phi0.sphereDataConfig->physical_array_data_number_of_elements; i++)
 				io_prog_phi0.physical_space_data[i] += perThreadVars[thread_id]->accum_phi.physical_space_data[i];
 
@@ -604,7 +674,7 @@ bool SWE_Sphere_REXI::run_timestep_rexi_advection_progphiuv(
 
 			tmp = perThreadVars[thread_id]->accum_phi.spectral_returnWithDifferentModes(tmp.sphereDataConfig);
 			tmp.request_data_physical();
-			#pragma omp parallel for schedule(static) default(none) shared(io_prog_h0, tmp)
+			#pragma omp parallel for schedule(static) default(none) shared(io_prog_phi0, tmp)
 			for (int i = 0; i < io_prog_phi0.sphereDataConfig->physical_array_data_number_of_elements; i++)
 				io_prog_phi0.physical_space_data[i] += tmp.physical_space_data[i];
 
@@ -722,7 +792,7 @@ bool SWE_Sphere_REXI::run_timestep_rexi_vectorinvariant_progphivortdiv(
 
 
 #if SWEET_REXI_THREAD_PARALLEL_SUM
-#	pragma omp parallel for schedule(static,1) default(none) shared(i_parameters, i_timestep_size, io_prog_h0, io_prog_u0, io_prog_v0, std::cout, std::cerr)
+#	pragma omp parallel for schedule(static,1) default(none) shared(i_parameters, i_timestep_size, io_prog_phi0, io_prog_u0, io_prog_v0, std::cout, std::cerr)
 #endif
 	for (int thread_id = 0; thread_id < num_local_rexi_par_threads; thread_id++)
 	{
@@ -801,33 +871,31 @@ bool SWE_Sphere_REXI::run_timestep_rexi_vectorinvariant_progphivortdiv(
 					std::complex<double> &alpha = perThreadVars[thread_id]->alpha[local_idx];
 					std::complex<double> &beta_re = perThreadVars[thread_id]->beta_re[local_idx];
 
-					rexiSPHRobert.setup(
+					rexiSPHRobert.setup_vectorinvariant_progphivortdiv(
 							sphereDataConfigRexi,	///< sphere data for input data
 							sphereDataConfig,		///< sphereData for solver (should be truncated!)
 							alpha,
 							beta_re,
+
 							simCoeffs->earth_radius,
 							simCoeffs->coriolis_omega,
 							simCoeffs->h0*simCoeffs->gravitation,
 							i_timestep_size,
-							use_coriolis_rexi_formulation
+
+							use_coriolis_rexi_formulation,
+							use_f_sphere
 					);
 
 					rexiSPHRobert.solve_vectorinvariant_progphivortdiv(
 							thread_prog_phi0, thread_prog_u0, thread_prog_v0,
 							tmp_prog_phi, tmp_prog_u, tmp_prog_v
 						);
-#if 0
-#pragma omp critical
-					{
-						std::cout << mpi_rank << ": " << simCoeffs->earth_radius << "\t" << simCoeffs->coriolis_omega << "\t" << simCoeffs->h0*simCoeffs->gravitation << "\t" << i_timestep_size << std::endl;
-						std::cout << mpi_rank << ": " << alpha << ", " << beta_re << "\t" << tmp_prog_phi.physical_reduce_min() << ", " << tmp_prog_phi.physical_reduce_max() << std::endl;
-					}
-#endif
 				}
 			}
 			else
 			{
+				FatalError("Non-Robert function not supported");
+
 				if (use_rexi_preallocation)
 				{
 					perThreadVars[thread_id]->rexiSPH_vector[local_idx].solve(
@@ -845,11 +913,14 @@ bool SWE_Sphere_REXI::run_timestep_rexi_vectorinvariant_progphivortdiv(
 							sphereDataConfigRexi,
 							alpha,
 							beta_re,
+
 							simCoeffs->earth_radius,
 							simCoeffs->coriolis_omega,
 							simCoeffs->h0*simCoeffs->gravitation,
 							i_timestep_size,
-							use_coriolis_rexi_formulation
+
+							use_coriolis_rexi_formulation,
+							use_f_sphere
 					);
 
 					rexiSPH.solve(
@@ -901,7 +972,7 @@ bool SWE_Sphere_REXI::run_timestep_rexi_vectorinvariant_progphivortdiv(
 
 			perThreadVars[thread_id]->accum_phi.request_data_physical();
 
-			#pragma omp parallel for schedule(static) default(none) shared(io_prog_h0, thread_id)
+			#pragma omp parallel for schedule(static) default(none) shared(io_prog_phi0, thread_id)
 			for (int i = 0; i < io_prog_phi0.sphereDataConfig->physical_array_data_number_of_elements; i++)
 				io_prog_phi0.physical_space_data[i] += perThreadVars[thread_id]->accum_phi.physical_space_data[i];
 
@@ -927,7 +998,7 @@ bool SWE_Sphere_REXI::run_timestep_rexi_vectorinvariant_progphivortdiv(
 
 			tmp = perThreadVars[thread_id]->accum_phi.spectral_returnWithDifferentModes(tmp.sphereDataConfig);
 			tmp.request_data_physical();
-			#pragma omp parallel for schedule(static) default(none) shared(io_prog_h0, tmp)
+			#pragma omp parallel for schedule(static) default(none) shared(io_prog_phi0, tmp)
 			for (int i = 0; i < io_prog_phi0.sphereDataConfig->physical_array_data_number_of_elements; i++)
 				io_prog_phi0.physical_space_data[i] += tmp.physical_space_data[i];
 
