@@ -40,9 +40,9 @@ class SphereComplexErrorCheck
 
 		if (rel_max_abs > i_error_threshold)
 		{
-			Convert_SphereDataComplex_To_SphereData::physical_convert(lhsr).physical_file_write("o_error_lhs.csv");
-			Convert_SphereDataComplex_To_SphereData::physical_convert(rhsr).physical_file_write("o_error_rhs.csv");
-			Convert_SphereDataComplex_To_SphereData::physical_convert(lhsr-rhsr).physical_file_write("o_error_diff.csv");
+			Convert_SphereDataComplex_To_SphereData::physical_convert_real(lhsr).physical_file_write("o_error_lhs.csv");
+			Convert_SphereDataComplex_To_SphereData::physical_convert_real(rhsr).physical_file_write("o_error_rhs.csv");
+			Convert_SphereDataComplex_To_SphereData::physical_convert_real(lhsr-rhsr).physical_file_write("o_error_diff.csv");
 
 			if (i_ignore_error)
 				std::cerr << "Error ignored (probably because extended modes not >= 2)" << std::endl;

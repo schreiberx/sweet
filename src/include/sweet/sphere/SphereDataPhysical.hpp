@@ -382,7 +382,8 @@ public:
 public:
 	~SphereDataPhysical()
 	{
-		MemBlockAlloc::free(physical_space_data, sphereDataConfig->physical_array_data_number_of_elements * sizeof(double));
+		if (physical_space_data != nullptr)
+			MemBlockAlloc::free(physical_space_data, sphereDataConfig->physical_array_data_number_of_elements * sizeof(double));
 	}
 
 
@@ -1153,7 +1154,7 @@ SphereDataPhysical operator-(
 		const SphereDataPhysical &i_array_data
 )
 {
-	return ((SphereDataPhysical&)i_array_data).valueMinusThis(i_value);
+//	return ((SphereDataPhysical&)i_array_data).operator-(i_value);
 //	return -(((SPHData&)i_array_data).operator-(i_value));
 }
 #endif

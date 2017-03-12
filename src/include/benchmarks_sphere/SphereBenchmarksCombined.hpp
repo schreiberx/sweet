@@ -34,9 +34,15 @@ public:
 			std::cout << "Benchmark scenario not selected (option -s [id])" << std::endl;
 			std::cout << "Available benchmark scenarios:" << std::endl;
 			std::cout << "	0: Dummy" << std::endl;
-			std::cout << "	2: Use Gaussian bump initial conditions (0, pi/3)" << std::endl;
-			std::cout << "	3: Use Gaussian bump initial conditions (pi/3, pi/3)" << std::endl;
-			std::cout << "	4: Use Gaussian bump initial conditions (-pi/2, pi/4)" << std::endl;
+			std::cout << "	2: Use Gaussian bump initial conditions (0, pi/3, exp=10)" << std::endl;
+			std::cout << "	3: Use Gaussian bump initial conditions (pi/3, pi/3, exp=10)" << std::endl;
+			std::cout << "	4: Use Gaussian bump initial conditions (-pi/2, pi/4, exp=10)" << std::endl;
+			std::cout << "	4: Use Gaussian bump initial conditions (-pi/2, pi/4, exp=10)" << std::endl;
+			std::cout << "	5: Use Gaussian bump initial conditions (-pi/2, pi/4, exp=10)" << std::endl;
+			std::cout << "	6: Use Gaussian bump initial conditions (pi/3, pi/3, exp=20)" << std::endl;
+			std::cout << "	7: Use Gaussian bump initial conditions (-pi, pi/4, exp=100)" << std::endl;
+			std::cout << "	10: Combination of Gaussian bumps" << std::endl;
+			std::cout << "	50: Swartztrauber 2004 Gaussian breaking dam" << std::endl;
 			std::cout << "	10: Use geostrophic balance test case" << std::endl;
 			std::cout << "	11: Williamson test benchmark 1 (DIV formulation)" << std::endl;
 			std::cout << "	12: Williamson test benchmark 1 (GRAD formulation)" << std::endl;
@@ -53,7 +59,7 @@ public:
 		}
 		else if (io_simVars.setup.benchmark_scenario_id == 2)
 		{
-			BenchmarkGaussianDam::setup_initial_conditions_gaussian(o_h, o_u, o_v, io_simVars, 0, M_PI/3.0);
+			BenchmarkGaussianDam::setup_initial_conditions_gaussian(o_h, o_u, o_v, io_simVars, M_PI/3.0, 0);
 		}
 		else if (io_simVars.setup.benchmark_scenario_id == 3)
 		{
@@ -61,11 +67,11 @@ public:
 		}
 		else if (io_simVars.setup.benchmark_scenario_id == 4)
 		{
-			BenchmarkGaussianDam::setup_initial_conditions_gaussian(o_h, o_u, o_v, io_simVars, -M_PI, M_PI/4.0);
+			BenchmarkGaussianDam::setup_initial_conditions_gaussian(o_h, o_u, o_v, io_simVars, M_PI/4.0, -M_PI);
 		}
 		else if (io_simVars.setup.benchmark_scenario_id == 5)
 		{
-			BenchmarkGaussianDam::setup_initial_conditions_gaussian(o_h, o_u, o_v, io_simVars, -M_PI, M_PI/4.0, 100.0);
+			BenchmarkGaussianDam::setup_initial_conditions_gaussian(o_h, o_u, o_v, io_simVars, M_PI/4.0, -M_PI, 100.0);
 		}
 		else if (io_simVars.setup.benchmark_scenario_id == 6)
 		{
@@ -73,9 +79,22 @@ public:
 		}
 		else if (io_simVars.setup.benchmark_scenario_id == 7)
 		{
-			BenchmarkGaussianDam::setup_initial_conditions_gaussian(o_h, o_u, o_v, io_simVars, -M_PI, M_PI/4.0, 100.0);
+			BenchmarkGaussianDam::setup_initial_conditions_gaussian(o_h, o_u, o_v, io_simVars, M_PI/4.0, -M_PI, 100.0);
 		}
-		else if (io_simVars.setup.benchmark_scenario_id == 8)
+		else if (io_simVars.setup.benchmark_scenario_id == 10)
+		{
+			SphereData tmp(o_h.sphereDataConfig);
+
+			o_h.physical_set_all_value(io_simVars.sim.h0);
+
+			BenchmarkGaussianDam::setup_initial_conditions_gaussian(tmp, o_u, o_v, io_simVars, 2.0*M_PI*0.1, M_PI/3, 20.0);
+			o_h += (tmp-io_simVars.sim.h0);
+			BenchmarkGaussianDam::setup_initial_conditions_gaussian(tmp, o_u, o_v, io_simVars, 2.0*M_PI*0.6, M_PI/5.0, 50.0);
+			o_h += (tmp-io_simVars.sim.h0);
+			BenchmarkGaussianDam::setup_initial_conditions_gaussian(tmp, o_u, o_v, io_simVars, 2.0*M_PI*0.8, -M_PI/4, 100.0);
+			o_h += (tmp-io_simVars.sim.h0);
+		}
+		else if (io_simVars.setup.benchmark_scenario_id == 50)
 		{
 			/*
 			 * PAUL N. SWARZTRAUBER

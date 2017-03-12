@@ -11,6 +11,10 @@
 #include <sweet/sphere/SphereDataComplex.hpp>
 #include <sweet/sphere/SphereSPHIdentities.hpp>
 #include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalComplex.hpp>
+#include <sweet/sphere/Convert_SphereDataComplex_to_SphereData.hpp>
+#include <sweet/sphere/Convert_SphereDataPhysicalComplex_to_SphereDataPhysical.hpp>
+
+
 
 class SphereOperatorsComplex	:
 		public SphereSPHIdentities
@@ -526,17 +530,19 @@ public:
 	 * Laplace operator
 	 */
 	SphereDataComplex laplace(
-			const SphereDataComplex &i_sph_data
-	)
+			const SphereDataComplex &i_sph_data,
+			double i_r
+	)	const
 	{
+		double ir = 1.0/i_r;
 		i_sph_data.request_data_spectral();
 
 		SphereDataComplex out(i_sph_data);
 
 		out.spectral_update_lambda(
-				[](int n, int m, std::complex<double> &o_data)
+				[&](int n, int m, std::complex<double> &o_data)
 				{
-					o_data *= -(double)n*((double)n+1.0);
+					o_data *= -(double)n*((double)n+1.0)*ir*ir;
 				}
 			);
 
@@ -571,6 +577,169 @@ public:
 	)
 	{
 		return robert_div_lon(i_lat) - robert_div_lat(i_lon);
+	}
+
+
+	/**
+	 * Laplace operator
+	 */
+	SphereDataComplex inv_laplace(
+			const SphereDataComplex &i_sph_data,
+			double i_radius
+	)	const
+	{
+		double ir = 1.0/i_radius;
+
+		SphereDataComplex out(i_sph_data);
+		out.request_data_spectral();
+
+		out.spectral_update_lambda(
+				[&](int n, int m, std::complex<double> &o_data)
+				{
+					if (n != 0)
+						o_data /= -(double)n*((double)n+1.0)*ir*ir;
+					else
+						o_data = 0;
+				}
+			);
+
+		return out;
+	}
+
+
+
+	void robert_uv_to_vortdiv(
+			const SphereDataPhysicalComplex &i_u,
+			const SphereDataPhysicalComplex &i_v,
+			SphereDataComplex &o_vort,
+			SphereDataComplex &o_div,
+
+			double r
+	)	const
+	{
+		SphereDataPhysicalComplex ug = i_u;
+
+		ug.physical_update_lambda_cosphi_grid(
+			[&](double lon, double phi, std::complex<double> &o_data)
+			{
+				o_data /= phi;
+			}
+		);
+
+		SphereDataPhysicalComplex vg = i_v;
+		vg.physical_update_lambda_cosphi_grid(
+			[&](double lon, double phi, std::complex<double> &o_data)
+			{
+				o_data /= phi;
+			}
+		);
+
+		SphereDataPhysical ug_re = Convert_SphereDataPhysicalComplex_To_SphereDataPhysical::physical_convert_real(ug);
+		SphereDataPhysical ug_im = Convert_SphereDataPhysicalComplex_To_SphereDataPhysical::physical_convert_imag(ug);
+		SphereDataPhysical vg_re = Convert_SphereDataPhysicalComplex_To_SphereDataPhysical::physical_convert_real(vg);
+		SphereDataPhysical vg_im = Convert_SphereDataPhysicalComplex_To_SphereDataPhysical::physical_convert_imag(vg);
+
+		SphereData vort_re(sphereDataConfig);
+		SphereData vort_im(sphereDataConfig);
+		SphereData div_re(sphereDataConfig);
+		SphereData div_im(sphereDataConfig);
+
+		spat_to_SHsphtor(
+				sphereDataConfig->shtns,
+				ug_re.physical_space_data,
+				vg_re.physical_space_data,
+				vort_re.spectral_space_data,
+				div_re.spectral_space_data
+		);
+		vort_re.spectral_space_data_valid = true;
+		vort_re.physical_space_data_valid = false;
+		div_re.spectral_space_data_valid = true;
+		div_re.physical_space_data_valid = false;
+
+		spat_to_SHsphtor(
+				sphereDataConfig->shtns,
+				ug_im.physical_space_data,
+				vg_im.physical_space_data,
+				vort_im.spectral_space_data,
+				div_im.spectral_space_data
+		);
+		vort_im.spectral_space_data_valid = true;
+		vort_im.physical_space_data_valid = false;
+		div_im.spectral_space_data_valid = true;
+		div_im.physical_space_data_valid = false;
+
+		o_vort.loadRealImag(vort_re, vort_im);
+		o_div.loadRealImag(div_re, div_im);
+
+		o_vort = laplace(o_vort, r)*r;
+		o_div = laplace(o_div, r)*r;
+	}
+
+
+	/**
+	 * Convert vorticity/divergence field to u,v velocity field
+	 */
+	void robert_vortdiv_to_uv(
+			const SphereDataComplex &i_vrt,
+			const SphereDataComplex &i_div,
+			SphereDataPhysicalComplex &o_u,
+			SphereDataPhysicalComplex &o_v,
+			double i_radius
+
+	)	const
+	{
+		double ir = 1.0/i_radius;
+
+		i_vrt.request_data_spectral();
+		i_div.request_data_spectral();
+
+		SphereDataComplex psi = inv_laplace(i_vrt, i_radius)*ir;
+		SphereDataComplex chi = inv_laplace(i_div, i_radius)*ir;
+
+		SphereData psi_re = Convert_SphereDataComplex_To_SphereData::physical_convert_real(psi);
+		SphereData psi_im = Convert_SphereDataComplex_To_SphereData::physical_convert_imag(psi);
+		SphereData chi_re = Convert_SphereDataComplex_To_SphereData::physical_convert_real(chi);
+		SphereData chi_im = Convert_SphereDataComplex_To_SphereData::physical_convert_imag(chi);
+
+		psi_re.request_data_spectral();
+		chi_re.request_data_spectral();
+		SphereDataPhysical u_re(sphereDataConfig);
+		SphereDataPhysical v_re(sphereDataConfig);
+		SHsphtor_to_spat(
+				sphereDataConfig->shtns,
+				psi_re.spectral_space_data,
+				chi_re.spectral_space_data,
+				u_re.physical_space_data,
+				v_re.physical_space_data
+		);
+
+		psi_im.request_data_spectral();
+		chi_im.request_data_spectral();
+		SphereDataPhysical u_im(sphereDataConfig);
+		SphereDataPhysical v_im(sphereDataConfig);
+		SHsphtor_to_spat(
+				sphereDataConfig->shtns,
+				psi_im.spectral_space_data,
+				chi_im.spectral_space_data,
+				u_im.physical_space_data,
+				v_im.physical_space_data
+		);
+
+		o_u.loadRealImag(u_re, u_im);
+		o_u.physical_update_lambda_cosphi_grid(
+			[](double lon, double phi, std::complex<double> &o_data)
+			{
+				o_data *= phi;
+			}
+		);
+
+		o_v.loadRealImag(v_re, v_im);
+		o_v.physical_update_lambda_cosphi_grid(
+			[](double lon, double phi, std::complex<double> &o_data)
+			{
+				o_data *= phi;
+			}
+		);
 	}
 
 

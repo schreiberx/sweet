@@ -63,7 +63,6 @@ SphereDataConfig *sphereDataConfigExt = &sphereDataConfigExtInstance;
 /*
  * This allows running REXI including Coriolis-related terms but just by setting f to 0
  */
-bool param_use_coriolis_formulation = true;
 bool param_compute_error = false;
 
 
@@ -359,9 +358,7 @@ public:
 		std::cout << std::endl;
 		std::cout << "LOCAL PARAMETERS:" << std::endl;
 		std::cout << " + param_compute_error: " << param_compute_error << std::endl;
-		std::cout << " + param_use_coriolis_formulation: " << param_use_coriolis_formulation << std::endl;
 		std::cout << std::endl;
-
 
 		switch (simVars.pde.id)
 		{
@@ -425,7 +422,6 @@ public:
 					simVars.rexi.rexi_use_extended_modes,
 					simVars.rexi.rexi_normalization,
 
-					param_use_coriolis_formulation,
 					simVars.sim.f_sphere,
 					simVars.rexi.rexi_sphere_solver_preallocation
 				);
@@ -446,19 +442,43 @@ public:
 					simVars.disc.crank_nicolson_filter
 			);
 
-			timestepping_implicit_swe.setup(
-					sphereDataConfig,
-					sphereDataConfigExt,
+			switch (simVars.pde.id)
+			{
+			case 0:
+				timestepping_implicit_swe.setup_velocityformulation_progphiuv(
+						sphereDataConfig,
+						sphereDataConfigExt,
 
-					simVars.sim.earth_radius,
-					simVars.sim.coriolis_omega,
-					simVars.sim.gravitation*simVars.sim.h0,
-					-simVars.sim.CFL,
+						simVars.sim.earth_radius,
+						simVars.sim.coriolis_omega,
+						simVars.sim.gravitation*simVars.sim.h0,
+						-simVars.sim.CFL,
 
-					param_use_coriolis_formulation,
+						simVars.sim.f_sphere,
+						simVars.disc.timestepping_order
+					);
+				break;
 
-					simVars.disc.timestepping_order
-				);
+			case 1:
+				timestepping_implicit_swe.setup_vectorinvariantformulation_progphivortdiv(
+						sphereDataConfig,
+						sphereDataConfigExt,
+
+						simVars.sim.earth_radius,
+						simVars.sim.coriolis_omega,
+						simVars.sim.gravitation*simVars.sim.h0,
+						-simVars.sim.CFL,
+
+						simVars.sim.f_sphere,
+
+						simVars.disc.timestepping_order
+					);
+				break;
+
+			default:
+				FatalError("CN for this pde not yet supported!");
+				break;
+			}
 		}
 
 		update_diagnostics();
@@ -560,7 +580,7 @@ public:
 #if 0
 		if (	param_compute_error &&
 				simVars.misc.use_nonlinear_equations == 0 &&
-				simVars.setup.benchmark_scenario_id == 10
+				simVars.setup_velocityformulation_progphiuv.benchmark_scenario_id == 10
 		)
 		{
 			SphereData test_h(sphereDataConfig);
@@ -570,24 +590,24 @@ public:
 			SphereBenchmarksCombined::setupInitialConditions(test_h, test_u, test_v, simVars, op);
 
 
-			output_filename = write_file(test_h, "reference_h", simVars.setup.benchmark_scenario_id == 0);
+			output_filename = write_file(test_h, "reference_h", simVars.setup_velocityformulation_progphiuv.benchmark_scenario_id == 0);
 			std::cout << output_filename << std::endl;
 
-			output_filename = write_file(test_u, "reference_u", simVars.setup.benchmark_scenario_id == 0);
+			output_filename = write_file(test_u, "reference_u", simVars.setup_velocityformulation_progphiuv.benchmark_scenario_id == 0);
 			std::cout << output_filename << std::endl;
 
-			output_filename = write_file(test_v, "reference_v", simVars.setup.benchmark_scenario_id == 0);
+			output_filename = write_file(test_v, "reference_v", simVars.setup_velocityformulation_progphiuv.benchmark_scenario_id == 0);
 			std::cout << output_filename << std::endl;
 
 
 
-			output_filename = write_file((SphereData(prog_h)-SphereData(test_h)), "ref_diff_h", simVars.setup.benchmark_scenario_id == 0);
+			output_filename = write_file((SphereData(prog_h)-SphereData(test_h)), "ref_diff_h", simVars.setup_velocityformulation_progphiuv.benchmark_scenario_id == 0);
 			std::cout << output_filename << std::endl;
 
-			output_filename = write_file((SphereData(prog_u)-SphereData(test_u)), "ref_diff_u", simVars.setup.benchmark_scenario_id == 0);
+			output_filename = write_file((SphereData(prog_u)-SphereData(test_u)), "ref_diff_u", simVars.setup_velocityformulation_progphiuv.benchmark_scenario_id == 0);
 			std::cout << output_filename << std::endl;
 
-			output_filename = write_file((SphereData(prog_v)-SphereData(test_v)), "ref_diff_v", simVars.setup.benchmark_scenario_id == 0);
+			output_filename = write_file((SphereData(prog_v)-SphereData(test_v)), "ref_diff_v", simVars.setup_velocityformulation_progphiuv.benchmark_scenario_id == 0);
 			std::cout << output_filename << std::endl;
 		}
 #endif
@@ -822,26 +842,6 @@ public:
 	{
 		std::cout << i_string << ": " << i_data.physical_reduce_min() << ", " << i_data.physical_reduce_max() << std::endl;
 	}
-
-
-/*
-
-	SphereData add_f(const SphereData &i_data)
-	const
-	{
-		SphereData d(i_data);
-
-		double two_omega = 2.0*simVars.sim.coriolis_omega;
-		d.physical_update_lambda_gaussian_grid(
-			[&](double lon, double mu, double &o_data)
-			{
-				o_data += mu*two_omega;
-			}
-		);
-
-		return d;
-	}
-*/
 
 
 
@@ -1242,7 +1242,6 @@ public:
 
 	void run_timestep()
 	{
-
 #if SWEET_GUI
 			if (simVars.misc.gui_enabled)
 				timestep_check_output();
@@ -1456,26 +1455,50 @@ public:
 					std::cout << "WARNING: IMPLICIT TS SETUP CALLED DURING SIMULATION TIME FRAME" << std::endl;
 					std::cerr << "WARNING: IMPLICIT TS SETUP CALLED DURING SIMULATION TIME FRAME" << std::endl;
 
-					timestepping_implicit_swe.setup(
-							sphereDataConfig,
-							sphereDataConfigExt,
+					switch (simVars.pde.id)
+					{
+					case 0:
+						timestepping_implicit_swe.setup_velocityformulation_progphiuv(
+								sphereDataConfig,
+								sphereDataConfigExt,
 
-							simVars.sim.earth_radius,
-							simVars.sim.coriolis_omega,
-							simVars.sim.gravitation*simVars.sim.h0,
-							o_dt,
+								simVars.sim.earth_radius,
+								simVars.sim.coriolis_omega,
+								simVars.sim.gravitation*simVars.sim.h0,
+								o_dt,
 
-							param_use_coriolis_formulation,
+								simVars.sim.f_sphere,
 
-							simVars.disc.timestepping_order
-						);
+								simVars.disc.timestepping_order
+							);
+						break;
+
+					case 1:
+						timestepping_implicit_swe.setup_vectorinvariantformulation_progphivortdiv(
+								sphereDataConfig,
+								sphereDataConfigExt,
+
+								simVars.sim.earth_radius,
+								simVars.sim.coriolis_omega,
+								simVars.sim.gravitation*simVars.sim.h0,
+								o_dt,
+
+								simVars.sim.f_sphere,
+
+								simVars.disc.timestepping_order
+							);
+						break;
+
+					default:
+						FatalError("TODO: Not yet implemented");
+					}
 				}
 			}
 
 			switch (simVars.pde.id)
 			{
 			case 0:
-				timestepping_implicit_swe.solve(
+				timestepping_implicit_swe.solve_velocityformulation_progphiuv(
 						prog_h*simVars.sim.gravitation, prog_u, prog_v,
 						o_prog_h, o_prog_u, o_prog_v,
 						o_dt
@@ -1484,6 +1507,19 @@ public:
 				prog_h = o_prog_h / simVars.sim.gravitation;
 				prog_u = o_prog_u;
 				prog_v = o_prog_v;
+				break;
+
+
+			case 1:
+				timestepping_implicit_swe.solve_vectorinvariantformulation_progphivortdiv(
+						prog_phi, prog_vort, prog_div,
+						o_prog_h, o_prog_u, o_prog_v,
+						o_dt
+					);
+
+				prog_phi = o_prog_h;
+				prog_vort = o_prog_u;
+				prog_div = o_prog_v;
 
 				break;
 
@@ -1511,7 +1547,7 @@ public:
 			{
 				if (o_dt + simVars.timecontrol.current_simulation_time > simVars.timecontrol.max_simulation_time)
 				{
-					o_dt = simVars.timecontrol.max_simulation_time-simVars.timecontrol.current_simulation_time;
+					o_dt = simVars.timecontrol.max_simulation_time - simVars.timecontrol.current_simulation_time;
 
 					std::cout << "WARNING: REXI SETUP CALLED DURING SIMULATION TIME FRAME" << std::endl;
 					std::cerr << "WARNING: REXI SETUP CALLED DURING SIMULATION TIME FRAME" << std::endl;
@@ -1532,7 +1568,6 @@ public:
 							simVars.rexi.rexi_use_extended_modes,
 							simVars.rexi.rexi_normalization,
 
-							param_use_coriolis_formulation,
 							simVars.sim.f_sphere,
 							simVars.rexi.rexi_sphere_solver_preallocation
 						);
@@ -1545,7 +1580,7 @@ public:
 			case 0:
 				// REXI time stepping
 				prog_h *= simVars.sim.gravitation;
-				swe_sphere_rexi.run_timestep_rexi_advection_progphiuv(
+				swe_sphere_rexi.run_timestep_rexi_velocityformulation_progphiuv(
 						prog_h,	// phi
 						prog_u,
 						prog_v,
@@ -1827,7 +1862,7 @@ public:
 						-i_r*op.robert_grad_lat(i_phi)
 						;
 
-				if (simVars.sim.coriolis_omega != 0 && param_use_coriolis_formulation)
+				if (simVars.sim.coriolis_omega != 0)
 				{
 					if (simVars.sim.f_sphere)
 					{
@@ -1865,7 +1900,7 @@ public:
 						-op.robert_grad_lat(i_h)*
 						(simVars.sim.gravitation/simVars.sim.earth_radius);
 
-				if (simVars.sim.coriolis_omega != 0 && param_use_coriolis_formulation)
+				if (simVars.sim.coriolis_omega != 0)
 				{
 					// This creates an instability!!!
 #if 0
@@ -1895,11 +1930,13 @@ public:
 
 					o_u_t += ug;
 					o_v_t += vg;
+
 #else
+
 					if (simVars.sim.f_sphere)
 					{
-						o_u_t += simVars.sim.f0*i_v;
-						o_v_t -= simVars.sim.f0*i_u;
+						o_u_t += simVars.sim.coriolis_omega*i_v;
+						o_v_t -= simVars.sim.coriolis_omega*i_u;
 					}
 					else
 					{
@@ -2063,54 +2100,57 @@ public:
 				/*
 				 * LINEAR
 				 */
-				if (simVars.sim.f_sphere)
+				double gh = simVars.sim.gravitation * simVars.sim.h0;
+
+				if (simVars.sim.coriolis_omega != 0)
 				{
-					double gh = simVars.sim.gravitation * simVars.sim.h0;
-
-					o_phi_t = -gh*i_divspec;
-					o_div_t = -op.laplace(i_phispec);
-
-					if (simVars.sim.coriolis_omega != 0 && param_use_coriolis_formulation)
+					if (simVars.sim.f_sphere)
 					{
-						o_vort_t = -f(i_divspec);
-						o_div_t += f(i_vortspec);
+						double gh = simVars.sim.gravitation * simVars.sim.h0;
+
+						o_phi_t = -gh*i_divspec;
+						o_div_t = -op.laplace(i_phispec);
+
+						o_vort_t = -simVars.sim.coriolis_omega*(i_divspec);
+						o_div_t += simVars.sim.coriolis_omega*(i_vortspec);
 					}
 					else
 					{
-						o_vort_t.spectral_set_zero();
+						double gh = simVars.sim.gravitation * simVars.sim.h0;
+
+						SphereDataPhysical ug(i_phispec.sphereDataConfig);
+						SphereDataPhysical vg(i_phispec.sphereDataConfig);
+
+		//				SphereDataPhysical vrtg = i_vortspec.getSphereDataPhysical();
+		//				SphereDataPhysical divg = i_divspec.getSphereDataPhysical();
+						op.robert_vortdiv_to_uv(i_vortspec, i_divspec, ug, vg);
+						SphereDataPhysical phig = i_phispec.getSphereDataPhysical();
+
+						SphereDataPhysical tmpg1 = ug*fg;
+						SphereDataPhysical tmpg2 = vg*fg;
+
+						op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
+
+						o_vort_t *= -1.0;
+
+						tmpg1 = ug*gh;
+						tmpg2 = vg*gh;
+
+						SphereData tmpspec(sphereDataConfig);
+						op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
+
+						o_phi_t *= -1.0;
+
+						tmpspec = phig;
+						tmpspec.request_data_spectral();
+						o_div_t += -op.laplace(tmpspec);
 					}
 				}
 				else
 				{
-
-					double gh = simVars.sim.gravitation * simVars.sim.h0;
-
-					SphereDataPhysical ug(i_phispec.sphereDataConfig);
-					SphereDataPhysical vg(i_phispec.sphereDataConfig);
-
-	//				SphereDataPhysical vrtg = i_vortspec.getSphereDataPhysical();
-	//				SphereDataPhysical divg = i_divspec.getSphereDataPhysical();
-					op.robert_vortdiv_to_uv(i_vortspec, i_divspec, ug, vg);
-					SphereDataPhysical phig = i_phispec.getSphereDataPhysical();
-
-					SphereDataPhysical tmpg1 = ug*fg;
-					SphereDataPhysical tmpg2 = vg*fg;
-
-					op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
-
-					o_vort_t *= -1.0;
-
-					tmpg1 = ug*gh;
-					tmpg2 = vg*gh;
-
-					SphereData tmpspec(sphereDataConfig);
-					op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
-
-					o_phi_t *= -1.0;
-
-					tmpspec = phig;
-					tmpspec.request_data_spectral();
-					o_div_t += -op.laplace(tmpspec);
+					o_phi_t = -gh*i_divspec;
+					o_div_t = -op.laplace(i_phispec);
+					o_vort_t.spectral_set_zero();
 				}
 			}
 		}
@@ -2657,9 +2697,9 @@ case 'C':
 
 		case 'l':
 			// load data arrays
-			prog_h.file_physical_loadData("swe_rexi_dump_h.csv", simVars.setup.input_data_binary);
-			prog_u.file_physical_loadData("swe_rexi_dump_u.csv", simVars.setup.input_data_binary);
-			prog_v.file_physical_loadData("swe_rexi_dump_v.csv", simVars.setup.input_data_binary);
+			prog_h.file_physical_loadData("swe_rexi_dump_h.csv", simVars.setup_velocityformulation_progphiuv.input_data_binary);
+			prog_u.file_physical_loadData("swe_rexi_dump_u.csv", simVars.setup_velocityformulation_progphiuv.input_data_binary);
+			prog_v.file_physical_loadData("swe_rexi_dump_v.csv", simVars.setup_velocityformulation_progphiuv.input_data_binary);
 			break;
 #endif
 		}
@@ -2694,14 +2734,12 @@ int main(int i_argc, char *i_argv[])
 
 	//input parameter names (specific ones for this program)
 	const char *bogus_var_names[] = {
-			"use-coriolis-formulation",
 			"compute-error",
 			nullptr
 	};
 
 	// default values for specific input (for general input see SimulationVariables.hpp)
-	simVars.bogus.var[0] = param_use_coriolis_formulation;
-	simVars.bogus.var[1] = param_compute_error;
+	simVars.bogus.var[0] = param_compute_error;
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
@@ -2709,16 +2747,12 @@ int main(int i_argc, char *i_argv[])
 #if SWEET_PARAREAL
 		simVars.parareal.setup_printOptions();
 #endif
-		std::cout << "	--use-coriolis-formulation [0/1]	Use Coriolisincluding  solver for REXI (default: 1)" << std::endl;
 		std::cout << "	--compute-error [0/1]	Output errors (if available, default: 1)" << std::endl;
-		std::cout << "	--pde-id [0/1]	PDE ID (0: SWE, 1: Advection, 2: Advection divergence free)" << std::endl;
 		return -1;
 	}
 
 
-	param_use_coriolis_formulation = simVars.bogus.var[0];
-	assert(param_use_coriolis_formulation == 0 || param_use_coriolis_formulation == 1);
-//	param_compute_error = simVars.bogus.var[1];
+	param_compute_error = simVars.bogus.var[0];
 
 	sphereDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
 /*
@@ -2875,7 +2909,7 @@ int main(int i_argc, char *i_argv[])
 			/*
 			 * Setup our little dog REXI
 			 */
-			swe_sphere_rexi.setup(
+			swe_sphere_rexi.setup_velocityformulation_progphiuv(
 					simVars.rexi.rexi_h,
 					simVars.rexi.rexi_M,
 					simVars.rexi.rexi_L,
@@ -2891,7 +2925,6 @@ int main(int i_argc, char *i_argv[])
 					simVars.rexi.rexi_use_extended_modes,
 					simVars.rexi.rexi_normalization,
 
-					param_use_coriolis_formulation,
 					simVars.sim.f_sphere,
 					simVars.rexi.rexi_sphere_solver_preallocation
 				);

@@ -84,11 +84,9 @@ public:
 
 			double i_timestep_size,
 
-			bool i_include_coriolis_effect,
 			bool i_use_f_sphere
 	)
 	{
-		use_formulation_with_coriolis_effect = i_include_coriolis_effect;
 		use_f_sphere = i_use_f_sphere;
 
 		timestep_size = i_timestep_size;
@@ -263,9 +261,9 @@ public:
 		u *= beta;
 		v *= beta;
 
-		o_phi = Convert_SphereDataComplex_To_SphereData::physical_convert(phi);
-		o_u = Convert_SphereDataComplex_To_SphereData::physical_convert(u);
-		o_v = Convert_SphereDataComplex_To_SphereData::physical_convert(v);
+		o_phi = Convert_SphereDataComplex_To_SphereData::physical_convert_real(phi);
+		o_u = Convert_SphereDataComplex_To_SphereData::physical_convert_real(u);
+		o_v = Convert_SphereDataComplex_To_SphereData::physical_convert_real(v);
 	}
 };
 

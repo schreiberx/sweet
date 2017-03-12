@@ -1992,6 +1992,7 @@ SphereData operator*(
 }
 
 
+
 /**
  * operator to support operations such as:
  *

@@ -91,6 +91,28 @@ public:
 	}
 
 
+	/*
+	 * load real and imaginary data from physical arrays
+	 */
+	void loadRealImag(
+			const SphereDataPhysical &i_re,
+			const SphereDataPhysical &i_im
+	)
+	{
+		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+		{
+#if 0
+			physical_space_data[i].real(i_re.physical_space_data[i]);
+			physical_space_data[i].imag(i_im.physical_space_data[i]);
+#else
+			physical_space_data[i] = std::complex<double>(
+								i_re.physical_space_data[i],
+								i_im.physical_space_data[i]
+						);
+#endif
+		}
+	}
+
 
 	/**
 	 * Run validation checks to make sure that the physical and spectral spaces match in size
@@ -276,8 +298,6 @@ public:
 	{
 		check(i_sph_data.sphereDataConfig);
 
-		check(i_sph_data.sphereDataConfig);
-
 		SphereDataPhysicalComplex out(sphereDataConfig);
 
 #if SWEET_THREADING
@@ -317,8 +337,8 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for
 #endif
-		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
-			out.physical_space_data[i] = physical_space_data[i]*i_value;
+		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
+			out.physical_space_data[idx] = physical_space_data[idx]*i_value;
 
 		return out;
 	}
@@ -377,7 +397,7 @@ public:
 
 
 	SphereDataPhysicalComplex operator+(
-			double i_value
+			const std::complex<double> &i_value
 	)	const
 	{
 		SphereDataPhysicalComplex out(sphereDataConfig);
@@ -394,7 +414,7 @@ public:
 
 
 	SphereDataPhysicalComplex operator-(
-			double i_value
+			const std::complex<double> &i_value
 	)	const
 	{
 		SphereDataPhysicalComplex out(sphereDataConfig);

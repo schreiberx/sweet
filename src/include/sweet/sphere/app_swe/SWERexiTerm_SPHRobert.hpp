@@ -49,8 +49,6 @@ class SWERexiTerm_SPHRobert
 	/// REXI beta
 	std::complex<double> beta;
 
-	bool use_formulation_with_coriolis_effect;
-
 	bool use_f_sphere;
 
 	/// timestep size
@@ -63,13 +61,14 @@ class SWERexiTerm_SPHRobert
 	double inv_r;
 
 	/// Coriolis omega
-	double coriolis_omega;
-
-	/// 2*\Omega
-	double two_omega;
+	double coriolis;
 
 	/// Average geopotential
-	double avg_geopotential;
+	double gh;
+
+	int variant_id;
+
+	SphereDataPhysicalComplex mug;
 
 public:
 	SWERexiTerm_SPHRobert()	:
@@ -90,18 +89,16 @@ public:
 			const std::complex<double> &i_beta,
 
 			double i_radius,
-			double i_coriolis_omega,
+			double i_coriolis,
 			double i_avg_geopotential,
 			double i_timestep_size,
 
-			bool i_use_formulation_with_coriolis_effect,
 			bool i_use_f_sphere
 	)
 	{
 		sphereDataConfig = i_sphereDataConfig;
 		sphereDataConfigSolver = i_sphereDataConfigSolver;
 
-		use_formulation_with_coriolis_effect = i_use_formulation_with_coriolis_effect;
 		use_f_sphere = i_use_f_sphere;
 		timestep_size = i_timestep_size;
 
@@ -111,118 +108,46 @@ public:
 		r = i_radius;
 		inv_r = 1.0/r;
 
-		coriolis_omega = i_coriolis_omega;
-
-		two_omega = 2.0*coriolis_omega;
-		avg_geopotential = i_avg_geopotential;
-
-		op.setup(sphereDataConfig, r);
-		opComplex.setup(sphereDataConfig, r);
-
-		sphSolverPhi.setup(sphereDataConfigSolver, 4);
-		sphSolverPhi.solver_component_rexi_z1(	(alpha*alpha)*(alpha*alpha), r);
-
-		if (use_formulation_with_coriolis_effect)
-		{
-			sphSolverPhi.solver_component_rexi_z2(	2.0*two_omega*two_omega*alpha*alpha, r);
-			sphSolverPhi.solver_component_rexi_z3(	(two_omega*two_omega)*(two_omega*two_omega), r);
-
-			if (!use_f_sphere)
-			{
-				sphSolverPhi.solver_component_rexi_z4robert(	-avg_geopotential*alpha*two_omega, r);
-				sphSolverPhi.solver_component_rexi_z5robert(	avg_geopotential/alpha*two_omega*two_omega*two_omega, r);
-				sphSolverPhi.solver_component_rexi_z6robert(	avg_geopotential*2.0*two_omega*two_omega, r);
-			}
-		}
-
-		sphSolverPhi.solver_component_rexi_z7(	-avg_geopotential*alpha*alpha, r);
-		if (use_formulation_with_coriolis_effect)
-		{
-			sphSolverPhi.solver_component_rexi_z8(	-avg_geopotential*two_omega*two_omega, r);
-		}
-
-
-
-		sphSolverVel.setup(sphereDataConfigSolver, 2);
-		sphSolverVel.solver_component_rexi_z1(	alpha*alpha, r);
-		if (use_formulation_with_coriolis_effect)
-		{
-			sphSolverVel.solver_component_rexi_z2(	two_omega*two_omega, r);
-		}
-	}
-
-
-
-	/**
-	 * Setup the SWE REXI solver with SPH
-	 */
-	void setup_vectorinvariant_progphivortdiv(
-			SphereDataConfig *i_sphereDataConfig,
-			SphereDataConfig *i_sphereDataConfigSolver,
-
-			const std::complex<double> &i_alpha,
-			const std::complex<double> &i_beta,
-
-			double i_radius,
-			double i_coriolis_omega,
-			double i_avg_geopotential,
-			double i_timestep_size,
-
-			bool i_use_formulation_with_coriolis_effect,
-			bool i_use_f_sphere
-	)
-	{
-		sphereDataConfig = i_sphereDataConfig;
-		sphereDataConfigSolver = i_sphereDataConfigSolver;
-
-		use_formulation_with_coriolis_effect = i_use_formulation_with_coriolis_effect;
-		use_f_sphere = i_use_f_sphere;
-		timestep_size = i_timestep_size;
-
-		alpha = i_alpha/timestep_size;
-		beta = i_beta/timestep_size;
-
-		r = i_radius;
-		inv_r = 1.0/r;
-
-		coriolis_omega = i_coriolis_omega;
-
-		two_omega = 2.0*coriolis_omega;
-		avg_geopotential = i_avg_geopotential;
-
-		double gh = i_avg_geopotential;
-
-		op.setup(sphereDataConfig, r);
-		opComplex.setup(sphereDataConfig, r);
-
-		if (use_formulation_with_coriolis_effect && !use_f_sphere)
-			sphSolverPhi.setup(sphereDataConfigSolver, 2);
+		if (use_f_sphere)
+			coriolis = i_coriolis;
 		else
-			sphSolverPhi.setup(sphereDataConfigSolver, 0);
+			coriolis = 2.0*i_coriolis;
 
-		sphSolverPhi.solver_component_rexi_z1(	(alpha*alpha), r);
+		gh = i_avg_geopotential;
 
-		if (use_formulation_with_coriolis_effect)
+		op.setup(sphereDataConfig, r);
+		opComplex.setup(sphereDataConfig, r);
+
+		if (coriolis != 0)
 		{
 			if (use_f_sphere)
-				sphSolverPhi.solver_component_rexi_z1(	coriolis_omega*coriolis_omega, r);
+			{
+				// NOTHING TO DO HERE
+			}
 			else
-				sphSolverPhi.solver_component_rexi_z2(	two_omega*two_omega, r);
+			{
+				sphSolverPhi.setup(sphereDataConfigSolver, 4);
+				sphSolverPhi.solver_component_rexi_z1(	(alpha*alpha)*(alpha*alpha), r);
+				sphSolverPhi.solver_component_rexi_z2(	2.0*coriolis*coriolis*alpha*alpha, r);
+				sphSolverPhi.solver_component_rexi_z3(	(coriolis*coriolis)*(coriolis*coriolis), r);
+				sphSolverPhi.solver_component_rexi_z4robert(	-gh*alpha*coriolis, r);
+				sphSolverPhi.solver_component_rexi_z5robert(	gh/alpha*coriolis*coriolis*coriolis, r);
+				sphSolverPhi.solver_component_rexi_z6robert(	gh*2.0*coriolis*coriolis, r);
+				sphSolverPhi.solver_component_rexi_z7(	-gh*alpha*alpha, r);
+				sphSolverPhi.solver_component_rexi_z8(	-gh*coriolis*coriolis, r);
+
+				sphSolverVel.setup(sphereDataConfigSolver, 2);
+				sphSolverVel.solver_component_rexi_z1(	alpha*alpha, r);
+				sphSolverVel.solver_component_rexi_z2(	coriolis*coriolis, r);
+			}
 		}
-
-		sphSolverPhi.solver_component_rexi_z7(	-gh, r);
-
-//		std::cout << use_formulation_with_coriolis_effect << "\t" << use_f_sphere << "\t" << two_omega << "\t" << avg_geopotential << "\t" << r << "\t" << alpha << std::endl;
-
+		else
+		{
+			// NOTHING TO DO HERE
+		}
 	}
 
 
-	SphereDataComplex kappa(
-			const SphereDataComplex &i_data
-	)	const
-	{
-		return (alpha*alpha)*i_data + two_omega*two_omega*opComplex.mu2(i_data);
-	}
 
 
 	/**
@@ -243,6 +168,7 @@ public:
 		const SphereDataComplex u0 = Convert_SphereData_To_SphereDataComplex::physical_convert(i_u0);
 		const SphereDataComplex v0 = Convert_SphereData_To_SphereDataComplex::physical_convert(i_v0);
 
+#if 0
 #if 1
 		SphereDataComplex div0 = inv_r*opComplex.robert_div(u0, v0);
 		SphereDataComplex eta0 = inv_r*opComplex.robert_vort(u0, v0);
@@ -251,52 +177,59 @@ public:
 		SphereData div0r(sphereDataConfig);
 		SphereData eta0r(sphereDataConfig);
 		op.robert_uv_to_vortdiv(i_u0.getSphereDataPhysical(), i_v0.getSphereDataPhysical(), eta0r, div0r);
-		SphereDataComplex eta0 = Convert_SphereData_To_SphereDataComplex::physical_convert(eta0r);
-		SphereDataComplex div0 = Convert_SphereData_To_SphereDataComplex::physical_convert(div0r);
+		SphereDataComplex eta0 = Convert_SphereData_To_SphereDataComplex::physical_convert_real(eta0r);
+		SphereDataComplex div0 = Convert_SphereData_To_SphereDataComplex::physical_convert_real(div0r);
 #endif
 		SphereDataComplex phi(sphereDataConfig);
 		SphereDataComplex u(sphereDataConfig);
 		SphereDataComplex v(sphereDataConfig);
 
-		if (use_formulation_with_coriolis_effect)
+		if (coriolis != 0)
 		{
 #if 1
 			/**
 			 * Both versions (this and the version below) results of similar accuracy
 			 */
-			// only valid for Robert formulation!
-			SphereDataComplex foo = avg_geopotential*(div0 - two_omega*(1.0/alpha)*opComplex.mu(eta0)) +
-									(alpha*phi0 + two_omega*two_omega*(1.0/alpha)*opComplex.mu2(phi0));
-
 			SphereDataComplex rhs(sphereDataConfig);
 
 			if (use_f_sphere)
 			{
-				rhs =	alpha*alpha*foo +
-						two_omega*two_omega*opComplex.mu2(foo);
-			}
-			else
-			{
-				SphereDataComplex Fc_k =	two_omega*inv_r*(
-							-(alpha*alpha*u0 - two_omega*two_omega*opComplex.mu2(u0)) +
-							2.0*alpha*two_omega*opComplex.mu(v0)
+				SphereDataComplex foo = gh*(div0 - coriolis*(1.0/alpha)*eta0) +
+										(alpha*phi0 + coriolis*coriolis*(1.0/alpha)*phi0);
+
+				SphereDataComplex Fc_k =	coriolis*inv_r*(
+							-(alpha*alpha*u0 - coriolis*coriolis*(u0)) +
+							2.0*alpha*coriolis*(v0)
 						);
 
 				rhs =	alpha*alpha*foo +
-						two_omega*two_omega*opComplex.mu2(foo)
-						- (avg_geopotential/alpha)*Fc_k;
+						coriolis*coriolis*foo;
+			}
+			else
+			{
+				SphereDataComplex foo = gh*(div0 - coriolis*(1.0/alpha)*opComplex.mu(eta0)) +
+										(alpha*phi0 + coriolis*coriolis*(1.0/alpha)*opComplex.mu2(phi0));
+
+				SphereDataComplex Fc_k =	coriolis*inv_r*(
+							-(alpha*alpha*u0 - coriolis*coriolis*opComplex.mu2(u0)) +
+							2.0*alpha*coriolis*opComplex.mu(v0)
+						);
+
+				rhs =	alpha*alpha*foo +
+						coriolis*coriolis*opComplex.mu2(foo)
+						- (gh/alpha)*Fc_k;
 			}
 
 #else
 
-			double fj = inv_r*two_omega;
-			double phi_bar = avg_geopotential;
+			double fj = inv_r*coriolis;
+			double phi_bar = gh;
 
 			SphereDataComplex f(sphereDataConfig);
 			f.physical_update_lambda_gaussian_grid(
 					[&](double lon, double mu, std::complex<double> &o_data)
 					{
-						o_data = mu*two_omega;
+						o_data = mu*coriolis;
 					}
 				);
 
@@ -319,30 +252,209 @@ public:
 			SphereDataComplex a = u0 + inv_r*opComplex.robert_grad_lon(phi);
 			SphereDataComplex b = v0 + inv_r*opComplex.robert_grad_lat(phi);
 
-			SphereDataComplex rhsa = alpha*a - two_omega*opComplex.mu(b);
-			SphereDataComplex rhsb = two_omega*opComplex.mu(a) + alpha*b;
+			SphereDataComplex rhsa(sphereDataConfig);
+			SphereDataComplex rhsb(sphereDataConfig);
+
+			if (use_f_sphere)
+			{
+				rhsa = alpha*a - coriolis*b;
+				rhsb = coriolis*a + alpha*b;
+			}
+			else
+			{
+				rhsa = alpha*a - coriolis*opComplex.mu(b);
+				rhsb = coriolis*opComplex.mu(a) + alpha*b;
+			}
 
 			u = sphSolverVel.solve(rhsa.spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
 			v = sphSolverVel.solve(rhsb.spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
 		}
 		else
 		{
-			SphereDataComplex rhs = avg_geopotential*div0 + alpha*phi0;
-			phi = rhs.spectral_solve_helmholtz(alpha*alpha, -avg_geopotential, r);
+			SphereDataComplex rhs = gh*div0 + alpha*phi0;
+			phi = rhs.spectral_solve_helmholtz(alpha*alpha, -gh, r);
+
+			u = (1.0/alpha) * (u0 + inv_r*opComplex.robert_grad_lon(phi));
+			v = (1.0/alpha) * (v0 + inv_r*opComplex.robert_grad_lat(phi));
+		}
+#endif
+
+
+		SphereDataComplex div0 = inv_r*opComplex.robert_div(u0, v0);
+		SphereDataComplex vort0 = inv_r*opComplex.robert_vort(u0, v0);
+
+		SphereDataComplex phi(sphereDataConfig);
+		SphereDataComplex u(sphereDataConfig);
+		SphereDataComplex v(sphereDataConfig);
+
+		if (coriolis != 0)
+		{
+			if (use_f_sphere)
+			{
+				SphereDataComplex rhs = gh*(div0 - coriolis/alpha*vort0) + (alpha+coriolis*coriolis/alpha)*phi0;
+				phi = rhs.spectral_solve_helmholtz(alpha*alpha + coriolis*coriolis, -gh, r);
+
+				std::complex<double> inv_k = 1.0/(coriolis*coriolis + alpha*alpha);
+				SphereDataComplex a = u0 + inv_r*opComplex.robert_grad_lon(phi);
+				SphereDataComplex b = v0 + inv_r*opComplex.robert_grad_lat(phi);
+				u = (inv_k*alpha)*a - (inv_k*coriolis)*b;
+				v = (inv_k*coriolis)*a + (inv_k*alpha)*b;
+			}
+			else
+			{
+				SphereDataComplex Fc_k =
+						coriolis*inv_r*(
+							-(alpha*alpha*u0 - coriolis*coriolis*opComplex.mu2(u0)) +
+							2.0*alpha*coriolis*opComplex.mu(v0)
+						);
+
+				SphereDataComplex foo =
+						gh*(div0 - coriolis*(1.0/alpha)*opComplex.mu(vort0)) +
+						(alpha*phi0 + coriolis*coriolis*(1.0/alpha)*opComplex.mu2(phi0));
+
+				SphereDataComplex rhs =	alpha*alpha*foo +
+						coriolis*coriolis*opComplex.mu2(foo)
+						- (gh/alpha)*Fc_k;
+
+
+				phi = sphSolverPhi.solve(rhs.spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
+
+				SphereDataComplex a = u0 + inv_r*opComplex.robert_grad_lon(phi);
+				SphereDataComplex b = v0 + inv_r*opComplex.robert_grad_lat(phi);
+
+				SphereDataComplex rhsa(sphereDataConfig);
+				SphereDataComplex rhsb(sphereDataConfig);
+
+				rhsa = alpha*a - coriolis*opComplex.mu(b);
+				rhsb = coriolis*opComplex.mu(a) + alpha*b;
+
+				u = sphSolverVel.solve(rhsa.spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
+				v = sphSolverVel.solve(rhsb.spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
+			}
+		}
+		else
+		{
+			SphereDataComplex rhs = gh*div0 + alpha*phi0;
+			phi = rhs.spectral_solve_helmholtz(alpha*alpha, -gh, r);
 
 			u = (1.0/alpha) * (u0 + inv_r*opComplex.robert_grad_lon(phi));
 			v = (1.0/alpha) * (v0 + inv_r*opComplex.robert_grad_lat(phi));
 		}
 
-		o_phi = Convert_SphereDataComplex_To_SphereData::physical_convert(phi * beta);
-		o_u = Convert_SphereDataComplex_To_SphereData::physical_convert(u * beta);
-		o_v = Convert_SphereDataComplex_To_SphereData::physical_convert(v * beta);
+
+		o_phi = Convert_SphereDataComplex_To_SphereData::physical_convert_real(phi * beta);
+		o_u = Convert_SphereDataComplex_To_SphereData::physical_convert_real(u * beta);
+		o_v = Convert_SphereDataComplex_To_SphereData::physical_convert_real(v * beta);
 	}
 
 
 
 
 
+	/**
+	 * Setup the SWE REXI solver with SPH
+	 */
+	void setup_vectorinvariant_progphivortdiv(
+			SphereDataConfig *i_sphereDataConfig,
+			SphereDataConfig *i_sphereDataConfigSolver,
+
+			const std::complex<double> &i_alpha,
+			const std::complex<double> &i_beta,
+
+			double i_radius,
+			double i_coriolis,
+			double i_avg_geopotential,
+			double i_timestep_size,
+
+			bool i_use_f_sphere,
+			int i_variant_id = 0
+	)
+	{
+		sphereDataConfig = i_sphereDataConfig;
+		sphereDataConfigSolver = i_sphereDataConfigSolver;
+
+		use_f_sphere = i_use_f_sphere;
+		timestep_size = i_timestep_size;
+
+		alpha = i_alpha/timestep_size;
+		beta = i_beta/timestep_size;
+
+		r = i_radius;
+		inv_r = 1.0/r;
+
+		variant_id = i_variant_id;
+
+		if (use_f_sphere)
+			coriolis = i_coriolis;
+		else
+			coriolis = 2.0*i_coriolis;
+
+		gh = i_avg_geopotential;
+
+		op.setup(sphereDataConfig, r);
+		opComplex.setup(sphereDataConfig, r);
+
+
+		if (coriolis != 0)
+		{
+			if (use_f_sphere)
+			{
+				// Not needed
+			}
+			else
+			{
+				sphSolverPhi.setup(sphereDataConfigSolver, 4);
+				sphSolverPhi.solver_component_rexi_z1(	(alpha*alpha)*(alpha*alpha), r);
+				sphSolverPhi.solver_component_rexi_z2(	2.0*coriolis*coriolis*alpha*alpha, r);
+				sphSolverPhi.solver_component_rexi_z3(	(coriolis*coriolis)*(coriolis*coriolis), r);
+				sphSolverPhi.solver_component_rexi_z4robert(	-gh*alpha*coriolis, r);
+				sphSolverPhi.solver_component_rexi_z5robert(	gh/alpha*coriolis*coriolis*coriolis, r);
+				sphSolverPhi.solver_component_rexi_z6robert(	gh*2.0*coriolis*coriolis, r);
+				sphSolverPhi.solver_component_rexi_z7(	-gh*alpha*alpha, r);
+				sphSolverPhi.solver_component_rexi_z8(	-gh*coriolis*coriolis, r);
+
+				mug.setup(sphereDataConfig);
+				mug.physical_update_lambda_gaussian_grid(
+					[&](double lon, double mu, std::complex<double> &o_data)
+					{
+						o_data = mu;
+					}
+				);
+
+				if (variant_id == 1)
+				{
+					sphSolverVel.setup(sphereDataConfigSolver, 2);
+					sphSolverVel.solver_component_rexi_z1(	alpha*alpha, r);
+					sphSolverVel.solver_component_rexi_z2(	coriolis*coriolis, r);
+				}
+			}
+		}
+		else
+		{
+			// Not needed
+		}
+#if 0
+		if (coriolis != 0 && !use_f_sphere)
+			sphSolverPhi.setup(sphereDataConfigSolver, 2);
+		else
+			sphSolverPhi.setup(sphereDataConfigSolver, 0);
+
+		sphSolverPhi.solver_component_rexi_z1(	(alpha*alpha), r);
+
+		if (coriolis != 0)
+		{
+			if (use_f_sphere)
+				sphSolverPhi.solver_component_rexi_z1(	coriolis*coriolis, r);
+			else
+				sphSolverPhi.solver_component_rexi_z2(	coriolis*coriolis, r);
+		}
+
+		sphSolverPhi.solver_component_rexi_z7(	-gh, r);
+#endif
+	}
+
+
+#if 0
 	/**
 	 * Solve a REXI time step for the given initial conditions
 	 */
@@ -365,7 +477,7 @@ public:
 		fg.physical_update_lambda_gaussian_grid(
 			[&](double lon, double mu, std::complex<double> &o_data)
 			{
-				o_data = mu;
+				o_data = mu*coriolis;
 			}
 		);
 
@@ -387,7 +499,7 @@ public:
 		SphereDataComplex v;
 
 
-		if (use_formulation_with_coriolis_effect)
+		if (coriolis != 0)
 		{
 			/**
 			 * Both versions (this and the version below) results of similar accuracy
@@ -395,30 +507,30 @@ public:
 			// only valid for Robert formulation!
 
 #if 1
-			SphereDataPhysicalComplex Fc_k = two_omega*inv_r*(
-										-(alpha*alpha*u0 - two_omega*two_omega*fg*fg*u0) +
-										2.0*alpha*two_omega*fg*v0
+			SphereDataPhysicalComplex Fc_k = coriolis*inv_r*(
+										-(alpha*alpha*u0 - coriolis*coriolis*fg*fg*u0) +
+										2.0*alpha*coriolis*fg*v0
 									);
 
-			SphereDataPhysicalComplex foo = 	avg_geopotential*(div0 - two_omega*(1.0/alpha)*fg*eta0) +
-										(alpha*phi0 + two_omega*two_omega*(1.0/alpha)*fg*fg*phi0);
+			SphereDataPhysicalComplex foo = 	gh*(div0 - coriolis*(1.0/alpha)*fg*eta0) +
+										(alpha*phi0 + coriolis*coriolis*(1.0/alpha)*fg*fg*phi0);
 
 			SphereDataPhysicalComplex rhs =	alpha*alpha*foo +
-									two_omega*two_omega*fg*fg*foo
-									- (avg_geopotential/alpha)*Fc_k;
+									coriolis*coriolis*fg*fg*foo
+									- (gh/alpha)*Fc_k;
 
 #else
-			SphereDataComplex Fc_k =	two_omega*inv_r*(
-										-(alpha*alpha*(SphereDataComplex)u0 - two_omega*two_omega*opComplex.mu2(u0)) +
-										2.0*alpha*two_omega*opComplex.mu(v0)
+			SphereDataComplex Fc_k =	coriolis*inv_r*(
+										-(alpha*alpha*(SphereDataComplex)u0 - coriolis*coriolis*opComplex.mu2(u0)) +
+										2.0*alpha*coriolis*opComplex.mu(v0)
 									);
 
-			SphereDataComplex foo = 	avg_geopotential*((SphereDataComplex)div0 - two_omega*(1.0/alpha)*opComplex.mu(eta0)) +
-										(alpha*(SphereDataComplex)phi0 + two_omega*two_omega*(1.0/alpha)*opComplex.mu2(phi0));
+			SphereDataComplex foo = 	gh*((SphereDataComplex)div0 - coriolis*(1.0/alpha)*opComplex.mu(eta0)) +
+										(alpha*(SphereDataComplex)phi0 + coriolis*coriolis*(1.0/alpha)*opComplex.mu2(phi0));
 
 			SphereDataComplex rhs =	alpha*alpha*foo +
-									two_omega*two_omega*opComplex.mu2(foo)
-									- (avg_geopotential/alpha)*Fc_k;
+									coriolis*coriolis*opComplex.mu2(foo)
+									- (gh/alpha)*Fc_k;
 #endif
 
 			phi = sphSolverPhi.solve(((SphereDataComplex)rhs).spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
@@ -427,8 +539,8 @@ public:
 			SphereDataPhysicalComplex a = u0 + inv_r*(opComplex.robert_grad_lon(phi)).getSphereDataPhysicalComplex();
 			SphereDataPhysicalComplex b = v0 + inv_r*(opComplex.robert_grad_lat(phi)).getSphereDataPhysicalComplex();
 
-			SphereDataComplex rhsa = alpha*a - two_omega*fg*b;
-			SphereDataComplex rhsb = two_omega*fg*a + alpha*b;
+			SphereDataComplex rhsa = alpha*a - coriolis*fg*b;
+			SphereDataComplex rhsb = coriolis*fg*a + alpha*b;
 
 			u = sphSolverVel.solve(((SphereDataComplex)rhsa).spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
 			v = sphSolverVel.solve(((SphereDataComplex)rhsb).spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
@@ -438,8 +550,8 @@ public:
 			SphereDataComplex a = (SphereDataComplex)u0 + inv_r*opComplex.robert_grad_lon(phi);
 			SphereDataComplex b = (SphereDataComplex)v0 + inv_r*opComplex.robert_grad_lat(phi);
 
-			SphereDataComplex rhsa = alpha*a - two_omega*opComplex.mu(b);
-			SphereDataComplex rhsb = two_omega*opComplex.mu(a) + alpha*b;
+			SphereDataComplex rhsa = alpha*a - coriolis*opComplex.mu(b);
+			SphereDataComplex rhsb = coriolis*opComplex.mu(a) + alpha*b;
 
 			u = sphSolverVel.solve(rhsa.spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
 			v = sphSolverVel.solve(rhsb.spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
@@ -447,17 +559,18 @@ public:
 		}
 		else
 		{
-			SphereDataComplex rhs = avg_geopotential*div0 + alpha*phi0;
-			phi = rhs.spectral_solve_helmholtz(alpha*alpha, -avg_geopotential, r);
+			SphereDataComplex rhs = gh*div0 + alpha*phi0;
+			phi = rhs.spectral_solve_helmholtz(alpha*alpha, -gh, r);
 
 			u = (1.0/alpha) * (u0 + inv_r*opComplex.robert_grad_lon(phi).getSphereDataPhysicalComplex());
 			v = (1.0/alpha) * (v0 + inv_r*opComplex.robert_grad_lat(phi).getSphereDataPhysicalComplex());
 		}
 
-		o_phi = Convert_SphereDataComplex_To_SphereData::physical_convert(phi * beta);
-		o_u = Convert_SphereDataComplex_To_SphereData::physical_convert(u * beta);
-		o_v = Convert_SphereDataComplex_To_SphereData::physical_convert(v * beta);
+		o_phi = Convert_SphereDataComplex_To_SphereData::physical_convert_real(phi * beta);
+		o_u = Convert_SphereDataComplex_To_SphereData::physical_convert_real(u * beta);
+		o_v = Convert_SphereDataComplex_To_SphereData::physical_convert_real(v * beta);
 	}
+#endif
 
 
 
@@ -467,91 +580,129 @@ public:
 	inline
 	void solve_vectorinvariant_progphivortdiv(
 			const SphereData &i_phi0,
-			const SphereData &i_eta0,
+			const SphereData &i_vort0,
 			const SphereData &i_div0,
 
 			SphereData &o_phi,
-			SphereData &o_eta,
+			SphereData &o_vort,
 			SphereData &o_div
 	)
 	{
-		const SphereDataComplex phi0c = Convert_SphereData_To_SphereDataComplex::physical_convert(i_phi0);
-		const SphereDataComplex eta0c = Convert_SphereData_To_SphereDataComplex::physical_convert(i_eta0);
-		const SphereDataComplex div0c = Convert_SphereData_To_SphereDataComplex::physical_convert(i_div0);
+		const SphereDataComplex phi0 = Convert_SphereData_To_SphereDataComplex::physical_convert(i_phi0);
+		const SphereDataComplex vort0 = Convert_SphereData_To_SphereDataComplex::physical_convert(i_vort0);
+		const SphereDataComplex div0 = Convert_SphereData_To_SphereDataComplex::physical_convert(i_div0);
 
 
 		SphereDataComplex phi(sphereDataConfig);
-		SphereDataComplex eta(sphereDataConfig);
+		SphereDataComplex vort(sphereDataConfig);
 		SphereDataComplex div(sphereDataConfig);
 
-		if (use_formulation_with_coriolis_effect)
+
+		if (coriolis != 0)
 		{
-			SphereDataComplex rhs =
-								avg_geopotential*div0c
-								+ alpha*phi0c;
-
-			if (use_formulation_with_coriolis_effect)
+			if (use_f_sphere)
 			{
-				if (use_f_sphere)
-				{
-					rhs = rhs
-						+ (coriolis_omega*coriolis_omega/alpha)*(phi0c)
-						- (avg_geopotential*coriolis_omega/alpha)*(eta0c);
-				}
-				else
-				{
-					rhs = rhs
-						+ (two_omega*two_omega/alpha)*opComplex.mu2(phi0c)
-						- (avg_geopotential*two_omega/alpha)*opComplex.mu(eta0c);
-				}
+				SphereDataComplex rhs = gh*(div0 - coriolis/alpha*vort0) + (alpha+coriolis*coriolis/alpha)*phi0;
+				phi = rhs.spectral_solve_helmholtz(alpha*alpha + coriolis*coriolis, -gh, r);
+
+				div = -1.0/gh*(phi0 - alpha*phi);
+				vort = (1.0/alpha)*(vort0 + coriolis*(div));
 			}
-
-			phi = sphSolverPhi.solve(
-										((SphereDataComplex)rhs).spectral_returnWithDifferentModes(sphereDataConfigSolver)
-									).spectral_returnWithDifferentModes(sphereDataConfig);
-
-			div = -1.0/avg_geopotential*(phi0c - alpha*phi);
-
-
-			if (use_formulation_with_coriolis_effect)
+			else
 			{
-				if (use_f_sphere)
-					eta = (1.0/alpha)*(eta0c + coriolis_omega*(div));
+#if 1
+				SphereDataPhysicalComplex u0g(sphereDataConfig);
+				SphereDataPhysicalComplex v0g(sphereDataConfig);
+				opComplex.robert_vortdiv_to_uv(vort0, div0, u0g, v0g, r);
+
+				SphereDataComplex Fc_k =
+						coriolis*inv_r*(
+								-(-coriolis*coriolis*mug*mug + alpha*alpha)*u0g
+								+ 2.0*alpha*coriolis*mug*v0g
+						);
+
+#else
+
+				SphereData psi = vort0.spectral_solve_laplace(r);
+				SphereData chi = div0.spectral_solve_laplace(r);
+
+//				SphereData u0 =
+#endif
+#if 0
+				SphereData Fc_k =
+						coriolis*inv_r*(
+								-(alpha*alpha*u0 - coriolis*coriolis*mu2_u0g) +
+								2.0*alpha*coriolis*mu_v0g
+//								-(alpha*alpha*u0 - coriolis*coriolis*op.mu2(u0)) +
+//								2.0*alpha*coriolis*op.mu(v0)
+						);
+#endif
+
+				SphereDataComplex foo =
+						gh*(div0 - coriolis*(1.0/alpha)*opComplex.mu(vort0)) +
+						(alpha*phi0 + coriolis*coriolis*(1.0/alpha)*opComplex.mu2(phi0));
+
+				SphereDataComplex rhs =	alpha*alpha*foo +
+						coriolis*coriolis*opComplex.mu2(foo)
+						- (gh/alpha)*Fc_k;
+
+				phi = sphSolverPhi.solve(rhs.spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
+
+				if (variant_id == 0)
+				{
+					/*
+					 * Solve without inverting a matrix
+					 */
+					SphereDataPhysicalComplex u0(sphereDataConfig);
+					SphereDataPhysicalComplex v0(sphereDataConfig);
+
+					opComplex.robert_vortdiv_to_uv(vort0, div0, u0, v0, r);
+
+					SphereDataPhysicalComplex a = u0 + inv_r*opComplex.robert_grad_lon(phi).getSphereDataPhysicalComplex();
+					SphereDataPhysicalComplex b = v0 + inv_r*opComplex.robert_grad_lat(phi).getSphereDataPhysicalComplex();
+
+					SphereDataPhysicalComplex k = (coriolis*coriolis*mug*mug+alpha*alpha);
+					SphereDataPhysicalComplex u = (alpha*a - coriolis*mug*(b))/k;
+					SphereDataPhysicalComplex v = (coriolis*mug*(a) + alpha*b)/k;
+
+					opComplex.robert_uv_to_vortdiv(u, v, vort, div, r);
+				}
+				else if (variant_id == 1)
+				{
+					FatalError("Variant not supported");
+					/*
+					 * Solve with inverting a matrix
+					 */
+#if 0
+					SphereDataComplex a = u0 + inv_r*opComplex.robert_grad_lon(phi);
+					SphereDataComplex b = v0 + inv_r*opComplex.robert_grad_lat(phi);
+
+					SphereDataComplex rhsa = alpha*a - coriolis*opComplex.mu(b);
+					SphereDataComplex rhsb = coriolis*opComplex.mu(a) + alpha*b;
+
+					u = sphSolverVel.solve(rhsa.spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
+					v = sphSolverVel.solve(rhsb.spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
+#endif
+				}
 				else
-					eta = (1.0/alpha)*(eta0c + two_omega*opComplex.mu(div));
+				{
+					FatalError("Variant not supported");
+				}
 			}
 		}
 		else
 		{
-#if 1
+			SphereDataComplex rhs = gh*div0 + alpha*phi0;
+			phi = rhs.spectral_solve_helmholtz(alpha*alpha, -gh, r);
 
-			SphereDataComplex rhs =
-								avg_geopotential*div0c
-								+ alpha*phi0c;
-
-			phi = sphSolverPhi.solve(
-								((SphereDataComplex)rhs).spectral_returnWithDifferentModes(sphereDataConfigSolver)
-							).spectral_returnWithDifferentModes(sphereDataConfig);
-
-
-			div = -1.0/avg_geopotential*(phi0c - alpha*phi);
-			eta = 1.0/alpha*(eta0c);
-
-#else
-
-			SphereDataComplex rhs = avg_geopotential*div0c + alpha*phi0c;
-			phi = rhs.spectral_solve_helmholtz(alpha*alpha, -avg_geopotential, r);
-
-			div = -1.0/avg_geopotential*(phi0c - alpha*phi);
-
-			eta = 1.0/alpha*(eta0c);
-
-#endif
+			div = -1.0/gh*(phi0 - alpha*phi);
+			vort = 1.0/alpha*(vort0);
 		}
 
-		o_phi = Convert_SphereDataComplex_To_SphereData::physical_convert(phi * beta);
-		o_eta = Convert_SphereDataComplex_To_SphereData::physical_convert(eta * beta);
-		o_div = Convert_SphereDataComplex_To_SphereData::physical_convert(div * beta);
+
+		o_phi = Convert_SphereDataComplex_To_SphereData::physical_convert_real(phi * beta);
+		o_vort = Convert_SphereDataComplex_To_SphereData::physical_convert_real(vort * beta);
+		o_div = Convert_SphereDataComplex_To_SphereData::physical_convert_real(div * beta);
 	}
 
 

@@ -5,35 +5,28 @@
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#ifndef SRC_INCLUDE_SWEET_SPHERE_CONVERT_SPHEREDATACOMPLEX_TO_SPHEREDATA_HPP_
-#define SRC_INCLUDE_SWEET_SPHERE_CONVERT_SPHEREDATACOMPLEX_TO_SPHEREDATA_HPP_
+#ifndef SRC_INCLUDE_SWEET_SPHERE_CONVERT_SPHEREDATAPHYSICALCOMPLEX_TO_SPHEREDATAPHYSICAL_HPP_
+#define SRC_INCLUDE_SWEET_SPHERE_CONVERT_SPHEREDATAPHYSICALCOMPLEX_TO_SPHEREDATAPHYSICAL_HPP_
 
 #include <sweet/sphere/SphereData.hpp>
 #include <sweet/sphere/SphereDataComplex.hpp>
 #include <sweet/ScalarDataArray.hpp>
 
-class Convert_SphereDataComplex_To_SphereData
+class Convert_SphereDataPhysicalComplex_To_SphereDataPhysical
 {
 public:
 	static
-	SphereData physical_convert_real(
-			const SphereDataComplex &i_sphereData
+	SphereDataPhysical physical_convert_real(
+			const SphereDataPhysicalComplex &i_sphereData
 	)
 	{
-		i_sphereData.request_data_physical();
-
-		SphereData out(i_sphereData.sphereDataConfig);
+		SphereDataPhysical out(i_sphereData.sphereDataConfig);
 
 #if SWEET_THREADING
 #pragma omp parallel for
 #endif
 		for (int i = 0; i < out.sphereDataConfig->physical_array_data_number_of_elements; i++)
 			out.physical_space_data[i] = i_sphereData.physical_space_data[i].real();
-
-#if SWEET_USE_SPHERE_SPECTRAL_SPACE
-		out.physical_space_data_valid = true;
-		out.spectral_space_data_valid = false;
-#endif
 
 		return out;
 	}
@@ -42,13 +35,11 @@ public:
 
 public:
 	static
-	SphereData physical_convert_imag(
-			const SphereDataComplex &i_sphereData
+	SphereDataPhysical physical_convert_imag(
+			const SphereDataPhysicalComplex &i_sphereData
 	)
 	{
-		i_sphereData.request_data_physical();
-
-		SphereData out(i_sphereData.sphereDataConfig);
+		SphereDataPhysical out(i_sphereData.sphereDataConfig);
 
 #if SWEET_THREADING
 #pragma omp parallel for
@@ -56,10 +47,6 @@ public:
 		for (int i = 0; i < out.sphereDataConfig->physical_array_data_number_of_elements; i++)
 			out.physical_space_data[i] = i_sphereData.physical_space_data[i].imag();
 
-#if SWEET_USE_SPHERE_SPECTRAL_SPACE
-		out.physical_space_data_valid = true;
-		out.spectral_space_data_valid = false;
-#endif
 
 		return out;
 	}

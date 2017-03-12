@@ -408,7 +408,6 @@ public:
 				o_v.physical_space_data
 		);
 
-
 		o_u.physical_update_lambda_cosphi_grid(
 			[&](double lon, double phi, double &o_data)
 			{
@@ -1027,7 +1026,6 @@ public:
 	)	const
 	{
 		SphereData out(i_sph_data);
-		out.request_data_spectral();
 
 		out.spectral_update_lambda(
 				[&](int n, int m, std::complex<double> &o_data)
@@ -1038,6 +1036,9 @@ public:
 						o_data = 0;
 				}
 			);
+
+		out.spectral_space_data_valid = true;
+		out.physical_space_data_valid = false;
 
 		return out;
 	}

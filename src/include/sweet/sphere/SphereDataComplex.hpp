@@ -96,6 +96,30 @@ public:
 
 
 
+	/*
+	 * load real and imaginary data from physical arrays
+	 */
+	void loadRealImag(
+			const SphereData &i_re,
+			const SphereData &i_im
+	)
+	{
+		i_re.request_data_physical();
+		i_im.request_data_physical();
+
+		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+		{
+			physical_space_data[i].real(i_re.physical_space_data[i]);
+			physical_space_data[i].imag(i_im.physical_space_data[i]);
+		}
+
+		physical_space_data_valid = true;
+		spectral_space_data_valid = false;
+	}
+
+
+
+
 	/**
 	 * Run validation checks to make sure that the physical and spectral spaces match in size
 	 */
