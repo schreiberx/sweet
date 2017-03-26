@@ -163,7 +163,6 @@ void SWE_Sphere_REXI::setup(
 
 		int i_rexi_use_extended_modes,
 		int i_rexi_normalization,
-//		bool i_use_coriolis_rexi_formulation,
 		bool i_use_f_sphere,
 
 		bool i_use_rexi_sphere_preallocation	///< preallocate all rexi coefficients (might fail because of memory limitations)
@@ -892,7 +891,7 @@ bool SWE_Sphere_REXI::run_timestep_rexi_vectorinvariant_progphivortdiv(
 			else
 			{
 				FatalError("Non-Robert function not supported");
-
+#if 0
 				if (use_rexi_preallocation)
 				{
 					perThreadVars[thread_id]->rexiSPH_vector[local_idx].solve(
@@ -925,6 +924,7 @@ bool SWE_Sphere_REXI::run_timestep_rexi_vectorinvariant_progphivortdiv(
 							tmp_prog_phi, tmp_prog_u, tmp_prog_v
 						);
 				}
+#endif
 			}
 
 

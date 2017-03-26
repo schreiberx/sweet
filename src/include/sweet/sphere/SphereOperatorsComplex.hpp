@@ -743,6 +743,72 @@ public:
 	}
 
 
+	/**
+	 * Convert vorticity/divergence field to u,v velocity field
+	 */
+	void robert_grad_to_vec(
+			const SphereDataComplex &i_phi,
+			SphereDataPhysicalComplex &o_u,
+			SphereDataPhysicalComplex &o_v,
+			double i_radius
+
+	)	const
+	{
+		double ir = 1.0/i_radius;
+
+		i_phi.request_data_spectral();
+
+		SphereDataComplex psi(sphereDataConfig);
+		psi.spectral_set_zero();
+		const SphereDataComplex &chi = i_phi;
+
+		SphereData psi_re(sphereDataConfig);	psi_re.spectral_set_zero();
+		SphereData psi_im(sphereDataConfig);	psi_im.spectral_set_zero();
+
+		SphereData chi_re = Convert_SphereDataComplex_To_SphereData::physical_convert_real(chi);
+		SphereData chi_im = Convert_SphereDataComplex_To_SphereData::physical_convert_imag(chi);
+
+		chi_re.request_data_spectral();
+		SphereDataPhysical u_re(sphereDataConfig);
+		SphereDataPhysical v_re(sphereDataConfig);
+		SHsphtor_to_spat(
+				sphereDataConfig->shtns,
+				psi_re.spectral_space_data,
+				chi_re.spectral_space_data,
+				u_re.physical_space_data,
+				v_re.physical_space_data
+		);
+
+		psi_im.request_data_spectral();
+		chi_im.request_data_spectral();
+		SphereDataPhysical u_im(sphereDataConfig);
+		SphereDataPhysical v_im(sphereDataConfig);
+		SHsphtor_to_spat(
+				sphereDataConfig->shtns,
+				psi_im.spectral_space_data,
+				chi_im.spectral_space_data,
+				u_im.physical_space_data,
+				v_im.physical_space_data
+		);
+
+		o_u.loadRealImag(u_re, u_im);
+		o_u.physical_update_lambda_cosphi_grid(
+			[&](double lon, double phi, std::complex<double> &o_data)
+			{
+				o_data *= phi*ir;
+			}
+		);
+
+		o_v.loadRealImag(v_re, v_im);
+		o_v.physical_update_lambda_cosphi_grid(
+			[&](double lon, double phi, std::complex<double> &o_data)
+			{
+				o_data *= phi*ir;
+			}
+		);
+	}
+
+
 
 public:
 	/**

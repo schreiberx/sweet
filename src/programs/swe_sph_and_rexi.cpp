@@ -524,6 +524,29 @@ public:
 
 		switch(simVars.pde.id)
 		{
+		default:
+			{
+				SphereData tmp_vort(prog_vort);
+				SphereData tmp_div(prog_div);
+
+				output_filename = write_file(prog_h, "prog_h", simVars.setup.benchmark_scenario_id == 0);
+				std::cout << output_filename << " (min: " << SphereData(prog_h).physical_reduce_min() << ", max: " << SphereData(prog_h).physical_reduce_max() << ")" << std::endl;
+
+				output_filename = write_file(prog_u, "prog_u", simVars.setup.benchmark_scenario_id == 0);
+				std::cout << output_filename << std::endl;
+
+				output_filename = write_file(prog_v, "prog_v", simVars.setup.benchmark_scenario_id == 0);
+				std::cout << output_filename << std::endl;
+
+
+				if (simVars.misc.sphere_use_robert_functions)
+					output_filename = write_file(op.robert_uv_to_vort(prog_u.getSphereDataPhysical(), prog_v.getSphereDataPhysical())/simVars.sim.earth_radius, "prog_eta", simVars.setup.benchmark_scenario_id == 0);
+				else
+					output_filename = write_file(op.vort(SphereData(prog_u), SphereData(prog_v))/simVars.sim.earth_radius, "prog_eta", simVars.setup.benchmark_scenario_id == 0);
+				std::cout << output_filename << std::endl;
+			}
+			break;
+
 		case 1:
 			{
 				SphereData h = prog_phi*(1.0/simVars.sim.gravitation);
@@ -548,39 +571,18 @@ public:
 				std::cout << output_filename << std::endl;
 			}
 			break;
-
-		default:
-			{
-				SphereData tmp_vort(prog_vort);
-				SphereData tmp_div(prog_div);
-
-				output_filename = write_file(prog_h, "prog_h", simVars.setup.benchmark_scenario_id == 0);
-				std::cout << output_filename << " (min: " << SphereData(prog_h).physical_reduce_min() << ", max: " << SphereData(prog_h).physical_reduce_max() << ")" << std::endl;
-
-				output_filename = write_file(prog_u, "prog_u", simVars.setup.benchmark_scenario_id == 0);
-				std::cout << output_filename << std::endl;
-
-				output_filename = write_file(prog_v, "prog_v", simVars.setup.benchmark_scenario_id == 0);
-				std::cout << output_filename << std::endl;
-
-
-				if (simVars.misc.sphere_use_robert_functions)
-					output_filename = write_file(op.robert_uv_to_vort(prog_u.getSphereDataPhysical(), prog_v.getSphereDataPhysical())/simVars.sim.earth_radius, "prog_eta", simVars.setup.benchmark_scenario_id == 0);
-				else
-					output_filename = write_file(op.vort(SphereData(prog_u), SphereData(prog_v))/simVars.sim.earth_radius, "prog_eta", simVars.setup.benchmark_scenario_id == 0);
-				std::cout << output_filename << std::endl;
-			}
 		}
 
 
 
-		/*
-		 * write reference solution
-		 */
-#if 0
-		if (	param_compute_error &&
-				simVars.misc.use_nonlinear_equations == 0 &&
-				simVars.setup_velocityformulation_progphiuv.benchmark_scenario_id == 10
+#if 1
+		if (
+			param_compute_error &&
+			simVars.misc.use_nonlinear_equations == 0 &&
+			(
+				simVars.setup.benchmark_scenario_id == 10 ||
+				simVars.setup.benchmark_scenario_id == 11
+			)
 		)
 		{
 			SphereData test_h(sphereDataConfig);
@@ -589,29 +591,50 @@ public:
 
 			SphereBenchmarksCombined::setupInitialConditions(test_h, test_u, test_v, simVars, op);
 
+			switch (simVars.pde.id)
+			{
+				default:
+				{
+					output_filename = write_file(test_h, "reference_h", simVars.setup.benchmark_scenario_id == 0);
+					std::cout << output_filename << std::endl;
 
-			output_filename = write_file(test_h, "reference_h", simVars.setup_velocityformulation_progphiuv.benchmark_scenario_id == 0);
-			std::cout << output_filename << std::endl;
+					output_filename = write_file(test_u, "reference_u", simVars.setup.benchmark_scenario_id == 0);
+					std::cout << output_filename << std::endl;
 
-			output_filename = write_file(test_u, "reference_u", simVars.setup_velocityformulation_progphiuv.benchmark_scenario_id == 0);
-			std::cout << output_filename << std::endl;
+					output_filename = write_file(test_v, "reference_v", simVars.setup.benchmark_scenario_id == 0);
+					std::cout << output_filename << std::endl;
 
-			output_filename = write_file(test_v, "reference_v", simVars.setup_velocityformulation_progphiuv.benchmark_scenario_id == 0);
-			std::cout << output_filename << std::endl;
+					output_filename = write_file((SphereData(prog_h)-SphereData(test_h)), "ref_diff_h", simVars.setup.benchmark_scenario_id == 0);
+					std::cout << output_filename << std::endl;
 
+					output_filename = write_file(SphereData(prog_u)-SphereData(test_u), "ref_diff_u", simVars.setup.benchmark_scenario_id == 0);
+					std::cout << output_filename << std::endl;
 
+					output_filename = write_file(SphereData(prog_v)-SphereData(test_v), "ref_diff_v", simVars.setup.benchmark_scenario_id == 0);
+					std::cout << output_filename << std::endl;
+				}
+				break;
 
-			output_filename = write_file((SphereData(prog_h)-SphereData(test_h)), "ref_diff_h", simVars.setup_velocityformulation_progphiuv.benchmark_scenario_id == 0);
-			std::cout << output_filename << std::endl;
+				case 1:	// vorticity/divergence formulation
+				{
+					SphereData h = prog_phi*(1.0/simVars.sim.gravitation);
 
-			output_filename = write_file((SphereData(prog_u)-SphereData(test_u)), "ref_diff_u", simVars.setup_velocityformulation_progphiuv.benchmark_scenario_id == 0);
-			std::cout << output_filename << std::endl;
+					output_filename = write_file(h-SphereData(test_h), "ref_diff_h", simVars.setup.benchmark_scenario_id == 0);
+					std::cout << output_filename << std::endl;
 
-			output_filename = write_file((SphereData(prog_v)-SphereData(test_v)), "ref_diff_v", simVars.setup_velocityformulation_progphiuv.benchmark_scenario_id == 0);
-			std::cout << output_filename << std::endl;
+	//				output_filename = write_file((SphereData(prog_u)-SphereData(test_u)), "ref_diff_u", simVars.setup.benchmark_scenario_id == 0);
+	//				std::cout << output_filename << std::endl;
+
+	//				output_filename = write_file((SphereData(prog_v)-SphereData(test_v)), "ref_diff_v", simVars.setup.benchmark_scenario_id == 0);
+	//				std::cout << output_filename << std::endl;
+				}
+				break;
+
+			}
 		}
 #endif
 	}
+
 
 
 	void timestep_do_output()
@@ -620,23 +643,28 @@ public:
 		{
 			if (
 					simVars.setup.benchmark_scenario_id != 10 &&
+					simVars.setup.benchmark_scenario_id != 11 &&
 					simVars.setup.benchmark_scenario_id != 101
 			)
 			{
 				FatalError("Analytical solution not available for this benchmark");
 			}
 
-			SphereData test_h(sphereDataConfig);
-			SphereData test_u(sphereDataConfig);
-			SphereData test_v(sphereDataConfig);
+			SphereData anal_solution_h(sphereDataConfig);
+			SphereData anal_solution_u(sphereDataConfig);
+			SphereData anal_solution_v(sphereDataConfig);
 
-			SphereBenchmarksCombined::setupInitialConditions(test_h, test_u, test_v, simVars, op);
+			SphereBenchmarksCombined::setupInitialConditions(anal_solution_h, anal_solution_u, anal_solution_v, simVars, op);
+
+			SphereDataPhysical anal_solution_hg = anal_solution_h.getSphereDataPhysical();
+			SphereDataPhysical anal_solution_ug = anal_solution_u.getSphereDataPhysical();
+			SphereDataPhysical anal_solution_vg = anal_solution_v.getSphereDataPhysical();
 
 			double error_h = -1;
 			double error_u = -1;
 			double error_v = -1;
 
-			if (simVars.misc.sphere_use_robert_functions && simVars.pde.id == 1)
+			if (simVars.misc.sphere_use_robert_functions == 0 && simVars.pde.id == 1)
 			{
 				static int blarg = 0;
 				if (blarg == 0)
@@ -656,20 +684,43 @@ public:
 			case 14:
 				{
 					SphereData h = prog_phi*(1.0/simVars.sim.gravitation);
-					SphereDataPhysical u(sphereDataConfig);
-					SphereDataPhysical v(sphereDataConfig);
+					SphereDataPhysical hg = h.getSphereDataPhysical();
 
+					SphereData tmp_vort(sphereDataConfig);
+					SphereData tmp_div(sphereDataConfig);
+
+
+					/*
+					 * Convert analytical correct velocities to vort/div
+					 */
 					if (simVars.misc.sphere_use_robert_functions)
-						op.robert_vortdiv_to_uv(prog_vort, prog_div, u, v);
+						op.robert_uv_to_vortdiv(anal_solution_ug, anal_solution_vg, tmp_vort, tmp_div);
 					else
-						op.vortdiv_to_uv(prog_vort, prog_div, u, v);
+						op.uv_to_vortdiv(anal_solution_ug, anal_solution_vg, tmp_vort, tmp_div);
 
-					SphereDataPhysical test_ug = test_u.getSphereDataPhysical();
-					SphereDataPhysical test_vg = test_v.getSphereDataPhysical();
 
-					error_h = h.physical_reduce_max_abs(test_h);
-					error_u = u.physical_reduce_max_abs(test_ug);
-					error_v = v.physical_reduce_max_abs(test_vg);
+					/*
+					 * Compute difference
+					 */
+					SphereData diff_vort = prog_vort - tmp_vort;
+					SphereData diff_div = prog_div - tmp_div;
+
+
+					/*
+					 * Convert back to u-v
+					 */
+					SphereDataPhysical diff_u(sphereDataConfig);
+					SphereDataPhysical diff_v(sphereDataConfig);
+					if (simVars.misc.sphere_use_robert_functions)
+						op.robert_vortdiv_to_uv(diff_vort, diff_div, diff_u, diff_v);
+					else
+						op.vortdiv_to_uv(diff_vort, diff_div, diff_u, diff_v);
+
+					error_h = hg.physical_reduce_max_abs(anal_solution_hg);
+					error_u = diff_u.physical_reduce_max_abs();
+					error_v = diff_v.physical_reduce_max_abs();
+
+					std::cerr << "error time, h, u, v:\t" << simVars.timecontrol.current_simulation_time << "\t" << error_h << "\t" << error_u << "\t" << error_v << std::endl;
 				}
 				break;
 
@@ -678,22 +729,26 @@ public:
 				{
 					SphereData h = prog_phi*(1.0/simVars.sim.gravitation);
 
-					error_h = h.physical_reduce_max_abs(test_h);
-					error_u = prog_u.physical_reduce_max_abs(test_u);
-					error_v = prog_v.physical_reduce_max_abs(test_v);
+					error_h = h.physical_reduce_max_abs(anal_solution_h);
+					error_u = prog_u.physical_reduce_max_abs(anal_solution_u);
+					error_v = prog_v.physical_reduce_max_abs(anal_solution_v);
+
+					std::cerr << "error time, h, u, v:\t" << simVars.timecontrol.current_simulation_time << "\t" << error_h << "\t" << error_u << "\t" << error_v << std::endl;
 				}
 				break;
 
 			default:
 				{
-					error_h = (prog_h-test_h).physical_reduce_max_abs();
-					error_u = (prog_u-test_u).physical_reduce_max_abs();
-					error_v = (prog_v-test_v).physical_reduce_max_abs();
+					error_h = (prog_h-anal_solution_h).physical_reduce_max_abs();
+					error_u = (prog_u-anal_solution_u).physical_reduce_max_abs();
+					error_v = (prog_v-anal_solution_v).physical_reduce_max_abs();
+
+					std::cerr << "error time, h, u, v:\t" << simVars.timecontrol.current_simulation_time << "\t" << error_h << "\t" << error_u << "\t" << error_v << std::endl;
 				}
 			}
 
-			std::cerr << "error (h,u,v):\t" << error_h << "\t" << error_u << "\t" << error_v << std::endl;
 		}
+
 		write_file_output();
 
 		// output line break
@@ -859,7 +914,11 @@ public:
 		char buffer_real[1024];
 		const char* filename = simVars.misc.output_file_name_prefix.c_str();
 
-		sprintf(buffer_real, filename, "normal_modes_physical", simVars.timecontrol.current_timestep_size*simVars.misc.output_time_scale);
+		if (simVars.timecontrol.max_timesteps_nr > 0)
+			sprintf(buffer_real, filename, "normal_modes_physical", simVars.timecontrol.current_timestep_size*simVars.timecontrol.max_timesteps_nr*simVars.misc.output_time_scale);
+		else
+			sprintf(buffer_real, filename, "normal_modes_physical", simVars.timecontrol.current_timestep_size*simVars.misc.output_time_scale);
+
 		std::ofstream file(buffer_real, std::ios_base::trunc);
 		std::cout << "Writing normal mode analysis to file '" << buffer_real << "'" << std::endl;
 
@@ -915,7 +974,11 @@ public:
 				num_timesteps = simVars.timecontrol.max_timesteps_nr;
 		}
 
-		file << "# " << (num_timesteps*(-simVars.sim.CFL)) << std::endl;
+		file << "# t " << (num_timesteps*(-simVars.sim.CFL)) << std::endl;
+		file << "# g " << simVars.sim.gravitation << std::endl;
+		file << "# h " << simVars.sim.h0 << std::endl;
+		file << "# r " << simVars.sim.earth_radius << std::endl;
+		file << "# f " << simVars.sim.coriolis_omega << std::endl;
 
 		// iterate over all prognostic variables
 		for (int outer_prog_id = 0; outer_prog_id < max_prog_id; outer_prog_id++)
@@ -1104,7 +1167,7 @@ public:
 			}
 			else if (simVars.disc.normal_mode_analysis_generation == 3 || simVars.disc.normal_mode_analysis_generation == 13)
 			{
-				// iterate over physical space
+				// iterate over spectral space
 				for (int outer_i = 0; outer_i < sphereDataConfig->spectral_array_data_number_of_elements; outer_i++)
 				{
 					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)

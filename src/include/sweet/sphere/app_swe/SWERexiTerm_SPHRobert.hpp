@@ -592,11 +592,9 @@ public:
 		const SphereDataComplex vort0 = Convert_SphereData_To_SphereDataComplex::physical_convert(i_vort0);
 		const SphereDataComplex div0 = Convert_SphereData_To_SphereDataComplex::physical_convert(i_div0);
 
-
 		SphereDataComplex phi(sphereDataConfig);
 		SphereDataComplex vort(sphereDataConfig);
 		SphereDataComplex div(sphereDataConfig);
-
 
 		if (coriolis != 0)
 		{
@@ -610,10 +608,35 @@ public:
 			}
 			else
 			{
-#if 1
 				SphereDataPhysicalComplex u0g(sphereDataConfig);
 				SphereDataPhysicalComplex v0g(sphereDataConfig);
 				opComplex.robert_vortdiv_to_uv(vort0, div0, u0g, v0g, r);
+
+#if 1
+				SphereDataPhysicalComplex phi0g = phi0.getSphereDataPhysicalComplex();
+
+
+				SphereDataPhysicalComplex Fc_k =
+						coriolis*inv_r*(
+								-(-coriolis*coriolis*mug*mug + alpha*alpha)*u0g
+								+ 2.0*alpha*coriolis*mug*v0g
+						);
+
+				SphereDataPhysicalComplex foo =
+						(gh*(div0.getSphereDataPhysicalComplex() - (1.0/alpha)*coriolis*mug*vort0.getSphereDataPhysicalComplex())) +
+						(alpha*phi0g + (1.0/alpha)*coriolis*coriolis*mug*mug*phi0g);
+
+				SphereDataPhysicalComplex rhsg =
+						alpha*alpha*foo +
+						coriolis*coriolis*mug*mug*foo
+						- (gh/alpha)*Fc_k;
+
+				SphereDataComplex rhs = rhsg;
+
+#else
+
+// see normal_mode_exp_analysis_earth_scale
+#error "DONT USE THIS FORMULATION AS IT CREATES WRONG DISPERSION RELATIONS!!!"
 
 				SphereDataComplex Fc_k =
 						coriolis*inv_r*(
@@ -621,31 +644,15 @@ public:
 								+ 2.0*alpha*coriolis*mug*v0g
 						);
 
-#else
-
-				SphereData psi = vort0.spectral_solve_laplace(r);
-				SphereData chi = div0.spectral_solve_laplace(r);
-
-//				SphereData u0 =
-#endif
-#if 0
-				SphereData Fc_k =
-						coriolis*inv_r*(
-								-(alpha*alpha*u0 - coriolis*coriolis*mu2_u0g) +
-								2.0*alpha*coriolis*mu_v0g
-//								-(alpha*alpha*u0 - coriolis*coriolis*op.mu2(u0)) +
-//								2.0*alpha*coriolis*op.mu(v0)
-						);
-#endif
-
 				SphereDataComplex foo =
-						gh*(div0 - coriolis*(1.0/alpha)*opComplex.mu(vort0)) +
-						(alpha*phi0 + coriolis*coriolis*(1.0/alpha)*opComplex.mu2(phi0));
+						(gh*(div0 - (1.0/alpha)*coriolis*opComplex.mu(vort0))) +
+						(alpha*phi0 + (1.0/alpha)*coriolis*coriolis*opComplex.mu2(phi0));
 
 				SphereDataComplex rhs =	alpha*alpha*foo +
 						coriolis*coriolis*opComplex.mu2(foo)
 						- (gh/alpha)*Fc_k;
 
+#endif
 				phi = sphSolverPhi.solve(rhs.spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
 
 				if (variant_id == 0)
@@ -658,10 +665,23 @@ public:
 
 					opComplex.robert_vortdiv_to_uv(vort0, div0, u0, v0, r);
 
+#if 1
+					SphereDataPhysicalComplex gradu(sphereDataConfig);
+					SphereDataPhysicalComplex gradv(sphereDataConfig);
+					opComplex.robert_grad_to_vec(phi, gradu, gradv, r);
+
+					SphereDataPhysicalComplex a = u0 + gradu;
+					SphereDataPhysicalComplex b = v0 + gradv;
+
+#else
+					// see normal_mode_exp_analysis_earth_scale
+					#error "DONT USE THIS FORMULATION AS IT CREATES WRONG DISPERSION RELATIONS!!!"
+
 					SphereDataPhysicalComplex a = u0 + inv_r*opComplex.robert_grad_lon(phi).getSphereDataPhysicalComplex();
 					SphereDataPhysicalComplex b = v0 + inv_r*opComplex.robert_grad_lat(phi).getSphereDataPhysicalComplex();
 
-					SphereDataPhysicalComplex k = (coriolis*coriolis*mug*mug+alpha*alpha);
+#endif
+					SphereDataPhysicalComplex k = (coriolis*coriolis*(mug*mug)+alpha*alpha);
 					SphereDataPhysicalComplex u = (alpha*a - coriolis*mug*(b))/k;
 					SphereDataPhysicalComplex v = (coriolis*mug*(a) + alpha*b)/k;
 

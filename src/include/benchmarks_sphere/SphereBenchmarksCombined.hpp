@@ -14,6 +14,8 @@
 #include <benchmarks_sphere/BenchmarkGalewsky.hpp>
 #include <benchmarks_sphere/BenchmarkGaussianDam.hpp>
 
+
+
 class SphereBenchmarksCombined
 {
 public:
@@ -22,6 +24,7 @@ public:
 			SphereData &o_h,
 			SphereData &o_u,
 			SphereData &o_v,
+
 			SimulationVariables &io_simVars,
 			SphereOperators &i_op
 	)
@@ -41,11 +44,15 @@ public:
 			std::cout << "	5: Use Gaussian bump initial conditions (-pi/2, pi/4, exp=10)" << std::endl;
 			std::cout << "	6: Use Gaussian bump initial conditions (pi/3, pi/3, exp=20)" << std::endl;
 			std::cout << "	7: Use Gaussian bump initial conditions (-pi, pi/4, exp=100)" << std::endl;
-			std::cout << "	10: Combination of Gaussian bumps" << std::endl;
+			std::cout << "	9: Combination of Gaussian bumps" << std::endl;
+
+			std::cout << "	10: Williamson Geostrophic balance test case, unit sphere" << std::endl;
+			std::cout << "	11: Williamson Geostrophic balance test case, earth scale" << std::endl;
+
+			std::cout << "	21: Williamson Advection test benchmark 1 (DIV formulation)" << std::endl;
+			std::cout << "	22: Williamson Advection test benchmark 1 (GRAD formulation)" << std::endl;
+
 			std::cout << "	50: Swartztrauber 2004 Gaussian breaking dam" << std::endl;
-			std::cout << "	10: Use geostrophic balance test case" << std::endl;
-			std::cout << "	11: Williamson test benchmark 1 (DIV formulation)" << std::endl;
-			std::cout << "	12: Williamson test benchmark 1 (GRAD formulation)" << std::endl;
 			std::cout << "	100: Galweski" << std::endl;
 			std::cout << "	101: Galweski - geostrophic case including non-linear parts" << std::endl;
 			std::cout << "	200: h=h0, u=0, v=0" << std::endl;
@@ -81,7 +88,7 @@ public:
 		{
 			BenchmarkGaussianDam::setup_initial_conditions_gaussian(o_h, o_u, o_v, io_simVars, M_PI/4.0, -M_PI, 100.0);
 		}
-		else if (io_simVars.setup.benchmark_scenario_id == 10)
+		else if (io_simVars.setup.benchmark_scenario_id == 9)
 		{
 			SphereData tmp(o_h.sphereDataConfig);
 
@@ -94,57 +101,39 @@ public:
 			BenchmarkGaussianDam::setup_initial_conditions_gaussian(tmp, o_u, o_v, io_simVars, 2.0*M_PI*0.8, -M_PI/4, 100.0);
 			o_h += (tmp-io_simVars.sim.h0);
 		}
-		else if (io_simVars.setup.benchmark_scenario_id == 50)
+		else if (io_simVars.setup.benchmark_scenario_id == 10 || io_simVars.setup.benchmark_scenario_id == 11)
 		{
 			/*
-			 * PAUL N. SWARZTRAUBER
-			 * Shallow Water Flow on the Sphere
-			 * 2004
+			 * Williamson test case 2 for geostrophic balance.
+			 *
+			 * See Williamson paper for accurate setup
 			 */
-			std::cout << "!!! WARNING !!!" << std::endl;
-			std::cout << "!!! WARNING: Overriding simulation parameters for this benchmark !!!" << std::endl;
-			std::cout << "!!! WARNING !!!" << std::endl;
 
-			if (io_simVars.sim.coriolis_omega != 0)
+			double u0 = 1.0;
+			if (io_simVars.setup.benchmark_scenario_id == 11)
+			{
+				std::cout << "!!! WARNING !!!" << std::endl;
+				std::cout << "!!! WARNING: Overriding simulation parameters for this benchmark !!!" << std::endl;
+				std::cout << "!!! WARNING !!!" << std::endl;
+
 				io_simVars.sim.coriolis_omega = 7.292e-5;
+				io_simVars.sim.gravitation = 9.80616;
+				io_simVars.sim.earth_radius = 6.37122e6;
+				io_simVars.sim.h0 = 29400.0/io_simVars.sim.gravitation;
 
-			io_simVars.sim.gravitation = 9.80616;
-			io_simVars.sim.earth_radius = 6.37122e6;
-			io_simVars.sim.h0 = 29400.0;
-
-			o_u.spectral_set_zero();
-			o_v.spectral_set_zero();
-
+				u0 = (2.0*M_PI*io_simVars.sim.earth_radius)/(12.0*24.0*60.0*60.0);
+			}
 			double a = io_simVars.sim.earth_radius;
-			double A = 6000.0;
-			double alpha = 10;
-
-			o_h.physical_update_lambda(
-				[&](double i_lambda, double i_phi, double &io_data)
-				{
-					double x = a*std::cos(i_phi)*std::cos(i_lambda);
-					double y = a*std::cos(i_phi)*std::sin(i_lambda);
-					double z = a*std::sin(i_phi);
-
-					double d = std::sqrt(x*x+y*y+(z-a)*(z-a));
-
-					io_data = io_simVars.sim.h0 + A*std::exp(-alpha*(d/a)*(d/a));
-				}
-			);
-		}
-		else if (io_simVars.setup.benchmark_scenario_id == 10)
-		{
-			/*
-			 * Williamson test case
-			 */
 			double inv_r = 1.0/io_simVars.sim.earth_radius;
 
-			o_v.spectral_set_zero();
+			double phi0 = io_simVars.sim.h0*io_simVars.sim.gravitation;
 
 			o_h.physical_update_lambda(
 				[&](double i_lon, double i_lat, double &io_data)
 				{
-					io_data = io_simVars.sim.earth_radius*io_simVars.sim.coriolis_omega*std::cos(i_lat)*std::cos(i_lat)/io_simVars.sim.gravitation;
+					io_data = (phi0 + (a*io_simVars.sim.coriolis_omega*u0*std::cos(i_lat)*std::cos(i_lat)))/io_simVars.sim.gravitation;
+//					io_simVars.sim.h0
+//					io_data = io_simVars.sim.earth_radius*io_simVars.sim.coriolis_omega*std::cos(i_lat)*std::cos(i_lat)/io_simVars.sim.gravitation;
 				}
 			);
 
@@ -153,7 +142,7 @@ public:
 				o_u.physical_update_lambda(
 					[&](double i_lon, double i_lat, double &io_data)
 					{
-						io_data = std::cos(i_lat)*std::cos(i_lat);
+						io_data = u0*std::cos(i_lat)*std::cos(i_lat);
 					}
 				);
 			}
@@ -167,6 +156,8 @@ public:
 					}
 				);
 			}
+
+			o_v.spectral_set_zero();
 
 			if (io_simVars.timecontrol.current_simulation_time == 0)
 			{
@@ -184,6 +175,7 @@ public:
 					u_max_error = (-inv_r*i_op.grad_lon(o_h*io_simVars.sim.gravitation) + 2.0*io_simVars.sim.coriolis_omega*i_op.mu(o_v)).physical_reduce_max_abs();
 					v_max_error = (-inv_r*i_op.grad_lat(o_h*io_simVars.sim.gravitation) - 2.0*io_simVars.sim.coriolis_omega*i_op.mu(o_u)).physical_reduce_max_abs();
 				}
+
 				std::cout << "h_max_error for geostrophic balance case: " << h_max_error << std::endl;
 				std::cout << "u_max_error for geostrophic balance case: " << u_max_error << std::endl;
 				std::cout << "v_max_error for geostrophic balance case: " << v_max_error << std::endl;
@@ -192,6 +184,7 @@ public:
 		else if (io_simVars.setup.benchmark_scenario_id == 11)
 		{
 			/*
+			 * Advection test case
 			 * See Williamson test case, eq. (75), (76)
 			 *
 			 * phi_t = DIV (u phi)
@@ -300,6 +293,7 @@ public:
 		else if (io_simVars.setup.benchmark_scenario_id == 12)
 		{
 			/**
+			 * Advection test case
 			 * See Williamson test case, eq. (75), (76)
 			 *
 			 * phi_t = phi GRAD u
@@ -409,11 +403,49 @@ public:
 
 			std::cout << "advection_rotation_angle: " << io_simVars.setup.advection_rotation_angle << std::endl;
 		}
-		else if (io_simVars.setup.benchmark_scenario_id == 20)
+		else if (io_simVars.setup.benchmark_scenario_id == 40)
 		{
 			o_h.physical_set_all_value(io_simVars.sim.h0);
 			o_u.physical_set_all_value(0);
 			o_v.physical_set_all_value(0);
+		}
+		else if (io_simVars.setup.benchmark_scenario_id == 50)
+		{
+			/*
+			 * PAUL N. SWARZTRAUBER
+			 * Shallow Water Flow on the Sphere
+			 * 2004
+			 */
+			std::cout << "!!! WARNING !!!" << std::endl;
+			std::cout << "!!! WARNING: Overriding simulation parameters for this benchmark !!!" << std::endl;
+			std::cout << "!!! WARNING !!!" << std::endl;
+
+			if (io_simVars.sim.coriolis_omega != 0)
+				io_simVars.sim.coriolis_omega = 7.292e-5;
+
+			io_simVars.sim.gravitation = 9.80616;
+			io_simVars.sim.earth_radius = 6.37122e6;
+			io_simVars.sim.h0 = 29400.0;
+
+			o_u.spectral_set_zero();
+			o_v.spectral_set_zero();
+
+			double a = io_simVars.sim.earth_radius;
+			double A = 6000.0;
+			double alpha = 10;
+
+			o_h.physical_update_lambda(
+				[&](double i_lambda, double i_phi, double &io_data)
+				{
+					double x = a*std::cos(i_phi)*std::cos(i_lambda);
+					double y = a*std::cos(i_phi)*std::sin(i_lambda);
+					double z = a*std::sin(i_phi);
+
+					double d = std::sqrt(x*x+y*y+(z-a)*(z-a));
+
+					io_data = io_simVars.sim.h0 + A*std::exp(-alpha*(d/a)*(d/a));
+				}
+			);
 		}
 		else if (io_simVars.setup.benchmark_scenario_id == 1 || io_simVars.setup.benchmark_scenario_id == 100 || io_simVars.setup.benchmark_scenario_id == 101)
 		{

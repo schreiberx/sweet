@@ -68,8 +68,6 @@ class SWE_Sphere_REXI
 	 */
 	double timestep_size;
 
-//	bool use_coriolis_rexi_formulation;
-
 	bool use_f_sphere;
 
 	bool use_rexi_preallocation;
@@ -145,7 +143,6 @@ public:
 
 			int i_rexi_use_extended_modes,
 			int i_rexi_normalization,
-//			bool i_use_coriolis_rexi_formulation,
 			bool i_use_f_sphere,
 
 			bool i_use_rexi_sphere_preallocation
