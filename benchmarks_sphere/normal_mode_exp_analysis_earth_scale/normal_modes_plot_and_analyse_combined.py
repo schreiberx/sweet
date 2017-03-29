@@ -239,6 +239,7 @@ if True:
 		tmp = tmp.replace('_t-0000001_o000.0001', '')
 		tmp = tmp.replace('C0000', 'C')
 		tmp = tmp.replace('_Tsm00', '_TM')
+		tmp = tmp.replace('_tso0', '')
 		tmp = tmp.replace('_rexih0.15_rexihalf1_rexiextmodes02/output_normal_modes_physical_t00000002000.00000000.csv_evalues_complex.csv', '')
 
 		legend_labels.append(tmp)
@@ -268,10 +269,10 @@ if True:
 			)
 
 	ax.set_xlabel('Eigenmode ID')
-	ax.set_ylabel('Eigenvalue (imaginary)')
+	ax.set_ylabel('Max. error on Eigenvalues')
 
 	if len(datap) > 0:
-		plt.ylim([min_val*1.2, max_val*1.2])
+		plt.ylim([min_val*2.0, max_val*2.0])
 
 	leg = plt.legend(legend_labels, ncol=1, loc='lower right', fontsize=6)
 	leg.get_frame().set_alpha(1) 

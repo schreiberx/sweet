@@ -240,6 +240,9 @@ for n in range(0, N):
 		swe_modes.append(0)
 
 swe_modes.sort()
+print("Min/max SWE modes on the f-sphere")
+print(min(swe_modes))
+print(max(swe_modes))
 
 
 
