@@ -206,7 +206,8 @@ default_timesteps=1
 #p.r = 1
 
 
-for p.pde_id in [0, 1]:
+#for p.pde_id in [0, 1]:
+for p.pde_id in [1]:
 
 	for p.f_sphere in [-1, 0, 1]:
 		if p.f_sphere == -1:
@@ -225,7 +226,7 @@ for p.pde_id in [0, 1]:
 			p.timestep_size = default_timestep_size
 			p.max_timesteps = default_timesteps
 
-			for p.rexi_extended_modes in [0, 2, 4, 16]:
+			for p.rexi_extended_modes in [0, 2]:
 				for p.rexi_m in [1, 2, 4, 8, 16, 32, 64, 128]:
 					p.gen_script('script'+p.create_job_id(), 'run.sh')
 
@@ -266,7 +267,7 @@ for p.pde_id in [0, 1]:
 			p.timestep_size = default_timestep_size
 			p.max_timesteps = default_timesteps
 
-			for p.rexi_extended_modes in [0, 2, 4, 16]:
+			for p.rexi_extended_modes in [0, 2]:
 
 				p.gen_script('script'+p.create_job_id(), 'run.sh')
 

@@ -18,7 +18,6 @@ h = -1
 r = -1
 f = -1
 
-
 #
 # Load meta data
 #
@@ -56,7 +55,6 @@ if True:
 			headerstr = headerstr[1:-1]
 
 		new_headers.append(headerstr[1:])
-
 
 	fileh.close()
 
@@ -102,37 +100,29 @@ if data.shape[0] != data.shape[1]:
 
 if 1:
 	print("Computing EV decomposition with numpy")
-	w, v = np.linalg.eig(data)
+	w = np.linalg.svd(data, compute_uv=0)
+	print (w)
+
 else:
-	print("Computing EV decomposition with multiprecision")
-	mp.prec = 53	# default: 53
-	w, v = mp.eig(mp.matrix(data))
-	w = np.matrix(w)
-	v = np.matrix(v)	# TODO: fix this conversion
+	#print("Computing EV decomposition with multiprecision")
+	#mp.prec = 53	# default: 53
+	#w, v = mp.eig(mp.matrix(data))
+	#w = np.matrix(w)
+	#v = np.matrix(v)	# TODO: fix this conversion
+	pass
 
+#w = np.log(w)#/time
 
-f = filename+"_evalues_orig_complex.csv"
-print("Writing data to "+f)
-# simply append the imaginary parts as columns at the end of the real parts!
-np.savetxt(f, np.column_stack([w.real, w.imag]), delimiter='\t', header='\n'.join(new_headers))
-
-
-we = np.log(w)/time
-# TODO: Why do we have to do this? Otherwise, the Eigenvalues hardly match!
-#w3 = w*np.pi*2.0
-#print(we)
-
-
-print("Headers: "+str(new_headers))
 
 f = filename+"_evalues_complex.csv"
 print("Writing data to "+f)
 # simply append the imaginary parts as columns at the end of the real parts!
-np.savetxt(f, np.column_stack([we.real, we.imag]), delimiter='\t', header='\n'.join(new_headers))
-
+np.savetxt(f, np.column_stack([w.real, w.imag]), delimiter='\t', header='\n'.join(new_headers))
 
 if False:
 	f = filename+"_evectors_complex.csv"
 	print("Writing data to "+f)
 	np.savetxt(f, np.column_stack([v.real, v.imag]), delimiter='\t', header='\n'.join(new_headers))
+
+
 

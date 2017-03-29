@@ -18,6 +18,11 @@ if len(sys.argv) < 2:
 	print("Execute with [executable] [input]")
 	sys.exit(1)
 
+ext = 'png'
+if len(sys.argv) > 2:
+	ext = sys.argv[3]
+
+
 filename = sys.argv[1]
 print("Loading data from "+filename)
 data = np.loadtxt(filename, skiprows=0)
@@ -35,7 +40,8 @@ if cols == 2:
 	print("Assuming complex values => splitting them!")
 	data = data[:,0] + data[:,1]*1j
 
-if True:
+#if True:
+if False:
 	print("Plotting lambdas")
 
 	datap = data[:]
@@ -68,12 +74,13 @@ if True:
 	if len(sys.argv) >= 3:
 		plt.title("Eigenvalues lambda - "+sys.argv[2], fontsize=10)
 
-	plt.savefig("output_lambda.png", dpi=300)
+	plt.savefig("output_lambda."+ext, dpi=300)
 
 
 
 
-if True:
+#if True:
+if False:
 	print("Plotting exp(lambda)")
 	#
 	# INFORMATION
@@ -120,7 +127,7 @@ if True:
 	)
 	ax.grid(True)
 
-	plt.savefig("output_exp_lambda.png", dpi=300)
+	plt.savefig("output_exp_lambda."+ext, dpi=300)
 
 
 
@@ -237,7 +244,7 @@ if lowhigh_threshold != 0:
 	if len(sys.argv) >= 3:
 		plt.title("Low Frequencies - "+sys.argv[2], fontsize=10)
 
-	plt.savefig("output_freq_low.png", dpi=300)
+	plt.savefig("output_freq_low."+ext, dpi=300)
 
 
 if True:
@@ -247,29 +254,33 @@ if True:
 
 	datap = high_freq_modes
 
-	fig, ax = plt.subplots()
-	ax.grid(True)
+	s = 0.7
+	fig, ax = plt.subplots(figsize=(10.0*s, 5.0*s))
+	plt.subplots_adjust(left=0.15, right=0.95, top=0.85, bottom=0.15)
 
-
-	ax.scatter(
-		range(-len(non_geostrophic_modes)/2, len(non_geostrophic_modes)/2),
-		non_geostrophic_modes,
-		c='blue',
-		s=5,
-		alpha=0.3,
-		edgecolors='none'
-	)
+	ax.grid(linestyle='-', linewidth='0.5', color='grey')
 
 	ax.scatter(
 		range(-len(datap)/2, len(datap)/2),
 		datap,
 		c='red',
-		s=1,
+		s=3,
 		alpha=1,
 		edgecolors='none'
 	)
-	ax.set_xlabel('Modes')
+
+	ax.scatter(
+		range(-len(non_geostrophic_modes)/2, len(non_geostrophic_modes)/2),
+		non_geostrophic_modes,
+		c='black',
+		s=0.5,
+		alpha=1,
+		edgecolors='none'
+	)
+
+	ax.set_xlabel('Eigenmode ID')
 	ax.set_ylabel('Eigenvalue (imaginary)')
+
 	if len(datap) > 0:
 		plt.ylim([min(datap)*1.1, max(datap)*1.1])
 
@@ -277,6 +288,10 @@ if True:
 	if len(sys.argv) >= 3:
 		plt.title("Low Frequencies - "+sys.argv[2], fontsize=10)
 
-	plt.savefig("output_freq_high.png", dpi=300)
+	legend_labels=['Analytical Eigenvalues for f-sphere', 'Numerical Eigenvalues of rotating sphere']
+	leg = plt.legend(legend_labels, ncol=1, loc='lower right')
+	leg.get_frame().set_alpha(1) 
+
+	plt.savefig("output_freq_high."+ext, dpi=300)
 
 

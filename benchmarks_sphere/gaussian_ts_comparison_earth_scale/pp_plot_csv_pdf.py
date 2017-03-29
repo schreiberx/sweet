@@ -84,10 +84,10 @@ for filename in files:
 			contour_levels = np.append(np.arange(cmin, cmid-hs, hs), np.arange(cmid+hs, cmax, hs))
 
 		elif cmax-cmin < 3000 and cmin > 9000 and cmax < 11000:
-			hs = 100
+			hs = 40
 			cmin = 9000
 			cmax = 11000
-			cmid = 0.5*(cmax+cmin)
+			cmid = 0.5*(cmax-cmin)
 			contour_levels = np.append(np.arange(cmin, cmid-hs, hs), np.arange(cmid+hs, cmax, hs))
 		else:
 			if 'eta' in filename:
@@ -130,10 +130,11 @@ for filename in files:
 	plt.yticks(labelsy, fontsize=fontsize)
 	plt.ylabel("Latitude", fontsize=fontsize)
 
-	outfilename = filename.replace('.csv', '.png')
+	#plt.show()
+	outfilename = filename.replace('.csv', '.pdf')
 	print(outfilename)
 
-	plt.savefig(outfilename, dpi=200)
+	plt.savefig(outfilename)
 	plt.close()
 
 	first = False
