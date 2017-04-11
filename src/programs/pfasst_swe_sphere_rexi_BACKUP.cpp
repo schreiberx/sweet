@@ -72,7 +72,7 @@ public:
 	{
 		o_dt = simVars.timecontrol.current_timestep_size;
 
-		if (!simVars.misc.use_nonlinear_equations)
+		if (!simVars.pde.use_nonlinear_equations)
 		{
 			// use Robert functions for velocity
 			// linear equations

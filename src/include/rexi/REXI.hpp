@@ -235,6 +235,7 @@ public:
 					}
 
 					TEvaluation normalization = sum.real();
+					std::cout << "REXI sum for geostrophic modes with double precision: " << (double)((TStorageAndProcessing)normalization) << std::endl;
 					std::cout << "REXI Error with coefficients used with double precision: " << (double)((TStorageAndProcessing)1.0-normalization) << std::endl;
 				}
 
@@ -243,7 +244,7 @@ public:
 				 */
 				/*
 				 * Apply normalization to beta coefficients
-				 * This assures no over/undershooting
+				 * This improves problems of over/undershooting for geostrophic modes
 				 */
 				{
 					complexEvaluation sum = 0;

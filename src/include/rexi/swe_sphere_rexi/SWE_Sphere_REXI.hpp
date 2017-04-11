@@ -74,6 +74,8 @@ class SWE_Sphere_REXI
 
 	int pde_id;
 
+	int pde_variant_id;
+
 	std::size_t block_size;
 
 #if SWEET_BENCHMARK_REXI
@@ -140,6 +142,7 @@ public:
 			bool i_rexi_half,				///< use half-pole reduction
 			bool i_use_robert_functions,	///< use Robert functions
 			int i_pde_id,
+			int i_pde_variant_id,
 
 			int i_rexi_use_extended_modes,
 			int i_rexi_normalization,

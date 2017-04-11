@@ -423,6 +423,52 @@ public:
 		);
 	}
 
+
+	/**
+	 * Convert vorticity/divergence field to u,v velocity field
+	 */
+	void robert_grad_to_vec(
+			const SphereData &i_phi,
+			SphereDataPhysical &o_u,
+			SphereDataPhysical &o_v,
+			double i_radius
+
+	)	const
+	{
+		double ir = 1.0/i_radius;
+
+		i_phi.request_data_spectral();
+
+		SphereData psi(sphereDataConfig);
+		psi.spectral_set_zero();
+
+		SphereDataPhysical u(sphereDataConfig);
+		SphereDataPhysical v(sphereDataConfig);
+		SHsphtor_to_spat(
+				sphereDataConfig->shtns,
+				psi.spectral_space_data,
+				i_phi.spectral_space_data,
+				o_u.physical_space_data,
+				o_v.physical_space_data
+		);
+
+		o_u.physical_update_lambda_cosphi_grid(
+			[&](double lon, double phi, double &o_data)
+			{
+				o_data *= phi*ir;
+			}
+		);
+
+		o_v.physical_update_lambda_cosphi_grid(
+			[&](double lon, double phi, double &o_data)
+			{
+				o_data *= phi*ir;
+			}
+		);
+	}
+
+
+
 	/**
 	 * Convert vorticity/divergence field to u,v velocity field
 	 */

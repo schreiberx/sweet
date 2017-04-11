@@ -57,6 +57,9 @@ class SWEImplicit_SPHRobert
 	// 2: Crank Nicolson
 	int timestepping_order;
 
+	// PDE variant
+	int pde_variant_id;
+
 	/// timestep size
 	double timestep_size;
 
@@ -329,7 +332,9 @@ public:
 			double i_timestep_size,
 
 			bool i_f_sphere,
-			int i_timestepping_order
+			int i_timestepping_order,
+
+			int i_pde_variant_id
 	)
 	{
 		sphereDataConfig = i_sphereDataConfig;
@@ -337,6 +342,8 @@ public:
 		timestep_size = i_timestep_size;
 		use_f_sphere = i_f_sphere;
 		timestepping_order = i_timestepping_order;
+
+		pde_variant_id = i_pde_variant_id;
 
 		if (use_f_sphere)
 			coriolis = i_coriolis_omega;
@@ -532,80 +539,83 @@ public:
 			}
 			else
 			{
-#if 1
+				SphereData rhs(sphereDataConfig);
+
 				SphereDataPhysical u0g(sphereDataConfig);
 				SphereDataPhysical v0g(sphereDataConfig);
 				op.robert_vortdiv_to_uv(vort0, div0, u0g, v0g);
 
-				SphereData Fc_k =
-						coriolis*inv_r*(
-								-(-coriolis*coriolis*mug*mug + alpha*alpha)*u0g
-								+ 2.0*alpha*coriolis*mug*v0g
-						);
-#else
-				SphereData psi = vort0.spectral_solve_laplace(r);
-				SphereData chi = div0.spectral_solve_laplace(r);
+				if (pde_variant_id == 0)
+				{
+					SphereDataPhysical phi0g = phi0.getSphereDataPhysical();
 
-//				SphereData u0 =
-#endif
-#if 0
-				SphereData Fc_k =
-						coriolis*inv_r*(
-								-(alpha*alpha*u0 - coriolis*coriolis*mu2_u0g) +
-								2.0*alpha*coriolis*mu_v0g
-//								-(alpha*alpha*u0 - coriolis*coriolis*op.mu2(u0)) +
-//								2.0*alpha*coriolis*op.mu(v0)
-						);
-#endif
-				SphereData foo =
-						gh*(div0 - coriolis*(1.0/alpha)*op.mu(vort0)) +
-						(alpha*phi0 + coriolis*coriolis*(1.0/alpha)*op.mu2(phi0));
+					SphereDataPhysical Fc_k =
+							coriolis*inv_r*(
+									-(-coriolis*coriolis*mug*mug + alpha*alpha)*u0g
+									+ 2.0*alpha*coriolis*mug*v0g
+							);
 
-				SphereData rhs =	alpha*alpha*foo +
-						coriolis*coriolis*op.mu2(foo)
-						- (gh/alpha)*Fc_k;
+					SphereDataPhysical foo =
+							(gh*(div0.getSphereDataPhysical() - (1.0/alpha)*coriolis*mug*vort0.getSphereDataPhysical())) +
+							(alpha*phi0g + (1.0/alpha)*coriolis*coriolis*mug*mug*phi0g);
+
+					SphereDataPhysical rhsg =
+							alpha*alpha*foo +
+							coriolis*coriolis*mug*mug*foo
+							- (gh/alpha)*Fc_k;
+
+					rhs = rhsg;
+				}
+				else
+				{
+					SphereData Fc_k =
+							coriolis*inv_r*(
+									-(-coriolis*coriolis*mug*mug + alpha*alpha)*u0g
+									+ 2.0*alpha*coriolis*mug*v0g
+							);
+
+					SphereData foo =
+							gh*(div0 - coriolis*(1.0/alpha)*op.mu(vort0)) +
+							(alpha*phi0 + coriolis*coriolis*(1.0/alpha)*op.mu2(phi0));
+
+					rhs =	alpha*alpha*foo +
+							coriolis*coriolis*op.mu2(foo)
+							- (gh/alpha)*Fc_k;
+				}
 
 				phi = sphSolverPhi.solve(rhs.spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
 
-#if 0
-				SphereData a = u0 + inv_r*op.robert_grad_lon(phi);
-				SphereData b = v0 + inv_r*op.robert_grad_lat(phi);
 
-				SphereData rhsa(sphereDataConfig);
-				SphereData rhsb(sphereDataConfig);
-
-				rhsa = alpha*a - coriolis*op.mu(b);
-				rhsb = coriolis*op.mu(a) + alpha*b;
-
-				u = sphSolverVel.solve(rhsa.spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
-				v = sphSolverVel.solve(rhsb.spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
-#elif 1
 				SphereDataPhysical u0(sphereDataConfig);
 				SphereDataPhysical v0(sphereDataConfig);
 
 				op.robert_vortdiv_to_uv(vort0, div0, u0, v0);
 
-				SphereDataPhysical a = u0 + inv_r*op.robert_grad_lon(phi).getSphereDataPhysical();
-				SphereDataPhysical b = v0 + inv_r*op.robert_grad_lat(phi).getSphereDataPhysical();
+				SphereDataPhysical a(sphereDataConfig);
+				SphereDataPhysical b(sphereDataConfig);
+
+				if (pde_variant_id == 0)
+				{
+					SphereDataPhysical gradu(sphereDataConfig);
+					SphereDataPhysical gradv(sphereDataConfig);
+					op.robert_grad_to_vec(phi, gradu, gradv, r);
+
+					a = u0 + gradu;
+					b = v0 + gradv;
+				}
+				else
+				{
+
+					a = u0 + inv_r*op.robert_grad_lon(phi).getSphereDataPhysical();
+					b = v0 + inv_r*op.robert_grad_lat(phi).getSphereDataPhysical();
+				}
+
 
 				SphereDataPhysical k = (coriolis*coriolis*mug*mug+alpha*alpha);
 				SphereDataPhysical u = (alpha*a - coriolis*mug*(b))/k;
 				SphereDataPhysical v = (coriolis*mug*(a) + alpha*b)/k;
 
 				op.robert_uv_to_vortdiv(u, v, vort, div);
-
-#else
-
-				FatalError("This is wrong, since it's for the f-sphere");
-				SphereData a = vort0;
-				SphereData b = div0 + op.laplace(phi);
-
-				SphereData rhsa = alpha*a + coriolis*op.mu(b);
-				SphereData rhsb = -coriolis*op.mu(a) + alpha*b;
-
-				vort = sphSolverVel.solve(rhsa.spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
-				div = sphSolverVel.solve(rhsb.spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
-#endif
 			}
 		}
 		else

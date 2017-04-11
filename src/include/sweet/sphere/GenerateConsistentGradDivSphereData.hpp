@@ -69,7 +69,7 @@ private:
 
 		assert(simVars.sim.earth_radius > 0);
 
-		if (!simVars.misc.use_nonlinear_equations)
+		if (!simVars.pde.use_nonlinear_equations)
 		{
 			if (!simVars.misc.sphere_use_robert_functions)
 			{

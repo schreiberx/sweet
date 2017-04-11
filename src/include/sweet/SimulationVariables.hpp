@@ -113,11 +113,19 @@ public:
 		 */
 		int id = 0;
 
+		int variant_id = 0;
+
+		/// Use non-linear equations for simulations
+		int use_nonlinear_equations = 1;
+
+
 		void outputConfig()
 		{
 			std::cout << std::endl;
 			std::cout << "PDE:" << std::endl;
 			std::cout << " + id: " << id << std::endl;
+			std::cout << " + variant_id: " << variant_id << std::endl;
+			std::cout << " + use_nonlinear_equations: " << use_nonlinear_equations << std::endl;
 			std::cout << std::endl;
 		}
 
@@ -126,6 +134,7 @@ public:
 			std::cout << std::endl;
 			std::cout << "Partial differential equation:" << std::endl;
 			std::cout << "	--pde-id [0/1]	PDE to solve (0: SWE, 1: advection)" << std::endl;
+			std::cout << "	--pde-variant-id [0/1]	PDE variant to use (default: 0)" << std::endl;
 			std::cout << "" << std::endl;
 		}
 	} pde;
@@ -550,7 +559,7 @@ public:
 		/**
 		 * REXI parameter h
 		 */
-		double rexi_h = 0.2;
+		double rexi_h = 0.15;
 
 		/**
 		 * REXI parameter M
@@ -570,7 +579,7 @@ public:
 		/**
 		 * Extend modes for certain operations
 		 */
-		int rexi_use_extended_modes = 0;
+		int rexi_use_extended_modes = 2;
 
 		/**
 		 * Normalize REXI for geostrophic balance
@@ -692,7 +701,6 @@ public:
 			std::cout << " + output_each_sim_seconds: " << output_each_sim_seconds << std::endl;
 			std::cout << " + output_next_sim_seconds: " << output_next_sim_seconds << std::endl;
 			std::cout << " + vis_id: " << vis_id << std::endl;
-			std::cout << " + use_nonlinear_equations: " << use_nonlinear_equations << std::endl;
 			std::cout << " + sphere_use_robert_functions: " << sphere_use_robert_functions << std::endl;
 			std::cout << " + output_time_scale: " << output_time_scale << std::endl;
 			std::cout << std::endl;
@@ -724,9 +732,6 @@ public:
 
 		/// id for visualization
 		int vis_id = 0;
-
-		/// Use non-linear equations for simulations
-		int use_nonlinear_equations = 1;
 
 
 		/// Use robert function formulation on the sphere
@@ -946,7 +951,10 @@ public:
         long_options[next_free_program_option] = {"pde-id", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        // 14
+        long_options[next_free_program_option] = {"pde-variant_id", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
+        // 15
         long_options[next_free_program_option] = {"timestepping-method", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
@@ -1066,32 +1074,33 @@ public:
 						case 8:		rexi.rexi_use_extended_modes = atoi(optarg);	break;
 
 						case 9:		misc.stability_checks = atoi(optarg);	break;
-						case 10:	misc.use_nonlinear_equations = atoi(optarg);	break;
+						case 10:	pde.use_nonlinear_equations = atoi(optarg);	break;
 						case 11:	misc.sphere_use_robert_functions = atoi(optarg);	break;
 
 						case 12:	setup.advection_rotation_angle = atof(optarg);	break;
 
 						case 13:	pde.id = atoi(optarg);	break;
+						case 14:	pde.variant_id = atoi(optarg);	break;
 
-						case 14:	disc.timestepping_method = atoi(optarg);	break;
-						case 15:	disc.timestepping_order = atoi(optarg);	break;
-						case 16:	disc.timestepping_method2 = atoi(optarg);	break;
-						case 17:	disc.timestepping_order2 = atoi(optarg);	break;
+						case 15:	disc.timestepping_method = atoi(optarg);	break;
+						case 16:	disc.timestepping_order = atoi(optarg);	break;
+						case 17:	disc.timestepping_method2 = atoi(optarg);	break;
+						case 18:	disc.timestepping_order2 = atoi(optarg);	break;
 
-						case 18:	disc.leapfrog_robert_asselin_filter = atof(optarg);	break;
-						case 19:	disc.normal_mode_analysis_generation = atoi(optarg);	break;
-						case 20:	disc.crank_nicolson_filter = atof(optarg);	break;
-						case 21:	disc.use_staggering = atof(optarg);	break;
+						case 19:	disc.leapfrog_robert_asselin_filter = atof(optarg);	break;
+						case 20:	disc.normal_mode_analysis_generation = atoi(optarg);	break;
+						case 21:	disc.crank_nicolson_filter = atof(optarg);	break;
+						case 22:	disc.use_staggering = atof(optarg);	break;
 
-						case 22:	dummy = atof(optarg);	break;
+						case 23:	dummy = atof(optarg);	break;
 
 #if SWEET_PFASST_CPP
-						case 23:	pfasst.nlevels = atoi(optarg);	break;
-						case 24:	pfasst.nnodes = atoi(optarg);	break;
-						case 25:	pfasst.nspace = atoi(optarg);	break;
-						case 26:	pfasst.nsteps = atoi(optarg);	break;
-						case 27:	pfasst.niters = atoi(optarg);	break;
-						case 28:	pfasst.dt = atof(optarg);	break;
+						case 24:	pfasst.nlevels = atoi(optarg);	break;
+						case 25:	pfasst.nnodes = atoi(optarg);	break;
+						case 26:	pfasst.nspace = atoi(optarg);	break;
+						case 27:	pfasst.nsteps = atoi(optarg);	break;
+						case 28:	pfasst.niters = atoi(optarg);	break;
+						case 29:	pfasst.dt = atof(optarg);	break;
 #endif
 
 						default:

@@ -277,6 +277,14 @@ public:
 			spheredataphysical_timestepping_explicit_rk.resetAndSetup(sphereDataConfig, simVars.disc.timestepping_order);
 			break;
 
+		case simVars.disc.REXI:
+			if (simVars.pde.use_nonlinear_equations)
+			{
+				spheredata_timestepping_explicit_rk.resetAndSetup(sphereDataConfig, simVars.disc.timestepping_order);
+				spheredataphysical_timestepping_explicit_rk.resetAndSetup(sphereDataConfig, simVars.disc.timestepping_order);
+			}
+			break;
+
 		case simVars.disc.LEAPFROG_EXPLICIT:
 			spheredata_timestepping_explicit_leapfrog.resetAndSetup(prog_h, simVars.disc.timestepping_order, simVars.disc.leapfrog_robert_asselin_filter);
 			break;
@@ -346,7 +354,7 @@ public:
 				exit(1);
 			}
 
-			simVars.misc.use_nonlinear_equations = 0;
+//			simVars.pde.use_nonlinear_equations = 0;
 		}
 
 
@@ -418,6 +426,7 @@ public:
 					simVars.rexi.rexi_use_half_poles,
 					simVars.misc.sphere_use_robert_functions,
 					simVars.pde.id,
+					simVars.pde.variant_id,
 
 					simVars.rexi.rexi_use_extended_modes,
 					simVars.rexi.rexi_normalization,
@@ -470,8 +479,8 @@ public:
 						-simVars.sim.CFL,
 
 						simVars.sim.f_sphere,
-
-						simVars.disc.timestepping_order
+						simVars.disc.timestepping_order,
+						simVars.pde.variant_id
 					);
 				break;
 
@@ -578,7 +587,7 @@ public:
 #if 1
 		if (
 			param_compute_error &&
-			simVars.misc.use_nonlinear_equations == 0 &&
+			simVars.pde.use_nonlinear_equations == 0 &&
 			(
 				simVars.setup.benchmark_scenario_id == 10 ||
 				simVars.setup.benchmark_scenario_id == 11
@@ -791,7 +800,7 @@ public:
 
 
 		if (	param_compute_error &&
-				simVars.misc.use_nonlinear_equations == 0 &&
+				simVars.pde.use_nonlinear_equations == 0 &&
 				simVars.setup.benchmark_scenario_id == 10
 		)
 		{
@@ -974,6 +983,11 @@ public:
 				num_timesteps = simVars.timecontrol.max_timesteps_nr;
 		}
 
+		if (simVars.timecontrol.max_simulation_time > 0)
+		{
+			FatalError("NOT YET SUPPORTED");
+		}
+
 		file << "# t " << (num_timesteps*(-simVars.sim.CFL)) << std::endl;
 		file << "# g " << simVars.sim.gravitation << std::endl;
 		file << "# h " << simVars.sim.h0 << std::endl;
@@ -1034,7 +1048,6 @@ public:
 
 					for (int i = 1; i < num_timesteps; i++)
 					{
-//						std::cout << "Timestep " << i << std::endl;
 						run_timestep();
 					}
 
@@ -1125,7 +1138,6 @@ public:
 
 
 
-
 						if (simVars.disc.normal_mode_analysis_generation == 2)
 						{
 							/*
@@ -1170,6 +1182,8 @@ public:
 				// iterate over spectral space
 				for (int outer_i = 0; outer_i < sphereDataConfig->spectral_array_data_number_of_elements; outer_i++)
 				{
+					std::cout << "." << std::flush;
+
 					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
 						prog[inner_prog_id]->spectral_set_zero();
 
@@ -1226,7 +1240,6 @@ public:
 
 					for (int i = 1; i < num_timesteps; i++)
 					{
-//						std::cout << "Timestep " << i << std::endl;
 						run_timestep();
 					}
 
@@ -1262,7 +1275,7 @@ public:
 					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
 					{
 						prog[inner_prog_id]->request_data_spectral();
-
+#if 0
 						// eliminate shift for zero mode since this is non-sense information
 						// TODO: Are we really allowed to do this?
 						for (int n = 0; n <= sphereDataConfig->spectral_modes_n_max; n++)
@@ -1274,7 +1287,7 @@ public:
 								FatalError("Phase shift");
 							}
 						}
-
+#endif
 						for (int k = 0; k < sphereDataConfig->spectral_array_data_number_of_elements; k++)
 						{
 							file << prog[inner_prog_id]->spectral_space_data[k].real();
@@ -1547,8 +1560,8 @@ public:
 								o_dt,
 
 								simVars.sim.f_sphere,
-
-								simVars.disc.timestepping_order
+								simVars.disc.timestepping_order,
+								simVars.pde.variant_id
 							);
 						break;
 
@@ -1627,6 +1640,7 @@ public:
 							simVars.rexi.rexi_use_half_poles,
 							simVars.misc.sphere_use_robert_functions,
 							simVars.pde.id,
+							simVars.pde.variant_id,
 
 							simVars.rexi.rexi_use_extended_modes,
 							simVars.rexi.rexi_normalization,
@@ -1638,38 +1652,89 @@ public:
 			}
 
 
-			switch (simVars.pde.id)
+			if (simVars.pde.use_nonlinear_equations)
 			{
-			case 0:
-				// REXI time stepping
-				prog_h *= simVars.sim.gravitation;
-				swe_sphere_rexi.run_timestep_rexi_velocityformulation_progphiuv(
-						prog_h,	// phi
-						prog_u,
-						prog_v,
-						o_dt,
-						simVars
+				switch (simVars.pde.id)
+				{
+				case 1:
+				{
+					// REXI time stepping
+
+					// Compute non-linear tendencies
+					SphereData nl_prog_dphi_dt = prog_phi;
+					SphereData nl_prog_dvort_dt = prog_vort;
+					SphereData nl_prog_ddiv_dt = prog_div;
+
+					spheredata_timestepping_explicit_rk.run_timestep(
+							this,
+							&SimulationInstance::p_compute_nonlinearities_swe_vectorinvariant,	///< pointer to function to compute euler time step updates
+							nl_prog_dphi_dt, nl_prog_dvort_dt, nl_prog_ddiv_dt,
+							o_dt,
+							simVars.timecontrol.current_timestep_size,
+							simVars.disc.timestepping_order,
+							simVars.timecontrol.current_simulation_time,
+							simVars.timecontrol.max_simulation_time
+						);
+
+					nl_prog_dphi_dt -= prog_phi;
+					nl_prog_dvort_dt -= prog_vort;
+					nl_prog_ddiv_dt -= prog_div;
+
+
+					// REXI
+					swe_sphere_rexi.run_timestep_rexi_vectorinvariant_progphivortdiv(
+							prog_phi,
+							prog_vort,
+							prog_div,
+							o_dt,
+							simVars
 					);
-				prog_h *= (1.0/simVars.sim.gravitation);
-				break;
+
+					// Combine both
+					prog_phi	+= nl_prog_dphi_dt;
+					prog_vort	+= nl_prog_dvort_dt;
+					prog_div	+= nl_prog_ddiv_dt;
+				}
+					break;
+
+				default:
+					FatalError("PDE id not yet implemented");
+					break;
+				}
+			}
+			else
+			{
+				switch (simVars.pde.id)
+				{
+				case 0:
+					// REXI time stepping
+					prog_h *= simVars.sim.gravitation;
+					swe_sphere_rexi.run_timestep_rexi_velocityformulation_progphiuv(
+							prog_h,
+							prog_u,
+							prog_v,
+							o_dt,
+							simVars
+						);
+					prog_h *= (1.0/simVars.sim.gravitation);
+					break;
 
 
-			case 1:
-				// REXI time stepping
-				prog_h *= simVars.sim.gravitation;
-				swe_sphere_rexi.run_timestep_rexi_vectorinvariant_progphivortdiv(
-						prog_h,	// phi
-						prog_vort,
-						prog_div,
-						o_dt,
-						simVars
-					);
-				prog_h *= (1.0/simVars.sim.gravitation);
-				break;
+				case 1:
+					// REXI time stepping
+					swe_sphere_rexi.run_timestep_rexi_vectorinvariant_progphivortdiv(
+							prog_phi,
+							prog_vort,
+							prog_div,
+							o_dt,
+							simVars
+						);
+					break;
 
-			default:
-				FatalError("PDE id not yet implemented");
-				break;
+				default:
+					FatalError("PDE id not yet implemented");
+					break;
+				}
 			}
 
 
@@ -1766,7 +1831,7 @@ public:
 	{
 		o_dt = simVars.timecontrol.current_timestep_size;
 
-		if (simVars.misc.use_nonlinear_equations)
+		if (simVars.pde.use_nonlinear_equations)
 			FatalError("Advection equation is only possible without non-linearities and with robert functions");
 
 		if (simVars.misc.sphere_use_robert_functions)
@@ -1895,7 +1960,7 @@ public:
 			/*
 			 * ROBERT
 			 */
-			if (simVars.misc.use_nonlinear_equations)
+			if (simVars.pde.use_nonlinear_equations)
 			{
 
 				/*
@@ -2015,7 +2080,7 @@ public:
 			/*
 			 * NON-ROBERT
 			 */
-			if (simVars.misc.use_nonlinear_equations)
+			if (simVars.pde.use_nonlinear_equations)
 			{
 				/*
 				 * NON-LINEAR
@@ -2078,6 +2143,60 @@ public:
 	}
 
 
+	void p_compute_nonlinearities_swe_vectorinvariant(
+		const SphereData &i_phispec,	///< prognostic variables
+		const SphereData &i_vortspec,	///< prognostic variables
+		const SphereData &i_divspec,	///< prognostic variables
+
+		SphereData &o_dphi_dt,	///< time updates
+		SphereData &o_dvort_dt,	///< time updates
+		SphereData &o_ddiv_dt,	///< time updates
+
+		double &o_dt,				///< time step restriction
+		double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_simulation_timestamp = -1
+
+	)
+	{
+		assert(i_fixed_dt >= 0);
+		o_dt = i_fixed_dt;
+
+		/*
+		 * compute dvort/dt and partly ddiv/dt
+		 */
+		SphereDataPhysical vrtg = i_vortspec.getSphereDataPhysical();
+		SphereDataPhysical divg = i_divspec.getSphereDataPhysical();
+
+		SphereDataPhysical ug(i_phispec.sphereDataConfig);
+		SphereDataPhysical vg(i_phispec.sphereDataConfig);
+		op.vortdiv_to_uv(i_vortspec, i_divspec, ug, vg);
+
+		SphereDataPhysical tmpg1 = ug*vrtg;
+		SphereDataPhysical tmpg2 = vg*vrtg;
+
+		op.uv_to_vortdiv(tmpg1, tmpg2, o_ddiv_dt, o_dvort_dt);
+
+		o_dvort_dt *= -1.0;
+		// VORT finished
+
+
+		SphereData tmpspec = 0.5*(ug*ug+vg*vg);
+		tmpspec.request_data_spectral();
+		o_ddiv_dt += -op.laplace(tmpspec);
+		// DIV finished
+
+		/*
+		 * compute dphi/dt
+		 */
+		SphereData phi_prime = i_phispec-(simVars.sim.h0*simVars.sim.gravitation);
+		SphereDataPhysical phig = phi_prime.getSphereDataPhysical();
+		tmpg1 = ug*phig;
+		tmpg2 = vg*phig;
+
+		op.uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_dphi_dt);
+		o_dphi_dt *= -1.0;
+		// PHI finished
+	}
 
 
 	/*
@@ -2121,7 +2240,7 @@ public:
 			/*
 			 * ROBERT
 			 */
-			if (simVars.misc.use_nonlinear_equations)
+			if (simVars.pde.use_nonlinear_equations)
 			{
 				/*
 				 * NON-LINEAR
@@ -2219,7 +2338,7 @@ public:
 		}
 		else
 		{
-			if (simVars.misc.use_nonlinear_equations)
+			if (simVars.pde.use_nonlinear_equations)
 			{
 				SphereDataPhysical ug(i_phispec.sphereDataConfig);
 				SphereDataPhysical vg(i_phispec.sphereDataConfig);
@@ -2343,7 +2462,7 @@ public:
 			/*
 			 * ROBERT
 			 */
-			if (simVars.misc.use_nonlinear_equations)
+			if (simVars.pde.use_nonlinear_equations)
 			{
 				FatalError("TODO");
 				/*
@@ -2443,7 +2562,7 @@ public:
 		}
 		else
 		{
-			if (simVars.misc.use_nonlinear_equations)
+			if (simVars.pde.use_nonlinear_equations)
 			{
 				SphereDataPhysical ug(i_phispec.sphereDataConfig);
 				SphereDataPhysical vg(i_phispec.sphereDataConfig);
@@ -2965,7 +3084,7 @@ int main(int i_argc, char *i_argv[])
 #if SWEET_MPI
 	else
 	{
-		if (simVars.disc.timestepping_method == 100)
+		if (simVars.disc.timestepping_method == simVars.disc.REXI)
 		{
 			SWE_Sphere_REXI swe_sphere_rexi;
 
@@ -3007,6 +3126,9 @@ int main(int i_argc, char *i_argv[])
 
 			while (run)
 			{
+				if (simVars.timecontrol.max_timesteps_nr <= 0)
+					FatalError("TODO: Insert limitation of time step size");
+
 				// REXI time stepping
 				prog_h *= simVars.sim.gravitation;
 				run = swe_sphere_rexi.run_timestep_rexi(
@@ -3022,7 +3144,7 @@ int main(int i_argc, char *i_argv[])
 
 
 #if SWEET_MPI
-	if (simVars.disc.timestepping_method == 100)
+	if (simVars.disc.timestepping_method == simVars.disc.REXI)
 	{
 		// synchronize REXI
 		if (mpi_rank == 0)

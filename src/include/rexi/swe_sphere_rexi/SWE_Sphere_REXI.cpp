@@ -160,6 +160,7 @@ void SWE_Sphere_REXI::setup(
 		bool i_rexi_half,				///< use half-pole reduction
 		bool i_use_robert_functions,	///< use Robert functions
 		int i_pde_id,
+		int i_pde_variant_id,
 
 		int i_rexi_use_extended_modes,
 		int i_rexi_normalization,
@@ -185,6 +186,7 @@ void SWE_Sphere_REXI::setup(
 	use_rexi_preallocation = i_use_rexi_sphere_preallocation;
 
 	pde_id = i_pde_id;
+	pde_variant_id = i_pde_variant_id;
 
 	if (rexi_use_extended_modes == 0)
 	{
@@ -322,7 +324,8 @@ void SWE_Sphere_REXI::setup(
 									simCoeffs->coriolis_omega,
 									simCoeffs->h0 * simCoeffs->gravitation,
 									timestep_size,
-									use_f_sphere
+									use_f_sphere,
+									pde_variant_id
 							);
 							break;
 
@@ -529,7 +532,8 @@ bool SWE_Sphere_REXI::run_timestep_rexi_velocityformulation_progphiuv(
 								simCoeffs->coriolis_omega,
 								simCoeffs->h0*simCoeffs->gravitation,
 								i_timestep_size,
-								use_f_sphere
+								use_f_sphere,
+								pde_variant_id
 						);
 
 						rexiSPHRobert.solve_vectorinvariant_progphivortdiv(
@@ -878,8 +882,8 @@ bool SWE_Sphere_REXI::run_timestep_rexi_vectorinvariant_progphivortdiv(
 							simCoeffs->h0*simCoeffs->gravitation,
 							i_timestep_size,
 
-//							use_coriolis_rexi_formulation,
-							use_f_sphere
+							use_f_sphere,
+							pde_variant_id
 					);
 
 					rexiSPHRobert.solve_vectorinvariant_progphivortdiv(

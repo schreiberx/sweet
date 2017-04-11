@@ -292,7 +292,7 @@ private:
 		}
 		else if (param_timestepping_mode == 2) //Direct solution
 		{
-			if (simVars.misc.use_nonlinear_equations>0)
+			if (simVars.pde.use_nonlinear_equations>0)
 				FatalError("Direct solution on staggered grid not supported!");
 
 			// Analytical solution

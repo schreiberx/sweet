@@ -612,102 +612,85 @@ public:
 				SphereDataPhysicalComplex v0g(sphereDataConfig);
 				opComplex.robert_vortdiv_to_uv(vort0, div0, u0g, v0g, r);
 
-#if 1
-				SphereDataPhysicalComplex phi0g = phi0.getSphereDataPhysicalComplex();
-
-
-				SphereDataPhysicalComplex Fc_k =
-						coriolis*inv_r*(
-								-(-coriolis*coriolis*mug*mug + alpha*alpha)*u0g
-								+ 2.0*alpha*coriolis*mug*v0g
-						);
-
-				SphereDataPhysicalComplex foo =
-						(gh*(div0.getSphereDataPhysicalComplex() - (1.0/alpha)*coriolis*mug*vort0.getSphereDataPhysicalComplex())) +
-						(alpha*phi0g + (1.0/alpha)*coriolis*coriolis*mug*mug*phi0g);
-
-				SphereDataPhysicalComplex rhsg =
-						alpha*alpha*foo +
-						coriolis*coriolis*mug*mug*foo
-						- (gh/alpha)*Fc_k;
-
-				SphereDataComplex rhs = rhsg;
-
-#else
-
-// see normal_mode_exp_analysis_earth_scale
-#error "DONT USE THIS FORMULATION AS IT CREATES WRONG DISPERSION RELATIONS!!!"
-
-				SphereDataComplex Fc_k =
-						coriolis*inv_r*(
-								-(-coriolis*coriolis*mug*mug + alpha*alpha)*u0g
-								+ 2.0*alpha*coriolis*mug*v0g
-						);
-
-				SphereDataComplex foo =
-						(gh*(div0 - (1.0/alpha)*coriolis*opComplex.mu(vort0))) +
-						(alpha*phi0 + (1.0/alpha)*coriolis*coriolis*opComplex.mu2(phi0));
-
-				SphereDataComplex rhs =	alpha*alpha*foo +
-						coriolis*coriolis*opComplex.mu2(foo)
-						- (gh/alpha)*Fc_k;
-
-#endif
-				phi = sphSolverPhi.solve(rhs.spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
+				SphereDataComplex rhs(sphereDataConfig);
 
 				if (variant_id == 0)
 				{
-					/*
-					 * Solve without inverting a matrix
-					 */
-					SphereDataPhysicalComplex u0(sphereDataConfig);
-					SphereDataPhysicalComplex v0(sphereDataConfig);
+					SphereDataPhysicalComplex phi0g = phi0.getSphereDataPhysicalComplex();
 
-					opComplex.robert_vortdiv_to_uv(vort0, div0, u0, v0, r);
+					SphereDataPhysicalComplex Fc_k =
+							coriolis*inv_r*(
+									-(-coriolis*coriolis*mug*mug + alpha*alpha)*u0g
+									+ 2.0*alpha*coriolis*mug*v0g
+							);
 
-#if 1
+					SphereDataPhysicalComplex foo =
+							(gh*(div0.getSphereDataPhysicalComplex() - (1.0/alpha)*coriolis*mug*vort0.getSphereDataPhysicalComplex())) +
+							(alpha*phi0g + (1.0/alpha)*coriolis*coriolis*mug*mug*phi0g);
+
+					SphereDataPhysicalComplex rhsg =
+							alpha*alpha*foo +
+							coriolis*coriolis*mug*mug*foo
+							- (gh/alpha)*Fc_k;
+
+					rhs = rhsg;
+				}
+				else
+				{
+// see normal_mode_exp_analysis_earth_scale
+//#error "DONT USE THIS FORMULATION AS IT CREATES OUTLIERS IN THE DISPERSION!!!"
+
+					SphereDataComplex Fc_k =
+							coriolis*inv_r*(
+									-(-coriolis*coriolis*mug*mug + alpha*alpha)*u0g
+									+ 2.0*alpha*coriolis*mug*v0g
+							);
+
+					SphereDataComplex foo =
+							(gh*(div0 - (1.0/alpha)*coriolis*opComplex.mu(vort0))) +
+							(alpha*phi0 + (1.0/alpha)*coriolis*coriolis*opComplex.mu2(phi0));
+
+					rhs =	alpha*alpha*foo +
+							coriolis*coriolis*opComplex.mu2(foo)
+							- (gh/alpha)*Fc_k;
+				}
+
+				phi = sphSolverPhi.solve(rhs.spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
+
+				/*
+				 * Solve without inverting a matrix
+				 */
+				SphereDataPhysicalComplex u0(sphereDataConfig);
+				SphereDataPhysicalComplex v0(sphereDataConfig);
+
+				opComplex.robert_vortdiv_to_uv(vort0, div0, u0, v0, r);
+
+
+				SphereDataPhysicalComplex a(sphereDataConfig);
+				SphereDataPhysicalComplex b(sphereDataConfig);
+				if (variant_id == 0)
+				{
 					SphereDataPhysicalComplex gradu(sphereDataConfig);
 					SphereDataPhysicalComplex gradv(sphereDataConfig);
 					opComplex.robert_grad_to_vec(phi, gradu, gradv, r);
 
-					SphereDataPhysicalComplex a = u0 + gradu;
-					SphereDataPhysicalComplex b = v0 + gradv;
-
-#else
-					// see normal_mode_exp_analysis_earth_scale
-					#error "DONT USE THIS FORMULATION AS IT CREATES WRONG DISPERSION RELATIONS!!!"
-
-					SphereDataPhysicalComplex a = u0 + inv_r*opComplex.robert_grad_lon(phi).getSphereDataPhysicalComplex();
-					SphereDataPhysicalComplex b = v0 + inv_r*opComplex.robert_grad_lat(phi).getSphereDataPhysicalComplex();
-
-#endif
-					SphereDataPhysicalComplex k = (coriolis*coriolis*(mug*mug)+alpha*alpha);
-					SphereDataPhysicalComplex u = (alpha*a - coriolis*mug*(b))/k;
-					SphereDataPhysicalComplex v = (coriolis*mug*(a) + alpha*b)/k;
-
-					opComplex.robert_uv_to_vortdiv(u, v, vort, div, r);
-				}
-				else if (variant_id == 1)
-				{
-					FatalError("Variant not supported");
-					/*
-					 * Solve with inverting a matrix
-					 */
-#if 0
-					SphereDataComplex a = u0 + inv_r*opComplex.robert_grad_lon(phi);
-					SphereDataComplex b = v0 + inv_r*opComplex.robert_grad_lat(phi);
-
-					SphereDataComplex rhsa = alpha*a - coriolis*opComplex.mu(b);
-					SphereDataComplex rhsb = coriolis*opComplex.mu(a) + alpha*b;
-
-					u = sphSolverVel.solve(rhsa.spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
-					v = sphSolverVel.solve(rhsb.spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
-#endif
+					a = u0 + gradu;
+					b = v0 + gradv;
 				}
 				else
 				{
-					FatalError("Variant not supported");
+					// see normal_mode_exp_analysis_earth_scale
+					//	#error "DONT USE THIS FORMULATION AS IT CREATES OUTLIERS IN DISPERSION!!!"
+
+					a = u0 + inv_r*opComplex.robert_grad_lon(phi).getSphereDataPhysicalComplex();
+					b = v0 + inv_r*opComplex.robert_grad_lat(phi).getSphereDataPhysicalComplex();
 				}
+
+				SphereDataPhysicalComplex k = (coriolis*coriolis*(mug*mug)+alpha*alpha);
+				SphereDataPhysicalComplex u = (alpha*a - coriolis*mug*(b))/k;
+				SphereDataPhysicalComplex v = (coriolis*mug*(a) + alpha*b)/k;
+
+				opComplex.robert_uv_to_vortdiv(u, v, vort, div, r);
 			}
 		}
 		else

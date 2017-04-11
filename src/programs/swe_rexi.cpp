@@ -313,7 +313,7 @@ public:
 		if (simVars.disc.use_staggering && param_compute_error)
 			std::cerr << "Warning: Staggered data will be interpolated to/from A-grid for exact linear solution" << std::endl;
 
-		if (simVars.misc.use_nonlinear_equations > 0 && param_compute_error)
+		if (simVars.pde.use_nonlinear_equations > 0 && param_compute_error)
 			std::cout << "Warning: Exact solution not possible in general for nonlinear swe. Using exact solution for linear case instead." << std::endl;
 
 		if (simVars.disc.use_staggering)
@@ -448,7 +448,7 @@ public:
 					{
 #if 0
 						//Coriolis term - lives in the corner of the cells
-						if (simVars.misc.use_nonlinear_equations)
+						if (simVars.pde.use_nonlinear_equations)
 						{
 							//PXT: had some -0.5 on i and j (why??)
 							double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
@@ -1130,7 +1130,7 @@ public:
 		// A- grid method
 		if (!simVars.disc.use_staggering)
 		{
-			if (simVars.misc.use_nonlinear_equations > 0)	 // nonlinear case
+			if (simVars.pde.use_nonlinear_equations > 0)	 // nonlinear case
 			{
 				std::cout << "Only linear swe are setup for unstaggered grids " << std::endl;
 				exit(1);
@@ -1223,7 +1223,7 @@ public:
 			/*
 			 * U and V updates
 			 */
-			if (simVars.misc.use_nonlinear_equations > 0) //nonlinear case
+			if (simVars.pde.use_nonlinear_equations > 0) //nonlinear case
 			{
 				U = op.avg_b_x(i_h)*i_u;
 				V = op.avg_b_y(i_h)*i_v;
@@ -1234,13 +1234,13 @@ public:
 				V = simVars.sim.h0*i_v;
 			}
 
-			if (simVars.misc.use_nonlinear_equations > 0) //nonlinear case
+			if (simVars.pde.use_nonlinear_equations > 0) //nonlinear case
 				H = simVars.sim.gravitation*i_h + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
 			else //linear case
 				H = simVars.sim.gravitation*i_h;// + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
 
 
-			if (simVars.misc.use_nonlinear_equations > 0) //nonlinear case
+			if (simVars.pde.use_nonlinear_equations > 0) //nonlinear case
 			{
 				// Potential vorticity
 				if(op.avg_b_x(op.avg_b_y(i_h)).reduce_min() < 0.00000001)
@@ -1289,7 +1289,7 @@ public:
 			 */
 			if (!simVars.disc.timestepping_up_and_downwinding)
 			{
-				if (simVars.misc.use_nonlinear_equations > 0){ //full nonlinear divergence
+				if (simVars.pde.use_nonlinear_equations > 0){ //full nonlinear divergence
 					// standard update
 					o_h_t = -op.diff_f_x(U) - op.diff_f_y(V);
 				}
@@ -1343,7 +1343,7 @@ public:
 			o_dt = -simVars.sim.CFL;
 
 			// REXI time stepping for nonlinear eq - semi-lagrangian scheme (SL-REXI)
-			if (simVars.misc.use_nonlinear_equations > 0)
+			if (simVars.pde.use_nonlinear_equations > 0)
 			{
 				swe_plane_rexi.run_timestep_slrexi(
 									prog_h, prog_u, prog_v,
@@ -1351,7 +1351,7 @@ public:
 									posx_a,	posy_a,
 									o_dt,
 
-									simVars.misc.use_nonlinear_equations,
+									simVars.pde.use_nonlinear_equations,
 									param_linear_exp_analytical,
 
 									simVars,
@@ -1370,7 +1370,7 @@ public:
 			if (simVars.disc.use_staggering)
 				FatalError("Direct solution on staggered grid not supported!");
 
-			if (simVars.misc.use_nonlinear_equations>0)
+			if (simVars.pde.use_nonlinear_equations>0)
 				FatalError("Direct solution on staggered grid not supported!");
 
 			// Analytical solution
@@ -1443,7 +1443,7 @@ public:
 					prog_h_prev, prog_u_prev, prog_v_prev,
 					posx_a,	posy_a,
 					o_dt,
-					simVars.misc.use_nonlinear_equations,
+					simVars.pde.use_nonlinear_equations,
 					simVars,
 					op,
 					sampler2D,
@@ -1537,7 +1537,7 @@ public:
 				//if ((simVars.setup.scenario >= 0 && simVars.setup.scenario <= 4) || simVars.setup.scenario == 13)
 				o_ostream << "\tDIFF_H0\tDIFF_U0\tDIFF_V0";
 
-				if (param_compute_error && simVars.misc.use_nonlinear_equations==0){
+				if (param_compute_error && simVars.pde.use_nonlinear_equations==0){
 					o_ostream << "\tANAL_DIFF_RMS_P\tANAL_DIFF_RMS_U\tANAL_DIFF_RMS_V";
 					o_ostream << "\tANAL_DIFF_MAX_P\tANAL_DIFF_MAX_U\tANAL_DIFF_MAX_V";
 				}
@@ -1575,7 +1575,7 @@ public:
 			o_ostream << "\t" << benchmark_diff_v;
 			//}
 
-			if (param_compute_error && simVars.misc.use_nonlinear_equations==0)
+			if (param_compute_error && simVars.pde.use_nonlinear_equations==0)
 			{
 				compute_errors();
 
@@ -2158,7 +2158,7 @@ public:
 		prog_u = *parareal_data_output.data_arrays[1];
 		prog_v = *parareal_data_output.data_arrays[2];
 
-		if (param_compute_error && simVars.misc.use_nonlinear_equations==0){
+		if (param_compute_error && simVars.pde.use_nonlinear_equations==0){
 			compute_errors();
 			std::cout << "maxabs error compared to analytical solution: " << benchmark_analytical_error_maxabs_h << std::endl;
 		}
@@ -2307,11 +2307,11 @@ int main(int i_argc, char *i_argv[])
 
 	// Print header
 	std::cout << std::endl;
-	if (simVars.misc.use_nonlinear_equations == 1)
+	if (simVars.pde.use_nonlinear_equations == 1)
 		std::cout << "Solving full nonlinear SW equations" << std::endl;
 	else
 	{
-		if (simVars.misc.use_nonlinear_equations == 2)
+		if (simVars.pde.use_nonlinear_equations == 2)
 				std::cout << "Solving linear SWE with nonlinear advection" << std::endl;
 		else
 			std::cout << "Solving linear SW equations" << std::endl;
@@ -2457,7 +2457,7 @@ int main(int i_argc, char *i_argv[])
 				}
 			}
 
-			if (param_compute_error && simVars.misc.use_nonlinear_equations == 0)
+			if (param_compute_error && simVars.pde.use_nonlinear_equations == 0)
 			{
 				simulationSWE->compute_errors();
 				std::cout << "DIAGNOSTICS ANALYTICAL RMS H:\t" << simulationSWE->benchmark_analytical_error_rms_h << std::endl;
