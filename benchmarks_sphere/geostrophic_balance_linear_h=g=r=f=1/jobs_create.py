@@ -16,6 +16,7 @@ class default_params:
 	rexi_h = 0.15
 	rexi_half_poles = 1
 	rexi_extended_modes = 2
+	rexi_normalization = 1
 
 	pde_id = 1
 

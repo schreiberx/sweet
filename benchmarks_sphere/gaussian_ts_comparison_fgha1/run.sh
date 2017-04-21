@@ -3,7 +3,7 @@
 BASEDIR=`pwd`
 cd ../../
 
-STDEXEC="./build/swe_sph_and_rexi_spherespectral_spheredealiasing_omp_libfft_gnu_release -M 128 -s 6 --nonlinear=0 -g 1 -f 1 -a 1 -H 1 -o 0.5 -t 7 --rexi-sphere-preallocation 0"
+STDEXEC="./build/swe_sph_and_rexi_spherespectral_spheredealiasing_omp_libfft_gnu_release -M 128 -s 9 --nonlinear=0 -g 1 -f 1 -a 1 -H 1 -o 0.5 -t 7 --rexi-sphere-preallocation 0"
 
 
 if false; then

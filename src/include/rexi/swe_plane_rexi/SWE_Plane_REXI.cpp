@@ -943,7 +943,7 @@ inline std::complex<double> conj(const std::complex<double> &v)
  * 		doc/swe_solution_for_L/sympy_L_spec_decomposition.py
  * for the dimensionful formulation.
  *
- * Don't use this function to frequently, since it always computes
+ * Don't use this function too frequently, since it always computes
  * the required coefficients on-the-fly which is expensive.
  */
 void SWE_Plane_REXI::run_timestep_direct_solution(

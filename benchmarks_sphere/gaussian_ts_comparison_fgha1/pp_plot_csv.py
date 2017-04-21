@@ -105,8 +105,7 @@ for filename in files:
 	plt.figure(figsize=figsize)
 
 
-
-	plt.imshow(data, interpolation='nearest', extent=extent, origin='lower', aspect='auto')
+	plt.imshow(data, interpolation='nearest', extent=extent, origin='lower', aspect='auto', cmap=plt.get_cmap('rainbow'))
 
 	plt.clim(cmin, cmax)
 	cbar = plt.colorbar()
