@@ -181,7 +181,7 @@ public:
 				std::cout << "v_max_error for geostrophic balance case: " << v_max_error << std::endl;
 			}
 		}
-		else if (io_simVars.setup.benchmark_scenario_id == 11)
+		else if (io_simVars.setup.benchmark_scenario_id == 21)
 		{
 			/*
 			 * Advection test case
@@ -290,7 +290,7 @@ public:
 
 			std::cout << "advection_rotation_angle: " << io_simVars.setup.advection_rotation_angle << std::endl;
 		}
-		else if (io_simVars.setup.benchmark_scenario_id == 12)
+		else if (io_simVars.setup.benchmark_scenario_id == 22)
 		{
 			/**
 			 * Advection test case
