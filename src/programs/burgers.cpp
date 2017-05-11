@@ -493,17 +493,28 @@ public:
 		PlaneData u=io_u;
 		PlaneData v=io_v;
 
-		// Initialize and set timestep dependent source for manufactured solution
-		PlaneData f(planeDataConfig);
-		BurgersValidationBenchmarks::set_source(simVars.timecontrol.current_simulation_time,simVars,param_use_staggering,f);
-		f.request_data_spectral();
-
 		// Modify timestep to final time if necessary
 		double& t = o_dt;
 		if (simVars.timecontrol.current_simulation_time+i_timestep_size < i_max_simulation_time)
 			t = i_timestep_size;
 		else
 			t = i_max_simulation_time-simVars.timecontrol.current_simulation_time;
+
+		// Initialize and set timestep dependent source for manufactured solution
+		PlaneData f(planeDataConfig);
+      PlaneData ff(planeDataConfig);
+#if 0
+      if (param_semilagrangian)
+      {
+		   BurgersValidationBenchmarks::set_source(simVars.timecontrol.current_simulation_time+t,simVars,param_use_staggering,f);
+      }else
+#endif
+      {
+		   BurgersValidationBenchmarks::set_source(simVars.timecontrol.current_simulation_time,simVars,param_use_staggering,f);
+		   BurgersValidationBenchmarks::set_source(simVars.timecontrol.current_simulation_time+0.5*t,simVars,param_use_staggering,ff);
+      }
+		f.request_data_spectral();
+      ff.request_data_spectral();
 
 		// Setting explicit right hand side and operator of the left hand side
 		PlaneData rhs_u = u;
@@ -513,8 +524,8 @@ public:
 		{
 			rhs_u += t*f;
 		}else{
-			rhs_u += - t*(u*op.diff_c_x(u)+v*op.diff_c_y(u)) + t*f;
-			rhs_v += - t*(u*op.diff_c_x(v)+v*op.diff_c_y(v));
+			rhs_u += - 0.5*t*(u*op.diff_c_x(u)+v*op.diff_c_y(u)) + 0.5*t*f;
+			rhs_v += - 0.5*t*(u*op.diff_c_x(v)+v*op.diff_c_y(v));
 		}
 
 		if (simVars.disc.use_spectral_basis_diffs) //spectral
@@ -522,70 +533,36 @@ public:
 			PlaneData lhs = u;
 			if (param_semilagrangian)
 			{
+#if 0
 				lhs = ((-t)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
+            io_u = rhs_u.spectral_div_element_wise(lhs);
+            io_v = rhs_v.spectral_div_element_wise(lhs);
+#else
+//            std::cout << "*****************Warning******************" << std::endl << "explicit RK instead of SL!!!" << std::endl;
+            PlaneData u1 = u + t*simVars.sim.viscosity*(op.diff2_c_x(u)+op.diff2_c_y(u))
+                           - 0.5*t*(u*op.diff_c_x(u)+v*op.diff_c_y(u)) + f*t;
+            PlaneData v1 = v + t*simVars.sim.viscosity*(op.diff2_c_x(v)+op.diff2_c_y(v))
+                           - 0.5*t*(u*op.diff_c_x(v)+v*op.diff_c_y(v));
+
+            io_u = u + t*simVars.sim.viscosity*(op.diff2_c_x(u1)+op.diff2_c_y(u1))
+                  - t*(u1*op.diff_c_x(u1)+v1*op.diff_c_y(u1)) +ff*t;
+            io_v = v + t*simVars.sim.viscosity*(op.diff2_c_x(v1)+op.diff2_c_y(v1))
+                  - t*(u1*op.diff_c_x(v1)+v1*op.diff_c_y(v1));
+#endif
 			}else{
 				lhs = ((-t)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
+            PlaneData u1 = rhs_u.spectral_div_element_wise(lhs);
+            PlaneData v1 = rhs_v.spectral_div_element_wise(lhs);
+
+            io_u = u + t*simVars.sim.viscosity*(op.diff2_c_x(u1)+op.diff2_c_y(u1))
+                  - t*(u1*op.diff_c_x(u1)+v1*op.diff_c_y(u1)) +ff*t;
+            io_v = v + t*simVars.sim.viscosity*(op.diff2_c_x(v1)+op.diff2_c_y(v1))
+                  - t*(u1*op.diff_c_x(v1)+v1*op.diff_c_y(v1));
 			}
 
-#if 1   // solving the system directly by inverting the left hand side operator
-			io_u = rhs_u.spectral_div_element_wise(lhs);
-			io_v = rhs_v.spectral_div_element_wise(lhs);
 		} else { //Jacobi
-			/*
-			 * TODO:
-			 * set these values non manually
-			 */
-
 			FatalError("NOT available");
-/*
-			bool retval=false;
-			int max_iters = 26000;
-			double eps = 1e-7;
-			double* domain_size = simVars.sim.domain_size;
-			double omega = 1.0;
-			retval = burgers_HelmholtzSolver::smoother_jacobi( // Velocity u
-										simVars.sim.viscosity*t,
-										rhs_u,
-										io_u,
-										domain_size,
-										eps,
-										max_iters,
-										omega,
-										0
-									);
-			if (!retval)
-			{
-				std::cout << "Did not converge!!!" << std::endl;
-				exit(-1);
-			}
-			retval = burgers_HelmholtzSolver::smoother_jacobi( // Velocity v
-										simVars.sim.viscosity*t,
-										rhs_v,
-										io_v,
-										domain_size,
-										eps,
-										max_iters,
-										omega,
-										0
-									);
-			if (!retval)
-			{
-				std::cout << "Did not converge!!!" << std::endl;
-				exit(-1);
-			}
-*/
 		}
-
-
-#else	// making the second step of the IMEX-RK1 scheme
-		PlaneData u1 = rhs_u.spectral_div_element_wise(lhs);
-		PlaneData v1 = rhs_v.spectral_div_element_wise(lhs);
-
-		io_u = u + t*simVars.sim.viscosity*(op.diff2_c_x(u1)+op.diff2_c_y(u1))
-				- t*(u*op.diff_c_x(u)+v*op.diff_c_y(u)) +f*t;
-		io_v = v + t*simVars.sim.viscosity*(op.diff2_c_x(v1)+op.diff2_c_y(v1))
-				- t*(u*op.diff_c_x(v)+v*op.diff_c_y(v));
-#endif
 
 		return true;
 	}
@@ -601,6 +578,7 @@ public:
 		assert(simVars.sim.CFL < 0);
 		simVars.timecontrol.current_timestep_size = -simVars.sim.CFL;
 
+#if 0
 		if (param_semilagrangian)
 		{
 			dt = -simVars.sim.CFL;
@@ -676,6 +654,7 @@ public:
 				FatalError("Chosen time stepping method not available!");
 		}
 		else
+#endif
 		{
 			if (simVars.disc.timestepping_method == 1)
 			{
