@@ -2,7 +2,7 @@
  * SPHDataComplex.hpp
  *
  *  Created on: 9 Aug 2016
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk> Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SPHDATACOMPLEX_HPP_
@@ -19,6 +19,7 @@
 
 #include <sweet/sphere/SphereDataConfig.hpp>
 #include <sweet/sphere/SphereData.hpp>
+#include <sweet/sphere/SphereDataPhysicalComplex.hpp>
 #include <sweet/MemBlockAlloc.hpp>
 
 
@@ -72,6 +73,53 @@ public:
 	}
 
 
+
+
+	SphereDataComplex(
+			const SphereDataPhysicalComplex &i_sph_data
+	):
+		sphereDataConfig(nullptr),
+		physical_space_data(nullptr),
+		spectral_space_data(nullptr)
+	{
+		setup(i_sph_data.sphereDataConfig);
+
+		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+			physical_space_data[i] = i_sph_data.physical_space_data[i];
+
+//		memcpy(physical_space_data, i_sph_data.physical_space_data, sizeof(double)*sphereDataConfig->physical_array_data_number_of_elements);
+
+		physical_space_data_valid = true;
+		spectral_space_data_valid = false;
+	}
+
+
+
+
+	/*
+	 * load real and imaginary data from physical arrays
+	 */
+	void loadRealImag(
+			const SphereData &i_re,
+			const SphereData &i_im
+	)
+	{
+		i_re.request_data_physical();
+		i_im.request_data_physical();
+
+		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+		{
+			physical_space_data[i].real(i_re.physical_space_data[i]);
+			physical_space_data[i].imag(i_im.physical_space_data[i]);
+		}
+
+		physical_space_data_valid = true;
+		spectral_space_data_valid = false;
+	}
+
+
+
+
 	/**
 	 * Run validation checks to make sure that the physical and spectral spaces match in size
 	 */
@@ -94,7 +142,8 @@ public:
 			const SphereDataComplex &i_sph_data
 	)
 	{
-		check_sphereDataConfig_identical_res(i_sph_data.sphereDataConfig);
+		if (sphereDataConfig == nullptr)
+			setup(i_sph_data.sphereDataConfig);
 
 		if (i_sph_data.physical_space_data_valid)
 			memcpy(physical_space_data, i_sph_data.physical_space_data, sizeof(cplx)*sphereDataConfig->physical_array_data_number_of_elements);
@@ -217,58 +266,31 @@ public:
 	}
 
 
-
-
-#if 0
-public:
-	void physical_RealToSphereData(
-			SphereData &o_sph_data
-	)
+	SphereDataPhysicalComplex getSphereDataPhysicalComplex()	const
 	{
-		check_sphereDataConfig_identical_res(o_sph_data.sphereDataConfig);
-
-		request_data_physical();
-
-		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
-			o_sph_data.physical_space_data[i] = physical_space_data[i].real();
-
-		o_sph_data.physical_space_data_valid = true;
-		o_sph_data.spectral_space_data_valid = false;
-	}
-
-public:
-	void physical_ImagToSphereData(
-			SphereData &o_sph_data
-	)
-	{
-		check_sphereDataConfig_identical_res(o_sph_data.sphereDataConfig);
-
-		request_data_physical();
-
-		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
-			o_sph_data.physical_space_data[i] = physical_space_data[i].imag();
-
-		o_sph_data.physical_space_data_valid = true;
-		o_sph_data.spectral_space_data_valid = false;
-	}
-
-
-public:
-	void physical_fromSphereData(
-			const SphereData &i_sph_data
-	)
-	{
-		check_sphereDataConfig_identical_res(i_sph_data.sphereDataConfig);
-
-		i_sph_data.request_data_physical();
-
-		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
-			physical_space_data[i] = i_sph_data.physical_space_data[i];
-
-		physical_space_data_valid = true;
-		spectral_space_data_valid = false;
-	}
+		SphereDataPhysicalComplex out(sphereDataConfig);
+#if 1
+		if (physical_space_data_valid)
+		{
+			for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+				out.physical_space_data[i] = physical_space_data[i];
+//			memcpy(out.physical_space_data, physical_space_data, sizeof(double)*sphereDataConfig->physical_array_data_number_of_elements);
+			return out;
+		}
 #endif
+		/*
+		 * WARNING:
+		 * We have to use a temporary array here because of destructive SH transformations
+		 */
+		SphereDataComplex tmp = *this;
+		tmp.request_data_spectral();
+		SH_to_spat_cplx(sphereDataConfig->shtns, tmp.spectral_space_data, tmp.physical_space_data);
+
+		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+			out.physical_space_data[i] = tmp.physical_space_data[i];
+
+		return out;
+	}
 
 
 public:
@@ -833,6 +855,9 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for
 #endif
+
+#if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
+
 		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
 		{
 			double lon_degree = ((double)i/(double)sphereDataConfig->physical_num_lon)*2.0*M_PI;
@@ -852,6 +877,29 @@ public:
 				i_lambda(lon_degree, lat_degree, physical_space_data[i*sphereDataConfig->physical_num_lat + j]);
 			}
 		}
+#else
+
+
+		for (int jlat = 0; jlat < sphereDataConfig->physical_num_lat; jlat++)
+		{
+			//double colatitude = acos(shtns->ct[j]);
+
+			/*
+			 * Colatitude is 0 at the north pole and 180 at the south pole
+			 *
+			 * WARNING: The latitude degrees are not aequidistantly spaced in the angles!!!! We have to use the shtns->ct lookup table
+			 */
+			//double lat_degree = M_PI*0.5 - colatitude;
+			double lat_degree = sphereDataConfig->lat[jlat];
+
+			for (int ilon = 0; ilon < sphereDataConfig->physical_num_lon; ilon++)
+			{
+				double lon_degree = ((double)ilon/(double)sphereDataConfig->physical_num_lon)*2.0*M_PI;
+
+				i_lambda(lon_degree, lat_degree, physical_space_data[jlat*sphereDataConfig->physical_num_lon + ilon]);
+			}
+		}
+#endif
 
 		physical_space_data_valid = true;
 		spectral_space_data_valid = false;
@@ -874,6 +922,7 @@ public:
 #pragma omp parallel for
 #endif
 
+#if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
 		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
 		{
 			double lon_degree = ((double)i/(double)sphereDataConfig->physical_num_lon)*2.0*M_PI;
@@ -885,6 +934,19 @@ public:
 				i_lambda(lon_degree, mu, physical_space_data[i*sphereDataConfig->physical_num_lat + j]);
 			}
 		}
+#else
+		for (int jlat = 0; jlat < sphereDataConfig->physical_num_lat; jlat++)
+		{
+			double mu = sphereDataConfig->lat_gaussian[jlat];
+
+			for (int ilon = 0; ilon < sphereDataConfig->physical_num_lon; ilon++)
+			{
+				double lon_degree = ((double)ilon/(double)sphereDataConfig->physical_num_lon)*2.0*M_PI;
+
+				i_lambda(lon_degree, mu, physical_space_data[jlat*sphereDataConfig->physical_num_lon + ilon]);
+			}
+		}
+#endif
 
 		physical_space_data_valid = true;
 		spectral_space_data_valid = false;
@@ -910,6 +972,7 @@ public:
 #pragma omp parallel for
 #endif
 
+#if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
 		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
 		{
 			double lon_degree = (((double)i)/(double)sphereDataConfig->physical_num_lon)*2.0*M_PI;
@@ -917,15 +980,23 @@ public:
 			for (int j = 0; j < sphereDataConfig->physical_num_lat; j++)
 			{
 				double comu = sphereDataConfig->shtns->st[j];
-				/*
-				 * IDENTITAL FORMULATION
-				double mu = shtns->ct[j];
-				double comu = sqrt(1.0-mu*mu);
-				*/
 
 				i_lambda(lon_degree, comu, physical_space_data[i*sphereDataConfig->physical_num_lat + j]);
 			}
 		}
+#else
+		for (int jlat = 0; jlat < sphereDataConfig->physical_num_lat; jlat++)
+		{
+			double comu = sphereDataConfig->shtns->st[jlat];
+
+			for (int ilon = 0; ilon < sphereDataConfig->physical_num_lon; ilon++)
+			{
+				double lon_degree = (((double)ilon)/(double)sphereDataConfig->physical_num_lon)*2.0*M_PI;
+
+				i_lambda(lon_degree, comu, physical_space_data[jlat*sphereDataConfig->physical_num_lon + ilon]);
+			}
+		}
+#endif
 
 		physical_space_data_valid = true;
 		spectral_space_data_valid = false;

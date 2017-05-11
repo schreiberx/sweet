@@ -2,7 +2,7 @@
  * rexi_swe.hpp
  *
  *  Created on: 24 Jul 2015
- *      Author: Martin Schreiber <schreiberx@gmail.com>
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk> Schreiber <schreiberx@gmail.com>
  */
 #include "SWE_Plane_REXI.hpp"
 
@@ -368,10 +368,10 @@ bool SWE_Plane_REXI::run_timestep_implicit_ts(
  *
  */
 bool SWE_Plane_REXI::run_timestep_cn_sl_ts(
-	PlaneData &io_h,  ///< Current and past fields
+	PlaneData &io_h,  ///< Current fields
 	PlaneData &io_u,
 	PlaneData &io_v,
-	PlaneData &io_h_prev,
+	PlaneData &io_h_prev,	///< past fields
 	PlaneData &io_u_prev,
 	PlaneData &io_v_prev,
 
@@ -388,18 +388,17 @@ bool SWE_Plane_REXI::run_timestep_cn_sl_ts(
 	SemiLagrangian &semiLagrangian  ///< Semi-Lag class
 )
 {
-
-	//Out vars
+	// Out vars
 	PlaneData h(io_h.planeDataConfig);
 	PlaneData u(io_h.planeDataConfig);
 	PlaneData v(io_h.planeDataConfig);
 
-	//Departure points and arrival points
+	// Departure points and arrival points
 
 	ScalarDataArray posx_d = i_posx_a;
 	ScalarDataArray posy_d = i_posy_a;
 
-	//Parameters
+	// Parameters
 	double h_bar = i_simVars.sim.h0;
 	double g = i_simVars.sim.gravitation;
 	double f0 = i_simVars.sim.f0;
@@ -413,10 +412,10 @@ bool SWE_Plane_REXI::run_timestep_cn_sl_ts(
 
 	if (i_param_nonlinear > 0)
 	{
-		//Calculate departure points
+		// Calculate departure points
 		semiLagrangian.semi_lag_departure_points_settls(
-				io_u_prev, io_v_prev,
-				io_u,	io_v,
+				io_u_prev,	io_v_prev,
+				io_u,		io_v,
 				i_posx_a,	i_posy_a,
 				dt,
 				posx_d,	posy_d,
@@ -425,12 +424,13 @@ bool SWE_Plane_REXI::run_timestep_cn_sl_ts(
 
 	}
 
-	//Calculate Divergence and vorticity spectrally
-	PlaneData div = op.diff_c_x(io_u) + op.diff_c_y(io_v) ;
-	//this could be pre-stored
-	PlaneData div_prev = op.diff_c_x(io_u_prev) + op.diff_c_y(io_v_prev) ;
+	// Calculate Divergence and vorticity spectrally
+	PlaneData div = op.diff_c_x(io_u) + op.diff_c_y(io_v);
 
-	//Calculate the RHS
+	// this could be pre-stored
+	PlaneData div_prev = op.diff_c_x(io_u_prev) + op.diff_c_y(io_v_prev);
+
+	// Calculate the RHS
 	PlaneData rhs_u = alpha * io_u + f0 * io_v    - g * op.diff_c_x(io_h);
 	PlaneData rhs_v =  - f0 * io_u + alpha * io_v - g * op.diff_c_y(io_h);
 	PlaneData rhs_h = alpha * io_h  - h_bar * div;
@@ -448,7 +448,7 @@ bool SWE_Plane_REXI::run_timestep_cn_sl_ts(
 		rhs_h.request_data_spectral();
 	}
 
-	//Calculate nonlinear term at half timestep and add to RHS of h eq.
+	// Calculate nonlinear term at half timestep and add to RHS of h eq.
 	if (i_param_nonlinear == 1)
 	{
 		// Calculate nonlinear term interpolated to departure points
@@ -458,8 +458,7 @@ bool SWE_Plane_REXI::run_timestep_cn_sl_ts(
 		PlaneData hdiv = 2.0 * io_h * div - io_h_prev * div_prev;
 		//hdiv.aliasing_zero_high_modes();
 		//std::cout<<offcent<<std::endl;
-		PlaneData nonlin = 0.5 * io_h * div +
-				0.5 * sampler2D.bicubic_scalar(hdiv, posx_d, posy_d, -0.5, -0.5);
+		PlaneData nonlin = 0.5 * io_h * div + 0.5 * sampler2D.bicubic_scalar(hdiv, posx_d, posy_d, -0.5, -0.5);
 		//add diffusion
 		//nonlin.printSpectrumEnergy_y();
 		//nonlin.printSpectrumIndex();
@@ -479,11 +478,11 @@ bool SWE_Plane_REXI::run_timestep_cn_sl_ts(
 		//std::cout << "Div: " << div.reduce_maxAbs() << std::endl;
 		//nonlin=0;
 		rhs_h = rhs_h - 2.0*nonlin;
-		rhs_h.request_data_spectral();
+		rhs_h.request_data_spectral();	/// why is there a request_data_spectral()?
 	}
 
 
-	//Build Helmholtz eq.
+	// Build Helmholtz eq.
 	PlaneData rhs_div = op.diff_c_x(rhs_u)+op.diff_c_y(rhs_v);
 	PlaneData rhs_vort = op.diff_c_x(rhs_v)-op.diff_c_y(rhs_u);
 	PlaneData rhs     = kappa* rhs_h / alpha - h_bar * rhs_div - f0 * h_bar * rhs_vort / alpha;
@@ -491,7 +490,7 @@ bool SWE_Plane_REXI::run_timestep_cn_sl_ts(
 	// Helmholtz solver
 	helmholtz_spectral_solver(kappa, g*h_bar, rhs, h, op);
 
-	//Update u and v
+	// Update u and v
 	u = (1/kappa)*
 			( alpha *rhs_u + f0 * rhs_v
 					- g * alpha * op.diff_c_x(h)
@@ -506,14 +505,14 @@ bool SWE_Plane_REXI::run_timestep_cn_sl_ts(
 
 
 	//Set time (n) as time (n-1)
-	io_h_prev=io_h;
-	io_u_prev=io_u;
-	io_v_prev=io_v;
+	io_h_prev = io_h;
+	io_u_prev = io_u;
+	io_v_prev = io_v;
 
 	//output data
-	io_h=h;
-	io_u=u;
-	io_v=v;
+	io_h = h;
+	io_u = u;
+	io_v = v;
 
 	return true;
 }
@@ -590,7 +589,7 @@ bool SWE_Plane_REXI::run_timestep_slrexi(
 	hdiv.physical_set_all(0);
 
 	//Calculate nonlinear terms
-	if(i_param_nonlinear==1)
+	if (i_param_nonlinear == 1)
 	{
 		//Calculate Divergence and vorticity spectrally
 		hdiv =  - io_h * (op.diff_c_x(io_u) + op.diff_c_y(io_v));
@@ -684,16 +683,6 @@ bool SWE_Plane_REXI::run_timestep_rexi(
 	io_h.request_data_physical();
 	io_u.request_data_physical();
 	io_v.request_data_physical();
-
-#if 0
-	std::cout << io_h << std::endl;
-	std::cout << std::endl;
-	std::cout << io_u << std::endl;
-	std::cout << std::endl;
-	std::cout << io_v << std::endl;
-	std::cout << std::endl;
-	exit(1);
-#endif
 
 #if SWEET_MPI
 
@@ -954,7 +943,7 @@ inline std::complex<double> conj(const std::complex<double> &v)
  * 		doc/swe_solution_for_L/sympy_L_spec_decomposition.py
  * for the dimensionful formulation.
  *
- * Don't use this function to frequently, since it always computes
+ * Don't use this function too frequently, since it always computes
  * the required coefficients on-the-fly which is expensive.
  */
 void SWE_Plane_REXI::run_timestep_direct_solution(
@@ -1039,8 +1028,6 @@ void SWE_Plane_REXI::run_timestep_direct_solution(
 
 			if (k0 == 0 && k1 == 0)
 			{
-//					complex wg = std::sqrt((complex)f*f*s0*s0*s1*s1);
-
 				eigenvalues[0] = 0.0;
 				eigenvalues[1] = -1.0*f;
 				eigenvalues[2] = f;

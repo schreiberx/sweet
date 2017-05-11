@@ -2,7 +2,7 @@
  * SPHSolverComplex.hpp
  *
  *  Created on: 31 Aug 2016
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk> Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SRC_INCLUDE_SPH_BANDED_MATRIX_COMPLEX_HPP_
@@ -513,6 +513,16 @@ public:
 		return out;
 	}
 
+
+
+
+	SphereDataComplex solve(
+			const SphereDataPhysicalComplex &i_rhs
+	)
+	{
+		SphereDataComplex tmp = i_rhs;
+		return solve(tmp);
+	}
 
 	SphereDataComplex solve(
 			const SphereDataComplex &i_rhs

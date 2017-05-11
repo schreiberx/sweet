@@ -2,7 +2,7 @@
  * GenerateConsistentGradDivSphereData.hpp
  *
  *  Created on: 4 Nov 2016
- *      Author: martin
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SRC_INCLUDE_SWEET_SPHERE_GENERATECONSISTENTGRADDIVSPHEREDATA_HPP_
@@ -69,7 +69,7 @@ private:
 
 		assert(simVars.sim.earth_radius > 0);
 
-		if (!simVars.misc.use_nonlinear_equations)
+		if (!simVars.pde.use_nonlinear_equations)
 		{
 			if (!simVars.misc.sphere_use_robert_functions)
 			{

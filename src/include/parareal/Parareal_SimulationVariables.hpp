@@ -2,7 +2,7 @@
  * PararealSimulationVariables.hpp
  *
  *  Created on: 18 Apr 2016
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk> Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SRC_INCLUDE_PARAREAL_PARAREAL_SIMULATIONVARIABLES_HPP_
@@ -104,7 +104,8 @@ public:
 	{
 		std::cout << std::endl;
 		std::cout << "Parareal" << std::endl;
-		std::cout << " + enabled: " << enabled << std::endl;
+		std::cout << " + enabled (compile time): " << SWEET_PARAREAL << std::endl;
+		std::cout << " + enabled (software flag): " << enabled << std::endl;
 		std::cout << " + coarse_slices: " << coarse_slices << std::endl;
 		std::cout << " + verbosity: " << verbosity << std::endl;
 		std::cout << " + convergence_error_threshold: " << convergence_error_threshold << std::endl;

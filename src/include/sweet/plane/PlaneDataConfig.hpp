@@ -2,7 +2,7 @@
  * PlaneDataConfig.hpp
  *
  *  Created on: 17 Oct 2016
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk> Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef PLANE_DATA_CONFIG_HPP_
@@ -336,15 +336,24 @@ private:
 			int M = spectral_data_size[0];
 			int N = spectral_data_size[1];
 
-			spectral_data_iteration_ranges[0][0][0] = 0;
-			spectral_data_iteration_ranges[0][0][1] = 2*(M-1)/3+1;
-			spectral_data_iteration_ranges[0][1][0] = 0;
-			spectral_data_iteration_ranges[0][1][1] = N/3+1;
+			if (	spectral_data_size[0] == physical_data_size[0] &&
+					spectral_data_size[1] == physical_data_size[1]
+			)
+			{
+				FatalError("Aliasing doesn't make sense since physical resolution is identical to spectral");
+			}
+			else
+			{
+				spectral_data_iteration_ranges[0][0][0] = 0;
+				spectral_data_iteration_ranges[0][0][1] = 2*(M-1)/3+1;
+				spectral_data_iteration_ranges[0][1][0] = 0;
+				spectral_data_iteration_ranges[0][1][1] = N/3+1;
 
-			spectral_data_iteration_ranges[1][0][0] = 0;
-			spectral_data_iteration_ranges[1][0][1] = 2*(M-1)/3+1;
-			spectral_data_iteration_ranges[1][1][0] = N-N/3;
-			spectral_data_iteration_ranges[1][1][1] = N;
+				spectral_data_iteration_ranges[1][0][0] = 0;
+				spectral_data_iteration_ranges[1][0][1] = 2*(M-1)/3+1;
+				spectral_data_iteration_ranges[1][1][0] = N-N/3;
+				spectral_data_iteration_ranges[1][1][1] = N;
+			}
 
 #else
 
@@ -661,8 +670,8 @@ public:
 			int io_spectral_modes[2]
 	)
 	{
-		std::cout << io_physical_res[0] << ", " << io_physical_res[1] << std::endl;
-		std::cout << io_spectral_modes[0] << ", " << io_spectral_modes[1] << std::endl;
+//		std::cout << io_physical_res[0] << ", " << io_physical_res[1] << std::endl;
+//		std::cout << io_spectral_modes[0] << ", " << io_spectral_modes[1] << std::endl;
 
 		if (io_physical_res[0] > 0 && io_spectral_modes[0] > 0)
 		{

@@ -2,7 +2,7 @@
  * BenchmarkGaussianDam.hpp
  *
  *  Created on: 30 Nov 2016
- *      Author: martin
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SRC_INCLUDE_BENCHMARKS_SPHERE_BENCHMARKGAUSSIANDAM_HPP_
@@ -18,8 +18,8 @@ public:
 			SphereData &o_u,
 			SphereData &o_v,
 			SimulationVariables &i_simVars,
-			double i_center_lat = M_PI/3,
 			double i_center_lon = M_PI/3,
+			double i_center_lat = M_PI/3,
 			double i_exp_fac = 10.0
 	)
 	{
@@ -40,7 +40,7 @@ public:
 
 			double d = acos(sin(phi1)*sin(phi2) + cos(phi1)*cos(phi2)*cos(lambda1-lambda2));
 
-			o_data = exp(-d*d*i_exp_fac)*0.1*i_simVars.sim.h0 + i_simVars.sim.h0;
+			o_data = std::exp(-d*d*i_exp_fac)*0.1*i_simVars.sim.h0 + i_simVars.sim.h0;
 		};
 
 		o_h.physical_update_lambda_gaussian_grid(initial_condition_h);

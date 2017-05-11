@@ -141,10 +141,15 @@ public:
 					dt = i_max_simulation_time-i_simulation_time;
 
 
+#if 0
+			io_h = io_h.getSphereDataPhysical() + dt*(*RK_h_t[0]).getSphereDataPhysical();
+			io_u = io_u.getSphereDataPhysical() + dt*(*RK_u_t[0]).getSphereDataPhysical();
+			io_v = io_v.getSphereDataPhysical() + dt*(*RK_v_t[0]).getSphereDataPhysical();
+#else
 			io_h += dt**RK_h_t[0];
 			io_u += dt**RK_u_t[0];
 			io_v += dt**RK_v_t[0];
-
+#endif
 		}
 		else if (i_runge_kutta_order == 2)
 		{

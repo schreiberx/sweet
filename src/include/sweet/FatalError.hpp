@@ -2,7 +2,7 @@
  * FatalError.hpp
  *
  *  Created on: 18 Oct 2016
- *      Author: martin
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SRC_INCLUDE_SWEET_FATALERROR_HPP_

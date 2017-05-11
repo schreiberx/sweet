@@ -6,6 +6,7 @@
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneDataTimesteppingRK.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
+#include <sweet/plane/PlaneDiagnostics.hpp>
 
 #include <benchmarks_plane/SWEPlaneBenchmarks.hpp>
 
@@ -33,7 +34,9 @@ class SimulationSWEStaggered
 {
 public:
 	// prognostics
-	PlaneData prog_P, prog_u, prog_v;
+	PlaneData prog_h;	/// geopotential
+	PlaneData prog_u;
+	PlaneData prog_v;
 
 	// temporary variables
 	PlaneData H, U, V;
@@ -75,7 +78,7 @@ public:
 	 */
 public:
 	SimulationSWEStaggered()	:
-		prog_P(planeDataConfig),	// density/pressure
+		prog_h(planeDataConfig),	// density/pressure
 		prog_u(planeDataConfig),	// velocity (x-direction)
 		prog_v(planeDataConfig),	// velocity (y-direction)
 
@@ -110,7 +113,7 @@ public:
 
 		simVars.reset();
 
-		prog_P.physical_update_lambda_array_indices(
+		prog_h.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
 				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
@@ -136,7 +139,7 @@ public:
 				io_data = SWEPlaneBenchmarks::return_v(simVars, x, y);
 			}
 		);
-
+#if 0
 		beta_plane.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
@@ -144,10 +147,10 @@ public:
 				io_data = simVars.sim.f0+simVars.sim.beta*y_beta;
 			}
 		);
-
+#endif
 
 		if (simVars.setup.input_data_filenames.size() > 0)
-			prog_P.file_physical_loadData(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
+			prog_h.file_physical_loadData(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
 
 		if (simVars.setup.input_data_filenames.size() > 1)
 			prog_u.file_physical_loadData(simVars.setup.input_data_filenames[1].c_str(), simVars.setup.input_data_binary);
@@ -170,30 +173,40 @@ public:
 
 		last_timestep_nr_update_diagnostics = simVars.timecontrol.current_timestep_nr;
 
+
+		PlaneDiagnostics::update_staggered_huv_to_mass_energy_enstrophy(
+				op,
+				prog_h,
+				prog_u,
+				prog_v,
+				simVars
+		);
+#if 0
 		if (simVars.sim.beta != 0.0)
 		{
-			q = (op.diff_b_x(prog_v) - op.diff_b_y(prog_u) + beta_plane) / op.avg_b_x(op.avg_b_y(prog_P));
+			q = (op.diff_b_x(prog_v) - op.diff_b_y(prog_u) + beta_plane) / op.avg_b_x(op.avg_b_y(prog_h));
 		}
 		else
+#endif
 		{
-			q = (op.diff_b_x(prog_v) - op.diff_b_y(prog_u) + simVars.sim.f0) / op.avg_b_x(op.avg_b_y(prog_P));
+			q = (op.diff_b_x(prog_v) - op.diff_b_y(prog_u) + simVars.sim.f0) / op.avg_b_x(op.avg_b_y(prog_h));
 		}
 
 		double normalization = (simVars.sim.domain_size[0]*simVars.sim.domain_size[1]) /
 								((double)simVars.disc.res_physical[0]*(double)simVars.disc.res_physical[1]);
 
 		// diagnostics_mass
-		simVars.diag.total_mass = prog_P.reduce_sum_quad() * normalization;
+		simVars.diag.total_mass = prog_h.reduce_sum_quad() * normalization;
 
 		// diagnostics_energy
 		simVars.diag.total_energy = 0.5*(
-				prog_P*prog_P +
-				prog_P*op.avg_f_x(prog_u*prog_u) +
-				prog_P*op.avg_f_y(prog_v*prog_v)
+				prog_h*prog_h +
+				prog_h*op.avg_f_x(prog_u*prog_u) +
+				prog_h*op.avg_f_y(prog_v*prog_v)
 			).reduce_sum_quad() * normalization;
 
 		// potential enstropy
-		simVars.diag.total_potential_enstrophy = 0.5*(q*q*op.avg_b_x(op.avg_b_y(prog_P))).reduce_sum_quad() * normalization;
+		simVars.diag.total_potential_enstrophy = 0.5*(q*q*op.avg_b_x(op.avg_b_y(prog_h))).reduce_sum_quad() * normalization;
 
 	}
 
@@ -284,11 +297,13 @@ public:
 
 		H = simVars.sim.gravitation*i_h + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
 
+#if 0
 		if (simVars.sim.beta != 0.0)
 		{
 			q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + beta_plane) / op.avg_b_x(op.avg_b_y(i_h));
 		}
 		else
+#endif
 		{
 			q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + simVars.sim.f0) / op.avg_b_x(op.avg_b_y(i_h));
 		}
@@ -391,7 +406,7 @@ public:
 		timestepping.run_timestep(
 				this,
 				&SimulationSWEStaggered::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
-				prog_P, prog_u, prog_v,
+				prog_h, prog_u, prog_v,
 				dt,
 				simVars.timecontrol.current_timestep_size,
 				simVars.disc.timestepping_order,
@@ -449,11 +464,11 @@ public:
 
 			if (simVars.misc.output_file_name_prefix.size() > 0)
 			{
-				write_file(prog_P, "P");
-				write_file(prog_u, "u");
-				write_file(prog_v, "v");
+				write_file(prog_h, "prog_P");
+				write_file(prog_u, "prog_u");
+				write_file(prog_v, "prog_v");
 
-				write_file(op.diff_c_x(prog_v) - op.diff_c_y(prog_u), "q");
+				write_file(op.diff_c_x(prog_v) - op.diff_c_y(prog_u), "prog_q");
 			}
 
 			if (simVars.timecontrol.current_timestep_nr == 0)
@@ -482,7 +497,7 @@ public:
 					}
 				);
 
-				benchmark_diff_h = (prog_P-tmp).reduce_norm1_quad() / (double)(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]);
+				benchmark_diff_h = (prog_h-tmp).reduce_norm1_quad() / (double)(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]);
 				o_ostream << "\t" << benchmark_diff_h;
 
 
@@ -555,7 +570,7 @@ public:
 
 	VisStuff vis_arrays[7] =
 	{
-			{&prog_P,	"P"},
+			{&prog_h,	"P"},
 			{&prog_u,	"u"},
 			{&prog_v,	"v"},
 			{&H,		"H"},
@@ -625,7 +640,7 @@ public:
 
 	bool instability_detected()
 	{
-		return !(prog_P.reduce_boolean_all_finite() && prog_u.reduce_boolean_all_finite() && prog_v.reduce_boolean_all_finite());
+		return !(prog_h.reduce_boolean_all_finite() && prog_u.reduce_boolean_all_finite() && prog_v.reduce_boolean_all_finite());
 	}
 };
 

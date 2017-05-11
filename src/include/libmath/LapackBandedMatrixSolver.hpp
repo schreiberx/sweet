@@ -2,7 +2,7 @@
  * DiagBandedMatrix.hpp
  *
  *  Created on: 24 Aug 2016
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk> Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SRC_INCLUDE_LIBMATH_LAPACKBANDEDMATRIXSOLVER_HPP_
@@ -237,7 +237,7 @@ public:
 		const std::complex<double>* i_b,
 		std::complex<double>* o_x,
 		int i_size
-	)
+	)	const
 	{
 		assert(max_N >= i_size);
 
@@ -353,8 +353,6 @@ public:
 				int si = j+(num_halo_size_diagonals-i);
 				int sj = j;
 
-//				std::cout << sj << " " << si << std::endl;
-
 				if (si < 0 || si >= i_size)
 					continue;
 
@@ -379,7 +377,7 @@ public:
 		const std::complex<double>* i_b,
 		std::complex<double>* o_x,
 		int i_size
-	)
+	)	const
 	{
 		/*
 		 * Make a copy of the array data since this is a destructive function
@@ -399,7 +397,7 @@ public:
 		std::complex<double>* io_A,		///< A of max size
 		std::complex<double>* io_b_x,	///< rhs and solution x
 		int i_size
-	)
+	)	const
 	{
 		assert((num_diagonals & 1) == 1);
 		assert(AB != nullptr);
@@ -432,42 +430,6 @@ public:
 			assert(false);
 			exit(1);
 		}
-
-#if 0
-		std::cout << std::endl;
-		for (int i = 0; i < i_size; i++)
-			std::cout << IPIV[i] << ", ";
-		std::cout << std::endl;
-
-		std::cout << std::endl;
-		for (int i = 0; i < i_size; i++)
-			std::cout << o_x[i] << ", ";
-		std::cout << std::endl;
-#endif
-
-#if 0
-		/**
-		 * TODO: This shouldn't be required since the solution is directly computed.
-		 *
-		 * TODO: Check pivotization
-		 */
-		int bvalue = true;
-		zlapmr_(
-				bvalue,	// true = forward permutation
-				one,	// rows
-				i_size,	// cols
-				o_x,	// data
-				i_size,	// leading dimension
-				IPIV
-			);
-#endif
-
-#if 0
-		std::cout << std::endl;
-		for (int i = 0; i < i_size; i++)
-			std::cout << o_x[i] << ", ";
-		std::cout << std::endl;
-#endif
 	}
 
 };

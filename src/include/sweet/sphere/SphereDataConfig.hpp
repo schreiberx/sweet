@@ -2,7 +2,7 @@
  * SPHSetup.hpp
  *
  *  Created on: 12 Aug 2016
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk> Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SPHSETUP_HPP_
@@ -13,8 +13,17 @@
 #include <fftw3.h>
 #include <iostream>
 #include <sweet/sweetmath.hpp>
+#include <sweet/FatalError.hpp>
 
 
+#define SPHERE_DATA_LON_CONTINUOUS	SHT_PHI_CONTIGUOUS
+#define SPHERE_DATA_LAT_CONTINUOUS	SHT_THETA_CONTIGUOUS
+
+// SWEET
+//#define SPHERE_DATA_GRID_LAYOUT	SPHERE_DATA_LAT_CONTINUOUS
+
+// SHTNS shallow water example
+#define SPHERE_DATA_GRID_LAYOUT	SPHERE_DATA_LON_CONTINUOUS
 
 class SphereDataConfig
 {
@@ -23,7 +32,7 @@ class SphereDataConfig
 	friend class SphereData;
 	friend class SphereDataComplex;
 
-private:
+public:
 	shtns_cfg shtns;
 
 	/**
@@ -52,6 +61,12 @@ public:
 	int spectral_modes_n_max;
 	int spectral_modes_m_max;
 
+	int fast_setup = sht_quick_init;
+//	int fast_setup = 0;
+
+//	double shtns_error = 1.e-10;
+	double shtns_error = 0;
+
 	/**
 	 * Number of total number of modes (complex valued)
 	 */
@@ -67,22 +82,26 @@ public:
 	/**
 	 * Array with latitude phi angle values
 	 *
-	 * WARNING: Phi is not the phi from SHTNS
+	 * WARNING: Phi is not the phi from SHTNS!
 	 */
 public:
 	double *lat;
 
-	/**
-	 * Array with mu = cos(phi) values
-	 */
-public:
-	double *lat_gaussian;
 
 	/**
 	 * Array with mu = sin(phi) values
 	 */
 public:
+	double *lat_gaussian;
+
+
+	/**
+	 * Array with comu = cos(phi) values
+	 */
+public:
 	double *lat_cogaussian;
+
+
 
 public:
 	SphereDataConfig()	:
@@ -102,15 +121,19 @@ public:
 	{
 	}
 
-	std::string getUniqueIDString()
+	const
+	std::string getUniqueIDString()	const
 	{
 		return getConfigInformationString();
 	}
 
-	std::string getConfigInformationString()
+
+	const
+	std::string getConfigInformationString()	const
 	{
 		std::ostringstream buf;
 		buf << "M" << spectral_modes_m_max << "," << spectral_modes_n_max << "_N" << physical_num_lon << "," << physical_num_lat;
+		buf << " total_spec_modes: " << spectral_array_data_number_of_elements;
 		return buf.str();
 	}
 
@@ -123,7 +146,7 @@ public:
 		assert(n >= 0);
 		assert(n >= m);
 
-//		return (spec_n_max-im)*im + ((im+1)*im)/2+l;
+//		return (spectral_modes_n_max-m)*m + ((m+1)*m)/2+n;
 		return (m*(2*spectral_modes_n_max-m+1)>>1)+n;
 	}
 
@@ -326,7 +349,7 @@ private:
 		 * We have to use the shtns->ct lookup table
 		 */
 		for (int i = 0; i < physical_num_lat; i++)
-			lat[i] = M_PI_2 - ::acos(shtns->ct[i]);
+			lat[i] = M_PI_2 - std::acos(shtns->ct[i]);
 
 		lat_gaussian = (double*)fftw_malloc(sizeof(double)*shtns->nlat);
 		for (int i = 0; i < physical_num_lat; i++)
@@ -335,16 +358,25 @@ private:
 		lat_cogaussian = (double*)fftw_malloc(sizeof(double)*shtns->nlat);
 		for (int i = 0; i < physical_num_lat; i++)
 			lat_cogaussian[i] = shtns->st[i];	/// cos(phi) (SHTNS stores sin(phi))
+
+#if 0
+		getConfigInformationString();
+		std::cout << "physical_num_lat: " << physical_num_lat << std::endl;
+		for (int i = 0; i < physical_num_lat; i++)
+			std::cout << i << ": " << asin(lat_gaussian[i]) << std::endl;
+#endif
 	}
 
 
 
 public:
 	void setup(
-			int mmax,
-			int nmax,
-			int nphi,
-			int nlat
+			int nphi,	// physical
+			int nlat,
+
+			int mmax,	// spectral
+			int nmax
+
 	)
 	{
 		shtns_verbose(0);			// displays informations during initialization.
@@ -356,7 +388,6 @@ public:
 		shtns_use_threads(1);	// value of 1 disables threading
 #endif
 
-
 		if (shtns != nullptr)
 			shtns_destroy(shtns);
 
@@ -364,15 +395,14 @@ public:
 				nmax,
 				mmax,
 				1,
-				(shtns_norm)((int)sht_orthonormal /*| SHT_NO_CS_PHASE*/)
+				(shtns_norm)((int)sht_orthonormal + SHT_NO_CS_PHASE)
 			);
 
 		shtns_set_grid(
 				shtns,
-				// TODO: replace this with sht_gauss
-				(shtns_type)(sht_quick_init | SHT_THETA_CONTIGUOUS),
+				(shtns_type)(fast_setup | SPHERE_DATA_GRID_LAYOUT),
 				//sht_gauss | SHT_THETA_CONTIGUOUS,	// use gaussian grid
-				0,
+				shtns_error,
 				nlat,		// number of latitude grid points
 				nphi		// number of longitude grid points
 			);
@@ -408,7 +438,7 @@ public:
 				i_nmax,
 				i_mmax,
 				1,
-				sht_orthonormal
+				(shtns_norm)((int)sht_orthonormal + SHT_NO_CS_PHASE)
 			);
 
 		*o_nphi = 0;
@@ -417,15 +447,119 @@ public:
 		shtns_set_grid_auto(
 				shtns,
 				// TODO: replace this with sht_gauss
-				(shtns_type)(sht_quick_init | SHT_THETA_CONTIGUOUS),
-				//sht_gauss | SHT_THETA_CONTIGUOUS,	// use gaussian grid
-				0,
+				(shtns_type)(fast_setup | SPHERE_DATA_GRID_LAYOUT),
+				//sht_gauss | SPHERE_DATA_GRID_LAYOUT,	// use gaussian grid
+				shtns_error,
 				2,		// use order 2
 				o_nlat,
 				o_nphi
 			);
 
 		setup_data();
+	}
+
+
+
+
+	/**
+	 * Setup with given modes.
+	 * Spatial resolution will be determined automatically
+	 */
+	void setupAutoPhysicalSpace(
+			int i_mmax,		/// longitude modes
+			int i_nmax		/// latitude modes
+	)
+	{
+		shtns_verbose(0);			// displays informations during initialization.
+#if SWEET_THREADING
+		shtns_use_threads(0);	// automatically choose number of threads
+#else
+		shtns_use_threads(1);	// value of 1 disables threading
+#endif
+
+
+		if (shtns != nullptr)
+			shtns_destroy(shtns);
+
+		shtns = shtns_create(
+				i_nmax,
+				i_mmax,
+				1,
+				(shtns_norm)((int)sht_orthonormal + SHT_NO_CS_PHASE)
+			);
+
+		physical_num_lat = 0;
+		physical_num_lon = 0;
+
+		shtns_set_grid_auto(
+				shtns,
+				// TODO: replace this with sht_gauss
+				(shtns_type)(fast_setup | SPHERE_DATA_GRID_LAYOUT),
+				//sht_gauss | SPHERE_DATA_GRID_LAYOUT,	// use gaussian grid
+				shtns_error,
+				2,		// use order 2
+				&physical_num_lat,
+				&physical_num_lon
+			);
+
+		setup_data();
+	}
+
+
+
+public:
+	void setupAuto(
+			int io_physical_res[2],
+			int io_spectral_modes[2]
+	)
+	{
+//		std::cout << io_physical_res[0] << ", " << io_physical_res[1] << std::endl;
+//		std::cout << io_spectral_modes[0] << ", " << io_spectral_modes[1] << std::endl;
+
+		if (io_physical_res[0] > 0 && io_spectral_modes[0] > 0)
+		{
+			setup(	io_physical_res[0],
+					io_physical_res[1],
+					io_spectral_modes[0],
+					io_spectral_modes[1]
+				);
+			return;
+		}
+
+		if (io_physical_res[0] > 0)
+		{
+			FatalError("TODO: Automatic spectral space mode computation");
+#if 0
+			setupAutoSpectralSpace(
+					io_physical_res[0],
+					io_physical_res[1]
+				);
+
+	#if SWEET_USE_LIBFFT
+			io_spectral_modes[0] = spectral_modes[0];
+			io_spectral_modes[1] = spectral_modes[1];
+	#endif
+#endif
+			return;
+		}
+
+		if (io_spectral_modes[0] > 0)
+		{
+#if SWEET_USE_LIBFFT
+			setupAutoPhysicalSpace(
+					io_spectral_modes[0],
+					io_spectral_modes[1]
+				);
+
+			io_physical_res[0] = physical_num_lon;
+			io_physical_res[1] = physical_num_lat;
+#else
+			FatalError("Setup with spectral modes not enabled");
+#endif
+			return;
+		}
+
+		FatalError("No resolution/modes selected");
 	}
 
 

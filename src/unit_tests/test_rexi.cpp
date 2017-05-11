@@ -29,7 +29,6 @@ int main(
 	}
 
 	double max_error_threshold = 1e-9;
-//	double max_error_threshold_machine = 1e-12;
 
 
 	for (int fun_id = 0; fun_id <= 1; fun_id++)

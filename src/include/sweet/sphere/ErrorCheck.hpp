@@ -2,7 +2,7 @@
  * ErrorCheck.hpp
  *
  *  Created on: 3 Feb 2017
- *      Author: martin
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SRC_INCLUDE_SWEET_SPHERE_ERRORCHECK_HPP_
@@ -109,10 +109,10 @@ public:
 
 		if (rel_max_abs > i_error_threshold)
 		{
-			Convert_SphereDataComplex_To_SphereData::physical_convert(i_lhs).physical_file_write("o_error_lhs_values.csv");
-			Convert_SphereDataComplex_To_SphereData::physical_convert(i_rhs).physical_file_write("o_error_rhs_values.csv");
-			Convert_SphereDataComplex_To_SphereData::physical_convert(i_lhs-i_rhs).physical_file_write("o_error_lhs_rhs_diff_spectral.csv");
-			Convert_SphereDataComplex_To_SphereData::physical_convert(diff).physical_file_write("o_error_lhs_rhs_diff_physical.csv");
+			Convert_SphereDataComplex_To_SphereData::physical_convert_real(i_lhs).physical_file_write("o_error_lhs_values.csv");
+			Convert_SphereDataComplex_To_SphereData::physical_convert_real(i_rhs).physical_file_write("o_error_rhs_values.csv");
+			Convert_SphereDataComplex_To_SphereData::physical_convert_real(i_lhs-i_rhs).physical_file_write("o_error_lhs_rhs_diff_spectral.csv");
+			Convert_SphereDataComplex_To_SphereData::physical_convert_real(diff).physical_file_write("o_error_lhs_rhs_diff_physical.csv");
 
 			if (i_ignore_error)
 				std::cerr << "Error ignored" << std::endl;
@@ -236,10 +236,10 @@ public:
 				return false;
 			}
 
-			Convert_SphereDataComplex_To_SphereData::physical_convert(lhsr).physical_file_write("o_error_lhs.csv");
-			Convert_SphereDataComplex_To_SphereData::physical_convert(rhsr).physical_file_write("o_error_rhs.csv");
-			Convert_SphereDataComplex_To_SphereData::physical_convert(lhsr-rhsr).physical_file_write("o_error_lhs_rhs_diff_spectral.csv");
-			Convert_SphereDataComplex_To_SphereData::physical_convert(diff).physical_file_write("o_error_lhs_rhs_diff_physical.csv");
+			Convert_SphereDataComplex_To_SphereData::physical_convert_real(lhsr).physical_file_write("o_error_lhs.csv");
+			Convert_SphereDataComplex_To_SphereData::physical_convert_real(rhsr).physical_file_write("o_error_rhs.csv");
+			Convert_SphereDataComplex_To_SphereData::physical_convert_real(lhsr-rhsr).physical_file_write("o_error_lhs_rhs_diff_spectral.csv");
+			Convert_SphereDataComplex_To_SphereData::physical_convert_real(diff).physical_file_write("o_error_lhs_rhs_diff_physical.csv");
 
 			FatalError("Error too large");
 			return true;
@@ -301,10 +301,10 @@ public:
 				return false;
 			}
 
-			Convert_SphereDataComplex_To_SphereData::physical_convert(lhsr).physical_file_write("o_error_lhs.csv");
-			Convert_SphereDataComplex_To_SphereData::physical_convert(rhsr).physical_file_write("o_error_rhs.csv");
-			Convert_SphereDataComplex_To_SphereData::physical_convert(lhsr-rhsr).physical_file_write("o_error_lhs_rhs_diff_spectral.csv");
-			Convert_SphereDataComplex_To_SphereData::physical_convert(diff).physical_file_write("o_error_lhs_rhs_diff_physical.csv");
+			Convert_SphereDataComplex_To_SphereData::physical_convert_real(lhsr).physical_file_write("o_error_lhs.csv");
+			Convert_SphereDataComplex_To_SphereData::physical_convert_real(rhsr).physical_file_write("o_error_rhs.csv");
+			Convert_SphereDataComplex_To_SphereData::physical_convert_real(lhsr-rhsr).physical_file_write("o_error_lhs_rhs_diff_spectral.csv");
+			Convert_SphereDataComplex_To_SphereData::physical_convert_real(diff).physical_file_write("o_error_lhs_rhs_diff_physical.csv");
 
 			FatalError("Error too large");
 			return true;

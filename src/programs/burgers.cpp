@@ -769,8 +769,8 @@ public:
 		// Dump data in csv, if requested
 		if (simVars.misc.output_file_name_prefix.size() > 0)
 		{
-			write_file(prog_u, "u");
-			write_file(prog_v, "v");
+			write_file(prog_u, "prog_u");
+			write_file(prog_v, "prog_v");
 			if (param_compute_error)
 				write_file(benchmark_analytical_error, "error");
 		}

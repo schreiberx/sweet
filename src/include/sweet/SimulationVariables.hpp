@@ -2,7 +2,7 @@
  * SimulationVariables.hpp
  *
  *  Created on: 30 Jun 2015
- *      Author: Martin Schreiber <schreiberx@gmail.com>
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk> Schreiber <schreiberx@gmail.com>
  */
 #ifndef SRC_SIMULATION_VARIABLES_HPP_
 #define SRC_SIMULATION_VARIABLES_HPP_
@@ -16,6 +16,7 @@
 #include <limits>
 #include <sweet/sweetmath.hpp>
 #include <sweet/FatalError.hpp>
+#include <sweet/StringSplit.hpp>
 
 
 #ifndef SWEET_PARAREAL
@@ -58,11 +59,25 @@ public:
 		/// total mass
 		double total_mass = 0;
 
+		/// kinetic energy
+		double kinetic_energy = 0;
+
+		/// potential energy
+		double potential_energy = 0;
+
 		/// total energy
 		double total_energy = 0;
 
 		/// total potential enstropy
 		double total_potential_enstrophy = 0;
+
+
+		double ref_total_mass = -1;
+		double ref_kinetic_energy = -1;
+		double ref_potential_energy = -1;
+		double ref_total_energy = -1;
+		double ref_total_potential_enstrophy = -1;
+
 
 		void outputConfig()
 		{
@@ -70,8 +85,19 @@ public:
 			std::cout << "DIAGNOSTICS:" << std::endl;
 			std::cout << " + total_mass: " << total_mass << std::endl;
 			std::cout << " + total_energy: " << total_energy << std::endl;
+			std::cout << " + kinetic_energy: " << kinetic_energy << std::endl;
+			std::cout << " + potential_energy: " << potential_energy << std::endl;
 			std::cout << " + total_potential_enstrophy: " << total_potential_enstrophy << std::endl;
 			std::cout << std::endl;
+		}
+
+		void backup_reference()
+		{
+			ref_total_mass = total_mass;
+			ref_kinetic_energy = kinetic_energy;
+			ref_potential_energy = potential_energy;
+			ref_total_energy = total_energy;
+			ref_total_potential_enstrophy = total_potential_enstrophy;
 		}
 	} diag;
 
@@ -87,12 +113,29 @@ public:
 		 */
 		int id = 0;
 
+		int variant_id = 0;
+
+		/// Use non-linear equations for simulations
+		int use_nonlinear_equations = 1;
+
+
 		void outputConfig()
 		{
 			std::cout << std::endl;
 			std::cout << "PDE:" << std::endl;
 			std::cout << " + id: " << id << std::endl;
+			std::cout << " + variant_id: " << variant_id << std::endl;
+			std::cout << " + use_nonlinear_equations: " << use_nonlinear_equations << std::endl;
 			std::cout << std::endl;
+		}
+
+		void outputProgParams()
+		{
+			std::cout << std::endl;
+			std::cout << "Partial differential equation:" << std::endl;
+			std::cout << "	--pde-id [0/1]	PDE to solve (0: SWE, 1: advection)" << std::endl;
+			std::cout << "	--pde-variant-id [0/1]	PDE variant to use (default: 0)" << std::endl;
+			std::cout << "" << std::endl;
 		}
 	} pde;
 
@@ -167,6 +210,24 @@ public:
 			std::cout << " + input_data_binary: " << input_data_binary << std::endl;
 			std::cout << std::endl;
 		}
+
+
+		void outputProgParams()
+		{
+			std::cout << std::endl;
+			std::cout << "SIMULATION SETUP PARAMETERS:" << std::endl;
+			std::cout << "	-s [scen]	scenario id, set to -1 for overview" << std::endl;
+			std::cout << "	-x [float]	x coordinate for setup \\in [0;1], default=0.5" << std::endl;
+			std::cout << "	-y [float]	y coordinate for setup \\in [0;1], default=0.5" << std::endl;
+			std::cout << "	-r [radius]	scale factor of radius for initial condition, default=1" << std::endl;
+			std::cout << "	--initial-freq-x-mul [float]	Frequency for the waves initial conditions in x, default=2" << std::endl;
+			std::cout << "	--initial-freq-y-mul [float]	Frequency for the waves initial conditions in y, default=1" << std::endl;
+			std::cout << "	--initial-coord-x [float]	Same as -x" << std::endl;
+			std::cout << "	--initial-coord-y [float]	Same as -y" << std::endl;
+			std::cout << "	--advection-rotation-angle [float]	Rotation angle for e.g. advection test case" << std::endl;
+
+			std::cout << "" << std::endl;
+		}
 	} setup;
 
 
@@ -177,7 +238,8 @@ public:
 	struct SimulationCoefficients
 	{
 		/// average height for initialization
-		double h0 = 1000.0;
+		/// use value similar to Galewski benchmark
+		double h0 = 10000.0;
 
 
 		/// For more information on viscosity,
@@ -206,7 +268,7 @@ public:
 
 		/// Beta coefficient for f(y_N) = f0 + y_N*beta
 		/// here, y_N is the normalized y coordinate \in [0;1]
-		double beta = 0.0;
+//		double beta = 0.0;
 
 		// constants from Galwesky et al. paper
 
@@ -219,6 +281,11 @@ public:
 		 * Coriolis effect
 		 */
 		double &coriolis_omega = f0;
+
+		/**
+		 * Simulation on f-sphere? (constant f0 term over entire sphere)
+		 */
+		bool f_sphere = false;
 
 		/**
 		 * Gravitational constant
@@ -241,13 +308,33 @@ public:
 			std::cout << " + viscosity_order: " << viscosity_order << std::endl;
 			std::cout << " + CFL: " << CFL << std::endl;
 			std::cout << " + f0: " << f0 << std::endl;
-			std::cout << " + beta: " << beta << std::endl;
+//			std::cout << " + beta: " << beta << std::endl;
 			std::cout << " + earth_radius: " << earth_radius << std::endl;
 			std::cout << " + coriolis_omega: " << coriolis_omega << std::endl;
+			std::cout << " + f_sphere: " << f_sphere << std::endl;
 			std::cout << " + gravitation: " << gravitation << std::endl;
 			std::cout << " + top_bottom_zero_v_velocity: " << top_bottom_zero_v_velocity << std::endl;
-			std::cout << " + domain_size: " << domain_size[0] << " x " << domain_size[1] << std::endl;
+			std::cout << " + domain_size (2D): " << domain_size[0] << " x " << domain_size[1] << std::endl;
 			std::cout << std::endl;
+		}
+
+
+		void outputProgParams()
+		{
+			std::cout << "Simulation parameters" << std::endl;
+			std::cout << "	-X [length]	length of simulation domain in x direction, default=1" << std::endl;
+			std::cout << "	-Y [width]	width of simulation domain in y direction, default=1" << std::endl;
+			std::cout << "	-u [visc]	viscosity, , default=0" << std::endl;
+			std::cout << "	-U [visc]	viscosity order, default=2" << std::endl;
+			std::cout << "	-f [float]	f-parameter for f-plane or coriolis omega term, default=0" << std::endl;
+			std::cout << "	-F [int]	Simulation on f-sphere, default=0" << std::endl;
+//				std::cout << "	-b [float]	beta-parameter for beta-plane, default=0" << std::endl;
+//				std::cout << "	            Use -1 to set f*sin(phi) with phi in [-pi/2;pi/2] in y" << std::endl;
+			std::cout << "	-g [float]	gravity" << std::endl;
+			std::cout << "	-a [float]	earth radius" << std::endl;
+			std::cout << "	-H [float]	average (initial) height of water" << std::endl;
+			std::cout << "" << std::endl;
+
 		}
 	} sim;
 
@@ -267,7 +354,7 @@ public:
 
 		/// size of cell (hx, hy)
 		/// this is computed based on disc.res and sim.domain_size
-		double cell_size[2] = {0,0};
+		double cell_size[2] = {0, 0};
 
 
 		/**
@@ -277,20 +364,42 @@ public:
 		{
 			RUNGE_KUTTA_EXPLICIT = 1,
 			LEAPFROG_EXPLICIT = 2,
-			EULER_IMPLICIT = 3,
+			IMPLICIT_TIMESTEP = 3,
 			RUNGE_KUTTA_IMEX = 4,
+			CRANK_NICOLSON = 5,
+
+			SEMI_LAGRANGIAN_ADVECTION_ONLY = 10,
+			SEMI_LAGRANGIAN_SEMI_IMPLICIT = 11,
 
 			REXI = 100,
+
+			ANALYTICAL_SOLUTION = 1000
+		};
+
+
+		int ts_method_ids[9] = {
+				RUNGE_KUTTA_EXPLICIT,
+				LEAPFROG_EXPLICIT,
+				IMPLICIT_TIMESTEP,
+				RUNGE_KUTTA_IMEX,
+				CRANK_NICOLSON,
+
+				SEMI_LAGRANGIAN_ADVECTION_ONLY,
+				SEMI_LAGRANGIAN_SEMI_IMPLICIT,
+
+				REXI,
+
+				ANALYTICAL_SOLUTION
 		};
 
 
 		static
 		std::string getTimesteppingMethodString
 		(
-				int i_method
+				int i_method_id
 		)
 		{
-			switch(i_method)
+			switch(i_method_id)
 			{
 			case RUNGE_KUTTA_EXPLICIT:
 				return "RUNGE_KUTTA_EXPLICIT";
@@ -298,14 +407,26 @@ public:
 			case LEAPFROG_EXPLICIT:
 				return "LEAPFROG_EXPLICIT";
 
-			case EULER_IMPLICIT:
+			case IMPLICIT_TIMESTEP:
 				return "EULER_IMPLICIT";
 
 			case RUNGE_KUTTA_IMEX:
 				return "RUNGE_KUTTA_IMEX";
 
+			case CRANK_NICOLSON:
+				return "CRANK_NICOLSON";
+
 			case REXI:
 				return "REXI";
+
+			case SEMI_LAGRANGIAN_ADVECTION_ONLY:
+				return "Semi-Lagrangian Advection only";
+
+			case SEMI_LAGRANGIAN_SEMI_IMPLICIT:
+				return "Semi-Lagrangian Semi-implicit";
+
+			case ANALYTICAL_SOLUTION:
+				return "Analytical solution";
 			}
 
 			return "[UNKWOWN]";
@@ -313,6 +434,9 @@ public:
 
 		/// Leapfrog: Robert Asselin filter
 		double leapfrog_robert_asselin_filter = 0;
+
+		/// Crank-Nicolson filter
+		double crank_nicolson_filter = 0.5;
 
 
 		///
@@ -331,14 +455,13 @@ public:
 		int timestepping_method2 = 0;
 
 		/// Order of time stepping
-		double timestepping_order = -1;
+		int timestepping_order = -1;
 
 		/// Order of 2nd time stepping which might be used
-		double timestepping_order2 = 0;
+		int timestepping_order2 = 0;
 
 		/// use up/downwinding for the advection of h
 		bool timestepping_up_and_downwinding = false;
-
 
 		/// use spectral differential operators
 		bool use_spectral_basis_diffs =
@@ -348,20 +471,41 @@ public:
 				false;
 #endif
 
+		bool use_staggering = false;
+
+		/*
+		 * Do a normal mode analysis, see
+		 * Hillary Weller, John Thuburn, Collin J. Cotter,
+		 * "Computational Modes and Grid Imprinting on Five Quasi-Uniform Spherical C Grids"
+		 */
+		int normal_mode_analysis_generation = false;
+
+
 		void outputConfig()
 		{
 			std::cout << std::endl;
 			std::cout << "DISCRETIZATION:" << std::endl;
 			std::cout << " + res_physical: " << res_physical[0] << " x " << res_physical[1] << std::endl;
 			std::cout << " + res_spectral: " << res_spectral[0] << " x " << res_spectral[1] << std::endl;
-			std::cout << " + cell_size: " << res_physical[0] << " x " << cell_size[1] << std::endl;
+			std::cout << " + cell_size (2D): " << res_physical[0] << " x " << cell_size[1] << std::endl;
 			std::cout << " + timestepping_method: " << getTimesteppingMethodString(timestepping_method) << std::endl;
 			std::cout << " + timestepping_order: " << timestepping_order << std::endl;
 			std::cout << " + timestepping_method2: " << getTimesteppingMethodString(timestepping_method2) << std::endl;
 			std::cout << " + timestepping_order2: " << timestepping_order2 << std::endl;
 			std::cout << " + timestepping_up_and_downwinding: " << timestepping_up_and_downwinding << std::endl;
 			std::cout << " + leapfrog_robert_asselin_filter: " << leapfrog_robert_asselin_filter << std::endl;
+			std::cout << " + crank_nicolson_filter: " << crank_nicolson_filter << std::endl;
 			std::cout << " + use_spectral_basis_diffs: " << use_spectral_basis_diffs << std::endl;
+			std::cout << " + normal_mode_analysis_generation: " << normal_mode_analysis_generation << std::endl;
+
+
+			std::cout << " + dealiasing (compile time): " <<
+		#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
+					1
+		#else
+					0
+		#endif
+					<< std::endl;
 			std::cout << std::endl;
 		}
 
@@ -369,6 +513,7 @@ public:
 		{
 			std::cout << "Discretization:" << std::endl;
 			std::cout << "  >Space:" << std::endl;
+			std::cout << "  --staggering [0/1]	Use staggering" << std::endl;
 			std::cout << "	-N [res]	resolution in x and y direction, default=0" << std::endl;
 			std::cout << "	-n [resx]	resolution in x direction, default=0" << std::endl;
 			std::cout << "	-m [resy]	resolution in y direction, default=0" << std::endl;
@@ -388,16 +533,20 @@ public:
 			std::cout << "	-C [cfl]	CFL condition, use negative value for fixed time step size, default=0.05" << std::endl;
 			std::cout << "	--timestepping-method	Specify time stepping method (";
 
-			for (int i = 1; i <= 4; i++)
-				std::cout << i << ": " << getTimesteppingMethodString(i) << ", ";
+			for (std::size_t i = 0; i < sizeof(ts_method_ids)/sizeof(ts_method_ids[0]); i++)
+				std::cout << ts_method_ids[i] << ": " << getTimesteppingMethodString(ts_method_ids[i]) << ", ";
 
 			std::cout << "...)" << std::endl;
 			std::cout << "	--timestepping-order [int]	Specify the order of the time stepping" << std::endl;
 			std::cout << "	--timestepping-method2 [int]	Alternative time stepping method" << std::endl;
 			std::cout << "	--timestepping-order2 [int]	Specify the order of the time stepping" << std::endl;
 			std::cout << "	--leapfrog-robert-asselin-filter [0;1]	Damping parameter for Robert-Asselin filter" << std::endl;
+			std::cout << "	--normal-mode-analysis-generation [0;1;2;3]	Generate output data for normal mode analysis" << std::endl;
+			std::cout << "                   (0: don't generate, 1: generate in physical space, 2: generate in spectral space, 3: generate in spectral space with complex matrix)" << std::endl;
 
 		}
+
+
 	} disc;
 
 
@@ -408,14 +557,9 @@ public:
 	struct REXI
 	{
 		/**
-		 * Activate REXI instead of standard time stepping
-		 */
-//		int use_rexi = 0;
-
-		/**
 		 * REXI parameter h
 		 */
-		double rexi_h = 0.2;
+		double rexi_h = 0.15;
 
 		/**
 		 * REXI parameter M
@@ -435,12 +579,18 @@ public:
 		/**
 		 * Extend modes for certain operations
 		 */
-		int rexi_use_extended_modes = 0;
+		int rexi_use_extended_modes = 2;
 
 		/**
 		 * Normalize REXI for geostrophic balance
 		 */
 		bool rexi_normalization = true;
+
+		/**
+		 * Use REXI preallocation
+		 */
+		bool rexi_sphere_solver_preallocation = true;
+
 
 		void outputConfig()
 		{
@@ -452,7 +602,22 @@ public:
 			std::cout << " + rexi_use_half_poles: " << rexi_use_half_poles << std::endl;
 			std::cout << " + rexi_use_extended_modes: " << rexi_use_extended_modes << std::endl;
 			std::cout << " + rexi_normalization: " << rexi_normalization << std::endl;
+			std::cout << " + rexi_sphere_solver_preallocation: " << rexi_sphere_solver_preallocation << std::endl;
 			std::cout << std::endl;
+		}
+
+		void outputProgParams()
+		{
+			std::cout << "" << std::endl;
+			std::cout << "Rexi" << std::endl;
+			std::cout << "	--rexi-h [float]	REXI parameter h" << std::endl;
+			std::cout << "	--rexi-m [int]	REXI parameter M" << std::endl;
+			std::cout << "	--rexi-l [int]	REXI parameter L" << std::endl;
+			std::cout << "	--rexi-half [bool]	Use half REXI poles, default:1" << std::endl;
+			std::cout << "	--rexi-normalization [bool]	Use REXI normalization around geostrophic balance, default:1" << std::endl;
+			std::cout << "	--rexi-sphere-preallocation [bool]	Use preallocation of SPH-REXI solver coefficients, default:1" << std::endl;
+			std::cout << "	--rexi-ext-modes [int]	Use this number of extended modes in spherical harmonics" << std::endl;
+			std::cout << "" << std::endl;
 		}
 	} rexi;
 
@@ -528,6 +693,7 @@ public:
 			std::cout << std::endl;
 			std::cout << "MISC:" << std::endl;
 			std::cout << " + verbosity: " << verbosity << std::endl;
+			std::cout << " + stability_checks: " << stability_checks << std::endl;
 			std::cout << " + output_floating_point_precision: " << output_floating_point_precision << std::endl;
 			std::cout << " + gui_enabled: " << gui_enabled << std::endl;
 			std::cout << " + be_verbose_after_this_simulation_time_period: " << be_verbose_after_this_simulation_time_period << std::endl;
@@ -535,7 +701,6 @@ public:
 			std::cout << " + output_each_sim_seconds: " << output_each_sim_seconds << std::endl;
 			std::cout << " + output_next_sim_seconds: " << output_next_sim_seconds << std::endl;
 			std::cout << " + vis_id: " << vis_id << std::endl;
-			std::cout << " + use_nonlinear_equations: " << use_nonlinear_equations << std::endl;
 			std::cout << " + sphere_use_robert_functions: " << sphere_use_robert_functions << std::endl;
 			std::cout << " + output_time_scale: " << output_time_scale << std::endl;
 			std::cout << std::endl;
@@ -543,6 +708,9 @@ public:
 
 		/// set verbosity of simulation
 		int verbosity = 0;
+
+		/// do stability checks for simulation
+		int stability_checks = 1;
 
 		/// precision for floating point outputConfig to std::cout and std::endl
 		int output_floating_point_precision = 18;
@@ -554,7 +722,7 @@ public:
 		double be_verbose_after_this_simulation_time_period = 0;
 
 		/// prefix of filename for outputConfig of data
-		std::string output_file_name_prefix = "prog_%s_t%020.8f.csv";
+		std::string output_file_name_prefix = "output_%s_t%020.8f.csv";
 
 		/// prefix of filename for outputConfig of data
 		double output_each_sim_seconds = -1;
@@ -565,9 +733,6 @@ public:
 		/// id for visualization
 		int vis_id = 0;
 
-		/// Use non-linear equations for simulations
-		int use_nonlinear_equations = 1;
-
 
 		/// Use robert function formulation on the sphere
 		bool sphere_use_robert_functions = true;
@@ -575,7 +740,6 @@ public:
 		/// time scaling for outputConfig
 		/// e.g. use scaling by 1.0/(60*60) to output days instead of seconds
 		double output_time_scale = 1.0;
-
 	} misc;
 
 
@@ -636,7 +800,9 @@ public:
 		parareal.outputConfig();
 #endif
 
+#if SWEET_PFASST_CPP || SWEET_LIBPFASST
 		pfasst.outputConfig();
+#endif
 	}
 
 
@@ -762,10 +928,17 @@ public:
         long_options[next_free_program_option] = {"rexi-normalization", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
+        long_options[next_free_program_option] = {"rexi-sphere-preallocation", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
         long_options[next_free_program_option] = {"rexi-ext-modes", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        // 8
+
+        // 9
+        long_options[next_free_program_option] = {"stability-checks", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
         long_options[next_free_program_option] = {"nonlinear", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
@@ -778,7 +951,10 @@ public:
         long_options[next_free_program_option] = {"pde-id", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        // 12
+        long_options[next_free_program_option] = {"pde-variant_id", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
+        // 15
         long_options[next_free_program_option] = {"timestepping-method", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
@@ -794,11 +970,22 @@ public:
         long_options[next_free_program_option] = {"leapfrog-robert-asselin-filter", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
+        long_options[next_free_program_option] = {"normal-mode-analysis-generation", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
+        long_options[next_free_program_option] = {"crank-nicolson-filter", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
+        long_options[next_free_program_option] = {"staggering", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
+        long_options[next_free_program_option] = {"dummy", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
 
 // leave this commented to avoid mismatch with following parameters!
 #if SWEET_PFASST_CPP
 
-        // 17
 		long_options[next_free_program_option] = {"pfasst-nlevels", required_argument, 0, 256+next_free_program_option};
 		next_free_program_option++;
 
@@ -849,12 +1036,14 @@ public:
 		// index into long_options for determined argument
 		int option_index = 0;
 
+		double dummy = 0;
+
 		int opt;
 		while (1)
 		{
 			opt = getopt_long(
 							i_argc, i_argv,
-							"N:M:n:m:C:u:U:s:X:Y:f:b:x:y:t:i:T:v:V:O:o:H:r:a:R:W:F:S:g:G:d:z",
+							"N:M:n:m:C:u:U:s:X:Y:f:F:b:x:y:t:i:T:v:V:O:o:H:r:a:R:W:F:S:g:G:d:z",
 							long_options, &option_index
 					);
 
@@ -881,30 +1070,37 @@ public:
 						case 4:		rexi.rexi_L = atoi(optarg);	break;
 						case 5:		rexi.rexi_use_half_poles = atoi(optarg);	break;
 						case 6:		rexi.rexi_normalization = atoi(optarg);	break;
-						case 7:		rexi.rexi_use_extended_modes = atoi(optarg);	break;
+						case 7:		rexi.rexi_sphere_solver_preallocation = atoi(optarg);	break;
+						case 8:		rexi.rexi_use_extended_modes = atoi(optarg);	break;
 
-						case 8:		misc.use_nonlinear_equations = atoi(optarg);	break;
-						case 9:		misc.sphere_use_robert_functions = atoi(optarg);	break;
+						case 9:		misc.stability_checks = atoi(optarg);	break;
+						case 10:	pde.use_nonlinear_equations = atoi(optarg);	break;
+						case 11:	misc.sphere_use_robert_functions = atoi(optarg);	break;
 
-						case 10:	setup.advection_rotation_angle = atof(optarg);	break;
+						case 12:	setup.advection_rotation_angle = atof(optarg);	break;
 
+						case 13:	pde.id = atoi(optarg);	break;
+						case 14:	pde.variant_id = atoi(optarg);	break;
 
-						case 11:	pde.id = atoi(optarg);	break;
+						case 15:	disc.timestepping_method = atoi(optarg);	break;
+						case 16:	disc.timestepping_order = atoi(optarg);	break;
+						case 17:	disc.timestepping_method2 = atoi(optarg);	break;
+						case 18:	disc.timestepping_order2 = atoi(optarg);	break;
 
-						case 12:	disc.timestepping_method = atoi(optarg);	break;
-						case 13:	disc.timestepping_order = atoi(optarg);	break;
-						case 14:	disc.timestepping_method2 = atoi(optarg);	break;
-						case 15:	disc.timestepping_order2 = atoi(optarg);	break;
+						case 19:	disc.leapfrog_robert_asselin_filter = atof(optarg);	break;
+						case 20:	disc.normal_mode_analysis_generation = atoi(optarg);	break;
+						case 21:	disc.crank_nicolson_filter = atof(optarg);	break;
+						case 22:	disc.use_staggering = atof(optarg);	break;
 
-						case 16:	disc.leapfrog_robert_asselin_filter = atof(optarg);	break;
+						case 23:	dummy = atof(optarg);	break;
 
 #if SWEET_PFASST_CPP
-						case 17:	pfasst.nlevels = atoi(optarg);	break;
-						case 18:	pfasst.nnodes = atoi(optarg);	break;
-						case 19:	pfasst.nspace = atoi(optarg);	break;
-						case 20:	pfasst.nsteps = atoi(optarg);	break;
-						case 21:	pfasst.niters = atoi(optarg);	break;
-						case 22:	pfasst.dt = atof(optarg);	break;
+						case 24:	pfasst.nlevels = atoi(optarg);	break;
+						case 25:	pfasst.nnodes = atoi(optarg);	break;
+						case 26:	pfasst.nspace = atoi(optarg);	break;
+						case 27:	pfasst.nsteps = atoi(optarg);	break;
+						case 28:	pfasst.niters = atoi(optarg);	break;
+						case 29:	pfasst.dt = atof(optarg);	break;
 #endif
 
 						default:
@@ -952,13 +1148,55 @@ public:
 				break;
 
 			case 'N':
-				disc.res_physical[0] = atoi(optarg);
-				disc.res_physical[1] = disc.res_physical[0];
+				{
+					std::vector<std::string> res = StringSplit::split(optarg, ",");
+
+					int c = res.size();
+
+					if (c == 0)
+						FatalError("Invaild format for modes");
+
+					if (c == 1)
+					{
+						disc.res_physical[0] = atoi(res[0].c_str());
+						disc.res_physical[1] = disc.res_physical[0];
+					}
+					else if (c == 2)
+					{
+						disc.res_physical[0] = atoi(res[0].c_str());
+						disc.res_physical[1] = atoi(res[1].c_str());
+					}
+					else
+					{
+						FatalError("More than 2 max resolutions given");
+					}
+				}
 				break;
 
 			case 'M':
-				disc.res_spectral[0] = atoi(optarg);
-				disc.res_spectral[1] = disc.res_spectral[0];
+				{
+					std::vector<std::string> modes = StringSplit::split(optarg, ",");
+
+					int c = modes.size();
+
+					if (c == 0)
+						FatalError("Invaild format for modes");
+
+					if (c == 1)
+					{
+						disc.res_spectral[0] = atoi(modes[0].c_str());
+						disc.res_spectral[1] = disc.res_spectral[0];
+					}
+					else if (c == 2)
+					{
+						disc.res_spectral[0] = atoi(modes[0].c_str());
+						disc.res_spectral[1] = atoi(modes[1].c_str());
+					}
+					else
+					{
+						FatalError("More than 2 max modes given");
+					}
+				}
 				break;
 
 			case 'n':
@@ -1021,13 +1259,17 @@ public:
 				sim.f0 = atof(optarg);
 				break;
 
+			case 'F':
+				sim.f_sphere = atoi(optarg);
+				break;
+
 			case 'a':
 				sim.earth_radius = atof(optarg);
 				break;
 
-			case 'b':
-				sim.beta = atof(optarg);
-				break;
+//			case 'b':
+//				sim.beta = atof(optarg);
+//				break;
 
 			case 'z':
 				sim.top_bottom_zero_v_velocity = true;
@@ -1077,32 +1319,9 @@ public:
 
 
 			default:
-				std::cout << "Simulation runtime parameters" << std::endl;
-				std::cout << "	-X [length]	length of simulation domain in x direction, default=1" << std::endl;
-				std::cout << "	-Y [width]	width of simulation domain in y direction, default=1" << std::endl;
-				std::cout << "	-u [visc]	viscosity, , default=0" << std::endl;
-				std::cout << "	-U [visc]	viscosity order, default=2" << std::endl;
-				std::cout << "	-f [float]	f-parameter for f-plane or coriolis omega term, default=0" << std::endl;
-				std::cout << "	-b [float]	beta-parameter for beta-plane, default=0" << std::endl;
-				std::cout << "	            Use -1 to set f*sin(phi) with phi in [-pi/2;pi/2] in y" << std::endl;
-				std::cout << "	-g [float]	gravity, default=9.81" << std::endl;
-				std::cout << "	-a [float]	earth radius, default=1" << std::endl;
-				std::cout << "	-H [float]	average (initial) height of water, default=1000" << std::endl;
-				std::cout << "" << std::endl;
-				std::cout << "Simulation setup parameters:" << std::endl;
-				std::cout << "	-s [scen]	scenario id, set to -1 for overview" << std::endl;
-				std::cout << "	-x [float]	x coordinate for setup \\in [0;1], default=0.5" << std::endl;
-				std::cout << "	-y [float]	y coordinate for setup \\in [0;1], default=0.5" << std::endl;
-				std::cout << "	-r [radius]	scale factor of radius for initial condition, default=1" << std::endl;
-				std::cout << "	--initial-freq-x-mul [float]	Frequency for the waves initial conditions in x, default=2" << std::endl;
-				std::cout << "	--initial-freq-y-mul [float]	Frequency for the waves initial conditions in y, default=1" << std::endl;
-				std::cout << "	--initial-coord-x [float]	Same as -x" << std::endl;
-				std::cout << "	--initial-coord-y [float]	Same as -y" << std::endl;
-				std::cout << "" << std::endl;
-				std::cout << "Partial differential equation:" << std::endl;
-				std::cout << "	--pde-id [0/1]	PDE to solve (0: SWE, 1: advection)" << std::endl;
-				std::cout << "" << std::endl;
-
+				sim.outputProgParams();
+				setup.outputProgParams();
+				pde.outputProgParams();
 				disc.outputProgParams();
 
 				std::cout << "" << std::endl;
@@ -1125,15 +1344,7 @@ public:
 				std::cout << "						     1: Nonlinear (default)" << std::endl;
 				std::cout << "						     2: Linear + nonlinear advection only (needs -H to be set)" << std::endl;
 				std::cout << "" << std::endl;
-				std::cout << "Rexi" << std::endl;
-				std::cout << "	--rexi-h [float]	REXI parameter h" << std::endl;
-				std::cout << "	--rexi-m [int]	REXI parameter M" << std::endl;
-				std::cout << "	--rexi-l [int]	REXI parameter L" << std::endl;
-				std::cout << "	--rexi-half [bool]	Use half REXI poles, default:1" << std::endl;
-				std::cout << "	--rexi-normalization [bool]	Use REXI normalization around geostrophic balance, default:1" << std::endl;
-				std::cout << "	--rexi-ext-modes [int]	Use this number of extended modes in spherical harmonics" << std::endl;
-				std::cout << "" << std::endl;
-
+				rexi.outputProgParams();
 
 
 #if SWEET_PARAREAL
@@ -1148,6 +1359,15 @@ public:
 			}
 		}
 
+
+		if (dummy != 0)
+		{
+			// this is helpful for debugging purpose
+			std::cout << "DUMMY VALUE SET TO " << dummy << std::endl;
+			exit(1);
+		}
+
+
 		if (	(disc.res_physical[0] == 0 || disc.res_physical[1] == 0)	&&
 				(disc.res_spectral[0] == 0 || disc.res_spectral[1] == 0)
 			)
@@ -1156,7 +1376,6 @@ public:
 		}
 
 		reset();
-
 
 
 #if SWEET_PARAREAL

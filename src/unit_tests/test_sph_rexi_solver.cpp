@@ -37,9 +37,6 @@ SphereDataConfig sphereDataConfigRexiAddedModes;
 SphereDataConfig *sphereDataConfigExt = &sphereDataConfigRexiAddedModes;
 
 
-bool param_use_coriolis_formulation = true;
-
-
 
 
 /**
@@ -84,8 +81,8 @@ void run_tests()
 		sphereDataConfigExt = &sphereDataConfigRexiAddedModes;
 	}
 
-	SphereOperatorsComplex opComplex(sphereDataConfig);
-	SphereOperatorsComplex opComplexExt(sphereDataConfigExt);
+	SphereOperatorsComplex opComplex(sphereDataConfig, 1);
+	SphereOperatorsComplex opComplexExt(sphereDataConfigExt, 1);
 
 	REXI<> rexi(0, simVars.rexi.rexi_h, simVars.rexi.rexi_M);
 
@@ -110,7 +107,7 @@ void run_tests()
 		if (simVars.setup.benchmark_scenario_id <= 0)
 		{
 			std::cout << "SETUP: Computing solution based on time stepping scheme." << std::endl;
-			SphereOperators op(sphereDataConfig);
+			SphereOperators op(sphereDataConfig, 1);
 
 			GenerateConsistentGradDivSphereData g_real(
 					simVars,
@@ -244,6 +241,7 @@ void run_tests()
 			 */
 			if (simVars.misc.sphere_use_robert_functions)
 			{
+				alpha.imag(0);
 				prog_phi0_cplx_ext =
 							+ alpha*prog_phi_cplx_ext
 							- phi_bar*ir*opComplexExt.robert_div_lon(prog_u_cplx_ext)
@@ -440,9 +438,9 @@ void run_tests()
 					FatalError("Threshold exceeded");
 			}
 
-			SphereData prog_phi0_ext = Convert_SphereDataComplex_To_SphereData::physical_convert(prog_phi0_cplx_ext).spectral_returnWithDifferentModes(sphereDataConfigExt);
-			SphereData prog_u0_ext = Convert_SphereDataComplex_To_SphereData::physical_convert(prog_u0_cplx_ext).spectral_returnWithDifferentModes(sphereDataConfigExt);
-			SphereData prog_v0_ext = Convert_SphereDataComplex_To_SphereData::physical_convert(prog_v0_cplx_ext).spectral_returnWithDifferentModes(sphereDataConfigExt);
+			SphereData prog_phi0_ext = Convert_SphereDataComplex_To_SphereData::physical_convert_real(prog_phi0_cplx_ext).spectral_returnWithDifferentModes(sphereDataConfigExt);
+			SphereData prog_u0_ext = Convert_SphereDataComplex_To_SphereData::physical_convert_real(prog_u0_cplx_ext).spectral_returnWithDifferentModes(sphereDataConfigExt);
+			SphereData prog_v0_ext = Convert_SphereDataComplex_To_SphereData::physical_convert_real(prog_v0_cplx_ext).spectral_returnWithDifferentModes(sphereDataConfigExt);
 
 			SphereData prog_phi0 = prog_phi0_ext.spectral_returnWithDifferentModes(sphereDataConfig);
 			SphereData prog_u0 = prog_u0_ext.spectral_returnWithDifferentModes(sphereDataConfig);
@@ -1617,8 +1615,8 @@ void run_tests()
 				SphereDataComplex Ti = u0 + ir*opComplexExt.robert_grad_lon(prog_phi_cplx);
 				SphereDataComplex Tj = v0 + ir*opComplexExt.robert_grad_lat(prog_phi_cplx);
 #else
-				SphereDataComplex Ti = u0 + ir*opComplexExt.robert_grad_lon(Convert_SphereData_To_SphereDataComplex::physical_convert(rexi_prog_phi));
-				SphereDataComplex Tj = v0 + ir*opComplexExt.robert_grad_lat(Convert_SphereData_To_SphereDataComplex::physical_convert(rexi_prog_phi));
+				SphereDataComplex Ti = u0 + ir*opComplexExt.robert_grad_lon(Convert_SphereData_To_SphereDataComplex::physical_convert_real(rexi_prog_phi));
+				SphereDataComplex Tj = v0 + ir*opComplexExt.robert_grad_lat(Convert_SphereData_To_SphereDataComplex::physical_convert_real(rexi_prog_phi));
 #endif
 
 				SphereDataComplex lhs = u;
@@ -1679,25 +1677,27 @@ void run_tests()
 				{
 					SWERexiTerm_SPHRobert rexiSPHRobert;
 
-					rexiSPHRobert.setup(
+					rexiSPHRobert.setup_velocityformulation_progphiuv(
 							sphereDataConfigExt,
 							sphereDataConfig,
 							alpha,
 							beta,
+
 							simVars.sim.earth_radius,
 							simVars.sim.coriolis_omega,
 							phi_bar,
 							timestep_size,
-							param_use_coriolis_formulation
+
+							simVars.sim.f_sphere
 					);
 
 					if (use_complex_valued_solver)
 					{
 #if 1
-						rexiSPHRobert.solve_complexRHS(
-								prog_phi0_cplx_ext,
-								prog_u0_cplx_ext,
-								prog_v0_cplx_ext,
+						rexiSPHRobert.solve_velocityformulation_progphiuv(
+								prog_phi0_ext,
+								prog_u0_ext,
+								prog_v0_ext,
 
 								rexi_prog_phi_ext,
 								rexi_prog_u_ext,
@@ -1721,7 +1721,7 @@ void run_tests()
 					{
 						FatalError("");
 
-						rexiSPHRobert.solve(
+						rexiSPHRobert.solve_velocityformulation_progphiuv(
 								prog_phi0_ext,
 								prog_u0_ext,
 								prog_v0_ext,
@@ -1744,11 +1744,13 @@ void run_tests()
 							sphereDataConfigExt,
 							alpha,
 							beta,
+
 							simVars.sim.earth_radius,
 							simVars.sim.coriolis_omega,
 							phi_bar,
 							timestep_size,
-							param_use_coriolis_formulation
+
+							simVars.sim.f_sphere
 					);
 
 					if (use_complex_valued_solver)
@@ -1791,9 +1793,9 @@ void run_tests()
 			/*
 			 * Test solution
 			 */
-			SphereData prog_phi = Convert_SphereDataComplex_To_SphereData::physical_convert(prog_phi_cplx);
-			SphereData prog_u = Convert_SphereDataComplex_To_SphereData::physical_convert(prog_u_cplx);
-			SphereData prog_v = Convert_SphereDataComplex_To_SphereData::physical_convert(prog_v_cplx);
+			SphereData prog_phi = Convert_SphereDataComplex_To_SphereData::physical_convert_real(prog_phi_cplx);
+			SphereData prog_u = Convert_SphereDataComplex_To_SphereData::physical_convert_real(prog_u_cplx);
+			SphereData prog_v = Convert_SphereDataComplex_To_SphereData::physical_convert_real(prog_v_cplx);
 
 
 			/*
@@ -1821,26 +1823,21 @@ int main(
 
 	//input parameter names (specific ones for this program)
 	const char *bogus_var_names[] = {
-			"rexi-use-coriolis-formulation",
 			nullptr
 	};
 
 	// default values for specific input (for general input see SimulationVariables.hpp)
-	simVars.bogus.var[0] = 1;
+	simVars.bogus.var[0] = 0;
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
-		std::cout << "	--rexi-use-coriolis-formulation [0/1]	Use REXI formulation with coriolis effect" << std::endl;
 
 #if SWEET_PARAREAL
 		simVars.parareal.setup_printOptions();
 #endif
 		return -1;
 	}
-
-	param_use_coriolis_formulation = simVars.bogus.var[0];
-	assert (param_use_coriolis_formulation == 0 || param_use_coriolis_formulation == 1);
 
 	if (simVars.disc.res_spectral[0] == 0)
 		FatalError("Set number of spectral modes to use SPH!");

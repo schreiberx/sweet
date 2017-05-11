@@ -4,7 +4,7 @@
  * PFASST SWE on the plane implementation
  *
  *  Created on: 30 Nov 2016
- *      Author: martin
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 void foo_awesome();
@@ -19,7 +19,7 @@ void foo_awesome();
 #include <sweet/plane/PlaneDataTimesteppingRK.hpp>
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
-//#include "swe_plane_rexi/SWE_Plane_REXI.hpp"
+#include <sweet/plane/PlaneDiagnostics.hpp>
 #include <benchmarks_plane/PlaneBenchmarksCombined.hpp>
 //#include <mpi.h>
 
@@ -277,7 +277,7 @@ private:
 		else if (param_timestepping_mode == 2) //Direct solution
 		{
 #if 0
-			if (simVars.misc.use_nonlinear_equations>0)
+			if (simVars.pde.use_nonlinear_equations>0)
 				FatalError("Direct solution on staggered grid not supported!");
 
 			// Analytical solution

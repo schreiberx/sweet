@@ -2,7 +2,7 @@
  * SWE_Sphere_REXI.cpp
  *
  *  Created on: 25 Oct 2016
- *      Author: martin
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #include <cassert>
@@ -110,6 +110,7 @@ SWE_Sphere_REXI::~SWE_Sphere_REXI()
 }
 
 
+
 void SWE_Sphere_REXI::get_workload_start_end(
 		std::size_t &o_start,
 		std::size_t &o_end
@@ -158,9 +159,14 @@ void SWE_Sphere_REXI::setup(
 
 		bool i_rexi_half,				///< use half-pole reduction
 		bool i_use_robert_functions,	///< use Robert functions
+		int i_pde_id,
+		int i_pde_variant_id,
+
 		int i_rexi_use_extended_modes,
 		int i_rexi_normalization,
-		bool i_use_coriolis_rexi_formulation
+		bool i_use_f_sphere,
+
+		bool i_use_rexi_sphere_preallocation	///< preallocate all rexi coefficients (might fail because of memory limitations)
 )
 {
 	cleanup();
@@ -175,9 +181,12 @@ void SWE_Sphere_REXI::setup(
 
 	use_robert_functions = i_use_robert_functions;
 	rexi_use_extended_modes = i_rexi_use_extended_modes;
-	use_coriolis_rexi_formulation = i_use_coriolis_rexi_formulation;
-	use_rexi_preallocation = false;
+	use_f_sphere = i_use_f_sphere;
 
+	use_rexi_preallocation = i_use_rexi_sphere_preallocation;
+
+	pde_id = i_pde_id;
+	pde_variant_id = i_pde_variant_id;
 
 	if (rexi_use_extended_modes == 0)
 	{
@@ -268,7 +277,6 @@ void SWE_Sphere_REXI::setup(
 			perThreadVars[i]->accum_u.setup(sphereDataConfigRexi);
 			perThreadVars[i]->accum_v.setup(sphereDataConfigRexi);
 
-
 			for (std::size_t n = start; n < end; n++)
 			{
 				int thread_local_idx = n-start;
@@ -290,33 +298,62 @@ void SWE_Sphere_REXI::setup(
 
 					if (use_robert_functions)
 					{
-//#pragma omp critical
-//						std::cout << mpi_rank << " - thread_local_idx: " << thread_local_idx << "        alpha: " << perThreadVars[i]->alpha[thread_local_idx] << std::endl;
+						switch(pde_id)
+						{
+						case 0:
+							perThreadVars[i]->rexiSPHRobert_vector[thread_local_idx].setup_velocityformulation_progphiuv(
+									sphereDataConfigRexi,
+									sphereDataConfig,
+									perThreadVars[i]->alpha[thread_local_idx],
+									perThreadVars[i]->beta_re[thread_local_idx],
+									simCoeffs->earth_radius,
+									simCoeffs->coriolis_omega,
+									simCoeffs->h0 * simCoeffs->gravitation,
+									timestep_size,
+									use_f_sphere
+							);
+							break;
 
-						perThreadVars[i]->rexiSPHRobert_vector[thread_local_idx].setup(
-								sphereDataConfigRexi,
-								sphereDataConfig,
-								perThreadVars[i]->alpha[thread_local_idx],
-								perThreadVars[i]->beta_re[thread_local_idx],
-								simCoeffs->earth_radius,
-								simCoeffs->coriolis_omega,
-								simCoeffs->h0 * simCoeffs->gravitation,
-								timestep_size,
-								use_coriolis_rexi_formulation
-						);
+						case 1:
+							perThreadVars[i]->rexiSPHRobert_vector[thread_local_idx].setup_vectorinvariant_progphivortdiv(
+									sphereDataConfigRexi,
+									sphereDataConfig,
+									perThreadVars[i]->alpha[thread_local_idx],
+									perThreadVars[i]->beta_re[thread_local_idx],
+									simCoeffs->earth_radius,
+									simCoeffs->coriolis_omega,
+									simCoeffs->h0 * simCoeffs->gravitation,
+									timestep_size,
+									use_f_sphere,
+									pde_variant_id
+							);
+							break;
+
+						default:
+							FatalError("Non supported 091i34kdnf");
+						}
 					}
 					else
 					{
-						perThreadVars[i]->rexiSPH_vector[thread_local_idx].setup(
-								sphereDataConfigRexi,
-								perThreadVars[i]->alpha[thread_local_idx],
-								perThreadVars[i]->beta_re[thread_local_idx],
-								simCoeffs->earth_radius,
-								simCoeffs->coriolis_omega,
-								simCoeffs->h0*simCoeffs->gravitation,
-								timestep_size,
-								use_coriolis_rexi_formulation
-						);
+						switch(pde_id)
+						{
+						case 0:
+							perThreadVars[i]->rexiSPH_vector[thread_local_idx].setup(
+									sphereDataConfigRexi,
+									perThreadVars[i]->alpha[thread_local_idx],
+									perThreadVars[i]->beta_re[thread_local_idx],
+									simCoeffs->earth_radius,
+									simCoeffs->coriolis_omega,
+									simCoeffs->h0*simCoeffs->gravitation,
+									timestep_size,
+									use_f_sphere
+							);
+							break;
+
+						default:
+							FatalError("Non supported 091ikdnf");
+
+						}
 					}
 				}
 			}
@@ -328,7 +365,6 @@ void SWE_Sphere_REXI::setup(
 		std::cerr << "FATAL ERROR C: omp_get_max_threads == 0" << std::endl;
 		exit(-1);
 	}
-
 
 
 #if SWEET_BENCHMARK_REXI
@@ -351,17 +387,17 @@ void SWE_Sphere_REXI::setup(
  *
  * for further information
  */
-bool SWE_Sphere_REXI::run_timestep_rexi(
-	SphereData &io_prog_h0,
+bool SWE_Sphere_REXI::run_timestep_rexi_velocityformulation_progphiuv(
+	SphereData &io_prog_phi0,
 	SphereData &io_prog_u0,
 	SphereData &io_prog_v0,
 
-	double i_timestep_size,	///< timestep size
+	double i_timestep_size,		///< timestep size
 
 	const SimulationVariables &i_parameters
 )
 {
-	io_prog_h0.request_data_spectral();
+	io_prog_phi0.request_data_spectral();
 	io_prog_u0.request_data_spectral();
 	io_prog_v0.request_data_spectral();
 
@@ -377,11 +413,11 @@ bool SWE_Sphere_REXI::run_timestep_rexi(
 			stopwatch_broadcast.start();
 	#endif
 
-		std::size_t spectral_data_num_doubles = io_prog_h0.sphereDataConfig->spectral_array_data_number_of_elements*2;
+		std::size_t spectral_data_num_doubles = io_prog_phi0.sphereDataConfig->spectral_array_data_number_of_elements*2;
 
-		MPI_Bcast(io_prog_h0.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		MPI_Bcast(io_prog_phi0.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-		if (std::isnan(io_prog_h0.spectral_get(0,0).real()))
+		if (std::isnan(io_prog_phi0.spectral_get(0,0).real()))
 			return false;
 
 		MPI_Bcast(io_prog_u0.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, 0, MPI_COMM_WORLD);
@@ -396,7 +432,7 @@ bool SWE_Sphere_REXI::run_timestep_rexi(
 
 
 #if SWEET_REXI_THREAD_PARALLEL_SUM
-#	pragma omp parallel for schedule(static,1) default(none) shared(i_parameters, i_timestep_size, io_prog_h0, io_prog_u0, io_prog_v0, std::cout, std::cerr)
+#	pragma omp parallel for schedule(static,1) default(none) shared(i_parameters, i_timestep_size, io_prog_phi0, io_prog_u0, io_prog_v0, std::cout, std::cerr)
 #endif
 	for (int thread_id = 0; thread_id < num_local_rexi_par_threads; thread_id++)
 	{
@@ -432,7 +468,7 @@ bool SWE_Sphere_REXI::run_timestep_rexi(
 		 * spectral space *in parallel* with write
 		 * access raceconditions
 		 */
-		if (	!io_prog_h0.spectral_space_data_valid	||
+		if (	!io_prog_phi0.spectral_space_data_valid	||
 				!io_prog_u0.spectral_space_data_valid	||
 				!io_prog_v0.spectral_space_data_valid
 			)
@@ -442,10 +478,9 @@ bool SWE_Sphere_REXI::run_timestep_rexi(
 #endif
 
 
-		thread_prog_phi0 = (io_prog_h0*simCoeffs->gravitation).spectral_returnWithDifferentModes(thread_prog_phi0.sphereDataConfig);
+		thread_prog_phi0 = io_prog_phi0.spectral_returnWithDifferentModes(thread_prog_phi0.sphereDataConfig);
 		thread_prog_u0 = io_prog_u0.spectral_returnWithDifferentModes(thread_prog_u0.sphereDataConfig);
 		thread_prog_v0 = io_prog_v0.spectral_returnWithDifferentModes(thread_prog_v0.sphereDataConfig);
-
 
 		SphereData tmp_prog_phi(sphereDataConfigRexi);
 		SphereData tmp_prog_u(sphereDataConfigRexi);
@@ -464,10 +499,20 @@ bool SWE_Sphere_REXI::run_timestep_rexi(
 			{
 				if (use_rexi_preallocation)
 				{
-					perThreadVars[thread_id]->rexiSPHRobert_vector[local_idx].solve(
-							thread_prog_phi0, thread_prog_u0, thread_prog_v0,
-							tmp_prog_phi, tmp_prog_u, tmp_prog_v
-						);
+					if (pde_id == 1)
+					{
+						perThreadVars[thread_id]->rexiSPHRobert_vector[local_idx].solve_vectorinvariant_progphivortdiv(
+								thread_prog_phi0, thread_prog_u0, thread_prog_v0,
+								tmp_prog_phi, tmp_prog_u, tmp_prog_v
+							);
+					}
+					else
+					{
+						perThreadVars[thread_id]->rexiSPHRobert_vector[local_idx].solve_velocityformulation_progphiuv(
+								thread_prog_phi0, thread_prog_u0, thread_prog_v0,
+								tmp_prog_phi, tmp_prog_u, tmp_prog_v
+							);
+					}
 				}
 				else
 				{
@@ -476,22 +521,46 @@ bool SWE_Sphere_REXI::run_timestep_rexi(
 					std::complex<double> &alpha = perThreadVars[thread_id]->alpha[local_idx];
 					std::complex<double> &beta_re = perThreadVars[thread_id]->beta_re[local_idx];
 
-					rexiSPHRobert.setup(
-							sphereDataConfigRexi,	///< sphere data for input data
-							sphereDataConfig,		///< sphereData for solver (should be truncated!)
-							alpha,
-							beta_re,
-							simCoeffs->earth_radius,
-							simCoeffs->coriolis_omega,
-							simCoeffs->h0*simCoeffs->gravitation,
-							i_timestep_size,
-							use_coriolis_rexi_formulation
-					);
-
-					rexiSPHRobert.solve(
-							thread_prog_phi0, thread_prog_u0, thread_prog_v0,
-							tmp_prog_phi, tmp_prog_u, tmp_prog_v
+					if (pde_id == 1)
+					{
+						rexiSPHRobert.setup_vectorinvariant_progphivortdiv(
+								sphereDataConfigRexi,	///< sphere data for input data
+								sphereDataConfig,		///< sphereData for solver (should be truncated!)
+								alpha,
+								beta_re,
+								simCoeffs->earth_radius,
+								simCoeffs->coriolis_omega,
+								simCoeffs->h0*simCoeffs->gravitation,
+								i_timestep_size,
+								use_f_sphere,
+								pde_variant_id
 						);
+
+						rexiSPHRobert.solve_vectorinvariant_progphivortdiv(
+								thread_prog_phi0, thread_prog_u0, thread_prog_v0,
+								tmp_prog_phi, tmp_prog_u, tmp_prog_v
+							);
+					}
+					else
+					{
+
+						rexiSPHRobert.setup_velocityformulation_progphiuv(
+								sphereDataConfigRexi,	///< sphere data for input data
+								sphereDataConfig,		///< sphereData for solver (should be truncated!)
+								alpha,
+								beta_re,
+								simCoeffs->earth_radius,
+								simCoeffs->coriolis_omega,
+								simCoeffs->h0*simCoeffs->gravitation,
+								i_timestep_size,
+								use_f_sphere
+						);
+
+						rexiSPHRobert.solve_velocityformulation_progphiuv(
+								thread_prog_phi0, thread_prog_u0, thread_prog_v0,
+								tmp_prog_phi, tmp_prog_u, tmp_prog_v
+							);
+					}
 #if 0
 #pragma omp critical
 					{
@@ -503,6 +572,8 @@ bool SWE_Sphere_REXI::run_timestep_rexi(
 			}
 			else
 			{
+				FatalError("Non-Robert REXI implementation is buggy");
+
 				if (use_rexi_preallocation)
 				{
 					perThreadVars[thread_id]->rexiSPH_vector[local_idx].solve(
@@ -524,7 +595,8 @@ bool SWE_Sphere_REXI::run_timestep_rexi(
 							simCoeffs->coriolis_omega,
 							simCoeffs->h0*simCoeffs->gravitation,
 							i_timestep_size,
-							use_coriolis_rexi_formulation
+//							use_coriolis_rexi_formulation,
+							use_f_sphere
 					);
 
 					rexiSPH.solve(
@@ -541,7 +613,7 @@ bool SWE_Sphere_REXI::run_timestep_rexi(
 		}
 
 #if SWEET_DEBUG
-		if (	!io_prog_h0.spectral_space_data_valid	||
+		if (	!io_prog_phi0.spectral_space_data_valid	||
 				!io_prog_u0.spectral_space_data_valid	||
 				!io_prog_v0.spectral_space_data_valid
 			)
@@ -563,7 +635,7 @@ bool SWE_Sphere_REXI::run_timestep_rexi(
 
 #if SWEET_REXI_THREAD_PARALLEL_SUM
 
-	io_prog_h0.physical_set_zero();
+	io_prog_phi0.physical_set_zero();
 	io_prog_u0.physical_set_zero();
 	io_prog_v0.physical_set_zero();
 
@@ -571,14 +643,14 @@ bool SWE_Sphere_REXI::run_timestep_rexi(
 	{
 		if (rexi_use_extended_modes == 0)
 		{
-			assert(io_prog_h0.sphereDataConfig->spectral_array_data_number_of_elements == perThreadVars[0]->accum_phi.sphereDataConfig->spectral_array_data_number_of_elements);
+			assert(io_prog_phi0.sphereDataConfig->spectral_array_data_number_of_elements == perThreadVars[0]->accum_phi.sphereDataConfig->spectral_array_data_number_of_elements);
 
 
 			perThreadVars[thread_id]->accum_phi.request_data_physical();
 
-			#pragma omp parallel for schedule(static) default(none) shared(io_prog_h0, thread_id)
-			for (int i = 0; i < io_prog_h0.sphereDataConfig->physical_array_data_number_of_elements; i++)
-				io_prog_h0.physical_space_data[i] += perThreadVars[thread_id]->accum_phi.physical_space_data[i];
+			#pragma omp parallel for schedule(static) default(none) shared(io_prog_phi0, thread_id)
+			for (int i = 0; i < io_prog_phi0.sphereDataConfig->physical_array_data_number_of_elements; i++)
+				io_prog_phi0.physical_space_data[i] += perThreadVars[thread_id]->accum_phi.physical_space_data[i];
 
 
 			perThreadVars[thread_id]->accum_u.request_data_physical();
@@ -596,15 +668,15 @@ bool SWE_Sphere_REXI::run_timestep_rexi(
 		}
 		else
 		{
-			assert(io_prog_h0.sphereDataConfig->spectral_array_data_number_of_elements == sphereDataConfig->spectral_array_data_number_of_elements);
+			assert(io_prog_phi0.sphereDataConfig->spectral_array_data_number_of_elements == sphereDataConfig->spectral_array_data_number_of_elements);
 
 			SphereData tmp(sphereDataConfig);
 
 			tmp = perThreadVars[thread_id]->accum_phi.spectral_returnWithDifferentModes(tmp.sphereDataConfig);
 			tmp.request_data_physical();
-			#pragma omp parallel for schedule(static) default(none) shared(io_prog_h0, tmp)
-			for (int i = 0; i < io_prog_h0.sphereDataConfig->physical_array_data_number_of_elements; i++)
-				io_prog_h0.physical_space_data[i] += tmp.physical_space_data[i]*(1.0/simCoeffs->gravitation);
+			#pragma omp parallel for schedule(static) default(none) shared(io_prog_phi0, tmp)
+			for (int i = 0; i < io_prog_phi0.sphereDataConfig->physical_array_data_number_of_elements; i++)
+				io_prog_phi0.physical_space_data[i] += tmp.physical_space_data[i];
 
 
 			tmp = perThreadVars[thread_id]->accum_u.spectral_returnWithDifferentModes(tmp.sphereDataConfig);
@@ -624,30 +696,355 @@ bool SWE_Sphere_REXI::run_timestep_rexi(
 
 #else
 
-	io_prog_h0 = (perThreadVars[0]->accum_phi*(1.0/simCoeffs->gravitation)).spectral_returnWithDifferentModes(io_prog_h0.sphereDataConfig);
+	io_prog_phi0 = perThreadVars[0]->accum_phi.spectral_returnWithDifferentModes(io_prog_phi0.sphereDataConfig);
 	io_prog_u0 = perThreadVars[0]->accum_u.spectral_returnWithDifferentModes(io_prog_u0.sphereDataConfig);
 	io_prog_v0 = perThreadVars[0]->accum_v.spectral_returnWithDifferentModes(io_prog_v0.sphereDataConfig);
 
 #endif
 
-	io_prog_h0.request_data_physical();
+	io_prog_phi0.request_data_physical();
 	io_prog_u0.request_data_physical();
 	io_prog_v0.request_data_physical();
 
 
 #if SWEET_MPI
-	std::size_t physical_data_num_doubles = io_prog_h0.sphereDataConfig->physical_array_data_number_of_elements;
+	std::size_t physical_data_num_doubles = io_prog_phi0.sphereDataConfig->physical_array_data_number_of_elements;
 
 	SphereData tmp(sphereDataConfig);
 
-	int retval = MPI_Reduce(io_prog_h0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	int retval = MPI_Reduce(io_prog_phi0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 	if (retval != MPI_SUCCESS)
 	{
 		FatalError("MPI Reduce FAILED!");
 		exit(1);
 	}
 
-	std::swap(io_prog_h0.physical_space_data, tmp.physical_space_data);
+	std::swap(io_prog_phi0.physical_space_data, tmp.physical_space_data);
+
+	MPI_Reduce(io_prog_u0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	std::swap(io_prog_u0.physical_space_data, tmp.physical_space_data);
+
+	MPI_Reduce(io_prog_v0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	std::swap(io_prog_v0.physical_space_data, tmp.physical_space_data);
+#endif
+
+
+#if SWEET_BENCHMARK_REXI
+	if (mpi_rank == 0)
+		stopwatch_reduce.stop();
+#endif
+
+	return true;
+}
+
+
+
+/**
+ * Solve the REXI of \f$ U(t) = exp(L*t) \f$
+ *
+ * See
+ * 		doc/rexi/understanding_rexi.pdf
+ *
+ * for further information
+ */
+bool SWE_Sphere_REXI::run_timestep_rexi_vectorinvariant_progphivortdiv(
+	SphereData &io_prog_phi0,
+	SphereData &io_prog_u0,
+	SphereData &io_prog_v0,
+
+	double i_timestep_size,	///< timestep size
+
+	const SimulationVariables &i_parameters
+)
+{
+	io_prog_phi0.request_data_spectral();
+	io_prog_u0.request_data_spectral();
+	io_prog_v0.request_data_spectral();
+
+
+#if SWEET_MPI
+
+		/*
+		 * TODO: Maybe we should measure this for the 2nd rank!!!
+		 * The reason could be since Bcast might already return before the packages were actually received!
+		 */
+	#if SWEET_BENCHMARK_REXI
+		if (mpi_rank == 0)
+			stopwatch_broadcast.start();
+	#endif
+
+		std::size_t spectral_data_num_doubles = io_prog_phi0.sphereDataConfig->spectral_array_data_number_of_elements*2;
+
+		MPI_Bcast(io_prog_phi0.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+		if (std::isnan(io_prog_phi0.spectral_get(0,0).real()))
+			return false;
+
+		MPI_Bcast(io_prog_u0.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		MPI_Bcast(io_prog_v0.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+	#if SWEET_BENCHMARK_REXI
+		if (mpi_rank == 0)
+			stopwatch_broadcast.stop();
+	#endif
+
+#endif	// SWEET_MPI
+
+
+#if SWEET_REXI_THREAD_PARALLEL_SUM
+#	pragma omp parallel for schedule(static,1) default(none) shared(i_parameters, i_timestep_size, io_prog_phi0, io_prog_u0, io_prog_v0, std::cout, std::cerr)
+#endif
+	for (int thread_id = 0; thread_id < num_local_rexi_par_threads; thread_id++)
+	{
+
+#if SWEET_BENCHMARK_REXI
+		bool stopwatch_measure = false;
+	#if SWEET_REXI_THREAD_PARALLEL_SUM
+		if (omp_get_thread_num() == 0)
+	#endif
+			if (mpi_rank == 0)
+				stopwatch_measure = true;
+#endif
+
+#if SWEET_BENCHMARK_REXI
+		if (stopwatch_measure)
+			stopwatch_preprocessing.start();
+#endif
+
+		std::size_t start, end;
+		get_workload_start_end(start, end);
+
+		/*
+		 * DO SUM IN PARALLEL
+		 */
+		SphereData thread_prog_phi0(sphereDataConfigRexi);
+		SphereData thread_prog_u0(sphereDataConfigRexi);
+		SphereData thread_prog_v0(sphereDataConfigRexi);
+
+#if SWEET_DEBUG
+		/**
+		 * THIS ASSERTION IS VERY IMPORTANT!
+		 * OTHERWISE io_prog_*0 will be converted to
+		 * spectral space *in parallel* with write
+		 * access raceconditions
+		 */
+		if (	!io_prog_phi0.spectral_space_data_valid	||
+				!io_prog_u0.spectral_space_data_valid	||
+				!io_prog_v0.spectral_space_data_valid
+			)
+		{
+			FatalError("SPECTRAL DATA NOT AVAILABLE, BUT REQUIRED!");
+		}
+#endif
+
+
+		thread_prog_phi0 = io_prog_phi0.spectral_returnWithDifferentModes(thread_prog_phi0.sphereDataConfig);
+		thread_prog_u0 = io_prog_u0.spectral_returnWithDifferentModes(thread_prog_u0.sphereDataConfig);
+		thread_prog_v0 = io_prog_v0.spectral_returnWithDifferentModes(thread_prog_v0.sphereDataConfig);
+
+		SphereData tmp_prog_phi(sphereDataConfigRexi);
+		SphereData tmp_prog_u(sphereDataConfigRexi);
+		SphereData tmp_prog_v(sphereDataConfigRexi);
+
+		perThreadVars[thread_id]->accum_phi.spectral_set_zero();
+		perThreadVars[thread_id]->accum_u.spectral_set_zero();
+		perThreadVars[thread_id]->accum_v.spectral_set_zero();
+
+
+		for (std::size_t workload_idx = start; workload_idx < end; workload_idx++)
+		{
+			int local_idx = workload_idx-start;
+
+			if (use_robert_functions)
+			{
+				if (use_rexi_preallocation)
+				{
+					perThreadVars[thread_id]->rexiSPHRobert_vector[local_idx].solve_vectorinvariant_progphivortdiv(
+							thread_prog_phi0, thread_prog_u0, thread_prog_v0,
+							tmp_prog_phi, tmp_prog_u, tmp_prog_v
+						);
+				}
+				else
+				{
+					SWERexiTerm_SPHRobert rexiSPHRobert;
+
+					std::complex<double> &alpha = perThreadVars[thread_id]->alpha[local_idx];
+					std::complex<double> &beta_re = perThreadVars[thread_id]->beta_re[local_idx];
+
+					rexiSPHRobert.setup_vectorinvariant_progphivortdiv(
+							sphereDataConfigRexi,	///< sphere data for input data
+							sphereDataConfig,		///< sphereData for solver (should be truncated!)
+							alpha,
+							beta_re,
+
+							simCoeffs->earth_radius,
+							simCoeffs->coriolis_omega,
+							simCoeffs->h0*simCoeffs->gravitation,
+							i_timestep_size,
+
+							use_f_sphere,
+							pde_variant_id
+					);
+
+					rexiSPHRobert.solve_vectorinvariant_progphivortdiv(
+							thread_prog_phi0, thread_prog_u0, thread_prog_v0,
+							tmp_prog_phi, tmp_prog_u, tmp_prog_v
+						);
+				}
+			}
+			else
+			{
+				FatalError("Non-Robert function not supported");
+#if 0
+				if (use_rexi_preallocation)
+				{
+					perThreadVars[thread_id]->rexiSPH_vector[local_idx].solve(
+							thread_prog_phi0, thread_prog_u0, thread_prog_v0,
+							tmp_prog_phi, tmp_prog_u, tmp_prog_v
+						);
+				}
+				else
+				{
+					std::complex<double> &alpha = perThreadVars[thread_id]->alpha[local_idx];
+					std::complex<double> &beta_re = perThreadVars[thread_id]->beta_re[local_idx];
+
+					SWERexiTerm_SPH rexiSPH;
+					rexiSPH.setup(
+							sphereDataConfigRexi,
+							alpha,
+							beta_re,
+
+							simCoeffs->earth_radius,
+							simCoeffs->coriolis_omega,
+							simCoeffs->h0*simCoeffs->gravitation,
+							i_timestep_size,
+
+//							use_coriolis_rexi_formulation,
+							use_f_sphere
+					);
+
+					rexiSPH.solve(
+							thread_prog_phi0, thread_prog_u0, thread_prog_v0,
+							tmp_prog_phi, tmp_prog_u, tmp_prog_v
+						);
+				}
+#endif
+			}
+
+
+			perThreadVars[thread_id]->accum_phi += tmp_prog_phi;
+			perThreadVars[thread_id]->accum_u += tmp_prog_u;
+			perThreadVars[thread_id]->accum_v += tmp_prog_v;
+		}
+
+#if SWEET_DEBUG
+		if (	!io_prog_phi0.spectral_space_data_valid	||
+				!io_prog_u0.spectral_space_data_valid	||
+				!io_prog_v0.spectral_space_data_valid
+			)
+		{
+			FatalError("SPECTRAL DATA NOT AVAILABLE, BUT REQUIRED!");
+		}
+#endif
+
+#if SWEET_BENCHMARK_REXI
+		if (stopwatch_measure)
+			stopwatch_solve_rexi_terms.stop();
+#endif
+	}
+
+#if SWEET_BENCHMARK_REXI
+	if (mpi_rank == 0)
+		stopwatch_reduce.start();
+#endif
+
+#if SWEET_REXI_THREAD_PARALLEL_SUM
+
+	io_prog_phi0.physical_set_zero();
+	io_prog_u0.physical_set_zero();
+	io_prog_v0.physical_set_zero();
+
+	for (int thread_id = 0; thread_id < num_local_rexi_par_threads; thread_id++)
+	{
+		if (rexi_use_extended_modes == 0)
+		{
+			assert(io_prog_phi0.sphereDataConfig->spectral_array_data_number_of_elements == perThreadVars[0]->accum_phi.sphereDataConfig->spectral_array_data_number_of_elements);
+
+
+			perThreadVars[thread_id]->accum_phi.request_data_physical();
+
+			#pragma omp parallel for schedule(static) default(none) shared(io_prog_phi0, thread_id)
+			for (int i = 0; i < io_prog_phi0.sphereDataConfig->physical_array_data_number_of_elements; i++)
+				io_prog_phi0.physical_space_data[i] += perThreadVars[thread_id]->accum_phi.physical_space_data[i];
+
+
+			perThreadVars[thread_id]->accum_u.request_data_physical();
+
+			#pragma omp parallel for schedule(static) default(none) shared(io_prog_u0, thread_id)
+			for (int i = 0; i < io_prog_u0.sphereDataConfig->physical_array_data_number_of_elements; i++)
+				io_prog_u0.physical_space_data[i] += perThreadVars[thread_id]->accum_u.physical_space_data[i];
+
+
+			perThreadVars[thread_id]->accum_v.request_data_physical();
+
+			#pragma omp parallel for schedule(static) default(none) shared(io_prog_v0, thread_id)
+			for (int i = 0; i < io_prog_v0.sphereDataConfig->physical_array_data_number_of_elements; i++)
+				io_prog_v0.physical_space_data[i] += perThreadVars[thread_id]->accum_v.physical_space_data[i];
+		}
+		else
+		{
+			assert(io_prog_phi0.sphereDataConfig->spectral_array_data_number_of_elements == sphereDataConfig->spectral_array_data_number_of_elements);
+
+			SphereData tmp(sphereDataConfig);
+
+			tmp = perThreadVars[thread_id]->accum_phi.spectral_returnWithDifferentModes(tmp.sphereDataConfig);
+			tmp.request_data_physical();
+			#pragma omp parallel for schedule(static) default(none) shared(io_prog_phi0, tmp)
+			for (int i = 0; i < io_prog_phi0.sphereDataConfig->physical_array_data_number_of_elements; i++)
+				io_prog_phi0.physical_space_data[i] += tmp.physical_space_data[i];
+
+
+			tmp = perThreadVars[thread_id]->accum_u.spectral_returnWithDifferentModes(tmp.sphereDataConfig);
+			tmp.request_data_physical();
+			#pragma omp parallel for schedule(static) default(none) shared(io_prog_u0, tmp)
+			for (int i = 0; i < io_prog_u0.sphereDataConfig->physical_array_data_number_of_elements; i++)
+				io_prog_u0.physical_space_data[i] += tmp.physical_space_data[i];
+
+
+			tmp = perThreadVars[thread_id]->accum_v.spectral_returnWithDifferentModes(tmp.sphereDataConfig);
+			tmp.request_data_physical();
+			#pragma omp parallel for schedule(static) default(none) shared(io_prog_v0, tmp)
+			for (int i = 0; i < io_prog_v0.sphereDataConfig->physical_array_data_number_of_elements; i++)
+				io_prog_v0.physical_space_data[i] += tmp.physical_space_data[i];
+		}
+	}
+
+#else
+
+	io_prog_phi0 = perThreadVars[0]->accum_phi.spectral_returnWithDifferentModes(io_prog_phi0.sphereDataConfig);
+	io_prog_u0 = perThreadVars[0]->accum_u.spectral_returnWithDifferentModes(io_prog_u0.sphereDataConfig);
+	io_prog_v0 = perThreadVars[0]->accum_v.spectral_returnWithDifferentModes(io_prog_v0.sphereDataConfig);
+
+#endif
+
+	io_prog_phi0.request_data_physical();
+	io_prog_u0.request_data_physical();
+	io_prog_v0.request_data_physical();
+
+
+#if SWEET_MPI
+	std::size_t physical_data_num_doubles = io_prog_phi0.sphereDataConfig->physical_array_data_number_of_elements;
+
+	SphereData tmp(sphereDataConfig);
+
+	int retval = MPI_Reduce(io_prog_phi0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	if (retval != MPI_SUCCESS)
+	{
+		FatalError("MPI Reduce FAILED!");
+		exit(1);
+	}
+
+	std::swap(io_prog_phi0.physical_space_data, tmp.physical_space_data);
 
 	MPI_Reduce(io_prog_u0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 	std::swap(io_prog_u0.physical_space_data, tmp.physical_space_data);

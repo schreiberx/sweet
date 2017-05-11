@@ -2,7 +2,7 @@
  * SphereData_To_ScalarDataArray.cpp
  *
  *  Created on: 20 Oct 2016
- *      Author: martin
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SRC_INCLUDE_SWEET_SPHERE_CONVERT_SPHEREDATA_TO_PLANEDATA_HPP_
@@ -31,16 +31,23 @@ public:
 #if SWEET_THREADING
 #pragma omp parallel for
 #endif
+
+
+#if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
+
 		for (int i = 0; i < i_sphereData.sphereDataConfig->physical_num_lon; i++)
 			for (int j = 0; j < i_sphereData.sphereDataConfig->physical_num_lat; j++)
 				out.physical_space_data[(i_sphereData.sphereDataConfig->physical_num_lat-1-j)*i_sphereData.sphereDataConfig->physical_num_lon + i] = i_sphereData.physical_space_data[i*i_sphereData.sphereDataConfig->physical_num_lat + j];
+#else
+		for (int j = 0; j < i_sphereData.sphereDataConfig->physical_num_lat; j++)
+			for (int i = 0; i < i_sphereData.sphereDataConfig->physical_num_lon; i++)
+				out.physical_space_data[(i_sphereData.sphereDataConfig->physical_num_lat-1-j)*i_sphereData.sphereDataConfig->physical_num_lon + i] = i_sphereData.physical_space_data[j*i_sphereData.sphereDataConfig->physical_num_lon + i];
+#endif
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 		out.physical_space_data_valid = true;
 		out.spectral_space_data_valid = false;
 #endif
-
-		out.file_physical_saveData_ascii("out.csv");
 
 		return out;
 	}

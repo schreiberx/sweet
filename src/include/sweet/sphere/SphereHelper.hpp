@@ -2,7 +2,7 @@
  * sh_helpers.hpp
  *
  *  Created on: 10 Aug 2016
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk> Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SPHHELPER_HPP_

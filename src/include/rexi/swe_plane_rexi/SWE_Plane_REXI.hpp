@@ -2,7 +2,7 @@
  * rexi_swe.hpp
  *
  *  Created on: 24 Jul 2015
- *      Author: Martin Schreiber <schreiberx@gmail.com>
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk> Schreiber <schreiberx@gmail.com>
  */
 #ifndef SRC_PROGRAMS_REXISWE_HPP_
 #define SRC_PROGRAMS_REXISWE_HPP_
@@ -209,7 +209,7 @@ public:
 
 		// compute
 		// 		kappa - g * eta_bar * D2
-		// NOTE!!! We add kappa in Cartesian space, hence add this value to all frequency components to account for scaling all frequencies!!!
+		// NOTE!!! We add kappa to all frequency components to account for scaling all frequencies!!!
 		// This is *NOT* straightforward and different to adding a constant for computations.
 		// We account for this by seeing the LHS as a set of operators which have to be joint later by a sum.
 
@@ -220,8 +220,7 @@ public:
 
 		io_x = i_rhs.spectral_div_element_wise(lhs);
 #else
-		std::cerr << "Cannot use helmholtz_spectral_solver if spectral space not enable in compilation time" << std::endl;
-		exit(1);
+		FatalError("Cannot use helmholtz_spectral_solver if spectral space not enable in compilation time");
 #endif
 	}
 

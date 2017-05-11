@@ -15,6 +15,7 @@
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/PlaneDataSemiLagrangian.hpp>
+#include <sweet/plane/PlaneDiagnostics.hpp>
 #include <sweet/Stopwatch.hpp>
 #include <sweet/FatalError.hpp>
 #include <benchmarks_plane/SWEPlaneBenchmarks.hpp>
@@ -58,9 +59,7 @@ SimulationVariables simVars;
 
 //specific parameters
 
-int param_timestepping_mode;
 bool param_compute_error;
-bool param_use_staggering;
 
 int param_boundary_id;
 bool param_linear_exp_analytical;
@@ -158,7 +157,7 @@ public:
 	PlaneOperators op;
 
 	// Runge-Kutta stuff
-	PlaneDataTimesteppingRK timestepping;
+	PlaneDataTimesteppingRK timestepping_rk;
 
 	// Rexi stuff
 	SWE_Plane_REXI swe_plane_rexi;
@@ -296,24 +295,28 @@ public:
 		boundary_mask.physical_set_all(0);
 
 		//Check if input parameters are adequate for this simulation
-		if (param_use_staggering && simVars.disc.use_spectral_basis_diffs)
+		if (simVars.disc.use_staggering && simVars.disc.use_spectral_basis_diffs)
 		{
 			std::cerr << "Staggering and spectral basis not supported!" << std::endl;
 			exit(1);
 		}
 
-		if (param_use_staggering && ( param_timestepping_mode != 0 && param_timestepping_mode != 4 ) )
+		if (simVars.disc.use_staggering &&
+				( simVars.disc.timestepping_method != SimulationVariables::Discretization::RUNGE_KUTTA_EXPLICIT &&
+					simVars.disc.timestepping_method != SimulationVariables::Discretization::SEMI_LAGRANGIAN_ADVECTION_ONLY
+				)
+		)
 		{
 			std::cerr << "Staggering only supported for standard time stepping mode 0 and 4!" << std::endl;
 			exit(1);
 		}
-		if (param_use_staggering && param_compute_error)
+		if (simVars.disc.use_staggering && param_compute_error)
 			std::cerr << "Warning: Staggered data will be interpolated to/from A-grid for exact linear solution" << std::endl;
 
-		if (simVars.misc.use_nonlinear_equations > 0 && param_compute_error)
+		if (simVars.pde.use_nonlinear_equations > 0 && param_compute_error)
 			std::cout << "Warning: Exact solution not possible in general for nonlinear swe. Using exact solution for linear case instead." << std::endl;
 
-		if (param_use_staggering)
+		if (simVars.disc.use_staggering)
 		{
 			/*
 			 *              ^
@@ -429,7 +432,7 @@ public:
 		{
 			for (int i = 0; i < simVars.disc.res_physical[0]; i++)
 			{
-				if (param_use_staggering) // C-grid
+				if (simVars.disc.use_staggering) // C-grid
 				{
 					{
 						// h - lives in the center of the cell
@@ -443,8 +446,9 @@ public:
 
 
 					{
+#if 0
 						//Coriolis term - lives in the corner of the cells
-						if (simVars.misc.use_nonlinear_equations)
+						if (simVars.pde.use_nonlinear_equations)
 						{
 							//PXT: had some -0.5 on i and j (why??)
 							double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
@@ -454,6 +458,7 @@ public:
 							{
 								std::cerr << "WARNING: BETA PLANE ON C-GRID NOT TESTED FOR NON_LINEARITIES!" << std::endl;
 							}
+
 						}
 						if(j==0 && i==0 && simVars.sim.beta)
 						{
@@ -462,6 +467,7 @@ public:
 							// linear
 							//	op.diff_b_x(H)
 						}
+#endif
 					}
 
 					{
@@ -634,7 +640,7 @@ public:
 		if (simVars.setup.input_data_filenames.size() > 1)
 		{
 			prog_u.file_physical_loadData(simVars.setup.input_data_filenames[1].c_str(), simVars.setup.input_data_binary);
-			if (param_use_staggering && param_compute_error)
+			if (simVars.disc.use_staggering && param_compute_error)
 			{
 				std::cerr << "Warning: Computing analytical solution with staggered grid based on loaded data not supported!" << std::endl;
 				exit(1);
@@ -644,7 +650,7 @@ public:
 		if (simVars.setup.input_data_filenames.size() > 2)
 		{
 			prog_v.file_physical_loadData(simVars.setup.input_data_filenames[2].c_str(), simVars.setup.input_data_binary);
-			if (param_use_staggering && param_compute_error)
+			if (simVars.disc.use_staggering && param_compute_error)
 			{
 				std::cerr << "Warning: Computing analytical solution with staggered grid based on loaded data not supported!" << std::endl;
 				exit(1);
@@ -653,7 +659,10 @@ public:
 
 
 		// Print info for REXI and setup REXI
-		if (param_timestepping_mode == 1 || param_timestepping_mode == 3 || param_timestepping_mode == 5)
+		if (	simVars.disc.timestepping_method == SimulationVariables::Discretization::REXI ||
+				simVars.disc.timestepping_method == SimulationVariables::Discretization::IMPLICIT_TIMESTEP ||
+				simVars.disc.timestepping_method == SimulationVariables::Discretization::SEMI_LAGRANGIAN_SEMI_IMPLICIT
+		)
 		{
 			if (simVars.misc.verbosity > 0)
 			{
@@ -709,30 +718,14 @@ public:
 
 		last_timestep_nr_update_diagnostics = simVars.timecontrol.current_timestep_nr;
 
-		double normalization = (simVars.sim.domain_size[0]*simVars.sim.domain_size[1]) /
-								((double)simVars.disc.res_physical[0]*(double)simVars.disc.res_physical[1]);
 
-
-		// mass
-		simVars.diag.total_mass = prog_h.reduce_sum_quad() * normalization;
-
-		// energy
-		simVars.diag.total_energy = 0.5*((
-				prog_h*prog_h +
-				prog_h*prog_u*prog_u +
-				prog_h*prog_v*prog_v
-			).reduce_sum_quad()) * normalization;
-
-		// potential vorticity and pot. enstropy
-		if (simVars.sim.beta == 0)
-			eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + simVars.sim.f0) / prog_h;
-		else
-			eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + beta_plane) / prog_h;
-
-		simVars.diag.total_potential_enstrophy = 0.5*(eta*eta*prog_h).reduce_sum_quad() * normalization;
-
-		//Divergence
-//		div = (op.diff_c_x(prog_u) + op.diff_c_y(prog_v));
+		PlaneDiagnostics::update_nonstaggered_huv_to_mass_energy_enstrophy(
+				op,
+				prog_h,
+				prog_u,
+				prog_v,
+				simVars
+		);
 	}
 
 
@@ -784,7 +777,7 @@ public:
 		if (param_boundary_id == 0)
 			return;
 
-		if (param_use_staggering)
+		if (simVars.disc.use_staggering)
 		{
 			/*
 			 * 0     1       1       0       0
@@ -843,6 +836,252 @@ public:
 		}
 	}
 
+
+
+	void normal_mode_analysis()
+	{
+		// dummy time step to get time step size
+		run_timestep();
+
+		/*
+		 * Do a normal mode analysis, see
+		 * Hillary Weller, John Thuburn, Collin J. Cotter,
+		 * "Computational Modes and Grid Imprinting on Five Quasi-Uniform Spherical C Grids"
+		 */
+		char buffer_real[1024];
+		const char* filename = simVars.misc.output_file_name_prefix.c_str();
+
+		sprintf(buffer_real, filename, "normal_modes_physical", simVars.timecontrol.current_timestep_size*simVars.misc.output_time_scale);
+		std::ofstream file(buffer_real, std::ios_base::trunc);
+		std::cout << "Writing normal mode analysis to file '" << buffer_real << "'" << std::endl;
+
+		std::cout << "WARNING: OUTPUT IS TRANSPOSED!" << std::endl;
+
+		// use very high precision
+		file << std::setprecision(20);
+
+		PlaneData* prog[3] = {&prog_h, &prog_u, &prog_v};
+
+		int max_prog_id = -1;
+
+		if (simVars.pde.id == 0 || simVars.pde.id == 1)
+		{
+			max_prog_id = 3;
+			prog_h.physical_set_zero();
+			prog_u.physical_set_zero();
+			prog_v.physical_set_zero();
+		}
+		else
+		{
+			max_prog_id = 1;
+			prog_h.physical_set_zero();
+		}
+
+
+		if (simVars.disc.timestepping_method == SimulationVariables::Discretization::LEAPFROG_EXPLICIT)
+		{
+			FatalError("Not yet tested and supported");
+			std::cout << "WARNING: Leapfrog time stepping doesn't make real sense since 1st step is based on RK-like method" << std::endl;
+			std::cout << "We'll do two Leapfrog time steps here to take the LF errors into account!" << std::endl;
+			std::cout << "Therefore, we also halve the time step size here" << std::endl;
+
+			simVars.timecontrol.current_timestep_size = 0.5*simVars.sim.CFL;
+			simVars.sim.CFL = -simVars.timecontrol.current_timestep_size;
+		}
+
+		// iterate over all prognostic variables
+		for (int outer_prog_id = 0; outer_prog_id < max_prog_id; outer_prog_id++)
+		{
+			if (simVars.disc.normal_mode_analysis_generation == 1)
+			{
+				// iterate over physical space
+				for (std::size_t outer_i = 0; outer_i < planeDataConfig->physical_array_data_number_of_elements; outer_i++)
+				{
+					std::cout << "normal mode analysis for prog " << outer_prog_id << ", idx " << outer_i << std::endl;
+
+					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+						prog[inner_prog_id]->physical_set_zero();
+
+					// activate mode
+					prog[outer_prog_id]->request_data_physical();
+					prog[outer_prog_id]->physical_space_data[outer_i] = 1;
+
+					// In case of a multi-step scheme, reset it!
+					if (simVars.disc.timestepping_method == SimulationVariables::Discretization::LEAPFROG_EXPLICIT)
+					{
+						FatalError("Not yet implemented");
+						//timestepping_explicit_leapfrog.resetAndSetup(prog_h, simVars.disc.timestepping_order, simVars.disc.leapfrog_robert_asselin_filter);
+						run_timestep();
+					}
+
+					/*
+					 * RUN timestep
+					 */
+
+					run_timestep();
+
+					/*
+					 * compute
+					 * 1/dt * (U(t+1) - U(t))
+					 */
+					prog[outer_prog_id]->request_data_physical();
+					prog[outer_prog_id]->physical_space_data[outer_i] -= 1.0;
+
+
+					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+					{
+						prog[inner_prog_id]->request_data_physical();
+						for (std::size_t k = 0; k < planeDataConfig->physical_array_data_number_of_elements; k++)
+						{
+							file << prog[inner_prog_id]->physical_space_data[k];
+							if (inner_prog_id != max_prog_id-1 || k != planeDataConfig->physical_array_data_number_of_elements-1)
+								file << "\t";
+							else
+								file << std::endl;
+						}
+					}
+				}
+			}
+			else if (simVars.disc.normal_mode_analysis_generation == 2)
+			{
+				// iterate over physical space
+				for (std::size_t outer_i = 0; outer_i < planeDataConfig->spectral_array_data_number_of_elements; outer_i++)
+				{
+					for (int imag_i = 0; imag_i < 2; imag_i++)
+					{
+						std::cout << "normal mode analysis for prog " << outer_prog_id << ", idx " << outer_i << std::endl;
+
+						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+							prog[inner_prog_id]->spectral_set_zero();
+
+						// activate mode
+						if (imag_i)
+							prog[outer_prog_id]->spectral_space_data[outer_i].imag(1);
+						else
+							prog[outer_prog_id]->spectral_space_data[outer_i].real(1);
+
+						// In case of a multi-step scheme, reset it!
+						if (simVars.disc.timestepping_method == SimulationVariables::Discretization::LEAPFROG_EXPLICIT)
+						{
+							FatalError("Not yet implemented");
+							//timestepping_explicit_leapfrog.resetAndSetup(prog_h, simVars.disc.timestepping_order, simVars.disc.leapfrog_robert_asselin_filter);
+							run_timestep();
+						}
+
+						/*
+						 * RUN timestep
+						 */
+						run_timestep();
+
+
+						/*
+						 * compute
+						 * 1/dt * (U(t+1) - U(t))
+						 */
+						prog[outer_prog_id]->request_data_spectral();
+						prog[outer_prog_id]->spectral_space_data[outer_i] -= 1.0;
+
+						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+							prog[inner_prog_id]->operator*=(1.0/simVars.timecontrol.current_timestep_size);
+
+						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+						{
+							prog[inner_prog_id]->request_data_spectral();
+							for (std::size_t k = 0; k < planeDataConfig->spectral_array_data_number_of_elements; k++)
+							{
+								file << prog[inner_prog_id]->spectral_space_data[k].real();
+								file << "\t";
+							}
+						}
+
+						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+						{
+							prog[inner_prog_id]->request_data_spectral();
+							for (std::size_t k = 0; k < planeDataConfig->spectral_array_data_number_of_elements; k++)
+							{
+								file << prog[inner_prog_id]->spectral_space_data[k].imag();
+								if (inner_prog_id != max_prog_id-1 || k != planeDataConfig->spectral_array_data_number_of_elements-1)
+									file << "\t";
+								else
+									file << std::endl;
+							}
+						}
+					}
+				}
+			}
+			else if (simVars.disc.normal_mode_analysis_generation == 3)
+			{
+				// iterate over physical space
+				for (std::size_t outer_i = 0; outer_i < planeDataConfig->spectral_array_data_number_of_elements; outer_i++)
+				{
+					std::cout << "normal mode analysis for prog " << outer_prog_id << ", idx " << outer_i << std::endl;
+
+					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+						prog[inner_prog_id]->spectral_set_zero();
+
+					// activate mode via real coefficient
+					prog[outer_prog_id]->request_data_spectral();
+					prog[outer_prog_id]->spectral_space_data[outer_i].real(1);
+
+					// In case of a multi-step scheme, reset it!
+					if (simVars.disc.timestepping_method == SimulationVariables::Discretization::LEAPFROG_EXPLICIT)
+					{
+						FatalError("Not yet implemented");
+						//timestepping_explicit_leapfrog.resetAndSetup(prog_h, simVars.disc.timestepping_order, simVars.disc.leapfrog_robert_asselin_filter);
+						run_timestep();
+					}
+
+					/*
+					 * RUN timestep
+					 */
+					run_timestep();
+
+					/*
+					 * compute
+					 * 1/dt * (U(t+1) - U(t))
+					 */
+					prog[outer_prog_id]->request_data_spectral();
+					prog[outer_prog_id]->spectral_space_data[outer_i] -= 1.0;
+
+					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+						prog[inner_prog_id]->operator*=(1.0/simVars.timecontrol.current_timestep_size);
+
+
+					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+					{
+						prog[inner_prog_id]->request_data_spectral();
+
+						// eliminate shift for zero mode since this is non-sense information
+//						for (std::size_t n = 0; n <= planeDataConfig->spectral_modes_n_max; n++)
+//						prog[inner_prog_id]->spectral_space_data[0].imag(0);
+
+						for (std::size_t k = 0; k < planeDataConfig->spectral_array_data_number_of_elements; k++)
+						{
+							file << prog[inner_prog_id]->spectral_space_data[k].real();
+							file << "\t";
+						}
+					}
+
+					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+					{
+						prog[inner_prog_id]->request_data_spectral();
+
+						for (std::size_t k = 0; k < planeDataConfig->spectral_array_data_number_of_elements; k++)
+						{
+							file << prog[inner_prog_id]->spectral_space_data[k].imag();
+
+							if (inner_prog_id != max_prog_id-1 || k != planeDataConfig->spectral_array_data_number_of_elements-1)
+								file << "\t";
+							else
+								file << std::endl;
+						}
+					}
+				}
+			}
+		}
+	}
+
+
 	// Main routine for method to be used in case of finite differences
 	void p_run_euler_timestep_update(
 			const PlaneData &i_h,	///< prognostic variables
@@ -889,9 +1128,9 @@ public:
 		}
 
 		// A- grid method
-		if (!param_use_staggering)
+		if (!simVars.disc.use_staggering)
 		{
-			if (simVars.misc.use_nonlinear_equations > 0)	 // nonlinear case
+			if (simVars.pde.use_nonlinear_equations > 0)	 // nonlinear case
 			{
 				std::cout << "Only linear swe are setup for unstaggered grids " << std::endl;
 				exit(1);
@@ -910,17 +1149,19 @@ public:
 			o_u_t = -simVars.sim.gravitation*op.diff_c_x(i_h);
 			o_v_t = -simVars.sim.gravitation*op.diff_c_y(i_h);
 
-			if (simVars.sim.beta == 0.0)
+
+//			if (simVars.sim.beta == 0.0)
 			{
 				o_u_t += simVars.sim.f0*i_v;
 				o_v_t -= simVars.sim.f0*i_u;
 			}
+#if 0
 			else
 			{
 				o_u_t += beta_plane*i_v;
 				o_v_t -= beta_plane*i_u;
 			}
-
+#endif
 
 			//if (simVars.sim.viscosity != 0)
 			//{
@@ -948,7 +1189,7 @@ public:
 
 			boundary_action();
 		}
-		else // param_use_staggering = true
+		else // simVars.disc.use_staggering = true
 		{
 			boundary_action();
 
@@ -982,7 +1223,7 @@ public:
 			/*
 			 * U and V updates
 			 */
-			if (simVars.misc.use_nonlinear_equations > 0) //nonlinear case
+			if (simVars.pde.use_nonlinear_equations > 0) //nonlinear case
 			{
 				U = op.avg_b_x(i_h)*i_u;
 				V = op.avg_b_y(i_h)*i_v;
@@ -993,13 +1234,13 @@ public:
 				V = simVars.sim.h0*i_v;
 			}
 
-			if (simVars.misc.use_nonlinear_equations > 0) //nonlinear case
+			if (simVars.pde.use_nonlinear_equations > 0) //nonlinear case
 				H = simVars.sim.gravitation*i_h + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
 			else //linear case
 				H = simVars.sim.gravitation*i_h;// + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
 
 
-			if (simVars.misc.use_nonlinear_equations > 0) //nonlinear case
+			if (simVars.pde.use_nonlinear_equations > 0) //nonlinear case
 			{
 				// Potential vorticity
 				if(op.avg_b_x(op.avg_b_y(i_h)).reduce_min() < 0.00000001)
@@ -1008,10 +1249,10 @@ public:
 					exit(1);
 				}
 
-				if (simVars.sim.beta == 0)
+//				if (simVars.sim.beta == 0)
 					q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + simVars.sim.f0) / op.avg_b_x(op.avg_b_y(i_h));
-				else
-					q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + beta_plane) / op.avg_b_x(op.avg_b_y(i_h));
+//				else
+//					q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + beta_plane) / op.avg_b_x(op.avg_b_y(i_h));
 
 				// u, v tendencies
 				// Energy conserving scheme
@@ -1020,16 +1261,18 @@ public:
 			}
 			else //linear case
 			{
-				if (simVars.sim.beta == 0)
+//				if (simVars.sim.beta == 0)
 				{
 					o_u_t = op.avg_f_y(simVars.sim.f0*op.avg_b_x(i_v)) - op.diff_b_x(H);
 					o_v_t = -op.avg_f_x(simVars.sim.f0*op.avg_b_y(i_u)) - op.diff_b_y(H);
 				}
+#if 0
 				else
 				{
 					o_u_t = op.avg_f_y(beta_plane*op.avg_b_x(i_v)) - op.diff_b_x(H);
 					o_v_t = -op.avg_f_x(beta_plane*op.avg_b_y(i_u)) - op.diff_b_y(H);
 				}
+#endif
 			}
 
 			/*
@@ -1046,7 +1289,7 @@ public:
 			 */
 			if (!simVars.disc.timestepping_up_and_downwinding)
 			{
-				if (simVars.misc.use_nonlinear_equations > 0){ //full nonlinear divergence
+				if (simVars.pde.use_nonlinear_equations > 0){ //full nonlinear divergence
 					// standard update
 					o_h_t = -op.diff_f_x(U) - op.diff_f_y(V);
 				}
@@ -1076,14 +1319,14 @@ public:
 	{
 		double o_dt;
 
-		if (param_timestepping_mode == 0)
+		if (simVars.disc.timestepping_method == SimulationVariables::Discretization::RUNGE_KUTTA_EXPLICIT)
 		{
 			// either set time step size to 0 for autodetection or to
 			// a positive value to use a fixed time step size
 			simVars.timecontrol.current_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
 
 			// standard time stepping
-			timestepping.run_timestep(
+			timestepping_rk.run_timestep(
 					this,
 					&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
 					prog_h, prog_u, prog_v,
@@ -1094,13 +1337,13 @@ public:
 					simVars.timecontrol.max_simulation_time
 				);
 		}
-		else if (param_timestepping_mode == 1) //REXI
+		else if (simVars.disc.timestepping_method == SimulationVariables::Discretization::REXI) //REXI
 		{
 			assert(simVars.sim.CFL < 0);
 			o_dt = -simVars.sim.CFL;
 
 			// REXI time stepping for nonlinear eq - semi-lagrangian scheme (SL-REXI)
-			if (simVars.misc.use_nonlinear_equations > 0)
+			if (simVars.pde.use_nonlinear_equations > 0)
 			{
 				swe_plane_rexi.run_timestep_slrexi(
 									prog_h, prog_u, prog_v,
@@ -1108,7 +1351,7 @@ public:
 									posx_a,	posy_a,
 									o_dt,
 
-									simVars.misc.use_nonlinear_equations,
+									simVars.pde.use_nonlinear_equations,
 									param_linear_exp_analytical,
 
 									simVars,
@@ -1122,12 +1365,12 @@ public:
 				swe_plane_rexi.run_timestep_rexi( prog_h, prog_u, prog_v, o_dt, op,	simVars);
 			}
 		}
-		else if (param_timestepping_mode == 2) //Direct solution
+		else if (simVars.disc.timestepping_method == SimulationVariables::Discretization::ANALYTICAL_SOLUTION) //Direct solution
 		{
-			if (param_use_staggering)
+			if (simVars.disc.use_staggering)
 				FatalError("Direct solution on staggered grid not supported!");
 
-			if (simVars.misc.use_nonlinear_equations>0)
+			if (simVars.pde.use_nonlinear_equations>0)
 				FatalError("Direct solution on staggered grid not supported!");
 
 			// Analytical solution
@@ -1140,7 +1383,7 @@ public:
 					simVars
 			);
 		}
-		else if (param_timestepping_mode == 3)
+		else if (simVars.disc.timestepping_method == SimulationVariables::Discretization::IMPLICIT_TIMESTEP)
 		{   //  Implicit time step - Backward Euler - checked - linear only
 			assert(simVars.sim.CFL < 0);
 
@@ -1152,7 +1395,7 @@ public:
 					simVars
 			);
 		}
-		else if (param_timestepping_mode == 4)
+		else if (simVars.disc.timestepping_method == SimulationVariables::Discretization::SEMI_LAGRANGIAN_ADVECTION_ONLY)
 		{ // Semi-Lagrangian advection - velocities are kept constant, and
 			//  h is transported according to given initial wind
 			// *** Valid only for non-divergent velocity fields **//
@@ -1190,7 +1433,7 @@ public:
 			);
 
 		}
-		else if (param_timestepping_mode == 5)
+		else if (simVars.disc.timestepping_method == SimulationVariables::Discretization::SEMI_LAGRANGIAN_SEMI_IMPLICIT)
 		{   // Semi-Lagrangian Semi-implicit Spectral
 			assert(simVars.sim.CFL < 0);
 			o_dt = -simVars.sim.CFL;
@@ -1200,7 +1443,7 @@ public:
 					prog_h_prev, prog_u_prev, prog_v_prev,
 					posx_a,	posy_a,
 					o_dt,
-					simVars.misc.use_nonlinear_equations,
+					simVars.pde.use_nonlinear_equations,
 					simVars,
 					op,
 					sampler2D,
@@ -1209,8 +1452,7 @@ public:
 		}
 		else
 		{
-			std::cerr << "Invalid time stepping method" << std::endl;
-			exit(1);
+			FatalError("Invalid time stepping method");
 		}
 
 		//Apply viscosity at posteriori, for all methods explicit diffusion for non spectral schemes and implicit for spectral
@@ -1275,11 +1517,11 @@ public:
 		//Dump  data in csv, if requested
 		if (simVars.misc.output_file_name_prefix.size() > 0)
 		{
-			write_file(prog_h, "h");
-			write_file(prog_u, "u");
-			write_file(prog_v, "v");
+			write_file(prog_h, "prog_h");
+			write_file(prog_u, "prog_u");
+			write_file(prog_v, "prog_v");
 
-			write_file(op.diff_c_x(prog_v) - op.diff_c_y(prog_u), "q");
+			write_file(op.diff_c_x(prog_v) - op.diff_c_y(prog_u), "prog_q");
 		}
 
 
@@ -1295,7 +1537,7 @@ public:
 				//if ((simVars.setup.scenario >= 0 && simVars.setup.scenario <= 4) || simVars.setup.scenario == 13)
 				o_ostream << "\tDIFF_H0\tDIFF_U0\tDIFF_V0";
 
-				if (param_compute_error && simVars.misc.use_nonlinear_equations==0){
+				if (param_compute_error && simVars.pde.use_nonlinear_equations==0){
 					o_ostream << "\tANAL_DIFF_RMS_P\tANAL_DIFF_RMS_U\tANAL_DIFF_RMS_V";
 					o_ostream << "\tANAL_DIFF_MAX_P\tANAL_DIFF_MAX_U\tANAL_DIFF_MAX_V";
 				}
@@ -1333,7 +1575,7 @@ public:
 			o_ostream << "\t" << benchmark_diff_v;
 			//}
 
-			if (param_compute_error && simVars.misc.use_nonlinear_equations==0)
+			if (param_compute_error && simVars.pde.use_nonlinear_equations==0)
 			{
 				compute_errors();
 
@@ -1381,7 +1623,7 @@ public:
 		t_h=t0_h;
 		t_u=t0_u;
 		t_v=t0_v;
-		if (param_use_staggering) // Remap in case of C-grid
+		if (simVars.disc.use_staggering) // Remap in case of C-grid
 		{
 			//remap initial condition to A grid
 			//sampler2D.bilinear_scalar(t0_u, posx_a, posy_a, t_u, stag_u[0], stag_u[1]);
@@ -1400,7 +1642,7 @@ public:
 		ts_h=t_h;
 		ts_u=t_u;
 		ts_v=t_v;
-		if (param_use_staggering)
+		if (simVars.disc.use_staggering)
 		{
 			// Remap A grid to C grid
 
@@ -1827,10 +2069,6 @@ public:
 		prog_u = *parareal_data_start.data_arrays[1];
 		prog_v = *parareal_data_start.data_arrays[2];
 
-		// run implicit time step
-//		assert(i_max_simulation_time < 0);
-//		assert(simVars.sim.CFL < 0);
-
 		swe_plane_rexi.run_timestep_implicit_ts(
 				prog_h, prog_u, prog_v,
 				timeframe_end - timeframe_start,
@@ -1920,7 +2158,7 @@ public:
 		prog_u = *parareal_data_output.data_arrays[1];
 		prog_v = *parareal_data_output.data_arrays[2];
 
-		if (param_compute_error && simVars.misc.use_nonlinear_equations==0){
+		if (param_compute_error && simVars.pde.use_nonlinear_equations==0){
 			compute_errors();
 			std::cout << "maxabs error compared to analytical solution: " << benchmark_analytical_error_maxabs_h << std::endl;
 		}
@@ -1957,7 +2195,6 @@ public:
 
 		std::string filename = ss.str();
 
-//		std::cout << "filename: " << filename << std::endl;
 		data.data_arrays[0]->file_physical_saveData_vtk(filename.c_str(), filename.c_str());
 	}
 
@@ -2002,9 +2239,7 @@ int main(int i_argc, char *i_argv[])
 
 	//input parameter names (specific ones for this program)
 	const char *bogus_var_names[] = {
-			"timestepping-mode",			///Method to be used
 			"compute-error",
-			"staggering",						/// FD A-C grid
 			"boundary-id",
 			"initial-freq-x-mul",		/// frequency multipliers for special scenario setup
 			"initial-freq-y-mul",
@@ -2013,13 +2248,11 @@ int main(int i_argc, char *i_argv[])
 	};
 
 	// default values for specific input (for general input see SimulationVariables.hpp)
-	simVars.bogus.var[0] = 0;	// timestepping mode - default is RK
-	simVars.bogus.var[1] = 0;	// compute error - default no
-	simVars.bogus.var[2] = 0;	// stag - default A grid
-	simVars.bogus.var[3] = 0; 	//boundary
-	simVars.bogus.var[4] = 0;  //frequency in x for waves test case
-	simVars.bogus.var[5] = 0;  //frequency in y for waves test case
-	simVars.bogus.var[6] = 0;  // Use analytical linear operator exponential
+	simVars.bogus.var[0] = 0;	// compute error - default no
+	simVars.bogus.var[1] = 0; 	//boundary
+	simVars.bogus.var[2] = 0;  //frequency in x for waves test case
+	simVars.bogus.var[3] = 0;  //frequency in y for waves test case
+	simVars.bogus.var[4] = 0;  // Use analytical linear operator exponential
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
@@ -2058,81 +2291,36 @@ int main(int i_argc, char *i_argv[])
 #endif
 		return -1;
 	}
-	// Method to be used
-	param_timestepping_mode = simVars.bogus.var[0];
-
 	// Calculate error flag
-	param_compute_error = simVars.bogus.var[1];
-
-	// C- grid flag
-	param_use_staggering = simVars.bogus.var[2];
+	param_compute_error = simVars.bogus.var[0];
 
 	// Boundary
-	param_boundary_id = simVars.bogus.var[3];
+	param_boundary_id = simVars.bogus.var[1];
 
 	// Frequency for certain initial conditions
-	param_initial_freq_x_mul = simVars.bogus.var[4];
-	param_initial_freq_y_mul = simVars.bogus.var[5];
+	param_initial_freq_x_mul = simVars.bogus.var[2];
+	param_initial_freq_y_mul = simVars.bogus.var[3];
 
-	param_linear_exp_analytical = simVars.bogus.var[6];
+	param_linear_exp_analytical = simVars.bogus.var[4];
 
 	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
 
 	// Print header
 	std::cout << std::endl;
-	if (simVars.misc.use_nonlinear_equations == 1)
+	if (simVars.pde.use_nonlinear_equations == 1)
 		std::cout << "Solving full nonlinear SW equations" << std::endl;
 	else
 	{
-		if (simVars.misc.use_nonlinear_equations == 2)
+		if (simVars.pde.use_nonlinear_equations == 2)
 				std::cout << "Solving linear SWE with nonlinear advection" << std::endl;
 		else
 			std::cout << "Solving linear SW equations" << std::endl;
 	}
 
 	std::cout << "-----------------------------" << std::endl;
-	std::cout << "Time stepping method to be used (timestepping_mode): "; // << param_timestepping_mode << std::endl;
-	switch(param_timestepping_mode)
-	{
-		case 0:
-				std::cout << " 0: Finite-difference " << std::endl; break;
-		case 1:
-				std::cout << " 1: REXI" << std::endl; break;
-		case 2:
-				std::cout << " 2: Direct solution in spectral space" << std::endl; break;
-		case 3:
-				std::cout << " 3: Implicit method (Euler) - Linear only" << std::endl; break;
-		case 4:
-				std::cout << " 4: Semi-Lag - pure advection " << std::endl; break;
-		case 5:
-				std::cout << " 5: Semi-Lag Semi-Implicit Spectral " << std::endl; break;
-		default:
-			std::cerr << "Timestepping unknowkn" << std::endl;
-			return -1;
-	}
-
-	std::cout << "Viscosity: " << simVars.sim.viscosity << std::endl;
-	std::cout << "Staggered grid: " << param_use_staggering << std::endl;
+	simVars.outputConfig();
 	std::cout << "Computing error: " << param_compute_error << std::endl;
-	std::cout << "Dealiasing: " <<
-#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
-			1
-#else
-			0
-#endif
-			<< std::endl;
-	std::cout << "Verbosity: " << simVars.misc.verbosity << std::endl;
-	std::cout << "Parareal: " << SWEET_PARAREAL << std::endl;
 	std::cout << "Linear exponential analytical: " << param_linear_exp_analytical << std::endl;
-	std::cout << std::endl;
-	std::cout << "simVars.rexi.rexi_h: " << simVars.rexi.rexi_h << std::endl;
-	std::cout << "simVars.rexi.rexi_M: " << simVars.rexi.rexi_M << std::endl;
-	std::cout << "simVars.rexi.rexi_L: " << simVars.rexi.rexi_L << std::endl;
-	std::cout << "simVars.rexi.rexi_half: " << simVars.rexi.rexi_use_half_poles << std::endl;
-	std::cout << std::endl;
-	std::cout << "g: " << simVars.sim.gravitation << std::endl;
-	std::cout << "f: " << simVars.sim.f0 << std::endl;
-	std::cout << "h: " << simVars.sim.h0 << std::endl;
 	std::cout << std::endl;
 
 	std::ostringstream buf;
@@ -2206,32 +2394,39 @@ int main(int i_argc, char *i_argv[])
 			time.reset();
 
 
-			// Main time loop
-			while(true)
+			if (simVars.disc.normal_mode_analysis_generation)
 			{
-				if (simulationSWE->timestep_output(buf))
+				simulationSWE->normal_mode_analysis();
+			}
+			else
+			{
+				// Main time loop
+				while(true)
 				{
-					// string output data
+					if (simulationSWE->timestep_output(buf))
+					{
+						// string output data
 
-					std::string output = buf.str();
-					buf.str("");
+						std::string output = buf.str();
+						buf.str("");
 
-					// This is an output printed on screen or buffered to files if > used
-					std::cout << output;
-				}
+						// This is an output printed on screen or buffered to files if > used
+						std::cout << output;
+					}
 
-				// Stop simulation if requested
-				if (simulationSWE->should_quit())
-					break;
+					// Stop simulation if requested
+					if (simulationSWE->should_quit())
+						break;
 
-				// Main call for timestep run
-				simulationSWE->run_timestep();
+					// Main call for timestep run
+					simulationSWE->run_timestep();
 
-				// Instability
-				if (simulationSWE->instability_detected())
-				{
-					std::cout << "INSTABILITY DETECTED" << std::endl;
-					break;
+					// Instability
+					if (simulationSWE->instability_detected())
+					{
+						std::cout << "INSTABILITY DETECTED" << std::endl;
+						break;
+					}
 				}
 			}
 
@@ -2245,7 +2440,7 @@ int main(int i_argc, char *i_argv[])
 			std::cout << "Number of time steps: " << simVars.timecontrol.current_timestep_nr << std::endl;
 			std::cout << "Time per time step: " << seconds/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
 			std::cout << "Last time step size: " << simVars.timecontrol.current_timestep_size << std::endl;
-			if (param_timestepping_mode != 0)
+			if (simVars.disc.timestepping_method != 0)
 				std::cout << "REXI alpha.size(): " << simulationSWE->swe_plane_rexi.rexi.alpha.size() << std::endl;
 
 			if (simVars.misc.verbosity > 0)
@@ -2262,7 +2457,7 @@ int main(int i_argc, char *i_argv[])
 				}
 			}
 
-			if (param_compute_error && simVars.misc.use_nonlinear_equations == 0)
+			if (param_compute_error && simVars.pde.use_nonlinear_equations == 0)
 			{
 				simulationSWE->compute_errors();
 				std::cout << "DIAGNOSTICS ANALYTICAL RMS H:\t" << simulationSWE->benchmark_analytical_error_rms_h << std::endl;
@@ -2280,7 +2475,7 @@ int main(int i_argc, char *i_argv[])
 #if SWEET_MPI
 	else
 	{
-		if (param_timestepping_mode == 1)
+		if (simVars.disc.timestepping_method == SimulationVariables::Discretization::REXI)
 		{
 			SWE_Plane_REXI rexiSWE;
 
@@ -2325,7 +2520,7 @@ int main(int i_argc, char *i_argv[])
 
 
 #if SWEET_MPI
-	if (param_timestepping_mode > 0)
+	if (simVars.disc.timestepping_method > 0)
 	{
 		// synchronize REXI
 		if (mpi_rank == 0)

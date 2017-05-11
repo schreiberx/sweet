@@ -2,7 +2,7 @@
  * SWE_Sphere_REXI.hpp
  *
  *  Created on: 25 Oct 2016
- *      Author: martin
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_REXI_HPP_
@@ -68,10 +68,13 @@ class SWE_Sphere_REXI
 	 */
 	double timestep_size;
 
-	bool use_coriolis_rexi_formulation;
+	bool use_f_sphere;
 
 	bool use_rexi_preallocation;
 
+	int pde_id;
+
+	int pde_variant_id;
 
 	std::size_t block_size;
 
@@ -138,9 +141,14 @@ public:
 
 			bool i_rexi_half,				///< use half-pole reduction
 			bool i_use_robert_functions,	///< use Robert functions
+			int i_pde_id,
+			int i_pde_variant_id,
+
 			int i_rexi_use_extended_modes,
 			int i_rexi_normalization,
-			bool i_use_coriolis_rexi_formulation
+			bool i_use_f_sphere,
+
+			bool i_use_rexi_sphere_preallocation
 	);
 
 
@@ -160,10 +168,29 @@ public:
 	 * for further information
 	 */
 public:
-	bool run_timestep_rexi(
-		SphereData &io_h0,
+	bool run_timestep_rexi_velocityformulation_progphiuv(
+		SphereData &io_phi0,
 		SphereData &io_u,
 		SphereData &io_v,
+
+		double i_timestep_size,	///< timestep size
+
+		const SimulationVariables &i_parameters
+	);
+
+
+	/**
+	 * Solve the REXI of \f$ U(t) = exp(L*t) \f$
+	 *
+	 * See
+	 * 		doc/rexi/understanding_rexi.pdf
+	 * for further information
+	 */
+public:
+	bool run_timestep_rexi_vectorinvariant_progphivortdiv(
+		SphereData &io_phi0,
+		SphereData &io_u0,
+		SphereData &io_v0,
 
 		double i_timestep_size,	///< timestep size
 

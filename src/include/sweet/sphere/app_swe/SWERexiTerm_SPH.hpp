@@ -2,7 +2,7 @@
  * SWE_REXI_SPH.hpp
  *
  *  Created on: 30 Aug 2016
- *      Author: martin
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SRC_SWEREXI_SPH_HPP_
@@ -41,6 +41,8 @@ class SWERexiTerm_SPH
 	std::complex<double> beta;
 
 	bool use_formulation_with_coriolis_effect;
+
+	bool use_f_sphere;
 
 	/// timestep size
 	double timestep_size;
@@ -82,10 +84,11 @@ public:
 
 			double i_timestep_size,
 
-			bool i_include_coriolis_effect = true
+			bool i_use_f_sphere
 	)
 	{
-		use_formulation_with_coriolis_effect = i_include_coriolis_effect;
+		use_f_sphere = i_use_f_sphere;
+
 		timestep_size = i_timestep_size;
 
 		alpha = i_alpha/timestep_size;
@@ -101,7 +104,7 @@ public:
 
 		sphereDataConfig = i_sphereDataConfig;
 
-		opComplex.setup(sphereDataConfig);
+		opComplex.setup(sphereDataConfig, r);
 
 		sphSolverPhi.setup(sphereDataConfig, 4);
 		sphSolverPhi.solver_component_rexi_z1(	(alpha*alpha)*(alpha*alpha), r);
@@ -110,9 +113,12 @@ public:
 		{
 			sphSolverPhi.solver_component_rexi_z2(	2.0*two_omega*two_omega*alpha*alpha, r);
 			sphSolverPhi.solver_component_rexi_z3(	(two_omega*two_omega)*(two_omega*two_omega), r);
-			sphSolverPhi.solver_component_rexi_z4(	-avg_geopotential*alpha*two_omega, r);
-			sphSolverPhi.solver_component_rexi_z5(	avg_geopotential/alpha*two_omega*two_omega*two_omega, r);
-			sphSolverPhi.solver_component_rexi_z6(	avg_geopotential*2.0*two_omega*two_omega, r);
+			if (!use_f_sphere)
+			{
+				sphSolverPhi.solver_component_rexi_z4(	-avg_geopotential*alpha*two_omega, r);
+				sphSolverPhi.solver_component_rexi_z5(	avg_geopotential/alpha*two_omega*two_omega*two_omega, r);
+				sphSolverPhi.solver_component_rexi_z6(	avg_geopotential*2.0*two_omega*two_omega, r);
+			}
 		}
 		sphSolverPhi.solver_component_rexi_z7(	-avg_geopotential*alpha*alpha, r);
 		if (use_formulation_with_coriolis_effect)
@@ -195,32 +201,41 @@ public:
 
 		if (use_formulation_with_coriolis_effect)
 		{
-
-#if 0
-			// only works for Robert formulation!
-			SphereDataComplex tmp = (
-					-(alpha*alpha*i_u0 - two_omega*two_omega*opComplex.mu2(i_u0)) +
-					2.0*alpha*two_omega*opComplex.mu(i_v0)
-				);
-
-			SphereDataComplex Fc_k =	two_omega*ir*(tmp-opComplex.mu2(tmp));
-
-#else
-
-			SphereDataComplex Fc_k =	two_omega*inv_r*opComplex.grad_lat(mu)*(
-										-(alpha*alpha*i_u0 - two_omega*two_omega*opComplex.mu2(i_u0)) +
-										2.0*alpha*two_omega*opComplex.mu(i_v0)
-									);
-
-#endif
-
 			SphereDataComplex foo = 	avg_geopotential*(div0 - two_omega*(1.0/alpha)*opComplex.mu(eta0)) +
 									(alpha*i_phi0 + two_omega*two_omega*(1.0/alpha)*opComplex.mu2(i_phi0));
 
-			SphereDataComplex rhs =	alpha*alpha*foo +
-									two_omega*two_omega*opComplex.mu2(foo) +
-									(avg_geopotential/alpha)*Fc_k;
+			SphereDataComplex rhs(sphereDataConfig);
 
+			if (use_f_sphere)
+			{
+
+				rhs =	alpha*alpha*foo +
+										two_omega*two_omega*opComplex.mu2(foo);
+			}
+			else
+			{
+#if 0
+				// only works for Robert formulation!
+				SphereDataComplex tmp = (
+						-(alpha*alpha*i_u0 - two_omega*two_omega*opComplex.mu2(i_u0)) +
+						2.0*alpha*two_omega*opComplex.mu(i_v0)
+					);
+
+				SphereDataComplex Fc_k =	two_omega*ir*(tmp-opComplex.mu2(tmp));
+
+#else
+
+				SphereDataComplex Fc_k =	two_omega*inv_r*opComplex.grad_lat(mu)*(
+											-(alpha*alpha*i_u0 - two_omega*two_omega*opComplex.mu2(i_u0)) +
+											2.0*alpha*two_omega*opComplex.mu(i_v0)
+										);
+
+#endif
+
+				rhs =	alpha*alpha*foo +
+										two_omega*two_omega*opComplex.mu2(foo) +
+										(avg_geopotential/alpha)*Fc_k;
+			}
 
 			phi = sphSolverPhi.solve(rhs);
 
@@ -246,9 +261,9 @@ public:
 		u *= beta;
 		v *= beta;
 
-		o_phi = Convert_SphereDataComplex_To_SphereData::physical_convert(phi);
-		o_u = Convert_SphereDataComplex_To_SphereData::physical_convert(u);
-		o_v = Convert_SphereDataComplex_To_SphereData::physical_convert(v);
+		o_phi = Convert_SphereDataComplex_To_SphereData::physical_convert_real(phi);
+		o_u = Convert_SphereDataComplex_To_SphereData::physical_convert_real(u);
+		o_v = Convert_SphereDataComplex_To_SphereData::physical_convert_real(v);
 	}
 };
 

@@ -2,7 +2,7 @@
  * PlaneData_Kernels.hpp
  *
  *  Created on: 19 Oct 2016
- *      Author: martin
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SRC_INCLUDE_SWEET_PLANE_PLANEDATA_KERNELS_HPP_

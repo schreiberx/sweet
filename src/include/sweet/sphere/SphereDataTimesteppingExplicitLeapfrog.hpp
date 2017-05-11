@@ -92,8 +92,8 @@ public:
 
 		int N = i_leapfrog_order;
 
-		if (N <= 0 || N > 1)
-			FatalError("Only 1st order leapfrog is currently supported!");
+		if (N != 2)
+			FatalError("Only 2nd order leapfrog is currently supported!");
 
 
 		// storage for previous time step
@@ -164,8 +164,6 @@ public:
 			double i_max_simulation_time = std::numeric_limits<double>::infinity()	///< limit the maximum simulation time
 	)
 	{
-
-
 		double &dt = o_dt;
 
 		SphereData &h_prev_u = *RK_h_prev;
@@ -192,6 +190,11 @@ public:
 				i_simulation_time
 		);
 
+		// padding to max simulation time if exceeding the maximum
+		if (i_max_simulation_time >= 0)
+			if (dt+i_simulation_time > i_max_simulation_time)
+				dt = i_max_simulation_time-i_simulation_time;
+
 		if (leapfrog_robert_asselin_filter == 0)
 		{
 			if (timestep_id == 0)
@@ -200,12 +203,74 @@ public:
 				u_prev_u = io_u;
 				v_prev_u = io_v;
 
+#if 0
 				// do standard Euler time step
 				io_h += dt * h_dt;
 				io_u += dt * u_dt;
 				io_v += dt * v_dt;
+#else
 
-//				std::cout << SphereData(io_h).physical_reduce_sum() << "\t" << SphereData(io_u).physical_reduce_sum() << "\t" << SphereData(io_v).physical_reduce_sum() << std::endl;
+				// See https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods#Explicit_Runge.E2.80.93Kutta_methods
+				// See https://de.wikipedia.org/wiki/Runge-Kutta-Verfahren
+				/*
+				 * c     a
+				 * 0   |
+				 * 1/2 | 1/2
+				 * --------------
+				 *     | 0   1    b
+				 */
+				double a2[1] = {0.5};
+				double b[2] = {0.0, 1.0};
+				double c[1] = {0.5};
+
+				double dummy_dt = -1;
+
+				SphereData h_t0(io_h.sphereDataConfig);
+				SphereData u_t0(io_h.sphereDataConfig);
+				SphereData v_t0(io_h.sphereDataConfig);
+
+				// STAGE 1
+				(i_baseClass->*i_compute_euler_timestep_update)(
+						io_h,
+						io_u,
+						io_v,
+						h_t0,//*RK_h_t[0],
+						u_t0,//*RK_u_t[0],
+						v_t0,//*RK_v_t[0],
+						dt,
+						i_use_fixed_dt,
+						i_simulation_time
+				);
+
+				// padding to max simulation time if exceeding the maximum
+				if (i_max_simulation_time >= 0)
+					if (dt+i_simulation_time > i_max_simulation_time)
+						dt = i_max_simulation_time-i_simulation_time;
+
+				SphereData h_t1(io_h.sphereDataConfig);
+				SphereData u_t1(io_h.sphereDataConfig);
+				SphereData v_t1(io_h.sphereDataConfig);
+
+				// STAGE 2
+				(i_baseClass->*i_compute_euler_timestep_update)(
+						io_h + ( dt*a2[0]*h_t0),//(*RK_h_t[0]) ),
+						io_u + ( dt*a2[0]*u_t0),//(*RK_u_t[0]) ),
+						io_v + ( dt*a2[0]*v_t0),//(*RK_v_t[0]) ),
+						h_t1,//*RK_h_t[1],
+						u_t1,//*RK_u_t[1],
+						v_t1,//*RK_v_t[1],
+						dummy_dt,
+						dt,
+						i_simulation_time + c[0]*dt
+				);
+
+				//io_h += dt*(/* b[0]*(*RK_h_t[0]) +*/ b[1]*(*RK_h_t[1]) );
+				//io_u += dt*(/* b[0]*(*RK_u_t[0]) +*/ b[1]*(*RK_u_t[1]) );
+				//io_v += dt*(/* b[0]*(*RK_v_t[0]) +*/ b[1]*(*RK_v_t[1]) );
+				io_h += dt*(/* b[0]*(*RK_h_t[0]) +*/ b[1]*h_t1 );
+				io_u += dt*(/* b[0]*(*RK_u_t[0]) +*/ b[1]*u_t1 );
+				io_v += dt*(/* b[0]*(*RK_v_t[0]) +*/ b[1]*v_t1 );
+#endif
 			}
 			else
 			{
@@ -338,6 +403,11 @@ public:
 				i_simulation_time
 		);
 
+		// padding to max simulation time if exceeding the maximum
+		if (i_max_simulation_time >= 0)
+			if (dt+i_simulation_time > i_max_simulation_time)
+				dt = i_max_simulation_time-i_simulation_time;
+
 		if (leapfrog_robert_asselin_filter == 0)
 		{
 			if (timestep_id == 0)
@@ -448,6 +518,11 @@ public:
 				i_use_fixed_dt,
 				i_simulation_time
 		);
+
+		// padding to max simulation time if exceeding the maximum
+		if (i_max_simulation_time >= 0)
+			if (dt+i_simulation_time > i_max_simulation_time)
+				dt = i_max_simulation_time-i_simulation_time;
 
 		if (leapfrog_robert_asselin_filter == 0)
 		{

@@ -2,7 +2,7 @@
  * BenchmarkGalewsky.hpp
  *
  *  Created on: 16 Aug 2016
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk> Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SRC_BENCHMARKGALEWSKY_HPP_
@@ -15,19 +15,19 @@
 
 class BenchmarkGalewsky
 {
-	/**
+	/*
 	 * Stream jet data
 	 */
 	const double phi0 = M_PI/7.0;
 	//const double phi0 = M_PI/30.0;
 	const double phi1 = M_PI/2.0 - phi0;
 
-
+public:
 	const double u_max = 80.0;
 	const double h_avg = 10000.0;
 	const double en = exp(-4.0/std::pow(phi1-phi0, 2.0));
 
-	/**
+	/*
 	 * Bump data
 	 */
 	const double phi2 = M_PI/4.0;
@@ -54,11 +54,16 @@ private:
 		return &t;
 	}
 
+	/*
+	 * Singleton to this class
+	 */
+private:
 	static BenchmarkGalewsky* T()
 	{
 		return *getPtrT();
 	}
 
+public:
 	double initial_condition_u(double lon, double phi)
 	{
 		if (phi <= phi0 || phi >= phi1)
@@ -83,7 +88,7 @@ private:
 				(2.0*t->simVars.sim.coriolis_omega*std::sin(phi)+(std::tan(phi)/t->simVars.sim.earth_radius)*u_phi);
 	};
 
-	double error_threshold = 1.e-13;
+	double error_threshold = 1.e-12;
 
 	double integrate_fun(
 			double int_start,
@@ -94,7 +99,8 @@ private:
 		static AdaptiveIntegrator<double(const double)> integration_helper;
 		return integration_helper.integrate(to_int_fun, int_start, int_end, error_threshold);
 #else
-		return GaussQuadrature::integrate5_intervals_adaptive_linear<double>(int_start, int_end, to_int_fun, error_threshold);
+		return GaussQuadrature::integrate5_intervals<double>(int_start, int_end, to_int_fun, 20);
+//		return GaussQuadrature::integrate5_intervals(int_start, int_end, to_int_fun);
 #endif
 	}
 
@@ -108,6 +114,10 @@ public:
 		*getPtrT() = this;
 		const SphereDataConfig *sphereDataConfig = o_h.sphereDataConfig;
 
+
+		/*
+		 * https://github.com/pedrospeixoto/iModel/blob/master/src/swm.f90#L1562
+		 */
 
 		/*
 		 * Initialization of U and V
@@ -127,6 +137,74 @@ public:
 		double int_start, int_end, int_delta;
 
 		int j = sphereDataConfig->physical_num_lat-1;
+
+#if 0
+		// start/end of first integration interval
+		{
+			assert(sphereDataConfig->lat[j] < 0);
+
+			// start at the south pole
+			int_start = -M_PI*0.5;
+
+			// first latitude gaussian point
+			int_end = 0.5*(sphereDataConfig->lat[j]+sphereDataConfig->lat[j-1]);
+
+			// 1d area of integration
+			int_delta = int_end - int_start;
+
+			assert(int_delta > 0);
+			assert(int_delta < 1);
+
+			double hg = -integrate_fun(int_start, int_end);
+			//hg = (int_end+int_start)*0.5;
+			hg_cached[j] = hg;
+
+			/*
+			 * cos scaling is required for 2D sphere coverage at this latitude
+			 *
+			 * metric term which computes the area coverage of each point
+			 */
+			// use integrated average as below instead of the following formulation
+			// double mterm = cos((int_start+int_end)*0.5);
+			double mterm = (sin(int_end)-sin(int_start))*2.0*M_PI;
+			assert(mterm > 0);
+
+			hg_sum += hg*mterm;
+			h_area += mterm;
+
+			int_start = int_end;
+		}
+		j--;
+
+		for (; j >= 0; j--)
+		{
+			double int_end;
+			if (j > 0)
+				int_end = 0.5*(sphereDataConfig->lat[j]+sphereDataConfig->lat[j-1]);
+			else
+				int_end = 0.5*(sphereDataConfig->lat[j]+M_PI*0.5);
+
+//			double int_end = sphereDataConfig->lat[j];
+			int_delta = int_end - int_start;
+			assert(int_delta > 0);
+
+			double hg = hg_cached[j+1] - integrate_fun(int_start, int_end);
+			//hg = (int_end+int_start)*0.5;
+			hg_cached[j] = hg;
+
+			// metric term which computes the area coverage of each point
+			double mterm = (sin(int_end)-sin(int_start))*2.0*M_PI;
+
+			hg_sum += hg*mterm;
+			h_area += mterm;
+
+			// continue at the end of the last integration interval
+			int_start = int_end;
+		}
+
+
+#else
+
 
 		// start/end of first integration interval
 		{
@@ -201,6 +279,9 @@ public:
 			hg_sum += hg*mterm;
 			h_area += mterm;
 		}
+
+#endif
+
 		assert(h_area > 0);
 
 		double h_sum = hg_sum / simVars.sim.gravitation;
@@ -213,7 +294,7 @@ public:
 		// update data
 		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
 			for (int j = 0; j < sphereDataConfig->physical_num_lat; j++)
-				o_h.physical_space_data[i*sphereDataConfig->physical_num_lat + j] = hg_cached[j];
+				o_h.physical_set_value(i, j, hg_cached[j]);
 
 		o_h.physical_space_data_valid = true;
 		o_h.spectral_space_data_valid = false;

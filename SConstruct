@@ -115,7 +115,7 @@ AddOption(	'--pfasst-cpp',
 		dest='pfasst_cpp',
 		type='choice',
 		choices=['enable', 'disable'],
-		default='enable',
+		default='disable',
 		help="Activate utilization of PFASST++ (C++ version) [default: %default]"
 )
 env['pfasst_cpp'] = GetOption('pfasst_cpp')
@@ -125,7 +125,7 @@ AddOption(	'--libpfasst',
 		dest='libpfasst',
 		type='choice',
 		choices=['enable', 'disable'],
-		default='enable',
+		default='disable',
 		help="Activate utilization of libPFASST (FOortran version) [default: %default]"
 )
 env['libpfasst'] = GetOption('libpfasst')

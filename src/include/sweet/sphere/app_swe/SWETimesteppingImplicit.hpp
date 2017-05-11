@@ -244,9 +244,9 @@ public:
 				v
 			);
 
-		o_phi = Convert_SphereDataComplex_To_SphereData::physical_convert(phi);
-		o_u = Convert_SphereDataComplex_To_SphereData::physical_convert(u);
-		o_v = Convert_SphereDataComplex_To_SphereData::physical_convert(v);
+		o_phi = Convert_SphereDataComplex_To_SphereData::physical_convert_real(phi);
+		o_u = Convert_SphereDataComplex_To_SphereData::physical_convert_real(u);
+		o_v = Convert_SphereDataComplex_To_SphereData::physical_convert_real(v);
 	}
 
 

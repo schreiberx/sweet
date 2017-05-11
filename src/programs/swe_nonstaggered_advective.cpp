@@ -6,6 +6,7 @@
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneDataTimesteppingRK.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
+#include <sweet/plane/PlaneDiagnostics.hpp>
 #include <benchmarks_plane/SWEPlaneBenchmarks.hpp>
 #include <sweet/Stopwatch.hpp>
 
@@ -111,7 +112,7 @@ public:
 				io_data = SWEPlaneBenchmarks::return_v(simVars, x, y);
 			}
 		);
-
+/*
 		beta_plane.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
@@ -119,8 +120,7 @@ public:
 				io_data = simVars.sim.f0+simVars.sim.beta*y_beta;
 			}
 		);
-
-
+*/
 
 		if (simVars.setup.input_data_filenames.size() > 0)
 			prog_h.file_physical_loadData(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
@@ -145,26 +145,14 @@ public:
 
 		last_timestep_nr_update_diagnostics = simVars.timecontrol.current_timestep_nr;
 
-		double normalization = (simVars.sim.domain_size[0]*simVars.sim.domain_size[1]) /
-								((double)simVars.disc.res_physical[0]*(double)simVars.disc.res_physical[1]);
 
-		// mass
-		simVars.diag.total_mass = prog_h.reduce_sum_quad() * normalization;
-
-		// energy
-		simVars.diag.total_energy = 0.5*(
-				prog_h*prog_h +
-				prog_h*prog_u*prog_u +
-				prog_h*prog_v*prog_v
-			).reduce_sum_quad() * normalization;
-
-		// potential enstropy
-		if (simVars.sim.beta != 0.0)
-			eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + simVars.sim.beta) / prog_h;
-		else
-			eta = (op.diff_c_x(prog_v) - op.diff_c_y(prog_u) + simVars.sim.f0) / prog_h;
-
-		simVars.diag.total_potential_enstrophy = 0.5*(eta*eta*prog_h).reduce_sum_quad() * normalization;
+		PlaneDiagnostics::update_nonstaggered_huv_to_mass_energy_enstrophy(
+				op,
+				prog_h,
+				prog_u,
+				prog_v,
+				simVars
+		);
 	}
 
 
@@ -262,11 +250,12 @@ public:
 		o_u_t = -simVars.sim.gravitation*op.diff_c_x(i_h) - i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
 		o_v_t = -simVars.sim.gravitation*op.diff_c_y(i_h) - i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
 
-		if (simVars.sim.beta == 0.0)
+//		if (simVars.sim.beta == 0.0)
 		{
 			o_u_t += simVars.sim.f0*i_v;
 			o_v_t -= simVars.sim.f0*i_u;
 		}
+/*
 		else
 		{
 			o_u_t += beta_plane*i_v;
@@ -275,7 +264,7 @@ public:
 			o_v_t.physical_set_row(0, 0);
 			o_v_t.physical_set_row(-1, 0);
 		}
-
+*/
 #if 0
 		if (simVars.sim.viscosity != 0)
 		{
@@ -406,11 +395,11 @@ public:
 
 			if (simVars.misc.output_file_name_prefix.size() > 0)
 			{
-				write_file(prog_h, "h");
-				write_file(prog_u, "u");
-				write_file(prog_v, "v");
+				write_file(prog_h, "prog_h");
+				write_file(prog_u, "prog_u");
+				write_file(prog_v, "prog_v");
 
-				write_file(op.diff_c_x(prog_v) - op.diff_c_y(prog_u), "q");
+				write_file(op.diff_c_x(prog_v) - op.diff_c_y(prog_u), "prog_q");
 			}
 
 			if (simVars.timecontrol.current_timestep_nr == 0)

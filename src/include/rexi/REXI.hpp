@@ -2,7 +2,7 @@
  * REXI.hpp
  *
  *  Created on: 3 Aug 2015
- *      Author: Martin Schreiber <schreiberx@gmail.com>
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk> Schreiber <schreiberx@gmail.com>
  */
 #ifndef SRC_INCLUDE_REXI_REXI_HPP_
 #define SRC_INCLUDE_REXI_REXI_HPP_
@@ -43,11 +43,15 @@
  * of exponential integrators.
  */
 template <
-	typename TEvaluation = double,	///< evaluation accuracy of coefficients
-	typename TStorageAndProcessing = double	///< storage precision of coefficients - use quad precision per default
+	typename TEvaluation_ = __float128,	///< evaluation accuracy of coefficients
+	typename TStorageAndProcessing_ = double	///< storage precision of coefficients - use quad precision per default
 >
 class REXI
 {
+public:
+	typedef TEvaluation_ TEvaluation;
+	typedef TStorageAndProcessing_ TStorageAndProcessing;
+
 	typedef std::complex<TEvaluation> complexEvaluation;
 	typedef std::complex<TStorageAndProcessing> complexProcessingAndStorage;
 
@@ -58,6 +62,11 @@ public:
 	std::vector<complexProcessingAndStorage> alpha;
 	std::vector<complexProcessingAndStorage> beta_re;
 	std::vector<complexProcessingAndStorage> beta_im;
+
+
+	std::vector<complexEvaluation> alpha_eval;
+	std::vector<complexEvaluation> beta_re_eval;
+	std::vector<complexEvaluation> beta_im_eval;
 
 
 public:
@@ -82,11 +91,11 @@ public:
 
 
 	static
-	std::complex<TStorageAndProcessing> conj(
-			const std::complex<TStorageAndProcessing> &i
+	std::complex<TEvaluation> conj(
+			const std::complex<TEvaluation> &i
 	)
 	{
-		return std::complex<TStorageAndProcessing>(i.real(), -i.imag());
+		return std::complex<TEvaluation>(i.real(), -i.imag());
 	}
 
 
@@ -94,36 +103,36 @@ public:
 public:
 	void setup(
 		int i_phi_id,			///< Phi function id
-		TStorageAndProcessing i_h,				///< sampling width
+		TEvaluation i_h,				///< sampling width
 		int i_M,				///< approximation area
 		int i_L = 0,			///< L value for Gaussian approximation, use 0 for autodetection
 		bool i_reduce_to_half = true,	///< reduce the number of poles to half
 		bool i_normalization = true
 	)
 	{
-		GaussianApproximation<TEvaluation,TStorageAndProcessing> ga(i_L);
+		GaussianApproximation<TEvaluation,TEvaluation> ga(i_L);
 
 		phi_id = i_phi_id;
 		int L = ga.L;
 		int N = i_M+ga.L;
 		int M = i_M;
 
-		alpha.resize(2*N+1);
-		beta_re.resize(2*N+1);
-		beta_im.resize(2*N+1);
+		alpha_eval.resize(2*N+1);
+		beta_re_eval.resize(2*N+1);
+		beta_im_eval.resize(2*N+1);
 
 		/// temporary storage vector for generalization
 		/// over phi functions
-		std::vector<complexProcessingAndStorage> b;
+		std::vector<complexEvaluation> b;
 
 		if (phi_id == 0)
 		{
-			ExponentialApproximation<TEvaluation, TStorageAndProcessing> ea(i_h, i_M);
+			ExponentialApproximation<TEvaluation, TEvaluation> ea(i_h, i_M);
 			b = ea.b;
 		}
 		else if (phi_id == 1)
 		{
-			Phi1Approximation<TEvaluation,TStorageAndProcessing> phia(i_h, i_M);
+			Phi1Approximation<TEvaluation,TEvaluation> phia(i_h, i_M);
 			b = phia.b;
 		}
 		else
@@ -135,32 +144,33 @@ public:
 #if 1
 		for (int n = 0; n < 2*N+1; n++)
 		{
-			alpha[n] = {0,0};
-			beta_re[n] = {0,0};
-			beta_im[n] = {0,0};
+			alpha_eval[n] = {0,0};
+			beta_re_eval[n] = {0,0};
+			beta_im_eval[n] = {0,0};
 		}
 
+		complexEvaluation cmu = ga.mu;
 		for (int l = -L; l < L+1; l++)
 		{
 			for (int m = -M; m < M+1; m++)
 			{
 				int n = l+m;
-				alpha[n+N] = i_h*(ga.mu + complexProcessingAndStorage(0, n));
+				alpha_eval[n+N] = i_h*(cmu + complexEvaluation(0, n));
 
-				beta_re[n+N] += b[m+M].real()*i_h*ga.a[l+L];
-				beta_im[n+N] += b[m+M].imag()*i_h*ga.a[l+L];
+				beta_re_eval[n+N] += b[m+M].real()*i_h*ga.a[l+L];
+				beta_im_eval[n+N] += b[m+M].imag()*i_h*ga.a[l+L];
 			}
 		}
 
 #else
 		for (int n = -N; n < N+1; n++)
 		{
-			alpha[n+N] = i_h*(ga.mu + complexEvaluation(0, n));
+			alpha_eval[n+N] = i_h*(ga.mu + complexEvaluation(0, n));
 
 			int L1 = std::max(-L, n-M);
 			int L2 = std::min(L, n+M);
 
-			beta_re[n+N] = 0;
+			beta_re_eval[n+N] = 0;
 			for (int k = L1; k < L2; k++)
 			{
 				assert(k+L >= 0);
@@ -168,10 +178,10 @@ public:
 				assert(n-k+M >= 0);
 				assert(n-k+M < 2*M+1);
 
-				beta_re[n+N] += ga.a[k+L]*ea.b[n-k+M].real();
+				beta_re_eval[n+N] += ga.a[k+L]*ea.b[n-k+M].real();
 			}
 
-			beta_re[n+N] *= i_h;
+			beta_re_eval[n+N] *= i_h;
 		}
 #endif
 
@@ -183,17 +193,14 @@ public:
 			 */
 			for (int i = 0; i < N; i++)
 			{
-//				std::cout << alpha[i] << ", " << alpha[N*2-i] << std::endl;
-//				std::cout << beta_re[i] << ", " << beta_re[N*2-i] << std::endl;
-//				std::cout << std::endl;
-
-//				alpha[i] = (alpha[i] + alpha[N*2-i])*0.5;
-				beta_re[i] += conj(beta_re[N*2-i]);
-				beta_im[i] += conj(beta_im[N*2-i]);
+//				alpha_tmp[i] = (alpha_tmp[i] + alpha_tmp[N*2-i])*0.5;
+				beta_re_eval[i] += conj(beta_re_eval[N*2-i]);
+				beta_im_eval[i] += conj(beta_im_eval[N*2-i]);
 			}
-			alpha.resize(N+1);
-			beta_re.resize(N+1);
-			beta_im.resize(N+1);
+			alpha_eval.resize(N+1);
+			beta_re_eval.resize(N+1);
+			beta_im_eval.resize(N+1);
+
 #elif 0
 
 #else
@@ -201,15 +208,15 @@ public:
 			 * reduce the computational amount to its half,
 			 * see understanding REXI in the documentation folder
 			 */
-			alpha.resize(N+1);
-			beta_re.resize(N+1);
-			beta_im.resize(N+1);
+			alpha_eval.resize(N+1);
+			beta_re_eval.resize(N+1);
+			beta_im_eval.resize(N+1);
 
 			// N+1 contains the pole and we don't rescale this one by 2 but all the other ones
 			for (int i = 0; i < N; i++)
 			{
-				beta_re[i] *= 2.0;
-				beta_im[i] *= 2.0;
+				beta_re_eval[i] *= 2.0;
+				beta_im_eval[i] *= 2.0;
 			}
 #endif
 		}
@@ -218,24 +225,55 @@ public:
 		{
 			if (phi_id == 0)
 			{
+				{
+					complexProcessingAndStorage sum = 0;
+					for (std::size_t n = 0; n < alpha_eval.size(); n++)
+					{
+						complexProcessingAndStorage b(beta_re_eval[n].real(), beta_re_eval[n].imag());
+						complexProcessingAndStorage a(alpha_eval[n].real(), alpha_eval[n].imag());
+						sum += b/a;
+					}
+
+					TEvaluation normalization = sum.real();
+					std::cout << "REXI sum for geostrophic modes with double precision: " << (double)((TStorageAndProcessing)normalization) << std::endl;
+					std::cout << "REXI Error with coefficients used with double precision: " << (double)((TStorageAndProcessing)1.0-normalization) << std::endl;
+				}
+
 				/*
 				 * Only available for e^{ix}
 				 */
 				/*
 				 * Apply normalization to beta coefficients
-				 * This assures no over/undershooting
+				 * This improves problems of over/undershooting for geostrophic modes
 				 */
-				std::complex<TStorageAndProcessing> sum = 0;
-				for (std::size_t n = 0; n < alpha.size(); n++)
-					sum += beta_re[n]/alpha[n];
+				{
+					complexEvaluation sum = 0;
+					for (std::size_t n = 0; n < alpha_eval.size(); n++)
+						sum += beta_re_eval[n]/alpha_eval[n];
 
-				TStorageAndProcessing normalization = sum.real();
-				std::cout << "Using REXI normalization: " << (double)((TStorageAndProcessing)1.0/normalization) << std::endl;
+					TEvaluation normalization = sum.real();
+					std::cout << "REXI Error: " << (double)(TStorageAndProcessing)((TEvaluation)1.0-normalization) << std::endl;
+					std::cout << "Using REXI normalization: " << (double)((TStorageAndProcessing)1.0/normalization) << std::endl;
 
-				for (std::size_t n = 0; n < beta_re.size(); n++)
-					beta_re[n] /= normalization;
+					for (std::size_t n = 0; n < beta_re_eval.size(); n++)
+						beta_re_eval[n] /= normalization;
+				}
 			}
 		}
+
+		alpha.resize(alpha_eval.size());
+		beta_re.resize(beta_re_eval.size());
+		beta_im.resize(beta_im_eval.size());
+
+
+		for (std::size_t n = 0; n < alpha.size(); n++)
+		{
+			alpha[n] = alpha_eval[n];
+			beta_re[n] = beta_re_eval[n];
+			beta_im[n] = beta_im_eval[n];
+		}
+
+		std::cout << "REXI - number of terms: " << alpha.size() << std::endl;
 	}
 
 
