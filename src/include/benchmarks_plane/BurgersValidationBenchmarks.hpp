@@ -131,7 +131,7 @@ public:
 	static
 	void set_source(
 			double i_simulation_time,
-			SimulationVariables &i_parameters,
+			const SimulationVariables &i_parameters,
 			bool i_use_staggering,
 			PlaneData &io_u_t
 	)

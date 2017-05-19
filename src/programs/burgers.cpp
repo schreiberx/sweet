@@ -9,16 +9,16 @@
 #endif
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneDataTimesteppingRK.hpp>
-#include <benchmarks_plane/BurgersValidationBenchmarks.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/PlaneDataSemiLagrangian.hpp>
-#include <sweet/plane/PlaneDataConfig.hpp>
+//#include <sweet/plane/PlaneDataConfig.hpp>
 #include <sweet/plane/Convert_PlaneData_to_ScalarDataArray.hpp>
 #include <sweet/plane/Convert_ScalarDataArray_to_PlaneData.hpp>
 #include <sweet/FatalError.hpp>
 
-#include "burgers/burgers_HelmholtzSolver.hpp"
+#include "burgers/Burgers_Plane.hpp"
+#include <benchmarks_plane/BurgersValidationBenchmarks.hpp>
 
 #include <sweet/Stopwatch.hpp>
 #include <ostream>
@@ -29,18 +29,12 @@
 #include <stdlib.h>
 
 #ifndef SWEET_PARAREAL
-#	define SWEET_PARAREAL 0
+#	define SWEET_PARAREAL 1
 #endif
 
 #if SWEET_PARAREAL
 #	include <parareal/Parareal.hpp>
 #endif
-
-
-#ifndef SWEET_PARAREAL
-#error "ACTIVATE PARAREAL compile option!"
-#endif
-
 
 
 // Plane data config
@@ -49,15 +43,13 @@ PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
 
 // Input parameters (cmd line)
 
-//general parameters
+// General parameters
 SimulationVariables simVars;
 
 const int NUM_OF_UNKNOWNS=2;
 
 //specific parameters
 bool param_compute_error = 0;
-bool param_use_staggering = 0;
-bool param_semilagrangian = 0;
 
 
 class SimulationInstance
@@ -73,7 +65,7 @@ public:
 	// Prognostic variables at time step t-dt
 	PlaneData prog_u_prev, prog_v_prev;
 
-	// temporary variables - may be overwritten, use locally
+	// Temporary variables - may be overwritten, use locally
 	PlaneData tmp;
 
 	// Points mapping [0,simVars.sim.domain_size[0])x[0,simVars.sim.domain_size[1])
@@ -86,7 +78,7 @@ public:
 	// Departure points for semi-lag
 	ScalarDataArray posx_d, posy_d;
 
-	//Staggering displacement array (use 0.5 for each displacement)
+	// Staggering displacement array (use 0.5 for each displacement)
 	// [0] - delta x of u variable
 	// [1] - delta y of u variable
 	// [2] - delta x of v variable
@@ -120,7 +112,10 @@ public:
 	PlaneOperators op;
 
 	// Runge-Kutta stuff
-	PlaneDataTimesteppingRK timestepping;
+	PlaneDataTimesteppingRK timestepping_rk;
+
+	// Burgers solvers
+	Burgers_Plane burgers_plane;
 
 	// Interpolation stuff
 	PlaneDataSampler sampler2D;
@@ -146,9 +141,11 @@ public:
 	 */
 public:
 	SimulationInstance()	:
-		// Constructor to initialize the class - all variables in the SW are setup
-		prog_u(planeDataConfig),	// velocity (x-direction)
-		prog_v(planeDataConfig),	// velocity (y-direction)
+	// Constructor to initialize the class - all variables in the SW are setup
+
+		// Variable dimensions (mem. allocation)
+		prog_u(planeDataConfig),
+		prog_v(planeDataConfig),
 
 		prog_u_prev(planeDataConfig),
 		prog_v_prev(planeDataConfig),
@@ -166,7 +163,7 @@ public:
 
 		benchmark_analytical_error(planeDataConfig),
 
-		// Init operators
+		// Initialise operators
 		op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
 #if SWEET_PARAREAL != 0
 		,
@@ -189,11 +186,15 @@ public:
 #endif
 	}
 
+
 	virtual ~SimulationInstance()
 	{
 	}
 
 
+	/*
+	 * Reset all variables
+	 */
 	void reset()
 	{
 		if (simVars.misc.verbosity > 2)
@@ -206,6 +207,7 @@ public:
 			BurgersValidationBenchmarks::printScenarioInformation();
 			FatalError("Benchmark scenario not selected");
 		}
+
 		// Initialize diagnostics
 		last_timestep_nr_update_diagnostics = -1;
 
@@ -216,23 +218,26 @@ public:
 		simVars.reset();
 
 		// set to some values for first touch NUMA policy (HPC stuff)
-
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+		tmp.spectral_set_all(0,0);
+		prog_u.spectral_set_all(0,0);
+		prog_v.spectral_set_all(0,0);
+#endif
 		tmp.physical_set_all(0);
-		//Setup prog vars
 		prog_u.physical_set_all(0);
 		prog_v.physical_set_all(0);
 
 		//Check if input parameters are adequate for this simulation
-		if (param_use_staggering && simVars.disc.use_spectral_basis_diffs)
+		if (simVars.disc.use_staggering && simVars.disc.use_spectral_basis_diffs)
 		{
 			std::cerr << "Staggering and spectral basis not supported!" << std::endl;
 			exit(1);
 		}
 
-		if (param_use_staggering && param_compute_error)
+		if (simVars.disc.use_staggering && param_compute_error)
 			std::cerr << "Warning: Staggered data will be interpolated to/from A-grid for exact linear solution" << std::endl;
 
-		if (param_use_staggering)
+		if (simVars.disc.use_staggering)
 		{
 			/*
 			 *              ^
@@ -272,7 +277,6 @@ public:
 		semiLagrangian.setup(simVars.sim.domain_size, planeDataConfig);
 
 		// Setup general (x,y) grid with position points
-
 		PlaneData tmp_x(planeDataConfig);
 		tmp_x.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
@@ -296,7 +300,8 @@ public:
 		posx_a = pos_x+0.5*simVars.disc.cell_size[0];
 		posy_a = pos_y+0.5*simVars.disc.cell_size[1];
 
-		if (param_use_staggering)
+		// Set initial condigions given from BurgersValidationBenchmarks
+		if (simVars.disc.use_staggering)
 		{
 			prog_u.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
@@ -344,7 +349,7 @@ public:
 		if (simVars.setup.input_data_filenames.size() > 0)
 		{
 			prog_u.file_physical_loadData(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
-			if (param_use_staggering && param_compute_error)
+			if (simVars.disc.use_staggering && param_compute_error)
 			{
 				std::cerr << "Warning: Computing analytical solution with staggered grid based on loaded data not supported!" << std::endl;
 				exit(1);
@@ -354,7 +359,7 @@ public:
 		if (simVars.setup.input_data_filenames.size() > 1)
 		{
 			prog_v.file_physical_loadData(simVars.setup.input_data_filenames[1].c_str(), simVars.setup.input_data_binary);
-			if (param_use_staggering && param_compute_error)
+			if (simVars.disc.use_staggering && param_compute_error)
 			{
 				std::cerr << "Warning: Computing analytical solution with staggered grid based on loaded data not supported!" << std::endl;
 				exit(1);
@@ -367,23 +372,24 @@ public:
 	}
 
 
-	// Calculate the model diagnostics
+	/*
+	 * Calculate the model diagnostics
+	 */
 	void update_diagnostics()
 	{
 		if (simVars.misc.verbosity > 2)
 			std::cout << "update_diagnostics()" << std::endl;
 
-		// assure, that the diagnostics are only updated for new time steps
+		// Assure, that the diagnostics are only updated for new time steps
 		if (last_timestep_nr_update_diagnostics == simVars.timecontrol.current_timestep_nr)
 			return;
 
 		last_timestep_nr_update_diagnostics = simVars.timecontrol.current_timestep_nr;
 
-
 		double normalization = (simVars.sim.domain_size[0]*simVars.sim.domain_size[1]) /
 								((double)simVars.disc.res_physical[0]*(double)simVars.disc.res_physical[1]);
 
-		// energy
+		// Energy
 		simVars.diag.total_energy =
 			0.5*((
 					prog_u*prog_u +
@@ -395,6 +401,9 @@ public:
 	/**
 	 * Compute derivative for time stepping and store it to
 	 * u_t and v_t
+	 * 2D Burgers equation [with source term]
+	 * u_t + u*u_x + v*u_y = nu*(u_xx + u_yy) [+ f(t,x,y)]
+	 * v_t + u*v_x + v*v_y = nu*(v_xx + v_yy) [+ g(t,x,y)]
 	 */
 	void p_run_euler_timestep_update(
 			const PlaneData &i_tmp,	///< prognostic variables
@@ -413,44 +422,23 @@ public:
 		if (simVars.misc.verbosity > 2)
 			std::cout << "p_run_euler_timestep_update()" << std::endl;
 
-		/*
-		 * 2D Burgers equation [with source term]
-		 * u_t + u*u_x + v*u_y = nu*(u_xx + u_yy) [+ f(t,x,y)]
-		 * v_t + u*v_x + v*v_y = nu*(v_xx + v_yy) [+ g(t,x,y)]
-		 */
-
 		//TODO: staggering vs. non staggering
 
 		PlaneData f(planeDataConfig);
-		BurgersValidationBenchmarks::set_source(i_simulation_timestamp,simVars,param_use_staggering,f);
+		BurgersValidationBenchmarks::set_source(i_simulation_timestamp,simVars,simVars.disc.use_staggering,f);
 		o_tmp_t.physical_set_all(0);
 
-		/*
-		 * u and v updates
-		 */
+		// u and v updates
+		o_u_t = -(i_u*op.diff_c_x(i_u) + i_v*op.diff_c_y(i_u));
+		o_u_t += simVars.sim.viscosity*(op.diff2_c_x(i_u)+op.diff2_c_y(i_u));
+		o_u_t += f; // Delete this line if no source is used
 
-		if (param_semilagrangian)
-		{
-			o_u_t = simVars.sim.viscosity*(op.diff2_c_x(i_u)+op.diff2_c_y(i_u));
-			// Delete this line if no source is used.
-			o_u_t += f;
-			o_v_t = simVars.sim.viscosity*(op.diff2_c_x(i_v)+op.diff2_c_y(i_v));
-		}
-		else
-		{
-			o_u_t = -(i_u*op.diff_c_x(i_u) + i_v*op.diff_c_y(i_u));
-			o_u_t += simVars.sim.viscosity*(op.diff2_c_x(i_u)+op.diff2_c_y(i_u));
-			// Delete this line if no source is used.
-			o_u_t += f;
-			o_v_t = -(i_u*op.diff_c_x(i_v) + i_v*op.diff_c_y(i_v));
-			o_v_t += simVars.sim.viscosity*(op.diff2_c_x(i_v)+op.diff2_c_y(i_v));
-		}
+		o_v_t = -(i_u*op.diff_c_x(i_v) + i_v*op.diff_c_y(i_v));
+		o_v_t += simVars.sim.viscosity*(op.diff2_c_x(i_v)+op.diff2_c_y(i_v));
 
 		o_tmp_t.physical_set_all(0);
 
-		/*
-		 * TIME STEP SIZE
-		 */
+		// Time step size
 		if (i_fixed_dt > 0)
 		{
 			o_dt = i_fixed_dt;
@@ -461,112 +449,12 @@ public:
 			assert(false);
 			exit(1);
 		}
-
 	}
 
-	/**
-	 * IMEX time stepping for the coarse timestepping method
-	 *
-	 * The IMEX RK schemes combine an implicit and explicit time discretization.
-	 * The diffusive, stiff term gets treated implicitly and the convective, non-
-	 * stiff term gets treated explicitly. This results in the following system,
-	 * which is solved by this routine:
-	 * (I-\nu\Delta) u(t+\tau) = u(t) - \tau (u(t)*\nabla(u(t))
-	 * for u(t+\tau).
+
+	/*
+	 * Routine to do one time step of chosen scheme and order
 	 */
-	bool run_timestep_imex(
-			PlaneData &io_u,
-			PlaneData &io_v,
-
-			double& o_dt,			///< return time step size for the computed time step
-			double i_timestep_size,	///< timestep size
-
-			PlaneOperators &op,
-			const SimulationVariables &i_simVars,
-
-			double i_max_simulation_time = std::numeric_limits<double>::infinity()	///< limit the maximum simulation time
-			)
-	{
-		if (simVars.misc.verbosity > 2)
-			std::cout << "run_timestep_imex()" << std::endl;
-
-		PlaneData u=io_u;
-		PlaneData v=io_v;
-
-		// Modify timestep to final time if necessary
-		double& t = o_dt;
-		if (simVars.timecontrol.current_simulation_time+i_timestep_size < i_max_simulation_time)
-			t = i_timestep_size;
-		else
-			t = i_max_simulation_time-simVars.timecontrol.current_simulation_time;
-
-		// Initialize and set timestep dependent source for manufactured solution
-		PlaneData f(planeDataConfig);
-      PlaneData ff(planeDataConfig);
-#if 0
-      if (param_semilagrangian)
-      {
-		   BurgersValidationBenchmarks::set_source(simVars.timecontrol.current_simulation_time+t,simVars,param_use_staggering,f);
-      }else
-#endif
-      {
-		   BurgersValidationBenchmarks::set_source(simVars.timecontrol.current_simulation_time,simVars,param_use_staggering,f);
-		   BurgersValidationBenchmarks::set_source(simVars.timecontrol.current_simulation_time+0.5*t,simVars,param_use_staggering,ff);
-      }
-		f.request_data_spectral();
-      ff.request_data_spectral();
-
-		// Setting explicit right hand side and operator of the left hand side
-		PlaneData rhs_u = u;
-		PlaneData rhs_v = v;
-
-		if (param_semilagrangian)
-		{
-			rhs_u += t*f;
-		}else{
-			rhs_u += - 0.5*t*(u*op.diff_c_x(u)+v*op.diff_c_y(u)) + 0.5*t*f;
-			rhs_v += - 0.5*t*(u*op.diff_c_x(v)+v*op.diff_c_y(v));
-		}
-
-		if (simVars.disc.use_spectral_basis_diffs) //spectral
-		{
-			PlaneData lhs = u;
-			if (param_semilagrangian)
-			{
-#if 0
-				lhs = ((-t)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
-            io_u = rhs_u.spectral_div_element_wise(lhs);
-            io_v = rhs_v.spectral_div_element_wise(lhs);
-#else
-//            std::cout << "*****************Warning******************" << std::endl << "explicit RK instead of SL!!!" << std::endl;
-            PlaneData u1 = u + t*simVars.sim.viscosity*(op.diff2_c_x(u)+op.diff2_c_y(u))
-                           - 0.5*t*(u*op.diff_c_x(u)+v*op.diff_c_y(u)) + f*t;
-            PlaneData v1 = v + t*simVars.sim.viscosity*(op.diff2_c_x(v)+op.diff2_c_y(v))
-                           - 0.5*t*(u*op.diff_c_x(v)+v*op.diff_c_y(v));
-
-            io_u = u + t*simVars.sim.viscosity*(op.diff2_c_x(u1)+op.diff2_c_y(u1))
-                  - t*(u1*op.diff_c_x(u1)+v1*op.diff_c_y(u1)) +ff*t;
-            io_v = v + t*simVars.sim.viscosity*(op.diff2_c_x(v1)+op.diff2_c_y(v1))
-                  - t*(u1*op.diff_c_x(v1)+v1*op.diff_c_y(v1));
-#endif
-			}else{
-				lhs = ((-t)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
-            PlaneData u1 = rhs_u.spectral_div_element_wise(lhs);
-            PlaneData v1 = rhs_v.spectral_div_element_wise(lhs);
-
-            io_u = u + t*simVars.sim.viscosity*(op.diff2_c_x(u1)+op.diff2_c_y(u1))
-                  - t*(u1*op.diff_c_x(u1)+v1*op.diff_c_y(u1)) +ff*t;
-            io_v = v + t*simVars.sim.viscosity*(op.diff2_c_x(v1)+op.diff2_c_y(v1))
-                  - t*(u1*op.diff_c_x(v1)+v1*op.diff_c_y(v1));
-			}
-
-		} else { //Jacobi
-			FatalError("NOT available");
-		}
-
-		return true;
-	}
-
 	void run_timestep()
 	{
 		if (simVars.misc.verbosity > 2)
@@ -578,120 +466,80 @@ public:
 		assert(simVars.sim.CFL < 0);
 		simVars.timecontrol.current_timestep_size = -simVars.sim.CFL;
 
-#if 0
-		if (param_semilagrangian)
+		if (simVars.disc.timestepping_method == SimulationVariables::Discretization::RUNGE_KUTTA_EXPLICIT) //Explicit RK
 		{
-			dt = -simVars.sim.CFL;
-			//Padding for last time step
-			if (simVars.timecontrol.current_simulation_time+dt > simVars.timecontrol.max_simulation_time)
-				dt = simVars.timecontrol.max_simulation_time-simVars.timecontrol.current_simulation_time;
-
-			ScalarDataArray posx_d_tmp(planeDataConfig->physical_array_data_number_of_elements);
-			ScalarDataArray posy_d_tmp(planeDataConfig->physical_array_data_number_of_elements);
-
-			//Calculate departure points
-			semiLagrangian.semi_lag_departure_points_settls(
-							prog_u_prev, prog_v_prev,
-							prog_u, prog_v,
-							posx_a, posy_a,
-							dt,
-							posx_d, posy_d,
-							stag_displacement
-					);
-
-			// Save old velocities
-			prog_u_prev = prog_u;
-			prog_v_prev = prog_v;
-
-			//Now interpolate to the the departure points
-			//Departure points are set for physical space
-			prog_u = sampler2D.bicubic_scalar(
-					prog_u,
-					posx_d,
-					posy_d,
-					stag_u[0],
-					stag_u[1]
-			);
-
-			prog_v = sampler2D.bicubic_scalar(
-					prog_v,
-					posx_d,
-					posy_d,
-					stag_v[0],
-					stag_v[1]
-			);
-
-			if (simVars.disc.timestepping_method == 1)
+			// Basic explicit Runge-Kutta
+			if (simVars.disc.timestepping_order != 21)
 			{
 				// setup dummy data
 				tmp.physical_set_all(0);
 
 				// run standard Runge Kutta
-				timestepping.run_timestep(
-						this,
-						&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
-						tmp, prog_u, prog_v, ///< tmp is used to make use of the swe version of run_timestep
-						dt,
-						simVars.timecontrol.current_timestep_size,
-						simVars.disc.timestepping_order,
-						simVars.timecontrol.current_simulation_time,
-						simVars.timecontrol.max_simulation_time
-					);
-			}
-			else if (simVars.disc.timestepping_method == 4)
-			{
-				// run IMEX Runge Kutta
-				run_timestep_imex(
-						prog_u, prog_v,
-						dt,
-						simVars.timecontrol.current_timestep_size,
-						op,
-						simVars,
-						simVars.timecontrol.max_simulation_time
+				timestepping_rk.run_timestep(
+					this,
+					&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
+					tmp, prog_u, prog_v, ///< tmp is used to make use of the swe version of run_timestep
+					dt,
+					simVars.timecontrol.current_timestep_size,
+					simVars.disc.timestepping_order,
+					simVars.timecontrol.current_simulation_time,
+					simVars.timecontrol.max_simulation_time
 				);
 			}
+			// Explicit Runge-Kutta with order 1 in diffusion and order 2 in advection
 			else
-				FatalError("Chosen time stepping method not available!");
+			{
+				burgers_plane.run_timestep_explicit_ts(
+						prog_u,
+						prog_v,
+
+						dt,
+						simVars.timecontrol.current_timestep_size,
+
+						op,
+						simVars,
+						planeDataConfig
+				);
+			}
+		}
+		else if (simVars.disc.timestepping_method == SimulationVariables::Discretization::RUNGE_KUTTA_IMEX) //IMEX
+		{
+			burgers_plane.run_timestep_imex(
+					prog_u, prog_v,
+					dt,
+					simVars.timecontrol.current_timestep_size,
+					op,
+					simVars,
+					planeDataConfig,
+					simVars.timecontrol.max_simulation_time
+			);
+		}
+		else if (simVars.disc.timestepping_method == SimulationVariables::Discretization::SEMI_LAGRANGIAN_SEMI_IMPLICIT) //IMEX
+		{
+			burgers_plane.run_timestep_sl(
+				prog_u, prog_v,
+				prog_u_prev, prog_v_prev,
+				posx_a, posy_a,
+				dt,
+				simVars.timecontrol.current_timestep_size,
+				simVars,
+				planeDataConfig,
+				op,
+				sampler2D,
+				semiLagrangian,
+				stag_displacement,
+				stag_u,
+				stag_v
+			);
 		}
 		else
-#endif
 		{
-			if (simVars.disc.timestepping_method == 1)
-			{
-				// setup dummy data
-				tmp.physical_set_all(0);
-
-				// run standard Runge Kutta
-				timestepping.run_timestep(
-						this,
-						&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
-						tmp, prog_u, prog_v, ///< tmp is used to make use of the swe version of run_timestep
-						dt,
-						simVars.timecontrol.current_timestep_size,
-						simVars.disc.timestepping_order,
-						simVars.timecontrol.current_simulation_time,
-						simVars.timecontrol.max_simulation_time
-					);
-			}
-			else if (simVars.disc.timestepping_method == 4)
-			{
-				// run IMEX Runge Kutta
-				run_timestep_imex(
-						prog_u, prog_v,
-						dt,
-						simVars.timecontrol.current_timestep_size,
-						op,
-						simVars,
-						simVars.timecontrol.max_simulation_time
-				);
-			}
-			else
-				FatalError("Chosen time stepping method not available!");
+			FatalError("Chosen time stepping method not available!");
 		}
 
 		//dt = simVars.timecontrol.current_timestep_size;
 
-		// provide information to parameters
+		// Provide information to parameters
 		simVars.timecontrol.current_timestep_size = dt;
 		simVars.timecontrol.current_simulation_time += dt;
 		simVars.timecontrol.current_timestep_nr++;
@@ -723,6 +571,9 @@ public:
 	}
 
 
+	/*
+	 * Create stream with output data
+	 */
 public:
 	bool timestep_output(
 			std::ostream &o_ostream = std::cout
@@ -730,6 +581,14 @@ public:
 	{
 		if (simVars.misc.verbosity > 2)
 			std::cout << "timestep_output()" << std::endl;
+
+		// output each time step
+		if (simVars.misc.output_each_sim_seconds < 0)
+			return false;
+
+		if (simVars.misc.output_next_sim_seconds > simVars.timecontrol.current_simulation_time)
+			if (simVars.timecontrol.current_simulation_time != simVars.timecontrol.max_simulation_time)
+				return false;
 
 		if (simVars.misc.verbosity > 0)
 		{
@@ -744,7 +603,6 @@ public:
 				}
 
 				o_ostream << std::endl;
-
 			}
 
 			// Print timestep data to given output stream
@@ -757,14 +615,6 @@ public:
 
 			o_ostream << std::endl;
 		}
-
-		// output each time step
-		if (simVars.misc.output_each_sim_seconds < 0)
-			return false;
-
-		if (simVars.misc.output_next_sim_seconds > simVars.timecontrol.current_simulation_time)
-			if (simVars.timecontrol.current_simulation_time != simVars.timecontrol.max_simulation_time)
-				return false;
 
 		// Dump data in csv, if requested
 		if (simVars.misc.output_file_name_prefix.size() > 0)
@@ -803,11 +653,11 @@ public:
 		if (simVars.setup.benchmark_scenario_id < 51 && simVars.setup.benchmark_scenario_id > 59)
 			return;
 
-		//Analytical solution at current time on original grid (stag or not)
+		// Analytical solution at current time on original grid (stag or not)
 		PlaneData ts_u(planeDataConfig);
 		PlaneData ts_v(planeDataConfig);
 
-		if (param_use_staggering)
+		if (simVars.disc.use_staggering)
 		{
 			ts_u.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
@@ -850,7 +700,6 @@ public:
 			);
 		}
 
-
 		benchmark_analytical_error = ts_u-u;
 
 		benchmark_analytical_error_rms_u = (ts_u-u).reduce_rms_quad();
@@ -861,6 +710,9 @@ public:
 	}
 
 
+	/*
+	 * Check for final time step
+	 */
 	bool should_quit()
 	{
 		if (simVars.misc.verbosity > 2)
@@ -876,9 +728,8 @@ public:
 	}
 
 
-
 	/**
-	 * postprocessing of frame: do time stepping
+	 * Postprocessing of frame: do time stepping
 	 */
 	void vis_post_frame_processing(int i_num_iterations)
 	{
@@ -891,12 +742,15 @@ public:
 	}
 
 
-
+	/*
+	 * Struct for visualization
+	 */
 	struct VisStuff
 	{
 		const PlaneData* data;
 		const char *description;
 	};
+
 
 	/**
 	 * Arrays for online visualisation and their textual description
@@ -907,6 +761,10 @@ public:
 			{&prog_v,	"v"}
 	};
 
+
+	/*
+	 * Getter for visualization data array
+	 */
 	void vis_get_vis_data_array(
 			const PlaneData **o_dataArray,
 			double *o_aspect_ratio,
@@ -924,7 +782,7 @@ public:
 
 
 	/**
-	 * return status string for window title
+	 * Return status string for window title
 	 */
 	const char* vis_get_status_string()
 	{
@@ -948,7 +806,9 @@ public:
 	}
 
 
-
+/*
+ * Pause visualization
+ */
 	void vis_pause()
 	{
 		if (simVars.misc.verbosity > 2)
@@ -958,7 +818,9 @@ public:
 	}
 
 
-
+/*
+ * Handle keypress events in visualization
+ */
 	void vis_keypress(int i_key)
 	{
 		if (simVars.misc.verbosity > 2)
@@ -981,6 +843,9 @@ public:
 	}
 
 
+	/*
+	 * Detect instabilities in the calculation
+	 */
 	bool instability_detected()
 	{
 		if (simVars.misc.verbosity > 2)
@@ -1025,6 +890,10 @@ public:
 
 	bool output_data_valid = false;
 
+
+	/*
+	 * Setup Parareal variables
+	 */
 	void parareal_setup()
 	{
 		if (simVars.parareal.verbosity > 2)
@@ -1062,7 +931,6 @@ public:
 	}
 
 
-
 	/**
 	 * Set the start and end of the coarse time step
 	 */
@@ -1077,7 +945,6 @@ public:
 		timeframe_start = i_timeframe_start;
 		timeframe_end = i_timeframe_end;
 	}
-
 
 
 	/**
@@ -1099,6 +966,7 @@ public:
 
 	}
 
+
 	/**
 	 * Set simulation data to data given in i_sim_data.
 	 * This can be data which is computed by another simulation.
@@ -1117,6 +985,7 @@ public:
 		// cast to pararealPlaneData stuff
 	}
 
+
 	/**
 	 * Set the MPI communicator to use for simulation purpose
 	 * (TODO: not yet implemented since our parallelization-in-space
@@ -1128,6 +997,7 @@ public:
 	{
 		// NOTHING TO DO HERE
 	}
+
 
 	/**
 	 * compute solution on time slice with fine timestep:
@@ -1146,21 +1016,11 @@ public:
 		simVars.timecontrol.max_simulation_time = timeframe_end;
 		simVars.timecontrol.current_timestep_nr = 0;
 
-		bool was_sl = false;
-		if (param_semilagrangian)
-		{
-			param_semilagrangian = false;
-			was_sl = true;
-		}
-
 		while (simVars.timecontrol.current_simulation_time < timeframe_end)
 		{
 			this->run_timestep();
 			assert(simVars.timecontrol.current_simulation_time <= timeframe_end);
 		}
-
-		if (was_sl)
-			param_semilagrangian = true;
 
 		// copy to buffers
 		*parareal_data_fine.data_arrays[0] = prog_u;
@@ -1180,9 +1040,6 @@ public:
 		return parareal_data_fine;
 	}
 
-#endif
-
-#if SWEET_PARAREAL
 
 	/**
 	 * compute solution with coarse timestepping:
@@ -1198,7 +1055,7 @@ public:
 		prog_u_prev = *parareal_data_start.data_arrays[2];
 		prog_v_prev = *parareal_data_start.data_arrays[3];
 
-		//Preserve parareal_data_start for next timestep to be prog_u_prev
+		// Preserve parareal_data_start for next timestep to be prog_u_prev
 		*parareal_data_output.data_arrays[2] = prog_u;
 		*parareal_data_output.data_arrays[3] = prog_v;
 		*parareal_data_coarse.data_arrays[2] = prog_u;
@@ -1209,11 +1066,12 @@ public:
 		simVars.timecontrol.max_simulation_time = timeframe_end;
 		simVars.timecontrol.current_timestep_nr = 0;
 
-		// set Runge-Kutta scheme to the chosen one for coarse time stepping
+		// set time stepping to the chosen scheme and order for coarse time stepping
 		int tmpScheme = simVars.disc.timestepping_method;
 		int tmpOrder = simVars.disc.timestepping_order;
 		simVars.disc.timestepping_method = simVars.disc.timestepping_method2;
 		simVars.disc.timestepping_order = simVars.disc.timestepping_order2;
+
 		// save the fine delta t to restore it later
 		double tmpCFL = simVars.sim.CFL;
 		simVars.sim.CFL=timeframe_start-timeframe_end;
@@ -1235,7 +1093,6 @@ public:
 	}
 
 
-
 	/**
 	 * return the solution after the coarse timestepping:
 	 * return Y^C
@@ -1247,7 +1104,6 @@ public:
 
 		return parareal_data_coarse;
 	}
-
 
 
 	/**
@@ -1262,7 +1118,6 @@ public:
 		for (int k = 0; k < 2; k++)
 			*parareal_data_error.data_arrays[k] = *parareal_data_fine.data_arrays[k] - *parareal_data_coarse.data_arrays[k];
 	}
-
 
 
 	/**
@@ -1290,8 +1145,6 @@ public:
 			return convergence;
 		}
 
-
-
 		for (int k = 0; k < NUM_OF_UNKNOWNS; k++)
 		{
 			tmp = *parareal_data_coarse.data_arrays[k] + *parareal_data_error.data_arrays[k];
@@ -1318,7 +1171,6 @@ public:
 	}
 
 
-
 	/**
 	 * Return the data to be forwarded to the next coarse time step interval:
 	 * return Y^O
@@ -1332,6 +1184,9 @@ public:
 	}
 
 
+	/*
+	 * Write output of Parareal data to file
+	 */
 	void output_data_file(
 			const Parareal_Data& i_data,
 			int iteration_id,
@@ -1364,6 +1219,9 @@ public:
 	}
 
 
+	/*
+	 * Write output of Parareal data to console
+	 */
 	void output_data_console(
 			const Parareal_Data& i_data,
 			int iteration_id,
@@ -1395,15 +1253,11 @@ int main(int i_argc, char *i_argv[])
 	// program specific input parameter names
 	const char *bogus_var_names[] = {
 			"compute-error",
-			"staggering",
-			"semi-lagrangian",
 			nullptr
 	};
 
 	// default values for program specific parameter
 	simVars.bogus.var[0] = param_compute_error; // compute-error
-	simVars.bogus.var[1] = param_use_staggering; // staggering
-	simVars.bogus.var[2] = param_semilagrangian; // semi-lagrangian
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
@@ -1411,8 +1265,6 @@ int main(int i_argc, char *i_argv[])
 		std::cout << std::endl;
 		std::cout << "Special parameters:" << std::endl;
 		std::cout << "	--compute-error [0/1]		Compute the errors, default=0" << std::endl;
-		std::cout << "	--staggering [0/1]		Use staggered grid, default=0" << std::endl;
-		std::cout << "	--semi-lagrangian [0/1]		Use semi-lagrangian formulation, default=0" << std::endl;
 		std::cout << std::endl;
 
 #if SWEET_PARAREAL
@@ -1423,13 +1275,17 @@ int main(int i_argc, char *i_argv[])
 
 	//Burgers parameters
 	param_compute_error = simVars.bogus.var[0];
-	param_use_staggering = simVars.bogus.var[1];
-	param_semilagrangian = simVars.bogus.var[2];
 
 	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
 
-	std::cout << planeDataConfigInstance.getUniqueIDString() << std::endl;
-
+	// Print header
+	std::cout << "-----------------------------" << std::endl;
+	std::cout << "Solving viscous Burgers' equation" << std::endl;
+	std::cout << "-----------------------------" << std::endl;
+	simVars.outputConfig();
+	std::cout << "Specific parameters" << std::endl;
+	std::cout << " + compute_error: " << param_compute_error << std::endl;
+	std::cout << std::endl;
 
 	std::ostringstream buf;
 	buf << std::setprecision(14);
@@ -1465,29 +1321,27 @@ int main(int i_argc, char *i_argv[])
 #endif
 		{
 			SimulationInstance *simulationBurgers = new SimulationInstance;
-			//Setting initial conditions and workspace - in case there is no GUI
 
+			// Setting initial conditions and workspace - in case there is no GUI
 			simulationBurgers->reset();
 
-			//Time counter
+			// Time counter
 			Stopwatch time;
 
-			//Diagnostic measures at initial stage
-			double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
+			// Diagnostic measures at initial stage
+			double diagnostics_energy_start;
 
 			// Initialize diagnostics
 			if (simVars.misc.verbosity > 0)
 			{
 				simulationBurgers->update_diagnostics();
 				diagnostics_energy_start = simVars.diag.total_energy;
-				diagnostics_mass_start = simVars.diag.total_mass;
-				diagnostics_potential_entrophy_start = simVars.diag.total_potential_enstrophy;
 			}
 
-			//Start counting time
+			// Start counting time
 			time.reset();
 
-			//Main time loop
+			// Main time loop
 			while(true)
 			{
 				//Output data
@@ -1527,17 +1381,14 @@ int main(int i_argc, char *i_argv[])
 			std::cout << "Time per time step: " << seconds/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
 			std::cout << "Last time step size: " << simVars.timecontrol.current_timestep_size << std::endl;
 
-
 			if (simVars.misc.verbosity > 0)
 			{
 				std::cout << "DIAGNOSTICS ENERGY DIFF:\t" << std::abs(simVars.diag.total_energy-diagnostics_energy_start) << std::endl;
-				std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs(simVars.diag.total_mass-diagnostics_mass_start) << std::endl;
-				std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs(simVars.diag.total_potential_enstrophy-diagnostics_potential_entrophy_start) << std::endl;
 
-				if (simVars.setup.benchmark_scenario_id == 2 || simVars.setup.benchmark_scenario_id == 3 || simVars.setup.benchmark_scenario_id == 4)
+				if (param_compute_error)
 				{
-					std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationBurgers->benchmark_diff_u << std::endl;
-					std::cout << "DIAGNOSTICS BENCHMARK DIFF V:\t" << simulationBurgers->benchmark_diff_v << std::endl;
+					std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationBurgers->benchmark_analytical_error_maxabs_u << std::endl;
+					std::cout << "DIAGNOSTICS BENCHMARK DIFF V:\t" << simulationBurgers->benchmark_analytical_error_maxabs_v << std::endl;
 				}
 			}
 
