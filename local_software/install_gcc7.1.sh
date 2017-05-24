@@ -3,12 +3,12 @@
 source config.sh
 
 
-echo "*** GCC5.3 ***"
+echo "*** GCC7.1 ***"
 if [ ! -e "$DST_DIR/bin/gcc"  -o "$1" != "" ]; then
-	SRC_LINK="http://www.martin-schreiber.info/pub/sweet_local_software/gcc-5.3.0.tar.bz2"
+	SRC_LINK="http://www.martin-schreiber.info/pub/sweet_local_software/gcc-7.1.0.tar.bz2"
 	#SRC_LINK="ftp://ftp.fu-berlin.de/unix/languages/gcc/releases/gcc-5.3.0/gcc-5.3.0.tar.bz2"
 	FILENAME="`basename $SRC_LINK`"
-	BASENAME="gcc-5.3.0"
+	BASENAME="gcc-7.1.0"
 
 	cd "$SRC_DIR"
 	if [ ! -e "$FILENAME" ]; then
@@ -29,9 +29,9 @@ if [ ! -e "$DST_DIR/bin/gcc"  -o "$1" != "" ]; then
 	##########################
 	# GMP
 	##########################
-	LIB_LINK="https://gmplib.org/download/gmp/gmp-6.1.0.tar.bz2"
+	LIB_LINK="https://gmplib.org/download/gmp/gmp-6.1.2.tar.bz2"
 	LIB_FILENAME="`basename $LIB_LINK`"
-	LIB_BASENAME="gmp-6.1.0"
+	LIB_BASENAME="gmp-6.1.2"
 	LIB_BASENAME_SHORT="gmp"
 	if [ ! -e "$LIB_FILENAME" ]; then
 		echo "Downloading file $LIB_FILENAME"
@@ -50,9 +50,9 @@ if [ ! -e "$DST_DIR/bin/gcc"  -o "$1" != "" ]; then
 	##########################
 	# MPFR
 	##########################
-	LIB_LINK="https://ftp.gnu.org/gnu/mpfr/mpfr-3.1.3.tar.bz2"
+	LIB_LINK="https://ftp.gnu.org/gnu/mpfr/mpfr-3.1.5.tar.bz2"
 	LIB_FILENAME="`basename $LIB_LINK`"
-	LIB_BASENAME="mpfr-3.1.3"
+	LIB_BASENAME="mpfr-3.1.5"
 	LIB_BASENAME_SHORT="mpfr"
 	if [ ! -e "$LIB_FILENAME" ]; then
 		echo "Downloading file $LIB_FILENAME"
@@ -71,7 +71,7 @@ if [ ! -e "$DST_DIR/bin/gcc"  -o "$1" != "" ]; then
 
 
 	##########################
-	# MPFR
+	# MPC
 	##########################
 	LIB_LINK="ftp://ftp.gnu.org/gnu/mpc/mpc-1.0.3.tar.gz"
 	LIB_FILENAME="`basename $LIB_LINK`"
@@ -95,9 +95,9 @@ if [ ! -e "$DST_DIR/bin/gcc"  -o "$1" != "" ]; then
 	##########################
 	# ISL
 	##########################
-	LIB_LINK="http://isl.gforge.inria.fr/isl-0.15.tar.gz"
+	LIB_LINK="http://isl.gforge.inria.fr/isl-0.18.tar.gz"
 	LIB_FILENAME="`basename $LIB_LINK`"
-	LIB_BASENAME="isl-0.15"
+	LIB_BASENAME="isl-0.18"
 	LIB_BASENAME_SHORT="isl"
 	if [ ! -e "$LIB_FILENAME" ]; then
 		echo "Downloading file $LIB_FILENAME"
@@ -121,7 +121,7 @@ if [ ! -e "$DST_DIR/bin/gcc"  -o "$1" != "" ]; then
 	export CC=gcc
 	export CXX=g++
 	export LINK=ld
-	./configure --disable-multilib --enable-languages=c++,fortran  --prefix="$DST_DIR" --program-suffix=-5.3 || exit 1
+	./configure --disable-multilib --enable-languages=c++,fortran  --prefix="$DST_DIR" --program-suffix=-7.1 || exit 1
 
 	make || exit 1
 	make install || exit 1
