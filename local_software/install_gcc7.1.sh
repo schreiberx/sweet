@@ -4,9 +4,8 @@ source config.sh
 
 
 echo "*** GCC7.1 ***"
-if [ ! -e "$DST_DIR/bin/gcc"  -o "$1" != "" ]; then
+if [ ! -e "$DST_DIR/bin/gcc-7.1"  -o "$1" != "" ]; then
 	SRC_LINK="http://www.martin-schreiber.info/pub/sweet_local_software/gcc-7.1.0.tar.bz2"
-	#SRC_LINK="ftp://ftp.fu-berlin.de/unix/languages/gcc/releases/gcc-5.3.0/gcc-5.3.0.tar.bz2"
 	FILENAME="`basename $SRC_LINK`"
 	BASENAME="gcc-7.1.0"
 
@@ -127,7 +126,7 @@ if [ ! -e "$DST_DIR/bin/gcc"  -o "$1" != "" ]; then
 	make install || exit 1
 
 	for i in g++ gcc gcc-ar gcc-nm gcc-ranlib gfortran gcov gcov-tool gfortran; do
-		ln -sf "$DST_DIR/bin/$i-5.3" "$DST_DIR/bin/$i"
+		ln -sf "$DST_DIR/bin/$i-7.1" "$DST_DIR/bin/$i"
 	done
 
 	echo "DONE"
