@@ -690,7 +690,7 @@ void run_tests()
 #endif
 
 				{
-					lhs = opComplexExt.laplace(phi);
+					lhs = opComplexExt.laplace(phi, 1);
 
 					rhs =	  opComplexExt.robert_div_lat(opComplexExt.robert_grad_lat(phi))
 							+ opComplexExt.robert_div_lon(opComplexExt.robert_grad_lon(phi))
@@ -851,7 +851,7 @@ void run_tests()
 
 					lhs = div0;
 
-					rhs =	 -ir*ir*opComplexExt.laplace(phi)
+					rhs =	 -ir*ir*opComplexExt.laplace(phi, 1)
 
 							+ alpha*ir*opComplexExt.robert_div(u, v)
 
@@ -907,7 +907,7 @@ void run_tests()
 					 * eq. (4)
 					 */
 
-					lhs =	- ir*ir*opComplexExt.laplace(phi)
+					lhs =	- ir*ir*opComplexExt.laplace(phi, 1)
 							+ alpha*div
 
 							+f*eta
@@ -952,7 +952,7 @@ void run_tests()
 					 * eq. (7)
 					 */
 
-					lhs =	- ir*ir*opComplexExt.laplace(phi)
+					lhs =	- ir*ir*opComplexExt.laplace(phi, 1)
 							+ 1.0/phi_bar * phi * alpha*alpha
 							+ f * eta
 							+ fi*v
@@ -1007,7 +1007,7 @@ void run_tests()
 							+ 1.0/alpha * fi*u;
 
 					// eq. (7)
-					lhs =	- ir*ir*opComplexExt.laplace(phi)
+					lhs =	- ir*ir*opComplexExt.laplace(phi, 1)
 							+ 1.0/phi_bar * phi * alpha*alpha
 							+ f * ceta	/* we use the computed eta here */
 							+ fi*v
@@ -1025,7 +1025,7 @@ void run_tests()
 					 */
 
 					lhs =
-							- ir*ir*opComplexExt.laplace(phi)
+							- ir*ir*opComplexExt.laplace(phi, 1)
 
 							+ 1.0/phi_bar * phi * alpha*alpha
 
@@ -1053,7 +1053,7 @@ void run_tests()
 #if 0
 					SphereDataComplex F = f*(fj*v + fi*u) + alpha*(fi*v - fj*u);
 
-					lhs = alpha*alpha*phi + f*f*phi - phi_bar*ir*ir*opComplexExt.laplace(phi) + (phi_bar/alpha) * F;
+					lhs = alpha*alpha*phi + f*f*phi - phi_bar*ir*ir*opComplexExt.laplace(phi, 1) + (phi_bar/alpha) * F;
 					rhs = phi_bar*(div0 - f*(1.0/alpha)*eta0) + (alpha+f*f*(1.0/alpha))*phi0;
 
 #else
@@ -1061,7 +1061,7 @@ void run_tests()
 					SphereDataComplex F = two_omega*opComplexExt.mu(fj*v + fi*u) + alpha*(fi*v - fj*u);
 
 
-					lhs = alpha*alpha*phi + two_omega*two_omega*opComplexExt.mu2(phi) - phi_bar*ir*ir*opComplexExt.laplace(phi) + (phi_bar/alpha) * F;
+					lhs = alpha*alpha*phi + two_omega*two_omega*opComplexExt.mu2(phi) - phi_bar*ir*ir*opComplexExt.laplace(phi, 1) + (phi_bar/alpha) * F;
 					rhs = phi_bar*(div0 - two_omega*opComplexExt.mu((1.0/alpha)*eta0)) + (alpha*phi0+(1.0/alpha)*two_omega*two_omega*opComplexExt.mu2(phi0));
 
 #endif
@@ -1228,7 +1228,7 @@ void run_tests()
 					SphereDataComplex F_lhs =
 							  kappa*phi
 							+ phi_bar/alpha*(Fp_i*ir*opComplexExt.robert_grad_lon(phi) + Fp_j*ir*opComplexExt.robert_grad_lat(phi))
-							- phi_bar*ir*ir*opComplexExt.laplace(phi);
+							- phi_bar*ir*ir*opComplexExt.laplace(phi, 1);
 
 					SphereDataComplex F_rhs =
 							  phi_bar*(div0 - f*(1.0/alpha)*eta0)
@@ -1266,7 +1266,7 @@ void run_tests()
 					SphereDataComplex F_lhs =
 							  kappa*phi
 							+ phi_bar/alpha*(Fp_i*ir*opComplexExt.robert_grad_lon(phi) + Fp_j*ir*opComplexExt.robert_grad_lat(phi))
-							- phi_bar*ir*ir*opComplexExt.laplace(phi);
+							- phi_bar*ir*ir*opComplexExt.laplace(phi, 1);
 
 					SphereDataComplex F_rhs =
 							  phi_bar*(div0 - f*(1.0/alpha)*eta0)
@@ -1309,7 +1309,7 @@ void run_tests()
 					SphereDataComplex lhs =
 							  kappa*kappa*phi
 							+ phi_bar/alpha*(Fkp_i*ir*opComplexExt.robert_grad_lon(phi) + Fkp_j*ir*opComplexExt.robert_grad_lat(phi))
-							- kappa*phi_bar*ir*ir*opComplexExt.laplace(phi);
+							- kappa*phi_bar*ir*ir*opComplexExt.laplace(phi, 1);
 
 					SphereDataComplex rhs =
 							kappa*phi_bar*(div0 - f*(1.0/alpha)*eta0)
@@ -1416,7 +1416,7 @@ void run_tests()
 							lhs_direct += (two_omega*two_omega)*(two_omega*two_omega)*opComplexExt.mu2(opComplexExt.mu2(phi));
 
 							sphSolverPhi.solver_component_rexi_z4robert(	-avg_geopotential*alpha*two_omega, r);
-							lhs_direct += (-avg_geopotential*alpha*two_omega)*(1.0/(r*r))*/* 1/cos^2phi opComplexExt.robert_grad_lat(mu)*/ opComplexExt.robert_grad_lon(phi);
+							lhs_direct += (-avg_geopotential*alpha*two_omega)*(1.0/(r*r))* /* 1/cos^2phi opComplexExt.robert_grad_lat(mu)*/ opComplexExt.robert_grad_lon(phi);
 
 							sphSolverPhi.solver_component_rexi_z5robert(	avg_geopotential/alpha*two_omega*two_omega*two_omega, r);
 							lhs_direct += (avg_geopotential/alpha*two_omega*two_omega*two_omega)*(1.0/(r*r))*opComplexExt.mu2(opComplexExt.robert_grad_lon(phi));
@@ -1426,12 +1426,12 @@ void run_tests()
 						}
 
 						sphSolverPhi.solver_component_rexi_z7(	-avg_geopotential*alpha*alpha, r);
-						lhs_direct += (-avg_geopotential*alpha*alpha)*(1.0/(r*r))*opComplexExt.laplace(phi);
+						lhs_direct += (-avg_geopotential*alpha*alpha)*(1.0/(r*r))*opComplexExt.laplace(phi, 1);
 
 						//if (use_formulation_with_coriolis_effect)
 						{
 							sphSolverPhi.solver_component_rexi_z8(	-avg_geopotential*two_omega*two_omega, r);
-							lhs_direct += (-avg_geopotential*two_omega*two_omega)*(1.0/(r*r))*opComplexExt.mu2(opComplexExt.laplace(phi));
+							lhs_direct += (-avg_geopotential*two_omega*two_omega)*(1.0/(r*r))*opComplexExt.mu2(opComplexExt.laplace(phi, 1));
 						}
 
 
@@ -1487,7 +1487,7 @@ void run_tests()
 						SphereDataComplex lhs_direct =
 								  kappa*kappa*phi
 								+ phi_bar/alpha*(Fp_i*ir*opComplexExt.robert_grad_lon(phi) + Fp_j*ir*opComplexExt.robert_grad_lat(phi))
-								- kappa*phi_bar*ir*ir*opComplexExt.laplace(phi);
+								- kappa*phi_bar*ir*ir*opComplexExt.laplace(phi, 1);
 #endif
 
 						SphereDataComplex phi_reduced = phi.spectral_returnWithDifferentModes(sphereDataConfig);
@@ -1558,7 +1558,7 @@ void run_tests()
 						SphereDataComplex lhs =
 								  kappa*kappa*phi
 								+ phi_bar/alpha*(Fp_i*ir*opComplexExt.robert_grad_lon(phi) + Fp_j*ir*opComplexExt.robert_grad_lat(phi))
-								- kappa*phi_bar*ir*ir*opComplexExt.laplace(phi);
+								- kappa*phi_bar*ir*ir*opComplexExt.laplace(phi, 1);
 
 						SphereDataComplex rhs =
 								kappa*phi_bar*(div0 - f*(1.0/alpha)*eta0)
