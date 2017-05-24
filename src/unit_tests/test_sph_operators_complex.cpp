@@ -105,7 +105,7 @@ void run_tests()
 			vc.physical_update_lambda(
 				[&](double i_lon, double i_lat, std::complex<double> &io_data)
 				{
-					double i_phi = i_lat;
+					//double i_phi = i_lat;
 					double i_lambda = i_lon;
 					io_data =
 						-u0*(
@@ -199,7 +199,7 @@ void run_tests()
 			v.physical_update_lambda(
 				[&](double i_lon, double i_lat, std::complex<double> &io_data)
 				{
-					double i_phi = i_lat;
+					//double i_phi = i_lat;
 					double i_lambda = i_lon;
 					io_data =
 						-u0*(
@@ -977,7 +977,7 @@ void run_tests()
 					}
 			);
 
-			result = opComplex.laplace(result);
+			result = opComplex.laplace(result, 1);
 
 
 			double error_max = (h-result).physical_reduce_max_abs();
