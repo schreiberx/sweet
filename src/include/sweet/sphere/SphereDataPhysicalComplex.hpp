@@ -17,6 +17,7 @@
 #include <iomanip>
 #include <cassert>
 #include <limits>
+#include <functional>
 
 #include <sweet/sweetmath.hpp>
 #include <sweet/MemBlockAlloc.hpp>
