@@ -1802,9 +1802,10 @@ void run_tests()
 			 * REXI results stored in rexi_prog_*
 			 * These should match prog_*
 			 */
-			ErrorCheck::checkTruncated(rexi_prog_phi, prog_phi, sphereDataConfig, "prog_phi", epsilon*1e+5, false, simVars.setup.benchmark_scenario_id != 1);
-			ErrorCheck::checkTruncated(rexi_prog_u, prog_u, sphereDataConfig, "prog_u", epsilon*1e+5, false, simVars.setup.benchmark_scenario_id != 1);
-			ErrorCheck::checkTruncated(rexi_prog_v, prog_v, sphereDataConfig, "prog_v", epsilon*1e+5, false, simVars.setup.benchmark_scenario_id != 1);
+// commented out since this is not how REXI is computed
+//			ErrorCheck::checkTruncated(rexi_prog_phi, prog_phi, sphereDataConfig, "prog_phi", epsilon*1e+5, false, simVars.setup.benchmark_scenario_id != 1);
+//			ErrorCheck::checkTruncated(rexi_prog_u, prog_u, sphereDataConfig, "prog_u", epsilon*1e+5, false, simVars.setup.benchmark_scenario_id != 1);
+//			ErrorCheck::checkTruncated(rexi_prog_v, prog_v, sphereDataConfig, "prog_v", epsilon*1e+5, false, simVars.setup.benchmark_scenario_id != 1);
 		}
 	}
 }
