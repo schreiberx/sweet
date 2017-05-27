@@ -3,7 +3,6 @@
  *
  */
 
-#include "../include/sweet/plane/PlaneData.hpp"
 #if SWEET_GUI
 	#include <sweet/VisSweet.hpp>
 #endif
@@ -11,6 +10,7 @@
 
 
 #include <sweet/SimulationVariables.hpp>
+#include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneDataTimesteppingRK.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>
@@ -18,6 +18,7 @@
 #include <sweet/plane/PlaneDiagnostics.hpp>
 #include <sweet/Stopwatch.hpp>
 #include <sweet/FatalError.hpp>
+#include <sweet/plane/Staggering.hpp>
 #include <benchmarks_plane/SWEPlaneBenchmarks.hpp>
 #include <ostream>
 #include <algorithm>
@@ -25,14 +26,15 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "swe_rexi/SWE_Plane_REXI.hpp"
+
+#include "swe_plane_rexi/SWE_Plane_REXI.hpp"
+//#include "swe_plane_rexi/SWE_Plane_TS_ln_rk.hpp"
 
 
 
 // Plane data config
 PlaneDataConfig planeDataConfigInstance;
 PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
-
 
 
 #ifndef SWEET_MPI
@@ -82,9 +84,6 @@ public:
 	// Prognostic variables
 	PlaneData prog_h, prog_u, prog_v;
 
-	// beta plane
-	PlaneData beta_plane;
-
 	// Prognostic variables at time step t-dt
 	PlaneData prog_h_prev, prog_u_prev, prog_v_prev;
 
@@ -122,36 +121,32 @@ public:
 	// Departure points for semi-lag
 	ScalarDataArray posx_d, posy_d;
 
-
-	//Staggering displacement array (use 0.5 for each displacement)
-	// [0] - delta x of u variable
-	// [1] - delta y of u variable
-	// [2] - delta x of v variable
-	// [3] - delta y of v variable
-	// Default - A grid (there is shift in x,y of 1/2 to all vars)
-	// For C grid use {0,-0.5,-0.5,0}
-	double stag_displacement[4] = {-0.5,-0.5,-0.5,-0.5};
-	double stag_h[2] = {-0.5,-0.5};
-	double stag_u[2] = {-0.5,-0.5};
-	double stag_v[2] = {-0.5,-0.5};
+	// Staggering
+	Staggering staggering;
 
 	// Diagnostics measures
 	int last_timestep_nr_update_diagnostics = -1;
 
-	//Max difference to initial conditions
-	double benchmark_diff_h;
-	double benchmark_diff_u;
-	double benchmark_diff_v;
+	class BenchmarkErrors
+	{
+	public:
+		//Max difference to initial conditions
+		double t0_error_max_abs_h;
+		double t0_error_max_abs_u;
+		double t0_error_max_abs_v;
 
-	// Error measures L2 norm
-	double benchmark_analytical_error_rms_h;
-	double benchmark_analytical_error_rms_u;
-	double benchmark_analytical_error_rms_v;
+		// Error measures L2 norm
+		double analytical_error_rms_h;
+		double analytical_error_rms_u;
+		double analytical_error_rms_v;
 
-	// Error measures max norm
-	double benchmark_analytical_error_maxabs_h;
-	double benchmark_analytical_error_maxabs_u;
-	double benchmark_analytical_error_maxabs_v;
+		// Error measures max norm
+		double analytical_error_maxabs_h;
+		double analytical_error_maxabs_u;
+		double analytical_error_maxabs_v;
+	};
+
+	BenchmarkErrors benchmark;
 
 	// Finite difference operators
 	PlaneOperators op;
@@ -160,7 +155,10 @@ public:
 	PlaneDataTimesteppingRK timestepping_rk;
 
 	// Rexi stuff
-	SWE_Plane_REXI swe_plane_rexi;
+	SWE_Plane_REXI timestepping_swe_plane_rexi;
+
+	// Rexi stuff
+//	SWE_Plane_Implicit timestepping_swe_plane_implicit;
 
 	// Interpolation stuff
 	PlaneDataSampler sampler2D;
@@ -176,8 +174,6 @@ public:
 		prog_h(planeDataConfig),
 		prog_u(planeDataConfig),
 		prog_v(planeDataConfig),
-
-		beta_plane(planeDataConfig),
 
 		prog_h_prev(planeDataConfig),
 		prog_u_prev(planeDataConfig),
@@ -225,7 +221,6 @@ public:
 		posx_d(planeDataConfig->physical_array_data_number_of_elements),
 		posy_d(planeDataConfig->physical_array_data_number_of_elements),
 
-
 		// Initialises operators
 		op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
 #if SWEET_PARAREAL != 0
@@ -246,6 +241,8 @@ public:
 #endif
 	}
 
+
+
 	virtual ~SimulationInstance()
 	{
 	}
@@ -265,17 +262,17 @@ public:
 		// Initialise diagnostics
 		last_timestep_nr_update_diagnostics = -1;
 
-		benchmark_diff_h = 0;
-		benchmark_diff_u = 0;
-		benchmark_diff_v = 0;
+		benchmark.t0_error_max_abs_h = 0;
+		benchmark.t0_error_max_abs_u = 0;
+		benchmark.t0_error_max_abs_v = 0;
 
-		benchmark_analytical_error_rms_h = 0;
-		benchmark_analytical_error_rms_u = 0;
-		benchmark_analytical_error_rms_v = 0;
+		benchmark.analytical_error_rms_h = 0;
+		benchmark.analytical_error_rms_u = 0;
+		benchmark.analytical_error_rms_v = 0;
 
-		benchmark_analytical_error_maxabs_h = 0;
-		benchmark_analytical_error_maxabs_u = 0;
-		benchmark_analytical_error_maxabs_v = 0;
+		benchmark.analytical_error_maxabs_h = 0;
+		benchmark.analytical_error_maxabs_u = 0;
+		benchmark.analytical_error_maxabs_v = 0;
 
 		simVars.timecontrol.current_timestep_nr = 0;
 		simVars.timecontrol.current_simulation_time = 0;
@@ -296,58 +293,25 @@ public:
 
 		//Check if input parameters are adequate for this simulation
 		if (simVars.disc.use_staggering && simVars.disc.use_spectral_basis_diffs)
-		{
-			std::cerr << "Staggering and spectral basis not supported!" << std::endl;
-			exit(1);
-		}
+			FatalError("Staggering and spectral basis not supported!");
 
 		if (simVars.disc.use_staggering &&
 				( simVars.disc.timestepping_method != SimulationVariables::Discretization::RUNGE_KUTTA_EXPLICIT &&
 					simVars.disc.timestepping_method != SimulationVariables::Discretization::SEMI_LAGRANGIAN_ADVECTION_ONLY
 				)
 		)
-		{
-			std::cerr << "Staggering only supported for standard time stepping mode 0 and 4!" << std::endl;
-			exit(1);
-		}
+			FatalError("Staggering only supported for standard time stepping mode 0 and 4!");
+
 		if (simVars.disc.use_staggering && param_compute_error)
 			std::cerr << "Warning: Staggered data will be interpolated to/from A-grid for exact linear solution" << std::endl;
 
 		if (simVars.pde.use_nonlinear_equations > 0 && param_compute_error)
-			std::cout << "Warning: Exact solution not possible in general for nonlinear swe. Using exact solution for linear case instead." << std::endl;
+			FatalError("Exact solution not possible in general for nonlinear SWE");
 
 		if (simVars.disc.use_staggering)
-		{
-			/*
-			 *              ^
-			 *              |
-			 *       ______v0,1_____
-			 *       |             |
-			 *       |			   |
-			 *       |   (0.5,0.5) |
-			 *  u0,0 |->  H/P0,0   |u1,0 ->
-			 *(0,0.5)|	           |
-			 *       |      ^      |
-			 *   q0,0|______|______|
-			 * (0,0)      v0,0
-			 *           (0.5,0)
-			 *
-			 *
-			 * These staggering should be used when interpolating from a staggered variable
-			 * If interpolating from A grid to C staggered, use negative of displacements.
-			 *
-			 */
-			stag_displacement[0] = 0.0;  // u_dx
-			stag_displacement[1] = -0.5; // u_dy
-			stag_displacement[2] = -0.5; // v_dx
-			stag_displacement[3] = 0.0;  // v_dy
-			stag_h[0] = -0.5;
-			stag_h[1] = -0.5;
-			stag_u[0] = -0.0;
-			stag_u[1] = -0.5;
-			stag_v[0] = -0.5;
-			stag_v[1] = -0.0;
-		}
+			staggering.setup_c_staggering();
+		else
+			staggering.setup_a_staggering();
 
 		// Setup sampler for future interpolations
 		sampler2D.setup(simVars.sim.domain_size, planeDataConfig);
@@ -453,19 +417,6 @@ public:
 							//PXT: had some -0.5 on i and j (why??)
 							double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 							double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-							beta_plane.p_physical_set(j, i, SWEPlaneBenchmarks::return_f(simVars, x, y));
-							if(j==0 && i==0 && simVars.sim.beta)
-							{
-								std::cerr << "WARNING: BETA PLANE ON C-GRID NOT TESTED FOR NON_LINEARITIES!" << std::endl;
-							}
-
-						}
-						if(j==0 && i==0 && simVars.sim.beta)
-						{
-							std::cerr << "WARNING: BETA PLANE ON C-GRID NOT SUPPORTED!" << std::endl;
-							exit(-1);
-							// linear
-							//	op.diff_b_x(H)
 						}
 #endif
 					}
@@ -498,8 +449,6 @@ public:
 					prog_h.p_physical_set(j, i, return_h(simVars, x, y));
 					prog_u.p_physical_set(j, i, return_u(simVars, x, y));
 					prog_v.p_physical_set(j, i, return_v(simVars, x, y));
-
-					beta_plane.p_physical_set(j, i, SWEPlaneBenchmarks::return_f(simVars, x, y));
 
 					t0_prog_h.p_physical_set(j, i, return_h(simVars, x, y));
 					t0_prog_u.p_physical_set(j, i, return_u(simVars, x, y));
@@ -677,7 +626,7 @@ public:
 			}
 
 			// use REXI
-			swe_plane_rexi.setup(
+			timestepping_swe_plane_rexi.setup(
 					simVars.rexi.rexi_h,
 					simVars.rexi.rexi_M,
 					simVars.rexi.rexi_L,
@@ -693,12 +642,12 @@ public:
 				std::cout << "Intel compiler issues, have fun" << std::endl;
 #else
 				std::cout << "ALPHA:" << std::endl;
-				for (std::size_t n = 0; n < swe_plane_rexi.rexi.alpha.size(); n++)
-					std::cout << swe_plane_rexi.rexi.alpha[n] << std::endl;
+				for (std::size_t n = 0; n < timestepping_swe_plane_rexi.rexi.alpha.size(); n++)
+					std::cout << timestepping_swe_plane_rexi.rexi.alpha[n] << std::endl;
 
 				std::cout << "BETA:" << std::endl;
-				for (std::size_t n = 0; n < swe_plane_rexi.rexi.beta_re.size(); n++)
-					std::cout << swe_plane_rexi.rexi.beta_re[n] << std::endl;
+				for (std::size_t n = 0; n < timestepping_swe_plane_rexi.rexi.beta_re.size(); n++)
+					std::cout << timestepping_swe_plane_rexi.rexi.beta_re[n] << std::endl;
 #endif
 			}
 		}
@@ -1150,18 +1099,10 @@ public:
 			o_v_t = -simVars.sim.gravitation*op.diff_c_y(i_h);
 
 
-//			if (simVars.sim.beta == 0.0)
 			{
 				o_u_t += simVars.sim.f0*i_v;
 				o_v_t -= simVars.sim.f0*i_u;
 			}
-#if 0
-			else
-			{
-				o_u_t += beta_plane*i_v;
-				o_v_t -= beta_plane*i_u;
-			}
-#endif
 
 			//if (simVars.sim.viscosity != 0)
 			//{
@@ -1249,10 +1190,7 @@ public:
 					exit(1);
 				}
 
-//				if (simVars.sim.beta == 0)
-					q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + simVars.sim.f0) / op.avg_b_x(op.avg_b_y(i_h));
-//				else
-//					q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + beta_plane) / op.avg_b_x(op.avg_b_y(i_h));
+				q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + simVars.sim.f0) / op.avg_b_x(op.avg_b_y(i_h));
 
 				// u, v tendencies
 				// Energy conserving scheme
@@ -1261,18 +1199,8 @@ public:
 			}
 			else //linear case
 			{
-//				if (simVars.sim.beta == 0)
-				{
-					o_u_t = op.avg_f_y(simVars.sim.f0*op.avg_b_x(i_v)) - op.diff_b_x(H);
-					o_v_t = -op.avg_f_x(simVars.sim.f0*op.avg_b_y(i_u)) - op.diff_b_y(H);
-				}
-#if 0
-				else
-				{
-					o_u_t = op.avg_f_y(beta_plane*op.avg_b_x(i_v)) - op.diff_b_x(H);
-					o_v_t = -op.avg_f_x(beta_plane*op.avg_b_y(i_u)) - op.diff_b_y(H);
-				}
-#endif
+				o_u_t = op.avg_f_y(simVars.sim.f0*op.avg_b_x(i_v)) - op.diff_b_x(H);
+				o_v_t = -op.avg_f_x(simVars.sim.f0*op.avg_b_y(i_u)) - op.diff_b_y(H);
 			}
 
 			/*
@@ -1345,7 +1273,7 @@ public:
 			// REXI time stepping for nonlinear eq - semi-lagrangian scheme (SL-REXI)
 			if (simVars.pde.use_nonlinear_equations > 0)
 			{
-				swe_plane_rexi.run_timestep_slrexi(
+				timestepping_swe_plane_rexi.run_timestep_slrexi(
 									prog_h, prog_u, prog_v,
 									prog_h_prev, prog_u_prev, prog_v_prev,
 									posx_a,	posy_a,
@@ -1362,7 +1290,7 @@ public:
 			}
 			else // linear solver
 			{
-				swe_plane_rexi.run_timestep_rexi( prog_h, prog_u, prog_v, o_dt, op,	simVars);
+				timestepping_swe_plane_rexi.run_timestep_rexi( prog_h, prog_u, prog_v, o_dt, op,	simVars);
 			}
 		}
 		else if (simVars.disc.timestepping_method == SimulationVariables::Discretization::ANALYTICAL_SOLUTION) //Direct solution
@@ -1376,7 +1304,7 @@ public:
 			// Analytical solution
 			assert(simVars.sim.CFL < 0);
 			o_dt = -simVars.sim.CFL;
-			swe_plane_rexi.run_timestep_direct_solution(
+			timestepping_swe_plane_rexi.run_timestep_direct_solution(
 					prog_h, prog_u, prog_v,
 					-simVars.sim.CFL,
 					op,
@@ -1388,7 +1316,7 @@ public:
 			assert(simVars.sim.CFL < 0);
 
 			o_dt = -simVars.sim.CFL;
-			swe_plane_rexi.run_timestep_implicit_ts(
+			timestepping_swe_plane_rexi.run_timestep_implicit_ts(
 					prog_h, prog_u, prog_v,
 					o_dt,
 					op,
@@ -1414,7 +1342,7 @@ public:
 							o_dt,
 							posx_d,
 							posy_d,
-							stag_displacement
+							staggering
 					);
 
 			//prog_u_prev = prog_u;
@@ -1428,8 +1356,8 @@ public:
 					posx_d,
 					posy_d,
 					prog_h,
-					stag_h[0],
-					stag_h[1]
+					staggering.h[0],
+					staggering.h[1]
 			);
 
 		}
@@ -1438,7 +1366,7 @@ public:
 			assert(simVars.sim.CFL < 0);
 			o_dt = -simVars.sim.CFL;
 
-			swe_plane_rexi.run_timestep_cn_sl_ts(
+			timestepping_swe_plane_rexi.run_timestep_cn_sl_ts(
 					prog_h, prog_u, prog_v,
 					prog_h_prev, prog_u_prev, prog_v_prev,
 					posx_a,	posy_a,
@@ -1563,29 +1491,29 @@ public:
 			//if ((simVars.setup.scenario >= 0 && simVars.setup.scenario <= 4) || simVars.setup.scenario == 13)
 			//{
 			// Height
-			benchmark_diff_h = (prog_h-t0_prog_h).reduce_maxAbs() ;
-			o_ostream << "\t" << benchmark_diff_h;
+			benchmark.t0_error_max_abs_h = (prog_h-t0_prog_h).reduce_maxAbs() ;
+			o_ostream << "\t" << benchmark.t0_error_max_abs_h;
 
 			// Velocity u
-			benchmark_diff_u = (prog_u-t0_prog_u).reduce_maxAbs();
-			o_ostream << "\t" << benchmark_diff_u;
+			benchmark.t0_error_max_abs_u = (prog_u-t0_prog_u).reduce_maxAbs();
+			o_ostream << "\t" << benchmark.t0_error_max_abs_u;
 
 			// Velocity v
-			benchmark_diff_v = (prog_v-t0_prog_v).reduce_maxAbs();
-			o_ostream << "\t" << benchmark_diff_v;
+			benchmark.t0_error_max_abs_v = (prog_v-t0_prog_v).reduce_maxAbs();
+			o_ostream << "\t" << benchmark.t0_error_max_abs_v;
 			//}
 
 			if (param_compute_error && simVars.pde.use_nonlinear_equations==0)
 			{
 				compute_errors();
 
-				o_ostream << "\t" << benchmark_analytical_error_rms_h;
-				o_ostream << "\t" << benchmark_analytical_error_rms_u;
-				o_ostream << "\t" << benchmark_analytical_error_rms_v;
+				o_ostream << "\t" << benchmark.analytical_error_rms_h;
+				o_ostream << "\t" << benchmark.analytical_error_rms_u;
+				o_ostream << "\t" << benchmark.analytical_error_rms_v;
 
-				o_ostream << "\t" << benchmark_analytical_error_maxabs_h;
-				o_ostream << "\t" << benchmark_analytical_error_maxabs_u;
-				o_ostream << "\t" << benchmark_analytical_error_maxabs_v;
+				o_ostream << "\t" << benchmark.analytical_error_maxabs_h;
+				o_ostream << "\t" << benchmark.analytical_error_maxabs_u;
+				o_ostream << "\t" << benchmark.analytical_error_maxabs_v;
 			}
 
 			o_ostream << std::endl;
@@ -1628,15 +1556,15 @@ public:
 			//remap initial condition to A grid
 			//sampler2D.bilinear_scalar(t0_u, posx_a, posy_a, t_u, stag_u[0], stag_u[1]);
 			//t_u=op.avg_f_x(t0_u); //equiv to bilinear
-			sampler2D.bicubic_scalar(t0_u, posx_a, posy_a, t_u, stag_u[0], stag_u[1]);
+			sampler2D.bicubic_scalar(t0_u, posx_a, posy_a, t_u, staggering.u[0], staggering.u[1]);
 
 			//sampler2D.bilinear_scalar(t0_v, posx_a, posy_a, t_v, stag_v[0], stag_v[1]);
 			//t_v=op.avg_f_y(t0_v); //equiv to bilinear
-			sampler2D.bicubic_scalar(t0_v, posx_a, posy_a, t_v, stag_v[0], stag_v[1]);
+			sampler2D.bicubic_scalar(t0_v, posx_a, posy_a, t_v, staggering.v[0], staggering.v[1]);
 		}
 
 		//Run exact solution for linear case
-		swe_plane_rexi.run_timestep_direct_solution(t_h, t_u, t_v, simVars.timecontrol.current_simulation_time, op, simVars);
+		timestepping_swe_plane_rexi.run_timestep_direct_solution(t_h, t_u, t_v, simVars.timecontrol.current_simulation_time, op, simVars);
 
 		// Recover data in C grid using interpolations
 		ts_h=t_h;
@@ -1649,21 +1577,21 @@ public:
 			//Temporary displacement for U points
 			//sampler2D.bilinear_scalar(t_u, pos_x, tmp, ts_u, stag_h[0], stag_h[1]);
 			//t_u=op.avg_b_x(t0_u); //equiv to bilinear
-			sampler2D.bicubic_scalar(t_u, pos_x, pos_y, ts_u, stag_h[0], stag_h[1]+0.5);
+			sampler2D.bicubic_scalar(t_u, pos_x, pos_y, ts_u, staggering.h[0], staggering.h[1]+0.5);
 
 			//Temporary displacement for V points
 			//sampler2D.bilinear_scalar(t_v, tmp, pos_y, ts_v, stag_h[0], stag_h[1]);
 			//t_v=op.avg_b_y(t0_v); //equiv to bilinear
-			sampler2D.bicubic_scalar(t_v, pos_x, pos_y, ts_v, stag_h[0]+0.5, stag_h[1]);
+			sampler2D.bicubic_scalar(t_v, pos_x, pos_y, ts_v, staggering.h[0]+0.5, staggering.h[1]);
 		}
 
-		benchmark_analytical_error_rms_h = (ts_h-prog_h).reduce_rms_quad();
-		benchmark_analytical_error_rms_u = (ts_u-prog_u).reduce_rms_quad();
-		benchmark_analytical_error_rms_v = (ts_v-prog_v).reduce_rms_quad();
+		benchmark.analytical_error_rms_h = (ts_h-prog_h).reduce_rms_quad();
+		benchmark.analytical_error_rms_u = (ts_u-prog_u).reduce_rms_quad();
+		benchmark.analytical_error_rms_v = (ts_v-prog_v).reduce_rms_quad();
 
-		benchmark_analytical_error_maxabs_h = (ts_h-prog_h).reduce_maxAbs();
-		benchmark_analytical_error_maxabs_u = (ts_u-prog_u).reduce_maxAbs();
-		benchmark_analytical_error_maxabs_v = (ts_v-prog_v).reduce_maxAbs();
+		benchmark.analytical_error_maxabs_h = (ts_h-prog_h).reduce_maxAbs();
+		benchmark.analytical_error_maxabs_u = (ts_u-prog_u).reduce_maxAbs();
+		benchmark.analytical_error_maxabs_v = (ts_v-prog_v).reduce_maxAbs();
 
 	}
 
@@ -1728,7 +1656,7 @@ public:
 			PlaneData t_u = t0_prog_u;
 			PlaneData t_v = t0_prog_v;
 
-			swe_plane_rexi.run_timestep_direct_solution(
+			timestepping_swe_plane_rexi.run_timestep_direct_solution(
 					t_h, t_u, t_v,
 					simVars.timecontrol.current_simulation_time,
 					op,
@@ -1747,10 +1675,6 @@ public:
 
 			case -3:
 				vis = t0_prog_h-prog_h;	// difference to initial condition
-				break;
-
-			case -4:					// beta plane
-				vis = beta_plane;
 				break;
 			}
 
@@ -1928,18 +1852,16 @@ public:
 		}
 
 		// use REXI
-		swe_plane_rexi.setup(
+		timestepping_swe_plane_rexi.setup(
 				0,
 				simVars.rexi.rexi_h,
-				simVars.rexi.rexi_m,
-				simVars.rexi.rexi_l,
+				simVars.rexi.rexi_M,
+				simVars.rexi.rexi_L,
 
 				simVars.disc.res_physical,
 				simVars.sim.domain_size,
-				simVars.rexi.rexi_half,
-				simVars.rexi.rexi_use_spectral_differences_for_complex_array,
-				simVars.rexi.rexi_helmholtz_solver_id,
-				simVars.rexi.rexi_helmholtz_solver_eps
+				simVars.rexi.rexi_use_half_poles,
+				simVars.rexi.rexi_normalization
 			);
 
 		output_data_valid = false;
@@ -2069,7 +1991,7 @@ public:
 		prog_u = *parareal_data_start.data_arrays[1];
 		prog_v = *parareal_data_start.data_arrays[2];
 
-		swe_plane_rexi.run_timestep_implicit_ts(
+		timestepping_swe_plane_rexi.run_timestep_implicit_ts(
 				prog_h, prog_u, prog_v,
 				timeframe_end - timeframe_start,
 				op,
@@ -2225,6 +2147,7 @@ int main(int i_argc, char *i_argv[])
 		MPI_Init_thread(&i_argc, &i_argv, MPI_THREAD_MULTIPLE, &provided);
 
 		if (provided != MPI_THREAD_MULTIPLE)
+			FatalError()
 		{
 				std::cerr << "MPI_THREAD_MULTIPLE not available! Try to get an MPI version with multi-threading support or compile without OMP/TBB support. Good bye..." << std::endl;
 				exit(-1);
@@ -2441,7 +2364,7 @@ int main(int i_argc, char *i_argv[])
 			std::cout << "Time per time step: " << seconds/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
 			std::cout << "Last time step size: " << simVars.timecontrol.current_timestep_size << std::endl;
 			if (simVars.disc.timestepping_method != 0)
-				std::cout << "REXI alpha.size(): " << simulationSWE->swe_plane_rexi.rexi.alpha.size() << std::endl;
+				std::cout << "REXI alpha.size(): " << simulationSWE->timestepping_swe_plane_rexi.rexi.alpha.size() << std::endl;
 
 			if (simVars.misc.verbosity > 0)
 			{
@@ -2451,22 +2374,22 @@ int main(int i_argc, char *i_argv[])
 
 				if (param_compute_error)
 				{
-					std::cout << "DIAGNOSTICS BENCHMARK DIFF H:\t" << simulationSWE->benchmark_diff_h << std::endl;
-					std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationSWE->benchmark_diff_u << std::endl;
-					std::cout << "DIAGNOSTICS BENCHMARK DIFF V:\t" << simulationSWE->benchmark_diff_v << std::endl;
+					std::cout << "DIAGNOSTICS BENCHMARK DIFF H:\t" << simulationSWE->benchmark.t0_error_max_abs_h << std::endl;
+					std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationSWE->benchmark.t0_error_max_abs_u << std::endl;
+					std::cout << "DIAGNOSTICS BENCHMARK DIFF V:\t" << simulationSWE->benchmark.t0_error_max_abs_v << std::endl;
 				}
 			}
 
 			if (param_compute_error && simVars.pde.use_nonlinear_equations == 0)
 			{
 				simulationSWE->compute_errors();
-				std::cout << "DIAGNOSTICS ANALYTICAL RMS H:\t" << simulationSWE->benchmark_analytical_error_rms_h << std::endl;
-				std::cout << "DIAGNOSTICS ANALYTICAL RMS U:\t" << simulationSWE->benchmark_analytical_error_rms_u << std::endl;
-				std::cout << "DIAGNOSTICS ANALYTICAL RMS V:\t" << simulationSWE->benchmark_analytical_error_rms_v << std::endl;
+				std::cout << "DIAGNOSTICS ANALYTICAL RMS H:\t" << simulationSWE->benchmark.analytical_error_rms_h << std::endl;
+				std::cout << "DIAGNOSTICS ANALYTICAL RMS U:\t" << simulationSWE->benchmark.analytical_error_rms_u << std::endl;
+				std::cout << "DIAGNOSTICS ANALYTICAL RMS V:\t" << simulationSWE->benchmark.analytical_error_rms_v << std::endl;
 
-				std::cout << "DIAGNOSTICS ANALYTICAL MAXABS H:\t" << simulationSWE->benchmark_analytical_error_maxabs_h << std::endl;
-				std::cout << "DIAGNOSTICS ANALYTICAL MAXABS U:\t" << simulationSWE->benchmark_analytical_error_maxabs_u << std::endl;
-				std::cout << "DIAGNOSTICS ANALYTICAL MAXABS V:\t" << simulationSWE->benchmark_analytical_error_maxabs_v << std::endl;
+				std::cout << "DIAGNOSTICS ANALYTICAL MAXABS H:\t" << simulationSWE->benchmark.analytical_error_maxabs_h << std::endl;
+				std::cout << "DIAGNOSTICS ANALYTICAL MAXABS U:\t" << simulationSWE->benchmark.analytical_error_maxabs_u << std::endl;
+				std::cout << "DIAGNOSTICS ANALYTICAL MAXABS V:\t" << simulationSWE->benchmark.analytical_error_maxabs_v << std::endl;
 			}
 
 			delete simulationSWE;
@@ -2484,14 +2407,12 @@ int main(int i_argc, char *i_argv[])
 			 */
 			rexiSWE.setup(
 					simVars.rexi.rexi_h,
-					simVars.rexi.rexi_m,
-					simVars.rexi.rexi_l,
+					simVars.rexi.rexi_M,
+					simVars.rexi.rexi_L,
 					simVars.disc.res_physical,
 					simVars.sim.domain_size,
-					simVars.rexi.rexi_half,
-					simVars.rexi.rexi_use_spectral_differences_for_complex_array,
-					simVars.rexi.rexi_helmholtz_solver_id,
-					simVars.rexi.rexi_helmholtz_solver_eps
+					simVars.rexi.rexi_use_half_poles,
+					simVars.rexi.rexi_normalization
 				);
 
 			bool run = true;

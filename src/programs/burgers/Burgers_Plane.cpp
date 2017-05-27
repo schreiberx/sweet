@@ -19,6 +19,8 @@
 #include <benchmarks_plane/BurgersValidationBenchmarks.hpp>
 #include <sweet/FatalError.hpp>
 
+#include <sweet/plane/Staggering.hpp>
+
 
 /**
  * Solve viscous Burgers' Equation with IMEX
@@ -191,9 +193,7 @@ bool Burgers_Plane::run_timestep_sl(
 	PlaneOperators &op,     ///< Operator class
 	PlaneDataSampler &sampler2D, ///< Interpolation class
 	SemiLagrangian &semiLagrangian,  ///< Semi-Lag class
-	double* i_stag_displacement,
-	double* i_stag_u,
-	double* i_stag_v
+	const Staggering &i_staggering
 )
 {
 	o_dt = i_timestep_size;
@@ -213,7 +213,7 @@ bool Burgers_Plane::run_timestep_sl(
 			i_posx_a, i_posy_a,
 			o_dt,
 			posx_d, posy_d,
-			i_stag_displacement
+			i_staggering
 			);
 
 	// Save old velocities
@@ -226,16 +226,16 @@ bool Burgers_Plane::run_timestep_sl(
 			io_u,
 			posx_d,
 			posy_d,
-			i_stag_u[0],
-			i_stag_u[1]
+			i_staggering.u[0],
+			i_staggering.u[1]
 	);
 
 	io_v = sampler2D.bicubic_scalar(
 			io_v,
 			posx_d,
 			posy_d,
-			i_stag_v[0],
-			i_stag_v[1]
+			i_staggering.v[0],
+			i_staggering.v[1]
 	);
 
 	PlaneData u=io_u;

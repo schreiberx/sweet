@@ -3,16 +3,15 @@
  *
  */
 
-#include "../include/sweet/plane/PlaneData.hpp"
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
 #include <sweet/SimulationVariables.hpp>
+#include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneDataTimesteppingRK.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/PlaneDataSemiLagrangian.hpp>
-//#include <sweet/plane/PlaneDataConfig.hpp>
 #include <sweet/plane/Convert_PlaneData_to_ScalarDataArray.hpp>
 #include <sweet/plane/Convert_ScalarDataArray_to_PlaneData.hpp>
 #include <sweet/FatalError.hpp>
@@ -78,17 +77,8 @@ public:
 	// Departure points for semi-lag
 	ScalarDataArray posx_d, posy_d;
 
-	// Staggering displacement array (use 0.5 for each displacement)
-	// [0] - delta x of u variable
-	// [1] - delta y of u variable
-	// [2] - delta x of v variable
-	// [3] - delta y of v variable
-	// Default - A grid (there is shift in x,y of 1/2 to all vars)
-	// For C grid use {0,-0.5,-0.5,0}
-	double stag_displacement[4] = {-0.5,-0.5,-0.5,-0.5};
-	double stag_h[2] = {-0.5,-0.5};
-	double stag_u[2] = {-0.5,-0.5};
-	double stag_v[2] = {-0.5,-0.5};
+	// Staggering displacement array
+	Staggering staggering;
 
 	// Diagnostics measures
 	int last_timestep_nr_update_diagnostics = -1;
@@ -238,37 +228,10 @@ public:
 			std::cerr << "Warning: Staggered data will be interpolated to/from A-grid for exact linear solution" << std::endl;
 
 		if (simVars.disc.use_staggering)
-		{
-			/*
-			 *              ^
-			 *              |
-			 *       ______v0,1_____
-			 *       |             |
-			 *       |			   |
-			 *       |   (0.5,0.5) |
-			 *  u0,0 |->  H/P0,0   |u1,0 ->
-			 *(0,0.5)|	           |
-			 *       |      ^      |
-			 *   q0,0|______|______|
-			 * (0,0)      v0,0
-			 *           (0.5,0)
-			 *
-			 *
-			 * These staggering should be used when interpolating from a staggered variable
-			 * If interpolating from A grid to C staggered, use negative of displacements.
-			 *
-			 */
-			stag_displacement[0] = 0.0;  // u_dx
-			stag_displacement[1] = -0.5; // u_dy
-			stag_displacement[2] = -0.5; // v_dx
-			stag_displacement[3] = 0.0;  // v_dy
-			stag_h[0] = -0.5;
-			stag_h[1] = -0.5;
-			stag_u[0] = -0.0;
-			stag_u[1] = -0.5;
-			stag_v[0] = -0.5;
-			stag_v[1] = -0.0;
-		}
+			staggering.setup_c_staggering();
+		else
+			staggering.setup_a_staggering();
+
 
 		// Setup sampler for future interpolations
 		sampler2D.setup(simVars.sim.domain_size, planeDataConfig);
@@ -527,9 +490,7 @@ public:
 				op,
 				sampler2D,
 				semiLagrangian,
-				stag_displacement,
-				stag_u,
-				stag_v
+				staggering
 			);
 		}
 		else

@@ -7,7 +7,7 @@
 #      Author: Martin Schreiber <schreiberx@gmail.com>
 #
 # Changelog:
-# 	2016-05-14: Converted to Python
+# 	2016-05-14: Converted to Python for usage in firedrake
 #                   Source: https://github.com/schreiberx/sweet
 #
 
@@ -332,6 +332,7 @@ print("GaussianApproximation")
 
 g = GaussianApproximation()
 h = 1
+print("evalGaussian\tapproxGaussian\terror")
 for x in range(0, 10):
 	a = g.evalGaussian(x, h)
 	b = g.approxGaussian(x, h)
@@ -346,6 +347,7 @@ print()
 print("ExponentialApproximation")
 ea = ExponentialApproximation(h, M)
 
+print("eval_e_ix\tapprox_e_ix\terror")
 for x in range(-int(h*M)+1, int(h*M)):
 	a = ea.eval_e_ix(x)
 	b = ea.approx_e_ix(x)
@@ -360,12 +362,40 @@ print()
 print("REXI")
 h = 0.2
 M = 64
-rexi = REXI(h, M)
+print("M="+str(M)+"   h="+str(h))
+rexi = REXI(h, M, False)
 
+print("eval_e_ix\tapprox_e_ix\terror")
 for x in range(-int(h*M)+1, int(h*M)):
 	a = rexi.eval_e_ix(x)
 	b = rexi.approx_e_ix(x)
 
 	print(str(a)+"\t"+str(b)+"\t"+str(abs(a-b)))
 
+print()
+
+print("REXI alpha coefficients")
+for i in range(len(rexi.alpha)):
+	print(rexi.alpha[i])
+
+
+print("REXI beta real coefficients")
+for i in range(len(rexi.beta_re)):
+	print(rexi.beta_re[i])
+
+
+print("REXI alpha / beta real information")
+asum = 0
+bsum = 0
+for i in range(len(rexi.beta_re)):
+	asum += rexi.alpha[i]
+	bsum += rexi.beta_re[i]
+	print(rexi.beta_re[i])
+
+print("sum alpha = "+str(asum))
+print("length alpha = "+str(math.sqrt(asum.real*asum.real + asum.imag*asum.imag)))
+
+print("sum beta = "+str(bsum))
+print("length beta = "+str(math.sqrt(bsum.real*bsum.real + bsum.imag*bsum.imag)))
+print()
 

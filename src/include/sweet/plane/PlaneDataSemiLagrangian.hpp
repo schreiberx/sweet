@@ -12,6 +12,7 @@
 #include "PlaneData.hpp"
 #include "PlaneDataSampler.hpp"
 #include <sweet/ScalarDataArray.hpp>
+#include <sweet/plane/Staggering.hpp>
 
 class SemiLagrangian
 {
@@ -154,19 +155,13 @@ public:
 			const ScalarDataArray &i_posx_a,	// Position of arrival points x / y
 			const ScalarDataArray &i_posy_a,
 
-			double i_dt,			///< time step size
-			ScalarDataArray &o_posx_d, // Position of departure points x / y
+			double i_dt,				///< time step size
+			ScalarDataArray &o_posx_d, 	///< Position of departure points x / y
 			ScalarDataArray &o_posy_d,
 
-			double *i_staggering = nullptr	///< staggering, if any (ux, uy, vx, vy)
+			const Staggering &i_staggering	///< staggering, if any (ux, uy, vx, vy)
 	)
 	{
-		if (i_staggering == nullptr)
-		{
-			static double constzerostuff[4] = {0,0,0,0};
-			i_staggering = constzerostuff;
-		}
-
 		std::size_t num_points = i_posx_a.number_of_elements;
 
 		ScalarDataArray u_prev = Convert_PlaneData_To_ScalarDataArray::physical_convert(i_u_prev);
@@ -201,11 +196,11 @@ public:
 			// r_d = r_a - dt/2 * v_n(r_d) - v^{iter}(r_d)
 			rx_d_new = i_posx_a - dt*0.5 * u - sample2D.bilinear_scalar(
 					Convert_ScalarDataArray_to_PlaneData::convert(u_iter, planeDataConfig),
-					o_posx_d, o_posy_d, i_staggering[0], i_staggering[1]
+					o_posx_d, o_posy_d, i_staggering.u[0], i_staggering.u[1]
 			);
 			ry_d_new = i_posy_a - dt*0.5 * v - sample2D.bilinear_scalar(
 					Convert_ScalarDataArray_to_PlaneData::convert(v_iter, planeDataConfig),
-					o_posx_d, o_posy_d, i_staggering[2], i_staggering[3]
+					o_posx_d, o_posy_d, i_staggering.v[0], i_staggering.v[1]
 			);
 
 			double diff = (rx_d_new - rx_d_prev).reduce_maxAbs() + (ry_d_new - ry_d_prev).reduce_maxAbs();
