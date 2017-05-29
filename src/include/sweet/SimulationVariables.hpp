@@ -133,7 +133,7 @@ public:
 		{
 			std::cout << std::endl;
 			std::cout << "Partial differential equation:" << std::endl;
-			std::cout << "	--pde-id [0/1]	PDE to solve (0: SWE, 1: advection)" << std::endl;
+			std::cout << "	--pde-id [0/1]		PDE to solve (0: SWE, 1: advection)" << std::endl;
 			std::cout << "	--pde-variant-id [0/1]	PDE variant to use (default: 0)" << std::endl;
 			std::cout << "" << std::endl;
 		}
@@ -216,14 +216,14 @@ public:
 		{
 			std::cout << std::endl;
 			std::cout << "SIMULATION SETUP PARAMETERS:" << std::endl;
-			std::cout << "	-s [scen]	scenario id, set to -1 for overview" << std::endl;
-			std::cout << "	-x [float]	x coordinate for setup \\in [0;1], default=0.5" << std::endl;
-			std::cout << "	-y [float]	y coordinate for setup \\in [0;1], default=0.5" << std::endl;
-			std::cout << "	-r [radius]	scale factor of radius for initial condition, default=1" << std::endl;
-			std::cout << "	--initial-freq-x-mul [float]	Frequency for the waves initial conditions in x, default=2" << std::endl;
-			std::cout << "	--initial-freq-y-mul [float]	Frequency for the waves initial conditions in y, default=1" << std::endl;
-			std::cout << "	--initial-coord-x [float]	Same as -x" << std::endl;
-			std::cout << "	--initial-coord-y [float]	Same as -y" << std::endl;
+			std::cout << "	-s [scen]				scenario id, set to -1 for overview" << std::endl;
+			std::cout << "	-x [float]				x coordinate for setup \\in [0;1], default=0.5" << std::endl;
+			std::cout << "	-y [float]				y coordinate for setup \\in [0;1], default=0.5" << std::endl;
+			std::cout << "	-r [radius]				scale factor of radius for initial condition, default=1" << std::endl;
+			std::cout << "	--initial-freq-x-mul [float]		Frequency for the waves initial conditions in x, default=2" << std::endl;
+			std::cout << "	--initial-freq-y-mul [float]		Frequency for the waves initial conditions in y, default=1" << std::endl;
+			std::cout << "	--initial-coord-x [float]		Same as -x" << std::endl;
+			std::cout << "	--initial-coord-y [float]		Same as -y" << std::endl;
 			std::cout << "	--advection-rotation-angle [float]	Rotation angle for e.g. advection test case" << std::endl;
 
 			std::cout << "" << std::endl;
@@ -507,36 +507,39 @@ public:
 		{
 			std::cout << "Discretization:" << std::endl;
 			std::cout << "  >Space:" << std::endl;
-			std::cout << "  --staggering [0/1]	Use staggering" << std::endl;
-			std::cout << "	-N [res]	resolution in x and y direction, default=0" << std::endl;
-			std::cout << "	-n [resx]	resolution in x direction, default=0" << std::endl;
-			std::cout << "	-m [resy]	resolution in y direction, default=0" << std::endl;
-			std::cout << "	-M [modes]	modes in x/y or lon/lat direction, default=0" << std::endl;
-			std::cout << "	-S [0/1]	Control Operator discretization for PlaneDatas" << std::endl;
-			std::cout << "               0: FD, 1: spectral derivatives, default:";
+			std::cout << "	--staggering [0/1]	Use staggering" << std::endl;
+			std::cout << "	-N [res]		resolution in x and y direction, default=0" << std::endl;
+			std::cout << "	-n [resx]		resolution in x direction, default=0" << std::endl;
+			std::cout << "	-m [resy]		resolution in y direction, default=0" << std::endl;
+			std::cout << "	-M [modes]		modes in x/y or lon/lat direction, default=0" << std::endl;
+			std::cout << "	-S [0/1]		Control Operator discretization for PlaneData" << std::endl;
+			std::cout << "				0: FD, 1: spectral derivatives, default: ";
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE || SWEET_USE_SPHERE_SPECTRAL_SPACE
-	std::cout << "1"
+	std::cout << "1" << std::endl;
 #else
-	std::cout << "0"
+	std::cout << "0" << std::endl;
 #endif
-					,
+
 			std::cout << "  >Time:" << std::endl;
-			std::cout << "	-W [0/1]	use up- and downwinding, default:0" << std::endl;
-			std::cout << "	-R [1-RKn]	order of time stepping method, default:0" << std::endl;
-			std::cout << "	-C [cfl]	CFL condition, use negative value for fixed time step size, default=0.05" << std::endl;
-			std::cout << "	--timestepping-method	Specify time stepping method (";
+			std::cout << "	-W [0/1]					use up- and downwinding, default:0" << std::endl;
+			std::cout << "	-R [1-RKn]					order of time stepping method, default:0" << std::endl;
+			std::cout << "	-C [cfl]					CFL condition, use negative value for fixed time step size, default=0.05" << std::endl;
+			std::cout << "	--timestepping-method				Specify time stepping method (";
 
 			for (std::size_t i = 0; i < sizeof(ts_method_ids)/sizeof(ts_method_ids[0]); i++)
 				std::cout << ts_method_ids[i] << ": " << getTimesteppingMethodString(ts_method_ids[i]) << ", ";
 
 			std::cout << "...)" << std::endl;
-			std::cout << "	--timestepping-order [int]	Specify the order of the time stepping" << std::endl;
-			std::cout << "	--timestepping-method2 [int]	Alternative time stepping method" << std::endl;
-			std::cout << "	--timestepping-order2 [int]	Specify the order of the time stepping" << std::endl;
-			std::cout << "	--leapfrog-robert-asselin-filter [0;1]	Damping parameter for Robert-Asselin filter" << std::endl;
+			std::cout << "	--timestepping-order [int]			Specify the order of the time stepping" << std::endl;
+			std::cout << "	--timestepping-method2 [int]			Alternative time stepping method" << std::endl;
+			std::cout << "	--timestepping-order2 [int]			Specify the order of the time stepping" << std::endl;
+			std::cout << "	--leapfrog-robert-asselin-filter [0;1]		Damping parameter for Robert-Asselin filter" << std::endl;
 			std::cout << "	--normal-mode-analysis-generation [0;1;2;3]	Generate output data for normal mode analysis" << std::endl;
-			std::cout << "                   (0: don't generate, 1: generate in physical space, 2: generate in spectral space, 3: generate in spectral space with complex matrix)" << std::endl;
+			std::cout << "							0: don't generate" << std::endl;
+			std::cout << "							1: generate in physical space" << std::endl;
+			std::cout << "							2: generate in spectral space" << std::endl;
+			std::cout << "							3: generate in spectral space with complex matrix)" << std::endl;
 
 		}
 
@@ -609,12 +612,12 @@ public:
 		void outputProgParams()
 		{
 			std::cout << "" << std::endl;
-			std::cout << "Rexi" << std::endl;
-			std::cout << "	--rexi-h [float]	REXI parameter h" << std::endl;
-			std::cout << "	--rexi-m [int]	REXI parameter M" << std::endl;
-			std::cout << "	--rexi-l [int]	REXI parameter L" << std::endl;
-			std::cout << "	--rexi-half [bool]	Use half REXI poles, default:1" << std::endl;
-			std::cout << "	--rexi-normalization [bool]	Use REXI normalization around geostrophic balance, default:1" << std::endl;
+			std::cout << "Rexi:" << std::endl;
+			std::cout << "	--rexi-h [float]			REXI parameter h" << std::endl;
+			std::cout << "	--rexi-m [int]				REXI parameter M" << std::endl;
+			std::cout << "	--rexi-l [int]				REXI parameter L" << std::endl;
+			std::cout << "	--rexi-half [bool]			Use half REXI poles, default:1" << std::endl;
+			std::cout << "	--rexi-normalization [bool]		Use REXI normalization around geostrophic balance, default:1" << std::endl;
 			std::cout << "	--rexi-sphere-preallocation [bool]	Use preallocation of SPH-REXI solver coefficients, default:1" << std::endl;
 			std::cout << "	--rexi-use-direct-solution [bool]	Use direct solution (analytical) for REXI, default:0" << std::endl;
 			std::cout << "	--rexi-ext-modes [int]	Use this number of extended modes in spherical harmonics" << std::endl;
@@ -1332,19 +1335,19 @@ public:
 				std::cout << "	-T [stepnr]	maximum number of time steps, default=-1 (infinity)" << std::endl;
 				std::cout << "	-o [time]	time interval at which output should be written" << std::endl;
 				std::cout << "" << std::endl;
-				std::cout << "Misc options" << std::endl;
-				std::cout << "	-v [int]	verbosity level" << std::endl;
-				std::cout << "	-V [double]	period of outputConfig" << std::endl;
-				std::cout << "	-G [0/1]	graphical user interface" << std::endl;
-				std::cout << "	-O [string]	string prefix for filename of output of simulation data" << std::endl;
-				std::cout << "	-d [int]	accuracy of floating point output" << std::endl;
+				std::cout << "Misc options:" << std::endl;
+				std::cout << "	-v [int]			verbosity level" << std::endl;
+				std::cout << "	-V [double]			period of outputConfig" << std::endl;
+				std::cout << "	-G [0/1]			graphical user interface" << std::endl;
+				std::cout << "	-O [string]			string prefix for filename of output of simulation data" << std::endl;
+				std::cout << "	-d [int]			accuracy of floating point output" << std::endl;
 				std::cout << "	-i [file0][;file1][;file3]...	string with filenames for initial conditions" << std::endl;
-				std::cout << "	            specify BINARY; as first file name to read files as binary raw data" << std::endl;
+				std::cout << "					specify BINARY; as first file name to read files as binary raw data" << std::endl;
 				std::cout << "	--use-robert-functions [bool]	Use Robert function formulation for velocities on the sphere" << std::endl;
-				std::cout << "	--nonlinear [int]	Use non-linear (>=1) if available or linear (0) formulation, default: 1" << std::endl;
-				std::cout << "						     0: Linear " << std::endl;
-				std::cout << "						     1: Nonlinear (default)" << std::endl;
-				std::cout << "						     2: Linear + nonlinear advection only (needs -H to be set)" << std::endl;
+				std::cout << "	--nonlinear [int]		Use non-linear (>=1) if available or linear (0) formulation, default: 1" << std::endl;
+				std::cout << "						0: Linear " << std::endl;
+				std::cout << "						1: Nonlinear (default)" << std::endl;
+				std::cout << "						2: Linear + nonlinear advection only (needs -H to be set)" << std::endl;
 				std::cout << "" << std::endl;
 				rexi.outputProgParams();
 
