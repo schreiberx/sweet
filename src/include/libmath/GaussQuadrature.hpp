@@ -8,10 +8,10 @@
 #ifndef SRC_INCLUDE_GAUSSQUADRATURE_HPP_
 #define SRC_INCLUDE_GAUSSQUADRATURE_HPP_
 
-#include <functional>
 #include <cmath>
 #include <limits>
 #include <iostream>
+#include <functional>
 #include <sweet/FatalError.hpp>
 #include <libmath/DQStuff.hpp>
 

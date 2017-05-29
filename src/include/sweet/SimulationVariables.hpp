@@ -266,10 +266,6 @@ public:
 		/// 7.292 × 10 −5
 		double f0 = 0.00007292;
 
-		/// Beta coefficient for f(y_N) = f0 + y_N*beta
-		/// here, y_N is the normalized y coordinate \in [0;1]
-//		double beta = 0.0;
-
 		// constants from Galwesky et al. paper
 
 		/**
@@ -308,7 +304,6 @@ public:
 			std::cout << " + viscosity_order: " << viscosity_order << std::endl;
 			std::cout << " + CFL: " << CFL << std::endl;
 			std::cout << " + f0: " << f0 << std::endl;
-//			std::cout << " + beta: " << beta << std::endl;
 			std::cout << " + earth_radius: " << earth_radius << std::endl;
 			std::cout << " + coriolis_omega: " << coriolis_omega << std::endl;
 			std::cout << " + f_sphere: " << f_sphere << std::endl;
@@ -328,8 +323,6 @@ public:
 			std::cout << "	-U [visc]	viscosity order, default=2" << std::endl;
 			std::cout << "	-f [float]	f-parameter for f-plane or coriolis omega term, default=0" << std::endl;
 			std::cout << "	-F [int]	Simulation on f-sphere, default=0" << std::endl;
-//				std::cout << "	-b [float]	beta-parameter for beta-plane, default=0" << std::endl;
-//				std::cout << "	            Use -1 to set f*sin(phi) with phi in [-pi/2;pi/2] in y" << std::endl;
 			std::cout << "	-g [float]	gravity" << std::endl;
 			std::cout << "	-a [float]	earth radius" << std::endl;
 			std::cout << "	-H [float]	average (initial) height of water" << std::endl;
@@ -1269,10 +1262,6 @@ public:
 			case 'a':
 				sim.earth_radius = atof(optarg);
 				break;
-
-//			case 'b':
-//				sim.beta = atof(optarg);
-//				break;
 
 			case 'z':
 				sim.top_bottom_zero_v_velocity = true;

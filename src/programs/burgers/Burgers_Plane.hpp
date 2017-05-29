@@ -117,9 +117,8 @@ public:
 		PlaneOperators &op,     ///< Operator class
 		PlaneDataSampler &sampler2D, ///< Interpolation class
 		SemiLagrangian &semiLagrangian,  ///< Semi-Lag class
-		double* i_stag_displacement,
-		double* i_stag_u,
-		double* i_stag_v
+
+		const Staggering &i_staggering
 	);
 
 	/**

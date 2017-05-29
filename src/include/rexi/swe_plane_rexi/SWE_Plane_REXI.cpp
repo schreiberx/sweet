@@ -342,35 +342,46 @@ bool SWE_Plane_REXI::run_timestep_implicit_ts(
 }
 
 
+
 /**
  * Solve  SWE with Crank-Nicolson implicit time stepping
  *  (spectral formulation for Helmholtz eq) with semi-Lagrangian
  *   SL-SI-SP
- * U_t = L U(0)
- * Fully implicit version
- * (U(tau) - U(0)) / tau = 0.5*(L U(tau)+L U(0))
  *
- * <=> U(tau) - U(0) =  tau * 0.5*(L U(tau)+L U(0))
+ * U_t = L U(0)
+ *
+ * MS@PP: Are you sure that this is fully-implicit?
+ * Fully-implicit would mean that all terms on RHS are dependent on U(tau)
+ *
+ * Fully implicit version:
+ *
+ * (U(tau) - U(0)) / tau = 0.5*(L U(tau) + L U(0))
+ *
+ * <=> U(tau) - U(0) =  tau * 0.5*(L U(tau) + L U(0))
  *
  * <=> U(tau) - 0.5* L tau U(tau) = U(0) + tau * 0.5*L U(0)
  *
- * <=> (1 - 0.5 L tau) U(tau) = (1+tau*0.5*L) U(0)
+ * <=> (1 - 0.5 L tau) U(tau) = (1 + tau*0.5*L) U(0)
  *
- * <=> (2/tau - L) U(tau) = (2/tau+L) U(0)
+ * <=> (2/tau - L) U(tau) = (2/tau + L) U(0)
  *
- * Semi-implicit has coriolis term as totally explicit
+ * <=> U(tau) = (2/tau - L)^{-1} (2/tau + L) U(0)
  *
- *Semi-Lagrangian:
- *  U(tau) is on arrival points
- *  U(0) is on departure points
+ * Semi-implicit has Coriolis term as totally explicit
+ *
+ * Semi-Lagrangian:
+ *   U(tau) is on arrival points
+ *   U(0) is on departure points
  *
  * Nonlinear term is added following Hortal (2002)
+ * http://onlinelibrary.wiley.com/doi/10.1002/qj.200212858314/pdf
  *
  */
 bool SWE_Plane_REXI::run_timestep_cn_sl_ts(
 	PlaneData &io_h,  ///< Current fields
 	PlaneData &io_u,
 	PlaneData &io_v,
+
 	PlaneData &io_h_prev,	///< past fields
 	PlaneData &io_u_prev,
 	PlaneData &io_v_prev,
@@ -406,12 +417,14 @@ bool SWE_Plane_REXI::run_timestep_cn_sl_ts(
 	double alpha = 2.0/dt;
 	double kappa = alpha*alpha;
 	double kappa_bar = kappa;
-	double stag_displacement[4] = {-0.5,-0.5,-0.5,-0.5}; //A grid staggering - centred cell
 	kappa += f0*f0;
 	kappa_bar -= f0*f0;
 
 	if (i_param_nonlinear > 0)
 	{
+		Staggering staggering;
+		assert(staggering.staggering_type == 'a');
+
 		// Calculate departure points
 		semiLagrangian.semi_lag_departure_points_settls(
 				io_u_prev,	io_v_prev,
@@ -419,7 +432,7 @@ bool SWE_Plane_REXI::run_timestep_cn_sl_ts(
 				i_posx_a,	i_posy_a,
 				dt,
 				posx_d,	posy_d,
-				stag_displacement
+				staggering
 		);
 
 	}
@@ -563,20 +576,21 @@ bool SWE_Plane_REXI::run_timestep_slrexi(
 
 	//Parameters
 	double dt = i_timestep_size;
-	double stag_displacement[4] = {-0.5,-0.5,-0.5,-0.5}; //A grid staggering - centred cell
+
+	Staggering staggering;
+	assert(staggering.staggering_type == 'a');
 
 	if (i_param_nonlinear > 0)
 	{
-		//Calculate departure points
+		// Calculate departure points
 		semiLagrangian.semi_lag_departure_points_settls(
-				io_u_prev, io_v_prev,
-				io_u,	io_v,
+				io_u_prev,	io_v_prev,
+				io_u,		io_v,
 				i_posx_a,	i_posy_a,
 				dt,
 				posx_d,	posy_d,			// output
-				stag_displacement
+				staggering
 		);
-
 	}
 
 	u = io_u;
@@ -600,7 +614,7 @@ bool SWE_Plane_REXI::run_timestep_slrexi(
 
 		//Calculate exp(Ldt)N(n-1), relative to previous timestep
 		//Calculate the V{n-1} term as in documentation, with the exponential integrator
-		if(i_linear_exp_analytical)
+		if (i_linear_exp_analytical)
 			run_timestep_direct_solution( N_h, N_u, N_v, dt, op, i_simVars );
 		else
 			run_timestep_rexi( N_h, N_u, N_v, dt, op, i_simVars);

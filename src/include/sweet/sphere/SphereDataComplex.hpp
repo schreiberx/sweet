@@ -16,6 +16,7 @@
 #include <fstream>
 #include <iomanip>
 #include <cassert>
+#include <functional>
 
 #include <sweet/sphere/SphereDataConfig.hpp>
 #include <sweet/sphere/SphereData.hpp>

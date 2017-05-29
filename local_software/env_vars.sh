@@ -6,8 +6,8 @@
 # It assumes that you install all your libraries in subdirectories in $HOME/local
 #
 
-if [ "`basename $0`" == "env_vars.sh" ]; then
-	if [ "#$0" != "#-bash" ]; then
+if [ "#$0" != "#-bash" ]; then
+	if [ "`basename $0`" == "env_vars.sh" ]; then
 		if [ "`basename $0`" != "bash" ]; then
 			if [ "`basename $0`" != "modules_env_yellowstone.inc" ]; then
 				echo "ERROR|"

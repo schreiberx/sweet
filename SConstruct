@@ -131,6 +131,7 @@ AddOption(	'--libpfasst',
 env['libpfasst'] = GetOption('libpfasst')
 
 
+
 env.Append(CXXFLAGS=' -DSWEET_SIMD_ENABLE='+('1' if env['simd']=='enable' else '0'))
 
 
@@ -346,6 +347,9 @@ env.Append(LINKFLAGS = env['ld_flags'])
 
 
 env['fortran_source'] = 'disable'
+
+if env['libpfasst'] == 'enable':
+	env['fortran_source'] = 'enable'
 
 llvm_gnu_override = False
 llvm_omp_override = False

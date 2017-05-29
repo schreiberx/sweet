@@ -17,6 +17,7 @@
 #include <iomanip>
 #include <cassert>
 #include <limits>
+#include <functional>
 
 #include <sweet/sweetmath.hpp>
 #include <sweet/MemBlockAlloc.hpp>
@@ -446,7 +447,8 @@ public:
 public:
 	~SphereDataPhysicalComplex()
 	{
-		MemBlockAlloc::free(physical_space_data, sphereDataConfig->physical_array_data_number_of_elements * sizeof(std::complex<double>));
+		if (physical_space_data != nullptr)
+			MemBlockAlloc::free(physical_space_data, sphereDataConfig->physical_array_data_number_of_elements * sizeof(std::complex<double>));
 	}
 
 

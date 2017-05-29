@@ -11,6 +11,7 @@
 #include <string>
 #include <iostream>
 #include <limits>
+#include <functional>
 #include <sweet/sweetmath.hpp>
 #include <sweet/openmp_helper.hpp>
 #include <sweet/MemBlockAlloc.hpp>

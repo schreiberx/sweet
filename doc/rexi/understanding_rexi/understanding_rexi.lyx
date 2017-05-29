@@ -1,7 +1,9 @@
-#LyX 2.1 created this file. For more info see http://www.lyx.org/
-\lyxformat 474
+#LyX 2.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 508
 \begin_document
 \begin_header
+\save_transient_properties true
+\origin unavailable
 \textclass article
 \begin_preamble
 \usepackage{babel}
@@ -12,16 +14,16 @@
 \language_package default
 \inputencoding iso8859-15
 \fontencoding T1
-\font_roman default
-\font_sans default
-\font_typewriter default
-\font_math auto
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
 \font_default_family default
 \use_non_tex_fonts false
 \font_sc false
 \font_osf false
-\font_sf_scale 100
-\font_tt_scale 100
+\font_sf_scale 100 100
+\font_tt_scale 100 100
 \graphics default
 \default_output_format default
 \output_sync 0
@@ -855,7 +857,7 @@ For a better understanding and discussion of the poles, we provide some
 \size scriptsize
 \begin_inset Tabular
 <lyxtabular version="3" rows="28" columns="3">
-<features rotate="0" tabularvalignment="middle">
+<features tabularvalignment="middle">
 <column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
@@ -892,7 +894,7 @@ For a better understanding and discussion of the poles, we provide some
 \begin_layout Plain Layout
 
 \size scriptsize
-\begin_inset Formula $\beta_{n}$
+\begin_inset Formula $\beta_{n}^{Re}$
 \end_inset
 
 
@@ -2286,7 +2288,7 @@ Handling
  in REXI
 \begin_inset CommandInset label
 LatexCommand label
-name "sub:Handling-tau-in-REXI"
+name "subsec:Handling-tau-in-REXI"
 
 \end_inset
 
@@ -2300,7 +2302,7 @@ We reformulate the REXI approximation scheme given by
 \begin_layout Standard
 \begin_inset Formula 
 \[
-(\tau L+\alpha)^{-1}U(\tau)=U(0)
+(\tau L+\alpha)U(\tau)=U(0)
 \]
 
 \end_inset
@@ -2315,7 +2317,7 @@ and by factoring
 \begin_layout Standard
 \begin_inset Formula 
 \[
-(L+\frac{\alpha}{\tau})^{-1}U(\tau)\tau^{-1}=U(0)
+(L+\frac{\alpha}{\tau})U(\tau)=\tau^{-1}U(0)
 \]
 
 \end_inset
@@ -2325,7 +2327,7 @@ So instead of solving for
 \end_inset
 
 , we are solving for 
-\begin_inset Formula $U^{\tau}(\tau):=U(\tau)\tau^{-1}$
+\begin_inset Formula $U^{\tau}(0):=U(0)\tau^{-1}$
 \end_inset
 
  as well as 
@@ -2342,7 +2344,7 @@ To summarize, we have to solve the system of equations given by
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-(L+\alpha^{\tau})^{-1}U^{\tau}(\tau)=U(0)\label{eq:unit_rexi_timestep}
+(L+\alpha^{\tau})U(\tau)=\tau^{-1}U(0)\label{eq:unit_rexi_timestep}
 \end{equation}
 
 \end_inset
@@ -3043,7 +3045,7 @@ contains eigenvalues
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="2" columns="3">
-<features rotate="0" tabularvalignment="middle">
+<features tabularvalignment="middle">
 <column alignment="right" valignment="top">
 <column alignment="center" valignment="top">
 <column alignment="left" valignment="top">
@@ -3141,7 +3143,7 @@ Case B) For
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="2" columns="3">
-<features rotate="0" tabularvalignment="middle">
+<features tabularvalignment="middle">
 <column alignment="right" valignment="top">
 <column alignment="center" valignment="top">
 <column alignment="left" valignment="top">
@@ -3618,6 +3620,10 @@ The iterative solvers are memory bound.
 
 \begin_layout Itemize
 It is unknown which method is more efficient to solve the system of equations:
+\begin_inset Separator latexpar
+\end_inset
+
+
 \end_layout
 
 \begin_deeper

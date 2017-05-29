@@ -44,9 +44,6 @@ class SWE_Plane_REXI
 	double h;
 	int M;
 
-	// ID of solver to use, specify -1 to print a list of solvers
-//	int helmholtz_solver;
-
 	// simulation domain size
 	double domain_size[2];
 
@@ -65,9 +62,6 @@ class SWE_Plane_REXI
 	{
 	public:
 		PlaneOperatorsComplex op;
-
-//		PlaneDataComplex op_diff_c_x, op_diff_c_y;
-//		PlaneDataComplex opc.diff2_c_x, opc.diff2_c_y;
 
 		PlaneDataComplex eta;
 
@@ -98,12 +92,6 @@ class SWE_Plane_REXI
 public:
 	//REXI stuff
 	REXI<> rexi;
-
-	// Interpolation stuff
-	//Sampler2D sampler2D;
-
-	// Semi-Lag stuff
-	//SemiLagrangian semiLagrangian;
 
 private:
 	void cleanup();
@@ -147,12 +135,14 @@ public:
 			int i_thread_id = 0
 	)
 	{
-		// compute
-		// 		kappa - g * eta_bar * D2
-		// NOTE!!! We add kappa in Cartesian space, hence add this value to all frequency components to account for scaling all frequencies!!!
-		// This is *NOT* straightforward and different to adding a constant for computations.
-		// We account for this by seeing the LHS as a set of operators which have to be joint later by a sum.
-
+		/*
+		 * compute
+		 * 		kappa - g * eta_bar * D2
+		 *
+		 * NOTE!!! We add kappa in Cartesian space, hence add this value to all frequency components to account for scaling all frequencies!!!
+		 * This is *NOT* straightforward and different to adding a constant for computations.
+		 * We account for this by seeing the LHS as a set of operators which have to be joint later by a sum.
+		 */
 		PlaneDataComplex lhs = ((-i_gh0)*(perThreadVars[i_thread_id]->op.diff2_c_x + perThreadVars[i_thread_id]->op.diff2_c_y)).spectral_addScalarAll(i_kappa);
 
 		io_x =i_rhs.spectral_div_element_wise(lhs);
@@ -177,12 +167,6 @@ public:
 			int i_thread_id = 0
 	)
 	{
-		// compute
-		// 		kappa - g * eta_bar * D2
-		// NOTE!!! We add kappa in Cartesian space, hence add this value to all frequency components to account for scaling all frequencies!!!
-		// This is *NOT* straightforward and different to adding a constant for computations.
-		// We account for this by seeing the LHS as a set of operators which have to be joint later by a sum.
-
 		PlaneDataComplex lhs = (-i_gh0*(perThreadVars[i_thread_id]->op.diff2_c_x + perThreadVars[i_thread_id]->op.diff2_c_y)).spectral_addScalarAll(i_kappa);
 
 		io_x = i_rhs.spectral_div_element_wise(lhs);
@@ -206,14 +190,6 @@ public:
 			PlaneOperators &op     ///< Operator class
 	)
 	{
-
-		// compute
-		// 		kappa - g * eta_bar * D2
-		// NOTE!!! We add kappa to all frequency components to account for scaling all frequencies!!!
-		// This is *NOT* straightforward and different to adding a constant for computations.
-		// We account for this by seeing the LHS as a set of operators which have to be joint later by a sum.
-
-
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 		PlaneData laplacian = -i_gh0*op.diff2_c_x -i_gh0*op.diff2_c_y;
 		PlaneData lhs = laplacian.spectral_addScalarAll(i_kappa);

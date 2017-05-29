@@ -473,7 +473,7 @@ void run_tests()
 					}
 			);
 
-			b = opComplex.laplace(b)*scalar/(r*r) + b*alpha;
+			b = opComplex.laplace(b,1)*scalar/(r*r) + b*alpha;
 
 			SphereDataComplex x_numerical = sphSolver.solve(b);
 			ErrorCheck::check(x_numerical, x_result, "Test Z7 = laplace(Phi(lam,mu))", epsilon);
@@ -494,7 +494,7 @@ void run_tests()
 			// ADD OFFSET FOR NON-SINGULAR SOLUTION
 			sphSolver.solver_component_scalar_phi(alpha);
 
-			SphereDataComplex b = opComplex.mu2(opComplex.laplace(x_result))*scalar/(r*r) + x_result*alpha;
+			SphereDataComplex b = opComplex.mu2(opComplex.laplace(x_result,1))*scalar/(r*r) + x_result*alpha;
 			SphereDataComplex x_numerical = sphSolver.solve(b);
 
 			ErrorCheck::check(x_numerical, x_result, "Test Z8 = mu*mu*laplace(Phi(lam,mu))", epsilon);
@@ -512,7 +512,7 @@ void run_tests()
 			std::complex<double> b = alpha*2.0-1.0;
 			double r = simVars.sim.earth_radius;
 
-			SphereDataComplex testc = a*x_result + (b/(r*r))*opComplex.laplace(x_result);
+			SphereDataComplex testc = a*x_result + (b/(r*r))*opComplex.laplace(x_result,1);
 
 			SphereDataComplex x_numerical = testc.spectral_solve_helmholtz(a, b, r);
 
