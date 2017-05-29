@@ -63,7 +63,7 @@ void SWE_Plane_TS_l_rexi_ns_sl_nd_erk::run_timestep(
 	Staggering staggering;
 	assert(staggering.staggering_type == 'a');
 
-	if (with_nonlinear)
+	if (with_nonlinear > 0)
 	{
 		// Calculate departure points
 		semiLagrangian.semi_lag_departure_points_settls(
@@ -86,7 +86,7 @@ void SWE_Plane_TS_l_rexi_ns_sl_nd_erk::run_timestep(
 	hdiv.physical_set_all(0);
 
 	//Calculate nonlinear terms
-	if (with_nonlinear)
+	if (with_nonlinear > 0)
 	{
 		//Calculate Divergence and vorticity spectrally
 		hdiv =  - io_h * (op.diff_c_x(io_u) + op.diff_c_y(io_v));
@@ -109,7 +109,7 @@ void SWE_Plane_TS_l_rexi_ns_sl_nd_erk::run_timestep(
 
 
 
-	if (with_nonlinear)
+	if (with_nonlinear > 0)
 	{
 		//Build variables to be interpolated to dep. points
 		// This is the W^n term in documentation
@@ -130,7 +130,7 @@ void SWE_Plane_TS_l_rexi_ns_sl_nd_erk::run_timestep(
 	 */
 	ts_l_rexi.run_timestep(h, u, v, o_dt, i_fixed_dt, i_simulation_timestamp, i_max_simulation_time);
 
-	if (with_nonlinear)
+	if (with_nonlinear > 1)
 	{
 		// Add nonlinearity in h
 		h = h + 0.5 * dt * hdiv;
@@ -161,7 +161,7 @@ void SWE_Plane_TS_l_rexi_ns_sl_nd_erk::setup(
 		bool i_rexi_half,				///< use half-pole reduction
 		bool i_rexi_normalization,		///< REXI normalization
 
-		bool i_with_nonlinear
+		int i_with_nonlinear
 )
 {
 	ts_l_rexi.setup(i_h, i_M, i_L, i_rexi_half, i_rexi_normalization);

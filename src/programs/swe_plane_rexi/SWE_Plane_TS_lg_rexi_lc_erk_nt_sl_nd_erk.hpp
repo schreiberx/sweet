@@ -28,7 +28,7 @@ class SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk	: public SWE_Plane_TS_interface
 
 	SWE_Plane_TS_l_rexi ts_l_rexi;
 
-	bool with_nonlinear;
+	int with_nonlinear;
 
 	PlaneDataSemiLagrangian semiLagrangian;
 	PlaneDataSampler sampler2D;
@@ -55,7 +55,7 @@ public:
 			bool i_rexi_half,				///< use half-pole reduction
 			bool i_rexi_normalization,		///< REXI normalization
 
-			bool i_with_nonlinear
+			int i_with_nonlinear
 	);
 
 	void run_timestep(

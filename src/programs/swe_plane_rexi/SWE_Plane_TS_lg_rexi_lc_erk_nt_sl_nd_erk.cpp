@@ -21,9 +21,6 @@
  *
  * U_t = L U(0)
  *
- * MS@PP: Are you sure that this is fully-implicit?
- * Fully-implicit would mean that all terms on RHS are dependent on U(tau)
- *
  * Fully implicit version:
  *
  * (U(tau) - U(0)) / tau = 0.5*(L U(tau) + L U(0))
@@ -73,7 +70,6 @@ void SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk::run_timestep(
 		/*
 		 * First time step
 		 */
-
 		h_prev = io_h;
 		u_prev = io_u;
 		v_prev = io_v;
@@ -85,7 +81,6 @@ void SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk::run_timestep(
 	PlaneData v(io_h.planeDataConfig);
 
 	// Departure points and arrival points
-
 	ScalarDataArray posx_d = posx_a;
 	ScalarDataArray posy_d = posy_a;
 
@@ -142,7 +137,7 @@ void SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk::run_timestep(
 	}
 
 	// Calculate nonlinear term at half timestep and add to RHS of h eq.
-	if (with_nonlinear == 1)
+	if (with_nonlinear > 0)
 	{
 		// Calculate nonlinear term interpolated to departure points
 		// h*div is calculate in cartesian space (pseudo-spectrally)
@@ -221,7 +216,7 @@ void SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk::setup(
 		bool i_rexi_half,				///< use half-pole reduction
 		bool i_rexi_normalization,		///< REXI normalization
 
-		bool i_with_nonlinear
+		int i_with_nonlinear
 )
 {
 	ts_l_rexi.setup(i_h, i_M, i_L, i_rexi_half, i_rexi_normalization);
