@@ -2,3 +2,4 @@ build
 FFTW_*
 *.txt
 *.mod
+*~
