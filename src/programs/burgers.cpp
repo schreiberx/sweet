@@ -49,7 +49,7 @@ SimulationVariables simVars;
 const int NUM_OF_UNKNOWNS=2;
 
 //specific parameters
-bool param_compute_error = 0;
+bool param_compute_error = 1;
 
 
 class SimulationInstance
@@ -466,6 +466,80 @@ public:
 		assert(simVars.sim.CFL < 0);
 		simVars.timecontrol.current_timestep_size = -simVars.sim.CFL;
 
+#if 0
+		switch (simVars.disc.timestepping_method)
+		{
+			case simVars.disc.RUNGE_KUTTA_EXPLICIT:
+				// Basic explicit Runge-Kutta
+				if (simVars.disc.timestepping_order != 21)
+				{
+					// setup dummy data
+					tmp.physical_set_all(0);
+
+					// run standard Runge Kutta
+					timestepping_rk.run_timestep(
+						this,
+						&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
+						tmp, prog_u, prog_v, ///< tmp is used to make use of the swe version of run_timestep
+						dt,
+						simVars.timecontrol.current_timestep_size,
+						simVars.disc.timestepping_order,
+						simVars.timecontrol.current_simulation_time,
+						simVars.timecontrol.max_simulation_time
+					);
+				}
+				// Explicit Runge-Kutta with order 1 in diffusion and order 2 in advection
+				else
+				{
+					burgers_plane.run_timestep_explicit_ts(
+							prog_u,
+							prog_v,
+
+							dt,
+							simVars.timecontrol.current_timestep_size,
+
+							op,
+							simVars,
+							planeDataConfig
+					);
+				}
+				break;
+
+			case simVars.disc.RUNGE_KUTTA_IMEX:
+				burgers_plane.run_timestep_imex(
+						prog_u, prog_v,
+						dt,
+						simVars.timecontrol.current_timestep_size,
+						op,
+						simVars,
+						planeDataConfig,
+						simVars.timecontrol.max_simulation_time
+				);
+				break;
+
+			case simVars.disc.SEMI_LAGRANGIAN_SEMI_IMPLICIT:
+				burgers_plane.run_timestep_sl(
+					prog_u, prog_v,
+					prog_u_prev, prog_v_prev,
+					posx_a, posy_a,
+					dt,
+					simVars.timecontrol.current_timestep_size,
+					simVars,
+					planeDataConfig,
+					op,
+					sampler2D,
+					semiLagrangian,
+					stag_displacement,
+					stag_u,
+					stag_v
+				);
+				break;
+
+			default:
+				FatalError("Chosen time stepping method not available!");
+		}
+
+#else
 		if (simVars.disc.timestepping_method == SimulationVariables::Discretization::RUNGE_KUTTA_EXPLICIT) //Explicit RK
 		{
 			// Basic explicit Runge-Kutta
@@ -536,6 +610,7 @@ public:
 		{
 			FatalError("Chosen time stepping method not available!");
 		}
+#endif
 
 		//dt = simVars.timecontrol.current_timestep_size;
 
@@ -1264,12 +1339,14 @@ int main(int i_argc, char *i_argv[])
 	{
 		std::cout << std::endl;
 		std::cout << "Special parameters:" << std::endl;
-		std::cout << "	--compute-error [0/1]		Compute the errors, default=0" << std::endl;
+		std::cout << "	--compute-error [0/1]		Compute errors (if available, default: 1)" << std::endl;
 		std::cout << std::endl;
 
-#if SWEET_PARAREAL
-		simVars.parareal.setup_printOptions();
-#endif
+/*
+ * #if SWEET_PARAREAL
+ * 		simVars.parareal.setup_printOptions();
+ * #endif
+ */
 		return -1;
 	}
 
@@ -1283,8 +1360,8 @@ int main(int i_argc, char *i_argv[])
 	std::cout << "Solving viscous Burgers' equation" << std::endl;
 	std::cout << "-----------------------------" << std::endl;
 	simVars.outputConfig();
-	std::cout << "Specific parameters" << std::endl;
-	std::cout << " + compute_error: " << param_compute_error << std::endl;
+	std::cout << "LOCAL PARAMETERS" << std::endl;
+	std::cout << " + param_compute_error: " << param_compute_error << std::endl;
 	std::cout << std::endl;
 
 	std::ostringstream buf;
