@@ -337,28 +337,8 @@ public:
 		/*
 		 * P UPDATE
 		 */
-		if (!simVars.disc.timestepping_up_and_downwinding)
-		{
-			// standard update
-			o_h_t = -op.diff_c_x(U) - op.diff_c_y(V);
-		}
-		else
-		{
-			// up/down winding
-			compute_upwinding_P_updates(
-					i_h,
-					i_u,
-					i_v,
-					o_h_t
-				);
-		}
-#if 0
-		if (simVars.sim.potential_viscosity != 0)
-			o_h_t -= op.diff2(i_h)*simVars.sim.potential_viscosity;
-
-		if (simVars.sim.potential_hyper_viscosity != 0)
-			o_h_t -= op.diff4(i_h)*simVars.sim.potential_hyper_viscosity;
-#endif
+		// standard update
+		o_h_t = -op.diff_c_x(U) - op.diff_c_y(V);
 	}
 
 

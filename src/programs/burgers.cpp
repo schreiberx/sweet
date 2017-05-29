@@ -111,7 +111,7 @@ public:
 	PlaneDataSampler sampler2D;
 
 	// Semi-Lag stuff
-	SemiLagrangian semiLagrangian;
+	PlaneDataSemiLagrangian semiLagrangian;
 
 
 	/**

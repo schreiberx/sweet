@@ -99,9 +99,9 @@ public:
 					double i_simulation_time	///< simulation time, e.g. for tidal waves
 			),
 
-			PlaneData &io_h,
-			PlaneData &io_u,
-			PlaneData &io_v,
+			PlaneData &io_var0,
+			PlaneData &io_var1,
+			PlaneData &io_var2,
 
 			double &o_dt,					///< return time step size for the computed time step
 
@@ -117,15 +117,15 @@ public:
 			double i_max_simulation_time = std::numeric_limits<double>::infinity()	///< limit the maximum simulation time
 	)
 	{
-		setupBuffers(io_h, i_runge_kutta_order);
+		setupBuffers(io_var0, i_runge_kutta_order);
 
 		double &dt = o_dt;
 		if (i_runge_kutta_order == 1)
 		{
 			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_h,	// input
-					io_u,
-					io_v,
+					io_var0,	// input
+					io_var1,
+					io_var2,
 					*RK_h_t[0],	// output
 					*RK_u_t[0],
 					*RK_v_t[0],
@@ -139,9 +139,9 @@ public:
 				if (dt+i_simulation_time > i_max_simulation_time)
 					dt = i_max_simulation_time-i_simulation_time;
 
-			io_h += dt**RK_h_t[0];
-			io_u += dt**RK_u_t[0];
-			io_v += dt**RK_v_t[0];
+			io_var0 += dt**RK_h_t[0];
+			io_var1 += dt**RK_u_t[0];
+			io_var2 += dt**RK_v_t[0];
 
 		}
 		else if (i_runge_kutta_order == 2)
@@ -163,9 +163,9 @@ public:
 
 			// STAGE 1
 			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_h,
-					io_u,
-					io_v,
+					io_var0,
+					io_var1,
+					io_var2,
 					*RK_h_t[0],
 					*RK_u_t[0],
 					*RK_v_t[0],
@@ -181,9 +181,9 @@ public:
 
 			// STAGE 2
 			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_h + ( dt*a2[0]*(*RK_h_t[0]) ),
-					io_u + ( dt*a2[0]*(*RK_u_t[0]) ),
-					io_v + ( dt*a2[0]*(*RK_v_t[0]) ),
+					io_var0 + ( dt*a2[0]*(*RK_h_t[0]) ),
+					io_var1 + ( dt*a2[0]*(*RK_u_t[0]) ),
+					io_var2 + ( dt*a2[0]*(*RK_v_t[0]) ),
 					*RK_h_t[1],
 					*RK_u_t[1],
 					*RK_v_t[1],
@@ -192,9 +192,9 @@ public:
 					i_simulation_time + c[0]*dt
 			);
 
-			io_h += dt*(/* b[0]*(*RK_h_t[0]) +*/ b[1]*(*RK_h_t[1]) );
-			io_u += dt*(/* b[0]*(*RK_u_t[0]) +*/ b[1]*(*RK_u_t[1]) );
-			io_v += dt*(/* b[0]*(*RK_v_t[0]) +*/ b[1]*(*RK_v_t[1]) );
+			io_var0 += dt*(/* b[0]*(*RK_h_t[0]) +*/ b[1]*(*RK_h_t[1]) );
+			io_var1 += dt*(/* b[0]*(*RK_u_t[0]) +*/ b[1]*(*RK_u_t[1]) );
+			io_var2 += dt*(/* b[0]*(*RK_v_t[0]) +*/ b[1]*(*RK_v_t[1]) );
 		}
 		else if (i_runge_kutta_order == 3)
 		{
@@ -217,9 +217,9 @@ public:
 
 			// STAGE 1
 			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_h,
-					io_u,
-					io_v,
+					io_var0,
+					io_var1,
+					io_var2,
 					*RK_h_t[0],
 					*RK_u_t[0],
 					*RK_v_t[0],
@@ -235,9 +235,9 @@ public:
 
 			// STAGE 2
 			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_h	+ dt*( a2[0]*(*RK_h_t[0]) ),
-					io_u	+ dt*( a2[0]*(*RK_u_t[0]) ),
-					io_v	+ dt*( a2[0]*(*RK_v_t[0]) ),
+					io_var0	+ dt*( a2[0]*(*RK_h_t[0]) ),
+					io_var1	+ dt*( a2[0]*(*RK_u_t[0]) ),
+					io_var2	+ dt*( a2[0]*(*RK_v_t[0]) ),
 					*RK_h_t[1],
 					*RK_u_t[1],
 					*RK_v_t[1],
@@ -248,9 +248,9 @@ public:
 
 			// STAGE 3
 			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_h	+ dt*( a3[0]*(*RK_h_t[0]) + a3[1]*(*RK_h_t[1]) ),
-					io_u	+ dt*( a3[0]*(*RK_u_t[0]) + a3[1]*(*RK_u_t[1]) ),
-					io_v	+ dt*( a3[0]*(*RK_v_t[0]) + a3[1]*(*RK_v_t[1]) ),
+					io_var0	+ dt*( a3[0]*(*RK_h_t[0]) + a3[1]*(*RK_h_t[1]) ),
+					io_var1	+ dt*( a3[0]*(*RK_u_t[0]) + a3[1]*(*RK_u_t[1]) ),
+					io_var2	+ dt*( a3[0]*(*RK_v_t[0]) + a3[1]*(*RK_v_t[1]) ),
 					*RK_h_t[2],
 					*RK_u_t[2],
 					*RK_v_t[2],
@@ -259,9 +259,9 @@ public:
 					i_simulation_time + c[1]*dt
 			);
 
-			io_h += dt*( (b[0]*(*RK_h_t[0])) + (b[1]*(*RK_h_t[1]))  + (b[2]*(*RK_h_t[2])) );
-			io_u += dt*( (b[0]*(*RK_u_t[0])) + (b[1]*(*RK_u_t[1]))  + (b[2]*(*RK_u_t[2])) );
-			io_v += dt*( (b[0]*(*RK_v_t[0])) + (b[1]*(*RK_v_t[1]))  + (b[2]*(*RK_v_t[2])) );
+			io_var0 += dt*( (b[0]*(*RK_h_t[0])) + (b[1]*(*RK_h_t[1]))  + (b[2]*(*RK_h_t[2])) );
+			io_var1 += dt*( (b[0]*(*RK_u_t[0])) + (b[1]*(*RK_u_t[1]))  + (b[2]*(*RK_u_t[2])) );
+			io_var2 += dt*( (b[0]*(*RK_v_t[0])) + (b[1]*(*RK_v_t[1]))  + (b[2]*(*RK_v_t[2])) );
 		}
 		else if (i_runge_kutta_order == 4)
 		{
@@ -286,9 +286,9 @@ public:
 
 			// STAGE 1
 			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_h,
-					io_u,
-					io_v,
+					io_var0,
+					io_var1,
+					io_var2,
 					*RK_h_t[0],
 					*RK_u_t[0],
 					*RK_v_t[0],
@@ -304,9 +304,9 @@ public:
 
 			// STAGE 2
 			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_h	+ dt*( a2[0]*(*RK_h_t[0]) ),
-					io_u	+ dt*( a2[0]*(*RK_u_t[0]) ),
-					io_v	+ dt*( a2[0]*(*RK_v_t[0]) ),
+					io_var0	+ dt*( a2[0]*(*RK_h_t[0]) ),
+					io_var1	+ dt*( a2[0]*(*RK_u_t[0]) ),
+					io_var2	+ dt*( a2[0]*(*RK_v_t[0]) ),
 					*RK_h_t[1],
 					*RK_u_t[1],
 					*RK_v_t[1],
@@ -317,9 +317,9 @@ public:
 
 			// STAGE 3
 			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_h	+ dt*( /*a3[0]*(*RK_P_t[0]) +*/ a3[1]*(*RK_h_t[1]) ),
-					io_u	+ dt*( /*a3[0]*(*RK_u_t[0]) +*/ a3[1]*(*RK_u_t[1]) ),
-					io_v	+ dt*( /*a3[0]*(*RK_v_t[0]) +*/ a3[1]*(*RK_v_t[1]) ),
+					io_var0	+ dt*( /*a3[0]*(*RK_P_t[0]) +*/ a3[1]*(*RK_h_t[1]) ),
+					io_var1	+ dt*( /*a3[0]*(*RK_u_t[0]) +*/ a3[1]*(*RK_u_t[1]) ),
+					io_var2	+ dt*( /*a3[0]*(*RK_v_t[0]) +*/ a3[1]*(*RK_v_t[1]) ),
 					*RK_h_t[2],
 					*RK_u_t[2],
 					*RK_v_t[2],
@@ -330,9 +330,9 @@ public:
 
 			// STAGE 4
 			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_h	+ dt*( /*a4[0]*(*RK_P_t[0]) + a4[1]*(*RK_P_t[1]) +*/ a4[2]*(*RK_h_t[2]) ),
-					io_u	+ dt*( /*a4[0]*(*RK_u_t[0]) + a4[1]*(*RK_u_t[1]) +*/ a4[2]*(*RK_u_t[2]) ),
-					io_v	+ dt*( /*a4[0]*(*RK_v_t[0]) + a4[1]*(*RK_v_t[1]) +*/ a4[2]*(*RK_v_t[2]) ),
+					io_var0	+ dt*( /*a4[0]*(*RK_P_t[0]) + a4[1]*(*RK_P_t[1]) +*/ a4[2]*(*RK_h_t[2]) ),
+					io_var1	+ dt*( /*a4[0]*(*RK_u_t[0]) + a4[1]*(*RK_u_t[1]) +*/ a4[2]*(*RK_u_t[2]) ),
+					io_var2	+ dt*( /*a4[0]*(*RK_v_t[0]) + a4[1]*(*RK_v_t[1]) +*/ a4[2]*(*RK_v_t[2]) ),
 					*RK_h_t[3],
 					*RK_u_t[3],
 					*RK_v_t[3],
@@ -342,9 +342,9 @@ public:
 			);
 
 
-			io_h += dt*( (b[0]*(*RK_h_t[0])) + (b[1]*(*RK_h_t[1]))  + (b[2]*(*RK_h_t[2])) + (b[3]*(*RK_h_t[3])) );
-			io_u += dt*( (b[0]*(*RK_u_t[0])) + (b[1]*(*RK_u_t[1]))  + (b[2]*(*RK_u_t[2])) + (b[3]*(*RK_u_t[3])) );
-			io_v += dt*( (b[0]*(*RK_v_t[0])) + (b[1]*(*RK_v_t[1]))  + (b[2]*(*RK_v_t[2])) + (b[3]*(*RK_v_t[3])) );
+			io_var0 += dt*( (b[0]*(*RK_h_t[0])) + (b[1]*(*RK_h_t[1]))  + (b[2]*(*RK_h_t[2])) + (b[3]*(*RK_h_t[3])) );
+			io_var1 += dt*( (b[0]*(*RK_u_t[0])) + (b[1]*(*RK_u_t[1]))  + (b[2]*(*RK_u_t[2])) + (b[3]*(*RK_u_t[3])) );
+			io_var2 += dt*( (b[0]*(*RK_v_t[0])) + (b[1]*(*RK_v_t[1]))  + (b[2]*(*RK_v_t[2])) + (b[3]*(*RK_v_t[3])) );
 		}
 		else
 		{

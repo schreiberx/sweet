@@ -1,20 +1,16 @@
 /*
- * rexi_swe.hpp
+ * SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk.cpp
  *
- *  Created on: 24 Jul 2015
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk> Schreiber <schreiberx@gmail.com>
+ *  Created on: 29 May 2017
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *
+ *  Changelog:
+ *  	2017-05-29: Based on source swe_plane_rexi.cpp
+ *					which was also written by Pedro Peixoto
  */
-#include "SWE_Plane_REXI.hpp"
 
-#include <sweet/sweetmath.hpp>
+#include "SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk.hpp"
 
-
-#include <sweet/plane/PlaneDataComplex.hpp>
-#include <sweet/plane/PlaneOperatorsComplex.hpp>
-
-
-#include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
-#include <sweet/plane/Convert_PlaneDataComplex_to_PlaneData.hpp>
 
 
 
@@ -52,29 +48,37 @@
  * http://onlinelibrary.wiley.com/doi/10.1002/qj.200212858314/pdf
  *
  */
-bool SWE_Plane_REXI::run_timestep_cn_sl_ts(
-	PlaneData &io_h,  ///< Current fields
-	PlaneData &io_u,
-	PlaneData &io_v,
+void SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk::run_timestep(
+		PlaneData &io_h,	///< prognostic variables
+		PlaneData &io_u,	///< prognostic variables
+		PlaneData &io_v,	///< prognostic variables
 
-	PlaneData &io_h_prev,	///< past fields
-	PlaneData &io_u_prev,
-	PlaneData &io_v_prev,
-
-	ScalarDataArray &i_posx_a, //Arrival point positions in x and y (this is basically the grid)
-	ScalarDataArray &i_posy_a,
-
-	double i_timestep_size,	///< timestep size
-	int i_param_nonlinear, ///< degree of nonlinearity (0-linear, 1-full nonlinear, 2-only nonlinear adv)
-
-	const SimulationVariables &i_simVars, ///< Parameters for simulation
-
-	PlaneOperators &op,     ///< Operator class
-	PlaneDataSampler &sampler2D, ///< Interpolation class
-	PlaneDataSemiLagrangian &semiLagrangian  ///< Semi-Lag class
+		double &o_dt,			///< time step restriction
+		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_simulation_timestamp,
+		double i_max_simulation_time
 )
 {
-#if 0
+
+	if (i_fixed_dt <= 0)
+		FatalError("Only constant time step size allowed");
+
+	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
+		i_fixed_dt = i_max_simulation_time-i_simulation_timestamp;
+
+	o_dt = i_fixed_dt;
+
+	if (i_simulation_timestamp == 0)
+	{
+		/*
+		 * First time step
+		 */
+
+		h_prev = io_h;
+		u_prev = io_u;
+		v_prev = io_v;
+	}
+
 	// Out vars
 	PlaneData h(io_h.planeDataConfig);
 	PlaneData u(io_h.planeDataConfig);
@@ -82,30 +86,30 @@ bool SWE_Plane_REXI::run_timestep_cn_sl_ts(
 
 	// Departure points and arrival points
 
-	ScalarDataArray posx_d = i_posx_a;
-	ScalarDataArray posy_d = i_posy_a;
+	ScalarDataArray posx_d = posx_a;
+	ScalarDataArray posy_d = posy_a;
 
 	// Parameters
-	double h_bar = i_simVars.sim.h0;
-	double g = i_simVars.sim.gravitation;
-	double f0 = i_simVars.sim.f0;
-	double dt = i_timestep_size;
+	double h_bar = simVars.sim.h0;
+	double g = simVars.sim.gravitation;
+	double f0 = simVars.sim.f0;
+	double dt = i_fixed_dt;
 	double alpha = 2.0/dt;
 	double kappa = alpha*alpha;
 	double kappa_bar = kappa;
 	kappa += f0*f0;
 	kappa_bar -= f0*f0;
 
-	if (i_param_nonlinear > 0)
+	if (with_nonlinear > 0)
 	{
 		Staggering staggering;
 		assert(staggering.staggering_type == 'a');
 
 		// Calculate departure points
 		semiLagrangian.semi_lag_departure_points_settls(
-				io_u_prev,	io_v_prev,
+				u_prev,	v_prev,
 				io_u,		io_v,
-				i_posx_a,	i_posy_a,
+				posx_a,	posy_a,
 				dt,
 				posx_d,	posy_d,
 				staggering
@@ -117,14 +121,14 @@ bool SWE_Plane_REXI::run_timestep_cn_sl_ts(
 	PlaneData div = op.diff_c_x(io_u) + op.diff_c_y(io_v);
 
 	// this could be pre-stored
-	PlaneData div_prev = op.diff_c_x(io_u_prev) + op.diff_c_y(io_v_prev);
+	PlaneData div_prev = op.diff_c_x(u_prev) + op.diff_c_y(v_prev);
 
 	// Calculate the RHS
 	PlaneData rhs_u = alpha * io_u + f0 * io_v    - g * op.diff_c_x(io_h);
 	PlaneData rhs_v =  - f0 * io_u + alpha * io_v - g * op.diff_c_y(io_h);
 	PlaneData rhs_h = alpha * io_h  - h_bar * div;
 
-	if (i_param_nonlinear > 0)
+	if (with_nonlinear > 0)
 	{
 		// all the RHS are to be evaluated at the departure points
 		rhs_u=sampler2D.bicubic_scalar(rhs_u, posx_d, posy_d, -0.5, -0.5);
@@ -138,13 +142,13 @@ bool SWE_Plane_REXI::run_timestep_cn_sl_ts(
 	}
 
 	// Calculate nonlinear term at half timestep and add to RHS of h eq.
-	if (i_param_nonlinear == 1)
+	if (with_nonlinear == 1)
 	{
 		// Calculate nonlinear term interpolated to departure points
 		// h*div is calculate in cartesian space (pseudo-spectrally)
 		//div.aliasing_zero_high_modes();
 		//div_prev.aliasing_zero_high_modes();
-		PlaneData hdiv = 2.0 * io_h * div - io_h_prev * div_prev;
+		PlaneData hdiv = 2.0 * io_h * div - h_prev * div_prev;
 		//hdiv.aliasing_zero_high_modes();
 		//std::cout<<offcent<<std::endl;
 		PlaneData nonlin = 0.5 * io_h * div + 0.5 * sampler2D.bicubic_scalar(hdiv, posx_d, posy_d, -0.5, -0.5);
@@ -177,7 +181,7 @@ bool SWE_Plane_REXI::run_timestep_cn_sl_ts(
 	PlaneData rhs     = kappa* rhs_h / alpha - h_bar * rhs_div - f0 * h_bar * rhs_vort / alpha;
 
 	// Helmholtz solver
-	helmholtz_spectral_solver(kappa, g*h_bar, rhs, h, op);
+	helmholtz_spectral_solver(kappa, g*h_bar, rhs, h);
 
 	// Update u and v
 	u = (1/kappa)*
@@ -194,16 +198,94 @@ bool SWE_Plane_REXI::run_timestep_cn_sl_ts(
 
 
 	//Set time (n) as time (n-1)
-	io_h_prev = io_h;
-	io_u_prev = io_u;
-	io_v_prev = io_v;
+	h_prev = io_h;
+	u_prev = io_u;
+	v_prev = io_v;
 
 	//output data
 	io_h = h;
 	io_u = u;
 	io_v = v;
-#endif
-	return true;
 }
 
+
+
+/*
+ * Setup
+ */
+void SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk::setup(
+		double i_h,						///< sampling size
+		int i_M,						///< number of sampling points
+		int i_L,						///< number of sampling points for Gaussian approximation
+										///< set to 0 for auto detection
+		bool i_rexi_half,				///< use half-pole reduction
+		bool i_rexi_normalization,		///< REXI normalization
+
+		bool i_with_nonlinear
+)
+{
+	ts_l_rexi.setup(i_h, i_M, i_L, i_rexi_half, i_rexi_normalization);
+
+	with_nonlinear = i_with_nonlinear;
+
+	// Setup sampler for future interpolations
+	sampler2D.setup(simVars.sim.domain_size, op.planeDataConfig);
+
+	// Setup semi-lag
+	semiLagrangian.setup(simVars.sim.domain_size, op.planeDataConfig);
+
+
+	PlaneData tmp_x(op.planeDataConfig);
+	tmp_x.physical_update_lambda_array_indices(
+		[&](int i, int j, double &io_data)
+		{
+			io_data = ((double)i)*simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
+		}
+	);
+	PlaneData tmp_y(op.planeDataConfig);
+	tmp_y.physical_update_lambda_array_indices(
+		[&](int i, int j, double &io_data)
+		{
+			io_data = ((double)j)*simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
+		}
+	);
+
+	// Initialize arrival points with h position
+	ScalarDataArray pos_x = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_x);
+	ScalarDataArray pos_y = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_y);
+
+	// Initialize arrival points with h position
+	posx_a = pos_x+0.5*simVars.disc.cell_size[0];
+	posy_a = pos_y+0.5*simVars.disc.cell_size[1];
+
+
+}
+
+
+SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk::SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk(
+		SimulationVariables &i_simVars,
+		PlaneOperators &i_op
+)	:
+		simVars(i_simVars),
+		op(i_op),
+
+		ts_l_rexi(i_simVars, i_op),
+
+		h_prev(i_op.planeDataConfig),
+		u_prev(i_op.planeDataConfig),
+		v_prev(i_op.planeDataConfig),
+
+		posx_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
+		posy_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
+
+		posx_d(i_op.planeDataConfig->physical_array_data_number_of_elements),
+		posy_d(i_op.planeDataConfig->physical_array_data_number_of_elements)
+{
+}
+
+
+
+SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk::~SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk()
+{
+}
 

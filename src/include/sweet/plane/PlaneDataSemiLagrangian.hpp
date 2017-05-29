@@ -14,13 +14,13 @@
 #include <sweet/ScalarDataArray.hpp>
 #include <sweet/plane/Staggering.hpp>
 
-class SemiLagrangian
+class PlaneDataSemiLagrangian
 {
 	PlaneDataSampler sample2D;
 	PlaneDataConfig *planeDataConfig;
 
 public:
-	SemiLagrangian()	:
+	PlaneDataSemiLagrangian()	:
 		planeDataConfig(nullptr)
 	{
 	}

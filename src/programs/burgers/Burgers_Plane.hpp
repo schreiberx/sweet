@@ -116,7 +116,7 @@ public:
 
 		PlaneOperators &op,     ///< Operator class
 		PlaneDataSampler &sampler2D, ///< Interpolation class
-		SemiLagrangian &semiLagrangian,  ///< Semi-Lag class
+		PlaneDataSemiLagrangian &semiLagrangian,  ///< Semi-Lag class
 
 		const Staggering &i_staggering
 	);

@@ -48,7 +48,7 @@ public:
 	PlaneOperators op;
 
 	PlaneDataSampler sampler2D;
-	SemiLagrangian semiLagrangian;
+	PlaneDataSemiLagrangian semiLagrangian;
 
 
 

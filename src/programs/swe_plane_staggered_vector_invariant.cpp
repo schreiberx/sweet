@@ -212,44 +212,6 @@ public:
 
 
 
-	void compute_upwinding_P_updates(
-			const PlaneData &i_P,		///< prognostic variables (at T=tn)
-			const PlaneData &i_u,		///< prognostic variables (at T=tn+dt)
-			const PlaneData &i_v,		///< prognostic variables (at T=tn+dt)
-
-			PlaneData &o_P_t	///< time updates (at T=tn+dt)
-	)
-	{
-		//             |                       |                       |
-		// --v---------|-----------v-----------|-----------v-----------|
-		//   h-1       u0          h0          u1          h1          u2
-		//
-
-		// same a above, but formulated in a finite-difference style
-		o_P_t =
-			(
-				(
-					// u is positive
-					op.shift_right(i_P)*i_u.physical_query_return_value_if_positive()	// inflow
-					-i_P*op.shift_left(i_u.physical_query_return_value_if_positive())					// outflow
-
-					// u is negative
-					+(i_P*i_u.physical_query_return_value_if_negative())	// outflow
-					-op.shift_left(i_P*i_u.physical_query_return_value_if_negative())		// inflow
-				)*(1.0/simVars.disc.cell_size[0])	// here we see a finite-difference-like formulation
-				+
-				(
-					// v is positive
-					op.shift_up(i_P)*i_v.physical_query_return_value_if_positive()		// inflow
-					-i_P*op.shift_down(i_v.physical_query_return_value_if_positive())					// outflow
-
-					// v is negative
-					+(i_P*i_v.physical_query_return_value_if_negative())	// outflow
-					-op.shift_down(i_P*i_v.physical_query_return_value_if_negative())	// inflow
-				)*(1.0/simVars.disc.cell_size[1])
-			);
-	}
-
 
 
 	/**
@@ -368,21 +330,8 @@ public:
 		/*
 		 * P UPDATE
 		 */
-		if (!simVars.disc.timestepping_up_and_downwinding)
-		{
-			// standard update
-			o_h_t = -op.diff_f_x(U) - op.diff_f_y(V);
-		}
-		else
-		{
-			// up/down winding
-			compute_upwinding_P_updates(
-					i_h,
-					i_u,
-					i_v,
-					o_h_t
-				);
-		}
+		// standard update
+		o_h_t = -op.diff_f_x(U) - op.diff_f_y(V);
 
 #if 0
 		if (simVars.sim.potential_viscosity != 0)

@@ -93,30 +93,9 @@ public:
 	//REXI stuff
 	REXI<> rexi;
 
-private:
-	void cleanup();
-
-public:
-	SWE_Plane_REXI();
 
 
-	/**
-	 * setup the REXI
-	 */
-public:
-	void setup(
-			double i_h,		///< sampling size
-			int i_M,		///< number of sampling points
-			int i_L,		///< number of sampling points for Gaussian approx
-
-			PlaneDataConfig *i_planeDataConfig,
-			const double *i_domain_size,		///< size of domain
-			bool i_rexi_half = true,			///< use half-pole reduction
-			bool i_rexi_normalization = true
-	);
-
-
-
+#if 0
 	/**
 	 * Solve complex-valued Helmholtz problem with a spectral solver,
 	 * values are given in Cartesian space
@@ -199,24 +178,7 @@ public:
 		FatalError("Cannot use helmholtz_spectral_solver if spectral space not enable in compilation time");
 #endif
 	}
-
-
-	/**
-	 * Solve U_t = L U via implicit solver:
-	 *
-	 *
-	 */
-public:
-	bool run_timestep_implicit_ts(
-		PlaneData &io_h,
-		PlaneData &io_u,
-		PlaneData &io_v,
-
-		double i_timestep_size,	///< timestep size
-
-		PlaneOperators &op,
-		const SimulationVariables &i_parameters
-	);
+#endif
 
 
 	/**
@@ -242,7 +204,7 @@ public:
 
 			PlaneOperators &op,     ///< Operator class
 			PlaneDataSampler &sampler2D, ///< Interpolation class
-			SemiLagrangian &semiLagrangian  ///< Semi-Lag class
+			PlaneDataSemiLagrangian &semiLagrangian  ///< Semi-Lag class
 	);
 
 	/**
@@ -273,85 +235,10 @@ public:
 
 		PlaneOperators &op,     ///< Operator class
 		PlaneDataSampler &sampler2D, ///< Interpolation class
-		SemiLagrangian &semiLagrangian  ///< Semi-Lag class
-	);
-
-	/**
-	 * Solve the REXI of \f$ U(t) = exp(L*t) \f$
-	 *
-	 * See
-	 * 		doc/rexi/understanding_rexi.pdf
-	 * for further information
-	 */
-public:
-	bool run_timestep_rexi(
-		PlaneData &io_h,
-		PlaneData &io_u,
-		PlaneData &io_v,
-
-		double i_timestep_size,	///< timestep size
-
-		PlaneOperators &op,
-		const SimulationVariables &i_parameters
+		PlaneDataSemiLagrangian &semiLagrangian  ///< Semi-Lag class
 	);
 
 
-	/**
-	 * This method computes the analytical solution based on the given initial values.
-	 *
-	 * See Embid/Madja/1996, Terry/Beth/2014, page 16
-	 * and
-	 * 		doc/swe_solution_for_L/sympy_L_spec_decomposition.py
-	 * for the dimensionful formulation.
-	 *
-	 * Don't use this function to frequently, since it always computes
-	 * the required coefficients on-the-fly which is expensive.
-	 */
-public:
-	void run_timestep_direct_solution(
-			PlaneData &io_h,
-			PlaneData &io_u,
-			PlaneData &io_v,
-
-			double i_timestep_size,	///< timestep size
-
-			PlaneOperators &op,
-			const SimulationVariables &i_parameters
-	);
-
-
-
-public:
-	void run_timestep_direct_solution_geopotential_formulation(
-			PlaneData &io_phi,
-			PlaneData &io_u,
-			PlaneData &io_v,
-
-			double i_timestep_size,	///< timestep size
-
-			PlaneOperators &op,
-			const SimulationVariables &i_parameters
-	);
-
-
-
-public:
-	inline
-	static
-	void MPI_quitWorkers(
-			PlaneDataConfig *i_planeDataConfig
-	)
-	{
-#if SWEET_MPI
-	PlaneData dummyData(i_planeDataConfig);
-	dummyData.physical_set_all(NAN);
-
-	MPI_Bcast(dummyData.physical_space_data, dummyData.planeDataConfig->physical_array_data_number_of_elements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-
-#endif
-	}
-
-	~SWE_Plane_REXI();
 };
 
 #endif /* SRC_PROGRAMS_REXISWE_HPP_ */

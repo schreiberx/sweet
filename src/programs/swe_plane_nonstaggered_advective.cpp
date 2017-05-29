@@ -30,8 +30,6 @@ class SimulationSWE
 {
 public:
 	PlaneData prog_h, prog_u, prog_v;
-	// beta plane
-	PlaneData beta_plane;
 
 	PlaneData eta;
 	PlaneData tmp;
@@ -52,8 +50,6 @@ public:
 		prog_h(planeDataConfig),
 		prog_u(planeDataConfig),
 		prog_v(planeDataConfig),
-
-		beta_plane(planeDataConfig),
 
 		eta(planeDataConfig),
 		tmp(planeDataConfig),
@@ -112,15 +108,6 @@ public:
 				io_data = SWEPlaneBenchmarks::return_v(simVars, x, y);
 			}
 		);
-/*
-		beta_plane.physical_update_lambda_array_indices(
-			[&](int i, int j, double &io_data)
-			{
-				double y_beta = (((double)j+0.5)/(double)simVars.disc.res_physical[1]);
-				io_data = simVars.sim.f0+simVars.sim.beta*y_beta;
-			}
-		);
-*/
 
 		if (simVars.setup.input_data_filenames.size() > 0)
 			prog_h.file_physical_loadData(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
@@ -156,47 +143,6 @@ public:
 	}
 
 
-	void compute_upwinding_P_updates(
-			const PlaneData &i_h,		///< prognostic variables (at T=tn)
-			const PlaneData &i_u,		///< prognostic variables (at T=tn+dt)
-			const PlaneData &i_v,		///< prognostic variables (at T=tn+dt)
-
-			PlaneData &o_P_t				///< time updates (at T=tn+dt)
-	)
-	{
-		std::cerr << "TODO: implement, is this really possible for non-staggered grid? (averaging of velocities required)" << std::endl;
-		exit(-1);
-		//             |                       |                       |
-		// --v---------|-----------v-----------|-----------v-----------|
-		//   h-1       u0          h0          u1          h1          u2
-		//
-
-		// same a above, but formulated in a finite-difference style
-		o_P_t =
-			(
-				(
-					// u is positive
-					op.shift_right(i_h)*i_u.physical_query_return_value_if_positive()	// inflow
-					-i_h*op.shift_left(i_u.physical_query_return_value_if_positive())					// outflow
-
-					// u is negative
-					+(i_h*i_u.physical_query_return_value_if_negative())	// outflow
-					-op.shift_left(i_h*i_u.physical_query_return_value_if_negative())		// inflow
-				)*(1.0/simVars.disc.cell_size[0])	// here we see a finite-difference-like formulation
-				+
-				(
-					// v is positive
-					op.shift_up(i_h)*i_v.physical_query_return_value_if_positive()		// inflow
-					-i_h*op.shift_down(i_v.physical_query_return_value_if_positive())					// outflow
-
-					// v is negative
-					+(i_h*i_v.physical_query_return_value_if_negative())	// outflow
-					-op.shift_down(i_h*i_v.physical_query_return_value_if_negative())	// inflow
-				)*(1.0/simVars.disc.cell_size[1])
-			);
-	}
-
-
 
 	void p_run_euler_timestep_update(
 			const PlaneData &i_h,	///< prognostic variables
@@ -212,34 +158,6 @@ public:
 			double i_simulation_timestamp = -1
 	)
 	{
-		if (simVars.sim.top_bottom_zero_v_velocity)
-		{
-			/**
-			 * See doc/beta_plane_for_swe/beta_plane_for_swe.lyx
-			 * for further information.
-			 *
-			 * We use some tricks to simulate a slip condition (no outflow) at the top and bottom layer.
-			 *
-			 * Note, that this has to be done here, since the the RK time step updates may generate
-			 * non-zero velocities at the top and bottom layer in the stages if only zeroing the components
-			 * for the very 1st stage of RK.
-			 */
-
-			/*
-			 * here, we first handle the VELOCITY UPDATES
-			 *
-			 * WARNING: This probably does not conserve the quantities
-			 */
-			((PlaneData&)i_v).physical_set_row(0, 0);		// zero velocities
-			((PlaneData&)i_v).physical_set_row(-1, 0);
-
-			((PlaneData&)i_u).physical_copy_row(1, 0);	// slip boundaries
-			((PlaneData&)i_u).physical_copy_row(-2, -1);
-
-			((PlaneData&)i_h).physical_copy_row(1, 0);	// make smooth
-			((PlaneData&)i_h).physical_copy_row(-2, -1);
-		}
-
 		/*
 		 * non-conservative (advective) formulation:
 		 *
@@ -250,29 +168,11 @@ public:
 		o_u_t = -simVars.sim.gravitation*op.diff_c_x(i_h) - i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
 		o_v_t = -simVars.sim.gravitation*op.diff_c_y(i_h) - i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
 
-//		if (simVars.sim.beta == 0.0)
-		{
-			o_u_t += simVars.sim.f0*i_v;
-			o_v_t -= simVars.sim.f0*i_u;
-		}
-/*
-		else
-		{
-			o_u_t += beta_plane*i_v;
-			o_v_t -= beta_plane*i_u;
+		o_u_t += simVars.sim.f0*i_v;
+		o_v_t -= simVars.sim.f0*i_u;
 
-			o_v_t.physical_set_row(0, 0);
-			o_v_t.physical_set_row(-1, 0);
-		}
-*/
-#if 0
-		if (simVars.sim.viscosity != 0)
-		{
-			o_u_t -= op.diffN_x(i_u, simVars.sim.viscosity_order)*simVars.sim.viscosity;
-			o_v_t -= op.diffN_y(i_v, simVars.sim.viscosity_order)*simVars.sim.viscosity;
-		}
-#endif
-
+		// standard update
+		o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
 
 		/*
 		 * TIME STEP SIZE
@@ -305,22 +205,6 @@ public:
 
 				o_dt = simVars.sim.CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
 			}
-		}
-
-		if (!simVars.disc.timestepping_up_and_downwinding)
-		{
-			// standard update
-			o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
-		}
-		else
-		{
-			// up/down winding
-			compute_upwinding_P_updates(
-					i_h,
-					i_u,
-					i_v,
-					o_h_t
-				);
 		}
 	}
 

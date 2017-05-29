@@ -453,8 +453,9 @@ public:
 		/// Order of 2nd time stepping which might be used
 		int timestepping_order2 = 0;
 
-		/// use up/downwinding for the advection of h
-		bool timestepping_up_and_downwinding = false;
+		/// String of time stepping method
+		std::string timestepping_method_string;
+
 
 		/// use spectral differential operators
 		bool use_spectral_basis_diffs =
@@ -485,12 +486,12 @@ public:
 			std::cout << " + timestepping_order: " << timestepping_order << std::endl;
 			std::cout << " + timestepping_method2: " << getTimesteppingMethodString(timestepping_method2) << std::endl;
 			std::cout << " + timestepping_order2: " << timestepping_order2 << std::endl;
-			std::cout << " + timestepping_up_and_downwinding: " << timestepping_up_and_downwinding << std::endl;
+			std::cout << " + timestepping_method_string: " << timestepping_method_string << std::endl;
 			std::cout << " + leapfrog_robert_asselin_filter: " << leapfrog_robert_asselin_filter << std::endl;
 			std::cout << " + crank_nicolson_filter: " << crank_nicolson_filter << std::endl;
 			std::cout << " + use_spectral_basis_diffs: " << use_spectral_basis_diffs << std::endl;
+			std::cout << " + use_staggering: " << use_staggering << std::endl;
 			std::cout << " + normal_mode_analysis_generation: " << normal_mode_analysis_generation << std::endl;
-
 
 			std::cout << " + dealiasing (compile time): " <<
 		#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
@@ -584,6 +585,11 @@ public:
 		 */
 		bool rexi_sphere_solver_preallocation = true;
 
+		/**
+		 * Use direct solution instead of REXI
+		 */
+		bool use_direct_solution = false;
+
 
 		void outputConfig()
 		{
@@ -596,6 +602,7 @@ public:
 			std::cout << " + rexi_use_extended_modes: " << rexi_use_extended_modes << std::endl;
 			std::cout << " + rexi_normalization: " << rexi_normalization << std::endl;
 			std::cout << " + rexi_sphere_solver_preallocation: " << rexi_sphere_solver_preallocation << std::endl;
+			std::cout << " + use_direct_solution: " << use_direct_solution << std::endl;
 			std::cout << std::endl;
 		}
 
@@ -609,6 +616,7 @@ public:
 			std::cout << "	--rexi-half [bool]	Use half REXI poles, default:1" << std::endl;
 			std::cout << "	--rexi-normalization [bool]	Use REXI normalization around geostrophic balance, default:1" << std::endl;
 			std::cout << "	--rexi-sphere-preallocation [bool]	Use preallocation of SPH-REXI solver coefficients, default:1" << std::endl;
+			std::cout << "	--rexi-use-direct-solution [bool]	Use direct solution (analytical) for REXI, default:0" << std::endl;
 			std::cout << "	--rexi-ext-modes [int]	Use this number of extended modes in spherical harmonics" << std::endl;
 			std::cout << "" << std::endl;
 		}
@@ -755,10 +763,10 @@ public:
 		double current_simulation_time = 0;
 
 		/// maximum number of time steps to simulate
-		int max_timesteps_nr = -1;
+		int max_timesteps_nr = std::numeric_limits<int>::max();
 
 		/// maximum simulation time to execute the simulation for
-		double max_simulation_time = -1;
+		double max_simulation_time = std::numeric_limits<double>::infinity();
 
 
 		void outputConfig()
@@ -924,6 +932,9 @@ public:
         long_options[next_free_program_option] = {"rexi-sphere-preallocation", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
+        long_options[next_free_program_option] = {"rexi-use-direct-solution", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
         long_options[next_free_program_option] = {"rexi-ext-modes", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
@@ -958,6 +969,9 @@ public:
         next_free_program_option++;
 
         long_options[next_free_program_option] = {"timestepping-order2", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
+        long_options[next_free_program_option] = {"timestepping-method-string", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
         long_options[next_free_program_option] = {"leapfrog-robert-asselin-filter", required_argument, 0, 256+next_free_program_option};
@@ -1064,36 +1078,39 @@ public:
 						case 5:		rexi.rexi_use_half_poles = atoi(optarg);	break;
 						case 6:		rexi.rexi_normalization = atoi(optarg);	break;
 						case 7:		rexi.rexi_sphere_solver_preallocation = atoi(optarg);	break;
-						case 8:		rexi.rexi_use_extended_modes = atoi(optarg);	break;
+						case 8:		rexi.use_direct_solution = atoi(optarg);	break;
+						case 9:		rexi.rexi_use_extended_modes = atoi(optarg);	break;
 
-						case 9:		misc.stability_checks = atoi(optarg);	break;
-						case 10:	pde.use_nonlinear_equations = atoi(optarg);	break;
-						case 11:	misc.sphere_use_robert_functions = atoi(optarg);	break;
+						case 10:		misc.stability_checks = atoi(optarg);	break;
+						case 11:	pde.use_nonlinear_equations = atoi(optarg);	break;
+						case 12:	misc.sphere_use_robert_functions = atoi(optarg);	break;
 
-						case 12:	setup.advection_rotation_angle = atof(optarg);	break;
+						case 13:	setup.advection_rotation_angle = atof(optarg);	break;
 
-						case 13:	pde.id = atoi(optarg);	break;
-						case 14:	pde.variant_id = atoi(optarg);	break;
+						case 14:	pde.id = atoi(optarg);	break;
+						case 15:	pde.variant_id = atoi(optarg);	break;
 
-						case 15:	disc.timestepping_method = atoi(optarg);	break;
-						case 16:	disc.timestepping_order = atoi(optarg);	break;
-						case 17:	disc.timestepping_method2 = atoi(optarg);	break;
-						case 18:	disc.timestepping_order2 = atoi(optarg);	break;
+						case 16:	disc.timestepping_method = atoi(optarg);	break;
+						case 17:	disc.timestepping_order = atoi(optarg);	break;
+						case 18:	disc.timestepping_method2 = atoi(optarg);	break;
+						case 19:	disc.timestepping_order2 = atoi(optarg);	break;
 
-						case 19:	disc.leapfrog_robert_asselin_filter = atof(optarg);	break;
-						case 20:	disc.normal_mode_analysis_generation = atoi(optarg);	break;
-						case 21:	disc.crank_nicolson_filter = atof(optarg);	break;
-						case 22:	disc.use_staggering = atof(optarg);	break;
+						case 20:	disc.timestepping_method_string = optarg;	break;
 
-						case 23:	dummy = atof(optarg);	break;
+						case 21:	disc.leapfrog_robert_asselin_filter = atof(optarg);	break;
+						case 22:	disc.normal_mode_analysis_generation = atoi(optarg);	break;
+						case 23:	disc.crank_nicolson_filter = atof(optarg);	break;
+						case 24:	disc.use_staggering = atof(optarg);	break;
+
+						case 25:	dummy = atof(optarg);	break;
 
 #if SWEET_PFASST_CPP
-						case 24:	pfasst.nlevels = atoi(optarg);	break;
-						case 25:	pfasst.nnodes = atoi(optarg);	break;
-						case 26:	pfasst.nspace = atoi(optarg);	break;
-						case 27:	pfasst.nsteps = atoi(optarg);	break;
-						case 28:	pfasst.niters = atoi(optarg);	break;
-						case 29:	pfasst.dt = atof(optarg);	break;
+						case 26:	pfasst.nlevels = atoi(optarg);	break;
+						case 27:	pfasst.nnodes = atoi(optarg);	break;
+						case 28:	pfasst.nspace = atoi(optarg);	break;
+						case 29:	pfasst.nsteps = atoi(optarg);	break;
+						case 30:	pfasst.niters = atoi(optarg);	break;
+						case 31:	pfasst.dt = atof(optarg);	break;
 #endif
 
 						default:
@@ -1296,10 +1313,6 @@ public:
 
 			case 'R':
 				disc.timestepping_order = atoi(optarg);
-				break;
-
-			case 'W':
-				disc.timestepping_up_and_downwinding = atoi(optarg);
 				break;
 
 			case 'i':

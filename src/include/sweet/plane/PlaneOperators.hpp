@@ -18,6 +18,7 @@
 
 class PlaneOperators
 {
+public:
 	PlaneDataConfig *planeDataConfig;
 
 public:
