@@ -5,8 +5,8 @@
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_REXI_HPP_
-#define SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_REXI_HPP_
+#ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_REXI_HPP_
+#define SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_REXI_HPP_
 
 
 #ifndef SWEET_MPI
@@ -26,15 +26,26 @@
 #include <sweet/sphere/app_swe/SWERexiTerm_SPH.hpp>
 #include <sweet/sphere/app_swe/SWERexiTerm_SPHRobert.hpp>
 
+#include "SWE_Sphere_TS_interface.hpp"
+
+
 #if SWEET_MPI
 	#include <mpi.h>
 #endif
 
 
 
-class SWE_Sphere_REXI
+class SWE_Sphere_TS_l_rexi	: public SWE_Sphere_TS_interface
 {
 	typedef std::complex<double> complex;
+
+
+	/// Simulation variables
+	SimulationVariables &simVars;
+
+	/// Sphere operators
+	SphereOperators &op;
+
 
 	double h;
 	int M;
@@ -44,19 +55,17 @@ class SWE_Sphere_REXI
 	SphereDataConfig *sphereDataConfigRexi;
 
 	/*
-	 * Simulation coefficients
-	 */
-	SimulationVariables::SimulationCoefficients *simCoeffs;
-
-	bool use_robert_functions;
-
-
-	/*
 	 * Extend modes for REXI time stepping?
 	 */
 	int rexi_use_extended_modes;
 
+#if SWEET_MPI
+public:
+	bool final_timestep;
 
+#endif
+
+private:
 	/*
 	 * This class is only used in case of added modes
 	 */
@@ -72,9 +81,6 @@ class SWE_Sphere_REXI
 
 	bool use_rexi_preallocation;
 
-	int pde_id;
-
-	int pde_variant_id;
 
 	std::size_t block_size;
 
@@ -95,8 +101,8 @@ class SWE_Sphere_REXI
 		std::vector< std::complex<double> > beta_re;
 
 		SphereData accum_phi;
-		SphereData accum_u;
-		SphereData accum_v;
+		SphereData accum_vort;
+		SphereData accum_div;
 	};
 
 	// per-thread allocated variables to avoid NUMA domain effects
@@ -114,17 +120,24 @@ class SWE_Sphere_REXI
 	// number of threads to be used
 	int num_global_threads;
 
+
 public:
 	// REXI stuff
 	REXI<> rexi;
 
 
 private:
-	void cleanup();
+	void reset();
+
 
 public:
-	SWE_Sphere_REXI();
+	SWE_Sphere_TS_l_rexi(
+			SimulationVariables &i_simVars,
+			SphereOperators &i_op
+		);
 
+private:
+	void update_coefficients();
 
 	/**
 	 * setup the REXI
@@ -135,48 +148,32 @@ public:
 			int i_M,		///< number of sampling points
 			int i_L,		///< number of sampling points for Gaussian approx
 
-			SphereDataConfig *i_sphereDataConfig,
-			SimulationVariables::SimulationCoefficients *i_simCoeffs,
 			double i_timestep_size,
-
 			bool i_rexi_half,				///< use half-pole reduction
-			bool i_use_robert_functions,	///< use Robert functions
-			int i_pde_id,
-			int i_pde_variant_id,
-
 			int i_rexi_use_extended_modes,
 			int i_rexi_normalization,
+
 			bool i_use_f_sphere,
 
 			bool i_use_rexi_sphere_preallocation
 	);
 
+	void run_timestep(
+			SphereData &io_h,	///< prognostic variables
+			SphereData &io_u,	///< prognostic variables
+			SphereData &io_v,	///< prognostic variables
 
+			double &o_dt,				///< time step restriction
+			double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_simulation_timestamp,
+			double i_max_simulation_time = std::numeric_limits<double>::infinity()
+	);
 
 	void get_workload_start_end(
 			std::size_t &o_start,
 			std::size_t &o_end
 	);
 
-
-
-	/**
-	 * Solve the REXI of \f$ U(t) = exp(L*t) \f$
-	 *
-	 * See
-	 * 		doc/rexi/understanding_rexi.pdf
-	 * for further information
-	 */
-public:
-	bool run_timestep_rexi_velocityformulation_progphiuv(
-		SphereData &io_phi0,
-		SphereData &io_u,
-		SphereData &io_v,
-
-		double i_timestep_size,	///< timestep size
-
-		const SimulationVariables &i_parameters
-	);
 
 
 	/**
@@ -205,8 +202,8 @@ public:
 			SphereDataConfig *i_sphereDataConfig
 	);
 
-	~SWE_Sphere_REXI();
+	virtual ~SWE_Sphere_TS_l_rexi();
 };
 
 
-#endif /* SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_REXI_HPP_ */
+#endif /* SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_REXI_HPP_ */

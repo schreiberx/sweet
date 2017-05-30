@@ -4,7 +4,7 @@
  * PFASST SWE on the plane implementation
  *
  *  Created on: 30 Nov 2016
- *      Author: martin
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 

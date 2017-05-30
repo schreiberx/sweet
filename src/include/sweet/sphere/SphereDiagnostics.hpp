@@ -53,8 +53,6 @@ public:
 		for (int i = 0; i < sphereDataConfig->physical_num_lat/2; i++)
 			gauss_weights[sphereDataConfig->physical_num_lat-i-1] = gauss_weights[i];
 
-//		for (int i = 0; i < sphereDataConfig->physical_num_lat; i++)
-//			gauss_weights_cos_phi[i] = gauss_weights[i]*sphereDataConfig->lat_cogaussian[i];
 
 #if 0
 		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
@@ -144,20 +142,6 @@ public:
 #error "TODO"
 #else
 
-#if 0
-		for (int ilon = 0; ilon < sphereDataConfig->physical_num_lon; ilon++)
-		{
-			double partsum = 0;
-			for (int jlat = 0; jlat < sphereDataConfig->physical_num_lat; jlat++)
-			{
-				double value = i_data.physical_space_data[jlat*sphereDataConfig->physical_num_lon + ilon];
-
-				partsum += value*gauss_weights[jlat];
-			}
-			std::cout << ilon << "\t" << partsum << std::endl;
-			sum += partsum;
-		}
-#else
 		for (int jlat = 0; jlat < sphereDataConfig->physical_num_lat; jlat++)
 		{
 			for (int ilon = 0; ilon < sphereDataConfig->physical_num_lon; ilon++)
@@ -169,8 +153,6 @@ public:
 				sum += value;
 			}
 		}
-#endif
-
 #endif
 
 		sum /= (double)sphereDataConfig->physical_num_lon;
@@ -212,55 +194,6 @@ public:
 
 
 public:
-	void update_h_u_v_2_mass_energy_enstrophy_4_sphere(
-			const SphereOperators &op,
-			const SphereData &i_prog_h,
-			const SphereData &i_prog_u,
-			const SphereData &i_prog_v,
-
-			SimulationVariables &io_simVars
-	)
-	{
-		SphereDataPhysical h = i_prog_h.getSphereDataPhysical();
-		SphereDataPhysical u = i_prog_u.getSphereDataPhysical();
-		SphereDataPhysical v = i_prog_v.getSphereDataPhysical();
-
-		if (io_simVars.misc.sphere_use_robert_functions)
-		{
-			u = u.robert_convertToNonRobert();
-			v = v.robert_convertToNonRobert();
-		}
-
-		double normalization = 4.0*M_PI*(io_simVars.sim.earth_radius*io_simVars.sim.earth_radius);
-
-		// mass
-		io_simVars.diag.total_mass = compute_sphere_integral(h) * normalization;
-
-		// energy
-		SphereDataPhysical pot_energy = h*(io_simVars.sim.gravitation*normalization);
-		SphereDataPhysical kin_energy = h*(u*u+v*v)*(0.5*normalization);
-
-		io_simVars.diag.potential_energy = compute_sphere_integral(pot_energy);
-		io_simVars.diag.kinetic_energy = compute_sphere_integral(kin_energy);
-
-		io_simVars.diag.total_energy = io_simVars.diag.kinetic_energy + io_simVars.diag.potential_energy;
-
-		// total vorticity
-		SphereDataPhysical eta(i_prog_h.sphereDataConfig);
-		if (io_simVars.misc.sphere_use_robert_functions)
-			eta = op.robert_uv_to_vort(u, v).getSphereDataPhysical();
-		else
-			eta = op.uv_to_vort(u, v).getSphereDataPhysical();
-
-		eta += fg;
-
-		// enstrophy
-		io_simVars.diag.total_potential_enstrophy = 0.5*compute_sphere_integral(eta*eta) * normalization;
-	}
-
-
-
-public:
 	void update_h_u_v_2_mass_energy_enstrophy_4_zylinder(
 			const SphereOperators &op,
 			const SphereData &i_prog_h,
@@ -274,11 +207,10 @@ public:
 		SphereDataPhysical u = i_prog_u.getSphereDataPhysical();
 		SphereDataPhysical v = i_prog_v.getSphereDataPhysical();
 
-		if (io_simVars.misc.sphere_use_robert_functions)
-		{
-			u = u.robert_convertToNonRobert();
-			v = v.robert_convertToNonRobert();
-		}
+		// Convert to non-robert formulation
+		// no problem, since we do everything in physical space
+		u = u.robert_convertToNonRobert();
+		v = v.robert_convertToNonRobert();
 
 		double normalization = 4.0*M_PI*(io_simVars.sim.earth_radius*io_simVars.sim.earth_radius);
 
@@ -309,60 +241,9 @@ public:
 
 
 
-public:
-	void update_phi_vort_div_2_mass_energy_enstrophy_4_sphere(
-			const SphereOperators &op,
-
-			const SphereData &i_prog_phi,
-			const SphereData &i_prog_vort,
-			const SphereData &i_prog_div,
-
-			SimulationVariables &io_simVars
-	)
-	{
-		SphereDataPhysical h(sphereDataConfig);
-		SphereDataPhysical u(sphereDataConfig);
-		SphereDataPhysical v(sphereDataConfig);
-
-		h = i_prog_phi.getSphereDataPhysical()*(1.0/io_simVars.sim.gravitation);
-//		if (io_simVars.misc.sphere_use_robert_functions)
-//			op.robert_vortdiv_to_uv(i_prog_vort, i_prog_div, u, v);
-//		else
-		op.vortdiv_to_uv(i_prog_vort, i_prog_div, u, v);
-
-		double normalization = 4.0*M_PI*(io_simVars.sim.earth_radius*io_simVars.sim.earth_radius);
-
-		// mass
-		io_simVars.diag.total_mass = compute_sphere_integral(h) * normalization;
-
-		// energy
-		SphereDataPhysical pot_energy = h*(io_simVars.sim.gravitation*normalization);
-		SphereDataPhysical kin_energy = h*(u*u+v*v)*(0.5*normalization);
-
-		io_simVars.diag.potential_energy = compute_sphere_integral(pot_energy);
-		io_simVars.diag.kinetic_energy = compute_sphere_integral(kin_energy);
-
-		io_simVars.diag.total_energy = io_simVars.diag.kinetic_energy + io_simVars.diag.potential_energy;
-
-		// total vorticity
-		// TODO: maybe replace this with the i_vort parameter
-		SphereDataPhysical eta(h.sphereDataConfig);
-//		if (io_simVars.misc.sphere_use_robert_functions)
-//			eta = op.robert_uv_to_vort(u, v).getSphereDataPhysical();
-//		else
-		eta = op.uv_to_vort(u, v).getSphereDataPhysical();
-
-		eta += fg;
-
-		// enstrophy
-		io_simVars.diag.total_potential_enstrophy = 0.5*compute_sphere_integral(eta*eta) * normalization;
-	}
-
-
-
 
 public:
-	void update_phi_vort_div_2_mass_energy_enstrophy_4_zylinder(
+	void update_phi_vort_div_2_mass_energy_enstrophy(
 			const SphereOperators &op,
 			const SphereData &i_prog_phi,
 			const SphereData &i_prog_vort,

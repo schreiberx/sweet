@@ -113,8 +113,6 @@ public:
 		 */
 		int id = 0;
 
-		int variant_id = 0;
-
 		/// Use non-linear equations for simulations
 		int use_nonlinear_equations = 1;
 
@@ -124,7 +122,7 @@ public:
 			std::cout << std::endl;
 			std::cout << "PDE:" << std::endl;
 			std::cout << " + id: " << id << std::endl;
-			std::cout << " + variant_id: " << variant_id << std::endl;
+//			std::cout << " + variant_id: " << variant_id << std::endl;
 			std::cout << " + use_nonlinear_equations: " << use_nonlinear_equations << std::endl;
 			std::cout << std::endl;
 		}
@@ -134,7 +132,7 @@ public:
 			std::cout << std::endl;
 			std::cout << "Partial differential equation:" << std::endl;
 			std::cout << "	--pde-id [0/1]		PDE to solve (0: SWE, 1: advection)" << std::endl;
-			std::cout << "	--pde-variant-id [0/1]	PDE variant to use (default: 0)" << std::endl;
+//			std::cout << "	--pde-variant-id [0/1]	PDE variant to use (default: 0)" << std::endl;
 			std::cout << "" << std::endl;
 		}
 	} pde;
@@ -958,7 +956,7 @@ public:
         long_options[next_free_program_option] = {"pde-id", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        long_options[next_free_program_option] = {"pde-variant_id", required_argument, 0, 256+next_free_program_option};
+        long_options[next_free_program_option] = {"pde-variant_id_DEACTIVATED", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
         // 15
@@ -1091,7 +1089,7 @@ public:
 						case 13:	setup.advection_rotation_angle = atof(optarg);	break;
 
 						case 14:	pde.id = atoi(optarg);	break;
-						case 15:	pde.variant_id = atoi(optarg);	break;
+//						case 15:	pde.variant_id = atoi(optarg);	break;
 
 						case 16:	disc.timestepping_method = atoi(optarg);	break;
 						case 17:	disc.timestepping_order = atoi(optarg);	break;

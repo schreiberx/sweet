@@ -87,6 +87,7 @@ void SWE_Plane_TS_l_erk::euler_timestep_update(
 		 * V_t + q N x (P V) + grad( g P + 1/2 V*V) = 0
 		 * P_t + div(P V) = 0
 		 */
+
 		/*
 		 * U and V updates
 		 */

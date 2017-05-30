@@ -443,8 +443,6 @@ public:
 			}
 		}
 
-
-		timeSteppers.reset();
 		timeSteppers.setup(simVars.disc.timestepping_method_string, op, simVars);
 
 		// Print output info (if gui is disabled, this is done in main
@@ -1809,7 +1807,9 @@ int main(int i_argc, char *i_argv[])
 	{
 		if (simVars.disc.timestepping_method == SimulationVariables::Discretization::REXI)
 		{
-			SWE_Plane_REXI rexiSWE;
+			PlaneOperators op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
+
+			SWE_Plane_TS_l_rexi rexiSWE(simVars, op);
 
 			/*
 			 * Setup our little dog REXI
@@ -1818,8 +1818,6 @@ int main(int i_argc, char *i_argv[])
 					simVars.rexi.rexi_h,
 					simVars.rexi.rexi_M,
 					simVars.rexi.rexi_L,
-					simVars.disc.res_physical,
-					simVars.sim.domain_size,
 					simVars.rexi.rexi_use_half_poles,
 					simVars.rexi.rexi_normalization
 				);
@@ -1830,20 +1828,24 @@ int main(int i_argc, char *i_argv[])
 			PlaneData prog_u(planeDataConfig);
 			PlaneData prog_v(planeDataConfig);
 
-			PlaneOperators op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
-
 			MPI_Barrier(MPI_COMM_WORLD);
 
-			while (run)
+			do
 			{
+				double o_dt;
 				// REXI time stepping
-				run = rexiSWE.run_timestep_rexi(
-						prog_h, prog_u, prog_v,
-						-simVars.sim.CFL,
-						op,
-						simVars
+				rexiSWE.run_timestep(
+						prog_h,
+						prog_u,
+						prog_v,
+						o_dt,					///< time step restriction
+						-simVars.sim.CFL,		///< if this value is not equal to 0, use this time step size instead of computing one
+						simVars.timecontrol.current_simulation_time,
+						simVars.timecontrol.max_simulation_time
+
 				);
 			}
+			while(!rexiSWE.final_timestep);
 		}
 	}
 #endif
@@ -1854,7 +1856,7 @@ int main(int i_argc, char *i_argv[])
 	{
 		// synchronize REXI
 		if (mpi_rank == 0)
-			SWE_Plane_REXI::MPI_quitWorkers(planeDataConfig);
+			SWE_Plane_TS_l_rexi::MPI_quitWorkers(planeDataConfig);
 	}
 
 	MPI_Finalize();

@@ -89,6 +89,10 @@ class SWE_Plane_TS_l_rexi	: public SWE_Plane_TS_interface
 	/// number of threads to be used
 	int num_global_threads;
 
+public:
+	/// final time step
+	bool final_timestep;
+
 
 public:
 	/// REXI stuff
@@ -130,7 +134,6 @@ public:
 
 
 public:
-	inline
 	static
 	void MPI_quitWorkers(
 			PlaneDataConfig *i_planeDataConfig

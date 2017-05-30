@@ -8,17 +8,14 @@
 class SphereDataTimesteppingExplicitRK
 {
 	// Runge-Kutta data storages
-	SphereData** RK_h_t;
-	SphereData** RK_u_t;
-	SphereData** RK_v_t;
+	std::vector<SphereData*> RK_h_t;
+	std::vector<SphereData*> RK_u_t;
+	std::vector<SphereData*> RK_v_t;
 
 	int runge_kutta_order;
 
 public:
 	SphereDataTimesteppingExplicitRK()	:
-		RK_h_t(nullptr),
-		RK_u_t(nullptr),
-		RK_v_t(nullptr),
 		runge_kutta_order(-1)
 	{
 	}
@@ -26,28 +23,28 @@ public:
 
 
 	void resetAndSetup(
-			const SphereData &i_test_buffer,	///< array of example data to know dimensions of buffers
+			const SphereDataConfig *i_sphereDataConfig,
 			int i_rk_order			///< Order of Runge-Kutta method
 	)
 	{
-		if (RK_h_t != nullptr)	///< already allocated?
+		if (RK_h_t.size() != 0)	///< already allocated?
 			return;
 
 		runge_kutta_order = i_rk_order;
-		int N = i_rk_order;
+		int N = runge_kutta_order;
 
 		if (N <= 0 || N > 4)
 			FatalError("Invalid order for RK time stepping");
 
-		RK_h_t = new SphereData*[N];
-		RK_u_t = new SphereData*[N];
-		RK_v_t = new SphereData*[N];
+		RK_h_t.resize(N);
+		RK_u_t.resize(N);
+		RK_v_t.resize(N);
 
 		for (int i = 0; i < N; i++)
 		{
-			RK_h_t[i] = new SphereData(i_test_buffer.sphereDataConfig);
-			RK_u_t[i] = new SphereData(i_test_buffer.sphereDataConfig);
-			RK_v_t[i] = new SphereData(i_test_buffer.sphereDataConfig);
+			RK_h_t[i] = new SphereData(i_sphereDataConfig);
+			RK_u_t[i] = new SphereData(i_sphereDataConfig);
+			RK_v_t[i] = new SphereData(i_sphereDataConfig);
 		}
 	}
 
@@ -57,7 +54,7 @@ public:
 	{
 		int N = runge_kutta_order;
 
-		if (RK_h_t != nullptr)
+		if (RK_h_t.size() != 0)
 		{
 			for (int i = 0; i < N; i++)
 			{
@@ -66,13 +63,9 @@ public:
 				delete RK_v_t[i];
 			}
 
-			delete [] RK_h_t;
-			delete [] RK_u_t;
-			delete [] RK_v_t;
-
-			RK_h_t = nullptr;
-			RK_u_t = nullptr;
-			RK_v_t = nullptr;
+			RK_h_t.resize(0);
+			RK_u_t.resize(0);
+			RK_v_t.resize(0);
 		}
 	}
 
@@ -118,7 +111,7 @@ public:
 			double i_max_simulation_time = std::numeric_limits<double>::infinity()	///< limit the maximum simulation time
 	)
 	{
-//		resetAndSetup(io_h, i_runge_kutta_order);
+		resetAndSetup(io_h.sphereDataConfig, i_runge_kutta_order);
 
 		double &dt = o_dt;
 		if (i_runge_kutta_order == 1)
@@ -140,16 +133,9 @@ public:
 				if (dt+i_simulation_time > i_max_simulation_time)
 					dt = i_max_simulation_time-i_simulation_time;
 
-
-#if 0
-			io_h = io_h.getSphereDataPhysical() + dt*(*RK_h_t[0]).getSphereDataPhysical();
-			io_u = io_u.getSphereDataPhysical() + dt*(*RK_u_t[0]).getSphereDataPhysical();
-			io_v = io_v.getSphereDataPhysical() + dt*(*RK_v_t[0]).getSphereDataPhysical();
-#else
 			io_h += dt**RK_h_t[0];
 			io_u += dt**RK_u_t[0];
 			io_v += dt**RK_v_t[0];
-#endif
 		}
 		else if (i_runge_kutta_order == 2)
 		{

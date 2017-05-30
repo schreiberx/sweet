@@ -25,21 +25,8 @@
 		#define OPENMP_PAR_SIMD     simd OMP_SCHEDULE
 		#define OPENMP_SIMD simd
 	#else
-		#ifndef __GNUC__
-			#define OPENMP_PAR_SIMD	simd OMP_SCHEDULE
-			#define OPENMP_SIMD simd
-		#else
-			#if __GNUC__ > 4 || ((__GNUC__ == 4) && (__GNUC_MINOR__ > 8))
-				#define OPENMP_PAR_SIMD	simd OMP_SCHEDULE
-				#define OPENMP_SIMD simd
-			#else
-				#ifndef __clang__
-					#warning "SIMD is disabled for this compiler version"
-				#endif
-				#define OPENMP_PAR_SIMD OMP_SCHEDULE
-				#define OPENMP_SIMD
-			#endif
-		#endif
+		#define OPENMP_PAR_SIMD	simd OMP_SCHEDULE
+		#define OPENMP_SIMD simd
 	#endif
 #endif
 

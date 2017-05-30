@@ -136,7 +136,9 @@ class VisSweet	:
 
 		double inv_delta = 1.0/real_delta;
 
+#if SWEET_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
+#endif
 		for (	std::size_t i = 0;
 				i < visData.planeDataConfig->physical_array_data_number_of_elements;
 				i++

@@ -25,6 +25,8 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 		double i_max_simulation_time
 )
 {
+	final_timestep = false;
+
 	if (simVars.rexi.use_direct_solution)
 	{
 		ts_l_direct.run_timestep(io_h, io_u, io_v, o_dt, i_fixed_dt, i_simulation_timestamp, i_max_simulation_time);
@@ -35,9 +37,7 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 		FatalError("Only constant time step size allowed");
 
 	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
-	{
 		i_fixed_dt = i_max_simulation_time-i_simulation_timestamp;
-	}
 
 	o_dt = i_fixed_dt;
 
@@ -61,7 +61,10 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 	MPI_Bcast(io_h.physical_space_data, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
 	if (std::isnan(io_h.physical_get(0,0)))
-		return false;
+	{
+		final_timestep = true;
+		return;
+	}
 
 
 	MPI_Bcast(io_u.physical_space_data, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);

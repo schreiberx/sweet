@@ -26,7 +26,10 @@ class SphereOperators	:
 {
 	friend SphereDataConfig;
 
+public:
 	SphereDataConfig *sphereDataConfig;
+
+private:
 
 #if SWEET_SPH_ON_THE_FLY_MODE == 2
 	std::vector<double> spec_one_minus_mu_squared_diff_lat_mu__1;

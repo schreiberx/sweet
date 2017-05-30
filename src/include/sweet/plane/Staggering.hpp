@@ -2,7 +2,7 @@
  * Staggering.hpp
  *
  *  Created on: 26 May 2017
- *      Author: martin
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SRC_INCLUDE_SWEET_PLANE_STAGGERING_HPP_

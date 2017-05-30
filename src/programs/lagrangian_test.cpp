@@ -12,9 +12,9 @@
 #endif
 #include <sweet/SimulationVariables.hpp>
 #include <benchmarks_plane/SWEPlaneBenchmarks.hpp>
-#include "../include/sweet/plane/PlaneOperators.hpp"
-#include "../include/sweet/plane/PlaneDataSampler.hpp"
-#include "../include/sweet/plane/PlaneDataSemiLagrangian.hpp"
+#include <sweet/plane/PlaneOperators.hpp>
+#include <sweet/plane/PlaneDataSampler.hpp>
+#include <sweet/plane/PlaneDataSemiLagrangian.hpp>
 #include <unistd.h>
 #include <stdio.h>
 #include <vector>

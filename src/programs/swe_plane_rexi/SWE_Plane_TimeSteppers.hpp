@@ -2,7 +2,7 @@
  * SWE_Plane_TimeSteppers.hpp
  *
  *  Created on: 29 May 2017
- *      Author: martin
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TIMESTEPPERS_HPP_
@@ -93,6 +93,8 @@ public:
 			SimulationVariables &i_simVars
 	)
 	{
+		reset();
+
 		if (i_simVars.sim.CFL >= 0)
 			FatalError("Only constant time step size supported with REXI, use negative CFL to set constant time step size");
 

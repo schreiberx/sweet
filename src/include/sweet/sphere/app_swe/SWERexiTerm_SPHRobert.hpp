@@ -40,7 +40,7 @@ class SWERexiTerm_SPHRobert
 	SphereOperators op;
 	SphereOperatorsComplex opComplex;
 
-	/// scalar infront of RHS
+	/// scalar in front of RHS
 	std::complex<double> rhs_scalar;
 
 	/// REXI alpha
@@ -421,12 +421,10 @@ public:
 					}
 				);
 
-				if (variant_id == 1)
-				{
-					sphSolverVel.setup(sphereDataConfigSolver, 2);
-					sphSolverVel.solver_component_rexi_z1(	alpha*alpha, r);
-					sphSolverVel.solver_component_rexi_z2(	coriolis*coriolis, r);
-				}
+
+				sphSolverVel.setup(sphereDataConfigSolver, 2);
+				sphSolverVel.solver_component_rexi_z1(	alpha*alpha, r);
+				sphSolverVel.solver_component_rexi_z2(	coriolis*coriolis, r);
 			}
 		}
 		else
