@@ -1,13 +1,38 @@
 Overview of helpful git commands
 
-#git remote  set-url origin https://github.com/schreiberx/sweet.git
+# Overview of remote URLs:
+git remote show -v
 
-# Add foobar repository with name foobar
-git remote add foobar https://github.com/foobar/sweet.git
+# Update URL
+git remote  set-url origin https://github.com/schreiberx/sweet.git
 
+
+# Checkout URL
 git checkout foobar
+
+# Push to particular URL
 git push foobar
 
 git merge foobar/master
 git fetch foobar
 git pull foobar
+
+
+
+#
+# Merge from upstream (schreiberx/sweet.git) repository
+#
+
+# Display remote repositories
+git remote show -v
+
+# Add schreiberx repository with name schreiberx
+git remote add schreiberx https://github.com/schreiberx/sweet.git
+# Or to update it:
+# git remote set-url schreiberx https://github.com/schreiberx/sweet.git
+
+# Fetch data from upstream
+git pull schreiberx master
+
+# merge from upstream
+git merge schreiberx/master
