@@ -23,11 +23,16 @@ git pull foobar
 # Merge from upstream (schreiberx/sweet.git) repository
 #
 
-# Add foobar repository with name foobar
-git remote add upstream https://github.com/foobar/sweet.git
+# Display remote repositories
+git remote show -v
+
+# Add schreiberx repository with name schreiberx
+git remote add schreiberx https://github.com/schreiberx/sweet.git
+# Or to update it:
+# git remote set-url schreiberx https://github.com/schreiberx/sweet.git
 
 # Fetch data from upstream
-git pull upstream
+git pull schreiberx master
 
 # merge from upstream
-git merge upstream/master
+git merge schreiberx/master
