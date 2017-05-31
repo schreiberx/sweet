@@ -13,6 +13,7 @@
 #endif
 
 #include <getopt.h>
+#include <limits>
 
 
 
@@ -47,7 +48,7 @@ public:
 	/**
 	 * Maximum simulation time
 	 */
-	double max_simulation_time = -1;
+	double max_simulation_time = std::numeric_limits<double>::infinity();
 
 
 	/**

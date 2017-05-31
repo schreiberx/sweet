@@ -132,8 +132,6 @@ public:
 				[&](double i_lon, double i_lat, double &io_data)
 				{
 					io_data = (phi0 + (a*io_simVars.sim.coriolis_omega*u0*std::cos(i_lat)*std::cos(i_lat)))/io_simVars.sim.gravitation;
-//					io_simVars.sim.h0
-//					io_data = io_simVars.sim.earth_radius*io_simVars.sim.coriolis_omega*std::cos(i_lat)*std::cos(i_lat)/io_simVars.sim.gravitation;
 				}
 			);
 
@@ -151,7 +149,6 @@ public:
 				o_u.physical_update_lambda(
 					[&](double i_lon, double i_lat, double &io_data)
 					{
-						//io_data = simVars.sim.earth_radius*2.0*simVars.sim.coriolis_omega*std::cos(i_lat)/simVars.sim.gravitation;
 						io_data = std::cos(i_lat);
 					}
 				);

@@ -63,8 +63,11 @@ class SWE_Sphere_TS_l_cn	: public SWE_Sphere_TS_interface
 	/// inverse of earth radius
 	double inv_r;
 
-	/// set to f0 for f-sphere and 2*coriolis_omega for non-f-sphere
-	double coriolis;
+	/// coriolis
+	double two_coriolis;
+
+	/// f0
+	double f0;
 
 	/// Average geopotential
 	double gh;

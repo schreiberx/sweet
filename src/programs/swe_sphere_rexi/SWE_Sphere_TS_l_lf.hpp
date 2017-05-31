@@ -23,13 +23,14 @@ class SWE_Sphere_TS_l_lf	: public SWE_Sphere_TS_interface
 	SimulationVariables &simVars;
 	SphereOperators &op;
 
-	int timestepping_order;
-
 	// Sampler
 	SphereDataTimesteppingExplicitLeapfrog timestepping_lf;
 
 	// Coriolis effect
 	SphereDataPhysical fg;
+
+	int timestepping_order;
+	double robert_asselin_filter;
 
 private:
 	void euler_timestep_update(
@@ -53,7 +54,8 @@ public:
 		);
 
 	void setup(
-			int i_order	///< order of RK time stepping method
+			int i_order,	///< order of RK time stepping method
+			double i_robert_asselin_filter
 	);
 
 	void run_timestep(

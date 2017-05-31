@@ -118,10 +118,14 @@ void SWE_Sphere_TS_l_lf::run_timestep(
  * Setup
  */
 void SWE_Sphere_TS_l_lf::setup(
-		int i_order	///< order of RK time stepping method
+		int i_order,	///< order of RK time stepping method
+		double i_robert_asselin_filter
 )
 {
 	timestepping_order = i_order;
+	robert_asselin_filter = i_robert_asselin_filter;
+
+	timestepping_lf.setup(robert_asselin_filter);
 
 	if (simVars.sim.f_sphere)
 	{
@@ -151,9 +155,9 @@ SWE_Sphere_TS_l_lf::SWE_Sphere_TS_l_lf(
 )	:
 		simVars(i_simVars),
 		op(i_op),
+		timestepping_lf(i_op.sphereDataConfig),
 		fg(i_op.sphereDataConfig)
 {
-	setup(simVars.disc.timestepping_order);
 }
 
 

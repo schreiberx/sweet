@@ -519,6 +519,7 @@ public:
 		double leapfrog_start_timesteps_size;
 		double leapfrog_end_timestep_size;
 		double leapfrog_original_cfl;
+
 		if (simVars.disc.timestepping_method == SimulationVariables::Discretization::LEAPFROG_EXPLICIT)
 		{
 			std::cout << "WARNING: Leapfrog time stepping doesn't make real sense since 1st step is based on RK-like method" << std::endl;
@@ -542,11 +543,10 @@ public:
 		}
 
 		if (simVars.timecontrol.max_simulation_time > 0)
-		{
-			FatalError("NOT YET SUPPORTED");
-		}
+			file << "# t " << simVars.timecontrol.max_simulation_time << std::endl;
+		else
+			file << "# t " << (num_timesteps*(-simVars.sim.CFL)) << std::endl;
 
-		file << "# t " << (num_timesteps*(-simVars.sim.CFL)) << std::endl;
 		file << "# g " << simVars.sim.gravitation << std::endl;
 		file << "# h " << simVars.sim.h0 << std::endl;
 		file << "# r " << simVars.sim.earth_radius << std::endl;
@@ -562,6 +562,10 @@ public:
 				// iterate over physical space
 				for (int outer_i = 0; outer_i < sphereDataConfig->physical_array_data_number_of_elements; outer_i++)
 				{
+					// reset time control
+					simVars.timecontrol.current_timestep_nr = 0;
+					simVars.timecontrol.current_simulation_time = 0;
+
 					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
 						prog[inner_prog_id]->physical_set_zero();
 
@@ -639,6 +643,10 @@ public:
 				{
 					for (int imag_i = 0; imag_i < 2; imag_i++)
 					{
+						// reset time control
+						simVars.timecontrol.current_timestep_nr = 0;
+						simVars.timecontrol.current_simulation_time = 0;
+
 						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
 							prog[inner_prog_id]->spectral_set_zero();
 
@@ -723,6 +731,10 @@ public:
 				// iterate over spectral space
 				for (int outer_i = 0; outer_i < sphereDataConfig->spectral_array_data_number_of_elements; outer_i++)
 				{
+					// reset time control
+					simVars.timecontrol.current_timestep_nr = 0;
+					simVars.timecontrol.current_simulation_time = 0;
+
 					std::cout << "." << std::flush;
 
 					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)

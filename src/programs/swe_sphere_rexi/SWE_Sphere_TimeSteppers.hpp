@@ -141,6 +141,13 @@ public:
 
 			master = &(SWE_Sphere_TS_interface&)*lg_irk;
 		}
+		else if (i_timestepping_method_string == "l_lf")
+		{
+			l_lf = new SWE_Sphere_TS_l_lf(i_simVars, i_op);
+			l_lf->setup(i_simVars.disc.timestepping_order, i_simVars.disc.leapfrog_robert_asselin_filter);
+
+			master = &(SWE_Sphere_TS_interface&)*l_lf;
+		}
 		else if (i_timestepping_method_string == "l_cn")
 		{
 			l_cn = new SWE_Sphere_TS_l_cn(i_simVars, i_op);

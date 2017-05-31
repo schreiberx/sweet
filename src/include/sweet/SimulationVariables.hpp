@@ -260,9 +260,18 @@ public:
 		/// CFL condition
 		double CFL = 0.05;
 
-		/// Coriolis frequency f0
-		/// 7.292 × 10 −5
-		double f0 = 0.00007292;
+
+		/**
+		 * Coriolis effect
+		 * 7.2921 × 10 −5
+		 */
+		double coriolis_omega = 0.000072921;
+
+
+		/**
+		 * Coriolis frequency f0
+		 */
+		double f0 = 0.00007292*2;
 
 		// constants from Galwesky et al. paper
 
@@ -271,10 +280,6 @@ public:
 		 */
 		double earth_radius = 6.37122e6;
 
-		/**
-		 * Coriolis effect
-		 */
-		double &coriolis_omega = f0;
 
 		/**
 		 * Simulation on f-sphere? (constant f0 term over entire sphere)
@@ -1268,6 +1273,7 @@ public:
 
 			case 'f':
 				sim.f0 = atof(optarg);
+				sim.coriolis_omega = atof(optarg);
 				break;
 
 			case 'F':

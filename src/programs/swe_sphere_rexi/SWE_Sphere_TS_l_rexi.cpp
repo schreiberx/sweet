@@ -322,6 +322,7 @@ void SWE_Sphere_TS_l_rexi::update_coefficients()
 							perThreadVars[i]->beta_re[thread_local_idx],
 							simVars.sim.earth_radius,
 							simVars.sim.coriolis_omega,
+							simVars.sim.f0,
 							simVars.sim.h0 * simVars.sim.gravitation,
 							timestep_size,
 							use_f_sphere
@@ -358,8 +359,10 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
 	{
-		FatalError("TODO: Reduction of time in SPH REXI required, not yet implemented");
 		i_fixed_dt = i_max_simulation_time-i_simulation_timestamp;
+
+		timestep_size = i_fixed_dt;
+		update_coefficients();
 	}
 
 	o_dt = i_fixed_dt;
@@ -405,7 +408,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 
 #if SWEET_REXI_THREAD_PARALLEL_SUM
-#	pragma omp parallel for schedule(static,1) default(none) shared(i_parameters, i_timestep_size, io_prog_phi0, io_prog_u0, io_prog_v0, std::cout, std::cerr)
+#	pragma omp parallel for schedule(static,1) default(none) shared(i_fixed_dt, io_prog_phi0, io_prog_vort0, io_prog_div0, std::cout, std::cerr)
 #endif
 	for (int thread_id = 0; thread_id < num_local_rexi_par_threads; thread_id++)
 	{
@@ -489,6 +492,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 						simVars.sim.earth_radius,
 						simVars.sim.coriolis_omega,
+						simVars.sim.f0,
 						simVars.sim.h0*simVars.sim.gravitation,
 						i_fixed_dt,
 
@@ -548,14 +552,14 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 			perThreadVars[thread_id]->accum_vort.request_data_physical();
 
-			#pragma omp parallel for schedule(static) default(none) shared(io_prog_u0, thread_id)
+			#pragma omp parallel for schedule(static) default(none) shared(io_prog_vort0, thread_id)
 			for (int i = 0; i < io_prog_vort0.sphereDataConfig->physical_array_data_number_of_elements; i++)
 				io_prog_vort0.physical_space_data[i] += perThreadVars[thread_id]->accum_vort.physical_space_data[i];
 
 
 			perThreadVars[thread_id]->accum_div.request_data_physical();
 
-			#pragma omp parallel for schedule(static) default(none) shared(io_prog_v0, thread_id)
+			#pragma omp parallel for schedule(static) default(none) shared(io_prog_div0, thread_id)
 			for (int i = 0; i < io_prog_div0.sphereDataConfig->physical_array_data_number_of_elements; i++)
 				io_prog_div0.physical_space_data[i] += perThreadVars[thread_id]->accum_div.physical_space_data[i];
 		}
@@ -574,14 +578,14 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 			tmp = perThreadVars[thread_id]->accum_vort.spectral_returnWithDifferentModes(tmp.sphereDataConfig);
 			tmp.request_data_physical();
-			#pragma omp parallel for schedule(static) default(none) shared(io_prog_u0, tmp)
+			#pragma omp parallel for schedule(static) default(none) shared(io_prog_vort0, tmp)
 			for (int i = 0; i < io_prog_vort0.sphereDataConfig->physical_array_data_number_of_elements; i++)
 				io_prog_vort0.physical_space_data[i] += tmp.physical_space_data[i];
 
 
 			tmp = perThreadVars[thread_id]->accum_div.spectral_returnWithDifferentModes(tmp.sphereDataConfig);
 			tmp.request_data_physical();
-			#pragma omp parallel for schedule(static) default(none) shared(io_prog_v0, tmp)
+			#pragma omp parallel for schedule(static) default(none) shared(io_prog_div0, tmp)
 			for (int i = 0; i < io_prog_div0.sphereDataConfig->physical_array_data_number_of_elements; i++)
 				io_prog_div0.physical_space_data[i] += tmp.physical_space_data[i];
 		}

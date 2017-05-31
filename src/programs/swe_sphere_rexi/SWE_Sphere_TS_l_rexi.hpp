@@ -23,7 +23,6 @@
 #include <sweet/sphere/SphereDataComplex.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/sphere/SphereOperatorsComplex.hpp>
-#include <sweet/sphere/app_swe/SWERexiTerm_SPH.hpp>
 #include <sweet/sphere/app_swe/SWERexiTerm_SPHRobert.hpp>
 
 #include "SWE_Sphere_TS_interface.hpp"
@@ -95,7 +94,6 @@ private:
 	{
 	public:
 		std::vector<SWERexiTerm_SPHRobert> rexiSPHRobert_vector;
-		std::vector<SWERexiTerm_SPH> rexiSPH_vector;
 
 		std::vector< std::complex<double> > alpha;
 		std::vector< std::complex<double> > beta_re;
