@@ -16,9 +16,10 @@ module feval_module
   ! prototypes of the C functions
 
   interface 
-     subroutine cinitial(i_ctx, o_Y) bind(c, name="cinitial")
+     subroutine cinitial(i_ctx, i_t, i_dt, o_Y) bind(c, name="cinitial")
        use iso_c_binding
-       type(c_ptr), value :: i_ctx, o_Y
+       type(c_ptr),    value :: i_ctx, o_Y
+       real(c_double), value :: i_t, i_dt 
      end subroutine cinitial
 
      subroutine cfinal(i_ctx, i_Y) bind(c, name="cfinal")
@@ -82,10 +83,11 @@ contains
 
   ! initialization of the sweet data vector using z
 
-  subroutine finitial(sweeper, sd, z)
+  subroutine finitial(sweeper, sd, z, t, dt)
     class(pf_sweeper_t),       intent(inout) :: sweeper
     class(pf_encap_t),         intent(inout) :: sd
     class(pf_encap_t),         intent(inout) :: z
+    real(c_double),            intent(in)    :: t, dt
     class(sweet_sweeper_t),    pointer       :: sweet_sweeper_ptr
     class(sweet_data_encap_t), pointer       :: sd_ptr
 
@@ -93,6 +95,8 @@ contains
     sd_ptr            => as_sweet_data_encap(sd)
 
     call cinitial(sweet_sweeper_ptr%ctx, & 
+                  t, &
+                  dt, &
                   sd_ptr%c_sweet_data_ptr)
 
   end subroutine finitial

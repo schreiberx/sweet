@@ -4,7 +4,7 @@
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneDataConfig.hpp>
 
-// Class containing the prognotic PlaneData variables phi, u, v
+// Class containing the prognotic PlaneData variables h, u, v
 
 class PlaneDataVars {
 
@@ -16,7 +16,7 @@ public:
 		int i_level
 		)
 
-    : prog_phi(planeDataConfig),
+    : prog_h(planeDataConfig),
       prog_u(planeDataConfig),
       prog_v(planeDataConfig),
       flat_data_array(nullptr),
@@ -50,12 +50,12 @@ public:
   }
   
   // getters for the PlaneData variables
-  const PlaneData& get_phi() const {return prog_phi;}
-  PlaneData&       get_phi()       {return prog_phi;}
-  const PlaneData& get_u()   const {return prog_u;}
-  PlaneData&       get_u()         {return prog_u;}
-  const PlaneData& get_v()   const {return prog_v;}
-  PlaneData&       get_v()         {return prog_v;}
+  const PlaneData& get_h() const {return prog_h;}
+  PlaneData&       get_h()       {return prog_h;}
+  const PlaneData& get_u() const {return prog_u;}
+  PlaneData&       get_u()       {return prog_u;}
+  const PlaneData& get_v() const {return prog_v;}
+  PlaneData&       get_v()       {return prog_v;}
 
   // getters for the flat data array
   double*&         get_flat_data_array()            {return flat_data_array;}
@@ -68,7 +68,7 @@ public:
 protected:
   
   // geopotential 
-  PlaneData prog_phi;
+  PlaneData prog_h;
   // velocities
   PlaneData prog_u;
   PlaneData prog_v;

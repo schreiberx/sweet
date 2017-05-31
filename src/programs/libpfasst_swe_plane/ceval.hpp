@@ -13,6 +13,8 @@ extern "C"
   // initialization of the variables (initial condition)
   void cinitial(
 		PlaneDataCtx *i_ctx,
+		double i_t,
+		double i_dt, 
 		PlaneDataVars *o_Y
 		);
 

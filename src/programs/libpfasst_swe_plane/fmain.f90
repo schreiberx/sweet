@@ -86,7 +86,7 @@ contains
      nsteps     = steps*pf_comm%nproc
      
      t          = 0.0_pfdp
-     dt         = 0.00001_pfdp ! small time step for now since the integrator is explicit
+     dt         = 0.000001_pfdp ! small time step for now since the integrator is explicit
      
      pf%nlevels = num_levs
      pf%niters  = 100 ! number of iterations hard coded for now
@@ -142,7 +142,9 @@ contains
 
        call finitial(pf%levels(level)%ulevel%sweeper, & 
                      pf%levels(level)%Q(1), & 
-                     pf%levels(level)%q0)
+                     pf%levels(level)%q0, &
+                     t, &
+                     dt)
 
     end do
     

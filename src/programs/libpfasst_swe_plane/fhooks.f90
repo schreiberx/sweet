@@ -48,7 +48,6 @@ contains
     ! compute the norm of the error
     call Y_exact%axpy(-1.0_pfdp, & 
                       level%qend)
-
     print '("error: step: ",i3.3," iter: ",i4.3," error: ",es14.7)', &
          state%step+1, state%iter, Y_exact%norm()
 
