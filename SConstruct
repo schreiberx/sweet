@@ -758,7 +758,7 @@ else:
 		exec_name+='_omp'
 	
 
-if env['rexi_thread_parallel_sum']=='enable':
+if env['rexi_thread_parallel_sum'] == 'enable':
 	exec_name+='_rexipar'
 
 env.Append(CXXFLAGS=' -DNUMA_BLOCK_ALLOCATOR_TYPE='+env['numa_block_allocator'])
