@@ -51,11 +51,12 @@ class SWE_Sphere_TS_l_rexi	: public SWE_Sphere_TS_interface
 	bool normalization;
 
 	SphereDataConfig *sphereDataConfig;
-	SphereDataConfig *sphereDataConfigRexi;
+	SphereDataConfig *sphereDataConfigSolver;
 
-	/*
-	 * Extend modes for REXI time stepping?
-	 */
+	/// This class is only setp and used in case of added modes
+	SphereDataConfig sphereDataConfigInstance;
+
+	/// Extend modes for REXI time stepping?
 	int rexi_use_extended_modes;
 
 #if SWEET_MPI
@@ -65,10 +66,6 @@ public:
 #endif
 
 private:
-	/*
-	 * This class is only used in case of added modes
-	 */
-	SphereDataConfig sphereConfigRexiAddedModes;
 
 
 	/*

@@ -28,7 +28,7 @@
 class SWERexiTerm_SPHRobert
 {
 	/// SPH configuration
-	SphereDataConfig *sphereDataConfig;
+//	SphereDataConfig *sphereDataConfig;
 
 	/// SPH configuration
 	SphereDataConfig *sphereDataConfigSolver;
@@ -74,7 +74,7 @@ class SWERexiTerm_SPHRobert
 
 public:
 	SWERexiTerm_SPHRobert()	:
-		sphereDataConfig(nullptr),
+//		sphereDataConfig(nullptr),
 		sphereDataConfigSolver(nullptr)
 	{
 	}
@@ -86,7 +86,6 @@ public:
 	 * Setup the SWE REXI solver with SPH
 	 */
 	void setup_vectorinvariant_progphivortdiv(
-			SphereDataConfig *i_sphereDataConfig,
 			SphereDataConfig *i_sphereDataConfigSolver,
 
 			const std::complex<double> &i_alpha,
@@ -101,7 +100,6 @@ public:
 			bool i_use_f_sphere
 	)
 	{
-		sphereDataConfig = i_sphereDataConfig;
 		sphereDataConfigSolver = i_sphereDataConfigSolver;
 
 		use_f_sphere = i_use_f_sphere;
@@ -120,8 +118,8 @@ public:
 
 		gh = i_avg_geopotential;
 
-		op.setup(sphereDataConfig, r);
-		opComplex.setup(sphereDataConfig, r);
+		op.setup(sphereDataConfigSolver, r);
+		opComplex.setup(sphereDataConfigSolver, r);
 
 
 		if (!use_f_sphere)
@@ -136,18 +134,13 @@ public:
 			sphSolverPhi.solver_component_rexi_z7(	-gh*alpha*alpha, r);
 			sphSolverPhi.solver_component_rexi_z8(	-gh*two_coriolis_omega*two_coriolis_omega, r);
 
-			mug.setup(sphereDataConfig);
+			mug.setup(sphereDataConfigSolver);
 			mug.physical_update_lambda_gaussian_grid(
 				[&](double lon, double mu, std::complex<double> &o_data)
 				{
 					o_data = mu;
 				}
 			);
-
-
-			sphSolverVel.setup(sphereDataConfigSolver, 2);
-			sphSolverVel.solver_component_rexi_z1(	alpha*alpha, r);
-			sphSolverVel.solver_component_rexi_z2(	two_coriolis_omega*two_coriolis_omega, r);
 		}
 	}
 
@@ -171,9 +164,9 @@ public:
 		const SphereDataComplex vort0 = Convert_SphereData_To_SphereDataComplex::physical_convert(i_vort0);
 		const SphereDataComplex div0 = Convert_SphereData_To_SphereDataComplex::physical_convert(i_div0);
 
-		SphereDataComplex phi(sphereDataConfig);
-		SphereDataComplex vort(sphereDataConfig);
-		SphereDataComplex div(sphereDataConfig);
+		SphereDataComplex phi(sphereDataConfigSolver);
+		SphereDataComplex vort(sphereDataConfigSolver);
+		SphereDataComplex div(sphereDataConfigSolver);
 
 		if (use_f_sphere)
 		{
@@ -185,11 +178,11 @@ public:
 		}
 		else
 		{
-			SphereDataPhysicalComplex u0g(sphereDataConfig);
-			SphereDataPhysicalComplex v0g(sphereDataConfig);
+			SphereDataPhysicalComplex u0g(sphereDataConfigSolver);
+			SphereDataPhysicalComplex v0g(sphereDataConfigSolver);
 			opComplex.robert_vortdiv_to_uv(vort0, div0, u0g, v0g, r);
 
-			SphereDataComplex rhs(sphereDataConfig);
+			SphereDataComplex rhs(sphereDataConfigSolver);
 
 			SphereDataPhysicalComplex phi0g = phi0.getSphereDataPhysicalComplex();
 
@@ -208,28 +201,39 @@ public:
 					two_coriolis_omega*two_coriolis_omega*mug*mug*foo
 					- (gh/alpha)*Fc_k;
 
+			// convert to spectral space
 			rhs = rhsg;
 
-
-			phi = sphSolverPhi.solve(rhs.spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
+			phi = sphSolverPhi.solve(rhs);
 
 			/*
 			 * Solve without inverting a matrix
 			 */
-			SphereDataPhysicalComplex u0(sphereDataConfig);
-			SphereDataPhysicalComplex v0(sphereDataConfig);
+			SphereDataPhysicalComplex u0(sphereDataConfigSolver);
+			SphereDataPhysicalComplex v0(sphereDataConfigSolver);
 
 			opComplex.robert_vortdiv_to_uv(vort0, div0, u0, v0, r);
 
 
-			SphereDataPhysicalComplex a(sphereDataConfig);
-			SphereDataPhysicalComplex b(sphereDataConfig);
-			SphereDataPhysicalComplex gradu(sphereDataConfig);
-			SphereDataPhysicalComplex gradv(sphereDataConfig);
-			opComplex.robert_grad_to_vec(phi, gradu, gradv, r);
+			SphereDataPhysicalComplex a(sphereDataConfigSolver);
+			SphereDataPhysicalComplex b(sphereDataConfigSolver);
 
+#if 1
+
+			SphereDataPhysicalComplex gradu(sphereDataConfigSolver);
+			SphereDataPhysicalComplex gradv(sphereDataConfigSolver);
+			opComplex.robert_grad_to_vec(phi, gradu, gradv, r);
 			a = u0 + gradu;
 			b = v0 + gradv;
+
+#else
+			// LEAVE THIS CODE HERE!!!
+			// THIS code resulted in the requirement of a mode extension of 2 additional modes
+			// for the REXI solver!!!
+            a = u0 + inv_r*opComplex.robert_grad_lon(phi).getSphereDataPhysicalComplex();
+            b = v0 + inv_r*opComplex.robert_grad_lat(phi).getSphereDataPhysicalComplex();
+
+#endif
 
 			SphereDataPhysicalComplex k = (two_coriolis_omega*two_coriolis_omega*(mug*mug)+alpha*alpha);
 			SphereDataPhysicalComplex u = (alpha*a - two_coriolis_omega*mug*(b))/k;

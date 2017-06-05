@@ -12,11 +12,13 @@
 
 #include "SWE_Plane_TS_l_direct.hpp"
 #include "SWE_Plane_TS_l_erk.hpp"
+#include "SWE_Plane_TS_l_erk_n_erk.hpp"
 #include "SWE_Plane_TS_l_irk.hpp"
 #include "SWE_Plane_TS_l_rexi_ns_sl_nd_erk.hpp"
 #include "SWE_Plane_TS_l_rexi.hpp"
 #include "SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk.hpp"
 #include "SWE_Plane_TS_ln_erk.hpp"
+#include "SWE_Plane_TS_l_irk1_n_erk1.hpp"
 
 
 
@@ -28,11 +30,14 @@ class SWE_Plane_TimeSteppers
 public:
 	SWE_Plane_TS_ln_erk *ln_erk = nullptr;
 	SWE_Plane_TS_l_erk *l_erk = nullptr;
+	SWE_Plane_TS_l_erk_n_erk *l_erk_n_erk = nullptr;
 	SWE_Plane_TS_l_irk *l_irk = nullptr;
 	SWE_Plane_TS_l_rexi *l_rexi = nullptr;
 	SWE_Plane_TS_l_direct *l_direct = nullptr;
 	SWE_Plane_TS_l_rexi_ns_sl_nd_erk *l_rexi_ns_sl_nd_erk = nullptr;
 	SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk *lg_rexi_lc_erk_nt_sl_nd_erk = nullptr;
+
+	SWE_Plane_TS_l_irk1_n_erk1 *l_irk1_n_erk1 = nullptr;
 
 	SWE_Plane_TS_interface *master = nullptr;
 
@@ -52,6 +57,12 @@ public:
 		{
 			delete l_erk;
 			l_erk = nullptr;
+		}
+
+		if (l_erk_n_erk != nullptr)
+		{
+			delete l_erk_n_erk;
+			l_erk_n_erk = nullptr;
 		}
 
 		if (l_irk != nullptr)
@@ -82,6 +93,12 @@ public:
 		{
 			delete lg_rexi_lc_erk_nt_sl_nd_erk;
 			lg_rexi_lc_erk_nt_sl_nd_erk = nullptr;
+		}
+
+		if (l_irk1_n_erk1 != nullptr)
+		{
+			delete l_irk1_n_erk1;
+			l_irk1_n_erk1 = nullptr;
 		}
 	}
 
@@ -114,6 +131,13 @@ public:
 			l_erk->setup(i_simVars.disc.timestepping_order);
 
 			master = &(SWE_Plane_TS_interface&)*l_erk;
+		}
+		else if (i_timestepping_method_string == "l_erk_n_erk")
+		{
+			l_erk_n_erk = new SWE_Plane_TS_l_erk_n_erk(i_simVars, i_op);
+			l_erk_n_erk->setup(i_simVars.disc.timestepping_order);
+
+			master = &(SWE_Plane_TS_interface&)*l_erk_n_erk;
 		}
 		else if (i_timestepping_method_string == "l_irk")
 		{
@@ -175,6 +199,16 @@ public:
 				);
 
 			master = &(SWE_Plane_TS_interface&)*lg_rexi_lc_erk_nt_sl_nd_erk;
+		}
+		else if (i_timestepping_method_string == "l_irk1_n_erk1")
+		{
+			l_irk1_n_erk1 = new SWE_Plane_TS_l_irk1_n_erk1(i_simVars, i_op);
+
+			l_irk1_n_erk1->setup(
+					i_simVars.disc.timestepping_order
+				);
+
+			master = &(SWE_Plane_TS_interface&)*l_irk1_n_erk1;
 		}
 		else if (i_timestepping_method_string == "l_direct")
 		{

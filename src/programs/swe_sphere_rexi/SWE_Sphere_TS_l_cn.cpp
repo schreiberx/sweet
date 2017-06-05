@@ -254,7 +254,6 @@ void SWE_Sphere_TS_l_cn::run_timestep(
 
 		SphereDataPhysical u0(sphereDataConfig);
 		SphereDataPhysical v0(sphereDataConfig);
-
 		op.robert_vortdiv_to_uv(vort0, div0, u0, v0);
 
 		SphereDataPhysical gradu(sphereDataConfig);

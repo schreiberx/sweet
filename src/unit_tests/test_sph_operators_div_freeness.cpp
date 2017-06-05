@@ -107,7 +107,7 @@ void run_tests()
 			v.physical_update_lambda(
 				[&](double i_lon, double i_lat, double &io_data)
 				{
-					double i_phi = i_lat;
+//					double i_phi = i_lat;
 					double i_lambda = i_lon;
 					io_data =
 						-u0*(
@@ -156,7 +156,7 @@ void run_tests()
 			vc.physical_update_lambda(
 				[&](double i_lon, double i_lat, std::complex<double> &io_data)
 				{
-					double i_phi = i_lat;
+//					double i_phi = i_lat;
 					double i_lambda = i_lon;
 					io_data =
 						-u0*(

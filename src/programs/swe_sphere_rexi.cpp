@@ -212,6 +212,7 @@ public:
 	}
 
 
+
 	void write_file_output()
 	{
 		if (simVars.misc.output_file_name_prefix.length() == 0)
@@ -484,8 +485,8 @@ public:
 	void normal_mode_analysis()
 	{
 		// dummy time step to get time step size
-		reset();
-		run_timestep();
+//		reset();
+//		run_timestep();
 
 		/*
 		 * Do a normal mode analysis, see
@@ -839,7 +840,7 @@ public:
 	void run_timestep()
 	{
 #if SWEET_GUI
-		if (simVars.misc.gui_enabled)
+		if (simVars.misc.gui_enabled && simVars.disc.normal_mode_analysis_generation == 0)
 			timestep_check_output();
 #endif
 		double o_dt;
@@ -855,205 +856,6 @@ public:
 				simVars.timecontrol.current_simulation_time,
 				simVars.timecontrol.max_simulation_time
 			);
-#if 0
-		// output of time step size
-		double o_dt;
-
-		else if (simVars.disc.timestepping_method == simVars.disc.IMPLICIT_TIMESTEP || simVars.disc.timestepping_method == simVars.disc.CRANK_NICOLSON)
-		{
-			SphereData o_prog_h(sphereDataConfig);
-			SphereData o_prog_u(sphereDataConfig);
-			SphereData o_prog_v(sphereDataConfig);
-
-			o_dt = -simVars.sim.CFL;
-
-			// padding to max simulation time if exceeding the maximum
-			if (simVars.timecontrol.max_simulation_time >= 0)
-			{
-				if (o_dt + simVars.timecontrol.current_simulation_time > simVars.timecontrol.max_simulation_time)
-				{
-					o_dt = simVars.timecontrol.max_simulation_time-simVars.timecontrol.current_simulation_time;
-
-					std::cout << "WARNING: IMPLICIT TS SETUP CALLED DURING SIMULATION TIME FRAME" << std::endl;
-					std::cerr << "WARNING: IMPLICIT TS SETUP CALLED DURING SIMULATION TIME FRAME" << std::endl;
-
-					switch (simVars.pde.id)
-					{
-					case 1:
-						timestepping_implicit_swe.setup_vectorinvariantformulation_progphivortdiv(
-								sphereDataConfig,
-								sphereDataConfigExt,
-
-								simVars.sim.earth_radius,
-								simVars.sim.coriolis_omega,
-								simVars.sim.gravitation*simVars.sim.h0,
-								o_dt,
-
-								simVars.sim.f_sphere,
-								simVars.disc.timestepping_order
-							);
-						break;
-
-					default:
-						FatalError("TODO: Not yet implemented");
-					}
-				}
-			}
-
-			switch (simVars.pde.id)
-			{
-
-			case 1:
-				timestepping_implicit_swe.solve_vectorinvariantformulation_progphivortdiv(
-						prog_phi, prog_vort, prog_div,
-						o_prog_h, o_prog_u, o_prog_v,
-						o_dt
-					);
-
-				prog_phi = o_prog_h;
-				prog_vort = o_prog_u;
-				prog_div = o_prog_v;
-
-				break;
-#if 0
-			case 12:
-				timestepping_implicit_swe.solve_advection(
-						prog_h*simVars.sim.gravitation, prog_u, prog_v,
-						o_prog_h,
-						o_dt
-					);
-
-				prog_h = o_prog_h / simVars.sim.gravitation;
-				break;
-#endif
-
-			default:
-				FatalError("PDE not supported for implicit TS");
-			}
-		}
-		else if (simVars.disc.timestepping_method == simVars.disc.REXI)
-		{
-			o_dt = simVars.timecontrol.current_timestep_size;
-			assert(o_dt > 0);
-
-			// padding to max simulation time if exceeding the maximum
-			if (simVars.timecontrol.max_simulation_time >= 0)
-			{
-				if (o_dt + simVars.timecontrol.current_simulation_time > simVars.timecontrol.max_simulation_time)
-				{
-					o_dt = simVars.timecontrol.max_simulation_time - simVars.timecontrol.current_simulation_time;
-
-					std::cout << "WARNING: REXI SETUP CALLED DURING SIMULATION TIME FRAME" << std::endl;
-					std::cerr << "WARNING: REXI SETUP CALLED DURING SIMULATION TIME FRAME" << std::endl;
-
-					swe_sphere_ts_l_rexi.setup(
-							simVars.rexi.rexi_h,
-							simVars.rexi.rexi_M,
-							simVars.rexi.rexi_L,
-
-							sphereDataConfig,
-							&simVars.sim,
-							o_dt,
-
-							simVars.rexi.rexi_use_half_poles,
-
-							simVars.rexi.rexi_use_extended_modes,
-							simVars.rexi.rexi_normalization,
-
-							simVars.sim.f_sphere,
-							simVars.rexi.rexi_sphere_solver_preallocation
-						);
-				}
-			}
-
-
-			if (simVars.pde.use_nonlinear_equations)
-			{
-				// REXI time stepping
-
-				// Compute non-linear tendencies
-				SphereData nl_prog_dphi_dt = prog_phi;
-				SphereData nl_prog_dvort_dt = prog_vort;
-				SphereData nl_prog_ddiv_dt = prog_div;
-
-				spheredata_timestepping_explicit_rk.run_timestep(
-						this,
-						&SimulationInstance::p_compute_nonlinearities_swe_vectorinvariant,	///< pointer to function to compute euler time step updates
-						nl_prog_dphi_dt, nl_prog_dvort_dt, nl_prog_ddiv_dt,
-						o_dt,
-						simVars.timecontrol.current_timestep_size,
-						simVars.disc.timestepping_order,
-						simVars.timecontrol.current_simulation_time,
-						simVars.timecontrol.max_simulation_time
-					);
-
-				nl_prog_dphi_dt -= prog_phi;
-				nl_prog_dvort_dt -= prog_vort;
-				nl_prog_ddiv_dt -= prog_div;
-
-
-				// REXI
-				swe_sphere_ts_l_rexi.run_timestep_rexi_vectorinvariant_progphivortdiv(
-						prog_phi,
-						prog_vort,
-						prog_div,
-						o_dt,
-						simVars
-				);
-
-				// Combine both
-				prog_phi	+= nl_prog_dphi_dt;
-				prog_vort	+= nl_prog_dvort_dt;
-				prog_div	+= nl_prog_ddiv_dt;
-				break;
-			}
-			else
-			{
-				switch (simVars.pde.id)
-				{
-#if 0
-				case 0:
-					// REXI time stepping
-					prog_h *= simVars.sim.gravitation;
-					swe_sphere_ts_l_rexi.run_timestep_rexi_velocityformulation_progphiuv(
-							prog_h,
-							prog_u,
-							prog_v,
-							o_dt,
-							simVars
-						);
-					prog_h *= (1.0/simVars.sim.gravitation);
-					break;
-#endif
-
-				case 1:
-					// REXI time stepping
-					swe_sphere_ts_l_rexi.run_timestep_rexi_vectorinvariant_progphivortdiv(
-							prog_phi,
-							prog_vort,
-							prog_div,
-							o_dt,
-							simVars
-						);
-					break;
-
-				default:
-					FatalError("PDE id not yet implemented");
-					break;
-				}
-			}
-
-
-		}
-		else if (simVars.disc.timestepping_method == simVars.disc.CRANK_NICOLSON)
-		{
-		}
-		else
-		{
-			FatalError("Timestepping method is not supported!");
-		}
-
-#endif
 
 
 		/*
@@ -1463,11 +1265,10 @@ int main(int i_argc, char *i_argv[])
 					simVars.timecontrol.current_timestep_size,
 
 					simVars.rexi.rexi_use_half_poles,
-
 					simVars.rexi.rexi_use_extended_modes,
 					simVars.rexi.rexi_normalization,
-
 					simVars.sim.f_sphere,
+
 					simVars.rexi.rexi_sphere_solver_preallocation
 				);
 

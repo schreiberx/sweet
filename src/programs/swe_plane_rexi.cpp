@@ -31,9 +31,11 @@
 #include "swe_plane_rexi/SWE_Plane_TimeSteppers.hpp"
 
 
+
 // Plane data config
 PlaneDataConfig planeDataConfigInstance;
 PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
+
 
 
 #ifndef SWEET_MPI
@@ -97,6 +99,7 @@ public:
 	Staggering staggering;
 
 
+	// implementation of different time steppers
 	SWE_Plane_TimeSteppers timeSteppers;
 
 
@@ -719,8 +722,6 @@ public:
 	{
 		double o_dt;
 
-		// either set time step size to 0 for autodetection or to
-		// a positive value to use a fixed time step size
 		simVars.timecontrol.current_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
 
 		timeSteppers.master->run_timestep(
@@ -734,7 +735,8 @@ public:
 #if 0
 
 		else if (simVars.disc.timestepping_method == SimulationVariables::Discretization::SEMI_LAGRANGIAN_ADVECTION_ONLY)
-		{ // Semi-Lagrangian advection - velocities are kept constant, and
+		{
+			// Semi-Lagrangian advection - velocities are kept constant, and
 			//  h is transported according to given initial wind
 			// *** Valid only for non-divergent velocity fields **//
 			// See test case scenario 17 for this ts mode
@@ -772,7 +774,8 @@ public:
 
 		}
 		else if (simVars.disc.timestepping_method == SimulationVariables::Discretization::SEMI_LAGRANGIAN_SEMI_IMPLICIT)
-		{   // Semi-Lagrangian Semi-implicit Spectral
+		{
+			// Semi-Lagrangian Semi-implicit Spectral
 			assert(simVars.sim.CFL < 0);
 			o_dt = -simVars.sim.CFL;
 
@@ -801,9 +804,9 @@ public:
 			prog_h = prog_h + pow(-1,simVars.sim.viscosity_order/2)* o_dt*op.diffN_x(prog_h, simVars.sim.viscosity_order)*simVars.sim.viscosity
 					+ pow(-1,simVars.sim.viscosity_order/2)*o_dt*op.diffN_y(prog_h, simVars.sim.viscosity_order)*simVars.sim.viscosity;
 #else
-			prog_u=op.implicit_diffusion(prog_u, o_dt*simVars.sim.viscosity, simVars.sim.viscosity_order );
-			prog_v=op.implicit_diffusion(prog_v, o_dt*simVars.sim.viscosity, simVars.sim.viscosity_order );
-			prog_h=op.implicit_diffusion(prog_h, o_dt*simVars.sim.viscosity, simVars.sim.viscosity_order );
+			prog_u = op.implicit_diffusion(prog_u, o_dt*simVars.sim.viscosity, simVars.sim.viscosity_order );
+			prog_v = op.implicit_diffusion(prog_v, o_dt*simVars.sim.viscosity, simVars.sim.viscosity_order );
+			prog_h = op.implicit_diffusion(prog_h, o_dt*simVars.sim.viscosity, simVars.sim.viscosity_order );
 #endif
 		}
 
@@ -815,6 +818,9 @@ public:
 #if SWEET_GUI
 		timestep_output();
 #endif
+
+		if (simVars.timecontrol.current_simulation_time > simVars.timecontrol.max_simulation_time)
+			FatalError("Max simulation time exceeded!");
 	}
 
 
@@ -939,35 +945,21 @@ public:
 	{
 		// Compute exact solution for linear part and compare with numerical solution
 
-		// Initial conditions (may be in a stag grid)
-		PlaneData t0_h = t0_prog_h;
-		PlaneData t0_u = t0_prog_u;
-		PlaneData t0_v = t0_prog_v;
-
 		// Variables on unstaggered A-grid
-		PlaneData t_h(planeDataConfig);
-		PlaneData t_u(planeDataConfig);
-		PlaneData t_v(planeDataConfig);
+		PlaneData t_h = t0_prog_h;
+		PlaneData t_u = t0_prog_u;
+		PlaneData t_v = t0_prog_v;
 
-		// Analytical solution at specific time on orginal grid (stag or not)
-		PlaneData ts_h(planeDataConfig);
-		PlaneData ts_u(planeDataConfig);
-		PlaneData ts_v(planeDataConfig);
-
-		// The direct spectral solution can only be calculated for A grid
-		t_h=t0_h;
-		t_u=t0_u;
-		t_v=t0_v;
 		if (simVars.disc.use_staggering) // Remap in case of C-grid
 		{
 			//remap initial condition to A grid
 			//sampler2D.bilinear_scalar(t0_u, posx_a, posy_a, t_u, stag_u[0], stag_u[1]);
 			//t_u=op.avg_f_x(t0_u); //equiv to bilinear
-			sampler2D.bicubic_scalar(t0_u, posa_x, posa_y, t_u, staggering.u[0], staggering.u[1]);
+			sampler2D.bicubic_scalar(t0_prog_u, posa_x, posa_y, t_u, staggering.u[0], staggering.u[1]);
 
 			//sampler2D.bilinear_scalar(t0_v, posx_a, posy_a, t_v, stag_v[0], stag_v[1]);
 			//t_v=op.avg_f_y(t0_v); //equiv to bilinear
-			sampler2D.bicubic_scalar(t0_v, posa_x, posa_y, t_v, staggering.v[0], staggering.v[1]);
+			sampler2D.bicubic_scalar(t0_prog_v, posa_x, posa_y, t_v, staggering.v[0], staggering.v[1]);
 		}
 
 		double o_dt;
@@ -976,15 +968,16 @@ public:
 				t_h, t_u, t_v,
 				o_dt,	// compute direct solution
 				simVars.timecontrol.current_simulation_time,
-				simVars.timecontrol.current_simulation_time,
+				0,			// initial condition given at time 0
 				simVars.timecontrol.max_simulation_time
 		);
 
+		// Analytical solution at specific time on orginal grid (stag or not)
+		PlaneData ts_h = t_h;
+		PlaneData ts_u = t_u;
+		PlaneData ts_v = t_v;
 
 		// Recover data in C grid using interpolations
-		ts_h=t_h;
-		ts_u=t_u;
-		ts_v=t_v;
 		if (simVars.disc.use_staggering)
 		{
 			// Remap A grid to C grid
@@ -1007,6 +1000,9 @@ public:
 		benchmark.analytical_error_maxabs_h = (ts_h-prog_h).reduce_maxAbs();
 		benchmark.analytical_error_maxabs_u = (ts_u-prog_u).reduce_maxAbs();
 		benchmark.analytical_error_maxabs_v = (ts_v-prog_v).reduce_maxAbs();
+
+//		std::cout << std::endl;
+//		std::cout << ts_h.reduce_rms_quad() << std::endl;
 
 	}
 
@@ -1073,10 +1069,10 @@ public:
 
 			double o_dt;
 			timeSteppers.l_direct->run_timestep(
-					prog_h, prog_u, prog_v,
+					t_h, t_u, t_v,
 					o_dt,
 					simVars.timecontrol.current_simulation_time,
-					simVars.timecontrol.current_simulation_time,
+					0,
 					simVars.timecontrol.max_simulation_time
 				);
 
@@ -1465,9 +1461,6 @@ public:
 			bool i_compute_convergence_test
 	)
 	{
-		if (simVars.parareal.verbosity > 2)
-			std::cout << "compute_output_data()" << std::endl;
-
 		double convergence = -1;
 
 		if (!i_compute_convergence_test || !output_data_valid)
@@ -1498,7 +1491,8 @@ public:
 		prog_u = *parareal_data_output.data_arrays[1];
 		prog_v = *parareal_data_output.data_arrays[2];
 
-		if (param_compute_error && simVars.pde.use_nonlinear_equations==0){
+		if (param_compute_error && simVars.pde.use_nonlinear_equations==0)
+		{
 			compute_errors();
 			std::cout << "maxabs error compared to analytical solution: " << benchmark_analytical_error_maxabs_h << std::endl;
 		}
