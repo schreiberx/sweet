@@ -1,12 +1,12 @@
 /*
- * SWE_Plane_TS_l_irk1_n_erk1.hpp
+ * SWE_Plane_TS_l_cn_n_erk.hpp
  *
  *  Created on: 29 May 2017
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#ifndef SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_L_IRK1_N_ERK1_HPP_
-#define SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_L_IRK1_N_ERK1_HPP_
+#ifndef SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_L_CN_N_ERK_HPP_
+#define SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_L_CN_N_ERK_HPP_
 
 #include <limits>
 #include <sweet/plane/PlaneData.hpp>
@@ -15,18 +15,20 @@
 #include <sweet/plane/PlaneOperators.hpp>
 #include "SWE_Plane_TS_interface.hpp"
 
-#include "SWE_Plane_TS_l_irk.hpp"
+#include "SWE_Plane_TS_l_cn.hpp"
 
 
-class SWE_Plane_TS_l_irk1_n_erk1	: public SWE_Plane_TS_interface
+class SWE_Plane_TS_l_cn_n_erk	: public SWE_Plane_TS_interface
 {
 	SimulationVariables &simVars;
 	PlaneOperators &op;
 
-	int timestepping_order;
-	PlaneDataTimesteppingRK timestepping_rk;
+	double crank_nicolson_damping_factor;
+	int timestepping_order_linear;
+	int timestepping_order_nonlinear;
 
-	SWE_Plane_TS_l_irk ts_l_irk;
+	PlaneDataTimesteppingRK timestepping_rk;
+	SWE_Plane_TS_l_cn ts_l_cn;
 
 
 private:
@@ -37,18 +39,24 @@ private:
 
 			PlaneData &o_h_t,	///< time updates
 			PlaneData &o_u_t,	///< time updates
-			PlaneData &o_v_t	///< time updates
+			PlaneData &o_v_t,	///< time updates
+
+			double &o_dt,
+			double i_fixed_dt,
+			double i_max_timestamp
 	);
 
 
 public:
-	SWE_Plane_TS_l_irk1_n_erk1(
+	SWE_Plane_TS_l_cn_n_erk(
 			SimulationVariables &i_simVars,
 			PlaneOperators &i_op
 		);
 
 	void setup(
-			int i_order	///< order of RK time stepping method
+			int i_l_order,
+			int i_n_order,
+			double i_crank_nicolson_damping_factor
 	);
 
 	void run_timestep(
@@ -64,7 +72,7 @@ public:
 
 
 
-	virtual ~SWE_Plane_TS_l_irk1_n_erk1();
+	virtual ~SWE_Plane_TS_l_cn_n_erk();
 };
 
 #endif /* SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_LN_ERK_HPP_ */

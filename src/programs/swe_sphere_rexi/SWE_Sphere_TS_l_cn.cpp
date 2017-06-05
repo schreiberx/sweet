@@ -137,7 +137,7 @@ void SWE_Sphere_TS_l_cn::run_timestep(
 )
 {
 	if (i_fixed_dt <= 0)
-		FatalError("Only constant time step size allowed");
+		FatalError("SWE_Sphere_TS_l_cn: Only constant time step size allowed");
 
 	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
 	{

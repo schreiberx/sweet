@@ -120,7 +120,7 @@ void SWE_Plane_TS_l_erk::run_timestep(
 )
 {
 	if (i_fixed_dt <= 0)
-		FatalError("Only constant time step size allowed");
+		FatalError("SWE_Plane_TS_l_erk: Only constant time step size allowed");
 
 	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
 		i_fixed_dt = i_max_simulation_time-i_simulation_timestamp;
@@ -150,6 +150,7 @@ void SWE_Plane_TS_l_erk::setup(
 )
 {
 	timestepping_order = i_order;
+	timestepping_rk.setupBuffers(op.planeDataConfig, timestepping_order);
 }
 
 

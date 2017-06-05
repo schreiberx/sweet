@@ -255,14 +255,14 @@ public:
 		//Check if input parameters are adequate for this simulation
 		if (simVars.disc.use_staggering && simVars.disc.use_spectral_basis_diffs)
 			FatalError("Staggering and spectral basis not supported!");
-
+/*
 		if (simVars.disc.use_staggering &&
 				( simVars.disc.timestepping_method != SimulationVariables::Discretization::RUNGE_KUTTA_EXPLICIT &&
 					simVars.disc.timestepping_method != SimulationVariables::Discretization::SEMI_LAGRANGIAN_ADVECTION_ONLY
 				)
 		)
-			FatalError("Staggering only supported for standard time stepping mode 0 and 4!");
-
+			FatalError("Staggering only supported for standard time stepping mode with RK and Lagrangian advection only!");
+*/
 		if (simVars.disc.use_staggering && param_compute_error)
 			std::cerr << "Warning: Staggered data will be interpolated to/from A-grid for exact linear solution" << std::endl;
 
@@ -448,9 +448,7 @@ public:
 
 		timeSteppers.setup(simVars.disc.timestepping_method_string, op, simVars);
 
-		// Print output info (if gui is disabled, this is done in main
-		if (simVars.misc.gui_enabled)
-			timestep_output();
+		timestep_output();
 	}
 
 
@@ -815,12 +813,10 @@ public:
 		simVars.timecontrol.current_simulation_time += o_dt;
 		simVars.timecontrol.current_timestep_nr++;
 
-#if SWEET_GUI
-		timestep_output();
-#endif
-
 		if (simVars.timecontrol.current_simulation_time > simVars.timecontrol.max_simulation_time)
 			FatalError("Max simulation time exceeded!");
+
+		timestep_output();
 	}
 
 
@@ -873,7 +869,7 @@ public:
 			// Print header
 			if (simVars.timecontrol.current_timestep_nr == 0)
 			{
-				o_ostream << "T\tTOTAL_MASS\tTOTAL_ENERGY\tPOT_ENSTROPHY";
+				o_ostream << "DATA\tT\tTOTAL_MASS\tTOTAL_ENERGY\tPOT_ENSTROPHY";
 
 				//if ((simVars.setup.scenario >= 0 && simVars.setup.scenario <= 4) || simVars.setup.scenario == 13)
 				o_ostream << "\tDIFF_H0\tDIFF_U0\tDIFF_V0";
@@ -886,7 +882,7 @@ public:
 			}
 
 			//Print simulation time, energy and pot enstrophy
-			o_ostream << std::setprecision(8) << simVars.timecontrol.current_simulation_time << "\t" << simVars.diag.total_mass << "\t" << simVars.diag.total_energy << "\t" << simVars.diag.total_potential_enstrophy;
+			o_ostream << std::setprecision(8) << "DATA\t" << simVars.timecontrol.current_simulation_time << "\t" << simVars.diag.total_mass << "\t" << simVars.diag.total_energy << "\t" << simVars.diag.total_potential_enstrophy;
 
 
 			// PXT: I didn't know where to put this to work with and without GUI - if removed crashes when gui=enable
@@ -933,8 +929,20 @@ public:
 		}
 
 		if (simVars.misc.output_each_sim_seconds > 0)
-			while (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
-				simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
+		{
+			if (simVars.misc.output_next_sim_seconds == simVars.timecontrol.max_simulation_time)
+			{
+				simVars.misc.output_next_sim_seconds = std::numeric_limits<double>::infinity();
+			}
+			else
+			{
+				while (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
+					simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
+
+				if (simVars.misc.output_next_sim_seconds > simVars.timecontrol.max_simulation_time)
+					simVars.misc.output_next_sim_seconds = simVars.timecontrol.max_simulation_time;
+			}
+		}
 
 		return true;
 	}
@@ -1727,17 +1735,6 @@ int main(int i_argc, char *i_argv[])
 				// Main time loop
 				while(true)
 				{
-					if (simulationSWE->timestep_output(buf))
-					{
-						// string output data
-
-						std::string output = buf.str();
-						buf.str("");
-
-						// This is an output printed on screen or buffered to files if > used
-						std::cout << output;
-					}
-
 					// Stop simulation if requested
 					if (simulationSWE->should_quit())
 						break;
@@ -1764,8 +1761,6 @@ int main(int i_argc, char *i_argv[])
 			std::cout << "Number of time steps: " << simVars.timecontrol.current_timestep_nr << std::endl;
 			std::cout << "Time per time step: " << seconds/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
 			std::cout << "Last time step size: " << simVars.timecontrol.current_timestep_size << std::endl;
-//			if (simVars.disc.timestepping_method != 0)
-//				std::cout << "REXI alpha.size(): " << simulationSWE->timeStepperstimestepping_swe_plane_rexi.rexi.alpha.size() << std::endl;
 
 			if (simVars.misc.verbosity > 0)
 			{

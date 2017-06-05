@@ -1549,7 +1549,7 @@ public:
 	 * Invert sign
 	 */
 	inline
-	PlaneData operator-()
+	PlaneData operator-()	const
 	{
 		PlaneData out(planeDataConfig);
 
