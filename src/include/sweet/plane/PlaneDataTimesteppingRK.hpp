@@ -25,7 +25,7 @@ public:
 
 
 	void setupBuffers(
-			const PlaneData &i_test_buffer,	///< array of example data to know dimensions of buffers
+			PlaneDataConfig *i_planeDataConfig,
 			int i_rk_order			///< Order of Runge-Kutta method
 	)
 	{
@@ -44,9 +44,9 @@ public:
 
 		for (int i = 0; i < N; i++)
 		{
-			RK_h_t[i] = new PlaneData(i_test_buffer.planeDataConfig);
-			RK_u_t[i] = new PlaneData(i_test_buffer.planeDataConfig);
-			RK_v_t[i] = new PlaneData(i_test_buffer.planeDataConfig);
+			RK_h_t[i] = new PlaneData(i_planeDataConfig);
+			RK_u_t[i] = new PlaneData(i_planeDataConfig);
+			RK_v_t[i] = new PlaneData(i_planeDataConfig);
 		}
 	}
 
@@ -117,7 +117,7 @@ public:
 			double i_max_simulation_time = std::numeric_limits<double>::infinity()	///< limit the maximum simulation time
 	)
 	{
-		setupBuffers(io_var0, i_runge_kutta_order);
+		setupBuffers(io_var0.planeDataConfig, i_runge_kutta_order);
 
 		double &dt = o_dt;
 		if (i_runge_kutta_order == 1)

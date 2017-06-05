@@ -31,9 +31,11 @@
 #include "swe_plane_rexi/SWE_Plane_TimeSteppers.hpp"
 
 
+
 // Plane data config
 PlaneDataConfig planeDataConfigInstance;
 PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
+
 
 
 #ifndef SWEET_MPI
@@ -97,6 +99,7 @@ public:
 	Staggering staggering;
 
 
+	// implementation of different time steppers
 	SWE_Plane_TimeSteppers timeSteppers;
 
 
@@ -252,14 +255,14 @@ public:
 		//Check if input parameters are adequate for this simulation
 		if (simVars.disc.use_staggering && simVars.disc.use_spectral_basis_diffs)
 			FatalError("Staggering and spectral basis not supported!");
-
+/*
 		if (simVars.disc.use_staggering &&
 				( simVars.disc.timestepping_method != SimulationVariables::Discretization::RUNGE_KUTTA_EXPLICIT &&
 					simVars.disc.timestepping_method != SimulationVariables::Discretization::SEMI_LAGRANGIAN_ADVECTION_ONLY
 				)
 		)
-			FatalError("Staggering only supported for standard time stepping mode 0 and 4!");
-
+			FatalError("Staggering only supported for standard time stepping mode with RK and Lagrangian advection only!");
+*/
 		if (simVars.disc.use_staggering && param_compute_error)
 			std::cerr << "Warning: Staggered data will be interpolated to/from A-grid for exact linear solution" << std::endl;
 
@@ -445,9 +448,7 @@ public:
 
 		timeSteppers.setup(simVars.disc.timestepping_method_string, op, simVars);
 
-		// Print output info (if gui is disabled, this is done in main
-		if (simVars.misc.gui_enabled)
-			timestep_output();
+		timestep_output();
 	}
 
 
@@ -719,8 +720,6 @@ public:
 	{
 		double o_dt;
 
-		// either set time step size to 0 for autodetection or to
-		// a positive value to use a fixed time step size
 		simVars.timecontrol.current_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
 
 		timeSteppers.master->run_timestep(
@@ -734,7 +733,8 @@ public:
 #if 0
 
 		else if (simVars.disc.timestepping_method == SimulationVariables::Discretization::SEMI_LAGRANGIAN_ADVECTION_ONLY)
-		{ // Semi-Lagrangian advection - velocities are kept constant, and
+		{
+			// Semi-Lagrangian advection - velocities are kept constant, and
 			//  h is transported according to given initial wind
 			// *** Valid only for non-divergent velocity fields **//
 			// See test case scenario 17 for this ts mode
@@ -772,7 +772,8 @@ public:
 
 		}
 		else if (simVars.disc.timestepping_method == SimulationVariables::Discretization::SEMI_LAGRANGIAN_SEMI_IMPLICIT)
-		{   // Semi-Lagrangian Semi-implicit Spectral
+		{
+			// Semi-Lagrangian Semi-implicit Spectral
 			assert(simVars.sim.CFL < 0);
 			o_dt = -simVars.sim.CFL;
 
@@ -801,9 +802,9 @@ public:
 			prog_h = prog_h + pow(-1,simVars.sim.viscosity_order/2)* o_dt*op.diffN_x(prog_h, simVars.sim.viscosity_order)*simVars.sim.viscosity
 					+ pow(-1,simVars.sim.viscosity_order/2)*o_dt*op.diffN_y(prog_h, simVars.sim.viscosity_order)*simVars.sim.viscosity;
 #else
-			prog_u=op.implicit_diffusion(prog_u, o_dt*simVars.sim.viscosity, simVars.sim.viscosity_order );
-			prog_v=op.implicit_diffusion(prog_v, o_dt*simVars.sim.viscosity, simVars.sim.viscosity_order );
-			prog_h=op.implicit_diffusion(prog_h, o_dt*simVars.sim.viscosity, simVars.sim.viscosity_order );
+			prog_u = op.implicit_diffusion(prog_u, o_dt*simVars.sim.viscosity, simVars.sim.viscosity_order );
+			prog_v = op.implicit_diffusion(prog_v, o_dt*simVars.sim.viscosity, simVars.sim.viscosity_order );
+			prog_h = op.implicit_diffusion(prog_h, o_dt*simVars.sim.viscosity, simVars.sim.viscosity_order );
 #endif
 		}
 
@@ -812,9 +813,10 @@ public:
 		simVars.timecontrol.current_simulation_time += o_dt;
 		simVars.timecontrol.current_timestep_nr++;
 
-#if SWEET_GUI
+		if (simVars.timecontrol.current_simulation_time > simVars.timecontrol.max_simulation_time)
+			FatalError("Max simulation time exceeded!");
+
 		timestep_output();
-#endif
 	}
 
 
@@ -867,7 +869,7 @@ public:
 			// Print header
 			if (simVars.timecontrol.current_timestep_nr == 0)
 			{
-				o_ostream << "T\tTOTAL_MASS\tTOTAL_ENERGY\tPOT_ENSTROPHY";
+				o_ostream << "DATA\tT\tTOTAL_MASS\tTOTAL_ENERGY\tPOT_ENSTROPHY";
 
 				//if ((simVars.setup.scenario >= 0 && simVars.setup.scenario <= 4) || simVars.setup.scenario == 13)
 				o_ostream << "\tDIFF_H0\tDIFF_U0\tDIFF_V0";
@@ -880,7 +882,7 @@ public:
 			}
 
 			//Print simulation time, energy and pot enstrophy
-			o_ostream << std::setprecision(8) << simVars.timecontrol.current_simulation_time << "\t" << simVars.diag.total_mass << "\t" << simVars.diag.total_energy << "\t" << simVars.diag.total_potential_enstrophy;
+			o_ostream << std::setprecision(8) << "DATA\t" << simVars.timecontrol.current_simulation_time << "\t" << simVars.diag.total_mass << "\t" << simVars.diag.total_energy << "\t" << simVars.diag.total_potential_enstrophy;
 
 
 			// PXT: I didn't know where to put this to work with and without GUI - if removed crashes when gui=enable
@@ -927,8 +929,20 @@ public:
 		}
 
 		if (simVars.misc.output_each_sim_seconds > 0)
-			while (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
-				simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
+		{
+			if (simVars.misc.output_next_sim_seconds == simVars.timecontrol.max_simulation_time)
+			{
+				simVars.misc.output_next_sim_seconds = std::numeric_limits<double>::infinity();
+			}
+			else
+			{
+				while (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
+					simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
+
+				if (simVars.misc.output_next_sim_seconds > simVars.timecontrol.max_simulation_time)
+					simVars.misc.output_next_sim_seconds = simVars.timecontrol.max_simulation_time;
+			}
+		}
 
 		return true;
 	}
@@ -939,35 +953,21 @@ public:
 	{
 		// Compute exact solution for linear part and compare with numerical solution
 
-		// Initial conditions (may be in a stag grid)
-		PlaneData t0_h = t0_prog_h;
-		PlaneData t0_u = t0_prog_u;
-		PlaneData t0_v = t0_prog_v;
-
 		// Variables on unstaggered A-grid
-		PlaneData t_h(planeDataConfig);
-		PlaneData t_u(planeDataConfig);
-		PlaneData t_v(planeDataConfig);
+		PlaneData t_h = t0_prog_h;
+		PlaneData t_u = t0_prog_u;
+		PlaneData t_v = t0_prog_v;
 
-		// Analytical solution at specific time on orginal grid (stag or not)
-		PlaneData ts_h(planeDataConfig);
-		PlaneData ts_u(planeDataConfig);
-		PlaneData ts_v(planeDataConfig);
-
-		// The direct spectral solution can only be calculated for A grid
-		t_h=t0_h;
-		t_u=t0_u;
-		t_v=t0_v;
 		if (simVars.disc.use_staggering) // Remap in case of C-grid
 		{
 			//remap initial condition to A grid
 			//sampler2D.bilinear_scalar(t0_u, posx_a, posy_a, t_u, stag_u[0], stag_u[1]);
 			//t_u=op.avg_f_x(t0_u); //equiv to bilinear
-			sampler2D.bicubic_scalar(t0_u, posa_x, posa_y, t_u, staggering.u[0], staggering.u[1]);
+			sampler2D.bicubic_scalar(t0_prog_u, posa_x, posa_y, t_u, staggering.u[0], staggering.u[1]);
 
 			//sampler2D.bilinear_scalar(t0_v, posx_a, posy_a, t_v, stag_v[0], stag_v[1]);
 			//t_v=op.avg_f_y(t0_v); //equiv to bilinear
-			sampler2D.bicubic_scalar(t0_v, posa_x, posa_y, t_v, staggering.v[0], staggering.v[1]);
+			sampler2D.bicubic_scalar(t0_prog_v, posa_x, posa_y, t_v, staggering.v[0], staggering.v[1]);
 		}
 
 		double o_dt;
@@ -976,15 +976,16 @@ public:
 				t_h, t_u, t_v,
 				o_dt,	// compute direct solution
 				simVars.timecontrol.current_simulation_time,
-				simVars.timecontrol.current_simulation_time,
+				0,			// initial condition given at time 0
 				simVars.timecontrol.max_simulation_time
 		);
 
+		// Analytical solution at specific time on orginal grid (stag or not)
+		PlaneData ts_h = t_h;
+		PlaneData ts_u = t_u;
+		PlaneData ts_v = t_v;
 
 		// Recover data in C grid using interpolations
-		ts_h=t_h;
-		ts_u=t_u;
-		ts_v=t_v;
 		if (simVars.disc.use_staggering)
 		{
 			// Remap A grid to C grid
@@ -1007,6 +1008,9 @@ public:
 		benchmark.analytical_error_maxabs_h = (ts_h-prog_h).reduce_maxAbs();
 		benchmark.analytical_error_maxabs_u = (ts_u-prog_u).reduce_maxAbs();
 		benchmark.analytical_error_maxabs_v = (ts_v-prog_v).reduce_maxAbs();
+
+//		std::cout << std::endl;
+//		std::cout << ts_h.reduce_rms_quad() << std::endl;
 
 	}
 
@@ -1073,10 +1077,10 @@ public:
 
 			double o_dt;
 			timeSteppers.l_direct->run_timestep(
-					prog_h, prog_u, prog_v,
+					t_h, t_u, t_v,
 					o_dt,
 					simVars.timecontrol.current_simulation_time,
-					simVars.timecontrol.current_simulation_time,
+					0,
 					simVars.timecontrol.max_simulation_time
 				);
 
@@ -1465,9 +1469,6 @@ public:
 			bool i_compute_convergence_test
 	)
 	{
-		if (simVars.parareal.verbosity > 2)
-			std::cout << "compute_output_data()" << std::endl;
-
 		double convergence = -1;
 
 		if (!i_compute_convergence_test || !output_data_valid)
@@ -1498,7 +1499,8 @@ public:
 		prog_u = *parareal_data_output.data_arrays[1];
 		prog_v = *parareal_data_output.data_arrays[2];
 
-		if (param_compute_error && simVars.pde.use_nonlinear_equations==0){
+		if (param_compute_error && simVars.pde.use_nonlinear_equations==0)
+		{
 			compute_errors();
 			std::cout << "maxabs error compared to analytical solution: " << benchmark_analytical_error_maxabs_h << std::endl;
 		}
@@ -1581,19 +1583,15 @@ int main(int i_argc, char *i_argv[])
 	//input parameter names (specific ones for this program)
 	const char *bogus_var_names[] = {
 			"compute-error",
-			"boundary-id",
 			"initial-freq-x-mul",		/// frequency multipliers for special scenario setup
 			"initial-freq-y-mul",
-			"lin-exp-analyt",
 			nullptr
 	};
 
 	// default values for specific input (for general input see SimulationVariables.hpp)
 	simVars.bogus.var[0] = 0;	// compute error - default no
-	simVars.bogus.var[1] = 0; 	//boundary
-	simVars.bogus.var[2] = 0;  //frequency in x for waves test case
-	simVars.bogus.var[3] = 0;  //frequency in y for waves test case
-	simVars.bogus.var[4] = 0;  // Use analytical linear operator exponential
+	simVars.bogus.var[1] = 0;  //frequency in x for waves test case
+	simVars.bogus.var[2] = 0;  //frequency in y for waves test case
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
@@ -1612,18 +1610,10 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "" << std::endl;
 		std::cout << "	--staggering [0/1]		Use staggered grid" << std::endl;
 		std::cout << std::endl;
-		std::cout << "	--boundary-id [0,1,...]	    Boundary id" << std::endl;
-		std::cout << "                              0: no boundary (default)" << std::endl;
-		std::cout << "                              1: centered box" << std::endl;
-		std::cout << std::endl;
-		std::cout << "	--rexi-zero-before-solving [0/1]	Zero the solution for the iterative solver (default=0)" << std::endl;
-		std::cout << std::endl;
-		//std::cout << "	--nonlinear [0/1/2]	   Form of equations:" << std::endl;
-		//std::cout << "						     0: Linear SWE (default)" << std::endl;
-		//std::cout << "						     1: Full nonlinear SWE" << std::endl;
-		//std::cout << "						     2: Linear SWE + nonlinear advection only (needs -H to be set)" << std::endl;
-		//std::cout << std::endl;
-		std::cout << "	--lin-exp-analyt [0/1]	Use analytical exponential of linear operator (default=0)" << std::endl;
+		std::cout << "	--nonlinear [0/1/2]	   Form of equations:" << std::endl;
+		std::cout << "						     0: Linear SWE (default)" << std::endl;
+		std::cout << "						     1: Full nonlinear SWE" << std::endl;
+		std::cout << "						     2: Linear SWE + nonlinear advection only (needs -H to be set)" << std::endl;
 		std::cout << std::endl;
 
 
@@ -1636,8 +1626,8 @@ int main(int i_argc, char *i_argv[])
 	param_compute_error = simVars.bogus.var[0];
 
 	// Frequency for certain initial conditions
-	param_initial_freq_x_mul = simVars.bogus.var[2];
-	param_initial_freq_y_mul = simVars.bogus.var[3];
+	param_initial_freq_x_mul = simVars.bogus.var[1];
+	param_initial_freq_y_mul = simVars.bogus.var[2];
 
 	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
 
@@ -1733,17 +1723,6 @@ int main(int i_argc, char *i_argv[])
 				// Main time loop
 				while(true)
 				{
-					if (simulationSWE->timestep_output(buf))
-					{
-						// string output data
-
-						std::string output = buf.str();
-						buf.str("");
-
-						// This is an output printed on screen or buffered to files if > used
-						std::cout << output;
-					}
-
 					// Stop simulation if requested
 					if (simulationSWE->should_quit())
 						break;
@@ -1770,8 +1749,6 @@ int main(int i_argc, char *i_argv[])
 			std::cout << "Number of time steps: " << simVars.timecontrol.current_timestep_nr << std::endl;
 			std::cout << "Time per time step: " << seconds/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
 			std::cout << "Last time step size: " << simVars.timecontrol.current_timestep_size << std::endl;
-//			if (simVars.disc.timestepping_method != 0)
-//				std::cout << "REXI alpha.size(): " << simulationSWE->timeStepperstimestepping_swe_plane_rexi.rexi.alpha.size() << std::endl;
 
 			if (simVars.misc.verbosity > 0)
 			{

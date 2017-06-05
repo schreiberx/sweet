@@ -44,7 +44,8 @@ SWE_Sphere_TS_l_rexi::SWE_Sphere_TS_l_rexi(
 )	:
 	simVars(i_simVars),
 	op(i_op),
-	sphereDataConfig(i_op.sphereDataConfig)
+	sphereDataConfig(i_op.sphereDataConfig),
+	sphereDataConfigSolver(nullptr)
 {
 #if !SWEET_USE_LIBFFT
 	std::cerr << "Spectral space required for solvers, use compile option --libfft=enable" << std::endl;
@@ -92,7 +93,7 @@ void SWE_Sphere_TS_l_rexi::reset()
 
 	perThreadVars.resize(0);
 
-	sphereDataConfigRexi = nullptr;
+	sphereDataConfigSolver = nullptr;
 }
 
 
@@ -179,18 +180,18 @@ void SWE_Sphere_TS_l_rexi::setup(
 
 	if (rexi_use_extended_modes == 0)
 	{
-		sphereDataConfigRexi = sphereDataConfig;
+		sphereDataConfigSolver = sphereDataConfig;
 	}
 	else
 	{
 		// Add modes only along latitude since these are the "problematic" modes
-		sphereConfigRexiAddedModes.setupAdditionalModes(
+		sphereDataConfigInstance.setupAdditionalModes(
 				sphereDataConfig,
 				rexi_use_extended_modes,	// TODO: Extend SPH wrapper to also support m != n to set this guy to 0
 				rexi_use_extended_modes
 		);
 
-		sphereDataConfigRexi = &sphereConfigRexiAddedModes;
+		sphereDataConfigSolver = &sphereDataConfigInstance;
 	}
 
 	rexi.setup(0, h, M, i_L, i_rexi_half, normalization);
@@ -257,9 +258,9 @@ void SWE_Sphere_TS_l_rexi::setup(
 			perThreadVars[i]->alpha.resize(local_size);
 			perThreadVars[i]->beta_re.resize(local_size);
 
-			perThreadVars[i]->accum_phi.setup(sphereDataConfigRexi);
-			perThreadVars[i]->accum_vort.setup(sphereDataConfigRexi);
-			perThreadVars[i]->accum_div.setup(sphereDataConfigRexi);
+			perThreadVars[i]->accum_phi.setup(sphereDataConfigSolver);
+			perThreadVars[i]->accum_vort.setup(sphereDataConfigSolver);
+			perThreadVars[i]->accum_div.setup(sphereDataConfigSolver);
 
 			for (std::size_t n = start; n < end; n++)
 			{
@@ -316,8 +317,7 @@ void SWE_Sphere_TS_l_rexi::update_coefficients()
 					int thread_local_idx = n-start;
 
 					perThreadVars[i]->rexiSPHRobert_vector[thread_local_idx].setup_vectorinvariant_progphivortdiv(
-							sphereDataConfigRexi,
-							sphereDataConfig,
+							sphereDataConfigSolver,
 							perThreadVars[i]->alpha[thread_local_idx],
 							perThreadVars[i]->beta_re[thread_local_idx],
 							simVars.sim.earth_radius,
@@ -361,6 +361,8 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 	{
 		i_fixed_dt = i_max_simulation_time-i_simulation_timestamp;
 
+
+		std::cout << "Warning: Reducing time step size from " << i_fixed_dt << " to " << timestep_size << std::endl;
 		timestep_size = i_fixed_dt;
 		update_coefficients();
 	}
@@ -433,9 +435,9 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 		/*
 		 * DO SUM IN PARALLEL
 		 */
-		SphereData thread_prog_phi0(sphereDataConfigRexi);
-		SphereData thread_prog_vort0(sphereDataConfigRexi);
-		SphereData thread_prog_div0(sphereDataConfigRexi);
+		SphereData thread_prog_phi0(sphereDataConfigSolver);
+		SphereData thread_prog_vort0(sphereDataConfigSolver);
+		SphereData thread_prog_div0(sphereDataConfigSolver);
 
 #if SWEET_DEBUG
 		/**
@@ -453,13 +455,13 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 		}
 #endif
 
-		thread_prog_phi0 = io_prog_phi0.spectral_returnWithDifferentModes(thread_prog_phi0.sphereDataConfig);
-		thread_prog_vort0 = io_prog_vort0.spectral_returnWithDifferentModes(thread_prog_vort0.sphereDataConfig);
-		thread_prog_div0 = io_prog_div0.spectral_returnWithDifferentModes(thread_prog_div0.sphereDataConfig);
+		thread_prog_phi0 = io_prog_phi0.spectral_returnWithDifferentModes(sphereDataConfigSolver);
+		thread_prog_vort0 = io_prog_vort0.spectral_returnWithDifferentModes(sphereDataConfigSolver);
+		thread_prog_div0 = io_prog_div0.spectral_returnWithDifferentModes(sphereDataConfigSolver);
 
-		SphereData tmp_prog_phi(sphereDataConfigRexi);
-		SphereData tmp_prog_vort(sphereDataConfigRexi);
-		SphereData tmp_prog_div(sphereDataConfigRexi);
+		SphereData tmp_prog_phi(sphereDataConfigSolver);
+		SphereData tmp_prog_vort(sphereDataConfigSolver);
+		SphereData tmp_prog_div(sphereDataConfigSolver);
 
 		perThreadVars[thread_id]->accum_phi.spectral_set_zero();
 		perThreadVars[thread_id]->accum_vort.spectral_set_zero();
@@ -485,8 +487,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 				std::complex<double> &beta_re = perThreadVars[thread_id]->beta_re[local_idx];
 
 				rexiSPHRobert.setup_vectorinvariant_progphivortdiv(
-						sphereDataConfigRexi,	///< sphere data for input data
-						sphereDataConfig,		///< sphereData for solver (should be truncated!)
+						sphereDataConfigSolver,	///< sphere data for input data
 						alpha,
 						beta_re,
 

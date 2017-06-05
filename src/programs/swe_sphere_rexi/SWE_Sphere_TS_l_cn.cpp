@@ -137,7 +137,7 @@ void SWE_Sphere_TS_l_cn::run_timestep(
 )
 {
 	if (i_fixed_dt <= 0)
-		FatalError("Only constant time step size allowed");
+		FatalError("SWE_Sphere_TS_l_cn: Only constant time step size allowed");
 
 	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
 	{
@@ -254,7 +254,6 @@ void SWE_Sphere_TS_l_cn::run_timestep(
 
 		SphereDataPhysical u0(sphereDataConfig);
 		SphereDataPhysical v0(sphereDataConfig);
-
 		op.robert_vortdiv_to_uv(vort0, div0, u0, v0);
 
 		SphereDataPhysical gradu(sphereDataConfig);

@@ -12,9 +12,14 @@
 
 #include "SWE_Plane_TS_l_direct.hpp"
 #include "SWE_Plane_TS_l_erk.hpp"
+#include "SWE_Plane_TS_l_cn.hpp"
+#include "SWE_Plane_TS_l_erk_n_erk.hpp"
+#include "SWE_Plane_TS_l_cn_n_erk.hpp"
+#include "SWE_Plane_TS_l_rexi_n_erk.hpp"
 #include "SWE_Plane_TS_l_irk.hpp"
-#include "SWE_Plane_TS_l_rexi_ns_sl_nd_erk.hpp"
+#include "SWE_Plane_TS_l_irk_n_erk.hpp"
 #include "SWE_Plane_TS_l_rexi.hpp"
+#include "SWE_Plane_TS_l_rexi_ns_sl_nd_erk.hpp"
 #include "SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk.hpp"
 #include "SWE_Plane_TS_ln_erk.hpp"
 
@@ -28,11 +33,17 @@ class SWE_Plane_TimeSteppers
 public:
 	SWE_Plane_TS_ln_erk *ln_erk = nullptr;
 	SWE_Plane_TS_l_erk *l_erk = nullptr;
+	SWE_Plane_TS_l_cn *l_cn = nullptr;
+	SWE_Plane_TS_l_erk_n_erk *l_erk_n_erk = nullptr;
+	SWE_Plane_TS_l_cn_n_erk *l_cn_n_erk = nullptr;
+	SWE_Plane_TS_l_rexi_n_erk *l_rexi_n_erk = nullptr;
 	SWE_Plane_TS_l_irk *l_irk = nullptr;
 	SWE_Plane_TS_l_rexi *l_rexi = nullptr;
 	SWE_Plane_TS_l_direct *l_direct = nullptr;
 	SWE_Plane_TS_l_rexi_ns_sl_nd_erk *l_rexi_ns_sl_nd_erk = nullptr;
 	SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk *lg_rexi_lc_erk_nt_sl_nd_erk = nullptr;
+
+	SWE_Plane_TS_l_irk_n_erk *l_irk_n_erk = nullptr;
 
 	SWE_Plane_TS_interface *master = nullptr;
 
@@ -52,6 +63,30 @@ public:
 		{
 			delete l_erk;
 			l_erk = nullptr;
+		}
+
+		if (l_cn != nullptr)
+		{
+			delete l_cn;
+			l_cn = nullptr;
+		}
+
+		if (l_erk_n_erk != nullptr)
+		{
+			delete l_erk_n_erk;
+			l_erk_n_erk = nullptr;
+		}
+
+		if (l_cn_n_erk != nullptr)
+		{
+			delete l_cn_n_erk;
+			l_cn_n_erk = nullptr;
+		}
+
+		if (l_rexi_n_erk != nullptr)
+		{
+			delete l_rexi_n_erk;
+			l_rexi_n_erk = nullptr;
 		}
 
 		if (l_irk != nullptr)
@@ -83,6 +118,12 @@ public:
 			delete lg_rexi_lc_erk_nt_sl_nd_erk;
 			lg_rexi_lc_erk_nt_sl_nd_erk = nullptr;
 		}
+
+		if (l_irk_n_erk != nullptr)
+		{
+			delete l_irk_n_erk;
+			l_irk_n_erk = nullptr;
+		}
 	}
 
 
@@ -108,12 +149,47 @@ public:
 
 			master = &(SWE_Plane_TS_interface&)*ln_erk;
 		}
+		else if (i_timestepping_method_string == "l_cn")
+		{
+			l_cn= new SWE_Plane_TS_l_cn(i_simVars, i_op);
+			l_cn->setup(i_simVars.disc.timestepping_order, i_simVars.disc.crank_nicolson_filter);
+
+			master = &(SWE_Plane_TS_interface&)*l_cn;
+		}
 		else if (i_timestepping_method_string == "l_erk")
 		{
 			l_erk = new SWE_Plane_TS_l_erk(i_simVars, i_op);
 			l_erk->setup(i_simVars.disc.timestepping_order);
 
 			master = &(SWE_Plane_TS_interface&)*l_erk;
+		}
+		else if (i_timestepping_method_string == "l_erk_n_erk")
+		{
+			l_erk_n_erk = new SWE_Plane_TS_l_erk_n_erk(i_simVars, i_op);
+			l_erk_n_erk->setup(i_simVars.disc.timestepping_order);
+
+			master = &(SWE_Plane_TS_interface&)*l_erk_n_erk;
+		}
+		else if (i_timestepping_method_string == "l_cn_n_erk")
+		{
+			l_cn_n_erk = new SWE_Plane_TS_l_cn_n_erk(i_simVars, i_op);
+			l_cn_n_erk->setup(i_simVars.disc.timestepping_order, i_simVars.disc.timestepping_order2, i_simVars.disc.crank_nicolson_filter);
+
+			master = &(SWE_Plane_TS_interface&)*l_cn_n_erk;
+		}
+		else if (i_timestepping_method_string == "l_rexi_n_erk")
+		{
+			l_rexi_n_erk = new SWE_Plane_TS_l_rexi_n_erk(i_simVars, i_op);
+			l_rexi_n_erk->setup(
+					i_simVars.rexi.rexi_h,
+					i_simVars.rexi.rexi_M,
+					i_simVars.rexi.rexi_L,
+					i_simVars.rexi.rexi_use_half_poles,
+					i_simVars.rexi.rexi_normalization,
+					i_simVars.disc.timestepping_order2
+				);
+
+			master = &(SWE_Plane_TS_interface&)*l_rexi_n_erk;
 		}
 		else if (i_timestepping_method_string == "l_irk")
 		{
@@ -175,6 +251,17 @@ public:
 				);
 
 			master = &(SWE_Plane_TS_interface&)*lg_rexi_lc_erk_nt_sl_nd_erk;
+		}
+		else if (i_timestepping_method_string == "l_irk_n_erk")
+		{
+			l_irk_n_erk = new SWE_Plane_TS_l_irk_n_erk(i_simVars, i_op);
+
+			l_irk_n_erk->setup(
+					i_simVars.disc.timestepping_order,
+					i_simVars.disc.timestepping_order2
+				);
+
+			master = &(SWE_Plane_TS_interface&)*l_irk_n_erk;
 		}
 		else if (i_timestepping_method_string == "l_direct")
 		{

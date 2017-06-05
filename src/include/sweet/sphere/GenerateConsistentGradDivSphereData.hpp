@@ -187,7 +187,7 @@ private:
 
 		SphereDataTimesteppingExplicitRK timestepping;
 
-		timestepping.resetAndSetup(prog_h, 4);
+		timestepping.resetAndSetup(sphereDataConfig, 4);
 
 		std::cout << max_simulation_time << ", " << current_simulation_time << std::endl;
 		while (max_simulation_time > 0.0 && max_simulation_time > current_simulation_time)

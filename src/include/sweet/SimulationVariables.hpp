@@ -475,7 +475,7 @@ public:
 		 * Hillary Weller, John Thuburn, Collin J. Cotter,
 		 * "Computational Modes and Grid Imprinting on Five Quasi-Uniform Spherical C Grids"
 		 */
-		int normal_mode_analysis_generation = false;
+		int normal_mode_analysis_generation = 0;
 
 
 		void outputConfig()
@@ -818,6 +818,12 @@ public:
 	 */
 	void reset()
 	{
+		if (timecontrol.max_simulation_time < 0)
+			FatalError("timecontrol.max_simulation_time < 0");
+
+		if (timecontrol.max_timesteps_nr < 0)
+			FatalError("timecontrol.max_timesteps_nr < 0");
+
 		disc.cell_size[0] = sim.domain_size[0]/(double)disc.res_physical[0];
 		disc.cell_size[1] = sim.domain_size[1]/(double)disc.res_physical[1];
 

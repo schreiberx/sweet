@@ -90,7 +90,6 @@ void SWE_Sphere_TS_l_erk::run_timestep(
 		double i_max_simulation_time
 )
 {
-
 	if (i_fixed_dt <= 0)
 		FatalError("Only constant time step size allowed");
 

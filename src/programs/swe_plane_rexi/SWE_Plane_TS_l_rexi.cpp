@@ -80,7 +80,7 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 
 
 #if SWEET_REXI_THREAD_PARALLEL_SUM
-#	pragma omp parallel for schedule(static,1) default(none) shared(i_parameters, i_timestep_size, io_h, io_u, io_v, max_N, std::cout, std::cerr)
+#	pragma omp parallel for schedule(static,1) default(none) shared(i_fixed_dt, io_h, io_u, io_v, max_N, std::cout, std::cerr)
 #endif
 	for (int i = 0; i < num_local_rexi_par_threads; i++)
 	{
@@ -359,7 +359,7 @@ void SWE_Plane_TS_l_rexi::setup(
 	for (int j = 0; j < num_local_rexi_par_threads; j++)
 	{
 #if SWEET_REXI_THREAD_PARALLEL_SUM
-#	pragma omp parallel for schedule(static,1) default(none) shared(planeDataConfig_local, i_domain_size,std::cout,j)
+#	pragma omp parallel for schedule(static,1) default(none) shared(planeDataConfig_local, std::cout,j)
 #endif
 		for (int i = 0; i < num_local_rexi_par_threads; i++)
 		{
@@ -405,7 +405,7 @@ void SWE_Plane_TS_l_rexi::setup(
 	}
 
 #if SWEET_REXI_THREAD_PARALLEL_SUM
-#	pragma omp parallel for schedule(static,1) default(none)  shared(planeDataConfig_local, i_domain_size,std::cout)
+#	pragma omp parallel for schedule(static,1) default(none)  shared(planeDataConfig_local, std::cout)
 #endif
 	for (int i = 0; i < num_local_rexi_par_threads; i++)
 	{
