@@ -1,5 +1,5 @@
 /*
- * SWE_Plane_TS_l_cn_n_erk.cpp
+ * SWE_Plane_TS_l_rexi_n_erk.cpp
  *
  *  Created on: 29 May 2017
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
@@ -9,7 +9,7 @@
  *					which was also written by Pedro Peixoto
  */
 
-#include "SWE_Plane_TS_l_cn_n_erk.hpp"
+#include "SWE_Plane_TS_l_rexi_n_erk.hpp"
 #include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
 #include <sweet/plane/PlaneOperatorsComplex.hpp>
 
@@ -18,7 +18,7 @@
 /*
  * Main routine for method to be used in case of finite differences
  */
-void SWE_Plane_TS_l_cn_n_erk::euler_timestep_update_nonlinear(
+void SWE_Plane_TS_l_rexi_n_erk::euler_timestep_update_nonlinear(
 		const PlaneData &i_h,	///< prognostic variables
 		const PlaneData &i_u,	///< prognostic variables
 		const PlaneData &i_v,	///< prognostic variables
@@ -46,7 +46,7 @@ void SWE_Plane_TS_l_cn_n_erk::euler_timestep_update_nonlinear(
 }
 
 
-void SWE_Plane_TS_l_cn_n_erk::run_timestep(
+void SWE_Plane_TS_l_rexi_n_erk::run_timestep(
 		PlaneData &io_h,	///< prognostic variables
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
@@ -58,17 +58,17 @@ void SWE_Plane_TS_l_cn_n_erk::run_timestep(
 )
 {
 	if (i_fixed_dt <= 0)
-		FatalError("SWE_Plane_TS_l_cn_n_erk: Only constant time step size allowed");
+		FatalError("SWE_Plane_TS_l_rexi_n_erk: Only constant time step size allowed");
 
 	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
 		i_fixed_dt = i_max_simulation_time-i_simulation_timestamp;
 
 	o_dt = i_fixed_dt;
 
-	ts_l_cn.run_timestep(
+	ts_l_rexi.run_timestep(
 			io_h, io_u, io_v,
 			o_dt,
-			i_fixed_dt*crank_nicolson_damping_factor,
+			i_fixed_dt,
 			i_simulation_timestamp,
 			i_max_simulation_time
 		);
@@ -76,7 +76,7 @@ void SWE_Plane_TS_l_cn_n_erk::run_timestep(
 	// standard time stepping
 	timestepping_rk.run_timestep(
 			this,
-			&SWE_Plane_TS_l_cn_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
+			&SWE_Plane_TS_l_rexi_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
 			io_h, io_u, io_v,
 			o_dt,
 			i_fixed_dt,
@@ -91,39 +91,38 @@ void SWE_Plane_TS_l_cn_n_erk::run_timestep(
 /*
  * Setup
  */
-void SWE_Plane_TS_l_cn_n_erk::setup(
-		int i_l_order,
-		int i_n_order,
-		double i_crank_nicolson_damping_factor
+void SWE_Plane_TS_l_rexi_n_erk::setup(
+		double i_h,						///< sampling size
+		int i_M,						///< number of sampling points
+		int i_L,						///< number of sampling points for Gaussian approximation
+										///< set to 0 for auto detection
+
+		bool i_rexi_half,				///< use half-pole reduction
+		bool i_rexi_normalization,		///< REXI normalization
+
+		int i_nonlinear_order
 )
 {
-	timestepping_order_linear = i_l_order;
-	timestepping_order_nonlinear = i_l_order;
-	crank_nicolson_damping_factor = i_crank_nicolson_damping_factor;
+	ts_l_rexi.setup(i_h, i_M, i_L, i_rexi_half, i_rexi_normalization);
 
-	if (timestepping_order_linear != 2)
-		FatalError("SWE_Plane_TS_l_cn_n_erk: Only 2nd order TS (Because of Crank Nicolson) supported with this implementation");
-
-	ts_l_cn.setup(2, i_crank_nicolson_damping_factor);
-
+	timestepping_order_nonlinear = i_nonlinear_order;
 	timestepping_rk.setupBuffers(op.planeDataConfig, timestepping_order_nonlinear);
 }
 
 
-SWE_Plane_TS_l_cn_n_erk::SWE_Plane_TS_l_cn_n_erk(
+SWE_Plane_TS_l_rexi_n_erk::SWE_Plane_TS_l_rexi_n_erk(
 		SimulationVariables &i_simVars,
 		PlaneOperators &i_op
 )	:
 		simVars(i_simVars),
 		op(i_op),
-		ts_l_cn(simVars, op)
+		ts_l_rexi(simVars, op)
 {
-	setup(simVars.disc.timestepping_order, simVars.disc.timestepping_order2, simVars.disc.crank_nicolson_filter);
 }
 
 
 
-SWE_Plane_TS_l_cn_n_erk::~SWE_Plane_TS_l_cn_n_erk()
+SWE_Plane_TS_l_rexi_n_erk::~SWE_Plane_TS_l_rexi_n_erk()
 {
 }
 

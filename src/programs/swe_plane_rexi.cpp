@@ -1583,19 +1583,15 @@ int main(int i_argc, char *i_argv[])
 	//input parameter names (specific ones for this program)
 	const char *bogus_var_names[] = {
 			"compute-error",
-			"boundary-id",
 			"initial-freq-x-mul",		/// frequency multipliers for special scenario setup
 			"initial-freq-y-mul",
-			"lin-exp-analyt",
 			nullptr
 	};
 
 	// default values for specific input (for general input see SimulationVariables.hpp)
 	simVars.bogus.var[0] = 0;	// compute error - default no
-	simVars.bogus.var[1] = 0; 	//boundary
-	simVars.bogus.var[2] = 0;  //frequency in x for waves test case
-	simVars.bogus.var[3] = 0;  //frequency in y for waves test case
-	simVars.bogus.var[4] = 0;  // Use analytical linear operator exponential
+	simVars.bogus.var[1] = 0;  //frequency in x for waves test case
+	simVars.bogus.var[2] = 0;  //frequency in y for waves test case
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
@@ -1614,18 +1610,10 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "" << std::endl;
 		std::cout << "	--staggering [0/1]		Use staggered grid" << std::endl;
 		std::cout << std::endl;
-		std::cout << "	--boundary-id [0,1,...]	    Boundary id" << std::endl;
-		std::cout << "                              0: no boundary (default)" << std::endl;
-		std::cout << "                              1: centered box" << std::endl;
-		std::cout << std::endl;
-		std::cout << "	--rexi-zero-before-solving [0/1]	Zero the solution for the iterative solver (default=0)" << std::endl;
-		std::cout << std::endl;
-		//std::cout << "	--nonlinear [0/1/2]	   Form of equations:" << std::endl;
-		//std::cout << "						     0: Linear SWE (default)" << std::endl;
-		//std::cout << "						     1: Full nonlinear SWE" << std::endl;
-		//std::cout << "						     2: Linear SWE + nonlinear advection only (needs -H to be set)" << std::endl;
-		//std::cout << std::endl;
-		std::cout << "	--lin-exp-analyt [0/1]	Use analytical exponential of linear operator (default=0)" << std::endl;
+		std::cout << "	--nonlinear [0/1/2]	   Form of equations:" << std::endl;
+		std::cout << "						     0: Linear SWE (default)" << std::endl;
+		std::cout << "						     1: Full nonlinear SWE" << std::endl;
+		std::cout << "						     2: Linear SWE + nonlinear advection only (needs -H to be set)" << std::endl;
 		std::cout << std::endl;
 
 
@@ -1638,8 +1626,8 @@ int main(int i_argc, char *i_argv[])
 	param_compute_error = simVars.bogus.var[0];
 
 	// Frequency for certain initial conditions
-	param_initial_freq_x_mul = simVars.bogus.var[2];
-	param_initial_freq_y_mul = simVars.bogus.var[3];
+	param_initial_freq_x_mul = simVars.bogus.var[1];
+	param_initial_freq_y_mul = simVars.bogus.var[2];
 
 	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
 
