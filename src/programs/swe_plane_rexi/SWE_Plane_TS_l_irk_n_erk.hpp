@@ -30,7 +30,7 @@ class SWE_Plane_TS_l_irk_n_erk	: public SWE_Plane_TS_interface
 	SWE_Plane_TS_l_irk ts_l_irk;
 
 
-private:
+public:
 	void euler_timestep_update_nonlinear(
 			const PlaneData &i_h,	///< prognostic variables
 			const PlaneData &i_u,	///< prognostic variables
@@ -64,7 +64,7 @@ public:
 			double i_max_simulation_time = std::numeric_limits<double>::infinity()
 	);
 
-
+        SWE_Plane_TS_l_irk& get_implicit_timestepper() {return ts_l_irk;}
 
 	virtual ~SWE_Plane_TS_l_irk_n_erk();
 };

@@ -71,6 +71,7 @@ public:
 		io_x = i_rhs.spectral_div_element_wise(lhs);
 	}
 
+        PlaneOperatorsComplex& get_plane_operators_complex() {return opComplex;}
 
 	virtual ~SWE_Plane_TS_l_irk();
 };

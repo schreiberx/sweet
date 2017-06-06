@@ -81,7 +81,7 @@ module encap_module
 
      subroutine c_sweet_data_eprint(i_sd) bind(c, name="c_sweet_data_eprint")
        use iso_c_binding
-       type(c_ptr),value :: i_sd
+       type(c_ptr), value :: i_sd
      end subroutine c_sweet_data_eprint
 
   end interface

@@ -86,15 +86,15 @@ contains
      nsteps     = steps*pf_comm%nproc
      
      t          = 0.0_pfdp
-     dt         = 0.000001_pfdp ! small time step for now since the integrator is explicit
+     dt         = 0.0001_pfdp ! small time step for now since the integrator is explicit
      
      pf%nlevels = num_levs
-     pf%niters  = 100 ! number of iterations hard coded for now
+     pf%niters  = 20 ! number of iterations hard coded for now
      
      qtype_name = 'SDC_GAUSS_LOBATTO' ! type of nodes hard coded for now
      qtype      = translate_qtype(qtype_name, & 
                                   qnl)
-     nnodes(1)  = 5 ! number of nodes hard coded for now
+     nnodes(1)  = 6 ! number of nodes hard coded for now
  
      ! loop over levels (currently only one) to initialize level-specific data structures
      do level = 1, pf%nlevels

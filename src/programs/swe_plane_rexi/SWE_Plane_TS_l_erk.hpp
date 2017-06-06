@@ -27,7 +27,7 @@ class SWE_Plane_TS_l_erk	: public SWE_Plane_TS_interface
 	// Sampler
 	PlaneDataTimesteppingRK timestepping_rk;
 
-private:
+public:
 	void euler_timestep_update(
 			const PlaneData &i_h,	///< prognostic variables
 			const PlaneData &i_u,	///< prognostic variables

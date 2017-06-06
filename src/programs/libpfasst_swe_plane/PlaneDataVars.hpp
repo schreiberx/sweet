@@ -67,7 +67,7 @@ public:
 
 protected:
   
-  // geopotential 
+  // height
   PlaneData prog_h;
   // velocities
   PlaneData prog_u;
