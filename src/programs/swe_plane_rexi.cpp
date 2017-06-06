@@ -105,6 +105,11 @@ public:
 	// implementation of different time steppers
 	SWE_Plane_TimeSteppers timeSteppers;
 
+#if SWEET_PARAREAL
+	// implementation of different time steppers
+	SWE_Plane_TimeSteppers timeSteppersCoarse;
+#endif
+
 
 	// Diagnostics measures
 	int last_timestep_nr_update_diagnostics = -1;
@@ -450,7 +455,13 @@ public:
 			}
 		}
 
-		timeSteppers.setup(simVars.disc.timestepping_method_string, op, simVars);
+		timeSteppers.setup(
+				simVars.disc.timestepping_method,
+				simVars.disc.timestepping_order,
+				simVars.disc.timestepping_order2,
+				op,
+				simVars
+			);
 
 		timestep_output();
 	}
@@ -1291,17 +1302,20 @@ public:
 			parareal_data_error.setup(data_array);
 		}
 
-		// use REXI
-		timestepping_swe_plane_rexi.setup(
-				0,
-				simVars.rexi.rexi_h,
-				simVars.rexi.rexi_M,
-				simVars.rexi.rexi_L,
+		timeSteppers.setup(
+				simVars.disc.timestepping_method,
+				simVars.disc.timestepping_order,
+				simVars.disc.timestepping_order2,
+				op,
+				simVars
+			);
 
-				simVars.disc.res_physical,
-				simVars.sim.domain_size,
-				simVars.rexi.rexi_use_half_poles,
-				simVars.rexi.rexi_normalization
+		timeSteppersCoarse.setup(
+				simVars.parareal.coarse_timestepping_method,
+				simVars.parareal.coarse_timestepping_order,
+				simVars.parareal.coarse_timestepping_order2,
+				op,
+				simVars
 			);
 
 		output_data_valid = false;
@@ -1787,7 +1801,7 @@ int main(int i_argc, char *i_argv[])
 #if SWEET_MPI
 	else
 	{
-		if (simVars.disc.timestepping_method_string.find("rexi") != std::string::npos)
+		if (simVars.disc.timestepping_method.find("rexi") != std::string::npos)
 		{
 			PlaneOperators op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
@@ -1831,7 +1845,7 @@ int main(int i_argc, char *i_argv[])
 		}
 	}
 
-	if (simVars.disc.timestepping_method_string.find("rexi") != std::string::npos)
+	if (simVars.disc.timestepping_method.find("rexi") != std::string::npos)
 	{
 		// synchronize REXI
 		if (mpi_rank == 0)

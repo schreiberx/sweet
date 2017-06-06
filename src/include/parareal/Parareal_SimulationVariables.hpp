@@ -53,12 +53,17 @@ public:
 	/**
 	 * Coarse time stepping method string
 	 */
-	std::string coarse_timestepping_method_string = "";
+	std::string coarse_timestepping_method = "";
 
 	/**
 	 * Coarse time stepping method order
 	 */
 	int coarse_timestepping_order = 1;
+
+	/**
+	 * Coarse time stepping method order
+	 */
+	int coarse_timestepping_order2 = 1;
 
 	/**
 	 * setup long options for program arguments
@@ -85,10 +90,13 @@ public:
 		io_long_options[io_next_free_program_option] = {"parareal-max-simulation-time", required_argument, 0, (int)256+io_next_free_program_option};
 		io_next_free_program_option++;
 
-		io_long_options[io_next_free_program_option] = {"parareal-coarse-timestepping-method-string", required_argument, 0, (int)256+io_next_free_program_option};
+		io_long_options[io_next_free_program_option] = {"parareal-coarse-timestepping-method", required_argument, 0, (int)256+io_next_free_program_option};
 		io_next_free_program_option++;
 
-		io_long_options[io_next_free_program_option] = {"parareal-coarse-timestepping-method-order", required_argument, 0, (int)256+io_next_free_program_option};
+		io_long_options[io_next_free_program_option] = {"parareal-coarse-timestepping-order", required_argument, 0, (int)256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"parareal-coarse-timestepping-order2", required_argument, 0, (int)256+io_next_free_program_option};
 		io_next_free_program_option++;
 
 		if (io_next_free_program_option > i_max_options)
@@ -111,8 +119,9 @@ public:
 		std::cout << "	--parareal-verbosity=[int]                  Verbosity level (default=0)" << std::endl;
 		std::cout << "	--parareal-enabled=[0/1]                    Enable Parareal method (default=0)" << std::endl;
 		std::cout << "	--parareal-max-simulation-time=[float]      Overall simulation time (default=-1)" << std::endl;
-		std::cout << "	--parareal-coarse-timestepping-method-string=[string]	Identifier for coarse time stepping method (default=ln_erk)" << std::endl;
-		std::cout << "	--parareal-coarse-timestepping-order=[int]	Order for coarse time stepping method (default=ln_erk)" << std::endl;
+		std::cout << "	--parareal-coarse-timestepping-method=[string]	Identifier for coarse time stepping method (default=ln_erk)" << std::endl;
+		std::cout << "	--parareal-coarse-timestepping-order=[int]	Order for coarse time stepping method (default=1)" << std::endl;
+		std::cout << "	--parareal-coarse-timestepping-order2=[int]	Order for coarse time stepping method (default=1)" << std::endl;
 		std::cout << std::endl;
 	}
 
@@ -128,8 +137,9 @@ public:
 		std::cout << " + verbosity: " << verbosity << std::endl;
 		std::cout << " + convergence_error_threshold: " << convergence_error_threshold << std::endl;
 		std::cout << " + max_simulation_time: " << max_simulation_time << std::endl;
-		std::cout << " + coarse_timestepping_method_string: " << coarse_timestepping_method_string << std::endl;
+		std::cout << " + coarse_timestepping_method: " << coarse_timestepping_method << std::endl;
 		std::cout << " + coarse_timestepping_method_order: " << coarse_timestepping_order << std::endl;
+		std::cout << " + coarse_timestepping_method_order2: " << coarse_timestepping_order2 << std::endl;
 		std::cout << std::endl;
 	}
 
@@ -166,11 +176,15 @@ public:
 			break;
 
 		case 5:
-			coarse_timestepping_method_string = i_value;
+			coarse_timestepping_method = i_value;
 			break;
 
 		case 6:
-			coarse_timestepping_method_string = atoi(i_value);
+			coarse_timestepping_order = atoi(i_value);
+			break;
+
+		case 7:
+			coarse_timestepping_order2 = atoi(i_value);
 			break;
 
 		default:

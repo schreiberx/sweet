@@ -363,7 +363,7 @@ public:
 
 		/// String of time stepping method
 		/// See doc/swe/swe_plane_timesteppings
-		std::string timestepping_method_string;
+		std::string timestepping_method;
 
 		/// Order of time stepping
 		int timestepping_order = -1;
@@ -397,7 +397,7 @@ public:
 			std::cout << " + res_physical: " << res_physical[0] << " x " << res_physical[1] << std::endl;
 			std::cout << " + res_spectral: " << res_spectral[0] << " x " << res_spectral[1] << std::endl;
 			std::cout << " + cell_size (2D): " << res_physical[0] << " x " << cell_size[1] << std::endl;
-			std::cout << " + timestepping_method_string: " << timestepping_method_string << std::endl;
+			std::cout << " + timestepping_method: " << timestepping_method << std::endl;
 			std::cout << " + timestepping_order: " << timestepping_order << std::endl;
 			std::cout << " + timestepping_order2: " << timestepping_order2 << std::endl;
 			std::cout << " + leapfrog_robert_asselin_filter: " << leapfrog_robert_asselin_filter << std::endl;
@@ -438,7 +438,7 @@ public:
 			std::cout << "	-W [0/1]					use up- and downwinding, default:0" << std::endl;
 			std::cout << "	-R [1-RKn]					order of time stepping method, default:0" << std::endl;
 			std::cout << "	-C [cfl]					CFL condition, use negative value for fixed time step size, default=0.05" << std::endl;
-			std::cout << "	--timestepping-method-string [string]	String of time stepping method" << std::endl;
+			std::cout << "	--timestepping-method [string]	String of time stepping method" << std::endl;
 			std::cout << "	--timestepping-order [int]			Specify the order of the time stepping" << std::endl;
 			std::cout << "	--timestepping-order2 [int]			Specify the order of the time stepping" << std::endl;
 			std::cout << "	--leapfrog-robert-asselin-filter [0;1]		Damping parameter for Robert-Asselin filter" << std::endl;
@@ -888,7 +888,7 @@ public:
         long_options[next_free_program_option] = {"timestepping-order2", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        long_options[next_free_program_option] = {"timestepping-method-string", required_argument, 0, 256+next_free_program_option};
+        long_options[next_free_program_option] = {"timestepping-method", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
         long_options[next_free_program_option] = {"leapfrog-robert-asselin-filter", required_argument, 0, 256+next_free_program_option};
@@ -1009,7 +1009,7 @@ public:
 						case 17:	disc.timestepping_order = atoi(optarg);	break;
 						case 19:	disc.timestepping_order2 = atoi(optarg);	break;
 
-						case 20:	disc.timestepping_method_string = optarg;	break;
+						case 20:	disc.timestepping_method = optarg;	break;
 
 						case 21:	disc.leapfrog_robert_asselin_filter = atof(optarg);	break;
 						case 22:	disc.normal_mode_analysis_generation = atoi(optarg);	break;

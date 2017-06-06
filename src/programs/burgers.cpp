@@ -419,7 +419,7 @@ public:
 	 * Routine to do one time step of chosen scheme and order
 	 */
 	void run_timestep(
-			const std::string &i_timestepping_method_string,
+			const std::string &i_timestepping_method,
 			int i_timestepping_order
 	)
 	{
@@ -432,7 +432,7 @@ public:
 		assert(simVars.sim.CFL < 0);
 		simVars.timecontrol.current_timestep_size = -simVars.sim.CFL;
 
-		if (simVars.disc.timestepping_method_string == "ln_erk") //Explicit RK
+		if (simVars.disc.timestepping_method == "ln_erk") //Explicit RK
 		{
 			// Basic explicit Runge-Kutta
 			if (simVars.disc.timestepping_order != 21)
@@ -468,7 +468,7 @@ public:
 				);
 			}
 		}
-		else if (simVars.disc.timestepping_method_string == "ln_imex") //IMEX
+		else if (simVars.disc.timestepping_method == "ln_imex") //IMEX
 		{
 			burgers_plane.run_timestep_imex(
 					prog_u, prog_v,
@@ -480,7 +480,7 @@ public:
 					simVars.timecontrol.max_simulation_time
 			);
 		}
-		else if (simVars.disc.timestepping_method_string == "l_irk_n_sl") //SL IMPLICIT
+		else if (simVars.disc.timestepping_method == "l_irk_n_sl") //SL IMPLICIT
 		{
 			burgers_plane.run_timestep_sl(
 				prog_u, prog_v,
@@ -702,7 +702,7 @@ public:
 
 		if (simVars.timecontrol.run_simulation_timesteps)
 			for (int i = 0; i < i_num_iterations; i++)
-				run_timestep(simVars.disc.timestepping_method_string, simVars.disc.timestepping_order);
+				run_timestep(simVars.disc.timestepping_method, simVars.disc.timestepping_order);
 	}
 
 
@@ -982,7 +982,7 @@ public:
 
 		while (simVars.timecontrol.current_simulation_time < timeframe_end)
 		{
-			this->run_timestep(simVars.disc.timestepping_method_string, simVars.disc.timestepping_order);
+			this->run_timestep(simVars.disc.timestepping_method, simVars.disc.timestepping_order);
 			assert(simVars.timecontrol.current_simulation_time <= timeframe_end);
 		}
 
@@ -1037,7 +1037,7 @@ public:
 		// make multiple time steps in the coarse solver possible
 		while (simVars.timecontrol.current_simulation_time < timeframe_end)
 		{
-			run_timestep(simVars.parareal.coarse_timestepping_method_string, simVars.parareal.coarse_timestepping_order);
+			run_timestep(simVars.parareal.coarse_timestepping_method, simVars.parareal.coarse_timestepping_order);
 			assert(simVars.timecontrol.current_simulation_time <= timeframe_end);
 		}
 
@@ -1316,7 +1316,7 @@ int main(int i_argc, char *i_argv[])
 					break;
 
 				//Main call for timestep run
-				simulationBurgers->run_timestep(simVars.disc.timestepping_method_string, simVars.disc.timestepping_order);
+				simulationBurgers->run_timestep(simVars.disc.timestepping_method, simVars.disc.timestepping_order);
 
 				//Instability
 				if (simulationBurgers->instability_detected())
