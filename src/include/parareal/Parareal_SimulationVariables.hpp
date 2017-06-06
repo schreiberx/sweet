@@ -50,6 +50,15 @@ public:
 	 */
 	double max_simulation_time = std::numeric_limits<double>::infinity();
 
+	/**
+	 * Coarse time stepping method string
+	 */
+	std::string coarse_timestepping_method_string = "";
+
+	/**
+	 * Coarse time stepping method order
+	 */
+	int coarse_timestepping_order = 1;
 
 	/**
 	 * setup long options for program arguments
@@ -76,6 +85,12 @@ public:
 		io_long_options[io_next_free_program_option] = {"parareal-max-simulation-time", required_argument, 0, (int)256+io_next_free_program_option};
 		io_next_free_program_option++;
 
+		io_long_options[io_next_free_program_option] = {"parareal-coarse-timestepping-method-string", required_argument, 0, (int)256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"parareal-coarse-timestepping-method-order", required_argument, 0, (int)256+io_next_free_program_option};
+		io_next_free_program_option++;
+
 		if (io_next_free_program_option > i_max_options)
 		{
 			std::cerr << "Max number of program options exceeded" << std::endl;
@@ -96,6 +111,8 @@ public:
 		std::cout << "	--parareal-verbosity=[int]                  Verbosity level (default=0)" << std::endl;
 		std::cout << "	--parareal-enabled=[0/1]                    Enable Parareal method (default=0)" << std::endl;
 		std::cout << "	--parareal-max-simulation-time=[float]      Overall simulation time (default=-1)" << std::endl;
+		std::cout << "	--parareal-coarse-timestepping-method-string=[string]	Identifier for coarse time stepping method (default=ln_erk)" << std::endl;
+		std::cout << "	--parareal-coarse-timestepping-order=[int]	Order for coarse time stepping method (default=ln_erk)" << std::endl;
 		std::cout << std::endl;
 	}
 
@@ -111,6 +128,8 @@ public:
 		std::cout << " + verbosity: " << verbosity << std::endl;
 		std::cout << " + convergence_error_threshold: " << convergence_error_threshold << std::endl;
 		std::cout << " + max_simulation_time: " << max_simulation_time << std::endl;
+		std::cout << " + coarse_timestepping_method_string: " << coarse_timestepping_method_string << std::endl;
+		std::cout << " + coarse_timestepping_method_order: " << coarse_timestepping_order << std::endl;
 		std::cout << std::endl;
 	}
 
@@ -130,7 +149,6 @@ public:
 			coarse_slices = atoi(i_value);
 			break;
 
-
 		case 1:
 			convergence_error_threshold = atof(i_value);
 			break;
@@ -145,6 +163,14 @@ public:
 
 		case 4:
 			max_simulation_time = atof(i_value);
+			break;
+
+		case 5:
+			coarse_timestepping_method_string = i_value;
+			break;
+
+		case 6:
+			coarse_timestepping_method_string = atoi(i_value);
 			break;
 
 		default:

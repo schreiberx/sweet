@@ -9,7 +9,7 @@
  *					which was also written by Pedro Peixoto
  */
 
-#include "SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk.hpp"
+#include "SWE_Plane_TS_lg_rexi_lc_erk_na_sl_nd_settls.hpp"
 
 
 

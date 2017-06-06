@@ -353,80 +353,6 @@ public:
 		double cell_size[2] = {0, 0};
 
 
-		/**
-		 * Extend this with new time stepping method IDs
-		 */
-		enum
-		{
-			RUNGE_KUTTA_EXPLICIT = 1,
-			LEAPFROG_EXPLICIT = 2,
-			IMPLICIT_TIMESTEP = 3,
-			RUNGE_KUTTA_IMEX = 4,
-			CRANK_NICOLSON = 5,
-
-			SEMI_LAGRANGIAN_ADVECTION_ONLY = 10,
-			SEMI_LAGRANGIAN_SEMI_IMPLICIT = 11,
-
-			REXI = 100,
-
-			ANALYTICAL_SOLUTION = 1000
-		};
-
-
-		int ts_method_ids[9] = {
-				RUNGE_KUTTA_EXPLICIT,
-				LEAPFROG_EXPLICIT,
-				IMPLICIT_TIMESTEP,
-				RUNGE_KUTTA_IMEX,
-				CRANK_NICOLSON,
-
-				SEMI_LAGRANGIAN_ADVECTION_ONLY,
-				SEMI_LAGRANGIAN_SEMI_IMPLICIT,
-
-				REXI,
-
-				ANALYTICAL_SOLUTION
-		};
-
-
-		static
-		std::string getTimesteppingMethodString
-		(
-				int i_method_id
-		)
-		{
-			switch(i_method_id)
-			{
-			case RUNGE_KUTTA_EXPLICIT:
-				return "RUNGE_KUTTA_EXPLICIT";
-
-			case LEAPFROG_EXPLICIT:
-				return "LEAPFROG_EXPLICIT";
-
-			case IMPLICIT_TIMESTEP:
-				return "EULER_IMPLICIT";
-
-			case RUNGE_KUTTA_IMEX:
-				return "RUNGE_KUTTA_IMEX";
-
-			case CRANK_NICOLSON:
-				return "CRANK_NICOLSON";
-
-			case REXI:
-				return "REXI";
-
-			case SEMI_LAGRANGIAN_ADVECTION_ONLY:
-				return "Semi-Lagrangian Advection only";
-
-			case SEMI_LAGRANGIAN_SEMI_IMPLICIT:
-				return "Semi-Lagrangian Semi-implicit";
-
-			case ANALYTICAL_SOLUTION:
-				return "Analytical solution";
-			}
-
-			return "[UNKWOWN]";
-		}
 
 		/// Leapfrog: Robert Asselin filter
 		double leapfrog_robert_asselin_filter = 0;
@@ -435,29 +361,15 @@ public:
 		double crank_nicolson_filter = 0.5;
 
 
-		///
-		/// Specify time stepping method
-		/// 1: explicit RK
-		/// 2: explicit Leapfrog
-		///
-		/// exotic time stepping methods should start with 100
-		/// 100: REXI
-		///
-		/// Negative numbers are treated in a program-specific way.
-		///
-		int timestepping_method = 0;
-
-		/// 2nd choise for time stepping method, if required
-		int timestepping_method2 = 0;
+		/// String of time stepping method
+		/// See doc/swe/swe_plane_timesteppings
+		std::string timestepping_method_string;
 
 		/// Order of time stepping
 		int timestepping_order = -1;
 
 		/// Order of 2nd time stepping which might be used
 		int timestepping_order2 = 0;
-
-		/// String of time stepping method
-		std::string timestepping_method_string;
 
 
 		/// use spectral differential operators
@@ -485,11 +397,9 @@ public:
 			std::cout << " + res_physical: " << res_physical[0] << " x " << res_physical[1] << std::endl;
 			std::cout << " + res_spectral: " << res_spectral[0] << " x " << res_spectral[1] << std::endl;
 			std::cout << " + cell_size (2D): " << res_physical[0] << " x " << cell_size[1] << std::endl;
-			std::cout << " + timestepping_method: " << getTimesteppingMethodString(timestepping_method) << std::endl;
-			std::cout << " + timestepping_order: " << timestepping_order << std::endl;
-			std::cout << " + timestepping_method2: " << getTimesteppingMethodString(timestepping_method2) << std::endl;
-			std::cout << " + timestepping_order2: " << timestepping_order2 << std::endl;
 			std::cout << " + timestepping_method_string: " << timestepping_method_string << std::endl;
+			std::cout << " + timestepping_order: " << timestepping_order << std::endl;
+			std::cout << " + timestepping_order2: " << timestepping_order2 << std::endl;
 			std::cout << " + leapfrog_robert_asselin_filter: " << leapfrog_robert_asselin_filter << std::endl;
 			std::cout << " + crank_nicolson_filter: " << crank_nicolson_filter << std::endl;
 			std::cout << " + use_spectral_basis_diffs: " << use_spectral_basis_diffs << std::endl;
@@ -516,7 +426,7 @@ public:
 			std::cout << "	-m [resy]		resolution in y direction, default=0" << std::endl;
 			std::cout << "	-M [modes]		modes in x/y or lon/lat direction, default=0" << std::endl;
 			std::cout << "	-S [0/1]		Control Operator discretization for PlaneData" << std::endl;
-			std::cout << "				0: FD, 1: spectral derivatives, default: ";
+			std::cout << "					0: FD, 1: spectral derivatives, default: ";
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE || SWEET_USE_SPHERE_SPECTRAL_SPACE
 	std::cout << "1" << std::endl;
@@ -528,14 +438,8 @@ public:
 			std::cout << "	-W [0/1]					use up- and downwinding, default:0" << std::endl;
 			std::cout << "	-R [1-RKn]					order of time stepping method, default:0" << std::endl;
 			std::cout << "	-C [cfl]					CFL condition, use negative value for fixed time step size, default=0.05" << std::endl;
-			std::cout << "	--timestepping-method				Specify time stepping method (";
-
-			for (std::size_t i = 0; i < sizeof(ts_method_ids)/sizeof(ts_method_ids[0]); i++)
-				std::cout << ts_method_ids[i] << ": " << getTimesteppingMethodString(ts_method_ids[i]) << ", ";
-
-			std::cout << "...)" << std::endl;
+			std::cout << "	--timestepping-method-string [string]	String of time stepping method" << std::endl;
 			std::cout << "	--timestepping-order [int]			Specify the order of the time stepping" << std::endl;
-			std::cout << "	--timestepping-method2 [int]			Alternative time stepping method" << std::endl;
 			std::cout << "	--timestepping-order2 [int]			Specify the order of the time stepping" << std::endl;
 			std::cout << "	--leapfrog-robert-asselin-filter [0;1]		Damping parameter for Robert-Asselin filter" << std::endl;
 			std::cout << "	--normal-mode-analysis-generation [0;1;2;3]	Generate output data for normal mode analysis" << std::endl;
@@ -712,6 +616,7 @@ public:
 			std::cout << " + output_time_scale: " << output_time_scale << std::endl;
 			std::cout << std::endl;
 		}
+
 
 		/// set verbosity of simulation
 		int verbosity = 0;
@@ -1100,11 +1005,8 @@ public:
 						case 13:	setup.advection_rotation_angle = atof(optarg);	break;
 
 						case 14:	pde.id = atoi(optarg);	break;
-//						case 15:	pde.variant_id = atoi(optarg);	break;
 
-						case 16:	disc.timestepping_method = atoi(optarg);	break;
 						case 17:	disc.timestepping_order = atoi(optarg);	break;
-						case 18:	disc.timestepping_method2 = atoi(optarg);	break;
 						case 19:	disc.timestepping_order2 = atoi(optarg);	break;
 
 						case 20:	disc.timestepping_method_string = optarg;	break;

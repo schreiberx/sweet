@@ -148,15 +148,7 @@ public:
 				io_data = SWEPlaneBenchmarks::return_v(simVars, x, y);
 			}
 		);
-/*
-		beta_plane.physical_update_lambda_array_indices(
-			[&](int i, int j, double &io_data)
-			{
-				double y_beta = (((double)j+0.5)/(double)simVars.disc.res_physical[1]);
-				io_data = simVars.sim.f0+simVars.sim.beta*y_beta;
-			}
-		);
-*/
+
 		if (simVars.setup.input_data_filenames.size() > 0)
 			prog_h.file_physical_loadData(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
 

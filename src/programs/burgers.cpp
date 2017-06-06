@@ -418,7 +418,10 @@ public:
 	/*
 	 * Routine to do one time step of chosen scheme and order
 	 */
-	void run_timestep()
+	void run_timestep(
+			const std::string &i_timestepping_method_string,
+			int i_timestepping_order
+	)
 	{
 		if (simVars.misc.verbosity > 2)
 			std::cout << "run_timestep()" << std::endl;
@@ -429,81 +432,7 @@ public:
 		assert(simVars.sim.CFL < 0);
 		simVars.timecontrol.current_timestep_size = -simVars.sim.CFL;
 
-#if 0
-		switch (simVars.disc.timestepping_method)
-		{
-			case simVars.disc.RUNGE_KUTTA_EXPLICIT:
-				// Basic explicit Runge-Kutta
-				if (simVars.disc.timestepping_order != 21)
-				{
-					// setup dummy data
-					tmp.physical_set_all(0);
-
-					// run standard Runge Kutta
-					timestepping_rk.run_timestep(
-						this,
-						&SimulationInstance::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
-						tmp, prog_u, prog_v, ///< tmp is used to make use of the swe version of run_timestep
-						dt,
-						simVars.timecontrol.current_timestep_size,
-						simVars.disc.timestepping_order,
-						simVars.timecontrol.current_simulation_time,
-						simVars.timecontrol.max_simulation_time
-					);
-				}
-				// Explicit Runge-Kutta with order 1 in diffusion and order 2 in advection
-				else
-				{
-					burgers_plane.run_timestep_explicit_ts(
-							prog_u,
-							prog_v,
-
-							dt,
-							simVars.timecontrol.current_timestep_size,
-
-							op,
-							simVars,
-							planeDataConfig
-					);
-				}
-				break;
-
-			case simVars.disc.RUNGE_KUTTA_IMEX:
-				burgers_plane.run_timestep_imex(
-						prog_u, prog_v,
-						dt,
-						simVars.timecontrol.current_timestep_size,
-						op,
-						simVars,
-						planeDataConfig,
-						simVars.timecontrol.max_simulation_time
-				);
-				break;
-
-			case simVars.disc.SEMI_LAGRANGIAN_SEMI_IMPLICIT:
-				burgers_plane.run_timestep_sl(
-					prog_u, prog_v,
-					prog_u_prev, prog_v_prev,
-					posx_a, posy_a,
-					dt,
-					simVars.timecontrol.current_timestep_size,
-					simVars,
-					planeDataConfig,
-					op,
-					sampler2D,
-					semiLagrangian,
-					stag_displacement,
-					stag_u,
-					stag_v
-				);
-				break;
-
-			default:
-				FatalError("Chosen time stepping method not available!");
-		}
-
-#else
-		if (simVars.disc.timestepping_method == SimulationVariables::Discretization::RUNGE_KUTTA_EXPLICIT) //Explicit RK
+		if (simVars.disc.timestepping_method_string == "ln_erk") //Explicit RK
 		{
 			// Basic explicit Runge-Kutta
 			if (simVars.disc.timestepping_order != 21)
@@ -539,7 +468,7 @@ public:
 				);
 			}
 		}
-		else if (simVars.disc.timestepping_method == SimulationVariables::Discretization::RUNGE_KUTTA_IMEX) //IMEX
+		else if (simVars.disc.timestepping_method_string == "ln_imex") //IMEX
 		{
 			burgers_plane.run_timestep_imex(
 					prog_u, prog_v,
@@ -551,7 +480,7 @@ public:
 					simVars.timecontrol.max_simulation_time
 			);
 		}
-		else if (simVars.disc.timestepping_method == SimulationVariables::Discretization::SEMI_LAGRANGIAN_SEMI_IMPLICIT) //IMEX
+		else if (simVars.disc.timestepping_method_string == "l_irk_n_sl") //SL IMPLICIT
 		{
 			burgers_plane.run_timestep_sl(
 				prog_u, prog_v,
@@ -571,7 +500,6 @@ public:
 		{
 			FatalError("Chosen time stepping method not available!");
 		}
-#endif
 
 		//dt = simVars.timecontrol.current_timestep_size;
 
@@ -774,7 +702,7 @@ public:
 
 		if (simVars.timecontrol.run_simulation_timesteps)
 			for (int i = 0; i < i_num_iterations; i++)
-				run_timestep();
+				run_timestep(simVars.disc.timestepping_method_string, simVars.disc.timestepping_order);
 	}
 
 
@@ -1054,7 +982,7 @@ public:
 
 		while (simVars.timecontrol.current_simulation_time < timeframe_end)
 		{
-			this->run_timestep();
+			this->run_timestep(simVars.disc.timestepping_method_string, simVars.disc.timestepping_order);
 			assert(simVars.timecontrol.current_simulation_time <= timeframe_end);
 		}
 
@@ -1102,12 +1030,6 @@ public:
 		simVars.timecontrol.max_simulation_time = timeframe_end;
 		simVars.timecontrol.current_timestep_nr = 0;
 
-		// set time stepping to the chosen scheme and order for coarse time stepping
-		int tmpScheme = simVars.disc.timestepping_method;
-		int tmpOrder = simVars.disc.timestepping_order;
-		simVars.disc.timestepping_method = simVars.disc.timestepping_method2;
-		simVars.disc.timestepping_order = simVars.disc.timestepping_order2;
-
 		// save the fine delta t to restore it later
 		double tmpCFL = simVars.sim.CFL;
 		simVars.sim.CFL=timeframe_start-timeframe_end;
@@ -1115,14 +1037,10 @@ public:
 		// make multiple time steps in the coarse solver possible
 		while (simVars.timecontrol.current_simulation_time < timeframe_end)
 		{
-			this->run_timestep();
+			run_timestep(simVars.parareal.coarse_timestepping_method_string, simVars.parareal.coarse_timestepping_order);
 			assert(simVars.timecontrol.current_simulation_time <= timeframe_end);
 		}
 
-		// restore fine delta t and time stepping scheme
-		simVars.sim.CFL = tmpCFL;
-		simVars.disc.timestepping_method = tmpScheme;
-		simVars.disc.timestepping_order = tmpOrder;
 		// copy to buffers
 		*parareal_data_coarse.data_arrays[0] = prog_u;
 		*parareal_data_coarse.data_arrays[1] = prog_v;
@@ -1398,7 +1316,7 @@ int main(int i_argc, char *i_argv[])
 					break;
 
 				//Main call for timestep run
-				simulationBurgers->run_timestep();
+				simulationBurgers->run_timestep(simVars.disc.timestepping_method_string, simVars.disc.timestepping_order);
 
 				//Instability
 				if (simulationBurgers->instability_detected())

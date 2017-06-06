@@ -5,8 +5,8 @@
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#ifndef SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_LG_REXI_LC_ERK_NT_SL_ND_ERK_HPP_
-#define SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_LG_REXI_LC_ERK_NT_SL_ND_ERK_HPP_
+#ifndef SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_LG_REXI_LC_ERK_NA_SL_ND_SETTLS_HPP_
+#define SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_LG_REXI_LC_ERK_NA_SL_ND_SETTLS_HPP_
 
 #include <limits>
 #include <sweet/SimulationVariables.hpp>

@@ -7,6 +7,9 @@
 	#include <sweet/VisSweet.hpp>
 #endif
 
+#ifndef SWEET_MPI
+	#define  SWEET_MPI 1
+#endif
 
 
 #include <sweet/SimulationVariables.hpp>
@@ -206,6 +209,7 @@ public:
 				io_data = ((double)i)*simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
 			}
 		);
+
 		PlaneData tmp_y(op.planeDataConfig);
 		tmp_y.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
@@ -306,20 +310,20 @@ public:
 #endif
 
 		// Waves test case - separate from SWEValidationBench because it depends on certain local input parameters
-		auto return_h = [] (
+		auto return_h_perturbed = [] (
 				SimulationVariables &i_parameters,
 				double x,
 				double y
 		) -> double
 		{
 			if (param_initial_freq_x_mul == 0)
-				return SWEPlaneBenchmarks::return_h(simVars, x, y);
+				return SWEPlaneBenchmarks::return_h_perturbed(simVars, x, y);
 
 			// Waves scenario
 			// Remember to set up initial_freq_x_mul and initial_freq_y_mul
 			double dx = x/i_parameters.sim.domain_size[0]*param_initial_freq_x_mul*M_PIl;
 			double dy = y/i_parameters.sim.domain_size[1]*param_initial_freq_y_mul*M_PIl;
-			return std::sin(2.0*dx)*std::cos(2.0*dy) - (1.0/5.0)*std::cos(2.0*dx)*std::sin(4.0*dy) + i_parameters.sim.h0;
+			return std::sin(2.0*dx)*std::cos(2.0*dy) - (1.0/5.0)*std::cos(2.0*dx)*std::sin(4.0*dy);
 		};
 
 
@@ -364,9 +368,9 @@ public:
 						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-						prog_h.p_physical_set(j, i, return_h(simVars, x, y));
-						t0_prog_h.p_physical_set(j, i, return_h(simVars, x, y));
-						force_h.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_h(simVars, x, y));
+						prog_h.p_physical_set(j, i, return_h_perturbed(simVars, x, y));
+						t0_prog_h.p_physical_set(j, i, return_h_perturbed(simVars, x, y));
+						force_h.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_h_perturbed(simVars, x, y));
 					}
 
 
@@ -407,15 +411,15 @@ public:
 					double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 					double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-					prog_h.p_physical_set(j, i, return_h(simVars, x, y));
+					prog_h.p_physical_set(j, i, return_h_perturbed(simVars, x, y));
 					prog_u.p_physical_set(j, i, return_u(simVars, x, y));
 					prog_v.p_physical_set(j, i, return_v(simVars, x, y));
 
-					t0_prog_h.p_physical_set(j, i, return_h(simVars, x, y));
+					t0_prog_h.p_physical_set(j, i, return_h_perturbed(simVars, x, y));
 					t0_prog_u.p_physical_set(j, i, return_u(simVars, x, y));
 					t0_prog_v.p_physical_set(j, i, return_v(simVars, x, y));
 
-					force_h.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_h(simVars, x, y));
+					force_h.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_h_perturbed(simVars, x, y));
 					force_u.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_u(simVars, x, y));
 					force_v.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_v(simVars, x, y));
 				}
@@ -512,7 +516,7 @@ public:
 			prog_h.physical_set_zero();
 		}
 
-
+#if 0
 		if (simVars.disc.timestepping_method == SimulationVariables::Discretization::LEAPFROG_EXPLICIT)
 		{
 			FatalError("Not yet tested and supported");
@@ -523,6 +527,7 @@ public:
 			simVars.timecontrol.current_timestep_size = 0.5*simVars.sim.CFL;
 			simVars.sim.CFL = -simVars.timecontrol.current_timestep_size;
 		}
+#endif
 
 		// iterate over all prognostic variables
 		for (int outer_prog_id = 0; outer_prog_id < max_prog_id; outer_prog_id++)
@@ -541,6 +546,7 @@ public:
 					prog[outer_prog_id]->request_data_physical();
 					prog[outer_prog_id]->physical_space_data[outer_i] = 1;
 
+#if 0
 					// In case of a multi-step scheme, reset it!
 					if (simVars.disc.timestepping_method == SimulationVariables::Discretization::LEAPFROG_EXPLICIT)
 					{
@@ -548,7 +554,7 @@ public:
 						//timestepping_explicit_leapfrog.resetAndSetup(prog_h, simVars.disc.timestepping_order, simVars.disc.leapfrog_robert_asselin_filter);
 						run_timestep();
 					}
-
+#endif
 					/*
 					 * RUN timestep
 					 */
@@ -595,6 +601,7 @@ public:
 						else
 							prog[outer_prog_id]->spectral_space_data[outer_i].real(1);
 
+#if 0
 						// In case of a multi-step scheme, reset it!
 						if (simVars.disc.timestepping_method == SimulationVariables::Discretization::LEAPFROG_EXPLICIT)
 						{
@@ -602,6 +609,7 @@ public:
 							//timestepping_explicit_leapfrog.resetAndSetup(prog_h, simVars.disc.timestepping_order, simVars.disc.leapfrog_robert_asselin_filter);
 							run_timestep();
 						}
+#endif
 
 						/*
 						 * RUN timestep
@@ -658,6 +666,7 @@ public:
 					prog[outer_prog_id]->request_data_spectral();
 					prog[outer_prog_id]->spectral_space_data[outer_i].real(1);
 
+#if 0
 					// In case of a multi-step scheme, reset it!
 					if (simVars.disc.timestepping_method == SimulationVariables::Discretization::LEAPFROG_EXPLICIT)
 					{
@@ -665,6 +674,7 @@ public:
 						//timestepping_explicit_leapfrog.resetAndSetup(prog_h, simVars.disc.timestepping_order, simVars.disc.leapfrog_robert_asselin_filter);
 						run_timestep();
 					}
+#endif
 
 					/*
 					 * RUN timestep
@@ -1087,15 +1097,15 @@ public:
 			switch(simVars.misc.vis_id)
 			{
 			case -1:
-				vis = t_h;			//Exact solution
+				vis = t_h+simVars.sim.h0;			//Exact solution
 				break;
 
 			case -2:
-				vis = t_h-prog_h;	// difference to exact solution
+				vis = t_h-prog_h+simVars.sim.h0;	// difference to exact solution
 				break;
 
 			case -3:
-				vis = t0_prog_h-prog_h;	// difference to initial condition
+				vis = t0_prog_h-prog_h+simVars.sim.h0;	// difference to initial condition
 				break;
 			}
 
@@ -1105,7 +1115,15 @@ public:
 		}
 
 		int id = simVars.misc.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
-		*o_dataArray = vis_arrays[id].data;
+
+		if (id == 0)
+		{
+			vis = *vis_arrays[id].data+simVars.sim.h0;
+			*o_dataArray = &vis;
+		}
+		else
+			*o_dataArray = vis_arrays[id].data;
+
 		vis=**o_dataArray;
 		*o_aspect_ratio = simVars.sim.domain_size[1] / simVars.sim.domain_size[0];
 	}
@@ -1567,11 +1585,7 @@ int main(int i_argc, char *i_argv[])
 		MPI_Init_thread(&i_argc, &i_argv, MPI_THREAD_MULTIPLE, &provided);
 
 		if (provided != MPI_THREAD_MULTIPLE)
-			FatalError()
-		{
-				std::cerr << "MPI_THREAD_MULTIPLE not available! Try to get an MPI version with multi-threading support or compile without OMP/TBB support. Good bye..." << std::endl;
-				exit(-1);
-		}
+			FatalError("MPI_THREAD_MULTIPLE not available! Try to get an MPI version with multi-threading support or compile without OMP/TBB support. Good bye...");
 	#else
 		MPI_Init(&i_argc, &i_argv);
 	#endif
@@ -1598,18 +1612,9 @@ int main(int i_argc, char *i_argv[])
 	{
 		std::cout << std::endl;
 		std::cout << "Special parameters:" << std::endl;
-		std::cout << "	--timestepping-mode [0/1/2/3/4/5]	Timestepping method to use" << std::endl;
-		std::cout << "	                            0: RKn with Finite-difference (default)" << std::endl;
-		std::cout << "	                            1: REXI (SL-REXI if nonlinear)" << std::endl;
-		std::cout << "	                            2: Direct solution in spectral space" << std::endl;
-		std::cout << "	                            3: Implicit Euler Spectral " << std::endl;
-		std::cout << "	                            4: Semi-Lagrangian Advection only" << std::endl;
-		std::cout << "	                            5: Semi-Lagrangian Semi-implicit Spectral" << std::endl;
-		std::cout << "" << std::endl;
 		std::cout << "	--compute-error [0/1]	Compute the errors" << std::endl;
 		std::cout << "" << std::endl;
-		std::cout << "	--staggering [0/1]		Use staggered grid" << std::endl;
-		std::cout << std::endl;
+		std::cout << "  WARNING: Nonlinear" << std::endl;
 		std::cout << "	--nonlinear [0/1/2]	   Form of equations:" << std::endl;
 		std::cout << "						     0: Linear SWE (default)" << std::endl;
 		std::cout << "						     1: Full nonlinear SWE" << std::endl;
@@ -1782,7 +1787,7 @@ int main(int i_argc, char *i_argv[])
 #if SWEET_MPI
 	else
 	{
-		if (simVars.disc.timestepping_method == SimulationVariables::Discretization::REXI)
+		if (simVars.disc.timestepping_method_string.find("rexi") != std::string::npos)
 		{
 			PlaneOperators op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
@@ -1825,11 +1830,8 @@ int main(int i_argc, char *i_argv[])
 			while(!rexiSWE.final_timestep);
 		}
 	}
-#endif
 
-
-#if SWEET_MPI
-	if (simVars.disc.timestepping_method > 0)
+	if (simVars.disc.timestepping_method_string.find("rexi") != std::string::npos)
 	{
 		// synchronize REXI
 		if (mpi_rank == 0)

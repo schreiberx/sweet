@@ -20,7 +20,7 @@
 #include "SWE_Plane_TS_l_irk_n_erk.hpp"
 #include "SWE_Plane_TS_l_rexi.hpp"
 #include "SWE_Plane_TS_l_rexi_ns_sl_nd_erk.hpp"
-#include "SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk.hpp"
+#include "SWE_Plane_TS_lg_rexi_lc_erk_na_sl_nd_settls.hpp"
 #include "SWE_Plane_TS_ln_erk.hpp"
 
 
