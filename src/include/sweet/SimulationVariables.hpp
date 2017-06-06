@@ -856,7 +856,7 @@ public:
         next_free_program_option++;
 
 
-        // 9
+        // 10
         long_options[next_free_program_option] = {"stability-checks", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
@@ -875,20 +875,14 @@ public:
         long_options[next_free_program_option] = {"pde-variant_id_DEACTIVATED", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        // 15
+        // 16
         long_options[next_free_program_option] = {"timestepping-method", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
         long_options[next_free_program_option] = {"timestepping-order", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        long_options[next_free_program_option] = {"timestepping-method2", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
         long_options[next_free_program_option] = {"timestepping-order2", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-        long_options[next_free_program_option] = {"timestepping-method", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
         long_options[next_free_program_option] = {"leapfrog-robert-asselin-filter", required_argument, 0, 256+next_free_program_option};
@@ -903,6 +897,7 @@ public:
         long_options[next_free_program_option] = {"staggering", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
+        // 23
         long_options[next_free_program_option] = {"dummy", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
@@ -1006,25 +1001,23 @@ public:
 
 						case 14:	pde.id = atoi(optarg);	break;
 
+						case 16:	disc.timestepping_method = optarg;	break;
+
 						case 17:	disc.timestepping_order = atoi(optarg);	break;
-						case 19:	disc.timestepping_order2 = atoi(optarg);	break;
+						case 18:	disc.timestepping_order2 = atoi(optarg);	break;
 
-						case 20:	disc.timestepping_method = optarg;	break;
-
-						case 21:	disc.leapfrog_robert_asselin_filter = atof(optarg);	break;
-						case 22:	disc.normal_mode_analysis_generation = atoi(optarg);	break;
-						case 23:	disc.crank_nicolson_filter = atof(optarg);	break;
-						case 24:	disc.use_staggering = atof(optarg);	break;
-
-						case 25:	dummy = atof(optarg);	break;
+						case 19:	disc.leapfrog_robert_asselin_filter = atof(optarg);	break;
+						case 20:	disc.normal_mode_analysis_generation = atoi(optarg);	break;
+						case 21:	disc.crank_nicolson_filter = atof(optarg);	break;
+						case 22:	disc.use_staggering = atof(optarg);	break;
 
 #if SWEET_PFASST_CPP
-						case 26:	pfasst.nlevels = atoi(optarg);	break;
-						case 27:	pfasst.nnodes = atoi(optarg);	break;
-						case 28:	pfasst.nspace = atoi(optarg);	break;
-						case 29:	pfasst.nsteps = atoi(optarg);	break;
-						case 30:	pfasst.niters = atoi(optarg);	break;
-						case 31:	pfasst.dt = atof(optarg);	break;
+						case 23:	pfasst.nlevels = atoi(optarg);	break;
+						case 24:	pfasst.nnodes = atoi(optarg);	break;
+						case 25:	pfasst.nspace = atoi(optarg);	break;
+						case 26:	pfasst.nsteps = atoi(optarg);	break;
+						case 27:	pfasst.niters = atoi(optarg);	break;
+						case 28:	pfasst.dt = atof(optarg);	break;
 #endif
 
 						default:
