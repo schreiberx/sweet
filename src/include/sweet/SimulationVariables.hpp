@@ -31,6 +31,10 @@
 #	define SWEET_PFASST_CPP 1
 #endif
 
+#ifndef SWEET_LIBPFASST
+#	define SWEET_LIBPFASST 1
+#endif
+
 #if SWEET_PARAREAL
 #	include <parareal/Parareal_SimulationVariables.hpp>
 #endif
@@ -533,7 +537,7 @@ public:
 	} rexi;
 
 
-#if SWEET_PFASST_CPP
+#if SWEET_PFASST_CPP || SWEET_LIBPFASST
 	struct Pfasst
 	{
 		int nlevels;
@@ -903,7 +907,7 @@ public:
 
 
 // leave this commented to avoid mismatch with following parameters!
-#if SWEET_PFASST_CPP
+#if SWEET_PFASST_CPP || SWEET_LIBPFASST
 
 		long_options[next_free_program_option] = {"pfasst-nlevels", required_argument, 0, 256+next_free_program_option};
 		next_free_program_option++;
@@ -1011,7 +1015,7 @@ public:
 						case 21:	disc.crank_nicolson_filter = atof(optarg);	break;
 						case 22:	disc.use_staggering = atof(optarg);	break;
 
-#if SWEET_PFASST_CPP
+#if SWEET_PFASST_CPP || SWEET_LIBPFASST
 						case 23:	pfasst.nlevels = atoi(optarg);	break;
 						case 24:	pfasst.nnodes = atoi(optarg);	break;
 						case 25:	pfasst.nspace = atoi(optarg);	break;

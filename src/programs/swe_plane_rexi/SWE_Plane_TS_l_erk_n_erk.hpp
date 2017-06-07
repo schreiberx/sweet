@@ -23,39 +23,14 @@ class SWE_Plane_TS_l_erk_n_erk	: public SWE_Plane_TS_interface
 	PlaneOperators &op;
 
 	int timestepping_order;
+	int timestepping_order2;
 
 	// Sampler
-	PlaneDataTimesteppingRK timestepping_rk;
+	PlaneDataTimesteppingRK timestepping_rk_linear;
+	PlaneDataTimesteppingRK timestepping_rk_nonlinear;
 
 private:
 	void euler_timestep_update_linear(
-			const PlaneData &i_h,	///< prognostic variables
-			const PlaneData &i_u,	///< prognostic variables
-			const PlaneData &i_v,	///< prognostic variables
-
-			PlaneData &o_h_t,	///< time updates
-			PlaneData &o_u_t,	///< time updates
-			PlaneData &o_v_t,	///< time updates
-
-			double i_simulation_timestamp = -1
-	);
-
-
-private:
-	void euler_timestep_update_nonlinear(
-			const PlaneData &i_h,	///< prognostic variables
-			const PlaneData &i_u,	///< prognostic variables
-			const PlaneData &i_v,	///< prognostic variables
-
-			PlaneData &o_h_t,	///< time updates
-			PlaneData &o_u_t,	///< time updates
-			PlaneData &o_v_t,	///< time updates
-
-			double i_simulation_timestamp = -1
-	);
-
-
-	void euler_timestep_update(
 			const PlaneData &i_h,	///< prognostic variables
 			const PlaneData &i_u,	///< prognostic variables
 			const PlaneData &i_v,	///< prognostic variables
@@ -69,6 +44,23 @@ private:
 			double i_simulation_timestamp
 	);
 
+
+private:
+	void euler_timestep_update_nonlinear(
+			const PlaneData &i_h,	///< prognostic variables
+			const PlaneData &i_u,	///< prognostic variables
+			const PlaneData &i_v,	///< prognostic variables
+
+			PlaneData &o_h_t,	///< time updates
+			PlaneData &o_u_t,	///< time updates
+			PlaneData &o_v_t,	///< time updates
+
+			double &o_dt,			///< time step restriction
+			double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_simulation_timestamp
+	);
+
+
 public:
 	SWE_Plane_TS_l_erk_n_erk(
 			SimulationVariables &i_simVars,
@@ -76,7 +68,8 @@ public:
 		);
 
 	void setup(
-			int i_order	///< order of RK time stepping method
+			int i_order,	///< order of RK time stepping method
+			int i_order2
 	);
 
 	void run_timestep(

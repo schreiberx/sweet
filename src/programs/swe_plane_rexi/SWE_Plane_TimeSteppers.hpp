@@ -169,7 +169,7 @@ public:
 		else if (i_timestepping_method == "l_erk_n_erk")
 		{
 			l_erk_n_erk = new SWE_Plane_TS_l_erk_n_erk(i_simVars, i_op);
-			l_erk_n_erk->setup(i_timestepping_order);
+			l_erk_n_erk->setup(i_timestepping_order, i_timestepping_order2);
 
 			master = &(SWE_Plane_TS_interface&)*l_erk_n_erk;
 		}
