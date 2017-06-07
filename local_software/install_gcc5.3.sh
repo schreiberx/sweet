@@ -123,8 +123,8 @@ if [ ! -e "$DST_DIR/bin/gcc-5.3"  -o "$1" != "" ]; then
 	export LINK=ld
 	./configure --disable-multilib --enable-languages=c++,fortran  --prefix="$DST_DIR" --program-suffix=-5.3 || exit 1
 
-	make || exit 1
-	make install || exit 1
+	make -j || exit 1
+	make install -j || exit 1
 
 	for i in g++ gcc gcc-ar gcc-nm gcc-ranlib gfortran gcov gcov-tool gfortran; do
 		ln -sf "$DST_DIR/bin/$i-5.3" "$DST_DIR/bin/$i"
