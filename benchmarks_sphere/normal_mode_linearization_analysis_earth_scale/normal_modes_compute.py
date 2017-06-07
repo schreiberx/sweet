@@ -112,21 +112,13 @@ else:
 	v = np.matrix(v)	# TODO: fix this conversion
 
 
-f = filename+"_evalues_orig_complex.csv"
-print("Writing data to "+f)
-# simply append the imaginary parts as columns at the end of the real parts!
-np.savetxt(f, np.column_stack([w.real, w.imag]), delimiter='\t', header='\n'.join(new_headers))
-
-
-we = np.log(w)/time
-
 
 print("Headers: "+str(new_headers))
 
 f = filename+"_evalues_complex.csv"
 print("Writing data to "+f)
 # simply append the imaginary parts as columns at the end of the real parts!
-np.savetxt(f, np.column_stack([we.real, we.imag]), delimiter='\t', header='\n'.join(new_headers))
+np.savetxt(f, np.column_stack([w.real, w.imag]), delimiter='\t', header='\n'.join(new_headers))
 
 
 if False:

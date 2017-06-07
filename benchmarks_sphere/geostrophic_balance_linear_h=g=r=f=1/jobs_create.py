@@ -18,7 +18,7 @@ class default_params:
 	rexi_extended_modes = 2
 	rexi_normalization = 1
 
-	pde_id = 1
+	pde_id = 0
 
 	g = 1	# gravity
 	h = 1	# avg height
@@ -60,7 +60,7 @@ source ./local_software/env_vars.sh || exit 1
 """
 
 		content += """
-SCONS="scons --program=swe_sph_and_rexi --gui=disable --plane-spectral-space=disable --sphere-spectral-space=enable --threading=omp --mode=release """+("--threading=off --rexi-thread-parallel-sum=enable" if p.rexi_par else "")+'"'+"""
+SCONS="scons --program=swe_sphere_rexi --gui=disable --plane-spectral-space=disable --sphere-spectral-space=enable --threading=omp --mode=release """+("--threading=off --rexi-thread-parallel-sum=enable" if p.rexi_par else "")+' -j 4"'+"""
 echo "$SCONS"
 $SCONS || exit 1
 """
@@ -70,8 +70,7 @@ cd "$BASEDIR"
 """
 
 		#content += 'EXEC="$SWEETROOT/build/swe_sph_and_rexi_*_release'
-		content += 'EXEC="$SWEETROOT/build/swe_sph_and_rexi_spherespectral_spheredealiasing_rexipar_libfft_gnu_release'
-		#content += 'EXEC="$SWEETROOT/build/swe_sph_and_rexi_spherespectral_spheredealiasing_omp_libfft_gnu_release'
+		content += 'EXEC="$SWEETROOT/build/swe_sphere_rexi_spherespectral_spheredealiasing_rexipar_libfft_gnu_release'
 
 		if self.g >= 0:
 			content += ' -g '+str(self.g)
@@ -185,7 +184,6 @@ p = default_params()
 
 p.simtime = 0.1
 p.bench_id = 10	# Geostrophic balance benchmark
-p.pde_id = 1
 
 p.output_timestep_size = 0.01
 
@@ -197,7 +195,7 @@ if False:
 
 if True:
 	# 10 times larger than RK4 time step size
-	p.timestepping_method = 100
+	p.timestepping_method = 'l_rexi'
 	p.timestepping_order = 1
 
 	p.timestep_size = 0.01
@@ -217,7 +215,7 @@ if True:
 ####################################
 
 if True:
-	p.timestepping_method = 1
+	p.timestepping_method = 'l_erk'
 	p.timestepping_order = 2
 
 	p.timestep_size = 0.01

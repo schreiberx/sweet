@@ -12,14 +12,13 @@ class default_params:
 
 	f_sphere = 1
 
-	# 1: RK
-	# 2: LF
-	# 3: implicit RK, Crank-Nicolson
-	timestepping_method = 1
+	timestepping_method = 'e_rk'
 	timestepping_order = 1
 
+	verbosity=0
+
 	timestep_size = 0.001
-	max_timesteps = -1
+	max_timesteps = 1
 
 	normal_mode_analysis = 1
 
@@ -30,7 +29,7 @@ class default_params:
 
 	g = 1	# gravity
 	h = 100000	# avg height
-	f = 0.00014584	# coriolis effect
+	f = 0.000145842	# coriolis effect
 
 	r = 6371220	# radius
 
@@ -44,12 +43,12 @@ class default_params:
 	nonlinear = 0
 	viscosity = 0
 
-	simtime = -1
+	simtime = 0.001 #math.inf
 
 	rexi_par = 1
 	postprocessing = 0
 
-	compute_error = 1
+	compute_error = 0
 
 
 	def create_job_script(self):
@@ -70,7 +69,7 @@ source ./local_software/env_vars.sh || exit 1
 #make clean || exit 1
 """
 		content += """
-SCONS="scons --program=swe_sph_and_rexi --gui=disable --plane-spectral-space=disable --sphere-spectral-space=enable --threading=omp --mode=release """+("--threading=off --rexi-thread-parallel-sum=enable" if p.rexi_par else "disable")+'"'+"""
+SCONS="scons --program=swe_sphere_rexi --gui=disable --plane-spectral-space=disable --sphere-spectral-space=enable --threading=omp --mode=release """+("--threading=off --rexi-thread-parallel-sum=enable" if p.rexi_par else "disable")+'"'+"""
 echo "$SCONS"
 $SCONS || exit 1
 """
@@ -79,8 +78,7 @@ $SCONS || exit 1
 cd "$BASEDIR"
 """
 
-		#content += 'EXEC="$SWEETROOT/build/swe_sph_and_rexi_*_release'
-		content += 'EXEC="$SWEETROOT/build/swe_sph_and_rexi_spherespectral_spheredealiasing_rexipar_libfft_gnu_release'
+		content += 'EXEC="$SWEETROOT/build/swe_sphere_rexi_spherespectral_spheredealiasing_rexipar_libfft_gnu_release'
 		content += ' -g '+str(self.g)
 		content += ' -H '+str(self.h)
 		content += ' -f '+str(self.f)
@@ -91,6 +89,7 @@ cd "$BASEDIR"
 		content += ' --pde-id '+str(self.pde_id)
 
 		content += ' -s '+str(self.bench_id)
+		content += ' -v '+str(self.verbosity)
 
 		content += ' -C '+str(-self.timestep_size)
 		content += ' -T '+str(self.max_timesteps)
@@ -101,7 +100,7 @@ cd "$BASEDIR"
 		content += ' -t '+str(self.simtime)
 		content += ' --nonlinear='+str(self.nonlinear)
 
-		content += ' --timestepping-method='+str(self.timestepping_method)
+		content += ' --timestepping-method='+self.timestepping_method
 		content += ' --timestepping-order='+str(self.timestepping_order)
 
 		content += ' --normal-mode-analysis-generation='+str(self.normal_mode_analysis)
@@ -119,7 +118,7 @@ cd "$BASEDIR"
 		content += "\n"
 		content += """
 echo "$EXEC"
-$EXEC || exit 1
+		$EXEC || exit 1
 """
 
 
@@ -149,7 +148,7 @@ $EXEC || exit 1
 		idstr += '_pdeid'+str(self.pde_id)
 		idstr += '_robert'+str(self.use_robert_functions)
 
-		idstr += '_tsm'+str(self.timestepping_method).zfill(3)
+		idstr += '_tsm_'+self.timestepping_method
 		idstr += '_tso'+str(self.timestepping_order)
 		idstr += '_tnr'+str(self.max_timesteps).zfill(3)
 
@@ -207,53 +206,71 @@ default_timesteps=1
 
 
 #for p.pde_id in [0, 1]:
-for p.pde_id in [1]:
+for p.pde_id in [0]:
 
-	for p.f_sphere in [-1, 0, 1]:
+	#for p.f_sphere in [-1, 0, 1]:
+	for p.f_sphere in [0, 1]:
 		if p.f_sphere == -1:
 			p.f = 0
 			p.f_sphere = 0
+
+		elif p.f_sphere == 0:
+			# f-sphere
+			p.f = 0.000072921	# \Omega coriolis effect
+
+		elif p.f_sphere == 1:
+			p.f = 0.000072921
+			p.f = 2.0*p.f
 		else:
-			p.f = 0.00014584
+			print("ERROR")
+			sys.exit(1)
 		
 		####################################
 		# REXI
 		####################################
 		if 1:
-			p.timestepping_method = 100
-			p.timestepping_order = 1
+			p.timestepping_method = 'l_rexi'
+			p.timestepping_order = 0
 
 			p.timestep_size = default_timestep_size
+			p.simtime = default_timestep_size*default_timesteps
 			p.max_timesteps = default_timesteps
 
 			for p.rexi_extended_modes in [0, 2]:
-				for p.rexi_m in [1, 2, 4, 8, 16, 32, 64, 128]:
+				for p.rexi_m in [4, 64, 128, 256]:
 					p.gen_script('script'+p.create_job_id(), 'run.sh')
+
+			p.rexi_extended_modes = 0
+			p.rexi_m = 0
 
 
 		####################################
 		# RK1
 		####################################
 		if 1:
-			p.timestepping_method = 1
+			p.timestepping_method = 'l_erk'
 			p.timestepping_order = 1
 
 			p.timestep_size = default_timestep_size
+			p.simtime = default_timestep_size*default_timesteps
 			p.max_timesteps = default_timesteps
 
+			p.rexi_extended_modes = 0
 			p.gen_script('script'+p.create_job_id(), 'run.sh')
 
 
 		####################################
 		# RK2
 		####################################
-		if 0:
-			p.timestepping_method = 1
+		if 1:
+			p.timestepping_method = 'l_erk'
 			p.timestepping_order = 2
 
 			p.timestep_size = default_timestep_size
+			p.simtime = default_timestep_size*default_timesteps
 			p.max_timesteps = default_timesteps
 
+			p.rexi_extended_modes = 0
 			p.gen_script('script'+p.create_job_id(), 'run.sh')
 
 
@@ -261,27 +278,44 @@ for p.pde_id in [1]:
 		# IRK1
 		####################################
 		if 1:
-			p.timestepping_method = 3
+			p.timestepping_method = 'l_irk'
 			p.timestepping_order = 1
 
 			p.timestep_size = default_timestep_size
+			p.simtime = default_timestep_size*default_timesteps
 			p.max_timesteps = default_timesteps
 
-			for p.rexi_extended_modes in [0, 2]:
+			p.rexi_extended_modes = 0
+			p.gen_script('script'+p.create_job_id(), 'run.sh')
 
-				p.gen_script('script'+p.create_job_id(), 'run.sh')
+
+		####################################
+		# CN
+		####################################
+		if 1:
+			p.timestepping_method = 'l_cn'
+			p.timestepping_order = 2
+
+			p.timestep_size = default_timestep_size
+			p.simtime = default_timestep_size*default_timesteps
+			p.max_timesteps = default_timesteps
+
+			p.rexi_extended_modes = 0
+			p.gen_script('script'+p.create_job_id(), 'run.sh')
 
 
 		####################################
 		# LF2
 		####################################
 		if 0:
-			p.timestepping_method = 2
+			p.timestepping_method = 'l_lf'
 			p.timestepping_order = 2
 
 			p.timestep_size = default_timestep_size
+			p.simtime = default_timestep_size*default_timesteps
 			p.max_timesteps = default_timesteps
 
+			p.rexi_extended_modes = 0
 			p.gen_script('script'+p.create_job_id(), 'run.sh')
 
 

@@ -70,7 +70,6 @@ def load_data(filename):
 	if p.time == -1:
 		print("Warning: time meta information not found")
 		print(filename)
-		sys.exit(1)
 
 	if p.g == -1:
 		print("Warning: g meta information not found")
@@ -237,18 +236,21 @@ if True:
 		tmp = tmp.replace('_rexim00', '_M')
 		tmp = tmp.replace('_rexim0', '_M')
 
-		tmp = tmp.replace('script_g1_h100000_f7.2921e-05_a6371220_u0_robert1_pdeid1_fsphere1_', '')
-		tmp = tmp.replace('script_g1_h100000_f0.000145842_a6371220_u0_robert1_pdeid1_fsphere0_', '')
-		tmp = tmp.replace('_t-0000001_o000.0001', '')
-		tmp = tmp.replace('C0000', 'C')
+		tmp = tmp.replace('script_modes016_bench4_nonlin0_g1_h100000_', '')
+		tmp = tmp.replace('_t00000010_o00000.01', '')
+		tmp = tmp.replace('_C00000010', '')
+		tmp = tmp.replace('_tnr001', '')
+		tmp = tmp.replace('_robert1', '')
+		tmp = tmp.replace('_pdeid1', '')
+		tmp = tmp.replace('_u0', '')
+		tmp = tmp.replace('_a6371220', '')
 		tmp = tmp.replace('_Tsm', '_TM')
 		tmp = tmp.replace('_tso0', '')
 		tmp = tmp.replace('_rexih0.15', '')
 		tmp = tmp.replace('_rexihalf0', '')
 		tmp = tmp.replace('_rexihalf1', '')
-		tmp = tmp.replace('_rexiextmodes02', '')
-		tmp = tmp.replace('_rexiextmodes04', '')
-		tmp = tmp.replace('/output_normal_modes_physical_t00000000400.00000000.csv_evalues_complex.csv', '')
+		tmp = tmp.replace('_rexipar1', '')
+		tmp = tmp.replace('/output_normal_modes_physical_t00000000010.00000000.csv_evalues_complex.csv', '')
 
 		legend_labels.append(tmp)
 

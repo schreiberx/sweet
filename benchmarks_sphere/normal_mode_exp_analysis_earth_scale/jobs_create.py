@@ -1,8 +1,9 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 import os
 import sys
 import stat
+import math
 
 
 class default_params:
@@ -13,14 +14,11 @@ class default_params:
 
 	f_sphere = 1
 
-	# 1: RK
-	# 2: LF
-	# 3: implicit RK, Crank-Nicolson
-	timestepping_method = 1
+	timestepping_method = 'l_erk'
 	timestepping_order = 1
 
 	timestep_size = 0.001
-	max_timesteps = -1
+	max_timesteps = 1
 
 	normal_mode_analysis = 1
 
@@ -28,10 +26,14 @@ class default_params:
 	rexi_h = 0.15
 	rexi_half_poles = 1
 	rexi_extended_modes = 0
+	rexi_normalization = 1
+	rexi_sphere_preallocation = 1
 
 	g = 1	# gravity
 	h = 100000	# avg height
-	f = 0.00014584	# coriolis effect
+
+	f = 0.000072921	# \Omega coriolis effect
+	#f = 2.0*f	# Coriolis effect for constant f (not multiplied with 2.0)
 
 	r = 6371220	# radius
 
@@ -45,7 +47,7 @@ class default_params:
 	nonlinear = 0
 	viscosity = 0
 
-	simtime = -1
+	simtime = 0.001 #math.inf
 
 	rexi_par = 1
 	postprocessing = 0
@@ -71,7 +73,7 @@ source ./local_software/env_vars.sh || exit 1
 #make clean || exit 1
 """
 		content += """
-SCONS="scons --program=swe_sph_and_rexi --gui=disable --plane-spectral-space=disable --sphere-spectral-space=enable --mode=release """+("--threading=off --rexi-thread-parallel-sum=enable" if p.rexi_par else "disable")+'"'+"""
+SCONS="scons --program=swe_sphere_rexi --gui=disable --plane-spectral-space=disable --sphere-spectral-space=enable --mode=release """+("--threading=off --rexi-thread-parallel-sum=enable" if p.rexi_par else "disable")+'"'+"""
 echo "$SCONS"
 $SCONS || exit 1
 """
@@ -80,8 +82,7 @@ $SCONS || exit 1
 cd "$BASEDIR"
 """
 
-		#content += 'EXEC="$SWEETROOT/build/swe_sph_and_rexi_*_release'
-		content += 'EXEC="$SWEETROOT/build/swe_sph_and_rexi_spherespectral_spheredealiasing_rexipar_libfft_gnu_release'
+		content += 'EXEC="$SWEETROOT/build/swe_sphere_rexi_spherespectral_spheredealiasing_rexipar_libfft_gnu_release'
 		content += ' -g '+str(self.g)
 		content += ' -H '+str(self.h)
 		content += ' -f '+str(self.f)
@@ -102,7 +103,7 @@ cd "$BASEDIR"
 		content += ' -t '+str(self.simtime)
 		content += ' --nonlinear='+str(self.nonlinear)
 
-		content += ' --timestepping-method='+str(self.timestepping_method)
+		content += ' --timestepping-method='+self.timestepping_method
 		content += ' --timestepping-order='+str(self.timestepping_order)
 
 		content += ' --normal-mode-analysis-generation='+str(self.normal_mode_analysis)
@@ -110,8 +111,10 @@ cd "$BASEDIR"
 		content += ' --rexi-m='+str(self.rexi_m)
 		content += ' --rexi-h='+str(self.rexi_h)
 		content += ' --rexi-half='+str(self.rexi_half_poles)
-		content += ' --use-robert-functions='+str(self.use_robert_functions)
+		content += ' --rexi-normalization='+str(self.rexi_normalization)
+		content += ' --rexi-sphere-preallocation='+str(self.rexi_sphere_preallocation)
 		content += ' --rexi-ext-modes='+str(self.rexi_extended_modes)
+		content += ' --use-robert-functions='+str(self.use_robert_functions)
 
 		content += ' --compute-error='+str(self.compute_error)
 
@@ -155,14 +158,15 @@ $EXEC || exit 1
 		idstr += '_t'+str(self.simtime).zfill(8)
 		idstr += '_o'+str(self.output_timestep_size).zfill(8)
 
-		idstr += '_tsm'+str(self.timestepping_method).zfill(3)
+		idstr += '_tsm_'+self.timestepping_method
 		idstr += '_tso'+str(self.timestepping_order)
 
-#		if self.timestepping_method >= 100:
 		if True:
 			idstr += '_rexim'+str(self.rexi_m).zfill(8)
 			idstr += '_rexih'+str(self.rexi_h)
+			idstr += '_rexinorm'+str(self.rexi_normalization)
 			idstr += '_rexihalf'+str(self.rexi_half_poles)
+			idstr += '_rexiprealloc'+str(self.rexi_sphere_preallocation)
 			idstr += '_rexiextmodes'+str(self.rexi_extended_modes).zfill(2)
 #			idstr += '_rexipar'+str(1 if self.rexi_par else 0)
 
@@ -199,80 +203,56 @@ p.normal_mode_analysis = 13
 p.use_robert_functions = 1
 
 
-#
-# Smaller values lead to no solution for the vort/div formulation
-# See gaussian_ts_comparison_earth_scale_M16
-# This shows that good results for RK can be computed with
-# RK2 and a time step size of 200
-#
+default_timestep_size = 2000
+default_timesteps = 1 #default_simtime/default_timestep_size
 
-default_timestep_size = 400
-default_timesteps = 5 #default_simtime/default_timestep_size
-
+p.rexi_sphere_preallocation = 0
 
 
 #for p.pde_id in [0, 1]:
-for p.pde_id in [1]:
+for p.pde_id in [0]:
 
-	#for p.f_sphere in [-1, 0, 1]:
 	for p.f_sphere in [0, 1]:
 
 		if p.f_sphere == -1:
 			p.f = 0
 			p.f_sphere = 0
+
+		elif p.f_sphere == 0:
+			# f-sphere
+			p.f = 0.000072921	# \Omega coriolis effect
+
 		else:
-			p.f = 0.00014584
+			p.f = 0.000072921	# \Omega coriolis effect
+			p.f = 2.0*p.f	# Constant f requires multiplication with 2.0
 
 
 		####################################
 		# REXI dt=defaut_timestep_size
 		####################################
-		for p.rexi_extended_modes in [2]:
-
-			if 1:
-				p.timestepping_method = 100
+		for p.rexi_normalization in [1]:
+			for p.rexi_extended_modes in [2]:
+				p.timestepping_method = 'l_rexi'
 				p.timestepping_order = 0
 
 				p.timestep_size = default_timestep_size
+				p.simtime = default_timestep_size*default_timesteps
 				p.max_timesteps = default_timesteps
 
-				for p.rexi_m in [2**i for i in range(4, 8)]:
+				for p.rexi_m in [2**i for i in range(4, 15)]:
 					p.gen_script('script'+p.create_job_id(), 'run.sh')
 
-			if 1:
-				p.timestepping_method = 100
-				p.timestepping_order = 0
-
-				p.timestep_size = default_timestep_size*default_timesteps
-				p.max_timesteps = 1
-
-				for p.rexi_m in [2**i for i in range(4, 11)]:
-					p.gen_script('script'+p.create_job_id(), 'run.sh')
-
-			p.rexi_m = 0
-
-
-		####################################
-		# RK4 tiny ts
-		####################################
-		if 0:
-			p.timestepping_method = 1
-			p.timestepping_order = 4
-
-			p.timestep_size = default_timestep_size/16
-			p.max_timesteps = default_timesteps*16
-
-			p.gen_script('script'+p.create_job_id(), 'run.sh')
-
+		p.rexi_m = 0
 
 		####################################
 		# RK1
 		####################################
 		if 1:
-			p.timestepping_method = 1
+			p.timestepping_method = 'l_erk'
 			p.timestepping_order = 1
 
 			p.timestep_size = default_timestep_size
+			p.simtime = default_timestep_size*default_timesteps
 			p.max_timesteps = default_timesteps
 
 			p.gen_script('script'+p.create_job_id(), 'run.sh')
@@ -282,10 +262,11 @@ for p.pde_id in [1]:
 		# RK2
 		####################################
 		if 1:
-			p.timestepping_method = 1
+			p.timestepping_method = 'l_erk'
 			p.timestepping_order = 2
 
 			p.timestep_size = default_timestep_size
+			p.simtime = default_timestep_size*default_timesteps
 			p.max_timesteps = default_timesteps
 
 			p.gen_script('script'+p.create_job_id(), 'run.sh')
@@ -295,10 +276,11 @@ for p.pde_id in [1]:
 		# RK4
 		####################################
 		if 1:
-			p.timestepping_method = 1
+			p.timestepping_method = 'l_erk'
 			p.timestepping_order = 4
 
 			p.timestep_size = default_timestep_size
+			p.simtime = default_timestep_size*default_timesteps
 			p.max_timesteps = default_timesteps
 
 			p.gen_script('script'+p.create_job_id(), 'run.sh')
@@ -308,10 +290,11 @@ for p.pde_id in [1]:
 		# IRK1
 		####################################
 		if 0:
-			p.timestepping_method = 3
+			p.timestepping_method = 'l_irk'
 			p.timestepping_order = 1
 
 			p.timestep_size = default_timestep_size
+			p.simtime = default_timestep_size*default_timesteps
 			p.max_timesteps = default_timesteps
 
 			p.gen_script('script'+p.create_job_id(), 'run.sh')
@@ -321,10 +304,11 @@ for p.pde_id in [1]:
 		# IRK2
 		####################################
 		if 1:
-			p.timestepping_method = 3
+			p.timestepping_method = 'l_cn'
 			p.timestepping_order = 2
 
 			p.timestep_size = default_timestep_size
+			p.simtime = default_timestep_size*default_timesteps
 			p.max_timesteps = default_timesteps
 
 			p.gen_script('script'+p.create_job_id(), 'run.sh')
@@ -334,10 +318,11 @@ for p.pde_id in [1]:
 		# LF2
 		####################################
 		if 0:
-			p.timestepping_method = 2
+			p.timestepping_method = 'l_lf'
 			p.timestepping_order = 2
 
 			p.timestep_size = default_timestep_size
+			p.simtime = default_timestep_size*default_timesteps
 			p.max_timesteps = default_timesteps
 
 			p.gen_script('script'+p.create_job_id(), 'run.sh')
