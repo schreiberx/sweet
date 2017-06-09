@@ -1,4 +1,7 @@
-#! /usr/bin/python3
+#! /usr/bin/python2
+
+import matplotlib as mpl
+mpl.use('Agg')
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -14,7 +17,7 @@ def loadDataFromFile(filename):
 		data = np.loadtxt(filename, skiprows=3)
 	except:
 		prefix = filename if len(sys.argv) <= 3 else sys.argv[3]
-		print(prefix+": UNABLE TO OPEN")
+		print(prefix+": UNABLE TO OPEN "+filename)
 		sys.exit(1)
 
 	labelsx = data[0,1:]

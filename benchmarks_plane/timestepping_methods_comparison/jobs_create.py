@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/env python2
 
 import os
 import sys
@@ -6,7 +6,14 @@ import stat
 import math
 
 
+total_max_cores = 4096
+max_cores_per_node = 16
+total_max_nodes = total_max_cores/max_cores_per_node
+
+
 class default_params:
+	target_machine = 'yellowstone'
+
 	prefix_string = ''
 
 	plane_or_sphere = 'plane'
@@ -30,6 +37,7 @@ class default_params:
 	normal_mode_analysis = 0
 
 	rexi_m = 0
+	rexi_l = 11
 	rexi_h = 0.15
 	rexi_half_poles = 1
 	rexi_extended_modes = 0
@@ -62,29 +70,138 @@ class default_params:
 
 	compute_error = 1
 
+	# OpenMP threads in space
+	par_space_threads = 1
 
-	def create_job_script(self):
-		content = "#! /bin/bash\n"
+	# MPI threads i time
+	par_mpi_time_threads = 1
+
+
+	def get_num_rexi_terms(self):
+		rexi_terms = self.rexi_m+self.rexi_l
+
+		if self.rexi_half_poles:
+			rexi_terms = rexi_terms+1
+		else:
+			rexi_terms = 2*rexi_terms+1
+
+		return rexi_terms
+
+
+	def get_mpi_ranks_total(self):
+		rexi_terms = self.get_num_rexi_terms()
+
+#		if self.par_mpi_time_threads != 1:
+#			if max_cores_per_node % self.par_space_threads != 0:
+#				raise ValueError('Number of cores on node not evenly dividable by space threads')
+
+		real_time_threads = min(rexi_terms, self.par_mpi_time_threads)
+
+		# total number of used MPI ranks
+		total_cores = self.par_space_threads*self.par_mpi_time_threads
+		mpi_ranks_total = self.par_mpi_time_threads
+		mpi_ranks_per_node = math.floor(max_cores_per_node/self.par_space_threads)
+
+		return mpi_ranks_total
+
+
+	def create_job_script(self, dirname):
+		job_id = 'sweet_swe_sph_and_rexi'+self.create_job_id()
+
+		rexi_terms = self.get_num_rexi_terms()
+
+		if self.par_mpi_time_threads != 1:
+			if max_cores_per_node % self.par_space_threads != 0:
+				raise ValueError('Number of cores on node not evenly dividable by space threads')
+
+		real_time_threads = min(rexi_terms, self.par_mpi_time_threads)
+
+		# total number of used MPI ranks
+		total_cores = self.par_space_threads*self.par_mpi_time_threads
+		mpi_ranks_total = self.par_mpi_time_threads
+		mpi_ranks_per_node = math.floor(max_cores_per_node/self.par_space_threads)
+
+		program_bin_name=""
+		program_bin_name=job_id
+
+		sweetdir=os.path.normpath(os.getcwd()+'/../../')
+
+		content = "#!/bin/bash\n"
+
+		#
+		# YELLOWSTONE:
+		# Each node has 16 cores
+		# 8 cores per socket
+		# hyperthreading enabled
+		#
+
+		if self.target_machine == '':
+			content += "\n"
+		elif self.target_machine == 'yellowstone':
+			content += """
+#
+# LSF batch script to run an MPI application
+#
+# YELLOW STONE SPECIFIC!!!
+# https://www2.cisl.ucar.edu/resources/computational-systems/yellowstone/
+#
+#BSUB -P NCIS0002            # project code
+#BSUB -W 02:00               # wall-clock time (hrs:mins)
+#
+#BSUB -n """+str(mpi_ranks_total)+"""   # number of tasks in job         
+#BSUB -R "span[ptile=16]"    # run 16 MPI tasks per node
+#
+#BSUB -outdir """+dirname+"""
+#BSUB -J """+job_id+"""      # job name
+#BSUB -o """+dirname+""".out  # output file name in which %J is replaced by the job ID
+#BSUB -e """+dirname+""".out  # error file name in which %J is replaced by the job ID
+#
+## https://www2.cisl.ucar.edu/resources/computational-systems/yellowstone/using-computing-resources/queues-and-charges
+#BSUB -q small
+#
+
+#
+# More example job scripts:
+# https://www2.cisl.ucar.edu/resources/computational-systems/yellowstone/using-computing-resources/running-jobs/platform-lsf-job-script-examples
+#
+""" # end yellowstone script
+		else:
+			print("Target machine "+str(self.target_machine)+" not supported")
+			sys.exit(1)
+
 
 		content += """
+
+cd \""""+dirname+"""\"
+
 BASEDIR="`pwd`"
 rm -f ./prog_h_*
 rm -f ./prog_u_*
 rm -f ./prog_v_*
 
-SWEETROOT="../../../"
+SWEETROOT=\""""+dirname+"""/../../../"
 cd "$SWEETROOT"
+
+pwd
 
 # Always load local software
 source ./local_software/env_vars.sh || exit 1
 
 #make clean || exit 1
+
 """
-		content += """
+		if self.target_machine == '':
+			content += """
 SCONS="scons --program=swe_plane_rexi --gui=disable --plane-spectral-space=enable --mode=release """+"--threading="+ ('omp' if not p.rexi_par else 'off') +" --rexi-thread-parallel-sum=" +('enable' if p.rexi_par else 'disable')+' -j 4"'+"""
 echo "$SCONS"
 $SCONS || exit 1
+
 """
+		elif self.target_machine == 'yellowstone':
+			pass
+		else:
+			print("Target machine "+str(self.target_machine)+" not supported")
+			sys.exit(1)
 
 		content += """
 cd "$BASEDIR"
@@ -221,7 +338,7 @@ $EXEC || exit 1
 		fullpath = dirname+'/'+scriptname
 		print("WRITING "+fullpath)
 		script_file = open(fullpath, 'w')
-		script_file.write(self.create_job_script())
+		script_file.write(self.create_job_script(os.getcwd()+'/'+dirname))
 		script_file.close()
 
 		st = os.stat(fullpath)
@@ -303,7 +420,6 @@ for group in groups:
 			['ln_erk',		4,	4],	# reference solution
 			['l_cn_n_erk',		2,	2],
 			['l_erk_n_erk',		2,	2],
-			['l_irk_n_erk',		2,	2],
 			['ln_erk',		2,	2],
 			['l_rexi_n_erk',	2,	2],
 		]
@@ -349,7 +465,7 @@ for group in groups:
 
 
 				if 'rexi' in tsm[0]:
-					for p.rexi_m in [16, 32, 64, 128]:
+					for p.rexi_m in [16, 32, 64, 128, 256, 512]:
 						p.gen_script('script'+p.create_job_id(), 'run.sh')
 
 					p.rexi_m = 0
