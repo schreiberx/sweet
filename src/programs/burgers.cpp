@@ -329,9 +329,7 @@ public:
 			}
 		}
 
-	// Print output info (if gui is disabled, this is done in main
-		if (simVars.misc.gui_enabled)
-			timestep_output();
+		timestep_output();
 	}
 
 
@@ -508,9 +506,7 @@ public:
 		simVars.timecontrol.current_simulation_time += dt;
 		simVars.timecontrol.current_timestep_nr++;
 
-#if SWEET_GUI
 		timestep_output();
-#endif
 	}
 
 
@@ -551,8 +547,19 @@ public:
 			return false;
 
 		if (simVars.misc.output_next_sim_seconds > simVars.timecontrol.current_simulation_time)
-			if (simVars.timecontrol.current_simulation_time != simVars.timecontrol.max_simulation_time)
-				return false;
+			return false;
+
+		if (param_compute_error)
+			compute_errors(prog_u, prog_v);
+
+		// Dump data in csv, if requested
+		if (simVars.misc.output_file_name_prefix.size() > 0)
+		{
+			write_file(prog_u, "prog_u");
+			write_file(prog_v, "prog_v");
+			if (param_compute_error)
+				write_file(benchmark_analytical_error, "error");
+		}
 
 		if (simVars.misc.verbosity > 0)
 		{
@@ -572,26 +579,27 @@ public:
 			// Print timestep data to given output stream
 			o_ostream << std::setprecision(8) << std::fixed << simVars.timecontrol.current_simulation_time << "\t" << simVars.diag.total_energy;
 
-			if (param_compute_error){
-				compute_errors(prog_u, prog_v);
+			if (param_compute_error)
 				o_ostream << std::setprecision(8) << "\t" << benchmark_analytical_error_maxabs_u << "\t" << benchmark_analytical_error_rms_u << "\t" << prog_u.reduce_max();
-			}
 
 			o_ostream << std::endl;
 		}
 
-		// Dump data in csv, if requested
-		if (simVars.misc.output_file_name_prefix.size() > 0)
-		{
-			write_file(prog_u, "prog_u");
-			write_file(prog_v, "prog_v");
-			if (param_compute_error)
-				write_file(benchmark_analytical_error, "error");
-		}
-
 		if (simVars.misc.output_each_sim_seconds > 0)
-			while (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
-				simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
+		{
+			if (simVars.misc.output_next_sim_seconds == simVars.timecontrol.max_simulation_time)
+			{
+				simVars.misc.output_next_sim_seconds = std::numeric_limits<double>::infinity();
+			}
+			else
+			{
+				while (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
+					simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
+
+				if (simVars.misc.output_next_sim_seconds > simVars.timecontrol.max_simulation_time)
+					simVars.misc.output_next_sim_seconds = simVars.timecontrol.max_simulation_time;
+			}
+		}
 
 		return true;
 	}
@@ -691,6 +699,7 @@ public:
 		return false;
 	}
 
+#if SWEET_GUI
 
 	/**
 	 * Postprocessing of frame: do time stepping
@@ -805,6 +814,7 @@ public:
 			break;
 		}
 	}
+#endif
 
 
 	/*
@@ -1300,6 +1310,7 @@ int main(int i_argc, char *i_argv[])
 			// Main time loop
 			while(true)
 			{
+				/*
 				//Output data
 				if (simulationBurgers->timestep_output(buf))
 				{
@@ -1310,6 +1321,7 @@ int main(int i_argc, char *i_argv[])
 					// This is an output printed on screen or buffered to files if > used
 					std::cout << output;
 				}
+				*/
 
 				//Stop simulation if requested
 				if (simulationBurgers->should_quit())
