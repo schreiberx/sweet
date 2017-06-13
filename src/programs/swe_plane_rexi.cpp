@@ -62,13 +62,12 @@ PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
 SimulationVariables simVars;
 
 /// specific parameters
-
-bool param_compute_error;
+int param_compute_error;
 
 double param_initial_freq_x_mul;
 double param_initial_freq_y_mul;
 
-//Diagnostic measures at initial stage
+/// Diagnostic measures at initial stage
 double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
 
 
@@ -543,12 +542,16 @@ public:
 		// iterate over all prognostic variables
 		for (int outer_prog_id = 0; outer_prog_id < max_prog_id; outer_prog_id++)
 		{
-			if (simVars.disc.normal_mode_analysis_generation == 1)
+			if (simVars.disc.normal_mode_analysis_generation == 1 || simVars.disc.normal_mode_analysis_generation == 11)
 			{
 				// iterate over physical space
 				for (std::size_t outer_i = 0; outer_i < planeDataConfig->physical_array_data_number_of_elements; outer_i++)
 				{
-					std::cout << "normal mode analysis for prog " << outer_prog_id << ", idx " << outer_i << std::endl;
+					// reset time control
+					simVars.timecontrol.current_timestep_nr = 0;
+					simVars.timecontrol.current_simulation_time = 0;
+
+					std::cout << "." << std::flush;
 
 					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
 						prog[inner_prog_id]->physical_set_zero();
@@ -557,28 +560,21 @@ public:
 					prog[outer_prog_id]->request_data_physical();
 					prog[outer_prog_id]->physical_space_data[outer_i] = 1;
 
-#if 0
-					// In case of a multi-step scheme, reset it!
-					if (simVars.disc.timestepping_method == SimulationVariables::Discretization::LEAPFROG_EXPLICIT)
-					{
-						FatalError("Not yet implemented");
-						//timestepping_explicit_leapfrog.resetAndSetup(prog_h, simVars.disc.timestepping_order, simVars.disc.leapfrog_robert_asselin_filter);
-						run_timestep();
-					}
-#endif
 					/*
 					 * RUN timestep
 					 */
 
 					run_timestep();
 
-					/*
-					 * compute
-					 * 1/dt * (U(t+1) - U(t))
-					 */
-					prog[outer_prog_id]->request_data_physical();
-					prog[outer_prog_id]->physical_space_data[outer_i] -= 1.0;
-
+					if (simVars.disc.normal_mode_analysis_generation == 1)
+					{
+						/*
+						 * compute
+						 * 1/dt * (U(t+1) - U(t))
+						 */
+						prog[outer_prog_id]->request_data_physical();
+						prog[outer_prog_id]->physical_space_data[outer_i] -= 1.0;
+					}
 
 					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
 					{
@@ -594,40 +590,32 @@ public:
 					}
 				}
 			}
-			else if (simVars.disc.normal_mode_analysis_generation == 2)
+			else if (simVars.disc.normal_mode_analysis_generation == 3 || simVars.disc.normal_mode_analysis_generation == 13)
 			{
-				// iterate over physical space
+				// iterate over spectral space
 				for (std::size_t outer_i = 0; outer_i < planeDataConfig->spectral_array_data_number_of_elements; outer_i++)
 				{
-					for (int imag_i = 0; imag_i < 2; imag_i++)
+					// reset time control
+					simVars.timecontrol.current_timestep_nr = 0;
+					simVars.timecontrol.current_simulation_time = 0;
+
+					std::cout << "." << std::flush;
+
+					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+						prog[inner_prog_id]->spectral_set_zero();
+
+					// activate mode via real coefficient
+					prog[outer_prog_id]->request_data_spectral();
+					prog[outer_prog_id]->spectral_space_data[outer_i].real(1);
+
+					/*
+					 * RUN timestep
+					 */
+					run_timestep();
+
+
+					if (simVars.disc.normal_mode_analysis_generation == 3)
 					{
-						std::cout << "normal mode analysis for prog " << outer_prog_id << ", idx " << outer_i << std::endl;
-
-						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-							prog[inner_prog_id]->spectral_set_zero();
-
-						// activate mode
-						if (imag_i)
-							prog[outer_prog_id]->spectral_space_data[outer_i].imag(1);
-						else
-							prog[outer_prog_id]->spectral_space_data[outer_i].real(1);
-
-#if 0
-						// In case of a multi-step scheme, reset it!
-						if (simVars.disc.timestepping_method == SimulationVariables::Discretization::LEAPFROG_EXPLICIT)
-						{
-							FatalError("Not yet implemented");
-							//timestepping_explicit_leapfrog.resetAndSetup(prog_h, simVars.disc.timestepping_order, simVars.disc.leapfrog_robert_asselin_filter);
-							run_timestep();
-						}
-#endif
-
-						/*
-						 * RUN timestep
-						 */
-						run_timestep();
-
-
 						/*
 						 * compute
 						 * 1/dt * (U(t+1) - U(t))
@@ -637,71 +625,7 @@ public:
 
 						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
 							prog[inner_prog_id]->operator*=(1.0/simVars.timecontrol.current_timestep_size);
-
-						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-						{
-							prog[inner_prog_id]->request_data_spectral();
-							for (std::size_t k = 0; k < planeDataConfig->spectral_array_data_number_of_elements; k++)
-							{
-								file << prog[inner_prog_id]->spectral_space_data[k].real();
-								file << "\t";
-							}
-						}
-
-						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-						{
-							prog[inner_prog_id]->request_data_spectral();
-							for (std::size_t k = 0; k < planeDataConfig->spectral_array_data_number_of_elements; k++)
-							{
-								file << prog[inner_prog_id]->spectral_space_data[k].imag();
-								if (inner_prog_id != max_prog_id-1 || k != planeDataConfig->spectral_array_data_number_of_elements-1)
-									file << "\t";
-								else
-									file << std::endl;
-							}
-						}
 					}
-				}
-			}
-			else if (simVars.disc.normal_mode_analysis_generation == 3)
-			{
-				// iterate over physical space
-				for (std::size_t outer_i = 0; outer_i < planeDataConfig->spectral_array_data_number_of_elements; outer_i++)
-				{
-					std::cout << "normal mode analysis for prog " << outer_prog_id << ", idx " << outer_i << std::endl;
-
-					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-						prog[inner_prog_id]->spectral_set_zero();
-
-					// activate mode via real coefficient
-					prog[outer_prog_id]->request_data_spectral();
-					prog[outer_prog_id]->spectral_space_data[outer_i].real(1);
-
-#if 0
-					// In case of a multi-step scheme, reset it!
-					if (simVars.disc.timestepping_method == SimulationVariables::Discretization::LEAPFROG_EXPLICIT)
-					{
-						FatalError("Not yet implemented");
-						//timestepping_explicit_leapfrog.resetAndSetup(prog_h, simVars.disc.timestepping_order, simVars.disc.leapfrog_robert_asselin_filter);
-						run_timestep();
-					}
-#endif
-
-					/*
-					 * RUN timestep
-					 */
-					run_timestep();
-
-					/*
-					 * compute
-					 * 1/dt * (U(t+1) - U(t))
-					 */
-					prog[outer_prog_id]->request_data_spectral();
-					prog[outer_prog_id]->spectral_space_data[outer_i] -= 1.0;
-
-					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-						prog[inner_prog_id]->operator*=(1.0/simVars.timecontrol.current_timestep_size);
-
 
 					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
 					{
@@ -716,8 +640,6 @@ public:
 
 					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
 					{
-						prog[inner_prog_id]->request_data_spectral();
-
 						for (std::size_t k = 0; k < planeDataConfig->spectral_array_data_number_of_elements; k++)
 						{
 							file << prog[inner_prog_id]->spectral_space_data[k].imag();
@@ -1626,7 +1548,9 @@ int main(int i_argc, char *i_argv[])
 	{
 		std::cout << std::endl;
 		std::cout << "Special parameters:" << std::endl;
-		std::cout << "	--compute-error [0/1]	Compute the errors" << std::endl;
+		std::cout << "	--compute-error [int]	0: No error computations" << std::endl;
+		std::cout << "							1: Stationary solution" << std::endl;
+		std::cout << "							2: Analytical (time varying) solution" << std::endl;
 		std::cout << "" << std::endl;
 		std::cout << "  WARNING: Nonlinear" << std::endl;
 		std::cout << "	--nonlinear [0/1/2]	   Form of equations:" << std::endl;
