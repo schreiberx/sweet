@@ -44,6 +44,9 @@ extern "C"
   void fmain (PlaneDataCtx *pd_ctx, int* num_levs, std::size_t* nvars);
 }
 
+/**
+ * Main function launching LibPFASST
+ */
 int main(int i_argc, char *i_argv[])
 {
   MPI_Init(&i_argc, &i_argv);
@@ -82,26 +85,26 @@ int main(int i_argc, char *i_argv[])
   levelSingletons.resize(param_max_levels);
 
   levelSingletons[0].dataConfig.setupAutoPhysicalSpace(
-						       simVars.disc.res_spectral[0],
-						       simVars.disc.res_spectral[1]
-						       );
+  						       simVars.disc.res_spectral[0],
+  						       simVars.disc.res_spectral[1]
+  						       );
 
   levelSingletons[0].level = 0;
   
   levelSingletons[0].op.setup(
-			      &(levelSingletons[0].dataConfig),
-			      simVars.sim.domain_size,
-			      simVars.disc.use_spectral_basis_diffs
-			      );
+  			      &(levelSingletons[0].dataConfig),
+  			      simVars.sim.domain_size,
+  			      simVars.disc.use_spectral_basis_diffs
+  			      );
   
   // this is not doing anything for now
   for (int i = 1; i < param_max_levels; i++)
     {
       levelSingletons[i].dataConfig.setupAdditionalModes(
-							 &(levelSingletons[i-1].dataConfig),
-							 -1,
-							 -1
-							 );
+  							 &(levelSingletons[i-1].dataConfig),
+  							 -1,
+  							 -1
+  							 );
     }
 
   /**********************************************************
@@ -114,13 +117,15 @@ int main(int i_argc, char *i_argv[])
 					  &levelSingletons
 					  );
   
+  levelSingletons[0].dataConfig.printInformation();
+
   // run a timestep with libpfasst and check that the solution matches the sweet integrators
   fmain(
 	pd_ctx,
 	&param_max_levels,
 	&(levelSingletons[0].dataConfig.physical_array_data_number_of_elements)
 	); 
-  
+
   // release the memory
   delete pd_ctx;
 

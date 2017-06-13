@@ -64,14 +64,12 @@ contains
     real(c_double)                           :: t, dt
 
     class(pf_factory_t),         allocatable :: factory
-    class(pf_encap_t),           allocatable :: q0
     
     class(sweet_data_factory_t), pointer     :: sd_factory_ptr
     class(sweet_sweeper_t),      pointer     :: sweet_sweeper_ptr
     
-    type(pf_comm_t)   :: pf_comm
-    type(pf_pfasst_t) :: pf
-
+    type(pf_comm_t)                          :: pf_comm
+    type(pf_pfasst_t)                        :: pf
 
     ! create the mpi and pfasst objects
      call pf_mpi_create(pf_comm, & 
@@ -82,20 +80,22 @@ contains
      pf_comm%nproc = 1
 
      ! parameters definition
-     steps      = 1 
-     nsteps     = steps*pf_comm%nproc
+     steps      = 1
+     nsteps     = 100
      
      t          = 0.0_pfdp
-     dt         = 0.0001_pfdp ! small time step for now since the integrator is explicit
+     dt         = 0.01_pfdp ! small time step for now since the integrator is explicit
      
      pf%nlevels = num_levs
-     pf%niters  = 20 ! number of iterations hard coded for now
+     pf%niters  = 4 ! number of iterations hard coded for now
      
      qtype_name = 'SDC_GAUSS_LOBATTO' ! type of nodes hard coded for now
      qtype      = translate_qtype(qtype_name, & 
                                   qnl)
-     nnodes(1)  = 6 ! number of nodes hard coded for now
- 
+     nnodes(1)  = 3 ! number of nodes hard coded for now
+     nvars      = 3 * nvars ! multiply by 3 since we have 3 fields (u, v, and h)
+     
+
      ! loop over levels (currently only one) to initialize level-specific data structures
      do level = 1, pf%nlevels
 
@@ -104,8 +104,8 @@ contains
        
        ! allocate space for the levels
        allocate(pf%levels(level)%shape(1))
-       pf%levels(level)%shape(1) = pf%levels(level)%nvars
-
+       pf%levels(level)%shape(1) = nvars
+       
        ! define the properties
        pf%levels(level)%nvars  = nvars 
        pf%levels(level)%nnodes = nnodes(level)
@@ -118,7 +118,7 @@ contains
        ! cast the object into sweet data objects
        sd_factory_ptr    => as_sweet_data_factory(pf%levels(level)%ulevel%factory)
        sweet_sweeper_ptr => as_sweet_sweeper(pf%levels(level)%ulevel%sweeper)    
-       
+
        ! pass the pointer to sweet data context to libpfasst
        sd_factory_ptr%ctx    = user_ctx_ptr
        sweet_sweeper_ptr%ctx = user_ctx_ptr
@@ -131,13 +131,6 @@ contains
     call pf_pfasst_setup(pf)
     
     ! initialize the state vector at each level
-    level = 1
-    call sd_factory_ptr%create_single(q0, & 
-                                      level, & 
-                                      SDC_KIND_SOL_FEVAL, & 
-                                      nvars, &
-                                      shape)
-
     do level = 1, pf%nlevels
 
        call finitial(pf%levels(level)%ulevel%sweeper, & 
@@ -147,7 +140,7 @@ contains
                      dt)
 
     end do
-    
+  
     ! define the hooks to output data to the terminal (residual and error)
     call pf_add_hook(pf, & 
                      pf%nlevels, & 
@@ -170,18 +163,13 @@ contains
 
     ! finalize the simulation (does nothing right now)
     do level = 1, pf%nlevels
+
        call ffinal(pf%levels(level)%ulevel%sweeper, & 
                    pf%levels(level)%Q(nnodes(level)))
+
     end do
     
     ! release memory
-    level = 1
-    call sd_factory_ptr%destroy_single(q0, &
-                                       level, & 
-                                       SDC_KIND_SOL_FEVAL, &
-                                       nvars, &
-                                       shape)
-
     call pf_pfasst_destroy(pf)
     call pf_mpi_destroy(pf_comm)
 

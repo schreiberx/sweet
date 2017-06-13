@@ -31,10 +31,10 @@ contains
     class(pf_level_t),  intent(inout) :: level
     type(pf_state_t),   intent(in)    :: state
 
-    class(pf_encap_t),  allocatable   :: Y_exact
+    class(pf_encap_t),  allocatable   :: Y_reference
 
     ! allocate memory for vector Y_exact
-    call level%ulevel%factory%create_single(Y_exact, & 
+    call level%ulevel%factory%create_single(Y_reference, & 
                                             level%level, & 
                                             SDC_KIND_SOL_FEVAL, & 
                                             level%nvars, &
@@ -43,21 +43,23 @@ contains
     ! compute the reference solution (currently with explicit RK)
     call freference(level%ulevel%sweeper, &
                     state%t0+state%dt, & 
-                    Y_exact)
+                    Y_reference)
+
+    print *, 'time at which reference is computed:', &
+              state%t0+state%dt
 
     ! compute the norm of the error
-    call Y_exact%axpy(-1.0_pfdp, & 
-                      level%qend)
+    call Y_reference%axpy(-1.0_pfdp, & 
+                          level%qend)
     print '("error: step: ",i3.3," iter: ",i4.3," error: ",es14.7)', &
-         state%step+1, state%iter, Y_exact%norm()
+         state%step+1, state%iter, Y_reference%norm()
 
     ! release memory
-    call level%ulevel%factory%destroy_single(Y_exact, &
+    call level%ulevel%factory%destroy_single(Y_reference, &
                                              level%level, & 
                                              SDC_KIND_SOL_FEVAL, &
                                              level%nvars, &
                                              level%shape)
-
 
   end subroutine fecho_error
 

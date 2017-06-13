@@ -17,6 +17,8 @@ extern "C"
 			   ) 
   {
     PlaneDataConfig *Y_config = i_ctx->get_plane_data_config(i_level);
+    Y_config->physical_array_data_number_of_elements = 
+      Y_config->physical_res[0]*Y_config->physical_res[1];
 
     // create the PlaneDataVars object
     *o_Y  = new PlaneDataVars(
@@ -34,9 +36,9 @@ extern "C"
     v = 0.0;
 
     // return the size of the number of elements 
-    *o_size = h.planeDataConfig->physical_array_data_number_of_elements 
-            + u.planeDataConfig->physical_array_data_number_of_elements 
-            + v.planeDataConfig->physical_array_data_number_of_elements;
+    *o_size = (h.planeDataConfig->physical_array_data_number_of_elements 
+	       + u.planeDataConfig->physical_array_data_number_of_elements 
+	       + v.planeDataConfig->physical_array_data_number_of_elements);
   }
 
   // calls the destructor of the sweet data encapsulated object
@@ -117,9 +119,9 @@ extern "C"
     v.request_data_physical();  
 
     // allocate the flat data array
-    const int n_elems = h.planeDataConfig->physical_array_data_number_of_elements 
-                      + u.planeDataConfig->physical_array_data_number_of_elements 
-                      + v.planeDataConfig->physical_array_data_number_of_elements;
+    const int n_elems = (h.planeDataConfig->physical_array_data_number_of_elements 
+			 + u.planeDataConfig->physical_array_data_number_of_elements 
+			 + v.planeDataConfig->physical_array_data_number_of_elements);
     io_Y->allocate_flat_data_array(n_elems);
     double*& flat_data_array = io_Y->get_flat_data_array();
     

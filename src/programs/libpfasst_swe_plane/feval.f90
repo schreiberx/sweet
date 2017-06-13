@@ -88,6 +88,7 @@ contains
     class(pf_encap_t),         intent(inout) :: sd
     class(pf_encap_t),         intent(inout) :: z
     real(c_double),            intent(in)    :: t, dt
+
     class(sweet_sweeper_t),    pointer       :: sweet_sweeper_ptr
     class(sweet_data_encap_t), pointer       :: sd_ptr
 

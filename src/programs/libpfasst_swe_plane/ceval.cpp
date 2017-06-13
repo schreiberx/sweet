@@ -8,13 +8,37 @@
 #include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
 #include <sweet/plane/Convert_PlaneDataComplex_to_PlaneData.hpp>
 
+#include "SWE_Plane_TS_l_erk.hpp"
 #include "SWE_Plane_TS_l_irk.hpp"
 #include "SWE_Plane_TS_l_irk_n_erk.hpp"
-#include "SWE_Plane_TS_l_direct.hpp"
-#include "SWE_Plane_TS_l_rexi.hpp"
-#include "SWE_Plane_TS_l_rexi_n_erk.hpp"
+#include "SWE_Plane_TS_ln_erk.hpp"
 
 #include "ceval.hpp"
+
+/**
+ * Write file to data and return string of file name
+ */
+std::string write_file(
+		       PlaneDataCtx  &i_ctx,
+		       const PlaneData &i_planeData,
+		       const char* i_name	///< name of output variable
+		       )
+{
+  char buffer[1024];
+  
+  // get the pointer to the Simulation Variables object
+  SimulationVariables* simVars = i_ctx.get_simulation_variables();
+
+  // write the data into the file
+  const char* filename_template = simVars->misc.output_file_name_prefix.c_str();
+  sprintf(buffer, 
+	  filename_template, 
+	  i_name, 
+	  simVars->timecontrol.current_timestep_size);
+  i_planeData.file_physical_saveData_ascii(buffer);
+  
+  return buffer;
+}
 
 extern "C"
 {
@@ -76,11 +100,6 @@ extern "C"
 					       io_data = SWEPlaneBenchmarks::return_v(*simVars, x, y);
 					     }
 					     );
-    /*
-    h_Y.print_physicalArrayData();
-    u_Y.print_physicalArrayData();
-    v_Y.print_physicalArrayData();
-    */
   }
 
   // finalizes the time step when libpfasst is done 
@@ -93,26 +112,22 @@ extern "C"
     const PlaneData& h_Y = i_Y->get_h();
     const PlaneData& u_Y = i_Y->get_u();
     const PlaneData& v_Y = i_Y->get_v();
-    /*
-    std::cerr <<  std::endl;
-    h_Y.print_physicalArrayData();
-    std::cerr <<  std::endl;
-    u_Y.print_physicalArrayData();
-    std::cerr <<  std::endl;
-    v_Y.print_physicalArrayData();
-    */
 
+    write_file(*i_ctx, h_Y, "prog_h");
+    write_file(*i_ctx, u_Y, "prog_u");
+    write_file(*i_ctx, v_Y, "prog_v");
+    
     std::cout << "cfinal is not implemented yet" << std::endl;
     //not implemented yet
   }
 
   // computes a reference solution to check libpfasst's results
-  // based on the "direct solution"
+  // based on the fourth order explicit (linear and nonlinear) RK
   void creference( 
-	      double i_t,
-	      PlaneDataCtx *i_ctx,
-	      PlaneDataVars *o_Y
-	      )
+		  double i_t,
+		  PlaneDataCtx *i_ctx,
+		  PlaneDataVars *o_Y
+		   )
   {
     // get the time step parameters
     SimulationVariables* simVars = i_ctx->get_simulation_variables();
@@ -130,26 +145,28 @@ extern "C"
     PlaneData& v = o_Y->get_v();
     
     // get the reference timestepper
-    SWE_Plane_TS_l_rexi_n_erk* timestepper = i_ctx->get_reference_timestepper(o_Y->get_level());
+    SWE_Plane_TS_ln_erk* timestepper = i_ctx->get_reference_timestepper(o_Y->get_level());
+    
+    const int dt_factor = 10000; 
+    double dt           = simVars->timecontrol.current_timestep_size 
+                        / (double)dt_factor;
+
+    double current_simulation_time = 0;
 
     // compute the reference solution (i.e., obtained with the reference time stepper)
-    timestepper->run_timestep(
-			      h,
-			      u,
-			      v,
-			      simVars->timecontrol.current_timestep_size,
-			      simVars->timecontrol.current_timestep_size,
-			      simVars->timecontrol.current_simulation_time,
-			      simVars->timecontrol.max_simulation_time
-			      );
-    
-    /*std::cerr <<  std::endl;
-    h.print_physicalArrayData();
-    std::cerr <<  std::endl;
-    u.print_physicalArrayData();
-    std::cerr <<  std::endl;
-    v.print_physicalArrayData();*/
-    
+    while (current_simulation_time < i_t)
+      {
+	timestepper->run_timestep(
+				  h,
+				  u,
+				  v,
+				  dt,
+				  dt,
+				  current_simulation_time,
+				  i_t
+				  );
+	current_simulation_time += dt;
+      }
   }
 
 
@@ -172,7 +189,7 @@ extern "C"
     SimulationVariables* simVars = i_ctx->get_simulation_variables();
 
     // get the timestepper
-    SWE_Plane_TS_l_irk_n_erk* timestepper = i_ctx->get_timestepper(i_Y->get_level());
+    SWE_Plane_TS_l_irk_n_erk* timestepper = i_ctx->get_l_irk_n_erk_timestepper(i_Y->get_level());
 		  
     // compute the explicit nonlinear right-hand side
     timestepper->euler_timestep_update_nonlinear(
@@ -205,38 +222,21 @@ extern "C"
     // get the simulation variables
     SimulationVariables* simVars = i_ctx->get_simulation_variables();
     
-    // get the simulation parameters
-    const double eta_bar = simVars->sim.h0;
-    const double g       = simVars->sim.gravitation;
-    const double f0      = simVars->sim.f0;
-
     // get the implicit timestepper 
-    SWE_Plane_TS_l_irk_n_erk* timestepper    = i_ctx->get_timestepper(i_Y->get_level());
-    SWE_Plane_TS_l_irk& implicit_timestepper = timestepper->get_implicit_timestepper();
+    SWE_Plane_TS_l_erk* timestepper    = i_ctx->get_l_erk_timestepper(i_Y->get_level());
 
-    // get the spectral space operators
-    PlaneOperatorsComplex& opComplex = implicit_timestepper.get_plane_operators_complex();
-
-    // convert to spectral data
-    const PlaneDataComplex eta0_Y = Convert_PlaneData_To_PlaneDataComplex::physical_convert(h_Y);
-    const PlaneDataComplex u0_Y   = Convert_PlaneData_To_PlaneDataComplex::physical_convert(u_Y);
-    const PlaneDataComplex v0_Y   = Convert_PlaneData_To_PlaneDataComplex::physical_convert(v_Y);
-    PlaneDataComplex eta0_F2      = Convert_PlaneData_To_PlaneDataComplex::physical_convert(h_F2);
-    PlaneDataComplex u0_F2        = Convert_PlaneData_To_PlaneDataComplex::physical_convert(u_F2);
-    PlaneDataComplex v0_F2        = Convert_PlaneData_To_PlaneDataComplex::physical_convert(v_F2);
-
-    // compute the right-hand side for eta
-    eta0_F2 = -eta_bar * (opComplex.diff_c_x(u0_Y) + opComplex.diff_c_y(v0_Y));
-    
-    // compute the right-hand side for u and v
-    u0_F2   = -g * opComplex.diff_c_x(eta0_Y) + f0 * v0_Y;
-    v0_F2   = -g * opComplex.diff_c_y(eta0_Y) - f0 * u0_Y;
-    
-    // convert back to physical data
-    h_F2 = Convert_PlaneDataComplex_To_PlaneData::physical_convert(eta0_F2);
-    u_F2 = Convert_PlaneDataComplex_To_PlaneData::physical_convert(u0_F2);
-    v_F2 = Convert_PlaneDataComplex_To_PlaneData::physical_convert(v0_F2);
-
+    // compute the linear right-hand side
+    timestepper->euler_timestep_update(
+				       h_Y, 
+				       u_Y,
+				       v_Y,
+				       h_F2,
+				       u_F2,
+				       v_F2,
+				       simVars->timecontrol.current_timestep_size,
+				       simVars->timecontrol.current_timestep_size,
+				       simVars->timecontrol.current_simulation_time
+				       );
   }
 
   // solves the first implicit system for io_Y
@@ -265,7 +265,7 @@ extern "C"
     v_Y = v_Rhs;
 
     // get the implicit timestepper 
-    SWE_Plane_TS_l_irk_n_erk* timestepper    = i_ctx->get_timestepper(io_Y->get_level());
+    SWE_Plane_TS_l_irk_n_erk* timestepper    = i_ctx->get_l_irk_n_erk_timestepper(io_Y->get_level());
     SWE_Plane_TS_l_irk& implicit_timestepper = timestepper->get_implicit_timestepper();
 
     // get the simulation variables

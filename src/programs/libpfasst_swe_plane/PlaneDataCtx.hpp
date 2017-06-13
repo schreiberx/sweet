@@ -6,9 +6,9 @@
 #include "LevelSingleton.hpp"
 
 #include "SWE_Plane_TS_l_irk_n_erk.hpp"
+#include "SWE_Plane_TS_l_erk.hpp"
+#include "SWE_Plane_TS_ln_erk.hpp"
 #include "SWE_Plane_TS_l_direct.hpp"
-#include "SWE_Plane_TS_l_rexi.hpp"
-#include "SWE_Plane_TS_l_rexi_n_erk.hpp"
 
 // Class containing the context necessary to evaluate the right-hand sides
 // Currently only contains a pointer to the level singletons and the SimulationVariables object
@@ -34,55 +34,48 @@ public:
     // and first order integration for implicit (only order currently supported)
     simVars->disc.timestepping_order  = 1; 
     simVars->disc.timestepping_order2 = 1; 
+    simVars->disc.use_staggering      = false; 
     
-    simVars->rexi.use_direct_solution = true;
-    
-    // initialize the time stepper from SWEET
-    timestepping_interfaces.resize(levelSingletons->size());
-    ref_timestepping_interfaces.resize(levelSingletons->size());
+    // initialize the time steppers from SWEET
+    timestepper_l_irk_n_erk.resize(levelSingletons->size());
+    timestepper_l_erk.resize(levelSingletons->size());
+    ref_timestepper.resize(levelSingletons->size());
 
-    for (int level = 0; level < timestepping_interfaces.size(); ++level) 
+    for (int level = 0; level < timestepper_l_irk_n_erk.size(); ++level) 
     {
-      timestepping_interfaces[level] = 
+      // these timesteppers contain the functions called by LibPFASST 
+      timestepper_l_irk_n_erk[level] = 
 	new SWE_Plane_TS_l_irk_n_erk(
 	                             *simVars,
 				     ((*levelSingletons)[level].op)
 				     );
-      /*timestepping_interfaces[level]->setup(simVars->disc.timestepping_order,
-	                                      simVars->disc.timestepping_order2
-					    );
-      */
-      
-      ref_timestepping_interfaces[level] = 
-	new SWE_Plane_TS_l_rexi_n_erk(
+      timestepper_l_erk[level] = 
+	new SWE_Plane_TS_l_erk(
+			       *simVars,
+			       ((*levelSingletons)[level].op)
+			       );
+
+      // use fourth order integration for the linear - nonlinear erk
+      // this timestepper will be used to obtain a SWEET-generated reference solution
+      simVars->disc.timestepping_order  = 4; 
+      simVars->disc.timestepping_order2 = 4; 
+      ref_timestepper[level] = 
+	new SWE_Plane_TS_ln_erk(
 	                        *simVars,
-				  ((*levelSingletons)[level].op)
-				  );
-      ref_timestepping_interfaces[level]->setup(
-						simVars->rexi.rexi_h,
-						simVars->rexi.rexi_M,
-						simVars->rexi.rexi_L,
-						
-						simVars->rexi.rexi_use_half_poles,
-                                                simVars->rexi.rexi_normalization,
-		  			        4 // use fourth order runge kutta for the nonlinear terms
-						);
-      
-      /*ref_timestepping_interfaces[level]->setup(simVars->disc.timestepping_order,
-						simVars->disc.timestepping_order2
-						);
-      */
+				((*levelSingletons)[level].op)
+				);
     }
-    
+
   }
 
   // Destructor
   ~PlaneDataCtx() 
   {
-    for (int level = 0; level < timestepping_interfaces.size(); ++level) 
+    for (int level = 0; level < timestepper_l_irk_n_erk.size(); ++level) 
     {
-      delete timestepping_interfaces[level];
-      delete ref_timestepping_interfaces[level];
+      delete timestepper_l_irk_n_erk[level];
+      delete timestepper_l_erk[level];
+      delete ref_timestepper[level];
     }
   }
 
@@ -102,20 +95,28 @@ public:
     return &((*levelSingletons)[i_level].op);
   }
 
-  // Getter for the SWEET time stepper at level i_level
-  SWE_Plane_TS_l_irk_n_erk* get_timestepper(
-					    int i_level
-					    ) const
+  // Getter for the linear implicit nonlinear explicit SWEET time stepper at level i_level
+  SWE_Plane_TS_l_irk_n_erk* get_l_irk_n_erk_timestepper(
+							int i_level
+							) const
   {
-    return timestepping_interfaces[i_level];
+    return timestepper_l_irk_n_erk[i_level];
+  }
+
+  // Getter for the linear explicit SWEET time stepper at level i_level
+  SWE_Plane_TS_l_erk* get_l_erk_timestepper(
+						  int i_level
+						  ) const
+  {
+    return timestepper_l_erk[i_level];
   }
 
   // Getter for the reference SWEET time stepper at level i_level
-  SWE_Plane_TS_l_rexi_n_erk* get_reference_timestepper(
+  SWE_Plane_TS_ln_erk* get_reference_timestepper(
 						 int i_level
 						 ) const
   {
-    return ref_timestepping_interfaces[i_level];
+    return ref_timestepper[i_level];
   }
 
 
@@ -135,8 +136,7 @@ public:
     simVars->timecontrol.current_simulation_time = i_t;
     simVars->timecontrol.max_simulation_time     = i_dt;
   }
-	
-		      
+	      
     
 protected:
 
@@ -147,11 +147,12 @@ protected:
   std::vector<LevelSingleton> *levelSingletons;
 
   // Pointer to the SWE_Plane time integrator (implicit linear part, explicit nonlinear part)
-  std::vector<SWE_Plane_TS_l_irk_n_erk*> timestepping_interfaces;
+  std::vector<SWE_Plane_TS_l_irk_n_erk*> timestepper_l_irk_n_erk;
+  std::vector<SWE_Plane_TS_l_erk*>       timestepper_l_erk;
 
   // Pointer to the SWE_Plane time integrator used to compute a reference solution
-  // this is currently l_rexi_n_erk but might change later 
-  std::vector<SWE_Plane_TS_l_rexi_n_erk*> ref_timestepping_interfaces;
+  // this is currently ln_erk but might change later 
+  std::vector<SWE_Plane_TS_ln_erk*> ref_timestepper;
 
   // Some contructors and operator= are disabled
   PlaneDataCtx() {};
