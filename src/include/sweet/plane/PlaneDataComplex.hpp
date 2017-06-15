@@ -159,7 +159,7 @@
 class PlaneDataComplex
 {
 public:
-	PlaneDataConfig *planeDataConfig;
+	const PlaneDataConfig *planeDataConfig;
 
 
 	/**
@@ -262,7 +262,7 @@ public:
 	 */
 public:
 	void setup(
-			PlaneDataConfig *i_planeDataConfig
+			const PlaneDataConfig *i_planeDataConfig
 	)
 	{
 		planeDataConfig = i_planeDataConfig;
@@ -277,7 +277,7 @@ public:
 	 */
 public:
 	PlaneDataComplex(
-		PlaneDataConfig *i_planeDataConfig
+		const PlaneDataConfig *i_planeDataConfig
 	)	:
 		planeDataConfig(nullptr)
 #if SWEET_USE_PLANE_COMPLEX_SPECTRAL_SPACE
@@ -1046,7 +1046,7 @@ public:
 	{
 		planeDataConfig = i_dataArray.planeDataConfig;
 
-		planeDataConfig->physical_array_data_number_of_elements = i_dataArray.planeDataConfig->physical_array_data_number_of_elements;
+		assert(planeDataConfig->physical_array_data_number_of_elements == i_dataArray.planeDataConfig->physical_array_data_number_of_elements);
 
 #if SWEET_USE_PLANE_COMPLEX_SPECTRAL_SPACE
 		if (i_dataArray.physical_space_data_valid)

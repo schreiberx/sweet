@@ -24,6 +24,8 @@ void SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_linear(
 		PlaneData &o_u_t,	///< time updates
 		PlaneData &o_v_t,	///< time updates
 
+		double &o_dt,			///< time step restriction
+		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp
 )
 {
@@ -50,6 +52,8 @@ void SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_nonlinear(
 		PlaneData &o_u_t,	///< time updates
 		PlaneData &o_v_t,	///< time updates
 
+		double &o_dt,			///< time step restriction
+		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp
 )
 {
@@ -67,53 +71,6 @@ void SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_nonlinear(
 
 
 
-
-void SWE_Plane_TS_l_erk_n_erk::euler_timestep_update(
-		const PlaneData &i_h,	///< prognostic variables
-		const PlaneData &i_u,	///< prognostic variables
-		const PlaneData &i_v,	///< prognostic variables
-
-		PlaneData &o_h_t,	///< time updates
-		PlaneData &o_u_t,	///< time updates
-		PlaneData &o_v_t,	///< time updates
-
-		double &o_dt,			///< time step restriction
-		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
-		double i_simulation_timestamp
-)
-{
-	if (i_fixed_dt <= 0)
-		FatalError("SWE_Plane_TS_l_erk_n_erk: Only constant time step size allowed");
-
-	o_dt = i_fixed_dt;
-
-	PlaneData h_linear_dt(op.planeDataConfig);
-	PlaneData u_linear_dt(op.planeDataConfig);
-	PlaneData v_linear_dt(op.planeDataConfig);
-
-	euler_timestep_update_linear(
-			o_h_t, o_u_t, o_v_t,
-			h_linear_dt, u_linear_dt, v_linear_dt,
-			i_simulation_timestamp
-		);
-
-	PlaneData h_nonlinear_dt(op.planeDataConfig);
-	PlaneData u_nonlinear_dt(op.planeDataConfig);
-	PlaneData v_nonlinear_dt(op.planeDataConfig);
-
-	euler_timestep_update_nonlinear(
-			o_h_t, o_u_t, o_v_t,
-			h_nonlinear_dt, u_nonlinear_dt, v_nonlinear_dt,
-			i_simulation_timestamp
-		);
-
-	o_h_t = i_fixed_dt*(h_linear_dt + h_nonlinear_dt);
-	o_u_t = i_fixed_dt*(u_linear_dt + u_nonlinear_dt);
-	o_v_t = i_fixed_dt*(v_linear_dt + v_nonlinear_dt);
-}
-
-
-
 void SWE_Plane_TS_l_erk_n_erk::run_timestep(
 		PlaneData &io_h,	///< prognostic variables
 		PlaneData &io_u,	///< prognostic variables
@@ -125,11 +82,22 @@ void SWE_Plane_TS_l_erk_n_erk::run_timestep(
 		double i_max_simulation_time
 )
 {
+	// standard time stepping
+	timestepping_rk_linear.run_timestep(
+			this,
+			&SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_linear,	///< pointer to function to compute euler time step updates
+			io_h, io_u, io_v,
+			o_dt,
+			i_fixed_dt,
+			timestepping_order,
+			i_simulation_timestamp,
+			i_max_simulation_time
+		);
 
 	// standard time stepping
-	timestepping_rk.run_timestep(
+	timestepping_rk_nonlinear.run_timestep(
 			this,
-			&SWE_Plane_TS_l_erk_n_erk::euler_timestep_update,	///< pointer to function to compute euler time step updates
+			&SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
 			io_h, io_u, io_v,
 			o_dt,
 			i_fixed_dt,
@@ -147,11 +115,14 @@ void SWE_Plane_TS_l_erk_n_erk::run_timestep(
  * Setup
  */
 void SWE_Plane_TS_l_erk_n_erk::setup(
-		int i_order	///< order of RK time stepping method
+		int i_order,	///< order of RK time stepping method
+		int i_order2	///< order of RK time stepping method
 )
 {
 	timestepping_order = i_order;
-	timestepping_rk.setupBuffers(op.planeDataConfig, timestepping_order);
+	timestepping_order2 = i_order2;
+	timestepping_rk_linear.setupBuffers(op.planeDataConfig, timestepping_order);
+	timestepping_rk_nonlinear.setupBuffers(op.planeDataConfig, timestepping_order2);
 
 	if (simVars.disc.use_staggering)
 		FatalError("SWE_Plane_TS_l_erk_n_erk: Staggering not supported");
@@ -165,7 +136,7 @@ SWE_Plane_TS_l_erk_n_erk::SWE_Plane_TS_l_erk_n_erk(
 		simVars(i_simVars),
 		op(i_op)
 {
-	setup(simVars.disc.timestepping_order);
+	setup(simVars.disc.timestepping_order, simVars.disc.timestepping_order2);
 }
 
 

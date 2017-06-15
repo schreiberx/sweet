@@ -78,14 +78,14 @@ public:
 	 */
 	void setup(
 			SphereDataConfig *i_sphereDataConfig,				///< Handler to sphereDataConfig
-			int i_halosize_offdiagonal = 0		///< Size of the halo around. A value of 2 allocates data for 5 diagonals.
+			int i_halosize_off_diagonal = 0		///< Size of the halo around. A value of 2 allocates data for 5 diagonals.
 	)
 	{
 		assert(data == nullptr);
 
 		sphereDataConfig = i_sphereDataConfig;
 
-		halosize_off_diagonal = i_halosize_offdiagonal;
+		halosize_off_diagonal = i_halosize_off_diagonal;
 		num_diagonals = 2*halosize_off_diagonal+1;
 
 		data = MemBlockAlloc::alloc<T>( sizeof(T)*sphereDataConfig->spectral_complex_array_data_number_of_elements*num_diagonals );

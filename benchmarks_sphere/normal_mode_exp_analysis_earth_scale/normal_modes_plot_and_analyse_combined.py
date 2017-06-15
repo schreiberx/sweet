@@ -92,9 +92,9 @@ def load_data(filename):
 		print(filename)
 		sys.exit(1)
 
-	data_ref = np.loadtxt(filename, skiprows=0)
+	data_val = np.loadtxt(filename, skiprows=0)
 
-	rows,cols = data_ref.shape
+	rows,cols = data_val.shape
 	print("Loaded "+str(rows)+" rows")
 	print("Loaded "+str(cols)+" cols")
 
@@ -103,9 +103,9 @@ def load_data(filename):
 
 	if cols == 2:
 		print("Assuming complex values => splitting them!")
-		data_ref = data_ref[:,0] + data_ref[:,1]*1j
+		data_val = data_val[:,0] + data_val[:,1]*1j
 	
-	return (data_ref, p)
+	return (data_val, p)
 
 
 (data_ref, p) = load_data(ref_file)
@@ -233,14 +233,22 @@ if True:
 		tmp = tmp.replace('_rexim000000', '_M')
 		tmp = tmp.replace('_rexim00000', '_M')
 		tmp = tmp.replace('_rexim0000', '_M')
+		tmp = tmp.replace('_rexim000', '_M')
+		tmp = tmp.replace('_rexim00', '_M')
+		tmp = tmp.replace('_rexim0', '_M')
 
-		tmp = tmp.replace('script_g1_h100000_f0.00014584_a6371220_u0_robert1_pdeid1_fsphere1_', '')
-		tmp = tmp.replace('script_g1_h100000_f0.00014584_a6371220_u0_robert1_pdeid1_fsphere0_', '')
+		tmp = tmp.replace('script_g1_h100000_f7.2921e-05_a6371220_u0_robert1_pdeid1_fsphere1_', '')
+		tmp = tmp.replace('script_g1_h100000_f0.000145842_a6371220_u0_robert1_pdeid1_fsphere0_', '')
 		tmp = tmp.replace('_t-0000001_o000.0001', '')
 		tmp = tmp.replace('C0000', 'C')
-		tmp = tmp.replace('_Tsm00', '_TM')
+		tmp = tmp.replace('_Tsm', '_TM')
 		tmp = tmp.replace('_tso0', '')
-		tmp = tmp.replace('_rexih0.15_rexihalf1_rexiextmodes02/output_normal_modes_physical_t00000002000.00000000.csv_evalues_complex.csv', '')
+		tmp = tmp.replace('_rexih0.15', '')
+		tmp = tmp.replace('_rexihalf0', '')
+		tmp = tmp.replace('_rexihalf1', '')
+		tmp = tmp.replace('_rexiextmodes02', '')
+		tmp = tmp.replace('_rexiextmodes04', '')
+		tmp = tmp.replace('/output_normal_modes_physical_t00000000400.00000000.csv_evalues_complex.csv', '')
 
 		legend_labels.append(tmp)
 

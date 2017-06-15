@@ -31,7 +31,7 @@ rows,cols = data.shape
 print("Loaded "+str(rows)+" rows")
 print("Loaded "+str(cols)+" cols")
 
-alim=[-0.000001,0.000001]
+alim=[-0.000001, 0.000001]
 
 if cols > 2:
 	print("Fatal error, cols > 2!")
@@ -162,7 +162,7 @@ if t != k:
 non_geostrophic_modes=[]
 for n in range(0, N):
 	# compute w in side brackets (equation 47) in John's paper
-	f = 0.00014584
+	f = 0.000145842
 
 	if '_f0_' in curid:
 		f = 0
@@ -217,6 +217,7 @@ if True:
 
 	print("Stationary modes: "+str(len(stat_modes)))
 	#print(stat_modes)
+
 
 
 if lowhigh_threshold != 0:
