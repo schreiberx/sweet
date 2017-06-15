@@ -30,14 +30,14 @@ PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
 SimulationVariables simVars;
 
 
-void setupData(
+void setupDataFreq(
 		PlaneData &io_data,
 		int fx,	///< frequency x
 		int fy	///< frequency y
 )
 {
 	int res_x = io_data.planeDataConfig->spectral_modes[0];
-//	int res_y = io_data.planeDataConfig->spectral_modes[1];
+	int res_y = io_data.planeDataConfig->spectral_modes[1];
 
 	/*
 	 * Phase shift doesn't work with the highest representable frequency
@@ -48,26 +48,35 @@ void setupData(
 	io_data.physical_update_lambda_array_indices(
 			[&](int x, int y, double &o_data)
 			{
-				o_data = std::cos(((double)x)*(double)fx*M_PI*2.0/(double)res_x + phase_shift);
+				if (fx < 0 || fy < 0)
+				{
+					o_data = 0.0;
+						return;
+				}
+
+				o_data = 1.0;
+
+				if (fx >= 0)
+					o_data *= std::cos(((double)x)*(double)fx*M_PI*2.0/(double)res_x + phase_shift);
+
+				if (fy >= 0)
+					o_data *= std::cos(((double)y)*(double)fy*M_PI*2.0/(double)res_y + phase_shift);
 			}
 	);
+}
 
-#if 0
-	a.physical_update_lambda_array_indices(
+
+void setupData123(
+		PlaneData &io_data
+)
+{
+
+	io_data.physical_update_lambda_array_indices(
 			[&](int x, int y, double &o_data)
 			{
-				o_data = (x+1)*(y*y+1);
+				o_data = (x+1.0)+(y+3.0)*y;
 			}
 	);
-#endif
-#if 0
-	a.spectral_update_lambda_array_indices(
-			[&](int idx, std::complex<double> &o_data)
-			{
-				o_data = idx;
-			}
-	);
-#endif
 }
 
 int main(int i_argc, char *i_argv[])
@@ -94,7 +103,7 @@ int main(int i_argc, char *i_argv[])
 	}
 
 
-	int max_res = 128;
+	int max_res = 64;
 
 	double epsilon = 1e-12;
 
@@ -127,10 +136,9 @@ int main(int i_argc, char *i_argv[])
 
 		// relative spectral resolution deltas to test restriction / interpolation
 		//for (int spec_delta = -4; spec_delta <= 4; spec_delta+=2)
-		//	for (int spec_delta = -4; spec_delta <= 4; spec_delta+=2)
-		int spec_delta = 2;
+		for (int spec_delta = -4; spec_delta <= 4; spec_delta+=2)
 		{
-			double dst_res = simVars.disc.res_physical[0]+spec_delta;
+			int dst_res = (int)simVars.disc.res_physical[0]+spec_delta;
 
 			PlaneDataConfig planeDataConfigInstanceDst;
 			planeDataConfigInstanceDst.setup(
@@ -145,100 +153,123 @@ int main(int i_argc, char *i_argv[])
 			 * Only iterate up to res_x/2 frequency since higher frequencies would be only
 			 * representable as aliased ones.
 			 */
-			for (int freq_delta = -(int)res; freq_delta <= -res/2; freq_delta += 1)
+			for (int freq_x = 0; freq_x <= res/2; freq_x += 1)
 			{
-				int freq = res+freq_delta;
-
-				std::cout << "*************************************************************" << std::endl;
-				std::cout << "Testing (" << res << ", " << res << ") -> (" << planeDataConfigDst->spectral_modes[0] << ", " << planeDataConfigDst->spectral_modes[1] << ")"  << std::endl;
-				std::cout << "freq: " << freq << std::endl;
-				std::cout << "*************************************************************" << std::endl;
-
-				double error = 0;
-
-				/*
-				 * Setup data with highest possible frequency
-				 */
-
-				setupData(a, freq, freq);
-
-				std::cout << "A (physical):" << std::endl;
-				a.print_physicalArrayData();
-
-				std::cout << "A (spectral):" << std::endl;
-				a.print_spectralData_zeroNumZero();
-
+				for (int freq_y = 0; freq_y <= res/2; freq_y += 1)
+//				int freq_y = 2;
 				{
-					/*
-					 * Test for conserving high frequencies in Fourier transformations
-					 */
-					PlaneData tmp = a;
-					tmp.request_data_spectral();
-					tmp.request_data_physical();
+					std::cout << "*************************************************************" << std::endl;
+					std::cout << "Testing (" << res << ", " << res << ") -> (" << planeDataConfigDst->spectral_modes[0] << ", " << planeDataConfigDst->spectral_modes[1] << ")"  << std::endl;
+					std::cout << "freq: " << freq_x << ", " << freq_y << std::endl;
+					std::cout << "*************************************************************" << std::endl;
 
-					error = (a-tmp).reduce_maxAbs();
-					if (error > epsilon)
-					{
-						std::cout << "Error: " << error << std::endl;
-						FatalError("Test for conserving high frequencies failed! Results should be identical!");
-					}
-				}
-
-				PlaneData b = a.spectral_returnWithDifferentModes(planeDataConfigDst);
-
-				if (dst_res/2 >= freq)
-				{
-					std::cout << "dst_res/2 >= freq: Current frequency is representable in new array" << std::endl;
-
-
-					PlaneData test(planeDataConfigDst);
-					setupData(test, freq, freq);
-
-					std::cout << "Spectral data of b:" << std::endl;
-					b.print_spectralData_zeroNumZero();
-
-					std::cout << "Spectral data of test:" << std::endl;
-					test.print_spectralData_zeroNumZero();
-
-					error = (b-test).reduce_maxAbs();
-					if (error > epsilon)
-					{
-						std::cout << "Spectral data of A:" << std::endl;
-						a.print_spectralData_zeroNumZero();
-
-						std::cout << "Spectral data of b:" << std::endl;
-						b.print_spectralData_zeroNumZero();
-
-						std::cout << "Spectral data of test:" << std::endl;
-						test.print_spectralData_zeroNumZero();
-
-						std::cout << "Error: " << error << std::endl;
-						FatalError("No modes changed! Results should be identical!");
-					}
-
-					std::cout << "PASSED with error of " << error << std::endl;
-				}
-				else
-				{
-					std::cout << "dst_res/2 < freq: Modes should be truncated => zero" << std::endl;
+					double error = 0;
 
 					/*
-					 * Reduced resolution => All modes should be truncated and the result should be zero
+					 * Setup data with highest possible frequency
 					 */
-					error = b.reduce_maxAbs();
-					if (error > epsilon)
+
 					{
-						std::cout << "Spectral data of A:" << std::endl;
+						setupDataFreq(a, freq_x, freq_y);
+
+#if 0
+						std::cout << "A (physical):" << std::endl;
+						a.print_physicalArrayData();
+
+						std::cout << "A (spectral):" << std::endl;
 						a.print_spectralData_zeroNumZero();
+#endif
+						{
+							/*
+							 * Test for conserving high frequencies in Fourier transformations
+							 */
+							PlaneData tmp = a;
+							tmp.request_data_spectral();
+							tmp.request_data_physical();
 
-						std::cout << "Spectral data of B:" << std::endl;
-						b.print_spectralData_zeroNumZero();
+							error = (a-tmp).reduce_maxAbs();
+							if (error > epsilon)
+							{
+								std::cout << "Error: " << error << std::endl;
+								FatalError("Test for conserving high frequencies failed! Results should be identical!");
+							}
+						}
 
-						std::cout << "Error: " << error << std::endl;
-						FatalError("Reduction and truncation of modes! Resulting array should be zero!");
+						PlaneData b = a.spectral_returnWithDifferentModes(planeDataConfigDst);
+
+						std::cout << "Frequency in original resolution: " << freq_x << ", " << freq_y << std::endl;
+						int test_freq_x = freq_x;
+						if (dst_res/2 < freq_x)
+							test_freq_x = -1;
+
+						int test_freq_y = freq_y;
+						if (dst_res/2 < freq_y)
+							test_freq_y = -1;
+
+						{
+							std::cout << "Test for existing frequencies " << test_freq_x << ", " << test_freq_y << std::endl;
+
+							PlaneData test(planeDataConfigDst);
+							setupDataFreq(test, test_freq_x, test_freq_y);
+#if 0
+							std::cout << "Spectral data of b:" << std::endl;
+							b.print_spectralData_zeroNumZero();
+
+							std::cout << "Spectral data of test:" << std::endl;
+							test.print_spectralData_zeroNumZero();
+#endif
+							error = (b-test).reduce_maxAbs();
+							if (error > epsilon)
+							{
+								std::cout << "**************************************************" << std::endl;
+								std::cout << "* ERROR" << std::endl;
+								std::cout << "**************************************************" << std::endl;
+								std::cout << "Spectral data of A:" << std::endl;
+								a.print_spectralData_zeroNumZero();
+
+								std::cout << "Spectral data of b:" << std::endl;
+								b.print_spectralData_zeroNumZero();
+
+								std::cout << "Spectral data of test:" << std::endl;
+								test.print_spectralData_zeroNumZero();
+
+								std::cout << "Error: " << error << std::endl;
+								FatalError("No modes changed! Results should be identical!");
+							}
+
+							std::cout << "PASSED (freq test) with error of " << error << std::endl;
+						}
 					}
 
-					std::cout << "PASSED with error of " << error << std::endl;
+					if (spec_delta >= 0)
+					{
+						setupData123(a);
+
+						PlaneData b = a.spectral_returnWithDifferentModes(planeDataConfigDst);
+
+						PlaneData test = b.spectral_returnWithDifferentModes(planeDataConfig);
+
+						error = (a-test).reduce_maxAbs();
+						if (error > epsilon)
+						{
+							std::cout << "**************************************************" << std::endl;
+							std::cout << "* ERROR" << std::endl;
+							std::cout << "**************************************************" << std::endl;
+							std::cout << "Spectral data of A:" << std::endl;
+							a.print_spectralData_zeroNumZero();
+
+							std::cout << "Spectral data of b:" << std::endl;
+							b.print_spectralData_zeroNumZero();
+
+							std::cout << "Spectral data of test:" << std::endl;
+							test.print_spectralData_zeroNumZero();
+
+							std::cout << "Error: " << error << std::endl;
+							FatalError("Mode extension requested, but interpolation followed by restriction does not return identical results!");
+						}
+
+						std::cout << "PASSED (setup 123) with error of " << error << std::endl;
+					}
 				}
 			}
 		}
