@@ -1041,7 +1041,7 @@ public:
 		simVars.timecontrol.current_timestep_nr = 0;
 
 		// save the fine delta t to restore it later
-		double tmpCFL = simVars.sim.CFL;
+//		double tmpCFL = simVars.sim.CFL;
 		simVars.sim.CFL=timeframe_start-timeframe_end;
 
 		// make multiple time steps in the coarse solver possible

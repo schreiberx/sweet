@@ -166,7 +166,7 @@ class PlaneData
 #endif
 {
 public:
-	PlaneDataConfig *planeDataConfig;
+	const PlaneDataConfig *planeDataConfig;
 
 
 	/**
@@ -283,7 +283,7 @@ public:
 	 */
 public:
 	void setup(
-			PlaneDataConfig *i_planeDataConfig
+			const PlaneDataConfig *i_planeDataConfig
 	)
 	{
 		planeDataConfig = i_planeDataConfig;
@@ -298,7 +298,7 @@ public:
 	 */
 public:
 	PlaneData(
-		PlaneDataConfig *i_planeDataConfig
+		const PlaneDataConfig *i_planeDataConfig
 	)	:
 		planeDataConfig(nullptr)
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
@@ -570,6 +570,27 @@ public:
 
 		physical_space_data_valid = false;
 		spectral_space_data_valid = true;
+	}
+
+
+
+	void spectral_update_lambda_array_indices(
+			std::function<void(int,std::complex<double>&)> i_lambda	///< lambda function to return value for lat/mu
+	)
+	{
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+		if (physical_space_data_valid)
+			request_data_spectral();
+#endif
+
+		PLANE_DATA_SPECTRAL_FOR_IDX(
+				i_lambda(idx, spectral_space_data[idx]);
+		);
+
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+		physical_space_data_valid = false;
+		spectral_space_data_valid = true;
+#endif
 	}
 
 
@@ -1112,7 +1133,7 @@ public:
 	{
 		planeDataConfig = i_dataArray.planeDataConfig;
 
-		planeDataConfig->physical_array_data_number_of_elements = i_dataArray.planeDataConfig->physical_array_data_number_of_elements;
+		assert(planeDataConfig->physical_array_data_number_of_elements == i_dataArray.planeDataConfig->physical_array_data_number_of_elements);
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 		if (i_dataArray.physical_space_data_valid)
@@ -1147,6 +1168,252 @@ public:
 
 		return *this;
 	}
+
+
+#if SWEET_USE_LIBFFT
+
+public:
+	PlaneData spectral_returnWithDifferentModes(
+			const PlaneDataConfig *i_planeDataConfig
+	)	const
+	{
+		PlaneData out(i_planeDataConfig);
+
+		/*
+		 *  0 = invalid
+		 * -1 = scale down
+		 *  1 = scale up
+		 */
+		int scaling_mode = 0;
+
+		if (planeDataConfig->spectral_modes[0] < out.planeDataConfig->spectral_modes[0])
+		{
+			scaling_mode = 1;
+		}
+		else if (planeDataConfig->spectral_modes[0] > out.planeDataConfig->spectral_modes[0])
+		{
+			scaling_mode = -1;
+		}
+
+		if (planeDataConfig->spectral_modes[1] < out.planeDataConfig->spectral_modes[1])
+		{
+			assert(scaling_mode != -1);
+			scaling_mode = 1;
+		}
+		else if (planeDataConfig->spectral_modes[1] > out.planeDataConfig->spectral_modes[1])
+		{
+			assert(scaling_mode != 1);
+			scaling_mode = -1;
+		}
+
+		if (scaling_mode == 0)
+		{
+			// Just copy the data
+			out = *this;
+			return out;
+		}
+
+		request_data_spectral();
+
+		double rescale =
+				(double)(out.planeDataConfig->spectral_modes[0]*out.planeDataConfig->spectral_modes[1])
+				/
+				(double)(planeDataConfig->spectral_modes[0]*planeDataConfig->spectral_modes[1]);
+
+		if (scaling_mode == -1)
+		{
+			/*
+			 * more modes -> less modes
+			 */
+
+			/*
+			 * Region #1
+			 */
+			{
+				int r = 0;
+
+				const std::size_t* src_range_dim0 = &(planeDataConfig->spectral_data_iteration_ranges[r][0][0]);
+				const std::size_t* src_range_dim1 = &(planeDataConfig->spectral_data_iteration_ranges[r][1][0]);
+
+				const std::size_t* dst_range_dim0 = &(out.planeDataConfig->spectral_data_iteration_ranges[r][0][0]);
+				const std::size_t* dst_range_dim1 = &(out.planeDataConfig->spectral_data_iteration_ranges[r][1][0]);
+
+				assert(src_range_dim0[0] == 0);
+				assert(dst_range_dim0[0] == 0);
+
+				std::size_t dst_size = dst_range_dim0[1];//-dst_range_dim0[0];
+#if SWEET_THREADING
+#pragma omp parallel for
+#endif
+				for (std::size_t j = dst_range_dim1[0]; j < dst_range_dim1[1]; j++)
+				{
+					std::complex<double> *src = &spectral_space_data[planeDataConfig->spectral_data_size[0]*(j-dst_range_dim1[0]+src_range_dim1[0])];
+					std::complex<double> *dst = &out.spectral_space_data[out.planeDataConfig->spectral_data_size[0]*j];
+
+					for (std::size_t i = 0; i < dst_size-1; i++)
+						dst[i] = src[i]*rescale;
+
+					dst[dst_size-1] = src[dst_size-1]*2.0*rescale;
+				}
+			}
+
+
+			/*
+			 * Region #2
+			 */
+			{
+				int r = 1;
+
+				const std::size_t* src_range_dim0 = &(planeDataConfig->spectral_data_iteration_ranges[r][0][0]);
+				const std::size_t* src_range_dim1 = &(planeDataConfig->spectral_data_iteration_ranges[r][1][0]);
+
+				const std::size_t* dst_range_dim0 = &(out.planeDataConfig->spectral_data_iteration_ranges[r][0][0]);
+				const std::size_t* dst_range_dim1 = &(out.planeDataConfig->spectral_data_iteration_ranges[r][1][0]);
+
+				assert(src_range_dim0[0] == 0);
+				assert(dst_range_dim0[0] == 0);
+
+				std::size_t dst_size = dst_range_dim0[1];//-dst_range_dim0[0];
+
+#if SWEET_THREADING
+#pragma omp parallel for
+#endif
+				for (std::size_t j = dst_range_dim1[0]; j < dst_range_dim1[1]; j++)
+				{
+					std::complex<double> *src = &spectral_space_data[planeDataConfig->spectral_data_size[0]*(src_range_dim1[1]-(dst_range_dim1[1]-j))];
+					std::complex<double> *dst = &out.spectral_space_data[out.planeDataConfig->spectral_data_size[0]*j];
+
+					for (std::size_t i = 0; i < dst_size-1; i++)
+						dst[i] = src[i]*rescale;
+
+					dst[dst_size-1] = src[dst_size-1]*2.0*rescale;
+
+				}
+			}
+		}
+		else
+		{
+			/*
+			 * less modes -> more modes
+			 */
+			out.spectral_set_zero();
+
+			{
+				int r = 0;
+
+				const std::size_t* src_range_dim0 = &(planeDataConfig->spectral_data_iteration_ranges[r][0][0]);
+				const std::size_t* src_range_dim1 = &(planeDataConfig->spectral_data_iteration_ranges[r][1][0]);
+
+				const std::size_t* dst_range_dim0 = &(out.planeDataConfig->spectral_data_iteration_ranges[r][0][0]);
+				const std::size_t* dst_range_dim1 = &(out.planeDataConfig->spectral_data_iteration_ranges[r][1][0]);
+
+				assert(src_range_dim0[0] == 0);
+				assert(dst_range_dim0[0] == 0);
+				assert(src_range_dim1[0] == 0);
+
+				std::size_t src_size = src_range_dim0[1];//-dst_range_dim0[0];
+#if SWEET_THREADING
+#pragma omp parallel for
+#endif
+				for (std::size_t j = 0; j < src_range_dim1[1]; j++)
+				{
+					std::complex<double> *src = &spectral_space_data[planeDataConfig->spectral_data_size[0]*(j-src_range_dim1[0]+dst_range_dim1[0])];
+					std::complex<double> *dst = &out.spectral_space_data[out.planeDataConfig->spectral_data_size[0]*j];
+
+					for (std::size_t i = 0; i < src_size-1; i++)
+						dst[i] = src[i]*rescale;
+
+					dst[src_size-1] = src[src_size-1]*0.5*rescale;
+				}
+			}
+
+
+
+			/*
+			 * Region #2
+			 */
+			{
+				int r = 1;
+
+				const std::size_t* src_range_dim0 = &(planeDataConfig->spectral_data_iteration_ranges[r][0][0]);
+				const std::size_t* src_range_dim1 = &(planeDataConfig->spectral_data_iteration_ranges[r][1][0]);
+
+				const std::size_t* dst_range_dim0 = &(out.planeDataConfig->spectral_data_iteration_ranges[r][0][0]);
+				const std::size_t* dst_range_dim1 = &(out.planeDataConfig->spectral_data_iteration_ranges[r][1][0]);
+
+				assert(src_range_dim0[0] == 0);
+				assert(dst_range_dim0[0] == 0);
+
+				std::size_t src_size0 = src_range_dim0[1];//-dst_range_dim0[0];
+				std::size_t src_size1 = src_range_dim1[1]-src_range_dim1[0];
+
+#if SWEET_THREADING
+#pragma omp parallel for
+#endif
+				for (std::size_t j = src_range_dim1[0]+1; j < src_range_dim1[1]; j++)
+				{
+					std::complex<double> *src = &spectral_space_data[planeDataConfig->spectral_data_size[0]*j];
+					std::complex<double> *dst = &out.spectral_space_data[out.planeDataConfig->spectral_data_size[0]*(dst_range_dim1[1]-src_size1+(j-src_range_dim1[0]))];
+
+					for (std::size_t i = 0; i < src_size0; i++)
+						dst[i] = src[i]*rescale;
+
+					dst[src_size0-1] = src[src_size0-1]*0.5*rescale;
+				}
+			}
+
+
+			/*
+			 * Next, we handle the "central" row
+			 *
+			 * This row has to be split up to two in te destination array.
+			 * This splitting requires halving the values and using the
+			 * complex conjugate for one of the rows.
+			 */
+			// TODO: Handle central cell
+			{
+				std::size_t src_start_idx =
+						planeDataConfig->spectral_data_size[0]*
+						planeDataConfig->spectral_data_iteration_ranges[1][1][0];
+
+				std::size_t src_size = planeDataConfig->spectral_data_iteration_ranges[0][0][1];
+
+				{
+					const std::size_t* src_range0_dim1 = &(planeDataConfig->spectral_data_iteration_ranges[0][1][0]);
+//					const std::size_t* dst_range0_dim1 = &(out.planeDataConfig->spectral_data_iteration_ranges[0][1][0]);
+
+					std::complex<double> *dst = &out.spectral_space_data[out.planeDataConfig->spectral_data_size[0]*src_range0_dim1[1]];
+					std::complex<double> *src = &spectral_space_data[src_start_idx];
+
+					for (std::size_t i = 0; i < src_size; i++)
+						 dst[i] = src[i]*0.5*rescale;
+				}
+
+				{
+					const std::size_t* src_range1_dim1 = &(planeDataConfig->spectral_data_iteration_ranges[1][1][0]);
+					const std::size_t* dst_range1_dim1 = &(out.planeDataConfig->spectral_data_iteration_ranges[1][1][0]);
+
+
+					std::size_t src_sizey = src_range1_dim1[1] - src_range1_dim1[0];
+
+					std::complex<double> *src = &spectral_space_data[src_start_idx];
+					std::complex<double> *dst = &out.spectral_space_data[out.planeDataConfig->spectral_data_size[0]*(dst_range1_dim1[1]-src_sizey)];
+
+					for (std::size_t i = 0; i < src_size; i++)
+						 dst[i] = std::conj(src[i])*0.5*rescale;
+				}
+
+			}
+		}
+
+		out.physical_space_data_valid = false;
+		out.spectral_space_data_valid = true;
+
+		return out;
+	}
+
+#endif
+
 
 	/**
 	 * Apply a linear operator given by this class to the input data array.
@@ -1792,6 +2059,35 @@ public:
 			{
 				const std::complex<double> &value = rw_array_data.spectral_get(y, x);
 				std::cout << "(" << value.real() << ", " << value.imag() << ")\t";
+			}
+			std::cout << std::endl;
+		}
+	}
+
+
+	/**
+	 * print spectral data and zero out values which are numerically close to zero
+	 */
+	inline
+	void print_spectralData_zeroNumZero(double i_zero_threshold = 1e-13)	const
+	{
+		PlaneData &rw_array_data = (PlaneData&)*this;
+
+		rw_array_data.request_data_spectral();
+
+		for (int y = planeDataConfig->spectral_data_size[1]-1; y >= 0; y--)
+		{
+			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
+			{
+				const std::complex<double> &value = rw_array_data.spectral_get(y, x);
+
+				double re = value.real();
+				double im = value.imag();
+
+				if (std::abs(re) < i_zero_threshold)	re = 0.0;
+				if (std::abs(im) < i_zero_threshold)	im = 0.0;
+
+				std::cout << "(" << re << ", " << im << ")\t";
 			}
 			std::cout << std::endl;
 		}

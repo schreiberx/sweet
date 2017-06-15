@@ -25,7 +25,7 @@ public:
 
 
 	void setupBuffers(
-			PlaneDataConfig *i_planeDataConfig,
+			const PlaneDataConfig *i_planeDataConfig,
 			int i_rk_order			///< Order of Runge-Kutta method
 	)
 	{

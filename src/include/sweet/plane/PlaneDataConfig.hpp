@@ -134,12 +134,12 @@ public:
 	bool initialized;
 
 
-	std::string getUniqueIDString()
+	std::string getUniqueIDString()	const
 	{
 		return getConfigInformationString();
 	}
 
-	std::string getConfigInformationString()
+	std::string getConfigInformationString()	const
 	{
 		std::ostringstream buf;
 		buf <<
@@ -153,9 +153,9 @@ public:
 	}
 
 
-	void printInformation()
+public:
+	void printInformation()	const
 	{
-
 		std::cout << std::endl;
 		std::cout << "physical_res: " << physical_res[0] << ", " << physical_res[1] << std::endl;
 		std::cout << "physical_data_size: " << physical_data_size[0] << ", " << physical_data_size[1] << std::endl;
@@ -330,7 +330,7 @@ private:
 
 			/*
 			 * For more information, have a look at
-			 * doc/antialiasing/implementation_strategy.pdf
+			 * doc/software_development_discussions/antialiasing/implementation_strategy.pdf
 			 */
 
 			int M = spectral_data_size[0];
@@ -578,7 +578,7 @@ private:
 	void fft_physical_to_spectral(
 			double *i_physical_data,
 			std::complex<double> *o_spectral_data
-	)
+	)	const
 	{
 		fftw_execute_dft_r2c(
 				fftw_plan_forward,
@@ -592,7 +592,7 @@ private:
 	void fft_spectral_to_physical(
 			std::complex<double> *i_spectral_data,
 			double *o_physical_data
-	)
+	)	const
 	{
 		fftw_execute_dft_c2r(
 				fftw_plan_backward,
@@ -612,7 +612,7 @@ private:
 	void fft_complex_physical_to_spectral(
 			std::complex<double> *i_physical_data,
 			std::complex<double> *o_spectral_data
-	)
+	)	const
 	{
 		fftw_execute_dft(
 				fftw_plan_complex_forward,
@@ -626,7 +626,7 @@ private:
 	void fft_spectral_to_complex_physical(
 			std::complex<double> *i_spectral_data,
 			std::complex<double> *o_physical_data
-	)
+	)	const
 	{
 		fftw_execute_dft(
 				fftw_plan_complex_backward,
