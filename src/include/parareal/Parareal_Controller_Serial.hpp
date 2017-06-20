@@ -123,8 +123,6 @@ public:
 
 		parareal_simulationInstances = new Parareal_SimulationInstance*[pVars->coarse_slices];
 
-		std::cout << pVars->coarse_slices << std::endl;
-
 		CONSOLEPREFIX.start("[MAIN] ");
 		std::cout << "Resetting simulation instances" << std::endl;
 
@@ -183,7 +181,7 @@ public:
 			CONSOLEPREFIX_start(i-1);
 			Parareal_Data &tmp = parareal_simulationInstances[i-1]->get_reference_to_data_timestep_coarse();
 
-				// use coarse time step output data as initial data of next coarse time step
+			// use coarse time step output data as initial data of next coarse time step
 			CONSOLEPREFIX_start(i);
 			parareal_simulationInstances[i]->sim_set_data(tmp);
 
