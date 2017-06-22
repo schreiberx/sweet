@@ -1,0 +1,323 @@
+#LyX 2.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 508
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\begin_preamble
+\usepackage[
+% these settings create hierarchical bookmarks which follow the
+% document hierarchy
+        bookmarks=true,
+        bookmarksopen=true,
+        bookmarksnumbered=true,
+% theese parameters are useful only if you build a pdf file
+% pdftitle={ DOCUMENT TITLE },
+% pdfauthor={ YOUR INFO },
+% pdfcreator={LyX, the LaTeX frontend with hyperref},
+% pdfkeywords={ DOCUMENT KEYWORDS },
+% pdfsubject={ DOCUMENT SUBJECT },
+% see http://www.tex.ac.uk/cgi-bin/texfaq2html?label=pdfpagelabels
+        pdfpagelabels, plainpages=false,
+% these settings remove all colours around any kind of link
+        colorlinks=true,
+        linkcolor=black,
+        urlcolor=black,
+        filecolor=black,
+        citecolor=black,
+]{hyperref}
+\end_preamble
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Anti-aliasing for dummies
+\end_layout
+
+\begin_layout Author
+Martin Schreiber <M.Schreiber@exeter.ac.uk>
+\end_layout
+
+\begin_layout Standard
+This document gives a very brief introduction to the anti-aliasing strategies
+ in SWEET and how to test for them.
+ The aliasing problem shows up when evaluating non-linearities in physical
+ space.
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+WARNING: There might be a missing 
+\begin_inset Formula $\pm1$
+\end_inset
+
+ somewhere.
+\end_layout
+
+\begin_layout Paragraph
+Problem formulation
+\end_layout
+
+\begin_layout Standard
+Let our domain be given by the unit interval 
+\begin_inset Formula $\Omega=[0;1]$
+\end_inset
+
+.
+ Furthermore, let 
+\begin_inset Formula $N$
+\end_inset
+
+ be the physical resolution and 
+\begin_inset Formula $K$
+\end_inset
+
+ the number of spectral modes.
+ We use 
+\begin_inset Formula $u(x)=\sin(k_{1}x\pi)$
+\end_inset
+
+ and 
+\begin_inset Formula $v(x)=\sin(k_{2}x\pi)$
+\end_inset
+
+ for particular frequencies 
+\begin_inset Formula $k_{1}$
+\end_inset
+
+ and 
+\begin_inset Formula $k_{2}$
+\end_inset
+
+ on our domain.
+\end_layout
+
+\begin_layout Standard
+Evaluating these non-linearities directly can be reformulated by using the
+ product-to-sum rule:
+\begin_inset Formula 
+\begin{eqnarray*}
+f(x) & = & u(x)v(x)\\
+ & = & \sin(k_{1}x)\sin(k_{2}x)\\
+ & = & \frac{1}{2}\cos\left(\left(k_{1}-k_{2}\right)x\pi\right)-\frac{1}{2}\cos\left(\left(k_{1}+k_{2}\right)x\pi\right)
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The frequency 
+\begin_inset Formula $k_{1}-k_{2}$
+\end_inset
+
+ is representable in our spectrum, since the frequency is lower than the
+ max.
+ representable frequency.
+ This behaves differently for the 2nd term.
+ If 
+\begin_inset Formula $k_{1}+k_{2}\geq K$
+\end_inset
+
+, this cannot be represented in the spectrum anymore and would be truncated.
+ Hence, using a convolution in spectral space to implement the non-linearities
+ does not require any special treatment.
+\end_layout
+
+\begin_layout Paragraph
+Errors with pseudo-spectrum
+\end_layout
+
+\begin_layout Standard
+However, using a pseudo-spectral method and hence evaluating the non-linearities
+ in physical space leads to aliasing effects.
+ This is because the frequency 
+\begin_inset Formula $k_{1}+k_{2}$
+\end_inset
+
+ would be under sampled, hence violating the Shannon-Nyquist theorem.
+ Therefore, this frequency must be 
+\begin_inset Quotes eld
+\end_inset
+
+somehow
+\begin_inset Quotes erd
+\end_inset
+
+ truncated off.
+\end_layout
+
+\begin_layout Paragraph
+Solution
+\end_layout
+
+\begin_layout Standard
+The underlying idea is to use a resolution in physical space which allows
+ to represent this frequency.
+ During the transformation to spectral space, this therefore doesn't lead
+ to an aliasing effect.
+ Once in spectral space, the new modes are truncated.
+ This can be realized as follows:
+\end_layout
+
+\begin_layout Enumerate
+A physical resolution of 
+\begin_inset Formula $N=\frac{3}{2}M$
+\end_inset
+
+ is used and the state variables in 
+\begin_inset Formula $u$
+\end_inset
+
+ and 
+\begin_inset Formula $v$
+\end_inset
+
+ are transformed from spectral space with 
+\begin_inset Formula $M$
+\end_inset
+
+ possible modes to a physical space or resolution 
+\begin_inset Formula $N$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Enumerate
+The non-linearities are evaluated in physical space at points 
+\begin_inset Formula $x_{i}$
+\end_inset
+
+:
+\begin_inset Formula 
+\[
+f_{i}=u_{i}v_{i}
+\]
+
+\end_inset
+
+Since the maximum mode was 
+\begin_inset Formula $\max_{k_{i}}i=M$
+\end_inset
+
+, the new resulting mode can be of max 
+\begin_inset Formula $2M$
+\end_inset
+
+ and all modes between 
+\begin_inset Formula $\{M+1,\ldots M\}$
+\end_inset
+
+ must be eliminated.
+\end_layout
+
+\begin_layout Enumerate
+The results are transformed back to spectral space and we discuss the representa
+tion of this data in spectral space.
+ First of all, we can exploit the representation in spectral space: There's
+ a symmetry due to the physical values being real-valued only.
+ Therefore, one half (requiring 
+\begin_inset Formula $M/2$
+\end_inset
+
+ complex values) of the data in spectral space can be used to reconstruct
+ the physical data and we focus on this half.
+\begin_inset Newline newline
+\end_inset
+
+Now, an anti-aliasing requires zeroing out half of these coefficients, leading
+ to the requirement to extend the spectrum by 
+\begin_inset Formula $M/2/2=M/4$
+\end_inset
+
+ additional modes.
+ Finally, this leads to a required spectrum size of
+\begin_inset Formula 
+\begin{align*}
+2(M/2+M/4) & =M+M/2\\
+ & =M3/2\\
+ & =N
+\end{align*}
+
+\end_inset
+
+which is also known as the 
+\begin_inset Formula $3/2$
+\end_inset
+
+ rule and requires to use a resolution of 
+\begin_inset Formula $N=M3/2$
+\end_inset
+
+ in physical space.
+\end_layout
+
+\end_body
+\end_document

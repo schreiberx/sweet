@@ -2,20 +2,19 @@
 
 
 echo "***********************************************"
-echo "Running tests for sampler operations"
+echo "Running tests for plane restriction and interpolation"
 echo "***********************************************"
+
+# set close affinity of threads
+export OMP_PROC_BIND=close
 
 cd ..
 
-echo
-echo "***********************************************"
-echo "TEST SPECTRAL OPS (release) ALIASING CONTROL $X"
-echo "***********************************************"
 make clean
-scons --threading=omp --unit-test=test_samplers --gui=disable --plane-spectral-dealiasing=disable
-./build/test_samplers_planespectral_*_release -s 2 -n 128 -m 128 --timestepping-method=ln_erk --timestepping-order 4 || exit
-./build/test_samplers_planespectral_*_release -s 3 -n 128 -m 128 --timestepping-method=ln_erk --timestepping-order 4 || exit
+SCONS="scons --threading=omp --unit-test=test_plane_restriction_interpolation --mode=release --plane-spectral-dealiasing=disable"
+$SCONS
 
+./build/test_plane_restriction_interpolation_planespectral_omp_libfft_gnu_release  -N 8 || exit 1
 
 
 echo "***********************************************"

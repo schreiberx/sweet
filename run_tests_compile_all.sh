@@ -53,25 +53,6 @@ echo "$SCONS"
 $SCONS  || exit
 
 
-echo
-echo "SWE nonstaggered_advective"
-SCONS="scons --program=swe_plane_nonstaggered_advective --gui=enable --mode=debug"
-echo "$SCONS"
-$SCONS  || exit
-SCONS="scons --program=swe_plane_nonstaggered_advective --plane-spectral-space=enable --mode=debug"
-echo "$SCONS"
-$SCONS  || exit
-
-
-echo
-echo "SWE nonstaggered_advective_linear_only"
-SCONS="scons --program=swe_plane_nonstaggered_advective_linear_only --plane-spectral-space=disable --mode=debug"
-echo "$SCONS"
-$SCONS  || exit
-SCONS="scons --program=swe_plane_nonstaggered_advective_linear_only --plane-spectral-space=enable --mode=debug"
-echo "$SCONS"
-$SCONS  || exit
-
 
 echo
 echo "SWE nonstaggered_vector_invariant"
@@ -89,7 +70,7 @@ SCONS="scons --program=swe_plane_rexi --gui=disable --plane-spectral-space=enabl
 echo "$SCONS"
 $SCONS  || exit
 
-SCONS="scons --program=swe_plane_rexi --rexi-thread-parallel-sum=enable --threading=off"
+SCONS="scons --program=swe_plane_rexi --sweet-mpi=enable --rexi-thread-parallel-sum=enable --threading=off"
 echo "$SCONS"
 $SCONS  || exit
 
@@ -110,3 +91,5 @@ echo "SPHERICAL HARMONICS SWE AND REXI"
 SCONS="scons --program=swe_sphere_rexi --gui=disable --sphere-spectral-space=enable --mode=debug"
 echo "$SCONS"
 $SCONS  || exit
+
+

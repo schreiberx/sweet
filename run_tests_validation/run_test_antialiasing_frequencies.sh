@@ -2,20 +2,35 @@
 
 
 echo "***********************************************"
-echo "Running tests for sampler operations"
+echo "Running tests for antialiasing frequencies"
 echo "***********************************************"
 
-cd ..
+cd ../
 
-echo
-echo "***********************************************"
-echo "TEST SPECTRAL OPS (release) ALIASING CONTROL $X"
-echo "***********************************************"
-make clean
-scons --threading=omp --unit-test=test_samplers --gui=disable --plane-spectral-dealiasing=disable
-./build/test_samplers_planespectral_*_release -s 2 -n 128 -m 128 --timestepping-method=ln_erk --timestepping-order 4 || exit
-./build/test_samplers_planespectral_*_release -s 3 -n 128 -m 128 --timestepping-method=ln_erk --timestepping-order 4 || exit
 
+for MODE in debug release; do
+	make clean
+
+	SCONS="scons  --unit-test=test_antialiasing_frequencies --plane-spectral-space=enable --mode=$MODE --plane-spectral-dealiasing=enable"
+	echo "$SCONS"
+	$SCONS
+
+	for Nx in `seq 4 37`; do
+		for Ny in `seq 4 3 37`; do
+			EXEC="./build/test_antialiasing_frequencies_*_$MODE -N $Nx,$Ny"
+			echo "$EXEC"
+			$EXEC || exit
+		done
+	done
+
+	for Nx in `seq 64 8 128`; do
+		for Ny in `seq 64 8 128`; do
+			EXEC="./build/test_antialiasing_frequencies_*_$MODE -N $Nx,$Ny"
+			echo "$EXEC"
+			$EXEC || exit
+		done
+	done
+done
 
 
 echo "***********************************************"

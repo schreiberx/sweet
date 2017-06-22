@@ -72,8 +72,7 @@ for i in range(0, len(files)):
 	# RK2
 	f = f.replace('script_modes064_bench10_nonlin0_g1_h1_f1_a1_u0_pdeid1_tsm1_tso2_rexim00256_rexih0.15_rexinorm0_rexihalf1_rexiextmodes02_rexipar1_C00000.01_t000000.1_o00000.01_robert1.err', 'Runge-Kutta order 2')
 
-	f = f.replace('script_modes064_bench10_nonlin0_g1_h1_f1_a1_u0_pdeid1_', '')
-	f = f.replace('./tsm100_tso1', '')
+	f = f.replace('script_modes064_bench10_nonlin0_g1_h1_f1_a1_u0_pdeid0_', '')
 	f = f.replace('_rexih0.15', '')
 
 	f = f.replace('_rexim', 'REXI M=')
