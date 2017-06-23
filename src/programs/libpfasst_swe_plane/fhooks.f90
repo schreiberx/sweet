@@ -33,34 +33,39 @@ contains
 
     class(pf_encap_t),  allocatable   :: Y_reference
 
-    ! allocate memory for vector Y_exact
-    call level%ulevel%factory%create_single(Y_reference, & 
-                                            level%level, & 
-                                            SDC_KIND_SOL_FEVAL, & 
-                                            level%nvars, &
-                                            level%shape)
+    if (state%t0 + state%dt > 99.9) then
+       
+       ! allocate memory for vector Y_exact
+       call level%ulevel%factory%create_single(Y_reference, & 
+                                               level%level, & 
+                                               SDC_KIND_SOL_FEVAL, & 
+                                               level%nvars, &
+                                               level%shape)
+       
+       ! compute the reference solution (currently with explicit RK)
+       call freference(level%ulevel%sweeper, &
+                       state%t0+state%dt, & 
+                       Y_reference)
     
-    ! compute the reference solution (currently with explicit RK)
-    call freference(level%ulevel%sweeper, &
-                    state%t0+state%dt, & 
-                    Y_reference)
 
-    print *, 'time at which reference is computed:', &
-              state%t0+state%dt
+       print *, 'time at which reference is computed:', &
+            state%t0+state%dt
+       
+       ! compute the norm of the error
+       call Y_reference%axpy(-1.0_pfdp, & 
+                             level%qend)
 
-    ! compute the norm of the error
-    call Y_reference%axpy(-1.0_pfdp, & 
-                          level%qend)
-    print '("error: step: ",i3.3," iter: ",i4.3," error: ",es14.7)', &
-         state%step+1, state%iter, Y_reference%norm()
+       print '("error: step: ",i7.5," iter: ",i5.3," error: ",es14.7)', &
+            state%step+1, state%iter, Y_reference%norm()
+       
+       ! release memory
+       call level%ulevel%factory%destroy_single(Y_reference, &
+                                                level%level, & 
+                                                SDC_KIND_SOL_FEVAL, &
+                                                level%nvars, &
+                                                level%shape)
 
-    ! release memory
-    call level%ulevel%factory%destroy_single(Y_reference, &
-                                             level%level, & 
-                                             SDC_KIND_SOL_FEVAL, &
-                                             level%nvars, &
-                                             level%shape)
-
+    end if
   end subroutine fecho_error
 
   

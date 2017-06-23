@@ -1,5 +1,6 @@
 #include <iomanip>
 #include <math.h>
+#include <string>
 
 #include <benchmarks_plane/SWEPlaneBenchmarks.hpp>
 #include <sweet/SimulationVariables.hpp>
@@ -106,16 +107,23 @@ extern "C"
   // currently does nothing else than outputting the solution
   void cfinal(
 	      PlaneDataCtx *i_ctx, 
-	      PlaneDataVars *i_Y
+	      PlaneDataVars *i_Y,
+	      int i_nnodes, 
+	      int i_niters
 	      ) 
   {
     const PlaneData& h_Y = i_Y->get_h();
     const PlaneData& u_Y = i_Y->get_u();
     const PlaneData& v_Y = i_Y->get_v();
 
-    write_file(*i_ctx, h_Y, "prog_h");
-    write_file(*i_ctx, u_Y, "prog_u");
-    write_file(*i_ctx, v_Y, "prog_v");
+    std::string filename = "prog_h_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
+    write_file(*i_ctx, h_Y, filename.c_str());
+
+    filename = "prog_u_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
+    write_file(*i_ctx, u_Y, filename.c_str());
+
+    filename = "prog_v_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
+    write_file(*i_ctx, v_Y, filename.c_str());
     
     std::cout << "cfinal is not implemented yet" << std::endl;
     //not implemented yet
@@ -147,15 +155,21 @@ extern "C"
     // get the reference timestepper
     SWE_Plane_TS_ln_erk* timestepper = i_ctx->get_reference_timestepper(o_Y->get_level());
     
-    const int dt_factor = 10000; 
+    const int dt_factor = 5000; 
     double dt           = simVars->timecontrol.current_timestep_size 
                         / (double)dt_factor;
 
     double current_simulation_time = 0;
+    int nsteps = 0;
 
     // compute the reference solution (i.e., obtained with the reference time stepper)
     while (current_simulation_time < i_t)
       {
+	if (nsteps%100 == 0)
+	  std::cout << "current_simulation_time = "
+		    << current_simulation_time
+		    << std::endl;
+	
 	timestepper->run_timestep(
 				  h,
 				  u,
@@ -166,7 +180,13 @@ extern "C"
 				  i_t
 				  );
 	current_simulation_time += dt;
+	nsteps += 1;
       }
+
+    write_file(*i_ctx, h, "prog_h_ref");
+    write_file(*i_ctx, u, "prog_u_ref");
+    write_file(*i_ctx, v, "prog_v_ref");
+
   }
 
 

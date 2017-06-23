@@ -171,11 +171,13 @@ public:
 	)
 	{
 		planeDataConfig = i_planeDataConfig;
-
+		
 		diff_c_x.setup(i_planeDataConfig);
 		diff_c_y.setup(i_planeDataConfig);
 		diff2_c_x.setup(i_planeDataConfig);
 		diff2_c_y.setup(i_planeDataConfig);
+		
+
 		/*
 		 * setup spectral differential operators
 		 * 		diff(e(ix), x)
@@ -189,7 +191,7 @@ public:
 #endif
 
 		{
-			diff_c_x.spectral_set_all(0, 0);
+		        diff_c_x.spectral_set_all(0, 0);
 			double scale = 2.0*M_PIl/i_domain_size[0];
 
 //#if !SWEET_REXI_THREAD_PARALLEL_SUM
@@ -329,9 +331,9 @@ public:
 			diff2_c_y.spectral_set_all(0, 0);
 			double scale = 2.0*M_PIl/i_domain_size[1];
 
-#if !SWEET_REXI_THREAD_PARALLEL_SUM
-#		pragma omp parallel for OPENMP_PAR_SIMD
-#endif
+			//#if !SWEET_REXI_THREAD_PARALLEL_SUM
+			//#		pragma omp parallel for OPENMP_PAR_SIMD
+			//#endif
 			for (int j = 1; j < (int)planeDataConfig->spectral_complex_data_size[1]/2; j++)
 			{
 				for (int i = 0; i < (int)planeDataConfig->spectral_complex_data_size[0]/2; i++)

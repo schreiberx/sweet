@@ -21,7 +21,9 @@ extern "C"
   // finalizes the time step when libpfasst is done 
   void cfinal(
 	      PlaneDataCtx *i_ctx, 
-	      PlaneDataVars *i_Y
+	      PlaneDataVars *i_Y,
+	      int i_nnodes,
+	      int i_niters
 	      );
 
   // computes a reference solution to check libpfasst's results

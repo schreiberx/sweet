@@ -22,9 +22,11 @@ module feval_module
        real(c_double), value :: i_t, i_dt 
      end subroutine cinitial
 
-     subroutine cfinal(i_ctx, i_Y) bind(c, name="cfinal")
+     subroutine cfinal(i_ctx, i_Y, i_nnodes, i_niter) bind(c, name="cfinal")
        use iso_c_binding
        type(c_ptr), value :: i_ctx, i_Y
+       integer,     value :: i_nnodes
+       integer,     value :: i_niter
      end subroutine cfinal
 
      subroutine creference(i_ctx, t, o_Y) bind(c, name="creference")
@@ -96,16 +98,17 @@ contains
     sd_ptr            => as_sweet_data_encap(sd)
 
     call cinitial(sweet_sweeper_ptr%ctx, & 
-                  t, &
-                  dt, &
+                  t,                     &
+                  dt,                    &
                   sd_ptr%c_sweet_data_ptr)
 
   end subroutine finitial
 
 
-  subroutine ffinal(sweeper, sd)
+  subroutine ffinal(sweeper, sd, nnodes, niter)
     class(pf_sweeper_t),       intent(in)    :: sweeper
     class(pf_encap_t),         intent(inout) :: sd
+    integer,                   intent(in)    :: nnodes, niter
 
     class(sweet_sweeper_t),    pointer       :: sweet_sweeper_ptr
     class(sweet_data_encap_t), pointer       :: sd_ptr
@@ -113,8 +116,10 @@ contains
     sweet_sweeper_ptr => as_sweet_sweeper(sweeper)
     sd_ptr            => as_sweet_data_encap(sd)
 
-    call cfinal(sweet_sweeper_ptr%ctx, & 
-                sd_ptr%c_sweet_data_ptr)
+    call cfinal(sweet_sweeper_ptr%ctx,   & 
+                sd_ptr%c_sweet_data_ptr, &
+                nnodes,                  &
+                niter)
 
   end subroutine ffinal
 

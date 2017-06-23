@@ -84,15 +84,15 @@ contains
      nsteps     = 100
      
      t          = 0.0_pfdp
-     dt         = 0.01_pfdp ! small time step for now since the integrator is explicit
-     
+     dt         = 0.1_pfdp ! small time step for now since the integrator is explicit 0.02048 0.01024 0.00512 0.00256 0.00128 0.00064 0.00032 | 00.00016
+
      pf%nlevels = num_levs
-     pf%niters  = 4 ! number of iterations hard coded for now
+     pf%niters  = 6 ! number of iterations hard coded for now
      
      qtype_name = 'SDC_GAUSS_LOBATTO' ! type of nodes hard coded for now
      qtype      = translate_qtype(qtype_name, & 
                                   qnl)
-     nnodes(1)  = 3 ! number of nodes hard coded for now
+     nnodes(1)  = 5 ! number of nodes hard coded for now
      nvars      = 3 * nvars ! multiply by 3 since we have 3 fields (u, v, and h)
      
 
@@ -164,8 +164,10 @@ contains
     ! finalize the simulation (does nothing right now)
     do level = 1, pf%nlevels
 
-       call ffinal(pf%levels(level)%ulevel%sweeper, & 
-                   pf%levels(level)%Q(nnodes(level)))
+       call ffinal(pf%levels(level)%ulevel%sweeper,   & 
+                   pf%levels(level)%Q(nnodes(level)), &
+                   nnodes(1),                         &
+                   pf%niters)
 
     end do
     
