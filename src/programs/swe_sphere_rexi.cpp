@@ -796,19 +796,7 @@ public:
 					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
 					{
 						prog[inner_prog_id]->request_data_spectral();
-#if 0
-						// eliminate shift for zero mode since this is non-sense information
-						// TODO: Are we really allowed to do this?
-						for (int n = 0; n <= sphereDataConfig->spectral_modes_n_max; n++)
-						{
-							if (std::abs(prog[inner_prog_id]->spectral_space_data[n].imag()) > 1e-10)
-							{
-								std::cerr << "Phase shift at mode " << n << " too large: " << prog[inner_prog_id]->spectral_space_data[n].imag() << std::endl;
-								std::cerr << "This is not an error" << std::endl;
-								FatalError("Phase shift");
-							}
-						}
-#endif
+
 						for (int k = 0; k < sphereDataConfig->spectral_array_data_number_of_elements; k++)
 						{
 							file << prog[inner_prog_id]->spectral_space_data[k].real();

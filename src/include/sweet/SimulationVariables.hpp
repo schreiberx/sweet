@@ -106,6 +106,7 @@ public:
 	} diag;
 
 
+
 public:
 	/**
 	 * Information on Partial Differential Equation
@@ -126,17 +127,16 @@ public:
 			std::cout << std::endl;
 			std::cout << "PDE:" << std::endl;
 			std::cout << " + id: " << id << std::endl;
-//			std::cout << " + variant_id: " << variant_id << std::endl;
 			std::cout << " + use_nonlinear_equations: " << use_nonlinear_equations << std::endl;
 			std::cout << std::endl;
 		}
+
 
 		void outputProgParams()
 		{
 			std::cout << std::endl;
 			std::cout << "Partial differential equation:" << std::endl;
 			std::cout << "	--pde-id [0/1]		PDE to solve (0: SWE, 1: advection)" << std::endl;
-//			std::cout << "	--pde-variant-id [0/1]	PDE variant to use (default: 0)" << std::endl;
 			std::cout << "" << std::endl;
 		}
 	} pde;
@@ -197,6 +197,7 @@ public:
 			}
 		}
 
+
 		void outputConfig()
 		{
 			std::cout << std::endl;
@@ -254,13 +255,6 @@ public:
 		/// hyper viscosity-term on velocities with 4th order diff operator
 		int viscosity_order = 2;
 
-#if 0
-		/// viscosity-term on velocities with 2nd order diff operator on potential
-		double potential_viscosity = 0.0;
-
-		/// hyper viscosity-term on velocities with 4th order diff operator on potential
-		double potential_viscosity_order = 0.0;
-#endif
 		/// CFL condition
 		double CFL = 0.05;
 
