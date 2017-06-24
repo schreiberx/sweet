@@ -23,7 +23,6 @@ void SWE_Plane_TS_l_rexi_ns_sl_nd_erk::run_timestep(
 		double i_max_simulation_time
 )
 {
-
 	if (i_fixed_dt <= 0)
 		FatalError("SWE_Plane_TS_l_rexi_ns_sl_nd_erk: Only constant time step size allowed");
 
@@ -182,6 +181,7 @@ void SWE_Plane_TS_l_rexi_ns_sl_nd_erk::setup(
 			io_data = ((double)i)*simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
 		}
 	);
+
 	PlaneData tmp_y(op.planeDataConfig);
 	tmp_y.physical_update_lambda_array_indices(
 		[&](int i, int j, double &io_data)

@@ -59,6 +59,8 @@ export LD_LIBRARY_PATH="$SCRIPTDIR/local/lib64:$LD_LIBRARY_PATH"
 export DYLD_LIBRARY_PATH="$SCRIPTDIR/local/lib:$LD_LIBRARY_PATH"
 export DYLD_LIBRARY_PATH="$SCRIPTDIR/local/lib64:$LD_LIBRARY_PATH"
 
+export PYTHONPATH="$PYTHONPATH:$SCRIPTDIR/local/lib/python2.7/site-packages/"
+
 echo "SWEET environment variables loaded"
 
 cd "$BACKDIR"

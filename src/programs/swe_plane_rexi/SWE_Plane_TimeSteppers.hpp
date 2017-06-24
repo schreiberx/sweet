@@ -20,7 +20,7 @@
 #include "SWE_Plane_TS_l_irk_n_erk.hpp"
 #include "SWE_Plane_TS_l_rexi.hpp"
 #include "SWE_Plane_TS_l_rexi_ns_sl_nd_erk.hpp"
-#include "SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk.hpp"
+#include "SWE_Plane_TS_lg_rexi_lc_erk_na_sl_nd_settls.hpp"
 #include "SWE_Plane_TS_ln_erk.hpp"
 
 
@@ -129,7 +129,10 @@ public:
 
 
 	void setup(
-			const std::string &i_timestepping_method_string,
+			const std::string &i_timestepping_method,
+			int &i_timestepping_order,
+			int &i_timestepping_order2,
+
 			PlaneOperators &i_op,
 			SimulationVariables &i_simVars
 	)
@@ -142,42 +145,42 @@ public:
 		/// Always allocate analytical solution
 		l_direct = new SWE_Plane_TS_l_direct(i_simVars, i_op);
 
-		if (i_timestepping_method_string == "ln_erk")
+		if (i_timestepping_method == "ln_erk")
 		{
 			ln_erk = new SWE_Plane_TS_ln_erk(i_simVars, i_op);
-			ln_erk->setup(i_simVars.disc.timestepping_order);
+			ln_erk->setup(i_timestepping_order);
 
 			master = &(SWE_Plane_TS_interface&)*ln_erk;
 		}
-		else if (i_timestepping_method_string == "l_cn")
+		else if (i_timestepping_method == "l_cn")
 		{
 			l_cn= new SWE_Plane_TS_l_cn(i_simVars, i_op);
-			l_cn->setup(i_simVars.disc.timestepping_order, i_simVars.disc.crank_nicolson_filter);
+			l_cn->setup(i_timestepping_order, i_simVars.disc.crank_nicolson_filter);
 
 			master = &(SWE_Plane_TS_interface&)*l_cn;
 		}
-		else if (i_timestepping_method_string == "l_erk")
+		else if (i_timestepping_method == "l_erk")
 		{
 			l_erk = new SWE_Plane_TS_l_erk(i_simVars, i_op);
-			l_erk->setup(i_simVars.disc.timestepping_order);
+			l_erk->setup(i_timestepping_order);
 
 			master = &(SWE_Plane_TS_interface&)*l_erk;
 		}
-		else if (i_timestepping_method_string == "l_erk_n_erk")
+		else if (i_timestepping_method == "l_erk_n_erk")
 		{
 			l_erk_n_erk = new SWE_Plane_TS_l_erk_n_erk(i_simVars, i_op);
-			l_erk_n_erk->setup(i_simVars.disc.timestepping_order);
+			l_erk_n_erk->setup(i_timestepping_order, i_timestepping_order2);
 
 			master = &(SWE_Plane_TS_interface&)*l_erk_n_erk;
 		}
-		else if (i_timestepping_method_string == "l_cn_n_erk")
+		else if (i_timestepping_method == "l_cn_n_erk")
 		{
 			l_cn_n_erk = new SWE_Plane_TS_l_cn_n_erk(i_simVars, i_op);
-			l_cn_n_erk->setup(i_simVars.disc.timestepping_order, i_simVars.disc.timestepping_order2, i_simVars.disc.crank_nicolson_filter);
+			l_cn_n_erk->setup(i_timestepping_order, i_timestepping_order2, i_simVars.disc.crank_nicolson_filter);
 
 			master = &(SWE_Plane_TS_interface&)*l_cn_n_erk;
 		}
-		else if (i_timestepping_method_string == "l_rexi_n_erk")
+		else if (i_timestepping_method == "l_rexi_n_erk")
 		{
 			l_rexi_n_erk = new SWE_Plane_TS_l_rexi_n_erk(i_simVars, i_op);
 			l_rexi_n_erk->setup(
@@ -186,19 +189,19 @@ public:
 					i_simVars.rexi.rexi_L,
 					i_simVars.rexi.rexi_use_half_poles,
 					i_simVars.rexi.rexi_normalization,
-					i_simVars.disc.timestepping_order2
+					i_timestepping_order2
 				);
 
 			master = &(SWE_Plane_TS_interface&)*l_rexi_n_erk;
 		}
-		else if (i_timestepping_method_string == "l_irk")
+		else if (i_timestepping_method == "l_irk")
 		{
 			l_irk = new SWE_Plane_TS_l_irk(i_simVars, i_op);
-			l_irk->setup(i_simVars.disc.timestepping_order);
+			l_irk->setup(i_timestepping_order);
 
 			master = &(SWE_Plane_TS_interface&)*l_irk;
 		}
-		else if (i_timestepping_method_string == "l_rexi")
+		else if (i_timestepping_method == "l_rexi")
 		{
 			l_rexi = new SWE_Plane_TS_l_rexi(i_simVars, i_op);
 			l_rexi->setup(
@@ -222,7 +225,7 @@ public:
 
 			master = &(SWE_Plane_TS_interface&)*l_rexi;
 		}
-		else if (i_timestepping_method_string == "l_rexi_ns_sl_nd_erk")
+		else if (i_timestepping_method == "l_rexi_ns_sl_nd_erk")
 		{
 			l_rexi_ns_sl_nd_erk = new SWE_Plane_TS_l_rexi_ns_sl_nd_erk(i_simVars, i_op);
 
@@ -237,7 +240,7 @@ public:
 
 			master = &(SWE_Plane_TS_interface&)*l_rexi_ns_sl_nd_erk;
 		}
-		else if (i_timestepping_method_string == "lg_rexi_lc_erk_nt_sl_nd_erk")
+		else if (i_timestepping_method == "lg_rexi_lc_erk_nt_sl_nd_erk")
 		{
 			lg_rexi_lc_erk_nt_sl_nd_erk = new SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk(i_simVars, i_op);
 
@@ -252,26 +255,26 @@ public:
 
 			master = &(SWE_Plane_TS_interface&)*lg_rexi_lc_erk_nt_sl_nd_erk;
 		}
-		else if (i_timestepping_method_string == "l_irk_n_erk")
+		else if (i_timestepping_method == "l_irk_n_erk")
 		{
 			l_irk_n_erk = new SWE_Plane_TS_l_irk_n_erk(i_simVars, i_op);
 
 			l_irk_n_erk->setup(
-					i_simVars.disc.timestepping_order,
-					i_simVars.disc.timestepping_order2
+					i_timestepping_order,
+					i_timestepping_order2
 				);
 
 			master = &(SWE_Plane_TS_interface&)*l_irk_n_erk;
 		}
-		else if (i_timestepping_method_string == "l_direct")
+		else if (i_timestepping_method == "l_direct")
 		{
 			master = &(SWE_Plane_TS_interface&)*l_direct;
 		}
 		//
 		else
 		{
-			std::cout << i_timestepping_method_string << std::endl;
-			FatalError("No valid --timestepping-method-string provided");
+			std::cout << i_timestepping_method << std::endl;
+			FatalError("No valid --timestepping-method provided");
 		}
 	}
 

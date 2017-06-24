@@ -8,7 +8,6 @@
 #endif
 
 
-
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
@@ -20,12 +19,12 @@
 #include <iomanip>
 #include <stdio.h>
 
+
 // Plane data config
 PlaneDataConfig planeDataConfigInstance;
 PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
 
 SimulationVariables simVars;
-
 
 
 int main(int i_argc, char *i_argv[])
@@ -71,7 +70,9 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "SPEC SIZE: " << planeDataConfig->spectral_data_size[0] << " x " << planeDataConfig->spectral_data_size[1] << std::endl;
 		std::cout << std::endl;
 
+#if PRINT_SPECCTRUM
 		int res_max = 32;
+#endif
 
 
 		PlaneData h(planeDataConfig);
@@ -82,6 +83,9 @@ int main(int i_argc, char *i_argv[])
 
 		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
 			h.spectral_space_data[i] = {1.0,0.0};
+
+		h.spectral_space_data_valid = true;
+		h.physical_space_data_valid = false;
 
 		h = h.spectral_addScalarAll(1.0);
 #define PRINT_SPECCTRUM	0
@@ -102,7 +106,7 @@ int main(int i_argc, char *i_argv[])
 			h.spectral_space_data[i] = {1.0,0.0};
 
 		h.spectral_space_data_valid = true;
-		h.physical_space_data_valid = true;
+		h.physical_space_data_valid = false;
 
 #if PRINT_SPECCTRUM
 		if (res[0] < res_max && res[1] < res_max)

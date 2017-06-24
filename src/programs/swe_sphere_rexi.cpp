@@ -178,7 +178,7 @@ public:
 		/*
 		 * SETUP time steppers
 		 */
-		timeSteppers.setup(simVars.disc.timestepping_method_string, op, simVars);
+		timeSteppers.setup(simVars.disc.timestepping_method, op, simVars);
 
 		update_diagnostics();
 
@@ -521,7 +521,7 @@ public:
 		double leapfrog_end_timestep_size;
 		double leapfrog_original_cfl;
 
-		if (simVars.disc.timestepping_method == SimulationVariables::Discretization::LEAPFROG_EXPLICIT)
+		if (simVars.disc.timestepping_method.find("_lf") != std::string::npos)
 		{
 			std::cout << "WARNING: Leapfrog time stepping doesn't make real sense since 1st step is based on RK-like method" << std::endl;
 			std::cout << "We'll do two Leapfrog time steps here to take the LF errors into account!" << std::endl;
@@ -579,7 +579,7 @@ public:
 					 */
 
 					// In case of a multi-step scheme, reset it!
-					if (simVars.disc.timestepping_method == SimulationVariables::Discretization::LEAPFROG_EXPLICIT)
+					if (simVars.disc.timestepping_method.find("_lf") != std::string::npos)
 					{
 						FatalError("TODO 01943934");
 						//spheredata_timestepping_explicit_leapfrog.resetAndSetup(prog_h, simVars.disc.timestepping_order, simVars.disc.leapfrog_robert_asselin_filter);
@@ -659,7 +659,7 @@ public:
 							prog[outer_prog_id]->spectral_space_data[outer_i].real(1);
 
 						// In case of a multi-step scheme, reset it!
-						if (simVars.disc.timestepping_method == SimulationVariables::Discretization::LEAPFROG_EXPLICIT)
+						if (simVars.disc.timestepping_method.find("_lf") != std::string::npos)
 						{
 							FatalError("TODO 01943934");
 							//spheredata_timestepping_explicit_leapfrog.resetAndSetup(prog_h, simVars.disc.timestepping_order, simVars.disc.leapfrog_robert_asselin_filter);
@@ -747,7 +747,7 @@ public:
 
 
 					// In case of a multi-step scheme, reset it!
-					if (simVars.disc.timestepping_method == SimulationVariables::Discretization::LEAPFROG_EXPLICIT)
+					if (simVars.disc.timestepping_method.find("_lf") != std::string::npos)
 					{
 						FatalError("TODO 01839471");
 						//spheredata_timestepping_explicit_leapfrog.resetAndSetup(prog_h, simVars.disc.timestepping_order, simVars.disc.leapfrog_robert_asselin_filter);
@@ -796,19 +796,7 @@ public:
 					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
 					{
 						prog[inner_prog_id]->request_data_spectral();
-#if 0
-						// eliminate shift for zero mode since this is non-sense information
-						// TODO: Are we really allowed to do this?
-						for (int n = 0; n <= sphereDataConfig->spectral_modes_n_max; n++)
-						{
-							if (std::abs(prog[inner_prog_id]->spectral_space_data[n].imag()) > 1e-10)
-							{
-								std::cerr << "Phase shift at mode " << n << " too large: " << prog[inner_prog_id]->spectral_space_data[n].imag() << std::endl;
-								std::cerr << "This is not an error" << std::endl;
-								FatalError("Phase shift");
-							}
-						}
-#endif
+
 						for (int k = 0; k < sphereDataConfig->spectral_array_data_number_of_elements; k++)
 						{
 							file << prog[inner_prog_id]->spectral_space_data[k].real();
@@ -1248,7 +1236,7 @@ int main(int i_argc, char *i_argv[])
 #if SWEET_MPI
 	else
 	{
-		if (simVars.disc.timestepping_method == simVars.disc.REXI)
+		if (simVars.disc.timestepping_method.find("_rexi") != std::string::npos)
 		{
 			SphereOperators op(sphereDataConfig, simVars.sim.earth_radius);
 
@@ -1305,7 +1293,7 @@ int main(int i_argc, char *i_argv[])
 
 
 #if SWEET_MPI
-	if (simVars.disc.timestepping_method == simVars.disc.REXI)
+	if (simVars.disc.timestepping_method.find("_rexi") != std::string::npos)
 	{
 		// synchronize REXI
 		if (mpi_rank == 0)

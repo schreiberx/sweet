@@ -1,7 +1,7 @@
 #! /bin/bash
 
 REFFILE=output_prog_h_t00000129600.00000000.csv
-REF="reference output_rk4_ts100_pde1/$REFFILE"
+REF="reference output_rk4_ts100/$REFFILE"
 #REF=""
 
 if true; then

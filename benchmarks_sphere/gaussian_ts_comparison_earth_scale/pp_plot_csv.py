@@ -84,7 +84,7 @@ for filename in files:
 			contour_levels = np.append(np.arange(cmin, cmid-hs, hs), np.arange(cmid+hs, cmax, hs))
 
 		elif cmax-cmin < 3000 and cmin > 9000 and cmax < 11000:
-			hs = 100
+			hs = 40
 			cmin = 9000
 			cmax = 11000
 			cmid = 0.5*(cmax+cmin)

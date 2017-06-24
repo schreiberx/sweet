@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 if len(sys.argv) < 2:
 	print("Execute with [executable] [input]")
 	sys.exit(1)
+
 filename = sys.argv[1]
 
 
@@ -118,9 +119,6 @@ np.savetxt(f, np.column_stack([w.real, w.imag]), delimiter='\t', header='\n'.joi
 
 
 we = np.log(w)/time
-# TODO: Why do we have to do this? Otherwise, the Eigenvalues hardly match!
-#w3 = w*np.pi*2.0
-#print(we)
 
 
 print("Headers: "+str(new_headers))
