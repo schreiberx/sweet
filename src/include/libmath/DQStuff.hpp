@@ -19,6 +19,43 @@ class DQStuff
 {
 public:
 	static
+	std::complex<float> conj(
+			const std::complex<float> &i_value
+	)
+	{
+		return std::complex<float>(
+				i_value.real(),
+				-i_value.imag()
+			);
+	}
+
+
+	static
+	std::complex<double> conj(
+			const std::complex<double> &i_value
+	)
+	{
+		return std::complex<double>(
+				i_value.real(),
+				-i_value.imag()
+			);
+	}
+
+
+	static
+	std::complex<__float128> conj(
+			const std::complex<__float128> &i_value
+	)
+	{
+		return std::complex<__float128>(
+				i_value.real(),
+				-i_value.imag()
+			);
+	}
+
+
+public:
+	static
 	std::complex<double> exp(
 			const std::complex<double> &i_value
 	)
@@ -59,6 +96,63 @@ public:
 			);
 
 		return ret_val*::expq(i_value.real());
+	}
+
+public:
+	constexpr
+	static
+	std::complex<double> I(
+			double i_value
+	)
+	{
+		return std::complex<double>(0, i_value);
+	}
+
+	constexpr
+	static
+	std::complex<float> I(
+			float i_value
+	)
+	{
+		return std::complex<float>(0, i_value);
+	}
+
+	constexpr
+	static
+	std::complex<__float128> I(
+			__float128 i_value
+	)
+	{
+		return std::complex<__float128>(0, i_value);
+	}
+
+
+public:
+	constexpr
+	static
+	double Re(
+			const std::complex<double> &i_value
+	)
+	{
+		return i_value.real();
+	}
+
+	constexpr
+	static
+	float Re(
+			const std::complex<float> &i_value
+	)
+	{
+		return i_value.real();
+	}
+
+	constexpr
+	static
+	__float128 Re(
+			const std::complex<__float128> &i_value
+	)
+	{
+		return i_value.real();
 	}
 
 
@@ -252,6 +346,16 @@ public:
 	)
 	{
 		return (T)::strtoflt128(i_value, nullptr);
+	}
+
+public:
+	template <typename T>
+	static
+	T fromString(
+			const std::string &i_value
+	)
+	{
+		return (T)::strtoflt128(i_value.c_str(), nullptr);
 	}
 
 };

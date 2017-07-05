@@ -1730,6 +1730,8 @@ public:
 
 #if SWEET_USE_PLANE_COMPLEX_SPECTRAL_SPACE
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
+		FatalError("Antialiasing not implemented for plane data complex, only works for linear terms! See PlaneDataConfig");
+
 		if (spectral_space_data_valid)
 			spectral_zeroAliasingModes();
 		if (i_array_data.spectral_space_data_valid)

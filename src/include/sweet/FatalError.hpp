@@ -16,7 +16,7 @@
 class FatalError
 {
 public:
-	FatalError(const std::string i_error)
+	[[ noreturn ]] FatalError(const std::string i_error)
 	{
 		std::cerr << std::flush << std::endl;
 		std::cerr << "********************************************" << std::endl;
