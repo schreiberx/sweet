@@ -16,8 +16,7 @@
 #include <sweet/plane/Convert_ScalarDataArray_to_PlaneData.hpp>
 #include <sweet/FatalError.hpp>
 
-#include "burgers/Burgers_Plane.hpp"
-#include <benchmarks_plane/BurgersValidationBenchmarks.hpp>
+#include "burgers/Burgers_Plane_TimeSteppers.hpp"
 
 #include <sweet/Stopwatch.hpp>
 #include <ostream>
@@ -64,21 +63,13 @@ public:
 	// Prognostic variables at time step t-dt
 	PlaneData prog_u_prev, prog_v_prev;
 
-	// Temporary variables - may be overwritten, use locally
-	PlaneData tmp;
+	// implementation of different time steppers
+	Burgers_Plane_TimeSteppers timeSteppers;
 
-	// Points mapping [0,simVars.sim.domain_size[0])x[0,simVars.sim.domain_size[1])
-	// with resolution simVars.sim.resolution
-	ScalarDataArray pos_x, pos_y;
-
-	// Arrival points for semi-lag
-	ScalarDataArray posx_a, posy_a;
-
-	// Departure points for semi-lag
-	ScalarDataArray posx_d, posy_d;
-
-	// Staggering displacement array
-	Staggering staggering;
+#if SWEET_PARAREAL
+	// implementation of different time steppers
+	Burgers_Plane_TimeSteppers timeSteppersCoarse;
+#endif
 
 	// Diagnostics measures
 	int last_timestep_nr_update_diagnostics = -1;
@@ -103,15 +94,6 @@ public:
 
 	// Runge-Kutta stuff
 	PlaneDataTimesteppingRK timestepping_rk;
-
-	// Burgers solvers
-	Burgers_Plane burgers_plane;
-
-	// Interpolation stuff
-	PlaneDataSampler sampler2D;
-
-	// Semi-Lag stuff
-	PlaneDataSemiLagrangian semiLagrangian;
 
 
 	/**
@@ -140,17 +122,6 @@ public:
 		prog_u_prev(planeDataConfig),
 		prog_v_prev(planeDataConfig),
 
-		tmp(planeDataConfig),
-
-		pos_x(planeDataConfig->physical_array_data_number_of_elements),
-		pos_y(planeDataConfig->physical_array_data_number_of_elements),
-
-		posx_a(planeDataConfig->physical_array_data_number_of_elements),
-		posy_a(planeDataConfig->physical_array_data_number_of_elements),
-
-		posx_d(planeDataConfig->physical_array_data_number_of_elements),
-		posy_d(planeDataConfig->physical_array_data_number_of_elements),
-
 		benchmark_analytical_error(planeDataConfig),
 
 		// Initialise operators
@@ -171,7 +142,8 @@ public:
 		reset();
 
 #if SWEET_PARAREAL
-		parareal_setup();
+		if (simVars.parareal.enabled)
+			parareal_setup();
 
 #endif
 	}
@@ -209,11 +181,9 @@ public:
 
 		// set to some values for first touch NUMA policy (HPC stuff)
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		tmp.spectral_set_all(0,0);
 		prog_u.spectral_set_all(0,0);
 		prog_v.spectral_set_all(0,0);
 #endif
-		tmp.physical_set_all(0);
 		prog_u.physical_set_all(0);
 		prog_v.physical_set_all(0);
 
@@ -227,41 +197,6 @@ public:
 		if (simVars.disc.use_staggering && param_compute_error)
 			std::cerr << "Warning: Staggered data will be interpolated to/from A-grid for exact linear solution" << std::endl;
 
-		if (simVars.disc.use_staggering)
-			staggering.setup_c_staggering();
-		else
-			staggering.setup_a_staggering();
-
-
-		// Setup sampler for future interpolations
-		sampler2D.setup(simVars.sim.domain_size, planeDataConfig);
-
-		// Setup semi-Lagrangian
-		semiLagrangian.setup(simVars.sim.domain_size, planeDataConfig);
-
-		// Setup general (x,y) grid with position points
-		PlaneData tmp_x(planeDataConfig);
-		tmp_x.physical_update_lambda_array_indices(
-			[&](int i, int j, double &io_data)
-			{
-				io_data = (double)i*(double)simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
-			}
-		);
-
-		PlaneData tmp_y(planeDataConfig);
-		tmp_y.physical_update_lambda_array_indices(
-			[&](int i, int j, double &io_data)
-			{
-				io_data = ((double)j)*(double)simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
-			}
-		);
-
-		pos_x = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_x);
-		pos_y = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_y);
-
-		// Initialize arrival points with h position
-		posx_a = pos_x+0.5*simVars.disc.cell_size[0];
-		posy_a = pos_y+0.5*simVars.disc.cell_size[1];
 
 		// Set initial condigions given from BurgersValidationBenchmarks
 		if (simVars.disc.use_staggering)
@@ -329,6 +264,14 @@ public:
 			}
 		}
 
+		timeSteppers.setup(
+			simVars.disc.timestepping_method,
+			simVars.disc.timestepping_order,
+			simVars.disc.timestepping_order2,
+			op,
+			simVars
+		);
+
 		timestep_output();
 	}
 
@@ -359,60 +302,6 @@ public:
 	}
 
 
-	/**
-	 * Compute derivative for time stepping and store it to
-	 * u_t and v_t
-	 * 2D Burgers equation [with source term]
-	 * u_t + u*u_x + v*u_y = nu*(u_xx + u_yy) [+ f(t,x,y)]
-	 * v_t + u*v_x + v*v_y = nu*(v_xx + v_yy) [+ g(t,x,y)]
-	 */
-	void p_run_euler_timestep_update(
-			const PlaneData &i_tmp,	///< prognostic variables
-			const PlaneData &i_u,	///< prognostic variables
-			const PlaneData &i_v,	///< prognostic variables
-
-			PlaneData &o_tmp_t,		///< time updates
-			PlaneData &o_u_t,		///< time updates
-			PlaneData &o_v_t,		///< time updates
-
-			double &o_dt,				///< time step restriction
-			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
-			double i_simulation_timestamp = -1
-	)
-	{
-		if (simVars.misc.verbosity > 2)
-			std::cout << "p_run_euler_timestep_update()" << std::endl;
-
-		//TODO: staggering vs. non staggering
-
-		PlaneData f(planeDataConfig);
-		BurgersValidationBenchmarks::set_source(i_simulation_timestamp,simVars,simVars.disc.use_staggering,f);
-		o_tmp_t.physical_set_all(0);
-
-		// u and v updates
-		o_u_t = -(i_u*op.diff_c_x(i_u) + i_v*op.diff_c_y(i_u));
-		o_u_t += simVars.sim.viscosity*(op.diff2_c_x(i_u)+op.diff2_c_y(i_u));
-		o_u_t += f; // Delete this line if no source is used
-
-		o_v_t = -(i_u*op.diff_c_x(i_v) + i_v*op.diff_c_y(i_v));
-		o_v_t += simVars.sim.viscosity*(op.diff2_c_x(i_v)+op.diff2_c_y(i_v));
-
-		o_tmp_t.physical_set_all(0);
-
-		// Time step size
-		if (i_fixed_dt > 0)
-		{
-			o_dt = i_fixed_dt;
-		}
-		else
-		{
-			std::cout << "Only fixed time step size supported" << std::endl;
-			assert(false);
-			exit(1);
-		}
-	}
-
-
 	/*
 	 * Routine to do one time step of chosen scheme and order
 	 */
@@ -430,6 +319,16 @@ public:
 		assert(simVars.sim.CFL < 0);
 		simVars.timecontrol.current_timestep_size = -simVars.sim.CFL;
 
+		timeSteppers.master->run_timestep(
+			prog_u, prog_v,
+			prog_u_prev, prog_v_prev,
+			dt,
+			simVars.timecontrol.current_timestep_size,
+			simVars.timecontrol.current_simulation_time,
+			simVars.timecontrol.max_simulation_time
+		);
+
+#if 0
 		if (simVars.disc.timestepping_method == "ln_erk") //Explicit RK
 		{
 			// Basic explicit Runge-Kutta
@@ -500,7 +399,7 @@ public:
 		}
 
 		//dt = simVars.timecontrol.current_timestep_size;
-
+#endif
 		// Provide information to parameters
 		simVars.timecontrol.current_timestep_size = dt;
 		simVars.timecontrol.current_simulation_time += dt;
@@ -901,6 +800,22 @@ public:
 			parareal_data_error.setup(data_array);
 		}
 
+		timeSteppers.setup(
+				simVars.disc.timestepping_method,
+				simVars.disc.timestepping_order,
+				simVars.disc.timestepping_order2,
+				op,
+				simVars
+			);
+
+		timeSteppersCoarse.setup(
+				simVars.parareal.coarse_timestepping_method,
+				simVars.parareal.coarse_timestepping_order,
+				simVars.parareal.coarse_timestepping_order2,
+				op,
+				simVars
+			);
+
 		output_data_valid = false;
 	}
 
@@ -1040,14 +955,26 @@ public:
 		simVars.timecontrol.max_simulation_time = timeframe_end;
 		simVars.timecontrol.current_timestep_nr = 0;
 
-		// save the fine delta t to restore it later
-//		double tmpCFL = simVars.sim.CFL;
-		simVars.sim.CFL=timeframe_start-timeframe_end;
+		simVars.timecontrol.current_timestep_size=timeframe_end-timeframe_start;
+		double dt = 0.0;
 
 		// make multiple time steps in the coarse solver possible
 		while (simVars.timecontrol.current_simulation_time < timeframe_end)
 		{
-			run_timestep(simVars.parareal.coarse_timestepping_method, simVars.parareal.coarse_timestepping_order);
+			//run_timestep(simVars.parareal.coarse_timestepping_method, simVars.parareal.coarse_timestepping_order);
+			timeSteppersCoarse.master->run_timestep(
+				prog_u, prog_v,
+				prog_u_prev, prog_v_prev,
+				dt,
+				simVars.timecontrol.current_timestep_size,
+				simVars.timecontrol.current_simulation_time,
+				simVars.timecontrol.max_simulation_time
+			);
+			// Provide information to parameters
+			simVars.timecontrol.current_timestep_size = dt;
+			simVars.timecontrol.current_simulation_time += dt;
+			simVars.timecontrol.current_timestep_nr++;
+
 			assert(simVars.timecontrol.current_simulation_time <= timeframe_end);
 		}
 
@@ -1108,6 +1035,12 @@ public:
 			output_data_valid = true;
 			return convergence;
 		}
+
+		PlaneData tmp(planeDataConfig);
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+		tmp.spectral_set_all(0,0);
+#endif
+		tmp.physical_set_all(0.0);
 
 		for (int k = 0; k < NUM_OF_UNKNOWNS; k++)
 		{
