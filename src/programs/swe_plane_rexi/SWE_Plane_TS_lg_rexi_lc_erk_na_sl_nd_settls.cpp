@@ -107,8 +107,8 @@ void SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk::run_timestep(
 				posx_d,	posy_d,
 				staggering
 		);
-
 	}
+
 
 	// Calculate Divergence and vorticity spectrally
 	PlaneData div = op.diff_c_x(io_u) + op.diff_c_y(io_v);
@@ -209,17 +209,12 @@ void SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk::run_timestep(
  * Setup
  */
 void SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk::setup(
-		double i_h,						///< sampling size
-		int i_M,						///< number of sampling points
-		int i_L,						///< number of sampling points for Gaussian approximation
-										///< set to 0 for auto detection
-		bool i_rexi_half,				///< use half-pole reduction
-		bool i_rexi_normalization,		///< REXI normalization
+		REXI_SimulationVariables &i_rexi,
 
 		int i_with_nonlinear
 )
 {
-	ts_l_rexi.setup(i_h, i_M, i_L, i_rexi_half, i_rexi_normalization);
+	ts_l_rexi.setup(i_rexi);
 
 	with_nonlinear = i_with_nonlinear;
 

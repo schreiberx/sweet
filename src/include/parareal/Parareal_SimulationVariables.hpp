@@ -20,7 +20,7 @@
 /**
  * Simulation variables which are specific to Parareal
  */
-class PararealSimulationVariables
+class Parareal_SimulationVariables
 {
 public:
 	/**
@@ -75,6 +75,12 @@ public:
 			int i_max_options					///< maximum number of options
 	)
 	{
+		if (io_next_free_program_option+8 > i_max_options)
+		{
+			std::cerr << "Max number of program options exceeded" << std::endl;
+			exit(-1);
+		}
+
 		io_long_options[io_next_free_program_option] = {"parareal-coarse-slices", required_argument, 0, (int)256+io_next_free_program_option};
 		io_next_free_program_option++;
 
@@ -98,19 +104,13 @@ public:
 
 		io_long_options[io_next_free_program_option] = {"parareal-coarse-timestepping-order2", required_argument, 0, (int)256+io_next_free_program_option};
 		io_next_free_program_option++;
-
-		if (io_next_free_program_option > i_max_options)
-		{
-			std::cerr << "Max number of program options exceeded" << std::endl;
-			exit(-1);
-		}
 	}
 
 
 	/**
 	 * Callback method to setup the values for the option with given index.
 	 */
-	void setup_printOptions()
+	void printOptions()
 	{
 		std::cout << std::endl;
 		std::cout << "Parareal options:" << std::endl;
@@ -147,8 +147,10 @@ public:
 
 	/**
 	 * Callback method to setup the values for the option with given index.
+	 *
+	 * \return Number of processed options if nothing was found or 0 in case of a found option
 	 */
-	void setup_longOptionValue(
+	int setup_longOptionValue(
 			int i_option_index,		///< Index relative to the parameters setup in this class only, starts with 0
 			const char *i_value		///< Value in string format
 	)
@@ -157,40 +159,38 @@ public:
 		{
 		case 0:
 			coarse_slices = atoi(i_value);
-			break;
+			return 0;
 
 		case 1:
 			convergence_error_threshold = atof(i_value);
-			break;
+			return 0;
 
 		case 2:
 			verbosity = atoi(i_value);
-			break;
+			return 0;
 
 		case 3:
 			enabled = atoi(i_value);
-			break;
+			return 0;
 
 		case 4:
 			max_simulation_time = atof(i_value);
-			break;
+			return 0;
 
 		case 5:
 			coarse_timestepping_method = i_value;
-			break;
+			return 0;
 
 		case 6:
 			coarse_timestepping_order = atoi(i_value);
-			break;
+			return 0;
 
 		case 7:
 			coarse_timestepping_order2 = atoi(i_value);
-			break;
-
-		default:
-			std::cerr << "Unknown long option with id " << i_option_index << std::endl;
-			break;
+			return 0;
 		}
+
+		return 8;
 	}
 
 

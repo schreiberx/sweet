@@ -306,6 +306,23 @@ void SWE_Plane_TS_l_rexi::cleanup()
 }
 
 
+
+
+void SWE_Plane_TS_l_rexi::setup(
+		REXI_SimulationVariables &i_rexi
+)
+{
+	setup(
+			i_rexi.h,
+			i_rexi.M,
+			i_rexi.L,
+			i_rexi.use_half_poles,
+			i_rexi.normalization,
+			i_rexi.use_next_generation
+		);
+}
+
+
 void SWE_Plane_TS_l_rexi::setup(
 		double i_h,						///< sampling size
 		int i_M,						///< number of sampling points
@@ -313,7 +330,8 @@ void SWE_Plane_TS_l_rexi::setup(
 										///< set to 0 for auto detection
 
 		bool i_rexi_half,				///< use half-pole reduction
-		bool i_rexi_normalization		///< REXI normalization
+		bool i_rexi_normalization,		///< REXI normalization
+		bool i_rexi_next_generation		///< Use REXI next generation?
 )
 {
 	M = i_M;

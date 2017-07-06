@@ -184,11 +184,7 @@ public:
 		{
 			l_rexi_n_erk = new SWE_Plane_TS_l_rexi_n_erk(i_simVars, i_op);
 			l_rexi_n_erk->setup(
-					i_simVars.rexi.rexi_h,
-					i_simVars.rexi.rexi_M,
-					i_simVars.rexi.rexi_L,
-					i_simVars.rexi.rexi_use_half_poles,
-					i_simVars.rexi.rexi_normalization,
+					i_simVars.rexi,
 					i_timestepping_order2
 				);
 
@@ -205,11 +201,7 @@ public:
 		{
 			l_rexi = new SWE_Plane_TS_l_rexi(i_simVars, i_op);
 			l_rexi->setup(
-					i_simVars.rexi.rexi_h,
-					i_simVars.rexi.rexi_M,
-					i_simVars.rexi.rexi_L,
-					i_simVars.rexi.rexi_use_half_poles,
-					i_simVars.rexi.rexi_normalization
+					i_simVars.rexi
 				);
 
 			if (i_simVars.misc.verbosity > 2)
@@ -230,11 +222,7 @@ public:
 			l_rexi_na_sl_nd_erk = new SWE_Plane_TS_l_rexi_na_sl_nd_erk(i_simVars, i_op);
 
 			l_rexi_na_sl_nd_erk->setup(
-					i_simVars.rexi.rexi_h,
-					i_simVars.rexi.rexi_M,
-					i_simVars.rexi.rexi_L,
-					i_simVars.rexi.rexi_use_half_poles,
-					i_simVars.rexi.rexi_normalization,
+					i_simVars.rexi,
 					i_simVars.pde.use_nonlinear_equations
 				);
 
@@ -245,11 +233,7 @@ public:
 			lg_rexi_lc_erk_nt_sl_nd_erk = new SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk(i_simVars, i_op);
 
 			lg_rexi_lc_erk_nt_sl_nd_erk->setup(
-					i_simVars.rexi.rexi_h,
-					i_simVars.rexi.rexi_M,
-					i_simVars.rexi.rexi_L,
-					i_simVars.rexi.rexi_use_half_poles,
-					i_simVars.rexi.rexi_normalization,
+					i_simVars.rexi,
 					i_simVars.pde.use_nonlinear_equations
 				);
 

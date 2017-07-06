@@ -80,7 +80,7 @@ int main(
 			{
 				for (int M = 128; M < 512; M *= 2)
 				{
-					REXI<TEvaluation, TStorageAndProcessing> rexi(fun_id, h, M, simVars.rexi.rexi_L, false, simVars.rexi.rexi_normalization);
+					REXI<TEvaluation, TStorageAndProcessing> rexi(fun_id, h, M, simVars.rexi.L, false, simVars.rexi.normalization);
 
 					// REXI approximates the interval [-M*h;M*h] but gets inaccurate close to the interval boundaries
 					double start = -M*h*0.9;
@@ -118,7 +118,7 @@ int main(
 			std::cout << "******************************************************" << std::endl;
 			std::cout << "PHI " << fun_id << " - EVALUATING GAUSSIAN APPROXIMATION (real)" << std::endl;
 			std::cout << "******************************************************" << std::endl;
-			GaussianApproximation<TEvaluation, TStorageAndProcessing> ga(simVars.rexi.rexi_L);
+			GaussianApproximation<TEvaluation, TStorageAndProcessing> ga(simVars.rexi.L);
 
 			for (double h = 0.2; h > 0.001; h *= 0.5)
 			{
@@ -155,7 +155,7 @@ int main(
 			{
 				int M = 32/h;
 
-				REXI<TEvaluation, TStorageAndProcessing> rexi(fun_id, h, M, simVars.rexi.rexi_L, false, simVars.rexi.rexi_normalization);
+				REXI<TEvaluation, TStorageAndProcessing> rexi(fun_id, h, M, simVars.rexi.L, false, simVars.rexi.normalization);
 
 				double start = -M*h*0.9;
 				double end = -start;
@@ -196,7 +196,7 @@ int main(
 				{
 					int M = 32/h;
 
-					REXI<TEvaluation, TStorageAndProcessing> rexi(fun_id, h, M, simVars.rexi.rexi_L, half, simVars.rexi.rexi_normalization);
+					REXI<TEvaluation, TStorageAndProcessing> rexi(fun_id, h, M, simVars.rexi.L, half, simVars.rexi.normalization);
 
 					double start = -M*h*0.9;
 					double end = -start;
@@ -239,7 +239,7 @@ int main(
 				{
 					int M = 32/h;
 
-					REXI<TEvaluation, TStorageAndProcessing> rexi(fun_id, h, M, simVars.rexi.rexi_L, half, simVars.rexi.rexi_normalization);
+					REXI<TEvaluation, TStorageAndProcessing> rexi(fun_id, h, M, simVars.rexi.L, half, simVars.rexi.normalization);
 
 					double start = -M*h*0.9;
 					double end = -start;
@@ -296,7 +296,7 @@ int main(
 
 				std::cout << "REXI setup: M=" << M << ", h=" << h << ", tau=" << tau << ", f=" << f << std::endl;
 
-				REXI<TEvaluation, TStorageAndProcessing> rexi(fun_id, 0, h, M, false, simVars.rexi.rexi_normalization);
+				REXI<TEvaluation, TStorageAndProcessing> rexi(fun_id, 0, h, M, false, simVars.rexi.normalization);
 
 				std::size_t N = rexi.alpha.size();
 				for (std::size_t n = 0; n < N; n++)

@@ -1,12 +1,12 @@
 /*
- * SWE_Plane_TS_l_rexi_n_erk.hpp
+ * SWE_Plane_TS_l_rexi_n_rexi.hpp
  *
  *  Created on: 29 May 2017
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#ifndef SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_L_REXI_N_ERK_HPP_
-#define SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_L_REXI_N_ERK_HPP_
+#ifndef SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_L_REXI_N_REXI_HPP_
+#define SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_L_REXI_N_REXI_HPP_
 
 #include <limits>
 #include <sweet/plane/PlaneData.hpp>
@@ -18,14 +18,11 @@
 #include "SWE_Plane_TS_l_rexi.hpp"
 
 
-class SWE_Plane_TS_l_rexi_n_erk	: public SWE_Plane_TS_interface
+class SWE_Plane_TS_l_rexi_n_rexi	: public SWE_Plane_TS_interface
 {
 	SimulationVariables &simVars;
 	PlaneOperators &op;
 
-	int timestepping_order_nonlinear;
-
-	PlaneDataTimesteppingRK timestepping_rk;
 	SWE_Plane_TS_l_rexi ts_l_rexi;
 
 
@@ -46,15 +43,13 @@ private:
 
 
 public:
-	SWE_Plane_TS_l_rexi_n_erk(
+	SWE_Plane_TS_l_rexi_n_rexi(
 			SimulationVariables &i_simVars,
 			PlaneOperators &i_op
 		);
 
 	void setup(
-			REXI_SimulationVariables &i_rexi,
-
-			int i_nonlinear_order
+			REXI_SimulationVariables &i_rexi
 	);
 
 	void run_timestep(
@@ -70,7 +65,7 @@ public:
 
 
 
-	virtual ~SWE_Plane_TS_l_rexi_n_erk();
+	virtual ~SWE_Plane_TS_l_rexi_n_rexi();
 };
 
 #endif /* SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_LN_ERK_HPP_ */

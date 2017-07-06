@@ -2,7 +2,7 @@
  * SWEPlaneBenchmarks.hpp
  *
  *  Created on: 5 Jul 2015
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk> Schreiber <schreiberx@gmail.com>
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 #ifndef SWE_PLANE_BENCHMARKS_HPP_
 #define SWE_PLANE_BENCHMARKS_HPP_
@@ -705,8 +705,14 @@ public:
 		std::cout << "		1 : Gaussian dam break" << std::endl;
 		std::cout << "		2 : balanced state x" << std::endl;
 		std::cout << "		3 : balanced state y" << std::endl;
+		std::cout << "		4 : square break" << std::endl;
+		std::cout << "		5 : trigonometric" << std::endl;
+		std::cout << "		6 : Gaussian" << std::endl;
+		std::cout << "		8 : Gaussian in x" << std::endl;
 		std::cout << "		9 : h=H0, v=0, u=0" << std::endl;
-		std::cout << "		11: Waves" << std::endl;
+		std::cout << "		13 : Forced nonlinear case - trigonometric" << std::endl;
+		std::cout << "		14 : Rotated steady state" << std::endl;
+		std::cout << "		16 : Waves" << std::endl;
 	}
 
 };

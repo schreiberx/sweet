@@ -41,7 +41,7 @@ class Parareal_Controller_Serial
 	 * Pointer to parareal simulation variables.
 	 * These variables are used as a singleton
 	 */
-	PararealSimulationVariables *pVars;
+	Parareal_SimulationVariables *pVars;
 
 	/**
 	 * Class which helps prefixing console output
@@ -96,7 +96,7 @@ public:
 
 
 	void setup(
-			PararealSimulationVariables *i_pararealSimVars
+			Parareal_SimulationVariables *i_pararealSimVars
 	)
 	{
 		cleanup();

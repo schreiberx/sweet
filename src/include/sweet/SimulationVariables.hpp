@@ -2,7 +2,7 @@
  * SimulationVariables.hpp
  *
  *  Created on: 30 Jun 2015
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk> Schreiber <schreiberx@gmail.com>
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 #ifndef SRC_SIMULATION_VARIABLES_HPP_
 #define SRC_SIMULATION_VARIABLES_HPP_
@@ -40,6 +40,8 @@
 #endif
 
 
+#include <rexi/REXI_SimulationVariables.hpp>
+
 /**
  * This class exists for convenience reasons.
  *
@@ -49,9 +51,12 @@ class SimulationVariables
 {
 public:
 #if SWEET_PARAREAL
-	PararealSimulationVariables parareal;
+	Parareal_SimulationVariables parareal;
 #endif
 
+
+public:
+	REXI_SimulationVariables rexi;
 
 
 public:
@@ -453,84 +458,6 @@ public:
 
 
 
-	/**
-	 * REXI
-	 */
-	struct REXI
-	{
-		/**
-		 * REXI parameter h
-		 */
-		double rexi_h = 0.15;
-
-		/**
-		 * REXI parameter M
-		 */
-		int rexi_M = 128;
-
-		/**
-		 * REXI parameter L
-		 */
-		int rexi_L = 0;
-
-		/**
-		 * Use only half of the poles for REXI
-		 */
-		bool rexi_use_half_poles = true;
-
-		/**
-		 * Extend modes for certain operations
-		 */
-		int rexi_use_extended_modes = 2;
-
-		/**
-		 * Normalize REXI for geostrophic balance
-		 */
-		bool rexi_normalization = true;
-
-		/**
-		 * Use REXI preallocation
-		 */
-		bool rexi_sphere_solver_preallocation = true;
-
-		/**
-		 * Use direct solution instead of REXI
-		 */
-		bool use_direct_solution = false;
-
-
-		void outputConfig()
-		{
-			std::cout << std::endl;
-			std::cout << "REXI:" << std::endl;
-			std::cout << " + rexi_h: " << rexi_h << std::endl;
-			std::cout << " + rexi_M: " << rexi_M << std::endl;
-			std::cout << " + rexi_L: " << rexi_L << std::endl;
-			std::cout << " + rexi_use_half_poles: " << rexi_use_half_poles << std::endl;
-			std::cout << " + rexi_use_extended_modes: " << rexi_use_extended_modes << std::endl;
-			std::cout << " + rexi_normalization: " << rexi_normalization << std::endl;
-			std::cout << " + rexi_sphere_solver_preallocation: " << rexi_sphere_solver_preallocation << std::endl;
-			std::cout << " + use_direct_solution: " << use_direct_solution << std::endl;
-			std::cout << std::endl;
-		}
-
-		void outputProgParams()
-		{
-			std::cout << "" << std::endl;
-			std::cout << "Rexi:" << std::endl;
-			std::cout << "	--rexi-h [float]			REXI parameter h" << std::endl;
-			std::cout << "	--rexi-m [int]				REXI parameter M" << std::endl;
-			std::cout << "	--rexi-l [int]				REXI parameter L" << std::endl;
-			std::cout << "	--rexi-half [bool]			Use half REXI poles, default:1" << std::endl;
-			std::cout << "	--rexi-normalization [bool]		Use REXI normalization around geostrophic balance, default:1" << std::endl;
-			std::cout << "	--rexi-sphere-preallocation [bool]	Use preallocation of SPH-REXI solver coefficients, default:1" << std::endl;
-			std::cout << "	--rexi-use-direct-solution [bool]	Use direct solution (analytical) for REXI, default:0" << std::endl;
-			std::cout << "	--rexi-ext-modes [int]	Use this number of extended modes in spherical harmonics" << std::endl;
-			std::cout << "" << std::endl;
-		}
-	} rexi;
-
-
 #if SWEET_PFASST_CPP || SWEET_LIBPFASST
 	struct Pfasst
 	{
@@ -822,58 +749,33 @@ public:
 
 		int next_free_program_option = 0;
 
-		// 0
+		// SETUP
         long_options[next_free_program_option] = {"initial-coord-x", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
         long_options[next_free_program_option] = {"initial-coord-y", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        long_options[next_free_program_option] = {"rexi-h", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-        long_options[next_free_program_option] = {"rexi-m", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-        long_options[next_free_program_option] = {"rexi-l", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-        long_options[next_free_program_option] = {"rexi-half", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-        long_options[next_free_program_option] = {"rexi-normalization", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-        long_options[next_free_program_option] = {"rexi-sphere-preallocation", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-        long_options[next_free_program_option] = {"rexi-use-direct-solution", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-        long_options[next_free_program_option] = {"rexi-ext-modes", required_argument, 0, 256+next_free_program_option};
+        long_options[next_free_program_option] = {"advection-rotation-angle", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
 
-        // 10
+        // MISC
         long_options[next_free_program_option] = {"stability-checks", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-        long_options[next_free_program_option] = {"nonlinear", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
         long_options[next_free_program_option] = {"use-robert-functions", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        long_options[next_free_program_option] = {"advection-rotation-angle", required_argument, 0, 256+next_free_program_option};
+
+        // PDE
+        long_options[next_free_program_option] = {"nonlinear", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
         long_options[next_free_program_option] = {"pde-id", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        long_options[next_free_program_option] = {"pde-variant_id_DEACTIVATED", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-        // 16
+        // DISC
         long_options[next_free_program_option] = {"timestepping-method", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
@@ -895,9 +797,6 @@ public:
         long_options[next_free_program_option] = {"staggering", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        // 23
-        long_options[next_free_program_option] = {"dummy", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
 
 
 // leave this commented to avoid mismatch with following parameters!
@@ -923,11 +822,26 @@ public:
 #endif
 
 
+
 #if SWEET_PARAREAL
         int parareal_start_option_index = next_free_program_option;
-        parareal.setup_longOptionList(long_options, next_free_program_option, max_options);
+        parareal.setup_longOptionList(
+        		long_options,
+				next_free_program_option,	///< also updated (IO)
+				max_options
+			);
 #endif
 
+        int rexi_start_option_index = next_free_program_option;
+        rexi.setup_longOptionList(
+        		long_options,
+				next_free_program_option,	///< also updated (IO)
+				max_options
+			);
+
+        // Test dummy object
+        long_options[next_free_program_option] = {"dummy", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
 
         if (bogus_var_names != nullptr)
         {
@@ -953,8 +867,6 @@ public:
 		// index into long_options for determined argument
 		int option_index = 0;
 
-		double dummy = 0;
-
 		int opt;
 		while (1)
 		{
@@ -977,53 +889,52 @@ public:
 
 				if (i < next_free_program_option)
 				{
-					switch(i)
-					{
-						case 0:		setup.setup_coord_x = atof(optarg);	break;
-						case 1:		setup.setup_coord_y = atof(optarg);	break;
+					int c = 0;	if (i == c)	{	setup.setup_coord_x = atof(optarg);	continue;	}
+					c++;		if (i == c)	{	setup.setup_coord_y = atof(optarg);	continue;	}
+					c++;		if (i == c)	{	setup.advection_rotation_angle = atof(optarg);	continue;	}
 
-						case 2:		rexi.rexi_h = atof(optarg);	break;
-						case 3:		rexi.rexi_M = atoi(optarg);	break;
-						case 4:		rexi.rexi_L = atoi(optarg);	break;
-						case 5:		rexi.rexi_use_half_poles = atoi(optarg);	break;
-						case 6:		rexi.rexi_normalization = atoi(optarg);	break;
-						case 7:		rexi.rexi_sphere_solver_preallocation = atoi(optarg);	break;
-						case 8:		rexi.use_direct_solution = atoi(optarg);	break;
-						case 9:		rexi.rexi_use_extended_modes = atoi(optarg);	break;
+					c++;		if (i == c)	{	misc.stability_checks = atoi(optarg);				continue;	}
+					c++;		if (i == c)	{	misc.sphere_use_robert_functions = atoi(optarg);	continue;	}
 
-						case 10:		misc.stability_checks = atoi(optarg);	break;
-						case 11:	pde.use_nonlinear_equations = atoi(optarg);	break;
-						case 12:	misc.sphere_use_robert_functions = atoi(optarg);	break;
+					c++;		if (i == c)	{	pde.use_nonlinear_equations = atoi(optarg);			continue;	}
+					c++;		if (i == c)	{	pde.id = atoi(optarg);								continue;	}
 
-						case 13:	setup.advection_rotation_angle = atof(optarg);	break;
-
-						case 14:	pde.id = atoi(optarg);	break;
-
-						case 16:	disc.timestepping_method = optarg;	break;
-
-						case 17:	disc.timestepping_order = atoi(optarg);	break;
-						case 18:	disc.timestepping_order2 = atoi(optarg);	break;
-
-						case 19:	disc.leapfrog_robert_asselin_filter = atof(optarg);	break;
-						case 20:	disc.normal_mode_analysis_generation = atoi(optarg);	break;
-						case 21:	disc.crank_nicolson_filter = atof(optarg);	break;
-						case 22:	disc.use_staggering = atof(optarg);	break;
+					c++;		if (i == c)	{	disc.timestepping_method = optarg;					continue;	}
+					c++;		if (i == c)	{	disc.timestepping_order = atoi(optarg);				continue;	}
+					c++;		if (i == c)	{	disc.timestepping_order2 = atoi(optarg);			continue;	}
+					c++;		if (i == c)	{	disc.leapfrog_robert_asselin_filter = atof(optarg);	continue;	}
+					c++;		if (i == c)	{	disc.normal_mode_analysis_generation = atoi(optarg);	continue;	}
+					c++;		if (i == c)	{	disc.crank_nicolson_filter = atof(optarg);			continue;	}
+					c++;		if (i == c)	{	disc.use_staggering = atof(optarg);					continue;	}
 
 #if SWEET_PFASST_CPP || SWEET_LIBPFASST
-						case 23:	pfasst.nlevels = atoi(optarg);	break;
-						case 24:	pfasst.nnodes = atoi(optarg);	break;
-						case 25:	pfasst.nspace = atoi(optarg);	break;
-						case 26:	pfasst.nsteps = atoi(optarg);	break;
-						case 27:	pfasst.niters = atoi(optarg);	break;
-						case 28:	pfasst.dt = atof(optarg);	break;
+					c++;		if (i == c)	{	pfasst.nlevels = atoi(optarg);	continue;	}
+					c++;		if (i == c)	{	pfasst.nnodes = atoi(optarg);	continue;	}
+					c++;		if (i == c)	{	pfasst.nspace = atoi(optarg);	continue;	}
+					c++;		if (i == c)	{	pfasst.nsteps = atoi(optarg);	continue;	}
+					c++;		if (i == c)	{	pfasst.niters = atoi(optarg);	continue;	}
+					c++;		if (i == c)	{	pfasst.dt = atof(optarg);	continue;	}
 #endif
 
-						default:
 #if SWEET_PARAREAL
-						parareal.setup_longOptionValue(i-parareal_start_option_index, optarg);
+					int retval = parareal.setup_longOptionValue(i-parareal_start_option_index, optarg);
+					if (retval == 0)
+						continue;
+					c += retval;
 #endif
-						break;
-					}
+
+					int retval = rexi.setup_longOptionValue(i-rexi_start_option_index, optarg);
+					if (retval == 0)
+						continue;
+					c += retval;
+
+					c++;
+
+					/*
+					 * This can be tested with the --dummy parameter
+					 */
+					if (c != next_free_program_option-1)
+						FatalError("Inconsistent processing of arguments");
 				}
 				else
 				{
@@ -1256,7 +1167,7 @@ public:
 
 
 #if SWEET_PARAREAL
-				parareal.setup_printOptions();
+				parareal.printOptions();
 #endif
 
 				std::cerr << std::endl;
@@ -1265,14 +1176,6 @@ public:
 					std::cerr << "Unknown option '" << (char)opt << "'" << std::endl;
 				return false;
 			}
-		}
-
-
-		if (dummy != 0)
-		{
-			// this is helpful for debugging purpose
-			std::cout << "DUMMY VALUE SET TO " << dummy << std::endl;
-			exit(1);
 		}
 
 

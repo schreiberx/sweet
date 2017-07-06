@@ -130,7 +130,7 @@ public:
 		else if (i_timestepping_method == "l_irk")
 		{
 			l_irk = new SWE_Sphere_TS_l_irk(i_simVars, i_op);
-			l_irk->setup(i_simVars.disc.timestepping_order, -i_simVars.sim.CFL, i_simVars.rexi.rexi_use_extended_modes);
+			l_irk->setup(i_simVars.disc.timestepping_order, -i_simVars.sim.CFL, i_simVars.rexi.use_extended_modes);
 
 			master = &(SWE_Sphere_TS_interface&)*l_irk;
 		}
@@ -151,7 +151,7 @@ public:
 		else if (i_timestepping_method == "l_cn")
 		{
 			l_cn = new SWE_Sphere_TS_l_cn(i_simVars, i_op);
-			l_cn->setup(i_simVars.disc.crank_nicolson_filter, -i_simVars.sim.CFL, i_simVars.rexi.rexi_use_extended_modes);
+			l_cn->setup(i_simVars.disc.crank_nicolson_filter, -i_simVars.sim.CFL, i_simVars.rexi.use_extended_modes);
 
 			master = &(SWE_Sphere_TS_interface&)*l_cn;
 		}
@@ -166,16 +166,16 @@ public:
 		{
 			l_rexi = new SWE_Sphere_TS_l_rexi(i_simVars, i_op);
 			l_rexi->setup(
-					i_simVars.rexi.rexi_h,
-					i_simVars.rexi.rexi_M,
-					i_simVars.rexi.rexi_L,
+					i_simVars.rexi.h,
+					i_simVars.rexi.M,
+					i_simVars.rexi.L,
 
 					-i_simVars.sim.CFL,
-					i_simVars.rexi.rexi_use_half_poles,
-					i_simVars.rexi.rexi_use_extended_modes,
-					i_simVars.rexi.rexi_normalization,
+					i_simVars.rexi.use_half_poles,
+					i_simVars.rexi.use_extended_modes,
+					i_simVars.rexi.normalization,
 					i_simVars.sim.f_sphere,
-					i_simVars.rexi.rexi_sphere_solver_preallocation
+					i_simVars.rexi.sphere_solver_preallocation
 				);
 
 			if (i_simVars.misc.verbosity > 2)

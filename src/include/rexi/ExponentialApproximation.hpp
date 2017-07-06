@@ -2,7 +2,7 @@
  * ExponentialApproximation.hpp
  *
  *  Created on: 2 Aug 2015
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk> Schreiber <schreiberx@gmail.com>
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 #ifndef SRC_INCLUDE_REXI_EXPONENTIALAPPROXIMATION_HPP_
 #define SRC_INCLUDE_REXI_EXPONENTIALAPPROXIMATION_HPP_

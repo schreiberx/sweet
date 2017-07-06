@@ -1108,7 +1108,7 @@ int main(int i_argc, char *i_argv[])
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
 #if SWEET_PARAREAL
-		simVars.parareal.setup_printOptions();
+		simVars.parareal.printOptions();
 #endif
 		std::cout << "	--compute-error [0/1]	Output errors (if available, default: 1)" << std::endl;
 		return -1;
@@ -1246,18 +1246,18 @@ int main(int i_argc, char *i_argv[])
 			 * Setup our little dog REXI
 			 */
 			swe_sphere_ts_l_rexi.setup(
-					simVars.rexi.rexi_h,
-					simVars.rexi.rexi_M,
-					simVars.rexi.rexi_L,
+					simVars.rexi.h,
+					simVars.rexi.M,
+					simVars.rexi.L,
 
 					simVars.timecontrol.current_timestep_size,
 
-					simVars.rexi.rexi_use_half_poles,
-					simVars.rexi.rexi_use_extended_modes,
-					simVars.rexi.rexi_normalization,
+					simVars.rexi.use_half_poles,
+					simVars.rexi.use_extended_modes,
+					simVars.rexi.normalization,
 					simVars.sim.f_sphere,
 
-					simVars.rexi.rexi_sphere_solver_preallocation
+					simVars.rexi.sphere_solver_preallocation
 				);
 
 

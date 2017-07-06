@@ -11,6 +11,7 @@
 #include <limits>
 #include <complex>
 #include <rexi/REXI.hpp>
+#include <rexi/RexiNG.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneDataComplex.hpp>
@@ -98,6 +99,11 @@ public:
 	/// REXI stuff
 	REXI<> rexi;
 
+public:
+	/// REXI next generation stuff
+	RexiNG<> rexiNG;
+
+	/// Direct solution for linear parts
 	SWE_Plane_TS_l_direct ts_l_direct;
 
 public:
@@ -107,13 +113,18 @@ public:
 		);
 
 	void setup(
+			REXI_SimulationVariables &i_rexi
+	);
+
+	void setup(
 			double i_h,						///< sampling size
 			int i_M,						///< number of sampling points
 			int i_L,						///< number of sampling points for Gaussian approximation
 											///< set to 0 for auto detection
 
 			bool i_rexi_half,				///< use half-pole reduction
-			bool i_rexi_normalization		///< REXI normalization
+			bool i_rexi_normalization,		///< REXI normalization
+			bool i_rexi_next_generation
 	);
 
 	void run_timestep(

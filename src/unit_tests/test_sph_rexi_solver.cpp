@@ -68,7 +68,7 @@ void run_tests()
 	double two_omega = 2.0*simVars.sim.coriolis_omega;
 
 
-	if (simVars.rexi.rexi_use_extended_modes == 0)
+	if (simVars.rexi.use_extended_modes == 0)
 	{
 		sphereDataConfigExt = sphereDataConfig;
 	}
@@ -77,8 +77,8 @@ void run_tests()
 		// Add modes only along latitude since these are the "problematic" modes
 		sphereDataConfigRexiAddedModes.setupAdditionalModes(
 				sphereDataConfig,
-				simVars.rexi.rexi_use_extended_modes,	// TODO: Extend SPH wrapper to also support m != n to set this guy to 0
-				simVars.rexi.rexi_use_extended_modes
+				simVars.rexi.use_extended_modes,	// TODO: Extend SPH wrapper to also support m != n to set this guy to 0
+				simVars.rexi.use_extended_modes
 		);
 		sphereDataConfigExt = &sphereDataConfigRexiAddedModes;
 	}
@@ -86,7 +86,7 @@ void run_tests()
 	SphereOperatorsComplex opComplex(sphereDataConfig, 1);
 	SphereOperatorsComplex opComplexExt(sphereDataConfigExt, 1);
 
-	REXI<> rexi(0, simVars.rexi.rexi_h, simVars.rexi.rexi_M);
+	REXI<> rexi(0, simVars.rexi.h, simVars.rexi.M);
 
 	if (!simVars.misc.sphere_use_robert_functions)
 		FatalError("Only Robert formulation allowed");
@@ -557,7 +557,7 @@ int main(
 	{
 
 #if SWEET_PARAREAL
-		simVars.parareal.setup_printOptions();
+		simVars.parareal.printOptions();
 #endif
 		return -1;
 	}
