@@ -271,11 +271,15 @@ public:
 		)
 			FatalError("Staggering only supported for standard time stepping mode with RK and Lagrangian advection only!");
 */
-		if (simVars.disc.use_staggering && param_compute_error)
+		if (simVars.disc.use_staggering && param_compute_error > 0 )
 			std::cerr << "Warning: Staggered data will be interpolated to/from A-grid for exact linear solution" << std::endl;
 
-		if (simVars.pde.use_nonlinear_equations > 0 && param_compute_error)
-			FatalError("Exact solution not possible in general for nonlinear SWE");
+		if (simVars.pde.use_nonlinear_equations > 0 && param_compute_error == 1)
+			std::cerr << "Warning: Error will be calculated relative to initial condition (assuming stationary flow)" << std::endl;
+
+		if (simVars.pde.use_nonlinear_equations > 0 && param_compute_error == 2)
+			std::cerr << "Warning: Error will be calculated relative to linear solution, Exact solution not possible in general for nonlinear SWE" << std::endl;
+			// FatalError("Exact solution not possible in general for nonlinear SWE");
 
 		if (simVars.disc.use_staggering)
 			staggering.setup_c_staggering();
@@ -1034,11 +1038,11 @@ public:
 				break;
 
 			case -2:
-				vis = t_h-prog_h+simVars.sim.h0;	// difference to exact solution
+				vis = t_h-prog_h;	// difference to exact solution
 				break;
 
 			case -3:
-				vis = t0_prog_h-prog_h+simVars.sim.h0;	// difference to initial condition
+				vis = t0_prog_h-prog_h;	// difference to initial condition
 				break;
 			}
 
