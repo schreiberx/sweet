@@ -84,7 +84,7 @@ extern "C"
 					     }
 					     );
     
-    // initialize velocity
+    // initialize velocities
     u_Y.physical_update_lambda_array_indices(
 					     [&](int i, int j, double &io_data)
 					     {

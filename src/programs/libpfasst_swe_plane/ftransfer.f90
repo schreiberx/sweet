@@ -14,17 +14,20 @@ module transfer_module
 
      ! prototypes of the C functions
      
-     subroutine c_sweet_data_restrict(Y_G, Y_F, t) bind(c, name="c_sweet_data_restrict")
+     subroutine c_sweet_data_restrict(io_y_coarse, i_y_fine, i_level_coarse, i_level_fine, i_t) & 
+          bind(c, name="c_sweet_data_restrict")
        use iso_c_binding
-       type(c_ptr),      value :: Y_G, Y_F
-       double precision, value :: t
+       type(c_ptr),      value :: io_y_coarse, i_y_fine
+       integer,          value :: i_level_coarse, i_level_fine
+       double precision, value :: i_t
      end subroutine c_sweet_data_restrict
 
-
-     subroutine c_sweet_data_interpolate(Y_F, Y_G, t) bind(c, name="c_sweet_data_interpolate")
+     subroutine c_sweet_data_interpolate(io_y_fine, i_y_coarse, i_level_fine, i_level_coarse, i_t) &
+          bind(c, name="c_sweet_data_interpolate")
        use iso_c_binding
-       type(c_ptr),      value :: Y_F, Y_G
-       double precision, value :: t
+       type(c_ptr),      value :: io_y_fine, i_y_coarse
+       integer,          value :: i_level_fine, i_level_coarse
+       double precision, value :: i_t
      end subroutine c_sweet_data_interpolate
      
   end interface
@@ -35,10 +38,10 @@ contains
 
   subroutine sweet_data_interpolate(this, levelF, levelG, qF, qG, t)
     class(sweet_level_t), intent(inout) :: this
-    class(pf_level_t),  intent(inout)   :: levelF, levelG
-    class(pf_encap_t),  intent(inout)   :: qF, qG
-    real(pfdp),         intent(in)      :: t
-
+    class(pf_level_t),       intent(inout) :: levelF, levelG
+    class(pf_encap_t),       intent(inout) :: qF, qG
+    real(pfdp),              intent(in)    :: t
+    
     select type(qF)
     type is (sweet_data_encap_t)
        select type(qG)
@@ -46,6 +49,8 @@ contains
 
           call c_sweet_data_interpolate(qF%c_sweet_data_ptr, & 
                                         qG%c_sweet_data_ptr, & 
+                                        levelF%level,        &
+                                        levelG%level,         &
                                         t)
 
        class default
@@ -62,9 +67,9 @@ contains
 
   subroutine sweet_data_restrict(this, levelF, levelG, qF, qG, t)
     class(sweet_level_t), intent(inout) :: this
-    class(pf_level_t),  intent(inout)   :: levelF, levelG
-    class(pf_encap_t),  intent(inout)   :: qF, qG
-    real(pfdp),         intent(in)      :: t
+    class(pf_level_t),       intent(inout) :: levelF, levelG
+    class(pf_encap_t),       intent(inout) :: qF, qG
+    real(pfdp),              intent(in)    :: t
     
     select type(qF)
     type is (sweet_data_encap_t)
@@ -73,6 +78,8 @@ contains
           
           call c_sweet_data_restrict(qG%c_sweet_data_ptr, &
                                      qF%c_sweet_data_ptr, & 
+                                     levelG%level,        & 
+                                     levelF%level,        &
                                      t)
 
        class default

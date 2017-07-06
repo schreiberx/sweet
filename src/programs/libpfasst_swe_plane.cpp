@@ -78,34 +78,45 @@ int main(int i_argc, char *i_argv[])
    * SETUP the LevelSingletons for all levels
    **********************************************************/
   
-  // currently only one level
-  param_max_levels = 1;
+  // define the number of levels
+  param_max_levels = 3;
   
   // setup the level singleton
   levelSingletons.resize(param_max_levels);
 
-  levelSingletons[0].dataConfig.setupAutoPhysicalSpace(
-  						       simVars.disc.res_spectral[0],
-  						       simVars.disc.res_spectral[1]
-  						       );
+  levelSingletons[param_max_levels-1].dataConfig.setupAutoPhysicalSpace(
+									simVars.disc.res_spectral[0],
+									simVars.disc.res_spectral[1]
+									);
 
-  levelSingletons[0].level = 0;
+  levelSingletons[param_max_levels-1].level = param_max_levels-1;
   
-  levelSingletons[0].op.setup(
-  			      &(levelSingletons[0].dataConfig),
-  			      simVars.sim.domain_size,
-  			      simVars.disc.use_spectral_basis_diffs
-  			      );
+  levelSingletons[param_max_levels-1].op.setup(
+					       &(levelSingletons[param_max_levels-1].dataConfig),
+					       simVars.sim.domain_size,
+					       simVars.disc.use_spectral_basis_diffs
+					       );
   
-  // this is not doing anything for now
+  // define the number of modes for the coarser levels
   for (int i = 1; i < param_max_levels; i++)
     {
-      levelSingletons[i].dataConfig.setupAdditionalModes(
-  							 &(levelSingletons[i-1].dataConfig),
-  							 -1,
-  							 -1
-  							 );
+      levelSingletons[param_max_levels-1-i].dataConfig.setupAdditionalModes(
+									    &(levelSingletons[param_max_levels-i].dataConfig),
+									    0,
+									    0
+									    );
+
+      levelSingletons[param_max_levels-1-i].level = param_max_levels-1-i;
+  
+      levelSingletons[param_max_levels-1-i].op.setup(
+						     &(levelSingletons[param_max_levels-1-i].dataConfig),
+						     simVars.sim.domain_size,
+						     simVars.disc.use_spectral_basis_diffs
+						     );
+
     }
+
+  std::cout << "completed the definition of the levelSingletons" << std::endl;
 
   /**********************************************************
    * SETUP top level data
@@ -113,18 +124,21 @@ int main(int i_argc, char *i_argv[])
 
   // instantiate the PlaneDataCtx object 
   PlaneDataCtx* pd_ctx = new PlaneDataCtx(
-					  &simVars,
-					  &levelSingletons
-					  );
+  					  &simVars,
+  					  &levelSingletons
+  					  );
   
+  std::cout << "completed the instantiation of the PlaneDataCtx object" << std::endl;
+  
+  // output the info for the fine level
   levelSingletons[0].dataConfig.printInformation();
-
+  
   // run a timestep with libpfasst and check that the solution matches the sweet integrators
   fmain(
 	pd_ctx,
 	&param_max_levels,
 	&(levelSingletons[0].dataConfig.physical_array_data_number_of_elements)
-	); 
+  	); 
 
   // release the memory
   delete pd_ctx;

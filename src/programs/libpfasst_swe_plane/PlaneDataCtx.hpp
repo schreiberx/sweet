@@ -29,12 +29,6 @@ public:
       FatalError("PlaneDataCtx: simVars pointer is NULL!");
     if (!levelSingletons) 
       FatalError("PlaneDataCtx: levelSingletons pointer is NULL!");
-
-    // select first order integration in time for explicit
-    // and first order integration for implicit (only order currently supported)
-    simVars->disc.timestepping_order  = 1; 
-    simVars->disc.timestepping_order2 = 1; 
-    simVars->disc.use_staggering      = false; 
     
     // initialize the time steppers from SWEET
     timestepper_l_irk_n_erk.resize(levelSingletons->size());
@@ -42,29 +36,35 @@ public:
     ref_timestepper.resize(levelSingletons->size());
 
     for (int level = 0; level < timestepper_l_irk_n_erk.size(); ++level) 
-    {
-      // these timesteppers contain the functions called by LibPFASST 
-      timestepper_l_irk_n_erk[level] = 
-	new SWE_Plane_TS_l_irk_n_erk(
-	                             *simVars,
-				     ((*levelSingletons)[level].op)
-				     );
-      timestepper_l_erk[level] = 
-	new SWE_Plane_TS_l_erk(
-			       *simVars,
-			       ((*levelSingletons)[level].op)
-			       );
+      {
+	// select first order integration in time for explicit
+	// and first order integration for implicit (only order currently supported)
+	simVars->disc.timestepping_order  = 1; 
+	simVars->disc.timestepping_order2 = 1; 
+	simVars->disc.use_staggering      = false; 
+		
+	// these timesteppers contain the functions called by LibPFASST 
+	timestepper_l_irk_n_erk[level] = 
+	  new SWE_Plane_TS_l_irk_n_erk(
+				       *simVars,
+				       ((*levelSingletons)[level].op)
+				       );
+	timestepper_l_erk[level] = 
+	  new SWE_Plane_TS_l_erk(
+				 *simVars,
+				 ((*levelSingletons)[level].op)
+				 );
 
-      // use fourth order integration for the linear - nonlinear erk
-      // this timestepper will be used to obtain a SWEET-generated reference solution
-      simVars->disc.timestepping_order  = 4; 
-      simVars->disc.timestepping_order2 = 4; 
-      ref_timestepper[level] = 
-	new SWE_Plane_TS_ln_erk(
-	                        *simVars,
-				((*levelSingletons)[level].op)
-				);
-    }
+	// use fourth order integration for the linear - nonlinear erk
+	// this timestepper will be used to obtain a SWEET-generated reference solution
+	simVars->disc.timestepping_order  = 4; 
+	simVars->disc.timestepping_order2 = 4; 
+	ref_timestepper[level] = 
+	  new SWE_Plane_TS_ln_erk(
+				  *simVars,
+				  ((*levelSingletons)[level].op)
+				  );
+      }
 
   }
 
