@@ -5,9 +5,11 @@ import subprocess
 import os
 
 
+
 datafile="output_prog_h_t00000000000.10000000.csv"
 
-for group in ['l1', 'l2', 'ln1', 'ln2']:
+
+for group in ['l1', 'l2', 'ln1', 'ln2', 'ln1test', 'ln2test']:
 	ref_dir=""
 	for i in glob.glob("script_"+group+"_ref*"):
 		if os.path.isdir(i):
@@ -20,7 +22,7 @@ for group in ['l1', 'l2', 'ln1', 'ln2']:
 	prev_value = 0
 
 	print("SIMNAME\tL1\tL2\tLinf\tCONV")
-	directories = glob.glob("script_"+group+"*")
+	directories = glob.glob("script_"+group+"_*")
 	directories.sort()
 	for dir in directories:
 		if not os.path.isdir(dir):
@@ -28,7 +30,8 @@ for group in ['l1', 'l2', 'ln1', 'ln2']:
 
 		try:
 			result = subprocess.check_output(['./pp_compute_max_and_rms_errors.py', ref_dir+"/"+datafile, dir+"/"+datafile, dir])
-		except:
+		except Exception as e:
+			print(str(e))
 			print("Error in processing file "+dir)
 			continue
 

@@ -19,7 +19,7 @@ class default_params:
 	plane_or_sphere = 'plane'
 
 #	mode_res = 32
-	mode_res = 16
+	mode_res = -1
 	phys_res = -1
 
 	output_timestep_size = 0.0001
@@ -43,6 +43,7 @@ class default_params:
 	rexi_extended_modes = 0
 	rexi_normalization = 0
 	rexi_sphere_preallocation = 1
+	rexi_use_direct_solution = 0
 
 	g = 1	# gravity
 	h = 100000	# avg height
@@ -251,6 +252,7 @@ cd "$BASEDIR"
 		content += ' --rexi-half='+str(self.rexi_half_poles)
 		content += ' --rexi-normalization='+str(self.rexi_normalization)
 		content += ' --rexi-sphere-preallocation='+str(self.rexi_sphere_preallocation)
+		content += ' --rexi-use-direct-solution='+str(self.rexi_use_direct_solution)
 		content += ' --rexi-ext-modes='+str(self.rexi_extended_modes)
 		content += ' --use-robert-functions='+str(self.use_robert_functions)
 
@@ -310,11 +312,14 @@ $EXEC || exit 1
 		idstr += '_tsob'+str(self.timestepping_order2)
 
 		if True:
-			idstr += '_rexim'+str(self.rexi_m).zfill(8)
-#			idstr += '_rexih'+str(self.rexi_h)
-#			idstr += '_rexinorm'+str(self.rexi_normalization)
-#			idstr += '_rexihalf'+str(self.rexi_half_poles)
-
+			if self.rexi_use_direct_solution:
+				idstr += '_rexidirect'
+			else:
+				idstr += '_rexim'+str(self.rexi_m).zfill(8)
+#				idstr += '_rexih'+str(self.rexi_h)
+#				idstr += '_rexinorm'+str(self.rexi_normalization)
+#				idstr += '_rexihalf'+str(self.rexi_half_poles)
+	
 			if self.plane_or_sphere == 'sphere':
 				idstr += '_rexiprealloc'+str(self.rexi_sphere_preallocation)
 				idstr += '_rexiextmodes'+str(self.rexi_extended_modes).zfill(2)
@@ -378,6 +383,7 @@ timestep_sizes = [0.0001*(2.0**i) for i in range(0, 11)]
 # l: linear
 # ln: linear and nonlinear
 groups = ['l1', 'l2', 'ln1', 'ln2']
+#groups = ['ln2test']
 
 
 
@@ -413,8 +419,16 @@ for group in groups:
 			['l_rexi_n_erk',	1,	1],
 		]
 
-
 	# 1st order nonlinear
+	if group == 'ln1test':
+		ts_methods = [
+			['ln_erk',		4,	4],	# reference solution
+			['l_erk_n_erk',		1,	1],
+			['l_irk_n_erk',		1,	1],
+			['ln_erk',		1,	1],
+		]
+
+	# 2nd order nonlinear
 	if group == 'ln2':
 		ts_methods = [
 			['ln_erk',		4,	4],	# reference solution
@@ -422,6 +436,18 @@ for group in groups:
 			['l_erk_n_erk',		2,	2],
 			['ln_erk',		2,	2],
 			['l_rexi_n_erk',	2,	2],
+			['l_rexi_ns_sl_nd_erk',	2,	2],
+			['lg_rexi_lc_erk_nt_sl_nd_erk',	2,	2],
+		]
+
+	# 2nd order nonlinear
+	if group == 'ln2test':
+		ts_methods = [
+			['ln_erk',		4,	4],	# reference solution
+			['l_cn_n_erk',		2,	2],
+			['l_erk_n_erk',		2,	2],
+#			['ln_erk',		2,	2],
+#			['l_rexi_n_erk',	2,	2],
 		]
 
 	#
@@ -465,6 +491,11 @@ for group in groups:
 
 
 				if 'rexi' in tsm[0]:
+					p.rexi_use_direct_solution = 1
+					p.rexi_m = 0
+					p.gen_script('script'+p.create_job_id(), 'run.sh')
+
+					p.rexi_use_direct_solution = 0
 					for p.rexi_m in [16, 32, 64, 128, 256, 512]:
 						p.gen_script('script'+p.create_job_id(), 'run.sh')
 
