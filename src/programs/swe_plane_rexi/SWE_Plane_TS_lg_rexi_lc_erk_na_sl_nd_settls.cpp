@@ -190,12 +190,12 @@ void SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk::run_timestep(
 					;
 
 
-	//Set time (n) as time (n-1)
+	// Set time (n) as time (n-1)
 	h_prev = io_h;
 	u_prev = io_u;
 	v_prev = io_v;
 
-	//output data
+	// output data
 	io_h = h;
 	io_u = u;
 	io_v = v;

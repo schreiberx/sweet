@@ -5,8 +5,8 @@
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#ifndef SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_L_REXI_NS_SL_ND_ERK_HPP_
-#define SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_L_REXI_NS_SL_ND_ERK_HPP_
+#ifndef SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_L_REXI_NA_SL_ND_ERK_HPP_
+#define SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_L_REXI_NA_SL_ND_ERK_HPP_
 
 #include <limits>
 #include <sweet/SimulationVariables.hpp>
@@ -21,7 +21,7 @@
 
 
 
-class SWE_Plane_TS_l_rexi_ns_sl_nd_erk	: public SWE_Plane_TS_interface
+class SWE_Plane_TS_l_rexi_na_sl_nd_erk	: public SWE_Plane_TS_interface
 {
 	SimulationVariables &simVars;
 	PlaneOperators &op;
@@ -42,7 +42,7 @@ class SWE_Plane_TS_l_rexi_ns_sl_nd_erk	: public SWE_Plane_TS_interface
 	ScalarDataArray posx_d, posy_d;
 
 public:
-	SWE_Plane_TS_l_rexi_ns_sl_nd_erk(
+	SWE_Plane_TS_l_rexi_na_sl_nd_erk(
 			SimulationVariables &i_simVars,
 			PlaneOperators &i_op
 		);
@@ -71,7 +71,7 @@ public:
 
 
 
-	virtual ~SWE_Plane_TS_l_rexi_ns_sl_nd_erk();
+	virtual ~SWE_Plane_TS_l_rexi_na_sl_nd_erk();
 };
 
 #endif /* SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_LN_ERK_HPP_ */

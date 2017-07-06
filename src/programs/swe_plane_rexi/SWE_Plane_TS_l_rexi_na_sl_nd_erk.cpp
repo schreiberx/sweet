@@ -1,5 +1,5 @@
 /*
- * SWE_Plane_TS_l_rexi_ns_sl_nd_erk.cpp
+ * SWE_Plane_TS_l_rexi_na_sl_nd_erk.cpp
  *
  *  Created on: 29 May 2017
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
@@ -9,10 +9,10 @@
  *					which was also written by Pedro Peixoto
  */
 
-#include "SWE_Plane_TS_l_rexi_ns_sl_nd_erk.hpp"
+#include "SWE_Plane_TS_l_rexi_na_sl_nd_erk.hpp"
 
 
-void SWE_Plane_TS_l_rexi_ns_sl_nd_erk::run_timestep(
+void SWE_Plane_TS_l_rexi_na_sl_nd_erk::run_timestep(
 		PlaneData &io_h,	///< prognostic variables
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
@@ -24,7 +24,7 @@ void SWE_Plane_TS_l_rexi_ns_sl_nd_erk::run_timestep(
 )
 {
 	if (i_fixed_dt <= 0)
-		FatalError("SWE_Plane_TS_l_rexi_ns_sl_nd_erk: Only constant time step size allowed");
+		FatalError("SWE_Plane_TS_l_rexi_na_sl_nd_erk: Only constant time step size allowed");
 
 	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
 		i_fixed_dt = i_max_simulation_time - i_simulation_timestamp;
@@ -151,7 +151,7 @@ void SWE_Plane_TS_l_rexi_ns_sl_nd_erk::run_timestep(
 /*
  * Setup
  */
-void SWE_Plane_TS_l_rexi_ns_sl_nd_erk::setup(
+void SWE_Plane_TS_l_rexi_na_sl_nd_erk::setup(
 		double i_h,						///< sampling size
 		int i_M,						///< number of sampling points
 		int i_L,						///< number of sampling points for Gaussian approximation
@@ -201,7 +201,7 @@ void SWE_Plane_TS_l_rexi_ns_sl_nd_erk::setup(
 }
 
 
-SWE_Plane_TS_l_rexi_ns_sl_nd_erk::SWE_Plane_TS_l_rexi_ns_sl_nd_erk(
+SWE_Plane_TS_l_rexi_na_sl_nd_erk::SWE_Plane_TS_l_rexi_na_sl_nd_erk(
 		SimulationVariables &i_simVars,
 		PlaneOperators &i_op
 )	:
@@ -224,7 +224,7 @@ SWE_Plane_TS_l_rexi_ns_sl_nd_erk::SWE_Plane_TS_l_rexi_ns_sl_nd_erk(
 
 
 
-SWE_Plane_TS_l_rexi_ns_sl_nd_erk::~SWE_Plane_TS_l_rexi_ns_sl_nd_erk()
+SWE_Plane_TS_l_rexi_na_sl_nd_erk::~SWE_Plane_TS_l_rexi_na_sl_nd_erk()
 {
 }
 
