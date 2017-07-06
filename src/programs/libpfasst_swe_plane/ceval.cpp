@@ -30,7 +30,7 @@ std::string write_file(
   // get the pointer to the Simulation Variables object
   SimulationVariables* simVars = i_ctx.get_simulation_variables();
 
-  // write the data into the file
+  // Write the data into the file
   const char* filename_template = simVars->misc.output_file_name_prefix.c_str();
   sprintf(buffer, 
 	  filename_template, 
@@ -64,13 +64,15 @@ extern "C"
     // get the SimulationVariables object from context
     SimulationVariables* simVars(i_ctx->get_simulation_variables());
     
-    // Gaussian dam break
-    simVars->setup.benchmark_scenario_id = 1;
+    // Gaussian 
+    //simVars->setup.benchmark_scenario_id = 1;
+    // Waves
+    simVars->setup.benchmark_scenario_id = 16;
 
     h_Y.physical_set_all(simVars->sim.h0);
     u_Y.physical_set_all(0);
     v_Y.physical_set_all(0);
-    
+        
     // initialize height
     h_Y.physical_update_lambda_array_indices(
 					     [&](int i, int j, double &io_data)
@@ -116,17 +118,55 @@ extern "C"
     const PlaneData& u_Y = i_Y->get_u();
     const PlaneData& v_Y = i_Y->get_v();
 
+    // get the SimulationVariables object from context
+    SimulationVariables* simVars(i_ctx->get_simulation_variables());
+    
+    /*
+    std::vector<int> coarsening_factors(5,0);
+    coarsening_factors[0] = 2;
+    coarsening_factors[1] = 4;
+    coarsening_factors[2] = 8;
+    coarsening_factors[3] = 16;
+    coarsening_factors[4] = 32;
+    
+    for (unsigned int i = 0; i < coarsening_factors.size(); ++i) {
+
+      PlaneDataConfig coarsened_dataConfig;
+      coarsened_dataConfig.setupAutoPhysicalSpace(
+						  simVars->disc.res_spectral[0]/coarsening_factors[i],
+						  simVars->disc.res_spectral[1]/coarsening_factors[i]
+						  );
+      coarsened_dataConfig.printInformation();
+      PlaneData coarsened_h_Y 
+	= h_Y.spectral_returnWithDifferentModes(&coarsened_dataConfig);
+
+      std::string filename = "prog_h_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters)+"_coarsening_factor_"+std::to_string(coarsening_factors[i]);
+      write_file(*i_ctx, coarsened_h_Y, filename.c_str());
+      
+      PlaneData coarsened_u_Y 
+	= u_Y.spectral_returnWithDifferentModes(&coarsened_dataConfig);
+
+      filename = "prog_u_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters)+"_coarsening_factor_"+std::to_string(coarsening_factors[i]);
+      write_file(*i_ctx, coarsened_u_Y, filename.c_str());
+
+      PlaneData coarsened_v_Y 
+	= v_Y.spectral_returnWithDifferentModes(&coarsened_dataConfig);
+      
+      filename = "prog_v_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters)+"_coarsening_factor_"+std::to_string(coarsening_factors[i]);
+      write_file(*i_ctx, coarsened_v_Y, filename.c_str());
+      
+    }
+    */
+    
     std::string filename = "prog_h_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
     write_file(*i_ctx, h_Y, filename.c_str());
-
+    
     filename = "prog_u_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
     write_file(*i_ctx, u_Y, filename.c_str());
 
     filename = "prog_v_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
     write_file(*i_ctx, v_Y, filename.c_str());
     
-    std::cout << "cfinal is not implemented yet" << std::endl;
-    //not implemented yet
   }
 
   // computes a reference solution to check libpfasst's results
@@ -155,7 +195,7 @@ extern "C"
     // get the reference timestepper
     SWE_Plane_TS_ln_erk* timestepper = i_ctx->get_reference_timestepper(o_Y->get_level());
     
-    const int dt_factor = 5000; 
+    const int dt_factor = 100; 
     double dt           = simVars->timecontrol.current_timestep_size 
                         / (double)dt_factor;
 
@@ -169,7 +209,7 @@ extern "C"
 	  std::cout << "current_simulation_time = "
 		    << current_simulation_time
 		    << std::endl;
-	
+  
 	timestepper->run_timestep(
 				  h,
 				  u,
