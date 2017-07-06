@@ -35,9 +35,7 @@ void SWE_Plane_TS_l_cn::run_timestep(
 		FatalError("SWE_Plane_TS_l_cn: Only constant time step size allowed");
 
 	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
-		i_fixed_dt = i_max_simulation_time-i_simulation_timestamp;
-
-	o_dt = i_fixed_dt;
+		i_fixed_dt = i_max_simulation_time - i_simulation_timestamp;
 
 
 	PlaneData h_linear_t1 = io_h;
@@ -63,6 +61,8 @@ void SWE_Plane_TS_l_cn::run_timestep(
 			i_simulation_timestamp,
 			i_max_simulation_time
 		);
+
+	o_dt = i_fixed_dt;
 }
 
 

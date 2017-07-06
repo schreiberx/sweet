@@ -46,8 +46,6 @@ void SWE_Plane_TS_l_irk::run_timestep(
 	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
 		i_fixed_dt = i_max_simulation_time-i_simulation_timestamp;
 
-	o_dt = i_fixed_dt;
-
 
 	PlaneDataComplex eta(io_h.planeDataConfig);
 
@@ -85,6 +83,8 @@ void SWE_Plane_TS_l_irk::run_timestep(
 	io_h = Convert_PlaneDataComplex_To_PlaneData::physical_convert(eta);
 	io_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(u1);
 	io_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(v1);
+
+	o_dt = i_fixed_dt;
 }
 
 

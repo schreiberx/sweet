@@ -39,9 +39,8 @@ void SWE_Plane_TS_l_direct::run_timestep(
 		FatalError("SWE_Plane_TS_l_direct: Only constant time step size allowed");
 
 	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
-		i_fixed_dt = i_max_simulation_time-i_simulation_timestamp;
+		i_fixed_dt = i_max_simulation_time - i_simulation_timestamp;
 
-	o_dt = i_fixed_dt;
 
 
 	typedef std::complex<double> complex;
@@ -319,6 +318,8 @@ void SWE_Plane_TS_l_direct::run_timestep(
 	io_h = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_h);
 	io_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_u);
 	io_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_v);
+
+	o_dt = i_fixed_dt;
 }
 
 

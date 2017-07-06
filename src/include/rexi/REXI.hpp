@@ -273,7 +273,7 @@ public:
 			beta_im[n] = beta_im_eval[n];
 		}
 
-		std::cout << "REXI - number of terms: " << alpha.size() << std::endl;
+		//std::cout << "REXI - number of terms: " << alpha.size() << std::endl;
 	}
 
 

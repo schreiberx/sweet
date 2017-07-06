@@ -13,8 +13,6 @@
 
 
 
-
-
 void SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_linear(
 		const PlaneData &i_h,	///< prognostic variables
 		const PlaneData &i_u,	///< prognostic variables
@@ -39,6 +37,8 @@ void SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_linear(
 	o_h_t = -(op.diff_c_x(i_u) + op.diff_c_y(i_v))*simVars.sim.h0;
 	o_u_t = -simVars.sim.gravitation*op.diff_c_x(i_h) + simVars.sim.f0*i_v;
 	o_v_t = -simVars.sim.gravitation*op.diff_c_y(i_h) - simVars.sim.f0*i_u;
+
+	o_dt = i_fixed_dt;
 }
 
 
@@ -67,6 +67,8 @@ void SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_nonlinear(
 	o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
 	o_u_t = -i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
 	o_v_t = -i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
+
+	o_dt = i_fixed_dt;
 }
 
 
@@ -82,29 +84,78 @@ void SWE_Plane_TS_l_erk_n_erk::run_timestep(
 		double i_max_simulation_time
 )
 {
-	// standard time stepping
-	timestepping_rk_linear.run_timestep(
-			this,
-			&SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_linear,	///< pointer to function to compute euler time step updates
-			io_h, io_u, io_v,
-			o_dt,
-			i_fixed_dt,
-			timestepping_order,
-			i_simulation_timestamp,
-			i_max_simulation_time
-		);
+	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
+		i_fixed_dt = i_max_simulation_time - i_simulation_timestamp;
 
-	// standard time stepping
-	timestepping_rk_nonlinear.run_timestep(
-			this,
-			&SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
-			io_h, io_u, io_v,
-			o_dt,
-			i_fixed_dt,
-			timestepping_order,
-			i_simulation_timestamp,
-			i_max_simulation_time
-		);
+	if (timestepping_order == 1)
+	{
+
+		timestepping_rk_linear.run_timestep(
+				this,
+				&SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_linear,	///< pointer to function to compute euler time step updates
+				io_h, io_u, io_v,
+				o_dt,
+				i_fixed_dt,
+				timestepping_order,
+				i_simulation_timestamp,
+				i_max_simulation_time
+			);
+
+		timestepping_rk_nonlinear.run_timestep(
+				this,
+				&SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
+				io_h, io_u, io_v,
+				o_dt,
+				i_fixed_dt,
+				timestepping_order,
+				i_simulation_timestamp,
+				i_max_simulation_time
+			);
+	}
+	else if (timestepping_order == 2)
+	{
+		// HALF time step for linear part
+		timestepping_rk_linear.run_timestep(
+				this,
+				&SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_linear,	///< pointer to function to compute euler time step updates
+				io_h, io_u, io_v,
+				o_dt,
+				i_fixed_dt*0.5,
+				timestepping_order,		/// This must be 2nd order accurate to get overall 2nd order accurate method
+				i_simulation_timestamp,
+				i_max_simulation_time
+			);
+
+		// FULL time step for non-linear part
+		timestepping_rk_nonlinear.run_timestep(
+				this,
+				&SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
+				io_h, io_u, io_v,
+				o_dt,
+				i_fixed_dt,
+				timestepping_order,		/// This must be 2nd order accurate to get overall 2nd order accurate method
+				i_simulation_timestamp,
+				i_max_simulation_time
+			);
+
+		// HALF time step for linear part
+		timestepping_rk_linear.run_timestep(
+				this,
+				&SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_linear,	///< pointer to function to compute euler time step updates
+				io_h, io_u, io_v,
+				o_dt,
+				i_fixed_dt*0.5,
+				timestepping_order,		/// This must be 2nd order accurate to get overall 2nd order accurate method
+				i_simulation_timestamp,
+				i_max_simulation_time
+			);
+	}
+	else
+	{
+		FatalError("Not yet supported!");
+	}
+
+	o_dt = i_fixed_dt;
 }
 
 

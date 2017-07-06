@@ -43,6 +43,7 @@ void SWE_Plane_TS_l_cn_n_erk::euler_timestep_update_nonlinear(
 	o_u_t = -i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
 	o_v_t = -i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
 
+	o_dt = i_fixed_dt;
 }
 
 
@@ -61,19 +62,18 @@ void SWE_Plane_TS_l_cn_n_erk::run_timestep(
 		FatalError("SWE_Plane_TS_l_cn_n_erk: Only constant time step size allowed");
 
 	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
-		i_fixed_dt = i_max_simulation_time-i_simulation_timestamp;
+		i_fixed_dt = i_max_simulation_time - i_simulation_timestamp;
 
-	o_dt = i_fixed_dt;
-
+	// Half one for linear parts
 	ts_l_cn.run_timestep(
 			io_h, io_u, io_v,
 			o_dt,
-			i_fixed_dt*crank_nicolson_damping_factor,
+			i_fixed_dt*0.5,
 			i_simulation_timestamp,
 			i_max_simulation_time
 		);
 
-	// standard time stepping
+	// standard time stepping for nonlinear parts
 	timestepping_rk.run_timestep(
 			this,
 			&SWE_Plane_TS_l_cn_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
@@ -84,6 +84,17 @@ void SWE_Plane_TS_l_cn_n_erk::run_timestep(
 			i_simulation_timestamp,
 			i_max_simulation_time
 		);
+
+	// Half one for linear parts
+	ts_l_cn.run_timestep(
+			io_h, io_u, io_v,
+			o_dt,
+			i_fixed_dt*0.5,
+			i_simulation_timestamp,
+			i_max_simulation_time
+		);
+
+	o_dt = i_fixed_dt;
 }
 
 

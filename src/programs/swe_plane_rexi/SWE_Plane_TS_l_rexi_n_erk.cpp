@@ -43,6 +43,7 @@ void SWE_Plane_TS_l_rexi_n_erk::euler_timestep_update_nonlinear(
 	o_u_t = -i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
 	o_v_t = -i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
 
+	o_dt = i_fixed_dt;
 }
 
 
@@ -63,27 +64,60 @@ void SWE_Plane_TS_l_rexi_n_erk::run_timestep(
 	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
 		i_fixed_dt = i_max_simulation_time-i_simulation_timestamp;
 
+	if (timestepping_order_nonlinear == 1)
+	{
+		ts_l_rexi.run_timestep(
+				io_h, io_u, io_v,
+				o_dt,
+				i_fixed_dt,
+				i_simulation_timestamp,
+				i_max_simulation_time
+			);
+
+		// standard time stepping
+		timestepping_rk.run_timestep(
+				this,
+				&SWE_Plane_TS_l_rexi_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
+				io_h, io_u, io_v,
+				o_dt,
+				i_fixed_dt,
+				timestepping_order_nonlinear,
+				i_simulation_timestamp,
+				i_max_simulation_time
+			);
+	}
+	else if (timestepping_order_nonlinear == 2)
+	{
+		ts_l_rexi.run_timestep(
+				io_h, io_u, io_v,
+				o_dt,
+				i_fixed_dt*0.5,
+				i_simulation_timestamp,
+				i_max_simulation_time
+			);
+
+		// standard time stepping
+		timestepping_rk.run_timestep(
+				this,
+				&SWE_Plane_TS_l_rexi_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
+				io_h, io_u, io_v,
+				o_dt,
+				i_fixed_dt,
+				timestepping_order_nonlinear,
+				i_simulation_timestamp,
+				i_max_simulation_time
+			);
+
+		ts_l_rexi.run_timestep(
+				io_h, io_u, io_v,
+				o_dt,
+				i_fixed_dt*0.5,
+				i_simulation_timestamp,
+				i_max_simulation_time
+			);
+	}
+
 	o_dt = i_fixed_dt;
-
-	ts_l_rexi.run_timestep(
-			io_h, io_u, io_v,
-			o_dt,
-			i_fixed_dt,
-			i_simulation_timestamp,
-			i_max_simulation_time
-		);
-
-	// standard time stepping
-	timestepping_rk.run_timestep(
-			this,
-			&SWE_Plane_TS_l_rexi_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
-			io_h, io_u, io_v,
-			o_dt,
-			i_fixed_dt,
-			timestepping_order_nonlinear,
-			i_simulation_timestamp,
-			i_max_simulation_time
-		);
 }
 
 

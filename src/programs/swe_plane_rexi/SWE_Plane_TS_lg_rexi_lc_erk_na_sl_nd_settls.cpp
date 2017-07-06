@@ -61,9 +61,7 @@ void SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk::run_timestep(
 		FatalError("SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk: Only constant time step size allowed");
 
 	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
-		i_fixed_dt = i_max_simulation_time-i_simulation_timestamp;
-
-	o_dt = i_fixed_dt;
+		i_fixed_dt = i_max_simulation_time - i_simulation_timestamp;
 
 	if (i_simulation_timestamp == 0)
 	{
@@ -201,6 +199,8 @@ void SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk::run_timestep(
 	io_h = h;
 	io_u = u;
 	io_v = v;
+
+	o_dt = i_fixed_dt;
 }
 
 

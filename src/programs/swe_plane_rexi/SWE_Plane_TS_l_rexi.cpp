@@ -37,9 +37,7 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 		FatalError("Only constant time step size allowed");
 
 	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
-		i_fixed_dt = i_max_simulation_time-i_simulation_timestamp;
-
-	o_dt = i_fixed_dt;
+		i_fixed_dt = i_max_simulation_time - i_simulation_timestamp;
 
 
 	typedef std::complex<double> complex;
@@ -290,6 +288,8 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 	if (mpi_rank == 0)
 		stopwatch_reduce.stop();
 #endif
+
+	o_dt = i_fixed_dt;
 }
 
 
