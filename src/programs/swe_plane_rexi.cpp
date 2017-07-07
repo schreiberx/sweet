@@ -859,7 +859,7 @@ public:
 			o_ostream << "\t" << benchmark.t0_error_max_abs_v;
 			//}
 
-			if (param_compute_error && simVars.pde.use_nonlinear_equations==0)
+			if (param_compute_error) // && simVars.pde.use_nonlinear_equations==0)
 			{
 				compute_errors();
 
@@ -901,6 +901,8 @@ public:
 		// Compute exact solution for linear part and compare with numerical solution
 
 		// Variables on unstaggered A-grid
+		// Comparison will be by default to the initial conditions
+		//   or to the linear solver if analytical solution exists.
 		PlaneData t_h = t0_prog_h;
 		PlaneData t_u = t0_prog_u;
 		PlaneData t_v = t0_prog_v;
@@ -917,20 +919,25 @@ public:
 			sampler2D.bicubic_scalar(t0_prog_v, posa_x, posa_y, t_v, staggering.v[0], staggering.v[1]);
 		}
 
+		//Calculate linear exact solution, if compute error requests
 		double o_dt;
-		//Run exact solution for linear case
-		timeSteppers.l_direct->run_timestep(
-				t_h, t_u, t_v,
-				o_dt,	// compute direct solution
-				simVars.timecontrol.current_simulation_time,
-				0,			// initial condition given at time 0
-				simVars.timecontrol.max_simulation_time
-		);
+		if (param_compute_error == 2 )
+		{
+			//Run exact solution for linear case
+			timeSteppers.l_direct->run_timestep(
+					t_h, t_u, t_v,
+					o_dt,	// compute direct solution
+					simVars.timecontrol.current_simulation_time,
+					0,			// initial condition given at time 0
+					simVars.timecontrol.max_simulation_time
+			);
+		}
 
-		// Analytical solution at specific time on orginal grid (stag or not)
+		// Analytical solution at specific time on original grid (stag or not)
 		PlaneData ts_h = t_h;
 		PlaneData ts_u = t_u;
 		PlaneData ts_v = t_v;
+
 
 		// Recover data in C grid using interpolations
 		if (simVars.disc.use_staggering)
