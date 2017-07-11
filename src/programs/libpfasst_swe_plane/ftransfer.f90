@@ -14,18 +14,18 @@ module transfer_module
 
      ! prototypes of the C functions
      
-     subroutine c_sweet_data_restrict(io_y_coarse, i_y_fine, i_level_coarse, i_level_fine, i_t) & 
+     subroutine c_sweet_data_restrict(io_y_coarse, i_y_fine, i_level_coarse, i_level_fine, i_ctx, i_t) & 
           bind(c, name="c_sweet_data_restrict")
        use iso_c_binding
-       type(c_ptr),      value :: io_y_coarse, i_y_fine
+       type(c_ptr),      value :: io_y_coarse, i_y_fine, i_ctx
        integer,          value :: i_level_coarse, i_level_fine
        double precision, value :: i_t
      end subroutine c_sweet_data_restrict
 
-     subroutine c_sweet_data_interpolate(io_y_fine, i_y_coarse, i_level_fine, i_level_coarse, i_t) &
+     subroutine c_sweet_data_interpolate(io_y_fine, i_y_coarse, i_level_fine, i_level_coarse, i_ctx, i_t) &
           bind(c, name="c_sweet_data_interpolate")
        use iso_c_binding
-       type(c_ptr),      value :: io_y_fine, i_y_coarse
+       type(c_ptr),      value :: io_y_fine, i_y_coarse, i_ctx
        integer,          value :: i_level_fine, i_level_coarse
        double precision, value :: i_t
      end subroutine c_sweet_data_interpolate
@@ -37,20 +37,25 @@ contains
   ! interpolation function
 
   subroutine sweet_data_interpolate(this, levelF, levelG, qF, qG, t)
-    class(sweet_level_t), intent(inout) :: this
+    class(sweet_level_t),    intent(inout) :: this
     class(pf_level_t),       intent(inout) :: levelF, levelG
     class(pf_encap_t),       intent(inout) :: qF, qG
     real(pfdp),              intent(in)    :: t
-    
+
+    class(sweet_sweeper_t),  pointer       :: sweet_sweeper_ptr
+
+    sweet_sweeper_ptr => as_sweet_sweeper(this%sweeper)
+
     select type(qF)
     type is (sweet_data_encap_t)
        select type(qG)
        type is (sweet_data_encap_t)
 
-          call c_sweet_data_interpolate(qF%c_sweet_data_ptr, & 
-                                        qG%c_sweet_data_ptr, & 
-                                        levelF%level,        &
-                                        levelG%level,         &
+          call c_sweet_data_interpolate(qF%c_sweet_data_ptr,   & 
+                                        qG%c_sweet_data_ptr,   & 
+                                        levelF%level-1,        & ! conversion to c++ indexing
+                                        levelG%level-1,        & ! conversion to c++ indexing
+                                        sweet_sweeper_ptr%ctx, &
                                         t)
 
        class default
@@ -66,20 +71,25 @@ contains
   ! restriction function
 
   subroutine sweet_data_restrict(this, levelF, levelG, qF, qG, t)
-    class(sweet_level_t), intent(inout) :: this
+    class(sweet_level_t),    intent(inout) :: this
     class(pf_level_t),       intent(inout) :: levelF, levelG
     class(pf_encap_t),       intent(inout) :: qF, qG
     real(pfdp),              intent(in)    :: t
     
+    class(sweet_sweeper_t),  pointer       :: sweet_sweeper_ptr
+
+    sweet_sweeper_ptr => as_sweet_sweeper(this%sweeper)
+
     select type(qF)
     type is (sweet_data_encap_t)
        select type(qG)
        type is (sweet_data_encap_t)
           
-          call c_sweet_data_restrict(qG%c_sweet_data_ptr, &
-                                     qF%c_sweet_data_ptr, & 
-                                     levelG%level,        & 
-                                     levelF%level,        &
+          call c_sweet_data_restrict(qG%c_sweet_data_ptr,   &
+                                     qF%c_sweet_data_ptr,   & 
+                                     levelG%level-1,        & ! conversion to c++ indexing
+                                     levelF%level-1,        & ! conversion to c++ indexing
+                                     sweet_sweeper_ptr%ctx, &
                                      t)
 
        class default
