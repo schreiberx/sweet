@@ -3,6 +3,11 @@
  *
  *  Created on: 29 May 2017
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *
+ *  Modif on: 11 July 2017
+ *  	Author: Pedro Peixoto <pedrosp@ime.usp.br>
+ *
+ *  Name: l_cn_na_sl_nd_settls
  */
 
 #ifndef SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_LG_REXI_LC_ERK_NA_SL_ND_SETTLS_HPP_

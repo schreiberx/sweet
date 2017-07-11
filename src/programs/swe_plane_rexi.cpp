@@ -681,67 +681,6 @@ public:
 				simVars.timecontrol.max_simulation_time
 			);
 
-#if 0
-
-		else if (simVars.disc.timestepping_method == SimulationVariables::Discretization::SEMI_LAGRANGIAN_ADVECTION_ONLY)
-		{
-			// Semi-Lagrangian advection - velocities are kept constant, and
-			//  h is transported according to given initial wind
-			// *** Valid only for non-divergent velocity fields **//
-			// See test case scenario 17 for this ts mode
-
-			assert(simVars.sim.CFL < 0);
-			o_dt = -simVars.sim.CFL;
-
-			semiLagrangian.semi_lag_departure_points_settls(
-							prog_u_prev,
-							prog_v_prev,
-							prog_u,
-							prog_v,
-							posx_a,
-							posy_a,
-							o_dt,
-							posx_d,
-							posy_d,
-							staggering
-					);
-
-			//prog_u_prev = prog_u;
-			//prog_v_prev = prog_v;
-			prog_h_prev = prog_h;
-
-			//Departure points are set for physical space
-			//    interpolate to h grid
-			sampler2D.bicubic_scalar(
-					prog_h_prev,
-					posx_d,
-					posy_d,
-					prog_h,
-					staggering.h[0],
-					staggering.h[1]
-			);
-
-		}
-		else if (simVars.disc.timestepping_method == SimulationVariables::Discretization::SEMI_LAGRANGIAN_SEMI_IMPLICIT)
-		{
-			// Semi-Lagrangian Semi-implicit Spectral
-			assert(simVars.sim.CFL < 0);
-			o_dt = -simVars.sim.CFL;
-
-			timestepping_swe_plane_rexi.run_timestep_cn_sl_ts(
-					prog_h, prog_u, prog_v,
-					prog_h_prev, prog_u_prev, prog_v_prev,
-					posx_a,	posy_a,
-					o_dt,
-					simVars.pde.use_nonlinear_equations,
-					simVars,
-					op,
-					sampler2D,
-					semiLagrangian
-			);
-		}
-#endif
-
 		//Apply viscosity at posteriori, for all methods explicit diffusion for non spectral schemes and implicit for spectral
 		if (simVars.sim.viscosity != 0)
 		{
@@ -811,7 +750,6 @@ public:
 
 			write_file(op.diff_c_x(prog_v) - op.diff_c_y(prog_u), "prog_q");
 		}
-
 
 		if (simVars.misc.verbosity > 0)
 		{
@@ -1564,15 +1502,9 @@ int main(int i_argc, char *i_argv[])
 		std::cout << std::endl;
 		std::cout << "Special parameters:" << std::endl;
 		std::cout << "	--compute-error [int]	0: No error computations" << std::endl;
-		std::cout << "							1: Stationary solution" << std::endl;
+		std::cout << "							1: Stationary solution (use initial condition as reference)" << std::endl;
 		std::cout << "							2: Analytical (time varying) solution" << std::endl;
 		std::cout << "" << std::endl;
-		std::cout << "  WARNING: Nonlinear" << std::endl;
-		std::cout << "	--nonlinear [0/1/2]	   Form of equations:" << std::endl;
-		std::cout << "						     0: Linear SWE (default)" << std::endl;
-		std::cout << "						     1: Full nonlinear SWE" << std::endl;
-		std::cout << "						     2: Linear SWE + nonlinear advection only (needs -H to be set)" << std::endl;
-		std::cout << std::endl;
 
 
 #if SWEET_PARAREAL
@@ -1591,12 +1523,6 @@ int main(int i_argc, char *i_argv[])
 
 	// Print header
 	std::cout << std::endl;
-	if (simVars.pde.use_nonlinear_equations == 1)
-		std::cout << "Solving full nonlinear SW equations" << std::endl;
-	else
-		std::cout << "Solving linear SW equations" << std::endl;
-
-	std::cout << "-----------------------------" << std::endl;
 	simVars.outputConfig();
 	std::cout << "Computing error: " << param_compute_error << std::endl;
 	std::cout << std::endl;
