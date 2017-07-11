@@ -195,7 +195,7 @@ extern "C"
     // get the reference timestepper
     SWE_Plane_TS_ln_erk* timestepper = i_ctx->get_reference_timestepper(o_Y->get_level());
     
-    const int dt_factor = 100; 
+    const int dt_factor = 1; 
     double dt           = simVars->timecontrol.current_timestep_size 
                         / (double)dt_factor;
 
@@ -374,5 +374,33 @@ extern "C"
 		 ) 
   {
     // not implemented
+  }
+
+  // applies implicit viscosity to the variables
+  void capply_viscosity(PlaneDataVars *io_Y,
+			double i_t, 
+			double i_dt,
+			int i_level, 
+			PlaneDataCtx *i_ctx
+			)
+  {
+    // get the simulation variables
+    SimulationVariables* simVars = i_ctx->get_simulation_variables();
+
+    if (simVars->sim.viscosity == 0)
+      return;
+		  
+    PlaneData& h_Y = io_Y->get_h();
+    PlaneData& u_Y = io_Y->get_u();
+    PlaneData& v_Y = io_Y->get_v();
+
+    // get the operators for this level
+    PlaneOperators* op = i_ctx->get_plane_operators(i_level);
+
+    // use the implicit diffusion from SWEET
+    h_Y = op->implicit_diffusion(h_Y, i_dt*simVars->sim.viscosity, simVars->sim.viscosity_order );
+    u_Y = op->implicit_diffusion(u_Y, i_dt*simVars->sim.viscosity, simVars->sim.viscosity_order );
+    v_Y = op->implicit_diffusion(v_Y, i_dt*simVars->sim.viscosity, simVars->sim.viscosity_order );
+
   }
 }

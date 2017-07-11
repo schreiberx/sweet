@@ -6,11 +6,17 @@ module feval_module
   implicit none
   
   type, extends(pf_imexQ_t) :: sweet_sweeper_t
-     type(c_ptr) :: ctx = c_null_ptr ! c pointer to PlaneDataCtx/SphereDataCtx
+     type(c_ptr)    :: ctx = c_null_ptr ! c pointer to PlaneDataCtx/SphereDataCtx
+     integer        :: nnodes           ! number of nodes
+     integer        :: sweep_niter      ! number of the current sweep
+     integer        :: sweep_niter_max  ! max number of sweeps
+     real(c_double) :: dt               ! full timestep size
    contains 
-     procedure :: f_eval  => sweet_f_eval 
-     procedure :: f_comp  => sweet_f_comp
-     procedure :: destroy => sweet_sweeper_destroy
+     procedure :: f_eval                => sweet_f_eval 
+     procedure :: f_comp                => sweet_f_comp
+     procedure :: initialize_correction => sweet_initialize_correction
+     procedure :: finalize_correction   => sweet_finalize_correction
+     procedure :: destroy               => sweet_sweeper_destroy
   end type sweet_sweeper_t
   
   ! prototypes of the C functions
@@ -64,6 +70,14 @@ module feval_module
        type(c_ptr),    value :: i_Y, i_Rhs, i_ctx, o_F3
        real(c_double), value :: i_t, i_dt
      end subroutine ccomp_f3
+
+     subroutine capply_viscosity(io_Y, i_t, i_dt, i_level, i_ctx) bind(c, name="capply_viscosity")
+       use iso_c_binding
+       type(c_ptr),    value :: io_Y, i_ctx
+       real(c_double), value :: i_t, i_dt
+       integer,        value :: i_level
+     end subroutine capply_viscosity
+
   end interface
   
 contains
@@ -123,6 +137,19 @@ contains
 
   end subroutine ffinal
 
+
+    ! prepare the current solution at m for the correction                                                                                                                           
+  subroutine sweet_initialize_correction(this, y, t, dt, level, m, flag)
+    class(sweet_sweeper_t), intent(inout) :: this
+    class(pf_encap_t),      intent(inout) :: y
+    real(pfdp),             intent(in)    :: t, dt
+    integer,                intent(in)    :: level, m
+    logical,                intent(in)    :: flag
+
+    ! not implemented
+
+  end subroutine sweet_initialize_correction
+  
   
   subroutine freference(sweeper, t, sd)
     class(pf_sweeper_t),       intent(in)    :: sweeper
@@ -135,19 +162,19 @@ contains
     sweet_sweeper_ptr => as_sweet_sweeper(sweeper)
     sd_ptr            => as_sweet_data_encap(sd)
 
-    call creference(sweet_sweeper_ptr%ctx, &
-                    t, &
+    call creference(sweet_sweeper_ptr%ctx,   &
+                    t,                       &
                     sd_ptr%c_sweet_data_ptr)
 
   end subroutine freference
   
   ! evaluate the right-hand side 
 
-  subroutine sweet_f_eval(this, y, t, level, f, piece)
+  subroutine sweet_f_eval(this, y, t, level, m, f, piece)
     class(sweet_sweeper_t),    intent(inout) :: this
     class(pf_encap_t),         intent(in)    :: y
     real(pfdp),                intent(in)    :: t
-    integer,                   intent(in)    :: level
+    integer,                   intent(in)    :: level, m
     class(pf_encap_t),         intent(inout) :: f
     integer,                   intent(in)    :: piece
     class(sweet_data_encap_t), pointer       :: y_sd_ptr
@@ -160,20 +187,20 @@ contains
 
        case (1) ! explicit rhs
           call ceval_f1(y_sd_ptr%c_sweet_data_ptr, &
-                        t, & 
-                        this%ctx, & 
+                        t,                         & 
+                        this%ctx,                  &  
                         f_sd_ptr%c_sweet_data_ptr)
 
        case (2) ! first implicit rhs
           call ceval_f2(y_sd_ptr%c_sweet_data_ptr, & 
-                        t, & 
-                        this%ctx, & 
+                        t,                         & 
+                        this%ctx,                  & 
                         f_sd_ptr%c_sweet_data_ptr)
 
        ! case (3) ! second implicit rhs
        !    call ceval_f3(y_sd_ptr%c_sweet_data_ptr, & 
-       !                  t, & 
-       !                  this%ctx, &
+       !                  t,                         & 
+       !                  this%ctx,                  &
        !                  f_sd_ptr%c_sweet_data_ptr)
 
        case DEFAULT
@@ -205,19 +232,19 @@ contains
     select case (piece)
 
          case (2) ! first implicit solve
-          call ccomp_f2(y_sd_ptr%c_sweet_data_ptr, & 
-                        t, & 
-                        dt, & 
+          call ccomp_f2(y_sd_ptr%c_sweet_data_ptr,   & 
+                        t,                           & 
+                        dt,                          & 
                         rhs_sd_ptr%c_sweet_data_ptr, &
-                        this%ctx, & 
+                        this%ctx,                    & 
                         f_sd_ptr%c_sweet_data_ptr)
 
     !    case (3) ! second implicit solve
-    !       call ccomp_f3(y_sd_ptr%c_sweet_data_ptr, &
-    !                     t, & 
-    !                     dt, & 
+    !       call ccomp_f3(y_sd_ptr%c_sweet_data_ptr,   &
+    !                     t,                           & 
+    !                     dt,                          & 
     !                     rhs_sd_ptr%c_sweet_data_ptr, & 
-    !                     this%ctx, & 
+    !                     this%ctx,                    & 
     !                     f_sd_ptr%c_sweet_data_ptr)
 
        case DEFAULT
@@ -227,6 +254,40 @@ contains
          
   end subroutine sweet_f_comp
 
+ ! apply various treatments to the solution after the correction                                                                                                                  
+  subroutine sweet_finalize_correction(this, y, t, dt, level, m, flag)
+    class(sweet_sweeper_t), intent(inout) :: this
+    class(pf_encap_t),      intent(inout) :: y
+    real(pfdp),             intent(in)    :: t, dt
+    integer,                intent(in)    :: level, m
+    logical,                intent(in)    :: flag 
+    
+    class(sweet_data_encap_t), pointer    :: y_sd_ptr
+
+    ! if m is the last node to be swept                                                                                                                                         
+    if (m == this%nnodes) then
+
+       ! increment the sweep number                                                                                                                                             
+       this%sweep_niter = this%sweep_niter + 1
+
+       ! set the delta_chi zero when we start a new timestep                                                                                                                    
+       if (this%sweep_niter == this%sweep_niter_max) then
+          
+          this%sweep_niter = 0 ! reset the counter
+          y_sd_ptr   => as_sweet_data_encap(y)
+          
+          ! apply the implicit viscosity
+          call capply_viscosity(y_sd_ptr%c_sweet_data_ptr,   & 
+                                t,                           & 
+                                this%dt,                     & ! this is the full timestep
+                                level-1,                     & ! conversion to c++ indexing
+                                this%ctx)
+
+       end if
+       
+    endif
+
+  end subroutine sweet_finalize_correction
   
   ! destructor
 
@@ -234,7 +295,7 @@ contains
     class(sweet_sweeper_t), intent(inout) :: this
     class(pf_level_t),      intent(inout) :: lev
 
-    ! need the follwing line since the "final" keyword is not supported by some (older) compilers
+    ! need the following line since the "final" keyword is not supported by some (older) compilers
     ! it forces Fortran to destroy the parent class data structures
     call this%imexQ_destroy(lev) 
 

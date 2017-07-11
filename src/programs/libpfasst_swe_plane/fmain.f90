@@ -81,27 +81,45 @@ contains
      pf_comm%nproc = 1
 
      ! timestepping parameters
-     nsteps     = 10
+     nsteps     = 1000
      t          = 0.0_pfdp
-     dt         = 0.02_pfdp 
+     dt         = 0.0002_pfdp 
 
      ! LibPFASST parameters
      pf%nlevels = num_levs
-     pf%niters  = 4                   ! number of SDC iterations 
+     if (num_levs == 3) then
+        pf%niters = 4                   ! number of SDC iterations
+     else if (num_levs == 2) then
+        pf%niters = 4
+     else 
+        pf%niters = 4
+     end if
      qtype_name = 'SDC_GAUSS_LOBATTO' ! type of nodes hard coded for now
      qtype      = translate_qtype(qtype_name, & 
                                   qnl)
 
-     nfields = 3                           ! three fields (horizontal velocities and height)
-     nnodes  = [2, 3, 5]                   ! number of nodes for the levels
-     nvars   = [nfields*nvars_per_field, & 
-                nfields*nvars_per_field, &
-                nfields*nvars_per_field]   ! number of degrees of freedom for the levels
+     nfields = 3                                ! three fields (horizontal velocities and height)
+     if (num_levs == 3) then
+        nnodes  = [2, 3, 5]                     ! number of nodes for the levels
+        nvars   = [nfields*nvars_per_field/4, & 
+                   nfields*nvars_per_field/2, & 
+                   nfields*nvars_per_field]     ! number of degrees of freedom for the levels
+     else if (num_levs == 2) then
+        nnodes  = [3, 5]                     ! number of nodes for the levels
+        nvars   = [nfields*nvars_per_field/2, & 
+                   nfields*nvars_per_field]     ! number of degrees of freedom for the levels
+     else
+        nnodes  = [3]                           ! number of nodes for the levels
+        nvars   = [nfields*nvars_per_field]     ! number of degrees of freedom for the levels
+     end if
 
      print *, nvars
      
      ! loop over levels to initialize level-specific data structures
      do level = 1, pf%nlevels
+
+       ! define the level id
+       pf%levels(level)%level = level ! confusing!
 
        ! trivial zero-order predictor
        pf%levels(level)%nsweeps_pred = 1
@@ -127,11 +145,17 @@ contains
        sd_factory_ptr%ctx    = user_ctx_ptr
        sweet_sweeper_ptr%ctx = user_ctx_ptr
        
+       ! initialize the sweeper data
+       sweet_sweeper_ptr%nnodes          = nnodes(level)
+       sweet_sweeper_ptr%sweep_niter     = 0
+       sweet_sweeper_ptr%sweep_niter_max = pf%niters
+       sweet_sweeper_ptr%dt              = dt
+       
     end do
 
     ! initialize the mpi and pfasst objects
     call pf_mpi_setup(pf_comm, & 
-                       pf)
+                      pf)
     call pf_pfasst_setup(pf)
     
     ! initialize the state vector at each level
@@ -150,13 +174,13 @@ contains
                      pf%nlevels,   & 
                      PF_POST_STEP, &
                      fecho_error)
-    call pf_add_hook(pf,            &
-                     -1,            &
-                     PF_POST_SWEEP, &
+    call pf_add_hook(pf,             &
+                     -1,             &
+                     PF_POST_SWEEP,  &
                      fecho_residual)   
 
     ! advance in time with libpfasst
-    level = 1
+    level = num_levs
     call pf_pfasst_run(pf,                    & 
                        pf%levels(level)%Q(1), &
                        dt,                    &

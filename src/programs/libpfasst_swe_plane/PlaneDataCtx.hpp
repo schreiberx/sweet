@@ -23,10 +23,11 @@ public:
 	       std::vector<LevelSingleton> *i_singletons
 	       ) 
     : simVars(i_simVars),
-      levelSingletons(i_singletons) 
+      levelSingletons(i_singletons)
   {
     if (!simVars) 
       FatalError("PlaneDataCtx: simVars pointer is NULL!");
+
     if (!levelSingletons) 
       FatalError("PlaneDataCtx: levelSingletons pointer is NULL!");
     

@@ -135,8 +135,8 @@ contains
 
     select type(x)
     type is (sweet_data_encap_t)
-       call c_sweet_data_create(this%ctx, &
-                                level-1, &
+       call c_sweet_data_create(this%ctx,           &
+                                level-1,            &
                                 x%c_sweet_data_ptr, &
                                 x%data_size) ! conversion to C++ indexing
     class default
@@ -158,8 +158,8 @@ contains
     do i = 1, n
        select type(x(i))
        type is (sweet_data_encap_t)
-          call c_sweet_data_create(this%ctx, &
-                                   level-1, & 
+          call c_sweet_data_create(this%ctx,              &
+                                   level-1,               & 
                                    x(i)%c_sweet_data_ptr, &
                                    x(i)%data_size) ! conversion to C++ indexing    
        class default
@@ -274,7 +274,7 @@ contains
 
     ! convert the C pointer into a Fortran pointer
     call c_f_pointer(z_c_ptr, &
-                     z_ptr, &
+                     z_ptr,   &
                      [this%data_size])
 
     ! copy the data into z

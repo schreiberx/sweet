@@ -74,6 +74,14 @@ extern "C"
 		 PlaneDataCtx *i_ctx, 
 		 PlaneDataVars *o_F3
 		 );
+
+  // applies implicit viscosity to the variables
+  void capply_viscosity(PlaneDataVars *io_Y,
+			double i_t, 
+			double i_dt,
+			int i_level, 
+			PlaneDataCtx *i_ctx
+			);
   
 }
 

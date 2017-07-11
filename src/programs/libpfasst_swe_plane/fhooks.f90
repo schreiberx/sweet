@@ -33,8 +33,8 @@ contains
 
     class(pf_encap_t),  allocatable   :: Y_reference
 
-    if (state%t0 + state%dt > 99.9) then
-       
+    if (state%t0 + state%dt > 0.0999) then!9.996) then
+     
        ! allocate memory for vector Y_exact
        call level%ulevel%factory%create_single(Y_reference, & 
                                                level%level, & 
@@ -64,7 +64,7 @@ contains
                                                 SDC_KIND_SOL_FEVAL, &
                                                 level%nvars, &
                                                 level%shape)
-
+       
     end if
   end subroutine fecho_error
 
@@ -81,7 +81,7 @@ contains
     select type(R => level%R(level%nnodes-1))
     type is (sweet_data_encap_t)
        
-       print '("resid: step: ",i3.3," iter: ",i4.3," level: ",i2.2," resid: ",es14.7)', &
+       print '("resid: step: ",i7.5," iter: ",i5.3," level: ",i2.2," resid: ",es14.7)', &
             state%step+1, state%iter, level%level, R%norm()
 
       !call cecho_residual(R%c_sweet_data_ptr, & 
