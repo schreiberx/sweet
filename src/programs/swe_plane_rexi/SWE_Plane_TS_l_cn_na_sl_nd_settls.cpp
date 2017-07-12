@@ -9,7 +9,7 @@
  *					which was also written by Pedro Peixoto
  */
 
-#include "SWE_Plane_TS_lg_rexi_lc_erk_na_sl_nd_settls.hpp"
+#include "SWE_Plane_TS_l_cn_na_sl_nd_settls.hpp"
 
 
 
@@ -45,7 +45,7 @@
  * http://onlinelibrary.wiley.com/doi/10.1002/qj.200212858314/pdf
  *
  */
-void SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk::run_timestep(
+void SWE_Plane_TS_l_cn__na_sl_nd_settls::run_timestep(
 		PlaneData &io_h,	///< prognostic variables
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
@@ -208,7 +208,7 @@ void SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk::run_timestep(
 /*
  * Setup
  */
-void SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk::setup(
+void SWE_Plane_TS_l_cn__na_sl_nd_settls::setup(
 		REXI_SimulationVariables &i_rexi,
 
 		int i_with_nonlinear
@@ -255,7 +255,7 @@ void SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk::setup(
 }
 
 
-SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk::SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk(
+SWE_Plane_TS_l_cn__na_sl_nd_settls::SWE_Plane_TS_l_cn__na_sl_nd_settls(
 		SimulationVariables &i_simVars,
 		PlaneOperators &i_op
 )	:
@@ -278,7 +278,7 @@ SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk::SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_e
 
 
 
-SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk::~SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk()
+SWE_Plane_TS_l_cn__na_sl_nd_settls::~SWE_Plane_TS_l_cn__na_sl_nd_settls()
 {
 }
 
