@@ -1,0 +1,33 @@
+
+
+These scripts help to test the convergence of the different SWE TS methods
+
+Steps:
+	1) Cleanup directory:
+	   ./cleanup.sh
+
+	2) Generate benchmarks:
+
+	   ./jobs_create.py [group=l1/l2/ln1/ln2] [tsmethod] [order1] [order2]")
+
+	   where
+
+	   [group] is one of the benchmarking groups
+	           which also chooses the reference solution
+	           l1: Linear 1st order
+	           l2: Linear 2nd order
+	           nl1: Nonlinear 1st order
+	           nl2: Nonlinear 2nd order
+
+	   [tsmethod] name of time stepping method
+
+	   [order1] order of time stepping method 1 (if applicable)
+
+	   [order2] order of time stepping method 2 (if applicable)
+
+	3) Execute benchmarks:
+	   ./run_jobs.sh
+
+	4) Run postprocessing (and validation tests):
+	   ./postprocessing.py
+
