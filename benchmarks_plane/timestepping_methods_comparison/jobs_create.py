@@ -385,7 +385,15 @@ timestep_sizes = [0.0001*(2.0**i) for i in range(0, 11)]
 groups = ['l1', 'l2', 'ln1', 'ln2']
 #groups = ['ln2test']
 
+#if len(sys.argv) < 5:
+#	print("Usage: "+str(sys.argv[0])+" [group=l1/l2/ln1/ln2] [tsmethod] [order1] [order2]")
+#	sys.exit(1)
 
+
+if len(sys.argv) > 1:
+	groups = [sys.argv[1]]
+
+print("Groups: "+str(groups))
 
 for group in groups:
 	# 1st order linear
@@ -434,6 +442,7 @@ for group in groups:
 			['ln_erk',		4,	4],	# reference solution
 			['l_cn_n_erk',		2,	2],
 			['l_erk_n_erk',		2,	2],
+			['l_irk_n_erk',		2,	2],
 			['ln_erk',		2,	2],
 			['l_rexi_n_erk',	2,	2],
 			['l_rexi_ns_sl_nd_erk',	2,	2],
@@ -451,57 +460,62 @@ for group in groups:
 		]
 
 	#
+	# OVERRIDE TS methods
+	#
+
+	if len(sys.argv) > 4:
+		ts_methods = [ts_methods[0]]+[[sys.argv[2], int(sys.argv[3]), int(sys.argv[4])]]
+		print(ts_methods)
+
+
+	#
 	# add prefix string to group benchmarks
 	#
-	prefix_string_template = group+'_'
+	prefix_string_template = group
 
 
-	for tsm in ts_methods:
+	#
+	# Reference solution
+	#
+	if True:
+		tsm = ts_methods[0]
 
-		#
-		# Reference solution
-		#
-		if True:
-			tsm = ts_methods[0]
+		p.prefix_string = prefix_string_template+'_ref'
+		p.timestepping_method = tsm[0]
+		p.timestepping_order = tsm[1]
+		p.timestepping_order2 = tsm[2]
 
-			p.prefix_string = prefix_string_template+'ref_'+tsm[0]
+		if len(tsm) > 3:
+			p.timestep_size = tsm[3]
+		else:
+			p.timestep_size = timestep_size_reference
+
+		p.gen_script('script'+p.create_job_id(), 'run.sh')
+
+
+	for tsm in ts_methods[1:]:
+		for timestep_size in timestep_sizes:
+			p.prefix_string = prefix_string_template
+
 			p.timestepping_method = tsm[0]
 			p.timestepping_order = tsm[1]
 			p.timestepping_order2 = tsm[2]
 
-			if len(tsm) > 3:
-				p.timestep_size = tsm[3]
+			p.timestep_size = timestep_size
+
+
+			if 'rexi' in tsm[0]:
+				p.rexi_use_direct_solution = 1
+				p.rexi_m = 0
+				p.gen_script('script'+p.create_job_id(), 'run.sh')
+
+				p.rexi_use_direct_solution = 0
+				for p.rexi_m in [16, 32, 64, 128, 256, 512]:
+					p.gen_script('script'+p.create_job_id(), 'run.sh')
+
+				p.rexi_m = 0
+
 			else:
-				p.timestep_size = timestep_size_reference
-
-			p.gen_script('script'+p.create_job_id(), 'run.sh')
-
-
-		for timestep_size in timestep_sizes:
-
-
-			for tsm in ts_methods[1:]:
-				p.prefix_string = prefix_string_template+tsm[0]
-
-				p.timestepping_method = tsm[0]
-				p.timestepping_order = tsm[1]
-				p.timestepping_order2 = tsm[2]
-
-				p.timestep_size = timestep_size
-
-
-				if 'rexi' in tsm[0]:
-					p.rexi_use_direct_solution = 1
-					p.rexi_m = 0
-					p.gen_script('script'+p.create_job_id(), 'run.sh')
-
-					p.rexi_use_direct_solution = 0
-					for p.rexi_m in [16, 32, 64, 128, 256, 512]:
-						p.gen_script('script'+p.create_job_id(), 'run.sh')
-
-					p.rexi_m = 0
-
-				else:
-					p.gen_script('script'+p.create_job_id(), 'run.sh')
+				p.gen_script('script'+p.create_job_id(), 'run.sh')
 
 
