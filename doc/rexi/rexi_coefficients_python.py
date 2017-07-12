@@ -14,6 +14,7 @@
 import math
 import cmath
 import sys
+import numpy as np
 
 #
 # This class provides the weights and coefficients for the
@@ -36,7 +37,7 @@ class GaussianApproximation:
 		"A high-order time-parallel scheme for solving wave propagation problems via the direct construction of an approximate time-evolution operator", Haut et.al.
 		"""
 
-		self.mu = -4.315321510875024 + 1j*0
+		self.mu = -4.315321510875024
 
 		self.L = 11
 
@@ -203,9 +204,12 @@ class ExponentialApproximation:
 
 		self.b = [math.exp(self.h*self.h)*cmath.exp(-1j*(float(m)*self.h)) for m in range(-self.M, self.M+1)]
 
+
+
 	def print(self):
 		for i in self.b:
 			print(i)
+
 
 
 	def eval_e_ix(
@@ -213,6 +217,7 @@ class ExponentialApproximation:
 		i_x
 	):
 		return cmath.exp(1j*i_x)
+
 
 
 	def approx_e_ix(
@@ -228,6 +233,7 @@ class ExponentialApproximation:
 		return sum
 
 
+
 class REXI:
 	
 	def __init__(
@@ -236,16 +242,21 @@ class REXI:
 		i_M,
 		i_reduce_to_half = True
 	):
-		self.ga = GaussianApproximation();
-		self.ea = ExponentialApproximation(i_h, i_M);
+		self.ga = GaussianApproximation()
+		self.ea = ExponentialApproximation(i_h, i_M)
 
-		self.L = self.ga.L;
-		self.N = i_M+self.ga.L;
-		self.M = i_M;
+		self.L = self.ga.L
+		self.N = i_M+self.ga.L
+		self.M = i_M
 
 		M = self.M
 		N = self.N
 		L = self.L
+
+		#print(self.ga.mu)
+		#for i in self.ga.a:
+		#	print(i)
+#		sys.exit(1)
 
 		self.alpha = [0 for i in range(0, 2*self.N+1)]
 		self.beta_re = [0 for i in range(0, 2*self.N+1)]
@@ -253,11 +264,18 @@ class REXI:
 
 		for l in range(-self.L, L+1):
 			for m in range(-M, M+1):
-				n = l+m;
-				self.alpha[n+N] = i_h*(self.ga.mu + 1j*n);
+				n = l+m
+				self.alpha[n+N] = i_h*(self.ga.mu + 1j*n)
 
-				self.beta_re[n+N] += self.ea.b[m+M].real*i_h*self.ga.a[l+L];
-				self.beta_im[n+N] += self.ea.b[m+M].imag*i_h*self.ga.a[l+L];
+				self.beta_re[n+N] += self.ea.b[m+M].real*i_h*self.ga.a[l+L]
+				self.beta_im[n+N] += self.ea.b[m+M].imag*i_h*self.ga.a[l+L]
+
+		#for i in self.alpha:
+		#	print(i)
+		#print("*"*80)
+		#for i in self.beta_re:
+		#	print(i)
+		#sys.exit(1)
 
 		#for (int n = -N; n < N+1; n++)
 		#{
@@ -304,25 +322,34 @@ class REXI:
 	# approx
 	#
 	def approx_e_ix(self, i_x):
-		sum_re = 0;
-		sum_im = 0;
+		sum_re = 0
+		sum_im = 0
 
 		S = len(self.alpha)
+		#print(S)
+		#print(i_x)
 
 		# Split computation into real part of \f$ cos(x) \f$ and imaginary part \f$ sin(x) \f$
 		for n in range(0, S):
-			denom = (1j*i_x + self.alpha[n]);
+			#print(n)
+			#print(self.alpha[n])
+			#print(self.beta_re[n])
+			denom = (1j*i_x + self.alpha[n])
 			sum_re += (self.beta_re[n] / denom).real
 			sum_im += (self.beta_im[n] / denom).real
+			#print(sum_re)
 
-		return sum_re + 1j*sum_im;
+		retval = sum_re + 1j*sum_im
+		#print(retval)
+		#sys.exit(1)
+		return retval
 
 
 ##################################################
 ##################################################
 
 h = 0.2
-M = 32
+M = 64
 
 ##################################################
 ##################################################
@@ -331,13 +358,17 @@ M = 32
 print("GaussianApproximation")
 
 g = GaussianApproximation()
-h = 1
-print("evalGaussian\tapproxGaussian\terror")
+
+maxerror = 0
 for x in range(0, 10):
 	a = g.evalGaussian(x, h)
 	b = g.approxGaussian(x, h)
 
-	print(str(a)+"\t"+str(b)+"\t"+str(abs(a-b)))
+	e = abs(a-b)
+	print("Error at "+str(float(x))+": "+str(float(e)))
+	maxerror = max(e, maxerror)
+
+print("FINAL error: "+str(maxerror))
 
 ##################################################
 ##################################################
@@ -347,12 +378,19 @@ print()
 print("ExponentialApproximation")
 ea = ExponentialApproximation(h, M)
 
-print("eval_e_ix\tapprox_e_ix\terror")
-for x in range(-int(h*M)+1, int(h*M)):
+print("h: "+str(h))
+print("M: "+str(M))
+
+maxerror = 0
+for x in range(-int(h*M-np.pi*0.5), int(h*M-np.pi*0.5)):
 	a = ea.eval_e_ix(x)
 	b = ea.approx_e_ix(x)
 
-	print(str(a)+"\t"+str(b)+"\t"+str(abs(a-b)))
+	e = abs(a-b)
+	print("Error at "+str(float(x))+": "+str(float(e)))
+	maxerror = max(e, maxerror)
+
+print("FINAL error: "+str(maxerror))
 
 ##################################################
 ##################################################
@@ -361,7 +399,7 @@ print()
 
 print("REXI")
 h = 0.2
-M = 64
+M = 8
 print("M="+str(M)+"   h="+str(h))
 rexi = REXI(h, M, False)
 
@@ -372,7 +410,8 @@ for x in range(-int(h*M)+1, int(h*M)):
 
 	print(str(a)+"\t"+str(b)+"\t"+str(abs(a-b)))
 
-print()
+print("")
+sys.exit(1)
 
 print("REXI alpha coefficients")
 for i in range(len(rexi.alpha)):

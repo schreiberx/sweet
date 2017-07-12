@@ -216,8 +216,8 @@ The following notations split up the shallow-water equations in their advective
 \end_inset
 
 , the non-linear part which can be formulated to be part of the total derivative
- denoted by 
-\begin_inset Formula $N_{T}(U)$
+ (advective terms) denoted by 
+\begin_inset Formula $N_{A}(U)$
 \end_inset
 
  and the divergence-related term 
@@ -233,7 +233,7 @@ The following notations split up the shallow-water equations in their advective
  on the find grid.
 \begin_inset Formula 
 \begin{eqnarray*}
-\frac{\partial U}{\partial t} & = & L_{G}(U)+L_{C}(U)+N_{T}(U)+N_{D}(U)+D(U)\\
+\frac{\partial U}{\partial t} & = & L_{G}(U)+L_{C}(U)+N_{A}(U)+N_{D}(U)+D(U)\\
  & = & \underbrace{\left[\begin{array}{ccc}
  & -\overline{\Phi}\partial_{x} & -\overline{\Phi}\partial_{y}\\
 -\partial_{x} &  & 0\\
@@ -244,10 +244,10 @@ The following notations split up the shallow-water equations in their advective
  & -f
 \end{array}\right]}_{L_{C}}U\\
  &  & +\underbrace{\left[\begin{array}{c}
--\nabla\Phi'.\boldsymbol{u}\\
+-\boldsymbol{u}.\nabla\Phi'\\
 -u\partial_{x}u-v\partial_{y}u\\
 -v\partial_{y}v-u\partial_{x}v
-\end{array}\right]}_{N_{T}(U)}+\underbrace{\left[\begin{array}{c}
+\end{array}\right]}_{N_{A}(U)}+\underbrace{\left[\begin{array}{c}
 -\Phi'\nabla.\boldsymbol{u}\\
 \\
 \\
@@ -316,7 +316,7 @@ Semi-Lagrangian formulation
 
 \begin_layout Standard
 The term 
-\begin_inset Formula $N_{T}(U)$
+\begin_inset Formula $N_{A}(U)$
 \end_inset
 
  can be treated with a semi-Lagrangian formulation by using the total derivative
@@ -453,7 +453,7 @@ Similar time step limitation compared to non-linear terms
 \begin_inset Text
 
 \begin_layout Plain Layout
-\begin_inset Formula $N_{T}(U)$
+\begin_inset Formula $N_{A}(U)$
 \end_inset
 
 
@@ -625,7 +625,7 @@ lf
 \begin_inset Text
 
 \begin_layout Plain Layout
-\begin_inset Formula $N_{T}(U)$
+\begin_inset Formula $N_{A}(U)$
 \end_inset
 
 
@@ -637,7 +637,7 @@ lf
 \begin_inset Text
 
 \begin_layout Plain Layout
-nt
+na
 \end_layout
 
 \end_inset
@@ -694,7 +694,7 @@ lgf
 \begin_inset Text
 
 \begin_layout Plain Layout
-\begin_inset Formula $N_{T}(U)+N_{D}(U)$
+\begin_inset Formula $N_{A}(U)+N_{D}(U)$
 \end_inset
 
 
@@ -1136,7 +1136,7 @@ Order
 \begin_inset Text
 
 \begin_layout Plain Layout
-\begin_inset Formula $N_{T}(U)$
+\begin_inset Formula $N_{A}(U)$
 \end_inset
 
 
@@ -1377,7 +1377,7 @@ X
 \begin_layout Plain Layout
 
 \series bold
-l_rexi_nt_sl
+l_rexi_na_sl
 \end_layout
 
 \end_inset
@@ -1511,7 +1511,7 @@ X
 \begin_layout Plain Layout
 
 \series bold
-lg_rexi_lc_implicit_nt_sl_nd_cn
+lg_rexi_lc_implicit_na_sl_nd_cn
 \end_layout
 
 \end_inset
