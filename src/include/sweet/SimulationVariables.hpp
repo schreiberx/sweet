@@ -353,7 +353,7 @@ public:
 
 		/// size of cell (hx, hy)
 		/// this is computed based on disc.res and sim.domain_size
-		double cell_size[2] = {0, 0};
+//		double cell_size[2] = {0, 0};
 
 
 
@@ -399,7 +399,7 @@ public:
 			std::cout << "DISCRETIZATION:" << std::endl;
 			std::cout << " + res_physical: " << res_physical[0] << " x " << res_physical[1] << std::endl;
 			std::cout << " + res_spectral: " << res_spectral[0] << " x " << res_spectral[1] << std::endl;
-			std::cout << " + cell_size (2D): " << res_physical[0] << " x " << cell_size[1] << std::endl;
+//			std::cout << " + cell_size (2D): " << res_physical[0] << " x " << cell_size[1] << std::endl;
 			std::cout << " + timestepping_method: " << timestepping_method << std::endl;
 			std::cout << " + timestepping_order: " << timestepping_order << std::endl;
 			std::cout << " + timestepping_order2: " << timestepping_order2 << std::endl;
@@ -654,8 +654,8 @@ public:
 		if (timecontrol.max_timesteps_nr < 0)
 			FatalError("timecontrol.max_timesteps_nr < 0");
 
-		disc.cell_size[0] = sim.domain_size[0]/(double)disc.res_physical[0];
-		disc.cell_size[1] = sim.domain_size[1]/(double)disc.res_physical[1];
+//		disc.cell_size[0] = sim.domain_size[0]/(double)disc.res_physical[0];
+//		disc.cell_size[1] = sim.domain_size[1]/(double)disc.res_physical[1];
 
 		timecontrol.current_timestep_size = -1;
 		timecontrol.current_timestep_nr = 0;

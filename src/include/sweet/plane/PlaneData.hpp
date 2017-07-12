@@ -768,7 +768,7 @@ public:
 
 #if SWEET_DEBUG
 		if (!physical_space_data_valid)
-			FatalError("Spectral data not available! Is this maybe a non-initialized operator?");
+			FatalError("Spectral data not available! Did you set the data to something or is this maybe a non-initialized operator?");
 
 		// zero out spectral data field to last column since this data might contain non-sense data to avoid valgrind errors
 //		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)

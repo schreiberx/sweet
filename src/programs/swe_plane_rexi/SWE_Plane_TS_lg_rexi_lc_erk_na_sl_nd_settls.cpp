@@ -244,9 +244,12 @@ void SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk::setup(
 	ScalarDataArray pos_x = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_x);
 	ScalarDataArray pos_y = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_y);
 
+	double cell_size_x = simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
+	double cell_size_y = simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
+
 	// Initialize arrival points with h position
-	posx_a = pos_x+0.5*simVars.disc.cell_size[0];
-	posy_a = pos_y+0.5*simVars.disc.cell_size[1];
+	posx_a = pos_x+0.5*cell_size_x;
+	posy_a = pos_y+0.5*cell_size_y;
 
 
 }

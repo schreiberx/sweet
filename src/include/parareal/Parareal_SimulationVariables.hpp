@@ -12,9 +12,6 @@
 #error "Parareal not activated"
 #endif
 
-#include <getopt.h>
-#include <limits>
-
 
 
 /**
