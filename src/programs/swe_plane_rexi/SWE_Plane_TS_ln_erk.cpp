@@ -40,6 +40,7 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 
 	o_dt = i_fixed_dt;
 
+
 	// A-grid method
 	if (!simVars.disc.use_staggering)
 	{
@@ -50,6 +51,7 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 		 *	u_t = -g * h_x - u * u_x - v * u_y + f*v
 		 *	v_t = -g * h_y - u * v_x - v * v_y - f*u
 		 */
+
 		PlaneData total_h = i_h + simVars.sim.h0;
 
 		o_u_t = -simVars.sim.gravitation*op.diff_c_x(total_h) - i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
@@ -63,12 +65,13 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 	}
 	else // simVars.disc.use_staggering = true
 	{
-		FatalError("TODO (MaS@Pedro): The A-grid formulation above assumes that h is the perturbation.");
+		//FatalError("TODO (MaS@Pedro): The A-grid formulation above assumes that h is the perturbation.");
 		// STAGGERED GRID
 
-		PlaneData U(i_h.planeDataConfig);
-		PlaneData V(i_h.planeDataConfig);
-		PlaneData H(i_h.planeDataConfig);
+		PlaneData U(i_h.planeDataConfig); // U flux
+		PlaneData V(i_h.planeDataConfig); // V flux
+		PlaneData H(i_h.planeDataConfig); //Bernoulli potential
+		PlaneData total_h = i_h + simVars.sim.h0;
 
 		/*
 		 * Sadourny energy conserving scheme
@@ -95,10 +98,12 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 		/*
 		 * U and V updates
 		 */
+
 		if (simVars.pde.use_nonlinear_equations > 0) // nonlinear case
 		{
-			U = op.avg_b_x(i_h)*i_u;
-			V = op.avg_b_y(i_h)*i_v;
+			FatalError("TODO (Pedro): Nonlinear is currently unstable (why?).");
+			U = op.avg_b_x(total_h)*i_u;
+			V = op.avg_b_y(total_h)*i_v;
 		}
 		else // linear case
 		{
@@ -115,13 +120,19 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 		if (simVars.pde.use_nonlinear_equations > 0) //nonlinear case
 		{
 			// Potential vorticity
-			if (op.avg_b_x(op.avg_b_y(i_h)).reduce_min() < 0.00000001)
+			PlaneData total_h_pv = total_h;
+			total_h_pv = op.avg_b_x(op.avg_b_y(total_h));
+
+			if (total_h_pv.reduce_min() < 0.00000001)
 			{
 				std::cerr << "Test case not adequate for vector invariant formulation. Null or negative water height" << std::endl;
+				std::cerr << "Min h_pv   : " << total_h_pv.reduce_min() << std::endl;
+				std::cerr << "Min h_total: " << total_h.reduce_min() << std::endl;
+				std::cerr << "Min h_pert : " << i_h.reduce_min() << std::endl;
 				exit(1);
 			}
 
-			PlaneData q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + simVars.sim.f0) / op.avg_b_x(op.avg_b_y(i_h));
+			PlaneData q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + simVars.sim.f0) / total_h_pv;
 
 			// u, v tendencies
 			// Energy conserving scheme
@@ -137,7 +148,7 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 		/*
 		 * P UPDATE
 		 */
-		if (simVars.pde.use_nonlinear_equations > 0){ //full nonlinear divergence
+		if (simVars.pde.use_nonlinear_equations == 1){ //full nonlinear divergence
 			// standard update
 			o_h_t = -op.diff_f_x(U) - op.diff_f_y(V);
 		}

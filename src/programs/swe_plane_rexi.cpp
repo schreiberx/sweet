@@ -293,33 +293,6 @@ public:
 		// Setup sampler for future interpolations
 		sampler2D.setup(simVars.sim.domain_size, planeDataConfig);
 
-#if 0		// Setup semi-lag
-		semiLagrangian.setup(simVars.sim.domain_size, planeDataConfig);
-
-
-		PlaneData tmp_x(planeDataConfig);
-		tmp_x.physical_update_lambda_array_indices(
-			[&](int i, int j, double &io_data)
-			{
-				io_data = ((double)i)*simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
-			}
-		);
-		PlaneData tmp_y(planeDataConfig);
-		tmp_y.physical_update_lambda_array_indices(
-			[&](int i, int j, double &io_data)
-			{
-				io_data = ((double)j)*simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
-			}
-		);
-
-		// Initialize arrival points with h position
-		pos_x = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_x);
-		pos_y = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_y);
-
-		// Initialize arrival points with h position
-		posx_a = pos_x+0.5*simVars.disc.cell_size[0];
-		posy_a = pos_y+0.5*simVars.disc.cell_size[1];
-#endif
 
 		// Waves test case - separate from SWEValidationBench because it depends on certain local input parameters
 		auto return_h_perturbed = [] (
@@ -385,18 +358,6 @@ public:
 						force_h.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_h_perturbed(simVars, x, y));
 					}
 
-
-					{
-#if 0
-						//Coriolis term - lives in the corner of the cells
-						if (simVars.pde.use_nonlinear_equations)
-						{
-							//PXT: had some -0.5 on i and j (why??)
-							double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-							double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-						}
-#endif
-					}
 
 					{
 						// u space

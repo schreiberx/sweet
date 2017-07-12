@@ -142,6 +142,10 @@ public:
 			std::cout << std::endl;
 			std::cout << "Partial differential equation:" << std::endl;
 			std::cout << "	--pde-id [0/1]		PDE to solve (0: SWE, 1: advection)" << std::endl;
+			std::cout << "	--nonlinear [int]		Use non-linear (>=1) if available or linear (0) formulation, default: 1" << std::endl;
+			std::cout << "						0: Linear " << std::endl;
+			std::cout << "						1: Nonlinear (default)" << std::endl;
+			std::cout << "						2: Linear + nonlinear advection only (needs -H to be set)" << std::endl;
 			std::cout << "" << std::endl;
 		}
 	} pde;
@@ -1158,10 +1162,6 @@ public:
 				std::cout << "	-i [file0][;file1][;file3]...	string with filenames for initial conditions" << std::endl;
 				std::cout << "					specify BINARY; as first file name to read files as binary raw data" << std::endl;
 				std::cout << "	--use-robert-functions [bool]	Use Robert function formulation for velocities on the sphere" << std::endl;
-				std::cout << "	--nonlinear [int]		Use non-linear (>=1) if available or linear (0) formulation, default: 1" << std::endl;
-				std::cout << "						0: Linear " << std::endl;
-				std::cout << "						1: Nonlinear (default)" << std::endl;
-				std::cout << "						2: Linear + nonlinear advection only (needs -H to be set)" << std::endl;
 				std::cout << "" << std::endl;
 				rexi.outputProgParams();
 

@@ -41,7 +41,7 @@ public:
 	SWE_Plane_TS_l_rexi *l_rexi = nullptr;
 	SWE_Plane_TS_l_direct *l_direct = nullptr;
 	SWE_Plane_TS_l_rexi_ns_sl_nd_erk *l_rexi_ns_sl_nd_erk = nullptr;
-	SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk *lg_rexi_lc_erk_nt_sl_nd_erk = nullptr;
+	SWE_Plane_TS_l_cn__na_sl_nd_settls *l_cn_na_sl_nd_settls = nullptr;
 
 	SWE_Plane_TS_l_irk_n_erk *l_irk_n_erk = nullptr;
 
@@ -113,10 +113,10 @@ public:
 			l_rexi_ns_sl_nd_erk = nullptr;
 		}
 
-		if (lg_rexi_lc_erk_nt_sl_nd_erk != nullptr)
+		if (l_cn_na_sl_nd_settls != nullptr)
 		{
-			delete lg_rexi_lc_erk_nt_sl_nd_erk;
-			lg_rexi_lc_erk_nt_sl_nd_erk = nullptr;
+			delete l_cn_na_sl_nd_settls;
+			l_cn_na_sl_nd_settls = nullptr;
 		}
 
 		if (l_irk_n_erk != nullptr)
@@ -239,9 +239,9 @@ public:
 		}
 		else if (i_timestepping_method_string == "lg_rexi_lc_erk_nt_sl_nd_erk")
 		{
-			lg_rexi_lc_erk_nt_sl_nd_erk = new SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk(i_simVars, i_op);
+			l_cn_na_sl_nd_settls = new SWE_Plane_TS_l_cn__na_sl_nd_settls(i_simVars, i_op);
 
-			lg_rexi_lc_erk_nt_sl_nd_erk->setup(
+			l_cn_na_sl_nd_settls->setup(
 					i_simVars.rexi.rexi_h,
 					i_simVars.rexi.rexi_M,
 					i_simVars.rexi.rexi_L,
@@ -250,7 +250,7 @@ public:
 					i_simVars.pde.use_nonlinear_equations
 				);
 
-			master = &(SWE_Plane_TS_interface&)*lg_rexi_lc_erk_nt_sl_nd_erk;
+			master = &(SWE_Plane_TS_interface&)*l_cn_na_sl_nd_settls;
 		}
 		else if (i_timestepping_method_string == "l_irk_n_erk")
 		{
