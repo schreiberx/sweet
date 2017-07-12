@@ -15,7 +15,7 @@ for MODE in debug release; do
 	echo "$SCONS"
 	$SCONS
 
-	for Nx in `seq 4 37`; do
+	for Nx in `seq 4 3 37`; do
 		for Ny in `seq 4 3 37`; do
 			EXEC="./build/test_antialiasing_frequencies_*_$MODE -N $Nx,$Ny"
 			echo "$EXEC"
@@ -23,8 +23,8 @@ for MODE in debug release; do
 		done
 	done
 
-	for Nx in `seq 64 8 128`; do
-		for Ny in `seq 64 8 128`; do
+	for Nx in `seq 32 8 64`; do
+		for Ny in `seq 32 8 64`; do
 			EXEC="./build/test_antialiasing_frequencies_*_$MODE -N $Nx,$Ny"
 			echo "$EXEC"
 			$EXEC || exit
