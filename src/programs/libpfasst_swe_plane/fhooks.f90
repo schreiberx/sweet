@@ -33,7 +33,7 @@ contains
 
     class(pf_encap_t),  allocatable   :: Y_reference
 
-    if (state%t0 + state%dt > 0.0999) then!9.996) then
+    if (state%t0 + state%dt > 999) then
      
        ! allocate memory for vector Y_exact
        call level%ulevel%factory%create_single(Y_reference, & 

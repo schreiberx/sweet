@@ -41,7 +41,7 @@ std::vector<LevelSingleton> levelSingletons;
 extern "C"
 {
   /* Driver function for pfasst control */
-  void fmain (PlaneDataCtx *pd_ctx, int* num_levs, std::size_t* nvars);
+  void fmain (PlaneDataCtx *pd_ctx, int* num_levs, double* t_max, double* dt, std::size_t* nvars);
 }
 
 /**
@@ -73,6 +73,9 @@ int main(int i_argc, char *i_argv[])
   param_use_coriolis_formulation = simVars.bogus.var[0];
   assert (param_use_coriolis_formulation == 0 || param_use_coriolis_formulation == 1);
   param_compute_error = simVars.bogus.var[1];
+
+  simVars.timecontrol.current_timestep_size = - simVars.sim.CFL; 
+  simVars.outputConfig();
 
   /**********************************************************
    * SETUP the LevelSingletons for all levels
@@ -138,6 +141,8 @@ int main(int i_argc, char *i_argv[])
   fmain(
 	pd_ctx,
 	&param_max_levels,
+	&(simVars.timecontrol.max_simulation_time),
+	&(simVars.timecontrol.current_timestep_size),
 	&(levelSingletons[param_max_levels-1].dataConfig.physical_array_data_number_of_elements)
   	); 
 

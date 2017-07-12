@@ -54,7 +54,7 @@ contains
     endif
   end function translate_qtype
 
-  subroutine fmain(user_ctx_ptr, num_levs, nvars_per_field) bind (c, name='fmain')
+  subroutine fmain(user_ctx_ptr, num_levs, t_max, dt, nvars_per_field) bind (c, name='fmain')
     use mpi
 
     type(c_ptr),                 value       :: user_ctx_ptr
@@ -62,7 +62,7 @@ contains
                                                 nvars_per_field, nfields, iters, nsteps, level, kind, qnl, qtype
     character(c_char)                        :: qtype_name
 
-    real(c_double)                           :: t, dt
+    real(c_double)                           :: t, t_max, dt
 
     class(pf_factory_t),         allocatable :: factory
     
@@ -81,9 +81,8 @@ contains
      pf_comm%nproc = 1
 
      ! timestepping parameters
-     nsteps     = 1000
-     t          = 0.0_pfdp
-     dt         = 0.0002_pfdp 
+     t          = 0
+     nsteps     = int(t_max/dt)
 
      ! LibPFASST parameters
      pf%nlevels = num_levs

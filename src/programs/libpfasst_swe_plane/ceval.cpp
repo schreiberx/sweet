@@ -64,45 +64,40 @@ extern "C"
     // get the SimulationVariables object from context
     SimulationVariables* simVars(i_ctx->get_simulation_variables());
     
-    // Gaussian 
-    //simVars->setup.benchmark_scenario_id = 1;
-    // Waves
-    simVars->setup.benchmark_scenario_id = 16;
-
     h_Y.physical_set_all(simVars->sim.h0);
     u_Y.physical_set_all(0);
     v_Y.physical_set_all(0);
-        
+    
     // initialize height
     h_Y.physical_update_lambda_array_indices(
-					     [&](int i, int j, double &io_data)
-					     {
-					       double x = (((double)i)/(double)simVars->disc.res_physical[0])*simVars->sim.domain_size[0];
-					       double y = (((double)j)/(double)simVars->disc.res_physical[1])*simVars->sim.domain_size[1];
+    					     [&](int i, int j, double &io_data)
+    					     {
+    					       double x = (((double)i+0.5)/(double)simVars->disc.res_physical[0])*simVars->sim.domain_size[0];
+    					       double y = (((double)j+0.5)/(double)simVars->disc.res_physical[1])*simVars->sim.domain_size[1];
 					       
-					       io_data = SWEPlaneBenchmarks::return_h(*simVars, x, y);
-					     }
-					     );
+    					       io_data = SWEPlaneBenchmarks::return_h(*simVars, x, y);
+    					     }
+    					     );
     
     // initialize velocities
     u_Y.physical_update_lambda_array_indices(
-					     [&](int i, int j, double &io_data)
-					     {
-					       double x = (((double)i)/(double)simVars->disc.res_physical[0])*simVars->sim.domain_size[0];
-					       double y = (((double)j)/(double)simVars->disc.res_physical[1])*simVars->sim.domain_size[1];
+    					     [&](int i, int j, double &io_data)
+    					     {
+    					       double x = (((double)i+0.5)/(double)simVars->disc.res_physical[0])*simVars->sim.domain_size[0];
+    					       double y = (((double)j+0.5)/(double)simVars->disc.res_physical[1])*simVars->sim.domain_size[1];
 					       
-					       io_data = SWEPlaneBenchmarks::return_u(*simVars, x, y);
-					     }
-					     );
+    					       io_data = SWEPlaneBenchmarks::return_u(*simVars, x, y);
+    					     }
+    					     );
     v_Y.physical_update_lambda_array_indices(
-					     [&](int i, int j, double &io_data)
-					     {
-					       double x = (((double)i)/(double)simVars->disc.res_physical[0])*simVars->sim.domain_size[0];
-					       double y = (((double)j)/(double)simVars->disc.res_physical[1])*simVars->sim.domain_size[1];
+    					     [&](int i, int j, double &io_data)
+    					     {
+    					       double x = (((double)i+0.5)/(double)simVars->disc.res_physical[0])*simVars->sim.domain_size[0];
+    					       double y = (((double)j+0.5)/(double)simVars->disc.res_physical[1])*simVars->sim.domain_size[1];
 					       
-					       io_data = SWEPlaneBenchmarks::return_v(*simVars, x, y);
-					     }
-					     );
+    					       io_data = SWEPlaneBenchmarks::return_v(*simVars, x, y);
+    					     }
+    					     );
   }
 
   // finalizes the time step when libpfasst is done 
@@ -295,7 +290,7 @@ extern "C"
 				       v_F2,
 				       simVars->timecontrol.current_timestep_size,
 				       simVars->timecontrol.current_timestep_size,
-				       simVars->timecontrol.current_simulation_time
+				       simVars->timecontrol.max_simulation_time
 				       );
   }
 
@@ -339,7 +334,7 @@ extern "C"
 				      i_dt,
 				      i_dt,
 				      simVars->timecontrol.current_simulation_time,
-				      simVars->timecontrol.current_simulation_time + i_dt
+				      simVars->timecontrol.max_simulation_time
 				      );
     
     // now recompute F2 with the new value of Y
