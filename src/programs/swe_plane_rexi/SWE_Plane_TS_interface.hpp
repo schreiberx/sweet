@@ -1,5 +1,5 @@
 /*
- * SWE_Plane_TS_ln_erk.hpp
+ * SWE_Plane_TS_interface.hpp
  *
  *  Created on: 29 May 2017
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
@@ -29,4 +29,4 @@ public:
 	) = 0;
 };
 
-#endif /* SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_LN_ERK_HPP_ */
+#endif /* SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_INTERFACE_HPP_ */
