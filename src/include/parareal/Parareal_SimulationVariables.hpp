@@ -13,6 +13,10 @@
 #endif
 
 
+#include <unistd.h>
+#include <getopt.h>
+
+
 
 /**
  * Simulation variables which are specific to Parareal

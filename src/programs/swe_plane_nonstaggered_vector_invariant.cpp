@@ -192,6 +192,10 @@ public:
 			PlaneData &o_P_t	///< time updates (at T=tn+dt)
 	)
 	{
+		double cell_size_x = simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
+		double cell_size_y = simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
+
+		
 		//             |                       |                       |
 		// --v---------|-----------v-----------|-----------v-----------|
 		//   h-1       u0          h0          u1          h1          u2
@@ -208,7 +212,7 @@ public:
 					// u is negative
 					+(i_P*i_u.physical_query_return_value_if_negative())	// outflow
 					-op.shift_left(i_P*i_u.physical_query_return_value_if_negative())		// inflow
-				)*(1.0/simVars.disc.cell_size[0])	// here we see a finite-difference-like formulation
+				)*(1.0/cell_size_x)	// here we see a finite-difference-like formulation
 				+
 				(
 					// v is positive
@@ -218,7 +222,7 @@ public:
 					// v is negative
 					+(i_P*i_v.physical_query_return_value_if_negative())	// outflow
 					-op.shift_down(i_P*i_v.physical_query_return_value_if_negative())	// inflow
-				)*(1.0/simVars.disc.cell_size[1])
+				)*(1.0/cell_size_y)
 			);
 	}
 
@@ -308,7 +312,10 @@ public:
 			}
 			else
 			{
-				double limit_speed = std::min(simVars.disc.cell_size[0]/i_u.reduce_maxAbs(), simVars.disc.cell_size[1]/i_v.reduce_maxAbs());
+				double cell_size_x = simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
+				double cell_size_y = simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
+
+				double limit_speed = std::min(cell_size_x/i_u.reduce_maxAbs(), cell_size_y/i_v.reduce_maxAbs());
 
 //				double hx = simVars.disc.cell_size[0];
 //				double hy = simVars.disc.cell_size[1];
@@ -317,7 +324,7 @@ public:
 				double limit_visc = std::numeric_limits<double>::infinity();
 
 				// limit by gravitational acceleration
-				double limit_gh = std::min(simVars.disc.cell_size[0], simVars.disc.cell_size[1])/std::sqrt(simVars.sim.gravitation*i_h.reduce_maxAbs());
+				double limit_gh = std::min(cell_size_x, cell_size_y)/std::sqrt(simVars.sim.gravitation*i_h.reduce_maxAbs());
 
 //				if (simVars.misc.verbosity > 2)
 //					std::cout << "limit_speed: " << limit_speed << ", limit_visc: " << limit_visc << ", limit_gh: " << limit_gh << std::endl;

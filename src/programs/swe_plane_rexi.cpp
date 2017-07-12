@@ -1636,13 +1636,7 @@ int main(int i_argc, char *i_argv[])
 			/*
 			 * Setup our little dog REXI
 			 */
-			rexiSWE.setup(
-					simVars.rexi.rexi_h,
-					simVars.rexi.rexi_M,
-					simVars.rexi.rexi_L,
-					simVars.rexi.rexi_use_half_poles,
-					simVars.rexi.rexi_normalization
-				);
+			rexiSWE.setup(simVars.rexi);
 
 			bool run = true;
 

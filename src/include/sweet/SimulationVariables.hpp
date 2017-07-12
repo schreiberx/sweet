@@ -921,16 +921,20 @@ public:
 #endif
 
 #if SWEET_PARAREAL
-					int retval = parareal.setup_longOptionValue(i-parareal_start_option_index, optarg);
-					if (retval == 0)
-						continue;
-					c += retval;
+					{
+						int retval = parareal.setup_longOptionValue(i-parareal_start_option_index, optarg);
+						if (retval == 0)
+							continue;
+						c += retval;
+					}
 #endif
 
-					int retval = rexi.setup_longOptionValue(i-rexi_start_option_index, optarg);
-					if (retval == 0)
-						continue;
-					c += retval;
+					{
+						int retval = rexi.setup_longOptionValue(i-rexi_start_option_index, optarg);
+						if (retval == 0)
+							continue;
+						c += retval;
+					}
 
 					c++;
 
