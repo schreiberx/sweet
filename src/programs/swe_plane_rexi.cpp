@@ -702,15 +702,42 @@ public:
 		if (simVars.misc.output_next_sim_seconds > simVars.timecontrol.current_simulation_time)
 			return false;
 
-		//Dump  data in csv, if requested
-		if (simVars.misc.output_file_name_prefix.size() > 0)
+		if (simVars.disc.use_staggering) // Remap in case of C-grid
 		{
-			write_file(prog_h, "prog_h");
-			write_file(prog_u, "prog_u");
-			write_file(prog_v, "prog_v");
+			// For output, variables need to be on unstaggered A-grid
+			PlaneData t_h = prog_h;
+			PlaneData t_u = prog_u;
+			PlaneData t_v = prog_v;
 
-			write_file(op.diff_c_x(prog_v) - op.diff_c_y(prog_u), "prog_q");
+			//remap solution to A grid
+			sampler2D.bicubic_scalar(prog_u, posa_x, posa_y, t_u, staggering.u[0], staggering.u[1]);
+			sampler2D.bicubic_scalar(prog_v, posa_x, posa_y, t_v, staggering.v[0], staggering.v[1]);
+
+			//Dump  data in csv, if requested
+			if (simVars.misc.output_file_name_prefix.size() > 0)
+			{
+				write_file(t_h, "prog_h");
+				write_file(t_u, "prog_u");
+				write_file(t_v, "prog_v");
+
+				write_file(op.diff_c_x(prog_v) - op.diff_c_y(prog_u), "prog_q");
+			}
+
 		}
+		else
+		{
+			//Dump  data in csv, if requested
+			if (simVars.misc.output_file_name_prefix.size() > 0)
+			{
+				write_file(prog_h, "prog_h");
+				write_file(prog_u, "prog_u");
+				write_file(prog_v, "prog_v");
+
+				write_file(op.diff_c_x(prog_v) - op.diff_c_y(prog_u), "prog_q");
+			}
+
+		}
+
 
 		if (simVars.misc.verbosity > 0)
 		{
@@ -724,9 +751,9 @@ public:
 				//if ((simVars.setup.scenario >= 0 && simVars.setup.scenario <= 4) || simVars.setup.scenario == 13)
 				o_ostream << "\tDIFF_H0\tDIFF_U0\tDIFF_V0";
 
-				if (param_compute_error && simVars.pde.use_nonlinear_equations==0){
-					o_ostream << "\tANAL_DIFF_RMS_P\tANAL_DIFF_RMS_U\tANAL_DIFF_RMS_V";
-					o_ostream << "\tANAL_DIFF_MAX_P\tANAL_DIFF_MAX_U\tANAL_DIFF_MAX_V";
+				if (param_compute_error && param_compute_error){
+					o_ostream << "\tREF_DIFF_RMS_H\tREF_DIFF_RMS_U\tREF_DIFF_RMS_V";
+					o_ostream << "\tREF_DIFF_MAX_H\tREF_DIFF_MAX_U\tREF_DIFF_MAX_V";
 				}
 				o_ostream << std::endl;
 			}

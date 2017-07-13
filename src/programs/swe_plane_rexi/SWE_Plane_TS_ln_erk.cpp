@@ -5,6 +5,8 @@
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  *
  *  Changelog:
+ *
+ *  	2017-07-13: Updated and validated by P. Peixoto.
  *  	2017-05-29: Based on source swe_plane_rexi.cpp
  *					which was also written by Pedro Peixoto
  */
@@ -12,11 +14,12 @@
 #include "SWE_Plane_TS_ln_erk.hpp"
 
 
-
-
-
 /*
  * Main routine for method to be used in case of finite differences
+ *
+ * - A-Grid with spectral or FD spatial discretizations
+ * - C-Grid with energy conserving FD scheme for spatial discretizations
+ *
  */
 void SWE_Plane_TS_ln_erk::euler_timestep_update(
 		const PlaneData &i_h,	///< prognostic variables (perturbed part of height)
@@ -65,7 +68,7 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 	}
 	else // simVars.disc.use_staggering = true
 	{
-		//FatalError("TODO (MaS@Pedro): The A-grid formulation above assumes that h is the perturbation.");
+
 		// STAGGERED GRID
 
 		PlaneData U(i_h.planeDataConfig); // U flux
@@ -101,7 +104,6 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 
 		if (simVars.pde.use_nonlinear_equations > 0) // nonlinear case
 		{
-			FatalError("TODO (Pedro): Nonlinear is currently unstable (why?).");
 			U = op.avg_b_x(total_h)*i_u;
 			V = op.avg_b_y(total_h)*i_v;
 		}
