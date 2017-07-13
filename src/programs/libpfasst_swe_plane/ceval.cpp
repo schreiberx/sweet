@@ -15,6 +15,7 @@
 #include "SWE_Plane_TS_ln_erk.hpp"
 
 #include "ceval.hpp"
+#include "cencap.hpp"
 
 /**
  * Write file to data and return string of file name
@@ -347,55 +348,97 @@ extern "C"
   }
 
   // evaluates the second implicit piece o_F3 = F3(i_Y)
+  // currently contains the implicit artificial viscosity term
   void ceval_f3 (
 		 PlaneDataVars *i_Y, 
 		 double i_t, 
+		 int i_level,
 		 PlaneDataCtx *i_ctx, 
 		 PlaneDataVars *o_F3
 		 ) 
   {
-    // not implemented 
+    const PlaneData& h_Y = i_Y->get_h();
+    const PlaneData& u_Y = i_Y->get_u();
+    const PlaneData& v_Y = i_Y->get_v();
+
+    PlaneData& h_F3 = o_F3->get_h();
+    PlaneData& u_F3 = o_F3->get_u();
+    PlaneData& v_F3 = o_F3->get_v();
+
+    // initialize F3 to zero in case no artificial viscosity
+    c_sweet_data_setval(o_F3, 0.0);
+
+    // get the simulation variables
+    SimulationVariables* simVars = i_ctx->get_simulation_variables();
+
+    // no need to do anything if no artificial viscosity
+    if (simVars->sim.viscosity == 0)
+      return;
+
+    // get the operators for this level
+    PlaneOperators* op = i_ctx->get_plane_operators(i_level);
+    
+    // Get diffusion coefficients
+    // put visc of the order of the sdc scheme
+    PlaneData diff = simVars->sim.viscosity * op->diffusion_coefficient(simVars->sim.viscosity_order);
+    
+    // apply to data
+    h_F3 = diff(h_Y);
+    u_F3 = diff(u_Y);
+    v_F3 = diff(v_Y);
   }
 
   // solves the second implicit system for io_Y
   // then updates o_F3 with the new value o_F3 = F3(io_Y)
+  // currently solve the implicit system formed with artificial viscosity term
   void ccomp_f3 (
 		 PlaneDataVars *io_Y, 
 		 double i_t, 
-		 double i_dt, 
+		 double i_dt,
+		 int i_level,
 		 PlaneDataVars *i_Rhs, 
 		 PlaneDataCtx *i_ctx, 
 		 PlaneDataVars *o_F3
 		 ) 
   {
-    // not implemented
-  }
-
-  // applies implicit viscosity to the variables
-  void capply_viscosity(PlaneDataVars *io_Y,
-			double i_t, 
-			double i_dt,
-			int i_level, 
-			PlaneDataCtx *i_ctx
-			)
-  {
-    // get the simulation variables
-    SimulationVariables* simVars = i_ctx->get_simulation_variables();
-
-    if (simVars->sim.viscosity == 0)
-      return;
-		  
     PlaneData& h_Y = io_Y->get_h();
     PlaneData& u_Y = io_Y->get_u();
     PlaneData& v_Y = io_Y->get_v();
 
+    const PlaneData& h_Rhs = i_Rhs->get_h();
+    const PlaneData& u_Rhs = i_Rhs->get_u();
+    const PlaneData& v_Rhs = i_Rhs->get_v();
+
+    // initialize F3 to zero in case no artificial viscosity
+    c_sweet_data_setval(o_F3, 0.0);
+            
+    // get the simulation variables
+    SimulationVariables* simVars = i_ctx->get_simulation_variables();
+
+    // no need to do anything if no artificial viscosity
+    if (simVars->sim.viscosity == 0)
+      return;
+
     // get the operators for this level
     PlaneOperators* op = i_ctx->get_plane_operators(i_level);
 
-    // use the implicit diffusion from SWEET
-    h_Y = op->implicit_diffusion(h_Y, i_dt*simVars->sim.viscosity, simVars->sim.viscosity_order );
-    u_Y = op->implicit_diffusion(u_Y, i_dt*simVars->sim.viscosity, simVars->sim.viscosity_order );
-    v_Y = op->implicit_diffusion(v_Y, i_dt*simVars->sim.viscosity, simVars->sim.viscosity_order );
+    // solve the implicit system
+    h_Y = op->implicit_diffusion(h_Rhs, i_dt*simVars->sim.viscosity, simVars->sim.viscosity_order );
+    u_Y = op->implicit_diffusion(u_Rhs, i_dt*simVars->sim.viscosity, simVars->sim.viscosity_order );
+    v_Y = op->implicit_diffusion(v_Rhs, i_dt*simVars->sim.viscosity, simVars->sim.viscosity_order );
 
+    // now recompute F3 with the new value of Y
+    ceval_f3(
+	     io_Y, 
+	     i_t, 
+	     i_level,
+	     i_ctx, 
+	     o_F3
+	     );
+    
+//     c_sweet_data_saxpy( 1/i_dt,io_Y, o_F3);
+//     c_sweet_data_saxpy(-1/i_dt,i_Rhs,o_F3);
+    
   }
+
 }

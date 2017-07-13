@@ -62,6 +62,7 @@ extern "C"
   // evaluates the second implicit piece
   void ceval_f3 (PlaneDataVars *i_Y, 
 		 double i_t, 
+		 int i_level,
 		 PlaneDataCtx *i_ctx,
 		 PlaneDataVars *o_F3 
 		 );
@@ -69,19 +70,12 @@ extern "C"
   // solves the second implicit system
   void ccomp_f3 (PlaneDataVars *io_Y, 
 		 double i_t, 
-		 double i_dt, 
+		 double i_dt,
+		 int i_level,
 		 PlaneDataVars *i_Rhs,
 		 PlaneDataCtx *i_ctx, 
 		 PlaneDataVars *o_F3
 		 );
-
-  // applies implicit viscosity to the variables
-  void capply_viscosity(PlaneDataVars *io_Y,
-			double i_t, 
-			double i_dt,
-			int i_level, 
-			PlaneDataCtx *i_ctx
-			);
   
 }
 

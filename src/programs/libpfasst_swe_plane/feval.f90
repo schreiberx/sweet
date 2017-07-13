@@ -2,14 +2,15 @@ module feval_module
   use iso_c_binding 
   use pf_mod_dtype
   use encap_module
-  use pf_mod_imexQ
+  use pf_mod_misdcQ
   implicit none
   
-  type, extends(pf_imexQ_t) :: sweet_sweeper_t
+  type, extends(pf_misdcQ_t) :: sweet_sweeper_t
      type(c_ptr)    :: ctx = c_null_ptr ! c pointer to PlaneDataCtx/SphereDataCtx
      integer        :: nnodes           ! number of nodes
      integer        :: sweep_niter      ! number of the current sweep
      integer        :: sweep_niter_max  ! max number of sweeps
+     integer        :: level            ! level on which the sweeper is acting 
      real(c_double) :: dt               ! full timestep size
    contains 
      procedure :: f_eval                => sweet_f_eval 
@@ -59,23 +60,25 @@ module feval_module
        real(c_double), value :: i_t, i_dt
      end subroutine ccomp_f2
 
-     subroutine ceval_f3(i_Y, i_t, i_ctx, o_F3) bind(c, name="ceval_f3")
+     subroutine ceval_f3(i_Y, i_t, i_level, i_ctx, o_F3) bind(c, name="ceval_f3")
        use iso_c_binding
        type(c_ptr),    value :: i_Y, i_ctx, o_F3 
+       integer,        value :: i_level
        real(c_double), value :: i_t
      end subroutine ceval_f3
 
-     subroutine ccomp_f3(i_Y, i_t, i_dt, i_Rhs, i_ctx, o_F3) bind(c, name="ccomp_f3")
+     subroutine ccomp_f3(i_Y, i_t, i_dt, i_level, i_Rhs, i_ctx, o_F3) bind(c, name="ccomp_f3")
        use iso_c_binding
        type(c_ptr),    value :: i_Y, i_Rhs, i_ctx, o_F3
        real(c_double), value :: i_t, i_dt
+       integer,        value :: i_level
      end subroutine ccomp_f3
 
-     subroutine capply_viscosity(io_Y, i_t, i_dt, i_level, i_ctx) bind(c, name="capply_viscosity")
+     subroutine capply_viscosity(io_Y, i_t, i_dt, i_nnodes, i_level, i_ctx) bind(c, name="capply_viscosity")
        use iso_c_binding
        type(c_ptr),    value :: io_Y, i_ctx
        real(c_double), value :: i_t, i_dt
-       integer,        value :: i_level
+       integer,        value :: i_level, i_nnodes
      end subroutine capply_viscosity
 
   end interface
@@ -197,11 +200,12 @@ contains
                         this%ctx,                  & 
                         f_sd_ptr%c_sweet_data_ptr)
 
-       ! case (3) ! second implicit rhs
-       !    call ceval_f3(y_sd_ptr%c_sweet_data_ptr, & 
-       !                  t,                         & 
-       !                  this%ctx,                  &
-       !                  f_sd_ptr%c_sweet_data_ptr)
+       case (3) ! second implicit rhs
+          call ceval_f3(y_sd_ptr%c_sweet_data_ptr, & 
+                        t,                         & 
+                        this%level-1,              &
+                        this%ctx,                  &
+                        f_sd_ptr%c_sweet_data_ptr)
 
        case DEFAULT
           print *, 'Piece argument in f_eval can only be 1, 2'!, or 3'
@@ -239,13 +243,14 @@ contains
                         this%ctx,                    & 
                         f_sd_ptr%c_sweet_data_ptr)
 
-    !    case (3) ! second implicit solve
-    !       call ccomp_f3(y_sd_ptr%c_sweet_data_ptr,   &
-    !                     t,                           & 
-    !                     dt,                          & 
-    !                     rhs_sd_ptr%c_sweet_data_ptr, & 
-    !                     this%ctx,                    & 
-    !                     f_sd_ptr%c_sweet_data_ptr)
+        case (3) ! second implicit solve
+           call ccomp_f3(y_sd_ptr%c_sweet_data_ptr,   &
+                         t,                           & 
+                         dt,                          & 
+                         this%level-1,                &
+                         rhs_sd_ptr%c_sweet_data_ptr, & 
+                         this%ctx,                    & 
+                         f_sd_ptr%c_sweet_data_ptr)
 
        case DEFAULT
           print *, 'Piece argument in f_comp can only be 2'! or 3'
@@ -274,14 +279,8 @@ contains
        if (this%sweep_niter == this%sweep_niter_max) then
           
           this%sweep_niter = 0 ! reset the counter
-          y_sd_ptr   => as_sweet_data_encap(y)
-          
-          ! apply the implicit viscosity
-          call capply_viscosity(y_sd_ptr%c_sweet_data_ptr,   & 
-                                t,                           & 
-                                this%dt,                     & ! this is the full timestep
-                                level-1,                     & ! conversion to c++ indexing
-                                this%ctx)
+
+          ! do nothing for now
 
        end if
        
@@ -297,7 +296,7 @@ contains
 
     ! need the following line since the "final" keyword is not supported by some (older) compilers
     ! it forces Fortran to destroy the parent class data structures
-    call this%imexQ_destroy(lev) 
+    call this%misdcQ_destroy(lev) 
 
   end subroutine sweet_sweeper_destroy
 
