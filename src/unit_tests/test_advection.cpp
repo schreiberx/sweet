@@ -318,6 +318,9 @@ public:
 			double i_simulation_timestamp = -1
 	)
 	{
+		double cell_size_x = simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
+		double cell_size_y = simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
+
 		if (simVars.bogus.var[2] == 0)
 		{
 			// UP/DOWNWINDING
@@ -340,7 +343,7 @@ public:
 						// u is negative
 						+(i_h*i_u.physical_query_return_value_if_negative())					// outflow
 						-op.shift_left(i_h*i_u.physical_query_return_value_if_negative())	// inflow
-					)*(1.0/simVars.disc.cell_size[0])				// here we see a finite-difference-like formulation
+					)*(1.0/cell_size_x)				// here we see a finite-difference-like formulation
 					+
 					(
 						// v is positive
@@ -350,7 +353,7 @@ public:
 						// v is negative
 						+(i_h*i_v.physical_query_return_value_if_negative())					// outflow
 						-op.shift_down(i_h*i_v.physical_query_return_value_if_negative())	// inflow
-					)*(1.0/simVars.disc.cell_size[1])
+					)*(1.0/cell_size_y)
 				);
 		}
 		else if (simVars.bogus.var[2] == 1)
@@ -418,9 +421,9 @@ public:
 			else
 			{
 				if (simVars.sim.CFL < 0)
-					o_dt = -simVars.sim.CFL*std::min(simVars.disc.cell_size[0]/i_u.reduce_maxAbs(), simVars.disc.cell_size[1]/i_v.reduce_maxAbs());
+					o_dt = -simVars.sim.CFL*std::min(cell_size_x/i_u.reduce_maxAbs(), cell_size_y/i_v.reduce_maxAbs());
 				else
-					o_dt = simVars.sim.CFL*std::min(simVars.disc.cell_size[0]/i_u.reduce_maxAbs(), simVars.disc.cell_size[1]/i_v.reduce_maxAbs());
+					o_dt = simVars.sim.CFL*std::min(cell_size_x/i_u.reduce_maxAbs(), cell_size_y/i_v.reduce_maxAbs());
 			}
 
 		}
@@ -883,7 +886,10 @@ int main(
 //					double error_max = (simulationAdvection->prog_h-benchmark_h).reduce_maxAbs();
 //					std::cout << "Max error in height: " << error_max << std::endl;
 
-					std::cout << "          dt = " << simVars.timecontrol.current_timestep_size << "    dx = " << simVars.disc.cell_size[0] << " x " << simVars.disc.cell_size[0] << std::endl;
+					double cell_size_x = simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
+					double cell_size_y = simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
+
+					std::cout << "          dt = " << simVars.timecontrol.current_timestep_size << "    dx = " << cell_size_x << " x " << cell_size_x << std::endl;
 
 					this_error = error;
 
@@ -915,7 +921,7 @@ int main(
 
 						output_string_conv << "r=" << this_conv_rate_space << "\t";
 						output_string_conv << "dt=" << simVars.timecontrol.current_timestep_size << "\t";
-						output_string_conv << "dx=" << simVars.disc.cell_size[0] << "." << simVars.disc.cell_size[0];
+						output_string_conv << "dx=" << cell_size_x << "." << cell_size_x;
 					}
 					break;
 				}
