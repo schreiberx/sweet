@@ -59,6 +59,8 @@ public:
 	bool reduce_to_half;
 	std::string faf_data_directory;
 
+	std::string filename;
+
 public:
 	std::vector<complexT> alpha;
 	std::vector<complexT> beta_re;
@@ -85,7 +87,7 @@ public:
 
 public:
 	bool auto_load(
-			std::string &i_function_name,		///< "phi0", "phi1", "phi2", etc.
+			const std::string &i_function_name,		///< "phi0", "phi1", "phi2", etc.
 
 			int i_N = 0,						///< Number of approximation poles
 
@@ -143,6 +145,10 @@ public:
 				continue;
 
 			if (filename == "..")
+				continue;
+
+			// skip hidden files
+			if (filename.data()[0] == '.')
 				continue;
 
 			std::string filepath = faf_data_dir + "/"+ filename;
@@ -293,30 +299,37 @@ public:
 			//FatalError("RexiNG: No coefficients found for given constraints");
 
 
+
 		int N = fafcoeffs.N;
+
 
 		alpha.resize(N);
 		beta_re.resize(N);
 
 		for (int i = 0; i < N; i++)
 		{
+			// generate alphas
 			int K = i - (N/2);
-
 			alpha[i] = std::complex<T>(fafcoeffs.basis_function_rat_shift, -(T)K*fafcoeffs.basis_function_spacing);
+
+			// generate betas
 			beta_re[i] = fafcoeffs.weights_cplx[i];
 		}
+
+		if ((N & 1) != 1)
+			FatalError("N must be odd!");
 
 
 		if (i_reduce_to_half)
 		{
-			for (int i = 0; i < i_N; i++)
+			for (int i = 0; i < N/2-1; i++)
 			{
-				beta_re[i] += DQStuff::conj(beta_re[i_N*2-i]);
-//				beta_im_eval[i] += conj(beta_im_eval[i_N*2-i]);
+				beta_re[i] += DQStuff::conj(beta_re[N-i-1]);
+//				beta_im_eval[i] += conj(beta_im_eval[N*2-i]);
 			}
-			alpha.resize(i_N+1);
-			beta_re.resize(i_N+1);
-//			beta_im_eval.resize(i_N+1);
+			alpha.resize(N/2+1);
+			beta_re.resize(N/2+1);
+//			beta_im_eval.resize(N+1);
 		}
 
 		return true;
@@ -326,18 +339,16 @@ public:
 
 	void output()
 	{
-		int N = fafcoeffs.N;
+		int N = alpha.size();
+		std::cout << "N: " << N << std::endl;
 
-		alpha.resize(N);
-		beta_re.resize(N);
-
-		std::cout << "Alpha:" << std::endl;
+//		std::cout << "Alpha:" << std::endl;
 		for (int i = 0; i < N; i++)
-			std::cout << alpha[i] << std::endl;
+			std::cout << "alpha[" << i << "] = " << alpha[i] << std::endl;
 
-		std::cout << "Beta:" << std::endl;
+//		std::cout << "Beta:" << std::endl;
 		for (int i = 0; i < N; i++)
-			std::cout << beta_re[i] << std::endl;
+			std::cout << "beta_re[" << i << "] = " << beta_re[i] << std::endl;
 	}
 
 
@@ -377,7 +388,7 @@ public:
 
 
 	/**
-	 * \return \f$ Re(cos(x) + i*sin(x)) = cos(x) \f$
+	 * \return \f$ f(x) \approx Re(cos(x) + i*sin(x)) = cos(x) \f$
 	 */
 	T approx_real(
 			T i_x

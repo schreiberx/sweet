@@ -9,6 +9,7 @@
 #define SRC_PROGRAMS_SWE_PLANE_TS_L_REXI_HPP_
 
 #include <limits>
+#include <string>
 #include <complex>
 #include <rexi/REXI.hpp>
 #include <rexi/RexiNG.hpp>
@@ -39,11 +40,18 @@ class SWE_Plane_TS_l_rexi	: public SWE_Plane_TS_interface
 	SimulationVariables &simVars;
 	PlaneOperators &op;
 
+	std::vector<std::complex<double>> rexi_alpha;
+	std::vector<std::complex<double>> rexi_beta_re;
+//	std::vector<std::complex<double>> rexi_beta_im;
+
+
+#if 0
 	/// REXI parameter h
 	double h;
 
 	/// REXI parameter M
 	int M;
+#endif
 
 	/// simulation domain size
 	double domain_size[2];
@@ -113,10 +121,11 @@ public:
 		);
 
 	void setup(
-			REXI_SimulationVariables &i_rexi
+			REXI_SimulationVariables &i_rexi,
+			const std::string &i_function_name = "phi0"
 	);
 
-	void setup(
+	void setup_REXI(
 			double i_h,						///< sampling size
 			int i_M,						///< number of sampling points
 			int i_L,						///< number of sampling points for Gaussian approximation
@@ -127,8 +136,24 @@ public:
 			bool i_rexi_next_generation
 	);
 
+
 	void run_timestep(
-			PlaneData &io_h,	///< prognostic variables
+			const PlaneData &i_h_pert,	///< prognostic variables
+			const PlaneData &i_u,	///< prognostic variables
+			const PlaneData &i_v,	///< prognostic variables
+
+			PlaneData &o_h_pert,	///< prognostic variables
+			PlaneData &o_u,	///< prognostic variables
+			PlaneData &o_v,	///< prognostic variables
+
+			double &o_dt,			///< time step restriction
+			double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_simulation_timestamp,
+			double i_max_simulation_time = std::numeric_limits<double>::infinity()
+	);
+
+	void run_timestep(
+			PlaneData &io_h_pert,	///< prognostic variables
 			PlaneData &io_u,	///< prognostic variables
 			PlaneData &io_v,	///< prognostic variables
 

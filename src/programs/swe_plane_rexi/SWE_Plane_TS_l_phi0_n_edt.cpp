@@ -1,5 +1,5 @@
 /*
- * SWE_Plane_TS_l_rexi_n_rexi.cpp
+ * SWE_Plane_TS_l_phi0_n_edt.cpp
  *
  *  Created on: 29 May 2017
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
@@ -9,16 +9,16 @@
  *					which was also written by Pedro Peixoto
  */
 
-#include "SWE_Plane_TS_l_rexi_n_rexi.hpp"
 #include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
 #include <sweet/plane/PlaneOperatorsComplex.hpp>
+#include "SWE_Plane_TS_l_phi0_n_edt.hpp"
 
 
 
 /*
  * Main routine for method to be used in case of finite differences
  */
-void SWE_Plane_TS_l_rexi_n_rexi::euler_timestep_update_nonlinear(
+void SWE_Plane_TS_l_phi0_n_edt::euler_timestep_update_nonlinear(
 		const PlaneData &i_h,	///< prognostic variables
 		const PlaneData &i_u,	///< prognostic variables
 		const PlaneData &i_v,	///< prognostic variables
@@ -48,7 +48,7 @@ void SWE_Plane_TS_l_rexi_n_rexi::euler_timestep_update_nonlinear(
 
 
 
-void SWE_Plane_TS_l_rexi_n_rexi::run_timestep(
+void SWE_Plane_TS_l_phi0_n_edt::run_timestep(
 		PlaneData &io_h,	///< prognostic variables
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
@@ -60,7 +60,7 @@ void SWE_Plane_TS_l_rexi_n_rexi::run_timestep(
 )
 {
 	if (i_fixed_dt <= 0)
-		FatalError("SWE_Plane_TS_l_rexi_n_rexi: Only constant time step size allowed");
+		FatalError("SWE_Plane_TS_l_phi0_n_edt: Only constant time step size allowed");
 
 	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
 		i_fixed_dt = i_max_simulation_time-i_simulation_timestamp;
@@ -75,19 +75,6 @@ void SWE_Plane_TS_l_rexi_n_rexi::run_timestep(
 				i_simulation_timestamp,
 				i_max_simulation_time
 			);
-#if 0
-		// standard time stepping
-		timestepping_rk.run_timestep(
-				this,
-				&SWE_Plane_TS_l_rexi_n_rexi::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
-				io_h, io_u, io_v,
-				o_dt,
-				i_fixed_dt,
-				timestepping_order_nonlinear,
-				i_simulation_timestamp,
-				i_max_simulation_time
-			);
-#endif
 	}
 	else if (timestepping_order_nonlinear == 2)
 	{
@@ -102,7 +89,7 @@ void SWE_Plane_TS_l_rexi_n_rexi::run_timestep(
 		// standard time stepping
 		timestepping_rk.run_timestep(
 				this,
-				&SWE_Plane_TS_l_rexi_n_rexi::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
+				&SWE_Plane_TS_l_phi0_n_edt::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
 				io_h, io_u, io_v,
 				o_dt,
 				i_fixed_dt,
@@ -128,7 +115,7 @@ void SWE_Plane_TS_l_rexi_n_rexi::run_timestep(
 /*
  * Setup
  */
-void SWE_Plane_TS_l_rexi_n_rexi::setup(
+void SWE_Plane_TS_l_phi0_n_edt::setup(
 		REXI_SimulationVariables &i_rexiSimVars
 )
 {
@@ -136,7 +123,7 @@ void SWE_Plane_TS_l_rexi_n_rexi::setup(
 }
 
 
-SWE_Plane_TS_l_rexi_n_rexi::SWE_Plane_TS_l_rexi_n_rexi(
+SWE_Plane_TS_l_phi0_n_edt::SWE_Plane_TS_l_phi0_n_edt(
 		SimulationVariables &i_simVars,
 		PlaneOperators &i_op
 )	:
@@ -149,7 +136,7 @@ SWE_Plane_TS_l_rexi_n_rexi::SWE_Plane_TS_l_rexi_n_rexi(
 
 
 
-SWE_Plane_TS_l_rexi_n_rexi::~SWE_Plane_TS_l_rexi_n_rexi()
+SWE_Plane_TS_l_phi0_n_edt::~SWE_Plane_TS_l_phi0_n_edt()
 {
 }
 

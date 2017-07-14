@@ -61,16 +61,8 @@ PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
 /// general parameters
 SimulationVariables simVars;
 
-/// specific parameters
-int param_compute_error;
-
 double param_initial_freq_x_mul;
 double param_initial_freq_y_mul;
-
-/// Diagnostic measures at initial stage
-double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
-
-
 
 class SimulationInstance
 #if SWEET_PARAREAL
@@ -80,7 +72,10 @@ class SimulationInstance
 {
 public:
 	// Prognostic variables
-	PlaneData prog_h, prog_u, prog_v;
+	// h: surface height
+	// u: velocity in x-direction
+	// v: velocity in y-direction
+	PlaneData prog_h_pert, prog_u, prog_v;
 
 	ScalarDataArray pos_x, pos_y;
 	ScalarDataArray posa_x, posa_y;
@@ -91,10 +86,10 @@ public:
 #endif
 
 	// Initial values for comparison with analytical solution
-	PlaneData t0_prog_h, t0_prog_u, t0_prog_v;
+	PlaneData t0_prog_h_pert, t0_prog_u, t0_prog_v;
 
 	// Forcings
-	PlaneData force_h, force_u, force_v;
+	PlaneData force_h_pert, force_u, force_v;
 
 
 	// Staggering
@@ -117,7 +112,7 @@ public:
 	{
 	public:
 		//Max difference to initial conditions
-		double t0_error_max_abs_h;
+		double t0_error_max_abs_h_pert;
 		double t0_error_max_abs_u;
 		double t0_error_max_abs_v;
 
@@ -140,12 +135,25 @@ public:
 	// Interpolation stuff
 	PlaneDataSampler sampler2D;
 
+
+
+	/// Diagnostic measures at initial stage, Initialize with 0
+	double diagnostics_energy_start = 0;
+	double diagnostics_mass_start = 0;
+	double diagnostics_potential_entrophy_start = 0;
+
+
+	bool compute_error_difference_to_initial_condition = false;
+	bool compute_error_to_analytical_solution = false;
+
+
+
 public:
 	SimulationInstance()	:
 	// Constructor to initialize the class - all variables in the SW are setup
 
 		// Variable dimensions (mem. allocation)
-		prog_h(planeDataConfig),
+		prog_h_pert(planeDataConfig),
 		prog_u(planeDataConfig),
 		prog_v(planeDataConfig),
 
@@ -159,11 +167,11 @@ public:
 		vis(planeDataConfig),
 #endif
 
-		t0_prog_h(planeDataConfig),
+		t0_prog_h_pert(planeDataConfig),
 		t0_prog_u(planeDataConfig),
 		t0_prog_v(planeDataConfig),
 
-		force_h(planeDataConfig),
+		force_h_pert(planeDataConfig),
 		force_u(planeDataConfig),
 		force_v(planeDataConfig),
 
@@ -237,7 +245,9 @@ public:
 		// Initialise diagnostics
 		last_timestep_nr_update_diagnostics = -1;
 
-		benchmark.t0_error_max_abs_h = 0;
+
+
+		benchmark.t0_error_max_abs_h_pert = 0;
 		benchmark.t0_error_max_abs_u = 0;
 		benchmark.t0_error_max_abs_v = 0;
 
@@ -254,36 +264,20 @@ public:
 
 		// set to some values for first touch NUMA policy (HPC stuff)
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		prog_h.spectral_set_all(0, 0);
+		prog_h_pert.spectral_set_all(0, 0);
 		prog_u.spectral_set_all(0, 0);
 		prog_v.spectral_set_all(0, 0);
 #endif
 
 		//Setup prog vars
-		prog_h.physical_set_all(simVars.sim.h0);
+		prog_h_pert.physical_set_all(simVars.sim.h0);
 		prog_u.physical_set_all(0);
 		prog_v.physical_set_all(0);
 
 		//Check if input parameters are adequate for this simulation
 		if (simVars.disc.use_staggering && simVars.disc.use_spectral_basis_diffs)
 			FatalError("Staggering and spectral basis not supported!");
-/*
-		if (simVars.disc.use_staggering &&
-				( simVars.disc.timestepping_method != SimulationVariables::Discretization::RUNGE_KUTTA_EXPLICIT &&
-					simVars.disc.timestepping_method != SimulationVariables::Discretization::SEMI_LAGRANGIAN_ADVECTION_ONLY
-				)
-		)
-			FatalError("Staggering only supported for standard time stepping mode with RK and Lagrangian advection only!");
-*/
-		if (simVars.disc.use_staggering && param_compute_error > 0 )
-			std::cerr << "Warning: Staggered data will be interpolated to/from A-grid for exact linear solution" << std::endl;
 
-		if (simVars.pde.use_nonlinear_equations > 0 && param_compute_error == 1)
-			std::cerr << "Warning: Error will be calculated relative to initial condition (assuming stationary flow)" << std::endl;
-
-		if (simVars.pde.use_nonlinear_equations > 0 && param_compute_error == 2)
-			std::cerr << "Warning: Error will be calculated relative to linear solution, Exact solution not possible in general for nonlinear SWE" << std::endl;
-			// FatalError("Exact solution not possible in general for nonlinear SWE");
 
 		if (simVars.disc.use_staggering)
 			staggering.setup_c_staggering();
@@ -353,9 +347,9 @@ public:
 						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-						prog_h.p_physical_set(j, i, return_h_perturbed(simVars, x, y));
-						t0_prog_h.p_physical_set(j, i, return_h_perturbed(simVars, x, y));
-						force_h.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_h_perturbed(simVars, x, y));
+						prog_h_pert.p_physical_set(j, i, return_h_perturbed(simVars, x, y));
+						t0_prog_h_pert.p_physical_set(j, i, return_h_perturbed(simVars, x, y));
+						force_h_pert.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_h_perturbed(simVars, x, y));
 					}
 
 
@@ -384,15 +378,15 @@ public:
 					double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 					double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-					prog_h.p_physical_set(j, i, return_h_perturbed(simVars, x, y));
+					prog_h_pert.p_physical_set(j, i, return_h_perturbed(simVars, x, y));
 					prog_u.p_physical_set(j, i, return_u(simVars, x, y));
 					prog_v.p_physical_set(j, i, return_v(simVars, x, y));
 
-					t0_prog_h.p_physical_set(j, i, return_h_perturbed(simVars, x, y));
+					t0_prog_h_pert.p_physical_set(j, i, return_h_perturbed(simVars, x, y));
 					t0_prog_u.p_physical_set(j, i, return_u(simVars, x, y));
 					t0_prog_v.p_physical_set(j, i, return_v(simVars, x, y));
 
-					force_h.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_h_perturbed(simVars, x, y));
+					force_h_pert.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_h_perturbed(simVars, x, y));
 					force_u.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_u(simVars, x, y));
 					force_v.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_v(simVars, x, y));
 				}
@@ -401,27 +395,13 @@ public:
 
 		// Load data, if requested
 		if (simVars.setup.input_data_filenames.size() > 0)
-			prog_h.file_physical_loadData(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
+			prog_h_pert.file_physical_loadData(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
 
 		if (simVars.setup.input_data_filenames.size() > 1)
-		{
 			prog_u.file_physical_loadData(simVars.setup.input_data_filenames[1].c_str(), simVars.setup.input_data_binary);
-			if (simVars.disc.use_staggering && param_compute_error)
-			{
-				std::cerr << "Warning: Computing analytical solution with staggered grid based on loaded data not supported!" << std::endl;
-				exit(1);
-			}
-		}
 
 		if (simVars.setup.input_data_filenames.size() > 2)
-		{
 			prog_v.file_physical_loadData(simVars.setup.input_data_filenames[2].c_str(), simVars.setup.input_data_binary);
-			if (simVars.disc.use_staggering && param_compute_error)
-			{
-				std::cerr << "Warning: Computing analytical solution with staggered grid based on loaded data not supported!" << std::endl;
-				exit(1);
-			}
-		}
 
 		timeSteppers.setup(
 				simVars.disc.timestepping_method,
@@ -431,7 +411,28 @@ public:
 				simVars
 			);
 
+		if (simVars.misc.compute_errors)
+		{
+			compute_error_difference_to_initial_condition =
+					simVars.setup.benchmark_scenario_id == 2 ||
+					simVars.setup.benchmark_scenario_id == 3;
+
+			compute_error_to_analytical_solution = timeSteppers.linear_only;
+		}
+		else
+		{
+			compute_error_difference_to_initial_condition = false;
+			compute_error_to_analytical_solution = false;
+		}
+
+		update_diagnostics();
 		timestep_output();
+
+
+		diagnostics_energy_start = simVars.diag.total_energy;
+		diagnostics_mass_start = simVars.diag.total_mass;
+		diagnostics_potential_entrophy_start = simVars.diag.total_potential_enstrophy;
+
 	}
 
 
@@ -445,13 +446,27 @@ public:
 		last_timestep_nr_update_diagnostics = simVars.timecontrol.current_timestep_nr;
 
 
-		PlaneDiagnostics::update_nonstaggered_huv_to_mass_energy_enstrophy(
-				op,
-				prog_h,
-				prog_u,
-				prog_v,
-				simVars
-		);
+		if (simVars.disc.use_staggering)
+		{
+			FatalError("TODO: Pedro, pls check this");
+			PlaneDiagnostics::update_staggered_huv_to_mass_energy_enstrophy(
+					op,
+					prog_h_pert,
+					prog_u,
+					prog_v,
+					simVars
+			);
+		}
+		else
+		{
+			PlaneDiagnostics::update_nonstaggered_huv_to_mass_energy_enstrophy(
+					op,
+					prog_h_pert,
+					prog_u,
+					prog_v,
+					simVars
+			);
+		}
 	}
 
 
@@ -478,21 +493,21 @@ public:
 		// use very high precision
 		file << std::setprecision(20);
 
-		PlaneData* prog[3] = {&prog_h, &prog_u, &prog_v};
+		PlaneData* prog[3] = {&prog_h_pert, &prog_u, &prog_v};
 
 		int max_prog_id = -1;
 
 		if (simVars.pde.id == 0 || simVars.pde.id == 1)
 		{
 			max_prog_id = 3;
-			prog_h.physical_set_zero();
+			prog_h_pert.physical_set_zero();
 			prog_u.physical_set_zero();
 			prog_v.physical_set_zero();
 		}
 		else
 		{
 			max_prog_id = 1;
-			prog_h.physical_set_zero();
+			prog_h_pert.physical_set_zero();
 		}
 
 #if 0
@@ -635,7 +650,7 @@ public:
 		simVars.timecontrol.current_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
 
 		timeSteppers.master->run_timestep(
-				prog_h, prog_u, prog_v,
+				prog_h_pert, prog_u, prog_v,
 				o_dt,
 				simVars.timecontrol.current_timestep_size,
 				simVars.timecontrol.current_simulation_time,
@@ -650,12 +665,12 @@ public:
 					+ pow(-1,simVars.sim.viscosity_order/2)*o_dt*op.diffN_y(prog_u, simVars.sim.viscosity_order)*simVars.sim.viscosity;
 			prog_v = prog_v + pow(-1,simVars.sim.viscosity_order/2)* o_dt*op.diffN_x(prog_v, simVars.sim.viscosity_order)*simVars.sim.viscosity
 					+ pow(-1,simVars.sim.viscosity_order/2)*o_dt*op.diffN_y(prog_v, simVars.sim.viscosity_order)*simVars.sim.viscosity;
-			prog_h = prog_h + pow(-1,simVars.sim.viscosity_order/2)* o_dt*op.diffN_x(prog_h, simVars.sim.viscosity_order)*simVars.sim.viscosity
-					+ pow(-1,simVars.sim.viscosity_order/2)*o_dt*op.diffN_y(prog_h, simVars.sim.viscosity_order)*simVars.sim.viscosity;
+			prog_h_pert = prog_h_pert + pow(-1,simVars.sim.viscosity_order/2)* o_dt*op.diffN_x(prog_h_pert, simVars.sim.viscosity_order)*simVars.sim.viscosity
+					+ pow(-1,simVars.sim.viscosity_order/2)*o_dt*op.diffN_y(prog_h_pert, simVars.sim.viscosity_order)*simVars.sim.viscosity;
 #else
-			prog_u = op.implicit_diffusion(prog_u, o_dt*simVars.sim.viscosity, simVars.sim.viscosity_order );
-			prog_v = op.implicit_diffusion(prog_v, o_dt*simVars.sim.viscosity, simVars.sim.viscosity_order );
-			prog_h = op.implicit_diffusion(prog_h, o_dt*simVars.sim.viscosity, simVars.sim.viscosity_order );
+			prog_u = op.implicit_diffusion(prog_u, o_dt*simVars.sim.viscosity, simVars.sim.viscosity_order);
+			prog_v = op.implicit_diffusion(prog_v, o_dt*simVars.sim.viscosity, simVars.sim.viscosity_order);
+			prog_h_pert = op.implicit_diffusion(prog_h_pert, o_dt*simVars.sim.viscosity, simVars.sim.viscosity_order);
 #endif
 		}
 
@@ -702,69 +717,101 @@ public:
 		if (simVars.misc.output_next_sim_seconds > simVars.timecontrol.current_simulation_time)
 			return false;
 
-		if (simVars.disc.use_staggering) // Remap in case of C-grid
+		/*
+		 * File output
+		 *
+		 * We write everything in non-staggered output
+		 */
 		{
 			// For output, variables need to be on unstaggered A-grid
-			PlaneData t_h = prog_h;
-			PlaneData t_u = prog_u;
-			PlaneData t_v = prog_v;
+			PlaneData t_h(planeDataConfig);
+			PlaneData t_u(planeDataConfig);
+			PlaneData t_v(planeDataConfig);
 
-			//remap solution to A grid
-			sampler2D.bicubic_scalar(prog_u, posa_x, posa_y, t_u, staggering.u[0], staggering.u[1]);
-			sampler2D.bicubic_scalar(prog_v, posa_x, posa_y, t_v, staggering.v[0], staggering.v[1]);
+			if (simVars.disc.use_staggering) // Remap in case of C-grid
+			{
+				//remap solution to A grid
+				sampler2D.bicubic_scalar(prog_u, posa_x, posa_y, t_u, staggering.u[0], staggering.u[1]);
+				sampler2D.bicubic_scalar(prog_v, posa_x, posa_y, t_v, staggering.v[0], staggering.v[1]);
+			}
+			else
+			{
+				t_h = prog_h_pert;
+				t_u = prog_u;
+				t_v = prog_v;
+			}
+
 
 			//Dump  data in csv, if requested
 			if (simVars.misc.output_file_name_prefix.size() > 0)
 			{
-				write_file(t_h, "prog_h");
+				write_file(t_h, "prog_h_pert");
 				write_file(t_u, "prog_u");
 				write_file(t_v, "prog_v");
 
 				write_file(op.diff_c_x(prog_v) - op.diff_c_y(prog_u), "prog_q");
 			}
-
-		}
-		else
-		{
-			//Dump  data in csv, if requested
-			if (simVars.misc.output_file_name_prefix.size() > 0)
-			{
-				write_file(prog_h, "prog_h");
-				write_file(prog_u, "prog_u");
-				write_file(prog_v, "prog_v");
-
-				write_file(op.diff_c_x(prog_v) - op.diff_c_y(prog_u), "prog_q");
-			}
-
 		}
 
 
 		if (simVars.misc.verbosity > 0)
 		{
 			update_diagnostics();
+			compute_errors();
 
-			// Print header
+			std::stringstream header;
+			std::stringstream rows;
+
+			rows << std::setprecision(8);
+
+			// Prefix
 			if (simVars.timecontrol.current_timestep_nr == 0)
+				header << "DATA";
+			rows << "DATA";
+
+			// Time
+			if (simVars.timecontrol.current_timestep_nr == 0)
+				header << "\tT";
+			rows << "\t" << simVars.timecontrol.current_simulation_time;
+
+#if 1
+			// Mass, Energy, Enstrophy
+			if (simVars.timecontrol.current_timestep_nr == 0)
+				header << "\tTOTAL_MASS\tTOTAL_ENERGY\tPOT_ENSTROPHY";
+			rows << "\t" << simVars.diag.total_mass << "\t" << simVars.diag.total_energy << "\t" << simVars.diag.total_potential_enstrophy;
+#endif
+
+
+#if 1
+			if (compute_error_difference_to_initial_condition)
 			{
-				o_ostream << "DATA\tT\tTOTAL_MASS\tTOTAL_ENERGY\tPOT_ENSTROPHY";
+				// Difference to initial condition
+				if (simVars.timecontrol.current_timestep_nr == 0)
+					header << "\tDIFF_MAXABS_H0\tDIFF_MAXABS_U0\tDIFF_MAXABS_V0";
 
-				//if ((simVars.setup.scenario >= 0 && simVars.setup.scenario <= 4) || simVars.setup.scenario == 13)
-				o_ostream << "\tDIFF_H0\tDIFF_U0\tDIFF_V0";
-
-				if (param_compute_error && param_compute_error){
-					o_ostream << "\tREF_DIFF_RMS_H\tREF_DIFF_RMS_U\tREF_DIFF_RMS_V";
-					o_ostream << "\tREF_DIFF_MAX_H\tREF_DIFF_MAX_U\tREF_DIFF_MAX_V";
-				}
-				o_ostream << std::endl;
+				rows << "\t" << benchmark.t0_error_max_abs_h_pert << "\t" << benchmark.t0_error_max_abs_u << "\t" << benchmark.t0_error_max_abs_v;
 			}
+#endif
 
-			//Print simulation time, energy and pot enstrophy
-			o_ostream << std::setprecision(8) << "DATA\t" << simVars.timecontrol.current_simulation_time << "\t" << simVars.diag.total_mass << "\t" << simVars.diag.total_energy << "\t" << simVars.diag.total_potential_enstrophy;
+#if 1
+			if (compute_error_to_analytical_solution)
+			{
+				if (simVars.timecontrol.current_timestep_nr == 0)
+					header << "\tREF_DIFF_MAX_H\tREF_DIFF_MAX_U\tREF_DIFF_MAX_V";
 
+				rows << "\t" << benchmark.analytical_error_maxabs_h << "\t" << benchmark.analytical_error_maxabs_u << "\t" << benchmark.analytical_error_maxabs_v;
+			}
+#endif
 
+			if (simVars.timecontrol.current_timestep_nr == 0)
+				o_ostream << header.str() << std::endl;
+
+			o_ostream << rows.str() << std::endl;
+
+#if 1
 			// PXT: I didn't know where to put this to work with and without GUI - if removed crashes when gui=enable
-			if (diagnostics_mass_start==0)
-				diagnostics_mass_start=simVars.diag.total_mass;
+			if (diagnostics_mass_start == 0)
+				diagnostics_mass_start = simVars.diag.total_mass;
 
 			if ( std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) > 10000.0 ) {
 				std::cout << "\n DIAGNOSTICS BENCHMARK DIFF H:\t" << "INF" << std::endl;
@@ -772,13 +819,15 @@ public:
 				std::cerr << "\n DIAGNOSTICS MASS DIFF TOO LARGE:\t" << std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) << std::endl;
 				exit(1);
 			}
+#endif
 
+#if 0
 			// Print max abs difference of vars to initial conditions (this gives the error in steady state cases)
 			//if ((simVars.setup.scenario >= 0 && simVars.setup.scenario <= 4) || simVars.setup.scenario == 13)
 			//{
 			// Height
-			benchmark.t0_error_max_abs_h = (prog_h-t0_prog_h).reduce_maxAbs() ;
-			o_ostream << "\t" << benchmark.t0_error_max_abs_h;
+			benchmark.t0_error_max_abs_h_pert = (prog_h_pert-t0_prog_h_pert).reduce_maxAbs() ;
+			o_ostream << "\t" << benchmark.t0_error_max_abs_h_pert;
 
 			// Velocity u
 			benchmark.t0_error_max_abs_u = (prog_u-t0_prog_u).reduce_maxAbs();
@@ -789,7 +838,7 @@ public:
 			o_ostream << "\t" << benchmark.t0_error_max_abs_v;
 			//}
 
-			if (param_compute_error) // && simVars.pde.use_nonlinear_equations==0)
+			if (simVars.misc.compute_errors) // && simVars.pde.use_nonlinear_equations==0)
 			{
 				compute_errors();
 
@@ -803,6 +852,8 @@ public:
 			}
 
 			o_ostream << std::endl;
+#endif
+
 		}
 
 		if (simVars.misc.output_each_sim_seconds > 0)
@@ -828,14 +879,12 @@ public:
 public:
 	void compute_errors()
 	{
-		// Compute exact solution for linear part and compare with numerical solution
-
-		// Variables on unstaggered A-grid
-		// Comparison will be by default to the initial conditions
-		//   or to the linear solver if analytical solution exists.
-		PlaneData t_h = t0_prog_h;
-		PlaneData t_u = t0_prog_u;
-		PlaneData t_v = t0_prog_v;
+		/*
+		 * First, we convert potential C-grid stored coefficients to an A-grid.
+		 */
+		PlaneData t_h(planeDataConfig);
+		PlaneData t_u(planeDataConfig);
+		PlaneData t_v(planeDataConfig);
 
 		if (simVars.disc.use_staggering) // Remap in case of C-grid
 		{
@@ -848,11 +897,50 @@ public:
 			//t_v=op.avg_f_y(t0_v); //equiv to bilinear
 			sampler2D.bicubic_scalar(t0_prog_v, posa_x, posa_y, t_v, staggering.v[0], staggering.v[1]);
 		}
-
-		//Calculate linear exact solution, if compute error requests
-		double o_dt;
-		if (param_compute_error == 2 )
+		else
 		{
+			t_h = t0_prog_h_pert;
+			t_u = t0_prog_u;
+			t_v = t0_prog_v;
+		}
+
+
+		/**
+		 * Compute difference to initial condition
+		 */
+		if (compute_error_difference_to_initial_condition)
+		{
+			PlaneData t0_h_pert(planeDataConfig);
+			PlaneData t0_u(planeDataConfig);
+			PlaneData t0_v(planeDataConfig);
+
+			if (simVars.disc.use_staggering) // Remap in case of C-grid
+			{
+				//remap initial condition to A grid
+				//sampler2D.bilinear_scalar(t0_u, posx_a, posy_a, t0_u, stag_u[0], stag_u[1]);
+				//t0_u=op.avg_f_x(t0_u); //equiv to bilinear
+				sampler2D.bicubic_scalar(t0_prog_u, posa_x, posa_y, t0_u, staggering.u[0], staggering.u[1]);
+
+				//sampler2D.bilinear_scalar(t0_v, posx_a, posy_a, t0_v, stag_v[0], stag_v[1]);
+				//t0_v=op.avg_f_y(t0_v); //equiv to bilinear
+				sampler2D.bicubic_scalar(t0_prog_v, posa_x, posa_y, t0_v, staggering.v[0], staggering.v[1]);
+			}
+			else
+			{
+				t0_h_pert = t0_prog_h_pert;
+				t0_u = t0_prog_u;
+				t0_v = t0_prog_v;
+			}
+
+			benchmark.t0_error_max_abs_h_pert = (prog_h_pert - t0_prog_h_pert).reduce_maxAbs();
+			benchmark.t0_error_max_abs_u = (prog_u - t0_prog_u).reduce_maxAbs();
+			benchmark.t0_error_max_abs_v = (prog_v - t0_prog_v).reduce_maxAbs();
+		}
+
+		// Calculate linear exact solution, if compute error requests
+		if (compute_error_to_analytical_solution)
+		{
+			double o_dt;
 			//Run exact solution for linear case
 			timeSteppers.l_direct->run_timestep(
 					t_h, t_u, t_v,
@@ -861,41 +949,43 @@ public:
 					0,			// initial condition given at time 0
 					simVars.timecontrol.max_simulation_time
 			);
+
+
+			// Analytical solution at specific time on original grid (stag or not)
+			PlaneData ts_h(planeDataConfig);
+			PlaneData ts_u(planeDataConfig);
+			PlaneData ts_v(planeDataConfig);
+
+			// Recover data in C grid using interpolations
+			if (simVars.disc.use_staggering)
+			{
+				// Remap A grid to C grid
+
+				//Temporary displacement for U points
+				//sampler2D.bilinear_scalar(t_u, pos_x, tmp, ts_u, stag_h[0], stag_h[1]);
+				//t_u=op.avg_b_x(t0_u); //equiv to bilinear
+				sampler2D.bicubic_scalar(t_u, pos_x, pos_y, ts_u, staggering.h[0], staggering.h[1]+0.5);
+
+				//Temporary displacement for V points
+				//sampler2D.bilinear_scalar(t_v, tmp, pos_y, ts_v, stag_h[0], stag_h[1]);
+				//t_v=op.avg_b_y(t0_v); //equiv to bilinear
+				sampler2D.bicubic_scalar(t_v, pos_x, pos_y, ts_v, staggering.h[0]+0.5, staggering.h[1]);
+			}
+			else
+			{
+				ts_h = t_h;
+				ts_u = t_u;
+				ts_v = t_v;
+			}
+
+			benchmark.analytical_error_rms_h = (ts_h-prog_h_pert).reduce_rms_quad();
+			benchmark.analytical_error_rms_u = (ts_u-prog_u).reduce_rms_quad();
+			benchmark.analytical_error_rms_v = (ts_v-prog_v).reduce_rms_quad();
+
+			benchmark.analytical_error_maxabs_h = (ts_h-prog_h_pert).reduce_maxAbs();
+			benchmark.analytical_error_maxabs_u = (ts_u-prog_u).reduce_maxAbs();
+			benchmark.analytical_error_maxabs_v = (ts_v-prog_v).reduce_maxAbs();
 		}
-
-		// Analytical solution at specific time on original grid (stag or not)
-		PlaneData ts_h = t_h;
-		PlaneData ts_u = t_u;
-		PlaneData ts_v = t_v;
-
-
-		// Recover data in C grid using interpolations
-		if (simVars.disc.use_staggering)
-		{
-			// Remap A grid to C grid
-
-			//Temporary displacement for U points
-			//sampler2D.bilinear_scalar(t_u, pos_x, tmp, ts_u, stag_h[0], stag_h[1]);
-			//t_u=op.avg_b_x(t0_u); //equiv to bilinear
-			sampler2D.bicubic_scalar(t_u, pos_x, pos_y, ts_u, staggering.h[0], staggering.h[1]+0.5);
-
-			//Temporary displacement for V points
-			//sampler2D.bilinear_scalar(t_v, tmp, pos_y, ts_v, stag_h[0], stag_h[1]);
-			//t_v=op.avg_b_y(t0_v); //equiv to bilinear
-			sampler2D.bicubic_scalar(t_v, pos_x, pos_y, ts_v, staggering.h[0]+0.5, staggering.h[1]);
-		}
-
-		benchmark.analytical_error_rms_h = (ts_h-prog_h).reduce_rms_quad();
-		benchmark.analytical_error_rms_u = (ts_u-prog_u).reduce_rms_quad();
-		benchmark.analytical_error_rms_v = (ts_v-prog_v).reduce_rms_quad();
-
-		benchmark.analytical_error_maxabs_h = (ts_h-prog_h).reduce_maxAbs();
-		benchmark.analytical_error_maxabs_u = (ts_u-prog_u).reduce_maxAbs();
-		benchmark.analytical_error_maxabs_v = (ts_v-prog_v).reduce_maxAbs();
-
-//		std::cout << std::endl;
-//		std::cout << ts_h.reduce_rms_quad() << std::endl;
-
 	}
 
 
@@ -939,7 +1029,7 @@ public:
 	 */
 	VisStuff vis_arrays[3] =
 	{
-			{&prog_h,	"h"},
+			{&prog_h_pert,	"h"},
 			{&prog_u,	"u"},
 			{&prog_v,	"v"},
 	};
@@ -955,13 +1045,13 @@ public:
 	{
 		if (simVars.misc.vis_id < 0)
 		{
-			PlaneData t_h = t0_prog_h;
+			PlaneData t_h_pert = t0_prog_h_pert;
 			PlaneData t_u = t0_prog_u;
 			PlaneData t_v = t0_prog_v;
 
 			double o_dt;
 			timeSteppers.l_direct->run_timestep(
-					t_h, t_u, t_v,
+					t_h_pert, t_u, t_v,
 					o_dt,
 					simVars.timecontrol.current_simulation_time,
 					0,
@@ -971,15 +1061,15 @@ public:
 			switch(simVars.misc.vis_id)
 			{
 			case -1:
-				vis = t_h+simVars.sim.h0;			//Exact solution
+				vis = t_h_pert+simVars.sim.h0;			//Exact solution
 				break;
 
 			case -2:
-				vis = t_h-prog_h;	// difference to exact solution
+				vis = t_h_pert-prog_h_pert;	// difference to exact solution
 				break;
 
 			case -3:
-				vis = t0_prog_h-prog_h;	// difference to initial condition
+				vis = t0_prog_h_pert-prog_h_pert;	// difference to initial condition
 				break;
 			}
 
@@ -1078,21 +1168,21 @@ public:
 
 		case 'c':
 			// dump data arrays
-			prog_h.file_physical_saveData_ascii("swe_rexi_dump_h.csv");
+			prog_h_pert.file_physical_saveData_ascii("swe_rexi_dump_h.csv");
 			prog_u.file_physical_saveData_ascii("swe_rexi_dump_u.csv");
 			prog_v.file_physical_saveData_ascii("swe_rexi_dump_v.csv");
 			break;
 
 		case 'C':
 			// dump data arrays to VTK
-			prog_h.file_physical_saveData_vtk("swe_rexi_dump_h.vtk", "Height");
+			prog_h_pert.file_physical_saveData_vtk("swe_rexi_dump_h.vtk", "Height");
 			prog_u.file_physical_saveData_vtk("swe_rexi_dump_u.vtk", "U-Velocity");
 			prog_v.file_physical_saveData_vtk("swe_rexi_dump_v.vtk", "V-Velocity");
 			break;
 
 		case 'l':
 			// load data arrays
-			prog_h.file_physical_loadData("swe_rexi_dump_h.csv", simVars.setup.input_data_binary);
+			prog_h_pert.file_physical_loadData("swe_rexi_dump_h.csv", simVars.setup.input_data_binary);
 			prog_u.file_physical_loadData("swe_rexi_dump_u.csv", simVars.setup.input_data_binary);
 			prog_v.file_physical_loadData("swe_rexi_dump_v.csv", simVars.setup.input_data_binary);
 			break;
@@ -1103,7 +1193,7 @@ public:
 
 	bool instability_detected()
 	{
-		return !(	prog_h.reduce_boolean_all_finite() &&
+		return !(	prog_h_pert.reduce_boolean_all_finite() &&
 					prog_u.reduce_boolean_all_finite() &&
 					prog_v.reduce_boolean_all_finite()
 				);
@@ -1215,7 +1305,7 @@ public:
 		reset();
 
 
-		*parareal_data_start.data_arrays[0] = prog_h;
+		*parareal_data_start.data_arrays[0] = prog_h_pert;
 		*parareal_data_start.data_arrays[1] = prog_u;
 		*parareal_data_start.data_arrays[2] = prog_v;
 
@@ -1260,7 +1350,7 @@ public:
 		if (simVars.parareal.verbosity > 2)
 			std::cout << "run_timestep_fine()" << std::endl;
 
-		prog_h = *parareal_data_start.data_arrays[0];
+		prog_h_pert = *parareal_data_start.data_arrays[0];
 		prog_u = *parareal_data_start.data_arrays[1];
 		prog_v = *parareal_data_start.data_arrays[2];
 
@@ -1276,7 +1366,7 @@ public:
 		}
 
 		// copy to buffers
-		*parareal_data_fine.data_arrays[0] = prog_h;
+		*parareal_data_fine.data_arrays[0] = prog_h_pert;
 		*parareal_data_fine.data_arrays[1] = prog_u;
 		*parareal_data_fine.data_arrays[2] = prog_v;
 	}
@@ -1304,12 +1394,12 @@ public:
 		if (simVars.parareal.verbosity > 2)
 			std::cout << "run_timestep_coarse()" << std::endl;
 
-		prog_h = *parareal_data_start.data_arrays[0];
+		prog_h_pert = *parareal_data_start.data_arrays[0];
 		prog_u = *parareal_data_start.data_arrays[1];
 		prog_v = *parareal_data_start.data_arrays[2];
 
 		timestepping_swe_plane_rexi.run_timestep_implicit_ts(
-				prog_h, prog_u, prog_v,
+				prog_h_pert, prog_u, prog_v,
 				timeframe_end - timeframe_start,
 				op,
 				simVars
@@ -1317,7 +1407,7 @@ public:
 
 
 		// copy to buffers
-		*parareal_data_coarse.data_arrays[0] = prog_h;
+		*parareal_data_coarse.data_arrays[0] = prog_h_pert;
 		*parareal_data_coarse.data_arrays[1] = prog_u;
 		*parareal_data_coarse.data_arrays[2] = prog_v;
 	}
@@ -1379,7 +1469,7 @@ public:
 
 		for (int k = 0; k < 3; k++)
 		{
-			tmp = *parareal_data_coarse.data_arrays[k] + *parareal_data_error.data_arrays[k];
+			PlaneData tmp = *parareal_data_coarse.data_arrays[k] + *parareal_data_error.data_arrays[k];
 
 			convergence = std::max(
 					convergence,
@@ -1390,14 +1480,17 @@ public:
 		}
 
 		simVars.timecontrol.current_simulation_time = timeframe_end;
-		prog_h = *parareal_data_output.data_arrays[0];
+		prog_h_pert = *parareal_data_output.data_arrays[0];
 		prog_u = *parareal_data_output.data_arrays[1];
 		prog_v = *parareal_data_output.data_arrays[2];
 
-		if (param_compute_error && simVars.pde.use_nonlinear_equations==0)
+		if (compute_error_to_analytical_solution)
 		{
-			compute_errors();
-			std::cout << "maxabs error compared to analytical solution: " << benchmark_analytical_error_maxabs_h << std::endl;
+			if (simVars.misc.compute_errors > 0 && simVars.pde.use_nonlinear_equations == 0)
+			{
+				compute_errors();
+				std::cout << "maxabs error compared to analytical solution: " << benchmark.analytical_error_maxabs_h << std::endl;
+			}
 		}
 
 		output_data_valid = true;
@@ -1480,18 +1573,16 @@ int main(int i_argc, char *i_argv[])
 	};
 
 	// default values for specific input (for general input see SimulationVariables.hpp)
-	simVars.bogus.var[0] = 0;	// compute error - default no
-	simVars.bogus.var[1] = 0;  //frequency in x for waves test case
-	simVars.bogus.var[2] = 0;  //frequency in y for waves test case
+	simVars.bogus.var[0] = 0;  //frequency in x for waves test case
+	simVars.bogus.var[1] = 0;  //frequency in y for waves test case
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
 		std::cout << std::endl;
 		std::cout << "Special parameters:" << std::endl;
-		std::cout << "	--compute-error [int]	0: No error computations" << std::endl;
-		std::cout << "							1: Stationary solution (use initial condition as reference)" << std::endl;
-		std::cout << "							2: Analytical (time varying) solution" << std::endl;
+		std::cout << "	--initial-freq-x-mul [float]" << std::endl;
+		std::cout << "	--initial-freq-y-mul [float]" << std::endl;
 		std::cout << "" << std::endl;
 
 
@@ -1500,19 +1591,16 @@ int main(int i_argc, char *i_argv[])
 #endif
 		return -1;
 	}
-	// Calculate error flag
-	param_compute_error = simVars.bogus.var[0];
-
 	// Frequency for certain initial conditions
-	param_initial_freq_x_mul = simVars.bogus.var[1];
-	param_initial_freq_y_mul = simVars.bogus.var[2];
+	param_initial_freq_x_mul = simVars.bogus.var[0];
+	param_initial_freq_y_mul = simVars.bogus.var[1];
 
 	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
 
 	// Print header
 	std::cout << std::endl;
 	simVars.outputConfig();
-	std::cout << "Computing error: " << param_compute_error << std::endl;
+	std::cout << "Computing error: " << simVars.misc.compute_errors << std::endl;
 	std::cout << std::endl;
 
 	std::ostringstream buf;
@@ -1549,6 +1637,7 @@ int main(int i_argc, char *i_argv[])
 		else
 #endif
 
+
 #if SWEET_GUI // The VisSweet directly calls simulationSWE->reset() and output stuff
 		if (simVars.misc.gui_enabled)
 		{
@@ -1562,26 +1651,16 @@ int main(int i_argc, char *i_argv[])
 			SimulationInstance *simulationSWE = new SimulationInstance;
 			//Setting initial conditions and workspace - in case there is no GUI
 
+			// also initializes diagnostics
 			simulationSWE->reset();
 
 			//Time counter
 			Stopwatch time;
 
-			//Diagnostic measures at initial stage
-			//double diagnostics_energy_start, diagnostics_mass_start, diagnostics_potential_entrophy_start;
-
-			// Initialize diagnostics
-			if (simVars.misc.verbosity > 0)
-			{
-				simulationSWE->update_diagnostics();
-				diagnostics_energy_start = simVars.diag.total_energy;
-				diagnostics_mass_start = simVars.diag.total_mass;
-				diagnostics_potential_entrophy_start = simVars.diag.total_potential_enstrophy;
-			}
-
 #if SWEET_MPI
 			MPI_Barrier(MPI_COMM_WORLD);
 #endif
+
 			//Start counting time
 			time.reset();
 
@@ -1624,21 +1703,23 @@ int main(int i_argc, char *i_argv[])
 
 			if (simVars.misc.verbosity > 0)
 			{
-				std::cout << "DIAGNOSTICS ENERGY DIFF:\t" << std::abs((simVars.diag.total_energy-diagnostics_energy_start)/diagnostics_energy_start) << std::endl;
-				std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) << std::endl;
-				std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs((simVars.diag.total_potential_enstrophy-diagnostics_potential_entrophy_start)/diagnostics_potential_entrophy_start) << std::endl;
+				std::cout << "DIAGNOSTICS ENERGY DIFF:\t" << std::abs((simVars.diag.total_energy-simulationSWE->diagnostics_energy_start)/simulationSWE->diagnostics_energy_start) << std::endl;
+				std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs((simVars.diag.total_mass-simulationSWE->diagnostics_mass_start)/simulationSWE->diagnostics_mass_start) << std::endl;
+				std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs((simVars.diag.total_potential_enstrophy-simulationSWE->diagnostics_potential_entrophy_start)/simulationSWE->diagnostics_potential_entrophy_start) << std::endl;
 
-				if (param_compute_error)
+				if (simVars.misc.compute_errors)
 				{
-					std::cout << "DIAGNOSTICS BENCHMARK DIFF H:\t" << simulationSWE->benchmark.t0_error_max_abs_h << std::endl;
+					std::cout << "DIAGNOSTICS BENCHMARK DIFF H:\t" << simulationSWE->benchmark.t0_error_max_abs_h_pert << std::endl;
 					std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationSWE->benchmark.t0_error_max_abs_u << std::endl;
 					std::cout << "DIAGNOSTICS BENCHMARK DIFF V:\t" << simulationSWE->benchmark.t0_error_max_abs_v << std::endl;
 				}
 			}
 
-			if (param_compute_error && simVars.pde.use_nonlinear_equations == 0)
+
+			if (simulationSWE->compute_error_to_analytical_solution)
 			{
 				simulationSWE->compute_errors();
+
 				std::cout << "DIAGNOSTICS ANALYTICAL RMS H:\t" << simulationSWE->benchmark.analytical_error_rms_h << std::endl;
 				std::cout << "DIAGNOSTICS ANALYTICAL RMS U:\t" << simulationSWE->benchmark.analytical_error_rms_u << std::endl;
 				std::cout << "DIAGNOSTICS ANALYTICAL RMS V:\t" << simulationSWE->benchmark.analytical_error_rms_v << std::endl;
@@ -1667,7 +1748,7 @@ int main(int i_argc, char *i_argv[])
 
 			bool run = true;
 
-			PlaneData prog_h(planeDataConfig);
+			PlaneData prog_h_pert(planeDataConfig);
 			PlaneData prog_u(planeDataConfig);
 			PlaneData prog_v(planeDataConfig);
 
@@ -1678,7 +1759,7 @@ int main(int i_argc, char *i_argv[])
 				double o_dt;
 				// REXI time stepping
 				rexiSWE.run_timestep(
-						prog_h,
+						prog_h_pert,
 						prog_u,
 						prog_v,
 						o_dt,					///< time step restriction

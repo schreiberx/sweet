@@ -1,12 +1,12 @@
 /*
- * SWE_Plane_TS_l_rexi_n_rexi.hpp
+ * SWE_Plane_TS_l_phi0_n_edt.hpp
  *
  *  Created on: 29 May 2017
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#ifndef SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_L_REXI_N_REXI_HPP_
-#define SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_L_REXI_N_REXI_HPP_
+#ifndef SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_L_PHI0_N_EDT_HPP_
+#define SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_L_PHI0_N_EDT_HPP_
 
 #include <limits>
 #include <sweet/plane/PlaneData.hpp>
@@ -18,7 +18,7 @@
 #include "SWE_Plane_TS_l_rexi.hpp"
 
 
-class SWE_Plane_TS_l_rexi_n_rexi	: public SWE_Plane_TS_interface
+class SWE_Plane_TS_l_phi0_n_edt	: public SWE_Plane_TS_interface
 {
 	SimulationVariables &simVars;
 	PlaneOperators &op;
@@ -43,7 +43,7 @@ private:
 
 
 public:
-	SWE_Plane_TS_l_rexi_n_rexi(
+	SWE_Plane_TS_l_phi0_n_edt(
 			SimulationVariables &i_simVars,
 			PlaneOperators &i_op
 		);
@@ -65,7 +65,7 @@ public:
 
 
 
-	virtual ~SWE_Plane_TS_l_rexi_n_rexi();
+	virtual ~SWE_Plane_TS_l_phi0_n_edt();
 };
 
 #endif /* SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_LN_ERK_HPP_ */

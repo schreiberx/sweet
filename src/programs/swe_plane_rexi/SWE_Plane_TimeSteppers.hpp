@@ -47,6 +47,8 @@ public:
 
 	SWE_Plane_TS_interface *master = nullptr;
 
+	bool linear_only = false;
+
 	SWE_Plane_TimeSteppers()
 	{
 	}
@@ -151,6 +153,8 @@ public:
 			ln_erk->setup(i_timestepping_order);
 
 			master = &(SWE_Plane_TS_interface&)*ln_erk;
+
+			linear_only = false;
 		}
 		else if (i_timestepping_method == "l_cn")
 		{
@@ -158,6 +162,8 @@ public:
 			l_cn->setup(i_timestepping_order, i_simVars.disc.crank_nicolson_filter);
 
 			master = &(SWE_Plane_TS_interface&)*l_cn;
+
+			linear_only = true;
 		}
 		else if (i_timestepping_method == "l_erk")
 		{
@@ -165,6 +171,8 @@ public:
 			l_erk->setup(i_timestepping_order);
 
 			master = &(SWE_Plane_TS_interface&)*l_erk;
+
+			linear_only = true;
 		}
 		else if (i_timestepping_method == "l_erk_n_erk")
 		{
@@ -179,6 +187,8 @@ public:
 			l_cn_n_erk->setup(i_timestepping_order, i_timestepping_order2, i_simVars.disc.crank_nicolson_filter);
 
 			master = &(SWE_Plane_TS_interface&)*l_cn_n_erk;
+
+			linear_only = false;
 		}
 		else if (i_timestepping_method == "l_rexi_n_erk")
 		{
@@ -189,6 +199,8 @@ public:
 				);
 
 			master = &(SWE_Plane_TS_interface&)*l_rexi_n_erk;
+
+			linear_only = false;
 		}
 		else if (i_timestepping_method == "l_irk")
 		{
@@ -196,6 +208,8 @@ public:
 			l_irk->setup(i_timestepping_order);
 
 			master = &(SWE_Plane_TS_interface&)*l_irk;
+
+			linear_only = true;
 		}
 		else if (i_timestepping_method == "l_rexi")
 		{
@@ -216,6 +230,8 @@ public:
 			}
 
 			master = &(SWE_Plane_TS_interface&)*l_rexi;
+
+			linear_only = true;
 		}
 		else if (i_timestepping_method == "l_rexi_na_sl_nd_settls")
 		{
@@ -227,6 +243,8 @@ public:
 				);
 
 			master = &(SWE_Plane_TS_interface&)*l_rexi_na_sl_nd_settls;
+
+			linear_only = false;
 		}
 		else if (i_timestepping_method == "l_cn_na_sl_nd_settls")
 		{
@@ -238,6 +256,8 @@ public:
 				);
 
 			master = &(SWE_Plane_TS_interface&)*l_cn_na_sl_nd_settls;
+
+			linear_only = false;
 		}
 		else if (i_timestepping_method == "l_irk_n_erk")
 		{
@@ -249,10 +269,14 @@ public:
 				);
 
 			master = &(SWE_Plane_TS_interface&)*l_irk_n_erk;
+
+			linear_only = false;
 		}
 		else if (i_timestepping_method == "l_direct")
 		{
 			master = &(SWE_Plane_TS_interface&)*l_direct;
+
+			linear_only = true;
 		}
 		//
 		else

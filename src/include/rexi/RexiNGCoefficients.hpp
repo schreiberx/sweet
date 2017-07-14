@@ -35,6 +35,7 @@ public:
 
 	bool reduce_to_half = true;
 
+	std::string filename;
 
 	static
 	constexpr
@@ -73,6 +74,8 @@ private:
 		basis_function_rat_shift = std::numeric_limits<T>::quiet_NaN();
 
 		weights_cplx.resize(0);
+
+		filename = "";
 	}
 
 
@@ -92,17 +95,17 @@ public:
 
 	void outputWeights()
 	{
-		std::cout << "weights:" << std::endl;
+//		std::cout << "weights:" << std::endl;
 		for (int i = 0; i < N; i++)
-		{
-			std::cout << weights_cplx[i] << std::endl;
-		}
+			std::cout << "faf_weight[" << i << "] = " << weights_cplx[i] << std::endl;
 	}
 
 
 public:
 	void load_from_file(std::string &i_filename)
 	{
+		filename = i_filename;
+
 		std::ifstream infile(i_filename);
 
 		if (!infile.is_open())

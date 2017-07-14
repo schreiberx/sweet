@@ -45,10 +45,6 @@ struct REXI_SimulationVariables
 	 */
 	bool normalization = true;
 
-	/**
-	 * Use Next Generation REXI
-	 */
-	bool use_next_generation = false;
 
 	/**
 	 * Use REXI preallocation
@@ -60,19 +56,39 @@ struct REXI_SimulationVariables
 	 */
 	bool use_direct_solution = false;
 
+	/**
+	 * Use Next Generation REXI
+	 */
+	bool use_next_generation = false;
+
+	/**
+	 * integration range for which NGREXI should be valid
+	 * [-test_range_abs;test_range_abs]
+	 */
+	double ng_test_min = 0;
+	double ng_test_max = 0;
+
+	/**
+	 * Max double precision error within test region
+	 */
+	double ng_max_error_double_precision = 1e-12;
+
 
 	void outputConfig()
 	{
 		std::cout << std::endl;
 		std::cout << "REXI:" << std::endl;
-		std::cout << " + rexi_h: " << h << std::endl;
-		std::cout << " + rexi_M: " << M << std::endl;
-		std::cout << " + rexi_L: " << L << std::endl;
-		std::cout << " + rexi_use_half_poles: " << use_half_poles << std::endl;
-		std::cout << " + rexi_use_extended_modes: " << use_extended_modes << std::endl;
-		std::cout << " + rexi_use_next_generation: " << use_next_generation << std::endl;
+		std::cout << " + h: " << h << std::endl;
+		std::cout << " + M: " << M << std::endl;
+		std::cout << " + L: " << L << std::endl;
+		std::cout << " + use_half_poles: " << use_half_poles << std::endl;
+		std::cout << " + use_extended_modes: " << use_extended_modes << std::endl;
 		std::cout << " + rexi_normalization: " << normalization << std::endl;
 		std::cout << " + rexi_sphere_solver_preallocation: " << sphere_solver_preallocation << std::endl;
+		std::cout << " + use_next_generation: " << use_next_generation << std::endl;
+		std::cout << " + ng_test_min: " << ng_test_min << std::endl;
+		std::cout << " + ng_test_max: " << ng_test_max << std::endl;
+		std::cout << " + ng_max_error_double_precision: " << ng_max_error_double_precision << std::endl;
 		std::cout << " + use_direct_solution: " << use_direct_solution << std::endl;
 		std::cout << std::endl;
 	}
@@ -87,9 +103,14 @@ struct REXI_SimulationVariables
 		std::cout << "	--rexi-half [bool]			Use half REXI poles, default:1" << std::endl;
 		std::cout << "	--rexi-normalization [bool]		Use REXI normalization around geostrophic balance, default:1" << std::endl;
 		std::cout << "	--rexi-sphere-preallocation [bool]	Use preallocation of SPH-REXI solver coefficients, default:1" << std::endl;
-		std::cout << "	--rexi-use-direct-solution [bool]	Use direct solution (analytical) for REXI, default:0" << std::endl;
-		std::cout << "	--rexi-use-next-generation [bool]	Use next generation REXI, default:0" << std::endl;
 		std::cout << "	--rexi-ext-modes [int]	Use this number of extended modes in spherical harmonics" << std::endl;
+
+		std::cout << "	--rexi-use-direct-solution [bool]	Use direct solution (analytical) for REXI, default:0" << std::endl;
+
+		std::cout << "	--rexi-use-next-generation [bool]	Use next generation REXI, default:0" << std::endl;
+		std::cout << "	--rexi-ng-test-min [double]	Set minimum test interval, default:0" << std::endl;
+		std::cout << "	--rexi-ng-test-max [double]	Set maximum test interval, default:0" << std::endl;
+		std::cout << "	--rexi-ng-test-abs [double]	Set min/max test interval, default:0" << std::endl;
 		std::cout << "" << std::endl;
 	}
 
@@ -120,10 +141,22 @@ struct REXI_SimulationVariables
 		io_long_options[io_next_free_program_option] = {"rexi-use-direct-solution", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
+		io_long_options[io_next_free_program_option] = {"rexi-ext-modes", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
 		io_long_options[io_next_free_program_option] = {"rexi-use-next-generation", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
-		io_long_options[io_next_free_program_option] = {"rexi-ext-modes", required_argument, 0, 256+io_next_free_program_option};
+		io_long_options[io_next_free_program_option] = {"rexi-ng-test-min", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"rexi-ng-test-max", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"rexi-ng-test-abs", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"rexi-ng-max-error", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 	}
 
@@ -146,11 +179,15 @@ struct REXI_SimulationVariables
 			case 4:	normalization = atoi(optarg);	return 0;
 			case 5:	sphere_solver_preallocation = atoi(optarg);	return 0;
 			case 6:	use_direct_solution = atoi(optarg);	return 0;
-			case 7:	use_next_generation = atoi(optarg);	return 0;
-			case 8:	use_extended_modes = atoi(optarg);	return 0;
+			case 7:	use_extended_modes = atoi(optarg);	return 0;
+			case 8:	use_next_generation = atoi(optarg);	return 0;
+			case 9:	ng_test_min = atof(optarg);	return 0;
+			case 10:	ng_test_max = atof(optarg);	return 0;
+			case 11:	ng_test_max = atof(optarg);	ng_test_min = -ng_test_max;	return 0;
+			case 12:	ng_max_error_double_precision = atof(optarg);	return 0;
 		}
 
-		return 9;
+		return 13;
 	}
 };
 

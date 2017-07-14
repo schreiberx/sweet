@@ -533,6 +533,7 @@ public:
 			std::cout << std::endl;
 			std::cout << "MISC:" << std::endl;
 			std::cout << " + verbosity: " << verbosity << std::endl;
+			std::cout << " + compute_error " << compute_errors << std::endl;
 			std::cout << " + stability_checks: " << stability_checks << std::endl;
 			std::cout << " + output_floating_point_precision: " << output_floating_point_precision << std::endl;
 			std::cout << " + gui_enabled: " << gui_enabled << std::endl;
@@ -549,6 +550,9 @@ public:
 
 		/// set verbosity of simulation
 		int verbosity = 0;
+
+		/// compute errors
+		int compute_errors = 0;
 
 		/// do stability checks for simulation
 		int stability_checks = 1;
@@ -765,6 +769,10 @@ public:
 
 
         // MISC
+
+        long_options[next_free_program_option] = {"compute-errors", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
         long_options[next_free_program_option] = {"stability-checks", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
@@ -893,10 +901,11 @@ public:
 
 				if (i < next_free_program_option)
 				{
-					int c = 0;	if (i == c)	{	setup.setup_coord_x = atof(optarg);	continue;	}
-					c++;		if (i == c)	{	setup.setup_coord_y = atof(optarg);	continue;	}
-					c++;		if (i == c)	{	setup.advection_rotation_angle = atof(optarg);	continue;	}
+					int c = 0;	if (i == c)	{	setup.setup_coord_x = atof(optarg);		continue;	}
+					c++;		if (i == c)	{	setup.setup_coord_y = atof(optarg);		continue;	}
+					c++;		if (i == c)	{	setup.advection_rotation_angle = atof(optarg);		continue;	}
 
+					c++;		if (i == c)	{	misc.compute_errors = atoi(optarg);					continue;	}
 					c++;		if (i == c)	{	misc.stability_checks = atoi(optarg);				continue;	}
 					c++;		if (i == c)	{	misc.sphere_use_robert_functions = atoi(optarg);	continue;	}
 

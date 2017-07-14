@@ -51,6 +51,9 @@ public:
 
 	void reset()
 	{
+		double cell_size_x = simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
+		double cell_size_y = simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
+
 		simVars.timecontrol.current_timestep_nr = 0;
 
 		h.physical_set_all(simVars.sim.h0);
@@ -161,7 +164,7 @@ public:
 					// u is negative
 					+(h*u.return_value_if_negative())				// outflow
 					-op.shift_left(h*u.return_value_if_negative())	// inflow
-				)*(1.0/simVars.disc.cell_size[0])				// here we see a finite-difference-like formulation
+				)*(1.0/simVars.disc.cell_size_x)				// here we see a finite-difference-like formulation
 				+
 				(
 					// v is positive
@@ -171,7 +174,7 @@ public:
 					// v is negative
 					+(h*v.return_value_if_negative())				// outflow
 					-op.shift_down(h*v.return_value_if_negative())	// inflow
-				)*(1.0/simVars.disc.cell_size[1])
+				)*(1.0/simVars.disc.cell_size_y)
 			);
 #endif
 		simVars.timecontrol.current_timestep_nr++;

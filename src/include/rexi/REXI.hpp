@@ -61,12 +61,12 @@ public:
 public:
 	std::vector<complexProcessingAndStorage> alpha;
 	std::vector<complexProcessingAndStorage> beta_re;
-	std::vector<complexProcessingAndStorage> beta_im;
+//	std::vector<complexProcessingAndStorage> beta_im;
 
 
 	std::vector<complexEvaluation> alpha_eval;
 	std::vector<complexEvaluation> beta_re_eval;
-	std::vector<complexEvaluation> beta_im_eval;
+//	std::vector<complexEvaluation> beta_im_eval;
 
 
 public:
@@ -119,7 +119,7 @@ public:
 
 		alpha_eval.resize(2*N+1);
 		beta_re_eval.resize(2*N+1);
-		beta_im_eval.resize(2*N+1);
+//		beta_im_eval.resize(2*N+1);
 
 		/// temporary storage vector for generalization
 		/// over phi functions
@@ -146,7 +146,7 @@ public:
 		{
 			alpha_eval[n] = {0,0};
 			beta_re_eval[n] = {0,0};
-			beta_im_eval[n] = {0,0};
+//			beta_im_eval[n] = {0,0};
 		}
 
 		complexEvaluation cmu = ga.mu;
@@ -158,7 +158,7 @@ public:
 				alpha_eval[n+N] = i_h*(cmu + complexEvaluation(0, n));
 
 				beta_re_eval[n+N] += b[m+M].real()*i_h*ga.a[l+L];
-				beta_im_eval[n+N] += b[m+M].imag()*i_h*ga.a[l+L];
+//				beta_im_eval[n+N] += b[m+M].imag()*i_h*ga.a[l+L];
 			}
 		}
 
@@ -195,11 +195,11 @@ public:
 			{
 //				alpha_tmp[i] = (alpha_tmp[i] + alpha_tmp[N*2-i])*0.5;
 				beta_re_eval[i] += conj(beta_re_eval[N*2-i]);
-				beta_im_eval[i] += conj(beta_im_eval[N*2-i]);
+//				beta_im_eval[i] += conj(beta_im_eval[N*2-i]);
 			}
 			alpha_eval.resize(N+1);
 			beta_re_eval.resize(N+1);
-			beta_im_eval.resize(N+1);
+//			beta_im_eval.resize(N+1);
 
 #elif 0
 
@@ -210,13 +210,13 @@ public:
 			 */
 			alpha_eval.resize(N+1);
 			beta_re_eval.resize(N+1);
-			beta_im_eval.resize(N+1);
+//			beta_im_eval.resize(N+1);
 
 			// N+1 contains the pole and we don't rescale this one by 2 but all the other ones
 			for (int i = 0; i < N; i++)
 			{
 				beta_re_eval[i] *= 2.0;
-				beta_im_eval[i] *= 2.0;
+//				beta_im_eval[i] *= 2.0;
 			}
 #endif
 		}
@@ -263,18 +263,19 @@ public:
 
 		alpha.resize(alpha_eval.size());
 		beta_re.resize(beta_re_eval.size());
-		beta_im.resize(beta_im_eval.size());
+//		beta_im.resize(beta_im_eval.size());
 
 
 		for (std::size_t n = 0; n < alpha.size(); n++)
 		{
 			alpha[n] = alpha_eval[n];
 			beta_re[n] = beta_re_eval[n];
-			beta_im[n] = beta_im_eval[n];
+//			beta_im[n] = beta_im_eval[n];
 		}
 
 		//std::cout << "REXI - number of terms: " << alpha.size() << std::endl;
 	}
+
 
 
 	/**
@@ -299,6 +300,7 @@ public:
 	}
 
 
+#if 0
 	/**
 	 * compute the approximated value of e^{ix}
 	 */
@@ -321,6 +323,7 @@ public:
 
 		return complexEvaluation(sum_re, sum_im);
 	}
+#endif
 
 
 	/**
@@ -340,6 +343,8 @@ public:
 		return sum;
 	}
 
+
+#if 0
 	/**
 	 * \return \f$ Im(cos(x) + i*sin(x)) = sin(x) \f$
 	 *
@@ -356,6 +361,7 @@ public:
 			sum += (DQStuff::convertComplex<TEvaluation>(beta_im[n]) / (complexEvaluation(0, i_x) + DQStuff::convertComplex<TEvaluation>(alpha[n]))).real();
 		return sum;
 	}
+#endif
 };
 
 
