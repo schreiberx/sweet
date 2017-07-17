@@ -417,7 +417,8 @@ public:
 		{
 			compute_error_difference_to_initial_condition =
 					simVars.setup.benchmark_scenario_id == 2 ||
-					simVars.setup.benchmark_scenario_id == 3;
+					simVars.setup.benchmark_scenario_id == 3 ||
+					simVars.setup.benchmark_scenario_id == 14;
 
 			compute_error_to_analytical_solution = timeSteppers.linear_only;
 		}
@@ -450,7 +451,6 @@ public:
 
 		if (simVars.disc.use_staggering)
 		{
-			FatalError("TODO: Pedro, pls check this");
 			PlaneDiagnostics::update_staggered_huv_to_mass_energy_enstrophy(
 					op,
 					prog_h_pert,

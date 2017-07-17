@@ -25,7 +25,7 @@ class default_params:
 	output_timestep_size = 0.0001
 
 	f_sphere = 1
-	verbosity = 0
+	verbosity = 2
 
 	timestepping_method = 'l_erk'
 	timestepping_order = 1
@@ -60,7 +60,8 @@ class default_params:
 	use_robert_functions = 1
 
 	pde_id = 0
-
+	staggering = 0
+	spectralderiv = 1
 	nonlinear = 0
 	viscosity = 0
 
@@ -224,6 +225,9 @@ cd "$BASEDIR"
 			content += ' -N '+str(self.phys_res)
 
 		content += ' --pde-id '+str(self.pde_id)
+		content += ' --staggering='+str(self.staggering)
+
+		content += ' -S '+str(self.spectralderiv)
 
 		content += ' -X '+str(self.domain_size)
 		content += ' -s '+str(self.bench_id)
@@ -257,7 +261,6 @@ cd "$BASEDIR"
 		content += ' --use-robert-functions='+str(self.use_robert_functions)
 
 		content += ' --compute-error='+str(self.compute_error)
-
 		content += '"'
 
 		content += "\n"
@@ -281,10 +284,10 @@ $EXEC || exit 1
 		idstr = '_'+self.prefix_string
 
 		if self.mode_res != -1:
-			idstr += '_modes'+str(self.mode_res).zfill(3)
+			idstr += '_modes'+str(self.mode_res).zfill(4)
 
 		if self.phys_res != -1:
-			idstr += '_phys'+str(self.phys_res).zfill(3)
+			idstr += '_phys'+str(self.phys_res).zfill(4)
 
 		idstr += '_bench'+str(self.bench_id)
 #		idstr += '_nonlin'+str(self.nonlinear)
@@ -353,14 +356,14 @@ $EXEC || exit 1
 p = default_params()
 
 
-p.verbosity = 2
+p.verbosity = 3
 
 p.plane_or_sphere = 'plane'
 
 p.mode_res = -1
-p.phys_res = 128
+p.phys_res = 512
 
-p.bench_id = 1
+p.bench_id = 14
 
 p.rexi_sphere_preallocation = 0
 
@@ -372,12 +375,13 @@ p.domain_size = 1
 #p.viscosity = 0.0005
 p.viscosity = 0.0
 
-p.simtime = 0.1
-p.output_timestep_size = p.simtime
+p.simtime = 0.0001
+timestep_size_reference = 0.00001
+p.timestep_size = timestep_size_reference
 
-timestep_size_reference = 0.0001
-timestep_sizes = [0.0001*(2.0**i) for i in range(0, 11)]
+p.output_timestep_size = p.timestep_size
 
+phys_res_list = [16*(2**i) for i in range(0, 6)]
 
 # Groups to execute, see below
 # l: linear
@@ -414,9 +418,6 @@ for group in groups:
 			['l_rexi',	0,	0],
 		]
 
-	#	['lg_rexi_lc_erk_nt_sl_nd_erk',
-	#	['l_rexi_ns_sl_nd_erk',
-
 	# 1st order nonlinear
 	if group == 'ln1':
 		ts_methods = [
@@ -449,12 +450,13 @@ for group in groups:
 			['lg_rexi_lc_erk_nt_sl_nd_erk',	2,	2],
 		]
 
-	# 2nd order nonlinear
-	if group == 'ln2test':
+	# 2nd order nonlinear non-fully-spectral
+	if group == 'ln2space':
 		ts_methods = [
-			['ln_erk',		4,	4],	# reference solution
-			['l_cn_n_erk',		2,	2],
-			['l_erk_n_erk',		2,	2],
+			['ln_erk',		4,	4],	# reference solution - spectral (128 grid points)
+			['ln_erk',		4,	4],	# FD- C-grid
+#			['l_cn_n_erk',		2,	2],
+#			['l_erk_n_erk',		2,	2],
 #			['ln_erk',		2,	2],
 #			['l_rexi_n_erk',	2,	2],
 		]
@@ -467,7 +469,6 @@ for group in groups:
 		ts_methods = [ts_methods[0]]+[[sys.argv[2], int(sys.argv[3]), int(sys.argv[4])]]
 		print(ts_methods)
 
-
 	#
 	# add prefix string to group benchmarks
 	#
@@ -478,12 +479,14 @@ for group in groups:
 	# Reference solution
 	#
 	if True:
+		print("Reference")
 		tsm = ts_methods[0]
 
 		p.prefix_string = prefix_string_template+'_ref'
 		p.timestepping_method = tsm[0]
 		p.timestepping_order = tsm[1]
 		p.timestepping_order2 = tsm[2]
+		p.phys_res = 128
 
 		if len(tsm) > 3:
 			p.timestep_size = tsm[3]
@@ -494,14 +497,22 @@ for group in groups:
 
 
 	for tsm in ts_methods[1:]:
-		for timestep_size in timestep_sizes:
+		for phys_res in phys_res_list:
+			print(phys_res)
+
 			p.prefix_string = prefix_string_template
 
 			p.timestepping_method = tsm[0]
 			p.timestepping_order = tsm[1]
 			p.timestepping_order2 = tsm[2]
+			p.timestep_size = timestep_size_reference
 
-			p.timestep_size = timestep_size
+			p.phys_res = phys_res
+
+			if group == 'ln2space' and 'ln_erk' in tsm[0]:
+				p.staggering = 1
+				p.spectralderiv = 0
+				p.nonlinear = 1
 
 
 			if 'rexi' in tsm[0]:
@@ -514,7 +525,6 @@ for group in groups:
 					p.gen_script('script'+p.create_job_id(), 'run.sh')
 
 				p.rexi_m = 0
-
 			else:
 				p.gen_script('script'+p.create_job_id(), 'run.sh')
 
