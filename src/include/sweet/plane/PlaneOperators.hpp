@@ -346,17 +346,13 @@ public:
 
 					std::size_t idxb = ((diff_c_x.planeDataConfig->spectral_data_size[1]-1-j)*planeDataConfig->spectral_data_size[0])+(i);
 					diff_c_x.spectral_space_data[idxb] = {0.0, (double)((double)i*2.0*M_PIl/(double)i_domain_size[0])};
+
 #if 0
-					diff_c_x.spectral_set(
-							j, i,
-							0,
-							(double)i*2.0*M_PIl/(double)i_domain_size[0]
-						);
-					diff_c_x.spectral_set(
-							diff_c_x.planeDataConfig->spectral_data_size[1]-1-j, i,
-							0,
-							(double)i*2.0*M_PIl/(double)i_domain_size[0]
-						);
+					if (i == (int)planeDataConfig->spectral_data_size[0]-1)
+					{
+						diff_c_x.spectral_space_data[idxa] *= 2.0;
+						diff_c_x.spectral_space_data[idxb] *= 2.0;
+					}
 #endif
 				}
 			}

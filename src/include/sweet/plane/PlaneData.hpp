@@ -611,7 +611,7 @@ public:
 
 	void spectral_zeroAliasingModes()	const
 	{
-#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
+#if SWEET_USE_PLANE_SPECTRAL_DEALIASING || 1
 		assert(spectral_space_data_valid);
 
 #if SWEET_THREADING
@@ -648,6 +648,8 @@ public:
 					}
 			}
 		}
+#else
+
 #endif
 	}
 
@@ -674,13 +676,31 @@ public:
 			const std::complex<double> &i_value
 	)
 	{
-//		request_data_spectral();
-
 		physical_space_data_valid = false;
 		spectral_space_data_valid = true;
 
 		std::size_t idx = (j*planeDataConfig->spectral_data_size[0])+i;
 		spectral_space_data[idx] = i_value;
+	}
+#endif
+
+
+
+
+#if 1
+	inline
+	std::complex<double> & p_spectral_get(
+			std::size_t j,
+			std::size_t i
+	)
+	{
+		request_data_spectral();
+
+		physical_space_data_valid = false;
+		spectral_space_data_valid = true;
+
+		std::size_t idx = (j*planeDataConfig->spectral_data_size[0])+i;
+		return spectral_space_data[idx];
 	}
 #endif
 
@@ -729,8 +749,7 @@ public:
 	void spectral_set_zero()
 	{
 		PLANE_DATA_SPECTRAL_FOR_IDX(
-				spectral_space_data[idx].real(0);
-				spectral_space_data[idx].imag(0);
+				spectral_space_data[idx] = 0.0;
 		);
 
 		spectral_zeroAliasingModes();
@@ -1843,9 +1862,6 @@ public:
 		PLANE_DATA_SPECTRAL_FOR_IDX(
 				spectral_space_data[idx] /= i_value;
 			);
-
-		spectral_space_data_valid = true;
-		physical_space_data_valid = false;
 
 #else
 

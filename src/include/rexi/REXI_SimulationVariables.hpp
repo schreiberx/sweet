@@ -18,10 +18,11 @@ struct REXI_SimulationVariables
 	/**
 	 * REXI parameter h
 	 */
-	double h = 0.15;
+	double h = -1.0;
 
 	/**
-	 * REXI parameter M
+	 * REXI parameter M: Number of Gaussian basis functions.
+	 * This is not the number of rational functions!
 	 */
 	int M = 128;
 
@@ -68,6 +69,18 @@ struct REXI_SimulationVariables
 	double ng_test_min = 0;
 	double ng_test_max = 0;
 
+	std::string ng_faf_dir = "";
+
+	/*
+	 * Number of rational functions
+	 */
+	int ng_N = 0;
+
+	/*
+	 * Spacing of rational functions
+	 */
+	double ng_h = -1.0;
+
 	/**
 	 * Max double precision error within test region
 	 */
@@ -86,6 +99,9 @@ struct REXI_SimulationVariables
 		std::cout << " + rexi_normalization: " << normalization << std::endl;
 		std::cout << " + rexi_sphere_solver_preallocation: " << sphere_solver_preallocation << std::endl;
 		std::cout << " + use_next_generation: " << use_next_generation << std::endl;
+		std::cout << " + ng_faf_dir: " << ng_faf_dir << std::endl;
+		std::cout << " + ng_N: " << ng_N << std::endl;
+		std::cout << " + ng_h: " << ng_h << std::endl;
 		std::cout << " + ng_test_min: " << ng_test_min << std::endl;
 		std::cout << " + ng_test_max: " << ng_test_max << std::endl;
 		std::cout << " + ng_max_error_double_precision: " << ng_max_error_double_precision << std::endl;
@@ -108,6 +124,9 @@ struct REXI_SimulationVariables
 		std::cout << "	--rexi-use-direct-solution [bool]	Use direct solution (analytical) for REXI, default:0" << std::endl;
 
 		std::cout << "	--rexi-use-next-generation [bool]	Use next generation REXI, default:0" << std::endl;
+		std::cout << "	--rexi-ng-faf-dir [string]			Directory with FAF coefficients" << std::endl;
+		std::cout << "	--rexi-ng-N [int]		Number of rational basis functions, default:auto" << std::endl;
+		std::cout << "	--rexi-ng-h [double]	Spacing of rational basis functions, default:auto" << std::endl;
 		std::cout << "	--rexi-ng-test-min [double]	Set minimum test interval, default:0" << std::endl;
 		std::cout << "	--rexi-ng-test-max [double]	Set maximum test interval, default:0" << std::endl;
 		std::cout << "	--rexi-ng-test-abs [double]	Set min/max test interval, default:0" << std::endl;
@@ -147,6 +166,15 @@ struct REXI_SimulationVariables
 		io_long_options[io_next_free_program_option] = {"rexi-use-next-generation", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
+		io_long_options[io_next_free_program_option] = {"rexi-ng-faf-dir", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"rexi-ng-n", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"rexi-ng-h", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
 		io_long_options[io_next_free_program_option] = {"rexi-ng-test-min", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
@@ -180,14 +208,18 @@ struct REXI_SimulationVariables
 			case 5:	sphere_solver_preallocation = atoi(optarg);	return 0;
 			case 6:	use_direct_solution = atoi(optarg);	return 0;
 			case 7:	use_extended_modes = atoi(optarg);	return 0;
-			case 8:	use_next_generation = atoi(optarg);	return 0;
-			case 9:	ng_test_min = atof(optarg);	return 0;
-			case 10:	ng_test_max = atof(optarg);	return 0;
-			case 11:	ng_test_max = atof(optarg);	ng_test_min = -ng_test_max;	return 0;
-			case 12:	ng_max_error_double_precision = atof(optarg);	return 0;
+
+			case 8:		use_next_generation = atoi(optarg);	return 0;
+			case 9:		ng_faf_dir = optarg;	return 0;
+			case 10:	ng_N = atoi(optarg);	return 0;
+			case 11:	ng_h = atof(optarg);	return 0;
+			case 12:	ng_test_min = atof(optarg);	return 0;
+			case 13:	ng_test_max = atof(optarg);	return 0;
+			case 14:	ng_test_max = atof(optarg);	ng_test_min = -ng_test_max;	return 0;
+			case 15:	ng_max_error_double_precision = atof(optarg);	return 0;
 		}
 
-		return 13;
+		return 16;
 	}
 };
 

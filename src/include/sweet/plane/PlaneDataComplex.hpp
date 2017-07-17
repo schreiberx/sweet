@@ -415,6 +415,7 @@ public:
 
 	void spectral_zeroAliasingModes()	const
 	{
+		FatalError("TODO");
 #if 0
 
 #if SWEET_THREADING
@@ -541,6 +542,18 @@ public:
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 				spectral_space_data[idx].real(i_value_re);
 				spectral_space_data[idx].imag(i_value_im);
+		);
+
+		physical_space_data_valid = false;
+		spectral_space_data_valid = true;
+	}
+
+
+	inline
+	void spectral_set_zero()
+	{
+		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
+				spectral_space_data[idx]  = 0;
 		);
 
 		physical_space_data_valid = false;

@@ -51,11 +51,34 @@ void SWE_Plane_TS_l_erk::euler_timestep_update(
 		 * v_t = -g * h_y - f*u
 		 */
 
+#if 1
 		o_u_t = -simVars.sim.gravitation*op.diff_c_x(i_h) + simVars.sim.f0*i_v;
 		o_v_t = -simVars.sim.gravitation*op.diff_c_y(i_h) - simVars.sim.f0*i_u;
 
 		// standard update
 		o_h_t = -(op.diff_c_x(i_u) + op.diff_c_y(i_v))*simVars.sim.h0;
+#else
+
+	#if 0
+		// U-only
+		o_u_t = -simVars.sim.gravitation*op.diff_c_x(i_h) + simVars.sim.f0*i_v;
+		//o_v_t.physical_set_zero();
+		o_v_t = - simVars.sim.f0*i_u;
+
+		// standard update
+		o_h_t = -(op.diff_c_x(i_u))*simVars.sim.h0;
+
+	#else
+		// V-only
+		//o_u_t.spectral_set_zero();
+		o_u_t = +simVars.sim.f0*i_v;
+		o_v_t = -simVars.sim.gravitation*op.diff_c_y(i_h) - simVars.sim.f0*i_u;// - simVars.sim.f0*i_u;
+
+		// standard update
+		o_h_t = -(op.diff_c_y(i_v))*simVars.sim.h0;
+	#endif
+
+#endif
 	}
 	else // simVars.disc.use_staggering = true
 	{

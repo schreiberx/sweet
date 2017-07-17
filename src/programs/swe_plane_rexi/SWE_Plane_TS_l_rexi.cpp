@@ -27,29 +27,33 @@ void SWE_Plane_TS_l_rexi::setup(
 	{
 		bool retval = rexiNG.auto_load(
 				i_function_name,
-				0,	/// N
+				i_rexi.ng_N,	/// N
 				rexiNG.None(),	/// max_error
 				i_rexi.ng_max_error_double_precision,			/// max_error_double_precision
 				i_rexi.ng_test_min,
 				i_rexi.ng_test_max,
 				rexiNG.None(),	/// basis_function_scaling
-				rexiNG.None(),	/// basis_function_spacing
+				i_rexi.ng_h, //rexiNG.None(),	/// basis_function_spacing
 				rexiNG.None(),	/// basis_function rat shift
 
-				i_rexi.use_half_poles
+				i_rexi.use_half_poles,
+
+				i_rexi.ng_faf_dir
 			);
 
-		std::cout << "Loaded REXI coefficients from file " << rexiNG.fafcoeffs.filename << std::endl;
+		if (!retval)
+			FatalError(std::string("Not able to find coefficients for given constraints for function "+i_function_name));
 
-		if (simVars.misc.verbosity > 1)
+
+		if (simVars.misc.verbosity > 0)
+			std::cout << "Loaded REXI coefficients from file '" << rexiNG.fafcoeffs.filename << "'" << std::endl;
+
+		if (simVars.misc.verbosity > 3)
 		{
 			rexiNG.fafcoeffs.output();
 			rexiNG.fafcoeffs.outputWeights();
 			rexiNG.output();
 		}
-
-		if (!retval)
-			FatalError(std::string("Not able to find coefficients for given constraints for function "+i_function_name));
 
 		rexi_alpha = rexiNG.alpha;
 		rexi_beta_re = rexiNG.beta_re;
@@ -57,12 +61,14 @@ void SWE_Plane_TS_l_rexi::setup(
 	else
 	{
 		rexi.setup(0, i_rexi.h, i_rexi.M, i_rexi.L, i_rexi.use_half_poles, i_rexi.normalization);
+		std::cout << i_rexi.M << std::endl;
 
 		rexi_alpha = rexi.alpha;
 		rexi_beta_re = rexi.beta_re;
 	}
 
-	std::cout << "REXI coefficients: " << rexi_alpha.size() << std::endl;
+	std::cout << "Halving rule = " << i_rexi.use_half_poles << std::endl;
+	std::cout << "Number of REXI coefficients N = " << rexi_alpha.size() << std::endl;
 
 	std::size_t N = rexi_alpha.size();
 	block_size = N/num_global_threads;
@@ -456,15 +462,15 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 
 		// sum real-valued elements
 		#pragma omp parallel for schedule(static)
-		for (std::size_t i = 0; i < io_h.planeDataConfig->physical_array_data_number_of_elements; i++)
+		for (std::size_t i = 0; i < i_h_pert.planeDataConfig->physical_array_data_number_of_elements; i++)
 			o_h_pert.physical_space_data[i] += perThreadVars[n]->h_sum.physical_space_data[i].real();
 
 		#pragma omp parallel for schedule(static)
-		for (std::size_t i = 0; i < io_h.planeDataConfig->physical_array_data_number_of_elements; i++)
+		for (std::size_t i = 0; i < i_h_pert.planeDataConfig->physical_array_data_number_of_elements; i++)
 			o_u.physical_space_data[i] += perThreadVars[n]->u_sum.physical_space_data[i].real();
 
 		#pragma omp parallel for schedule(static)
-		for (std::size_t i = 0; i < io_h.planeDataConfig->physical_array_data_number_of_elements; i++)
+		for (std::size_t i = 0; i < i_h_pert.planeDataConfig->physical_array_data_number_of_elements; i++)
 			o_v.physical_space_data[i] += perThreadVars[n]->v_sum.physical_space_data[i].real();
 	}
 

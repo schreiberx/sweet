@@ -25,7 +25,7 @@
  * the required coefficients on-the-fly which is expensive.
  */
 void SWE_Plane_TS_l_direct::run_timestep(
-		PlaneData &io_h,	///< prognostic variables
+		PlaneData &io_h_pert,	///< prognostic variables
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
 
@@ -41,8 +41,6 @@ void SWE_Plane_TS_l_direct::run_timestep(
 	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
 		i_fixed_dt = i_max_simulation_time - i_simulation_timestamp;
 
-
-
 	typedef std::complex<double> complex;
 
 	double eta_bar = simVars.sim.h0;
@@ -50,20 +48,20 @@ void SWE_Plane_TS_l_direct::run_timestep(
 	double f = simVars.sim.f0;
 	complex I(0.0,1.0);
 
-	PlaneDataComplex i_h = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_h);
+	PlaneDataComplex i_h_pert = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_h_pert);
 	PlaneDataComplex i_u = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_u);
 	PlaneDataComplex i_v = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_v);
 
-	PlaneDataComplex o_h(io_h.planeDataConfig);
-	PlaneDataComplex o_u(io_h.planeDataConfig);
-	PlaneDataComplex o_v(io_h.planeDataConfig);
+	PlaneDataComplex o_h_pert(io_h_pert.planeDataConfig);
+	PlaneDataComplex o_u(io_h_pert.planeDataConfig);
+	PlaneDataComplex o_v(io_h_pert.planeDataConfig);
 
 	double s0 = simVars.sim.domain_size[0];
 	double s1 = simVars.sim.domain_size[1];
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-	o_h.spectral_space_data_valid = true;
-	o_h.physical_space_data_valid = false;
+	o_h_pert.spectral_space_data_valid = true;
+	o_h_pert.physical_space_data_valid = false;
 
 	o_u.spectral_space_data_valid = true;
 	o_u.physical_space_data_valid = false;
@@ -72,32 +70,34 @@ void SWE_Plane_TS_l_direct::run_timestep(
 	o_v.physical_space_data_valid = false;
 #endif
 
-	for (std::size_t ik1 = 0; ik1 < i_h.planeDataConfig->spectral_complex_data_size[1]; ik1++)
+	for (std::size_t ik1 = 0; ik1 < i_h_pert.planeDataConfig->spectral_complex_data_size[1]; ik1++)
 	{
-		for (std::size_t ik0 = 0; ik0 < i_h.planeDataConfig->spectral_complex_data_size[0]; ik0++)
+		double k1;
+		if (ik1 < i_h_pert.planeDataConfig->spectral_complex_data_size[1]/2)
+			k1 = (double)ik1;
+		else
+			k1 = (double)((int)ik1-(int)i_h_pert.planeDataConfig->spectral_complex_data_size[1]);
+
+		for (std::size_t ik0 = 0; ik0 < i_h_pert.planeDataConfig->spectral_complex_data_size[0]; ik0++)
 		{
-			if (ik0 == i_h.planeDataConfig->spectral_complex_data_size[0]/2 || ik1 == i_h.planeDataConfig->spectral_complex_data_size[1]/2)
+			if (ik0 == i_h_pert.planeDataConfig->spectral_complex_data_size[0]/2 || ik1 == i_h_pert.planeDataConfig->spectral_complex_data_size[1]/2)
 			{
-				o_h.p_spectral_set(ik1, ik0, 0, 0);
+				o_h_pert.p_spectral_set(ik1, ik0, 0, 0);
 				o_u.p_spectral_set(ik1, ik0, 0, 0);
 				o_v.p_spectral_set(ik1, ik0, 0, 0);
+				continue;
 			}
 
 			complex U_hat[3];
-			U_hat[0] = i_h.spectral_get(ik1, ik0);
+			U_hat[0] = i_h_pert.spectral_get(ik1, ik0);
 			U_hat[1] = i_u.spectral_get(ik1, ik0);
 			U_hat[2] = i_v.spectral_get(ik1, ik0);
 
-			double k0, k1;
-			if (ik0 < i_h.planeDataConfig->spectral_complex_data_size[0]/2)
+			double k0;
+			if (ik0 < i_h_pert.planeDataConfig->spectral_complex_data_size[0]/2)
 				k0 = (double)ik0;
 			else
-				k0 = (double)((int)ik0-(int)i_h.planeDataConfig->spectral_complex_data_size[0]);
-
-			if (ik1 < i_h.planeDataConfig->spectral_complex_data_size[1]/2)
-				k1 = (double)ik1;
-			else
-				k1 = (double)((int)ik1-(int)i_h.planeDataConfig->spectral_complex_data_size[1]);
+				k0 = (double)((int)ik0-(int)i_h_pert.planeDataConfig->spectral_complex_data_size[0]);
 
 			/*
 			 * dimensionful formulation
@@ -112,10 +112,12 @@ void SWE_Plane_TS_l_direct::run_timestep(
 			complex eigenvalues[3];
 			complex eigenvectors[3][3];
 
+			double k01 = k0*k1;
+
 			if (k0 == 0 && k1 == 0)
 			{
 				eigenvalues[0] = 0.0;
-				eigenvalues[1] = -1.0*f;
+				eigenvalues[1] = -f;
 				eigenvalues[2] = f;
 
 				eigenvectors[0][0] = 1.00000000000000;
@@ -203,18 +205,18 @@ void SWE_Plane_TS_l_direct::run_timestep(
 					double K2 = K2;
 
 					eigenvalues[0] = 0.0;
-					eigenvalues[1] = -2.0*M_PI*sqrt(H0)*sqrt((double)g)*sqrt(k0*k0 + k1*k1);
-					eigenvalues[2] = 2.0*M_PI*sqrt(H0)*sqrt((double)g)*sqrt(k0*k0 + k1*k1);
+					eigenvalues[1] = -2.0*M_PI*sqrt(H0)*sqrt((g*H0)*(k0*k0 + k1*k1));
+					eigenvalues[2] = 2.0*M_PI*sqrt(H0)*sqrt((g*H0)*(k0*k0 + k1*k1));
 
 					eigenvectors[0][0] = 0.0;
-					eigenvectors[0][1] = -1.0*k1/sqrt(k0*k0 + k1*k1);
+					eigenvectors[0][1] = -k1/sqrt(k0*k0 + k1*k1);
 					eigenvectors[0][2] = k0/sqrt(k0*k0 + k1*k1);
-					eigenvectors[1][0] = -1.0*sqrt(H0)*sqrt(k0*k0 + k1*k1)/sqrt(H0*(k0*k0 + k1*k1) + g*k0*k0 + g*k1*k1);
-					eigenvectors[1][1] = sqrt((double)g)*k0/sqrt(H0*(k0*k0 + k1*k1) + g*k0*k0 + g*k1*k1);
-					eigenvectors[1][2] = sqrt((double)g)*k1/sqrt(H0*(k0*k0 + k1*k1) + g*k0*k0 + g*k1*k1);
-					eigenvectors[2][0] = sqrt(H0)*sqrt(k0*k0 + k1*k1)/sqrt(H0*(k0*k0 + k1*k1) + g*k0*k0 + g*k1*k1);
-					eigenvectors[2][1] = sqrt((double)g)*k0/sqrt(H0*(k0*k0 + k1*k1) + g*k0*k0 + g*k1*k1);
-					eigenvectors[2][2] = sqrt((double)g)*k1/sqrt(H0*(k0*k0 + k1*k1) + g*k0*k0 + g*k1*k1);
+					eigenvectors[1][0] = -1.0*sqrt(H0)*sqrt(k0*k0 + k1*k1)/sqrt(H0*g*(k0*k0 + k1*k1));
+					eigenvectors[1][1] = sqrt((double)g)*k0/sqrt(H0*g*(k0*k0 + k1*k1));
+					eigenvectors[1][2] = sqrt((double)g)*k1/sqrt(H0*g*(k0*k0 + k1*k1));
+					eigenvectors[2][0] = sqrt(H0)*sqrt(k0*k0 + k1*k1)/sqrt(H0*g*(k0*k0 + k1*k1));
+					eigenvectors[2][1] = sqrt((double)g)*k0/sqrt(H0*g*(k0*k0 + k1*k1));
+					eigenvectors[2][2] = sqrt((double)g)*k1/sqrt(H0*g*(k0*k0 + k1*k1));
 				}
 				else
 				{
@@ -260,7 +262,7 @@ void SWE_Plane_TS_l_direct::run_timestep(
 				for (int i = 0; i < 3; i++)
 					eigenvectors_inv[j][i] /= s;
 
-
+#if SWEET_DEBUG
 			// check
 			for (int j = 0; j < 3; j++)
 			{
@@ -283,6 +285,7 @@ void SWE_Plane_TS_l_direct::run_timestep(
 					}
 				}
 			}
+#endif
 
 			/*
 			 * Solve based on previously computed data.
@@ -309,13 +312,13 @@ void SWE_Plane_TS_l_direct::run_timestep(
 					U_hat_sp[k] += eigenvectors[j][k] * omega[j] * UEV0_sp[j];
 			}
 
-			o_h.p_spectral_set(ik1, ik0, U_hat_sp[0]);
+			o_h_pert.p_spectral_set(ik1, ik0, U_hat_sp[0]);
 			o_u.p_spectral_set(ik1, ik0, U_hat_sp[1]);
 			o_v.p_spectral_set(ik1, ik0, U_hat_sp[2]);
 		}
 	}
 
-	io_h = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_h);
+	io_h_pert = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_h_pert);
 	io_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_u);
 	io_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_v);
 

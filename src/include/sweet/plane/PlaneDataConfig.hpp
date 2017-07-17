@@ -348,18 +348,16 @@ private:
 			if (	spectral_modes[0] == physical_res[0] ||
 					spectral_modes[1] == physical_res[1]
 			)
-			{
 				FatalError("Aliasing doesn't make sense since physical resolution is identical to spectral");
-			}
 
 			spectral_data_iteration_ranges[0][0][0] = 0;
 			spectral_data_iteration_ranges[0][0][1] = 2*(M-1)/3+1;
 			spectral_data_iteration_ranges[0][1][0] = 0;
-			spectral_data_iteration_ranges[0][1][1] = N/3;
+			spectral_data_iteration_ranges[0][1][1] = N/3+1;
 
 			spectral_data_iteration_ranges[1][0][0] = 0;
 			spectral_data_iteration_ranges[1][0][1] = 2*(M-1)/3+1;
-			spectral_data_iteration_ranges[1][1][0] = N-N/3+1;
+			spectral_data_iteration_ranges[1][1][0] = N-N/3;
 			spectral_data_iteration_ranges[1][1][1] = N;
 
 			spectral_data_iteration_ranges[0][0][1]--;
@@ -371,18 +369,18 @@ private:
 #else
 
 			spectral_data_iteration_ranges[0][0][0] = 0;
-			spectral_data_iteration_ranges[0][0][1] = spectral_data_size[0];
+			spectral_data_iteration_ranges[0][0][1] = spectral_data_size[0];	// padding
 			spectral_data_iteration_ranges[0][1][0] = 0;
 			spectral_data_iteration_ranges[0][1][1] = spectral_data_size[1]/2;
 
 			spectral_data_iteration_ranges[1][0][0] = 0;
-			spectral_data_iteration_ranges[1][0][1] = spectral_data_size[0];
+			spectral_data_iteration_ranges[1][0][1] = spectral_data_size[0];	// padding
 			spectral_data_iteration_ranges[1][1][0] = spectral_data_size[1]/2;
 			spectral_data_iteration_ranges[1][1][1] = spectral_data_size[1];
 
 
-			spectral_real_modes[0] = spectral_data_size[0]/2;
-			spectral_real_modes[1] = spectral_data_size[1]/2;
+			spectral_real_modes[0] = spectral_data_iteration_ranges[0][0][1];
+			spectral_real_modes[1] = spectral_data_iteration_ranges[0][1][1];
 #endif
 
 			spectral_array_data_number_of_elements = spectral_data_size[0]*spectral_data_size[1];
@@ -548,8 +546,8 @@ private:
 						(fftw_complex*)data_physical,
 						(fftw_complex*)data_spectral,
 						FFTW_FORWARD,
-						(!wisdom_loaded ? FFTW_PRESERVE_INPUT | fftw_estimate_plan : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
-//						(!wisdom_loaded ? FFTW_PRESERVE_INPUT : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
+//						(!wisdom_loaded ? FFTW_PRESERVE_INPUT | fftw_estimate_plan : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
+						(!wisdom_loaded ? fftw_estimate_plan : FFTW_WISDOM_ONLY)
 					);
 
 			if (fftw_plan_complex_forward == nullptr)
@@ -567,8 +565,8 @@ private:
 						(fftw_complex*)data_spectral,
 						(fftw_complex*)data_physical,
 						FFTW_BACKWARD,
-						(!wisdom_loaded ? FFTW_PRESERVE_INPUT | fftw_estimate_plan : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
-//						(!wisdom_loaded ? FFTW_PRESERVE_INPUT : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
+//						(!wisdom_loaded ? FFTW_PRESERVE_INPUT | fftw_estimate_plan : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
+						(!wisdom_loaded ? fftw_estimate_plan : FFTW_WISDOM_ONLY)
 					);
 
 			if (fftw_plan_complex_backward == nullptr)
@@ -592,6 +590,14 @@ private:
 //			FatalError("Only even number of spectral modes are supported!");
 		}
 #endif
+	}
+
+
+public:
+	std::size_t get_iteration_range_area(int i)	const
+	{
+		return	(spectral_data_iteration_ranges[i][0][1] - spectral_data_iteration_ranges[i][0][0])*
+				(spectral_data_iteration_ranges[i][1][1] - spectral_data_iteration_ranges[i][1][0]);
 	}
 
 

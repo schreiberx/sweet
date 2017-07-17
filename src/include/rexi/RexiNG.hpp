@@ -103,6 +103,10 @@ public:
 			const std::string &i_faf_data_directory = "data/faf_data/"
 	)
 	{
+		/// fix for default program parameter value of h
+		if (i_basis_function_spacing <= 0)
+			i_basis_function_spacing = None();
+
 		std::string faf_data_dir = i_faf_data_directory + "/faf_data_rationalcplx_"+i_function_name;
 		RexiNGCoefficients<T> target_fafcoeffs;
 
@@ -131,12 +135,13 @@ public:
 		struct dirent *dp;
 		while (dirp)
 		{
+			errno = 0;	/// required! set errno to zero!
 			if ((dp = readdir(dirp)) == nullptr)
 			{
 				if (errno == 0)
 					break;
 
-				FatalError("Error while reading faf coefficients");
+				FatalError(std::string("Error while reading faf coefficients from directory '")+faf_data_dir+"'");
 			}
 
 			std::string filename = dp->d_name;
@@ -319,19 +324,38 @@ public:
 		if ((N & 1) != 1)
 			FatalError("N must be odd!");
 
-
 		if (i_reduce_to_half)
 		{
-			for (int i = 0; i < N/2-1; i++)
-			{
-				beta_re[i] += DQStuff::conj(beta_re[N-i-1]);
-//				beta_im_eval[i] += conj(beta_im_eval[N*2-i]);
-			}
-			alpha.resize(N/2+1);
-			beta_re.resize(N/2+1);
-//			beta_im_eval.resize(N+1);
+			int newN = N/2+1;
+			for (int i = 0; i < newN-1; i++)
+				beta_re[i] += conj(beta_re[N-1-i]);
+
+			alpha.resize(newN);
+			beta_re.resize(newN);
 		}
 
+#if 0
+		bool i_normalization = true;
+		if (i_normalization)
+		{
+			if (i_function_name == "phi0")
+			{
+				std::complex<double> sum = 0;
+				std::cout << "Normalize for 0-dispersion modes:" << std::endl;
+
+				for (std::size_t n = 0; n < alpha.size(); n++)
+				{
+					std::complex<double> val = beta_re[n]/alpha[n];
+					std::cout << n << ": " << val << std::endl;
+					sum += val;
+				}
+
+				double normalization = sum.real();
+				std::cout << "REXI sum for geostrophic modes with double precision: " << normalization<< std::endl;
+				std::cout << "REXI Error with coefficients used with double precision: " << (1.0-normalization) << std::endl;
+			}
+		}
+#endif
 		return true;
 	}
 

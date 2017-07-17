@@ -103,7 +103,7 @@ public:
 public:
 	void setup(
 		int i_phi_id,			///< Phi function id
-		TEvaluation i_h,				///< sampling width
+		TEvaluation i_h,		///< sampling width
 		int i_M,				///< approximation area
 		int i_L = 0,			///< L value for Gaussian approximation, use 0 for autodetection
 		bool i_reduce_to_half = true,	///< reduce the number of poles to half
@@ -124,6 +124,9 @@ public:
 		/// temporary storage vector for generalization
 		/// over phi functions
 		std::vector<complexEvaluation> b;
+
+		if (i_h < 0)
+			FatalError("Specify the sampling distance width of REXI (parameter h)");
 
 		if (phi_id == 0)
 		{
@@ -227,11 +230,16 @@ public:
 			{
 				{
 					complexProcessingAndStorage sum = 0;
+
+					std::cout << "Normalize for 0-dispersion modes:" << std::endl;
+
 					for (std::size_t n = 0; n < alpha_eval.size(); n++)
 					{
 						complexProcessingAndStorage b(beta_re_eval[n].real(), beta_re_eval[n].imag());
 						complexProcessingAndStorage a(alpha_eval[n].real(), alpha_eval[n].imag());
-						sum += b/a;
+						complexProcessingAndStorage val = b/a;
+						std::cout << n << ": " << val << std::endl;
+						sum += val;
 					}
 
 					TEvaluation normalization = sum.real();

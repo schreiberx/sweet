@@ -353,7 +353,7 @@ public:
 				std::cerr << std::endl;
 			}
 
-			//Print simulation time, energy and pot enstrophy
+			// Print simulation time, energy and pot enstrophy
 			std::cerr << simVars.timecontrol.current_simulation_time << "\t";
 			std::cerr << simVars.diag.total_mass << "\t";
 			std::cerr << simVars.diag.potential_energy << "\t";

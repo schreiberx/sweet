@@ -19,6 +19,8 @@
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/PlaneDataSemiLagrangian.hpp>
 #include <sweet/plane/PlaneDiagnostics.hpp>
+#include <sweet/plane/Convert_PlaneDataComplex_to_PlaneData.hpp>
+#include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
 #include <sweet/Stopwatch.hpp>
 #include <sweet/FatalError.hpp>
 #include <sweet/plane/Staggering.hpp>
@@ -474,7 +476,12 @@ public:
 	void normal_mode_analysis()
 	{
 		// dummy time step to get time step size
-		run_timestep();
+		if (simVars.sim.CFL >= 0)
+			FatalError("Normal mode analysis requires setting fixed time step size");
+
+		simVars.timecontrol.current_timestep_size = -simVars.sim.CFL;
+
+		//run_timestep();
 
 		/*
 		 * Do a normal mode analysis, see
@@ -495,8 +502,12 @@ public:
 
 		PlaneData* prog[3] = {&prog_h_pert, &prog_u, &prog_v};
 
+		/*
+		 * Maximum number of prognostic variables
+		 *
+		 * Advection e.g. has only one
+		 */
 		int max_prog_id = -1;
-
 		if (simVars.pde.id == 0 || simVars.pde.id == 1)
 		{
 			max_prog_id = 3;
@@ -522,6 +533,41 @@ public:
 			simVars.sim.CFL = -simVars.timecontrol.current_timestep_size;
 		}
 #endif
+
+		int num_timesteps = 1;
+		if (simVars.disc.normal_mode_analysis_generation >= 10)
+		{
+			if (simVars.timecontrol.max_timesteps_nr > 0)
+				num_timesteps = simVars.timecontrol.max_timesteps_nr;
+		}
+
+		if (simVars.timecontrol.max_simulation_time > 0)
+			file << "# t " << simVars.timecontrol.max_simulation_time << std::endl;
+		else
+			file << "# t " << (num_timesteps*(-simVars.sim.CFL)) << std::endl;
+
+		file << "# g " << simVars.sim.gravitation << std::endl;
+		file << "# h " << simVars.sim.h0 << std::endl;
+		file << "# r " << simVars.sim.earth_radius << std::endl;
+		file << "# f " << simVars.sim.coriolis_omega << std::endl;
+
+		int specmodes = planeDataConfig->get_iteration_range_area(0)+planeDataConfig->get_iteration_range_area(1);
+		file << "# specnummodes " << specmodes << std::endl;
+		file << "# specrealresx " << planeDataConfig->spectral_real_modes[0] << std::endl;
+		file << "# specrealresy " << planeDataConfig->spectral_real_modes[1] << std::endl;
+		file << "# physresx " << planeDataConfig->physical_res[0] << std::endl;
+		file << "# physresy " << planeDataConfig->physical_res[1] << std::endl;
+		file << "# normalmodegeneration " << simVars.disc.normal_mode_analysis_generation << std::endl;
+		file << "# antialiasing ";
+
+#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
+		file << 1;
+#else
+		file << 0;
+#endif
+
+		file << std::endl;
+
 
 		// iterate over all prognostic variables
 		for (int outer_prog_id = 0; outer_prog_id < max_prog_id; outer_prog_id++)
@@ -558,6 +604,9 @@ public:
 						 */
 						prog[outer_prog_id]->request_data_physical();
 						prog[outer_prog_id]->physical_space_data[outer_i] -= 1.0;
+
+						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+							(*prog[inner_prog_id]) /= simVars.timecontrol.current_timestep_size;
 					}
 
 					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
@@ -574,10 +623,112 @@ public:
 					}
 				}
 			}
+#if 1
 			else if (simVars.disc.normal_mode_analysis_generation == 3 || simVars.disc.normal_mode_analysis_generation == 13)
 			{
 				// iterate over spectral space
-				for (std::size_t outer_i = 0; outer_i < planeDataConfig->spectral_array_data_number_of_elements; outer_i++)
+				for (int r = 0; r < 2; r++)
+				{
+					for (std::size_t j = planeDataConfig->spectral_data_iteration_ranges[r][1][0]; j < planeDataConfig->spectral_data_iteration_ranges[r][1][1]; j++)
+					{
+						for (std::size_t i = planeDataConfig->spectral_data_iteration_ranges[r][0][0]; i < planeDataConfig->spectral_data_iteration_ranges[r][0][1]; i++)
+						{
+							// reset time control
+							simVars.timecontrol.current_timestep_nr = 0;
+							simVars.timecontrol.current_simulation_time = 0;
+
+							std::cout << "." << std::flush;
+
+							for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+								prog[inner_prog_id]->spectral_set_zero();
+
+							// activate mode via real coefficient
+							prog[outer_prog_id]->p_spectral_set(j, i, 1.0);
+
+
+							/*
+							 * RUN timestep
+							 */
+							run_timestep();
+
+
+							if (simVars.disc.normal_mode_analysis_generation == 3)
+							{
+								/*
+								 * compute
+								 * 1/dt * (U(t+1) - U(t))
+								 */
+								prog[outer_prog_id]->request_data_spectral();
+
+								std::complex<double> val = prog[outer_prog_id]->p_spectral_get(j, i);
+								val = val - 1.0;
+								prog[outer_prog_id]->p_spectral_set(j, i, val);
+
+								for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+									(*prog[inner_prog_id]) /= simVars.timecontrol.current_timestep_size;
+							}
+
+
+							for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+							{
+								prog[inner_prog_id]->request_data_spectral();
+
+								/*
+								 * REAL
+								 */
+
+								for (int r = 0; r < 2; r++)
+								{
+									for (std::size_t j = planeDataConfig->spectral_data_iteration_ranges[r][1][0]; j < planeDataConfig->spectral_data_iteration_ranges[r][1][1]; j++)
+									{
+										for (std::size_t i = planeDataConfig->spectral_data_iteration_ranges[r][0][0]; i < planeDataConfig->spectral_data_iteration_ranges[r][0][1]; i++)
+										{
+											file << prog[inner_prog_id]->p_spectral_get(j, i).real();
+											file << "\t";
+										}
+									}
+								}
+							}
+
+
+							for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+							{
+								/*
+								 * IMAG
+								 */
+								int c = 0;
+								for (int r = 0; r < 2; r++)
+								{
+									for (std::size_t j = planeDataConfig->spectral_data_iteration_ranges[r][1][0]; j < planeDataConfig->spectral_data_iteration_ranges[r][1][1]; j++)
+									{
+										for (std::size_t i = planeDataConfig->spectral_data_iteration_ranges[r][0][0]; i < planeDataConfig->spectral_data_iteration_ranges[r][0][1]; i++)
+										{
+											file << prog[inner_prog_id]->p_spectral_get(j, i).imag();
+
+											if (inner_prog_id != max_prog_id-1 || c != specmodes-1)
+												file << "\t";
+											else
+												file << std::endl;
+
+											c++;
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+#else
+			else if (simVars.disc.normal_mode_analysis_generation == 3 || simVars.disc.normal_mode_analysis_generation == 13)
+			{
+				PlaneDataComplex t1(planeDataConfig);
+				PlaneDataComplex t2(planeDataConfig);
+				PlaneDataComplex t3(planeDataConfig);
+				PlaneDataComplex* prog_cplx[3] = {&t1, &t2, &t3};
+
+				// iterate over spectral space
+				for (std::size_t outer_i = 0; outer_i < planeDataConfig->spectral_complex_array_data_number_of_elements; outer_i++)
 				{
 					// reset time control
 					simVars.timecontrol.current_timestep_nr = 0;
@@ -586,17 +737,32 @@ public:
 					std::cout << "." << std::flush;
 
 					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-						prog[inner_prog_id]->spectral_set_zero();
+						prog_cplx[inner_prog_id]->spectral_set_zero();
 
 					// activate mode via real coefficient
-					prog[outer_prog_id]->request_data_spectral();
-					prog[outer_prog_id]->spectral_space_data[outer_i].real(1);
+					prog_cplx[outer_prog_id]->request_data_spectral();
+					prog_cplx[outer_prog_id]->spectral_space_data[outer_i].real(1);
+
+					// convert PlaneDataComplex to PlaneData
+					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+					{
+						*prog[inner_prog_id] = Convert_PlaneDataComplex_To_PlaneData::physical_convert(*prog_cplx[inner_prog_id]);
+						prog[inner_prog_id]->spectral_zeroAliasingModes();
+					}
+
 
 					/*
 					 * RUN timestep
 					 */
 					run_timestep();
 
+					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+					{
+						prog[inner_prog_id]->spectral_zeroAliasingModes();
+						*prog_cplx[inner_prog_id] = Convert_PlaneData_To_PlaneDataComplex::physical_convert(*prog[inner_prog_id]);
+
+						prog_cplx[inner_prog_id]->request_data_spectral();
+					}
 
 					if (simVars.disc.normal_mode_analysis_generation == 3)
 					{
@@ -604,31 +770,36 @@ public:
 						 * compute
 						 * 1/dt * (U(t+1) - U(t))
 						 */
-						prog[outer_prog_id]->request_data_spectral();
-						prog[outer_prog_id]->spectral_space_data[outer_i] -= 1.0;
+						prog_cplx[outer_prog_id]->request_data_spectral();
+						prog_cplx[outer_prog_id]->spectral_space_data[outer_i] -= 1.0;
 
 						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-							prog[inner_prog_id]->operator*=(1.0/simVars.timecontrol.current_timestep_size);
+							prog_cplx[inner_prog_id]->operator*=(1.0/simVars.timecontrol.current_timestep_size);
 					}
 
+
+					// convert PlaneDataComplex to PlaneData
 					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
 					{
-						prog[inner_prog_id]->request_data_spectral();
+						prog_cplx[inner_prog_id]->request_data_spectral();
 
-						for (std::size_t k = 0; k < planeDataConfig->spectral_array_data_number_of_elements; k++)
+						/*
+						 * REAL
+						 */
+						for (std::size_t k = 0; k < planeDataConfig->spectral_complex_array_data_number_of_elements; k++)
 						{
-							file << prog[inner_prog_id]->spectral_space_data[k].real();
+							file << prog_cplx[inner_prog_id]->spectral_space_data[k].real();
 							file << "\t";
 						}
-					}
 
-					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-					{
-						for (std::size_t k = 0; k < planeDataConfig->spectral_array_data_number_of_elements; k++)
+						/*
+						 * IMAG
+						 */
+						for (std::size_t k = 0; k < planeDataConfig->spectral_complex_array_data_number_of_elements; k++)
 						{
-							file << prog[inner_prog_id]->spectral_space_data[k].imag();
+							file << prog_cplx[inner_prog_id]->spectral_space_data[k].imag();
 
-							if (inner_prog_id != max_prog_id-1 || k != planeDataConfig->spectral_array_data_number_of_elements-1)
+							if (inner_prog_id != max_prog_id-1 || k != planeDataConfig->spectral_complex_array_data_number_of_elements-1)
 								file << "\t";
 							else
 								file << std::endl;
@@ -636,6 +807,7 @@ public:
 					}
 				}
 			}
+#endif
 		}
 	}
 
@@ -710,6 +882,9 @@ public:
 			std::ostream &o_ostream = std::cout
 	)
 	{
+		if (simVars.disc.normal_mode_analysis_generation > 0)
+			return false;
+
 		// output each time step
 		if (simVars.misc.output_each_sim_seconds < 0)
 			return false;
@@ -810,48 +985,12 @@ public:
 
 #if 1
 			// PXT: I didn't know where to put this to work with and without GUI - if removed crashes when gui=enable
-			if (diagnostics_mass_start == 0)
-				diagnostics_mass_start = simVars.diag.total_mass;
-
 			if ( std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) > 10000.0 ) {
 				std::cout << "\n DIAGNOSTICS BENCHMARK DIFF H:\t" << "INF" << std::endl;
 				//std::cout << "\n DIAGNOSTICS MASS DIFF:\t" << diagnostics_mass_start << " "<< simVars.diag.total_mass << " "<<std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) << std::endl;
 				std::cerr << "\n DIAGNOSTICS MASS DIFF TOO LARGE:\t" << std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) << std::endl;
-				exit(1);
+//				exit(1);
 			}
-#endif
-
-#if 0
-			// Print max abs difference of vars to initial conditions (this gives the error in steady state cases)
-			//if ((simVars.setup.scenario >= 0 && simVars.setup.scenario <= 4) || simVars.setup.scenario == 13)
-			//{
-			// Height
-			benchmark.t0_error_max_abs_h_pert = (prog_h_pert-t0_prog_h_pert).reduce_maxAbs() ;
-			o_ostream << "\t" << benchmark.t0_error_max_abs_h_pert;
-
-			// Velocity u
-			benchmark.t0_error_max_abs_u = (prog_u-t0_prog_u).reduce_maxAbs();
-			o_ostream << "\t" << benchmark.t0_error_max_abs_u;
-
-			// Velocity v
-			benchmark.t0_error_max_abs_v = (prog_v-t0_prog_v).reduce_maxAbs();
-			o_ostream << "\t" << benchmark.t0_error_max_abs_v;
-			//}
-
-			if (simVars.misc.compute_errors) // && simVars.pde.use_nonlinear_equations==0)
-			{
-				compute_errors();
-
-				o_ostream << "\t" << benchmark.analytical_error_rms_h;
-				o_ostream << "\t" << benchmark.analytical_error_rms_u;
-				o_ostream << "\t" << benchmark.analytical_error_rms_v;
-
-				o_ostream << "\t" << benchmark.analytical_error_maxabs_h;
-				o_ostream << "\t" << benchmark.analytical_error_maxabs_u;
-				o_ostream << "\t" << benchmark.analytical_error_maxabs_v;
-			}
-
-			o_ostream << std::endl;
 #endif
 
 		}
@@ -1595,6 +1734,7 @@ int main(int i_argc, char *i_argv[])
 	param_initial_freq_y_mul = simVars.bogus.var[1];
 
 	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
+	planeDataConfig->printInformation();
 
 	// Print header
 	std::cout << std::endl;
@@ -1660,11 +1800,11 @@ int main(int i_argc, char *i_argv[])
 			MPI_Barrier(MPI_COMM_WORLD);
 #endif
 
-			//Start counting time
+			// Start counting time
 			time.reset();
 
 
-			if (simVars.disc.normal_mode_analysis_generation)
+			if (simVars.disc.normal_mode_analysis_generation > 0)
 			{
 				simulationSWE->normal_mode_analysis();
 			}
