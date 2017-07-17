@@ -114,9 +114,9 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 		}
 
 		if (simVars.pde.use_nonlinear_equations > 0) // nonlinear case
-			H = simVars.sim.gravitation*i_h + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
+			H = simVars.sim.gravitation*total_h + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
 		else // linear case
-			H = simVars.sim.gravitation*i_h;// + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
+			H = simVars.sim.gravitation*total_h;// + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
 
 
 		if (simVars.pde.use_nonlinear_equations > 0) //nonlinear case
@@ -131,7 +131,7 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 				std::cerr << "Min h_pv   : " << total_h_pv.reduce_min() << std::endl;
 				std::cerr << "Min h_total: " << total_h.reduce_min() << std::endl;
 				std::cerr << "Min h_pert : " << i_h.reduce_min() << std::endl;
-				exit(1);
+				FatalError("SWE_Plane_TS_ln_erk: Methods unstable or inadequate for vector invariant swe");;
 			}
 
 			PlaneData q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + simVars.sim.f0) / total_h_pv;
