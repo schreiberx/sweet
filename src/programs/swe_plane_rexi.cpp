@@ -428,13 +428,13 @@ public:
 		}
 
 		update_diagnostics();
-		timestep_output();
-
 
 		diagnostics_energy_start = simVars.diag.total_energy;
 		diagnostics_mass_start = simVars.diag.total_mass;
 		diagnostics_potential_entrophy_start = simVars.diag.total_potential_enstrophy;
 
+
+		timestep_output();
 	}
 
 

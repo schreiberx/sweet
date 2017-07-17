@@ -4,10 +4,11 @@ import glob
 import subprocess
 import os
 import sys
+from subprocess import Popen, PIPE
 
 
 
-datafile="output_prog_h_t00000000000.10000000.csv"
+datafile="output_prog_h_pert_t00000000000.10000000.csv"
 
 
 groups = [
@@ -76,13 +77,20 @@ for group_info in groups:
 		for rundir in g:
 			progparams = ['./pp_compute_max_and_rms_errors.py', ref_dir+"/"+datafile, rundir+"/"+datafile, rundir]
 
-			try:
-				result = subprocess.check_output(progparams)
-			except Exception as e:
-				print(str(e))
-				print("Error in processing output in directory "+rundir)
+			p = Popen(progparams, stdout=PIPE, stderr=PIPE)
+			output, error = p.communicate()
+
+			if p.returncode != 0:
+				print("*"*80)
+				print("Exit code "+str(p.returncode))
+				print("EXEC: "+(" ".join(progparams)))
+				print("STDOUT: "+str(output))
+				print("STDERR: "+str(error))
 				continue
 
+			result = output
+
+			# last line contains convergence info
 			if result[-1] == '\n':
 				result = result[0:-1]
 
