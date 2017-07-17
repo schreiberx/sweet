@@ -209,7 +209,7 @@ $SCONS || exit 1
 cd "$BASEDIR"
 """
 
-		if p.rexi_par:
+		if self.rexi_par:
 			content += 'EXEC="$SWEETROOT/build/swe_plane_rexi_planespectral_planedealiasing_rexipar_libfft_gnu_release'
                 elif self.staggering:
                         content += 'EXEC="$SWEETROOT/build/swe_plane_rexi_omp_libfft_gnu_release'
