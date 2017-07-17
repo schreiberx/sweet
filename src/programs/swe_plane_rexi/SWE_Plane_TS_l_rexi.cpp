@@ -44,7 +44,6 @@ void SWE_Plane_TS_l_rexi::setup(
 		if (!retval)
 			FatalError(std::string("Not able to find coefficients for given constraints for function "+i_function_name));
 
-
 		if (simVars.misc.verbosity > 0)
 			std::cout << "Loaded REXI coefficients from file '" << rexiNG.fafcoeffs.filename << "'" << std::endl;
 
@@ -61,14 +60,13 @@ void SWE_Plane_TS_l_rexi::setup(
 	else
 	{
 		rexi.setup(0, i_rexi.h, i_rexi.M, i_rexi.L, i_rexi.use_half_poles, i_rexi.normalization);
-		std::cout << i_rexi.M << std::endl;
 
 		rexi_alpha = rexi.alpha;
 		rexi_beta_re = rexi.beta_re;
 	}
 
 	std::cout << "Halving rule = " << i_rexi.use_half_poles << std::endl;
-	std::cout << "Number of REXI coefficients N = " << rexi_alpha.size() << std::endl;
+	std::cout << "Number of total REXI coefficients N = " << rexi_alpha.size() << std::endl;
 
 	std::size_t N = rexi_alpha.size();
 	block_size = N/num_global_threads;

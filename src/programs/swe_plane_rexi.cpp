@@ -551,7 +551,7 @@ public:
 		file << "# r " << simVars.sim.earth_radius << std::endl;
 		file << "# f " << simVars.sim.coriolis_omega << std::endl;
 
-		int specmodes = planeDataConfig->get_iteration_range_area(0)+planeDataConfig->get_iteration_range_area(1);
+		int specmodes = planeDataConfig->get_spectral_iteration_range_area(0)+planeDataConfig->get_spectral_iteration_range_area(1);
 		file << "# specnummodes " << specmodes << std::endl;
 		file << "# specrealresx " << planeDataConfig->spectral_real_modes[0] << std::endl;
 		file << "# specrealresy " << planeDataConfig->spectral_real_modes[1] << std::endl;
@@ -626,6 +626,9 @@ public:
 #if 1
 			else if (simVars.disc.normal_mode_analysis_generation == 3 || simVars.disc.normal_mode_analysis_generation == 13)
 			{
+#if !SWEET_USE_PLANE_SPECTRAL_SPACE
+				FatalError("Only available with if plane spectral space is activated during compile time!");
+#else
 				// iterate over spectral space
 				for (int r = 0; r < 2; r++)
 				{
@@ -718,6 +721,7 @@ public:
 						}
 					}
 				}
+#endif
 			}
 #else
 			else if (simVars.disc.normal_mode_analysis_generation == 3 || simVars.disc.normal_mode_analysis_generation == 13)

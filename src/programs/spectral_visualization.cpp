@@ -10,6 +10,7 @@
 
 
 #include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneDataComplex.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/VisSweet.hpp>
 #include <sweet/SimulationVariables.hpp>
@@ -53,6 +54,21 @@ public:
 		op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
 	{
 		stopwatch.reset();
+
+		planeDataConfig->printInformation();
+		simVars.outputConfig();
+
+		for (std::size_t i = 0; i < planeDataConfig->spectral_complex_data_size[0]; i++)
+		{
+			std::cout << std::endl;
+			std::cout << "i: " << i << std::endl;
+			PlaneDataComplex tmp(planeDataConfig);
+			tmp.spectral_set_zero();
+			tmp.p_spectral_set(0, i, 1);
+			tmp.print_physicalArrayData();
+		}
+
+		exit(1);
 	}
 
 

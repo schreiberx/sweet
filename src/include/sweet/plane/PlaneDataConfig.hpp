@@ -594,7 +594,7 @@ private:
 
 
 public:
-	std::size_t get_iteration_range_area(int i)	const
+	std::size_t get_spectral_iteration_range_area(int i)	const
 	{
 		return	(spectral_data_iteration_ranges[i][0][1] - spectral_data_iteration_ranges[i][0][0])*
 				(spectral_data_iteration_ranges[i][1][1] - spectral_data_iteration_ranges[i][1][0]);
