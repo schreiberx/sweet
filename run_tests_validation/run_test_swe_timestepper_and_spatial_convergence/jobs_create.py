@@ -62,7 +62,7 @@ class default_params:
 	pde_id = 0
 	staggering = 0
 	spectralderiv = 1
-	nonlinear = 0
+	nonlinear = 1
 	viscosity = 0
 
 	simtime = 0.001 #math.inf
