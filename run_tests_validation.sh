@@ -1,6 +1,6 @@
 #! /bin/bash
 
-
+source ./local_software/env_vars.sh
 
 cd run_tests_validation
 

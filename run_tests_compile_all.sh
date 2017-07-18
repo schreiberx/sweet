@@ -1,5 +1,7 @@
 #! /bin/bash
 
+source ./local_software/env_vars.sh
+
 for i in 0 1 2 3; do
 	SCONS="scons --program=advection --numa-block-allocator=$i --threading=omp --mode=debug"
 	echo "$SCONS"
