@@ -101,14 +101,14 @@ public:
 
 public:
 	void bicubic_scalar(
-			const PlaneData &i_data,				///< sampling data
+			const PlaneData &i_data,			///< sampling data
 
-			const ScalarDataArray &i_pos_x,				///< x positions of interpolation points
-			const ScalarDataArray &i_pos_y,				///< y positions of interpolation points
+			const ScalarDataArray &i_pos_x,		///< x positions of interpolation points
+			const ScalarDataArray &i_pos_y,		///< y positions of interpolation points
 
-			PlaneData &o_data,				///< output values
+			PlaneData &o_data,					///< output values
 
-			double i_shift_x = 0.0,            ///< shift in x for staggered grids
+			double i_shift_x = 0.0,				///< shift in x for staggered grids
 			double i_shift_y = 0.0				///< shift in y for staggered grids
 	)
 	{

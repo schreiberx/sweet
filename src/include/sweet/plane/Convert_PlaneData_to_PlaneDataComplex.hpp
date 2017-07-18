@@ -14,6 +14,9 @@
 
 class Convert_PlaneData_To_PlaneDataComplex
 {
+
+#if 1
+//#error "Don't use physical_convert, since it looses the highest modes"
 public:
 	static
 	PlaneDataComplex physical_convert(
@@ -34,6 +37,117 @@ public:
 
 		return out;
 	}
+#endif
+
+
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+public:
+	static
+	PlaneDataComplex spectral_convert(
+			const PlaneData &i_planeData
+	)
+	{
+		PlaneDataComplex out(i_planeData.planeDataConfig);
+		out.spectral_set_zero();
+
+		i_planeData.request_data_spectral();
+
+		for (int r = 0; r < 2; r++)
+		{
+			for (	std::size_t j = out.planeDataConfig->spectral_data_iteration_ranges[r][1][0];
+					j < out.planeDataConfig->spectral_data_iteration_ranges[r][1][1];
+					j++
+			) {
+#if 0
+				for (	std::size_t i = out.planeDataConfig->spectral_data_iteration_ranges[r][0][0];
+						i < out.planeDataConfig->spectral_data_iteration_ranges[r][0][1];
+						i++
+				) {
+					const std::complex<double> &data = i_planeData.p_spectral_get(j, i);
+					out.p_spectral_set(j, i, data);
+				}
+
+				for (	std::size_t i = out.planeDataConfig->spectral_data_iteration_ranges[r][0][0];
+						i < out.planeDataConfig->spectral_data_iteration_ranges[r][0][1];
+						i++
+				) {
+					const std::complex<double> &data = i_planeData.p_spectral_get(j, i);
+					std::complex<double> data2 = data;
+					if (i > 0)
+					{
+//						data2.imag(-data2.imag());
+						if (j == 0)
+							out.p_spectral_set(j, out.planeDataConfig->spectral_complex_data_size[0]-i, data2);
+						else
+							out.p_spectral_set(out.planeDataConfig->spectral_complex_data_size[1]-j, out.planeDataConfig->spectral_complex_data_size[0]-i, data2);
+					}
+				}
+#else
+				std::cout << "*********" << std::endl;
+				for (	std::size_t i = out.planeDataConfig->spectral_data_iteration_ranges[r][0][0];
+						i < out.planeDataConfig->spectral_data_iteration_ranges[r][0][1]-1;
+						i++
+				) {
+					std::cout << i << std::endl;
+					std::complex<double> data = i_planeData.p_spectral_get(j, i);
+
+//					if (i == out.planeDataConfig->spectral_data_iteration_ranges[r][0][1]-1)
+//						data *= 0.5;
+
+					out.p_spectral_set(j, i, data);
+				}
+
+				for (	std::size_t i = out.planeDataConfig->spectral_data_iteration_ranges[r][0][0];
+						i < out.planeDataConfig->spectral_data_iteration_ranges[r][0][1]-1;
+						i++
+				) {
+					std::cout << out.planeDataConfig->spectral_complex_data_size[0]-i << std::endl;
+					std::complex<double> data2 = i_planeData.p_spectral_get(j, i);
+
+					if (i > 0)
+					{
+						//data2.imag(-data2.imag());
+						//if (i == out.planeDataConfig->spectral_data_iteration_ranges[r][0][1]-1)
+						//	data2 *= 0.5;
+
+						if (j == 0)
+							out.p_spectral_set(j, out.planeDataConfig->spectral_complex_data_size[0]-i, data2);
+						else
+							out.p_spectral_set(out.planeDataConfig->spectral_complex_data_size[1]-j, out.planeDataConfig->spectral_complex_data_size[0]-i, data2);
+					}
+				}
+#endif
+			}
+		}
+
+		out.physical_space_data_valid = false;
+		out.spectral_space_data_valid = true;
+
+#if 0
+		if (i_planeData.reduce_maxAbs() > 1e-8)
+		{
+			std::cout << std::endl;
+			PlaneDataComplex asdf = physical_convert(i_planeData);
+
+			double error = (asdf-out).reduce_maxabs_real();
+
+			if (error > 1e-8)
+			{
+				std::cout << "original" << std::endl;
+				i_planeData.print_spectralData_zeroNumZero();
+				std::cout << "physical converted" << std::endl;
+				asdf.print_spectralData();
+				std::cout << "spectral converted" << std::endl;
+				out.print_spectralData();
+
+				std::cout << "ERROR: " << error << std::endl;
+			}
+		}
+		//exit(1);
+#endif
+		return out;
+	}
+#endif
 };
 
 

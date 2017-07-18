@@ -79,8 +79,6 @@ public:
 	// v: velocity in y-direction
 	PlaneData prog_h_pert, prog_u, prog_v;
 
-	ScalarDataArray pos_x, pos_y;
-	ScalarDataArray posa_x, posa_y;
 
 #if SWEET_GUI
 	//visualization variable
@@ -93,9 +91,7 @@ public:
 	// Forcings
 	PlaneData force_h_pert, force_u, force_v;
 
-
-	// Staggering
-	Staggering staggering;
+	PlaneDataGridMapping gridMapping;
 
 
 	// implementation of different time steppers
@@ -134,10 +130,6 @@ public:
 	// Finite difference operators
 	PlaneOperators op;
 
-	// Interpolation stuff
-	PlaneDataSampler sampler2D;
-
-
 
 	/// Diagnostic measures at initial stage, Initialize with 0
 	double diagnostics_energy_start = 0;
@@ -152,18 +144,12 @@ public:
 
 public:
 	SimulationInstance()	:
-	// Constructor to initialize the class - all variables in the SW are setup
+		// Constructor to initialize the class - all variables in the SW are setup
 
 		// Variable dimensions (mem. allocation)
 		prog_h_pert(planeDataConfig),
 		prog_u(planeDataConfig),
 		prog_v(planeDataConfig),
-
-		pos_x(planeDataConfig->physical_array_data_number_of_elements),
-		pos_y(planeDataConfig->physical_array_data_number_of_elements),
-
-		posa_x(planeDataConfig->physical_array_data_number_of_elements),
-		posa_y(planeDataConfig->physical_array_data_number_of_elements),
 
 #if SWEET_GUI
 		vis(planeDataConfig),
@@ -216,34 +202,6 @@ public:
 		}
 
 
-		PlaneData tmp_x(op.planeDataConfig);
-		tmp_x.physical_update_lambda_array_indices(
-			[&](int i, int j, double &io_data)
-			{
-				io_data = ((double)i)*simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
-			}
-		);
-
-		PlaneData tmp_y(op.planeDataConfig);
-		tmp_y.physical_update_lambda_array_indices(
-			[&](int i, int j, double &io_data)
-			{
-				io_data = ((double)j)*simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
-			}
-		);
-
-		// Initialize arrival points with h position
-		pos_x = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_x);
-		pos_y = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_y);
-
-
-		double cell_size_x = simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
-		double cell_size_y = simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
-
-		// Initialize arrival points with h position
-		posa_x = pos_x+0.5*cell_size_x;
-		posa_y = pos_y+0.5*cell_size_y;
-
 		// Initialise diagnostics
 		last_timestep_nr_update_diagnostics = -1;
 
@@ -282,12 +240,7 @@ public:
 
 
 		if (simVars.disc.use_staggering)
-			staggering.setup_c_staggering();
-		else
-			staggering.setup_a_staggering();
-
-		// Setup sampler for future interpolations
-		sampler2D.setup(simVars.sim.domain_size, planeDataConfig);
+			gridMapping.setup(simVars, planeDataConfig);
 
 
 		// Waves test case - separate from SWEValidationBench because it depends on certain local input parameters
@@ -488,8 +441,14 @@ public:
 		 * Hillary Weller, John Thuburn, Collin J. Cotter,
 		 * "Computational Modes and Grid Imprinting on Five Quasi-Uniform Spherical C Grids"
 		 */
+		const char* filename;
 		char buffer_real[1024];
-		const char* filename = simVars.misc.output_file_name_prefix.c_str();
+
+		if (simVars.misc.output_file_name_prefix != "")
+			filename = "output_%s_normalmodes.csv";
+		else
+			filename = simVars.misc.output_file_name_prefix.c_str();
+
 
 		sprintf(buffer_real, filename, "normal_modes_physical", simVars.timecontrol.current_timestep_size*simVars.misc.output_time_scale);
 		std::ofstream file(buffer_real, std::ios_base::trunc);
@@ -551,10 +510,13 @@ public:
 		file << "# r " << simVars.sim.earth_radius << std::endl;
 		file << "# f " << simVars.sim.coriolis_omega << std::endl;
 
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 		int specmodes = planeDataConfig->get_spectral_iteration_range_area(0)+planeDataConfig->get_spectral_iteration_range_area(1);
 		file << "# specnummodes " << specmodes << std::endl;
 		file << "# specrealresx " << planeDataConfig->spectral_real_modes[0] << std::endl;
 		file << "# specrealresy " << planeDataConfig->spectral_real_modes[1] << std::endl;
+#endif
+
 		file << "# physresx " << planeDataConfig->physical_res[0] << std::endl;
 		file << "# physresy " << planeDataConfig->physical_res[1] << std::endl;
 		file << "# normalmodegeneration " << simVars.disc.normal_mode_analysis_generation << std::endl;
@@ -629,9 +591,11 @@ public:
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
 				FatalError("Only available with if plane spectral space is activated during compile time!");
 #else
+				//std::cout << "prog " << outer_prog_id << std::endl;
 				// iterate over spectral space
 				for (int r = 0; r < 2; r++)
 				{
+
 					for (std::size_t j = planeDataConfig->spectral_data_iteration_ranges[r][1][0]; j < planeDataConfig->spectral_data_iteration_ranges[r][1][1]; j++)
 					{
 						for (std::size_t i = planeDataConfig->spectral_data_iteration_ranges[r][0][0]; i < planeDataConfig->spectral_data_iteration_ranges[r][0][1]; i++)
@@ -649,10 +613,22 @@ public:
 							prog[outer_prog_id]->p_spectral_set(j, i, 1.0);
 
 
+							std::cout << "NORM " << j << ", " << i << std::endl;
+							for (int k = 0; k < 3; k++)
+							{
+								std::cout << "PROG " << k << std::endl;
+								prog[k]->print_spectralData_zeroNumZero();
+							}
 							/*
 							 * RUN timestep
 							 */
 							run_timestep();
+
+							for (int k = 0; k < 3; k++)
+							{
+								std::cout << "PROG DT" << k << std::endl;
+								prog[k]->print_spectralData_zeroNumZero();
+							}
 
 
 							if (simVars.disc.normal_mode_analysis_generation == 3)
@@ -833,7 +809,7 @@ public:
 				simVars.timecontrol.max_simulation_time
 			);
 
-		//Apply viscosity at posteriori, for all methods explicit diffusion for non spectral schemes and implicit for spectral
+		// Apply viscosity at posteriori, for all methods explicit diffusion for non spectral schemes and implicit for spectral
 		if (simVars.sim.viscosity != 0)
 		{
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE //TODO: this needs checking
@@ -909,9 +885,9 @@ public:
 
 			if (simVars.disc.use_staggering) // Remap in case of C-grid
 			{
-				//remap solution to A grid
-				sampler2D.bicubic_scalar(prog_u, posa_x, posa_y, t_u, staggering.u[0], staggering.u[1]);
-				sampler2D.bicubic_scalar(prog_v, posa_x, posa_y, t_v, staggering.v[0], staggering.v[1]);
+				t_h = prog_h_pert;
+				gridMapping.mapCtoA_u(prog_u, t_u);
+				gridMapping.mapCtoA_v(prog_v, t_v);
 			}
 			else
 			{
@@ -1022,112 +998,44 @@ public:
 public:
 	void compute_errors()
 	{
-		/*
-		 * First, we convert potential C-grid stored coefficients to an A-grid.
-		 */
-		PlaneData t_h(planeDataConfig);
-		PlaneData t_u(planeDataConfig);
-		PlaneData t_v(planeDataConfig);
-
-		if (simVars.disc.use_staggering) // Remap in case of C-grid
+		if (compute_error_difference_to_initial_condition || compute_error_to_analytical_solution)
 		{
-			//remap initial condition to A grid
-			//sampler2D.bilinear_scalar(t0_u, posx_a, posy_a, t_u, stag_u[0], stag_u[1]);
-			//t_u=op.avg_f_x(t0_u); //equiv to bilinear
-			sampler2D.bicubic_scalar(t0_prog_u, posa_x, posa_y, t_u, staggering.u[0], staggering.u[1]);
-
-			//sampler2D.bilinear_scalar(t0_v, posx_a, posy_a, t_v, stag_v[0], stag_v[1]);
-			//t_v=op.avg_f_y(t0_v); //equiv to bilinear
-			sampler2D.bicubic_scalar(t0_prog_v, posa_x, posa_y, t_v, staggering.v[0], staggering.v[1]);
-		}
-		else
-		{
-			t_h = t0_prog_h_pert;
-			t_u = t0_prog_u;
-			t_v = t0_prog_v;
-		}
-
-
-		/**
-		 * Compute difference to initial condition
-		 */
-		if (compute_error_difference_to_initial_condition)
-		{
-			PlaneData t0_h_pert(planeDataConfig);
-			PlaneData t0_u(planeDataConfig);
-			PlaneData t0_v(planeDataConfig);
-
-			if (simVars.disc.use_staggering) // Remap in case of C-grid
+			/**
+			 * Compute difference to initial condition
+			 */
+			if (compute_error_difference_to_initial_condition)
 			{
-				//remap initial condition to A grid
-				//sampler2D.bilinear_scalar(t0_u, posx_a, posy_a, t0_u, stag_u[0], stag_u[1]);
-				//t0_u=op.avg_f_x(t0_u); //equiv to bilinear
-				sampler2D.bicubic_scalar(t0_prog_u, posa_x, posa_y, t0_u, staggering.u[0], staggering.u[1]);
-
-				//sampler2D.bilinear_scalar(t0_v, posx_a, posy_a, t0_v, stag_v[0], stag_v[1]);
-				//t0_v=op.avg_f_y(t0_v); //equiv to bilinear
-				sampler2D.bicubic_scalar(t0_prog_v, posa_x, posa_y, t0_v, staggering.v[0], staggering.v[1]);
-			}
-			else
-			{
-				t0_h_pert = t0_prog_h_pert;
-				t0_u = t0_prog_u;
-				t0_v = t0_prog_v;
+				benchmark.t0_error_max_abs_h_pert = (prog_h_pert - t0_prog_h_pert).reduce_maxAbs();
+				benchmark.t0_error_max_abs_u = (prog_u - t0_prog_u).reduce_maxAbs();
+				benchmark.t0_error_max_abs_v = (prog_v - t0_prog_v).reduce_maxAbs();
 			}
 
-			benchmark.t0_error_max_abs_h_pert = (prog_h_pert - t0_prog_h_pert).reduce_maxAbs();
-			benchmark.t0_error_max_abs_u = (prog_u - t0_prog_u).reduce_maxAbs();
-			benchmark.t0_error_max_abs_v = (prog_v - t0_prog_v).reduce_maxAbs();
-		}
-
-		// Calculate linear exact solution, if compute error requests
-		if (compute_error_to_analytical_solution)
-		{
-			double o_dt;
-			//Run exact solution for linear case
-			timeSteppers.l_direct->run_timestep(
-					t_h, t_u, t_v,
-					o_dt,	// compute direct solution
-					simVars.timecontrol.current_simulation_time,
-					0,			// initial condition given at time 0
-					simVars.timecontrol.max_simulation_time
-			);
-
-
-			// Analytical solution at specific time on original grid (stag or not)
-			PlaneData ts_h(planeDataConfig);
-			PlaneData ts_u(planeDataConfig);
-			PlaneData ts_v(planeDataConfig);
-
-			// Recover data in C grid using interpolations
-			if (simVars.disc.use_staggering)
+			// Calculate linear exact solution, if compute error requests
+			if (compute_error_to_analytical_solution)
 			{
-				// Remap A grid to C grid
+				// Analytical solution at specific time on A-grid
+				PlaneData ts_h_pert = t0_prog_h_pert;
+				PlaneData ts_u = t0_prog_u;
+				PlaneData ts_v = t0_prog_v;
 
-				//Temporary displacement for U points
-				//sampler2D.bilinear_scalar(t_u, pos_x, tmp, ts_u, stag_h[0], stag_h[1]);
-				//t_u=op.avg_b_x(t0_u); //equiv to bilinear
-				sampler2D.bicubic_scalar(t_u, pos_x, pos_y, ts_u, staggering.h[0], staggering.h[1]+0.5);
+				double o_dt;
+				// Run exact solution for linear case
+				timeSteppers.l_direct->run_timestep(
+						ts_h_pert, ts_u, ts_v,
+						o_dt,	// compute direct solution
+						simVars.timecontrol.current_simulation_time,
+						0,			// initial condition given at time 0
+						simVars.timecontrol.max_simulation_time
+				);
 
-				//Temporary displacement for V points
-				//sampler2D.bilinear_scalar(t_v, tmp, pos_y, ts_v, stag_h[0], stag_h[1]);
-				//t_v=op.avg_b_y(t0_v); //equiv to bilinear
-				sampler2D.bicubic_scalar(t_v, pos_x, pos_y, ts_v, staggering.h[0]+0.5, staggering.h[1]);
+				benchmark.analytical_error_rms_h = (ts_h_pert-prog_h_pert).reduce_rms_quad();
+				benchmark.analytical_error_rms_u = (ts_u-prog_u).reduce_rms_quad();
+				benchmark.analytical_error_rms_v = (ts_v-prog_v).reduce_rms_quad();
+
+				benchmark.analytical_error_maxabs_h = (ts_h_pert-prog_h_pert).reduce_maxAbs();
+				benchmark.analytical_error_maxabs_u = (ts_u-prog_u).reduce_maxAbs();
+				benchmark.analytical_error_maxabs_v = (ts_v-prog_v).reduce_maxAbs();
 			}
-			else
-			{
-				ts_h = t_h;
-				ts_u = t_u;
-				ts_v = t_v;
-			}
-
-			benchmark.analytical_error_rms_h = (ts_h-prog_h_pert).reduce_rms_quad();
-			benchmark.analytical_error_rms_u = (ts_u-prog_u).reduce_rms_quad();
-			benchmark.analytical_error_rms_v = (ts_v-prog_v).reduce_rms_quad();
-
-			benchmark.analytical_error_maxabs_h = (ts_h-prog_h_pert).reduce_maxAbs();
-			benchmark.analytical_error_maxabs_u = (ts_u-prog_u).reduce_maxAbs();
-			benchmark.analytical_error_maxabs_v = (ts_v-prog_v).reduce_maxAbs();
 		}
 	}
 
@@ -1188,34 +1096,52 @@ public:
 	{
 		if (simVars.misc.vis_id < 0)
 		{
-			PlaneData t_h_pert = t0_prog_h_pert;
-			PlaneData t_u = t0_prog_u;
-			PlaneData t_v = t0_prog_v;
+			// Analytical solution at specific time on A-grid
+			PlaneData ts_h_pert = t0_prog_h_pert;
+			PlaneData ts_u = t0_prog_u;
+			PlaneData ts_v = t0_prog_v;
 
 			double o_dt;
+			// Run exact solution for linear case
 			timeSteppers.l_direct->run_timestep(
-					t_h_pert, t_u, t_v,
-					o_dt,
+					ts_h_pert, ts_u, ts_v,
+					o_dt,	// compute direct solution
 					simVars.timecontrol.current_simulation_time,
-					0,
+					0,			// initial condition given at time 0
 					simVars.timecontrol.max_simulation_time
-				);
+			);
 
+#if 1
 			switch(simVars.misc.vis_id)
 			{
 			case -1:
-				vis = t_h_pert+simVars.sim.h0;			//Exact solution
+				vis = ts_u+simVars.sim.h0;			//Exact solution
 				break;
 
 			case -2:
-				vis = t_h_pert-prog_h_pert;	// difference to exact solution
+				vis = ts_u-prog_u;	// difference to exact solution
+				break;
+
+			case -3:
+				vis = t0_prog_u-prog_u;	// difference to initial condition
+				break;
+			}
+#else
+			switch(simVars.misc.vis_id)
+			{
+			case -1:
+				vis = ts_h_pert+simVars.sim.h0;			//Exact solution
+				break;
+
+			case -2:
+				vis = ts_h_pert-prog_h_pert;	// difference to exact solution
 				break;
 
 			case -3:
 				vis = t0_prog_h_pert-prog_h_pert;	// difference to initial condition
 				break;
 			}
-
+#endif
 			*o_dataArray = &vis;
 			*o_aspect_ratio = simVars.sim.domain_size[1] / simVars.sim.domain_size[0];
 			return;

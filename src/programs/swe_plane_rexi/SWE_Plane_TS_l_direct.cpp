@@ -7,11 +7,74 @@
 
 #include "SWE_Plane_TS_l_direct.hpp"
 #include <sweet/plane/PlaneDataComplex.hpp>
-
+#include <sweet/plane/Staggering.hpp>
+#include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/PlaneOperatorsComplex.hpp>
 
 #include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
 #include <sweet/plane/Convert_PlaneDataComplex_to_PlaneData.hpp>
+
+
+
+void SWE_Plane_TS_l_direct::run_timestep(
+		PlaneData &io_h_pert,	///< prognostic variables
+		PlaneData &io_u,	///< prognostic variables
+		PlaneData &io_v,	///< prognostic variables
+
+		double &o_dt,			///< time step restriction
+		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_simulation_timestamp,
+		double i_max_simulation_time
+)
+{
+	if (simVars.disc.use_staggering)
+		run_timestep_cgrid(io_h_pert, io_u, io_v, o_dt, i_fixed_dt, i_simulation_timestamp, i_max_simulation_time);
+	else
+		run_timestep_agrid(io_h_pert, io_u, io_v, o_dt, i_fixed_dt, i_simulation_timestamp, i_max_simulation_time);
+}
+
+
+
+
+/**
+ * Computation of analytical solution on staggered grid
+ */
+void SWE_Plane_TS_l_direct::run_timestep_cgrid(
+		PlaneData &io_h_pert,	///< prognostic variables
+		PlaneData &io_u,		///< prognostic variables
+		PlaneData &io_v,		///< prognostic variables
+
+		double &o_dt,			///< time step restriction
+		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_simulation_timestamp,
+		double i_max_simulation_time
+)
+{
+	// For output, variables need to be on unstaggered A-grid
+	PlaneData t_u(io_h_pert.planeDataConfig);
+	PlaneData t_v(io_h_pert.planeDataConfig);
+
+	if (!simVars.disc.use_staggering)
+		FatalError("Expected staggering");
+
+	planeDataGridMapping.mapCtoA_u(io_u, t_u);
+	planeDataGridMapping.mapCtoA_v(io_v, t_v);
+
+	simVars.disc.use_staggering = false;
+
+	run_timestep_agrid(
+			io_h_pert, t_u, t_v,
+			o_dt, i_fixed_dt, i_simulation_timestamp, i_max_simulation_time
+	);
+
+	simVars.disc.use_staggering = true;
+
+	planeDataGridMapping.mapAtoC_u(t_u, io_u);
+	planeDataGridMapping.mapAtoC_v(t_v, io_v);
+}
+
+
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 
 /**
  * This method computes the analytical solution based on the given initial values.
@@ -20,11 +83,313 @@
  * and
  * 		doc/swe_solution_for_L/sympy_L_spec_decomposition.py
  * for the dimensionful formulation.
- *
- * Don't use this function too frequently, since it always computes
- * the required coefficients on-the-fly which is expensive.
  */
-void SWE_Plane_TS_l_direct::run_timestep(
+void SWE_Plane_TS_l_direct::run_timestep_agrid(
+		PlaneData &io_h_pert,	///< prognostic variables
+		PlaneData &io_u,	///< prognostic variables
+		PlaneData &io_v,	///< prognostic variables
+
+		double &o_dt,			///< time step restriction
+		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_simulation_timestamp,
+		double i_max_simulation_time
+)
+{
+	if (simVars.disc.use_staggering)
+		FatalError("Staggering not supported");
+
+	if (i_fixed_dt < 0)
+		FatalError("SWE_Plane_TS_l_direct: Only constant time step size allowed");
+
+	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
+		i_fixed_dt = i_max_simulation_time - i_simulation_timestamp;
+
+	typedef std::complex<double> complex;
+
+	complex I(0.0, 1.0);
+
+
+	/*
+	 * This implementation works directly on PlaneData
+	 */
+	double s0 = simVars.sim.domain_size[0];
+	double s1 = simVars.sim.domain_size[1];
+
+	io_h_pert.request_data_spectral();
+	io_u.request_data_spectral();
+	io_v.request_data_spectral();
+
+	double f = simVars.sim.f0;
+	double h = simVars.sim.h0;
+	double g = simVars.sim.gravitation;
+
+	double sqrt_h = std::sqrt(h);
+	double sqrt_g = std::sqrt(g);
+
+
+	for (std::size_t ik1 = 0; ik1 < io_h_pert.planeDataConfig->spectral_data_size[1]; ik1++)
+	{
+		double k1;
+		if (ik1 < io_h_pert.planeDataConfig->spectral_data_size[1]/2)
+			k1 = (double)ik1;
+		else
+			k1 = (double)((int)ik1-(int)io_h_pert.planeDataConfig->spectral_data_size[1]);
+
+		for (std::size_t ik0 = 0; ik0 < io_h_pert.planeDataConfig->spectral_data_size[0]; ik0++)
+		{
+			double k0 = (double)ik0;
+
+			complex U[3];
+			U[0] = io_h_pert.spectral_get(ik1, ik0);
+			U[1] = io_u.spectral_get(ik1, ik0);
+			U[2] = io_v.spectral_get(ik1, ik0);
+
+			complex b = -k0*I;	// d/dx exp(I*k0*x) = I*k0 exp(I*k0*x)
+			complex c = -k1*I;
+
+			b = b*2.0*M_PI/s0;
+			c = c*2.0*M_PI/s1;
+
+			/*
+			 * Matrix with Eigenvectors (column-wise)
+			 */
+			complex v[3][3];
+
+			/*
+			 * Eigenvalues
+			 */
+			complex lambda[3];
+
+			if (simVars.sim.f0 == 0)
+			{
+				/*
+				 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c%7D,%7Bg*b,0,0%7D,%7Bg*c,0,0%7D%7D
+				 */
+				if (k0 == 0 && k1 == 0)
+				{
+					v[0][0] = 1;
+					v[1][0] = 0;
+					v[2][0] = 0;
+
+					v[0][1] = 0;
+					v[1][1] = 1;
+					v[2][1] = 0;
+
+					v[0][2] = 0;
+					v[1][2] = 0;
+					v[2][2] = 1;
+
+					lambda[0] = 0;
+					lambda[1] = 0;
+					lambda[2] = 0;
+				}
+				else if (k0 == 0)
+				{
+					v[0][0] = 0;
+					v[1][0] = 1;
+					v[2][0] = 0;
+
+					v[0][1] = -sqrt_h/sqrt_g;
+					v[1][1] = 0;
+					v[2][1] = 1;
+
+					v[0][2] = sqrt_h/sqrt_g;
+					v[1][2] = 0;
+					v[2][2] = 1;
+
+					lambda[0] = 0;
+					lambda[1] = -c*sqrt_g*sqrt_h;
+					lambda[2] = c*sqrt_g*sqrt_h;;
+				}
+				else if (k1 == 0)
+				{
+					/*
+					 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c*0%7D,%7Bg*b,0,0%7D,%7Bg*c*0,0,0%7D%7D
+					 */
+
+					v[0][0] = 0;
+					v[1][0] = 0;
+					v[2][0] = 1;
+
+					v[0][1] = -sqrt_h/sqrt_g;
+					v[1][1] = 1;
+					v[2][1] = 0;
+
+					v[0][2] = sqrt_h/sqrt_g;
+					v[1][2] = 1;
+					v[2][2] = 0;
+
+					lambda[0] = 0;
+					lambda[1] = -b*sqrt_g*sqrt_h;
+					lambda[2] = b*sqrt_g*sqrt_h;
+				}
+				else
+				{
+					v[0][0] = 0;
+					v[1][0] = -c/b;
+					v[2][0] = 1.0;
+
+					v[0][1] = -(sqrt_h*std::sqrt(b*b + c*c))/(c*sqrt_g);
+					v[1][1] = b/c;
+					v[2][1] = 1.0;
+
+					v[0][2] = (sqrt_h*std::sqrt(b*b + c*c))/(c*sqrt_g);
+					v[1][2] = b/c;
+					v[2][2] = 1.0;
+
+					lambda[0] = 0.0;
+					lambda[1] = -std::sqrt(b*b + c*c)*sqrt_h*sqrt_g;
+					lambda[2] = std::sqrt(b*b + c*c)*sqrt_h*sqrt_g;
+				}
+			}
+			else
+			{
+				if (k0 == 0 && k1 == 0)
+				{
+					/*
+					 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,0,0%7D,%7B0,0,f%7D,%7B0,-f,0%7D%7D
+					 */
+					v[0][0] = 0;
+					v[1][0] = -I;
+					v[2][0] = 1;
+
+					v[0][1] = 0;
+					v[1][1] = I;
+					v[2][1] = 1;
+
+					v[0][2] = 1;
+					v[1][2] = 0;
+					v[2][2] = 0;
+
+					lambda[0] = I*f;
+					lambda[1] = -I*f;
+					lambda[2] = 0;
+				}
+				else if (k0 == 0)
+				{
+					/*
+					 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b*0,h*c%7D,%7Bg*b*0,0,f%7D,%7Bg*c,-f,0%7D%7D
+					 */
+					v[0][0] = f/(c*g);
+					v[1][0] = 1;
+					v[2][0] = 0;
+
+					v[0][1] = -(c*h)/std::sqrt(-f*f + c*c*g*h);
+					v[1][1] =  -f/std::sqrt(-f*f + c*c*g*h);
+					v[2][1] = 1;
+
+					v[0][2] = (c*h)/std::sqrt(-f*f + c*c*g*h);
+					v[1][2] = f/std::sqrt(-f*f + c*c*g*h);
+					v[2][2] = 1;
+
+					lambda[0] = 0;
+					lambda[1] = -std::sqrt(c*c*g*h-f*f);
+					lambda[2] = std::sqrt(c*c*g*h-f*f);
+				}
+				else if (k1 == 0)
+				{
+					/*
+					 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c*0%7D,%7Bg*b,0,f%7D,%7Bg*c*0,-f,0%7D%7D
+					 */
+					v[0][0] = -f/(b*g);
+					v[1][0] = 0;
+					v[2][0] = 1;
+
+					v[0][1] = -(b*h)/f;
+					v[1][1] = std::sqrt(-f*f + b*b*g*h)/f;
+					v[2][1] = 1;
+
+					v[0][2] = -(b*h)/f;
+					v[1][2] = -std::sqrt(-f*f + b*b*g*h)/f;
+					v[2][2] = 1;
+
+					lambda[0] = 0;
+					lambda[1] = -std::sqrt(b*b*g*h-f*f);
+					lambda[2] = std::sqrt(b*b*g*h-f*f);
+				}
+				else
+				{
+					/*
+					 * Compute EV's of
+					 * Linear operator
+					 *
+					 * [ 0  hb  hc ]
+					 * [ gb  0   f ]
+					 * [ gc -f   0 ]
+					 *
+					 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c%7D,%7Bg*b,0,f%7D,%7Bg*c,-f,0%7D%7D
+					 */
+
+					v[0][0] = -f/(b*g);
+					v[1][0] = -c/b;
+					v[2][0] = 1.0;
+
+					v[0][1] = -(c*f*h + b*h*std::sqrt(-f*f + b*b*g*h + c*c*g*h))/(b*c*g*h + f*std::sqrt(-f*f + b*b*g*h + c*c*g*h));
+					v[1][1] = -(f*f - b*b*g*h)/(b*c*g*h + f*std::sqrt(-f*f + b*b*g*h + c*c*g*h));
+					v[2][1] = 1.0;
+
+					v[0][2] = -(-c*f*h + b*h*std::sqrt(-f*f + b*b*g*h + c*c*g*h))/(-b*c*g*h + f*std::sqrt(-f*f + b*b*g*h + c*c*g*h));
+					v[1][2] =  -(-f*f + b*b*g*h)/(-b*c*g*h + f*std::sqrt(-f*f + b*b*g*h + c*c*g*h));
+					v[2][2] = 1.0;
+
+					lambda[0] = 0.0;
+					lambda[1] = -std::sqrt(b*b*g*h + c*c*g*h - f*f);
+					lambda[2] =  std::sqrt(b*b*g*h + c*c*g*h - f*f);
+				}
+			}
+
+			/*
+			 * Invert Eigenvalue matrix
+			 */
+			complex v_inv[3][3];
+
+			v_inv[0][0] =  (v[1][1]*v[2][2] - v[1][2]*v[2][1]);
+			v_inv[0][1] = -(v[0][1]*v[2][2] - v[0][2]*v[2][1]);
+			v_inv[0][2] =  (v[0][1]*v[1][2] - v[0][2]*v[1][1]);
+
+			v_inv[1][0] = -(v[1][0]*v[2][2] - v[1][2]*v[2][0]);
+			v_inv[1][1] =  (v[0][0]*v[2][2] - v[0][2]*v[2][0]);
+			v_inv[1][2] = -(v[0][0]*v[1][2] - v[0][2]*v[1][0]);
+
+			v_inv[2][0] =  (v[1][0]*v[2][1] - v[1][1]*v[2][0]);
+			v_inv[2][1] = -(v[0][0]*v[2][1] - v[0][1]*v[2][0]);
+			v_inv[2][2] =  (v[0][0]*v[1][1] - v[0][1]*v[1][0]);
+
+			complex s = v[0][0]*v_inv[0][0] + v[0][1]*v_inv[1][0] + v[0][2]*v_inv[2][0];
+
+			for (int j = 0; j < 3; j++)
+				for (int i = 0; i < 3; i++)
+					v_inv[j][i] /= s;
+
+			complex UEV[3] = {0.0, 0.0, 0.0};
+			for (int k = 0; k < 3; k++)
+				for (int j = 0; j < 3; j++)
+					UEV[k] += v_inv[k][j] * U[j];
+
+			for (int k = 0; k < 3; k++)
+				UEV[k] = std::exp(i_fixed_dt*lambda[k])*UEV[k];
+
+			for (int k = 0; k < 3; k++)
+				U[k] = 0.0;
+
+			for (int k = 0; k < 3; k++)
+				for (int j = 0; j < 3; j++)
+					U[k] += v[k][j] * UEV[j];
+
+			io_h_pert.p_spectral_set(ik1, ik0, U[0]);
+			io_u.p_spectral_set(ik1, ik0, U[1]);
+			io_v.p_spectral_set(ik1, ik0, U[2]);
+		}
+	}
+
+	o_dt = i_fixed_dt;
+}
+
+
+#else
+
+
+void SWE_Plane_TS_l_direct::run_timestep_agrid(
 		PlaneData &io_h_pert,	///< prognostic variables
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
@@ -43,14 +408,18 @@ void SWE_Plane_TS_l_direct::run_timestep(
 
 	typedef std::complex<double> complex;
 
-	double eta_bar = simVars.sim.h0;
-	double g = simVars.sim.gravitation;
-	double f = simVars.sim.f0;
-	complex I(0.0,1.0);
+	complex I(0.0, 1.0);
 
+
+#if !SWEET_USE_PLANE_SPECTRAL_SPACE
 	PlaneDataComplex i_h_pert = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_h_pert);
 	PlaneDataComplex i_u = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_u);
 	PlaneDataComplex i_v = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_v);
+#else
+	PlaneDataComplex i_h_pert = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(io_h_pert);
+	PlaneDataComplex i_u = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(io_u);
+	PlaneDataComplex i_v = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(io_v);
+#endif
 
 	PlaneDataComplex o_h_pert(io_h_pert.planeDataConfig);
 	PlaneDataComplex o_u(io_h_pert.planeDataConfig);
@@ -70,6 +439,13 @@ void SWE_Plane_TS_l_direct::run_timestep(
 	o_v.physical_space_data_valid = false;
 #endif
 
+	double f = simVars.sim.f0;
+	double h = simVars.sim.h0;
+	double g = simVars.sim.gravitation;
+
+	double sqrt_h = std::sqrt(h);
+	double sqrt_g = std::sqrt(g);
+
 	for (std::size_t ik1 = 0; ik1 < i_h_pert.planeDataConfig->spectral_complex_data_size[1]; ik1++)
 	{
 		double k1;
@@ -80,253 +456,272 @@ void SWE_Plane_TS_l_direct::run_timestep(
 
 		for (std::size_t ik0 = 0; ik0 < i_h_pert.planeDataConfig->spectral_complex_data_size[0]; ik0++)
 		{
-			if (ik0 == i_h_pert.planeDataConfig->spectral_complex_data_size[0]/2 || ik1 == i_h_pert.planeDataConfig->spectral_complex_data_size[1]/2)
-			{
-				o_h_pert.p_spectral_set(ik1, ik0, 0, 0);
-				o_u.p_spectral_set(ik1, ik0, 0, 0);
-				o_v.p_spectral_set(ik1, ik0, 0, 0);
-				continue;
-			}
-
-			complex U_hat[3];
-			U_hat[0] = i_h_pert.spectral_get(ik1, ik0);
-			U_hat[1] = i_u.spectral_get(ik1, ik0);
-			U_hat[2] = i_v.spectral_get(ik1, ik0);
-
 			double k0;
 			if (ik0 < i_h_pert.planeDataConfig->spectral_complex_data_size[0]/2)
 				k0 = (double)ik0;
 			else
 				k0 = (double)((int)ik0-(int)i_h_pert.planeDataConfig->spectral_complex_data_size[0]);
 
+			complex U[3];
+			U[0] = i_h_pert.p_spectral_get(ik1, ik0);
+			U[1] = i_u.p_spectral_get(ik1, ik0);
+			U[2] = i_v.p_spectral_get(ik1, ik0);
+
+			complex b = -k0*I;	// d/dx exp(I*k0*x) = I*k0 exp(I*k0*x)
+			complex c = -k1*I;
+
+			b = b*2.0*M_PI/s0;
+			c = c*2.0*M_PI/s1;
+
 			/*
-			 * dimensionful formulation
-			 * see doc/swe_solution_for_L
+			 * Matrix with Eigenvectors (column-wise)
 			 */
+			complex v[3][3];
 
-			double H0 = eta_bar;
+			/*
+			 * Eigenvalues
+			 */
+			complex lambda[3];
 
-			//////////////////////////////////////
-			// GENERATED CODE START
-			//////////////////////////////////////
-			complex eigenvalues[3];
-			complex eigenvectors[3][3];
-
-			double k01 = k0*k1;
-
-			if (k0 == 0 && k1 == 0)
-			{
-				eigenvalues[0] = 0.0;
-				eigenvalues[1] = -f;
-				eigenvalues[2] = f;
-
-				eigenvectors[0][0] = 1.00000000000000;
-				eigenvectors[0][1] = 0.0;
-				eigenvectors[0][2] = 0.0;
-				eigenvectors[1][0] = 0.0;
-				eigenvectors[1][1] = -1.0*I;
-				eigenvectors[1][2] = 1.00000000000000;
-				eigenvectors[2][0] = 0.0;
-				eigenvectors[2][1] = I;
-				eigenvectors[2][2] = 1.00000000000000;
-			}
-			else if (k0 == 0)
-			{
-//					complex wg = std::sqrt((complex)s0*s0*(f*f*s1*s1 + 4.0*M_PI*M_PI*g*g*k1*k1));
-
-				eigenvalues[0] = 0.0;
-				eigenvalues[1] = -1.0*1.0/s1*std::sqrt((complex)4.0*M_PI*M_PI*H0*g*k1*k1 + f*f*s1*s1);
-				eigenvalues[2] = -1.0*I*1.0/s1*std::sqrt((complex)-4.0*M_PI*M_PI*H0*g*k1*k1 - 1.0*f*f*s1*s1);
-
-				eigenvectors[0][0] = (1.0/2.0)*I*1.0/M_PI*f*1.0/g*1.0/k1*s1;
-				eigenvectors[0][1] = 1.00000000000000;
-				eigenvectors[0][2] = 0.0;
-				eigenvectors[1][0] = -2.0*M_PI*H0*k1/std::sqrt((complex)4.0*M_PI*M_PI*H0*g*k1*k1 + f*f*s1*s1);
-				eigenvectors[1][1] = -1.0*I*f*s1/std::sqrt((complex)4.0*M_PI*M_PI*H0*g*k1*k1 + f*f*s1*s1);
-				eigenvectors[1][2] = 1.00000000000000;
-				eigenvectors[2][0] = 2.0*M_PI*H0*k1/std::sqrt((complex)4.0*M_PI*M_PI*H0*g*k1*k1 + f*f*s1*s1);
-				eigenvectors[2][1] = I*f*s1/std::sqrt((complex)4.0*M_PI*M_PI*H0*g*k1*k1 + f*f*s1*s1);
-				eigenvectors[2][2] = 1.00000000000000;
-			}
-			else if (k1 == 0)
-			{
-//					complex wg = std::sqrt((complex)s1*s1*(f*f*s0*s0 + 4.0*M_PI*M_PI*g*g*k0*k0));
-
-				eigenvalues[0] = 0.0;
-				eigenvalues[1] = -1.0*1.0/s0*std::sqrt((complex)4.0*M_PI*M_PI*H0*g*k0*k0 + f*f*s0*s0);
-				eigenvalues[2] = -1.0*I*1.0/s0*std::sqrt((complex)-4.0*M_PI*M_PI*H0*g*k0*k0 - 1.0*f*f*s0*s0);
-
-				eigenvectors[0][0] = -1.0/2.0*I*1.0/M_PI*f*1.0/g*1.0/k0*s0;
-				eigenvectors[0][1] = 0.0;
-				eigenvectors[0][2] = 1.00000000000000;
-				eigenvectors[1][0] = 2.0*I*M_PI*H0*1.0/f*k0*1.0/s0;
-				eigenvectors[1][1] = -1.0*I*1.0/f*1.0/s0*std::sqrt((complex)4.0*M_PI*M_PI*H0*g*k0*k0 + f*f*s0*s0);
-				eigenvectors[1][2] = 1.00000000000000;
-				eigenvectors[2][0] = 2.0*I*M_PI*H0*1.0/f*k0*1.0/s0;
-				eigenvectors[2][1] = 1.0/f*1.0/s0*std::sqrt((complex)-4.0*M_PI*M_PI*H0*g*k0*k0 - 1.0*f*f*s0*s0);
-				eigenvectors[2][2] = 1.00000000000000;
-			}
-			else
-			{
-//					complex K2 = M_PI*M_PI*k0*k0 + M_PI*M_PI*k1*k1;
-				complex w = std::sqrt((complex)4.0*M_PI*M_PI*H0*g*k0*k0*s1*s1 + 4.0*M_PI*M_PI*H0*g*k1*k1*s0*s0 + f*f*s0*s0*s1*s1);
-
-//					complex wg = std::sqrt((complex)f*f*s0*s0*s1*s1 + 4.0*M_PI*M_PI*g*g*k0*k0*s1*s1 + 4.0*M_PI*M_PI*g*g*k1*k1*s0*s0);
-				eigenvalues[0] = 0.0;
-				eigenvalues[1] = -1.0*1.0/s0*1.0/s1*std::sqrt((complex)4.0*M_PI*M_PI*H0*g*k0*k0*s1*s1 + 4.0*M_PI*M_PI*H0*g*k1*k1*s0*s0 + f*f*s0*s0*s1*s1);
-				eigenvalues[2] = -1.0*I*1.0/s0*1.0/s1*std::sqrt((complex)-4.0*M_PI*M_PI*H0*g*k0*k0*s1*s1 - 4.0*M_PI*M_PI*H0*g*k1*k1*s0*s0 - 1.0*f*f*s0*s0*s1*s1);
-
-				eigenvectors[0][0] = -1.0/2.0*I*1.0/M_PI*f*1.0/g*1.0/k0*s0;
-				eigenvectors[0][1] = -1.0*1.0/k0*k1*s0*1.0/s1;
-				eigenvectors[0][2] = 1.00000000000000;
-				eigenvectors[1][0] = 2.0*M_PI*H0*1.0/s0*1.0/w*(I*k0*s1*s1*(4.0*I*M_PI*M_PI*H0*g*k0*k1 + f*w) - 1.0*k1*s0*s0*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f*s1*s1))*1.0/(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f*s1*s1);
-				eigenvectors[1][1] = 1.0/s0*s1*1.0/(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f*s1*s1)*(4.0*M_PI*M_PI*H0*g*k0*k1 - 1.0*I*f*w);
-				eigenvectors[1][2] = 1.00000000000000;
-				eigenvectors[2][0] = -2.0*M_PI*H0*1.0/s0*1.0/w*(I*k0*s1*s1*(4.0*I*M_PI*M_PI*H0*g*k0*k1 - 1.0*f*w) - 1.0*k1*s0*s0*(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f*s1*s1))*1.0/(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f*s1*s1);
-				eigenvectors[2][1] = 1.0/s0*s1*1.0/(4.0*M_PI*M_PI*H0*g*k1*k1 + f*f*s1*s1)*(4.0*M_PI*M_PI*H0*g*k0*k1 + I*f*w);
-				eigenvectors[2][2] = 1.00000000000000;
-			}
-
-
-
-
-			//////////////////////////////////////
-			// GENERATED CODE END
-			//////////////////////////////////////
-
-
-			if (f == 0)
+			if (simVars.sim.f0 == 0)
 			{
 				/*
-				 * override if f == 0, see ./sympy_L_spec_decomposition.py executed with LNr=4
+				 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c%7D,%7Bg*b,0,0%7D,%7Bg*c,0,0%7D%7D
 				 */
-				if (k0 != 0 || k1 != 0)
+				if (k0 == 0 && k1 == 0)
 				{
-					double K2 = K2;
+					v[0][0] = 1;
+					v[1][0] = 0;
+					v[2][0] = 0;
 
-					eigenvalues[0] = 0.0;
-					eigenvalues[1] = -2.0*M_PI*sqrt(H0)*sqrt((g*H0)*(k0*k0 + k1*k1));
-					eigenvalues[2] = 2.0*M_PI*sqrt(H0)*sqrt((g*H0)*(k0*k0 + k1*k1));
+					v[0][1] = 0;
+					v[1][1] = 1;
+					v[2][1] = 0;
 
-					eigenvectors[0][0] = 0.0;
-					eigenvectors[0][1] = -k1/sqrt(k0*k0 + k1*k1);
-					eigenvectors[0][2] = k0/sqrt(k0*k0 + k1*k1);
-					eigenvectors[1][0] = -1.0*sqrt(H0)*sqrt(k0*k0 + k1*k1)/sqrt(H0*g*(k0*k0 + k1*k1));
-					eigenvectors[1][1] = sqrt((double)g)*k0/sqrt(H0*g*(k0*k0 + k1*k1));
-					eigenvectors[1][2] = sqrt((double)g)*k1/sqrt(H0*g*(k0*k0 + k1*k1));
-					eigenvectors[2][0] = sqrt(H0)*sqrt(k0*k0 + k1*k1)/sqrt(H0*g*(k0*k0 + k1*k1));
-					eigenvectors[2][1] = sqrt((double)g)*k0/sqrt(H0*g*(k0*k0 + k1*k1));
-					eigenvectors[2][2] = sqrt((double)g)*k1/sqrt(H0*g*(k0*k0 + k1*k1));
+					v[0][2] = 0;
+					v[1][2] = 0;
+					v[2][2] = 1;
+
+					lambda[0] = 0;
+					lambda[1] = 0;
+					lambda[2] = 0;
+				}
+				else if (k0 == 0)
+				{
+					v[0][0] = 0;
+					v[1][0] = 1;
+					v[2][0] = 0;
+
+					v[0][1] = -sqrt_h/sqrt_g;
+					v[1][1] = 0;
+					v[2][1] = 1;
+
+					v[0][2] = sqrt_h/sqrt_g;
+					v[1][2] = 0;
+					v[2][2] = 1;
+
+					lambda[0] = 0;
+					lambda[1] = -c*sqrt_g*sqrt_h;
+					lambda[2] = c*sqrt_g*sqrt_h;;
+				}
+				else if (k1 == 0)
+				{
+					/*
+					 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c*0%7D,%7Bg*b,0,0%7D,%7Bg*c*0,0,0%7D%7D
+					 */
+
+					v[0][0] = 0;
+					v[1][0] = 0;
+					v[2][0] = 1;
+
+					v[0][1] = -sqrt_h/sqrt_g;
+					v[1][1] = 1;
+					v[2][1] = 0;
+
+					v[0][2] = sqrt_h/sqrt_g;
+					v[1][2] = 1;
+					v[2][2] = 0;
+
+					lambda[0] = 0;
+					lambda[1] = -b*sqrt_g*sqrt_h;
+					lambda[2] = b*sqrt_g*sqrt_h;
 				}
 				else
 				{
+					v[0][0] = 0;
+					v[1][0] = -c/b;
+					v[2][0] = 1.0;
 
-					eigenvalues[0] = 0.0;
-					eigenvalues[1] = 0.0;
-					eigenvalues[2] = 0.0;
+					v[0][1] = -(sqrt_h*std::sqrt(b*b + c*c))/(c*sqrt_g);
+					v[1][1] = b/c;
+					v[2][1] = 1.0;
 
-					eigenvectors[0][0] = 1.00000000000000;
-					eigenvectors[0][1] = 0.0;
-					eigenvectors[0][2] = 0.0;
-					eigenvectors[1][0] = 0.0;
-					eigenvectors[1][1] = 1.00000000000000;
-					eigenvectors[1][2] = 0.0;
-					eigenvectors[2][0] = 0.0;
-					eigenvectors[2][1] = 0.0;
-					eigenvectors[2][2] = 1.00000000000000;
+					v[0][2] = (sqrt_h*std::sqrt(b*b + c*c))/(c*sqrt_g);
+					v[1][2] = b/c;
+					v[2][2] = 1.0;
+
+					lambda[0] = 0.0;
+					lambda[1] = -std::sqrt(b*b + c*c)*sqrt_h*sqrt_g;
+					lambda[2] = std::sqrt(b*b + c*c)*sqrt_h*sqrt_g;
 				}
 			}
-
-
-			/*
-			 * Compute inverse of Eigenvectors.
-			 * This generalizes to the case that the Eigenvectors are not orthonormal.
-			 */
-			complex eigenvectors_inv[3][3];
-
-			eigenvectors_inv[0][0] =  (eigenvectors[1][1]*eigenvectors[2][2] - eigenvectors[1][2]*eigenvectors[2][1]);
-			eigenvectors_inv[0][1] = -(eigenvectors[0][1]*eigenvectors[2][2] - eigenvectors[0][2]*eigenvectors[2][1]);
-			eigenvectors_inv[0][2] =  (eigenvectors[0][1]*eigenvectors[1][2] - eigenvectors[0][2]*eigenvectors[1][1]);
-
-			eigenvectors_inv[1][0] = -(eigenvectors[1][0]*eigenvectors[2][2] - eigenvectors[1][2]*eigenvectors[2][0]);
-			eigenvectors_inv[1][1] =  (eigenvectors[0][0]*eigenvectors[2][2] - eigenvectors[0][2]*eigenvectors[2][0]);
-			eigenvectors_inv[1][2] = -(eigenvectors[0][0]*eigenvectors[1][2] - eigenvectors[0][2]*eigenvectors[1][0]);
-
-			eigenvectors_inv[2][0] =  (eigenvectors[1][0]*eigenvectors[2][1] - eigenvectors[1][1]*eigenvectors[2][0]);
-			eigenvectors_inv[2][1] = -(eigenvectors[0][0]*eigenvectors[2][1] - eigenvectors[0][1]*eigenvectors[2][0]);
-			eigenvectors_inv[2][2] =  (eigenvectors[0][0]*eigenvectors[1][1] - eigenvectors[0][1]*eigenvectors[1][0]);
-
-			complex s = eigenvectors[0][0]*eigenvectors_inv[0][0] + eigenvectors[0][1]*eigenvectors_inv[1][0] + eigenvectors[0][2]*eigenvectors_inv[2][0];
-
-			for (int j = 0; j < 3; j++)
-				for (int i = 0; i < 3; i++)
-					eigenvectors_inv[j][i] /= s;
-
-#if SWEET_DEBUG
-			// check
-			for (int j = 0; j < 3; j++)
+			else
 			{
-				for (int i = 0; i < 3; i++)
+				if (k0 == 0 && k1 == 0)
 				{
-					if (
-							std::isnan(eigenvectors[j][i].real()) || std::isinf(eigenvectors[j][i].real()) != 0	||
-							std::isnan(eigenvectors[j][i].imag()) || std::isinf(eigenvectors[j][i].imag()) != 0
-					)
-					{
-						std::cerr << "Invalid number in Eigenvector " << j << " detected: " << eigenvectors[j][0] << ", " << eigenvectors[j][1] << ", " << eigenvectors[j][2] << std::endl;
-					}
+					/*
+					 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,0,0%7D,%7B0,0,f%7D,%7B0,-f,0%7D%7D
+					 */
+					v[0][0] = 0;
+					v[1][0] = -I;
+					v[2][0] = 1;
 
-					if (
-							std::isnan(eigenvectors_inv[j][i].real()) || std::isinf(eigenvectors_inv[j][i].real()) != 0	||
-							std::isnan(eigenvectors_inv[j][i].imag()) || std::isinf(eigenvectors_inv[j][i].imag()) != 0
-					)
-					{
-						std::cerr << "Invalid number in inverse of Eigenvector " << j << " detected: " << eigenvectors_inv[j][0] << ", " << eigenvectors_inv[j][1] << ", " << eigenvectors_inv[j][2] << std::endl;
-					}
+					v[0][1] = 0;
+					v[1][1] = I;
+					v[2][1] = 1;
+
+					v[0][2] = 1;
+					v[1][2] = 0;
+					v[2][2] = 0;
+
+					lambda[0] = I*f;
+					lambda[1] = -I*f;
+					lambda[2] = 0;
+				}
+				else if (k0 == 0)
+				{
+					/*
+					 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b*0,h*c%7D,%7Bg*b*0,0,f%7D,%7Bg*c,-f,0%7D%7D
+					 */
+					v[0][0] = f/(c*g);
+					v[1][0] = 1;
+					v[2][0] = 0;
+
+					v[0][1] = -(c*h)/std::sqrt(-f*f + c*c*g*h);
+					v[1][1] =  -f/std::sqrt(-f*f + c*c*g*h);
+					v[2][1] = 1;
+
+					v[0][2] = (c*h)/std::sqrt(-f*f + c*c*g*h);
+					v[1][2] = f/std::sqrt(-f*f + c*c*g*h);
+					v[2][2] = 1;
+
+					lambda[0] = 0;
+					lambda[1] = -std::sqrt(c*c*g*h-f*f);
+					lambda[2] = std::sqrt(c*c*g*h-f*f);
+				}
+				else if (k1 == 0)
+				{
+					/*
+					 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c*0%7D,%7Bg*b,0,f%7D,%7Bg*c*0,-f,0%7D%7D
+					 */
+					v[0][0] = -f/(b*g);
+					v[1][0] = 0;
+					v[2][0] = 1;
+
+					v[0][1] = -(b*h)/f;
+					v[1][1] = std::sqrt(-f*f + b*b*g*h)/f;
+					v[2][1] = 1;
+
+					v[0][2] = -(b*h)/f;
+					v[1][2] = -std::sqrt(-f*f + b*b*g*h)/f;
+					v[2][2] = 1;
+
+					lambda[0] = 0;
+					lambda[1] = -std::sqrt(b*b*g*h-f*f);
+					lambda[2] = std::sqrt(b*b*g*h-f*f);
+				}
+				else
+				{
+					/*
+					 * Compute EV's of
+					 * Linear operator
+					 *
+					 * [ 0  hb  hc ]
+					 * [ gb  0   f ]
+					 * [ gc -f   0 ]
+					 *
+					 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c%7D,%7Bg*b,0,f%7D,%7Bg*c,-f,0%7D%7D
+					 */
+
+					v[0][0] = -f/(b*g);
+					v[1][0] = -c/b;
+					v[2][0] = 1.0;
+
+					v[0][1] = -(c*f*h + b*h*std::sqrt(-f*f + b*b*g*h + c*c*g*h))/(b*c*g*h + f*std::sqrt(-f*f + b*b*g*h + c*c*g*h));
+					v[1][1] = -(f*f - b*b*g*h)/(b*c*g*h + f*std::sqrt(-f*f + b*b*g*h + c*c*g*h));
+					v[2][1] = 1.0;
+
+					v[0][2] = -(-c*f*h + b*h*std::sqrt(-f*f + b*b*g*h + c*c*g*h))/(-b*c*g*h + f*std::sqrt(-f*f + b*b*g*h + c*c*g*h));
+					v[1][2] =  -(-f*f + b*b*g*h)/(-b*c*g*h + f*std::sqrt(-f*f + b*b*g*h + c*c*g*h));
+					v[2][2] = 1.0;
+
+					lambda[0] = 0.0;
+					lambda[1] = -std::sqrt(b*b*g*h + c*c*g*h - f*f);
+					lambda[2] =  std::sqrt(b*b*g*h + c*c*g*h - f*f);
 				}
 			}
-#endif
 
 			/*
-			 * Solve based on previously computed data.
-			 * Note, that this data can be also precomputed and reused every time.
+			 * Invert Eigenvalue matrix
 			 */
-			complex UEV0_sp[3];
+			complex v_inv[3][3];
+
+			v_inv[0][0] =  (v[1][1]*v[2][2] - v[1][2]*v[2][1]);
+			v_inv[0][1] = -(v[0][1]*v[2][2] - v[0][2]*v[2][1]);
+			v_inv[0][2] =  (v[0][1]*v[1][2] - v[0][2]*v[1][1]);
+
+			v_inv[1][0] = -(v[1][0]*v[2][2] - v[1][2]*v[2][0]);
+			v_inv[1][1] =  (v[0][0]*v[2][2] - v[0][2]*v[2][0]);
+			v_inv[1][2] = -(v[0][0]*v[1][2] - v[0][2]*v[1][0]);
+
+			v_inv[2][0] =  (v[1][0]*v[2][1] - v[1][1]*v[2][0]);
+			v_inv[2][1] = -(v[0][0]*v[2][1] - v[0][1]*v[2][0]);
+			v_inv[2][2] =  (v[0][0]*v[1][1] - v[0][1]*v[1][0]);
+
+			complex s = v[0][0]*v_inv[0][0] + v[0][1]*v_inv[1][0] + v[0][2]*v_inv[2][0];
+
+			for (int j = 0; j < 3; j++)
+				for (int i = 0; i < 3; i++)
+					v_inv[j][i] /= s;
+
+			complex UEV[3] = {0.0, 0.0, 0.0};
 			for (int k = 0; k < 3; k++)
-			{
-				UEV0_sp[k] = {0, 0};
 				for (int j = 0; j < 3; j++)
-					UEV0_sp[k] += eigenvectors_inv[j][k] * U_hat[j];
-			}
+					UEV[k] += v_inv[k][j] * U[j];
 
-			complex omega[3];
-			omega[0] = std::exp(-I*eigenvalues[0]*i_fixed_dt);
-			omega[1] = std::exp(-I*eigenvalues[1]*i_fixed_dt);
-			omega[2] = std::exp(-I*eigenvalues[2]*i_fixed_dt);
-
-			complex U_hat_sp[3];
 			for (int k = 0; k < 3; k++)
-			{
-				U_hat_sp[k] = {0, 0};
-				for (int j = 0; j < 3; j++)
-					U_hat_sp[k] += eigenvectors[j][k] * omega[j] * UEV0_sp[j];
-			}
+				UEV[k] = std::exp(i_fixed_dt*lambda[k])*UEV[k];
 
-			o_h_pert.p_spectral_set(ik1, ik0, U_hat_sp[0]);
-			o_u.p_spectral_set(ik1, ik0, U_hat_sp[1]);
-			o_v.p_spectral_set(ik1, ik0, U_hat_sp[2]);
+			for (int k = 0; k < 3; k++)
+				U[k] = 0.0;
+
+			for (int k = 0; k < 3; k++)
+				for (int j = 0; j < 3; j++)
+					U[k] += v[k][j] * UEV[j];
+
+			/*
+			 * Convert to EV space
+			 */
+
+			o_h_pert.p_spectral_set(ik1, ik0, U[0]);
+			o_u.p_spectral_set(ik1, ik0, U[1]);
+			o_v.p_spectral_set(ik1, ik0, U[2]);
 		}
 	}
 
+#if !SWEET_USE_PLANE_SPECTRAL_SPACE
 	io_h_pert = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_h_pert);
 	io_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_u);
 	io_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_v);
-
+#else
+	io_h_pert = Convert_PlaneDataComplex_To_PlaneData::spectral_convert(o_h_pert);
+	io_u = Convert_PlaneDataComplex_To_PlaneData::spectral_convert(o_u);
+	io_v = Convert_PlaneDataComplex_To_PlaneData::spectral_convert(o_v);
+#endif
 	o_dt = i_fixed_dt;
 }
 
-
-
+#endif
 
 
 SWE_Plane_TS_l_direct::SWE_Plane_TS_l_direct(
@@ -336,6 +731,8 @@ SWE_Plane_TS_l_direct::SWE_Plane_TS_l_direct(
 		simVars(i_simVars),
 		op(i_op)
 {
+	if (simVars.disc.use_staggering)
+		planeDataGridMapping.setup(i_simVars, op.planeDataConfig);
 }
 
 

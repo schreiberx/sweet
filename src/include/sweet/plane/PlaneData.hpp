@@ -343,7 +343,8 @@ public:
 
 
 	void physical_update_lambda_array_indices(
-			std::function<void(int,int,double&)> i_lambda	///< lambda function to return value for lat/mu
+			std::function<void(int,int,double&)> i_lambda,	///< lambda function to return value for lat/mu
+			bool i_anti_aliasing = true
 	)
 	{
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
@@ -360,14 +361,16 @@ public:
 		spectral_space_data_valid = false;
 
 		// request data in spectral space automatically leads to applying anti-aliasing rule
-		request_data_spectral();
+		if (i_anti_aliasing)
+			request_data_spectral();
 #endif
 	}
 
 
 
 	void physical_update_lambda_unit_coordinates_corner_centered(
-			std::function<void(double,double,double&)> i_lambda	///< lambda function to return value for lat/mu
+			std::function<void(double,double,double&)> i_lambda,	///< lambda function to return value for lat/mu
+			bool i_anti_aliasing = true
 	)
 	{
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
@@ -388,7 +391,8 @@ public:
 		spectral_space_data_valid = false;
 
 		// request data in spectral space automatically leads to applying anti-aliasing rule
-		request_data_spectral();
+		if (i_anti_aliasing)
+			request_data_spectral();
 #endif
 	}
 
@@ -397,7 +401,8 @@ public:
 
 
 	void physical_update_lambda_unit_coordinates_cell_centered(
-			std::function<void(double,double,double&)> i_lambda	///< lambda function to return value for lat/mu
+			std::function<void(double,double,double&)> i_lambda,	///< lambda function to return value for lat/mu
+			bool i_anti_aliasing = true
 	)
 	{
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
@@ -418,7 +423,8 @@ public:
 		spectral_space_data_valid = false;
 
 		// request data in spectral space automatically leads to applying anti-aliasing rule
-		request_data_spectral();
+		if (i_anti_aliasing)
+			request_data_spectral();
 #endif
 	}
 
@@ -679,6 +685,15 @@ public:
 		physical_space_data_valid = false;
 		spectral_space_data_valid = true;
 
+#if SWEET_DEBUG
+		if (i >= planeDataConfig->spectral_data_size[0])
+			FatalError("Out of boundary, PlaneData, p_spectral_set, i");
+
+		if (j >= planeDataConfig->spectral_data_size[1])
+			FatalError("Out of boundary, PlaneData, p_spectral_set, j");
+#endif
+
+
 		std::size_t idx = (j*planeDataConfig->spectral_data_size[0])+i;
 		spectral_space_data[idx] = i_value;
 	}
@@ -686,23 +701,25 @@ public:
 
 
 
-
-#if 1
 	inline
-	std::complex<double> & p_spectral_get(
+	const std::complex<double> & p_spectral_get(
 			std::size_t j,
 			std::size_t i
-	)
+	)	const
 	{
 		request_data_spectral();
 
-		physical_space_data_valid = false;
-		spectral_space_data_valid = true;
+#if SWEET_DEBUG
+		if (i >= planeDataConfig->spectral_data_size[0])
+			FatalError("Out of boundary, PlaneData, p_spectral_get, i");
+
+		if (j >= planeDataConfig->spectral_data_size[1])
+			FatalError("Out of boundary, PlaneData, p_spectral_get, j");
+#endif
 
 		std::size_t idx = (j*planeDataConfig->spectral_data_size[0])+i;
 		return spectral_space_data[idx];
 	}
-#endif
 
 
 
@@ -752,10 +769,10 @@ public:
 				spectral_space_data[idx] = 0.0;
 		);
 
-		spectral_zeroAliasingModes();
-
 		physical_space_data_valid = false;
 		spectral_space_data_valid = true;
+
+		spectral_zeroAliasingModes();
 	}
 
 #endif

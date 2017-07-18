@@ -12,9 +12,6 @@
 #include "SWE_Plane_TS_l_erk.hpp"
 
 
-
-
-
 /*
  * Main routine for method to be used in case of finite differences
  */

@@ -149,6 +149,9 @@ public:
 
 		if (i_timestepping_method == "ln_erk")
 		{
+//			if (i_simVars.disc.use_staggering)
+//				FatalError("Staggering not supported for ln_erk");
+
 			ln_erk = new SWE_Plane_TS_ln_erk(i_simVars, i_op);
 			ln_erk->setup(i_timestepping_order);
 
@@ -158,6 +161,9 @@ public:
 		}
 		else if (i_timestepping_method == "l_cn")
 		{
+			if (i_simVars.disc.use_staggering)
+				FatalError("Staggering not supported for l_cn");
+
 			l_cn= new SWE_Plane_TS_l_cn(i_simVars, i_op);
 			l_cn->setup(i_timestepping_order, i_simVars.disc.crank_nicolson_filter);
 
@@ -167,6 +173,9 @@ public:
 		}
 		else if (i_timestepping_method == "l_erk")
 		{
+			if (i_simVars.disc.use_staggering)
+				FatalError("Staggering not supported for l_erk");
+
 			l_erk = new SWE_Plane_TS_l_erk(i_simVars, i_op);
 			l_erk->setup(i_timestepping_order);
 
@@ -176,6 +185,9 @@ public:
 		}
 		else if (i_timestepping_method == "l_erk_n_erk")
 		{
+			if (i_simVars.disc.use_staggering)
+				FatalError("Staggering not supported for l_erk_n_erk");
+
 			l_erk_n_erk = new SWE_Plane_TS_l_erk_n_erk(i_simVars, i_op);
 			l_erk_n_erk->setup(i_timestepping_order, i_timestepping_order2);
 
@@ -183,6 +195,9 @@ public:
 		}
 		else if (i_timestepping_method == "l_cn_n_erk")
 		{
+			if (i_simVars.disc.use_staggering)
+				FatalError("Staggering not supported for l_cn_n_erk");
+
 			l_cn_n_erk = new SWE_Plane_TS_l_cn_n_erk(i_simVars, i_op);
 			l_cn_n_erk->setup(i_timestepping_order, i_timestepping_order2, i_simVars.disc.crank_nicolson_filter);
 
@@ -192,6 +207,9 @@ public:
 		}
 		else if (i_timestepping_method == "l_rexi_n_erk")
 		{
+			if (i_simVars.disc.use_staggering)
+				FatalError("Staggering not supported for l_rexi_n_erk");
+
 			l_rexi_n_erk = new SWE_Plane_TS_l_rexi_n_erk(i_simVars, i_op);
 			l_rexi_n_erk->setup(
 					i_simVars.rexi,
@@ -204,6 +222,9 @@ public:
 		}
 		else if (i_timestepping_method == "l_irk")
 		{
+			if (i_simVars.disc.use_staggering)
+				FatalError("Staggering not supported for l_irk");
+
 			l_irk = new SWE_Plane_TS_l_irk(i_simVars, i_op);
 			l_irk->setup(i_timestepping_order);
 
@@ -213,6 +234,9 @@ public:
 		}
 		else if (i_timestepping_method == "l_rexi")
 		{
+			if (i_simVars.disc.use_staggering)
+				FatalError("Staggering not supported for l_rexi");
+
 			l_rexi = new SWE_Plane_TS_l_rexi(i_simVars, i_op);
 			l_rexi->setup(
 					i_simVars.rexi
@@ -235,6 +259,9 @@ public:
 		}
 		else if (i_timestepping_method == "l_rexi_na_sl_nd_settls")
 		{
+			if (i_simVars.disc.use_staggering)
+				FatalError("Staggering not supported for l_rexi_na_sl_nd_settls");
+
 			l_rexi_na_sl_nd_settls = new SWE_Plane_TS_l_rexi_na_sl_nd_settls(i_simVars, i_op);
 
 			l_rexi_na_sl_nd_settls->setup(
@@ -248,6 +275,9 @@ public:
 		}
 		else if (i_timestepping_method == "l_cn_na_sl_nd_settls")
 		{
+			if (i_simVars.disc.use_staggering)
+				FatalError("Staggering not supported for l_cn_na_sl_nd_settls");
+
 			l_cn_na_sl_nd_settls = new SWE_Plane_TS_l_cn__na_sl_nd_settls(i_simVars, i_op);
 
 			l_cn_na_sl_nd_settls->setup(
@@ -261,6 +291,9 @@ public:
 		}
 		else if (i_timestepping_method == "l_irk_n_erk")
 		{
+			if (i_simVars.disc.use_staggering)
+				FatalError("Staggering not supported for l_irk_n_erk");
+
 			l_irk_n_erk = new SWE_Plane_TS_l_irk_n_erk(i_simVars, i_op);
 
 			l_irk_n_erk->setup(
@@ -278,10 +311,9 @@ public:
 
 			linear_only = true;
 		}
-		//
 		else
 		{
-			std::cout << i_timestepping_method << std::endl;
+			std::cout << "Unknown method: " << i_timestepping_method << std::endl;
 			FatalError("No valid --timestepping-method provided");
 		}
 	}

@@ -20,20 +20,6 @@ public:
 	double u[2] = {-0.5,-0.5};
 	double v[2] = {-0.5,-0.5};
 
-
-	/*
-	 * Staggering displacement array (use 0.5 for each displacement)
-	 *
-	 * [0] - delta x of u variable
-	 * [1] - delta y of u variable
-	 * [2] - delta x of v variable
-	 * [3] - delta y of v variable
-	 * Default - A grid (there is shift in x,y of 1/2 to all vars)
-	 * For C grid use {0,-0.5,-0.5,0}
-	 *
-	 */
-//	double displacement[4] = {-0.5,-0.5,-0.5,-0.5};
-
 	char staggering_type = 'a';
 
 

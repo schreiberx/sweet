@@ -14,6 +14,8 @@
 
 class Convert_PlaneDataComplex_To_PlaneData
 {
+#if 1
+//#error "Don't use physical_convert, since it looses the highest modes"
 public:
 	static
 	PlaneData physical_convert(
@@ -34,6 +36,43 @@ public:
 
 		return out;
 	}
+#endif
+
+
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+public:
+	static
+	PlaneData spectral_convert(
+			const PlaneDataComplex &i_planeData
+	)
+	{
+		PlaneData out(i_planeData.planeDataConfig);
+		out.spectral_set_zero();
+
+		i_planeData.request_data_spectral();
+
+		for (int r = 0; r < 2; r++)
+		{
+			for (	std::size_t j = out.planeDataConfig->spectral_data_iteration_ranges[r][1][0];
+					j < out.planeDataConfig->spectral_data_iteration_ranges[r][1][1];
+					j++
+			) {
+				for (	std::size_t i = out.planeDataConfig->spectral_data_iteration_ranges[r][0][0];
+						i < out.planeDataConfig->spectral_data_iteration_ranges[r][0][1];
+						i++
+				) {
+					const std::complex<double> &data = i_planeData.p_spectral_get(j, i);
+					out.p_spectral_set(j, i, data);
+				}
+			}
+		}
+
+		out.physical_space_data_valid = false;
+		out.spectral_space_data_valid = true;
+
+		return out;
+	}
+#endif
 };
 
 

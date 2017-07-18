@@ -51,8 +51,8 @@ public:
 
 	void reset()
 	{
-		double cell_size_x = simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
-		double cell_size_y = simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
+		//double cell_size_x = simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
+		//double cell_size_y = simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
 
 		simVars.timecontrol.current_timestep_nr = 0;
 

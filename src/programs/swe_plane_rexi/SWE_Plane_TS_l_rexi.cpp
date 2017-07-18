@@ -6,8 +6,8 @@
  */
 
 #include "SWE_Plane_TS_l_rexi.hpp"
+#include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneDataComplex.hpp>
-
 #include <sweet/plane/PlaneOperatorsComplex.hpp>
 
 #include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
@@ -312,10 +312,15 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 		u_sum.spectral_set_all(0, 0);
 		v_sum.spectral_set_all(0, 0);
 
+#if !SWEET_USE_PLANE_SPECTRAL_SPACE
 		eta0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(i_h_pert);
 		u0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(i_u);
 		v0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(i_v);
-
+#else
+		eta0 = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(i_h_pert);
+		u0 = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(i_u);
+		v0 = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(i_v);
+#endif
 
 		/**
 		 * SPECTRAL SOLVER - DO EVERYTHING IN SPECTRAL SPACE
@@ -419,7 +424,6 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 					;
 
 				PlaneDataComplex lhs = lhs_a.spectral_addScalarAll(kappa);
-	//			rhs.spectral_div_element_wise(lhs, eta);
 				eta = rhs.spectral_div_element_wise(lhs);
 
 				PlaneDataComplex uh = u0 + g*opc.diff_c_x(eta);
@@ -474,9 +478,15 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 
 #else
 
+#if !SWEET_USE_PLANE_SPECTRAL_SPACE
 	o_h_pert = Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->h_sum);
 	o_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->u_sum);
 	o_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->v_sum);
+#else
+	o_h_pert = Convert_PlaneDataComplex_To_PlaneData::spectral_convert(perThreadVars[0]->h_sum);
+	o_u = Convert_PlaneDataComplex_To_PlaneData::spectral_convert(perThreadVars[0]->u_sum);
+	o_v = Convert_PlaneDataComplex_To_PlaneData::spectral_convert(perThreadVars[0]->v_sum);
+#endif
 
 #endif
 

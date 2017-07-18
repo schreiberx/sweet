@@ -460,12 +460,20 @@ public:
 
 
 	inline
-	const std::complex<double>& spectral_get(
+	const std::complex<double>& p_spectral_get(
 			std::size_t j,
 			std::size_t i
 	)	const
 	{
 		request_data_spectral();
+
+#if SWEET_DEBUG
+		if (i >= planeDataConfig->spectral_complex_data_size[0])
+			FatalError("Out of boundary, PlaneDataComplex, p_spectral_get, i");
+
+		if (j >= planeDataConfig->spectral_complex_data_size[1])
+			FatalError("Out of boundary, PlaneDataComplex, p_spectral_get, j");
+#endif
 
 		return spectral_space_data[j*planeDataConfig->spectral_complex_data_size[0]+i];
 	}
@@ -506,6 +514,14 @@ public:
 			const std::complex<double> &i_value
 	)
 	{
+#if SWEET_DEBUG
+		if (i >= planeDataConfig->spectral_complex_data_size[0])
+			FatalError("Out of boundary, PlaneDataComplex, p_spectral_set, i");
+
+		if (j >= planeDataConfig->spectral_complex_data_size[1])
+			FatalError("Out of boundary, PlaneDataComplex, p_spectral_set, j");
+#endif
+
 		physical_space_data_valid = false;
 		spectral_space_data_valid = true;
 
@@ -522,6 +538,14 @@ public:
 			double i_imag
 	)
 	{
+#if SWEET_DEBUG
+		if (i >= planeDataConfig->spectral_complex_data_size[0])
+			FatalError("Out of boundary, PlaneDataComplex, p_spectral_set, i");
+
+		if (j >= planeDataConfig->spectral_complex_data_size[1])
+			FatalError("Out of boundary, PlaneDataComplex, p_spectral_set, j");
+#endif
+
 		physical_space_data_valid = false;
 		spectral_space_data_valid = true;
 
@@ -769,25 +793,25 @@ public:
 	}
 #endif
 
-#if 0
 	/**
 	 * return the maximum of all absolute values
 	 */
-	std::complex<double> reduce_max()	const
+	double reduce_maxabs_real()	const
 	{
 		request_data_physical();
 
-		std::complex<double> maxvalue = -std::numeric_limits<double>::max();
+		double maxvalue = -std::numeric_limits<double>::max();
 #if SWEET_THREADING
-//#pragma omp parallel for proc_bind(close) reduction(max:maxvalue)
+#pragma omp parallel for proc_bind(close) reduction(max:maxvalue)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			maxvalue = std::max(maxvalue, physical_space_data[i]);
+			maxvalue = std::max(maxvalue, std::abs(physical_space_data[i].real()));
 
 		return maxvalue;
 	}
 
 
+#if 0
 	/**
 	 * return the maximum of all absolute values
 	 */
@@ -2053,7 +2077,7 @@ public:
 		{
 			for (std::size_t x = 0; x < planeDataConfig->spectral_complex_data_size[0]; x++)
 			{
-				const std::complex<double> &value = rw_array_data.spectral_get(y, x);
+				const std::complex<double> &value = rw_array_data.p_spectral_get(y, x);
 				std::cout << "(" << value.real() << ", " << value.imag() << ")\t";
 			}
 			std::cout << std::endl;
@@ -2071,7 +2095,7 @@ public:
 		{
 			for (std::size_t x = 0; x < planeDataConfig->spectral_complex_data_size[0]; x++)
 			{
-				const std::complex<double> &value = rw_array_data.spectral_get(y, x);
+				const std::complex<double> &value = rw_array_data.p_spectral_get(y, x);
 				std::cout << "(" << x << ", "<< y << ", "<< value.real() << ", " << value.imag() << ")\t";
 			}
 			std::cout << std::endl;
@@ -2091,7 +2115,7 @@ public:
 		{
 			for (std::size_t x = 0; x < planeDataConfig->spectral_complex_data_size[0]; x++)
 			{
-				const std::complex<double> &value = rw_array_data.spectral_get(y, x);
+				const std::complex<double> &value = rw_array_data.p_spectral_get(y, x);
 				if (value.real()*value.real()+value.imag()*value.imag() > 1.0e-13)
 					std::cout << "(" << x << ", "<< y << ", "<< value.real() << ", " << value.imag() << ")" <<std::endl;;
 			}

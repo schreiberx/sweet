@@ -68,7 +68,6 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 	}
 	else // simVars.disc.use_staggering = true
 	{
-
 		// STAGGERED GRID
 
 		PlaneData U(i_h.planeDataConfig); // U flux

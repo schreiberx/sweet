@@ -85,9 +85,9 @@ void SWE_Plane_TS_l_direct::run_timestep(
 			}
 
 			complex U_hat[3];
-			U_hat[0] = i_h.spectral_get(ik1, ik0);
-			U_hat[1] = i_u.spectral_get(ik1, ik0);
-			U_hat[2] = i_v.spectral_get(ik1, ik0);
+			U_hat[0] = i_h.p_spectral_get(ik1, ik0);
+			U_hat[1] = i_u.p_spectral_get(ik1, ik0);
+			U_hat[2] = i_v.p_spectral_get(ik1, ik0);
 
 			double k0, k1;
 			if (ik0 < i_h.planeDataConfig->spectral_complex_data_size[0]/2)

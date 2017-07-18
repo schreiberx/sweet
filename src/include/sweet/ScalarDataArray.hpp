@@ -16,6 +16,7 @@
 #include <sweet/openmp_helper.hpp>
 #include <sweet/MemBlockAlloc.hpp>
 #include <sweet/FatalError.hpp>
+#include <sweet/plane/PlaneDataConfig.hpp>
 
 /*
  * Precompiler helper functions to handle loops in spectral and physical space
@@ -56,9 +57,9 @@ public:
 	double *scalar_data;
 
 	/**
-	 * prohibit empty initialization by making this method private
+	 * allow empty initialization
 	 */
-private:
+public:
 	ScalarDataArray()	:
 		number_of_elements(0)
 	{
@@ -97,6 +98,24 @@ public:
 	}
 
 
+public:
+	/**
+	 * copy constructor, used e.g. in
+	 * 	ScalarDataArray tmp_h = h;
+	 * 	ScalarDataArray tmp_h2(h);
+	 *
+	 * Duplicate all data
+	 */
+	ScalarDataArray(
+			const PlaneDataConfig *i_planeDataConfig
+	)
+	{
+		number_of_elements = i_planeDataConfig->physical_array_data_number_of_elements;
+
+		p_allocate_buffers();
+	}
+
+
 
 public:
 	/**
@@ -110,6 +129,9 @@ public:
 			std::size_t i_number_of_elements
 	)
 	{
+		if (number_of_elements != 0)
+			p_free_buffer();
+
 		number_of_elements = i_number_of_elements;
 
 		p_allocate_buffers();
@@ -123,19 +145,30 @@ public:
 public:
 	ScalarDataArray(
 			std::size_t i_number_of_elements
-	)
+	)	: number_of_elements(i_number_of_elements)
 	{
 		number_of_elements = i_number_of_elements;
 
-		setup(number_of_elements);
+		if (number_of_elements == 0)
+			return;
+
+		p_allocate_buffers();
 	}
 
+
+	void p_free_buffer()
+	{
+		if (number_of_elements != 0)
+			MemBlockAlloc::free(scalar_data, number_of_elements*sizeof(double));
+
+		number_of_elements = 0;
+	}
 
 
 public:
 	~ScalarDataArray()
 	{
-		MemBlockAlloc::free(scalar_data, number_of_elements*sizeof(double));
+		p_free_buffer();
 	}
 
 

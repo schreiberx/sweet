@@ -58,15 +58,34 @@ public:
 		planeDataConfig->printInformation();
 		simVars.outputConfig();
 
-		for (std::size_t i = 0; i < planeDataConfig->spectral_complex_data_size[0]; i++)
+#if 0
+		//for (std::size_t j = 0; j < planeDataConfig->spectral_complex_data_size[1]; j++)
+		std::size_t j = 0;
 		{
-			std::cout << std::endl;
-			std::cout << "i: " << i << std::endl;
-			PlaneDataComplex tmp(planeDataConfig);
-			tmp.spectral_set_zero();
-			tmp.p_spectral_set(0, i, 1);
-			tmp.print_physicalArrayData();
+			for (std::size_t i = 0; i < planeDataConfig->spectral_complex_data_size[0]; i++)
+			//std::size_t i = 0;
+			{
+				{
+					std::cout << std::endl;
+					std::cout << "complex: " << j << ", " << i << std::endl;
+					PlaneDataComplex tmp(planeDataConfig);
+					tmp.spectral_set_zero();
+					tmp.p_spectral_set(j, i, 1);
+					tmp.print_physicalArrayData();
+				}
+
+				{
+					std::cout << std::endl;
+					std::cout << "real: " << j << ", " << i << std::endl;
+					PlaneData tmp(planeDataConfig);
+					tmp.spectral_set_zero();
+					tmp.p_spectral_set(j, i, 1);
+					tmp.print_physicalArrayData();
+				}
+
+			}
 		}
+#endif
 
 		exit(1);
 	}

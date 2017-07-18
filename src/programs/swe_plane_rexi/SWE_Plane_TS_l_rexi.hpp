@@ -17,9 +17,7 @@
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneDataComplex.hpp>
 #include <sweet/plane/PlaneOperatorsComplex.hpp>
-#include <sweet/plane/PlaneDataSemiLagrangian.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
-#include <sweet/plane/PlaneDataSampler.hpp>
 #include "SWE_Plane_TS_interface.hpp"
 #include "SWE_Plane_TS_l_direct.hpp"
 
@@ -45,13 +43,6 @@ class SWE_Plane_TS_l_rexi	: public SWE_Plane_TS_interface
 //	std::vector<std::complex<double>> rexi_beta_im;
 
 
-#if 0
-	/// REXI parameter h
-	double h;
-
-	/// REXI parameter M
-	int M;
-#endif
 
 	/// simulation domain size
 	double domain_size[2];
