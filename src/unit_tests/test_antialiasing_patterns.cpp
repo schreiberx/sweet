@@ -64,11 +64,15 @@ int main(int i_argc, char *i_argv[])
 
 		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical);
 
+		planeDataConfigInstance.printInformation();
+
 		std::cout << "PHYS RES: " << planeDataConfig->physical_res[0] << " x " << planeDataConfig->physical_res[1] << std::endl;
 		std::cout << "PHYS SIZE: " << planeDataConfig->physical_data_size[0] << " x " << planeDataConfig->physical_data_size[1] << std::endl;
 		std::cout << "SPEC MODES: " << planeDataConfig->spectral_modes[0] << " x " << planeDataConfig->spectral_modes[1] << std::endl;
 		std::cout << "SPEC SIZE: " << planeDataConfig->spectral_data_size[0] << " x " << planeDataConfig->spectral_data_size[1] << std::endl;
 		std::cout << std::endl;
+
+#define PRINT_SPECTRUM	0
 
 #if PRINT_SPECCTRUM
 		int res_max = 32;
@@ -81,20 +85,19 @@ int main(int i_argc, char *i_argv[])
 		/////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////
 
-		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
-			h.spectral_space_data[i] = {1.0,0.0};
+		h.spectral_set_zero();
 
 		h.spectral_space_data_valid = true;
 		h.physical_space_data_valid = false;
 
 		h = h.spectral_addScalarAll(1.0);
-#define PRINT_SPECCTRUM	0
 
 #if PRINT_SPECCTRUM
 		if (res[0] < res_max && res[1] < res_max)
 		{
+			std::cout << "***************************************" << std::endl;
 			std::cout << "All one spectrum:" << std::endl;
-			h.print_spectralData();
+			h.print_spectralData_zeroNumZero();
 			std::cout << std::endl;
 		}
 #endif
@@ -111,6 +114,7 @@ int main(int i_argc, char *i_argv[])
 #if PRINT_SPECCTRUM
 		if (res[0] < res_max && res[1] < res_max)
 		{
+			std::cout << "***************************************" << std::endl;
 			std::cout << "All one spectrum:" << std::endl;
 			h.print_spectralData();
 			std::cout << std::endl;
@@ -122,6 +126,7 @@ int main(int i_argc, char *i_argv[])
 #if PRINT_SPECCTRUM
 		if (res[0] < res_max && res[1] < res_max)
 		{
+			std::cout << "***************************************" << std::endl;
 			std::cout << "Zero aliasing spectrum:" << std::endl;
 			h.print_spectralData();
 			std::cout << std::endl;
@@ -133,6 +138,7 @@ int main(int i_argc, char *i_argv[])
 #if PRINT_SPECCTRUM
 		if (res[0] < res_max && res[1] < res_max)
 		{
+			std::cout << "***************************************" << std::endl;
 			std::cout << "Add scalar 1 to non-aliasing spectrum:" << std::endl;
 			h.print_spectralData();
 			std::cout << std::endl;
@@ -143,7 +149,9 @@ int main(int i_argc, char *i_argv[])
 		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
 		{
 			if (h.spectral_space_data[i] != 2.0 && h.spectral_space_data[i] != 0.0)
+			{
 				FatalError("INCONSISTENT ALIASING !!!");
+			}
 		}
 	}
 

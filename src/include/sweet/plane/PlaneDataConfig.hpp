@@ -353,14 +353,12 @@ private:
 			spectral_data_iteration_ranges[0][0][0] = 0;
 			spectral_data_iteration_ranges[0][0][1] = 2*(M-1)/3+1;
 			spectral_data_iteration_ranges[0][1][0] = 0;
-//			spectral_data_iteration_ranges[0][1][1] = N/3+1;
 			spectral_data_iteration_ranges[0][1][1] = N/3;
 
 			spectral_data_iteration_ranges[1][0][0] = 0;
 			spectral_data_iteration_ranges[1][0][1] = 2*(M-1)/3+1;
-			spectral_data_iteration_ranges[1][1][0] = N-N/3;
 			spectral_data_iteration_ranges[1][1][0] = N-N/3+1;
-//			spectral_data_iteration_ranges[1][1][1] = N;
+			spectral_data_iteration_ranges[1][1][1] = N;
 
 			spectral_data_iteration_ranges[0][0][1]--;
 			spectral_data_iteration_ranges[1][0][1]--;

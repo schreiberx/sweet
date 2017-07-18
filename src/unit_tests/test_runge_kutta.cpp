@@ -322,7 +322,7 @@ int main(
 			while(true)
 			{
 				if (simVars.misc.verbosity > 2)
-					std::cout << simVars.timecontrol.current_simulation_time << ": " << simulationTestRK->prog_h.physical_get(0,0) << std::endl;
+					std::cout << simVars.timecontrol.current_simulation_time << ": " << simulationTestRK->prog_h.p_physical_get(0,0) << std::endl;
 
 				simulationTestRK->run_timestep();
 

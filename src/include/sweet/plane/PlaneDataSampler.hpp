@@ -188,10 +188,10 @@ public:
 			{
 				double p[4];
 
-				p[0] = i_data.physical_get(idx_j, idx_i[0]);
-				p[1] = i_data.physical_get(idx_j, idx_i[1]);
-				p[2] = i_data.physical_get(idx_j, idx_i[2]);
-				p[3] = i_data.physical_get(idx_j, idx_i[3]);
+				p[0] = i_data.p_physical_get(idx_j, idx_i[0]);
+				p[1] = i_data.p_physical_get(idx_j, idx_i[1]);
+				p[2] = i_data.p_physical_get(idx_j, idx_i[2]);
+				p[3] = i_data.p_physical_get(idx_j, idx_i[3]);
 
 				q[kj] = p[1] + 0.5 * x*(p[2] - p[0] + x*(2.0*p[0] - 5.0*p[1] + 4.0*p[2] - p[3] + x*(3.0*(p[1] - p[2]) + p[3] - p[0])));
 
@@ -299,10 +299,10 @@ public:
 			{
 				double p[4];
 
-				p[0] = i_data.physical_get(idx_j, idx_i[0]);
-				p[1] = i_data.physical_get(idx_j, idx_i[1]);
-				p[2] = i_data.physical_get(idx_j, idx_i[2]);
-				p[3] = i_data.physical_get(idx_j, idx_i[3]);
+				p[0] = i_data.p_physical_get(idx_j, idx_i[0]);
+				p[1] = i_data.p_physical_get(idx_j, idx_i[1]);
+				p[2] = i_data.p_physical_get(idx_j, idx_i[2]);
+				p[3] = i_data.p_physical_get(idx_j, idx_i[3]);
 
 				q[kj] = p[1] + 0.5 * x*(p[2] - p[0] + x*(2.0*p[0] - 5.0*p[1] + 4.0*p[2] - p[3] + x*(3.0*(p[1] - p[2]) + p[3] - p[0])));
 
@@ -378,8 +378,8 @@ public:
 			for (int kj = 0; kj < 2; kj++)
 			{
 				double p[2];
-				p[0] = i_data.physical_get(idx_j, idx_i[0]);
-				p[1] = i_data.physical_get(idx_j, idx_i[1]);
+				p[0] = i_data.p_physical_get(idx_j, idx_i[0]);
+				p[1] = i_data.p_physical_get(idx_j, idx_i[1]);
 
 				q[kj] = p[0] + x*(p[1]-p[0]);
 
@@ -459,8 +459,8 @@ public:
 			for (int kj = 0; kj < 2; kj++)
 			{
 				double p[2];
-				p[0] = i_data.physical_get(idx_j, idx_i[0]);
-				p[1] = i_data.physical_get(idx_j, idx_i[1]);
+				p[0] = i_data.p_physical_get(idx_j, idx_i[0]);
+				p[1] = i_data.p_physical_get(idx_j, idx_i[1]);
 
 				q[kj] = p[0] + x*(p[1]-p[0]);
 

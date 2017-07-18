@@ -360,9 +360,10 @@ public:
 	}
 #endif
 
-#if 1
+
+
 	inline
-	std::complex<double> physical_get(
+	std::complex<double> p_physical_get(
 			std::size_t j,
 			std::size_t i
 	)	const
@@ -371,7 +372,22 @@ public:
 
 		return physical_space_data[j*planeDataConfig->physical_data_size[0]+i];
 	}
+
+
+
+	inline
+	void physical_set_zero()
+	{
+		PLANE_DATA_COMPLEX_PHYSICAL_FOR_IDX(
+				physical_space_data[idx] = 0.0;
+		);
+
+#if SWEET_USE_PLANE_COMPLEX_SPECTRAL_SPACE
+		physical_space_data_valid = true;
+		spectral_space_data_valid = false;
 #endif
+	}
+
 
 
 	inline
@@ -2084,6 +2100,36 @@ public:
 		}
 	}
 
+
+	/**
+	 * print spectral data and zero out values which are numerically close to zero
+	 */
+	inline
+	void print_spectralData_zeroNumZero(double i_zero_threshold = 1e-13)	const
+	{
+		PlaneDataComplex &rw_array_data = (PlaneDataComplex&)*this;
+
+		rw_array_data.request_data_spectral();
+
+		for (int y = planeDataConfig->spectral_complex_data_size[1]-1; y >= 0; y--)
+		{
+			for (std::size_t x = 0; x < planeDataConfig->spectral_complex_data_size[0]; x++)
+			{
+				const std::complex<double> &value = rw_array_data.p_spectral_get(y, x);
+
+				double re = value.real();
+				double im = value.imag();
+
+				if (std::abs(re) < i_zero_threshold)	re = 0.0;
+				if (std::abs(im) < i_zero_threshold)	im = 0.0;
+
+				std::cout << "(" << re << ", " << im << ")\t";
+			}
+			std::cout << std::endl;
+		}
+	}
+
+
 	inline
 	void print_spectralIndex()	const
 	{
@@ -2147,7 +2193,7 @@ public:
 		{
 			for (std::size_t x = 0; x < planeDataConfig->physical_data_size[0]; x++)
 			{
-				o_ostream << physical_get(y, x);
+				o_ostream << p_physical_get(y, x);
 
 				if (x < planeDataConfig->physical_data_size[0]-1)
 					o_ostream << '\t';
@@ -2158,6 +2204,40 @@ public:
 
 		return true;
 	}
+
+
+
+	/**
+	 * print spectral data and zero out values which are numerically close to zero
+	 */
+	inline
+	void print_physicalData_zeroNumZero(double i_zero_threshold = 1e-13)	const
+	{
+		PlaneDataComplex &rw_array_data = (PlaneDataComplex&)*this;
+
+		rw_array_data.request_data_spectral();
+
+		for (int y = planeDataConfig->physical_data_size[1]-1; y >= 0; y--)
+		{
+			for (std::size_t x = 0; x < planeDataConfig->physical_data_size[0]; x++)
+			{
+				const std::complex<double> &value = rw_array_data.p_physical_get(y, x);
+
+				double re = value.real();
+				double im = value.imag();
+
+				if (std::abs(re) < i_zero_threshold)	re = 0.0;
+				if (std::abs(im) < i_zero_threshold)	im = 0.0;
+
+				std::cout << "(" << re << ", " << im << ")";
+
+				if (x != planeDataConfig->physical_data_size[0]-1)
+					std::cout << "\t";
+			}
+			std::cout << std::endl;
+		}
+	}
+
 
 
 	friend
@@ -2204,7 +2284,7 @@ public:
 		{
 			for (std::size_t x = 0; x < planeDataConfig->physical_res[0]; x++)
 			{
-				file << physical_get(y, x);
+				file << p_physical_get(y, x);
 
 				if (x < planeDataConfig->physical_res[0]-1)
 					file << i_separator;

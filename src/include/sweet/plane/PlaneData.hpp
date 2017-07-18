@@ -431,7 +431,7 @@ public:
 
 
 	inline
-	double physical_get(
+	double p_physical_get(
 			std::size_t j,
 			std::size_t i
 	)	const
@@ -2419,7 +2419,7 @@ public:
 		{
 			for (std::size_t x = 0; x < planeDataConfig->physical_data_size[0]; x++)
 			{
-				o_ostream << physical_get(y, x);
+				o_ostream << p_physical_get(y, x);
 
 				if (x < planeDataConfig->physical_data_size[0]-1)
 					o_ostream << '\t';
@@ -2429,6 +2429,35 @@ public:
 		}
 
 		return true;
+	}
+
+
+	/**
+	 * print spectral data and zero out values which are numerically close to zero
+	 */
+	inline
+	void print_physicalData_zeroNumZero(double i_zero_threshold = 1e-13)	const
+	{
+		PlaneData &rw_array_data = (PlaneData&)*this;
+
+		rw_array_data.request_data_spectral();
+
+		for (int y = planeDataConfig->physical_data_size[1]-1; y >= 0; y--)
+		{
+			for (std::size_t x = 0; x < planeDataConfig->physical_data_size[0]; x++)
+			{
+				double value = rw_array_data.p_physical_get(y, x);
+
+				if (std::abs(value) < i_zero_threshold)
+					value = 0.0;
+
+				std::cout << value;
+
+				if (x != planeDataConfig->physical_data_size[0]-1)
+					std::cout << "\t";
+			}
+			std::cout << std::endl;
+		}
 	}
 
 
@@ -2476,7 +2505,7 @@ public:
 		{
 			for (std::size_t x = 0; x < planeDataConfig->physical_res[0]; x++)
 			{
-				file << physical_get(y, x);
+				file << p_physical_get(y, x);
 
 				if (x < planeDataConfig->physical_res[0]-1)
 					file << i_separator;
