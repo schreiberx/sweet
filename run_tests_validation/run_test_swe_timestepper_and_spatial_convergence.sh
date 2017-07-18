@@ -11,7 +11,7 @@ export OMP_PROC_BIND=close
 
 BASEDIR=`pwd`
 
-cd "$BASEDIR/run_test_swe_timestepper_convergence"
+cd "$BASEDIR/run_test_swe_timestepper_and_spatial_convergence"
 ./compile.sh
 
 
@@ -33,12 +33,12 @@ cd "$BASEDIR/run_test_swe_timestepper_convergence"
 #./jobs_create.py ln1 l_irk_n_erk 1 1
 
 # 2nd order nonlinear
-./jobs_create.py ln2 ln_erk 2 2
+#./jobs_create.py ln2 ln_erk 2 2
 #./jobs_create.py ln2 l_cn_n_erk 2 2
 #./jobs_create.py ln2 l_erk_n_erk 2 2
 
 # 2nd order nonlinear, SL-REXI related
-# TODO
+./jobs_create.py ln2space
 #./jobs_create.py ln2 ln_erk 2 2
 
 ./jobs_run.sh
@@ -46,10 +46,10 @@ cd "$BASEDIR/run_test_swe_timestepper_convergence"
 echo "***********************************************"
 echo " POSTPROCESSING "
 echo "***********************************************"
-./postprocessing.py || exit 1
+#./postprocessing.py || exit 1
 
 
-./cleanup.sh
+#./cleanup.sh
 
 echo "***********************************************"
 echo "***************** FIN *************************"
