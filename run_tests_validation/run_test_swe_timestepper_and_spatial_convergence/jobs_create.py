@@ -209,8 +209,12 @@ $SCONS || exit 1
 cd "$BASEDIR"
 """
 
-		if p.rexi_par:
+		if self.rexi_par:
 			content += 'EXEC="$SWEETROOT/build/swe_plane_rexi_planespectral_planedealiasing_rexipar_libfft_gnu_release'
+                elif self.staggering:
+                        #content += 'EXEC="$SWEETROOT/build/swe_plane_rexi_planespectral_omp_libfft_gnu_release'
+                        #content += 'EXEC="$SWEETROOT/build/swe_plane_rexi_omp_libfft_gnu_release'
+                        content += 'EXEC="$SWEETROOT/build/swe_plane_rexi_planespectral_planedealiasing_omp_libfft_gnu_release'
 		else:
 			content += 'EXEC="$SWEETROOT/build/swe_plane_rexi_planespectral_planedealiasing_omp_libfft_gnu_release'
 
@@ -283,12 +287,6 @@ $EXEC || exit 1
 	def create_job_id(self):
 		idstr = '_'+self.prefix_string
 
-		if self.mode_res != -1:
-			idstr += '_modes'+str(self.mode_res).zfill(4)
-
-		if self.phys_res != -1:
-			idstr += '_phys'+str(self.phys_res).zfill(4)
-
 		idstr += '_bench'+str(self.bench_id)
 #		idstr += '_nonlin'+str(self.nonlinear)
 
@@ -334,6 +332,12 @@ $EXEC || exit 1
 		if self.max_timesteps != -1:
 			idstr += '_Tn'+str(self.max_timesteps).zfill(3)
 
+		if self.mode_res != -1:
+			idstr += '_modes'+str(self.mode_res).zfill(4)
+
+		if self.phys_res != -1:
+			idstr += '_phys'+str(self.phys_res).zfill(4)
+
 		return idstr
 
 
@@ -363,13 +367,14 @@ p.plane_or_sphere = 'plane'
 p.mode_res = -1
 p.phys_res = 512
 
-p.bench_id = 14
+p.bench_id = 2
 
 p.rexi_sphere_preallocation = 0
 
 p.g = 1
 p.f = 1
 p.h = 1
+p.h=10
 p.domain_size = 1
 
 #p.viscosity = 0.0005
