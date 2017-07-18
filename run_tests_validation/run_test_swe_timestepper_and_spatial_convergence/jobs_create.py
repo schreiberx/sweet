@@ -287,12 +287,6 @@ $EXEC || exit 1
 	def create_job_id(self):
 		idstr = '_'+self.prefix_string
 
-		if self.mode_res != -1:
-			idstr += '_modes'+str(self.mode_res).zfill(4)
-
-		if self.phys_res != -1:
-			idstr += '_phys'+str(self.phys_res).zfill(4)
-
 		idstr += '_bench'+str(self.bench_id)
 #		idstr += '_nonlin'+str(self.nonlinear)
 
@@ -337,6 +331,12 @@ $EXEC || exit 1
 
 		if self.max_timesteps != -1:
 			idstr += '_Tn'+str(self.max_timesteps).zfill(3)
+
+		if self.mode_res != -1:
+			idstr += '_modes'+str(self.mode_res).zfill(4)
+
+		if self.phys_res != -1:
+			idstr += '_phys'+str(self.phys_res).zfill(4)
 
 		return idstr
 

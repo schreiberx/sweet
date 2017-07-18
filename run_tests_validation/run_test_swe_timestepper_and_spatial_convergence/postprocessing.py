@@ -19,7 +19,9 @@ groups = [
 	['ln2', 2],
 
 	['ln1test', 1],
-	['ln2test', 2]
+	['ln2test', 2],
+
+        ['ln2space',2]
 ]
 
 for group_info in groups:
@@ -32,12 +34,13 @@ for group_info in groups:
 			ref_dir=i
 			break
 
-	print("")
-	print("Using reference: "+ref_dir)
-
+        if ref_dir!="":
+                print("")
+                print("Using reference: "+ref_dir)
+	        print("SIMNAME\tL1\tL2\tLinf\tCONV")
+                
 	prev_conv_value = 0.0
 
-	print("SIMNAME\tL1\tL2\tLinf\tCONV")
 	directories = glob.glob("script_"+group+"_*")
 	directories.sort()
 
@@ -56,11 +59,12 @@ for group_info in groups:
 			continue
 
 		# Reset convergence test?
-		pos = rundir.find("_C")
+		pos = rundir.find("_phys")
 		test_name = rundir[0:pos]
 
 		if test_name != prev_test_name:
 			test_group_dirs.append([])
+                        
 		prev_test_name = test_name
 
 		test_group_dirs[-1].append(rundir)
