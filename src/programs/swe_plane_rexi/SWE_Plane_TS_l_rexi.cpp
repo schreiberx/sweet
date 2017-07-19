@@ -238,6 +238,9 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 	std::size_t max_N = rexi_alpha.size();
 
 
+	/*
+	 * Request physical or spectral here to avoid parallel race conditions
+	 */
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
 	i_h_pert.request_data_physical();
 	i_u.request_data_physical();
@@ -315,9 +318,10 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 		/*
 		 * INITIALIZATION - THIS IS THE NON-PARALLELIZABLE PART!
 		 */
-		h_sum.spectral_set_all(0, 0);
-		u_sum.spectral_set_all(0, 0);
-		v_sum.spectral_set_all(0, 0);
+		h_sum.spectral_set_zero();
+		u_sum.spectral_set_zero();
+		v_sum.spectral_set_zero();
+
 
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
 #warning "WARNING: Not doing this in spectral space leads to a loss of the highest mode"
@@ -366,7 +370,26 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 		std::size_t end = max_N;
 #endif
 
+		std::cout << std::setprecision(4);
 
+		std::cout << std::endl;
+		std::cout << "opc.diff_c_x" << std::endl;
+		opc.diff_c_x.print_spectralData_zeroNumZero();
+
+		std::cout << std::endl;
+		std::cout << "opc.diff_c_y" << std::endl;
+		opc.diff_c_y.print_spectralData_zeroNumZero();
+
+
+		std::cout << std::endl;
+		std::cout << "opc.diff2_c_x" << std::endl;
+		opc.diff2_c_x.print_spectralData_zeroNumZero();
+
+		std::cout << std::endl;
+		std::cout << "opc.diff2_c_y" << std::endl;
+		opc.diff2_c_y.print_spectralData_zeroNumZero();
+
+		exit(1);
 		/*
 		 * DO SUM IN PARALLEL
 		 */
@@ -464,9 +487,12 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 #endif
 
 #if SWEET_REXI_THREAD_PARALLEL_SUM
-	o_h_pert.physical_set_all(0);
-	o_u.physical_set_all(0);
-	o_v.physical_set_all(0);
+
+
+#if !SWEET_USE_PLANE_SPECTRAL_SPACE
+	o_h_pert.physical_set_zero();
+	o_u.physical_set_zero();
+	o_v.physical_set_zero();
 
 	for (int n = 0; n < num_local_rexi_par_threads; n++)
 	{
@@ -487,10 +513,38 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 		for (std::size_t i = 0; i < i_h_pert.planeDataConfig->physical_array_data_number_of_elements; i++)
 			o_v.physical_space_data[i] += perThreadVars[n]->v_sum.physical_space_data[i].real();
 	}
+#else
+
+
+	o_h_pert.spectral_set_zero();
+	o_u.spectral_set_zero();
+	o_v.spectral_set_zero();
+
+	for (int n = 0; n < num_local_rexi_par_threads; n++)
+	{
+		perThreadVars[n]->h_sum.request_data_spectral();
+		perThreadVars[n]->u_sum.request_data_spectral();
+		perThreadVars[n]->v_sum.request_data_spectral();
+
+		// sum real-valued elements
+		#pragma omp parallel for schedule(static)
+		for (std::size_t i = 0; i < i_h_pert.planeDataConfig->spectral_array_data_number_of_elements; i++)
+			o_h_pert.spectral_space_data[i] += perThreadVars[n]->h_sum.spectral_space_data[i].real();
+
+		#pragma omp parallel for schedule(static)
+		for (std::size_t i = 0; i < i_h_pert.planeDataConfig->spectral_array_data_number_of_elements; i++)
+			o_u.spectral_space_data[i] += perThreadVars[n]->u_sum.spectral_space_data[i].real();
+
+		#pragma omp parallel for schedule(static)
+		for (std::size_t i = 0; i < i_h_pert.planeDataConfig->spectral_array_data_number_of_elements; i++)
+			o_v.spectral_space_data[i] += perThreadVars[n]->v_sum.spectral_space_data[i].real();
+	}
+#endif
+
 
 #else
 
-#if !SWEET_USE_PLANE_SPECTRAL_SPACE
+#if !SWEET_USE_PLANE_SPECTRAL_SPACE //|| 1
 #warning "WARNING: Not doing this in spectral space leads to a loss of the highest mode"
 	/*
 	 * WARNING: This leads to a loss of precision due to the highest mode which cannot be
@@ -500,15 +554,17 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 	o_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->u_sum);
 	o_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->v_sum);
 #else
-	o_h_pert = Convert_PlaneDataComplex_To_PlaneData::spectral_convert(perThreadVars[0]->h_sum);
-	o_u = Convert_PlaneDataComplex_To_PlaneData::spectral_convert(perThreadVars[0]->u_sum);
-	o_v = Convert_PlaneDataComplex_To_PlaneData::spectral_convert(perThreadVars[0]->v_sum);
+	o_h_pert = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real(perThreadVars[0]->h_sum);
+	o_u = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real(perThreadVars[0]->u_sum);
+	o_v = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real(perThreadVars[0]->v_sum);
 #endif
 
 #endif
 
 
 #if SWEET_MPI
+
+#if !SWEET_USE_PLANE_SPECTRAL_SPACE
 	PlaneData tmp(o_h_pert.planeDataConfig);
 
 	o_h_pert.request_data_physical();
@@ -528,6 +584,10 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 	o_v.request_data_physical();
 	MPI_Reduce(o_v.physical_space_data, tmp.physical_space_data, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 	std::swap(o_v.physical_space_data, tmp.physical_space_data);
+#else
+#error "TODO: spectral version"
+#endif
+
 #endif
 
 

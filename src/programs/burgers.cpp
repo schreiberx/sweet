@@ -12,7 +12,6 @@
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/PlaneDataSemiLagrangian.hpp>
-#include <sweet/plane/Convert_PlaneData_to_ScalarDataArray.hpp>
 #include <sweet/plane/Convert_ScalarDataArray_to_PlaneData.hpp>
 #include <sweet/FatalError.hpp>
 

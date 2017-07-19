@@ -21,6 +21,9 @@ public:
 	{
 		ScalarDataArray out(i_planeData.planeDataConfig->physical_array_data_number_of_elements);
 
+		if (i_planeData.spectral_space_data_valid)
+			FatalError("This data should be typically never converted to spectral space");
+
 		i_planeData.request_data_physical();
 
 		for (std::size_t i = 0; i < out.number_of_elements; i++)

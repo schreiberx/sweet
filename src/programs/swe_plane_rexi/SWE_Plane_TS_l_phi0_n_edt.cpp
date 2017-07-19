@@ -9,8 +9,6 @@
  *					which was also written by Pedro Peixoto
  */
 
-#include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
-#include <sweet/plane/PlaneOperatorsComplex.hpp>
 #include "SWE_Plane_TS_l_phi0_n_edt.hpp"
 
 
