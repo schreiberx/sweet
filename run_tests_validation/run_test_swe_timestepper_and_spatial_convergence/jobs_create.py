@@ -211,7 +211,7 @@ cd "$BASEDIR"
 
 		if self.rexi_par:
 			content += 'EXEC="$SWEETROOT/build/swe_plane_rexi_planespectral_planedealiasing_rexipar_libfft_gnu_release'
-                elif self.staggering:
+                elif self.spectralderiv==0:
                         #content += 'EXEC="$SWEETROOT/build/swe_plane_rexi_planespectral_omp_libfft_gnu_release'
                         content += 'EXEC="$SWEETROOT/build/swe_plane_rexi_omp_libfft_gnu_release'
                         #content += 'EXEC="$SWEETROOT/build/swe_plane_rexi_planespectral_planedealiasing_omp_libfft_gnu_release'
@@ -491,7 +491,7 @@ for group in groups:
 		p.timestepping_method = tsm[0]
 		p.timestepping_order = tsm[1]
 		p.timestepping_order2 = tsm[2]
-		p.phys_res = 128
+		p.phys_res = 512
 
 		if len(tsm) > 3:
 			p.timestep_size = tsm[3]
@@ -515,7 +515,7 @@ for group in groups:
 			p.phys_res = phys_res
 
 			if group == 'ln2space' and 'ln_erk' in tsm[0]:
-				p.staggering = 1
+				p.staggering = 0
 				p.spectralderiv = 0
 				p.nonlinear = 1
 

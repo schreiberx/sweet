@@ -13,15 +13,15 @@ def loadDataFromFile(filename):
 	global prefix
 
 	try:
-		data = np.loadtxt(filename, skiprows=3)
+		data = np.loadtxt(filename, skiprows = 0)
 	except:
 		prefix = filename if len(sys.argv) <= 3 else sys.argv[3]
 		print(prefix+": UNABLE TO OPEN "+filename)
 		sys.exit(1)
 
-	labelsx = data[0,1:]
-	labelsy = data[1:,0]
-	data = data[1:,1:]
+	#labelsx = data[0,1:]
+	#labelsy = data[1:,0]
+	#data = data[1:,1:]
 	return data
 
 ref_data = loadDataFromFile(sys.argv[1])
@@ -32,11 +32,41 @@ norm_l1_value = 0.0
 norm_l2_value = 0.0
 norm_linf_value = 0.0
 
+# Check grid compatibility
 size_j = len(cmp_data)
 size_i = len(cmp_data[0])
-for j in range(0, size_j):
-	for i in range(0, size_i):
-		value = cmp_data[j,i]-ref_data[j,i]
+size_j_ref = len(ref_data)
+size_i_ref = len(ref_data[0])
+#print "Ref grid:", size_i_ref, "x", size_j_ref, " Computed grid:", size_i, "x", size_j
+
+if size_i <= size_i_ref:
+        factori=(size_i_ref)/(size_i)
+        rem=(size_i_ref)%(size_i)
+        #print "Grid Factor i:",factori,"Rem:",rem
+        if rem !=0:
+                print("Grids not aligned, cannot do comparison")
+                sys.exit(1)
+elif size_i > size_i_ref:
+        print("Reference has smaller grid than computed data, cannot compate results")
+        sys.exit(1)
+
+if size_j <= size_j_ref:
+        factorj=(size_j_ref)/(size_j)
+        rem=(size_j_ref)%(size_j)
+        #print "Grid Factor j:",factorj,"Rem:",rem
+        if rem !=0:
+                print("Grids not aligned, cannot do comparison")
+                sys.exit(1)
+elif size_j > size_j_ref:
+        print("Reference has smaller grid than computed data, cannot compate results")
+        sys.exit(1)
+
+print cmp_data[1,0], cmp_data[1,1], cmp_data[1,2]
+print ref_data[1,0],  ref_data[1,1],  ref_data[1,2]
+print ref_data[1,0*factori], ref_data[1,1*factori], ref_data[1,2*factori]
+for j in range(1, size_j-1):
+	for i in range(1, size_i-1):
+		value = cmp_data[j,i]-ref_data[j*factorj,i*factori]
 
 		norm_l1_value += abs(value)
 		norm_l2_value += value*value

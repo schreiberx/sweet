@@ -79,14 +79,14 @@ for group_info in groups:
 		print("")
 		print("Running tests for new group")
 		for rundir in g:
-                        print("ref_dir")
-                        print(ref_dir)
-                        print("rundir")
-                        print(rundir)
-                        print("datafile")
-                        print(datafile)
+                        #print("ref_dir")
+                        #print(ref_dir)
+                        #print("rundir")
+                        #print(rundir)
+                        #print("datafile")
+                        #print(datafile)
 			progparams = ['./pp_compute_max_and_rms_errors.py', ref_dir+"/"+datafile, rundir+"/"+datafile, rundir]
-
+                        #print(progparams)
 			p = Popen(progparams, stdout=PIPE, stderr=PIPE)
                        
 			output, error = p.communicate()
@@ -110,7 +110,7 @@ for group_info in groups:
 			if prev_conv_value == 0.0:
 				conv_test.append(0.0)
 			else:
-				conv_test.append(float(last_conv_value)/float(prev_conv_value))
+				conv_test.append(float(prev_conv_value)/float(last_conv_value))
 
 			print(result+"\t"+str(conv_test[-1]))
 			prev_conv_value = last_conv_value
