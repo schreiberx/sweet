@@ -54,6 +54,8 @@ contains
     endif
   end function translate_qtype
 
+  ! main Fortran routine calling LibPFASST
+
   subroutine fmain(                           &
                    user_ctx_ptr,              & ! user-defined context
                    nlevs, niters, nnodes,     & ! LibPFASST parameters
@@ -91,11 +93,6 @@ contains
      qtype_name = 'SDC_GAUSS_LOBATTO' ! type of nodes hard coded for now
      qtype      = translate_qtype(qtype_name, & 
                                   qnl)
-
-     print *, 'nlevs = ', nlevs
-     print *, 'nfields = ', nfields
-     print *, 'nvars_per_field = ', nvars_per_field
-     print *, 'niters = ', niters
 
      if (nlevs == 3) then
         nvars   = [nfields*nvars_per_field(1), & 

@@ -1,3 +1,4 @@
+
 /*
  * main.cpp
  *
@@ -28,8 +29,8 @@ extern "C"
 {
   /* Driver function for pfasst control */
   void fmain (PlaneDataCtx *pd_ctx, 
-	      const int* nlevs, const int* niters, const int* nnodes, 
-	      const int* nfields, const size_t* nvars_per_field, 
+	      const int* nlevels, const int* niters, const int nnodes[], 
+	      const int* nfields, const int nvars_per_field[], 
 	      double* t_max, double* dt);
 }
 
@@ -41,15 +42,34 @@ int main(int i_argc, char *i_argv[])
 {
   MPI_Init(&i_argc, &i_argv);
 
+  // input parameter names (specific ones for this program)
+  const char *bogus_var_names[] = {
+    "rexi-use-coriolis-formulation",
+    "compute-error",
+    nullptr
+  };
+
+  // default values for specific input (for general input see SimulationVariables.hpp)
+  simVars.bogus.var[0] = 1;
+  simVars.bogus.var[1] = 1;
+  
+  // Help menu
+  if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
+    {
+      std::cout << "--compute-error [0/1]Output errors (if available, default: 1)" << std::endl;
+      std::cout << "--rexi-use-coriolis-formulation [0/1]Use Coriolisincluding  solver for REXI (default: 1)" << std::endl;
+      return -1;
+    }
+
   simVars.timecontrol.current_timestep_size = - simVars.sim.CFL; 
   simVars.outputConfig();
 
   // define the LibPFASST parameters (later implemented as command line args)
 
-  const int nlevels  = 2;                       // number of SDC levels
-  const int niters   = 2;                       // number of SDC iterations
-  const int nnodes[] = {3, 5};                  // number of SDC nodes
-  const double coarsening_multiplier[] = { 1 }; // spatial coarsening ratio for the levels
+  const int nlevels  = 3;                                        // number of SDC levels
+  const int niters   = 1;                                        // number of SDC iterations
+  const int nnodes[nlevels] = {2, 3, 5};                         // number of SDC nodes
+  const double coarsening_multiplier[nlevels-1] = { 0.25, 0.5 }; // spatial coarsening ratio for the levels
 
 
 
@@ -95,10 +115,9 @@ int main(int i_argc, char *i_argv[])
   // define the SWEET parameters
 
   const int nfields = 3;  // number of vector fields (here, height and two horizontal velocities)
-  const size_t nvars_per_field[] = { levelSingletons[0].dataConfig.physical_array_data_number_of_elements, // number of degrees of freedom per vector field
-				     levelSingletons[1].dataConfig.physical_array_data_number_of_elements };
-
-
+  const int nvars_per_field[nlevels] = { levelSingletons[0].dataConfig.physical_array_data_number_of_elements, // number of degrees of freedom per vector field
+                                         levelSingletons[1].dataConfig.physical_array_data_number_of_elements,
+					 levelSingletons[2].dataConfig.physical_array_data_number_of_elements};
 
   // instantiate the PlaneDataCtx object 
 
@@ -118,9 +137,9 @@ int main(int i_argc, char *i_argv[])
 	pd_ctx,                                       // user defined context
 	&nlevels,                                     // number of SDC levels
 	&niters,                                      // number of SDC iterations
-	&nnodes[0],                                   // number of SDC nodes 
+	nnodes,                                   // number of SDC nodes 
 	&nfields,                                     // number of vector fields
-	&nvars_per_field[0],                          // number of dofs per vector field
+	nvars_per_field,                          // number of dofs per vector field
 	&(simVars.timecontrol.max_simulation_time),   // simulation time
 	&(simVars.timecontrol.current_timestep_size)  // time step size
   	); 
