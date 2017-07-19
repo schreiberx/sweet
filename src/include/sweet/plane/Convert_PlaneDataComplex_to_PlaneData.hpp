@@ -42,7 +42,7 @@ public:
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 public:
 	static
-	PlaneData spectral_convert(
+	PlaneData spectral_convert_physical_real(
 			const PlaneDataComplex &i_planeData
 	)
 	{
