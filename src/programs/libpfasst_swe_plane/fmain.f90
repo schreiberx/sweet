@@ -54,21 +54,22 @@ contains
     endif
   end function translate_qtype
 
-  subroutine fmain(user_ctx_ptr, num_levs, t_max, dt, nvars_per_field) bind (c, name='fmain')
+  subroutine fmain(                           &
+                   user_ctx_ptr,              & ! user-defined context
+                   nlevs, niters, nnodes,     & ! LibPFASST parameters
+                   nfields, nvars_per_field,  & ! SWEET parameters
+                   t_max, dt                  & ! timestepping parameters
+                   ) bind (c, name='fmain')
     use mpi
 
     type(c_ptr),                 value       :: user_ctx_ptr
-    integer                                  :: num_levs, nnodes(num_levs), nvars(num_levs), shape(num_levs), &
-                                                nvars_per_field, nfields, iters, nsteps, level, kind, qnl, qtype
+    integer                                  :: nlevs, niters, nnodes(nlevs), nvars(nlevs), shape(nlevs), &
+                                                nfields, nvars_per_field(nlevs), nsteps, level, kind, qnl, qtype
     character(c_char)                        :: qtype_name
-
     real(c_double)                           :: t, t_max, dt
-
     class(pf_factory_t),         allocatable :: factory
-    
     class(sweet_data_factory_t), pointer     :: sd_factory_ptr
     class(sweet_sweeper_t),      pointer     :: sweet_sweeper_ptr
-    
     type(pf_comm_t)                          :: pf_comm
     type(pf_pfasst_t)                        :: pf
 
@@ -77,7 +78,7 @@ contains
                         MPI_COMM_SELF);
      call pf_pfasst_create(pf,      & 
                            pf_comm, & 
-                           num_levs)
+                           nlevs)
      pf_comm%nproc = 1
 
      ! timestepping parameters
@@ -85,35 +86,30 @@ contains
      nsteps     = int(t_max/dt)
 
      ! LibPFASST parameters
-     pf%nlevels = num_levs
-     if (num_levs == 3) then
-        pf%niters = 4                   ! number of SDC iterations
-     else if (num_levs == 2) then
-        pf%niters = 4
-     else 
-        pf%niters = 4
-     end if
+     pf%nlevels = nlevs               ! number of SDC levels
+     pf%niters  = niters              ! number of SDC iterations
      qtype_name = 'SDC_GAUSS_LOBATTO' ! type of nodes hard coded for now
      qtype      = translate_qtype(qtype_name, & 
                                   qnl)
 
-     nfields = 3                                ! three fields (horizontal velocities and height)
-     if (num_levs == 3) then
-        nnodes  = [2, 3, 5]                     ! number of nodes for the levels
-        nvars   = [nfields*nvars_per_field/4, & 
-                   nfields*nvars_per_field/2, & 
-                   nfields*nvars_per_field]     ! number of degrees of freedom for the levels
-     else if (num_levs == 2) then
-        nnodes  = [3, 5]                     ! number of nodes for the levels
-        nvars   = [nfields*nvars_per_field/2, & 
-                   nfields*nvars_per_field]     ! number of degrees of freedom for the levels
-     else
-        nnodes  = [3]                           ! number of nodes for the levels
-        nvars   = [nfields*nvars_per_field]     ! number of degrees of freedom for the levels
+     print *, 'nlevs = ', nlevs
+     print *, 'nfields = ', nfields
+     print *, 'nvars_per_field = ', nvars_per_field
+     print *, 'niters = ', niters
+
+     if (nlevs == 3) then
+        nvars   = [nfields*nvars_per_field(1), & 
+                   nfields*nvars_per_field(2), & 
+                   nfields*nvars_per_field(3)]    ! number of degrees of freedom for the levels
+     else if (nlevs == 2) then
+        nvars   = [nfields*nvars_per_field(1), & 
+                   nfields*nvars_per_field(2)]    ! number of degrees of freedom for the levels
+     else if (nlevs == 1) then
+        nvars   = [nfields*nvars_per_field(1)]    ! number of degrees of freedom for the levels
+     else 
+        stop 'This number of levels is not supported yet'
      end if
 
-     print *, nvars
-     
      ! loop over levels to initialize level-specific data structures
      do level = 1, pf%nlevels
 
@@ -121,8 +117,13 @@ contains
        pf%levels(level)%level = level ! confusing!
 
        ! trivial zero-order predictor
-       pf%levels(level)%nsweeps_pred = 1
-       
+       if (level == pf%nlevels) then
+          pf%levels(level)%nsweeps_pred = 1
+       else
+          pf%levels(level)%nsweeps_pred = 0
+       end if
+       pf%levels(level)%nsweeps = 1
+              
        ! allocate space for the levels
        allocate(pf%levels(level)%shape(level))
        pf%levels(level)%shape(level) = nvars(level)
@@ -145,6 +146,7 @@ contains
        sweet_sweeper_ptr%ctx = user_ctx_ptr
        
        ! initialize the sweeper data
+       sweet_sweeper_ptr%level           = level
        sweet_sweeper_ptr%nnodes          = nnodes(level)
        sweet_sweeper_ptr%sweep_niter     = 0
        sweet_sweeper_ptr%sweep_niter_max = pf%niters
@@ -171,7 +173,7 @@ contains
    ! define the hooks to output data to the terminal (residual and error)
     call pf_add_hook(pf,           & 
                      pf%nlevels,   & 
-                     PF_POST_STEP, &
+                     PF_POST_SWEEP, &
                      fecho_error)
     call pf_add_hook(pf,             &
                      -1,             &
@@ -179,7 +181,7 @@ contains
                      fecho_residual)   
 
     ! advance in time with libpfasst
-    level = num_levs
+    level = nlevs
     call pf_pfasst_run(pf,                    & 
                        pf%levels(level)%Q(1), &
                        dt,                    &
