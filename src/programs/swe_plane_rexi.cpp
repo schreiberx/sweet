@@ -443,7 +443,7 @@ public:
 		const char* filename;
 		char buffer_real[1024];
 
-		if (simVars.misc.output_file_name_prefix != "")
+		if (simVars.misc.output_file_name_prefix == "")
 			filename = "output_%s_normalmodes.csv";
 		else
 			filename = simVars.misc.output_file_name_prefix.c_str();
@@ -590,7 +590,7 @@ public:
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
 				FatalError("Only available with if plane spectral space is activated during compile time!");
 #else
-				//std::cout << "prog " << outer_prog_id << std::endl;
+
 				// iterate over spectral space
 				for (int r = 0; r < 2; r++)
 				{
@@ -611,23 +611,10 @@ public:
 							// activate mode via real coefficient
 							prog[outer_prog_id]->p_spectral_set(j, i, 1.0);
 
-
-							std::cout << "NORM " << j << ", " << i << std::endl;
-							for (int k = 0; k < 3; k++)
-							{
-								std::cout << "PROG " << k << std::endl;
-								prog[k]->print_spectralData_zeroNumZero();
-							}
 							/*
 							 * RUN timestep
 							 */
 							run_timestep();
-
-							for (int k = 0; k < 3; k++)
-							{
-								std::cout << "PROG DT" << k << std::endl;
-								prog[k]->print_spectralData_zeroNumZero();
-							}
 
 
 							if (simVars.disc.normal_mode_analysis_generation == 3)
@@ -738,6 +725,8 @@ public:
 					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
 					{
 						prog[inner_prog_id]->spectral_zeroAliasingModes();
+#warning "update this physical_convert maybe to spectral_convert"
+
 						*prog_cplx[inner_prog_id] = Convert_PlaneData_To_PlaneDataComplex::physical_convert(*prog[inner_prog_id]);
 
 						prog_cplx[inner_prog_id]->request_data_spectral();
@@ -800,6 +789,15 @@ public:
 
 		simVars.timecontrol.current_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
 
+#if 0
+		timeSteppers.l_direct->run_timestep_agrid_planedatacomplex(
+				prog_h_pert, prog_u, prog_v,
+				o_dt,
+				simVars.timecontrol.current_timestep_size,
+				simVars.timecontrol.current_simulation_time,
+				simVars.timecontrol.max_simulation_time
+			);
+#else
 		timeSteppers.master->run_timestep(
 				prog_h_pert, prog_u, prog_v,
 				o_dt,
@@ -807,7 +805,7 @@ public:
 				simVars.timecontrol.current_simulation_time,
 				simVars.timecontrol.max_simulation_time
 			);
-
+#endif
 		// Apply viscosity at posteriori, for all methods explicit diffusion for non spectral schemes and implicit for spectral
 		if (simVars.sim.viscosity != 0)
 		{

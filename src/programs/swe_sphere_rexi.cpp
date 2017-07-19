@@ -484,10 +484,6 @@ public:
 
 	void normal_mode_analysis()
 	{
-		// dummy time step to get time step size
-//		reset();
-//		run_timestep();
-
 		/*
 		 * Do a normal mode analysis, see
 		 * Hillary Weller, John Thuburn, Collin J. Cotter,

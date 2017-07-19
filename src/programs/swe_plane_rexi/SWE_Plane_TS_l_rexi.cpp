@@ -237,9 +237,16 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 
 	std::size_t max_N = rexi_alpha.size();
 
+
+#if !SWEET_USE_PLANE_SPECTRAL_SPACE
 	i_h_pert.request_data_physical();
 	i_u.request_data_physical();
 	i_v.request_data_physical();
+#else
+	i_h_pert.request_data_spectral();
+	i_u.request_data_spectral();
+	i_v.request_data_spectral();
+#endif
 
 #if SWEET_MPI
 
@@ -313,6 +320,11 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 		v_sum.spectral_set_all(0, 0);
 
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
+#warning "WARNING: Not doing this in spectral space leads to a loss of the highest mode"
+	/*
+	 * WARNING: This leads to a loss of precision due to the highest mode which cannot be
+	 * tracked due to the Nyquist theorem
+	 */
 		eta0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(i_h_pert);
 		u0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(i_u);
 		v0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(i_v);
@@ -479,6 +491,11 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 #else
 
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
+#warning "WARNING: Not doing this in spectral space leads to a loss of the highest mode"
+	/*
+	 * WARNING: This leads to a loss of precision due to the highest mode which cannot be
+	 * tracked due to the Nyquist theorem
+	 */
 	o_h_pert = Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->h_sum);
 	o_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->u_sum);
 	o_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->v_sum);

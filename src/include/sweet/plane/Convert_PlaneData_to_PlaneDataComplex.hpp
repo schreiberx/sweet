@@ -58,7 +58,6 @@ public:
 					j < out.planeDataConfig->spectral_data_iteration_ranges[r][1][1];
 					j++
 			) {
-#if 0
 				for (	std::size_t i = out.planeDataConfig->spectral_data_iteration_ranges[r][0][0];
 						i < out.planeDataConfig->spectral_data_iteration_ranges[r][0][1];
 						i++
@@ -67,56 +66,23 @@ public:
 					out.p_spectral_set(j, i, data);
 				}
 
-				for (	std::size_t i = out.planeDataConfig->spectral_data_iteration_ranges[r][0][0];
+				for (	std::size_t i = out.planeDataConfig->spectral_data_iteration_ranges[r][0][0]+1;
+#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 						i < out.planeDataConfig->spectral_data_iteration_ranges[r][0][1];
+#else
+						i < out.planeDataConfig->spectral_data_iteration_ranges[r][0][1]-1;
+#endif
 						i++
 				) {
 					const std::complex<double> &data = i_planeData.p_spectral_get(j, i);
 					std::complex<double> data2 = data;
-					if (i > 0)
-					{
-//						data2.imag(-data2.imag());
-						if (j == 0)
-							out.p_spectral_set(j, out.planeDataConfig->spectral_complex_data_size[0]-i, data2);
-						else
-							out.p_spectral_set(out.planeDataConfig->spectral_complex_data_size[1]-j, out.planeDataConfig->spectral_complex_data_size[0]-i, data2);
-					}
+
+					data2.imag(-data2.imag());
+					if (j == 0)
+						out.p_spectral_set(j, out.planeDataConfig->spectral_complex_data_size[0]-i, data2);
+					else
+						out.p_spectral_set(out.planeDataConfig->spectral_complex_data_size[1]-j, out.planeDataConfig->spectral_complex_data_size[0]-i, data2);
 				}
-#else
-				std::cout << "*********" << std::endl;
-				for (	std::size_t i = out.planeDataConfig->spectral_data_iteration_ranges[r][0][0];
-						i < out.planeDataConfig->spectral_data_iteration_ranges[r][0][1]-1;
-						i++
-				) {
-					std::cout << i << std::endl;
-					std::complex<double> data = i_planeData.p_spectral_get(j, i);
-
-//					if (i == out.planeDataConfig->spectral_data_iteration_ranges[r][0][1]-1)
-//						data *= 0.5;
-
-					out.p_spectral_set(j, i, data);
-				}
-
-				for (	std::size_t i = out.planeDataConfig->spectral_data_iteration_ranges[r][0][0];
-						i < out.planeDataConfig->spectral_data_iteration_ranges[r][0][1]-1;
-						i++
-				) {
-					std::cout << out.planeDataConfig->spectral_complex_data_size[0]-i << std::endl;
-					std::complex<double> data2 = i_planeData.p_spectral_get(j, i);
-
-					if (i > 0)
-					{
-						//data2.imag(-data2.imag());
-						//if (i == out.planeDataConfig->spectral_data_iteration_ranges[r][0][1]-1)
-						//	data2 *= 0.5;
-
-						if (j == 0)
-							out.p_spectral_set(j, out.planeDataConfig->spectral_complex_data_size[0]-i, data2);
-						else
-							out.p_spectral_set(out.planeDataConfig->spectral_complex_data_size[1]-j, out.planeDataConfig->spectral_complex_data_size[0]-i, data2);
-					}
-				}
-#endif
 			}
 		}
 

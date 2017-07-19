@@ -74,6 +74,27 @@ void SWE_Plane_TS_l_direct::run_timestep_cgrid(
 }
 
 
+
+void SWE_Plane_TS_l_direct::run_timestep_agrid(
+		PlaneData &io_h_pert,	///< prognostic variables
+		PlaneData &io_u,	///< prognostic variables
+		PlaneData &io_v,	///< prognostic variables
+
+		double &o_dt,			///< time step restriction
+		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_simulation_timestamp,
+		double i_max_simulation_time
+)
+{
+
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+	run_timestep_agrid_planedata(io_h_pert, io_u, io_v, o_dt, i_fixed_dt, i_simulation_timestamp, i_max_simulation_time);
+#else
+	run_timestep_agrid_planedatacomplex(io_h_pert, io_u, io_v, o_dt, i_fixed_dt, i_simulation_timestamp, i_max_simulation_time);
+#endif
+}
+
+
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
 /**
@@ -84,7 +105,7 @@ void SWE_Plane_TS_l_direct::run_timestep_cgrid(
  * 		doc/swe_solution_for_L/sympy_L_spec_decomposition.py
  * for the dimensionful formulation.
  */
-void SWE_Plane_TS_l_direct::run_timestep_agrid(
+void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 		PlaneData &io_h_pert,	///< prognostic variables
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
@@ -385,11 +406,10 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid(
 	o_dt = i_fixed_dt;
 }
 
+#endif
 
-#else
 
-
-void SWE_Plane_TS_l_direct::run_timestep_agrid(
+void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 		PlaneData &io_h_pert,	///< prognostic variables
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
@@ -412,6 +432,11 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid(
 
 
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
+#warning "WARNING: Not doing this in spectral space leads to a loss of the highest mode"
+	/*
+	 * WARNING: This leads to a loss of precision due to the highest mode which cannot be
+	 * tracked due to the Nyquist theorem
+	 */
 	PlaneDataComplex i_h_pert = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_h_pert);
 	PlaneDataComplex i_u = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_u);
 	PlaneDataComplex i_v = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_v);
@@ -452,7 +477,7 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid(
 		if (ik1 < i_h_pert.planeDataConfig->spectral_complex_data_size[1]/2)
 			k1 = (double)ik1;
 		else
-			k1 = (double)((int)ik1-(int)i_h_pert.planeDataConfig->spectral_complex_data_size[1]);
+			k1 = -(double)((int)ik1-(int)i_h_pert.planeDataConfig->spectral_complex_data_size[1]);
 
 		for (std::size_t ik0 = 0; ik0 < i_h_pert.planeDataConfig->spectral_complex_data_size[0]; ik0++)
 		{
@@ -700,16 +725,36 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid(
 					U[k] += v[k][j] * UEV[j];
 
 			/*
+			 * Make sure that symmetry is correct
+			 */
+			if (ik0 > i_h_pert.planeDataConfig->spectral_complex_data_size[0]/2)
+			{
+				for (int i = 0; i < 3; i++)
+					U[i].imag(-U[i].imag());
+			}
+
+			/*
 			 * Convert to EV space
 			 */
-
 			o_h_pert.p_spectral_set(ik1, ik0, U[0]);
 			o_u.p_spectral_set(ik1, ik0, U[1]);
 			o_v.p_spectral_set(ik1, ik0, U[2]);
 		}
 	}
 
+#if SWEET_DEBUG
+	o_h_pert.test_realphysical();
+	o_u.test_realphysical();
+	o_v.test_realphysical();
+#endif
+
+
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
+#warning "WARNING: Not doing this in spectral space leads to a loss of the highest mode"
+	/*
+	 * WARNING: This leads to a loss of precision due to the highest mode which cannot be
+	 * tracked due to the Nyquist theorem
+	 */
 	io_h_pert = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_h_pert);
 	io_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_u);
 	io_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_v);
@@ -720,8 +765,6 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid(
 #endif
 	o_dt = i_fixed_dt;
 }
-
-#endif
 
 
 SWE_Plane_TS_l_direct::SWE_Plane_TS_l_direct(
