@@ -100,9 +100,9 @@ void SWE_Plane_TS_l_irk::run_timestep(
 	io_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(u1);
 	io_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(v1);
 #else
-	io_h = Convert_PlaneDataComplex_To_PlaneData::spectral_convert(eta);
-	io_u = Convert_PlaneDataComplex_To_PlaneData::spectral_convert(u1);
-	io_v = Convert_PlaneDataComplex_To_PlaneData::spectral_convert(v1);
+	io_h = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real(eta);
+	io_u = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real(u1);
+	io_v = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real(v1);
 #endif
 
 	o_dt = i_fixed_dt;

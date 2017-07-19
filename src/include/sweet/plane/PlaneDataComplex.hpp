@@ -2440,8 +2440,10 @@ public:
 	 * Test for real values only in physical space
 	 * by checking for certain symmetries
 	 */
-	void test_realphysical()
+	void test_realphysical()	const
 	{
+		request_data_spectral();
+
 		for (int r = 0; r < 2; r++)
 		{
 			for (	std::size_t j = planeDataConfig->spectral_data_iteration_ranges[r][1][0];
@@ -2463,16 +2465,12 @@ public:
 					data2.imag(-data2.imag());
 
 					double error_real = std::abs(data.real() - data2.real());
-					if (error_real > 1e-6)
-					{
-						print_spectralData_zeroNumZero();
-						FatalError("Invalid symmetry detected");
-					}
-
 					double error_imag = std::abs(data.imag() - data2.imag());
-					if (error_imag > 1e-6)
+					if (error_real > 1e-6 || error_imag > 1e-6)
 					{
+						std::cout << std::setprecision(5);
 						print_spectralData_zeroNumZero();
+						std::cout << "Mode " << j << ", " << i << std::endl;
 						FatalError("Invalid symmetry detected");
 					}
 				}

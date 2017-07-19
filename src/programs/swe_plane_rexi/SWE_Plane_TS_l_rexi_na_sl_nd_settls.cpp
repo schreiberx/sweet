@@ -173,7 +173,8 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::setup(
 		[&](int i, int j, double &io_data)
 		{
 			io_data = ((double)i)*simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
-		}
+		},
+		false
 	);
 
 	PlaneData tmp_y(op.planeDataConfig);
@@ -181,7 +182,8 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::setup(
 		[&](int i, int j, double &io_data)
 		{
 			io_data = ((double)j)*simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
-		}
+		},
+		false
 	);
 
 	// Initialize arrival points with h position

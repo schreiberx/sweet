@@ -13,7 +13,7 @@ def loadDataFromFile(filename):
 	global prefix
 
 	try:
-		data = np.loadtxt(filename, skiprows=3)
+		data = np.loadtxt(filename, skiprows=0)
 	except:
 		prefix = filename if len(sys.argv) <= 3 else sys.argv[3]
 		print(prefix+": UNABLE TO OPEN "+filename)

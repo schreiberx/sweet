@@ -10,7 +10,6 @@
  */
 
 #include "SWE_Plane_TS_l_cn_n_erk.hpp"
-#include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
 #include <sweet/plane/PlaneOperatorsComplex.hpp>
 
 

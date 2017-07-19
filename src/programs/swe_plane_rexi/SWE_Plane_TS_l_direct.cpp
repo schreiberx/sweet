@@ -759,9 +759,9 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 	io_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_u);
 	io_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_v);
 #else
-	io_h_pert = Convert_PlaneDataComplex_To_PlaneData::spectral_convert(o_h_pert);
-	io_u = Convert_PlaneDataComplex_To_PlaneData::spectral_convert(o_u);
-	io_v = Convert_PlaneDataComplex_To_PlaneData::spectral_convert(o_v);
+	io_h_pert = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real(o_h_pert);
+	io_u = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real(o_u);
+	io_v = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real(o_v);
 #endif
 	o_dt = i_fixed_dt;
 }

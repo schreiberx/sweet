@@ -1113,7 +1113,7 @@ public:
 					simVars.timecontrol.max_simulation_time
 			);
 
-#if 1
+#if 0
 			switch(simVars.misc.vis_id)
 			{
 			case -1:
