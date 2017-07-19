@@ -812,7 +812,7 @@ public:
 	/**
 	 * return the maximum of all absolute values
 	 */
-	double reduce_maxabs_real()	const
+	double reduce_maxAbs_real()	const
 	{
 		request_data_physical();
 
@@ -2433,6 +2433,52 @@ public:
 		}
 
 		return true;
+	}
+
+
+	/**
+	 * Test for real values only in physical space
+	 * by checking for certain symmetries
+	 */
+	void test_realphysical()
+	{
+		for (int r = 0; r < 2; r++)
+		{
+			for (	std::size_t j = planeDataConfig->spectral_data_iteration_ranges[r][1][0];
+					j < planeDataConfig->spectral_data_iteration_ranges[r][1][1];
+					j++
+			) {
+				for (	std::size_t i = planeDataConfig->spectral_data_iteration_ranges[r][0][0]+1;
+						i < planeDataConfig->spectral_data_iteration_ranges[r][0][1]-1;
+						i++
+				) {
+					const std::complex<double> &data = p_spectral_get(j, i);
+					std::complex<double> data2;
+
+					if (j == 0)
+						data2 = p_spectral_get(j, planeDataConfig->spectral_complex_data_size[0]-i);
+					else
+						data2 = p_spectral_get(planeDataConfig->spectral_complex_data_size[1]-j, planeDataConfig->spectral_complex_data_size[0]-i);
+
+					data2.imag(-data2.imag());
+
+					double error_real = std::abs(data.real() - data2.real());
+					if (error_real > 1e-6)
+					{
+						print_spectralData_zeroNumZero();
+						FatalError("Invalid symmetry detected");
+					}
+
+					double error_imag = std::abs(data.imag() - data2.imag());
+					if (error_imag > 1e-6)
+					{
+						print_spectralData_zeroNumZero();
+						FatalError("Invalid symmetry detected");
+					}
+				}
+			}
+		}
+
 	}
 
 };
