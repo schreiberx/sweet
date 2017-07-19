@@ -238,7 +238,7 @@ public:
 			FatalError("Staggering and spectral basis not supported!");
 
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
-		if (simVars.disc.use_staggering ||  ~simVars.disc.use_spectral_basis_diffs)
+		if (simVars.disc.use_staggering ||  !simVars.disc.use_spectral_basis_diffs)
 			FatalError("Finite differences and spectral dealisiang should not be used together! Please compile without dealiasing.");
 #endif
 
