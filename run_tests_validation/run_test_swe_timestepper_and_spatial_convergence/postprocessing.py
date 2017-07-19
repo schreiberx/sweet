@@ -8,7 +8,7 @@ from subprocess import Popen, PIPE
 
 
 
-datafile="output_prog_h_pert_t00000000000.10000000.csv"
+datafile="output_prog_h_pert_t00000000000.00010000.csv"
 
 
 groups = [
@@ -61,14 +61,14 @@ for group_info in groups:
 		# Reset convergence test?
 		pos = rundir.find("_phys")
 		test_name = rundir[0:pos]
-
+                #print(test_name)
 		if test_name != prev_test_name:
 			test_group_dirs.append([])
                         
 		prev_test_name = test_name
 
 		test_group_dirs[-1].append(rundir)
-
+                #print(test_group_dirs)
 
 
 	for g in test_group_dirs:
@@ -79,9 +79,16 @@ for group_info in groups:
 		print("")
 		print("Running tests for new group")
 		for rundir in g:
+                        print("ref_dir")
+                        print(ref_dir)
+                        print("rundir")
+                        print(rundir)
+                        print("datafile")
+                        print(datafile)
 			progparams = ['./pp_compute_max_and_rms_errors.py', ref_dir+"/"+datafile, rundir+"/"+datafile, rundir]
 
 			p = Popen(progparams, stdout=PIPE, stderr=PIPE)
+                       
 			output, error = p.communicate()
 
 			if p.returncode != 0:
