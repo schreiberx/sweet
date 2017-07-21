@@ -18,13 +18,13 @@ cd $dir
 cd $dir
 source install_lapack.sh
 cd $dir
-source install_libfreetype.sh
+# source install_libfreetype.sh  #TODO: does not check if already installed
 cd $dir
 #source install_libpfasst.sh #needs password
 cd $dir
 #source install_libpng.sh
 cd $dir
-source install_likwid.sh
+#source install_likwid.sh #TODO: does not check if already installed
 cd $dir
 source install_numa.sh
 cd $dir
@@ -32,7 +32,7 @@ source install_openmpi.sh
 cd $dir
 source install_pfasst++.sh
 cd $dir
-source install_python2.sh
+#source install_python2.sh #crashes: gzip: stdin: unexpected end of file
 cd $dir
 source install_python_matplotlib.sh
 cd $dir
