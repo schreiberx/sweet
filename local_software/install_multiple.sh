@@ -1,0 +1,25 @@
+#! /bin/bash
+
+source install_autoconf.sh
+#source install_automake.sh
+#source install_eigen3.sh
+source install_fftw3.sh
+#source install_gcc5.3.sh
+#source install_gcc7.1.sh
+source install_lapack.sh
+source install_libfreetype.sh
+source install_libpfasst.sh
+#source install_libpng.sh
+source install_likwid.sh
+source install_numa.sh
+source install_openmpi.sh
+source install_pfasst++.sh
+source install_python2.sh
+source install_python_matplotlib.sh
+source install_python_mpmath.sh
+source install_python_pip.sh
+source install_python_scipy.sh
+source install_rdic.sh
+source install_scons.sh
+source install_sdl2.sh
+source install_shtns.sh
