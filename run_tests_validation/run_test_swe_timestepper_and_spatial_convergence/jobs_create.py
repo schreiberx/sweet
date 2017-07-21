@@ -212,9 +212,7 @@ cd "$BASEDIR"
 		if self.rexi_par:
 			content += 'EXEC="$SWEETROOT/build/swe_plane_rexi_planespectral_planedealiasing_rexipar_libfft_gnu_release'
                 elif self.spectralderiv==0:
-                        #content += 'EXEC="$SWEETROOT/build/swe_plane_rexi_planespectral_omp_libfft_gnu_release'
                         content += 'EXEC="$SWEETROOT/build/swe_plane_rexi_omp_libfft_gnu_release'
-                        #content += 'EXEC="$SWEETROOT/build/swe_plane_rexi_planespectral_planedealiasing_omp_libfft_gnu_release'
 		else:
 			content += 'EXEC="$SWEETROOT/build/swe_plane_rexi_planespectral_planedealiasing_omp_libfft_gnu_release'
 
@@ -367,14 +365,14 @@ p.plane_or_sphere = 'plane'
 p.mode_res = -1
 p.phys_res = 512
 
-p.bench_id = 2
+p.bench_id = 14
 
 p.rexi_sphere_preallocation = 0
 
 p.g = 1
 p.f = 1
 p.h = 1
-p.h=1
+p.h=100
 p.domain_size = 1
 
 #p.viscosity = 0.0005
