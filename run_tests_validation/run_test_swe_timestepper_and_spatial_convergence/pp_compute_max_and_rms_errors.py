@@ -32,6 +32,7 @@ norm_l1_value = 0.0
 norm_l2_value = 0.0
 norm_linf_value = 0.0
 
+#Since data is on centred A-grids, grids with different size do not align perfectly, so are not comparable
 # Check grid compatibility
 size_j = len(cmp_data)
 size_i = len(cmp_data[0])
@@ -39,14 +40,14 @@ size_j_ref = len(ref_data)
 size_i_ref = len(ref_data[0])
 #print "Ref grid:", size_i_ref, "x", size_j_ref, " Computed grid:", size_i, "x", size_j
 
-if size_i <= size_i_ref:
+if size_i == size_i_ref:
         factori=(size_i_ref)/(size_i)
         rem=(size_i_ref)%(size_i)
         #print "Grid Factor i:",factori,"Rem:",rem
         if rem !=0:
                 print("Grids not aligned, cannot do comparison")
                 sys.exit(1)
-elif size_i > size_i_ref:
+else:
         print("Reference has smaller grid than computed data, cannot compate results")
         sys.exit(1)
 
@@ -61,9 +62,9 @@ elif size_j > size_j_ref:
         print("Reference has smaller grid than computed data, cannot compate results")
         sys.exit(1)
 
-print cmp_data[1,0], cmp_data[1,1], cmp_data[1,2]
-print ref_data[1,0],  ref_data[1,1],  ref_data[1,2]
-print ref_data[1,0*factori], ref_data[1,1*factori], ref_data[1,2*factori]
+#print cmp_data[1,0], cmp_data[1,1], cmp_data[1,2]
+#print ref_data[1,0],  ref_data[1,1],  ref_data[1,2]
+#print ref_data[1,0*factori], ref_data[1,1*factori], ref_data[1,2*factori]
 for j in range(1, size_j-1):
 	for i in range(1, size_i-1):
 		value = cmp_data[j,i]-ref_data[j*factorj,i*factori]

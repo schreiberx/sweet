@@ -14,8 +14,6 @@ BASEDIR=`pwd`
 cd "$BASEDIR/run_test_swe_timestepper_and_spatial_convergence"
 ./compile.sh
 
-
-
 ./cleanup.sh
 
 
@@ -46,7 +44,7 @@ cd "$BASEDIR/run_test_swe_timestepper_and_spatial_convergence"
 echo "***********************************************"
 echo " POSTPROCESSING "
 echo "***********************************************"
-#./postprocessing.py || exit 1
+./postprocessing_analytical.py || exit 1
 
 
 #./cleanup.sh

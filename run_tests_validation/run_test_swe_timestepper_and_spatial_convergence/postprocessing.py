@@ -68,7 +68,7 @@ for group_info in groups:
 		prev_test_name = test_name
 
 		test_group_dirs[-1].append(rundir)
-                #print(test_group_dirs)
+                print(test_group_dirs)
 
 
 	for g in test_group_dirs:
