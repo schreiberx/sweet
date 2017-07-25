@@ -41,7 +41,7 @@ public:
 	SWE_Plane_TS_l_rexi *l_rexi = nullptr;
 	SWE_Plane_TS_l_direct *l_direct = nullptr;
 	SWE_Plane_TS_l_rexi_na_sl_nd_settls *l_rexi_na_sl_nd_settls = nullptr;
-	SWE_Plane_TS_l_cn__na_sl_nd_settls *l_cn_na_sl_nd_settls = nullptr;
+	SWE_Plane_TS_l_cn_na_sl_nd_settls *l_cn_na_sl_nd_settls = nullptr;
 
 	SWE_Plane_TS_l_irk_n_erk *l_irk_n_erk = nullptr;
 
@@ -278,10 +278,9 @@ public:
 			if (i_simVars.disc.use_staggering)
 				FatalError("Staggering not supported for l_cn_na_sl_nd_settls");
 
-			l_cn_na_sl_nd_settls = new SWE_Plane_TS_l_cn__na_sl_nd_settls(i_simVars, i_op);
+			l_cn_na_sl_nd_settls = new SWE_Plane_TS_l_cn_na_sl_nd_settls(i_simVars, i_op);
 
 			l_cn_na_sl_nd_settls->setup(
-					i_simVars.rexi,
 					i_simVars.pde.use_nonlinear_equations
 				);
 

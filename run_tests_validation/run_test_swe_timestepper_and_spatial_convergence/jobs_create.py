@@ -457,8 +457,8 @@ for group in groups:
 	if group == 'ln2space':
 		ts_methods = [
 			['ln_erk',		4,	4],	# reference solution - spectral (128 grid points)
-			['ln_erk',		4,	4],	# FD- C-grid
-#			['l_cn_n_erk',		2,	2],
+			['ln_erk',		2,	2],	# FD- C-grid
+			['l_cn_na_sl_nd_settls', 2,	2],     # SI-SL-SP
 #			['l_erk_n_erk',		2,	2],
 #			['ln_erk',		2,	2],
 #			['l_rexi_n_erk',	2,	2],
