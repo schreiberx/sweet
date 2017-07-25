@@ -56,17 +56,17 @@ contains
 
   ! main Fortran routine calling LibPFASST
 
-  subroutine fmain(                           &
-                   user_ctx_ptr,              & ! user-defined context
-                   nlevs, niters, nnodes,     & ! LibPFASST parameters
-                   nfields, nvars_per_field,  & ! SWEET parameters
-                   t_max, dt                  & ! timestepping parameters
+  subroutine fmain(                                        &
+                   user_ctx_ptr,                           & ! user-defined context
+                   nlevs, niters, nnodes, qtype_name, qnl, & ! LibPFASST parameters
+                   nfields, nvars_per_field,               & ! SWEET parameters
+                   t_max, dt                               & ! timestepping parameters
                    ) bind (c, name='fmain')
     use mpi
 
     type(c_ptr),                 value       :: user_ctx_ptr
     integer                                  :: nlevs, niters, nnodes(nlevs), nvars(nlevs), shape(nlevs), &
-                                                nfields, nvars_per_field(nlevs), nsteps, level, kind, qnl, qtype
+                                                nfields, nvars_per_field(nlevs), nsteps, level, qnl, qtype
     character(c_char)                        :: qtype_name
     real(c_double)                           :: t, t_max, dt
     class(pf_factory_t),         allocatable :: factory
@@ -90,9 +90,10 @@ contains
      ! LibPFASST parameters
      pf%nlevels = nlevs               ! number of SDC levels
      pf%niters  = niters              ! number of SDC iterations
-     qtype_name = 'SDC_GAUSS_LOBATTO' ! type of nodes hard coded for now
      qtype      = translate_qtype(qtype_name, & 
                                   qnl)
+
+     print *, 'qtype = ', qtype
 
      if (nlevs == 3) then
         nvars   = [nfields*nvars_per_field(1), & 

@@ -113,7 +113,7 @@ extern "C"
     PlaneData& u = io_Y->get_u();
     PlaneData& v = io_Y->get_v();
 
-    // make sure that the data is up to date
+    // make sure that the physical data is up to date
     h.request_data_physical();  
     u.request_data_physical();  
     v.request_data_physical();  
@@ -172,7 +172,6 @@ extern "C"
       v.physical_space_data[i] = i_flat_data_ptr[0][j++]; 
     }
 
-
     // tell sweet that the physical data is up to date
     h.physical_space_data_valid = true;
     u.physical_space_data_valid = true;
@@ -183,6 +182,11 @@ extern "C"
     u.spectral_space_data_valid = false;
     v.spectral_space_data_valid = false;
 
+    // make sure that the spectral data is up to date
+    h.request_data_spectral();  
+    u.request_data_spectral();  
+    v.request_data_spectral();  
+    
   }
 
   // computes io_Y = i_a * i_X + io_Y
