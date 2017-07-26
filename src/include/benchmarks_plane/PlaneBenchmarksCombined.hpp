@@ -25,35 +25,65 @@ public:
 			PlaneOperators &i_op
 	)
 	{
-		o_h.physical_update_lambda_array_indices(
-				[&](int i, int j, double &io_data)
-				{
-					double x = (double)i*i_simVars.disc.cell_size[0];
-					double y = (double)j*i_simVars.disc.cell_size[1];
+	  o_h.physical_update_lambda_array_indices(
+						   [&](int i, int j, double &io_data)
+						   {
+						     double x = (double)i*(i_simVars.sim.domain_size[0]/(double)i_simVars.disc.res_physical[0]);
+						     double y = (double)j*(i_simVars.sim.domain_size[1]/(double)i_simVars.disc.res_physical[1]);
 
-					io_data = SWEPlaneBenchmarks::return_h(i_simVars, x, y);
-				}
-			);
+						     io_data = SWEPlaneBenchmarks::return_h(i_simVars, x, y);
+						   }
+						   );
 
-		o_u.physical_update_lambda_array_indices(
-				[&](int i, int j, double &io_data)
-				{
-					double x = (double)i*i_simVars.disc.cell_size[0];
-					double y = (double)j*i_simVars.disc.cell_size[1];
+	  o_u.physical_update_lambda_array_indices(
+						   [&](int i, int j, double &io_data)
+						   {
+						     double x = (double)i*(i_simVars.sim.domain_size[0]/(double)i_simVars.disc.res_physical[0]);
+						     double y = (double)j*(i_simVars.sim.domain_size[1]/(double)i_simVars.disc.res_physical[1]);
 
-					io_data = SWEPlaneBenchmarks::return_u(i_simVars, x, y);
-				}
-			);
+						     io_data = SWEPlaneBenchmarks::return_u(i_simVars, x, y);
+						   }
+						   );
 
-		o_v.physical_update_lambda_array_indices(
-				[&](int i, int j, double &io_data)
-				{
-					double x = (double)i*i_simVars.disc.cell_size[0];
-					double y = (double)j*i_simVars.disc.cell_size[1];
+	  o_v.physical_update_lambda_array_indices(
+						   [&](int i, int j, double &io_data)
+						   {
+						     double x = (double)i*(i_simVars.sim.domain_size[0]/(double)i_simVars.disc.res_physical[0]);
+						     double y = (double)j*(i_simVars.sim.domain_size[1]/(double)i_simVars.disc.res_physical[1]);
 
-					io_data = SWEPlaneBenchmarks::return_v(i_simVars, x, y);
-				}
-			);
+						     io_data = SWEPlaneBenchmarks::return_v(i_simVars, x, y);
+						   }
+						   );
+	  o_h.physical_update_lambda_array_indices(
+						   [&](int i, int j, double &io_data)
+						   {
+						     double x = (double)i*(i_simVars.sim.domain_size[0]/(double)i_simVars.disc.res_physical[0]);
+						     double y = (double)j*(i_simVars.sim.domain_size[1]/(double)i_simVars.disc.res_physical[1]);
+
+						     io_data = SWEPlaneBenchmarks::return_h(i_simVars, x, y);
+						   }
+						   );
+
+	  o_u.physical_update_lambda_array_indices(
+						   [&](int i, int j, double &io_data)
+						   {
+						     double x = (double)i*(i_simVars.sim.domain_size[0]/(double)i_simVars.disc.res_physical[0]);
+						     double y = (double)j*(i_simVars.sim.domain_size[1]/(double)i_simVars.disc.res_physical[1]);
+
+						     io_data = SWEPlaneBenchmarks::return_u(i_simVars, x, y);
+						   }
+						   );
+
+	  o_v.physical_update_lambda_array_indices(
+						   [&](int i, int j, double &io_data)
+						   {
+						     double x = (double)i*(i_simVars.sim.domain_size[0]/(double)i_simVars.disc.res_physical[0]);
+						     double y = (double)j*(i_simVars.sim.domain_size[1]/(double)i_simVars.disc.res_physical[1]);
+
+						     io_data = SWEPlaneBenchmarks::return_v(i_simVars, x, y);
+						   }
+						   );
+
 	}
 
 };
