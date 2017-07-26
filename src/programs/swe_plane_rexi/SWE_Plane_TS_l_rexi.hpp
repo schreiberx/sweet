@@ -143,6 +143,22 @@ public:
 			double i_max_simulation_time = std::numeric_limits<double>::infinity()
 	);
 
+
+	void run_timestep_real(
+			const PlaneData &i_h_pert,	///< prognostic variables
+			const PlaneData &i_u,	///< prognostic variables
+			const PlaneData &i_v,	///< prognostic variables
+
+			PlaneData &o_h_pert,	///< prognostic variables
+			PlaneData &o_u,	///< prognostic variables
+			PlaneData &o_v,	///< prognostic variables
+
+			double &o_dt,			///< time step restriction
+			double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_simulation_timestamp,
+			double i_max_simulation_time = std::numeric_limits<double>::infinity()
+	);
+
 	void run_timestep(
 			PlaneData &io_h_pert,	///< prognostic variables
 			PlaneData &io_u,	///< prognostic variables

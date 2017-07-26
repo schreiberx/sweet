@@ -82,6 +82,7 @@ SCONS="scons --program=swe_plane_rexi --gui=disable --plane-spectral-space=enabl
 echo "$SCONS"
 $SCONS  || exit
 
+
 SCONS="scons --program=swe_plane_rexi --sweet-mpi=enable --rexi-thread-parallel-sum=enable --threading=off"
 echo "$SCONS"
 $SCONS  || exit

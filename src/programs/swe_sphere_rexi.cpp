@@ -1249,7 +1249,7 @@ int main(int i_argc, char *i_argv[])
 					simVars.timecontrol.current_timestep_size,
 
 					simVars.rexi.use_half_poles,
-					simVars.rexi.use_extended_modes,
+					simVars.rexi.use_sphere_extended_modes,
 					simVars.rexi.normalization,
 					simVars.sim.f_sphere,
 

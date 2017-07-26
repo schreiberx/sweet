@@ -192,7 +192,7 @@ public:
 		 * DIFF X
 		 */
 		{
-			diff_c_x.spectral_set_all(666, 666);
+			diff_c_x.spectral_set_zero();
 			double scale_x = 2.0*M_PIl/i_domain_size[0];
 
 #if 1
@@ -202,14 +202,9 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-			for (std::size_t j = 0; j < planeDataConfig->spectral_complex_data_size[1]/2+1; j++)
-				for (std::size_t i = 0; i < planeDataConfig->spectral_complex_data_size[0]/2+1; i++)
-					diff_c_x.p_spectral_set(
-							j,
-							i,
-							0,
-							(double)i*scale_x
-						);
+			for (std::size_t j = planeDataConfig->spectral_complex_ranges[0][1][0]; j < planeDataConfig->spectral_complex_ranges[0][1][1]; j++)
+				for (std::size_t i = planeDataConfig->spectral_complex_ranges[0][0][0]; i < planeDataConfig->spectral_complex_ranges[0][0][1]; i++)
+					diff_c_x.p_spectral_set(j, i, 0, (double)i*scale_x);
 #endif
 
 
@@ -220,14 +215,9 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-			for (std::size_t j = 0; j < planeDataConfig->spectral_complex_data_size[1]/2-1; j++)
-				for (std::size_t i = 0; i < planeDataConfig->spectral_complex_data_size[0]/2+1; i++)
-					diff_c_x.p_spectral_set(
-							planeDataConfig->spectral_complex_data_size[1]-1-j,
-							i,
-							0,
-							(double)i*scale_x
-						);
+			for (std::size_t j = planeDataConfig->spectral_complex_ranges[1][1][0]; j < planeDataConfig->spectral_complex_ranges[1][1][1]; j++)
+				for (std::size_t i = planeDataConfig->spectral_complex_ranges[1][0][0]; i < planeDataConfig->spectral_complex_ranges[1][0][1]; i++)
+					diff_c_x.p_spectral_set(j, i, 0, (double)i*scale_x);
 #endif
 
 #if 1
@@ -237,14 +227,9 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-			for (std::size_t j = 0; j < planeDataConfig->spectral_complex_data_size[1]/2+1; j++)
-				for (std::size_t i = 0; i < planeDataConfig->spectral_complex_data_size[0]/2-1; i++)
-					diff_c_x.p_spectral_set(
-							j,
-							planeDataConfig->spectral_complex_data_size[0]-1-i,
-							0,
-							-(double)(i+1)*scale_x
-						);
+			for (std::size_t j = planeDataConfig->spectral_complex_ranges[2][1][0]; j < planeDataConfig->spectral_complex_ranges[2][1][1]; j++)
+				for (std::size_t i = planeDataConfig->spectral_complex_ranges[2][0][0]; i < planeDataConfig->spectral_complex_ranges[2][0][1]; i++)
+					diff_c_x.p_spectral_set(j, i, 0, -(double)(planeDataConfig->spectral_complex_ranges[2][0][1]-i)*scale_x);
 #endif
 
 #if 1
@@ -254,27 +239,20 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-			for (std::size_t j = 0; j < planeDataConfig->spectral_complex_data_size[1]/2-1; j++)
-				for (std::size_t i = 0; i < planeDataConfig->spectral_complex_data_size[0]/2-1; i++)
-					diff_c_x.p_spectral_set(
-							planeDataConfig->spectral_complex_data_size[1]-1-j,
-							planeDataConfig->spectral_complex_data_size[0]-1-i,
-							0,
-							-(double)(i+1)*scale_x
-						);
+			for (std::size_t j = planeDataConfig->spectral_complex_ranges[3][1][0]; j < planeDataConfig->spectral_complex_ranges[3][1][1]; j++)
+				for (std::size_t i = planeDataConfig->spectral_complex_ranges[3][0][0]; i < planeDataConfig->spectral_complex_ranges[3][0][1]; i++)
+					diff_c_x.p_spectral_set(j, i, 0, -(double)(planeDataConfig->spectral_complex_ranges[3][0][1]-i)*scale_x);
 #endif
-
 
 			diff_c_x.physical_space_data_valid = false;
 			diff_c_x.spectral_space_data_valid = true;
 		}
 
-
 		/*
 		 * DIFF Y
 		 */
 		{
-			diff_c_y.spectral_set_all(666, 666);
+			diff_c_y.spectral_set_zero();
 			double scale_y = 2.0*M_PIl/i_domain_size[1];
 
 
@@ -285,14 +263,9 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-			for (std::size_t j = 0; j < planeDataConfig->spectral_complex_data_size[1]/2+1; j++)
-				for (std::size_t i = 0; i < planeDataConfig->spectral_complex_data_size[0]/2+1; i++)
-					diff_c_y.p_spectral_set(
-							j,
-							i,
-							0,
-							(double)j*scale_y
-						);
+			for (std::size_t j = planeDataConfig->spectral_complex_ranges[0][1][0]; j < planeDataConfig->spectral_complex_ranges[0][1][1]; j++)
+				for (std::size_t i = planeDataConfig->spectral_complex_ranges[0][0][0]; i < planeDataConfig->spectral_complex_ranges[0][0][1]; i++)
+					diff_c_y.p_spectral_set(j, i, 0, (double)j*scale_y);
 #endif
 
 
@@ -303,14 +276,9 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-			for (std::size_t j = 0; j < planeDataConfig->spectral_complex_data_size[1]/2-1; j++)
-				for (std::size_t i = 0; i < planeDataConfig->spectral_complex_data_size[0]/2+1; i++)
-					diff_c_y.p_spectral_set(
-							planeDataConfig->spectral_complex_data_size[1]-1-j,
-							i,
-							0,
-							-(double)(j+1)*scale_y
-						);
+			for (std::size_t j = planeDataConfig->spectral_complex_ranges[1][1][0]; j < planeDataConfig->spectral_complex_ranges[1][1][1]; j++)
+				for (std::size_t i = planeDataConfig->spectral_complex_ranges[1][0][0]; i < planeDataConfig->spectral_complex_ranges[1][0][1]; i++)
+					diff_c_y.p_spectral_set(j, i, 0, -(double)(planeDataConfig->spectral_complex_ranges[1][1][1]-j)*scale_y);
 #endif
 
 #if 1
@@ -320,14 +288,9 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-			for (std::size_t j = 0; j < planeDataConfig->spectral_complex_data_size[1]/2+1; j++)
-				for (std::size_t i = 0; i < planeDataConfig->spectral_complex_data_size[0]/2-1; i++)
-					diff_c_y.p_spectral_set(
-							j,
-							planeDataConfig->spectral_complex_data_size[0]-1-i,
-							0,
-							(double)j*scale_y
-						);
+			for (std::size_t j = planeDataConfig->spectral_complex_ranges[2][1][0]; j < planeDataConfig->spectral_complex_ranges[2][1][1]; j++)
+				for (std::size_t i = planeDataConfig->spectral_complex_ranges[2][0][0]; i < planeDataConfig->spectral_complex_ranges[2][0][1]; i++)
+					diff_c_y.p_spectral_set(j, i, 0, (double)(j)*scale_y);
 #endif
 
 
@@ -338,20 +301,14 @@ public:
 #if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
-			for (std::size_t j = 0; j < planeDataConfig->spectral_complex_data_size[1]/2-1; j++)
-				for (std::size_t i = 0; i < planeDataConfig->spectral_complex_data_size[0]/2-1; i++)
-					diff_c_y.p_spectral_set(
-							planeDataConfig->spectral_complex_data_size[1]-1-j,
-							planeDataConfig->spectral_complex_data_size[0]-1-i,
-							0,
-							-(double)(j+1)*scale_y
-						);
+			for (std::size_t j = planeDataConfig->spectral_complex_ranges[3][1][0]; j < planeDataConfig->spectral_complex_ranges[3][1][1]; j++)
+				for (std::size_t i = planeDataConfig->spectral_complex_ranges[3][0][0]; i < planeDataConfig->spectral_complex_ranges[3][0][1]; i++)
+					diff_c_y.p_spectral_set(j, i, 0, -(double)(planeDataConfig->spectral_complex_ranges[3][1][1]-j)*scale_y);
 #endif
 
 			diff_c_y.physical_space_data_valid = false;
 			diff_c_y.spectral_space_data_valid = true;
 		}
-
 
 		/*
 		 * 2nd order differential operators

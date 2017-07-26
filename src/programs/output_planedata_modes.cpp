@@ -177,7 +177,7 @@ public:
 				testcplx = Convert_PlaneData_To_PlaneDataComplex::physical_convert(test);
 				testcplx.test_realphysical();
 
-				PlaneData tmp = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real(testcplx);
+				PlaneData tmp = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(testcplx);
 
 				double error = (test-tmp).reduce_maxAbs();
 
@@ -213,7 +213,7 @@ public:
 					testcplx = Convert_PlaneData_To_PlaneDataComplex::physical_convert(test);
 					testcplx.test_realphysical();
 
-					PlaneData tmp = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real(testcplx);
+					PlaneData tmp = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(testcplx);
 
 					double error = (test-tmp).reduce_maxAbs();
 
@@ -243,7 +243,7 @@ public:
 					testcplx = Convert_PlaneData_To_PlaneDataComplex::physical_convert(test);
 					testcplx.test_realphysical();
 
-					PlaneData tmp = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real(testcplx);
+					PlaneData tmp = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(testcplx);
 
 					double error = (test-tmp).reduce_maxAbs();
 
@@ -273,7 +273,7 @@ public:
 					testcplx = Convert_PlaneData_To_PlaneDataComplex::physical_convert(test);
 					testcplx.test_realphysical();
 
-					PlaneData tmp = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real(testcplx);
+					PlaneData tmp = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(testcplx);
 
 					double error = (test-tmp).reduce_maxAbs();
 

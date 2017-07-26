@@ -25,8 +25,8 @@ if false; then
 	echo "TEST CART DIFF OPS (release) $X x $Y"
 	echo "***********************************************"
 	make clean
-	scons --threading=omp --unit-test=test_diff_stencil_ops --gui=disable --plane-spectral-space=disable --mode=release --plane-spectral-dealiasing=disable
-	EXEC="./build/test_diff_stencil_ops_*_release  -X $X -Y $Y -S 0"
+	scons --threading=omp --unit-test=test_plane_diff_stencil_ops --gui=disable --plane-spectral-space=disable --mode=release --plane-spectral-dealiasing=disable
+	EXEC="./build/test_plane_diff_stencil_ops_*_release  -X $X -Y $Y -S 0"
 	echo "$EXEC"
 	$EXEC || exit 1
 fi
@@ -38,8 +38,8 @@ echo "***********************************************"
 echo "TEST CART DIFF OPS (release) $X"
 echo "***********************************************"
 make clean
-scons --threading=omp --unit-test=test_diff_stencil_ops --gui=disable --plane-spectral-space=disable --mode=release --plane-spectral-dealiasing=disable
-EXEC="./build/test_diff_stencil_ops_*_release -n 128 -m 128 -X $X -Y $X -S 0"
+scons --threading=omp --unit-test=test_plane_diff_stencil_ops --gui=disable --plane-spectral-space=disable --mode=release --plane-spectral-dealiasing=disable
+EXEC="./build/test_plane_diff_stencil_ops_*_release -n 128 -m 128 -X $X -Y $X -S 0"
 $EXEC || exit 1
 
 X=$MIN_SCALE
@@ -48,8 +48,8 @@ echo "***********************************************"
 echo "TEST CART DIFF OPS (release) $X"
 echo "***********************************************"
 make clean
-scons --threading=omp --unit-test=test_diff_stencil_ops --gui=disable --plane-spectral-space=disable --mode=release --plane-spectral-dealiasing=disable
-./build/test_diff_stencil_ops_*_release -n 128 -m 128 -X $X -Y $X -S 0 || exit 1
+scons --threading=omp --unit-test=test_plane_diff_stencil_ops --gui=disable --plane-spectral-space=disable --mode=release --plane-spectral-dealiasing=disable
+./build/test_plane_diff_stencil_ops_*_release -n 128 -m 128 -X $X -Y $X -S 0 || exit 1
 
 X=$MAX_SCALE
 echo
@@ -57,8 +57,8 @@ echo "***********************************************"
 echo "TEST CART DIFF OPS (release) ALIASING CONTROL $X"
 echo "***********************************************"
 make clean
-scons --threading=omp --unit-test=test_diff_stencil_ops --gui=disable --plane-spectral-space=enable --mode=release --plane-spectral-dealiasing=enable
-./build/test_diff_stencil_ops_*_release -n 128 -m 128 -X $X -Y $X -S 0 || exit 1
+scons --threading=omp --unit-test=test_plane_diff_stencil_ops --gui=disable --plane-spectral-space=enable --mode=release --plane-spectral-dealiasing=enable
+./build/test_plane_diff_stencil_ops_*_release -n 128 -m 128 -X $X -Y $X -S 0 || exit 1
 
 X=$MIN_SCALE
 echo
@@ -66,8 +66,8 @@ echo "***********************************************"
 echo "TEST CART DIFF OPS (release) ALIASING CONTROL $X"
 echo "***********************************************"
 make clean
-scons --threading=omp --unit-test=test_diff_stencil_ops --gui=disable --plane-spectral-space=enable --mode=release --plane-spectral-dealiasing=enable
-./build/test_diff_stencil_ops_*_release -n 128 -m 128 -X $X -Y $X -S 0 || exit 1
+scons --threading=omp --unit-test=test_plane_diff_stencil_ops --gui=disable --plane-spectral-space=enable --mode=release --plane-spectral-dealiasing=enable
+./build/test_plane_diff_stencil_ops_*_release -n 128 -m 128 -X $X -Y $X -S 0 || exit 1
 
 
 

@@ -132,7 +132,7 @@ public:
 	/// 1st index (left): the id of the range,
 	/// 2nd index (middle): dimension the range,
 	/// 3rd index (last one): start and end (exclusive) index
-	std::size_t spectral_complex_data_iteration_ranges[4][2][2];
+	std::size_t spectral_complex_ranges[4][2][2];
 
 	fftw_plan	fftw_plan_complex_forward;
 	fftw_plan	fftw_plan_complex_backward;
@@ -184,14 +184,14 @@ public:
 		std::cout << "spectral_complex_data_size: " << spectral_complex_data_size[0] << ", " << spectral_complex_data_size[1] << std::endl;
 		std::cout << "spectral_complex_array_data_number_of_elements: " << spectral_complex_array_data_number_of_elements << std::endl;
 		std::cout << std::endl;
-		std::cout << "spectral_complex_data_iteration_ranges [0][0]: " << spectral_complex_data_iteration_ranges[0][0][0] << ", " << spectral_complex_data_iteration_ranges[0][0][1] << std::endl;
-		std::cout << "spectral_complex_data_iteration_ranges [0][1]: " << spectral_complex_data_iteration_ranges[0][1][0] << ", " << spectral_complex_data_iteration_ranges[0][1][1] << std::endl;
-		std::cout << "spectral_complex_data_iteration_ranges [1][0]: " << spectral_complex_data_iteration_ranges[1][0][0] << ", " << spectral_complex_data_iteration_ranges[1][0][1] << std::endl;
-		std::cout << "spectral_complex_data_iteration_ranges [1][1]: " << spectral_complex_data_iteration_ranges[1][1][0] << ", " << spectral_complex_data_iteration_ranges[1][1][1] << std::endl;
-		std::cout << "spectral_complex_data_iteration_ranges [2][0]: " << spectral_complex_data_iteration_ranges[2][0][0] << ", " << spectral_complex_data_iteration_ranges[2][0][1] << std::endl;
-		std::cout << "spectral_complex_data_iteration_ranges [2][1]: " << spectral_complex_data_iteration_ranges[2][1][0] << ", " << spectral_complex_data_iteration_ranges[2][1][1] << std::endl;
-		std::cout << "spectral_complex_data_iteration_ranges [3][0]: " << spectral_complex_data_iteration_ranges[3][0][0] << ", " << spectral_complex_data_iteration_ranges[3][0][1] << std::endl;
-		std::cout << "spectral_complex_data_iteration_ranges [3][1]: " << spectral_complex_data_iteration_ranges[3][1][0] << ", " << spectral_complex_data_iteration_ranges[3][1][1] << std::endl;
+		std::cout << "spectral_complex_ranges [0][0]: " << spectral_complex_ranges[0][0][0] << ", " << spectral_complex_ranges[0][0][1] << std::endl;
+		std::cout << "spectral_complex_ranges [0][1]: " << spectral_complex_ranges[0][1][0] << ", " << spectral_complex_ranges[0][1][1] << std::endl;
+		std::cout << "spectral_complex_ranges [1][0]: " << spectral_complex_ranges[1][0][0] << ", " << spectral_complex_ranges[1][0][1] << std::endl;
+		std::cout << "spectral_complex_ranges [1][1]: " << spectral_complex_ranges[1][1][0] << ", " << spectral_complex_ranges[1][1][1] << std::endl;
+		std::cout << "spectral_complex_ranges [2][0]: " << spectral_complex_ranges[2][0][0] << ", " << spectral_complex_ranges[2][0][1] << std::endl;
+		std::cout << "spectral_complex_ranges [2][1]: " << spectral_complex_ranges[2][1][0] << ", " << spectral_complex_ranges[2][1][1] << std::endl;
+		std::cout << "spectral_complex_ranges [3][0]: " << spectral_complex_ranges[3][0][0] << ", " << spectral_complex_ranges[3][0][1] << std::endl;
+		std::cout << "spectral_complex_ranges [3][1]: " << spectral_complex_ranges[3][1][0] << ", " << spectral_complex_ranges[3][1][1] << std::endl;
 		std::cout << std::endl;
 #endif
 	}
@@ -226,7 +226,7 @@ public:
 public:
 	int& refCounterFftwPlans()
 	{
-#if SWEET_THREADING
+#if SWEET_THREADING && SWEET_DEBUG
 		if (omp_get_level() != 0)
 			FatalError("PlaneDataConfig is not threadsafe, but called inside parallel region with more than one thread!!!");
 #endif
@@ -241,6 +241,7 @@ public:
 	{
 		physical_res[0] = 0;
 		physical_res[1] = 0;
+
 #if SWEET_USE_LIBFFT
 		spectral_modes[0] = 0;
 		spectral_modes[1] = 0;
@@ -316,7 +317,6 @@ private:
 		 */
 		bool wisdom_loaded = loadWisdom();
 
-
 		int fftw_estimate_plan = 0;
 		const char* fftw_estimate_plan_env = getenv("SWEET_FFTW_ESTIMATE");
 		if (fftw_estimate_plan_env != nullptr)
@@ -334,6 +334,11 @@ private:
 			spectral_data_size[0] = physical_data_size[0]/2+1;
 			spectral_data_size[1] = physical_data_size[1];
 
+			if ((physical_data_size[0] & 1) == 1)
+				FatalError("Not supported a");
+
+			if ((physical_data_size[1] & 1) == 1)
+				FatalError("Not supported b");
 
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 
@@ -342,46 +347,38 @@ private:
 			 * doc/software_development_discussions/antialiasing/implementation_strategy.pdf
 			 */
 
-			int M = spectral_data_size[0];
-			int N = spectral_data_size[1];
-
 			if (	spectral_modes[0] == physical_res[0] ||
 					spectral_modes[1] == physical_res[1]
 			)
 				FatalError("Aliasing doesn't make sense since physical resolution is identical to spectral");
 
 			spectral_data_iteration_ranges[0][0][0] = 0;
-			spectral_data_iteration_ranges[0][0][1] = 2*(M-1)/3+1;
+			spectral_data_iteration_ranges[0][0][1] = (physical_data_size[0]-1)/3;
 			spectral_data_iteration_ranges[0][1][0] = 0;
-			spectral_data_iteration_ranges[0][1][1] = N/3;
+			spectral_data_iteration_ranges[0][1][1] = (physical_data_size[1]-1)/3;
 
-			spectral_data_iteration_ranges[1][0][0] = 0;
-			spectral_data_iteration_ranges[1][0][1] = 2*(M-1)/3+1;
-			spectral_data_iteration_ranges[1][1][0] = N-N/3+1;
-			spectral_data_iteration_ranges[1][1][1] = N;
-
-			spectral_data_iteration_ranges[0][0][1]--;
-			spectral_data_iteration_ranges[1][0][1]--;
-
-			spectral_real_modes[0] = spectral_data_iteration_ranges[0][0][1];
-			spectral_real_modes[1] = spectral_data_iteration_ranges[0][1][1];
 
 #else
 
+			/*
+			 * The central mode is the Shannon-Nyquist one
+			 * => Remove this one, since this is not tracked in transformations
+			 */
 			spectral_data_iteration_ranges[0][0][0] = 0;
-			spectral_data_iteration_ranges[0][0][1] = spectral_data_size[0];	// padding
+			spectral_data_iteration_ranges[0][0][1] = spectral_data_size[0]-1;		// Shannon-Nyquist
 			spectral_data_iteration_ranges[0][1][0] = 0;
 			spectral_data_iteration_ranges[0][1][1] = spectral_data_size[1]/2;
 
-			spectral_data_iteration_ranges[1][0][0] = 0;
-			spectral_data_iteration_ranges[1][0][1] = spectral_data_size[0];	// padding
-			spectral_data_iteration_ranges[1][1][0] = spectral_data_size[1]/2;
-			spectral_data_iteration_ranges[1][1][1] = spectral_data_size[1];
+#endif
 
+
+			spectral_data_iteration_ranges[1][0][0] = spectral_data_iteration_ranges[0][0][0];
+			spectral_data_iteration_ranges[1][0][1] = spectral_data_iteration_ranges[0][0][1];
+			spectral_data_iteration_ranges[1][1][0] = spectral_data_size[1] - spectral_data_iteration_ranges[0][1][1] + 1;
+			spectral_data_iteration_ranges[1][1][1] = spectral_data_size[1];
 
 			spectral_real_modes[0] = spectral_data_iteration_ranges[0][0][1];
 			spectral_real_modes[1] = spectral_data_iteration_ranges[0][1][1];
-#endif
 
 			spectral_array_data_number_of_elements = spectral_data_size[0]*spectral_data_size[1];
 
@@ -462,57 +459,31 @@ private:
 			spectral_complex_data_size[0] = physical_data_size[0];
 			spectral_complex_data_size[1] = physical_data_size[1];
 
-#if SWEET_USE_PLANE_SPECTRAL_DEALIASING && 0
+			if ((spectral_complex_data_size[0] & 1) == 1)
+				FatalError("Not supported c");
 
-			/*
-			 * For more information, have a look at
-			 * doc/antialiasing/implementation_strategy.pdf
-			 */
+			if ((spectral_complex_data_size[1] & 1) == 1)
+				FatalError("Not supported d");
 
-			spectral_complex_data_iteration_ranges[0][0][0] = 0;
-			spectral_complex_data_iteration_ranges[0][0][1] = spectral_complex_data_size[0]*2/3-1;
-			spectral_complex_data_iteration_ranges[0][1][0] = 0;
-			spectral_complex_data_iteration_ranges[0][1][1] = spectral_complex_data_size[1]/3;
+			spectral_complex_ranges[0][0][0] = spectral_data_iteration_ranges[0][0][0];
+			spectral_complex_ranges[0][0][1] = spectral_data_iteration_ranges[0][0][1];
+			spectral_complex_ranges[0][1][0] = spectral_data_iteration_ranges[0][1][0];
+			spectral_complex_ranges[0][1][1] = spectral_data_iteration_ranges[0][1][1];
 
-			spectral_complex_data_iteration_ranges[1][0][0] = 0;
-			spectral_complex_data_iteration_ranges[1][0][1] = spectral_complex_data_size[0]*2/3-1;
-			spectral_complex_data_iteration_ranges[1][1][0] = spectral_complex_data_size[1]-spectral_complex_data_size[1]/3;
-			spectral_complex_data_iteration_ranges[1][1][1] = spectral_complex_data_size[1];
+			spectral_complex_ranges[1][0][0] = spectral_complex_ranges[0][0][0];
+			spectral_complex_ranges[1][0][1] = spectral_complex_ranges[0][0][1];
+			spectral_complex_ranges[1][1][0] = spectral_data_size[1] - spectral_complex_ranges[0][1][1] + 1;
+			spectral_complex_ranges[1][1][1] = spectral_data_size[1];
 
-#warning "TODO: setup correct ranges"
-			spectral_complex_data_iteration_ranges[2][0][0] = spectral_complex_data_size[0] - (spectral_complex_data_size[0]*2/3-1);	// TODO: check this start index
-			spectral_complex_data_iteration_ranges[2][0][1] = spectral_complex_data_size[0];
-			spectral_complex_data_iteration_ranges[2][1][0] = 0;
-			spectral_complex_data_iteration_ranges[2][1][1] = spectral_complex_data_size[1]/3;
+			spectral_complex_ranges[2][0][0] = spectral_complex_data_size[0] - spectral_complex_ranges[0][0][1] + 1;
+			spectral_complex_ranges[2][0][1] = spectral_complex_data_size[0];
+			spectral_complex_ranges[2][1][0] = 0;
+			spectral_complex_ranges[2][1][1] = spectral_complex_ranges[0][1][1];
 
-			spectral_complex_data_iteration_ranges[3][0][0] = spectral_complex_data_size[0] - (spectral_complex_data_size[0]*2/3-1);	// TODO: check this start index
-			spectral_complex_data_iteration_ranges[3][0][1] = spectral_complex_data_size[0];
-			spectral_complex_data_iteration_ranges[3][1][0] = spectral_complex_data_size[1]-spectral_complex_data_size[1]/3;
-			spectral_complex_data_iteration_ranges[3][1][1] = spectral_complex_data_size[1];
-
-#else
-
-			spectral_complex_data_iteration_ranges[0][0][0] = 0;
-			spectral_complex_data_iteration_ranges[0][0][1] = spectral_complex_data_size[0]/2;
-			spectral_complex_data_iteration_ranges[0][1][0] = 0;
-			spectral_complex_data_iteration_ranges[0][1][1] = spectral_complex_data_size[1]/2;
-
-			spectral_complex_data_iteration_ranges[1][0][0] = 0;
-			spectral_complex_data_iteration_ranges[1][0][1] = spectral_complex_data_size[0]/2;
-			spectral_complex_data_iteration_ranges[1][1][0] = spectral_complex_data_size[1]/2;
-			spectral_complex_data_iteration_ranges[1][1][1] = spectral_complex_data_size[1];
-
-			spectral_complex_data_iteration_ranges[2][0][0] = spectral_complex_data_size[0]/2;
-			spectral_complex_data_iteration_ranges[2][0][1] = spectral_complex_data_size[0];
-			spectral_complex_data_iteration_ranges[2][1][0] = 0;
-			spectral_complex_data_iteration_ranges[2][1][1] = spectral_complex_data_size[1]/2;
-
-			spectral_complex_data_iteration_ranges[3][0][0] = spectral_complex_data_size[0]/2;
-			spectral_complex_data_iteration_ranges[3][0][1] = spectral_complex_data_size[0];
-			spectral_complex_data_iteration_ranges[3][1][0] = spectral_complex_data_size[1]/2;
-			spectral_complex_data_iteration_ranges[3][1][1] = spectral_complex_data_size[1];
-
-#endif
+			spectral_complex_ranges[3][0][0] = spectral_complex_data_size[0] - spectral_complex_ranges[0][0][1] + 1;
+			spectral_complex_ranges[3][0][1] = spectral_complex_data_size[0];
+			spectral_complex_ranges[3][1][0] = spectral_complex_data_size[1] - spectral_complex_ranges[0][1][1] + 1;
+			spectral_complex_ranges[3][1][1] = spectral_complex_data_size[1];
 
 			spectral_complex_array_data_number_of_elements = spectral_complex_data_size[0]*spectral_complex_data_size[1];
 
@@ -580,14 +551,6 @@ private:
 
 			MemBlockAlloc::free(data_physical, physical_array_data_number_of_elements*sizeof(std::complex<double>));
 			MemBlockAlloc::free(data_spectral, spectral_complex_array_data_number_of_elements*sizeof(std::complex<double>));
-		}
-#endif
-
-
-#if 0
-		if (((spectral_modes[0] & 1) != 0) || ((spectral_modes[1] & 1) != 0))
-		{
-//			FatalError("Only even number of spectral modes are supported!");
 		}
 #endif
 	}
@@ -825,7 +788,6 @@ public:
 		// TODO: check for correct anti-aliasing rule
 		physical_res[0] = (spectral_modes[0]*3+1)/2;
 		physical_res[1] = (spectral_modes[1]*3+1)/2;
-
 #else
 
 	#if SWEET_USE_LIBFFT

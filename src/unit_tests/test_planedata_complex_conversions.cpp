@@ -57,7 +57,7 @@ public:
 					std::cout << "Original converted" << std::endl;
 					tmp.print_spectralData_zeroNumZero();
 
-					FatalError("Inconsistency detected");
+					FatalError("Inconsistency detected a");
 				}
 			}
 		}
@@ -94,7 +94,7 @@ public:
 						std::cout << "Original converted" << std::endl;
 						tmp.print_spectralData_zeroNumZero();
 
-						FatalError("Inconsistency detected");
+						FatalError("Inconsistency detected b");
 					}
 				}
 
@@ -125,7 +125,7 @@ public:
 						std::cout << "Original converted" << std::endl;
 						tmp.print_spectralData_zeroNumZero();
 
-						FatalError("Inconsistency detected");
+						FatalError("Inconsistency detected c");
 					}
 				}
 
@@ -156,7 +156,7 @@ public:
 						std::cout << "Original converted" << std::endl;
 						tmp.print_spectralData_zeroNumZero();
 
-						FatalError("Inconsistency detected");
+						FatalError("Inconsistency detected d");
 					}
 				}
 			}
@@ -180,7 +180,7 @@ public:
 				testcplx = Convert_PlaneData_To_PlaneDataComplex::physical_convert(test);
 				testcplx.test_realphysical();
 
-				PlaneData tmp = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real(testcplx);
+				PlaneData tmp = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(testcplx);
 
 				double error = (test-tmp).reduce_maxAbs();
 
@@ -198,7 +198,7 @@ public:
 					std::cout << "Original converted" << std::endl;
 					tmp.print_spectralData_zeroNumZero();
 
-					FatalError("Inconsistency detected");
+					FatalError("Inconsistency detected e");
 				}
 			}
 		}
@@ -217,7 +217,7 @@ public:
 					testcplx = Convert_PlaneData_To_PlaneDataComplex::physical_convert(test);
 					testcplx.test_realphysical();
 
-					PlaneData tmp = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real(testcplx);
+					PlaneData tmp = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(testcplx);
 
 					double error = (test-tmp).reduce_maxAbs();
 
@@ -235,7 +235,7 @@ public:
 						std::cout << "Original converted" << std::endl;
 						tmp.print_spectralData_zeroNumZero();
 
-						FatalError("Inconsistency detected");
+						FatalError("Inconsistency detected f");
 					}
 				}
 
@@ -248,7 +248,7 @@ public:
 					testcplx = Convert_PlaneData_To_PlaneDataComplex::physical_convert(test);
 					testcplx.test_realphysical();
 
-					PlaneData tmp = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real(testcplx);
+					PlaneData tmp = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(testcplx);
 
 					double error = (test-tmp).reduce_maxAbs();
 
@@ -266,7 +266,7 @@ public:
 						std::cout << "Original converted" << std::endl;
 						tmp.print_spectralData_zeroNumZero();
 
-						FatalError("Inconsistency detected");
+						FatalError("Inconsistency detected g");
 					}
 				}
 
@@ -279,7 +279,7 @@ public:
 					testcplx = Convert_PlaneData_To_PlaneDataComplex::physical_convert(test);
 					testcplx.test_realphysical();
 
-					PlaneData tmp = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real(testcplx);
+					PlaneData tmp = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(testcplx);
 
 					double error = (test-tmp).reduce_maxAbs();
 
@@ -297,7 +297,7 @@ public:
 						std::cout << "Original converted" << std::endl;
 						tmp.print_spectralData_zeroNumZero();
 
-						FatalError("Inconsistency detected");
+						FatalError("Inconsistency detected h");
 					}
 				}
 			}
@@ -338,7 +338,7 @@ public:
 					std::cout << "Original converted" << std::endl;
 					tmp.print_spectralData_zeroNumZero();
 
-					FatalError("Inconsistency detected");
+					FatalError("Inconsistency detected i");
 				}
 			}
 		}
@@ -375,7 +375,7 @@ public:
 						std::cout << "Original converted" << std::endl;
 						tmp.print_spectralData_zeroNumZero();
 
-						FatalError("Inconsistency detected");
+						FatalError("Inconsistency detected j");
 					}
 				}
 
@@ -406,7 +406,7 @@ public:
 						std::cout << "Original converted" << std::endl;
 						tmp.print_spectralData_zeroNumZero();
 
-						FatalError("Inconsistency detected");
+						FatalError("Inconsistency detected k");
 					}
 				}
 
@@ -437,7 +437,7 @@ public:
 						std::cout << "Original converted" << std::endl;
 						tmp.print_spectralData_zeroNumZero();
 
-						FatalError("Inconsistency detected");
+						FatalError("Inconsistency detected l");
 					}
 				}
 			}

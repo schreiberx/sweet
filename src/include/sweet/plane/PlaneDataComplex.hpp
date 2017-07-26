@@ -48,9 +48,9 @@
 			for (int r = 0; r < 4; r++)								\
 			{														\
 				_Pragma("omp parallel for OPENMP_PAR_SIMD proc_bind(close) collapse(2)")		\
-				for (std::size_t jj = planeDataConfig->spectral_complex_data_iteration_ranges[r][1][0]; jj < planeDataConfig->spectral_complex_data_iteration_ranges[r][1][1]; jj++)		\
+				for (std::size_t jj = planeDataConfig->spectral_complex_ranges[r][1][0]; jj < planeDataConfig->spectral_complex_ranges[r][1][1]; jj++)		\
 				{				\
-					for (std::size_t ii = planeDataConfig->spectral_complex_data_iteration_ranges[r][0][0]; ii < planeDataConfig->spectral_complex_data_iteration_ranges[r][0][1]; ii++)	\
+					for (std::size_t ii = planeDataConfig->spectral_complex_ranges[r][0][0]; ii < planeDataConfig->spectral_complex_ranges[r][0][1]; ii++)	\
 					{			\
 						std::size_t idx = jj*planeDataConfig->spectral_complex_data_size[0]+ii;	\
 						CORE	\
@@ -58,19 +58,34 @@
 				}				\
 			}
 
+
+
+		#define PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX_ALL(CORE)				\
+			_Pragma("omp parallel for")			\
+			for (std::size_t idx = 0; idx < planeDataConfig->spectral_complex_array_data_number_of_elements; idx++)		\
+			{			\
+				CORE	\
+			}
 	#else
 
 		#define PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(CORE)					\
 			for (int r = 0; r < 4; r++)								\
 			{														\
-				for (std::size_t jj = planeDataConfig->spectral_complex_data_iteration_ranges[r][1][0]; jj < planeDataConfig->spectral_complex_data_iteration_ranges[r][1][1]; jj++)		\
+				for (std::size_t jj = planeDataConfig->spectral_complex_ranges[r][1][0]; jj < planeDataConfig->spectral_complex_ranges[r][1][1]; jj++)		\
 				{				\
-					for (std::size_t ii = planeDataConfig->spectral_complex_data_iteration_ranges[r][0][0]; ii < planeDataConfig->spectral_complex_data_iteration_ranges[r][0][1]; ii++)	\
+					for (std::size_t ii = planeDataConfig->spectral_complex_ranges[r][0][0]; ii < planeDataConfig->spectral_complex_ranges[r][0][1]; ii++)	\
 					{			\
 						std::size_t idx = jj*planeDataConfig->spectral_complex_data_size[0]+ii;	\
 						CORE	\
 					}			\
 				}				\
+			}
+
+
+		#define PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX_ALL(CORE)				\
+			for (std::size_t idx = 0; idx < planeDataConfig->spectral_complex_array_data_number_of_elements; idx++)		\
+			{			\
+				CORE	\
 			}
 
 	#endif
@@ -244,7 +259,7 @@ public:
 
 		if (spectral_space_data_valid)
 		{
-			PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
+			PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX_ALL(
 					spectral_space_data[idx] = i_dataArray.spectral_space_data[idx];
 			);
 		}
@@ -431,30 +446,29 @@ public:
 
 	void spectral_zeroAliasingModes()	const
 	{
-//		FatalError("TODO");
-#if 0
+//		spectral_space_data[0].imag(0);
+
+#if SWEET_USE_PLANE_SPECTRAL_DEALIASING || 1	/// ALWAYS run this to eliminate Nyquist Frequency even without dealiasing activated
+		assert(spectral_space_data_valid);
 
 #if SWEET_THREADING
-//#pragma omp parallel for proc_bind(spread)
+#pragma omp parallel for proc_bind(spread)
 #endif
-		for (int k = 0; k < 4; k++)
+		for (int k = 0; k < 2; k++)
 		{
-			// TODO, k=0..3
-			// TODO, k=0..3
-			// TODO, k=0..3
-
 			if (k == 0)
 			{
 				/*
 				 * First process part between top and bottom spectral data blocks
 				 */
 #if SWEET_THREADING
-//#pragma omp parallel for OPENMP_PAR_SIMD proc_bind(close) collapse(2)
+#pragma omp parallel for OPENMP_PAR_SIMD proc_bind(close) collapse(2)
 #endif
-				for (std::size_t jj = planeDataConfig->spectral_complex_data_iteration_ranges[0][1][1]; jj < planeDataConfig->spectral_complex_data_iteration_ranges[1][1][0]; jj++)
-					for (std::size_t ii = planeDataConfig->spectral_complex_data_iteration_ranges[0][0][0]; ii < planeDataConfig->spectral_complex_data_iteration_ranges[0][0][1]; ii++)
+				for (std::size_t jj = planeDataConfig->spectral_complex_ranges[0][1][1]; jj < planeDataConfig->spectral_complex_ranges[1][1][0]; jj++)
+					for (std::size_t ii = 0; ii < planeDataConfig->spectral_complex_data_size[0]; ii++)
+					{
 						spectral_space_data[jj*planeDataConfig->spectral_complex_data_size[0]+ii] = 0;
-
+					}
 			}
 			else
 			{
@@ -462,19 +476,40 @@ public:
 				 * Then process the aliasing block on the right side
 				 */
 #if SWEET_THREADING
-//#pragma omp parallel for OPENMP_PAR_SIMD proc_bind(close) collapse(2)
+#pragma omp parallel for OPENMP_PAR_SIMD proc_bind(close) collapse(2)
 #endif
 				for (std::size_t jj = 0; jj < planeDataConfig->spectral_complex_data_size[1]; jj++)
-					for (std::size_t ii = planeDataConfig->spectral_complex_data_iteration_ranges[0][0][1]; ii < planeDataConfig->spectral_complex_data_size[0]; ii++)
+					for (std::size_t ii = planeDataConfig->spectral_complex_ranges[0][0][1]; ii < planeDataConfig->spectral_complex_ranges[2][0][0]; ii++)
+					{
 						spectral_space_data[jj*planeDataConfig->spectral_complex_data_size[0]+ii] = 0;
+					}
 			}
 		}
+#else
 
 #endif
 	}
 
 
 
+	inline
+	std::complex<double>& p_spectral_get_nonconstref(
+			std::size_t j,
+			std::size_t i
+	)	const
+	{
+		request_data_spectral();
+
+#if SWEET_DEBUG
+		if (i >= planeDataConfig->spectral_complex_data_size[0])
+			FatalError("Out of boundary, PlaneDataComplex, p_spectral_get, i");
+
+		if (j >= planeDataConfig->spectral_complex_data_size[1])
+			FatalError("Out of boundary, PlaneDataComplex, p_spectral_get, j");
+#endif
+
+		return spectral_space_data[j*planeDataConfig->spectral_complex_data_size[0]+i];
+	}
 	inline
 	const std::complex<double>& p_spectral_get(
 			std::size_t j,
@@ -583,6 +618,7 @@ public:
 				spectral_space_data[idx].real(i_value_re);
 				spectral_space_data[idx].imag(i_value_im);
 		);
+		spectral_zeroAliasingModes();
 
 		physical_space_data_valid = false;
 		spectral_space_data_valid = true;
@@ -592,7 +628,7 @@ public:
 	inline
 	void spectral_set_zero()
 	{
-		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
+		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX_ALL(
 				spectral_space_data[idx]  = 0;
 		);
 
@@ -1016,13 +1052,16 @@ public:
 		request_data_spectral();
 		rw_array_data.request_data_spectral();
 
-		for (std::size_t idx = 0; idx < planeDataConfig->spectral_complex_array_data_number_of_elements; idx++)
+		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 		{
-			if (i_array_data.spectral_space_data[idx].real() == 0 && i_array_data.spectral_space_data[idx].imag() == 0)
+			if (i_array_data.spectral_space_data[idx] == std::complex<double>(0))
 				out.spectral_space_data[idx] = 0;
 			else
 				out.spectral_space_data[idx] = spectral_space_data[idx] / i_array_data.spectral_space_data[idx];
 		}
+		);
+
+		out.spectral_zeroAliasingModes();
 
 		out.spectral_space_data_valid = true;
 		out.physical_space_data_valid = false;
@@ -1053,6 +1092,7 @@ public:
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 					out.spectral_space_data[idx] = spectral_space_data[idx] * i_array_data.spectral_space_data[idx];
 		);
+		out.spectral_zeroAliasingModes();
 
 		out.spectral_space_data_valid = true;
 		out.physical_space_data_valid = false;
@@ -1122,9 +1162,10 @@ public:
 		{
 			spectral_space_data_valid = true;
 
-			PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
+			PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX_ALL(
 					spectral_space_data[idx] = i_dataArray.spectral_space_data[idx];
 				);
+
 		}
 		else
 		{
@@ -1155,6 +1196,7 @@ public:
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = spectral_space_data[idx]*i_array_data.spectral_space_data[idx];
 		);
+		out.spectral_zeroAliasingModes();
 
 		out.spectral_space_data_valid = true;
 		out.physical_space_data_valid = false;
@@ -1198,6 +1240,7 @@ public:
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = spectral_space_data[idx] + i_array_data.spectral_space_data[idx];
 			);
+		out.spectral_zeroAliasingModes();
 
 		out.spectral_space_data_valid = true;
 		out.physical_space_data_valid = false;
@@ -1571,6 +1614,7 @@ public:
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 			out.spectral_space_data[idx] = spectral_space_data[idx] - i_array_data.spectral_space_data[idx];
 		);
+		out.spectral_zeroAliasingModes();
 
 		out.physical_space_data_valid = false;
 		out.spectral_space_data_valid = true;
@@ -1676,6 +1720,7 @@ public:
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = -spectral_space_data[idx];
 			);
+		out.spectral_zeroAliasingModes();
 
 		double scale = planeDataConfig->physical_data_size[0]*planeDataConfig->physical_data_size[1];
 		out.spectral_space_data[0] += i_value*scale;
@@ -1715,6 +1760,7 @@ public:
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = -spectral_space_data[idx];
 			);
+		out.spectral_zeroAliasingModes();
 
 		double scale = planeDataConfig->physical_data_size[0]*planeDataConfig->physical_data_size[1];
 		out.spectral_space_data[0] += i_value*scale;
@@ -1752,6 +1798,7 @@ public:
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = -spectral_space_data[idx];
 			);
+		out.spectral_zeroAliasingModes();
 
 		out.physical_space_data_valid = false;
 		out.spectral_space_data_valid = true;
@@ -1783,10 +1830,9 @@ public:
 
 #if SWEET_USE_PLANE_COMPLEX_SPECTRAL_SPACE
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
-		FatalError("Antialiasing not implemented for plane data complex, only works for linear terms! See PlaneDataConfig");
-
 		if (spectral_space_data_valid)
 			spectral_zeroAliasingModes();
+
 		if (i_array_data.spectral_space_data_valid)
 			i_array_data.spectral_zeroAliasingModes();
 #endif
@@ -1829,6 +1875,7 @@ public:
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 		if (spectral_space_data_valid)
 			spectral_zeroAliasingModes();
+
 		if (i_array_data.spectral_space_data_valid)
 			i_array_data.spectral_zeroAliasingModes();
 #endif
@@ -1875,6 +1922,7 @@ public:
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = spectral_space_data[idx]*i_value;
 		);
+		out.spectral_zeroAliasingModes();
 
 		out.spectral_space_data_valid = true;
 		out.physical_space_data_valid = false;
@@ -1907,6 +1955,7 @@ public:
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = spectral_space_data[idx]*i_value;
 		);
+		out.spectral_zeroAliasingModes();
 
 		out.spectral_space_data_valid = true;
 		out.physical_space_data_valid = false;
@@ -1939,6 +1988,7 @@ public:
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = spectral_space_data[idx] / i_value;
 		);
+		out.spectral_zeroAliasingModes();
 
 		out.spectral_space_data_valid = true;
 		out.physical_space_data_valid = false;
@@ -1973,6 +2023,7 @@ public:
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = spectral_space_data[idx] / i_value;
 		);
+		out.spectral_zeroAliasingModes();
 
 		out.spectral_space_data_valid = true;
 		out.physical_space_data_valid = false;
@@ -2009,6 +2060,7 @@ public:
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = spectral_space_data[idx] + i_value;
 		);
+		out.spectral_zeroAliasingModes();
 
 		out.physical_space_data_valid = false;
 		out.spectral_space_data_valid = true;
@@ -2031,6 +2083,7 @@ public:
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = spectral_space_data[idx] + i_value;
 		);
+		out.spectral_zeroAliasingModes();
 
 		out.physical_space_data_valid = false;
 		out.spectral_space_data_valid = true;
@@ -2053,6 +2106,7 @@ public:
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = spectral_space_data[idx] - i_value;
 		);
+		out.spectral_zeroAliasingModes();
 
 		out.physical_space_data_valid = false;
 		out.spectral_space_data_valid = true;
@@ -2074,6 +2128,7 @@ public:
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = 1.0/spectral_space_data[idx];
 		);
+		out.spectral_zeroAliasingModes();
 
 		out.physical_space_data_valid = false;
 		out.spectral_space_data_valid = true;

@@ -50,11 +50,6 @@ void SWE_Plane_TS_l_irk::run_timestep(
 	PlaneDataComplex eta(io_h.planeDataConfig);
 
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
-#warning "WARNING: Not doing this in spectral space leads to a loss of the highest mode"
-	/*
-	 * WARNING: This leads to a loss of precision due to the highest mode which cannot be
-	 * tracked due to the Nyquist theorem
-	 */
 	PlaneDataComplex eta0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_h);
 	PlaneDataComplex u0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_u);
 	PlaneDataComplex v0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_v);
@@ -91,18 +86,13 @@ void SWE_Plane_TS_l_irk::run_timestep(
 	PlaneDataComplex v1 =    -simVars.sim.f0/kappa * uh + alpha/kappa * vh;
 
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
-#warning "WARNING: Not doing this in spectral space leads to a loss of the highest mode"
-	/*
-	 * WARNING: This leads to a loss of precision due to the highest mode which cannot be
-	 * tracked due to the Nyquist theorem
-	 */
 	io_h = Convert_PlaneDataComplex_To_PlaneData::physical_convert(eta);
 	io_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(u1);
 	io_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(v1);
 #else
-	io_h = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real(eta);
-	io_u = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real(u1);
-	io_v = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real(v1);
+	io_h = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(eta);
+	io_u = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(u1);
+	io_v = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(v1);
 #endif
 
 	o_dt = i_fixed_dt;

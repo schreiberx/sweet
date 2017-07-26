@@ -403,6 +403,10 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 		}
 	}
 
+	io_h_pert.spectral_zeroAliasingModes();
+	io_u.spectral_zeroAliasingModes();
+	io_v.spectral_zeroAliasingModes();
+
 	o_dt = i_fixed_dt;
 }
 
@@ -748,6 +752,9 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 	o_v.test_realphysical();
 #endif
 
+	o_h_pert.spectral_zeroAliasingModes();
+	o_u.spectral_zeroAliasingModes();
+	o_v.spectral_zeroAliasingModes();
 
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
 #warning "WARNING: Not doing this in spectral space leads to a loss of the highest mode"
@@ -759,9 +766,9 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 	io_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_u);
 	io_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_v);
 #else
-	io_h_pert = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real(o_h_pert);
-	io_u = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real(o_u);
-	io_v = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real(o_v);
+	io_h_pert = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(o_h_pert);
+	io_u = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(o_u);
+	io_v = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(o_v);
 #endif
 	o_dt = i_fixed_dt;
 }

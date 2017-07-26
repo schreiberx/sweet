@@ -16,20 +16,20 @@ echo "***********************************************"
 echo "TEST ADVECTION: convergence in space (release) $X"
 echo "***********************************************"
 make clean
-scons --threading=omp --unit-test=test_advection --gui=disable --plane-spectral-space=disable --libfft=disable --mode=release --plane-spectral-dealiasing=disable
-EXEC="./build/test_advection_*_release -X 1000000 -Y 1000000 --velocity-u 20000 --velocity-v 0 --advection-scheme 2 --staggered-use-analytical-solution 1 -C 0.1 -H 0 --timestepping-method=ln_erk --timestepping-order 1 -N 32 --test-mode 0 -G 0 -t 10 -S 0"
+scons --threading=omp --unit-test=test_plane_advection --gui=disable --plane-spectral-space=disable --libfft=disable --mode=release --plane-spectral-dealiasing=disable
+EXEC="./build/test_plane_advection_*_release -X 1000000 -Y 1000000 --velocity-u 20000 --velocity-v 0 --advection-scheme 2 --staggered-use-analytical-solution 1 -C 0.1 -H 0 --timestepping-method=ln_erk --timestepping-order 1 -N 32 --test-mode 0 -G 0 -t 10 -S 0"
 echo "$EXEC"
 $EXEC || exit
 
-EXEC="./build/test_advection_*_release -X 1000000 -Y 1000000 --velocity-u 20000 --velocity-v 0 --advection-scheme 2 --staggered-use-analytical-solution 1 -C 0.1 -H 0  --timestepping-method=ln_erk --timestepping-order 2 -N 32 --test-mode 0 -G 0 -t 10 -S 0"
+EXEC="./build/test_plane_advection_*_release -X 1000000 -Y 1000000 --velocity-u 20000 --velocity-v 0 --advection-scheme 2 --staggered-use-analytical-solution 1 -C 0.1 -H 0  --timestepping-method=ln_erk --timestepping-order 2 -N 32 --test-mode 0 -G 0 -t 10 -S 0"
 echo "$EXEC"
 $EXEC || exit
 
-EXEC="./build/test_advection_*_release -X 1000000 -Y 1000000 --velocity-u 20000 --velocity-v 0 --advection-scheme 2 --staggered-use-analytical-solution 1 -C 0.1 -H 0 --timestepping-method=ln_erk --timestepping-order 3 -N 32 --test-mode 0 -G 0 -t 10 -S 0"
+EXEC="./build/test_plane_advection_*_release -X 1000000 -Y 1000000 --velocity-u 20000 --velocity-v 0 --advection-scheme 2 --staggered-use-analytical-solution 1 -C 0.1 -H 0 --timestepping-method=ln_erk --timestepping-order 3 -N 32 --test-mode 0 -G 0 -t 10 -S 0"
 echo "$EXEC"
 $EXEC || exit
 
-EXEC="./build/test_advection_*_release -X 1000000 -Y 1000000 --velocity-u 20000 --velocity-v 0 --advection-scheme 2 --staggered-use-analytical-solution 1 -C 0.1 -H 0 --timestepping-method=ln_erk --timestepping-order 4 -N 32 --test-mode 0 -G 0 -t 10 -S 0"
+EXEC="./build/test_plane_advection_*_release -X 1000000 -Y 1000000 --velocity-u 20000 --velocity-v 0 --advection-scheme 2 --staggered-use-analytical-solution 1 -C 0.1 -H 0 --timestepping-method=ln_erk --timestepping-order 4 -N 32 --test-mode 0 -G 0 -t 10 -S 0"
 echo "$EXEC"
 $EXEC || exit
 
@@ -40,21 +40,21 @@ echo "***********************************************"
 echo "TEST ADVECTION: convergence in time (release) $X"
 echo "***********************************************"
 make clean
-scons --threading=omp --unit-test=test_advection --gui=disable --plane-spectral-space=disable --libfft=disable --mode=release --plane-spectral-dealiasing=disable
+scons --threading=omp --unit-test=test_plane_advection --gui=disable --plane-spectral-space=disable --libfft=disable --mode=release --plane-spectral-dealiasing=disable
 
-EXEC="./build/test_advection_*_release -X 1000000 -Y 1000000 --velocity-u 20000 --velocity-v 0 --advection-scheme 2 --staggered-use-analytical-solution 1 -C 0.1 -H 0 --timestepping-method=ln_erk --timestepping-order 1 -N 32 --test-mode 1 -G 0 -t 10 -S 0"
+EXEC="./build/test_plane_advection_*_release -X 1000000 -Y 1000000 --velocity-u 20000 --velocity-v 0 --advection-scheme 2 --staggered-use-analytical-solution 1 -C 0.1 -H 0 --timestepping-method=ln_erk --timestepping-order 1 -N 32 --test-mode 1 -G 0 -t 10 -S 0"
 echo "$EXEC"
 $EXEC || exit
 
-EXEC="./build/test_advection_*_release -X 1000000 -Y 1000000 --velocity-u 20000 --velocity-v 0 --advection-scheme 2 --staggered-use-analytical-solution 1 -C 0.1 -H 0 --timestepping-method=ln_erk --timestepping-order 2 -N 32 --test-mode 1 -G 0 -t 10 -S 0"
+EXEC="./build/test_plane_advection_*_release -X 1000000 -Y 1000000 --velocity-u 20000 --velocity-v 0 --advection-scheme 2 --staggered-use-analytical-solution 1 -C 0.1 -H 0 --timestepping-method=ln_erk --timestepping-order 2 -N 32 --test-mode 1 -G 0 -t 10 -S 0"
 echo "$EXEC"
 $EXEC || exit
 
-EXEC="./build/test_advection_*_release -X 1000000 -Y 1000000 --velocity-u 20000 --velocity-v 0 --advection-scheme 2 --staggered-use-analytical-solution 1 -C 0.1 -H 0 --timestepping-method=ln_erk --timestepping-order 3 -N 32 --test-mode 1 -G 0 -t 10 -S 0"
+EXEC="./build/test_plane_advection_*_release -X 1000000 -Y 1000000 --velocity-u 20000 --velocity-v 0 --advection-scheme 2 --staggered-use-analytical-solution 1 -C 0.1 -H 0 --timestepping-method=ln_erk --timestepping-order 3 -N 32 --test-mode 1 -G 0 -t 10 -S 0"
 echo "$EXEC"
 $EXEC || exit
 
-EXEC="./build/test_advection_*_release -X 1000000 -Y 1000000 --velocity-u 20000 --velocity-v 0 --advection-scheme 2 --staggered-use-analytical-solution 1 -C 0.1 -H 0 --timestepping-method=ln_erk --timestepping-order 4 -N 32 --test-mode 1 -G 0 -t 10 -S 0"
+EXEC="./build/test_plane_advection_*_release -X 1000000 -Y 1000000 --velocity-u 20000 --velocity-v 0 --advection-scheme 2 --staggered-use-analytical-solution 1 -C 0.1 -H 0 --timestepping-method=ln_erk --timestepping-order 4 -N 32 --test-mode 1 -G 0 -t 10 -S 0"
 echo "$EXEC"
 $EXEC || exit
 

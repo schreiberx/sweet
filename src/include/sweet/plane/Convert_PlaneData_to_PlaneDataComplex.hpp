@@ -69,11 +69,7 @@ public:
 				}
 
 				for (	std::size_t i = out.planeDataConfig->spectral_data_iteration_ranges[r][0][0]+1;
-#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 						i < out.planeDataConfig->spectral_data_iteration_ranges[r][0][1];
-#else
-						i < out.planeDataConfig->spectral_data_iteration_ranges[r][0][1]-1;
-#endif
 						i++
 				) {
 					const std::complex<double> &data = i_planeData.p_spectral_get(j, i);
@@ -91,28 +87,6 @@ public:
 		out.physical_space_data_valid = false;
 		out.spectral_space_data_valid = true;
 
-#if 0
-		if (i_planeData.reduce_maxAbs() > 1e-8)
-		{
-			std::cout << std::endl;
-			PlaneDataComplex asdf = physical_convert(i_planeData);
-
-			double error = (asdf-out).reduce_maxabs_real();
-
-			if (error > 1e-8)
-			{
-				std::cout << "original" << std::endl;
-				i_planeData.print_spectralData_zeroNumZero();
-				std::cout << "physical converted" << std::endl;
-				asdf.print_spectralData();
-				std::cout << "spectral converted" << std::endl;
-				out.print_spectralData();
-
-				std::cout << "ERROR: " << error << std::endl;
-			}
-		}
-		//exit(1);
-#endif
 		return out;
 	}
 #endif

@@ -160,6 +160,24 @@ int main(int i_argc, char *i_argv[])
 
 			PlaneOperators op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
+
+#if 0
+			std::cout << std::endl;
+			std::cout << "op.diff_c_x" << std::endl;
+			op.diff_c_x.print_spectralData_zeroNumZero();
+			std::cout << std::endl;
+			std::cout << "op.diff_c_y" << std::endl;
+			op.diff_c_y.print_spectralData_zeroNumZero();
+
+			std::cout << std::endl;
+			std::cout << "op.diff2_c_x" << std::endl;
+			op.diff2_c_x.print_spectralData_zeroNumZero();
+			std::cout << std::endl;
+			std::cout << "op.diff2_c_y" << std::endl;
+			op.diff2_c_y.print_spectralData_zeroNumZero();
+			exit(1);
+#endif
+
 			for (int j = 0; j < simVars.disc.res_physical[1]; j++)
 			{
 				for (int i = 0; i < simVars.disc.res_physical[0]; i++)

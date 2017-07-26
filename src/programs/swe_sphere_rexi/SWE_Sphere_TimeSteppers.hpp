@@ -130,7 +130,7 @@ public:
 		else if (i_timestepping_method == "l_irk")
 		{
 			l_irk = new SWE_Sphere_TS_l_irk(i_simVars, i_op);
-			l_irk->setup(i_simVars.disc.timestepping_order, -i_simVars.sim.CFL, i_simVars.rexi.use_extended_modes);
+			l_irk->setup(i_simVars.disc.timestepping_order, -i_simVars.sim.CFL, i_simVars.rexi.use_sphere_extended_modes);
 
 			master = &(SWE_Sphere_TS_interface&)*l_irk;
 		}
@@ -151,7 +151,7 @@ public:
 		else if (i_timestepping_method == "l_cn")
 		{
 			l_cn = new SWE_Sphere_TS_l_cn(i_simVars, i_op);
-			l_cn->setup(i_simVars.disc.crank_nicolson_filter, -i_simVars.sim.CFL, i_simVars.rexi.use_extended_modes);
+			l_cn->setup(i_simVars.disc.crank_nicolson_filter, -i_simVars.sim.CFL, i_simVars.rexi.use_sphere_extended_modes);
 
 			master = &(SWE_Sphere_TS_interface&)*l_cn;
 		}
@@ -172,7 +172,7 @@ public:
 
 					-i_simVars.sim.CFL,
 					i_simVars.rexi.use_half_poles,
-					i_simVars.rexi.use_extended_modes,
+					i_simVars.rexi.use_sphere_extended_modes,
 					i_simVars.rexi.normalization,
 					i_simVars.sim.f_sphere,
 					i_simVars.rexi.sphere_solver_preallocation

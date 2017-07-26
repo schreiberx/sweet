@@ -68,7 +68,7 @@ void run_tests()
 	double two_omega = 2.0*simVars.sim.coriolis_omega;
 
 
-	if (simVars.rexi.use_extended_modes == 0)
+	if (simVars.rexi.use_sphere_extended_modes == 0)
 	{
 		sphereDataConfigExt = sphereDataConfig;
 	}
@@ -77,8 +77,8 @@ void run_tests()
 		// Add modes only along latitude since these are the "problematic" modes
 		sphereDataConfigRexiAddedModes.setupAdditionalModes(
 				sphereDataConfig,
-				simVars.rexi.use_extended_modes,	// TODO: Extend SPH wrapper to also support m != n to set this guy to 0
-				simVars.rexi.use_extended_modes
+				simVars.rexi.use_sphere_extended_modes,	// TODO: Extend SPH wrapper to also support m != n to set this guy to 0
+				simVars.rexi.use_sphere_extended_modes
 		);
 		sphereDataConfigExt = &sphereDataConfigRexiAddedModes;
 	}

@@ -75,6 +75,7 @@ public:
 	}
 
 
+
 public:
 	REXI(
 			int i_phi_id,	///< ID of Phi function to be approximated
@@ -190,7 +191,6 @@ public:
 
 		if (i_reduce_to_half)
 		{
-#if 1
 			/*
 			 * This is slightly more accurate
 			 */
@@ -204,24 +204,6 @@ public:
 			beta_re_eval.resize(N+1);
 //			beta_im_eval.resize(N+1);
 
-#elif 0
-
-#else
-			/**
-			 * reduce the computational amount to its half,
-			 * see understanding REXI in the documentation folder
-			 */
-			alpha_eval.resize(N+1);
-			beta_re_eval.resize(N+1);
-//			beta_im_eval.resize(N+1);
-
-			// N+1 contains the pole and we don't rescale this one by 2 but all the other ones
-			for (int i = 0; i < N; i++)
-			{
-				beta_re_eval[i] *= 2.0;
-//				beta_im_eval[i] *= 2.0;
-			}
-#endif
 		}
 
 		if (i_normalization)
@@ -238,7 +220,6 @@ public:
 						complexProcessingAndStorage b(beta_re_eval[n].real(), beta_re_eval[n].imag());
 						complexProcessingAndStorage a(alpha_eval[n].real(), alpha_eval[n].imag());
 						complexProcessingAndStorage val = b/a;
-						std::cout << n << ": " << val << std::endl;
 						sum += val;
 					}
 
@@ -282,6 +263,21 @@ public:
 		}
 
 		//std::cout << "REXI - number of terms: " << alpha.size() << std::endl;
+	}
+
+
+	void output()
+	{
+		int N = alpha.size();
+		std::cout << "N: " << N << std::endl;
+
+//		std::cout << "Alpha:" << std::endl;
+		for (int i = 0; i < N; i++)
+			std::cout << "alpha[" << i << "] = " << alpha[i] << std::endl;
+
+//		std::cout << "Beta:" << std::endl;
+		for (int i = 0; i < N; i++)
+			std::cout << "beta_re[" << i << "] = " << beta_re[i] << std::endl;
 	}
 
 

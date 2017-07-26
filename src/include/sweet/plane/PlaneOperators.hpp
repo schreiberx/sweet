@@ -335,56 +335,47 @@ public:
 			 * PXT: removed this setting to zero (changed < to <=), because of 2nd and higher order differentiation
 			 * MaS: changed <= to < for the x-axis because of invalid memory access...
 			 */
-			diff_c_x.spectral_set_all(0, 0);
+			diff_c_x.spectral_set_zero();
 
-			for (int j = 0; j <= (int)planeDataConfig->spectral_data_size[1]/2; j++)
+			for (int j = planeDataConfig->spectral_data_iteration_ranges[0][1][0]; j < (int)planeDataConfig->spectral_data_iteration_ranges[0][1][1]; j++)
 			{
-				for (int i = 0; i < (int)planeDataConfig->spectral_data_size[0]; i++)
+				for (int i = planeDataConfig->spectral_data_iteration_ranges[0][0][0]; i < (int)planeDataConfig->spectral_data_iteration_ranges[0][0][1]; i++)
 				{
-					std::size_t idxa = ((j)*planeDataConfig->spectral_data_size[0])+(i);
-					diff_c_x.spectral_space_data[idxa] = {0.0, (double)(((double)i)*2.0*M_PIl/(double)i_domain_size[0])};
-
-					std::size_t idxb = ((diff_c_x.planeDataConfig->spectral_data_size[1]-1-j)*planeDataConfig->spectral_data_size[0])+(i);
-					diff_c_x.spectral_space_data[idxb] = {0.0, (double)((double)i*2.0*M_PIl/(double)i_domain_size[0])};
-
-#if 0
-					if (i == (int)planeDataConfig->spectral_data_size[0]-1)
-					{
-						diff_c_x.spectral_space_data[idxa] *= 2.0;
-						diff_c_x.spectral_space_data[idxb] *= 2.0;
-					}
-#endif
+					std::complex<double> data(0.0, ((double)i*2.0*M_PIl/(double)i_domain_size[0]));
+					diff_c_x.p_spectral_set(j, i, data);
 				}
 			}
 
+			for (int j = planeDataConfig->spectral_data_iteration_ranges[1][1][0]; j < (int)planeDataConfig->spectral_data_iteration_ranges[1][1][1]; j++)
+			{
+				for (int i = planeDataConfig->spectral_data_iteration_ranges[1][0][0]; i < (int)planeDataConfig->spectral_data_iteration_ranges[1][0][1]; i++)
+				{
+					std::complex<double> data(0.0, ((double)i*2.0*M_PIl/(double)i_domain_size[0]));
+					diff_c_x.p_spectral_set(j, i, data);
+				}
+			}
 
 			/*
 			 * DIFF operator in y axis
 			 */
-			diff_c_y.spectral_set_all(0, 0);
-			// TODO: shift j for loop by +1
-			for (int j = 0; j <= (int)diff_c_y.planeDataConfig->spectral_data_size[1]/2-1; j++)
+			diff_c_y.spectral_set_zero();
+
+			for (int j = planeDataConfig->spectral_data_iteration_ranges[0][1][0]; j < (int)planeDataConfig->spectral_data_iteration_ranges[0][1][1]; j++)
 			{
-				for (int i = 0; i < (int)diff_c_y.planeDataConfig->spectral_data_size[0]; i++)
+				for (int i = planeDataConfig->spectral_data_iteration_ranges[0][0][0]; i < (int)planeDataConfig->spectral_data_iteration_ranges[0][0][1]; i++)
 				{
-					std::size_t idxa = ((j+1)*planeDataConfig->spectral_data_size[0])+(i);
-					diff_c_y.spectral_space_data[idxa] = {0, (double)((double)(j+1)*2.0*M_PIl/(double)i_domain_size[1])};
+					std::complex<double> data(0, (double)((double)j*2.0*M_PIl/(double)i_domain_size[1]));
+					diff_c_y.p_spectral_set(j, i, data);
+				}
+			}
 
-					std::size_t idxb = ((diff_c_y.planeDataConfig->spectral_data_size[1]-(j+1))*planeDataConfig->spectral_data_size[0])+(i);
-					diff_c_y.spectral_space_data[idxb] = {0, (double)(-(double)(j+1)*2.0*M_PIl/(double)i_domain_size[1])};
 
-#if 0
-					diff_c_y.spectral_set(
-							j+1, i,
-							0,
-							(double)(j+1)*2.0*M_PIl/(double)i_domain_size[1]
-						);
-					diff_c_y.spectral_set(
-							diff_c_y.planeDataConfig->spectral_data_size[1]-(j+1), i,
-							0,
-							-(double)(j+1)*2.0*M_PIl/(double)i_domain_size[1]
-						);
-#endif
+			for (int j = planeDataConfig->spectral_data_iteration_ranges[1][1][0]; j < (int)planeDataConfig->spectral_data_iteration_ranges[1][1][1]; j++)
+			{
+				for (int i = planeDataConfig->spectral_data_iteration_ranges[1][0][0]; i < (int)planeDataConfig->spectral_data_iteration_ranges[1][0][1]; i++)
+				{
+					std::complex<double> data(0, -(double)((double)(planeDataConfig->spectral_data_size[1]-j)*2.0*M_PIl/(double)i_domain_size[1]));
+					diff_c_y.p_spectral_set(j, i, data);
 				}
 			}
 
@@ -423,75 +414,39 @@ public:
 			diff_b_y.kernel_stencil_setup(d_b_y_kernel, 1.0/h[1]);
 
 
-
-#if 1
 			/*
 			 * 2nd order differential operators
 			 */
-			diff2_c_x.spectral_set_all(0, 0);
-
-			for (int j = 0; j <= (int)diff_c_x.planeDataConfig->spectral_data_size[1]/2; j++)
+			diff2_c_x.spectral_set_zero();
+			for (int r = 0; r < 2; r++)
 			{
-				for (int i = 0; i < (int)diff_c_x.planeDataConfig->spectral_data_size[0]; i++)
+				for (int j = planeDataConfig->spectral_data_iteration_ranges[r][1][0]; j < (int)planeDataConfig->spectral_data_iteration_ranges[r][1][1]; j++)
 				{
-					double fac = (double)i*2.0*M_PIl/(double)i_domain_size[0];
-
-					std::size_t idxa = ((j)*planeDataConfig->spectral_data_size[0])+(i);
-					diff2_c_x.spectral_space_data[idxa] = {-fac*fac, 0.0};
-
-					std::size_t idxb = ((diff_c_x.planeDataConfig->spectral_data_size[1]-1-j)*planeDataConfig->spectral_data_size[0])+(i);
-					diff2_c_x.spectral_space_data[idxb] = {-fac*fac, 0.0};
-
-#if 0
-					diff2_c_x.spectral_set(
-							j, i,
-							-fac*fac,
-							0
-						);
-					diff2_c_x.spectral_set(
-							diff_c_x.planeDataConfig->spectral_data_size[1]-1-j, i,
-							-fac*fac,
-							0
-						);
-#endif
+					for (int i = planeDataConfig->spectral_data_iteration_ranges[r][0][0]; i < (int)planeDataConfig->spectral_data_iteration_ranges[r][0][1]; i++)
+					{
+						std::complex<double> data = diff_c_x.p_spectral_get(j, i);
+						diff2_c_x.p_spectral_set(j, i, data*data);
+					}
 				}
 			}
 
-
-			diff2_c_y.spectral_set_all(0, 0);
-
-			for (int j = 0; j <= (int)diff_c_y.planeDataConfig->spectral_data_size[1]/2-1; j++)
+			diff2_c_y.spectral_set_zero();
+			for (int r = 0; r < 2; r++)
 			{
-				for (int i = 0; i < (int)diff_c_y.planeDataConfig->spectral_data_size[0]; i++)
+				for (int j = planeDataConfig->spectral_data_iteration_ranges[r][1][0]; j < (int)planeDataConfig->spectral_data_iteration_ranges[r][1][1]; j++)
 				{
-					double fac = (double)(j+1)*2.0*M_PIl/(double)i_domain_size[1];
-
-					std::size_t idxa = ((j+1)*planeDataConfig->spectral_data_size[0])+(i);
-					diff2_c_y.spectral_space_data[idxa] = {-fac*fac, 0.0};
-
-					std::size_t idxb = ((diff_c_y.planeDataConfig->spectral_data_size[1]-(j+1))*planeDataConfig->spectral_data_size[0])+(i);
-					diff2_c_y.spectral_space_data[idxb] = {-fac*fac, 0.0};
-
-#if 0
-					diff2_c_y.spectral_set(
-							j+1, i,
-							-fac*fac,
-							0
-						);
-
-					diff2_c_y.spectral_set(
-							diff_c_y.planeDataConfig->spectral_data_size[1]-(j+1), i,
-							-fac*fac,
-							0
-						);
-#endif
+					for (int i = planeDataConfig->spectral_data_iteration_ranges[r][0][0]; i < (int)planeDataConfig->spectral_data_iteration_ranges[r][0][1]; i++)
+					{
+						std::complex<double> data = diff_c_y.p_spectral_get(j, i);
+						diff2_c_y.p_spectral_set(j, i, data*data);
+					}
 				}
 			}
-#else
-			diff2_c_x = diff_c_x(diff_c_x);
-			diff2_c_y = diff_c_y(diff_c_y);
-#endif
 
+			diff_c_x.spectral_debugCheckForZeroAliasingModes();
+			diff_c_y.spectral_debugCheckForZeroAliasingModes();
+			diff2_c_x.spectral_debugCheckForZeroAliasingModes();
+			diff2_c_y.spectral_debugCheckForZeroAliasingModes();
 #endif
 		}
 		else
@@ -554,7 +509,6 @@ public:
 			};
 			diff2_c_y.kernel_stencil_setup(diff2_y_kernel, 1.0/(h[1]*h[1]));
 		}
-
 	}
 
 	PlaneOperators(

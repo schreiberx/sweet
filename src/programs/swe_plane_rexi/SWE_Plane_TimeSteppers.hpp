@@ -241,6 +241,7 @@ public:
 			l_rexi->setup(
 					i_simVars.rexi
 				);
+/*
 
 			if (i_simVars.misc.verbosity > 2)
 			{
@@ -252,6 +253,7 @@ public:
 				for (std::size_t n = 0; n < l_rexi->rexi.beta_re.size(); n++)
 					std::cout << l_rexi->rexi.beta_re[n] << std::endl;
 			}
+*/
 
 			master = &(SWE_Plane_TS_interface&)*l_rexi;
 
