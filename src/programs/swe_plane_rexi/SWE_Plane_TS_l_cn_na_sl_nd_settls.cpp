@@ -11,9 +11,6 @@
 
 #include "SWE_Plane_TS_l_cn_na_sl_nd_settls.hpp"
 
-
-
-
 /**
  * Solve  SWE with Crank-Nicolson implicit time stepping
  *  (spectral formulation for Helmholtz eq) with semi-Lagrangian
@@ -45,7 +42,7 @@
  * http://onlinelibrary.wiley.com/doi/10.1002/qj.200212858314/pdf
  *
  */
-void SWE_Plane_TS_l_cn__na_sl_nd_settls::run_timestep(
+void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 		PlaneData &io_h,	///< prognostic variables
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
@@ -208,14 +205,10 @@ void SWE_Plane_TS_l_cn__na_sl_nd_settls::run_timestep(
 /*
  * Setup
  */
-void SWE_Plane_TS_l_cn__na_sl_nd_settls::setup(
-		REXI_SimulationVariables &i_rexi,
-
+void SWE_Plane_TS_l_cn_na_sl_nd_settls::setup(
 		int i_with_nonlinear
 )
 {
-	ts_l_rexi.setup(i_rexi);
-
 	with_nonlinear = i_with_nonlinear;
 
 	// Setup sampler for future interpolations
@@ -255,14 +248,12 @@ void SWE_Plane_TS_l_cn__na_sl_nd_settls::setup(
 }
 
 
-SWE_Plane_TS_l_cn__na_sl_nd_settls::SWE_Plane_TS_l_cn__na_sl_nd_settls(
+SWE_Plane_TS_l_cn_na_sl_nd_settls::SWE_Plane_TS_l_cn_na_sl_nd_settls(
 		SimulationVariables &i_simVars,
 		PlaneOperators &i_op
 )	:
 		simVars(i_simVars),
 		op(i_op),
-
-		ts_l_rexi(i_simVars, i_op),
 
 		h_prev(i_op.planeDataConfig),
 		u_prev(i_op.planeDataConfig),
@@ -278,7 +269,7 @@ SWE_Plane_TS_l_cn__na_sl_nd_settls::SWE_Plane_TS_l_cn__na_sl_nd_settls(
 
 
 
-SWE_Plane_TS_l_cn__na_sl_nd_settls::~SWE_Plane_TS_l_cn__na_sl_nd_settls()
+SWE_Plane_TS_l_cn_na_sl_nd_settls::~SWE_Plane_TS_l_cn_na_sl_nd_settls()
 {
 }
 

@@ -1,5 +1,5 @@
 /*
- * SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk.hpp
+ * SWE_Plane_TS_l_cn_na_sl_nd_settls.hpp
  *
  *  Created on: 29 May 2017
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
@@ -21,17 +21,13 @@
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/PlaneDataSemiLagrangian.hpp>
 #include "SWE_Plane_TS_interface.hpp"
-#include "SWE_Plane_TS_l_direct.hpp"
-#include "SWE_Plane_TS_l_rexi.hpp"
 
 
 
-class SWE_Plane_TS_l_cn__na_sl_nd_settls	: public SWE_Plane_TS_interface
+class SWE_Plane_TS_l_cn_na_sl_nd_settls	: public SWE_Plane_TS_interface
 {
 	SimulationVariables &simVars;
 	PlaneOperators &op;
-
-	SWE_Plane_TS_l_rexi ts_l_rexi;
 
 	int with_nonlinear;
 
@@ -47,14 +43,12 @@ class SWE_Plane_TS_l_cn__na_sl_nd_settls	: public SWE_Plane_TS_interface
 	ScalarDataArray posx_d, posy_d;
 
 public:
-	SWE_Plane_TS_l_cn__na_sl_nd_settls(
+	SWE_Plane_TS_l_cn_na_sl_nd_settls(
 			SimulationVariables &i_simVars,
 			PlaneOperators &i_op
 		);
 
 	void setup(
-			REXI_SimulationVariables &i_rexi,
-
 			int i_with_nonlinear
 	);
 
@@ -89,7 +83,7 @@ public:
 	}
 
 
-	virtual ~SWE_Plane_TS_l_cn__na_sl_nd_settls();
+	virtual ~SWE_Plane_TS_l_cn_na_sl_nd_settls();
 };
 
-#endif /* SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_LN_ERK_HPP_ */
+#endif /* SRC_PROGRAMS_SWE_Plane_TS_l_cn_na_sl_nd_settls_HPP_ */

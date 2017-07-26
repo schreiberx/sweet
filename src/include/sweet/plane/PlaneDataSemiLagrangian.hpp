@@ -96,7 +96,7 @@ public:
 		ScalarDataArray ry_d_new(num_points);
 
 		ScalarDataArray rx_d_prev = rx_a;
-		ScalarDataArray ry_d_prev = ry_a;	// TODO: is rx_a correct or should it be ry_a?
+		ScalarDataArray ry_d_prev = ry_a;
 
 		//PlaneData* r_d[2] = {&rx_d, &ry_d};
 

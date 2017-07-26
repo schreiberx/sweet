@@ -39,6 +39,9 @@
 #	include <parareal/Parareal_SimulationVariables.hpp>
 #endif
 
+#if SWEET_LIBPFASST
+#       include <libpfasst/LibPFASST_SimulationVariables.hpp>
+#endif
 
 #include <rexi/REXI_SimulationVariables.hpp>
 
@@ -54,6 +57,9 @@ public:
 	Parareal_SimulationVariables parareal;
 #endif
 
+#if SWEET_LIBPFASST
+        LibPFASST_SimulationVariables libpfasst;
+#endif
 
 public:
 	REXI_SimulationVariables rexi;
@@ -461,7 +467,7 @@ public:
 
 
 
-#if SWEET_PFASST_CPP || SWEET_LIBPFASST
+#if SWEET_PFASST_CPP 
 	struct Pfasst
 	{
 		int nlevels;
@@ -644,7 +650,12 @@ public:
 		parareal.outputConfig();
 #endif
 
-#if SWEET_PFASST_CPP || SWEET_LIBPFASST
+#if SWEET_LIBPFASST
+		libpfasst.outputConfig();
+#endif
+
+
+#if SWEET_PFASST_CPP 
 		pfasst.outputConfig();
 #endif
 	}
@@ -811,7 +822,7 @@ public:
 
 
 // leave this commented to avoid mismatch with following parameters!
-#if SWEET_PFASST_CPP || SWEET_LIBPFASST
+#if SWEET_PFASST_CPP 
 
 		long_options[next_free_program_option] = {"pfasst-nlevels", required_argument, 0, 256+next_free_program_option};
 		next_free_program_option++;
@@ -842,6 +853,16 @@ public:
 				max_options
 			);
 #endif
+
+#if SWEET_LIBPFASST
+        int libpfasst_start_option_index = next_free_program_option;
+        libpfasst.setup_longOptionList(
+				       long_options,
+				       next_free_program_option,	///< also updated (IO)
+				       max_options
+				       );
+#endif
+
 
         int rexi_start_option_index = next_free_program_option;
         rexi.setup_longOptionList(
@@ -919,7 +940,7 @@ public:
 					c++;		if (i == c)	{	disc.crank_nicolson_filter = atof(optarg);			continue;	}
 					c++;		if (i == c)	{	disc.use_staggering = atof(optarg);					continue;	}
 
-#if SWEET_PFASST_CPP || SWEET_LIBPFASST
+#if SWEET_PFASST_CPP 
 					c++;		if (i == c)	{	pfasst.nlevels = atoi(optarg);	continue;	}
 					c++;		if (i == c)	{	pfasst.nnodes = atoi(optarg);	continue;	}
 					c++;		if (i == c)	{	pfasst.nspace = atoi(optarg);	continue;	}
@@ -934,6 +955,15 @@ public:
 						if (retval == 0)
 							continue;
 						c += retval;
+					}
+#endif
+
+#if SWEET_LIBPFASST
+					{
+					  int retval = libpfasst.setup_longOptionValue(i-libpfasst_start_option_index, optarg);
+					  if (retval == 0)
+					    continue;
+					  c += retval;
 					}
 #endif
 
@@ -1180,6 +1210,10 @@ public:
 
 #if SWEET_PARAREAL
 				parareal.printOptions();
+#endif
+
+#if SWEET_LIBPFASST
+				libpfasst.printOptions();
 #endif
 
 				std::cerr << std::endl;

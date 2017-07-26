@@ -87,7 +87,7 @@ extern "C"
     					       double x = (((double)i+0.5)/(double)simVars->disc.res_physical[0])*simVars->sim.domain_size[0];
     					       double y = (((double)j+0.5)/(double)simVars->disc.res_physical[1])*simVars->sim.domain_size[1];
 					       
-    					       io_data = SWEPlaneBenchmarks::return_u(*simVars, x, y);
+					       io_data = SWEPlaneBenchmarks::return_u(*simVars, x, y);
     					     }
     					     );
     v_Y.physical_update_lambda_array_indices(
@@ -96,9 +96,15 @@ extern "C"
     					       double x = (((double)i+0.5)/(double)simVars->disc.res_physical[0])*simVars->sim.domain_size[0];
     					       double y = (((double)j+0.5)/(double)simVars->disc.res_physical[1])*simVars->sim.domain_size[1];
 					       
-    					       io_data = SWEPlaneBenchmarks::return_v(*simVars, x, y);
+					       io_data = SWEPlaneBenchmarks::return_v(*simVars, x, y);
     					     }
     					     );
+
+    // make sure that the spectral data is up to date
+    h_Y.request_data_spectral();  
+    u_Y.request_data_spectral();  
+    v_Y.request_data_spectral();  
+
   }
 
   // finalizes the time step when libpfasst is done 

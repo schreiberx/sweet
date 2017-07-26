@@ -29,7 +29,7 @@ extern "C"
 {
   /* Driver function for pfasst control */
   void fmain (PlaneDataCtx *pd_ctx, 
-	      const int* nlevels, const int* niters, const int nnodes[], 
+	      const int* nlevels, const int* niters, const int nnodes[], const char* qtype_name, const int* qtype_name_len,
 	      const int* nfields, const int nvars_per_field[], 
 	      double* t_max, double* dt);
 }
@@ -64,50 +64,90 @@ int main(int i_argc, char *i_argv[])
   simVars.timecontrol.current_timestep_size = - simVars.sim.CFL; 
   simVars.outputConfig();
 
-  // define the LibPFASST parameters (later implemented as command line args)
-
-  const int nlevels  = 3;                                        // number of SDC levels
-  const int niters   = 1;                                        // number of SDC iterations
-  const int nnodes[nlevels] = {2, 3, 5};                         // number of SDC nodes
-  const double coarsening_multiplier[nlevels-1] = { 0.25, 0.5 }; // spatial coarsening ratio for the levels
 
 
+  // define the number of levels and SDC nodes for each level
+  // note: level #nlevels-1 is the finest, level #0 is the coarsest
 
+  int nnodes[simVars.libpfasst.nlevels];
+  nnodes[simVars.libpfasst.nlevels-1] = simVars.libpfasst.nnodes; // finest level
+
+  switch (simVars.libpfasst.nlevels) 
+    {
+      // One level (nothing to do)
+      case 1: {
+	break;
+      }
+      // Two levels
+      case 2: {
+	if (simVars.libpfasst.nnodes == 3 ||
+	    simVars.libpfasst.nnodes == 5 || 
+	    simVars.libpfasst.nnodes == 7)
+	  nnodes[0] = 2; 
+	else 
+	  FatalError("With 2 levels, the number of SDC nodes on the fine level must be either 3, 5, or 7");
+	break;
+      }
+      // Three levels
+      case 3: {
+	if (simVars.libpfasst.nnodes == 7) 
+	  {
+	    nnodes[0] = 2; 
+	    nnodes[1] = 5;
+	  }
+	else if (simVars.libpfasst.nnodes == 5) 
+	  {
+	    nnodes[0] = 2; 
+	    nnodes[1] = 3;
+	  }
+	else 
+	  FatalError("With 3 levels, the number of SDC nodes on the fine level must be either 5 or 7");
+	break;
+      }
+      // All other cases not supported yet
+      default:
+	FatalError("Only 1, 2, or 3 levels are currently supported");
+    }
+  
   // setup the LevelSingletons for all levels
   // note: level #nlevels-1 is the finest, level #0 is the coarsest
 
+
+
   // setup the finest level singleton
-  levelSingletons.resize(nlevels);
+  levelSingletons.resize(simVars.libpfasst.nlevels);
 
-  levelSingletons[nlevels-1].dataConfig.setupAutoPhysicalSpace(
-							       simVars.disc.res_spectral[0],
-							       simVars.disc.res_spectral[1]
-							       );
+  levelSingletons[simVars.libpfasst.nlevels-1].dataConfig.setupAutoPhysicalSpace(
+										 simVars.disc.res_spectral[0],
+										 simVars.disc.res_spectral[1],
+										 &(simVars.disc.res_physical[0]),
+										 &(simVars.disc.res_physical[1])
+										 );
 
-  levelSingletons[nlevels-1].level = nlevels-1;
+  levelSingletons[simVars.libpfasst.nlevels-1].level = simVars.libpfasst.nlevels-1;
   
-  levelSingletons[nlevels-1].op.setup(
-				      &(levelSingletons[nlevels-1].dataConfig),
-				      simVars.sim.domain_size,
-				      simVars.disc.use_spectral_basis_diffs
-				      );
+  levelSingletons[simVars.libpfasst.nlevels-1].op.setup(
+							&(levelSingletons[simVars.libpfasst.nlevels-1].dataConfig),
+							simVars.sim.domain_size,
+							simVars.disc.use_spectral_basis_diffs
+							);
   
   // define the number of modes for the coarser levels
-  for (int i = 1; i < nlevels; i++)
+  for (int i = 1; i < simVars.libpfasst.nlevels; i++)
     {
-      levelSingletons[nlevels-1-i].dataConfig.setupAdditionalModes(
-								   &(levelSingletons[nlevels-i].dataConfig),
-								   -simVars.disc.res_spectral[0]*coarsening_multiplier[i-1],
-								   -simVars.disc.res_spectral[1]*coarsening_multiplier[i-1]
-								   );
+      levelSingletons[simVars.libpfasst.nlevels-1-i].dataConfig.setupAdditionalModes(
+										     &(levelSingletons[simVars.libpfasst.nlevels-i].dataConfig),
+										     -simVars.disc.res_spectral[0]*pow(simVars.libpfasst.coarsening_multiplier,i),
+										     -simVars.disc.res_spectral[1]*pow(simVars.libpfasst.coarsening_multiplier,i)
+										     );
       
-      levelSingletons[nlevels-1-i].level = nlevels-1-i;
+      levelSingletons[simVars.libpfasst.nlevels-1-i].level = simVars.libpfasst.nlevels-1-i;
   
-      levelSingletons[nlevels-1-i].op.setup(
-					    &(levelSingletons[nlevels-1-i].dataConfig),
-					    simVars.sim.domain_size,
-					    simVars.disc.use_spectral_basis_diffs
-					    );
+      levelSingletons[simVars.libpfasst.nlevels-1-i].op.setup(
+							      &(levelSingletons[simVars.libpfasst.nlevels-1-i].dataConfig),
+							      simVars.sim.domain_size,
+							      simVars.disc.use_spectral_basis_diffs
+							      );
     }
 
 
@@ -115,9 +155,9 @@ int main(int i_argc, char *i_argv[])
   // define the SWEET parameters
 
   const int nfields = 3;  // number of vector fields (here, height and two horizontal velocities)
-  const int nvars_per_field[nlevels] = { levelSingletons[0].dataConfig.physical_array_data_number_of_elements, // number of degrees of freedom per vector field
-                                         levelSingletons[1].dataConfig.physical_array_data_number_of_elements,
-					 levelSingletons[2].dataConfig.physical_array_data_number_of_elements};
+  int nvars_per_field[simVars.libpfasst.nlevels];
+  for (int i = 0; i < simVars.libpfasst.nlevels; ++i) 
+    nvars_per_field[i] = levelSingletons[i].dataConfig.physical_array_data_number_of_elements;  // number of degrees of freedom per vector field
 
   // instantiate the PlaneDataCtx object 
 
@@ -127,19 +167,22 @@ int main(int i_argc, char *i_argv[])
   					  );
   
   // output the info for the levels
-  for (int i = 0; i < nlevels; i++)
-    levelSingletons[nlevels-1-i].dataConfig.printInformation();
+  for (int i = 0; i < simVars.libpfasst.nlevels; i++)
+    levelSingletons[simVars.libpfasst.nlevels-1-i].dataConfig.printInformation();
   
-
+  // get the C string length (needed by Fortran...)
+  int string_length = simVars.libpfasst.nodes_type.size();
 
   // call LibPFASST to advance in time
   fmain(
 	pd_ctx,                                       // user defined context
-	&nlevels,                                     // number of SDC levels
-	&niters,                                      // number of SDC iterations
-	nnodes,                                   // number of SDC nodes 
+	&simVars.libpfasst.nlevels,                   // number of SDC levels
+	&simVars.libpfasst.niters,                    // number of SDC iterations
+	nnodes,                                       // number of SDC nodes 
+	(simVars.libpfasst.nodes_type).c_str(),         // type of nodes
+	&string_length,
 	&nfields,                                     // number of vector fields
-	nvars_per_field,                          // number of dofs per vector field
+	nvars_per_field,                              // number of dofs per vector field
 	&(simVars.timecontrol.max_simulation_time),   // simulation time
 	&(simVars.timecontrol.current_timestep_size)  // time step size
   	); 

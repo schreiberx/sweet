@@ -17,6 +17,7 @@
 class PlaneDataGridMapping
 {
 public:
+	//(x,y) grid points, refers to lower left corner of cells
 	ScalarDataArray pos_ll_x, pos_ll_y;
 
 	// Interpolation stuff
@@ -36,6 +37,7 @@ public:
 			PlaneDataConfig *i_planeDataConfig
 	)
 	{
+		// ll  refers to lower left corner of the cell.
 		pos_ll_x.setup(i_planeDataConfig->physical_array_data_number_of_elements);
 		pos_ll_y.setup(i_planeDataConfig->physical_array_data_number_of_elements);
 
@@ -87,7 +89,7 @@ public:
 			PlaneData &o_dst
 	)
 	{
-		// remap solution to A grid
+		// remap solution to C grid
 		sampler2D.bicubic_scalar(i_src, pos_ll_x, pos_ll_y, o_dst, -staggering.u[0], -staggering.u[1]);
 	}
 
@@ -97,7 +99,7 @@ public:
 			PlaneData &o_dst
 	)
 	{
-		// remap solution to A grid
+		// remap solution to C grid
 		sampler2D.bicubic_scalar(i_src, pos_ll_x, pos_ll_y, o_dst, -staggering.v[0], -staggering.v[1]);
 	}
 };
