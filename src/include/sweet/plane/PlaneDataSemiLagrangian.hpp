@@ -164,11 +164,11 @@ public:
 	{
 		std::size_t num_points = i_posx_a.number_of_elements;
 
-		ScalarDataArray u_prev = Convert_PlaneData_To_ScalarDataArray::physical_convert(i_u_prev);
-		ScalarDataArray v_prev = Convert_PlaneData_To_ScalarDataArray::physical_convert(i_v_prev);
+		ScalarDataArray u_prev = Convert_PlaneData_To_ScalarDataArray::physical_convert(i_u_prev, false);
+		ScalarDataArray v_prev = Convert_PlaneData_To_ScalarDataArray::physical_convert(i_v_prev, false);
 
-		ScalarDataArray u = Convert_PlaneData_To_ScalarDataArray::physical_convert(i_u);
-		ScalarDataArray v = Convert_PlaneData_To_ScalarDataArray::physical_convert(i_v);
+		ScalarDataArray u = Convert_PlaneData_To_ScalarDataArray::physical_convert(i_u, false);
+		ScalarDataArray v = Convert_PlaneData_To_ScalarDataArray::physical_convert(i_v, false);
 
 		//local dt
 		double dt = i_dt;

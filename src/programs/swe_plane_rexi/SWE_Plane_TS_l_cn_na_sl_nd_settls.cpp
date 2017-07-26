@@ -223,17 +223,19 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::setup(
 		[&](int i, int j, double &io_data)
 		{
 			io_data = ((double)i)*simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
-		}
+		},
+		false
 	);
 	PlaneData tmp_y(op.planeDataConfig);
 	tmp_y.physical_update_lambda_array_indices(
 		[&](int i, int j, double &io_data)
 		{
 			io_data = ((double)j)*simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
-		}
+		},
+		false
 	);
 
-	// Initialize arrival points with h position
+	//pectral  Initialize arrival points with h position
 	ScalarDataArray pos_x = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_x);
 	ScalarDataArray pos_y = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_y);
 

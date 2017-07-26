@@ -16,13 +16,14 @@ class Convert_PlaneData_To_ScalarDataArray
 public:
 	static
 	ScalarDataArray physical_convert(
-			const PlaneData &i_planeData
+			const PlaneData &i_planeData,
+			bool i_raise_error_if_spectral = true
 	)
 	{
 		ScalarDataArray out(i_planeData.planeDataConfig->physical_array_data_number_of_elements);
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		if (i_planeData.spectral_space_data_valid)
+		if (i_planeData.spectral_space_data_valid && i_raise_error_if_spectral)
 			FatalError("This data should be typically never converted to spectral space");
 #endif
 
