@@ -46,18 +46,9 @@ void SWE_Plane_TS_l_irk::run_timestep(
 	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
 		i_fixed_dt = i_max_simulation_time-i_simulation_timestamp;
 
-
-	PlaneDataComplex eta(io_h.planeDataConfig);
-
-#if !SWEET_USE_PLANE_SPECTRAL_SPACE
-	PlaneDataComplex eta0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_h);
-	PlaneDataComplex u0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_u);
-	PlaneDataComplex v0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_v);
-#else
-	PlaneDataComplex eta0 = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(io_h);
-	PlaneDataComplex u0 = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(io_u);
-	PlaneDataComplex v0 = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(io_v);
-#endif
+	PlaneData &eta0 = io_h;
+	PlaneData &u0 = io_u;
+	PlaneData &v0 = io_v;
 
 	double alpha = 1.0/i_fixed_dt;
 
@@ -71,29 +62,20 @@ void SWE_Plane_TS_l_irk::run_timestep(
 	double eta_bar = simVars.sim.h0;
 	double g = simVars.sim.gravitation;
 
-	PlaneDataComplex rhs =
+	PlaneData rhs =
 			(kappa/alpha) * eta0
-			- eta_bar*(opComplex.diff_c_x(u0) + opComplex.diff_c_y(v0))
-			- (simVars.sim.f0*eta_bar/alpha) * (opComplex.diff_c_x(v0) - opComplex.diff_c_y(u0))
+			- eta_bar*(op.diff_c_x(u0) + op.diff_c_y(v0))
+			- (simVars.sim.f0*eta_bar/alpha) * (op.diff_c_x(v0) - op.diff_c_y(u0))
 		;
 
-	helmholtz_spectral_solver_spec(kappa, g*eta_bar, rhs, eta, 0);
+	PlaneData lhs = (-g*eta_bar*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(kappa);
+	io_h = rhs.spectral_div_element_wise(lhs);
 
-	PlaneDataComplex uh = u0 - g*opComplex.diff_c_x(eta);
-	PlaneDataComplex vh = v0 - g*opComplex.diff_c_y(eta);
+	PlaneData uh = u0 - g*op.diff_c_x(io_h);
+	PlaneData vh = v0 - g*op.diff_c_y(io_h);
 
-	PlaneDataComplex u1 = alpha/kappa * uh     + simVars.sim.f0/kappa * vh;
-	PlaneDataComplex v1 =    -simVars.sim.f0/kappa * uh + alpha/kappa * vh;
-
-#if !SWEET_USE_PLANE_SPECTRAL_SPACE
-	io_h = Convert_PlaneDataComplex_To_PlaneData::physical_convert(eta);
-	io_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(u1);
-	io_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(v1);
-#else
-	io_h = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(eta);
-	io_u = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(u1);
-	io_v = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(v1);
-#endif
+	io_u = alpha/kappa * uh     + simVars.sim.f0/kappa * vh;
+	io_v =    -simVars.sim.f0/kappa * uh + alpha/kappa * vh;
 
 	o_dt = i_fixed_dt;
 }
@@ -120,8 +102,7 @@ SWE_Plane_TS_l_irk::SWE_Plane_TS_l_irk(
 		PlaneOperators &i_op
 )	:
 		simVars(i_simVars),
-		op(i_op),
-		opComplex(op.planeDataConfig, simVars.sim.domain_size)
+		op(i_op)
 {
 	setup(1);
 }

@@ -22,7 +22,6 @@ class SWE_Plane_TS_l_irk	: public SWE_Plane_TS_interface
 {
 	SimulationVariables &simVars;
 	PlaneOperators &op;
-	PlaneOperatorsComplex opComplex;
 
 	int timestepping_order;
 
@@ -47,31 +46,6 @@ public:
 			double i_max_simulation_time = std::numeric_limits<double>::infinity()
 	);
 
-
-	/**
-	 * Solve complex-valued Helmholtz problem with a spectral solver,
-	 * values are given in Spectral space
-	 *
-	 * (kappa - gh*D2) X = B
-	 *
-	 * This is here to compare speedups and such a solver cannot be applied in general,
-	 * e.g. with special general boundary values
-	 */
-public:
-	void helmholtz_spectral_solver_spec(
-			std::complex<double> i_kappa,
-			double i_gh0,
-			const PlaneDataComplex &i_rhs,
-			PlaneDataComplex &io_x,
-			int i_thread_id = 0
-	)
-	{
-		PlaneDataComplex lhs = (-i_gh0*(opComplex.diff2_c_x + opComplex.diff2_c_y)).spectral_addScalarAll(i_kappa);
-
-		io_x = i_rhs.spectral_div_element_wise(lhs);
-	}
-
-        PlaneOperatorsComplex& get_plane_operators_complex() {return opComplex;}
 
 	virtual ~SWE_Plane_TS_l_irk();
 };
