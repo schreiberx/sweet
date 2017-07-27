@@ -12,11 +12,11 @@ export OMP_PROC_BIND=close
 BASEDIR=`pwd`
 
 cd "$BASEDIR/run_test_swe_timestepper_convergence"
-./compile.sh
+./compile.sh || exit 1
 
 
 
-./cleanup.sh
+./cleanup.sh || exit 1
 
 
 # 1st order linear
@@ -41,7 +41,7 @@ cd "$BASEDIR/run_test_swe_timestepper_convergence"
 # TODO
 #./jobs_create.py ln2 ln_erk 2 2
 
-./jobs_run.sh
+./jobs_run.sh || exit 1
 
 echo "***********************************************"
 echo " POSTPROCESSING "
