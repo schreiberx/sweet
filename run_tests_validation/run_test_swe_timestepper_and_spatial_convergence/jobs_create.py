@@ -365,6 +365,11 @@ p.plane_or_sphere = 'plane'
 p.mode_res = -1
 p.phys_res = 512
 
+p.simtime = 0.0001
+timestep_size_reference = 0.0001
+p.timestep_size = timestep_size_reference
+p.output_timestep_size = p.timestep_size
+
 p.bench_id = 14
 
 p.rexi_sphere_preallocation = 0
@@ -378,19 +383,15 @@ p.domain_size = 1
 #p.viscosity = 0.0005
 p.viscosity = 0.0
 
-p.simtime = 0.0001
-timestep_size_reference = 0.00001
-p.timestep_size = timestep_size_reference
+phys_res_list = [16*(2**i) for i in range(0, 7)]
 
-p.output_timestep_size = p.timestep_size
-
-phys_res_list = [16*(2**i) for i in range(0, 6)]
+p.nonlinear = 1
 
 # Groups to execute, see below
 # l: linear
 # ln: linear and nonlinear
-groups = ['l1', 'l2', 'ln1', 'ln2']
-#groups = ['ln2test']
+#groups = ['l1', 'l2', 'ln1', 'ln2']
+groups = ['ln2space']
 
 #if len(sys.argv) < 5:
 #	print("Usage: "+str(sys.argv[0])+" [group=l1/l2/ln1/ln2] [tsmethod] [order1] [order2]")
@@ -467,11 +468,9 @@ for group in groups:
 	#
 	# OVERRIDE TS methods
 	#
-
 	if len(sys.argv) > 4:
-		ts_methods = [ts_methods[0]]+[[sys.argv[2], int(sys.argv[3]), int(sys.argv[4])]]
+		ts_methods = [[sys.argv[2], int(sys.argv[3]), int(sys.argv[4])]]
 		print(ts_methods)
-
 	#
 	# add prefix string to group benchmarks
 	#
@@ -481,7 +480,7 @@ for group in groups:
 	#
 	# Reference solution
 	#
-	if True:
+	if False:
 		print("Reference")
 		tsm = ts_methods[0]
 
@@ -500,6 +499,15 @@ for group in groups:
 
 
 	for tsm in ts_methods[1:]:
+                
+                if group == 'ln2space' and 'ln_erk' in tsm[0]:
+			p.staggering = 1
+			p.spectralderiv = 0
+
+                if group == 'ln2space' and 'l_cn_na_sl_nd_settls' in tsm[0]:
+                        p.staggering = 0
+			p.spectralderiv = 1
+                                
 		for phys_res in phys_res_list:
 			print(phys_res)
 
@@ -512,10 +520,6 @@ for group in groups:
 
 			p.phys_res = phys_res
 
-			if group == 'ln2space' and 'ln_erk' in tsm[0]:
-				p.staggering = 0
-				p.spectralderiv = 0
-				p.nonlinear = 1
 
 
 			if 'rexi' in tsm[0]:
