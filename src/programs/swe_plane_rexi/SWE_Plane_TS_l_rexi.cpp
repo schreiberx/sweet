@@ -25,25 +25,33 @@ void SWE_Plane_TS_l_rexi::setup(
 		const std::string &i_function_name
 )
 {
+	rexiSimVars = &i_rexi;
+
 	domain_size[0] = simVars.sim.domain_size[0];
 	domain_size[1] = simVars.sim.domain_size[1];
 
-	if (i_rexi.use_next_generation)
+	if (rexiSimVars->use_direct_solution)
+	{
+		ts_l_direct.setup(i_function_name);
+		return;
+	}
+
+	if (rexiSimVars->use_next_generation)
 	{
 		bool retval = rexiNG.auto_load(
 				i_function_name,
-				i_rexi.ng_N,	/// N
+				rexiSimVars->ng_N,	/// N
 				rexiNG.None(),	/// max_error
-				i_rexi.ng_max_error_double_precision,			/// max_error_double_precision
-				i_rexi.ng_test_min,
-				i_rexi.ng_test_max,
+				rexiSimVars->ng_max_error_double_precision,			/// max_error_double_precision
+				rexiSimVars->ng_test_min,
+				rexiSimVars->ng_test_max,
 				rexiNG.None(),	/// basis_function_scaling
-				i_rexi.ng_h, //rexiNG.None(),	/// basis_function_spacing
+				rexiSimVars->ng_h, //rexiNG.None(),	/// basis_function_spacing
 				rexiNG.None(),	/// basis_function rat shift
 
-				i_rexi.use_half_poles,
+				rexiSimVars->use_half_poles,
 
-				i_rexi.ng_faf_dir
+				rexiSimVars->ng_faf_dir
 			);
 
 		if (!retval)
@@ -64,7 +72,7 @@ void SWE_Plane_TS_l_rexi::setup(
 	}
 	else
 	{
-		rexi.setup(0, i_rexi.h, i_rexi.M, i_rexi.L, !i_rexi.use_half_poles, i_rexi.normalization);
+		rexi.setup(0, rexiSimVars->h, rexiSimVars->M, rexiSimVars->L, !rexiSimVars->use_half_poles, rexiSimVars->normalization);
 
 		rexi_alpha = rexi.alpha;
 		rexi_beta_re = rexi.beta_re;
@@ -75,15 +83,15 @@ void SWE_Plane_TS_l_rexi::setup(
 
 #if FOOBAR123
 		// fake setup
-		//		rexi.setup(0, i_rexi.h, i_rexi.M, i_rexi.L, !i_rexi.use_half_poles, i_rexi.normalization);
-		rexi.setup(0, i_rexi.h, i_rexi.M, i_rexi.L, i_rexi.use_half_poles, i_rexi.normalization);
+		//		rexi.setup(0, rexiSimVars->h, rexiSimVars->M, rexiSimVars->L, !rexiSimVars->use_half_poles, rexiSimVars->normalization);
+		rexi.setup(0, rexiSimVars->h, rexiSimVars->M, rexiSimVars->L, rexiSimVars->use_half_poles, rexiSimVars->normalization);
 		x_rexi_alpha = rexi.alpha;
 		x_rexi_beta_re = rexi.beta_re;
 #endif
 
 	}
 
-	std::cout << "Halving rule = " << i_rexi.use_half_poles << std::endl;
+	std::cout << "Halving rule = " << rexiSimVars->use_half_poles << std::endl;
 	std::cout << "Number of total REXI coefficients N = " << rexi_alpha.size() << std::endl;
 
 	std::size_t N = rexi_alpha.size();

@@ -13,15 +13,21 @@
 #include <sweet/plane/PlaneDataTimesteppingRK.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
-#include <sweet/plane/PlaneOperatorsComplex.hpp>
 #include "SWE_Plane_TS_interface.hpp"
 
+#if !SWEET_USE_PLANE_SPECTRAL_SPACE
+	#include <sweet/plane/PlaneOperatorsComplex.hpp>
+#endif
 
 
 class SWE_Plane_TS_l_irk	: public SWE_Plane_TS_interface
 {
 	SimulationVariables &simVars;
 	PlaneOperators &op;
+
+#if !SWEET_USE_PLANE_SPECTRAL_SPACE
+	PlaneOperatorsComplex &opComplex;
+#endif
 
 	int timestepping_order;
 

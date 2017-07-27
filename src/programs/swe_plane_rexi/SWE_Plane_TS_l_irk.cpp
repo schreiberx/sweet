@@ -46,6 +46,8 @@ void SWE_Plane_TS_l_irk::run_timestep(
 	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
 		i_fixed_dt = i_max_simulation_time-i_simulation_timestamp;
 
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+
 	PlaneData &eta0 = io_h;
 	PlaneData &u0 = io_u;
 	PlaneData &v0 = io_v;
@@ -77,6 +79,44 @@ void SWE_Plane_TS_l_irk::run_timestep(
 	io_u = alpha/kappa * uh     + simVars.sim.f0/kappa * vh;
 	io_v =    -simVars.sim.f0/kappa * uh + alpha/kappa * vh;
 
+#else
+
+	PlaneDataComplex eta0 = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(io_h);
+	PlaneDataComplex u0 = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(io_u);
+	PlaneDataComplex v0 = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(io_v);
+
+	double alpha = 1.0/i_fixed_dt;
+
+	eta0 *= alpha;
+	u0 *= alpha;
+	v0 *= alpha;
+
+	// load kappa (k)
+	double kappa = alpha*alpha + simVars.sim.f0*simVars.sim.f0;
+
+	double eta_bar = simVars.sim.h0;
+	double g = simVars.sim.gravitation;
+
+	PlaneDataComplex rhs =
+			(kappa/alpha) * eta0
+			- eta_bar*(opComplex.diff_c_x(u0) + opComplex.diff_c_y(v0))
+			- (simVars.sim.f0*eta_bar/alpha) * (opComplex.diff_c_x(v0) - opComplex.diff_c_y(u0))
+		;
+
+	PlaneDataComplex lhs = (-g*eta_bar*(opComplex.diff2_c_x + opComplex.diff2_c_y)).spectral_addScalarAll(kappa);
+	PlaneDataComplex eta = rhs.spectral_div_element_wise(lhs);
+
+	PlaneDataComplex uh = u0 - g*opComplex.diff_c_x(eta);
+	PlaneDataComplex vh = v0 - g*opComplex.diff_c_y(eta);
+
+	PlaneDataComplex u1 = alpha/kappa * uh     + simVars.sim.f0/kappa * vh;
+	PlaneDataComplex v1 =    -simVars.sim.f0/kappa * uh + alpha/kappa * vh;
+
+	io_h = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(eta);
+	io_u = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(u1);
+	io_v = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(v1);
+#endif
+
 	o_dt = i_fixed_dt;
 }
 
@@ -103,6 +143,10 @@ SWE_Plane_TS_l_irk::SWE_Plane_TS_l_irk(
 )	:
 		simVars(i_simVars),
 		op(i_op)
+#if !SWEET_USE_PLANE_SPECTRAL_SPACE
+		,
+		opComplex(i_op.planeDataConfig, i_simVars.sim.domain_size)
+#endif
 {
 	setup(1);
 }

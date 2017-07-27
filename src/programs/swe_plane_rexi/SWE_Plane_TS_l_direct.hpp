@@ -23,6 +23,8 @@ class SWE_Plane_TS_l_direct	: public SWE_Plane_TS_interface
 	SimulationVariables &simVars;
 	PlaneOperators &op;
 
+	int phi_id;
+
 	PlaneDataGridMapping planeDataGridMapping;
 
 public:
@@ -92,6 +94,9 @@ public:
 			double i_max_simulation_time = std::numeric_limits<double>::infinity()
 	);
 
+	void setup(
+			const std::string &i_function_name = "phi0"
+	);
 
 	virtual ~SWE_Plane_TS_l_direct();
 };

@@ -15,6 +15,27 @@
 #include <sweet/plane/Convert_PlaneDataComplex_to_PlaneData.hpp>
 
 
+void SWE_Plane_TS_l_direct:: setup(
+		const std::string &i_function_name
+)
+{
+	if (i_function_name  == "phi0")
+		phi_id = 0;
+	else if (i_function_name  == "phi1")
+		phi_id = 1;
+	else if (i_function_name  == "phi2")
+		phi_id = 2;
+	else if (i_function_name  == "phi3")
+		phi_id = 3;
+	else if (i_function_name  == "phi4")
+		phi_id = 4;
+	else if (i_function_name  == "phi5")
+		phi_id = 5;
+	else
+		FatalError(std::string("function ")+i_function_name+" not supported");
+}
+
+
 
 void SWE_Plane_TS_l_direct::run_timestep(
 		PlaneData &io_h_pert,	///< prognostic variables
@@ -387,8 +408,57 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 				for (int j = 0; j < 3; j++)
 					UEV[k] += v_inv[k][j] * U[j];
 
+			double eps = 1e-8;
+
+#if SWEET_DEBUG
 			for (int k = 0; k < 3; k++)
-				UEV[k] = std::exp(i_fixed_dt*lambda[k])*UEV[k];
+				if (std::abs(lambda[k].real()) > eps)
+					FatalError("Real value shouldn't be larger than eps (purely imaginary expected)");
+#endif
+
+			for (int k = 0; k < 3; k++)
+			{
+				std::complex<double> K;
+
+				switch(phi_id)
+				{
+				case 0:
+					K = i_fixed_dt*lambda[k];
+					UEV[k] = std::exp(K)*UEV[k];
+					break;
+
+				case 1:
+					if (std::abs(lambda[k].imag()) < eps)
+						K = 1.0/std::complex<double>(0.0, 1.0);
+					else
+						K = i_fixed_dt*lambda[k];
+
+					UEV[k] = (std::exp(K)-1.0)/K*UEV[k];
+					break;
+
+				case 2:
+					// http://www.wolframalpha.com/input/?i=(exp(i*x)-1-i*x)%2F(i*x*i*x)
+					if (std::abs(lambda[k].imag()) < eps)
+						K = 1.0/std::complex<double>(0.0, 2.0);
+					else
+						K = i_fixed_dt*lambda[k];
+
+					UEV[k] = (std::exp(K) - 1.0 - K)/(K*K);
+					break;
+
+				case 3:
+					if (std::abs(lambda[k].imag()) < eps)
+						K = 1.0*std::complex<double>(0.0, 2.0*3.0);
+					else
+						K = i_fixed_dt*lambda[k];
+
+					UEV[k] = (std::exp(K) - 1.0 - K - K*K)/(K*K*K);
+					break;
+
+				default:
+					FatalError("This phi is not yet supported");
+				}
+			}
 
 			for (int k = 0; k < 3; k++)
 				U[k] = 0.0;
@@ -436,11 +506,6 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 
 
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
-#warning "WARNING: Not doing this in spectral space leads to a loss of the highest mode"
-	/*
-	 * WARNING: This leads to a loss of precision due to the highest mode which cannot be
-	 * tracked due to the Nyquist theorem
-	 */
 	PlaneDataComplex i_h_pert = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_h_pert);
 	PlaneDataComplex i_u = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_u);
 	PlaneDataComplex i_v = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_v);
@@ -757,11 +822,6 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 	o_v.spectral_zeroAliasingModes();
 
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
-#warning "WARNING: Not doing this in spectral space leads to a loss of the highest mode"
-	/*
-	 * WARNING: This leads to a loss of precision due to the highest mode which cannot be
-	 * tracked due to the Nyquist theorem
-	 */
 	io_h_pert = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_h_pert);
 	io_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_u);
 	io_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_v);
@@ -779,7 +839,8 @@ SWE_Plane_TS_l_direct::SWE_Plane_TS_l_direct(
 		PlaneOperators &i_op
 )	:
 		simVars(i_simVars),
-		op(i_op)
+		op(i_op),
+		phi_id(0)
 {
 	if (simVars.disc.use_staggering)
 		planeDataGridMapping.setup(i_simVars, op.planeDataConfig);

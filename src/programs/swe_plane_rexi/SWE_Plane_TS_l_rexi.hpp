@@ -36,12 +36,13 @@
 class SWE_Plane_TS_l_rexi	: public SWE_Plane_TS_interface
 {
 	SimulationVariables &simVars;
+	REXI_SimulationVariables *rexiSimVars;
+
 	PlaneOperators &op;
 
 	std::vector<std::complex<double>> rexi_alpha;
 	std::vector<std::complex<double>> rexi_beta_re;
 //	std::vector<std::complex<double>> rexi_beta_im;
-
 
 
 	/// simulation domain size
