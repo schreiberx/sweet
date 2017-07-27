@@ -26,7 +26,7 @@ class SWE_Plane_TS_l_irk	: public SWE_Plane_TS_interface
 	PlaneOperators &op;
 
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
-	PlaneOperatorsComplex &opComplex;
+	PlaneOperatorsComplex opComplex;
 #endif
 
 	int timestepping_order;

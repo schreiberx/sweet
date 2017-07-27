@@ -81,9 +81,9 @@ void SWE_Plane_TS_l_irk::run_timestep(
 
 #else
 
-	PlaneDataComplex eta0 = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(io_h);
-	PlaneDataComplex u0 = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(io_u);
-	PlaneDataComplex v0 = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(io_v);
+	PlaneDataComplex eta0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_h);
+	PlaneDataComplex u0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_u);
+	PlaneDataComplex v0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_v);
 
 	double alpha = 1.0/i_fixed_dt;
 
@@ -112,9 +112,9 @@ void SWE_Plane_TS_l_irk::run_timestep(
 	PlaneDataComplex u1 = alpha/kappa * uh     + simVars.sim.f0/kappa * vh;
 	PlaneDataComplex v1 =    -simVars.sim.f0/kappa * uh + alpha/kappa * vh;
 
-	io_h = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(eta);
-	io_u = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(u1);
-	io_v = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(v1);
+	io_h = Convert_PlaneDataComplex_To_PlaneData::physical_convert(eta);
+	io_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(u1);
+	io_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(v1);
 #endif
 
 	o_dt = i_fixed_dt;
