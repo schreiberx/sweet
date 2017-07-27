@@ -103,8 +103,12 @@ for group_info in groups:
                         i=i+1 #output index
                         test_res = output[pos+5:len(output)-4]
                         result=extract_errors(output)
-                        
-                        ratios[i]=float(prev_h_error)/float(result[0])
+                        if result[0] != "x" and float(result[0]) != 0 :
+                                ratios[i]=float(prev_h_error)/float(result[0])
+                        else:
+                                print "This method could not be evaluated.", result[0]
+                                sys.exit(1)
+                                
                         prev_h_error=result[0]
                         
                         print test_res, result[0], result[1], result[2], ratios[i]

@@ -451,12 +451,12 @@ for group in groups:
 	if group == 'ln2space':
 		ts_methods = [
 			['ln_erk',		4,	4],	# reference solution
-			['l_cn_n_erk',		2,	2],
-			['l_erk_n_erk',		2,	2],
+			['ln_erk',		2,	2],
+			['l_cn_na_sl_nd_settls',2,	2],
 #			['ln_erk',		2,	2],
 #			['l_rexi_n_erk',	2,	2],
 		]
-
+                
 	#
 	# OVERRIDE TS methods
 	#

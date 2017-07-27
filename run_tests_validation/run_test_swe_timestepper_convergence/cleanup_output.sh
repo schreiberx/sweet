@@ -1,3 +1,4 @@
 #! /bin/bash
 
-rm a_output*
+rm -f a_output*
+rm -f output*

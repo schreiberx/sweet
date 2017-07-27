@@ -1,5 +1,5 @@
 #! /bin/bash
 
 for i in script_*; do
-	rm -r "$i"
+	rm -rf "$i"
 done

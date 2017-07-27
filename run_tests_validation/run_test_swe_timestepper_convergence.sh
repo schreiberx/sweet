@@ -38,8 +38,8 @@ cd "$BASEDIR/run_test_swe_timestepper_convergence"
 ./jobs_create.py ln2 l_erk_n_erk 2 2
 
 # 2nd order nonlinear, SL-REXI related
-# TODO
-#./jobs_create.py ln2 ln_erk 2 2
+./jobs_create.py ln2space ln_erk 2 2
+./jobs_create.py ln2space l_cn_na_sl_nd_settls 2 2
 
 ./jobs_run.sh || exit 1
 
