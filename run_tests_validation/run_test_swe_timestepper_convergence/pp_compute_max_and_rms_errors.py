@@ -43,7 +43,7 @@ for j in range(0, size_j):
 		norm_linf_value = max(norm_linf_value, abs(value))
 
 norm_l1_value = norm_l1_value/(size_i*size_j)
-norm_l2_value = math.sqrt(norm_l2_value)/(size_i*size_j)
+norm_l2_value = math.sqrt(norm_l2_value/(size_i*size_j))
 
 #
 # L1, L2, Linf

@@ -445,12 +445,10 @@ for group in groups:
 			['l_irk_n_erk',		2,	2],
 			['ln_erk',		2,	2],
 			['l_rexi_n_erk',	2,	2],
-			['l_rexi_ns_sl_nd_erk',	2,	2],
-			['lg_rexi_lc_erk_nt_sl_nd_erk',	2,	2],
 		]
 
 	# 2nd order nonlinear
-	if group == 'ln2test':
+	if group == 'ln2space':
 		ts_methods = [
 			['ln_erk',		4,	4],	# reference solution
 			['l_cn_n_erk',		2,	2],
