@@ -13,6 +13,7 @@
 #include "SWE_Plane_TS_l_irk.hpp"
 #include "SWE_Plane_TS_l_irk_n_erk.hpp"
 #include "SWE_Plane_TS_ln_erk.hpp"
+#include "SWE_Plane_TS_l_rexi_n_erk.hpp"
 
 #include "ceval.hpp"
 #include "cencap.hpp"
@@ -251,18 +252,37 @@ extern "C"
     SimulationVariables* simVars = i_ctx->get_simulation_variables();
 
     // get the timestepper
-    SWE_Plane_TS_l_irk_n_erk* timestepper = i_ctx->get_l_irk_n_erk_timestepper(i_Y->get_level());
+    if (simVars->libpfasst.use_rexi) 
+      {
+	SWE_Plane_TS_l_rexi_n_erk* timestepper = i_ctx->get_l_rexi_n_erk_timestepper(i_Y->get_level());
 		  
-    // compute the explicit nonlinear right-hand side
-    timestepper->euler_timestep_update_nonlinear(
-						 h_Y, 
-						 u_Y,
-						 v_Y,
-						 h_F1,
-						 u_F1,
-						 v_F1
-						 );
-    
+	// compute the explicit nonlinear right-hand side
+	timestepper->euler_timestep_update_nonlinear(
+						     h_Y, 
+						     u_Y,
+						     v_Y,
+						     h_F1,
+						     u_F1,
+						     v_F1,
+						     simVars->timecontrol.current_timestep_size,
+						     simVars->timecontrol.current_timestep_size,
+						     simVars->timecontrol.max_simulation_time			
+						     );
+      } 
+    else
+      {
+	SWE_Plane_TS_l_irk_n_erk* timestepper = i_ctx->get_l_irk_n_erk_timestepper(i_Y->get_level());
+		  
+	// compute the explicit nonlinear right-hand side
+	timestepper->euler_timestep_update_nonlinear(
+						     h_Y, 
+						     u_Y,
+						     v_Y,
+						     h_F1,
+						     u_F1,
+						     v_F1
+						     );
+      }
   }
   
   // evaluates the first implicit piece o_F2 = F2(i_Y)
@@ -284,9 +304,9 @@ extern "C"
     // get the simulation variables
     SimulationVariables* simVars = i_ctx->get_simulation_variables();
     
-    // get the implicit timestepper 
-    SWE_Plane_TS_l_erk* timestepper    = i_ctx->get_l_erk_timestepper(i_Y->get_level());
-
+    // get the explicit timestepper 
+    SWE_Plane_TS_l_erk* timestepper = i_ctx->get_l_erk_timestepper(i_Y->get_level());
+	
     // compute the linear right-hand side
     timestepper->euler_timestep_update(
 				       h_Y, 
@@ -326,24 +346,46 @@ extern "C"
     u_Y = u_Rhs;
     v_Y = v_Rhs;
 
-    // get the implicit timestepper 
-    SWE_Plane_TS_l_irk_n_erk* timestepper    = i_ctx->get_l_irk_n_erk_timestepper(io_Y->get_level());
-    SWE_Plane_TS_l_irk& implicit_timestepper = timestepper->get_implicit_timestepper();
-
     // get the simulation variables
     SimulationVariables* simVars = i_ctx->get_simulation_variables();
 
-    // solve the implicit system using the Helmholtz solver
-    implicit_timestepper.run_timestep(
-				      h_Y,
-				      u_Y,
-				      v_Y,
-				      i_dt,
-				      i_dt,
-				      simVars->timecontrol.current_simulation_time,
-				      simVars->timecontrol.max_simulation_time
-				      );
-    
+    // get the implicit timestepper 
+    if (simVars->libpfasst.use_rexi) 
+      {
+
+	SWE_Plane_TS_l_rexi_n_erk* timestepper    = i_ctx->get_l_rexi_n_erk_timestepper(io_Y->get_level());
+	SWE_Plane_TS_l_rexi& implicit_timestepper = timestepper->get_implicit_timestepper();
+	
+	// solve the implicit system using REXI
+	implicit_timestepper.run_timestep(
+					  h_Y,
+					  u_Y,
+					  v_Y,
+					  i_dt,
+					  i_dt,
+					  simVars->timecontrol.current_simulation_time,
+					  simVars->timecontrol.max_simulation_time
+					);
+      }       
+    else
+      {
+
+	SWE_Plane_TS_l_irk_n_erk* timestepper    = i_ctx->get_l_irk_n_erk_timestepper(io_Y->get_level());
+	SWE_Plane_TS_l_irk& implicit_timestepper = timestepper->get_implicit_timestepper();
+	
+	// solve the implicit system using the Helmholtz solver
+	implicit_timestepper.run_timestep(
+					  h_Y,
+					  u_Y,
+					  v_Y,
+					  i_dt,
+					  i_dt,
+					  simVars->timecontrol.current_simulation_time,
+					  simVars->timecontrol.max_simulation_time
+					);
+
+      }
+
     // now recompute F2 with the new value of Y
     ceval_f2(
 	     io_Y, 
@@ -441,9 +483,6 @@ extern "C"
 	     i_ctx, 
 	     o_F3
 	     );
-    
-//     c_sweet_data_saxpy( 1/i_dt,io_Y, o_F3);
-//     c_sweet_data_saxpy(-1/i_dt,i_Rhs,o_F3);
     
   }
 

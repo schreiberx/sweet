@@ -82,17 +82,23 @@ int main(int i_argc, char *i_argv[])
       case 2: {
 	if (simVars.libpfasst.nnodes == 3 ||
 	    simVars.libpfasst.nnodes == 5 || 
-	    simVars.libpfasst.nnodes == 7)
-	  nnodes[0] = 2; 
+	    simVars.libpfasst.nnodes == 7 ||
+	    simVars.libpfasst.nnodes == 9)
+	  nnodes[0] = 5; 
 	else 
-	  FatalError("With 2 levels, the number of SDC nodes on the fine level must be either 3, 5, or 7");
+	  FatalError("With 2 levels, the number of SDC nodes on the fine level must be either 3, 5, 7, or 9");
 	break;
       }
       // Three levels
       case 3: {
-	if (simVars.libpfasst.nnodes == 7) 
+	if (simVars.libpfasst.nnodes == 9) 
 	  {
-	    nnodes[0] = 2; 
+	    nnodes[0] = 5; 
+	    nnodes[1] = 7;
+	  }
+	else if (simVars.libpfasst.nnodes == 7) 
+	  {
+	    nnodes[0] = 3; 
 	    nnodes[1] = 5;
 	  }
 	else if (simVars.libpfasst.nnodes == 5) 
@@ -101,7 +107,7 @@ int main(int i_argc, char *i_argv[])
 	    nnodes[1] = 3;
 	  }
 	else 
-	  FatalError("With 3 levels, the number of SDC nodes on the fine level must be either 5 or 7");
+	  FatalError("With 3 levels, the number of SDC nodes on the fine level must be either 5, 7, or 9");
 	break;
       }
       // All other cases not supported yet
@@ -179,7 +185,7 @@ int main(int i_argc, char *i_argv[])
 	&simVars.libpfasst.nlevels,                   // number of SDC levels
 	&simVars.libpfasst.niters,                    // number of SDC iterations
 	nnodes,                                       // number of SDC nodes 
-	(simVars.libpfasst.nodes_type).c_str(),         // type of nodes
+	(simVars.libpfasst.nodes_type).c_str(),       // type of nodes
 	&string_length,
 	&nfields,                                     // number of vector fields
 	nvars_per_field,                              // number of dofs per vector field
