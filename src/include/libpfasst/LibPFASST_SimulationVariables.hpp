@@ -33,6 +33,12 @@ struct LibPFASST_SimulationVariables
    */ 
   double coarsening_multiplier = 0.5;
 
+  /**
+   * Use rexi as a linear solve in f2comp
+   */ 
+  bool use_rexi = false;
+
+
 
   void outputConfig()
   {
@@ -43,19 +49,21 @@ struct LibPFASST_SimulationVariables
     std::cout << " + nnodes: "                << nnodes                << std::endl;
     std::cout << " + nodes_type: "            << nodes_type            << std::endl;
     std::cout << " + coarsening_multiplier: " << coarsening_multiplier << std::endl;
-    std::cout << std::endl;
+    std::cout << " + use_rexi: "              << use_rexi              << std::endl;
+    std::cout                                                          << std::endl;
   }
 
   void printOptions()
   {
-    std::cout << "" << std::endl;
-    std::cout << "LibPFASST:" << std::endl;
-    std::cout << "	--libpfasst-nlevels [int]			LibPFASST parameter nlevels, default: 2" << std::endl;
-    std::cout << "	--libpfasst-niters [int]                        LibPFASST parameter niters, default: 8" << std::endl;
-    std::cout << "	--libpfasst-nnodes [int]			LibPFASST parameter nnodes, default: 5" << std::endl;
+    std::cout << ""                                                                                                                 << std::endl;
+    std::cout << "LibPFASST:"                                                                                                       << std::endl;
+    std::cout << "	--libpfasst-nlevels [int]			LibPFASST parameter nlevels, default: 2"                    << std::endl;
+    std::cout << "	--libpfasst-niters [int]                        LibPFASST parameter niters, default: 8"                     << std::endl;
+    std::cout << "	--libpfasst-nnodes [int]			LibPFASST parameter nnodes, default: 5"                     << std::endl;
     std::cout << "	--libpfasst-nodes_type [string]			LibPFASST parameter nodes_type, default: SDC_GAUSS_LOBATTO" << std::endl;
-    std::cout << "	--libpfasst-coarsening_multiplier [float]	LibPFASST parameter coarsening_multiplier, default: 0.5" << std::endl;
-    std::cout << "" << std::endl;
+    std::cout << "	--libpfasst-coarsening_multiplier [float]	LibPFASST parameter coarsening_multiplier, default: 0.5"    << std::endl;
+    std::cout << "	--libpfasst-use_rexi [bool]	                LibPFASST parameter use_rexi, default: false"               << std::endl;
+    std::cout << ""                                                                                                                 << std::endl;
   }
 
   void setup_longOptionList(
@@ -78,6 +86,9 @@ struct LibPFASST_SimulationVariables
     
     io_long_options[io_next_free_program_option] = {"libpfasst-coarsening_multiplier", required_argument, 0, 256+io_next_free_program_option};
     io_next_free_program_option++;
+
+    io_long_options[io_next_free_program_option] = {"libpfasst-use_rexi", required_argument, 0, 256+io_next_free_program_option};
+    io_next_free_program_option++;
   }
   
   /**
@@ -97,9 +108,10 @@ struct LibPFASST_SimulationVariables
       case 2:	nnodes                = atoi(optarg);	return 0;
       case 3:	nodes_type            = optarg; 	return 0;
       case 4:	coarsening_multiplier = atof(optarg);	return 0;
+      case 5:   use_rexi              = atoi(optarg);   return 0;
       }
     
-    return 5;
+    return 6;
   }
   
 
