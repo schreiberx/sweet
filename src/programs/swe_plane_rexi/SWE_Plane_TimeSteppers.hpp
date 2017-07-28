@@ -22,6 +22,7 @@
 #include "SWE_Plane_TS_l_rexi_na_sl_nd_settls.hpp"
 #include "SWE_Plane_TS_l_cn_na_sl_nd_settls.hpp"
 #include "SWE_Plane_TS_ln_erk.hpp"
+#include "SWE_Plane_TS_ln_etdrk.hpp"
 
 
 
@@ -32,6 +33,7 @@ class SWE_Plane_TimeSteppers
 {
 public:
 	SWE_Plane_TS_ln_erk *ln_erk = nullptr;
+	SWE_Plane_TS_ln_etdrk *ln_etdrk = nullptr;
 	SWE_Plane_TS_l_erk *l_erk = nullptr;
 	SWE_Plane_TS_l_cn *l_cn = nullptr;
 	SWE_Plane_TS_l_erk_n_erk *l_erk_n_erk = nullptr;
@@ -59,6 +61,12 @@ public:
 		{
 			delete ln_erk;
 			ln_erk = nullptr;
+		}
+
+		if (ln_etdrk != nullptr)
+		{
+			delete ln_etdrk;
+			ln_etdrk = nullptr;
 		}
 
 		if (l_erk != nullptr)
@@ -149,13 +157,19 @@ public:
 
 		if (i_timestepping_method == "ln_erk")
 		{
-//			if (i_simVars.disc.use_staggering)
-//				FatalError("Staggering not supported for ln_erk");
-
 			ln_erk = new SWE_Plane_TS_ln_erk(i_simVars, i_op);
 			ln_erk->setup(i_timestepping_order);
 
 			master = &(SWE_Plane_TS_interface&)*ln_erk;
+
+			linear_only = false;
+		}
+		else if (i_timestepping_method == "ln_etdrk")
+		{
+			ln_etdrk = new SWE_Plane_TS_ln_etdrk(i_simVars, i_op);
+			ln_etdrk->setup(i_simVars.rexi, i_simVars.disc.timestepping_order);
+
+			master = &(SWE_Plane_TS_interface&)*ln_etdrk;
 
 			linear_only = false;
 		}

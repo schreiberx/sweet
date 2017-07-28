@@ -408,7 +408,7 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 				for (int j = 0; j < 3; j++)
 					UEV[k] += v_inv[k][j] * U[j];
 
-			double eps = 1e-8;
+			double eps = 1e-10;
 
 #if SWEET_DEBUG
 			for (int k = 0; k < 3; k++)
@@ -428,31 +428,47 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 					break;
 
 				case 1:
+					// http://www.wolframalpha.com/input/?i=(exp(i*x)-1)%2F(i*x)
 					if (std::abs(lambda[k].imag()) < eps)
-						K = 1.0/std::complex<double>(0.0, 1.0);
+					{
+						K = 1.0;
+					}
 					else
+					{
 						K = i_fixed_dt*lambda[k];
+						K = (std::exp(K)-1.0)/K;
+					}
 
-					UEV[k] = (std::exp(K)-1.0)/K*UEV[k];
+					UEV[k] = K*UEV[k];
 					break;
 
 				case 2:
 					// http://www.wolframalpha.com/input/?i=(exp(i*x)-1-i*x)%2F(i*x*i*x)
 					if (std::abs(lambda[k].imag()) < eps)
-						K = 1.0/std::complex<double>(0.0, 2.0);
+					{
+						K = 1.0/std::complex<double>(2.0, 0.0);
+					}
 					else
+					{
 						K = i_fixed_dt*lambda[k];
+						K = (std::exp(K) - 1.0 - K)/(K*K);
+					}
 
-					UEV[k] = (std::exp(K) - 1.0 - K)/(K*K);
+					UEV[k] = K*UEV[k];
 					break;
 
 				case 3:
 					if (std::abs(lambda[k].imag()) < eps)
-						K = 1.0*std::complex<double>(0.0, 2.0*3.0);
+					{
+						K = 1.0/std::complex<double>(2.0*3.0, 0.0);
+					}
 					else
+					{
 						K = i_fixed_dt*lambda[k];
+						K = (std::exp(K) - 1.0 - K - K*K)/(K*K*K);
+					}
 
-					UEV[k] = (std::exp(K) - 1.0 - K - K*K)/(K*K*K);
+					UEV[k] = K*UEV[k];
 					break;
 
 				default:
@@ -783,8 +799,17 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 				for (int j = 0; j < 3; j++)
 					UEV[k] += v_inv[k][j] * U[j];
 
-			for (int k = 0; k < 3; k++)
-				UEV[k] = std::exp(i_fixed_dt*lambda[k])*UEV[k];
+
+			switch(phi_id)
+			{
+			case 0:
+				for (int k = 0; k < 3; k++)
+					UEV[k] = std::exp(i_fixed_dt*lambda[k])*UEV[k];
+				break;
+
+			default:
+				FatalError("Not yet supported");
+			}
 
 			for (int k = 0; k < 3; k++)
 				U[k] = 0.0;
