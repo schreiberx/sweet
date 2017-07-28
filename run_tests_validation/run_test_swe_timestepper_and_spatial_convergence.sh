@@ -14,7 +14,7 @@ BASEDIR=`pwd`
 cd "$BASEDIR/run_test_swe_timestepper_and_spatial_convergence"
 ./compile.sh || exit 1
 
-./cleanup.sh || exit 1
+./cleanup.sh
 
 
 # 1st order linear
