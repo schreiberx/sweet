@@ -20,7 +20,7 @@ cd "$BASEDIR/run_test_swe_timestepper_convergence"
 
 # encoding: group | tsm | order1 | order2 | rexi_direct_solution
 
-if true; then
+#if true; then
 if false; then
 	./jobs_create.py l1 l_irk 1 0 0
 
