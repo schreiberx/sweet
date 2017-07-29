@@ -48,7 +48,7 @@ public:
     timestepper_l_erk.resize(levelSingletons->size());
     ref_timestepper.resize(levelSingletons->size());
 
-    for (int level = 0; level < timestepper_l_irk_n_erk.size(); ++level) 
+    for (int level = 0; level < levelSingletons->size(); ++level) 
       {
 	// select first order integration in time for explicit
 	// and first order integration for implicit (only order currently supported)
@@ -65,6 +65,7 @@ public:
 					   ((*levelSingletons)[level].op)
 					   );
 	    timestepper_l_rexi_n_erk[level]->get_implicit_timestepper().setup(simVars->rexi);
+	    std::cout << "initialization" << std::endl;
 	  }
 	else 
 	  {
