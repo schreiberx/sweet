@@ -374,8 +374,8 @@ p.domain_size = 1
 #p.viscosity = 0.0005
 p.viscosity = 0.0
 
-#p.simtime = 0.1
-p.simtime = 0.5
+#p.simtime = 0.5
+p.simtime = 0.1
 p.output_timestep_size = p.simtime
 
 timestep_size_reference = 0.0001
