@@ -169,17 +169,22 @@ contains
     end do
   
    ! define the hooks to output data to the terminal (residual and error)
-    call pf_add_hook(pf,           & 
-                     pf%nlevels,   & 
+    call pf_add_hook(pf,            & 
+                     pf%nlevels,    & 
                      PF_POST_SWEEP, &
                      fecho_error)
     call pf_add_hook(pf,             &
                      -1,             &
                      PF_POST_SWEEP,  &
                      fecho_residual)   
+    call pf_add_hook(pf,            & 
+                     pf%nlevels,    &  
+                     PF_POST_STEP, &
+                     fecho_interpolation_errors)
 
     ! advance in time with libpfasst
     level = nlevs
+
     call pf_pfasst_run(pf,                    & 
                        pf%levels(level)%Q(1), &
                        dt,                    &
