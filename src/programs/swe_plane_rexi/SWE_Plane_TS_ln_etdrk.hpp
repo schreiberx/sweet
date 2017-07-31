@@ -27,6 +27,10 @@ class SWE_Plane_TS_ln_etdrk	: public SWE_Plane_TS_interface
 	SWE_Plane_TS_l_rexi ts_phi1_rexi;
 	SWE_Plane_TS_l_rexi ts_phi2_rexi;
 
+	SWE_Plane_TS_l_rexi ts_ups1_rexi;
+	SWE_Plane_TS_l_rexi ts_ups2_rexi;
+	SWE_Plane_TS_l_rexi ts_ups3_rexi;
+
 	int timestepping_order;
 
 private:
@@ -63,7 +67,9 @@ public:
 
 			PlaneData &o_h_t,	///< time updates
 			PlaneData &o_u_t,	///< time updates
-			PlaneData &o_v_t	///< time updates
+			PlaneData &o_v_t,	///< time updates
+
+			double i_timestamp
 	);
 
 	void run_timestep(

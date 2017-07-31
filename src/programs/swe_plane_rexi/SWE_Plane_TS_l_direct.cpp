@@ -27,10 +27,24 @@ void SWE_Plane_TS_l_direct:: setup(
 		phi_id = 2;
 	else if (i_function_name  == "phi3")
 		phi_id = 3;
-	else if (i_function_name  == "phi4")
-		phi_id = 4;
-	else if (i_function_name  == "phi5")
-		phi_id = 5;
+//	else if (i_function_name  == "phi4")
+//		phi_id = 4;
+//	else if (i_function_name  == "phi5")
+//		phi_id = 5;
+
+//	else if (i_function_name  == "ups0")
+//		phi_id = 100;
+	else if (i_function_name  == "ups1")
+		phi_id = 101;
+	else if (i_function_name  == "ups2")
+		phi_id = 102;
+	else if (i_function_name  == "ups3")
+		phi_id = 103;
+//	else if (i_function_name  == "ups4")
+//		phi_id = 104;
+//	else if (i_function_name  == "ups5")
+//		phi_id = 105;
+
 	else
 		FatalError(std::string("function ")+i_function_name+" not supported");
 }
@@ -422,12 +436,12 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 
 				switch(phi_id)
 				{
-				case 0:
+				case 0:	// phi0
 					K = i_fixed_dt*lambda[k];
-					UEV[k] = std::exp(K)*UEV[k];
+					K = std::exp(K);
 					break;
 
-				case 1:
+				case 1:	// phi1
 					// http://www.wolframalpha.com/input/?i=(exp(i*x)-1)%2F(i*x)
 					if (std::abs(lambda[k].imag()) < eps)
 					{
@@ -438,11 +452,9 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 						K = i_fixed_dt*lambda[k];
 						K = (std::exp(K)-1.0)/K;
 					}
-
-					UEV[k] = K*UEV[k];
 					break;
 
-				case 2:
+				case 2:	// phi2
 					// http://www.wolframalpha.com/input/?i=(exp(i*x)-1-i*x)%2F(i*x*i*x)
 					if (std::abs(lambda[k].imag()) < eps)
 					{
@@ -453,11 +465,9 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 						K = i_fixed_dt*lambda[k];
 						K = (std::exp(K) - 1.0 - K)/(K*K);
 					}
-
-					UEV[k] = K*UEV[k];
 					break;
 
-				case 3:
+				case 3:	// phi3
 					if (std::abs(lambda[k].imag()) < eps)
 					{
 						K = 1.0/std::complex<double>(2.0*3.0, 0.0);
@@ -467,13 +477,57 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 						K = i_fixed_dt*lambda[k];
 						K = (std::exp(K) - 1.0 - K - K*K)/(K*K*K);
 					}
-
-					UEV[k] = K*UEV[k];
 					break;
+
+
+				case 101:	// ups1
+					// http://www.wolframalpha.com/input/?i=(-4-K%2Bexp(K)*(4-3K%2BK*K))%2F(K*K*K)
+					if (std::abs(lambda[k].imag()) < eps)
+					{
+						K = 1.0/std::complex<double>(2.0*3.0, 0.0);
+					}
+					else
+					{
+						K = i_fixed_dt*lambda[k];
+						K = (-4.0-K+std::exp(K)*(4.0-3.0*K+K*K))/(K*K*K);
+					}
+					break;
+
+
+				case 102:	// ups2
+					// http://www.wolframalpha.com/input/?i=(2%2BK%2Bexp(K)*(-2%2BK))%2F(K*K*K)
+					if (std::abs(lambda[k].imag()) < eps)
+					{
+						K = 1.0/std::complex<double>(2.0*3.0, 0.0);
+					}
+					else
+					{
+						K = i_fixed_dt*lambda[k];
+						K = (2.0+K+std::exp(K)*(-2.0+K))/(K*K*K);
+					}
+					break;
+
+
+				case 103:	// ups3
+					// http://www.wolframalpha.com/input/?i=(-4-3*K-K*K%2Bexp(K)*(4-K))%2F(K*K*K)
+
+					if (std::abs(lambda[k].imag()) < eps)
+					{
+						K = 1.0/std::complex<double>(2.0*3.0, 0.0);
+					}
+					else
+					{
+						K = i_fixed_dt*lambda[k];
+						K = (-4.0-3.0*K-K*K+exp(K)*(4.0-K))/(K*K*K);
+					}
+					break;
+
 
 				default:
 					FatalError("This phi is not yet supported");
 				}
+
+				UEV[k] = K*UEV[k];
 			}
 
 			for (int k = 0; k < 3; k++)
