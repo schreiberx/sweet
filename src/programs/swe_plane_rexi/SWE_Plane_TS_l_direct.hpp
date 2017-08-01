@@ -18,6 +18,14 @@
 #include "SWE_Plane_TS_interface.hpp"
 
 
+
+#define SWE_PLANE_TS_L_DIRECT_QUADPRECISION	1
+
+
+#if SWE_PLANE_TS_L_DIRECT_QUADPRECISION
+	#include <quadmath.h>
+#endif
+
 class SWE_Plane_TS_l_direct	: public SWE_Plane_TS_interface
 {
 	SimulationVariables &simVars;
@@ -26,6 +34,97 @@ class SWE_Plane_TS_l_direct	: public SWE_Plane_TS_interface
 	int phi_id;
 
 	PlaneDataGridMapping planeDataGridMapping;
+
+
+#if SWE_PLANE_TS_L_DIRECT_QUADPRECISION
+
+	typedef __float128 T;
+
+	static std::complex<T> l_expcplx(std::complex<T> &i_value)
+	{
+		__complex128 z;
+		__real__ z = i_value.real();
+		__imag__ z = i_value.imag();
+
+		__complex128 val = cexpq(z);
+
+		return std::complex<double>(crealq(val), cimagq(val));
+	}
+
+	static T l_sqrt(T &i_value)
+	{
+		return sqrtq(i_value);
+	}
+
+	static const std::complex<T> l_sqrtcplx(const std::complex<T> &i_value)
+	{
+		__complex128 z;
+		__real__ z = i_value.real();
+		__imag__ z = i_value.imag();
+
+		__complex128 val = csqrtq(z);
+
+		return std::complex<double>(crealq(val), cimagq(val));
+	}
+
+	static T eps_phi()
+	{
+		return 1e-10;
+	}
+
+	static T eps_ups()
+	{
+		return 1e-10;
+	}
+
+	static T pi2()
+	{
+		static char *sp;
+		static T retval = (T)2.0*strtoflt128("3.1415926535897932384626433832795029", &sp);
+		return retval;
+	}
+
+#else
+
+	/*
+	 * Double precision
+	 * Might suffer of numerical double precision limited effects
+	 */
+	typedef double T;
+
+	std::complex<T> l_expcplx(std::complex<T> &i_value)
+	{
+		return std::exp(i_value);
+	};
+
+	T l_sqrt(T &i_value)
+	{
+		return l_sqrt(i_value);
+	};
+
+	std::complex<T> l_sqrtcplx(std::complex<T> &i_value)
+	{
+		return std::exp(i_value);
+	};
+
+
+	static T eps_phi()
+	{
+		return 1e-10;
+	}
+
+	static T eps_ups()
+	{
+		return 1e-10;
+	}
+
+	static T pi2()
+	{
+		return (T)2.0*(T)M_PI;
+	}
+
+#endif
+
 
 public:
 	SWE_Plane_TS_l_direct(

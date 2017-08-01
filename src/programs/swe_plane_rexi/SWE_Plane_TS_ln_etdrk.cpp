@@ -149,6 +149,7 @@ void SWE_Plane_TS_ln_etdrk::run_timestep(
 		PlaneData phi0_Un_h(planeDataConfig);
 		PlaneData phi0_Un_u(planeDataConfig);
 		PlaneData phi0_Un_v(planeDataConfig);
+
 		ts_phi0_rexi.run_timestep(
 				io_h, io_u, io_v,
 				phi0_Un_h, phi0_Un_u, phi0_Un_v,
@@ -234,13 +235,6 @@ void SWE_Plane_TS_ln_etdrk::run_timestep(
 		double dt_half = dt*0.5;
 
 
-		/*
-		 * Some commonly shared buffers
-		 */
-
-		PlaneData phi1_h(planeDataConfig);
-		PlaneData phi1_u(planeDataConfig);
-		PlaneData phi1_v(planeDataConfig);
 
 		/*
 		 * Precompute commonly used terms
@@ -254,8 +248,7 @@ void SWE_Plane_TS_ln_etdrk::run_timestep(
 				phi0_Un_h, phi0_Un_u, phi0_Un_v,
 				o_dt,
 				dt_half,
-				i_simulation_timestamp,
-				i_max_simulation_time
+				i_simulation_timestamp
 			);
 
 		PlaneData FUn_h(planeDataConfig);
@@ -269,6 +262,16 @@ void SWE_Plane_TS_ln_etdrk::run_timestep(
 		);
 
 
+
+		/*
+		 * Some commonly shared buffers
+		 */
+
+		PlaneData phi1_h(planeDataConfig);
+		PlaneData phi1_u(planeDataConfig);
+		PlaneData phi1_v(planeDataConfig);
+
+
 		/*
 		 * A_{n} = \psi_{0}(0.5*\Delta tL)U_{n} + \Delta t\psi_{1}(0.5*\Delta tL) F(U_{n})
 		 */
@@ -277,13 +280,13 @@ void SWE_Plane_TS_ln_etdrk::run_timestep(
 				phi1_h, phi1_u, phi1_v,
 				o_dt,
 				dt_half,
-				i_simulation_timestamp,
-				i_max_simulation_time
+				i_simulation_timestamp
 			);
 
 		PlaneData A_h = phi0_Un_h + dt_half*phi1_h;
 		PlaneData A_u = phi0_Un_u + dt_half*phi1_u;
 		PlaneData A_v = phi0_Un_v + dt_half*phi1_v;
+
 
 
 		/*
@@ -305,8 +308,7 @@ void SWE_Plane_TS_ln_etdrk::run_timestep(
 				phi1_h, phi1_u, phi1_v,
 				o_dt,
 				dt_half,
-				i_simulation_timestamp,
-				i_max_simulation_time
+				i_simulation_timestamp
 			);
 
 		PlaneData B_h = phi0_Un_h + dt_half*phi1_h;
@@ -318,6 +320,19 @@ void SWE_Plane_TS_ln_etdrk::run_timestep(
 		/*
 		 * C_{n} = \psi_{0}(0.5*\Delta tL)U_{n} + 0.5*\Delta t\psi_{1}(0.5* \Delta tL) ( 2 F(B_{n},t_{n} + 0.5*\Delta t)-F(U_{n},t_{n})).
 		 */
+
+		PlaneData phi0_An_h(planeDataConfig);
+		PlaneData phi0_An_u(planeDataConfig);
+		PlaneData phi0_An_v(planeDataConfig);
+
+		ts_phi0_rexi.run_timestep(
+				A_h, A_u, A_v,
+				phi0_An_h, phi0_An_u, phi0_An_v,
+				o_dt,
+				dt_half,
+				i_simulation_timestamp
+			);
+
 
 		PlaneData FBn_h(planeDataConfig);
 		PlaneData FBn_u(planeDataConfig);
@@ -333,36 +348,34 @@ void SWE_Plane_TS_ln_etdrk::run_timestep(
 				2.0*FBn_h - FUn_h,
 				2.0*FBn_u - FUn_u,
 				2.0*FBn_v - FUn_v,
-				phi1_h, phi1_u, phi1_v,
+				phi1_h,	phi1_u,	phi1_v,
 				o_dt,
 				dt_half,
-				i_simulation_timestamp,
-				i_max_simulation_time
+				i_simulation_timestamp
 			);
 
-		PlaneData C_h = phi0_Un_h + dt_half*phi1_h;
-		PlaneData C_u = phi0_Un_u + dt_half*phi1_u;
-		PlaneData C_v = phi0_Un_v + dt_half*phi1_v;
+		PlaneData C_h = phi0_An_h + dt_half*phi1_h;
+		PlaneData C_u = phi0_An_u + dt_half*phi1_u;
+		PlaneData C_v = phi0_An_v + dt_half*phi1_v;
 
 
 
 		/*
 		 * R0 - R3
 		 */
-
 		PlaneData FCn_h(planeDataConfig);
 		PlaneData FCn_u(planeDataConfig);
 		PlaneData FCn_v(planeDataConfig);
 
 		euler_timestep_update_nonlinear(
-				B_h, B_u, B_v,
+				C_h, C_u, C_v,
 				FCn_h, FCn_u, FCn_v,
 				i_simulation_timestamp + dt
 		);
 
-		PlaneData &R0_h = io_h;
-		PlaneData &R0_u = io_u;
-		PlaneData &R0_v = io_v;
+		PlaneData R0_h = io_h;
+		PlaneData R0_u = io_u;
+		PlaneData R0_v = io_v;
 
 		PlaneData &R1_h = FUn_h;
 		PlaneData &R1_u = FUn_u;
@@ -380,30 +393,31 @@ void SWE_Plane_TS_ln_etdrk::run_timestep(
 		/*
 		 * U_{n+1} =
 		 * 		\psi_{0}(\Delta tL)R_{0}
-		 * 			+\Delta t (
-		 * 				\upsilon_{1}(\Delta tL)R_{1} +
-		 * 				2\upsilon_{2}(\Delta tL)R_{2} +
-		 * 				\upsilon_{3}(\Delta tL)R_{3}
+		 * 			+ \Delta t
+		 * 			(
+		 * 				  \upsilon_{1}(\Delta tL) R_{1} +
+		 * 				2*\upsilon_{2}(\Delta tL) R_{2} +
+		 * 				  \upsilon_{3}(\Delta tL) R_{3}
 		 * 			)
 		 */
 		ts_phi0_rexi.run_timestep(
 				R0_h, R0_u, R0_v,
-				o_dt,	dt,		i_simulation_timestamp,		i_max_simulation_time
+				o_dt,	dt,		i_simulation_timestamp
 			);
 
 		ts_ups1_rexi.run_timestep(
 				R1_h, R1_u, R1_v,
-				o_dt,	dt,		i_simulation_timestamp,		i_max_simulation_time
+				o_dt,	dt,		i_simulation_timestamp
 			);
 
 		ts_ups2_rexi.run_timestep(
 				R2_h, R2_u, R2_v,
-				o_dt,	dt,		i_simulation_timestamp,		i_max_simulation_time
+				o_dt,	dt,		i_simulation_timestamp
 			);
 
 		ts_ups3_rexi.run_timestep(
 				R3_h, R3_u, R3_v,
-				o_dt,	dt,		i_simulation_timestamp,		i_max_simulation_time
+				o_dt,	dt,		i_simulation_timestamp
 			);
 
 		io_h = R0_h + dt*(R1_h + 2.0*R2_h + R3_h);
