@@ -65,7 +65,6 @@ public:
 					   ((*levelSingletons)[level].op)
 					   );
 	    timestepper_l_rexi_n_erk[level]->get_implicit_timestepper().setup(simVars->rexi);
-	    std::cout << "initialization" << std::endl;
 	  }
 	else 
 	  {
