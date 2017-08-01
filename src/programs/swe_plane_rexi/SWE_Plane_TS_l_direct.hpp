@@ -51,6 +51,7 @@ class SWE_Plane_TS_l_direct	: public SWE_Plane_TS_interface
 		return std::complex<double>(crealq(val), cimagq(val));
 	}
 
+	inline
 	static T l_sqrt(T &i_value)
 	{
 		return sqrtq(i_value);
@@ -67,16 +68,19 @@ class SWE_Plane_TS_l_direct	: public SWE_Plane_TS_interface
 		return std::complex<double>(crealq(val), cimagq(val));
 	}
 
+	inline
 	static T eps_phi()
 	{
 		return 1e-10;
 	}
 
+	inline
 	static T eps_ups()
 	{
 		return 1e-10;
 	}
 
+	inline
 	static T pi2()
 	{
 		static char *sp;

@@ -379,13 +379,13 @@ p.simtime = 0.1
 p.output_timestep_size = p.simtime
 
 timestep_size_reference = 0.0001
-timestep_sizes = [0.0001*(2.0**i) for i in range(0, 14)]
+timestep_sizes = [0.0001*(2.0**i) for i in range(0, 11)]
 
 
 # Groups to execute, see below
 # l: linear
 # ln: linear and nonlinear
-groups = ['l1', 'l2', 'ln1', 'ln2']
+groups = ['l1', 'l2', 'ln1', 'ln2', 'ln4']
 #groups = ['ln2test']
 
 #if len(sys.argv) < 5:
@@ -459,11 +459,22 @@ for group in groups:
 #			['ln_erk',		2,	2,	0],
 #			['l_rexi_n_erk',	2,	2,	0],
 		]
-                
+
+	# 4th order nonlinear
+	if group == 'ln4':
+		ts_methods = [
+			['ln_erk',		4,	4,	0],	# reference solution
+			#['ln_etdrk',		4,	4,	1],	# reference solution
+
+			['ln_etdrk',		4,	4,	1],
+			['ln_erk',		4,	4,	0],
+		]
+
+
+
 	#
 	# OVERRIDE TS methods
 	#
-
 	if len(sys.argv) > 4:
 		ts_methods = [ts_methods[0]]+[[sys.argv[2], int(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5])]]
 

@@ -17,6 +17,7 @@ groups = [
 
 	['ln1', 1],
 	['ln2', 2],
+	['ln4', 4],
 
 	['ln1test', 1],
 	['ln2space', 2]
@@ -108,17 +109,33 @@ for group_info in groups:
 		print("Measured convergence: "+str(conv_test))
                 
 		# test these first convergence tests
-		for i in range(1,4):
-			if conv_test[i] == 0.0:
-				print("Invalid convergence of 0")
-				sys.exit(1)
+		if 'ln4' in group_info[0]:
+			# Comparing RK4 with 4-th order methods requires a more relaxed test
+			# This works and was empirically determined
+			test_range = range(3,6)
+			max_error_rate = 0.5
+		else:
+			test_range = range(1,4)
+			max_error_rate = 0.05
 
-			a = abs(1.0-abs(conv_test[i]-conv_order)/conv_order )
+		for i in test_range:
+			if conv_test[i] == 0.0:
+				if 'ln4' not in group_info[0]:
+					print("Invalid convergence of 0")
+					sys.exit(1)
+
+			conv_rate = 2**conv_order
+			a = abs(conv_test[i]-conv_rate)/conv_rate
 			print("Testing convergence "+str(conv_test[i])+": "+str(a))
 
-			if a > 0.05 and  group_info[0] != "ln2space":
-				print("ERROR: First tests should converge, but was not the case")
-				sys.exit(1)
-                        elif a>0.05 and group_info[0]=="ln2space":
-                                print("Warning:Spatial discretization errors might be dominating error, so no convergence in time observed")
+                        if a > max_error_rate:
+				if group_info[0] == "ln2space":
+					print("ERROR: First tests should converge, but was not the case")
+					continue
 
+				print("ERROR: Convergence rate not given")
+				print("ERROR: Tested with convergence rate "+str(conv_test[i]))
+				print("ERROR: Expected convergence rate "+str(conv_rate))
+				print("ERROR: Relative error: "+str(a))
+				print("ERROR: Max error: "+str(max_error_rate))
+				sys.exit(1)
