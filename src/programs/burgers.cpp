@@ -903,7 +903,7 @@ public:
 
 		while (simVars.timecontrol.current_simulation_time < timeframe_end)
 		{
-			this->run_timestep(simVars.disc.timestepping_method, simVars.disc.timestepping_order);
+			this->run_timestep();
 			assert(simVars.timecontrol.current_simulation_time <= timeframe_end);
 		}
 
