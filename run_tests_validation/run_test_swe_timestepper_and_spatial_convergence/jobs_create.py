@@ -147,14 +147,14 @@ class default_params:
 # YELLOW STONE SPECIFIC!!!
 # https://www2.cisl.ucar.edu/resources/computational-systems/yellowstone/
 #
-#BSUB -P NCIS0002            # project code
-#BSUB -W 02:00               # wall-clock time (hrs:mins)
+#BSUB -P NCIS0002	     # project code
+#BSUB -W 02:00		     # wall-clock time (hrs:mins)
 #
-#BSUB -n """+str(mpi_ranks_total)+"""   # number of tasks in job         
+#BSUB -n """+str(mpi_ranks_total)+"""	# number of tasks in job	 
 #BSUB -R "span[ptile=16]"    # run 16 MPI tasks per node
 #
 #BSUB -outdir """+dirname+"""
-#BSUB -J """+job_id+"""      # job name
+#BSUB -J """+job_id+"""	     # job name
 #BSUB -o """+dirname+""".out  # output file name in which %J is replaced by the job ID
 #BSUB -e """+dirname+""".out  # error file name in which %J is replaced by the job ID
 #
@@ -211,8 +211,8 @@ cd "$BASEDIR"
 
 		if self.rexi_par:
 			content += 'EXEC="$SWEETROOT/build/swe_plane_rexi_planespectral_planedealiasing_rexipar_libfft_gnu_release'
-                elif self.spectralderiv==0:
-                        content += 'EXEC="$SWEETROOT/build/swe_plane_rexi_omp_libfft_gnu_release'
+		elif self.spectralderiv == 0:
+			content += 'EXEC="$SWEETROOT/build/swe_plane_rexi_omp_libfft_gnu_release'
 		else:
 			content += 'EXEC="$SWEETROOT/build/swe_plane_rexi_planespectral_planedealiasing_omp_libfft_gnu_release'
 
@@ -318,7 +318,7 @@ $EXEC || exit 1
 #				idstr += '_rexih'+str(self.rexi_h)
 #				idstr += '_rexinorm'+str(self.rexi_normalization)
 #				idstr += '_rexihalf'+str(self.rexi_half_poles)
-	
+
 			if self.plane_or_sphere == 'sphere':
 				idstr += '_rexiprealloc'+str(self.rexi_sphere_preallocation)
 				idstr += '_rexiextmodes'+str(self.rexi_extended_modes).zfill(2)
@@ -457,7 +457,7 @@ for group in groups:
 		ts_methods = [
 			['ln_erk',		4,	4],	# reference solution - spectral (128 grid points)
 			['ln_erk',		2,	2],	# FD- C-grid
-			['l_cn_na_sl_nd_settls', 2,	2],     # SI-SL-SP
+			['l_cn_na_sl_nd_settls', 2,	2],	# SI-SL-SP
 #			['l_erk_n_erk',		2,	2],
 #			['ln_erk',		2,	2],
 #			['l_rexi_n_erk',	2,	2],
@@ -497,15 +497,15 @@ for group in groups:
 
 
 	for tsm in ts_methods[1:]:
-                
-                if group == 'ln2space' and 'ln_erk' in tsm[0]:
+
+		if group == 'ln2space' and 'ln_erk' in tsm[0]:
 			p.staggering = 1
 			p.spectralderiv = 0
 
-                if group == 'ln2space' and 'l_cn_na_sl_nd_settls' in tsm[0]:
-                        p.staggering = 0
+		if group == 'ln2space' and 'l_cn_na_sl_nd_settls' in tsm[0]:
+			p.staggering = 0
 			p.spectralderiv = 1
-                                
+
 		for phys_res in phys_res_list:
 			print(phys_res)
 
