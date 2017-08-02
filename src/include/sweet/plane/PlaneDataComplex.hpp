@@ -755,7 +755,8 @@ public:
 		double sum = 0;
 		double c = 0;
 
-#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING
+//#if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
@@ -784,7 +785,8 @@ public:
 		double sum = 0;
 		double c = 0;
 
-#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING
+//#if !SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
