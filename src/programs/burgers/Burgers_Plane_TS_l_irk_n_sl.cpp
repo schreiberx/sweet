@@ -110,7 +110,8 @@ void Burgers_Plane_TS_l_irk_n_sl::setup()
 		[&](int i, int j, double &io_data)
 		{
 			io_data = ((double)i)*simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
-		}
+		},
+		false
 	);
 
 	PlaneData tmp_y(op.planeDataConfig);
@@ -118,7 +119,8 @@ void Burgers_Plane_TS_l_irk_n_sl::setup()
 		[&](int i, int j, double &io_data)
 		{
 			io_data = ((double)j)*simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
-		}
+		},
+		false
 	);
 
 	// Initialize arrival points with h position
