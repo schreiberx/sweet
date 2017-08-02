@@ -1107,8 +1107,8 @@ int main(
 
 	sphereDataConfigExtInstance.setupAdditionalModes(
 			&sphereDataConfigInstance,
-			simVars.rexi.use_extended_modes,
-			simVars.rexi.use_extended_modes
+			simVars.rexi.use_sphere_extended_modes,
+			simVars.rexi.use_sphere_extended_modes
 		);
 
 	run_tests();
