@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import glob
 import subprocess
@@ -33,8 +33,8 @@ for group_info in groups:
 			ref_dir=i
 			break
 
-	print "Group:", group_info
-	print "Using reference: ", ref_dir
+	print("Group:"+str(group_info))
+	print("Using reference: "+str(ref_dir))
 
 	prev_conv_value = 0.0
 
@@ -72,8 +72,8 @@ for group_info in groups:
 		conv_test = []
 		prev_conv_value = 0.0
 
-		print ""
-		print "Running tests for new group:"
+		print("")
+		print("Running tests for new group:")
 		for rundir in g:
 			progparams = ['./pp_compute_max_and_rms_errors.py', ref_dir+"/"+datafile, rundir+"/"+datafile, rundir]
 
@@ -90,11 +90,13 @@ for group_info in groups:
 
 			result = output
 
+			result = result.decode()
+
 			# last line contains convergence info
 			if result[-1] == '\n':
 				result = result[0:-1]
 
-			last_conv_value = float(result.split("\t")[-1])
+			last_conv_value = float(result.split('\t')[-1])
 
 			if prev_conv_value == 0.0:
 				conv_test.append(0.0)
@@ -128,7 +130,7 @@ for group_info in groups:
 			a = abs(conv_test[i]-conv_rate)/conv_rate
 			print("Testing convergence "+str(conv_test[i])+": "+str(a))
 
-                        if a > max_error_rate:
+			if a > max_error_rate:
 				if group_info[0] == "ln2space":
 					print("ERROR: First tests should converge, but was not the case")
 					continue
