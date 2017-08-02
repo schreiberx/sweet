@@ -138,7 +138,6 @@ public:
 			PlaneData &o_u_t,	///< time updates
 			PlaneData &o_v_t,	///< time updates
 
-			double &o_dt,			///< time step restriction
 			double i_fixed_dt = 0,	///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_current_timestamp = -1
 	)
@@ -146,11 +145,6 @@ public:
 		o_h_t.physical_set_all(test_function_diff(time_test_function_order, i_current_timestamp));
 		o_u_t.physical_set_all(0);
 		o_v_t.physical_set_all(0);
-
-		if (simVars.sim.CFL < 0)
-			o_dt = -simVars.sim.CFL;
-		else
-			o_dt = 0.1;
 
 		simVars.timecontrol.current_timestep_nr++;
 	}
@@ -165,26 +159,23 @@ public:
 
 	void run_timestep()
 	{
-		double dt;
-
-
 		// either set time step size to 0 for autodetection or to
 		// a positive value to use a fixed time step size
-		simVars.timecontrol.current_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
+		//simVars.timecontrol.current_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
+		assert(simVars.sim.CFL < 0);
+		assert(simVars.timecontrol.current_timestep_size > 0);
 
 		timestepping.run_timestep(
 				this,
 				&SimulationTestRK::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
 				prog_h, prog_u, prog_v,
-				dt,
 				simVars.timecontrol.current_timestep_size,
 				timestepping_runge_kutta_order,
 				simVars.timecontrol.current_simulation_time
 			);
 
 		// provide information to parameters
-		simVars.timecontrol.current_timestep_size = dt;
-		simVars.timecontrol.current_simulation_time += dt;
+		simVars.timecontrol.current_simulation_time += simVars.timecontrol.current_timestep_size;
 		simVars.timecontrol.current_timestep_nr++;
 	}
 
