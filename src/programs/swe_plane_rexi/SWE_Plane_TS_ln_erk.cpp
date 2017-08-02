@@ -30,18 +30,15 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 		PlaneData &o_u_t,	///< time updates
 		PlaneData &o_v_t,	///< time updates
 
-		double &o_dt,			///< time step restriction
-		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp
 )
 {
 	/*
 	 * TIME STEP SIZE
 	 */
-	if (i_fixed_dt <= 0)
+	if (i_dt <= 0)
 		FatalError("Only fixed time step size allowed");
-
-	o_dt = i_fixed_dt;
 
 
 	// A-grid method
@@ -167,30 +164,21 @@ void SWE_Plane_TS_ln_erk::run_timestep(
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
 
-		double &o_dt,			///< time step restriction
-		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
-		double i_simulation_timestamp,
-		double i_max_simulation_time
+		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_simulation_timestamp
 )
 {
-	if (i_fixed_dt <= 0)
+	if (i_dt <= 0)
 		FatalError("SWE_Plane_TS_ln_erk: Only constant time step size allowed");
-
-	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
-		i_fixed_dt = i_max_simulation_time - i_simulation_timestamp;
-
-	o_dt = i_fixed_dt;
 
 	// standard time stepping
 	timestepping_rk.run_timestep(
 			this,
 			&SWE_Plane_TS_ln_erk::euler_timestep_update,	///< pointer to function to compute euler time step updates
 			io_h, io_u, io_v,
-			o_dt,
-			i_fixed_dt,
+			i_dt,
 			timestepping_order,
-			i_simulation_timestamp,
-			i_max_simulation_time
+			i_simulation_timestamp
 		);
 }
 

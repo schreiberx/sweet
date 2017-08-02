@@ -16,10 +16,8 @@ void Burgers_Plane_TS_ln_imex::run_timestep(
 		PlaneData &io_u_prev,	///< prognostic variables
 		PlaneData &io_v_prev,	///< prognostic variables
 
-		double &o_dt,			///< time step restriction
 		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
-		double i_simulation_timestamp,
-		double i_max_simulation_time
+		double i_simulation_timestamp
 )
 {
 	if (simVars.misc.verbosity > 2)
@@ -27,13 +25,7 @@ void Burgers_Plane_TS_ln_imex::run_timestep(
 
 	PlaneData u=io_u;
 	PlaneData v=io_v;
-
-	// Modify timestep to final time if necessary
-	double& t = o_dt;
-	if (simVars.timecontrol.current_simulation_time+i_fixed_dt < i_max_simulation_time)
-		t = i_fixed_dt;
-	else
-		t = i_max_simulation_time-simVars.timecontrol.current_simulation_time;
+	double t = i_fixed_dt;
 
 	// Initialize and set timestep dependent source for manufactured solution
 	PlaneData f(io_u.planeDataConfig);

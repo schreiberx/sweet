@@ -17,17 +17,12 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
 
-		double &o_dt,			///< time step restriction
-		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
-		double i_simulation_timestamp,
-		double i_max_simulation_time
+		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_simulation_timestamp
 )
 {
-	if (i_fixed_dt <= 0)
+	if (i_dt <= 0)
 		FatalError("SWE_Plane_TS_l_rexi_na_sl_nd_erk: Only constant time step size allowed");
-
-	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
-		i_fixed_dt = i_max_simulation_time - i_simulation_timestamp;
 
 	if (i_simulation_timestamp == 0)
 	{
@@ -55,7 +50,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 	ScalarDataArray posy_d(io_h.planeDataConfig->physical_array_data_number_of_elements);
 
 	//Parameters
-	double dt = i_fixed_dt;
+	double dt = i_dt;
 
 	Staggering staggering;
 	assert(staggering.staggering_type == 'a');
@@ -94,8 +89,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 
 		//Calculate exp(Ldt)N(n-1), relative to previous timestep
 		//Calculate the V{n-1} term as in documentation, with the exponential integrator
-		double o_dt;
-		ts_l_rexi.run_timestep(N_h, N_u, N_v, o_dt, i_fixed_dt, i_simulation_timestamp, i_max_simulation_time);
+		ts_l_rexi.run_timestep(N_h, N_u, N_v, i_dt, i_simulation_timestamp);
 
 		//Use N_h to store now the nonlinearity of the current time (prev will not be required anymore)
 		//Update the nonlinear terms with the constants relative to dt
@@ -125,7 +119,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 	/*
 	 * Calculate the exp(Ldt) W{n}_* term as in documentation, with the exponential integrator?
 	 */
-	ts_l_rexi.run_timestep(h, u, v, o_dt, i_fixed_dt, i_simulation_timestamp, i_max_simulation_time);
+	ts_l_rexi.run_timestep(h, u, v, i_dt, i_simulation_timestamp);
 
 	if (with_nonlinear > 1)
 	{
@@ -142,8 +136,6 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 	io_h = h;
 	io_u = u;
 	io_v = v;
-
-	o_dt = i_fixed_dt;
 }
 
 

@@ -313,7 +313,6 @@ public:
 			PlaneData &o_u_t,		///< time updates
 			PlaneData &o_v_t,		///< time updates
 
-			double &o_dt,				///< time step restriction
 			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp = -1
 	)
@@ -407,33 +406,24 @@ public:
 			exit(-1);
 		}
 
-
-		if (i_fixed_dt > 0)
-		{
-			o_dt = i_fixed_dt;
-		}
-		else
-		{
-			if (i_fixed_dt < 0)
-			{
-				o_dt = -i_fixed_dt;
-			}
-			else
-			{
-				if (simVars.sim.CFL < 0)
-					o_dt = -simVars.sim.CFL*std::min(cell_size_x/i_u.reduce_maxAbs(), cell_size_y/i_v.reduce_maxAbs());
-				else
-					o_dt = simVars.sim.CFL*std::min(cell_size_x/i_u.reduce_maxAbs(), cell_size_y/i_v.reduce_maxAbs());
-			}
-
-		}
-
 		o_u_t.physical_set_all(0);
 		o_v_t.physical_set_all(0);
 
 		simVars.timecontrol.current_timestep_nr++;
 	}
 
+
+	double getMaxTimestepsize(
+			const PlaneData &i_u,
+			const PlaneData &i_v
+	)
+	{
+		double cell_size_x = simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
+		double cell_size_y = simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
+
+		assert(simVars.sim.CFL > 0);
+		return simVars.sim.CFL*std::min(cell_size_x/i_u.reduce_maxAbs(), cell_size_y/i_v.reduce_maxAbs());
+	}
 
 
 	void run()
@@ -444,25 +434,20 @@ public:
 
 	void run_timestep()
 	{
-		double dt;
-
-		// either set time step size to 0 for autodetection or to
-		// a positive value to use a fixed time step size
-		simVars.timecontrol.current_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
+		if (simVars.sim.CFL > 0)
+			simVars.timecontrol.current_timestep_size = getMaxTimestepsize(prog_u, prog_v);
 
 		timestepping.run_timestep(
 				this,
 				&SimulationAdvection::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
 				prog_h, prog_u, prog_v,
-				dt,
 				simVars.timecontrol.current_timestep_size,
 				simVars.disc.timestepping_order,
 				simVars.timecontrol.current_simulation_time
 			);
 
 		// provide information to parameters
-		simVars.timecontrol.current_timestep_size = dt;
-		simVars.timecontrol.current_simulation_time += dt;
+		simVars.timecontrol.current_simulation_time += simVars.timecontrol.current_timestep_size;
 		simVars.timecontrol.current_timestep_nr++;
 	}
 

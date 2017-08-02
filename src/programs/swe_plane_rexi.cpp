@@ -790,47 +790,43 @@ public:
 	 */
 	void run_timestep()
 	{
-		double o_dt;
-
 		simVars.timecontrol.current_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
 
 #if 0
 		timeSteppers.l_direct->run_timestep_agrid_planedatacomplex(
 				prog_h_pert, prog_u, prog_v,
-				o_dt,
 				simVars.timecontrol.current_timestep_size,
-				simVars.timecontrol.current_simulation_time,
-				simVars.timecontrol.max_simulation_time
+				simVars.timecontrol.current_simulation_time
 			);
 #else
 		timeSteppers.master->run_timestep(
 				prog_h_pert, prog_u, prog_v,
-				o_dt,
 				simVars.timecontrol.current_timestep_size,
-				simVars.timecontrol.current_simulation_time,
-				simVars.timecontrol.max_simulation_time
+				simVars.timecontrol.current_simulation_time
 			);
 #endif
 		// Apply viscosity at posteriori, for all methods explicit diffusion for non spectral schemes and implicit for spectral
 		if (simVars.sim.viscosity != 0)
 		{
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE //TODO: this needs checking
-			prog_u = prog_u + pow(-1,simVars.sim.viscosity_order/2)* o_dt*op.diffN_x(prog_u, simVars.sim.viscosity_order)*simVars.sim.viscosity
-					+ pow(-1,simVars.sim.viscosity_order/2)*o_dt*op.diffN_y(prog_u, simVars.sim.viscosity_order)*simVars.sim.viscosity;
-			prog_v = prog_v + pow(-1,simVars.sim.viscosity_order/2)* o_dt*op.diffN_x(prog_v, simVars.sim.viscosity_order)*simVars.sim.viscosity
-					+ pow(-1,simVars.sim.viscosity_order/2)*o_dt*op.diffN_y(prog_v, simVars.sim.viscosity_order)*simVars.sim.viscosity;
-			prog_h_pert = prog_h_pert + pow(-1,simVars.sim.viscosity_order/2)* o_dt*op.diffN_x(prog_h_pert, simVars.sim.viscosity_order)*simVars.sim.viscosity
-					+ pow(-1,simVars.sim.viscosity_order/2)*o_dt*op.diffN_y(prog_h_pert, simVars.sim.viscosity_order)*simVars.sim.viscosity;
+
+			double dt = simVars.timecontrol.current_timestep_size;
+
+			prog_u = prog_u + pow(-1,simVars.sim.viscosity_order/2)* dt*op.diffN_x(prog_u, simVars.sim.viscosity_order)*simVars.sim.viscosity
+					+ pow(-1,simVars.sim.viscosity_order/2)*dt*op.diffN_y(prog_u, simVars.sim.viscosity_order)*simVars.sim.viscosity;
+			prog_v = prog_v + pow(-1,simVars.sim.viscosity_order/2)* dt*op.diffN_x(prog_v, simVars.sim.viscosity_order)*simVars.sim.viscosity
+					+ pow(-1,simVars.sim.viscosity_order/2)*dt*op.diffN_y(prog_v, simVars.sim.viscosity_order)*simVars.sim.viscosity;
+			prog_h_pert = prog_h_pert + pow(-1,simVars.sim.viscosity_order/2)* dt*op.diffN_x(prog_h_pert, simVars.sim.viscosity_order)*simVars.sim.viscosity
+					+ pow(-1,simVars.sim.viscosity_order/2)*dt*op.diffN_y(prog_h_pert, simVars.sim.viscosity_order)*simVars.sim.viscosity;
 #else
-			prog_u = op.implicit_diffusion(prog_u, o_dt*simVars.sim.viscosity, simVars.sim.viscosity_order);
-			prog_v = op.implicit_diffusion(prog_v, o_dt*simVars.sim.viscosity, simVars.sim.viscosity_order);
-			prog_h_pert = op.implicit_diffusion(prog_h_pert, o_dt*simVars.sim.viscosity, simVars.sim.viscosity_order);
+			prog_u = op.implicit_diffusion(prog_u, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.viscosity_order);
+			prog_v = op.implicit_diffusion(prog_v, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.viscosity_order);
+			prog_h_pert = op.implicit_diffusion(prog_h_pert, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.viscosity_order);
 #endif
 		}
 
 		// advance time step and provide information to parameters
-		simVars.timecontrol.current_timestep_size = o_dt;
-		simVars.timecontrol.current_simulation_time += o_dt;
+		simVars.timecontrol.current_simulation_time += simVars.timecontrol.current_timestep_size;
 		simVars.timecontrol.current_timestep_nr++;
 
 		if (simVars.timecontrol.current_simulation_time > simVars.timecontrol.max_simulation_time)
@@ -1019,14 +1015,11 @@ public:
 				PlaneData ts_u = t0_prog_u;
 				PlaneData ts_v = t0_prog_v;
 
-				double o_dt;
 				// Run exact solution for linear case
 				timeSteppers.l_direct->run_timestep(
 						ts_h_pert, ts_u, ts_v,
-						o_dt,	// compute direct solution
 						simVars.timecontrol.current_simulation_time,
-						0,			// initial condition given at time 0
-						simVars.timecontrol.max_simulation_time
+						0			// initial condition given at time 0
 				);
 
 				benchmark.analytical_error_rms_h = (ts_h_pert-prog_h_pert).reduce_rms_quad();
@@ -1102,14 +1095,11 @@ public:
 			PlaneData ts_u = t0_prog_u;
 			PlaneData ts_v = t0_prog_v;
 
-			double o_dt;
 			// Run exact solution for linear case
 			timeSteppers.l_direct->run_timestep(
 					ts_h_pert, ts_u, ts_v,
-					o_dt,	// compute direct solution
 					simVars.timecontrol.current_simulation_time,
-					0,			// initial condition given at time 0
-					simVars.timecontrol.max_simulation_time
+					0			// initial condition given at time 0
 			);
 
 #if 0
@@ -1826,16 +1816,13 @@ int main(int i_argc, char *i_argv[])
 
 			do
 			{
-				double o_dt;
 				// REXI time stepping
 				rexiSWE.run_timestep(
 						prog_h_pert,
 						prog_u,
 						prog_v,
-						o_dt,					///< time step restriction
 						-simVars.sim.CFL,		///< if this value is not equal to 0, use this time step size instead of computing one
-						simVars.timecontrol.current_simulation_time,
-						simVars.timecontrol.max_simulation_time
+						simVars.timecontrol.current_simulation_time
 
 				);
 			}

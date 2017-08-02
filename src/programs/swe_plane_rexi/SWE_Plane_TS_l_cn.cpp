@@ -24,44 +24,32 @@ void SWE_Plane_TS_l_cn::run_timestep(
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
 
-		double &o_dt,			///< time step restriction
-		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
-		double i_simulation_timestamp,
-		double i_max_simulation_time
+		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_simulation_timestamp
 )
 {
-	if (i_fixed_dt <= 0)
+	if (i_dt <= 0)
 		FatalError("SWE_Plane_TS_l_cn: Only constant time step size allowed");
-
-	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
-		i_fixed_dt = i_max_simulation_time - i_simulation_timestamp;
 
 
 	PlaneData h_linear_t1 = io_h;
 	PlaneData u_linear_t1 = io_u;
 	PlaneData v_linear_t1 = io_v;
 
-	double o_dummy;
 	ts_l_erk.run_timestep(
 			io_h,
 			io_u,
 			io_v,
 
-			o_dummy,
-			i_fixed_dt*(1.0-crank_nicolson_damping_factor),
-			i_simulation_timestamp,
-			i_max_simulation_time
+			i_dt*(1.0-crank_nicolson_damping_factor),
+			i_simulation_timestamp
 		);
 
 	ts_l_irk.run_timestep(
 			io_h, io_u, io_v,
-			o_dummy,
-			i_fixed_dt*crank_nicolson_damping_factor,
-			i_simulation_timestamp,
-			i_max_simulation_time
+			i_dt*crank_nicolson_damping_factor,
+			i_simulation_timestamp
 		);
-
-	o_dt = i_fixed_dt;
 }
 
 

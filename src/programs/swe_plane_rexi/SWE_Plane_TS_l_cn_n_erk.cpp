@@ -26,9 +26,8 @@ void SWE_Plane_TS_l_cn_n_erk::euler_timestep_update_nonlinear(
 		PlaneData &o_u_t,	///< time updates
 		PlaneData &o_v_t,	///< time updates
 
-		double &o_dt,
-		double i_fixed_dt,
-		double i_max_timestamp
+		double i_dt,
+		double i_timestamp
 )
 {
 	/*
@@ -41,8 +40,6 @@ void SWE_Plane_TS_l_cn_n_erk::euler_timestep_update_nonlinear(
 	o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
 	o_u_t = -i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
 	o_v_t = -i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
-
-	o_dt = i_fixed_dt;
 }
 
 
@@ -51,25 +48,18 @@ void SWE_Plane_TS_l_cn_n_erk::run_timestep(
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
 
-		double &o_dt,			///< time step restriction
-		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
-		double i_simulation_timestamp,
-		double i_max_simulation_time
+		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_simulation_timestamp
 )
 {
-	if (i_fixed_dt <= 0)
+	if (i_dt <= 0)
 		FatalError("SWE_Plane_TS_l_cn_n_erk: Only constant time step size allowed");
-
-	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
-		i_fixed_dt = i_max_simulation_time - i_simulation_timestamp;
 
 	// Half one for linear parts
 	ts_l_cn.run_timestep(
 			io_h, io_u, io_v,
-			o_dt,
-			i_fixed_dt*0.5,
-			i_simulation_timestamp,
-			i_max_simulation_time
+			i_dt*0.5,
+			i_simulation_timestamp
 		);
 
 	// standard time stepping for nonlinear parts
@@ -77,23 +67,17 @@ void SWE_Plane_TS_l_cn_n_erk::run_timestep(
 			this,
 			&SWE_Plane_TS_l_cn_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
 			io_h, io_u, io_v,
-			o_dt,
-			i_fixed_dt,
+			i_dt,
 			timestepping_order_nonlinear,
-			i_simulation_timestamp,
-			i_max_simulation_time
+			i_simulation_timestamp
 		);
 
 	// Half one for linear parts
 	ts_l_cn.run_timestep(
 			io_h, io_u, io_v,
-			o_dt,
-			i_fixed_dt*0.5,
-			i_simulation_timestamp,
-			i_max_simulation_time
+			i_dt*0.5,
+			i_simulation_timestamp
 		);
-
-	o_dt = i_fixed_dt;
 }
 
 

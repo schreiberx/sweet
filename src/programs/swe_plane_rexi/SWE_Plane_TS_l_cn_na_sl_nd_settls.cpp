@@ -47,18 +47,13 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
 
-		double &o_dt,			///< time step restriction
-		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
-		double i_simulation_timestamp,
-		double i_max_simulation_time
+		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_simulation_timestamp
 )
 {
 
-	if (i_fixed_dt <= 0)
+	if (i_dt <= 0)
 		FatalError("SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk: Only constant time step size allowed");
-
-	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
-		i_fixed_dt = i_max_simulation_time - i_simulation_timestamp;
 
 	if (i_simulation_timestamp == 0)
 	{
@@ -83,7 +78,7 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 	double h_bar = simVars.sim.h0;
 	double g = simVars.sim.gravitation;
 	double f0 = simVars.sim.f0;
-	double dt = i_fixed_dt;
+	double dt = i_dt;
 	double alpha = 2.0/dt;
 	double kappa = alpha*alpha;
 	double kappa_bar = kappa;
@@ -196,8 +191,6 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 	io_h = h;
 	io_u = u;
 	io_v = v;
-
-	o_dt = i_fixed_dt;
 }
 
 

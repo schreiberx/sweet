@@ -39,8 +39,7 @@ private:
 			PlaneData &o_u_t,	///< time updates
 			PlaneData &o_v_t,	///< time updates
 
-			double &o_dt,			///< time step restriction
-			double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp
 	);
 
@@ -55,8 +54,7 @@ private:
 			PlaneData &o_u_t,	///< time updates
 			PlaneData &o_v_t,	///< time updates
 
-			double &o_dt,			///< time step restriction
-			double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp
 	);
 
@@ -77,10 +75,8 @@ public:
 			PlaneData &io_u,	///< prognostic variables
 			PlaneData &io_v,	///< prognostic variables
 
-			double &o_dt,				///< time step restriction
-			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
-			double i_simulation_timestamp = -1,
-			double i_max_simulation_time = std::numeric_limits<double>::infinity()
+			double i_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_simulation_timestamp = -1
 	);
 
 

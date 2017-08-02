@@ -57,16 +57,14 @@ void SWE_Plane_TS_l_direct::run_timestep(
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
 
-		double &o_dt,			///< time step restriction
-		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
-		double i_simulation_timestamp,
-		double i_max_simulation_time
+		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_simulation_timestamp
 )
 {
 	if (simVars.disc.use_staggering)
-		run_timestep_cgrid(io_h_pert, io_u, io_v, o_dt, i_fixed_dt, i_simulation_timestamp, i_max_simulation_time);
+		run_timestep_cgrid(io_h_pert, io_u, io_v, i_dt, i_simulation_timestamp);
 	else
-		run_timestep_agrid(io_h_pert, io_u, io_v, o_dt, i_fixed_dt, i_simulation_timestamp, i_max_simulation_time);
+		run_timestep_agrid(io_h_pert, io_u, io_v, i_dt, i_simulation_timestamp);
 }
 
 
@@ -80,10 +78,8 @@ void SWE_Plane_TS_l_direct::run_timestep_cgrid(
 		PlaneData &io_u,		///< prognostic variables
 		PlaneData &io_v,		///< prognostic variables
 
-		double &o_dt,			///< time step restriction
-		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
-		double i_simulation_timestamp,
-		double i_max_simulation_time
+		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_simulation_timestamp
 )
 {
 	// For output, variables need to be on unstaggered A-grid
@@ -100,7 +96,7 @@ void SWE_Plane_TS_l_direct::run_timestep_cgrid(
 
 	run_timestep_agrid(
 			io_h_pert, t_u, t_v,
-			o_dt, i_fixed_dt, i_simulation_timestamp, i_max_simulation_time
+			i_dt, i_simulation_timestamp
 	);
 
 	simVars.disc.use_staggering = true;
@@ -116,17 +112,15 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid(
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
 
-		double &o_dt,			///< time step restriction
-		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
-		double i_simulation_timestamp,
-		double i_max_simulation_time
+		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_simulation_timestamp
 )
 {
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-	run_timestep_agrid_planedata(io_h_pert, io_u, io_v, o_dt, i_fixed_dt, i_simulation_timestamp, i_max_simulation_time);
+	run_timestep_agrid_planedata(io_h_pert, io_u, io_v, i_dt, i_simulation_timestamp);
 #else
-	run_timestep_agrid_planedatacomplex(io_h_pert, io_u, io_v, o_dt, i_fixed_dt, i_simulation_timestamp, i_max_simulation_time);
+	run_timestep_agrid_planedatacomplex(io_h_pert, io_u, io_v, i_dt, i_simulation_timestamp);
 #endif
 }
 
@@ -146,26 +140,21 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
 
-		double &o_dt,			///< time step restriction
-		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
-		double i_simulation_timestamp,
-		double i_max_simulation_time
+		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_simulation_timestamp
 )
 {
 	if (simVars.disc.use_staggering)
 		FatalError("Staggering not supported");
 
-	if (i_fixed_dt < 0)
+	if (i_dt < 0)
 		FatalError("SWE_Plane_TS_l_direct: Only constant time step size allowed");
-
-	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
-		i_fixed_dt = i_max_simulation_time - i_simulation_timestamp;
 
 
 	typedef std::complex<T> complex;
 	complex I(0.0, 1.0);
 
-	T dt = i_fixed_dt;
+	T dt = i_dt;
 
 
 	/*
@@ -583,8 +572,6 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 	io_h_pert.spectral_zeroAliasingModes();
 	io_u.spectral_zeroAliasingModes();
 	io_v.spectral_zeroAliasingModes();
-
-	o_dt = i_fixed_dt;
 }
 
 #endif
@@ -595,17 +582,12 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
 
-		double &o_dt,			///< time step restriction
-		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
-		double i_simulation_timestamp,
-		double i_max_simulation_time
+		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_simulation_timestamp
 )
 {
-	if (i_fixed_dt < 0)
+	if (i_dt < 0)
 		FatalError("SWE_Plane_TS_l_direct: Only constant time step size allowed");
-
-	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
-		i_fixed_dt = i_max_simulation_time - i_simulation_timestamp;
 
 	typedef std::complex<T> complex;
 
@@ -626,7 +608,7 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 	PlaneDataComplex o_u(io_h_pert.planeDataConfig);
 	PlaneDataComplex o_v(io_h_pert.planeDataConfig);
 
-	T dt = i_fixed_dt;
+	T dt = i_dt;
 
 	T s0 = simVars.sim.domain_size[0];
 	T s1 = simVars.sim.domain_size[1];
@@ -1075,7 +1057,6 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 	io_u = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(o_u);
 	io_v = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(o_v);
 #endif
-	o_dt = i_fixed_dt;
 }
 
 

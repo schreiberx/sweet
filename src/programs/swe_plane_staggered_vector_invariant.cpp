@@ -227,7 +227,6 @@ public:
 			PlaneData &o_u_t,	///< time updates
 			PlaneData &o_v_t,	///< time updates
 
-			double &o_dt,			///< time step restriction
 			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp = -1
 	)
@@ -284,6 +283,7 @@ public:
 		}
 
 
+#if 0
 		/*
 		 * TIME STEP SIZE
 		 */
@@ -328,7 +328,7 @@ public:
 				o_dt = simVars.sim.CFL*std::min(std::min(limit_speed, limit_visc), limit_gh);
 			}
 		}
-
+#endif
 
 		/*
 		 * P UPDATE
@@ -349,8 +349,6 @@ public:
 
 	void run_timestep()
 	{
-		double dt;
-
 		// either set time step size to 0 for autodetection or to
 		// a positive value to use a fixed time step size
 		simVars.timecontrol.current_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
@@ -359,15 +357,14 @@ public:
 				this,
 				&SimulationSWEStaggered::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
 				prog_h, prog_u, prog_v,
-				dt,
 				simVars.timecontrol.current_timestep_size,
 				simVars.disc.timestepping_order,
 				simVars.timecontrol.current_simulation_time
 			);
 
 		// provide information to parameters
-		simVars.timecontrol.current_timestep_size = dt;
-		simVars.timecontrol.current_simulation_time += dt;
+		simVars.timecontrol.current_timestep_size = simVars.timecontrol.current_timestep_size;
+		simVars.timecontrol.current_simulation_time += simVars.timecontrol.current_timestep_size;
 		simVars.timecontrol.current_timestep_nr++;
 
 #if SWEET_GUI

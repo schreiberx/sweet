@@ -34,17 +34,12 @@ void SWE_Plane_TS_l_irk::run_timestep(
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
 
-		double &o_dt,			///< time step restriction
-		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
-		double i_simulation_timestamp,
-		double i_max_simulation_time
+		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_simulation_timestamp
 )
 {
-	if (i_fixed_dt <= 0)
+	if (i_dt <= 0)
 		FatalError("OSWE_Plane_TS_l_irk: nly constant time step size allowed");
-
-	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
-		i_fixed_dt = i_max_simulation_time-i_simulation_timestamp;
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
@@ -52,7 +47,7 @@ void SWE_Plane_TS_l_irk::run_timestep(
 	PlaneData &u0 = io_u;
 	PlaneData &v0 = io_v;
 
-	double alpha = 1.0/i_fixed_dt;
+	double alpha = 1.0/i_dt;
 
 	eta0 *= alpha;
 	u0 *= alpha;
@@ -85,7 +80,7 @@ void SWE_Plane_TS_l_irk::run_timestep(
 	PlaneDataComplex u0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_u);
 	PlaneDataComplex v0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_v);
 
-	double alpha = 1.0/i_fixed_dt;
+	double alpha = 1.0/i_dt;
 
 	eta0 *= alpha;
 	u0 *= alpha;
@@ -116,8 +111,6 @@ void SWE_Plane_TS_l_irk::run_timestep(
 	io_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(u1);
 	io_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(v1);
 #endif
-
-	o_dt = i_fixed_dt;
 }
 
 

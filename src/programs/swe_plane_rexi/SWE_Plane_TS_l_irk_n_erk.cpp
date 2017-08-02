@@ -49,17 +49,12 @@ void SWE_Plane_TS_l_irk_n_erk::run_timestep(
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
 
-		double &o_dt,			///< time step restriction
-		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
-		double i_simulation_timestamp,
-		double i_max_simulation_time
+		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_simulation_timestamp
 )
 {
-	if (i_fixed_dt <= 0)
+	if (i_dt <= 0)
 		FatalError("SWE_Plane_TS_l_irk_n_erk: Only constant time step size allowed");
-
-	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
-		i_fixed_dt = i_max_simulation_time - i_simulation_timestamp;
 
 	PlaneData h_linear_t1 = io_h;
 	PlaneData u_linear_t1 = io_u;
@@ -67,10 +62,8 @@ void SWE_Plane_TS_l_irk_n_erk::run_timestep(
 
 	ts_l_irk.run_timestep(
 			h_linear_t1, u_linear_t1, v_linear_t1,
-			o_dt,
-			i_fixed_dt,
-			i_simulation_timestamp,
-			i_max_simulation_time
+			i_dt,
+			i_simulation_timestamp
 		);
 
 	// compute non-linear tendencies at half time step
@@ -84,11 +77,9 @@ void SWE_Plane_TS_l_irk_n_erk::run_timestep(
 			h_dt_nonlinear, u_dt_nonlinear, v_dt_nonlinear
 		);
 
-	io_h = h_linear_t1 + h_dt_nonlinear*i_fixed_dt;
-	io_u = u_linear_t1 + u_dt_nonlinear*i_fixed_dt;
-	io_v = v_linear_t1 + v_dt_nonlinear*i_fixed_dt;
-
-	o_dt = i_fixed_dt;
+	io_h = h_linear_t1 + h_dt_nonlinear*i_dt;
+	io_u = u_linear_t1 + u_dt_nonlinear*i_dt;
+	io_v = v_linear_t1 + v_dt_nonlinear*i_dt;
 }
 
 

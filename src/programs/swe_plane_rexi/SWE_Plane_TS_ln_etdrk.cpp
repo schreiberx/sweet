@@ -26,7 +26,7 @@ void SWE_Plane_TS_ln_etdrk::euler_timestep_update_nonlinear(
 		PlaneData &o_v_t,	///< time updates
 
 		double &o_dt,
-		double i_fixed_dt,
+		double i_dt,
 		double i_max_timestamp
 )
 {
@@ -41,7 +41,7 @@ void SWE_Plane_TS_ln_etdrk::euler_timestep_update_nonlinear(
 	o_u_t = -i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
 	o_v_t = -i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
 
-	o_dt = i_fixed_dt;
+	o_dt = i_dt;
 }
 
 
@@ -79,17 +79,12 @@ void SWE_Plane_TS_ln_etdrk::run_timestep(
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
 
-		double &o_dt,			///< time step restriction
-		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
-		double i_simulation_timestamp,
-		double i_max_simulation_time
+		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_simulation_timestamp
 )
 {
-	if (i_fixed_dt <= 0)
+	if (i_dt <= 0)
 		FatalError("SWE_Plane_TS_l_phi0_n_edt: Only constant time step size allowed");
-
-	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
-		i_fixed_dt = i_max_simulation_time-i_simulation_timestamp;
 
 
 	const PlaneDataConfig *planeDataConfig = io_h.planeDataConfig;
@@ -107,10 +102,8 @@ void SWE_Plane_TS_ln_etdrk::run_timestep(
 		ts_phi0_rexi.run_timestep(
 				io_h, io_u, io_v,
 				phi0_Un_h, phi0_Un_u, phi0_Un_v,
-				o_dt,
-				i_fixed_dt,
-				i_simulation_timestamp,
-				i_max_simulation_time
+				i_dt,
+				i_simulation_timestamp
 			);
 
 		PlaneData FUn_h(planeDataConfig);
@@ -129,15 +122,13 @@ void SWE_Plane_TS_ln_etdrk::run_timestep(
 		ts_phi1_rexi.run_timestep(
 				FUn_h, FUn_u, FUn_v,
 				phi1_FUn_h, phi1_FUn_u, phi1_FUn_v,
-				o_dt,
-				i_fixed_dt,
-				i_simulation_timestamp,
-				i_max_simulation_time
+				i_dt,
+				i_simulation_timestamp
 			);
 
-		io_h = phi0_Un_h + i_fixed_dt*phi1_FUn_h;
-		io_u = phi0_Un_u + i_fixed_dt*phi1_FUn_u;
-		io_v = phi0_Un_v + i_fixed_dt*phi1_FUn_v;
+		io_h = phi0_Un_h + i_dt*phi1_FUn_h;
+		io_u = phi0_Un_u + i_dt*phi1_FUn_u;
+		io_v = phi0_Un_v + i_dt*phi1_FUn_v;
 	}
 	else if (timestepping_order == 2)
 	{
@@ -153,10 +144,8 @@ void SWE_Plane_TS_ln_etdrk::run_timestep(
 		ts_phi0_rexi.run_timestep(
 				io_h, io_u, io_v,
 				phi0_Un_h, phi0_Un_u, phi0_Un_v,
-				o_dt,
-				i_fixed_dt,
-				i_simulation_timestamp,
-				i_max_simulation_time
+				i_dt,
+				i_simulation_timestamp
 			);
 
 		PlaneData FUn_h(planeDataConfig);
@@ -176,15 +165,13 @@ void SWE_Plane_TS_ln_etdrk::run_timestep(
 		ts_phi1_rexi.run_timestep(
 				FUn_h, FUn_u, FUn_v,
 				phi1_FUn_h, phi1_FUn_u, phi1_FUn_v,
-				o_dt,
-				i_fixed_dt,
-				i_simulation_timestamp,
-				i_max_simulation_time
+				i_dt,
+				i_simulation_timestamp
 			);
 
-		PlaneData A_h = phi0_Un_h + i_fixed_dt*phi1_FUn_h;
-		PlaneData A_u = phi0_Un_u + i_fixed_dt*phi1_FUn_u;
-		PlaneData A_v = phi0_Un_v + i_fixed_dt*phi1_FUn_v;
+		PlaneData A_h = phi0_Un_h + i_dt*phi1_FUn_h;
+		PlaneData A_u = phi0_Un_u + i_dt*phi1_FUn_u;
+		PlaneData A_v = phi0_Un_v + i_dt*phi1_FUn_v;
 
 		/*
 		 * U_{n+1} = A_{n}+ \Delta t \psi_{2}(\Delta tL)
@@ -215,23 +202,17 @@ void SWE_Plane_TS_ln_etdrk::run_timestep(
 				phi2_X_u,
 				phi2_X_v,
 
-				o_dt,
-				i_fixed_dt,
-				i_simulation_timestamp,
-				i_max_simulation_time
+				i_dt,
+				i_simulation_timestamp
 			);
 
-		io_h = A_h + i_fixed_dt*phi2_X_h;
-		io_u = A_u + i_fixed_dt*phi2_X_u;
-		io_v = A_v + i_fixed_dt*phi2_X_v;
+		io_h = A_h + i_dt*phi2_X_h;
+		io_u = A_u + i_dt*phi2_X_u;
+		io_v = A_v + i_dt*phi2_X_v;
 	}
 	else if (timestepping_order == 4)
 	{
-		double dt = i_fixed_dt;
-
-		if (i_simulation_timestamp + dt > i_max_simulation_time)
-			dt = i_max_simulation_time - i_simulation_timestamp;
-
+		double dt = i_dt;
 		double dt_half = dt*0.5;
 
 
@@ -246,7 +227,6 @@ void SWE_Plane_TS_ln_etdrk::run_timestep(
 		ts_phi0_rexi.run_timestep(
 				io_h, io_u, io_v,
 				phi0_Un_h, phi0_Un_u, phi0_Un_v,
-				o_dt,
 				dt_half,
 				i_simulation_timestamp
 			);
@@ -278,7 +258,6 @@ void SWE_Plane_TS_ln_etdrk::run_timestep(
 		ts_phi1_rexi.run_timestep(
 				FUn_h, FUn_u, FUn_v,
 				phi1_h, phi1_u, phi1_v,
-				o_dt,
 				dt_half,
 				i_simulation_timestamp
 			);
@@ -306,7 +285,6 @@ void SWE_Plane_TS_ln_etdrk::run_timestep(
 		ts_phi1_rexi.run_timestep(
 				FAn_h, FAn_u, FAn_v,
 				phi1_h, phi1_u, phi1_v,
-				o_dt,
 				dt_half,
 				i_simulation_timestamp
 			);
@@ -328,7 +306,6 @@ void SWE_Plane_TS_ln_etdrk::run_timestep(
 		ts_phi0_rexi.run_timestep(
 				A_h, A_u, A_v,
 				phi0_An_h, phi0_An_u, phi0_An_v,
-				o_dt,
 				dt_half,
 				i_simulation_timestamp
 			);
@@ -349,7 +326,6 @@ void SWE_Plane_TS_ln_etdrk::run_timestep(
 				2.0*FBn_u - FUn_u,
 				2.0*FBn_v - FUn_v,
 				phi1_h,	phi1_u,	phi1_v,
-				o_dt,
 				dt_half,
 				i_simulation_timestamp
 			);
@@ -402,22 +378,22 @@ void SWE_Plane_TS_ln_etdrk::run_timestep(
 		 */
 		ts_phi0_rexi.run_timestep(
 				R0_h, R0_u, R0_v,
-				o_dt,	dt,		i_simulation_timestamp
+				dt,		i_simulation_timestamp
 			);
 
 		ts_ups1_rexi.run_timestep(
 				R1_h, R1_u, R1_v,
-				o_dt,	dt,		i_simulation_timestamp
+				dt,		i_simulation_timestamp
 			);
 
 		ts_ups2_rexi.run_timestep(
 				R2_h, R2_u, R2_v,
-				o_dt,	dt,		i_simulation_timestamp
+				dt,		i_simulation_timestamp
 			);
 
 		ts_ups3_rexi.run_timestep(
 				R3_h, R3_u, R3_v,
-				o_dt,	dt,		i_simulation_timestamp
+				dt,		i_simulation_timestamp
 			);
 
 		io_h = R0_h + dt*(R1_h + 2.0*R2_h + R3_h);
@@ -428,8 +404,6 @@ void SWE_Plane_TS_ln_etdrk::run_timestep(
 	{
 		FatalError("TODO: This order is not implemented, yet!");
 	}
-
-	o_dt = i_fixed_dt;
 }
 
 

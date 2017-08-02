@@ -267,16 +267,14 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 		PlaneData &o_u,	///< prognostic variables
 		PlaneData &o_v,	///< prognostic variables
 
-		double &o_dt,			///< time step restriction
-		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
-		double i_simulation_timestamp,
-		double i_max_simulation_time
+		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_simulation_timestamp
 )
 {
 #if !FOOBAR123
 
 	/// WARNING: i_h_pert might be identical to o_h_pert
-	run_timestep_real(i_h_pert, i_u, i_v, o_h_pert, o_u, o_v, o_dt, i_fixed_dt, i_simulation_timestamp, i_max_simulation_time);
+	run_timestep_real(i_h_pert, i_u, i_v, o_h_pert, o_u, o_v, i_dt, i_simulation_timestamp);
 
 #elif 1
 
@@ -291,7 +289,7 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 	PlaneData tmp_u = i_u;
 	PlaneData tmp_v = i_v;
 
-	run_timestep_real(i_h_pert, i_u, i_v, o_h_pert, o_u, o_v, o_dt, i_fixed_dt, i_simulation_timestamp, i_max_simulation_time);
+	run_timestep_real(i_h_pert, i_u, i_v, o_h_pert, o_u, o_v, i_dt, i_simulation_timestamp);
 
 
 	PlaneData x_o_h_pert(planeDataConfig);
@@ -301,7 +299,7 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 	std::swap(rexi_alpha, x_rexi_alpha);
 	std::swap(rexi_beta_re, x_rexi_beta_re);
 
-	run_timestep_real(tmp_h_pert, tmp_u, tmp_v, x_o_h_pert, x_o_u, x_o_v, o_dt, i_fixed_dt, i_simulation_timestamp, i_max_simulation_time);
+	run_timestep_real(tmp_h_pert, tmp_u, tmp_v, x_o_h_pert, x_o_u, x_o_v, i_dt, i_simulation_timestamp);
 
 	std::swap(rexi_alpha, x_rexi_alpha);
 	std::swap(rexi_beta_re, x_rexi_beta_re);
@@ -334,7 +332,7 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 	PlaneData tmp_u = i_u;
 	PlaneData tmp_v = i_v;
 
-	run_timestep_real(i_h_pert, i_u, i_v, o_h_pert, o_u, o_v, o_dt, i_fixed_dt, i_simulation_timestamp, i_max_simulation_time);
+	run_timestep_real(i_h_pert, i_u, i_v, o_h_pert, o_u, o_v, i_dt, i_simulation_timestamp);
 
 	static int i = 0;
 
@@ -358,7 +356,7 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 	std::swap(rexi_alpha, x_rexi_alpha);
 	std::swap(rexi_beta_re, x_rexi_beta_re);
 
-	run_timestep_real(x_i_h_pert, x_i_u, x_i_v, x_o_h_pert, x_o_u, x_o_v, o_dt, i_fixed_dt, i_simulation_timestamp, i_max_simulation_time);
+	run_timestep_real(x_i_h_pert, x_i_u, x_i_v, x_o_h_pert, x_o_u, x_o_v, i_dt, i_simulation_timestamp);
 
 	std::swap(rexi_alpha, x_rexi_alpha);
 	std::swap(rexi_beta_re, x_rexi_beta_re);
@@ -408,10 +406,8 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 		PlaneData &o_u,			///< prognostic variables
 		PlaneData &o_v,			///< prognostic variables
 
-		double &o_dt,			///< time step restriction
-		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
-		double i_simulation_timestamp,
-		double i_max_simulation_time
+		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_simulation_timestamp
 )
 {
 	final_timestep = false;
@@ -421,17 +417,12 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 		o_h_pert = i_h_pert;
 		o_u = i_u;
 		o_v = i_v;
-		ts_l_direct.run_timestep(o_h_pert, o_u, o_v, o_dt, i_fixed_dt, i_simulation_timestamp, i_max_simulation_time);
+		ts_l_direct.run_timestep(o_h_pert, o_u, o_v, i_dt, i_simulation_timestamp);
 		return;
 	}
 
-	if (i_fixed_dt <= 0)
+	if (i_dt <= 0)
 		FatalError("Only constant time step size allowed");
-
-	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
-		i_fixed_dt = i_max_simulation_time-i_simulation_timestamp;
-
-	o_dt = i_fixed_dt;
 
 
 	typedef std::complex<double> complex;
@@ -482,7 +473,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 
 
 #if SWEET_REXI_THREAD_PARALLEL_SUM
-#	pragma omp parallel for schedule(static,1) default(none) shared(i_fixed_dt, i_h_pert, i_u, i_v, max_N, std::cout, std::cerr)
+#	pragma omp parallel for schedule(static,1) default(none) shared(i_dt, i_h_pert, i_u, i_v, max_N, std::cout, std::cerr)
 #endif
 	for (int i = 0; i < num_local_rexi_par_threads; i++)
 	{
@@ -545,7 +536,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 		 */
 		// convert to spectral space
 		// scale with inverse of tau
-		double inv_dt = (1.0/i_fixed_dt);
+		double inv_dt = (1.0/i_dt);
 		eta0 = eta0*inv_dt;
 		u0 = u0*inv_dt;
 		v0 = v0*inv_dt;
@@ -593,7 +584,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 		for (std::size_t n = start; n < end; n++)
 		{
 			// load alpha (a) and scale by inverse of tau
-			complex alpha = rexi_alpha[n]/i_fixed_dt;
+			complex alpha = rexi_alpha[n]/i_dt;
 			complex beta = rexi_beta_re[n];
 
 			if (simVars.sim.f0 == 0)
@@ -780,19 +771,15 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
 
-		double &o_dt,			///< time step restriction
-		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
-		double i_simulation_timestamp,
-		double i_max_simulation_time
+		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_simulation_timestamp
 )
 {
 	run_timestep(
 			io_h, io_u, io_v,
 			io_h, io_u, io_v,
-			o_dt,
-			i_fixed_dt,
-			i_simulation_timestamp,
-			i_max_simulation_time
+			i_dt,
+			i_simulation_timestamp
 		);
 }
 

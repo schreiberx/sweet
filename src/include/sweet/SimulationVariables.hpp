@@ -819,6 +819,9 @@ public:
         long_options[next_free_program_option] = {"staggering", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
+        long_options[next_free_program_option] = {"dt", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
 
 
 // leave this commented to avoid mismatch with following parameters!
@@ -939,6 +942,8 @@ public:
 					c++;		if (i == c)	{	disc.normal_mode_analysis_generation = atoi(optarg);	continue;	}
 					c++;		if (i == c)	{	disc.crank_nicolson_filter = atof(optarg);			continue;	}
 					c++;		if (i == c)	{	disc.use_staggering = atof(optarg);					continue;	}
+
+					c++;		if (i == c)	{	timecontrol.current_timestep_size = atof(optarg);					continue;	}
 
 #if SWEET_PFASST_CPP 
 					c++;		if (i == c)	{	pfasst.nlevels = atoi(optarg);	continue;	}
@@ -1081,6 +1086,9 @@ public:
 
 			case 'C':
 				sim.CFL = atof(optarg);
+				if (sim.CFL < 0)
+					timecontrol.current_timestep_size = -sim.CFL;
+
 				break;
 
 			case 'r':

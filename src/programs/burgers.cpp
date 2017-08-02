@@ -309,8 +309,6 @@ public:
 		if (simVars.misc.verbosity > 2)
 			std::cout << "run_timestep()" << std::endl;
 
-		double dt = 0.0;
-
 		// Only fixed time stepping supported with the Burgers equation
 		assert(simVars.sim.CFL < 0);
 		simVars.timecontrol.current_timestep_size = -simVars.sim.CFL;
@@ -318,10 +316,8 @@ public:
 		timeSteppers.master->run_timestep(
 			prog_u, prog_v,
 			prog_u_prev, prog_v_prev,
-			dt,
 			simVars.timecontrol.current_timestep_size,
-			simVars.timecontrol.current_simulation_time,
-			simVars.timecontrol.max_simulation_time
+			simVars.timecontrol.current_simulation_time
 		);
 
 #if 0
@@ -397,8 +393,7 @@ public:
 		//dt = simVars.timecontrol.current_timestep_size;
 #endif
 		// Provide information to parameters
-		simVars.timecontrol.current_timestep_size = dt;
-		simVars.timecontrol.current_simulation_time += dt;
+		simVars.timecontrol.current_simulation_time += simVars.timecontrol.current_timestep_size;
 		simVars.timecontrol.current_timestep_nr++;
 
 		timestep_output();
@@ -903,7 +898,7 @@ public:
 
 		while (simVars.timecontrol.current_simulation_time < timeframe_end)
 		{
-			this->run_timestep(simVars.disc.timestepping_method, simVars.disc.timestepping_order);
+			run_timestep();
 			assert(simVars.timecontrol.current_simulation_time <= timeframe_end);
 		}
 
@@ -951,8 +946,7 @@ public:
 		simVars.timecontrol.max_simulation_time = timeframe_end;
 		simVars.timecontrol.current_timestep_nr = 0;
 
-		simVars.timecontrol.current_timestep_size=timeframe_end-timeframe_start;
-		double dt = 0.0;
+		simVars.timecontrol.current_timestep_size = timeframe_end-timeframe_start;
 
 		// make multiple time steps in the coarse solver possible
 		while (simVars.timecontrol.current_simulation_time < timeframe_end)
@@ -961,14 +955,12 @@ public:
 			timeSteppersCoarse.master->run_timestep(
 				prog_u, prog_v,
 				prog_u_prev, prog_v_prev,
-				dt,
 				simVars.timecontrol.current_timestep_size,
-				simVars.timecontrol.current_simulation_time,
-				simVars.timecontrol.max_simulation_time
+				simVars.timecontrol.current_simulation_time
 			);
 			// Provide information to parameters
-			simVars.timecontrol.current_timestep_size = dt;
-			simVars.timecontrol.current_simulation_time += dt;
+//			simVars.timecontrol.current_timestep_size = simVars.timecontrol.current_timestep_size;
+			simVars.timecontrol.current_simulation_time += simVars.timecontrol.current_timestep_size;
 			simVars.timecontrol.current_timestep_nr++;
 
 			assert(simVars.timecontrol.current_simulation_time <= timeframe_end);

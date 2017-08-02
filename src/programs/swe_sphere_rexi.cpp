@@ -827,15 +827,14 @@ public:
 		if (simVars.misc.gui_enabled && simVars.disc.normal_mode_analysis_generation == 0)
 			timestep_check_output();
 #endif
-		double o_dt;
-
-		// either set time step size to 0 for autodetection or to
-		// a positive value to use a fixed time step size
 		simVars.timecontrol.current_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
+
+		if (simVars.timecontrol.current_simulation_time + simVars.timecontrol.current_timestep_size > simVars.timecontrol.max_simulation_time)
+			simVars.timecontrol.current_timestep_size = simVars.timecontrol.max_simulation_time - simVars.timecontrol.current_simulation_time;
+
 
 		timeSteppers.master->run_timestep(
 				prog_phi, prog_vort, prog_div,
-				o_dt,
 				simVars.timecontrol.current_timestep_size,
 				simVars.timecontrol.current_simulation_time,
 				simVars.timecontrol.max_simulation_time
@@ -859,8 +858,8 @@ public:
 		}
 
 		// advance time step and provide information to parameters
-		simVars.timecontrol.current_timestep_size = o_dt;
-		simVars.timecontrol.current_simulation_time += o_dt;
+		simVars.timecontrol.current_timestep_size = simVars.timecontrol.current_timestep_size;
+		simVars.timecontrol.current_simulation_time += simVars.timecontrol.current_timestep_size;
 		simVars.timecontrol.current_timestep_nr++;
 
 #if SWEET_GUI
@@ -868,49 +867,6 @@ public:
 #endif
 	}
 
-
-
-#if 0
-	/**
-	 * Euler time step for advection along the longitude
-	 */
-	void p_run_euler_timestep_update_advection_vortdiv(
-			const SphereData &i_h,	///< prognostic variables
-			SphereData &o_h_t,	///< time updates
-
-			double &o_dt,				///< time step restriction
-			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
-			double i_simulation_timestamp = -1
-	)
-	{
-		o_dt = simVars.timecontrol.current_timestep_size;
-
-
-		SphereDataPhysical ug = prog_u.getSphereDataPhysical();
-		SphereDataPhysical vg = prog_v.getSphereDataPhysical();
-
-		SphereDataPhysical phig = i_h.getSphereDataPhysical();
-
-		SphereData tmpspec(sphereDataConfig);
-		op.robert_uv_to_vortdiv(ug*phig,vg*phig, tmpspec, o_h_t);
-
-		o_h_t *= -1.0;
-
-
-		assert(simVars.sim.viscosity_order == 2 || simVars.sim.viscosity_order == 4);
-		if (simVars.sim.viscosity != 0)
-		{
-			if (simVars.sim.viscosity_order == 2)
-			{
-				o_h_t += op.laplace(i_h)*simVars.sim.viscosity;
-			}
-			else if (simVars.sim.viscosity_order == 4)
-			{
-				o_h_t += op.laplace(op.laplace(i_h))*simVars.sim.viscosity;
-			}
-		}
-	}
-#endif
 
 
 #if SWEET_GUI

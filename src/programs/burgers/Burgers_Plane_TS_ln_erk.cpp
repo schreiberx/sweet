@@ -24,7 +24,6 @@ void Burgers_Plane_TS_ln_erk::euler_timestep_update(
 		PlaneData &o_u_t,	///< time updates
 		PlaneData &o_v_t,	///< time updates
 
-		double &o_dt,			///< time step restriction
 		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp
 )
@@ -47,18 +46,6 @@ void Burgers_Plane_TS_ln_erk::euler_timestep_update(
 	o_v_t += simVars.sim.viscosity*(op.diff2_c_x(i_v)+op.diff2_c_y(i_v));
 
 	o_tmp_t.physical_set_all(0);
-
-	// Time step size
-	if (i_fixed_dt > 0)
-	{
-		o_dt = i_fixed_dt;
-	}
-	else
-	{
-		std::cout << "Only fixed time step size supported" << std::endl;
-		assert(false);
-		exit(1);
-	}
 }
 
 
@@ -69,19 +56,13 @@ void Burgers_Plane_TS_ln_erk::run_timestep(
 		PlaneData &io_u_prev,	///< prognostic variables
 		PlaneData &io_v_prev,	///< prognostic variables
 
-		double &o_dt,			///< time step restriction
 		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
-		double i_simulation_timestamp,
-		double i_max_simulation_time
+		double i_simulation_timestamp
 )
 {
 	if (i_fixed_dt <= 0)
 		FatalError("Burgers_Plane_TS_ln_erk: Only constant time step size allowed");
 
-	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
-		i_fixed_dt = i_max_simulation_time-i_simulation_timestamp;
-
-	o_dt = i_fixed_dt;
 
 	// setup dummy data
 	PlaneData tmp(io_u.planeDataConfig);
@@ -100,11 +81,9 @@ void Burgers_Plane_TS_ln_erk::run_timestep(
 			this,
 			&Burgers_Plane_TS_ln_erk::euler_timestep_update,	///< pointer to function to compute euler time step updates
 			tmp, io_u, io_v,
-			o_dt,
 			i_fixed_dt,
 			timestepping_order,
-			i_simulation_timestamp,
-			i_max_simulation_time
+			i_simulation_timestamp
 		);
 	}
 	// Explicit Runge-Kutta with order 1 in diffusion and order 2 in advection
@@ -116,12 +95,15 @@ void Burgers_Plane_TS_ln_erk::run_timestep(
 		PlaneData u=io_u;
 		PlaneData v=io_v;
 
+		double t = i_fixed_dt;
+/*
 		// Modify timestep to final time if necessary
-		double& t = o_dt;
+		double t = i_fixed_dt;
 		if (simVars.timecontrol.current_simulation_time+i_fixed_dt < simVars.timecontrol.max_simulation_time)
 			t = i_fixed_dt;
 		else
 			t = simVars.timecontrol.max_simulation_time-simVars.timecontrol.current_simulation_time;
+*/
 
 		// Initialize and set timestep dependent source for manufactured solution
 		PlaneData f(io_u.planeDataConfig);

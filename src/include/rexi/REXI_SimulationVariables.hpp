@@ -130,8 +130,11 @@ struct REXI_SimulationVariables
 		std::cout << "	--rexi-ng-test-min [double]	Set minimum test interval, default:0" << std::endl;
 		std::cout << "	--rexi-ng-test-max [double]	Set maximum test interval, default:0" << std::endl;
 		std::cout << "	--rexi-ng-test-abs [double]	Set min/max test interval, default:0" << std::endl;
+		std::cout << "	--rexi-ng-max-error [double]	Maximum allowed error within test interval, default:0" << std::endl;
 		std::cout << "" << std::endl;
 	}
+
+
 
 	void setup_longOptionList(
 			struct option io_long_options[],		///< string and meta information for long options
