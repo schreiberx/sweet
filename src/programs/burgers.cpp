@@ -304,10 +304,7 @@ public:
 	/*
 	 * Routine to do one time step of chosen scheme and order
 	 */
-	void run_timestep(
-			const std::string &i_timestepping_method,
-			int i_timestepping_order
-	)
+	void run_timestep()
 	{
 		if (simVars.misc.verbosity > 2)
 			std::cout << "run_timestep()" << std::endl;
@@ -609,7 +606,7 @@ public:
 
 		if (simVars.timecontrol.run_simulation_timesteps)
 			for (int i = 0; i < i_num_iterations; i++)
-				run_timestep(simVars.disc.timestepping_method, simVars.disc.timestepping_order);
+				run_timestep();
 	}
 
 
@@ -1260,7 +1257,7 @@ int main(int i_argc, char *i_argv[])
 					break;
 
 				//Main call for timestep run
-				simulationBurgers->run_timestep(simVars.disc.timestepping_method, simVars.disc.timestepping_order);
+				simulationBurgers->run_timestep();
 
 				//Instability
 				if (simulationBurgers->instability_detected())
