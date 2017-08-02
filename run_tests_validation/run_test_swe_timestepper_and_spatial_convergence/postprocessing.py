@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import glob
 import subprocess
@@ -100,6 +100,8 @@ for group_info in groups:
 				continue
 
 			result = output
+
+			result = result.decode()
 
 			# last line contains convergence info
 			if result[-1] == '\n':
