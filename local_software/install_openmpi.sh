@@ -11,12 +11,7 @@ if [ ! -e "$DST_DIR/bin/mpicc"  -o "$1" != "" ]; then
 	BASENAME="openmpi-1.10.2"
 
 	cd "$SRC_DIR"
-	if [ ! -e "$FILENAME" ]; then
-		echo "Downloading file $FILENAME"
-		curl "$SRC_LINK" -o "$FILENAME" || exit 1
-	else
-		echo "Using existing file $FILENAME"
-	fi
+	download "$SRC_LINK" "$FILENAME" || exit 1
 
 	echo "Uncompressing $FILENAME"
 	tar xjf "$FILENAME"

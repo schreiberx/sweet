@@ -16,11 +16,9 @@ if [ ! -e "$DST_DIR/bin/WHATEVER"  -o "$1" != "" ]; then
 
 	cd "$SRC_DIR"
 
-	if [ ! -e "$FILENAME" ]; then
-		curl "$SRC_LINK" -o "$FILENAME" || exit 1
-	fi
+	download "$SRC_LINK" "$FILENAME" || exit 1
 
-	python get-pip.py || exit 1
+	python3 get-pip.py || exit 1
 
 	echo "DONE"
 

@@ -23,3 +23,8 @@ mkdir -p "$SRC_DIR"
 # on BGQ to compile FFT
 #export HOST="powerpc64-bgq-linux"
 
+function download {
+	echo "Downloading from $1"
+	#curl -C - "$1" -o "$2" || exit 1
+	wget --continue --progress=bar "$1" -O "$2" || exit 1
+}

@@ -12,9 +12,7 @@ if [ ! -e "$DST_DIR/lib/libshtns_omp.a"  -o "$1" != "" ]; then
 
 	cd "$SRC_DIR"
 
-	if [ ! -e "$FILENAME" ]; then
-		curl -L "$SRC_LINK" -o "$FILENAME" || exit 1
-	fi
+	download "$SRC_LINK" "$FILENAME" || exit 1
 
 	tar xzf "$FILENAME"
 	cd "$BASENAME"

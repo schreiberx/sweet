@@ -13,9 +13,8 @@ if [ ! -e "$DST_DIR/lib/libSDL2.so"  -o "$1" != "" ]; then
 
 	cd "$SRC_DIR"
 
-	if [ ! -e "$FILENAME" ]; then
-		curl "$SRC_LINK" -o "$FILENAME" || exit 1
-	fi
+	download "$SRC_LINK" "$FILENAME" || exit 1
+
 	tar xzf "$FILENAME"
 	cd "$BASENAME"
 

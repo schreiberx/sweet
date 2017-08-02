@@ -12,9 +12,7 @@ if [ ! -e "$DST_DIR/bin/scons"  -o "$1" != "" ]; then
 
 	cd "$SRC_DIR"
 
-	if [ ! -e "$FILENAME" ]; then
-		curl "$SRC_LINK" -o "$FILENAME" || exit 1
-	fi
+	download "$SRC_LINK" "$FILENAME" || exit 1
 	tar xzf "$FILENAME" || exit 1
 	cd "$BASENAME" || exit 1
 

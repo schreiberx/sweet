@@ -10,12 +10,7 @@ if [ ! -e "$DST_DIR/bin/gcc-7.1"  -o "$1" != "" ]; then
 	BASENAME="gcc-7.1.0"
 
 	cd "$SRC_DIR"
-	if [ ! -e "$FILENAME" ]; then
-		echo "Downloading file $FILENAME"
-		curl "$SRC_LINK" -o "$FILENAME" || exit 1
-	else
-		echo "Using existing file $FILENAME"
-	fi
+	download "$SRC_LINK" "$FILENAME" || exit 1
 
 	echo "Uncompressing $FILENAME"
 	tar xjf "$FILENAME" || exit 1
@@ -32,12 +27,7 @@ if [ ! -e "$DST_DIR/bin/gcc-7.1"  -o "$1" != "" ]; then
 	LIB_FILENAME="`basename $LIB_LINK`"
 	LIB_BASENAME="gmp-6.1.2"
 	LIB_BASENAME_SHORT="gmp"
-	if [ ! -e "$LIB_FILENAME" ]; then
-		echo "Downloading file $LIB_FILENAME"
-		curl "$LIB_LINK" -o "$LIB_FILENAME" || exit 1
-	else
-		echo "Using existing file $LIB_FILENAME"
-	fi
+	download "$LIB_LINK" "$LIB_FILENAME" || exit 1
 
 	if [ ! -e "$BASENAME/$LIB_BASENAME" ]; then
 		tar xjf "$LIB_FILENAME" || exit 1
@@ -53,12 +43,7 @@ if [ ! -e "$DST_DIR/bin/gcc-7.1"  -o "$1" != "" ]; then
 	LIB_FILENAME="`basename $LIB_LINK`"
 	LIB_BASENAME="mpfr-3.1.5"
 	LIB_BASENAME_SHORT="mpfr"
-	if [ ! -e "$LIB_FILENAME" ]; then
-		echo "Downloading file $LIB_FILENAME"
-		curl "$LIB_LINK" -o "$LIB_FILENAME" || exit 1
-	else
-		echo "Using existing file $LIB_FILENAME"
-	fi
+	download "$LIB_LINK" "$LIB_FILENAME" || exit 1
 
 	if [ ! -e "$BASENAME/$LIB_BASENAME" ]; then
 		tar xjf "$LIB_FILENAME" || exit 1
@@ -76,12 +61,7 @@ if [ ! -e "$DST_DIR/bin/gcc-7.1"  -o "$1" != "" ]; then
 	LIB_FILENAME="`basename $LIB_LINK`"
 	LIB_BASENAME="mpc-1.0.3"
 	LIB_BASENAME_SHORT="mpc"
-	if [ ! -e "$LIB_FILENAME" ]; then
-		echo "Downloading file $LIB_FILENAME"
-		curl "$LIB_LINK" -o "$LIB_FILENAME" || exit 1
-	else
-		echo "Using existing file $LIB_FILENAME"
-	fi
+	download "$LIB_LINK" "$LIB_FILENAME" || exit 1
 	
 	if [ ! -e "$BASENAME/$LIB_BASENAME" ]; then
 		tar xzf "$LIB_FILENAME" || exit 1
@@ -98,12 +78,7 @@ if [ ! -e "$DST_DIR/bin/gcc-7.1"  -o "$1" != "" ]; then
 	LIB_FILENAME="`basename $LIB_LINK`"
 	LIB_BASENAME="isl-0.18"
 	LIB_BASENAME_SHORT="isl"
-	if [ ! -e "$LIB_FILENAME" ]; then
-		echo "Downloading file $LIB_FILENAME"
-		curl "$LIB_LINK" -o "$LIB_FILENAME" || exit 1
-	else
-		echo "Using existing file $LIB_FILENAME"
-	fi
+	download "$LIB_LINK" "$LIB_FILENAME" || exit 1
 
 	if [ ! -e "$BASENAME/$LIB_BASENAME" ]; then
 		tar xzf "$LIB_FILENAME" || exit 1

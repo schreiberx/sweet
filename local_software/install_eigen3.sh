@@ -12,10 +12,7 @@ if [ ! -e "$DST_DIR/include/librdic.so.0"  -o "$1" != "" ]; then
 
 	cd "$SRC_DIR"
 
-	if [ ! -e "$FILENAME" ]; then
-		curl "$SRC_LINK" -o "$FILENAME" || exit 1
-	fi
-
+	download "$SRC_LINK" "$FILENAME" || exit 1
 	tar xjf "$FILENAME"
 	mv "eigen-eigen-26667be4f70b" "$BASENAME"
 	cd "$BASENAME"
