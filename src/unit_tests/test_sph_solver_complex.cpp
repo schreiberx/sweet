@@ -246,7 +246,7 @@ void run_tests()
 			);
 
 			SphereDataComplex x_numerical = sphSolver.solve(b);
-			ErrorCheck::check(x_numerical, x_result, "Test Z3 = mu^4*Phi(lam,mu)", epsilon);
+			ErrorCheck::check(x_numerical, x_result, "Test Z3 = mu^4*Phi(lam,mu)", epsilon*1e+1);
 		}
 
 
