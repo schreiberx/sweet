@@ -66,7 +66,8 @@ contains
 
     type(c_ptr),                 value       :: user_ctx_ptr
     integer                                  :: nlevs, niters, nnodes(nlevs), nvars(nlevs), shape(nlevs), &
-                                                nfields, nvars_per_field(nlevs), nsteps, level, qnl, qtype
+                                                nfields, nvars_per_field(nlevs), nsteps, level, qnl, qtype, &
+                                                ierr, num_procs, my_id, mpi_stat
     character(c_char)                        :: qtype_name
     real(c_double)                           :: t, t_max, dt
     class(pf_factory_t),         allocatable :: factory
@@ -75,35 +76,43 @@ contains
     type(pf_comm_t)                          :: pf_comm
     type(pf_pfasst_t)                        :: pf
 
+    real(c_double),             allocatable  :: z(:)
+
     ! create the mpi and pfasst objects
      call pf_mpi_create(pf_comm,    & 
-                        MPI_COMM_SELF);
+                        MPI_COMM_WORLD);
      call pf_pfasst_create(pf,      & 
                            pf_comm, & 
                            nlevs)
-     pf_comm%nproc = 1
+
+     call MPI_COMM_RANK (MPI_COMM_WORLD, my_id, ierr)
+     call MPI_COMM_SIZE (MPI_COMM_WORLD, num_procs, ierr)
+
+     if (my_id == 0) then
+        print *, 'Number of Processors: ', num_procs
+     end if
+     print *, 'My Id = ', my_id
 
      ! timestepping parameters
-     t          = 0
-     nsteps     = int(t_max/dt)
+     t      = 0
+     nsteps = int(t_max/dt)
 
      ! LibPFASST parameters
-     pf%nlevels = nlevs               ! number of SDC levels
-     pf%niters  = niters              ! number of SDC iterations
-     qtype      = translate_qtype(qtype_name, & 
-                                  qnl)
-
-     print *, 'qtype = ', qtype
+     pf%nlevels    = nlevs   ! number of SDC levels
+     pf%niters     = niters  ! number of SDC iterations
+     pf%pipeline_G = .true.  ! pipeline the coarse prediction sweeps
+     qtype         = translate_qtype(qtype_name, & ! select the type of nodes
+                                     qnl)
 
      if (nlevs == 3) then
-        nvars   = [nfields*nvars_per_field(1), & 
-                   nfields*nvars_per_field(2), & 
-                   nfields*nvars_per_field(3)]    ! number of degrees of freedom for the levels
+        nvars = [nfields*nvars_per_field(1), &
+                 nfields*nvars_per_field(2), &
+                 nfields*nvars_per_field(3)]    ! number of degrees of freedom for the levels
      else if (nlevs == 2) then
-        nvars   = [nfields*nvars_per_field(1), & 
-                   nfields*nvars_per_field(2)]    ! number of degrees of freedom for the levels
+        nvars = [nfields*nvars_per_field(1), &
+                 nfields*nvars_per_field(2)]    ! number of degrees of freedom for the levels
      else if (nlevs == 1) then
-        nvars   = [nfields*nvars_per_field(1)]    ! number of degrees of freedom for the levels
+        nvars = [nfields*nvars_per_field(1)]    ! number of degrees of freedom for the levels
      else 
         stop 'This number of levels is not supported yet'
      end if
@@ -114,14 +123,14 @@ contains
        ! define the level id
        pf%levels(level)%level = level ! confusing!
 
-       ! trivial zero-order predictor
-       if (level == pf%nlevels) then
-          pf%levels(level)%nsweeps_pred = 1
+       ! define number of sweeps for each level
+       pf%levels(level)%nsweeps_pred = 1
+       if (level > 1) then
+          pf%levels(level)%nsweeps   = 1
        else
-          pf%levels(level)%nsweeps_pred = 0
+          pf%levels(level)%nsweeps   = 2
        end if
-       pf%levels(level)%nsweeps = 1
-              
+
        ! allocate space for the levels
        allocate(pf%levels(level)%shape(level))
        pf%levels(level)%shape(level) = nvars(level)
@@ -167,23 +176,34 @@ contains
                      dt)
 
     end do
+
+!    allocate(z(nvars(pf%nlevels)))
+!    call pf%levels(pf%nlevels)%q0%unpack(z)
+!    call pf%levels(pf%nlevels)%q0%pack(z)
+
   
    ! define the hooks to output data to the terminal (residual and error)
-    call pf_add_hook(pf,            & 
-                     pf%nlevels,    & 
-                     PF_POST_SWEEP, &
-                     fecho_error)
+    ! call pf_add_hook(pf,            &
+    !                  pf%nlevels,    &
+    !                  PF_POST_SWEEP, &
+    !                  fecho_error)
     call pf_add_hook(pf,             &
                      -1,             &
                      PF_POST_SWEEP,  &
                      fecho_residual)   
-    call pf_add_hook(pf,            & 
-                     pf%nlevels,    &  
-                     PF_POST_STEP, &
-                     fecho_interpolation_errors)
+    ! call pf_add_hook(pf,           &
+    !                  pf%nlevels,   &
+    !                  PF_POST_STEP, &
+    !                  fecho_interpolation_errors)
+    call pf_add_hook(pf,                 &
+                     pf%nlevels,         &
+                     PF_POST_ITERATION,  &
+                     fecho_output_solution)
 
     ! advance in time with libpfasst
     level = nlevs
+
+    call MPI_BARRIER(MPI_COMM_WORLD,mpi_stat)
 
     call pf_pfasst_run(pf,                    & 
                        pf%levels(level)%Q(1), &
@@ -201,10 +221,14 @@ contains
                    pf%niters)
 
     end do
-    
+
+    call MPI_BARRIER(MPI_COMM_WORLD,mpi_stat)
+
     ! release memory
     call pf_pfasst_destroy(pf)
     call pf_mpi_destroy(pf_comm)
+
+    print *, 'all the memory was released'
 
   end subroutine fmain
 

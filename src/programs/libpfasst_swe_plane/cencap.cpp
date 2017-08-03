@@ -120,8 +120,8 @@ extern "C"
 
     // allocate the flat data array
     const int n_elems = (h.planeDataConfig->physical_array_data_number_of_elements 
-			 + u.planeDataConfig->physical_array_data_number_of_elements 
-			 + v.planeDataConfig->physical_array_data_number_of_elements);
+		      +  u.planeDataConfig->physical_array_data_number_of_elements
+		      +  v.planeDataConfig->physical_array_data_number_of_elements);
     io_Y->allocate_flat_data_array(n_elems);
     double*& flat_data_array = io_Y->get_flat_data_array();
     
@@ -132,14 +132,12 @@ extern "C"
       flat_data_array[j++] = h.physical_space_data[i];
 
     // u
-    for (int i = 0; i < u.planeDataConfig->physical_array_data_number_of_elements; ++i) {
+    for (int i = 0; i < u.planeDataConfig->physical_array_data_number_of_elements; ++i)
       flat_data_array[j++] = u.physical_space_data[i];
-    }
 
     // v
-    for (int i = 0; i < v.planeDataConfig->physical_array_data_number_of_elements; ++i) {
+    for (int i = 0; i < v.planeDataConfig->physical_array_data_number_of_elements; ++i)
       flat_data_array[j++] = v.physical_space_data[i]; 
-    }
 
     // return the pointer to the array
     *o_flat_data_ptr = flat_data_array;
