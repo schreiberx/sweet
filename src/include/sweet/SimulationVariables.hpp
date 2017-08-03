@@ -675,7 +675,6 @@ public:
 //		disc.cell_size[0] = sim.domain_size[0]/(double)disc.res_physical[0];
 //		disc.cell_size[1] = sim.domain_size[1]/(double)disc.res_physical[1];
 
-		timecontrol.current_timestep_size = -1;
 		timecontrol.current_timestep_nr = 0;
 		timecontrol.current_simulation_time = 0;
 
