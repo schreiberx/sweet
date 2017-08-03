@@ -4,6 +4,16 @@
 #include "PlaneDataVars.hpp"
 #include "PlaneDataCtx.hpp"
 
+/**
+ * Write file to data and return string of file name
+ */
+
+std::string write_file(
+		       PlaneDataCtx  &i_ctx,
+		       const PlaneData &i_planeData,
+		       const char* i_name	///< name of output variable
+		       );
+
 /*
   Right-hand-side functions called from Fortran 
 */

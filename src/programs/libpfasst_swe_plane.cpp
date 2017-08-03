@@ -82,21 +82,15 @@ int main(int i_argc, char *i_argv[])
       case 2: {
 	if (simVars.libpfasst.nnodes == 3 ||
 	    simVars.libpfasst.nnodes == 5 || 
-	    simVars.libpfasst.nnodes == 7 ||
 	    simVars.libpfasst.nnodes == 9)
 	  nnodes[0] = 5; 
 	else 
-	  FatalError("With 2 levels, the number of SDC nodes on the fine level must be either 3, 5, 7, or 9");
+	  FatalError("With 2 levels, the number of SDC nodes on the fine level must be either 3, 5, or 9");
 	break;
       }
       // Three levels
       case 3: {
 	if (simVars.libpfasst.nnodes == 9) 
-	  {
-	    nnodes[0] = 5; 
-	    nnodes[1] = 7;
-	  }
-	else if (simVars.libpfasst.nnodes == 7) 
 	  {
 	    nnodes[0] = 3; 
 	    nnodes[1] = 5;
@@ -107,7 +101,7 @@ int main(int i_argc, char *i_argv[])
 	    nnodes[1] = 3;
 	  }
 	else 
-	  FatalError("With 3 levels, the number of SDC nodes on the fine level must be either 5, 7, or 9");
+	  FatalError("With 3 levels, the number of SDC nodes on the fine level must be either 5, or 9");
 	break;
       }
       // All other cases not supported yet
@@ -166,12 +160,10 @@ int main(int i_argc, char *i_argv[])
     nvars_per_field[i] = levelSingletons[i].dataConfig.physical_array_data_number_of_elements;  // number of degrees of freedom per vector field
 
   // instantiate the PlaneDataCtx object 
-
   PlaneDataCtx* pd_ctx = new PlaneDataCtx(
   					  &simVars,
   					  &levelSingletons
   					  );
-  
   // output the info for the levels
   for (int i = 0; i < simVars.libpfasst.nlevels; i++)
     levelSingletons[simVars.libpfasst.nlevels-1-i].dataConfig.printInformation();
