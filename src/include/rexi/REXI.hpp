@@ -43,7 +43,8 @@
  * of exponential integrators.
  */
 template <
-	typename TEvaluation_ = __float128,	///< evaluation accuracy of coefficients
+//	typename TEvaluation_ = __float128,	///< evaluation accuracy of coefficients
+	typename TEvaluation_ = double,	///< evaluation accuracy of coefficients
 	typename TStorageAndProcessing_ = double	///< storage precision of coefficients - use quad precision per default
 >
 class REXI
@@ -191,19 +192,36 @@ public:
 
 		if (i_reduce_to_half)
 		{
+#if 0
+			/**
+			 * reduce the computational amount to its half,
+			 * see understanding REXI in the documentation folder
+			 */
+			alpha_eval.resize(N+1);
+			beta_re_eval.resize(N+1);
+			//beta_im_eval.resize(N+1);
+
+			// N+1 contains the pole and we don't rescale this one by 2 but all the other ones
+			for (int i = 0; i < N; i++)
+			{
+				beta_re_eval[i] *= 2.0;
+				//beta_im[i] *= 2.0;
+			}
+
+#else
 			/*
 			 * This is slightly more accurate
 			 */
 			for (int i = 0; i < N; i++)
 			{
-//				alpha_tmp[i] = (alpha_tmp[i] + alpha_tmp[N*2-i])*0.5;
+//				alpha_eval[i] = (alpha_eval[i] + alpha_eval[N*2-i])*complexEvaluation(0.5);
 				beta_re_eval[i] += conj(beta_re_eval[N*2-i]);
 //				beta_im_eval[i] += conj(beta_im_eval[N*2-i]);
 			}
 			alpha_eval.resize(N+1);
 			beta_re_eval.resize(N+1);
 //			beta_im_eval.resize(N+1);
-
+#endif
 		}
 
 		if (i_normalization)

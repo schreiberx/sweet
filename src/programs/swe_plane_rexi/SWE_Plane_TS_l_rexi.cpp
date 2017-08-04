@@ -69,17 +69,24 @@ void SWE_Plane_TS_l_rexi::setup(
 
 		rexi_alpha = rexiNG.alpha;
 		rexi_beta_re = rexiNG.beta_re;
+
+#if 1
+		for (std::size_t i = 0; i < rexi_alpha.size(); i++)
+		{
+			rexi_alpha[i] = -std::conj(rexi_alpha[i]);
+			rexi_beta_re[i] = -std::conj(rexi_beta_re[i]);
+		}
+#endif
 	}
 	else
 	{
-		rexi.setup(0, rexiSimVars->h, rexiSimVars->M, rexiSimVars->L, !rexiSimVars->use_half_poles, rexiSimVars->normalization);
+		rexi.setup(0, rexiSimVars->h, rexiSimVars->M, rexiSimVars->L, rexiSimVars->use_half_poles, rexiSimVars->normalization);
 
 		rexi_alpha = rexi.alpha;
 		rexi_beta_re = rexi.beta_re;
 
 		if (simVars.misc.verbosity > 3)
 			rexi.output();
-
 
 #if FOOBAR123
 		// fake setup
@@ -520,9 +527,18 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 		u0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(i_u);
 		v0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(i_v);
 #else
-		eta0 = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(i_h_pert);
-		u0 = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(i_u);
-		v0 = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(i_v);
+		if (simVars.rexi.use_half_poles)
+		{
+			eta0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(i_h_pert);
+			u0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(i_u);
+			v0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(i_v);
+		}
+		else
+		{
+			eta0 = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(i_h_pert);
+			u0 = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(i_u);
+			v0 = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(i_v);
+		}
 #endif
 
 		/**
@@ -710,9 +726,8 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 
 #else
 
-	if (simVars.rexi.use_half_poles && 0)
+	if (simVars.rexi.use_half_poles)
 	{
-		//FatalError("Not yet supported!");
 		o_h_pert = Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->h_sum);
 		o_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->u_sum);
 		o_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->v_sum);
