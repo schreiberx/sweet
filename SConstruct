@@ -278,6 +278,9 @@ AddOption(	'--parareal',
 )
 env['parareal'] = GetOption('parareal')
 
+if env['parareal'] == 'mpi':
+	raise Exception("TODO: Implement MPI Parareal")
+
 
 
 
