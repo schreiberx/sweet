@@ -6,7 +6,7 @@ source config.sh
 if [ "${HOSTNAME:0:8}" == "cheyenne" ]; then
 	echo "Compilation of GCC fails on Cheyenne, please use"
 	echo "	module load gnu/7.1.0"
-	exit 1
+	exit 0
 fi
 
 echo "*** GCC7.1 ***"
