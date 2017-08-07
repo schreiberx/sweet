@@ -38,7 +38,7 @@ else
 	exit 1
 fi
 
-echo "Installing packages:" ${PKGS[0]} ${PKGS[1]}
+echo "Installing packages: ${PKGS[@]}"
 
 for D in "${PKGS[@]}"; do
 	./$D || exit 1
