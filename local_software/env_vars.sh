@@ -32,6 +32,7 @@ if [ "`basename $SHELL`" != "bash" ]; then
 	return
 fi
 
+export PS1="[SWEET] $PS1"
 
 BACKDIR="$PWD"
 
