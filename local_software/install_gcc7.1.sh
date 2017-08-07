@@ -3,6 +3,12 @@
 source config.sh
 
 
+if [ "${HOSTNAME:0:8}" == "cheyenne" ]; then
+	echo "Compilation of GCC fails on Cheyenne, please use"
+	echo "	module load gnu/7.1.0"
+	exit 1
+fi
+
 echo "*** GCC7.1 ***"
 if [ ! -e "$DST_DIR/bin/gcc-7.1"  -o "$1" != "" ]; then
 	SRC_LINK="http://www.martin-schreiber.info/pub/sweet_local_software/gcc-7.1.0.tar.bz2"
