@@ -25,6 +25,12 @@ if [ "#$0" != "#-bash" ]; then
 	fi
 fi
 
+if [ "${HOSTNAME:0:8}" == "cheyenne" ]; then
+	echo "Loading GNU 7.1.0 module on Cheyenne"
+	module load gnu/7.1.0
+fi
+
+
 if [ "`basename $SHELL`" != "bash" ]; then
 	echo "ERROR|"
 	echo "ERROR| These scripts are only compatible to the bash shell"
@@ -65,5 +71,4 @@ export PYTHONPATH="$PYTHONPATH:$SCRIPTDIR/local/lib/python3.6/site-packages/"
 echo "SWEET environment variables loaded"
 
 cd "$BACKDIR"
-
 
