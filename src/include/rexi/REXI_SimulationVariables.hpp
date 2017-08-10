@@ -7,6 +7,7 @@
 #ifndef SRC_REXI_SIMULATION_VARIABLES_HPP_
 #define SRC_REXI_SIMULATION_VARIABLES_HPP_
 
+#include <iostream>
 #include <unistd.h>
 #include <getopt.h>
 

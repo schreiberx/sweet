@@ -4,8 +4,8 @@
  *  Created on: 3 July 2017
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
-#ifndef SRC_INCLUDE_RexiNG_RexiNG_HPP_
-#define SRC_INCLUDE_RexiNG_RexiNG_HPP_
+#ifndef SRC_INCLUDE_REXI_FILE_HPP_
+#define SRC_INCLUDE_REXI_FILE_HPP_
 
 #include <cmath>
 #include <complex>
@@ -17,10 +17,10 @@
 
 #include <sweet/FatalError.hpp>
 #include <libmath/DQStuff.hpp>
+#include <rexi/RexiFile.hpp>
 
 
-#include "RexiNG.hpp"
-#include "rexi/RexiNGCoefficients.hpp"
+#include <rexi/RexiFileCoefficients.hpp>
 
 
 
@@ -51,7 +51,7 @@
  *
  */
 template <typename T = double>
-class RexiNG
+class RexiFile
 {
 public:
 	typedef std::complex<T> complexT;
@@ -66,7 +66,7 @@ public:
 	std::vector<complexT> beta_re;
 //	std::vector<complexT> beta_im;
 
-	RexiNGCoefficients<T> fafcoeffs;
+	RexiFileCoefficients<T> fafcoeffs;
 
 
 	static
@@ -108,7 +108,7 @@ public:
 			i_basis_function_spacing = None();
 
 		std::string faf_data_dir = i_faf_data_directory + "/faf_data_rationalcplx_"+i_function_name;
-		RexiNGCoefficients<T> target_fafcoeffs;
+		RexiFileCoefficients<T> target_fafcoeffs;
 
 		target_fafcoeffs.N = i_N;
 		target_fafcoeffs.max_error = i_max_error;
@@ -130,7 +130,7 @@ public:
 			FatalError(std::string("Unable to open directory ") + i_faf_data_directory);
 
 		bool best_found = false;
-		RexiNGCoefficients<T> &best = fafcoeffs;
+		RexiFileCoefficients<T> &best = fafcoeffs;
 
 		struct dirent *dp;
 		while (dirp)
@@ -158,7 +158,7 @@ public:
 
 			std::string filepath = faf_data_dir + "/"+ filename;
 
-			RexiNGCoefficients<T> test_fafcoeffs;
+			RexiFileCoefficients<T> test_fafcoeffs;
 			test_fafcoeffs.load_from_file(filepath);
 
 			T eps = 1e-10;
@@ -311,14 +311,17 @@ public:
 		alpha.resize(N);
 		beta_re.resize(N);
 
+
 		for (int i = 0; i < N; i++)
 		{
 			// generate alphas
 			int K = i - (N/2);
-			alpha[i] = std::complex<T>(fafcoeffs.basis_function_rat_shift, -(T)K*fafcoeffs.basis_function_spacing);
+			alpha[i] = std::complex<T>(fafcoeffs.basis_function_rat_shift/fafcoeffs.basis_function_scaling, -(T)K*fafcoeffs.basis_function_spacing);
 
 			// generate betas
 			beta_re[i] = fafcoeffs.weights_cplx[i];
+
+			beta_re[i] /= fafcoeffs.basis_function_scaling;
 		}
 
 		if ((N & 1) != 1)
@@ -366,11 +369,9 @@ public:
 		int N = alpha.size();
 		std::cout << "N: " << N << std::endl;
 
-//		std::cout << "Alpha:" << std::endl;
 		for (int i = 0; i < N; i++)
 			std::cout << "alpha[" << i << "] = " << alpha[i] << std::endl;
 
-//		std::cout << "Beta:" << std::endl;
 		for (int i = 0; i < N; i++)
 			std::cout << "beta_re[" << i << "] = " << beta_re[i] << std::endl;
 	}
@@ -423,7 +424,7 @@ public:
 		std::size_t S = alpha.size();
 
 		for (std::size_t n = 0; n < S; n++)
-			sum += (beta_re[n] / (complexT(0, i_x) + alpha[n])).real();
+			sum += (beta_re[n] / (complexT(0.0, i_x) + alpha[n])).real();
 
 		return sum;
 	}

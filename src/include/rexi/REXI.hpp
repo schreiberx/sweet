@@ -13,10 +13,10 @@
 #include <vector>
 #include <algorithm>
 #include <assert.h>
+#include <rexi/FunApproximation.hpp>
 
 #include "ExponentialApproximation.hpp"
 #include "GaussianApproximation.hpp"
-#include "Phi1Approximation.hpp"
 
 
 
@@ -43,8 +43,11 @@
  * of exponential integrators.
  */
 template <
-//	typename TEvaluation_ = __float128,	///< evaluation accuracy of coefficients
+#if 1
+	typename TEvaluation_ = __float128,	///< evaluation accuracy of coefficients
+#else
 	typename TEvaluation_ = double,	///< evaluation accuracy of coefficients
+#endif
 	typename TStorageAndProcessing_ = double	///< storage precision of coefficients - use quad precision per default
 >
 class REXI
@@ -70,6 +73,7 @@ public:
 //	std::vector<complexEvaluation> beta_im_eval;
 
 
+
 public:
 	REXI()
 	{
@@ -79,7 +83,7 @@ public:
 
 public:
 	REXI(
-			int i_phi_id,	///< ID of Phi function to be approximated
+			const std::string &i_function_id,
 			TStorageAndProcessing i_h,	///< sampling width
 			int i_M,		///< approximation area
 			int i_L = 0,	///< L, see Gaussian approximation
@@ -87,7 +91,7 @@ public:
 			bool i_normalization = true
 	)
 	{
-		setup(i_phi_id, i_h, i_M, i_L, i_reduce_to_half, i_normalization);
+		setup(i_function_id, i_h, i_M, i_L, i_reduce_to_half, i_normalization);
 	}
 
 
@@ -104,17 +108,16 @@ public:
 
 public:
 	void setup(
-		int i_phi_id,			///< Phi function id
+		const std::string &i_function_id,
 		TEvaluation i_h,		///< sampling width
 		int i_M,				///< approximation area
 		int i_L = 0,			///< L value for Gaussian approximation, use 0 for autodetection
 		bool i_reduce_to_half = true,	///< reduce the number of poles to half
-		bool i_normalization = true
+		bool i_normalization = false
 	)
 	{
 		GaussianApproximation<TEvaluation,TEvaluation> ga(i_L);
 
-		phi_id = i_phi_id;
 		int L = ga.L;
 		int N = i_M+ga.L;
 		int M = i_M;
@@ -130,14 +133,22 @@ public:
 		if (i_h < 0)
 			FatalError("Specify the sampling distance width of REXI (parameter h)");
 
-		if (phi_id == 0)
+		if (i_function_id == "phi0")
 		{
+			phi_id = 0;
 			ExponentialApproximation<TEvaluation, TEvaluation> ea(i_h, i_M);
 			b = ea.b;
 		}
-		else if (phi_id == 1)
+		else if (i_function_id == "phi1")
 		{
-			Phi1Approximation<TEvaluation,TEvaluation> phia(i_h, i_M);
+			phi_id = 1;
+			FunApproximation<TEvaluation,TEvaluation> phia("phi1", i_h, i_M);
+			b = phia.b;
+		}
+		else if (i_function_id == "phi2")
+		{
+			phi_id = 2;
+			FunApproximation<TEvaluation,TEvaluation> phia("phi2", i_h, i_M);
 			b = phia.b;
 		}
 		else
@@ -223,6 +234,7 @@ public:
 //			beta_im_eval.resize(N+1);
 #endif
 		}
+
 
 		if (i_normalization)
 		{
@@ -313,7 +325,7 @@ public:
 			return ExponentialApproximation<TEvaluation,TStorageAndProcessing>::eval(i_x);
 
 		case 1:
-			return Phi1Approximation<TEvaluation,TStorageAndProcessing>::eval(i_x);
+			return FunApproximation<TEvaluation,TStorageAndProcessing>::eval(i_x);
 
 		default:
 			FatalError("Unknown phi function id");
@@ -366,24 +378,41 @@ public:
 	}
 
 
-#if 0
+
+	/**
+	 * \return \f$ Re(cos(x) + i*sin(x)) = cos(x) \f$
+	 */
+	TEvaluation approx_returnComplex(
+			TEvaluation i_x
+	)
+	{
+		TEvaluation sum = 0;
+
+		std::size_t S = alpha.size();
+
+		for (std::size_t n = 0; n < S; n++)
+			sum += (DQStuff::convertComplex<TEvaluation>(beta_re[n]) / (complexEvaluation(0, i_x) + DQStuff::convertComplex<TEvaluation>(alpha[n]))).real();
+
+		return sum;
+	}
+
+
 	/**
 	 * \return \f$ Im(cos(x) + i*sin(x)) = sin(x) \f$
 	 *
 	 * we simply use a phase shift of M_PI and use the returnReal variant
 	 */
-	TEvaluation approx_returnImag(
+	std::complex<TEvaluation> approx_returnImag(
 			TEvaluation i_x		///< sampling position
 	)
 	{
 		std::size_t S = alpha.size();
 
-		TEvaluation sum = 0;
+		std::complex<TEvaluation> sum = 0;
 		for (std::size_t n = 0; n < S; n++)
-			sum += (DQStuff::convertComplex<TEvaluation>(beta_im[n]) / (complexEvaluation(0, i_x) + DQStuff::convertComplex<TEvaluation>(alpha[n]))).real();
+			sum += (DQStuff::convertComplex<TEvaluation>(beta_re[n]) / (complexEvaluation(0, i_x) + DQStuff::convertComplex<TEvaluation>(alpha[n])));
 		return sum;
 	}
-#endif
 };
 
 

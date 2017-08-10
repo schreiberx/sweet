@@ -237,6 +237,33 @@ public:
 		return sum;
 	}
 
+
+	/**
+	 * evaluate approximation of Gaussian basis function
+	 *
+	 * with sum of complex rational functions
+	 */
+	std::complex<Tevaluation> approxGaussian_Complex(
+			Tevaluation x,	///< x-coefficient for Gaussian basis function
+			Tevaluation h	///< h-coefficient for Gaussian basis function
+	)
+	{
+		// scale x, since it depends linearly on h:
+		// x^2 ~ h^2
+		x /= h;
+
+		std::complex<Tevaluation> sum = 0;
+
+		for (int l = 0; l < 2*L+1; l++)
+		{
+			int j = l-L;
+
+			sum += (a[l]/(complex(0, x) + (Tevaluation)mu + complex(0, j)));
+		}
+
+		return sum;
+	}
+
 	void print()
 	{
 		std::cout << "mu: " << mu << std::endl;

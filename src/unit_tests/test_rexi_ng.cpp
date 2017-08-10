@@ -5,8 +5,8 @@
  *      Author: Martin Schreiber <schreiberx@gmail.com>
  */
 
+#include <rexi/RexiFile.hpp>
 #include <iostream>
-#include <rexi/RexiNG.hpp>
 #include <sweet/SimulationVariables.hpp>
 //#include <rexi/REXI.hpp>
 
@@ -19,7 +19,7 @@ int main(
 )
 {
 	SimulationVariables simVars;
-	if (!simVars.setupFromMainParameters(i_argc, i_argv))
+	if (!simVars.setupFromMainParameters(i_argc, i_argv, nullptr, false))
 	{
 		return -1;
 	}
@@ -45,7 +45,7 @@ int main(
 				double test_min = -h*(T)M;
 				double test_max = h*(T)M;
 
-				RexiNG<T> rexiNG;
+				RexiFile<T> rexiNG;
 				bool retval = rexiNG.auto_load(
 						function_name,
 						0,

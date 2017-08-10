@@ -5,8 +5,8 @@
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#ifndef SRC_INCLUDE_REXI_REXINGCOEFFICIENTS_HPP_
-#define SRC_INCLUDE_REXI_REXINGCOEFFICIENTS_HPP_
+#ifndef SRC_INCLUDE_REXI_REXIFILECOEFFICIENTS_HPP_
+#define SRC_INCLUDE_REXI_REXIFILECOEFFICIENTS_HPP_
 
 #include <string>
 #include <fstream>
@@ -14,7 +14,7 @@
 
 
 template <typename T>
-class RexiNGCoefficients
+class RexiFileCoefficients
 {
 public:
 	std::string function_name;		///< "phi0"; "phi1"; "phi2"; etc.
@@ -53,7 +53,7 @@ public:
 
 
 public:
-	RexiNGCoefficients()
+	RexiFileCoefficients()
 	{
 		reset();
 	}
@@ -219,4 +219,4 @@ public:
 
 
 
-#endif /* SRC_INCLUDE_REXI_REXINGCOEFFICIENTS_HPP_ */
+#endif /* SRC_INCLUDE_REXI_REXIFILECOEFFICIENTS_HPP_ */

@@ -15,6 +15,7 @@
 
 typedef double TEvaluation;
 typedef double TStorageAndProcessing;
+typedef std::complex<TEvaluation> TComplexEvaluation;
 //typedef double TStorageAndProcessing;
 
 int main(
@@ -23,22 +24,21 @@ int main(
 )
 {
 	SimulationVariables simVars;
-	if (!simVars.setupFromMainParameters(i_argc, i_argv))
+	if (!simVars.setupFromMainParameters(i_argc, i_argv, nullptr, false))
 	{
 		return -1;
 	}
 
 	double max_error_threshold = 1e-9;
 
-
-	for (int fun_id = 0; fun_id <= 1; fun_id++)
-	{
-
+// TODO: REACTIVATE!!!!!!!!!!!!!!
+// TODO: REACTIVATE!!!!!!!!!!!!!!
+// TODO: REACTIVATE!!!!!!!!!!!!!!
 #if 1
 		if (1)
 		{
 			std::cout << "******************************************************" << std::endl;
-			std::cout << "PHI " << fun_id << " - EVALUATING EXPONENTIAL APPROXIMATION with approx Gaussian" << std::endl;
+			std::cout << "EVALUATING EXPONENTIAL (e^(ix)) APPROXIMATION with approx Gaussian" << std::endl;
 			std::cout << "******************************************************" << std::endl;
 
 			for (double h = 0.2; h > 0.01; h *= 0.5)
@@ -70,53 +70,11 @@ int main(
 		}
 #endif
 
-		if (1)
+
+#if 1
 		{
 			std::cout << "******************************************************" << std::endl;
-			std::cout << "PHI " << fun_id << " - REXI real: Test for partition of unity" << std::endl;
-			std::cout << "******************************************************" << std::endl;
-
-			for (TEvaluation h = 0.2; h >= 0.05; h *= 0.5)
-			{
-				for (int M = 128; M < 512; M *= 2)
-				{
-					REXI<TEvaluation, TStorageAndProcessing> rexi(fun_id, h, M, simVars.rexi.L, false, simVars.rexi.normalization);
-
-					// REXI approximates the interval [-M*h;M*h] but gets inaccurate close to the interval boundaries
-					double start = -M*h*0.9;
-					double end = -start;
-					double step_size = 0.001;
-
-					TEvaluation max_error = 0;
-
-					for (double x = start; x < end; x += step_size)
-					{
-						TEvaluation correct = rexi.eval(x).real();
-						TEvaluation approx = rexi.approx_returnReal(x);
-
-						if (DQStuff::abs(approx) > 1.0)
-							std::cerr << "approx value " << (double)approx << " not bounded by unity (just a warning and not a problem) at x=" << x << std::endl;
-						TEvaluation error_real = DQStuff::abs(correct - approx);
-
-						max_error = DQStuff::max(max_error, error_real);
-					}
-
-					std::cout << "max_error: " << (double)max_error << " for h " << (double)h << " and M " << M << std::endl;
-
-					if (DQStuff::abs(max_error) > max_error_threshold)
-					{
-						std::cerr << "MAX ERROR THRESHOLD EXCEEDED!" << std::endl;
-						exit(-1);
-					}
-				}
-			}
-		}
-
-
-		if (1)
-		{
-			std::cout << "******************************************************" << std::endl;
-			std::cout << "PHI " << fun_id << " - EVALUATING GAUSSIAN APPROXIMATION (real)" << std::endl;
+			std::cout << "EVALUATING GAUSSIAN APPROXIMATION (real)" << std::endl;
 			std::cout << "******************************************************" << std::endl;
 			GaussianApproximation<TEvaluation, TStorageAndProcessing> ga(simVars.rexi.L);
 
@@ -126,62 +84,110 @@ int main(
 				double end = 100.0;
 				double step_size = 0.001;
 
-				double max_error = 0.0;
+				double max_error_real = 0.0;
+				double max_error_imag = 0.0;
 
+/*
+				start *= 0.1;
+				end *= 0.1;
+				step_size = 0.01;
+*/
 				for (double x = start; x < end; x += step_size)
 				{
-					double error = DQStuff::abs(ga.evalGaussian(x, h) - ga.approxGaussian(x, h));
-					max_error = DQStuff::max(max_error, error);
+					std::complex<double> error = ga.evalGaussian(x, h) - ga.approxGaussian_Complex(x, h);
+
+					max_error_real = DQStuff::max(max_error_real, DQStuff::abs(error.real()));
+					max_error_imag = DQStuff::max(max_error_imag, DQStuff::abs(error.imag()));
+
+//					std::cout << x << ": " << DQStuff::abs(error.imag()) << std::endl;
 				}
 
-				std::cout << "max_error: " << max_error << " for h " << h << std::endl;
+				std::cout << "max_error_real: " << max_error_real << " for h " << h << std::endl;
+//				std::cout << "max_error_imag: " << max_error_imag << " for h " << h << std::endl;
 
-				if (DQStuff::abs(max_error) > max_error_threshold)
+				if (DQStuff::abs(max_error_real) > max_error_threshold)
 				{
 					std::cerr << "MAX ERROR THRESHOLD EXCEEDED!" << std::endl;
 					exit(-1);
 				}
 			}
 		}
+#endif
 
-	#if 0
-		if (1)
+	for (int fun_id = 0; fun_id <= 1; fun_id++)
+	{
+		std::string function_name;
+		switch(fun_id)
+		{
+		case 0:
+			function_name = "phi0";
+			break;
+
+		case 1:
+			function_name = "phi1";
+			break;
+
+		case 2:
+			function_name = "phi2";
+			break;
+
+		default:
+			FatalError("this phi function is not implemented");
+		}
+
+#if 1
 		{
 			std::cout << "******************************************************" << std::endl;
-			std::cout << "PHI " << fun_id << " - REXI complex" << std::endl;
+			std::cout << "PHI " << fun_id << " - REXI real: Test for partition of unity" << std::endl;
 			std::cout << "******************************************************" << std::endl;
 
-			for (double h = 0.2; h > 0.01; h *= 0.5)
+			for (TEvaluation h = 0.2; h >= 0.05; h *= 0.5)
 			{
-				int M = 32/h;
-
-				REXI<TEvaluation, TStorageAndProcessing> rexi(fun_id, h, M, simVars.rexi.L, false, simVars.rexi.normalization);
-
-				double start = -M*h*0.9;
-				double end = -start;
-				double step_size = 0.01;
-
-				double max_error = 0;
-
-				for (double x = start; x < end; x += step_size)
+				for (int M = 128; M < 512; M *= 2)
 				{
-					std::complex<TEvaluation> diff = rexi.eval(x) - rexi.approx(x);
-					double error = DQStuff::max(DQStuff::abs(diff.real()), DQStuff::abs(diff.imag()));
-					max_error = DQStuff::max(max_error, error);
-				}
+					REXI<TEvaluation, TStorageAndProcessing> rexi(function_name, h, M, simVars.rexi.L, false, simVars.rexi.normalization);
 
-				std::cout << "max_error: " << max_error << " for h " << h << " and M " << M << std::endl;
+					// REXI approximates the interval [-M*h;M*h] but gets inaccurate close to the interval boundaries
+					double start = -M*h*0.9;
+					double end = -start;
+					double step_size = 0.001;
 
-				if (DQStuff::abs(max_error) > max_error_threshold)
-				{
-					std::cerr << "MAX ERROR THRESHOLD EXCEEDED!" << std::endl;
-					exit(-1);
+					TEvaluation max_error_real = 0;
+					TEvaluation max_error_imag = 0;
+
+					for (double x = start; x < end; x += step_size)
+					{
+						TComplexEvaluation correct = rexi.eval(x);
+						TComplexEvaluation approx = rexi.approx_returnComplex(x);
+
+						if (DQStuff::abs(approx.real()) > 1.0)
+							std::cerr << "approx value_real " << (double)approx.real() << " not bounded by unity (just a warning and not a problem) at x=" << x << std::endl;
+
+						if (DQStuff::abs(approx.imag()) > 1.0)
+							std::cerr << "approx value_imag " << (double)approx.imag() << " not bounded by unity (just a warning and not a problem) at x=" << x << std::endl;
+
+						TEvaluation error_real = DQStuff::abs(correct.real() - approx.real());
+						TEvaluation error_imag = DQStuff::abs(correct.imag() - approx.imag());
+
+						max_error_real = DQStuff::max(max_error_real, error_real);
+						max_error_imag = DQStuff::max(max_error_imag, error_imag);
+					}
+
+					std::cout << "max_error_real: " << (double)max_error_real << " for h " << (double)h << " and M " << M << std::endl;
+					std::cout << "max_error_imag: " << (double)max_error_imag << " for h " << (double)h << " and M " << M << std::endl;
+
+					if (DQStuff::abs(max_error_real) > max_error_threshold)
+					{
+						std::cerr << "MAX ERROR THRESHOLD EXCEEDED!" << std::endl;
+						exit(-1);
+					}
 				}
 			}
 		}
-	#endif
+#endif
 
-	#if 1
+
+#if 0
 		if (1)
 		{
 			std::cout << "******************************************************" << std::endl;
@@ -196,7 +202,7 @@ int main(
 				{
 					int M = 32/h;
 
-					REXI<TEvaluation, TStorageAndProcessing> rexi(fun_id, h, M, simVars.rexi.L, half, simVars.rexi.normalization);
+					REXI<TEvaluation, TStorageAndProcessing> rexi(function_name, h, M, simVars.rexi.L, half, simVars.rexi.normalization);
 
 					double start = -M*h*0.9;
 					double end = -start;
@@ -220,10 +226,10 @@ int main(
 				}
 				}
 		}
-	#endif
+#endif
 
 
-	#if 0
+#if 0
 		if (1)
 		{
 			std::cout << "******************************************************" << std::endl;
@@ -239,7 +245,7 @@ int main(
 				{
 					int M = 32/h;
 
-					REXI<TEvaluation, TStorageAndProcessing> rexi(fun_id, h, M, simVars.rexi.L, half, simVars.rexi.normalization);
+					REXI<TEvaluation, TStorageAndProcessing> rexi(function_name, h, M, simVars.rexi.L, half, simVars.rexi.normalization);
 
 					double start = -M*h*0.9;
 					double end = -start;
@@ -263,14 +269,15 @@ int main(
 				}
 			}
 		}
-	#endif
+#endif
 
-	#if 0
+#if 0
+		// not compiling anymore
 		if (0)
 		{
 			std::size_t res[2] = {128, 128};
 
-			double eta_bar = simVars.setup.h0;
+			double eta_bar = simVars.sim.h0;
 			double g = simVars.sim.g;
 
 			PlaneDataComplex eta0(simVars.disc.res);
@@ -521,7 +528,7 @@ int main(
 				}
 			}
 		}
-	#endif
+#endif
 	}
 
 

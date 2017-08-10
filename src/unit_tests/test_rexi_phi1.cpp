@@ -5,9 +5,9 @@
  *      Author: Martin Schreiber <schreiberx@gmail.com>
  */
 
+#include <rexi/FunApproximation.hpp>
 #include <iostream>
 #include <rexi/GaussianApproximation.hpp>
-#include <rexi/Phi1Approximation.hpp>
 #include <rexi/REXI.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include "../include/sweet/plane/PlaneDataComplex.hpp"

@@ -5,6 +5,7 @@
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
+#include <rexi/REXI_Terry_and_File.hpp>
 #include "SWE_Plane_TS_l_rexi.hpp"
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneDataComplex.hpp>
@@ -21,8 +22,8 @@ std::vector<std::complex<double>> x_rexi_beta_re;
 #endif
 
 void SWE_Plane_TS_l_rexi::setup(
-		REXI_SimulationVariables &i_rexi,
-		const std::string &i_function_name
+	REXI_SimulationVariables &i_rexi,
+	const std::string &i_function_name
 )
 {
 	rexiSimVars = &i_rexi;
@@ -36,67 +37,13 @@ void SWE_Plane_TS_l_rexi::setup(
 		return;
 	}
 
-	if (rexiSimVars->use_next_generation)
-	{
-		bool retval = rexiNG.auto_load(
-				i_function_name,
-				rexiSimVars->ng_N,	/// N
-				rexiNG.None(),	/// max_error
-				rexiSimVars->ng_max_error_double_precision,			/// max_error_double_precision
-				rexiSimVars->ng_test_min,
-				rexiSimVars->ng_test_max,
-				rexiNG.None(),	/// basis_function_scaling
-				rexiSimVars->ng_h, //rexiNG.None(),	/// basis_function_spacing
-				rexiNG.None(),	/// basis_function rat shift
-
-				rexiSimVars->use_half_poles,
-
-				rexiSimVars->ng_faf_dir
-			);
-
-		if (!retval)
-			FatalError(std::string("Not able to find coefficients for given constraints for function "+i_function_name));
-
-		if (simVars.misc.verbosity > 0)
-			std::cout << "Loaded REXI coefficients from file '" << rexiNG.fafcoeffs.filename << "'" << std::endl;
-
-		if (simVars.misc.verbosity > 3)
-		{
-			rexiNG.fafcoeffs.output();
-			rexiNG.fafcoeffs.outputWeights();
-			rexiNG.output();
-		}
-
-		rexi_alpha = rexiNG.alpha;
-		rexi_beta_re = rexiNG.beta_re;
-
-#if 1
-		for (std::size_t i = 0; i < rexi_alpha.size(); i++)
-		{
-			rexi_alpha[i] = -std::conj(rexi_alpha[i]);
-			rexi_beta_re[i] = -std::conj(rexi_beta_re[i]);
-		}
-#endif
-	}
-	else
-	{
-		rexi.setup(0, rexiSimVars->h, rexiSimVars->M, rexiSimVars->L, rexiSimVars->use_half_poles, rexiSimVars->normalization);
-
-		rexi_alpha = rexi.alpha;
-		rexi_beta_re = rexi.beta_re;
-
-		if (simVars.misc.verbosity > 3)
-			rexi.output();
-
-#if FOOBAR123
-		// fake setup
-		//		rexi.setup(0, rexiSimVars->h, rexiSimVars->M, rexiSimVars->L, !rexiSimVars->use_half_poles, rexiSimVars->normalization);
-		rexi.setup(0, rexiSimVars->h, rexiSimVars->M, rexiSimVars->L, rexiSimVars->use_half_poles, rexiSimVars->normalization);
-		x_rexi_alpha = rexi.alpha;
-		x_rexi_beta_re = rexi.beta_re;
-#endif
-
-	}
+	REXI_Terry_or_File::load(
+			rexiSimVars,
+			i_function_name,
+			rexi_alpha,
+			rexi_beta_re,
+			simVars.misc.verbosity
+	);
 
 	std::cout << "Halving rule = " << rexiSimVars->use_half_poles << std::endl;
 	std::cout << "Number of total REXI coefficients N = " << rexi_alpha.size() << std::endl;
