@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <assert.h>
 #include <rexi/FunApproximation.hpp>
+#include <rexi/REXIFunctions.hpp>
 
 #include "ExponentialApproximation.hpp"
 #include "GaussianApproximation.hpp"
@@ -50,7 +51,7 @@ template <
 #endif
 	typename TStorageAndProcessing_ = double	///< storage precision of coefficients - use quad precision per default
 >
-class REXI
+class REXITerry
 {
 public:
 	typedef TEvaluation_ TEvaluation;
@@ -59,8 +60,7 @@ public:
 	typedef std::complex<TEvaluation> complexEvaluation;
 	typedef std::complex<TStorageAndProcessing> complexProcessingAndStorage;
 
-	int phi_id;
-
+	REXIFunctions<TStorageAndProcessing> rexiFunctions;
 
 public:
 	std::vector<complexProcessingAndStorage> alpha;
@@ -75,14 +75,14 @@ public:
 
 
 public:
-	REXI()
+	REXITerry()
 	{
 	}
 
 
 
 public:
-	REXI(
+	REXITerry(
 			const std::string &i_function_id,
 			TStorageAndProcessing i_h,	///< sampling width
 			int i_M,		///< approximation area
@@ -108,7 +108,7 @@ public:
 
 public:
 	void setup(
-		const std::string &i_function_id,
+		const std::string &i_function_name,
 		TEvaluation i_h,		///< sampling width
 		int i_M,				///< approximation area
 		int i_L = 0,			///< L value for Gaussian approximation, use 0 for autodetection
@@ -133,28 +133,61 @@ public:
 		if (i_h < 0)
 			FatalError("Specify the sampling distance width of REXI (parameter h)");
 
-		if (i_function_id == "phi0")
+		if (i_function_name == "phi0")
 		{
-			phi_id = 0;
-			ExponentialApproximation<TEvaluation, TEvaluation> ea(i_h, i_M);
-			b = ea.b;
-		}
-		else if (i_function_id == "phi1")
-		{
-			phi_id = 1;
-			FunApproximation<TEvaluation,TEvaluation> phia("phi1", i_h, i_M);
+#if 1
+			ExponentialApproximation<TEvaluation, TEvaluation> exp_approx(i_h, i_M);
+			b = exp_approx.b;
+#else
+			FunApproximation<TEvaluation,TEvaluation> phia(i_function_name, i_h, i_M);
 			b = phia.b;
-		}
-		else if (i_function_id == "phi2")
-		{
-			phi_id = 2;
-			FunApproximation<TEvaluation,TEvaluation> phia("phi2", i_h, i_M);
-			b = phia.b;
+#endif
+
+
+#if 0
+			typedef double T;
+			//typedef __float128 T;
+
+			REXIFunctions<T> rexiFunctions;
+			rexiFunctions.setup(i_function_name);
+
+			double d = i_h*i_M;
+			for (double x = -d; x <= d+1e-10; x += 1.0)
+			{
+				std::complex<double> approx = exp_approx.approx(x);
+				std::complex<T> tmp = rexiFunctions.eval(std::complex<double>(0, x));
+
+				std::complex<double> analyt(tmp.real(), tmp.imag());
+				std::cout << x << ": " << approx << "	" << analyt << std::endl;
+			}
+#endif
 		}
 		else
 		{
-			FatalError("Unknown phi function ID");
+			FunApproximation<TEvaluation,TEvaluation> phia(i_function_name, i_h, i_M);
+			b = phia.b;
+
+#if 0
+			typedef double T;
+			//typedef __float128 T;
+
+			REXIFunctions<T> rexiFunctions;
+			rexiFunctions.setup(i_function_name);
+
+			double d = i_h*i_M;
+			for (double x = -d; x <= d+1e-10; x += 1.0)
+			{
+				std::complex<double> approx = phia.approx(x);
+				std::complex<T> tmp = rexiFunctions.eval(std::complex<double>(0, x));
+
+				std::complex<double> analyt(tmp.real(), tmp.imag());
+				std::cout << x << ": " << approx << "	" << analyt << std::endl;
+			}
+#endif
+
 		}
+
+		rexiFunctions.setup(i_function_name);
 
 
 #if 1
@@ -238,7 +271,7 @@ public:
 
 		if (i_normalization)
 		{
-			if (phi_id == 0)
+			if (i_function_name == "phi0")
 			{
 				{
 					complexProcessingAndStorage sum = 0;
@@ -315,49 +348,31 @@ public:
 	/**
 	 * \return \f$ cos(x) + i*sin(x) \f$
 	 */
-	complexEvaluation eval(
-			TEvaluation i_x	///< sampling position
+	complexProcessingAndStorage eval(
+			TStorageAndProcessing i_x	///< sampling position
 	)
 	{
-		switch(phi_id)
-		{
-		case 0:
-			return ExponentialApproximation<TEvaluation,TStorageAndProcessing>::eval(i_x);
-
-		case 1:
-			return FunApproximation<TEvaluation,TStorageAndProcessing>::eval(i_x);
-
-		default:
-			FatalError("Unknown phi function id");
-		}
-		return complexEvaluation(0,0);
+		return rexiFunctions.eval(complexProcessingAndStorage(0, i_x));
 	}
 
 
-#if 0
+
 	/**
-	 * compute the approximated value of e^{ix}
+	 * \return \f$ Re(cos(x) + i*sin(x)) = cos(x) \f$
 	 */
-	complexEvaluation approx(
-			TEvaluation i_x	///< sampling position
+	std::complex<TStorageAndProcessing> approx_returnComplex(
+			TStorageAndProcessing i_x
 	)
 	{
-		TEvaluation sum_re = 0;
-		TEvaluation sum_im = 0;
+		std::complex<TStorageAndProcessing> sum = 0;
 
 		std::size_t S = alpha.size();
 
-		// Split computation into real part of \f$ cos(x) \f$ and imaginary part \f$ sin(x) \f$
 		for (std::size_t n = 0; n < S; n++)
-		{
-			complexEvaluation denom = (complexEvaluation(0, i_x) + DQStuff::convertComplex<TEvaluation>(alpha[n]));
-			sum_re += (DQStuff::convertComplex<TEvaluation>(beta_re[n]) / denom).real();
-			sum_im += (DQStuff::convertComplex<TEvaluation>(beta_im[n]) / denom).real();
-		}
+			sum += (DQStuff::convertComplex<TStorageAndProcessing>(beta_re[n]) / (complexProcessingAndStorage(0, i_x) + DQStuff::convertComplex<TStorageAndProcessing>(alpha[n])));
 
-		return complexEvaluation(sum_re, sum_im);
+		return sum;
 	}
-#endif
 
 
 	/**
@@ -377,24 +392,6 @@ public:
 		return sum;
 	}
 
-
-
-	/**
-	 * \return \f$ Re(cos(x) + i*sin(x)) = cos(x) \f$
-	 */
-	TEvaluation approx_returnComplex(
-			TEvaluation i_x
-	)
-	{
-		TEvaluation sum = 0;
-
-		std::size_t S = alpha.size();
-
-		for (std::size_t n = 0; n < S; n++)
-			sum += (DQStuff::convertComplex<TEvaluation>(beta_re[n]) / (complexEvaluation(0, i_x) + DQStuff::convertComplex<TEvaluation>(alpha[n]))).real();
-
-		return sum;
-	}
 
 
 	/**

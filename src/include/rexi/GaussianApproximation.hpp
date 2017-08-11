@@ -28,12 +28,12 @@
  * See e.g. Near optimal rational approximations of large data sets, Damle et. al.
  */
 template <
-	typename Tevaluation,	///< evaluation accuracy of coefficients
+	typename TEvaluation,	///< evaluation accuracy of coefficients
 	typename TStorage		///< storage precision of coefficients - use quad precision per default
 >
 class GaussianApproximation
 {
-	typedef std::complex<Tevaluation> complex;
+	typedef std::complex<TEvaluation> complex;
 	typedef std::complex<TStorage> complexStorage;
 
 	const TStorage pi = DQStuff::fromString<TStorage>("3.14159265358979323846264338327950288");
@@ -199,9 +199,9 @@ public:
 	/**
 	 * directly evaluate basis function which is to be approximated
 	 */
-	Tevaluation evalGaussian(
-			Tevaluation x,	///< x-coefficient for Gaussian basis function
-			Tevaluation h	///< h-coefficient for Gaussian basis function
+	TEvaluation evalGaussian(
+			TEvaluation x,	///< x-coefficient for Gaussian basis function
+			TEvaluation h	///< h-coefficient for Gaussian basis function
 	)
 	{
 		return DQStuff::exp(-(x*x)/(4.0*h*h))/sqrtpi4;
@@ -213,25 +213,25 @@ public:
 	 *
 	 * with sum of complex rational functions
 	 */
-	Tevaluation approxGaussian(
-			Tevaluation x,	///< x-coefficient for Gaussian basis function
-			Tevaluation h	///< h-coefficient for Gaussian basis function
+	TEvaluation approxGaussian(
+			TEvaluation x,	///< x-coefficient for Gaussian basis function
+			TEvaluation h	///< h-coefficient for Gaussian basis function
 	)
 	{
 		// scale x, since it depends linearly on h:
 		// x^2 ~ h^2
 		x /= h;
 
-		Tevaluation sum = 0;
+		TEvaluation sum = 0;
 
 		for (int l = 0; l < 2*L+1; l++)
 		{
 			int j = l-L;
 
-			std::complex<Tevaluation> aEval(a[l].real(), a[l].imag());
+			std::complex<TEvaluation> aEval(a[l].real(), a[l].imag());
 
 			// WORKS with max error 7.15344e-13
-			sum += (aEval/(complex(0, x) + (Tevaluation)mu + complex(0, j))).real();
+			sum += (aEval/(complex(0, x) + (TEvaluation)mu + complex(0, j))).real();
 		}
 
 		return sum;
@@ -243,22 +243,22 @@ public:
 	 *
 	 * with sum of complex rational functions
 	 */
-	std::complex<Tevaluation> approxGaussian_Complex(
-			Tevaluation x,	///< x-coefficient for Gaussian basis function
-			Tevaluation h	///< h-coefficient for Gaussian basis function
+	std::complex<TEvaluation> approxGaussian_Complex(
+			TEvaluation x,	///< x-coefficient for Gaussian basis function
+			TEvaluation h	///< h-coefficient for Gaussian basis function
 	)
 	{
 		// scale x, since it depends linearly on h:
 		// x^2 ~ h^2
 		x /= h;
 
-		std::complex<Tevaluation> sum = 0;
+		std::complex<TEvaluation> sum = 0;
 
 		for (int l = 0; l < 2*L+1; l++)
 		{
 			int j = l-L;
 
-			sum += (a[l]/(complex(0, x) + (Tevaluation)mu + complex(0, j)));
+			sum += (a[l]/(complex(0, x) + (TEvaluation)mu + complex(0, j)));
 		}
 
 		return sum;

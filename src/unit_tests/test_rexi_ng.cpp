@@ -8,7 +8,7 @@
 #include <rexi/RexiFile.hpp>
 #include <iostream>
 #include <sweet/SimulationVariables.hpp>
-//#include <rexi/REXI.hpp>
+//#include <rexi/REXITerry.hpp>
 
 
 typedef double T;

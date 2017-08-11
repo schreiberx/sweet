@@ -15,6 +15,7 @@
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/plane/PlaneDataGridMapping.hpp>
+#include <rexi/REXIFunctions.hpp>
 #include "SWE_Plane_TS_interface.hpp"
 
 
@@ -31,10 +32,18 @@ class SWE_Plane_TS_l_direct	: public SWE_Plane_TS_interface
 	SimulationVariables &simVars;
 	PlaneOperators &op;
 
-	int phi_id;
+
+#if SWE_PLANE_TS_L_DIRECT_QUADPRECISION
+	typedef __float128 T;
+#else
+	typedef double T;
+#endif
+
+	REXIFunctions<T> rexiFunctions;
 
 	PlaneDataGridMapping planeDataGridMapping;
 
+#if 0
 
 #if SWE_PLANE_TS_L_DIRECT_QUADPRECISION
 
@@ -126,6 +135,8 @@ class SWE_Plane_TS_l_direct	: public SWE_Plane_TS_interface
 	{
 		return (T)2.0*(T)M_PI;
 	}
+
+#endif
 
 #endif
 

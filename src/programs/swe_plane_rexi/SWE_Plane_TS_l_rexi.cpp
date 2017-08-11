@@ -5,7 +5,7 @@
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#include <rexi/REXI_Terry_and_File.hpp>
+#include <rexi/REXITerryAndFile.hpp>
 #include "SWE_Plane_TS_l_rexi.hpp"
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneDataComplex.hpp>
@@ -37,7 +37,7 @@ void SWE_Plane_TS_l_rexi::setup(
 		return;
 	}
 
-	REXI_Terry_or_File::load(
+	REXITerryAndFile::load(
 			rexiSimVars,
 			i_function_name,
 			rexi_alpha,

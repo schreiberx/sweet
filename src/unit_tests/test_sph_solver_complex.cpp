@@ -20,7 +20,7 @@
 #include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalComplex.hpp>
 #include <sweet/sphere/ErrorCheck.hpp>
 
-#include <rexi/REXI.hpp>
+#include <rexi/REXITerry.hpp>
 #include <sweet/sphere/Convert_SphereDataComplex_to_SphereData.hpp>
 #include <sweet/sphere/Convert_SphereData_to_SphereDataComplex.hpp>
 
@@ -68,7 +68,7 @@ void run_tests()
 	double two_omega = 2.0*simVars.sim.coriolis_omega;
 
 
-	REXI<> rexi(0, 0.2, 64);
+	REXITerry<> rexi(0, 0.2, 64);
 
 	SphereOperatorsComplex opComplex(sphereDataConfig, 1);
 

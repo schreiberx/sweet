@@ -11,15 +11,16 @@
 
 #include <rexi/RexiFile.hpp>
 #include <rexi/REXI_SimulationVariables.hpp>
-#include <rexi/REXI.hpp>
+#include <rexi/REXITerry.hpp>
 #include <vector>
 #include <complex>
+
 
 
 /**
  * Interface to load either REXI via Terrys method or via File
  */
-class REXI_Terry_or_File
+class REXITerryAndFile
 {
 public:
 	static
@@ -68,26 +69,11 @@ public:
 
 			alpha = rexiNG.alpha;
 			beta_re = rexiNG.beta_re;
-
-#if 0
-			std::size_t N = alpha.size();
-			alpha.resize(N*2);
-			beta_re.resize(N*2);
-
-			for (std::size_t i = 0; i < N; i++)
-			{
-				alpha[i+N] = alpha[i] - std::complex<double>(0, M_PI/2.0);
-				beta_re[i+N] = beta_re[i];
-//				alpha[i] = -std::conj(alpha[i]);
-//				beta_re[i] = -std::conj(beta_re[i]);
-			}
-#endif
 		}
 		else
 		{
 			/// REXI stuff
-			REXI<double, double> rexi;
-
+			REXITerry<double, double> rexi;
 			rexi.setup(i_function_name, i_rexiSimVars->h, i_rexiSimVars->M, i_rexiSimVars->L, i_rexiSimVars->use_half_poles, i_rexiSimVars->normalization);
 
 			alpha = rexi.alpha;
