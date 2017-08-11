@@ -291,8 +291,7 @@ Burgers_Plane_TS_l_direct::Burgers_Plane_TS_l_direct(
 		PlaneOperators &i_op
 )	:
 		simVars(i_simVars),
-		op(i_op),
-		phi_id(0)
+		op(i_op)
 {
 	if (simVars.disc.use_staggering)
 		planeDataGridMapping.setup(i_simVars, op.planeDataConfig);

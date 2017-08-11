@@ -35,7 +35,9 @@ public:
 		out.spectral_space_data_valid = false;
 #endif
 
+#if SWEET_DEBUG
 		out.test_realphysical();
+#endif
 
 		return out;
 	}

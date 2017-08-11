@@ -103,9 +103,6 @@ public:
 			SimulationVariables &i_simVars
 	)
 	{
-		if (i_simVars.sim.CFL >= 0)
-			FatalError("Only constant time step size supported with REXI, use negative CFL to set constant time step size");
-
 		if (i_timestepping_method == "l_erk")
 		{
 			l_erk = new SWE_Sphere_TS_l_erk(i_simVars, i_op);

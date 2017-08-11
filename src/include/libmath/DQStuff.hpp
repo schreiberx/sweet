@@ -238,6 +238,15 @@ public:
 		return ::fabs(i_value);
 	}
 
+
+	static
+	double abs(
+			const std::complex<double> &i_value
+	)
+	{
+		return i_value.real()*i_value.real() + i_value.imag()*i_value.imag();
+	}
+
 	static
 	float abs(
 			const float &i_value

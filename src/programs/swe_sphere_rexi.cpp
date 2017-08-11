@@ -66,7 +66,7 @@ public:
 	SphereData prog_div;
 
 
-	REXI<> rexi;
+	REXITerry<> rexi;
 
 #if SWEET_GUI
 	PlaneData viz_plane_data;
@@ -827,7 +827,6 @@ public:
 		if (simVars.misc.gui_enabled && simVars.disc.normal_mode_analysis_generation == 0)
 			timestep_check_output();
 #endif
-		simVars.timecontrol.current_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
 
 		if (simVars.timecontrol.current_simulation_time + simVars.timecontrol.current_timestep_size > simVars.timecontrol.max_simulation_time)
 			simVars.timecontrol.current_timestep_size = simVars.timecontrol.max_simulation_time - simVars.timecontrol.current_simulation_time;
@@ -858,7 +857,6 @@ public:
 		}
 
 		// advance time step and provide information to parameters
-		simVars.timecontrol.current_timestep_size = simVars.timecontrol.current_timestep_size;
 		simVars.timecontrol.current_simulation_time += simVars.timecontrol.current_timestep_size;
 		simVars.timecontrol.current_timestep_nr++;
 

@@ -278,6 +278,9 @@ AddOption(	'--parareal',
 )
 env['parareal'] = GetOption('parareal')
 
+if env['parareal'] == 'mpi':
+	raise Exception("TODO: Implement MPI Parareal")
+
 
 
 
@@ -903,6 +906,7 @@ env.Append(F90FLAGS = '-J'+build_dir)
 
 
 env.Append(CPPPATH = ['/usr/local/include', '/usr/include'])
+
 
 
 

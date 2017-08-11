@@ -11,8 +11,6 @@
 #include <limits>
 #include <string>
 #include <complex>
-#include <rexi/REXI.hpp>
-#include <rexi/RexiNG.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneDataComplex.hpp>
@@ -93,15 +91,6 @@ class SWE_Plane_TS_l_rexi	: public SWE_Plane_TS_interface
 public:
 	/// final time step
 	bool final_timestep;
-
-
-public:
-	/// REXI stuff
-	REXI<> rexi;
-
-public:
-	/// REXI next generation stuff
-	RexiNG<> rexiNG;
 
 	/// Direct solution for linear parts
 	SWE_Plane_TS_l_direct ts_l_direct;

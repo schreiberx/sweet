@@ -15,7 +15,7 @@
 
 
 #include <complex>
-#include <rexi/REXI.hpp>
+#include <rexi/REXITerry.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <string.h>
 #include <sweet/sphere/SphereDataConfig.hpp>
@@ -118,7 +118,7 @@ private:
 
 public:
 	// REXI stuff
-	REXI<> rexi;
+	REXITerry<> rexi;
 
 
 private:

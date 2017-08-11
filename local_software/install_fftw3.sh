@@ -21,6 +21,8 @@ if [ ! -e "$DST_DIR/lib/libfftw3.so"  -o "$1" != "" ]; then
 	if [ "`uname -s`" == "Linux" -o "`uname -s`" == "Darwin" ]; then
 		CONF_FLAGS=" --enable-openmp "
 	fi
+
+	CONF_FLAGS=" --disable-fortran $CONF_FLAGS"
 	./configure --prefix="$DST_DIR" --with-our-malloc16 $CONF_FLAGS --enable-shared  || exit 1
 	#./configure $HOST --prefix="$DST_DIR" --with-our-malloc16 $CONF_FLAGS --enable-shared  || exit 1
 

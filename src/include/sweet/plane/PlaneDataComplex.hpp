@@ -618,10 +618,11 @@ public:
 				spectral_space_data[idx].real(i_value_re);
 				spectral_space_data[idx].imag(i_value_im);
 		);
-		spectral_zeroAliasingModes();
 
 		physical_space_data_valid = false;
 		spectral_space_data_valid = true;
+
+		spectral_zeroAliasingModes();
 	}
 
 
@@ -1063,10 +1064,11 @@ public:
 		}
 		);
 
-		out.spectral_zeroAliasingModes();
 
 		out.spectral_space_data_valid = true;
 		out.physical_space_data_valid = false;
+
+		out.spectral_zeroAliasingModes();
 
 		return out;
 	}
@@ -1094,10 +1096,11 @@ public:
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 					out.spectral_space_data[idx] = spectral_space_data[idx] * i_array_data.spectral_space_data[idx];
 		);
-		out.spectral_zeroAliasingModes();
 
 		out.spectral_space_data_valid = true;
 		out.physical_space_data_valid = false;
+
+		out.spectral_zeroAliasingModes();
 
 		return out;
 	}
@@ -1198,10 +1201,11 @@ public:
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = spectral_space_data[idx]*i_array_data.spectral_space_data[idx];
 		);
-		out.spectral_zeroAliasingModes();
 
 		out.spectral_space_data_valid = true;
 		out.physical_space_data_valid = false;
+
+		out.spectral_zeroAliasingModes();
 
 #else
 
@@ -1242,10 +1246,11 @@ public:
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = spectral_space_data[idx] + i_array_data.spectral_space_data[idx];
 			);
-		out.spectral_zeroAliasingModes();
 
 		out.spectral_space_data_valid = true;
 		out.physical_space_data_valid = false;
+
+		out.spectral_zeroAliasingModes();
 
 #else
 
@@ -1616,10 +1621,11 @@ public:
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 			out.spectral_space_data[idx] = spectral_space_data[idx] - i_array_data.spectral_space_data[idx];
 		);
-		out.spectral_zeroAliasingModes();
 
 		out.physical_space_data_valid = false;
 		out.spectral_space_data_valid = true;
+
+		out.spectral_zeroAliasingModes();
 
 #else
 
@@ -1722,13 +1728,13 @@ public:
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = -spectral_space_data[idx];
 			);
-		out.spectral_zeroAliasingModes();
 
 		double scale = planeDataConfig->physical_data_size[0]*planeDataConfig->physical_data_size[1];
 		out.spectral_space_data[0] += i_value*scale;
 
 		out.physical_space_data_valid = false;
 		out.spectral_space_data_valid = true;
+		out.spectral_zeroAliasingModes();
 
 #else
 
@@ -1762,13 +1768,14 @@ public:
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = -spectral_space_data[idx];
 			);
-		out.spectral_zeroAliasingModes();
 
 		double scale = planeDataConfig->physical_data_size[0]*planeDataConfig->physical_data_size[1];
 		out.spectral_space_data[0] += i_value*scale;
 
 		out.physical_space_data_valid = false;
 		out.spectral_space_data_valid = true;
+
+		out.spectral_zeroAliasingModes();
 
 #else
 
@@ -1800,10 +1807,11 @@ public:
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = -spectral_space_data[idx];
 			);
-		out.spectral_zeroAliasingModes();
 
 		out.physical_space_data_valid = false;
 		out.spectral_space_data_valid = true;
+
+		out.spectral_zeroAliasingModes();
 
 #else
 
@@ -1924,11 +1932,11 @@ public:
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = spectral_space_data[idx]*i_value;
 		);
-		out.spectral_zeroAliasingModes();
 
 		out.spectral_space_data_valid = true;
 		out.physical_space_data_valid = false;
 
+		out.spectral_zeroAliasingModes();
 #else
 
 		PLANE_DATA_COMPLEX_PHYSICAL_FOR_IDX(
@@ -1957,10 +1965,11 @@ public:
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = spectral_space_data[idx]*i_value;
 		);
-		out.spectral_zeroAliasingModes();
 
 		out.spectral_space_data_valid = true;
 		out.physical_space_data_valid = false;
+
+		out.spectral_zeroAliasingModes();
 
 #else
 
@@ -1990,11 +1999,11 @@ public:
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = spectral_space_data[idx] / i_value;
 		);
-		out.spectral_zeroAliasingModes();
 
 		out.spectral_space_data_valid = true;
 		out.physical_space_data_valid = false;
 
+		out.spectral_zeroAliasingModes();
 #else
 
 		PLANE_DATA_COMPLEX_PHYSICAL_FOR_IDX(
@@ -2025,11 +2034,11 @@ public:
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = spectral_space_data[idx] / i_value;
 		);
-		out.spectral_zeroAliasingModes();
 
 		out.spectral_space_data_valid = true;
 		out.physical_space_data_valid = false;
 
+		out.spectral_zeroAliasingModes();
 #else
 
 		PLANE_DATA_COMPLEX_PHYSICAL_FOR_IDX(
@@ -2062,10 +2071,11 @@ public:
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = spectral_space_data[idx] + i_value;
 		);
-		out.spectral_zeroAliasingModes();
 
 		out.physical_space_data_valid = false;
 		out.spectral_space_data_valid = true;
+
+		out.spectral_zeroAliasingModes();
 
 		return out;
 	}
@@ -2085,10 +2095,11 @@ public:
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = spectral_space_data[idx] + i_value;
 		);
-		out.spectral_zeroAliasingModes();
 
 		out.physical_space_data_valid = false;
 		out.spectral_space_data_valid = true;
+
+		out.spectral_zeroAliasingModes();
 
 		return out;
 	}
@@ -2108,10 +2119,11 @@ public:
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = spectral_space_data[idx] - i_value;
 		);
-		out.spectral_zeroAliasingModes();
 
 		out.physical_space_data_valid = false;
 		out.spectral_space_data_valid = true;
+
+		out.spectral_zeroAliasingModes();
 
 		return out;
 	}
@@ -2130,10 +2142,11 @@ public:
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = 1.0/spectral_space_data[idx];
 		);
-		out.spectral_zeroAliasingModes();
 
 		out.physical_space_data_valid = false;
 		out.spectral_space_data_valid = true;
+
+		out.spectral_zeroAliasingModes();
 
 		return out;
 	}

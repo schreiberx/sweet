@@ -20,7 +20,7 @@
 #include "../programs/swe_sphere_rexi/SWE_Sphere_TS_l_rexi.hpp"
 
 #include <sweet/sphere/GenerateConsistentGradDivSphereData.hpp>
-#include <rexi/REXI.hpp>
+#include <rexi/REXITerry.hpp>
 
 #include <sweet/sphere/ErrorCheck.hpp>
 
@@ -86,7 +86,7 @@ void run_tests()
 	SphereOperatorsComplex opComplex(sphereDataConfig, 1);
 	SphereOperatorsComplex opComplexExt(sphereDataConfigExt, 1);
 
-	REXI<> rexi(0, simVars.rexi.h, simVars.rexi.M);
+	REXITerry<> rexi(0, simVars.rexi.h, simVars.rexi.M);
 
 	if (!simVars.misc.sphere_use_robert_functions)
 		FatalError("Only Robert formulation allowed");

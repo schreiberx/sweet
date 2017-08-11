@@ -33,7 +33,7 @@ void Burgers_Plane_TS_ln_adomian::run_timestep(
 
    //TODO: implement this correctly
    if (op.diff_c_y(io_u).reduce_maxAbs()>1e-11)
-      FatalError('The analyitical solution works only in 1d!');
+      FatalError("The analyitical solution works only in 1d!");
 
 	std::vector<PlaneData> u;
 	u.resize(20,PlaneData(io_u.planeDataConfig));

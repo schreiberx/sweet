@@ -5,10 +5,10 @@
  *      Author: Martin Schreiber <schreiberx@gmail.com>
  */
 
+#include <rexi/FunApproximation.hpp>
 #include <iostream>
 #include <rexi/GaussianApproximation.hpp>
-#include <rexi/Phi1Approximation.hpp>
-#include <rexi/REXI.hpp>
+#include <rexi/REXITerry.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include "../include/sweet/plane/PlaneDataComplex.hpp"
 
@@ -18,10 +18,8 @@ int main(
 )
 {
 	SimulationVariables simVars;
-	if (!simVars.setupFromMainParameters(i_argc, i_argv))
-	{
+	if (!simVars.setupFromMainParameters(i_argc, i_argv, nullptr, false))
 		return -1;
-	}
 
 	double max_error_threshold = 1e-9;
 	double max_error_threshold_machine = 1e-12;
@@ -124,7 +122,7 @@ int main(
 		{
 			int M = 32/h;
 			std::cout << "Setting up scalars..." << std::flush;
-			Phi1Approximation ea(h, M);
+			FunApproximation<double> ea("phi1", h, M);
 			std::cout << "OK" << std::endl;
 
 			double start = -M*h*0.95;

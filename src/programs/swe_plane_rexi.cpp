@@ -790,21 +790,15 @@ public:
 	 */
 	void run_timestep()
 	{
-		simVars.timecontrol.current_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
+		if (simVars.timecontrol.current_simulation_time + simVars.timecontrol.current_timestep_size > simVars.timecontrol.max_simulation_time)
+			simVars.timecontrol.current_timestep_size = simVars.timecontrol.max_simulation_time - simVars.timecontrol.current_simulation_time;
 
-#if 0
-		timeSteppers.l_direct->run_timestep_agrid_planedatacomplex(
-				prog_h_pert, prog_u, prog_v,
-				simVars.timecontrol.current_timestep_size,
-				simVars.timecontrol.current_simulation_time
-			);
-#else
 		timeSteppers.master->run_timestep(
 				prog_h_pert, prog_u, prog_v,
 				simVars.timecontrol.current_timestep_size,
 				simVars.timecontrol.current_simulation_time
 			);
-#endif
+
 		// Apply viscosity at posteriori, for all methods explicit diffusion for non spectral schemes and implicit for spectral
 		if (simVars.sim.viscosity != 0)
 		{
@@ -962,11 +956,9 @@ public:
 			o_ostream << rows.str() << std::endl;
 
 #if 1
-			// PXT: I didn't know where to put this to work with and without GUI - if removed crashes when gui=enable
-			if ( diagnostics_mass_start > 0.00001 && std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) > 10000000.0 ) {
-				//std::cout << "\n DIAGNOSTICS MASS DIFF:\t" << diagnostics_mass_start << " "<< simVars.diag.total_mass << " "<<std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) << std::endl;
+			if (diagnostics_mass_start > 0.00001 && std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) > 10000000.0)
+			{
 				std::cerr << "\n DIAGNOSTICS MASS DIFF TOO LARGE:\t" << std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) << std::endl;
-//				exit(1);
 			}
 #endif
 
@@ -1038,11 +1030,15 @@ public:
 public:
 	bool should_quit()
 	{
-		if (simVars.timecontrol.max_timesteps_nr != -1 && simVars.timecontrol.max_timesteps_nr <= simVars.timecontrol.current_timestep_nr)
+		if (
+				simVars.timecontrol.max_timesteps_nr != -1 &&
+				simVars.timecontrol.max_timesteps_nr <= simVars.timecontrol.current_timestep_nr
+		)
 			return true;
 
-		if (simVars.timecontrol.max_simulation_time != -1 && simVars.timecontrol.max_simulation_time <= simVars.timecontrol.current_simulation_time)
-			return true;
+		if (!std::isinf(simVars.timecontrol.max_simulation_time))
+			if (simVars.timecontrol.max_simulation_time <= simVars.timecontrol.current_simulation_time+simVars.timecontrol.max_simulation_time*1e-10)	// care about roundoff errors with 1e-10
+				return true;
 
 		return false;
 	}
@@ -1122,6 +1118,7 @@ public:
 			{
 			case -1:
 				vis = ts_h_pert+simVars.sim.h0;			//Exact solution
+//				vis = ts_u;
 				break;
 
 			case -2:
@@ -1421,7 +1418,7 @@ public:
 
 		while (simVars.timecontrol.current_simulation_time != timeframe_end)
 		{
-			this->run_timestep();
+			run_timestep();
 			assert(simVars.timecontrol.current_simulation_time <= timeframe_end);
 		}
 
@@ -1732,7 +1729,7 @@ int main(int i_argc, char *i_argv[])
 			else
 			{
 				// Main time loop
-				while(true)
+				while (true)
 				{
 					// Stop simulation if requested
 					if (simulationSWE->should_quit())
