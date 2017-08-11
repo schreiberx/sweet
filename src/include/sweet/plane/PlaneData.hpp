@@ -1677,6 +1677,20 @@ public:
 
 
 
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+
+	/**
+	 * Return average which is given by the first mode
+	 */
+	inline
+	double get_average()	const
+	{
+		request_data_spectral();
+		return spectral_space_data[0].real()/(double)planeDataConfig->physical_array_data_number_of_elements;
+	}
+
+#endif
+
 	/**
 	 * Compute element-wise addition
 	 */
