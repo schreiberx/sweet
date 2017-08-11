@@ -83,9 +83,13 @@ echo "$SCONS"
 $SCONS  || exit
 
 
-SCONS="scons --program=swe_plane_rexi --sweet-mpi=enable --rexi-thread-parallel-sum=enable --threading=off"
-echo "$SCONS"
-$SCONS  || exit
+
+mpiCC -v 2>&1 2> /dev/null
+if [ $? -eq 0 ]; then
+	SCONS="scons --program=swe_plane_rexi --sweet-mpi=enable --rexi-thread-parallel-sum=enable --threading=off"
+	echo "$SCONS"
+	$SCONS  || exit
+fi
 
 
 
