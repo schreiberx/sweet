@@ -32,6 +32,10 @@ public:
 			double y
 	)
 	{
+		if (i_parameters.setup.benchmark_scenario_id == 70)
+		{
+			return sin(M_PI*x);
+		}
 
 		if (i_parameters.setup.benchmark_scenario_id == 51)
 		{
@@ -414,6 +418,9 @@ public:
 		}
 
 		if (i_parameters.setup.benchmark_scenario_id == 63)
+			io_u_t.physical_set_all(0.0);
+
+		if (i_parameters.setup.benchmark_scenario_id == 70)
 			io_u_t.physical_set_all(0.0);
 	}
 

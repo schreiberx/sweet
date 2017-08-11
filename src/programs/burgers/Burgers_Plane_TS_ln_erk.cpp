@@ -34,8 +34,18 @@ void Burgers_Plane_TS_ln_erk::euler_timestep_update(
 	//TODO: staggering vs. non staggering
 
 	PlaneData f(i_u.planeDataConfig);
-	BurgersValidationBenchmarks::set_source(i_simulation_timestamp,simVars,simVars.disc.use_staggering,f);
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+   o_tmp_t.spectral_set_all(0,0);
+   o_u_t.spectral_set_all(0,0);
+   o_v_t.spectral_set_all(0,0);
+   f.spectral_set_all(0,0);
+#endif
 	o_tmp_t.physical_set_all(0);
+	o_u_t.physical_set_all(0);
+	o_v_t.physical_set_all(0);
+	f.physical_set_all(0);
+
+	BurgersValidationBenchmarks::set_source(i_simulation_timestamp,simVars,simVars.disc.use_staggering,f);
 
 	// u and v updates
 	o_u_t = -(i_u*op.diff_c_x(i_u) + i_v*op.diff_c_y(i_u));
