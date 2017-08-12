@@ -861,7 +861,7 @@ public:
 		if (simVars.misc.output_each_sim_seconds < 0)
 			return false;
 
-		if (simVars.misc.output_next_sim_seconds > simVars.timecontrol.current_simulation_time)
+		if (simVars.misc.output_next_sim_seconds-simVars.misc.output_next_sim_seconds*(1e-12) > simVars.timecontrol.current_simulation_time)
 			return false;
 
 		/*
