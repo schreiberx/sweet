@@ -67,8 +67,7 @@ void run_tests()
 	double r = simVars.sim.earth_radius;
 	double two_omega = 2.0*simVars.sim.coriolis_omega;
 
-
-	REXITerry<> rexi(0, 0.2, 64);
+	REXITerry<__float128> rexi("phi0", 0.2, 64);
 
 	SphereOperatorsComplex opComplex(sphereDataConfig, 1);
 

@@ -74,6 +74,17 @@ public:
 			phi_id = 102;
 		else if (i_function_name  == "ups3")
 			phi_id = 103;
+
+		if (phi_id == 1 || phi_id == 2 || phi_id == 3 || phi_id == 101 || phi_id == 102 || phi_id == 103)
+		{
+			if (typeid(T) == typeid(double))
+			{
+				std::cout << "**************************************************************" << std::endl;
+				std::cout << "* WARNING: " << i_function_name << " typically required __float128 precision!" << std::endl;
+				std::cout << "**************************************************************" << std::endl;
+				FatalError("Seriously, you shouldn't use me with only double precision!");
+			}
+		}
 	}
 
 

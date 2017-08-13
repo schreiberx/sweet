@@ -32,6 +32,7 @@ class SWE_Plane_TS_l_direct	: public SWE_Plane_TS_interface
 	SimulationVariables &simVars;
 	PlaneOperators &op;
 
+	int phi_id;
 
 #if SWE_PLANE_TS_L_DIRECT_QUADPRECISION
 	typedef __float128 T;
@@ -140,7 +141,6 @@ class SWE_Plane_TS_l_direct	: public SWE_Plane_TS_interface
 
 #endif
 
-
 public:
 	SWE_Plane_TS_l_direct(
 			SimulationVariables &i_simVars,
@@ -163,7 +163,7 @@ public:
 			PlaneData &io_u,		///< prognostic variables
 			PlaneData &io_v,		///< prognostic variables
 
-			double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_dt,
 			double i_simulation_timestamp
 	);
 
@@ -173,8 +173,8 @@ public:
 			PlaneData &io_u,	///< prognostic variables
 			PlaneData &io_v,	///< prognostic variables
 
-			double i_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
-			double i_simulation_timestamp = -1
+			double i_dt,
+			double i_simulation_timestamp
 	);
 
 
@@ -183,8 +183,8 @@ public:
 			PlaneData &io_u,	///< prognostic variables
 			PlaneData &io_v,	///< prognostic variables
 
-			double i_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
-			double i_simulation_timestamp = -1
+			double i_dt,
+			double i_simulation_timestamp
 	);
 
 
@@ -194,8 +194,8 @@ public:
 			PlaneData &io_u,	///< prognostic variables
 			PlaneData &io_v,	///< prognostic variables
 
-			double i_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
-			double i_simulation_timestamp = -1
+			double i_dt,
+			double i_simulation_timestamp
 	);
 
 	void setup(

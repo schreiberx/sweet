@@ -31,10 +31,71 @@ int main(
 
 	double max_error_threshold = 1e-9;
 
+
+#if 1
+	{
+		std::cout << "******************************************************" << std::endl;
+		std::cout << "EVALUATING GAUSSIAN APPROXIMATION (real)" << std::endl;
+		std::cout << "******************************************************" << std::endl;
+		GaussianApproximation<TEvaluation, TStorageAndProcessing> ga(simVars.rexi.L);
+
+		for (double h = 0.2; h > 0.001; h *= 0.5)
+		{
+			double start = -100.0;
+			double end = 100.0;
+			double step_size = 0.001;
+
+			double max_error_real = 0.0;
+			double max_error_imag = 0.0;
+
+#if 1
+			start = -5.0;
+			end = 5.0;
+			step_size = 0.05;
+#endif
+
+			for (double x = start; x < end; x += step_size)
+			{
+				typedef double TStorage;
+
+				TStorage pi = DQStuff::fromString<TStorage>("3.14159265358979323846264338327950288");
+				TStorage pi4 = pi*DQStuff::fromString<TStorage>("4.0");
+				TStorage sqrtpi4 = DQStuff::sqrt(pi4);
+
+				std::complex<double> approx = ga.approxGaussian_Complex(x, h);
+				std::complex<double> analyt = ga.evalGaussian(x, h);
+
+				double t = 2*x/std::pow(x*x+1.0, 2.0);
+				analyt.imag(t);
+
+				std::complex<double> error = analyt - approx;
+
+				max_error_real = DQStuff::max(max_error_real, DQStuff::abs(error.real()));
+				max_error_imag = DQStuff::max(max_error_imag, DQStuff::abs(error.imag()));
+
+				std::cout << x << "\t";
+				std::cout << approx.real() << "\t" << approx.imag() << "\t";
+				std::cout << analyt.real() << "\t" << analyt.imag();
+				std::cout << std::endl;
+			}
+//			exit(-1);
+
+			std::cout << "max_error_real: " << max_error_real << " for h " << h << std::endl;
+//				std::cout << "max_error_imag: " << max_error_imag << " for h " << h << std::endl;
+
+			if (DQStuff::abs(max_error_real) > max_error_threshold)
+			{
+				std::cerr << "MAX ERROR THRESHOLD EXCEEDED!" << std::endl;
+				exit(-1);
+			}
+		}
+	}
+#endif
+
 // TODO: REACTIVATE!!!!!!!!!!!!!!
 // TODO: REACTIVATE!!!!!!!!!!!!!!
 // TODO: REACTIVATE!!!!!!!!!!!!!!
-#if 0
+#if 1
 	if (1)
 	{
 		std::cout << "******************************************************" << std::endl;
@@ -71,50 +132,8 @@ int main(
 #endif
 
 
-#if 0
-	{
-		std::cout << "******************************************************" << std::endl;
-		std::cout << "EVALUATING GAUSSIAN APPROXIMATION (real)" << std::endl;
-		std::cout << "******************************************************" << std::endl;
-		GaussianApproximation<TEvaluation, TStorageAndProcessing> ga(simVars.rexi.L);
 
-		for (double h = 0.2; h > 0.001; h *= 0.5)
-		{
-			double start = -100.0;
-			double end = 100.0;
-			double step_size = 0.001;
-
-			double max_error_real = 0.0;
-			double max_error_imag = 0.0;
-
-/*
-			start *= 0.1;
-			end *= 0.1;
-			step_size = 0.01;
-*/
-			for (double x = start; x < end; x += step_size)
-			{
-				std::complex<double> error = ga.evalGaussian(x, h) - ga.approxGaussian_Complex(x, h);
-
-				max_error_real = DQStuff::max(max_error_real, DQStuff::abs(error.real()));
-				max_error_imag = DQStuff::max(max_error_imag, DQStuff::abs(error.imag()));
-
-//					std::cout << x << ": " << DQStuff::abs(error.imag()) << std::endl;
-			}
-
-			std::cout << "max_error_real: " << max_error_real << " for h " << h << std::endl;
-//				std::cout << "max_error_imag: " << max_error_imag << " for h " << h << std::endl;
-
-			if (DQStuff::abs(max_error_real) > max_error_threshold)
-			{
-				std::cerr << "MAX ERROR THRESHOLD EXCEEDED!" << std::endl;
-				exit(-1);
-			}
-		}
-	}
-#endif
-
-	for (int fun_id = 0; fun_id <= 1; fun_id++)
+	for (int fun_id = 0; fun_id <= 0; fun_id++)
 	{
 		std::string function_name;
 		switch(fun_id)

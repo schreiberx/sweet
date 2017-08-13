@@ -21,6 +21,7 @@ void SWE_Plane_TS_l_direct::setup(
 )
 {
 	rexiFunctions.setup(i_function_name);
+
 #if 0
 	if (i_function_name  == "phi0")
 		phi_id = 0;
@@ -423,11 +424,12 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 				std::complex<T> &lam = lambda[k];
 
 				T abs_lam_imag = lam.imag();
-#if SWEET_DEBUG
-				T abs_lam_real = lam.real();
 
 				if (abs_lam_imag < 0)
 					abs_lam_imag = -abs_lam_imag;
+
+#if SWEET_DEBUG
+				T abs_lam_real = lam.real();
 
 				if (abs_lam_real < 0)
 					abs_lam_real = -abs_lam_real;

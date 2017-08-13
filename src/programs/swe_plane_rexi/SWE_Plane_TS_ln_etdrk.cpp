@@ -45,6 +45,7 @@ void SWE_Plane_TS_ln_etdrk::euler_timestep_update_nonlinear(
 }
 
 
+
 /*
  * Main routine for method to be used in case of finite differences
  */
@@ -72,6 +73,7 @@ void SWE_Plane_TS_ln_etdrk::euler_timestep_update_nonlinear(
 	o_v_t = -i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
 
 }
+
 
 
 void SWE_Plane_TS_ln_etdrk::run_timestep(

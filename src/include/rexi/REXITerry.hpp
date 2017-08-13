@@ -60,7 +60,7 @@ public:
 	typedef std::complex<TEvaluation> complexEvaluation;
 	typedef std::complex<TStorageAndProcessing> complexProcessingAndStorage;
 
-	REXIFunctions<TStorageAndProcessing> rexiFunctions;
+	REXIFunctions<TEvaluation_> rexiFunctions;
 
 public:
 	std::vector<complexProcessingAndStorage> alpha;
