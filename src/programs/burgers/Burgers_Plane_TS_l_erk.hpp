@@ -5,8 +5,8 @@
  *  Author: Andreas Schmitt <aschmitt@fnb.tu-darmstadt.de>
  */
 
-#ifndef SRC_PROGRAMS_Burgers_PLANE_TS_L_ERK_HPP_
-#define SRC_PROGRAMS_Burgers_PLANE_TS_L_ERK_HPP_
+#ifndef SRC_PROGRAMS_BURGERS_PLANE_TS_L_ERK_HPP_
+#define SRC_PROGRAMS_BURGERS_PLANE_TS_L_ERK_HPP_
 
 #include <limits>
 #include <sweet/plane/PlaneData.hpp>
@@ -65,4 +65,4 @@ public:
 	virtual ~Burgers_Plane_TS_l_erk();
 };
 
-#endif /* SRC_PROGRAMS_Burgers_PLANE_TS_L_ERK_HPP_ */
+#endif /* SRC_PROGRAMS_BURGERS_PLANE_TS_L_ERK_HPP_ */

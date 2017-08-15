@@ -1,12 +1,12 @@
 /*
- * Burgers_Plane_TS_ln_erk.cpp
+ * Burgers_Plane_TS_ln_erk_forcing.cpp
  *
  *  Created on: 17 June 2017
  *      Author: Andreas Schmitt <aschmitt@fnb.tu-darmstadt.de>
  *
  */
 
-#include "Burgers_Plane_TS_ln_erk.hpp"
+#include "Burgers_Plane_TS_ln_erk_forcing.hpp"
 
 
 
@@ -15,7 +15,7 @@
 /*
  * Main routine for method to be used in case of finite differences
  */
-void Burgers_Plane_TS_ln_erk::euler_timestep_update(
+void Burgers_Plane_TS_ln_erk_forcing::euler_timestep_update(
 		const PlaneData &i_tmp,	///< prognostic variables (perturbed part of height)
 		const PlaneData &i_u,	///< prognostic variables
 		const PlaneData &i_v,	///< prognostic variables
@@ -33,18 +33,24 @@ void Burgers_Plane_TS_ln_erk::euler_timestep_update(
 
 	//TODO: staggering vs. non staggering
 
+	PlaneData f(i_u.planeDataConfig);
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
    o_tmp_t.spectral_set_all(0,0);
    o_u_t.spectral_set_all(0,0);
    o_v_t.spectral_set_all(0,0);
+   f.spectral_set_all(0,0);
 #endif
 	o_tmp_t.physical_set_all(0);
 	o_u_t.physical_set_all(0);
 	o_v_t.physical_set_all(0);
+	f.physical_set_all(0);
+
+	BurgersValidationBenchmarks::set_source(i_simulation_timestamp,simVars,simVars.disc.use_staggering,f);
 
 	// u and v updates
 	o_u_t = -(i_u*op.diff_c_x(i_u) + i_v*op.diff_c_y(i_u));
 	o_u_t += simVars.sim.viscosity*(op.diff2_c_x(i_u)+op.diff2_c_y(i_u));
+	o_u_t += f; // Delete this line if no source is used
 
 	o_v_t = -(i_u*op.diff_c_x(i_v) + i_v*op.diff_c_y(i_v));
 	o_v_t += simVars.sim.viscosity*(op.diff2_c_x(i_v)+op.diff2_c_y(i_v));
@@ -54,7 +60,7 @@ void Burgers_Plane_TS_ln_erk::euler_timestep_update(
 
 
 
-void Burgers_Plane_TS_ln_erk::run_timestep(
+void Burgers_Plane_TS_ln_erk_forcing::run_timestep(
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
 		PlaneData &io_u_prev,	///< prognostic variables
@@ -83,7 +89,7 @@ void Burgers_Plane_TS_ln_erk::run_timestep(
 		// run standard Runge Kutta
 		timestepping_rk.run_timestep(
 			this,
-			&Burgers_Plane_TS_ln_erk::euler_timestep_update,	///< pointer to function to compute euler time step updates
+			&Burgers_Plane_TS_ln_erk_forcing::euler_timestep_update,	///< pointer to function to compute euler time step updates
 			tmp, io_u, io_v,
 			i_fixed_dt,
 			timestepping_order,
@@ -94,7 +100,7 @@ void Burgers_Plane_TS_ln_erk::run_timestep(
 	else
 	{
 		if (simVars.misc.verbosity > 2)
-			std::cout << "run_timestep_erk()" << std::endl;
+			std::cout << "run_timestep_imex()" << std::endl;
 
 		PlaneData u=io_u;
 		PlaneData v=io_v;
@@ -109,15 +115,25 @@ void Burgers_Plane_TS_ln_erk::run_timestep(
 			t = simVars.timecontrol.max_simulation_time-simVars.timecontrol.current_simulation_time;
 */
 
+		// Initialize and set timestep dependent source for manufactured solution
+		PlaneData f(io_u.planeDataConfig);
+		PlaneData ff(io_u.planeDataConfig);
+
+		BurgersValidationBenchmarks::set_source(simVars.timecontrol.current_simulation_time,simVars,simVars.disc.use_staggering,f);
+		BurgersValidationBenchmarks::set_source(simVars.timecontrol.current_simulation_time+0.5*t,simVars,simVars.disc.use_staggering,ff);
+
+		f.request_data_spectral();
+		ff.request_data_spectral();
+
 		if (simVars.disc.use_spectral_basis_diffs) //spectral
 		{
 			PlaneData u1 = u + t*simVars.sim.viscosity*(op.diff2_c_x(u)+op.diff2_c_y(u))
-						   - 0.5*t*(u*op.diff_c_x(u)+v*op.diff_c_y(u));
+						   - 0.5*t*(u*op.diff_c_x(u)+v*op.diff_c_y(u)) + f*t;
 			PlaneData v1 = v + t*simVars.sim.viscosity*(op.diff2_c_x(v)+op.diff2_c_y(v))
 						   - 0.5*t*(u*op.diff_c_x(v)+v*op.diff_c_y(v));
 
 			io_u = u + t*simVars.sim.viscosity*(op.diff2_c_x(u1)+op.diff2_c_y(u1))
-				  - t*(u1*op.diff_c_x(u1)+v1*op.diff_c_y(u1));
+				  - t*(u1*op.diff_c_x(u1)+v1*op.diff_c_y(u1)) +ff*t;
 			io_v = v + t*simVars.sim.viscosity*(op.diff2_c_x(v1)+op.diff2_c_y(v1))
 				  - t*(u1*op.diff_c_x(v1)+v1*op.diff_c_y(v1));
 
@@ -132,7 +148,7 @@ void Burgers_Plane_TS_ln_erk::run_timestep(
 /*
  * Setup
  */
-void Burgers_Plane_TS_ln_erk::setup(
+void Burgers_Plane_TS_ln_erk_forcing::setup(
 		int i_order	///< order of RK time stepping method
 )
 {
@@ -140,7 +156,7 @@ void Burgers_Plane_TS_ln_erk::setup(
 }
 
 
-Burgers_Plane_TS_ln_erk::Burgers_Plane_TS_ln_erk(
+Burgers_Plane_TS_ln_erk_forcing::Burgers_Plane_TS_ln_erk_forcing(
 		SimulationVariables &i_simVars,
 		PlaneOperators &i_op
 )	:
@@ -152,7 +168,7 @@ Burgers_Plane_TS_ln_erk::Burgers_Plane_TS_ln_erk(
 
 
 
-Burgers_Plane_TS_ln_erk::~Burgers_Plane_TS_ln_erk()
+Burgers_Plane_TS_ln_erk_forcing::~Burgers_Plane_TS_ln_erk_forcing()
 {
 }
 

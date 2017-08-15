@@ -1,12 +1,12 @@
 /*
- * Burgers_Plane_TS_ln_imex.hpp
+ * Burgers_Plane_TS_ln_erk_forcing.hpp
  *
  *  Created on: 17 June 2017
  *  Author: Andreas Schmitt <aschmitt@fnb.tu-darmstadt.de>
  */
 
-#ifndef SRC_PROGRAMS_BURGERS_PLANE_TS_LN_IMEX_HPP_
-#define SRC_PROGRAMS_BURGERS_PLANE_TS_LN_IMEX_HPP_
+#ifndef SRC_PROGRAMS_BURGERS_PLANE_TS_LN_ERK_FORCING_HPP_
+#define SRC_PROGRAMS_BURGERS_PLANE_TS_LN_ERK_FORCING_HPP_
 
 #include <limits>
 #include <sweet/plane/PlaneData.hpp>
@@ -14,12 +14,11 @@
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include "Burgers_Plane_TS_interface.hpp"
+#include <benchmarks_plane/BurgersValidationBenchmarks.hpp>
 
-#include <sweet/sweetmath.hpp>
-#include <sweet/FatalError.hpp>
-#include <sweet/plane/Staggering.hpp>
 
-class Burgers_Plane_TS_ln_imex	: public Burgers_Plane_TS_interface
+
+class Burgers_Plane_TS_ln_erk_forcing	: public Burgers_Plane_TS_interface
 {
 	SimulationVariables &simVars;
 	PlaneOperators &op;
@@ -27,8 +26,22 @@ class Burgers_Plane_TS_ln_imex	: public Burgers_Plane_TS_interface
 	int timestepping_order;
 	PlaneDataTimesteppingRK timestepping_rk;
 
+private:
+	void euler_timestep_update(
+			const PlaneData &i_tmp,	///< prognostic variables
+			const PlaneData &i_u,	///< prognostic variables
+			const PlaneData &i_v,	///< prognostic variables
+
+			PlaneData &o_tmp_t,	///< time updates
+			PlaneData &o_u_t,	///< time updates
+			PlaneData &o_v_t,	///< time updates
+
+			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_simulation_timestamp = -1
+	);
+
 public:
-	Burgers_Plane_TS_ln_imex(
+	Burgers_Plane_TS_ln_erk_forcing(
 			SimulationVariables &i_simVars,
 			PlaneOperators &i_op
 		);
@@ -49,7 +62,7 @@ public:
 
 
 
-	virtual ~Burgers_Plane_TS_ln_imex();
+	virtual ~Burgers_Plane_TS_ln_erk_forcing();
 };
 
-#endif /* SRC_PROGRAMS_BURGERS_PLANE_TS_LN_IMEX_HPP_ */
+#endif /* SRC_PROGRAMS_BURGERS_PLANE_TS_LN_ERK_FORCING_HPP_ */

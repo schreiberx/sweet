@@ -1,15 +1,15 @@
 /*
- * Burgers_Plane_TS_l_irk_n_sl.cpp
+ * Burgers_Plane_TS_l_irk_n_sl_forcing.cpp
  *
  *  Created on: 14 June 2017
  *      Author: Andreas Schmitt <aschmitt@fnb.tu-darmstadt.de>
  *
  */
 
-#include "Burgers_Plane_TS_l_irk_n_sl.hpp"
+#include "Burgers_Plane_TS_l_irk_n_sl_forcing.hpp"
 
 
-void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
+void Burgers_Plane_TS_l_irk_n_sl_forcing::run_timestep(
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
 		PlaneData &io_u_prev,	///< prognostic variables
@@ -20,7 +20,7 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 )
 {
 	if (i_fixed_dt <= 0)
-		FatalError("Burgers_Plane_TS_l_irk_n_sl: Only constant time step size allowed");
+		FatalError("Burgers_Plane_TS_l_irk_n_sl_forcing: Only constant time step size allowed");
 
 	//Departure points and arrival points
 	ScalarDataArray posx_d(io_u.planeDataConfig->physical_array_data_number_of_elements);
@@ -63,9 +63,18 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 	PlaneData u=io_u;
 	PlaneData v=io_v;
 
+	// Initialize and set timestep dependent source for manufactured solution
+	PlaneData f(io_u.planeDataConfig);
+
+	BurgersValidationBenchmarks::set_source(simVars.timecontrol.current_simulation_time+i_fixed_dt,simVars,simVars.disc.use_staggering,f);
+
+	f.request_data_spectral();
+
 	// Setting explicit right hand side and operator of the left hand side
 	PlaneData rhs_u = u;
 	PlaneData rhs_v = v;
+
+	rhs_u += i_fixed_dt*f;
 
 	if (simVars.disc.use_spectral_basis_diffs) //spectral
 	{
@@ -86,7 +95,7 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 /*
  * Setup
  */
-void Burgers_Plane_TS_l_irk_n_sl::setup()
+void Burgers_Plane_TS_l_irk_n_sl_forcing::setup()
 {
 
 	// Setup sampler for future interpolations
@@ -129,7 +138,7 @@ void Burgers_Plane_TS_l_irk_n_sl::setup()
 }
 
 
-Burgers_Plane_TS_l_irk_n_sl::Burgers_Plane_TS_l_irk_n_sl(
+Burgers_Plane_TS_l_irk_n_sl_forcing::Burgers_Plane_TS_l_irk_n_sl_forcing(
 		SimulationVariables &i_simVars,
 		PlaneOperators &i_op
 )	:
@@ -146,7 +155,7 @@ Burgers_Plane_TS_l_irk_n_sl::Burgers_Plane_TS_l_irk_n_sl(
 
 
 
-Burgers_Plane_TS_l_irk_n_sl::~Burgers_Plane_TS_l_irk_n_sl()
+Burgers_Plane_TS_l_irk_n_sl_forcing::~Burgers_Plane_TS_l_irk_n_sl_forcing()
 {
 }
 

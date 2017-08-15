@@ -1,12 +1,12 @@
 /*
- * Burgers_Plane_TS_l_irk_n_sl.hpp
+ * Burgers_Plane_TS_l_irk_n_sl_forcing.hpp
  *
  *  Created on: 14 June 2017
  *      Author: Andreas Schmitt <aschmitt@fnb.tu-darmstadt.de>
  */
 
-#ifndef SRC_PROGRAMS_BURGERS_PLANE_TS_L_IRK_N_SL_HPP_
-#define SRC_PROGRAMS_BURGERS_PLANE_TS_L_IRK_N_SL_HPP_
+#ifndef SRC_PROGRAMS_BURGERS_PLANE_TS_L_IRK_N_SL_FORCING_HPP_
+#define SRC_PROGRAMS_BURGERS_PLANE_TS_L_IRK_N_SL_FORCING_HPP_
 
 #include <limits>
 #include <sweet/SimulationVariables.hpp>
@@ -16,10 +16,11 @@
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/PlaneDataSemiLagrangian.hpp>
 #include "Burgers_Plane_TS_interface.hpp"
+#include <benchmarks_plane/BurgersValidationBenchmarks.hpp>
 
 
 
-class Burgers_Plane_TS_l_irk_n_sl	: public Burgers_Plane_TS_interface
+class Burgers_Plane_TS_l_irk_n_sl_forcing	: public Burgers_Plane_TS_interface
 {
 	SimulationVariables &simVars;
 	PlaneOperators &op;
@@ -34,7 +35,7 @@ class Burgers_Plane_TS_l_irk_n_sl	: public Burgers_Plane_TS_interface
 	ScalarDataArray posx_d, posy_d;
 
 public:
-	Burgers_Plane_TS_l_irk_n_sl(
+	Burgers_Plane_TS_l_irk_n_sl_forcing(
 			SimulationVariables &i_simVars,
 			PlaneOperators &i_op
 		);
@@ -53,7 +54,7 @@ public:
 
 
 
-	virtual ~Burgers_Plane_TS_l_irk_n_sl();
+	virtual ~Burgers_Plane_TS_l_irk_n_sl_forcing();
 };
 
-#endif /* SRC_PROGRAMS_BURGERS_PLANE_TS_L_IRK_N_SL_HPP_ */
+#endif /* SRC_PROGRAMS_BURGERS_PLANE_TS_L_IRK_N_SL_FORCING_HPP_ */
