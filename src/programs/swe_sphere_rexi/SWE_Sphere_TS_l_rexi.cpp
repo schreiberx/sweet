@@ -348,26 +348,19 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 	SphereData &io_prog_vort0,
 	SphereData &io_prog_div0,
 
-	double &o_dt,				///< time step restriction
 	double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
-	double i_simulation_timestamp,
-	double i_max_simulation_time
+	double i_simulation_timestamp
 )
 {
 	if (i_fixed_dt <= 0)
 		FatalError("Only constant time step size allowed");
 
-	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
+	if (timestep_size != i_fixed_dt)
 	{
-		i_fixed_dt = i_max_simulation_time-i_simulation_timestamp;
-
-
-		std::cout << "Warning: Reducing time step size from " << i_fixed_dt << " to " << timestep_size << std::endl;
 		timestep_size = i_fixed_dt;
+		std::cout << "Warning: Reducing time step size from " << i_fixed_dt << " to " << timestep_size << std::endl;
 		update_coefficients();
 	}
-
-	o_dt = i_fixed_dt;
 
 
 	io_prog_phi0.request_data_spectral();

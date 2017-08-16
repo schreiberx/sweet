@@ -12,6 +12,7 @@
 #include <cassert>
 #include <string>
 #include <iostream>
+#include <signal.h>
 
 class FatalError
 {
@@ -24,6 +25,7 @@ public:
 		std::cerr << "********************************************" << std::endl;
 		std::cerr << std::endl;
 		assert(false);
+		raise (SIGABRT);
 		exit(-1);
 	}
 };
