@@ -130,24 +130,12 @@ void SWE_Sphere_TS_l_cn::run_timestep(
 		SphereData &io_vort,	///< prognostic variables
 		SphereData &io_div,		///< prognostic variables
 
-		double &o_dt,				///< time step restriction
 		double i_fixed_dt,			///< if this value is not equal to 0, use this time step size instead of computing one
-		double i_simulation_timestamp,
-		double i_max_simulation_time
+		double i_simulation_timestamp
 )
 {
 	if (i_fixed_dt <= 0)
 		FatalError("SWE_Sphere_TS_l_cn: Only constant time step size allowed");
-
-	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
-	{
-		i_fixed_dt = i_max_simulation_time-i_simulation_timestamp;
-
-		timestep_size = i_fixed_dt;
-		update_coefficients();
-	}
-
-	o_dt = i_fixed_dt;
 
 	SphereData phi0 = io_phi;
 	SphereData vort0 = io_vort;

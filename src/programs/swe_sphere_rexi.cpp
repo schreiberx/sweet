@@ -831,12 +831,10 @@ public:
 		if (simVars.timecontrol.current_simulation_time + simVars.timecontrol.current_timestep_size > simVars.timecontrol.max_simulation_time)
 			simVars.timecontrol.current_timestep_size = simVars.timecontrol.max_simulation_time - simVars.timecontrol.current_simulation_time;
 
-
 		timeSteppers.master->run_timestep(
 				prog_phi, prog_vort, prog_div,
 				simVars.timecontrol.current_timestep_size,
-				simVars.timecontrol.current_simulation_time,
-				simVars.timecontrol.max_simulation_time
+				simVars.timecontrol.current_simulation_time
 			);
 
 

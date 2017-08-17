@@ -23,7 +23,6 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update(
 		SphereData &o_vort_t,	///< time updates
 		SphereData &o_div_t,	///< time updates
 
-		double &o_dt,			///< time step restriction
 		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp
 )
@@ -33,9 +32,6 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update(
 	 */
 	if (i_fixed_dt <= 0)
 		FatalError("Only fixed time step size allowed");
-
-	o_dt = i_fixed_dt;
-
 
 	/*
 	 * NON-LINEAR
@@ -80,31 +76,21 @@ void SWE_Sphere_TS_ln_erk::run_timestep(
 		SphereData &io_vort,	///< prognostic variables
 		SphereData &io_div,		///< prognostic variables
 
-		double &o_dt,			///< time step restriction
 		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
-		double i_simulation_timestamp,
-		double i_max_simulation_time
+		double i_simulation_timestamp
 )
 {
-
 	if (i_fixed_dt <= 0)
 		FatalError("Only constant time step size allowed");
-
-	if (i_simulation_timestamp + i_fixed_dt > i_max_simulation_time)
-		i_fixed_dt = i_max_simulation_time-i_simulation_timestamp;
-
-	o_dt = i_fixed_dt;
 
 	// standard time stepping
 	timestepping_rk.run_timestep(
 			this,
 			&SWE_Sphere_TS_ln_erk::euler_timestep_update,	///< pointer to function to compute euler time step updates
 			io_phi, io_vort, io_div,
-			o_dt,
 			i_fixed_dt,
 			timestepping_order,
-			i_simulation_timestamp,
-			i_max_simulation_time
+			i_simulation_timestamp
 		);
 }
 

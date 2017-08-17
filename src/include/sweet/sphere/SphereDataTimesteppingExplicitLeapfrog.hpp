@@ -93,7 +93,6 @@ public:
 					SphereData &o_u_t,		///< time updates
 					SphereData &o_v_t,		///< time updates
 
-					double &o_dt,				///< time step restriction
 					double i_use_fixed_dt,		///< if this value is not equal to 0,
 												///< use this time step size instead of computing one
 					double i_simulation_time	///< simulation time, e.g. for tidal waves
@@ -103,21 +102,17 @@ public:
 			SphereData &io_u,
 			SphereData &io_v,
 
-			double &o_dt,					///< return time step size for the computed time step
-
 			double i_use_fixed_dt = 0,		///< If this value is not equal to 0,
 											///< Use this time step size instead of computing one
 											///< This also sets o_dt = i_use_fixed_dt
 
 			int i_runge_kutta_order = 1,	///< Order of RK time stepping
 
-			double i_simulation_time = -1,	///< Current simulation time.
+			double i_simulation_time = -1	///< Current simulation time.
 											///< This gets e.g. important for tidal waves
-
-			double i_max_simulation_time = std::numeric_limits<double>::infinity()	///< limit the maximum simulation time
 	)
 	{
-		double &dt = o_dt;
+		double &dt = i_use_fixed_dt;
 
 		(i_baseClass->*i_compute_euler_timestep_update)(
 				io_h,		// input
@@ -126,15 +121,9 @@ public:
 				RK_h_dt,	// output
 				RK_u_dt,
 				RK_v_dt,
-				dt,
 				i_use_fixed_dt,
 				i_simulation_time
 		);
-
-		// padding to max simulation time if exceeding the maximum
-		if (i_max_simulation_time >= 0)
-			if (dt+i_simulation_time > i_max_simulation_time)
-				dt = i_max_simulation_time-i_simulation_time;
 
 		if (leapfrog_robert_asselin_filter == 0)
 		{
@@ -178,15 +167,9 @@ public:
 						h_t0,//*RK_h_t[0],
 						u_t0,//*RK_u_t[0],
 						v_t0,//*RK_v_t[0],
-						dt,
 						i_use_fixed_dt,
 						i_simulation_time
 				);
-
-				// padding to max simulation time if exceeding the maximum
-				if (i_max_simulation_time >= 0)
-					if (dt+i_simulation_time > i_max_simulation_time)
-						dt = i_max_simulation_time-i_simulation_time;
 
 				SphereData h_t1(io_h.sphereDataConfig);
 				SphereData u_t1(io_h.sphereDataConfig);
@@ -200,7 +183,6 @@ public:
 						h_t1,//*RK_h_t[1],
 						u_t1,//*RK_u_t[1],
 						v_t1,//*RK_v_t[1],
-						dummy_dt,
 						dt,
 						i_simulation_time + c[0]*dt
 				);
@@ -293,7 +275,6 @@ public:
 					SphereData &o_u_t,	///< time updates
 					SphereData &o_v_t,	///< time updates
 
-					double &o_dt,			///< time step restriction
 					double i_use_fixed_dt,	///< if this value is not equal to 0,
 											///< use this time step size instead of computing one
 					double i_simulation_time	///< simulation time, e.g. for tidal waves
@@ -302,18 +283,14 @@ public:
 			SphereData &io_u,
 			SphereData &io_v,
 
-			double &o_dt,					///< return time step size for the computed time step
-
 			double i_use_fixed_dt = 0,		///< If this value is not equal to 0,
 											///< Use this time step size instead of computing one
 											///< This also sets o_dt = i_use_fixed_dt
 
 			int i_leapfrog_order = 1,	///< Order of RK time stepping
 
-			double i_simulation_time = -1,	///< Current simulation time.
+			double i_simulation_time = -1	///< Current simulation time.
 											///< This gets e.g. important for tidal waves
-
-			double i_max_simulation_time = std::numeric_limits<double>::infinity()	///< limit the maximum simulation time
 	)
 	{
 		/*
@@ -322,9 +299,7 @@ public:
 		 * Yong Li, Catalin Trenchea
 		 */
 
-
-		double &dt = o_dt;
-
+		double &dt = i_use_fixed_dt;
 
 		(i_baseClass->*i_compute_euler_timestep_update)(
 				io_u,		// input
@@ -335,11 +310,6 @@ public:
 				i_use_fixed_dt,
 				i_simulation_time
 		);
-
-		// padding to max simulation time if exceeding the maximum
-		if (i_max_simulation_time >= 0)
-			if (dt+i_simulation_time > i_max_simulation_time)
-				dt = i_max_simulation_time-i_simulation_time;
 
 		if (leapfrog_robert_asselin_filter == 0)
 		{
@@ -416,7 +386,6 @@ public:
 					const SphereData &i_h,		///< prognostic variables
 					SphereData &o_h_t,			///< time updates
 
-					double &o_dt,				///< time step restriction
 					double i_use_fixed_dt,		///< if this value is not equal to 0,
 												///< use this time step size instead of computing one
 					double i_simulation_time	///< simulation time, e.g. for tidal waves
@@ -424,21 +393,17 @@ public:
 
 			SphereData &io_h,
 
-			double &o_dt,					///< return time step size for the computed time step
-
 			double i_use_fixed_dt = 0,		///< If this value is not equal to 0,
 											///< Use this time step size instead of computing one
 											///< This also sets o_dt = i_use_fixed_dt
 
 			int i_runge_kutta_order = 1,	///< Order of RK time stepping
 
-			double i_simulation_time = -1,	///< Current simulation time.
+			double i_simulation_time = -1	///< Current simulation time.
 											///< This gets e.g. important for tidal waves
-
-			double i_max_simulation_time = std::numeric_limits<double>::infinity()	///< limit the maximum simulation time
 	)
 	{
-		double &dt = o_dt;
+		double &dt = i_use_fixed_dt;
 
 		(i_baseClass->*i_compute_euler_timestep_update)(
 				io_h,		// input
@@ -447,11 +412,6 @@ public:
 				i_use_fixed_dt,
 				i_simulation_time
 		);
-
-		// padding to max simulation time if exceeding the maximum
-		if (i_max_simulation_time >= 0)
-			if (dt+i_simulation_time > i_max_simulation_time)
-				dt = i_max_simulation_time-i_simulation_time;
 
 		if (leapfrog_robert_asselin_filter == 0)
 		{
