@@ -37,14 +37,62 @@ class default_params:
 
 	normal_mode_analysis = 0
 
+
+	rexi_use_next_generation = 0
+	rexi_ng_n = 0
+	rexi_ng_h = 0
+	rexi_ng_test_abs = 0
+	rexi_ng_max_error = 0
+	rexi_ng_faf_dir = None
+
 	rexi_m = 0
 	rexi_l = 11
 	rexi_h = 0.15
+
 	rexi_half_poles = 1
 	rexi_extended_modes = 0
 	rexi_normalization = 0
-	rexi_sphere_preallocation = 1
+	rexi_sphere_preallocation = 0
 	rexi_use_direct_solution = 0
+
+
+	def load_rexi_from_dict(self, d):
+		if 'm' in d:
+			self.rexi_m = d['m']
+
+		if 'h' in d:
+			self.rexi_h = d['h']
+
+		if 'half_poles' in d:
+			self.rexi_half_poles = d['half_poles']
+
+		if 'extended_modes' in d:
+			self.rexi_extended_modes = d['extended_modes']
+
+		if 'normalization' in d:
+			self.rexi_normalization = d['normalization']
+
+		if 'sphere_preallocation' in d:
+			self.rexi_sphere_preallocation = d['sphere_preallocation']
+
+		if 'use_direct_solution' in d:
+			self.rexi_use_direct_solution = d['use_direct_solution']
+
+		if 'use_next_generation' in d:
+			self.rexi_use_next_generation = d['use_next_generation']
+
+		if 'ng_n' in d:
+			self.rexi_ng_n = d['ng_n']
+
+		if 'ng_h' in d:
+			self.rexi_ng_h = d['ng_h']
+
+		if 'ng_test_abs' in d:
+			self.rexi_ng_test_abs = d['ng_test_abs']
+
+		if 'ng_max_error' in d:
+			self.rexi_ng_max_error = d['ng_max_error']
+
 
 	g = 1	# gravity
 	h = 100000	# avg height
@@ -238,7 +286,9 @@ cd "$BASEDIR"
 			content += ' -T '+str(self.max_timesteps)
 
 		content += ' -o '+str(self.output_timestep_size)
-#		content += ' -O -'	# deactivate file output
+
+		if self.output_timestep_size > 0:
+			content += ' -O -'	# deactivate file output
 		content += ' -u '+str(self.viscosity)
 		content += ' -t '+str(self.simtime)
 		content += ' --nonlinear='+str(self.nonlinear)
@@ -256,6 +306,16 @@ cd "$BASEDIR"
 		content += ' --rexi-sphere-preallocation='+str(self.rexi_sphere_preallocation)
 		content += ' --rexi-use-direct-solution='+str(self.rexi_use_direct_solution)
 		content += ' --rexi-ext-modes='+str(self.rexi_extended_modes)
+
+		content += ' --rexi-use-next-generation='+str(self.rexi_use_next_generation)
+		content += ' --rexi-ng-n='+str(self.rexi_ng_n)
+		content += ' --rexi-ng-h='+str(self.rexi_ng_h)
+		content += ' --rexi-ng-test-abs='+str(self.rexi_ng_test_abs)
+		content += ' --rexi-ng-max-error='+str(self.rexi_ng_max_error)
+
+		if self.rexi_ng_faf_dir != None:
+			content += ' --rexi-ng-faf-dir='+str(self.rexi_ng_faf_dir)
+
 		content += ' --use-robert-functions='+str(self.use_robert_functions)
 
 		content += ' --compute-error='+str(self.compute_error)
@@ -317,10 +377,17 @@ $EXEC || exit 1
 			if self.rexi_use_direct_solution:
 				idstr += '_rexidirect'
 			else:
-				idstr += '_rexim'+str(self.rexi_m).zfill(8)
-#				idstr += '_rexih'+str(self.rexi_h)
-#				idstr += '_rexinorm'+str(self.rexi_normalization)
-#				idstr += '_rexihalf'+str(self.rexi_half_poles)
+				if self.rexi_use_next_generation:
+					idstr += '_rexingn'+str(self.rexi_ng_n).zfill(8)
+					idstr += '_rexingh'+str(self.rexi_ng_h)
+					idstr += '_rexingtestabs'+str(self.rexi_ng_test_abs).zfill(3)
+					idstr += '_rexingmaxerr'+str(self.rexi_ng_max_error)
+				else:
+					idstr += '_rexim'+str(self.rexi_m).zfill(8)
+					idstr += '_rexih'+str(self.rexi_h)
+
+				idstr += '_rexinorm'+str(self.rexi_normalization)
+				idstr += '_rexihalf'+str(self.rexi_half_poles)
 	
 			if self.plane_or_sphere == 'sphere':
 				idstr += '_rexiprealloc'+str(self.rexi_sphere_preallocation)
@@ -402,23 +469,32 @@ for group in groups:
 	# 1st order linear
 	if group == 'l1':
 		ts_methods = [
-			['l_direct',	0,	0,	0],	# reference solution
+			['l_direct',	0,	0,	0,	{'timestep_size': p.simtime}],	# reference solution
 			['l_erk',	1,	0,	0],
 			['l_irk',	1,	0,	0],
 			['l_rexi',	0,	0,	0],
 		]
 
-	# 2nd order linear
-	if group == 'l2':
-		ts_methods = [
-			['l_direct',	0,	0,	0],	# reference solution
-			['l_erk',	2,	0,	0],
-			['l_cn',	2,	0,	0],
-			['l_rexi',	0,	0,	0],
-		]
+		if False:
+			ts_methods.append(['l_erk',	4,	0,	0,	{'timestep_size': 0.01}])
 
-	#	['lg_rexi_lc_erk_nt_sl_nd_erk',
-	#	['l_rexi_ns_sl_nd_erk',
+			for h in [0.1, 0.2, 0.3, 0.4, 0.5]:
+			#for h in [0.1]:
+				for M in [2**i for i in range(4, 11)]:
+				#for M in [2**i for i in range(4, 5)]:
+					ts_methods.append(['l_rexi',	0,	0,	0, {'use_next_generation': 0, 'h':h, 'm':M}])
+
+			for testabs in [2**i for i in range(0, 3)]:
+				for max_error in [1e-6, 1e-8, 1e-10, 1e-12]:
+					ts_methods.append(['l_rexi',	0,	0,	0, {'use_next_generation': 1, 'ng_test_abs':testabs, 'ng_max_error':max_error}])
+		# 2nd order linear
+		if group == 'l2':
+			ts_methods = [
+				['l_direct',	0,	0,	0],	# reference solution
+				['l_erk',	2,	0,	0],
+				['l_cn',	2,	0,	0],
+				['l_rexi',	0,	0,	0],
+			]
 
 	# 1st order nonlinear
 	if group == 'ln1':
@@ -496,14 +572,18 @@ for group in groups:
 		p.timestepping_order = tsm[1]
 		p.timestepping_order2 = tsm[2]
 		p.rexi_use_direct_solution = tsm[3]
-
 		p.timestep_size = timestep_size_reference
+
+		if len(tsm) > 4:
+			s = tsm[4]
+			if 'timestep_size' in s:
+				p.timestep_size = s['timestep_size']
 
 		p.gen_script('script'+p.create_job_id(), 'run.sh')
 
 
 	for tsm in ts_methods[1:]:
-		for timestep_size in timestep_sizes:
+		for p.timestep_size in timestep_sizes:
 			p.prefix_string = prefix_string_template
 
 			p.timestepping_method = tsm[0]
@@ -511,16 +591,11 @@ for group in groups:
 			p.timestepping_order2 = tsm[2]
 			p.rexi_use_direct_solution = tsm[3]
 
-			p.timestep_size = timestep_size
+			if len(tsm) > 4:
+				s = tsm[4]
+				p.load_rexi_from_dict(tsm[4])
+				if 'timestep_size' in s:
+					p.timestep_size = s['timestep_size']
 
-
-			if 'rexi' in tsm[0]:
-				for p.rexi_m in [16, 32, 64, 128, 256, 512]:
-					p.gen_script('script'+p.create_job_id(), 'run.sh')
-
-				p.rexi_m = 0
-
-			else:
-				p.gen_script('script'+p.create_job_id(), 'run.sh')
-
+			p.gen_script('script'+p.create_job_id(), 'run.sh')
 
