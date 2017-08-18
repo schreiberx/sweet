@@ -291,7 +291,7 @@ cd "$BASEDIR"
 
 		content += ' -o '+str(self.output_timestep_size)
 
-		if self.output_timestep_size > 0:
+		if self.output_timestep_size < 0:
 			content += ' -O -'	# deactivate file output
 
 		content += ' -u '+str(self.viscosity)
