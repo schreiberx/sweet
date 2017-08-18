@@ -38,12 +38,12 @@ class default_params:
 	normal_mode_analysis = 0
 
 
-	rexi_use_next_generation = 0
-	rexi_ng_n = 0
-	rexi_ng_h = 0
-	rexi_ng_test_abs = 0
-	rexi_ng_max_error = 0
-	rexi_ng_faf_dir = None
+	rexi_method = 'terry'
+	rexi_file_n = 0
+	rexi_file_h = 0
+	rexi_file_test_abs = 0
+	rexi_file_max_error = 0
+	rexi_file_faf_dir = None
 
 	rexi_m = 0
 	rexi_l = 11
@@ -78,20 +78,20 @@ class default_params:
 		if 'use_direct_solution' in d:
 			self.rexi_use_direct_solution = d['use_direct_solution']
 
-		if 'use_next_generation' in d:
-			self.rexi_use_next_generation = d['use_next_generation']
+		if 'rexi_method' in d:
+			self.rexi_method = d['rexi_method']
 
-		if 'ng_n' in d:
-			self.rexi_ng_n = d['ng_n']
+		if 'file_n' in d:
+			self.rexi_file_n = d['file_n']
 
-		if 'ng_h' in d:
-			self.rexi_ng_h = d['ng_h']
+		if 'file_h' in d:
+			self.rexi_file_h = d['file_h']
 
-		if 'ng_test_abs' in d:
-			self.rexi_ng_test_abs = d['ng_test_abs']
+		if 'file_test_abs' in d:
+			self.rexi_file_test_abs = d['file_test_abs']
 
-		if 'ng_max_error' in d:
-			self.rexi_ng_max_error = d['ng_max_error']
+		if 'file_max_error' in d:
+			self.rexi_file_max_error = d['file_max_error']
 
 
 	g = 1	# gravity
@@ -109,7 +109,8 @@ class default_params:
 	use_robert_functions = 1
 
 	pde_id = 0
-
+	staggering = 0
+	spectralderiv = 1
 	nonlinear = 0
 	viscosity = 0
 
@@ -195,14 +196,14 @@ class default_params:
 # YELLOW STONE SPECIFIC!!!
 # https://www2.cisl.ucar.edu/resources/computational-systems/yellowstone/
 #
-#BSUB -P NCIS0002            # project code
-#BSUB -W 02:00               # wall-clock time (hrs:mins)
+#BSUB -P NCIS0002	# project code
+#BSUB -W 02:00		# wall-clock time (hrs:mins)
 #
-#BSUB -n """+str(mpi_ranks_total)+"""   # number of tasks in job         
+#BSUB -n """+str(mpi_ranks_total)+"""	 number of tasks in job
 #BSUB -R "span[ptile=16]"    # run 16 MPI tasks per node
 #
 #BSUB -outdir """+dirname+"""
-#BSUB -J """+job_id+"""      # job name
+#BSUB -J """+job_id+"""	# job name
 #BSUB -o """+dirname+""".out  # output file name in which %J is replaced by the job ID
 #BSUB -e """+dirname+""".out  # error file name in which %J is replaced by the job ID
 #
@@ -258,8 +259,10 @@ $SCONS || exit 1
 cd "$BASEDIR"
 """
 
-		if p.rexi_par:
+		if self.rexi_par:
 			content += 'EXEC="$SWEETROOT/build/swe_plane_rexi_planespectral_planedealiasing_rexipar_libfft_gnu_release'
+		elif self.spectralderiv == 0:
+			content += 'EXEC="$SWEETROOT/build/swe_plane_rexi_omp_libfft_gnu_release'
 		else:
 			content += 'EXEC="$SWEETROOT/build/swe_plane_rexi_planespectral_planedealiasing_omp_libfft_gnu_release'
 
@@ -274,6 +277,8 @@ cd "$BASEDIR"
 			content += ' -N '+str(self.phys_res)
 
 		content += ' --pde-id '+str(self.pde_id)
+		content += ' --staggering='+str(self.staggering)
+		content += ' -S '+str(self.spectralderiv)
 
 		content += ' -X '+str(self.domain_size)
 		content += ' -s '+str(self.bench_id)
@@ -289,6 +294,7 @@ cd "$BASEDIR"
 
 		if self.output_timestep_size > 0:
 			content += ' -O -'	# deactivate file output
+
 		content += ' -u '+str(self.viscosity)
 		content += ' -t '+str(self.simtime)
 		content += ' --nonlinear='+str(self.nonlinear)
@@ -299,22 +305,24 @@ cd "$BASEDIR"
 
 		content += ' --normal-mode-analysis-generation='+str(self.normal_mode_analysis)
 
-		content += ' --rexi-m='+str(self.rexi_m)
-		content += ' --rexi-h='+str(self.rexi_h)
+		content += ' --rexi-method='+str(self.rexi_method)
 		content += ' --rexi-half='+str(self.rexi_half_poles)
 		content += ' --rexi-normalization='+str(self.rexi_normalization)
 		content += ' --rexi-sphere-preallocation='+str(self.rexi_sphere_preallocation)
 		content += ' --rexi-use-direct-solution='+str(self.rexi_use_direct_solution)
 		content += ' --rexi-ext-modes='+str(self.rexi_extended_modes)
 
-		content += ' --rexi-use-next-generation='+str(self.rexi_use_next_generation)
-		content += ' --rexi-ng-n='+str(self.rexi_ng_n)
-		content += ' --rexi-ng-h='+str(self.rexi_ng_h)
-		content += ' --rexi-ng-test-abs='+str(self.rexi_ng_test_abs)
-		content += ' --rexi-ng-max-error='+str(self.rexi_ng_max_error)
+		# REXI Terry
+		content += ' --rexi-m='+str(self.rexi_m)
+		content += ' --rexi-h='+str(self.rexi_h)
 
-		if self.rexi_ng_faf_dir != None:
-			content += ' --rexi-ng-faf-dir='+str(self.rexi_ng_faf_dir)
+		# REXI File
+		content += ' --rexi-file-n='+str(self.rexi_file_n)
+		content += ' --rexi-file-h='+str(self.rexi_file_h)
+		content += ' --rexi-file-test-abs='+str(self.rexi_file_test_abs)
+		content += ' --rexi-file-max-error='+str(self.rexi_file_max_error)
+		if self.rexi_file_faf_dir != None:
+			content += ' --rexi-file-faf-dir='+str(self.rexi_file_faf_dir)
 
 		content += ' --use-robert-functions='+str(self.use_robert_functions)
 
@@ -342,11 +350,6 @@ $EXEC || exit 1
 	def create_job_id(self):
 		idstr = '_'+self.prefix_string
 
-		if self.mode_res != -1:
-			idstr += '_modes'+str(self.mode_res).zfill(3)
-
-		if self.phys_res != -1:
-			idstr += '_phys'+str(self.phys_res).zfill(3)
 
 		idstr += '_bench'+str(self.bench_id)
 #		idstr += '_nonlin'+str(self.nonlinear)
@@ -377,14 +380,22 @@ $EXEC || exit 1
 			if self.rexi_use_direct_solution:
 				idstr += '_rexidirect'
 			else:
-				if self.rexi_use_next_generation:
-					idstr += '_rexingn'+str(self.rexi_ng_n).zfill(8)
-					idstr += '_rexingh'+str(self.rexi_ng_h)
-					idstr += '_rexingtestabs'+str(self.rexi_ng_test_abs).zfill(3)
-					idstr += '_rexingmaxerr'+str(self.rexi_ng_max_error)
-				else:
+				if self.rexi_method == "file":
+					idstr += '_REXIFILE'
+					idstr += '_filen'+str(self.rexi_file_n).zfill(8)
+					idstr += '_fileh'+str(self.rexi_file_h)
+					idstr += '_filetestabs'+str(self.rexi_file_test_abs).zfill(3)
+					idstr += '_filemaxerr'+str(self.rexi_file_max_error)
+
+				elif self.rexi_method == "terry":
+					idstr += '_REXITERRY'
 					idstr += '_rexim'+str(self.rexi_m).zfill(8)
 					idstr += '_rexih'+str(self.rexi_h)
+
+				elif self.rexi_method == "ci":
+					idstr += '_REXICI'
+					idstr += '_cim'+str(self.rexi_m).zfill(8)
+					idstr += '_cih'+str(self.rexi_h)
 
 				idstr += '_rexinorm'+str(self.rexi_normalization)
 				idstr += '_rexihalf'+str(self.rexi_half_poles)
@@ -399,6 +410,12 @@ $EXEC || exit 1
 
 		if self.max_timesteps != -1:
 			idstr += '_Tn'+str(self.max_timesteps).zfill(3)
+
+		if self.mode_res != -1:
+			idstr += '_modes'+str(self.mode_res).zfill(4)
+
+		if self.phys_res != -1:
+			idstr += '_phys'+str(self.phys_res).zfill(4)
 
 		return idstr
 
@@ -482,11 +499,11 @@ for group in groups:
 			#for h in [0.1]:
 				for M in [2**i for i in range(4, 11)]:
 				#for M in [2**i for i in range(4, 5)]:
-					ts_methods.append(['l_rexi',	0,	0,	0, {'use_next_generation': 0, 'h':h, 'm':M}])
+					ts_methods.append(['l_rexi',	0,	0,	0, {'use_method': 'terry', 'h':h, 'm':M}])
 
 			for testabs in [2**i for i in range(0, 3)]:
 				for max_error in [1e-6, 1e-8, 1e-10, 1e-12]:
-					ts_methods.append(['l_rexi',	0,	0,	0, {'use_next_generation': 1, 'ng_test_abs':testabs, 'ng_max_error':max_error}])
+					ts_methods.append(['l_rexi',	0,	0,	0, {'use_method': 'file', 'file_test_abs':testabs, 'file_max_error':max_error}])
 		# 2nd order linear
 		if group == 'l2':
 			ts_methods = [
@@ -572,12 +589,13 @@ for group in groups:
 		p.timestepping_order = tsm[1]
 		p.timestepping_order2 = tsm[2]
 		p.rexi_use_direct_solution = tsm[3]
-		p.timestep_size = timestep_size_reference
 
 		if len(tsm) > 4:
 			s = tsm[4]
 			if 'timestep_size' in s:
 				p.timestep_size = s['timestep_size']
+		else:
+			p.timestep_size = timestep_size_reference
 
 		p.gen_script('script'+p.create_job_id(), 'run.sh')
 

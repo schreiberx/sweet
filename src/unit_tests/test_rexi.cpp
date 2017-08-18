@@ -5,13 +5,13 @@
  *      Author: Martin Schreiber <schreiberx@gmail.com>
  */
 
+#include <iostream>
+#include <rexi/REXI.hpp>
 #include <rexi/REXI_Terry.hpp>
 #include <rexi/REXI_Terry_ExponentialApproximation.hpp>
 #include <rexi/REXI_Terry_GaussianApproximation.hpp>
-#include <iostream>
 #include <rexi/REXIFunctions.hpp>
 #include <sweet/SimulationVariables.hpp>
-#include "../include/sweet/plane/PlaneDataComplex.hpp"
 
 
 #if 0

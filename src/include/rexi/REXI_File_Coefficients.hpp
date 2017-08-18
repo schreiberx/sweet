@@ -102,7 +102,7 @@ public:
 
 
 public:
-	void load_from_file(std::string &i_filename)
+	bool load_from_file(std::string &i_filename)
 	{
 		filename = i_filename;
 
@@ -214,6 +214,8 @@ public:
 
 			weights_cplx.push_back(val);
 		}
+
+		return true;
 	}
 };
 

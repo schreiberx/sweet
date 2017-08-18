@@ -294,9 +294,9 @@ int main(
 					std::cout << "ERROR " << error_real << " too large at " << x << std::endl;
 				}
 	*/
-				std::cout << "exp(I*" << x << ") ~~ " << approx << "\t" << correct << "\t" << (approx-correct) << std::endl;
+//				std::cout << "exp(I*" << x << ") ~~ " << approx << "\t" << correct << "\t" << (approx-correct) << std::endl;
 			}
-			exit(1);
+//			exit(1);
 		}
 
 #if 0

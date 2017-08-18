@@ -302,6 +302,23 @@ public:
 			//FatalError("RexiNG: No coefficients found for given constraints");
 
 
+		generate_alpha_and_beta(i_reduce_to_half);
+
+		return true;
+	}
+
+	bool load_from_file(std::string i_filename, bool i_reduce_to_half)
+	{
+		bool retval = fafcoeffs.load_from_file(i_filename);
+		if (!retval)
+			return false;
+
+		generate_alpha_and_beta(i_reduce_to_half);
+		return true;
+	}
+
+	void generate_alpha_and_beta(bool i_reduce_to_half)
+	{
 
 		int N = fafcoeffs.N;
 
@@ -334,33 +351,7 @@ public:
 			alpha.resize(newN);
 			beta_re.resize(newN);
 		}
-
-#if 0
-		bool i_normalization = true;
-		if (i_normalization)
-		{
-			if (i_function_name == "phi0")
-			{
-				std::complex<double> sum = 0;
-				std::cout << "Normalize for 0-dispersion modes:" << std::endl;
-
-				for (std::size_t n = 0; n < alpha.size(); n++)
-				{
-					std::complex<double> val = beta_re[n]/alpha[n];
-					std::cout << n << ": " << val << std::endl;
-					sum += val;
-				}
-
-				double normalization = sum.real();
-				std::cout << "REXI sum for geostrophic modes with double precision: " << normalization<< std::endl;
-				std::cout << "REXI Error with coefficients used with double precision: " << (1.0-normalization) << std::endl;
-			}
-		}
-#endif
-		return true;
 	}
-
-
 
 	void output()
 	{
