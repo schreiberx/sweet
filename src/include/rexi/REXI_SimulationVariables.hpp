@@ -61,7 +61,7 @@ struct REXI_SimulationVariables
 	/**
 	 * Use Next Generation REXI
 	 */
-	bool use_next_generation = false;
+	bool load_from_file = false;
 
 	/**
 	 * integration range for which NGREXI should be valid
@@ -97,7 +97,7 @@ struct REXI_SimulationVariables
 		std::cout << " + L: " << L << std::endl;
 		std::cout << " + use_half_poles: " << use_half_poles << std::endl;
 		std::cout << " + rexi_normalization: " << normalization << std::endl;
-		std::cout << " + use_next_generation: " << use_next_generation << std::endl;
+		std::cout << " + use_next_generation: " << load_from_file << std::endl;
 		std::cout << " + ng_faf_dir: " << ng_faf_dir << std::endl;
 		std::cout << " + ng_N: " << ng_N << std::endl;
 		std::cout << " + ng_h: " << ng_h << std::endl;
@@ -213,7 +213,7 @@ struct REXI_SimulationVariables
 			case 6:	use_direct_solution = atoi(optarg);	return 0;
 			case 7:	use_sphere_extended_modes = atoi(optarg);	return 0;
 
-			case 8:		use_next_generation = atoi(optarg);	return 0;
+			case 8:		load_from_file = atoi(optarg);	return 0;
 			case 9:		ng_faf_dir = optarg;	return 0;
 			case 10:	ng_N = atoi(optarg);	return 0;
 			case 11:	ng_h = atof(optarg);	return 0;

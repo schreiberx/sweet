@@ -66,7 +66,7 @@ public:
 	SphereData prog_div;
 
 
-	REXITerry<> rexi;
+	REXI_Terry<> rexi;
 
 #if SWEET_GUI
 	PlaneData viz_plane_data;

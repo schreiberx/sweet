@@ -28,9 +28,8 @@ public:
 	T eps_ups;
 	T pi2;
 
-public:
-	REXIFunctions()	:
-		phi_id(0)
+
+	void setup_constvars()
 	{
 		if (typeid(T) == typeid(__float128))
 		{
@@ -50,6 +49,24 @@ public:
 		{
 			FatalError("Type not supported");
 		}
+	}
+
+
+
+public:
+	REXIFunctions()	:
+		phi_id(0)
+	{
+		setup_constvars();
+	}
+
+
+public:
+	REXIFunctions(const std::string &i_function_name)	:
+		phi_id(0)
+	{
+		setup_constvars();
+		setup(i_function_name);
 	}
 
 
@@ -80,7 +97,7 @@ public:
 			if (typeid(T) == typeid(double))
 			{
 				std::cout << "**************************************************************" << std::endl;
-				std::cout << "* WARNING: " << i_function_name << " typically required __float128 precision!" << std::endl;
+				std::cout << "* WARNING: " << i_function_name << " typically requires __float128 precision!" << std::endl;
 				std::cout << "**************************************************************" << std::endl;
 				FatalError("Seriously, you shouldn't use me with only double precision!");
 			}
@@ -143,28 +160,43 @@ public:
 
 
 
+	template <typename D>
+	static
+	std::complex<D> convert(
+			const std::complex<T> &i_value
+	)
+	{
+		std::complex<D> data;
+		data.real(i_value.real());
+		data.imag(i_value.imag());
+
+		return data;
+	}
+
 
 
 	/**
 	 * Evaluate the function (phi/ups)
 	 */
 	std::complex<T> eval(
-			const std::complex<T> &i_K
+		const std::complex<T> &i_K
 	)
 	{
 		std::complex<T> K = i_K;
+
+		// for tests of numerical instability
 		T lamdt = K.imag();
 		if (lamdt < 0)
 			lamdt = -lamdt;
 
 		switch(phi_id)
 		{
-		case 0:	// phi0
+		case 0:	// \phi_0
 			K = l_expcplx(K);
 			break;
 
 
-		case 1:	// phi1
+		case 1:	// \phi_1
 			// http://www.wolframalpha.com/input/?i=(exp(i*x)-1)%2F(i*x)
 			if (lamdt < eps_phi)
 			{
@@ -177,7 +209,7 @@ public:
 			break;
 
 
-		case 2:	// phi2
+		case 2:	// \phi_2
 			// http://www.wolframalpha.com/input/?i=(exp(i*x)-1-i*x)%2F(i*x*i*x)
 			if (lamdt*lamdt < eps_phi)
 			{
@@ -190,7 +222,7 @@ public:
 			break;
 
 
-		case 3:	// phi3
+		case 3:	// \phi_3
 			if (lamdt*lamdt*lamdt < eps_phi)
 			{
 				K = 1.0/(2.0*3.0);
@@ -202,7 +234,7 @@ public:
 			break;
 
 
-		case 101:	// ups1
+		case 101:	// \ups_1
 			// http://www.wolframalpha.com/input/?i=(-4-K%2Bexp(K)*(4-3K%2BK*K))%2F(K*K*K)
 			if (lamdt*lamdt*lamdt < eps_ups)
 			{
@@ -215,7 +247,7 @@ public:
 			break;
 
 
-		case 102:	// ups2
+		case 102:	// \ups_2
 			// http://www.wolframalpha.com/input/?i=(2%2BK%2Bexp(K)*(-2%2BK))%2F(K*K*K)
 			if (lamdt*lamdt*lamdt < eps_ups)
 			{
@@ -228,7 +260,7 @@ public:
 			break;
 
 
-		case 103:	// ups3
+		case 103:	// \ups_3
 			// http://www.wolframalpha.com/input/?i=(-4-3*K-K*K%2Bexp(K)*(4-K))%2F(K*K*K)
 			if (lamdt*lamdt*lamdt < eps_ups)
 			{

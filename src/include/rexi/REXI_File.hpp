@@ -17,10 +17,8 @@
 
 #include <sweet/FatalError.hpp>
 #include <libmath/DQStuff.hpp>
-#include <rexi/RexiFile.hpp>
-
-
-#include <rexi/RexiFileCoefficients.hpp>
+#include <rexi/REXI_File_Coefficients.hpp>
+#include <rexi/REXI_File.hpp>
 
 
 
@@ -51,7 +49,7 @@
  *
  */
 template <typename T = double>
-class RexiFile
+class REXI_File
 {
 public:
 	typedef std::complex<T> complexT;
@@ -66,7 +64,7 @@ public:
 	std::vector<complexT> beta_re;
 //	std::vector<complexT> beta_im;
 
-	RexiFileCoefficients<T> fafcoeffs;
+	REXI_File_Coefficients<T> fafcoeffs;
 
 
 	static
@@ -108,7 +106,7 @@ public:
 			i_basis_function_spacing = None();
 
 		std::string faf_data_dir = i_faf_data_directory + "/faf_data_rationalcplx_"+i_function_name;
-		RexiFileCoefficients<T> target_fafcoeffs;
+		REXI_File_Coefficients<T> target_fafcoeffs;
 
 		target_fafcoeffs.N = i_N;
 		target_fafcoeffs.max_error = i_max_error;
@@ -130,7 +128,7 @@ public:
 			FatalError(std::string("Unable to open directory ") + i_faf_data_directory);
 
 		bool best_found = false;
-		RexiFileCoefficients<T> &best = fafcoeffs;
+		REXI_File_Coefficients<T> &best = fafcoeffs;
 
 		struct dirent *dp;
 		while (dirp)
@@ -158,7 +156,7 @@ public:
 
 			std::string filepath = faf_data_dir + "/"+ filename;
 
-			RexiFileCoefficients<T> test_fafcoeffs;
+			REXI_File_Coefficients<T> test_fafcoeffs;
 			test_fafcoeffs.load_from_file(filepath);
 
 			T eps = 1e-10;

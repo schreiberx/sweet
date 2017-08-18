@@ -8,8 +8,8 @@
 #include <iostream>
 #include <sweet/SimulationVariables.hpp>
 #include <quadmath.h>
-#include <rexi/RexiFile.hpp>
-#include <rexi/REXITerryAndFile.hpp>
+#include <rexi/REXI.hpp>
+#include <rexi/REXI_File.hpp>
 #include <rexi/REXIFunctions.hpp>
 
 
@@ -249,14 +249,13 @@ int main(
 		 * Oscillatory stiffness: imaginary-only
 		 */
 		cplx lambda = {0.0, 1.0};
+		std::vector<cplx> alpha, beta;
 
-		std::vector<std::complex<double>> alpha_tmp, beta_tmp;
-
-		REXITerryAndFile::load(
+		REXI::load(
 				&simVars.rexi,
 				function_name,
-				alpha_tmp,
-				beta_tmp,
+				alpha,
+				beta,
 				simVars.misc.verbosity
 			);
 
@@ -265,25 +264,39 @@ int main(
 			/**
 			 * Additional test for phi0
 			 */
+/*
 			REXITerryAndFile::testREXIphi0(
 					alpha_tmp,
 					beta_tmp,
 					2.0
 			);
-		}
+*/
 
-		std::vector<cplx> alpha, beta;
-		alpha.resize(alpha_tmp.size());
-		beta.resize(beta_tmp.size());
+			double start = -M_PI;
+			double end = M_PI;
+			double step_size = M_PI/80.0;
 
+			double max_error = 0;
+			for (double x = start; x < end; x += step_size)
+			{
+				std::complex<double> correct = std::exp(std::complex<double>(0.0, x));
 
-		for (std::size_t i = 0; i < alpha.size(); i++)
-		{
-			alpha[i].real(alpha_tmp[i].real());
-			alpha[i].imag(alpha_tmp[i].imag());
+				std::complex<double> approx = 0;
+				for (std::size_t n = 0; n < alpha.size(); n++)
+					approx += (beta[n] / (std::complex<double>(0.0, x) + alpha[n]));
 
-			beta[i].real(beta_tmp[i].real());
-			beta[i].imag(beta_tmp[i].imag());
+	/*
+				double error_real = DQStuff::abs(correct_real - approx_real);
+
+				if (error_real > max_error)
+				{
+					max_error = error_real;
+					std::cout << "ERROR " << error_real << " too large at " << x << std::endl;
+				}
+	*/
+				std::cout << "exp(I*" << x << ") ~~ " << approx << "\t" << correct << "\t" << (approx-correct) << std::endl;
+			}
+			exit(1);
 		}
 
 #if 0
@@ -325,7 +338,7 @@ int main(
 		std::cout << "Eigenvalue 1: " << -fromTtoComplexDouble(evalue) << std::endl;
 		std::cout << "Eigenvalue 2: " << fromTtoComplexDouble(evalue) << std::endl;
 
-		int tnr_max = 10;
+		int tnr_max = (int)(M_PI*2.0/(timestep_size*lambda.imag()));
 		int tnr = 0;
 		while (true)
 		{
@@ -370,10 +383,11 @@ int main(
 				);
 #endif
 
-#if 0
+#if 1
 			if (simVars.rexi.use_half_poles)
 			{
 				// eliminate imaginary poles
+				// this is required for solving a PDE
 				U[0].imag(0);
 				U[1].imag(0);
 			}

@@ -185,8 +185,6 @@ public:
 			double b[3] = {1.0/4.0, 0.0, 3.0/4.0};
 			double c[2] = {1.0/3.0, 2.0/3.0};
 
-			double dummy_dt;
-
 			// STAGE 1
 			(i_baseClass->*i_compute_euler_timestep_update)(
 					io_h,
@@ -324,7 +322,6 @@ public:
 					SphereData &o_u_t,	///< time updates
 					SphereData &o_v_t,	///< time updates
 
-					double &o_dt,			///< time step restriction
 					double i_dt,	///< if this value is not equal to 0,
 											///< use this time step size instead of computing one
 					double i_simulation_time	///< simulation time, e.g. for tidal waves
@@ -353,7 +350,6 @@ public:
 					*RK_u_t[0],	// output
 					*RK_v_t[0],
 					i_dt,
-					i_dt,
 					i_simulation_time
 			);
 
@@ -376,15 +372,12 @@ public:
 			double b[2] = {0.0, 1.0};
 			double c[1] = {0.5};
 
-			double dummy_dt = -1;
-
 			// STAGE 1
 			(i_baseClass->*i_compute_euler_timestep_update)(
 					io_u,
 					io_v,
 					*RK_u_t[0],
 					*RK_v_t[0],
-					i_dt,
 					i_dt,
 					i_simulation_time
 			);
@@ -395,7 +388,6 @@ public:
 					io_v + ( i_dt*a2[0]*(*RK_v_t[0]) ),
 					*RK_u_t[1],
 					*RK_v_t[1],
-					dummy_dt,
 					i_dt,
 					i_simulation_time + c[0]*i_dt
 			);
@@ -420,15 +412,12 @@ public:
 			double b[3] = {1.0/4.0, 0.0, 3.0/4.0};
 			double c[2] = {1.0/3.0, 2.0/3.0};
 
-			double dummy_dt;
-
 			// STAGE 1
 			(i_baseClass->*i_compute_euler_timestep_update)(
 					io_u,
 					io_v,
 					*RK_u_t[0],
 					*RK_v_t[0],
-					i_dt,
 					i_dt,
 					i_simulation_time
 			);
@@ -439,7 +428,6 @@ public:
 					io_v	+ i_dt*( a2[0]*(*RK_v_t[0]) ),
 					*RK_u_t[1],
 					*RK_v_t[1],
-					dummy_dt,
 					i_dt,
 					i_simulation_time + c[0]*i_dt
 			);
@@ -450,7 +438,6 @@ public:
 					io_v	+ i_dt*( a3[0]*(*RK_v_t[0]) + a3[1]*(*RK_v_t[1]) ),
 					*RK_u_t[2],
 					*RK_v_t[2],
-					dummy_dt,
 					i_dt,
 					i_simulation_time + c[1]*i_dt
 			);
@@ -477,15 +464,12 @@ public:
 			double b[4] = {1.0/6.0, 1.0/3.0, 1.0/3.0, 1.0/6.0};
 			double c[3] = {0.5, 0.5, 1.0};
 
-			double dummy_dt;
-
 			// STAGE 1
 			(i_baseClass->*i_compute_euler_timestep_update)(
 					io_u,
 					io_v,
 					*RK_u_t[0],
 					*RK_v_t[0],
-					i_dt,
 					i_dt,
 					i_simulation_time
 			);
@@ -496,7 +480,6 @@ public:
 					io_v	+ i_dt*( a2[0]*(*RK_v_t[0]) ),
 					*RK_u_t[1],
 					*RK_v_t[1],
-					dummy_dt,
 					i_dt,
 					i_simulation_time + c[0]*i_dt
 			);
@@ -507,7 +490,6 @@ public:
 					io_v	+ i_dt*( /*a3[0]*(*RK_v_t[0]) +*/ a3[1]*(*RK_v_t[1]) ),
 					*RK_u_t[2],
 					*RK_v_t[2],
-					dummy_dt,
 					i_dt,
 					i_simulation_time + c[1]*i_dt
 			);
@@ -518,7 +500,6 @@ public:
 					io_v	+ i_dt*( /*a4[0]*(*RK_v_t[0]) + a4[1]*(*RK_v_t[1]) +*/ a4[2]*(*RK_v_t[2]) ),
 					*RK_u_t[3],
 					*RK_v_t[3],
-					dummy_dt,
 					i_dt,
 					i_simulation_time + c[2]*i_dt
 			);
@@ -570,7 +551,6 @@ public:
 			(i_baseClass->*i_compute_euler_timestep_update)(
 					io_h,	// input
 					*RK_h_t[0],	// output
-					i_dt,
 					i_dt,
 					i_simulation_time
 			);
@@ -634,7 +614,6 @@ public:
 					io_h,
 					*RK_h_t[0],
 					i_dt,
-					i_dt,
 					i_simulation_time
 			);
 
@@ -681,7 +660,6 @@ public:
 			(i_baseClass->*i_compute_euler_timestep_update)(
 					io_h,
 					*RK_h_t[0],
-					i_dt,
 					i_dt,
 					i_simulation_time
 			);

@@ -5,18 +5,28 @@
  *      Author: Martin Schreiber <schreiberx@gmail.com>
  */
 
+#include <rexi/REXI_Terry.hpp>
+#include <rexi/REXI_Terry_ExponentialApproximation.hpp>
+#include <rexi/REXI_Terry_GaussianApproximation.hpp>
 #include <iostream>
-#include <rexi/GaussianApproximation.hpp>
-#include <rexi/ExponentialApproximation.hpp>
-#include <rexi/REXITerry.hpp>
+#include <rexi/REXIFunctions.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include "../include/sweet/plane/PlaneDataComplex.hpp"
 
 
-typedef double TEvaluation;
-typedef double TStorageAndProcessing;
-typedef std::complex<TEvaluation> TComplexEvaluation;
-//typedef double TStorageAndProcessing;
+#if 0
+	typedef __float128 TGeneration;
+#else
+	typedef double TGeneration;
+#endif
+typedef std::complex<TGeneration> TComplexGeneration;
+
+
+
+typedef double T;
+typedef std::complex<T> TComplex;
+
+
 
 int main(
 		int i_argc,
@@ -37,7 +47,7 @@ int main(
 		std::cout << "******************************************************" << std::endl;
 		std::cout << "EVALUATING GAUSSIAN APPROXIMATION (real)" << std::endl;
 		std::cout << "******************************************************" << std::endl;
-		GaussianApproximation<TEvaluation, TStorageAndProcessing> ga(simVars.rexi.L);
+		REXI_Terry_GaussianApproximation<TGeneration> ga(simVars.rexi.L);
 
 		for (double h = 0.2; h > 0.001; h *= 0.5)
 		{
@@ -56,11 +66,9 @@ int main(
 
 			for (double x = start; x < end; x += step_size)
 			{
-				typedef double TStorage;
-
-				TStorage pi = DQStuff::fromString<TStorage>("3.14159265358979323846264338327950288");
-				TStorage pi4 = pi*DQStuff::fromString<TStorage>("4.0");
-				TStorage sqrtpi4 = DQStuff::sqrt(pi4);
+				TGeneration pi = DQStuff::fromString<TGeneration>("3.14159265358979323846264338327950288");
+				TGeneration pi4 = pi*DQStuff::fromString<TGeneration>("4.0");
+				TGeneration sqrtpi4 = DQStuff::sqrt(pi4);
 
 				std::complex<double> approx = ga.approxGaussian_Complex(x, h);
 				std::complex<double> analyt = ga.evalGaussian(x, h);
@@ -102,21 +110,21 @@ int main(
 		std::cout << "EVALUATING EXPONENTIAL (e^(ix)) APPROXIMATION with approx Gaussian" << std::endl;
 		std::cout << "******************************************************" << std::endl;
 
-		for (double h = 0.2; h > 0.01; h *= 0.5)
+		for (T h = 0.2; h > 0.01; h *= 0.5)
 		{
 			int M = 32/h;
-			ExponentialApproximation<TEvaluation, TStorageAndProcessing> ea(h, M);
+			REXI_Terry_ExponentialApproximation<T> ea(h, M);
 
-			double start = -M*h*0.95;
-			double end = -start;
-			double step_size = 0.01;
+			T start = -M*h*0.95;
+			T end = -start;
+			T step_size = 0.1;
 
-			TEvaluation max_error = 0;
+			T max_error = 0;
 
-			for (double x = start; x < end; x += step_size)
+			for (T x = start; x < end; x += step_size)
 			{
-				std::complex<TEvaluation> diff = ea.eval(x) - ea.approx(x);
-				TEvaluation error = DQStuff::max(DQStuff::abs(diff.real()), DQStuff::abs(diff.imag()));
+				std::complex<T> diff = ea.eval(x) - ea.approx(x);
+				T error = DQStuff::max(DQStuff::abs(diff.real()), DQStuff::abs(diff.imag()));
 				max_error = DQStuff::max(max_error, error);
 			}
 
@@ -133,7 +141,7 @@ int main(
 
 
 
-	for (int fun_id = 0; fun_id <= 0; fun_id++)
+	for (int fun_id = 1; fun_id <= 1; fun_id++)
 	{
 		std::string function_name;
 		switch(fun_id)
@@ -154,14 +162,18 @@ int main(
 			FatalError("this phi function is not implemented");
 		}
 
-#if 1
-		if (!simVars.rexi.use_half_poles)
+
+		if (simVars.rexi.use_half_poles)
+		{
+			std::cout << "Skipping testing for valid real parts since halving of poles is used" << std::endl;
+		}
+		else
 		{
 			std::cout << "******************************************************" << std::endl;
 			std::cout << "PHI " << fun_id << " - REXI real: Test for partition of unity and accuracy" << std::endl;
 			std::cout << "******************************************************" << std::endl;
 
-			for (TEvaluation h = 0.2; h >= 0.05; h *= 0.5)
+			for (T h = 0.2; h >= 0.05; h *= 0.5)
 			{
 				int Mstart = 128;
 				if (fun_id > 0)
@@ -169,51 +181,58 @@ int main(
 
 				for (int M = Mstart; M <= 1024; M *= 2)
 				{
+					std::cout << "******************************************************" << std::endl;
 					std::cout << "M: " << M << std::endl;
-					std::cout << "h: " << h << std::endl;
+					std::cout << "h: " << (double)h << std::endl;
+					std::cout << "******************************************************" << std::endl;
 					std::cout << "Setup coefficients... " << std::flush;
-					REXITerry<TEvaluation, TStorageAndProcessing> rexi(function_name, h, M, simVars.rexi.L, simVars.rexi.use_half_poles, simVars.rexi.normalization);
+					REXI_Terry<TGeneration, T> rexi(function_name, h, M, simVars.rexi.L, simVars.rexi.use_half_poles, simVars.rexi.normalization);
 					std::cout << "OK" << std::endl;
 
+
+					REXIFunctions<__float128> rexiFunctions(function_name);
+
 					// REXI approximates the interval [-M*h;M*h] but gets inaccurate close to the interval boundaries
-					TEvaluation start = -M*h*0.9;
+					T start = -M*h*0.9;
 					if (fun_id > 0)
 						start = start*0.5;
 
-					TEvaluation end = -start;
-					TEvaluation step_size = 0.011;
+					T end = -start;
+					T step_size = 0.011;
 
-					TEvaluation max_error_real = 0.0;
-					TEvaluation max_error_imag = 0.0;
+					T max_error_real = 0.0;
+					T max_error_imag = 0.0;
 
 					double max_error_threshold_imag = max_error_threshold;
 
 					/*
 					 * TODO: Analyze this required increase error threshold for the imaginary axis
 					 */
-					if (fun_id > 0)
-						max_error_threshold_imag *= 1e+5;
+//					if (fun_id > 0)
+//						max_error_threshold_imag *= 1e+5;
 
-					for (TEvaluation x = start; x < end; x += step_size)
+					for (T x = start; x < end; x += step_size)
 					{
-						TComplexEvaluation correct = rexi.eval(x);
-						TComplexEvaluation approx = rexi.approx_returnComplex(x);
+						std::complex<__float128> correct_ = rexiFunctions.eval(std::complex<__float128>(0, x));
+						TComplex correct(correct_.real(), correct_.imag());
+						TComplex approx = rexi.approx_returnComplex(x);
 
-						std::cout << x << ": " << correct << "\t" << approx << std::endl;
-						continue;
+//						std::cout << (double)x << ": " << correct << "\t" << approx << "\t" << (correct-approx) << std::endl;
+//						continue;
 
 						if (DQStuff::abs(approx.real()) > 1.0)
-							std::cerr << "approx value_real " << (double)approx.real() << " not bounded by unity (just a warning and not a problem) at x=" << x << std::endl;
+							std::cerr << "approx value_real " << approx.real() << " not bounded by unity (just a warning and not a problem) at x=" << (double)x << std::endl;
 
-						if (DQStuff::abs(approx.imag()) > 1.0)
-							std::cerr << "approx value_imag " << (double)approx.imag() << " not bounded by unity (just a warning and not a problem) at x=" << x << std::endl;
+//						if (DQStuff::abs(approx.imag()) > 1.0)
+//							std::cerr << "approx value_imag " << approx.imag() << " not bounded by unity (just a warning and not a problem) at x=" << (double)x << std::endl;
 
-						TEvaluation error_real = DQStuff::abs(correct.real() - approx.real());
-						TEvaluation error_imag = DQStuff::abs(correct.imag() - approx.imag());
+						T error_real = DQStuff::abs(correct.real() - approx.real());
+						T error_imag = DQStuff::abs(correct.imag() - approx.imag());
 
 						max_error_real = DQStuff::max(max_error_real, error_real);
 						max_error_imag = DQStuff::max(max_error_imag, error_imag);
 					}
+//					exit(1);
 
 					std::cout << "max_error_real: " << (double)max_error_real << " for h " << (double)h << " and M " << M << std::endl;
 
@@ -225,16 +244,16 @@ int main(
 
 					std::cout << "max_error_imag: " << (double)max_error_imag << " for h " << (double)h << " and M " << M << std::endl;
 
+#if 0
 					if (max_error_imag > max_error_threshold_imag)
 					{
 						std::cout << "max_error_threshold_imag: " << max_error_threshold_imag << std::endl;
 						FatalError("MAX ERROR THRESHOLD EXCEEDED for imaginary value!");
 					}
+#endif
 				}
 			}
 		}
-#endif
-
 	}
 
 

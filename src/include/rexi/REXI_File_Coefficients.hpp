@@ -14,7 +14,7 @@
 
 
 template <typename T>
-class RexiFileCoefficients
+class REXI_File_Coefficients
 {
 public:
 	std::string function_name;		///< "phi0"; "phi1"; "phi2"; etc.
@@ -53,7 +53,7 @@ public:
 
 
 public:
-	RexiFileCoefficients()
+	REXI_File_Coefficients()
 	{
 		reset();
 	}

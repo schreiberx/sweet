@@ -13,11 +13,9 @@
 #include <vector>
 #include <algorithm>
 #include <assert.h>
-#include <rexi/FunApproximation.hpp>
-#include <rexi/REXIFunctions.hpp>
-
-#include "ExponentialApproximation.hpp"
-#include "GaussianApproximation.hpp"
+#include <rexi/REXI_Terry_ExponentialApproximation.hpp>
+#include <rexi/REXI_Terry_FunApproximation.hpp>
+#include <rexi/REXI_Terry_GaussianApproximation.hpp>
 
 
 
@@ -44,47 +42,38 @@
  * of exponential integrators.
  */
 template <
-#if 1
-	typename TEvaluation_ = __float128,	///< evaluation accuracy of coefficients
-#else
-	typename TEvaluation_ = double,	///< evaluation accuracy of coefficients
-#endif
-	typename TStorageAndProcessing_ = double	///< storage precision of coefficients - use quad precision per default
+	typename T = __float128,	///< evaluation accuracy of coefficients
+	typename TStorage = double	///< storage precision of coefficients - use quad precision per default
 >
-class REXITerry
+class REXI_Terry
 {
 public:
-	typedef TEvaluation_ TEvaluation;
-	typedef TStorageAndProcessing_ TStorageAndProcessing;
+	typedef std::complex<T> TComplex;
+	typedef std::complex<TStorage> TStorageComplex;
 
-	typedef std::complex<TEvaluation> complexEvaluation;
-	typedef std::complex<TStorageAndProcessing> complexProcessingAndStorage;
-
-	REXIFunctions<TEvaluation_> rexiFunctions;
+//	REXIFunctions<T> rexiFunctions;
 
 public:
-	std::vector<complexProcessingAndStorage> alpha;
-	std::vector<complexProcessingAndStorage> beta_re;
-//	std::vector<complexProcessingAndStorage> beta_im;
+	std::vector<TStorageComplex> alpha;
+	std::vector<TStorageComplex> beta_re;
 
 
-	std::vector<complexEvaluation> alpha_eval;
-	std::vector<complexEvaluation> beta_re_eval;
-//	std::vector<complexEvaluation> beta_im_eval;
+	std::vector<TComplex> alpha_eval;
+	std::vector<TComplex> beta_re_eval;
 
 
 
 public:
-	REXITerry()
+	REXI_Terry()
 	{
 	}
 
 
 
 public:
-	REXITerry(
+	REXI_Terry(
 			const std::string &i_function_id,
-			TStorageAndProcessing i_h,	///< sampling width
+			TStorage i_h,	///< sampling width
 			int i_M,		///< approximation area
 			int i_L = 0,	///< L, see Gaussian approximation
 			bool i_reduce_to_half = true,
@@ -97,11 +86,11 @@ public:
 
 
 	static
-	std::complex<TEvaluation> conj(
-			const std::complex<TEvaluation> &i
+	std::complex<T> conj(
+			const std::complex<T> &i
 	)
 	{
-		return std::complex<TEvaluation>(i.real(), -i.imag());
+		return std::complex<T>(i.real(), -i.imag());
 	}
 
 
@@ -109,14 +98,14 @@ public:
 public:
 	void setup(
 		const std::string &i_function_name,
-		TEvaluation i_h,		///< sampling width
+		T i_h,		///< sampling width
 		int i_M,				///< approximation area
 		int i_L = 0,			///< L value for Gaussian approximation, use 0 for autodetection
 		bool i_reduce_to_half = true,	///< reduce the number of poles to half
 		bool i_normalization = false
 	)
 	{
-		GaussianApproximation<TEvaluation,TEvaluation> ga(i_L);
+		REXI_Terry_GaussianApproximation<T> ga(i_L);
 
 		int L = ga.L;
 		int N = i_M+ga.L;
@@ -124,11 +113,10 @@ public:
 
 		alpha_eval.resize(2*N+1);
 		beta_re_eval.resize(2*N+1);
-//		beta_im_eval.resize(2*N+1);
 
 		/// temporary storage vector for generalization
 		/// over phi functions
-		std::vector<complexEvaluation> b;
+		std::vector<TComplex> b;
 
 		if (i_h < 0)
 			FatalError("Specify the sampling distance width of REXI (parameter h)");
@@ -136,17 +124,16 @@ public:
 		if (i_function_name == "phi0")
 		{
 #if 1
-			ExponentialApproximation<TEvaluation, TEvaluation> exp_approx(i_h, i_M);
+			REXI_Terry_ExponentialApproximation<T> exp_approx(i_h, i_M);
 			b = exp_approx.b;
 #else
-			FunApproximation<TEvaluation,TEvaluation> phia(i_function_name, i_h, i_M);
+			REXI_Terry_FunApproximation<T,T> phia(i_function_name, i_h, i_M);
 			b = phia.b;
 #endif
 
 
 #if 0
 			typedef double T;
-			//typedef __float128 T;
 
 			REXIFunctions<T> rexiFunctions;
 			rexiFunctions.setup(i_function_name);
@@ -155,7 +142,7 @@ public:
 			for (double x = -d; x <= d+1e-10; x += 1.0)
 			{
 				std::complex<double> approx = exp_approx.approx(x);
-				std::complex<T> tmp = rexiFunctions.eval(std::complex<double>(0, x));
+				std::complex<T> tmp = rexiFunctions.eval_returnComplex(std::complex<double>(0, x));
 
 				std::complex<double> analyt(tmp.real(), tmp.imag());
 				std::cout << x << ": " << approx << "	" << analyt << std::endl;
@@ -164,7 +151,7 @@ public:
 		}
 		else
 		{
-			FunApproximation<TEvaluation,TEvaluation> phia(i_function_name, i_h, i_M);
+			REXI_Terry_FunApproximation<T> phia(i_function_name, i_h, i_M);
 			b = phia.b;
 
 #if 0
@@ -178,7 +165,7 @@ public:
 			for (double x = -d; x <= d+1e-10; x += 1.0)
 			{
 				std::complex<double> approx = phia.approx(x);
-				std::complex<T> tmp = rexiFunctions.eval(std::complex<double>(0, x));
+				std::complex<T> tmp = rexiFunctions.eval_returnComplex(std::complex<double>(0, x));
 
 				std::complex<double> analyt(tmp.real(), tmp.imag());
 				std::cout << x << ": " << approx << "	" << analyt << std::endl;
@@ -187,7 +174,7 @@ public:
 
 		}
 
-		rexiFunctions.setup(i_function_name);
+//		rexiFunctions.setup(i_function_name);
 
 
 #if 1
@@ -195,26 +182,24 @@ public:
 		{
 			alpha_eval[n] = {0,0};
 			beta_re_eval[n] = {0,0};
-//			beta_im_eval[n] = {0,0};
 		}
 
-		complexEvaluation cmu = ga.mu;
+		TComplex cmu = ga.mu;
 		for (int l = -L; l < L+1; l++)
 		{
 			for (int m = -M; m < M+1; m++)
 			{
 				int n = l+m;
-				alpha_eval[n+N] = i_h*(cmu + complexEvaluation(0, n));
+				alpha_eval[n+N] = i_h*(cmu + TComplex(0, n));
 
 				beta_re_eval[n+N] += b[m+M].real()*i_h*ga.a[l+L];
-//				beta_im_eval[n+N] += b[m+M].imag()*i_h*ga.a[l+L];
 			}
 		}
 
 #else
 		for (int n = -N; n < N+1; n++)
 		{
-			alpha_eval[n+N] = i_h*(ga.mu + complexEvaluation(0, n));
+			alpha_eval[n+N] = i_h*(ga.mu + TComplex(0, n));
 
 			int L1 = std::max(-L, n-M);
 			int L2 = std::min(L, n+M);
@@ -234,6 +219,7 @@ public:
 		}
 #endif
 
+
 		if (i_reduce_to_half)
 		{
 #if 0
@@ -243,14 +229,10 @@ public:
 			 */
 			alpha_eval.resize(N+1);
 			beta_re_eval.resize(N+1);
-			//beta_im_eval.resize(N+1);
 
 			// N+1 contains the pole and we don't rescale this one by 2 but all the other ones
 			for (int i = 0; i < N; i++)
-			{
 				beta_re_eval[i] *= 2.0;
-				//beta_im[i] *= 2.0;
-			}
 
 #else
 			/*
@@ -260,11 +242,9 @@ public:
 			{
 //				alpha_eval[i] = (alpha_eval[i] + alpha_eval[N*2-i])*complexEvaluation(0.5);
 				beta_re_eval[i] += conj(beta_re_eval[N*2-i]);
-//				beta_im_eval[i] += conj(beta_im_eval[N*2-i]);
 			}
 			alpha_eval.resize(N+1);
 			beta_re_eval.resize(N+1);
-//			beta_im_eval.resize(N+1);
 #endif
 		}
 
@@ -274,21 +254,21 @@ public:
 			if (i_function_name == "phi0")
 			{
 				{
-					complexProcessingAndStorage sum = 0;
+					TStorageComplex sum = 0;
 
 					std::cout << "Normalize for 0-dispersion modes:" << std::endl;
 
 					for (std::size_t n = 0; n < alpha_eval.size(); n++)
 					{
-						complexProcessingAndStorage b(beta_re_eval[n].real(), beta_re_eval[n].imag());
-						complexProcessingAndStorage a(alpha_eval[n].real(), alpha_eval[n].imag());
-						complexProcessingAndStorage val = b/a;
+						TStorageComplex b(beta_re_eval[n].real(), beta_re_eval[n].imag());
+						TStorageComplex a(alpha_eval[n].real(), alpha_eval[n].imag());
+						TStorageComplex val = b/a;
 						sum += val;
 					}
 
-					TEvaluation normalization = sum.real();
-					std::cout << "REXI sum for geostrophic modes with double precision: " << (double)((TStorageAndProcessing)normalization) << std::endl;
-					std::cout << "REXI Error with coefficients used with double precision: " << (double)((TStorageAndProcessing)1.0-normalization) << std::endl;
+					T normalization = sum.real();
+					std::cout << "REXI sum for geostrophic modes with double precision: " << (double)((TStorage)normalization) << std::endl;
+					std::cout << "REXI Error with coefficients used with double precision: " << (double)((TStorage)1.0-normalization) << std::endl;
 				}
 
 				/*
@@ -299,13 +279,13 @@ public:
 				 * This improves problems of over/undershooting for geostrophic modes
 				 */
 				{
-					complexEvaluation sum = 0;
+					TComplex sum = 0;
 					for (std::size_t n = 0; n < alpha_eval.size(); n++)
 						sum += beta_re_eval[n]/alpha_eval[n];
 
-					TEvaluation normalization = sum.real();
-					std::cout << "REXI Error: " << (double)(TStorageAndProcessing)((TEvaluation)1.0-normalization) << std::endl;
-					std::cout << "Using REXI normalization: " << (double)((TStorageAndProcessing)1.0/normalization) << std::endl;
+					T normalization = sum.real();
+					std::cout << "REXI Error: " << (double)(TStorage)((T)1.0-normalization) << std::endl;
+					std::cout << "Using REXI normalization: " << (double)((TStorage)1.0/normalization) << std::endl;
 
 					for (std::size_t n = 0; n < beta_re_eval.size(); n++)
 						beta_re_eval[n] /= normalization;
@@ -315,17 +295,13 @@ public:
 
 		alpha.resize(alpha_eval.size());
 		beta_re.resize(beta_re_eval.size());
-//		beta_im.resize(beta_im_eval.size());
 
 
 		for (std::size_t n = 0; n < alpha.size(); n++)
 		{
 			alpha[n] = alpha_eval[n];
 			beta_re[n] = beta_re_eval[n];
-//			beta_im[n] = beta_im_eval[n];
 		}
-
-		//std::cout << "REXI - number of terms: " << alpha.size() << std::endl;
 	}
 
 
@@ -344,32 +320,35 @@ public:
 	}
 
 
-
+#if 0
 	/**
 	 * \return \f$ cos(x) + i*sin(x) \f$
 	 */
-	complexProcessingAndStorage eval(
-			TStorageAndProcessing i_x	///< sampling position
+	TStorageComplex eval_returnComplex(
+			TStorage i_x	///< sampling position
 	)
 	{
-		return rexiFunctions.eval(complexProcessingAndStorage(0, i_x));
+		TComplex ix = {0, (T)i_x};
+		TComplex retval = rexiFunctions.eval(ix);
+		TStorageComplex retdata = {(TStorage)retval.real(), (TStorage)retval.imag()};
+		return retdata;
 	}
-
+#endif
 
 
 	/**
 	 * \return \f$ Re(cos(x) + i*sin(x)) = cos(x) \f$
 	 */
-	std::complex<TStorageAndProcessing> approx_returnComplex(
-			TStorageAndProcessing i_x
+	std::complex<TStorage> approx_returnComplex(
+			TStorage i_x
 	)
 	{
-		std::complex<TStorageAndProcessing> sum = 0;
+		std::complex<TStorage> sum = 0;
 
 		std::size_t S = alpha.size();
 
 		for (std::size_t n = 0; n < S; n++)
-			sum += (DQStuff::convertComplex<TStorageAndProcessing>(beta_re[n]) / (complexProcessingAndStorage(0, i_x) + DQStuff::convertComplex<TStorageAndProcessing>(alpha[n])));
+			sum += (DQStuff::convertComplex<TStorage>(beta_re[n]) / (TStorageComplex(0, i_x) + DQStuff::convertComplex<TStorage>(alpha[n])));
 
 		return sum;
 	}
@@ -378,16 +357,16 @@ public:
 	/**
 	 * \return \f$ Re(cos(x) + i*sin(x)) = cos(x) \f$
 	 */
-	TEvaluation approx_returnReal(
-			TEvaluation i_x
+	T approx_returnReal(
+			T i_x
 	)
 	{
-		TEvaluation sum = 0;
+		T sum = 0;
 
 		std::size_t S = alpha.size();
 
 		for (std::size_t n = 0; n < S; n++)
-			sum += (DQStuff::convertComplex<TEvaluation>(beta_re[n]) / (complexEvaluation(0, i_x) + DQStuff::convertComplex<TEvaluation>(alpha[n]))).real();
+			sum += (DQStuff::convertComplex<T>(beta_re[n]) / (TComplex(0, i_x) + DQStuff::convertComplex<T>(alpha[n]))).real();
 
 		return sum;
 	}
@@ -399,15 +378,15 @@ public:
 	 *
 	 * we simply use a phase shift of M_PI and use the returnReal variant
 	 */
-	std::complex<TEvaluation> approx_returnImag(
-			TEvaluation i_x		///< sampling position
+	std::complex<T> approx_returnImag(
+			T i_x		///< sampling position
 	)
 	{
 		std::size_t S = alpha.size();
 
-		std::complex<TEvaluation> sum = 0;
+		std::complex<T> sum = 0;
 		for (std::size_t n = 0; n < S; n++)
-			sum += (DQStuff::convertComplex<TEvaluation>(beta_re[n]) / (complexEvaluation(0, i_x) + DQStuff::convertComplex<TEvaluation>(alpha[n])));
+			sum += (DQStuff::convertComplex<T>(beta_re[n]) / (TComplex(0, i_x) + DQStuff::convertComplex<T>(alpha[n])));
 		return sum;
 	}
 };

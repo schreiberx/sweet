@@ -5,7 +5,7 @@
  *      Author: Martin Schreiber <schreiberx@gmail.com>
  */
 
-#include <rexi/RexiFile.hpp>
+#include <rexi/REXI_File.hpp>
 #include <iostream>
 #include <sweet/SimulationVariables.hpp>
 //#include <rexi/REXITerry.hpp>
@@ -45,7 +45,7 @@ int main(
 				double test_min = -h*(T)M;
 				double test_max = h*(T)M;
 
-				RexiFile<T> rexiNG;
+				REXI_File<T> rexiNG;
 				bool retval = rexiNG.auto_load(
 						function_name,
 						0,

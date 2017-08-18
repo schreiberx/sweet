@@ -9,9 +9,9 @@
 #define SRC_INCLUDE_REXI_REXI_TERRY_AND_FILE_HPP_
 
 
-#include <rexi/RexiFile.hpp>
 #include <rexi/REXI_SimulationVariables.hpp>
-#include <rexi/REXITerry.hpp>
+#include <rexi/REXI_Terry.hpp>
+#include <rexi/REXI_File.hpp>
 #include <vector>
 #include <complex>
 
@@ -20,7 +20,7 @@
 /**
  * Interface to load either REXI via Terrys method or via File
  */
-class REXITerryAndFile
+class REXI
 {
 public:
 	static
@@ -34,10 +34,10 @@ public:
 			int i_verbosity = 0
 	)
 	{
-		if (i_rexiSimVars->use_next_generation)
+		if (i_rexiSimVars->load_from_file)
 		{
 			/// REXI next generation stuff
-			RexiFile<double> rexiNG;
+			REXI_File<> rexiNG;
 
 			bool retval = rexiNG.auto_load(
 					i_function_name,
@@ -73,7 +73,7 @@ public:
 		else
 		{
 			/// REXI stuff
-			REXITerry<double, double> rexi;
+			REXI_Terry<> rexi;
 			rexi.setup(i_function_name, i_rexiSimVars->h, i_rexiSimVars->M, i_rexiSimVars->L, i_rexiSimVars->use_half_poles, i_rexiSimVars->normalization);
 
 			alpha = rexi.alpha;

@@ -13,6 +13,7 @@
 #include <benchmarks_sphere/SphereTestSolutions_Gaussian.hpp>
 #include <benchmarks_sphere/SphereTestSolutions_SPH.hpp>
 #include <libmath/BandedMatrixPhysicalComplex.hpp>
+#include <rexi/REXI_Terry.hpp>
 #include <sweet/sphere/SphereDataConfig.hpp>
 #include <sweet/sphere/SphereData.hpp>
 #include <sweet/sphere/SphereDataComplex.hpp>
@@ -20,7 +21,6 @@
 #include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalComplex.hpp>
 #include <sweet/sphere/ErrorCheck.hpp>
 
-#include <rexi/REXITerry.hpp>
 #include <sweet/sphere/Convert_SphereDataComplex_to_SphereData.hpp>
 #include <sweet/sphere/Convert_SphereData_to_SphereDataComplex.hpp>
 
@@ -67,7 +67,7 @@ void run_tests()
 	double r = simVars.sim.earth_radius;
 	double two_omega = 2.0*simVars.sim.coriolis_omega;
 
-	REXITerry<__float128> rexi("phi0", 0.2, 64);
+	REXI_Terry<__float128> rexi("phi0", 0.2, 64);
 
 	SphereOperatorsComplex opComplex(sphereDataConfig, 1);
 
