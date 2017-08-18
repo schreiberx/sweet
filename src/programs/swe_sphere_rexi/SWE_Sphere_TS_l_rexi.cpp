@@ -7,10 +7,8 @@
 
 #include "SWE_Sphere_TS_l_rexi.hpp"
 
+#include <rexi/REXI_Terry.hpp>
 #include <cassert>
-#include <rexi/REXITerry.hpp>
-
-
 #include <sweet/sphere/Convert_SphereDataComplex_to_SphereData.hpp>
 #include <sweet/sphere/Convert_SphereData_to_SphereDataComplex.hpp>
 

@@ -17,10 +17,8 @@
 
 #include <sweet/FatalError.hpp>
 #include <libmath/DQStuff.hpp>
-#include <rexi/RexiFile.hpp>
-
-
-#include <rexi/RexiFileCoefficients.hpp>
+#include <rexi/REXI_File_Coefficients.hpp>
+#include <rexi/REXI_File.hpp>
 
 
 
@@ -51,7 +49,7 @@
  *
  */
 template <typename T = double>
-class RexiFile
+class REXI_File
 {
 public:
 	typedef std::complex<T> complexT;
@@ -66,7 +64,7 @@ public:
 	std::vector<complexT> beta_re;
 //	std::vector<complexT> beta_im;
 
-	RexiFileCoefficients<T> fafcoeffs;
+	REXI_File_Coefficients<T> fafcoeffs;
 
 
 	static
@@ -108,7 +106,7 @@ public:
 			i_basis_function_spacing = None();
 
 		std::string faf_data_dir = i_faf_data_directory + "/faf_data_rationalcplx_"+i_function_name;
-		RexiFileCoefficients<T> target_fafcoeffs;
+		REXI_File_Coefficients<T> target_fafcoeffs;
 
 		target_fafcoeffs.N = i_N;
 		target_fafcoeffs.max_error = i_max_error;
@@ -130,7 +128,7 @@ public:
 			FatalError(std::string("Unable to open directory ") + i_faf_data_directory);
 
 		bool best_found = false;
-		RexiFileCoefficients<T> &best = fafcoeffs;
+		REXI_File_Coefficients<T> &best = fafcoeffs;
 
 		struct dirent *dp;
 		while (dirp)
@@ -158,7 +156,7 @@ public:
 
 			std::string filepath = faf_data_dir + "/"+ filename;
 
-			RexiFileCoefficients<T> test_fafcoeffs;
+			REXI_File_Coefficients<T> test_fafcoeffs;
 			test_fafcoeffs.load_from_file(filepath);
 
 			T eps = 1e-10;
@@ -304,6 +302,23 @@ public:
 			//FatalError("RexiNG: No coefficients found for given constraints");
 
 
+		generate_alpha_and_beta(i_reduce_to_half);
+
+		return true;
+	}
+
+	bool load_from_file(std::string i_filename, bool i_reduce_to_half)
+	{
+		bool retval = fafcoeffs.load_from_file(i_filename);
+		if (!retval)
+			return false;
+
+		generate_alpha_and_beta(i_reduce_to_half);
+		return true;
+	}
+
+	void generate_alpha_and_beta(bool i_reduce_to_half)
+	{
 
 		int N = fafcoeffs.N;
 
@@ -336,33 +351,7 @@ public:
 			alpha.resize(newN);
 			beta_re.resize(newN);
 		}
-
-#if 0
-		bool i_normalization = true;
-		if (i_normalization)
-		{
-			if (i_function_name == "phi0")
-			{
-				std::complex<double> sum = 0;
-				std::cout << "Normalize for 0-dispersion modes:" << std::endl;
-
-				for (std::size_t n = 0; n < alpha.size(); n++)
-				{
-					std::complex<double> val = beta_re[n]/alpha[n];
-					std::cout << n << ": " << val << std::endl;
-					sum += val;
-				}
-
-				double normalization = sum.real();
-				std::cout << "REXI sum for geostrophic modes with double precision: " << normalization<< std::endl;
-				std::cout << "REXI Error with coefficients used with double precision: " << (1.0-normalization) << std::endl;
-			}
-		}
-#endif
-		return true;
 	}
-
-
 
 	void output()
 	{

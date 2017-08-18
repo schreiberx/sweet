@@ -11,12 +11,13 @@ import math
 
 def loadDataFromFile(filename):
 	global prefix
+	print(filename)
 
 	try:
 		data = np.loadtxt(filename, skiprows=0)
 	except:
 		prefix = filename if len(sys.argv) <= 3 else sys.argv[3]
-		print(prefix+": UNABLE TO OPEN "+filename)
+		print(prefix+": UNABLE TO OPEN '"+filename+"'")
 		sys.exit(1)
 
 	labelsx = data[0,1:]

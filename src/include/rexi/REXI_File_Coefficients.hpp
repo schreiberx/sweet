@@ -14,7 +14,7 @@
 
 
 template <typename T>
-class RexiFileCoefficients
+class REXI_File_Coefficients
 {
 public:
 	std::string function_name;		///< "phi0"; "phi1"; "phi2"; etc.
@@ -53,7 +53,7 @@ public:
 
 
 public:
-	RexiFileCoefficients()
+	REXI_File_Coefficients()
 	{
 		reset();
 	}
@@ -102,7 +102,7 @@ public:
 
 
 public:
-	void load_from_file(std::string &i_filename)
+	bool load_from_file(std::string &i_filename)
 	{
 		filename = i_filename;
 
@@ -214,6 +214,8 @@ public:
 
 			weights_cplx.push_back(val);
 		}
+
+		return true;
 	}
 };
 

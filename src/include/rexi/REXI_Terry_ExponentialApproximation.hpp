@@ -4,13 +4,13 @@
  *  Created on: 2 Aug 2015
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
-#ifndef SRC_INCLUDE_REXI_EXPONENTIALAPPROXIMATION_HPP_
-#define SRC_INCLUDE_REXI_EXPONENTIALAPPROXIMATION_HPP_
+#ifndef SRC_INCLUDE_REXI_REXI_TERRY_EXPONENTIALAPPROXIMATION_HPP_
+#define SRC_INCLUDE_REXI_REXI_TERRY_EXPONENTIALAPPROXIMATION_HPP_
 
 #include <libmath/DQStuff.hpp>
 #include <sweet/sweetmath.hpp>
 #include <quadmath.h>
-#include "GaussianApproximation.hpp"
+#include <rexi/REXI_Terry_GaussianApproximation.hpp>
 
 
 
@@ -36,32 +36,28 @@
  *
  * with F and \f$ \psi \f$ the functions f and \f$ \psi \f$ in Fourier space
  */
-template <
-	typename TEvaluation,	///< evaluation accuracy of coefficients
-	typename TStorageAndProcessing	///< storage precision of coefficients - use quad precision per default
->
-class ExponentialApproximation
+template <typename T>
+class REXI_Terry_ExponentialApproximation
 {
-	typedef std::complex<TEvaluation> complexEvaluation;
-	typedef std::complex<TStorageAndProcessing> complexStorage;
+	typedef std::complex<T> TComplex;
 
-	GaussianApproximation<TEvaluation, TStorageAndProcessing> ga;
+	REXI_Terry_GaussianApproximation<T> ga;
 
-	TStorageAndProcessing h;
+	T h;
 	int M;
 
 public:
-	std::vector<complexStorage> b;
+	std::vector<TComplex> b;
 
 
 
-	ExponentialApproximation(
-			TStorageAndProcessing i_h,
+	REXI_Terry_ExponentialApproximation(
+			T i_h,
 			int i_M
 	)
 	{
 		h = i_h;
-		M = (i_M == -1 ? (TStorageAndProcessing)(i_M/h+1) : i_M);
+		M = (i_M == -1 ? (T)(i_M/h+1) : i_M);
 
 		b.resize(i_M*2+1);
 
@@ -128,7 +124,7 @@ public:
 			 */
 
 			b[m+M] = DQStuff::exp(
-					complexStorage(h*h, -(TStorageAndProcessing)m*h)
+					TComplex(h*h, -(T)m*h)
 				);
 		}
 	}
@@ -143,25 +139,25 @@ public:
 	}
 
 	static
-	complexEvaluation eval(
-			TEvaluation i_x
+	TComplex eval(
+			T i_x
 	)
 	{
 		return DQStuff::expIm(i_x);
 	}
 
 
-	complexEvaluation approx(
-			TEvaluation i_x
+	TComplex approx(
+			T i_x
 	)
 	{
-		complexEvaluation sum = 0;
+		TComplex sum = 0;
 
 		/// \f$ \sum_{m=-M}^{M}{b_m \psi_h(x+m*h)} \f$
 
 		for (int m = -M; m < M+1; m++)
 		{
-			sum += DQStuff::convertComplex<TEvaluation>(b[m+M]) * ga.approxGaussian(i_x+(TEvaluation)m*h, h);
+			sum += DQStuff::convertComplex<T>(b[m+M]) * ga.approxGaussian(i_x+(T)m*h, h);
 		}
 		return sum;
 	}

@@ -9,9 +9,10 @@
 #define SRC_INCLUDE_REXI_REXI_TERRY_AND_FILE_HPP_
 
 
-#include <rexi/RexiFile.hpp>
 #include <rexi/REXI_SimulationVariables.hpp>
-#include <rexi/REXITerry.hpp>
+#include <rexi/REXI_Terry.hpp>
+#include <rexi/REXI_File.hpp>
+#include <rexi/REXI_CI.hpp>
 #include <vector>
 #include <complex>
 
@@ -20,7 +21,7 @@
 /**
  * Interface to load either REXI via Terrys method or via File
  */
-class REXITerryAndFile
+class REXI
 {
 public:
 	static
@@ -29,30 +30,38 @@ public:
 			const std::string &i_function_name,
 
 			std::vector<std::complex<double>> &alpha,
-			std::vector<std::complex<double>> &beta_re,
+			std::vector<std::complex<double>> &beta,
 
 			int i_verbosity = 0
 	)
 	{
-		if (i_rexiSimVars->use_next_generation)
+		if (i_rexiSimVars->rexi_method == "file")
 		{
 			/// REXI next generation stuff
-			RexiFile<double> rexiNG;
+			REXI_File<> rexiNG;
 
-			bool retval = rexiNG.auto_load(
-					i_function_name,
-					i_rexiSimVars->ng_N,	/// N
-					rexiNG.None(),			/// max_error
-					i_rexiSimVars->ng_max_error_double_precision,			/// max_error_double_precision
-					i_rexiSimVars->ng_test_min,
-					i_rexiSimVars->ng_test_max,
-					rexiNG.None(),			/// basis_function_scaling
-					i_rexiSimVars->ng_h, 	/// basis_function_spacing
-					rexiNG.None(),			/// basis_function rat shift
+			bool retval;
+			if (i_rexiSimVars->file_filename == "")
+			{
+				retval = rexiNG.auto_load(
+						i_function_name,
+						i_rexiSimVars->file_N,	/// N
+						rexiNG.None(),			/// max_error
+						i_rexiSimVars->file_max_error_double_precision,			/// max_error_double_precision
+						i_rexiSimVars->file_test_min,
+						i_rexiSimVars->file_test_max,
+						rexiNG.None(),			/// basis_function_scaling
+						i_rexiSimVars->file_h, 	/// basis_function_spacing
+						rexiNG.None(),			/// basis_function rat shift
 
-					i_rexiSimVars->use_half_poles,
-					i_rexiSimVars->ng_faf_dir
-				);
+						i_rexiSimVars->use_half_poles,
+						i_rexiSimVars->file_faf_dir
+					);
+			}
+			else
+			{
+				retval = rexiNG.load_from_file(i_rexiSimVars->file_filename, i_rexiSimVars->use_half_poles);
+			}
 
 			if (!retval)
 				FatalError(std::string("Not able to find coefficients for given constraints for function "+i_function_name));
@@ -60,29 +69,55 @@ public:
 			if (i_verbosity > 0)
 				std::cout << "Loaded REXI coefficients from file '" << rexiNG.fafcoeffs.filename << "'" << std::endl;
 
-			if (i_verbosity > 3)
+			if (i_verbosity > 5)
 			{
 				rexiNG.fafcoeffs.output();
 				rexiNG.fafcoeffs.outputWeights();
-				rexiNG.output();
+				//rexiNG.output();
 			}
 
 			alpha = rexiNG.alpha;
-			beta_re = rexiNG.beta_re;
+			beta = rexiNG.beta_re;
 		}
-		else
+		else if (i_rexiSimVars->rexi_method == "terry")
 		{
 			/// REXI stuff
-			REXITerry<double, double> rexi;
+			REXI_Terry<> rexi;
 			rexi.setup(i_function_name, i_rexiSimVars->h, i_rexiSimVars->M, i_rexiSimVars->L, i_rexiSimVars->use_half_poles, i_rexiSimVars->normalization);
 
 			alpha = rexi.alpha;
-			beta_re = rexi.beta_re;
+			beta = rexi.beta_re;
 
-			if (i_verbosity > 3)
-				rexi.output();
+			//if (i_verbosity > 3)
+			//	rexi.output();
+		}
+		else if (i_rexiSimVars->rexi_method == "ci")
+		{
+			/// REXI stuff
+			REXI_CI<> rexi;
+			rexi.setup(i_function_name, i_rexiSimVars->ci_n, i_rexiSimVars->ci_r, i_rexiSimVars->ci_mu);
+
+			alpha = rexi.alpha;
+			beta = rexi.beta;
+		}
+		else
+		{
+			FatalError("REXI Mode not supported");
 		}
 
+		if (i_verbosity)
+		{
+			int N = alpha.size();
+			std::cout << "N: " << N << std::endl;
+
+	//		std::cout << "Alpha:" << std::endl;
+			for (int i = 0; i < N; i++)
+				std::cout << "alpha[" << i << "] = " << alpha[i] << std::endl;
+
+	//		std::cout << "Beta:" << std::endl;
+			for (int i = 0; i < N; i++)
+				std::cout << "beta_re[" << i << "] = " << beta[i] << std::endl;
+		}
 	}
 
 

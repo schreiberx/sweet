@@ -66,7 +66,7 @@ for group_info in groups:
 
 		test_group_dirs[-1].append(rundir)
 
-                
+
 	for g in test_group_dirs:
 
 		conv_test = []

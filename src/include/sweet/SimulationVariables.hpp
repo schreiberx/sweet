@@ -779,7 +779,6 @@ public:
 
 
         // MISC
-
         long_options[next_free_program_option] = {"compute-errors", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
