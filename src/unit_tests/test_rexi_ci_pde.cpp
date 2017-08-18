@@ -221,26 +221,36 @@ int main(
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, nullptr, false))
 		return -1;
 
-	std::string function_names[7] =
+	if (simVars.rexi.rexi_method != "ci")
+		FatalError("This test is for rexi_method=='ci' only");
+
+	if (simVars.rexi.use_half_poles)
+		FatalError("Not yet supported");
+
+	std::string function_names[9] =
 	{
 			"phi0",
 			"phi1",
 			"phi2",
 			"phi3",
+			"phi4",
+			"phi5",
 
 			"ups1",
 			"ups2",
 			"ups3",
 	};
 
-	for (int fun_id = 0; fun_id < 2; fun_id++)
+	double max_error_threshold = 1e-8;
+
+	for (int fun_id = 0; fun_id < 9; fun_id++)
 	{
 		std::string &function_name = function_names[fun_id];
 
 		rexiFunctions.setup(function_name);
 
 		std::cout << "******************************************************" << std::endl;
-		std::cout << function_name << " - Testing time stepping" << std::endl;
+		std::cout << function_name << " - Testing time stepping with PDE" << std::endl;
 		std::cout << "******************************************************" << std::endl;
 
 		/*
@@ -259,21 +269,11 @@ int main(
 				simVars.misc.verbosity
 			);
 
+#if 0
 		if (!simVars.rexi.use_half_poles && function_name == "phi0")
 		{
-			/**
-			 * Additional test for phi0
-			 */
-/*
-			REXITerryAndFile::testREXIphi0(
-					alpha_tmp,
-					beta_tmp,
-					2.0
-			);
-*/
-
-			double start = -M_PI;
-			double end = M_PI;
+			double start = -2.0*M_PI;
+			double end = 2.0*M_PI;
 			double step_size = M_PI/80.0;
 
 			double max_error = 0;
@@ -283,21 +283,10 @@ int main(
 
 				std::complex<double> approx = 0;
 				for (std::size_t n = 0; n < alpha.size(); n++)
-					approx += (beta[n] / (std::complex<double>(0.0, x) + alpha[n]));
-
-	/*
-				double error_real = DQStuff::abs(correct_real - approx_real);
-
-				if (error_real > max_error)
-				{
-					max_error = error_real;
-					std::cout << "ERROR " << error_real << " too large at " << x << std::endl;
-				}
-	*/
-//				std::cout << "exp(I*" << x << ") ~~ " << approx << "\t" << correct << "\t" << (approx-correct) << std::endl;
+					approx += beta[n] / (std::complex<double>(0.0, x) + alpha[n]);
 			}
-//			exit(1);
 		}
+#endif
 
 #if 0
 		std::cout << std::endl;
@@ -328,10 +317,25 @@ int main(
 #endif
 
 
-		cplx U0[2] = {1.0, 0.0};
-		cplx U[2] = {U0[0], U0[1]};
+		cplx U0[2];
+		U0[0] = {1.0, 1.0};
+		U0[1] = {2.0, 3.0};
 
-		double timestep_size = 0.1;
+		cplx U[2];
+		U[0] = U0[0];
+		U[1] = U0[1];
+
+		/*
+		 * Cope with phi2..5 scalings for first time step
+		 */
+		analyticalIntegration(
+				lambda,
+				0,
+				U0,
+				U
+			);
+
+		double timestep_size = 0.3;
 		double simtime = 0;
 
 		cplx evalue = lambda*timestep_size;
@@ -342,48 +346,74 @@ int main(
 		int tnr = 0;
 		while (true)
 		{
-			cplx Ubutt[2];	// analytical solution
+			cplx Uanal[2];	// analytical solution
 
 			analyticalIntegration(
 					lambda,
 					simtime,
 					U0,
-					Ubutt
+					Uanal
+				);
+
+			double error = std::max(
+					std::abs(	(double)Uanal[0].real() - (double)U[0].real()	),
+					std::abs(	(double)Uanal[1].real() - (double)U[1].real()	)
 				);
 
 			std::cout << "t = " << (double)simtime;
 			std::cout << "\tU=(" << fromTtoComplexDouble(U[0]) << ", " << fromTtoComplexDouble(U[1]) << ")";
-			std::cout << "\tUbutt=(" << fromTtoComplexDouble(Ubutt[0]) << ", " << fromTtoComplexDouble(Ubutt[1]) << ")";
-			std::cout << "\tUreallen=(" << (double)lenreal(U[0], U[1]) << ")";
-			std::cout << "\tUbuttreallen=(" << (double)lenreal(Ubutt[0], Ubutt[1]) << ")";
-			std::cout << "\tUmaxerr=(" << std::max(
-									std::abs(	(double)Ubutt[0].real() - (double)U[0].real()	),
-									std::abs(	(double)Ubutt[1].real() - (double)U[1].real()	)
-								) << ")";
+			std::cout << "\tUanal=(" << fromTtoComplexDouble(Uanal[0]) << ", " << fromTtoComplexDouble(Uanal[1]) << ")";
+//			std::cout << "\tUreallen=(" << (double)lenreal(U[0], U[1]) << ")";
+//			std::cout << "\tUanalreallen=(" << (double)lenreal(Uanal[0], Uanal[1]) << ")";
+			std::cout << "\tUmaxerr=(" << error << ")";
 			std::cout << std::endl;
+
+#if 1
+			if (error > max_error_threshold)
+				FatalError("Error too large");
+#endif
 
 			if (tnr >= tnr_max)
 				break;
 
-#if 1
-			rexiIntegration(
-					lambda,
-					timestep_size,
-					alpha,
-					beta,
-					U
-				);
-#else
-			rexiIntegrationEValues(
-					lambda,
-					timestep_size,
-					alpha,
-					beta,
-					U
-				);
-#endif
+			if (function_name == "phi0")
+			{
+	#if 1
+				rexiIntegration(
+						lambda,
+						timestep_size,
+						alpha,
+						beta,
+						U
+					);
+	#else
+				rexiIntegrationEValues(
+						lambda,
+						timestep_size,
+						alpha,
+						beta,
+						U
+					);
+	#endif
+			}
+			else
+			{
+				/*
+				 * Integrate over entire interval since there's a damping,
+				 * hence a memorization of the state
+				 */
+				U[0] = U0[0];
+				U[1] = U0[1];
+				rexiIntegration(
+						lambda,
+						simtime+timestep_size,
+						alpha,
+						beta,
+						U
+					);
+			}
 
-#if 1
+#if 0
 			if (simVars.rexi.use_half_poles)
 			{
 				// eliminate imaginary poles
@@ -395,7 +425,6 @@ int main(
 
 			tnr++;
 			simtime += timestep_size;
-
 		}
 	}
 

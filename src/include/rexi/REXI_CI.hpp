@@ -46,8 +46,7 @@ public:
 		alpha_eval.resize(N);
 		beta_eval.resize(N);
 
-		REXIFunctions<T> fun;
-		fun.setup(i_function_name);
+		REXIFunctions<T> fun(i_function_name);
 
 		for (int j = 0; j < N; j++)
 		{

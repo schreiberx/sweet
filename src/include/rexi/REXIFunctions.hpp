@@ -84,6 +84,10 @@ public:
 			phi_id = 2;
 		else if (i_function_name  == "phi3")
 			phi_id = 3;
+		else if (i_function_name  == "phi4")
+			phi_id = 4;
+		else if (i_function_name  == "phi5")
+			phi_id = 5;
 
 		else if (i_function_name  == "ups1")
 			phi_id = 101;
@@ -91,6 +95,9 @@ public:
 			phi_id = 102;
 		else if (i_function_name  == "ups3")
 			phi_id = 103;
+
+		else
+			FatalError("This phi function is not supported!");
 
 		if (phi_id == 1 || phi_id == 2 || phi_id == 3 || phi_id == 101 || phi_id == 102 || phi_id == 103)
 		{
@@ -108,7 +115,7 @@ public:
 	/**************************************************************
 	 * __float128 TYPES
 	 **************************************************************/
-	static std::complex<__float128> l_expcplx(std::complex<__float128> &i_value)
+	static std::complex<__float128> l_expcplx(const std::complex<__float128> &i_value)
 	{
 		__complex128 z;
 		__real__ z = i_value.real();
@@ -143,7 +150,7 @@ public:
 	 * Might suffer of numerical double precision limited effects
 	 **************************************************************/
 
-	std::complex<double> l_expcplx(std::complex<double> &i_value)
+	std::complex<double> l_expcplx(const std::complex<double> &i_value)
 	{
 		return std::exp(i_value);
 	};
@@ -153,7 +160,7 @@ public:
 		return l_sqrt(i_value);
 	};
 
-	std::complex<double> l_sqrtcplx(std::complex<double> &i_value)
+	std::complex<double> l_sqrtcplx(const std::complex<double> &i_value)
 	{
 		return std::exp(i_value);
 	};
@@ -173,7 +180,29 @@ public:
 		return data;
 	}
 
+	int factorial(int N)
+	{
+		int retval = 1;
 
+		for (; N > 0; N--)
+			retval = retval * N;
+
+		return retval;
+	}
+
+	std::complex<T> phi(
+			int n,
+			const std::complex<T> &z
+	)
+	{
+		if (n == 0)
+			return l_expcplx(z);
+
+        if (std::abs((double)z.real()) < eps_phi && std::abs((double)z.imag()) < eps_phi)
+				return (T)1.0/(T)factorial(n);
+
+        return (phi(n-1, z) - (T)1.0/(T)factorial(n-1))/z;
+	}
 
 	/**
 	 * Evaluate the function (phi/ups)
@@ -191,6 +220,7 @@ public:
 
 		switch(phi_id)
 		{
+#if 0
 		case 0:	// \phi_0
 			K = l_expcplx(K);
 			break;
@@ -232,7 +262,7 @@ public:
 				K = (l_expcplx(K) - std::complex<T>(1.0) - K - K*K)/(K*K*K);
 			}
 			break;
-
+#endif
 
 		case 101:	// \ups_1
 			// http://www.wolframalpha.com/input/?i=(-4-K%2Bexp(K)*(4-3K%2BK*K))%2F(K*K*K)
@@ -274,7 +304,8 @@ public:
 
 
 		default:
-			FatalError("This phi is not yet supported");
+			return phi(phi_id, i_K);
+			//FatalError("This phi is not yet supported");
 		}
 
 		return K;

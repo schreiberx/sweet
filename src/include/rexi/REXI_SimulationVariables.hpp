@@ -27,7 +27,7 @@ struct REXI_SimulationVariables
 	/**
 	 * Use only half of the poles for REXI
 	 */
-	bool use_half_poles = true;
+	bool use_half_poles = false;
 
 	/**
 	 * Extend modes for certain operations
@@ -112,17 +112,18 @@ struct REXI_SimulationVariables
 	/*
 	 * Number of quadrature points
 	 */
-	int ci_n;
+	int ci_n = 64;
 
 	/*
 	 * Radius
 	 */
-	double ci_r;
+	double ci_r = 10;
 
 	/*
 	 * Shift
 	 */
-	double ci_mu;
+	double ci_mu = 1;
+
 
 	void outputConfig()
 	{
