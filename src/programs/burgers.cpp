@@ -82,6 +82,9 @@ public:
 	// Diagnostics measures
 	int last_timestep_nr_update_diagnostics = -1;
 
+   // Variable to select correct analytic solver
+   int analytic_solution = 2;
+
 	class BenchmarkErrors
 	{
 	public:
@@ -268,6 +271,20 @@ public:
 		diagnostics_energy_start = simVars.diag.total_energy;
 
 		timestep_output();
+
+      if (simVars.misc.compute_errors)
+      {
+         bool foundl = (simVars.disc.timestepping_method.find("l_")==0) || (simVars.disc.timestepping_method.find("_l_")!=std::string::npos);
+         bool foundn = (simVars.disc.timestepping_method.find("n_")==0) || (simVars.disc.timestepping_method.find("_n_")!=std::string::npos);
+         bool foundnl = (simVars.disc.timestepping_method.find("ln_")==0) || (foundl && foundn);
+
+         if (foundnl)
+            analytic_solution = 1;
+         else if (foundl)
+            analytic_solution = 2;
+         else
+            FatalError("Computing errors for this timestepping-method is not possible");
+      }
 	}
 
 
@@ -300,9 +317,10 @@ public:
 		if (simVars.timecontrol.current_simulation_time + simVars.timecontrol.current_timestep_size > simVars.timecontrol.max_simulation_time)
 			simVars.timecontrol.current_timestep_size = simVars.timecontrol.max_simulation_time - simVars.timecontrol.current_simulation_time;
 
-		if (simVars.disc.timestepping_method == "ln_cole_hopf")
+		if (simVars.disc.timestepping_method == "ln_cole_hopf" || simVars.disc.timestepping_method == "l_direct")
 		{
-			//TODO: set to u(0) and v(0)
+         prog_u = t0_prog_u;
+         prog_v = t0_prog_v;
 			timeSteppers.master->run_timestep(
 				prog_u, prog_v,
 				prog_u_prev, prog_v_prev,
@@ -377,7 +395,8 @@ public:
 			std::stringstream header;
 			std::stringstream rows;
 
-			rows << std::setprecision(8);
+			//rows << std::setprecision(8);
+			rows << std::setprecision(12);
 
 			// Prefix
 			if (simVars.timecontrol.current_timestep_nr == 0)
@@ -490,12 +509,24 @@ public:
 			}
 			else if (simVars.setup.benchmark_scenario_id == 70)
 			{
-				timeSteppers.ln_cole_hopf->run_timestep(
-						ts_u, ts_v,
-						ts_u, ts_v,
-						simVars.timecontrol.current_simulation_time,
-						0
-				);
+            if (analytic_solution == 1)
+            {
+               timeSteppers.ln_cole_hopf->run_timestep(
+                     ts_u, ts_v,
+                     ts_u, ts_v,
+                     simVars.timecontrol.current_simulation_time,
+                     0
+               );
+            }
+            else if (analytic_solution == 2)
+            {
+               timeSteppers.l_direct->run_timestep(
+                     ts_u, ts_v,
+                     ts_u, ts_v,
+                     simVars.timecontrol.current_simulation_time,
+                     0
+               );
+            }
 			}
 			benchmark.benchmark_analytical_error_rms_u = (ts_u-u).reduce_rms_quad();
 			benchmark.benchmark_analytical_error_rms_v = (ts_v-v).reduce_rms_quad();

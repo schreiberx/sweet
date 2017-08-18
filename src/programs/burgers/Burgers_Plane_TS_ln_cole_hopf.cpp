@@ -24,7 +24,7 @@ void Burgers_Plane_TS_ln_cole_hopf::run_timestep(
 		FatalError("Cole-Hopf solution is not usable in combination with Parareal");
 #endif
 	if (io_u.reduce_sum() > 1e-12)
-		FatalError("Cole-Hopf solution does only work with functions which oszillate around 0");
+      FatalError("Cole-Hopf solution does only work with functions which oszillate around 0");
 
 	// setup dummy data
 	PlaneData tmp(io_u.planeDataConfig);

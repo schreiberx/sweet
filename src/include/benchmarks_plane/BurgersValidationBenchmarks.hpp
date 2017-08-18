@@ -34,7 +34,7 @@ public:
 	{
 		if (i_parameters.setup.benchmark_scenario_id == 70)
 		{
-			return sin(M_PI*x);
+			return sin(2*M_PI*x);
 		}
 
 		if (i_parameters.setup.benchmark_scenario_id == 51)

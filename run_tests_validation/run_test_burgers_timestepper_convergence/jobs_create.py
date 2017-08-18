@@ -194,7 +194,7 @@ sweetenv
 """
 		if self.target_machine == '':
 			content += """
-SCONS="scons --program=burgers --gui=disable --plane-spectral-space=enable --parareal=none --plane-spectral-dealiasing=enable --mode=release """+"--threading="+ ('omp' if not p.rexi_par else 'off') +" --rexi-thread-parallel-sum=" +('enable' if p.rexi_par else 'disable')+' -j 4"'+"""
+SCONS="scons --program=burgers --gui=disable --plane-spectral-space=enable --parareal=none --plane-spectral-dealiasing=enable --mode=release """+"--threading='omp'"+' -j 4"'+"""
 echo "$SCONS"
 $SCONS || exit 1
 
@@ -215,17 +215,17 @@ cd "$BASEDIR"
 		else:
 			content += 'EXEC="$SWEETROOT/build/burgers_planespectral_planedealiasing_omp_libfft_gnu_release'
 
-		content += ' -g '+str(self.g)
-		content += ' -H '+str(self.h)
-		content += ' -f '+str(self.f)
-		content += ' -F '+str(self.f_sphere)
-		content += ' -a '+str(self.r)
+#		content += ' -g '+str(self.g)
+#		content += ' -H '+str(self.h)
+#		content += ' -f '+str(self.f)
+#		content += ' -F '+str(self.f_sphere)
+#		content += ' -a '+str(self.r)
 		if self.mode_res != -1:
 			content += ' -M '+str(self.mode_res)
 		if self.phys_res != -1:
 			content += ' -N '+str(self.phys_res)
 
-		content += ' --pde-id '+str(self.pde_id)
+#		content += ' --pde-id '+str(self.pde_id)
 
 		content += ' -X '+str(self.domain_size)
 		content += ' -s '+str(self.bench_id)
@@ -241,22 +241,22 @@ cd "$BASEDIR"
 #		content += ' -O -'	# deactivate file output
 		content += ' -u '+str(self.viscosity)
 		content += ' -t '+str(self.simtime)
-		content += ' --nonlinear='+str(self.nonlinear)
+#		content += ' --nonlinear='+str(self.nonlinear)
 
 		content += ' --timestepping-method='+self.timestepping_method
 		content += ' --timestepping-order='+str(self.timestepping_order)
 		content += ' --timestepping-order2='+str(self.timestepping_order2)
 
-		content += ' --normal-mode-analysis-generation='+str(self.normal_mode_analysis)
+#		content += ' --normal-mode-analysis-generation='+str(self.normal_mode_analysis)
 
-		content += ' --rexi-m='+str(self.rexi_m)
-		content += ' --rexi-h='+str(self.rexi_h)
-		content += ' --rexi-half='+str(self.rexi_half_poles)
-		content += ' --rexi-normalization='+str(self.rexi_normalization)
-		content += ' --rexi-sphere-preallocation='+str(self.rexi_sphere_preallocation)
-		content += ' --rexi-use-direct-solution='+str(self.rexi_use_direct_solution)
-		content += ' --rexi-ext-modes='+str(self.rexi_extended_modes)
-		content += ' --use-robert-functions='+str(self.use_robert_functions)
+#		content += ' --rexi-m='+str(self.rexi_m)
+#		content += ' --rexi-h='+str(self.rexi_h)
+#		content += ' --rexi-half='+str(self.rexi_half_poles)
+#		content += ' --rexi-normalization='+str(self.rexi_normalization)
+#		content += ' --rexi-sphere-preallocation='+str(self.rexi_sphere_preallocation)
+#		content += ' --rexi-use-direct-solution='+str(self.rexi_use_direct_solution)
+#		content += ' --rexi-ext-modes='+str(self.rexi_extended_modes)
+#		content += ' --use-robert-functions='+str(self.use_robert_functions)
 
 		content += ' --compute-error='+str(self.compute_error)
 
@@ -291,20 +291,20 @@ $EXEC || exit 1
 		idstr += '_bench'+str(self.bench_id)
 #		idstr += '_nonlin'+str(self.nonlinear)
 
-		idstr += '_g'+str(self.g)
-		idstr += '_h'+str(self.h)
-		idstr += '_f'+str(self.f)
+#		idstr += '_g'+str(self.g)
+#		idstr += '_h'+str(self.h)
+#		idstr += '_f'+str(self.f)
 
-		if self.plane_or_sphere == 'sphere':
-			idstr += '_a'+str(self.r)
+#		if self.plane_or_sphere == 'sphere':
+#			idstr += '_a'+str(self.r)
 
 		idstr += '_u'+str(self.viscosity)
 
-		idstr += '_pdeid'+str(self.pde_id)
+#		idstr += '_pdeid'+str(self.pde_id)
 
-		if self.plane_or_sphere == 'sphere':
-			idstr += '_robert'+str(self.use_robert_functions)
-			idstr += '_fsphere'+str(self.f_sphere)
+#		if self.plane_or_sphere == 'sphere':
+#			idstr += '_robert'+str(self.use_robert_functions)
+#			idstr += '_fsphere'+str(self.f_sphere)
 
 #		idstr += '_t'+str(self.simtime).zfill(8)
 #		idstr += '_o'+str(self.output_timestep_size).zfill(8)
@@ -313,18 +313,18 @@ $EXEC || exit 1
 		idstr += '_tso'+str(self.timestepping_order)
 		idstr += '_tsob'+str(self.timestepping_order2)
 
-		if True:
-			if self.rexi_use_direct_solution:
-				idstr += '_rexidirect'
-			else:
-				idstr += '_rexim'+str(self.rexi_m).zfill(8)
+#		if True:
+#			if self.rexi_use_direct_solution:
+#				idstr += '_rexidirect'
+#			else:
+#				idstr += '_rexim'+str(self.rexi_m).zfill(8)
 #				idstr += '_rexih'+str(self.rexi_h)
 #				idstr += '_rexinorm'+str(self.rexi_normalization)
 #				idstr += '_rexihalf'+str(self.rexi_half_poles)
 	
-			if self.plane_or_sphere == 'sphere':
-				idstr += '_rexiprealloc'+str(self.rexi_sphere_preallocation)
-				idstr += '_rexiextmodes'+str(self.rexi_extended_modes).zfill(2)
+#			if self.plane_or_sphere == 'sphere':
+#				idstr += '_rexiprealloc'+str(self.rexi_sphere_preallocation)
+#				idstr += '_rexiextmodes'+str(self.rexi_extended_modes).zfill(2)
 
 #			idstr += '_rexipar'+str(1 if self.rexi_par else 0)
 
