@@ -11,7 +11,7 @@ export OMP_PROC_BIND=close
 
 BASEDIR=`pwd`
 
-cd "$BASEDIR/run_test_swe_timestepper_convergence"
+cd "$BASEDIR/run_test_swe_plane_timestepper_convergence"
 ./compile.sh || exit 1
 
 
