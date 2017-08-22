@@ -6,10 +6,10 @@ import stat
 import math
 
 sys.path.append("../../scripts")
-from sweet_swe_rexi_plane_params import *
+from sweet_swe_rexi_plane_and_sphere_params import *
+p = sweet_swe_rexi_plane_and_sphere_params()
 
 
-p = sweet_swe_rexi_plane_params()
 
 p.verbosity = 2
 p.plane_or_sphere = 'plane'
