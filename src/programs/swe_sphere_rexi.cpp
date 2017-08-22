@@ -859,7 +859,7 @@ public:
 		simVars.timecontrol.current_timestep_nr++;
 
 #if SWEET_GUI
-		timestep_do_output();
+		timestep_check_output();
 #endif
 	}
 

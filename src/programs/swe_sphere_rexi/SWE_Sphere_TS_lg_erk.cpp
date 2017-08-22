@@ -21,16 +21,9 @@ void SWE_Sphere_TS_lg_erk::euler_timestep_update(
 		SphereData &o_vort_t,	///< time updates
 		SphereData &o_div_t,	///< time updates
 
-		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp
 )
 {
-	/*
-	 * TIME STEP SIZE
-	 */
-	if (i_fixed_dt <= 0)
-		FatalError("Only fixed time step size allowed");
-
 	/*
 	 * LINEAR
 	 */

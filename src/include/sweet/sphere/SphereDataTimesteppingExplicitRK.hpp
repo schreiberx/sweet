@@ -87,8 +87,6 @@ public:
 					SphereData &o_u_t,		///< time updates
 					SphereData &o_v_t,		///< time updates
 
-					double i_dt,		///< if this value is not equal to 0,
-												///< use this time step size instead of computing one
 					double i_simulation_time	///< simulation time, e.g. for tidal waves
 			),
 
@@ -117,7 +115,6 @@ public:
 					*RK_h_t[0],	// output
 					*RK_u_t[0],
 					*RK_v_t[0],
-					i_dt,
 					i_simulation_time
 			);
 
@@ -148,7 +145,6 @@ public:
 					*RK_h_t[0],
 					*RK_u_t[0],
 					*RK_v_t[0],
-					i_dt,
 					i_simulation_time
 			);
 
@@ -160,7 +156,6 @@ public:
 					*RK_h_t[1],
 					*RK_u_t[1],
 					*RK_v_t[1],
-					i_dt,
 					i_simulation_time + c[0]*i_dt
 			);
 
@@ -193,7 +188,6 @@ public:
 					*RK_h_t[0],
 					*RK_u_t[0],
 					*RK_v_t[0],
-					i_dt,
 					i_simulation_time
 			);
 
@@ -205,7 +199,6 @@ public:
 					*RK_h_t[1],
 					*RK_u_t[1],
 					*RK_v_t[1],
-					i_dt,
 					i_simulation_time + c[0]*i_dt
 			);
 
@@ -217,7 +210,6 @@ public:
 					*RK_h_t[2],
 					*RK_u_t[2],
 					*RK_v_t[2],
-					i_dt,
 					i_simulation_time + c[1]*i_dt
 			);
 
@@ -252,7 +244,6 @@ public:
 					*RK_h_t[0],
 					*RK_u_t[0],
 					*RK_v_t[0],
-					i_dt,
 					i_simulation_time
 			);
 
@@ -264,7 +255,6 @@ public:
 					*RK_h_t[1],
 					*RK_u_t[1],
 					*RK_v_t[1],
-					i_dt,
 					i_simulation_time + c[0]*i_dt
 			);
 
@@ -276,7 +266,6 @@ public:
 					*RK_h_t[2],
 					*RK_u_t[2],
 					*RK_v_t[2],
-					i_dt,
 					i_simulation_time + c[1]*i_dt
 			);
 
@@ -288,7 +277,6 @@ public:
 					*RK_h_t[3],
 					*RK_u_t[3],
 					*RK_v_t[3],
-					i_dt,
 					i_simulation_time + c[2]*i_dt
 			);
 
@@ -322,8 +310,6 @@ public:
 					SphereData &o_u_t,	///< time updates
 					SphereData &o_v_t,	///< time updates
 
-					double i_dt,	///< if this value is not equal to 0,
-											///< use this time step size instead of computing one
 					double i_simulation_time	///< simulation time, e.g. for tidal waves
 			),
 
@@ -349,7 +335,6 @@ public:
 					io_v,
 					*RK_u_t[0],	// output
 					*RK_v_t[0],
-					i_dt,
 					i_simulation_time
 			);
 
@@ -378,7 +363,6 @@ public:
 					io_v,
 					*RK_u_t[0],
 					*RK_v_t[0],
-					i_dt,
 					i_simulation_time
 			);
 
@@ -388,7 +372,6 @@ public:
 					io_v + ( i_dt*a2[0]*(*RK_v_t[0]) ),
 					*RK_u_t[1],
 					*RK_v_t[1],
-					i_dt,
 					i_simulation_time + c[0]*i_dt
 			);
 
@@ -418,7 +401,6 @@ public:
 					io_v,
 					*RK_u_t[0],
 					*RK_v_t[0],
-					i_dt,
 					i_simulation_time
 			);
 
@@ -428,7 +410,6 @@ public:
 					io_v	+ i_dt*( a2[0]*(*RK_v_t[0]) ),
 					*RK_u_t[1],
 					*RK_v_t[1],
-					i_dt,
 					i_simulation_time + c[0]*i_dt
 			);
 
@@ -438,7 +419,6 @@ public:
 					io_v	+ i_dt*( a3[0]*(*RK_v_t[0]) + a3[1]*(*RK_v_t[1]) ),
 					*RK_u_t[2],
 					*RK_v_t[2],
-					i_dt,
 					i_simulation_time + c[1]*i_dt
 			);
 
@@ -470,7 +450,6 @@ public:
 					io_v,
 					*RK_u_t[0],
 					*RK_v_t[0],
-					i_dt,
 					i_simulation_time
 			);
 
@@ -480,7 +459,6 @@ public:
 					io_v	+ i_dt*( a2[0]*(*RK_v_t[0]) ),
 					*RK_u_t[1],
 					*RK_v_t[1],
-					i_dt,
 					i_simulation_time + c[0]*i_dt
 			);
 
@@ -490,7 +468,6 @@ public:
 					io_v	+ i_dt*( /*a3[0]*(*RK_v_t[0]) +*/ a3[1]*(*RK_v_t[1]) ),
 					*RK_u_t[2],
 					*RK_v_t[2],
-					i_dt,
 					i_simulation_time + c[1]*i_dt
 			);
 
@@ -500,7 +477,6 @@ public:
 					io_v	+ i_dt*( /*a4[0]*(*RK_v_t[0]) + a4[1]*(*RK_v_t[1]) +*/ a4[2]*(*RK_v_t[2]) ),
 					*RK_u_t[3],
 					*RK_v_t[3],
-					i_dt,
 					i_simulation_time + c[2]*i_dt
 			);
 
@@ -527,8 +503,6 @@ public:
 					const SphereData &i_h,		///< prognostic variables
 					SphereData &o_h_t,			///< time updates
 
-					double i_dt,		///< if this value is not equal to 0,
-												///< use this time step size instead of computing one
 					double i_simulation_time	///< simulation time, e.g. for tidal waves
 			),
 

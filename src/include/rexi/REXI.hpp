@@ -92,7 +92,7 @@ public:
 		{
 			/// REXI stuff
 			REXI_CI<> rexi_ci;
-			rexi_ci.setup(i_function_name, i_rexiSimVars->ci_n, i_rexiSimVars->ci_r, i_rexiSimVars->ci_mu);
+			rexi_ci.setup(i_function_name, i_rexiSimVars->ci_n, i_rexiSimVars->ci_primitive, i_rexiSimVars->ci_s_real, i_rexiSimVars->ci_s_imag, i_rexiSimVars->ci_mu);
 
 			alpha = rexi_ci.alpha;
 			beta = rexi_ci.beta;

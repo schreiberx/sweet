@@ -7,7 +7,7 @@
 
 #include "SWE_Sphere_TS_l_rexi.hpp"
 
-#include <rexi/REXI_Terry.hpp>
+#include <rexi/REXI.hpp>
 #include <cassert>
 #include <sweet/sphere/Convert_SphereDataComplex_to_SphereData.hpp>
 #include <sweet/sphere/Convert_SphereData_to_SphereDataComplex.hpp>
@@ -118,7 +118,7 @@ void SWE_Sphere_TS_l_rexi::get_workload_start_end(
 		std::size_t &o_end
 )
 {
-	std::size_t max_N = rexi.alpha.size();
+	std::size_t max_N = rexi_alpha.size();
 
 #if SWEET_REXI_THREAD_PARALLEL_SUM || SWEET_MPI
 
@@ -150,33 +150,33 @@ void SWE_Sphere_TS_l_rexi::get_workload_start_end(
  * setup the REXI
  */
 void SWE_Sphere_TS_l_rexi::setup(
-		double i_h,						///< sampling size
-		int i_M,						///< number of sampling points
-		int i_L,						///< number of sampling points for Gaussian approx.
-										///< set to 0 for auto detection
-
+		REXI_SimulationVariables &i_rexi,
+		const std::string &i_function_name,
 		double i_timestep_size,
-
-		bool i_rexi_half,				///< use half-pole reduction
-
-		int i_rexi_use_extended_modes,
-		int i_rexi_normalization,
-		bool i_use_f_sphere,
-
-		bool i_use_rexi_sphere_preallocation	///< preallocate all rexi coefficients (might fail because of memory limitations)
+		bool i_use_f_sphere
 )
 {
+	rexiSimVars = &i_rexi;
+
 	reset();
 
-	M = i_M;
-	h = i_h;
-	normalization = i_rexi_normalization;
-	timestep_size = i_timestep_size;
-	rexi_use_extended_modes = i_rexi_use_extended_modes;
-	use_f_sphere = i_use_f_sphere;
-	use_rexi_preallocation = i_use_rexi_sphere_preallocation;
+	if (i_rexi.use_direct_solution)
+		FatalError("Direct solution for linear operator not available");
 
-	if (rexi_use_extended_modes == 0)
+	REXI::load(
+			rexiSimVars,
+			i_function_name,
+			rexi_alpha,
+			rexi_beta,
+			simVars.misc.verbosity
+	);
+
+	timestep_size = i_timestep_size;
+	rexi_use_sphere_extended_modes = rexiSimVars->use_sphere_extended_modes;
+	use_f_sphere = i_use_f_sphere;
+	use_rexi_sphere_solver_preallocation = rexiSimVars->sphere_solver_preallocation;
+
+	if (rexi_use_sphere_extended_modes == 0)
 	{
 		sphereDataConfigSolver = sphereDataConfig;
 	}
@@ -185,16 +185,14 @@ void SWE_Sphere_TS_l_rexi::setup(
 		// Add modes only along latitude since these are the "problematic" modes
 		sphereDataConfigInstance.setupAdditionalModes(
 				sphereDataConfig,
-				rexi_use_extended_modes,	// TODO: Extend SPH wrapper to also support m != n to set this guy to 0
-				rexi_use_extended_modes
+				rexi_use_sphere_extended_modes,	// TODO: Extend SPH wrapper to also support m != n to set this guy to 0
+				rexi_use_sphere_extended_modes
 		);
 
 		sphereDataConfigSolver = &sphereDataConfigInstance;
 	}
 
-	rexi.setup(0, h, M, i_L, i_rexi_half, normalization);
-
-	std::size_t N = rexi.alpha.size();
+	std::size_t N = rexi_alpha.size();
 	block_size = N/num_global_threads;
 	if (block_size*num_global_threads != N)
 		block_size++;
@@ -264,8 +262,8 @@ void SWE_Sphere_TS_l_rexi::setup(
 			{
 				int thread_local_idx = n-start;
 
-				perThreadVars[i]->alpha[thread_local_idx] = rexi.alpha[n];
-				perThreadVars[i]->beta_re[thread_local_idx] = rexi.beta_re[n];
+				perThreadVars[i]->alpha[thread_local_idx] = rexi_alpha[n];
+				perThreadVars[i]->beta_re[thread_local_idx] = rexi_beta[n];
 			}
 		}
 	}
@@ -306,7 +304,7 @@ void SWE_Sphere_TS_l_rexi::update_coefficients()
 			get_workload_start_end(start, end);
 			int local_size = (int)end-(int)start;
 
-			if (use_rexi_preallocation)
+			if (use_rexi_sphere_solver_preallocation)
 			{
 				perThreadVars[i]->rexiSPHRobert_vector.resize(local_size);
 
@@ -333,6 +331,30 @@ void SWE_Sphere_TS_l_rexi::update_coefficients()
 
 
 
+
+void SWE_Sphere_TS_l_rexi::run_timestep(
+	const SphereData &i_prog_phi0,
+	const SphereData &i_prog_vort0,
+	const SphereData &i_prog_div0,
+
+	SphereData &o_prog_phi0,
+	SphereData &o_prog_vort0,
+	SphereData &o_prog_div0,
+
+	double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+	double i_simulation_timestamp
+)
+{
+	o_prog_phi0 = i_prog_phi0;
+	o_prog_vort0 = i_prog_vort0;
+	o_prog_div0 = i_prog_div0;
+
+	run_timestep(o_prog_phi0, o_prog_vort0, o_prog_div0, i_fixed_dt, i_simulation_timestamp);
+}
+
+
+
+
 /**
  * Solve the REXI of \f$ U(t) = exp(L*t) \f$
  *
@@ -353,7 +375,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 	if (i_fixed_dt <= 0)
 		FatalError("Only constant time step size allowed");
 
-	if (timestep_size != i_fixed_dt)
+	if (std::abs(timestep_size - i_fixed_dt)/std::max(timestep_size, i_fixed_dt) > 1e-10)
 	{
 		timestep_size = i_fixed_dt;
 		std::cout << "Warning: Reducing time step size from " << i_fixed_dt << " to " << timestep_size << std::endl;
@@ -367,7 +389,6 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 
 #if SWEET_MPI
-
 		/*
 		 * TODO: Maybe we should measure this for the 2nd rank!!!
 		 * The reason could be since Bcast might already return before the packages were actually received!
@@ -463,7 +484,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 		{
 			int local_idx = workload_idx-start;
 
-			if (use_rexi_preallocation)
+			if (use_rexi_sphere_solver_preallocation)
 			{
 				perThreadVars[thread_id]->rexiSPHRobert_vector[local_idx].solve_vectorinvariant_progphivortdiv(
 						thread_prog_phi0, thread_prog_vort0, thread_prog_div0,
@@ -531,7 +552,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 	for (int thread_id = 0; thread_id < num_local_rexi_par_threads; thread_id++)
 	{
-		if (rexi_use_extended_modes == 0)
+		if (rexi_use_sphere_extended_modes == 0)
 		{
 			assert(io_prog_phi0.sphereDataConfig->spectral_array_data_number_of_elements == perThreadVars[0]->accum_phi.sphereDataConfig->spectral_array_data_number_of_elements);
 

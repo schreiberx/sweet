@@ -115,14 +115,24 @@ struct REXI_SimulationVariables
 	int ci_n = 64;
 
 	/*
-	 * Radius
+	 * Primitive name
 	 */
-	double ci_r = 10;
+	std::string ci_primitive = "circle";
+
+	/*
+	 * Size of primitive in real axis
+	 */
+	double ci_s_real = 1;
+
+	/*
+	 * Size of primitive in imag axis
+	 */
+	double ci_s_imag = 1;
 
 	/*
 	 * Shift
 	 */
-	double ci_mu = 1;
+	double ci_mu = 0;
 
 
 	void outputConfig()
@@ -148,7 +158,9 @@ struct REXI_SimulationVariables
 		std::cout << " + file_max_error_double_precision: " << file_max_error_double_precision << std::endl;
 		std::cout << " [REXI CI]" << std::endl;
 		std::cout << " + ci_n: " << ci_n << std::endl;
-		std::cout << " + ci_r: " << ci_r << std::endl;
+		std::cout << " + ci_primitive: " << ci_primitive << std::endl;
+		std::cout << " + ci_s_real: " << ci_s_real << std::endl;
+		std::cout << " + ci_s_imag: " << ci_s_imag << std::endl;
 		std::cout << " + ci_mu: " << ci_mu << std::endl;
 		std::cout << std::endl;
 	}
@@ -178,7 +190,9 @@ struct REXI_SimulationVariables
 		std::cout << "	--rexi-file-filename [string]	Filename of REXI coefficients, default:''" << std::endl;
 		std::cout << "  REXI CI:" << std::endl;
 		std::cout << "	--rexi-ci-n [double]	Number of quadrature points, default: 64" << std::endl;
-		std::cout << "	--rexi-ci-r [double]	Radius, default: 10" << std::endl;
+		std::cout << "	--rexi-ci-primitive [string]	Primitive ('circle', 'rectangle'), default: 'circle'" << std::endl;
+		std::cout << "	--rexi-ci-sx [double]	Size of primitive in real, default: 1" << std::endl;
+		std::cout << "	--rexi-ci-sy [double]	Size of primitive in imag, default: 1" << std::endl;
 		std::cout << "	--rexi-ci-mu [double]	Shift, default: 1" << std::endl;
 		std::cout << "" << std::endl;
 	}
@@ -245,7 +259,13 @@ struct REXI_SimulationVariables
 		io_long_options[io_next_free_program_option] = {"rexi-ci-n", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
-		io_long_options[io_next_free_program_option] = {"rexi-ci-r", required_argument, 0, 256+io_next_free_program_option};
+		io_long_options[io_next_free_program_option] = {"rexi-ci-primitive", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"rexi-ci-sx", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"rexi-ci-sy", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
 		io_long_options[io_next_free_program_option] = {"rexi-ci-mu", required_argument, 0, 256+io_next_free_program_option};
@@ -284,8 +304,10 @@ struct REXI_SimulationVariables
 			case 16:	file_filename = optarg;	return 0;
 
 			case 17:	ci_n = atoi(optarg);	return 0;
-			case 18:	ci_r = atof(optarg);	return 0;
-			case 19:	ci_mu = atof(optarg);	return 0;
+			case 18:	ci_primitive = optarg;	return 0;
+			case 19:	ci_s_real = atof(optarg);	return 0;
+			case 20:	ci_s_imag = atof(optarg);	return 0;
+			case 21:	ci_mu = atof(optarg);	return 0;
 		}
 
 		if (rexi_method != "" && rexi_method == "terry" && rexi_method == "file")
