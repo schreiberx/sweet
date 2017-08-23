@@ -497,13 +497,6 @@ class SWEETCompileOptions:
 			if self.llvm_omp_override:
 				print("WARNING: adding _omp despite program was not compiled with OpenMP activated. This is for compatibility reasons only!")
 				exec_name+='_omp'
-
-		if self.threading in ['omp']:
-			exec_name+='_'+self.threading
-		else:
-			if self.llvm_omp_override:
-				print("WARNING: adding _omp despite program was not compiled with OpenMP activated. This is for compatibility reasons only!")
-				exec_name+='_omp'
 			
 		if self.rexi_thread_parallel_sum == 'enable':
 			exec_name+='_rexithreadpar'
