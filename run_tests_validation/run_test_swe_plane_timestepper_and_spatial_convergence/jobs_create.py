@@ -15,6 +15,7 @@ p = SWEETJobGeneration()
 p.compile.program = 'swe_plane_rexi'
 
 p.compile.plane_or_sphere = 'plane'
+
 p.compile.plane_spectral_space = 'enable'
 p.compile.plane_spectral_dealiasing = 'enable'
 p.compile.sphere_spectral_space = 'disable'
@@ -202,9 +203,20 @@ for group in groups:
 			p.runtime.staggering = 1
 			p.runtime.spectralderiv = 0
 
+			p.compile.plane_spectral_space = 'disable'
+			p.compile.plane_spectral_dealiasing = 'disable'
+			p.compile.sphere_spectral_space = 'disable'
+			p.compile.sphere_spectral_dealiasing = 'disable'
+			p.compile.libfft = 'enable'
+
 		if group == 'ln2space' and 'l_cn_na_sl_nd_settls' in tsm[0]:
 			p.runtime.staggering = 0
 			p.runtime.spectralderiv = 1
+
+			p.compile.plane_spectral_space = 'enable'
+			p.compile.plane_spectral_dealiasing = 'enable'
+			p.compile.sphere_spectral_space = 'disable'
+			p.compile.sphere_spectral_dealiasing = 'disable'
 
 		for phys_res in phys_res_list:
 
