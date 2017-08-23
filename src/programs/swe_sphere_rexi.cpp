@@ -1,5 +1,5 @@
 /*
- * AppTestSWE.hpp
+ * swe_sphere_rexi.cpp
  *
  *  Created on: 15 Aug 2016
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>

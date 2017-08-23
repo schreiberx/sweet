@@ -153,8 +153,6 @@ public:
 				double b[2] = {0.0, 1.0};
 				double c[1] = {0.5};
 
-				double dummy_dt = -1;
-
 				SphereData h_t0(io_h.sphereDataConfig);
 				SphereData u_t0(io_h.sphereDataConfig);
 				SphereData v_t0(io_h.sphereDataConfig);

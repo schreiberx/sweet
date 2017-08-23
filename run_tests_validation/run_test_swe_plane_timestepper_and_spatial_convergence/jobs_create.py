@@ -5,49 +5,97 @@ import sys
 import stat
 import math
 
-sys.path.append("../../scripts")
-from sweet_swe_rexi_plane_and_sphere_params import *
-p = sweet_swe_rexi_plane_and_sphere_params()
+from SWEETJobGeneration import *
+p = SWEETJobGeneration()
 
 
-p.verbosity = 3
+#
+# Run simulation on plane or sphere
+#
+p.compile.program = 'swe_plane_rexi'
 
-p.plane_or_sphere = 'plane'
+p.compile.plane_or_sphere = 'plane'
+p.compile.plane_spectral_space = 'enable'
+p.compile.plane_spectral_dealiasing = 'enable'
+p.compile.sphere_spectral_space = 'disable'
+p.compile.sphere_spectral_dealiasing = 'disable'
 
-p.mode_res = -1
-p.phys_res = 512
 
-p.simtime = 0.0001
+
+
+# Verbosity mode
+p.runtime.verbosity = 2
+
+#
+# Mode and Physical resolution
+#
+p.runtime.mode_res = -1
+p.runtime.phys_res = 128
+
+#
+# Benchmark ID
+# 1: Gaussian breaking dam
+#
+p.runtime.bench_id = 1
+
+#
+# Compute error
+#
+p.runtime.compute_error = 0
+
+#
+# Preallocate the REXI matrices
+#
+p.runtime.rexi_sphere_preallocation = 0
+
+#
+# Threading accross all REXI terms
+#
+rexi_thread_par = True
+if rexi_thread_par:
+	# OMP parallel for over REXI terms
+	p.compile.threading = 'off'
+	p.compile.rexi_thread_parallel_sum = 'enable'
+else:
+	p.compile.threading = 'omp'
+	p.compile.rexi_thread_parallel_sum = 'disable'
+
+
+#
+# REXI method
+# N=64, SX,SY=50 and MU=0 with circle primitive provide good results
+#
+p.runtime.rexi_method = 'ci'
+p.runtime.rexi_ci_n = 64
+p.runtime.rexi_ci_sx = 50
+p.runtime.rexi_ci_sy = 50
+p.runtime.rexi_ci_mu = 0
+p.runtime.rexi_ci_primitive = 'circle'
+
+
+p.runtime.g = 1
+p.runtime.f = 1
+p.runtime.h = 1
+p.runtime.domain_size = 1
+
+p.runtime.viscosity = 0.0
+
+
 timestep_size_reference = 0.0001
-p.timestep_size = timestep_size_reference
-p.output_timestep_size = p.timestep_size
+timestep_sizes = [0.0001*(2.0**i) for i in range(0, 11)]
 
-p.bench_id = 14
-
-p.rexi_sphere_preallocation = 0
-
-p.g = 1
-p.f = 1
-p.h = 1
-p.h=100
-p.domain_size = 1
-
-#p.viscosity = 0.0005
-p.viscosity = 0.0
+p.runtime.simtime = 0.1
+p.runtime.output_timestep_size = p.runtime.simtime
 
 phys_res_list = [16*(2**i) for i in range(0, 7)]
 
-p.nonlinear = 1
+p.runtime.nonlinear = 1
 
 # Groups to execute, see below
 # l: linear
 # ln: linear and nonlinear
 #groups = ['l1', 'l2', 'ln1', 'ln2']
 groups = ['ln2space']
-
-#if len(sys.argv) < 5:
-#	print("Usage: "+str(sys.argv[0])+" [group=l1/l2/ln1/ln2] [tsmethod] [order1] [order2]")
-#	sys.exit(1)
 
 
 if len(sys.argv) > 1:
@@ -134,50 +182,44 @@ for group in groups:
 	if False:
 		print("Reference")
 		tsm = ts_methods[0]
-
-		p.prefix_string = prefix_string_template+'_ref'
-		p.timestepping_method = tsm[0]
-		p.timestepping_order = tsm[1]
-		p.timestepping_order2 = tsm[2]
+	
+		p.timestep_size = timestep_size_reference
+		p.runtime.timestepping_method = tsm[0]
+		p.runtime.timestepping_order = tsm[1]
+		p.runtime.timestepping_order2 = tsm[2]
 		p.phys_res = 512
 
 		if len(tsm) > 4:
 			s = tsm[4]
-			if 'timestep_size' in s:
-				p.timestep_size = s['timestep_size']
-		else:
-			p.timestep_size = timestep_size_reference
+			p.runtime.load_from_dict(tsm[4])
 
-		p.gen_script('script'+p.create_job_id(), 'run.sh')
+		p.gen_script('script_'+prefix_string_template+'_ref_'+p.runtime.getUniqueID(), 'run.sh')
 
 
 	for tsm in ts_methods[1:]:
 
 		if group == 'ln2space' and 'ln_erk' in tsm[0]:
-			p.staggering = 1
-			p.spectralderiv = 0
+			p.runtime.staggering = 1
+			p.runtime.spectralderiv = 0
 
 		if group == 'ln2space' and 'l_cn_na_sl_nd_settls' in tsm[0]:
-			p.staggering = 0
-			p.spectralderiv = 1
+			p.runtime.staggering = 0
+			p.runtime.spectralderiv = 1
 
 		for phys_res in phys_res_list:
 
 			p.prefix_string = prefix_string_template
 
-			p.timestepping_method = tsm[0]
-			p.timestepping_order = tsm[1]
-			p.timestepping_order2 = tsm[2]
-			p.timestep_size = timestep_size_reference
-
-			p.phys_res = phys_res
+			p.runtime.timestep_size = timestep_size_reference
+			p.runtime.timestepping_method = tsm[0]
+			p.runtime.timestepping_order = tsm[1]
+			p.runtime.timestepping_order2 = tsm[2]
+			p.runtime.phys_res = phys_res
 
 
 			if len(tsm) > 4:
 				s = tsm[4]
-				p.load_rexi_from_dict(tsm[4])
-				if 'timestep_size' in s:
-					p.timestep_size = s['timestep_size']
+				p.runtime.load_from_dict(tsm[4])
 
-			p.gen_script('script'+p.create_job_id(), 'run.sh')
+			p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(), 'run.sh')
 
