@@ -651,7 +651,7 @@ void SWE_Sphere_TS_l_rexi:: MPI_quitWorkers(
 		SphereDataConfig *i_sphereDataConfig
 )
 {
-#if SWEET_MPI
+#if SWEET_MPI && 0
 
 	SphereData dummyData(i_sphereDataConfig);
 	dummyData.spectral_set_value(NAN);

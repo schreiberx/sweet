@@ -94,9 +94,9 @@ public:
 			SphereData &io_u,
 			SphereData &io_v,
 
-			double i_dt,		///< If this value is not equal to 0,
-											///< Use this time step size instead of computing one
-											///< This also sets o_dt = i_dt
+			double i_dt,	///< If this value is not equal to 0,
+					///< Use this time step size instead of computing one
+					///< This also sets o_dt = i_dt
 
 			int i_runge_kutta_order,	///< Order of RK time stepping
 
@@ -316,9 +316,9 @@ public:
 			SphereData &io_u,
 			SphereData &io_v,
 
-			double i_dt = 0,		///< If this value is not equal to 0,
-											///< Use this time step size instead of computing one
-											///< This also sets o_dt = i_dt
+			double i_dt = 0,	///< If this value is not equal to 0,
+						///< Use this time step size instead of computing one
+						///< This also sets o_dt = i_dt
 
 			int i_runge_kutta_order = 1,	///< Order of RK time stepping
 
@@ -326,8 +326,6 @@ public:
 											///< This gets e.g. important for tidal waves
 	)
 	{
-//		resetAndSetup(io_u, i_runge_kutta_order);
-
 		if (i_runge_kutta_order == 1)
 		{
 			(i_baseClass->*i_compute_euler_timestep_update)(
