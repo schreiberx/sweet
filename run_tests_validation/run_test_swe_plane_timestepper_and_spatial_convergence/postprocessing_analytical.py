@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import glob
 import subprocess
@@ -12,8 +12,8 @@ from subprocess import Popen, PIPE
 
 def extract_errors(filename):
 
-        file = open(filename, "r")
-        output=file.read()
+	file = open(filename, "r")
+	output=file.read()
 	match_list = [
 		'DIAGNOSTICS BENCHMARK DIFF H:',
 		'DIAGNOSTICS BENCHMARK DIFF U:',
@@ -34,7 +34,7 @@ def extract_errors(filename):
 	return vals
 
 
-datafile="output_prog_h_pert_t00000000000.00010000.csv"
+datafile="output_prog_h_pert_t00000000000.10000000.csv"
 
 
 groups = [
@@ -53,20 +53,19 @@ groups = [
 for group_info in groups:
 	group = group_info[0]
 	conv_order = group_info[1]
-        print
-        print "Group to be tested:", group, conv_order
-        print
-        #List of output files (all methods in group)
-        outputs = glob.glob("script_"+group+"_bench*.out")
+	print("")
+	print("Group to be tested: "+str(group)+" "+str(conv_order))
+	print("")
+	#List of output files (all methods in group)
+	outputs = glob.glob("script_"+group+"_bench*.out")
 	outputs.sort()
-                        
+			
 	#
 	# Determine test groups, each group has the same TS method
 	#
 	test_group_methods = []
-        prev_test_name = ""
+	prev_test_name = ""
 	for output in outputs:
-
 		# Reset convergence test?
 		pos = output.find("_phys")
 		test_name = output[0:pos]
@@ -77,54 +76,56 @@ for group_info in groups:
 
 		#test_group_methods[-1].append(test_name)
 
-        print "Methods to be analysed:", test_group_methods
-        print
+	print("")
+	print("Methods to be analysed:"+str(test_group_methods))
+	print("")
 
 	for method in test_group_methods:
-
-                #List of outputs for this method
-                outputs = glob.glob(method+"*.out")
-	        outputs.sort()
+		# List of outputs for this method
+		outputs = glob.glob(method+"*.out")
+		outputs.sort()
 
 		conv_test = []
 		prev_conv_value = 0.0
-                prev_h_error = 0.0
-                pos = outputs[1].find("_phys")
+		prev_h_error = 0.0
+		pos = outputs[1].find("_phys")
 		test_name = outputs[1][0:pos]
-                print "----------------------"
-                print "Method:", test_name
-                print "Resolution    MaxErrorH               MaxErrorU             MaxErrorV         RatioH"
+		print("----------------------")
+		print("Method: "+test_name)
+		print("Resolution    MaxErrorH               MaxErrorU             MaxErrorV         RatioH")
 
-                i=-1
-                n=len(outputs)
-                ratios=[0 for j in range(n)]
-        
-                for output in outputs:
-                        i=i+1 #output index
-                        test_res = output[pos+5:len(output)-4]
-                        result=extract_errors(output)
-                        if result[0] != "x" and float(result[0]) != 0 :
-                                ratios[i]=float(prev_h_error)/float(result[0])
-                        else:
-                                print "This method could not be evaluated.", result[0]
-                                sys.exit(1)
-                                
-                        prev_h_error=result[0]
-                        
-                        print test_res, result[0], result[1], result[2], ratios[i]
-                conv_test=math.log(max(ratios), 2)
+		i = -1
+		n = len(outputs)
+		ratios = [0 for j in range(n)]
+
+		for output in outputs:
+			i = i+1 #output index
+			test_res = output[pos+5:len(output)-4]
+			result = extract_errors(output)
+
+			if result[0] != "x" and float(result[0]) != 0 :
+				ratios[i] = float(prev_h_error)/float(result[0])
+			else:
+				print("This method could not be evaluated: "+str(result[0]))
+				sys.exit(1)
+
+			prev_h_error=result[0]
+
+			print(str(test_res)+"\t"+str(result[0])+"\t"+str(result[1])+"\t"+str(result[2])+"\t"+str(ratios[i]))
+
+		conv_test = math.log(max(ratios), 2)
 		print("Expected convergence: "+str(conv_order))
 		print("Measured convergence: "+str(conv_test))
 
 		# test these first convergence tests
-	
+
 		a = abs(1.0-abs(conv_test)/conv_order )
-                #print a
+		#print a
 		if a > 0.05 and conv_test < conv_order:
 			print("ERROR: Convergence order not matching expected")
-                        print a
+			print(a)
 			sys.exit(1)
-                else:
-                        print "*Convergence seems correct or higher than expected!!*"
+		else:
+			print("*Convergence seems correct or higher than expected!!*")
 
-        print "-----------------------"
+	print("-----------------------")

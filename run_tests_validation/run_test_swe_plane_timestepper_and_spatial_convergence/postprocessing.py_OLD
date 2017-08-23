@@ -8,7 +8,7 @@ from subprocess import Popen, PIPE
 
 
 
-datafile="output_prog_h_pert_t00000000000.00010000.csv"
+datafile="output_prog_h_pert_t00000000000.10000000.csv"
 
 
 groups = [
@@ -34,10 +34,10 @@ for group_info in groups:
 			ref_dir=i
 			break
 
-        if ref_dir!="":
-                print("")
-                print("Using reference: "+ref_dir)
-	        print("SIMNAME\tL1\tL2\tLinf\tCONV")
+	if ref_dir != "":
+		print("")
+		print("Using reference: "+ref_dir)
+		print("SIMNAME\tL1\tL2\tLinf\tCONV")
                 
 	prev_conv_value = 0.0
 
@@ -68,7 +68,7 @@ for group_info in groups:
 		prev_test_name = test_name
 
 		test_group_dirs[-1].append(rundir)
-                print(test_group_dirs)
+		print(test_group_dirs)
 
 
 	for g in test_group_dirs:

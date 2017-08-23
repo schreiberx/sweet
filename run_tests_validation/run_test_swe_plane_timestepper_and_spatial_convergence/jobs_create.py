@@ -25,24 +25,24 @@ p.compile.sphere_spectral_dealiasing = 'disable'
 
 
 # Verbosity mode
-p.runtime.verbosity = 2
+p.runtime.verbosity = 3
 
 #
 # Mode and Physical resolution
 #
 p.runtime.mode_res = -1
-p.runtime.phys_res = 128
+p.runtime.phys_res = 512
 
 #
 # Benchmark ID
 # 1: Gaussian breaking dam
 #
-p.runtime.bench_id = 1
+p.runtime.bench_id = 14
 
 #
 # Compute error
 #
-p.runtime.compute_error = 0
+p.runtime.compute_error = 1
 
 #
 # Preallocate the REXI matrices
@@ -76,7 +76,7 @@ p.runtime.rexi_ci_primitive = 'circle'
 
 p.runtime.g = 1
 p.runtime.f = 1
-p.runtime.h = 1
+p.runtime.h = 100
 p.runtime.domain_size = 1
 
 p.runtime.viscosity = 0.0
@@ -85,7 +85,7 @@ p.runtime.viscosity = 0.0
 timestep_size_reference = 0.0001
 timestep_sizes = [0.0001*(2.0**i) for i in range(0, 11)]
 
-p.runtime.simtime = 0.1
+p.runtime.simtime = 0.0001
 p.runtime.output_timestep_size = p.runtime.simtime
 
 phys_res_list = [16*(2**i) for i in range(0, 7)]
@@ -179,7 +179,8 @@ for group in groups:
 
 	#
 	# Reference solution
-	#
+	# (Not required, since we compare it with the real errors with --compute-errors=1)
+	#if True:
 	if False:
 		print("Reference")
 		tsm = ts_methods[0]
