@@ -5,11 +5,8 @@
 #include <sweet/SimulationVariables.hpp>
 #include "LevelSingleton.hpp"
 
-#include "SWE_Sphere_TS_l_irk_n_erk.hpp"
-#include "SWE_Sphere_TS_l_erk.hpp"
 #include "SWE_Sphere_TS_ln_erk.hpp"
-#include "SWE_Sphere_TS_l_direct.hpp"
-#include "SWE_Sphere_TS_l_rexi_n_erk.hpp"
+#include "SWE_Sphere_TS_l_irk.hpp"
 
 // Class containing the context necessary to evaluate the right-hand sides
 // Currently only contains a pointer to the level singletons and the SimulationVariables object
@@ -34,18 +31,8 @@ public:
       FatalError("SphereDataCtx: levelSingletons pointer is NULL!");
     
     // initialize the time steppers from SWEET
-    if (simVars->libpfasst.use_rexi)
-      {
-	timestepper_l_rexi_n_erk.resize(levelSingletons->size());	
-	timestepper_l_irk_n_erk.resize(0);
-      }
-    else 
-      {
-	timestepper_l_irk_n_erk.resize(levelSingletons->size());
-	timestepper_l_rexi_n_erk.resize(0);
-      }
-    timestepper_l_erk.resize(levelSingletons->size());
-    ref_timestepper.resize(levelSingletons->size());
+    timestepper_ln_erk.resize(levelSingletons->size());
+    timestepper_l_irk.resize(levelSingletons->size());
 
     for (int level = 0; level < levelSingletons->size(); ++level) 
       {
@@ -56,65 +43,31 @@ public:
 	simVars->disc.use_staggering      = false; 
 		
 	// these timesteppers contain the functions called by LibPFASST 
-	if (simVars->libpfasst.use_rexi)
-	  {
-	    timestepper_l_rexi_n_erk[level].resize(i_nnodes[level]+1);
-	    
-	    // initialize the phi_n functions for exponential integration
-	    for (int node = 0; node < i_nnodes[level]+1; ++node) 
-	      {
-
-		timestepper_l_rexi_n_erk[level][node] = 
-		  new SWE_Sphere_TS_l_rexi_n_erk(
-						*simVars,
-						((*levelSingletons)[level].op)
-						);
-		timestepper_l_rexi_n_erk[level][node]->get_implicit_timestepper().setup(simVars->rexi,"phi"+std::to_string(node));
-	      }
-	  }
-	else 
-	  {
-	    timestepper_l_irk_n_erk[level] = 
-	      new SWE_Sphere_TS_l_irk_n_erk(
-					   *simVars,
-					   ((*levelSingletons)[level].op)
-					   );
-	  }
-	
-	timestepper_l_erk[level] = 
-	  new SWE_Sphere_TS_l_erk(
-				 *simVars,
-				 ((*levelSingletons)[level].op)
-				 );
+	timestepper_ln_erk[level] = 
+	  new SWE_Sphere_TS_ln_erk(
+				   *simVars,
+				   ((*levelSingletons)[level].op)
+				   );
+	timestepper_l_irk[level] = 
+	  new SWE_Sphere_TS_l_irk(
+				  *simVars,
+				  ((*levelSingletons)[level].op)
+				  );
 
 	// use fourth order integration for the linear - nonlinear erk
 	// this timestepper will be used to obtain a SWEET-generated reference solution
 	simVars->disc.timestepping_order  = 4; 
 	simVars->disc.timestepping_order2 = 4; 
-	ref_timestepper[level] = 
-	  new SWE_Sphere_TS_ln_erk(
-				  *simVars,
-				  ((*levelSingletons)[level].op)
-				  );
       }
-
   }
 
   // Destructor
   ~SphereDataCtx() 
   {
-    for (int level = 0; level < timestepper_l_irk_n_erk.size(); ++level) 
+    for (int level = 0; level < timestepper_ln_erk.size(); ++level) 
     {
-      if (simVars->libpfasst.use_rexi) 
-	{
-	  for (int node = 0; node < timestepper_l_rexi_n_erk[level].size(); ++node)
-	    delete timestepper_l_rexi_n_erk[level][node];
-	}
-      else
-	delete timestepper_l_irk_n_erk[level];
-	
-      delete timestepper_l_erk[level];
-      delete ref_timestepper[level];
+      delete timestepper_ln_erk[level];
+      delete timestepper_l_irk[level];
     }
   }
 
@@ -135,44 +88,20 @@ public:
   }
 
   // Getter for the linear implicit nonlinear explicit SWEET time stepper at level i_level
-  SWE_Sphere_TS_l_irk_n_erk* get_l_irk_n_erk_timestepper(
-							int i_level
-							) const
+  SWE_Sphere_TS_ln_erk* get_ln_erk_timestepper(
+					       int i_level
+					       ) const
   {
-    if (simVars->libpfasst.use_rexi)
-      return NULL;
-    else 
-      return timestepper_l_irk_n_erk[i_level];
-  }
-
-  // Getter for the linear implicit nonlinear explicit SWEET time stepper at level i_level
-  SWE_Sphere_TS_l_rexi_n_erk* get_l_rexi_n_erk_timestepper(
-							  int i_level,
-							  int i_n
-							  ) const
-  {
-    if (!simVars->libpfasst.use_rexi)
-      return NULL;
-    else 
-      return timestepper_l_rexi_n_erk[i_level][i_n];
+    return timestepper_ln_erk[i_level];
   }
 
   // Getter for the linear explicit SWEET time stepper at level i_level
-  SWE_Sphere_TS_l_erk* get_l_erk_timestepper(
-					    int i_level
-					    ) const
+  SWE_Sphere_TS_l_irk* get_l_irk_timestepper(
+					     int i_level
+					     ) const
   {
-    return timestepper_l_erk[i_level];
+    return timestepper_l_irk[i_level];
   }
-
-  // Getter for the reference SWEET time stepper at level i_level
-  SWE_Sphere_TS_ln_erk* get_reference_timestepper(
-						 int i_level
-						 ) const
-  {
-    return ref_timestepper[i_level];
-  }
-
 
   // Getter for the simulationVariables object
   SimulationVariables* get_simulation_variables() const 
@@ -201,13 +130,8 @@ protected:
   std::vector<LevelSingleton> *levelSingletons;
 
   // Pointer to the SWE_Sphere time integrator (implicit linear part, explicit nonlinear part)
-  std::vector<SWE_Sphere_TS_l_irk_n_erk*>                timestepper_l_irk_n_erk;
-  std::vector<std::vector<SWE_Sphere_TS_l_rexi_n_erk*> > timestepper_l_rexi_n_erk;
-  std::vector<SWE_Sphere_TS_l_erk*>                      timestepper_l_erk;
-
-  // Pointer to the SWE_Sphere time integrator used to compute a reference solution
-  // this is currently ln_erk but might change later 
-  std::vector<SWE_Sphere_TS_ln_erk*> ref_timestepper;
+  std::vector<SWE_Sphere_TS_ln_erk*> timestepper_ln_erk;
+  std::vector<SWE_Sphere_TS_l_irk*>  timestepper_l_irk;
 
   // Some contructors and operator= are disabled
   SphereDataCtx() {};

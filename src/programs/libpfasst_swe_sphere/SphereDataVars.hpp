@@ -16,9 +16,9 @@ public:
 		int i_level
 		)
 
-    : prog_h(sphereDataConfig),
-      prog_u(sphereDataConfig),
-      prog_v(sphereDataConfig),
+    : prog_phi(sphereDataConfig),
+      prog_vort(sphereDataConfig),
+      prog_div(sphereDataConfig),
       flat_data_array(nullptr),
       flat_data_array_size(0),
       level(i_level)
@@ -50,12 +50,12 @@ public:
   }
   
   // getters for the SphereData variables
-  const SphereData& get_h() const {return prog_h;}
-  SphereData&       get_h()       {return prog_h;}
-  const SphereData& get_u() const {return prog_u;}
-  SphereData&       get_u()       {return prog_u;}
-  const SphereData& get_v() const {return prog_v;}
-  SphereData&       get_v()       {return prog_v;}
+  const SphereData& get_phi() const  {return prog_phi;}
+  SphereData&       get_phi()        {return prog_phi;}
+  const SphereData& get_vort() const {return prog_vort;}
+  SphereData&       get_vort()       {return prog_vort;}
+  const SphereData& get_div() const  {return prog_div;}
+  SphereData&       get_div()        {return prog_div;}
 
   // getters for the flat data array
   double*&         get_flat_data_array()            {return flat_data_array;}
@@ -68,10 +68,10 @@ public:
 protected:
   
   // height
-  SphereData prog_h;
+  SphereData prog_phi;
   // velocities
-  SphereData prog_u;
-  SphereData prog_v;
+  SphereData prog_vort;
+  SphereData prog_div;
 
   // flat data array vector (currently used to pack and unpack)
   double *flat_data_array;

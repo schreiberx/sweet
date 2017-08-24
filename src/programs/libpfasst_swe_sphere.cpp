@@ -128,8 +128,7 @@ int main(int i_argc, char *i_argv[])
   
   levelSingletons[simVars.libpfasst.nlevels-1].op.setup(
 							&(levelSingletons[simVars.libpfasst.nlevels-1].dataConfig),
-							simVars.sim.domain_size,
-							simVars.disc.use_spectral_basis_diffs
+							simVars.sim.earth_radius
 							);
   
   // define the number of modes for the coarser levels
@@ -145,10 +144,10 @@ int main(int i_argc, char *i_argv[])
   
       levelSingletons[simVars.libpfasst.nlevels-1-i].op.setup(
 							      &(levelSingletons[simVars.libpfasst.nlevels-1-i].dataConfig),
-							      simVars.sim.domain_size,
-							      simVars.disc.use_spectral_basis_diffs
+							      simVars.sim.earth_radius							      
 							      );
     }
+
 
 
 
@@ -167,7 +166,7 @@ int main(int i_argc, char *i_argv[])
   					  );
   // output the info for the levels
   for (int i = 0; i < simVars.libpfasst.nlevels; i++)
-    levelSingletons[simVars.libpfasst.nlevels-1-i].dataConfig.printInformation();
+    levelSingletons[simVars.libpfasst.nlevels-1-i].dataConfig.getConfigInformationString();
   
   // get the C string length (needed by Fortran...)
   int string_length = simVars.libpfasst.nodes_type.size();
