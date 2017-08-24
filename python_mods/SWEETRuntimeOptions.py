@@ -23,7 +23,7 @@ class SWEETRuntimeOptions():
 		self.normal_mode_analysis = 0
 
 
-		self.rexi_method = 'terry'
+		self.rexi_method = ''
 
 		self.rexi_file_n = 0
 		self.rexi_file_h = 0
@@ -133,7 +133,7 @@ class SWEETRuntimeOptions():
 		if 'timestep_size' in d:
 			self.timestep_size = float(d['timestep_size'])
 
-	def getUniqueID(self):
+	def getUniqueID(self, compileOptions):
 		idstr = ''
 
 		idstr += '_bench'+str(self.bench_id)
@@ -142,16 +142,14 @@ class SWEETRuntimeOptions():
 		idstr += '_h'+str(self.h)
 		idstr += '_f'+str(self.f)
 
-#		if compileOptions.plane_or_sphere == 'sphere':
-		idstr += '_a'+str(self.r)
+		idstr += '_pde'+str(self.pde_id)
 
-		idstr += '_u'+str(self.viscosity)
+		if compileOptions.plane_or_sphere == 'sphere':
+			idstr += '_a'+str(self.r)
+			idstr += '_u'+str(self.viscosity)
 
-		idstr += '_pdeid'+str(self.pde_id)
-
-#		if compileOptions.plane_or_sphere == 'sphere':
-		idstr += '_robert'+str(self.use_robert_functions)
-		idstr += '_fsphere'+str(self.f_sphere)
+			idstr += '_rob'+str(self.use_robert_functions)
+			idstr += '_fsph'+str(self.f_sphere)
 
 #		idstr += '_t'+str(self.simtime).zfill(8)
 #		idstr += '_o'+str(self.output_timestep_size).zfill(8)
@@ -160,36 +158,36 @@ class SWEETRuntimeOptions():
 		idstr += '_tso'+str(self.timestepping_order)
 		idstr += '_tsob'+str(self.timestepping_order2)
 
-		if True:
+		if self.rexi_method != '':
 			if self.rexi_use_direct_solution:
-				idstr += '_rexidirect'
+				idstr += '_REXIDIRECT'
 			else:
 				if self.rexi_method == "file":
 					idstr += '_REXIFILE'
-					idstr += '_filen'+str(self.rexi_file_n).zfill(8)
-					idstr += '_fileh'+str(self.rexi_file_h)
-					idstr += '_filetestabs'+str(self.rexi_file_test_abs).zfill(3)
-					idstr += '_filemaxerr'+str(self.rexi_file_max_error)
+					idstr += '_n'+str(self.rexi_file_n).zfill(8)
+					idstr += '_h'+str(self.rexi_file_h)
+					idstr += '_testabs'+str(self.rexi_file_test_abs).zfill(3)
+					idstr += '_maxerr'+str(self.rexi_file_max_error)
 
 				elif self.rexi_method == "terry":
 					idstr += '_REXITERRY'
-					idstr += '_rexim'+str(self.rexi_m).zfill(8)
-					idstr += '_rexih'+str(self.rexi_h)
+					idstr += '_m'+str(self.rexi_m).zfill(8)
+					idstr += '_h'+str(self.rexi_h)
 
 				elif self.rexi_method == "ci":
 					idstr += '_REXICI'
-					idstr += '_ci_n'+str(self.rexi_ci_n).zfill(8)
-					idstr += '_ci_sx'+str(self.rexi_ci_sx)
-					idstr += '_ci_sy'+str(self.rexi_ci_sy)
-					idstr += '_ci_mu'+str(self.rexi_ci_mu)
-					idstr += '_ci_primitive'+str(self.rexi_ci_primitive)
+					idstr += '_n'+str(self.rexi_ci_n).zfill(8)
+					idstr += '_sx'+str(self.rexi_ci_sx)
+					idstr += '_sy'+str(self.rexi_ci_sy)
+					idstr += '_mu'+str(self.rexi_ci_mu)
+					idstr += '_prim'+str(self.rexi_ci_primitive)
 
-				idstr += '_rexinorm'+str(self.rexi_normalization)
-				idstr += '_rexihalf'+str(self.rexi_half_poles)
+				idstr += '_norm'+str(self.rexi_normalization)
+				idstr += '_half'+str(self.rexi_half_poles)
 	
 			#if self.plane_or_sphere == 'sphere':
-			idstr += '_rexiprealloc'+str(self.rexi_sphere_preallocation)
-			idstr += '_rexiextmodes'+str(self.rexi_extended_modes).zfill(2)
+			idstr += '_preal'+str(self.rexi_sphere_preallocation)
+			idstr += '_extm'+str(self.rexi_extended_modes).zfill(2)
 
 			#idstr += '_rexithreadpar'+str(1 if self.rexi_thread_par else 0)
 
@@ -199,10 +197,10 @@ class SWEETRuntimeOptions():
 			idstr += '_Tn'+str(self.max_timesteps).zfill(3)
 
 		if self.mode_res != -1:
-			idstr += '_modes'+str(self.mode_res).zfill(4)
+			idstr += '_M'+str(self.mode_res).zfill(4)
 
 		if self.phys_res != -1:
-			idstr += '_phys'+str(self.phys_res).zfill(4)
+			idstr += '_N'+str(self.phys_res).zfill(4)
 
 		return idstr
 		

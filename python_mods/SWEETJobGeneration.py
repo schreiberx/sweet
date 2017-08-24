@@ -29,7 +29,7 @@ class SWEETJobGeneration:
 	def create_job_script(self, dirname):
 		self.compile.makeOptionsConsistent()
 
-		job_id = 'sweet_'+self.runtime.getUniqueID()
+		job_id = 'sweet_'+self.runtime.getUniqueID(self.compile)
 
 		content = self.cluster.getScriptHeader()
 

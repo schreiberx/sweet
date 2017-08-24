@@ -195,7 +195,7 @@ for group in groups:
 			s = tsm[4]
 			p.runtime.load_from_dict(tsm[4])
 
-		p.gen_script('script_'+prefix_string_template+'_ref_'+p.runtime.getUniqueID(), 'run.sh')
+		p.gen_script('script_'+prefix_string_template+'_ref_'+p.runtime.getUniqueID(p.compile), 'run.sh')
 
 
 	for tsm in ts_methods[1:]:
@@ -234,5 +234,5 @@ for group in groups:
 				s = tsm[4]
 				p.runtime.load_from_dict(tsm[4])
 
-			p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(), 'run.sh')
+			p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile), 'run.sh')
 
