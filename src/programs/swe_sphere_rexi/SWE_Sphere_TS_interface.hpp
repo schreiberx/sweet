@@ -22,10 +22,8 @@ public:
 			SphereData &io_u,	///< prognostic variables
 			SphereData &io_v,	///< prognostic variables
 
-			double &o_dt,				///< time step restriction
 			double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
-			double i_simulation_timestamp,
-			double i_max_simulation_time = std::numeric_limits<double>::infinity()
+			double i_simulation_timestamp
 	) = 0;
 };
 

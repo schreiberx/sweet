@@ -63,18 +63,9 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 	PlaneData u=io_u;
 	PlaneData v=io_v;
 
-	// Initialize and set timestep dependent source for manufactured solution
-	PlaneData f(io_u.planeDataConfig);
-
-	BurgersValidationBenchmarks::set_source(simVars.timecontrol.current_simulation_time+i_fixed_dt,simVars,simVars.disc.use_staggering,f);
-
-	f.request_data_spectral();
-
 	// Setting explicit right hand side and operator of the left hand side
 	PlaneData rhs_u = u;
 	PlaneData rhs_v = v;
-
-	rhs_u += i_fixed_dt*f;
 
 	if (simVars.disc.use_spectral_basis_diffs) //spectral
 	{

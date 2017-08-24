@@ -58,8 +58,13 @@ Once going into the local_software directory
   $ cd ./local_software
 install the following packages if required:
 
-If python2 is not available, then trigger
-  $ ./install_python2.sh
+Install python3 and pip:
+  $ ./install_python3.sh
+  $ ./install_python3_pip.sh
+
+Use pip to install other packages:
+  $ pip3 install matplotlib sympy mpmath
+
 
 If your compiler is older than gcc 5.3 (check with gcc --version), then
   $ ./install_gcc5.3.sh	# GNU compiler

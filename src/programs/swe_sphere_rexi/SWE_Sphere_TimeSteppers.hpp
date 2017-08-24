@@ -11,6 +11,7 @@
 #include "SWE_Sphere_TS_interface.hpp"
 
 #include "SWE_Sphere_TS_l_erk.hpp"
+#include "SWE_Sphere_TS_l_erk_n_erk.hpp"
 #include "SWE_Sphere_TS_l_lf.hpp"
 #include "SWE_Sphere_TS_l_irk.hpp"
 #include "SWE_Sphere_TS_lg_irk.hpp"
@@ -18,6 +19,7 @@
 #include "SWE_Sphere_TS_lg_cn.hpp"
 #include "SWE_Sphere_TS_lg_erk.hpp"
 #include "SWE_Sphere_TS_ln_erk.hpp"
+#include "SWE_Sphere_TS_ln_etdrk.hpp"
 #include "SWE_Sphere_TS_l_rexi.hpp"
 
 
@@ -29,14 +31,16 @@ class SWE_Sphere_TimeSteppers
 {
 public:
 	SWE_Sphere_TS_l_erk *l_erk = nullptr;
-	SWE_Sphere_TS_lg_erk *lg_erk = nullptr;
-	SWE_Sphere_TS_ln_erk *ln_erk = nullptr;
+	SWE_Sphere_TS_l_erk_n_erk *l_erk_n_erk = nullptr;
 	SWE_Sphere_TS_l_irk *l_irk = nullptr;
-	SWE_Sphere_TS_lg_irk *lg_irk = nullptr;
-	SWE_Sphere_TS_l_cn *l_cn = nullptr;
-	SWE_Sphere_TS_lg_cn *lg_cn = nullptr;
 	SWE_Sphere_TS_l_lf *l_lf = nullptr;
 	SWE_Sphere_TS_l_rexi *l_rexi = nullptr;
+	SWE_Sphere_TS_l_cn *l_cn = nullptr;
+	SWE_Sphere_TS_ln_erk *ln_erk = nullptr;
+	SWE_Sphere_TS_ln_etdrk *ln_etdrk = nullptr;
+	SWE_Sphere_TS_lg_erk *lg_erk = nullptr;
+	SWE_Sphere_TS_lg_irk *lg_irk = nullptr;
+	SWE_Sphere_TS_lg_cn *lg_cn = nullptr;
 
 	SWE_Sphere_TS_interface *master = nullptr;
 
@@ -51,6 +55,11 @@ public:
 		{
 			delete l_erk;
 			l_erk = nullptr;
+		}
+		if (l_erk_n_erk != nullptr)
+		{
+			delete l_erk_n_erk;
+			l_erk_n_erk = nullptr;
 		}
 		if (l_irk != nullptr)
 		{
@@ -87,6 +96,11 @@ public:
 			delete ln_erk;
 			ln_erk = nullptr;
 		}
+		if (ln_etdrk != nullptr)
+		{
+			delete ln_etdrk;
+			ln_etdrk = nullptr;
+		}
 
 		if (l_rexi != nullptr)
 		{
@@ -103,15 +117,19 @@ public:
 			SimulationVariables &i_simVars
 	)
 	{
-		if (i_simVars.sim.CFL >= 0)
-			FatalError("Only constant time step size supported with REXI, use negative CFL to set constant time step size");
-
 		if (i_timestepping_method == "l_erk")
 		{
 			l_erk = new SWE_Sphere_TS_l_erk(i_simVars, i_op);
 			l_erk->setup(i_simVars.disc.timestepping_order);
 
 			master = &(SWE_Sphere_TS_interface&)*l_erk;
+		}
+		else if (i_timestepping_method == "l_erk_n_erk")
+		{
+			l_erk_n_erk = new SWE_Sphere_TS_l_erk_n_erk(i_simVars, i_op);
+			l_erk_n_erk->setup(i_simVars.disc.timestepping_order);
+
+			master = &(SWE_Sphere_TS_interface&)*l_erk_n_erk;
 		}
 		else if (i_timestepping_method == "lg_erk")
 		{
@@ -126,6 +144,18 @@ public:
 			ln_erk->setup(i_simVars.disc.timestepping_order);
 
 			master = &(SWE_Sphere_TS_interface&)*ln_erk;
+		}
+		else if (i_timestepping_method == "ln_etdrk")
+		{
+			ln_etdrk = new SWE_Sphere_TS_ln_etdrk(i_simVars, i_op);
+			ln_etdrk->setup(
+					i_simVars.rexi,
+					i_simVars.disc.timestepping_order,
+					i_simVars.timecontrol.current_timestep_size,
+					i_simVars.sim.f_sphere
+				);
+
+			master = &(SWE_Sphere_TS_interface&)*ln_etdrk;
 		}
 		else if (i_timestepping_method == "l_irk")
 		{
@@ -166,67 +196,25 @@ public:
 		{
 			l_rexi = new SWE_Sphere_TS_l_rexi(i_simVars, i_op);
 			l_rexi->setup(
-					i_simVars.rexi.h,
-					i_simVars.rexi.M,
-					i_simVars.rexi.L,
-
-					-i_simVars.sim.CFL,
-					i_simVars.rexi.use_half_poles,
-					i_simVars.rexi.use_sphere_extended_modes,
-					i_simVars.rexi.normalization,
-					i_simVars.sim.f_sphere,
-					i_simVars.rexi.sphere_solver_preallocation
+					i_simVars.rexi,
+					"phi0",
+					i_simVars.timecontrol.current_timestep_size,
+					i_simVars.sim.f_sphere
 				);
 
 			if (i_simVars.misc.verbosity > 2)
 			{
 				std::cout << "ALPHA:" << std::endl;
-				for (std::size_t n = 0; n < l_rexi->rexi.alpha.size(); n++)
-					std::cout << l_rexi->rexi.alpha[n] << std::endl;
+				for (std::size_t n = 0; n < l_rexi->rexi_alpha.size(); n++)
+					std::cout << l_rexi->rexi_alpha[n] << std::endl;
 
 				std::cout << "BETA:" << std::endl;
-				for (std::size_t n = 0; n < l_rexi->rexi.beta_re.size(); n++)
-					std::cout << l_rexi->rexi.beta_re[n] << std::endl;
+				for (std::size_t n = 0; n < l_rexi->rexi_beta.size(); n++)
+					std::cout << l_rexi->rexi_beta[n] << std::endl;
 			}
 
 			master = &(SWE_Sphere_TS_interface&)*l_rexi;
 		}
-/*
-		else if (i_timestepping_method == "l_rexi_ns_sl_nd_erk")
-		{
-			l_rexi_ns_sl_nd_erk = new SWE_Sphere_TS_l_rexi_ns_sl_nd_erk(i_simVars, i_op);
-
-			l_rexi_ns_sl_nd_erk->setup(
-					i_simVars.rexi.rexi_h,
-					i_simVars.rexi.rexi_M,
-					i_simVars.rexi.rexi_L,
-					i_simVars.rexi.rexi_use_half_poles,
-					i_simVars.rexi.rexi_normalization,
-					i_simVars.pde.use_nonlinear_equations
-				);
-
-			master = &(SWE_Sphere_TS_interface&)*l_rexi_ns_sl_nd_erk;
-		}
-		else if (i_timestepping_method == "lg_rexi_lc_erk_nt_sl_nd_erk")
-		{
-			lg_rexi_lc_erk_nt_sl_nd_erk = new SWE_Sphere_TS_lg_rexi_lc_erk_nt_sl_nd_erk(i_simVars, i_op);
-
-			lg_rexi_lc_erk_nt_sl_nd_erk->setup(
-					i_simVars.rexi.rexi_h,
-					i_simVars.rexi.rexi_M,
-					i_simVars.rexi.rexi_L,
-					i_simVars.rexi.rexi_use_half_poles,
-					i_simVars.rexi.rexi_normalization,
-					i_simVars.pde.use_nonlinear_equations
-				);
-
-			master = &(SWE_Sphere_TS_interface&)*lg_rexi_lc_erk_nt_sl_nd_erk;
-		}
-		else if (i_timestepping_method == "l_direct")
-		{
-			master = &(SWE_Sphere_TS_interface&)*l_direct;
-		}
-*/
 		else
 		{
 			std::cout << i_timestepping_method << std::endl;

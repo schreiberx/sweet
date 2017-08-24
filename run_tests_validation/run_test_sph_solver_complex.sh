@@ -15,9 +15,12 @@ SCONS="scons --threading=omp --unit-test=test_sph_solver_complex --gui=disable -
 echo "$SCONS"
 $SCONS
 
+
 for r in 0.1 1 10 10000; do
 
-	./build/test_sph_solver_complex*_debug -f 1 -g 1 -H 1 -a $r -M 256 || exit
+	EXEC="./build/test_sph_solver_complex*_debug -f 1 -g 1 -H 1 -a $r -M 256"
+	echo "$EXEC"
+	$EXEC || exit
 
 done
 

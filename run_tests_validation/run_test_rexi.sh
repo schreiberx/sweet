@@ -13,11 +13,22 @@ cd ..
 
 echo
 echo "***********************************************"
-echo "TEST REXI: convergence in space (release) $X"
+echo "TEST REXI without halving"
 echo "***********************************************"
 make clean
 scons --threading=omp --unit-test=test_rexi --gui=disable
-EXEC="./build/test_rexi_*_release -N 64 --rexi-l=11 --rexi-normalization 0 --timestepping-method=ln_erk --timestepping-order 4"
+EXEC="./build/test_rexi_*_release -N 64 --rexi-l=11 --rexi-normalization 0 --rexi-half 1"
+echo "$EXEC"
+$EXEC || exit
+
+
+echo
+echo "***********************************************"
+echo "TEST REXI with halving"
+echo "***********************************************"
+make clean
+scons --threading=omp --unit-test=test_rexi --gui=disable
+EXEC="./build/test_rexi_*_release -N 64 --rexi-l=11 --rexi-normalization 0 --rexi-half 0"
 echo "$EXEC"
 $EXEC || exit
 

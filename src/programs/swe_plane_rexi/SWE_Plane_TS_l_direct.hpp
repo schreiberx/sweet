@@ -15,6 +15,7 @@
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/plane/PlaneDataGridMapping.hpp>
+#include <rexi/REXIFunctions.hpp>
 #include "SWE_Plane_TS_interface.hpp"
 
 
@@ -33,8 +34,17 @@ class SWE_Plane_TS_l_direct	: public SWE_Plane_TS_interface
 
 	int phi_id;
 
+#if SWE_PLANE_TS_L_DIRECT_QUADPRECISION
+	typedef __float128 T;
+#else
+	typedef double T;
+#endif
+
+	REXIFunctions<T> rexiFunctions;
+
 	PlaneDataGridMapping planeDataGridMapping;
 
+#if 0
 
 #if SWE_PLANE_TS_L_DIRECT_QUADPRECISION
 
@@ -129,6 +139,7 @@ class SWE_Plane_TS_l_direct	: public SWE_Plane_TS_interface
 
 #endif
 
+#endif
 
 public:
 	SWE_Plane_TS_l_direct(
@@ -152,7 +163,7 @@ public:
 			PlaneData &io_u,		///< prognostic variables
 			PlaneData &io_v,		///< prognostic variables
 
-			double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_dt,
 			double i_simulation_timestamp
 	);
 
@@ -162,8 +173,8 @@ public:
 			PlaneData &io_u,	///< prognostic variables
 			PlaneData &io_v,	///< prognostic variables
 
-			double i_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
-			double i_simulation_timestamp = -1
+			double i_dt,
+			double i_simulation_timestamp
 	);
 
 
@@ -172,8 +183,8 @@ public:
 			PlaneData &io_u,	///< prognostic variables
 			PlaneData &io_v,	///< prognostic variables
 
-			double i_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
-			double i_simulation_timestamp = -1
+			double i_dt,
+			double i_simulation_timestamp
 	);
 
 
@@ -183,8 +194,8 @@ public:
 			PlaneData &io_u,	///< prognostic variables
 			PlaneData &io_v,	///< prognostic variables
 
-			double i_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
-			double i_simulation_timestamp = -1
+			double i_dt,
+			double i_simulation_timestamp
 	);
 
 	void setup(

@@ -7,34 +7,27 @@
 #ifndef SRC_REXI_SIMULATION_VARIABLES_HPP_
 #define SRC_REXI_SIMULATION_VARIABLES_HPP_
 
+#include <iostream>
 #include <unistd.h>
 #include <getopt.h>
+#include <sweet/FatalError.hpp>
 
 /**
  * REXI
  */
 struct REXI_SimulationVariables
 {
-	/**
-	 * REXI parameter h
-	 */
-	double h = -1.0;
 
 	/**
-	 * REXI parameter M: Number of Gaussian basis functions.
-	 * This is not the number of rational functions!
+	 * Choose REXI solver method
 	 */
-	int M = 128;
+	std::string rexi_method = "terry";
 
-	/**
-	 * REXI parameter L
-	 */
-	int L = 0;
 
 	/**
 	 * Use only half of the poles for REXI
 	 */
-	bool use_half_poles = true;
+	bool use_half_poles = false;
 
 	/**
 	 * Extend modes for certain operations
@@ -57,80 +50,150 @@ struct REXI_SimulationVariables
 	 */
 	bool use_direct_solution = false;
 
-	/**
-	 * Use Next Generation REXI
+
+	/***************************************************
+	 * REXI Terry
 	 */
-	bool use_next_generation = false;
+
+	/**
+	 * REXI parameter h
+	 */
+	double h = -1.0;
+
+	/**
+	 * REXI parameter M: Number of Gaussian basis functions.
+	 * This is not the number of rational functions!
+	 */
+	int M = 128;
+
+	/**
+	 * REXI parameter L
+	 */
+	int L = 0;
+
+	/***************************************************
+	 * REXI File
+	 */
 
 	/**
 	 * integration range for which NGREXI should be valid
 	 * [-test_range_abs;test_range_abs]
 	 */
-	double ng_test_min = 0;
-	double ng_test_max = 0;
+	double file_test_min = 0;
+	double file_test_max = 0;
 
-	std::string ng_faf_dir = "./data/faf_data";
+	/*
+	 * Filename to directly load REXI coefficients
+	 */
+	std::string file_filename = "";
+
+	std::string file_faf_dir = "./data/faf_data";
 
 	/*
 	 * Number of rational functions
 	 */
-	int ng_N = 0;
+	int file_N = 0;
 
 	/*
 	 * Spacing of rational functions
 	 */
-	double ng_h = -1.0;
+	double file_h = -1.0;
 
 	/**
 	 * Max double precision error within test region
 	 */
-	double ng_max_error_double_precision = 1e-12;
+	double file_max_error_double_precision = 1e-12;
+
+
+	/***************************************************
+	 * REXI CI
+	 */
+
+	/*
+	 * Number of quadrature points
+	 */
+	int ci_n = 64;
+
+	/*
+	 * Primitive name
+	 */
+	std::string ci_primitive = "circle";
+
+	/*
+	 * Size of primitive in real axis
+	 */
+	double ci_s_real = 1;
+
+	/*
+	 * Size of primitive in imag axis
+	 */
+	double ci_s_imag = 1;
+
+	/*
+	 * Shift
+	 */
+	double ci_mu = 0;
 
 
 	void outputConfig()
 	{
 		std::cout << std::endl;
 		std::cout << "REXI:" << std::endl;
-		std::cout << " + h: " << h << std::endl;
-		std::cout << " + M: " << M << std::endl;
-		std::cout << " + L: " << L << std::endl;
+		std::cout << " + rexi_method: " << rexi_method << std::endl;
 		std::cout << " + use_half_poles: " << use_half_poles << std::endl;
 		std::cout << " + rexi_normalization: " << normalization << std::endl;
-		std::cout << " + use_next_generation: " << use_next_generation << std::endl;
-		std::cout << " + ng_faf_dir: " << ng_faf_dir << std::endl;
-		std::cout << " + ng_N: " << ng_N << std::endl;
-		std::cout << " + ng_h: " << ng_h << std::endl;
-		std::cout << " + ng_test_min: " << ng_test_min << std::endl;
-		std::cout << " + ng_test_max: " << ng_test_max << std::endl;
-		std::cout << " + ng_max_error_double_precision: " << ng_max_error_double_precision << std::endl;
 		std::cout << " + use_direct_solution: " << use_direct_solution << std::endl;
 		std::cout << " + use_extended_modes: " << use_sphere_extended_modes << std::endl;
 		std::cout << " + rexi_sphere_solver_preallocation: " << sphere_solver_preallocation << std::endl;
+		std::cout << " [REXI Terry]" << std::endl;
+		std::cout << " + h: " << h << std::endl;
+		std::cout << " + M: " << M << std::endl;
+		std::cout << " + L: " << L << std::endl;
+		std::cout << " [REXI File]" << std::endl;
+		std::cout << " + file_faf_dir: " << file_faf_dir << std::endl;
+		std::cout << " + file_N: " << file_N << std::endl;
+		std::cout << " + file_h: " << file_h << std::endl;
+		std::cout << " + file_test_min: " << file_test_min << std::endl;
+		std::cout << " + file_test_max: " << file_test_max << std::endl;
+		std::cout << " + file_max_error_double_precision: " << file_max_error_double_precision << std::endl;
+		std::cout << " [REXI CI]" << std::endl;
+		std::cout << " + ci_n: " << ci_n << std::endl;
+		std::cout << " + ci_primitive: " << ci_primitive << std::endl;
+		std::cout << " + ci_s_real: " << ci_s_real << std::endl;
+		std::cout << " + ci_s_imag: " << ci_s_imag << std::endl;
+		std::cout << " + ci_mu: " << ci_mu << std::endl;
 		std::cout << std::endl;
 	}
 
 	void outputProgParams()
 	{
 		std::cout << "" << std::endl;
-		std::cout << "Rexi:" << std::endl;
-		std::cout << "	--rexi-h [float]			REXI parameter h" << std::endl;
-		std::cout << "	--rexi-m [int]				REXI parameter M" << std::endl;
-		std::cout << "	--rexi-l [int]				REXI parameter L" << std::endl;
+		std::cout << "REXI:" << std::endl;
+		std::cout << "	--rexi-method [str]	Choose REXI method ('terry', 'file'), default:0" << std::endl;
 		std::cout << "	--rexi-half [bool]			Use half REXI poles, default:1" << std::endl;
 		std::cout << "	--rexi-normalization [bool]		Use REXI normalization around geostrophic balance, default:1" << std::endl;
 		std::cout << "	--rexi-sphere-preallocation [bool]	Use preallocation of SPH-REXI solver coefficients, default:1" << std::endl;
 		std::cout << "	--rexi-ext-modes [int]	Use this number of extended modes in spherical harmonics" << std::endl;
-
 		std::cout << "	--rexi-use-direct-solution [bool]	Use direct solution (analytical) for REXI, default:0" << std::endl;
-
-		std::cout << "	--rexi-use-next-generation [bool]	Use next generation REXI, default:0" << std::endl;
-		std::cout << "	--rexi-ng-faf-dir [string]			Directory with FAF coefficients" << std::endl;
-		std::cout << "	--rexi-ng-N [int]		Number of rational basis functions, default:auto" << std::endl;
-		std::cout << "	--rexi-ng-h [double]	Spacing of rational basis functions, default:auto" << std::endl;
-		std::cout << "	--rexi-ng-test-min [double]	Set minimum test interval, default:0" << std::endl;
-		std::cout << "	--rexi-ng-test-max [double]	Set maximum test interval, default:0" << std::endl;
-		std::cout << "	--rexi-ng-test-abs [double]	Set min/max test interval, default:0" << std::endl;
-		std::cout << "	--rexi-ng-max-error [double]	Maximum allowed error within test interval, default:0" << std::endl;
+		std::cout << "  REXI Terry:" << std::endl;
+		std::cout << "	--rexi-h [float]			REXI parameter h" << std::endl;
+		std::cout << "	--rexi-m [int]				REXI parameter M" << std::endl;
+		std::cout << "	--rexi-l [int]				REXI parameter L" << std::endl;
+		std::cout << "  REXI File:" << std::endl;
+		std::cout << "	--rexi-file-faf-dir [string]			Directory with FAF coefficients" << std::endl;
+		std::cout << "	--rexi-file-N [int]		Number of rational basis functions, default:auto" << std::endl;
+		std::cout << "	--rexi-file-h [double]	Spacing of rational basis functions, default:auto" << std::endl;
+		std::cout << "	--rexi-file-test-min [double]	Set minimum test interval, default:0" << std::endl;
+		std::cout << "	--rexi-file-test-max [double]	Set maximum test interval, default:0" << std::endl;
+		std::cout << "	--rexi-file-test-abs [double]	Set min/max test interval, default:0" << std::endl;
+		std::cout << "	--rexi-file-max-error [double]	Maximum allowed error within test interval, default:0" << std::endl;
+		std::cout << "	--rexi-file-filename [string]	Filename of REXI coefficients, default:''" << std::endl;
+		std::cout << "  REXI CI:" << std::endl;
+		std::cout << "	--rexi-ci-n [double]	Number of quadrature points, default: 64" << std::endl;
+		std::cout << "	--rexi-ci-primitive [string]	Primitive ('circle', 'rectangle'), default: 'circle'" << std::endl;
+		std::cout << "	--rexi-ci-sx [double]	Size of primitive in real, default: 1" << std::endl;
+		std::cout << "	--rexi-ci-sy [double]	Size of primitive in imag, default: 1" << std::endl;
+		std::cout << "	--rexi-ci-mu [double]	Shift, default: 1" << std::endl;
 		std::cout << "" << std::endl;
 	}
 
@@ -166,28 +229,46 @@ struct REXI_SimulationVariables
 		io_long_options[io_next_free_program_option] = {"rexi-ext-modes", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
-		io_long_options[io_next_free_program_option] = {"rexi-use-next-generation", required_argument, 0, 256+io_next_free_program_option};
+		io_long_options[io_next_free_program_option] = {"rexi-method", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
-		io_long_options[io_next_free_program_option] = {"rexi-ng-faf-dir", required_argument, 0, 256+io_next_free_program_option};
+		io_long_options[io_next_free_program_option] = {"rexi-file-faf-dir", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
-		io_long_options[io_next_free_program_option] = {"rexi-ng-n", required_argument, 0, 256+io_next_free_program_option};
+		io_long_options[io_next_free_program_option] = {"rexi-file-n", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
-		io_long_options[io_next_free_program_option] = {"rexi-ng-h", required_argument, 0, 256+io_next_free_program_option};
+		io_long_options[io_next_free_program_option] = {"rexi-file-h", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
-		io_long_options[io_next_free_program_option] = {"rexi-ng-test-min", required_argument, 0, 256+io_next_free_program_option};
+		io_long_options[io_next_free_program_option] = {"rexi-file-test-min", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
-		io_long_options[io_next_free_program_option] = {"rexi-ng-test-max", required_argument, 0, 256+io_next_free_program_option};
+		io_long_options[io_next_free_program_option] = {"rexi-file-test-max", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
-		io_long_options[io_next_free_program_option] = {"rexi-ng-test-abs", required_argument, 0, 256+io_next_free_program_option};
+		io_long_options[io_next_free_program_option] = {"rexi-file-test-abs", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
-		io_long_options[io_next_free_program_option] = {"rexi-ng-max-error", required_argument, 0, 256+io_next_free_program_option};
+		io_long_options[io_next_free_program_option] = {"rexi-file-max-error", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"rexi-file-filename", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"rexi-ci-n", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"rexi-ci-primitive", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"rexi-ci-sx", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"rexi-ci-sy", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"rexi-ci-mu", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 	}
 
@@ -212,17 +293,27 @@ struct REXI_SimulationVariables
 			case 6:	use_direct_solution = atoi(optarg);	return 0;
 			case 7:	use_sphere_extended_modes = atoi(optarg);	return 0;
 
-			case 8:		use_next_generation = atoi(optarg);	return 0;
-			case 9:		ng_faf_dir = optarg;	return 0;
-			case 10:	ng_N = atoi(optarg);	return 0;
-			case 11:	ng_h = atof(optarg);	return 0;
-			case 12:	ng_test_min = atof(optarg);	return 0;
-			case 13:	ng_test_max = atof(optarg);	return 0;
-			case 14:	ng_test_max = atof(optarg);	ng_test_min = -ng_test_max;	return 0;
-			case 15:	ng_max_error_double_precision = atof(optarg);	return 0;
+			case 8:		rexi_method = optarg;	return 0;
+			case 9:		file_faf_dir = optarg;	return 0;
+			case 10:	file_N = atoi(optarg);	return 0;
+			case 11:	file_h = atof(optarg);	return 0;
+			case 12:	file_test_min = atof(optarg);	return 0;
+			case 13:	file_test_max = atof(optarg);	return 0;
+			case 14:	file_test_max = atof(optarg);	file_test_min = -file_test_max;	return 0;
+			case 15:	file_max_error_double_precision = atof(optarg);	return 0;
+			case 16:	file_filename = optarg;	return 0;
+
+			case 17:	ci_n = atoi(optarg);	return 0;
+			case 18:	ci_primitive = optarg;	return 0;
+			case 19:	ci_s_real = atof(optarg);	return 0;
+			case 20:	ci_s_imag = atof(optarg);	return 0;
+			case 21:	ci_mu = atof(optarg);	return 0;
 		}
 
-		return 16;
+		if (rexi_method != "" && rexi_method == "terry" && rexi_method == "file")
+			FatalError("Invalid argument for '--rexi-method='");
+
+		return 20;
 	}
 };
 

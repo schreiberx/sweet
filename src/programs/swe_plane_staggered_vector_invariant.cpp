@@ -349,9 +349,7 @@ public:
 
 	void run_timestep()
 	{
-		// either set time step size to 0 for autodetection or to
-		// a positive value to use a fixed time step size
-		simVars.timecontrol.current_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
+		assert(simVars.timecontrol.current_timestep_size > 0);
 
 		timestepping.run_timestep(
 				this,
@@ -363,7 +361,6 @@ public:
 			);
 
 		// provide information to parameters
-		simVars.timecontrol.current_timestep_size = simVars.timecontrol.current_timestep_size;
 		simVars.timecontrol.current_simulation_time += simVars.timecontrol.current_timestep_size;
 		simVars.timecontrol.current_timestep_nr++;
 

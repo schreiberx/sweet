@@ -41,8 +41,6 @@ private:
 			SphereData &o_vort_t,	///< time updates
 			SphereData &o_div_t,	///< time updates
 
-			double &o_dt,				///< time step restriction
-			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp = -1
 	);
 
@@ -61,10 +59,8 @@ public:
 			SphereData &io_vort,	///< prognostic variables
 			SphereData &io_div,	///< prognostic variables
 
-			double &o_dt,				///< time step restriction
 			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
-			double i_simulation_timestamp = -1,
-			double i_max_simulation_time = std::numeric_limits<double>::infinity()
+			double i_simulation_timestamp = -1
 	);
 
 

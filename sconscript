@@ -2,7 +2,7 @@ import os
 import sys
 import glob
 
-Import('env')
+Import('env', 'p')
 env.Append(CPPPATH = ['include'])
 
 
@@ -11,10 +11,10 @@ sweet_root = env['SWEET_ROOT']+'/'
 
 mainsrcadddir = ''
 
-if env['compile_program'] != '':
-	mainsrcadddir = 'src/programs/'+env['compile_program']
-elif env['unit_test'] != '':
-	mainsrcadddir = 'src/unit_tests/'+env['unit_test']
+if p.program != '':
+	mainsrcadddir = 'src/programs/'+p.program
+elif p.unit_test != '':
+	mainsrcadddir = 'src/unit_tests/'+p.unit_test
 else:
 	mainsrcadddir = ''
 
@@ -53,7 +53,7 @@ if mainsrcadddir != '':
 			# SWE PLANE REXI SPECIAL FILE HANDLING for threaded parallelization over the REXI sum
 			filetmp = os.path.basename(filerelpath)
 			if 'l_rexi' in filetmp or 'lg_rexi' in filetmp or 'lf_rexi' in filetmp:
-				if env['rexi_thread_parallel_sum']=='enable':
+				if p.rexi_thread_parallel_sum=='enable':
 					env_omp = env.Clone()
 					env_omp.Append(CXXFLAGS = ' -fopenmp')
 					env_omp.src_files.append(env_omp.Object(filerelpath))
@@ -71,5 +71,5 @@ if mainsrcadddir != '':
 			#env.AddPostAction(obj, moveModFiles)
 
 
-	Export('env')
+Export('env', 'p')
 

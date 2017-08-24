@@ -25,7 +25,6 @@ class SWE_Plane_TS_l_erk_n_erk	: public SWE_Plane_TS_interface
 	int timestepping_order;
 	int timestepping_order2;
 
-	// Sampler
 	PlaneDataTimesteppingRK timestepping_rk_linear;
 	PlaneDataTimesteppingRK timestepping_rk_nonlinear;
 

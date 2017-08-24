@@ -5,10 +5,11 @@
  *      Author: Martin Schreiber <schreiberx@gmail.com>
  */
 
+#include <rexi/REXI_Terry.hpp>
+#include <rexi/REXI_Terry_FunApproximation.hpp>
+#include <rexi/REXI_Terry_GaussianApproximation.hpp>
+#include <rexi/REXIFunctions.hpp>
 #include <iostream>
-#include <rexi/GaussianApproximation.hpp>
-#include <rexi/Phi1Approximation.hpp>
-#include <rexi/REXI.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include "../include/sweet/plane/PlaneDataComplex.hpp"
 
@@ -18,10 +19,8 @@ int main(
 )
 {
 	SimulationVariables simVars;
-	if (!simVars.setupFromMainParameters(i_argc, i_argv))
-	{
+	if (!simVars.setupFromMainParameters(i_argc, i_argv, nullptr, false))
 		return -1;
-	}
 
 	double max_error_threshold = 1e-9;
 	double max_error_threshold_machine = 1e-12;
@@ -80,13 +79,13 @@ int main(
 	}
 #endif
 
-#if 0
+#if 1
 	if (1)
 	{
 		std::cout << "******************************************************" << std::endl;
 		std::cout << "EVALUATING GAUSSIAN APPROXIMATION (real)" << std::endl;
 		std::cout << "******************************************************" << std::endl;
-		GaussianApproximation ga;
+		REXI_Terry_GaussianApproximation<double> ga;
 
 		for (double h = 0.2; h > 0.001; h *= 0.5)
 		{
@@ -124,7 +123,9 @@ int main(
 		{
 			int M = 32/h;
 			std::cout << "Setting up scalars..." << std::flush;
-			Phi1Approximation ea(h, M);
+			REXI_Terry_FunApproximation<double> ea("phi1", h, M);
+			REXIFunctions<__float128> rexiFunctions;
+			rexiFunctions.setup("phi1");
 			std::cout << "OK" << std::endl;
 
 			double start = -M*h*0.95;
@@ -136,7 +137,11 @@ int main(
 			std::cout << "Testing interval [" << start << ", " << end << "] with step size " << step_size << std::endl;
 			for (double x = start; x < end; x += step_size)
 			{
-				double error = std::abs(ea.eval(x) - ea.approx(x));
+				double eval = rexiFunctions.convert<double>(rexiFunctions.eval(std::complex<__float128>(0, x))).real();
+				double approx = ea.approx(x).real();
+
+//				std::cout << x << ":\t" << eval << "\t" << approx << std::endl;
+				double error = std::abs(eval - approx);
 				max_error = std::max(max_error, error);
 			}
 

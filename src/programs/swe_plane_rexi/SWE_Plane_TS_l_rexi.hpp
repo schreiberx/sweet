@@ -11,8 +11,6 @@
 #include <limits>
 #include <string>
 #include <complex>
-#include <rexi/REXI.hpp>
-#include <rexi/RexiNG.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneDataComplex.hpp>
@@ -41,8 +39,7 @@ class SWE_Plane_TS_l_rexi	: public SWE_Plane_TS_interface
 	PlaneOperators &op;
 
 	std::vector<std::complex<double>> rexi_alpha;
-	std::vector<std::complex<double>> rexi_beta_re;
-//	std::vector<std::complex<double>> rexi_beta_im;
+	std::vector<std::complex<double>> rexi_beta;
 
 
 	/// simulation domain size
@@ -94,15 +91,6 @@ public:
 	/// final time step
 	bool final_timestep;
 
-
-public:
-	/// REXI stuff
-	REXI<> rexi;
-
-public:
-	/// REXI next generation stuff
-	RexiNG<> rexiNG;
-
 	/// Direct solution for linear parts
 	SWE_Plane_TS_l_direct ts_l_direct;
 
@@ -116,7 +104,7 @@ public:
 			REXI_SimulationVariables &i_rexi,
 			const std::string &i_function_name = "phi0"
 	);
-
+/*
 	void setup_REXI(
 			double i_h,						///< sampling size
 			int i_M,						///< number of sampling points
@@ -127,7 +115,7 @@ public:
 			bool i_rexi_normalization,		///< REXI normalization
 			bool i_rexi_next_generation
 	);
-
+*/
 
 	void run_timestep(
 			const PlaneData &i_h_pert,	///< prognostic variables

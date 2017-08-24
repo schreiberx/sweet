@@ -5,8 +5,8 @@
  *      Author: Andreas Schmitt <aschmitt@fnb.tu-darmstadt.de>
  */
 
-#ifndef SRC_PROGRAMS_Burgers_PLANE_TS_L_IRK_N_SL_HPP_
-#define SRC_PROGRAMS_Burgers_PLANE_TS_L_IRK_N_SL_HPP_
+#ifndef SRC_PROGRAMS_BURGERS_PLANE_TS_L_IRK_N_SL_HPP_
+#define SRC_PROGRAMS_BURGERS_PLANE_TS_L_IRK_N_SL_HPP_
 
 #include <limits>
 #include <sweet/SimulationVariables.hpp>
@@ -16,7 +16,6 @@
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/PlaneDataSemiLagrangian.hpp>
 #include "Burgers_Plane_TS_interface.hpp"
-#include <benchmarks_plane/BurgersValidationBenchmarks.hpp>
 
 
 
@@ -57,4 +56,4 @@ public:
 	virtual ~Burgers_Plane_TS_l_irk_n_sl();
 };
 
-#endif /* SRC_PROGRAMS_Burgers_PLANE_TS_L_IRK_N_SL_HPP_ */
+#endif /* SRC_PROGRAMS_BURGERS_PLANE_TS_L_IRK_N_SL_HPP_ */

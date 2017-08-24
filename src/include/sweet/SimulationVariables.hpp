@@ -563,7 +563,7 @@ public:
 		int stability_checks = 1;
 
 		/// precision for floating point outputConfig to std::cout and std::endl
-		int output_floating_point_precision = 18;
+		int output_floating_point_precision = -1;
 
 		/// activate GUI mode?
 		bool gui_enabled = (SWEET_GUI == 0 ? false : true);
@@ -675,7 +675,6 @@ public:
 //		disc.cell_size[0] = sim.domain_size[0]/(double)disc.res_physical[0];
 //		disc.cell_size[1] = sim.domain_size[1]/(double)disc.res_physical[1];
 
-		timecontrol.current_timestep_size = -1;
 		timecontrol.current_timestep_nr = 0;
 		timecontrol.current_simulation_time = 0;
 
@@ -691,7 +690,8 @@ public:
 	bool setupFromMainParameters(
 			int i_argc,					///< argc from main()
 			char *const i_argv[],		///< argv from main()
-			const char *bogus_var_names[] = nullptr			///< list of strings of simulation-specific variables, has to be terminated by nullptr
+			const char *bogus_var_names[] = nullptr,			///< list of strings of simulation-specific variables, has to be terminated by nullptr
+			bool i_run_prog_parameter_validation = true
 	)
 	{
 		const int max_options = 60;
@@ -779,7 +779,6 @@ public:
 
 
         // MISC
-
         long_options[next_free_program_option] = {"compute-errors", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
@@ -1233,11 +1232,14 @@ public:
 		}
 
 
-		if (	(disc.res_physical[0] == 0 || disc.res_physical[1] == 0)	&&
-				(disc.res_spectral[0] == 0 || disc.res_spectral[1] == 0)
-			)
+		if (i_run_prog_parameter_validation)
 		{
-			FatalError("Select physical resolution or spectral modes");
+			if (	(disc.res_physical[0] == 0 || disc.res_physical[1] == 0)	&&
+					(disc.res_spectral[0] == 0 || disc.res_spectral[1] == 0)
+				)
+			{
+				FatalError("Select physical resolution or spectral modes");
+			}
 		}
 
 		reset();
@@ -1265,8 +1267,11 @@ public:
 		if (misc.output_file_name_prefix == "-")
 			misc.output_file_name_prefix = "";
 
-		std::cout << std::setprecision(misc.output_floating_point_precision);
-		std::cerr << std::setprecision(misc.output_floating_point_precision);
+		if (misc.output_floating_point_precision >= 0)
+		{
+			std::cout << std::setprecision(misc.output_floating_point_precision);
+			std::cerr << std::setprecision(misc.output_floating_point_precision);
+		}
 
 		return true;
 	}

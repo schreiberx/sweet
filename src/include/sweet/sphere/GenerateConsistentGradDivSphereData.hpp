@@ -60,13 +60,9 @@ private:
 			SphereData &o_u_t,	///< time updates
 			SphereData &o_v_t,	///< time updates
 
-			double &o_dt,				///< time step restriction
-			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp = -1
 	)
 	{
-		o_dt = i_fixed_dt;
-
 		assert(simVars.sim.earth_radius > 0);
 
 		if (!simVars.pde.use_nonlinear_equations)
@@ -192,22 +188,17 @@ private:
 		std::cout << max_simulation_time << ", " << current_simulation_time << std::endl;
 		while (max_simulation_time > 0.0 && max_simulation_time > current_simulation_time)
 		{
-			double o_dt;
-
 			timestepping.run_timestep(
 					this,
 					&GenerateConsistentGradDivSphereData::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
 					prog_h, prog_u, prog_v,
-					o_dt,
 					current_timestep_size,
 					4,
-					current_simulation_time,
-					max_simulation_time
+					current_simulation_time
 				);
 
 			// advance time step and provide information to parameters
-			current_timestep_size = o_dt;
-			current_simulation_time += o_dt;
+			current_simulation_time += current_timestep_size;
 
 			std::cout << "." << std::flush;
 		}
