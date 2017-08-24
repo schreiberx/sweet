@@ -146,6 +146,7 @@ public:
 		if (simVars.sim.CFL < 0)
 			simVars.timecontrol.current_timestep_size = -simVars.sim.CFL;
 
+		std::cout << simVars.timecontrol.current_timestep_size << std::endl;
 
 		if (simVars.timecontrol.current_timestep_size <= 0)
 		{
@@ -158,7 +159,7 @@ public:
 				simVars.timecontrol.current_timestep_size = 0.001*simVars.sim.earth_radius/(double)sphereDataConfig->physical_num_lat;
 		}
 
-		if (simVars.sim.CFL >= 0)
+		if (simVars.timecontrol.current_timestep_size <= 0)
 			FatalError("Only fixed time step size supported");
 
 
@@ -510,6 +511,8 @@ public:
 
 		if (simVars.disc.timestepping_method.find("_lf") != std::string::npos)
 		{
+			FatalError("TODO: Get this Leapfrog running");
+
 			std::cout << "WARNING: Leapfrog time stepping doesn't make real sense since 1st step is based on RK-like method" << std::endl;
 			std::cout << "We'll do two Leapfrog time steps here to take the LF errors into account!" << std::endl;
 			std::cout << "Therefore, we also halve the time step size here" << std::endl;

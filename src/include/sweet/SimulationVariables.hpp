@@ -58,7 +58,7 @@ public:
 #endif
 
 #if SWEET_LIBPFASST
-        LibPFASST_SimulationVariables libpfasst;
+	LibPFASST_SimulationVariables libpfasst;
 #endif
 
 public:
@@ -672,9 +672,6 @@ public:
 		if (timecontrol.max_timesteps_nr < 0)
 			FatalError("timecontrol.max_timesteps_nr < 0");
 
-//		disc.cell_size[0] = sim.domain_size[0]/(double)disc.res_physical[0];
-//		disc.cell_size[1] = sim.domain_size[1]/(double)disc.res_physical[1];
-
 		timecontrol.current_timestep_nr = 0;
 		timecontrol.current_simulation_time = 0;
 
@@ -694,76 +691,16 @@ public:
 			bool i_run_prog_parameter_validation = true
 	)
 	{
-		const int max_options = 60;
-        static struct option long_options[max_options+1] = {
-    			{0, 0, 0, 0}, // 0
-    			{0, 0, 0, 0}, // 1
-    			{0, 0, 0, 0}, // 2
-    			{0, 0, 0, 0}, // 3
-				{0, 0, 0, 0}, // 4
-    			{0, 0, 0, 0}, // 5
-    			{0, 0, 0, 0}, // 6
-    			{0, 0, 0, 0}, // 7
-    			{0, 0, 0, 0}, // 8
-    			{0, 0, 0, 0}, // 9
+		const int max_options = 100;
+        struct option long_options[max_options+1];
 
-				{0, 0, 0, 0}, // 0
-				{0, 0, 0, 0}, // 1
-				{0, 0, 0, 0}, // 2
-				{0, 0, 0, 0}, // 3
-				{0, 0, 0, 0}, // 4
-				{0, 0, 0, 0}, // 5
-				{0, 0, 0, 0}, // 6
-				{0, 0, 0, 0}, // 7
-				{0, 0, 0, 0}, // 8
-				{0, 0, 0, 0}, // 9
-
-				{0, 0, 0, 0}, // 0
-				{0, 0, 0, 0}, // 1
-				{0, 0, 0, 0}, // 2
-				{0, 0, 0, 0}, // 3
-				{0, 0, 0, 0}, // 4
-				{0, 0, 0, 0}, // 5
-				{0, 0, 0, 0}, // 6
-				{0, 0, 0, 0}, // 7
-				{0, 0, 0, 0}, // 8
-				{0, 0, 0, 0}, // 9	Option Nr. 30
-
-				{0, 0, 0, 0}, // 0
-				{0, 0, 0, 0}, // 1
-				{0, 0, 0, 0}, // 2
-				{0, 0, 0, 0}, // 3
-				{0, 0, 0, 0}, // 4
-				{0, 0, 0, 0}, // 5
-				{0, 0, 0, 0}, // 6
-				{0, 0, 0, 0}, // 7
-				{0, 0, 0, 0}, // 8
-				{0, 0, 0, 0}, // 9	Option Nr. 40
-
-				{0, 0, 0, 0}, // 0
-				{0, 0, 0, 0}, // 1
-				{0, 0, 0, 0}, // 2
-				{0, 0, 0, 0}, // 3
-				{0, 0, 0, 0}, // 4
-				{0, 0, 0, 0}, // 5
-				{0, 0, 0, 0}, // 6
-				{0, 0, 0, 0}, // 7
-				{0, 0, 0, 0}, // 8
-				{0, 0, 0, 0}, // 9	Option Nr. 50
-
-				{0, 0, 0, 0}, // 0
-				{0, 0, 0, 0}, // 1
-				{0, 0, 0, 0}, // 2
-				{0, 0, 0, 0}, // 3
-				{0, 0, 0, 0}, // 4
-				{0, 0, 0, 0}, // 5
-				{0, 0, 0, 0}, // 6
-				{0, 0, 0, 0}, // 7
-				{0, 0, 0, 0}, // 8
-				{0, 0, 0, 0}, // 9	Option Nr. 60
-
-				{0, 0, 0, 0} // NULL
-        };
+        for (std::size_t i = 0; i < max_options+1; i++)
+        {
+        	long_options[i].flag = 0;
+        	long_options[i].has_arg = 0;
+        	long_options[i].name = 0;
+        	long_options[i].val = 0;
+        }
 
 		int next_free_program_option = 0;
 
@@ -893,8 +830,7 @@ public:
 
 			if (opt_nr == max_options)
 			{
-				std::cerr << "Max number of arguments reached. Reduce number of program arguments" << std::endl;
-				exit(1);
+				FatalError("Max number of arguments reached. Reduce number of program arguments");
 			}
         }
 
@@ -942,7 +878,7 @@ public:
 					c++;		if (i == c)	{	disc.crank_nicolson_filter = atof(optarg);			continue;	}
 					c++;		if (i == c)	{	disc.use_staggering = atof(optarg);					continue;	}
 
-					c++;		if (i == c)	{	timecontrol.current_timestep_size = atof(optarg);					continue;	}
+					c++;		if (i == c)	{	timecontrol.current_timestep_size = atof(optarg);		continue;	}
 
 #if SWEET_PFASST_CPP 
 					c++;		if (i == c)	{	pfasst.nlevels = atoi(optarg);	continue;	}
@@ -985,6 +921,7 @@ public:
 					 */
 					if (c != next_free_program_option-1)
 						FatalError("Inconsistent processing of arguments");
+
 				}
 				else
 				{
@@ -1243,7 +1180,6 @@ public:
 		}
 
 		reset();
-
 
 #if SWEET_PARAREAL
 		// if max simulation time was not set for parareal, copy max simulation time from default parameters to parareal parameters.
