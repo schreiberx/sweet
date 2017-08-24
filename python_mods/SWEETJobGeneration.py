@@ -31,7 +31,7 @@ class SWEETJobGeneration:
 
 		job_id = 'sweet_'+self.runtime.getUniqueID(self.compile)
 
-		content = self.cluster.getScriptHeader()
+		content, mpiexec_prefix = self.cluster.getScriptHeader(self.compile.getUniqueID()+'_'+self.runtime.getUniqueID(self.compile), self.runtime)
 
 		content += """
 
@@ -42,7 +42,7 @@ rm -f ./prog_h_*
 rm -f ./prog_u_*
 rm -f ./prog_v_*
 
-SWEETROOT=\""""+dirname+"""/../../../"
+SWEETROOT=\""""+dirname+"""/../../../\"
 cd "$SWEETROOT"
 
 pwd
@@ -53,6 +53,7 @@ source ./local_software/env_vars.sh || exit 1
 #make clean || exit 1
 
 """
+
 
 		#
 		# Setup compile options
@@ -65,19 +66,25 @@ echo "$SCONS"
 $SCONS || exit 1
 
 """
+
 		elif self.cluster.target_machine == 'yellowstone':
-			f = open('compile_yellowstone.sh', a)
+			f = open('compile_yellowstone.sh', 'w')
 			f.write("#! /bin/bash\n")
 			f.write("\n")
 			f.write("scons "+self.compile.getSConsParams()+'\n')
 			f.write("\n")
 
 		elif self.cluster.target_machine == 'cheyenne':
-			f = open('compile_cheyenne.sh', a)
+			fn = 'compile_cheyenne.sh'
+			f = open(fn, 'w')
 			f.write("#! /bin/bash\n")
+			f.write("\n")
+			f.write("SWEETROOT=\""+dirname+"/../../../\"\n")
+			f.write("cd \"$SWEETROOT\"\n")
 			f.write("\n")
 			f.write("scons "+self.compile.getSConsParams()+'\n')
 			f.write("\n")
+			os.chmod(fn, 0o755)
 			print("COMPILE WITH: scons "+self.compile.getSConsParams()+' -j 4')
 			pass
 
@@ -97,7 +104,7 @@ cd "$BASEDIR"
 		content += """
 
 echo "$EXEC"
-$EXEC || exit 1
+"""+mpiexec_prefix+"""$EXEC || exit 1
 """
 
 		return content

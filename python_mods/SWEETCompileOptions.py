@@ -518,6 +518,10 @@ class SWEETCompileOptions:
 		return exec_name
 
 
+	def getUniqueID(self):
+		return self.getProgramName()
+
+
 
 	def getOptionList(self):
 		return self.__dict__
