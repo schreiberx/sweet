@@ -25,14 +25,14 @@
 SimulationVariables simVars;
 std::vector<LevelSingleton> levelSingletons;
 
-// extern "C"
-// {
-//   /* Driver function for pfasst control */
-//   void fmain (SphereDataCtx *pd_ctx, 
-// 	      const int* nlevels, const int* niters, const int nnodes[], const char* qtype_name, const int* qtype_name_len,
-// 	      const int* nfields, const int nvars_per_field[], 
-// 	      double* t_max, double* dt);
-// }
+extern "C"
+{
+   /* Driver function for pfasst control */
+   void fmain (SphereDataCtx *pd_ctx, 
+ 	      const int* nlevels, const int* niters, const int nnodes[], const char* qtype_name, const int* qtype_name_len,
+ 	      const int* nfields, const int nvars_per_field[], 
+ 	      double* t_max, double* dt);
+}
 
 /**
  * Main function launching LibPFASST
@@ -172,18 +172,18 @@ int main(int i_argc, char *i_argv[])
   int string_length = simVars.libpfasst.nodes_type.size();
 
   // call LibPFASST to advance in time
-  // fmain(
-  // 	pd_ctx,                                       // user defined context
-  // 	&simVars.libpfasst.nlevels,                   // number of SDC levels
-  // 	&simVars.libpfasst.niters,                    // number of SDC iterations
-  // 	nnodes,                                       // number of SDC nodes 
-  // 	(simVars.libpfasst.nodes_type).c_str(),       // type of nodes
-  // 	&string_length,                               // length of (simVars.libpfasst.nodes_type).c_str()
-  // 	&nfields,                                     // number of vector fields
-  // 	nvars_per_field,                              // number of dofs per vector field
-  // 	&(simVars.timecontrol.max_simulation_time),   // simulation time
-  // 	&(simVars.timecontrol.current_timestep_size)  // time step size
-  // 	); 
+  fmain(
+   	pd_ctx,                                       // user defined context
+	&simVars.libpfasst.nlevels,                   // number of SDC levels
+	&simVars.libpfasst.niters,                    // number of SDC iterations
+	nnodes,                                       // number of SDC nodes 
+ 	(simVars.libpfasst.nodes_type).c_str(),       // type of nodes
+	&string_length,                               // length of (simVars.libpfasst.nodes_type).c_str()
+	&nfields,                                     // number of vector fields
+	nvars_per_field,                              // number of dofs per vector field
+ 	&(simVars.timecontrol.max_simulation_time),   // simulation time
+   	&(simVars.timecontrol.current_timestep_size)  // time step size
+ 	); 
 
   // release the memory
   delete pd_ctx;
