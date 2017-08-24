@@ -69,22 +69,22 @@ $SCONS || exit 1
 			f = open('compile_yellowstone.sh', a)
 			f.write("#! /bin/bash\n")
 			f.write("\n")
-			f.write("scons "+self.compile.getSConsParams()+' -j 4\n')
+			f.write("scons "+self.compile.getSConsParams()+'\n')
 			f.write("\n")
 
 		elif self.cluster.target_machine == 'cheyenne':
 			f = open('compile_cheyenne.sh', a)
 			f.write("#! /bin/bash\n")
 			f.write("\n")
-			f.write("scons "+self.compile.getSConsParams()+' -j 4\n')
+			f.write("scons "+self.compile.getSConsParams()+'\n')
 			f.write("\n")
 			print("COMPILE WITH: scons "+self.compile.getSConsParams()+' -j 4')
 			pass
 
 		else:
-			print("Target machine "+str(self.target_machine)+" not supported")
-			sys.exit(1)
-
+			content += "\n"
+			content += "scons "+self.compile.getSConsParams()+"\n"
+			content += "\n"
 		content += """
 cd "$BASEDIR"
 """

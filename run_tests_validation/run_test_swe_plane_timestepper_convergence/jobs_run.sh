@@ -11,7 +11,7 @@ cd "$THISDIR"
 
 
 if [ -z "$1" ]; then
-	DIRS=script_*rexi*
+	DIRS=script_*
 else
 	DIRS=$@
 fi

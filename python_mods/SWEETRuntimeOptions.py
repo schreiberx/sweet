@@ -13,6 +13,8 @@ class SWEETRuntimeOptions():
 		self.f_sphere = 0
 		self.verbosity = 0
 
+		self.stability_checks = 0
+
 		self.timestepping_method = 'l_erk'
 		self.timestepping_order = 1
 		self.timestepping_order2 = 1
@@ -238,6 +240,8 @@ class SWEETRuntimeOptions():
 
 		retval += ' -u '+str(self.viscosity)
 		retval += ' -t '+str(self.simtime)
+
+		retval += ' --stability-checks='+str(self.stability_checks)
 		retval += ' --nonlinear='+str(self.nonlinear)
 
 		retval += ' --timestepping-method='+self.timestepping_method

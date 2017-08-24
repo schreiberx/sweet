@@ -19,37 +19,7 @@ class SWEETClusterOptions:
 		# Number of physical cores per node
 		self.cores_per_node = -1
 
-		if target_machine == '':
-			# Autodetect host with FQDN
-			#hostname = socket.gethostname()
-			fqdn = socket.getfqdn()
-
-			target_machine = None
-
-			if ".gw4.metoffice.gov.uk" in fqdn:
-				target_machine = "isambard"
-
-			elif ".yellowstone" in fqdn:
-				target_machine = "yellowstone"
-				raise Exception("TODO")
-
-			elif ".cheyenne" in fqdn:
-				target_machine = "cheyenne"
-
-				self.total_max_cores = 4096
-				self.cores_per_node = 123
-				raise Exception("TODO")
-
-			else:
-				target_machine = socket.gethostname()
-
-				self.total_max_cores = multiprocessing.cpu_count()
-				self.cores_per_node = self.total_max_cores
-
-		self.total_max_nodes = self.total_max_cores//self.cores_per_node
-
-		if self.total_max_nodes*self.cores_per_node != self.total_max_cores:
-			raise Exception("Inconsistency detected")
+		self.setupTargetMachine(target_machine)
 
 		#
 		# Setup default values
@@ -63,9 +33,63 @@ class SWEETClusterOptions:
 
 
 
+	def setupTargetMachine(
+		self,
+		target_machine
+	):
+		self.target_machine = target_machine
+
+		if self.target_machine == '':
+			# Autodetect host with FQDN
+			#hostname = socket.gethostname()
+			fqdn = socket.getfqdn()
+
+			self.target_machine = None
+
+			if ".gw4.metoffice.gov.uk" in fqdn:
+				self.target_machine = "isambard"
+
+			elif ".yellowstone" in fqdn:
+				self.target_machine = "yellowstone"
+
+			elif ".cheyenne" in fqdn:
+				self.target_machine = "cheyenne"
+
+			else:
+				self.target_machine = socket.gethostname()
+
+
+		if self.target_machine == 'isambard':
+			self.total_max_cores = 4096
+			raise Exception("TODO")
+
+		elif self.target_machine == "yellowstone":
+			self.total_max_cores = 4096
+			self.cores_per_node = 16
+			raise Exception("TODO")
+
+		elif self.target_machine == "cheyenne":
+			self.total_max_cores = 4096
+			self.cores_per_node = 36
+
+		else:
+			print("Unknown Target: "+str(self.target_machine))
+			print("Using default values")
+
+			self.total_max_cores = multiprocessing.cpu_count()
+			self.cores_per_node = self.total_max_cores
+
+
+		self.total_max_nodes = self.total_max_cores//self.cores_per_node
+
+		if self.total_max_nodes*self.cores_per_node != self.total_max_cores:
+			raise Exception("Inconsistency detected")
+
+
+
 	def setup(
-		par_space_cores = None,
-		par_time_cores = None
+		par_space_cores,
+		par_time_cores,
 	):
 		self.par_space_cores = par_space_cores
 		self.par_time_cores = par_time_cores
@@ -138,8 +162,29 @@ class SWEETClusterOptions:
 #
 
 """
+
 		elif self.target_machine == 'cheyenne':
-			raise Exception("TODO")
+
+			content += """#
+## project code
+#PBS -A NCIS0002
+## regular limit: 12 hours
+## economy queue
+#PBS -q economy
+## shared queue
+##PBS -q share
+## wall-clock time (hrs:mins:secs)
+#PBS -l walltime=01:00:00
+## select one chunk with one CPU in it
+#PBS -l select=1:ncpus=1
+#
+#PBS -N """+jobid+"""
+#PBS -o """+cwd+"/"+jobid+""".out
+#PBS -e """+cwd+"/"+jobid+""".err
+
+export MPI_USE_ARRAY=false
+
+"""
 
 
 		return content

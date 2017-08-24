@@ -82,7 +82,7 @@ p.runtime.viscosity = 0.0
 
 
 timestep_size_reference = 0.0001
-timestep_sizes = [0.0001*(2.0**i) for i in range(0, 11)]
+timestep_sizes = [0.0001*(2.0**i) for i in range(1, 10)]
 
 # Don't use a smaller TS since convergence is not computable anymore
 p.runtime.simtime = 0.1
@@ -148,6 +148,7 @@ for group in groups:
 			['l_erk_n_erk',		1,	1,	0],
 			['l_irk_n_erk',		1,	1,	0],
 			['ln_erk',		1,	1,	0],
+			['ln_etdrk',		1,	1,	0],
 		]
 
 	# 2nd order nonlinear
@@ -158,6 +159,7 @@ for group in groups:
 			['l_erk_n_erk',		2,	2,	0],
 			['l_irk_n_erk',		2,	2,	0],
 			['ln_erk',		2,	2,	0],
+			['ln_etdrk',		2,	2,	0],
 			['l_rexi_n_erk',	2,	2,	0],
 		]
 
@@ -167,7 +169,6 @@ for group in groups:
 			['ln_erk',		4,	4,	0],	# reference solution
 			['l_cn_n_erk',		2,	2,	0],
 			['l_erk_n_erk',		2,	2,	0],
-#			['ln_erk',		2,	2,	0],
 #			['l_rexi_n_erk',	2,	2,	0],
 		]
 
