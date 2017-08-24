@@ -84,6 +84,7 @@ p.runtime.viscosity = 0.0
 timestep_size_reference = 0.0001
 timestep_sizes = [0.0001*(2.0**i) for i in range(0, 11)]
 
+# Don't use a smaller TS since convergence is not computable anymore
 p.runtime.simtime = 0.1
 p.runtime.output_timestep_size = p.runtime.simtime
 
@@ -121,14 +122,14 @@ for group in groups:
 			for testabs in [2**i for i in range(0, 3)]:
 				for max_error in [1e-6, 1e-8, 1e-10, 1e-12]:
 					ts_methods.append(['l_rexi',	0,	0,	0, {'use_method': 'file', 'file_test_abs':testabs, 'file_max_error':max_error}])
-		# 2nd order linear
-		if group == 'l2':
-			ts_methods = [
-				['l_direct',	0,	0,	0],	# reference solution
-				['l_erk',	2,	0,	0],
-				['l_cn',	2,	0,	0],
-				['l_rexi',	0,	0,	0],
-			]
+	# 2nd order linear
+	if group == 'l2':
+		ts_methods = [
+			['l_direct',	0,	0,	0],	# reference solution
+			['l_erk',	2,	0,	0],
+			['l_cn',	2,	0,	0],
+			['l_rexi',	0,	0,	0],
+		]
 
 	# 1st order nonlinear
 	if group == 'ln1':
@@ -179,7 +180,6 @@ for group in groups:
 			['ln_etdrk',		4,	4,	1],
 			['ln_erk',		4,	4,	0],
 		]
-
 
 
 	#

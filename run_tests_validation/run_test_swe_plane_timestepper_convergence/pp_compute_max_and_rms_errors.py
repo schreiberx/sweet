@@ -11,7 +11,6 @@ import math
 
 def loadDataFromFile(filename):
 	global prefix
-	print(filename)
 
 	try:
 		data = np.loadtxt(filename, skiprows=0)
