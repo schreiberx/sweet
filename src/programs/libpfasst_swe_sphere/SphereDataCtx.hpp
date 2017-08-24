@@ -5,7 +5,7 @@
 #include <sweet/SimulationVariables.hpp>
 #include "LevelSingleton.hpp"
 
-#include "SWE_Sphere_TS_ln_erk.hpp"
+#include "SWE_Sphere_TS_l_erk_n_erk.hpp"
 #include "SWE_Sphere_TS_l_irk.hpp"
 
 // Class containing the context necessary to evaluate the right-hand sides
@@ -31,7 +31,7 @@ public:
       FatalError("SphereDataCtx: levelSingletons pointer is NULL!");
     
     // initialize the time steppers from SWEET
-    timestepper_ln_erk.resize(levelSingletons->size());
+    timestepper_l_erk_n_erk.resize(levelSingletons->size());
     timestepper_l_irk.resize(levelSingletons->size());
 
     for (int level = 0; level < levelSingletons->size(); ++level) 
@@ -43,8 +43,8 @@ public:
 	simVars->disc.use_staggering      = false; 
 		
 	// these timesteppers contain the functions called by LibPFASST 
-	timestepper_ln_erk[level] = 
-	  new SWE_Sphere_TS_ln_erk(
+	timestepper_l_erk_n_erk[level] = 
+	  new SWE_Sphere_TS_l_erk_n_erk(
 				   *simVars,
 				   ((*levelSingletons)[level].op)
 				   );
@@ -64,9 +64,9 @@ public:
   // Destructor
   ~SphereDataCtx() 
   {
-    for (int level = 0; level < timestepper_ln_erk.size(); ++level) 
+    for (int level = 0; level < timestepper_l_erk_n_erk.size(); ++level) 
     {
-      delete timestepper_ln_erk[level];
+      delete timestepper_l_erk_n_erk[level];
       delete timestepper_l_irk[level];
     }
   }
@@ -88,11 +88,11 @@ public:
   }
 
   // Getter for the linear implicit nonlinear explicit SWEET time stepper at level i_level
-  SWE_Sphere_TS_ln_erk* get_ln_erk_timestepper(
+  SWE_Sphere_TS_l_erk_n_erk* get_l_erk_n_erk_timestepper(
 					       int i_level
 					       ) const
   {
-    return timestepper_ln_erk[i_level];
+    return timestepper_l_erk_n_erk[i_level];
   }
 
   // Getter for the linear explicit SWEET time stepper at level i_level
@@ -130,7 +130,7 @@ protected:
   std::vector<LevelSingleton> *levelSingletons;
 
   // Pointer to the SWE_Sphere time integrator (implicit linear part, explicit nonlinear part)
-  std::vector<SWE_Sphere_TS_ln_erk*> timestepper_ln_erk;
+  std::vector<SWE_Sphere_TS_l_erk_n_erk*> timestepper_l_erk_n_erk;
   std::vector<SWE_Sphere_TS_l_irk*>  timestepper_l_irk;
 
   // Some contructors and operator= are disabled
