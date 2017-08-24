@@ -455,19 +455,19 @@ class SWEPlaneBenchmarks
 
 			if (i_variable_id == 0) // height
 			{
-				//return std::sin(2.0*dx)*std::cos(2.0*dy) - (1.0/5.0)*std::cos(2.0*dx)*std::sin(4.0*dy) + i_simVars.sim.h0; // original
-				return std::sin(2.0*dx)*std::cos(2.0*dy) + i_simVars.sim.h0; //simpler
-				//return std::cos(2.0*M_PI*(x/sx+y/sy)) + i_simVars.sim.h0;
+			  return std::sin(2.0*dx)*std::cos(2.0*dy) - (1.0/5.0)*std::cos(2.0*dx)*std::sin(4.0*dy) + i_simVars.sim.h0; // original
+			  //return std::sin(2.0*dx)*std::cos(2.0*dy) + i_simVars.sim.h0; //simpler
+			  //return std::cos(2.0*M_PI*(x/sx+y/sy)) + i_simVars.sim.h0;
 			}
 			else if (i_variable_id == 1) // velocity u
 			{
-				//return std::cos(4.0*dx)*std::cos(2.0*dy); //original
-				return std::cos(2.0*dx)*std::cos(2.0*dy)+0.000001*std::cos(40.0*dx)*std::cos(33.0*dy); //simplified
+			  return std::cos(4.0*dx)*std::cos(2.0*dy);//+0.000001*std::cos(100.0*dx)*std::cos(80.0*dy); //simplified
+			  //return std::cos(2.0*dx)*std::cos(2.0*dy);//+0.000001*std::cos(40.0*dx)*std::cos(33.0*dy); //simplified
 			}
 			else if (i_variable_id == 2) // velocity v
 			{
-				//return std::cos(2.0*dx)*std::cos(4.0*dy); //original
-				return std::cos(2.0*dx)*std::cos(2.0*dy); //simplified
+			  return std::cos(2.0*dx)*std::cos(4.0*dy); //original
+			  //return std::cos(2.0*dx)*std::cos(2.0*dy); //simplified
 			}
 			else if (i_variable_id == 6) // f-term
 			{

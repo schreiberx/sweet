@@ -218,8 +218,6 @@ extern "C"
 				  u,
 				  v,
 				  dt,
-				  dt,
-				  current_simulation_time,
 				  i_t
 				  );
 	current_simulation_time += dt;
@@ -231,7 +229,6 @@ extern "C"
     write_file(*i_ctx, v, "prog_v_ref");
 
   }
-
 
   // evaluates the explicit (nonlinear) piece
   void ceval_f1(PlaneDataVars *i_Y,
@@ -247,16 +244,25 @@ extern "C"
     PlaneData& h_F1 = o_F1->get_h();
     PlaneData& u_F1 = o_F1->get_u();
     PlaneData& v_F1 = o_F1->get_v();
-    
+
     // get the time step parameters
     SimulationVariables* simVars = i_ctx->get_simulation_variables();
+
+    // return immediately if no nonlinear terms
+    if (simVars->pde.use_nonlinear_equations == 0)
+      {
+	h_F1 = 0;
+	u_F1 = 0;
+	v_F1 = 0;
+	return;
+      }
 
     // get the timestepper
     if (simVars->libpfasst.use_rexi) 
       {
-	SWE_Plane_TS_l_rexi_n_erk* timestepper = i_ctx->get_l_rexi_n_erk_timestepper(i_Y->get_level());
-		  
-	// compute the explicit nonlinear right-hand side
+	SWE_Plane_TS_l_rexi_n_erk* timestepper    = i_ctx->get_l_rexi_n_erk_timestepper(i_Y->get_level(),0);
+
+	// compute the explicit nonlinear right-hand side to get N(Y)
 	timestepper->euler_timestep_update_nonlinear(
 						     h_Y, 
 						     u_Y,
@@ -264,7 +270,6 @@ extern "C"
 						     h_F1,
 						     u_F1,
 						     v_F1,
-						     simVars->timecontrol.current_timestep_size,
 						     simVars->timecontrol.current_timestep_size,
 						     simVars->timecontrol.max_simulation_time			
 						     );
@@ -284,7 +289,39 @@ extern "C"
 						     );
       }
   }
-  
+
+  // applies phi_n to Y 
+  void capply_phi( 
+		    PlaneDataVars *io_Y,
+		    double i_t, 
+		    double i_dt, 
+		    PlaneDataCtx *i_ctx,
+		    int i_n
+		    ) 
+  {
+    PlaneData& h_Y = io_Y->get_h();
+    PlaneData& u_Y = io_Y->get_u();
+    PlaneData& v_Y = io_Y->get_v();
+    
+          
+    // get the rexi timestepper based on phi_{i_n}
+    SWE_Plane_TS_l_rexi_n_erk* timestepper    = i_ctx->get_l_rexi_n_erk_timestepper(io_Y->get_level(),i_n);
+    SWE_Plane_TS_l_rexi& implicit_timestepper = timestepper->get_implicit_timestepper();
+
+    // get the simulation variables
+    SimulationVariables* simVars = i_ctx->get_simulation_variables();
+	
+    // apply phi_n to the system variables
+    implicit_timestepper.run_timestep(
+				      h_Y,
+				      u_Y,
+				      v_Y,
+				      i_dt,
+				      simVars->timecontrol.max_simulation_time
+				      );
+
+  }
+
   // evaluates the first implicit piece o_F2 = F2(i_Y)
   void ceval_f2 (
 		 PlaneDataVars *i_Y, 
@@ -306,7 +343,7 @@ extern "C"
     
     // get the explicit timestepper 
     SWE_Plane_TS_l_erk* timestepper = i_ctx->get_l_erk_timestepper(i_Y->get_level());
-	
+    
     // compute the linear right-hand side
     timestepper->euler_timestep_update(
 				       h_Y, 
@@ -316,9 +353,9 @@ extern "C"
 				       u_F2,
 				       v_F2,
 				       simVars->timecontrol.current_timestep_size,
-				       simVars->timecontrol.current_timestep_size,
 				       simVars->timecontrol.max_simulation_time
 				       );
+
   }
 
   // solves the first implicit system for io_Y
@@ -340,20 +377,15 @@ extern "C"
     const PlaneData& u_Rhs = i_Rhs->get_u();
     const PlaneData& v_Rhs = i_Rhs->get_v();
 
-    // first copy the rhs into the solution vector
-    // this is needed to call the SWEET function run_ts_timestep
-    h_Y = h_Rhs;
-    u_Y = u_Rhs;
-    v_Y = v_Rhs;
-
     // get the simulation variables
     SimulationVariables* simVars = i_ctx->get_simulation_variables();
 
-    // get the implicit timestepper 
+    // if exponential integration, call REXI
     if (simVars->libpfasst.use_rexi) 
       {
 
-	SWE_Plane_TS_l_rexi_n_erk* timestepper    = i_ctx->get_l_rexi_n_erk_timestepper(io_Y->get_level());
+	// get the implicit timestepper 
+	SWE_Plane_TS_l_rexi_n_erk* timestepper    = i_ctx->get_l_rexi_n_erk_timestepper(io_Y->get_level(),0); // based on phi_0 = exp(A)
 	SWE_Plane_TS_l_rexi& implicit_timestepper = timestepper->get_implicit_timestepper();
 	
 	// solve the implicit system using REXI
@@ -362,13 +394,23 @@ extern "C"
 					  u_Y,
 					  v_Y,
 					  i_dt,
-					  i_dt,
-					  simVars->timecontrol.current_simulation_time,
 					  simVars->timecontrol.max_simulation_time
-					);
+					  );
+
+	// add the explicit right-hand side to the solution
+	h_Y += h_Rhs;
+	u_Y += u_Rhs;
+	v_Y += v_Rhs;
+
       }       
+    // else call the irk integrator
     else
       {
+	// first copy the rhs into the solution vector
+	// this is needed to call the SWEET function run_ts_timestep
+	h_Y = h_Rhs;
+	u_Y = u_Rhs;
+	v_Y = v_Rhs;
 
 	SWE_Plane_TS_l_irk_n_erk* timestepper    = i_ctx->get_l_irk_n_erk_timestepper(io_Y->get_level());
 	SWE_Plane_TS_l_irk& implicit_timestepper = timestepper->get_implicit_timestepper();
@@ -379,8 +421,6 @@ extern "C"
 					  u_Y,
 					  v_Y,
 					  i_dt,
-					  i_dt,
-					  simVars->timecontrol.current_simulation_time,
 					  simVars->timecontrol.max_simulation_time
 					);
 

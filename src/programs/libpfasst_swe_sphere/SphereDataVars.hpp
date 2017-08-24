@@ -1,31 +1,31 @@
-#ifndef _PLANE_DATA_VARS_HPP_
-#define _PLANE_DATA_VARS_HPP_
+#ifndef _SPHERE_DATA_VARS_HPP_
+#define _SPHERE_DATA_VARS_HPP_
 
-#include <sweet/plane/PlaneData.hpp>
-#include <sweet/plane/PlaneDataConfig.hpp>
+#include <sweet/sphere/SphereData.hpp>
+#include <sweet/sphere/SphereDataConfig.hpp>
 
-// Class containing the prognotic PlaneData variables h, u, v
+// Class containing the prognotic SphereData variables h, u, v
 
-class PlaneDataVars {
+class SphereDataVars {
 
 public:
 
   // Constructor
-  PlaneDataVars(
-                PlaneDataConfig *planeDataConfig,
+  SphereDataVars(
+                SphereDataConfig *sphereDataConfig,
 		int i_level
 		)
 
-    : prog_h(planeDataConfig),
-      prog_u(planeDataConfig),
-      prog_v(planeDataConfig),
+    : prog_phi(sphereDataConfig),
+      prog_vort(sphereDataConfig),
+      prog_div(sphereDataConfig),
       flat_data_array(nullptr),
       flat_data_array_size(0),
       level(i_level)
   {}
   
   // Destructor
-  ~PlaneDataVars()
+  ~SphereDataVars()
   {
     if (flat_data_array != nullptr) 
       {
@@ -49,13 +49,13 @@ public:
       }						   
   }
   
-  // getters for the PlaneData variables
-  const PlaneData& get_h() const {return prog_h;}
-  PlaneData&       get_h()       {return prog_h;}
-  const PlaneData& get_u() const {return prog_u;}
-  PlaneData&       get_u()       {return prog_u;}
-  const PlaneData& get_v() const {return prog_v;}
-  PlaneData&       get_v()       {return prog_v;}
+  // getters for the SphereData variables
+  const SphereData& get_phi() const  {return prog_phi;}
+  SphereData&       get_phi()        {return prog_phi;}
+  const SphereData& get_vort() const {return prog_vort;}
+  SphereData&       get_vort()       {return prog_vort;}
+  const SphereData& get_div() const  {return prog_div;}
+  SphereData&       get_div()        {return prog_div;}
 
   // getters for the flat data array
   double*&         get_flat_data_array()            {return flat_data_array;}
@@ -68,10 +68,10 @@ public:
 protected:
   
   // height
-  PlaneData prog_h;
+  SphereData prog_phi;
   // velocities
-  PlaneData prog_u;
-  PlaneData prog_v;
+  SphereData prog_vort;
+  SphereData prog_div;
 
   // flat data array vector (currently used to pack and unpack)
   double *flat_data_array;
@@ -81,9 +81,9 @@ protected:
   const int level;
 
   // default constructor, copy constructor, and operator= are disabled
-  PlaneDataVars();
-  PlaneDataVars(const PlaneDataVars&);
-  PlaneDataVars& operator=(const PlaneDataVars&);
+  SphereDataVars();
+  SphereDataVars(const SphereDataVars&);
+  SphereDataVars& operator=(const SphereDataVars&);
 
 };
 

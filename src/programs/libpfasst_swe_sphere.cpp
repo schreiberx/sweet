@@ -2,7 +2,7 @@
 /*
  * main.cpp
  *
- * PFASST SWE on the plane implementation
+ * PFASST SWE on the sphere implementation
  *
  *  Created on: 30 Nov 2016
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
@@ -10,14 +10,14 @@
 
 #include <sweet/FatalError.hpp>
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/plane/PlaneDataTimesteppingRK.hpp>
-#include <sweet/plane/PlaneData.hpp>
-#include <sweet/plane/PlaneOperators.hpp>
-#include <sweet/plane/PlaneDiagnostics.hpp>
-#include <benchmarks_plane/PlaneBenchmarksCombined.hpp>
+//#include <sweet/sphere/SphereDataTimesteppingRK.hpp>
+#include <sweet/sphere/SphereData.hpp>
+#include <sweet/sphere/SphereOperators.hpp>
+#include <sweet/sphere/SphereDiagnostics.hpp>
+#include <benchmarks_sphere/SphereBenchmarksCombined.hpp>
 
-#include "libpfasst_swe_plane/LevelSingleton.hpp"
-#include "libpfasst_swe_plane/PlaneDataCtx.hpp"
+#include "libpfasst_swe_sphere/LevelSingleton.hpp"
+#include "libpfasst_swe_sphere/SphereDataCtx.hpp"
 #include <mpi.h>
 
 #define WITH_MPI
@@ -27,11 +27,11 @@ std::vector<LevelSingleton> levelSingletons;
 
 extern "C"
 {
-  /* Driver function for pfasst control */
-  void fmain (PlaneDataCtx *pd_ctx, 
-	      const int* nlevels, const int* niters, const int nnodes[], const char* qtype_name, const int* qtype_name_len,
-	      const int* nfields, const int nvars_per_field[], 
-	      double* t_max, double* dt);
+   /* Driver function for pfasst control */
+   void fmain (SphereDataCtx *pd_ctx, 
+ 	      const int* nlevels, const int* niters, const int nnodes[], const char* qtype_name, const int* qtype_name_len,
+ 	      const int* nfields, const int nvars_per_field[], 
+ 	      double* t_max, double* dt);
 }
 
 /**
@@ -128,8 +128,7 @@ int main(int i_argc, char *i_argv[])
   
   levelSingletons[simVars.libpfasst.nlevels-1].op.setup(
 							&(levelSingletons[simVars.libpfasst.nlevels-1].dataConfig),
-							simVars.sim.domain_size,
-							simVars.disc.use_spectral_basis_diffs
+							simVars.sim.earth_radius
 							);
   
   // define the number of modes for the coarser levels
@@ -145,10 +144,10 @@ int main(int i_argc, char *i_argv[])
   
       levelSingletons[simVars.libpfasst.nlevels-1-i].op.setup(
 							      &(levelSingletons[simVars.libpfasst.nlevels-1-i].dataConfig),
-							      simVars.sim.domain_size,
-							      simVars.disc.use_spectral_basis_diffs
+							      simVars.sim.earth_radius							      
 							      );
     }
+
 
 
 
@@ -159,32 +158,32 @@ int main(int i_argc, char *i_argv[])
   for (int i = 0; i < simVars.libpfasst.nlevels; ++i) 
     nvars_per_field[i] = levelSingletons[i].dataConfig.physical_array_data_number_of_elements;  // number of degrees of freedom per vector field
 
-  // instantiate the PlaneDataCtx object 
-  PlaneDataCtx* pd_ctx = new PlaneDataCtx(
+  // instantiate the SphereDataCtx object 
+  SphereDataCtx* pd_ctx = new SphereDataCtx(
   					  &simVars,
   					  &levelSingletons,
 					  nnodes
   					  );
   // output the info for the levels
   for (int i = 0; i < simVars.libpfasst.nlevels; i++)
-    levelSingletons[simVars.libpfasst.nlevels-1-i].dataConfig.printInformation();
+    levelSingletons[simVars.libpfasst.nlevels-1-i].dataConfig.getConfigInformationString();
   
   // get the C string length (needed by Fortran...)
   int string_length = simVars.libpfasst.nodes_type.size();
 
   // call LibPFASST to advance in time
   fmain(
-	pd_ctx,                                       // user defined context
+   	pd_ctx,                                       // user defined context
 	&simVars.libpfasst.nlevels,                   // number of SDC levels
 	&simVars.libpfasst.niters,                    // number of SDC iterations
 	nnodes,                                       // number of SDC nodes 
-	(simVars.libpfasst.nodes_type).c_str(),       // type of nodes
+ 	(simVars.libpfasst.nodes_type).c_str(),       // type of nodes
 	&string_length,                               // length of (simVars.libpfasst.nodes_type).c_str()
 	&nfields,                                     // number of vector fields
 	nvars_per_field,                              // number of dofs per vector field
-	&(simVars.timecontrol.max_simulation_time),   // simulation time
-	&(simVars.timecontrol.current_timestep_size)  // time step size
-  	); 
+ 	&(simVars.timecontrol.max_simulation_time),   // simulation time
+   	&(simVars.timecontrol.current_timestep_size)  // time step size
+ 	); 
 
   // release the memory
   delete pd_ctx;
