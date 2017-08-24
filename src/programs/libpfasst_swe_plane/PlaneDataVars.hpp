@@ -31,7 +31,7 @@ public:
       {
 	// release the memory
 	MemBlockAlloc::free(
-			    flat_data_array, 
+			    flat_data_array,
 			    flat_data_array_size*sizeof(double)
 			    );
       }
