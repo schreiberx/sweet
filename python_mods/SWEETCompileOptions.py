@@ -28,6 +28,11 @@ class SWEETCompileOptions:
 		# Compile options
 		self.mode = 'release'
 		self.compiler = 'gnu'
+
+		self.compiler_c_exec = ''
+		self.compiler_cpp_exec = ''
+		self.compiler_fortran_exec = ''
+
 		self.debug_symbols = 'enable'
 		self.simd = 'enable'
 		self.mic = 'disable'
@@ -94,7 +99,7 @@ class SWEETCompileOptions:
 		if self.ld_flags:
 			retval += ' --ld-flags='+self.ld_flags
 
-		#retval += ' --fortran-source='+self.fortran_source
+		retval += ' --fortran-source='+self.fortran_source
 
 		retval += ' --program-binary-name='+self.program_binary_name
 
@@ -128,6 +133,10 @@ class SWEETCompileOptions:
 		retval += ' --sphere-spectral-space='+self.sphere_spectral_space
 		retval += ' --sphere-spectral-dealiasing='+self.sphere_spectral_dealiasing
 		retval += ' --libxml='+self.libxml
+
+		retval += ' --compiler-c-exec='+self.compiler_c_exec
+		retval += ' --compiler-cpp-exec='+self.compiler_cpp_exec
+		retval += ' --compiler-fortran-exec='+self.compiler_fortran_exec
 
 		# GUI
 		retval += ' --gui='+self.gui
@@ -191,6 +200,30 @@ class SWEETCompileOptions:
 				help='specify compiler to use: gnu, intel, llvm, pgi [default: %default]'
 		)
 		self.compiler = scons.GetOption('compiler')
+
+		scons.AddOption(	'--compiler-c-exec',
+				dest='compiler_c_exec',
+				type='string',
+				default='',
+				help='Specify program name for c compiler'
+		)
+		self.compiler_c_exec = scons.GetOption('compiler_c_exec')
+
+		scons.AddOption(	'--compiler-cpp-exec',
+				dest='compiler_cpp_exec',
+				type='string',
+				default='',
+				help='Specify program name for cpp compiler'
+		)
+		self.compiler_cpp_exec = scons.GetOption('compiler_cpp_exec')
+
+		scons.AddOption(	'--compiler-fortran-exec',
+				dest='compiler_fortran_exec',
+				type='string',
+				default='',
+				help='Specify program name for fortran compiler'
+		)
+		self.compiler_fortran_exec = scons.GetOption('compiler_fortran_exec')
 
 
 		scons.AddOption(	'--numa-block-allocator',
@@ -271,6 +304,16 @@ class SWEETCompileOptions:
 				help="Activate spectral space for data on the sphere (Spherical Harmonics) [default: %default]"
 		)
 		self.sphere_spectral_space = scons.GetOption('sphere_spectral_space')
+
+
+		scons.AddOption(	'--fortran-source',
+				dest='fortran_source',
+				type='choice',
+				choices=['enable', 'disable'],
+				default='disable',
+				help="Activate linking with Fortran source [default: %default]"
+		)
+		self.fortran_source = scons.GetOption('fortran_source')
 
 
 
@@ -477,16 +520,16 @@ class SWEETCompileOptions:
 		exec_name = self.program_name
 
 		if self.plane_spectral_space == 'enable':
-			exec_name+='_planespectral'
+			exec_name+='_plspec'
 
 		if self.plane_spectral_dealiasing == 'enable':
-			exec_name+='_planedealiasing'
+			exec_name+='_pldeal'
 
 		if self.sphere_spectral_space == 'enable':
-			exec_name+='_spherespectral'
+			exec_name+='_spspec'
 
 		if self.sphere_spectral_dealiasing == 'enable':
-			exec_name+='_spheredealiasing'
+			exec_name+='_spdeal'
 
 		if self.gui == 'enable':
 			exec_name+='_gui'
@@ -499,13 +542,13 @@ class SWEETCompileOptions:
 				exec_name+='_omp'
 			
 		if self.rexi_thread_parallel_sum == 'enable':
-			exec_name+='_rexithreadpar'
+			exec_name+='_rxthpar'
 
 		if self.numa_block_allocator in ['1', '2']:
-			exec_name+='_numaallocator'+self.numa_block_allocator
+			exec_name+='_numa'+self.numa_block_allocator
 
 		if self.libfft == 'enable':
-			exec_name+='_libfft'
+			exec_name+='_fft'
 
 		if self.llvm_gnu_override:
 			print("WARNING: adding _omp despite program was not compiled with LLVM. This is for compatibility reasons only!")

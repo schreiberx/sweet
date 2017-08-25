@@ -23,6 +23,28 @@ p.compile.sphere_spectral_space = 'enable'
 p.compile.sphere_spectral_dealiasing = 'enable'
 
 
+p.compile.compiler = 'intel'
+
+
+#
+# Use Intel MPI Compilers
+#
+p.compile.compiler_c_exec = 'mpicc'
+p.compile.compiler_cpp_exec = 'mpicxx'
+p.compile.compiler_fortran_exec = 'mpif90'
+
+
+#
+# Activate Fortran source
+#
+p.compile.fortran_source = 'enable'
+
+
+#
+# MPI?
+#
+p.compile.sweet_mpi = 'enable'
+
 
 # Verbosity mode
 p.runtime.verbosity = 2
@@ -207,17 +229,22 @@ for group in groups:
 	#
 	if True:
 		tsm = ts_methods[0]
+		p.runtime.timestep_size  = timestep_sizes[0]
 
 		p.runtime.timestepping_method = tsm[0]
 		p.runtime.timestepping_order = tsm[1]
 		p.runtime.timestepping_order2 = tsm[2]
 		p.runtime.rexi_use_direct_solution = tsm[3]
 
+		p.cluster.par_space_cores = 1
+		p.cluster.par_time_cores = 1
+
 		if len(tsm) > 4:
 			s = tsm[4]
 			p.load_from_dict(tsm[4])
 
 		p.gen_script('script_'+prefix_string_template+'_ref'+p.runtime.getUniqueID(p.compile), 'run.sh')
+
 
 
 	#

@@ -120,7 +120,7 @@ class SWEETClusterOptions:
 	#
 	# \return header, exec_prefix
 	#
-	def getScriptHeader(self, jobid, runtimeOptions):
+	def getScriptHeader(self, jobid, runtimeOptions, dirname):
 		#if self.par_mpi_time_threads != 1:
 		#	if self.max_cores_per_node % self.par_space_threads != 0:
 		#		raise ValueError('Number of cores on node not evenly dividable by space threads')
@@ -162,6 +162,9 @@ class SWEETClusterOptions:
 
 		# number of cores (CPUs) per node
 		num_cores_per_node = self.cores_per_node
+
+		if total_cores == 1:
+			num_cores_per_node = 1
 
 		#
 		# SETUP the following variables:
@@ -243,11 +246,13 @@ class SWEETClusterOptions:
 ## select one chunk with one CPU in it
 #PBS -l select="""+str(num_nodes)+""":ncpus="""+str(num_cores_per_node)+""":mpiprocs="""+str(num_cores_per_node)+"""
 #
-#PBS -N """+jobid+"""
-#PBS -o """+cwd+"/"+jobid+""".out
-#PBS -e """+cwd+"/"+jobid+""".err
+#PBS -N """+jobid[0:100]+"""
+#PBS -o """+cwd+"/"+dirname+"""/output.out
+#PBS -e """+cwd+"/"+dirname+"""/output.err
 
 """
 			mpi_exec_prefix = "mpiexec_mpt "
 
 		return content, mpi_exec_prefix
+
+
