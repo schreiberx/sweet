@@ -1,6 +1,14 @@
 #! /bin/bash
 
-for i in */run.sh; do
-	qsub "$i"
+
+if [ -z "$1" ]; then
+	DIRS=script_*
+else
+	DIRS=$@
+fi
+
+
+for i in $DIRS; do
+	qsub "$i/run.sh"
 done
 

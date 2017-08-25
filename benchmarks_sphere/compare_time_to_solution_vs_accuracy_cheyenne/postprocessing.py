@@ -7,9 +7,15 @@ import sys
 from subprocess import Popen, PIPE
 
 
+# Load simulation time to get reference file
+import jobs_create as jc
+simtime = jc.p.runtime.simtime
+print(simtime)
+t = ("%8.8f" % simtime).zfill(20)
 
-#datafile="output_prog_h_pert_t00000000000.10000000.csv"
-datafile="output_prog_h_t00000002000.00000000.csv"
+datafile="output_prog_h_t"+t+".csv"
+
+
 
 
 groups = [
@@ -23,6 +29,8 @@ groups = [
 	['ln1test', 1],
 	['ln2space', 2]
 ]
+
+
 
 for group_info in groups:
 	group = group_info[0]
@@ -98,6 +106,18 @@ for group_info in groups:
 				result = result[0:-1]
 
 			last_conv_value = float(result.split('\t')[-1])
+
+			f=open(rundir+"/output.out")
+			tag = "Simulation time (seconds): "
+			secs = 0
+			for l in f:
+				if l[0:len(tag)] == tag:
+					secs = l[len(tag):]
+
+			if secs[-1] == '\n':
+				secs = secs[0:-1]
+
+			result += "\t"+str(secs)
 
 			if prev_conv_value == 0.0:
 				conv_test.append(0.0)
