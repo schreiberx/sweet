@@ -173,7 +173,7 @@ public:
 		prog_phi = prog_h*simVars.sim.gravitation;
 		op.robert_uv_to_vortdiv(prog_u.getSphereDataPhysical(), prog_v.getSphereDataPhysical(), prog_vort, prog_div);
 
-		if (mpi_ranks == 0)
+		if (mpi_rank == 0)
 		{
 			simVars.outputConfig();
 
