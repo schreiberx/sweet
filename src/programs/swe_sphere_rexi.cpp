@@ -173,12 +173,15 @@ public:
 		prog_phi = prog_h*simVars.sim.gravitation;
 		op.robert_uv_to_vortdiv(prog_u.getSphereDataPhysical(), prog_v.getSphereDataPhysical(), prog_vort, prog_div);
 
-		simVars.outputConfig();
+		if (mpi_ranks == 0)
+		{
+			simVars.outputConfig();
 
-		std::cout << std::endl;
-		std::cout << "LOCAL PARAMETERS:" << std::endl;
-		std::cout << " + param_compute_error: " << param_compute_error << std::endl;
-		std::cout << std::endl;
+			std::cout << std::endl;
+			std::cout << "LOCAL PARAMETERS:" << std::endl;
+			std::cout << " + param_compute_error: " << param_compute_error << std::endl;
+			std::cout << std::endl;
+		}
 
 		/*
 		 * SETUP time steppers
