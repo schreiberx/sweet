@@ -1,9 +1,9 @@
 module main_module
   use iso_c_binding 
   use encap_module
-!  use transfer_module
-!  use feval_module
-!  use hooks_module
+  use transfer_module
+  use feval_module
+  use hooks_module
   use pf_mod_misdc
   use pf_mod_parallel
   use pf_mod_mpi
@@ -72,7 +72,7 @@ contains
     real(c_double)                           :: t, t_max, dt
     class(pf_factory_t),         allocatable :: factory
     class(sweet_data_factory_t), pointer     :: sd_factory_ptr
-!    class(sweet_sweeper_t),      pointer     :: sweet_sweeper_ptr
+    class(sweet_sweeper_t),      pointer     :: sweet_sweeper_ptr
     type(pf_comm_t)                          :: pf_comm
     type(pf_pfasst_t)                        :: pf
 
@@ -88,141 +88,154 @@ contains
      call MPI_COMM_RANK (MPI_COMM_WORLD, my_id, ierr)
      call MPI_COMM_SIZE (MPI_COMM_WORLD, num_procs, ierr)
 
- !     if (my_id == 0) then
-!         print *, 'Number of Processors: ', num_procs
-!      end if
-!      print *, 'My Id = ', my_id
+     if (my_id == 0) then
+        print *, 'Number of Processors: ', num_procs
+     end if
+     print *, 'My Id = ', my_id
 
-!      ! timestepping parameters
-!      t      = 0
-!      nsteps = int(t_max/dt)
+     ! timestepping parameters
+     t      = 0
+     nsteps = int(t_max/dt)
 
-!      ! LibPFASST parameters
-!      pf%nlevels    = nlevs   ! number of SDC levels
-!      pf%niters     = niters  ! number of SDC iterations
-!      pf%pipeline_G = .true.  ! pipeline the coarse prediction sweeps
-!      qtype         = translate_qtype(qtype_name, & ! select the type of nodes
-!                                      qnl)
+     ! LibPFASST parameters
+     pf%nlevels    = nlevs   ! number of SDC levels
+     pf%niters     = niters  ! number of SDC iterations
+     pf%pipeline_G = .true.  ! pipeline the coarse prediction sweeps
+     qtype         = translate_qtype(qtype_name, & ! select the type of nodes
+                                     qnl)
 
-!      if (nlevs == 3) then
-!         nvars = [nfields*nvars_per_field(1), &
-!                  nfields*nvars_per_field(2), &
-!                  nfields*nvars_per_field(3)]    ! number of degrees of freedom for the levels
-!      else if (nlevs == 2) then
-!         nvars = [nfields*nvars_per_field(1), &
-!                  nfields*nvars_per_field(2)]    ! number of degrees of freedom for the levels
-!      else if (nlevs == 1) then
-!         nvars = [nfields*nvars_per_field(1)]    ! number of degrees of freedom for the levels
-!      else 
-!         stop 'This number of levels is not supported yet'
-!      end if
+     print *, qtype
 
-!      ! loop over levels to initialize level-specific data structures
-!      do level = 1, pf%nlevels
+     if (nlevs == 3) then
+        nvars = [nfields*nvars_per_field(1), &
+                 nfields*nvars_per_field(2), &
+                 nfields*nvars_per_field(3)]    ! number of degrees of freedom for the levels
+     else if (nlevs == 2) then
+        nvars = [nfields*nvars_per_field(1), &
+                 nfields*nvars_per_field(2)]    ! number of degrees of freedom for the levels
+     else if (nlevs == 1) then
+        nvars = [nfields*nvars_per_field(1)]    ! number of degrees of freedom for the levels
+     else 
+        stop 'This number of levels is not supported yet'
+     end if
 
-!        ! define the level id
-!        pf%levels(level)%level = level ! confusing!
+     ! loop over levels to initialize level-specific data structures
+     do level = 1, pf%nlevels
 
-!        ! define number of sweeps for each level
-!        pf%levels(level)%nsweeps_pred = 1
-!        if (level > 1) then
-!           pf%levels(level)%nsweeps   = 1
-!        else
-!           pf%levels(level)%nsweeps   = 2
-!        end if
+       ! define the level id
+       pf%levels(level)%level = level ! confusing!
 
-!        ! allocate space for the levels
-!        allocate(pf%levels(level)%shape(level))
-!        pf%levels(level)%shape(level) = nvars(level)
+       ! define number of sweeps for each level
+       if (pf%nlevels == 1) then
+          
+          pf%levels(level)%nsweeps      = 1
+          pf%levels(level)%nsweeps_pred = 1
+             
+       else
+
+          if (level > 1) then
+             pf%levels(level)%nsweeps      = 1
+             pf%levels(level)%nsweeps_pred = 1
+          else
+             pf%levels(level)%nsweeps      = 1
+             pf%levels(level)%nsweeps_pred = 1
+          end if
+       end if
+
+       ! allocate space for the levels
+       allocate(pf%levels(level)%shape(level))
+       pf%levels(level)%shape(level) = nvars(level)
        
-!        ! define the properties (number of degrees of freedom and number of SDC nodes)
-!        pf%levels(level)%nvars  = nvars(level)
-!        pf%levels(level)%nnodes = nnodes(level)
+       ! define the properties (number of degrees of freedom and number of SDC nodes)
+       pf%levels(level)%nvars  = nvars(level)
+       pf%levels(level)%nnodes = nnodes(level)
        
-!        ! allocate space for the objects at this level
-!        allocate(sweet_level_t::pf%levels(level)%ulevel)
-!        allocate(sweet_data_factory_t::pf%levels(level)%ulevel%factory)
-!        allocate(sweet_sweeper_t::pf%levels(level)%ulevel%sweeper)
+       ! allocate space for the objects at this level
+       allocate(sweet_level_t::pf%levels(level)%ulevel)
+       allocate(sweet_data_factory_t::pf%levels(level)%ulevel%factory)
+       allocate(sweet_sweeper_t::pf%levels(level)%ulevel%sweeper)
 
-!        ! cast the object into sweet data objects
-!        sd_factory_ptr    => as_sweet_data_factory(pf%levels(level)%ulevel%factory)
-!        sweet_sweeper_ptr => as_sweet_sweeper(pf%levels(level)%ulevel%sweeper)    
+       ! cast the object into sweet data objects
+       sd_factory_ptr    => as_sweet_data_factory(pf%levels(level)%ulevel%factory)
+       sweet_sweeper_ptr => as_sweet_sweeper(pf%levels(level)%ulevel%sweeper)    
 
-!        ! pass the pointer to sweet data context to LibPFASST
-!        sd_factory_ptr%ctx    = user_ctx_ptr
-!        sweet_sweeper_ptr%ctx = user_ctx_ptr
+       ! pass the pointer to sweet data context to LibPFASST
+       sd_factory_ptr%ctx    = user_ctx_ptr
+       sweet_sweeper_ptr%ctx = user_ctx_ptr
        
-!        ! initialize the sweeper data
-!        sweet_sweeper_ptr%level           = level
-!        sweet_sweeper_ptr%nnodes          = nnodes(level)
-!        sweet_sweeper_ptr%sweep_niter     = 0
-!        sweet_sweeper_ptr%sweep_niter_max = pf%niters
-!        sweet_sweeper_ptr%dt              = dt
+       ! initialize the sweeper data
+       sweet_sweeper_ptr%level           = level
+       sweet_sweeper_ptr%nnodes          = nnodes(level)
+       sweet_sweeper_ptr%sweep_niter     = 0
+       sweet_sweeper_ptr%sweep_niter_max = pf%niters
+       sweet_sweeper_ptr%dt              = dt
        
-!     end do
+    end do
 
-!     ! initialize the mpi and pfasst objects
-!     call pf_mpi_setup(pf_comm, & 
-!                       pf)
-!     call pf_pfasst_setup(pf)
+    ! initialize the mpi and pfasst objects
+    call pf_mpi_setup(pf_comm, & 
+                      pf)
+    call pf_pfasst_setup(pf)
+
+    print *, "t = ", t
     
-!     ! initialize the state vector at each level
-!     do level = 1, pf%nlevels
+    ! initialize the state vector at each level
+    do level = 1, pf%nlevels
 
-!        call finitial(pf%levels(level)%ulevel%sweeper, & 
-!                      pf%levels(level)%Q(1),           & 
-!                      pf%levels(level)%q0,             &
-!                      t,                               &
-!                      dt)
+       call finitial(pf%levels(level)%ulevel%sweeper, & 
+                     pf%levels(level)%Q(1),           & 
+                     pf%levels(level)%q0,             &
+                     t_max,                           &
+                     dt)
 
-!     end do
+    end do
 
-! !    allocate(z(nvars(pf%nlevels)))
-! !    call pf%levels(pf%nlevels)%q0%unpack(z)
-! !    call pf%levels(pf%nlevels)%q0%pack(z)
+    !allocate(z(nvars(pf%nlevels)))
+    !call pf%levels(pf%nlevels)%q0%unpack(z)
+    !call pf%levels(pf%nlevels)%q0%pack(z)
 
   
-!    ! define the hooks to output data to the terminal (residual and error)
-!     ! call pf_add_hook(pf,            &
-!     !                  pf%nlevels,    &
-!     !                  PF_POST_SWEEP, &
-!     !                  fecho_error)
-!     call pf_add_hook(pf,             &
-!                      -1,             &
-!                      PF_POST_SWEEP,  &
-!                      fecho_residual)   
-!     ! call pf_add_hook(pf,           &
-!     !                  pf%nlevels,   &
-!     !                  PF_POST_STEP, &
-!     !                  fecho_interpolation_errors)
-!     call pf_add_hook(pf,                 &
-!                      pf%nlevels,         &
-!                      PF_POST_ITERATION,  &
-!                      fecho_output_solution)
+   ! define the hooks to output data to the terminal (residual and error)
+    ! call pf_add_hook(pf,            &
+    !                  pf%nlevels,    &
+    !                  PF_POST_SWEEP, &
+    !                  fecho_error)
+    call pf_add_hook(pf,             &
+                     -1,             &
+                     PF_POST_SWEEP,  &
+                     fecho_residual)   
+    ! call pf_add_hook(pf,           &
+    !                  pf%nlevels,   &
+    !                  PF_POST_STEP, &
+    !                  fecho_interpolation_errors)
+    call pf_add_hook(pf,                 &
+                     -1,         &
+                     PF_POST_ITERATION,  &
+                     fecho_output_solution)
 
-!     ! advance in time with libpfasst
-!     level = nlevs
+    ! advance in time with libpfasst
+    level = nlevs
 
-!     call MPI_BARRIER(MPI_COMM_WORLD,mpi_stat)
+    call MPI_BARRIER(MPI_COMM_WORLD,mpi_stat)
 
-!     call pf_pfasst_run(pf,                    & 
-!                        pf%levels(level)%Q(1), &
-!                        dt,                    &
-!                        t,                     &
-!                        nsteps)
-!     t = t + dt*nsteps
+    call pf_pfasst_run(pf,                    & 
+                       pf%levels(level)%Q(1), &
+                       dt,                    &
+                       t,                     &
+                       nsteps)
+    t = t + dt*nsteps
 
-!     ! finalize the simulation (does nothing right now)
-!     do level = 1, pf%nlevels
+    ! finalize the simulation (does nothing right now)
+    do level = 1, pf%nlevels
 
-!        call ffinal(pf%levels(level)%ulevel%sweeper,   & 
-!                    pf%levels(level)%Q(nnodes(level)), &
-!                    nnodes(level),                     &
-!                    pf%niters)
+       call ffinal(pf%levels(level)%ulevel%sweeper,   & 
+                   pf%levels(level)%Q(nnodes(level)), &
+                   nnodes(level),                     &
+                   pf%niters)
 
-!     end do
+    end do
 
-!     call MPI_BARRIER(MPI_COMM_WORLD,mpi_stat)
+    call MPI_BARRIER(MPI_COMM_WORLD,mpi_stat)
 
     ! release memory
     call pf_pfasst_destroy(pf)

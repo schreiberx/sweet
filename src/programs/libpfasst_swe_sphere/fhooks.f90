@@ -20,10 +20,11 @@ module hooks_module
        integer,intent(in)           :: step,iter
      end subroutine cecho_residual
 
-     subroutine cecho_output_solution(i_ctx, i_Y, i_current_iter, i_nnodes, i_niter) bind(c, name="cecho_output_solution")
+     subroutine cecho_output_solution(i_ctx, i_Y, i_current_proc, i_current_iter, i_nnodes, i_niter) & 
+          bind(c, name="cecho_output_solution")
        use iso_c_binding
        type(c_ptr),           value :: i_ctx, i_Y
-       integer,               value :: i_current_iter, i_nnodes, i_niter
+       integer,               value :: i_current_proc, i_current_iter, i_nnodes, i_niter
      end subroutine cecho_output_solution
 
   end interface
@@ -249,20 +250,21 @@ contains
     integer                                  :: ierr, num_procs
 
     call MPI_COMM_SIZE (MPI_COMM_WORLD, num_procs, ierr)
-    if (state%proc == num_procs) then
+!    if (state%proc == num_procs) then
 
        sweet_sweeper_ptr => as_sweet_sweeper(level%ulevel%sweeper)
        x_ptr             => as_sweet_data_encap(level%Q(sweet_sweeper_ptr%nnodes))
 
        call cecho_output_solution(sweet_sweeper_ptr%ctx,  &
                                   x_ptr%c_sweet_data_ptr, &
+                                  state%proc,             &
                                   state%iter,             &
                                   level%nnodes,           &
                                   pf%niters)
 
        print *, 'step = ', state%step, ' iter = ', state%iter, ' processor = ', state%proc
 
-    end if
+!    end if
 
   end subroutine fecho_output_solution
 

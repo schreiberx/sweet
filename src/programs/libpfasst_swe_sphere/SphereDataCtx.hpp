@@ -5,6 +5,7 @@
 #include <sweet/SimulationVariables.hpp>
 #include "LevelSingleton.hpp"
 
+#include "SWE_Sphere_TS_l_erk.hpp"
 #include "SWE_Sphere_TS_l_erk_n_erk.hpp"
 #include "SWE_Sphere_TS_l_irk.hpp"
 
@@ -40,7 +41,6 @@ public:
 	// and first order integration for implicit (only order currently supported)
 	simVars->disc.timestepping_order  = 1; 
 	simVars->disc.timestepping_order2 = 1; 
-	simVars->disc.use_staggering      = false; 
 		
 	// these timesteppers contain the functions called by LibPFASST 
 	timestepper_l_erk_n_erk[level] = 
@@ -48,16 +48,18 @@ public:
 				   *simVars,
 				   ((*levelSingletons)[level].op)
 				   );
+	timestepper_l_erk_n_erk[level]->setup(simVars->disc.timestepping_order);
+
 	timestepper_l_irk[level] = 
 	  new SWE_Sphere_TS_l_irk(
 				  *simVars,
 				  ((*levelSingletons)[level].op)
 				  );
-
-	// use fourth order integration for the linear - nonlinear erk
-	// this timestepper will be used to obtain a SWEET-generated reference solution
-	simVars->disc.timestepping_order  = 4; 
-	simVars->disc.timestepping_order2 = 4; 
+	
+	timestepper_l_irk[level]->setup(simVars->disc.timestepping_order,
+					simVars->timecontrol.current_timestep_size,
+					simVars->rexi.use_sphere_extended_modes);
+	
       }
   }
 

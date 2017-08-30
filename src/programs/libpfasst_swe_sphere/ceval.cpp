@@ -9,6 +9,7 @@
 
 #include "SWE_Sphere_TS_l_irk.hpp"
 #include "SWE_Sphere_TS_l_erk_n_erk.hpp"
+#include "SWE_Sphere_TS_l_erk.hpp"
 
 #include "ceval.hpp"
 #include "cencap.hpp"
@@ -62,9 +63,9 @@ extern "C"
     SimulationVariables* simVars(i_ctx->get_simulation_variables());
     
     // initialize the variables
-    phi_Y.physical_set_all_value(simVars->sim.h0);
-    vort_Y.physical_set_all_value(0.0);
-    div_Y.physical_set_all_value(0.0);
+    phi_Y.physical_set_zero();
+    vort_Y.physical_set_zero();
+    div_Y.physical_set_zero();
 
     // get the configuration for this level
     SphereDataConfig* data_config = i_ctx->get_sphere_data_config(o_Y->get_level());
@@ -93,12 +94,52 @@ extern "C"
     
     // output the configuration
     simVars->outputConfig();
-    
-    // make sure that the spectral data is up to date
-    phi_Y.request_data_spectral();  
-    vort_Y.request_data_spectral();  
-    div_Y.request_data_spectral();  
 
+    double current_simulation_time = 0;
+    int nsteps = 0;
+    /*    
+    
+    // get the timestepper 
+    SWE_Sphere_TS_l_erk_n_erk* timestepper = i_ctx->get_l_erk_n_erk_timestepper(o_Y->get_level());
+    
+    write_file(*i_ctx, phi_Y,  "prog_phi_init");
+    write_file(*i_ctx, vort_Y, "prog_vort_init");
+    write_file(*i_ctx, div_Y,  "prog_div_init");
+
+    std::cout << "current_simulation_time = " << current_simulation_time 
+	      << " i_t = " << i_t 
+	      << std::endl;
+    
+    i_dt /= 10;
+    std::cout << "i_dt = " << i_dt << std::endl;
+
+    // compute the reference solution (i.e., obtained with the reference time stepper)
+    while (current_simulation_time < i_t)
+      {
+	if (nsteps%100 == 0)
+	  std::cout << "current_simulation_time = "
+		    << current_simulation_time
+		    << std::endl;
+
+	// solve the implicit system using the Helmholtz solver
+	timestepper->run_timestep(
+				  phi_Y,
+				  vort_Y,
+				  div_Y,
+				  i_dt,
+				  simVars->timecontrol.max_simulation_time
+				  );
+	
+	current_simulation_time += i_dt;
+	nsteps += 1;
+      }
+
+    write_file(*i_ctx, phi_Y,  "prog_phi_ref");
+    write_file(*i_ctx, vort_Y, "prog_vort_ref");
+    write_file(*i_ctx, div_Y,  "prog_div_ref");
+
+    FatalError("stop the simulation");
+    */
   }
 
   // finalizes the time step when libpfasst is done 
@@ -146,28 +187,31 @@ extern "C"
     // get the time step parameters
     SimulationVariables* simVars = i_ctx->get_simulation_variables();
 
+    /*
     // return immediately if no nonlinear terms
     if (simVars->pde.use_nonlinear_equations == 0)
       {
 	phi_F1.physical_set_zero();
 	vort_F1.physical_set_zero();
 	div_F1.physical_set_zero();
+
 	return;
       }
-
+    */
+ 
     SWE_Sphere_TS_l_erk_n_erk* timestepper = i_ctx->get_l_erk_n_erk_timestepper(i_Y->get_level());
 		  
     // compute the explicit nonlinear right-hand side
-    timestepper->euler_timestep_update_nonlinear(
-						 phi_Y, 
-						 vort_Y,
-						 div_Y,
-						 phi_F1,
-						 vort_F1,
-						 div_F1, 
-						 simVars->timecontrol.max_simulation_time
-						 );
-  
+    timestepper->euler_timestep_update(
+				       phi_Y, 
+				       vort_Y,
+				       div_Y,
+				       phi_F1,
+				       vort_F1,
+				       div_F1, 
+				       simVars->timecontrol.max_simulation_time
+				       );
+    
   }
 
   // evaluates the first implicit piece o_F2 = F2(i_Y)
@@ -186,12 +230,17 @@ extern "C"
     SphereData& vort_F2 = o_F2->get_vort();
     SphereData& div_F2  = o_F2->get_div();
 
+    phi_F2.physical_set_zero();
+    vort_F2.physical_set_zero();
+    div_F2.physical_set_zero();
+
     // get the simulation variables
     SimulationVariables* simVars = i_ctx->get_simulation_variables();
     
+    /*
     // get the explicit timestepper 
     SWE_Sphere_TS_l_erk_n_erk* timestepper = i_ctx->get_l_erk_n_erk_timestepper(i_Y->get_level());
-    
+
     // compute the linear right-hand side
     timestepper->euler_timestep_update_linear(
 					      phi_Y, 
@@ -202,7 +251,7 @@ extern "C"
 					      div_F2,
 					      simVars->timecontrol.max_simulation_time
 					      );
-
+    */
   }
 
   // solves the first implicit system for io_Y
@@ -234,7 +283,7 @@ extern "C"
     div_Y  = div_Rhs;
     
     SWE_Sphere_TS_l_irk* timestepper = i_ctx->get_l_irk_timestepper(io_Y->get_level());
-
+    /*
     // solve the implicit system using the Helmholtz solver
     timestepper->run_timestep(
 			      phi_Y,
@@ -243,7 +292,7 @@ extern "C"
 			      i_dt,
 			      simVars->timecontrol.max_simulation_time
 			      );
-
+    */
     // now recompute F2 with the new value of Y
     ceval_f2(
 	     io_Y, 
