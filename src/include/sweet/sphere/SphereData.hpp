@@ -685,7 +685,7 @@ public:
 
 
 	SphereData operator*(
-			const double i_value
+			double i_value
 	)	const
 	{
 		request_data_spectral();
@@ -709,7 +709,7 @@ public:
 
 
 	const SphereData& operator*=(
-			const double i_value
+			double i_value
 	)	const
 	{
 		request_data_spectral();
@@ -997,7 +997,7 @@ public:
 	}
 
 
-	const double physical_get(
+	double physical_get(
 			int i_lon,
 			int i_lat
 	)	const
@@ -1985,7 +1985,7 @@ public:
 inline
 static
 SphereData operator*(
-		const double i_value,
+		double i_value,
 		const SphereData &i_array_data
 )
 {

@@ -26,23 +26,23 @@ class SWEETJobGeneration:
 
 
 
-	def create_job_script(self, dirname):
+	def create_job_script(self, dirpath, dirname):
 		self.compile.makeOptionsConsistent()
 
 		job_id = 'sweet_'+self.runtime.getUniqueID(self.compile)
 
-		content = self.cluster.getScriptHeader()
+		content, mpiexec_prefix = self.cluster.getScriptHeader('script'+self.runtime.getUniqueID(self.compile), self.runtime, dirname)
 
 		content += """
 
-cd \""""+dirname+"""\"
+cd \""""+dirpath+"""\"
 
 BASEDIR="`pwd`"
 rm -f ./prog_h_*
 rm -f ./prog_u_*
 rm -f ./prog_v_*
 
-SWEETROOT=\""""+dirname+"""/../../../"
+SWEETROOT=\""""+dirpath+"""/../../../\"
 cd "$SWEETROOT"
 
 pwd
@@ -53,6 +53,7 @@ source ./local_software/env_vars.sh || exit 1
 #make clean || exit 1
 
 """
+
 
 		#
 		# Setup compile options
@@ -65,19 +66,25 @@ echo "$SCONS"
 $SCONS || exit 1
 
 """
+
 		elif self.cluster.target_machine == 'yellowstone':
-			f = open('compile_yellowstone.sh', a)
+			f = open('compile_yellowstone.sh', 'w')
 			f.write("#! /bin/bash\n")
 			f.write("\n")
 			f.write("scons "+self.compile.getSConsParams()+'\n')
 			f.write("\n")
 
 		elif self.cluster.target_machine == 'cheyenne':
-			f = open('compile_cheyenne.sh', a)
+			fn = 'compile_cheyenne.sh'
+			f = open(fn, 'w')
 			f.write("#! /bin/bash\n")
+			f.write("\n")
+			f.write("SWEETROOT=\""+dirpath+"/../../../\"\n")
+			f.write("cd \"$SWEETROOT\"\n")
 			f.write("\n")
 			f.write("scons "+self.compile.getSConsParams()+'\n')
 			f.write("\n")
+			os.chmod(fn, 0o755)
 			print("COMPILE WITH: scons "+self.compile.getSConsParams()+' -j 4')
 			pass
 
@@ -97,7 +104,7 @@ cd "$BASEDIR"
 		content += """
 
 echo "$EXEC"
-$EXEC || exit 1
+"""+mpiexec_prefix+"""$EXEC || exit 1
 """
 
 		return content
@@ -113,7 +120,7 @@ $EXEC || exit 1
 		fullpath = dirname+'/'+scriptname
 		print("WRITING "+fullpath)
 		script_file = open(fullpath, 'w')
-		script_file.write(self.create_job_script(os.getcwd()+'/'+dirname))
+		script_file.write(self.create_job_script(os.getcwd()+'/'+dirname, dirname))
 		script_file.close()
 
 		st = os.stat(fullpath)

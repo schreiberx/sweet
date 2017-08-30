@@ -61,16 +61,25 @@ class SWEETClusterOptions:
 
 		if self.target_machine == 'isambard':
 			self.total_max_cores = 4096
+			self.total_max_modes = 512
+			self.total_max_cores = self.cores_per_node*self.total_max_modes
 			raise Exception("TODO")
 
 		elif self.target_machine == "yellowstone":
-			self.total_max_cores = 4096
 			self.cores_per_node = 16
+			self.total_max_modes = 512
+			self.total_max_cores = self.cores_per_node*self.total_max_modes
 			raise Exception("TODO")
 
 		elif self.target_machine == "cheyenne":
-			self.total_max_cores = 4096
 			self.cores_per_node = 36
+
+			# REAL number:
+			# self.total_max_modes = 4032
+
+			# Low number to avoid accidentally wasting computing time
+			self.total_max_modes = 128
+			self.total_max_cores = self.cores_per_node*self.total_max_modes
 
 		else:
 			print("Unknown Target: "+str(self.target_machine))
@@ -105,7 +114,13 @@ class SWEETClusterOptions:
 
 
 
-	def getScriptHeader(self):
+	##################################################################
+	# return header for job execution script and the parallel job execution command
+	##################################################################
+	#
+	# \return header, exec_prefix
+	#
+	def getScriptHeader(self, jobid, runtimeOptions, dirname):
 		#if self.par_mpi_time_threads != 1:
 		#	if self.max_cores_per_node % self.par_space_threads != 0:
 		#		raise ValueError('Number of cores on node not evenly dividable by space threads')
@@ -117,6 +132,8 @@ class SWEETClusterOptions:
 		mpi_ranks_total = self.par_time_cores
 		mpi_ranks_per_node = math.floor(self.cores_per_node/self.par_space_cores)
 
+		cwd = os.getcwd()
+
 		for i in range(6):
 			if i == 5:
 				raise Exception("Unable to find SWEET main directory")
@@ -125,8 +142,39 @@ class SWEETClusterOptions:
 			if os.path.exists(sweetdir+'/local_software'):
 				break
 
-		content = "#!/bin/bash\n"
-		content += "# TARGET MACHINE: "+self.target_machine
+		#
+		# SWEET specific allocation starts here
+		#
+		# Number of cores to use for space parallelization
+		# self.par_space_cores
+		#
+		# Number of cores to use for time parallelization
+		# self.par_time_cores
+		#
+
+		# SETUP variables which are shared by all job scripts
+
+		# total number of nodes
+		total_cores = self.par_space_cores*self.par_time_cores
+
+		# total number of nodes
+		num_nodes = int(math.ceil(total_cores/self.cores_per_node))
+
+		# number of cores (CPUs) per node
+		num_cores_per_node = self.cores_per_node
+
+		if total_cores == 1:
+			num_cores_per_node = 1
+
+		#
+		# SETUP the following variables:
+		#
+		# content
+		#    e.g. "/bin/bash\n#PBS....."
+		#
+		# mpi_exec_prefix
+		#    e.g. mpirun -n XXX
+		#
 
 		if self.target_machine == 'yellowstone':
 			#
@@ -138,6 +186,8 @@ class SWEETClusterOptions:
 			# More example job scripts:
 			# https://www2.cisl.ucar.edu/resources/computational-systems/yellowstone/using-computing-resources/running-jobs/platform-lsf-job-script-examples
 			#
+			content = "#!/bin/bash\n"
+			content += "# TARGET MACHINE: "+self.target_machine
 
 			content += """
 #
@@ -162,9 +212,27 @@ class SWEETClusterOptions:
 #
 
 """
+			raise Exception("TODO")
+			#
+			# AND PAY ATTENTION TO NODE SHARING IF USING ONLY SINGLE CORE!!!!!!!!!!!
+			#
+			mpi_exec_prefix = ""
+
 
 		elif self.target_machine == 'cheyenne':
 
+			#
+			# CHEYENNE:
+			#  - Dual socket (18 cores / socket)
+			#  - 36 cores in total per node
+			#
+			# 9-D enhanced hypercube topology
+			# 100-Gbps link bandwidth — 0.5 μs latency
+			# 36 TB/s bisection bandwidth
+			#
+
+			content = "#!/bin/bash\n"
+			content += "# TARGET MACHINE: "+self.target_machine
 			content += """#
 ## project code
 #PBS -A NCIS0002
@@ -172,19 +240,19 @@ class SWEETClusterOptions:
 ## economy queue
 #PBS -q economy
 ## shared queue
-##PBS -q share
+######PBS -q share
 ## wall-clock time (hrs:mins:secs)
 #PBS -l walltime=01:00:00
 ## select one chunk with one CPU in it
-#PBS -l select=1:ncpus=1
+#PBS -l select="""+str(num_nodes)+""":ncpus="""+str(num_cores_per_node)+""":mpiprocs="""+str(num_cores_per_node)+"""
 #
-#PBS -N """+jobid+"""
-#PBS -o """+cwd+"/"+jobid+""".out
-#PBS -e """+cwd+"/"+jobid+""".err
-
-export MPI_USE_ARRAY=false
+#PBS -N """+jobid[0:100]+"""
+#PBS -o """+cwd+"/"+dirname+"""/output.out
+#PBS -e """+cwd+"/"+dirname+"""/output.err
 
 """
+			mpi_exec_prefix = "mpiexec_mpt "
+
+		return content, mpi_exec_prefix
 
 
-		return content

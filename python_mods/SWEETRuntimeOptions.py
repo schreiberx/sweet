@@ -138,13 +138,13 @@ class SWEETRuntimeOptions():
 	def getUniqueID(self, compileOptions):
 		idstr = ''
 
-		idstr += '_bench'+str(self.bench_id)
+		idstr += '_b'+str(self.bench_id)
 
 		idstr += '_g'+str(self.g)
 		idstr += '_h'+str(self.h)
 		idstr += '_f'+str(self.f)
 
-		idstr += '_pde'+str(self.pde_id)
+		idstr += '_p'+str(self.pde_id)
 
 		if compileOptions.plane_or_sphere == 'sphere':
 			idstr += '_a'+str(self.r)
@@ -162,17 +162,17 @@ class SWEETRuntimeOptions():
 
 		if self.rexi_method != '':
 			if self.rexi_use_direct_solution:
-				idstr += '_REXIDIRECT'
+				idstr += '_REXIDIR'
 			else:
 				if self.rexi_method == "file":
-					idstr += '_REXIFILE'
+					idstr += '_REXIFIL'
 					idstr += '_n'+str(self.rexi_file_n).zfill(8)
 					idstr += '_h'+str(self.rexi_file_h)
-					idstr += '_testabs'+str(self.rexi_file_test_abs).zfill(3)
-					idstr += '_maxerr'+str(self.rexi_file_max_error)
+					idstr += '_teabs'+str(self.rexi_file_test_abs).zfill(3)
+					idstr += '_mxer'+str(self.rexi_file_max_error)
 
 				elif self.rexi_method == "terry":
-					idstr += '_REXITERRY'
+					idstr += '_REXITER'
 					idstr += '_m'+str(self.rexi_m).zfill(8)
 					idstr += '_h'+str(self.rexi_h)
 
@@ -182,21 +182,21 @@ class SWEETRuntimeOptions():
 					idstr += '_sx'+str(self.rexi_ci_sx)
 					idstr += '_sy'+str(self.rexi_ci_sy)
 					idstr += '_mu'+str(self.rexi_ci_mu)
-					idstr += '_prim'+str(self.rexi_ci_primitive)
+					idstr += '_pr'+str(self.rexi_ci_primitive)
 
-				idstr += '_norm'+str(self.rexi_normalization)
-				idstr += '_half'+str(self.rexi_half_poles)
+				idstr += '_nrm'+str(self.rexi_normalization)
+				idstr += '_hlf'+str(self.rexi_half_poles)
 	
 			#if self.plane_or_sphere == 'sphere':
-			idstr += '_preal'+str(self.rexi_sphere_preallocation)
-			idstr += '_extm'+str(self.rexi_extended_modes).zfill(2)
+			idstr += '_pre'+str(self.rexi_sphere_preallocation)
+			idstr += '_ext'+str(self.rexi_extended_modes).zfill(2)
 
 			#idstr += '_rexithreadpar'+str(1 if self.rexi_thread_par else 0)
 
 		idstr += '_C'+str(self.timestep_size).zfill(8)
 
 		if self.max_timesteps != -1:
-			idstr += '_Tn'+str(self.max_timesteps).zfill(3)
+			idstr += '_T'+str(self.max_timesteps).zfill(3)
 
 		if self.mode_res != -1:
 			idstr += '_M'+str(self.mode_res).zfill(4)
@@ -228,7 +228,7 @@ class SWEETRuntimeOptions():
 
 		retval += ' -v '+str(self.verbosity)
 
-		retval += ' -C '+str(-self.timestep_size)
+		retval += ' --dt='+str(self.timestep_size)
 
 		if self.max_timesteps != -1:
 			retval += ' -T '+str(self.max_timesteps)

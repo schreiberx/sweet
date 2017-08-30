@@ -260,6 +260,7 @@ if p.compiler == 'intel':
 	env.Replace(LINK='icpc')
 
 	if p.fortran_source == 'enable':
+		env.Append(LIBS=['gfortran'])
 		env.Append(LIBS=['ifcore'])
 		env.Replace(F90='ifort')
 		env.Append(F90FLAGS=' -fpp')
@@ -307,9 +308,10 @@ if p.compiler == 'llvm':
 	env.Replace(CXX = 'clang++')
 
 	if p.fortran_source == 'enable':
-		#env.Append(LIBS=['gfortran'])
+		env.Append(LIBS=['gfortran'])
 		print("TODO: LLVM compiler not yet supported with fortran enabled")
 		Exit(-1)
+
 
 
 
@@ -552,6 +554,17 @@ env.Append(CPPPATH = ['/usr/local/include', '/usr/include'])
 
 
 
+
+if p.compiler_c_exec != '':
+	env.Replace(CC = p.compiler_c_exec)
+
+if p.compiler_cpp_exec != '':
+	env.Replace(CXX = p.compiler_cpp_exec)
+	env.Replace(LINK = p.compiler_cpp_exec)
+
+if p.compiler_fortran_exec != '':
+	env.Replace(F90 = p.compiler_fortran_exec)
+
 #
 # FORTRAN stuff
 #
@@ -564,17 +577,6 @@ env.Append(CPPPATH = ['/usr/local/include', '/usr/include'])
 #    os.makedirs(fortran_mod_dir)
 #env = env.Clone(FORTRANMODDIR = fortran_mod_dir)
 
-
-#
-# MAC cluster
-#
-
-#print hostname
-if hostname[0:4] == "mac-":
-	env.Append(CPPPATH = ['/usr/local/include', '/usr/include', '/lrz/sys/libraries/fftw/3.3.3/avx/include'])
-	env.Append(LINKFLAGS=' -L/lrz/sys/libraries/fftw/3.3.3/avx/lib_omp ')
-	env.Append(LINKFLAGS=' -L/home/hpc/pr63so/di69fol/local/numactl-2.0.8/lib64 ')
-	env.Append(CPPPATH = ['/home/hpc/pr63so/di69fol/local/numactl-2.0.8/include'])
 
 # also include the 'src' directory to search for dependencies
 env.Append(CPPPATH = ['.', './src/', './src/include'])
