@@ -1,5 +1,5 @@
 /*
- * AppTestSWE.hpp
+ * swe_sphere_rexi.cpp
  *
  *  Created on: 15 Aug 2016
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
@@ -76,6 +76,11 @@ public:
 
 	SphereDiagnostics sphereDiagnostics;
 
+#if SWEET_MPI
+	int mpi_rank;
+#endif
+
+
 public:
 	SimulationInstance()	:
 		op(sphereDataConfig, simVars.sim.earth_radius),
@@ -88,6 +93,9 @@ public:
 #endif
 		sphereDiagnostics(sphereDataConfig, simVars)
 	{
+#if SWEET_MPI
+		MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+#endif
 		reset();
 	}
 
@@ -138,6 +146,7 @@ public:
 		if (simVars.sim.CFL < 0)
 			simVars.timecontrol.current_timestep_size = -simVars.sim.CFL;
 
+		std::cout << simVars.timecontrol.current_timestep_size << std::endl;
 
 		if (simVars.timecontrol.current_timestep_size <= 0)
 		{
@@ -150,11 +159,7 @@ public:
 				simVars.timecontrol.current_timestep_size = 0.001*simVars.sim.earth_radius/(double)sphereDataConfig->physical_num_lat;
 		}
 
-
-		if (simVars.misc.output_each_sim_seconds <= 0)
-			simVars.misc.output_each_sim_seconds = 60*30;	// output every 1/2 hour
-
-		if (simVars.sim.CFL >= 0)
+		if (simVars.timecontrol.current_timestep_size <= 0)
 			FatalError("Only fixed time step size supported");
 
 
@@ -168,12 +173,15 @@ public:
 		prog_phi = prog_h*simVars.sim.gravitation;
 		op.robert_uv_to_vortdiv(prog_u.getSphereDataPhysical(), prog_v.getSphereDataPhysical(), prog_vort, prog_div);
 
-		simVars.outputConfig();
+		if (mpi_rank == 0)
+		{
+			simVars.outputConfig();
 
-		std::cout << std::endl;
-		std::cout << "LOCAL PARAMETERS:" << std::endl;
-		std::cout << " + param_compute_error: " << param_compute_error << std::endl;
-		std::cout << std::endl;
+			std::cout << std::endl;
+			std::cout << "LOCAL PARAMETERS:" << std::endl;
+			std::cout << " + param_compute_error: " << param_compute_error << std::endl;
+			std::cout << std::endl;
+		}
 
 		/*
 		 * SETUP time steppers
@@ -215,6 +223,11 @@ public:
 
 	void write_file_output()
 	{
+#if SWEET_MPI
+		if (mpi_rank > 0)
+			return;
+#endif
+
 		if (simVars.misc.output_file_name_prefix.length() == 0)
 			return;
 
@@ -239,32 +252,6 @@ public:
 
 		output_filename = write_file(prog_vort, "prog_eta", simVars.setup.benchmark_scenario_id == 0);
 		std::cout << output_filename << std::endl;
-
-
-#if 0
-		if (
-			param_compute_error &&
-			simVars.pde.use_nonlinear_equations == 0 &&
-			(
-				simVars.setup.benchmark_scenario_id == 10 ||
-				simVars.setup.benchmark_scenario_id == 11
-			)
-		)
-		{
-			SphereData test_h(sphereDataConfig);
-			SphereData test_u(sphereDataConfig);
-			SphereData test_v(sphereDataConfig);
-
-			SphereBenchmarksCombined::setupInitialConditions(test_h, test_u, test_v, simVars, op);
-
-			{
-				SphereData h = prog_phi*(1.0/simVars.sim.gravitation);
-
-				output_filename = write_file(h-SphereData(test_h), "ref_diff_h", simVars.setup.benchmark_scenario_id == 0);
-				std::cout << output_filename << std::endl;
-			}
-		}
-#endif
 	}
 
 
@@ -414,6 +401,11 @@ public:
 public:
 	bool timestep_check_output()
 	{
+#if SWEET_MPI
+		if (mpi_rank > 0)
+			return false;
+#endif
+
 		std::cout << "." << std::flush;
 
 		// output each time step
@@ -475,7 +467,10 @@ public:
 
 
 
-	void outInfo(const std::string &i_string, const SphereData &i_data)
+	void outInfo(
+			const std::string &i_string,
+			const SphereData &i_data
+	)
 	{
 		std::cout << i_string << ": " << i_data.physical_reduce_min() << ", " << i_data.physical_reduce_max() << std::endl;
 	}
@@ -519,6 +514,8 @@ public:
 
 		if (simVars.disc.timestepping_method.find("_lf") != std::string::npos)
 		{
+			FatalError("TODO: Get this Leapfrog running");
+
 			std::cout << "WARNING: Leapfrog time stepping doesn't make real sense since 1st step is based on RK-like method" << std::endl;
 			std::cout << "We'll do two Leapfrog time steps here to take the LF errors into account!" << std::endl;
 			std::cout << "Therefore, we also halve the time step size here" << std::endl;
@@ -859,7 +856,7 @@ public:
 		simVars.timecontrol.current_timestep_nr++;
 
 #if SWEET_GUI
-		timestep_do_output();
+		timestep_check_output();
 #endif
 	}
 
@@ -953,7 +950,14 @@ public:
 		static char title_string[2048];
 
 		//sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %.14e, Vis: %s, Mass: %.14e, Energy: %.14e, Potential Entrophy: %.14e",
-		sprintf(title_string, "Time: %f (%.2f d), k: %i, dt: %.3e, Vis: %s, TMass: %.6e, TEnergy: %.6e, PotEnstrophy: %.6e, MaxVal: %.6e, MinVal: %.6e ",
+		sprintf(title_string,
+#if SWEET_MPI
+				"Rank %i - "
+#endif
+				"Time: %f (%.2f d), k: %i, dt: %.3e, Vis: %s, TMass: %.6e, TEnergy: %.6e, PotEnstrophy: %.6e, MaxVal: %.6e, MinVal: %.6e ",
+#if SWEET_MPI
+				mpi_rank,
+#endif
 				simVars.timecontrol.current_simulation_time,
 				simVars.timecontrol.current_simulation_time/(60.0*60.0*24.0),
 				simVars.timecontrol.current_timestep_nr,
@@ -1084,7 +1088,14 @@ int main(int i_argc, char *i_argv[])
 	std::cout << "MPI RANK: " << mpi_rank << std::endl;
 
 	// only start simulation and time stepping for first rank
-	if (mpi_rank == 0)
+	if (mpi_rank > 0)
+	{
+		/*
+		 * Deactivate all output for ranks larger than the current one
+		 */
+		simVars.misc.verbosity = 0;
+		simVars.misc.output_each_sim_seconds = -1;
+	}
 #endif
 
 	{
@@ -1127,9 +1138,8 @@ int main(int i_argc, char *i_argv[])
 #if SWEET_MPI
 			MPI_Barrier(MPI_COMM_WORLD);
 #endif
-			//Start counting time
+			// Start counting time
 			time.reset();
-
 
 			if (simVars.disc.normal_mode_analysis_generation > 0)
 			{
@@ -1172,82 +1182,23 @@ int main(int i_argc, char *i_argv[])
 
 			double seconds = time();
 
-			// End of run output results
-			std::cout << "Simulation time (seconds): " << seconds << std::endl;
-			std::cout << "Number of time steps: " << simVars.timecontrol.current_timestep_nr << std::endl;
-			std::cout << "Time per time step: " << seconds/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
-			std::cout << "Last time step size: " << simVars.timecontrol.current_timestep_size << std::endl;
+#if SWEET_MPI
+			if (mpi_rank == 0)
+#endif
+			{
+				// End of run output results
+				std::cout << "Simulation time (seconds): " << seconds << std::endl;
+				std::cout << "Number of time steps: " << simVars.timecontrol.current_timestep_nr << std::endl;
+				std::cout << "Time per time step: " << seconds/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
+				std::cout << "Last time step size: " << simVars.timecontrol.current_timestep_size << std::endl;
+			}
 
 			delete simulationSWE;
 		}
 	}
-#if SWEET_MPI
-	else
-	{
-		if (simVars.disc.timestepping_method.find("_rexi") != std::string::npos)
-		{
-			SphereOperators op(sphereDataConfig, simVars.sim.earth_radius);
-
-			SWE_Sphere_TS_l_rexi swe_sphere_ts_l_rexi(simVars, op);
-
-			/*
-			 * Setup our little dog REXI
-			 */
-			swe_sphere_ts_l_rexi.setup(
-					simVars.rexi.h,
-					simVars.rexi.M,
-					simVars.rexi.L,
-
-					simVars.timecontrol.current_timestep_size,
-
-					simVars.rexi.use_half_poles,
-					simVars.rexi.use_sphere_extended_modes,
-					simVars.rexi.normalization,
-					simVars.sim.f_sphere,
-
-					simVars.rexi.sphere_solver_preallocation
-				);
-
-
-			SphereData prog_phi(sphereDataConfig);
-			SphereData prog_vort(sphereDataConfig);
-			SphereData prog_div(sphereDataConfig);
-
-			// initialize with dummy data
-			prog_phi.spectral_set_zero();
-			prog_vort.spectral_set_zero();
-			prog_div.spectral_set_zero();
-
-			MPI_Barrier(MPI_COMM_WORLD);
-
-			do
-			{
-				if (simVars.timecontrol.max_timesteps_nr <= 0)
-					FatalError("TODO: Insert limitation of time step size");
-
-				double o_dt;
-				swe_sphere_ts_l_rexi.run_timestep(
-						prog_phi, prog_vort, prog_div,
-						o_dt,					///< time step restriction
-						-simVars.sim.CFL,		///< if this value is not equal to 0, use this time step size instead of computing one
-						simVars.timecontrol.current_simulation_time,
-						simVars.timecontrol.max_simulation_time
-				);
-
-			} while (!swe_sphere_ts_l_rexi.final_timestep);
-		}
-	}
-#endif
 
 
 #if SWEET_MPI
-	if (simVars.disc.timestepping_method.find("_rexi") != std::string::npos)
-	{
-		// synchronize REXI
-		if (mpi_rank == 0)
-			SWE_Sphere_TS_l_rexi::MPI_quitWorkers(sphereDataConfig);
-	}
-
 	MPI_Finalize();
 #endif
 

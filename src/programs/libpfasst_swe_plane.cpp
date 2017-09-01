@@ -83,7 +83,7 @@ int main(int i_argc, char *i_argv[])
 	if (simVars.libpfasst.nnodes == 3 ||
 	    simVars.libpfasst.nnodes == 5 || 
 	    simVars.libpfasst.nnodes == 9)
-	  nnodes[0] = 5; 
+	  nnodes[0] = 3; 
 	else 
 	  FatalError("With 2 levels, the number of SDC nodes on the fine level must be either 3, 5, or 9");
 	break;
@@ -162,7 +162,8 @@ int main(int i_argc, char *i_argv[])
   // instantiate the PlaneDataCtx object 
   PlaneDataCtx* pd_ctx = new PlaneDataCtx(
   					  &simVars,
-  					  &levelSingletons
+  					  &levelSingletons,
+					  nnodes
   					  );
   // output the info for the levels
   for (int i = 0; i < simVars.libpfasst.nlevels; i++)
@@ -178,7 +179,7 @@ int main(int i_argc, char *i_argv[])
 	&simVars.libpfasst.niters,                    // number of SDC iterations
 	nnodes,                                       // number of SDC nodes 
 	(simVars.libpfasst.nodes_type).c_str(),       // type of nodes
-	&string_length,
+	&string_length,                               // length of (simVars.libpfasst.nodes_type).c_str()
 	&nfields,                                     // number of vector fields
 	nvars_per_field,                              // number of dofs per vector field
 	&(simVars.timecontrol.max_simulation_time),   // simulation time

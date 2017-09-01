@@ -42,7 +42,7 @@ void SWE_Plane_TS_l_rexi::setup(
 			rexiSimVars,
 			i_function_name,
 			rexi_alpha,
-			rexi_beta_re,
+			rexi_beta,
 			simVars.misc.verbosity
 	);
 
@@ -252,12 +252,12 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 	PlaneData x_o_v(planeDataConfig);
 
 	std::swap(rexi_alpha, x_rexi_alpha);
-	std::swap(rexi_beta_re, x_rexi_beta_re);
+	std::swap(rexi_beta, x_rexi_beta_re);
 
 	run_timestep_real(tmp_h_pert, tmp_u, tmp_v, x_o_h_pert, x_o_u, x_o_v, i_dt, i_simulation_timestamp);
 
 	std::swap(rexi_alpha, x_rexi_alpha);
-	std::swap(rexi_beta_re, x_rexi_beta_re);
+	std::swap(rexi_beta, x_rexi_beta_re);
 
 	PlaneData diff_o_h_pert = x_o_h_pert - o_h_pert;
 	PlaneData diff_o_u = x_o_u - o_u;
@@ -309,12 +309,12 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 	}
 
 	std::swap(rexi_alpha, x_rexi_alpha);
-	std::swap(rexi_beta_re, x_rexi_beta_re);
+	std::swap(rexi_beta, x_rexi_beta_re);
 
 	run_timestep_real(x_i_h_pert, x_i_u, x_i_v, x_o_h_pert, x_o_u, x_o_v, i_dt, i_simulation_timestamp);
 
 	std::swap(rexi_alpha, x_rexi_alpha);
-	std::swap(rexi_beta_re, x_rexi_beta_re);
+	std::swap(rexi_beta, x_rexi_beta_re);
 
 	x_i_h_pert = o_h_pert;
 	x_i_u = o_u;
@@ -549,7 +549,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 		{
 			// load alpha (a) and scale by inverse of tau
 			complex alpha = rexi_alpha[n]/i_dt;
-			complex beta = rexi_beta_re[n];
+			complex beta = rexi_beta[n];
 
 			if (simVars.sim.f0 == 0)
 			{

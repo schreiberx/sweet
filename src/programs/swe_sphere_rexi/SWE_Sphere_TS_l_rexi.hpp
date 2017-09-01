@@ -46,9 +46,10 @@ class SWE_Sphere_TS_l_rexi	: public SWE_Sphere_TS_interface
 	SphereOperators &op;
 
 
-	double h;
-	int M;
-	bool normalization;
+public:
+	std::vector<std::complex<double>> rexi_alpha;
+	std::vector<std::complex<double>> rexi_beta;
+
 
 	SphereDataConfig *sphereDataConfig;
 	SphereDataConfig *sphereDataConfigSolver;
@@ -57,7 +58,7 @@ class SWE_Sphere_TS_l_rexi	: public SWE_Sphere_TS_interface
 	SphereDataConfig sphereDataConfigInstance;
 
 	/// Extend modes for REXI time stepping?
-	int rexi_use_extended_modes;
+	int rexi_use_sphere_extended_modes;
 
 #if SWEET_MPI
 public:
@@ -67,6 +68,7 @@ public:
 
 private:
 
+	REXI_SimulationVariables *rexiSimVars;
 
 	/*
 	 * Time step size of REXI
@@ -75,7 +77,7 @@ private:
 
 	bool use_f_sphere;
 
-	bool use_rexi_preallocation;
+	bool use_rexi_sphere_solver_preallocation;
 
 
 	std::size_t block_size;
@@ -116,11 +118,6 @@ private:
 	int num_global_threads;
 
 
-public:
-	// REXI stuff
-	REXI_Terry<> rexi;
-
-
 private:
 	void reset();
 
@@ -139,24 +136,30 @@ private:
 	 */
 public:
 	void setup(
-			double i_h,		///< sampling size
-			int i_M,		///< number of sampling points
-			int i_L,		///< number of sampling points for Gaussian approx
-
+			REXI_SimulationVariables &i_rexi,
+			const std::string &i_function_name,
 			double i_timestep_size,
-			bool i_rexi_half,				///< use half-pole reduction
-			int i_rexi_use_extended_modes,
-			int i_rexi_normalization,
-
-			bool i_use_f_sphere,
-
-			bool i_use_rexi_sphere_preallocation
+			bool i_use_f_sphere
 	);
 
 	void run_timestep(
 			SphereData &io_h,	///< prognostic variables
 			SphereData &io_u,	///< prognostic variables
 			SphereData &io_v,	///< prognostic variables
+
+			double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_simulation_timestamp
+	);
+
+
+	void run_timestep(
+			const SphereData &i_h,	///< prognostic variables
+			const SphereData &i_u,	///< prognostic variables
+			const SphereData &i_v,	///< prognostic variables
+
+			SphereData &o_h,	///< prognostic variables
+			SphereData &o_u,	///< prognostic variables
+			SphereData &o_v,	///< prognostic variables
 
 			double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp

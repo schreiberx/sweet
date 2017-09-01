@@ -205,18 +205,17 @@ public:
 		last_timestep_nr_update_diagnostics = -1;
 
 
+		benchmark.t0_error_max_abs_h_pert = -1;
+		benchmark.t0_error_max_abs_u = -1;
+		benchmark.t0_error_max_abs_v = -1;
 
-		benchmark.t0_error_max_abs_h_pert = 0;
-		benchmark.t0_error_max_abs_u = 0;
-		benchmark.t0_error_max_abs_v = 0;
+		benchmark.analytical_error_rms_h = -1;
+		benchmark.analytical_error_rms_u = -1;
+		benchmark.analytical_error_rms_v = -1;
 
-		benchmark.analytical_error_rms_h = 0;
-		benchmark.analytical_error_rms_u = 0;
-		benchmark.analytical_error_rms_v = 0;
-
-		benchmark.analytical_error_maxabs_h = 0;
-		benchmark.analytical_error_maxabs_u = 0;
-		benchmark.analytical_error_maxabs_v = 0;
+		benchmark.analytical_error_maxabs_h = -1;
+		benchmark.analytical_error_maxabs_u = -1;
+		benchmark.analytical_error_maxabs_v = -1;
 
 		simVars.timecontrol.current_timestep_nr = 0;
 		simVars.timecontrol.current_simulation_time = 0;
@@ -1758,6 +1757,8 @@ int main(int i_argc, char *i_argv[])
 			std::cout << "Time per time step: " << seconds/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
 			std::cout << "Last time step size: " << simVars.timecontrol.current_timestep_size << std::endl;
 
+			simulationSWE->compute_errors();
+
 			if (simVars.misc.verbosity > 0)
 			{
 				std::cout << "DIAGNOSTICS ENERGY DIFF:\t" << std::abs((simVars.diag.total_energy-simulationSWE->diagnostics_energy_start)/simulationSWE->diagnostics_energy_start) << std::endl;
@@ -1775,8 +1776,6 @@ int main(int i_argc, char *i_argv[])
 
 			if (simulationSWE->compute_error_to_analytical_solution)
 			{
-				simulationSWE->compute_errors();
-
 				std::cout << "DIAGNOSTICS ANALYTICAL RMS H:\t" << simulationSWE->benchmark.analytical_error_rms_h << std::endl;
 				std::cout << "DIAGNOSTICS ANALYTICAL RMS U:\t" << simulationSWE->benchmark.analytical_error_rms_u << std::endl;
 				std::cout << "DIAGNOSTICS ANALYTICAL RMS V:\t" << simulationSWE->benchmark.analytical_error_rms_v << std::endl;

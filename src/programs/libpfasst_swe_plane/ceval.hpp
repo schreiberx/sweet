@@ -51,6 +51,15 @@ extern "C"
 		PlaneDataVars *o_F1
 		);
 
+  // applies phi_n to Y 
+  void capply_phi( 
+		  PlaneDataVars *i_Y,
+		  double i_t, 
+		  double i_dt, 
+		  PlaneDataCtx *i_ctx,
+		  int i_n
+		  );
+
   // evaluates the first implicit piece
   void ceval_f2 (
 		 PlaneDataVars *i_Y, 

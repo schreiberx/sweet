@@ -1,3 +1,5 @@
+#! /usr/bin/env python2
+
 import os
 import commands
 import re
@@ -5,7 +7,15 @@ import sys
 import platform
 import subprocess
 
-from python_mods import CompileXMLOptions
+from python_mods.SWEETCompileOptions import *
+
+#
+# Setup parallel compilation
+#
+import multiprocessing
+num_cpu = multiprocessing.cpu_count()
+SetOption('num_jobs', num_cpu)
+
 
 #
 # determine hostname
@@ -17,6 +27,8 @@ hostname = hostname.replace("\r", '')
 env = Environment(ENV = os.environ)
 env['SWEET_ROOT'] = os.getcwd()
 
+p = SWEETCompileOptions()
+
 
 
 ###################################################################
@@ -27,417 +39,80 @@ if 'LD_LIBRARY_PATH' in os.environ:
 
 files = os.listdir('src/programs/')
 files = sorted(files)
-example_programs = []
+p.example_programs = []
 for f in files:
 	if os.path.isfile('src/programs/'+f):
-		example_programs.append(f[0:-4])
-env['example_programs'] = example_programs
+		p.example_programs.append(f[0:-4])
 
 
 files = os.listdir('src/unit_tests/')
 files = sorted(files)
-unit_tests_programs = []
+p.unit_tests_programs = []
 for f in files:
-	unit_tests_programs.append(f[0:-4])
-env['unit_tests_programs'] = unit_tests_programs
+	p.unit_tests_programs.append(f[0:-4])
 
 
-
-################################################################
-# XML CONFIGURATION
-################################################################
-
-
-AddOption(	'--xml-config',		dest='xml_config',	type='string',	default='',	help='xml configuration file with compile options')
-env['xml_config'] = GetOption('xml_config')
-
-if env['xml_config'] != '':
-	env = CompileXMLOptions.load(env['xml_config'], env)
-
-
-
-
-################################################################
+###########################################
 # Compile options
-################################################################
+###########################################
 
 
-AddOption(      '--mode',
-		dest='mode',
-		type='choice',
-		choices=['debug', 'release'],
-		default='release',
-		help='specify compiler to use: debug, release [default: %default]'
-)
-env['mode'] = GetOption('mode')
+p.sconsProcessOptions()
+
+p.makeOptionsConsistent()
 
 
-AddOption(	'--compiler',
-		dest='compiler',
-		type='choice',
-		choices=['gnu', 'intel', 'llvm', 'pgi'],
-		default='gnu',
-		help='specify compiler to use: gnu, intel, llvm, pgi [default: %default]'
-)
-env['compiler'] = GetOption('compiler')
-
-
-AddOption(	'--numa-block-allocator',
-		dest='numa_block_allocator',
-		type='choice',
-		choices=['0', '1', '2', '3'],
-		default='0',
-		help='Specify allocation method to use: 0: default system\'s malloc, 1: allocation with NUMA granularity, 2: allocation with thread granularity, 3: allocation with non-NUMA granularity [default: %default]'
-)
-env['numa_block_allocator'] = GetOption('numa_block_allocator')
-
-
-AddOption(	'--gxx-toolchain',
-		dest='gxx-toolchain',
-		type='string',
-		default='',
-		help='specify gcc toolchain for intel and llvm compiler, e.g. g++-4.6, default: deactivated'
-)
-env['gxx_toolchain'] = GetOption('gxx-toolchain')
-
-
-AddOption(	'--simd',
-		dest='simd',
-		type='choice',
-		choices=['enable', 'disable'],
-		default='enable',
-		help="Use SIMD for operations such as folding [default: %default]"
-)
-env['simd'] = GetOption('simd')
-
-
-AddOption(	'--pfasst-cpp',
-		dest='pfasst_cpp',
-		type='choice',
-		choices=['enable', 'disable'],
-		default='disable',
-		help="Activate utilization of PFASST++ (C++ version) [default: %default]"
-)
-env['pfasst_cpp'] = GetOption('pfasst_cpp')
-
-
-AddOption(	'--libpfasst',
-		dest='libpfasst',
-		type='choice',
-		choices=['enable', 'disable'],
-		default='disable',
-		help="Activate utilization of libPFASST (FOortran version) [default: %default]"
-)
-env['libpfasst'] = GetOption('libpfasst')
-
-
-
-env.Append(CXXFLAGS=' -DSWEET_SIMD_ENABLE='+('1' if env['simd']=='enable' else '0'))
-
-
-AddOption(	'--debug-symbols',
-		dest='debug_symbols',
-		type='choice',
-		choices=['enable', 'disable'],
-		default='enable',
-		help="Create binary with debug symbols [default: %default]"
-)
-env['debug_symbols'] = GetOption('debug_symbols')
-
-
-
-AddOption(	'--plane-spectral-space',
-		dest='plane_spectral_space',
-		type='choice',
-		choices=['enable', 'disable'],
-		default='enable',
-		help="Activate spectral space for data on the plane (2D FFT) [default: %default]"
-)
-env['plane_spectral_space'] = GetOption('plane_spectral_space')
-
-AddOption(	'--sphere-spectral-space',
-		dest='sphere_spectral_space',
-		type='choice',
-		choices=['enable', 'disable'],
-		default='disable',
-		help="Activate spectral space for data on the sphere (Spherical Harmonics) [default: %default]"
-)
-env['sphere_spectral_space'] = GetOption('sphere_spectral_space')
-
-
-
-AddOption(	'--libfft',
-		dest='libfft',
-		type='choice',
-		choices=['enable', 'disable'],
-		default='disable',
-		help="Enable compiling and linking with FFT library [default: %default]"
-)
-env['libfft'] = GetOption('libfft')
-
-
-AddOption(	'--libsph',
-		dest='libsph',
-		type='choice',
-		choices=['enable', 'disable'],
-		default='disable',
-		help="Enable compiling and linking with SPH library [default: %default]"
-)
-env['libsph'] = GetOption('libsph')
-
-
-AddOption(	'--mkl',
-		dest='mkl',
-		type='choice',
-		choices=['enable', 'disable'],
-		default='disable',
-		help="Enable Intel MKL [default: %default]"
-)
-env['mkl'] = GetOption('mkl')
-
-
-AddOption(	'--mic',
-		dest='mic',
-		type='choice',
-		choices=['enable', 'disable'],
-		default='disable',
-		help="Enable Intel MIC (XeonPhi) [default: %default]"
-)
-env['mic'] = GetOption('mic')
-
-
-#
-# LIB XML
-#
-AddOption(	'--libxml',
-		dest='libxml',
-		type='choice',
-		choices=['enable','disable'],
-		default='disable',
-		help='Compile with libXML related code: enable, disable [default: %default]'
-)
-env['libxml'] = GetOption('libxml')
-
-env.Append(CXXFLAGS=' -DCONFIG_ENABLE_LIBXML='+('1' if env['libxml']=='enable' else '0'))
-if env['libxml'] == 'enable':
+if p.libxml == 'enable':
 	env.ParseConfig("xml2-config --cflags --libs")
 
-
-AddOption(	'--plane-spectral-dealiasing',
-		dest='plane_spectral_dealiasing',
-		type='choice',
-		choices=['enable','disable'],
-		default='enable',
-		help='spectral dealiasing (3N/2-1 rule): enable, disable [default: %default]'
-)
-env['plane_spectral_dealiasing'] = GetOption('plane_spectral_dealiasing')
-
-# Use always dealiasing for sphere
-env['sphere_spectral_dealiasing'] = 'enable'
-
-
-AddOption(	'--gui',
-		dest='gui',
-		type='choice',
-		choices=['enable','disable'],
-		default='disable',
-		help='gui: enable, disable [default: %default]'
-)
-env['gui'] = GetOption('gui')
-
-
-
-
-AddOption(	'--rexi-thread-parallel-sum',
-		dest='rexi_thread_parallel_sum',
-		type='choice',
-		choices=['enable','disable'],
-		default='disable',
-		help='Use a par for loop over the sum in REXI: enable, disable [default: %default]\n\tWARNING: This also disables the parallelization-in-space with OpenMP'
-)
-env['rexi_thread_parallel_sum'] = GetOption('rexi_thread_parallel_sum')
-
-
-AddOption(	'--sweet-mpi',
-		dest='sweet_mpi',
-		type='choice',
-		choices=['enable','disable'],
-		default='disable',
-		help='Enable MPI commands e.g. for REXI sum: enable, disable [default: %default]'
-)
-env['sweet_mpi'] = GetOption('sweet_mpi')
-
-
-
-AddOption(	'--parareal',
-		dest='parareal',
-		type='choice',
-		choices=['none', 'serial','mpi'],
-		default='none',
-		help='Enable Parareal (none, serial, mpi) [default: %default]\nOnly works, if Parareal is supported by the simulation'
-)
-env['parareal'] = GetOption('parareal')
-
-if env['parareal'] == 'mpi':
+if p.parareal == 'mpi':
 	raise Exception("TODO: Implement MPI Parareal")
 
+p.ld_flags = GetOption('ld_flags')
+
+env.Append(CXXFLAGS=' -DSWEET_SIMD_ENABLE='+('1' if p.simd=='enable' else '0'))
+env.Append(CXXFLAGS=' -DCONFIG_ENABLE_LIBXML='+('1' if p.libxml=='enable' else '0'))
+env.Append(CXXFLAGS = p.cxx_flags)
+env.Append(LINKFLAGS = p.ld_flags)
 
 
 
-AddOption(      '--program',
-		dest='program',
-		type='choice',
-		choices=example_programs,
-		default='',
-		help='Specify program to compile: '+', '.join(example_programs)+' '*80+' [default: %default]'
-)
-env['compile_program'] = GetOption('program')
+p.llvm_gnu_override = False
+p.llvm_omp_override = False
 
 
-AddOption(      '--program-binary-name',
-		dest='program_binary_name',
-		type='string',
-		action='store',
-		help='Name of program binary, default: [auto]',
-		default=''
-)
-env['program_binary_name'] = GetOption('program_binary_name')
-
-
-AddOption(      '--unit-test',
-		dest='unit_test',
-		type='choice',
-		choices=unit_tests_programs,
-		default='',
-		help='Specify unit tests to compile: '+', '.join(unit_tests_programs)+' '*80+' [default: %default]'
-)
-env['unit_test'] = GetOption('unit_test')
-
-
-threading_constraints = ['off', 'omp']
-AddOption(	'--threading',
-		dest='threading',
-		type='choice',
-		choices=threading_constraints,
-		default='omp',
-		help='Threading to use '+' / '.join(threading_constraints)+', default: off'
-)
-env['threading'] = GetOption('threading')
-
-
-AddOption(	'--cxx-flags',
-		dest='cxx_flags',
-		type='string',	
-		default='',
-		help='Additional cxx-flags, default: ""'
-)
-
-env['cxx_flags'] = GetOption('cxx_flags')
-env.Append(CXXFLAGS = env['cxx_flags'])
-
-
-AddOption(	'--ld-flags',
-		dest='ld_flags',
-		type='string',	
-		default='',
-		help='Additional ld-flags, default: ""'
-)
-
-
-
-env['ld_flags'] = GetOption('ld_flags')
-env.Append(LINKFLAGS = env['ld_flags'])
-
-
-env['fortran_source'] = 'disable'
-
-if env['libpfasst'] == 'enable':
-	env['fortran_source'] = 'enable'
-
-llvm_gnu_override = False
-llvm_omp_override = False
-
-###########################################
-# Compile options
-###########################################
-
-# set default to first example program
-if env['compile_program'] != '':
-	env['program_name'] = env['compile_program']
-
-elif env['unit_test'] != '':
-	env['program_name'] = env['unit_test']
-
-else:
-	env['program_name'] = 'DUMMY'
-	print("")
-	print("")
-	print("Neither a program name, nor a unit test is given:\n")
-	print("  use --program=[program name] to specify the program\n")
-	print("  or --unit-test=[unit test] to specify a unit test\n")
-	print("")
-	print("")
-
-
-
-env.Append(CXXFLAGS = ' -DSWEET_PROGRAM_NAME='+env['program_name'])
-
-
-
-exec_name=env['program_name']
-
-
-if env['plane_spectral_space'] == 'enable':
-	# override libfft
-	env['libfft'] = 'enable'
-
-	#if env['libfft'] != 'enable':
-	#	print("Option --libfft is disabled!")
-	#	Exit(1)
+if p.plane_spectral_space == 'enable':
 	env.Append(CXXFLAGS = ' -DSWEET_USE_PLANE_SPECTRAL_SPACE=1')
-	exec_name+='_planespectral'
-
 else:
 	env.Append(CXXFLAGS = ' -DSWEET_USE_PLANE_SPECTRAL_SPACE=0')
 
-	# override dealiasing
-	env['plane_spectral_dealiasing'] = 'disable'
 
 
-
-if env['plane_spectral_dealiasing'] == 'enable':
+if p.plane_spectral_dealiasing == 'enable':
 	env.Append(CXXFLAGS = ' -DSWEET_USE_PLANE_SPECTRAL_DEALIASING=1')
-	exec_name+='_planedealiasing'
 else:
 	env.Append(CXXFLAGS = ' -DSWEET_USE_PLANE_SPECTRAL_DEALIASING=0')
 
 
 
 
-if env['sphere_spectral_space'] == 'enable':
-	env['libsph'] = 'enable'
-
+if p.sphere_spectral_space == 'enable':
 	env.Append(CXXFLAGS = ' -DSWEET_USE_SPHERE_SPECTRAL_SPACE=1')
-	exec_name+='_spherespectral'
 else:
 	env.Append(CXXFLAGS = ' -DSWEET_USE_SPHERE_SPECTRAL_SPACE=0')
 
-	env['sphere_spectral_dealiasing'] = 'disable'
 
-
-if env['sphere_spectral_dealiasing'] == 'enable':
+if p.sphere_spectral_dealiasing == 'enable':
 	env.Append(CXXFLAGS = ' -DSWEET_USE_SPHERE_SPECTRAL_DEALIASING=1')
-	exec_name+='_spheredealiasing'
 else:
-	if env['sphere_spectral_space'] == 'enable':
-		print("No anti-aliasing on sphere not supported!")
-		sys.exit(-1)
+	if p.sphere_spectral_space == 'enable':
+		raise Exception("No anti-aliasing on sphere as compile option supported, please simply use command line options to specify lower physical resolution!")
 
 	env.Append(CXXFLAGS = ' -DSWEET_USE_SPHERE_SPECTRAL_DEALIASING=0')
 
 
 
-if env['sweet_mpi'] == 'enable':
+if p.sweet_mpi == 'enable':
 	env.Append(CXXFLAGS = ' -DSWEET_MPI=1')
 else:
 	env.Append(CXXFLAGS = ' -DSWEET_MPI=0')
@@ -445,24 +120,20 @@ else:
 
 
 
-if env['parareal'] == 'none':
+if p.parareal == 'none':
 	env.Append(CXXFLAGS = ' -DSWEET_PARAREAL=0')
-elif env['parareal'] == 'serial':
+elif p.parareal == 'serial':
 	env.Append(CXXFLAGS = ' -DSWEET_PARAREAL=1')
-elif env['parareal'] == 'mpi':
+elif p.parareal == 'mpi':
 	env.Append(CXXFLAGS = ' -DSWEET_PARAREAL=2')
 else:
-	print("Invalid option '"+str(env['parareal'])+"' for parareal method")
+	print("Invalid option '"+str(p.parareal)+"' for parareal method")
 	sys.exit(1)
 	
 
-if env['gui']=='enable':
-	exec_name+='_gui'
 
 
-
-
-if env['compiler'] == 'gnu':
+if p.compiler == 'gnu':
 	reqversion = [4,6,1]
 
 	#
@@ -506,8 +177,8 @@ if env['compiler'] == 'gnu':
 			print("LLVM not detected")
 			sys.exit(1)
 
-		llvm_gnu_override = True
-		env['compiler'] = 'llvm'
+		p.llvm_gnu_override = True
+		p.compiler = 'llvm'
 
 	else:
 		for i in range(0, 3):
@@ -517,7 +188,7 @@ if env['compiler'] == 'gnu':
 				print('At least GCC Version 4.6.1 necessary.')
 				Exit(1)
 
-	if env['compiler'] == 'gnu':
+	if p.compiler == 'gnu':
 		# eclipse specific flag
 		env.Append(CXXFLAGS=' -fmessage-length=0')
 
@@ -532,7 +203,7 @@ if env['compiler'] == 'gnu':
 
 		# activate gnu C++ compiler
 
-		if env['fortran_source']=='enable':
+		if p.fortran_source=='enable':
 			env.Replace(F90='gfortran')
 			env.Append(F90FLAGS=' -cpp')
 			env.Append(LIBS=['gfortran'])
@@ -541,7 +212,7 @@ if env['compiler'] == 'gnu':
 		env.Replace(CXX = 'g++')
 
 
-if env['compiler'] == 'intel':
+if p.compiler == 'intel':
 	reqversion = [12,1]
 	iccversion_line = commands.getoutput('icpc -dumpversion -w')
 
@@ -555,9 +226,9 @@ if env['compiler'] == 'intel':
 				Exit(1)
 
 	# override g++ called by intel compiler to determine location of header files
-	if env['gxx_toolchain'] != '':
-		env.Append(CXXFLAGS='-gxx-name='+env['gxx_toolchain'])
-		env.Append(LINKFLAGS='-gxx-name='+env['gxx_toolchain'])
+	if p.gxx_toolchain != '':
+		env.Append(CXXFLAGS='-gxx-name='+p.gxx_toolchain)
+		env.Append(LINKFLAGS='-gxx-name='+p.gxx_toolchain)
 
 	env.Append(LINKFLAGS='-shared-intel')
 	env.Append(LINKFLAGS='-shared-libgcc')
@@ -588,7 +259,8 @@ if env['compiler'] == 'intel':
 	env.Replace(CXX = 'icpc')
 	env.Replace(LINK='icpc')
 
-	if env['fortran_source'] == 'enable':
+	if p.fortran_source == 'enable':
+		env.Append(LIBS=['gfortran'])
 		env.Append(LIBS=['ifcore'])
 		env.Replace(F90='ifort')
 		env.Append(F90FLAGS=' -fpp')
@@ -596,11 +268,11 @@ if env['compiler'] == 'intel':
 
 
 # WARNING: don't use 'elif' here wince llvm may be activated via the 'gnu' compiler option
-if env['compiler'] == 'llvm':
+if p.compiler == 'llvm':
 	reqversion = [3,1]
 
-	if env['gxx_toolchain'] != '':
-		env.Append(CXXFLAGS=' --gcc-toolchain='+env['gxx_toolchain'])
+	if p.gxx_toolchain != '':
+		env.Append(CXXFLAGS=' --gcc-toolchain='+p.gxx_toolchain)
 
 	# eclipse specific flag
 	env.Append(CXXFLAGS=' -fmessage-length=0')
@@ -620,86 +292,87 @@ if env['compiler'] == 'llvm':
 	# activate gnu C++ compiler
 
 
-	if env['sphere_spectral_space'] == 'enable':
+	if p.sphere_spectral_space == 'enable':
 		# append gfortran library
 		env.Append(LIBS=['gfortran'])
 
-	if env['threading'] == 'omp':
+	if p.threading == 'omp':
 		print("")
 		print('WARNING: OpenMP with LLVM not supported, deactivating')
 		print("")
 
-		llvm_omp_override = True
-		env['threading'] = 'off'
+		p.llvm_omp_override = True
+		p.threading = 'off'
 
 	# todo: fix me also for intel mpicxx compiler
 	env.Replace(CXX = 'clang++')
 
-	if env['fortran_source'] == 'enable':
-		#env.Append(LIBS=['gfortran'])
+	if p.fortran_source == 'enable':
+		env.Append(LIBS=['gfortran'])
 		print("TODO: LLVM compiler not yet supported with fortran enabled")
 		Exit(-1)
 
 
 
-if env['mode'] == 'debug':
+
+if p.mode == 'debug':
 	env.Append(CXXFLAGS=' -DSWEET_DEBUG=1')
 
-	if env['compiler'] == 'gnu':
+	if p.compiler == 'gnu':
 		env.Append(CXXFLAGS='-O0 -g3 -Wall')
 
 		# integer overflow check
 		env.Append(CXXFLAGS=' -ftrapv')
 
-	elif env['compiler'] == 'llvm':
+	elif p.compiler == 'llvm':
 		env.Append(CXXFLAGS='-O0 -g3 -Wall')
 
-	elif env['compiler'] == 'intel':
+	elif p.compiler == 'intel':
 		env.Append(CXXFLAGS='-O0 -g -traceback')
 #		env.Append(CXXFLAGS=' -fp-trap=common')
 
-	elif env['compiler'] == 'pgi':
+	elif p.compiler == 'pgi':
 		env.Append(CXXFLAGS='-O0 -g -traceback')
 
 
-	if env['fortran_source'] == 'enable':
-		if env['compiler'] == 'gnu':
+	if p.fortran_source == 'enable':
+		if p.compiler == 'gnu':
 			env.Append(F90FLAGS='-g -O0')
-		elif env['compiler'] == 'intel':
+		elif p.compiler == 'intel':
 			env.Append(F90FLAGS='-g -O0 -traceback')
 
 
-elif env['mode'] == 'release':
+elif p.mode == 'release':
 	env.Append(CXXFLAGS=' -DSWEET_DEBUG=0')
 
 	# deactivate assertion calls
 	env.Append(CXXFLAGS=' -DNDEBUG=1')
 
-	if env['compiler'] == 'gnu':
+	if p.compiler == 'gnu':
 		env.Append(CXXFLAGS=' -O3 -mtune=native')
 
-	elif env['compiler'] == 'llvm':
+	elif p.compiler == 'llvm':
 		env.Append(CXXFLAGS=' -O3 -mtune=native')
 
-	elif env['compiler'] == 'intel':
+	elif p.compiler == 'intel':
 		env.Append(CXXFLAGS=' -O2 -fno-alias')
 
-		if env['mic'] != 'enable':
+		if p.mic != 'enable':
 			env.Append(CXXFLAGS=' -xHost')
 
-	elif env['compiler'] == 'pgi':
+	elif p.compiler == 'pgi':
 		env.Append(CXXFLAGS='-O3 -fast -Mipa=fast,inline -Msmartalloc')
 
-	if env['fortran_source'] == 'enable':
-		if env['compiler'] == 'gnu':
+	if p.fortran_source == 'enable':
+		if p.compiler == 'gnu':
 			env.Append(F90FLAGS=' -O2')
-		elif env['compiler'] == 'intel':
+		elif p.compiler == 'intel':
 			env.Append(F90FLAGS=' -O2')
 
 
 
 
-if env['gui'] == 'enable':
+if p.gui == 'enable':
 	# compile flags
 	env.Append(CXXFLAGS=' -I'+os.environ['HOME']+'/local/include')
 	env.Append(CXXFLAGS=' -DSWEET_GUI=1')
@@ -731,21 +404,21 @@ else:
   
 
 
-if env['sweet_mpi'] == 'enable':
+if p.sweet_mpi == 'enable':
 	print("Enabling MPI for REXI")
 	print("Warning: Compiler checks not done")
 
-	if env['compiler'] == 'gnu':
+	if p.compiler == 'gnu':
 		env.Replace(CXX = 'mpiCC')
 		env.Replace(LINK = 'mpiCC')
 		env.Replace(F90 = 'mpif90')
 
-	elif env['compiler'] == 'intel':
+	elif p.compiler == 'intel':
 		env.Replace(CXX = 'mpiicpc')
 		env.Replace(LINK = 'mpiicpc')
 		env.Replace(F90 = 'mpif90')
 
-	if env['threading'] != 'off' and env['compiler'] == 'intel':
+	if p.threading != 'off' and p.compiler == 'intel':
 		env.Append(CXXFLAGS='-mt_mpi')
 		env.Append(LINKFLAGS='-mt_mpi')
 
@@ -753,25 +426,14 @@ if env['sweet_mpi'] == 'enable':
 env.Append(LIBS=['quadmath'])
 
 
-if env['threading'] in ['omp']:
-	exec_name+='_'+env['threading']
-else:
-	if llvm_omp_override:
-		print("WARNING: adding _omp despite program was not compiled with OpenMP activated. This is for compatibility reasons only!")
-		exec_name+='_omp'
-	
 
-if env['rexi_thread_parallel_sum'] == 'enable':
-	exec_name+='_rexipar'
+env.Append(CXXFLAGS=' -DNUMA_BLOCK_ALLOCATOR_TYPE='+p.numa_block_allocator)
 
-env.Append(CXXFLAGS=' -DNUMA_BLOCK_ALLOCATOR_TYPE='+env['numa_block_allocator'])
-
-if env['numa_block_allocator'] in ['1', '2']:
-	exec_name+='_numaallocator'+env['numa_block_allocator']
+if p.numa_block_allocator in ['1', '2']:
 	env.Append(LIBS=['numa'])
 
 
-if env['threading'] == 'omp':
+if p.threading == 'omp':
 	env.Append(CXXFLAGS=['-fopenmp'])
 	env.Append(LINKFLAGS=['-fopenmp'])
 	env.Append(CXXFLAGS=' -DSWEET_THREADING=1')
@@ -779,17 +441,14 @@ else:
 	env.Append(CXXFLAGS=' -DSWEET_THREADING=0')
 
 
-if env['plane_spectral_space'] == 'enable':
-	env['libfft'] = 'enable'
 
-
-if env['pfasst_cpp'] == 'enable':
+if p.pfasst_cpp == 'enable':
 	env.Append(CXXFLAGS=['-Ilocal_software/local/include/eigen3'])
 	env.Append(CXXFLAGS=['-DSWEET_PFASST_CPP=1'])
 else:
 	env.Append(CXXFLAGS=['-DSWEET_PFASST_CPP=0'])
 
-if env['libpfasst'] == 'enable':
+if p.libpfasst == 'enable':
 	env.Append(CXXFLAGS=['-Llibpfasst'])
 	env.Append(CXXFLAGS=['-DSWEET_LIBPFASST=1'])
 else:
@@ -797,11 +456,8 @@ else:
 
 
 
-if env['libsph'] == 'enable':
-	# activate linking with libfft!
-	env['libfft'] = 'enable'
-
-	if env['threading'] == 'omp':
+if p.libsph == 'enable':
+	if p.threading == 'omp':
 		env.Append(LIBS=['shtns_omp'])
 	else:
 		env.Append(LIBS=['shtns'])
@@ -810,19 +466,18 @@ if env['libsph'] == 'enable':
 	env.Append(LIBS=['lapack'])
 	env.Append(LIBS=['refblas'])
 
-	if env['compiler'] == 'gnu':
+	if p.compiler == 'gnu':
 		env.Append(LIBS=['gfortran'])
 
 
-if env['libfft'] == 'enable':
+if p.libfft == 'enable':
 
 	env.Append(CXXFLAGS = ' -DSWEET_USE_LIBFFT=1')
-	exec_name+='_libfft'
 
-	if env['mkl'] == 'enable':
+	if p.mkl == 'enable':
 		print("INFO: Using Intel MKL instead of FFTW");
 
-		if env['threading'] != 'omp':
+		if p.threading != 'omp':
 			env.Append(CXXFLAGS=['-mkl=sequential'])
 			env.Append(LINKFLAGS=['-mkl=sequential'])
 		else:
@@ -836,27 +491,27 @@ if env['libfft'] == 'enable':
 	else:
 		env.Append(LIBS=['fftw3'])
 
-		if env['threading'] == 'omp':
+		if p.threading == 'omp':
 			env.Append(LIBS=['fftw3_omp'])
 else:
 	env.Append(CXXFLAGS = ' -DSWEET_USE_LIBFFT=0')
 
 
-if env['mic'] == 'enable':
+if p.mic == 'enable':
 	env.Append(CXXFLAGS=['-mmic'])
 	env.Append(LINKFLAGS=['-mmic'])
 
 
-if env['rexi_thread_parallel_sum'] == 'enable' and env['threading'] == 'omp':
-	print('ERROR: "REXI Parallel Sum" and "Threading" is both activated')
-	sys.exit(1)
+if p.rexi_thread_parallel_sum == 'enable' and p.threading == 'omp':
+	raise Exception('ERROR: "REXI Parallel Sum" and "Threading" is both activated')
+
 
 
 #
 # If SWEET_REXI_THREAD_PARALLEL_SUM is activated, the REXI sum is computed
 # with parallel for over the sum terms
 #
-if env['rexi_thread_parallel_sum'] == 'enable':
+if p.rexi_thread_parallel_sum == 'enable':
 	# Same for gcc/icpc
 	env.Append(LINKFLAGS=['-fopenmp'])
 
@@ -868,27 +523,16 @@ else:
 	env.Append(CXXFLAGS=' -DSWEET_REXI_THREAD_PARALLEL_SUM=0')
 
 
-if env['debug_symbols'] == 'enable':
+if p.debug_symbols == 'enable':
 	env.Append(CXXFLAGS = '-g')
 	env.Append(LINKFLAGS = '-g')
 
-	if env['compiler'] == 'intel':
+	if p.compiler == 'intel':
 		env.Append(CXXFLAGS = ' -shared-intel -shared-libgcc -debug inline-debug-info')
 		env.Append(LINKFLAGS = ' -shared-intel  -shared-libgcc -debug inline-debug-info')
 
 
-if llvm_gnu_override:
-	print("WARNING: adding _omp despite program was not compiled with LLVM. This is for compatibility reasons only!")
-	exec_name += '_gnu'
-else:
-	exec_name += '_'+env['compiler']
-	
-exec_name += '_'+env['mode']
-
-
-if env['program_binary_name'] != '':
-	exec_name = env['program_binary_name']
-
+exec_name = p.getProgramName()
 
 
 #
@@ -896,7 +540,7 @@ if env['program_binary_name'] != '':
 #
 build_dir='/tmp/scons_build_'+exec_name+'/'
 
-if env['libpfasst'] == 'enable':
+if p.libpfasst == 'enable':
 	env.Append(F90FLAGS = ['-Ilocal_software/local_src/libpfasst/include'])
 
 #
@@ -910,6 +554,17 @@ env.Append(CPPPATH = ['/usr/local/include', '/usr/include'])
 
 
 
+
+if p.compiler_c_exec != '':
+	env.Replace(CC = p.compiler_c_exec)
+
+if p.compiler_cpp_exec != '':
+	env.Replace(CXX = p.compiler_cpp_exec)
+	env.Replace(LINK = p.compiler_cpp_exec)
+
+if p.compiler_fortran_exec != '':
+	env.Replace(F90 = p.compiler_fortran_exec)
+
 #
 # FORTRAN stuff
 #
@@ -922,17 +577,6 @@ env.Append(CPPPATH = ['/usr/local/include', '/usr/include'])
 #    os.makedirs(fortran_mod_dir)
 #env = env.Clone(FORTRANMODDIR = fortran_mod_dir)
 
-
-#
-# MAC cluster
-#
-
-#print hostname
-if hostname[0:4] == "mac-":
-	env.Append(CPPPATH = ['/usr/local/include', '/usr/include', '/lrz/sys/libraries/fftw/3.3.3/avx/include'])
-	env.Append(LINKFLAGS=' -L/lrz/sys/libraries/fftw/3.3.3/avx/lib_omp ')
-	env.Append(LINKFLAGS=' -L/home/hpc/pr63so/di69fol/local/numactl-2.0.8/lib64 ')
-	env.Append(CPPPATH = ['/home/hpc/pr63so/di69fol/local/numactl-2.0.8/include'])
 
 # also include the 'src' directory to search for dependencies
 env.Append(CPPPATH = ['.', './src/', './src/include'])
@@ -951,12 +595,12 @@ env.src_files = []
 env.Append(LINKFLAGS=['-L./local_software/local/lib'])
 env.Append(CPPPATH=['./local_software/local/include'])
 
-if env['program_name'] != 'DUMMY':
+if p.program_name != 'DUMMY':
 
-	env.SConscript('sconscript', variant_dir=build_dir, duplicate=0, exports=['env'])
+	env.SConscript('sconscript', variant_dir=build_dir, duplicate=0, exports=['env', 'p'])
 
 	print('')
-	print('            Program: '+env['program_name'])
+	print('            Program: '+p.program_name)
 	print('Building executable: '+exec_name)
 	print('')
 

@@ -21,7 +21,8 @@ public:
   // Contructor
   PlaneDataCtx(
                SimulationVariables *i_simVars,
-	       std::vector<LevelSingleton> *i_singletons
+	       std::vector<LevelSingleton> *i_singletons,
+	       int* i_nnodes
 	       ) 
     : simVars(i_simVars),
       levelSingletons(i_singletons)
@@ -37,13 +38,11 @@ public:
       {
 	timestepper_l_rexi_n_erk.resize(levelSingletons->size());	
 	timestepper_l_irk_n_erk.resize(0);
-
       }
     else 
       {
 	timestepper_l_irk_n_erk.resize(levelSingletons->size());
 	timestepper_l_rexi_n_erk.resize(0);
-
       }
     timestepper_l_erk.resize(levelSingletons->size());
     ref_timestepper.resize(levelSingletons->size());
@@ -59,12 +58,19 @@ public:
 	// these timesteppers contain the functions called by LibPFASST 
 	if (simVars->libpfasst.use_rexi)
 	  {
-	    timestepper_l_rexi_n_erk[level] = 
-	      new SWE_Plane_TS_l_rexi_n_erk(
-					   *simVars,
-					   ((*levelSingletons)[level].op)
-					   );
-	    timestepper_l_rexi_n_erk[level]->get_implicit_timestepper().setup(simVars->rexi);
+	    timestepper_l_rexi_n_erk[level].resize(i_nnodes[level]+1);
+	    
+	    // initialize the phi_n functions for exponential integration
+	    for (int node = 0; node < i_nnodes[level]+1; ++node) 
+	      {
+
+		timestepper_l_rexi_n_erk[level][node] = 
+		  new SWE_Plane_TS_l_rexi_n_erk(
+						*simVars,
+						((*levelSingletons)[level].op)
+						);
+		timestepper_l_rexi_n_erk[level][node]->get_implicit_timestepper().setup(simVars->rexi,"phi"+std::to_string(node));
+	      }
 	  }
 	else 
 	  {
@@ -74,7 +80,7 @@ public:
 					   ((*levelSingletons)[level].op)
 					   );
 	  }
-     
+	
 	timestepper_l_erk[level] = 
 	  new SWE_Plane_TS_l_erk(
 				 *simVars,
@@ -100,7 +106,10 @@ public:
     for (int level = 0; level < timestepper_l_irk_n_erk.size(); ++level) 
     {
       if (simVars->libpfasst.use_rexi) 
-	delete timestepper_l_rexi_n_erk[level];
+	{
+	  for (int node = 0; node < timestepper_l_rexi_n_erk[level].size(); ++node)
+	    delete timestepper_l_rexi_n_erk[level][node];
+	}
       else
 	delete timestepper_l_irk_n_erk[level];
 	
@@ -136,22 +145,22 @@ public:
       return timestepper_l_irk_n_erk[i_level];
   }
 
-    // Getter for the linear implicit nonlinear explicit SWEET time stepper at level i_level
+  // Getter for the linear implicit nonlinear explicit SWEET time stepper at level i_level
   SWE_Plane_TS_l_rexi_n_erk* get_l_rexi_n_erk_timestepper(
-							int i_level
-							) const
+							  int i_level,
+							  int i_n
+							  ) const
   {
     if (!simVars->libpfasst.use_rexi)
       return NULL;
     else 
-      return timestepper_l_rexi_n_erk[i_level];
+      return timestepper_l_rexi_n_erk[i_level][i_n];
   }
-
 
   // Getter for the linear explicit SWEET time stepper at level i_level
   SWE_Plane_TS_l_erk* get_l_erk_timestepper(
-						  int i_level
-						  ) const
+					    int i_level
+					    ) const
   {
     return timestepper_l_erk[i_level];
   }
@@ -192,9 +201,9 @@ protected:
   std::vector<LevelSingleton> *levelSingletons;
 
   // Pointer to the SWE_Plane time integrator (implicit linear part, explicit nonlinear part)
-  std::vector<SWE_Plane_TS_l_irk_n_erk*>  timestepper_l_irk_n_erk;
-  std::vector<SWE_Plane_TS_l_rexi_n_erk*> timestepper_l_rexi_n_erk;
-  std::vector<SWE_Plane_TS_l_erk*>        timestepper_l_erk;
+  std::vector<SWE_Plane_TS_l_irk_n_erk*>                timestepper_l_irk_n_erk;
+  std::vector<std::vector<SWE_Plane_TS_l_rexi_n_erk*> > timestepper_l_rexi_n_erk;
+  std::vector<SWE_Plane_TS_l_erk*>                      timestepper_l_erk;
 
   // Pointer to the SWE_Plane time integrator used to compute a reference solution
   // this is currently ln_erk but might change later 

@@ -2,6 +2,7 @@ module feval_module
   use iso_c_binding 
   use pf_mod_dtype
   use encap_module
+  use pf_mod_utils
   use pf_mod_imexQ
   implicit none
   
@@ -17,6 +18,7 @@ module feval_module
      procedure :: f_comp                => sweet_f_comp
      procedure :: initialize_correction => sweet_initialize_correction
      procedure :: finalize_correction   => sweet_finalize_correction
+     procedure :: apply_phi             => sweet_apply_phi
      procedure :: destroy               => sweet_sweeper_destroy
   end type sweet_sweeper_t
   
@@ -47,6 +49,13 @@ module feval_module
        type(c_ptr),    value :: i_Y, i_ctx, o_F1
        real(c_double), value :: i_t
      end subroutine ceval_f1
+
+     subroutine capply_phi(io_Y, i_t, i_dt, i_ctx, i_n) bind(c, name="capply_phi")
+       use iso_c_binding
+       type(c_ptr),    value :: io_Y, i_ctx
+       real(c_double), value :: i_t, i_dt
+       integer,        value :: i_n
+     end subroutine capply_phi
 
      subroutine ceval_f2(i_Y, i_t, i_ctx, o_F2) bind(c, name="ceval_f2")
        use iso_c_binding
@@ -141,7 +150,7 @@ contains
   end subroutine ffinal
 
 
-    ! prepare the current solution at m for the correction                                                                                                                           
+  ! prepare the current solution at m for the correction                                                                                                                           
   subroutine sweet_initialize_correction(this, y, t, dt, level, m, flag)
     class(sweet_sweeper_t), intent(inout) :: this
     class(pf_encap_t),      intent(inout) :: y
@@ -171,6 +180,28 @@ contains
 
   end subroutine freference
   
+  
+  ! apply phi to the argument Y
+  
+  subroutine sweet_apply_phi(this, y, t, dt, level, n) 
+    class(sweet_sweeper_t),    intent(inout) :: this
+    class(pf_encap_t),         intent(inout) :: y
+    real(pfdp),                intent(in)    :: t, dt
+    integer,                   intent(in)    :: level, n
+
+    class(sweet_data_encap_t), pointer       :: y_sd_ptr
+    
+    y_sd_ptr  => as_sweet_data_encap(y)
+
+    call capply_phi(y_sd_ptr%c_sweet_data_ptr, &
+                    t,                         &
+                    dt,                        &
+                    this%ctx,                  &
+                    n)
+
+  end subroutine sweet_apply_phi
+
+
   ! evaluate the right-hand side 
 
   subroutine sweet_f_eval(this, y, t, level, m, f, piece)
@@ -180,6 +211,7 @@ contains
     integer,                   intent(in)    :: level, m
     class(pf_encap_t),         intent(inout) :: f
     integer,                   intent(in)    :: piece
+
     class(sweet_data_encap_t), pointer       :: y_sd_ptr
     class(sweet_data_encap_t), pointer       :: f_sd_ptr
     

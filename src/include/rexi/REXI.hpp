@@ -38,21 +38,21 @@ public:
 		if (i_rexiSimVars->rexi_method == "file")
 		{
 			/// REXI next generation stuff
-			REXI_File<> rexiNG;
+			REXI_File<> rexi_file;
 
 			bool retval;
 			if (i_rexiSimVars->file_filename == "")
 			{
-				retval = rexiNG.auto_load(
+				retval = rexi_file.auto_load(
 						i_function_name,
 						i_rexiSimVars->file_N,	/// N
-						rexiNG.None(),			/// max_error
+						rexi_file.None(),			/// max_error
 						i_rexiSimVars->file_max_error_double_precision,			/// max_error_double_precision
 						i_rexiSimVars->file_test_min,
 						i_rexiSimVars->file_test_max,
-						rexiNG.None(),			/// basis_function_scaling
+						rexi_file.None(),			/// basis_function_scaling
 						i_rexiSimVars->file_h, 	/// basis_function_spacing
-						rexiNG.None(),			/// basis_function rat shift
+						rexi_file.None(),			/// basis_function rat shift
 
 						i_rexiSimVars->use_half_poles,
 						i_rexiSimVars->file_faf_dir
@@ -60,45 +60,42 @@ public:
 			}
 			else
 			{
-				retval = rexiNG.load_from_file(i_rexiSimVars->file_filename, i_rexiSimVars->use_half_poles);
+				retval = rexi_file.load_from_file(i_rexiSimVars->file_filename, i_rexiSimVars->use_half_poles);
 			}
 
 			if (!retval)
 				FatalError(std::string("Not able to find coefficients for given constraints for function "+i_function_name));
 
 			if (i_verbosity > 0)
-				std::cout << "Loaded REXI coefficients from file '" << rexiNG.fafcoeffs.filename << "'" << std::endl;
+				std::cout << "Loaded REXI coefficients from file '" << rexi_file.fafcoeffs.filename << "'" << std::endl;
 
 			if (i_verbosity > 5)
 			{
-				rexiNG.fafcoeffs.output();
-				rexiNG.fafcoeffs.outputWeights();
+				rexi_file.fafcoeffs.output();
+				rexi_file.fafcoeffs.outputWeights();
 				//rexiNG.output();
 			}
 
-			alpha = rexiNG.alpha;
-			beta = rexiNG.beta_re;
+			alpha = rexi_file.alpha;
+			beta = rexi_file.beta_re;
 		}
 		else if (i_rexiSimVars->rexi_method == "terry")
 		{
 			/// REXI stuff
-			REXI_Terry<> rexi;
-			rexi.setup(i_function_name, i_rexiSimVars->h, i_rexiSimVars->M, i_rexiSimVars->L, i_rexiSimVars->use_half_poles, i_rexiSimVars->normalization);
+			REXI_Terry<> rexi_terry;
+			rexi_terry.setup(i_function_name, i_rexiSimVars->h, i_rexiSimVars->M, i_rexiSimVars->L, i_rexiSimVars->use_half_poles, i_rexiSimVars->normalization);
 
-			alpha = rexi.alpha;
-			beta = rexi.beta_re;
-
-			//if (i_verbosity > 3)
-			//	rexi.output();
+			alpha = rexi_terry.alpha;
+			beta = rexi_terry.beta_re;
 		}
 		else if (i_rexiSimVars->rexi_method == "ci")
 		{
 			/// REXI stuff
-			REXI_CI<> rexi;
-			rexi.setup(i_function_name, i_rexiSimVars->ci_n, i_rexiSimVars->ci_r, i_rexiSimVars->ci_mu);
+			REXI_CI<> rexi_ci;
+			rexi_ci.setup(i_function_name, i_rexiSimVars->ci_n, i_rexiSimVars->ci_primitive, i_rexiSimVars->ci_s_real, i_rexiSimVars->ci_s_imag, i_rexiSimVars->ci_mu);
 
-			alpha = rexi.alpha;
-			beta = rexi.beta;
+			alpha = rexi_ci.alpha;
+			beta = rexi_ci.beta;
 		}
 		else
 		{
