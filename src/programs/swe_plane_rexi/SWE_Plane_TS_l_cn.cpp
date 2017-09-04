@@ -81,12 +81,15 @@ void SWE_Plane_TS_l_cn::setup(
 	//Force 1st order implicit and explicit schemes to achieve the 2nd order CN
 	timestepping_order_linear = 1; //i_l_order;
 
-	if (timestepping_order_linear != 1)
-	{
-		std::cout << "SWE_Plane_TS_l_cn Warning: Using half explicit/implicit euler to achieve Crank-Nicolson" << std::endl;
-	    std::cout << "                             even though you wanted to have a " << timestepping_order_linear << " order explicit scheme." << std::endl;
-		//FatalError("SWE_Plane_TS_l_cn: Only 2nd order TS (Because of Crank Nicolson) supported with this implementation");
-	}
+	//if (timestepping_order_linear != 1)
+	//{
+	//	std::cout << "SWE_Plane_TS_l_cn Warning: Using half explicit/implicit euler to achieve Crank-Nicolson" << std::endl;
+	//   std::cout << "                             even though you wanted to have a " << timestepping_order_linear << " order explicit scheme." << std::endl;
+	//	//FatalError("SWE_Plane_TS_l_cn: Only 2nd order TS (Because of Crank Nicolson) supported with this implementation");
+	//}
+
+	if (simVars.disc.use_staggering)
+		FatalError("Staggering not supported for l_cn");
 
 	crank_nicolson_damping_factor = i_crank_nicolson_damping_factor;
 }
