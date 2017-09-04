@@ -7,16 +7,35 @@
  *  Changelog:
  *  	2017-05-29: Based on source swe_plane_rexi.cpp
  *					which was also written by Pedro Peixoto
+ *  	2017-09-04: Adjusted to fit any explicit half step (Pedro Peixoto)
+ *
  */
 
 #include "SWE_Plane_TS_l_cn.hpp"
 #include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
 
-
-
-
-
-
+/*
+ * This is a "generalized" Crank-Nicolson scheme for linear equation
+ *
+ * 1) Takes an explicit 1/2 step (or whatever controlled by crank_nicolson_damping_factor) with an RK of any implemented order
+ * 2) Then, takes an implicit 1/2 step (or whatever controlled by crank_nicolson_damping_factor) with and implicit euler scheme
+ * --> If the explicit step is taken with explicit Euler, then this is exactly CN
+ *
+ * With explicit Euler, my be viewed as classic CN:
+ *
+ * U_t = L U(n)
+ *
+ *
+ * (U(n+1) - U(n)) / dt = 0.5*(L U(n+1) + L U(n))
+ *
+ * <=> U(n+1) - U(n) =  dt/2 *(L U(n+1) + L U(n))
+ *
+ * <=> (1-dt/2L) U(n+1)= (1 + dt/2 L) U(n)
+ *     ---------------   -----------------
+ *           |                  |
+ *  (1/2 implicit euler)  (1/2 explicit euler)
+ *
+ */
 
 
 void SWE_Plane_TS_l_cn::run_timestep(
@@ -29,7 +48,7 @@ void SWE_Plane_TS_l_cn::run_timestep(
 )
 {
 	if (i_dt <= 0)
-		FatalError("SWE_Plane_TS_l_cn: Only constant time step size allowed");
+		FatalError("SWE_Plane_TS_l_cn: Only constant time step size allowed (Please set --dt )");
 
 
 	PlaneData h_linear_t1 = io_h;
@@ -64,8 +83,9 @@ void SWE_Plane_TS_l_cn::setup(
 {
 	timestepping_order_linear = i_l_order;
 
-	if (timestepping_order_linear != 2)
-		FatalError("SWE_Plane_TS_l_cn: Only 2nd order TS (Because of Crank Nicolson) supported with this implementation");
+	if (timestepping_order_linear != 1)
+		std::cout << "SWE_Plane_TS_l_cn Warning: Using explicit time integrator with order different than 1, so this is not exactly Crank-Nicolson" << std::endl;
+		//FatalError("SWE_Plane_TS_l_cn: Only 2nd order TS (Because of Crank Nicolson) supported with this implementation");
 
 	crank_nicolson_damping_factor = i_crank_nicolson_damping_factor;
 }

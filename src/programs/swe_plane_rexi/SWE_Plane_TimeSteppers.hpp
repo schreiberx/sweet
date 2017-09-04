@@ -23,7 +23,7 @@
 #include "SWE_Plane_TS_l_cn_na_sl_nd_settls.hpp"
 #include "SWE_Plane_TS_ln_erk.hpp"
 #include "SWE_Plane_TS_ln_etdrk.hpp"
-
+//When adding a new scheme, remember to update the list of schemes for --help in the end of this hpp file
 
 
 /**
@@ -323,9 +323,23 @@ public:
 
 			linear_only = true;
 		}
-		else
+		else //Help menu with list of schemes
 		{
 			std::cout << "Unknown method: " << i_timestepping_method << std::endl;
+			std::cout << "Available --timestepping-method :"  << std::endl;
+			std::cout << "      l_direct       : Linear, analytical solution to SW operator"  << std::endl;
+			std::cout << "      l_erk          : Linear, explicit RK scheme"  << std::endl;
+			std::cout << "      l_cn           : Linear, Crank-Nicolson scheme"  << std::endl;
+			std::cout << "      l_erk_n_erk    :"  << std::endl;
+			std::cout << "      l_cn_n_erk "  << std::endl;
+			std::cout << "      l_rexi_n_erk "  << std::endl;
+			std::cout << "      l_irk "  << std::endl;
+			std::cout << "      l_irk_n_erk "  << std::endl;
+			std::cout << "      l_rexi "  << std::endl;
+			std::cout << "      l_rexi_na_sl_nd_settls "  << std::endl;
+			std::cout << "      l_cn_na_sl_nd_settls "  << std::endl;
+			std::cout << "      ln_erk "  << std::endl;
+			std::cout << "      ln_etdrk "  << std::endl;
 			FatalError("No valid --timestepping-method provided");
 		}
 	}

@@ -371,12 +371,14 @@ public:
 
 		if (simVars.misc.compute_errors)
 		{
-			compute_error_difference_to_initial_condition =
-					simVars.setup.benchmark_scenario_id == 2 ||
-					simVars.setup.benchmark_scenario_id == 3 ||
-					simVars.setup.benchmark_scenario_id == 14;
+			//Compute difference to initial condition (makes more sense in steady state cases, but useful in others too)
+			compute_error_difference_to_initial_condition = true;
+					//simVars.setup.benchmark_scenario_id == 2 ||
+					//simVars.setup.benchmark_scenario_id == 3 ||
+					//simVars.setup.benchmark_scenario_id == 14;
 
-			compute_error_to_analytical_solution = timeSteppers.linear_only;
+			//Compute difference to analytical solution (makes more sense in linear cases, but useful in others too)
+			compute_error_to_analytical_solution = true; //timeSteppers.linear_only;
 		}
 		else
 		{
@@ -1542,7 +1544,7 @@ public:
 
 		if (compute_error_to_analytical_solution)
 		{
-			if (simVars.misc.compute_errors > 0 && simVars.pde.use_nonlinear_equations == 0)
+			if (simVars.misc.compute_errors > 0)// && simVars.pde.use_nonlinear_equations == 0)
 			{
 				compute_errors();
 				std::cout << "maxabs error compared to analytical solution: " << benchmark.analytical_error_maxabs_h << std::endl;

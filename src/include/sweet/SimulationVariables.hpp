@@ -538,7 +538,7 @@ public:
 			std::cout << std::endl;
 			std::cout << "MISC:" << std::endl;
 			std::cout << " + verbosity: " << verbosity << std::endl;
-			std::cout << " + compute_error " << compute_errors << std::endl;
+			std::cout << " + compute_errors " << compute_errors << std::endl;
 			std::cout << " + stability_checks: " << stability_checks << std::endl;
 			std::cout << " + output_floating_point_precision: " << output_floating_point_precision << std::endl;
 			std::cout << " + gui_enabled: " << gui_enabled << std::endl;
@@ -1147,6 +1147,7 @@ public:
 				std::cout << "	-d [int]			accuracy of floating point output" << std::endl;
 				std::cout << "	-i [file0][;file1][;file3]...	string with filenames for initial conditions" << std::endl;
 				std::cout << "					specify BINARY; as first file name to read files as binary raw data" << std::endl;
+				std::cout << "	--compute-errors [int]          Compute errors when possible [1], default=0	" << std::endl;
 				std::cout << "	--use-robert-functions [bool]	Use Robert function formulation for velocities on the sphere" << std::endl;
 				std::cout << "" << std::endl;
 				rexi.outputProgParams();

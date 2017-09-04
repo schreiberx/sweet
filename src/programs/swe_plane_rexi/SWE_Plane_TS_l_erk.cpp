@@ -135,7 +135,7 @@ void SWE_Plane_TS_l_erk::run_timestep(
 )
 {
 	if (i_dt <= 0)
-		FatalError("SWE_Plane_TS_l_erk: Only constant time step size allowed");
+		FatalError("SWE_Plane_TS_l_erk: Only constant time step size allowed (please set --dt)");
 
 	// standard time stepping
 	timestepping_rk.run_timestep(
