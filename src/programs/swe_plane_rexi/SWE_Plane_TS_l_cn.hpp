@@ -48,7 +48,7 @@ public:
 		);
 
 	void setup(
-			int i_l_order,
+			//int i_l_order,
 			double i_crank_nicolson_damping_factor
 	);
 

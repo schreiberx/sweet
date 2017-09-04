@@ -7,7 +7,6 @@
  *  Changelog:
  *  	2017-05-29: Based on source swe_plane_rexi.cpp
  *					which was also written by Pedro Peixoto
- *  	2017-09-04: Adjusted to fit any explicit half step (Pedro Peixoto)
  *
  */
 
@@ -48,7 +47,7 @@ void SWE_Plane_TS_l_cn::run_timestep(
 )
 {
 	if (i_dt <= 0)
-		FatalError("SWE_Plane_TS_l_cn: Only constant time step size allowed (Please set --dt )");
+		FatalError("SWE_Plane_TS_l_cn: Only constant time step size allowed (Please set --dt)");
 
 
 	PlaneData h_linear_t1 = io_h;
@@ -59,7 +58,6 @@ void SWE_Plane_TS_l_cn::run_timestep(
 			io_h,
 			io_u,
 			io_v,
-
 			i_dt*(1.0-crank_nicolson_damping_factor),
 			i_simulation_timestamp
 		);
@@ -77,15 +75,18 @@ void SWE_Plane_TS_l_cn::run_timestep(
  * Setup
  */
 void SWE_Plane_TS_l_cn::setup(
-		int i_l_order,
+		//int i_l_order,
 		double i_crank_nicolson_damping_factor
 )
 {
-	timestepping_order_linear = i_l_order;
+	timestepping_order_linear = 1; //i_l_order;
 
 	if (timestepping_order_linear != 1)
-		std::cout << "SWE_Plane_TS_l_cn Warning: Using explicit time integrator with order different than 1, so this is not exactly Crank-Nicolson" << std::endl;
+	{
+		std::cout << "SWE_Plane_TS_l_cn Warning: Using half explicit/implicit euler to achieve Crank-Nicolson" << std::endl;
+	    std::cout << "                             even though you wanted to have a " << timestepping_order_linear << " order explicit scheme." << std::endl;
 		//FatalError("SWE_Plane_TS_l_cn: Only 2nd order TS (Because of Crank Nicolson) supported with this implementation");
+	}
 
 	crank_nicolson_damping_factor = i_crank_nicolson_damping_factor;
 }
@@ -100,6 +101,7 @@ SWE_Plane_TS_l_cn::SWE_Plane_TS_l_cn(
 		ts_l_erk(simVars, op),
 		ts_l_irk(simVars, op)
 {
+	//Force 1st order implicit and explicit schemes to achieve the 2nd order CN
 	ts_l_irk.setup(1);
 	ts_l_erk.setup(1);
 }

@@ -175,8 +175,11 @@ public:
 			if (i_simVars.disc.use_staggering)
 				FatalError("Staggering not supported for l_cn");
 
+			//Force time step order to 1 to set CN
+			//i_timestepping_order=1;
+
 			l_cn= new SWE_Plane_TS_l_cn(i_simVars, i_op);
-			l_cn->setup(i_timestepping_order, i_simVars.disc.crank_nicolson_filter);
+			l_cn->setup(i_simVars.disc.crank_nicolson_filter);
 
 			master = &(SWE_Plane_TS_interface&)*l_cn;
 

@@ -1137,7 +1137,7 @@ public:
 				std::cout << "Control:" << std::endl;
 				std::cout << "	-t [time]	maximum simulation time, default=-1 (infinity)" << std::endl;
 				std::cout << "	-T [stepnr]	maximum number of time steps, default=-1 (infinity)" << std::endl;
-				std::cout << "	-o [time]	time interval at which output should be written" << std::endl;
+				std::cout << "	-o [time]	time interval at which output should be written, (set to 0 for output at every time step), default=-1 (no output) " << std::endl;
 				std::cout << "" << std::endl;
 				std::cout << "Misc options:" << std::endl;
 				std::cout << "	-v [int]			verbosity level" << std::endl;
