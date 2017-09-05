@@ -23,7 +23,7 @@
 #include "SWE_Plane_TS_l_cn_na_sl_nd_settls.hpp"
 #include "SWE_Plane_TS_ln_erk.hpp"
 #include "SWE_Plane_TS_ln_etdrk.hpp"
-
+//When adding a new scheme, remember to update the list of schemes for --help in the end of this hpp file
 
 
 /**
@@ -172,11 +172,11 @@ public:
 		}
 		else if (i_timestepping_method == "l_cn")
 		{
-			if (i_simVars.disc.use_staggering)
-				FatalError("Staggering not supported for l_cn");
+			//if (i_simVars.disc.use_staggering)
+			//	FatalError("Staggering not supported for l_cn");
 
 			l_cn= new SWE_Plane_TS_l_cn(i_simVars, i_op);
-			l_cn->setup(i_timestepping_order, i_simVars.disc.crank_nicolson_filter);
+			l_cn->setup(i_simVars.disc.crank_nicolson_filter);
 
 			master = &(SWE_Plane_TS_interface&)*l_cn;
 
@@ -184,8 +184,8 @@ public:
 		}
 		else if (i_timestepping_method == "l_erk")
 		{
-			if (i_simVars.disc.use_staggering)
-				FatalError("Staggering not supported for l_erk");
+			//if (i_simVars.disc.use_staggering)
+			//	FatalError("Staggering not supported for l_erk");
 
 			l_erk = new SWE_Plane_TS_l_erk(i_simVars, i_op);
 			l_erk->setup(i_timestepping_order);
@@ -196,8 +196,8 @@ public:
 		}
 		else if (i_timestepping_method == "l_erk_n_erk")
 		{
-			if (i_simVars.disc.use_staggering)
-				FatalError("Staggering not supported for l_erk_n_erk");
+			//if (i_simVars.disc.use_staggering)
+			//	FatalError("Staggering not supported for l_erk_n_erk");
 
 			l_erk_n_erk = new SWE_Plane_TS_l_erk_n_erk(i_simVars, i_op);
 			l_erk_n_erk->setup(i_timestepping_order, i_timestepping_order2);
@@ -323,9 +323,23 @@ public:
 
 			linear_only = true;
 		}
-		else
+		else //Help menu with list of schemes
 		{
 			std::cout << "Unknown method: " << i_timestepping_method << std::endl;
+			std::cout << "Available --timestepping-method :"  << std::endl;
+			std::cout << "      l_direct       : Linear, analytical solution to SW operator"  << std::endl;
+			std::cout << "      l_erk          : Linear, explicit RK scheme"  << std::endl;
+			std::cout << "      l_cn           : Linear, Crank-Nicolson scheme"  << std::endl;
+			std::cout << "      l_erk_n_erk    : Non-linear: Linear RK, Non-linear RK"  << std::endl;
+			std::cout << "      l_cn_n_erk "  << std::endl;
+			std::cout << "      l_rexi_n_erk "  << std::endl;
+			std::cout << "      l_irk "  << std::endl;
+			std::cout << "      l_irk_n_erk "  << std::endl;
+			std::cout << "      l_rexi "  << std::endl;
+			std::cout << "      l_rexi_na_sl_nd_settls "  << std::endl;
+			std::cout << "      l_cn_na_sl_nd_settls "  << std::endl;
+			std::cout << "      ln_erk "  << std::endl;
+			std::cout << "      ln_etdrk "  << std::endl;
 			FatalError("No valid --timestepping-method provided");
 		}
 	}

@@ -98,7 +98,8 @@ void SWE_Plane_TS_l_cn_n_erk::setup(
 	if (timestepping_order_linear != 2)
 		FatalError("SWE_Plane_TS_l_cn_n_erk: Only 2nd order TS (Because of Crank Nicolson) supported with this implementation");
 
-	ts_l_cn.setup(2, i_crank_nicolson_damping_factor);
+	//ts_l_cn.setup(2, i_crank_nicolson_damping_factor);
+	ts_l_cn.setup(i_crank_nicolson_damping_factor);
 
 	timestepping_rk.setupBuffers(op.planeDataConfig, timestepping_order_nonlinear);
 }
