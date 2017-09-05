@@ -116,13 +116,13 @@ class SWEPlaneBenchmarks
 			else if (i_variable_id == 1) // velocity u
 			{
 				if (f == 0)
-					error("f-value is equal to zero!");
+					FatalError("f-value is equal to zero!");
 				return 0;
 			}
 			else if (i_variable_id == 2) // velocity v
 			{
 				if (f == 0)
-					error("f-value is equal to zero!");
+					FatalError("f-value is equal to zero!");
 				return i_simVars.sim.gravitation/f*2.0*M_PIl*std::cos(2.0*M_PIl*x/sx)/sx;
 			}
 			else if (i_variable_id == 6) // f-term
@@ -146,16 +146,16 @@ class SWEPlaneBenchmarks
 			else if (i_variable_id == 1) // velocity u
 			{
 				if (f == 0)
-					error("f-value is equal to zero! Cannot run this case scenario.");
+					FatalError("f-value is equal to zero! Cannot run this case scenario.");
 				return -i_simVars.sim.gravitation*2.0*M_PI*std::cos(2.0*M_PI*y/sy)/(f*sy);
 			}
 			else if (i_variable_id == 2) // velocity v
 			{
 				if (f == 0)
-					error("f-value is equal to zero!");
+					FatalError("f-value is equal to zero!");
 				return 0;
 
-				error("Variable v not available");
+				FatalError("Variable v not available");
 			}
 			else if (i_variable_id == 6) // f-term
 			{
@@ -377,7 +377,7 @@ class SWEPlaneBenchmarks
 			else if (i_variable_id == 1) // velocity u
 			{
 				if (f == 0)
-					error("f-value is equal to zero! Cannot run this case scenario.");
+					FatalError("f-value is equal to zero! Cannot run this case scenario.");
 
 				double factor = -i_simVars.sim.gravitation*2.0*M_PI/(f*sy);
 
@@ -415,15 +415,15 @@ class SWEPlaneBenchmarks
 		//Rotated steady state
 		if (i_simVars.setup.benchmark_scenario_id == 14)
 		{
+			if ( std::abs(f) < 0.0001 )
+				FatalError("f-value is equal to zero or too small! Cannot run this case scenario. Please set -f ");
+
 			if (i_variable_id == 0)
 			{
 				return std::cos(2.0*M_PI*(x/sx+y/sy)) + i_simVars.sim.h0;
 			}
 			else if (i_variable_id == 1) // velocity u
 			{
-				if (f == 0)
-					error("f-value is equal to zero! Cannot run this case scenario.");
-
 				double factor = i_simVars.sim.gravitation*2.0*M_PI/(f*sy);
 				return factor*std::sin(2.0*M_PI*(x/sx+y/sy));
 			}

@@ -327,10 +327,10 @@ public:
 		{
 			std::cout << "Unknown method: " << i_timestepping_method << std::endl;
 			std::cout << "Available --timestepping-method :"  << std::endl;
-			std::cout << "      l_direct       : Linear, analytical solution to SW operator"  << std::endl;
-			std::cout << "      l_erk          : Linear, explicit RK scheme"  << std::endl;
-			std::cout << "      l_cn           : Linear, Crank-Nicolson scheme"  << std::endl;
-			std::cout << "      l_erk_n_erk    : Non-linear: Linear RK, Non-linear RK"  << std::endl;
+			std::cout << "      l_direct       : Linear: analytical solution to SW operator"  << std::endl;
+			std::cout << "      l_erk          : Linear: explicit RK scheme"  << std::endl;
+			std::cout << "      l_cn           : Linear: Crank-Nicolson scheme"  << std::endl;
+			std::cout << "      l_erk_n_erk    : Non-linear: Linear RK, Non-linear RK, Strang-split"  << std::endl;
 			std::cout << "      l_cn_n_erk "  << std::endl;
 			std::cout << "      l_rexi_n_erk "  << std::endl;
 			std::cout << "      l_irk "  << std::endl;
