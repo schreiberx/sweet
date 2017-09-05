@@ -1176,7 +1176,7 @@ public:
 					(disc.res_spectral[0] == 0 || disc.res_spectral[1] == 0)
 				)
 			{
-				FatalError("Select physical resolution or spectral modes");
+				FatalError("Select physical resolution or spectral modes (use -N (or -n, -m) for physical and -M for spectral) ");
 			}
 		}
 

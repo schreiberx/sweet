@@ -76,6 +76,10 @@ void SWE_Plane_TS_l_erk_n_erk::run_timestep(
 		double i_simulation_timestamp
 )
 {
+
+	if (i_dt <= 0)
+			FatalError("Only fixed time step size allowed (set --dt)");
+
 	if (timestepping_order == 1)
 	{
 		timestepping_rk_linear.run_timestep(

@@ -32,7 +32,7 @@ void SWE_Plane_TS_l_erk::euler_timestep_update(
 	 * TIME STEP SIZE
 	 */
 	if (i_dt <= 0)
-		FatalError("Only fixed time step size allowed");
+		FatalError("Only fixed time step size allowed (set --dt)");
 
 
 	// A- grid method
