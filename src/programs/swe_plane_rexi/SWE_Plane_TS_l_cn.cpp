@@ -79,7 +79,7 @@ void SWE_Plane_TS_l_cn::setup(
 )
 {
 	//Force 1st order implicit and explicit schemes to achieve the 2nd order CN
-	timestepping_order_linear = 1; //i_l_order;
+	//timestepping_order_linear = 1; //i_l_order;
 
 	//if (timestepping_order_linear != 1)
 	//{

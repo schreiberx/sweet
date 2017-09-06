@@ -25,7 +25,7 @@ class SWE_Plane_TS_l_cn	: public SWE_Plane_TS_interface
 	PlaneOperators &op;
 
 	double crank_nicolson_damping_factor = 0.5;
-	int timestepping_order_linear = 1;
+	//int timestepping_order_linear = 1;
 
 	SWE_Plane_TS_l_erk ts_l_erk;
 	SWE_Plane_TS_l_irk ts_l_irk;
