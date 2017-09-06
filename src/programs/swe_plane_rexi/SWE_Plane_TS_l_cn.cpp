@@ -14,7 +14,7 @@
 #include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
 
 /*
- * This is a "generalized" Crank-Nicolson scheme for linear equation
+ * This is a Crank-Nicolson scheme for linear equation
  *
  * 1) Takes an explicit 1/2 step (or whatever controlled by crank_nicolson_damping_factor) of explicit euler
  * 2) Then, takes an implicit 1/2 step (or whatever controlled by crank_nicolson_damping_factor) with and implicit euler scheme

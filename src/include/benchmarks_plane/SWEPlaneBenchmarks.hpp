@@ -415,8 +415,11 @@ class SWEPlaneBenchmarks
 		//Rotated steady state
 		if (i_simVars.setup.benchmark_scenario_id == 14)
 		{
-			if ( std::abs(f) < 0.0001 )
-				FatalError("f-value is equal to zero or too small! Cannot run this case scenario. Please set -f ");
+			//if ( std::abs(f) < 0.01 )
+				//std::cout<<"SWEPlaneBenchmarks Warning: f-value is equal to zero or is very small! Problem may be ill posed. Please be careful or set appropriate -f "<<std::endl;
+
+			if ( std::abs(f) < 0.001 )
+				FatalError("SWEPlaneBenchmark: f-value is equal to zero or very small! Problem may be ill posed. Please set appropriate -f ");
 
 			if (i_variable_id == 0)
 			{
