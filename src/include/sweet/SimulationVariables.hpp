@@ -284,7 +284,11 @@ public:
 		/**
 		 * Coriolis frequency f0
 		 */
-		double f0 = 0.00007292*2;
+#if SWEET_USE_SPHERE_SPECTRAL_SPACE
+		double f0 = 0.00007292*2; //Sphere
+#else
+		double f0 = 1.0; //Plane
+#endif
 
 		// constants from Galwesky et al. paper
 
