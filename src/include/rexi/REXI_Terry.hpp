@@ -119,7 +119,7 @@ public:
 		std::vector<TComplex> b;
 
 		if (i_h < 0)
-			FatalError("Specify the sampling distance width of REXI (parameter h)");
+			FatalError("Specify the sampling distance width of REXI (parameter --rexi-h)");
 
 		if (i_function_name == "phi0")
 		{
