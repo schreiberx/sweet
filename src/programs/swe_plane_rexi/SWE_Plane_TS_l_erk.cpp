@@ -32,7 +32,7 @@ void SWE_Plane_TS_l_erk::euler_timestep_update(
 	 * TIME STEP SIZE
 	 */
 	if (i_dt <= 0)
-		FatalError("Only fixed time step size allowed");
+		FatalError("Only fixed time step size allowed (set --dt)");
 
 
 	// A- grid method
@@ -135,7 +135,7 @@ void SWE_Plane_TS_l_erk::run_timestep(
 )
 {
 	if (i_dt <= 0)
-		FatalError("SWE_Plane_TS_l_erk: Only constant time step size allowed");
+		FatalError("SWE_Plane_TS_l_erk: Only constant time step size allowed (please set --dt)");
 
 	// standard time stepping
 	timestepping_rk.run_timestep(
@@ -159,6 +159,9 @@ void SWE_Plane_TS_l_erk::setup(
 {
 	timestepping_order = i_order;
 	timestepping_rk.setupBuffers(op.planeDataConfig, timestepping_order);
+
+	if (simVars.disc.use_staggering)
+		FatalError("Staggering not supported for l_erk");
 }
 
 

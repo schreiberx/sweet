@@ -12,11 +12,21 @@
 #include "SWE_Plane_TS_l_cn_n_erk.hpp"
 #include <sweet/plane/PlaneOperatorsComplex.hpp>
 
-
-
 /*
- * Main routine for method to be used in case of finite differences
+ *
+ * U_t=LU+N(U)
+ *
+ * Strang Splitting used
+
+ *
+ * 2nd order scheme
+ * 1) dt/2 step of linear part with CN
+ * 2) dt step of nonlinear part with RK from step 1)
+ * 3) dt/2 step of linear part with CN from step 2)
+ * Formally: U(n+1)=exp(dtL/2)exp(dtN)exp(dtL/2)U(n)
+ *
  */
+
 void SWE_Plane_TS_l_cn_n_erk::euler_timestep_update_nonlinear(
 		const PlaneData &i_h,	///< prognostic variables
 		const PlaneData &i_u,	///< prognostic variables
@@ -53,7 +63,7 @@ void SWE_Plane_TS_l_cn_n_erk::run_timestep(
 )
 {
 	if (i_dt <= 0)
-		FatalError("SWE_Plane_TS_l_cn_n_erk: Only constant time step size allowed");
+		FatalError("SWE_Plane_TS_l_cn_n_erk: Only constant time step size allowed (set --dt)");
 
 	// Half one for linear parts
 	ts_l_cn.run_timestep(
@@ -92,13 +102,20 @@ void SWE_Plane_TS_l_cn_n_erk::setup(
 )
 {
 	timestepping_order_linear = i_l_order;
-	timestepping_order_nonlinear = i_l_order;
+	timestepping_order_nonlinear = i_n_order;
 	crank_nicolson_damping_factor = i_crank_nicolson_damping_factor;
 
-	if (timestepping_order_linear != 2)
-		FatalError("SWE_Plane_TS_l_cn_n_erk: Only 2nd order TS (Because of Crank Nicolson) supported with this implementation");
+	if (simVars.disc.use_staggering)
+		FatalError("SWE_Plane_TS_l_cn_n_erk: Staggering not supported for l_cn_n_erk");
 
-	ts_l_cn.setup(2, i_crank_nicolson_damping_factor);
+	if (timestepping_order_linear > 0)
+		std::cout<<"SWE_Plane_TS_l_cn_n_erk Warning: Ignoring timestepping_order for linear time integration because this is always given by the Crank-Nicolson scheme"<<std::endl;
+
+	if (timestepping_order_nonlinear <= 0)
+		FatalError("SWE_Plane_TS_l_cn_n_erk: Please set --timestepping-order2 to define the order of the nonlinear time integration");
+
+	//ts_l_cn.setup(2, i_crank_nicolson_damping_factor);
+	ts_l_cn.setup(i_crank_nicolson_damping_factor);
 
 	timestepping_rk.setupBuffers(op.planeDataConfig, timestepping_order_nonlinear);
 }

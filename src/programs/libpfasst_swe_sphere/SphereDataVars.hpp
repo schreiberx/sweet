@@ -4,7 +4,7 @@
 #include <sweet/sphere/SphereData.hpp>
 #include <sweet/sphere/SphereDataConfig.hpp>
 
-// Class containing the prognotic SphereData variables h, u, v
+// Class containing the prognotic SphereData variables phi, vort, and div
 
 class SphereDataVars {
 
@@ -67,9 +67,7 @@ public:
 
 protected:
   
-  // height
   SphereData prog_phi;
-  // velocities
   SphereData prog_vort;
   SphereData prog_div;
 

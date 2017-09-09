@@ -15,7 +15,7 @@
 
 
 /**
- * Solve SWE with implicit time stepping
+ * Solve SWE with implicit Euler time stepping
  *
  * U_t = L U(0)
  *
@@ -39,7 +39,7 @@ void SWE_Plane_TS_l_irk::run_timestep(
 )
 {
 	if (i_dt <= 0)
-		FatalError("OSWE_Plane_TS_l_irk: nly constant time step size allowed");
+		FatalError("SWE_Plane_TS_l_irk: only constant time step size allowed (Please set --dt)");
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 

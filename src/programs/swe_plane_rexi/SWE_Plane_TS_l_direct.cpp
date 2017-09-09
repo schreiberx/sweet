@@ -137,7 +137,7 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid(
  * See Embid/Madja/1996, Terry/Beth/2014, page 16
  * and
  * 		doc/swe_solution_for_L/sympy_L_spec_decomposition.py
- * for the dimensionful formulation.
+ * for the dimension full formulation.
  */
 void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 		PlaneData &io_h_pert,	///< prognostic variables
@@ -152,7 +152,7 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 		FatalError("Staggering not supported");
 
 	if (i_dt < 0)
-		FatalError("SWE_Plane_TS_l_direct: Only constant time step size allowed");
+		FatalError("SWE_Plane_TS_l_direct: Only constant time step size allowed (please set --dt )");
 
 
 	typedef std::complex<T> complex;

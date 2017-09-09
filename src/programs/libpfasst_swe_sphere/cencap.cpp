@@ -77,9 +77,9 @@ extern "C"
     SphereData&       vort_dst = o_dst->get_vort();
     SphereData&       div_dst  = o_dst->get_div();
 
-    phi_dst = phi_src;
+    phi_dst  = phi_src;
     vort_dst = vort_src;
-    div_dst = div_src;
+    div_dst  = div_src;
   }
   
   // computes the norm of the sweet data encapsulated object
@@ -100,7 +100,7 @@ extern "C"
     if (vort_max > *o_val) 
       *o_val = vort_max;
     if (div_max > *o_val)
-      *o_val = div_max;
+      *o_val = div_max;    
   }
 
   // packs all the values contained in the sweet data object into a flat array
@@ -194,13 +194,13 @@ extern "C"
 			  SphereDataVars *io_Y
 			  ) 
   {
-    const SphereData& phi_x = i_X->get_phi();
+    const SphereData& phi_x  = i_X->get_phi();
     const SphereData& vort_x = i_X->get_vort();
-    const SphereData& div_x = i_X->get_div();
+    const SphereData& div_x  = i_X->get_div();
 
-    SphereData&       phi_y = io_Y->get_phi();
+    SphereData&       phi_y  = io_Y->get_phi();
     SphereData&       vort_y = io_Y->get_vort();
-    SphereData&       div_y = io_Y->get_div();
+    SphereData&       div_y  = io_Y->get_div();
     
     phi_y  = i_a * phi_x  + phi_y;
     vort_y = i_a * vort_x + vort_y;

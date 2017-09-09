@@ -28,10 +28,16 @@ std::vector<LevelSingleton> levelSingletons;
 extern "C"
 {
    /* Driver function for pfasst control */
-   void fmain (SphereDataCtx *pd_ctx, 
- 	      const int* nlevels, const int* niters, const int nnodes[], const char* qtype_name, const int* qtype_name_len,
- 	      const int* nfields, const int nvars_per_field[], 
- 	      double* t_max, double* dt);
+  void fmain (SphereDataCtx* pd_ctx, 
+	      const int*     nlevels, 
+	      const int*     niters, 
+	      const int      nnodes[], 
+	      const char*    qtype_name, 
+	      const int*     qtype_name_len,
+ 	      const int*     nfields, 
+	      const int      nvars_per_field[], 
+ 	      double*        t_max, 
+	      double*        dt);
 }
 
 /**
@@ -83,7 +89,7 @@ int main(int i_argc, char *i_argv[])
 	if (simVars.libpfasst.nnodes == 3 ||
 	    simVars.libpfasst.nnodes == 5 || 
 	    simVars.libpfasst.nnodes == 9)
-	  nnodes[0] = 3; 
+	  nnodes[0] = 5; 
 	else 
 	  FatalError("With 2 levels, the number of SDC nodes on the fine level must be either 3, 5, or 9");
 	break;
@@ -117,12 +123,10 @@ int main(int i_argc, char *i_argv[])
   // setup the finest level singleton
   levelSingletons.resize(simVars.libpfasst.nlevels);
 
-  levelSingletons[simVars.libpfasst.nlevels-1].dataConfig.setupAutoPhysicalSpace(
-										 simVars.disc.res_spectral[0],
-										 simVars.disc.res_spectral[1],
-										 &(simVars.disc.res_physical[0]),
-										 &(simVars.disc.res_physical[1])
-										 );
+  levelSingletons[simVars.libpfasst.nlevels-1].dataConfig.setupAuto(
+								    simVars.disc.res_physical,
+								    simVars.disc.res_spectral 
+								    );
 
   levelSingletons[simVars.libpfasst.nlevels-1].level = simVars.libpfasst.nlevels-1;
   
@@ -166,7 +170,7 @@ int main(int i_argc, char *i_argv[])
   					  );
   // output the info for the levels
   for (int i = 0; i < simVars.libpfasst.nlevels; i++)
-    levelSingletons[simVars.libpfasst.nlevels-1-i].dataConfig.getConfigInformationString();
+    std::cout << levelSingletons[simVars.libpfasst.nlevels-1-i].dataConfig.getConfigInformationString() << std::endl;
   
   // get the C string length (needed by Fortran...)
   int string_length = simVars.libpfasst.nodes_type.size();

@@ -167,7 +167,7 @@ contains
 
     select case (piece)
 
-       case (1) ! explicit rhs
+       case (1) ! imex rhs
           call ceval_f1(y_sd_ptr%c_sweet_data_ptr, &
                         t,                         & 
                         this%ctx,                  &  

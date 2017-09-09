@@ -284,7 +284,11 @@ public:
 		/**
 		 * Coriolis frequency f0
 		 */
-		double f0 = 0.00007292*2;
+#if SWEET_USE_SPHERE_SPECTRAL_SPACE
+		double f0 = 0.00007292*2; //Sphere
+#else
+		double f0 = 1.0; //Plane
+#endif
 
 		// constants from Galwesky et al. paper
 
@@ -538,7 +542,7 @@ public:
 			std::cout << std::endl;
 			std::cout << "MISC:" << std::endl;
 			std::cout << " + verbosity: " << verbosity << std::endl;
-			std::cout << " + compute_error " << compute_errors << std::endl;
+			std::cout << " + compute_errors " << compute_errors << std::endl;
 			std::cout << " + stability_checks: " << stability_checks << std::endl;
 			std::cout << " + output_floating_point_precision: " << output_floating_point_precision << std::endl;
 			std::cout << " + gui_enabled: " << gui_enabled << std::endl;
@@ -1137,7 +1141,7 @@ public:
 				std::cout << "Control:" << std::endl;
 				std::cout << "	-t [time]	maximum simulation time, default=-1 (infinity)" << std::endl;
 				std::cout << "	-T [stepnr]	maximum number of time steps, default=-1 (infinity)" << std::endl;
-				std::cout << "	-o [time]	time interval at which output should be written" << std::endl;
+				std::cout << "	-o [time]	time interval at which output should be written, (set to 0 for output at every time step), default=-1 (no output) " << std::endl;
 				std::cout << "" << std::endl;
 				std::cout << "Misc options:" << std::endl;
 				std::cout << "	-v [int]			verbosity level" << std::endl;
@@ -1147,6 +1151,7 @@ public:
 				std::cout << "	-d [int]			accuracy of floating point output" << std::endl;
 				std::cout << "	-i [file0][;file1][;file3]...	string with filenames for initial conditions" << std::endl;
 				std::cout << "					specify BINARY; as first file name to read files as binary raw data" << std::endl;
+				std::cout << "	--compute-errors [int]          Compute errors when possible [1], default=0	" << std::endl;
 				std::cout << "	--use-robert-functions [bool]	Use Robert function formulation for velocities on the sphere" << std::endl;
 				std::cout << "" << std::endl;
 				rexi.outputProgParams();
@@ -1175,7 +1180,7 @@ public:
 					(disc.res_spectral[0] == 0 || disc.res_spectral[1] == 0)
 				)
 			{
-				FatalError("Select physical resolution or spectral modes");
+				FatalError("Select physical resolution or spectral modes (use -N (or -n, -m) for physical and -M for spectral) ");
 			}
 		}
 
