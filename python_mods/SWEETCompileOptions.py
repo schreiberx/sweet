@@ -56,7 +56,7 @@ class SWEETCompileOptions:
 		self.rexi_thread_parallel_sum = 'disable'
 
 		# Memory allocator
-		self.numa_block_allocator = '2'
+		self.numa_block_allocator = '0'
 
 		# Program / Unit test
 		self.program = ''
