@@ -1131,15 +1131,6 @@ int main(int i_argc, char *i_argv[])
 		{
 			SimulationInstance *simulationSWE = new SimulationInstance;
 
-			//Time counter
-			Stopwatch time;
-
-
-#if SWEET_MPI
-			MPI_Barrier(MPI_COMM_WORLD);
-#endif
-			// Start counting time
-			time.reset();
 
 			if (simVars.disc.normal_mode_analysis_generation > 0)
 			{
@@ -1147,16 +1138,33 @@ int main(int i_argc, char *i_argv[])
 			}
 			else
 			{
-				bool output_written = false;
+				// Do first output before starting timer
+				simulationSWE->timestep_check_output();
+
+
+				//Time counter
+				Stopwatch time;
+
+#if SWEET_MPI
+				MPI_Barrier(MPI_COMM_WORLD);
+				// Start counting time
+				if (mpi_rank == 0)
+					std::cout << "TIMER RESET" << std::endl;
+#endif
+				time.reset();
+
 
 				// Main time loop
-				while(true)
+				while (true)
 				{
-					output_written = simulationSWE->timestep_check_output();
-
 					// Stop simulation if requested
 					if (simulationSWE->should_quit())
 						break;
+
+					// Do the output here before the quit check.
+					// This assures that in case of writing the data for the 1st and last time step,
+					// this is not included in the timings
+					simulationSWE->timestep_check_output();
 
 					// Main call for timestep run
 					simulationSWE->run_timestep();
@@ -1172,26 +1180,34 @@ int main(int i_argc, char *i_argv[])
 					}
 				}
 
-				// Output final time step output!
-				if (!output_written)
-					simulationSWE->timestep_do_output();
-			}
 
-			// Stop counting time
-			time.stop();
-
-			double seconds = time();
+				// Stop counting time
+				time.stop();
 
 #if SWEET_MPI
-			if (mpi_rank == 0)
+				MPI_Barrier(MPI_COMM_WORLD);
+				// Start counting time
+				if (mpi_rank == 0)
+					std::cout << "TIMER STOP" << std::endl;
 #endif
-			{
-				// End of run output results
-				std::cout << "Simulation time (seconds): " << seconds << std::endl;
-				std::cout << "Number of time steps: " << simVars.timecontrol.current_timestep_nr << std::endl;
-				std::cout << "Time per time step: " << seconds/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
-				std::cout << "Last time step size: " << simVars.timecontrol.current_timestep_size << std::endl;
+
+				double seconds = time();
+
+#if SWEET_MPI
+				if (mpi_rank == 0)
+#endif
+				{
+					// End of run output results
+					std::cout << "Simulation time (seconds): " << seconds << std::endl;
+					std::cout << "Number of time steps: " << simVars.timecontrol.current_timestep_nr << std::endl;
+					std::cout << "Time per time step: " << seconds/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
+					std::cout << "Last time step size: " << simVars.timecontrol.current_timestep_size << std::endl;
+				}
+
+				// Output final time step output!
+				simulationSWE->timestep_check_output();
 			}
+
 
 			delete simulationSWE;
 		}
