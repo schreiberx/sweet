@@ -7,9 +7,15 @@ import sys
 from subprocess import Popen, PIPE
 
 
+# Load simulation time to get reference file
+import jobs_create as jc
+simtime = jc.p.runtime.simtime
+print(simtime)
+t = ("%8.8f" % simtime).zfill(20)
 
-#datafile="output_prog_h_pert_t00000000000.10000000.csv"
-datafile="output_prog_h_t00000002000.00000000.csv"
+datafile="output_prog_h_t"+t+".csv"
+
+
 
 
 groups = [
@@ -39,9 +45,13 @@ for group_info in groups:
 
 	prev_conv_value = 0.0
 
-	print("SIMNAME\tL1\tL2\tLinf\tCONV")
-	directories = glob.glob("script_"+group+"_*")
-	directories.sort()
+	if len(sys.argv) > 1:
+		directories = sys.argv[1:]
+	else:
+		directories = glob.glob("script_"+group+"_*")
+		directories.sort()
+
+	#print(directories)
 
 	prev_test_name = ""
 
@@ -68,6 +78,8 @@ for group_info in groups:
 		test_group_dirs[-1].append(rundir)
 
 
+
+	print("SIMNAME\tL1\tL2\tLinf\tCONV")
 	for g in test_group_dirs:
 
 		conv_test = []
@@ -112,10 +124,10 @@ for group_info in groups:
 		print("Measured convergence: "+str(conv_test))
                 
 		# test these first convergence tests
-		if 'ln4' in group_info[0]:
+		if 'ln4' in group or 'ln2' in group:
 			# Comparing RK4 with 4-th order methods requires a more relaxed test
 			# This works and was empirically determined
-			test_range = range(3,6)
+			test_range = range(4,6)
 			max_error_rate = 0.5
 		else:
 			test_range = range(1,4)
@@ -137,8 +149,9 @@ for group_info in groups:
 					continue
 
 				print("ERROR: Convergence rate not given")
-				print("ERROR: Tested with convergence rate "+str(conv_test[i]))
-				print("ERROR: Expected convergence rate "+str(conv_rate))
+				print("ERROR: Test range: "+str(test_range))
+				print("ERROR: Tested with convergence rate: "+str(conv_test[i]))
+				print("ERROR: Expected convergence rate: "+str(conv_rate))
 				print("ERROR: Relative error: "+str(a))
 				print("ERROR: Max error: "+str(max_error_rate))
 				sys.exit(1)
