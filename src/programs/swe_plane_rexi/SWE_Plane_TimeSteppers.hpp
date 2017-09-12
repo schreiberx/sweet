@@ -210,8 +210,6 @@ public:
 		}
 		else if (i_timestepping_method == "l_rexi_n_erk")
 		{
-			if (i_simVars.disc.use_staggering)
-				FatalError("Staggering not supported for l_rexi_n_erk");
 
 			l_rexi_n_erk = new SWE_Plane_TS_l_rexi_n_erk(i_simVars, i_op);
 			l_rexi_n_erk->setup(
