@@ -253,6 +253,10 @@ class SWEETClusterOptions:
 """
 			mpi_exec_prefix = "mpiexec_mpt "
 
+		else:
+			content = ""
+			mpi_exec_prefix = ""
+
 		return content, mpi_exec_prefix
 
 
