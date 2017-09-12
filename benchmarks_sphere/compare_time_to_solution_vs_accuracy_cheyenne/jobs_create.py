@@ -187,7 +187,7 @@ if __name__ == "__main__":
 				['l_irk_n_erk',		1,	1,	0],
 				['ln_erk',		1,	1,	0],
 				['l_rexi_n_erk',	1,	1,	0],
-				['ln_etdrk',		1,	1,	0],
+				['l_rexi_n_etdrk',	1,	1,	0],
 			]
 
 		# 2nd order nonlinear
@@ -199,7 +199,7 @@ if __name__ == "__main__":
 				#['l_erk_n_erk',		2,	2,	0],
 				['ln_erk',		2,	2,	0],
 	#			['l_rexi_n_erk',	2,	2,	0],
-				#['ln_etdrk',		2,	2,	0],
+				#['l_rexi_n_etdrk',		2,	2,	0],
 			]
 
 			if True:
@@ -209,13 +209,13 @@ if __name__ == "__main__":
 					#for r in [25, 50, 75, 100]:
 					if True:
 						r = 50
-						ts_methods.append(['ln_etdrk',	2,	2,	0, {'rexi_method': 'ci', 'ci_n':N, 'ci_sx':r, 'ci_sy':r}])
+						ts_methods.append(['l_rexi_n_etdrk',	2,	2,	0, {'rexi_method': 'ci', 'ci_n':N, 'ci_sx':r, 'ci_sy':r}])
 
 		# 4th order nonlinear
 		if group == 'ln4':
 			ts_methods = [
 				['ln_erk',		4,	4,	0],	# reference solution
-				['ln_etdrk',		4,	4,	0],
+				['l_rexi_n_etdrk',		4,	4,	0],
 				['ln_erk',		4,	4,	0],
 			]
 

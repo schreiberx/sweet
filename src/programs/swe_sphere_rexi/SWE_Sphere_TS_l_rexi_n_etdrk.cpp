@@ -5,12 +5,12 @@
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#include "SWE_Sphere_TS_ln_etdrk.hpp"
+#include "SWE_Sphere_TS_l_rexi_n_etdrk.hpp"
 
 
 
 
-void SWE_Sphere_TS_ln_etdrk::run_timestep(
+void SWE_Sphere_TS_l_rexi_n_etdrk::run_timestep(
 		SphereData &io_phi,	///< prognostic variables
 		SphereData &io_u,	///< prognostic variables
 		SphereData &io_v,	///< prognostic variables
@@ -347,7 +347,7 @@ void SWE_Sphere_TS_ln_etdrk::run_timestep(
 /*
  * Setup
  */
-void SWE_Sphere_TS_ln_etdrk::setup(
+void SWE_Sphere_TS_l_rexi_n_etdrk::setup(
 		REXI_SimulationVariables &i_rexiSimVars,
 		int i_timestepping_order,
 		double i_timestep_size,
@@ -358,24 +358,24 @@ void SWE_Sphere_TS_ln_etdrk::setup(
 
 	timestepping_order = i_timestepping_order;
 
-	ts_phi0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size, i_use_f_sphere);
+	ts_phi0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size, i_use_f_sphere, false);
 
 	if (timestepping_order >= 2)
 	{
-		ts_phi1_rexi.setup(i_rexiSimVars, "phi1", i_timestep_size, i_use_f_sphere);
-		ts_phi2_rexi.setup(i_rexiSimVars, "phi2", i_timestep_size, i_use_f_sphere);
+		ts_phi1_rexi.setup(i_rexiSimVars, "phi1", i_timestep_size, i_use_f_sphere, false);
+		ts_phi2_rexi.setup(i_rexiSimVars, "phi2", i_timestep_size, i_use_f_sphere, false);
 	}
 
 	if (timestepping_order >= 4)
 	{
-		ts_ups1_rexi.setup(i_rexiSimVars, "ups1", i_timestep_size, i_use_f_sphere);
-		ts_ups2_rexi.setup(i_rexiSimVars, "ups2", i_timestep_size, i_use_f_sphere);
-		ts_ups3_rexi.setup(i_rexiSimVars, "ups3", i_timestep_size, i_use_f_sphere);
+		ts_ups1_rexi.setup(i_rexiSimVars, "ups1", i_timestep_size, i_use_f_sphere, false);
+		ts_ups2_rexi.setup(i_rexiSimVars, "ups2", i_timestep_size, i_use_f_sphere, false);
+		ts_ups3_rexi.setup(i_rexiSimVars, "ups3", i_timestep_size, i_use_f_sphere, false);
 	}
-	}
+}
 
 
-SWE_Sphere_TS_ln_etdrk::SWE_Sphere_TS_ln_etdrk(
+SWE_Sphere_TS_l_rexi_n_etdrk::SWE_Sphere_TS_l_rexi_n_etdrk(
 		SimulationVariables &i_simVars,
 		SphereOperators &i_op
 )	:
@@ -396,7 +396,7 @@ SWE_Sphere_TS_ln_etdrk::SWE_Sphere_TS_ln_etdrk(
 
 
 
-SWE_Sphere_TS_ln_etdrk::~SWE_Sphere_TS_ln_etdrk()
+SWE_Sphere_TS_l_rexi_n_etdrk::~SWE_Sphere_TS_l_rexi_n_etdrk()
 {
 }
 
