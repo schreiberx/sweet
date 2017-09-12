@@ -127,7 +127,8 @@ for group_info in groups:
 		if 'ln4' in group or 'ln2' in group:
 			# Comparing RK4 with 4-th order methods requires a more relaxed test
 			# This works and was empirically determined
-			test_range = range(4,6)
+			#test_range = range(4,6)
+			test_range = range(8,10)
 			max_error_rate = 0.5
 		else:
 			test_range = range(1,4)
