@@ -9,9 +9,8 @@ source ./local_software/env_vars.sh || exit 1
 
 cd "$THISDIR"
 
-
 if [ -z "$1" ]; then
-	DIRS=script_*rexi*
+	DIRS=script_*
 else
 	DIRS=$@
 fi
