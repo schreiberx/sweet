@@ -25,7 +25,7 @@ if true; then
 	echo "Generating test scripts"
 
 	#./jobs_create.py ln2 ln_erk 2 2 0 || exit 1
-	./jobs_create.py ln2 ln_etdrk 2 2 0 || exit 1
+	./jobs_create.py ln2 l_rexi_n_etdrk 2 2 0 || exit 1
 	#./jobs_create.py ln2 l_erk_n_erk 2 2 0 || exit 1
 
 else
@@ -40,7 +40,7 @@ else
 
 	# 1st order nonlinear
 	./jobs_create.py ln1 ln_erk 1 1 0 || exit 1
-	#./jobs_create.py ln1 ln_etdrk 1 1 1 || exit 1
+	#./jobs_create.py ln1 l_rexi_n_etdrk 1 1 1 || exit 1
 	./jobs_create.py ln1 l_erk_n_erk 1 1 0 || exit 1
 	#./jobs_create.py ln1 l_irk_n_erk 1 1 0 || exit 1
 	#./jobs_create.py ln1 l_rexi_n_erk 1 1 1 || exit 1
