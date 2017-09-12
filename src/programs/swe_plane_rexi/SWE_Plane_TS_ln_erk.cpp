@@ -38,7 +38,7 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 	 * TIME STEP SIZE
 	 */
 	if (i_dt <= 0)
-		FatalError("Only fixed time step size allowed");
+		FatalError("SWE_Plane_TS_ln_erk: Only constant time step size allowed (please set --dt)");
 
 
 	// A-grid method
@@ -61,7 +61,20 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 		o_v_t -= simVars.sim.f0*i_u;
 
 		// standard update
-		o_h_t = -op.diff_c_x(i_u*total_h) - op.diff_c_y(i_v*total_h);
+		/*
+		 * P UPDATE
+		 */
+		if (simVars.pde.use_nonlinear_equations == 1){ //full nonlinear divergence
+			// standard update
+			//o_h_t = -op.diff_f_x(U) - op.diff_f_y(V);
+			o_h_t = -op.diff_c_x(i_u*total_h) - op.diff_c_y(i_v*total_h);
+		}
+		else // use linear divergence
+		{
+			//o_h_t = -op.diff_f_x(simVars.sim.h0*i_u) - op.diff_f_y(simVars.sim.h0*i_v);
+			o_h_t = -op.diff_c_x(i_u*simVars.sim.h0) - op.diff_c_y(i_v*simVars.sim.h0);
+		}
+
 	}
 	else // simVars.disc.use_staggering = true
 	{
@@ -98,50 +111,35 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 		 * U and V updates
 		 */
 
-		if (simVars.pde.use_nonlinear_equations > 0) // nonlinear case
+
+		U = op.avg_b_x(total_h)*i_u;
+		V = op.avg_b_y(total_h)*i_v;
+
+
+		H = simVars.sim.gravitation*total_h + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
+
+
+
+		// Potential vorticity
+		PlaneData total_h_pv = total_h;
+		total_h_pv = op.avg_b_x(op.avg_b_y(total_h));
+
+		if (total_h_pv.reduce_min() < 0.00000001)
 		{
-			U = op.avg_b_x(total_h)*i_u;
-			V = op.avg_b_y(total_h)*i_v;
-		}
-		else // linear case
-		{
-			U = simVars.sim.h0*i_u;
-			V = simVars.sim.h0*i_v;
+			std::cerr << "Test case not adequate for vector invariant formulation. Null or negative water height" << std::endl;
+			std::cerr << "Min h_pv   : " << total_h_pv.reduce_min() << std::endl;
+			std::cerr << "Min h_total: " << total_h.reduce_min() << std::endl;
+			std::cerr << "Min h_pert : " << i_h.reduce_min() << std::endl;
+			FatalError("SWE_Plane_TS_ln_erk: Methods unstable or inadequate for vector invariant swe");;
 		}
 
-		if (simVars.pde.use_nonlinear_equations > 0) // nonlinear case
-			H = simVars.sim.gravitation*total_h + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
-		else // linear case
-			H = simVars.sim.gravitation*total_h;// + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
+		PlaneData q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + simVars.sim.f0) / total_h_pv;
 
+		// u, v tendencies
+		// Energy conserving scheme
+		o_u_t = op.avg_f_y(q*op.avg_b_x(V)) - op.diff_b_x(H);
+		o_v_t = -op.avg_f_x(q*op.avg_b_y(U)) - op.diff_b_y(H);
 
-		if (simVars.pde.use_nonlinear_equations > 0) //nonlinear case
-		{
-			// Potential vorticity
-			PlaneData total_h_pv = total_h;
-			total_h_pv = op.avg_b_x(op.avg_b_y(total_h));
-
-			if (total_h_pv.reduce_min() < 0.00000001)
-			{
-				std::cerr << "Test case not adequate for vector invariant formulation. Null or negative water height" << std::endl;
-				std::cerr << "Min h_pv   : " << total_h_pv.reduce_min() << std::endl;
-				std::cerr << "Min h_total: " << total_h.reduce_min() << std::endl;
-				std::cerr << "Min h_pert : " << i_h.reduce_min() << std::endl;
-				FatalError("SWE_Plane_TS_ln_erk: Methods unstable or inadequate for vector invariant swe");;
-			}
-
-			PlaneData q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + simVars.sim.f0) / total_h_pv;
-
-			// u, v tendencies
-			// Energy conserving scheme
-			o_u_t = op.avg_f_y(q*op.avg_b_x(V)) - op.diff_b_x(H);
-			o_v_t = -op.avg_f_x(q*op.avg_b_y(U)) - op.diff_b_y(H);
-		}
-		else // linear case
-		{
-			o_u_t = op.avg_f_y(simVars.sim.f0*op.avg_b_x(i_v)) - op.diff_b_x(H);
-			o_v_t = -op.avg_f_x(simVars.sim.f0*op.avg_b_y(i_u)) - op.diff_b_y(H);
-		}
 
 		/*
 		 * P UPDATE

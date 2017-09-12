@@ -95,8 +95,12 @@ void SWE_Plane_TS_l_irk_n_erk::setup(
 	timestepping_order_linear = i_l_order;
 	ts_l_irk.setup(timestepping_order_linear);
 
+	if (simVars.disc.use_staggering)
+		FatalError("Staggering not supported for l_irk_n_erk");
+
+
 	if (timestepping_order_linear != 1)
-		FatalError("SWE_Plane_TS_l_irk_n_erk: Only 1st order TS supported with this implementation");
+		FatalError("SWE_Plane_TS_l_irk_n_erk: Only 1st order TS supported with this implementation. Please set --timestepping-order 1.");
 
 	timestepping_order_nonlinear = i_l_order;
 	timestepping_rk.setupBuffers(op.planeDataConfig, timestepping_order_nonlinear);

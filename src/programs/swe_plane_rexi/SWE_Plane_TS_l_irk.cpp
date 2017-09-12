@@ -125,7 +125,11 @@ void SWE_Plane_TS_l_irk::setup(
 	timestepping_order = i_order;
 
 	if (timestepping_order != 1)
-		FatalError("SWE_Plane_TS_l_irk: Only 1st order IRK is supported");
+		FatalError("SWE_Plane_TS_l_irk: Only 1st order IRK is supported. Please set --timestepping-order 1.");
+
+	if (simVars.disc.use_staggering)
+		FatalError("Staggering not supported for l_irk");
+
 }
 
 

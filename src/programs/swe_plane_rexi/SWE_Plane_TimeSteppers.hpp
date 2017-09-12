@@ -210,8 +210,6 @@ public:
 		}
 		else if (i_timestepping_method == "l_rexi_n_erk")
 		{
-			if (i_simVars.disc.use_staggering)
-				FatalError("Staggering not supported for l_rexi_n_erk");
 
 			l_rexi_n_erk = new SWE_Plane_TS_l_rexi_n_erk(i_simVars, i_op);
 			l_rexi_n_erk->setup(
@@ -295,8 +293,6 @@ public:
 		}
 		else if (i_timestepping_method == "l_irk_n_erk")
 		{
-			if (i_simVars.disc.use_staggering)
-				FatalError("Staggering not supported for l_irk_n_erk");
 
 			l_irk_n_erk = new SWE_Plane_TS_l_irk_n_erk(i_simVars, i_op);
 
@@ -319,18 +315,18 @@ public:
 		{
 			std::cout << "Unknown method: " << i_timestepping_method << std::endl;
 			std::cout << "Available --timestepping-method :"  << std::endl;
-			std::cout << "      l_direct       : Linear:     analytical solution to SW operator"  << std::endl;
-			std::cout << "      l_erk          : Linear:     explicit RK scheme"  << std::endl;
-			std::cout << "      l_cn           : Linear:     Crank-Nicolson scheme"  << std::endl;
+			std::cout << "      l_direct       : Linear:     Analytical solution to linear SW operator"  << std::endl;
+			std::cout << "      l_erk          : Linear:     Explicit RK scheme (supports FD-C staggering)"  << std::endl;
 			std::cout << "      l_erk_n_erk    : Non-linear: Linear RK, Non-linear RK, Strang-split"  << std::endl;
+			std::cout << "      l_cn           : Linear:     Crank-Nicolson scheme"  << std::endl;
 			std::cout << "      l_cn_n_erk     : Non-linear: Linear CN, Non-linear RK, Strang-split"<< std::endl;
+			std::cout << "      l_rexi         : Linear:     Pure REXI, our little dog."<< std::endl;
 			std::cout << "      l_rexi_n_erk   : Non-linear: Linear REXI, Non-linear RK, Strang-split"<< std::endl;
 			std::cout << "      l_irk          : Linear:     Implicit Euler"  << std::endl;
-			std::cout << "      l_irk_n_erk "  << std::endl;
-			std::cout << "      l_rexi "  << std::endl;
+			std::cout << "      l_irk_n_erk    : Non-linear: Linear Implicit Euler, Non-linear RK, Strang-split"  << std::endl;
+			std::cout << "      ln_erk         : Non-linear: Linear and nonlinear solved jointly with erk (supports FD-C staggering)"  << std::endl;
 			std::cout << "      l_rexi_na_sl_nd_settls "  << std::endl;
 			std::cout << "      l_cn_na_sl_nd_settls "  << std::endl;
-			std::cout << "      ln_erk "  << std::endl;
 			std::cout << "      ln_etdrk "  << std::endl;
 			FatalError("No valid --timestepping-method provided");
 		}
