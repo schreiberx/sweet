@@ -57,6 +57,7 @@ class SWEETCompileOptions:
 
 		# Memory allocator
 		self.numa_block_allocator = '0'
+		#self.numa_block_allocator = '2'
 
 		# Program / Unit test
 		self.program = ''

@@ -21,8 +21,7 @@ p.compile.plane_spectral_dealiasing = 'enable'
 p.compile.sphere_spectral_space = 'disable'
 p.compile.sphere_spectral_dealiasing = 'disable'
 
-
-
+p.compile.numa_block_allocator = '2'
 
 # Verbosity mode
 p.runtime.verbosity = 3

@@ -20,8 +20,8 @@ cd "$BASEDIR/run_test_swe_sphere_timestepper_convergence"
 
 # encoding: group | tsm | order1 | order2 | rexi_direct_solution
 
-if true; then
-#if false; then
+#if true; then
+if false; then
 	echo "Generating test scripts"
 
 	#./jobs_create.py ln2 ln_erk 2 2 0 || exit 1
