@@ -56,8 +56,8 @@ class SWEETCompileOptions:
 		self.rexi_thread_parallel_sum = 'disable'
 
 		# Memory allocator
-		self.numa_block_allocator = '0'
-		#self.numa_block_allocator = '2'
+		self.numa_block_allocator = 0
+		#self.numa_block_allocator = 2
 
 		# Program / Unit test
 		self.program = ''
@@ -110,7 +110,7 @@ class SWEETCompileOptions:
 		retval += ' --rexi-thread-parallel-sum='+self.rexi_thread_parallel_sum
 
 		# Memory allocator
-		retval += ' --numa-block-allocator='+self.numa_block_allocator
+		retval += ' --numa-block-allocator='+str(self.numa_block_allocator)
 
 		# Program / Unit test
 		if self.program != '':
@@ -234,7 +234,7 @@ class SWEETCompileOptions:
 				default='0',
 				help='Specify allocation method to use: 0: default system\'s malloc, 1: allocation with NUMA granularity, 2: allocation with thread granularity, 3: allocation with non-NUMA granularity [default: %default]'
 		)
-		self.numa_block_allocator = scons.GetOption('numa_block_allocator')
+		self.numa_block_allocator = int(scons.GetOption('numa_block_allocator'))
 
 
 		scons.AddOption(	'--gxx-toolchain',
@@ -545,8 +545,8 @@ class SWEETCompileOptions:
 		if self.rexi_thread_parallel_sum == 'enable':
 			exec_name+='_rxthpar'
 
-		if self.numa_block_allocator in ['1', '2']:
-			exec_name+='_numa'+self.numa_block_allocator
+		if self.numa_block_allocator in [1, 2]:
+			exec_name+='_numa'+str(self.numa_block_allocator)
 
 		if self.libfft == 'enable':
 			exec_name+='_fft'

@@ -183,14 +183,14 @@ public:
 		else if (i_timestepping_method == "l_irk")
 		{
 			l_irk = new SWE_Sphere_TS_l_irk(i_simVars, i_op);
-			l_irk->setup(i_simVars.disc.timestepping_order, -i_simVars.sim.CFL, i_simVars.rexi.use_sphere_extended_modes);
+			l_irk->setup(i_simVars.disc.timestepping_order, i_simVars.timecontrol.current_timestep_size, i_simVars.rexi.use_sphere_extended_modes);
 
 			master = &(SWE_Sphere_TS_interface&)*l_irk;
 		}
 		else if (i_timestepping_method == "lg_irk")
 		{
 			lg_irk = new SWE_Sphere_TS_lg_irk(i_simVars, i_op);
-			lg_irk->setup(i_simVars.disc.timestepping_order, -i_simVars.sim.CFL);
+			lg_irk->setup(i_simVars.disc.timestepping_order, i_simVars.timecontrol.current_timestep_size);
 
 			master = &(SWE_Sphere_TS_interface&)*lg_irk;
 		}
@@ -204,14 +204,14 @@ public:
 		else if (i_timestepping_method == "l_cn")
 		{
 			l_cn = new SWE_Sphere_TS_l_cn(i_simVars, i_op);
-			l_cn->setup(i_simVars.disc.crank_nicolson_filter, -i_simVars.sim.CFL, i_simVars.rexi.use_sphere_extended_modes);
+			l_cn->setup(i_simVars.disc.crank_nicolson_filter, i_simVars.timecontrol.current_timestep_size, i_simVars.rexi.use_sphere_extended_modes);
 
 			master = &(SWE_Sphere_TS_interface&)*l_cn;
 		}
 		else if (i_timestepping_method == "lg_cn")
 		{
 			lg_cn = new SWE_Sphere_TS_lg_cn(i_simVars, i_op);
-			lg_cn->setup(i_simVars.disc.crank_nicolson_filter, -i_simVars.sim.CFL);
+			lg_cn->setup(i_simVars.disc.crank_nicolson_filter, i_simVars.timecontrol.current_timestep_size);
 
 			master = &(SWE_Sphere_TS_interface&)*lg_cn;
 		}
