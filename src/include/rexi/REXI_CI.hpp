@@ -67,8 +67,8 @@ public:
 				// shifted position
 				TComplex gamma_j = pos + mu;
 
-				beta_eval[j] = -fun.eval(gamma_j)*pos;
-				alpha_eval[j] = -gamma_j;
+				beta_eval[j] = fun.eval(gamma_j)*pos;
+				alpha_eval[j] = gamma_j;
 
 				beta_eval[j] /= (T)N;
 			}
