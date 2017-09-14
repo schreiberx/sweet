@@ -377,8 +377,8 @@ public:
 					//simVars.setup.benchmark_scenario_id == 3 ||
 					//simVars.setup.benchmark_scenario_id == 14;
 
-			//Compute difference to analytical solution (makes more sense in linear cases, but useful in others too)
-			compute_error_to_analytical_solution = true; //timeSteppers.linear_only;
+			//Compute difference to analytical solution (makes more sense in linear cases, but might be useful in others too)
+			compute_error_to_analytical_solution = timeSteppers.linear_only;
 		}
 		else
 		{
