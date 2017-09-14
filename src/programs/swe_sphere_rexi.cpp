@@ -370,7 +370,7 @@ public:
 
 #if 0
 		if (	param_compute_error &&
-				simVars.pde.use_nonlinear_equations == 0 &&
+			//	simVars.pde.use_nonlinear_equations == 0 &&
 				simVars.setup.benchmark_scenario_id == 10
 		)
 		{

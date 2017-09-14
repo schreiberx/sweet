@@ -64,7 +64,7 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 		/*
 		 * P UPDATE
 		 */
-		if (simVars.pde.use_nonlinear_equations == 1){ //full nonlinear divergence
+		if (simVars.pde.use_linear_div == 0){ //full nonlinear divergence
 			// standard update
 			//o_h_t = -op.diff_f_x(U) - op.diff_f_y(V);
 			o_h_t = -op.diff_c_x(i_u*total_h) - op.diff_c_y(i_v*total_h);
@@ -144,7 +144,7 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 		/*
 		 * P UPDATE
 		 */
-		if (simVars.pde.use_nonlinear_equations == 1){ //full nonlinear divergence
+		if (simVars.pde.use_linear_div == 0){ //full nonlinear divergence
 			// standard update
 			o_h_t = -op.diff_f_x(U) - op.diff_f_y(V);
 		}

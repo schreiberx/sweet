@@ -130,7 +130,8 @@ public:
 		int id = 0;
 
 		/// Use non-linear equations for simulations
-		int use_nonlinear_equations = 1;
+		///int use_nonlinear_equations = 1;
+		int use_linear_div = 0;
 
 
 		void outputConfig()
@@ -138,7 +139,7 @@ public:
 			std::cout << std::endl;
 			std::cout << "PDE:" << std::endl;
 			std::cout << " + id: " << id << std::endl;
-			std::cout << " + use_nonlinear_equations: " << use_nonlinear_equations << std::endl;
+			std::cout << " + use_linear_div: " << use_linear_div << std::endl;
 			std::cout << std::endl;
 		}
 
@@ -147,11 +148,8 @@ public:
 		{
 			std::cout << std::endl;
 			std::cout << "Partial differential equation:" << std::endl;
-			std::cout << "	--pde-id [0/1]		PDE to solve (0: SWE, 1: advection)" << std::endl;
-			std::cout << "	--nonlinear [int]		Use non-linear (>=1) if available or linear (0) formulation, default: 1" << std::endl;
-			std::cout << "						0: Linear " << std::endl;
-			std::cout << "						1: Nonlinear (default)" << std::endl;
-			std::cout << "						2: Linear + nonlinear advection only (needs -H to be set)" << std::endl;
+			std::cout << "	--pde-id [0/1]		    PDE to solve (0: SWE, 1: advection)" << std::endl;
+			std::cout << "	--use_linear_div [0/1]	Nonlinear equations will use linear divergence of mass equations, default:0" << std::endl;
 			std::cout << "" << std::endl;
 		}
 	} pde;
@@ -731,7 +729,7 @@ public:
 
 
         // PDE
-        long_options[next_free_program_option] = {"nonlinear", required_argument, 0, 256+next_free_program_option};
+        long_options[next_free_program_option] = {"use-linear-div", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
         long_options[next_free_program_option] = {"pde-id", required_argument, 0, 256+next_free_program_option};
@@ -871,7 +869,7 @@ public:
 					c++;		if (i == c)	{	misc.stability_checks = atoi(optarg);				continue;	}
 					c++;		if (i == c)	{	misc.sphere_use_robert_functions = atoi(optarg);	continue;	}
 
-					c++;		if (i == c)	{	pde.use_nonlinear_equations = atoi(optarg);			continue;	}
+					c++;		if (i == c)	{	pde.use_linear_div = atoi(optarg);			continue;	}
 					c++;		if (i == c)	{	pde.id = atoi(optarg);								continue;	}
 
 					c++;		if (i == c)	{	disc.timestepping_method = optarg;					continue;	}

@@ -269,7 +269,7 @@ public:
 
 			l_rexi_na_sl_nd_settls->setup(
 					i_simVars.rexi,
-					i_simVars.pde.use_nonlinear_equations
+					1 //i_simVars.pde.use_linear_div
 				);
 
 			master = &(SWE_Plane_TS_interface&)*l_rexi_na_sl_nd_settls;
@@ -284,7 +284,7 @@ public:
 			l_cn_na_sl_nd_settls = new SWE_Plane_TS_l_cn_na_sl_nd_settls(i_simVars, i_op);
 
 			l_cn_na_sl_nd_settls->setup(
-					i_simVars.pde.use_nonlinear_equations
+					1 //i_simVars.pde.use_linear_div
 				);
 
 			master = &(SWE_Plane_TS_interface&)*l_cn_na_sl_nd_settls;

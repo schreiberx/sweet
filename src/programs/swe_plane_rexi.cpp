@@ -1544,7 +1544,7 @@ public:
 
 		if (compute_error_to_analytical_solution)
 		{
-			if (simVars.misc.compute_errors > 0)// && simVars.pde.use_nonlinear_equations == 0)
+			if (simVars.misc.compute_errors > 0)
 			{
 				compute_errors();
 				std::cout << "maxabs error compared to analytical solution: " << benchmark.analytical_error_maxabs_h << std::endl;

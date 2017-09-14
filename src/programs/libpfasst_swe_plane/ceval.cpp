@@ -249,7 +249,7 @@ extern "C"
     SimulationVariables* simVars = i_ctx->get_simulation_variables();
 
     // return immediately if no nonlinear terms
-    if (simVars->pde.use_nonlinear_equations == 0)
+    if (simVars->pde.use_linear_div == 0)
       {
 	h_F1 = 0;
 	u_F1 = 0;
