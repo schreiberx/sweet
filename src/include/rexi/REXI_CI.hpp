@@ -75,91 +75,100 @@ public:
 		}
 		else if (i_primitive_name == "rectangle")
 		{
-			FatalError("Not yet working :-(");
+//			FatalError("Not yet working :-(");
 
-			int N_real = 0.5 * size_real * N / (size_real + size_imag);
-			int N_imag = 0.5 * size_imag * N / (size_real + size_imag);
+			T SRe = size_real;
+			T SIm = size_imag;
 
+			int NRe = 0.5 * SRe * N / (SRe + SIm);
+			int NIm = 0.5 * SIm * N / (SRe + SIm);
+
+#if 0
 			/*
 			 * Make N even numbered
 			 */
-			if (N_real & 1)
-				N_real--;
+			if (NRe & 1)
+				NRe--;
 
-			if (N_imag & 1)
-				N_imag--;
+			if (NIm & 1)
+				NIm--;
+#endif
 
-			std::cout << "Points: " << N_real << " x " << N_imag << std::endl;
 			std::cout << "Size: " << (double)size_real << " x " << (double)size_imag << std::endl;
+			std::cout << "Points: " << NRe << " x " << NIm << std::endl;
+			int total_N = (2*NRe + 2*NIm);
+			std::cout << "Points (total): " << total_N << std::endl;
 
-			T d_real = size_real / (N_real-1);
-			T d_imag = size_imag / (N_imag-1);
+			if (total_N > N)
+				FatalError("Total number of points exceeds the total number of requested points");
+
+			// Sampling distances
+			T DRe = SRe/NRe;
+			T DIm = SIm/NIm;
+
+			// Sampling points along each rectangle boundary
+			auto PRe = [&](int n) -> T { return (T)0.5*(DRe-SRe) + n*DRe; };
+			auto PIm = [&](int n) -> T { return (T)0.5*(DIm-SIm) + n*DIm; };
 
 			int j = 0;
-			for (int i = 0; i < N_real; i++)
+
+			// BOTTOM
+			for (int n = 0; n < NRe; n++)
 			{
-				TComplex pos;
-				pos.real(-size_real*0.5 + d_real*i);
+				TComplex z = -I*(T)0.5*SIm + PRe(n) + mu;
 
-				{
-					pos.imag(size_imag*0.5);
+				beta_eval[j] = fun.eval(z);
+				beta_eval[j] *= SRe/NRe;
+				beta_eval[j] /= I*pi2;
 
-					TComplex gamma_j = pos + mu;
-
-					beta_eval[j] = -fun.eval(gamma_j)*pos;
-					beta_eval[j] /= size_real;
-					alpha_eval[j] = -gamma_j;
-					j++;
-				}
-				{
-					pos.imag(-size_imag*0.5);
-
-					TComplex gamma_j = pos + mu;
-
-					beta_eval[j] = -fun.eval(gamma_j)*pos;
-					beta_eval[j] /= size_real;
-					alpha_eval[j] = -gamma_j;
-					j++;
-				}
+				alpha_eval[j] = z;
+				j++;
 			}
 
-			for (int i = 1; i < N_imag-1; i++)
+			// RIGHT
+			for (int n = 0; n < NIm; n++)
 			{
-				TComplex pos;
-				pos.imag(-size_imag*0.5 + d_imag*i);
+				TComplex z = (T)0.5*SRe + I*PIm(n) + mu;
 
-				{
-					pos.real(-size_real*0.5);
+				beta_eval[j] = fun.eval(z);
+				beta_eval[j] *= I;
+				beta_eval[j] *= SIm/NIm;
+				beta_eval[j] /= I*pi2;
 
-					TComplex gamma_j = pos + mu;
+				alpha_eval[j] = z;
+				j++;
+			}
 
-					beta_eval[j] = -fun.eval(gamma_j)*pos;
-					beta_eval[j] /= size_imag;
-					alpha_eval[j] = -gamma_j;
-					j++;
-				}
+			// TOP
+			for (int n = 0; n < NRe; n++)
+			{
+				TComplex z = I*(T)0.5*SIm - PRe(n) + mu;
 
-				{
-					pos.real(size_real*0.5);
+				beta_eval[j] = fun.eval(z);
+				beta_eval[j] *= -(T)1.0;
+				beta_eval[j] *= SRe/NRe;
+				beta_eval[j] /= I*pi2;
 
-					TComplex gamma_j = pos + mu;
+				alpha_eval[j] = z;
+				j++;
+			}
 
-					beta_eval[j] = -fun.eval(gamma_j)*pos;
-					beta_eval[j] /= size_imag;
-					alpha_eval[j] = -gamma_j;
-					j++;
-				}
+
+			// LEFT
+			for (int n = 0; n < NIm; n++)
+			{
+				TComplex z = -(T)0.5*SRe - I*PIm(n) + mu;
+
+				beta_eval[j] = fun.eval(z);
+				beta_eval[j] *= -I;
+				beta_eval[j] *= SIm/NIm;
+				beta_eval[j] /= I*pi2;
+
+				alpha_eval[j] = z;
+				j++;
 			}
 
 			N = j;
-			alpha_eval.resize(N);
-			beta_eval.resize(N);
-
-			for (int j = 0; j < N; j++)
-			{
-				beta_eval[j] /= (T)N;
-				beta_eval[j] *= std::complex<T>(0, 1);
-			}
 		}
 		else
 		{
@@ -169,10 +178,14 @@ public:
 
 		alpha.resize(N);
 		beta.resize(N);
+
 		for (int j = 0; j < N; j++)
 		{
 			alpha[j] = {(double)alpha_eval[j].real(), (double)alpha_eval[j].imag()};
+			alpha[j] = -alpha[j];
+
 			beta[j] = {(double)beta_eval[j].real(), (double)beta_eval[j].imag()};
+			beta[j] = -beta[j];
 //			std::cout << j << ":\t" << alpha[j] << std::endl;
 		}
 	}

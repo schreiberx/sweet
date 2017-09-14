@@ -193,7 +193,7 @@ struct REXI_SimulationVariables
 		std::cout << "	--rexi-ci-primitive [string]	Primitive ('circle', 'rectangle'), default: 'circle'" << std::endl;
 		std::cout << "	--rexi-ci-sx [double]	Size of primitive in real, default: 1" << std::endl;
 		std::cout << "	--rexi-ci-sy [double]	Size of primitive in imag, default: 1" << std::endl;
-		std::cout << "	--rexi-ci-mu [double]	Shift, default: 1" << std::endl;
+		std::cout << "	--rexi-ci-mu [double]	Shift, default: 0" << std::endl;
 		std::cout << "" << std::endl;
 	}
 

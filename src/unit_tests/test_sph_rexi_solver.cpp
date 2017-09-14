@@ -455,7 +455,8 @@ void run_tests()
 							phi_bar,
 							timestep_size,
 
-							simVars.sim.f_sphere
+							simVars.sim.f_sphere,
+							false
 					);
 
 					if (use_complex_valued_solver)

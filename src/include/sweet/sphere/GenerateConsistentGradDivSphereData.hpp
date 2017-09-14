@@ -12,6 +12,8 @@
 #include <sweet/sphere/SphereData.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/sphere/SphereDataTimesteppingExplicitRK.hpp>
+#include "../../../programs/swe_sphere_rexi/SWE_Sphere_TS_l_erk.hpp"
+//#include "../../../programs/swe_sphere_rexi/SWE_Sphere_TS_ln_erk.hpp"
 
 
 
@@ -48,7 +50,7 @@ public:
 
 	double center_lon, center_lat;
 
-
+#if 0
 private:
 	// Main routine for method to be used in case of finite differences
 	void p_run_euler_timestep_update(
@@ -162,7 +164,7 @@ private:
 			o_v_t += op.laplace(i_v)*scalar;
 		}
 	}
-
+#endif
 
 
 private:
@@ -185,23 +187,33 @@ private:
 
 		timestepping.resetAndSetup(sphereDataConfig, 4);
 
+		SWE_Sphere_TS_l_erk l_erk(simVars, op);
+		l_erk.setup(4);
+
+		SphereDataPhysical prog_u_g = prog_u.getSphereDataPhysical();
+		SphereDataPhysical prog_v_g = prog_v.getSphereDataPhysical();
+
+		SphereData phi = prog_h * simVars.sim.gravitation;
+		SphereData vort(sphereDataConfig);
+		SphereData div(sphereDataConfig);
+
+		op.robert_uv_to_vortdiv(prog_u_g, prog_v_g, vort, div);
+
 		std::cout << max_simulation_time << ", " << current_simulation_time << std::endl;
 		while (max_simulation_time > 0.0 && max_simulation_time > current_simulation_time)
 		{
-			timestepping.run_timestep(
-					this,
-					&GenerateConsistentGradDivSphereData::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
-					prog_h, prog_u, prog_v,
-					current_timestep_size,
-					4,
-					current_simulation_time
-				);
+			l_erk.run_timestep(phi, vort, div, current_timestep_size, current_simulation_time);
 
 			// advance time step and provide information to parameters
 			current_simulation_time += current_timestep_size;
 
 			std::cout << "." << std::flush;
 		}
+
+		prog_h = phi/simVars.sim.gravitation;
+		op.robert_vortdiv_to_uv(vort, div, prog_u_g,prog_v_g);
+		prog_u = prog_u_g;
+		prog_v = prog_v_g;
 	}
 
 
