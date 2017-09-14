@@ -21,8 +21,8 @@
 #include "SWE_Plane_TS_l_rexi.hpp"
 #include "SWE_Plane_TS_l_rexi_na_sl_nd_settls.hpp"
 #include "SWE_Plane_TS_l_cn_na_sl_nd_settls.hpp"
+#include "SWE_Plane_TS_l_rexi_n_etdrk.hpp"
 #include "SWE_Plane_TS_ln_erk.hpp"
-#include "SWE_Plane_TS_ln_etdrk.hpp"
 //When adding a new scheme, remember to update the list of schemes for --help in the end of this hpp file
 
 
@@ -33,7 +33,7 @@ class SWE_Plane_TimeSteppers
 {
 public:
 	SWE_Plane_TS_ln_erk *ln_erk = nullptr;
-	SWE_Plane_TS_ln_etdrk *ln_etdrk = nullptr;
+	SWE_Plane_TS_l_rexi_n_etdrk *l_rexi_n_etdrk = nullptr;
 	SWE_Plane_TS_l_erk *l_erk = nullptr;
 	SWE_Plane_TS_l_cn *l_cn = nullptr;
 	SWE_Plane_TS_l_erk_n_erk *l_erk_n_erk = nullptr;
@@ -63,10 +63,10 @@ public:
 			ln_erk = nullptr;
 		}
 
-		if (ln_etdrk != nullptr)
+		if (l_rexi_n_etdrk != nullptr)
 		{
-			delete ln_etdrk;
-			ln_etdrk = nullptr;
+			delete l_rexi_n_etdrk;
+			l_rexi_n_etdrk = nullptr;
 		}
 
 		if (l_erk != nullptr)
@@ -161,12 +161,12 @@ public:
 
 			linear_only = false;
 		}
-		else if (i_timestepping_method == "ln_etdrk")
+		else if (i_timestepping_method == "l_rexi_n_etdrk")
 		{
-			ln_etdrk = new SWE_Plane_TS_ln_etdrk(i_simVars, i_op);
-			ln_etdrk->setup(i_simVars.rexi, i_simVars.disc.timestepping_order);
+			l_rexi_n_etdrk = new SWE_Plane_TS_l_rexi_n_etdrk(i_simVars, i_op);
+			l_rexi_n_etdrk->setup(i_simVars.rexi, i_simVars.disc.timestepping_order);
 
-			master = &(SWE_Plane_TS_interface&)*ln_etdrk;
+			master = &(SWE_Plane_TS_interface&)*l_rexi_n_etdrk;
 
 			linear_only = false;
 		}
@@ -327,7 +327,7 @@ public:
 			std::cout << "      ln_erk         : Non-linear: Linear and nonlinear solved jointly with erk (supports FD-C staggering)"  << std::endl;
 			std::cout << "      l_rexi_na_sl_nd_settls "  << std::endl;
 			std::cout << "      l_cn_na_sl_nd_settls "  << std::endl;
-			std::cout << "      ln_etdrk "  << std::endl;
+			std::cout << "      l_rexi_n_etdrk "  << std::endl;
 			FatalError("No valid --timestepping-method provided");
 		}
 	}

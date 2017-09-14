@@ -28,10 +28,10 @@ if false; then
 else
 	# 2nd order nonlinear
 	./jobs_create.py ln2 ln_erk 2 2 0
-	./jobs_create.py ln2 ln_etdrk 2 2 1
 	./jobs_create.py ln2 l_cn_n_erk 2 2 0
 	./jobs_create.py ln2 l_erk_n_erk 2 2 0
 	./jobs_create.py ln2 l_rexi_n_erk 2 2 1
+	./jobs_create.py ln2 l_rexi_n_etdrk 2 2 1
 fi
 
 
