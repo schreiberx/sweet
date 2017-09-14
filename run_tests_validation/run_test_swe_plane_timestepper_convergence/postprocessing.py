@@ -121,11 +121,16 @@ for group_info in groups:
 		if 'ln4' in group_info[0]:
 			# Comparing RK4 with 4-th order methods requires a more relaxed test
 			# This works and was empirically determined
-			test_range = range(3,6)
+			test_range = range(2,5)
+			max_error_rate = 0.5
+		elif 'ln2' in group_info[0]:
+			test_range = range(1,3)
 			max_error_rate = 0.5
 		else:
-			test_range = range(1,4)
+			test_range = range(1,3)
 			max_error_rate = 0.05
+
+		print(test_range)
 
 		for i in test_range:
 			if conv_test[i] == 0.0:

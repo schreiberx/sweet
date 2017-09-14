@@ -81,8 +81,8 @@ p.runtime.domain_size = 1
 p.runtime.viscosity = 0.0
 
 
-timestep_size_reference = 0.0001
-timestep_sizes = [0.0001*(2.0**i) for i in range(0, 10)]
+timestep_size_reference = 0.0002
+timestep_sizes = [timestep_size_reference*(2.0**i) for i in range(0, 9)]
 
 # Don't use a smaller TS since convergence is not computable anymore
 p.runtime.simtime = 0.1
