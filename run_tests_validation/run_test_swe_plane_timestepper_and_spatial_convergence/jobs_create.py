@@ -89,7 +89,6 @@ p.runtime.output_timestep_size = p.runtime.simtime
 
 phys_res_list = [16*(2**i) for i in range(0, 7)]
 
-p.runtime.nonlinear = 1
 
 # Groups to execute, see below
 # l: linear
