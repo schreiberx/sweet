@@ -20,7 +20,7 @@ p.compile.plane_spectral_dealiasing = 'enable'
 p.compile.sphere_spectral_space = 'disable'
 p.compile.sphere_spectral_dealiasing = 'disable'
 
-p.compile.numa_block_allocator = 2
+p.compile.numa_block_allocator = 0
 
 
 # Verbosity mode
@@ -82,7 +82,7 @@ p.runtime.viscosity = 0.0
 
 
 timestep_size_reference = 0.0001
-timestep_sizes = [0.0001*(2.0**i) for i in range(1, 10)]
+timestep_sizes = [0.0001*(2.0**i) for i in range(0, 10)]
 
 # Don't use a smaller TS since convergence is not computable anymore
 p.runtime.simtime = 0.1
@@ -219,7 +219,7 @@ if __name__ == "__main__":
 				s = tsm[4]
 				p.runtime.load_from_dict(tsm[4])
 
-			p.gen_script('script_'+prefix_string_template+'_ref_'+p.runtime.getUniqueID(p.compile), 'run.sh')
+			p.gen_script('script_'+prefix_string_template+'_ref'+p.runtime.getUniqueID(p.compile), 'run.sh')
 
 
 		#
