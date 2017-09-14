@@ -434,7 +434,7 @@ env.Append(LIBS=['quadmath'])
 
 env.Append(CXXFLAGS=' -DNUMA_BLOCK_ALLOCATOR_TYPE='+str(p.numa_block_allocator))
 
-if p.numa_block_allocator in ['1', '2']:
+if p.numa_block_allocator in [1, 2]:
 	env.Append(LIBS=['numa'])
 
 
