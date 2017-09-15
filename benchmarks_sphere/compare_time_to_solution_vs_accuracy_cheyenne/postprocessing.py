@@ -34,7 +34,6 @@ groups = [
 
 for group_info in groups:
 	group = group_info[0]
-	conv_order = group_info[1]
 
 	ref_dir=""
 	for i in glob.glob("script_"+group+"_ref*"):
@@ -44,8 +43,6 @@ for group_info in groups:
 
 	print("Group:"+str(group_info))
 	print("Using reference: "+str(ref_dir))
-
-	prev_conv_value = 0.0
 
 	print("SIMNAME\tL1\tL2\tLinf\tCONV")
 	directories = glob.glob("script_"+group+"_*")
@@ -101,11 +98,9 @@ for group_info in groups:
 
 			result = result.decode()
 
-			# last line contains convergence info
+			# remove line break
 			if result[-1] == '\n':
 				result = result[0:-1]
-
-			last_conv_value = float(result.split('\t')[-1])
 
 			f=open(rundir+"/output.out")
 			tag = "Simulation time (seconds): "
@@ -119,46 +114,5 @@ for group_info in groups:
 
 			result += "\t"+str(secs)
 
-			if prev_conv_value == 0.0:
-				conv_test.append(0.0)
-			else:
-				conv_test.append(float(last_conv_value)/float(prev_conv_value))
+			print(result)
 
-			print(result+"\t"+str(conv_test[-1]))
-			prev_conv_value = last_conv_value
-
-
-		print("Expected convergence: "+str(conv_order))
-		print("Measured convergence: "+str(conv_test))
-                
-		# test these first convergence tests
-		if 'ln4' in group_info[0]:
-			# Comparing RK4 with 4-th order methods requires a more relaxed test
-			# This works and was empirically determined
-			test_range = range(3,6)
-			max_error_rate = 0.5
-		else:
-			test_range = range(1,4)
-			max_error_rate = 0.05
-
-		for i in test_range:
-			if conv_test[i] == 0.0:
-				if 'ln4' not in group_info[0]:
-					print("Invalid convergence of 0")
-					sys.exit(1)
-
-			conv_rate = 2**conv_order
-			a = abs(conv_test[i]-conv_rate)/conv_rate
-			print("Testing convergence "+str(conv_test[i])+": "+str(a))
-
-			if a > max_error_rate:
-				if group_info[0] == "ln2space":
-					print("ERROR: First tests should converge, but was not the case")
-					continue
-
-				print("ERROR: Convergence rate not given")
-				print("ERROR: Tested with convergence rate "+str(conv_test[i]))
-				print("ERROR: Expected convergence rate "+str(conv_rate))
-				print("ERROR: Relative error: "+str(a))
-				print("ERROR: Max error: "+str(max_error_rate))
-				sys.exit(1)

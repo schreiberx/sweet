@@ -135,7 +135,8 @@ p.runtime.output_timestep_size = p.runtime.simtime
 # Groups to execute, see below
 # l: linear
 # ln: linear and nonlinear
-groups = ['l1', 'l2', 'ln1', 'ln2', 'ln4']
+#groups = ['l1', 'l2', 'ln1', 'ln2', 'ln4']
+groups = ['ln2']
 
 
 #
@@ -213,17 +214,9 @@ if __name__ == "__main__":
 				#['l_cn_n_erk',		2,	2,	0],
 				['l_erk_n_erk',		2,	2,	0],
 				['ln_erk',		2,	2,	0],
-	#			['l_rexi_n_erk',	2,	2,	0],
+				['l_rexi_n_etdrk',	2,	2,	0],
+				['lg_rexi_lf_n_etdrk',	2,	2,	0],
 			]
-
-			if True:
-				for N in [64, 96, 128]:
-				#if True:
-					for r in [20, 30, 40]:
-					#if True:
-						ts_methods.append(['l_rexi_n_etdrk',	2,	2,	0, {'rexi_method': 'ci', 'ci_n':N, 'ci_sx':r, 'ci_sy':r}])
-						ts_methods.append(['lg_rexi_lf_n_etdrk',	2,	2,	0, {'rexi_method': 'ci', 'ci_n':N, 'ci_sx':r, 'ci_sy':r}])
-
 
 		# 4th order nonlinear
 		if group == 'ln4':
@@ -303,8 +296,26 @@ if __name__ == "__main__":
 						range_cores.append(p.runtime.rexi_ci_n)
 					range_cores.sort()
 
+					if True:
+						for N in [64, 128]:
+							#for r in [25, 50, 75]:
+							# Everything starting and above 40 results in significant errors
+							for r in [20, 30]:
+								p.runtime.load_from_dict({'rexi_method': 'ci', 'ci_n':N, 'ci_sx':r, 'ci_sy':r, 'half_poles':0})
+
+								for p.cluster.par_time_cores in range_cores:
+
+									p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
+
+									if p.cluster.par_time_cores >= p.runtime.rexi_ci_n:
+										break
+
+#					for p.cluster.par_time_cores in range_cores:
+#						p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
+
 				else:
 					p.cluster.par_time_cores = 1
+
 					p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
 
 
