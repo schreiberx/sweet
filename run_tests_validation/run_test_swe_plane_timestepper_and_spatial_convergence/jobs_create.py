@@ -21,8 +21,7 @@ p.compile.plane_spectral_dealiasing = 'enable'
 p.compile.sphere_spectral_space = 'disable'
 p.compile.sphere_spectral_dealiasing = 'disable'
 
-
-
+p.compile.numa_block_allocator = 0
 
 # Verbosity mode
 p.runtime.verbosity = 3
@@ -90,7 +89,6 @@ p.runtime.output_timestep_size = p.runtime.simtime
 
 phys_res_list = [16*(2**i) for i in range(0, 7)]
 
-p.runtime.nonlinear = 1
 
 # Groups to execute, see below
 # l: linear

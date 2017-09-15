@@ -7,8 +7,15 @@ import sys
 from subprocess import Popen, PIPE
 
 
+# Load simulation time to get reference file
+import jobs_create as jc
+simtime = jc.p.runtime.simtime
+print(simtime)
+t = ("%8.8f" % simtime).zfill(20)
 
-datafile="output_prog_h_pert_t00000000000.10000000.csv"
+datafile="output_prog_h_pert_t"+t+".csv"
+
+
 
 
 groups = [
@@ -114,11 +121,16 @@ for group_info in groups:
 		if 'ln4' in group_info[0]:
 			# Comparing RK4 with 4-th order methods requires a more relaxed test
 			# This works and was empirically determined
-			test_range = range(3,6)
+			test_range = range(2,5)
+			max_error_rate = 0.5
+		elif 'ln2' in group_info[0]:
+			test_range = range(1,3)
 			max_error_rate = 0.5
 		else:
-			test_range = range(1,4)
+			test_range = range(1,3)
 			max_error_rate = 0.05
+
+		print(test_range)
 
 		for i in test_range:
 			if conv_test[i] == 0.0:

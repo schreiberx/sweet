@@ -664,7 +664,6 @@ public:
 		if (i_simVars.setup.benchmark_scenario_id == 0)// radial dam break
 			return false;
 
-
 		if (i_simVars.setup.benchmark_scenario_id == 1) // Gaussian
 			return false;
 

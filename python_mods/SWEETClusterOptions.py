@@ -262,6 +262,10 @@ class SWEETClusterOptions:
 			#mpi_exec_prefix += " omplace -vv "
 			mpi_exec_prefix += " dplace -s 1 "
 
+		else:
+			content = ""
+			mpi_exec_prefix = ""
+
 		return content, mpi_exec_prefix
 
 

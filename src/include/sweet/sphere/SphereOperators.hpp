@@ -44,7 +44,7 @@ private:
 #endif
 
 
-	SphBandedMatrixPhysicalReal< std::complex<double> > sphSolver_inv_one_minus_mu2;
+//	SphBandedMatrixPhysicalReal< std::complex<double> > sphSolver_inv_one_minus_mu2;
 
 	double r;
 	double ir;
@@ -75,9 +75,9 @@ public:
 	{
 		sphereDataConfig = i_sphereDataConfig;
 
-		sphSolver_inv_one_minus_mu2.setup(sphereDataConfig, 2);
-		sphSolver_inv_one_minus_mu2.solver_component_rexi_z1(1.0, 1.0);	// (1.0
-		sphSolver_inv_one_minus_mu2.solver_component_rexi_z2(-1.0, 1.0);	//      - mu^2)
+//		sphSolver_inv_one_minus_mu2.setup(sphereDataConfig, 2);
+//		sphSolver_inv_one_minus_mu2.solver_component_rexi_z1(1.0, 1.0);	// (1.0
+//		sphSolver_inv_one_minus_mu2.solver_component_rexi_z2(-1.0, 1.0);	//      - mu^2)
 
 		r = i_earth_radius;
 		ir = 1.0/r;
@@ -192,7 +192,7 @@ public:
 	}
 
 
-
+#if 0
 	/**
 	 * Compute differential along latitude
 	 *
@@ -206,7 +206,7 @@ public:
 	{
 		return inv_one_minus_mu2(spectral_one_minus_mu_squared_diff_lat_mu(i_sph_data));
 	}
-
+#endif
 
 
 	/**
@@ -262,7 +262,7 @@ public:
 	}
 
 
-
+#if 0
 	/**
 	 * Divergence Operator along longitude for Robert function formulation
 	 *
@@ -277,7 +277,7 @@ public:
 	{
 		return inv_one_minus_mu2(diff_lon(i_sph_data));
 	}
-
+#endif
 
 
 	/**
@@ -321,7 +321,7 @@ public:
 		return out;
 	}
 
-
+#if 0
 	SphereData inv_one_minus_mu2(
 			const SphereData &i_sph_data
 	)	const
@@ -355,7 +355,7 @@ public:
 		return out;
 #endif
 	}
-
+#endif
 
 
 	void uv_to_stream_potential(
@@ -647,6 +647,7 @@ public:
 	 * This computes
 	 * 		d/dmu V
 	 */
+#if 0
 	SphereData robert_div_lat(
 			const SphereData &i_sph_data
 	)	const
@@ -657,7 +658,7 @@ public:
 		 */
 		return inv_one_minus_mu2(spectral_cosphi2_diff_lat_mu(i_sph_data));
 	}
-
+#endif
 
 
 	/**
@@ -682,12 +683,14 @@ public:
 	 *
 	 * 1.0/(1-mu*mu) d/dlambda Phi
 	 */
+#if 0
 	SphereData robert_grad_lon_M(
 			const SphereData &i_sph_data
 	)	const
 	{
 		return inv_one_minus_mu2(robert_grad_lon(i_sph_data));
 	}
+#endif
 
 
 	/**
@@ -714,13 +717,14 @@ public:
 	 *
 	 * d/dmu Phi
 	 */
+#if 0
 	SphereData robert_grad_lat_M(
 			const SphereData &i_sph_data
 	)	const
 	{
 		return inv_one_minus_mu2(robert_grad_lat(i_sph_data));
 	}
-
+#endif
 
 	/**
 	 */
@@ -736,6 +740,7 @@ public:
 			;
 	}
 
+#if 0
 	/**
 	 * Special formulation for Robert gradient,
 	 * see REXI with spherical harmonics
@@ -751,7 +756,6 @@ public:
 				spectral_one_minus_mu_squared_diff_lat_mu(i_phi)*i_v
 			);
 	}
-
 
 
 	/**
@@ -770,7 +774,7 @@ public:
 				)
 			);
 	}
-
+#endif
 
 
 
@@ -1114,6 +1118,7 @@ public:
 	 *
 	 * \eta = robert_div_lon(V_lat) - robert_div_lat(V_lon)
 	 */
+#if 0
 	SphereData robert_vort(
 			const SphereData &i_lon,
 			const SphereData &i_lat
@@ -1121,6 +1126,7 @@ public:
 	{
 		return robert_div_lon(i_lat) - robert_div_lat(i_lon);
 	}
+#endif
 #endif
 
 public:
@@ -1138,6 +1144,7 @@ public:
 	}
 
 
+#if 0
 public:
 	/**
 	 * Compute divergence
@@ -1160,6 +1167,8 @@ public:
 			);
 #endif
 	}
+#endif
+
 };
 
 

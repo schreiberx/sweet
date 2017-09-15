@@ -25,7 +25,8 @@ for f in 0.1 10; do
 	for g in 0.1 100; do
 		for h in 0.1 100; do
 			for r in 0.1 100; do
-				EXEC="./build/test_sph_rexi_solver*_debug -f $f -g $g -H $h -a $r -M 256 --nonlinear 0 --use-robert-functions 1 --rexi-ext-modes 4 --rexi-m 2"
+			    #EXEC="./build/test_sph_rexi_solver*_debug -f $f -g $g -H $h -a $r -M 256 --nonlinear 0 --use-robert-functions 1 --rexi-ext-modes 4 --rexi-m 2"
+			    EXEC="./build/test_sph_rexi_solver*_debug -f $f -g $g -H $h -a $r -M 256 --use-robert-functions 1 --rexi-ext-modes 4 --rexi-m 2"
 				echo "$EXEC"
 				$EXEC || exit
 			done

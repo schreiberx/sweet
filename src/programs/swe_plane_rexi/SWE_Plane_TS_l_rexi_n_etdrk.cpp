@@ -9,14 +9,14 @@
  *					which was also written by Pedro Peixoto
  */
 
-#include "SWE_Plane_TS_ln_etdrk.hpp"
+#include "SWE_Plane_TS_l_rexi_n_etdrk.hpp"
 
 
 
 /*
  * Main routine for method to be used in case of finite differences
  */
-void SWE_Plane_TS_ln_etdrk::euler_timestep_update_nonlinear(
+void SWE_Plane_TS_l_rexi_n_etdrk::euler_timestep_update_nonlinear(
 		const PlaneData &i_h,	///< prognostic variables
 		const PlaneData &i_u,	///< prognostic variables
 		const PlaneData &i_v,	///< prognostic variables
@@ -49,7 +49,7 @@ void SWE_Plane_TS_ln_etdrk::euler_timestep_update_nonlinear(
 /*
  * Main routine for method to be used in case of finite differences
  */
-void SWE_Plane_TS_ln_etdrk::euler_timestep_update_nonlinear(
+void SWE_Plane_TS_l_rexi_n_etdrk::euler_timestep_update_nonlinear(
 		const PlaneData &i_h,	///< prognostic variables
 		const PlaneData &i_u,	///< prognostic variables
 		const PlaneData &i_v,	///< prognostic variables
@@ -76,7 +76,7 @@ void SWE_Plane_TS_ln_etdrk::euler_timestep_update_nonlinear(
 
 
 
-void SWE_Plane_TS_ln_etdrk::run_timestep(
+void SWE_Plane_TS_l_rexi_n_etdrk::run_timestep(
 		PlaneData &io_h,	///< prognostic variables
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
@@ -413,7 +413,7 @@ void SWE_Plane_TS_ln_etdrk::run_timestep(
 /*
  * Setup
  */
-void SWE_Plane_TS_ln_etdrk::setup(
+void SWE_Plane_TS_l_rexi_n_etdrk::setup(
 		REXI_SimulationVariables &i_rexiSimVars,
 		int i_timestepping_order
 )
@@ -437,7 +437,7 @@ void SWE_Plane_TS_ln_etdrk::setup(
 	}
 
 
-SWE_Plane_TS_ln_etdrk::SWE_Plane_TS_ln_etdrk(
+SWE_Plane_TS_l_rexi_n_etdrk::SWE_Plane_TS_l_rexi_n_etdrk(
 		SimulationVariables &i_simVars,
 		PlaneOperators &i_op
 )	:
@@ -455,7 +455,7 @@ SWE_Plane_TS_ln_etdrk::SWE_Plane_TS_ln_etdrk(
 
 
 
-SWE_Plane_TS_ln_etdrk::~SWE_Plane_TS_ln_etdrk()
+SWE_Plane_TS_l_rexi_n_etdrk::~SWE_Plane_TS_l_rexi_n_etdrk()
 {
 }
 

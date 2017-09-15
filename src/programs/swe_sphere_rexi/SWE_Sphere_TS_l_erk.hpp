@@ -14,7 +14,7 @@
 #include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/SimulationVariables.hpp>
 
-#include "SWE_Sphere_TS_interface.hpp"
+#include "../../programs/swe_sphere_rexi/SWE_Sphere_TS_interface.hpp"
 
 
 

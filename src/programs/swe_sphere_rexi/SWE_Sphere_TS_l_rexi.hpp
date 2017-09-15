@@ -42,6 +42,11 @@ class SWE_Sphere_TS_l_rexi	: public SWE_Sphere_TS_interface
 	/// Simulation variables
 	SimulationVariables &simVars;
 
+public:
+	// WARNING: Do NOT use a reference to this to get more flexibility by overriding certain things in here
+	SimulationVariables::SimulationCoefficients simCoeffs;
+
+private:
 	/// Sphere operators
 	SphereOperators &op;
 
@@ -75,6 +80,14 @@ private:
 	 */
 	double timestep_size;
 
+	/*
+	 * Don't use any Coriolis effect (reduction to very simple Helmholtz problem)
+	 */
+	bool no_coriolis;
+
+	/*
+	 * Assume f-sphere (reduction to Helmholtz problem)
+	 */
 	bool use_f_sphere;
 
 	bool use_rexi_sphere_solver_preallocation;
@@ -139,7 +152,8 @@ public:
 			REXI_SimulationVariables &i_rexi,
 			const std::string &i_function_name,
 			double i_timestep_size,
-			bool i_use_f_sphere
+			bool i_use_f_sphere,
+			bool i_no_coriolis
 	);
 
 	void run_timestep(

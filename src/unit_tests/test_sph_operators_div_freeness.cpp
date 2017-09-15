@@ -167,6 +167,7 @@ void run_tests()
 				}
 			);
 
+#if 0
 			{
 				SphereData lhs = op.robert_div(u, v);
 				ErrorCheck::check(lhs, zero, "REAL: div freeness Robert formulation", error_threshold*1e1);
@@ -186,6 +187,7 @@ void run_tests()
 
 				ErrorCheck::check(lhs, rhs, "REAL: TEST div(U*phi) with Robert formulation", error_threshold*10e4);
 			}
+#endif
 
 			{
 				// LHS = div(U*phi)

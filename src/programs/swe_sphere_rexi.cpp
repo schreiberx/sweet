@@ -173,7 +173,9 @@ public:
 		prog_phi = prog_h*simVars.sim.gravitation;
 		op.robert_uv_to_vortdiv(prog_u.getSphereDataPhysical(), prog_v.getSphereDataPhysical(), prog_vort, prog_div);
 
+#if SWEET_MPI
 		if (mpi_rank == 0)
+#endif
 		{
 			simVars.outputConfig();
 
@@ -368,7 +370,7 @@ public:
 
 #if 0
 		if (	param_compute_error &&
-				simVars.pde.use_nonlinear_equations == 0 &&
+			//	simVars.pde.use_nonlinear_equations == 0 &&
 				simVars.setup.benchmark_scenario_id == 10
 		)
 		{

@@ -97,6 +97,11 @@ else:
 
 
 if p.sphere_spectral_space == 'enable':
+
+	if p.numa_block_allocator != 0:
+		print("NUMA Block allocator option > 0 not tested with SHTNS, buffers in SHTNS may be shared")
+		Exit(1)
+
 	env.Append(CXXFLAGS = ' -DSWEET_USE_SPHERE_SPECTRAL_SPACE=1')
 else:
 	env.Append(CXXFLAGS = ' -DSWEET_USE_SPHERE_SPECTRAL_SPACE=0')
@@ -427,9 +432,9 @@ env.Append(LIBS=['quadmath'])
 
 
 
-env.Append(CXXFLAGS=' -DNUMA_BLOCK_ALLOCATOR_TYPE='+p.numa_block_allocator)
+env.Append(CXXFLAGS=' -DNUMA_BLOCK_ALLOCATOR_TYPE='+str(p.numa_block_allocator))
 
-if p.numa_block_allocator in ['1', '2']:
+if p.numa_block_allocator in [1, 2]:
 	env.Append(LIBS=['numa'])
 
 
@@ -564,6 +569,8 @@ if p.compiler_cpp_exec != '':
 
 if p.compiler_fortran_exec != '':
 	env.Replace(F90 = p.compiler_fortran_exec)
+
+
 
 #
 # FORTRAN stuff

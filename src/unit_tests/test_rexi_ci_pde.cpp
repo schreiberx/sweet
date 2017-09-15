@@ -24,7 +24,6 @@
 
 REXIFunctions<T> rexiFunctions;
 
-typedef std::complex<double> cplx;
 
 
 std::complex<double> fromTtoComplexDouble(
@@ -54,6 +53,7 @@ std::complex<T> fromComplexDoubleToT(
 
 
 
+typedef std::complex<double> cplx;
 
 
 void solveLalpha(
@@ -288,7 +288,7 @@ int main(
 		}
 #endif
 
-#if 0
+#if 1
 		std::cout << std::endl;
 		std::cout << "ALPHA:" << std::endl;
 		for (std::size_t i = 0; i < alpha.size(); i++)

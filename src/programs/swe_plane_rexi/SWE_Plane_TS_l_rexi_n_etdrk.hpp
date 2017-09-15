@@ -18,7 +18,7 @@
 #include "SWE_Plane_TS_l_rexi.hpp"
 
 
-class SWE_Plane_TS_ln_etdrk	: public SWE_Plane_TS_interface
+class SWE_Plane_TS_l_rexi_n_etdrk	: public SWE_Plane_TS_interface
 {
 	SimulationVariables &simVars;
 	PlaneOperators &op;
@@ -50,7 +50,7 @@ private:
 
 
 public:
-	SWE_Plane_TS_ln_etdrk(
+	SWE_Plane_TS_l_rexi_n_etdrk(
 			SimulationVariables &i_simVars,
 			PlaneOperators &i_op
 		);
@@ -83,7 +83,7 @@ public:
 
 
 
-	virtual ~SWE_Plane_TS_ln_etdrk();
+	virtual ~SWE_Plane_TS_l_rexi_n_etdrk();
 };
 
 #endif /* SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_LN_ERK_HPP_ */
