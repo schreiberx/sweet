@@ -88,7 +88,7 @@ class SWEETCompileOptions:
 		retval = ''
 		retval += ' --mode='+self.mode
 		retval += ' --compiler='+self.compiler
-		retval += ' --debug-symbols='+self.debug_symbols
+		retval += ' --debug-symbols='+("enable" if self.debug_symbols else "disable")
 		retval += ' --simd='+self.simd
 		retval += ' --mic='+self.mic
 

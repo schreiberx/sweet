@@ -85,7 +85,7 @@ $SCONS || exit 1
 			f.write("scons "+self.compile.getSConsParams()+'\n')
 			f.write("\n")
 			os.chmod(fn, 0o755)
-			print("COMPILE WITH: scons "+self.compile.getSConsParams()+' -j 4')
+			#print("COMPILE WITH: scons "+self.compile.getSConsParams()+' -j 4')
 			pass
 
 		else:
@@ -93,7 +93,9 @@ $SCONS || exit 1
 			content += "scons "+self.compile.getSConsParams()+"\n"
 			content += "\n"
 		content += """
+
 cd "$BASEDIR"
+
 """
 
 		content += 'EXEC="$SWEETROOT/build/'+self.compile.getProgramName()+' '
@@ -102,6 +104,9 @@ cd "$BASEDIR"
 
 		content += "\n"
 		content += """
+
+# TODO: Fix this if OpenMP threading is used
+export OMP_NUM_THREADS=1
 
 echo "$EXEC"
 """+mpiexec_prefix+"""$EXEC || exit 1

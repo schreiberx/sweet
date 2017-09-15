@@ -179,9 +179,9 @@ class SWEETRuntimeOptions():
 				elif self.rexi_method == "ci":
 					idstr += '_REXICI'
 					idstr += '_n'+str(self.rexi_ci_n).zfill(8)
-					idstr += '_sx'+str(self.rexi_ci_sx)
-					idstr += '_sy'+str(self.rexi_ci_sy)
-					idstr += '_mu'+str(self.rexi_ci_mu)
+					idstr += '_sx'+str(float(self.rexi_ci_sx))
+					idstr += '_sy'+str(float(self.rexi_ci_sy))
+					idstr += '_mu'+str(float(self.rexi_ci_mu))
 					idstr += '_pr'+str(self.rexi_ci_primitive)
 
 				idstr += '_nrm'+str(self.rexi_normalization)
