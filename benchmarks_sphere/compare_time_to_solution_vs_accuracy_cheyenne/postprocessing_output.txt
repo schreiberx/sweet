@@ -1,0 +1,902 @@
+32000
+Group:['l1', 1]
+Using reference: 
+SIMNAME	L1	L2	Linf	CONV
+Group:['l2', 2]
+Using reference: 
+SIMNAME	L1	L2	Linf	CONV
+Group:['ln1', 1]
+Using reference: 
+SIMNAME	L1	L2	Linf	CONV
+Group:['ln2', 2]
+Using reference: script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128
+SIMNAME	L1	L2	Linf	CONV
+
+Running tests for new group:
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_erk_n_erk_tso2_tsob2_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128_MPI_space01_time001/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_erk_n_erk_tso2_tsob2_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128_MPI_space01_time001
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_erk_n_erk_tso2_tsob2_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000200_M0128_MPI_space01_time001/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_erk_n_erk_tso2_tsob2_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000200_M0128_MPI_space01_time001
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_erk_n_erk_tso2_tsob2_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000400_M0128_MPI_space01_time001/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_erk_n_erk_tso2_tsob2_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000400_M0128_MPI_space01_time001
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_erk_n_erk_tso2_tsob2_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000800_M0128_MPI_space01_time001/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_erk_n_erk_tso2_tsob2_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000800_M0128_MPI_space01_time001
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_erk_n_erk_tso2_tsob2_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00001600_M0128_MPI_space01_time001/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_erk_n_erk_tso2_tsob2_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00001600_M0128_MPI_space01_time001
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+
+Running tests for new group:
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time064/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time064
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+
+Running tests for new group:
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time064/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time064
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+
+Running tests for new group:
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time064/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time064
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time108/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time108
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time144/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time144
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time108/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time108
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time128
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time108/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time108
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time128
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time108/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time108
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time128
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time108/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time108
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time128
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+
+Running tests for new group:
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time064/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time064
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time108/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time108
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time144/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time144
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time108/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time108
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time128
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time108/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time108
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time128
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time108/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time108
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time128
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time108/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time108
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_l_rexi_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time128
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+
+Running tests for new group:
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+
+Running tests for new group:
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000064_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+
+Running tests for new group:
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time108/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time108
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time128
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time108/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time108
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time128
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time108/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time108
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time128
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time108/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time108
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time128
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time108/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time108
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx20.0_sy20.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time128
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+
+Running tests for new group:
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time108/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time108
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000100_M0128_MPI_space01_time128
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time108/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time108
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000200_M0128_MPI_space01_time128
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time108/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time108
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000400_M0128_MPI_space01_time128
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time108/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time108
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00000800_M0128_MPI_space01_time128
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time018/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time018
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time036/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time036
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time072/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time072
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time108/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time108
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_lg_rexi_lf_n_etdrk_tso2_tsob2_REXICI_n00000128_sx30.0_sy30.0_mu0.0_prcircle_nrm0_hlf0_pre1_ext00_C00001600_M0128_MPI_space01_time128
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+
+Running tests for new group:
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso2_tsob2_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128_MPI_space01_time001/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso2_tsob2_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128_MPI_space01_time001
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso2_tsob2_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000200_M0128_MPI_space01_time001/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso2_tsob2_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000200_M0128_MPI_space01_time001
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso2_tsob2_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000400_M0128_MPI_space01_time001/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso2_tsob2_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000400_M0128_MPI_space01_time001
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso2_tsob2_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000800_M0128_MPI_space01_time001/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso2_tsob2_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000800_M0128_MPI_space01_time001
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+********************************************************************************
+Exit code 1
+EXEC: ./pp_compute_max_and_rms_errors.py script_ln2_ref_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso4_tsob4_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00000100_M0128/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso2_tsob2_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00001600_M0128_MPI_space01_time001/output_prog_h_t00000032000.00000000.csv script_ln2_b4_g1_h100000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_ln_erk_tso2_tsob2_REXICI_n00000064_sx50.0_sy50.0_mu0.0_prcircle_nrm0_hlf1_pre1_ext00_C00001600_M0128_MPI_space01_time001
+STDOUT: b''
+STDERR: b'Traceback (most recent call last):\n  File "./pp_compute_max_and_rms_errors.py", line 7, in <module>\n    import numpy as np\nImportError: No module named \'numpy\'\n'
+Group:['ln4', 4]
+Using reference: 
+SIMNAME	L1	L2	Linf	CONV
+Group:['ln1test', 1]
+Using reference: 
+SIMNAME	L1	L2	Linf	CONV
+Group:['ln2space', 2]
+Using reference: 
+SIMNAME	L1	L2	Linf	CONV
