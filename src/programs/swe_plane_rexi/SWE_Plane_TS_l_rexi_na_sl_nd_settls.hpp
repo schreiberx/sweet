@@ -28,7 +28,7 @@ class SWE_Plane_TS_l_rexi_na_sl_nd_settls	: public SWE_Plane_TS_interface
 
 	SWE_Plane_TS_l_rexi ts_l_rexi;
 
-	int with_nonlinear;
+	int with_linear_div_only;
 
 	PlaneDataSemiLagrangian semiLagrangian;
 	PlaneDataSampler sampler2D;

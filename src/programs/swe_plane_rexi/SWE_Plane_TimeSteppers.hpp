@@ -262,14 +262,12 @@ public:
 		}
 		else if (i_timestepping_method == "l_rexi_na_sl_nd_settls")
 		{
-			if (i_simVars.disc.use_staggering)
-				FatalError("Staggering not supported for l_rexi_na_sl_nd_settls");
 
 			l_rexi_na_sl_nd_settls = new SWE_Plane_TS_l_rexi_na_sl_nd_settls(i_simVars, i_op);
 
 			l_rexi_na_sl_nd_settls->setup(
 					i_simVars.rexi,
-					1 //i_simVars.pde.use_linear_div
+					i_simVars.pde.use_linear_div
 				);
 
 			master = &(SWE_Plane_TS_interface&)*l_rexi_na_sl_nd_settls;
@@ -278,13 +276,11 @@ public:
 		}
 		else if (i_timestepping_method == "l_cn_na_sl_nd_settls")
 		{
-			if (i_simVars.disc.use_staggering)
-				FatalError("Staggering not supported for l_cn_na_sl_nd_settls");
 
 			l_cn_na_sl_nd_settls = new SWE_Plane_TS_l_cn_na_sl_nd_settls(i_simVars, i_op);
 
 			l_cn_na_sl_nd_settls->setup(
-					1 //i_simVars.pde.use_linear_div
+					i_simVars.pde.use_linear_div
 				);
 
 			master = &(SWE_Plane_TS_interface&)*l_cn_na_sl_nd_settls;
@@ -318,16 +314,16 @@ public:
 			std::cout << "      l_direct       : Linear:     Analytical solution to linear SW operator"  << std::endl;
 			std::cout << "      l_erk          : Linear:     Explicit RK scheme (supports FD-C staggering)"  << std::endl;
 			std::cout << "      l_erk_n_erk    : Non-linear: Linear RK, Non-linear RK, Strang-split"  << std::endl;
-			std::cout << "      l_cn           : Linear:     Crank-Nicolson scheme"  << std::endl;
+			std::cout << "      l_cn           : Linear:     Crank-Nicolson (CN) scheme"  << std::endl;
 			std::cout << "      l_cn_n_erk     : Non-linear: Linear CN, Non-linear RK, Strang-split"<< std::endl;
 			std::cout << "      l_rexi         : Linear:     Pure REXI, our little dog."<< std::endl;
 			std::cout << "      l_rexi_n_erk   : Non-linear: Linear REXI, Non-linear RK, Strang-split"<< std::endl;
 			std::cout << "      l_irk          : Linear:     Implicit Euler"  << std::endl;
 			std::cout << "      l_irk_n_erk    : Non-linear: Linear Implicit Euler, Non-linear RK, Strang-split"  << std::endl;
 			std::cout << "      ln_erk         : Non-linear: Linear and nonlinear solved jointly with erk (supports FD-C staggering)"  << std::endl;
-			std::cout << "      l_rexi_na_sl_nd_settls "  << std::endl;
-			std::cout << "      l_cn_na_sl_nd_settls "  << std::endl;
-			std::cout << "      l_rexi_n_etdrk "  << std::endl;
+			std::cout << "      l_rexi_na_sl_nd_settls : Non-linear: Linear Rexi, Advection: Semi-Lag, Nonlinear-diverg: SETTLS"  << std::endl;
+			std::cout << "      l_cn_na_sl_nd_settls   : Non-linear: Linear CN, Advection: Semi-Lag, Nonlinear-diverg: SETTLS"  << std::endl;
+			std::cout << "      l_rexi_n_etdrk : Non-linear: Linear REXI, Non-linear: ETDRK"  << std::endl;
 			FatalError("No valid --timestepping-method provided");
 		}
 	}

@@ -22,7 +22,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 )
 {
 	if (i_dt <= 0)
-		FatalError("SWE_Plane_TS_l_rexi_na_sl_nd_erk: Only constant time step size allowed");
+		FatalError("SWE_Plane_TS_l_rexi_na_sl_nd_erk: Only constant time step size allowed (Please set --dt)");
 
 	if (i_simulation_timestamp == 0)
 	{
@@ -55,18 +55,18 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 	Staggering staggering;
 	assert(staggering.staggering_type == 'a');
 
-	if (with_nonlinear > 0)
-	{
-		// Calculate departure points
-		semiLagrangian.semi_lag_departure_points_settls(
-				u_prev,	v_prev,
-				io_u,		io_v,
-				posx_a,		posy_a,
-				dt,
-				posx_d,	posy_d,			// output
-				staggering
-		);
-	}
+	//if (with_linear_div_only > 0)
+	//{
+	// Calculate departure points
+	semiLagrangian.semi_lag_departure_points_settls(
+			u_prev,	v_prev,
+			io_u,		io_v,
+			posx_a,		posy_a,
+			dt,
+			posx_d,	posy_d,			// output
+			staggering
+	);
+	//}
 
 	u = io_u;
 	v = io_v;
@@ -78,50 +78,51 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 	hdiv.physical_set_all(0);
 
 	//Calculate nonlinear terms
-	if (with_nonlinear > 0)
-	{
-		//Calculate Divergence and vorticity spectrally
-		hdiv =  - io_h * (op.diff_c_x(io_u) + op.diff_c_y(io_v));
+	//if (with_linear_div_only > 0)
+	//{
+	//Calculate Divergence and vorticity spectrally
+	hdiv =  - io_h * (op.diff_c_x(io_u) + op.diff_c_y(io_v));
 
-		// Calculate nonlinear term for the previous time step
-		// h*div is calculate in cartesian space (pseudo-spectrally)
-		N_h = -h_prev * (op.diff_c_x(u_prev) + op.diff_c_y(v_prev));
+	// Calculate nonlinear term for the previous time step
+	// h*div is calculate in cartesian space (pseudo-spectrally)
+	N_h = -h_prev * (op.diff_c_x(u_prev) + op.diff_c_y(v_prev));
 
-		//Calculate exp(Ldt)N(n-1), relative to previous timestep
-		//Calculate the V{n-1} term as in documentation, with the exponential integrator
-		ts_l_rexi.run_timestep(N_h, N_u, N_v, i_dt, i_simulation_timestamp);
+	//Calculate exp(Ldt)N(n-1), relative to previous timestep
+	//Calculate the V{n-1} term as in documentation, with the exponential integrator
+	ts_l_rexi.run_timestep(N_h, N_u, N_v, i_dt, i_simulation_timestamp);
 
-		//Use N_h to store now the nonlinearity of the current time (prev will not be required anymore)
-		//Update the nonlinear terms with the constants relative to dt
-		N_u = -0.5 * dt * N_u; // N^n of u term is zero
-		N_v = -0.5 * dt * N_v; // N^n of v term is zero
-		N_h = dt * hdiv - 0.5 * dt * N_h ; //N^n of h has the nonlin term
-	}
+	//Use N_h to store now the nonlinearity of the current time (prev will not be required anymore)
+	//Update the nonlinear terms with the constants relative to dt
+	N_u = -0.5 * dt * N_u; // N^n of u term is zero
+	N_v = -0.5 * dt * N_v; // N^n of v term is zero
+	N_h = dt * hdiv - 0.5 * dt * N_h ; //N^n of h has the nonlin term
+	//}
 
 
 
-	if (with_nonlinear > 0)
-	{
-		//Build variables to be interpolated to dep. points
-		// This is the W^n term in documentation
-		u = u + N_u;
-		v = v + N_v;
-		h = h + N_h;
+	//if (with_linear_div_only > 0)
+	//{
+	//Build variables to be interpolated to dep. points
+	// This is the W^n term in documentation
+	u = u + N_u;
+	v = v + N_v;
+	h = h + N_h;
 
-		// Interpolate W to departure points
-		u = sampler2D.bicubic_scalar(u, posx_d, posy_d, -0.5, -0.5);
-		v = sampler2D.bicubic_scalar(v, posx_d, posy_d, -0.5, -0.5);
+	// Interpolate W to departure points
+	u = sampler2D.bicubic_scalar(u, posx_d, posy_d, -0.5, -0.5);
+	v = sampler2D.bicubic_scalar(v, posx_d, posy_d, -0.5, -0.5);
 
-		h = sampler2D.bicubic_scalar(h, posx_d, posy_d, -0.5, -0.5);
+	h = sampler2D.bicubic_scalar(h, posx_d, posy_d, -0.5, -0.5);
 
-	}
+	//}
 
 	/*
-	 * Calculate the exp(Ldt) W{n}_* term as in documentation, with the exponential integrator?
+	 * Calculate the exp(Ldt) W{n}_* term as in documentation, with the exponential integrator
 	 */
 	ts_l_rexi.run_timestep(h, u, v, i_dt, i_simulation_timestamp);
 
-	if (with_nonlinear > 1)
+	//if (with_linear_div_only > 1)
+	if (with_linear_div_only == 0) // Full nonlinear case
 	{
 		// Add nonlinearity in h
 		h = h + 0.5 * dt * hdiv;
@@ -145,13 +146,15 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
  */
 void SWE_Plane_TS_l_rexi_na_sl_nd_settls::setup(
 		REXI_SimulationVariables &i_rexi,
-
-		int i_with_nonlinear
+		int i_use_linear_div
 )
 {
 	ts_l_rexi.setup(simVars.rexi);
 
-	with_nonlinear = i_with_nonlinear;
+	if (simVars.disc.use_staggering)
+		FatalError("SWE_Plane_TS_l_rexi_na_sl_nd_settls: Staggering not supported for l_rexi_na_sl_nd_settls");
+
+	with_linear_div_only = i_use_linear_div;
 
 	// Setup sampler for future interpolations
 	sampler2D.setup(simVars.sim.domain_size, op.planeDataConfig);
@@ -162,20 +165,20 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::setup(
 
 	PlaneData tmp_x(op.planeDataConfig);
 	tmp_x.physical_update_lambda_array_indices(
-		[&](int i, int j, double &io_data)
-		{
-			io_data = ((double)i)*simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
-		},
-		false
+			[&](int i, int j, double &io_data)
+			{
+		io_data = ((double)i)*simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
+			},
+			false
 	);
 
 	PlaneData tmp_y(op.planeDataConfig);
 	tmp_y.physical_update_lambda_array_indices(
-		[&](int i, int j, double &io_data)
-		{
-			io_data = ((double)j)*simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
-		},
-		false
+			[&](int i, int j, double &io_data)
+			{
+		io_data = ((double)j)*simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
+			},
+			false
 	);
 
 	// Initialize arrival points with h position
@@ -198,20 +201,20 @@ SWE_Plane_TS_l_rexi_na_sl_nd_settls::SWE_Plane_TS_l_rexi_na_sl_nd_settls(
 		SimulationVariables &i_simVars,
 		PlaneOperators &i_op
 )	:
-		simVars(i_simVars),
-		op(i_op),
+				simVars(i_simVars),
+				op(i_op),
 
-		ts_l_rexi(i_simVars, i_op),
+				ts_l_rexi(i_simVars, i_op),
 
-		h_prev(i_op.planeDataConfig),
-		u_prev(i_op.planeDataConfig),
-		v_prev(i_op.planeDataConfig),
+				h_prev(i_op.planeDataConfig),
+				u_prev(i_op.planeDataConfig),
+				v_prev(i_op.planeDataConfig),
 
-		posx_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
-		posy_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
+				posx_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
+				posy_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
 
-		posx_d(i_op.planeDataConfig->physical_array_data_number_of_elements),
-		posy_d(i_op.planeDataConfig->physical_array_data_number_of_elements)
+				posx_d(i_op.planeDataConfig->physical_array_data_number_of_elements),
+				posy_d(i_op.planeDataConfig->physical_array_data_number_of_elements)
 {
 }
 
