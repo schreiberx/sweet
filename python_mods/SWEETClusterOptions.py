@@ -61,25 +61,25 @@ class SWEETClusterOptions:
 
 		if self.target_machine == 'isambard':
 			self.total_max_cores = 4096
-			self.total_max_modes = 512
-			self.total_max_cores = self.cores_per_node*self.total_max_modes
+			self.total_max_nodes = 512
+			self.total_max_cores = self.cores_per_node*self.total_max_nodes
 			raise Exception("TODO")
 
 		elif self.target_machine == "yellowstone":
 			self.cores_per_node = 16
-			self.total_max_modes = 512
-			self.total_max_cores = self.cores_per_node*self.total_max_modes
+			self.total_max_nodes = 512
+			self.total_max_cores = self.cores_per_node*self.total_max_nodes
 			raise Exception("TODO")
 
 		elif self.target_machine == "cheyenne":
 			self.cores_per_node = 36
 
 			# REAL number:
-			# self.total_max_modes = 4032
+			# self.total_max_nodes = 4032
 
 			# Low number to avoid accidentally wasting computing time
-			self.total_max_modes = 128
-			self.total_max_cores = self.cores_per_node*self.total_max_modes
+			self.total_max_nodes = 128
+			self.total_max_cores = self.cores_per_node*self.total_max_nodes
 
 		else:
 			print("Unknown Target: "+str(self.target_machine))
@@ -107,8 +107,8 @@ class SWEETClusterOptions:
 
 	def getUniqueID(self):
 		retval = 'MPI'
-		retval += '_space'+str(self.par_space_cores)
-		retval += '_time'+str(self.par_time_cores)
+		retval += '_space'+str(self.par_space_cores).zfill(2).zfill(2)
+		retval += '_time'+str(self.par_time_cores).zfill(3)
 
 		return retval
 
@@ -125,12 +125,10 @@ class SWEETClusterOptions:
 		#	if self.max_cores_per_node % self.par_space_threads != 0:
 		#		raise ValueError('Number of cores on node not evenly dividable by space threads')
 
-		real_time_threads = self.par_time_cores
-
 		# total number of used MPI ranks
-		total_cores = self.par_space_cores*self.par_time_cores
-		mpi_ranks_total = self.par_time_cores
-		mpi_ranks_per_node = math.floor(self.cores_per_node/self.par_space_cores)
+		par_total_cores = self.par_space_cores*self.par_time_cores
+		par_mpi_ranks_total = self.par_time_cores
+		par_mpi_ranks_per_node = math.floor(self.cores_per_node/self.par_space_cores)
 
 		cwd = os.getcwd()
 
@@ -155,16 +153,20 @@ class SWEETClusterOptions:
 		# SETUP variables which are shared by all job scripts
 
 		# total number of nodes
-		total_cores = self.par_space_cores*self.par_time_cores
+		par_total_cores = self.par_space_cores*self.par_time_cores
 
 		# total number of nodes
-		num_nodes = int(math.ceil(total_cores/self.cores_per_node))
+		num_nodes = int(math.ceil(par_total_cores/self.cores_per_node))
 
 		# number of cores (CPUs) per node
 		num_cores_per_node = self.cores_per_node
 
-		if total_cores == 1:
-			num_cores_per_node = 1
+		# Number of OpenMP threads to use per MPI threads
+		# TODO: Include compile options and runtime options to determine this number
+		num_omp_threads_per_mpi_thread = 1
+
+#		if par_total_cores == 1:
+#			num_cores_per_node = 1
 
 		#
 		# SETUP the following variables:
@@ -187,7 +189,7 @@ class SWEETClusterOptions:
 			# https://www2.cisl.ucar.edu/resources/computational-systems/yellowstone/using-computing-resources/running-jobs/platform-lsf-job-script-examples
 			#
 			content = "#!/bin/bash\n"
-			content += "# TARGET MACHINE: "+self.target_machine
+			content += "# TARGET MACHINE: "+self.target_machine+"\n"
 
 			content += """
 #
@@ -199,7 +201,7 @@ class SWEETClusterOptions:
 #BSUB -P NCIS0002	# project code
 #BSUB -W 02:00		# wall-clock time (hrs:mins)
 #
-#BSUB -n """+str(mpi_ranks_total)+"""	 number of tasks in job
+#BSUB -n """+str(par_mpi_ranks_total)+"""	 number of tasks in job
 #BSUB -R "span[ptile=16]"    # run 16 MPI tasks per node
 #
 #BSUB -outdir """+dirname+"""
@@ -242,16 +244,27 @@ class SWEETClusterOptions:
 ## shared queue
 ######PBS -q share
 ## wall-clock time (hrs:mins:secs)
-#PBS -l walltime=01:00:00
+#PBS -l walltime=00:30:00
 ## select one chunk with one CPU in it
-#PBS -l select="""+str(num_nodes)+""":ncpus="""+str(num_cores_per_node)+""":mpiprocs="""+str(num_cores_per_node)+"""
+#PBS -l select="""+str(num_nodes)+""":ncpus="""+str(num_cores_per_node)+""":mpiprocs="""+str(num_cores_per_node)+""":ompthreads="""+str(num_omp_threads_per_mpi_thread)+"""
 #
 #PBS -N """+jobid[0:100]+"""
 #PBS -o """+cwd+"/"+dirname+"""/output.out
 #PBS -e """+cwd+"/"+dirname+"""/output.err
 
 """
-			mpi_exec_prefix = "mpiexec_mpt "
+
+			#
+			# https://www2.cisl.ucar.edu/resources/computational-systems/cheyenne/running-jobs/submitting-jobs-pbs/omplace-and-dplace
+			#
+			mpi_exec_prefix = "mpiexec_mpt -n "+str(par_total_cores)+" "
+			# TODO: This seems to make trouble
+			#mpi_exec_prefix += " omplace -vv "
+			mpi_exec_prefix += " dplace -s 1 "
+
+		else:
+			content = ""
+			mpi_exec_prefix = ""
 
 		return content, mpi_exec_prefix
 

@@ -67,6 +67,8 @@ class SWERexiTerm_SPHRobert
 
 	bool use_f_sphere;
 
+	bool no_coriolis;
+
 	/// Average geopotential
 	double gh;
 
@@ -97,12 +99,15 @@ public:
 			double i_avg_geopotential,
 			double i_timestep_size,
 
-			bool i_use_f_sphere
+			bool i_use_f_sphere,
+			bool i_no_coriolis
 	)
 	{
 		sphereDataConfigSolver = i_sphereDataConfigSolver;
 
 		use_f_sphere = i_use_f_sphere;
+		no_coriolis = i_no_coriolis;
+
 		timestep_size = i_timestep_size;
 
 		alpha = i_alpha/timestep_size;
@@ -168,7 +173,15 @@ public:
 		SphereDataComplex vort(sphereDataConfigSolver);
 		SphereDataComplex div(sphereDataConfigSolver);
 
-		if (use_f_sphere)
+		if (no_coriolis)
+		{
+			SphereDataComplex rhs = gh*div0 + alpha*phi0;
+			phi = rhs.spectral_solve_helmholtz(alpha*alpha, -gh, r);
+
+			div = -1.0/gh*(phi0 - alpha*phi);
+			vort = (1.0/alpha)*vort0;
+		}
+		else if (use_f_sphere)
 		{
 			SphereDataComplex rhs = gh*(div0 - f0/alpha*vort0) + (alpha+f0*f0/alpha)*phi0;
 			phi = rhs.spectral_solve_helmholtz(alpha*alpha + f0*f0, -gh, r);

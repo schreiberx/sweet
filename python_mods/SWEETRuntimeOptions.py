@@ -69,7 +69,7 @@ class SWEETRuntimeOptions():
 		self.pde_id = 0
 		self.staggering = 0
 		self.spectralderiv = 1
-		self.nonlinear = 0
+		self.uselineardiv = 0
 		self.viscosity = 0
 
 		self.simtime = 0.001
@@ -179,9 +179,9 @@ class SWEETRuntimeOptions():
 				elif self.rexi_method == "ci":
 					idstr += '_REXICI'
 					idstr += '_n'+str(self.rexi_ci_n).zfill(8)
-					idstr += '_sx'+str(self.rexi_ci_sx)
-					idstr += '_sy'+str(self.rexi_ci_sy)
-					idstr += '_mu'+str(self.rexi_ci_mu)
+					idstr += '_sx'+str(float(self.rexi_ci_sx))
+					idstr += '_sy'+str(float(self.rexi_ci_sy))
+					idstr += '_mu'+str(float(self.rexi_ci_mu))
 					idstr += '_pr'+str(self.rexi_ci_primitive)
 
 				idstr += '_nrm'+str(self.rexi_normalization)
@@ -242,7 +242,7 @@ class SWEETRuntimeOptions():
 		retval += ' -t '+str(self.simtime)
 
 		retval += ' --stability-checks='+str(self.stability_checks)
-		retval += ' --nonlinear='+str(self.nonlinear)
+		retval += ' --use-linear-div='+str(self.uselineardiv)
 
 		retval += ' --timestepping-method='+self.timestepping_method
 		retval += ' --timestepping-order='+str(self.timestepping_order)

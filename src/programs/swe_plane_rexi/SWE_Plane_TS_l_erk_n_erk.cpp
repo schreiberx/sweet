@@ -11,7 +11,23 @@
 
 #include "SWE_Plane_TS_l_erk_n_erk.hpp"
 
-
+/*
+ *
+ * U_t=LU+N(U)
+ *
+ * Strang Splitting used
+ * 1st order scheme:
+ * 1) dt step of linear part with RK1
+ * 2) dt step of nonlinear part from step 1) with RK1
+ * Formally: U(n+1)=exp(dtN)exp(dtL)U(n)
+ *
+ * 2nd order scheme
+ * 1) dt/2 step of linear part with RK2
+ * 2) dt step of nonlinear part with RK2 from step 1)
+ * 3) dt/2 step of linear part with RK2 from step 2)
+ * Formally: U(n+1)=exp(dtL/2)exp(dtN)exp(dtL/2)U(n)
+ *
+ */
 
 void SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_linear(
 		const PlaneData &i_h,	///< prognostic variables
@@ -76,6 +92,9 @@ void SWE_Plane_TS_l_erk_n_erk::run_timestep(
 		double i_simulation_timestamp
 )
 {
+	if (i_dt <= 0)
+			FatalError("Only fixed time step size allowed (set --dt)");
+
 	if (timestepping_order == 1)
 	{
 		timestepping_rk_linear.run_timestep(
@@ -83,7 +102,7 @@ void SWE_Plane_TS_l_erk_n_erk::run_timestep(
 				&SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_linear,	///< pointer to function to compute euler time step updates
 				io_h, io_u, io_v,
 				i_dt,
-				timestepping_order,
+				1,
 				i_simulation_timestamp
 			);
 
@@ -92,7 +111,7 @@ void SWE_Plane_TS_l_erk_n_erk::run_timestep(
 				&SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
 				io_h, io_u, io_v,
 				i_dt,
-				timestepping_order,
+				1,
 				i_simulation_timestamp
 			);
 	}
@@ -104,7 +123,7 @@ void SWE_Plane_TS_l_erk_n_erk::run_timestep(
 				&SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_linear,	///< pointer to function to compute euler time step updates
 				io_h, io_u, io_v,
 				i_dt*0.5,
-				timestepping_order,		/// This must be 2nd order accurate to get overall 2nd order accurate method
+				2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
 				i_simulation_timestamp
 			);
 
@@ -114,7 +133,7 @@ void SWE_Plane_TS_l_erk_n_erk::run_timestep(
 				&SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
 				io_h, io_u, io_v,
 				i_dt,
-				timestepping_order,		/// This must be 2nd order accurate to get overall 2nd order accurate method
+				2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
 				i_simulation_timestamp
 			);
 
@@ -124,13 +143,13 @@ void SWE_Plane_TS_l_erk_n_erk::run_timestep(
 				&SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_linear,	///< pointer to function to compute euler time step updates
 				io_h, io_u, io_v,
 				i_dt*0.5,
-				timestepping_order,		/// This must be 2nd order accurate to get overall 2nd order accurate method
+				2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
 				i_simulation_timestamp
 			);
 	}
 	else
 	{
-		FatalError("Not yet supported!");
+		FatalError("SWE_Plane_TS_l_erk_n_erk: Order not yet supported!");
 	}
 }
 
@@ -148,11 +167,9 @@ void SWE_Plane_TS_l_erk_n_erk::setup(
 {
 	timestepping_order = i_order;
 	timestepping_order2 = i_order2;
-	if(timestepping_order2<=0 || timestepping_order != timestepping_order2 )
-	{
-		timestepping_order2=timestepping_order;
-		std::cout<<"SWE_Plane_TS_l_erk_n_erk Warning: forcing order of nonlinear RK as the same as linear : "<< timestepping_order<<std::endl;
-	}
+
+	if (timestepping_order != timestepping_order2)
+		FatalError("TODO: Currently, both time stepping orders (1 and 2) have to match!");
 
 	timestepping_rk_linear.setupBuffers(op.planeDataConfig, timestepping_order);
 	timestepping_rk_nonlinear.setupBuffers(op.planeDataConfig, timestepping_order2);
@@ -160,6 +177,7 @@ void SWE_Plane_TS_l_erk_n_erk::setup(
 	if (simVars.disc.use_staggering)
 		FatalError("SWE_Plane_TS_l_erk_n_erk: Staggering not supported");
 }
+
 
 
 SWE_Plane_TS_l_erk_n_erk::SWE_Plane_TS_l_erk_n_erk(

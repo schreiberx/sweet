@@ -1,5 +1,5 @@
 /*
- * SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk.cpp
+ * SWE_Plane_TS_l_cn_na_sl_nd_settls.cpp
  *
  *  Created on: 29 May 2017
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
@@ -53,7 +53,7 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 {
 
 	if (i_dt <= 0)
-		FatalError("SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk: Only constant time step size allowed");
+		FatalError("SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk: Only constant time step size allowed (Please set --dt)");
 
 	if (i_simulation_timestamp == 0)
 	{
@@ -85,21 +85,21 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 	kappa += f0*f0;
 	kappa_bar -= f0*f0;
 
-	if (with_nonlinear > 0)
-	{
-		Staggering staggering;
-		assert(staggering.staggering_type == 'a');
+	//if (with_linear_div_only > 0)
+	//{
+	Staggering staggering;
+	assert(staggering.staggering_type == 'a');
 
-		// Calculate departure points
-		semiLagrangian.semi_lag_departure_points_settls(
-				u_prev,	v_prev,
-				io_u,		io_v,
-				posx_a,	posy_a,
-				dt,
-				posx_d,	posy_d,
-				staggering
-		);
-	}
+	// Calculate departure points
+	semiLagrangian.semi_lag_departure_points_settls(
+			u_prev,	v_prev,
+			io_u,		io_v,
+			posx_a,	posy_a,
+			dt,
+			posx_d,	posy_d,
+			staggering
+	);
+	//}
 
 
 	// Calculate Divergence and vorticity spectrally
@@ -113,51 +113,51 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 	PlaneData rhs_v =  - f0 * io_u + alpha * io_v - g * op.diff_c_y(io_h);
 	PlaneData rhs_h = alpha * io_h  - h_bar * div;
 
-	if (with_nonlinear > 0)
-	{
-		// all the RHS are to be evaluated at the departure points
-		rhs_u=sampler2D.bicubic_scalar(rhs_u, posx_d, posy_d, -0.5, -0.5);
-		rhs_v=sampler2D.bicubic_scalar(rhs_v, posx_d, posy_d, -0.5, -0.5);
-		rhs_h=sampler2D.bicubic_scalar(rhs_h, posx_d, posy_d, -0.5, -0.5);
+	//if (with_linear_div_only > 0)
+	//{
+	// all the RHS are to be evaluated at the departure points
+	rhs_u=sampler2D.bicubic_scalar(rhs_u, posx_d, posy_d, -0.5, -0.5);
+	rhs_v=sampler2D.bicubic_scalar(rhs_v, posx_d, posy_d, -0.5, -0.5);
+	rhs_h=sampler2D.bicubic_scalar(rhs_h, posx_d, posy_d, -0.5, -0.5);
 
-		//Get data in spectral space
-		rhs_u.request_data_spectral();
-		rhs_v.request_data_spectral();
-		rhs_h.request_data_spectral();
-	}
+	//Get data in spectral space
+	rhs_u.request_data_spectral();
+	rhs_v.request_data_spectral();
+	rhs_h.request_data_spectral();
+	//}
 
 	// Calculate nonlinear term at half timestep and add to RHS of h eq.
-	if (with_nonlinear > 0)
-	{
-		// Calculate nonlinear term interpolated to departure points
-		// h*div is calculate in cartesian space (pseudo-spectrally)
-		//div.aliasing_zero_high_modes();
-		//div_prev.aliasing_zero_high_modes();
-		PlaneData hdiv = 2.0 * io_h * div - h_prev * div_prev;
-		//hdiv.aliasing_zero_high_modes();
-		//std::cout<<offcent<<std::endl;
-		PlaneData nonlin = 0.5 * io_h * div + 0.5 * sampler2D.bicubic_scalar(hdiv, posx_d, posy_d, -0.5, -0.5);
-		//add diffusion
-		//nonlin.printSpectrumEnergy_y();
-		//nonlin.printSpectrumIndex();
+	//if (with_linear_div_only > 0)
+	//{
+	// Calculate nonlinear term interpolated to departure points
+	// h*div is calculate in cartesian space (pseudo-spectrally)
+	//div.aliasing_zero_high_modes();
+	//div_prev.aliasing_zero_high_modes();
+	PlaneData hdiv = 2.0 * io_h * div - h_prev * div_prev;
+	//hdiv.aliasing_zero_high_modes();
+	//std::cout<<offcent<<std::endl;
+	PlaneData nonlin = 0.5 * io_h * div + 0.5 * sampler2D.bicubic_scalar(hdiv, posx_d, posy_d, -0.5, -0.5);
+	//add diffusion
+	//nonlin.printSpectrumEnergy_y();
+	//nonlin.printSpectrumIndex();
 
-		//nonlin.aliasing_zero_high_modes();
-		//nonlin.printSpectrumEnergy_y();
-		//nonlin.printSpectrumIndex();
-		//nonlin=diff(nonlin);
-		//nonlin=op.implicit_diffusion(nonlin,i_simVars.sim.viscosity,i_simVars.sim.viscosity_order );
-		//nonlin.printSpectrumIndex();
-		//nonlin.aliasing_zero_high_modes();
-		//nonlin.printSpectrumIndex();
+	//nonlin.aliasing_zero_high_modes();
+	//nonlin.printSpectrumEnergy_y();
+	//nonlin.printSpectrumIndex();
+	//nonlin=diff(nonlin);
+	//nonlin=op.implicit_diffusion(nonlin,i_simVars.sim.viscosity,i_simVars.sim.viscosity_order );
+	//nonlin.printSpectrumIndex();
+	//nonlin.aliasing_zero_high_modes();
+	//nonlin.printSpectrumIndex();
 
-		//std::cout << "blocked: "  << std::endl;
-		//nonlin.printSpectrumEnergy();
-		//std::cout << "Nonlinear error: " << nonlin.reduce_maxAbs() << std::endl;
-		//std::cout << "Div: " << div.reduce_maxAbs() << std::endl;
-		//nonlin=0;
-		rhs_h = rhs_h - 2.0*nonlin;
-		rhs_h.request_data_spectral();	/// why is there a request_data_spectral()?
-	}
+	//std::cout << "blocked: "  << std::endl;
+	//nonlin.printSpectrumEnergy();
+	//std::cout << "Nonlinear error: " << nonlin.reduce_maxAbs() << std::endl;
+	//std::cout << "Div: " << div.reduce_maxAbs() << std::endl;
+	//nonlin=0;
+	rhs_h = rhs_h - 2.0*nonlin;
+	rhs_h.request_data_spectral();	/// why is there a request_data_spectral()?
+	//}
 
 
 	// Build Helmholtz eq.
@@ -199,10 +199,13 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
  * Setup
  */
 void SWE_Plane_TS_l_cn_na_sl_nd_settls::setup(
-		int i_with_nonlinear
+		int i_with_linear_div_only
 )
 {
-	with_nonlinear = i_with_nonlinear;
+	with_linear_div_only = i_with_linear_div_only;
+
+	if (simVars.disc.use_staggering)
+		FatalError("SWE_Plane_TS_l_cn_na_sl_nd_settls: Staggering not supported for l_cn_na_sl_nd_settls");
 
 	// Setup sampler for future interpolations
 	sampler2D.setup(simVars.sim.domain_size, op.planeDataConfig);
@@ -213,19 +216,19 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::setup(
 
 	PlaneData tmp_x(op.planeDataConfig);
 	tmp_x.physical_update_lambda_array_indices(
-		[&](int i, int j, double &io_data)
-		{
-			io_data = ((double)i)*simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
-		},
-		false
+			[&](int i, int j, double &io_data)
+			{
+		io_data = ((double)i)*simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
+			},
+			false
 	);
 	PlaneData tmp_y(op.planeDataConfig);
 	tmp_y.physical_update_lambda_array_indices(
-		[&](int i, int j, double &io_data)
-		{
-			io_data = ((double)j)*simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
-		},
-		false
+			[&](int i, int j, double &io_data)
+			{
+		io_data = ((double)j)*simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
+			},
+			false
 	);
 
 	//pectral  Initialize arrival points with h position
@@ -247,18 +250,18 @@ SWE_Plane_TS_l_cn_na_sl_nd_settls::SWE_Plane_TS_l_cn_na_sl_nd_settls(
 		SimulationVariables &i_simVars,
 		PlaneOperators &i_op
 )	:
-		simVars(i_simVars),
-		op(i_op),
+				simVars(i_simVars),
+				op(i_op),
 
-		h_prev(i_op.planeDataConfig),
-		u_prev(i_op.planeDataConfig),
-		v_prev(i_op.planeDataConfig),
+				h_prev(i_op.planeDataConfig),
+				u_prev(i_op.planeDataConfig),
+				v_prev(i_op.planeDataConfig),
 
-		posx_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
-		posy_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
+				posx_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
+				posy_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
 
-		posx_d(i_op.planeDataConfig->physical_array_data_number_of_elements),
-		posy_d(i_op.planeDataConfig->physical_array_data_number_of_elements)
+				posx_d(i_op.planeDataConfig->physical_array_data_number_of_elements),
+				posy_d(i_op.planeDataConfig->physical_array_data_number_of_elements)
 {
 }
 

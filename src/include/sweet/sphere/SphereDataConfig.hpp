@@ -379,6 +379,8 @@ public:
 
 	)
 	{
+		cleanup();
+
 		shtns_verbose(0);			// displays informations during initialization.
 
 		// enable multi-threaded transforms (if supported).
@@ -423,6 +425,8 @@ public:
 			int *o_nlat		/// physical resolution along latitude
 	)
 	{
+		cleanup();
+
 		shtns_verbose(0);			// displays informations during initialization.
 #if SWEET_THREADING
 		shtns_use_threads(0);	// automatically choose number of threads
@@ -470,6 +474,8 @@ public:
 			int i_nmax		/// latitude modes
 	)
 	{
+		cleanup();
+
 		shtns_verbose(0);			// displays informations during initialization.
 #if SWEET_THREADING
 		shtns_use_threads(0);	// automatically choose number of threads
@@ -513,6 +519,8 @@ public:
 			int io_spectral_modes[2]
 	)
 	{
+		cleanup();
+
 //		std::cout << io_physical_res[0] << ", " << io_physical_res[1] << std::endl;
 //		std::cout << io_spectral_modes[0] << ", " << io_spectral_modes[1] << std::endl;
 
@@ -571,6 +579,8 @@ public:
 			int i_additional_modes_latitude
 	)
 	{
+		cleanup();
+
 		assert(shtns == nullptr);
 
 		setupAutoPhysicalSpace(
@@ -583,7 +593,7 @@ public:
 
 
 
-	void shutdown()
+	void cleanup()
 	{
 		// check if sphereDataConfig was initialized
 		if (shtns == nullptr)
@@ -611,7 +621,7 @@ public:
 
 	~SphereDataConfig()
 	{
-		shutdown();
+		cleanup();
 	}
 };
 

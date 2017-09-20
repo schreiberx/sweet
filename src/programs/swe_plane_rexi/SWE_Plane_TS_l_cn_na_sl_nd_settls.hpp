@@ -29,7 +29,7 @@ class SWE_Plane_TS_l_cn_na_sl_nd_settls	: public SWE_Plane_TS_interface
 	SimulationVariables &simVars;
 	PlaneOperators &op;
 
-	int with_nonlinear;
+	int with_linear_div_only;
 
 	PlaneDataSemiLagrangian semiLagrangian;
 	PlaneDataSampler sampler2D;
@@ -84,4 +84,4 @@ public:
 	virtual ~SWE_Plane_TS_l_cn_na_sl_nd_settls();
 };
 
-#endif /* SRC_PROGRAMS_SWE_Plane_TS_l_cn_na_sl_nd_settls_HPP_ */
+#endif /* SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_L_CN_NA_SL_ND_SETTLS_HPP_ */

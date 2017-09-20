@@ -14,7 +14,7 @@
 #include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
 
 /*
- * This is a "generalized" Crank-Nicolson scheme for linear equation
+ * This is a Crank-Nicolson scheme for linear equation
  *
  * 1) Takes an explicit 1/2 step (or whatever controlled by crank_nicolson_damping_factor) of explicit euler
  * 2) Then, takes an implicit 1/2 step (or whatever controlled by crank_nicolson_damping_factor) with and implicit euler scheme
@@ -79,7 +79,7 @@ void SWE_Plane_TS_l_cn::setup(
 )
 {
 	//Force 1st order implicit and explicit schemes to achieve the 2nd order CN
-	timestepping_order_linear = 1; //i_l_order;
+	//timestepping_order_linear = 1; //i_l_order;
 
 	//if (timestepping_order_linear != 1)
 	//{

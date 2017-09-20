@@ -156,6 +156,7 @@ public:
 
 			o_v.spectral_set_zero();
 
+#if 0
 			if (io_simVars.timecontrol.current_simulation_time == 0)
 			{
 				double h_max_error, u_max_error, v_max_error;
@@ -177,6 +178,7 @@ public:
 				std::cout << "u_max_error for geostrophic balance case: " << u_max_error << std::endl;
 				std::cout << "v_max_error for geostrophic balance case: " << v_max_error << std::endl;
 			}
+#endif
 		}
 		else if (io_simVars.setup.benchmark_scenario_id == 21)
 		{

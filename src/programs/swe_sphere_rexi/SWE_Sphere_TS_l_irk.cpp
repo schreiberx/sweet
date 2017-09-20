@@ -33,6 +33,9 @@ void SWE_Sphere_TS_l_irk::setup(
 		int i_use_extended_modes
 )
 {
+	timestep_size = i_timestep_size;
+	use_f_sphere = simVars.sim.f_sphere;
+
 	if (i_timestep_order != 1)
 		FatalError("Only 1st order IRK supported so far!");
 
@@ -54,9 +57,6 @@ void SWE_Sphere_TS_l_irk::setup(
 		sphereDataConfigSolver = &sphereDataConfigSolverAddedModes;
 	}
 
-	timestep_size = i_timestep_size;
-	use_f_sphere = simVars.sim.f_sphere;
-
 	if (use_f_sphere)
 		f0 = simVars.sim.f0;
 	else
@@ -70,14 +70,12 @@ void SWE_Sphere_TS_l_irk::setup(
 
 	gh = simVars.sim.gravitation*simVars.sim.h0;
 
-
 	update_coefficients();
 }
 
 
 void SWE_Sphere_TS_l_irk::update_coefficients()
 {
-
 	if (!use_f_sphere)
 	{
 		sphSolverPhi.setup(sphereDataConfigSolver, 4);
@@ -116,6 +114,15 @@ void SWE_Sphere_TS_l_irk::run_timestep(
 {
 	if (i_fixed_dt <= 0)
 		FatalError("Only constant time step size allowed");
+
+	if (std::abs(timestep_size - i_fixed_dt)/std::max(timestep_size, i_fixed_dt) > 1e-10)
+	{
+		timestep_size = i_fixed_dt;
+
+		std::cout << "Warning: Reducing time step size from " << i_fixed_dt << " to " << timestep_size << std::endl;
+
+		update_coefficients();
+	}
 
 	SphereData phi0 = io_phi;
 	SphereData vort0 = io_vort;

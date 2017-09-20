@@ -42,7 +42,7 @@ void run_tests()
 	SphereOperators op(sphereDataConfig, 1);
 
 
-#if 1
+#if 0
 	if (true)
 	{
 		std::cout << "****************************************" << std::endl;
@@ -122,6 +122,7 @@ void run_tests()
 				ErrorCheck::check(lhs, zero, "div freeness Robert formulation", error_threshold);
 			}
 
+#if 0
 			{
 				// LHS = div(U*phi)
 				SphereData lhs = op.robert_div(u*phi, v*phi);
@@ -131,6 +132,7 @@ void run_tests()
 
 				ErrorCheck::check(lhs, rhs, "TEST div(U*phi) with Robert formulation", error_threshold*10e4);
 			}
+#endif
 		}
 	}
 #endif
@@ -227,7 +229,7 @@ void run_tests()
 #endif
 
 
-#if 1
+#if 0
 	if (true)
 	{
 		// 1.0/sqrt(1.0-mu^2)
@@ -261,7 +263,7 @@ void run_tests()
 #endif
 
 
-#if 1
+#if 0
 	if (true)
 	{
 		// 1.0/sqrt(1.0-mu^2)
@@ -284,7 +286,7 @@ void run_tests()
 #endif
 
 
-#if 1
+#if 0
 	if (true)
 	{
 		double u0 = 123;
@@ -428,7 +430,7 @@ void run_tests()
 #endif
 
 
-#if 1
+#if 0
 
 	if (true)
 	{
@@ -481,7 +483,7 @@ void run_tests()
 #endif
 
 
-#if 1
+#if 0
 	if (true)
 	{
 		double lambda_c = 3.0*M_PI/2.0;
@@ -584,6 +586,7 @@ void run_tests()
 
 
 
+#if 0
 	if (true)
 	{
 		SphereTestSolutions_SPH testSolutionsSph(2,1);
@@ -612,8 +615,9 @@ void run_tests()
 		if (error_max > error_threshold)
 			FatalError("ERROR THRESHOLD EXCEEDED!");
 	}
+#endif
 
-#if 1
+#if 0
 	if (true)
 	{
 		SphereTestSolutions_Gaussian testSolutions;
@@ -768,6 +772,7 @@ void run_tests()
 		}
 
 
+#if 0
 		if (true)
 		{
 			// d/d mu
@@ -785,6 +790,7 @@ void run_tests()
 
 			ErrorCheck::check(h, result, "TEST DIFF LAT MU", error_threshold*1e2, false, true);
 		}
+#endif
 
 		if (true)
 		{
@@ -824,6 +830,7 @@ void run_tests()
 		}
 
 
+#if 0
 		if (true)
 		{
 			// one_minus_mu_squared_diff_lat
@@ -840,6 +847,7 @@ void run_tests()
 
 			ErrorCheck::check(h, result, "TEST (1-mu*mu)*d/dmu");
 		}
+#endif
 
 
 		if (true)

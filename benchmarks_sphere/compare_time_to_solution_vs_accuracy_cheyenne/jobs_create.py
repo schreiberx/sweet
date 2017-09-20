@@ -78,15 +78,25 @@ p.stability_checks = 0
 
 #
 # Threading accross all REXI terms
-#
-rexi_thread_par = True
-if rexi_thread_par:
-	# OMP parallel for over REXI terms
+
+if True:
 	p.compile.threading = 'off'
-	p.compile.rexi_thread_parallel_sum = 'enable'
-else:
-	p.compile.threading = 'omp'
 	p.compile.rexi_thread_parallel_sum = 'disable'
+
+else:
+	#
+	# WARNING: rexi_thread_par does not work yet!!!
+	# MPI Ranks are clashing onthe same node with OpenMP Threads!
+	#rexi_thread_par = True
+	rexi_thread_par = False
+
+	if rexi_thread_par:
+		# OMP parallel for over REXI terms
+		p.compile.threading = 'off'
+		p.compile.rexi_thread_parallel_sum = 'enable'
+	else:
+		p.compile.threading = 'omp'
+		p.compile.rexi_thread_parallel_sum = 'disable'
 
 
 #
@@ -100,6 +110,8 @@ p.runtime.rexi_ci_sy = 50
 p.runtime.rexi_ci_mu = 0
 p.runtime.rexi_ci_primitive = 'circle'
 
+#p.compile.debug_symbols = False
+
 
 #p.runtime.g = 1
 #p.runtime.f = 1
@@ -109,17 +121,22 @@ p.runtime.rexi_ci_primitive = 'circle'
 p.runtime.viscosity = 0.0
 
 
-timestep_size_reference = 2
-timestep_sizes = [timestep_size_reference*(2.0**i) for i in range(0, 11)]
 
-p.runtime.simtime = timestep_sizes[-1] #timestep_size_reference*2000
+timestep_size_reference = 100
+#timestep_sizes = [timestep_size_reference*(2.0**i) for i in range(0, 11)]
+timestep_sizes = [timestep_size_reference*(2**i) for i in range(0, 5)]
+
+#p.runtime.simtime = timestep_sizes[-1]*10 #timestep_size_reference*2000
+p.runtime.simtime = 100*(2**5)*10
 p.runtime.output_timestep_size = p.runtime.simtime
+#p.runtime.output_timestep_size = -1
 
 
 # Groups to execute, see below
 # l: linear
 # ln: linear and nonlinear
-groups = ['l1', 'l2', 'ln1', 'ln2', 'ln4']
+#groups = ['l1', 'l2', 'ln1', 'ln2', 'ln4']
+groups = ['ln2']
 
 
 #
@@ -169,7 +186,6 @@ if __name__ == "__main__":
 					for max_error in [1e-6, 1e-8, 1e-10, 1e-12]:
 						ts_methods.append(['l_rexi',	0,	0,	0, {'rexi_method': 'file', 'file_test_abs':testabs, 'file_max_error':max_error}])
 
-
 		# 2nd order linear
 		if group == 'l2':
 			ts_methods = [
@@ -187,7 +203,7 @@ if __name__ == "__main__":
 				['l_irk_n_erk',		1,	1,	0],
 				['ln_erk',		1,	1,	0],
 				['l_rexi_n_erk',	1,	1,	0],
-				['ln_etdrk',		1,	1,	0],
+				['l_rexi_n_etdrk',	1,	1,	0],
 			]
 
 		# 2nd order nonlinear
@@ -196,26 +212,17 @@ if __name__ == "__main__":
 				['ln_erk',		4,	4,	0],	# reference solution
 				#['l_irk_n_erk',		2,	2,	0],
 				#['l_cn_n_erk',		2,	2,	0],
-				#['l_erk_n_erk',		2,	2,	0],
+				['l_erk_n_erk',		2,	2,	0],
 				['ln_erk',		2,	2,	0],
-	#			['l_rexi_n_erk',	2,	2,	0],
-				#['ln_etdrk',		2,	2,	0],
+				['l_rexi_n_etdrk',	2,	2,	0],
+				['lg_rexi_lf_n_etdrk',	2,	2,	0],
 			]
-
-			if True:
-				#for N in [64, 96, 128]:
-				if True:
-					N = 64
-					#for r in [25, 50, 75, 100]:
-					if True:
-						r = 50
-						ts_methods.append(['ln_etdrk',	2,	2,	0, {'rexi_method': 'ci', 'ci_n':N, 'ci_sx':r, 'ci_sy':r}])
 
 		# 4th order nonlinear
 		if group == 'ln4':
 			ts_methods = [
 				['ln_erk',		4,	4,	0],	# reference solution
-				['ln_etdrk',		4,	4,	0],
+				['l_rexi_n_etdrk',		4,	4,	0],
 				['ln_erk',		4,	4,	0],
 			]
 
@@ -238,6 +245,7 @@ if __name__ == "__main__":
 		# Reference solution
 		#
 		if True:
+		#if False:
 			tsm = ts_methods[0]
 			p.runtime.timestep_size  = timestep_sizes[0]
 
@@ -273,11 +281,42 @@ if __name__ == "__main__":
 					p.runtime.load_from_dict(tsm[4])
 
 				if 'etdrk' in p.runtime.timestepping_method:
-					p.cluster.par_time_cores = p.runtime.rexi_ci_n
+
+					c = 1
+					#if True:
+					if False:
+						range_cores_single_socket = [1, 2, 4, 8, 12, 16, 18]
+						range_cores_node = range_cores_single_socket + [18+i for i in range_cores_single_socket]
+					else:
+						range_cores_node = [18,36]
+
+					range_cores = range_cores_node + [36*i for i in range(2, p.cluster.total_max_nodes)]
+
+					if p.runtime.rexi_ci_n not in range_cores:
+						range_cores.append(p.runtime.rexi_ci_n)
+					range_cores.sort()
+
+					if True:
+						for N in [64, 128]:
+							#for r in [25, 50, 75]:
+							# Everything starting and above 40 results in significant errors
+							for r in [20, 30]:
+								p.runtime.load_from_dict({'rexi_method': 'ci', 'ci_n':N, 'ci_sx':r, 'ci_sy':r, 'half_poles':0})
+
+								for p.cluster.par_time_cores in range_cores:
+
+									p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
+
+									if p.cluster.par_time_cores >= p.runtime.rexi_ci_n:
+										break
+
+#					for p.cluster.par_time_cores in range_cores:
+#						p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
+
 				else:
 					p.cluster.par_time_cores = 1
 
-				p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
+					p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
 
 
 

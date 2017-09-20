@@ -15,12 +15,12 @@
 #include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
 #include <sweet/plane/Convert_PlaneDataComplex_to_PlaneData.hpp>
 
-#define FOOBAR123 0
 
-#if FOOBAR123
-std::vector<std::complex<double>> x_rexi_alpha;
-std::vector<std::complex<double>> x_rexi_beta_re;
+#if SWEET_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+#include <omp.h>
 #endif
+
+
 
 void SWE_Plane_TS_l_rexi::setup(
 	REXI_SimulationVariables &i_rexi,
@@ -177,42 +177,6 @@ void SWE_Plane_TS_l_rexi::setup(
 
 
 
-#if 0
-void spectral_zero_nyquist_phase(PlaneData &i_planeData)
-{
-	/*
-	 *
-	 */
-	for (int j = 0; j < i_planeData.planeDataConfig->spectral_data_size[1]; j++)
-	{
-		i_planeData.p_spectral_get_nonconstref(j, i_planeData.planeDataConfig->spectral_data_size[0]-1).real(0);
-		i_planeData.p_spectral_get_nonconstref(j, i_planeData.planeDataConfig->spectral_data_size[0]-1).imag(0);
-	}
-
-	for (int i = 0; i < i_planeData.planeDataConfig->spectral_data_size[0]-1; i++)
-	{
-		i_planeData.p_spectral_get_nonconstref(i_planeData.planeDataConfig->spectral_data_size[1]/2, i).real(0);
-		i_planeData.p_spectral_get_nonconstref(i_planeData.planeDataConfig->spectral_data_size[1]/2, i).imag(0);
-	}
-}
-
-
-
-void spectral_half_nyquist_phase(PlaneData &i_planeData)
-{
-	/*
-	 *
-	 */
-	for (int j = 0; j < i_planeData.planeDataConfig->spectral_data_size[1]; j++)
-		i_planeData.p_spectral_get_nonconstref(j, i_planeData.planeDataConfig->spectral_data_size[0]-1) *= 0.5;
-
-	for (int i = 0; i < i_planeData.planeDataConfig->spectral_data_size[0]-1; i++)
-		i_planeData.p_spectral_get_nonconstref(i_planeData.planeDataConfig->spectral_data_size[1]/2, i) *= 0.5;
-}
-#endif
-
-
-
 void SWE_Plane_TS_l_rexi::run_timestep(
 		const PlaneData &i_h_pert,	///< prognostic variables
 		const PlaneData &i_u,	///< prognostic variables
@@ -226,128 +190,8 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 		double i_simulation_timestamp
 )
 {
-#if !FOOBAR123
-
 	/// WARNING: i_h_pert might be identical to o_h_pert
 	run_timestep_real(i_h_pert, i_u, i_v, o_h_pert, o_u, o_v, i_dt, i_simulation_timestamp);
-
-#elif 1
-
-#if 0
-	op.diff_c_x.print_physicalData_zeroNumZero();
-	std::cout << std::endl;
-	op.diff_c_y.print_physicalData_zeroNumZero();
-	exit(1);
-#endif
-
-	PlaneData tmp_h_pert = i_h_pert;
-	PlaneData tmp_u = i_u;
-	PlaneData tmp_v = i_v;
-
-	run_timestep_real(i_h_pert, i_u, i_v, o_h_pert, o_u, o_v, i_dt, i_simulation_timestamp);
-
-
-	PlaneData x_o_h_pert(planeDataConfig);
-	PlaneData x_o_u(planeDataConfig);
-	PlaneData x_o_v(planeDataConfig);
-
-	std::swap(rexi_alpha, x_rexi_alpha);
-	std::swap(rexi_beta, x_rexi_beta_re);
-
-	run_timestep_real(tmp_h_pert, tmp_u, tmp_v, x_o_h_pert, x_o_u, x_o_v, i_dt, i_simulation_timestamp);
-
-	std::swap(rexi_alpha, x_rexi_alpha);
-	std::swap(rexi_beta, x_rexi_beta_re);
-
-	PlaneData diff_o_h_pert = x_o_h_pert - o_h_pert;
-	PlaneData diff_o_u = x_o_u - o_u;
-	PlaneData diff_o_v = x_o_v - o_v;
-
-#if 1
-	std::cout << std::endl;
-	std::cout << std::endl;
-	std::cout << std::endl;
-	std::cout << std::endl;
-
-//	std::cout << rexi_alpha.size() << ", " << x_rexi_alpha.size() << std::endl;
-	std::cout << "tmp_h_pert" << std::endl;
-	tmp_h_pert.print_spectralData_zeroNumZero(1e-12);
-	std::cout << "prog_h" << std::endl;
-	diff_o_h_pert.print_spectralData_zeroNumZero(1e-12);
-	std::cout << "u" << std::endl;
-	diff_o_u.print_spectralData_zeroNumZero(1e-12);
-	std::cout << "v" << std::endl;
-	diff_o_v.print_spectralData_zeroNumZero(1e-12);
-//	exit(1);
-#endif
-
-#else
-
-	PlaneData tmp_h_pert = i_h_pert;
-	PlaneData tmp_u = i_u;
-	PlaneData tmp_v = i_v;
-
-	run_timestep_real(i_h_pert, i_u, i_v, o_h_pert, o_u, o_v, i_dt, i_simulation_timestamp);
-
-	static int i = 0;
-
-	static PlaneData x_i_h_pert(planeDataConfig);
-	static PlaneData x_i_u(planeDataConfig);
-	static PlaneData x_i_v(planeDataConfig);
-
-	static PlaneData x_o_h_pert(planeDataConfig);
-	static PlaneData x_o_u(planeDataConfig);
-	static PlaneData x_o_v(planeDataConfig);
-
-	if (i == 0)
-	{
-		x_i_h_pert = tmp_h_pert;
-		x_i_u = tmp_u;
-		x_i_v = tmp_v;
-
-//		i = 1;
-	}
-
-	std::swap(rexi_alpha, x_rexi_alpha);
-	std::swap(rexi_beta, x_rexi_beta_re);
-
-	run_timestep_real(x_i_h_pert, x_i_u, x_i_v, x_o_h_pert, x_o_u, x_o_v, i_dt, i_simulation_timestamp);
-
-	std::swap(rexi_alpha, x_rexi_alpha);
-	std::swap(rexi_beta, x_rexi_beta_re);
-
-	x_i_h_pert = o_h_pert;
-	x_i_u = o_u;
-	x_i_v = o_v;
-
-	PlaneData diff_o_h_pert = x_o_h_pert - o_h_pert;
-	PlaneData diff_o_u = x_o_u - o_u;
-	PlaneData diff_o_v = x_o_v - o_v;
-
-#if 0
-	std::cout << std::endl;
-	std::cout << std::endl;
-	std::cout << std::endl;
-	std::cout << std::endl;
-	tmp_h_pert.print_spectralData_zeroNumZero();
-	tmp_h_pert.request_data_physical();
-	std::cout << std::endl;
-	tmp_h_pert.print_spectralData_zeroNumZero();
-#endif
-
-#if 0
-//	std::cout << rexi_alpha.size() << ", " << x_rexi_alpha.size() << std::endl;
-	std::cout << "i_prog_h" << std::endl;
-	i_h_pert.print_spectralData_zeroNumZero(1e-12);
-	std::cout << "prog_h" << std::endl;
-	diff_o_h_pert.print_spectralData_zeroNumZero(1e-12);
-	std::cout << "u" << std::endl;
-	diff_o_u.print_spectralData_zeroNumZero(1e-12);
-	std::cout << "v" << std::endl;
-	diff_o_v.print_spectralData_zeroNumZero(1e-12);
-//	exit(1);
-#endif
-#endif
 }
 
 

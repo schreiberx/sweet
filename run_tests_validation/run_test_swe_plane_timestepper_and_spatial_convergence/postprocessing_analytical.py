@@ -57,7 +57,7 @@ for group_info in groups:
 	print("Group to be tested: "+str(group)+" "+str(conv_order))
 	print("")
 	#List of output files (all methods in group)
-	outputs = glob.glob("script_"+group+"_bench*.out")
+	outputs = glob.glob("script_"+group+"_b*.out")
 	outputs.sort()
 			
 	#
@@ -67,7 +67,7 @@ for group_info in groups:
 	prev_test_name = ""
 	for output in outputs:
 		# Reset convergence test?
-		pos = output.find("_phys")
+		pos = output.find("_N")
 		test_name = output[0:pos]
 		if test_name != prev_test_name:
 			test_group_methods.append(test_name)

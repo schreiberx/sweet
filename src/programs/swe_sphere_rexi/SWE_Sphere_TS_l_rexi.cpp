@@ -41,6 +41,7 @@ SWE_Sphere_TS_l_rexi::SWE_Sphere_TS_l_rexi(
 		SphereOperators &i_op
 )	:
 	simVars(i_simVars),
+	simCoeffs(simVars.sim),
 	op(i_op),
 	sphereDataConfig(i_op.sphereDataConfig),
 	sphereDataConfigSolver(nullptr)
@@ -153,9 +154,12 @@ void SWE_Sphere_TS_l_rexi::setup(
 		REXI_SimulationVariables &i_rexi,
 		const std::string &i_function_name,
 		double i_timestep_size,
-		bool i_use_f_sphere
+		bool i_use_f_sphere,
+		bool i_no_coriolis
 )
 {
+	no_coriolis = i_no_coriolis;
+
 	rexiSimVars = &i_rexi;
 
 	reset();
@@ -316,12 +320,13 @@ void SWE_Sphere_TS_l_rexi::update_coefficients()
 							sphereDataConfigSolver,
 							perThreadVars[i]->alpha[thread_local_idx],
 							perThreadVars[i]->beta_re[thread_local_idx],
-							simVars.sim.earth_radius,
-							simVars.sim.coriolis_omega,
-							simVars.sim.f0,
-							simVars.sim.h0 * simVars.sim.gravitation,
+							simCoeffs.earth_radius,
+							simCoeffs.coriolis_omega,
+							simCoeffs.f0,
+							simCoeffs.h0 * simCoeffs.gravitation,
 							timestep_size,
-							use_f_sphere
+							use_f_sphere,
+							no_coriolis
 						);
 				}
 			}
@@ -378,7 +383,9 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 	if (std::abs(timestep_size - i_fixed_dt)/std::max(timestep_size, i_fixed_dt) > 1e-10)
 	{
 		timestep_size = i_fixed_dt;
+
 		std::cout << "Warning: Reducing time step size from " << i_fixed_dt << " to " << timestep_size << std::endl;
+
 		update_coefficients();
 	}
 
@@ -503,13 +510,14 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 						alpha,
 						beta_re,
 
-						simVars.sim.earth_radius,
-						simVars.sim.coriolis_omega,
-						simVars.sim.f0,
-						simVars.sim.h0*simVars.sim.gravitation,
+						simCoeffs.earth_radius,
+						simCoeffs.coriolis_omega,
+						simCoeffs.f0,
+						simCoeffs.h0*simCoeffs.gravitation,
 						i_fixed_dt,
 
-						use_f_sphere
+						use_f_sphere,
+						no_coriolis
 				);
 
 				rexiSPHRobert.solve_vectorinvariant_progphivortdiv(
