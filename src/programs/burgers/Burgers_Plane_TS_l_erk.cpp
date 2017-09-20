@@ -70,9 +70,6 @@ void Burgers_Plane_TS_l_erk::run_timestep(
 #endif
 	tmp.physical_set_all(0);
 
-	// setup dummy data
-	tmp.physical_set_all(0);
-
 	// run standard Runge Kutta
 	timestepping_rk.run_timestep(
 		this,

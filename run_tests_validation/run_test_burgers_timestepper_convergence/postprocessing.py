@@ -17,10 +17,7 @@ groups = [
 
 	['ln1', 1],
 	['ln2', 2],
-	['ln4', 4],
-
-	#['ln1test', 1],
-	#['ln2space', 2]
+	['ln4', 4]
 ]
 
 for group_info in groups:
@@ -28,7 +25,7 @@ for group_info in groups:
 	conv_order = group_info[1]
 
 	ref_dir=""
-	for i in glob.glob("script_"+group+"_ref*"):
+	for i in glob.glob("script_burgers_"+group+"_ref*"):
 		if os.path.isdir(i):
 			ref_dir=i
 			break
@@ -39,7 +36,7 @@ for group_info in groups:
 	prev_conv_value = 0.0
 
 	print("SIMNAME\tL1\tL2\tLinf\tCONV")
-	directories = glob.glob("script_"+group+"_*")
+	directories = glob.glob("script_burgers_"+group+"_*")
 	directories.sort()
 
 	prev_test_name = ""

@@ -384,18 +384,48 @@ public:
 		if (simVars.misc.output_file_name_prefix.size() > 0)
 		{
 			write_file(prog_u, "prog_u");
-			write_file(prog_v, "prog_v");
+			//write_file(prog_v, "prog_v");
+
+			prog_u.request_data_spectral();
+
+			char buffer[1024];
+			sprintf(buffer,"output_prog_u_spec_%06.8f",simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
+
+			std::ofstream file(buffer, std::ios_base::trunc);
+			file << std::setprecision(12);
+			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
+			{
+				const std::complex<double> &value = prog_u.spectral_get(0, x);
+				file << "(" << x << ", "<< value.real() << ", " << value.imag() << ")\t";
+			}
+			file << std::endl;
+			file.close();
 		}
 
 		if (simVars.misc.verbosity > 0)
 		{
 			update_diagnostics();
-			compute_errors(prog_u,prog_v);
+			PlaneData tmp(planeDataConfig);
+			tmp = compute_errors(prog_u,prog_v);
+
+			tmp.request_data_spectral();
+
+			char buffer[1024];
+			sprintf(buffer,"output_error_spec_%06.8f",simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
+
+			std::ofstream file(buffer, std::ios_base::trunc);
+			file << std::setprecision(12);
+			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
+			{
+				const std::complex<double> &value = tmp.spectral_get(0, x);
+				file << "(" << x << ", "<< value.real() << ", " << value.imag() << ")\t";
+			}
+			file << std::endl;
+			file.close();
 
 			std::stringstream header;
 			std::stringstream rows;
 
-			//rows << std::setprecision(8);
 			rows << std::setprecision(12);
 
 			// Prefix
@@ -447,7 +477,7 @@ public:
 
 
 public:
-	void compute_errors(
+	PlaneData compute_errors(
          const PlaneData &i_planeData_u,
          const PlaneData &i_planeData_v
 	)
@@ -533,6 +563,8 @@ public:
 
 			benchmark.benchmark_analytical_error_maxabs_u = (ts_u-u).reduce_maxAbs();
 			benchmark.benchmark_analytical_error_maxabs_v = (ts_v-v).reduce_maxAbs();
+
+			return ts_u-u;
 		}
 	}
 

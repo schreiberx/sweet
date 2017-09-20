@@ -42,6 +42,9 @@ void Burgers_Plane_TS_ln_imex_forcing::run_timestep(
 	rhs_u += - 0.5*t*(u*op.diff_c_x(u)+v*op.diff_c_y(u)) + 0.5*t*f;
 	rhs_v += - 0.5*t*(u*op.diff_c_x(v)+v*op.diff_c_y(v));
 
+	//std::cout << std::endl << std::endl << "rhs_u" << std::endl;
+	//rhs_u.print_physicalArrayData();
+
 	if (simVars.disc.use_spectral_basis_diffs) //spectral
 	{
 
@@ -50,10 +53,16 @@ void Burgers_Plane_TS_ln_imex_forcing::run_timestep(
         PlaneData u1 = rhs_u.spectral_div_element_wise(lhs);
         PlaneData v1 = rhs_v.spectral_div_element_wise(lhs);
 
+        //std::cout << std::endl << std::endl << "u1" << std::endl;
+        //u1.print_physicalArrayData();
+
         io_u = u + t*simVars.sim.viscosity*(op.diff2_c_x(u1)+op.diff2_c_y(u1))
               - t*(u1*op.diff_c_x(u1)+v1*op.diff_c_y(u1)) +ff*t;
         io_v = v + t*simVars.sim.viscosity*(op.diff2_c_x(v1)+op.diff2_c_y(v1))
               - t*(u1*op.diff_c_x(v1)+v1*op.diff_c_y(v1));
+
+        //std::cout << std::endl << std::endl << "io_u" << std::endl;
+        //io_u.print_physicalArrayData();
 
 	} else { //Jacobi
 		FatalError("NOT available");

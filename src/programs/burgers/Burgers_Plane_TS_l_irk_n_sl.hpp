@@ -17,6 +17,8 @@
 #include <sweet/plane/PlaneDataSemiLagrangian.hpp>
 #include "Burgers_Plane_TS_interface.hpp"
 
+#include "Burgers_Plane_TS_l_irk.hpp"
+
 
 
 class Burgers_Plane_TS_l_irk_n_sl	: public Burgers_Plane_TS_interface
@@ -32,6 +34,8 @@ class Burgers_Plane_TS_l_irk_n_sl	: public Burgers_Plane_TS_interface
 
 	// Departure points for semi-lag
 	ScalarDataArray posx_d, posy_d;
+
+	Burgers_Plane_TS_l_irk ts_l_irk;
 
 public:
 	Burgers_Plane_TS_l_irk_n_sl(
