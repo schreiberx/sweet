@@ -105,8 +105,6 @@ cd "$BASEDIR"
 		content += "\n"
 		content += """
 
-# TODO: Fix this if OpenMP threading is used
-export OMP_NUM_THREADS=1
 
 echo "$EXEC"
 """+mpiexec_prefix+"""$EXEC || exit 1
