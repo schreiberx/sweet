@@ -20,6 +20,7 @@
 #include "Burgers_Plane_TS_ln_cole_hopf.hpp"
 #include "Burgers_Plane_TS_l_direct.hpp"
 #include "Burgers_Plane_TS_l_erk.hpp"
+#include "Burgers_Plane_TS_l_irk.hpp"
 
 
 
@@ -39,6 +40,7 @@ public:
 	Burgers_Plane_TS_ln_cole_hopf *ln_cole_hopf = nullptr;
 	Burgers_Plane_TS_l_direct *l_direct = nullptr;
 	Burgers_Plane_TS_l_erk *l_erk = nullptr;
+	Burgers_Plane_TS_l_irk *l_irk = nullptr;
 
 	Burgers_Plane_TS_interface *master = nullptr;
 
@@ -108,6 +110,12 @@ public:
 			l_erk = nullptr;
 		}
 
+		if (l_irk != nullptr)
+		{
+			delete l_irk;
+			l_irk = nullptr;
+		}
+
 	}
 
 
@@ -126,10 +134,11 @@ public:
 		if (i_simVars.sim.CFL >= 0)
 			FatalError("Only constant time step size supported with Burgers' equation, use negative CFL to set constant time step size");
 
-		/*
 		/// Always allocate analytical solution
 		l_direct = new Burgers_Plane_TS_l_direct(i_simVars, i_op);
-		*/
+		l_direct->setup();
+		ln_cole_hopf = new Burgers_Plane_TS_ln_cole_hopf(i_simVars, i_op);
+		ln_cole_hopf->setup();
 
 		if (i_timestepping_method == "ln_erk")
 		{
@@ -201,10 +210,29 @@ public:
 
 			master = &(Burgers_Plane_TS_interface&)*l_erk;
 		}
+		else if (i_timestepping_method == "l_irk")
+		{
+			l_irk= new Burgers_Plane_TS_l_irk(i_simVars, i_op);
+			l_irk->setup(i_timestepping_order);
+
+			master = &(Burgers_Plane_TS_interface&)*l_irk;
+		}
 		//
 		else
 		{
-			std::cout << i_timestepping_method << std::endl;
+			std::cout << "Unknown method: " << i_timestepping_method << std::endl;
+			std::cout << "Available --timestepping-method :"  << std::endl;
+			std::cout << "      l_direct           : Linear: analytical solution to diffusion operator"  << std::endl;
+			std::cout << "      l_erk              : Linear: explicit RK scheme"  << std::endl;
+			std::cout << "      l_irk              : Linear: implicit RK scheme"  << std::endl;
+			std::cout << "      ln_cole_hopf       : Non-linear: analytic solution to Burgers' equation"  << std::endl;
+			std::cout << "      ln_erk             : Non-linear: explicit RK scheme"  << std::endl;
+			std::cout << "      ln_erk_forcing     : Non-linear: explicit RK scheme with forcing term"  << std::endl;
+			std::cout << "      ln_imex            : Non-linear: implicit-explicit RK scheme"  << std::endl;
+			std::cout << "      ln_imex_forcing    : Non-linear: implicit-explicit RK scheme with forcing term"  << std::endl;
+			std::cout << "      l_irk_n_sl         : Non-linear: implicit RK on semi-Lagrangian formulation"  << std::endl;
+			std::cout << "      l_irk_n_sl_forcing : Non-linear: implicit RK on semi-Lagrangian formulation with forcing"  << std::endl;
+			std::cout << "      ln_adomian         : Non-linear: Adomian decomposition method"  << std::endl;
 			FatalError("No valid --timestepping-method provided");
 		}
 	}

@@ -6,6 +6,7 @@ THISDIR=`pwd`
 cd "../../"
 
 #source ./local_software/env_vars.sh || exit 1
+source ~/.bashrc
 sweetenv
 
 cd "$THISDIR"

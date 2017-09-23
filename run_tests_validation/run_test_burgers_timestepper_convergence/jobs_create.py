@@ -19,7 +19,7 @@ class default_params:
 
 	plane_or_sphere = 'plane'
 
-#	mode_res = 32
+	#	mode_res = 32
 	mode_res = -1
 	phys_res = -1
 
@@ -37,14 +37,60 @@ class default_params:
 
 	normal_mode_analysis = 0
 
+	rexi_method = 'terry'
+	rexi_file_n = 0
+	rexi_file_h = 0
+	rexi_file_test_abs = 0
+	rexi_file_max_error = 0
+	rexi_file_faf_dir = None
+
 	rexi_m = 0
 	rexi_l = 11
 	rexi_h = 0.15
+
 	rexi_half_poles = 1
 	rexi_extended_modes = 0
 	rexi_normalization = 0
-	rexi_sphere_preallocation = 1
+	rexi_sphere_preallocation = 0
 	rexi_use_direct_solution = 0
+
+
+	def load_rexi_from_dict(self,d):
+		if 'm' in d:
+			self.rexi_m = d['m']
+
+		if 'h' in d:
+			self.rexi_h = d['h']
+
+		if 'half_poles' in d:
+			self.rexi_half_poles = d['half_poles']
+
+		if 'extended_modes' in d:
+			self.rexi_extended_modes = d['extended_modes']
+
+		if 'normalization' in d:
+			self.rexi_normalization = d['normalization']
+
+		if 'sphere_preallocation' in d:
+			self.rexi_sphere_preallocation = d['sphere_preallocation']
+
+		if 'use_direct_solution' in d:
+			self.rexi_use_direct_solution = d['use_direct_solution']
+
+		if 'rexi_method' in d:
+			self.rexi_method = d['rexi_method']
+
+		if 'file_n' in d:
+			self.rexi_file_n = d['file_n']
+
+		if 'file_h' in d:
+			self.rexi_file_h = d['file_h']
+
+		if 'file_test_abs' in d:
+			self.rexi_file_test_abs = d['file_test_abs']
+
+		if 'file_max_error' in d:
+			self.rexi_file_max_error = d['file_max_error']
 
 	g = 1	# gravity
 	h = 100000	# avg height
@@ -60,6 +106,8 @@ class default_params:
 	bench_id = 70
 	use_robert_functions = 1
 
+	staggering = 0
+	spectralderiv = 1
 	pde_id = 0
 
 	nonlinear = 0
@@ -187,6 +235,7 @@ pwd
 
 # Always load local software
 #source ./local_software/env_vars.sh || exit 1
+source ~/.bashrc
 sweetenv
 
 #make clean || exit 1
@@ -194,7 +243,7 @@ sweetenv
 """
 		if self.target_machine == '':
 			content += """
-SCONS="scons --program=burgers --gui=disable --plane-spectral-space=enable --parareal=none --plane-spectral-dealiasing=enable --mode=release """+"--threading="+ ('omp' if not p.rexi_par else 'off') +" --rexi-thread-parallel-sum=" +('enable' if p.rexi_par else 'disable')+' -j 4"'+"""
+SCONS="scons --program=burgers --gui=disable --plane-spectral-space=enable --parareal=none --plane-spectral-dealiasing=enable --mode=release """+"--threading=omp"+' -j 4"'+"""
 echo "$SCONS"
 $SCONS || exit 1
 
@@ -210,22 +259,26 @@ $SCONS || exit 1
 cd "$BASEDIR"
 """
 
-		if p.rexi_par:
-			content += 'EXEC="$SWEETROOT/build/burgers_planespectral_planedealiasing_rexipar_libfft_gnu_release'
+		if self.rexi_par:
+			content += 'EXEC="$SWEETROOT/build/burgers_plspec_pldeal_rexipar_fft_gnu_release'
+		elif self.spectralderiv == 0:
+			content += 'EXEC="$SWEETROOT/build/burgers_plane_rexi_omp_fft_gnu_release'
 		else:
-			content += 'EXEC="$SWEETROOT/build/burgers_planespectral_planedealiasing_omp_libfft_gnu_release'
+			content += 'EXEC="$SWEETROOT/build/burgers_plspec_pldeal_omp_fft_gnu_release'
 
-		content += ' -g '+str(self.g)
-		content += ' -H '+str(self.h)
-		content += ' -f '+str(self.f)
-		content += ' -F '+str(self.f_sphere)
-		content += ' -a '+str(self.r)
+#		content += ' -g '+str(self.g)
+#		content += ' -H '+str(self.h)
+#		content += ' -f '+str(self.f)
+#		content += ' -F '+str(self.f_sphere)
+#		content += ' -a '+str(self.r)
 		if self.mode_res != -1:
 			content += ' -M '+str(self.mode_res)
 		if self.phys_res != -1:
 			content += ' -N '+str(self.phys_res)
 
-		content += ' --pde-id '+str(self.pde_id)
+#		content += ' --pde-id '+str(self.pde_id)
+		content += ' --staggering='+str(self.staggering)
+		content += ' -S '+str(self.spectralderiv)
 
 		content += ' -X '+str(self.domain_size)
 		content += ' -s '+str(self.bench_id)
@@ -238,25 +291,40 @@ cd "$BASEDIR"
 			content += ' -T '+str(self.max_timesteps)
 
 		content += ' -o '+str(self.output_timestep_size)
-#		content += ' -O -'	# deactivate file output
+
+		if self.output_timestep_size < 0:
+			content += ' -O -'   # deactivate file output
+
 		content += ' -u '+str(self.viscosity)
 		content += ' -t '+str(self.simtime)
-		content += ' --nonlinear='+str(self.nonlinear)
+#		content += ' --nonlinear='+str(self.nonlinear)
 
 		content += ' --timestepping-method='+self.timestepping_method
 		content += ' --timestepping-order='+str(self.timestepping_order)
 		content += ' --timestepping-order2='+str(self.timestepping_order2)
 
-		content += ' --normal-mode-analysis-generation='+str(self.normal_mode_analysis)
+#		content += ' --normal-mode-analysis-generation='+str(self.normal_mode_analysis)
 
-		content += ' --rexi-m='+str(self.rexi_m)
-		content += ' --rexi-h='+str(self.rexi_h)
-		content += ' --rexi-half='+str(self.rexi_half_poles)
-		content += ' --rexi-normalization='+str(self.rexi_normalization)
-		content += ' --rexi-sphere-preallocation='+str(self.rexi_sphere_preallocation)
-		content += ' --rexi-use-direct-solution='+str(self.rexi_use_direct_solution)
-		content += ' --rexi-ext-modes='+str(self.rexi_extended_modes)
-		content += ' --use-robert-functions='+str(self.use_robert_functions)
+#     content += ' --rexi-method='+str(self.rexi_method)
+#		content += ' --rexi-half='+str(self.rexi_half_poles)
+#		content += ' --rexi-normalization='+str(self.rexi_normalization)
+#		content += ' --rexi-sphere-preallocation='+str(self.rexi_sphere_preallocation)
+#		content += ' --rexi-use-direct-solution='+str(self.rexi_use_direct_solution)
+#		content += ' --rexi-ext-modes='+str(self.rexi_extended_modes)
+
+      # REXI Terry
+#		content += ' --rexi-m='+str(self.rexi_m)
+#		content += ' --rexi-h='+str(self.rexi_h)
+
+      # REXI File
+#     content += ' --rexi-file-n='+str(self.rexi_file_n)
+#     content += ' --rexi-file-h='+str(self.rexi_file_h)
+#     content += ' --rexi-file-test-abs='+str(self.rexi_file_test_abs)
+#     content += ' --rexi-file-max-error='+str(self.rexi_file_max_error)
+#     if self.rexi_file_faf_dir != None:
+#        content += ' --rexi-file-faf-dir='+str(self.rexi_file_faf_dir)
+
+#		content += ' --use-robert-functions='+str(self.use_robert_functions)
 
 		content += ' --compute-error='+str(self.compute_error)
 
@@ -282,29 +350,24 @@ $EXEC || exit 1
 	def create_job_id(self):
 		idstr = '_'+self.prefix_string
 
-		if self.mode_res != -1:
-			idstr += '_modes'+str(self.mode_res).zfill(3)
-
-		if self.phys_res != -1:
-			idstr += '_phys'+str(self.phys_res).zfill(3)
 
 		idstr += '_bench'+str(self.bench_id)
 #		idstr += '_nonlin'+str(self.nonlinear)
 
-		idstr += '_g'+str(self.g)
-		idstr += '_h'+str(self.h)
-		idstr += '_f'+str(self.f)
+#		idstr += '_g'+str(self.g)
+#		idstr += '_h'+str(self.h)
+#		idstr += '_f'+str(self.f)
 
-		if self.plane_or_sphere == 'sphere':
-			idstr += '_a'+str(self.r)
+#		if self.plane_or_sphere == 'sphere':
+#			idstr += '_a'+str(self.r)
 
 		idstr += '_u'+str(self.viscosity)
 
-		idstr += '_pdeid'+str(self.pde_id)
+#		idstr += '_pdeid'+str(self.pde_id)
 
-		if self.plane_or_sphere == 'sphere':
-			idstr += '_robert'+str(self.use_robert_functions)
-			idstr += '_fsphere'+str(self.f_sphere)
+#		if self.plane_or_sphere == 'sphere':
+#			idstr += '_robert'+str(self.use_robert_functions)
+#			idstr += '_fsphere'+str(self.f_sphere)
 
 #		idstr += '_t'+str(self.simtime).zfill(8)
 #		idstr += '_o'+str(self.output_timestep_size).zfill(8)
@@ -313,18 +376,33 @@ $EXEC || exit 1
 		idstr += '_tso'+str(self.timestepping_order)
 		idstr += '_tsob'+str(self.timestepping_order2)
 
-		if True:
-			if self.rexi_use_direct_solution:
-				idstr += '_rexidirect'
-			else:
-				idstr += '_rexim'+str(self.rexi_m).zfill(8)
-#				idstr += '_rexih'+str(self.rexi_h)
-#				idstr += '_rexinorm'+str(self.rexi_normalization)
-#				idstr += '_rexihalf'+str(self.rexi_half_poles)
+#		if True:
+#			if self.rexi_use_direct_solution:
+#				idstr += '_rexidirect'
+#			else:
+#            if self.rexi_method == "file":
+#               idstr += '_REXIFILE'
+#               idstr += '_filen'+str(self.rexi_file_n).zfill(8)
+#               idstr += '_fileh'+str(self.rexi_file_h)
+#               idstr += '_filetestabs'+str(self.rexi_file_test_abs).zfill(3)
+#               idstr += '_filemaxerr'+str(self.rexi_file_max_error)
+# 
+#            elif self.rexi_method == "terry":
+#               idstr += '_REXITERRY'
+#               idstr += '_rexim'+str(self.rexi_m).zfill(8)
+#               idstr += '_rexih'+str(self.rexi_h)
+# 
+#            elif self.rexi_method == "ci":
+#               idstr += '_REXICI'
+#               idstr += '_cim'+str(self.rexi_m).zfill(8)
+#               idstr += '_cih'+str(self.rexi_h)
+# 
+#            idstr += '_rexinorm'+str(self.rexi_normalization)
+#            idstr += '_rexihalf'+str(self.rexi_half_poles)
 	
-			if self.plane_or_sphere == 'sphere':
-				idstr += '_rexiprealloc'+str(self.rexi_sphere_preallocation)
-				idstr += '_rexiextmodes'+str(self.rexi_extended_modes).zfill(2)
+#			if self.plane_or_sphere == 'sphere':
+#				idstr += '_rexiprealloc'+str(self.rexi_sphere_preallocation)
+#				idstr += '_rexiextmodes'+str(self.rexi_extended_modes).zfill(2)
 
 #			idstr += '_rexipar'+str(1 if self.rexi_par else 0)
 
@@ -332,6 +410,12 @@ $EXEC || exit 1
 
 		if self.max_timesteps != -1:
 			idstr += '_Tn'+str(self.max_timesteps).zfill(3)
+
+#      if self.mode_res != -1:
+#         idstr += '_modes'+str(self.mode_res).zfill(4)
+# 
+#      if self.phys_res != -1:
+#         idstr += '_phys'+str(self.phys_res).zfill(4)
 
 		return idstr
 
@@ -386,8 +470,6 @@ timestep_sizes = [0.0001*(2.0**i) for i in range(0, 11)]
 # l: linear
 # ln: linear and nonlinear
 groups = ['l1', 'l2', 'ln1', 'ln2', 'ln4']
-#groups = ['ln1', 'ln2', 'ln4']
-#groups = ['ln2test']
 
 #if len(sys.argv) < 5:
 #	print("Usage: "+str(sys.argv[0])+" [group=l1/l2/ln1/ln2] [tsmethod] [order1] [order2] [use rexi direct solution]")
@@ -404,64 +486,41 @@ for group in groups:
 	if group == 'l1':
 		ts_methods = [
 			['l_direct',	0,	0,	0],	# reference solution
-			['l_erk',	1,	0,	0],
-	#		['l_irk',	1,	0,	0],
-	#		['l_rexi',	0,	0,	0],
+			['l_erk',		1,	0,	0],
+			['l_irk',		1,	0,	0],
 		]
 
 	# 2nd order linear
 	if group == 'l2':
 		ts_methods = [
 			['l_direct',	0,	0,	0],	# reference solution
-			['l_erk',	2,	0,	0],
-	#		['l_cn',	2,	0,	0],
-	#		['l_rexi',	0,	0,	0],
+			['l_erk',		2,	0,	0],
+			['l_irk',		2,	0,	0],
 		]
-
-	#	['lg_rexi_lc_erk_nt_sl_nd_erk',
-	#	['l_rexi_ns_sl_nd_erk',
 
 	# 1st order nonlinear
 	if group == 'ln1':
 		ts_methods = [
 			['ln_cole_hopf',		0,	0,	0],	# reference solution
-			['ln_erk',		1,	1,	0],
-			['ln_imex',		1,	1,	0],
+			['ln_erk',				1,	1,	0],
+			['ln_imex',				1,	1,	0],
+#			['l_irk_n_sl',			1,	1,	0],
 		]
-
-	## 1st order nonlinear
-	#if group == 'ln1test':
-	#	ts_methods = [
-	#		['ln_erk',		4,	4,	0],	# reference solution
-	#		['l_erk_n_erk',		1,	1,	0],
-	#		['l_irk_n_erk',		1,	1,	0],
-	#		['ln_erk',		1,	1,	0],
-	#	]
 
 	# 2nd order nonlinear
 	if group == 'ln2':
 		ts_methods = [
 			['ln_cole_hopf',		0,	0,	0],	# reference solution
-			['ln_erk',		2,	2,	0],
-			['ln_imex',		2,	2,	0],
+			['ln_erk',				2,	2,	0],
+			['ln_imex',				2,	2,	0],
+#			['l_irk_n_sl',			2,	2,	0],
 		]
-
-	## 2nd order nonlinear
-	#if group == 'ln2space':
-	#	ts_methods = [
-	#		['ln_erk',		4,	4,	0],	# reference solution
-	#		['l_cn_n_erk',		2,	2,	0],
-	#		['l_erk_n_erk',		2,	2,	0],
-#	#		['ln_erk',		2,	2,	0],
-#	#		['l_rexi_n_erk',	2,	2,	0],
-	#	]
 
 	# 4th order nonlinear
 	if group == 'ln4':
 		ts_methods = [
 			['ln_cole_hopf',		0,	0,	0],	# reference solution
-			#['ln_etdrk',		4,	4,	1],	# reference solution
-			['ln_erk',		4,	4,	0],
+			['ln_erk',				4,	4,	0],
 		]
 
 
@@ -491,9 +550,14 @@ for group in groups:
 		p.timestepping_order2 = tsm[2]
 		p.rexi_use_direct_solution = tsm[3]
 
-		p.timestep_size = timestep_size_reference
+		if len(tsm) > 4:
+			s = tsm[4]
+			if 'timestep_size' in s:
+				p.timestep_size = s['timestep_size']
+			else:
+				p.timestep_size = timestep_size_reference
 
-		p.gen_script('script'+p.create_job_id(), 'run.sh')
+		p.gen_script('script_burgers'+p.create_job_id(), 'run.sh')
 
 
 	for tsm in ts_methods[1:]:
@@ -507,14 +571,12 @@ for group in groups:
 
 			p.timestep_size = timestep_size
 
+			if len(tsm) > 4:
+				s = tsm[4]
+				p.load_rexi_from_dict(tsm[4])
+				if 'timestep_size' in s:
+					p.timestep_size = s['timestep_size']
 
-			if 'rexi' in tsm[0]:
-				for p.rexi_m in [16, 32, 64, 128, 256, 512]:
-					p.gen_script('script'+p.create_job_id(), 'run.sh')
-
-				p.rexi_m = 0
-
-			else:
-				p.gen_script('script'+p.create_job_id(), 'run.sh')
+			p.gen_script('script_burgers'+p.create_job_id(), 'run.sh')
 
 

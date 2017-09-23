@@ -56,13 +56,13 @@ void Burgers_Plane_TS_ln_imex::run_timestep(
 		{
 			lhs = ((-t*0.5)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
 		}
-        PlaneData u1 = rhs_u.spectral_div_element_wise(lhs);
-        PlaneData v1 = rhs_v.spectral_div_element_wise(lhs);
+		PlaneData u1 = rhs_u.spectral_div_element_wise(lhs);
+		PlaneData v1 = rhs_v.spectral_div_element_wise(lhs);
 
-        io_u = u + t*simVars.sim.viscosity*(op.diff2_c_x(u1)+op.diff2_c_y(u1))
-              - t*(u1*op.diff_c_x(u1)+v1*op.diff_c_y(u1));
-        io_v = v + t*simVars.sim.viscosity*(op.diff2_c_x(v1)+op.diff2_c_y(v1))
-              - t*(u1*op.diff_c_x(v1)+v1*op.diff_c_y(v1));
+		io_u = u + t*simVars.sim.viscosity*(op.diff2_c_x(u1)+op.diff2_c_y(u1))
+			  - t*(u1*op.diff_c_x(u1)+v1*op.diff_c_y(u1));
+		io_v = v + t*simVars.sim.viscosity*(op.diff2_c_x(v1)+op.diff2_c_y(v1))
+			  - t*(u1*op.diff_c_x(v1)+v1*op.diff_c_y(v1));
 
 	} else { //Jacobi
 		FatalError("NOT available");

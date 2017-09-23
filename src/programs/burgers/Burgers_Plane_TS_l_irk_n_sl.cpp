@@ -60,25 +60,13 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 			staggering.v[1]
 	);
 
-	PlaneData u=io_u;
-	PlaneData v=io_v;
-
-	// Setting explicit right hand side and operator of the left hand side
-	PlaneData rhs_u = u;
-	PlaneData rhs_v = v;
-
-	if (simVars.disc.use_spectral_basis_diffs) //spectral
-	{
-		PlaneData lhs = u;
-
-		lhs = ((-i_fixed_dt)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
-		io_u = rhs_u.spectral_div_element_wise(lhs);
-		io_v = rhs_v.spectral_div_element_wise(lhs);
-
-	} else { //Jacobi
-		FatalError("NOT available");
-	}
-
+	// Run implicit Runge-Kutta on Burgers' equation in SL form
+	ts_l_irk.run_timestep(
+			io_u, io_v,
+			io_u_prev, io_v_prev,
+			i_fixed_dt,
+			i_simulation_timestamp
+		);
 }
 
 
@@ -125,6 +113,7 @@ void Burgers_Plane_TS_l_irk_n_sl::setup()
 	posx_a = pos_x+0.5*cell_size_x;
 	posy_a = pos_y+0.5*cell_size_y;
 
+	ts_l_irk.setup(simVars.disc.timestepping_order);
 
 }
 
@@ -140,7 +129,9 @@ Burgers_Plane_TS_l_irk_n_sl::Burgers_Plane_TS_l_irk_n_sl(
 		posy_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
 
 		posx_d(i_op.planeDataConfig->physical_array_data_number_of_elements),
-		posy_d(i_op.planeDataConfig->physical_array_data_number_of_elements)
+		posy_d(i_op.planeDataConfig->physical_array_data_number_of_elements),
+
+		ts_l_irk(simVars, op)
 {
 }
 
