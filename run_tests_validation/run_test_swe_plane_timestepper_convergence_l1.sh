@@ -30,7 +30,7 @@ else
 fi
 
 
-./compile.sh || exit 1
+#./compile.sh || exit 1
 
 ./jobs_run.sh || exit 1
 
