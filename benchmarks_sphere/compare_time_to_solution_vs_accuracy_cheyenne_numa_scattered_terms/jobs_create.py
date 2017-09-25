@@ -215,7 +215,7 @@ if __name__ == "__main__":
 				['l_erk_n_erk',		2,	2,	0],
 				['ln_erk',		2,	2,	0],
 				['l_rexi_n_etdrk',	2,	2,	0],
-				['lg_rexi_lf_n_etdrk',	2,	2,	0],
+				['lg_rexi_lc_n_etdrk',	2,	2,	0],
 			]
 
 		# 4th order nonlinear

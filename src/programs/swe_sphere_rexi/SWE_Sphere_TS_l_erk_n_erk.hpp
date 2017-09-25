@@ -61,6 +61,16 @@ public:
 	);
 
 
+public:
+	void euler_timestep_update_nonlinear(
+			SphereData &io_phi,	///< prognostic variables
+			SphereData &io_vort,	///< prognostic variables
+			SphereData &io_div,	///< prognostic variables
+
+			double i_dt,
+			double i_simulation_timestamp
+	);
+
 private:
 	void euler_timestep_update(
 			const SphereData &i_phi,	///< prognostic variables

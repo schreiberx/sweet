@@ -124,12 +124,22 @@ for group_info in groups:
 		print("Measured convergence: "+str(conv_test))
                 
 		# test these first convergence tests
-		if 'ln4' in group or 'ln2' in group:
+		if 'ln4' in group in group:
 			# Comparing RK4 with 4-th order methods requires a more relaxed test
 			# This works and was empirically determined
 			#test_range = range(4,6)
 			test_range = range(8,10)
 			max_error_rate = 0.5
+
+		elif 'ln2' in group:
+			# Comparing RK4 with 4-th order methods requires a more relaxed test
+			# This works and was empirically determined
+			if 'etdrk' in rundir:
+				test_range = range(8,10)
+			else:
+				test_range = range(1,4)
+
+			max_error_rate = 0.01
 		else:
 			test_range = range(1,4)
 			max_error_rate = 0.05

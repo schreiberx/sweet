@@ -32,9 +32,11 @@ else
 	# 2nd order nonlinear
 	./jobs_create.py ln2 ln_erk 2 2 0 || exit 1
 	./jobs_create.py ln2 l_rexi_n_etdrk 2 2 0 || exit 1
-	./jobs_create.py ln2 lg_rexi_lf_n_etdrk 2 2 0 || exit 1
+	./jobs_create.py ln2 lg_rexi_lc_n_etdrk 2 2 0 || exit 1
 	#./jobs_create.py ln2 l_cn_n_erk 2 2 0 || exit 1
 	./jobs_create.py ln2 l_erk_n_erk 2 2 0 || exit 1
+	./jobs_create.py ln2 l_cn_n_erk 2 2 0 || exit 1
+	./jobs_create.py ln2 lg_cn_lc_n_erk 2 2 0 || exit 1
 	#./jobs_create.py ln2 l_rexi_n_erk 2 2 1 || exit 1
 fi
 

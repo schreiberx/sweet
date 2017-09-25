@@ -99,10 +99,10 @@ void SWE_Sphere_TS_l_irk::update_coefficients()
 }
 
 
+
 /**
  * Solve a REXI time step for the given initial conditions
  */
-
 void SWE_Sphere_TS_l_irk::run_timestep(
 		SphereData &io_phi,		///< prognostic variables
 		SphereData &io_vort,	///< prognostic variables

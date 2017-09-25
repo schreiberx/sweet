@@ -5,12 +5,12 @@
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#include "SWE_Sphere_TS_lg_rexi_lf_n_etdrk.hpp"
+#include "SWE_Sphere_TS_lg_rexi_lc_n_etdrk.hpp"
 
 
 
 
-void SWE_Sphere_TS_lg_rexi_lf_n_etdrk::run_timestep(
+void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 		SphereData &io_phi,	///< prognostic variables
 		SphereData &io_u,	///< prognostic variables
 		SphereData &io_v,	///< prognostic variables
@@ -345,7 +345,7 @@ void SWE_Sphere_TS_lg_rexi_lf_n_etdrk::run_timestep(
 /*
  * Setup
  */
-void SWE_Sphere_TS_lg_rexi_lf_n_etdrk::setup(
+void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::setup(
 		REXI_SimulationVariables &i_rexiSimVars,
 		int i_timestepping_order,
 		double i_timestep_size
@@ -372,7 +372,7 @@ void SWE_Sphere_TS_lg_rexi_lf_n_etdrk::setup(
 }
 
 
-SWE_Sphere_TS_lg_rexi_lf_n_etdrk::SWE_Sphere_TS_lg_rexi_lf_n_etdrk(
+SWE_Sphere_TS_lg_rexi_lc_n_etdrk::SWE_Sphere_TS_lg_rexi_lc_n_etdrk(
 		SimulationVariables &i_simVars,
 		SphereOperators &i_op
 )	:
@@ -393,7 +393,7 @@ SWE_Sphere_TS_lg_rexi_lf_n_etdrk::SWE_Sphere_TS_lg_rexi_lf_n_etdrk(
 
 
 
-SWE_Sphere_TS_lg_rexi_lf_n_etdrk::~SWE_Sphere_TS_lg_rexi_lf_n_etdrk()
+SWE_Sphere_TS_lg_rexi_lc_n_etdrk::~SWE_Sphere_TS_lg_rexi_lc_n_etdrk()
 {
 }
 
