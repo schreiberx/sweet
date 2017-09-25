@@ -124,7 +124,6 @@ public:
 				u0 = (2.0*M_PI*io_simVars.sim.earth_radius)/(12.0*24.0*60.0*60.0);
 			}
 			double a = io_simVars.sim.earth_radius;
-			double inv_r = 1.0/io_simVars.sim.earth_radius;
 
 			double phi0 = io_simVars.sim.h0*io_simVars.sim.gravitation;
 
@@ -159,6 +158,7 @@ public:
 #if 0
 			if (io_simVars.timecontrol.current_simulation_time == 0)
 			{
+				double inv_r = 1.0/io_simVars.sim.earth_radius;
 				double h_max_error, u_max_error, v_max_error;
 
 				if (io_simVars.misc.sphere_use_robert_functions)

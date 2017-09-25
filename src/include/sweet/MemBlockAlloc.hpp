@@ -246,7 +246,9 @@ private:
 		getThreadLocalDomainIdRef() = omp_get_thread_num();
 
 #pragma omp parallel
+		{
 		getThreadLocalDomainIdRef() = omp_get_thread_num();
+		}
 
 #else
 		getThreadLocalDomainIdRef() = 0;

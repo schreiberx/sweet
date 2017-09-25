@@ -287,6 +287,7 @@ void SWE_Sphere_TS_l_rexi::setup(
 	stopwatch_reduce.reset();
 	stopwatch_solve_rexi_terms.reset();
 #endif
+
 }
 
 
@@ -457,6 +458,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 		SphereData thread_prog_phi0(sphereDataConfigSolver);
 		SphereData thread_prog_vort0(sphereDataConfigSolver);
 		SphereData thread_prog_div0(sphereDataConfigSolver);
+
 
 #if SWEET_DEBUG
 		/**
