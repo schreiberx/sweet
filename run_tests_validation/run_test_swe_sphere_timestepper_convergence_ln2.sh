@@ -12,8 +12,6 @@ export OMP_PROC_BIND=close
 BASEDIR=`pwd`
 
 cd "$BASEDIR/run_test_swe_sphere_timestepper_convergence"
-#./compile.sh || exit 1
-
 
 
 ./cleanup.sh
@@ -41,6 +39,7 @@ else
 fi
 
 
+./compile.sh || exit 1
 
 ./jobs_run.sh || exit 1
 
