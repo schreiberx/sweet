@@ -430,6 +430,10 @@ if p.sweet_mpi == 'enable':
 
 env.Append(LIBS=['quadmath'])
 
+env.Append(LIBS=['libpfasst'])
+env.Append(LIBS=['mpichcxx'])
+env.Append(LIBS=['mpich'])
+env.Append(LIBS=['mpi'])
 
 
 env.Append(CXXFLAGS=' -DNUMA_BLOCK_ALLOCATOR_TYPE='+str(p.numa_block_allocator))
@@ -559,8 +563,8 @@ exec_name = p.getProgramName()
 build_dir='/tmp/scons_build_'+exec_name+'/'
 
 if p.libpfasst == 'enable':
-	env.Append(F90FLAGS = ['-Ilocal_software/local_src/libpfasst/include'])
-
+	#env.Append(F90FLAGS = ['-Ilocal_software/local_src/libpfasst/include'])
+	env.Append(F90FLAGS = ['-I../libpfasst_user_level/include'])
 #
 # USE build directory for Fortran module output
 #
