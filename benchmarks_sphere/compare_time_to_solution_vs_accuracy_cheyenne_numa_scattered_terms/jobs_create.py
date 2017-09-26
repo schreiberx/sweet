@@ -213,8 +213,10 @@ if __name__ == "__main__":
 				#['l_irk_n_erk',		2,	2,	0],
 				#['l_cn_n_erk',		2,	2,	0],
 				['l_erk_n_erk',		2,	2,	0],
+				['l_irk_n_erk',		2,	2,	0],
 				['ln_erk',		2,	2,	0],
 				['l_rexi_n_etdrk',	2,	2,	0],
+				['lg_irk_lc_n_erk',		2,	2,	0],
 				['lg_rexi_lf_n_etdrk',	2,	2,	0],
 			]
 
