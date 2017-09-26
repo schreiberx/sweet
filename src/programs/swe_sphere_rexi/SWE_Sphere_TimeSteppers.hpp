@@ -8,11 +8,10 @@
 #ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TIMESTEPPERS_HPP_
 #define SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TIMESTEPPERS_HPP_
 
+#include "../swe_sphere_rexi/SWE_Sphere_TS_lg_erk_lc_n_erk.hpp"
 #include "SWE_Sphere_TS_interface.hpp"
 
 #include "SWE_Sphere_TS_l_erk.hpp"
-#include "SWE_Sphere_TS_l_erk_n_erk.hpp"
-#include "SWE_Sphere_TS_lg_erk_lf_n_erk.hpp"
 #include "SWE_Sphere_TS_l_rexi.hpp"
 #include "SWE_Sphere_TS_l_lf.hpp"
 #include "SWE_Sphere_TS_l_irk.hpp"
@@ -20,9 +19,12 @@
 #include "SWE_Sphere_TS_l_cn.hpp"
 #include "SWE_Sphere_TS_lg_cn.hpp"
 #include "SWE_Sphere_TS_lg_erk.hpp"
+
+#include "SWE_Sphere_TS_l_erk_n_erk.hpp"
+#include "SWE_Sphere_TS_l_irk_n_erk.hpp"
 #include "SWE_Sphere_TS_ln_erk.hpp"
 #include "SWE_Sphere_TS_l_rexi_n_etdrk.hpp"
-#include "SWE_Sphere_TS_lg_rexi_lf_n_etdrk.hpp"
+#include "SWE_Sphere_TS_lg_rexi_lc_n_etdrk.hpp"
 
 
 
@@ -34,14 +36,15 @@ class SWE_Sphere_TimeSteppers
 public:
 	SWE_Sphere_TS_l_erk *l_erk = nullptr;
 	SWE_Sphere_TS_l_erk_n_erk *l_erk_n_erk = nullptr;
-	SWE_Sphere_TS_lg_erk_lf_n_erk *lg_erk_lf_n_erk = nullptr;
+	SWE_Sphere_TS_l_irk_n_erk *l_irk_n_erk = nullptr;
+	SWE_Sphere_TS_lg_erk_lc_n_erk *lg_erk_lc_n_erk = nullptr;
 	SWE_Sphere_TS_l_irk *l_irk = nullptr;
-	SWE_Sphere_TS_l_lf *l_lf = nullptr;
+	SWE_Sphere_TS_l_lf *l_leapfrog = nullptr;
 	SWE_Sphere_TS_l_rexi *l_rexi = nullptr;
 	SWE_Sphere_TS_l_cn *l_cn = nullptr;
 	SWE_Sphere_TS_ln_erk *ln_erk = nullptr;
 	SWE_Sphere_TS_l_rexi_n_etdrk *l_rexi_n_etdrk = nullptr;
-	SWE_Sphere_TS_lg_rexi_lf_n_etdrk *lg_rexi_lf_n_etdrk = nullptr;
+	SWE_Sphere_TS_lg_rexi_lc_n_etdrk *lg_rexi_lc_n_etdrk = nullptr;
 	SWE_Sphere_TS_lg_erk *lg_erk = nullptr;
 	SWE_Sphere_TS_lg_irk *lg_irk = nullptr;
 	SWE_Sphere_TS_lg_cn *lg_cn = nullptr;
@@ -66,6 +69,11 @@ public:
 			delete l_erk_n_erk;
 			l_erk_n_erk = nullptr;
 		}
+		if (l_irk_n_erk != nullptr)
+		{
+			delete l_irk_n_erk;
+			l_irk_n_erk = nullptr;
+		}
 		if (l_irk != nullptr)
 		{
 			delete l_irk;
@@ -86,7 +94,7 @@ public:
 			delete lg_cn;
 			lg_cn = nullptr;
 		}
-		if (l_lf != nullptr)
+		if (l_leapfrog != nullptr)
 		{
 			delete l_erk;
 			l_erk = nullptr;
@@ -136,12 +144,19 @@ public:
 
 			master = &(SWE_Sphere_TS_interface&)*l_erk_n_erk;
 		}
-		else if (i_timestepping_method == "lg_erk_lf_n_erk")
+		else if (i_timestepping_method == "l_irk_n_erk")
 		{
-			lg_erk_lf_n_erk = new SWE_Sphere_TS_lg_erk_lf_n_erk(i_simVars, i_op);
-			lg_erk_lf_n_erk->setup(i_simVars.disc.timestepping_order);
+			l_irk_n_erk = new SWE_Sphere_TS_l_irk_n_erk(i_simVars, i_op);
+			l_irk_n_erk->setup(i_simVars.disc.timestepping_order);
 
-			master = &(SWE_Sphere_TS_interface&)*lg_erk_lf_n_erk;
+			master = &(SWE_Sphere_TS_interface&)*l_irk_n_erk;
+		}
+		else if (i_timestepping_method == "lg_erk_lc_n_erk")
+		{
+			lg_erk_lc_n_erk = new SWE_Sphere_TS_lg_erk_lc_n_erk(i_simVars, i_op);
+			lg_erk_lc_n_erk->setup(i_simVars.disc.timestepping_order);
+
+			master = &(SWE_Sphere_TS_interface&)*lg_erk_lc_n_erk;
 		}
 		else if (i_timestepping_method == "lg_erk")
 		{
@@ -169,16 +184,16 @@ public:
 
 			master = &(SWE_Sphere_TS_interface&)*l_rexi_n_etdrk;
 		}
-		else if (i_timestepping_method == "lg_rexi_lf_n_etdrk")
+		else if (i_timestepping_method == "lg_rexi_lc_n_etdrk")
 		{
-			lg_rexi_lf_n_etdrk = new SWE_Sphere_TS_lg_rexi_lf_n_etdrk(i_simVars, i_op);
-			lg_rexi_lf_n_etdrk->setup(
+			lg_rexi_lc_n_etdrk = new SWE_Sphere_TS_lg_rexi_lc_n_etdrk(i_simVars, i_op);
+			lg_rexi_lc_n_etdrk->setup(
 					i_simVars.rexi,
 					i_simVars.disc.timestepping_order,
 					i_simVars.timecontrol.current_timestep_size
 				);
 
-			master = &(SWE_Sphere_TS_interface&)*lg_rexi_lf_n_etdrk;
+			master = &(SWE_Sphere_TS_interface&)*lg_rexi_lc_n_etdrk;
 		}
 		else if (i_timestepping_method == "l_irk")
 		{
@@ -196,10 +211,10 @@ public:
 		}
 		else if (i_timestepping_method == "l_lf")
 		{
-			l_lf = new SWE_Sphere_TS_l_lf(i_simVars, i_op);
-			l_lf->setup(i_simVars.disc.timestepping_order, i_simVars.disc.leapfrog_robert_asselin_filter);
+			l_leapfrog = new SWE_Sphere_TS_l_lf(i_simVars, i_op);
+			l_leapfrog->setup(i_simVars.disc.timestepping_order, i_simVars.disc.leapfrog_robert_asselin_filter);
 
-			master = &(SWE_Sphere_TS_interface&)*l_lf;
+			master = &(SWE_Sphere_TS_interface&)*l_leapfrog;
 		}
 		else if (i_timestepping_method == "l_cn")
 		{

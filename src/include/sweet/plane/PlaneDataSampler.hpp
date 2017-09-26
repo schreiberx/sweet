@@ -120,7 +120,7 @@ public:
 		i_data.request_data_physical();
 
 		// iterate over all positions in parallel
-#if SWEET_THREADING
+#if SWEET_SPACE_THREADING
 #pragma omp parallel for
 #endif
 		for (std::size_t pos_idx = 0; pos_idx < i_pos_x.number_of_elements; pos_idx++)
@@ -233,7 +233,7 @@ public:
 		i_data.request_data_physical();
 
 		// iterate over all positions in parallel
-#if SWEET_THREADING
+#if SWEET_SPACE_THREADING
 #pragma omp parallel for
 #endif
 		for (std::size_t pos_idx = 0; pos_idx < i_pos_x.number_of_elements; pos_idx++)
@@ -347,7 +347,7 @@ public:
 		assert(size != 0);
 
 		// iterate over all positions
-#if SWEET_THREADING
+#if SWEET_SPACE_THREADING
 #pragma omp parallel for
 #endif
 		for (std::size_t pos_idx = 0; pos_idx < size; pos_idx++)
@@ -429,7 +429,7 @@ public:
 		assert(size != 0);
 
 		// iterate over all positions
-#if SWEET_THREADING
+#if SWEET_SPACE_THREADING
 #pragma omp parallel for
 #endif
 		for (std::size_t pos_idx = 0; pos_idx < size; pos_idx++)

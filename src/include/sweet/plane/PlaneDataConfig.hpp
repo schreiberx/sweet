@@ -24,7 +24,7 @@
 
 
 
-#if SWEET_THREADING
+#if SWEET_SPACE_THREADING
 #	include <omp.h>
 #endif
 
@@ -226,7 +226,7 @@ public:
 public:
 	int& refCounterFftwPlans()
 	{
-#if SWEET_THREADING && SWEET_DEBUG
+#if SWEET_SPACE_THREADING && SWEET_DEBUG
 		if (omp_get_level() != 0)
 			FatalError("PlaneDataConfig is not threadsafe, but called inside parallel region with more than one thread!!!");
 #endif
@@ -299,7 +299,7 @@ private:
 
 #else
 
-	#if SWEET_THREADING
+	#if SWEET_SPACE_THREADING
 		// Is this the first instance?
 		if (refCounterFftwPlans() == 1)
 		{
@@ -391,7 +391,7 @@ private:
 			//std::cout << physical_array_data_number_of_elements << std::endl;
 			//std::cout << spectral_array_data_number_of_elements << std::endl;
 
-	#if SWEET_THREADING
+	#if SWEET_SPACE_THREADING
 	#pragma omp parallel for OPENMP_PAR_SIMD
 	#endif
 			for (std::size_t i = 0; i < physical_array_data_number_of_elements; i++)
@@ -402,7 +402,7 @@ private:
 			 */
 			std::complex<double> *data_spectral = MemBlockAlloc::alloc< std::complex<double> >(spectral_array_data_number_of_elements*sizeof(std::complex<double>));
 
-	#if SWEET_THREADING
+	#if SWEET_SPACE_THREADING
 	#pragma omp parallel for OPENMP_PAR_SIMD
 	#endif
 			for (std::size_t i = 0; i < spectral_array_data_number_of_elements; i++)
@@ -492,7 +492,7 @@ private:
 			 */
 			std::complex<double> *data_physical = MemBlockAlloc::alloc< std::complex<double> >(physical_array_data_number_of_elements*sizeof(std::complex<double>));
 
-	#if SWEET_THREADING
+	#if SWEET_SPACE_THREADING
 	#pragma omp parallel for OPENMP_PAR_SIMD
 	#endif
 			for (std::size_t i = 0; i < physical_array_data_number_of_elements; i++)
@@ -503,7 +503,7 @@ private:
 			 */
 			std::complex<double> *data_spectral = MemBlockAlloc::alloc< std::complex<double> >(spectral_complex_array_data_number_of_elements*sizeof(std::complex<double>));
 
-	#if SWEET_THREADING
+	#if SWEET_SPACE_THREADING
 	#pragma omp parallel for OPENMP_PAR_SIMD
 	#endif
 			for (std::size_t i = 0; i < spectral_complex_array_data_number_of_elements; i++)
@@ -596,7 +596,7 @@ public:
 				o_physical_data
 			);
 
-#if SWEET_THREADING
+#if SWEET_SPACE_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 		for (std::size_t i = 0; i < physical_array_data_number_of_elements; i++)
@@ -630,7 +630,7 @@ public:
 				(fftw_complex*)o_physical_data
 			);
 
-#if SWEET_THREADING
+#if SWEET_SPACE_THREADING
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 		for (std::size_t i = 0; i < physical_array_data_number_of_elements; i++)
@@ -851,7 +851,7 @@ public:
 
 			if (refCounterFftwPlans() == 0)
 			{
-#if SWEET_THREADING
+#if SWEET_SPACE_THREADING
 				fftw_cleanup_threads();
 #endif
 				fftw_cleanup();

@@ -29,7 +29,7 @@ SWE_Sphere_TS_l_cn::SWE_Sphere_TS_l_cn(
  * Setup the SWE REXI solver with SPH
  */
 void SWE_Sphere_TS_l_cn::setup(
-		double i_crank_nicolson_damping_factor,
+		double i_crank_nicolson_damping_factor,	// = 0.5,
 		double i_timestep_size,
 		int i_use_extended_modes
 )
@@ -88,6 +88,7 @@ void SWE_Sphere_TS_l_cn::setup(
 }
 
 
+
 void SWE_Sphere_TS_l_cn::update_coefficients()
 {
 	if (!use_f_sphere)
@@ -136,6 +137,17 @@ void SWE_Sphere_TS_l_cn::run_timestep(
 {
 	if (i_fixed_dt <= 0)
 		FatalError("SWE_Sphere_TS_l_cn: Only constant time step size allowed");
+
+
+	if (std::abs(timestep_size - i_fixed_dt)/std::max(timestep_size, i_fixed_dt) > 1e-10)
+	{
+		timestep_size = i_fixed_dt;
+
+		std::cout << "Warning: Reducing time step size from " << i_fixed_dt << " to " << timestep_size << std::endl;
+
+		update_coefficients();
+	}
+
 
 	SphereData phi0 = io_phi;
 	SphereData vort0 = io_vort;

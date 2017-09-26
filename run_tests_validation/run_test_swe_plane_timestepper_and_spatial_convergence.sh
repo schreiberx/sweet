@@ -12,7 +12,6 @@ export OMP_PROC_BIND=close
 BASEDIR=`pwd`
 
 cd "$BASEDIR/run_test_swe_plane_timestepper_and_spatial_convergence"
-./compile.sh || exit 1
 
 ./cleanup.sh
 
@@ -38,6 +37,9 @@ cd "$BASEDIR/run_test_swe_plane_timestepper_and_spatial_convergence"
 # 2nd order nonlinear, SL-REXI related
 ./jobs_create.py ln2space
 #./jobs_create.py ln2 ln_erk 2 2
+
+
+#./compile.sh || exit 1
 
 ./jobs_run.sh || exit 1
 

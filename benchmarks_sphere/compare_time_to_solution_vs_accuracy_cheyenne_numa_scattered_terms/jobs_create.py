@@ -216,8 +216,12 @@ if __name__ == "__main__":
 				['l_irk_n_erk',		2,	2,	0],
 				['ln_erk',		2,	2,	0],
 				['l_rexi_n_etdrk',	2,	2,	0],
+<<<<<<< HEAD
 				['lg_irk_lc_n_erk',		2,	2,	0],
 				['lg_rexi_lf_n_etdrk',	2,	2,	0],
+=======
+				['lg_rexi_lc_n_etdrk',	2,	2,	0],
+>>>>>>> f289441e47bb3b2e640e87887fdf4180b6c55d4a
 			]
 
 		# 4th order nonlinear

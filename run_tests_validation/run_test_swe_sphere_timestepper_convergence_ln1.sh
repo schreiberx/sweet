@@ -12,8 +12,6 @@ export OMP_PROC_BIND=close
 BASEDIR=`pwd`
 
 cd "$BASEDIR/run_test_swe_sphere_timestepper_convergence"
-#./compile.sh || exit 1
-
 
 
 ./cleanup.sh
@@ -33,11 +31,13 @@ else
 	./jobs_create.py ln1 ln_erk 1 1 0 || exit 1
 	#./jobs_create.py ln1 l_rexi_n_etdrk 1 1 1 || exit 1
 	./jobs_create.py ln1 l_erk_n_erk 1 1 0 || exit 1
+	./jobs_create.py ln1 l_irk_n_erk 1 1 0 || exit 1
 	#./jobs_create.py ln1 l_irk_n_erk 1 1 0 || exit 1
 	#./jobs_create.py ln1 l_rexi_n_erk 1 1 1 || exit 1
 fi
 
 
+#./compile.sh || exit 1
 
 ./jobs_run.sh || exit 1
 

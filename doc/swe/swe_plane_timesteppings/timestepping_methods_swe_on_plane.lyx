@@ -430,7 +430,7 @@ Frequently treated implicitly.
 \begin_inset Text
 
 \begin_layout Plain Layout
-\begin_inset Formula $L_{F}(U)$
+\begin_inset Formula $L_{C}(U)$
 \end_inset
 
 
@@ -602,7 +602,7 @@ lg
 \begin_inset Text
 
 \begin_layout Plain Layout
-\begin_inset Formula $L_{F}(U)$
+\begin_inset Formula $L_{C}(U)$
 \end_inset
 
 
@@ -614,7 +614,7 @@ lg
 \begin_inset Text
 
 \begin_layout Plain Layout
-lf
+lc
 \end_layout
 
 \end_inset
@@ -772,7 +772,7 @@ Naming time stepping methods
 \begin_layout Standard
 \align center
 \begin_inset Tabular
-<lyxtabular version="3" rows="7" columns="2">
+<lyxtabular version="3" rows="8" columns="2">
 <features tabularvalignment="middle">
 <column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
@@ -855,6 +855,26 @@ Crank-Nicolson
 
 \begin_layout Plain Layout
 cn
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Leap-Frog
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+lf
 \end_layout
 
 \end_inset
@@ -1124,7 +1144,7 @@ Order
 \begin_inset Text
 
 \begin_layout Plain Layout
-\begin_inset Formula $L_{F}(U)$
+\begin_inset Formula $L_{C}(U)$
 \end_inset
 
 
