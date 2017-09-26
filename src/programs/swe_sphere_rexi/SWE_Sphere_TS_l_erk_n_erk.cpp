@@ -154,7 +154,7 @@ void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_nonlinear(
 
 
 
-#if 0
+//#if 0
 /*
  * Main routine for method to be used in case of finite differences
  */
@@ -167,15 +167,15 @@ void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update(
 		SphereData &o_vort_t,	///< time updates
 		SphereData &o_div_t,	///< time updates
 
-		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		//double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp
 )
 {
 	/*
 	 * TIME STEP SIZE
 	 */
-	if (i_fixed_dt <= 0)
-		FatalError("Only fixed time step size allowed");
+        //if (i_fixed_dt <= 0)
+	//	FatalError("Only fixed time step size allowed");
 
 	/*
 	 * NON-LINEAR
@@ -212,7 +212,7 @@ void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update(
 	tmpspec.request_data_spectral();
 	o_div_t += -op.laplace(tmpspec);
 }
-#endif
+//#endif
 
 
 void SWE_Sphere_TS_l_erk_n_erk::run_timestep(

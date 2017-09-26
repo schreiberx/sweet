@@ -71,7 +71,7 @@ public:
 			double i_simulation_timestamp
 	);
 
-private:
+public:
 	void euler_timestep_update(
 			const SphereData &i_phi,	///< prognostic variables
 			const SphereData &i_vort,	///< prognostic variables
