@@ -199,7 +199,7 @@ public:
 			/*
 			 * left bottom
 			 */
-#if SWEET_THREADING
+#if SWEET_SPACE_THREADING
 //#if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
@@ -213,7 +213,7 @@ public:
 			/*
 			 * left top
 			 */
-#if SWEET_THREADING
+#if SWEET_SPACE_THREADING
 //#if !SWEET_REXI_THREAD_PARALLEL_SUM
 
 #		pragma omp parallel for OPENMP_PAR_SIMD
@@ -227,7 +227,7 @@ public:
 			/*
 			 * right bottom
 			 */
-#if SWEET_THREADING
+#if SWEET_SPACE_THREADING
 //#if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
@@ -240,7 +240,7 @@ public:
 			/*
 			 * right top
 			 */
-#if SWEET_THREADING
+#if SWEET_SPACE_THREADING
 //#if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
@@ -265,7 +265,7 @@ public:
 			/*
 			 * left bottom
 			 */
-#if SWEET_THREADING
+#if SWEET_SPACE_THREADING
 //#if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
@@ -279,7 +279,7 @@ public:
 			/*
 			 * left top
 			 */
-#if SWEET_THREADING
+#if SWEET_SPACE_THREADING
 //#if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
@@ -292,7 +292,7 @@ public:
 			/*
 			 * right bottom
 			 */
-#if SWEET_THREADING
+#if SWEET_SPACE_THREADING
 //#if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
@@ -306,7 +306,7 @@ public:
 			/*
 			 * right top
 			 */
-#if SWEET_THREADING
+#if SWEET_SPACE_THREADING
 //#if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
@@ -326,7 +326,7 @@ public:
 		 * DIFF2 X
 		 */
 		{
-#if SWEET_THREADING
+#if SWEET_SPACE_THREADING
 //#if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
@@ -342,7 +342,7 @@ public:
 		 * DIFF2 X
 		 */
 		{
-#if SWEET_THREADING
+#if SWEET_SPACE_THREADING
 //#if !SWEET_REXI_THREAD_PARALLEL_SUM
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif

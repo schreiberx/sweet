@@ -1608,7 +1608,7 @@ int main(int i_argc, char *i_argv[])
 
 #if SWEET_MPI
 
-	#if SWEET_THREADING
+	#if SWEET_SPACE_THREADING
 		int provided;
 		MPI_Init_thread(&i_argc, &i_argv, MPI_THREAD_MULTIPLE, &provided);
 

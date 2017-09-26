@@ -123,7 +123,7 @@ void SWE_Sphere_TS_l_rexi::get_workload_start_end(
 
 #if SWEET_REXI_THREAD_PARALLEL_SUM || SWEET_MPI
 
-	#if SWEET_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+	#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
 		int local_thread_id = omp_get_thread_num();
 	#else
 		int local_thread_id = 0;
@@ -216,7 +216,7 @@ void SWE_Sphere_TS_l_rexi::setup(
 		exit(-1);
 	}
 
-#if SWEET_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
 	if (omp_in_parallel())
 	{
 		std::cerr << "FATAL ERROR X: in parallel region" << std::endl;
@@ -235,7 +235,7 @@ void SWE_Sphere_TS_l_rexi::setup(
 			if (i != j)
 				continue;
 
-#if SWEET_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
 			if (omp_get_thread_num() != i)
 			{
 				// leave this dummy std::cout in it to avoid the intel compiler removing this part

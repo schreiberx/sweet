@@ -171,7 +171,7 @@ public:
 		SphereData out_sph_data(i_sph_data.sphereDataConfig);
 
 		// compute d/dlambda in spectral space
-#if SWEET_THREADING
+#if SWEET_SPACE_THREADING
 #pragma omp parallel for schedule(guided)
 #endif
 		for (int m = i_sph_data.sphereDataConfig->spectral_modes_m_max; m >= 0; m--)
@@ -810,7 +810,7 @@ public:
 
 		SphereData out_sph_data(sphereDataConfig);
 
-#if SWEET_THREADING
+#if SWEET_SPACE_THREADING
 #pragma omp parallel for
 #endif
 		for (int m = 0; m <= i_sph_data.sphereDataConfig->spectral_modes_m_max; m++)
@@ -860,7 +860,7 @@ public:
 		SphereData out_sph_data = SphereData(sphereDataConfig);
 
 
-#if SWEET_THREADING
+#if SWEET_SPACE_THREADING
 #pragma omp parallel for
 #endif
 		for (int m = 0; m <= i_sphere_data.sphereDataConfig->spectral_modes_m_max; m++)
@@ -904,7 +904,7 @@ public:
 		SphereData out_sph_data = SphereData(sphereDataConfig);
 
 
-#if SWEET_THREADING
+#if SWEET_SPACE_THREADING
 #pragma omp parallel for
 #endif
 		for (int m = 0; m <= i_sph_data.sphereDataConfig->spectral_modes_m_max; m++)

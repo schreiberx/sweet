@@ -28,7 +28,7 @@ public:
 
 		PlaneData out(i_planeDataConfig);
 
-#if SWEET_THREADING
+#if SWEET_SPACE_THREADING
 #pragma omp parallel for
 #endif
 

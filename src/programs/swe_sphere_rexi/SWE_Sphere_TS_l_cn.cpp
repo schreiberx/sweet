@@ -88,6 +88,7 @@ void SWE_Sphere_TS_l_cn::setup(
 }
 
 
+
 void SWE_Sphere_TS_l_cn::update_coefficients()
 {
 	if (!use_f_sphere)

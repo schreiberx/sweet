@@ -24,7 +24,7 @@ public:
 
 		SphereData out(i_sphereData.sphereDataConfig);
 
-#if SWEET_THREADING
+#if SWEET_SPACE_THREADING
 #pragma omp parallel for
 #endif
 		for (int i = 0; i < out.sphereDataConfig->physical_array_data_number_of_elements; i++)
@@ -50,7 +50,7 @@ public:
 
 		SphereData out(i_sphereData.sphereDataConfig);
 
-#if SWEET_THREADING
+#if SWEET_SPACE_THREADING
 #pragma omp parallel for
 #endif
 		for (int i = 0; i < out.sphereDataConfig->physical_array_data_number_of_elements; i++)

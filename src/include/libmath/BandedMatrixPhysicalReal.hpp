@@ -81,9 +81,7 @@ public:
 	)
 	{
 		if (data != nullptr)
-			delete data;
-
-//		assert(data == nullptr);
+			MemBlockAlloc::free(data, sizeof(T)*sphereDataConfig->spectral_array_data_number_of_elements*num_diagonals);
 
 		sphereDataConfig = i_sphereDataConfig;
 
