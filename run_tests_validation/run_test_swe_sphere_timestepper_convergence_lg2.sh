@@ -27,16 +27,9 @@ if false; then
 	#./jobs_create.py ln2 l_erk_n_erk 2 2 0 || exit 1
 
 else
-	# 2nd order nonlinear
-	./jobs_create.py ln2 ln_erk 2 2 0 || exit 1
-
-	./jobs_create.py ln2 l_erk_n_erk 2 2 0 || exit 1
-	./jobs_create.py ln2 lg_erk_lc_n_erk 2 2 0 || exit 1
-	./jobs_create.py ln2 l_irk_n_erk 2 2 0 || exit 1
-	./jobs_create.py ln2 lg_irk_lc_n_erk 2 2 0 || exit 1
-
-	./jobs_create.py ln2 l_rexi_n_etdrk 2 2 0 || exit 1
-	./jobs_create.py ln2 lg_rexi_lc_n_etdrk 2 2 0 || exit 1
+	# 1st order linear
+	./jobs_create.py lg2 lg_cn 2 0 0 || exit 1
+	./jobs_create.py lg2 lg_erk 2 0 0 || exit 1
 fi
 
 

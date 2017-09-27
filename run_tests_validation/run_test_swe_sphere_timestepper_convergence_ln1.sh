@@ -28,12 +28,15 @@ if false; then
 
 else
 	# 1st order nonlinear
+
+	./jobs_create.py ln1 l_erk_n_erk 1 1 0 || exit 1
+	./jobs_create.py ln1 lg_erk_lc_n_erk 1 1 0 || exit 1
+
+	./jobs_create.py ln1 l_irk_n_erk 1 1 0 || exit 1
+	./jobs_create.py ln1 lg_irk_lc_n_erk 1 1 0 || exit 1
+
 	./jobs_create.py ln1 ln_erk 1 1 0 || exit 1
 	#./jobs_create.py ln1 l_rexi_n_etdrk 1 1 1 || exit 1
-	./jobs_create.py ln1 l_erk_n_erk 1 1 0 || exit 1
-	./jobs_create.py ln1 l_irk_n_erk 1 1 0 || exit 1
-	#./jobs_create.py ln1 l_irk_n_erk 1 1 0 || exit 1
-	#./jobs_create.py ln1 l_rexi_n_erk 1 1 1 || exit 1
 fi
 
 

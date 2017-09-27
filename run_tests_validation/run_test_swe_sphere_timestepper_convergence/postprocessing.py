@@ -19,8 +19,11 @@ datafile="output_prog_h_t"+t+".csv"
 
 
 groups = [
-	['l1', 1],	# Group name / convergence order
+	# Group name, convergence order
+	['l1', 1],
+	['lg1', 1],
 	['l2', 2],
+	['lg2', 2],
 
 	['ln1', 1],
 	['ln2', 2],

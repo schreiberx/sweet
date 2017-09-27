@@ -57,8 +57,16 @@ void SWE_Sphere_TS_l_cn::setup(
 	timestep_size = i_timestep_size;
 	use_f_sphere = simVars.sim.f_sphere;
 
-	f0 = simVars.sim.f0;
-	two_coriolis = 2.0*simVars.sim.coriolis_omega;
+	if (use_f_sphere)
+	{
+		f0 = simVars.sim.f0;
+		two_coriolis = 0.0;
+	}
+	else
+	{
+		f0 = 0.0;
+		two_coriolis = 2.0*simVars.sim.coriolis_omega;
+	}
 
 	alpha = -1.0/timestep_size;
 	beta = -1.0/timestep_size;
@@ -83,10 +91,8 @@ void SWE_Sphere_TS_l_cn::setup(
 
 	gh = simVars.sim.gravitation*simVars.sim.h0;
 
-
 	update_coefficients();
 }
-
 
 
 void SWE_Sphere_TS_l_cn::update_coefficients()

@@ -93,7 +93,7 @@ p.runtime.output_timestep_size = p.runtime.simtime
 # Groups to execute, see below
 # l: linear
 # ln: linear and nonlinear
-groups = ['l1', 'l2', 'ln1', 'ln2', 'ln4']
+groups = ['l1', 'lg1', 'l2', 'lg2', 'ln1', 'ln2', 'ln4']
 
 if len(sys.argv) > 1:
 	groups = [sys.argv[1]]
@@ -129,6 +129,15 @@ if __name__ == "__main__":
 					for max_error in [1e-6, 1e-8, 1e-10, 1e-12]:
 						ts_methods.append(['l_rexi',	0,	0,	0, {'rexi_method': 'file', 'file_test_abs':testabs, 'file_max_error':max_error}])
 
+		# 1st order linear
+		if group == 'lg1':
+			ts_methods = [
+				['lg_erk',		4,	4,	0],	# reference solution
+				['lg_erk',	1,	0,	0],
+				['lg_irk',	1,	0,	0],
+				#['l_rexi',	0,	0,	0],
+			]
+
 		# 2nd order linear
 		if group == 'l2':
 			ts_methods = [
@@ -137,6 +146,16 @@ if __name__ == "__main__":
 				['l_cn',	2,	0,	0],
 				['l_rexi',	0,	0,	0],
 			]
+
+		# 2nd order linear
+		if group == 'lg2':
+			ts_methods = [
+				['lg_erk',		4,	4,	0],	# reference solution
+				['lg_erk',	2,	0,	0],
+				['lg_cn',	2,	0,	0],
+				['l_rexi',	0,	0,	0],
+			]
+
 
 		# 1st order nonlinear
 		if group == 'ln1':

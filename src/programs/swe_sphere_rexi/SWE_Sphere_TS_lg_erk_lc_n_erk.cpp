@@ -122,6 +122,43 @@ void SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_coriolis_and_nonlinear
 }
 
 
+
+/**
+ * This routine is used by other time step implementations
+ */
+void SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_coriolis_and_nonlinear(
+		SphereData &io_phi,		///< prognostic variables
+		SphereData &io_vort,	///< prognostic variables
+		SphereData &io_div,		///< prognostic variables
+
+		double i_dt,
+		double i_simulation_timestamp
+)
+{
+	SphereData tmp_phi(io_phi.sphereDataConfig);
+	SphereData tmp_vort(io_vort.sphereDataConfig);
+	SphereData tmp_div(io_div.sphereDataConfig);
+
+	euler_timestep_update_coriolis_and_nonlinear(
+			io_phi,
+			io_vort,
+			io_div,
+
+			tmp_phi,
+			tmp_vort,
+			tmp_div,
+
+			i_simulation_timestamp
+		);
+
+	io_phi += i_dt*tmp_phi;
+	io_vort += i_dt*tmp_vort;
+	io_div += i_dt*tmp_div;
+}
+
+
+
+
 #if 0
 /*
  * Main routine for method to be used in case of finite differences
