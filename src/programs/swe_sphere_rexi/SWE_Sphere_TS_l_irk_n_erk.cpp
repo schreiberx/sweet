@@ -14,25 +14,38 @@ void SWE_Sphere_TS_l_irk_n_erk::run_timestep(
 		SphereData &io_vort,	///< prognostic variables
 		SphereData &io_div,		///< prognostic variables
 
-		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp
 )
 {
 	if (timestepping_order == 1)
 	{
+
+		SphereData tmp_phi = io_phi;
+		SphereData tmp_vort = io_vort;
+		SphereData tmp_div = io_div;
+
 		// first order IRK for linear
 		timestepping_l_irk.run_timestep(
 				io_phi, io_vort, io_div,
-				i_fixed_dt,
+				i_dt,
 				i_simulation_timestamp
 			);
 
+		SphereData phi_dt(io_phi.sphereDataConfig);
+		SphereData vort_dt(io_vort.sphereDataConfig);
+		SphereData div_dt(io_div.sphereDataConfig);
+
 		// first order explicit for non-linear
 		timestepping_l_erk_n_erk.euler_timestep_update_nonlinear(
-				io_phi, io_vort, io_div,
-				i_fixed_dt,
+				tmp_phi, tmp_vort, tmp_div,
+				phi_dt, vort_dt, div_dt,
 				i_simulation_timestamp
 			);
+
+		io_phi += i_dt*phi_dt;
+		io_vort += i_dt*vort_dt;
+		io_div += i_dt*div_dt;
 	}
 	else if (timestepping_order == 2)
 	{
@@ -40,7 +53,7 @@ void SWE_Sphere_TS_l_irk_n_erk::run_timestep(
 		// HALF time step for linear part
 		timestepping_l_cn.run_timestep(
 				io_phi, io_vort, io_div,
-				i_fixed_dt*0.5,
+				i_dt*0.5,
 				i_simulation_timestamp
 			);
 
@@ -49,7 +62,7 @@ void SWE_Sphere_TS_l_irk_n_erk::run_timestep(
 				&timestepping_l_erk_n_erk,
 				&SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
 				io_phi, io_vort, io_div,
-				i_fixed_dt,
+				i_dt,
 				timestepping_order,		/// This must be 2nd order accurate to get overall 2nd order accurate method
 				i_simulation_timestamp
 			);
@@ -57,8 +70,8 @@ void SWE_Sphere_TS_l_irk_n_erk::run_timestep(
 		// HALF time step for linear part
 		timestepping_l_cn.run_timestep(
 				io_phi, io_vort, io_div,
-				i_fixed_dt*0.5,
-				i_simulation_timestamp+i_fixed_dt*0.5	/* TODO: CHECK THIS, THIS MIGHT BE WRONG!!! */
+				i_dt*0.5,
+				i_simulation_timestamp+i_dt*0.5	/* TODO: CHECK THIS, THIS MIGHT BE WRONG!!! */
 			);
 #else
 		// HALF time step for non-linear part
@@ -66,7 +79,7 @@ void SWE_Sphere_TS_l_irk_n_erk::run_timestep(
 				&timestepping_l_erk_n_erk,
 				&SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
 				io_phi, io_vort, io_div,
-				i_fixed_dt*0.5,
+				i_dt*0.5,
 				timestepping_order,		/// This must be 2nd order accurate to get overall 2nd order accurate method
 				i_simulation_timestamp
 			);
@@ -74,7 +87,7 @@ void SWE_Sphere_TS_l_irk_n_erk::run_timestep(
 		// FULL time step for linear part
 		timestepping_l_cn.run_timestep(
 				io_phi, io_vort, io_div,
-				i_fixed_dt,
+				i_dt,
 				i_simulation_timestamp
 			);
 
@@ -83,7 +96,7 @@ void SWE_Sphere_TS_l_irk_n_erk::run_timestep(
 				&timestepping_l_erk_n_erk,
 				&SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
 				io_phi, io_vort, io_div,
-				i_fixed_dt*0.5,
+				i_dt*0.5,
 				timestepping_order,		/// This must be 2nd order accurate to get overall 2nd order accurate method
 				i_simulation_timestamp
 			);
@@ -112,7 +125,7 @@ void SWE_Sphere_TS_l_irk_n_erk::setup(
 	{
 		timestepping_l_irk.setup(
 				1,
-				timestep_size*0.5,	// Half time step size for linear implicit part (applied 2x)
+				timestep_size,	// Half time step size for linear implicit part (applied 2x)
 				simVars.rexi.use_sphere_extended_modes
 		);
 	}

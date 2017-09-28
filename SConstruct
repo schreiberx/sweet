@@ -430,10 +430,6 @@ if p.sweet_mpi == 'enable':
 
 env.Append(LIBS=['quadmath'])
 
-env.Append(LIBS=['libpfasst'])
-env.Append(LIBS=['mpichcxx'])
-env.Append(LIBS=['mpich'])
-env.Append(LIBS=['mpi'])
 
 
 env.Append(CXXFLAGS=' -DNUMA_BLOCK_ALLOCATOR_TYPE='+str(p.numa_block_allocator))
@@ -461,6 +457,11 @@ else:
 if p.libpfasst == 'enable':
 	env.Append(CXXFLAGS=['-Llibpfasst'])
 	env.Append(CXXFLAGS=['-DSWEET_LIBPFASST=1'])
+
+	env.Append(LIBS=['libpfasst'])
+	env.Append(LIBS=['mpichcxx'])
+	env.Append(LIBS=['mpich'])
+	env.Append(LIBS=['mpi'])
 else:
 	env.Append(CXXFLAGS=['-DSWEET_LIBPFASST=0'])
 

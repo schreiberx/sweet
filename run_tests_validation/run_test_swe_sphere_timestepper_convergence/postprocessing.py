@@ -19,8 +19,11 @@ datafile="output_prog_h_t"+t+".csv"
 
 
 groups = [
-	['l1', 1],	# Group name / convergence order
+	# Group name, convergence order
+	['l1', 1],
+	['lg1', 1],
 	['l2', 2],
+	['lg2', 2],
 
 	['ln1', 1],
 	['ln2', 2],
@@ -135,11 +138,12 @@ for group_info in groups:
 			# Comparing RK4 with 4-th order methods requires a more relaxed test
 			# This works and was empirically determined
 			if 'etdrk' in rundir:
-				test_range = range(8,10)
+				#test_range = range(8,10)
+				test_range = range(7,9)
+				max_error_rate = 0.1
 			else:
 				test_range = range(1,4)
-
-			max_error_rate = 0.01
+				max_error_rate = 0.01
 		else:
 			test_range = range(1,4)
 			max_error_rate = 0.05

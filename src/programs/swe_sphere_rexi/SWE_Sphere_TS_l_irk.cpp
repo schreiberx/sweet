@@ -58,9 +58,15 @@ void SWE_Sphere_TS_l_irk::setup(
 	}
 
 	if (use_f_sphere)
+	{
 		f0 = simVars.sim.f0;
+		two_coriolis = 0;
+	}
 	else
+	{
 		two_coriolis = 2.0*simVars.sim.coriolis_omega;
+		f0 = 0;
+	}
 
 	alpha = -1.0/timestep_size;
 	beta = -1.0/timestep_size;

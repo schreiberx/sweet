@@ -15,9 +15,9 @@
 #include <sweet/SimulationVariables.hpp>
 
 #include "SWE_Sphere_TS_interface.hpp"
-#include "SWE_Sphere_TS_l_irk.hpp"
-#include "SWE_Sphere_TS_l_cn.hpp"
-#include "SWE_Sphere_TS_l_erk_n_erk.hpp"
+#include "SWE_Sphere_TS_lg_irk.hpp"
+#include "SWE_Sphere_TS_lg_cn.hpp"
+#include "SWE_Sphere_TS_lg_erk_lc_n_erk.hpp"
 
 
 
@@ -34,13 +34,13 @@ class SWE_Sphere_TS_lg_irk_lc_n_erk	: public SWE_Sphere_TS_interface
 	/*
 	 * Linear time steppers
 	 */
-	SWE_Sphere_TS_l_irk timestepping_l_irk;
-	SWE_Sphere_TS_l_cn timestepping_l_cn;
+	SWE_Sphere_TS_lg_irk timestepping_lg_irk;
+	SWE_Sphere_TS_lg_cn timestepping_lg_cn;
 
 	/*
 	 * Non-linear time steppers
 	 */
-	SWE_Sphere_TS_l_erk_n_erk timestepping_l_erk_n_erk;
+	SWE_Sphere_TS_lg_erk_lc_n_erk timestepping_lg_erk_lc_n_erk;
 
 	SphereDataTimesteppingExplicitRK timestepping_rk_nonlinear;
 
