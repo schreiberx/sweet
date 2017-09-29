@@ -19,6 +19,10 @@ class SWEETClusterOptions:
 		# Number of physical cores per node
 		self.cores_per_node = -1
 
+		# Cores per MPI thread
+		self.pm_time_cores_per_mpi_rank = 1
+		self.pm_space_cores_per_mpi_rank = 1
+
 		self.setupTargetMachine(target_machine)
 
 		#
@@ -140,33 +144,181 @@ class SWEETClusterOptions:
 			if os.path.exists(sweetdir+'/local_software'):
 				break
 
-		#
+		###########################################################
 		# SWEET specific allocation starts here
+		###########################################################
 		#
 		# Number of cores to use for space parallelization
-		# self.par_space_cores
+		# -> self.par_space_cores
 		#
 		# Number of cores to use for time parallelization
-		# self.par_time_cores
+		# -> self.par_time_cores
 		#
 
+		###########################################################
+		# Parallelization model
+		###########################################################
+		#
+		# Number of cores per MPI rank
+		# -> self.pm_time_cores_per_mpi_rank
+		# -> self.pm_space_cores_per_mpi_rank
+		#
+
+		#
 		# SETUP variables which are shared by all job scripts
+		#
 
-		# total number of nodes
-		par_total_cores = self.par_space_cores*self.par_time_cores
+		#if False:
+		if True:
+			print(" > par_space_cores: "+str(self.par_space_cores))
+			print(" > par_time_cores: "+str(self.par_time_cores))
 
-		# total number of nodes
-		num_nodes = int(math.ceil(par_total_cores/self.cores_per_node))
+			###########################################################
+			# Compact in time
+			###########################################################
 
-		# number of cores (CPUs) per node
-		num_cores_per_node = self.cores_per_node
+			pm_cores_per_mpi_rank = self.pm_time_cores_per_mpi_rank * self.pm_space_cores_per_mpi_rank
+			print(" + pm_cores_per_mpi_rank: "+str(pm_cores_per_mpi_rank))
 
-		# Number of OpenMP threads to use per MPI threads
-		# TODO: Include compile options and runtime options to determine this number
-		num_omp_threads_per_mpi_thread = 1
+			if self.pm_time_cores_per_mpi_rank != 1:
+				raise Exception("Not yet supported")
 
-#		if par_total_cores == 1:
-#			num_cores_per_node = 1
+			if self.pm_space_cores_per_mpi_rank > self.cores_per_node:
+				raise Exception("Not yet supported")
+
+
+
+			###########################################################
+			# SPACE
+			###########################################################
+
+			# Cores per space group on each node
+			space_ranks_per_node = int(math.ceil(self.cores_per_node/pm_cores_per_mpi_rank))
+			print(" + space_ranks_per_node: "+str(space_ranks_per_node))
+
+			if space_ranks_per_node == 0:
+				raise Exception("Too many cores per MPI rank")
+
+			# Total number of space mpi ranks
+			space_num_ranks = int(math.ceil(self.par_space_cores/space_ranks_per_node))
+			print(" + space_num_ranks: "+str(space_num_ranks))
+
+			# Total number of nodes INCLUDING IDLING ONES !!!
+			space_total_num_nodes = int(math.ceil(space_num_ranks/space_ranks_per_node))
+			print(" + space_total_num_nodes: "+str(space_total_num_nodes))
+
+			# Total number of cores in space INCLUDING IDLING ONES !!!
+			space_total_num_cores = space_total_num_nodes*self.cores_per_node
+			print(" + space_total_num_cores: "+str(space_total_num_cores))
+
+
+
+			###########################################################
+			# TIME
+			###########################################################
+			time_ranks_per_node = int(math.ceil(18/self.pm_time_cores_per_mpi_rank))
+
+			time_ranks_per_node = min(time_ranks_per_node*self.pm_time_cores_per_mpi_rank, self.par_time_cores)
+			time_num_cores = self.par_time_cores
+			time_num_ranks = self.par_time_cores
+
+			print(" + space_ranks_per_node: "+str(space_ranks_per_node))
+			print(" + time_ranks_per_node: "+str(time_ranks_per_node))
+			print(" + space_num_ranks: "+str(space_num_ranks))
+			print(" + time_num_ranks: "+str(time_num_ranks))
+
+
+
+			###########################################################
+			###########################################################
+			###########################################################
+
+			# Total number of nodes
+			par_total_cores = space_num_ranks*self.pm_space_cores_per_mpi_rank * time_num_ranks * self.pm_time_cores_per_mpi_rank
+			print(" + par_total_cores: "+str(par_total_cores))
+
+			# Total number of nodes
+			num_nodes = int(math.ceil(par_total_cores/self.cores_per_node))
+			print(" + num_nodes: "+str(num_nodes))
+
+			# Number of cores (CPUs) per node
+			num_cores_per_node = self.cores_per_node
+
+			# Number of OpenMP threads to use per MPI threads
+			# TODO: Include compile options and runtime options to determine this number
+			num_omp_threads_per_mpi_thread = pm_cores_per_mpi_rank
+
+			# Total number of MPI ranks
+			mpi_ranks_total = space_num_ranks*time_num_ranks
+
+
+		else:
+
+
+			###########################################################
+			# Compact in space
+			###########################################################
+			raise Exception("Not implemented yet")
+
+			###########################################################
+			# Compact in time
+			###########################################################
+
+			pm_cores_per_mpi_rank = self.pm_time_cores_per_mpi_rank * self.pm_space_cores_per_mpi_rank
+
+			if self.pm_time_cores_per_mpi_rank != 1:
+				raise Exception("Not yet supported")
+
+			if self.pm_space_cores_per_mpi_rank > self.cores_per_node:
+				raise Exception("Not yet supported")
+
+
+
+			###########################################################
+			# TIME
+			###########################################################
+
+			# Cores per time group on each node
+			time_ranks_per_node = int(math.ceil(self.cores_per_node/self.pm_cores_per_mpi_rank))
+
+			if time_ranks_per_node == 0:
+				raise Exception("Too many cores per MPI rank")
+
+
+			# Total number of time mpi ranks
+			time_num_ranks = int(math.ceil(self.par_time_cores/time_ranks_per_node))
+
+			# Total number of nodes INCLUDING IDLING ONES !!!
+			time_total_num_nodes = int(math.ceil(time_num_ranks/time_ranks_per_node))
+
+			# Total number of cores in time INCLUDING IDLING ONES !!!
+			time_total_num_cores = time_total_num_nodes*self.cores_per_node
+
+
+
+			###########################################################
+			# SPACE
+			###########################################################
+			space_ranks_per_node = 1
+			space_num_cores = 1
+
+			###########################################################
+
+			# Total number of nodes
+			par_total_cores = self.par_space_cores*time_total_num_cores
+
+			# Total number of nodes
+			num_nodes = int(math.ceil(par_total_cores/self.cores_per_node))
+
+			# Number of cores (CPUs) per node
+			num_cores_per_node = self.cores_per_node
+
+			# Number of OpenMP threads to use per MPI threads
+			# TODO: Include compile options and runtime options to determine this number
+			num_omp_threads_per_mpi_thread = self.pm_time_cores_per_mpi_rank*self.pm_space_cores_per_mpi_rank
+
+			# Total number of MPI ranks
+			mpi_ranks_total = par_total_cores
 
 		#
 		# SETUP the following variables:
@@ -234,7 +386,7 @@ class SWEETClusterOptions:
 			#
 
 			content = "#!/bin/bash\n"
-			content += "# TARGET MACHINE: "+self.target_machine
+			content += "# TARGET MACHINE: "+self.target_machine+"\n"
 			content += """#
 ## project code
 #PBS -A NCIS0002
@@ -252,12 +404,14 @@ class SWEETClusterOptions:
 #PBS -o """+cwd+"/"+dirname+"""/output.out
 #PBS -e """+cwd+"/"+dirname+"""/output.err
 
+export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
+
 """
 
 			#
 			# https://www2.cisl.ucar.edu/resources/computational-systems/cheyenne/running-jobs/submitting-jobs-pbs/omplace-and-dplace
 			#
-			mpi_exec_prefix = "mpiexec_mpt -n "+str(par_total_cores)+" "
+			mpi_exec_prefix = "mpiexec_mpt -n "+str(mpi_ranks_total)+" "
 			# TODO: This seems to make trouble
 			#mpi_exec_prefix += " omplace -vv "
 			mpi_exec_prefix += " dplace -s 1 "

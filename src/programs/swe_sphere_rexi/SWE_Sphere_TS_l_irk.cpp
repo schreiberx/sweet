@@ -58,9 +58,15 @@ void SWE_Sphere_TS_l_irk::setup(
 	}
 
 	if (use_f_sphere)
+	{
 		f0 = simVars.sim.f0;
+		two_coriolis = 0;
+	}
 	else
+	{
 		two_coriolis = 2.0*simVars.sim.coriolis_omega;
+		f0 = 0;
+	}
 
 	alpha = -1.0/timestep_size;
 	beta = -1.0/timestep_size;
@@ -99,10 +105,10 @@ void SWE_Sphere_TS_l_irk::update_coefficients()
 }
 
 
+
 /**
  * Solve a REXI time step for the given initial conditions
  */
-
 void SWE_Sphere_TS_l_irk::run_timestep(
 		SphereData &io_phi,		///< prognostic variables
 		SphereData &io_vort,	///< prognostic variables
@@ -117,11 +123,14 @@ void SWE_Sphere_TS_l_irk::run_timestep(
 
 	if (std::abs(timestep_size - i_fixed_dt)/std::max(timestep_size, i_fixed_dt) > 1e-10)
 	{
-		timestep_size = i_fixed_dt;
-
-		std::cout << "Warning: Reducing time step size from " << i_fixed_dt << " to " << timestep_size << std::endl;
-
-		update_coefficients();
+	        std::cout << "Warning: Reducing time step size from " << i_fixed_dt << " to " << timestep_size << std::endl;
+	  
+	        timestep_size = i_fixed_dt;
+	  
+	        alpha = -1.0/timestep_size;
+	        beta = -1.0/timestep_size;
+	  
+	        update_coefficients();
 	}
 
 	SphereData phi0 = io_phi;

@@ -384,7 +384,7 @@ public:
 		shtns_verbose(0);			// displays informations during initialization.
 
 		// enable multi-threaded transforms (if supported).
-#if SWEET_THREADING
+#if SWEET_SPACE_THREADING
 		shtns_use_threads(0);	// automatically choose number of threads
 #else
 		shtns_use_threads(1);	// value of 1 disables threading
@@ -428,7 +428,7 @@ public:
 		cleanup();
 
 		shtns_verbose(0);			// displays informations during initialization.
-#if SWEET_THREADING
+#if SWEET_SPACE_THREADING
 		shtns_use_threads(0);	// automatically choose number of threads
 #else
 		shtns_use_threads(1);	// value of 1 disables threading
@@ -477,7 +477,7 @@ public:
 		cleanup();
 
 		shtns_verbose(0);			// displays informations during initialization.
-#if SWEET_THREADING
+#if SWEET_SPACE_THREADING
 		shtns_use_threads(0);	// automatically choose number of threads
 #else
 		shtns_use_threads(1);	// value of 1 disables threading

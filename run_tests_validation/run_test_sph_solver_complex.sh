@@ -16,7 +16,7 @@ echo "$SCONS"
 $SCONS
 
 
-for r in 0.1 1 10 10000; do
+for r in 0.1 10000; do
 
 	EXEC="./build/test_sph_solver_complex*_debug -f 1 -g 1 -H 1 -a $r -M 256"
 	echo "$EXEC"

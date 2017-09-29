@@ -64,6 +64,16 @@ void SWE_Sphere_TS_lg_irk::run_timestep(
 	if (i_fixed_dt <= 0)
 		FatalError("Only constant time step size allowed");
 
+	if (std::abs(timestep_size - i_fixed_dt)/std::max(timestep_size, i_fixed_dt) > 1e-10)
+	{
+	        std::cout << "Warning: Reducing time step size from " << i_fixed_dt << " to " << timestep_size << std::endl;
+
+	        timestep_size = i_fixed_dt;
+
+	        alpha = -1.0/timestep_size;
+	        beta = -1.0/timestep_size;
+	}
+
 	SphereData phi0 = io_phi;
 	SphereData vort0 = io_vort;
 	SphereData div0 = io_div;

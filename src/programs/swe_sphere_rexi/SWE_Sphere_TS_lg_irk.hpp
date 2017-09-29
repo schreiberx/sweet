@@ -59,9 +59,6 @@ public:
 			SphereOperators &i_op
 	);
 
-private:
-	void update_coefficients();
-
 
 	/**
 	 * Setup the SWE REXI solver with SPH

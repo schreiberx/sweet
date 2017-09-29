@@ -98,9 +98,9 @@ else:
 
 if p.sphere_spectral_space == 'enable':
 
-	if p.numa_block_allocator != 0:
-		print("NUMA Block allocator option > 0 not tested with SHTNS, buffers in SHTNS may be shared")
-		Exit(1)
+#	if p.numa_block_allocator != 0:
+#		print("NUMA Block allocator option > 0 not tested with SHTNS, buffers in SHTNS may be shared")
+#		Exit(1)
 
 	env.Append(CXXFLAGS = ' -DSWEET_USE_SPHERE_SPECTRAL_SPACE=1')
 else:
@@ -441,9 +441,10 @@ if p.numa_block_allocator in [1, 2]:
 if p.threading == 'omp':
 	env.Append(CXXFLAGS=['-fopenmp'])
 	env.Append(LINKFLAGS=['-fopenmp'])
-	env.Append(CXXFLAGS=' -DSWEET_THREADING=1')
+
+	env.Append(CXXFLAGS=' -DSWEET_SPACE_THREADING=1')
 else:
-	env.Append(CXXFLAGS=' -DSWEET_THREADING=0')
+	env.Append(CXXFLAGS=' -DSWEET_SPACE_THREADING=0')
 
 
 
@@ -456,6 +457,11 @@ else:
 if p.libpfasst == 'enable':
 	env.Append(CXXFLAGS=['-Llibpfasst'])
 	env.Append(CXXFLAGS=['-DSWEET_LIBPFASST=1'])
+
+	env.Append(LIBS=['libpfasst'])
+	env.Append(LIBS=['mpichcxx'])
+	env.Append(LIBS=['mpich'])
+	env.Append(LIBS=['mpi'])
 else:
 	env.Append(CXXFLAGS=['-DSWEET_LIBPFASST=0'])
 
@@ -520,6 +526,18 @@ if p.rexi_thread_parallel_sum == 'enable':
 	# Same for gcc/icpc
 	env.Append(LINKFLAGS=['-fopenmp'])
 
+	#
+	# Also add CXX flags here.
+	# This requires that *ALL* space-related 
+	#
+	#pragma omp parallel for
+	#
+	# loops are annoted with
+	#
+	#if SWEET_SPACE_THREADING
+	#
+	env.Append(CXXFLAGS=['-fopenmp'])
+
 	# Compile flag is set in sconscript
 
 	# Activate precompiler flag
@@ -546,8 +564,8 @@ exec_name = p.getProgramName()
 build_dir='/tmp/scons_build_'+exec_name+'/'
 
 if p.libpfasst == 'enable':
-	env.Append(F90FLAGS = ['-Ilocal_software/local_src/libpfasst/include'])
-
+	#env.Append(F90FLAGS = ['-Ilocal_software/local_src/libpfasst/include'])
+	env.Append(F90FLAGS = ['-I../libpfasst_user_level/include'])
 #
 # USE build directory for Fortran module output
 #

@@ -5,11 +5,11 @@
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#include "SWE_Sphere_TS_lg_erk_lf_n_erk.hpp"
+#include "SWE_Sphere_TS_lg_erk_lc_n_erk.hpp"
 
 
 
-void SWE_Sphere_TS_lg_erk_lf_n_erk::euler_timestep_update_linear(
+void SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_linear(
 		const SphereData &i_phi,	///< prognostic variables
 		const SphereData &i_vort,	///< prognostic variables
 		const SphereData &i_div,	///< prognostic variables
@@ -70,7 +70,7 @@ void SWE_Sphere_TS_lg_erk_lf_n_erk::euler_timestep_update_linear(
 }
 
 
-void SWE_Sphere_TS_lg_erk_lf_n_erk::euler_timestep_update_coriolis_and_nonlinear(
+void SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_coriolis_and_nonlinear(
 		const SphereData &i_phi,	///< prognostic variables
 		const SphereData &i_vort,	///< prognostic variables
 		const SphereData &i_div,	///< prognostic variables
@@ -122,11 +122,48 @@ void SWE_Sphere_TS_lg_erk_lf_n_erk::euler_timestep_update_coriolis_and_nonlinear
 }
 
 
+
+/**
+ * This routine is used by other time step implementations
+ */
+void SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_coriolis_and_nonlinear(
+		SphereData &io_phi,		///< prognostic variables
+		SphereData &io_vort,	///< prognostic variables
+		SphereData &io_div,		///< prognostic variables
+
+		double i_dt,
+		double i_simulation_timestamp
+)
+{
+	SphereData tmp_phi(io_phi.sphereDataConfig);
+	SphereData tmp_vort(io_vort.sphereDataConfig);
+	SphereData tmp_div(io_div.sphereDataConfig);
+
+	euler_timestep_update_coriolis_and_nonlinear(
+			io_phi,
+			io_vort,
+			io_div,
+
+			tmp_phi,
+			tmp_vort,
+			tmp_div,
+
+			i_simulation_timestamp
+		);
+
+	io_phi += i_dt*tmp_phi;
+	io_vort += i_dt*tmp_vort;
+	io_div += i_dt*tmp_div;
+}
+
+
+
+
 #if 0
 /*
  * Main routine for method to be used in case of finite differences
  */
-void SWE_Sphere_TS_lg_erk_lf_n_erk::euler_timestep_update(
+void SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update(
 		const SphereData &i_phi,	///< prognostic variables
 		const SphereData &i_vort,	///< prognostic variables
 		const SphereData &i_div,	///< prognostic variables
@@ -183,7 +220,7 @@ void SWE_Sphere_TS_lg_erk_lf_n_erk::euler_timestep_update(
 #endif
 
 
-void SWE_Sphere_TS_lg_erk_lf_n_erk::run_timestep(
+void SWE_Sphere_TS_lg_erk_lc_n_erk::run_timestep(
 		SphereData &io_phi,		///< prognostic variables
 		SphereData &io_vort,	///< prognostic variables
 		SphereData &io_div,		///< prognostic variables
@@ -196,7 +233,7 @@ void SWE_Sphere_TS_lg_erk_lf_n_erk::run_timestep(
 	{
 		timestepping_rk_linear.run_timestep(
 				this,
-				&SWE_Sphere_TS_lg_erk_lf_n_erk::euler_timestep_update_linear,	///< pointer to function to compute euler time step updates
+				&SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_linear,	///< pointer to function to compute euler time step updates
 				io_phi, io_vort, io_div,
 				i_dt,
 				timestepping_order,
@@ -205,7 +242,7 @@ void SWE_Sphere_TS_lg_erk_lf_n_erk::run_timestep(
 
 		timestepping_rk_nonlinear.run_timestep(
 				this,
-				&SWE_Sphere_TS_lg_erk_lf_n_erk::euler_timestep_update_coriolis_and_nonlinear,	///< pointer to function to compute euler time step updates
+				&SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_coriolis_and_nonlinear,	///< pointer to function to compute euler time step updates
 				io_phi, io_vort, io_div,
 				i_dt,
 				timestepping_order,
@@ -217,7 +254,7 @@ void SWE_Sphere_TS_lg_erk_lf_n_erk::run_timestep(
 		// HALF time step for linear part
 		timestepping_rk_linear.run_timestep(
 				this,
-				&SWE_Sphere_TS_lg_erk_lf_n_erk::euler_timestep_update_linear,	///< pointer to function to compute euler time step updates
+				&SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_linear,	///< pointer to function to compute euler time step updates
 				io_phi, io_vort, io_div,
 				i_dt*0.5,
 				timestepping_order,		/// This must be 2nd order accurate to get overall 2nd order accurate method
@@ -227,7 +264,7 @@ void SWE_Sphere_TS_lg_erk_lf_n_erk::run_timestep(
 		// FULL time step for non-linear part
 		timestepping_rk_nonlinear.run_timestep(
 				this,
-				&SWE_Sphere_TS_lg_erk_lf_n_erk::euler_timestep_update_coriolis_and_nonlinear,	///< pointer to function to compute euler time step updates
+				&SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_coriolis_and_nonlinear,	///< pointer to function to compute euler time step updates
 				io_phi, io_vort, io_div,
 				i_dt,
 				timestepping_order,		/// This must be 2nd order accurate to get overall 2nd order accurate method
@@ -237,7 +274,7 @@ void SWE_Sphere_TS_lg_erk_lf_n_erk::run_timestep(
 		// HALF time step for linear part
 		timestepping_rk_linear.run_timestep(
 				this,
-				&SWE_Sphere_TS_lg_erk_lf_n_erk::euler_timestep_update_linear,	///< pointer to function to compute euler time step updates
+				&SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_linear,	///< pointer to function to compute euler time step updates
 				io_phi, io_vort, io_div,
 				i_dt*0.5,
 				timestepping_order,		/// This must be 2nd order accurate to get overall 2nd order accurate method
@@ -255,7 +292,7 @@ void SWE_Sphere_TS_lg_erk_lf_n_erk::run_timestep(
 /*
  * Setup
  */
-void SWE_Sphere_TS_lg_erk_lf_n_erk::setup(
+void SWE_Sphere_TS_lg_erk_lc_n_erk::setup(
 		int i_order	///< order of RK time stepping method
 )
 {
@@ -283,7 +320,7 @@ void SWE_Sphere_TS_lg_erk_lf_n_erk::setup(
 }
 
 
-SWE_Sphere_TS_lg_erk_lf_n_erk::SWE_Sphere_TS_lg_erk_lf_n_erk(
+SWE_Sphere_TS_lg_erk_lc_n_erk::SWE_Sphere_TS_lg_erk_lc_n_erk(
 		SimulationVariables &i_simVars,
 		SphereOperators &i_op
 )	:
@@ -296,7 +333,7 @@ SWE_Sphere_TS_lg_erk_lf_n_erk::SWE_Sphere_TS_lg_erk_lf_n_erk(
 
 
 
-SWE_Sphere_TS_lg_erk_lf_n_erk::~SWE_Sphere_TS_lg_erk_lf_n_erk()
+SWE_Sphere_TS_lg_erk_lc_n_erk::~SWE_Sphere_TS_lg_erk_lc_n_erk()
 {
 }
 

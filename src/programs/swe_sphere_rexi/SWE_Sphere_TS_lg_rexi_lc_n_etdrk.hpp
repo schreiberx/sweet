@@ -15,16 +15,16 @@
 #include <sweet/sphere/SphereOperators.hpp>
 #include "SWE_Sphere_TS_interface.hpp"
 
-#include "SWE_Sphere_TS_lg_erk_lf_n_erk.hpp"
 #include "SWE_Sphere_TS_l_rexi.hpp"
+#include "SWE_Sphere_TS_lg_erk_lc_n_erk.hpp"
 
 
-class SWE_Sphere_TS_lg_rexi_lf_n_etdrk	: public SWE_Sphere_TS_interface
+class SWE_Sphere_TS_lg_rexi_lc_n_etdrk	: public SWE_Sphere_TS_interface
 {
 	SimulationVariables &simVars;
 	SphereOperators &op;
 
-	SWE_Sphere_TS_lg_erk_lf_n_erk ts_lg_erk_lf_n_erk;
+	SWE_Sphere_TS_lg_erk_lc_n_erk ts_lg_erk_lf_n_erk;
 
 	SWE_Sphere_TS_l_rexi ts_phi0_rexi;
 	SWE_Sphere_TS_l_rexi ts_phi1_rexi;
@@ -66,7 +66,7 @@ private:
 
 
 public:
-	SWE_Sphere_TS_lg_rexi_lf_n_etdrk(
+	SWE_Sphere_TS_lg_rexi_lc_n_etdrk(
 			SimulationVariables &i_simVars,
 			SphereOperators &i_op
 		);
@@ -88,7 +88,7 @@ public:
 
 
 
-	virtual ~SWE_Sphere_TS_lg_rexi_lf_n_etdrk();
+	virtual ~SWE_Sphere_TS_lg_rexi_lc_n_etdrk();
 };
 
 #endif /* SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_LN_ERK_HPP_ */
