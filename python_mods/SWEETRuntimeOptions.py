@@ -15,7 +15,7 @@ class SWEETRuntimeOptions():
 
 		self.stability_checks = 0
 
-		self.timestepping_method = 'l_erk'
+		self.timestepping_method = 'ln_erk'
 		self.timestepping_order = 1
 		self.timestepping_order2 = 1
 
@@ -53,7 +53,7 @@ class SWEETRuntimeOptions():
 
 
 		self.g = 1		# gravity
-		self.h = 100000	# avg. height
+		self.h = 10000	# avg. height
 
 		self.f = 0.000072921	# \Omega coriolis effect
 		#self.f = 2.0*f	# Coriolis effect for constant f (not multiplied with 2.0)
