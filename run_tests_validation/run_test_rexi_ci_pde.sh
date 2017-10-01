@@ -34,6 +34,10 @@ EXEC="./build/test_rexi_ci_pde_*_release --rexi-method=ci --rexi-ci-primitive=ci
 echo "$EXEC"
 $EXEC || exit
 
+EXEC="./build/test_rexi_ci_pde_*_release --rexi-method=ci --rexi-ci-primitive=circle --rexi-ci-n=64 --rexi-ci-max-real=7.0 --rexi-ci-max-imag=10.0 -v 5"
+echo "$EXEC"
+$EXEC || exit
+
 
 echo "***********************************************"
 echo "***************** FIN *************************"
