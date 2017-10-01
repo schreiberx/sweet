@@ -462,6 +462,7 @@ if p.libpfasst == 'enable':
 	env.Append(LIBS=['mpichcxx'])
 	env.Append(LIBS=['mpich'])
 	env.Append(LIBS=['mpi'])
+
 else:
 	env.Append(CXXFLAGS=['-DSWEET_LIBPFASST=0'])
 
