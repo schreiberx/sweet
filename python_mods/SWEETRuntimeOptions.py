@@ -34,6 +34,8 @@ class SWEETRuntimeOptions():
 		self.rexi_file_faf_dir = None
 
 		self.rexi_ci_n = 128
+		self.rexi_ci_max_real = -999
+		self.rexi_ci_max_imag = -999
 		self.rexi_ci_sx = 50
 		self.rexi_ci_sy = 50
 		self.rexi_ci_mu = 0
@@ -120,6 +122,12 @@ class SWEETRuntimeOptions():
 		if 'ci_n' in d:
 			self.rexi_ci_n = int(d['ci_n'])
 
+		if 'ci_max_real' in d:
+			self.rexi_ci_max_real = float(d['ci_max_real'])
+
+		if 'ci_max_imag' in d:
+			self.rexi_ci_max_imag = float(d['ci_max_imag'])
+
 		if 'ci_sx' in d:
 			self.rexi_ci_sx = float(d['ci_sx'])
 
@@ -179,9 +187,13 @@ class SWEETRuntimeOptions():
 				elif self.rexi_method == "ci":
 					idstr += '_REXICI'
 					idstr += '_n'+str(self.rexi_ci_n).zfill(8)
-					idstr += '_sx'+str(float(self.rexi_ci_sx))
-					idstr += '_sy'+str(float(self.rexi_ci_sy))
-					idstr += '_mu'+str(float(self.rexi_ci_mu))
+					if self.rexi_ci_max_real > 0:
+						idstr += '_mr'+str(float(self.rexi_ci_max_real))
+						idstr += '_mi'+str(float(self.rexi_ci_max_imag))
+					else:
+						idstr += '_sx'+str(float(self.rexi_ci_sx))
+						idstr += '_sy'+str(float(self.rexi_ci_sy))
+						idstr += '_mu'+str(float(self.rexi_ci_mu))
 					idstr += '_pr'+str(self.rexi_ci_primitive)
 
 				idstr += '_nrm'+str(self.rexi_normalization)
@@ -273,9 +285,13 @@ class SWEETRuntimeOptions():
 
 		elif self.rexi_method == 'ci':
 			retval += ' --rexi-ci-n='+str(self.rexi_ci_n)
-			retval += ' --rexi-ci-sx='+str(self.rexi_ci_sx)
-			retval += ' --rexi-ci-sy='+str(self.rexi_ci_sy)
-			retval += ' --rexi-ci-mu='+str(self.rexi_ci_mu)
+			if self.rexi_ci_max_real > 0:
+				retval += ' --rexi-ci-max-real='+str(self.rexi_ci_max_real)
+				retval += ' --rexi-ci-max-imag='+str(self.rexi_ci_max_imag)
+			else:
+				retval += ' --rexi-ci-sx='+str(self.rexi_ci_sx)
+				retval += ' --rexi-ci-sy='+str(self.rexi_ci_sy)
+				retval += ' --rexi-ci-mu='+str(self.rexi_ci_mu)
 			retval += ' --rexi-ci-primitive='+str(self.rexi_ci_primitive)
 
 		retval += ' --use-robert-functions='+str(self.use_robert_functions)
