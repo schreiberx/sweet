@@ -15,7 +15,7 @@ class SWEETRuntimeOptions():
 
 		self.stability_checks = 0
 
-		self.timestepping_method = 'l_erk'
+		self.timestepping_method = 'ln_erk'
 		self.timestepping_order = 1
 		self.timestepping_order2 = 1
 
