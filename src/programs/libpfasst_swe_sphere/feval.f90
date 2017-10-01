@@ -3,10 +3,10 @@ module feval_module
   use pf_mod_dtype
   use encap_module
   use pf_mod_utils
-  use pf_mod_imexQ
+  use pf_mod_misdcQ
   implicit none
   
-  type, extends(pf_imexQ_t) :: sweet_sweeper_t
+  type, extends(pf_misdcQ_t) :: sweet_sweeper_t
      type(c_ptr)    :: ctx = c_null_ptr ! c pointer to PlaneDataCtx/SphereDataCtx
      integer        :: nnodes           ! number of nodes
      integer        :: sweep_niter      ! number of the current sweep
@@ -275,7 +275,7 @@ contains
 
     ! need the following line since the "final" keyword is not supported by some (older) compilers
     ! it forces Fortran to destroy the parent class data structures
-    call this%imexQ_destroy(lev) 
+    call this%misdcQ_destroy(lev) 
 
   end subroutine sweet_sweeper_destroy
 

@@ -187,9 +187,9 @@ extern "C"
     // get the time step parameters
     SimulationVariables* simVars = i_ctx->get_simulation_variables();
 
-    /*
+    
     // return immediately if no nonlinear terms
-    if (simVars->pde.use_nonlinear_equations == 0)
+    if (simVars->pde.use_linear_div == 1)
       {
 	phi_F1.physical_set_zero();
 	vort_F1.physical_set_zero();
@@ -197,8 +197,7 @@ extern "C"
 
 	return;
       }
-    */
- 
+   
     SWE_Sphere_TS_l_erk_n_erk* timestepper = i_ctx->get_l_erk_n_erk_timestepper(i_Y->get_level());
 		  
     // compute the explicit nonlinear right-hand side
@@ -283,8 +282,6 @@ extern "C"
     div_Y  = div_Rhs;
     
     SWE_Sphere_TS_l_irk* timestepper = i_ctx->get_l_irk_timestepper(io_Y->get_level());
-    
-    std::cout << "i_dt = " << i_dt << std::endl;
 
     // solve the implicit system using the Helmholtz solver
     timestepper->run_timestep(
@@ -296,12 +293,23 @@ extern "C"
 			      );
     
     // now recompute F2 with the new value of Y
+    /*
     ceval_f2(
 	     io_Y, 
 	     i_t, 
 	     i_ctx, 
 	     o_F2
 	     );
+    */
+
+    SphereData& phi_F2  = o_F2->get_phi();
+    SphereData& vort_F2 = o_F2->get_vort();
+    SphereData& div_F2  = o_F2->get_div();
+
+    phi_F2  = (phi_Y  - phi_Rhs)  / i_dt;
+    vort_F2 = (vort_Y - vort_Rhs) / i_dt;
+    div_F2  = (div_Y  - div_Rhs)  / i_dt;
+
   }
 
   // evaluates the second implicit piece o_F3 = F3(i_Y)
@@ -325,24 +333,49 @@ extern "C"
     // initialize F3 to zero in case no artificial viscosity
     c_sweet_data_setval(o_F3, 0.0);
 
-    // // get the simulation variables
-    // SimulationVariables* simVars = i_ctx->get_simulation_variables();
+    // get the simulation variables
+    SimulationVariables* simVars = i_ctx->get_simulation_variables();
 
-    // // no need to do anything if no artificial viscosity
-    // if (simVars->sim.viscosity == 0)
-    //   return;
+    // no need to do anything if no artificial viscosity
+    if (simVars->sim.viscosity == 0)
+      return;
 
-    // // get the operators for this level
-    // SphereOperators* op = i_ctx->get_sphere_operators(i_level);
-    
-    // // Get diffusion coefficients
-    // // put visc of the order of the sdc scheme
-    // SphereData diff = simVars->sim.viscosity * op->diffusion_coefficient(simVars->sim.viscosity_order);
-    
-    // // apply to data
-    // phi_F3  = diff(phi_Y);
-    // vort_F3 = diff(vort_Y);
-    // div_F3  = diff(div_Y);
+    // get the parameters used to apply diffusion
+    const double r    = simVars->sim.earth_radius;
+    const double visc = simVars->sim.viscosity;
+
+    phi_F3 = phi_Y;
+    phi_F3.spectral_update_lambda(
+				  [&](
+				      int n, int m,
+				      std::complex<double> &io_data
+				      )
+				  {
+				    io_data *= (-visc*(double)n*((double)n+1.0))/(r*r);
+				  }
+				  );
+
+    vort_F3 = vort_Y;
+    vort_F3.spectral_update_lambda(
+				  [&](
+				      int n, int m,
+				      std::complex<double> &io_data
+				      )
+				  {
+				    io_data *= (-visc*(double)n*((double)n+1.0))/(r*r);
+				  }
+				  );
+
+    div_F3 = div_Y;
+    div_F3.spectral_update_lambda(
+				  [&](
+				      int n, int m,
+				      std::complex<double> &io_data
+				      )
+				  {
+				    io_data *= (-visc*(double)n*((double)n+1.0))/(r*r);
+				  }
+				  );
   }
 
   // solves the second implicit system for io_Y
@@ -362,43 +395,48 @@ extern "C"
     SphereData& vort_Y = io_Y->get_vort();
     SphereData& div_Y  = io_Y->get_div();
 
-    const SphereData& phi_Rhs  = i_Rhs->get_phi();
-    const SphereData& vort_Rhs = i_Rhs->get_vort();
-    const SphereData& div_Rhs  = i_Rhs->get_div();
+    SphereData& phi_Rhs  = i_Rhs->get_phi();
+    SphereData& vort_Rhs = i_Rhs->get_vort();
+    SphereData& div_Rhs  = i_Rhs->get_div();
 
     // initialize F3 to zero in case no artificial viscosity
     c_sweet_data_setval(o_F3, 0.0);
             
-    // // get the simulation variables
-    // SimulationVariables* simVars = i_ctx->get_simulation_variables();
+    // get the simulation variables
+    SimulationVariables* simVars = i_ctx->get_simulation_variables();
 
-    // // no need to do anything if no artificial viscosity
-    // if (simVars->sim.viscosity == 0)
-    //   return;
+    // no need to do anything if no artificial viscosity
+    if (simVars->sim.viscosity == 0)
+      return;
 
-    // // get the operators for this level
-    // SphereOperators* op = i_ctx->get_sphere_operators(i_level);
+    // get the parameters used to apply diffusion
+    const double scalar = simVars->sim.viscosity*i_dt;
+    const double r      = simVars->sim.earth_radius;
 
-    // // solve the implicit system
-    // phi_Y = op->implicit_diffusion(phi_Rhs, 
-    // 				   i_dt*simVars->sim.viscosity, 
-    // 				   simVars->sim.viscosity_order );
-    // vort_Y = op->implicit_diffusion(vort_Rhs, 
-    // 				    i_dt*simVars->sim.viscosity, 
-    // 				    simVars->sim.viscosity_order );
-    // div_Y = op->implicit_diffusion(div_Rhs, 
-    // 				   i_dt*simVars->sim.viscosity, 
-    // 				   simVars->sim.viscosity_order );
-
-    // // now recompute F3 with the new value of Y
-    // ceval_f3(
-    // 	     io_Y, 
-    // 	     i_t, 
-    // 	     i_level,
-    // 	     i_ctx, 
-    // 	     o_F3
-    // 	     );
+    // solve (1-dt*visc*diff_op)*rhs = y
+    phi_Y  = phi_Rhs.spectral_solve_helmholtz( 1.0, -scalar, r); 
+    vort_Y = vort_Rhs.spectral_solve_helmholtz(1.0, -scalar, r); 
+    div_Y  = div_Rhs.spectral_solve_helmholtz( 1.0, -scalar, r); 
     
+    // now recompute F3 with the new value of Y
+    /*
+    ceval_f3(
+     	     io_Y, 
+	     i_t, 
+	     i_level,
+	     i_ctx, 
+	     o_F3
+	     );
+    */
+    
+    SphereData& phi_F3  = o_F3->get_phi();
+    SphereData& vort_F3 = o_F3->get_vort();
+    SphereData& div_F3  = o_F3->get_div();
+
+    phi_F3  = (phi_Y  - phi_Rhs)  / i_dt;
+    vort_F3 = (vort_Y - vort_Rhs) / i_dt;
+    div_F3  = (div_Y  - div_Rhs)  / i_dt;
+  
   }
 
 }
