@@ -21,11 +21,12 @@
 #include "SWE_Sphere_TS_lg_erk.hpp"
 
 #include "SWE_Sphere_TS_l_erk_n_erk.hpp"
-#include "SWE_Sphere_TS_l_irk_n_erk.hpp"
-#include "SWE_Sphere_TS_lg_irk_lc_n_erk.hpp"
+#include "SWE_Sphere_TS_l_irk_n_erk_ver01.hpp"
+#include "SWE_Sphere_TS_lg_irk_lc_n_erk_ver01.hpp"
 #include "SWE_Sphere_TS_ln_erk.hpp"
-#include "SWE_Sphere_TS_l_rexi_n_erk.hpp"
+#include "SWE_Sphere_TS_l_rexi_n_erk_ver01.hpp"
 #include "SWE_Sphere_TS_l_rexi_n_etdrk.hpp"
+#include "SWE_Sphere_TS_lg_rexi_lc_n_erk_ver01.hpp"
 #include "SWE_Sphere_TS_lg_rexi_lc_n_etdrk.hpp"
 
 
@@ -48,6 +49,7 @@ public:
 	SWE_Sphere_TS_ln_erk *ln_erk = nullptr;
 	SWE_Sphere_TS_l_rexi_n_erk *l_rexi_n_erk = nullptr;
 	SWE_Sphere_TS_l_rexi_n_etdrk *l_rexi_n_etdrk = nullptr;
+	SWE_Sphere_TS_lg_rexi_lc_n_erk *lg_rexi_lc_n_erk = nullptr;
 	SWE_Sphere_TS_lg_rexi_lc_n_etdrk *lg_rexi_lc_n_etdrk = nullptr;
 	SWE_Sphere_TS_lg_erk *lg_erk = nullptr;
 	SWE_Sphere_TS_lg_irk *lg_irk = nullptr;
@@ -200,12 +202,43 @@ public:
 
 			master = &(SWE_Sphere_TS_interface&)*l_rexi_n_erk;
 		}
-		else if (i_timestepping_method == "lg_irk_lc_n_erk")
+		else if (i_timestepping_method == "lg_irk_lc_n_erk" || i_timestepping_method == "lg_irk_lc_n_erk_ver0")
 		{
 			lg_irk_lc_n_erk = new SWE_Sphere_TS_lg_irk_lc_n_erk(i_simVars, i_op);
-			lg_irk_lc_n_erk->setup(i_simVars.disc.timestepping_order);
+			lg_irk_lc_n_erk->setup(i_simVars.disc.timestepping_order, 0);
 
 			master = &(SWE_Sphere_TS_interface&)*lg_irk_lc_n_erk;
+		}
+		else if (i_timestepping_method == "lg_irk_lc_n_erk_ver1")
+		{
+			lg_irk_lc_n_erk = new SWE_Sphere_TS_lg_irk_lc_n_erk(i_simVars, i_op);
+			lg_irk_lc_n_erk->setup(i_simVars.disc.timestepping_order, 1);
+
+			master = &(SWE_Sphere_TS_interface&)*lg_irk_lc_n_erk;
+		}
+		else if (i_timestepping_method == "lg_rexi_lc_n_erk" || i_timestepping_method == "lg_rexi_lc_n_erk_ver0")
+		{
+			lg_rexi_lc_n_erk = new SWE_Sphere_TS_lg_rexi_lc_n_erk(i_simVars, i_op);
+			lg_rexi_lc_n_erk->setup(
+					i_simVars.rexi,
+					i_simVars.disc.timestepping_order,
+					i_simVars.timecontrol.current_timestep_size,
+					0
+				);
+
+			master = &(SWE_Sphere_TS_interface&)*lg_rexi_lc_n_erk;
+		}
+		else if (i_timestepping_method == "lg_rexi_lc_n_erk_ver1")
+		{
+			lg_rexi_lc_n_erk = new SWE_Sphere_TS_lg_rexi_lc_n_erk(i_simVars, i_op);
+			lg_rexi_lc_n_erk->setup(
+					i_simVars.rexi,
+					i_simVars.disc.timestepping_order,
+					i_simVars.timecontrol.current_timestep_size,
+					1
+				);
+
+			master = &(SWE_Sphere_TS_interface&)*lg_rexi_lc_n_erk;
 		}
 		else if (i_timestepping_method == "lg_erk_lc_n_erk")
 		{
