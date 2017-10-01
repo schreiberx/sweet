@@ -1,15 +1,15 @@
 /*
- * SWE_Sphere_TS_l_irk_n_erk.cpp
+ * SWE_Sphere_TS_l_rexi_n_erk.cpp
  *
- *  Created on: 21 Aug 2017
+ *  Created on: 1 Oct 2017
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#include "SWE_Sphere_TS_l_irk_n_erk.hpp"
+#include "SWE_Sphere_TS_l_rexi_n_erk.hpp"
 
 
 
-void SWE_Sphere_TS_l_irk_n_erk::run_timestep(
+void SWE_Sphere_TS_l_rexi_n_erk::run_timestep(
 		SphereData &io_phi,		///< prognostic variables
 		SphereData &io_vort,	///< prognostic variables
 		SphereData &io_div,		///< prognostic variables
@@ -24,13 +24,13 @@ void SWE_Sphere_TS_l_irk_n_erk::run_timestep(
 		SphereData tmp_vort = io_vort;
 		SphereData tmp_div = io_div;
 
-		// first order IRK for linear
-		timestepping_l_irk.run_timestep(
+		// first order REXI for linear part
+		timestepping_l_rexi.run_timestep(
 				io_phi, io_vort, io_div,
 				i_dt,
 				i_simulation_timestamp
 			);
-
+/*
 		SphereData phi_dt(io_phi.sphereDataConfig);
 		SphereData vort_dt(io_vort.sphereDataConfig);
 		SphereData div_dt(io_div.sphereDataConfig);
@@ -45,13 +45,14 @@ void SWE_Sphere_TS_l_irk_n_erk::run_timestep(
 		io_phi += i_dt*phi_dt;
 		io_vort += i_dt*vort_dt;
 		io_div += i_dt*div_dt;
+*/
 	}
 	else if (timestepping_order == 2)
 	{
 		if (version_id == 0)
 		{
 			// HALF time step for linear part
-			timestepping_l_cn.run_timestep(
+			timestepping_l_rexi.run_timestep(
 					io_phi, io_vort, io_div,
 					i_dt*0.5,
 					i_simulation_timestamp
@@ -68,14 +69,16 @@ void SWE_Sphere_TS_l_irk_n_erk::run_timestep(
 				);
 
 			// HALF time step for linear part
-			timestepping_l_cn.run_timestep(
+			timestepping_l_rexi.run_timestep(
 					io_phi, io_vort, io_div,
 					i_dt*0.5,
 					i_simulation_timestamp+i_dt*0.5	/* TODO: CHECK THIS, THIS MIGHT BE WRONG!!! */
 				);
+
 		}
 		else if (version_id == 1)
 		{
+
 			// HALF time step for non-linear part
 			timestepping_rk_nonlinear.run_timestep(
 					&timestepping_l_erk_n_erk,
@@ -87,7 +90,7 @@ void SWE_Sphere_TS_l_irk_n_erk::run_timestep(
 				);
 
 			// FULL time step for linear part
-			timestepping_l_cn.run_timestep(
+			timestepping_l_rexi.run_timestep(
 					io_phi, io_vort, io_div,
 					i_dt,
 					i_simulation_timestamp
@@ -119,40 +122,49 @@ void SWE_Sphere_TS_l_irk_n_erk::run_timestep(
 /*
  * Setup
  */
-void SWE_Sphere_TS_l_irk_n_erk::setup(
+void SWE_Sphere_TS_l_rexi_n_erk::setup(
+		REXI_SimulationVariables &i_rexiSimVars,
 		int i_order,	///< order of RK time stepping method
+		double i_timestep_size,
+		bool i_use_f_sphere,
 		int i_version_id
 )
 {
 	version_id = i_version_id;
 
 	timestepping_order = i_order;
-	timestep_size = simVars.timecontrol.current_timestep_size;
+	timestep_size = i_timestep_size;
 
 	if (timestepping_order == 1)
 	{
-		timestepping_l_irk.setup(
-				1,
-				timestep_size,	// Half time step size for linear implicit part (applied 2x)
-				simVars.rexi.use_sphere_extended_modes
+		timestepping_l_rexi.setup(
+				i_rexiSimVars,
+				"phi0",
+				i_timestep_size,
+				i_use_f_sphere,
+				false
 		);
 	}
 	else if (timestepping_order == 2)
 	{
 		if (version_id == 0)
 		{
-			timestepping_l_cn.setup(
-					simVars.disc.crank_nicolson_filter,
-					timestep_size*0.5,	// Half time step size for linear implicit part (applied 2x)
-					simVars.rexi.use_sphere_extended_modes
+			timestepping_l_rexi.setup(
+					i_rexiSimVars,
+					"phi0",
+					i_timestep_size*0.5,
+					i_use_f_sphere,
+					false
 			);
 		}
 		else if (version_id == 1)
 		{
-			timestepping_l_cn.setup(
-					simVars.disc.crank_nicolson_filter,
-					timestep_size,	// Half time step size for linear implicit part (applied 2x)
-					simVars.rexi.use_sphere_extended_modes
+			timestepping_l_rexi.setup(
+					i_rexiSimVars,
+					"phi0",
+					i_timestep_size,
+					i_use_f_sphere,
+					false
 			);
 		}
 		else
@@ -175,24 +187,23 @@ void SWE_Sphere_TS_l_irk_n_erk::setup(
 
 
 
-SWE_Sphere_TS_l_irk_n_erk::SWE_Sphere_TS_l_irk_n_erk(
+SWE_Sphere_TS_l_rexi_n_erk::SWE_Sphere_TS_l_rexi_n_erk(
 		SimulationVariables &i_simVars,
 		SphereOperators &i_op
 )	:
 		simVars(i_simVars),
 		op(i_op),
-		timestepping_l_irk(simVars, op),
-		timestepping_l_cn(simVars, op),
+		timestepping_l_rexi(simVars, op),
 		timestepping_l_erk_n_erk(simVars, op),
 		version_id(0),
 		timestepping_order(-1)
 {
-//	setup(simVars.disc.timestepping_order, 0);
+//	setup(simVars.disc.timestepping_order);
 }
 
 
 
-SWE_Sphere_TS_l_irk_n_erk::~SWE_Sphere_TS_l_irk_n_erk()
+SWE_Sphere_TS_l_rexi_n_erk::~SWE_Sphere_TS_l_rexi_n_erk()
 {
 }
 

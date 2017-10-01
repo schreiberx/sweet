@@ -1,12 +1,12 @@
 /*
- * SWE_Sphere_TS_l_irk_n_erk.hpp
+ * SWE_Sphere_TS_l_rexi_n_erk.hpp
  *
  *  Created on: 30 May 2017
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_IRK_N_ERK_HPP_
-#define SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_IRK_N_ERK_HPP_
+#ifndef SWE_SPHERE_TS_L_REXI_N_ERK_HPP_
+#define SWE_SPHERE_TS_L_REXI_N_ERK_HPP_
 
 #include <limits>
 #include <sweet/sphere/SphereData.hpp>
@@ -15,27 +15,25 @@
 #include <sweet/SimulationVariables.hpp>
 
 #include "SWE_Sphere_TS_interface.hpp"
-#include "SWE_Sphere_TS_l_irk.hpp"
-#include "SWE_Sphere_TS_l_cn.hpp"
+#include "SWE_Sphere_TS_l_rexi.hpp"
 #include "SWE_Sphere_TS_l_erk_n_erk.hpp"
 
 
 
-class SWE_Sphere_TS_l_irk_n_erk	: public SWE_Sphere_TS_interface
+class SWE_Sphere_TS_l_rexi_n_erk	: public SWE_Sphere_TS_interface
 {
 	SimulationVariables &simVars;
 	SphereOperators &op;
 
 	int timestepping_order;
-//	int timestepping_order2;
+	int timestepping_order2;
 
 	double timestep_size;
 
 	/*
 	 * Linear time steppers
 	 */
-	SWE_Sphere_TS_l_irk timestepping_l_irk;
-	SWE_Sphere_TS_l_cn timestepping_l_cn;
+	SWE_Sphere_TS_l_rexi timestepping_l_rexi;
 
 	/*
 	 * Non-linear time steppers
@@ -47,14 +45,17 @@ class SWE_Sphere_TS_l_irk_n_erk	: public SWE_Sphere_TS_interface
 	int version_id;
 
 public:
-	SWE_Sphere_TS_l_irk_n_erk(
+	SWE_Sphere_TS_l_rexi_n_erk(
 			SimulationVariables &i_simVars,
 			SphereOperators &i_op
 		);
 
 	void setup(
+			REXI_SimulationVariables &i_rexiSimVars,
 			int i_order,	///< order of RK time stepping method
-			int i_version_id
+			double i_timestep_size,
+			bool i_use_f_sphere,
+			int version_id	///< strang splitting for 2nd order method
 	);
 
 	void run_timestep(
@@ -68,7 +69,7 @@ public:
 
 
 
-	virtual ~SWE_Sphere_TS_l_irk_n_erk();
+	virtual ~SWE_Sphere_TS_l_rexi_n_erk();
 };
 
 #endif /* SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_LN_ERK_HPP_ */
