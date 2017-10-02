@@ -248,6 +248,9 @@ class SWEETClusterOptions:
 			# TODO: Include compile options and runtime options to determine this number
 			num_omp_threads_per_mpi_thread = pm_cores_per_mpi_rank
 
+			# Ranks per node
+			num_ranks_per_node = int(math.ceil(self.cores_per_node / pm_cores_per_mpi_rank))
+
 			# Total number of MPI ranks
 			mpi_ranks_total = space_num_ranks*time_num_ranks
 
@@ -398,7 +401,7 @@ class SWEETClusterOptions:
 ## wall-clock time (hrs:mins:secs)
 #PBS -l walltime=00:10:00
 ## select one chunk with one CPU in it
-#PBS -l select="""+str(num_nodes)+""":ncpus="""+str(num_cores_per_node)+""":mpiprocs="""+str(num_cores_per_node)+""":ompthreads="""+str(num_omp_threads_per_mpi_thread)+"""
+#PBS -l select="""+str(num_nodes)+""":ncpus="""+str(num_cores_per_node)+""":mpiprocs="""+str(num_ranks_per_node)+""":ompthreads="""+str(num_omp_threads_per_mpi_thread)+"""
 #
 #PBS -N """+jobid[0:100]+"""
 #PBS -o """+cwd+"/"+dirname+"""/output.out
@@ -414,7 +417,11 @@ export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
 			mpi_exec_prefix = "mpiexec_mpt -n "+str(mpi_ranks_total)+" "
 			# TODO: This seems to make trouble
 			#mpi_exec_prefix += " omplace -vv "
-			mpi_exec_prefix += " dplace -s 1 "
+			#mpi_exec_prefix += " dplace -s 1 "
+			mpi_exec_prefix += " omplace "
+			mpi_exec_prefix += " -nt "+str(num_omp_threads_per_mpi_thread)+" "
+			mpi_exec_prefix += " -vv "
+			mpi_exec_prefix += " -tm pthread "
 
 		else:
 			content = ""

@@ -15,7 +15,7 @@ class SWEETRuntimeOptions():
 
 		self.stability_checks = 0
 
-		self.timestepping_method = 'l_erk'
+		self.timestepping_method = 'ln_erk'
 		self.timestepping_order = 1
 		self.timestepping_order2 = 1
 
@@ -54,8 +54,11 @@ class SWEETRuntimeOptions():
 
 
 
-		self.g = 1		# gravity
-		self.h = 100000	# avg. height
+		#self.g = 1		# gravity
+		#self.h = 100000	# avg. height
+
+		self.g = 9.81		# gravity
+		self.h = 10000	# avg. height
 
 		self.f = 0.000072921	# \Omega coriolis effect
 		#self.f = 2.0*f	# Coriolis effect for constant f (not multiplied with 2.0)
@@ -263,39 +266,42 @@ class SWEETRuntimeOptions():
 		retval += ' --normal-mode-analysis-generation='+str(self.normal_mode_analysis)
 
 		retval += ' --rexi-method='+str(self.rexi_method)
-		retval += ' --rexi-half='+str(self.rexi_half_poles)
-		retval += ' --rexi-normalization='+str(self.rexi_normalization)
-		retval += ' --rexi-sphere-preallocation='+str(self.rexi_sphere_preallocation)
-		retval += ' --rexi-use-direct-solution='+str(self.rexi_use_direct_solution)
-		retval += ' --rexi-ext-modes='+str(self.rexi_extended_modes)
 
-		if self.rexi_method == 'terry':
-			# REXI Terry
-			retval += ' --rexi-m='+str(self.rexi_m)
-			retval += ' --rexi-h='+str(self.rexi_h)
+		if self.rexi_method != '':
+			retval += ' --rexi-half='+str(self.rexi_half_poles)
+			retval += ' --rexi-normalization='+str(self.rexi_normalization)
+			retval += ' --rexi-sphere-preallocation='+str(self.rexi_sphere_preallocation)
+			retval += ' --rexi-use-direct-solution='+str(self.rexi_use_direct_solution)
+			retval += ' --rexi-ext-modes='+str(self.rexi_extended_modes)
 
-		elif self.rexi_method == 'file':
-			# REXI File
-			retval += ' --rexi-file-n='+str(self.rexi_file_n)
-			retval += ' --rexi-file-h='+str(self.rexi_file_h)
-			retval += ' --rexi-file-test-abs='+str(self.rexi_file_test_abs)
-			retval += ' --rexi-file-max-error='+str(self.rexi_file_max_error)
-			if self.rexi_file_faf_dir != None:
-				retval += ' --rexi-file-faf-dir='+str(self.rexi_file_faf_dir)
+			if self.rexi_method == 'terry':
+				# REXI Terry
+				retval += ' --rexi-m='+str(self.rexi_m)
+				retval += ' --rexi-h='+str(self.rexi_h)
 
-		elif self.rexi_method == 'ci':
-			retval += ' --rexi-ci-n='+str(self.rexi_ci_n)
-			if self.rexi_ci_max_real > 0:
-				retval += ' --rexi-ci-max-real='+str(self.rexi_ci_max_real)
-				retval += ' --rexi-ci-max-imag='+str(self.rexi_ci_max_imag)
-			else:
-				retval += ' --rexi-ci-sx='+str(self.rexi_ci_sx)
-				retval += ' --rexi-ci-sy='+str(self.rexi_ci_sy)
-				retval += ' --rexi-ci-mu='+str(self.rexi_ci_mu)
-			retval += ' --rexi-ci-primitive='+str(self.rexi_ci_primitive)
+			elif self.rexi_method == 'file':
+				# REXI File
+				retval += ' --rexi-file-n='+str(self.rexi_file_n)
+				retval += ' --rexi-file-h='+str(self.rexi_file_h)
+				retval += ' --rexi-file-test-abs='+str(self.rexi_file_test_abs)
+				retval += ' --rexi-file-max-error='+str(self.rexi_file_max_error)
+				if self.rexi_file_faf_dir != None:
+					retval += ' --rexi-file-faf-dir='+str(self.rexi_file_faf_dir)
+
+			elif self.rexi_method == 'ci':
+				retval += ' --rexi-ci-n='+str(self.rexi_ci_n)
+				if self.rexi_ci_max_real > 0:
+					retval += ' --rexi-ci-max-real='+str(self.rexi_ci_max_real)
+					retval += ' --rexi-ci-max-imag='+str(self.rexi_ci_max_imag)
+				else:
+					retval += ' --rexi-ci-sx='+str(self.rexi_ci_sx)
+					retval += ' --rexi-ci-sy='+str(self.rexi_ci_sy)
+					retval += ' --rexi-ci-mu='+str(self.rexi_ci_mu)
+				retval += ' --rexi-ci-primitive='+str(self.rexi_ci_primitive)
 
 		retval += ' --use-robert-functions='+str(self.use_robert_functions)
 
 		retval += ' --compute-error='+str(self.compute_error)
+
 		return retval
 
