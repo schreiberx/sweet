@@ -399,7 +399,7 @@ class SWEETClusterOptions:
 ## shared queue
 ######PBS -q share
 ## wall-clock time (hrs:mins:secs)
-#PBS -l walltime=00:30:00
+#PBS -l walltime=00:10:00
 ## select one chunk with one CPU in it
 #PBS -l select="""+str(num_nodes)+""":ncpus="""+str(num_cores_per_node)+""":mpiprocs="""+str(num_ranks_per_node)+""":ompthreads="""+str(num_omp_threads_per_mpi_thread)+"""
 #
