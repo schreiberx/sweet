@@ -120,6 +120,12 @@ struct REXI_SimulationVariables
 	std::string ci_primitive = "circle";
 
 	/*
+	 * Maximum real (positive) Eigenvalue enscribed by circle.
+	 */
+	double ci_max_real = -999;
+	double ci_max_imag = -999;
+
+	/*
 	 * Size of primitive in real axis
 	 */
 	double ci_s_real = 1;
@@ -159,6 +165,8 @@ struct REXI_SimulationVariables
 		std::cout << " [REXI CI]" << std::endl;
 		std::cout << " + ci_n: " << ci_n << std::endl;
 		std::cout << " + ci_primitive: " << ci_primitive << std::endl;
+		std::cout << " + ci_max_real: " << ci_max_real << std::endl;
+		std::cout << " + ci_max_imag: " << ci_max_imag << std::endl;
 		std::cout << " + ci_s_real: " << ci_s_real << std::endl;
 		std::cout << " + ci_s_imag: " << ci_s_imag << std::endl;
 		std::cout << " + ci_mu: " << ci_mu << std::endl;
@@ -191,6 +199,8 @@ struct REXI_SimulationVariables
 		std::cout << "  REXI CI:" << std::endl;
 		std::cout << "	--rexi-ci-n [double]	Number of quadrature points, default: 64" << std::endl;
 		std::cout << "	--rexi-ci-primitive [string]	Primitive ('circle', 'rectangle'), default: 'circle'" << std::endl;
+		std::cout << "	--rexi-ci-max-real [double]	Maximum real Eigenvalue to shift circle, default: -999" << std::endl;
+		std::cout << "	--rexi-ci-max-imag [double]	Maximum imag Eigenvalue to shift circle, default: -999" << std::endl;
 		std::cout << "	--rexi-ci-sx [double]	Size of primitive in real, default: 1" << std::endl;
 		std::cout << "	--rexi-ci-sy [double]	Size of primitive in imag, default: 1" << std::endl;
 		std::cout << "	--rexi-ci-mu [double]	Shift, default: 0" << std::endl;
@@ -262,6 +272,12 @@ struct REXI_SimulationVariables
 		io_long_options[io_next_free_program_option] = {"rexi-ci-primitive", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
+		io_long_options[io_next_free_program_option] = {"rexi-ci-max-real", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"rexi-ci-max-imag", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
 		io_long_options[io_next_free_program_option] = {"rexi-ci-sx", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
@@ -305,15 +321,17 @@ struct REXI_SimulationVariables
 
 			case 17:	ci_n = atoi(optarg);	return 0;
 			case 18:	ci_primitive = optarg;	return 0;
-			case 19:	ci_s_real = atof(optarg);	return 0;
-			case 20:	ci_s_imag = atof(optarg);	return 0;
-			case 21:	ci_mu = atof(optarg);	return 0;
+			case 19:	ci_max_real = atof(optarg);	return 0;
+			case 20:	ci_max_imag = atof(optarg);	return 0;
+			case 21:	ci_s_real = atof(optarg);	return 0;
+			case 22:	ci_s_imag = atof(optarg);	return 0;
+			case 23:	ci_mu = atof(optarg);	return 0;
 		}
 
 		if (rexi_method != "" && rexi_method == "terry" && rexi_method == "file")
 			FatalError("Invalid argument for '--rexi-method='");
 
-		return 20;
+		return 23;
 	}
 };
 

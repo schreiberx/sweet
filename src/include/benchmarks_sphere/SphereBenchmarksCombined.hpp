@@ -449,6 +449,18 @@ public:
 		else if (io_simVars.setup.benchmark_scenario_id == 1 || io_simVars.setup.benchmark_scenario_id == 100 || io_simVars.setup.benchmark_scenario_id == 101)
 		{
 
+			std::cout << "!!! WARNING !!!" << std::endl;
+			std::cout << "!!! WARNING: Overriding simulation parameters for this benchmark !!!" << std::endl;
+			std::cout << "!!! WARNING !!!" << std::endl;
+
+			/// Setup Galewski parameters
+			io_simVars.sim.coriolis_omega = 7.292e-5;
+			io_simVars.sim.gravitation = 9.80616;
+			io_simVars.sim.earth_radius = 6.37122e6;
+			io_simVars.sim.h0 = benchmarkGalewsky.h_avg;
+
+			io_simVars.misc.output_time_scale = 1.0/(60.0*60.0);
+
 #if 0
 
 			benchmarkGalewsky.setup_initial_h(o_h);
@@ -630,18 +642,6 @@ public:
 			}
 #endif
 
-
-			std::cout << "!!! WARNING !!!" << std::endl;
-			std::cout << "!!! WARNING: Overriding simulation parameters for this benchmark !!!" << std::endl;
-			std::cout << "!!! WARNING !!!" << std::endl;
-
-			/// Setup Galewski parameters
-			io_simVars.sim.coriolis_omega = 7.292e-5;
-			io_simVars.sim.gravitation = 9.80616;
-			io_simVars.sim.earth_radius = 6.37122e6;
-			io_simVars.sim.h0 = benchmarkGalewsky.h_avg;
-
-			io_simVars.misc.output_time_scale = 1.0/(60.0*60.0);
 		}
 		else if (io_simVars.setup.benchmark_scenario_id == 200)
 		{

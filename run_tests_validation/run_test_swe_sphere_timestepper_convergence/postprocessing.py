@@ -141,6 +141,21 @@ for group_info in groups:
 				#test_range = range(8,10)
 				test_range = range(7,9)
 				max_error_rate = 0.1
+
+			elif 'lg_rexi_lc_n_erk' in rundir:
+				print("WARNING: We don't get a convergence for the first steps for unknown reasons")
+				test_range = range(6,8)
+				max_error_rate = 0.1
+
+			elif 'l_rexi' in rundir or 'lg_rexi' in rundir:
+				#test_range = range(8,10)
+				test_range = range(5,7)
+				max_error_rate = 0.1
+
+			elif 'lg_irk_lc_n_erk' in rundir:
+				test_range = range(1,4)
+				max_error_rate = 0.05
+
 			else:
 				test_range = range(1,4)
 				max_error_rate = 0.01

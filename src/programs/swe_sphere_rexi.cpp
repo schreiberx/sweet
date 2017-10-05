@@ -146,8 +146,6 @@ public:
 		if (simVars.sim.CFL < 0)
 			simVars.timecontrol.current_timestep_size = -simVars.sim.CFL;
 
-		std::cout << simVars.timecontrol.current_timestep_size << std::endl;
-
 		if (simVars.timecontrol.current_timestep_size <= 0)
 		{
 			// TRY to guess optimal time step size
