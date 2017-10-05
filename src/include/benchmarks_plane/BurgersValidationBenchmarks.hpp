@@ -88,7 +88,7 @@ public:
 
 		if (i_parameters.setup.benchmark_scenario_id == 62)
 		{
-			double t=i_parameters.timecontrol.current_simulation_time;
+			double t=i_parameters.timecontrol.current_simulation_time+i_parameters.timecontrol.current_timestep_size;
 			double tmpvar = 0;
 			int kmax = i_parameters.sim.f0;
 			double eps = 0.1;

@@ -361,7 +361,13 @@ public:
 
 		const char* filename_template = simVars.misc.output_file_name_prefix.c_str();
 		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
-		i_planeData.file_physical_saveData_ascii(buffer);
+		i_planeData.file_physical_saveData_ascii(buffer,'\n',12,1);
+
+		char tmp[128];
+		strcpy(tmp,i_name);
+		strcat(tmp,"_spec");
+		sprintf(buffer, filename_template, tmp, simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
+		i_planeData.file_spectral_saveData_ascii(buffer,'\n',12,1);
 
 		return buffer;
 	}
@@ -390,16 +396,15 @@ public:
 
 			char buffer[1024];
 			const char* filename_template = simVars.misc.output_file_name_prefix.c_str();
-			sprintf(buffer,filename_template,"prog_u_spec",simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
+			sprintf(buffer,filename_template,"prog_u_amp_phase",simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
 
 			std::ofstream file(buffer, std::ios_base::trunc);
 			file << std::setprecision(12);
+
 			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
 			{
-				const std::complex<double> &value = prog_u.spectral_get(0, x);
-				file << x << ", ("<< value.real() << ", " << value.imag() << ")\t";
+				file << x << ", " << prog_u.spectral_return_amplitude(0,x) << ", " << prog_u.spectral_return_phase(0,x) << std::endl;
 			}
-			file << std::endl;
 			file.close();
 		}
 
@@ -411,18 +416,19 @@ public:
 				PlaneData tmp(planeDataConfig);
 				tmp = compute_errors2(prog_u,prog_v);
 
+				write_file(tmp, "analytical");
+
 				tmp.request_data_spectral();
 
 				char buffer[1024];
 				const char* filename_template = simVars.misc.output_file_name_prefix.c_str();
-				sprintf(buffer,filename_template,"error_spec",simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
+				sprintf(buffer,filename_template,"analytical_amp_phase",simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
 
 				std::ofstream file(buffer, std::ios_base::trunc);
 				file << std::setprecision(12);
 				for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
 				{
-					const std::complex<double> &value = tmp.spectral_get(0, x);
-					file << x << ", ("<< value.real() << ", " << value.imag() << ")" << std::endl;
+					file << x << ", " << tmp.spectral_return_amplitude(0,x) << ", " << tmp.spectral_return_phase(0,x) << std::endl;
 				}
 				file.close();
 			}
@@ -659,7 +665,7 @@ public:
 			benchmark.benchmark_analytical_error_maxabs_u = (ts_u-u).reduce_maxAbs();
 			benchmark.benchmark_analytical_error_maxabs_v = (ts_v-v).reduce_maxAbs();
 
-			return ts_u-u;
+			return ts_u;
 		}
 	}
 
