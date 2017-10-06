@@ -421,7 +421,8 @@ export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
 			mpi_exec_prefix += " omplace "
 			mpi_exec_prefix += " -nt "+str(num_omp_threads_per_mpi_thread)+" "
 			mpi_exec_prefix += " -vv "
-			mpi_exec_prefix += " -tm pthread "
+			# -tm pthreads didn't make any difference in performance for single-threaded programs which 1 thread per socket
+			#mpi_exec_prefix += " -tm pthreads "
 
 		else:
 			content = ""

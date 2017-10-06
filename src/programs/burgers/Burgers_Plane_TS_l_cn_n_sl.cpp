@@ -1,15 +1,15 @@
 /*
- * Burgers_Plane_TS_l_irk_n_sl.cpp
+ * Burgers_Plane_TS_l_cn_n_sl.cpp
  *
  *  Created on: 14 June 2017
  *      Author: Andreas Schmitt <aschmitt@fnb.tu-darmstadt.de>
  *
  */
 
-#include "Burgers_Plane_TS_l_irk_n_sl.hpp"
+#include "Burgers_Plane_TS_l_cn_n_sl.hpp"
 
 
-void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
+void Burgers_Plane_TS_l_cn_n_sl::run_timestep(
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
 		PlaneData &io_u_prev,	///< prognostic variables
@@ -20,7 +20,7 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 )
 {
 	if (i_fixed_dt <= 0)
-		FatalError("Burgers_Plane_TS_l_irk_n_sl: Only constant time step size allowed");
+		FatalError("Burgers_Plane_TS_l_cn_n_sl: Only constant time step size allowed");
 
 	//Departure points and arrival points
 	ScalarDataArray posx_d = posx_a;
@@ -64,7 +64,7 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 	);
 
 	// Run implicit Runge-Kutta on Burgers' equation in SL form
-	ts_l_irk.run_timestep(
+	ts_l_cn.run_timestep(
 			io_u, io_v,
 			io_u_prev, io_v_prev,
 			dt,
@@ -78,9 +78,9 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 /*
  * Setup
  */
-void Burgers_Plane_TS_l_irk_n_sl::setup()
+void Burgers_Plane_TS_l_cn_n_sl::setup()
 {
-	ts_l_irk.setup(simVars.disc.timestepping_order);
+	ts_l_cn.setup();
 
 	// Setup sampler for future interpolations
 	sampler2D.setup(simVars.sim.domain_size, op.planeDataConfig);
@@ -121,7 +121,7 @@ void Burgers_Plane_TS_l_irk_n_sl::setup()
 }
 
 
-Burgers_Plane_TS_l_irk_n_sl::Burgers_Plane_TS_l_irk_n_sl(
+Burgers_Plane_TS_l_cn_n_sl::Burgers_Plane_TS_l_cn_n_sl(
 		SimulationVariables &i_simVars,
 		PlaneOperators &i_op
 )	:
@@ -134,13 +134,13 @@ Burgers_Plane_TS_l_irk_n_sl::Burgers_Plane_TS_l_irk_n_sl(
 		posx_d(i_op.planeDataConfig->physical_array_data_number_of_elements),
 		posy_d(i_op.planeDataConfig->physical_array_data_number_of_elements),
 
-		ts_l_irk(simVars, op)
+		ts_l_cn(simVars, op)
 {
 }
 
 
 
-Burgers_Plane_TS_l_irk_n_sl::~Burgers_Plane_TS_l_irk_n_sl()
+Burgers_Plane_TS_l_cn_n_sl::~Burgers_Plane_TS_l_cn_n_sl()
 {
 }
 

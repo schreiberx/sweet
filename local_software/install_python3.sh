@@ -2,9 +2,9 @@
 
 source config.sh
 
-export CC=gcc
-export CXX=g++
-export LINK=g++
+#export CC=gcc
+#export CXX=g++
+#export LINK=g++
 
 
 echo "*** Python3 ***"
@@ -21,7 +21,10 @@ if [ ! -e "$DST_DIR/bin/python3"  -o "$1" != "" ]; then
 	tar xzf "$FILENAME"
 	cd "$BASENAME"
 
-	./configure --prefix="$DST_DIR"  || exit 1
+	#sed -i "s/#zlib/zlib/" Modules/Setup	 || exit 1
+	#sed -i "s/#binascii/binascii/" Modules/Setup	|| exit 1
+
+	./configure --prefix="$DST_DIR" || exit 1
 
 	make install || exit 1
 

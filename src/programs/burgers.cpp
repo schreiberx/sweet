@@ -361,7 +361,13 @@ public:
 
 		const char* filename_template = simVars.misc.output_file_name_prefix.c_str();
 		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
-		i_planeData.file_physical_saveData_ascii(buffer);
+		i_planeData.file_physical_saveData_ascii(buffer,'\n',12,1);
+
+		char tmp[128];
+		strcpy(tmp,i_name);
+		strcat(tmp,"_spec");
+		sprintf(buffer, filename_template, tmp, simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
+		i_planeData.file_spectral_saveData_ascii(buffer,'\n',12,1);
 
 		return buffer;
 	}
@@ -390,16 +396,15 @@ public:
 
 			char buffer[1024];
 			const char* filename_template = simVars.misc.output_file_name_prefix.c_str();
-			sprintf(buffer,filename_template,"prog_u_spec",simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
+			sprintf(buffer,filename_template,"prog_u_amp_phase",simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
 
 			std::ofstream file(buffer, std::ios_base::trunc);
 			file << std::setprecision(12);
+
 			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
 			{
-				const std::complex<double> &value = prog_u.spectral_get(0, x);
-				file << x << ", ("<< value.real() << ", " << value.imag() << ")\t";
+				file << x << ", " << prog_u.spectral_return_amplitude(0,x) << ", " << prog_u.spectral_return_phase(0,x) << std::endl;
 			}
-			file << std::endl;
 			file.close();
 		}
 
@@ -411,18 +416,19 @@ public:
 				PlaneData tmp(planeDataConfig);
 				tmp = compute_errors2(prog_u,prog_v);
 
+				write_file(tmp, "analytical");
+
 				tmp.request_data_spectral();
 
 				char buffer[1024];
 				const char* filename_template = simVars.misc.output_file_name_prefix.c_str();
-				sprintf(buffer,filename_template,"error_spec",simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
+				sprintf(buffer,filename_template,"analytical_amp_phase",simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
 
 				std::ofstream file(buffer, std::ios_base::trunc);
 				file << std::setprecision(12);
 				for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
 				{
-					const std::complex<double> &value = tmp.spectral_get(0, x);
-					file << x << ", ("<< value.real() << ", " << value.imag() << ")" << std::endl;
+					file << x << ", " << tmp.spectral_return_amplitude(0,x) << ", " << tmp.spectral_return_phase(0,x) << std::endl;
 				}
 				file.close();
 			}
@@ -496,7 +502,8 @@ public:
 
 		if (simVars.misc.compute_errors)
 		{
-			if (simVars.setup.benchmark_scenario_id > 51 && simVars.setup.benchmark_scenario_id < 59)
+			//if (simVars.setup.benchmark_scenario_id > 51 && simVars.setup.benchmark_scenario_id < 65)
+			if (simVars.disc.timestepping_method.find("forcing")!=std::string::npos)
 			{
 				if (simVars.disc.use_staggering)
 				{
@@ -541,7 +548,7 @@ public:
 					);
 				}
 			}
-			else if (simVars.setup.benchmark_scenario_id == 70)
+			else //if (simVars.setup.benchmark_scenario_id == 70)
 			{
 				if (analytic_solution == 1)
 				{
@@ -587,7 +594,8 @@ public:
 
 		if (simVars.misc.compute_errors)
 		{
-			if (simVars.setup.benchmark_scenario_id > 51 && simVars.setup.benchmark_scenario_id < 59)
+			//if (simVars.setup.benchmark_scenario_id > 51 && simVars.setup.benchmark_scenario_id < 65)
+			if (simVars.disc.timestepping_method.find("forcing")!=std::string::npos)
 			{
 				if (simVars.disc.use_staggering)
 				{
@@ -632,7 +640,7 @@ public:
 					);
 				}
 			}
-			else if (simVars.setup.benchmark_scenario_id == 70)
+			else //if (simVars.setup.benchmark_scenario_id == 70)
 			{
 				if (analytic_solution == 1)
 				{
@@ -659,7 +667,7 @@ public:
 			benchmark.benchmark_analytical_error_maxabs_u = (ts_u-u).reduce_maxAbs();
 			benchmark.benchmark_analytical_error_maxabs_v = (ts_v-v).reduce_maxAbs();
 
-			return ts_u-u;
+			return ts_u;
 		}
 	}
 
@@ -1070,8 +1078,6 @@ public:
 		simVars.timecontrol.max_simulation_time = timeframe_end;
 		simVars.timecontrol.current_timestep_nr = 0;
 
-		simVars.timecontrol.current_timestep_size = timeframe_end-timeframe_start;
-
 		// make multiple time steps in the coarse solver possible
 		while (simVars.timecontrol.current_simulation_time < timeframe_end)
 		{
@@ -1079,12 +1085,12 @@ public:
 			timeSteppersCoarse.master->run_timestep(
 				prog_u, prog_v,
 				prog_u_prev, prog_v_prev,
-				simVars.timecontrol.current_timestep_size,
+				timeframe_end-timeframe_start,
 				simVars.timecontrol.current_simulation_time
 			);
 			// Provide information to parameters
 //			simVars.timecontrol.current_timestep_size = simVars.timecontrol.current_timestep_size;
-			simVars.timecontrol.current_simulation_time += simVars.timecontrol.current_timestep_size;
+			simVars.timecontrol.current_simulation_time += timeframe_end-timeframe_start;
 			simVars.timecontrol.current_timestep_nr++;
 
 			assert(simVars.timecontrol.current_simulation_time <= timeframe_end);
@@ -1193,6 +1199,32 @@ public:
 	}
 
 
+	/**
+	 * Write file to data and return string of file name
+	 */
+	std::string write_file_parareal(
+			const PlaneData &i_planeData,
+			const char* i_name, ///< name of output variable
+			const int i_iteration_id,
+			const int i_time_slice_id
+		)
+	{
+		char buffer[1024];
+
+		const char* filename_template = "output_%s_iter_%d_slice_%d.csv";
+		sprintf(buffer, filename_template, i_name, i_iteration_id, i_time_slice_id);
+		i_planeData.file_physical_saveData_ascii(buffer,'\n',12,1);
+
+		char tmp[128];
+		strcpy(tmp,i_name);
+		strcat(tmp,"_spec");
+		sprintf(buffer, filename_template, tmp, simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
+		i_planeData.file_spectral_saveData_ascii(buffer,'\n',12,1);
+
+		return buffer;
+	}
+
+
 	/*
 	 * Write output of Parareal data to file
 	 */
@@ -1207,26 +1239,36 @@ public:
 
 		Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2>& data = (Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2>&)i_data;
 
-		std::ostringstream ss;
-		ss << simVars.misc.output_file_name_prefix << "_iter" << iteration_id << "_slice" << time_slice_id << ".csv";
+		write_file_parareal(*data.data_arrays[0],"prog_u",iteration_id,time_slice_id);
 
-		std::string filename = ss.str();
+		char buffer[1024];
+		const char* filename_template = "output_%s_iter_%d_slice_%d.csv";
+		sprintf(buffer, filename_template, "prog_u_amp_phase", iteration_id, time_slice_id);
 
-		data.data_arrays[0]->file_physical_saveData_ascii(filename.c_str());
-		//data.data_arrays[0]->file_saveSpectralData_ascii(filename.c_str());
+		std::ofstream file(buffer, std::ios_base::trunc);
+		file << std::setprecision(12);
 
-		ss.str("");
-		ss.clear();
+		for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
+		{
+			file << x << ", " << data.data_arrays[0]->spectral_return_amplitude(0,x) << ", " << data.data_arrays[0]->spectral_return_phase(0,x) << std::endl;
+		}
+		file.close();
+		file.clear();
 
-		ss << simVars.misc.output_file_name_prefix << "_iter" << iteration_id << "_slice" << time_slice_id << ".err";
 
-		filename = ss.str();
+		PlaneData ana = compute_errors2(*data.data_arrays[0], *data.data_arrays[1]);
 
-		PlaneData tmp = compute_errors2(*data.data_arrays[0], *data.data_arrays[1]);
+		write_file_parareal(ana,"analytical",iteration_id,time_slice_id);
 
-		//benchmark_analytical_error.file_physical_saveData_ascii(filename2.c_str());
+		sprintf(buffer,filename_template,"analytical_amp_phase", iteration_id, time_slice_id);
 
-		//data.data_arrays[0]->file_saveData_vtk(filename.c_str(), filename.c_str());
+		file.open(buffer, std::ios_base::trunc);
+		file << std::setprecision(12);
+		for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
+		{
+			file << x << ", " << ana.spectral_return_amplitude(0,x) << ", " << ana.spectral_return_phase(0,x) << std::endl;
+		}
+		file.close();
 	}
 
 
@@ -1244,7 +1286,39 @@ public:
 
 		update_diagnostics();
 		// Print timestep data to console
-		std::cout << std::setprecision(8) << "Total energy: " << simVars.diag.total_energy << std::endl;
+
+		std::stringstream header;
+		std::stringstream rows;
+
+		rows << std::setprecision(12);
+
+		// Prefix
+		if (iteration_id == 0)
+			header << "DATA";
+		rows << "DATA";
+
+		// Time
+		if (iteration_id == 0)
+			header << "\tITERATION\tTIME_SLICE";
+		rows << "\t" << iteration_id << "\t" << time_slice_id;
+
+		// Energy
+		if (iteration_id == 0)
+			header << "\tTOTAL_ENERGY";
+		rows << "\t" << simVars.diag.total_energy;
+
+		if (simVars.misc.compute_errors)
+		{
+			if (iteration_id == 0)
+				header << "\tMAX_ABS_U\tMAX_RMS_U\tMAX_U";
+			rows << "\t" << benchmark.benchmark_analytical_error_maxabs_u << "\t" << benchmark.benchmark_analytical_error_rms_u << "\t" << prog_u.reduce_max();
+		}
+
+		if (iteration_id == 0)
+			std::cout << header.str() << std::endl;
+
+		std::cout << rows.str() << std::endl;
+
 	}
 
 #endif
