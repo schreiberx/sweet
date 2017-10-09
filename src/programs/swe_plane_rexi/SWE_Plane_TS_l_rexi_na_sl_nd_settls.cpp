@@ -1,5 +1,5 @@
 /*
- * SWE_Plane_TS_l_rexi_na_sl_nd_erk.cpp
+ * SWE_Plane_TS_l_rexi_na_sl_nd_settls.cpp
  *
  *  Created on: 29 May 2017
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
@@ -8,6 +8,7 @@
  *  	2017-05-29: Based on source swe_plane_rexi.cpp
  *					which was also written by Pedro Peixoto
  */
+
 
 #include "SWE_Plane_TS_l_rexi_na_sl_nd_settls.hpp"
 
@@ -39,6 +40,8 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 	PlaneData h(io_h.planeDataConfig);
 	PlaneData u(io_h.planeDataConfig);
 	PlaneData v(io_h.planeDataConfig);
+
+	//Temporary
 	PlaneData N_h(io_h.planeDataConfig);
 	PlaneData N_u(io_h.planeDataConfig);
 	PlaneData N_v(io_h.planeDataConfig);
