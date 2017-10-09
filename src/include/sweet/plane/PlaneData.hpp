@@ -2508,7 +2508,7 @@ public:
 		else
 			ymin = planeDataConfig->physical_res[1]-1;
 
-		for (int y = planeDataConfig->physical_res[1]-1; y >= ymin; y--)
+		for (int y = (int) planeDataConfig->physical_res[1]-1; y >= (int) ymin; y--)
 		{
 			for (std::size_t x = 0; x < planeDataConfig->physical_res[0]; x++)
 			{
