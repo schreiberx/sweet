@@ -2460,13 +2460,13 @@ public:
 		std::ofstream file(i_filename, std::ios_base::trunc);
 		file << std::setprecision(i_precision);
 
-		size_t ymin = 0;
+		std::size_t ymin = 0;
 		if (dimension == 2)
 			ymin = 0;
 		else
 			ymin = planeDataConfig->physical_res[1]-1;
 
-		for (int y = planeDataConfig->physical_res[1]-1; y >= ymin; y--)
+		for (std::size_t y = planeDataConfig->physical_res[1]-1; y >= ymin; y--)
 		{
 			for (std::size_t x = 0; x < planeDataConfig->physical_res[0]; x++)
 			{
