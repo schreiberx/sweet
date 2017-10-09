@@ -21,8 +21,10 @@ fontsize=8
 
 figsize=(9, 3)
 
-for filename in sys.argv[1:]:
+filename = sys.argv[1]
+ref_filename = sys.argv[2]
 
+if True:
 	print(filename)
 	data = np.loadtxt(filename, skiprows=3)
 
@@ -32,7 +34,7 @@ for filename in sys.argv[1:]:
 	data = data[1:,1:]
 	if np.isnan(data).any():
 		print("Skipping "+filename+" because of NaN")
-		continue
+		sys.exit(1)
 
 	if zoom_lat:
 		while labelsy[1] < 10:
@@ -52,6 +54,21 @@ for filename in sys.argv[1:]:
 #			tmpdata = data[:,0]
 #			data[:,0:-1] = data[:,1:]
 #			data[:,-1] = tmpdata
+
+	# Reference 
+	if True:
+		refdata = np.loadtxt(ref_filename, skiprows=3)
+
+		refdata = refdata[1:,1:]
+
+		if zoom_lat:
+			while labelsy[1] < 10:
+				labelsy = labelsy[1:]
+				refdata = refdata[1:]
+
+			while labelsy[-2] > 80:
+				labelsy = labelsy[0:-2]
+				refdata = refdata[0:-2]
 
 	if first:
 		lon_min = labelsx[0]
@@ -89,9 +106,11 @@ for filename in sys.argv[1:]:
 
 	if 'eta' in filename:
 		plt.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, levels=eta_contour_levels, linewidths=0.5)
+		plt.contour(refdata, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, levels=eta_contour_levels, linewidths=0.5, linestyles='dashed')
 	else:
 		if cmin != cmax:
 			plt.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, linewidths=0.5)
+			plt.contour(refdata, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, linewidths=0.5, linestyles='dashed')
 		
 
 

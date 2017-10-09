@@ -1266,8 +1266,6 @@ public:
 public:
 	/**
 	 * assignment operator
-	 *
-	 * hasdfasdf = h*hasdf;
 	 */
 	PlaneData &operator=(
 			const PlaneData &i_dataArray
@@ -1301,6 +1299,50 @@ public:
 			PLANE_DATA_SPECTRAL_FOR_IDX(
 					spectral_space_data[idx] = i_dataArray.spectral_space_data[idx];
 				);
+
+			spectral_zeroAliasingModes();
+		}
+		else
+		{
+			spectral_space_data_valid = false;
+		}
+#endif
+
+		return *this;
+	}
+
+
+public:
+	/**
+	 * assignment operator
+	 */
+	PlaneData &operator=(
+			PlaneData &&i_dataArray
+	)
+	{
+		planeDataConfig = i_dataArray.planeDataConfig;
+
+		assert(planeDataConfig->physical_array_data_number_of_elements == i_dataArray.planeDataConfig->physical_array_data_number_of_elements);
+
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+		if (i_dataArray.physical_space_data_valid)
+		{
+			physical_space_data_valid = true;
+#endif
+			std::swap(physical_space_data, i_dataArray.physical_space_data);
+
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+		}
+		else
+		{
+			physical_space_data_valid = false;
+		}
+
+		if (i_dataArray.spectral_space_data_valid)
+		{
+			spectral_space_data_valid = true;
+
+			std::swap(spectral_space_data, i_dataArray.spectral_space_data);
 
 			spectral_zeroAliasingModes();
 		}

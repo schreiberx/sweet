@@ -73,7 +73,7 @@ class SimulationInstance
 {
 public:
 	// Prognostic variables
-	// h: surface height
+	// h: surface height (perturbation)
 	// u: velocity in x-direction
 	// v: velocity in y-direction
 	PlaneData prog_h_pert, prog_u, prog_v;
@@ -1103,7 +1103,7 @@ public:
 			switch(simVars.misc.vis_id)
 			{
 			case -1:
-				vis = ts_u+simVars.sim.h0;			//Exact solution
+				vis = ts_h_pert+simVars.sim.h0;			//Exact solution
 				break;
 
 			case -2:

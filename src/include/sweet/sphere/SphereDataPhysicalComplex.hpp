@@ -17,6 +17,7 @@
 #include <iomanip>
 #include <cassert>
 #include <limits>
+#include <utility>
 #include <functional>
 
 #include <sweet/sweetmath.hpp>
@@ -143,6 +144,22 @@ public:
 	}
 
 
+public:
+	SphereDataPhysicalComplex& operator=(
+			SphereDataPhysicalComplex &&i_sph_data
+	)
+	{
+		if (sphereDataConfig == nullptr)
+			setup(i_sph_data.sphereDataConfig);
+
+		std::swap(physical_space_data, i_sph_data.physical_space_data);
+
+		return *this;
+	}
+
+
+
+public:
 	SphereDataPhysicalComplex& operator=(
 			const SphereDataPhysical &i_sph_data
 	)

@@ -16,6 +16,7 @@
 #include <fstream>
 #include <iomanip>
 #include <cassert>
+#include <utility>
 #include <functional>
 
 #include <sweet/sphere/SphereDataConfig.hpp>
@@ -72,6 +73,31 @@ public:
 
 		operator=(i_sph_data);
 	}
+
+
+
+
+public:
+	SphereDataComplex(
+			SphereDataComplex &&i_sph_data
+	)	:
+		sphereDataConfig(nullptr),
+		physical_space_data(nullptr),
+		spectral_space_data(nullptr)
+	{
+		if (sphereDataConfig == nullptr)
+			setup(i_sph_data.sphereDataConfig);
+
+		if (i_sph_data.physical_space_data_valid)
+			std::swap(physical_space_data, i_sph_data.physical_space_data);
+
+		if (i_sph_data.spectral_space_data_valid)
+			std::swap(spectral_space_data, i_sph_data.spectral_space_data);
+
+		physical_space_data_valid = i_sph_data.physical_space_data_valid;
+		spectral_space_data_valid = i_sph_data.spectral_space_data_valid;
+	}
+
 
 
 
@@ -151,6 +177,29 @@ public:
 
 		if (i_sph_data.spectral_space_data_valid)
 			memcpy(spectral_space_data, i_sph_data.spectral_space_data, sizeof(cplx)*sphereDataConfig->spectral_complex_array_data_number_of_elements);
+
+		physical_space_data_valid = i_sph_data.physical_space_data_valid;
+		spectral_space_data_valid = i_sph_data.spectral_space_data_valid;
+
+		return *this;
+	}
+
+
+
+
+public:
+	SphereDataComplex& operator=(
+			SphereDataComplex &&i_sph_data
+	)
+	{
+		if (sphereDataConfig == nullptr)
+			setup(i_sph_data.sphereDataConfig);
+
+		if (i_sph_data.physical_space_data_valid)
+			std::swap(physical_space_data, i_sph_data.physical_space_data);
+
+		if (i_sph_data.spectral_space_data_valid)
+			std::swap(spectral_space_data, i_sph_data.spectral_space_data);
 
 		physical_space_data_valid = i_sph_data.physical_space_data_valid;
 		spectral_space_data_valid = i_sph_data.spectral_space_data_valid;

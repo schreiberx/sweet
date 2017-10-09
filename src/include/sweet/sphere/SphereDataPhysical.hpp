@@ -17,6 +17,7 @@
 #include <iomanip>
 #include <cassert>
 #include <limits>
+#include <utility>
 #include <functional>
 
 #include <sweet/sweetmath.hpp>
@@ -103,6 +104,20 @@ public:
 			setup(i_sph_data.sphereDataConfig);
 
 		memcpy(physical_space_data, i_sph_data.physical_space_data, sizeof(double)*sphereDataConfig->physical_array_data_number_of_elements);
+
+		return *this;
+	}
+
+
+public:
+	SphereDataPhysical& operator=(
+			SphereDataPhysical &&i_sph_data
+	)
+	{
+		if (sphereDataConfig == nullptr)
+			setup(i_sph_data.sphereDataConfig);
+
+		std::swap(physical_space_data, i_sph_data.physical_space_data);
 
 		return *this;
 	}
