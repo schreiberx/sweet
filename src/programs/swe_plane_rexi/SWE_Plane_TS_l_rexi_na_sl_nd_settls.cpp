@@ -13,9 +13,9 @@
 
 
 void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
-		PlaneData &io_h,	///< prognostic variables
-		PlaneData &io_u,	///< prognostic variables
-		PlaneData &io_v,	///< prognostic variables
+		PlaneData &io_h,	///< prognostic variables - perturbation of height!
+		PlaneData &io_u,	///< prognostic variables - zonal velocity
+		PlaneData &io_v,	///< prognostic variables - meridional velocity
 
 		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp
@@ -29,7 +29,6 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 		/*
 		 * First time step
 		 */
-
 		h_prev = io_h;
 		u_prev = io_u;
 		v_prev = io_v;
@@ -44,6 +43,8 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 	PlaneData N_u(io_h.planeDataConfig);
 	PlaneData N_v(io_h.planeDataConfig);
 	PlaneData hdiv(io_h.planeDataConfig);
+	PlaneData N_h_prev(io_h.planeDataConfig);
+	PlaneData N_h_ext(io_h.planeDataConfig);
 
 	//Departure points and arrival points
 	ScalarDataArray posx_d(io_h.planeDataConfig->physical_array_data_number_of_elements);
@@ -55,8 +56,6 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 	Staggering staggering;
 	assert(staggering.staggering_type == 'a');
 
-	//if (with_linear_div_only > 0)
-	//{
 	// Calculate departure points
 	semiLagrangian.semi_lag_departure_points_settls(
 			u_prev,	v_prev,
@@ -75,58 +74,101 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 	N_u.physical_set_all(0);
 	N_v.physical_set_all(0);
 	N_h.physical_set_all(0);
+	N_h_prev.physical_set_all(0);
+	N_h_ext.physical_set_all(0);
 	hdiv.physical_set_all(0);
 
-	//Calculate nonlinear terms
-	//if (with_linear_div_only > 0)
-	//{
-	//Calculate Divergence and vorticity spectrally
-	hdiv =  - io_h * (op.diff_c_x(io_u) + op.diff_c_y(io_v));
-
-	// Calculate nonlinear term for the previous time step
-	// h*div is calculate in cartesian space (pseudo-spectrally)
-	N_h = -h_prev * (op.diff_c_x(u_prev) + op.diff_c_y(v_prev));
-
-	//Calculate exp(Ldt)N(n-1), relative to previous timestep
-	//Calculate the V{n-1} term as in documentation, with the exponential integrator
-	ts_l_rexi.run_timestep(N_h, N_u, N_v, i_dt, i_simulation_timestamp);
-
-	//Use N_h to store now the nonlinearity of the current time (prev will not be required anymore)
-	//Update the nonlinear terms with the constants relative to dt
-	N_u = -0.5 * dt * N_u; // N^n of u term is zero
-	N_v = -0.5 * dt * N_v; // N^n of v term is zero
-	N_h = dt * hdiv - 0.5 * dt * N_h ; //N^n of h has the nonlin term
-	//}
+#if 1 	 //Original complicated scheme
 
 
 
-	//if (with_linear_div_only > 0)
-	//{
-	//Build variables to be interpolated to dep. points
-	// This is the W^n term in documentation
-	u = u + N_u;
-	v = v + N_v;
-	h = h + N_h;
+	    //Calculate nonlinear terms - not done in case of only linear divergence (linear div is already in linear part)
+		if (with_linear_div_only == 0) // Full nonlinear case
+		{
 
-	// Interpolate W to departure points
-	u = sampler2D.bicubic_scalar(u, posx_d, posy_d, -0.5, -0.5);
-	v = sampler2D.bicubic_scalar(v, posx_d, posy_d, -0.5, -0.5);
+			// Calculate nonlinear term for the previous time step
+			N_h = -h_prev * (op.diff_c_x(u_prev) + op.diff_c_y(v_prev));
 
-	h = sampler2D.bicubic_scalar(h, posx_d, posy_d, -0.5, -0.5);
 
-	//}
+			//Calculate exp(Ldt)N(n-1), relative to previous timestep
+			//Calculate the V{n-1} term as in documentation, with the exponential integrator
+			ts_l_rexi.run_timestep(N_h, N_u, N_v, i_dt, i_simulation_timestamp);
 
-	/*
-	 * Calculate the exp(Ldt) W{n}_* term as in documentation, with the exponential integrator
-	 */
-	ts_l_rexi.run_timestep(h, u, v, i_dt, i_simulation_timestamp);
+			//Use N_h to store now the nonlinearity of the current time (prev will not be required anymore)
+			//Update the nonlinear terms with the constants relative to dt
+			// N=dtN^n-0.5dtV^n-1 from paper
+			// h*div is calculate in cartesian space (pseudo-spectrally)
+			hdiv =  - h * (op.diff_c_x(io_u) + op.diff_c_y(io_v));
+			N_u = -0.5 * dt * N_u; // N^n of u term is zero
+			N_v = -0.5 * dt * N_v; // N^n of v term is zero
+			N_h = dt * hdiv - 0.5 * dt * N_h ; //N^n of h has the nonlin term
 
-	//if (with_linear_div_only > 1)
-	if (with_linear_div_only == 0) // Full nonlinear case
-	{
+			//Build variables to be interpolated to dep. points
+			// This is the W^n term in documentation
+			u = u + N_u;
+			v = v + N_v;
+			h = h + N_h;
+		}
+
+		// Interpolate W to departure points
+		u = sampler2D.bicubic_scalar(u, posx_d, posy_d, -0.5, -0.5);
+		v = sampler2D.bicubic_scalar(v, posx_d, posy_d, -0.5, -0.5);
+		h = sampler2D.bicubic_scalar(h, posx_d, posy_d, -0.5, -0.5);
+
+		/*
+		 * Calculate the exp(Ldt) W{n}_* term as in documentation, with the exponential integrator
+		 */
+		ts_l_rexi.run_timestep(h, u, v, i_dt, i_simulation_timestamp);
+
 		// Add nonlinearity in h
-		h = h + 0.5 * dt * hdiv;
-	}
+		if (with_linear_div_only == 0) // Full nonlinear case
+		{
+			h = h + 0.5 * dt * hdiv;
+		}
+
+#else //simpler scheme (unstable)
+
+
+		// Calculate linear part
+		// ------------------------------
+
+		// Interpolate U to departure points
+		u = sampler2D.bicubic_scalar(io_u, posx_d, posy_d, -0.5, -0.5);
+		v = sampler2D.bicubic_scalar(io_v, posx_d, posy_d, -0.5, -0.5);
+		h = sampler2D.bicubic_scalar(io_h, posx_d, posy_d, -0.5, -0.5);
+
+		ts_l_rexi.run_timestep(h, u, v, i_dt, i_simulation_timestamp);
+
+		if(with_linear_div_only==0) //linear div is already incorporated in the linear term, so simply ignore nonlinearity.
+		{
+			std::cout<<"Be careful, don't trust me, I may be go unstable!"<<std::endl;
+			// Calculate nonlinear term
+			// ------------------------------
+
+			//Extrapolate N to t_n+1
+			N_h =  - io_h * (op.diff_c_x(io_u) + op.diff_c_y(io_v));
+			N_h_prev = - h_prev * (op.diff_c_x(u_prev) + op.diff_c_y(v_prev));
+			N_h_ext = 2 * N_h - N_h_prev;
+
+			//Interpolate to departure points
+			N_h_ext = sampler2D.bicubic_scalar(N_h_ext, posx_d, posy_d, -0.5, -0.5);
+
+			//Compose extrapolated N_n+1/2
+			N_h = 0.5 * ( N_h_ext + N_h );
+
+			//Apply exponential dt/2
+			ts_l_rexi.run_timestep(N_h, N_u, N_v, 0.5*i_dt, i_simulation_timestamp);
+
+			// Join linear and nonlinear
+			// ------------------------------
+			u = u + i_dt * N_u;
+			u = v + i_dt * N_v;
+			h = h + i_dt * N_h;
+
+		}
+
+#endif
+
 
 	// Set time (n) as time (n-1)
 	h_prev = io_h;
