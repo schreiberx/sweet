@@ -1,4 +1,4 @@
 #! /bin/bash
 
-rm -fr output_*
+rm -fr script_*
 rm -fr a_output_*
