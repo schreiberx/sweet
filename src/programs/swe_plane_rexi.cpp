@@ -542,6 +542,7 @@ public:
 				// iterate over physical space
 				for (std::size_t outer_i = 0; outer_i < planeDataConfig->physical_array_data_number_of_elements; outer_i++)
 				{
+					std::cout << outer_i << ", " << outer_prog_id << std::endl;
 					// reset time control
 					simVars.timecontrol.current_timestep_nr = 0;
 					simVars.timecontrol.current_simulation_time = 0;
