@@ -49,7 +49,7 @@ p.runtime.normal_mode_analysis = 1
 #
 # Mode and Physical resolution
 #
-p.runtime.mode_res = 128
+p.runtime.mode_res = 16
 p.runtime.phys_res = -1
 
 #
@@ -127,7 +127,8 @@ p.runtime.viscosity = 0.0
 
 timestep_size_reference = 100
 #timestep_sizes = [timestep_size_reference*(2.0**i) for i in range(0, 11)]
-timestep_sizes = [timestep_size_reference*(2**i) for i in range(0, 5)]
+#timestep_sizes = [timestep_size_reference*(2**i) for i in range(0, 5)]
+timestep_sizes = [timestep_size_reference]
 
 #p.runtime.simtime = timestep_sizes[-1]*10 #timestep_size_reference*2000
 p.runtime.simtime = 100*(2**5)*10
@@ -215,10 +216,10 @@ if __name__ == "__main__":
 				['ln_erk',		4,	4,	0],	# reference solution
 				#['l_irk_n_erk',		2,	2,	0],
 				#['l_cn_n_erk',		2,	2,	0],
-				['l_erk_n_erk',		2,	2,	0],
+				#['l_erk_n_erk',		2,	2,	0],
 				['ln_erk',		2,	2,	0],
-				['l_rexi_n_etdrk',	2,	2,	0],
-				['lg_rexi_lc_n_etdrk',	2,	2,	0],
+				#['l_rexi_n_etdrk',	2,	2,	0],
+				#['lg_rexi_lc_n_etdrk',	2,	2,	0],
 			]
 
 		# 4th order nonlinear
@@ -247,8 +248,8 @@ if __name__ == "__main__":
 		#
 		# Reference solution
 		#
-		if True:
-		#if False:
+		#if True:
+		if False:
 			tsm = ts_methods[0]
 			p.runtime.timestep_size  = timestep_sizes[0]
 
