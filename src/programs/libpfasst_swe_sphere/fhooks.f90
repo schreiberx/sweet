@@ -20,11 +20,11 @@ module hooks_module
        integer,intent(in)           :: step,iter
      end subroutine cecho_residual
 
-     subroutine cecho_output_solution(i_ctx, i_Y, i_current_proc, i_current_iter, i_nnodes, i_niter) & 
+     subroutine cecho_output_solution(i_ctx, i_Y, i_current_proc, i_current_step, i_current_iter, i_nnodes, i_niter) & 
           bind(c, name="cecho_output_solution")
        use iso_c_binding
        type(c_ptr),           value :: i_ctx, i_Y
-       integer,               value :: i_current_proc, i_current_iter, i_nnodes, i_niter
+       integer,               value :: i_current_proc, i_current_step, i_current_iter, i_nnodes, i_niter
      end subroutine cecho_output_solution
 
   end interface
@@ -255,14 +255,19 @@ contains
        sweet_sweeper_ptr => as_sweet_sweeper(level%ulevel%sweeper)
        x_ptr             => as_sweet_data_encap(level%Q(sweet_sweeper_ptr%nnodes))
 
-       call cecho_output_solution(sweet_sweeper_ptr%ctx,  &
-                                  x_ptr%c_sweet_data_ptr, &
-                                  state%proc,             &
-                                  state%iter,             &
-                                  level%nnodes,           &
-                                  pf%niters)
+       if (modulo(state%step, 100) == 0 .and. state%iter == pf%niters) then
 
-       print *, 'step = ', state%step, ' iter = ', state%iter, ' processor = ', state%proc
+          call cecho_output_solution(sweet_sweeper_ptr%ctx,  &
+                                     x_ptr%c_sweet_data_ptr, &
+                                     state%proc,             &
+                                     state%step,             &
+                                     state%iter,             &
+                                     level%nnodes,           &
+                                     pf%niters)
+          
+          print *, 'step = ', state%step, ' iter = ', state%iter, ' processor = ', state%proc
+
+       end if
 
 !    end if
 
