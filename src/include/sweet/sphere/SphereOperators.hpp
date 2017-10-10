@@ -641,25 +641,6 @@ public:
 
 
 
-	/**
-	 * Compute divergence along latitude for robert function formulation
-	 *
-	 * This computes
-	 * 		d/dmu V
-	 */
-#if 0
-	SphereData robert_div_lat(
-			const SphereData &i_sph_data
-	)	const
-	{
-		/*
-		 * Compute
-		 *   1/(1-sin^2(phi)) * cos^2(phi) * d/d mu f(lambda,mu)
-		 */
-		return inv_one_minus_mu2(spectral_cosphi2_diff_lat_mu(i_sph_data));
-	}
-#endif
-
 
 	/**
 	 * Compute gradient component along longitude (lambda) for Robert function formulation
@@ -676,21 +657,6 @@ public:
 	}
 
 
-
-	/**
-	 * Special formulation for Robert gradient,
-	 * see REXI with spherical harmonics
-	 *
-	 * 1.0/(1-mu*mu) d/dlambda Phi
-	 */
-#if 0
-	SphereData robert_grad_lon_M(
-			const SphereData &i_sph_data
-	)	const
-	{
-		return inv_one_minus_mu2(robert_grad_lon(i_sph_data));
-	}
-#endif
 
 
 	/**
@@ -711,20 +677,6 @@ public:
 
 
 
-	/**
-	 * Special formulation for Robert gradient,
-	 * see REXI with spherical harmonics
-	 *
-	 * d/dmu Phi
-	 */
-#if 0
-	SphereData robert_grad_lat_M(
-			const SphereData &i_sph_data
-	)	const
-	{
-		return inv_one_minus_mu2(robert_grad_lat(i_sph_data));
-	}
-#endif
 
 	/**
 	 */

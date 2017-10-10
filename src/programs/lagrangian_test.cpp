@@ -5,6 +5,9 @@
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
+#ifndef SWEET_GUI
+#define SWEET_GUI 1
+#endif
 
 #include "../include/sweet/plane/PlaneData.hpp"
 #if SWEET_GUI

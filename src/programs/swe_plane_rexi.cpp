@@ -434,10 +434,8 @@ public:
 	void normal_mode_analysis()
 	{
 		// dummy time step to get time step size
-		if (simVars.sim.CFL >= 0)
+		if (simVars.timecontrol.current_timestep_size <= 0)
 			FatalError("Normal mode analysis requires setting fixed time step size");
-
-		simVars.timecontrol.current_timestep_size = -simVars.sim.CFL;
 
 		//run_timestep();
 
