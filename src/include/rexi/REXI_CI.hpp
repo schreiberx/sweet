@@ -36,6 +36,35 @@ public:
 	}
 
 
+	void setup_shifted_circle(
+			const std::string &i_function_name,
+			int N,
+			T max_real_evalue,
+			T max_imag_evalue
+	)
+	{
+		/*
+		 * See CI documentation
+		 *
+		 * Here we compute a circle which is given by the boundary points.
+		 * This avoids large positive EValues leading to numerical cancellation effects
+		 */
+		T x0 = max_real_evalue;
+		T xm = max_imag_evalue;
+		T r = (x0*x0 + xm*xm)/(2.0*x0);
+		T center = max_real_evalue-r;
+
+		setup(
+				i_function_name,
+				N,
+				"circle",
+				r*2.0,
+				r*2.0,
+				center
+			);
+	}
+
+
 	void setup(
 			const std::string &i_function_name,
 			int N,

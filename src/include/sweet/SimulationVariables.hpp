@@ -139,7 +139,7 @@ public:
 			std::cout << std::endl;
 			std::cout << "PDE:" << std::endl;
 			std::cout << " + id: " << id << std::endl;
-			std::cout << " + use_linear_div: " << use_linear_div << std::endl;
+			std::cout << " + use-linear-div: " << use_linear_div << std::endl;
 			std::cout << std::endl;
 		}
 
@@ -149,7 +149,7 @@ public:
 			std::cout << std::endl;
 			std::cout << "Partial differential equation:" << std::endl;
 			std::cout << "	--pde-id [0/1]		    PDE to solve (0: SWE, 1: advection)" << std::endl;
-			std::cout << "	--use_linear_div [0/1]	Nonlinear equations will use linear divergence of mass equations, default:0" << std::endl;
+			std::cout << "	--use-linear-div [0/1]	Nonlinear equations will use linear divergence of mass equations, default:0" << std::endl;
 			std::cout << "" << std::endl;
 		}
 	} pde;

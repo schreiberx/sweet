@@ -1,12 +1,12 @@
 /*
- * SWE_Sphere_TS_l_irk_n_erk.hpp
+ * SWE_Sphere_TS_l_na_erk.hpp
  *
  *  Created on: 30 May 2017
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_IRK_N_ERK_HPP_
-#define SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_IRK_N_ERK_HPP_
+#ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_NA_ERK_HPP_
+#define SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_NA_ERK_HPP_
 
 #include <limits>
 #include <sweet/sphere/SphereData.hpp>
@@ -14,39 +14,37 @@
 #include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/SimulationVariables.hpp>
 
-#include "SWE_Sphere_TS_interface.hpp"
-#include "SWE_Sphere_TS_l_irk.hpp"
-#include "SWE_Sphere_TS_l_cn.hpp"
-#include "SWE_Sphere_TS_l_erk_n_erk.hpp"
+#include "../../programs/swe_sphere_rexi/SWE_Sphere_TS_interface.hpp"
 
 
-
-class SWE_Sphere_TS_l_irk_n_erk	: public SWE_Sphere_TS_interface
+class SWE_Sphere_TS_l_na_erk	: public SWE_Sphere_TS_interface
 {
 	SimulationVariables &simVars;
 	SphereOperators &op;
 
 	int timestepping_order;
-	int timestepping_order2;
 
-	double timestep_size;
+	// Sampler
+	SphereDataTimesteppingExplicitRK timestepping_rk;
 
-	/*
-	 * Linear time steppers
-	 */
-	SWE_Sphere_TS_l_irk timestepping_l_irk;
-	SWE_Sphere_TS_l_cn timestepping_l_cn;
+	// Coriolis effect
+	SphereDataPhysical fg;
 
-	/*
-	 * Non-linear time steppers
-	 */
-	SWE_Sphere_TS_l_erk_n_erk timestepping_l_erk_n_erk;
+private:
+	void euler_timestep_update(
+			const SphereData &i_phi,	///< prognostic variables
+			const SphereData &i_vort,	///< prognostic variables
+			const SphereData &i_div,	///< prognostic variables
 
-	SphereDataTimesteppingExplicitRK timestepping_rk_nonlinear;
+			SphereData &o_phi_t,	///< time updates
+			SphereData &o_vort_t,	///< time updates
+			SphereData &o_div_t,	///< time updates
 
+			double i_simulation_timestamp = -1
+	);
 
 public:
-	SWE_Sphere_TS_l_irk_n_erk(
+	SWE_Sphere_TS_l_na_erk(
 			SimulationVariables &i_simVars,
 			SphereOperators &i_op
 		);
@@ -66,7 +64,7 @@ public:
 
 
 
-	virtual ~SWE_Sphere_TS_l_irk_n_erk();
+	virtual ~SWE_Sphere_TS_l_na_erk();
 };
 
 #endif /* SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_LN_ERK_HPP_ */

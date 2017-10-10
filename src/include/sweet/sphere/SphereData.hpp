@@ -17,6 +17,7 @@
 #include <iomanip>
 #include <cassert>
 #include <limits>
+#include <utility>
 #include <functional>
 
 #include <sweet/sweetmath.hpp>
@@ -94,6 +95,29 @@ public:
 
 
 
+public:
+	SphereData(
+			SphereData &&i_sph_data
+	)	:
+		sphereDataConfig(i_sph_data.sphereDataConfig),
+		physical_space_data(nullptr),
+		spectral_space_data(nullptr)
+	{
+		setup(i_sph_data.sphereDataConfig);
+
+		if (i_sph_data.physical_space_data_valid)
+			std::swap(physical_space_data, i_sph_data.physical_space_data);
+
+		if (i_sph_data.spectral_space_data_valid)
+			std::swap(spectral_space_data, i_sph_data.spectral_space_data);
+
+		physical_space_data_valid = i_sph_data.physical_space_data_valid;
+		spectral_space_data_valid = i_sph_data.spectral_space_data_valid;
+	}
+
+
+
+
 	/**
 	 * Run validation checks to make sure that the physical and spectral spaces match in size
 	 */
@@ -124,6 +148,27 @@ public:
 
 		if (i_sph_data.spectral_space_data_valid)
 			memcpy(spectral_space_data, i_sph_data.spectral_space_data, sizeof(cplx)*sphereDataConfig->spectral_array_data_number_of_elements);
+
+		physical_space_data_valid = i_sph_data.physical_space_data_valid;
+		spectral_space_data_valid = i_sph_data.spectral_space_data_valid;
+
+		return *this;
+	}
+
+
+public:
+	SphereData& operator=(
+			SphereData &&i_sph_data
+	)
+	{
+		if (sphereDataConfig == nullptr)
+			setup(i_sph_data.sphereDataConfig);
+
+		if (i_sph_data.physical_space_data_valid)
+			std::swap(physical_space_data, i_sph_data.physical_space_data);
+
+		if (i_sph_data.spectral_space_data_valid)
+			std::swap(spectral_space_data, i_sph_data.spectral_space_data);
 
 		physical_space_data_valid = i_sph_data.physical_space_data_valid;
 		spectral_space_data_valid = i_sph_data.spectral_space_data_valid;
@@ -223,57 +268,6 @@ public:
 		return out;
 	}
 
-
-#if 0
-public:
-	void physical_RealToSphereData(
-			SphereData &o_sph_data
-	)
-	{
-		check_sphereDataConfig_identical_res(o_sph_data.sphereDataConfig);
-
-		request_data_physical();
-
-		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
-			o_sph_data.physical_space_data[i] = physical_space_data[i].real();
-
-		o_sph_data.physical_space_data_valid = true;
-		o_sph_data.spectral_space_data_valid = false;
-	}
-
-public:
-	void physical_ImagToSphereData(
-			SphereData &o_sph_data
-	)
-	{
-		check_sphereDataConfig_identical_res(o_sph_data.sphereDataConfig);
-
-		request_data_physical();
-
-		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
-			o_sph_data.physical_space_data[i] = physical_space_data[i].imag();
-
-		o_sph_data.physical_space_data_valid = true;
-		o_sph_data.spectral_space_data_valid = false;
-	}
-
-
-public:
-	void physical_fromSphereData(
-			const SphereData &i_sph_data
-	)
-	{
-		check_sphereDataConfig_identical_res(i_sph_data.sphereDataConfig);
-
-		i_sph_data.request_data_physical();
-
-		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
-			physical_space_data[i] = i_sph_data.physical_space_data[i];
-
-		physical_space_data_valid = true;
-		spectral_space_data_valid = false;
-	}
-#endif
 
 
 	void request_data_spectral()	const
