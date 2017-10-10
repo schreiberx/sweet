@@ -52,8 +52,15 @@ void SWE_Sphere_TS_l_erk::euler_timestep_update(
 
 		o_vort_t *= -1.0;
 
+#if 0
+		// Non-linear divergence
+		tmpg1 = ug*phig;
+		tmpg2 = vg*phig;
+#else
+		// Linearized divergence around avg. geopotential
 		tmpg1 = ug*gh;
 		tmpg2 = vg*gh;
+#endif
 
 		SphereData tmpspec(i_phi.sphereDataConfig);
 		op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);

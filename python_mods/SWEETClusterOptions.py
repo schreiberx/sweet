@@ -399,7 +399,7 @@ class SWEETClusterOptions:
 ## shared queue
 ######PBS -q share
 ## wall-clock time (hrs:mins:secs)
-#PBS -l walltime=00:30:00
+#PBS -l walltime=00:10:00
 ## select one chunk with one CPU in it
 #PBS -l select="""+str(num_nodes)+""":ncpus="""+str(num_cores_per_node)+""":mpiprocs="""+str(num_ranks_per_node)+""":ompthreads="""+str(num_omp_threads_per_mpi_thread)+"""
 #
@@ -421,7 +421,8 @@ export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
 			mpi_exec_prefix += " omplace "
 			mpi_exec_prefix += " -nt "+str(num_omp_threads_per_mpi_thread)+" "
 			mpi_exec_prefix += " -vv "
-			mpi_exec_prefix += " -tm pthread "
+			# -tm pthreads didn't make any difference in performance for single-threaded programs which 1 thread per socket
+			#mpi_exec_prefix += " -tm pthreads "
 
 		else:
 			content = ""

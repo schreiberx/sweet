@@ -73,7 +73,7 @@ class SimulationInstance
 {
 public:
 	// Prognostic variables
-	// h: surface height
+	// h: surface height (perturbation)
 	// u: velocity in x-direction
 	// v: velocity in y-direction
 	PlaneData prog_h_pert, prog_u, prog_v;
@@ -434,10 +434,8 @@ public:
 	void normal_mode_analysis()
 	{
 		// dummy time step to get time step size
-		if (simVars.sim.CFL >= 0)
+		if (simVars.timecontrol.current_timestep_size <= 0)
 			FatalError("Normal mode analysis requires setting fixed time step size");
-
-		simVars.timecontrol.current_timestep_size = -simVars.sim.CFL;
 
 		//run_timestep();
 
@@ -544,6 +542,7 @@ public:
 				// iterate over physical space
 				for (std::size_t outer_i = 0; outer_i < planeDataConfig->physical_array_data_number_of_elements; outer_i++)
 				{
+					std::cout << outer_i << ", " << outer_prog_id << std::endl;
 					// reset time control
 					simVars.timecontrol.current_timestep_nr = 0;
 					simVars.timecontrol.current_simulation_time = 0;
@@ -1103,7 +1102,7 @@ public:
 			switch(simVars.misc.vis_id)
 			{
 			case -1:
-				vis = ts_u+simVars.sim.h0;			//Exact solution
+				vis = ts_h_pert+simVars.sim.h0;			//Exact solution
 				break;
 
 			case -2:

@@ -1,12 +1,12 @@
 /*
- * SWE_Plane_TS_l_phi0_n_edt.hpp
+ * SWE_Plane_TS_l_rexi_n_etdrk.hpp
  *
  *  Created on: 29 May 2017
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#ifndef SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_LN_ETDRK_HPP_
-#define SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_LN_ETDRK_HPP_
+#ifndef SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_L_REXI_N_ETDRK_HPP_
+#define SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_L_REXI_N_ETDRK_HPP_
 
 #include <limits>
 #include <sweet/plane/PlaneData.hpp>
