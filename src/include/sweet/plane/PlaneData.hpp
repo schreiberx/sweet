@@ -2526,6 +2526,8 @@ public:
 	}
 
 
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+
 	/**
 	 * Write spectral data to ASCII file
 	 *
@@ -2566,6 +2568,8 @@ public:
 
 		return true;
 	}
+
+#endif
 
 
 
