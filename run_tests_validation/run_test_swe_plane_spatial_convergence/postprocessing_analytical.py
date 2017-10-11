@@ -88,11 +88,11 @@ for group_info in groups:
 		conv_test = []
 		prev_conv_value = 0.0
 		prev_h_error = 0.0
-		pos = outputs[1].find("_phys")
+		pos = outputs[1].find("_N")
 		test_name = outputs[1][0:pos]
 		print("----------------------")
 		print("Method: "+test_name)
-		print("Resolution    MaxErrorH               MaxErrorU             MaxErrorV         RatioH")
+		print("Resolution    MaxErrorH    MaxErrorU  MaxErrorV  RatioH")
 
 		i = -1
 		n = len(outputs)
@@ -100,7 +100,7 @@ for group_info in groups:
 
 		for output in outputs:
 			i = i+1 #output index
-			test_res = output[pos+5:len(output)-4]
+			test_res = output[pos+2:len(output)-4]
 			result = extract_errors(output)
 
 			if result[0] != "x" and float(result[0]) != 0 :

@@ -82,9 +82,9 @@ p.runtime.viscosity = 0.0
 
 
 timestep_size_reference = 0.0001
-timestep_sizes = [0.0001*(2.0**i) for i in range(0, 11)]
+timestep_sizes = [0.1*(2.0**(-i)) for i in range(0, 11)]
 
-p.runtime.simtime = 0.0001
+p.runtime.simtime = 1.0
 p.runtime.output_timestep_size = p.runtime.simtime
 
 phys_res_list = [16*(2**i) for i in range(0, 7)]
@@ -212,16 +212,16 @@ for group in groups:
 			p.compile.plane_spectral_space = 'enable'
 			p.compile.plane_spectral_dealiasing = 'enable'
 
-		for phys_res in phys_res_list:
+		for idx in range(0,7): #, phys_res in phys_res_list:
 
 			p.prefix_string = prefix_string_template
 
-			p.runtime.timestep_size = timestep_size_reference
+			p.runtime.timestep_size = timestep_sizes[idx]
 			p.runtime.timestepping_method = tsm[0]
 			p.runtime.timestepping_order = tsm[1]
 			p.runtime.timestepping_order2 = tsm[2]
-			p.runtime.phys_res = phys_res
-
+			p.runtime.phys_res = phys_res_list[idx]
+			print(idx, p.runtime.timestep_size, p.runtime.phys_res)
 
 			if len(tsm) > 4:
 				s = tsm[4]
