@@ -10,6 +10,7 @@
 #include "SWE_Sphere_TS_l_irk.hpp"
 #include "SWE_Sphere_TS_l_erk_n_erk.hpp"
 #include "SWE_Sphere_TS_l_erk.hpp"
+#include "SWE_Sphere_TS_l_rexi.hpp"
 
 #include "ceval.hpp"
 #include "cencap.hpp"
@@ -281,27 +282,37 @@ extern "C"
     vort_Y = vort_Rhs;
     div_Y  = div_Rhs;
     
-    SWE_Sphere_TS_l_irk* timestepper = i_ctx->get_l_irk_timestepper(io_Y->get_level());
 
-    // solve the implicit system using the Helmholtz solver
-    timestepper->run_timestep(
-			      phi_Y,
-			      vort_Y,
-			      div_Y,
-			      i_dt,
-			      simVars->timecontrol.max_simulation_time
-			      );
-    
+    if (simVars->libpfasst.use_rexi) 
+      {
+	// get the rexi time stepper
+	SWE_Sphere_TS_l_rexi* timestepper = i_ctx->get_l_rexi_timestepper(io_Y->get_level());
+
+	// solve the implicit system using the Helmholtz solver
+	timestepper->run_timestep(
+				  phi_Y,
+				  vort_Y,
+				  div_Y,
+				  i_dt,
+				  simVars->timecontrol.max_simulation_time
+				  );
+      }
+    else 
+      {
+	// get the irk timestepper
+	SWE_Sphere_TS_l_irk* timestepper = i_ctx->get_l_irk_timestepper(io_Y->get_level());
+	
+	// solve the implicit system using the Helmholtz solver
+	timestepper->run_timestep(
+				  phi_Y,
+				  vort_Y,
+				  div_Y,
+				  i_dt,
+				  simVars->timecontrol.max_simulation_time
+				  );
+      }
+
     // now recompute F2 with the new value of Y
-    /*
-    ceval_f2(
-	     io_Y, 
-	     i_t, 
-	     i_ctx, 
-	     o_F2
-	     );
-    */
-
     SphereData& phi_F2  = o_F2->get_phi();
     SphereData& vort_F2 = o_F2->get_vort();
     SphereData& div_F2  = o_F2->get_div();
