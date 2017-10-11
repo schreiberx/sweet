@@ -1,22 +1,21 @@
 /*
- * SWE_Plane_TS_l_phi0_n_edt.cpp
+ * SWE_Plane_TS_l_rexi_na_sl_nd_etdrk.hpp
  *
- *  Created on: 29 May 2017
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *  Created on: 09 Oct 2017
+ *      Author: Pedro Peixoto <pedrosp@ime.usp.br>
  *
  *  Changelog:
- *  	2017-05-29: Based on source swe_plane_rexi.cpp
- *					which was also written by Pedro Peixoto
+ *      based on Martin Schreiber ETD timestepper
  */
 
-#include "SWE_Plane_TS_l_rexi_n_etdrk.hpp"
+#include "SWE_Plane_TS_l_rexi_na_sl_nd_etdrk.hpp"
 
 
 
 /*
  * Main routine for method to be used in case of finite differences
  */
-void SWE_Plane_TS_l_rexi_n_etdrk::euler_timestep_update_nonlinear(
+void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::euler_timestep_update_nonlinear(
 
 		const PlaneData &i_h,	///< prognostic variables
 		const PlaneData &i_u,	///< prognostic variables
@@ -38,10 +37,15 @@ void SWE_Plane_TS_l_rexi_n_etdrk::euler_timestep_update_nonlinear(
 	 *	u_t = -g * h_x - u * u_x - v * u_y + f*v
 	 *	v_t = -g * h_y - u * v_x - v * v_y - f*u
 	 */
+	/*
+	 * o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
+	 * o_u_t = -i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
+	 * o_v_t = -i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
+	 */
+	// In lagrangian form, the only nonlinearity is the nonlinear divergence
 	o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
-	o_u_t = -i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
-	o_v_t = -i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
-
+	o_u_t = 0.0; //-i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
+	o_v_t = 0.0; //-i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
 	o_dt = i_dt;
 }
 
@@ -50,7 +54,7 @@ void SWE_Plane_TS_l_rexi_n_etdrk::euler_timestep_update_nonlinear(
 /*
  * Main routine for method to be used in case of finite differences
  */
-void SWE_Plane_TS_l_rexi_n_etdrk::euler_timestep_update_nonlinear(
+void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::euler_timestep_update_nonlinear(
 		const PlaneData &i_h,	///< prognostic variables
 		const PlaneData &i_u,	///< prognostic variables
 		const PlaneData &i_v,	///< prognostic variables
@@ -69,15 +73,21 @@ void SWE_Plane_TS_l_rexi_n_etdrk::euler_timestep_update_nonlinear(
 	 *	u_t = -g * h_x - u * u_x - v * u_y + f*v
 	 *	v_t = -g * h_y - u * v_x - v * v_y - f*u
 	 */
+	/*
+	 * o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
+	 * o_u_t = -i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
+	 * o_v_t = -i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
+	 */
+	// In lagrangian form, the only nonlinearity is the nonlinear divergence
 	o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
-	o_u_t = -i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
-	o_v_t = -i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
+	o_u_t = 0.0; //-i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
+	o_v_t = 0.0; //-i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
 
 }
 
 
 
-void SWE_Plane_TS_l_rexi_n_etdrk::run_timestep(
+void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 		PlaneData &io_h,	///< prognostic variables
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
@@ -87,10 +97,51 @@ void SWE_Plane_TS_l_rexi_n_etdrk::run_timestep(
 )
 {
 	if (i_dt <= 0)
-		FatalError("SWE_Plane_TS_l_phi0_n_edt: Only constant time step size allowed");
+		FatalError("SWE_Plane_TS_l_rexi_na_sl_nd_etdrk: Only constant time step size allowed (Please set --dt)");
 
 
 	const PlaneDataConfig *planeDataConfig = io_h.planeDataConfig;
+
+	//Departure points and arrival points
+	ScalarDataArray posx_d(io_h.planeDataConfig->physical_array_data_number_of_elements);
+	ScalarDataArray posy_d(io_h.planeDataConfig->physical_array_data_number_of_elements);
+
+	// Tmp vars
+	PlaneData h(io_h.planeDataConfig);
+	PlaneData u(io_h.planeDataConfig);
+	PlaneData v(io_h.planeDataConfig);
+
+	Staggering staggering;
+	assert(staggering.staggering_type == 'a');
+
+	if (i_simulation_timestamp == 0)
+	{
+		/*
+		 * First time step
+		 */
+		h_prev = io_h;
+		u_prev = io_u;
+		v_prev = io_v;
+	}
+
+	// Calculate departure points
+	semiLagrangian.semi_lag_departure_points_settls(
+			u_prev,	v_prev,
+			io_u,		io_v,
+			posx_a,		posy_a,
+			i_dt,
+			posx_d,	posy_d,			// output
+			staggering
+	);
+
+	u = io_u;
+	v = io_v;
+	h = io_h;
+
+	// Interpolate U to departure points
+	u = sampler2D.bicubic_scalar(io_u, posx_d, posy_d, -0.5, -0.5);
+	v = sampler2D.bicubic_scalar(io_v, posx_d, posy_d, -0.5, -0.5);
+	h = sampler2D.bicubic_scalar(io_h, posx_d, posy_d, -0.5, -0.5);
 
 	if (timestepping_order == 1)
 	{
@@ -103,7 +154,7 @@ void SWE_Plane_TS_l_rexi_n_etdrk::run_timestep(
 		PlaneData phi0_Un_u(planeDataConfig);
 		PlaneData phi0_Un_v(planeDataConfig);
 		ts_phi0_rexi.run_timestep(
-				io_h, io_u, io_v,
+				h, u, v,
 				phi0_Un_h, phi0_Un_u, phi0_Un_v,
 				i_dt,
 				i_simulation_timestamp
@@ -113,7 +164,7 @@ void SWE_Plane_TS_l_rexi_n_etdrk::run_timestep(
 		PlaneData FUn_u(planeDataConfig);
 		PlaneData FUn_v(planeDataConfig);
 		euler_timestep_update_nonlinear(
-				io_h, io_u, io_v,
+				h, u, v,
 				FUn_h, FUn_u, FUn_v,
 				i_simulation_timestamp
 		);
@@ -145,7 +196,7 @@ void SWE_Plane_TS_l_rexi_n_etdrk::run_timestep(
 		PlaneData phi0_Un_v(planeDataConfig);
 
 		ts_phi0_rexi.run_timestep(
-				io_h, io_u, io_v,
+				h, u, v,
 				phi0_Un_h, phi0_Un_u, phi0_Un_v,
 				i_dt,
 				i_simulation_timestamp
@@ -156,7 +207,7 @@ void SWE_Plane_TS_l_rexi_n_etdrk::run_timestep(
 		PlaneData FUn_v(planeDataConfig);
 
 		euler_timestep_update_nonlinear(
-				io_h, io_u, io_v,
+				h, u, v,
 				FUn_h, FUn_u, FUn_v,
 				i_simulation_timestamp
 		);
@@ -228,7 +279,7 @@ void SWE_Plane_TS_l_rexi_n_etdrk::run_timestep(
 		PlaneData phi0_Un_v(planeDataConfig);
 
 		ts_phi0_rexi.run_timestep(
-				io_h, io_u, io_v,
+				h, u, v,
 				phi0_Un_h, phi0_Un_u, phi0_Un_v,
 				dt_half,
 				i_simulation_timestamp
@@ -239,7 +290,7 @@ void SWE_Plane_TS_l_rexi_n_etdrk::run_timestep(
 		PlaneData FUn_v(planeDataConfig);
 
 		euler_timestep_update_nonlinear(
-				io_h, io_u, io_v,
+				h, u, v,
 				FUn_h, FUn_u, FUn_v,
 				i_simulation_timestamp
 		);
@@ -352,9 +403,9 @@ void SWE_Plane_TS_l_rexi_n_etdrk::run_timestep(
 				i_simulation_timestamp + dt
 		);
 
-		PlaneData R0_h = io_h;
-		PlaneData R0_u = io_u;
-		PlaneData R0_v = io_v;
+		PlaneData R0_h = h;
+		PlaneData R0_u = u;
+		PlaneData R0_v = v;
 
 		PlaneData &R1_h = FUn_h;
 		PlaneData &R1_u = FUn_u;
@@ -407,6 +458,11 @@ void SWE_Plane_TS_l_rexi_n_etdrk::run_timestep(
 	{
 		FatalError("TODO: This order is not implemented, yet!");
 	}
+	// Set time (n) as time (n-1)
+	h_prev = io_h;
+	u_prev = io_u;
+	v_prev = io_v;
+
 }
 
 
@@ -414,7 +470,7 @@ void SWE_Plane_TS_l_rexi_n_etdrk::run_timestep(
 /*
  * Setup
  */
-void SWE_Plane_TS_l_rexi_n_etdrk::setup(
+void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::setup(
 		REXI_SimulationVariables &i_rexiSimVars,
 		int i_timestepping_order
 )
@@ -435,10 +491,53 @@ void SWE_Plane_TS_l_rexi_n_etdrk::setup(
 		ts_ups2_rexi.setup(i_rexiSimVars, "ups2");
 		ts_ups3_rexi.setup(i_rexiSimVars, "ups3");
 	}
-	}
+
+	if (simVars.disc.use_staggering)
+		FatalError("SWE_Plane_TS_l_rexi_na_sl_nd_etdrk: Staggering not supported for l_rexi_na_sl_nd_etdrk");
+
+	//with_linear_div_only = i_use_linear_div;
+
+	// Setup sampler for future interpolations
+	sampler2D.setup(simVars.sim.domain_size, op.planeDataConfig);
+
+	// Setup semi-lag
+	semiLagrangian.setup(simVars.sim.domain_size, op.planeDataConfig);
 
 
-SWE_Plane_TS_l_rexi_n_etdrk::SWE_Plane_TS_l_rexi_n_etdrk(
+	PlaneData tmp_x(op.planeDataConfig);
+	tmp_x.physical_update_lambda_array_indices(
+			[&](int i, int j, double &io_data)
+			{
+		io_data = ((double)i)*simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
+			},
+			false
+	);
+
+	PlaneData tmp_y(op.planeDataConfig);
+	tmp_y.physical_update_lambda_array_indices(
+			[&](int i, int j, double &io_data)
+			{
+		io_data = ((double)j)*simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
+			},
+			false
+	);
+
+	// Initialize arrival points with h position
+	ScalarDataArray pos_x = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_x);
+	ScalarDataArray pos_y = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_y);
+
+
+	double cell_size_x = simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
+	double cell_size_y = simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
+
+	// Initialize arrival points with h position
+	posx_a = pos_x+0.5*cell_size_x;
+	posy_a = pos_y+0.5*cell_size_y;
+
+}
+
+
+SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::SWE_Plane_TS_l_rexi_na_sl_nd_etdrk(
 		SimulationVariables &i_simVars,
 		PlaneOperators &i_op
 )	:
@@ -450,13 +549,23 @@ SWE_Plane_TS_l_rexi_n_etdrk::SWE_Plane_TS_l_rexi_n_etdrk(
 
 		ts_ups1_rexi(simVars, op),
 		ts_ups2_rexi(simVars, op),
-		ts_ups3_rexi(simVars, op)
+		ts_ups3_rexi(simVars, op),
+
+		h_prev(i_op.planeDataConfig),
+		u_prev(i_op.planeDataConfig),
+		v_prev(i_op.planeDataConfig),
+
+		posx_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
+		posy_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
+
+		posx_d(i_op.planeDataConfig->physical_array_data_number_of_elements),
+		posy_d(i_op.planeDataConfig->physical_array_data_number_of_elements)
 {
 }
 
 
 
-SWE_Plane_TS_l_rexi_n_etdrk::~SWE_Plane_TS_l_rexi_n_etdrk()
+SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::~SWE_Plane_TS_l_rexi_na_sl_nd_etdrk()
 {
 }
 
