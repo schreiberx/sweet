@@ -2502,7 +2502,7 @@ public:
 		std::ofstream file(i_filename, std::ios_base::trunc);
 		file << std::setprecision(i_precision);
 
-		size_t ymin = 0;
+		std::size_t ymin = 0;
 		if (dimension == 2)
 			ymin = 0;
 		else

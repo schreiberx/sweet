@@ -45,6 +45,17 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 	io_u_prev = io_u;
 	io_v_prev = io_v;
 
+	if (simVars.disc.timestepping_order == 2)
+	{
+		// Run implicit Runge-Kutta on Burgers' equation in SL form
+		ts_l_irk.run_timestep(
+				io_u, io_v,
+				io_u_prev, io_v_prev,
+				0.5*dt,
+				i_simulation_timestamp
+		);
+	}
+
 	//Now interpolate to the the departure points
 	//Departure points are set for physical space
 	io_u = sampler2D.bicubic_scalar(
@@ -63,13 +74,26 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 			staggering.v[1]
 	);
 
-	// Run implicit Runge-Kutta on Burgers' equation in SL form
-	ts_l_irk.run_timestep(
-			io_u, io_v,
-			io_u_prev, io_v_prev,
-			dt,
-			i_simulation_timestamp
-	);
+	if (simVars.disc.timestepping_order == 2)
+	{
+		// Run implicit Runge-Kutta on Burgers' equation in SL form
+		ts_l_irk.run_timestep(
+				io_u, io_v,
+				io_u_prev, io_v_prev,
+				0.5*dt,
+				i_simulation_timestamp
+		);
+	}
+	else
+	{
+		// Run implicit Runge-Kutta on Burgers' equation in SL form
+		ts_l_irk.run_timestep(
+				io_u, io_v,
+				io_u_prev, io_v_prev,
+				dt,
+				i_simulation_timestamp
+		);
+	}
 
 }
 

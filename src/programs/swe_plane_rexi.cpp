@@ -1090,12 +1090,15 @@ public:
 			PlaneData ts_u = t0_prog_u;
 			PlaneData ts_v = t0_prog_v;
 
-			// Run exact solution for linear case
-			timeSteppers.l_direct->run_timestep(
-					ts_h_pert, ts_u, ts_v,
-					simVars.timecontrol.current_simulation_time,
-					0			// initial condition given at time 0
-			);
+			if(simVars.misc.vis_id == -1 || simVars.misc.vis_id == -2 )
+			{
+				// Run exact solution for linear case
+				timeSteppers.l_direct->run_timestep(
+						ts_h_pert, ts_u, ts_v,
+						simVars.timecontrol.current_simulation_time,
+						0			// initial condition given at time 0
+				);
+			}
 
 #if 0
 			switch(simVars.misc.vis_id)
@@ -1105,7 +1108,7 @@ public:
 				break;
 
 			case -2:
-				vis = ts_u-prog_u;	// difference to exact solution
+				vis = ts_u-prog_u;	// difference to exact linear solution
 				break;
 
 			case -3:
@@ -1126,6 +1129,10 @@ public:
 
 			case -3:
 				vis = t0_prog_h_pert-prog_h_pert;	// difference to initial condition
+				break;
+
+			case -4:
+				vis = op.diff_c_x(prog_v) - op.diff_c_y(prog_u);	// relative vorticity
 				break;
 			}
 #endif
@@ -1179,6 +1186,9 @@ public:
 
 			case -3:
 				description = "Diff in h to initial condition";
+				break;
+			case -4:
+				description = "Relative vorticity";
 				break;
 			}
 		}

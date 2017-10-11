@@ -8,6 +8,7 @@
 #include "SWE_Sphere_TS_l_erk.hpp"
 #include "SWE_Sphere_TS_l_erk_n_erk.hpp"
 #include "SWE_Sphere_TS_l_irk.hpp"
+#include "SWE_Sphere_TS_l_rexi.hpp"
 
 // Class containing the context necessary to evaluate the right-hand sides
 // Currently only contains a pointer to the level singletons and the SimulationVariables object
@@ -33,7 +34,14 @@ public:
     
     // initialize the time steppers from SWEET
     timestepper_l_erk_n_erk.resize(levelSingletons->size());
-    timestepper_l_irk.resize(levelSingletons->size());
+    if (simVars->libpfasst.use_rexi) 
+      {
+	timestepper_l_irk.resize(levelSingletons->size());
+      }
+    else
+      {
+	timestepper_l_rexi.resize(levelSingletons->size());
+      }
 
     for (int level = 0; level < levelSingletons->size(); ++level) 
       {
@@ -48,18 +56,35 @@ public:
 				   *simVars,
 				   ((*levelSingletons)[level].op)
 				   );
-	timestepper_l_erk_n_erk[level]->setup(simVars->disc.timestepping_order);
+        timestepper_l_erk_n_erk[level]->setup(simVars->disc.timestepping_order);
 
-	timestepper_l_irk[level] = 
-	  new SWE_Sphere_TS_l_irk(
-				  *simVars,
-				  ((*levelSingletons)[level].op)
-				  );
+        if (simVars->libpfasst.use_rexi) 
+	  {
+            timestepper_l_rexi[level] = 
+	      new SWE_Sphere_TS_l_rexi(
+	                               *simVars,
+				       ((*levelSingletons)[level].op)
+				       );
+
+            timestepper_l_rexi[level]->setup(simVars->rexi,
+					     "phi0",
+					     simVars->timecontrol.current_timestep_size,
+					     simVars->sim.f_sphere,
+					     (simVars->sim.coriolis_omega == 0)
+					     );
+	  }
+	else
+	  {
+	    timestepper_l_irk[level] = 
+	      new SWE_Sphere_TS_l_irk(
+				      *simVars,
+				      ((*levelSingletons)[level].op)
+				      );
 	
-	timestepper_l_irk[level]->setup(simVars->disc.timestepping_order,
-					simVars->timecontrol.current_timestep_size,
-					simVars->rexi.use_sphere_extended_modes);
-	
+	    timestepper_l_irk[level]->setup(simVars->disc.timestepping_order,
+					    simVars->timecontrol.current_timestep_size,
+					    simVars->rexi.use_sphere_extended_modes);
+	  }
       }
   }
 
@@ -68,8 +93,15 @@ public:
   {
     for (int level = 0; level < timestepper_l_erk_n_erk.size(); ++level) 
     {
+      if (simVars->libpfasst.use_rexi)
+	{
+	  delete timestepper_l_rexi[level];
+	}
+      else 
+	{
+	  delete timestepper_l_irk[level];
+	}
       delete timestepper_l_erk_n_erk[level];
-      delete timestepper_l_irk[level];
     }
   }
 
@@ -102,9 +134,23 @@ public:
 					     int i_level
 					     ) const
   {
-    return timestepper_l_irk[i_level];
+    if (simVars->libpfasst.use_rexi)
+      return NULL;
+    else
+      return timestepper_l_irk[i_level];
   }
 
+  // Getter for the REXI implicit SWEET time stepper at level i_level
+  SWE_Sphere_TS_l_rexi* get_l_rexi_timestepper( 
+					       int i_level
+					       ) const
+  {
+    if (!simVars->libpfasst.use_rexi)
+      return NULL;
+    else
+      return timestepper_l_rexi[i_level];
+  }
+ 
   // Getter for the simulationVariables object
   SimulationVariables* get_simulation_variables() const 
   { 
@@ -133,7 +179,8 @@ protected:
 
   // Pointer to the SWE_Sphere time integrator (implicit linear part, explicit nonlinear part)
   std::vector<SWE_Sphere_TS_l_erk_n_erk*> timestepper_l_erk_n_erk;
-  std::vector<SWE_Sphere_TS_l_irk*>  timestepper_l_irk;
+  std::vector<SWE_Sphere_TS_l_irk*> timestepper_l_irk;
+  std::vector<SWE_Sphere_TS_l_rexi*> timestepper_l_rexi; 
 
   // Some contructors and operator= are disabled
   SphereDataCtx() {};
