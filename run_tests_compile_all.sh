@@ -77,6 +77,12 @@ SCONS="scons --program=swe_plane_rexi --gui=disable --plane-spectral-space=disab
 echo "$SCONS"
 $SCONS  || exit
 
+echo
+echo "SWE REXI"
+SCONS="scons --program=swe_plane_rexi --gui=disable --plane-spectral-space=disable --libfft=enable --mode=debug"
+echo "$SCONS"
+$SCONS  || exit
+
 
 SCONS="scons --program=swe_plane_rexi --gui=disable --plane-spectral-space=enable --plane-spectral-dealiasing=disable --mode=debug"
 echo "$SCONS"
