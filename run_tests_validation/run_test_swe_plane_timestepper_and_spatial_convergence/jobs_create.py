@@ -51,7 +51,7 @@ p.runtime.rexi_sphere_preallocation = 0
 #
 # Threading accross all REXI terms
 #
-rexi_thread_par = True
+rexi_thread_par = False
 if rexi_thread_par:
 	# OMP parallel for over REXI terms
 	p.compile.threading = 'off'
@@ -64,15 +64,15 @@ else:
 #
 # REXI method
 # N=64, SX,SY=50 and MU=0 with circle primitive provide good results
-#
-p.runtime.rexi_method = 'ci'
-p.runtime.rexi_ci_n = 64
-p.runtime.rexi_ci_sx = 50
-p.runtime.rexi_ci_sy = 50
-p.runtime.rexi_ci_mu = 0
-p.runtime.rexi_ci_primitive = 'circle'
-
-
+# ==> use direct
+p.runtime.rexi_method = 'terry'
+#p.runtime.rexi_ci_n = 64
+#p.runtime.rexi_ci_sx = 50
+#p.runtime.rexi_ci_sy = 50
+#p.runtime.rexi_ci_mu = 0
+#p.runtime.rexi_ci_primitive = 'circle'
+p.runtime.rexi_use_direct_solution = 1
+                
 p.runtime.g = 1
 p.runtime.f = 1
 p.runtime.h = 100
@@ -157,8 +157,8 @@ for group in groups:
 			['ln_erk',		4,	4],	# reference solution - spectral (128 grid points)
 			['ln_erk',		2,	2],	# FD- C-grid
 			['l_cn_na_sl_nd_settls', 2,	2],	# SI-SL-SP
-#			['l_erk_n_erk',		2,	2],
-#			['ln_erk',		2,	2],
+                        ['l_rexi_na_sl_nd_settls',	2,	2], #SL-EXP-SETTLS
+			['l_rexi_na_sl_nd_etdrk',	2,	2], #SL-EXP-ETDRK
 #			['l_rexi_n_erk',	2,	2],
 		]
 
@@ -166,7 +166,7 @@ for group in groups:
 	# OVERRIDE TS methods
 	#
 	if len(sys.argv) > 4:
-		ts_methods = [ts_methods[0]]+[[sys.argv[2], int(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5])]]
+		ts_methods = [ts_methods[0]]+[[sys.argv[2], int(sys.argv[3]), int(sys.argv[4])]]
 
 
 	#
@@ -204,18 +204,13 @@ for group in groups:
 
 			#p.compile.plane_spectral_space = 'disable'
 			p.compile.plane_spectral_dealiasing = 'disable'
-			#p.compile.sphere_spectral_space = 'disable'
-			p.compile.sphere_spectral_dealiasing = 'disable'
 			p.compile.libfft = 'enable'
-
-		if group == 'ln2space' and 'l_cn_na_sl_nd_settls' in tsm[0]:
+		else:
 			p.runtime.staggering = 0
 			p.runtime.spectralderiv = 1
 
 			p.compile.plane_spectral_space = 'enable'
 			p.compile.plane_spectral_dealiasing = 'enable'
-			p.compile.sphere_spectral_space = 'disable'
-			p.compile.sphere_spectral_dealiasing = 'disable'
 
 		for phys_res in phys_res_list:
 
