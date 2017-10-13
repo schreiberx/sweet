@@ -455,7 +455,7 @@ public:
 
 			programCallbacks->vis_render();
 
-			engineState->quit = programCallbacks->should_quit();
+			engineState->quit |= programCallbacks->should_quit();
 
 			renderWindow->setWindowTitle(programCallbacks->vis_getStatusString());
 
