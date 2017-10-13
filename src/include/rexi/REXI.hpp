@@ -40,8 +40,9 @@ public:
 			/// REXI next generation stuff
 			REXI_File<> rexi_file;
 
-			bool retval;
-			if (i_rexiSimVars->file_filename == "")
+			bool retval = rexi_file.load_from_file(i_rexiSimVars->file_filename_alpha, i_rexiSimVars->file_filename_beta);
+#if 0
+			if (i_rexiSimVars->file_filename_alpha == "")
 			{
 				retval = rexi_file.auto_load(
 						i_function_name,
@@ -62,22 +63,15 @@ public:
 			{
 				retval = rexi_file.load_from_file(i_rexiSimVars->file_filename, i_rexiSimVars->use_half_poles);
 			}
-
+#endif
 			if (!retval)
 				FatalError(std::string("Not able to find coefficients for given constraints for function "+i_function_name));
 
-			if (i_verbosity > 0)
-				std::cout << "Loaded REXI coefficients from file '" << rexi_file.fafcoeffs.filename << "'" << std::endl;
-
-			if (i_verbosity > 5)
-			{
-				rexi_file.fafcoeffs.output();
-				rexi_file.fafcoeffs.outputWeights();
-				//rexiNG.output();
-			}
+//			if (i_verbosity > 0)
+//				std::cout << "Loaded REXI coefficients from file '" << rexi_file.fafcoeffs.filename << "'" << std::endl;
 
 			alpha = rexi_file.alpha;
-			beta = rexi_file.beta_re;
+			beta = rexi_file.beta;
 		}
 		else if (i_rexiSimVars->rexi_method == "terry")
 		{
