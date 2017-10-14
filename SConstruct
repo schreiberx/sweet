@@ -1,11 +1,8 @@
-#! /usr/bin/env python2
-
 import os
-import commands
+import subprocess
 import re
 import sys
 import platform
-import subprocess
 
 from python_mods.SWEETCompileOptions import *
 
@@ -17,12 +14,19 @@ num_cpu = multiprocessing.cpu_count()
 SetOption('num_jobs', num_cpu)
 
 
+def exec_command(command):
+	process = subprocess.Popen(command.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	out, err = process.communicate()
+	# combine stdout and stderr
+	out = out+err
+	out = out.replace("\r", '')
+	return out
+
 #
 # determine hostname
 #
-hostname = subprocess.check_output('hostname')
+hostname = exec_command('hostname')
 hostname = hostname.replace("\n", '')
-hostname = hostname.replace("\r", '')
 
 env = Environment(ENV = os.environ)
 env['SWEET_ROOT'] = os.getcwd()
@@ -145,7 +149,7 @@ if p.compiler == 'gnu':
 	# get gcc version using -v instead of -dumpversion since SUSE gnu compiler
 	# returns only 2 instead of 3 digits with -dumpversion
 	#
-	gccv = commands.getoutput('g++ -v').splitlines()
+	gccv = exec_command('g++ -v').splitlines()
 
 	# updated to search for 'gcc version ' line prefix
 	found = False
@@ -219,7 +223,7 @@ if p.compiler == 'gnu':
 
 if p.compiler == 'intel':
 	reqversion = [12,1]
-	iccversion_line = commands.getoutput('icpc -dumpversion -w')
+	iccversion_line = exec_command('icpc -dumpversion -w').splitlines()
 
 	if iccversion_line != 'Mainline':
 		iccversion = iccversion_line.split('.')
@@ -254,7 +258,7 @@ if p.compiler == 'intel':
 
 
 	# UBUNTU FIX for i386 systems
-	lines = commands.getoutput('uname -i').splitlines()
+	lines = exec_command('uname -i').splitlines()
 
 	for i in lines:
 		if i == 'i386':
@@ -385,14 +389,15 @@ if p.gui == 'enable':
 
 	# linker flags
 
-	if commands.getoutput('uname -s') == "Darwin":
+	if exec_command('uname -s') == "Darwin":
 		# ASSUME MACOSX SYSTEM
 		env.Append(LINKFLAGS='-framework OpenGL')
 	else:
 		env.Append(LIBS=['GL'])
 
 	reqversion = [2,0,0]
-	sdlversion = commands.getoutput('sdl2-config --version').split('.')
+	sdlversion = exec_command('sdl2-config --version').split('.')
+	sdlversion = sdlversion.replace("\n", '')
 
 	for i in range(0, 3):
 		if (int(sdlversion[i]) > int(reqversion[i])):
