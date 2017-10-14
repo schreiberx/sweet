@@ -348,7 +348,7 @@ struct REXI_SimulationVariables
 		if (rexi_method != "" && rexi_method == "terry" && rexi_method == "file")
 			FatalError("Invalid argument for '--rexi-method='");
 
-		return 17;
+		return 18;
 	}
 };
 

@@ -190,9 +190,9 @@ SWE_Sphere_TS_lg_rexi_lc_n_erk::SWE_Sphere_TS_lg_rexi_lc_n_erk(
 )	:
 		simVars(i_simVars),
 		op(i_op),
+		timestepping_order(-1),
 		timestepping_lg_rexi(simVars, op),
-		timestepping_lg_erk_lc_n_erk(simVars, op),
-		timestepping_order(-1)
+		timestepping_lg_erk_lc_n_erk(simVars, op)
 {
 }
 

@@ -29,6 +29,7 @@ class SWEPlaneBenchmarks
 #endif
 
 
+
 	static
 	double return_variable_value(
 			SimulationVariables &i_simVars,

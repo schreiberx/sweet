@@ -26,9 +26,6 @@ class SWE_Sphere_TS_l_irk_n_erk	: public SWE_Sphere_TS_interface
 	SimulationVariables &simVars;
 	SphereOperators &op;
 
-	int timestepping_order;
-//	int timestepping_order2;
-
 	double timestep_size;
 
 	/*
@@ -45,6 +42,10 @@ class SWE_Sphere_TS_l_irk_n_erk	: public SWE_Sphere_TS_interface
 	SphereDataTimesteppingExplicitRK timestepping_rk_nonlinear;
 
 	int version_id;
+
+	int timestepping_order;
+//	int timestepping_order2;
+
 
 public:
 	SWE_Sphere_TS_l_irk_n_erk(

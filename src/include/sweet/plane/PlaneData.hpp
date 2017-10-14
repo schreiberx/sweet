@@ -39,6 +39,7 @@
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
 	#if SWEET_SPACE_THREADING
+
 		#define PLANE_DATA_SPECTRAL_FOR_IDX(CORE)					\
 			_Pragma("omp parallel for proc_bind(spread)")			\
 			for (int r = 0; r < 2; r++)								\
@@ -53,6 +54,7 @@
 					}			\
 				}				\
 			}
+
 
 	#else
 
@@ -710,6 +712,44 @@ public:
 
 		PLANE_DATA_SPECTRAL_FOR_IDX(
 				i_lambda(idx, spectral_space_data[idx]);
+		);
+
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+		physical_space_data_valid = false;
+		spectral_space_data_valid = true;
+#endif
+
+		spectral_zeroAliasingModes();
+	}
+
+
+	void spectral_update_lambda_modes(
+			std::function<void(int,int,std::complex<double>&)> i_lambda	///< lambda function to return value for lat/mu
+	)
+	{
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+		if (physical_space_data_valid)
+			request_data_spectral();
+#endif
+
+//		int modes_0 = planeDataConfig->spectral_complex_data_size[0];
+		int modes_1 = planeDataConfig->spectral_complex_data_size[1];
+
+//		int half_modes_0 = modes_0/2;
+		int half_modes_1 = modes_1/2;
+
+		PLANE_DATA_SPECTRAL_FOR_IDX(
+				{
+					int k0 = ii;
+//					if (k0 > half_modes_0)
+//						k0 -= modes_0;
+
+					int k1 = jj;
+					if (k1 > half_modes_1)
+						k1 = k1 - modes_1;
+
+					i_lambda(k0, k1, spectral_space_data[idx]);
+				}
 		);
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
