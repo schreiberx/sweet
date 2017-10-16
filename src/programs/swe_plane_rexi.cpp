@@ -899,14 +899,14 @@ public:
 			}
 
 
-			//Dump  data in csv, if requested
+			// Dump  data in csv, if output filename is not empty
 			if (simVars.misc.output_file_name_prefix.size() > 0)
 			{
 				write_file(t_h, "prog_h_pert");
 				write_file(t_u, "prog_u");
 				write_file(t_v, "prog_v");
-
-				write_file(op.diff_c_x(prog_v) - op.diff_c_y(prog_u), "prog_q");
+				write_file(op.vort(t_u, t_v), "prog_vort");
+				write_file(op.div(t_u, t_v), "prog_div");
 			}
 		}
 
@@ -1729,7 +1729,8 @@ int main(int i_argc, char *i_argv[])
 			//Setting initial conditions and workspace - in case there is no GUI
 
 			// also initializes diagnostics
-			simulationSWE->reset();
+			// already called in constructor
+			//simulationSWE->reset();
 
 			//Time counter
 			Stopwatch time;

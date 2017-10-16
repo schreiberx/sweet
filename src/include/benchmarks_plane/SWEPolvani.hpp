@@ -111,38 +111,6 @@ class SWEPolvani
 #endif
 	}
 
-	/*
-	 * Compute Arakawa Jacobian
-	 *
-	 * J(a,b) = da/dx db/dy - da/dy db/dx
-	 */
-	PlaneData J(
-			const PlaneData &a,
-			const PlaneData &b
-	)
-	{
-		return op.diff_c_x(a)*op.diff_c_y(b) - op.diff_c_y(a)*op.diff_c_x(b);
-	}
-
-
-	/*
-	 * Compute time derivative of Arakawa Jacobian
-	 *
-	 * J(a,b)_t = (da/dx db/dy - da/dy db/dx)_t
-	 */
-	PlaneData J_t(
-			PlaneData &a,
-			PlaneData &b,
-			PlaneData &a_t,
-			PlaneData &b_t
-	)
-	{
-		return	  op.diff_c_x(a_t)*op.diff_c_y(b)
-				+ op.diff_c_x(a)*op.diff_c_y(b_t)
-				- op.diff_c_y(a_t)*op.diff_c_x(b)
-				- op.diff_c_y(a)*op.diff_c_x(b_t);
-	}
-
 
 public:
 	SWEPolvani(
@@ -163,11 +131,42 @@ public:
 	)
 	{
 		/*
+		 * Prepare other values
+		 */
+		// Rossby number
+		double R = simVars.swe_polvani.r;
+		// Froude number
+		double F = simVars.swe_polvani.f;
+
+		// Burger number
+		// Equation (2.2)
+		double B = (R*R)/(F*F);
+
+#if 0
+		std::cout << R << std::endl;
+		std::cout << F << std::endl;
+		std::cout << B << std::endl;
+#endif
+
+
+		/*
 		 * Overwrite domain size
 		 * Page 179, right column
 		 */
 		simVars.sim.domain_size[0] = 2.0*M_PI*k0;
 		simVars.sim.domain_size[1] = simVars.sim.domain_size[0];
+
+
+		/*
+		 * Equation (2.3.a)
+		 * => Infer f0 and gravitation
+		 */
+		simVars.sim.f0 = 1.0/R;
+		simVars.sim.gravitation = 1.0/R;
+
+		simVars.sim.h0 = 1.0/R*B;
+
+		simVars.outputConfig();
 
 		std::cout << "******************* WARNING ***********************" << std::endl;
 		std::cout << "POLVANI Benchmark setup:" << std::endl;
@@ -191,35 +190,110 @@ public:
 //		std::cout << lap_h.reduce_maxAbs() << std::endl;
 
 		/*
-		 * Prepare other values
+		 * Prepare laplace operator
 		 */
-		// Rossby number
-		double R = simVars.swe_polvani.r;
-		// Froude number
-		double F = simVars.swe_polvani.f;
-
-		double B = (R*R)/(F*F);
-
-#if 0
-		std::cout << R << std::endl;
-		std::cout << F << std::endl;
-		std::cout << B << std::endl;
-#endif
-
 		PlaneData laplace = op.diff2_c_x + op.diff2_c_y;
 
 		/*
 		 * Compute height
+		 * Solve equation (2.5b)
 		 */
 
-		PlaneData lap_h = op.diff2(psi) + 2.0*R*J(op.diff_c_x(psi), op.diff_c_y(psi));
+		PlaneData lap_h = op.diff2(psi) + 2.0*R*op.J(op.diff_c_x(psi), op.diff_c_y(psi));
 		PlaneData h = lap_h.spectral_div_element_wise(laplace);
 
+		/*
+		 * Setup chi
+		 */
+		PlaneData chi(o_h.planeDataConfig);
+		chi.spectral_set_zero();
+
+		PlaneData psi_t(o_h.planeDataConfig);
+
+		/*
+		 * Iteratively solve for chi
+		 */
+		double R_1 = 1.0/R;
+		double diff;
+		for (int i = 0; i < 10; i++)
+		{
+			/*
+			 * Solve equation (2.5a)
+			 */
+			PlaneData laplace_psi_t =
+					  op.J(psi, laplace(psi))
+					+ R_1*(laplace(chi))
+					+ op.div(	laplace(chi)*op.diff_c_x(chi),
+								laplace(chi)*op.diff_c_y(chi)
+						)
+					;
+
+			PlaneData psi_t = laplace_psi_t.spectral_div_element_wise(laplace);
+
+			/*
+			 * Solve equation (2.5c)
+			 */
+			PlaneData stuff_chi =
+					- op.J(psi, laplace(chi))
+					+ laplace(op.J(psi, h))
+					+ 2.0*R*op.J_t(psi, psi, op.diff_c_x(psi), op.diff_c_y(psi))
+					- op.div(	laplace(chi)*op.diff_c_x(chi),
+								laplace(chi)*op.diff_c_y(chi)
+						)
+					+ laplace(op.diff_c_x(h*op.diff_c_x(chi)) + op.diff_c_y(h*op.diff_c_y(chi)));
+
+			/*
+			 * Setup identity operator for Helmholtz solver
+			 */
+			PlaneData I(o_h.planeDataConfig);
+			I.spectral_set_zero();
+			I.spectral_addScalarAll(1.0);
+
+			PlaneData lhs = R_1*(I - laplace*B);
+			PlaneData new_chi = stuff_chi.spectral_div_element_wise(laplace).spectral_div_element_wise(lhs);
+
+			diff = (new_chi-chi).reduce_maxAbs();
+			std::cout << i << ": chi update = " << diff << std::endl;
+
+			chi = new_chi;
+		}
+
+		if (diff > 1e-10)
+		{
+			FatalError("No convergence for Polvani initial conditions reached");
+		}
+
+
+		/*
+		 * Convert height field
+		 * See page 178, h* = H(1+RB^-1 h)
+		 */
+		// total height
+		h = simVars.sim.h0*(1.0+R/B*h);
+
+		// perturbation
+		h = h-simVars.sim.h0;
+
 		o_h = h;
-		o_u.spectral_set_zero();
-		o_v.spectral_set_zero();
+
+
+		/*
+		 * Compute velocity
+		 */
+		double eps = R*std::max(1.0, R)/std::max(1.0, B);
+
+		// Equation (2.4)
+		o_u = -op.diff_c_y(psi) + eps*op.diff_c_x(chi);
+		o_v = op.diff_c_x(psi) + eps*op.diff_c_y(chi);
 
 	}
 };
+
+
+
+
+
+
+
 
 #endif

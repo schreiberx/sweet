@@ -51,6 +51,9 @@ class SWEETRuntimeOptions():
 		self.rexi_sphere_preallocation = 0
 		self.rexi_use_direct_solution = 0
 
+		self.polvani_rossby = -1.0
+		self.polvani_froude = -1.0
+
 
 
 
@@ -69,6 +72,8 @@ class SWEETRuntimeOptions():
 		# 3: gaussian breaking dam
 		# 4: geostrophic balance test case
 		self.bench_id = 4
+		self.benchmark_name = ""
+
 		self.use_robert_functions = 1
 
 		self.pde_id = 0
@@ -143,13 +148,22 @@ class SWEETRuntimeOptions():
 		if 'ci_primitive' in d:
 			self.rexi_ci_primitive = float(d['ci_primitive'])
 
+		if 'polvani_rossby' in d:
+			self.polvani_rossby = float(d['polvani_rossby'])
+
+		if 'polvani_froude' in d:
+			self.polvani_froude = float(d['polvani_froude'])
+
 		if 'timestep_size' in d:
 			self.timestep_size = float(d['timestep_size'])
 
 	def getUniqueID(self, compileOptions):
 		idstr = ''
 
-		idstr += '_b'+str(self.bench_id)
+		if self.benchmark_name != '':
+			idstr += '_b'+str(self.benchmark_name)
+		else:
+			idstr += '_b'+str(self.bench_id)
 
 		idstr += '_g'+str(self.g)
 		idstr += '_h'+str(self.h)
@@ -208,6 +222,12 @@ class SWEETRuntimeOptions():
 
 			#idstr += '_rexithreadpar'+str(1 if self.rexi_thread_par else 0)
 
+		if self.polvani_rossby >= 0:
+			idstr += '_PR'+str(self.polvani_rossby)
+
+		if self.polvani_froude >= 0:
+			idstr += '_PF'+str(self.polvani_froude)
+
 		idstr += '_C'+str(self.timestep_size).zfill(8)
 
 		if self.max_timesteps != -1:
@@ -240,6 +260,7 @@ class SWEETRuntimeOptions():
 
 		retval += ' -X '+str(self.domain_size)
 		retval += ' -s '+str(self.bench_id)
+		retval += ' --benchmark='+str(self.benchmark_name)
 
 		retval += ' -v '+str(self.verbosity)
 
@@ -298,6 +319,10 @@ class SWEETRuntimeOptions():
 					retval += ' --rexi-ci-sy='+str(self.rexi_ci_sy)
 					retval += ' --rexi-ci-mu='+str(self.rexi_ci_mu)
 				retval += ' --rexi-ci-primitive='+str(self.rexi_ci_primitive)
+
+
+		retval += ' --polvani-rossby='+str(self.polvani_rossby)
+		retval += ' --polvani-froude='+str(self.polvani_froude)
 
 		retval += ' --use-robert-functions='+str(self.use_robert_functions)
 
