@@ -539,6 +539,7 @@ public:
 	}
 
 
+
 	void spectral_zero_nyquist_modes()
 	{
 		for (std::size_t j = 0; j < planeDataConfig->spectral_data_size[1]; j++)
@@ -553,6 +554,8 @@ public:
 			p_spectral_get_nonconstref(planeDataConfig->spectral_data_size[1]/2, i).imag(0);
 		}
 	}
+
+
 
 	void spectral_zeroAliasingModes()
 	{
