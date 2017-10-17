@@ -174,9 +174,11 @@ public:
 		 * => Infer f0 and gravitation
 		 */
 		simVars.sim.f0 = 1.0/R;
-		simVars.sim.gravitation = 1.0/R;
+		//simVars.sim.gravitation = 1.0/R;
+		simVars.sim.gravitation = 1.0/(F*F);
 
-		simVars.sim.h0 = 1.0/R*B;
+		//simVars.sim.h0 = 1.0/R*B;
+		simVars.sim.h0 = 1.0;
 
 		simVars.outputConfig();
 
