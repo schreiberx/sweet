@@ -82,10 +82,18 @@ public:
 		}
 #endif
 
+		printBenchmarkInformation();
 		FatalError(std::string("Benchmark ")+io_simVars.setup.benchmark_scenario_name+ " not found (or not availble)");
+
+
 		return false;
 	}
 
+	static void printBenchmarkInformation()
+		{
+			std::cout << "Available benchmark scenarios (--benchmark):" << std::endl;
+			std::cout << "		polvani : Polvani et al (1994) initial condition" << std::endl;
+		}
 };
 
 
