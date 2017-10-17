@@ -82,6 +82,10 @@ Formulations of the shallow-water equations
 Martin Schreiber <M.Schreiber@exeter.ac.uk>
 \end_layout
 
+\begin_layout Author
+Pedro Peixoto <pedrosp@ime.usp.br>
+\end_layout
+
 \begin_layout Standard
 Equations (2.3a) and (2.3b) relate the Rossby 
 \begin_inset Formula $R$
@@ -219,6 +223,92 @@ and
 \begin_inset Formula 
 \[
 g=R^{-1}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Dimensionalization
+\end_layout
+
+\begin_layout Standard
+Let U, V, T, H be reference scaling parameters of the nondimensionalization,
+ where, U is characteristic velocity, L caracteristic lenght space, T characteri
+stic time scale, H characteristic height scale.
+ We need to decide what will be set for H, g, f, where g is the gravity
+ constant and f is the Coriolis parameter.
+ Polvani et al (1994) adopts a nondimensional length scale of L=1, which
+ is obtained by setting the domain size to 
+\begin_inset Formula $2\pi k_{0}$
+\end_inset
+
+.
+ The initial velocity is forced to be 
+\begin_inset Formula $(u,v)=\frac{1}{\sqrt{2}}(1,1)$
+\end_inset
+
+, so that the nondimensional reference velocity is given by 
+\begin_inset Formula $U=1$
+\end_inset
+
+.
+ Therefore, since 
+\begin_inset Formula $U=L/T$
+\end_inset
+
+, we may assume T=1.
+ 
+\end_layout
+
+\begin_layout Standard
+The Rossby number then results in
+\begin_inset Formula 
+\[
+R=\frac{U}{fL}=\frac{1}{f}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+and the Froude number
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+F=\frac{U}{\sqrt{gH}}=\frac{1}{\sqrt{gH}}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Given R and F, we may set H=1 and therefore
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+f=R^{-1}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+g=F^{-2}
 \]
 
 \end_inset
