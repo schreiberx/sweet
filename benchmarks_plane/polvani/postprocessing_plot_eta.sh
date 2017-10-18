@@ -5,8 +5,8 @@
 #OUTFILE="output_prog_eta_t00000000120.00000000.png"
 #FILEA="output_prog_eta_"
 
-CSVFILE="output_prog_eta_t00000000120.00000000.csv"
-OUTFILE="output_prog_eta_t00000000120.00000000.png"
+CSVFILE="output_prog_vort_t00000001000.00000000.csv"
+OUTFILE="output_prog_vort_t00000001000.00000000.png"
 FILEA="output_prog_eta_"
 
 FILEEXT="png"
