@@ -980,6 +980,7 @@ public:
 		request_data_physical();
 
 		double sum = 0;
+
 #if SWEET_SPACE_THREADING
 #pragma omp parallel for proc_bind(close) reduction(+:sum)
 #endif

@@ -898,6 +898,7 @@ public:
 				t_v = prog_v;
 			}
 
+			std::cout << simVars.misc.output_next_sim_seconds << "\t" << simVars.timecontrol.current_simulation_time << std::endl;
 
 			// Dump  data in csv, if output filename is not empty
 			if (simVars.misc.output_file_name_prefix.size() > 0)
@@ -974,20 +975,17 @@ public:
 
 		}
 
-		if (simVars.misc.output_each_sim_seconds > 0)
+		if (simVars.misc.output_next_sim_seconds == simVars.timecontrol.max_simulation_time)
 		{
-			if (simVars.misc.output_next_sim_seconds == simVars.timecontrol.max_simulation_time)
-			{
-				simVars.misc.output_next_sim_seconds = std::numeric_limits<double>::infinity();
-			}
-			else
-			{
-				while (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
-					simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
+			simVars.misc.output_next_sim_seconds = std::numeric_limits<double>::infinity();
+		}
+		else
+		{
+			while (simVars.misc.output_next_sim_seconds-simVars.misc.output_next_sim_seconds*(1e-12) <= simVars.timecontrol.current_simulation_time)
+				simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
 
-				if (simVars.misc.output_next_sim_seconds > simVars.timecontrol.max_simulation_time)
-					simVars.misc.output_next_sim_seconds = simVars.timecontrol.max_simulation_time;
-			}
+			if (simVars.misc.output_next_sim_seconds > simVars.timecontrol.max_simulation_time)
+				simVars.misc.output_next_sim_seconds = simVars.timecontrol.max_simulation_time;
 		}
 
 		return true;

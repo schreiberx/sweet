@@ -38,6 +38,7 @@ class SWEPolvani
 	double k0 = 14.0;
 	double m = 25;
 
+	double normalize_ek = 1.0;
 
 	double Ek(int ka[2])
 	{
@@ -61,7 +62,7 @@ class SWEPolvani
 		/*
 		 * We normalize the energy spectrum to a maximum value of 1
 		 */
-		double max_energy_amplitude = 0;
+//		double max_energy_amplitude = 0;
 
 		/*
 		 * Determine scaling factor to assure that max of E_k = 1
@@ -70,9 +71,12 @@ class SWEPolvani
 		 *
 		 * => Maximum at k_0
 		 */
-		double max_ek = std::pow(2.0, (double)-m) * std::pow(k0, (double)-m/2.0);
-		std::cout << "POLVANI: Using scaling factor for ek of " << max_ek << std::endl;
+		double max_ek = std::pow(k0, m/2.0)/std::pow(2.0*k0, m);
+
 		double scale_ek = 1.0/max_ek;
+		std::cout << "POLVANI: Using scaling factor for ek of " << scale_ek << std::endl;
+
+		double scale = o_psi.planeDataConfig->spectral_data_size[0]*o_psi.planeDataConfig->spectral_data_size[1];
 
 		o_psi.spectral_update_lambda_modes(
 			[&](int k0, int k1, std::complex<double> &o_data)
@@ -84,10 +88,12 @@ class SWEPolvani
 				int ka[2] = {k0, k1};
 
 
-				double energy_amplitude = Ek(ka)*scale_ek;
+//				double energy_amplitude = Ek(ka)*scale_ek;
+				double energy_amplitude = Ek(ka)*normalize_ek;
+
 				double phase = 2.0*M_PI*((double)rand()/(double)RAND_MAX);
 
-				max_energy_amplitude = std::max(energy_amplitude, max_energy_amplitude);
+//				max_energy_amplitude = std::max(energy_amplitude, max_energy_amplitude);
 
 				/*
 				 * Rescale amplitude
@@ -111,8 +117,10 @@ class SWEPolvani
 				o_data = {std::sin(phase), std::cos(phase)};
 				o_data *= energy_amplitude;
 
-				// Not necessary, because of scaling to max amplitude
-//				o_data *= o_psi.planeDataConfig->physical_array_data_number_of_elements;
+				/*
+				 * spectral space scaling factor
+				 */
+				o_data *= scale;
 			}
 		);
 
@@ -134,7 +142,9 @@ public:
 	{
 	}
 
-
+	double R;
+	double B;
+	double F;
 
 	void setup(
 			PlaneData &o_h,
@@ -146,13 +156,14 @@ public:
 		 * Prepare other values
 		 */
 		// Rossby number
-		double R = simVars.swe_polvani.r;
+		R = simVars.swe_polvani.r;
+
 		// Froude number
-		double F = simVars.swe_polvani.f;
+		F = simVars.swe_polvani.f;
 
 		// Burger number
 		// Equation (2.2)
-		double B = (R*R)/(F*F);
+		B = (R*R)/(F*F);
 
 #if 0
 		std::cout << R << std::endl;
@@ -192,7 +203,93 @@ public:
 		 */
 		op.setup(simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
+
+		normalize_ek = 1.60132855847e+21;//1e+21;
+
+		double target_rms = 1.0/sqrt(2.0);
+
+		for (int k = 0; k < 1000; k++)
+		{
+			/*
+			 * Manually reset the seed
+			 */
+			if (simVars.setup.random_seed >= 0)
+				srandom(simVars.setup.random_seed);
+
+			std::cout << "POLVANI"<< std::endl;
+			std::cout << "POLVANI ITERATION " << k << std::endl;
+			std::cout << "POLVANI NORMALIZE_EK = " << normalize_ek << std::endl;
+
+			/*
+			 * We first compute the slope numerically
+			 */
+
+			/*
+			 * This is the distance between two sampling points to determine the slope
+			 */
+			double d_rms = normalize_ek * 1e-8;
+
+			/*
+			 * First sample at x_0
+			 */
+			double x_0 = normalize_ek;
+			double rms_0;
+			{
+				setup_inner_iter(o_h, o_u, o_v);
+				double rms_u = o_u.reduce_rms();
+				double rms_v = o_v.reduce_rms();
+				rms_0 = 0.5*(rms_u + rms_v);
+			}
+
+			std::cout << "POLVANI x0 = " << x_0 << "\tRMS = " << rms_0 << std::endl;
+
+			/*
+			 * Second sample at x_1
+			 */
+			double x_1 = x_0+d_rms;
+			normalize_ek = x_1;
+			double rms_1;
+			{
+				setup_inner_iter(o_h, o_u, o_v);
+				double rms_u = o_u.reduce_rms();
+				double rms_v = o_v.reduce_rms();
+				rms_1 = 0.5*(rms_u + rms_v);
+			}
+
+			std::cout << "POLVANI x1 = " << x_1 << "\tRMS = " << rms_1 << std::endl;
+
+			double diff = (rms_1 - rms_0) / d_rms;
+
+			std::cout << "POLVANI dy/dx = " << diff << std::endl;
+
+			double omega = 10000.0;
+
+			normalize_ek = normalize_ek + omega*(rms_0 - target_rms)/diff;
+
+			double error = std::abs(rms_0 - target_rms);
+			std::cout << "POLVANI " << k << ": " << rms_0 << "\tERROR: " << error << std::endl;
+			std::cout << std::endl;
+
+			if (error < 1e-8)
+				break;
+		}
+	}
+
+
+
+	void setup_inner_iter(
+			PlaneData &o_h,
+			PlaneData &o_u,
+			PlaneData &o_v
+	)
+	{
+
 		PlaneData psi(o_h.planeDataConfig);
+
+		/*
+		 * Prepare laplace operator
+		 */
+		PlaneData laplace = op.diff2_c_x + op.diff2_c_y;
 
 		/*
 		 * Setup stream function
@@ -202,11 +299,6 @@ public:
 
 //		psi.print_physicalArrayData();
 //		std::cout << lap_h.reduce_maxAbs() << std::endl;
-
-		/*
-		 * Prepare laplace operator
-		 */
-		PlaneData laplace = op.diff2_c_x + op.diff2_c_y;
 
 		/*
 		 * Compute height
