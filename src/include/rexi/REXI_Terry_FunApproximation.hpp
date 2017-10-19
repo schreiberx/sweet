@@ -49,7 +49,13 @@
  * 		c_m := \int_{-1/(2h)}^{1/2h}  exp(-2 \pi i m h \xi) / (h* \exp(-h*h*\xi*\xi)) * phiN(\xi) d \xi
  * \f$
  */
-template <typename T = __float128>
+template <
+#if SWEET_QUADMATH
+	typename T = __float128
+#else
+	typename T = double
+#endif
+>
 class REXI_Terry_FunApproximation
 {
 	typedef std::complex<T> TComplex;
