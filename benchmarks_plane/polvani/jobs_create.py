@@ -29,6 +29,8 @@ p.compile.sphere_spectral_dealiasing = 'disable'
 p.compile.compiler = 'gnu'
 
 
+p.runtime.floating_point_output_digits = 12
+
 #
 # Use Intel MPI Compilers
 #
@@ -55,7 +57,7 @@ p.runtime.verbosity = 2
 #
 # Mode and Physical resolution
 #
-p.runtime.mode_res = 128
+p.runtime.mode_res = 200
 p.runtime.phys_res = -1
 
 #
@@ -78,12 +80,13 @@ p.runtime.rexi_sphere_preallocation = 0
 #
 # Viscosity, hail to viscosity !!!
 #
-p.runtime.viscosity = 0.01
+p.runtime.viscosity = 1e-8
+p.runtime.viscosity_order = 8
 
 #
 # Deactivate stability checks
 #
-p.stability_checks = 0
+p.stability_checks = 1
 
 #
 # Threading accross all REXI terms
@@ -108,7 +111,7 @@ else:
 		p.compile.rexi_thread_parallel_sum = 'disable'
 
 
-p.runtime.timestep_size = 0.01
+p.runtime.timestep_size = 0.05
 p.runtime.simtime = 1000
 p.runtime.output_timestep_size = 10
 
@@ -121,8 +124,6 @@ p.runtime.output_timestep_size = 10
 if __name__ == "__main__":
 	p.runtime.timestepping_method = 'ln_erk'
 	p.runtime.timestepping_order = 4
-
-	p.runtime.stability_checks = 1
 
 	for [p.runtime.polvani_rossby, p.runtime.polvani_froude, M] in [
 			[0.01, 0.04, 'A'],	# A
