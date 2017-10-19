@@ -19,14 +19,15 @@ def exec_command(command):
 	out, err = process.communicate()
 	# combine stdout and stderr
 	out = out+err
-	out = out.replace(b"\r", b"")
+	out = out.decode("utf-8")
+	out = out.replace("\r", "")
 	return out
 
 #
 # determine hostname
 #
 hostname = exec_command('hostname')
-hostname = hostname.replace(b"\n", b"")
+hostname = hostname.replace("\n", "")
 
 env = Environment(ENV = os.environ)
 env['SWEET_ROOT'] = os.getcwd()
@@ -397,7 +398,7 @@ if p.gui == 'enable':
 
 	reqversion = [2,0,0]
 	sdlversion = exec_command('sdl2-config --version')
-	sdlversion = sdlversion.replace(b"\n", b"").split('.')
+	sdlversion = sdlversion.replace("\n", "").split('.')
 
 	for i in range(0, 3):
 		if (int(sdlversion[i]) > int(reqversion[i])):
