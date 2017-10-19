@@ -341,6 +341,7 @@ public:
 #endif
 
 
+#if SWEET_QUADMATH
 public:
 	template <typename T>
 	static
@@ -350,7 +351,7 @@ public:
 	{
 		return std::complex<T>((T)i_value.real(), (T)i_value.imag());
 	}
-
+#endif
 
 	template <typename T>
 	static
