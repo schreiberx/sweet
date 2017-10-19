@@ -15,6 +15,8 @@ class SWEETRuntimeOptions():
 
 		self.stability_checks = 0
 
+		self.floating_point_output_digits = -1
+
 		self.timestepping_method = 'ln_erk'
 		self.timestepping_order = 1
 		self.timestepping_order2 = 1
@@ -81,6 +83,7 @@ class SWEETRuntimeOptions():
 		self.spectralderiv = 1
 		self.uselineardiv = 0
 		self.viscosity = 0
+		self.viscosity_order = 0
 
 		self.simtime = 0.001
 
@@ -174,6 +177,7 @@ class SWEETRuntimeOptions():
 		if compileOptions.plane_or_sphere == 'sphere':
 			idstr += '_a'+str(self.r)
 			idstr += '_u'+str(self.viscosity)
+			idstr += '_U'+str(self.viscosity_order)
 
 			idstr += '_rob'+str(self.use_robert_functions)
 			idstr += '_fsph'+str(self.f_sphere)
@@ -275,9 +279,15 @@ class SWEETRuntimeOptions():
 			retval += ' -O -'	# deactivate file output
 
 		retval += ' -u '+str(self.viscosity)
+		if self.viscosity_order > 0:
+			retval += ' -U '+str(self.viscosity_order)
 		retval += ' -t '+str(self.simtime)
 
 		retval += ' --stability-checks='+str(self.stability_checks)
+
+		if self.floating_point_output_digits >= 0:
+			retval += ' -d '+str(self.floating_point_output_digits)
+
 		retval += ' --use-linear-div='+str(self.uselineardiv)
 
 		retval += ' --timestepping-method='+self.timestepping_method

@@ -204,10 +204,16 @@ public:
 		op.setup(simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
 
-		normalize_ek = 1.60132855847e+21;//1e+21;
+//		normalize_ek = 1.5967e+21;
+		normalize_ek = 1.59373326082e+21;
 
 		double target_rms = 1.0/sqrt(2.0);
 
+		/*
+		 * Use a shitty zero-crossing finder here
+		 *
+		 * TODO: Use Newton solver
+		 */
 		for (int k = 0; k < 1000; k++)
 		{
 			/*
@@ -262,15 +268,15 @@ public:
 
 			std::cout << "POLVANI dy/dx = " << diff << std::endl;
 
-			double omega = 10000.0;
+			double omega = 100.0;
 
-			normalize_ek = normalize_ek + omega*(rms_0 - target_rms)/diff;
+			normalize_ek = normalize_ek - omega*(rms_0 - target_rms)/diff;
 
 			double error = std::abs(rms_0 - target_rms);
 			std::cout << "POLVANI " << k << ": " << rms_0 << "\tERROR: " << error << std::endl;
 			std::cout << std::endl;
 
-			if (error < 1e-8)
+			if (error < 1e-2)
 				break;
 		}
 	}
@@ -321,7 +327,7 @@ public:
 		 */
 		double R_1 = 1.0/R;
 		double diff;
-		for (int i = 0; i < 10; i++)
+		for (int i = 0; i < 50; i++)
 		{
 			/*
 			 * Solve equation (2.5a)
@@ -362,9 +368,12 @@ public:
 			std::cout << i << ": chi update = " << diff << std::endl;
 
 			chi = new_chi;
+
+			if (diff < 1e-10)
+				break;
 		}
 
-		if (diff > 1e-10)
+		if (diff >= 1e-10)
 		{
 			FatalError("No convergence for Polvani initial conditions reached");
 		}
@@ -392,6 +401,13 @@ public:
 		o_u = -op.diff_c_y(psi) + eps*op.diff_c_x(chi);
 		o_v = op.diff_c_x(psi) + eps*op.diff_c_y(chi);
 
+		double chi_rms = chi.reduce_rms();
+		double psi_rms = psi.reduce_rms();
+
+		std::cout << "POLVANI: chi_rms = " << chi_rms << std::endl;
+		std::cout << "POLVANI: psi_rms = " << psi_rms << std::endl;
+		double chi_rms_psi_rms = chi_rms / psi_rms;
+		std::cout << "POLVANI: chi_rms / psi_rms = " << chi_rms_psi_rms << std::endl;
 	}
 };
 

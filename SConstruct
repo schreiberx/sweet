@@ -380,6 +380,11 @@ elif p.mode == 'release':
 			env.Append(F90FLAGS=' -O2')
 
 
+if p.quadmath == 'enable':
+	env.Append(CXXFLAGS=' -DSWEET_QUADMATH=1')
+else:
+	env.Append(CXXFLAGS=' -DSWEET_QUADMATH=0')
+
 
 
 if p.gui == 'enable':

@@ -14,7 +14,13 @@
 #include <vector>
 
 
-template <typename T =  __float128>
+template <
+#if SWEET_QUADMATH
+	typename T =  __float128
+#else
+	typename T =  double
+#endif
+>
 class REXI_CI
 {
 	typedef std::complex<T> TComplex;

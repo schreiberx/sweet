@@ -82,6 +82,8 @@ class SWEETCompileOptions:
 
 		# GUI
 		self.gui = 'disable'
+
+		self.quadmath = 'enable'
 		pass
 
 
@@ -141,6 +143,9 @@ class SWEETCompileOptions:
 
 		# GUI
 		retval += ' --gui='+self.gui
+
+		# Activate quadmath
+		retval += ' --quadmath='+self.quadmath
 
 		return retval
 
@@ -393,6 +398,16 @@ class SWEETCompileOptions:
 		if self.sphere_spectral_space == 'enable' and self.sphere_spectral_dealiasing != 'enable':
 			raise Exception("self.sphere_spectral_dealiasing != enable")
 
+		scons.AddOption(	'--quadmath',
+				dest='quadmath',
+				type='choice',
+				choices=['enable','disable'],
+				default='enable',
+				help='quadmath: enable, disable [default: %default]'
+		)
+		self.quadmath = scons.GetOption('quadmath')
+
+
 
 		scons.AddOption(	'--gui',
 				dest='gui',
@@ -534,6 +549,9 @@ class SWEETCompileOptions:
 
 		if self.gui == 'enable':
 			exec_name+='_gui'
+
+		if self.quadmath == 'enable':
+			exec_name+='_quadmath'
 
 		if self.threading in ['omp']:
 			exec_name+='_'+self.threading

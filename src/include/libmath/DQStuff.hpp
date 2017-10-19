@@ -8,8 +8,11 @@
 #ifndef SRC_INCLUDE_REXI_DQSTUFF_HPP_
 #define SRC_INCLUDE_REXI_DQSTUFF_HPP_
 
-#include <quadmath.h>
+#if SWEET_QUADMATH
+	#include <quadmath.h>
+#endif
 #include <ccomplex>
+#include <cmath>
 
 
 /**
@@ -41,7 +44,7 @@ public:
 			);
 	}
 
-
+#if SWEET_QUADMATH
 	static
 	std::complex<__float128> conj(
 			const std::complex<__float128> &i_value
@@ -52,7 +55,7 @@ public:
 				-i_value.imag()
 			);
 	}
-
+#endif
 
 public:
 	static
@@ -85,6 +88,7 @@ public:
 		return ret_val;
 	}
 
+#if SWEET_QUADMATH
 	static
 	std::complex<__float128> exp(
 			const std::complex<__float128> &i_value
@@ -97,6 +101,7 @@ public:
 
 		return ret_val*::expq(i_value.real());
 	}
+#endif
 
 public:
 	constexpr
@@ -105,7 +110,7 @@ public:
 			double i_value
 	)
 	{
-		return std::complex<double>(0, i_value);
+		return std::complex<double>(0.0, i_value);
 	}
 
 	constexpr
@@ -114,9 +119,10 @@ public:
 			float i_value
 	)
 	{
-		return std::complex<float>(0, i_value);
+		return std::complex<float>(0.0, i_value);
 	}
 
+#if SWEET_QUADMATH
 	constexpr
 	static
 	std::complex<__float128> I(
@@ -125,7 +131,7 @@ public:
 	{
 		return std::complex<__float128>(0, i_value);
 	}
-
+#endif
 
 public:
 	constexpr
@@ -146,6 +152,7 @@ public:
 		return i_value.real();
 	}
 
+#if SWEET_QUADMATH
 	constexpr
 	static
 	__float128 Re(
@@ -154,7 +161,7 @@ public:
 	{
 		return i_value.real();
 	}
-
+#endif
 
 
 public:
@@ -174,6 +181,7 @@ public:
 		return std::complex<float>(::cos(i_value), ::sin(i_value));
 	}
 
+#if SWEET_QUADMATH
 	static
 	std::complex<__float128> expIm(
 			const __float128 &i_value
@@ -181,7 +189,7 @@ public:
 	{
 		return std::complex<__float128>(::cosq(i_value), ::sinq(i_value));
 	}
-
+#endif
 
 
 public:
@@ -193,6 +201,7 @@ public:
 		return ::exp(i_value);
 	}
 
+#if SWEET_QUADMATH
 	static
 	__float128 exp(
 			const __float128 &i_value
@@ -200,6 +209,7 @@ public:
 	{
 		return ::expq(i_value);
 	}
+#endif
 
 
 public:
@@ -219,6 +229,7 @@ public:
 		return ::sqrt(i_value);
 	}
 
+#if SWEET_QUADMATH
 	static
 	__float128 sqrt(
 			const __float128 &i_value
@@ -226,6 +237,7 @@ public:
 	{
 		return ::sqrtq(i_value);
 	}
+#endif
 
 
 
@@ -255,6 +267,7 @@ public:
 		return ::fabs(i_value);
 	}
 
+#if SWEET_QUADMATH
 	static
 	__float128 abs(
 			const __float128 &i_value
@@ -262,7 +275,7 @@ public:
 	{
 		return ::fabsq(i_value);
 	}
-
+#endif
 
 
 public:
@@ -284,6 +297,7 @@ public:
 		return std::max(i_value1, i_value2);
 	}
 
+#if SWEET_QUADMATH
 	static
 	__float128 max(
 			const __float128 &i_value1,
@@ -292,6 +306,7 @@ public:
 	{
 		return ::fmaxq(i_value1, i_value2);
 	}
+#endif
 
 
 
@@ -314,6 +329,7 @@ public:
 		return ::pow(i_value, i_pi);
 	}
 
+#if SWEET_QUADMATH
 	static
 	__float128 pow(
 			const __float128 &i_value,
@@ -322,7 +338,7 @@ public:
 	{
 		return ::powq(i_value, i_pi);
 	}
-
+#endif
 
 
 public:
@@ -354,7 +370,11 @@ public:
 			const char* i_value
 	)
 	{
+#if SWEET_QUADMATH
 		return (T)::strtoflt128(i_value, nullptr);
+#else
+		return strtof(i_value, nullptr);
+#endif
 	}
 
 public:
@@ -364,7 +384,11 @@ public:
 			const std::string &i_value
 	)
 	{
+#if SWEET_QUADMATH
 		return (T)::strtoflt128(i_value.c_str(), nullptr);
+#else
+		return strtof(i_value.c_str(), nullptr);
+#endif
 	}
 
 };
