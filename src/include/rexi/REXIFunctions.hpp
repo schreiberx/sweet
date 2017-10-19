@@ -34,6 +34,7 @@ public:
 
 	void setup_constvars()
 	{
+#if SWEET_QUADMATH
 		if (typeid(T) == typeid(__float128))
 		{
 			eps_phi = 1e-10;
@@ -41,13 +42,11 @@ public:
 
 			static char *sp;
 
-#if SWEET_QUADMATH
 			pi2 = (__float128)2.0*strtoflt128("3.1415926535897932384626433832795029", &sp);
-#else
-			pi2 = 2.0*strtof("3.1415926535897932384626433832795029", &sp);
-#endif
 		}
-		else if (typeid(T) == typeid(double))
+		else
+#endif
+		if (typeid(T) == typeid(double))
 		{
 			eps_phi = 1e-10;
 			eps_ups= 1e-10;
