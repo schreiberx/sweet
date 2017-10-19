@@ -303,11 +303,15 @@ public:
 		double normalization = (simVars.sim.domain_size[0]*simVars.sim.domain_size[1]) /
 								((double)simVars.disc.res_physical[0]*(double)simVars.disc.res_physical[1]);
 
+		// Reduce amount of possible FFTs to minimize numerical error
+		PlaneData tmp_u = prog_u;
+		PlaneData tmp_v = prog_v;
+
 		// Energy
 		simVars.diag.total_energy =
 			0.5*((
-					prog_u*prog_u +
-					prog_v*prog_v
+					tmp_u*tmp_u +
+					tmp_v*tmp_v
 				).reduce_sum_quad()) * normalization;
 	}
 
@@ -394,13 +398,16 @@ public:
 		if (simVars.misc.output_next_sim_seconds-simVars.misc.output_next_sim_seconds*(1e-12) > simVars.timecontrol.current_simulation_time)
 			return false;
 
+		PlaneData tmp_u = prog_u;
+		PlaneData tmp_v = prog_v;
+
 		// Dump data in csv, if requested
 		if (simVars.misc.output_file_name_prefix.size() > 0)
 		{
-			write_file(prog_u, "prog_u");
-			//write_file(prog_v, "prog_v");
+			write_file(tmp_u, "prog_u");
+			//write_file(tmp_v, "prog_v");
 
-			prog_u.request_data_spectral();
+			tmp_u.request_data_spectral();
 
 			char buffer[1024];
 			const char* filename_template = simVars.misc.output_file_name_prefix.c_str();
@@ -411,7 +418,7 @@ public:
 
 			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
 			{
-				file << x << ", " << prog_u.spectral_return_amplitude(0,x) << ", " << prog_u.spectral_return_phase(0,x) << std::endl;
+				file << x << ", " << tmp_u.spectral_return_amplitude(0,x) << ", " << tmp_u.spectral_return_phase(0,x) << std::endl;
 			}
 			file.close();
 		}
@@ -422,7 +429,7 @@ public:
 			if (simVars.misc.compute_errors)
 			{
 				PlaneData tmp(planeDataConfig);
-				tmp = compute_errors2(prog_u,prog_v);
+				tmp = compute_errors2(tmp_u,tmp_v);
 
 				write_file(tmp, "analytical");
 
@@ -677,6 +684,7 @@ public:
 
 			return ts_u;
 		}
+		return nullptr;
 	}
 
 
@@ -1028,6 +1036,9 @@ public:
 		if (simVars.parareal.verbosity > 2)
 			std::cout << "run_timestep_fine()" << std::endl;
 
+		// Set for ln_imex_init_sl_forcing
+		simVars.bogus.var[0] = 1;
+
 		prog_u = *parareal_data_start.data_arrays[0];
 		prog_v = *parareal_data_start.data_arrays[1];
 
@@ -1252,7 +1263,11 @@ public:
 
 		Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2>& data = (Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2>&)i_data;
 
-		write_file_parareal(*data.data_arrays[0],"prog_u",iteration_id,time_slice_id);
+		// Copy to minimize errors from FFT
+		PlaneData tmp_u = *data.data_arrays[0];
+		PlaneData tmp_v = *data.data_arrays[1];
+
+		write_file_parareal(tmp_u,"prog_u",iteration_id,time_slice_id);
 
 		char buffer[1024];
 		sprintf(buffer,(simVars.misc.output_file_name_prefix+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(), "prog_u_amp_phase", iteration_id, time_slice_id);
@@ -1262,7 +1277,7 @@ public:
 
 		for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
 		{
-			file << x << ", " << data.data_arrays[0]->spectral_return_amplitude(0,x) << ", " << data.data_arrays[0]->spectral_return_phase(0,x) << std::endl;
+			file << x << ", " << tmp_u.spectral_return_amplitude(0,x) << ", " << tmp_u.spectral_return_phase(0,x) << std::endl;
 		}
 		file.close();
 		file.clear();
@@ -1270,7 +1285,7 @@ public:
 
 		if (simVars.misc.compute_errors)
 		{
-			PlaneData ana = compute_errors2(*data.data_arrays[0], *data.data_arrays[1]);
+			PlaneData ana = compute_errors2(tmp_u, tmp_v);
 
 			write_file_parareal(ana,"analytical",iteration_id,time_slice_id);
 
@@ -1324,9 +1339,11 @@ public:
 
 		if (simVars.misc.compute_errors)
 		{
+			// Copy to minimize errors from FFT
+			PlaneData tmp_u = prog_u;
 			if (iteration_id == 0 && time_slice_id == 0)
 				header << "\tMAX_ABS_U\tMAX_RMS_U\tMAX_U";
-			rows << "\t" << benchmark.benchmark_analytical_error_maxabs_u << "\t" << benchmark.benchmark_analytical_error_rms_u << "\t" << prog_u.reduce_max();
+			rows << "\t" << benchmark.benchmark_analytical_error_maxabs_u << "\t" << benchmark.benchmark_analytical_error_rms_u << "\t" << tmp_u.reduce_max();
 		}
 
 		if (iteration_id == 0 && time_slice_id == 0)
@@ -1385,6 +1402,9 @@ int main(int i_argc, char *i_argv[])
 
 	std::ostringstream buf;
 	buf << std::setprecision(14);
+
+	// Set for ln_imex_init_sl_forcing
+	simVars.bogus.var[0] = 0;
 
 	{
 
