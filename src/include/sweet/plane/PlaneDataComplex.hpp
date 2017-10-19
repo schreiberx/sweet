@@ -443,7 +443,6 @@ public:
 #if SWEET_USE_PLANE_COMPLEX_SPECTRAL_SPACE
 
 
-
 	void spectral_zeroAliasingModes()	const
 	{
 //		spectral_space_data[0].imag(0);

@@ -75,6 +75,9 @@ struct REXI_SimulationVariables
 	 * REXI File
 	 */
 
+	std::string file_filename_alpha = "";
+	std::string file_filename_beta = "";
+#if 0
 	/**
 	 * integration range for which NGREXI should be valid
 	 * [-test_range_abs;test_range_abs]
@@ -103,7 +106,7 @@ struct REXI_SimulationVariables
 	 * Max double precision error within test region
 	 */
 	double file_max_error_double_precision = 1e-12;
-
+#endif
 
 	/***************************************************
 	 * REXI CI
@@ -156,12 +159,18 @@ struct REXI_SimulationVariables
 		std::cout << " + M: " << M << std::endl;
 		std::cout << " + L: " << L << std::endl;
 		std::cout << " [REXI File]" << std::endl;
+
+#if 0
 		std::cout << " + file_faf_dir: " << file_faf_dir << std::endl;
 		std::cout << " + file_N: " << file_N << std::endl;
 		std::cout << " + file_h: " << file_h << std::endl;
 		std::cout << " + file_test_min: " << file_test_min << std::endl;
 		std::cout << " + file_test_max: " << file_test_max << std::endl;
 		std::cout << " + file_max_error_double_precision: " << file_max_error_double_precision << std::endl;
+#endif
+
+		std::cout << " + file_filename_alpha: " << file_filename_alpha << std::endl;
+		std::cout << " + file_filename_beta: " << file_filename_beta << std::endl;
 		std::cout << " [REXI CI]" << std::endl;
 		std::cout << " + ci_n: " << ci_n << std::endl;
 		std::cout << " + ci_primitive: " << ci_primitive << std::endl;
@@ -242,6 +251,7 @@ struct REXI_SimulationVariables
 		io_long_options[io_next_free_program_option] = {"rexi-method", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
+#if 0
 		io_long_options[io_next_free_program_option] = {"rexi-file-faf-dir", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
@@ -262,8 +272,12 @@ struct REXI_SimulationVariables
 
 		io_long_options[io_next_free_program_option] = {"rexi-file-max-error", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
+#endif
 
-		io_long_options[io_next_free_program_option] = {"rexi-file-filename", required_argument, 0, 256+io_next_free_program_option};
+		io_long_options[io_next_free_program_option] = {"rexi-file-alpha", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"rexi-file-beta", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
 		io_long_options[io_next_free_program_option] = {"rexi-ci-n", required_argument, 0, 256+io_next_free_program_option};
@@ -310,6 +324,7 @@ struct REXI_SimulationVariables
 			case 7:	use_sphere_extended_modes = atoi(optarg);	return 0;
 
 			case 8:		rexi_method = optarg;	return 0;
+#if 0
 			case 9:		file_faf_dir = optarg;	return 0;
 			case 10:	file_N = atoi(optarg);	return 0;
 			case 11:	file_h = atof(optarg);	return 0;
@@ -317,21 +332,23 @@ struct REXI_SimulationVariables
 			case 13:	file_test_max = atof(optarg);	return 0;
 			case 14:	file_test_max = atof(optarg);	file_test_min = -file_test_max;	return 0;
 			case 15:	file_max_error_double_precision = atof(optarg);	return 0;
-			case 16:	file_filename = optarg;	return 0;
+#endif
+			case 9:		file_filename_alpha = optarg;	return 0;
+			case 10:	file_filename_beta = optarg;	return 0;
 
-			case 17:	ci_n = atoi(optarg);	return 0;
-			case 18:	ci_primitive = optarg;	return 0;
-			case 19:	ci_max_real = atof(optarg);	return 0;
-			case 20:	ci_max_imag = atof(optarg);	return 0;
-			case 21:	ci_s_real = atof(optarg);	return 0;
-			case 22:	ci_s_imag = atof(optarg);	return 0;
-			case 23:	ci_mu = atof(optarg);	return 0;
+			case 11:	ci_n = atoi(optarg);	return 0;
+			case 12:	ci_primitive = optarg;	return 0;
+			case 13:	ci_max_real = atof(optarg);	return 0;
+			case 14:	ci_max_imag = atof(optarg);	return 0;
+			case 15:	ci_s_real = atof(optarg);	return 0;
+			case 16:	ci_s_imag = atof(optarg);	return 0;
+			case 17:	ci_mu = atof(optarg);	return 0;
 		}
 
 		if (rexi_method != "" && rexi_method == "terry" && rexi_method == "file")
 			FatalError("Invalid argument for '--rexi-method='");
 
-		return 23;
+		return 18;
 	}
 };
 

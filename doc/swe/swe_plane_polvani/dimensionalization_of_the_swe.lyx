@@ -1,0 +1,320 @@
+#LyX 2.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 508
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\begin_preamble
+\usepackage{babel}
+\end_preamble
+\use_default_options false
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding iso8859-15
+\fontencoding T1
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 0
+\use_package cancel 0
+\use_package esint 1
+\use_package mathdots 0
+\use_package mathtools 0
+\use_package mhchem 0
+\use_package stackrel 0
+\use_package stmaryrd 0
+\use_package undertilde 0
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Formulations of the shallow-water equations
+\end_layout
+
+\begin_layout Author
+Martin Schreiber <M.Schreiber@exeter.ac.uk>
+\end_layout
+
+\begin_layout Author
+Pedro Peixoto <pedrosp@ime.usp.br>
+\end_layout
+
+\begin_layout Standard
+Equations (2.3a) and (2.3b) relate the Rossby 
+\begin_inset Formula $R$
+\end_inset
+
+ and Burgers 
+\begin_inset Formula $B$
+\end_inset
+
+ number to the non-dimensional SWE.
+ We have to identify parameters 
+\begin_inset Formula $H$
+\end_inset
+
+, 
+\begin_inset Formula $f$
+\end_inset
+
+ and 
+\begin_inset Formula $g$
+\end_inset
+
+ in order to run this in SWEET.
+\end_layout
+
+\begin_layout Section
+Mass conservation term
+\end_layout
+
+\begin_layout Standard
+The mass conservation term is given by
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{eqnarray*}
+\partial_{t}h & = & -(hu)_{x}-(hv)_{y}
+\end{eqnarray*}
+
+\end_inset
+
+with 
+\begin_inset Formula $h$
+\end_inset
+
+ the total surface height.
+\end_layout
+
+\begin_layout Standard
+Polvani's paper states
+\begin_inset Formula 
+\[
+RB^{-1}\left[\partial_{t}h'+\nabla.(h'\boldsymbol{V})\right]+\nabla.\boldsymbol{V}=0
+\]
+
+\end_inset
+
+which we reformulate to
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\partial_{t}h'+\nabla.(h'\boldsymbol{V})+(R^{-1}B)\nabla.\boldsymbol{V}=0
+\]
+
+\end_inset
+
+where we can directly see that
+\begin_inset Formula 
+\[
+H=R^{-1}B
+\]
+
+\end_inset
+
+with
+\end_layout
+
+\begin_layout Section
+Advective terms
+\end_layout
+
+\begin_layout Standard
+We can use the advective formulation which is given by
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{eqnarray*}
+\partial_{t}u & = & -g\partial_{x}u+fv-uu_{x}-vu_{y}\\
+\partial_{t}v & = & -g\partial_{y}v-fu-uv_{x}-vv_{y}.
+\end{eqnarray*}
+
+\end_inset
+
+For the advective part and using 
+\begin_inset Formula $V=(u,v)^{T}$
+\end_inset
+
+, we can write
+\begin_inset Formula 
+\[
+\partial_{t}\boldsymbol{V}=-g\nabla h+\boldsymbol{k}\times\boldsymbol{V}-(\boldsymbol{V}.\nabla)\boldsymbol{V}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The Polvani paper uses the formulation
+\begin_inset Formula 
+\begin{eqnarray*}
+R\left[\partial_{t}\boldsymbol{V}+(\boldsymbol{V}.\nabla)\boldsymbol{V}\right]+\boldsymbol{k}\times\boldsymbol{V} & = & -\nabla h\\
+\partial_{t}\boldsymbol{V}+(\boldsymbol{V}.\nabla)\boldsymbol{V}+R^{-1}\boldsymbol{k}\times\boldsymbol{V} & = & -R^{-1}\nabla h
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+and we can get this formulation by setting
+\begin_inset Formula 
+\[
+f=R^{-1}
+\]
+
+\end_inset
+
+and
+\begin_inset Formula 
+\[
+g=R^{-1}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Dimensionalization
+\end_layout
+
+\begin_layout Standard
+Let U, V, T, H be reference scaling parameters of the nondimensionalization,
+ where, U is characteristic velocity, L caracteristic lenght space, T characteri
+stic time scale, H characteristic height scale.
+ We need to decide what will be set for H, g, f, where g is the gravity
+ constant and f is the Coriolis parameter.
+ Polvani et al (1994) adopts a nondimensional length scale of L=1, which
+ is obtained by setting the domain size to 
+\begin_inset Formula $2\pi k_{0}$
+\end_inset
+
+.
+ The initial velocity is forced to be 
+\begin_inset Formula $(u,v)=\frac{1}{\sqrt{2}}(1,1)$
+\end_inset
+
+, so that the nondimensional reference velocity is given by 
+\begin_inset Formula $U=1$
+\end_inset
+
+.
+ Therefore, since 
+\begin_inset Formula $U=L/T$
+\end_inset
+
+, we may assume T=1.
+ 
+\end_layout
+
+\begin_layout Standard
+The Rossby number then results in
+\begin_inset Formula 
+\[
+R=\frac{U}{fL}=\frac{1}{f}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+and the Froude number
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+F=\frac{U}{\sqrt{gH}}=\frac{1}{\sqrt{gH}}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Given R and F, we may set H=1 and therefore
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+f=R^{-1}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+g=F^{-2}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document

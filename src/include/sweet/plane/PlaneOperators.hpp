@@ -62,6 +62,72 @@ public:
 	}
 
 
+
+	/**
+	 * Vorticity
+	 *
+	 * vort(a,b) = db/dx - da/dy
+	 */
+	PlaneData vort(
+			const PlaneData &a,
+			const PlaneData &b
+	)
+	{
+		return diff_c_x(b) - diff_c_y(a);
+	}
+
+
+
+	/**
+	 * Divergence
+	 *
+	 * div(a,b) = da/dx + db/dy
+	 */
+	PlaneData div(
+			const PlaneData &a,
+			const PlaneData &b
+	)
+	{
+		return diff_c_x(a) + diff_c_y(b);
+	}
+
+
+
+	/*
+	 * Compute Arakawa Jacobian
+	 * See A. Arakawa, V. R. Lamb, "A potential enstrophy and energy conserving scheme for the shallow water equations"
+	 *
+	 * J(a,b) = da/dx db/dy - da/dy db/dx
+	 */
+	PlaneData J(
+			const PlaneData &a,
+			const PlaneData &b
+	)
+	{
+		return diff_c_x(a)*diff_c_y(b) - diff_c_y(a)*diff_c_x(b);
+	}
+
+
+	/*
+	 * Compute time derivative of Arakawa Jacobian
+	 *
+	 * J(a,b)_t = (da/dx db/dy - da/dy db/dx)_t
+	 */
+	PlaneData J_t(
+			const PlaneData &a,
+			const PlaneData &b,
+			const PlaneData &a_t,
+			const PlaneData &b_t
+	)
+	{
+		return	  diff_c_x(a_t)*diff_c_y(b)
+				+ diff_c_x(a)*diff_c_y(b_t)
+				- diff_c_y(a_t)*diff_c_x(b)
+				- diff_c_y(a)*diff_c_x(b_t);
+	}
+
+
+
 	/**
 	 *        __
 	 * apply  \/ .  operator
