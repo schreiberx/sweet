@@ -382,6 +382,7 @@ elif p.mode == 'release':
 
 if p.quadmath == 'enable':
 	env.Append(CXXFLAGS=' -DSWEET_QUADMATH=1')
+	env.Append(LIBS=['quadmath'])
 else:
 	env.Append(CXXFLAGS=' -DSWEET_QUADMATH=0')
 
@@ -439,7 +440,6 @@ if p.sweet_mpi == 'enable':
 		env.Append(LINKFLAGS='-mt_mpi')
 
 
-env.Append(LIBS=['quadmath'])
 
 
 
