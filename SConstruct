@@ -224,7 +224,7 @@ if p.compiler == 'gnu':
 
 if p.compiler == 'intel':
 	reqversion = [12,1]
-	iccversion_line = exec_command('icpc -dumpversion -w').splitlines()
+	iccversion_line = exec_command('icpc -dumpversion -w').splitlines()[0]
 
 	if iccversion_line != 'Mainline':
 		iccversion = iccversion_line.split('.')
