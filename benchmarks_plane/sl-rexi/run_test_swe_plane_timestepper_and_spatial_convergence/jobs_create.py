@@ -34,7 +34,7 @@ p.runtime.phys_res = 512
 
 #
 # Benchmark ID
-# 1: Gaussian breaking dam
+# 14: Steady diagonal benchmark
 #
 p.runtime.bench_id = 14
 
@@ -72,8 +72,10 @@ p.runtime.rexi_method = 'terry'
 #p.runtime.rexi_ci_mu = 0
 #p.runtime.rexi_ci_primitive = 'circle'
 p.runtime.rexi_use_direct_solution = 1
-                
-p.runtime.g = 1
+         
+# Parameters for SL-REXI paper
+#-----------------------------       
+p.runtime.g = 10
 p.runtime.f = 1
 p.runtime.h = 100
 p.runtime.domain_size = 1
@@ -103,53 +105,6 @@ if len(sys.argv) > 1:
 print("Groups: "+str(groups))
 
 for group in groups:
-	# 1st order linear
-	if group == 'l1':
-		ts_methods = [
-			['l_direct',	0,	0,	0,	{'timestep_size': p.simtime}],	# reference solution
-			['l_erk',	1,	0],
-			['l_irk',	1,	0],
-			['l_rexi',	0,	0],
-		]
-
-	# 2nd order linear
-	if group == 'l2':
-		ts_methods = [
-			['l_direct',	0,	0,	{'timestep_size': p.simtime}],	# reference solution
-			['l_erk',	2,	0],
-			['l_cn',	2,	0],
-			['l_rexi',	0,	0],
-		]
-
-	# 1st order nonlinear
-	if group == 'ln1':
-		ts_methods = [
-			['ln_erk',		4,	4],	# reference solution
-			['l_erk_n_erk',		1,	1],
-			['l_irk_n_erk',		1,	1],
-			['ln_erk',		1,	1],
-			['l_rexi_n_erk',	1,	1],
-		]
-
-	# 1st order nonlinear
-	if group == 'ln1test':
-		ts_methods = [
-			['ln_erk',		4,	4],	# reference solution
-			['l_erk_n_erk',		1,	1],
-			['l_irk_n_erk',		1,	1],
-			['ln_erk',		1,	1],
-		]
-
-	# 2nd order nonlinear
-	if group == 'ln2':
-		ts_methods = [
-			['ln_erk',		4,	4],	# reference solution
-			['l_cn_n_erk',		2,	2],
-			['l_erk_n_erk',		2,	2],
-			['l_irk_n_erk',		2,	2],
-			['ln_erk',		2,	2],
-			['l_rexi_n_erk',	2,	2],
-		]
 
 	# 2nd order nonlinear non-fully-spectral
 	if group == 'ln2space':
@@ -159,7 +114,7 @@ for group in groups:
 			['l_cn_na_sl_nd_settls', 2,	2],	# SI-SL-SP
                         ['l_rexi_na_sl_nd_settls',	2,	2], #SL-EXP-SETTLS
 			['l_rexi_na_sl_nd_etdrk',	2,	2], #SL-EXP-ETDRK
-#			['l_rexi_n_erk',	2,	2],
+	#		['l_rexi_n_erk',	2,	2],
 		]
 
 	#
@@ -168,12 +123,10 @@ for group in groups:
 	if len(sys.argv) > 4:
 		ts_methods = [ts_methods[0]]+[[sys.argv[2], int(sys.argv[3]), int(sys.argv[4])]]
 
-
 	#
 	# add prefix string to group benchmarks
 	#
 	prefix_string_template = group
-
 
 	#
 	# Reference solution
@@ -221,6 +174,7 @@ for group in groups:
 			p.runtime.timestepping_order = tsm[1]
 			p.runtime.timestepping_order2 = tsm[2]
 			p.runtime.phys_res = phys_res_list[idx]
+			print("id   dt       N  ")
 			print(idx, p.runtime.timestep_size, p.runtime.phys_res)
 
 			if len(tsm) > 4:
