@@ -42,6 +42,7 @@ class SWEETRuntimeOptions():
 		self.rexi_ci_sy = 50
 		self.rexi_ci_mu = 0
 		self.rexi_ci_primitive = 'circle'
+		self.rexi_ci_gaussian_filter = 0
 
 		self.rexi_m = 0
 		self.rexi_l = 11
@@ -151,6 +152,9 @@ class SWEETRuntimeOptions():
 		if 'ci_primitive' in d:
 			self.rexi_ci_primitive = float(d['ci_primitive'])
 
+		if 'ci_gaussian_filter' in d:
+			self.rexi_ci_gaussian_filter = float(d['ci_gaussian_filter'])
+
 		if 'polvani_rossby' in d:
 			self.polvani_rossby = float(d['polvani_rossby'])
 
@@ -216,6 +220,7 @@ class SWEETRuntimeOptions():
 						idstr += '_sy'+str(float(self.rexi_ci_sy))
 						idstr += '_mu'+str(float(self.rexi_ci_mu))
 					idstr += '_pr'+str(self.rexi_ci_primitive)
+					idstr += '_gf'+str(self.rexi_ci_gaussian_filter)
 
 				idstr += '_nrm'+str(self.rexi_normalization)
 				idstr += '_hlf'+str(self.rexi_half_poles)
@@ -329,6 +334,7 @@ class SWEETRuntimeOptions():
 					retval += ' --rexi-ci-sy='+str(self.rexi_ci_sy)
 					retval += ' --rexi-ci-mu='+str(self.rexi_ci_mu)
 				retval += ' --rexi-ci-primitive='+str(self.rexi_ci_primitive)
+				retval += ' --rexi-ci-gaussian-filter='+str(self.rexi_ci_gaussian_filter)
 
 
 		retval += ' --polvani-rossby='+str(self.polvani_rossby)

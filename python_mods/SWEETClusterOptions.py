@@ -85,6 +85,11 @@ class SWEETClusterOptions:
 			self.total_max_nodes = 128
 			self.total_max_cores = self.cores_per_node*self.total_max_nodes
 
+		elif self.target_machine == "martinium":
+			self.cores_per_node = 2
+			self.total_max_nodes = 1
+			self.total_max_cores = self.cores_per_node*self.total_max_nodes
+
 		else:
 			print("Unknown Target: "+str(self.target_machine))
 			print("Using default values")
