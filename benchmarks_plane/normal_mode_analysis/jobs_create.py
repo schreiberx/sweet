@@ -158,7 +158,7 @@ if __name__ == "__main__":
 	####################################################
 	# WE FOCUS ON 2ND ORDER ACCURATE METHODS HERE
 	####################################################
-	groups = ['ln2']
+	groups = ['l1']
 
 
 	if len(sys.argv) > 1:
@@ -172,8 +172,8 @@ if __name__ == "__main__":
 			ts_methods = [
 				['l_erk',		4,	4,	0],	# reference solution
 				['l_erk',	1,	0,	0],
-				['l_irk',	1,	0,	0],
-				['l_rexi',	0,	0,	0],
+				#['l_irk',	1,	0,	0],
+				#k['l_rexi',	0,	0,	0],
 			]
 
 			#if True:

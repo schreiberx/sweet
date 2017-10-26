@@ -47,7 +47,7 @@ int main(
 		std::cout << "******************************************************" << std::endl;
 		std::cout << "EVALUATING GAUSSIAN APPROXIMATION (real)" << std::endl;
 		std::cout << "******************************************************" << std::endl;
-		REXI_Terry_GaussianApproximation<TGeneration> ga(simVars.rexi.L);
+		REXI_Terry_GaussianApproximation<TGeneration> ga(simVars.rexi.terry_L);
 
 		for (double h = 0.2; h > 0.001; h *= 0.5)
 		{
@@ -186,7 +186,7 @@ int main(
 					std::cout << "h: " << (double)h << std::endl;
 					std::cout << "******************************************************" << std::endl;
 					std::cout << "Setup coefficients... " << std::flush;
-					REXI_Terry<TGeneration, T> rexi(function_name, h, M, simVars.rexi.L, simVars.rexi.use_half_poles, simVars.rexi.normalization);
+					REXI_Terry<TGeneration, T> rexi(function_name, h, M, simVars.rexi.terry_L, simVars.rexi.use_half_poles, simVars.rexi.normalization);
 					std::cout << "OK" << std::endl;
 
 

@@ -77,7 +77,7 @@ public:
 		{
 			/// REXI stuff
 			REXI_Terry<> rexi_terry;
-			rexi_terry.setup(i_function_name, i_rexiSimVars->h, i_rexiSimVars->M, i_rexiSimVars->L, i_rexiSimVars->use_half_poles, i_rexiSimVars->normalization);
+			rexi_terry.setup(i_function_name, i_rexiSimVars->terry_h, i_rexiSimVars->terry_M, i_rexiSimVars->terry_L, i_rexiSimVars->use_half_poles, i_rexiSimVars->normalization);
 
 			alpha = rexi_terry.alpha;
 			beta = rexi_terry.beta_re;
@@ -88,9 +88,9 @@ public:
 			REXI_CI<> rexi_ci;
 
 			if (i_rexiSimVars->ci_max_real >= 0)
-				rexi_ci.setup_shifted_circle(i_function_name, i_rexiSimVars->ci_n, i_rexiSimVars->ci_max_real, i_rexiSimVars->ci_max_imag);
+				rexi_ci.setup_shifted_circle(i_function_name, i_rexiSimVars->ci_n, i_rexiSimVars->ci_max_real, i_rexiSimVars->ci_max_imag, i_rexiSimVars->ci_gaussian_filter);
 			else
-				rexi_ci.setup(i_function_name, i_rexiSimVars->ci_n, i_rexiSimVars->ci_primitive, i_rexiSimVars->ci_s_real, i_rexiSimVars->ci_s_imag, i_rexiSimVars->ci_mu);
+				rexi_ci.setup(i_function_name, i_rexiSimVars->ci_n, i_rexiSimVars->ci_primitive, i_rexiSimVars->ci_s_real, i_rexiSimVars->ci_s_imag, i_rexiSimVars->ci_mu, i_rexiSimVars->ci_gaussian_filter);
 
 			alpha = rexi_ci.alpha;
 			beta = rexi_ci.beta;

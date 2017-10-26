@@ -58,18 +58,18 @@ struct REXI_SimulationVariables
 	/**
 	 * REXI parameter h
 	 */
-	double h = -1.0;
+	double terry_h = -1.0;
 
 	/**
 	 * REXI parameter M: Number of Gaussian basis functions.
 	 * This is not the number of rational functions!
 	 */
-	int M = 128;
+	int terry_M = 128;
 
 	/**
 	 * REXI parameter L
 	 */
-	int L = 0;
+	int terry_L = 0;
 
 	/***************************************************
 	 * REXI File
@@ -144,6 +144,12 @@ struct REXI_SimulationVariables
 	double ci_mu = 0;
 
 
+	/*
+	 * Gaussian filter
+	 * 0: no filter (exp(-(x*filter)^2) = 0
+	 */
+	double ci_gaussian_filter = 0.0;
+
 	void outputConfig()
 	{
 		std::cout << std::endl;
@@ -155,9 +161,9 @@ struct REXI_SimulationVariables
 		std::cout << " + use_extended_modes: " << use_sphere_extended_modes << std::endl;
 		std::cout << " + rexi_sphere_solver_preallocation: " << sphere_solver_preallocation << std::endl;
 		std::cout << " [REXI Terry]" << std::endl;
-		std::cout << " + h: " << h << std::endl;
-		std::cout << " + M: " << M << std::endl;
-		std::cout << " + L: " << L << std::endl;
+		std::cout << " + h: " << terry_h << std::endl;
+		std::cout << " + M: " << terry_M << std::endl;
+		std::cout << " + L: " << terry_L << std::endl;
 		std::cout << " [REXI File]" << std::endl;
 
 #if 0
@@ -179,6 +185,7 @@ struct REXI_SimulationVariables
 		std::cout << " + ci_s_real: " << ci_s_real << std::endl;
 		std::cout << " + ci_s_imag: " << ci_s_imag << std::endl;
 		std::cout << " + ci_mu: " << ci_mu << std::endl;
+		std::cout << " + ci_gaussian_filter: " << ci_gaussian_filter << std::endl;
 		std::cout << std::endl;
 	}
 
@@ -213,6 +220,7 @@ struct REXI_SimulationVariables
 		std::cout << "	--rexi-ci-sx [double]	Size of primitive in real, default: 1" << std::endl;
 		std::cout << "	--rexi-ci-sy [double]	Size of primitive in imag, default: 1" << std::endl;
 		std::cout << "	--rexi-ci-mu [double]	Shift, default: 0" << std::endl;
+		std::cout << "	--rexi-ci-gaussian-filter [double]	Gaussian filter parameter, default: 0 (no filter)" << std::endl;
 		std::cout << "" << std::endl;
 	}
 
@@ -300,6 +308,9 @@ struct REXI_SimulationVariables
 
 		io_long_options[io_next_free_program_option] = {"rexi-ci-mu", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"rexi-ci-gaussian-filter", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
 	}
 
 	/**
@@ -314,9 +325,9 @@ struct REXI_SimulationVariables
 	{
 		switch(i_option_index)
 		{
-			case 0:	h = atof(optarg);	return 0;
-			case 1:	M = atoi(optarg);	return 0;
-			case 2:	L = atoi(optarg);	return 0;
+			case 0:	terry_h = atof(optarg);	return 0;
+			case 1:	terry_M = atoi(optarg);	return 0;
+			case 2:	terry_L = atoi(optarg);	return 0;
 			case 3:	use_half_poles = atoi(optarg);	return 0;
 			case 4:	normalization = atoi(optarg);	return 0;
 			case 5:	sphere_solver_preallocation = atoi(optarg);	return 0;
@@ -343,12 +354,13 @@ struct REXI_SimulationVariables
 			case 15:	ci_s_real = atof(optarg);	return 0;
 			case 16:	ci_s_imag = atof(optarg);	return 0;
 			case 17:	ci_mu = atof(optarg);	return 0;
+			case 18:	ci_gaussian_filter = atof(optarg);	return 0;
 		}
 
 		if (rexi_method != "" && rexi_method == "terry" && rexi_method == "file")
 			FatalError("Invalid argument for '--rexi-method='");
 
-		return 18;
+		return 19;
 	}
 };
 
