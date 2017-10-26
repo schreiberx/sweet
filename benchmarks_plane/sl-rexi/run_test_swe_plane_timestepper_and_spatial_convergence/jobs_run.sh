@@ -3,7 +3,7 @@
 
 THISDIR=`pwd`
 
-cd "../../"
+cd "../../../"
 
 source ./local_software/env_vars.sh || exit 1
 
