@@ -32,10 +32,10 @@ if [ "${HOSTNAME:0:8}" == "cheyenne" ]; then
 	#PKGS+=("install_sdl2.sh")
 	PKGS+=("install_shtns.sh")
 
-elif [ "${HOSTNAME:0:8}" == "guepardo00" ]; then
+elif [ "${HOSTNAME:0:8}" == "guepardo" ]; then
 
 	echo "***********************************"
-	echo "USP system detected: guepardo00"
+	echo "USP system detected: guepardo at USP-BR"
 	echo "***********************************"
 
 	#PKGS+=("install_autoconf.sh")
