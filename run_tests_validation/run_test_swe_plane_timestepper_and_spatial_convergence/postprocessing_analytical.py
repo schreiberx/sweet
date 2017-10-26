@@ -59,7 +59,7 @@ for group_info in groups:
 	#List of output files (all methods in group)
 	outputs = glob.glob("script_"+group+"_b*.out")
 	outputs.sort()
-			
+		
 	#
 	# Determine test groups, each group has the same TS method
 	#
@@ -67,7 +67,7 @@ for group_info in groups:
 	prev_test_name = ""
 	for output in outputs:
 		# Reset convergence test?
-		pos = output.find("_N")
+		pos = output.find("_C")
 		test_name = output[0:pos]
 		if test_name != prev_test_name:
 			test_group_methods.append(test_name)
@@ -83,16 +83,16 @@ for group_info in groups:
 	for method in test_group_methods:
 		# List of outputs for this method
 		outputs = glob.glob(method+"*.out")
-		outputs.sort()
+		outputs.sort(reverse=True)
 
 		conv_test = []
 		prev_conv_value = 0.0
 		prev_h_error = 0.0
-		pos = outputs[1].find("_phys")
+		pos = outputs[1].find("_N")
 		test_name = outputs[1][0:pos]
 		print("----------------------")
 		print("Method: "+test_name)
-		print("Resolution    MaxErrorH               MaxErrorU             MaxErrorV         RatioH")
+		print("Resolution    MaxErrorH  MaxErrorU   MaxErrorV   RatioH")
 
 		i = -1
 		n = len(outputs)
@@ -100,13 +100,13 @@ for group_info in groups:
 
 		for output in outputs:
 			i = i+1 #output index
-			test_res = output[pos+5:len(output)-4]
+			test_res = output[pos+2:len(output)-4]
 			result = extract_errors(output)
 
 			if result[0] != "x" and float(result[0]) != 0 :
 				ratios[i] = float(prev_h_error)/float(result[0])
 			else:
-				print("This method could not be evaluated: "+str(result[0]))
+				print("This method could not be evaluated: "+str(output))
 				sys.exit(1)
 
 			prev_h_error=result[0]

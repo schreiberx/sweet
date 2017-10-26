@@ -12,8 +12,10 @@
 
 #include "Burgers_Plane_TS_l_irk_n_sl.hpp"
 #include "Burgers_Plane_TS_l_irk_n_sl_forcing.hpp"
+#include "Burgers_Plane_TS_l_cn_n_sl.hpp"
 #include "Burgers_Plane_TS_ln_imex.hpp"
 #include "Burgers_Plane_TS_ln_imex_forcing.hpp"
+#include "Burgers_Plane_TS_ln_imex_init_sl_forcing.hpp"
 #include "Burgers_Plane_TS_ln_erk.hpp"
 #include "Burgers_Plane_TS_ln_erk_forcing.hpp"
 #include "Burgers_Plane_TS_ln_adomian.hpp"
@@ -21,6 +23,7 @@
 #include "Burgers_Plane_TS_l_direct.hpp"
 #include "Burgers_Plane_TS_l_erk.hpp"
 #include "Burgers_Plane_TS_l_irk.hpp"
+#include "Burgers_Plane_TS_l_cn.hpp"
 
 
 
@@ -34,13 +37,16 @@ public:
 	Burgers_Plane_TS_ln_erk_forcing *ln_erk_forcing = nullptr;
 	Burgers_Plane_TS_ln_imex *ln_imex = nullptr;
 	Burgers_Plane_TS_ln_imex_forcing *ln_imex_forcing = nullptr;
+	Burgers_Plane_TS_ln_imex_init_sl_forcing *ln_imex_init_sl_forcing = nullptr;
 	Burgers_Plane_TS_l_irk_n_sl *l_irk_n_sl = nullptr;
 	Burgers_Plane_TS_l_irk_n_sl_forcing *l_irk_n_sl_forcing = nullptr;
+	Burgers_Plane_TS_l_cn_n_sl *l_cn_n_sl = nullptr;
 	Burgers_Plane_TS_ln_adomian *ln_adomian = nullptr;
 	Burgers_Plane_TS_ln_cole_hopf *ln_cole_hopf = nullptr;
 	Burgers_Plane_TS_l_direct *l_direct = nullptr;
 	Burgers_Plane_TS_l_erk *l_erk = nullptr;
 	Burgers_Plane_TS_l_irk *l_irk = nullptr;
+	Burgers_Plane_TS_l_cn *l_cn = nullptr;
 
 	Burgers_Plane_TS_interface *master = nullptr;
 
@@ -74,6 +80,12 @@ public:
 			ln_imex_forcing = nullptr;
 		}
 
+		if (ln_imex_init_sl_forcing != nullptr)
+		{
+			delete ln_imex_init_sl_forcing;
+			ln_imex_init_sl_forcing = nullptr;
+		}
+
 		if (l_irk_n_sl != nullptr)
 		{
 			delete l_irk_n_sl;
@@ -84,6 +96,12 @@ public:
 		{
 			delete l_irk_n_sl_forcing;
 			l_irk_n_sl_forcing = nullptr;
+		}
+
+		if (l_cn_n_sl != nullptr)
+		{
+			delete l_cn_n_sl;
+			l_cn_n_sl = nullptr;
 		}
 
 		if (ln_adomian != nullptr)
@@ -114,6 +132,12 @@ public:
 		{
 			delete l_irk;
 			l_irk = nullptr;
+		}
+
+		if (l_cn != nullptr)
+		{
+			delete l_cn;
+			l_cn = nullptr;
 		}
 
 	}
@@ -168,6 +192,13 @@ public:
 
 			master = &(Burgers_Plane_TS_interface&)*ln_imex_forcing;
 		}
+		else if (i_timestepping_method == "ln_imex_init_sl_forcing")
+		{
+			ln_imex_init_sl_forcing= new Burgers_Plane_TS_ln_imex_init_sl_forcing(i_simVars, i_op);
+			ln_imex_init_sl_forcing->setup();
+
+			master = &(Burgers_Plane_TS_interface&)*ln_imex_init_sl_forcing;
+		}
 		else if (i_timestepping_method == "l_irk_n_sl")
 		{
 			l_irk_n_sl = new Burgers_Plane_TS_l_irk_n_sl(i_simVars, i_op);
@@ -181,6 +212,13 @@ public:
 			l_irk_n_sl_forcing->setup();
 
 			master = &(Burgers_Plane_TS_interface&)*l_irk_n_sl_forcing;
+		}
+		else if (i_timestepping_method == "l_cn_n_sl")
+		{
+			l_cn_n_sl = new Burgers_Plane_TS_l_cn_n_sl(i_simVars, i_op);
+			l_cn_n_sl->setup();
+
+			master = &(Burgers_Plane_TS_interface&)*l_cn_n_sl;
 		}
 		else if (i_timestepping_method == "ln_adomian")
 		{
@@ -217,6 +255,13 @@ public:
 
 			master = &(Burgers_Plane_TS_interface&)*l_irk;
 		}
+		else if (i_timestepping_method == "l_cn")
+		{
+			l_cn= new Burgers_Plane_TS_l_cn(i_simVars, i_op);
+			l_cn->setup();
+
+			master = &(Burgers_Plane_TS_interface&)*l_cn;
+		}
 		//
 		else
 		{
@@ -225,13 +270,16 @@ public:
 			std::cout << "      l_direct           : Linear: analytical solution to diffusion operator"  << std::endl;
 			std::cout << "      l_erk              : Linear: explicit RK scheme"  << std::endl;
 			std::cout << "      l_irk              : Linear: implicit RK scheme"  << std::endl;
+			std::cout << "      l_cn               : Linear: Crank-Nicolson scheme"  << std::endl;
 			std::cout << "      ln_cole_hopf       : Non-linear: analytic solution to Burgers' equation"  << std::endl;
 			std::cout << "      ln_erk             : Non-linear: explicit RK scheme"  << std::endl;
 			std::cout << "      ln_erk_forcing     : Non-linear: explicit RK scheme with forcing term"  << std::endl;
 			std::cout << "      ln_imex            : Non-linear: implicit-explicit RK scheme"  << std::endl;
 			std::cout << "      ln_imex_forcing    : Non-linear: implicit-explicit RK scheme with forcing term"  << std::endl;
+			std::cout << "      ln_imex_init_sl_forcing    : Non-linear: implicit-explicit RK scheme with forcing term init Parareal with SL"  << std::endl;
 			std::cout << "      l_irk_n_sl         : Non-linear: implicit RK on semi-Lagrangian formulation"  << std::endl;
 			std::cout << "      l_irk_n_sl_forcing : Non-linear: implicit RK on semi-Lagrangian formulation with forcing"  << std::endl;
+			std::cout << "      l_cn_n_sl          : Non-linear: Crank-Nicolson on semi-Lagrangian formulation"  << std::endl;
 			std::cout << "      ln_adomian         : Non-linear: Adomian decomposition method"  << std::endl;
 			FatalError("No valid --timestepping-method provided");
 		}

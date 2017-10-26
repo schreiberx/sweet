@@ -61,7 +61,7 @@ public:
 
 public:
 	std::vector<complexT> alpha;
-	std::vector<complexT> beta_re;
+	std::vector<complexT> beta;
 //	std::vector<complexT> beta_im;
 
 	REXI_File_Coefficients<T> fafcoeffs;
@@ -82,7 +82,7 @@ public:
 	}
 
 
-
+#if 0
 public:
 	bool auto_load(
 			const std::string &i_function_name,		///< "phi0", "phi1", "phi2", etc.
@@ -302,30 +302,34 @@ public:
 			//FatalError("RexiNG: No coefficients found for given constraints");
 
 
-		generate_alpha_and_beta(i_reduce_to_half);
-
 		return true;
 	}
+#endif
 
-	bool load_from_file(std::string i_filename, bool i_reduce_to_half)
+	bool load_from_file(
+			std::string& i_filename_alpha,
+			std::string& i_filename_beta
+	)
 	{
-		bool retval = fafcoeffs.load_from_file(i_filename);
+		bool retval;
+
+		retval = fafcoeffs.load_from_file(i_filename_alpha, alpha);
 		if (!retval)
 			return false;
 
-		generate_alpha_and_beta(i_reduce_to_half);
+		retval = fafcoeffs.load_from_file(i_filename_beta, beta);
+		if (!retval)
+			return false;
+
 		return true;
 	}
-
+#if 0
 	void generate_alpha_and_beta(bool i_reduce_to_half)
 	{
-
 		int N = fafcoeffs.N;
 
-
 		alpha.resize(N);
-		beta_re.resize(N);
-
+		beta.resize(N);
 
 		for (int i = 0; i < N; i++)
 		{
@@ -334,9 +338,9 @@ public:
 			alpha[i] = std::complex<T>(fafcoeffs.basis_function_rat_shift/fafcoeffs.basis_function_scaling, -(T)K*fafcoeffs.basis_function_spacing);
 
 			// generate betas
-			beta_re[i] = fafcoeffs.weights_cplx[i];
+			beta[i] = fafcoeffs.weights_cplx[i];
 
-			beta_re[i] /= fafcoeffs.basis_function_scaling;
+			beta[i] /= fafcoeffs.basis_function_scaling;
 		}
 
 		if ((N & 1) != 1)
@@ -346,13 +350,15 @@ public:
 		{
 			int newN = N/2+1;
 			for (int i = 0; i < newN-1; i++)
-				beta_re[i] += conj(beta_re[N-1-i]);
+				beta[i] += conj(beta[N-1-i]);
 
 			alpha.resize(newN);
-			beta_re.resize(newN);
+			beta.resize(newN);
 		}
 	}
+#endif
 
+#if 0
 	void output()
 	{
 		int N = alpha.size();
@@ -362,7 +368,7 @@ public:
 			std::cout << "alpha[" << i << "] = " << alpha[i] << std::endl;
 
 		for (int i = 0; i < N; i++)
-			std::cout << "beta_re[" << i << "] = " << beta_re[i] << std::endl;
+			std::cout << "beta[" << i << "] = " << beta[i] << std::endl;
 	}
 
 
@@ -413,10 +419,11 @@ public:
 		std::size_t S = alpha.size();
 
 		for (std::size_t n = 0; n < S; n++)
-			sum += (beta_re[n] / (complexT(0.0, i_x) + alpha[n])).real();
+			sum += (beta[n] / (complexT(0.0, i_x) + alpha[n])).real();
 
 		return sum;
 	}
+#endif
 };
 
 

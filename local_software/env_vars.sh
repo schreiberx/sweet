@@ -68,6 +68,7 @@ export DYLD_LIBRARY_PATH="$SCRIPTDIR/local/lib:$LD_LIBRARY_PATH"
 export DYLD_LIBRARY_PATH="$SCRIPTDIR/local/lib64:$LD_LIBRARY_PATH"
 
 export PYTHONPATH="$PYTHONPATH:$SCRIPTDIR/local/lib/python3.6/site-packages/"
+#export PYTHONHOME="$SCRIPTDIR/local/lib/:$PYTHONHOME"
 
 echo "SWEET environment variables loaded"
 

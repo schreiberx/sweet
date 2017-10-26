@@ -368,6 +368,11 @@ public:
 
 		while (!engineState->quit)
 		{
+			/*
+			 * EVENTS
+			 */
+			renderWindow->eventLoop();
+
 			glClearColor(0,0,0,0);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -450,16 +455,11 @@ public:
 
 			programCallbacks->vis_render();
 
-			engineState->quit = programCallbacks->should_quit();
+			engineState->quit |= programCallbacks->should_quit();
 
 			renderWindow->setWindowTitle(programCallbacks->vis_getStatusString());
 
 			renderWindow->swapBuffer();
-
-			/*
-			 * EVENTS
-			 */
-			renderWindow->eventLoop();
 		}
 
 		programCallbacks->vis_shutdown();

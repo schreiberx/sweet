@@ -13,6 +13,7 @@
 #include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalReal.hpp>
 
 
+
 SWE_Sphere_TS_l_cn::SWE_Sphere_TS_l_cn(
 		SimulationVariables &i_simVars,
 		SphereOperators &i_op

@@ -3,6 +3,10 @@
  *
  *  Created on: 29 May 2017
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *
+ *  Changelog:
+ *  	2017-05-29: Based on source swe_plane_rexi.cpp
+ *					which was also written by Pedro Peixoto
  */
 
 #ifndef SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_L_REXI_NA_SL_ND_SETTLS_HPP_
@@ -33,6 +37,7 @@ class SWE_Plane_TS_l_rexi_na_sl_nd_settls	: public SWE_Plane_TS_interface
 	PlaneDataSemiLagrangian semiLagrangian;
 	PlaneDataSampler sampler2D;
 
+	//Previous values (t_n-1)
 	PlaneData h_prev, u_prev, v_prev;
 
 	// Arrival points for semi-lag

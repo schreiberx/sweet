@@ -51,7 +51,7 @@ p.runtime.rexi_sphere_preallocation = 0
 #
 # Threading accross all REXI terms
 #
-rexi_thread_par = True
+rexi_thread_par = False
 if rexi_thread_par:
 	# OMP parallel for over REXI terms
 	p.compile.threading = 'off'
@@ -64,15 +64,15 @@ else:
 #
 # REXI method
 # N=64, SX,SY=50 and MU=0 with circle primitive provide good results
-#
-p.runtime.rexi_method = 'ci'
-p.runtime.rexi_ci_n = 64
-p.runtime.rexi_ci_sx = 50
-p.runtime.rexi_ci_sy = 50
-p.runtime.rexi_ci_mu = 0
-p.runtime.rexi_ci_primitive = 'circle'
-
-
+# ==> use direct
+p.runtime.rexi_method = 'terry'
+#p.runtime.rexi_ci_n = 64
+#p.runtime.rexi_ci_sx = 50
+#p.runtime.rexi_ci_sy = 50
+#p.runtime.rexi_ci_mu = 0
+#p.runtime.rexi_ci_primitive = 'circle'
+p.runtime.rexi_use_direct_solution = 1
+                
 p.runtime.g = 1
 p.runtime.f = 1
 p.runtime.h = 100
@@ -82,9 +82,9 @@ p.runtime.viscosity = 0.0
 
 
 timestep_size_reference = 0.0001
-timestep_sizes = [0.0001*(2.0**i) for i in range(0, 11)]
+timestep_sizes = [0.1*(2.0**(-i)) for i in range(0, 11)]
 
-p.runtime.simtime = 0.0001
+p.runtime.simtime = 1.0
 p.runtime.output_timestep_size = p.runtime.simtime
 
 phys_res_list = [16*(2**i) for i in range(0, 7)]
@@ -157,8 +157,8 @@ for group in groups:
 			['ln_erk',		4,	4],	# reference solution - spectral (128 grid points)
 			['ln_erk',		2,	2],	# FD- C-grid
 			['l_cn_na_sl_nd_settls', 2,	2],	# SI-SL-SP
-#			['l_erk_n_erk',		2,	2],
-#			['ln_erk',		2,	2],
+                        ['l_rexi_na_sl_nd_settls',	2,	2], #SL-EXP-SETTLS
+			['l_rexi_na_sl_nd_etdrk',	2,	2], #SL-EXP-ETDRK
 #			['l_rexi_n_erk',	2,	2],
 		]
 
@@ -166,7 +166,7 @@ for group in groups:
 	# OVERRIDE TS methods
 	#
 	if len(sys.argv) > 4:
-		ts_methods = [ts_methods[0]]+[[sys.argv[2], int(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5])]]
+		ts_methods = [ts_methods[0]]+[[sys.argv[2], int(sys.argv[3]), int(sys.argv[4])]]
 
 
 	#
@@ -202,31 +202,26 @@ for group in groups:
 			p.runtime.staggering = 1
 			p.runtime.spectralderiv = 0
 
-			p.compile.plane_spectral_space = 'disable'
+			#p.compile.plane_spectral_space = 'disable'
 			p.compile.plane_spectral_dealiasing = 'disable'
-			p.compile.sphere_spectral_space = 'disable'
-			p.compile.sphere_spectral_dealiasing = 'disable'
 			p.compile.libfft = 'enable'
-
-		if group == 'ln2space' and 'l_cn_na_sl_nd_settls' in tsm[0]:
+		else:
 			p.runtime.staggering = 0
 			p.runtime.spectralderiv = 1
 
 			p.compile.plane_spectral_space = 'enable'
 			p.compile.plane_spectral_dealiasing = 'enable'
-			p.compile.sphere_spectral_space = 'disable'
-			p.compile.sphere_spectral_dealiasing = 'disable'
 
-		for phys_res in phys_res_list:
+		for idx in range(0,7): #, phys_res in phys_res_list:
 
 			p.prefix_string = prefix_string_template
 
-			p.runtime.timestep_size = timestep_size_reference
+			p.runtime.timestep_size = timestep_sizes[idx]
 			p.runtime.timestepping_method = tsm[0]
 			p.runtime.timestepping_order = tsm[1]
 			p.runtime.timestepping_order2 = tsm[2]
-			p.runtime.phys_res = phys_res
-
+			p.runtime.phys_res = phys_res_list[idx]
+			print(idx, p.runtime.timestep_size, p.runtime.phys_res)
 
 			if len(tsm) > 4:
 				s = tsm[4]

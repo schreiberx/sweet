@@ -135,7 +135,10 @@ p.runtime.simtime = 432000 #timestep_size_reference*(2**6)*10
 p.runtime.output_timestep_size = p.runtime.simtime
 #p.runtime.output_timestep_size = -1
 
+<<<<<<< HEAD
 p.runtime.rexi_extended_modes = 0
+=======
+>>>>>>> 00e9941228e671eab960d888e64d2996c3d0cc17
 
 # Groups to execute, see below
 # l: linear
@@ -215,6 +218,7 @@ if __name__ == "__main__":
 		if group == 'ln2':
 			ts_methods = [
 				['ln_erk',		4,	4,	0],	# reference solution
+<<<<<<< HEAD
 				#['l_cn_n_erk',		2,	2,	0],
 				#['ln_erk',		2,	2,	0],
 
@@ -231,6 +235,21 @@ if __name__ == "__main__":
 				#['lg_rexi_lc_n_erk',	2,	2,	0],
 				#['lg_rexi_lc_n_erk_ver1',	2,	2,	0],
 				#['lg_rexi_lc_n_etdrk',	2,	2,	0],
+=======
+				#['l_irk_n_erk',		2,	2,	0],
+				#['l_cn_n_erk',		2,	2,	0],
+				['ln_erk',		2,	2,	0],
+
+				['l_erk_n_erk',		2,	2,	0],
+
+				#['l_irk_n_erk',		2,	2,	0],
+				#['l_rexi_n_erk',	2,	2,	0],
+				#['l_rexi_n_etdrk',	2,	2,	0],
+
+				['lg_irk_lc_n_erk',	2,	2,	0],
+				['lg_rexi_lc_n_erk',	2,	2,	0],
+				['lg_rexi_lc_n_etdrk',	2,	2,	0],
+>>>>>>> 00e9941228e671eab960d888e64d2996c3d0cc17
 			]
 
 		# 4th order nonlinear
@@ -328,7 +347,11 @@ if __name__ == "__main__":
 
 							#for r in [25, 50, 75]:
 							# Everything starting and above 40 results in significant errors
+<<<<<<< HEAD
 							for r in [30]:
+=======
+							for r in [20, 30]:
+>>>>>>> 00e9941228e671eab960d888e64d2996c3d0cc17
 								p.runtime.load_from_dict({'rexi_method': 'ci', 'ci_n':N, 'ci_max_real':10, 'ci_max_imag':r, 'half_poles':0})
 
 								for p.cluster.par_time_cores in range_cores:

@@ -138,7 +138,7 @@ contains
              pf%levels(level)%nsweeps_pred = 1
           else
              pf%levels(level)%nsweeps      = 1
-             pf%levels(level)%nsweeps_pred = 1
+             pf%levels(level)%nsweeps_pred = 0
           end if
        end if
 

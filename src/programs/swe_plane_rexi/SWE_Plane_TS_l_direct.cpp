@@ -557,7 +557,7 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 					U[k] += v[k][j] * UEV[j];
 
 
-#if SWE_PLANE_TS_L_DIRECT_QUADPRECISION
+#if SWEET_QUADMATH
 			std::complex<double> tmp0(U[0].real(), U[0].imag());
 			io_h_pert.p_spectral_set(ik1, ik0, tmp0);
 
@@ -1026,7 +1026,7 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 			/*
 			 * Convert to EV space
 			 */
-#if SWE_PLANE_TS_L_DIRECT_QUADPRECISION
+#if SWEET_QUADMATH
 			std::complex<double> tmp0(U[0].real(), U[0].imag());
 			o_h_pert.p_spectral_set(ik1, ik0, tmp0);
 

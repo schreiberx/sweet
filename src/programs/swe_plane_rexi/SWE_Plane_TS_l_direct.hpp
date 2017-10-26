@@ -19,11 +19,7 @@
 #include "SWE_Plane_TS_interface.hpp"
 
 
-
-#define SWE_PLANE_TS_L_DIRECT_QUADPRECISION	1
-
-
-#if SWE_PLANE_TS_L_DIRECT_QUADPRECISION
+#if SWEET_QUADMATH
 	#include <quadmath.h>
 #endif
 
@@ -34,7 +30,7 @@ class SWE_Plane_TS_l_direct	: public SWE_Plane_TS_interface
 
 	int phi_id;
 
-#if SWE_PLANE_TS_L_DIRECT_QUADPRECISION
+#if SWEET_QUADMATH
 	typedef __float128 T;
 #else
 	typedef double T;
@@ -46,7 +42,7 @@ class SWE_Plane_TS_l_direct	: public SWE_Plane_TS_interface
 
 #if 0
 
-#if SWE_PLANE_TS_L_DIRECT_QUADPRECISION
+#if SWEET_QUADMATH
 
 	typedef __float128 T;
 

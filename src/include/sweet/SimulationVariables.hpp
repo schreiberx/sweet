@@ -43,7 +43,16 @@
 #       include <libpfasst/LibPFASST_SimulationVariables.hpp>
 #endif
 
+/*
+ * REXI program parameters
+ */
 #include <rexi/REXI_SimulationVariables.hpp>
+
+/*
+ * Polvani program parameters
+ */
+#include <benchmarks_plane/SWEPolvani_SimulationVariables.hpp>
+
 
 /**
  * This class exists for convenience reasons.
@@ -63,7 +72,7 @@ public:
 
 public:
 	REXI_SimulationVariables rexi;
-
+	SWEPolvani_SimulationVariables swe_polvani;
 
 public:
 	/**
@@ -139,7 +148,7 @@ public:
 			std::cout << std::endl;
 			std::cout << "PDE:" << std::endl;
 			std::cout << " + id: " << id << std::endl;
-			std::cout << " + use_linear_div: " << use_linear_div << std::endl;
+			std::cout << " + use-linear-div: " << use_linear_div << std::endl;
 			std::cout << std::endl;
 		}
 
@@ -149,7 +158,7 @@ public:
 			std::cout << std::endl;
 			std::cout << "Partial differential equation:" << std::endl;
 			std::cout << "	--pde-id [0/1]		    PDE to solve (0: SWE, 1: advection)" << std::endl;
-			std::cout << "	--use_linear_div [0/1]	Nonlinear equations will use linear divergence of mass equations, default:0" << std::endl;
+			std::cout << "	--use-linear-div [0/1]	Nonlinear equations will use linear divergence of mass equations, default:0" << std::endl;
 			std::cout << "" << std::endl;
 		}
 	} pde;
@@ -162,8 +171,14 @@ public:
 	 */
 	struct Setup
 	{
+		/// seed for random number generator
+		int random_seed = 0;
+
 		/// setup scenario
 		int benchmark_scenario_id = -1;
+
+		/// setup scenario
+		std::string benchmark_scenario_name = "";
 
 		/// radius
 		double radius_scale = 1;
@@ -215,7 +230,9 @@ public:
 		{
 			std::cout << std::endl;
 			std::cout << "SETUP:" << std::endl;
+			std::cout << " + random_seed: " << random_seed << std::endl;
 			std::cout << " + benchmark_scenario_id: " << benchmark_scenario_id << std::endl;
+			std::cout << " + benchmark_scenario_name: " << benchmark_scenario_name << std::endl;
 			std::cout << " + radius_scale: " << radius_scale << std::endl;
 			std::cout << " + setup_coord_x: " << setup_coord_x << std::endl;
 			std::cout << " + setup_coord_y: " << setup_coord_y << std::endl;
@@ -232,7 +249,9 @@ public:
 		{
 			std::cout << std::endl;
 			std::cout << "SIMULATION SETUP PARAMETERS:" << std::endl;
-			std::cout << "	-s [scen]				scenario id, set to -1 for overview" << std::endl;
+			std::cout << "	--random-seed [int]		random seed for random number generator" << std::endl;
+			std::cout << "	-s [int]				benchmark scenario id, set to -1 for overview" << std::endl;
+			std::cout << "	--benchmark [string]	benchmark name, only used if -s not set, set -1 for overview " << std::endl;
 			std::cout << "	-x [float]				x coordinate for setup \\in [0;1], default=0.5" << std::endl;
 			std::cout << "	-y [float]				y coordinate for setup \\in [0;1], default=0.5" << std::endl;
 			std::cout << "	-r [radius]				scale factor of radius for initial condition, default=1" << std::endl;
@@ -644,6 +663,7 @@ public:
 		timecontrol.outputConfig();
 
 		rexi.outputConfig();
+		swe_polvani.outputConfig();
 		pde.outputConfig();
 		misc.outputConfig();
 		diag.outputConfig();
@@ -679,6 +699,10 @@ public:
 
 		if ((disc.res_physical[0] & 1) || (disc.res_physical[1] & 1))
 			std::cout << "WARNING: Typically there are only even resolutions supported!" << std::endl;
+
+
+		if (setup.random_seed >= 0)
+			srandom(setup.random_seed);
 	}
 
 
@@ -693,7 +717,7 @@ public:
 			bool i_run_prog_parameter_validation = true
 	)
 	{
-		const int max_options = 100;
+		const int max_options = 200;
         struct option long_options[max_options+1];
 
         for (std::size_t i = 0; i < max_options+1; i++)
@@ -707,6 +731,9 @@ public:
 		int next_free_program_option = 0;
 
 		// SETUP
+        long_options[next_free_program_option] = {"random-seed", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
         long_options[next_free_program_option] = {"initial-coord-x", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
@@ -714,6 +741,9 @@ public:
         next_free_program_option++;
 
         long_options[next_free_program_option] = {"advection-rotation-angle", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
+        long_options[next_free_program_option] = {"benchmark", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
 
@@ -812,6 +842,13 @@ public:
 				max_options
 			);
 
+        int swe_polvani_start_option_index = next_free_program_option;
+        swe_polvani.setup_longOptionList(
+        		long_options,
+				next_free_program_option,	///< also updated (IO)
+				max_options
+			);
+
         // Test dummy object
         long_options[next_free_program_option] = {"dummy", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
@@ -861,9 +898,12 @@ public:
 
 				if (i < next_free_program_option)
 				{
-					int c = 0;	if (i == c)	{	setup.setup_coord_x = atof(optarg);		continue;	}
+					int c = 0;
+								if (i == c)	{	setup.random_seed = atoi(optarg);		continue;	}
+					c++;		if (i == c)	{	setup.setup_coord_x = atof(optarg);		continue;	}
 					c++;		if (i == c)	{	setup.setup_coord_y = atof(optarg);		continue;	}
 					c++;		if (i == c)	{	setup.advection_rotation_angle = atof(optarg);		continue;	}
+					c++;		if (i == c)	{	setup.benchmark_scenario_name = optarg;		continue;	}
 
 					c++;		if (i == c)	{	misc.compute_errors = atoi(optarg);					continue;	}
 					c++;		if (i == c)	{	misc.stability_checks = atoi(optarg);				continue;	}
@@ -911,6 +951,13 @@ public:
 
 					{
 						int retval = rexi.setup_longOptionValue(i-rexi_start_option_index, optarg);
+						if (retval == 0)
+							continue;
+						c += retval;
+					}
+
+					{
+						int retval = swe_polvani.setup_longOptionValue(i-swe_polvani_start_option_index, optarg);
 						if (retval == 0)
 							continue;
 						c += retval;
@@ -1153,6 +1200,7 @@ public:
 				std::cout << "	--use-robert-functions [bool]	Use Robert function formulation for velocities on the sphere" << std::endl;
 				std::cout << "" << std::endl;
 				rexi.outputProgParams();
+				swe_polvani.outputProgParams();
 
 
 #if SWEET_PARAREAL

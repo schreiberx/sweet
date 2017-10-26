@@ -17,6 +17,7 @@
  * Main routine for method to be used in case of finite differences
  */
 void SWE_Plane_TS_l_rexi_n_etdrk::euler_timestep_update_nonlinear(
+
 		const PlaneData &i_h,	///< prognostic variables
 		const PlaneData &i_u,	///< prognostic variables
 		const PlaneData &i_v,	///< prognostic variables

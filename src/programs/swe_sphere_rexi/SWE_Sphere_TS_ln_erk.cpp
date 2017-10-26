@@ -58,8 +58,8 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update(
 	o_phi_t *= -1.0;
 
 	tmpspec = (phig+0.5*(ug*ug+vg*vg));
-	tmpspec.request_data_spectral();
-	o_div_t += -op.laplace(tmpspec);
+//	tmpspec.request_data_spectral();
+	o_div_t -= op.laplace(tmpspec);
 }
 
 

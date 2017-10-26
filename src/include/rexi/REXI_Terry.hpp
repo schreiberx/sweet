@@ -42,7 +42,11 @@
  * of exponential integrators.
  */
 template <
+#if SWEET_QUADMATH
 	typename T = __float128,	///< evaluation accuracy of coefficients
+#else
+	typename T = double,
+#endif
 	typename TStorage = double	///< storage precision of coefficients - use quad precision per default
 >
 class REXI_Terry

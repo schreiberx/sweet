@@ -85,7 +85,7 @@ void run_tests()
 	SphereOperatorsComplex opComplex(sphereDataConfig, 1);
 	SphereOperatorsComplex opComplexExt(sphereDataConfigExt, 1);
 
-	REXI_Terry<> rexi("phi0", simVars.rexi.h, simVars.rexi.M);
+	REXI_Terry<> rexi("phi0", simVars.rexi.terry_h, simVars.rexi.terry_M);
 
 	if (!simVars.misc.sphere_use_robert_functions)
 		FatalError("Only Robert formulation allowed");

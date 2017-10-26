@@ -24,6 +24,7 @@
 #include "SWE_Sphere_TS_l_irk_n_erk_ver01.hpp"
 #include "SWE_Sphere_TS_lg_irk_lc_n_erk_ver01.hpp"
 #include "SWE_Sphere_TS_ln_erk.hpp"
+#include "SWE_Sphere_TS_l_na_erk.hpp"
 #include "SWE_Sphere_TS_l_rexi_n_erk_ver01.hpp"
 #include "SWE_Sphere_TS_l_rexi_n_etdrk.hpp"
 #include "SWE_Sphere_TS_lg_rexi_lc_n_erk_ver01.hpp"
@@ -47,6 +48,7 @@ public:
 	SWE_Sphere_TS_l_rexi *l_rexi = nullptr;
 	SWE_Sphere_TS_l_cn *l_cn = nullptr;
 	SWE_Sphere_TS_ln_erk *ln_erk = nullptr;
+	SWE_Sphere_TS_l_na_erk *l_na_erk = nullptr;
 	SWE_Sphere_TS_l_rexi_n_erk *l_rexi_n_erk = nullptr;
 	SWE_Sphere_TS_l_rexi_n_etdrk *l_rexi_n_etdrk = nullptr;
 	SWE_Sphere_TS_lg_rexi_lc_n_erk *lg_rexi_lc_n_erk = nullptr;
@@ -119,6 +121,11 @@ public:
 		{
 			delete ln_erk;
 			ln_erk = nullptr;
+		}
+		if (l_na_erk != nullptr)
+		{
+			delete l_na_erk;
+			l_na_erk = nullptr;
 		}
 		if (l_rexi_n_erk != nullptr)
 		{
@@ -260,6 +267,13 @@ public:
 			ln_erk->setup(i_simVars.disc.timestepping_order);
 
 			master = &(SWE_Sphere_TS_interface&)*ln_erk;
+		}
+		else if (i_timestepping_method == "l_na_erk")
+		{
+			l_na_erk = new SWE_Sphere_TS_l_na_erk(i_simVars, i_op);
+			l_na_erk->setup(i_simVars.disc.timestepping_order);
+
+			master = &(SWE_Sphere_TS_interface&)*l_na_erk;
 		}
 		else if (i_timestepping_method == "l_rexi_n_etdrk")
 		{

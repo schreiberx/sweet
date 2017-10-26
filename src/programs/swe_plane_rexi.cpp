@@ -24,6 +24,7 @@
 #include <sweet/Stopwatch.hpp>
 #include <sweet/FatalError.hpp>
 #include <benchmarks_plane/SWEPlaneBenchmarks.hpp>
+#include <benchmarks_plane/SWEBenchmarksCombined.hpp>
 #include <ostream>
 #include <algorithm>
 #include <sstream>
@@ -73,7 +74,7 @@ class SimulationInstance
 {
 public:
 	// Prognostic variables
-	// h: surface height
+	// h: surface height (perturbation)
 	// u: velocity in x-direction
 	// v: velocity in y-direction
 	PlaneData prog_h_pert, prog_u, prog_v;
@@ -192,6 +193,8 @@ public:
 
 	void reset()
 	{
+		simVars.reset();
+
 		if (simVars.setup.benchmark_scenario_id < 0)
 		{
 			std::cout << std::endl;
@@ -227,12 +230,12 @@ public:
 		prog_v.spectral_set_all(0, 0);
 #endif
 
-		//Setup prog vars
+		// Setup prog vars
 		prog_h_pert.physical_set_all(simVars.sim.h0);
 		prog_u.physical_set_all(0);
 		prog_v.physical_set_all(0);
 
-		//Check if input parameters are adequate for this simulation
+		// Check if input parameters are adequate for this simulation
 		if (simVars.disc.use_staggering && simVars.disc.use_spectral_basis_diffs)
 			FatalError("Staggering and spectral basis not supported!");
 
@@ -246,109 +249,117 @@ public:
 			gridMapping.setup(simVars, planeDataConfig);
 
 
-		// Waves test case - separate from SWEValidationBench because it depends on certain local input parameters
-		auto return_h_perturbed = [] (
-				SimulationVariables &i_parameters,
-				double x,
-				double y
-		) -> double
+		if (simVars.setup.benchmark_scenario_name == "")
 		{
-			if (param_initial_freq_x_mul == 0)
-				return SWEPlaneBenchmarks::return_h_perturbed(simVars, x, y);
-
-			// Waves scenario
-			// Remember to set up initial_freq_x_mul and initial_freq_y_mul
-			double dx = x/i_parameters.sim.domain_size[0]*param_initial_freq_x_mul*M_PIl;
-			double dy = y/i_parameters.sim.domain_size[1]*param_initial_freq_y_mul*M_PIl;
-			return std::sin(2.0*dx)*std::cos(2.0*dy) - (1.0/5.0)*std::cos(2.0*dx)*std::sin(4.0*dy);
-		};
-
-
-		auto return_u = [] (
-				SimulationVariables &i_parameters,
-				double x,
-				double y
-		) -> double
-		{
-			if (param_initial_freq_x_mul == 0)
-				return SWEPlaneBenchmarks::return_u(simVars, x, y);
-
-			double dx = x/i_parameters.sim.domain_size[0]*param_initial_freq_x_mul*M_PIl;
-			double dy = y/i_parameters.sim.domain_size[1]*param_initial_freq_y_mul*M_PIl;
-			return std::cos(4.0*dx)*std::cos(2.0*dy);
-		};
-
-
-		auto return_v = [] (
-				SimulationVariables &i_parameters,
-				double x,
-				double y
-		) -> double
-		{
-			if (param_initial_freq_x_mul == 0)
-				return SWEPlaneBenchmarks::return_v(simVars, x, y);
-
-			double dx = x/i_parameters.sim.domain_size[0]*param_initial_freq_x_mul*M_PIl;
-			double dy = y/i_parameters.sim.domain_size[1]*param_initial_freq_y_mul*M_PIl;
-			return std::cos(2.0*dx)*std::cos(4.0*dy);
-		};
-
-		// Set initial conditions given from SWEValidationBenchmarks
-		for (int j = 0; j < simVars.disc.res_physical[1]; j++)
-		{
-			for (int i = 0; i < simVars.disc.res_physical[0]; i++)
+			// Waves test case - separate from SWEValidationBench because it depends on certain local input parameters
+			auto return_h_perturbed = [] (
+					SimulationVariables &i_parameters,
+					double x,
+					double y
+			) -> double
 			{
-				if (simVars.disc.use_staggering) // C-grid
+				if (param_initial_freq_x_mul == 0)
+					return SWEPlaneBenchmarks::return_h_perturbed(simVars, x, y);
+
+				// Waves scenario
+				// Remember to set up initial_freq_x_mul and initial_freq_y_mul
+				double dx = x/i_parameters.sim.domain_size[0]*param_initial_freq_x_mul*M_PIl;
+				double dy = y/i_parameters.sim.domain_size[1]*param_initial_freq_y_mul*M_PIl;
+				return std::sin(2.0*dx)*std::cos(2.0*dy) - (1.0/5.0)*std::cos(2.0*dx)*std::sin(4.0*dy);
+			};
+
+
+			auto return_u = [] (
+					SimulationVariables &i_parameters,
+					double x,
+					double y
+			) -> double
+			{
+				if (param_initial_freq_x_mul == 0)
+					return SWEPlaneBenchmarks::return_u(simVars, x, y);
+
+				double dx = x/i_parameters.sim.domain_size[0]*param_initial_freq_x_mul*M_PIl;
+				double dy = y/i_parameters.sim.domain_size[1]*param_initial_freq_y_mul*M_PIl;
+				return std::cos(4.0*dx)*std::cos(2.0*dy);
+			};
+
+
+			auto return_v = [] (
+					SimulationVariables &i_parameters,
+					double x,
+					double y
+			) -> double
+			{
+				if (param_initial_freq_x_mul == 0)
+					return SWEPlaneBenchmarks::return_v(simVars, x, y);
+
+				double dx = x/i_parameters.sim.domain_size[0]*param_initial_freq_x_mul*M_PIl;
+				double dy = y/i_parameters.sim.domain_size[1]*param_initial_freq_y_mul*M_PIl;
+				return std::cos(2.0*dx)*std::cos(4.0*dy);
+			};
+
+			// Set initial conditions given from SWEValidationBenchmarks
+			for (int j = 0; j < simVars.disc.res_physical[1]; j++)
+			{
+				for (int i = 0; i < simVars.disc.res_physical[0]; i++)
 				{
+					if (simVars.disc.use_staggering) // C-grid
 					{
-						// h - lives in the center of the cell
+						{
+							// h - lives in the center of the cell
+							double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+							double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+
+							prog_h_pert.p_physical_set(j, i, return_h_perturbed(simVars, x, y));
+							t0_prog_h_pert.p_physical_set(j, i, return_h_perturbed(simVars, x, y));
+							force_h_pert.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_h_perturbed(simVars, x, y));
+						}
+
+
+						{
+							// u space
+							double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+							double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+
+							prog_u.p_physical_set(j,i, return_u(simVars, x, y));
+							t0_prog_u.p_physical_set(j, i, return_u(simVars, x, y));
+							force_u.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_u(simVars, x, y));
+						}
+
+						{
+							// v space
+							double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+							double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+
+							prog_v.p_physical_set(j, i, return_v(simVars, x, y));
+							t0_prog_v.p_physical_set(j, i, return_v(simVars, x, y));
+							force_v.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_v(simVars, x, y));
+						}
+					}
+					else // A-Grid (colocated grid)
+					{
 						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
 						prog_h_pert.p_physical_set(j, i, return_h_perturbed(simVars, x, y));
-						t0_prog_h_pert.p_physical_set(j, i, return_h_perturbed(simVars, x, y));
-						force_h_pert.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_h_perturbed(simVars, x, y));
-					}
-
-
-					{
-						// u space
-						double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-
-						prog_u.p_physical_set(j,i, return_u(simVars, x, y));
-						t0_prog_u.p_physical_set(j, i, return_u(simVars, x, y));
-						force_u.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_u(simVars, x, y));
-					}
-
-					{
-						// v space
-						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-						double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-
+						prog_u.p_physical_set(j, i, return_u(simVars, x, y));
 						prog_v.p_physical_set(j, i, return_v(simVars, x, y));
+
+						t0_prog_h_pert.p_physical_set(j, i, return_h_perturbed(simVars, x, y));
+						t0_prog_u.p_physical_set(j, i, return_u(simVars, x, y));
 						t0_prog_v.p_physical_set(j, i, return_v(simVars, x, y));
+
+						force_h_pert.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_h_perturbed(simVars, x, y));
+						force_u.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_u(simVars, x, y));
 						force_v.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_v(simVars, x, y));
 					}
 				}
-				else // A-Grid (colocated grid)
-				{
-					double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-					double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-
-					prog_h_pert.p_physical_set(j, i, return_h_perturbed(simVars, x, y));
-					prog_u.p_physical_set(j, i, return_u(simVars, x, y));
-					prog_v.p_physical_set(j, i, return_v(simVars, x, y));
-
-					t0_prog_h_pert.p_physical_set(j, i, return_h_perturbed(simVars, x, y));
-					t0_prog_u.p_physical_set(j, i, return_u(simVars, x, y));
-					t0_prog_v.p_physical_set(j, i, return_v(simVars, x, y));
-
-					force_h_pert.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_h_perturbed(simVars, x, y));
-					force_u.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_u(simVars, x, y));
-					force_v.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_v(simVars, x, y));
-				}
 			}
+		}
+		else
+		{
+			SWEBenchmarksCombined s;
+			s.setupInitialConditions(prog_h_pert, prog_u, prog_v, simVars, op);
 		}
 
 		// Load data, if requested
@@ -434,10 +445,8 @@ public:
 	void normal_mode_analysis()
 	{
 		// dummy time step to get time step size
-		if (simVars.sim.CFL >= 0)
+		if (simVars.timecontrol.current_timestep_size <= 0)
 			FatalError("Normal mode analysis requires setting fixed time step size");
-
-		simVars.timecontrol.current_timestep_size = -simVars.sim.CFL;
 
 		//run_timestep();
 
@@ -889,15 +898,16 @@ public:
 				t_v = prog_v;
 			}
 
+			std::cout << simVars.misc.output_next_sim_seconds << "\t" << simVars.timecontrol.current_simulation_time << std::endl;
 
-			//Dump  data in csv, if requested
+			// Dump  data in csv, if output filename is not empty
 			if (simVars.misc.output_file_name_prefix.size() > 0)
 			{
 				write_file(t_h, "prog_h_pert");
 				write_file(t_u, "prog_u");
 				write_file(t_v, "prog_v");
-
-				write_file(op.diff_c_x(prog_v) - op.diff_c_y(prog_u), "prog_q");
+				write_file(op.vort(t_u, t_v), "prog_vort");
+				write_file(op.div(t_u, t_v), "prog_div");
 			}
 		}
 
@@ -965,20 +975,17 @@ public:
 
 		}
 
-		if (simVars.misc.output_each_sim_seconds > 0)
+		if (simVars.misc.output_next_sim_seconds == simVars.timecontrol.max_simulation_time)
 		{
-			if (simVars.misc.output_next_sim_seconds == simVars.timecontrol.max_simulation_time)
-			{
-				simVars.misc.output_next_sim_seconds = std::numeric_limits<double>::infinity();
-			}
-			else
-			{
-				while (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
-					simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
+			simVars.misc.output_next_sim_seconds = std::numeric_limits<double>::infinity();
+		}
+		else
+		{
+			while (simVars.misc.output_next_sim_seconds-simVars.misc.output_next_sim_seconds*(1e-12) <= simVars.timecontrol.current_simulation_time)
+				simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
 
-				if (simVars.misc.output_next_sim_seconds > simVars.timecontrol.max_simulation_time)
-					simVars.misc.output_next_sim_seconds = simVars.timecontrol.max_simulation_time;
-			}
+			if (simVars.misc.output_next_sim_seconds > simVars.timecontrol.max_simulation_time)
+				simVars.misc.output_next_sim_seconds = simVars.timecontrol.max_simulation_time;
 		}
 
 		return true;
@@ -1092,22 +1099,25 @@ public:
 			PlaneData ts_u = t0_prog_u;
 			PlaneData ts_v = t0_prog_v;
 
-			// Run exact solution for linear case
-			timeSteppers.l_direct->run_timestep(
-					ts_h_pert, ts_u, ts_v,
-					simVars.timecontrol.current_simulation_time,
-					0			// initial condition given at time 0
-			);
+			if(simVars.misc.vis_id == -1 || simVars.misc.vis_id == -2 )
+			{
+				// Run exact solution for linear case
+				timeSteppers.l_direct->run_timestep(
+						ts_h_pert, ts_u, ts_v,
+						simVars.timecontrol.current_simulation_time,
+						0			// initial condition given at time 0
+				);
+			}
 
 #if 0
 			switch(simVars.misc.vis_id)
 			{
 			case -1:
-				vis = ts_u+simVars.sim.h0;			//Exact solution
+				vis = ts_h_pert+simVars.sim.h0;			//Exact solution
 				break;
 
 			case -2:
-				vis = ts_u-prog_u;	// difference to exact solution
+				vis = ts_u-prog_u;	// difference to exact linear solution
 				break;
 
 			case -3:
@@ -1128,6 +1138,10 @@ public:
 
 			case -3:
 				vis = t0_prog_h_pert-prog_h_pert;	// difference to initial condition
+				break;
+
+			case -4:
+				vis = op.diff_c_x(prog_v) - op.diff_c_y(prog_u);	// relative vorticity
 				break;
 			}
 #endif
@@ -1181,6 +1195,9 @@ public:
 
 			case -3:
 				description = "Diff in h to initial condition";
+				break;
+			case -4:
+				description = "Relative vorticity";
 				break;
 			}
 		}
@@ -1710,7 +1727,8 @@ int main(int i_argc, char *i_argv[])
 			//Setting initial conditions and workspace - in case there is no GUI
 
 			// also initializes diagnostics
-			simulationSWE->reset();
+			// already called in constructor
+			//simulationSWE->reset();
 
 			//Time counter
 			Stopwatch time;

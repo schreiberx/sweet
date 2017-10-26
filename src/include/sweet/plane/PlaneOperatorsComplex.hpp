@@ -176,7 +176,7 @@ public:
 		diff_c_y.setup(i_planeDataConfig);
 		diff2_c_x.setup(i_planeDataConfig);
 		diff2_c_y.setup(i_planeDataConfig);
-		
+
 
 		/*
 		 * setup spectral differential operators

@@ -23,17 +23,20 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 		FatalError("Burgers_Plane_TS_l_irk_n_sl: Only constant time step size allowed");
 
 	//Departure points and arrival points
-	ScalarDataArray posx_d(io_u.planeDataConfig->physical_array_data_number_of_elements);
-	ScalarDataArray posy_d(io_u.planeDataConfig->physical_array_data_number_of_elements);
+	ScalarDataArray posx_d = posx_a;
+	ScalarDataArray posy_d = posy_a;
+
+	double dt = i_fixed_dt;
 
 	Staggering staggering;
+	assert(staggering.staggering_type == 'a');
 
 	//Calculate departure points
 	semiLagrangian.semi_lag_departure_points_settls(
 			io_u_prev, io_v_prev,
 			io_u, io_v,
 			posx_a, posy_a,
-			i_fixed_dt,
+			dt,
 			posx_d, posy_d,
 			staggering
 			);
@@ -41,6 +44,17 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 	// Save old velocities
 	io_u_prev = io_u;
 	io_v_prev = io_v;
+
+	if (simVars.disc.timestepping_order == 2)
+	{
+		// Run implicit Runge-Kutta on Burgers' equation in SL form
+		ts_l_irk.run_timestep(
+				io_u, io_v,
+				io_u_prev, io_v_prev,
+				0.5*dt,
+				i_simulation_timestamp
+		);
+	}
 
 	//Now interpolate to the the departure points
 	//Departure points are set for physical space
@@ -60,13 +74,27 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 			staggering.v[1]
 	);
 
-	// Run implicit Runge-Kutta on Burgers' equation in SL form
-	ts_l_irk.run_timestep(
-			io_u, io_v,
-			io_u_prev, io_v_prev,
-			i_fixed_dt,
-			i_simulation_timestamp
+	if (simVars.disc.timestepping_order == 2)
+	{
+		// Run implicit Runge-Kutta on Burgers' equation in SL form
+		ts_l_irk.run_timestep(
+				io_u, io_v,
+				io_u_prev, io_v_prev,
+				0.5*dt,
+				i_simulation_timestamp
 		);
+	}
+	else
+	{
+		// Run implicit Runge-Kutta on Burgers' equation in SL form
+		ts_l_irk.run_timestep(
+				io_u, io_v,
+				io_u_prev, io_v_prev,
+				dt,
+				i_simulation_timestamp
+		);
+	}
+
 }
 
 
@@ -76,6 +104,7 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
  */
 void Burgers_Plane_TS_l_irk_n_sl::setup()
 {
+	ts_l_irk.setup(simVars.disc.timestepping_order);
 
 	// Setup sampler for future interpolations
 	sampler2D.setup(simVars.sim.domain_size, op.planeDataConfig);
@@ -112,8 +141,6 @@ void Burgers_Plane_TS_l_irk_n_sl::setup()
 	// Initialize arrival points with h position
 	posx_a = pos_x+0.5*cell_size_x;
 	posy_a = pos_y+0.5*cell_size_y;
-
-	ts_l_irk.setup(simVars.disc.timestepping_order);
 
 }
 
