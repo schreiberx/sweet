@@ -70,7 +70,7 @@ class SWEETRuntimeOptions():
 		#self.f = 2.0*f	# Coriolis effect for constant f (not multiplied with 2.0)
 
 		self.r = 6371220	# Sphere: Radius
-		self.domain_size = 1	# Plane: Domain size
+		self.domain_size = 1	# Plane: Domain size for X and Y (square)
 
 		# 3: gaussian breaking dam
 		# 4: geostrophic balance test case
@@ -268,6 +268,7 @@ class SWEETRuntimeOptions():
 		retval += ' -S '+str(self.spectralderiv)
 
 		retval += ' -X '+str(self.domain_size)
+		retval += ' -Y '+str(self.domain_size)
 		retval += ' -s '+str(self.bench_id)
 		retval += ' --benchmark='+str(self.benchmark_name)
 

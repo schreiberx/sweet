@@ -898,7 +898,7 @@ public:
 				t_v = prog_v;
 			}
 
-			std::cout << simVars.misc.output_next_sim_seconds << "\t" << simVars.timecontrol.current_simulation_time << std::endl;
+			//std::cout << simVars.misc.output_next_sim_seconds << "\t" << simVars.timecontrol.current_simulation_time << std::endl;
 
 			// Dump  data in csv, if output filename is not empty
 			if (simVars.misc.output_file_name_prefix.size() > 0)
@@ -935,10 +935,18 @@ public:
 #if 1
 			// Mass, Energy, Enstrophy
 			if (simVars.timecontrol.current_timestep_nr == 0)
+			{
 				header << "\tTOTAL_MASS\tTOTAL_ENERGY\tPOT_ENSTROPHY";
-			rows << "\t" << simVars.diag.total_mass << "\t" << simVars.diag.total_energy << "\t" << simVars.diag.total_potential_enstrophy;
-#endif
+				rows << "\t" << simVars.diag.total_mass << "\t" << simVars.diag.total_energy << "\t" << simVars.diag.total_potential_enstrophy;
+			}
+			else
+			{
+				rows << "\t" << std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start);
+				rows << "\t" << std::abs((simVars.diag.total_energy-diagnostics_energy_start)/diagnostics_energy_start) ;
+				rows << "\t" << std::abs((simVars.diag.total_potential_enstrophy-diagnostics_potential_entrophy_start)/diagnostics_potential_entrophy_start);
 
+			}
+#endif
 
 #if 1
 			if (compute_error_difference_to_initial_condition)

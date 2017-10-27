@@ -16,7 +16,7 @@ public:
 	static
 	void update_nonstaggered_huv_to_mass_energy_enstrophy(
 			PlaneOperators &op,
-			PlaneData &i_prog_h,
+			PlaneData &i_prog_h, //h perturbation
 			PlaneData &i_prog_u,
 			PlaneData &i_prog_v,
 			SimulationVariables &io_simVars
@@ -25,19 +25,23 @@ public:
 		double normalization = (io_simVars.sim.domain_size[0]*io_simVars.sim.domain_size[1]) /
 								((double)io_simVars.disc.res_physical[0]*(double)io_simVars.disc.res_physical[1]);
 
-		// mass
-		io_simVars.diag.total_mass = i_prog_h.reduce_sum_quad() * normalization;
+		//std::cout << "Size x, sixe y" << (io_simVars.sim.domain_size[0]) << (io_simVars.sim.domain_size[1]) << std::endl;
+		//std::cout << "resphysx, resphysy" << (double)io_simVars.disc.res_physical[0] << (double)io_simVars.disc.res_physical[1] << std::endl;
+		//std::cout << "normal" << normalization << std::endl;
+
+		// mass (mean depth needs to be added)
+		io_simVars.diag.total_mass = (i_prog_h+ io_simVars.sim.h0).reduce_sum_quad() * normalization;
 
 		// energy
-		PlaneData pot_energy = i_prog_h*(io_simVars.sim.gravitation*normalization);
-		PlaneData kin_energy = i_prog_h*(i_prog_u*i_prog_u+i_prog_v*i_prog_v)*(0.5*normalization);
+		PlaneData pot_energy = (i_prog_h+ io_simVars.sim.h0)*(io_simVars.sim.gravitation*normalization);
+		PlaneData kin_energy = (i_prog_h+ io_simVars.sim.h0)*(i_prog_u*i_prog_u+i_prog_v*i_prog_v)*(0.5*normalization);
 
 		io_simVars.diag.potential_energy = pot_energy.reduce_sum_quad();
 		io_simVars.diag.kinetic_energy = kin_energy.reduce_sum_quad();
 
 		io_simVars.diag.total_energy = io_simVars.diag.kinetic_energy + io_simVars.diag.potential_energy;
 
-		// total vorticity
+		// absolute vorticity
 		PlaneData eta = (op.diff_c_x(i_prog_v) - op.diff_c_y(i_prog_u) + io_simVars.sim.f0);
 
 		// enstrophy
@@ -60,14 +64,14 @@ public:
 								((double)io_simVars.disc.res_physical[0]*(double)io_simVars.disc.res_physical[1]);
 
 		// mass
-		io_simVars.diag.total_mass = i_prog_h.reduce_sum_quad() * normalization;
+		io_simVars.diag.total_mass = (i_prog_h+ io_simVars.sim.h0).reduce_sum_quad() * normalization;
 
 		PlaneData u = op.avg_b_x(i_prog_u);
 		PlaneData v = op.avg_b_y(i_prog_v);
 
 		// energy
-		PlaneData pot_energy = i_prog_h*(io_simVars.sim.gravitation*normalization);
-		PlaneData kin_energy = i_prog_h*(u*u+v*v)*(0.5*normalization);
+		PlaneData pot_energy = (i_prog_h+ io_simVars.sim.h0)*(io_simVars.sim.gravitation*normalization);
+		PlaneData kin_energy = (i_prog_h+ io_simVars.sim.h0)*(u*u+v*v)*(0.5*normalization);
 
 		io_simVars.diag.total_energy = (pot_energy + kin_energy).reduce_sum_quad();
 

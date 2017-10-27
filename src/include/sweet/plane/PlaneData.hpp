@@ -1027,7 +1027,7 @@ public:
 
 
 	/**
-	 * return the maximum of all absolute values
+	 * return the maximum of all values
 	 */
 	double reduce_max()	const
 	{
@@ -1046,7 +1046,7 @@ public:
 
 
 	/**
-	 * return the maximum of all absolute values
+	 * return the maximum of all values
 	 */
 	double reduce_min()	const
 	{
@@ -1065,7 +1065,7 @@ public:
 
 
 	/**
-	 * return the maximum of all absolute values
+	 * return the maximum of all  values
 	 */
 	double reduce_sum()	const
 	{
@@ -1083,7 +1083,7 @@ public:
 
 
 	/**
-	 * return the maximum of all absolute values, use quad precision for reduction
+	 * return the maximum of all values, use quad precision for reduction
 	 */
 	double reduce_sum_quad()	const
 	{

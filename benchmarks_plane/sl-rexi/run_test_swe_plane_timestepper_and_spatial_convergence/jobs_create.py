@@ -75,21 +75,23 @@ p.runtime.rexi_use_direct_solution = 1
          
 # Parameters for SL-REXI paper
 #-----------------------------       
-p.runtime.g = 10
-p.runtime.f = 1
-p.runtime.h = 100
-p.runtime.domain_size = 1
+p.runtime.g = 9.80616
+p.runtime.f = 0.00014584
+p.runtime.h = 10000
+p.runtime.domain_size = 40031555.8928087
 
 p.runtime.viscosity = 0.0
 
+timelevels = 3
+timestep_size_reference = 864000/10 #1 day
+timestep_sizes = [timestep_size_reference*(2.0**(-i)) for i in range(0, timelevels)]
 
-timestep_size_reference = 0.0001
-timestep_sizes = [0.1*(2.0**(-i)) for i in range(0, 11)]
+p.runtime.simtime = 864000 #10 day
+#p.runtime.output_timestep_size = p.runtime.simtime
+p.runtime.output_timestep_size = timestep_size_reference*(2.0**(-timelevels))
 
-p.runtime.simtime = 1.0
-p.runtime.output_timestep_size = p.runtime.simtime
-
-phys_res_list = [16*(2**i) for i in range(0, 7)]
+phys_res_levels = timelevels
+phys_res_list = [16*(2**i) for i in range(0, phys_res_levels)]
 
 
 # Groups to execute, see below
@@ -165,7 +167,7 @@ for group in groups:
 			p.compile.plane_spectral_space = 'enable'
 			p.compile.plane_spectral_dealiasing = 'enable'
 
-		for idx in range(0,7): #, phys_res in phys_res_list:
+		for idx in range(0, phys_res_levels): #, phys_res in phys_res_list:
 
 			p.prefix_string = prefix_string_template
 
