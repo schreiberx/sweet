@@ -5,6 +5,8 @@
 
 PKGS=()
 
+echo "${HOSTNAME:0:8}"
+
 if [ "${HOSTNAME:0:8}" == "cheyenne" ]; then
 
 	echo "***********************************"
@@ -28,11 +30,11 @@ if [ "${HOSTNAME:0:8}" == "cheyenne" ]; then
 	#PKGS+=("install_python3_pip.sh")
 	PKGS+=("install_python3.sh")
 	#PKGS+=("install_rdic.sh")
-	PKGS+=("install_scons.sh")
+	PKGS+=("install_scons3.sh")
 	#PKGS+=("install_sdl2.sh")
 	PKGS+=("install_shtns.sh")
 
-elif [ "${HOSTNAME:0:8}" == "guepardo00" ]; then
+elif [ "${HOSTNAME:0:8}" == "guepardo" ]; then
 
 	echo "***********************************"
 	echo "USP system detected: guepardo00"
@@ -49,14 +51,14 @@ elif [ "${HOSTNAME:0:8}" == "guepardo00" ]; then
 	#PKGS+=("install_libpfasst.sh")
 	#PKGS+=("install_libpng.sh")
 	#PKGS+=("install_likwid.sh")
-	#PKGS+=("install_numa.sh")
+	PKGS+=("install_numa.sh")
 	#PKGS+=("install_openmpi.sh")
 	#PKGS+=("install_pfasst++.sh")
+	#PKGS+=("install_python3.sh")
 	#PKGS+=("install_python3_pip.sh")
-	PKGS+=("install_python3.sh")
 	#PKGS+=("install_rdic.sh")
-	PKGS+=("install_scons.sh")
-	#PKGS+=("install_sdl2.sh")
+	PKGS+=("install_scons3.sh")
+	PKGS+=("install_sdl2.sh")
 	PKGS+=("install_shtns.sh")
 else
 	echo "***********************************"
