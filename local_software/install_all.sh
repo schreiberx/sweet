@@ -37,7 +37,7 @@ if [ "${HOSTNAME:0:8}" == "cheyenne" ]; then
 elif [ "${HOSTNAME:0:8}" == "guepardo" ]; then
 
 	echo "***********************************"
-	echo "USP system detected: guepardo00"
+	echo "USP system detected: guepardo at USP-BR"
 	echo "***********************************"
 
 	#PKGS+=("install_autoconf.sh")
