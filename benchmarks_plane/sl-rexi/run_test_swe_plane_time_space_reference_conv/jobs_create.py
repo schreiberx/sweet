@@ -83,10 +83,10 @@ p.runtime.domain_size = 40031555.8928087
 p.runtime.viscosity = 0.0
 
 timelevels = 7 #5
-timestep_size_reference = 8640  #864000/10 #1 day
+timestep_size_reference = 3600 #1 hour  #864000/10 #1 day
 timestep_sizes = [timestep_size_reference*(2.0**(-i)) for i in range(0, timelevels)]
 
-p.runtime.simtime = timestep_size_reference #864000 #10 days
+p.runtime.simtime = 86400 #1 day #timestep_size_reference #864000 #10 days
 #p.runtime.output_timestep_size = p.runtime.simtime
 p.runtime.output_timestep_size = timestep_size_reference*(2.0**(-timelevels))/10.0
 
@@ -138,7 +138,7 @@ for group in groups:
 		print("Reference")
 		tsm = ts_methods[0]
 	
-		p.runtime.timestep_size = timestep_size_reference/10.0
+		p.runtime.timestep_size = p.runtime.output_timestep_size/100.0
 		p.runtime.timestepping_method = tsm[0]
 		p.runtime.timestepping_order = tsm[1]
 		p.runtime.timestepping_order2 = tsm[2]

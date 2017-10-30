@@ -115,7 +115,7 @@ for group_info in groups:
 
 		conv_test = math.log(max(ratios), 2)
 		print("Expected convergence: "+str(conv_order))
-		print("Measured convergence: "+str(conv_test))
+		print("Measured convergence (based on max ratio): "+str(conv_test))
 
 		# test these first convergence tests
 
