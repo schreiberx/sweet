@@ -82,13 +82,13 @@ p.runtime.domain_size = 40031555.8928087
 
 p.runtime.viscosity = 0.0
 
-timelevels = 5
-timestep_size_reference = 864000/10 #1 day
+timelevels = 7 #5
+timestep_size_reference = 8640  #864000/10 #1 day
 timestep_sizes = [timestep_size_reference*(2.0**(-i)) for i in range(0, timelevels)]
 
-p.runtime.simtime = 864000 #10 day
+p.runtime.simtime = timestep_size_reference #864000 #10 days
 #p.runtime.output_timestep_size = p.runtime.simtime
-p.runtime.output_timestep_size = timestep_size_reference*(2.0**(-timelevels))
+p.runtime.output_timestep_size = timestep_size_reference*(2.0**(-timelevels))/10.0
 
 phys_res_levels = timelevels
 phys_res_reference = 8
@@ -133,24 +133,22 @@ for group in groups:
 
 	#
 	# Reference solution
-	# (Not required, since we compare it with the real errors with --compute-errors=1)
 	#if True:
-	if False:
+	if True:
 		print("Reference")
 		tsm = ts_methods[0]
 	
-		p.timestep_size = timestep_size_reference/1000.0
+		p.runtime.timestep_size = timestep_size_reference/10.0
 		p.runtime.timestepping_method = tsm[0]
 		p.runtime.timestepping_order = tsm[1]
 		p.runtime.timestepping_order2 = tsm[2]
-		p.phys_res = 512
+		p.runtime.phys_res = 512
 
 		if len(tsm) > 4:
 			s = tsm[4]
 			p.runtime.load_from_dict(tsm[4])
 
-		p.gen_script('script_'+prefix_string_template+'_ref_'+p.runtime.getUniqueID(p.compile), 'run.sh')
-
+		p.gen_script('script_'+prefix_string_template+'_ref'+p.runtime.getUniqueID(p.compile), 'run.sh')
 
 	for tsm in ts_methods[1:]:
 
@@ -171,10 +169,11 @@ for group in groups:
 		for idx in range(0, phys_res_levels): #, phys_res in phys_res_list:
 
 			p.prefix_string = prefix_string_template
+
 			p.runtime.timestep_size = timestep_sizes[idx]
 			if group == 'ln2space' and 'ln_erk' in tsm[0]:
 				p.runtime.timestep_size = p.runtime.timestep_size / 100.0
-				
+
 			p.runtime.timestepping_method = tsm[0]
 			p.runtime.timestepping_order = tsm[1]
 			p.runtime.timestepping_order2 = tsm[2]
