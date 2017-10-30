@@ -91,7 +91,7 @@ p.runtime.simtime = 864000 #10 day
 p.runtime.output_timestep_size = timestep_size_reference*(2.0**(-timelevels))
 
 phys_res_levels = timelevels
-phys_res_reference = 8
+phys_res_reference = 16
 phys_res_list = [phys_res_reference*(2**i) for i in range(0, phys_res_levels)]
 
 
@@ -112,7 +112,7 @@ for group in groups:
 	# 2nd order nonlinear non-fully-spectral
 	if group == 'ln2space':
 		ts_methods = [
-			['ln_erk',		4,	4],	# reference solution - spectral (128 grid points)
+			['ln_erk',		4,	4],	# reference solution - spectral 
 			['ln_erk',		2,	2],	# FD- C-grid
 			['l_cn_na_sl_nd_settls', 2,	2],	# SI-SL-SP
                         ['l_rexi_na_sl_nd_settls',	2,	2], #SL-EXP-SETTLS
