@@ -36,7 +36,7 @@ p.runtime.phys_res = 512
 # Benchmark ID
 # 14: Steady diagonal benchmark
 #
-p.runtime.bench_id = 14
+p.runtime.bench_id = 1
 
 #
 # Compute error
