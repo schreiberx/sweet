@@ -97,6 +97,7 @@ for group_info in groups:
 		i = -1
 		n = len(outputs)
 		ratios = [0 for j in range(n)]
+		#ratios = [2 for j in range(n)]
 
 		for output in outputs:
 			i = i+1 #output index
@@ -113,7 +114,7 @@ for group_info in groups:
 
 			print(str(test_res)+"\t"+str(result[0])+"\t"+str(result[1])+"\t"+str(result[2])+"\t"+str(ratios[i]))
 
-		conv_test = math.log(max(ratios), 2)
+		conv_test = math.log(max(ratios[2:n]), 2)
 		print("Expected convergence: "+str(conv_order))
 		print("Measured convergence (based on max ratio): "+str(conv_test))
 

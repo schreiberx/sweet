@@ -195,11 +195,16 @@ public:
 	{
 		simVars.reset();
 
-		if (simVars.setup.benchmark_scenario_id < 0)
+		if (simVars.setup.benchmark_scenario_id < 0 && simVars.setup.benchmark_scenario_name == "" )
 		{
 			std::cout << std::endl;
 			std::cout << "Benchmark scenario not selected (option -s [id])" << std::endl;
 			SWEPlaneBenchmarks::printScenarioInformation();
+			std::cout << std::endl;
+
+			std::cout << "Benchmark scenario not selected (option --benchmark [string])" << std::endl;
+			SWEBenchmarksCombined::printBenchmarkInformation();
+
 			FatalError("Benchmark scenario not selected");
 		}
 
