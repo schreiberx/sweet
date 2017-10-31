@@ -4,6 +4,8 @@ SWEET
 **************************
 Shallow Water Equation Environment for Tests, Awesome!
 
+Official website now available: https://schreiberx.github.io/sweetsite
+
 This library supports various kinds of simulations (not only Shallow Water)
 on 2D surfaces. The currently supported surfaces are
   * the 2D torus (bi-periodic plane) and
