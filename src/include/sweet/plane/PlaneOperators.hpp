@@ -91,6 +91,19 @@ public:
 		return diff_c_x(a) + diff_c_y(b);
 	}
 
+	/**
+	 * kinetic energy
+	 *
+	 * ke(a,b) = 0.5*(a^2+b^2)
+	 */
+	PlaneData ke(
+			const PlaneData &a,
+			const PlaneData &b
+	)
+	{
+		return 0.5*(a*a+b*b);
+	}
+
 
 
 	/*
