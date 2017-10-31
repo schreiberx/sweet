@@ -20,9 +20,9 @@ def loadDataFromFile(filename):
 		print(prefix+": UNABLE TO OPEN '"+filename+"'")
 		sys.exit(1)
 
-	labelsx = data[0,1:]
-	labelsy = data[1:,0]
-	data = data[1:,1:]
+	#labelsx = data[0,0:]
+	#labelsy = data[0:,0]
+	#data = data[1:,1:]
 	return data
 
 ref_data = loadDataFromFile(sys.argv[1])

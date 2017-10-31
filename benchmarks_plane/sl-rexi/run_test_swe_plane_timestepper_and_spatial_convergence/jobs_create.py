@@ -82,8 +82,8 @@ p.runtime.domain_size = 40031555.8928087
 
 p.runtime.viscosity = 0.0
 
-timelevels = 5
-timestep_size_reference = 864000/10 #1 day
+timelevels = 6
+timestep_size_reference = 864000 #10 day 864000/10 #1 day
 timestep_sizes = [timestep_size_reference*(2.0**(-i)) for i in range(0, timelevels)]
 
 p.runtime.simtime = 864000 #10 day
@@ -173,7 +173,7 @@ for group in groups:
 			p.prefix_string = prefix_string_template
 			p.runtime.timestep_size = timestep_sizes[idx]
 			if group == 'ln2space' and 'ln_erk' in tsm[0]:
-				p.runtime.timestep_size = p.runtime.timestep_size / 100.0
+				p.runtime.timestep_size = p.runtime.timestep_size / 1000.0
 				
 			p.runtime.timestepping_method = tsm[0]
 			p.runtime.timestepping_order = tsm[1]
