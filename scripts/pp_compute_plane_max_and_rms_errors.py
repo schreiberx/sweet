@@ -38,8 +38,8 @@ size_ref_j = len(ref_data)
 size_ref_i = len(ref_data[0])
 size_cmp_j = len(cmp_data)
 size_cmp_i = len(cmp_data[0])
-multiplier_j = (size_ref_j+1)/(size_cmp_j+1)
-multiplier_i = (size_ref_i+1)/(size_cmp_i+1)
+multiplier_j = (size_ref_j)/(size_cmp_j)
+multiplier_i = (size_ref_i)/(size_cmp_i)
 
 
 if not float(multiplier_i).is_integer() or not float(multiplier_j).is_integer() : 

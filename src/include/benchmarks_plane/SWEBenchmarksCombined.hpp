@@ -15,6 +15,7 @@
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 	#include <benchmarks_plane/SWEPolvani.hpp>
+	#include <benchmarks_plane/SWEMergeVortex.hpp>
 #endif
 
 
@@ -73,6 +74,18 @@ public:
 			SWEPolvani swe_polvani(io_simVars, io_op);
 
 			swe_polvani.setup(
+					o_h_pert,
+					o_u,
+					o_v
+				);
+
+			return true;
+		}
+		if (io_simVars.setup.benchmark_scenario_name == "mergevortex")
+		{
+			SWEMergeVortex swe_mergevortex(io_simVars, io_op);
+
+			swe_mergevortex.setup(
 					o_h_pert,
 					o_u,
 					o_v

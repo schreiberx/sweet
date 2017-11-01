@@ -26,9 +26,10 @@ figsize=(9, 3)
 for filename in sys.argv[1:]:
 
 	print(filename)
+	#data = np.loadtxt(filename, skiprows=3)
 	data = np.loadtxt(filename, skiprows=3)
 
-	data = data[1:,1:]
+	#data = data[1:,1:]
 
 	if first:
 		cmin = np.amin(data)
@@ -56,7 +57,8 @@ for filename in sys.argv[1:]:
 	if 'prog_eta' in filename:
 		plt.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, levels=eta_contour_levels, linewidths=0.5)
 	elif 'prog_h' in filename:
-		plt.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, levels=h_contour_levels, linewidths=0.5)
+		#plt.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, levels=h_contour_levels, linewidths=0.5)
+		plt.contour(data, colors="black", origin='lower', vmin=cmin, vmax=cmax, levels=h_contour_levels, linewidths=0.5)
 #	elif '_u' in filename:
 #		hs = 0.001
 #		h_contour_levels = np.append(np.arange(-0.1, 0-hs, hs), np.arange(hs, 0.1, hs))
