@@ -1235,6 +1235,14 @@ public:
 	/**
 	 * Invert the application of a linear operator in spectral space.
 	 * The operator is given in i_array_data
+	 *
+	 * Solving for phi in
+	 *
+	 * 		\Delta^2 phi = delta_phi
+	 *
+	 * can be accomplished by
+	 *
+	 * 		phi = delta_phi.spectral_div_element_wise(\Delta^2)
 	 */
 	inline
 	PlaneData spectral_div_element_wise(
