@@ -209,8 +209,16 @@ public:
 		assert( i_order > 0);
 		PlaneData out = diff2_c_x+diff2_c_y;
 
+#if 0
 		for (int i = 1; i < i_order/2; i++)
 			out = pow(-1, i)*(diff2_c_x(out)+diff2_c_y(out));
+#else
+		/*
+		 * Always use negative sign for hyperdiffusion to allow using always positive viscosity
+		 */
+		for (int i = 1; i < i_order/2; i++)
+			out = -(diff2_c_x(out)+diff2_c_y(out));
+#endif
 
 		return out;
 	}
