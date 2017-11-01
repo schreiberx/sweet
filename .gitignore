@@ -4,3 +4,4 @@ FFTW_*
 *.mod
 *.out
 *~
+output*

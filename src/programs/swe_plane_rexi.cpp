@@ -195,11 +195,16 @@ public:
 	{
 		simVars.reset();
 
-		if (simVars.setup.benchmark_scenario_id < 0)
+		if (simVars.setup.benchmark_scenario_id < 0 && simVars.setup.benchmark_scenario_name == "" )
 		{
 			std::cout << std::endl;
 			std::cout << "Benchmark scenario not selected (option -s [id])" << std::endl;
 			SWEPlaneBenchmarks::printScenarioInformation();
+			std::cout << std::endl;
+
+			std::cout << "Benchmark scenario not selected (option --benchmark [string])" << std::endl;
+			SWEBenchmarksCombined::printBenchmarkInformation();
+
 			FatalError("Benchmark scenario not selected");
 		}
 
@@ -853,7 +858,23 @@ public:
 		const char* filename_template = simVars.misc.output_file_name_prefix.c_str();
 		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
 		i_planeData.file_physical_saveData_ascii(buffer);
+		return buffer;
+	}
 
+	/**
+	 * Write spectrum info to data and return string of file name
+	 */
+	std::string write_file_spec(
+			const PlaneData &i_planeData,
+			const char* i_name	///< name of output variable
+		)
+	{
+		char buffer[1024];
+
+		const char* filename_template = simVars.misc.output_file_name_prefix.c_str();
+		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
+		i_planeData.file_spectral_abs_saveData_ascii(buffer);
+		//i_planeData.file_spectral_saveData_ascii(buffer);
 		return buffer;
 	}
 
@@ -906,8 +927,12 @@ public:
 				write_file(t_h, "prog_h_pert");
 				write_file(t_u, "prog_u");
 				write_file(t_v, "prog_v");
-				write_file(op.vort(t_u, t_v), "prog_vort");
-				write_file(op.div(t_u, t_v), "prog_div");
+
+				write_file(op.ke(t_u,t_v),"diag_ke");
+				write_file_spec(op.ke(t_u,t_v),"diag_ke_spec");
+
+				write_file(op.vort(t_u, t_v), "diag_vort");
+				write_file(op.div(t_u, t_v), "diag_div");
 			}
 		}
 
