@@ -20,7 +20,14 @@
  * equations, based on mimetic finite elements
  * Andrew T. T. McRae and Colin J. Cotter
  *
- */
+ * IMPORTANT: TO BE USED IN [0,1]x[0,1] domain
+ *
+ *  To match paper use:
+ * f = 1
+ * g = 1
+ * h0 = 1
+ * [0,1]x[0,1
+ **/
 class SWEMergeVortex
 {
 	SimulationVariables &simVars;
@@ -32,17 +39,28 @@ class SWEMergeVortex
 	double sx = simVars.sim.domain_size[0];
 	double sy = simVars.sim.domain_size[1];
 
+
 	double stream(
 			double x,
 			double y
 			)
 	{
 
-		double radius = simVars.setup.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
+		//double radius = simVars.setup.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
+		double radius = 1; //simVars.setup.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
 		double factor = 500.0;
 
+		//Andrew's parameters
+		double k = 0.03;
+		double a = 10.0;
+		//my parameters
+		//a=20.0;
+		factor=(a*a);
+
 		// Gaussian Vortice 1
-		double dx = x-0.45*sx;
+		//double dx = x-0.45*sx;
+		//double dy = y-0.5*sy;
+		double dx = x-0.425*sx;
 		double dy = y-0.5*sy;
 
 		dx /= radius;
@@ -51,7 +69,9 @@ class SWEMergeVortex
 		double exp1 = std::exp(-factor*(dx*dx + dy*dy));
 
 		// Gaussian Vortice 2
-		dx = x-0.55*sx;
+		//dx = x-0.55*sx;
+		//dy = y-0.5*sy;
+		dx = x-0.575*sx;
 		dy = y-0.5*sy;
 
 		dx /= radius;
@@ -59,7 +79,7 @@ class SWEMergeVortex
 
 		double exp2 = std::exp(-factor*(dx*dx + dy*dy));
 
-		return exp1+exp2;
+		return (k/a)*(exp1+exp2);
 
 	}
 

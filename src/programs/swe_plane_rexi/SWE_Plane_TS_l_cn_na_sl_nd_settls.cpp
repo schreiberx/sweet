@@ -53,7 +53,7 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 {
 
 	if (i_dt <= 0)
-		FatalError("SWE_Plane_TS_lg_rexi_lc_erk_nt_sl_nd_erk: Only constant time step size allowed (Please set --dt)");
+		FatalError("SWE_Plane_TS_l_cn_na_sl_nd_settls: Only constant time step size allowed (Please set --dt)");
 
 	if (i_simulation_timestamp == 0)
 	{
