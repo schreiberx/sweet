@@ -250,7 +250,12 @@ public:
 		output_filename = write_file(v, "prog_v", simVars.setup.benchmark_scenario_id == 0);
 		std::cout << output_filename << std::endl;
 
-		output_filename = write_file(prog_vort, "prog_eta", simVars.setup.benchmark_scenario_id == 0);
+		output_filename = write_file(prog_vort, "prog_vort", simVars.setup.benchmark_scenario_id == 0);
+		std::cout << output_filename << std::endl;
+
+		SphereData potvort = (prog_phi/simVars.sim.gravitation)*prog_vort;
+
+		output_filename = write_file(potvort, "prog_potvort", simVars.setup.benchmark_scenario_id == 0);
 		std::cout << output_filename << std::endl;
 	}
 
