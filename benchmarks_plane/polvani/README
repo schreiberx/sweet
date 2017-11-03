@@ -1,0 +1,14 @@
+Polvani benchmarks
+
+Usage:
+
+1) Generate the script files
+   ./jobs_create.py
+
+2) Run all scripts to execute different Polvani studies
+   ./jobs_run.sh
+
+3) Run postprocessing which generated nice pictures
+   ./postprocessing_plot_eta.sh
+
+
