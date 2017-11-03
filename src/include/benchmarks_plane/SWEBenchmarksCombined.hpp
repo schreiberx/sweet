@@ -17,7 +17,7 @@
 	#include <benchmarks_plane/SWEPolvani.hpp>
 	#include <benchmarks_plane/SWEMergeVortex.hpp>
 #endif
-
+#include <benchmarks_plane/SWEUnstableJet.hpp>
 
 
 class SWEBenchmarksCombined
@@ -90,6 +90,18 @@ public:
 					o_u,
 					o_v
 				);
+
+			return true;
+		}
+		if (io_simVars.setup.benchmark_scenario_name == "unstablejet")
+		{
+			SWEUnstableJet swe_unstablejet(io_simVars, io_op);
+
+			swe_unstablejet.setup(
+					o_h_pert,
+					o_u,
+					o_v
+			);
 
 			return true;
 		}
