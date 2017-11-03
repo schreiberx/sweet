@@ -3,13 +3,14 @@
 
 #include <vector>
 #include <sweet/SimulationVariables.hpp>
+
+#include "../swe_plane/SWE_Plane_TS_l_direct.hpp"
+#include "../swe_plane/SWE_Plane_TS_l_erk.hpp"
+#include "../swe_plane/SWE_Plane_TS_l_irk_n_erk.hpp"
+#include "../swe_plane/SWE_Plane_TS_l_rexi_n_erk.hpp"
+#include "../swe_plane/SWE_Plane_TS_ln_erk.hpp"
 #include "LevelSingleton.hpp"
 
-#include "SWE_Plane_TS_l_irk_n_erk.hpp"
-#include "SWE_Plane_TS_l_erk.hpp"
-#include "SWE_Plane_TS_ln_erk.hpp"
-#include "SWE_Plane_TS_l_direct.hpp"
-#include "SWE_Plane_TS_l_rexi_n_erk.hpp"
 
 // Class containing the context necessary to evaluate the right-hand sides
 // Currently only contains a pointer to the level singletons and the SimulationVariables object

@@ -14,7 +14,7 @@ p = SWEETJobGeneration()
 #
 # Run simulation on plane or sphere
 #
-p.compile.program = 'swe_sphere_rexi'
+p.compile.program = 'swe_sphere'
 
 p.compile.plane_or_sphere = 'sphere'
 p.compile.plane_spectral_space = 'disable'

@@ -15,7 +15,7 @@ p.cluster.setupTargetMachine("")
 #
 # Run simulation on plane or sphere
 #
-p.compile.program = 'swe_plane_rexi'
+p.compile.program = 'swe_plane'
 
 prefix=p.compile.program
 

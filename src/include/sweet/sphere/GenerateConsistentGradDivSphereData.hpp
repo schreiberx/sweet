@@ -12,8 +12,8 @@
 #include <sweet/sphere/SphereData.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/sphere/SphereDataTimesteppingExplicitRK.hpp>
-#include "../../../programs/swe_sphere_rexi/SWE_Sphere_TS_l_erk.hpp"
-//#include "../../../programs/swe_sphere_rexi/SWE_Sphere_TS_ln_erk.hpp"
+#include "../../../programs/swe_sphere/SWE_Sphere_TS_l_erk.hpp"
+//#include "../../../programs/swe_sphere/SWE_Sphere_TS_ln_erk.hpp"
 
 
 

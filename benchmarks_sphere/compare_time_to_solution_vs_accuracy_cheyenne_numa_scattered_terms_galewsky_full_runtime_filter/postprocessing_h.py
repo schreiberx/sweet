@@ -108,9 +108,15 @@ for group_info in groups:
 			if result[-1] == '\n':
 				result = result[0:-1]
 
-			f=open(rundir+"/output.out")
+			fs = rundir+"/output.out"
+			if os.path.exists(fs):
+				f=open(fs)
+			else:
+				fs = rundir+".out"
+				f=open(fs)
+
 			tag = "Simulation time (seconds): "
-			secs = 0
+			secs = '0'
 			for l in f:
 				if l[0:len(tag)] == tag:
 					secs = l[len(tag):]
