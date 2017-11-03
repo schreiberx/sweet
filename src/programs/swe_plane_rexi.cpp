@@ -364,7 +364,11 @@ public:
 		else
 		{
 			SWEBenchmarksCombined s;
-			s.setupInitialConditions(prog_h_pert, prog_u, prog_v, simVars, op);
+			s.setupInitialConditions(t0_prog_h_pert, t0_prog_u, t0_prog_v, simVars, op);
+
+			prog_h_pert = t0_prog_h_pert;
+			prog_u = t0_prog_u;
+			prog_v = t0_prog_v;
 		}
 
 		// Load data, if requested
