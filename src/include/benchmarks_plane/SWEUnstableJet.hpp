@@ -32,6 +32,23 @@ class SWEUnstableJet
 	double sx = simVars.sim.domain_size[0];
 	double sy = simVars.sim.domain_size[1];
 
+private:
+	static SWEUnstableJet** getPtrT()
+	{
+		// use this static pointer to allow using an existing quadrature code
+		static SWEUnstableJet *t;
+		return &t;
+	}
+
+	/*
+	 * Singleton to this class
+	 */
+private:
+	static SWEUnstableJet* T()
+	{
+		return *getPtrT();
+	}
+
 	double integrate_fun(
 			double int_start,
 			double int_end
@@ -67,7 +84,9 @@ class SWEUnstableJet
 			double y
 	)
 	{
-		return std::pow(std::sin(2.0*M_PI*y), 20);
+		SWEUnstableJet* t = T();
+
+		return std::pow(std::sin(2.0*M_PI*y/t->simVars.sim.domain_size[1]), 20);
 
 	}
 
