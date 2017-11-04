@@ -48,7 +48,7 @@ class SWEUnstableJet
 	)
 	{
 
-		return -(f/g)*GaussQuadrature::integrate5_intervals_adaptive_linear<double>(0, y, u_fun, 10e-13);
+		return -(f/g)*sy*GaussQuadrature::integrate5_intervals_adaptive_linear<double>(0, y, u_fun, 10e-13);
 		//return -(f/g)*GaussQuadrature::integrate5_intervals<double>(0, y, u_fun, 200);
 	}
 
