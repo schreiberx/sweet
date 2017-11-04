@@ -9,16 +9,19 @@
 
 
 #include <stdlib.h>
+
 #include <sweet/sweetmath.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneData.hpp>
 #include <libmath/GaussQuadrature.hpp>
+
 
 /**
  * Implement unstable jet initial conditions
  *
  * Mimics Spherical Mountain Wave test case 5
  *
+ * ONLY WORKING FOR [0,1]x[0,1]
  *
  **/
 class SWEUnstableJet
@@ -32,62 +35,34 @@ class SWEUnstableJet
 	double sx = simVars.sim.domain_size[0];
 	double sy = simVars.sim.domain_size[1];
 
-private:
-	static SWEUnstableJet** getPtrT()
-	{
-		// use this static pointer to allow using an existing quadrature code
-		static SWEUnstableJet *t;
-		return &t;
-	}
-
-	/*
-	 * Singleton to this class
-	 */
-private:
-	static SWEUnstableJet* T()
-	{
-		return *getPtrT();
-	}
-
-	double integrate_fun(
-			double int_start,
-			double int_end
-	)
-	{
-		return GaussQuadrature::integrate5_intervals<double>(int_start, int_end, u_fun, 200);
-//		return GaussQuadrature::integrate5_intervals(int_start, int_end, to_int_fun);
-
-	}
 
 	/*
 	 * The depth function is numerically integrated to ensure
 	 * balanced initial conditions for the jet
+	 *
+	 * On (x,y) \in [0,1]x[0,1]
 	 */
 	double depth(
 			double x,
 			double y
 	)
 	{
-		double error_threshold = 1e-11;
 
-		double int_start = 0;
-		double int_end = 1;
-
-		//double quad_val = GaussQuadrature::integrate5_intervals_adaptive_linear<double>(int_start, int_end, u_fun, error_threshold);
-
-		return -(f/g)*integrate_fun(0,y);
-
+		return -(f/g)*GaussQuadrature::integrate5_intervals_adaptive_linear<double>(0, y, u_fun, 10e-13);
+		//return -(f/g)*GaussQuadrature::integrate5_intervals<double>(0, y, u_fun, 200);
 	}
 
-
+	/*
+	 * Velocity
+	 * On (x,y) \in [0,1]x[0,1]
+	 */
 	static double u_fun(
 			double y
 	)
 	{
-		SWEUnstableJet* t = T();
-
-		return std::pow(std::sin(2.0*M_PI*y/t->simVars.sim.domain_size[1]), 20);
-
+		 //power has to be odd to ensure periodicity
+		// the larger the thiner the jet
+		return std::pow(std::sin(2.0*M_PI*y), 41);
 	}
 
 	double u(
@@ -99,21 +74,73 @@ private:
 
 	}
 
+	/*
+	 * Depth perturbation (gaussian bumps)
+	 * On (x,y) \in [0,1]x[0,1]
+	 */
+	double bump(
+			double x,
+			double y
+	)
+	{
+		//double radius = simVars.setup.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
+		double radius = 1.0; //simVars.setup.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
+		double factor = 1000.0;
+
+
+		// Gaussian Bump top
+		double dx = x-0.85;
+		double dy = y-0.75;
+
+		dx /= radius;
+		dy /= radius;
+
+		double exp1 = std::exp(-factor*(dx*dx + dy*dy));
+
+		// Gaussian Bump bottom
+		dx = x-0.15;
+		dy = y-0.25;
+
+		dx /= radius;
+		dy /= radius;
+
+		double exp2 = std::exp(-factor*(dx*dx + dy*dy));
+
+		double pert = 0.0001;
+		//double pert = 0.000;
+
+		return (pert)*(exp1+exp2);
+
+	}
+
 	void setup_depth(
 			PlaneData &o_depth
 	)
 	{
+		// First set for the first column (one vertical slice)
 
 		for (int j = 0; j < simVars.disc.res_physical[1]; j++)
 		{
-			for (int i = 0; i < simVars.disc.res_physical[0]; i++)
+			int i = 0;
+			double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0]); //*simVars.sim.domain_size[0];
+			double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1]); //*simVars.sim.domain_size[1];
+
+			o_depth.p_physical_set(j, i, depth(x, y));
+		}
+
+		//Now set for other "x" and add bump
+		for (int j = 0; j < simVars.disc.res_physical[1]; j++)
+		{
+			for (int i = 1; i < simVars.disc.res_physical[0]; i++)
 			{
 
 				// h - lives in the center of the cell
-				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+				// (x,y) \in [0,1]x[0,1]
+				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0]); //*simVars.sim.domain_size[0];
+				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1]); //*simVars.sim.domain_size[1];
 
-				o_depth.p_physical_set(j, i, depth(x, y));
+				o_depth.p_physical_set(j, i, o_depth.p_physical_get(j, 0) + bump(x,y));
+
 			}
 		}
 
@@ -132,14 +159,13 @@ private:
 			for (int i = 0; i < simVars.disc.res_physical[0]; i++)
 			{
 
-				// h - lives in the center of the cell
-				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-
+				// (u,v) - lives in the center of the cell
+				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0]); //*simVars.sim.domain_size[0];
+				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1]); //*simVars.sim.domain_size[1];
+				// (x,y) \in [0,1]x[0,1]
 				o_u.p_physical_set(j, i, u(x, y));
 			}
 		}
-
 	}
 
 public:
@@ -158,10 +184,12 @@ public:
 			PlaneData &o_v
 	)
 	{
+		std::cout<< "Generating Unstable Jet initial conditions.";
 		/*
 		 * Setup velocities
 		 */
 		setup_velocity(o_u,o_v);
+
 
 		/*
 		 * Setup depth function
@@ -173,7 +201,7 @@ public:
 		/*
 		 * Add perturbation to depth
 		 */
-
+		std::cout<< "   Done! " << std::endl;
 	}
 
 
