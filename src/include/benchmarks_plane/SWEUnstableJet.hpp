@@ -12,7 +12,7 @@
 #include <sweet/sweetmath.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneData.hpp>
-
+#include <libmath/GaussQuadrature.hpp>
 
 /**
  * Implement unstable jet initial conditions
@@ -32,6 +32,15 @@ class SWEUnstableJet
 	double sx = simVars.sim.domain_size[0];
 	double sy = simVars.sim.domain_size[1];
 
+	double integrate_fun(
+			double int_start,
+			double int_end
+	)
+	{
+		return GaussQuadrature::integrate5_intervals<double>(int_start, int_end, u_fun, 200);
+//		return GaussQuadrature::integrate5_intervals(int_start, int_end, to_int_fun);
+
+	}
 
 	/*
 	 * The depth function is numerically integrated to ensure
@@ -40,21 +49,34 @@ class SWEUnstableJet
 	double depth(
 			double x,
 			double y
-			)
+	)
 	{
-		//TODO
+		double error_threshold = 1e-11;
 
-				return 1.0;
+		double int_start = 0;
+		double int_end = 1;
+
+		//double quad_val = GaussQuadrature::integrate5_intervals_adaptive_linear<double>(int_start, int_end, u_fun, error_threshold);
+
+		return -(f/g)*integrate_fun(0,y);
+
+	}
+
+
+	static double u_fun(
+			double y
+	)
+	{
+		return std::pow(std::sin(2.0*M_PI*y), 20);
 
 	}
 
 	double u(
 			double x,
 			double y
-			)
+	)
 	{
-		//TODO
-				return std::pow(std::sin(2.0*M_PI*y/sy),20);
+		return u_fun(y);
 
 	}
 
