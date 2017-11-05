@@ -88,7 +88,7 @@ class SWEPolvani
 				int ka[2] = {k0, k1};
 
 
-//				double energy_amplitude = Ek(ka)*scale_ek;
+//				double energy_amplitude = Ek(ka)*scale_ek;7
 				double energy_amplitude = Ek(ka)*normalize_ek;
 
 				double phase = 2.0*M_PI*((double)rand()/(double)RAND_MAX);

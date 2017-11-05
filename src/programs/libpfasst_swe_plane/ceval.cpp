@@ -9,13 +9,13 @@
 #include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
 #include <sweet/plane/Convert_PlaneDataComplex_to_PlaneData.hpp>
 
-#include "SWE_Plane_TS_l_erk.hpp"
-#include "SWE_Plane_TS_l_irk.hpp"
-#include "SWE_Plane_TS_l_irk_n_erk.hpp"
-#include "SWE_Plane_TS_ln_erk.hpp"
-#include "SWE_Plane_TS_l_rexi_n_erk.hpp"
-
 #include "ceval.hpp"
+
+#include "../swe_plane/SWE_Plane_TS_l_erk.hpp"
+#include "../swe_plane/SWE_Plane_TS_l_irk.hpp"
+#include "../swe_plane/SWE_Plane_TS_l_irk_n_erk.hpp"
+#include "../swe_plane/SWE_Plane_TS_l_rexi_n_erk.hpp"
+#include "../swe_plane/SWE_Plane_TS_ln_erk.hpp"
 #include "cencap.hpp"
 
 /**

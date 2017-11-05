@@ -60,7 +60,7 @@ source ./local_software/env_vars.sh || exit 1
 """
 
 		content += """
-SCONS="scons --program=swe_sphere_rexi --gui=disable --plane-spectral-space=disable --sphere-spectral-space=enable --threading=omp --mode=release """+("--threading=off --rexi-thread-parallel-sum=enable" if p.rexi_par else "")+' -j 4"'+"""
+SCONS="scons --program=swe_sphere --gui=disable --plane-spectral-space=disable --sphere-spectral-space=enable --threading=omp --mode=release """+("--threading=off --rexi-thread-parallel-sum=enable" if p.rexi_par else "")+' -j 4"'+"""
 echo "$SCONS"
 $SCONS || exit 1
 """
@@ -70,7 +70,7 @@ cd "$BASEDIR"
 """
 
 		#content += 'EXEC="$SWEETROOT/build/swe_sph_and_rexi_*_release'
-		content += 'EXEC="$SWEETROOT/build/swe_sphere_rexi_spherespectral_spheredealiasing_rexipar_libfft_gnu_release'
+		content += 'EXEC="$SWEETROOT/build/swe_sphere_spherespectral_spheredealiasing_rexipar_libfft_gnu_release'
 
 		if self.g >= 0:
 			content += ' -g '+str(self.g)

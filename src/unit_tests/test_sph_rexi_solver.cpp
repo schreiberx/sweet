@@ -18,7 +18,7 @@
 #include <sweet/sphere/Convert_SphereDataComplex_to_SphereData.hpp>
 #include <sweet/sphere/Convert_SphereData_to_SphereDataComplex.hpp>
 
-#include "../programs/swe_sphere_rexi/SWE_Sphere_TS_l_rexi.hpp"
+#include "../programs/swe_sphere/SWE_Sphere_TS_l_rexi.hpp"
 
 #include <sweet/sphere/GenerateConsistentGradDivSphereData.hpp>
 #include <sweet/sphere/ErrorCheck.hpp>
