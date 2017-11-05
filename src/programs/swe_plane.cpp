@@ -969,6 +969,12 @@ public:
 
 #if 1
 			// Mass, Energy, Enstrophy
+			header << "\tTOTAL_MASS\tTOTAL_ENERGY\tPOT_ENSTROPHY";
+			rows << "\t" << simVars.diag.total_mass;
+			rows << "\t" << simVars.diag.total_energy;
+			rows << "\t" << simVars.diag.total_potential_enstrophy;
+
+			// Mass, Energy, Enstrophy
 			header << "\tTOTAL_MASS_REL_ERROR\tTOTAL_ENERGY_REL_ERROR\tPOT_ENSTROPHY_REL_ERROR";
 			rows << "\t" << std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start);
 			rows << "\t" << std::abs((simVars.diag.total_energy-diagnostics_energy_start)/diagnostics_energy_start) ;
