@@ -80,7 +80,15 @@ p.runtime.rexi_sphere_preallocation = 0
 #
 # Viscosity, hail to viscosity !!!
 #
+# Results in noisy output
+#p.runtime.viscosity = 1e-10
+#p.runtime.viscosity_order = 8
+
+# Unstable!
 p.runtime.viscosity = 1e-8
+
+# Stable
+p.runtime.viscosity = 1e-14
 p.runtime.viscosity_order = 8
 
 #
@@ -111,7 +119,8 @@ else:
 		p.compile.rexi_thread_parallel_sum = 'disable'
 
 
-p.runtime.timestep_size = 0.05
+p.runtime.timestep_size = 0.005
+p.runtime.timestep_size = 0.0025
 p.runtime.simtime = 1000
 p.runtime.output_timestep_size = 10
 
@@ -125,21 +134,22 @@ if __name__ == "__main__":
 	p.runtime.timestepping_method = 'ln_erk'
 	p.runtime.timestepping_order = 4
 
-	for [p.runtime.polvani_rossby, p.runtime.polvani_froude, M] in [
-			[0.01, 0.04, 'A'],	# A
-			[0.05, 0.05, 'B'],	# B
-			[0.05, 0.075, 'C'],	# C
-			[0.25, 0.05, 'D'],	# D
-			[0.25, 0.20, 'E'],	# E
-			[1.00, 0.05, 'F'],	# F
-			[1.00, 0.30, 'G'],	# G
-			[5.00, 0.05, 'H'],	# H
-			[5.00, 0.30, 'I'],	# I
-			[20.25, 0.30, 'J'],	# J
-			[10.25, 0.10, 'K'],	# K
-			[20.25, 0.05, 'L'],	# L
-			[2.00, 0.10, 'M'],	# M
-			[0.40, 0.10, 'M'],	# N
-		]:
-		p.gen_script('script_'+prefix+'_polvani_'+M+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
+	for p.runtime.viscosity in [1.0*(1e-1**i) for i in range(0, 10)]:
+		for [p.runtime.polvani_rossby, p.runtime.polvani_froude, M] in [
+				[0.01, 0.04, 'A'],	# A
+				#[0.05, 0.05, 'B'],	# B
+				#[0.05, 0.075, 'C'],	# C
+				#[0.25, 0.05, 'D'],	# D
+				#[0.25, 0.20, 'E'],	# E
+				#[1.00, 0.05, 'F'],	# F
+				#[1.00, 0.30, 'G'],	# G
+				#[5.00, 0.05, 'H'],	# H
+				#[5.00, 0.30, 'I'],	# I
+				#[20.25, 0.30, 'J'],	# J
+				#[10.25, 0.10, 'K'],	# K
+				#[20.25, 0.05, 'L'],	# L
+				#[2.00, 0.10, 'M'],	# M
+				#[0.40, 0.10, 'M'],	# N
+			]:
+			p.gen_script('script_'+prefix+'_polvani_'+M+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
 

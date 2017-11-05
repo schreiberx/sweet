@@ -223,7 +223,7 @@ if __name__ == "__main__":
 				['ln_erk',		4,	4,	0],	# reference solution
 
 				###########
-				#['l_irk_n_erk',		2,	2,	0],
+				['l_irk_n_erk',		2,	2,	0],
 				#['l_cn_n_erk',		2,	2,	0],
 				#['l_irk_n_erk',		2,	2,	0],
 				#['l_rexi_n_erk',	2,	2,	0],
@@ -324,7 +324,7 @@ if __name__ == "__main__":
 
 					if True:
 						#for N in [64, 128]:
-						for N in [128]:
+						for N in [128, 256]:
 
 							range_cores = range_cores_node + [36*i for i in range(2, p.cluster.total_max_nodes)]
 
@@ -334,8 +334,8 @@ if __name__ == "__main__":
 
 							#for r in [25, 50, 75]:
 							# Everything starting and above 40 results in significant errors
-							for r in [30]:
-								for gf in [1, 0.1, 0.01, 0.001, 0.0001]:
+							for r in [30, 50]:
+								for gf in [0.01, 0.005, 0.001, 0.0005, 0.0001, 0.0]:
 									p.runtime.load_from_dict({
 										'rexi_method': 'ci',
 										'ci_n':N,
