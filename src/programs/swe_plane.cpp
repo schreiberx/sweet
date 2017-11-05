@@ -946,6 +946,12 @@ public:
 			update_diagnostics();
 			compute_errors();
 
+
+			if (simVars.timecontrol.current_timestep_nr == 0)
+			{
+				simVars.diag.outputConfig();
+			}
+
 			std::stringstream header;
 			std::stringstream rows;
 
@@ -963,18 +969,10 @@ public:
 
 #if 1
 			// Mass, Energy, Enstrophy
-			if (simVars.timecontrol.current_timestep_nr == 0)
-			{
-				header << "\tTOTAL_MASS\tTOTAL_ENERGY\tPOT_ENSTROPHY";
-				rows << "\t" << simVars.diag.total_mass << "\t" << simVars.diag.total_energy << "\t" << simVars.diag.total_potential_enstrophy;
-			}
-			else
-			{
-				rows << "\t" << std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start);
-				rows << "\t" << std::abs((simVars.diag.total_energy-diagnostics_energy_start)/diagnostics_energy_start) ;
-				rows << "\t" << std::abs((simVars.diag.total_potential_enstrophy-diagnostics_potential_entrophy_start)/diagnostics_potential_entrophy_start);
-
-			}
+			header << "\tTOTAL_MASS_REL_ERROR\tTOTAL_ENERGY_REL_ERROR\tPOT_ENSTROPHY_REL_ERROR";
+			rows << "\t" << std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start);
+			rows << "\t" << std::abs((simVars.diag.total_energy-diagnostics_energy_start)/diagnostics_energy_start) ;
+			rows << "\t" << std::abs((simVars.diag.total_potential_enstrophy-diagnostics_potential_entrophy_start)/diagnostics_potential_entrophy_start);
 #endif
 
 #if 1
