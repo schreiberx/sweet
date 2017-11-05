@@ -431,6 +431,10 @@ export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
 
 		else:
 			content = ""
+			content += "#!/bin/bash\n"
+			content += "\n"
+			content += "export OMP_PROC_BIND=CLOSE\n"
+			content += "\n"
 			mpi_exec_prefix = ""
 
 		return content, mpi_exec_prefix
