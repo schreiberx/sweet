@@ -17,6 +17,17 @@ from importlib import import_module
 
 class SWEETCompileOptions:
 
+	def exec_command(command):
+		process = subprocess.Popen(command.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		out, err = process.communicate()
+		# combine stdout and stderr
+		out = out+err
+		out = out.decode("utf-8")
+		out = out.replace("\r", "")
+		return out
+
+
+
 	def __init__(self):
 		self.example_programs = []
 		self.unit_tests_programs = []
@@ -56,8 +67,11 @@ class SWEETCompileOptions:
 		self.rexi_thread_parallel_sum = 'disable'
 
 		# Memory allocator
-		self.numa_block_allocator = 2
-		#self.numa_block_allocator = 2
+		if self.exec_command('uname -s') == "Darwin":
+			# Deactivate efficient NUMA block allocation on MacOSX systems (missing numa.h file)
+			self.numa_block_allocator = 0
+		else:
+			self.numa_block_allocator = 2
 
 		# Program / Unit test
 		self.program = ''
