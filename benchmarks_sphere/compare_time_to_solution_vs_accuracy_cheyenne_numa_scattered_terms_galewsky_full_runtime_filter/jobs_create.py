@@ -126,7 +126,7 @@ p.runtime.viscosity = 0.0
 
 
 
-timestep_size_reference = 160
+timestep_size_reference = 120
 #timestep_sizes = [timestep_size_reference*(2.0**i) for i in range(0, 11)]
 timestep_sizes = [timestep_size_reference*(2**i) for i in range(0, 5)]
 
@@ -223,7 +223,9 @@ if __name__ == "__main__":
 				['ln_erk',		4,	4,	0],	# reference solution
 
 				###########
-				['l_irk_n_erk',		2,	2,	0],
+				#['l_irk_n_erk',		2,	2,	0],
+				['lg_irk_lc_n_erk_ver0',	2,	2,	0],
+				['lg_irk_lc_n_erk_ver1',	2,	2,	0],
 				#['l_cn_n_erk',		2,	2,	0],
 				#['l_irk_n_erk',		2,	2,	0],
 				#['l_rexi_n_erk',	2,	2,	0],
@@ -235,7 +237,8 @@ if __name__ == "__main__":
 				#['l_erk_n_erk',		2,	2,	0],
 
 				#['lg_irk_lc_n_erk',	2,	2,	0],
-				['lg_rexi_lc_n_erk',	2,	2,	0],
+				['lg_rexi_lc_n_erk_ver0',	2,	2,	0],
+				['lg_rexi_lc_n_erk_ver1',	2,	2,	0],
 				#['lg_rexi_lc_n_etdrk',	2,	2,	0],
 			]
 
@@ -320,11 +323,13 @@ if __name__ == "__main__":
 						range_cores_single_socket = [1, 2, 4, 8, 12, 16, 18]
 						range_cores_node = range_cores_single_socket + [18+i for i in range_cores_single_socket]
 					else:
-						range_cores_node = [18,36]
+						#range_cores_node = [18,36]
+						range_cores_node = [18]
 
 					if True:
 						#for N in [64, 128]:
-						for N in [128, 256]:
+						#for N in [128, 256]:
+						for N in [128]:
 
 							range_cores = range_cores_node + [36*i for i in range(2, p.cluster.total_max_nodes)]
 
@@ -334,22 +339,31 @@ if __name__ == "__main__":
 
 							#for r in [25, 50, 75]:
 							# Everything starting and above 40 results in significant errors
-							for r in [30, 50]:
-								for gf in [0.01, 0.005, 0.001, 0.0005, 0.0001, 0.0]:
-									p.runtime.load_from_dict({
-										'rexi_method': 'ci',
-										'ci_n':N,
-										'ci_max_real':10,
-										'ci_max_imag':r,
-										'half_poles':0,
-										'ci_gaussian_filter':gf
-									})
+							#for r in [30, 50]:
+							for r in [30]:
+								#for gf in [0.01, 0.005, 0.001, 0.0005, 0.0001, 0.0]:
+								#for gf in [0.01, 0.005, 0.001, 0.0005, 0.0001, 0.0]:
+								#for gf in [1, 0.1, 0.01, 0.001, 0.0001, 0.00001, 0.000001, 0.0000001, 0.00000001]:
+								#for gf_exp_N in [2, 4, 6, 10, 20, 40]:
+								for gf_exp_N in [2, 4, 20]:
+									for gf_scale in [0.5, 1, 2, 3, 4]:
 
-									for p.cluster.par_time_cores in range_cores:
-										if p.cluster.par_time_cores >= p.runtime.rexi_ci_n:
-											# Generate only scripts with max number of cores
-											p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
-											break
+										p.runtime.load_from_dict({
+											'rexi_method': 'ci',
+											'ci_n':N,
+											'ci_max_real':10,
+											'ci_max_imag':r,
+											'half_poles':0,
+											'ci_gaussian_filter_scale':gf_scale,
+											'ci_gaussian_filter_dt_norm':130.0,	# unit scaling for T128 resolution
+											'ci_gaussian_filter_exp_N':gf_exp_N,
+										})
+
+										for p.cluster.par_time_cores in range_cores:
+											if p.cluster.par_time_cores >= p.runtime.rexi_ci_n:
+												# Generate only scripts with max number of cores
+												p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
+												break
 
 #					for p.cluster.par_time_cores in range_cores:
 #						p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
