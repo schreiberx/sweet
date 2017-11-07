@@ -399,7 +399,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 	if (i_fixed_dt <= 0)
 		FatalError("Only constant time step size allowed");
 
-	if (std::abs(timestep_size - i_fixed_dt)/std::max(timestep_size, i_fixed_dt) > 1e-10)
+	if (std::abs(timestep_size - i_fixed_dt)/std::max(timestep_size, i_fixed_dt) > 1e-9)
 	{
 		timestep_size = i_fixed_dt;
 
