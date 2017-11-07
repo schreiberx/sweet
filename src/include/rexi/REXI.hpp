@@ -37,6 +37,9 @@ public:
 			int i_verbosity
 	)
 	{
+		alpha.clear();
+		beta.clear();
+
 		if (i_rexiSimVars->rexi_method == "file")
 		{
 			/// REXI next generation stuff

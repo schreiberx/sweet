@@ -168,16 +168,18 @@ void SWE_Sphere_TS_l_rexi::setup(
 	if (i_rexi.use_direct_solution)
 		FatalError("Direct solution for linear operator not available");
 
+	timestep_size = i_timestep_size;
+	function_name = i_function_name;
+
 	REXI::load(
 			rexiSimVars,
-			i_function_name,
+			function_name,
 			rexi_alpha,
 			rexi_beta,
-			i_timestep_size,
+			timestep_size,
 			simVars.misc.verbosity
 	);
 
-	timestep_size = i_timestep_size;
 	rexi_use_sphere_extended_modes = rexiSimVars->use_sphere_extended_modes;
 	use_f_sphere = i_use_f_sphere;
 	use_rexi_sphere_solver_preallocation = rexiSimVars->sphere_solver_preallocation;
@@ -274,7 +276,7 @@ void SWE_Sphere_TS_l_rexi::setup(
 		}
 	}
 
-	update_coefficients();
+	update_coefficients(false);
 
 	if (num_local_rexi_par_threads == 0)
 	{
@@ -294,8 +296,22 @@ void SWE_Sphere_TS_l_rexi::setup(
 
 
 
-void SWE_Sphere_TS_l_rexi::update_coefficients()
+void SWE_Sphere_TS_l_rexi::update_coefficients(
+		bool i_update_rexi
+)
 {
+	if (i_update_rexi)
+	{
+		REXI::load(
+				rexiSimVars,
+				function_name,
+				rexi_alpha,
+				rexi_beta,
+				timestep_size,
+				simVars.misc.verbosity
+		);
+	}
+
 	// use a kind of serialization of the input to avoid threading conflicts in the ComplexFFT generation
 	for (int j = 0; j < num_local_rexi_par_threads; j++)
 	{
@@ -389,7 +405,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 		std::cout << "Warning: Reducing time step size from " << i_fixed_dt << " to " << timestep_size << std::endl;
 
-		update_coefficients();
+		update_coefficients(true);
 	}
 
 

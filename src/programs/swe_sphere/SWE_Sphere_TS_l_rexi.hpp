@@ -81,6 +81,11 @@ private:
 	double timestep_size;
 
 	/*
+	 * Function name to be used by REXI
+	 */
+	std::string function_name;
+
+	/*
 	 * Don't use any Coriolis effect (reduction to very simple Helmholtz problem)
 	 */
 	bool no_coriolis;
@@ -142,7 +147,7 @@ public:
 		);
 
 private:
-	void update_coefficients();
+	void update_coefficients(bool i_update_rexi);
 
 	/**
 	 * setup the REXI
