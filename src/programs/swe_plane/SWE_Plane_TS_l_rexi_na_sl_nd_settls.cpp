@@ -194,7 +194,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::setup(
 		int i_use_linear_div
 )
 {
-	ts_l_rexi.setup(simVars.rexi);
+	ts_l_rexi.setup(simVars.rexi, "phi0", simVars.timecontrol.current_timestep_size);
 
 	if (simVars.disc.use_staggering)
 		FatalError("SWE_Plane_TS_l_rexi_na_sl_nd_settls: Staggering not supported for l_rexi_na_sl_nd_settls");

@@ -47,7 +47,10 @@ public:
 			int N,
 			T max_real_evalue,
 			T max_imag_evalue,
-			T i_gaussian_filter
+			T i_ci_gaussian_filter_scale_a,
+			T i_ci_gaussian_filter_dt_norm,
+			T i_ci_gaussian_filter_exp_N,
+			T i_ci_gaussian_filter_dt
 	)
 	{
 		/*
@@ -68,7 +71,10 @@ public:
 				r*2.0,
 				r*2.0,
 				center,
-				i_gaussian_filter
+				i_ci_gaussian_filter_scale_a,
+				i_ci_gaussian_filter_dt_norm,
+				i_ci_gaussian_filter_exp_N,
+				i_ci_gaussian_filter_dt
 			);
 	}
 
@@ -80,7 +86,10 @@ public:
 			T i_size_real,
 			T i_size_imag,
 			T i_mu,
-			T i_gaussian_filter
+			T i_ci_gaussian_filter_scale_a,
+			T i_ci_gaussian_filter_dt_norm,
+			T i_ci_gaussian_filter_exp_N,
+			T i_ci_gaussian_filter_dt
 	)
 	{
 		alpha_eval.resize(N);
@@ -112,10 +121,16 @@ public:
 				 * We use a Gaussian bump to filter out the fast modes
 				 */
 				T filter_value = 1.0;
-				if (i_gaussian_filter != 0)
+				if (i_ci_gaussian_filter_dt_norm != 0 && i_ci_gaussian_filter_scale_a != 0)
 				{
 					T dist = DQStuff::sqrt(gamma_j.real()*gamma_j.real() + gamma_j.imag()*gamma_j.imag());
-					filter_value = DQStuff::exp(-DQStuff::pow(i_gaussian_filter*dist, (T)2.0));
+
+					filter_value = DQStuff::exp(
+										-DQStuff::pow(
+												i_ci_gaussian_filter_dt_norm/(i_ci_gaussian_filter_scale_a*i_ci_gaussian_filter_dt)*dist,
+												i_ci_gaussian_filter_exp_N
+										)
+									);
 				}
 
 				beta_eval[j] = filter_value*fun.eval(gamma_j)*pos;

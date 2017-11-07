@@ -868,6 +868,8 @@ public:
 	/**
 	 * Write spectrum info to data and return string of file name
 	 */
+
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 	std::string write_file_spec(
 			const PlaneData &i_planeData,
 			const char* i_name	///< name of output variable
@@ -881,6 +883,7 @@ public:
 		//i_planeData.file_spectral_saveData_ascii(buffer);
 		return buffer;
 	}
+#endif
 
 
 
@@ -933,7 +936,10 @@ public:
 				write_file(t_v, "prog_v");
 
 				write_file(op.ke(t_u,t_v),"diag_ke");
+
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 				write_file_spec(op.ke(t_u,t_v),"diag_ke_spec");
+#endif
 
 				write_file(op.vort(t_u, t_v), "diag_vort");
 				write_file(op.div(t_u, t_v), "diag_div");
@@ -1810,12 +1816,13 @@ int main(int i_argc, char *i_argv[])
 			// Stop counting time
 			time.stop();
 
-			double seconds = time();
+			double wallclock_time = time();
 
 			// End of run output results
-			std::cout << "Simulation time (seconds): " << seconds << std::endl;
+			std::cout << "***************************************************" << std::endl;
+			std::cout << "Wallclock time (seconds): " << wallclock_time << std::endl;
 			std::cout << "Number of time steps: " << simVars.timecontrol.current_timestep_nr << std::endl;
-			std::cout << "Time per time step: " << seconds/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
+			std::cout << "Time per time step: " << wallclock_time/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
 			std::cout << "Last time step size: " << simVars.timecontrol.current_timestep_size << std::endl;
 
 			simulationSWE->compute_errors();
@@ -1861,7 +1868,7 @@ int main(int i_argc, char *i_argv[])
 			/*
 			 * Setup our little dog REXI
 			 */
-			rexiSWE.setup(simVars.rexi);
+			rexiSWE.setup(simVars.rexi, "phi0", simVars.timecontrol.current_timestep_size);
 
 			bool run = true;
 

@@ -244,7 +244,7 @@ public:
 
 			l_rexi = new SWE_Plane_TS_l_rexi(i_simVars, i_op);
 			l_rexi->setup(
-					i_simVars.rexi
+					i_simVars.rexi, "phi0", i_simVars.timecontrol.current_timestep_size
 				);
 /*
 

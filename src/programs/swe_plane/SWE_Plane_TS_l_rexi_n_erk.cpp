@@ -116,7 +116,7 @@ void SWE_Plane_TS_l_rexi_n_erk::setup(
 		int i_nonlinear_order
 )
 {
-	ts_l_rexi.setup(i_rexi);
+	ts_l_rexi.setup(i_rexi, "phi0", simVars.timecontrol.current_timestep_size);
 
 	timestepping_order_nonlinear = i_nonlinear_order;
 	timestepping_rk.setupBuffers(op.planeDataConfig, timestepping_order_nonlinear);

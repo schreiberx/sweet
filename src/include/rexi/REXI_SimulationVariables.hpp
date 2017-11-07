@@ -146,9 +146,33 @@ struct REXI_SimulationVariables
 
 	/*
 	 * Gaussian filter
-	 * 0: no filter (exp(-(x*filter)^2) = 0
+	 *
+	 * exp( -pow(dt_norm / (a * dt) * x, N) )
+	 *
 	 */
-	double ci_gaussian_filter = 0.0;
+//	double ci_gaussian_filter = 0.0;
+
+	/*
+	 * Parameter to control the filter spread
+	 */
+	double ci_gaussian_filter_scale_a = 1.0;
+
+	/*
+	 * Timestep size to scale the spectrum to the interval [-i;i]
+	 *
+	 * As an approximation, this timestep size is similar to the max. stable
+	 * time step size over a few time steps for RK1 and RK2.
+	 *
+	 * A value of 0 deactivates the filter
+	 */
+	double ci_gaussian_filter_dt_norm = 0.0;
+
+	/*
+	 * Exponent of the Gaussian filter
+	 */
+	double ci_gaussian_filter_exp_N = 0.0;
+
+
 
 	void outputConfig()
 	{
@@ -185,7 +209,9 @@ struct REXI_SimulationVariables
 		std::cout << " + ci_s_real: " << ci_s_real << std::endl;
 		std::cout << " + ci_s_imag: " << ci_s_imag << std::endl;
 		std::cout << " + ci_mu: " << ci_mu << std::endl;
-		std::cout << " + ci_gaussian_filter: " << ci_gaussian_filter << std::endl;
+		std::cout << " + ci_gaussian_filter_scale_a: " << ci_gaussian_filter_scale_a << std::endl;
+		std::cout << " + ci_gaussian_filter_dt_norm: " << ci_gaussian_filter_dt_norm << std::endl;
+		std::cout << " + ci_gaussian_filter_exp_N: " << ci_gaussian_filter_exp_N << std::endl;
 		std::cout << std::endl;
 	}
 
@@ -220,7 +246,9 @@ struct REXI_SimulationVariables
 		std::cout << "	--rexi-ci-sx [double]	Size of primitive in real, default: 1" << std::endl;
 		std::cout << "	--rexi-ci-sy [double]	Size of primitive in imag, default: 1" << std::endl;
 		std::cout << "	--rexi-ci-mu [double]	Shift, default: 0" << std::endl;
-		std::cout << "	--rexi-ci-gaussian-filter [double]	Gaussian filter parameter, default: 0 (no filter)" << std::endl;
+		std::cout << "	--rexi-ci-gaussian-filter-scale [double]	Gaussian filter scaling parameter, default: 0 (no filter)" << std::endl;
+		std::cout << "	--rexi-ci-gaussian-filter-dt-norm [double]	Gaussian filter normalization parameter (max timestep size for explicit method), default: 0 (no filter)" << std::endl;
+		std::cout << "	--rexi-ci-gaussian-filter-exp-N [double]	Gaussian filter exponent, larger values lead to sharper function form, default: 2 (Gaussian-shaped)" << std::endl;
 		std::cout << "" << std::endl;
 	}
 
@@ -309,7 +337,13 @@ struct REXI_SimulationVariables
 		io_long_options[io_next_free_program_option] = {"rexi-ci-mu", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
-		io_long_options[io_next_free_program_option] = {"rexi-ci-gaussian-filter", required_argument, 0, 256+io_next_free_program_option};
+		io_long_options[io_next_free_program_option] = {"rexi-ci-gaussian-filter-scale", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"rexi-ci-gaussian-filter-dt-norm", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"rexi-ci-gaussian-filter-exp-N", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 	}
 
@@ -354,13 +388,15 @@ struct REXI_SimulationVariables
 			case 15:	ci_s_real = atof(optarg);	return 0;
 			case 16:	ci_s_imag = atof(optarg);	return 0;
 			case 17:	ci_mu = atof(optarg);	return 0;
-			case 18:	ci_gaussian_filter = atof(optarg);	return 0;
+			case 18:	ci_gaussian_filter_scale_a = atof(optarg);	return 0;
+			case 19:	ci_gaussian_filter_dt_norm = atof(optarg);	return 0;
+			case 20:	ci_gaussian_filter_exp_N = atof(optarg);	return 0;
 		}
 
 		if (rexi_method != "" && rexi_method == "terry" && rexi_method == "file")
 			FatalError("Invalid argument for '--rexi-method='");
 
-		return 19;
+		return 21;
 	}
 };
 

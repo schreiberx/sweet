@@ -173,6 +173,7 @@ void SWE_Sphere_TS_l_rexi::setup(
 			i_function_name,
 			rexi_alpha,
 			rexi_beta,
+			i_timestep_size,
 			simVars.misc.verbosity
 	);
 

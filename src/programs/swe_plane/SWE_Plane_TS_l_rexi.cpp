@@ -24,9 +24,12 @@
 
 void SWE_Plane_TS_l_rexi::setup(
 	REXI_SimulationVariables &i_rexi,
-	const std::string &i_function_name
+	const std::string &i_function_name,
+	double i_timestep_size
 )
 {
+	assert(i_timestep_size >= 0);
+
 	rexiSimVars = &i_rexi;
 
 	domain_size[0] = simVars.sim.domain_size[0];
@@ -43,6 +46,7 @@ void SWE_Plane_TS_l_rexi::setup(
 			i_function_name,
 			rexi_alpha,
 			rexi_beta,
+			i_timestep_size,
 			simVars.misc.verbosity
 	);
 

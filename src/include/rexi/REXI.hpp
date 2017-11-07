@@ -32,7 +32,9 @@ public:
 			std::vector<std::complex<double>> &alpha,
 			std::vector<std::complex<double>> &beta,
 
-			int i_verbosity = 0
+			double i_dt,	///< Timestep size, this gets important for the Gaussian filter
+
+			int i_verbosity
 	)
 	{
 		if (i_rexiSimVars->rexi_method == "file")
@@ -88,9 +90,17 @@ public:
 			REXI_CI<> rexi_ci;
 
 			if (i_rexiSimVars->ci_max_real >= 0)
-				rexi_ci.setup_shifted_circle(i_function_name, i_rexiSimVars->ci_n, i_rexiSimVars->ci_max_real, i_rexiSimVars->ci_max_imag, i_rexiSimVars->ci_gaussian_filter);
+				rexi_ci.setup_shifted_circle(
+						i_function_name,
+						i_rexiSimVars->ci_n, i_rexiSimVars->ci_max_real, i_rexiSimVars->ci_max_imag,
+						i_rexiSimVars->ci_gaussian_filter_scale_a, i_rexiSimVars->ci_gaussian_filter_dt_norm, i_rexiSimVars->ci_gaussian_filter_exp_N, i_dt
+					);
 			else
-				rexi_ci.setup(i_function_name, i_rexiSimVars->ci_n, i_rexiSimVars->ci_primitive, i_rexiSimVars->ci_s_real, i_rexiSimVars->ci_s_imag, i_rexiSimVars->ci_mu, i_rexiSimVars->ci_gaussian_filter);
+				rexi_ci.setup(
+						i_function_name,
+						i_rexiSimVars->ci_n, i_rexiSimVars->ci_primitive, i_rexiSimVars->ci_s_real, i_rexiSimVars->ci_s_imag, i_rexiSimVars->ci_mu,
+						i_rexiSimVars->ci_gaussian_filter_scale_a, i_rexiSimVars->ci_gaussian_filter_dt_norm, i_rexiSimVars->ci_gaussian_filter_exp_N, i_dt
+					);
 
 			alpha = rexi_ci.alpha;
 			beta = rexi_ci.beta;

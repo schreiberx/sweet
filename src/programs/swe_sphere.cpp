@@ -1196,16 +1196,18 @@ int main(int i_argc, char *i_argv[])
 					std::cout << "TIMER STOP" << std::endl;
 #endif
 
-				double seconds = time();
+				double wallclock_time = time();
 
 #if SWEET_MPI
 				if (mpi_rank == 0)
 #endif
 				{
 					// End of run output results
-					std::cout << "Simulation time (seconds): " << seconds << std::endl;
+					std::cout << std::endl;
+					std::cout << "***************************************************" << std::endl;
+					std::cout << "Wallclock time (seconds): " << wallclock_time << std::endl;
 					std::cout << "Number of time steps: " << simVars.timecontrol.current_timestep_nr << std::endl;
-					std::cout << "Time per time step: " << seconds/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
+					std::cout << "Time per time step: " << wallclock_time/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
 					std::cout << "Last time step size: " << simVars.timecontrol.current_timestep_size << std::endl;
 				}
 

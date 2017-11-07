@@ -102,7 +102,8 @@ public:
 
 	void setup(
 			REXI_SimulationVariables &i_rexi,
-			const std::string &i_function_name = "phi0"
+			const std::string &i_function_name,
+			double i_timestep_size
 	);
 /*
 	void setup_REXI(
