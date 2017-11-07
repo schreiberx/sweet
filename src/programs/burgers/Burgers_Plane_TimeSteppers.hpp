@@ -15,7 +15,6 @@
 #include "Burgers_Plane_TS_l_cn_n_sl.hpp"
 #include "Burgers_Plane_TS_ln_imex.hpp"
 #include "Burgers_Plane_TS_ln_imex_forcing.hpp"
-#include "Burgers_Plane_TS_ln_imex_init_sl_forcing.hpp"
 #include "Burgers_Plane_TS_ln_erk.hpp"
 #include "Burgers_Plane_TS_ln_erk_forcing.hpp"
 #include "Burgers_Plane_TS_ln_adomian.hpp"
@@ -37,7 +36,6 @@ public:
 	Burgers_Plane_TS_ln_erk_forcing *ln_erk_forcing = nullptr;
 	Burgers_Plane_TS_ln_imex *ln_imex = nullptr;
 	Burgers_Plane_TS_ln_imex_forcing *ln_imex_forcing = nullptr;
-	Burgers_Plane_TS_ln_imex_init_sl_forcing *ln_imex_init_sl_forcing = nullptr;
 	Burgers_Plane_TS_l_irk_n_sl *l_irk_n_sl = nullptr;
 	Burgers_Plane_TS_l_irk_n_sl_forcing *l_irk_n_sl_forcing = nullptr;
 	Burgers_Plane_TS_l_cn_n_sl *l_cn_n_sl = nullptr;
@@ -78,12 +76,6 @@ public:
 		{
 			delete ln_imex_forcing;
 			ln_imex_forcing = nullptr;
-		}
-
-		if (ln_imex_init_sl_forcing != nullptr)
-		{
-			delete ln_imex_init_sl_forcing;
-			ln_imex_init_sl_forcing = nullptr;
 		}
 
 		if (l_irk_n_sl != nullptr)
@@ -192,13 +184,6 @@ public:
 
 			master = &(Burgers_Plane_TS_interface&)*ln_imex_forcing;
 		}
-		else if (i_timestepping_method == "ln_imex_init_sl_forcing")
-		{
-			ln_imex_init_sl_forcing= new Burgers_Plane_TS_ln_imex_init_sl_forcing(i_simVars, i_op);
-			ln_imex_init_sl_forcing->setup();
-
-			master = &(Burgers_Plane_TS_interface&)*ln_imex_init_sl_forcing;
-		}
 		else if (i_timestepping_method == "l_irk_n_sl")
 		{
 			l_irk_n_sl = new Burgers_Plane_TS_l_irk_n_sl(i_simVars, i_op);
@@ -223,7 +208,7 @@ public:
 		else if (i_timestepping_method == "ln_adomian")
 		{
 			ln_adomian= new Burgers_Plane_TS_ln_adomian(i_simVars, i_op);
-			ln_adomian->setup();
+			ln_adomian->setup(i_timestepping_order);
 
 			master = &(Burgers_Plane_TS_interface&)*ln_adomian;
 		}
@@ -276,7 +261,6 @@ public:
 			std::cout << "      ln_erk_forcing     : Non-linear: explicit RK scheme with forcing term"  << std::endl;
 			std::cout << "      ln_imex            : Non-linear: implicit-explicit RK scheme"  << std::endl;
 			std::cout << "      ln_imex_forcing    : Non-linear: implicit-explicit RK scheme with forcing term"  << std::endl;
-			std::cout << "      ln_imex_init_sl_forcing    : Non-linear: implicit-explicit RK scheme with forcing term init Parareal with SL"  << std::endl;
 			std::cout << "      l_irk_n_sl         : Non-linear: implicit RK on semi-Lagrangian formulation"  << std::endl;
 			std::cout << "      l_irk_n_sl_forcing : Non-linear: implicit RK on semi-Lagrangian formulation with forcing"  << std::endl;
 			std::cout << "      l_cn_n_sl          : Non-linear: Crank-Nicolson on semi-Lagrangian formulation"  << std::endl;

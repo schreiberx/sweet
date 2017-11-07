@@ -30,7 +30,9 @@ public:
 			PlaneOperators &i_op
 		);
 
-	void setup();
+	void setup(
+			int i_order	///< number used of Adomian polynomials
+	);
 
 	void run_timestep(
 			PlaneData &io_u,	///< prognostic variables
