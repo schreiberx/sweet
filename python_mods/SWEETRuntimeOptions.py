@@ -42,7 +42,9 @@ class SWEETRuntimeOptions():
 		self.rexi_ci_sy = 50
 		self.rexi_ci_mu = 0
 		self.rexi_ci_primitive = 'circle'
-		self.rexi_ci_gaussian_filter = 0
+		self.rexi_ci_gaussian_filter_scale = 0
+		self.rexi_ci_gaussian_filter_dt_norm = 0
+		self.rexi_ci_gaussian_filter_exp_N = 0
 
 		self.rexi_m = 0
 		self.rexi_l = 11
@@ -152,8 +154,14 @@ class SWEETRuntimeOptions():
 		if 'ci_primitive' in d:
 			self.rexi_ci_primitive = float(d['ci_primitive'])
 
-		if 'ci_gaussian_filter' in d:
-			self.rexi_ci_gaussian_filter = float(d['ci_gaussian_filter'])
+		if 'ci_gaussian_filter_scale' in d:
+			self.rexi_ci_gaussian_filter_scale = float(d['ci_gaussian_filter_scale'])
+
+		if 'ci_gaussian_filter_dt_norm' in d:
+			self.rexi_ci_gaussian_filter_dt_norm = float(d['ci_gaussian_filter_dt_norm'])
+
+		if 'ci_gaussian_filter_exp_N' in d:
+			self.rexi_ci_gaussian_filter_exp_N = float(d['ci_gaussian_filter_exp_N'])
 
 		if 'polvani_rossby' in d:
 			self.polvani_rossby = float(d['polvani_rossby'])
@@ -193,6 +201,12 @@ class SWEETRuntimeOptions():
 		idstr += '_tso'+str(self.timestepping_order)
 		idstr += '_tsob'+str(self.timestepping_order2)
 
+
+		idstr += '_C'+str(self.timestep_size).zfill(8)
+
+		if self.max_timesteps != -1:
+			idstr += '_T'+str(self.max_timesteps).zfill(3)
+
 		if self.rexi_method != '':
 			if self.rexi_use_direct_solution:
 				idstr += '_REXIDIR'
@@ -220,7 +234,9 @@ class SWEETRuntimeOptions():
 						idstr += '_sy'+str(float(self.rexi_ci_sy))
 						idstr += '_mu'+str(float(self.rexi_ci_mu))
 					idstr += '_pr'+str(self.rexi_ci_primitive)
-					idstr += '_gf'+str(self.rexi_ci_gaussian_filter)
+					idstr += '_gfs'+str( "{:.4E}".format(self.rexi_ci_gaussian_filter_scale))
+					idstr += '_gfd'+str( "{:.4E}".format(self.rexi_ci_gaussian_filter_dt_norm))
+					idstr += '_gfe'+str( "{:.4E}".format(self.rexi_ci_gaussian_filter_exp_N))
 
 				idstr += '_nrm'+str(self.rexi_normalization)
 				idstr += '_hlf'+str(self.rexi_half_poles)
@@ -236,11 +252,6 @@ class SWEETRuntimeOptions():
 
 		if self.polvani_froude >= 0:
 			idstr += '_PF'+str(self.polvani_froude)
-
-		idstr += '_C'+str(self.timestep_size).zfill(8)
-
-		if self.max_timesteps != -1:
-			idstr += '_T'+str(self.max_timesteps).zfill(3)
 
 		if self.mode_res != -1:
 			idstr += '_M'+str(self.mode_res).zfill(4)
@@ -334,7 +345,9 @@ class SWEETRuntimeOptions():
 					retval += ' --rexi-ci-sy='+str(self.rexi_ci_sy)
 					retval += ' --rexi-ci-mu='+str(self.rexi_ci_mu)
 				retval += ' --rexi-ci-primitive='+str(self.rexi_ci_primitive)
-				retval += ' --rexi-ci-gaussian-filter='+str(self.rexi_ci_gaussian_filter)
+				retval += ' --rexi-ci-gaussian-filter-scale='+str(self.rexi_ci_gaussian_filter_scale)
+				retval += ' --rexi-ci-gaussian-filter-dt-norm='+str(self.rexi_ci_gaussian_filter_dt_norm)
+				retval += ' --rexi-ci-gaussian-filter-exp-N='+str(self.rexi_ci_gaussian_filter_exp_N)
 
 
 		retval += ' --polvani-rossby='+str(self.polvani_rossby)
