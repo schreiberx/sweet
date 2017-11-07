@@ -1792,10 +1792,10 @@ public:
 		request_data_spectral();
 
 		std::complex<double> val = p_spectral_get(j,i);
-		double re = val.real()*2/(planeDataConfig->physical_array_data_number_of_elements);
-		double im = val.imag()*2/(planeDataConfig->physical_array_data_number_of_elements);
+		val.real(val.real()*2/(planeDataConfig->physical_array_data_number_of_elements));
+		val.imag(val.imag()*2/(planeDataConfig->physical_array_data_number_of_elements));
 
-		return sqrt(re*re+im*im);
+		return std::abs(val);
 	}
 
 	inline
@@ -1807,10 +1807,10 @@ public:
 		request_data_spectral();
 
 		std::complex<double> val = p_spectral_get(j,i);
-		double re = val.real()*2/(planeDataConfig->physical_array_data_number_of_elements);
-		double im = val.imag()*2/(planeDataConfig->physical_array_data_number_of_elements);
+		val.real(val.real()*2/(planeDataConfig->physical_array_data_number_of_elements));
+		val.imag(val.imag()*2/(planeDataConfig->physical_array_data_number_of_elements));
 
-		return atan(im/re);
+		return std::arg(val);
 	}
 
 #endif
@@ -2649,9 +2649,8 @@ public:
 		{
 			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
 			{
-				const std::complex<double> &value = p_spectral_get(y, x);
 
-				file << std::abs(value);
+				file << spectral_return_amplitude(y, x);
 
 				if (x < planeDataConfig->spectral_data_size[0]-1)
 					file << i_separator;
@@ -2691,9 +2690,8 @@ public:
 		{
 			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
 			{
-				const std::complex<double> &value = p_spectral_get(y, x);
 
-				file << std::arg(value);
+				file << spectral_return_phase(y, x);
 
 				if (x < planeDataConfig->spectral_data_size[0]-1)
 					file << i_separator;
