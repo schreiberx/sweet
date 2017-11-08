@@ -15,7 +15,7 @@ if [ ! -e "$DST_DIR/bin/scons"  -o "$1" != "" ]; then
 	tar xzf "$FILENAME" || exit 1
 	cd "$BASENAME" || exit 1
 
-	python setup.py install --prefix="$DST_DIR" || exit 1
+	python3 setup.py install --prefix="$DST_DIR" || exit 1
 
 	echo "DONE"
 

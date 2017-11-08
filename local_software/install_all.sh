@@ -34,6 +34,15 @@ if [ "${HOSTNAME:0:8}" == "cheyenne" ]; then
 	#PKGS+=("install_sdl2.sh")
 	PKGS+=("install_shtns.sh")
 
+elif [ "${HOSTNAME}" == "mac-login-amd" ]; then
+	PKGS+=("install_gcc7.1.sh")
+	PKGS+=("install_fftw3.sh")
+	PKGS+=("install_eigen3.sh")
+	PKGS+=("install_lapack.sh")
+	PKGS+=("install_python3.sh")
+	PKGS+=("install_scons3.sh")
+	PKGS+=("install_shtns.sh")
+
 elif [ "${HOSTNAME:0:8}" == "guepardo" ]; then
 
 	echo "***********************************"
