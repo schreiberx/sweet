@@ -27,6 +27,7 @@ if [ ! -e "$DST_DIR/bin/python3"  -o "$1" != "" ]; then
 	./configure --prefix="$DST_DIR" || exit 1
 
 	make install || exit 1
+	ln -sf "$DST_DIR/bin/python3" "$DST_DIR/bin/python" 
 
 	echo "DONE"
 
