@@ -1036,9 +1036,6 @@ public:
 		if (simVars.parareal.verbosity > 2)
 			std::cout << "run_timestep_fine()" << std::endl;
 
-		// Set for ln_imex_init_sl_forcing
-		simVars.bogus.var[0] = 1;
-
 		prog_u = *parareal_data_start.data_arrays[0];
 		prog_v = *parareal_data_start.data_arrays[1];
 
@@ -1402,9 +1399,6 @@ int main(int i_argc, char *i_argv[])
 
 	std::ostringstream buf;
 	buf << std::setprecision(14);
-
-	// Set for ln_imex_init_sl_forcing
-	simVars.bogus.var[0] = 0;
 
 	{
 

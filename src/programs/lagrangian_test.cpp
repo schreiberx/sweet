@@ -319,14 +319,18 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 	}
 
-	if (std::isinf(simVars.bogus.var[0]) != 0 || std::isinf(simVars.bogus.var[1]) != 0)
+	if (simVars.bogus.var[0] != "")
+		param_velocity_u = atof(simVars.bogus.var[0].c_str());
+
+	if (simVars.bogus.var[1] != "")
+		param_velocity_v = atof(simVars.bogus.var[1].c_str());
+
+	if (param_velocity_u == 0 && param_velocity_v == 0)
 	{
-		std::cout << "Both velocities have to be set, see parameters --velocity-u, --velocity-v" << std::endl;
+		std::cout << "At least one velocity has to be set, see parameters --velocity-u, --velocity-v" << std::endl;
 		return -1;
 	}
 
-	param_velocity_u = simVars.bogus.var[0];
-	param_velocity_v = simVars.bogus.var[1];
 
 	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
 

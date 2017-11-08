@@ -23,6 +23,9 @@ PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
 
 SimulationVariables simVars;
 
+double vel0 = 0.0;
+double vel1 = 0.0;
+
 
 //
 // 0: Gaussian (WARNING! DON'T USE THIS AS INITIAL CONDITIONS!)
@@ -78,8 +81,8 @@ public:
 	{
 		PlaneData ret_h(planeDataConfig);
 
-		double adv_x = (std::isinf(simVars.bogus.var[0]) != 0 ? 0 : -simVars.bogus.var[0]*i_timestamp);
-		double adv_y = (std::isinf(simVars.bogus.var[1]) != 0 ? 0 : -simVars.bogus.var[1]*i_timestamp);
+		double adv_x = -vel0*i_timestamp;
+		double adv_y = -vel1*i_timestamp;
 
 		double radius = simVars.setup.radius_scale*
 			std::sqrt(
@@ -146,8 +149,8 @@ public:
 	{
 		PlaneData ret_h(planeDataConfig);
 
-		double adv_x = (std::isinf(simVars.bogus.var[0]) != 0 ? 0 : -simVars.bogus.var[0]*i_timestamp);
-		double adv_y = (std::isinf(simVars.bogus.var[1]) != 0 ? 0 : -simVars.bogus.var[1]*i_timestamp);
+		double adv_x = -vel0*i_timestamp;
+		double adv_y = -vel1*i_timestamp;
 
 		double radius_scale = std::sqrt(
 				 (double)simVars.sim.domain_size[0]*(double)simVars.sim.domain_size[0]
@@ -181,7 +184,7 @@ public:
 				dy /= radius;
 
 				double value = -50.0*2.0*dx*std::exp(-50.0*(dx*dx + dy*dy));
-				value /= radius_scale;
+				value /= radius_scale
 
 				io_data = value;
 
@@ -218,8 +221,8 @@ public:
 	{
 		PlaneData ret_h(planeDataConfig);
 
-		double adv_x = (std::isinf(simVars.bogus.var[0]) != 0 ? 0 : -simVars.bogus.var[0]*i_timestamp);
-		double adv_y = (std::isinf(simVars.bogus.var[1]) != 0 ? 0 : -simVars.bogus.var[1]*i_timestamp);
+		double adv_x = -vel0*i_timestamp;
+		double adv_y = -vel1*i_timestamp;
 
 		double radius_scale = std::sqrt(
 				 (double)simVars.sim.domain_size[0]*(double)simVars.sim.domain_size[0]
@@ -289,15 +292,8 @@ public:
 		simVars.timecontrol.current_simulation_time = 0;
 		simVars.timecontrol.current_timestep_size = -1;
 
-		if (std::isinf(simVars.bogus.var[0]) != 0)
-			prog_u.physical_set_all(0);
-		else
-			prog_u.physical_set_all(simVars.bogus.var[0]);
-
-		if (std::isinf(simVars.bogus.var[1]) != 0)
-			prog_v.physical_set_all(0);
-		else
-			prog_v.physical_set_all(simVars.bogus.var[1]);
+		prog_u.physical_set_all(vel0);
+		prog_v.physical_set_all(vel1);
 
 		prog_h = get_advected_solution(0);
 	}
@@ -320,7 +316,8 @@ public:
 		double cell_size_x = simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
 		double cell_size_y = simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
 
-		if (simVars.bogus.var[2] == 0)
+		int asdf = atoi(simVars.bogus.var[2].c_str());
+		if (asdf == 0)
 		{
 			// UP/DOWNWINDING
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
@@ -355,7 +352,7 @@ public:
 					)*(1.0/cell_size_y)
 				);
 		}
-		else if (simVars.bogus.var[2] == 1)
+		else if (asdf == 1)
 		{
 			// STAGGERED
 
@@ -369,11 +366,13 @@ public:
 					op.diff_f_y(op.avg_b_y(i_h)*i_v)
 				);
 		}
-		else  if (simVars.bogus.var[2] == 2)
+		else  if (asdf == 2)
 		{
 			// NON-STAGGERED
 
-			if (simVars.bogus.var[3] == 0)
+			int a = atoi(simVars.bogus.var[3].c_str());
+
+			if (a == 0)
 			{
 				// non-staggered
 				o_h_t = -(
@@ -381,7 +380,7 @@ public:
 						op.diff_c_y(i_h*i_v)
 					);
 			}
-			else if (simVars.bogus.var[3] == 1)
+			else if (a == 1)
 			{
 				// non-staggered with analytical solution, only works for constant velocity!
 				o_h_t = -(
@@ -395,7 +394,7 @@ public:
 				exit(-1);
 			}
 		}
-		else  if (simVars.bogus.var[2] == 3)
+		else  if (asdf == 3)
 		{
 			// NO H UPDATE
 			o_h_t.physical_set_all(0);
@@ -614,17 +613,25 @@ int main(
 		return -1;
 	}
 
+	std::cout << "X> " << simVars.bogus.var[0] << std::endl;
+	std::cout << "Y> " << simVars.bogus.var[1] << std::endl;
 
 	double u, v;
-	if (std::isinf(simVars.bogus.var[0]) != 0)
+	if (simVars.bogus.var[0] == "")
 		u = 0;
 	else
-		u = simVars.bogus.var[0];
+		u = atof(simVars.bogus.var[0].c_str());
 
-	if (std::isinf(simVars.bogus.var[1]) != 0)
+	if (simVars.bogus.var[1] == "")
 		v = 0;
 	else
-		v = simVars.bogus.var[1];
+		v = atof(simVars.bogus.var[1].c_str());
+
+	vel0 = u;
+	vel1 = v;
+
+
+	std::cout << u << "\t" << v << std::endl;
 
 	double total_speed;
 	double turnaround_time;
@@ -681,7 +688,8 @@ int main(
 
 	bool error_detected = false;
 
-	if (simVars.bogus.var[4] == 0)
+	int asdf = atoi(simVars.bogus.var[4].c_str());
+	if (asdf == 0)
 	{
 		std::ostringstream output_string_conv;
 
@@ -803,7 +811,7 @@ int main(
 		std::cout << "Convergence rate in space (inc. resolution):";
 		std::cout << output_string_conv.str() << std::endl;
 	}
-	else if (simVars.bogus.var[4] == 1)
+	else if (asdf == 1)
 	{
 		std::ostringstream output_string_conv;
 

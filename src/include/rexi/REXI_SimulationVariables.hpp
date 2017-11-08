@@ -77,6 +77,7 @@ struct REXI_SimulationVariables
 
 	std::string file_filename_alpha = "";
 	std::string file_filename_beta = "";
+
 #if 0
 	/**
 	 * integration range for which NGREXI should be valid
