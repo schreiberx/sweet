@@ -523,7 +523,9 @@ public:
 	 */
 	struct Bogus
 	{
-		double var[20] =
+		std::string var[20];
+#if 0
+		=
 		{
 				std::numeric_limits<double>::infinity(),
 				std::numeric_limits<double>::infinity(),
@@ -546,6 +548,7 @@ public:
 				std::numeric_limits<double>::infinity(),
 				std::numeric_limits<double>::infinity()
 		};
+#endif
 	} bogus;
 
 
@@ -985,7 +988,7 @@ public:
 						std::cout << std::endl;
 						exit(1);
 					}
-					bogus.var[i-next_free_program_option] = atof(optarg);
+					bogus.var[i-next_free_program_option] = optarg;
 				}
 				continue;
 			}

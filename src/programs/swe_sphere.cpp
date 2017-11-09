@@ -46,7 +46,7 @@ SphereDataConfig *sphereDataConfig = &sphereDataConfigInstance;
 /*
  * This allows running REXI including Coriolis-related terms but just by setting f to 0
  */
-bool param_compute_error = false;
+//bool param_compute_error = false;
 
 
 
@@ -177,10 +177,12 @@ public:
 		{
 			simVars.outputConfig();
 
+#if 0
 			std::cout << std::endl;
 			std::cout << "LOCAL PARAMETERS:" << std::endl;
 			std::cout << " + param_compute_error: " << param_compute_error << std::endl;
 			std::cout << std::endl;
+#endif
 		}
 
 		/*
@@ -263,7 +265,7 @@ public:
 
 	void timestep_do_output()
 	{
-		if (param_compute_error)
+		if (simVars.misc.compute_errors)
 		{
 			if (
 					simVars.setup.benchmark_scenario_id != 10 &&
@@ -1054,12 +1056,12 @@ int main(int i_argc, char *i_argv[])
 
 	//input parameter names (specific ones for this program)
 	const char *bogus_var_names[] = {
-			"compute-error",
+//			"compute-error",
 			nullptr
 	};
 
 	// default values for specific input (for general input see SimulationVariables.hpp)
-	simVars.bogus.var[0] = param_compute_error;
+//	simVars.bogus.var[0];
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
@@ -1072,7 +1074,8 @@ int main(int i_argc, char *i_argv[])
 	}
 
 
-	param_compute_error = simVars.bogus.var[0];
+//	if (simVars.bogus.var[0] != "")
+//		param_compute_error = atof(simVars.bogus.var[0].c_str());
 
 	sphereDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
 

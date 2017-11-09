@@ -334,6 +334,7 @@ public:
 };
 
 
+
 int main(int i_argc, char *i_argv[])
 {
 	const char *bogus_var_names[] = {
@@ -344,10 +345,10 @@ int main(int i_argc, char *i_argv[])
 		nullptr
 	};
 
-	simVars.bogus.var[0] = -1;
-	simVars.bogus.var[1] = 0.123;
-	simVars.bogus.var[2] = 1.0;
-	simVars.bogus.var[3] = 0.1;
+	param_parareal_fine_dt = -1;
+	param_parareal_function_y0 = 0.123;
+	param_parareal_function_a = 1.0;
+	param_parareal_function_b = 0.1;
 
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
@@ -359,10 +360,14 @@ int main(int i_argc, char *i_argv[])
 		exit(-1);
 	}
 
-	param_parareal_fine_dt = simVars.bogus.var[0];
-	param_parareal_function_y0 = simVars.bogus.var[1];
-	param_parareal_function_a = simVars.bogus.var[2];
-	param_parareal_function_b = simVars.bogus.var[3];
+	if (simVars.bogus.var[0] != "")
+		param_parareal_fine_dt = atof(simVars.bogus.var[0].c_str());
+	if (simVars.bogus.var[1] != "")
+		param_parareal_function_y0 = atof(simVars.bogus.var[1].c_str());
+	if (simVars.bogus.var[2] != "")
+		param_parareal_function_a = atof(simVars.bogus.var[2].c_str());
+	if (simVars.bogus.var[3] != "")
+		param_parareal_function_b = atof(simVars.bogus.var[3].c_str());
 
 	if (param_parareal_fine_dt <= 0)
 	{

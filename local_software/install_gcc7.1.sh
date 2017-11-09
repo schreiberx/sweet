@@ -29,7 +29,7 @@ if [ ! -e "$DST_DIR/bin/gcc-7.1"  -o "$1" != "" ]; then
 	##########################
 	# GMP
 	##########################
-	LIB_LINK="https://gmplib.org/download/gmp/gmp-6.1.2.tar.bz2"
+	LIB_LINK="http://www.martin-schreiber.info/pub/sweet_local_software/gmp-6.1.2.tar.bz2"
 	LIB_FILENAME="`basename $LIB_LINK`"
 	LIB_BASENAME="gmp-6.1.2"
 	LIB_BASENAME_SHORT="gmp"
@@ -45,7 +45,7 @@ if [ ! -e "$DST_DIR/bin/gcc-7.1"  -o "$1" != "" ]; then
 	##########################
 	# MPFR
 	##########################
-	LIB_LINK="https://ftp.gnu.org/gnu/mpfr/mpfr-3.1.5.tar.bz2"
+	LIB_LINK="http://www.martin-schreiber.info/pub/sweet_local_software/mpfr-3.1.5.tar.bz2"
 	LIB_FILENAME="`basename $LIB_LINK`"
 	LIB_BASENAME="mpfr-3.1.5"
 	LIB_BASENAME_SHORT="mpfr"
@@ -63,7 +63,7 @@ if [ ! -e "$DST_DIR/bin/gcc-7.1"  -o "$1" != "" ]; then
 	##########################
 	# MPC
 	##########################
-	LIB_LINK="ftp://ftp.gnu.org/gnu/mpc/mpc-1.0.3.tar.gz"
+	LIB_LINK="http://www.martin-schreiber.info/pub/sweet_local_software/mpc-1.0.3.tar.gz"
 	LIB_FILENAME="`basename $LIB_LINK`"
 	LIB_BASENAME="mpc-1.0.3"
 	LIB_BASENAME_SHORT="mpc"
@@ -80,7 +80,7 @@ if [ ! -e "$DST_DIR/bin/gcc-7.1"  -o "$1" != "" ]; then
 	##########################
 	# ISL
 	##########################
-	LIB_LINK="http://isl.gforge.inria.fr/isl-0.18.tar.gz"
+	LIB_LINK="http://www.martin-schreiber.info/pub/sweet_local_software/isl-0.18.tar.gz"
 	LIB_FILENAME="`basename $LIB_LINK`"
 	LIB_BASENAME="isl-0.18"
 	LIB_BASENAME_SHORT="isl"

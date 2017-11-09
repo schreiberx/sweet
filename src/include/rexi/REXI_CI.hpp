@@ -2,7 +2,7 @@
  * REXI_CI.hpp
  *
  *  Created on: 18 Aug 2017
- *      Author: martin
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SRC_INCLUDE_REXI_CI_HPP_
@@ -106,6 +106,7 @@ public:
 
 			for (int j = 0; j < N; j++)
 			{
+//				T theta_j = (T)pi2*((T)j+(T)0.5)/(T)N;
 				T theta_j = (T)pi2*((T)j+(T)0.5)/(T)N;
 
 				// sampling position of support point
@@ -123,7 +124,11 @@ public:
 				T filter_value = 1.0;
 				if (i_ci_gaussian_filter_dt_norm != 0 && i_ci_gaussian_filter_scale_a != 0)
 				{
-					T dist = DQStuff::sqrt(gamma_j.real()*gamma_j.real() + gamma_j.imag()*gamma_j.imag());
+//					T dist = DQStuff::sqrt(gamma_j.real()*gamma_j.real() + gamma_j.imag()*gamma_j.imag());
+					T dist = DQStuff::abs(gamma_j.imag());
+
+//					std::cout << (double)gamma_j.real() << std::endl;
+//					std::cout << (double)gamma_j.imag() << std::endl;
 
 					filter_value = DQStuff::exp(
 										-DQStuff::pow(
@@ -131,6 +136,7 @@ public:
 												i_ci_gaussian_filter_exp_N
 										)
 									);
+					std::cout << (double)dist << "\t" << (double)filter_value << std::endl;
 				}
 
 				beta_eval[j] = filter_value*fun.eval(gamma_j)*pos;

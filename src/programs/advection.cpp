@@ -16,6 +16,8 @@ PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
 
 SimulationVariables simVars;
 
+double velx = 0;
+double vely = 0;
 
 class SimulationSWE
 {
@@ -57,17 +59,8 @@ public:
 		simVars.timecontrol.current_timestep_nr = 0;
 
 		h.physical_set_all(simVars.sim.h0);
-
-		if (std::isinf(simVars.bogus.var[0]) != 0)
-		{
-			u.physical_set_all(0);
-			v.physical_set_all(0);
-		}
-		else
-		{
-			u.physical_set_all(simVars.bogus.var[0]);
-			v.physical_set_all(simVars.bogus.var[1]);
-		}
+		u.physical_set_all(velx);
+		v.physical_set_all(vely);
 
 		double center_x = 0.7;
 		double center_y = 0.6;
@@ -270,9 +263,15 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 	}
 
-	if (std::isinf(simVars.bogus.var[0]) != 0 || std::isinf(simVars.bogus.var[1]) != 0)
+	if (std::isinf(atof(simVars.bogus.var[0].c_str()) != 0))
+		velx = atof(simVars.bogus.var[0].c_str());
+
+	if (std::isinf(atof(simVars.bogus.var[1].c_str()) != 0))
+		vely = atof(simVars.bogus.var[1].c_str());
+
+	if (velx == 0 && vely == 0)
 	{
-		std::cout << "Both velocities have to be set, see parameters --velocity-u, --velocity-v" << std::endl;
+		std::cout << "At least one velocity has to be set, see parameters --velocity-u, --velocity-v" << std::endl;
 		return -1;
 	}
 

@@ -292,8 +292,8 @@ int main(
 		return -1;
 	}
 
-	if (!std::isinf(simVars.bogus.var[0]))
-		time_test_function_order = simVars.bogus.var[0];
+	if (simVars.bogus.var[0] != "")
+		time_test_function_order = atof(simVars.bogus.var[0].c_str());
 
 	for (int fun_order = 0; fun_order <= 4; fun_order++)
 	{

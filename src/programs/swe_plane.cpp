@@ -1694,8 +1694,8 @@ int main(int i_argc, char *i_argv[])
 	};
 
 	// default values for specific input (for general input see SimulationVariables.hpp)
-	simVars.bogus.var[0] = 0;  //frequency in x for waves test case
-	simVars.bogus.var[1] = 0;  //frequency in y for waves test case
+	simVars.bogus.var[0];  //frequency in x for waves test case
+	simVars.bogus.var[1];  //frequency in y for waves test case
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
@@ -1713,8 +1713,14 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 	}
 	// Frequency for certain initial conditions
-	param_initial_freq_x_mul = simVars.bogus.var[0];
-	param_initial_freq_y_mul = simVars.bogus.var[1];
+	param_initial_freq_x_mul = 0;
+	param_initial_freq_y_mul = 0;
+
+	if (simVars.bogus.var[0] != "")
+		param_initial_freq_x_mul = atof(simVars.bogus.var[0].c_str());
+
+	if (simVars.bogus.var[1] != "")
+		param_initial_freq_y_mul = atof(simVars.bogus.var[1].c_str());
 
 	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
 	planeDataConfig->printInformation();

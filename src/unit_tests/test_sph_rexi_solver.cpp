@@ -549,9 +549,6 @@ int main(
 			nullptr
 	};
 
-	// default values for specific input (for general input see SimulationVariables.hpp)
-	simVars.bogus.var[0] = 0;
-
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
