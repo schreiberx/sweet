@@ -85,11 +85,15 @@ p.runtime.rexi_sphere_preallocation = 0
 #p.runtime.viscosity_order = 8
 
 # Unstable!
-p.runtime.viscosity = 1e-8
+#p.runtime.viscosity = 1e-8
 
 # Stable
-p.runtime.viscosity = 1e-14
-p.runtime.viscosity_order = 8
+if p.runtime.mode_res == 200:
+	p.runtime.viscosity = 1e-5
+	p.runtime.viscosity_order = 8
+else:
+	p.runtime.viscosity = 1e-5*200.0/p.runtime.mode_res
+	p.runtime.viscosity_order = 8
 
 #
 # Deactivate stability checks
@@ -134,22 +138,23 @@ if __name__ == "__main__":
 	p.runtime.timestepping_method = 'ln_erk'
 	p.runtime.timestepping_order = 4
 
-	for p.runtime.viscosity in [1.0*(1e-1**i) for i in range(0, 10)]:
+	if True:
+	#for p.runtime.viscosity in [1.0*(1e-1**i) for i in range(0, 10)]:
 		for [p.runtime.polvani_rossby, p.runtime.polvani_froude, M] in [
 				[0.01, 0.04, 'A'],	# A
-				#[0.05, 0.05, 'B'],	# B
-				#[0.05, 0.075, 'C'],	# C
-				#[0.25, 0.05, 'D'],	# D
-				#[0.25, 0.20, 'E'],	# E
-				#[1.00, 0.05, 'F'],	# F
-				#[1.00, 0.30, 'G'],	# G
-				#[5.00, 0.05, 'H'],	# H
-				#[5.00, 0.30, 'I'],	# I
-				#[20.25, 0.30, 'J'],	# J
-				#[10.25, 0.10, 'K'],	# K
-				#[20.25, 0.05, 'L'],	# L
-				#[2.00, 0.10, 'M'],	# M
-				#[0.40, 0.10, 'M'],	# N
+				[0.05, 0.05, 'B'],	# B
+				[0.05, 0.075, 'C'],	# C
+				[0.25, 0.05, 'D'],	# D
+				[0.25, 0.20, 'E'],	# E
+				[1.00, 0.05, 'F'],	# F
+				[1.00, 0.30, 'G'],	# G
+				[5.00, 0.05, 'H'],	# H
+				[5.00, 0.30, 'I'],	# I
+				[20.25, 0.30, 'J'],	# J
+				[10.25, 0.10, 'K'],	# K
+				[20.25, 0.05, 'L'],	# L
+				[2.00, 0.10, 'M'],	# M
+				[0.40, 0.10, 'M'],	# N
 			]:
 			p.gen_script('script_'+prefix+'_polvani_'+M+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
 
