@@ -9,7 +9,7 @@ from SWEETJobGeneration import *
 p = SWEETJobGeneration()
 
 #p.cluster.setupTargetMachine("cheyenne")
-p.cluster.setupTargetMachine("")
+p.cluster.setupTargetMachine("mac-login-intel")
 
 
 #
@@ -89,7 +89,8 @@ p.runtime.rexi_sphere_preallocation = 0
 
 # Stable
 if p.runtime.mode_res == 200:
-	p.runtime.viscosity = 1e-5
+	#p.runtime.viscosity = 1e-5
+	p.runtime.viscosity = 2e-5
 	p.runtime.viscosity_order = 8
 else:
 	p.runtime.viscosity = 1e-5*200.0/p.runtime.mode_res
@@ -126,7 +127,7 @@ else:
 p.runtime.timestep_size = 0.005
 p.runtime.timestep_size = 0.0025
 p.runtime.simtime = 1000
-p.runtime.output_timestep_size = 10
+p.runtime.output_timestep_size = 1000
 
 
 
@@ -154,7 +155,7 @@ if __name__ == "__main__":
 				[10.25, 0.10, 'K'],	# K
 				[20.25, 0.05, 'L'],	# L
 				[2.00, 0.10, 'M'],	# M
-				[0.40, 0.10, 'M'],	# N
+				[0.40, 0.10, 'N'],	# N
 			]:
 			p.gen_script('script_'+prefix+'_polvani_'+M+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
 

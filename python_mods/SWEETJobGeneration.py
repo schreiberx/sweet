@@ -74,8 +74,8 @@ $SCONS || exit 1
 			f.write("scons "+self.compile.getSConsParams()+'\n')
 			f.write("\n")
 
-		elif self.cluster.target_machine == 'cheyenne':
-			fn = 'compile_cheyenne.sh'
+		elif self.cluster.target_machine in ['cheyenne', 'mac-login-amd', 'mac-login-intel']:
+			fn = 'compile_'+self.cluster.target_machine+'.sh'
 			f = open(fn, 'w')
 			f.write("#! /bin/bash\n")
 			f.write("\n")
@@ -92,6 +92,7 @@ $SCONS || exit 1
 			content += "\n"
 			content += "scons "+self.compile.getSConsParams()+"\n"
 			content += "\n"
+
 		content += """
 
 cd "$BASEDIR"
