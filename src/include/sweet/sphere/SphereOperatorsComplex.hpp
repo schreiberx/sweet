@@ -14,7 +14,7 @@
 #include <sweet/sphere/Convert_SphereDataComplex_to_SphereData.hpp>
 #include <sweet/sphere/Convert_SphereDataPhysicalComplex_to_SphereDataPhysical.hpp>
 
-#define SHTNS_COMPLEX_SPH_SPHTOR	0
+#define SHTNS_COMPLEX_SPH_SPHTOR	1
 
 
 class SphereOperatorsComplex	:
@@ -618,26 +618,15 @@ public:
 			double r
 	)	const
 	{
+		/*
+		 * Generate a copy because of destructive SHT operations
+		 */
 		SphereDataPhysicalComplex ug = i_u;
-
-		ug.physical_update_lambda_cosphi_grid(
-			[&](double lon, double phi, std::complex<double> &o_data)
-			{
-				o_data /= phi;
-			}
-		);
-
 		SphereDataPhysicalComplex vg = i_v;
-		vg.physical_update_lambda_cosphi_grid(
-			[&](double lon, double phi, std::complex<double> &o_data)
-			{
-				o_data /= phi;
-			}
-		);
 
 #if SHTNS_COMPLEX_SPH_SPHTOR
 
-		spat_cplx_to_SHsphtor(
+		spat_cplx_xsint_to_SHsphtor(
 				sphereDataConfig->shtns,
 				ug.physical_space_data,
 				vg.physical_space_data,
@@ -650,6 +639,21 @@ public:
 		o_div.physical_space_data_valid = false;
 
 #else
+
+		ug.physical_update_lambda_cosphi_grid(
+			[&](double lon, double phi, std::complex<double> &o_data)
+			{
+				o_data /= phi;
+			}
+		);
+
+		vg.physical_update_lambda_cosphi_grid(
+			[&](double lon, double phi, std::complex<double> &o_data)
+			{
+				o_data /= phi;
+			}
+		);
+
 		SphereDataPhysical ug_re = Convert_SphereDataPhysicalComplex_To_SphereDataPhysical::physical_convert_real(ug);
 		SphereDataPhysical ug_im = Convert_SphereDataPhysicalComplex_To_SphereDataPhysical::physical_convert_imag(ug);
 		SphereDataPhysical vg_re = Convert_SphereDataPhysicalComplex_To_SphereDataPhysical::physical_convert_real(vg);
@@ -718,7 +722,7 @@ public:
 		psi.request_data_spectral();
 		chi.request_data_spectral();
 
-		SHsphtor_to_spat_cplx(
+		SHsphtor_to_spat_cplx_xsint(
 				sphereDataConfig->shtns,
 				psi.spectral_space_data,
 				chi.spectral_space_data,
@@ -759,7 +763,7 @@ public:
 
 		o_u.loadRealImag(u_re, u_im);
 		o_v.loadRealImag(v_re, v_im);
-#endif
+
 
 		o_u.physical_update_lambda_cosphi_grid(
 			[](double lon, double phi, std::complex<double> &o_data)
@@ -774,6 +778,8 @@ public:
 				o_data *= phi;
 			}
 		);
+#endif
+
 	}
 
 

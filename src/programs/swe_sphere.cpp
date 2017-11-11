@@ -268,12 +268,29 @@ public:
 		if (simVars.misc.compute_errors)
 		{
 			if (
-					simVars.setup.benchmark_scenario_id != 10 &&
-					simVars.setup.benchmark_scenario_id != 11 &&
-					simVars.setup.benchmark_scenario_id != 101
+					simVars.setup.benchmark_scenario_name != "geostrophic_balance"		&&
+					simVars.setup.benchmark_scenario_name != "geostrophic_balance_1"		&&
+					simVars.setup.benchmark_scenario_name != "geostrophic_balance_2"		&&
+					simVars.setup.benchmark_scenario_name != "geostrophic_balance_4"		&&
+					simVars.setup.benchmark_scenario_name != "geostrophic_balance_8"		&&
+					simVars.setup.benchmark_scenario_name != "geostrophic_balance_16"	&&
+					simVars.setup.benchmark_scenario_name != "geostrophic_balance_32"	&&
+					simVars.setup.benchmark_scenario_name != "geostrophic_balance_64"	&&
+					simVars.setup.benchmark_scenario_name != "geostrophic_balance_128"	&&
+					simVars.setup.benchmark_scenario_name != "geostrophic_balance_256"	&&
+					simVars.setup.benchmark_scenario_name != "geostrophic_balance_512"
 			)
 			{
-				FatalError("Analytical solution not available for this benchmark");
+				if (
+						simVars.setup.benchmark_scenario_id != 10	 &&
+						simVars.setup.benchmark_scenario_id != 11	 &&
+						simVars.setup.benchmark_scenario_id != 101
+				)
+				{
+					std::cout << "Benchamrk name: " << simVars.setup.benchmark_scenario_name << std::endl;
+					std::cout << "Benchmark scenario id: " << simVars.setup.benchmark_scenario_id << std::endl;
+					FatalError("Analytical solution not available for this benchmark");
+				}
 			}
 
 			SphereData anal_solution_h(sphereDataConfig);
@@ -289,6 +306,8 @@ public:
 			double error_h = -1;
 			double error_u = -1;
 			double error_v = -1;
+			double error_vort = -1;
+			double error_div = -1;
 
 
 			SphereData h = prog_phi*(1.0/simVars.sim.gravitation);
@@ -327,8 +346,10 @@ public:
 			error_h = hg.physical_reduce_max_abs(anal_solution_hg);
 			error_u = diff_u.physical_reduce_max_abs();
 			error_v = diff_v.physical_reduce_max_abs();
+			error_vort = diff_vort.physical_reduce_max_abs();
+			error_div = diff_div.physical_reduce_max_abs();
 
-			std::cerr << "error time, h, u, v:\t" << simVars.timecontrol.current_simulation_time << "\t" << error_h << "\t" << error_u << "\t" << error_v << std::endl;
+			std::cerr << "error time, h, u, v, vort, div:\t" << simVars.timecontrol.current_simulation_time << "\t" << error_h << "\t" << error_u << "\t" << error_v << "\t" << error_vort << "\t" << error_div << std::endl;
 		}
 
 		write_file_output();
@@ -896,7 +917,7 @@ public:
 		*o_render_primitive_id = render_primitive_id;
 		*o_bogus_data = sphereDataConfig;
 
-		int id = simVars.misc.vis_id % 4;
+		int id = simVars.misc.vis_id % 5;
 		switch (id)
 		{
 		default:
@@ -906,15 +927,33 @@ public:
 			break;
 
 		case 1:
+		{
+			SphereDataPhysical u(prog_vort.sphereDataConfig);
+			SphereDataPhysical v(prog_vort.sphereDataConfig);
+
+			// Don't use Robert, since we're not interested in the Robert formulation here
+			op.vortdiv_to_uv(prog_vort, prog_div, u, v);
+			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(u, planeDataConfig);
+			break;
+		}
+
+		case 2:
+		{
+			SphereDataPhysical u(prog_vort.sphereDataConfig);
+			SphereDataPhysical v(prog_vort.sphereDataConfig);
+
+			// Don't use Robert, since we're not interested in the Robert formulation here
+			op.vortdiv_to_uv(prog_vort, prog_div, u, v);
+			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(v, planeDataConfig);
+			break;
+		}
+
+		case 3:
 			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(SphereData(prog_vort), planeDataConfig);
 			break;
 
-		case 2:
+		case 4:
 			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(SphereData(prog_div), planeDataConfig);
-			break;
-
-		case 3:
-			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(prog_vort, planeDataConfig);
 			break;
 		}
 
@@ -941,15 +980,19 @@ public:
 			break;
 
 		case 1:
-			description = "vort";
+			description = "U";
 			break;
 
 		case 2:
-			description = "div";
+			description = "V";
 			break;
 
 		case 3:
-			description = "eta";
+			description = "vort";
+			break;
+
+		case 4:
+			description = "div";
 			break;
 		}
 
