@@ -24,6 +24,9 @@ def exec_command(command):
 	out = out+err
 	out = out.decode("utf-8")
 	out = out.replace("\r", "")
+	if len(out) > 0:
+		if out[-1] in ["\n", "\r"]:
+			out = out[:-1]
 	return out
 
 
@@ -252,7 +255,7 @@ class SWEETCompileOptions:
 				dest='numa_block_allocator',
 				type='choice',
 				choices=['0', '1', '2', '3'],
-				default='0',
+				default=str(self.numa_block_allocator),
 				help='Specify allocation method to use: 0: default system\'s malloc, 1: allocation with NUMA granularity, 2: allocation with thread granularity, 3: allocation with non-NUMA granularity [default: %default]'
 		)
 		self.numa_block_allocator = int(scons.GetOption('numa_block_allocator'))
