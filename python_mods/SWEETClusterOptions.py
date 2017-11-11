@@ -429,6 +429,63 @@ export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
 			# -tm pthreads didn't make any difference in performance for single-threaded programs which 1 thread per socket
 			#mpi_exec_prefix += " -tm pthreads "
 
+		elif self.target_machine == 'mac-login-intel':
+
+			content = """#!/bin/bash
+#SBATCH -o """+cwd+"/"+dirname+"""/output.out
+#SBATCH -e """+cwd+"/"+dirname+"""/output.err
+#####SBATCH -D /home/hpc/<project>/<user>
+#SBATCH -J """+jobid[0:100]+"""
+#SBATCH --get-user-env
+#SBATCH --partition=snb
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=32
+#SBATCH --mail-type=end
+#SBATCH --mail-user=M.Schreiber@exeter.ac.uk
+#SBATCH --export=NONE
+###SBATCH --time=01:30:00
+
+source /etc/profile.d/modules.sh
+
+# optimal values for sph sphere T128 REXI stuff
+export OMP_PROC_BIND=COMPACT
+export OMP_NUM_THREADS=32
+
+#export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
+"""
+
+			# one process per node, only one node
+			mpi_exec_prefix = "mpiexec.hydra -ppn 1 -n 1"
+
+
+		elif self.target_machine == 'mac-login-amd':
+
+			content = """#!/bin/bash
+#SBATCH -o """+cwd+"/"+dirname+"""/output.out
+#SBATCH -e """+cwd+"/"+dirname+"""/output.err
+#####SBATCH -D /home/hpc/<project>/<user>
+#SBATCH -J """+jobid[0:100]+"""
+#SBATCH --get-user-env
+#SBATCH --partition=bdz
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=64
+#SBATCH --mail-type=end
+#SBATCH --mail-user=M.Schreiber@exeter.ac.uk
+#SBATCH --export=NONE
+###SBATCH --time=01:30:00
+
+source /etc/profile.d/modules.sh
+
+# optimal values for sph sphere T128 REXI stuff
+export OMP_PROC_BIND=SPREAD
+export OMP_NUM_THREADS=16
+
+#export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
+"""
+
+			# one process per node, only one node
+			mpi_exec_prefix = "mpiexec.hydra -ppn 1 -n 1"
+
 		else:
 			content = ""
 			content += "#!/bin/bash\n"
@@ -436,6 +493,10 @@ export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
 			#content += "export OMP_PROC_BIND=CLOSE\n"
 			content += "\n"
 			mpi_exec_prefix = ""
+
+		if len(mpi_exec_prefix) > 1:
+			if mpi_exec_prefix[-1] != " ":
+				mpi_exec_prefix += " "
 
 		return content, mpi_exec_prefix
 
