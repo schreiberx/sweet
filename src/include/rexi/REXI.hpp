@@ -93,17 +93,21 @@ public:
 			REXI_CI<> rexi_ci;
 
 			if (i_rexiSimVars->ci_max_real >= 0)
+			{
 				rexi_ci.setup_shifted_circle(
 						i_function_name,
 						i_rexiSimVars->ci_n, i_rexiSimVars->ci_max_real, i_rexiSimVars->ci_max_imag,
 						i_rexiSimVars->ci_gaussian_filter_scale_a, i_rexiSimVars->ci_gaussian_filter_dt_norm, i_rexiSimVars->ci_gaussian_filter_exp_N, i_dt
 					);
+			}
 			else
+			{
 				rexi_ci.setup(
 						i_function_name,
 						i_rexiSimVars->ci_n, i_rexiSimVars->ci_primitive, i_rexiSimVars->ci_s_real, i_rexiSimVars->ci_s_imag, i_rexiSimVars->ci_mu,
 						i_rexiSimVars->ci_gaussian_filter_scale_a, i_rexiSimVars->ci_gaussian_filter_dt_norm, i_rexiSimVars->ci_gaussian_filter_exp_N, i_dt
 					);
+			}
 
 			alpha = rexi_ci.alpha;
 			beta = rexi_ci.beta;
@@ -112,6 +116,27 @@ public:
 		{
 			FatalError("REXI Mode not supported");
 		}
+
+
+		if (i_rexiSimVars->beta_cutoff != 0)
+		{
+			std::vector<std::complex<double>>::iterator ia = alpha.begin();
+			std::vector<std::complex<double>>::iterator ib = beta.begin();
+			while (ia != alpha.end())
+			{
+				if (std::abs(*ib) < i_rexiSimVars->beta_cutoff)
+				{
+					ia = alpha.erase(ia);
+					ib = beta.erase(ib);
+				}
+				else
+				{
+					ia++;
+					ib++;
+				}
+			}
+		}
+
 
 		if (i_verbosity)
 		{

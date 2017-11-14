@@ -29,6 +29,8 @@ class SWEETRuntimeOptions():
 
 		self.rexi_method = ''
 
+		self.rexi_beta_cutoff = 0
+
 		self.rexi_file_n = 0
 		self.rexi_file_h = 0
 		self.rexi_file_test_abs = 0
@@ -184,14 +186,14 @@ class SWEETRuntimeOptions():
 		idstr += '_h'+str(self.h)
 		idstr += '_f'+str(self.f)
 
-		idstr += '_p'+str(self.pde_id)
+		#idstr += '_p'+str(self.pde_id)
 
 		if compileOptions.plane_or_sphere == 'sphere':
 			idstr += '_a'+str(self.r)
 			idstr += '_u'+str(self.viscosity)
 			idstr += '_U'+str(self.viscosity_order)
 
-			idstr += '_rob'+str(self.use_robert_functions)
+			#idstr += '_rob'+str(self.use_robert_functions)
 			idstr += '_fsph'+str(self.f_sphere)
 
 #		idstr += '_t'+str(self.simtime).zfill(8)
@@ -202,7 +204,7 @@ class SWEETRuntimeOptions():
 		idstr += '_tsob'+str(self.timestepping_order2)
 
 
-		idstr += '_C'+str(self.timestep_size).zfill(8)
+		idstr += '_C'+str(self.timestep_size).zfill(4)
 
 		if self.max_timesteps != -1:
 			idstr += '_T'+str(self.max_timesteps).zfill(3)
@@ -240,9 +242,10 @@ class SWEETRuntimeOptions():
 
 				idstr += '_nrm'+str(self.rexi_normalization)
 				idstr += '_hlf'+str(self.rexi_half_poles)
+				idstr += '_bf'+str(self.rexi_beta_cutoff)
 	
 			#if self.plane_or_sphere == 'sphere':
-			idstr += '_pre'+str(self.rexi_sphere_preallocation)
+			#idstr += '_pre'+str(self.rexi_sphere_preallocation)
 			idstr += '_ext'+str(self.rexi_extended_modes).zfill(2)
 
 			#idstr += '_rexithreadpar'+str(1 if self.rexi_thread_par else 0)
@@ -320,6 +323,9 @@ class SWEETRuntimeOptions():
 			retval += ' --rexi-sphere-preallocation='+str(self.rexi_sphere_preallocation)
 			retval += ' --rexi-use-direct-solution='+str(self.rexi_use_direct_solution)
 			retval += ' --rexi-ext-modes='+str(self.rexi_extended_modes)
+
+			if self.rexi_beta_cutoff != 0:
+				retval += ' --rexi-beta-cutoff='+str(self.rexi_beta_cutoff)
 
 			if self.rexi_method == 'terry':
 				# REXI Terry
