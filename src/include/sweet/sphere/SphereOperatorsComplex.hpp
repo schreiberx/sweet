@@ -14,7 +14,7 @@
 #include <sweet/sphere/Convert_SphereDataComplex_to_SphereData.hpp>
 #include <sweet/sphere/Convert_SphereDataPhysicalComplex_to_SphereDataPhysical.hpp>
 
-#define SHTNS_COMPLEX_SPH_SPHTOR	0
+#define SHTNS_COMPLEX_SPH_SPHTOR	1
 
 
 class SphereOperatorsComplex	:

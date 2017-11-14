@@ -21,7 +21,7 @@
 #define SWEET_SPH_ON_THE_FLY_MODE	0
 
 
-#define SHTNS_REAL_SPH_SPHTOR	0
+#define SHTNS_REAL_SPH_SPHTOR	1
 
 class SphereOperators	:
 	public SphereSPHIdentities
