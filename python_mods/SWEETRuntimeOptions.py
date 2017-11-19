@@ -9,6 +9,7 @@ class SWEETRuntimeOptions():
 		self.phys_res = -1
 
 		self.output_timestep_size = 0.0001
+		self.output_filename = ''
 
 		self.f_sphere = 0
 		self.verbosity = 0
@@ -92,7 +93,7 @@ class SWEETRuntimeOptions():
 
 		self.simtime = 0.001
 
-		self.compute_error = 1
+		self.compute_error = 0
 
 		return
 
@@ -177,10 +178,11 @@ class SWEETRuntimeOptions():
 	def getUniqueID(self, compileOptions):
 		idstr = ''
 
-		if self.benchmark_name != '':
-			idstr += '_b'+str(self.benchmark_name)
-		else:
-			idstr += '_b'+str(self.bench_id)
+		if False:
+			if self.benchmark_name != '':
+				idstr += '_b'+str(self.benchmark_name)
+			else:
+				idstr += '_b'+str(self.bench_id)
 
 		idstr += '_g'+str(self.g)
 		idstr += '_h'+str(self.h)
@@ -296,6 +298,9 @@ class SWEETRuntimeOptions():
 
 		if self.output_timestep_size < 0:
 			retval += ' -O -'	# deactivate file output
+
+		if self.output_filename != '':
+			retval += ' -O '+self.output_filename
 
 		retval += ' -u '+str(self.viscosity)
 		if self.viscosity_order > 0:

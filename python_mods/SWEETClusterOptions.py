@@ -185,8 +185,8 @@ class SWEETClusterOptions:
 			pm_cores_per_mpi_rank = self.pm_time_cores_per_mpi_rank * self.pm_space_cores_per_mpi_rank
 			print(" + pm_cores_per_mpi_rank: "+str(pm_cores_per_mpi_rank))
 
-			if self.pm_time_cores_per_mpi_rank != 1:
-				raise Exception("Not yet supported")
+			#if self.pm_time_cores_per_mpi_rank != 1:
+			#	raise Exception("Not yet supported")
 
 			if self.pm_space_cores_per_mpi_rank > self.cores_per_node:
 				raise Exception("Not yet supported")
@@ -405,7 +405,9 @@ class SWEETClusterOptions:
 ######PBS -q share
 ## wall-clock time (hrs:mins:secs)
 #PBS -l walltime=00:10:00
-## select one chunk with one CPU in it
+## select: number of nodes
+## ncpus: number of CPUs per node
+## mpiprocs: number of ranks per node
 #PBS -l select="""+str(num_nodes)+""":ncpus="""+str(num_cores_per_node)+""":mpiprocs="""+str(num_ranks_per_node)+""":ompthreads="""+str(num_omp_threads_per_mpi_thread)+"""
 #
 #PBS -N """+jobid[0:100]+"""
