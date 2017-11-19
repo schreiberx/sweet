@@ -90,19 +90,6 @@ if True:
 
 
 
-####################################
-# Leapfrog
-####################################
-
-if True:
-	p.runtime.timestepping_method = 'l_lf'
-	p.cluster.pm_time_cores_per_mpi_rank = 1
-
-	for p.runtime.timestepping_order in [2]:
-		for p.runtime.timestep_size in [100]:
-		#for p.runtime.timestep_size in timestep_sizes:
-			p.gen_script('script'+p.runtime.getUniqueID(p.compile), 'run.sh')
-
 
 ####################################
 # Crank Nicolson
