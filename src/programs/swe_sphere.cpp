@@ -26,6 +26,7 @@
 #include <sweet/FatalError.hpp>
 
 #include "swe_sphere/SWE_Sphere_TimeSteppers.hpp"
+#include "swe_sphere/SWE_Sphere_NormalModeAnalysis.hpp"
 
 
 
@@ -47,7 +48,6 @@ SphereDataConfig *sphereDataConfig = &sphereDataConfigInstance;
  * This allows running REXI including Coriolis-related terms but just by setting f to 0
  */
 //bool param_compute_error = false;
-
 
 
 class SimulationInstance
@@ -505,345 +505,6 @@ public:
 
 
 
-	void normal_mode_analysis()
-	{
-		/*
-		 * Do a normal mode analysis, see
-		 * Hillary Weller, John Thuburn, Collin J. Cotter,
-		 * "Computational Modes and Grid Imprinting on Five Quasi-Uniform Spherical C Grids"
-		 */
-		char buffer_real[1024];
-		const char* filename = simVars.misc.output_file_name_prefix.c_str();
-
-		if (simVars.timecontrol.max_timesteps_nr > 0)
-			sprintf(buffer_real, filename, "normal_modes_physical", simVars.timecontrol.current_timestep_size*simVars.timecontrol.max_timesteps_nr*simVars.misc.output_time_scale);
-		else
-			sprintf(buffer_real, filename, "normal_modes_physical", simVars.timecontrol.current_timestep_size*simVars.misc.output_time_scale);
-
-		std::ofstream file(buffer_real, std::ios_base::trunc);
-		std::cout << "Writing normal mode analysis to file '" << buffer_real << "'" << std::endl;
-
-		std::cout << "WARNING: OUTPUT IS TRANSPOSED!" << std::endl;
-
-		// use very high precision
-		file << std::setprecision(20);
-
-		SphereData* prog[3] = {&prog_phi, &prog_vort, &prog_div};
-
-		int max_prog_id = 3;
-		prog_phi.physical_set_zero();
-		prog_vort.physical_set_zero();
-		prog_div.physical_set_zero();
-
-		int leapfrog_start_num_timesteps = 16;
-		double leapfrog_start_timesteps_size;
-		double leapfrog_end_timestep_size;
-		double leapfrog_original_cfl;
-
-		if (simVars.disc.timestepping_method.find("_lf") != std::string::npos)
-		{
-			FatalError("TODO: Get this Leapfrog running");
-
-			std::cout << "WARNING: Leapfrog time stepping doesn't make real sense since 1st step is based on RK-like method" << std::endl;
-			std::cout << "We'll do two Leapfrog time steps here to take the LF errors into account!" << std::endl;
-			std::cout << "Therefore, we also halve the time step size here" << std::endl;
-
-			leapfrog_original_cfl = simVars.sim.CFL;
-			// do 2 leapfrog time steps -> half time step size
-			simVars.sim.CFL *= 0.5;
-			simVars.timecontrol.current_timestep_size = -simVars.sim.CFL;
-
-			leapfrog_start_timesteps_size = simVars.timecontrol.current_timestep_size/(double)leapfrog_start_num_timesteps;
-			leapfrog_end_timestep_size = simVars.timecontrol.current_timestep_size;
-		}
-
-		int num_timesteps = 1;
-		if (simVars.disc.normal_mode_analysis_generation >= 10)
-		{
-			if (simVars.timecontrol.max_timesteps_nr > 0)
-				num_timesteps = simVars.timecontrol.max_timesteps_nr;
-		}
-
-		if (simVars.timecontrol.max_simulation_time > 0)
-			file << "# t " << simVars.timecontrol.max_simulation_time << std::endl;
-		else
-			file << "# t " << (num_timesteps*(-simVars.sim.CFL)) << std::endl;
-
-		file << "# g " << simVars.sim.gravitation << std::endl;
-		file << "# h " << simVars.sim.h0 << std::endl;
-		file << "# r " << simVars.sim.earth_radius << std::endl;
-		file << "# f " << simVars.sim.coriolis_omega << std::endl;
-
-		// iterate over all prognostic variables
-		for (int outer_prog_id = 0; outer_prog_id < max_prog_id; outer_prog_id++)
-		{
-			std::cout << "normal mode analysis for prog " << outer_prog_id << std::endl;
-
-			if (simVars.disc.normal_mode_analysis_generation == 1 || simVars.disc.normal_mode_analysis_generation == 11)
-			{
-				// iterate over physical space
-				for (int outer_i = 0; outer_i < sphereDataConfig->physical_array_data_number_of_elements; outer_i++)
-				{
-					// reset time control
-					simVars.timecontrol.current_timestep_nr = 0;
-					simVars.timecontrol.current_simulation_time = 0;
-
-					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-						prog[inner_prog_id]->physical_set_zero();
-
-					// activate mode
-					prog[outer_prog_id]->request_data_physical();
-					prog[outer_prog_id]->physical_space_data[outer_i] = 1;
-
-					/*
-					 * RUN timestep
-					 */
-
-					// In case of a multi-step scheme, reset it!
-					if (simVars.disc.timestepping_method.find("_lf") != std::string::npos)
-					{
-						FatalError("TODO 01943934");
-						//spheredata_timestepping_explicit_leapfrog.resetAndSetup(prog_h, simVars.disc.timestepping_order, simVars.disc.leapfrog_robert_asselin_filter);
-
-						simVars.sim.CFL = -leapfrog_start_timesteps_size;
-						simVars.timecontrol.current_timestep_size = leapfrog_start_timesteps_size;
-
-						for (int i = 0; i < leapfrog_start_num_timesteps; i++)
-							run_timestep();
-
-						simVars.sim.CFL = -leapfrog_end_timestep_size;
-						simVars.timecontrol.current_timestep_size = leapfrog_end_timestep_size;
-
-						run_timestep();
-
-						simVars.sim.CFL = leapfrog_original_cfl;
-						simVars.timecontrol.current_timestep_size = -simVars.sim.CFL;
-					}
-					else
-					{
-						run_timestep();
-					}
-
-					for (int i = 1; i < num_timesteps; i++)
-					{
-						run_timestep();
-					}
-
-
-					if (simVars.disc.normal_mode_analysis_generation == 1)
-					{
-						/*
-						 * compute
-						 * 1/dt * (U(t+1) - U(t))
-						 */
-						prog[outer_prog_id]->request_data_physical();
-						prog[outer_prog_id]->physical_space_data[outer_i] -= 1.0;
-
-						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-							prog[inner_prog_id]->operator*=(1.0/simVars.timecontrol.current_timestep_size);
-					}
-
-					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-					{
-						prog[inner_prog_id]->request_data_physical();
-						for (int k = 0; k < sphereDataConfig->physical_array_data_number_of_elements; k++)
-						{
-							file << prog[inner_prog_id]->physical_space_data[k];
-							if (inner_prog_id != max_prog_id-1 || k != sphereDataConfig->physical_array_data_number_of_elements-1)
-								file << "\t";
-							else
-								file << std::endl;
-						}
-					}
-				}
-			}
-			else if (simVars.disc.normal_mode_analysis_generation == 2 || simVars.disc.normal_mode_analysis_generation == 12)
-			{
-
-				// iterate over physical space
-				for (int outer_i = 0; outer_i < sphereDataConfig->spectral_array_data_number_of_elements; outer_i++)
-				{
-					for (int imag_i = 0; imag_i < 2; imag_i++)
-					{
-						// reset time control
-						simVars.timecontrol.current_timestep_nr = 0;
-						simVars.timecontrol.current_simulation_time = 0;
-
-						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-							prog[inner_prog_id]->spectral_set_zero();
-
-						// activate mode
-						prog[outer_prog_id]->request_data_spectral();
-						if (imag_i)
-							prog[outer_prog_id]->spectral_space_data[outer_i].imag(1);
-						else
-							prog[outer_prog_id]->spectral_space_data[outer_i].real(1);
-
-						// In case of a multi-step scheme, reset it!
-						if (simVars.disc.timestepping_method.find("_lf") != std::string::npos)
-						{
-							FatalError("TODO 01943934");
-							//spheredata_timestepping_explicit_leapfrog.resetAndSetup(prog_h, simVars.disc.timestepping_order, simVars.disc.leapfrog_robert_asselin_filter);
-
-							simVars.sim.CFL = -leapfrog_start_timesteps_size;
-							simVars.timecontrol.current_timestep_size = leapfrog_start_timesteps_size;
-
-							for (int i = 0; i < leapfrog_start_num_timesteps; i++)
-								run_timestep();
-
-							simVars.sim.CFL = -leapfrog_end_timestep_size;
-							simVars.timecontrol.current_timestep_size = leapfrog_end_timestep_size;
-
-							run_timestep();
-
-							simVars.sim.CFL = leapfrog_original_cfl;
-							simVars.timecontrol.current_timestep_size = -simVars.sim.CFL;
-						}
-						else
-						{
-							run_timestep();
-						}
-
-						for (int i = 1; i < num_timesteps; i++)
-							run_timestep();
-
-
-
-						if (simVars.disc.normal_mode_analysis_generation == 2)
-						{
-							/*
-							 * compute
-							 * 1/dt * (U(t+1) - U(t))
-							 */
-							prog[outer_prog_id]->request_data_spectral();
-							prog[outer_prog_id]->spectral_space_data[outer_i] -= 1.0;
-
-							for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-								prog[inner_prog_id]->operator*=(1.0/simVars.timecontrol.current_timestep_size);
-						}
-
-						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-						{
-							prog[inner_prog_id]->request_data_spectral();
-							for (int k = 0; k < sphereDataConfig->spectral_array_data_number_of_elements; k++)
-							{
-								file << prog[inner_prog_id]->spectral_space_data[k].real();
-								file << "\t";
-							}
-						}
-
-						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-						{
-							prog[inner_prog_id]->request_data_spectral();
-
-							for (int k = 0; k < sphereDataConfig->spectral_array_data_number_of_elements; k++)
-							{
-								file << prog[inner_prog_id]->spectral_space_data[k].imag();
-								if (inner_prog_id != max_prog_id-1 || k != sphereDataConfig->spectral_array_data_number_of_elements-1)
-									file << "\t";
-								else
-									file << std::endl;
-							}
-						}
-					}
-				}
-			}
-			else if (simVars.disc.normal_mode_analysis_generation == 3 || simVars.disc.normal_mode_analysis_generation == 13)
-			{
-				// iterate over spectral space
-				for (int outer_i = 0; outer_i < sphereDataConfig->spectral_array_data_number_of_elements; outer_i++)
-				{
-					// reset time control
-					simVars.timecontrol.current_timestep_nr = 0;
-					simVars.timecontrol.current_simulation_time = 0;
-
-					std::cout << "." << std::flush;
-
-					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-						prog[inner_prog_id]->spectral_set_zero();
-
-					// activate mode via real coefficient
-					prog[outer_prog_id]->request_data_spectral();
-					prog[outer_prog_id]->spectral_space_data[outer_i].real(1);
-
-
-					// In case of a multi-step scheme, reset it!
-					if (simVars.disc.timestepping_method.find("_lf") != std::string::npos)
-					{
-						FatalError("TODO 01839471");
-						//spheredata_timestepping_explicit_leapfrog.resetAndSetup(prog_h, simVars.disc.timestepping_order, simVars.disc.leapfrog_robert_asselin_filter);
-
-						simVars.sim.CFL = -leapfrog_start_timesteps_size;
-						simVars.timecontrol.current_timestep_size = leapfrog_start_timesteps_size;
-
-						for (int i = 0; i < leapfrog_start_num_timesteps; i++)
-							run_timestep();
-
-						simVars.sim.CFL = -leapfrog_end_timestep_size;
-						simVars.timecontrol.current_timestep_size = leapfrog_end_timestep_size;
-
-						run_timestep();
-
-						simVars.sim.CFL = leapfrog_original_cfl;
-						simVars.timecontrol.current_timestep_size = -simVars.sim.CFL;
-
-						if (num_timesteps > 1)
-							FatalError("Doesn't make sense because the previous time step is half the time step size in advance");
-					}
-					else
-					{
-						run_timestep();
-					}
-
-					for (int i = 1; i < num_timesteps; i++)
-					{
-						run_timestep();
-					}
-
-					if (simVars.disc.normal_mode_analysis_generation == 3)
-					{
-						/*
-						 * Compute
-						 *    1/dt * (U(t+1) - U(t))
-						 * for linearization
-						 */
-						prog[outer_prog_id]->request_data_spectral();
-						prog[outer_prog_id]->spectral_space_data[outer_i] -= 1.0;
-
-						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-							prog[inner_prog_id]->operator*=(1.0/simVars.timecontrol.current_timestep_size);
-					}
-
-					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-					{
-						prog[inner_prog_id]->request_data_spectral();
-
-						for (int k = 0; k < sphereDataConfig->spectral_array_data_number_of_elements; k++)
-						{
-							file << prog[inner_prog_id]->spectral_space_data[k].real();
-							file << "\t";
-						}
-					}
-
-					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-					{
-						prog[inner_prog_id]->request_data_spectral();
-
-						for (int k = 0; k < sphereDataConfig->spectral_array_data_number_of_elements; k++)
-						{
-							file << prog[inner_prog_id]->spectral_space_data[k].imag();
-
-							if (inner_prog_id != max_prog_id-1 || k != sphereDataConfig->spectral_array_data_number_of_elements-1)
-								file << "\t";
-							else
-								file << std::endl;
-						}
-					}
-				}
-			}
-		}
-	}
-
 
 
 	void run_timestep()
@@ -886,6 +547,19 @@ public:
 #if SWEET_GUI
 		timestep_check_output();
 #endif
+	}
+
+
+	void normalmode_analysis()
+	{
+		NormalModeAnalysisSphere::normal_mode_analysis(
+				prog_phi,
+				prog_vort,
+				prog_div,
+				simVars,
+				this,
+				&SimulationInstance::run_timestep
+			);
 	}
 
 
@@ -1185,7 +859,7 @@ int main(int i_argc, char *i_argv[])
 
 			if (simVars.disc.normal_mode_analysis_generation > 0)
 			{
-				simulationSWE->normal_mode_analysis();
+				simulationSWE->normalmode_analysis();
 			}
 			else
 			{
