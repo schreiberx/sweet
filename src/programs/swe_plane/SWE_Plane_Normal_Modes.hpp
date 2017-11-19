@@ -1,5 +1,5 @@
 /*
- * SWE_Plane_TimeSteppers.hpp
+ * SWE_Plane_Normal_Modes.hpp
  *
  *  Created on: 17 Nov 2017
  *      Author: Pedro Peixoto <pedrosp@ime.usp.br>
@@ -14,7 +14,7 @@
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
-
+#include <functional>
 
 /**
  * SWE Plane normal mode
@@ -22,30 +22,22 @@
 class SWE_Plane_Normal_Modes
 {
 public:
-
-	bool linear_only = false;
-
-
-	SWE_Plane_Normal_Modes()
-	{
-	}
-
-	void normal_mode_analysis();
-
-	void setup(	)
-	{
-	};
-
-	~SWE_Plane_Normal_Modes()
+	template <typename TCallbackClass>
+	static
+	void normal_mode_analysis(
+			PlaneData &io_prog_h_pert, // h: surface height (perturbation)
+			PlaneData &io_prog_u, // u: velocity in x-direction
+			PlaneData &io_prog_v, // v: velocity in y-direction
+			SimulationVariables &i_simVars, // Simulation variables
+			TCallbackClass *i_class,
+			void(TCallbackClass::* const i_run_timestep_method)(void)
+	)
 	{
 
-	}
-};
+		const PlaneDataConfig *planeDataConfig = io_prog_h_pert.planeDataConfig;
 
-	void SWE_Plane_Normal_Modes::normal_mode_analysis()
-	{
 		// dummy time step to get time step size
-		if (simVars.timecontrol.current_timestep_size <= 0)
+		if (i_simVars.timecontrol.current_timestep_size <= 0)
 			FatalError("Normal mode analysis requires setting fixed time step size");
 
 		//run_timestep();
@@ -58,13 +50,13 @@ public:
 		const char* filename;
 		char buffer_real[1024];
 
-		if (simVars.misc.output_file_name_prefix == "")
+		if (i_simVars.misc.output_file_name_prefix == "")
 			filename = "output_%s_normalmodes.csv";
 		else
-			filename = simVars.misc.output_file_name_prefix.c_str();
+			filename = i_simVars.misc.output_file_name_prefix.c_str();
 
 
-		sprintf(buffer_real, filename, "normal_modes_physical", simVars.timecontrol.current_timestep_size*simVars.misc.output_time_scale);
+		sprintf(buffer_real, filename, "normal_modes_physical", i_simVars.timecontrol.current_timestep_size*i_simVars.misc.output_time_scale);
 		std::ofstream file(buffer_real, std::ios_base::trunc);
 		std::cout << "Writing normal mode analysis to file '" << buffer_real << "'" << std::endl;
 
@@ -73,7 +65,7 @@ public:
 		// use very high precision
 		file << std::setprecision(20);
 
-		PlaneData* prog[3] = {&prog_h_pert, &prog_u, &prog_v};
+		PlaneData* prog[3] = {&io_prog_h_pert, &io_prog_u, &io_prog_v};
 
 		/*
 		 * Maximum number of prognostic variables
@@ -81,48 +73,48 @@ public:
 		 * Advection e.g. has only one
 		 */
 		int max_prog_id = -1;
-		if (simVars.pde.id == 0 || simVars.pde.id == 1)
+		if (i_simVars.pde.id == 0 || i_simVars.pde.id == 1)
 		{
 			max_prog_id = 3;
-			prog_h_pert.physical_set_zero();
-			prog_u.physical_set_zero();
-			prog_v.physical_set_zero();
+			io_prog_h_pert.physical_set_zero();
+			io_prog_u.physical_set_zero();
+			io_prog_v.physical_set_zero();
 		}
 		else
 		{
 			max_prog_id = 1;
-			prog_h_pert.physical_set_zero();
+			io_prog_h_pert.physical_set_zero();
 		}
 
 #if 0
-		if (simVars.disc.timestepping_method == SimulationVariables::Discretization::LEAPFROG_EXPLICIT)
+		if (i_simVars.disc.timestepping_method == SimulationVariables::Discretization::LEAPFROG_EXPLICIT)
 		{
 			FatalError("Not yet tested and supported");
 			std::cout << "WARNING: Leapfrog time stepping doesn't make real sense since 1st step is based on RK-like method" << std::endl;
 			std::cout << "We'll do two Leapfrog time steps here to take the LF errors into account!" << std::endl;
 			std::cout << "Therefore, we also halve the time step size here" << std::endl;
 
-			simVars.timecontrol.current_timestep_size = 0.5*simVars.sim.CFL;
-			simVars.sim.CFL = -simVars.timecontrol.current_timestep_size;
+			i_simVars.timecontrol.current_timestep_size = 0.5*i_simVars.sim.CFL;
+			i_simVars.sim.CFL = -i_simVars.timecontrol.current_timestep_size;
 		}
 #endif
 
 		int num_timesteps = 1;
-		if (simVars.disc.normal_mode_analysis_generation >= 10)
+		if (i_simVars.disc.normal_mode_analysis_generation >= 10)
 		{
-			if (simVars.timecontrol.max_timesteps_nr > 0)
-				num_timesteps = simVars.timecontrol.max_timesteps_nr;
+			if (i_simVars.timecontrol.max_timesteps_nr > 0)
+				num_timesteps = i_simVars.timecontrol.max_timesteps_nr;
 		}
 
-		if (simVars.timecontrol.max_simulation_time > 0)
-			file << "# t " << simVars.timecontrol.max_simulation_time << std::endl;
+		if (i_simVars.timecontrol.max_simulation_time > 0)
+			file << "# t " << i_simVars.timecontrol.max_simulation_time << std::endl;
 		else
-			file << "# t " << (num_timesteps*(-simVars.sim.CFL)) << std::endl;
+			file << "# t " << (num_timesteps*(-i_simVars.sim.CFL)) << std::endl;
 
-		file << "# g " << simVars.sim.gravitation << std::endl;
-		file << "# h " << simVars.sim.h0 << std::endl;
-		file << "# r " << simVars.sim.earth_radius << std::endl;
-		file << "# f " << simVars.sim.coriolis_omega << std::endl;
+		file << "# g " << i_simVars.sim.gravitation << std::endl;
+		file << "# h " << i_simVars.sim.h0 << std::endl;
+		file << "# r " << i_simVars.sim.earth_radius << std::endl;
+		file << "# f " << i_simVars.sim.coriolis_omega << std::endl;
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 		int specmodes = planeDataConfig->get_spectral_iteration_range_area(0)+planeDataConfig->get_spectral_iteration_range_area(1);
@@ -133,7 +125,7 @@ public:
 
 		file << "# physresx " << planeDataConfig->physical_res[0] << std::endl;
 		file << "# physresy " << planeDataConfig->physical_res[1] << std::endl;
-		file << "# normalmodegeneration " << simVars.disc.normal_mode_analysis_generation << std::endl;
+		file << "# normalmodegeneration " << i_simVars.disc.normal_mode_analysis_generation << std::endl;
 		file << "# antialiasing ";
 
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
@@ -148,14 +140,14 @@ public:
 		// iterate over all prognostic variables
 		for (int outer_prog_id = 0; outer_prog_id < max_prog_id; outer_prog_id++)
 		{
-			if (simVars.disc.normal_mode_analysis_generation == 1 || simVars.disc.normal_mode_analysis_generation == 11)
+			if (i_simVars.disc.normal_mode_analysis_generation == 1 || i_simVars.disc.normal_mode_analysis_generation == 11)
 			{
 				// iterate over physical space
 				for (std::size_t outer_i = 0; outer_i < planeDataConfig->physical_array_data_number_of_elements; outer_i++)
 				{
 					// reset time control
-					simVars.timecontrol.current_timestep_nr = 0;
-					simVars.timecontrol.current_simulation_time = 0;
+					i_simVars.timecontrol.current_timestep_nr = 0;
+					i_simVars.timecontrol.current_simulation_time = 0;
 
 					std::cout << "." << std::flush;
 
@@ -170,9 +162,9 @@ public:
 					 * RUN timestep
 					 */
 
-					run_timestep();
+					(i_class->*i_run_timestep_method)();
 
-					if (simVars.disc.normal_mode_analysis_generation == 1)
+					if (i_simVars.disc.normal_mode_analysis_generation == 1)
 					{
 						/*
 						 * compute
@@ -182,7 +174,7 @@ public:
 						prog[outer_prog_id]->physical_space_data[outer_i] -= 1.0;
 
 						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-							(*prog[inner_prog_id]) /= simVars.timecontrol.current_timestep_size;
+							(*prog[inner_prog_id]) /= i_simVars.timecontrol.current_timestep_size;
 					}
 
 					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
@@ -200,7 +192,7 @@ public:
 				}
 			}
 #if 1
-			else if (simVars.disc.normal_mode_analysis_generation == 3 || simVars.disc.normal_mode_analysis_generation == 13)
+			else if (i_simVars.disc.normal_mode_analysis_generation == 3 || i_simVars.disc.normal_mode_analysis_generation == 13)
 			{
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
 				FatalError("Only available with if plane spectral space is activated during compile time!");
@@ -215,8 +207,8 @@ public:
 						for (std::size_t i = planeDataConfig->spectral_data_iteration_ranges[r][0][0]; i < planeDataConfig->spectral_data_iteration_ranges[r][0][1]; i++)
 						{
 							// reset time control
-							simVars.timecontrol.current_timestep_nr = 0;
-							simVars.timecontrol.current_simulation_time = 0;
+							i_simVars.timecontrol.current_timestep_nr = 0;
+							i_simVars.timecontrol.current_simulation_time = 0;
 
 							std::cout << "." << std::flush;
 
@@ -229,10 +221,10 @@ public:
 							/*
 							 * RUN timestep
 							 */
-							run_timestep();
+							(i_class->*i_run_timestep_method)();
 
 
-							if (simVars.disc.normal_mode_analysis_generation == 3)
+							if (i_simVars.disc.normal_mode_analysis_generation == 3)
 							{
 								/*
 								 * compute
@@ -245,7 +237,7 @@ public:
 								prog[outer_prog_id]->p_spectral_set(j, i, val);
 
 								for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-									(*prog[inner_prog_id]) /= simVars.timecontrol.current_timestep_size;
+									(*prog[inner_prog_id]) /= i_simVars.timecontrol.current_timestep_size;
 							}
 
 
@@ -301,7 +293,7 @@ public:
 #endif
 			}
 #else
-			else if (simVars.disc.normal_mode_analysis_generation == 3 || simVars.disc.normal_mode_analysis_generation == 13)
+			else if (i_simVars.disc.normal_mode_analysis_generation == 3 || i_simVars.disc.normal_mode_analysis_generation == 13)
 			{
 				PlaneDataComplex t1(planeDataConfig);
 				PlaneDataComplex t2(planeDataConfig);
@@ -312,8 +304,8 @@ public:
 				for (std::size_t outer_i = 0; outer_i < planeDataConfig->spectral_complex_array_data_number_of_elements; outer_i++)
 				{
 					// reset time control
-					simVars.timecontrol.current_timestep_nr = 0;
-					simVars.timecontrol.current_simulation_time = 0;
+					i_simVars.timecontrol.current_timestep_nr = 0;
+					i_simVars.timecontrol.current_simulation_time = 0;
 
 					std::cout << "." << std::flush;
 
@@ -335,7 +327,7 @@ public:
 					/*
 					 * RUN timestep
 					 */
-					run_timestep();
+					(i_class->*i_run_timestep_method)();
 
 					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
 					{
@@ -347,7 +339,7 @@ public:
 						prog_cplx[inner_prog_id]->request_data_spectral();
 					}
 
-					if (simVars.disc.normal_mode_analysis_generation == 3)
+					if (i_simVars.disc.normal_mode_analysis_generation == 3)
 					{
 						/*
 						 * compute
@@ -357,7 +349,7 @@ public:
 						prog_cplx[outer_prog_id]->spectral_space_data[outer_i] -= 1.0;
 
 						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-							prog_cplx[inner_prog_id]->operator*=(1.0/simVars.timecontrol.current_timestep_size);
+							prog_cplx[inner_prog_id]->operator*=(1.0/i_simVars.timecontrol.current_timestep_size);
 					}
 
 
@@ -395,5 +387,10 @@ public:
 	}
 
 
+	~SWE_Plane_Normal_Modes()
+		{
+
+		}
+	};
 
 #endif /* SRC_PROGRAMS_SWE_PLANE_NORMAL_MODES_HPP_ */
