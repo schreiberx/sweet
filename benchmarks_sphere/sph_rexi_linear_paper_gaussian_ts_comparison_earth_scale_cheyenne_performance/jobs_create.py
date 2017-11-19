@@ -126,12 +126,13 @@ if True:
 if True:
 	p.runtime.timestepping_method = 'l_rexi'
 
-	for p.runtime.rexi_m in [128, 256, 512, 1024, 2048]:
+	#for p.runtime.rexi_m in [128, 256, 512, 1024, 2048]:
+	for p.runtime.rexi_m in [512]:
 		for p.runtime.timestepping_order in [0]:
 			for p.runtime.timestep_size in [800]:
 			#for p.runtime.timestep_size in timestep_sizes:
 				for p.cluster.par_time_cores in par_time_cores_list:
-					p.gen_script('script'+p.runtime.getUniqueID(p.compile), 'run.sh')
+					p.gen_script('script'+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
 
 
 
@@ -142,10 +143,11 @@ if True:
 if True:
 	p.runtime.timestepping_method = 'l_rexi'
 
-	for p.runtime.rexi_m in [1024, 4192]:
+	#for p.runtime.rexi_m in [1024, 4192]:
+	for p.runtime.rexi_m in [4192]:
 		for p.runtime.timestepping_order in [0]:
 			for p.runtime.timestep_size in [129600]:
 			#for p.runtime.timestep_size in timestep_sizes:
 				for p.cluster.par_time_cores in par_time_cores_list:
-					p.gen_script('script'+p.runtime.getUniqueID(p.compile), 'run.sh')
+					p.gen_script('script'+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
 
