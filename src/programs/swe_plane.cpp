@@ -34,7 +34,7 @@
 
 
 #include "swe_plane/SWE_Plane_TimeSteppers.hpp"
-
+#include "swe_plane/SWE_Plane_Normal_Modes.hpp"
 
 
 // Plane data config
@@ -453,6 +453,20 @@ public:
 
 	void normal_mode_analysis()
 	{
+		SWE_Plane_Normal_Modes::normal_mode_analysis(
+								prog_h_pert,
+								prog_u,
+								prog_v,
+								op,
+								simVars,
+								//PlaneData configuration
+								planeDataConfigInstance,
+								//Run timestep hook
+								run_timestep
+						);
+
+		FatalError("Done normal mode analysis in separate class");
+
 		// dummy time step to get time step size
 		if (simVars.timecontrol.current_timestep_size <= 0)
 			FatalError("Normal mode analysis requires setting fixed time step size");
@@ -1797,6 +1811,7 @@ int main(int i_argc, char *i_argv[])
 			if (simVars.disc.normal_mode_analysis_generation > 0)
 			{
 				simulationSWE->normal_mode_analysis();
+
 			}
 			else
 			{
