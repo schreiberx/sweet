@@ -36,6 +36,9 @@ p.compile.rexi_thread_parallel_sum = 'enable'
 p.compile.threading = 'off'
 
 
+p.compile.compiler = 'intel'
+p.compile.fortran_source = 'enable'
+
 
 
 p.runtime.timestep_size = 0.001
