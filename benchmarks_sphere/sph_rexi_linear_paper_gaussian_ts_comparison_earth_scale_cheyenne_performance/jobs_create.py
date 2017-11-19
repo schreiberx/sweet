@@ -36,6 +36,9 @@ p.compile.rexi_thread_parallel_sum = 'enable'
 p.compile.threading = 'off'
 
 
+p.compile.compiler = 'intel'
+p.compile.fortran_source = 'enable'
+
 
 
 p.runtime.timestep_size = 0.001
@@ -90,19 +93,6 @@ if True:
 
 
 
-####################################
-# Leapfrog
-####################################
-
-if True:
-	p.runtime.timestepping_method = 'l_lf'
-	p.cluster.pm_time_cores_per_mpi_rank = 1
-
-	for p.runtime.timestepping_order in [2]:
-		for p.runtime.timestep_size in [100]:
-		#for p.runtime.timestep_size in timestep_sizes:
-			p.gen_script('script'+p.runtime.getUniqueID(p.compile), 'run.sh')
-
 
 ####################################
 # Crank Nicolson
@@ -126,12 +116,13 @@ if True:
 if True:
 	p.runtime.timestepping_method = 'l_rexi'
 
-	for p.runtime.rexi_m in [128, 256, 512, 1024, 2048]:
+	#for p.runtime.rexi_m in [128, 256, 512, 1024, 2048]:
+	for p.runtime.rexi_m in [512]:
 		for p.runtime.timestepping_order in [0]:
 			for p.runtime.timestep_size in [800]:
 			#for p.runtime.timestep_size in timestep_sizes:
 				for p.cluster.par_time_cores in par_time_cores_list:
-					p.gen_script('script'+p.runtime.getUniqueID(p.compile), 'run.sh')
+					p.gen_script('script'+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
 
 
 
@@ -142,10 +133,11 @@ if True:
 if True:
 	p.runtime.timestepping_method = 'l_rexi'
 
-	for p.runtime.rexi_m in [1024, 4192]:
+	#for p.runtime.rexi_m in [1024, 4192]:
+	for p.runtime.rexi_m in [4192]:
 		for p.runtime.timestepping_order in [0]:
 			for p.runtime.timestep_size in [129600]:
 			#for p.runtime.timestep_size in timestep_sizes:
 				for p.cluster.par_time_cores in par_time_cores_list:
-					p.gen_script('script'+p.runtime.getUniqueID(p.compile), 'run.sh')
+					p.gen_script('script'+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
 
