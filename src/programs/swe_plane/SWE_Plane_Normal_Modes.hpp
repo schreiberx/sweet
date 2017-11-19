@@ -22,43 +22,19 @@
 class SWE_Plane_Normal_Modes
 {
 public:
-
-    std::function<void(void)> run_timestep;
-
-	bool linear_only = false;
-
-
-	SWE_Plane_Normal_Modes()
-	{
-	};
-
-	void setup(	)
-	{
-	};
-
-
+	template <typename TCallbackClass>
+	static
 	void normal_mode_analysis(
-			// Prognostic variables
-			// h: surface height (perturbation)
-			// u: velocity in x-direction
-			// v: velocity in y-direction
-			PlaneData i_prog_h_pert,
-			PlaneData i_prog_u,
-			PlaneData i_prog_v,
-			// Operator (maybe unnecessary)
-			PlaneOperators &i_op,
-			// Simulation variables
-			SimulationVariables &i_simVars,
-			//PlaneData configuration
-			PlaneDataConfig i_planeDataConfigInstance,
-			//Run timestep hook
-			std::function<void(void)> i_run_timestep
+			PlaneData &io_prog_h_pert, // h: surface height (perturbation)
+			PlaneData &io_prog_u, // u: velocity in x-direction
+			PlaneData &io_prog_v, // v: velocity in y-direction
+			SimulationVariables &i_simVars, // Simulation variables
+			TCallbackClass *i_class,
+			void(TCallbackClass::* const i_run_timestep_method)(void)
 	)
 	{
 
-	    PlaneDataConfig *planeDataConfig = &i_planeDataConfigInstance;
-
-	    run_timestep = i_run_timestep;
+		const PlaneDataConfig *planeDataConfig = io_prog_h_pert.planeDataConfig;
 
 		// dummy time step to get time step size
 		if (i_simVars.timecontrol.current_timestep_size <= 0)
@@ -89,7 +65,7 @@ public:
 		// use very high precision
 		file << std::setprecision(20);
 
-		PlaneData* prog[3] = {&i_prog_h_pert, &i_prog_u, &i_prog_v};
+		PlaneData* prog[3] = {&io_prog_h_pert, &io_prog_u, &io_prog_v};
 
 		/*
 		 * Maximum number of prognostic variables
@@ -100,14 +76,14 @@ public:
 		if (i_simVars.pde.id == 0 || i_simVars.pde.id == 1)
 		{
 			max_prog_id = 3;
-			i_prog_h_pert.physical_set_zero();
-			i_prog_u.physical_set_zero();
-			i_prog_v.physical_set_zero();
+			io_prog_h_pert.physical_set_zero();
+			io_prog_u.physical_set_zero();
+			io_prog_v.physical_set_zero();
 		}
 		else
 		{
 			max_prog_id = 1;
-			i_prog_h_pert.physical_set_zero();
+			io_prog_h_pert.physical_set_zero();
 		}
 
 #if 0
@@ -186,7 +162,7 @@ public:
 					 * RUN timestep
 					 */
 
-					run_timestep();
+					(i_class->*i_run_timestep_method)();
 
 					if (i_simVars.disc.normal_mode_analysis_generation == 1)
 					{
@@ -245,7 +221,7 @@ public:
 							/*
 							 * RUN timestep
 							 */
-							run_timestep();
+							(i_class->*i_run_timestep_method)();
 
 
 							if (i_simVars.disc.normal_mode_analysis_generation == 3)
@@ -351,7 +327,7 @@ public:
 					/*
 					 * RUN timestep
 					 */
-					run_timestep();
+					(i_class->*i_run_timestep_method)();
 
 					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
 					{

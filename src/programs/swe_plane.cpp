@@ -457,15 +457,12 @@ public:
 								prog_h_pert,
 								prog_u,
 								prog_v,
-								op,
 								simVars,
-								//PlaneData configuration
-								planeDataConfigInstance,
-								//Run timestep hook
-								run_timestep
+								this,
+								&SimulationInstance::run_timestep
 						);
 
-		FatalError("Done normal mode analysis in separate class");
+		std::cout << "Done normal mode analysis in separate class" << std::endl;
 
 		// dummy time step to get time step size
 		if (simVars.timecontrol.current_timestep_size <= 0)
@@ -487,7 +484,7 @@ public:
 			filename = simVars.misc.output_file_name_prefix.c_str();
 
 
-		sprintf(buffer_real, filename, "normal_modes_physical", simVars.timecontrol.current_timestep_size*simVars.misc.output_time_scale);
+		sprintf(buffer_real, filename, "normal_modes_old", simVars.timecontrol.current_timestep_size*simVars.misc.output_time_scale);
 		std::ofstream file(buffer_real, std::ios_base::trunc);
 		std::cout << "Writing normal mode analysis to file '" << buffer_real << "'" << std::endl;
 
