@@ -12,11 +12,11 @@ p = SWEETJobGeneration()
 #
 # Cluster options
 #
-p.cluster.setupTargetMachine("cheyenne_rexi_linear")
-p.cluster.pm_space_cores_per_mpi_rank = 18
+p.cluster.setupTargetMachine("cheyenne")
+p.cluster.pm_space_cores_per_mpi_rank = 4
 p.cluster.pm_time_cores_per_mpi_rank = 1
 
-pm_time_cores_per_mpi_ranks = [2**i for i in range(0, 10)]
+par_time_cores_list = [2**i for i in range(0, 10)]
 
 
 
@@ -130,7 +130,7 @@ if True:
 		for p.runtime.timestepping_order in [0]:
 			for p.runtime.timestep_size in [800]:
 			#for p.runtime.timestep_size in timestep_sizes:
-				for p.cluster.pm_time_cores_per_mpi_rank in pm_time_cores_per_mpi_ranks:
+				for p.cluster.par_time_cores in par_time_cores_list:
 					p.gen_script('script'+p.runtime.getUniqueID(p.compile), 'run.sh')
 
 
@@ -146,5 +146,6 @@ if True:
 		for p.runtime.timestepping_order in [0]:
 			for p.runtime.timestep_size in [129600]:
 			#for p.runtime.timestep_size in timestep_sizes:
-				p.gen_script('script'+p.runtime.getUniqueID(p.compile), 'run.sh')
+				for p.cluster.par_time_cores in par_time_cores_list:
+					p.gen_script('script'+p.runtime.getUniqueID(p.compile), 'run.sh')
 
