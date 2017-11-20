@@ -1356,8 +1356,8 @@ int main(int i_argc, char *i_argv[])
 	};
 
 	// default values for specific input (for general input see SimulationVariables.hpp)
-	simVars.bogus.var[0];  //frequency in x for waves test case
-	simVars.bogus.var[1];  //frequency in y for waves test case
+	//simVars.bogus.var[0];  //frequency in x for waves test case
+	//simVars.bogus.var[1];  //frequency in y for waves test case
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
