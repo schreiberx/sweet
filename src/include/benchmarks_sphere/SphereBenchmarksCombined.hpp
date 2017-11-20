@@ -737,11 +737,24 @@ public:
 		}
 		else
 		{
-			if (	io_simVars.setup.benchmark_scenario_name == "geostrophic_balance"		||
-					io_simVars.setup.benchmark_scenario_name == "geostrophic_balance_1"		||
-					io_simVars.setup.benchmark_scenario_name == "geostrophic_balance_2"		||
-					io_simVars.setup.benchmark_scenario_name == "geostrophic_balance_4"		||
-					io_simVars.setup.benchmark_scenario_name == "geostrophic_balance_8"		||
+			if (io_simVars.setup.benchmark_scenario_name == "gaussian_bumps2")
+			{
+				SphereData tmp(o_h.sphereDataConfig);
+
+				o_h.physical_set_all_value(io_simVars.sim.h0);
+
+				BenchmarkGaussianDam::setup_initial_conditions_gaussian(tmp, o_u, o_v, io_simVars, 2.0*M_PI*0.1, M_PI/3, 20.0);
+				o_h += (tmp-io_simVars.sim.h0);
+				BenchmarkGaussianDam::setup_initial_conditions_gaussian(tmp, o_u, o_v, io_simVars, 2.0*M_PI*0.6, M_PI/5.0, 80.0);
+				o_h += (tmp-io_simVars.sim.h0);
+				BenchmarkGaussianDam::setup_initial_conditions_gaussian(tmp, o_u, o_v, io_simVars, 2.0*M_PI*0.8, -M_PI/4, 360.0);
+				o_h += (tmp-io_simVars.sim.h0);
+			}
+			else if (	io_simVars.setup.benchmark_scenario_name == "geostrophic_balance"	||
+					io_simVars.setup.benchmark_scenario_name == "geostrophic_balance_1"	||
+					io_simVars.setup.benchmark_scenario_name == "geostrophic_balance_2"	||
+					io_simVars.setup.benchmark_scenario_name == "geostrophic_balance_4"	||
+					io_simVars.setup.benchmark_scenario_name == "geostrophic_balance_8"	||
 					io_simVars.setup.benchmark_scenario_name == "geostrophic_balance_16"	||
 					io_simVars.setup.benchmark_scenario_name == "geostrophic_balance_32"	||
 					io_simVars.setup.benchmark_scenario_name == "geostrophic_balance_64"	||
@@ -934,6 +947,10 @@ public:
 						}
 					);
 				}
+			}
+			else
+			{
+				FatalError("Benchmark not implemented");
 			}
 		}
 	}
