@@ -50,6 +50,133 @@ public:
 		if (i_simVars.disc.normal_mode_analysis_generation == 4)
 		{
 
+			const char* filename;
+			char buffer_real[1024];
+
+			if (i_simVars.misc.output_file_name_prefix == "")
+				filename = "output_%s_normalmodes.csv";
+			else
+				filename = i_simVars.misc.output_file_name_prefix.c_str();
+
+
+			sprintf(buffer_real, filename, "normal_modes_plane", i_simVars.timecontrol.current_timestep_size*i_simVars.misc.output_time_scale);
+			std::ofstream file(buffer_real, std::ios_base::trunc);
+			std::cout << "Writing normal mode analysis to file '" << buffer_real << "'" << std::endl;
+
+			std::cout << "WARNING: OUTPUT IS TRANSPOSED!" << std::endl;
+
+			// use very high precision
+			file << std::setprecision(20);
+
+			PlaneData* prog[3] = {&io_prog_h_pert, &io_prog_u, &io_prog_v};
+
+			int max_prog_id = 3;
+			//The basic state is with zero in all variables
+			// The only non zero variable in the basic state is the total height
+			//    for which the constant is added within run_timestep()
+			io_prog_h_pert.physical_set_zero();
+			io_prog_u.physical_set_zero();
+			io_prog_v.physical_set_zero();
+
+			//int num_timesteps = 1;
+
+			file << "# dt " << i_simVars.timecontrol.current_timestep_size << std::endl;
+			file << "# g " << i_simVars.sim.gravitation << std::endl;
+			file << "# h " << i_simVars.sim.h0 << std::endl;
+			file << "# r " << i_simVars.sim.earth_radius << std::endl;
+			file << "# f " << i_simVars.sim.coriolis_omega << std::endl;
+
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+			int specmodes = planeDataConfig->get_spectral_iteration_range_area(0)+planeDataConfig->get_spectral_iteration_range_area(1);
+			file << "# specnummodes " << specmodes << std::endl;
+			file << "# specrealresx " << planeDataConfig->spectral_real_modes[0] << std::endl;
+			file << "# specrealresy " << planeDataConfig->spectral_real_modes[1] << std::endl;
+#endif
+
+			file << "# physresx " << planeDataConfig->physical_res[0] << std::endl;
+			file << "# physresy " << planeDataConfig->physical_res[1] << std::endl;
+			file << "# normalmodegeneration " << i_simVars.disc.normal_mode_analysis_generation << std::endl;
+			file << "# antialiasing ";
+#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
+			file << 1;
+#else
+			file << 0;
+#endif
+			file << std::endl;
+
+
+			// reset time control
+			i_simVars.timecontrol.current_timestep_nr = 0;
+			i_simVars.timecontrol.current_simulation_time = 0;
+			double dt = i_simVars.timecontrol.current_timestep_size;
+			double eps = dt;
+
+			//For each spectral mode
+			for (int r = 0; r < 2; r++)
+			{
+
+				for (std::size_t j = planeDataConfig->spectral_data_iteration_ranges[r][1][0]; j < planeDataConfig->spectral_data_iteration_ranges[r][1][1]; j++)
+				{
+					for (std::size_t i = planeDataConfig->spectral_data_iteration_ranges[r][0][0]; i < planeDataConfig->spectral_data_iteration_ranges[r][0][1]; i++)
+					{
+
+						//This is the mode to be analysed
+						std::cout << "Mode (i,j)= (" << i << " , " << j <<")"<< std::endl;
+
+
+						for (int outer_prog_id = 0; outer_prog_id < max_prog_id; outer_prog_id++)
+						{
+							std::cout << "prog id outer : " << outer_prog_id << std::endl;
+
+							// reset time control
+							i_simVars.timecontrol.current_timestep_nr = 0;
+							i_simVars.timecontrol.current_simulation_time = 0;
+
+							for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+								prog[inner_prog_id]->spectral_set_zero();
+
+							// activate mode via real coefficient
+							prog[outer_prog_id]->p_spectral_set(j, i, 1.0);
+
+							for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+							{
+								std::cout<<"inner prog (before runtime): " << inner_prog_id << std::endl;
+								prog[inner_prog_id]->print_spectralData();
+							}
+
+							/*
+							 * RUN timestep
+							 */
+							prog[outer_prog_id]->request_data_physical();
+							(i_class->*i_run_timestep_method)();
+
+							/*
+							 * compute
+							 * 1/dt * (U(t+1) - U(t))
+							 */
+							prog[outer_prog_id]->request_data_spectral();
+
+							std::complex<double> val = prog[outer_prog_id]->p_spectral_get(j, i);
+							val = val - 1.0;
+							prog[outer_prog_id]->p_spectral_set(j, i, val);
+
+							for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+								(*prog[inner_prog_id]) /= eps;
+
+
+							for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+							{
+								std::cout<<"inner prog (after runtime): " << inner_prog_id << std::endl;
+								prog[inner_prog_id]->print_spectralData();
+							}
+
+						}
+
+					}
+				}
+				std::cout<<"-------------------------" << std::endl;
+				FatalError("needs debug");
+			}
 		}
 		/*
 		 * Do a normal mode analysis using perturbation, see
