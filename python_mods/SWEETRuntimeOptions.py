@@ -206,7 +206,7 @@ class SWEETRuntimeOptions():
 		idstr += '_tsob'+str(self.timestepping_order2)
 
 
-		idstr += '_C'+str(self.timestep_size).zfill(4)
+		idstr += '_C'+str(self.timestep_size).zfill(6)
 
 		if self.max_timesteps != -1:
 			idstr += '_T'+str(self.max_timesteps).zfill(3)
