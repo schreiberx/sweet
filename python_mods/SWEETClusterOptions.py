@@ -292,7 +292,6 @@ class SWEETClusterOptions:
 			if time_ranks_per_node == 0:
 				raise Exception("Too many cores per MPI rank")
 
-
 			# Total number of time mpi ranks
 			time_num_ranks = int(math.ceil(self.par_time_cores/time_ranks_per_node))
 
@@ -328,6 +327,8 @@ class SWEETClusterOptions:
 			# Total number of MPI ranks
 			mpi_ranks_total = par_total_cores
 
+
+
 		#
 		# SETUP the following variables:
 		#
@@ -337,7 +338,6 @@ class SWEETClusterOptions:
 		# mpi_exec_prefix
 		#    e.g. mpirun -n XXX
 		#
-
 		if self.target_machine == 'yellowstone':
 			#
 			# YELLOWSTONE:
@@ -431,6 +431,7 @@ export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
 			# -tm pthreads didn't make any difference in performance for single-threaded programs which 1 thread per socket
 			#mpi_exec_prefix += " -tm pthreads "
 
+
 		elif self.target_machine == 'mac-login-intel':
 
 			content = """#!/bin/bash
@@ -488,6 +489,7 @@ export OMP_NUM_THREADS=16
 			# one process per node, only one node
 			mpi_exec_prefix = "mpiexec.hydra -ppn 1 -n 1"
 
+
 		else:
 			content = ""
 			content += "#!/bin/bash\n"
@@ -495,6 +497,8 @@ export OMP_NUM_THREADS=16
 			#content += "export OMP_PROC_BIND=CLOSE\n"
 			content += "\n"
 			mpi_exec_prefix = ""
+ 
+
 
 		if len(mpi_exec_prefix) > 1:
 			if mpi_exec_prefix[-1] != " ":
