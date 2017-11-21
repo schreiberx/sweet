@@ -72,7 +72,7 @@ for group_info in groups:
 		print("")
 		print("Running tests for new group:")
 		for rundir in g:
-			progparams = ['./pp_compute_max_and_rms_errors.py', ref_dir+"/"+datafile, rundir+"/"+datafile, rundir]
+			progparams = ['./pp_compute_plane_max_and_rms_errors.py', ref_dir+"/"+datafile, rundir+"/"+datafile, rundir]
 
 			p = Popen(progparams, stdout=PIPE, stderr=PIPE)
 			output, error = p.communicate()
