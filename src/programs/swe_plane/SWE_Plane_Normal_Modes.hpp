@@ -15,7 +15,9 @@
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <functional>
-
+#if SWEET_EIGEN
+#include <Eigen/Eigenvalues>
+#endif
 /**
  * SWE Plane normal mode
  */
@@ -49,7 +51,9 @@ public:
 
 		if (i_simVars.disc.normal_mode_analysis_generation == 4)
 		{
-
+#if !SWEET_EIGEN
+			FatalError("Cannot test this without Eigen library. Please compile with --eigen=enable");
+#endif
 			const char* filename;
 			char buffer_real[1024];
 
