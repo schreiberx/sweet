@@ -1,9 +1,9 @@
 #! /bin/bash
 
 
-#CSVFILE="output_prog_eta_t00000000120.00000000.csv"
-#OUTFILE="output_prog_eta_t00000000120.00000000.png"
-#FILEA="output_prog_eta_"
+#CSVFILE="output_prog_vort_t00000000120.00000000.csv"
+#OUTFILE="output_prog_vort_t00000000120.00000000.png"
+#FILEA="output_prog_vort_"
 
 CSVFILE="output_prog_h_t00000000120.00000000.csv"
 OUTFILE="output_prog_h_t00000000120.00000000.png"

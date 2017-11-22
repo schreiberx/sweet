@@ -1,0 +1,16 @@
+#! /bin/bash
+
+
+REFFILE="output_normal_modes_physical_t00000000010.00000000.csv_evalues_complex.csv"
+
+./normal_modes_plot_reference_vs_others.py	\
+	a_output_a_reference_vs_others_fsphere0.png		\
+	"script_g1_h100000_f7.2921e-05_a6371220_u0_U0_fsph0_tsm_l_cn_tso2_tsob1_C000010_T001_M0016/$REFFILE" \
+	"script_g1_h100000_f7.2921e-05_a6371220_u0_U0_fsph0_tsm_l_erk_tso1_tsob1_C000010_T001_M0016/$REFFILE" \
+	"script_g1_h100000_f7.2921e-05_a6371220_u0_U0_fsph0_tsm_l_erk_tso2_tsob1_C000010_T001_M0016/$REFFILE" \
+	"script_g1_h100000_f7.2921e-05_a6371220_u0_U0_fsph0_tsm_l_irk_tso1_tsob1_C000010_T001_M0016/$REFFILE" \
+	"script_g1_h100000_f7.2921e-05_a6371220_u0_U0_fsph0_tsm_l_rexi_tso0_tsob1_C000010_T001_REXITER_m00000004_h0.15_nrm0_hlf1_bf0_ext00_M0016/$REFFILE" \
+	"script_g1_h100000_f7.2921e-05_a6371220_u0_U0_fsph0_tsm_l_rexi_tso0_tsob1_C000010_T001_REXITER_m00000064_h0.15_nrm0_hlf1_bf0_ext00_M0016/$REFFILE" \
+	"script_g1_h100000_f7.2921e-05_a6371220_u0_U0_fsph0_tsm_l_rexi_tso0_tsob1_C000010_T001_REXITER_m00000128_h0.15_nrm0_hlf1_bf0_ext00_M0016/$REFFILE" \
+	"script_g1_h100000_f7.2921e-05_a6371220_u0_U0_fsph0_tsm_l_rexi_tso0_tsob1_C000010_T001_REXITER_m00000256_h0.15_nrm0_hlf1_bf0_ext00_M0016/$REFFILE" \
+
