@@ -103,6 +103,10 @@ int main(
 	}
 	std::cout << "The matrix of eigenvectors, V, is:" << std::endl << ces.eigenvectors() << std::endl << std::endl;
 
+	//const Eigen::IOFormat fmt(3, Eigen::DontAlignCols, "\t", " ", "", "", "", "");
+	//const Eigen::IOFormat OctaveFmt(Eigen::StreamPrecision, 0, ", ", "\n", "", "", "", "");
+	//const Eigen::IOFormat CleanFmt(4, 0, ", ", "\n", "[", "]");
+
 	//std::complex<float> lambda = ces.eigenvalues()[0];
 	//std::cout << "Consider the first eigenvalue, lambda = " << lambda << std::endl;
 	//Eigen vectors
