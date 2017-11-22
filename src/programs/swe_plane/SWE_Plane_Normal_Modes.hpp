@@ -54,6 +54,10 @@ public:
 #if !SWEET_EIGEN
 			FatalError("Cannot test this without Eigen library. Please compile with --eigen=enable");
 #endif
+#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
+			FatalError("This test was build for linear or linearized models, so please compile without dealising --plane-spectral-dealiasing=disable.");
+#endif
+
 			const char* filename;
 			char buffer_real[1024];
 
