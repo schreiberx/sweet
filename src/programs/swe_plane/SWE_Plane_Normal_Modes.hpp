@@ -15,7 +15,9 @@
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <functional>
-
+#if SWEET_EIGEN
+#include <Eigen/Eigenvalues>
+#endif
 /**
  * SWE Plane normal mode
  */
@@ -49,6 +51,12 @@ public:
 
 		if (i_simVars.disc.normal_mode_analysis_generation == 4)
 		{
+#if !SWEET_EIGEN
+			FatalError("Cannot test this without Eigen library. Please compile with --eigen=enable");
+#endif
+#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
+			FatalError("This test was build for linear or linearized models, so please compile without dealising --plane-spectral-dealiasing=disable.");
+#endif
 
 			const char* filename;
 			char buffer_real[1024];
@@ -57,7 +65,6 @@ public:
 				filename = "output_%s_normalmodes.csv";
 			else
 				filename = i_simVars.misc.output_file_name_prefix.c_str();
-
 
 			sprintf(buffer_real, filename, "normal_modes_plane", i_simVars.timecontrol.current_timestep_size*i_simVars.misc.output_time_scale);
 			std::ofstream file(buffer_real, std::ios_base::trunc);
@@ -105,78 +112,106 @@ public:
 			file << std::endl;
 
 
-			// reset time control
-			i_simVars.timecontrol.current_timestep_nr = 0;
-			i_simVars.timecontrol.current_simulation_time = 0;
+			// Timestep and perturbation
 			double dt = i_simVars.timecontrol.current_timestep_size;
 			double eps = dt;
 
+			//Matrix representing discrete linear operator in spectral space
+			Eigen::MatrixXcf A(3,3) ;
+			//Eigen solver
+			Eigen::ComplexEigenSolver<Eigen::MatrixXcf> ces;
+			//Final eigenvalues
+			std::complex<double> eval[3];
+
 			//For each spectral mode
-			for (int r = 0; r < 2; r++)
+			//for (int r = 0; r < 2; r++) //only required to get the symmetric half of the spectrum
+			//{
+			int r = 0;
+			for (std::size_t j = planeDataConfig->spectral_data_iteration_ranges[r][1][0]; j < planeDataConfig->spectral_data_iteration_ranges[r][1][1]; j++)
 			{
-
-				for (std::size_t j = planeDataConfig->spectral_data_iteration_ranges[r][1][0]; j < planeDataConfig->spectral_data_iteration_ranges[r][1][1]; j++)
+				for (std::size_t i = planeDataConfig->spectral_data_iteration_ranges[r][0][0]; i < planeDataConfig->spectral_data_iteration_ranges[r][0][1]; i++)
 				{
-					for (std::size_t i = planeDataConfig->spectral_data_iteration_ranges[r][0][0]; i < planeDataConfig->spectral_data_iteration_ranges[r][0][1]; i++)
+
+					//This is the mode to be analysed
+					std::cout << "Mode (i,j)= (" << i << " , " << j <<")"<< std::endl;
+
+
+					for (int outer_prog_id = 0; outer_prog_id < max_prog_id; outer_prog_id++)
 					{
+						//std::cout << "prog id outer : " << outer_prog_id << std::endl;
 
-						//This is the mode to be analysed
-						std::cout << "Mode (i,j)= (" << i << " , " << j <<")"<< std::endl;
+						// reset time control
+						i_simVars.timecontrol.current_timestep_nr = 0;
+						i_simVars.timecontrol.current_simulation_time = 0;
 
+						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+							prog[inner_prog_id]->spectral_set_zero();
 
-						for (int outer_prog_id = 0; outer_prog_id < max_prog_id; outer_prog_id++)
+						// activate mode via real coefficient
+						prog[outer_prog_id]->p_spectral_set(j, i, 1.0);
+
+						if(i==0 || j==0)
 						{
-							std::cout << "prog id outer : " << outer_prog_id << std::endl;
+							std::cout<<"prog:"<<outer_prog_id<<" before runtime"<<std::endl;
+							prog[outer_prog_id]->print_spectralData_zeroNumZero();
+						}
 
-							// reset time control
-							i_simVars.timecontrol.current_timestep_nr = 0;
-							i_simVars.timecontrol.current_simulation_time = 0;
+						//for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+						//{
+						//	std::cout<<"inner prog (before runtime): " << inner_prog_id << std::endl;
+						//	prog[inner_prog_id]->print_spectralData();
+						//}
 
-							for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-								prog[inner_prog_id]->spectral_set_zero();
+						/*
+						 * RUN timestep
+						 */
+						prog[outer_prog_id]->request_data_physical();
+						(i_class->*i_run_timestep_method)();
 
-							// activate mode via real coefficient
-							prog[outer_prog_id]->p_spectral_set(j, i, 1.0);
+						/*
+						 * compute
+						 * 1/dt * (U(t+1) - U(t))
+						 */
+						prog[outer_prog_id]->request_data_spectral();
 
-							for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+						std::complex<double> val = prog[outer_prog_id]->p_spectral_get(j, i);
+						val = val - 1.0; //subtract U(0) from mode
+						prog[outer_prog_id]->p_spectral_set(j, i, val);
+
+						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+							(*prog[inner_prog_id]) /= eps;
+
+						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+						{
+							if(i==0 || j==0)
 							{
-								std::cout<<"inner prog (before runtime): " << inner_prog_id << std::endl;
+								std::cout<<"prog:"<< inner_prog_id <<" (after runtime) "<<std::endl;
 								prog[inner_prog_id]->print_spectralData();
 							}
-
-							/*
-							 * RUN timestep
-							 */
-							prog[outer_prog_id]->request_data_physical();
-							(i_class->*i_run_timestep_method)();
-
-							/*
-							 * compute
-							 * 1/dt * (U(t+1) - U(t))
-							 */
-							prog[outer_prog_id]->request_data_spectral();
-
-							std::complex<double> val = prog[outer_prog_id]->p_spectral_get(j, i);
-							val = val - 1.0;
-							prog[outer_prog_id]->p_spectral_set(j, i, val);
-
-							for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-								(*prog[inner_prog_id]) /= eps;
-
-
-							for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-							{
-								std::cout<<"inner prog (after runtime): " << inner_prog_id << std::endl;
-								prog[inner_prog_id]->print_spectralData();
-							}
-
+							A(inner_prog_id,outer_prog_id)=prog[inner_prog_id]->p_spectral_get(j, i);;
 						}
 
 					}
+
+					std::cout << "Lik matrix" << std::endl;
+					std::cout << A << std::endl;
+
+					std::cout<<"Normal modes" << std::endl;
+					ces.compute(A);
+					for(int i=0; i<3; i++)
+					{
+						eval[i]=ces.eigenvalues()[i];
+						std::cout << "Eigenvalue "<< i << " : " << eval[i] << std::endl;
+
+					}
+
+					std::cout<<"-------------------------" << std::endl;
 				}
-				std::cout<<"-------------------------" << std::endl;
-				FatalError("needs debug");
 			}
+
+			//}
+			std::cout<<"-------------------------" << std::endl;
+			FatalError("still needs work...");
 		}
 		/*
 		 * Do a normal mode analysis using perturbation, see
