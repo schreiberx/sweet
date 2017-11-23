@@ -1195,7 +1195,7 @@ public:
 				std::cout << "	-v [int]			verbosity level" << std::endl;
 				std::cout << "	-V [double]			period of outputConfig" << std::endl;
 				std::cout << "	-G [0/1]			graphical user interface" << std::endl;
-				std::cout << "	-O [string]			string prefix for filename of output of simulation data" << std::endl;
+				std::cout << "	-O [string]			string prefix for filename of output of simulation data (default output_%s_t%020.8f.csv)" << std::endl;
 				std::cout << "	-d [int]			accuracy of floating point output" << std::endl;
 				std::cout << "	-i [file0][;file1][;file3]...	string with filenames for initial conditions" << std::endl;
 				std::cout << "					specify BINARY; as first file name to read files as binary raw data" << std::endl;

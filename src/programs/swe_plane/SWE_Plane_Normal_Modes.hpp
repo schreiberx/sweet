@@ -52,46 +52,53 @@ public:
 		if (i_simVars.disc.normal_mode_analysis_generation == 4)
 		{
 #if !SWEET_EIGEN
-			FatalError("Cannot test this without Eigen library. Please compile with --eigen=enable");
+			FatalError("SWE_Plane_Normal_Modes: Cannot test this without Eigen library. Please compile with --eigen=enable");
 #endif
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
-			FatalError("This test was build for linear or linearized models, so please compile without dealising --plane-spectral-dealiasing=disable.");
+			FatalError("SWE_Plane_Normal_Modes: This test was build for linear or linearized models, so please compile without dealising --plane-spectral-dealiasing=disable.");
 #endif
 
-			const char* filename;
+
+			/*
+			 * Setup all output files
+			 */
+			const char* filename; //general filename
 			char buffer_real[1024];
 
 			if (i_simVars.misc.output_file_name_prefix == "")
-				filename = "output_%s_normalmodes.csv";
+				filename = "output_%s_t%020.8f.csv";
 			else
 				filename = i_simVars.misc.output_file_name_prefix.c_str();
 
 			sprintf(buffer_real, filename, "normal_modes_plane", i_simVars.timecontrol.current_timestep_size*i_simVars.misc.output_time_scale);
 			std::ofstream file(buffer_real, std::ios_base::trunc);
-			std::cout << "Writing normal mode analysis to file '" << buffer_real << "'" << std::endl;
+			std::cout << "Writing normal mode analysis to files of the form '" << buffer_real << "'" << std::endl;
 
-			std::cout << "WARNING: OUTPUT IS TRANSPOSED!" << std::endl;
+			//Positive inertia-gravity modes
+			sprintf(buffer_real, filename, "normal_modes_plane_igpos", i_simVars.timecontrol.current_timestep_size*i_simVars.misc.output_time_scale);
+			std::ofstream file_igpos(buffer_real, std::ios_base::trunc);
+
+			//Negative inertia-gravity modes
+			sprintf(buffer_real, filename, "normal_modes_plane_igneg", i_simVars.timecontrol.current_timestep_size*i_simVars.misc.output_time_scale);
+			std::ofstream file_igneg(buffer_real, std::ios_base::trunc);
+
+			//Geostrophic modes
+			sprintf(buffer_real, filename, "normal_modes_plane_geo", i_simVars.timecontrol.current_timestep_size*i_simVars.misc.output_time_scale);
+			std::ofstream file_geo(buffer_real, std::ios_base::trunc);
+
+			//std::cout << "WARNING: OUTPUT IS TRANSPOSED!" << std::endl;
 
 			// use very high precision
 			file << std::setprecision(20);
-
-			PlaneData* prog[3] = {&io_prog_h_pert, &io_prog_u, &io_prog_v};
-
-			int max_prog_id = 3;
-			//The basic state is with zero in all variables
-			// The only non zero variable in the basic state is the total height
-			//    for which the constant is added within run_timestep()
-			io_prog_h_pert.physical_set_zero();
-			io_prog_u.physical_set_zero();
-			io_prog_v.physical_set_zero();
-
-			//int num_timesteps = 1;
+			file_igpos << std::setprecision(20);
+			file_igneg << std::setprecision(20);
+			file_geo << std::setprecision(20);
 
 			file << "# dt " << i_simVars.timecontrol.current_timestep_size << std::endl;
 			file << "# g " << i_simVars.sim.gravitation << std::endl;
 			file << "# h " << i_simVars.sim.h0 << std::endl;
 			file << "# r " << i_simVars.sim.earth_radius << std::endl;
-			file << "# f " << i_simVars.sim.coriolis_omega << std::endl;
+			file << "# f " << i_simVars.sim.f0 << std::endl;
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 			int specmodes = planeDataConfig->get_spectral_iteration_range_area(0)+planeDataConfig->get_spectral_iteration_range_area(1);
@@ -111,6 +118,17 @@ public:
 #endif
 			file << std::endl;
 
+			PlaneData* prog[3] = {&io_prog_h_pert, &io_prog_u, &io_prog_v};
+
+			int max_prog_id = 3;
+			//The basic state is with zero in all variables
+			// The only non zero variable in the basic state is the total height
+			//    for which the constant is added within run_timestep()
+			io_prog_h_pert.physical_set_zero();
+			io_prog_u.physical_set_zero();
+			io_prog_v.physical_set_zero();
+
+			//int num_timesteps = 1;
 
 			// Timestep and perturbation
 			double dt = i_simVars.timecontrol.current_timestep_size;
@@ -127,18 +145,18 @@ public:
 			//for (int r = 0; r < 2; r++) //only required to get the symmetric half of the spectrum
 			//{
 			int r = 0;
-			for (std::size_t j = planeDataConfig->spectral_data_iteration_ranges[r][1][0]; j < planeDataConfig->spectral_data_iteration_ranges[r][1][1]; j++)
-			{
-				for (std::size_t i = planeDataConfig->spectral_data_iteration_ranges[r][0][0]; i < planeDataConfig->spectral_data_iteration_ranges[r][0][1]; i++)
-				{
 
+			for (std::size_t i = planeDataConfig->spectral_data_iteration_ranges[r][0][0]; i < planeDataConfig->spectral_data_iteration_ranges[r][0][1]; i++)
+			{
+				std::cout << "." << std::flush;
+				for (std::size_t j = planeDataConfig->spectral_data_iteration_ranges[r][1][0]; j < planeDataConfig->spectral_data_iteration_ranges[r][1][1]; j++)
+				{
 					//This is the mode to be analysed
-					std::cout << "Mode (i,j)= (" << i << " , " << j <<")"<< std::endl;
+					//std::cout << "Mode (i,j)= (" << i << " , " << j <<")"<< std::endl;
 
 
 					for (int outer_prog_id = 0; outer_prog_id < max_prog_id; outer_prog_id++)
 					{
-						//std::cout << "prog id outer : " << outer_prog_id << std::endl;
 
 						// reset time control
 						i_simVars.timecontrol.current_timestep_nr = 0;
@@ -149,18 +167,9 @@ public:
 
 						// activate mode via real coefficient
 						prog[outer_prog_id]->p_spectral_set(j, i, 1.0);
-
-						if(i==0 || j==0)
-						{
-							std::cout<<"prog:"<<outer_prog_id<<" before runtime"<<std::endl;
-							prog[outer_prog_id]->print_spectralData_zeroNumZero();
-						}
-
-						//for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-						//{
-						//	std::cout<<"inner prog (before runtime): " << inner_prog_id << std::endl;
-						//	prog[inner_prog_id]->print_spectralData();
-						//}
+						//Activate the symetric couterpart of the mode (only needed if j>0 )
+						if (j > 0)
+							prog[outer_prog_id]->p_spectral_set(planeDataConfig->spectral_data_size[1]-j, i, 1.0);
 
 						/*
 						 * RUN timestep
@@ -183,35 +192,61 @@ public:
 
 						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
 						{
-							if(i==0 || j==0)
-							{
-								std::cout<<"prog:"<< inner_prog_id <<" (after runtime) "<<std::endl;
-								prog[inner_prog_id]->print_spectralData();
-							}
 							A(inner_prog_id,outer_prog_id)=prog[inner_prog_id]->p_spectral_get(j, i);;
 						}
 
 					}
 
-					std::cout << "Lik matrix" << std::endl;
-					std::cout << A << std::endl;
+					//std::cout << "Lik matrix" << std::endl;
+					//std::cout << A << std::endl;
 
-					std::cout<<"Normal modes" << std::endl;
+					//std::cout<<"Normal modes" << std::endl;
 					ces.compute(A);
 					for(int i=0; i<3; i++)
 					{
 						eval[i]=ces.eigenvalues()[i];
-						std::cout << "Eigenvalue "<< i << " : " << eval[i] << std::endl;
+						//std::cout << "Eigenvalue "<< i << " : " << eval[i].real() <<" "<<eval[i].imag() << std::endl;
 
 					}
-
-					std::cout<<"-------------------------" << std::endl;
+					/* We will try to separate the modes in 3 types:
+					 * -positive inertia-gravity (imag>f) - we will adopt coriolis f to test as if > zero, since the exact freq is sqrt(f^2+cK*K)
+					 * -negative inertia-gravity (imag<-f)
+					 * -negative inertia-gravity (imag aprox 0) - we will fit all other modes here
+					 */
+					for(int i=0; i<3; i++)
+					{
+						if(eval[i].imag() > 0.5 * i_simVars.sim.f0)
+						{
+							//std::cout<< "IG pos mode: " << eval[i].imag() << std::endl;
+							//file_igpos << eval[i].imag();
+							file_igpos << eval[i];
+							file_igpos << "\t";
+						}
+						if(eval[i].imag() < - 0.5 * i_simVars.sim.f0)
+						{
+							//std::cout<< "IG neg mode: " << eval[i].imag() << std::endl;
+							//file_igneg << eval[i].imag();
+							file_igneg << eval[i];
+							file_igneg << "\t";
+						}
+						if(eval[i].imag() >= - 0.5 * i_simVars.sim.f0 && eval[i].imag() <=  0.5 * i_simVars.sim.f0 )
+						{
+							//std::cout<< "IG geo mode: " << eval[i].imag() << std::endl;
+							//file_geo << eval[i].imag();
+							file_geo << eval[i];
+							file_geo << "\t";
+						}
+					}
+					//std::cout<<"-------------------------" << std::endl;
 				}
+				file_igpos << std::endl;
+				file_igneg << std::endl;
+				file_geo << std::endl;
 			}
 
 			//}
-			std::cout<<"-------------------------" << std::endl;
-			FatalError("still needs work...");
+			//std::cout<<"-------------------------" << std::endl;
+			//FatalError("still needs work...");
 		}
 		/*
 		 * Do a normal mode analysis using perturbation, see
