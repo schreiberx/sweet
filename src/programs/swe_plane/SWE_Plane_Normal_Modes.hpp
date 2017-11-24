@@ -213,30 +213,48 @@ public:
 					 * -negative inertia-gravity (imag<-f)
 					 * -negative inertia-gravity (imag aprox 0) - we will fit all other modes here
 					 */
+					int count_igpos=0;
+					int count_igneg=0;
+					int count_geo=0;
 					for(int i=0; i<3; i++)
 					{
 						if(eval[i].imag() > 0.5 * i_simVars.sim.f0)
 						{
 							//std::cout<< "IG pos mode: " << eval[i].imag() << std::endl;
 							//file_igpos << eval[i].imag();
-							file_igpos << eval[i];
+							file_igpos << eval[i].real()<< "\t" << eval[i].imag();
 							file_igpos << "\t";
+							count_igpos++;
 						}
 						if(eval[i].imag() < - 0.5 * i_simVars.sim.f0)
 						{
 							//std::cout<< "IG neg mode: " << eval[i].imag() << std::endl;
 							//file_igneg << eval[i].imag();
-							file_igneg << eval[i];
+							file_igneg << eval[i].real()<< "\t" << eval[i].imag();
 							file_igneg << "\t";
+							count_igneg++;
 						}
 						if(eval[i].imag() >= - 0.5 * i_simVars.sim.f0 && eval[i].imag() <=  0.5 * i_simVars.sim.f0 )
 						{
 							//std::cout<< "IG geo mode: " << eval[i].imag() << std::endl;
 							//file_geo << eval[i].imag();
-							file_geo << eval[i];
+							file_geo << eval[i].real()<< "\t" << eval[i].imag();
 							file_geo << "\t";
+							count_geo++;
 						}
 					}
+					//Check if we got the correct modes
+					if ( count_igpos * count_igneg * count_geo > 0 )
+					{
+						count_igpos=0;
+						count_igneg=0;
+						count_geo=0;
+					}
+					else
+					{
+						FatalError("SWE_Plane_Normal_Modes: Could not separate modes!!");
+					}
+
 					//std::cout<<"-------------------------" << std::endl;
 				}
 				file_igpos << std::endl;

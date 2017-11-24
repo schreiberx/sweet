@@ -40,7 +40,7 @@ p.compile.compiler = 'gnu'
 
 
 # Verbosity mode
-p.runtime.verbosity = 2
+#p.runtime.verbosity = 2
 
 # Normal mode analysis
 p.runtime.normal_mode_analysis = 1
@@ -49,19 +49,19 @@ p.runtime.normal_mode_analysis = 1
 #
 # Mode and Physical resolution
 #
-p.runtime.mode_res = 32
+p.runtime.mode_res = 16
 p.runtime.phys_res = -1
 
 #
 # Benchmark ID
 # 4: Gaussian breaking dam
-# 14: Diagonal steady state
-p.runtime.bench_id = 14
+#
+p.runtime.bench_id = 4
 
 #
 # Compute error
 #
-p.runtime.compute_error = 1
+p.runtime.compute_error = 0
 
 
 #
@@ -131,10 +131,10 @@ timestep_size_reference = 100
 timestep_sizes = [timestep_size_reference]
 
 #p.runtime.simtime = timestep_sizes[-1]*10 #timestep_size_reference*2000
-#p.runtime.simtime = 100*(2**5)*10
+p.runtime.simtime = 100*(2**5)*10
 p.runtime.output_timestep_size = p.runtime.simtime
 #p.runtime.output_timestep_size = -1
-p.runtime.max_timesteps = 1
+
 
 # Groups to execute, see below
 # l: linear
@@ -158,7 +158,7 @@ if __name__ == "__main__":
 	####################################################
 	# WE FOCUS ON 2ND ORDER ACCURATE METHODS HERE
 	####################################################
-	groups = ['ln2']
+	groups = ['l1']
 
 
 	if len(sys.argv) > 1:
@@ -172,8 +172,8 @@ if __name__ == "__main__":
 			ts_methods = [
 				['l_erk',		4,	4,	0],	# reference solution
 				['l_erk',	1,	0,	0],
-				['l_irk',	1,	0,	0],
-				['l_rexi',	0,	0,	0],
+				#['l_irk',	1,	0,	0],
+				#k['l_rexi',	0,	0,	0],
 			]
 
 			#if True:
