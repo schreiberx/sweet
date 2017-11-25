@@ -84,11 +84,12 @@ for filename in files:
 			contour_levels = np.append(np.arange(cmin, cmid-hs, hs), np.arange(cmid+hs, cmax, hs))
 
 		elif cmax-cmin < 3000 and cmin > 9000 and cmax < 11000:
-			hs = 40
+			hs = 30
 			cmin = 9000
 			cmax = 11000
 			cmid = 0.5*(cmax+cmin)
-			contour_levels = np.append(np.arange(cmin, cmid-hs, hs), np.arange(cmid+hs, cmax, hs))
+			#contour_levels = np.append(np.arange(cmin, cmid-hs, hs), np.arange(cmid+hs, cmax, hs))
+			contour_levels = np.arange(cmin, cmax, hs)
 		else:
 			if 'eta' in filename:
 				hs = 2e-5
@@ -115,11 +116,11 @@ for filename in files:
 	plt.title(filename, fontsize=fontsize)
 
 	if refdataavailable:
-		CS = plt.contour(refdata, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, levels=contour_levels, linewidths=0.5)
+		CS = plt.contour(refdata, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, levels=contour_levels, linewidths=0.35)
 		for c in CS.collections:
 			c.set_dashes([(0, (2.0, 2.0))])
 
-	plt.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, levels=contour_levels, linewidths=0.5)
+	plt.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, levels=contour_levels, linewidths=0.35)
 
 	ax = plt.gca()
 	ax.xaxis.set_label_coords(0.5, -0.075)
