@@ -458,12 +458,18 @@ else:
 	env.Append(CXXFLAGS=' -DSWEET_SPACE_THREADING=0')
 
 
-
 if p.pfasst_cpp == 'enable':
 	env.Append(CXXFLAGS=['-Ilocal_software/local/include/eigen3'])
 	env.Append(CXXFLAGS=['-DSWEET_PFASST_CPP=1'])
 else:
 	env.Append(CXXFLAGS=['-DSWEET_PFASST_CPP=0'])
+
+if p.eigen == 'enable':
+	env.Append(CXXFLAGS=['-Ilocal_software/local/include/eigen3'])
+	env.Append(CXXFLAGS=['-DSWEET_EIGEN=1'])
+else:
+	env.Append(CXXFLAGS=['-DSWEET_EIGEN=0'])
+
 
 if p.libpfasst == 'enable':
 	env.Append(CXXFLAGS=['-Llibpfasst'])

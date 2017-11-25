@@ -28,7 +28,8 @@ p.runtime.output_timestep_size = 0.01
 p.runtime.output_filename = '-'
 p.runtime.timestepping_order = 4
 
-p.runtime.timestepping_method = 1
+p.runtime.timestepping_method = 'l_erk'
+p.runtime.timestepping_order = 2
 p.runtime.rexi_m = 256
 p.runtime.rexi_h = 0.15
 p.runtime.rexi_half_poles = 1

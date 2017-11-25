@@ -224,6 +224,7 @@ class SWEETClusterOptions:
 			time_ranks_per_node = int(math.ceil(18/self.pm_time_cores_per_mpi_rank))
 
 			time_ranks_per_node = min(time_ranks_per_node*self.pm_time_cores_per_mpi_rank, self.par_time_cores)
+			time_num_cores = self.par_time_cores
 			time_num_ranks = self.par_time_cores
 
 			print(" + space_ranks_per_node: "+str(space_ranks_per_node))
@@ -257,8 +258,6 @@ class SWEETClusterOptions:
 
 			# Total number of MPI ranks
 			mpi_ranks_total = space_num_ranks*time_num_ranks
-
-			print(" + mpi_ranks_total: "+str(mpi_ranks_total))
 
 
 		else:
@@ -405,7 +404,7 @@ class SWEETClusterOptions:
 ## shared queue
 ######PBS -q share
 ## wall-clock time (hrs:mins:secs)
-#PBS -l walltime=00:05:00
+#PBS -l walltime=00:10:00
 ## select: number of nodes
 ## ncpus: number of CPUs per node
 ## mpiprocs: number of ranks per node

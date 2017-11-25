@@ -87,9 +87,6 @@ class SWEETCompileOptions:
 		self.libpfasst = 'disable'
 		self.pfasst_cpp = 'disable'
 
-		# Eigen library
-		self.eigen = 'disable'
-
 		# Libraries
 		self.libfft = 'disable'
 		self.libsph = 'disable'
@@ -146,8 +143,6 @@ class SWEETCompileOptions:
 		retval += ' --parareal='+self.parareal
 		retval += ' --libpfasst='+self.libpfasst
 		retval += ' --pfasst-cpp='+self.pfasst_cpp
-
-		retval += ' --eigen='+self.eigen
 
 		# Libraries
 		retval += ' --libfft='+self.libfft
@@ -283,17 +278,6 @@ class SWEETCompileOptions:
 				help="Use SIMD for operations such as folding [default: %default]"
 		)
 		self.simd = scons.GetOption('simd')
-
-
-		scons.AddOption(	'--eigen',
-				dest='eigen',
-				type='choice',
-				choices=['enable', 'disable'],
-				default='disable',
-				help="Activate utilization of Eigen library [default: %default]"
-		)
-		self.eigen = scons.GetOption('eigen')
-
 
 
 		scons.AddOption(	'--pfasst-cpp',
