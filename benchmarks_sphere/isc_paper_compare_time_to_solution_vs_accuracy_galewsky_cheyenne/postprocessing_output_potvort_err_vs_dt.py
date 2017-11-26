@@ -19,7 +19,7 @@ fig, ax = plt.subplots(figsize=(10,7))
 ax.set_xscale("log", nonposx='clip')
 ax.set_yscale("log", nonposy='clip')
 
-#mode = 'simtime'
+#mode = 'wallclocktime'
 mode = 'dt'
 
 
@@ -128,12 +128,12 @@ for l in lines:
 
 
 
-	if mode == 'simtime':
+	if mode == 'wallclocktime':
 		#
 		# SIMTIME
 		#
 		values_time.append(float(d[4]))
-		plt.xlabel("simulation time")
+		plt.xlabel("Wallclock time")
 
 	elif mode == 'dt':
 		#

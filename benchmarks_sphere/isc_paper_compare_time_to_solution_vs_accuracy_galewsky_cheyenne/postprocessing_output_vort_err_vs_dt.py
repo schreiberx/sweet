@@ -133,7 +133,7 @@ for l in lines:
 		# SIMTIME
 		#
 		values_time.append(float(d[4]))
-		plt.xlabel("simulation time")
+		plt.xlabel("Wallclock time")
 
 	elif mode == 'dt':
 		#

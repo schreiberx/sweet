@@ -75,7 +75,7 @@ class SWEETClusterOptions:
 			self.total_max_cores = self.cores_per_node*self.total_max_nodes
 			raise Exception("TODO")
 
-		elif self.target_machine == "cheyenne":
+		elif self.target_machine == "cheyenne" or self.target_machine == "cheyenne_impi":
 			self.cores_per_node = 36
 
 			# REAL number:
@@ -381,6 +381,57 @@ class SWEETClusterOptions:
 			#
 			mpi_exec_prefix = ""
 
+
+		elif self.target_machine == 'cheyenne_impi':
+
+			#
+			# CHEYENNE:
+			#  - Dual socket (18 cores / socket)
+			#  - 36 cores in total per node
+			#
+			# 9-D enhanced hypercube topology
+			# 100-Gbps link bandwidth — 0.5 μs latency
+			# 36 TB/s bisection bandwidth
+			#
+
+			content = "#!/bin/bash\n"
+			content += "# TARGET MACHINE: "+self.target_machine+"\n"
+			content += """#
+## project code
+#PBS -A NCIS0002
+## regular limit: 12 hours
+## economy queue
+#PBS -q economy
+## shared queue
+######PBS -q share
+## wall-clock time (hrs:mins:secs)
+#PBS -l walltime=00:05:00
+## select: number of nodes
+## ncpus: number of CPUs per node
+## mpiprocs: number of ranks per node
+#PBS -l select="""+str(num_nodes)+""":ncpus="""+str(num_cores_per_node)+""":mpiprocs="""+str(num_ranks_per_node)+""":ompthreads="""+str(num_omp_threads_per_mpi_thread)+"""
+#
+#PBS -N """+jobid[0:100]+"""
+#PBS -o """+cwd+"/"+dirname+"""/output.out
+#PBS -e """+cwd+"/"+dirname+"""/output.err
+
+module load impi
+export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
+
+"""
+
+			#
+			# https://www2.cisl.ucar.edu/resources/computational-systems/cheyenne/running-jobs/submitting-jobs-pbs/omplace-and-dplace
+			#
+			mpi_exec_prefix = "mpirun -n "+str(mpi_ranks_total)+" "
+			# TODO: This seems to make trouble
+			#mpi_exec_prefix += " omplace -vv "
+			#mpi_exec_prefix += " dplace -s 1 "
+			mpi_exec_prefix += " omplace "
+			mpi_exec_prefix += " -nt "+str(num_omp_threads_per_mpi_thread)+" "
+			mpi_exec_prefix += " -vv "
+			# -tm pthreads didn't make any difference in performance for single-threaded programs which 1 thread per socket
+			#mpi_exec_prefix += " -tm pthreads "
 
 		elif self.target_machine == 'cheyenne':
 

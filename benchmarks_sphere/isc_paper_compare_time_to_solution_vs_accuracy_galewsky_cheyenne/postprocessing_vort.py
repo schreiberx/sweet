@@ -109,7 +109,7 @@ for group_info in groups:
 				result = result[0:-1]
 
 			f=open(rundir+"/output.out")
-			tag = "Simulation time (seconds): "
+			tag = "Wallclock time (seconds): "
 			secs = "0"
 			for l in f:
 				if l[0:len(tag)] == tag:

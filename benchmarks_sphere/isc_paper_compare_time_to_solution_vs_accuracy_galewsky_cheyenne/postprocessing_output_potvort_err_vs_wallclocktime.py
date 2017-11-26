@@ -19,10 +19,11 @@ fig, ax = plt.subplots(figsize=(10,7))
 ax.set_xscale("log", nonposx='clip')
 ax.set_yscale("log", nonposy='clip')
 
-plt.xlabel("Simulation time")
-plt.ylabel("Error")
+mode = 'wallclocktime'
+#mode = 'dt'
 
-with open('postprocessing_output_vort.txt') as f:
+
+with open('postprocessing_output_potvort.txt') as f:
 	lines = f.readlines()
 
 
@@ -46,7 +47,7 @@ linestyles = ['-', '--', ':', '-.']
 if len(sys.argv) > 1:
 	output_filename = sys.argv[1]
 else:
-	output_filename = "postprocessing_output_vort.pdf"
+	output_filename = "./postprocessing_output_potvort_err_vs_"+mode+".pdf"
 
 if len(sys.argv) > 2:
 	plot_set = sys.argv[2:]
@@ -105,6 +106,7 @@ for l in lines:
 	prev_name = d[0]
 	prev_name = prev_name.replace('script_ln2_b100_g9.81_h10000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_', '')
 	prev_name = prev_name.replace('_M0128_MPI_space01_time128', '')
+	prev_name = prev_name.replace('_M0128_MPI_space01_time001', '')
 	prev_name = prev_name.replace('_prcircle_nrm0_hlf0_pre1_ext00', '')
 	prev_name = prev_name.replace('_tso2_tsob2_REXICI', '')
 	prev_name = prev_name.replace('_C0040', '')
@@ -114,12 +116,35 @@ for l in lines:
 	prev_name = prev_name.replace('_C0640', '')
 	prev_name = prev_name.replace('_C1280', '')
 	prev_name = prev_name.replace('_C2560', '')
+	prev_name = prev_name.replace('_mr10.0_mi30.0', '')
+	prev_name = prev_name.replace('_n0064_sx50.0_sy50.0', '')
+	prev_name = prev_name.replace('_n0064', '')
+	prev_name = prev_name.replace('_sx50.0_sy50.0', '')
 
 	prev_name = re.sub(r"_mu.*", "", prev_name)
 	prev_name = re.sub(r"0000", "", prev_name)
 
 	values_err.append(float(d[1]))
-	values_time.append(float(d[4]))
+
+
+
+	if mode == 'wallclocktime':
+		#
+		# SIMTIME
+		#
+		values_time.append(float(d[4]))
+		plt.xlabel("Wallclock time")
+
+	elif mode == 'dt':
+		#
+		# DT
+		#
+		m = re.search('_C([0-9]*)', d[0])
+		dt = float(m.group(1))
+		values_time.append(dt)
+		plt.xlabel("Timestep size")
+
+	plt.ylabel("Error")
 
 
 plot(values_time, values_err, markers[c % len(markers)], linestyles[c % len(linestyles)], prev_name)
@@ -128,3 +153,4 @@ plt.legend()
 
 plt.savefig(output_filename)
 #plt.show()
+

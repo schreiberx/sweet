@@ -115,7 +115,7 @@ for group_info in groups:
 				fs = rundir+".out"
 				f=open(fs)
 
-			tag = "Simulation time (seconds): "
+			tag = "Wallclock time (seconds): "
 			secs = "0"
 			for l in f:
 				if l[0:len(tag)] == tag:
