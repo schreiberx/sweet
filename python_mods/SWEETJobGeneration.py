@@ -38,9 +38,9 @@ class SWEETJobGeneration:
 cd \""""+dirpath+"""\"
 
 BASEDIR="`pwd`"
-rm -f ./prog_h_*
-rm -f ./prog_u_*
-rm -f ./prog_v_*
+#rm -f ./prog_h_*
+#rm -f ./prog_u_*
+#rm -f ./prog_v_*
 
 SWEETROOT=\""""+dirpath+"""/../../../\"
 cd "$SWEETROOT"

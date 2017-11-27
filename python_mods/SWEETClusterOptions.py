@@ -5,6 +5,7 @@ import math
 import sys
 import os
 import multiprocessing
+import datetime
 
 
 class SWEETClusterOptions:
@@ -34,6 +35,12 @@ class SWEETClusterOptions:
 
 		# Cores in time
 		self.par_time_cores = 1
+
+		# max wallclock time, default: 1h
+		self.max_wallclock_seconds = 60*60
+
+		# additional environment variables
+		self.environment_vars = ""
 
 
 
@@ -330,6 +337,8 @@ class SWEETClusterOptions:
 
 
 
+		max_wallclock_seconds_str = str(datetime.timedelta(seconds=self.max_wallclock_seconds)).zfill(8)
+
 		#
 		# SETUP the following variables:
 		#
@@ -382,8 +391,8 @@ class SWEETClusterOptions:
 			mpi_exec_prefix = ""
 
 
-		elif self.target_machine == 'cheyenne_impi':
 
+		elif self.target_machine == "cheyenne_impi":
 			#
 			# CHEYENNE:
 			#  - Dual socket (18 cores / socket)
@@ -405,7 +414,7 @@ class SWEETClusterOptions:
 ## shared queue
 ######PBS -q share
 ## wall-clock time (hrs:mins:secs)
-#PBS -l walltime=00:05:00
+#PBS -l walltime="""+max_wallclock_seconds_str+"""
 ## select: number of nodes
 ## ncpus: number of CPUs per node
 ## mpiprocs: number of ranks per node
@@ -418,7 +427,7 @@ class SWEETClusterOptions:
 module load impi
 export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
 
-"""
+"""+self.environment_vars
 
 			#
 			# https://www2.cisl.ucar.edu/resources/computational-systems/cheyenne/running-jobs/submitting-jobs-pbs/omplace-and-dplace
@@ -433,7 +442,8 @@ export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
 			# -tm pthreads didn't make any difference in performance for single-threaded programs which 1 thread per socket
 			#mpi_exec_prefix += " -tm pthreads "
 
-		elif self.target_machine == 'cheyenne':
+
+		elif self.target_machine == "cheyenne":
 
 			#
 			# CHEYENNE:
@@ -456,7 +466,7 @@ export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
 ## shared queue
 ######PBS -q share
 ## wall-clock time (hrs:mins:secs)
-#PBS -l walltime=00:05:00
+#PBS -l walltime="""+max_wallclock_seconds_str+"""
 ## select: number of nodes
 ## ncpus: number of CPUs per node
 ## mpiprocs: number of ranks per node
@@ -468,7 +478,7 @@ export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
 
 export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
 
-"""
+"""+self.environment_vars
 
 			#
 			# https://www2.cisl.ucar.edu/resources/computational-systems/cheyenne/running-jobs/submitting-jobs-pbs/omplace-and-dplace
