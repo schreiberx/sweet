@@ -6,8 +6,11 @@ import stat
 import math
 
 from SWEETJobGeneration import *
+from SWEETParameters import *
+
 p = SWEETJobGeneration()
 
+#p = SWEETCompilePlane()
 #p.cluster.setupTargetMachine("")
 
 
@@ -25,8 +28,8 @@ p.compile.sphere_spectral_dealiasing = 'disable'
 
 p.compile.compiler = 'gnu'
 
-
-
+#print(p.compile.compiler)
+#quit(1)
 #
 # Activate Fortran source
 #
