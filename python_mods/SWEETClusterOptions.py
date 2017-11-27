@@ -424,8 +424,10 @@ class SWEETClusterOptions:
 #PBS -o """+cwd+"/"+dirname+"""/output.out
 #PBS -e """+cwd+"/"+dirname+"""/output.err
 
-module load impi
 export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
+
+module load impi
+module load mkl
 
 """+self.environment_vars
 
@@ -477,6 +479,8 @@ export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
 #PBS -e """+cwd+"/"+dirname+"""/output.err
 
 export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
+
+module load mkl
 
 """+self.environment_vars
 
