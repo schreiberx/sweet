@@ -28,6 +28,14 @@
 #include "SWE_Sphere_TS_interface.hpp"
 
 
+#ifndef SWEET_REXI_TIMINGS
+#define SWEET_REXI_TIMINGS 0
+#endif
+
+#if SWEET_REXI_TIMINGS
+#include <sweet/Stopwatch.hpp>
+#endif
+
 #if SWEET_MPI
 	#include <mpi.h>
 #endif
@@ -67,7 +75,7 @@ public:
 
 #if SWEET_MPI
 public:
-	bool final_timestep;
+//	bool final_timestep;
 
 #endif
 
@@ -100,7 +108,7 @@ private:
 
 	std::size_t block_size;
 
-#if SWEET_BENCHMARK_REXI
+#if SWEET_REXI_TIMINGS
 	Stopwatch stopwatch_preprocessing;
 	Stopwatch stopwatch_broadcast;
 	Stopwatch stopwatch_reduce;
