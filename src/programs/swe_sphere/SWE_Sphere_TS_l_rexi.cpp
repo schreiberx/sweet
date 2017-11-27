@@ -102,13 +102,44 @@ SWE_Sphere_TS_l_rexi::~SWE_Sphere_TS_l_rexi()
 {
 	reset();
 
-#if SWEET_BENCHMARK_REXI
+	std::cout << "mpi_rank: " << mpi_rank << std::endl;
+
+#if SWEET_REXI_TIMINGS
 	if (mpi_rank == 0)
 	{
-		std::cout << "STOPWATCH broadcast: " << stopwatch_broadcast() << std::endl;
 		std::cout << "STOPWATCH preprocessing: " << stopwatch_preprocessing() << std::endl;
 		std::cout << "STOPWATCH reduce: " << stopwatch_reduce() << std::endl;
 		std::cout << "STOPWATCH solve_rexi_terms: " << stopwatch_solve_rexi_terms() << std::endl;
+	}
+
+	int num_ranks;
+	MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
+
+	if (num_ranks == 1)
+	{
+		if (mpi_rank == 0)
+			std::cout << "STOPWATCH broadcast: " << stopwatch_broadcast() << std::endl;
+	}
+	else
+	{
+		/*
+		 * Send broadcast information to 1st rank
+		 */
+		if (mpi_rank == 1)
+		{
+			double data = stopwatch_broadcast();
+			MPI_Send(&data, sizeof(double), MPI_BYTE, 0, 0, MPI_COMM_WORLD);
+		}
+
+		if (mpi_rank == 0)
+		{
+			double data;
+			MPI_Status status;
+			MPI_Recv(&data, sizeof(double), MPI_BYTE, 1, 0, MPI_COMM_WORLD, &status);
+
+			std::cout << "STOPWATCH broadcast: " << data << std::endl;
+		}
+
 	}
 #endif
 }
@@ -285,7 +316,7 @@ void SWE_Sphere_TS_l_rexi::setup(
 	}
 
 
-#if SWEET_BENCHMARK_REXI
+#if SWEET_REXI_TIMINGS
 	stopwatch_preprocessing.reset();
 	stopwatch_broadcast.reset();
 	stopwatch_reduce.reset();
@@ -399,11 +430,19 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 	if (i_fixed_dt <= 0)
 		FatalError("Only constant time step size allowed");
 
-	if (std::abs(timestep_size - i_fixed_dt)/std::max(timestep_size, i_fixed_dt) > 1e-9)
+	double update_dt_delta = std::abs(timestep_size - i_fixed_dt)/std::max(timestep_size, i_fixed_dt);
+	if (update_dt_delta > 1e-9)
 	{
-		timestep_size = i_fixed_dt;
 
-		std::cout << "Warning: Reducing time step size from " << i_fixed_dt << " to " << timestep_size << std::endl;
+		std::cout << timestep_size << std::endl;
+		std::cout << i_fixed_dt << std::endl;
+		std::cout << std::abs(timestep_size - i_fixed_dt) << std::endl;
+		std::cout << std::max(timestep_size, i_fixed_dt) << std::endl;
+		std::cout << std::abs(timestep_size - i_fixed_dt)/std::max(timestep_size, i_fixed_dt) << std::endl;
+		std::cout << update_dt_delta << std::endl;
+
+		timestep_size = i_fixed_dt;
+		std::cout << "Warning: Reducing time step size from " << i_fixed_dt << " to " << timestep_size << ", threshold " << update_dt_delta << " exceeded" << std::endl;
 
 		update_coefficients(true);
 	}
@@ -419,15 +458,15 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 		 * TODO: Maybe we should measure this for the 2nd rank!!!
 		 * The reason could be since Bcast might already return before the packages were actually received!
 		 */
-	#if SWEET_BENCHMARK_REXI
-		if (mpi_rank == 0)
+	#if SWEET_REXI_TIMINGS
+		if (mpi_rank == 1)
 			stopwatch_broadcast.start();
 	#endif
 
 		std::size_t spectral_data_num_doubles = io_prog_phi0.sphereDataConfig->spectral_array_data_number_of_elements*2;
 
 		MPI_Bcast(io_prog_phi0.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-
+/*
 		if (std::isnan(io_prog_phi0.spectral_get(0,0).real()))
 		{
 			final_timestep = true;
@@ -435,12 +474,13 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 		}
 
 		final_timestep = false;
+*/
 
 		MPI_Bcast(io_prog_vort0.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 		MPI_Bcast(io_prog_div0.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-	#if SWEET_BENCHMARK_REXI
-		if (mpi_rank == 0)
+	#if SWEET_REXI_TIMINGS
+		if (mpi_rank == 1)
 			stopwatch_broadcast.stop();
 	#endif
 
@@ -460,16 +500,16 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 	if (flag_noext_no_thread)
 	{
-	#if SWEET_BENCHMARK_REXI
+	#if SWEET_REXI_TIMINGS
 		bool stopwatch_measure = false;
 		#if SWEET_REXI_THREAD_PARALLEL_SUM
 			if (omp_get_thread_num() == 0)
 		#endif
-				if (mpi_rank == 0)
+//				if (mpi_rank == 0)
 					stopwatch_measure = true;
 	#endif
 
-	#if SWEET_BENCHMARK_REXI
+	#if SWEET_REXI_TIMINGS
 		if (stopwatch_measure)
 			stopwatch_preprocessing.start();
 	#endif
@@ -508,6 +548,15 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 		perThreadVars[0]->accum_vort.spectral_set_zero();
 		perThreadVars[0]->accum_div.spectral_set_zero();
 
+	#if SWEET_REXI_TIMINGS
+		if (stopwatch_measure)
+			stopwatch_preprocessing.stop();
+#endif
+
+#if SWEET_REXI_TIMINGS
+		if (stopwatch_measure)
+			stopwatch_solve_rexi_terms.start();
+#endif
 
 		for (std::size_t workload_idx = start; workload_idx < end; workload_idx++)
 		{
@@ -553,6 +602,11 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 			perThreadVars[0]->accum_div += tmp_prog_div;
 		}
 
+#if SWEET_REXI_TIMINGS
+		if (stopwatch_measure)
+			stopwatch_solve_rexi_terms.stop();
+#endif
+
 	#if SWEET_DEBUG
 		if (	!io_prog_phi0.spectral_space_data_valid	||
 				!io_prog_vort0.spectral_space_data_valid	||
@@ -563,15 +617,6 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 		}
 	#endif
 
-	#if SWEET_BENCHMARK_REXI
-		if (stopwatch_measure)
-			stopwatch_solve_rexi_terms.stop();
-	#endif
-
-	#if SWEET_BENCHMARK_REXI
-		if (mpi_rank == 0)
-			stopwatch_reduce.start();
-	#endif
 
 		io_prog_phi0 = perThreadVars[0]->accum_phi;
 		io_prog_vort0 = perThreadVars[0]->accum_vort;
@@ -589,16 +634,16 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 		for (int thread_id = 0; thread_id < num_local_rexi_par_threads; thread_id++)
 		{
 
-	#if SWEET_BENCHMARK_REXI
-			bool stopwatch_measure = false;
-		#if SWEET_REXI_THREAD_PARALLEL_SUM
-			if (omp_get_thread_num() == 0)
-		#endif
-				if (mpi_rank == 0)
-					stopwatch_measure = true;
+#if SWEET_REXI_TIMINGS
+		bool stopwatch_measure = false;
+	#if SWEET_REXI_THREAD_PARALLEL_SUM
+		if (omp_get_thread_num() == 0)
 	#endif
+//				if (mpi_rank == 0)
+				stopwatch_measure = true;
+#endif
 
-	#if SWEET_BENCHMARK_REXI
+	#if SWEET_REXI_TIMINGS
 			if (stopwatch_measure)
 				stopwatch_preprocessing.start();
 	#endif
@@ -642,6 +687,15 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 			perThreadVars[thread_id]->accum_vort.spectral_set_zero();
 			perThreadVars[thread_id]->accum_div.spectral_set_zero();
 
+#if SWEET_REXI_TIMINGS
+		if (stopwatch_measure)
+			stopwatch_preprocessing.stop();
+#endif
+
+#if SWEET_REXI_TIMINGS
+		if (stopwatch_measure)
+			stopwatch_solve_rexi_terms.start();
+#endif
 
 			for (std::size_t workload_idx = start; workload_idx < end; workload_idx++)
 			{
@@ -697,13 +751,14 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 			}
 	#endif
 
-	#if SWEET_BENCHMARK_REXI
+#if SWEET_REXI_TIMINGS
 			if (stopwatch_measure)
 				stopwatch_solve_rexi_terms.stop();
-	#endif
+#endif
 		}
 
-	#if SWEET_BENCHMARK_REXI
+
+	#if SWEET_REXI_TIMINGS
 		if (mpi_rank == 0)
 			stopwatch_reduce.start();
 	#endif
@@ -811,7 +866,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 #endif
 
 
-#if SWEET_BENCHMARK_REXI
+#if SWEET_REXI_TIMINGS
 	if (mpi_rank == 0)
 		stopwatch_reduce.stop();
 #endif

@@ -71,6 +71,8 @@ class SWEETCompileOptions:
 		self.threading = 'omp'
 		self.rexi_thread_parallel_sum = 'disable'
 
+		self.rexi_timings = 'disable'
+
 		# Memory allocator
 		if exec_command('uname -s') == "Darwin":
 			# Deactivate efficient NUMA block allocation on MacOSX systems (missing numa.h file)
@@ -132,6 +134,7 @@ class SWEETCompileOptions:
 		retval += ' --sweet-mpi='+self.sweet_mpi
 		retval += ' --threading='+self.threading
 		retval += ' --rexi-thread-parallel-sum='+self.rexi_thread_parallel_sum
+		retval += ' --rexi-timings='+self.rexi_timings
 
 		# Memory allocator
 		retval += ' --numa-block-allocator='+str(self.numa_block_allocator)
@@ -466,6 +469,16 @@ class SWEETCompileOptions:
 		self.rexi_thread_parallel_sum = scons.GetOption('rexi_thread_parallel_sum')
 
 
+		scons.AddOption(	'--rexi-timings',
+				dest='rexi_timings',
+				type='choice',
+				choices=['enable','disable'],
+				default='disable',
+				help='REXI timings: enable, disable [default: %default]'
+		)
+		self.rexi_timings = scons.GetOption('rexi_timings')
+
+
 		scons.AddOption(	'--sweet-mpi',
 				dest='sweet_mpi',
 				type='choice',
@@ -588,6 +601,9 @@ class SWEETCompileOptions:
 		if self.quadmath == 'enable':
 			exec_name+='_quadmath'
 
+		if self.sweet_mpi == 'enable':
+			exec_name+='_mpi'
+
 		if self.threading in ['omp']:
 			exec_name+='_'+self.threading
 		else:
@@ -597,6 +613,10 @@ class SWEETCompileOptions:
 			
 		if self.rexi_thread_parallel_sum == 'enable':
 			exec_name+='_rxthpar'
+
+		if self.rexi_timings == 'enable':
+			exec_name+='_rxtime'
+
 
 		if self.numa_block_allocator in [1, 2]:
 			exec_name+='_numa'+str(self.numa_block_allocator)
