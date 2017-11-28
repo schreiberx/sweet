@@ -36,7 +36,12 @@ def RuntimeSWEPlaneNondimParameters(p):
 	p.runtime.domain_size = 1
 	return p	
 
-
+def RuntimeSWEPlaneEarthParam(p):
+	p.runtime.g = 9.80616
+	p.runtime.f = 0.00014584
+	p.runtime.h = 10000
+	p.runtime.domain_size = 40031555.8928087
+	return p	
 
 
 
