@@ -86,7 +86,7 @@ p.runtime.output_timestep_size = p.runtime.simtime
 #p.runtime.output_timestep_size = timestep_size_reference*(2.0**(-timelevels))/10.0
 
 phys_res_levels = timelevels
-phys_res_reference = 8
+phys_res_reference = 64
 phys_res_list = [phys_res_reference*(2**i) for i in range(0, phys_res_levels)]
 
 # Groups to execute, see below
