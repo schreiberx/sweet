@@ -41,9 +41,9 @@ class SWEETJobGeneration:
 cd \""""+dirpath+"""\"
 
 BASEDIR="`pwd`"
-rm -f ./prog_h_*
-rm -f ./prog_u_*
-rm -f ./prog_v_*
+#rm -f ./prog_h_*
+#rm -f ./prog_u_*
+#rm -f ./prog_v_*
 
 SWEETROOT=\""""+dirpath+"""/../../../\"
 cd "$SWEETROOT"
@@ -51,7 +51,17 @@ cd "$SWEETROOT"
 pwd
 
 # Always load local software
-source ./local_software/env_vars.sh || exit 1
+#is this really the root?
+if test -e ./local_software/env_vars.sh ; then
+	source ./local_software/env_vars.sh || exit 1
+else #try ../
+	echo "Warning: changing SWEETROOT directory"	
+	cd ..
+	SWEETROOT="`pwd`"
+	pwd
+	source ./local_software/env_vars.sh || exit 1
+fi
+#source ./local_software/env_vars.sh || exit 1
 
 #make clean || exit 1
 
