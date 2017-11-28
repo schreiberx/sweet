@@ -1,3 +1,3 @@
 #! /bin/bash
 
-rm a_output*
+rm output*

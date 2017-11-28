@@ -78,7 +78,7 @@ p = RuntimeSWEPlaneEarthParam(p)
 p.runtime.viscosity = 0.0
 
 timelevels = 1 #7 #5
-timestep_size_reference = 3600 #1 hour  #864000/10 #1 day
+timestep_size_reference = 0.1 #3600 #1 hour  #864000/10 #1 day
 timestep_sizes = [timestep_size_reference*(2.0**(-i)) for i in range(0, timelevels)]
 
 p.runtime.simtime = 86400 #1 day #timestep_size_reference #864000 #10 days
@@ -108,7 +108,7 @@ for group in groups:
 		ts_methods = [
 			['ln_erk',		4,	4],	# reference solution - spectral (128 grid points)
 	#		['ln_erk',		2,	2],	# FD- C-grid
-	#		['l_cn_na_sl_nd_settls', 2,	2],	# SI-SL-SP
+			['l_cn_na_sl_nd_settls', 2,	2],	# SI-SL-SP
         #                ['l_rexi_na_sl_nd_settls',	2,	2], #SL-EXP-SETTLS
 	#		['l_rexi_na_sl_nd_etdrk',	2,	2], #SL-EXP-ETDRK
 	#		['l_rexi_n_erk',	2,	2],
@@ -128,7 +128,7 @@ for group in groups:
 	#
 	# Reference solution
 	#if True:
-	if True:
+	if False:
 		print("Reference")
 		tsm = ts_methods[0]
 	
