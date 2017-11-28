@@ -51,9 +51,7 @@ public:
 
 		if (i_simVars.disc.normal_mode_analysis_generation == 4)
 		{
-#if !SWEET_EIGEN
-			FatalError("SWE_Plane_Normal_Modes: Cannot test this without Eigen library. Please compile with --eigen=enable");
-#endif
+#if SWEET_EIGEN
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 			FatalError("SWE_Plane_Normal_Modes: This test was build for linear or linearized models, so please compile without dealising --plane-spectral-dealiasing=disable.");
 #endif
@@ -265,6 +263,9 @@ public:
 			//}
 			//std::cout<<"-------------------------" << std::endl;
 			//FatalError("still needs work...");
+#else
+			FatalError("SWE_Plane_Normal_Modes: Cannot test this without Eigen library. Please compile with --eigen=enable");
+#endif
 		}
 		/*
 		 * Do a normal mode analysis using perturbation, see
