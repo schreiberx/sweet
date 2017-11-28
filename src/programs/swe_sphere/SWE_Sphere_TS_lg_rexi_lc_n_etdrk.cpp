@@ -348,12 +348,17 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::setup(
 		REXI_SimulationVariables &i_rexiSimVars,
 		int i_timestepping_order,
+		int i_timestepping_order2,
 		double i_timestep_size
 )
 {
 	ts_lg_erk_lf_n_erk.setup(i_timestepping_order);
 
 	timestepping_order = i_timestepping_order;
+	timestepping_order2 = i_timestepping_order2;
+
+	if (timestepping_order != timestepping_order2)
+		FatalError("Mismatch of orders, should be equal");
 
 	ts_phi0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true);	/* set use_f_sphere to true */
 

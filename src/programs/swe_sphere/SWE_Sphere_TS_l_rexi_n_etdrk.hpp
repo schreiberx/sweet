@@ -35,6 +35,7 @@ class SWE_Sphere_TS_l_rexi_n_etdrk	: public SWE_Sphere_TS_interface
 	SWE_Sphere_TS_l_rexi ts_ups3_rexi;
 
 	int timestepping_order;
+	int timestepping_order2;
 
 private:
 	void euler_timestep_update_linear(
@@ -74,6 +75,7 @@ public:
 	void setup(
 			REXI_SimulationVariables &i_rexi,
 			int i_timestepping_order,
+			int i_timestepping_order2,
 			double i_timestep_size,
 			bool i_use_f_sphere
 	);

@@ -289,9 +289,11 @@ void SWE_Sphere_TS_lg_erk_lc_erk::run_timestep(
  */
 void SWE_Sphere_TS_lg_erk_lc_erk::setup(
 		int i_order	///< order of RK time stepping method
+//		int i_order2
 )
 {
 	timestepping_order = i_order;
+//	timestepping_order2 = i_order2;
 
 	if (simVars.sim.f_sphere)
 	{

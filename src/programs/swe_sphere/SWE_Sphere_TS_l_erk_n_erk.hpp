@@ -91,7 +91,8 @@ public:
 		);
 
 	void setup(
-			int i_order	///< order of RK time stepping method
+			int i_order,	///< order of RK time stepping method
+			int i_order2
 	);
 
 	void run_timestep(

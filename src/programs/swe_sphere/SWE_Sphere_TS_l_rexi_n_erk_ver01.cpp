@@ -125,6 +125,7 @@ void SWE_Sphere_TS_l_rexi_n_erk::run_timestep(
 void SWE_Sphere_TS_l_rexi_n_erk::setup(
 		REXI_SimulationVariables &i_rexiSimVars,
 		int i_order,	///< order of RK time stepping method
+		int i_order2,	///< order of RK time stepping method of non-linear parts
 		double i_timestep_size,
 		bool i_use_f_sphere,
 		int i_version_id
@@ -133,6 +134,11 @@ void SWE_Sphere_TS_l_rexi_n_erk::setup(
 	version_id = i_version_id;
 
 	timestepping_order = i_order;
+	timestepping_order2 = i_order2;
+
+	if (timestepping_order != timestepping_order2)
+		FatalError("Mismatch of orders, should be equal");
+
 	timestep_size = i_timestep_size;
 
 	if (timestepping_order == 1)
@@ -182,7 +188,7 @@ void SWE_Sphere_TS_l_rexi_n_erk::setup(
 	// Only request 1st order time stepping methods for irk and erk
 	// These 1st order methods will be combined to higher-order methods in this class
 	//
-	timestepping_l_erk_n_erk.setup(1);
+	timestepping_l_erk_n_erk.setup(1, 1);
 }
 
 

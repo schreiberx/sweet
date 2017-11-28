@@ -24,7 +24,7 @@ class SWE_Sphere_TS_lg_erk_lc_erk	: public SWE_Sphere_TS_interface
 	SphereOperators &op;
 
 	int timestepping_order;
-	int timestepping_order2;
+//	int timestepping_order2;
 
 	SphereDataTimesteppingExplicitRK timestepping_rk_linear;
 	SphereDataTimesteppingExplicitRK timestepping_rk_nonlinear;
@@ -93,6 +93,7 @@ public:
 
 	void setup(
 			int i_order	///< order of RK time stepping method
+//			int i_order2
 	);
 
 	void run_timestep(

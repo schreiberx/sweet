@@ -54,6 +54,7 @@ public:
 	void setup(
 			REXI_SimulationVariables &i_rexiSimVars,
 			int i_order,	///< order of RK time stepping method
+			int i_order2,	///< order of RK time stepping method
 			double i_timestep_size,
 			bool i_use_f_sphere,
 			int version_id	///< strang splitting for 2nd order method

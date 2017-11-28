@@ -29,7 +29,7 @@ class SWE_Sphere_TS_lg_irk_lc_erk	: public SWE_Sphere_TS_interface
 	int version_id;
 
 	int timestepping_order;
-	int timestepping_order2;
+//	int timestepping_order2;
 
 	double timestep_size;
 

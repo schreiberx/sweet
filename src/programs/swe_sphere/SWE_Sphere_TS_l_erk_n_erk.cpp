@@ -240,7 +240,7 @@ void SWE_Sphere_TS_l_erk_n_erk::run_timestep(
 				&SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
 				io_phi, io_vort, io_div,
 				i_dt,
-				timestepping_order,
+				timestepping_order2,
 				i_simulation_timestamp
 			);
 	}
@@ -262,7 +262,7 @@ void SWE_Sphere_TS_l_erk_n_erk::run_timestep(
 				&SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
 				io_phi, io_vort, io_div,
 				i_dt,
-				timestepping_order,		/// This must be 2nd order accurate to get overall 2nd order accurate method
+				timestepping_order2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
 				i_simulation_timestamp
 			);
 
@@ -288,10 +288,12 @@ void SWE_Sphere_TS_l_erk_n_erk::run_timestep(
  * Setup
  */
 void SWE_Sphere_TS_l_erk_n_erk::setup(
-		int i_order	///< order of RK time stepping method
+		int i_order,	///< order of RK time stepping method for non-linear parts
+		int i_order2	///< order of RK time stepping method for non-linear parts
 )
 {
 	timestepping_order = i_order;
+	timestepping_order2 = i_order2;
 
 	if (simVars.sim.f_sphere)
 	{
@@ -323,7 +325,7 @@ SWE_Sphere_TS_l_erk_n_erk::SWE_Sphere_TS_l_erk_n_erk(
 		op(i_op),
 		fg(i_op.sphereDataConfig)
 {
-	setup(simVars.disc.timestepping_order);
+	setup(simVars.disc.timestepping_order, simVars.disc.timestepping_order2);
 }
 
 

@@ -64,7 +64,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_erk::run_timestep(
 					&SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_coriolis_and_nonlinear,	///< pointer to function to compute Euler time step updates
 					io_phi, io_vort, io_div,
 					i_dt,
-					2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
+					timestepping_order2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
 					i_simulation_timestamp
 				);
 
@@ -83,7 +83,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_erk::run_timestep(
 					&SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_coriolis_and_nonlinear,	///< pointer to function to compute euler time step updates
 					io_phi, io_vort, io_div,
 					i_dt*0.5,
-					2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
+					timestepping_order2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
 					i_simulation_timestamp
 				);
 
@@ -100,7 +100,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_erk::run_timestep(
 					&SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_coriolis_and_nonlinear,	///< pointer to function to compute euler time step updates
 					io_phi, io_vort, io_div,
 					i_dt*0.5,
-					2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
+					timestepping_order2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
 					i_simulation_timestamp
 				);
 		}
@@ -123,6 +123,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_erk::run_timestep(
 void SWE_Sphere_TS_lg_rexi_lc_n_erk::setup(
 		REXI_SimulationVariables &i_rexiSimVars,
 		int i_timestepping_order,
+		int i_timestepping_order2,
 		double i_timestep_size,
 		int i_version_id
 )
@@ -130,6 +131,11 @@ void SWE_Sphere_TS_lg_rexi_lc_n_erk::setup(
 	version_id = i_version_id;
 
 	timestepping_order = i_timestepping_order;
+	timestepping_order2 = i_timestepping_order2;
+
+	if (timestepping_order != timestepping_order2)
+		FatalError("Mismatch of orders, should be equal");
+
 	timestep_size = simVars.timecontrol.current_timestep_size;
 
 	if (timestepping_order == 1)

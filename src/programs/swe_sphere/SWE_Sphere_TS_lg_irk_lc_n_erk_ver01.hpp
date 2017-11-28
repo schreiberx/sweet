@@ -55,6 +55,7 @@ public:
 
 	void setup(
 			int i_order,	///< order of RK time stepping method
+			int i_order2,	///< order of RK time stepping method for non-linear parts
 			int i_version_id
 	);
 
