@@ -43,6 +43,9 @@ p.runtime.compute_error = 1
 #
 p.runtime.rexi_sphere_preallocation = 0
 
+# Enable/Disbale GUI
+p = EnableGUI(p)
+
 #
 # Threading accross all REXI terms
 #
