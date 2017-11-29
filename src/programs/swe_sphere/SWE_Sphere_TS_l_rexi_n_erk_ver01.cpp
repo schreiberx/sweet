@@ -18,7 +18,7 @@ void SWE_Sphere_TS_l_rexi_n_erk::run_timestep(
 		double i_simulation_timestamp
 )
 {
-	if (timestepping_order == 1)
+	if (timestepping_order2 == 1)
 	{
 		SphereData tmp_phi = io_phi;
 		SphereData tmp_vort = io_vort;
@@ -47,7 +47,7 @@ void SWE_Sphere_TS_l_rexi_n_erk::run_timestep(
 		io_div += i_dt*div_dt;
 */
 	}
-	else if (timestepping_order == 2)
+	else if (timestepping_order2 == 2 || timestepping_order2 == 4)
 	{
 		if (version_id == 0)
 		{
@@ -141,7 +141,7 @@ void SWE_Sphere_TS_l_rexi_n_erk::setup(
 
 	timestep_size = i_timestep_size;
 
-	if (timestepping_order == 1)
+	if (timestepping_order2 == 1)
 	{
 		timestepping_l_rexi.setup(
 				i_rexiSimVars,
@@ -151,7 +151,7 @@ void SWE_Sphere_TS_l_rexi_n_erk::setup(
 				false
 		);
 	}
-	else if (timestepping_order == 2)
+	else if (timestepping_order2 == 2 || timestepping_order2 == 4)
 	{
 		if (version_id == 0)
 		{

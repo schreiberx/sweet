@@ -47,7 +47,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_erk::run_timestep(
 		io_vort += i_dt*vort_dt;
 		io_div += i_dt*div_dt;
 	}
-	else if (timestepping_order == 2)
+	else if (timestepping_order == 2 || timestepping_order == 4)
 	{
 		if (version_id == 0)
 		{
@@ -133,12 +133,9 @@ void SWE_Sphere_TS_lg_rexi_lc_n_erk::setup(
 	timestepping_order = i_timestepping_order;
 	timestepping_order2 = i_timestepping_order2;
 
-	if (timestepping_order != timestepping_order2)
-		FatalError("Mismatch of orders, should be equal");
-
 	timestep_size = simVars.timecontrol.current_timestep_size;
 
-	if (timestepping_order == 1)
+	if (timestepping_order2 == 1)
 	{
 		timestepping_lg_rexi.setup(
 				i_rexiSimVars,
@@ -148,7 +145,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_erk::setup(
 				true
 			);
 	}
-	else if (timestepping_order == 2)
+	else if (timestepping_order2 == 2 || timestepping_order2 == 4)
 	{
 		if (version_id == 0)
 		{
