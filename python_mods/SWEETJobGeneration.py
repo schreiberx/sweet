@@ -109,6 +109,7 @@ $SCONS || exit 1
 		content += """
 
 cd "$BASEDIR"
+pwd
 
 """
 
@@ -119,8 +120,9 @@ cd "$BASEDIR"
 		content += "\n"
 		content += """
 
-
 echo "$EXEC"
+pwd
+ln -s $SWEETROOT/data/ $BASEDIR/data   #Symlink for GUI directory, if necessary
 """+mpiexec_prefix+"""$EXEC || exit 1
 """
 

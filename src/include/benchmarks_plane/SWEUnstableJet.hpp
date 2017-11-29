@@ -62,7 +62,8 @@ class SWEUnstableJet
 	{
 		 //power has to be odd to ensure periodicity
 		// the larger the thiner the jet
-		return std::pow(std::sin(2.0*M_PI*y), 41);
+		// Max speed is 20m/s
+		return 40.0*std::pow(std::sin(2.0*M_PI*y), 41);
 	}
 
 	double u(
@@ -106,7 +107,7 @@ class SWEUnstableJet
 
 		double exp2 = std::exp(-factor*(dx*dx + dy*dy));
 
-		double pert = 0.0001;
+		double pert = 0.01*simVars.sim.h0;
 		//double pert = 0.000;
 
 		return (pert)*(exp1+exp2);
