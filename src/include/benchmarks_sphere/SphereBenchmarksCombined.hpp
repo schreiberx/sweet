@@ -784,10 +784,10 @@ public:
 				io_simVars.sim.earth_radius = 6.37122e6;
 				io_simVars.sim.h0 = 29400.0/io_simVars.sim.gravitation;
 
-				double u0 = (2.0*M_PI*io_simVars.sim.earth_radius)/(12.0*24.0*60.0*60.0);
-				double a = io_simVars.sim.earth_radius;
+				//double u0 = (2.0*M_PI*io_simVars.sim.earth_radius)/(12.0*24.0*60.0*60.0);
+				//double a = io_simVars.sim.earth_radius;
 
-				double phi0 = io_simVars.sim.h0*io_simVars.sim.gravitation;
+				//double phi0 = io_simVars.sim.h0*io_simVars.sim.gravitation;
 
 				double freq_multiplier = 1.0;
 

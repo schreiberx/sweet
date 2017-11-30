@@ -430,7 +430,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 		 * 				  \upsilon_{3}(\Delta tL) R_{3}
 		 * 			)
 		 */
-		ts_phi0_rexi.run_timestep(
+		ts_ups0_rexi.run_timestep(
 				R0_h, R0_u, R0_v,
 				dt,		i_simulation_timestamp
 			);
@@ -477,16 +477,24 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::setup(
 {
 	timestepping_order = i_timestepping_order;
 
-	ts_phi0_rexi.setup(i_rexiSimVars, "phi0", simVars.timecontrol.current_timestep_size);
 
-	if (timestepping_order >= 2)
+	if (timestepping_order == 1)
 	{
+		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", simVars.timecontrol.current_timestep_size);
+	}
+	else if (timestepping_order == 2)
+	{
+		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", simVars.timecontrol.current_timestep_size);
 		ts_phi1_rexi.setup(i_rexiSimVars, "phi1", simVars.timecontrol.current_timestep_size);
 		ts_phi2_rexi.setup(i_rexiSimVars, "phi2", simVars.timecontrol.current_timestep_size);
 	}
-
-	if (timestepping_order >= 4)
+	else if (timestepping_order == 4)
 	{
+		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", simVars.timecontrol.current_timestep_size*0.5);
+		ts_phi1_rexi.setup(i_rexiSimVars, "phi1", simVars.timecontrol.current_timestep_size*0.5);
+		ts_phi2_rexi.setup(i_rexiSimVars, "phi2", simVars.timecontrol.current_timestep_size*0.5);
+
+		ts_ups0_rexi.setup(i_rexiSimVars, "phi0", simVars.timecontrol.current_timestep_size);
 		ts_ups1_rexi.setup(i_rexiSimVars, "ups1", simVars.timecontrol.current_timestep_size);
 		ts_ups2_rexi.setup(i_rexiSimVars, "ups2", simVars.timecontrol.current_timestep_size);
 		ts_ups3_rexi.setup(i_rexiSimVars, "ups3", simVars.timecontrol.current_timestep_size);
@@ -547,6 +555,7 @@ SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::SWE_Plane_TS_l_rexi_na_sl_nd_etdrk(
 		ts_phi1_rexi(simVars, op),
 		ts_phi2_rexi(simVars, op),
 
+		ts_ups0_rexi(simVars, op),
 		ts_ups1_rexi(simVars, op),
 		ts_ups2_rexi(simVars, op),
 		ts_ups3_rexi(simVars, op),
