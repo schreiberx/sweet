@@ -63,18 +63,23 @@ p.runtime.viscosity = 0.0
 #
 # Time, Mode and Physical resolution
 #
-timelevels = 1 #7 #5
-timestep_size_reference = earth.day/100 #3600 #1 hour  #864000/10 #1 day
+timelevels = 20 #7 #5
+timestep_size_reference = earth.day/10 #3600 #1 hour  #864000/10 #1 day
 timestep_sizes = [timestep_size_reference*(2.0**(-i)) for i in range(0, timelevels)]
 
-p.runtime.simtime = earth.day*30 #1 day #timestep_size_reference #864000 #10 days
-p.runtime.output_timestep_size = p.runtime.simtime/10
+p.runtime.simtime = earth.day*20 #1 day #timestep_size_reference #864000 #10 days
+p.runtime.output_timestep_size = p.runtime.simtime/100
+datastorage = p.runtime.simtime / p.runtime.output_timestep_size
+if datastorage > 200:
+	print("Warning::Too much data will be stored, are you sure you wish to run this?") 
+
 #p.runtime.output_filename = "-"
 #p.runtime.output_timestep_size = timestep_size_reference*(2.0**(-timelevels))/10.0
 
 phys_res_levels = timelevels
-phys_res_reference = 256
-phys_res_list = [phys_res_reference*(2**i) for i in range(0, phys_res_levels)]
+phys_res_reference = 512
+#phys_res_list = [phys_res_reference*(2**i) for i in range(0, phys_res_levels)]
+phys_res_list = [phys_res_reference for i in range(0, phys_res_levels)]
 
 # Groups to execute, see below
 # l: linear
@@ -94,11 +99,11 @@ for group in groups:
 	if group == 'sl-rexi':
 		ts_methods = [
 			['ln_erk',		4,	4],	# reference solution - spectral (128 grid points)
-	#		['ln_erk',		2,	2],	# FD- C-grid
+			['ln_erk',		2,	2],	# FD- C-grid
 			['l_cn_na_sl_nd_settls', 2,	2],	# SI-SL-SP
-	#       ['l_rexi_na_sl_nd_settls',	2,	2], #SL-EXP-SETTLS
-	#		['l_rexi_na_sl_nd_etdrk',	2,	2], #SL-EXP-ETDRK
-	#		['l_rexi_n_erk',	2,	2],
+	        ['l_rexi_na_sl_nd_settls',	2,	2], #SL-EXP-SETTLS
+			['l_rexi_na_sl_nd_etdrk',	2,	2], #SL-EXP-ETDRK
+			['l_rexi_n_erk',	2,	2],
 		]
 
 	#
