@@ -433,6 +433,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 	double update_dt_delta = std::abs(timestep_size - i_fixed_dt)/std::max(timestep_size, i_fixed_dt);
 	if (update_dt_delta > 1e-9)
 	{
+		std::cout << "Warning: Reducing time step size from " << i_fixed_dt << " to " << timestep_size << ", threshold " << update_dt_delta << " exceeded" << std::endl;
 
 		std::cout << timestep_size << std::endl;
 		std::cout << i_fixed_dt << std::endl;
@@ -442,7 +443,6 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 		std::cout << update_dt_delta << std::endl;
 
 		timestep_size = i_fixed_dt;
-		std::cout << "Warning: Reducing time step size from " << i_fixed_dt << " to " << timestep_size << ", threshold " << update_dt_delta << " exceeded" << std::endl;
 
 		update_coefficients(true);
 	}

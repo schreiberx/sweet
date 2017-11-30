@@ -30,6 +30,7 @@ class SWE_Sphere_TS_lg_rexi_lc_n_etdrk	: public SWE_Sphere_TS_interface
 	SWE_Sphere_TS_l_rexi ts_phi1_rexi;
 	SWE_Sphere_TS_l_rexi ts_phi2_rexi;
 
+	SWE_Sphere_TS_l_rexi ts_ups0_rexi;
 	SWE_Sphere_TS_l_rexi ts_ups1_rexi;
 	SWE_Sphere_TS_l_rexi ts_ups2_rexi;
 	SWE_Sphere_TS_l_rexi ts_ups3_rexi;
