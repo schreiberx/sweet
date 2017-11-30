@@ -44,8 +44,8 @@ p.runtime.benchmark_name = "unstablejet"
 p.runtime.compute_error = 1
 
 # Enable/Disbale GUI
-p = EnableGUI(p)
-#p = DisableGUI(p)
+#p = EnableGUI(p)
+p = DisableGUI(p)
 
 #
 # REXI method
