@@ -77,7 +77,7 @@ if datastorage > 200:
 #p.runtime.output_timestep_size = timestep_size_reference*(2.0**(-timelevels))/10.0
 
 phys_res_levels = timelevels
-phys_res_reference = 512
+phys_res_reference = 256
 #phys_res_list = [phys_res_reference*(2**i) for i in range(0, phys_res_levels)]
 phys_res_list = [phys_res_reference for i in range(0, phys_res_levels)]
 
@@ -121,7 +121,7 @@ for group in groups:
 	#
 	# Reference solution
 	#if True:
-	if False:
+	if True:
 		print("Reference")
 		tsm = ts_methods[0]
 	
@@ -129,7 +129,8 @@ for group in groups:
 		p.runtime.timestepping_method = tsm[0]
 		p.runtime.timestepping_order = tsm[1]
 		p.runtime.timestepping_order2 = tsm[2]
-		p.runtime.phys_res = 512
+		p.runtime.phys_res = -1
+		p.runtime.mode_res = 512
 
 		if len(tsm) > 4:
 			s = tsm[4]
@@ -148,13 +149,14 @@ for group in groups:
 
 			p.runtime.timestep_size = timestep_sizes[idx]
 			if group == 'ln2space' and 'ln_erk' in tsm[0]:
-				p.runtime.timestep_size = p.runtime.timestep_size / 100.0
+				p.runtime.timestep_size = p.runtime.timestep_size / 1000.0
 
 			p.runtime.timestepping_method = tsm[0]
 			p.runtime.timestepping_order = tsm[1]
 			p.runtime.timestepping_order2 = tsm[2]
-			p.runtime.phys_res = phys_res_list[idx]
-			print("id   dt       N  ")
+			p.runtime.phys_res = -1
+			p.runtime.mode_res = phys_res_list[idx]
+			print("id   dt       Nmodes  ")
 			print(idx, p.runtime.timestep_size, p.runtime.phys_res)
 
 			if len(tsm) > 4:
