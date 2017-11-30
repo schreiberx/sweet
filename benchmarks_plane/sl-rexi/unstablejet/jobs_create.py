@@ -121,7 +121,7 @@ for group in groups:
 	#
 	# Reference solution
 	#if True:
-	if False:
+	if True:
 		print("Reference")
 		tsm = ts_methods[0]
 	
