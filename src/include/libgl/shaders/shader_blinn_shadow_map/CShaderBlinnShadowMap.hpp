@@ -21,7 +21,7 @@ public:
 		std::string infoLog;
 
 		initVertFragShadersFromDirectory("shader_blinn_shadow_map");
-		attachFragShader(SHADER_GLSL_DEFAULT_DIR"shader_blinn/fragment_shader_skeleton.glsl");
+		attachFragShader((ShaderDir::getDirectory()+"shader_blinn/fragment_shader_skeleton.glsl").c_str());
 
 		// link programs
 		if (!link())

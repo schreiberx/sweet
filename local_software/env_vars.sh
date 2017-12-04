@@ -47,6 +47,9 @@ test "x${PWD##*/}" = "xlocal_software" && cd ../
 
 SCRIPTDIR="`pwd`/local_software"
 
+export SWEET_ROOT="`pwd`"
+
+
 if [ ! -d "$SCRIPTDIR" ]; then
 	echo
 	echo "ERROR| Execute this script only from the SWEET root directory"
