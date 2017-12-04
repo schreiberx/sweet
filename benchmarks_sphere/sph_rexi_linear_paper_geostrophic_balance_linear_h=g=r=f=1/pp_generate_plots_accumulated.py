@@ -70,12 +70,19 @@ for i in range(0, len(files)):
 	plt.plot(data[0], data[1], linewidth=1.0, linestyle='-', marker=marker)
 
 	# RK2
-	f = f.replace('script_b10_g1_h1_f1_a1_u0_U0_fsph0_tsm_l_erk_tso2_tsob1_C0.01_REXITER_m00000256_h0.15_nrm0_hlf1_bf0_ext02_M0064', 'Runge-Kutta order 2')
+	f = f.replace('script_g1_h1_f1_a1_u0_U0_fsph0_tsm_l_erk_tso2_tsob1_C000.01_M0064', 'Runge-Kutta 2')
+
+	# REXI
+	f = f.replace('script_g1_h1_f1_a1_u0_U0_fsph0_tsm_l_rexi_tso1_tsob1_C0000.1_REXITER_', '')
+	f = f.replace('_h0.15', '')
+	f = f.replace('_bf0_ext02_M0064', '')
 
 	f = f.replace('script_b10_g1_h1_f1_a1_u0_U0_fsph0_tsm_l_rexi_tso1_tsob1_C0.01_REXITER', '')
 	f = f.replace('_h0.15', '')
 	f = f.replace('_bf0', '')
-	f = f.replace('_ext', ' EXT=')
+	#f = f.replace('_ext', ' EXT=')
+	f = f.replace('_ext00', '')
+	f = f.replace('_ext02', '')
 	f = f.replace('./', '')
 
 	f = f.replace('_M0064', '')
@@ -86,7 +93,7 @@ for i in range(0, len(files)):
 	f = f.replace('_nrm0', '')
 	f = f.replace('_nrm1', '')
 
-	f = f.replace('_m', 'REXI M=')
+	f = f.replace('m', 'T-REXI M=')
 
 	f = f.replace('M=0', 'M=')
 	f = f.replace('M=0', 'M=')
