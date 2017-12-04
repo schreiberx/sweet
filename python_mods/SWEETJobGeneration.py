@@ -98,8 +98,8 @@ $SCONS || exit 1
 			f.write("scons "+self.compile.getSConsParams()+'\n')
 			f.write("\n")
 			os.chmod(fn, 0o755)
+
 			#print("COMPILE WITH: scons "+self.compile.getSConsParams()+' -j 4')
-			pass
 
 		else:
 			content += "\n"
@@ -122,7 +122,7 @@ pwd
 
 echo "$EXEC"
 pwd
-ln -s $SWEETROOT/data/ $BASEDIR/data   #Symlink for GUI directory, if necessary
+#ln -s "$SWEETROOT/data/" "$BASEDIR/data"   #Symlink for GUI directory, if necessary
 """+mpiexec_prefix+"""$EXEC || exit 1
 """
 

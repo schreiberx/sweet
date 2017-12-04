@@ -563,6 +563,10 @@ if p.rexi_thread_parallel_sum == 'enable':
 else:
 	env.Append(CXXFLAGS=' -DSWEET_REXI_THREAD_PARALLEL_SUM=0')
 
+if p.rexi_timings == 'enable':
+	env.Append(CXXFLAGS=' -DSWEET_REXI_TIMINGS=1')
+else:
+	env.Append(CXXFLAGS=' -DSWEET_REXI_TIMINGS=0')
 
 if p.debug_symbols == 'enable':
 	env.Append(CXXFLAGS = '-g')
