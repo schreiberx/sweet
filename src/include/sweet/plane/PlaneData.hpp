@@ -8,6 +8,8 @@
 #define SRC_PLANE_DATA_HPP_
 
 #include <complex>
+#include <cfloat>
+#include <cmath>
 #include <cassert>
 #include <cstddef>
 #include <cassert>
@@ -945,7 +947,11 @@ public:
 #pragma omp parallel for proc_bind(close) reduction(&&:isallfinite)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+#if __GNUC__ < 6
+			isallfinite = isallfinite && isfinite(physical_space_data[i]);
+#else
 			isallfinite = isallfinite && std::isfinite(physical_space_data[i]);
+#endif
 
 
 		return isallfinite;

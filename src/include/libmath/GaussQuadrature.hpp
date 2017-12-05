@@ -211,7 +211,7 @@ public:
 				i_rel_error_threshold
 			);
 
-		if (std::isinf((double)approx_integral))
+		if (isinf((double)approx_integral))
 			FatalError("No convergence reached for integrate5_intervals_adaptive");
 
 		return approx_integral;
