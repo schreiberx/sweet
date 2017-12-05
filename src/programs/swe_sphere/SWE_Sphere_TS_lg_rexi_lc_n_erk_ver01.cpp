@@ -47,7 +47,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_erk::run_timestep(
 		io_vort += i_dt*vort_dt;
 		io_div += i_dt*div_dt;
 	}
-	else if (timestepping_order == 2)
+	else if (timestepping_order == 2 || timestepping_order == 4)
 	{
 		if (version_id == 0)
 		{
@@ -64,7 +64,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_erk::run_timestep(
 					&SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_coriolis_and_nonlinear,	///< pointer to function to compute Euler time step updates
 					io_phi, io_vort, io_div,
 					i_dt,
-					2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
+					timestepping_order2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
 					i_simulation_timestamp
 				);
 
@@ -83,7 +83,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_erk::run_timestep(
 					&SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_coriolis_and_nonlinear,	///< pointer to function to compute euler time step updates
 					io_phi, io_vort, io_div,
 					i_dt*0.5,
-					2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
+					timestepping_order2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
 					i_simulation_timestamp
 				);
 
@@ -100,7 +100,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_erk::run_timestep(
 					&SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_coriolis_and_nonlinear,	///< pointer to function to compute euler time step updates
 					io_phi, io_vort, io_div,
 					i_dt*0.5,
-					2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
+					timestepping_order2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
 					i_simulation_timestamp
 				);
 		}
@@ -123,6 +123,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_erk::run_timestep(
 void SWE_Sphere_TS_lg_rexi_lc_n_erk::setup(
 		REXI_SimulationVariables &i_rexiSimVars,
 		int i_timestepping_order,
+		int i_timestepping_order2,
 		double i_timestep_size,
 		int i_version_id
 )
@@ -130,9 +131,11 @@ void SWE_Sphere_TS_lg_rexi_lc_n_erk::setup(
 	version_id = i_version_id;
 
 	timestepping_order = i_timestepping_order;
+	timestepping_order2 = i_timestepping_order2;
+
 	timestep_size = simVars.timecontrol.current_timestep_size;
 
-	if (timestepping_order == 1)
+	if (timestepping_order2 == 1)
 	{
 		timestepping_lg_rexi.setup(
 				i_rexiSimVars,
@@ -142,7 +145,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_erk::setup(
 				true
 			);
 	}
-	else if (timestepping_order == 2)
+	else if (timestepping_order2 == 2 || timestepping_order2 == 4)
 	{
 		if (version_id == 0)
 		{

@@ -44,7 +44,7 @@ class SWE_Sphere_TS_l_irk_n_erk	: public SWE_Sphere_TS_interface
 	int version_id;
 
 	int timestepping_order;
-//	int timestepping_order2;
+	int timestepping_order2;
 
 
 public:
@@ -54,7 +54,8 @@ public:
 		);
 
 	void setup(
-			int i_order,	///< order of RK time stepping method
+			int i_order,	///< order of RK time stepping method for linear parts
+			int i_order2,	///< order of RK time stepping method for non-linear parts
 			int i_version_id
 	);
 

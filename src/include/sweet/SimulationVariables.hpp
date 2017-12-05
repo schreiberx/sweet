@@ -403,7 +403,7 @@ public:
 		int timestepping_order = -1;
 
 		/// Order of 2nd time stepping which might be used
-		int timestepping_order2 = 0;
+		int timestepping_order2 = -1;
 
 
 		/// use spectral differential operators
@@ -1241,12 +1241,14 @@ public:
 			parareal.max_simulation_time = timecontrol.max_simulation_time;
 #endif
 
+#if 0
 		if (misc.verbosity > 1)
 		{
 			for (int i = 0; i < i_argc; i++)
 				std::cout << i_argv[i] << " ";
 			std::cout << std::endl;
 		}
+#endif
 
 		/*
 		 * WARNING: the precision of std::cout and std::cerr is set here.
@@ -1261,6 +1263,11 @@ public:
 		{
 			std::cout << std::setprecision(misc.output_floating_point_precision);
 			std::cerr << std::setprecision(misc.output_floating_point_precision);
+		}
+
+		if (disc.timestepping_order2 <= 0)
+		{
+			disc.timestepping_order2 = disc.timestepping_order;
 		}
 
 		return true;

@@ -4,19 +4,25 @@
 #   Pre-setup specific test parameters
 #
 #
-#
+#   Pedro Peixoto <pedrosp@ime.usp.br>
 #
 #
 #---------------------------------------------------
-
-import matplotlib
-matplotlib.use('agg')
 
 import os
 import sys
 import stat
 import math
 
+class EarthMKSDimensions:
+	name = "EarthMKSDimensions"
+	day = 86400
+	g = 9.80616
+	f = 0.00014584	#2 omega
+	omega = 0.00007292
+	erad = 6371220
+	
+	
 def CompileSWEPlane(p):
 	p.compile.program = 'swe_plane'
 	p.compile.plane_or_sphere = 'plane'
@@ -25,8 +31,8 @@ def CompileSWEPlane(p):
 	p.compile.sphere_spectral_space = 'disable'
 	p.compile.sphere_spectral_dealiasing = 'disable'
 	p.compile.compiler = 'gnu'
+	p.compile.threading = 'omp'
 	return p	
-
 
 
 def RuntimeSWEPlaneNondimParameters(p):
@@ -37,10 +43,11 @@ def RuntimeSWEPlaneNondimParameters(p):
 	return p	
 
 def RuntimeSWEPlaneEarthParam(p):
-	p.runtime.g = 9.80616
-	p.runtime.f = 0.00014584
+	s = EarthMKSDimensions()
+	p.runtime.g = s.g
+	p.runtime.f = s.f
 	p.runtime.h = 10000
-	p.runtime.domain_size = 40031555.8928087
+	p.runtime.domain_size = 2.0*math.pi*s.erad # 40031555.8928087
 	return p	
 
 def EnableGUI(p):
@@ -55,11 +62,23 @@ def DisableGUI(p):
 	return p	
 
 
+def SetupFDCMethods(p):
+	p.runtime.staggering = 1
+	p.runtime.spectralderiv = 0
+
+	#p.compile.plane_spectral_space = 'disable'
+	p.compile.plane_spectral_dealiasing = 'disable'
+	p.compile.libfft = 'enable'
+	return p
 
 
+def SetupSpectralMethods(p):
+	p.runtime.staggering = 0
+	p.runtime.spectralderiv = 1
 
-
-
+	p.compile.plane_spectral_space = 'enable'
+	p.compile.plane_spectral_dealiasing = 'enable'
+	return p
 
 
 

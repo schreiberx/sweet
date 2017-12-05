@@ -59,8 +59,13 @@ for i in range(0, len(files)):
 	marker = markers[i % len(markers)]
 	plt.plot(data[0], data[1], linewidth=1.0, linestyle='-', marker=marker)
 
-	f = f.replace('script_modes128_bench10_nonlin0_g1_h1_f1_a1_u0_pdeid1_', '')
-	f = f.replace('_rexiextmodes02_rexipar1_C00000.01_t000000.1_o00000.01_robert1', '')
+	f = f.replace('script_g1_h1_f1_a1_u0_U0_fsph0_tsm_l_rexi_tso1_tsob1_C0000.1_REXITER_', '')
+	f = f.replace('_h0.15', '')
+	f = f.replace('_bf0_ext02_M0064', '')
+
+	#f = f.replace('script_modes128_bench10_nonlin0_g1_h1_f1_a1_u0_pdeid1_', '')
+	#f = f.replace('_rexiextmodes02_rexipar1_C00000.01_t000000.1_o00000.01_robert1', '')
+
 	legend_labels.append(f)
 
 

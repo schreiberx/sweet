@@ -186,7 +186,7 @@ public:
 		else if (i_timestepping_method == "l_erk_n_erk")
 		{
 			l_erk_n_erk = new SWE_Sphere_TS_l_erk_n_erk(i_simVars, i_op);
-			l_erk_n_erk->setup(i_simVars.disc.timestepping_order);
+			l_erk_n_erk->setup(i_simVars.disc.timestepping_order, i_simVars.disc.timestepping_order2);
 
 			master = &(SWE_Sphere_TS_interface&)*l_erk_n_erk;
 		}
@@ -214,14 +214,14 @@ public:
 		else if (i_timestepping_method == "l_irk_n_erk" || i_timestepping_method == "l_irk_n_erk_ver0")
 		{
 			l_irk_n_erk = new SWE_Sphere_TS_l_irk_n_erk(i_simVars, i_op);
-			l_irk_n_erk->setup(i_simVars.disc.timestepping_order, 0);
+			l_irk_n_erk->setup(i_simVars.disc.timestepping_order, i_simVars.disc.timestepping_order2, 0);
 
 			master = &(SWE_Sphere_TS_interface&)*l_irk_n_erk;
 		}
 		else if (i_timestepping_method == "l_irk_n_erk_ver1")
 		{
 			l_irk_n_erk = new SWE_Sphere_TS_l_irk_n_erk(i_simVars, i_op);
-			l_irk_n_erk->setup(i_simVars.disc.timestepping_order, 1);
+			l_irk_n_erk->setup(i_simVars.disc.timestepping_order, i_simVars.disc.timestepping_order2, 1);
 
 			master = &(SWE_Sphere_TS_interface&)*l_irk_n_erk;
 		}
@@ -232,6 +232,7 @@ public:
 			l_rexi_n_erk->setup(
 					i_simVars.rexi,
 					i_simVars.disc.timestepping_order,
+					i_simVars.disc.timestepping_order2,
 					i_simVars.timecontrol.current_timestep_size,
 					i_simVars.sim.f_sphere,
 					0	// VERSION 0
@@ -246,6 +247,7 @@ public:
 			l_rexi_n_erk->setup(
 					i_simVars.rexi,
 					i_simVars.disc.timestepping_order,
+					i_simVars.disc.timestepping_order2,
 					i_simVars.timecontrol.current_timestep_size,
 					i_simVars.sim.f_sphere,
 					1	// VERSION 1
@@ -256,14 +258,22 @@ public:
 		else if (i_timestepping_method == "lg_irk_lc_n_erk" || i_timestepping_method == "lg_irk_lc_n_erk_ver0")
 		{
 			lg_irk_lc_n_erk = new SWE_Sphere_TS_lg_irk_lc_n_erk(i_simVars, i_op);
-			lg_irk_lc_n_erk->setup(i_simVars.disc.timestepping_order, 0);
+			lg_irk_lc_n_erk->setup(
+					i_simVars.disc.timestepping_order,
+					i_simVars.disc.timestepping_order2,
+					0
+				);
 
 			master = &(SWE_Sphere_TS_interface&)*lg_irk_lc_n_erk;
 		}
 		else if (i_timestepping_method == "lg_irk_lc_n_erk_ver1")
 		{
 			lg_irk_lc_n_erk = new SWE_Sphere_TS_lg_irk_lc_n_erk(i_simVars, i_op);
-			lg_irk_lc_n_erk->setup(i_simVars.disc.timestepping_order, 1);
+			lg_irk_lc_n_erk->setup(
+					i_simVars.disc.timestepping_order,
+					i_simVars.disc.timestepping_order2,
+					1
+				);
 
 			master = &(SWE_Sphere_TS_interface&)*lg_irk_lc_n_erk;
 		}
@@ -273,6 +283,7 @@ public:
 			lg_rexi_lc_n_erk->setup(
 					i_simVars.rexi,
 					i_simVars.disc.timestepping_order,
+					i_simVars.disc.timestepping_order2,
 					i_simVars.timecontrol.current_timestep_size,
 					0
 				);
@@ -285,6 +296,7 @@ public:
 			lg_rexi_lc_n_erk->setup(
 					i_simVars.rexi,
 					i_simVars.disc.timestepping_order,
+					i_simVars.disc.timestepping_order2,
 					i_simVars.timecontrol.current_timestep_size,
 					1
 				);
@@ -294,14 +306,18 @@ public:
 		else if (i_timestepping_method == "lg_erk_lc_n_erk")
 		{
 			lg_erk_lc_n_erk = new SWE_Sphere_TS_lg_erk_lc_n_erk(i_simVars, i_op);
-			lg_erk_lc_n_erk->setup(i_simVars.disc.timestepping_order);
+			lg_erk_lc_n_erk->setup(
+					i_simVars.disc.timestepping_order
+				);
 
 			master = &(SWE_Sphere_TS_interface&)*lg_erk_lc_n_erk;
 		}
 		else if (i_timestepping_method == "lg_erk")
 		{
 			lg_erk = new SWE_Sphere_TS_lg_erk(i_simVars, i_op);
-			lg_erk->setup(i_simVars.disc.timestepping_order);
+			lg_erk->setup(
+					i_simVars.disc.timestepping_order
+				);
 
 			master = &(SWE_Sphere_TS_interface&)*lg_erk;
 		}
@@ -325,6 +341,7 @@ public:
 			l_rexi_n_etdrk->setup(
 					i_simVars.rexi,
 					i_simVars.disc.timestepping_order,
+					i_simVars.disc.timestepping_order2,
 					i_simVars.timecontrol.current_timestep_size,
 					i_simVars.sim.f_sphere
 				);
@@ -337,6 +354,7 @@ public:
 			lg_rexi_lc_n_etdrk->setup(
 					i_simVars.rexi,
 					i_simVars.disc.timestepping_order,
+					i_simVars.disc.timestepping_order2,
 					i_simVars.timecontrol.current_timestep_size
 				);
 
@@ -387,7 +405,7 @@ public:
 					i_simVars.sim.f_sphere,
 					false
 				);
-
+#if 0
 			if (i_simVars.misc.verbosity > 2)
 			{
 				std::cout << "ALPHA:" << std::endl;
@@ -398,7 +416,7 @@ public:
 				for (std::size_t n = 0; n < l_rexi->rexi_beta.size(); n++)
 					std::cout << l_rexi->rexi_beta[n] << std::endl;
 			}
-
+#endif
 			master = &(SWE_Sphere_TS_interface&)*l_rexi;
 		}
 		else if (i_timestepping_method == "lg_rexi")

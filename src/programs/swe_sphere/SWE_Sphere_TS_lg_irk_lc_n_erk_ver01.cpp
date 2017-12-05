@@ -65,7 +65,7 @@ void SWE_Sphere_TS_lg_irk_lc_n_erk::run_timestep(
 					&SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_coriolis_and_nonlinear,	///< pointer to function to compute euler time step updates
 					io_phi, io_vort, io_div,
 					i_dt,
-					timestepping_order,		/// This must be 2nd order accurate to get overall 2nd order accurate method
+					timestepping_order2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
 					i_simulation_timestamp
 				);
 
@@ -84,7 +84,7 @@ void SWE_Sphere_TS_lg_irk_lc_n_erk::run_timestep(
 					&SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_coriolis_and_nonlinear,	///< pointer to function to compute euler time step updates
 					io_phi, io_vort, io_div,
 					i_dt*0.5,
-					timestepping_order,		/// This must be 2nd order accurate to get overall 2nd order accurate method
+					timestepping_order2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
 					i_simulation_timestamp
 				);
 
@@ -101,7 +101,7 @@ void SWE_Sphere_TS_lg_irk_lc_n_erk::run_timestep(
 					&SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_coriolis_and_nonlinear,	///< pointer to function to compute euler time step updates
 					io_phi, io_vort, io_div,
 					i_dt*0.5,
-					timestepping_order,		/// This must be 2nd order accurate to get overall 2nd order accurate method
+					timestepping_order2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
 					i_simulation_timestamp
 				);
 		}
@@ -123,12 +123,14 @@ void SWE_Sphere_TS_lg_irk_lc_n_erk::run_timestep(
  */
 void SWE_Sphere_TS_lg_irk_lc_n_erk::setup(
 		int i_order,	///< order of RK time stepping method
+		int i_order2,
 		int i_version_id
 )
 {
 	version_id = i_version_id;
 
 	timestepping_order = i_order;
+	timestepping_order2 = i_order2;
 	timestep_size = simVars.timecontrol.current_timestep_size;
 
 	if (timestepping_order == 1)

@@ -21,7 +21,6 @@
  *
  * Mimics Spherical Mountain Wave test case 5
  *
- * ONLY WORKING FOR [0,1]x[0,1]
  *
  **/
 class SWEUnstableJet
@@ -40,7 +39,6 @@ class SWEUnstableJet
 	 * The depth function is numerically integrated to ensure
 	 * balanced initial conditions for the jet
 	 *
-	 * On (x,y) \in [0,1]x[0,1]
 	 */
 	double depth(
 			double x,
@@ -62,7 +60,8 @@ class SWEUnstableJet
 	{
 		 //power has to be odd to ensure periodicity
 		// the larger the thiner the jet
-		return std::pow(std::sin(2.0*M_PI*y), 41);
+		// Max speed is 50m/s
+		return 50.0*std::pow(std::sin(2.0*M_PI*y), 41);
 	}
 
 	double u(
@@ -106,7 +105,7 @@ class SWEUnstableJet
 
 		double exp2 = std::exp(-factor*(dx*dx + dy*dy));
 
-		double pert = 0.0001;
+		double pert = 0.01*simVars.sim.h0;
 		//double pert = 0.000;
 
 		return (pert)*(exp1+exp2);
