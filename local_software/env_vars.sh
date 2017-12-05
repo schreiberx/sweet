@@ -37,7 +37,7 @@ fi
 #
 grep "Ubuntu" /etc/issue > /dev/null
 if [ "x$?" = "x0" ]; then
-	export SWEET_SYSTEM_PACKAGES="libfreetype6-dev libxft-dev"
+	export SWEET_SYSTEM_PACKAGES="libxft-dev"
 
 	for i in $SWEET_SYSTEM_PACKAGES; do
 		dpkg -s "$i" >/dev/null 2>&1
