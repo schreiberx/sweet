@@ -8,7 +8,28 @@ import math
 from SWEETJobGeneration import *
 p = SWEETJobGeneration()
 
+#
+# cheyenne_impi provides similar performance results
+#
 p.cluster.setupTargetMachine("cheyenne")
+
+# 10 mins max wallclock seconds
+p.cluster.max_wallclock_seconds = 60*10
+
+
+# Override OMP_NUM_THREADS
+p.cluster.environment_vars = "export OMP_NUM_THREADS=1\n"
+
+#
+# Parallelization models
+#
+# Use 18 cores for each MPI task even if only 1 thread is used
+# This avoid any bandwidth-related issues
+#
+# Parallelization model (18 threads per rank)
+p.cluster.pm_space_cores_per_mpi_rank = 18
+p.cluster.pm_time_cores_per_mpi_rank = 1
+
 
 
 #
@@ -22,21 +43,25 @@ p.compile.plane_spectral_dealiasing = 'disable'
 p.compile.sphere_spectral_space = 'enable'
 p.compile.sphere_spectral_dealiasing = 'enable'
 
+p.compile.rexi_timings = 'enable'
 
 
 
 #
 # Options for CHEYENNE
 #
-p.compile.compiler = 'intel'
+if True:
+	p.compile.compiler = 'intel'
 
+	# MKL turned out to be slower on Cheyenne than FFTW
+	p.compile.mkl = 'disable'
 
-#
-# Use Intel MPI Compilers
-#
-p.compile.compiler_c_exec = 'mpicc'
-p.compile.compiler_cpp_exec = 'mpicxx'
-p.compile.compiler_fortran_exec = 'mpif90'
+	#
+	# Use Intel MPI Compilers
+	#
+	p.compile.compiler_c_exec = 'mpicc'
+	p.compile.compiler_cpp_exec = 'mpicxx'
+	p.compile.compiler_fortran_exec = 'mpif90'
 
 
 #
@@ -87,8 +112,8 @@ p.stability_checks = 0
 
 if True:
 	p.compile.threading = 'off'
-	#p.compile.rexi_thread_parallel_sum = 'disable'
-	p.compile.rexi_thread_parallel_sum = 'enable'
+	#p.compile.rexi_thread_parallel_sum = 'enable'
+	p.compile.rexi_thread_parallel_sum = 'disable'
 
 else:
 	#
@@ -110,16 +135,17 @@ else:
 # REXI method
 # N=64, SX,SY=50 and MU=0 with circle primitive provide good results
 #
-p.runtime.rexi_method = 'ci'
+p.runtime.rexi_method = ''
 p.runtime.rexi_ci_n = 128
 p.runtime.rexi_ci_max_real = -999
 p.runtime.rexi_ci_max_imag = -999
-p.runtime.rexi_ci_sx = 50
-p.runtime.rexi_ci_sy = 50
+p.runtime.rexi_ci_sx = -1
+p.runtime.rexi_ci_sy = -1
 p.runtime.rexi_ci_mu = 0
 p.runtime.rexi_ci_primitive = 'circle'
 
-p.runtime.rexi_beta_cutoff = 1e-16
+#p.runtime.rexi_beta_cutoff = 1e-16
+p.runtime.rexi_beta_cutoff = 0
 
 #p.compile.debug_symbols = False
 
@@ -137,9 +163,9 @@ timestep_size_reference = 60
 #timestep_sizes = [timestep_size_reference*(2.0**i) for i in range(0, 11)]
 #timestep_sizes = [timestep_size_reference*(2**i) for i in range(2, 4)]
 
-timestep_sizes_explicit = [60, 120, 180]
+timestep_sizes_explicit = [10, 20, 30, 60, 120, 180]
 timestep_sizes_implicit = [60, 120, 180, 360, 480, 600, 720]
-timestep_sizes_rexi = [60, 120, 180, 360, 480, 600, 720]
+timestep_sizes_rexi = [60, 120, 180, 240, 300, 360, 480, 600, 720]
 
 
 #timestep_sizes = timestep_sizes[1:]
@@ -161,21 +187,6 @@ p.runtime.rexi_extended_modes = 0
 groups = ['ln2']
 
 
-#
-# MPI ranks
-#
-mpi_ranks = [2**i for i in range(0, 12+1)]
-
-
-#
-# Parallelization models
-#
-# Use 18 cores for each MPI task even if only 1 thread is used
-# This avoid any bandwidth-related issues
-#
-# Parallelization model (18 threads per rank)
-p.cluster.pm_space_cores_per_mpi_rank = 18
-p.cluster.pm_time_cores_per_mpi_rank = 1
 
 
 
@@ -204,26 +215,34 @@ if __name__ == "__main__":
 				['ln_erk',		4,	4,	0],	# reference solution
 
 				###########
-				#['l_irk_n_erk',		2,	2,	0],
+				# RK2/4
+				###########
+				['ln_erk',		2,	2,	0],	# reference solution
+				['ln_erk',		4,	4,	0],	# reference solution
+
+				###########
+				# CN
+				###########
 				['lg_irk_lc_n_erk_ver0',	2,	2,	0],
 				['lg_irk_lc_n_erk_ver1',	2,	2,	0],
 
-				#['l_cn_n_erk',		2,	2,	0],
 				['l_irk_n_erk_ver0',	2,	2,	0],
 				['l_irk_n_erk_ver1',	2,	2,	0],
-				#['l_rexi_n_erk',	2,	2,	0],
-				#['l_rexi_n_etdrk',	2,	2,	0],
 
-
-				['ln_erk',		2,	2,	0],
-
-				#['l_erk_n_erk',		2,	2,	0],
-
-				#['lg_irk_lc_n_erk',	2,	2,	0],
-				#['lg_rexi_lc_n_erk_ver0',	2,	2,	0],
+				###########
+				# REXI
+				###########
 				['lg_rexi_lc_n_erk_ver0',	2,	2,	0],
 				['lg_rexi_lc_n_erk_ver1',	2,	2,	0],
+
+				['l_rexi_n_erk_ver0',	2,	2,	0],
+				['l_rexi_n_erk_ver1',	2,	2,	0],
+
+				###########
+				# ETDRK
+				###########
 				['lg_rexi_lc_n_etdrk',	2,	2,	0],
+				['l_rexi_n_etdrk',	2,	2,	0],
 			]
 
 		# 4th order nonlinear
@@ -312,8 +331,12 @@ if __name__ == "__main__":
 					s = tsm[4]
 					p.runtime.load_from_dict(tsm[4])
 
-				if '_rexi' in p.runtime.timestepping_method:
+				if not '_rexi' in p.runtime.timestepping_method:
+					p.runtime.rexi_method = ''
+					p.cluster.par_time_cores = 1
+					p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
 
+				else:
 					c = 1
 					#if True:
 					if False:
@@ -345,12 +368,12 @@ if __name__ == "__main__":
 								#for gf in [1, 0.1, 0.01, 0.001, 0.0001, 0.00001, 0.000001, 0.0000001, 0.00000001]:
 								#for gf_exp_N in [2, 4, 6, 10, 20, 40]:
 								#for gf_exp_N in [2, 4, 10]:
-								for gf_exp_N in [2]:
+								for gf_exp_N in [0]:
 									#for gf_scale in [0, 5, 10, 20, 50]:
 									for gf_scale in [0]:
 
 										#for ci_max_real in [10, 5]:
-										for ci_max_real in [10]:
+										for ci_max_real in [10.0]:
 											p.runtime.load_from_dict({
 												'rexi_method': 'ci',
 												'ci_n':N,
@@ -358,7 +381,8 @@ if __name__ == "__main__":
 												'ci_max_imag':r,
 												'half_poles':0,
 												'ci_gaussian_filter_scale':gf_scale,
-												'ci_gaussian_filter_dt_norm':130.0,	# unit scaling for T128 resolution
+												#'ci_gaussian_filter_dt_norm':130.0,	# unit scaling for T128 resolution
+												'ci_gaussian_filter_dt_norm':0.0,	# unit scaling for T128 resolution
 												'ci_gaussian_filter_exp_N':gf_exp_N,
 											})
 
@@ -372,11 +396,5 @@ if __name__ == "__main__":
 
 #					for p.cluster.par_time_cores in range_cores:
 #						p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
-
-				else:
-					p.cluster.par_time_cores = 1
-
-					p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
-
 
 

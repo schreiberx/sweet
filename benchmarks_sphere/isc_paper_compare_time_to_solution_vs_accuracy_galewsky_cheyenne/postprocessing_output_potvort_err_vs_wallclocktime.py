@@ -104,6 +104,11 @@ for l in lines:
 		continue
 
 	prev_name = d[0]
+	prev_name = prev_name.replace('script_ln2_g9.81_h10000_f7.2921e-05_a6371220_u0.0_U0_fsph0_tsm_', '')
+	prev_name = prev_name.replace('_prcircle_gfs0.E+00_gfd1.3000E+02_gfe2.E+00_nrm0_hlf0_bf1e-16_ext00', '')
+	prev_name = prev_name.replace('_tso2_tsob2', '')
+	prev_name = prev_name.replace('_REXICI_n0128', '')
+
 	prev_name = prev_name.replace('script_ln2_b100_g9.81_h10000_f7.2921e-05_p0_a6371220_u0.0_rob1_fsph0_tsm_', '')
 	prev_name = prev_name.replace('_M0128_MPI_space01_time128', '')
 	prev_name = prev_name.replace('_M0128_MPI_space01_time001', '')
