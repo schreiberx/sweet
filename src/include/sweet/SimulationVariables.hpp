@@ -524,31 +524,6 @@ public:
 	struct Bogus
 	{
 		std::string var[20];
-#if 0
-		=
-		{
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity()
-		};
-#endif
 	} bogus;
 
 
@@ -999,7 +974,7 @@ public:
 				if (optarg[0] == '=')
 				{
 					std::cerr << "Short option parameters may not be specified with an equal '=' sign!" << std::endl;
-					exit(-1);
+					FatalError("Exit");
 				}
 			}
 
@@ -1214,10 +1189,13 @@ public:
 				libpfasst.printOptions();
 #endif
 
-				std::cerr << std::endl;
+				std::cout << std::endl;
 
 				if ((char)opt != 'h')
+				{
 					std::cerr << "Unknown option '" << (char)opt << "'" << std::endl;
+					FatalError("Exit");
+				}
 				return false;
 			}
 		}
