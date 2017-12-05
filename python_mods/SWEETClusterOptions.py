@@ -26,6 +26,8 @@ class SWEETClusterOptions:
 
 		self.setupTargetMachine(target_machine)
 
+		self.exec_prefix = ''
+
 		#
 		# Setup default values
 		#
@@ -569,6 +571,9 @@ export OMP_NUM_THREADS=16
 		if len(mpi_exec_prefix) > 1:
 			if mpi_exec_prefix[-1] != " ":
 				mpi_exec_prefix += " "
+
+		if self.exec_prefix != '':
+			mpi_exec_prefix += self.exec_prefix
 
 		return content, mpi_exec_prefix
 
