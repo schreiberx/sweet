@@ -146,6 +146,7 @@ public:
 		if (simVars.sim.CFL < 0)
 			simVars.timecontrol.current_timestep_size = -simVars.sim.CFL;
 
+#if 0
 		if (simVars.timecontrol.current_timestep_size <= 0)
 		{
 			// TRY to guess optimal time step size
@@ -156,6 +157,7 @@ public:
 			else
 				simVars.timecontrol.current_timestep_size = 0.001*simVars.sim.earth_radius/(double)sphereDataConfig->physical_num_lat;
 		}
+#endif
 
 		if (simVars.timecontrol.current_timestep_size <= 0)
 			FatalError("Only fixed time step size supported");

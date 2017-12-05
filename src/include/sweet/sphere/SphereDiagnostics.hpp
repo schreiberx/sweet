@@ -129,7 +129,7 @@ public:
 
 
 
-
+#if 0
 
 public:
 	double compute_sphere_integral(
@@ -162,9 +162,13 @@ public:
 		return sum;
 	}
 
+#endif
 
 
 public:
+	/*
+	 * The integral similar to the zylinder is used because of the lat-related scaling factor.
+	 */
 	double compute_zylinder_integral(
 			const SphereData &i_data
 	)	const
@@ -187,6 +191,10 @@ public:
 		}
 #endif
 		sum /= (double)sphereDataConfig->physical_num_lon;
+
+//		sum *= 0.5;
+//		sum *= M_PI*4.0;
+		sum *= 2.0*M_PI;
 
 		return sum;
 	}

@@ -948,6 +948,12 @@ public:
 					);
 				}
 			}
+			else if (io_simVars.setup.benchmark_scenario_name == "flat")
+			{
+				o_h.physical_set_all_value(io_simVars.sim.h0);
+				o_u.physical_set_all_value(0);
+				o_v.physical_set_all_value(0);
+			}
 			else
 			{
 				FatalError("Benchmark not implemented");
