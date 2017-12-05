@@ -226,7 +226,7 @@ public:
 #pragma omp parallel for proc_bind(close) reduction(&&:isallfinite)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
-#if __GNUC__ < 6
+#if __GNUC__ == 5
 			isallfinite = isallfinite && isfinite(scalar_data[i]);
 #else
 			isallfinite = isallfinite && std::isfinite(scalar_data[i]);

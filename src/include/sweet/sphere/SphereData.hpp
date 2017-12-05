@@ -955,7 +955,7 @@ public:
 
 		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 		{
-#if __GNUC__ < 6
+#if __GNUC__ == 5
 			if (isnan(a.physical_space_data[i]) || isinf(a.physical_space_data[i]) != 0)
 #else
 			if (std::isnan(a.physical_space_data[i]) || std::isinf(a.physical_space_data[i]) != 0)

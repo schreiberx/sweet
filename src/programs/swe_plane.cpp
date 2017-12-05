@@ -753,7 +753,7 @@ public:
 		)
 			return true;
 
-#if __GNUC__ < 6
+#if __GNUC__ == 5
 		if (!isinf(simVars.timecontrol.max_simulation_time))
 #else
 		if (!std::isinf(simVars.timecontrol.max_simulation_time))
