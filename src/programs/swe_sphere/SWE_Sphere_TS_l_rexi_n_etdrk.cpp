@@ -24,7 +24,7 @@ void SWE_Sphere_TS_l_rexi_n_etdrk::run_timestep(
 
 	const SphereDataConfig *sphereDataConfig = io_phi.sphereDataConfig;
 
-	if (timestepping_order == 1)
+	if (timestepping_order == 0 || timestepping_order == 1)
 	{
 		/*
 		 * U_{1} = \psi_{0}( \Delta t L ) U_{0}
@@ -68,7 +68,6 @@ void SWE_Sphere_TS_l_rexi_n_etdrk::run_timestep(
 	}
 	else if (timestepping_order == 2)
 	{
-
 		/*
 		 * A_{n}=\psi_{0}(\Delta tL)U_{n}+\Delta t\psi_{1}(\Delta tL)F(U_{n})
 		 */
@@ -150,8 +149,6 @@ void SWE_Sphere_TS_l_rexi_n_etdrk::run_timestep(
 	{
 		double dt = i_dt;
 		double dt_half = dt*0.5;
-
-
 
 		/*
 		 * Precompute commonly used terms
@@ -351,8 +348,7 @@ void SWE_Sphere_TS_l_rexi_n_etdrk::setup(
 		REXI_SimulationVariables &i_rexiSimVars,
 		int i_timestepping_order,
 		int i_timestepping_order2,
-		double i_timestep_size,
-		bool i_use_f_sphere
+		double i_timestep_size
 )
 {
 	timestepping_order = i_timestepping_order;
@@ -363,27 +359,27 @@ void SWE_Sphere_TS_l_rexi_n_etdrk::setup(
 	if (timestepping_order != timestepping_order2)
 		FatalError("Mismatch of orders, should be equal");
 
-	if (timestepping_order == 0)
+	if (timestepping_order == 0 || timestepping_order == 1)
 	{
-		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true);	/* set use_f_sphere to true */
+		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size, false, false);	/* set use_f_sphere to true */
 	}
 	else if (timestepping_order == 2)
 	{
-		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true);	/* set use_f_sphere to true */
-		ts_phi1_rexi.setup(i_rexiSimVars, "phi1", i_timestep_size, false, true);
-		ts_phi2_rexi.setup(i_rexiSimVars, "phi2", i_timestep_size, false, true);
+		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size, false, false);	/* set use_f_sphere to true */
+		ts_phi1_rexi.setup(i_rexiSimVars, "phi1", i_timestep_size, false, false);
+		ts_phi2_rexi.setup(i_rexiSimVars, "phi2", i_timestep_size, false, false);
 	}
 	else if  (timestepping_order == 4)
 	{
-		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size*0.5, false, true);	/* set use_f_sphere to true */
-		ts_phi1_rexi.setup(i_rexiSimVars, "phi1", i_timestep_size*0.5, false, true);
-		ts_phi2_rexi.setup(i_rexiSimVars, "phi2", i_timestep_size*0.5, false, true);
+		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size*0.5, false, false);	/* set use_f_sphere to true */
+		ts_phi1_rexi.setup(i_rexiSimVars, "phi1", i_timestep_size*0.5, false, false);
+		ts_phi2_rexi.setup(i_rexiSimVars, "phi2", i_timestep_size*0.5, false, false);
 
 		// phi0, but with a full time step size
-		ts_ups0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true);
-		ts_ups1_rexi.setup(i_rexiSimVars, "ups1", i_timestep_size, false, true);
-		ts_ups2_rexi.setup(i_rexiSimVars, "ups2", i_timestep_size, false, true);
-		ts_ups3_rexi.setup(i_rexiSimVars, "ups3", i_timestep_size, false, true);
+		ts_ups0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size, false, false);
+		ts_ups1_rexi.setup(i_rexiSimVars, "ups1", i_timestep_size, false, false);
+		ts_ups2_rexi.setup(i_rexiSimVars, "ups2", i_timestep_size, false, false);
+		ts_ups3_rexi.setup(i_rexiSimVars, "ups3", i_timestep_size, false, false);
 	}
 	else
 	{

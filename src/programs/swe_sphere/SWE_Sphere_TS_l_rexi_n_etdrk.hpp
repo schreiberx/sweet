@@ -77,8 +77,7 @@ public:
 			REXI_SimulationVariables &i_rexi,
 			int i_timestepping_order,
 			int i_timestepping_order2,
-			double i_timestep_size,
-			bool i_use_f_sphere
+			double i_timestep_size
 	);
 
 	void run_timestep(

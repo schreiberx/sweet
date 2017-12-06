@@ -24,7 +24,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 
 	const SphereDataConfig *sphereDataConfig = io_phi.sphereDataConfig;
 
-	if (timestepping_order == 1)
+	if (timestepping_order == 0 || timestepping_order == 1)
 	{
 		/*
 		 * U_{1} = \psi_{0}( \Delta t L ) U_{0}
@@ -68,7 +68,6 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 	}
 	else if (timestepping_order == 2)
 	{
-
 		/*
 		 * A_{n}=\psi_{0}(\Delta tL)U_{n}+\Delta t\psi_{1}(\Delta tL)F(U_{n})
 		 */
@@ -352,15 +351,15 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::setup(
 		double i_timestep_size
 )
 {
-	ts_lg_erk_lf_n_erk.setup(i_timestepping_order);
-
 	timestepping_order = i_timestepping_order;
 	timestepping_order2 = i_timestepping_order2;
+
+	ts_lg_erk_lf_n_erk.setup(i_timestepping_order);
 
 	if (timestepping_order != timestepping_order2)
 		FatalError("Mismatch of orders, should be equal");
 
-	if (timestepping_order == 0)
+	if (timestepping_order == 0 || timestepping_order == 1)
 	{
 		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true);	/* set use_f_sphere to true */
 	}
