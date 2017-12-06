@@ -211,7 +211,11 @@ public:
 				i_rel_error_threshold
 			);
 
+#if __GNUC__ == 5
 		if (isinf((double)approx_integral))
+#else
+		if (std::isinf((double)approx_integral))
+#endif
 			FatalError("No convergence reached for integrate5_intervals_adaptive");
 
 		return approx_integral;

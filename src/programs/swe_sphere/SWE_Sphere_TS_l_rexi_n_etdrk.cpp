@@ -367,13 +367,13 @@ void SWE_Sphere_TS_l_rexi_n_etdrk::setup(
 	{
 		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true);	/* set use_f_sphere to true */
 	}
-	else if (timestepping_order -= 2)
+	else if (timestepping_order == 2)
 	{
 		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true);	/* set use_f_sphere to true */
 		ts_phi1_rexi.setup(i_rexiSimVars, "phi1", i_timestep_size, false, true);
 		ts_phi2_rexi.setup(i_rexiSimVars, "phi2", i_timestep_size, false, true);
 	}
-	else if  (timestepping_order >= 4)
+	else if  (timestepping_order == 4)
 	{
 		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size*0.5, false, true);	/* set use_f_sphere to true */
 		ts_phi1_rexi.setup(i_rexiSimVars, "phi1", i_timestep_size*0.5, false, true);
@@ -384,6 +384,10 @@ void SWE_Sphere_TS_l_rexi_n_etdrk::setup(
 		ts_ups1_rexi.setup(i_rexiSimVars, "ups1", i_timestep_size, false, true);
 		ts_ups2_rexi.setup(i_rexiSimVars, "ups2", i_timestep_size, false, true);
 		ts_ups3_rexi.setup(i_rexiSimVars, "ups3", i_timestep_size, false, true);
+	}
+	else
+	{
+		FatalError("TODO: This order is not implemented, yet!");
 	}
 }
 
