@@ -436,7 +436,8 @@ public:
 			return false;
 #endif
 
-		std::cout << "." << std::flush;
+		if (simVars.misc.verbosity > 0)
+			std::cout << "." << std::flush;
 
 		// output each time step
 		if (simVars.misc.output_each_sim_seconds < 0)
