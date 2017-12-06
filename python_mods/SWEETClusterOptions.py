@@ -138,7 +138,7 @@ class SWEETClusterOptions:
 	#
 	# \return header, exec_prefix
 	#
-	def getScriptHeader(self, jobid, runtimeOptions, dirname):
+	def getScriptHeader(self, jobid, runtimeOptions, compileOptions, dirname):
 		#if self.par_mpi_time_threads != 1:
 		#	if self.max_cores_per_node % self.par_space_threads != 0:
 		#		raise ValueError('Number of cores on node not evenly dividable by space threads')
@@ -341,6 +341,10 @@ class SWEETClusterOptions:
 
 		max_wallclock_seconds_str = str(datetime.timedelta(seconds=self.max_wallclock_seconds)).zfill(8)
 
+		mkl = False
+		if compileOptions.mkl == 'enable':
+			mkl = True
+
 		#
 		# SETUP the following variables:
 		#
@@ -429,7 +433,7 @@ class SWEETClusterOptions:
 export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
 
 module load impi
-module load mkl
+"""+("module load mkl" if mkl else "")+"""
 
 """+self.environment_vars
 
@@ -482,7 +486,8 @@ module load mkl
 
 export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
 
-module load mkl
+"""+("module load mkl" if mkl else "")+"""
+
 
 """+self.environment_vars
 

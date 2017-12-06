@@ -31,7 +31,7 @@ class SWEETJobGeneration:
 
 		job_id = 'sweet_'+self.runtime.getUniqueID(self.compile)
 
-		content, mpiexec_prefix = self.cluster.getScriptHeader('script'+self.runtime.getUniqueID(self.compile), self.runtime, dirname)
+		content, mpiexec_prefix = self.cluster.getScriptHeader('script'+self.runtime.getUniqueID(self.compile), self.runtime, self.compile, dirname)
 
 		content += """
 
