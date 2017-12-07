@@ -43,7 +43,16 @@
 #       include <libpfasst/LibPFASST_SimulationVariables.hpp>
 #endif
 
+/*
+ * REXI program parameters
+ */
 #include <rexi/REXI_SimulationVariables.hpp>
+
+/*
+ * Polvani program parameters
+ */
+#include <benchmarks_plane/SWEPolvani_SimulationVariables.hpp>
+
 
 /**
  * This class exists for convenience reasons.
@@ -63,7 +72,7 @@ public:
 
 public:
 	REXI_SimulationVariables rexi;
-
+	SWEPolvani_SimulationVariables swe_polvani;
 
 public:
 	/**
@@ -162,8 +171,14 @@ public:
 	 */
 	struct Setup
 	{
+		/// seed for random number generator
+		int random_seed = 0;
+
 		/// setup scenario
 		int benchmark_scenario_id = -1;
+
+		/// setup scenario
+		std::string benchmark_scenario_name = "";
 
 		/// radius
 		double radius_scale = 1;
@@ -215,7 +230,9 @@ public:
 		{
 			std::cout << std::endl;
 			std::cout << "SETUP:" << std::endl;
+			std::cout << " + random_seed: " << random_seed << std::endl;
 			std::cout << " + benchmark_scenario_id: " << benchmark_scenario_id << std::endl;
+			std::cout << " + benchmark_scenario_name: " << benchmark_scenario_name << std::endl;
 			std::cout << " + radius_scale: " << radius_scale << std::endl;
 			std::cout << " + setup_coord_x: " << setup_coord_x << std::endl;
 			std::cout << " + setup_coord_y: " << setup_coord_y << std::endl;
@@ -232,7 +249,9 @@ public:
 		{
 			std::cout << std::endl;
 			std::cout << "SIMULATION SETUP PARAMETERS:" << std::endl;
-			std::cout << "	-s [scen]				scenario id, set to -1 for overview" << std::endl;
+			std::cout << "	--random-seed [int]		random seed for random number generator" << std::endl;
+			std::cout << "	-s [int]				benchmark scenario id, set to -1 for overview" << std::endl;
+			std::cout << "	--benchmark [string]	benchmark name, only used if -s not set, set -1 for overview " << std::endl;
 			std::cout << "	-x [float]				x coordinate for setup \\in [0;1], default=0.5" << std::endl;
 			std::cout << "	-y [float]				y coordinate for setup \\in [0;1], default=0.5" << std::endl;
 			std::cout << "	-r [radius]				scale factor of radius for initial condition, default=1" << std::endl;
@@ -384,7 +403,7 @@ public:
 		int timestepping_order = -1;
 
 		/// Order of 2nd time stepping which might be used
-		int timestepping_order2 = 0;
+		int timestepping_order2 = -1;
 
 
 		/// use spectral differential operators
@@ -504,29 +523,7 @@ public:
 	 */
 	struct Bogus
 	{
-		double var[20] =
-		{
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity(),
-				std::numeric_limits<double>::infinity()
-		};
+		std::string var[20];
 	} bogus;
 
 
@@ -644,6 +641,7 @@ public:
 		timecontrol.outputConfig();
 
 		rexi.outputConfig();
+		swe_polvani.outputConfig();
 		pde.outputConfig();
 		misc.outputConfig();
 		diag.outputConfig();
@@ -679,6 +677,10 @@ public:
 
 		if ((disc.res_physical[0] & 1) || (disc.res_physical[1] & 1))
 			std::cout << "WARNING: Typically there are only even resolutions supported!" << std::endl;
+
+
+		if (setup.random_seed >= 0)
+			srandom(setup.random_seed);
 	}
 
 
@@ -693,7 +695,7 @@ public:
 			bool i_run_prog_parameter_validation = true
 	)
 	{
-		const int max_options = 100;
+		const int max_options = 200;
         struct option long_options[max_options+1];
 
         for (std::size_t i = 0; i < max_options+1; i++)
@@ -707,6 +709,9 @@ public:
 		int next_free_program_option = 0;
 
 		// SETUP
+        long_options[next_free_program_option] = {"random-seed", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
         long_options[next_free_program_option] = {"initial-coord-x", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
@@ -714,6 +719,9 @@ public:
         next_free_program_option++;
 
         long_options[next_free_program_option] = {"advection-rotation-angle", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
+        long_options[next_free_program_option] = {"benchmark", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
 
@@ -812,6 +820,13 @@ public:
 				max_options
 			);
 
+        int swe_polvani_start_option_index = next_free_program_option;
+        swe_polvani.setup_longOptionList(
+        		long_options,
+				next_free_program_option,	///< also updated (IO)
+				max_options
+			);
+
         // Test dummy object
         long_options[next_free_program_option] = {"dummy", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
@@ -861,9 +876,12 @@ public:
 
 				if (i < next_free_program_option)
 				{
-					int c = 0;	if (i == c)	{	setup.setup_coord_x = atof(optarg);		continue;	}
+					int c = 0;
+								if (i == c)	{	setup.random_seed = atoi(optarg);		continue;	}
+					c++;		if (i == c)	{	setup.setup_coord_x = atof(optarg);		continue;	}
 					c++;		if (i == c)	{	setup.setup_coord_y = atof(optarg);		continue;	}
 					c++;		if (i == c)	{	setup.advection_rotation_angle = atof(optarg);		continue;	}
+					c++;		if (i == c)	{	setup.benchmark_scenario_name = optarg;		continue;	}
 
 					c++;		if (i == c)	{	misc.compute_errors = atoi(optarg);					continue;	}
 					c++;		if (i == c)	{	misc.stability_checks = atoi(optarg);				continue;	}
@@ -916,6 +934,13 @@ public:
 						c += retval;
 					}
 
+					{
+						int retval = swe_polvani.setup_longOptionValue(i-swe_polvani_start_option_index, optarg);
+						if (retval == 0)
+							continue;
+						c += retval;
+					}
+
 					c++;
 
 					/*
@@ -938,7 +963,7 @@ public:
 						std::cout << std::endl;
 						exit(1);
 					}
-					bogus.var[i-next_free_program_option] = atof(optarg);
+					bogus.var[i-next_free_program_option] = optarg;
 				}
 				continue;
 			}
@@ -949,7 +974,7 @@ public:
 				if (optarg[0] == '=')
 				{
 					std::cerr << "Short option parameters may not be specified with an equal '=' sign!" << std::endl;
-					exit(-1);
+					FatalError("Exit");
 				}
 			}
 
@@ -1145,7 +1170,7 @@ public:
 				std::cout << "	-v [int]			verbosity level" << std::endl;
 				std::cout << "	-V [double]			period of outputConfig" << std::endl;
 				std::cout << "	-G [0/1]			graphical user interface" << std::endl;
-				std::cout << "	-O [string]			string prefix for filename of output of simulation data" << std::endl;
+				std::cout << "	-O [string]			string prefix for filename of output of simulation data (default output_%s_t%020.8f.csv)" << std::endl;
 				std::cout << "	-d [int]			accuracy of floating point output" << std::endl;
 				std::cout << "	-i [file0][;file1][;file3]...	string with filenames for initial conditions" << std::endl;
 				std::cout << "					specify BINARY; as first file name to read files as binary raw data" << std::endl;
@@ -1153,6 +1178,7 @@ public:
 				std::cout << "	--use-robert-functions [bool]	Use Robert function formulation for velocities on the sphere" << std::endl;
 				std::cout << "" << std::endl;
 				rexi.outputProgParams();
+				swe_polvani.outputProgParams();
 
 
 #if SWEET_PARAREAL
@@ -1163,10 +1189,13 @@ public:
 				libpfasst.printOptions();
 #endif
 
-				std::cerr << std::endl;
+				std::cout << std::endl;
 
 				if ((char)opt != 'h')
+				{
 					std::cerr << "Unknown option '" << (char)opt << "'" << std::endl;
+					FatalError("Exit");
+				}
 				return false;
 			}
 		}
@@ -1190,12 +1219,14 @@ public:
 			parareal.max_simulation_time = timecontrol.max_simulation_time;
 #endif
 
+#if 0
 		if (misc.verbosity > 1)
 		{
 			for (int i = 0; i < i_argc; i++)
 				std::cout << i_argv[i] << " ";
 			std::cout << std::endl;
 		}
+#endif
 
 		/*
 		 * WARNING: the precision of std::cout and std::cerr is set here.
@@ -1210,6 +1241,11 @@ public:
 		{
 			std::cout << std::setprecision(misc.output_floating_point_precision);
 			std::cerr << std::setprecision(misc.output_floating_point_precision);
+		}
+
+		if (disc.timestepping_order2 <= 0)
+		{
+			disc.timestepping_order2 = disc.timestepping_order;
 		}
 
 		return true;

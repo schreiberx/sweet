@@ -14,8 +14,24 @@ from importlib import import_module
 
 #from python_mods import CompileXMLOptions
 
+import subprocess
+
+
+def exec_command(command):
+	process = subprocess.Popen(command.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	out, err = process.communicate()
+	# combine stdout and stderr
+	out = out+err
+	out = out.decode("utf-8")
+	out = out.replace("\r", "")
+	if len(out) > 0:
+		if out[-1] in ["\n", "\r"]:
+			out = out[:-1]
+	return out
+
 
 class SWEETCompileOptions:
+
 
 	def __init__(self):
 		self.example_programs = []
@@ -55,9 +71,14 @@ class SWEETCompileOptions:
 		self.threading = 'omp'
 		self.rexi_thread_parallel_sum = 'disable'
 
+		self.rexi_timings = 'disable'
+
 		# Memory allocator
-		self.numa_block_allocator = 2
-		#self.numa_block_allocator = 2
+		if exec_command('uname -s') == "Darwin":
+			# Deactivate efficient NUMA block allocation on MacOSX systems (missing numa.h file)
+			self.numa_block_allocator = 0
+		else:
+			self.numa_block_allocator = 2
 
 		# Program / Unit test
 		self.program = ''
@@ -67,6 +88,9 @@ class SWEETCompileOptions:
 		self.parareal = 'none'
 		self.libpfasst = 'disable'
 		self.pfasst_cpp = 'disable'
+
+		# Eigen library
+		self.eigen = 'disable'
 
 		# Libraries
 		self.libfft = 'disable'
@@ -82,6 +106,8 @@ class SWEETCompileOptions:
 
 		# GUI
 		self.gui = 'disable'
+
+		self.quadmath = 'enable'
 		pass
 
 
@@ -108,6 +134,7 @@ class SWEETCompileOptions:
 		retval += ' --sweet-mpi='+self.sweet_mpi
 		retval += ' --threading='+self.threading
 		retval += ' --rexi-thread-parallel-sum='+self.rexi_thread_parallel_sum
+		retval += ' --rexi-timings='+self.rexi_timings
 
 		# Memory allocator
 		retval += ' --numa-block-allocator='+str(self.numa_block_allocator)
@@ -122,6 +149,8 @@ class SWEETCompileOptions:
 		retval += ' --parareal='+self.parareal
 		retval += ' --libpfasst='+self.libpfasst
 		retval += ' --pfasst-cpp='+self.pfasst_cpp
+
+		retval += ' --eigen='+self.eigen
 
 		# Libraries
 		retval += ' --libfft='+self.libfft
@@ -141,6 +170,9 @@ class SWEETCompileOptions:
 
 		# GUI
 		retval += ' --gui='+self.gui
+
+		# Activate quadmath
+		retval += ' --quadmath='+self.quadmath
 
 		return retval
 
@@ -231,7 +263,7 @@ class SWEETCompileOptions:
 				dest='numa_block_allocator',
 				type='choice',
 				choices=['0', '1', '2', '3'],
-				default='0',
+				default=str(self.numa_block_allocator),
 				help='Specify allocation method to use: 0: default system\'s malloc, 1: allocation with NUMA granularity, 2: allocation with thread granularity, 3: allocation with non-NUMA granularity [default: %default]'
 		)
 		self.numa_block_allocator = int(scons.GetOption('numa_block_allocator'))
@@ -254,6 +286,17 @@ class SWEETCompileOptions:
 				help="Use SIMD for operations such as folding [default: %default]"
 		)
 		self.simd = scons.GetOption('simd')
+
+
+		scons.AddOption(	'--eigen',
+				dest='eigen',
+				type='choice',
+				choices=['enable', 'disable'],
+				default='disable',
+				help="Activate utilization of Eigen library [default: %default]"
+		)
+		self.eigen = scons.GetOption('eigen')
+
 
 
 		scons.AddOption(	'--pfasst-cpp',
@@ -393,6 +436,16 @@ class SWEETCompileOptions:
 		if self.sphere_spectral_space == 'enable' and self.sphere_spectral_dealiasing != 'enable':
 			raise Exception("self.sphere_spectral_dealiasing != enable")
 
+		scons.AddOption(	'--quadmath',
+				dest='quadmath',
+				type='choice',
+				choices=['enable','disable'],
+				default='enable',
+				help='quadmath: enable, disable [default: %default]'
+		)
+		self.quadmath = scons.GetOption('quadmath')
+
+
 
 		scons.AddOption(	'--gui',
 				dest='gui',
@@ -414,6 +467,16 @@ class SWEETCompileOptions:
 				help='Use a par for loop over the sum in REXI: enable, disable [default: %default]\n\tWARNING: This also disables the parallelization-in-space with OpenMP'
 		)
 		self.rexi_thread_parallel_sum = scons.GetOption('rexi_thread_parallel_sum')
+
+
+		scons.AddOption(	'--rexi-timings',
+				dest='rexi_timings',
+				type='choice',
+				choices=['enable','disable'],
+				default='disable',
+				help='REXI timings: enable, disable [default: %default]'
+		)
+		self.rexi_timings = scons.GetOption('rexi_timings')
 
 
 		scons.AddOption(	'--sweet-mpi',
@@ -535,6 +598,12 @@ class SWEETCompileOptions:
 		if self.gui == 'enable':
 			exec_name+='_gui'
 
+		if self.quadmath == 'enable':
+			exec_name+='_quadmath'
+
+		if self.sweet_mpi == 'enable':
+			exec_name+='_mpi'
+
 		if self.threading in ['omp']:
 			exec_name+='_'+self.threading
 		else:
@@ -544,6 +613,10 @@ class SWEETCompileOptions:
 			
 		if self.rexi_thread_parallel_sum == 'enable':
 			exec_name+='_rxthpar'
+
+		if self.rexi_timings == 'enable':
+			exec_name+='_rxtime'
+
 
 		if self.numa_block_allocator in [1, 2]:
 			exec_name+='_numa'+str(self.numa_block_allocator)

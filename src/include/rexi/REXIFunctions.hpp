@@ -8,9 +8,13 @@
 #ifndef SRC_INCLUDE_REXI_REXIFUNCTIONS_HPP_
 #define SRC_INCLUDE_REXI_REXIFUNCTIONS_HPP_
 
+//#include <complex.h>
+//#include <complex>
+//#include <cmath>
 #include <iostream>
 #include <typeinfo>
-#include <quadmath.h>
+#include <libmath/DQStuff.hpp>
+
 
 
 /**
@@ -28,18 +32,21 @@ public:
 	T eps_ups;
 	T pi2;
 
-
 	void setup_constvars()
 	{
+#if SWEET_QUADMATH
 		if (typeid(T) == typeid(__float128))
 		{
 			eps_phi = 1e-10;
 			eps_ups= 1e-10;
 
 			static char *sp;
+
 			pi2 = (__float128)2.0*strtoflt128("3.1415926535897932384626433832795029", &sp);
 		}
-		else if (typeid(T) == typeid(double))
+		else
+#endif
+		if (typeid(T) == typeid(double))
 		{
 			eps_phi = 1e-10;
 			eps_ups= 1e-10;
@@ -112,6 +119,7 @@ public:
 	}
 
 
+#if SWEET_QUADMATH
 	/**************************************************************
 	 * __float128 TYPES
 	 **************************************************************/
@@ -142,7 +150,7 @@ public:
 
 		return std::complex<double>(crealq(val), cimagq(val));
 	}
-
+#endif
 
 
 	/**************************************************************
@@ -157,12 +165,12 @@ public:
 
 	T l_sqrt(double &i_value)
 	{
-		return l_sqrt(i_value);
+		return std::sqrt(i_value);
 	};
 
 	std::complex<double> l_sqrtcplx(const std::complex<double> &i_value)
 	{
-		return std::exp(i_value);
+		return std::sqrt(i_value);
 	};
 
 

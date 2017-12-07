@@ -14,6 +14,7 @@
 #include <sweet/sphere/Convert_SphereDataComplex_to_SphereData.hpp>
 #include <sweet/sphere/Convert_SphereDataPhysicalComplex_to_SphereDataPhysical.hpp>
 
+#define SHTNS_COMPLEX_SPH_SPHTOR	1
 
 
 class SphereOperatorsComplex	:
@@ -617,7 +618,27 @@ public:
 			double r
 	)	const
 	{
+		/*
+		 * Generate a copy because of destructive SHT operations
+		 */
 		SphereDataPhysicalComplex ug = i_u;
+		SphereDataPhysicalComplex vg = i_v;
+
+#if SHTNS_COMPLEX_SPH_SPHTOR
+
+		spat_cplx_xsint_to_SHsphtor(
+				sphereDataConfig->shtns,
+				ug.physical_space_data,
+				vg.physical_space_data,
+				o_vort.spectral_space_data,
+				o_div.spectral_space_data
+		);
+		o_vort.spectral_space_data_valid = true;
+		o_vort.physical_space_data_valid = false;
+		o_div.spectral_space_data_valid = true;
+		o_div.physical_space_data_valid = false;
+
+#else
 
 		ug.physical_update_lambda_cosphi_grid(
 			[&](double lon, double phi, std::complex<double> &o_data)
@@ -626,7 +647,6 @@ public:
 			}
 		);
 
-		SphereDataPhysicalComplex vg = i_v;
 		vg.physical_update_lambda_cosphi_grid(
 			[&](double lon, double phi, std::complex<double> &o_data)
 			{
@@ -670,6 +690,7 @@ public:
 
 		o_vort.loadRealImag(vort_re, vort_im);
 		o_div.loadRealImag(div_re, div_im);
+#endif
 
 		o_vort = laplace(o_vort, r)*r;
 		o_div = laplace(o_div, r)*r;
@@ -695,6 +716,21 @@ public:
 
 		SphereDataComplex psi = inv_laplace(i_vrt, i_radius)*ir;
 		SphereDataComplex chi = inv_laplace(i_div, i_radius)*ir;
+
+#if SHTNS_COMPLEX_SPH_SPHTOR
+
+		psi.request_data_spectral();
+		chi.request_data_spectral();
+
+		SHsphtor_to_spat_cplx_xsint(
+				sphereDataConfig->shtns,
+				psi.spectral_space_data,
+				chi.spectral_space_data,
+				o_u.physical_space_data,
+				o_v.physical_space_data
+		);
+
+#else
 
 		SphereData psi_re = Convert_SphereDataComplex_To_SphereData::physical_convert_real(psi);
 		SphereData psi_im = Convert_SphereDataComplex_To_SphereData::physical_convert_imag(psi);
@@ -726,6 +762,9 @@ public:
 		);
 
 		o_u.loadRealImag(u_re, u_im);
+		o_v.loadRealImag(v_re, v_im);
+
+
 		o_u.physical_update_lambda_cosphi_grid(
 			[](double lon, double phi, std::complex<double> &o_data)
 			{
@@ -733,13 +772,14 @@ public:
 			}
 		);
 
-		o_v.loadRealImag(v_re, v_im);
 		o_v.physical_update_lambda_cosphi_grid(
 			[](double lon, double phi, std::complex<double> &o_data)
 			{
 				o_data *= phi;
 			}
 		);
+#endif
+
 	}
 
 

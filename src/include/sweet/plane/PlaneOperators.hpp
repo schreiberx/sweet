@@ -62,6 +62,85 @@ public:
 	}
 
 
+
+	/**
+	 * Vorticity
+	 *
+	 * vort(a,b) = db/dx - da/dy
+	 */
+	PlaneData vort(
+			const PlaneData &a,
+			const PlaneData &b
+	)
+	{
+		return diff_c_x(b) - diff_c_y(a);
+	}
+
+
+
+	/**
+	 * Divergence
+	 *
+	 * div(a,b) = da/dx + db/dy
+	 */
+	PlaneData div(
+			const PlaneData &a,
+			const PlaneData &b
+	)
+	{
+		return diff_c_x(a) + diff_c_y(b);
+	}
+
+	/**
+	 * kinetic energy
+	 *
+	 * ke(a,b) = 0.5*(a^2+b^2)
+	 */
+	PlaneData ke(
+			const PlaneData &a,
+			const PlaneData &b
+	)
+	{
+		return 0.5*(a*a+b*b);
+	}
+
+
+
+	/*
+	 * Compute Arakawa Jacobian
+	 * See A. Arakawa, V. R. Lamb, "A potential enstrophy and energy conserving scheme for the shallow water equations"
+	 *
+	 * J(a,b) = da/dx db/dy - da/dy db/dx
+	 */
+	PlaneData J(
+			const PlaneData &a,
+			const PlaneData &b
+	)
+	{
+		return diff_c_x(a)*diff_c_y(b) - diff_c_y(a)*diff_c_x(b);
+	}
+
+
+	/*
+	 * Compute time derivative of Arakawa Jacobian
+	 *
+	 * J(a,b)_t = (da/dx db/dy - da/dy db/dx)_t
+	 */
+	PlaneData J_t(
+			const PlaneData &a,
+			const PlaneData &b,
+			const PlaneData &a_t,
+			const PlaneData &b_t
+	)
+	{
+		return	  diff_c_x(a_t)*diff_c_y(b)
+				+ diff_c_x(a)*diff_c_y(b_t)
+				- diff_c_y(a_t)*diff_c_x(b)
+				- diff_c_y(a)*diff_c_x(b_t);
+	}
+
+
+
 	/**
 	 *        __
 	 * apply  \/ .  operator
@@ -143,8 +222,16 @@ public:
 		assert( i_order > 0);
 		PlaneData out = diff2_c_x+diff2_c_y;
 
+#if 0
 		for (int i = 1; i < i_order/2; i++)
 			out = pow(-1, i)*(diff2_c_x(out)+diff2_c_y(out));
+#else
+		/*
+		 * Always use negative sign for hyperdiffusion to allow using always positive viscosity
+		 */
+		for (int i = 1; i < i_order/2; i++)
+			out = -(diff2_c_x(out)+diff2_c_y(out));
+#endif
 
 		return out;
 	}

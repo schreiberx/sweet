@@ -32,6 +32,33 @@ if [ "${HOSTNAME:0:8}" == "cheyenne" ]; then
 fi
 
 
+#
+# Detect Ubuntu system
+#
+grep "Ubuntu" /etc/issue > /dev/null
+if [ "x$?" = "x0" ]; then
+	export SWEET_SYSTEM_PACKAGES="libxft-dev"
+
+	for i in $SWEET_SYSTEM_PACKAGES; do
+		dpkg -s "$i" >/dev/null 2>&1
+		if [ "x$?" != "x0" ]; then
+			echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+			echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+			echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+			echo ""
+			echo "Ubuntu system detected and packages missing, please use"
+			echo ""
+			echo "    sudo apt-get install $SWEET_SYSTEM_PACKAGES"
+			echo ""
+			echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+			echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+			echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+			return
+		fi
+	done
+fi
+
+
 if [ "`basename $SHELL`" != "bash" ]; then
 	echo "ERROR|"
 	echo "ERROR| These scripts are only compatible to the bash shell"
@@ -46,6 +73,9 @@ BACKDIR="$PWD"
 test "x${PWD##*/}" = "xlocal_software" && cd ../
 
 SCRIPTDIR="`pwd`/local_software"
+
+export SWEET_ROOT="`pwd`"
+
 
 if [ ! -d "$SCRIPTDIR" ]; then
 	echo
@@ -68,6 +98,7 @@ export DYLD_LIBRARY_PATH="$SCRIPTDIR/local/lib:$LD_LIBRARY_PATH"
 export DYLD_LIBRARY_PATH="$SCRIPTDIR/local/lib64:$LD_LIBRARY_PATH"
 
 export PYTHONPATH="$PYTHONPATH:$SCRIPTDIR/local/lib/python3.6/site-packages/"
+#export PYTHONHOME="$SCRIPTDIR/local/lib/:$PYTHONHOME"
 
 echo "SWEET environment variables loaded"
 

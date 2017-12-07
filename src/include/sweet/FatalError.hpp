@@ -13,6 +13,7 @@
 #include <string>
 #include <iostream>
 #include <signal.h>
+#include <stdlib.h>
 
 class FatalError
 {

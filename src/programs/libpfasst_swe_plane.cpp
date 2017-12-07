@@ -8,14 +8,13 @@
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
+#include <benchmarks_plane/SWEBenchmarksCombined.hpp>
 #include <sweet/FatalError.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneDataTimesteppingRK.hpp>
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/plane/PlaneDiagnostics.hpp>
-#include <benchmarks_plane/PlaneBenchmarksCombined.hpp>
-
 #include "libpfasst_swe_plane/LevelSingleton.hpp"
 #include "libpfasst_swe_plane/PlaneDataCtx.hpp"
 #include <mpi.h>
@@ -44,14 +43,10 @@ int main(int i_argc, char *i_argv[])
 
   // input parameter names (specific ones for this program)
   const char *bogus_var_names[] = {
-    "rexi-use-coriolis-formulation",
-    "compute-error",
     nullptr
   };
 
   // default values for specific input (for general input see SimulationVariables.hpp)
-  simVars.bogus.var[0] = 1;
-  simVars.bogus.var[1] = 1;
   
   // Help menu
   if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))

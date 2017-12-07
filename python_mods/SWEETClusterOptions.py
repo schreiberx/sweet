@@ -5,6 +5,7 @@ import math
 import sys
 import os
 import multiprocessing
+import datetime
 
 
 class SWEETClusterOptions:
@@ -25,6 +26,8 @@ class SWEETClusterOptions:
 
 		self.setupTargetMachine(target_machine)
 
+		self.exec_prefix = ''
+
 		#
 		# Setup default values
 		#
@@ -34,6 +37,12 @@ class SWEETClusterOptions:
 
 		# Cores in time
 		self.par_time_cores = 1
+
+		# max wallclock time, default: 1h
+		self.max_wallclock_seconds = 60*60
+
+		# additional environment variables
+		self.environment_vars = ""
 
 
 
@@ -75,7 +84,7 @@ class SWEETClusterOptions:
 			self.total_max_cores = self.cores_per_node*self.total_max_nodes
 			raise Exception("TODO")
 
-		elif self.target_machine == "cheyenne":
+		elif self.target_machine == "cheyenne" or self.target_machine == "cheyenne_impi":
 			self.cores_per_node = 36
 
 			# REAL number:
@@ -83,6 +92,11 @@ class SWEETClusterOptions:
 
 			# Low number to avoid accidentally wasting computing time
 			self.total_max_nodes = 128
+			self.total_max_cores = self.cores_per_node*self.total_max_nodes
+
+		elif self.target_machine == "martinium":
+			self.cores_per_node = 2
+			self.total_max_nodes = 1
 			self.total_max_cores = self.cores_per_node*self.total_max_nodes
 
 		else:
@@ -124,7 +138,7 @@ class SWEETClusterOptions:
 	#
 	# \return header, exec_prefix
 	#
-	def getScriptHeader(self, jobid, runtimeOptions, dirname):
+	def getScriptHeader(self, jobid, runtimeOptions, compileOptions, dirname):
 		#if self.par_mpi_time_threads != 1:
 		#	if self.max_cores_per_node % self.par_space_threads != 0:
 		#		raise ValueError('Number of cores on node not evenly dividable by space threads')
@@ -180,8 +194,8 @@ class SWEETClusterOptions:
 			pm_cores_per_mpi_rank = self.pm_time_cores_per_mpi_rank * self.pm_space_cores_per_mpi_rank
 			print(" + pm_cores_per_mpi_rank: "+str(pm_cores_per_mpi_rank))
 
-			if self.pm_time_cores_per_mpi_rank != 1:
-				raise Exception("Not yet supported")
+			#if self.pm_time_cores_per_mpi_rank != 1:
+			#	raise Exception("Not yet supported")
 
 			if self.pm_space_cores_per_mpi_rank > self.cores_per_node:
 				raise Exception("Not yet supported")
@@ -219,7 +233,6 @@ class SWEETClusterOptions:
 			time_ranks_per_node = int(math.ceil(18/self.pm_time_cores_per_mpi_rank))
 
 			time_ranks_per_node = min(time_ranks_per_node*self.pm_time_cores_per_mpi_rank, self.par_time_cores)
-			time_num_cores = self.par_time_cores
 			time_num_ranks = self.par_time_cores
 
 			print(" + space_ranks_per_node: "+str(space_ranks_per_node))
@@ -254,6 +267,8 @@ class SWEETClusterOptions:
 			# Total number of MPI ranks
 			mpi_ranks_total = space_num_ranks*time_num_ranks
 
+			print(" + mpi_ranks_total: "+str(mpi_ranks_total))
+
 
 		else:
 
@@ -286,7 +301,6 @@ class SWEETClusterOptions:
 
 			if time_ranks_per_node == 0:
 				raise Exception("Too many cores per MPI rank")
-
 
 			# Total number of time mpi ranks
 			time_num_ranks = int(math.ceil(self.par_time_cores/time_ranks_per_node))
@@ -323,6 +337,14 @@ class SWEETClusterOptions:
 			# Total number of MPI ranks
 			mpi_ranks_total = par_total_cores
 
+
+
+		max_wallclock_seconds_str = str(datetime.timedelta(seconds=self.max_wallclock_seconds)).zfill(8)
+
+		mkl = False
+		if compileOptions.mkl == 'enable':
+			mkl = True
+
 		#
 		# SETUP the following variables:
 		#
@@ -332,7 +354,6 @@ class SWEETClusterOptions:
 		# mpi_exec_prefix
 		#    e.g. mpirun -n XXX
 		#
-
 		if self.target_machine == 'yellowstone':
 			#
 			# YELLOWSTONE:
@@ -376,7 +397,61 @@ class SWEETClusterOptions:
 			mpi_exec_prefix = ""
 
 
-		elif self.target_machine == 'cheyenne':
+
+		elif self.target_machine == "cheyenne_impi":
+			#
+			# CHEYENNE:
+			#  - Dual socket (18 cores / socket)
+			#  - 36 cores in total per node
+			#
+			# 9-D enhanced hypercube topology
+			# 100-Gbps link bandwidth — 0.5 μs latency
+			# 36 TB/s bisection bandwidth
+			#
+
+			content = "#!/bin/bash\n"
+			content += "# TARGET MACHINE: "+self.target_machine+"\n"
+			content += """#
+## project code
+#PBS -A NCIS0002
+## regular limit: 12 hours
+## economy queue
+#PBS -q economy
+## shared queue
+######PBS -q share
+## wall-clock time (hrs:mins:secs)
+#PBS -l walltime="""+max_wallclock_seconds_str+"""
+## select: number of nodes
+## ncpus: number of CPUs per node
+## mpiprocs: number of ranks per node
+#PBS -l select="""+str(num_nodes)+""":ncpus="""+str(num_cores_per_node)+""":mpiprocs="""+str(num_ranks_per_node)+""":ompthreads="""+str(num_omp_threads_per_mpi_thread)+"""
+#
+#PBS -N """+jobid[0:100]+"""
+#PBS -o """+cwd+"/"+dirname+"""/output.out
+#PBS -e """+cwd+"/"+dirname+"""/output.err
+
+export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
+
+module load impi
+"""+("module load mkl" if mkl else "")+"""
+
+"""+self.environment_vars
+
+			#
+			# https://www2.cisl.ucar.edu/resources/computational-systems/cheyenne/running-jobs/submitting-jobs-pbs/omplace-and-dplace
+			#
+			mpi_exec_prefix = "mpirun -n "+str(mpi_ranks_total)+" "
+			# TODO: This seems to make trouble
+			#mpi_exec_prefix += " omplace -vv "
+			#mpi_exec_prefix += " dplace -s 1 "
+		#	mpi_exec_prefix += " omplace "
+		#	mpi_exec_prefix += " -nt "+str(num_omp_threads_per_mpi_thread)+" "
+		#	mpi_exec_prefix += " -vv "
+			# -tm pthreads didn't make any difference in performance for single-threaded programs which 1 thread per socket
+			#mpi_exec_prefix += " -tm pthreads "
+
+
+		elif self.target_machine == "cheyenne":
 
 			#
 			# CHEYENNE:
@@ -399,8 +474,10 @@ class SWEETClusterOptions:
 ## shared queue
 ######PBS -q share
 ## wall-clock time (hrs:mins:secs)
-#PBS -l walltime=00:10:00
-## select one chunk with one CPU in it
+#PBS -l walltime="""+max_wallclock_seconds_str+"""
+## select: number of nodes
+## ncpus: number of CPUs per node
+## mpiprocs: number of ranks per node
 #PBS -l select="""+str(num_nodes)+""":ncpus="""+str(num_cores_per_node)+""":mpiprocs="""+str(num_ranks_per_node)+""":ompthreads="""+str(num_omp_threads_per_mpi_thread)+"""
 #
 #PBS -N """+jobid[0:100]+"""
@@ -409,7 +486,10 @@ class SWEETClusterOptions:
 
 export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
 
-"""
+"""+("module load mkl" if mkl else "")+"""
+
+
+"""+self.environment_vars
 
 			#
 			# https://www2.cisl.ucar.edu/resources/computational-systems/cheyenne/running-jobs/submitting-jobs-pbs/omplace-and-dplace
@@ -424,9 +504,81 @@ export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
 			# -tm pthreads didn't make any difference in performance for single-threaded programs which 1 thread per socket
 			#mpi_exec_prefix += " -tm pthreads "
 
+
+		elif self.target_machine == 'mac-login-intel':
+
+			content = """#!/bin/bash
+#SBATCH -o """+cwd+"/"+dirname+"""/output.out
+#SBATCH -e """+cwd+"/"+dirname+"""/output.err
+#####SBATCH -D /home/hpc/<project>/<user>
+#SBATCH -J """+jobid[0:100]+"""
+#SBATCH --get-user-env
+#SBATCH --partition=snb
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=32
+#SBATCH --mail-type=end
+#SBATCH --mail-user=M.Schreiber@exeter.ac.uk
+#SBATCH --export=NONE
+###SBATCH --time=01:30:00
+
+source /etc/profile.d/modules.sh
+
+# optimal values for sph sphere T128 REXI stuff
+export OMP_PROC_BIND=COMPACT
+export OMP_NUM_THREADS=32
+
+#export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
+"""
+
+			# one process per node, only one node
+			mpi_exec_prefix = "mpiexec.hydra -ppn 1 -n 1"
+
+
+		elif self.target_machine == 'mac-login-amd':
+
+			content = """#!/bin/bash
+#SBATCH -o """+cwd+"/"+dirname+"""/output.out
+#SBATCH -e """+cwd+"/"+dirname+"""/output.err
+#####SBATCH -D /home/hpc/<project>/<user>
+#SBATCH -J """+jobid[0:100]+"""
+#SBATCH --get-user-env
+#SBATCH --partition=bdz
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=64
+#SBATCH --mail-type=end
+#SBATCH --mail-user=M.Schreiber@exeter.ac.uk
+#SBATCH --export=NONE
+###SBATCH --time=01:30:00
+
+source /etc/profile.d/modules.sh
+
+# optimal values for sph sphere T128 REXI stuff
+export OMP_PROC_BIND=SPREAD
+export OMP_NUM_THREADS=16
+
+#export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
+"""
+
+			# one process per node, only one node
+			mpi_exec_prefix = "mpiexec.hydra -ppn 1 -n 1"
+
+
 		else:
 			content = ""
+			content += "#!/bin/bash\n"
+			content += "\n"
+			#content += "export OMP_PROC_BIND=CLOSE\n"
+			content += "\n"
 			mpi_exec_prefix = ""
+ 
+
+
+		if len(mpi_exec_prefix) > 1:
+			if mpi_exec_prefix[-1] != " ":
+				mpi_exec_prefix += " "
+
+		if self.exec_prefix != '':
+			mpi_exec_prefix += self.exec_prefix
 
 		return content, mpi_exec_prefix
 

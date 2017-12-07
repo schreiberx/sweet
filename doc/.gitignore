@@ -1,2 +1,5 @@
 html
 latex
+*.aux
+*.log
+*.gz

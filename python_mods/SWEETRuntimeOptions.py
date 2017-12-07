@@ -9,11 +9,14 @@ class SWEETRuntimeOptions():
 		self.phys_res = -1
 
 		self.output_timestep_size = 0.0001
+		self.output_filename = ''
 
 		self.f_sphere = 0
 		self.verbosity = 0
 
 		self.stability_checks = 0
+
+		self.floating_point_output_digits = -1
 
 		self.timestepping_method = 'ln_erk'
 		self.timestepping_order = 1
@@ -26,6 +29,8 @@ class SWEETRuntimeOptions():
 
 
 		self.rexi_method = ''
+
+		self.rexi_beta_cutoff = 0
 
 		self.rexi_file_n = 0
 		self.rexi_file_h = 0
@@ -40,6 +45,9 @@ class SWEETRuntimeOptions():
 		self.rexi_ci_sy = 50
 		self.rexi_ci_mu = 0
 		self.rexi_ci_primitive = 'circle'
+		self.rexi_ci_gaussian_filter_scale = 0
+		self.rexi_ci_gaussian_filter_dt_norm = 0
+		self.rexi_ci_gaussian_filter_exp_N = 0
 
 		self.rexi_m = 0
 		self.rexi_l = 11
@@ -50,6 +58,9 @@ class SWEETRuntimeOptions():
 		self.rexi_normalization = 0
 		self.rexi_sphere_preallocation = 0
 		self.rexi_use_direct_solution = 0
+
+		self.polvani_rossby = -1.0
+		self.polvani_froude = -1.0
 
 
 
@@ -69,6 +80,8 @@ class SWEETRuntimeOptions():
 		# 3: gaussian breaking dam
 		# 4: geostrophic balance test case
 		self.bench_id = 4
+		self.benchmark_name = ""
+
 		self.use_robert_functions = 1
 
 		self.pde_id = 0
@@ -76,10 +89,11 @@ class SWEETRuntimeOptions():
 		self.spectralderiv = 1
 		self.uselineardiv = 0
 		self.viscosity = 0
+		self.viscosity_order = 0
 
 		self.simtime = 0.001
 
-		self.compute_error = 1
+		self.compute_error = 0
 
 		return
 
@@ -143,25 +157,45 @@ class SWEETRuntimeOptions():
 		if 'ci_primitive' in d:
 			self.rexi_ci_primitive = float(d['ci_primitive'])
 
+		if 'ci_gaussian_filter_scale' in d:
+			self.rexi_ci_gaussian_filter_scale = float(d['ci_gaussian_filter_scale'])
+
+		if 'ci_gaussian_filter_dt_norm' in d:
+			self.rexi_ci_gaussian_filter_dt_norm = float(d['ci_gaussian_filter_dt_norm'])
+
+		if 'ci_gaussian_filter_exp_N' in d:
+			self.rexi_ci_gaussian_filter_exp_N = float(d['ci_gaussian_filter_exp_N'])
+
+		if 'polvani_rossby' in d:
+			self.polvani_rossby = float(d['polvani_rossby'])
+
+		if 'polvani_froude' in d:
+			self.polvani_froude = float(d['polvani_froude'])
+
 		if 'timestep_size' in d:
 			self.timestep_size = float(d['timestep_size'])
 
 	def getUniqueID(self, compileOptions):
 		idstr = ''
 
-		idstr += '_b'+str(self.bench_id)
+		if False:
+			if self.benchmark_name != '':
+				idstr += '_b'+str(self.benchmark_name)
+			else:
+				idstr += '_b'+str(self.bench_id)
 
 		idstr += '_g'+str(self.g)
 		idstr += '_h'+str(self.h)
 		idstr += '_f'+str(self.f)
 
-		idstr += '_p'+str(self.pde_id)
+		#idstr += '_p'+str(self.pde_id)
 
 		if compileOptions.plane_or_sphere == 'sphere':
 			idstr += '_a'+str(self.r)
 			idstr += '_u'+str(self.viscosity)
+			idstr += '_U'+str(self.viscosity_order)
 
-			idstr += '_rob'+str(self.use_robert_functions)
+			#idstr += '_rob'+str(self.use_robert_functions)
 			idstr += '_fsph'+str(self.f_sphere)
 
 #		idstr += '_t'+str(self.simtime).zfill(8)
@@ -171,8 +205,14 @@ class SWEETRuntimeOptions():
 		idstr += '_tso'+str(self.timestepping_order)
 		idstr += '_tsob'+str(self.timestepping_order2)
 
+
+		idstr += '_C'+str(self.timestep_size).zfill(6)
+
+		if self.max_timesteps != -1:
+			idstr += '_T'+str(self.max_timesteps).zfill(3)
+
 		if self.rexi_method != '':
-			if self.rexi_use_direct_solution:
+			if self.rexi_method == 'direct' or self.rexi_use_direct_solution:
 				idstr += '_REXIDIR'
 			else:
 				if self.rexi_method == "file":
@@ -198,20 +238,25 @@ class SWEETRuntimeOptions():
 						idstr += '_sy'+str(float(self.rexi_ci_sy))
 						idstr += '_mu'+str(float(self.rexi_ci_mu))
 					idstr += '_pr'+str(self.rexi_ci_primitive)
+					idstr += '_gfs'+str( "{:.4E}".format(self.rexi_ci_gaussian_filter_scale))
+					idstr += '_gfd'+str( "{:.4E}".format(self.rexi_ci_gaussian_filter_dt_norm))
+					idstr += '_gfe'+str( "{:.4E}".format(self.rexi_ci_gaussian_filter_exp_N))
 
 				idstr += '_nrm'+str(self.rexi_normalization)
 				idstr += '_hlf'+str(self.rexi_half_poles)
+				idstr += '_bf'+str(self.rexi_beta_cutoff)
 	
-			#if self.plane_or_sphere == 'sphere':
-			idstr += '_pre'+str(self.rexi_sphere_preallocation)
-			idstr += '_ext'+str(self.rexi_extended_modes).zfill(2)
+				#if self.plane_or_sphere == 'sphere':
+				#idstr += '_pre'+str(self.rexi_sphere_preallocation)
+				idstr += '_ext'+str(self.rexi_extended_modes).zfill(2)
 
-			#idstr += '_rexithreadpar'+str(1 if self.rexi_thread_par else 0)
+				#idstr += '_rexithreadpar'+str(1 if self.rexi_thread_par else 0)
 
-		idstr += '_C'+str(self.timestep_size).zfill(8)
+		if self.polvani_rossby >= 0:
+			idstr += '_PR'+str(self.polvani_rossby)
 
-		if self.max_timesteps != -1:
-			idstr += '_T'+str(self.max_timesteps).zfill(3)
+		if self.polvani_froude >= 0:
+			idstr += '_PF'+str(self.polvani_froude)
 
 		if self.mode_res != -1:
 			idstr += '_M'+str(self.mode_res).zfill(4)
@@ -239,7 +284,10 @@ class SWEETRuntimeOptions():
 		retval += ' -S '+str(self.spectralderiv)
 
 		retval += ' -X '+str(self.domain_size)
+		retval += ' -Y '+str(self.domain_size)
+		
 		retval += ' -s '+str(self.bench_id)
+		retval += ' --benchmark='+str(self.benchmark_name)
 
 		retval += ' -v '+str(self.verbosity)
 
@@ -253,10 +301,19 @@ class SWEETRuntimeOptions():
 		if self.output_timestep_size < 0:
 			retval += ' -O -'	# deactivate file output
 
+		if self.output_filename != '':
+			retval += ' -O '+self.output_filename
+
 		retval += ' -u '+str(self.viscosity)
+		if self.viscosity_order > 0:
+			retval += ' -U '+str(self.viscosity_order)
 		retval += ' -t '+str(self.simtime)
 
 		retval += ' --stability-checks='+str(self.stability_checks)
+
+		if self.floating_point_output_digits >= 0:
+			retval += ' -d '+str(self.floating_point_output_digits)
+
 		retval += ' --use-linear-div='+str(self.uselineardiv)
 
 		retval += ' --timestepping-method='+self.timestepping_method
@@ -268,36 +325,51 @@ class SWEETRuntimeOptions():
 		retval += ' --rexi-method='+str(self.rexi_method)
 
 		if self.rexi_method != '':
-			retval += ' --rexi-half='+str(self.rexi_half_poles)
-			retval += ' --rexi-normalization='+str(self.rexi_normalization)
-			retval += ' --rexi-sphere-preallocation='+str(self.rexi_sphere_preallocation)
-			retval += ' --rexi-use-direct-solution='+str(self.rexi_use_direct_solution)
-			retval += ' --rexi-ext-modes='+str(self.rexi_extended_modes)
+			if self.rexi_method == 'direct' or self.rexi_use_direct_solution:
+				if self.rexi_method == 'direct':
+					self.rexi_use_direct_solution = 1
+					retval += ' --rexi-use-direct-solution='+str(self.rexi_use_direct_solution)
+			else:
+				retval += ' --rexi-half='+str(self.rexi_half_poles)
+				retval += ' --rexi-normalization='+str(self.rexi_normalization)
+				retval += ' --rexi-sphere-preallocation='+str(self.rexi_sphere_preallocation)
+				retval += ' --rexi-use-direct-solution='+str(self.rexi_use_direct_solution)
+				retval += ' --rexi-ext-modes='+str(self.rexi_extended_modes)
 
-			if self.rexi_method == 'terry':
-				# REXI Terry
-				retval += ' --rexi-m='+str(self.rexi_m)
-				retval += ' --rexi-h='+str(self.rexi_h)
+				if self.rexi_beta_cutoff != 0:
+					retval += ' --rexi-beta-cutoff='+str(self.rexi_beta_cutoff)
 
-			elif self.rexi_method == 'file':
-				# REXI File
-				retval += ' --rexi-file-n='+str(self.rexi_file_n)
-				retval += ' --rexi-file-h='+str(self.rexi_file_h)
-				retval += ' --rexi-file-test-abs='+str(self.rexi_file_test_abs)
-				retval += ' --rexi-file-max-error='+str(self.rexi_file_max_error)
-				if self.rexi_file_faf_dir != None:
-					retval += ' --rexi-file-faf-dir='+str(self.rexi_file_faf_dir)
+				if self.rexi_method == 'terry':
+					# REXI Terry
+					retval += ' --rexi-m='+str(self.rexi_m)
+					retval += ' --rexi-h='+str(self.rexi_h)
 
-			elif self.rexi_method == 'ci':
-				retval += ' --rexi-ci-n='+str(self.rexi_ci_n)
-				if self.rexi_ci_max_real > 0:
-					retval += ' --rexi-ci-max-real='+str(self.rexi_ci_max_real)
-					retval += ' --rexi-ci-max-imag='+str(self.rexi_ci_max_imag)
-				else:
-					retval += ' --rexi-ci-sx='+str(self.rexi_ci_sx)
-					retval += ' --rexi-ci-sy='+str(self.rexi_ci_sy)
-					retval += ' --rexi-ci-mu='+str(self.rexi_ci_mu)
-				retval += ' --rexi-ci-primitive='+str(self.rexi_ci_primitive)
+				elif self.rexi_method == 'file':
+					# REXI File
+					retval += ' --rexi-file-n='+str(self.rexi_file_n)
+					retval += ' --rexi-file-h='+str(self.rexi_file_h)
+					retval += ' --rexi-file-test-abs='+str(self.rexi_file_test_abs)
+					retval += ' --rexi-file-max-error='+str(self.rexi_file_max_error)
+					if self.rexi_file_faf_dir != None:
+						retval += ' --rexi-file-faf-dir='+str(self.rexi_file_faf_dir)
+
+				elif self.rexi_method == 'ci':
+					retval += ' --rexi-ci-n='+str(self.rexi_ci_n)
+					if self.rexi_ci_max_real > 0:
+						retval += ' --rexi-ci-max-real='+str(self.rexi_ci_max_real)
+						retval += ' --rexi-ci-max-imag='+str(self.rexi_ci_max_imag)
+					else:
+						retval += ' --rexi-ci-sx='+str(self.rexi_ci_sx)
+						retval += ' --rexi-ci-sy='+str(self.rexi_ci_sy)
+						retval += ' --rexi-ci-mu='+str(self.rexi_ci_mu)
+					retval += ' --rexi-ci-primitive='+str(self.rexi_ci_primitive)
+					retval += ' --rexi-ci-gaussian-filter-scale='+str(self.rexi_ci_gaussian_filter_scale)
+					retval += ' --rexi-ci-gaussian-filter-dt-norm='+str(self.rexi_ci_gaussian_filter_dt_norm)
+					retval += ' --rexi-ci-gaussian-filter-exp-N='+str(self.rexi_ci_gaussian_filter_exp_N)
+
+
+		retval += ' --polvani-rossby='+str(self.polvani_rossby)
+		retval += ' --polvani-froude='+str(self.polvani_froude)
 
 		retval += ' --use-robert-functions='+str(self.use_robert_functions)
 

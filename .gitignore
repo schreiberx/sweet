@@ -2,4 +2,6 @@ build
 FFTW_*
 *.txt
 *.mod
+*.out
 *~
+output*

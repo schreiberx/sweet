@@ -32,16 +32,22 @@ public:
 			std::vector<std::complex<double>> &alpha,
 			std::vector<std::complex<double>> &beta,
 
-			int i_verbosity = 0
+			double i_dt,	///< Timestep size, this gets important for the Gaussian filter
+
+			int i_verbosity
 	)
 	{
+		alpha.clear();
+		beta.clear();
+
 		if (i_rexiSimVars->rexi_method == "file")
 		{
 			/// REXI next generation stuff
 			REXI_File<> rexi_file;
 
-			bool retval;
-			if (i_rexiSimVars->file_filename == "")
+			bool retval = rexi_file.load_from_file(i_rexiSimVars->file_filename_alpha, i_rexiSimVars->file_filename_beta);
+#if 0
+			if (i_rexiSimVars->file_filename_alpha == "")
 			{
 				retval = rexi_file.auto_load(
 						i_function_name,
@@ -62,28 +68,21 @@ public:
 			{
 				retval = rexi_file.load_from_file(i_rexiSimVars->file_filename, i_rexiSimVars->use_half_poles);
 			}
-
+#endif
 			if (!retval)
 				FatalError(std::string("Not able to find coefficients for given constraints for function "+i_function_name));
 
-			if (i_verbosity > 0)
-				std::cout << "Loaded REXI coefficients from file '" << rexi_file.fafcoeffs.filename << "'" << std::endl;
-
-			if (i_verbosity > 5)
-			{
-				rexi_file.fafcoeffs.output();
-				rexi_file.fafcoeffs.outputWeights();
-				//rexiNG.output();
-			}
+//			if (i_verbosity > 0)
+//				std::cout << "Loaded REXI coefficients from file '" << rexi_file.fafcoeffs.filename << "'" << std::endl;
 
 			alpha = rexi_file.alpha;
-			beta = rexi_file.beta_re;
+			beta = rexi_file.beta;
 		}
 		else if (i_rexiSimVars->rexi_method == "terry")
 		{
 			/// REXI stuff
 			REXI_Terry<> rexi_terry;
-			rexi_terry.setup(i_function_name, i_rexiSimVars->h, i_rexiSimVars->M, i_rexiSimVars->L, i_rexiSimVars->use_half_poles, i_rexiSimVars->normalization);
+			rexi_terry.setup(i_function_name, i_rexiSimVars->terry_h, i_rexiSimVars->terry_M, i_rexiSimVars->terry_L, i_rexiSimVars->use_half_poles, i_rexiSimVars->normalization);
 
 			alpha = rexi_terry.alpha;
 			beta = rexi_terry.beta_re;
@@ -94,9 +93,21 @@ public:
 			REXI_CI<> rexi_ci;
 
 			if (i_rexiSimVars->ci_max_real >= 0)
-				rexi_ci.setup_shifted_circle(i_function_name, i_rexiSimVars->ci_n, i_rexiSimVars->ci_max_real, i_rexiSimVars->ci_max_imag);
+			{
+				rexi_ci.setup_shifted_circle(
+						i_function_name,
+						i_rexiSimVars->ci_n, i_rexiSimVars->ci_max_real, i_rexiSimVars->ci_max_imag,
+						i_rexiSimVars->ci_gaussian_filter_scale_a, i_rexiSimVars->ci_gaussian_filter_dt_norm, i_rexiSimVars->ci_gaussian_filter_exp_N, i_dt
+					);
+			}
 			else
-				rexi_ci.setup(i_function_name, i_rexiSimVars->ci_n, i_rexiSimVars->ci_primitive, i_rexiSimVars->ci_s_real, i_rexiSimVars->ci_s_imag, i_rexiSimVars->ci_mu);
+			{
+				rexi_ci.setup(
+						i_function_name,
+						i_rexiSimVars->ci_n, i_rexiSimVars->ci_primitive, i_rexiSimVars->ci_s_real, i_rexiSimVars->ci_s_imag, i_rexiSimVars->ci_mu,
+						i_rexiSimVars->ci_gaussian_filter_scale_a, i_rexiSimVars->ci_gaussian_filter_dt_norm, i_rexiSimVars->ci_gaussian_filter_exp_N, i_dt
+					);
+			}
 
 			alpha = rexi_ci.alpha;
 			beta = rexi_ci.beta;
@@ -105,6 +116,27 @@ public:
 		{
 			FatalError("REXI Mode not supported");
 		}
+
+
+		if (i_rexiSimVars->beta_cutoff != 0)
+		{
+			std::vector<std::complex<double>>::iterator ia = alpha.begin();
+			std::vector<std::complex<double>>::iterator ib = beta.begin();
+			while (ia != alpha.end())
+			{
+				if (std::abs(*ib) < i_rexiSimVars->beta_cutoff)
+				{
+					ia = alpha.erase(ia);
+					ib = beta.erase(ib);
+				}
+				else
+				{
+					ia++;
+					ib++;
+				}
+			}
+		}
+
 
 		if (i_verbosity)
 		{

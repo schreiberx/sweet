@@ -18,7 +18,7 @@
 #include <sweet/sphere/Convert_SphereDataComplex_to_SphereData.hpp>
 #include <sweet/sphere/Convert_SphereData_to_SphereDataComplex.hpp>
 
-#include "../programs/swe_sphere_rexi/SWE_Sphere_TS_l_rexi.hpp"
+#include "../programs/swe_sphere/SWE_Sphere_TS_l_rexi.hpp"
 
 #include <sweet/sphere/GenerateConsistentGradDivSphereData.hpp>
 #include <sweet/sphere/ErrorCheck.hpp>
@@ -85,7 +85,7 @@ void run_tests()
 	SphereOperatorsComplex opComplex(sphereDataConfig, 1);
 	SphereOperatorsComplex opComplexExt(sphereDataConfigExt, 1);
 
-	REXI_Terry<> rexi("phi0", simVars.rexi.h, simVars.rexi.M);
+	REXI_Terry<> rexi("phi0", simVars.rexi.terry_h, simVars.rexi.terry_M);
 
 	if (!simVars.misc.sphere_use_robert_functions)
 		FatalError("Only Robert formulation allowed");
@@ -548,9 +548,6 @@ int main(
 	const char *bogus_var_names[] = {
 			nullptr
 	};
-
-	// default values for specific input (for general input see SimulationVariables.hpp)
-	simVars.bogus.var[0] = 0;
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))

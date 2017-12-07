@@ -236,13 +236,15 @@ pwd
 # Always load local software
 #source ./local_software/env_vars.sh || exit 1
 source ~/.bashrc
-sweetenv
 
 #make clean || exit 1
 
 """
 		if self.target_machine == '':
 			content += """
+
+. ./local_software/env_vars.sh
+
 SCONS="scons --program=burgers --gui=disable --plane-spectral-space=enable --parareal=none --plane-spectral-dealiasing=enable --mode=release """+"--threading=omp"+' -j 4"'+"""
 echo "$SCONS"
 $SCONS || exit 1
@@ -259,12 +261,14 @@ $SCONS || exit 1
 cd "$BASEDIR"
 """
 
-		if self.rexi_par:
-			content += 'EXEC="$SWEETROOT/build/burgers_plspec_pldeal_rexipar_fft_gnu_release'
-		elif self.spectralderiv == 0:
-			content += 'EXEC="$SWEETROOT/build/burgers_plane_rexi_omp_fft_gnu_release'
-		else:
-			content += 'EXEC="$SWEETROOT/build/burgers_plspec_pldeal_omp_fft_gnu_release'
+		#if self.rexi_par:
+		#	content += 'EXEC="$SWEETROOT/build/burgers_plspec_pldeal_rexipar_fft_gnu_release'
+		#elif self.spectralderiv == 0:
+		#	content += 'EXEC="$SWEETROOT/build/burgers_plane_rexi_omp_fft_gnu_release'
+		#else:
+		#	content += 'EXEC="$SWEETROOT/build/burgers_plspec_pldeal_quadmath_omp_fft_gnu_release'
+
+		content += 'EXEC="$SWEETROOT/build/burgers_plspec_pldeal_quadmath_omp_numa2_fft_gnu_release'
 
 #		content += ' -g '+str(self.g)
 #		content += ' -H '+str(self.h)

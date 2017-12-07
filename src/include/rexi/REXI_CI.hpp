@@ -2,7 +2,7 @@
  * REXI_CI.hpp
  *
  *  Created on: 18 Aug 2017
- *      Author: martin
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SRC_INCLUDE_REXI_CI_HPP_
@@ -14,7 +14,13 @@
 #include <vector>
 
 
-template <typename T =  __float128>
+template <
+#if SWEET_QUADMATH
+	typename T =  __float128
+#else
+	typename T =  double
+#endif
+>
 class REXI_CI
 {
 	typedef std::complex<T> TComplex;
@@ -40,7 +46,11 @@ public:
 			const std::string &i_function_name,
 			int N,
 			T max_real_evalue,
-			T max_imag_evalue
+			T max_imag_evalue,
+			T i_ci_gaussian_filter_scale_a,
+			T i_ci_gaussian_filter_dt_norm,
+			T i_ci_gaussian_filter_exp_N,
+			T i_ci_gaussian_filter_dt
 	)
 	{
 		/*
@@ -60,7 +70,11 @@ public:
 				"circle",
 				r*2.0,
 				r*2.0,
-				center
+				center,
+				i_ci_gaussian_filter_scale_a,
+				i_ci_gaussian_filter_dt_norm,
+				i_ci_gaussian_filter_exp_N,
+				i_ci_gaussian_filter_dt
 			);
 	}
 
@@ -69,9 +83,13 @@ public:
 			const std::string &i_function_name,
 			int N,
 			const std::string &i_primitive_name,
-			T size_real,
-			T size_imag,
-			T mu
+			T i_size_real,
+			T i_size_imag,
+			T i_mu,
+			T i_ci_gaussian_filter_scale_a,
+			T i_ci_gaussian_filter_dt_norm,
+			T i_ci_gaussian_filter_exp_N,
+			T i_ci_gaussian_filter_dt
 	)
 	{
 		alpha_eval.resize(N);
@@ -81,22 +99,47 @@ public:
 
 		if (i_primitive_name == "circle")
 		{
-			if (size_real != size_imag)
+			if (i_size_real != i_size_imag)
 				FatalError("size along real and imaginary axis must be the same");
 
-			T r = size_real*0.5;
+			T r = i_size_real*0.5;
 
 			for (int j = 0; j < N; j++)
 			{
+//				T theta_j = (T)pi2*((T)j+(T)0.5)/(T)N;
 				T theta_j = (T)pi2*((T)j+(T)0.5)/(T)N;
 
 				// sampling position of support point
 				TComplex pos = r*DQStuff::exp(I*theta_j);
 
 				// shifted position
-				TComplex gamma_j = pos + mu;
+				TComplex gamma_j = pos + i_mu;
 
-				beta_eval[j] = fun.eval(gamma_j)*pos;
+				/*
+				 * Handle filter, see
+				 * doc/rexi/filter
+				 *
+				 * We use a Gaussian bump to filter out the fast modes
+				 */
+				T filter_value = 1.0;
+				if (i_ci_gaussian_filter_dt_norm != 0 && i_ci_gaussian_filter_scale_a != 0)
+				{
+//					T dist = DQStuff::sqrt(gamma_j.real()*gamma_j.real() + gamma_j.imag()*gamma_j.imag());
+					T dist = DQStuff::abs(gamma_j.imag());
+
+//					std::cout << (double)gamma_j.real() << std::endl;
+//					std::cout << (double)gamma_j.imag() << std::endl;
+
+					filter_value = DQStuff::exp(
+										-DQStuff::pow(
+												i_ci_gaussian_filter_dt_norm/(i_ci_gaussian_filter_scale_a*i_ci_gaussian_filter_dt)*dist,
+												i_ci_gaussian_filter_exp_N
+										)
+									);
+					std::cout << (double)dist << "\t" << (double)filter_value << std::endl;
+				}
+
+				beta_eval[j] = filter_value*fun.eval(gamma_j)*pos;
 				alpha_eval[j] = gamma_j;
 
 				beta_eval[j] /= (T)N;
@@ -106,8 +149,8 @@ public:
 		{
 //			FatalError("Not yet working :-(");
 
-			T SRe = size_real;
-			T SIm = size_imag;
+			T SRe = i_size_real;
+			T SIm = i_size_imag;
 
 			int NRe = 0.5 * SRe * N / (SRe + SIm);
 			int NIm = 0.5 * SIm * N / (SRe + SIm);
@@ -123,7 +166,7 @@ public:
 				NIm--;
 #endif
 
-			std::cout << "Size: " << (double)size_real << " x " << (double)size_imag << std::endl;
+			std::cout << "Size: " << (double)i_size_real << " x " << (double)i_size_imag << std::endl;
 			std::cout << "Points: " << NRe << " x " << NIm << std::endl;
 			int total_N = (2*NRe + 2*NIm);
 			std::cout << "Points (total): " << total_N << std::endl;
@@ -144,7 +187,7 @@ public:
 			// BOTTOM
 			for (int n = 0; n < NRe; n++)
 			{
-				TComplex z = -I*(T)0.5*SIm + PRe(n) + mu;
+				TComplex z = -I*(T)0.5*SIm + PRe(n) + i_mu;
 
 				beta_eval[j] = fun.eval(z);
 				beta_eval[j] *= SRe/NRe;
@@ -157,7 +200,7 @@ public:
 			// RIGHT
 			for (int n = 0; n < NIm; n++)
 			{
-				TComplex z = (T)0.5*SRe + I*PIm(n) + mu;
+				TComplex z = (T)0.5*SRe + I*PIm(n) + i_mu;
 
 				beta_eval[j] = fun.eval(z);
 				beta_eval[j] *= I;
@@ -171,7 +214,7 @@ public:
 			// TOP
 			for (int n = 0; n < NRe; n++)
 			{
-				TComplex z = I*(T)0.5*SIm - PRe(n) + mu;
+				TComplex z = I*(T)0.5*SIm - PRe(n) + i_mu;
 
 				beta_eval[j] = fun.eval(z);
 				beta_eval[j] *= -(T)1.0;
@@ -186,7 +229,7 @@ public:
 			// LEFT
 			for (int n = 0; n < NIm; n++)
 			{
-				TComplex z = -(T)0.5*SRe - I*PIm(n) + mu;
+				TComplex z = -(T)0.5*SRe - I*PIm(n) + i_mu;
 
 				beta_eval[j] = fun.eval(z);
 				beta_eval[j] *= -I;

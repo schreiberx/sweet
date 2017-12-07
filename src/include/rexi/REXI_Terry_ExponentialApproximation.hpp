@@ -9,7 +9,9 @@
 
 #include <libmath/DQStuff.hpp>
 #include <sweet/sweetmath.hpp>
-#include <quadmath.h>
+#if SWEET_QUADMATH
+	#include <quadmath.h>
+#endif
 #include <rexi/REXI_Terry_GaussianApproximation.hpp>
 
 

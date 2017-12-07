@@ -211,7 +211,7 @@ public:
 
 		std::string dir;
 
-		dir = SHADER_GLSL_DEFAULT_DIR;
+		dir = ShaderDir::getDirectory();
 		dir += directory;
 		dir += "/";
 

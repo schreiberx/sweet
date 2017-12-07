@@ -17,10 +17,10 @@ template <typename T>
 class REXI_File_Coefficients
 {
 public:
-	std::string function_name;		///< "phi0"; "phi1"; "phi2"; etc.
+//	std::string function_name;		///< "phi0"; "phi1"; "phi2"; etc.
 
 	int N;							///< Number of approximation poles
-
+#if 0
 	T max_error;
 	T max_error_double_precision;
 
@@ -32,10 +32,10 @@ public:
 	T basis_function_rat_shift;
 
 	std::vector< std::complex<T> > weights_cplx;
+#endif
 
-	bool reduce_to_half = true;
-
-	std::string filename;
+	std::vector< std::complex<T> > alpha;
+	std::vector< std::complex<T> > beta;
 
 	static
 	constexpr
@@ -48,7 +48,11 @@ public:
 	constexpr
 	bool isNone(T i_value)
 	{
+#if __GNUC__ == 5
+		return isnan(i_value);
+#else
 		return std::isnan(i_value);
+#endif
 	}
 
 
@@ -63,8 +67,9 @@ public:
 private:
 	void reset()
 	{
-		function_name = "";
 		N = 0;						///< Number of approximation poles
+#if 0
+		function_name = "";
 		max_error = std::numeric_limits<T>::quiet_NaN();
 		max_error_double_precision = std::numeric_limits<T>::quiet_NaN();
 		test_min = std::numeric_limits<T>::quiet_NaN();
@@ -76,8 +81,15 @@ private:
 		weights_cplx.resize(0);
 
 		filename = "";
+#endif
+
+		alpha.resize(0);
+		beta.resize(0);
+
+//		filename = "";
 	}
 
+#if 0
 
 public:
 	void output()
@@ -93,19 +105,20 @@ public:
 		std::cout << "basis_function_rat_shift: " << basis_function_rat_shift << std::endl;
 	}
 
-	void outputWeights()
+	void outputAlphaAndBeta()
 	{
-//		std::cout << "weights:" << std::endl;
 		for (int i = 0; i < N; i++)
-			std::cout << "faf_weight[" << i << "] = " << weights_cplx[i] << std::endl;
+			std::cout << "alpha[" << i << "] = " << alpha[i] << std::endl;
+
+		for (int i = 0; i < N; i++)
+			std::cout << "beta[" << i << "] = " << beta[i] << std::endl;
 	}
+#endif
 
 
 public:
-	bool load_from_file(std::string &i_filename)
+	bool load_from_file(std::string &i_filename, std::vector< std::complex<T> > & o_list)
 	{
-		filename = i_filename;
-
 		std::ifstream infile(i_filename);
 
 		if (!infile.is_open())
@@ -115,6 +128,7 @@ public:
 
 		while (std::getline(infile, line))
 		{
+#if 0
 			{
 				std::string match = "# max_error ";
 				if (match == line.substr(0, match.length()))
@@ -201,7 +215,7 @@ public:
 				if (match == line.substr(0, match.length()))
 					continue;
 			}
-
+#endif
 			std::size_t pos = line.find('\t');
 
 			if (pos == std::string::npos)
@@ -212,7 +226,7 @@ public:
 					DQStuff::fromString<T>(line.substr(pos+1))
 			);
 
-			weights_cplx.push_back(val);
+			o_list.push_back(val);
 		}
 
 		return true;

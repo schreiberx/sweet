@@ -21,6 +21,8 @@
 #define SWEET_SPH_ON_THE_FLY_MODE	0
 
 
+#define SHTNS_REAL_SPH_SPHTOR	1
+
 class SphereOperators	:
 	public SphereSPHIdentities
 {
@@ -403,6 +405,17 @@ public:
 		SphereData psi = inv_laplace(i_vrt)*ir;
 		SphereData chi = inv_laplace(i_div)*ir;
 
+#if SHTNS_REAL_SPH_SPHTOR
+
+		SHsphtor_to_spat_xsint(
+				sphereDataConfig->shtns,
+				psi.spectral_space_data,
+				chi.spectral_space_data,
+				o_u.physical_space_data,
+				o_v.physical_space_data
+		);
+
+#else
 		SHsphtor_to_spat(
 				sphereDataConfig->shtns,
 				psi.spectral_space_data,
@@ -424,6 +437,7 @@ public:
 				o_data *= phi;
 			}
 		);
+#endif
 	}
 
 
@@ -507,7 +521,24 @@ public:
 
 	)	const
 	{
+		SphereData tmp(sphereDataConfig);
+		SphereData vort(sphereDataConfig);
+
 		SphereDataPhysical ug = i_u;
+		SphereDataPhysical vg = i_v;
+
+
+#if SHTNS_REAL_SPH_SPHTOR
+
+		spat_xsint_to_SHsphtor(
+				sphereDataConfig->shtns,
+				ug.physical_space_data,
+				vg.physical_space_data,
+				vort.spectral_space_data,
+				tmp.spectral_space_data
+		);
+
+#else
 
 		ug.physical_update_lambda_cosphi_grid(
 			[&](double lon, double phi, double &o_data)
@@ -516,16 +547,12 @@ public:
 			}
 		);
 
-		SphereDataPhysical vg = i_v;
 		vg.physical_update_lambda_cosphi_grid(
 			[&](double lon, double phi, double &o_data)
 			{
 				o_data /= phi;
 			}
 		);
-
-		SphereData tmp(sphereDataConfig);
-		SphereData vort(sphereDataConfig);
 
 		spat_to_SHsphtor(
 				sphereDataConfig->shtns,
@@ -534,6 +561,7 @@ public:
 				vort.spectral_space_data,
 				tmp.spectral_space_data
 		);
+#endif
 
 		vort.physical_space_data_valid = false;
 		vort.spectral_space_data_valid = true;

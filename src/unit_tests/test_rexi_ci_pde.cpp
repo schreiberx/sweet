@@ -266,6 +266,7 @@ int main(
 				function_name,
 				alpha,
 				beta,
+				1,
 				simVars.misc.verbosity
 			);
 

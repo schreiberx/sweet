@@ -29,6 +29,7 @@ class SWEPlaneBenchmarks
 #endif
 
 
+
 	static
 	double return_variable_value(
 			SimulationVariables &i_simVars,
@@ -418,22 +419,24 @@ class SWEPlaneBenchmarks
 			//if ( std::abs(f) < 0.01 )
 				//std::cout<<"SWEPlaneBenchmarks Warning: f-value is equal to zero or is very small! Problem may be ill posed. Please be careful or set appropriate -f "<<std::endl;
 
-			if ( std::abs(f) < 0.001 )
-				FatalError("SWEPlaneBenchmark: f-value is equal to zero or very small! Problem may be ill posed. Please set appropriate -f ");
+			double freq = 10.0;
+
+			if ( std::abs(f*sy)+abs(f*sx) < 0.001 )
+				FatalError("SWEPlaneBenchmark: f-value*domain is equal to zero or very small! Problem may be ill posed. Please set appropriate -f and -X and -Y");
 
 			if (i_variable_id == 0)
 			{
-				return std::cos(2.0*M_PI*(x/sx+y/sy)) + i_simVars.sim.h0;
+				return std::cos(2.0*M_PI*freq*(x/sx+y/sy)) + i_simVars.sim.h0;
 			}
 			else if (i_variable_id == 1) // velocity u
 			{
-				double factor = i_simVars.sim.gravitation*2.0*M_PI/(f*sy);
-				return factor*std::sin(2.0*M_PI*(x/sx+y/sy));
+				double factor = i_simVars.sim.gravitation*2.0*M_PI*freq/(f*sy);
+				return factor*std::sin(2.0*M_PI*freq*(x/sx+y/sy));
 			}
 			else if (i_variable_id == 2) // velocity v
 			{
-				double factor = -i_simVars.sim.gravitation*2.0*M_PI/(f*sx);
-				return factor*std::sin(2.0*M_PI*(x/sx+y/sy));
+				double factor = -i_simVars.sim.gravitation*2.0*M_PI*freq/(f*sx);
+				return factor*std::sin(2.0*M_PI*freq*(x/sx+y/sy));
 			}
 			else if (i_variable_id == 6) // f-term
 			{
@@ -546,7 +549,37 @@ class SWEPlaneBenchmarks
 				return 0;
 			}
 		}
+		if (i_simVars.setup.benchmark_scenario_id == 19)
+		{
+			// Rotating Gaussian
+			double dx = x-i_simVars.setup.setup_coord_x*sx;
+			double dy = y-i_simVars.setup.setup_coord_y*sy;
 
+			if (i_variable_id == 0)
+			{
+				double radius = i_simVars.setup.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
+				dx /= radius;
+				dy /= radius;
+
+				return i_simVars.sim.h0+std::exp(-100.0*(dx*dx + dy*dy));
+			}
+			else if (i_variable_id == 1) // velocity u
+					{
+				return 10;
+					}
+			else if (i_variable_id == 2) // velocity v
+			{
+				return 0;
+			}
+			else if (i_variable_id == 6) // f-term
+			{
+				return i_simVars.sim.f0;
+			}
+			else
+			{
+				return 0;
+			}
+		}
 
 		std::cerr << "Invalid setup scenario id " << i_simVars.setup.benchmark_scenario_id << std::endl;
 		exit(1);
@@ -715,6 +748,7 @@ public:
 		std::cout << "		13 : Forced nonlinear case - trigonometric" << std::endl;
 		std::cout << "		14 : Rotated steady state" << std::endl;
 		std::cout << "		16 : Waves" << std::endl;
+		std::cout << "		19 : Rotating Gaussian" << std::endl;
 	}
 
 };

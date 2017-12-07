@@ -208,7 +208,7 @@ public:
 		else if (i_timestepping_method == "ln_adomian")
 		{
 			ln_adomian= new Burgers_Plane_TS_ln_adomian(i_simVars, i_op);
-			ln_adomian->setup();
+			ln_adomian->setup(i_timestepping_order);
 
 			master = &(Burgers_Plane_TS_interface&)*ln_adomian;
 		}

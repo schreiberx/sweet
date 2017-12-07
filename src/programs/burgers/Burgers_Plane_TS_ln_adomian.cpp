@@ -19,6 +19,8 @@ void Burgers_Plane_TS_ln_adomian::run_timestep(
 		double i_simulation_timestamp
 )
 {
+	if (i_fixed_dt <= 0)
+		FatalError("Burgers_Plane_TS_ln_adomian: Only constant time step size allowed");
 
 	// setup dummy data
 	PlaneData tmp(io_u.planeDataConfig);
@@ -27,30 +29,29 @@ void Burgers_Plane_TS_ln_adomian::run_timestep(
 #endif
 	tmp.physical_set_zero();
 	/*
-	 * Calculating the analytic solution to the initial condition i_prog_u
-	 * with Adomian decomposition
+	 * Applying the Adomian decomposition method. Using up to timestepping_order Adomian polynomials
 	 */
 
-   //TODO: implement this correctly
-   if (op.diff_c_y(io_u).reduce_maxAbs()>1e-11)
-      FatalError("The analyitical solution works only in 1d!");
+	//TODO: implement this correctly
+	if (op.diff_c_y(io_u).reduce_maxAbs()>1e-11)
+		FatalError("The Adomian decomposition method is implemented in 1D only!");
 
 	std::vector<PlaneData> u;
-	u.resize(20,PlaneData(io_u.planeDataConfig));
+	u.resize(timestepping_order+1,PlaneData(io_u.planeDataConfig));
 	std::vector<PlaneData> A;
-	A.resize(20,PlaneData(io_u.planeDataConfig));
+	A.resize(timestepping_order+1,PlaneData(io_u.planeDataConfig));
 
-   //Forward differencing uses dt
-   double time = i_fixed_dt;
+	//Forward differencing uses dt
+	double time = i_fixed_dt;
 
-   for (int kk = 0; kk < 20; kk++) {
-      A[kk] = tmp;
-      u[kk] = tmp;
-   }
+	for (int kk = 0; kk < timestepping_order+1; kk++) {
+		A[kk] = tmp;
+		u[kk] = tmp;
+	}
 
 	u[0] = io_u;
 
-	for (int kk = 0; kk < 19; kk++) {
+	for (int kk = 0; kk < timestepping_order; kk++) {
 		for (int ii = 0; ii < kk+1; ii++) {
 			for (int jj = 0; jj < ii+1; jj++) {
 				if ((ii+jj)==kk)
@@ -65,11 +66,13 @@ void Burgers_Plane_TS_ln_adomian::run_timestep(
 		}
 
 		u[kk+1] = simVars.sim.viscosity*op.diff2_c_x(u[kk])-A[kk];
+		// Integration by time, works like this, since u0 is independent of t.
+		// Therefore, each integration goes from 1 to 1*t, to t*t/2, to t^2*t/3 etc.
 		u[kk+1] = u[kk+1] * time / (kk+1);
 
 		io_u=io_u+u[kk+1];
-      std::cout << std::endl << u[kk+1].reduce_rms() <<std::endl<<std::endl;
-		if(u[kk+1].reduce_rms() < 1e-11)
+
+		if(u[kk+1].reduce_rms() < 1e-12)
 			break;
 	}
 }
@@ -79,8 +82,11 @@ void Burgers_Plane_TS_ln_adomian::run_timestep(
 /*
  * Setup
  */
-void Burgers_Plane_TS_ln_adomian::setup()
+void Burgers_Plane_TS_ln_adomian::setup(
+		int i_order	///< number used of Adomian polynomials
+)
 {
+	timestepping_order = i_order;
 }
 
 
@@ -91,7 +97,7 @@ Burgers_Plane_TS_ln_adomian::Burgers_Plane_TS_ln_adomian(
 		simVars(i_simVars),
 		op(i_op)
 {
-	setup();
+	setup(simVars.disc.timestepping_order);
 }
 
 

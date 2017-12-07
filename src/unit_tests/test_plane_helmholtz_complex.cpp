@@ -20,7 +20,7 @@
 #include <stdio.h>
 #include <complex>
 
-#include "../programs/swe_plane_rexi/SWE_Plane_REXI.hpp"
+#include "../programs/swe_plane/SWE_Plane_REXI.hpp"
 #include "../programs/rexiswe/RexiSWE_HelmholtzSolver.hpp"
 
 // Plane data config
@@ -61,11 +61,6 @@ int main(int i_argc, char *i_argv[])
 			nullptr
 	};
 
-	simVars.bogus.var[0] = 0;	// don't use FD per default for complex array
-	simVars.bogus.var[1] = 0;
-	simVars.bogus.var[2] = 1;
-	simVars.bogus.var[3] = 1e-7;	// error threshold
-
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
 		std::cout << std::endl;
@@ -86,10 +81,23 @@ int main(int i_argc, char *i_argv[])
 	/*
 	 * use finite differences for differential operators in complex array
 	 */
-	bool use_spectral_differences_for_complex_array = simVars.bogus.var[0];
-	int helmholtz_solver_id = simVars.bogus.var[1];
-	double helmholtz_solver_sor = simVars.bogus.var[2];
-	double helmholtz_solver_eps = simVars.bogus.var[3];
+	bool use_spectral_differences_for_complex_array = 0;
+	int helmholtz_solver_id = 0;
+	double helmholtz_solver_sor = 1;
+	double helmholtz_solver_eps = 1e-7;
+
+	if (simVars.bogus.var[0] != "")
+		use_spectral_differences_for_complex_array = atof(simVars.bogus.var[0].c_str());
+
+	if (simVars.bogus.var[1] != "")
+		helmholtz_solver_id = atof(simVars.bogus.var[1].c_str());
+
+	if (simVars.bogus.var[2] != "")
+		helmholtz_solver_sor = atof(simVars.bogus.var[2].c_str());
+
+	if (simVars.bogus.var[3] != "")
+		helmholtz_solver_eps = atof(simVars.bogus.var[3].c_str());
+
 
 	if (!use_spectral_differences_for_complex_array)
 	{

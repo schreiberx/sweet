@@ -14,7 +14,7 @@ p.cluster.setupTargetMachine("cheyenne")
 #
 # Run simulation on plane or sphere
 #
-p.compile.program = 'swe_sphere_rexi'
+p.compile.program = 'swe_sphere'
 
 p.compile.plane_or_sphere = 'sphere'
 p.compile.plane_spectral_space = 'disable'
@@ -135,6 +135,7 @@ p.runtime.simtime = 432000 #timestep_size_reference*(2**6)*10
 p.runtime.output_timestep_size = p.runtime.simtime
 #p.runtime.output_timestep_size = -1
 
+p.runtime.rexi_extended_modes = 0
 
 # Groups to execute, see below
 # l: linear
@@ -214,6 +215,7 @@ if __name__ == "__main__":
 		if group == 'ln2':
 			ts_methods = [
 				['ln_erk',		4,	4,	0],	# reference solution
+
 				#['l_irk_n_erk',		2,	2,	0],
 				#['l_cn_n_erk',		2,	2,	0],
 				['ln_erk',		2,	2,	0],

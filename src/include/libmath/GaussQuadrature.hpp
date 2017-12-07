@@ -83,12 +83,15 @@ public:
 		int max_intervals = 1024*128;
 		for (int num_intervals = 1; num_intervals < max_intervals; num_intervals++)
 		{
+			//std::cout << num_intervals <<" ";
 			T value = integrate5_intervals(i_start, i_end, i_fun, num_intervals);
 			T delta = std::abs(prev_value - value);
 
 			if (delta <= i_error_threshold)
+			{
+				//std::cout << std::endl;
 				return value;
-
+			}
 			prev_value = value;
 		}
 
@@ -208,7 +211,11 @@ public:
 				i_rel_error_threshold
 			);
 
+#if __GNUC__ == 5
+		if (isinf((double)approx_integral))
+#else
 		if (std::isinf((double)approx_integral))
+#endif
 			FatalError("No convergence reached for integrate5_intervals_adaptive");
 
 		return approx_integral;

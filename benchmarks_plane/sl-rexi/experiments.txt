@@ -64,7 +64,7 @@ New experiments (new parameter settings):
 
 ln_erk (RK4-FD-C-grid)
  
-./build/swe_plane_rexi_planespectral_planedealiasing_gui_omp_libfft_gnu_debug -g 1 -H 100 -f 1 -N 128 --pde-id 0 -X 1 -s 14 -C -0.0001 -o 0.0001 -u 0.0 -U 4 -t 0.01 --nonlinear=1 --timestepping-method=ln_erk --timestepping-order=4 --staggering 1 -S 0 --normal-mode-analysis-generation=0 --rexi-m=0 --rexi-h=0.15 --rexi-half=1 --rexi-normalization=0 --rexi-use-direct-solution=0 --rexi-ext-modes=0 --compute-error=1 -v 2 -G 1
+./build/swe_plane_planespectral_planedealiasing_gui_omp_libfft_gnu_debug -g 1 -H 100 -f 1 -N 128 --pde-id 0 -X 1 -s 14 -C -0.0001 -o 0.0001 -u 0.0 -U 4 -t 0.01 --nonlinear=1 --timestepping-method=ln_erk --timestepping-order=4 --staggering 1 -S 0 --normal-mode-analysis-generation=0 --rexi-m=0 --rexi-h=0.15 --rexi-half=1 --rexi-normalization=0 --rexi-use-direct-solution=0 --rexi-ext-modes=0 --compute-error=1 -v 2 -G 1
 DATA	T	      TOTAL_MASS	TOTAL_ENERGY	POT_ENSTROPHY	DIFF_H0	     DIFF_U0	     DIFF_V0	 REF_DIFF_RMS_H  REF_DIFF_RMS_U REF_DIFF_RMS_V REF_DIFF_MAX_H REF_DIFF_MAX_U REF_DIFF_MAX_V
 N=128	0.01	-1.0974244e-16	2.2963631e-05	1557.7941	0.00015653266	2.3788522e-05	2.364432e-05	0.00011316978	0.76747791	0.76746917	0.00015653266	4.7959454	4.7959181
 N=64	0.01	-3.9578461e-16	9.0873119e-05	1554.0448	0.00062371781	9.5127406e-05	9.4497593e-05	0.00045169748	0.96323957	0.9631992	0.00062371781	4.1327372	4.1325616
@@ -72,22 +72,22 @@ N=32	0.01	1.01915e-17	   0.00034807672	1539.1198	0.0024108249	0.00037848083	0.00
 
 
 
-./build/swe_plane_rexi_planespectral_planedealiasing_gui_omp_libfft_gnu_debug -g 1 -H 100 -f 1 -N 128 --pde-id 0 -X 1 -s 14 -C -0.0001 -o 0.0001 -u 0.0 -U 4 -t 0.01 --nonlinear=1 --timestepping-method=ln_erk --timestepping-order=4 --normal-mode-analysis-generation=0 --rexi-m=0 --rexi-h=0.15 --rexi-half=1 --rexi-normalization=0 --rexi-use-direct-solution=0 --rexi-ext-modes=0 --compute-error=1 -v 2 -G 1 
+./build/swe_plane_planespectral_planedealiasing_gui_omp_libfft_gnu_debug -g 1 -H 100 -f 1 -N 128 --pde-id 0 -X 1 -s 14 -C -0.0001 -o 0.0001 -u 0.0 -U 4 -t 0.01 --nonlinear=1 --timestepping-method=ln_erk --timestepping-order=4 --normal-mode-analysis-generation=0 --rexi-m=0 --rexi-h=0.15 --rexi-half=1 --rexi-normalization=0 --rexi-use-direct-solution=0 --rexi-ext-modes=0 --compute-error=1 -v 2 -G 1 
 
 Oct 2017:
-./build/swe_plane_rexi_plspec_pldeal_gui_omp_fft_gnu_release -N 128 -s 14 --timestepping-method l_rexi_na_sl_nd_settls --rexi-use-direct-solution 1 --dt 0.001 -v 3 --compute-errors 1 -o 0 -O - 
+./build/swe_plane_plspec_pldeal_gui_omp_fft_gnu_release -N 128 -s 14 --timestepping-method l_rexi_na_sl_nd_settls --rexi-use-direct-solution 1 --dt 0.001 -v 3 --compute-errors 1 -o 0 -O - 
 crashes at time 0.269
 "turbulence" at time 0.18
 DATA	0.1	-9.9080067e-10	-1.8431514e-06	149867.95	1.2187942e-05	0.0013149505	0.0013149371
 DATA	0.1	-9.9080389e-10	-1.843146e-06	149867.95	1.2189779e-05	0.0013149498	0.0013149388
 
-./build/swe_plane_rexi_plspec_pldeal_gui_omp_fft_gnu_release -N 128 -s 14 --timestepping-method l_cn_na_sl_nd_settls --rexi-use-direct-solution 1 --dt 0.001 -v 3 --compute-errors 1 -o 0 -O -
+./build/swe_plane_plspec_pldeal_gui_omp_fft_gnu_release -N 128 -s 14 --timestepping-method l_cn_na_sl_nd_settls --rexi-use-direct-solution 1 --dt 0.001 -v 3 --compute-errors 1 -o 0 -O -
 stable
 dynamics instability kicks in at 0.29
 DATA	0.1	-1.849525e-13	2.1742249e-07	149867.95	1.1735995e-05	0.0013149061	0.0013149056
 
 
-./build/swe_plane_rexi_plspec_gui_omp_fft_gnu_release -N 128 -s 14 --timestepping-method ln_erk --staggering 1 -S 0 --timestepping-order 4 --rexi-use-direct-solution 1 --dt 0.001 -v 3 --compute-errors 1 -o 0 -O - 
+./build/swe_plane_plspec_gui_omp_fft_gnu_release -N 128 -s 14 --timestepping-method ln_erk --staggering 1 -S 0 --timestepping-order 4 --rexi-use-direct-solution 1 --dt 0.001 -v 3 --compute-errors 1 -o 0 -O - 
 blows up in the first time steps
 -dt 0.00001
 DATA	0.1	-3.9489947e-17	-3.8208344e-06	149660.91	0.00058131939	1.114371e-05	1.1134963e-05

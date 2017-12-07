@@ -31,16 +31,16 @@ class SWEETJobGeneration:
 
 		job_id = 'sweet_'+self.runtime.getUniqueID(self.compile)
 
-		content, mpiexec_prefix = self.cluster.getScriptHeader('script'+self.runtime.getUniqueID(self.compile), self.runtime, dirname)
+		content, mpiexec_prefix = self.cluster.getScriptHeader('script'+self.runtime.getUniqueID(self.compile), self.runtime, self.compile, dirname)
 
 		content += """
 
 cd \""""+dirpath+"""\"
 
 BASEDIR="`pwd`"
-rm -f ./prog_h_*
-rm -f ./prog_u_*
-rm -f ./prog_v_*
+#rm -f ./prog_h_*
+#rm -f ./prog_u_*
+#rm -f ./prog_v_*
 
 SWEETROOT=\""""+dirpath+"""/../../../\"
 cd "$SWEETROOT"
@@ -48,7 +48,17 @@ cd "$SWEETROOT"
 pwd
 
 # Always load local software
-source ./local_software/env_vars.sh || exit 1
+#is this really the root?
+if test -e ./local_software/env_vars.sh ; then
+	source ./local_software/env_vars.sh || exit 1
+else #try ../
+	echo "Warning: changing SWEETROOT directory"	
+	cd ..
+	SWEETROOT="`pwd`"
+	pwd
+	source ./local_software/env_vars.sh || exit 1
+fi
+#source ./local_software/env_vars.sh || exit 1
 
 #make clean || exit 1
 
@@ -74,27 +84,35 @@ $SCONS || exit 1
 			f.write("scons "+self.compile.getSConsParams()+'\n')
 			f.write("\n")
 
-		elif self.cluster.target_machine == 'cheyenne':
-			fn = 'compile_cheyenne.sh'
+		elif self.cluster.target_machine in ['cheyenne', 'cheyenne_impi', 'mac-login-amd', 'mac-login-intel']:
+			fn = 'compile_'+self.cluster.target_machine+'.sh'
 			f = open(fn, 'w')
 			f.write("#! /bin/bash\n")
 			f.write("\n")
 			f.write("SWEETROOT=\""+dirpath+"/../../../\"\n")
 			f.write("cd \"$SWEETROOT\"\n")
 			f.write("\n")
+
+			if self.cluster.target_machine == 'cheyenne_impi':
+				# https://www2.cisl.ucar.edu/resources/computational-systems/cheyenne/running-jobs/intel-mpi-and-open-mpi
+				f.write("module load impi\n")
+				f.write("\n")
+
 			f.write("scons "+self.compile.getSConsParams()+'\n')
 			f.write("\n")
 			os.chmod(fn, 0o755)
+
 			#print("COMPILE WITH: scons "+self.compile.getSConsParams()+' -j 4')
-			pass
 
 		else:
 			content += "\n"
 			content += "scons "+self.compile.getSConsParams()+"\n"
 			content += "\n"
+
 		content += """
 
 cd "$BASEDIR"
+pwd
 
 """
 
@@ -105,8 +123,9 @@ cd "$BASEDIR"
 		content += "\n"
 		content += """
 
-
 echo "$EXEC"
+pwd
+#ln -s "$SWEETROOT/data/" "$BASEDIR/data"   #Symlink for GUI directory, if necessary
 """+mpiexec_prefix+"""$EXEC || exit 1
 """
 

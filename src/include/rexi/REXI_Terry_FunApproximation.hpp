@@ -49,7 +49,13 @@
  * 		c_m := \int_{-1/(2h)}^{1/2h}  exp(-2 \pi i m h \xi) / (h* \exp(-h*h*\xi*\xi)) * phiN(\xi) d \xi
  * \f$
  */
-template <typename T = __float128>
+template <
+#if SWEET_QUADMATH
+	typename T = __float128
+#else
+	typename T = double
+#endif
+>
 class REXI_Terry_FunApproximation
 {
 	typedef std::complex<T> TComplex;
@@ -231,10 +237,12 @@ public:
 		{
 			int_threshold = 1e-12;
 		}
+#if SWEET_QUADMATH
 		else if (typeid(T) == typeid(__float128))
 		{
 			int_threshold = 1e-14;
 		}
+#endif
 		else
 		{
 			FatalError("Type not supported!");
@@ -244,10 +252,12 @@ public:
 		M = (i_M == -1 ? (T)i_M/h : i_M);
 		b.resize(i_M*2+1);
 
+#if SWEET_QUADMATH
 #if 1
 		__float128 asdf = DQStuff::fromString<T>("3.14159265358979323846264338327950288");
 		if (asdf - pi != 0)
 			FatalError("Compiled constant not equal to string-induced constant!");
+#endif
 #endif
 
 		if (i_function_name == "phi0")

@@ -25,11 +25,11 @@ if mainsrcadddir != '':
 	# Add an action to move any module files
 	#
 	def moveModFiles(target=None, source=None, env=None):
-	    import glob, os, os.path
-	    targetdir = target[0].dir
-	    for t in target:
-		if t.name[-4:] == '.mod':
-		    os.rename(t.name,os.path.join(str(targetdir),t.name))
+		import glob, os, os.path
+		targetdir = target[0].dir
+		for t in target:
+			if t.name[-4:] == '.mod':
+				os.rename(t.name,os.path.join(str(targetdir),t.name))
 
 
 	#
