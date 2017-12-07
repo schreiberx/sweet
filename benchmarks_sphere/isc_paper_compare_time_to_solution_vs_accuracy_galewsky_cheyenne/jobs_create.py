@@ -53,8 +53,8 @@ p.compile.rexi_timings = 'enable'
 if True:
 	p.compile.compiler = 'intel'
 
-	# MKL turned out to be slower on Cheyenne than FFTW
-	p.compile.mkl = 'disable'
+	# MKL turned out to be more robust on Cheyenne compared to FFTW
+	p.compile.mkl = 'enable'
 
 	#
 	# Use Intel MPI Compilers
@@ -77,7 +77,7 @@ p.compile.fortran_source = 'enable'
 
 
 # Verbosity mode
-p.runtime.verbosity = 2
+p.runtime.verbosity = 0
 
 #
 # Mode and Physical resolution
@@ -159,13 +159,16 @@ p.runtime.viscosity = 0.0
 
 
 
-timestep_size_reference = 60
+#timestep_size_reference = 60
 #timestep_sizes = [timestep_size_reference*(2.0**i) for i in range(0, 11)]
 #timestep_sizes = [timestep_size_reference*(2**i) for i in range(2, 4)]
 
 timestep_sizes_explicit = [10, 20, 30, 60, 120, 180]
 timestep_sizes_implicit = [60, 120, 180, 360, 480, 600, 720]
 timestep_sizes_rexi = [60, 120, 180, 240, 300, 360, 480, 600, 720]
+
+timestep_size_reference = timestep_sizes_explicit[0]
+
 
 
 #timestep_sizes = timestep_sizes[1:]
