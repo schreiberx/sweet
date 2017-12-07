@@ -102,8 +102,6 @@ SWE_Sphere_TS_l_rexi::~SWE_Sphere_TS_l_rexi()
 {
 	reset();
 
-	std::cout << "mpi_rank: " << mpi_rank << std::endl;
-
 #if SWEET_REXI_TIMINGS && SWEET_MPI
 	if (mpi_rank == 0)
 	{
