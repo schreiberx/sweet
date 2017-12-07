@@ -7,9 +7,10 @@
 #include <sweet/sphere/SphereData.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
 
-#include "SWE_Sphere_TS_l_irk.hpp"
 #include "SWE_Sphere_TS_l_erk_n_erk.hpp"
-#include "SWE_Sphere_TS_l_erk.hpp"
+#include "SWE_Sphere_TS_lg_erk_lc_n_erk.hpp"
+#include "SWE_Sphere_TS_l_irk.hpp"
+#include "SWE_Sphere_TS_lg_irk.hpp"
 #include "SWE_Sphere_TS_l_rexi.hpp"
 
 #include "ceval.hpp"
@@ -198,20 +199,41 @@ extern "C"
 
 	return;
       }
+
+
+    if (simVars->libpfasst.implicit_coriolis_force) 
+      {
    
-    SWE_Sphere_TS_l_erk_n_erk* timestepper = i_ctx->get_l_erk_n_erk_timestepper(i_Y->get_level());
+	SWE_Sphere_TS_l_erk_n_erk* timestepper = i_ctx->get_l_erk_n_erk_timestepper(i_Y->get_level());
 		  
-    // compute the explicit nonlinear right-hand side
-    timestepper->euler_timestep_update_nonlinear(
-						 phi_Y, 
-						 vort_Y,
-						 div_Y,
-						 phi_F1,
-						 vort_F1,
-						 div_F1, 
-						 simVars->timecontrol.max_simulation_time
-						 );
-    
+	// compute the explicit nonlinear right-hand side
+	timestepper->euler_timestep_update_nonlinear(
+						     phi_Y, 
+						     vort_Y,
+						     div_Y,
+						     phi_F1,
+						     vort_F1,
+						     div_F1, 
+						     simVars->timecontrol.max_simulation_time
+						     );
+      }   
+    else
+      {
+
+	SWE_Sphere_TS_lg_erk_lc_n_erk* timestepper = i_ctx->get_lg_erk_lc_n_erk_timestepper(i_Y->get_level());
+		  
+	// compute the explicit nonlinear right-hand side
+	timestepper->euler_timestep_update_coriolis_and_nonlinear(
+								  phi_Y, 
+								  vort_Y,
+								  div_Y,
+								  phi_F1,
+								  vort_F1,
+								  div_F1, 
+								  simVars->timecontrol.max_simulation_time
+								  );
+
+      }
   }
 
   // evaluates the first implicit piece o_F2 = F2(i_Y)
@@ -236,21 +258,42 @@ extern "C"
 
     // get the simulation variables
     SimulationVariables* simVars = i_ctx->get_simulation_variables();
-    
-    
-    // get the explicit timestepper 
-    SWE_Sphere_TS_l_erk_n_erk* timestepper = i_ctx->get_l_erk_n_erk_timestepper(i_Y->get_level());
 
-    // compute the linear right-hand side
-    timestepper->euler_timestep_update_linear(
-					      phi_Y, 
-					      vort_Y,
-					      div_Y,
-					      phi_F2,
-					      vort_F2,
-					      div_F2,
-					      simVars->timecontrol.max_simulation_time
-					      );
+    if (simVars->libpfasst.implicit_coriolis_force) 
+      {
+    
+	// get the explicit timestepper 
+	SWE_Sphere_TS_l_erk_n_erk* timestepper = i_ctx->get_l_erk_n_erk_timestepper(i_Y->get_level());
+	
+	// compute the linear right-hand side
+	timestepper->euler_timestep_update_linear(
+						  phi_Y, 
+						  vort_Y,
+						  div_Y,
+						  phi_F2,
+						  vort_F2,
+						  div_F2,
+						  simVars->timecontrol.max_simulation_time
+						  );
+      }
+    else
+      {
+	
+	// get the explicit timestepper 
+	SWE_Sphere_TS_lg_erk_lc_n_erk* timestepper = i_ctx->get_lg_erk_lc_n_erk_timestepper(i_Y->get_level());
+	
+	// compute the linear right-hand side
+	timestepper->euler_timestep_update_linear(
+						  phi_Y, 
+						  vort_Y,
+						  div_Y,
+						  phi_F2,
+						  vort_F2,
+						  div_F2,
+						  simVars->timecontrol.max_simulation_time
+						  );
+
+      }
     
   }
 
@@ -296,20 +339,43 @@ extern "C"
 				  i_dt,
 				  simVars->timecontrol.max_simulation_time
 				  );
+	
       }
     else 
       {
-	// get the irk timestepper
-	SWE_Sphere_TS_l_irk* timestepper = i_ctx->get_l_irk_timestepper(io_Y->get_level());
-	
-	// solve the implicit system using the Helmholtz solver
-	timestepper->run_timestep(
-				  phi_Y,
-				  vort_Y,
-				  div_Y,
-				  i_dt,
-				  simVars->timecontrol.max_simulation_time
-				  );
+	if (simVars->libpfasst.implicit_coriolis_force) 
+	  {
+	    
+	    // get the irk timestepper
+	    SWE_Sphere_TS_l_irk* timestepper = i_ctx->get_l_irk_timestepper(io_Y->get_level());
+	    
+	    // solve the implicit system using the Helmholtz solver
+	    timestepper->run_timestep(
+				      phi_Y,
+				      vort_Y,
+				      div_Y,
+				      i_dt,
+				      simVars->timecontrol.max_simulation_time
+				      );
+
+	  }
+	else
+	  {
+	    
+	    // get the irk timestepper
+	    SWE_Sphere_TS_lg_irk* timestepper = i_ctx->get_lg_irk_timestepper(io_Y->get_level());
+	    
+	    // solve the implicit system using the Helmholtz solver
+	    timestepper->run_timestep(
+				      phi_Y,
+				      vort_Y,
+				      div_Y,
+				      i_dt,
+				      simVars->timecontrol.max_simulation_time
+				      );
+
+
+	  }
       }
 
     // now recompute F2 with the new value of Y
