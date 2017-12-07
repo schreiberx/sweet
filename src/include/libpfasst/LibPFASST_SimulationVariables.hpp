@@ -38,19 +38,23 @@ struct LibPFASST_SimulationVariables
    */ 
   bool use_rexi = false;
 
-
+  /**
+   * Treat the Coriolis force implicitly
+   */
+  bool implicit_coriolis_force = true;
 
   void outputConfig()
   {
     std::cout << std::endl;
     std::cout << "LibPFASST:" << std::endl;
-    std::cout << " + nlevels: "               << nlevels               << std::endl;
-    std::cout << " + niters: "                << niters                << std::endl;
-    std::cout << " + nnodes: "                << nnodes                << std::endl;
-    std::cout << " + nodes_type: "            << nodes_type            << std::endl;
-    std::cout << " + coarsening_multiplier: " << coarsening_multiplier << std::endl;
-    std::cout << " + use_rexi: "              << use_rexi              << std::endl;
-    std::cout                                                          << std::endl;
+    std::cout << " + nlevels: "                 << nlevels                 << std::endl;
+    std::cout << " + niters: "                  << niters                  << std::endl;
+    std::cout << " + nnodes: "                  << nnodes                  << std::endl;
+    std::cout << " + nodes_type: "              << nodes_type              << std::endl;
+    std::cout << " + coarsening_multiplier: "   << coarsening_multiplier   << std::endl;
+    std::cout << " + use_rexi: "                << use_rexi                << std::endl;
+    std::cout << " + implicit_coriolis_force: " << implicit_coriolis_force << std::endl;
+    std::cout                                                              << std::endl;
   }
 
   void printOptions()
@@ -63,6 +67,7 @@ struct LibPFASST_SimulationVariables
     std::cout << "	--libpfasst-nodes_type [string]			LibPFASST parameter nodes_type, default: SDC_GAUSS_LOBATTO" << std::endl;
     std::cout << "	--libpfasst-coarsening_multiplier [float]	LibPFASST parameter coarsening_multiplier, default: 0.5"    << std::endl;
     std::cout << "	--libpfasst-use_rexi [bool]	                LibPFASST parameter use_rexi, default: false"               << std::endl;
+    std::cout << "	--libpfasst-implicit_coriolis_force [bool]      LibPFASST parameter implicit_coriolis_force, default: true" << std::endl;
     std::cout << ""                                                                                                                 << std::endl;
   }
 
@@ -89,6 +94,9 @@ struct LibPFASST_SimulationVariables
 
     io_long_options[io_next_free_program_option] = {"libpfasst-use_rexi", required_argument, 0, 256+io_next_free_program_option};
     io_next_free_program_option++;
+
+    io_long_options[io_next_free_program_option] = {"libpfasst-implicit_coriolis_force", required_argument, 0, 256+io_next_free_program_option};
+    io_next_free_program_option++;
   }
   
   /**
@@ -103,15 +111,16 @@ struct LibPFASST_SimulationVariables
   {
     switch(i_option_index)
       {
-      case 0:	nlevels               = atoi(optarg);	return 0;
-      case 1:	niters                = atoi(optarg);	return 0;
-      case 2:	nnodes                = atoi(optarg);	return 0;
-      case 3:	nodes_type            = optarg; 	return 0;
-      case 4:	coarsening_multiplier = atof(optarg);	return 0;
-      case 5:   use_rexi              = atoi(optarg);   return 0;
+      case 0:	nlevels                 = atoi(optarg);	return 0;
+      case 1:	niters                  = atoi(optarg);	return 0;
+      case 2:	nnodes                  = atoi(optarg);	return 0;
+      case 3:	nodes_type              = optarg; 	return 0;
+      case 4:	coarsening_multiplier   = atof(optarg);	return 0;
+      case 5:   use_rexi                = atoi(optarg); return 0;
+      case 6:   implicit_coriolis_force = atoi(optarg); return 0;
       }
     
-    return 6;
+    return 7;
   }
   
 
