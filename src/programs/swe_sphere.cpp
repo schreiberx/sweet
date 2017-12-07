@@ -363,36 +363,44 @@ public:
 		{
 			update_diagnostics();
 
-			// Print header
-			if (simVars.timecontrol.current_timestep_nr == 0)
+#if SWEET_MPI
+			if (mpi_rank == 0)
+#endif
 			{
-				std::cerr << "T\tTOTAL_MASS\tPOT_ENERGY\tKIN_ENERGY\tTOT_ENERGY\tPOT_ENSTROPHY\tREL_TOTAL_MASS\tREL_POT_ENERGY\tREL_KIN_ENERGY\tREL_TOT_ENERGY\tREL_POT_ENSTROPHY";
-				std::cerr << std::endl;
+				// Print header
+				if (simVars.timecontrol.current_timestep_nr == 0)
+				{
+					std::cerr << "T\tTOTAL_MASS\tPOT_ENERGY\tKIN_ENERGY\tTOT_ENERGY\tPOT_ENSTROPHY\tREL_TOTAL_MASS\tREL_POT_ENERGY\tREL_KIN_ENERGY\tREL_TOT_ENERGY\tREL_POT_ENSTROPHY";
+					std::cerr << std::endl;
+				}
+
+				// Print simulation time, energy and pot enstrophy
+				std::cerr << simVars.timecontrol.current_simulation_time << "\t";
+				std::cerr << simVars.diag.total_mass << "\t";
+				std::cerr << simVars.diag.potential_energy << "\t";
+				std::cerr << simVars.diag.kinetic_energy << "\t";
+				std::cerr << simVars.diag.total_energy << "\t";
+				std::cerr << simVars.diag.total_potential_enstrophy << "\t";
+
+				std::cerr << (simVars.diag.total_mass-simVars.diag.ref_total_mass)/simVars.diag.total_mass << "\t";
+				std::cerr << (simVars.diag.potential_energy-simVars.diag.ref_potential_energy)/simVars.diag.potential_energy << "\t";
+				std::cerr << (simVars.diag.kinetic_energy-simVars.diag.ref_kinetic_energy)/simVars.diag.kinetic_energy << "\t";
+				std::cerr << (simVars.diag.total_energy-simVars.diag.total_energy)/simVars.diag.total_energy << "\t";
+				std::cerr << (simVars.diag.total_potential_enstrophy-simVars.diag.total_potential_enstrophy)/simVars.diag.total_potential_enstrophy << std::endl;
+
+				static double start_tot_energy = -1;
+				if (start_tot_energy == -1)
+					start_tot_energy = simVars.diag.total_energy;
 			}
-
-			// Print simulation time, energy and pot enstrophy
-			std::cerr << simVars.timecontrol.current_simulation_time << "\t";
-			std::cerr << simVars.diag.total_mass << "\t";
-			std::cerr << simVars.diag.potential_energy << "\t";
-			std::cerr << simVars.diag.kinetic_energy << "\t";
-			std::cerr << simVars.diag.total_energy << "\t";
-			std::cerr << simVars.diag.total_potential_enstrophy << "\t";
-
-			std::cerr << (simVars.diag.total_mass-simVars.diag.ref_total_mass)/simVars.diag.total_mass << "\t";
-			std::cerr << (simVars.diag.potential_energy-simVars.diag.ref_potential_energy)/simVars.diag.potential_energy << "\t";
-			std::cerr << (simVars.diag.kinetic_energy-simVars.diag.ref_kinetic_energy)/simVars.diag.kinetic_energy << "\t";
-			std::cerr << (simVars.diag.total_energy-simVars.diag.total_energy)/simVars.diag.total_energy << "\t";
-			std::cerr << (simVars.diag.total_potential_enstrophy-simVars.diag.total_potential_enstrophy)/simVars.diag.total_potential_enstrophy << std::endl;
-
-			static double start_tot_energy = -1;
-			if (start_tot_energy == -1)
-				start_tot_energy = simVars.diag.total_energy;
 		}
 
 
 		if (simVars.misc.verbosity > 0)
 		{
-			std::cout << "prog_phi min/max:\t" << SphereData(prog_phi).physical_reduce_min() << ", " << SphereData(prog_phi).physical_reduce_max() << std::endl;
+#if SWEET_MPI
+			if (mpi_rank == 0)
+#endif
+				std::cout << "prog_phi min/max:\t" << SphereData(prog_phi).physical_reduce_min() << ", " << SphereData(prog_phi).physical_reduce_max() << std::endl;
 		}
 
 
