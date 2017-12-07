@@ -621,6 +621,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 		io_prog_phi0 = perThreadVars[0]->accum_phi;
 		io_prog_vort0 = perThreadVars[0]->accum_vort;
 		io_prog_div0 = perThreadVars[0]->accum_div;
+
 	}
 	else
 	{
@@ -758,11 +759,6 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 		}
 
 
-	#if SWEET_REXI_TIMINGS && SWEET_MPI
-		if (mpi_rank == 0)
-			stopwatch_reduce.start();
-	#endif
-
 	#if SWEET_REXI_THREAD_PARALLEL_SUM
 
 		io_prog_phi0.physical_set_zero();
@@ -833,6 +829,12 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 	}
 
 
+#if SWEET_REXI_TIMINGS && SWEET_MPI
+	if (mpi_rank == 0)
+		stopwatch_reduce.start();
+#endif
+
+
 #if SWEET_MPI
 	{
 		/*
@@ -864,7 +866,6 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 		std::swap(io_prog_div0.physical_space_data, tmp.physical_space_data);
 	}
 #endif
-
 
 #if SWEET_REXI_TIMINGS && SWEET_MPI
 	if (mpi_rank == 0)
