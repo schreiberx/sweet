@@ -17,12 +17,34 @@
 #include <complex>
 
 
+#if SWEET_MPI
+#include <mpi.h>
+#endif
 
 /**
  * Interface to load either REXI via Terrys method or via File
  */
 class REXI
 {
+#if SWEET_MPI
+	static
+	int& getMPIRank()
+	{
+		static int mpi_rank;
+		return mpi_rank;
+	}
+#endif
+
+
+
+public:
+	REXI()
+	{
+#if SWEET_MPI
+		MPI_Comm_rank(MPI_COMM_WORLD, &getMPIRank());
+#endif
+	}
+
 public:
 	static
 	void load(
@@ -137,7 +159,9 @@ public:
 			}
 		}
 
-
+#if SWEET_MPI
+		if (getMPIRank() == 0)
+#endif
 		if (i_verbosity)
 		{
 			int N = alpha.size();

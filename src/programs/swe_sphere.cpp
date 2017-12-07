@@ -350,8 +350,11 @@ public:
 			error_v = diff_v.physical_reduce_max_abs();
 			error_vort = diff_vort.physical_reduce_max_abs();
 			error_div = diff_div.physical_reduce_max_abs();
+#if SWEET_MPI
+			if (mpi_rank == 0)
+#endif
 
-			std::cerr << "error time, h, u, v, vort, div:\t" << simVars.timecontrol.current_simulation_time << "\t" << error_h << "\t" << error_u << "\t" << error_v << "\t" << error_vort << "\t" << error_div << std::endl;
+				std::cerr << "error time, h, u, v, vort, div:\t" << simVars.timecontrol.current_simulation_time << "\t" << error_h << "\t" << error_u << "\t" << error_v << "\t" << error_vort << "\t" << error_div << std::endl;
 		}
 
 		write_file_output();
@@ -503,18 +506,6 @@ public:
 
 		return false;
 	}
-
-
-
-	void outInfo(
-			const std::string &i_string,
-			const SphereData &i_data
-	)
-	{
-		std::cout << i_string << ": " << i_data.physical_reduce_min() << ", " << i_data.physical_reduce_max() << std::endl;
-	}
-
-
 
 
 
@@ -797,7 +788,14 @@ int main(int i_argc, char *i_argv[])
 #if SWEET_PARAREAL
 		simVars.parareal.printOptions();
 #endif
-		std::cout << "	--compute-error [0/1]	Output errors (if available, default: 1)" << std::endl;
+#if SWEET_MPI
+		int mpi_rank;
+		MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+		if (mpi_rank == 0)
+#endif
+		{
+			std::cout << "	--compute-error [0/1]	Output errors (if available, default: 1)" << std::endl;
+		}
 		return -1;
 	}
 
@@ -821,7 +819,7 @@ int main(int i_argc, char *i_argv[])
 	int mpi_rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 
-	std::cout << "MPI RANK: " << mpi_rank << std::endl;
+	std::cout << "Helo from MPI rank: " << mpi_rank << std::endl;
 
 	// only start simulation and time stepping for first rank
 	if (mpi_rank > 0)
@@ -835,7 +833,12 @@ int main(int i_argc, char *i_argv[])
 #endif
 
 	{
-		std::cout << "SPH config string: " << sphereDataConfigInstance.getConfigInformationString() << std::endl;
+#if SWEET_MPI
+		if (mpi_rank == 0)
+#endif
+		{
+			std::cout << "SPH config string: " << sphereDataConfigInstance.getConfigInformationString() << std::endl;
+		}
 
 #if SWEET_PARAREAL
 		if (simVars.parareal.enabled)
