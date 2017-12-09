@@ -24,7 +24,7 @@ public:
 	{
 		std::cout << std::endl;
 		std::cout << "Benchmark scenario not selected (option -s [id])" << std::endl;
-		std::cout << "Available benchmark scenarios:" << std::endl;
+		std::cout << "Available benchmark scenarios (DEPRECATED):" << std::endl;
 		std::cout << "	0: Dummy" << std::endl;
 		std::cout << "	2: Use Gaussian bump initial conditions (0, pi/3, exp=10)" << std::endl;
 		std::cout << "	3: Use Gaussian bump initial conditions (pi/3, pi/3, exp=10)" << std::endl;
@@ -45,6 +45,13 @@ public:
 		std::cout << "	100: Galweski" << std::endl;
 		std::cout << "	101: Galweski - geostrophic case including non-linear parts" << std::endl;
 		std::cout << "	200: h=h0, u=0, v=0" << std::endl;
+		std::cout << std::endl;
+		std::cout << "Benchmark scenario by name (NEW):" << std::endl;
+		std::cout << "  'flat': Constant height and zero velocity" << std::endl;
+		std::cout << "  'galewsky': Galwesky benchmark" << std::endl;
+		std::cout << "  'galewsky_nobump': Galwesky benchmark without any bump" << std::endl;
+		std::cout << "  'geostrophic_balance': Geostrophic balance, one wave (standard)" << std::endl;
+		std::cout << "  'geostrophic_balance_[N]': Geostrophic balance, with [N] waves" << std::endl;
 		std::cout << std::endl;
 	}
 
