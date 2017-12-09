@@ -105,9 +105,9 @@ SWE_Sphere_TS_l_rexi::~SWE_Sphere_TS_l_rexi()
 #if SWEET_REXI_TIMINGS && SWEET_MPI
 	if (mpi_rank == 0)
 	{
-		std::cout << "STOPWATCH preprocessing: " << stopwatch_preprocessing() << std::endl;
-		std::cout << "STOPWATCH reduce: " << stopwatch_reduce() << std::endl;
-		std::cout << "STOPWATCH solve_rexi_terms: " << stopwatch_solve_rexi_terms() << std::endl;
+		std::cout << "REXI STOPWATCH preprocessing: " << stopwatch_preprocessing() << std::endl;
+		std::cout << "REXI STOPWATCH reduce: " << stopwatch_reduce() << std::endl;
+		std::cout << "REXI STOPWATCH solve_rexi_terms: " << stopwatch_solve_rexi_terms() << std::endl;
 	}
 
 	int num_ranks;
@@ -116,7 +116,7 @@ SWE_Sphere_TS_l_rexi::~SWE_Sphere_TS_l_rexi()
 	if (num_ranks == 1)
 	{
 		if (mpi_rank == 0)
-			std::cout << "STOPWATCH broadcast: " << stopwatch_broadcast() << std::endl;
+			std::cout << "REXI STOPWATCH broadcast: " << stopwatch_broadcast() << std::endl;
 	}
 	else
 	{
