@@ -105,7 +105,7 @@ SWE_Sphere_TS_l_rexi::~SWE_Sphere_TS_l_rexi()
 #if SWEET_REXI_TIMINGS && SWEET_MPI
 	if (mpi_rank == 0)
 	{
-		std::cout << "REXI STOPWATCH preprocessing: " << stopwatch_preprocessing() << std::endl;
+		std::cout << "REXI STOPWATCH preprocessing: " << stopwatch_misc_processing() << std::endl;
 		std::cout << "REXI STOPWATCH reduce: " << stopwatch_reduce() << std::endl;
 		std::cout << "REXI STOPWATCH solve_rexi_terms: " << stopwatch_solve_rexi_terms() << std::endl;
 	}
@@ -315,7 +315,7 @@ void SWE_Sphere_TS_l_rexi::setup(
 
 
 #if SWEET_REXI_TIMINGS && SWEET_MPI
-	stopwatch_preprocessing.reset();
+	stopwatch_misc_processing.reset();
 	stopwatch_broadcast.reset();
 	stopwatch_reduce.reset();
 	stopwatch_solve_rexi_terms.reset();
@@ -425,64 +425,75 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 	double i_simulation_timestamp
 )
 {
-	if (i_fixed_dt <= 0)
-		FatalError("Only constant time step size allowed");
-
-	double update_dt_delta = std::abs(timestep_size - i_fixed_dt)/std::max(timestep_size, i_fixed_dt);
-	if (update_dt_delta > 1e-9)
+	/*
+	 * PREPROCESSING
+	 */
 	{
-		std::cout << "Warning: Reducing time step size from " << i_fixed_dt << " to " << timestep_size << ", threshold " << update_dt_delta << " exceeded" << std::endl;
+#if SWEET_REXI_TIMINGS && SWEET_MPI
+		if (mpi_rank == 0)
+			stopwatch_misc_processing.start();
+#endif
 
-		std::cout << timestep_size << std::endl;
-		std::cout << i_fixed_dt << std::endl;
-		std::cout << std::abs(timestep_size - i_fixed_dt) << std::endl;
-		std::cout << std::max(timestep_size, i_fixed_dt) << std::endl;
-		std::cout << std::abs(timestep_size - i_fixed_dt)/std::max(timestep_size, i_fixed_dt) << std::endl;
-		std::cout << update_dt_delta << std::endl;
+		if (i_fixed_dt <= 0)
+			FatalError("Only constant time step size allowed");
 
-		timestep_size = i_fixed_dt;
+		double update_dt_delta = std::abs(timestep_size - i_fixed_dt)/std::max(timestep_size, i_fixed_dt);
+		if (update_dt_delta > 1e-9)
+		{
+			std::cout << "Warning: Reducing time step size from " << i_fixed_dt << " to " << timestep_size << ", threshold " << update_dt_delta << " exceeded" << std::endl;
 
-		update_coefficients(true);
+			std::cout << timestep_size << std::endl;
+			std::cout << i_fixed_dt << std::endl;
+			std::cout << std::abs(timestep_size - i_fixed_dt) << std::endl;
+			std::cout << std::max(timestep_size, i_fixed_dt) << std::endl;
+			std::cout << std::abs(timestep_size - i_fixed_dt)/std::max(timestep_size, i_fixed_dt) << std::endl;
+			std::cout << update_dt_delta << std::endl;
+
+			timestep_size = i_fixed_dt;
+
+			update_coefficients(true);
+		}
+
+
+		io_prog_phi0.request_data_spectral();
+		io_prog_vort0.request_data_spectral();
+		io_prog_div0.request_data_spectral();
+
+#if SWEET_REXI_TIMINGS && SWEET_MPI
+		if (mpi_rank == 0)
+			stopwatch_misc_processing.stop();
+#endif
 	}
 
+	/*
+	 * BROADCAST
+	 */
+	{
 
-	io_prog_phi0.request_data_spectral();
-	io_prog_vort0.request_data_spectral();
-	io_prog_div0.request_data_spectral();
-
-
+#if SWEET_REXI_TIMINGS && SWEET_MPI
+	if (mpi_rank == 1)
+		stopwatch_broadcast.start();
+#endif
 #if SWEET_MPI
 		/*
 		 * TODO: Maybe we should measure this for the 2nd rank!!!
 		 * The reason could be since Bcast might already return before the packages were actually received!
 		 */
-	#if SWEET_REXI_TIMINGS && SWEET_MPI
-		if (mpi_rank == 1)
-			stopwatch_broadcast.start();
-	#endif
 
 		std::size_t spectral_data_num_doubles = io_prog_phi0.sphereDataConfig->spectral_array_data_number_of_elements*2;
 
 		MPI_Bcast(io_prog_phi0.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-/*
-		if (std::isnan(io_prog_phi0.spectral_get(0,0).real()))
-		{
-			final_timestep = true;
-			return;
-		}
-
-		final_timestep = false;
-*/
-
 		MPI_Bcast(io_prog_vort0.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 		MPI_Bcast(io_prog_div0.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-	#if SWEET_REXI_TIMINGS && SWEET_MPI
-		if (mpi_rank == 1)
-			stopwatch_broadcast.stop();
-	#endif
-
 #endif
+
+
+#if SWEET_REXI_TIMINGS && SWEET_MPI
+	if (mpi_rank == 1)
+		stopwatch_broadcast.stop();
+#endif
+	}
 
 
 	/*
@@ -509,7 +520,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 	#if SWEET_REXI_TIMINGS && SWEET_MPI
 		if (stopwatch_measure)
-			stopwatch_preprocessing.start();
+			stopwatch_misc_processing.start();
 	#endif
 
 		std::size_t start, end;
@@ -548,7 +559,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 #if SWEET_REXI_TIMINGS && SWEET_MPI
 		if (stopwatch_measure)
-			stopwatch_preprocessing.stop();
+			stopwatch_misc_processing.stop();
 #endif
 
 #if SWEET_REXI_TIMINGS && SWEET_MPI
@@ -611,6 +622,17 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 	#endif
 
 
+#if SWEET_REXI_TIMINGS && SWEET_MPI
+		if (stopwatch_measure)
+			stopwatch_solve_rexi_terms.stop();
+#endif
+
+
+#if SWEET_REXI_TIMINGS && SWEET_MPI
+		if (stopwatch_measure)
+			stopwatch_misc_processing.start();
+#endif
+
 		io_prog_phi0 = perThreadVars[0]->accum_phi;
 		io_prog_vort0 = perThreadVars[0]->accum_vort;
 		io_prog_div0 = perThreadVars[0]->accum_div;
@@ -619,11 +641,11 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 		io_prog_vort0.request_data_physical();
 		io_prog_div0.request_data_physical();
 
+
 #if SWEET_REXI_TIMINGS && SWEET_MPI
 		if (stopwatch_measure)
-			stopwatch_solve_rexi_terms.stop();
+			stopwatch_misc_processing.stop();
 #endif
-
 	}
 	else
 	{
@@ -648,7 +670,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 	#if SWEET_REXI_TIMINGS && SWEET_MPI
 			if (stopwatch_measure)
-				stopwatch_preprocessing.start();
+				stopwatch_misc_processing.start();
 	#endif
 
 			std::size_t start, end;
@@ -692,7 +714,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 #if SWEET_REXI_TIMINGS && SWEET_MPI
 		if (stopwatch_measure)
-			stopwatch_preprocessing.stop();
+			stopwatch_misc_processing.stop();
 #endif
 
 #if SWEET_REXI_TIMINGS && SWEET_MPI
@@ -761,7 +783,17 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 		}
 
 
-	#if SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_REXI_THREAD_PARALLEL_SUM
+
+
+		#if SWEET_REXI_TIMINGS && SWEET_MPI
+			#error "Not yet properly supported!"
+		#endif
+
+		#if SWEET_REXI_TIMINGS && SWEET_MPI
+		if (mpi_rank == 0)
+			stopwatch_reduce.start();
+		#endif
 
 		io_prog_phi0.physical_set_zero();
 		io_prog_vort0.physical_set_zero();
@@ -821,24 +853,54 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 			}
 		}
 
-	#else
+		#if SWEET_REXI_TIMINGS && SWEET_MPI
+		if (mpi_rank == 0)
+			stopwatch_reduce.stop();
+		#endif
+
+	#else	// SWEET_REXI_THREAD_PARALLEL_SUM
+
+#if SWEET_REXI_TIMINGS && SWEET_MPI
+		if (mpi_rank == 0)
+			stopwatch_misc_processing.start();
+#endif
 
 		io_prog_phi0 = perThreadVars[0]->accum_phi.spectral_returnWithDifferentModes(io_prog_phi0.sphereDataConfig);
 		io_prog_vort0 = perThreadVars[0]->accum_vort.spectral_returnWithDifferentModes(io_prog_vort0.sphereDataConfig);
 		io_prog_div0 = perThreadVars[0]->accum_div.spectral_returnWithDifferentModes(io_prog_div0.sphereDataConfig);
 
-	#endif
-	}
+#if SWEET_REXI_TIMINGS && SWEET_MPI
+		if (mpi_rank == 0)
+			stopwatch_misc_processing.stop();
+#endif
+
+	#endif	// SWEET_REXI_THREAD_PARALLEL_SUM
 
 
 #if SWEET_REXI_TIMINGS && SWEET_MPI
-	if (mpi_rank == 0)
-		stopwatch_reduce.start();
+		if (mpi_rank == 0)
+			stopwatch_misc_processing.start();
 #endif
+
+		io_prog_phi0.request_data_physical();
+		io_prog_vort0.request_data_physical();
+		io_prog_div0.request_data_physical();
+
+
+#if SWEET_REXI_TIMINGS && SWEET_MPI
+		if (mpi_rank == 0)
+			stopwatch_misc_processing.stop();
+#endif
+	}
 
 
 #if SWEET_MPI
 	{
+#if SWEET_REXI_TIMINGS && SWEET_MPI
+		if (mpi_rank == 0)
+			stopwatch_reduce.start();
+#endif
+
 		/*
 		 * Physical data reduction
 		 *
@@ -846,9 +908,11 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 		 *
 		 * Comment from Martin to Martin: I forgot why this was necessary :-(
 		 */
-		io_prog_phi0.request_data_physical();
-		io_prog_vort0.request_data_physical();
-		io_prog_div0.request_data_physical();
+		if (!io_prog_phi0.physical_space_data_valid)
+			FatalError("Physical data should be available here");
+//		io_prog_phi0.request_data_physical();
+//		io_prog_vort0.request_data_physical();
+//		io_prog_div0.request_data_physical();
 
 		std::size_t physical_data_num_doubles = io_prog_phi0.sphereDataConfig->physical_array_data_number_of_elements;
 
@@ -868,18 +932,20 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 		MPI_Reduce(io_prog_div0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 		std::swap(io_prog_div0.physical_space_data, tmp.physical_space_data);
+
+
+#if SWEET_REXI_TIMINGS && SWEET_MPI
+		if (mpi_rank == 0)
+			stopwatch_reduce.stop();
+#endif
 	}
 #endif
 
-#if SWEET_REXI_TIMINGS && SWEET_MPI
-	if (mpi_rank == 0)
-		stopwatch_reduce.stop();
-#endif
 }
 
 
-
-void SWE_Sphere_TS_l_rexi:: MPI_quitWorkers(
+#if 0
+void SWE_Sphere_TS_l_rexi::MPI_quitWorkers(
 		SphereDataConfig *i_sphereDataConfig
 )
 {
@@ -892,4 +958,5 @@ void SWE_Sphere_TS_l_rexi:: MPI_quitWorkers(
 
 #endif
 }
+#endif
 
