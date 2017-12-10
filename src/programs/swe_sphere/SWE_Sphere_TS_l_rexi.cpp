@@ -135,7 +135,7 @@ SWE_Sphere_TS_l_rexi::~SWE_Sphere_TS_l_rexi()
 			MPI_Status status;
 			MPI_Recv(&data, sizeof(double), MPI_BYTE, 1, 0, MPI_COMM_WORLD, &status);
 
-			std::cout << "STOPWATCH broadcast: " << data << std::endl;
+			std::cout << "REXI STOPWATCH broadcast: " << data << std::endl;
 		}
 
 	}
