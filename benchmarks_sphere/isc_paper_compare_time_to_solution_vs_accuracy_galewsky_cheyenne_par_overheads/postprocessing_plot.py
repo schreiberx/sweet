@@ -6,8 +6,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import re
 from matplotlib.lines import Line2D
-
-import numpy as np
+import os
 
 
 datafiles = sys.argv[1:]
@@ -47,7 +46,12 @@ if len(datafiles) == 0:
 c = 2
 for i in datafiles:
 	
-	with open(i+'/output.out') as f:
+	filename = i+'/output.out'
+	if not os.path.isfile(filename):
+		print("File '"+filename+"' doesn't exist")
+		continue
+
+	with open(filename) as f:
 		lines = f.readlines()
 
 	wallclock_time = -1.0
@@ -110,12 +114,12 @@ for i in datafiles:
 	bar_wallclock_time.append(wallclock_time)
 
 	print("")
-	print(prev_name)
-	print(wallclock_time)
-	#print(rexi_preprocess)
-	print(rexi_broadcast)
-	print(rexi_solve)
-	print(rexi_reduce)
+	print("prev_name: "+str(prev_name))
+	print("wallclock_time: "+str(wallclock_time))
+	#print("rexi_preprocess: "+str(rexi_preprocess))
+	print("rexi_broadcast: "+str(rexi_broadcast))
+	print("rexi_solve: "+str(rexi_solve))
+	print("rexi_reduce: "+str(rexi_reduce))
 	
 
 
