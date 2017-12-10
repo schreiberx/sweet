@@ -600,11 +600,6 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 			perThreadVars[0]->accum_div += tmp_prog_div;
 		}
 
-#if SWEET_REXI_TIMINGS && SWEET_MPI
-		if (stopwatch_measure)
-			stopwatch_solve_rexi_terms.stop();
-#endif
-
 	#if SWEET_DEBUG
 		if (	!io_prog_phi0.spectral_space_data_valid	||
 				!io_prog_vort0.spectral_space_data_valid	||
@@ -619,6 +614,15 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 		io_prog_phi0 = perThreadVars[0]->accum_phi;
 		io_prog_vort0 = perThreadVars[0]->accum_vort;
 		io_prog_div0 = perThreadVars[0]->accum_div;
+
+		io_prog_phi0.request_data_physical();
+		io_prog_vort0.request_data_physical();
+		io_prog_div0.request_data_physical();
+
+#if SWEET_REXI_TIMINGS && SWEET_MPI
+		if (stopwatch_measure)
+			stopwatch_solve_rexi_terms.stop();
+#endif
 
 	}
 	else
@@ -839,6 +843,8 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 		 * Physical data reduction
 		 *
 		 * WE MUST do the reduction in physical space!
+		 *
+		 * Comment from Martin to Martin: I forgot why this was necessary :-(
 		 */
 		io_prog_phi0.request_data_physical();
 		io_prog_vort0.request_data_physical();

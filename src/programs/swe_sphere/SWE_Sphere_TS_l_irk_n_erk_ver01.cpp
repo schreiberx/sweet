@@ -71,7 +71,7 @@ void SWE_Sphere_TS_l_irk_n_erk::run_timestep(
 			timestepping_l_cn.run_timestep(
 					io_phi, io_vort, io_div,
 					i_dt*0.5,
-					i_simulation_timestamp+i_dt*0.5	/* TODO: CHECK THIS, THIS MIGHT BE WRONG!!! */
+					i_simulation_timestamp+i_dt*0.5	/* TODO: CHECK THIS, THIS MIGHT BE WRONG!!! However, we only have autonomous simulations so far */
 				);
 		}
 		else if (version_id == 1)
@@ -145,7 +145,7 @@ void SWE_Sphere_TS_l_irk_n_erk::setup(
 		{
 			timestepping_l_cn.setup(
 					simVars.disc.crank_nicolson_filter,
-					timestep_size*0.5,	// Half time step size for linear implicit part (applied 2x)
+					timestep_size*0.5,	// Half time step size for linear implicit part (applied 2x at start/end of TS)
 					simVars.rexi.use_sphere_extended_modes
 			);
 		}
@@ -153,7 +153,7 @@ void SWE_Sphere_TS_l_irk_n_erk::setup(
 		{
 			timestepping_l_cn.setup(
 					simVars.disc.crank_nicolson_filter,
-					timestep_size,	// Half time step size for linear implicit part (applied 2x)
+					timestep_size,	// Full time step size for linear implicit part (applied once at center)
 					simVars.rexi.use_sphere_extended_modes
 			);
 		}
