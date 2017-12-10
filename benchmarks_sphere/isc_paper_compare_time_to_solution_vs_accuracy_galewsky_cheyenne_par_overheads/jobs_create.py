@@ -180,6 +180,7 @@ timestep_size_reference = timestep_sizes_explicit[0]
 #p.runtime.simtime = timestep_sizes[-1]*10 #timestep_size_reference*2000
 p.runtime.simtime = 432000 #timestep_size_reference*(2**6)*10
 p.runtime.output_timestep_size = p.runtime.simtime
+p.runtime.output_filename = "-"
 #p.runtime.output_timestep_size = -1
 
 p.runtime.rexi_extended_modes = 0
