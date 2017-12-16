@@ -1,7 +1,9 @@
 #include "ctransfer.hpp"
+
+#include <benchmarks_plane/SWE_bench_PlaneBenchmarks_DEPRECATED.hpp>
+
 #include "cencap.hpp"
 
-#include <benchmarks_plane/SWEPlaneBenchmarks.hpp>
 
 extern "C"
 {

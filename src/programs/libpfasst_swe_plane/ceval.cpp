@@ -2,7 +2,6 @@
 #include <math.h>
 #include <string>
 
-#include <benchmarks_plane/SWEPlaneBenchmarks.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneDataComplex.hpp>
 #include <sweet/plane/PlaneOperatorsComplex.hpp>
@@ -10,6 +9,8 @@
 #include <sweet/plane/Convert_PlaneDataComplex_to_PlaneData.hpp>
 
 #include "ceval.hpp"
+
+#include <benchmarks_plane/SWE_bench_PlaneBenchmarks_DEPRECATED.hpp>
 
 #include "../swe_plane/SWE_Plane_TS_l_erk.hpp"
 #include "../swe_plane/SWE_Plane_TS_l_irk.hpp"

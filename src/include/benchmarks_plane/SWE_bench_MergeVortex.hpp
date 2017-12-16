@@ -28,7 +28,7 @@
  * h0 = 1
  * [0,1]x[0,1
  **/
-class SWEMergeVortex
+class SWE_bench_MergeVortex
 {
 	SimulationVariables &simVars;
 
@@ -105,7 +105,7 @@ class SWEMergeVortex
 
 
 public:
-	SWEMergeVortex(
+	SWE_bench_MergeVortex(
 		SimulationVariables &io_simVars,
 		PlaneOperators &io_op
 	)	:

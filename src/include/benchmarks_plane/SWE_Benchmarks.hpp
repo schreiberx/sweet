@@ -5,19 +5,20 @@
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#ifndef SRC_INCLUDE_BENCHMARKS_PLANE_SWEBENCHMARKSCOMBINED_HPP_
-#define SRC_INCLUDE_BENCHMARKS_PLANE_SWEBENCHMARKSCOMBINED_HPP_
+#ifndef SRC_INCLUDE_BENCHMARKS_PLANE_SWE_BENCHMARKS_HPP_
+#define SRC_INCLUDE_BENCHMARKS_PLANE_SWE_BENCHMARKS_HPP_
 
+#include <benchmarks_plane/SWE_bench_PlaneBenchmarks_DEPRECATED.hpp>
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/SimulationVariables.hpp>
-#include <benchmarks_plane/SWEPlaneBenchmarks.hpp>
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-	#include <benchmarks_plane/SWEPolvani.hpp>
-	#include <benchmarks_plane/SWEMergeVortex.hpp>
+	#include <benchmarks_plane/SWE_bench_Polvani.hpp>
+	#include <benchmarks_plane/SWE_bench_MergeVortex.hpp>
 #endif
-#include <benchmarks_plane/SWEUnstableJet.hpp>
+#include <benchmarks_plane/SWE_bench_UnstableJet.hpp>
+#include <benchmarks_plane/SWE_bench_GaussianBump.hpp>
 
 
 class SWEBenchmarksCombined
@@ -34,6 +35,9 @@ public:
 	{
 		if (io_simVars.setup.benchmark_scenario_name == "")
 		{
+			std::cout << "WARNING: Using -s [int] is deprecated" << std::endl;
+			std::cout << "WARNING: TODO: change to use --benchmark [string] for benchmarks" << std::endl;
+
 			o_h_pert.physical_update_lambda_array_indices(
 					[&](int i, int j, double &io_data)
 				{
@@ -71,7 +75,7 @@ public:
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 		if (io_simVars.setup.benchmark_scenario_name == "polvani")
 		{
-			SWEPolvani swe_polvani(io_simVars, io_op);
+			SWE_bench_Polvani swe_polvani(io_simVars, io_op);
 
 			swe_polvani.setup(
 					o_h_pert,
@@ -81,9 +85,9 @@ public:
 
 			return true;
 		}
-		if (io_simVars.setup.benchmark_scenario_name == "mergevortex")
+		else if (io_simVars.setup.benchmark_scenario_name == "mergevortex")
 		{
-			SWEMergeVortex swe_mergevortex(io_simVars, io_op);
+			SWE_bench_MergeVortex swe_mergevortex(io_simVars, io_op);
 
 			swe_mergevortex.setup(
 					o_h_pert,
@@ -93,11 +97,23 @@ public:
 
 			return true;
 		}
-		if (io_simVars.setup.benchmark_scenario_name == "unstablejet")
+		else if (io_simVars.setup.benchmark_scenario_name == "unstablejet")
 		{
-			SWEUnstableJet swe_unstablejet(io_simVars, io_op);
+			SWE_bench_UnstableJet swe_unstablejet(io_simVars, io_op);
 
 			swe_unstablejet.setup(
+					o_h_pert,
+					o_u,
+					o_v
+			);
+
+			return true;
+		}
+		else if (io_simVars.setup.benchmark_scenario_name == "gaussian_bump")
+		{
+			SWE_bench_GaussianBump swe_gaussian_bump(io_simVars, io_op);
+
+			swe_gaussian_bump.setup(
 					o_h_pert,
 					o_u,
 					o_v

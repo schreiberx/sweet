@@ -22,7 +22,7 @@
  * Implement initial conditions of Polvani benchmark
  * "Coherent structures of shallow-water turbulence"
  */
-class SWEPolvani
+class SWE_bench_Polvani
 {
 	SimulationVariables &simVars;
 
@@ -133,7 +133,7 @@ class SWEPolvani
 
 
 public:
-	SWEPolvani(
+	SWE_bench_Polvani(
 		SimulationVariables &io_simVars,
 		PlaneOperators &io_op
 	)	:

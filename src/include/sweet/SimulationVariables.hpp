@@ -51,7 +51,7 @@
 /*
  * Polvani program parameters
  */
-#include <benchmarks_plane/SWEPolvani_SimulationVariables.hpp>
+#include <benchmarks_plane/SWE_bench_Polvani_SimulationVariables.hpp>
 
 
 /**

@@ -23,8 +23,8 @@
 #include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
 #include <sweet/Stopwatch.hpp>
 #include <sweet/FatalError.hpp>
-#include <benchmarks_plane/SWEPlaneBenchmarks.hpp>
-#include <benchmarks_plane/SWEBenchmarksCombined.hpp>
+#include <benchmarks_plane/SWE_bench_PlaneBenchmarks_DEPRECATED.hpp>
+#include <benchmarks_plane/SWE_Benchmarks.hpp>
 #include <ostream>
 #include <algorithm>
 #include <sstream>

@@ -23,7 +23,7 @@
  *
  *
  **/
-class SWEUnstableJet
+class SWE_bench_UnstableJet
 {
 	SimulationVariables &simVars;
 
@@ -168,7 +168,7 @@ class SWEUnstableJet
 	}
 
 public:
-	SWEUnstableJet(
+	SWE_bench_UnstableJet(
 		SimulationVariables &io_simVars,
 		PlaneOperators &io_op
 	)	:
