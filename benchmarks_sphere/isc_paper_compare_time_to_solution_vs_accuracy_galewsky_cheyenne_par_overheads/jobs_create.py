@@ -44,6 +44,7 @@ p.compile.sphere_spectral_space = 'enable'
 p.compile.sphere_spectral_dealiasing = 'enable'
 
 p.compile.rexi_timings = 'enable'
+p.compile.rexi_timings_additional_barriers = 'enable'
 
 
 
@@ -238,7 +239,7 @@ if __name__ == "__main__":
 				# REXI
 				###########
 				#['lg_rexi_lc_n_erk_ver0',	2,	2,	0],
-				['lg_rexi_lc_n_erk_ver0',	2,	2,	0],
+				#['lg_rexi_lc_n_erk_ver0',	2,	2,	0],
 				['lg_rexi_lc_n_erk_ver1',	2,	2,	0],
 				['lg_rexi',	2,	2,	0],
 
