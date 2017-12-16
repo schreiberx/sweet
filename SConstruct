@@ -222,6 +222,7 @@ if p.compiler == 'gnu':
 		env.Replace(CXX = 'g++')
 
 
+
 if p.compiler == 'intel':
 	reqversion = [12,1]
 	iccversion_line = exec_command('icpc -dumpversion -w').splitlines()[0]

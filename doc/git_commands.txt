@@ -36,3 +36,10 @@ git pull schreiberx master
 
 # merge from upstream
 git merge schreiberx/master
+
+
+#
+# Checkout older versions
+#
+
+git checkout `git rev-list -n 1 --before="2017-11-20 00:00" master`

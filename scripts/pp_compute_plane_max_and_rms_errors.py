@@ -14,7 +14,7 @@ def loadDataFromFile(filename):
 	global prefix
 
 	try:
-		data = np.loadtxt(filename, skiprows=0)
+		data = np.loadtxt(filename, skiprows=0, ndmin=2)
 	except:
 		prefix = filename if len(sys.argv) <= 3 else sys.argv[3]
 		print(prefix+": UNABLE TO OPEN '"+filename+"'")
@@ -33,11 +33,9 @@ norm_l1_value = 0.0
 norm_l2_value = 0.0
 norm_linf_value = 0.0
 
-#print (cmp_data)
-size_ref_j = len(ref_data)
-size_ref_i = len(ref_data[0])
-size_cmp_j = len(cmp_data)
-size_cmp_i = len(cmp_data[0])
+(size_ref_j, size_ref_i) = ref_data.shape
+(size_cmp_j, size_cmp_i) = cmp_data.shape
+
 multiplier_j = (size_ref_j)/(size_cmp_j)
 multiplier_i = (size_ref_i)/(size_cmp_i)
 

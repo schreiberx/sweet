@@ -21,7 +21,7 @@ for i in $DIRS; do
 	test -d "$i" || continue
 
 	cd "$i"
-	./run.sh | tee "../$i.out"
+	./run.sh | tee "../$i/output.out"
 	test ${PIPESTATUS[0]} -eq 0 || exit 2>&1
 	cd ".."
 
