@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import sys
+import math
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -22,7 +23,7 @@ fig, ax = plt.subplots(figsize=(8,5))
 
 #ax.set_xscale("log", nonposx='clip')
 ax.set_yscale("log", nonposy='clip')
-ax.set_ylim(4e-1, 300)
+ax.set_ylim(1e-1, 3000)
 
 
 output_filename = "output_rexi_performance_breakdown.pdf"
@@ -134,19 +135,8 @@ ind = range(N)
 width = 0.2
 colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
 
-
-#rects0 = ax.bar([ind[i] - width*2 for i in range(N)], bar_preprocess, width, color=colors[0])
-rects0 = ax.bar([ind[i] - width*2 for i in range(N)], bar_wallclock_time, width, color=colors[0])
-rects1 = ax.bar([ind[i] - width*1 for i in range(N)], bar_broadcast, width, color=colors[1])
-rects2 = ax.bar([ind[i] + width*0 for i in range(N)], bar_solve, width, color=colors[2])
-rects3 = ax.bar([ind[i] + width*1 for i in range(N)], bar_reduce, width, color=colors[3])
 ax.set_xticklabels(bar_name)
-
-
 ax.set_ylabel('Wallclock time (seconds)')
-
-#ax.legend((rects0[0], rects1[0], rects2[0], rects3[0]), ('preprocess', 'broadcast', 'solve', 'reduce'))
-ax.legend((rects0[0], rects1[0], rects2[0], rects3[0]), ('wallclock time', 'broadcast', 'solve', 'reduce'))
 
 ax.set_xticks([ind[i]-width/2 for i in range(N)])
 ax.set_xticklabels(bar_name)
@@ -154,6 +144,27 @@ ax.set_xticklabels(bar_name)
 
 for tick in ax.get_xticklabels():
     tick.set_rotation(45)
+
+
+
+values = [bar_wallclock_time, bar_broadcast, bar_solve, bar_reduce]
+labels = ['wallclock time', 'broadcast', 'solve', 'reduce']
+rects = []
+
+for j in range(len(values)):
+	rects_ = ax.bar([i - width*(2-j) for i in range(N)], values[j], width, color=colors[j])
+	rects.append(rects_)
+
+
+for j in range(len(values)):
+	for rect, val in zip(rects[j], values[j]):
+		height = rect.get_height()
+		text =  "%.2f" % height
+		ax.text(rect.get_x() + rect.get_width()/2, height+math.log(1.0+0.1*height), text, ha='center', va='bottom', size=8, rotation=90)
+
+
+ax.legend([rect[0] for rect in rects], labels)
+
 
 plt.legend()
 plt.tight_layout()
