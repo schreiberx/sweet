@@ -459,6 +459,10 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 		io_prog_vort0.request_data_spectral();
 		io_prog_div0.request_data_spectral();
 
+#if SWEET_REXI_TIMINGS_ADDITIONAL_BARRIERS && SWEET_MPI
+		MPI_Barrier(MPI_COMM_WORLD);
+#endif
+
 #if SWEET_REXI_TIMINGS && SWEET_MPI
 		if (mpi_rank == 0)
 			stopwatch_misc_processing.stop();
@@ -642,6 +646,10 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 		io_prog_div0.request_data_physical();
 
 
+#if SWEET_REXI_TIMINGS_ADDITIONAL_BARRIERS && SWEET_MPI
+		MPI_Barrier(MPI_COMM_WORLD);
+#endif
+
 #if SWEET_REXI_TIMINGS && SWEET_MPI
 		if (stopwatch_measure)
 			stopwatch_misc_processing.stop();
@@ -776,6 +784,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 			}
 	#endif
 
+
 #if SWEET_REXI_TIMINGS && SWEET_MPI
 			if (stopwatch_measure)
 				stopwatch_solve_rexi_terms.stop();
@@ -885,6 +894,11 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 		io_prog_phi0.request_data_physical();
 		io_prog_vort0.request_data_physical();
 		io_prog_div0.request_data_physical();
+
+
+#if SWEET_REXI_TIMINGS_ADDITIONAL_BARRIERS && SWEET_MPI
+		MPI_Barrier(MPI_COMM_WORLD);
+#endif
 
 
 #if SWEET_REXI_TIMINGS && SWEET_MPI

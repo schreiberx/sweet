@@ -29,8 +29,14 @@
 
 
 #ifndef SWEET_REXI_TIMINGS
-#define SWEET_REXI_TIMINGS 1
+	#define SWEET_REXI_TIMINGS 1
 #endif
+
+#ifndef SWEET_REXI_TIMINGS_ADDITIONAL_BARRIERS
+	#define SWEET_REXI_TIMINGS_ADDITIONAL_BARRIERS 1
+#endif
+
+
 
 #if SWEET_REXI_TIMINGS
 #include <sweet/Stopwatch.hpp>
