@@ -244,6 +244,9 @@ struct REXI_SimulationVariables
 		std::cout << "	--rexi-m [int]				REXI parameter M" << std::endl;
 		std::cout << "	--rexi-l [int]				REXI parameter L" << std::endl;
 		std::cout << "  REXI File:" << std::endl;
+		std::cout << "	--rexi-file-alpha [string]			File with alpha coefficients" << std::endl;
+		std::cout << "	--rexi-file-beta [string]			File with beta coefficients" << std::endl;
+#if 0
 		std::cout << "	--rexi-file-faf-dir [string]			Directory with FAF coefficients" << std::endl;
 		std::cout << "	--rexi-file-N [int]		Number of rational basis functions, default:auto" << std::endl;
 		std::cout << "	--rexi-file-h [double]	Spacing of rational basis functions, default:auto" << std::endl;
@@ -252,6 +255,7 @@ struct REXI_SimulationVariables
 		std::cout << "	--rexi-file-test-abs [double]	Set min/max test interval, default:0" << std::endl;
 		std::cout << "	--rexi-file-max-error [double]	Maximum allowed error within test interval, default:0" << std::endl;
 		std::cout << "	--rexi-file-filename [string]	Filename of REXI coefficients, default:''" << std::endl;
+#endif
 		std::cout << "  REXI CI:" << std::endl;
 		std::cout << "	--rexi-ci-n [double]	Number of quadrature points, default: 64" << std::endl;
 		std::cout << "	--rexi-ci-primitive [string]	Primitive ('circle', 'rectangle'), default: 'circle'" << std::endl;
