@@ -4,7 +4,7 @@ source config.sh
 
 
 echo "*** BINUTILS ***"
-if [ -e "$DST_DIR/lib/xxxx" -a "$1" == "" ]; then
+if [ -e "$DST_DIR/bin/as" -a "$1" == "" ]; then
 	echo "Binutils already installed"
 	exit 1
 fi
