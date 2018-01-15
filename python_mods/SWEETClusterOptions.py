@@ -435,7 +435,8 @@ class SWEETClusterOptions:
 			if self.force_turbo_off:
 				content += ":freq=rated"
 
-			content += """#
+			content += """
+#
 #PBS -N """+jobid[0:100]+"""
 #PBS -o """+cwd+"/"+dirname+"""/output.out
 #PBS -e """+cwd+"/"+dirname+"""/output.err
@@ -496,7 +497,8 @@ module load openmpi
 			if self.force_turbo_off:
 				content += ":freq=rated"
 
-			content += """#
+			content += """
+#
 #PBS -N """+jobid[0:100]+"""
 #PBS -o """+cwd+"/"+dirname+"""/output.out
 #PBS -e """+cwd+"/"+dirname+"""/output.err
@@ -558,7 +560,8 @@ module load impi
 			if self.force_turbo_off:
 				content += ":freq=rated"
 
-			content += """#
+			content += """
+#
 #PBS -N """+jobid[0:100]+"""
 #PBS -o """+cwd+"/"+dirname+"""/output.out
 #PBS -e """+cwd+"/"+dirname+"""/output.err
