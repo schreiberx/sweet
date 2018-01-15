@@ -44,6 +44,9 @@ class SWEETClusterOptions:
 		# additional environment variables
 		self.environment_vars = ""
 
+		# Force disabling of turbo mode (if supported)
+		self.force_turbo_off = False
+
 
 
 	def setupTargetMachine(
@@ -423,8 +426,16 @@ class SWEETClusterOptions:
 ## select: number of nodes
 ## ncpus: number of CPUs per node
 ## mpiprocs: number of ranks per node
-#PBS -l select="""+str(num_nodes)+""":ncpus="""+str(num_cores_per_node)+""":mpiprocs="""+str(num_ranks_per_node)+""":ompthreads="""+str(num_omp_threads_per_mpi_thread)+"""
-#
+#PBS -l select="""+str(num_nodes)+""":ncpus="""+str(num_cores_per_node)+""":mpiprocs="""+str(num_ranks_per_node)+""":ompthreads="""+str(num_omp_threads_per_mpi_thread)
+
+			#"default": 2301000 
+			#"turbo": 2301000
+			#"rated": 2300000
+			#"slow": 1200000
+			if self.force_turbo_off:
+				content += ":freq=rated"
+
+			content += """#
 #PBS -N """+jobid[0:100]+"""
 #PBS -o """+cwd+"/"+dirname+"""/output.out
 #PBS -e """+cwd+"/"+dirname+"""/output.err
@@ -476,8 +487,16 @@ module load openmpi
 ## select: number of nodes
 ## ncpus: number of CPUs per node
 ## mpiprocs: number of ranks per node
-#PBS -l select="""+str(num_nodes)+""":ncpus="""+str(num_cores_per_node)+""":mpiprocs="""+str(num_ranks_per_node)+""":ompthreads="""+str(num_omp_threads_per_mpi_thread)+"""
-#
+#PBS -l select="""+str(num_nodes)+""":ncpus="""+str(num_cores_per_node)+""":mpiprocs="""+str(num_ranks_per_node)+""":ompthreads="""+str(num_omp_threads_per_mpi_thread)
+
+			#"default": 2301000 
+			#"turbo": 2301000
+			#"rated": 2300000
+			#"slow": 1200000
+			if self.force_turbo_off:
+				content += ":freq=rated"
+
+			content += """#
 #PBS -N """+jobid[0:100]+"""
 #PBS -o """+cwd+"/"+dirname+"""/output.out
 #PBS -e """+cwd+"/"+dirname+"""/output.err
@@ -530,8 +549,16 @@ module load impi
 ## select: number of nodes
 ## ncpus: number of CPUs per node
 ## mpiprocs: number of ranks per node
-#PBS -l select="""+str(num_nodes)+""":ncpus="""+str(num_cores_per_node)+""":mpiprocs="""+str(num_ranks_per_node)+""":ompthreads="""+str(num_omp_threads_per_mpi_thread)+"""
-#
+#PBS -l select="""+str(num_nodes)+""":ncpus="""+str(num_cores_per_node)+""":mpiprocs="""+str(num_ranks_per_node)+""":ompthreads="""+str(num_omp_threads_per_mpi_thread)
+
+			#"default": 2301000 
+			#"turbo": 2301000
+			#"rated": 2300000
+			#"slow": 1200000
+			if self.force_turbo_off:
+				content += ":freq=rated"
+
+			content += """#
 #PBS -N """+jobid[0:100]+"""
 #PBS -o """+cwd+"/"+dirname+"""/output.out
 #PBS -e """+cwd+"/"+dirname+"""/output.err

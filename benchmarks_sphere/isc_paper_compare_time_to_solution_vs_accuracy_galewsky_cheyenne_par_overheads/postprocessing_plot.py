@@ -117,12 +117,15 @@ for i in datafiles:
 	print("")
 	print("prev_name: "+str(prev_name))
 	print("wallclock_time: "+str(wallclock_time))
-	#print("rexi_preprocess: "+str(rexi_preprocess))
+	print("rexi_preprocess: "+str(rexi_preprocess))
 	print("rexi_broadcast: "+str(rexi_broadcast))
 	print("rexi_solve: "+str(rexi_solve))
 	print("rexi_reduce: "+str(rexi_reduce))
 	
 
+labels = ['Total wallclock', 'REXI misc', 'REXI broadcast', 'REXI solve', 'REXI reduce']
+values = [bar_wallclock_time, bar_preprocess, bar_broadcast, bar_solve, bar_reduce]
+M = len(values)
 
 if len(bar_name) == 0:
 	print("No valid data found")
@@ -132,7 +135,7 @@ if len(bar_name) == 0:
 
 N = len(bar_name)
 ind = range(N)
-width = 0.2
+width = 0.18
 colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
 
 ax.set_xticklabels(bar_name)
@@ -147,16 +150,14 @@ for tick in ax.get_xticklabels():
 
 
 
-values = [bar_wallclock_time, bar_broadcast, bar_solve, bar_reduce]
-labels = ['wallclock time', 'broadcast', 'solve', 'reduce']
 rects = []
 
-for j in range(len(values)):
-	rects_ = ax.bar([i - width*(2-j) for i in range(N)], values[j], width, color=colors[j])
+for j in range(M):
+	rects_ = ax.bar([i - width*(M/2-j) for i in range(N)], values[j], width, color=colors[j])
 	rects.append(rects_)
 
 
-for j in range(len(values)):
+for j in range(M):
 	for rect, val in zip(rects[j], values[j]):
 		height = rect.get_height()
 		text =  "%.2f" % height

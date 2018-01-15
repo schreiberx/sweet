@@ -13,6 +13,11 @@ p = SWEETJobGeneration()
 #
 p.cluster.setupTargetMachine("cheyenne")
 
+#
+# Force deactivating Turbo mode
+#
+p.cluster.force_turbo_off = True
+
 # 10 mins max wallclock seconds
 p.cluster.max_wallclock_seconds = 60*10
 
