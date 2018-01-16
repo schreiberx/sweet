@@ -55,6 +55,8 @@ public:
 		std::cout << std::endl;
 	}
 
+
+
 	/*
 	 * Compute surface height for geostrophic balance with given velocities
 	 *
@@ -864,7 +866,11 @@ public:
 					);
 				}
 			}
-			else if (io_simVars.setup.benchmark_scenario_name == "galewsky" || io_simVars.setup.benchmark_scenario_name == "galewsky_nobump")
+			else if (
+				io_simVars.setup.benchmark_scenario_name == "galewsky" ||			///< Standard Galewsky benchmark
+				io_simVars.setup.benchmark_scenario_name == "galewsky_nobump" ||	///< Galewsky benchmark without bumps
+				io_simVars.setup.benchmark_scenario_name == "galewsky_nosetparam"	///< Galewsky benchmark without overriding parameters
+			)
 			{
 				if (io_simVars.timecontrol.current_simulation_time == 0)
 				{
@@ -873,11 +879,14 @@ public:
 					std::cout << "!!! WARNING !!!" << std::endl;
 				}
 
-				/// Setup Galewski parameters
-				io_simVars.sim.coriolis_omega = 7.292e-5;
-				io_simVars.sim.gravitation = 9.80616;
-				io_simVars.sim.earth_radius = 6.37122e6;
-				io_simVars.sim.h0 = 10000;
+				if (io_simVars.setup.benchmark_scenario_name != "galewsky_nosetparam")
+				{
+					/// Setup Galewski parameters
+					io_simVars.sim.coriolis_omega = 7.292e-5;
+					io_simVars.sim.gravitation = 9.80616;
+					io_simVars.sim.earth_radius = 6.37122e6;
+					io_simVars.sim.h0 = 10000;
+				}
 
 				io_simVars.misc.output_time_scale = 1.0/(60.0*60.0);
 
@@ -885,13 +894,23 @@ public:
 				 * Parameters from Galewsky paper setup
 				 */
 				double umax = 80.;
+
 				double phi0 = M_PI/7.;
 				double phi1 = 0.5*M_PI - phi0;
-				double phi2 = 0.25*M_PI;
+				double phi2 = 0.25*M_PI;		/// latitude placement of gaussian bump
 				double en = std::exp(-4.0/std::pow((phi1-phi0), 2.0));
 				double alpha = 1./3.;
 				double beta = 1./15.;
 				double hamp = 120.;
+
+				if (io_simVars.setup.benchmark_galewsky_umax >= 0)
+					hamp = io_simVars.setup.benchmark_galewsky_umax;
+
+				if (io_simVars.setup.benchmark_galewsky_hamp >= 0)
+					hamp = io_simVars.setup.benchmark_galewsky_hamp;
+
+				if (io_simVars.setup.benchmark_galewsky_phi2 >= 0)
+					hamp = io_simVars.setup.benchmark_galewsky_phi2;
 
 				/*
 				 * Setup V=0
