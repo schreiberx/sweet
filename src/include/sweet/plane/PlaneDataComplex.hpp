@@ -309,7 +309,7 @@ public:
 public:
 	~PlaneDataComplex()
 	{
-		MemBlockAlloc::free(physical_space_data, planeDataConfig->physical_array_data_number_of_elements*sizeof(double));
+		MemBlockAlloc::free(physical_space_data, planeDataConfig->physical_array_data_number_of_elements*sizeof(std::complex<double>));
 
 #if SWEET_USE_PLANE_COMPLEX_SPECTRAL_SPACE
 		MemBlockAlloc::free(spectral_space_data, planeDataConfig->spectral_complex_array_data_number_of_elements*sizeof(std::complex<double>));
