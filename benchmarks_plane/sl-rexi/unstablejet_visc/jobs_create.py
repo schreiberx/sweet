@@ -58,8 +58,11 @@ p.runtime.rexi_method = 'direct'
 p = RuntimeSWEPlaneEarthParam(p)
 #p = RuntimeSWENonDimParam(p)
 p.runtime.g=p.runtime.g*10
-p.runtime.viscosity = 0.0
 
+visclevels = 4
+p.runtime.viscosity = 0.0
+viscref = 10
+viscosity_sizes = [viscref*(10.0**(i)) for i in range(0, visclevels)]
 
 #
 # Time, Mode and Physical resolution
@@ -146,23 +149,26 @@ for group in groups:
 		else:
 			p = SetupSpectralMethods(p)
 		
-		for idx in range(0, phys_res_levels): #, phys_res in phys_res_list:
+		for idy in range(0, visclevels):
 
-			p.runtime.timestep_size = timestep_sizes[idx]
-			if group == 'ln2space' and 'ln_erk' in tsm[0]:
-				p.runtime.timestep_size = p.runtime.timestep_size / 1000.0
+			p.runtime.viscosity = 0.0
+			for idx in range(0, phys_res_levels): #, phys_res in phys_res_list:
 
-			p.runtime.timestepping_method = tsm[0]
-			p.runtime.timestepping_order = tsm[1]
-			p.runtime.timestepping_order2 = tsm[2]
-			p.runtime.phys_res = -1
-			p.runtime.mode_res = phys_res_list[idx]
-			print("id   dt       Nmodes  ")
-			print(idx, p.runtime.timestep_size, p.runtime.phys_res)
+				p.runtime.timestep_size = timestep_sizes[idx]
+				if group == 'ln2space' and 'ln_erk' in tsm[0]:
+					p.runtime.timestep_size = p.runtime.timestep_size / 1000.0
 
-			if len(tsm) > 4:
-				s = tsm[4]
-				p.runtime.load_from_dict(tsm[4])
+				p.runtime.timestepping_method = tsm[0]
+				p.runtime.timestepping_order = tsm[1]
+				p.runtime.timestepping_order2 = tsm[2]
+				p.runtime.phys_res = -1
+				p.runtime.mode_res = phys_res_list[idx]
+				print("id   dt       Nmodes  ")
+				print(idx, p.runtime.timestep_size, p.runtime.phys_res)
 
-			p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile), 'run.sh')
+				if len(tsm) > 4:
+					s = tsm[4]
+					p.runtime.load_from_dict(tsm[4])
+
+				p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile), 'run.sh')
 
