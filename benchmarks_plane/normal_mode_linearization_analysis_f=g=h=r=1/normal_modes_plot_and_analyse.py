@@ -142,123 +142,78 @@ lowhigh_threshold=0
 #
 # Compute artificial solution for f-plane
 #
-"""
 f_plane_modes = []
 
 # determine truncation
 k=len(data)
-print(k)
-k=k/3
-print(k)
+k=k//3
+N = math.sqrt(k)
+N = int(N)
 
-N = 0
-t = 0
-while t < k:
-	t += N+1
-#	print("T: "+str(t))
-	N = N+1
-
-if t != k:
-	print("ERROR: Unable to compute truncation")
-	sys.exit(1)
+M = N//2
 
 
-non_geostrophic_modes=[]
-for n in range(0, N):
-	# compute w in side brackets (equation 47) in John's paper
-	f = 0.000145842
-
-	if '_f0_' in curid:
-		f = 0
-
-	a = 6371220.0
-	h = 100000.0
-
-	#f = 1
-	#a = 1
-	#h = 1
-
-	w = 0
-	if True:
-		w = math.sqrt(f*f + n*(n+1)*h/(a*a))
-	else:
-		from sympy import Symbol, solve
-		w = Symbol("w")
-		s = solve(w*(w*w-f*f-n*(n+1)*h/(a*a)))
-#	print(str(n)+str(": ")+str(w))
-
-	for i in range(0, n+1):
-		non_geostrophic_modes.append(w)
-		non_geostrophic_modes.append(-w)
-
-	for i in range(0, n+1):
-		non_geostrophic_modes.append(0)
-
-non_geostrophic_modes.sort()
-"""
+anal_modes=[]
 
 
+k0_range = list(range(-M+1, M))
+#k0_range.append(0)
+#k0_range.append(0)
+k1_range = list(range(-M+1, M))
+#k1_range.append(0)
+#k1_range.append(0)
+#k1_range.append(0)
+#k1_range.append(0)
 
-stat_modes=[]
-high_freq_modes=[]
-low_freq_modes=[]
+for k0 in k0_range:
+	for k1 in k1_range:
+		f = 1
+		g = 1
+		h = 1
 
+		w = math.sqrt(g*h*4.0*math.pi*math.pi*(k0*k0 + k1*k1) + f*f)
+
+		anal_modes.append(-w)
+		anal_modes.append(0) 
+		anal_modes.append(w)
+
+for k0 in k0_range+[0]:
+	anal_modes.append(0) 
+	anal_modes.append(0) 
+	anal_modes.append(0) 
+
+for k0 in k0_range:
+	anal_modes.append(0) 
+	anal_modes.append(0) 
+	anal_modes.append(0) 
+
+
+anal_modes.sort()
 datai = data.imag
 datai.sort()
-#print(datai)
-
-for d in datai:
-	ad = abs(d)
-	if ad < num_threshold:
-		stat_modes.append(d)
-	elif ad < lowhigh_threshold:
-		low_freq_modes.append(d)
-	else:
-		high_freq_modes.append(d)
 
 
-
-if True:
-
-	print("Stationary modes: "+str(len(stat_modes)))
-	#print(stat_modes)
+print("Analytical modes: "+str(len(anal_modes)))
+print("Numerical modes: "+str(len(datai)))
 
 
+c = 0
+for i in anal_modes:
+	if abs(i) < 1e-10:
+		c = c+1
+print("Analytical steady modes: "+str(c))
 
-if lowhigh_threshold != 0:
-	print("Low frequency modes: "+str(len(low_freq_modes)))
-	#print(low_freq_modes)
-
-	datap = low_freq_modes
-
-	fig, ax = plt.subplots()
-	ax.grid(True)
-	ax.scatter(
-		range(-len(datap)//2, len(datap)//2),
-		datap,
-		c='blue',
-		s=3,
-		alpha=0.3,
-		edgecolors='none'
-	)
-	ax.set_xlabel('Modes')
-	ax.set_ylabel('Eigenvalue (imaginary)')
-	if len(datap) > 0:
-		plt.ylim([min(datap)*1.1, max(datap)*1.1])
-
-
-	if len(sys.argv) >= 3:
-		plt.title("Low Frequencies - "+sys.argv[2], fontsize=10)
-
-	plt.savefig("output_freq_low."+ext, dpi=300)
+c = 0
+for i in datai:
+	if abs(i) < 1e-10:
+		c = c+1
+print("Numerical steady modes: "+str(c))
 
 
 if True:
-	print("High frequency modes: "+str(len(high_freq_modes)))
-#	print("High frequency modes (computed): "+str(len(non_geostrophic_modes)))
-	#print(high_freq_modes)
+	print("High frequency modes: "+str(len(data)))
 
-	datap = high_freq_modes
+	datap = data.imag
 
 	s = 0.7
 	fig, ax = plt.subplots(figsize=(10.0*s, 5.0*s))
@@ -275,16 +230,14 @@ if True:
 		edgecolors='none'
 	)
 
-	"""
 	ax.scatter(
-		range(-len(non_geostrophic_modes)//2, len(non_geostrophic_modes)//2),
-		non_geostrophic_modes,
+		range(-len(anal_modes)//2, len(anal_modes)//2),
+		anal_modes,
 		c='black',
 		s=0.5,
 		alpha=1,
 		edgecolors='none'
 	)
-	"""
 
 	ax.set_xlabel('Eigenmode ID')
 	ax.set_ylabel('Eigenvalue (imaginary)')
@@ -298,7 +251,7 @@ if True:
 
 	#legend_labels=['Analytical Eigenvalues for f-sphere', 'Numerical Eigenvalues of rotating sphere']
 	#legend_labels=['Analytical Eigenvalues for f-sphere']
-	legend_labels=['Numerical Eigenvalues for f-plane']
+	legend_labels=['Numerical Eigenvalues for f-plane', 'Analytical Eigenvalues for f-plane']
 	leg = plt.legend(legend_labels, ncol=1, loc='lower right')
 	leg.get_frame().set_alpha(1) 
 
