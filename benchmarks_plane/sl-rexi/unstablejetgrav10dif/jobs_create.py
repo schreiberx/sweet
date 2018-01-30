@@ -58,8 +58,8 @@ p.runtime.rexi_method = 'direct'
 p = RuntimeSWEPlaneEarthParam(p)
 #p = RuntimeSWENonDimParam(p)
 p.runtime.g=p.runtime.g*10
-viscref = 100000000000000.0
-p.runtime.viscosity = 100000000000000.0
+viscref = 10000000000000000.0
+p.runtime.viscosity = 10000000000000000.0
 p.runtime.viscosity_order = 4
 
 #
@@ -149,7 +149,7 @@ for group in groups:
 		
 		for ivis in range(-1,2):
 			
-			p.runtime.viscosity = 100000000000000.0 * (10**ivis)
+			p.runtime.viscosity = 100000000000000000.0 * (10**ivis)
 			
 			for idx in range(0, phys_res_levels): #, phys_res in phys_res_list:
 
