@@ -189,13 +189,13 @@ class SWEETRuntimeOptions():
 				idstr += '_b'+str(self.bench_id)
 
 		if self.benchmark_galewsky_umax > 0:
-			idstr += '_bgu'+str(self.benchmark_galewsky_umax)
+			idstr += '_bgu'+str("{:.4E}".format(self.benchmark_galewsky_umax))
 
 		if self.benchmark_galewsky_hamp > 0:
-			idstr += '_bgh'+str(self.benchmark_galewsky_hamp)
+			idstr += '_bgh'+str("{:.4E}".format(self.benchmark_galewsky_hamp))
 
 		if self.benchmark_galewsky_phi2 > 0:
-			idstr += '_bgp'+str(self.benchmark_galewsky_phi2)
+			idstr += '_bgp'+str("{:.4E}".format(self.benchmark_galewsky_phi2))
 
 		idstr += '_g'+str(self.g)
 		idstr += '_h'+str(self.h)
