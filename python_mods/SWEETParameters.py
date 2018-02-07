@@ -50,6 +50,7 @@ def RuntimeSWEPlaneEarthParam(p):
 	p.runtime.domain_size = 2.0*math.pi*s.erad # 40031555.8928087
 	return p	
 
+	
 def EnableGUI(p):
 	p.runtime.gui = 'enable'
 	p.compile.gui = 'enable'

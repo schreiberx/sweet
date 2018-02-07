@@ -205,11 +205,11 @@ class SWEETRuntimeOptions():
 
 		if compileOptions.plane_or_sphere == 'sphere':
 			idstr += '_a'+str(self.r)
-			idstr += '_u'+str(self.viscosity)
-#			idstr += '_U'+str(self.viscosity_order)
-
 			#idstr += '_rob'+str(self.use_robert_functions)
 			idstr += '_fsph'+str(self.f_sphere)
+			
+		idstr += '_u'+str(self.viscosity)
+		idstr += '_U'+str(self.viscosity_order)
 
 #		idstr += '_t'+str(self.simtime).zfill(8)
 #		idstr += '_o'+str(self.output_timestep_size).zfill(8)
