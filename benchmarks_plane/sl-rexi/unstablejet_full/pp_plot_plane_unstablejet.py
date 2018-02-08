@@ -29,6 +29,7 @@ for filename in sys.argv[1:]:
 		print(depth)
 		depth=float(depth)
 		data = data + depth
+		#Define in km
 		data = data / 1000
 
 	#Get max/min
