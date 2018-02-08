@@ -61,7 +61,7 @@ class SWE_bench_UnstableJet
 		 //power has to be odd to ensure periodicity
 		// the larger the thiner the jet
 		// Max speed is 50m/s
-		return 50.0*std::pow(std::sin(2.0*M_PI*y), 41);
+		return 50.0*std::pow(std::sin(2.0*M_PI*y), 81);
 	}
 
 	double u(
