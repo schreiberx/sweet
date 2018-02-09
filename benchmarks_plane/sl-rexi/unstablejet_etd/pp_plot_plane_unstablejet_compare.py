@@ -86,33 +86,77 @@ else:
 
 #Set tittle
 title=""
+outfile=""
 if 'diag_vort' in filename:
 	title+="Vorticity Deviation"
-if 'prog_h' in filename:
+elif 'prog_h' in filename:
 	title+="Depth Deviation (m) "
-if 'l_cn_na_sl_nd_settls' in filename1 and 'l_cn_na_sl_nd_settls' in filename2:
-	title+=" SL-SI-SETTLS "
-elif 'l_rexi_na_sl_nd_settls' in filename1 and 'l_rexi_na_sl_nd_settls' in filename2:
-	title+="SL-EXP-SETTLS "
 else:
-	title+="SL-EXP-SETTLS vs SL-SI-SETTLS"
-	
-title += 't='
-pos1 = filename.find('output')
-name = filename[pos1:]
-pos2 = name.find('_t')
-pos3 = filename.find('.csv')
-time = filename[pos1+pos2+2:pos3]
-time = float(time)
-time = time / 86400
+	title+="What is this?"
 
-title += str(time)
+#Method
+print("Methods")
+pos1 = filename1.find('_tsm_')
+pos2 = filename1.find('_tso')
+method1 = filename1[pos1+5:pos2]
+print(method1)
+pos1 = filename2.find('_tsm_')
+pos2 = filename2.find('_tso')
+method2 = filename2[pos1+5:pos2]
+print(method2)
+
+if method1 == method2:
+	title+=method1
+	outfile+=method1
+else:
+	title += method1
+	title += " vs "
+	title += method2
+	outfile += "_vs_"
+	outfile += method2
+
+#Time
+title += '  t='
+pos1 = filename1.find('output')
+name = filename1[pos1:]
+pos2 = name.find('_t')
+pos3 = filename1.find('.csv')
+time1 = filename1[pos1+pos2+2:pos3]
+time1 = float(time1)
+time1 = time1 / 86400
+title += str(time1)
+outfile += "_t"
+outfile += str(time1)
+pos1 = filename2.find('output')
+name = filename2[pos1:]
+pos2 = name.find('_t')
+pos3 = filename2.find('.csv')
+time2 = filename2[pos1+pos2+2:pos3]
+time2 = float(time2)
+time2 = time2 / 86400
+if time1 != time2:
+	title += " vs t="
+	title += str(time2)
+	outfile += "_vs_t"
+	outfile += str(time2)
+
 title += ' days '
 
+#Time step
 title+=" dt="
-pos1 = filename.find('_C')
-pos2 = filename.find('_R')
-title += filename[pos1+2:pos2]
+pos1 = filename1.find('_C')
+pos2 = filename1.find('_R')
+timestep1=filename1[pos1+2:pos2]
+title += filename1[pos1+2:pos2]
+
+pos1 = filename2.find('_C')
+pos2 = filename2.find('_R')
+timestep2=filename2[pos1+2:pos2]
+if timestep1 != timestep2:
+	title += " vs dt="
+	title += filename2[pos1+2:pos2]
+title += ' sec '
+	
 
 print(title)
 plt.title(title, fontsize=fontsize)
@@ -130,8 +174,9 @@ plt.ylabel("y (1000 km)", fontsize=fontsize)
 
 plt.show()
 
-#Save faile as eps
-outfilename = filename.replace('.csv', 'compare.eps')
+#Save file as eps
+#outfilename = filename.replace('.csv', 'compare.eps')
+outfilename=outfile+".eps"
 print(outfilename)
 plt.savefig(outfilename, dpi=300)
 #plt.show()
