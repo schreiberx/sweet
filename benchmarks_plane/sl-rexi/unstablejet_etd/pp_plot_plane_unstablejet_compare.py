@@ -107,11 +107,12 @@ print(method2)
 
 if method1 == method2:
 	title+=method1
-	outfile+=method1
+	outfile += method1
 else:
 	title += method1
 	title += " vs "
 	title += method2
+	outfile += method1
 	outfile += "_vs_"
 	outfile += method2
 
@@ -148,6 +149,8 @@ pos1 = filename1.find('_C')
 pos2 = filename1.find('_R')
 timestep1=filename1[pos1+2:pos2]
 title += filename1[pos1+2:pos2]
+outfile += "_dt"
+outfile += str(timestep1)
 
 pos1 = filename2.find('_C')
 pos2 = filename2.find('_R')
@@ -155,6 +158,8 @@ timestep2=filename2[pos1+2:pos2]
 if timestep1 != timestep2:
 	title += " vs dt="
 	title += filename2[pos1+2:pos2]
+	outfile += "_vs_dt"
+	outfile += str(timestep2)
 title += ' sec '
 	
 
