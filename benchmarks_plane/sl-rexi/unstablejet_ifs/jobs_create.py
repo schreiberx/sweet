@@ -71,7 +71,7 @@ timestep_size_reference = earth.day/24 #3600 #1 hour  #864000/10 #1 day
 timestep_sizes = [timestep_size_reference*(2.0**(-i)) for i in range(0, timelevels)]
 
 p.runtime.simtime = 10*earth.day #1 day #timestep_size_reference #864000 #10 days
-p.runtime.output_timestep_size = p.runtime.simtime/24/4
+p.runtime.output_timestep_size = p.runtime.simtime/20
 datastorage = p.runtime.simtime / p.runtime.output_timestep_size
 if datastorage > 200:
 	print("Warning::Too much data will be stored, are you sure you wish to run this?") 
@@ -90,6 +90,7 @@ phys_res_list = [phys_res_reference for i in range(0, phys_res_levels)]
 #groups = ['l1', 'l2', 'ln1', 'ln2']
 groups = ['sl-rexi']
 
+p = SetupSpectralMethods(p)
 
 if len(sys.argv) > 1:
 	groups = [sys.argv[1]]
@@ -101,12 +102,12 @@ for group in groups:
 	# 2nd order nonlinear non-fully-spectral
 	if group == 'sl-rexi':
 		ts_methods = [
-			['ln_erk',		4,	4],	# reference solution - spectral (128 grid points)
+			#['ln_erk',		4,	4],	# reference solution - spectral (128 grid points)
 			['ln_erk',		2,	2],	# FD- C-grid
 			['l_cn_na_sl_nd_settls', 2,	2],	# SI-SL-SP
 	        ['l_rexi_na_sl_nd_settls',	2,	2], #SL-EXP-SETTLS
-			['l_rexi_na_sl_nd_etdrk',	2,	2], #SL-EXP-ETDRK
-			['l_rexi_n_erk',	4,	4],
+			#['l_rexi_na_sl_nd_etdrk',	2,	2], #SL-EXP-ETDRK
+			#['l_rexi_n_erk',	4,	4],
 		]
 
 	#
@@ -124,7 +125,7 @@ for group in groups:
 	#
 	# Reference solution
 	#if True:
-	if True:
+	if False:
 		print("Reference")
 		tsm = ts_methods[0]
 	
@@ -143,7 +144,7 @@ for group in groups:
 
 	for tsm in ts_methods[1:]:
 
-		if group == 'ln2space' and 'ln_erk' in tsm[0]:
+		if group == 'sl-rexi' and 'ln_erk' in tsm[0]:
 			p = SetupFDCMethods(p)
 		else:
 			p = SetupSpectralMethods(p)
