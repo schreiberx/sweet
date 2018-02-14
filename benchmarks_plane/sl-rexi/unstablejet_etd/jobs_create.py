@@ -90,6 +90,7 @@ phys_res_list = [phys_res_reference for i in range(0, phys_res_levels)]
 #groups = ['l1', 'l2', 'ln1', 'ln2']
 groups = ['sl-rexi']
 
+p = SetupSpectralMethods(p)
 
 if len(sys.argv) > 1:
 	groups = [sys.argv[1]]
@@ -101,8 +102,8 @@ for group in groups:
 	# 2nd order nonlinear non-fully-spectral
 	if group == 'sl-rexi':
 		ts_methods = [
-			#['ln_erk',		4,	4],	# reference solution - spectral (128 grid points)
-			['ln_erk',		2,	2],	# FD- C-grid
+			['ln_erk',		4,	4],	# reference solution - spectral (128 grid points)
+			#['ln_erk',		2,	2],	# FD- C-grid
 			#['l_cn_na_sl_nd_settls', 2,	2],	# SI-SL-SP
 	        #['l_rexi_na_sl_nd_settls',	2,	2], #SL-EXP-SETTLS
 			['l_rexi_na_sl_nd_etdrk',	2,	2], #SL-EXP-ETDRK
@@ -129,12 +130,12 @@ for group in groups:
 		print("Reference")
 		tsm = ts_methods[0]
 	
-		p.runtime.timestep_size = p.runtime.output_timestep_size/100.0
+		p.runtime.timestep_size = p.runtime.output_timestep_size/10000.0
 		p.runtime.timestepping_method = tsm[0]
 		p.runtime.timestepping_order = tsm[1]
 		p.runtime.timestepping_order2 = tsm[2]
 		p.runtime.phys_res = -1
-		p.runtime.mode_res = 512
+		p.runtime.mode_res = 256
 
 		if len(tsm) > 4:
 			s = tsm[4]
@@ -144,7 +145,7 @@ for group in groups:
 
 	for tsm in ts_methods[1:]:
 
-		if group == 'ln2space' and 'ln_erk' in tsm[0]:
+		if group == 'sl-rexi' and 'ln_erk' in tsm[0]:
 			p = SetupFDCMethods(p)
 		else:
 			p = SetupSpectralMethods(p)
