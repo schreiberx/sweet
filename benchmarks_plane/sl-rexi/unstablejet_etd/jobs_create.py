@@ -70,8 +70,8 @@ timelevels = 10 #7 #5
 timestep_size_reference = earth.day/24 #3600 #1 hour  #864000/10 #1 day
 timestep_sizes = [timestep_size_reference*(2.0**(-i)) for i in range(0, timelevels)]
 
-p.runtime.simtime = 10*earth.day #1 day #timestep_size_reference #864000 #10 days
-p.runtime.output_timestep_size = p.runtime.simtime/24/4
+p.runtime.simtime = 1.0*earth.day #1 day #timestep_size_reference #864000 #10 days
+p.runtime.output_timestep_size = p.runtime.simtime/24/4/10
 datastorage = p.runtime.simtime / p.runtime.output_timestep_size
 if datastorage > 200:
 	print("Warning::Too much data will be stored, are you sure you wish to run this?") 
