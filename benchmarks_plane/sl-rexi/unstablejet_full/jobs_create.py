@@ -171,5 +171,3 @@ for group in groups:
 					p.runtime.load_from_dict(tsm[4])
 			
 			p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile), 'run.sh')
-		
-		
