@@ -173,4 +173,3 @@ for group in groups:
 			
 			p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile), 'run.sh')
 		
-		

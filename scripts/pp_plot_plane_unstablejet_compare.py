@@ -10,6 +10,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import subprocess
+import os
+retval = os.getcwd()
+print ("Current working directory %s" % retval)
+os.chdir( retval )
+
 
 #Figure definitions
 fontsize=12
@@ -125,7 +130,7 @@ pos2 = name.find('_t')
 pos3 = filename1.find('.csv')
 time1 = filename1[pos1+pos2+2:pos3]
 time1 = float(time1)
-time1 = time1 / 86400
+time1 = round(time1 / 86400, 2)
 title += str(time1)
 outfile += "_t"
 outfile += str(time1)
@@ -135,7 +140,7 @@ pos2 = name.find('_t')
 pos3 = filename2.find('.csv')
 time2 = filename2[pos1+pos2+2:pos3]
 time2 = float(time2)
-time2 = time2 / 86400
+time2 = round(time2 / 86400, 2)
 if time1 != time2:
 	title += " vs t="
 	title += str(time2)
