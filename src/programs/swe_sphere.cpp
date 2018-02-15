@@ -34,7 +34,9 @@ SimulationVariables simVars;
 
 // Plane data config
 SphereDataConfig sphereDataConfigInstance;
+SphereDataConfig sphereDataConfigInstance_nodealiasing;
 SphereDataConfig *sphereDataConfig = &sphereDataConfigInstance;
+SphereDataConfig *sphereDataConfig_nodealiasing = &sphereDataConfigInstance_nodealiasing;
 
 
 #if SWEET_GUI
@@ -54,6 +56,7 @@ class SimulationInstance
 {
 public:
 	SphereOperators op;
+	SphereOperators op_nodealiasing;
 
 	SWE_Sphere_TimeSteppers timeSteppers;
 
@@ -84,6 +87,7 @@ public:
 public:
 	SimulationInstance()	:
 		op(sphereDataConfig, simVars.sim.earth_radius),
+		op_nodealiasing(sphereDataConfig_nodealiasing, simVars.sim.earth_radius),
 		prog_phi(sphereDataConfig),
 		prog_vort(sphereDataConfig),
 		prog_div(sphereDataConfig),
@@ -163,15 +167,26 @@ public:
 			FatalError("Only fixed time step size supported");
 
 
+		if (simVars.setup.benchmark_setup_dealiased)
+		{
+			// use dealiased physical space for setup
+			SphereBenchmarksCombined::setupInitialConditions(prog_phi, prog_vort, prog_div, simVars, op);
+		}
+		else
+		{
+			// this is the default
+			// use reduced physical space for setup to avoid spurious modes
+			SphereData prog_phi_nodealiasing(sphereDataConfig_nodealiasing);
+			SphereData prog_vort_nodealiasing(sphereDataConfig_nodealiasing);
+			SphereData prog_div_nodealiasing(sphereDataConfig_nodealiasing);
 
-		SphereData prog_h(sphereDataConfig);
-		SphereData prog_u(sphereDataConfig);
-		SphereData prog_v(sphereDataConfig);
+			SphereBenchmarksCombined::setupInitialConditions(prog_phi_nodealiasing, prog_vort_nodealiasing, prog_div_nodealiasing, simVars, op_nodealiasing);
 
-		SphereBenchmarksCombined::setupInitialConditions(prog_h, prog_u, prog_v, simVars, op);
+			prog_phi.load_nodealiasing(prog_phi_nodealiasing);
+			prog_vort.load_nodealiasing(prog_vort_nodealiasing);
+			prog_div.load_nodealiasing(prog_div_nodealiasing);
+		}
 
-		prog_phi = prog_h*simVars.sim.gravitation;
-		op.robert_uv_to_vortdiv(prog_u.getSphereDataPhysical(), prog_v.getSphereDataPhysical(), prog_vort, prog_div);
 
 #if SWEET_MPI
 		if (mpi_rank == 0)
@@ -204,7 +219,7 @@ public:
 	 */
 	std::string write_file(
 			const SphereData &i_sphereData,
-			const char* i_name,	///< name of output variable
+			const char* i_name,		///< name of output variable
 			bool i_phi_shifted
 		)
 	{
@@ -353,8 +368,9 @@ public:
 #if SWEET_MPI
 			if (mpi_rank == 0)
 #endif
-
+			{
 				std::cerr << "error time, h, u, v, vort, div:\t" << simVars.timecontrol.current_simulation_time << "\t" << error_h << "\t" << error_u << "\t" << error_v << "\t" << error_vort << "\t" << error_div << std::endl;
+			}
 		}
 
 		write_file_output();
@@ -749,6 +765,7 @@ case 'C':
 };
 
 
+
 int main(int i_argc, char *i_argv[])
 {
 
@@ -775,12 +792,9 @@ int main(int i_argc, char *i_argv[])
 
 	//input parameter names (specific ones for this program)
 	const char *bogus_var_names[] = {
-//			"compute-error",
 			nullptr
 	};
 
-	// default values for specific input (for general input see SimulationVariables.hpp)
-//	simVars.bogus.var[0];
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
@@ -799,11 +813,14 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 	}
 
-
-//	if (simVars.bogus.var[0] != "")
-//		param_compute_error = atof(simVars.bogus.var[0].c_str());
-
 	sphereDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
+
+	int res_physical_nodealias[2] = {
+			2*(simVars.disc.res_spectral[0]+1),
+			simVars.disc.res_spectral[1]+1
+		};
+
+	sphereDataConfigInstance_nodealiasing.setupAuto(res_physical_nodealias, simVars.disc.res_spectral);
 
 
 #if SWEET_GUI
@@ -812,6 +829,7 @@ int main(int i_argc, char *i_argv[])
 
 	std::ostringstream buf;
 	buf << std::setprecision(14);
+
 
 
 #if SWEET_MPI

@@ -110,12 +110,33 @@ public:
 	}
 
 
-public:
 	static
 	void setupInitialConditions(
+			SphereData &o_phi,
+			SphereData &o_vort,
+			SphereData &o_div,
+
+			SimulationVariables &io_simVars,
+			SphereOperators &i_op
+	)
+	{
+		SphereData h(o_phi.sphereDataConfig);
+		SphereDataPhysical u(o_phi.sphereDataConfig);
+		SphereDataPhysical v(o_phi.sphereDataConfig);
+
+		setupInitialConditions_HUV(h, u, v, io_simVars, i_op);
+
+		o_phi = h*io_simVars.sim.gravitation;
+		i_op.robert_uv_to_vortdiv(u, v, o_vort, o_div);
+	}
+
+
+public:
+	static
+	void setupInitialConditions_HUV(
 			SphereData &o_h,
-			SphereData &o_u,
-			SphereData &o_v,
+			SphereDataPhysical &o_u,
+			SphereDataPhysical &o_v,
 
 			SimulationVariables &io_simVars,
 			SphereOperators &i_op
@@ -225,7 +246,7 @@ public:
 					);
 				}
 
-				o_v.spectral_set_zero();
+				o_v.physical_set_zero();
 
 #if 0
 				if (io_simVars.timecontrol.current_simulation_time == 0)
@@ -469,9 +490,9 @@ public:
 					);
 				}
 
-				o_h.physical_truncate();
-				o_u.physical_truncate();
-				o_v.physical_truncate();
+				//o_h.physical_truncate();
+				//o_u.physical_truncate();
+				//o_v.physical_truncate();
 
 				if (io_simVars.timecontrol.current_simulation_time == 0)
 				{
@@ -512,8 +533,8 @@ public:
 				io_simVars.sim.earth_radius = 6.37122e6;
 				io_simVars.sim.h0 = 29400.0;
 
-				o_u.spectral_set_zero();
-				o_v.spectral_set_zero();
+				o_u.physical_set_zero();
+				o_v.physical_set_zero();
 
 				double a = io_simVars.sim.earth_radius;
 				double A = 6000.0;
@@ -736,8 +757,8 @@ public:
 			else if (io_simVars.setup.benchmark_scenario_id == 200)
 			{
 				o_h.physical_set_all_value(io_simVars.sim.h0);
-				o_u.spectral_set_zero();
-				o_v.spectral_set_zero();
+				o_u.physical_set_zero();
+				o_v.physical_set_zero();
 			}
 			else
 			{

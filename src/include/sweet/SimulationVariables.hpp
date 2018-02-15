@@ -182,6 +182,9 @@ public:
 		/// setup scenario
 		std::string benchmark_scenario_name = "";
 
+		/// Use 2/3 rule in physical space for dealiasing
+		bool benchmark_setup_dealiased = false;
+
 
 		/// Galewsky-benchmark specific: velocity
 		double benchmark_galewsky_umax = -1;
@@ -246,6 +249,7 @@ public:
 			std::cout << " + random_seed: " << random_seed << std::endl;
 			std::cout << " + benchmark_scenario_id: " << benchmark_scenario_id << std::endl;
 			std::cout << " + benchmark_scenario_name: " << benchmark_scenario_name << std::endl;
+			std::cout << " + benchmark_setup_dealiased: " << benchmark_setup_dealiased << std::endl;
 			std::cout << " + benchmark_galewsky_umax: " << benchmark_galewsky_umax << std::endl;
 			std::cout << " + benchmark_galewsky_hamp: " << benchmark_galewsky_hamp << std::endl;
 			std::cout << " + benchmark_galewsky_phi2: " << benchmark_galewsky_phi2 << std::endl;
@@ -740,6 +744,9 @@ public:
         long_options[next_free_program_option] = {"benchmark", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
+        long_options[next_free_program_option] = {"benchmark-setup-dealiased", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
 
         long_options[next_free_program_option] = {"benchmark-galewsky-umax", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
@@ -908,6 +915,7 @@ public:
 					c++;		if (i == c)	{	setup.setup_coord_y = atof(optarg);		continue;	}
 					c++;		if (i == c)	{	setup.advection_rotation_angle = atof(optarg);		continue;	}
 					c++;		if (i == c)	{	setup.benchmark_scenario_name = optarg;		continue;	}
+					c++;		if (i == c)	{	setup.benchmark_setup_dealiased = atof(optarg);		continue;	}
 
 					c++;		if (i == c)	{	setup.benchmark_galewsky_umax = atof(optarg);		continue;	}
 					c++;		if (i == c)	{	setup.benchmark_galewsky_hamp = atof(optarg);		continue;	}
