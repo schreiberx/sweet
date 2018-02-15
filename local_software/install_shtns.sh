@@ -18,12 +18,14 @@ if [ ! -e "$DST_DIR/lib/libshtns_omp.a"  -o "$1" != "" ]; then
 
 	# no OpenMP
 	make clean
-	./configure --prefix="$DST_DIR" --disable-openmp || exit 1
+	./configure --prefix="$DST_DIR" --enable-python --disable-openmp || exit 1
+	python setup.py install --prefix="$DST_DIR"
 	make install || exit 1
 
 	# with OpenMP
 	make clean
-	./configure --prefix="$DST_DIR" --enable-openmp || exit 1
+	./configure --prefix="$DST_DIR" --enable-python --enable-openmp || exit 1
+	python setup.py install --prefix="$DST_DIR"
 	make install || exit 1
 
 	echo "DONE"
