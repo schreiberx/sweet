@@ -137,5 +137,3 @@ for filename in sys.argv[1:]:
 	plt.savefig(outfilename, dpi=300)
 	#plt.show()
 	plt.close()
-	
-	
