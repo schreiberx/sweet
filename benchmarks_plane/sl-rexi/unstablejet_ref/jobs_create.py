@@ -129,7 +129,7 @@ for group in groups:
 		print("Reference")
 		tsm = ts_methods[0]
 	
-		p.runtime.timestep_size = min(timestep_sizes)/10000.0
+		p.runtime.timestep_size = min(timestep_sizes)/1000.0
 		p.runtime.timestepping_method = tsm[0]
 		p.runtime.timestepping_order = tsm[1]
 		p.runtime.timestepping_order2 = tsm[2]
@@ -157,7 +157,7 @@ for group in groups:
 		
 			p.runtime.timestep_size = timestep_sizes[idx]
 			if group == 'sl-rexi' and 'ln_erk' in tsm[0]:
-				p.runtime.timestep_size = p.runtime.timestep_size / 1000.0
+				p.runtime.timestep_size = p.runtime.timestep_size / 100.0
 			
 			p.runtime.timestepping_method = tsm[0]
 			p.runtime.timestepping_order = tsm[1]
