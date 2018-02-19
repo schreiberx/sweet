@@ -129,7 +129,7 @@ for group in groups:
 		print("Reference")
 		tsm = ts_methods[0]
 	
-		p.runtime.timestep_size = min(timestep_sizes)/1000.0
+		p.runtime.timestep_size = min(timestep_sizes)/10.0
 		p.runtime.timestepping_method = tsm[0]
 		p.runtime.timestepping_order = tsm[1]
 		p.runtime.timestepping_order2 = tsm[2]
@@ -144,7 +144,7 @@ for group in groups:
 
 	for tsm in ts_methods[1:]:
 
-		if group == 'sl-rexi' and 'ln_erk' in tsm[0]:
+		if group == 'sl-rexi' and 'ln_erk' in tsm[0]:  #C-grid
 			p = SetupFDCMethods(p)
 		else:
 			p = SetupSpectralMethods(p)
@@ -156,8 +156,8 @@ for group in groups:
 		for idx in range(0, phys_res_levels): #, phys_res in phys_res_list:
 		
 			p.runtime.timestep_size = timestep_sizes[idx]
-			if group == 'sl-rexi' and 'ln_erk' in tsm[0]:
-				p.runtime.timestep_size = p.runtime.timestep_size / 100.0
+			if group == 'sl-rexi' and 'ln_erk' in tsm[0]:  #C-grid
+				p.runtime.timestep_size = p.runtime.timestep_size / 10.0
 			
 			p.runtime.timestepping_method = tsm[0]
 			p.runtime.timestepping_order = tsm[1]
