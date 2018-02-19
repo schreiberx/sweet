@@ -94,12 +94,15 @@ else:
 title=""
 outfile=""
 if 'diag_vort' in filename:
-	title+="Vorticity Deviation"
+	title+="Vorticity Deviation "
+	outfile+="vort"
 elif 'prog_h' in filename:
 	title+="Depth Deviation (m) "
+	outfile+="depth"
 else:
 	title+="What is this?"
-
+	outfile+="what"
+	
 #Method
 print("Methods")
 pos1 = filename1.find('_tsm_')
@@ -111,6 +114,24 @@ pos2 = filename2.find('_tso')
 method2 = filename2[pos1+5:pos2]
 print(method2)
 
+if method1 == "l_cn_na_sl_nd_settls":
+	method1 = "SL-SI-SETTLS"
+elif method1 == "l_rexi_na_sl_nd_settls":
+	method1 = "SL-EXP-SETTLS"
+elif method1 == "l_rexi_na_sl_nd_etdrk":
+	method1 = "SL-ETD2RK"
+elif method1 == "l_rexi_n_etdrk":
+	method1 = "ETD2RK"
+	
+if method2 == "l_cn_na_sl_nd_settls":
+	method2 = "SL-SI-SETTLS"
+elif method2 == "l_rexi_na_sl_nd_settls":
+	method2 = "SL-EXP-SETTLS"
+elif method2 == "l_rexi_na_sl_nd_etdrk":
+	method2 = "SL-ETD2RK"
+elif method2 == "l_rexi_n_etdrk":
+	method2 = "ETD2RK"
+		
 if method1 == method2:
 	title+=method1
 	outfile += method1
