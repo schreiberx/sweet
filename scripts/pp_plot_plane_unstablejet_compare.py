@@ -177,7 +177,9 @@ class MidpointNormalize(colors.Normalize):
 cmin = np.amin(data)
 cmax = np.amax(data)		
 mid_val=0		
-		
+
+dx_cmp=(x_max-x_min)/nx_cmp
+dy_cmp=(y_max-y_min)/ny_cmp		
 extent = (labelsx[0]+dx_cmp/2, labelsx[-1]-dx_cmp/2, labelsy[0]+dy_cmp/2, labelsy[-1]-dy_cmp/2)
 
 #Color plot
