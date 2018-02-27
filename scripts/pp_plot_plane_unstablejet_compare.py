@@ -196,7 +196,8 @@ cref=max(abs(cmin),abs(cmax))
 plt.clim(-cref, +cref)
 if 'diag_vort' in filename:
 	cbar = plt.colorbar(format='%.0e')
-else:
+	cbar.set_label('1/s', rotation=270, labelpad=+20)
+elif 'prog_h' in filename:
 	cbar = plt.colorbar()
 	cbar.set_label('meters', rotation=270)
 cbar.ax.tick_params(labelsize=fontsize) 
@@ -208,13 +209,13 @@ if 'diag_vort' in filename:
 	eta_contour_levels = np.append(np.arange(-1e-4, 0, s), np.arange(s, 1e-4, s))
 
 	#plt.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, levels=eta_contour_levels, linewidths=0.5)
-	plt.contour(x,y,data, colors="black", origin='lower', vmin=cmin, vmax=cmax, levels=eta_contour_levels, linewidths=0.5)
+	#plt.contour(x,y,data, colors="black", origin='lower', vmin=cmin, vmax=cmax, levels=eta_contour_levels, linewidths=0.5)
 	#plt.contourf(x, y, data, vmin=cmin, vmax=cmax, levels=eta_contour_levels)
 elif 'prog_h' in filename:
 	#plt.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, levels=h_contour_levels, linewidths=0.5)
-	hs = 2
+	hs = 20
 	#h_contour_levels = np.append(np.arange(900, 1000-hs, hs), np.arange(1000+hs, 1100, hs))
-	h_contour_levels = np.append(np.arange(-2, 0, hs), np.arange(0, 2, hs))
+	h_contour_levels = np.append(np.arange(-20, 0, hs), np.arange(0, 20, hs))
 	#plt.contour(x,y, data, colors="black", origin='lower', vmin=cmin, vmax=cmax, levels=h_contour_levels, linewidths=0.5)
 else:
 	if cmin != cmax:
