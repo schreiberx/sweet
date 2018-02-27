@@ -198,7 +198,9 @@ if 'diag_vort' in filename:
 	cbar = plt.colorbar(format='%.0e')
 else:
 	cbar = plt.colorbar()
+	cbar.set_label('meters', rotation=270)
 cbar.ax.tick_params(labelsize=fontsize) 
+
 
 #Contour lines (black)
 if 'diag_vort' in filename:
