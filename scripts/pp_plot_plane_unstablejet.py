@@ -11,7 +11,7 @@ import numpy as np
 import sys
 
 #Figure definitions
-fontsize=12
+fontsize=16
 figsize=(9, 7)
 
 for filename in sys.argv[1:]:
@@ -108,7 +108,7 @@ for filename in sys.argv[1:]:
 	title=""
 	if 'diag_vort' in filename:
 		title+="Vorticity "
-		cbar.set_label('1/s', rotation=270, labelpad=+20)
+		cbar.set_label('1/s', rotation=270, labelpad=+20, size=fontsize)
 	if 'prog_h' in filename:
 		title+="Depth (km) "
 		cbar.set_label('km', rotation=270)
@@ -118,9 +118,10 @@ for filename in sys.argv[1:]:
 	if 'prog_v' in filename:
 		title+="V-Velocity (m/s) "
 		cbar.set_label('m/s', rotation=270)
-
+		
+	cbar.ax.tick_params(labelsize=fontsize) 
 			
-		#Method
+	#Method
 	print("Methods")
 	pos1 = filename.find('_tsm_')
 	pos2 = filename.find('_tso')

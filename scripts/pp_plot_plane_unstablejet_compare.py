@@ -28,7 +28,7 @@ os.chdir( retval )
 
 
 #Figure definitions
-fontsize=12
+fontsize=16
 figsize=(9, 7)
 
 #Arguments check
