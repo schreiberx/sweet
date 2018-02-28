@@ -177,6 +177,15 @@ void SWE_Plane_TS_l_rexi::setup(
 	stopwatch_reduce.reset();
 	stopwatch_solve_rexi_terms.reset();
 #endif
+
+	if (simVars.rexi.rexi_terms_add_u0)
+	{
+		gamma0 = 1.0;
+		for (int i = 0; i < rexi_alpha.size(); i++)
+			gamma0 -= rexi_beta[i] / rexi_alpha[i];
+	}
+
+
 }
 
 
@@ -315,18 +324,24 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 		 */
 		if (simVars.rexi.rexi_terms_add_u0)
 		{
+#if !SWEET_USE_PLANE_SPECTRAL_SPACE
+			h_sum = Convert_PlaneData_To_PlaneDataComplex::physical_convert(gamma0.real() * i_h_pert);
+			u_sum = Convert_PlaneData_To_PlaneDataComplex::physical_convert(gamma0.real() * i_u);
+			v_sum = Convert_PlaneData_To_PlaneDataComplex::physical_convert(gamma0.real() * i_v);
+#else
 			if (simVars.rexi.use_half_poles)
 			{
-				h_sum = Convert_PlaneData_To_PlaneDataComplex::physical_convert(i_h_pert);
-				u_sum = Convert_PlaneData_To_PlaneDataComplex::physical_convert(i_u);
-				v_sum = Convert_PlaneData_To_PlaneDataComplex::physical_convert(i_v);
+				h_sum = Convert_PlaneData_To_PlaneDataComplex::physical_convert(gamma0.real() * i_h_pert);
+				u_sum = Convert_PlaneData_To_PlaneDataComplex::physical_convert(gamma0.real() * i_u);
+				v_sum = Convert_PlaneData_To_PlaneDataComplex::physical_convert(gamma0.real() * i_v);
 			}
 			else
 			{
-				h_sum = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(i_h_pert);
-				u_sum = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(i_u);
-				v_sum = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(i_v);
+				h_sum = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(gamma0.real() * i_h_pert);
+				u_sum = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(gamma0.real() * i_u);
+				v_sum = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(gamma0.real() * i_v);
 			}
+#endif
 		}
 		else
 		{
@@ -542,31 +557,18 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 	o_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->v_sum);
 
 #else
-        complex gamma0 = 0;
-        for (int i=0; i<max_N; i++) gamma0 -= rexi_beta[i] / rexi_alpha[i];
-        gamma0 += 1;
-        if (1) {
-          // std::cerr << "gamma0 " << gamma0 << std::endl;
-          o_h_pert = gamma0.real() * i_h_pert;
-          o_u = gamma0.real() * o_u;
-          o_v = gamma0.real() * o_v;
-        } else {
-          o_h_pert.spectral_set_zero();
-          o_u.spectral_set_zero();
-          o_v.spectral_set_zero();
-        }
 
 	if (simVars.rexi.use_half_poles)
 	{
-		o_h_pert += Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->h_sum);
-		o_u += Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->u_sum);
-		o_v += Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->v_sum);
+		o_h_pert = Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->h_sum);
+		o_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->u_sum);
+		o_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->v_sum);
 	}
 	else
 	{
-		o_h_pert += Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(perThreadVars[0]->h_sum);
-		o_u += Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(perThreadVars[0]->u_sum);
-		o_v += Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(perThreadVars[0]->v_sum);
+		o_h_pert = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(perThreadVars[0]->h_sum);
+		o_u = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(perThreadVars[0]->u_sum);
+		o_v = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(perThreadVars[0]->v_sum);
 	}
 #endif
 
