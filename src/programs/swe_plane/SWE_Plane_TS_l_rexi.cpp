@@ -319,36 +319,9 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 		PlaneDataComplex &eta = perThreadVars[i]->eta;
 
 
-		/*
-		 * INITIALIZATION - THIS IS THE NON-PARALLELIZABLE PART!
-		 */
-		if (simVars.rexi.rexi_terms_add_u0)
-		{
-#if !SWEET_USE_PLANE_SPECTRAL_SPACE
-			h_sum = Convert_PlaneData_To_PlaneDataComplex::physical_convert(gamma0.real() * i_h_pert);
-			u_sum = Convert_PlaneData_To_PlaneDataComplex::physical_convert(gamma0.real() * i_u);
-			v_sum = Convert_PlaneData_To_PlaneDataComplex::physical_convert(gamma0.real() * i_v);
-#else
-			if (simVars.rexi.use_half_poles)
-			{
-				h_sum = Convert_PlaneData_To_PlaneDataComplex::physical_convert(gamma0.real() * i_h_pert);
-				u_sum = Convert_PlaneData_To_PlaneDataComplex::physical_convert(gamma0.real() * i_u);
-				v_sum = Convert_PlaneData_To_PlaneDataComplex::physical_convert(gamma0.real() * i_v);
-			}
-			else
-			{
-				h_sum = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(gamma0.real() * i_h_pert);
-				u_sum = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(gamma0.real() * i_u);
-				v_sum = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(gamma0.real() * i_v);
-			}
-#endif
-		}
-		else
-		{
-			h_sum.spectral_set_zero();
-			u_sum.spectral_set_zero();
-			v_sum.spectral_set_zero();
-		}
+		h_sum.spectral_set_zero();
+		u_sum.spectral_set_zero();
+		v_sum.spectral_set_zero();
 
 
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
@@ -571,6 +544,17 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 		o_v = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(perThreadVars[0]->v_sum);
 	}
 #endif
+
+
+	/*
+	 * INITIALIZATION - THIS IS THE NON-PARALLELIZABLE PART!
+	 */
+	if (simVars.rexi.rexi_terms_add_u0)
+	{
+		o_h_pert += gamma0.real() * i_h_pert;
+		o_u += gamma0.real() * i_u;
+		o_v += gamma0.real() * i_v;
+	}
 
 
 #endif
