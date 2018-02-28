@@ -424,6 +424,7 @@ struct REXI_SimulationVariables
 			case 22:	ci_gaussian_filter_exp_N = atof(optarg);	return 0;
 		}
 
+
 		if (rexi_method != "" && rexi_method == "terry" && rexi_method == "file")
 			FatalError("Invalid argument for '--rexi-method='");
 
