@@ -65,7 +65,7 @@ else:
 # REXI method
 # N=64, SX,SY=50 and MU=0 with circle primitive provide good results
 # ==> use direct
-p.runtime.rexi_method = 'terry'
+p.runtime.rexi_method = 'direct'
 #p.runtime.rexi_ci_n = 64
 #p.runtime.rexi_ci_sx = 50
 #p.runtime.rexi_ci_sy = 50
