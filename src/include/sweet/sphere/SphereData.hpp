@@ -1780,6 +1780,50 @@ public:
         file.close();
 	}
 
+  
+  	void spectrum_file_write(
+			const std::string &i_filename,
+			const char *i_title = "",
+			int i_precision = 20
+	)	const
+	{
+	  request_data_spectral();
+	  
+	  std::ofstream file(i_filename, std::ios_base::trunc);
+
+	  file << std::setprecision(i_precision);
+	  file << "#TI " << i_title << std::endl;
+	  
+	  // Use 0 to make it processable by python
+	  file << "0\t";
+	  
+	  std::complex<double> w = {0,0};
+	  std::vector<double> sum(sphereDataConfig->spectral_modes_n_max+1,0);
+	  std::vector<double> sum_squared(sphereDataConfig->spectral_modes_n_max+1,0);
+	  std::vector<double> max(sphereDataConfig->spectral_modes_n_max+1,0);
+
+	  for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
+	    {
+	      std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
+	      for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
+		{
+		  w = spectral_space_data[idx];
+		  idx++;
+
+		  sum[n]         += std::abs(w);
+		  sum_squared[n] += std::abs(w * w);
+		  if (std::abs(w) >= max[n]) max[n] = std::abs(w);
+		}
+	    }
+
+	  file << sphereDataConfig->spectral_modes_m_max << " " 
+	       << sphereDataConfig->spectral_modes_n_max << std::endl;
+	  for (int n = 0; n <= sphereDataConfig->spectral_modes_n_max; n++)
+	    file << n << " " << sum[n] << " " << max[n] << " " << std::sqrt(sum_squared[n]) << std::endl;
+	  
+	  file.close();
+
+	}
 
 
 	void physical_file_write_lon_pi_shifted(

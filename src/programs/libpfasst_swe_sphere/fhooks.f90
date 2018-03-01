@@ -27,6 +27,13 @@ module hooks_module
        integer,               value :: i_current_proc, i_current_step, i_current_iter, i_nnodes, i_niter
      end subroutine cecho_output_solution
 
+     subroutine cecho_output_invariants(i_ctx, i_Y, i_current_proc, i_current_step, i_current_iter, i_nnodes, i_niter) & 
+          bind(c, name="cecho_output_invariants")
+       use iso_c_binding
+       type(c_ptr),           value :: i_ctx, i_Y
+       integer,               value :: i_current_proc, i_current_step, i_current_iter, i_nnodes, i_niter
+     end subroutine cecho_output_invariants
+
   end interface
 
 contains
@@ -255,7 +262,7 @@ contains
        sweet_sweeper_ptr => as_sweet_sweeper(level%ulevel%sweeper)
        x_ptr             => as_sweet_data_encap(level%Q(sweet_sweeper_ptr%nnodes))
 
-       if (modulo(state%step, 100) == 0 .and. state%iter == pf%niters) then
+       if (modulo(state%step, 100) == 0) then !.and. state%iter == pf%niters) then
 
           call cecho_output_solution(sweet_sweeper_ptr%ctx,  &
                                      x_ptr%c_sweet_data_ptr, &
@@ -272,6 +279,44 @@ contains
 !    end if
 
   end subroutine fecho_output_solution
+
+  ! function to output the solution
+
+  subroutine fecho_output_invariants(pf, level, state)
+    use iso_c_binding
+    use pf_mod_utils
+    use pf_mod_restrict
+    use mpi
+    type(pf_pfasst_t),         intent(inout) :: pf
+    class(pf_level_t),         intent(inout) :: level
+    type(pf_state_t),          intent(in)    :: state
+
+    class(sweet_sweeper_t),    pointer       :: sweet_sweeper_ptr
+    class(sweet_data_encap_t), pointer       :: x_ptr
+    integer                                  :: ierr, num_procs
+
+    call MPI_COMM_SIZE (MPI_COMM_WORLD, num_procs, ierr)
+!    if (state%proc == num_procs) then
+
+       sweet_sweeper_ptr => as_sweet_sweeper(level%ulevel%sweeper)
+       x_ptr             => as_sweet_data_encap(level%Q(sweet_sweeper_ptr%nnodes))
+
+       if (modulo(state%step, 100) == 0 .and. state%iter == pf%niters) then
+
+          call cecho_output_invariants(sweet_sweeper_ptr%ctx,  &
+                                       x_ptr%c_sweet_data_ptr, &
+                                       state%proc,             &
+                                       state%step,             &
+                                       state%iter,             &
+                                       level%nnodes,           &
+                                       pf%niters)
+
+       end if
+
+!    end if
+       
+     end subroutine fecho_output_invariants
+
 
 end module hooks_module
 

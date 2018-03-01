@@ -122,6 +122,8 @@ contains
      ! loop over levels to initialize level-specific data structures
      do level = 1, pf%nlevels
 
+        print *, level
+
        ! define the level id
        pf%levels(level)%level = level ! confusing!
 
@@ -147,9 +149,10 @@ contains
        pf%levels(level)%shape(level) = nvars(level)
        
        ! define the properties (number of degrees of freedom and number of SDC nodes)
-       pf%levels(level)%nvars  = nvars(level)
-       pf%levels(level)%nnodes = nnodes(level)
-       
+       pf%levels(level)%nvars   = nvars(level)
+       pf%levels(level)%nnodes  = nnodes(level)
+       pf%levels(level)%Finterp = .true.
+
        ! allocate space for the objects at this level
        allocate(sweet_level_t::pf%levels(level)%ulevel)
        allocate(sweet_data_factory_t::pf%levels(level)%ulevel%factory)
@@ -162,7 +165,7 @@ contains
        ! pass the pointer to sweet data context to LibPFASST
        sd_factory_ptr%ctx    = user_ctx_ptr
        sweet_sweeper_ptr%ctx = user_ctx_ptr
-       
+
        ! initialize the sweeper data
        sweet_sweeper_ptr%level           = level
        sweet_sweeper_ptr%nnodes          = nnodes(level)
@@ -175,6 +178,7 @@ contains
     ! initialize the mpi and pfasst objects
     call pf_mpi_setup(pf_comm, & 
                       pf)
+
     call pf_pfasst_setup(pf)
 
     print *, "t = ", t
@@ -209,9 +213,13 @@ contains
     !                  PF_POST_STEP, &
     !                  fecho_interpolation_errors)
     call pf_add_hook(pf,                 &
-                     -1,         &
-                     PF_POST_ITERATION,  &
+                     -1,                 &
+                     PF_PRE_SWEEP,  &
                      fecho_output_solution)
+    call pf_add_hook(pf,                 &
+                     pf%nlevels,         &
+                     PF_POST_STEP,       &
+                     fecho_output_invariants)
 
     ! advance in time with libpfasst
     level = nlevs
