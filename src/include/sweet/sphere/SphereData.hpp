@@ -157,6 +157,33 @@ public:
 	}
 
 
+
+
+	/**
+	 * This function implements copying the spectral data only.
+	 *
+	 * This becomes handy if coping with data which should be only transformed without dealiasing.
+	 */
+public:
+	SphereData& load_nodealiasing(
+			const SphereData &i_sph_data		///< data to be converted to sphereDataConfig_nodealiasing
+	)
+	{
+		if (sphereDataConfig == nullptr)
+			FatalError("sphereDataConfig not initialized");
+
+		// only copy spectral data
+		i_sph_data.request_data_spectral();
+
+		memcpy(spectral_space_data, i_sph_data.spectral_space_data, sizeof(cplx)*sphereDataConfig->spectral_array_data_number_of_elements);
+
+		physical_space_data_valid = false;
+		spectral_space_data_valid = true;
+
+		return *this;
+	}
+
+
 public:
 	SphereData& operator=(
 			SphereData &&i_sph_data

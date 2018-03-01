@@ -50,6 +50,7 @@ def RuntimeSWEPlaneEarthParam(p):
 	p.runtime.domain_size = 2.0*math.pi*s.erad # 40031555.8928087
 	return p	
 
+	
 def EnableGUI(p):
 	p.runtime.gui = 'enable'
 	p.compile.gui = 'enable'
@@ -82,25 +83,12 @@ def SetupSpectralMethods(p):
 
 
 
+class Unstablejet:
+	name = "Unstablejet"
+	s = EarthMKSDimensions()
+	#Domain
+	x_min = 0
+	x_max = 2.0*math.pi*s.erad/1000/1000 #1000km
+	y_min = 0 
+	y_max = 2.0*math.pi*s.erad/1000/1000 #1000km
 
-
-
-
-
-# ---old code ----
-
-#from SWEETJobGeneration import *
-
-#class SWEETSpecificTest(SWEETJobGeneration):
-#
-#	def __init__(self): 
-#		self.p = SWEETJobGeneration() #For some odd reason, I need self.p, not just self :-(
-#		self.p.compile.program="test"
-
-
-
-#class SWEETEditTests(SWEETSpecificTest):
-
-#	def __init__(self, p): 
-#		self.p.compile.program="test2"
-#		self = p

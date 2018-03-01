@@ -177,6 +177,15 @@ void SWE_Plane_TS_l_rexi::setup(
 	stopwatch_reduce.reset();
 	stopwatch_solve_rexi_terms.reset();
 #endif
+
+	if (simVars.rexi.rexi_terms_add_u0)
+	{
+		gamma0 = 1.0;
+		for (int i = 0; i < rexi_alpha.size(); i++)
+			gamma0 -= rexi_beta[i] / rexi_alpha[i];
+	}
+
+
 }
 
 
@@ -310,9 +319,6 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 		PlaneDataComplex &eta = perThreadVars[i]->eta;
 
 
-		/*
-		 * INITIALIZATION - THIS IS THE NON-PARALLELIZABLE PART!
-		 */
 		h_sum.spectral_set_zero();
 		u_sum.spectral_set_zero();
 		v_sum.spectral_set_zero();
@@ -460,6 +466,9 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 #endif
 	}
 
+
+
+
 #if SWEET_REXI_TIMINGS
 	if (mpi_rank == 0)
 		stopwatch_reduce.start();
@@ -537,6 +546,17 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 #endif
 
 
+	/*
+	 * INITIALIZATION - THIS IS THE NON-PARALLELIZABLE PART!
+	 */
+	if (simVars.rexi.rexi_terms_add_u0)
+	{
+		o_h_pert += gamma0.real() * i_h_pert;
+		o_u += gamma0.real() * i_u;
+		o_v += gamma0.real() * i_v;
+	}
+
+
 #endif
 
 
@@ -562,8 +582,11 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 	o_v.request_data_physical();
 	MPI_Reduce(o_v.physical_space_data, tmp.physical_space_data, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 	std::swap(o_v.physical_space_data, tmp.physical_space_data);
+
 #else
-#error "TODO: spectral version"
+
+	#error "TODO: spectral version"
+
 #endif
 
 #endif

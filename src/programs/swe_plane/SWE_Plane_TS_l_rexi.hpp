@@ -43,6 +43,8 @@ class SWE_Plane_TS_l_rexi	: public SWE_Plane_TS_interface
 	std::vector<std::complex<double>> rexi_alpha;
 	std::vector<std::complex<double>> rexi_beta;
 
+	// to implement REXI version which supports also IRK
+    std::complex<double> gamma0;
 
 	/// simulation domain size
 	double domain_size[2];

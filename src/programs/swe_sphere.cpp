@@ -34,7 +34,9 @@ SimulationVariables simVars;
 
 // Plane data config
 SphereDataConfig sphereDataConfigInstance;
+SphereDataConfig sphereDataConfigInstance_nodealiasing;
 SphereDataConfig *sphereDataConfig = &sphereDataConfigInstance;
+SphereDataConfig *sphereDataConfig_nodealiasing = &sphereDataConfigInstance_nodealiasing;
 
 
 #if SWEET_GUI
@@ -54,6 +56,7 @@ class SimulationInstance
 {
 public:
 	SphereOperators op;
+	SphereOperators op_nodealiasing;
 
 	SWE_Sphere_TimeSteppers timeSteppers;
 
@@ -84,6 +87,7 @@ public:
 public:
 	SimulationInstance()	:
 		op(sphereDataConfig, simVars.sim.earth_radius),
+		op_nodealiasing(sphereDataConfig_nodealiasing, simVars.sim.earth_radius),
 		prog_phi(sphereDataConfig),
 		prog_vort(sphereDataConfig),
 		prog_div(sphereDataConfig),
@@ -163,15 +167,26 @@ public:
 			FatalError("Only fixed time step size supported");
 
 
+		if (simVars.setup.benchmark_setup_dealiased)
+		{
+			// use dealiased physical space for setup
+			SphereBenchmarksCombined::setupInitialConditions(prog_phi, prog_vort, prog_div, simVars, op);
+		}
+		else
+		{
+			// this is the default
+			// use reduced physical space for setup to avoid spurious modes
+			SphereData prog_phi_nodealiasing(sphereDataConfig_nodealiasing);
+			SphereData prog_vort_nodealiasing(sphereDataConfig_nodealiasing);
+			SphereData prog_div_nodealiasing(sphereDataConfig_nodealiasing);
 
-		SphereData prog_h(sphereDataConfig);
-		SphereData prog_u(sphereDataConfig);
-		SphereData prog_v(sphereDataConfig);
+			SphereBenchmarksCombined::setupInitialConditions(prog_phi_nodealiasing, prog_vort_nodealiasing, prog_div_nodealiasing, simVars, op_nodealiasing);
 
-		SphereBenchmarksCombined::setupInitialConditions(prog_h, prog_u, prog_v, simVars, op);
+			prog_phi.load_nodealiasing(prog_phi_nodealiasing);
+			prog_vort.load_nodealiasing(prog_vort_nodealiasing);
+			prog_div.load_nodealiasing(prog_div_nodealiasing);
+		}
 
-		prog_phi = prog_h*simVars.sim.gravitation;
-		op.robert_uv_to_vortdiv(prog_u.getSphereDataPhysical(), prog_v.getSphereDataPhysical(), prog_vort, prog_div);
 
 #if SWEET_MPI
 		if (mpi_rank == 0)
@@ -204,7 +219,7 @@ public:
 	 */
 	std::string write_file(
 			const SphereData &i_sphereData,
-			const char* i_name,	///< name of output variable
+			const char* i_name,		///< name of output variable
 			bool i_phi_shifted
 		)
 	{
@@ -350,8 +365,12 @@ public:
 			error_v = diff_v.physical_reduce_max_abs();
 			error_vort = diff_vort.physical_reduce_max_abs();
 			error_div = diff_div.physical_reduce_max_abs();
-
-			std::cerr << "error time, h, u, v, vort, div:\t" << simVars.timecontrol.current_simulation_time << "\t" << error_h << "\t" << error_u << "\t" << error_v << "\t" << error_vort << "\t" << error_div << std::endl;
+#if SWEET_MPI
+			if (mpi_rank == 0)
+#endif
+			{
+				std::cerr << "error time, h, u, v, vort, div:\t" << simVars.timecontrol.current_simulation_time << "\t" << error_h << "\t" << error_u << "\t" << error_v << "\t" << error_vort << "\t" << error_div << std::endl;
+			}
 		}
 
 		write_file_output();
@@ -363,36 +382,44 @@ public:
 		{
 			update_diagnostics();
 
-			// Print header
-			if (simVars.timecontrol.current_timestep_nr == 0)
+#if SWEET_MPI
+			if (mpi_rank == 0)
+#endif
 			{
-				std::cerr << "T\tTOTAL_MASS\tPOT_ENERGY\tKIN_ENERGY\tTOT_ENERGY\tPOT_ENSTROPHY\tREL_TOTAL_MASS\tREL_POT_ENERGY\tREL_KIN_ENERGY\tREL_TOT_ENERGY\tREL_POT_ENSTROPHY";
-				std::cerr << std::endl;
+				// Print header
+				if (simVars.timecontrol.current_timestep_nr == 0)
+				{
+					std::cerr << "T\tTOTAL_MASS\tPOT_ENERGY\tKIN_ENERGY\tTOT_ENERGY\tPOT_ENSTROPHY\tREL_TOTAL_MASS\tREL_POT_ENERGY\tREL_KIN_ENERGY\tREL_TOT_ENERGY\tREL_POT_ENSTROPHY";
+					std::cerr << std::endl;
+				}
+
+				// Print simulation time, energy and pot enstrophy
+				std::cerr << simVars.timecontrol.current_simulation_time << "\t";
+				std::cerr << simVars.diag.total_mass << "\t";
+				std::cerr << simVars.diag.potential_energy << "\t";
+				std::cerr << simVars.diag.kinetic_energy << "\t";
+				std::cerr << simVars.diag.total_energy << "\t";
+				std::cerr << simVars.diag.total_potential_enstrophy << "\t";
+
+				std::cerr << (simVars.diag.total_mass-simVars.diag.ref_total_mass)/simVars.diag.total_mass << "\t";
+				std::cerr << (simVars.diag.potential_energy-simVars.diag.ref_potential_energy)/simVars.diag.potential_energy << "\t";
+				std::cerr << (simVars.diag.kinetic_energy-simVars.diag.ref_kinetic_energy)/simVars.diag.kinetic_energy << "\t";
+				std::cerr << (simVars.diag.total_energy-simVars.diag.total_energy)/simVars.diag.total_energy << "\t";
+				std::cerr << (simVars.diag.total_potential_enstrophy-simVars.diag.total_potential_enstrophy)/simVars.diag.total_potential_enstrophy << std::endl;
+
+				static double start_tot_energy = -1;
+				if (start_tot_energy == -1)
+					start_tot_energy = simVars.diag.total_energy;
 			}
-
-			// Print simulation time, energy and pot enstrophy
-			std::cerr << simVars.timecontrol.current_simulation_time << "\t";
-			std::cerr << simVars.diag.total_mass << "\t";
-			std::cerr << simVars.diag.potential_energy << "\t";
-			std::cerr << simVars.diag.kinetic_energy << "\t";
-			std::cerr << simVars.diag.total_energy << "\t";
-			std::cerr << simVars.diag.total_potential_enstrophy << "\t";
-
-			std::cerr << (simVars.diag.total_mass-simVars.diag.ref_total_mass)/simVars.diag.total_mass << "\t";
-			std::cerr << (simVars.diag.potential_energy-simVars.diag.ref_potential_energy)/simVars.diag.potential_energy << "\t";
-			std::cerr << (simVars.diag.kinetic_energy-simVars.diag.ref_kinetic_energy)/simVars.diag.kinetic_energy << "\t";
-			std::cerr << (simVars.diag.total_energy-simVars.diag.total_energy)/simVars.diag.total_energy << "\t";
-			std::cerr << (simVars.diag.total_potential_enstrophy-simVars.diag.total_potential_enstrophy)/simVars.diag.total_potential_enstrophy << std::endl;
-
-			static double start_tot_energy = -1;
-			if (start_tot_energy == -1)
-				start_tot_energy = simVars.diag.total_energy;
 		}
 
 
 		if (simVars.misc.verbosity > 0)
 		{
-			std::cout << "prog_phi min/max:\t" << SphereData(prog_phi).physical_reduce_min() << ", " << SphereData(prog_phi).physical_reduce_max() << std::endl;
+#if SWEET_MPI
+			if (mpi_rank == 0)
+#endif
+				std::cout << "prog_phi min/max:\t" << SphereData(prog_phi).physical_reduce_min() << ", " << SphereData(prog_phi).physical_reduce_max() << std::endl;
 		}
 
 
@@ -495,18 +522,6 @@ public:
 
 		return false;
 	}
-
-
-
-	void outInfo(
-			const std::string &i_string,
-			const SphereData &i_data
-	)
-	{
-		std::cout << i_string << ": " << i_data.physical_reduce_min() << ", " << i_data.physical_reduce_max() << std::endl;
-	}
-
-
 
 
 
@@ -750,6 +765,7 @@ case 'C':
 };
 
 
+
 int main(int i_argc, char *i_argv[])
 {
 
@@ -776,12 +792,9 @@ int main(int i_argc, char *i_argv[])
 
 	//input parameter names (specific ones for this program)
 	const char *bogus_var_names[] = {
-//			"compute-error",
 			nullptr
 	};
 
-	// default values for specific input (for general input see SimulationVariables.hpp)
-//	simVars.bogus.var[0];
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
@@ -789,15 +802,25 @@ int main(int i_argc, char *i_argv[])
 #if SWEET_PARAREAL
 		simVars.parareal.printOptions();
 #endif
-		std::cout << "	--compute-error [0/1]	Output errors (if available, default: 1)" << std::endl;
+#if SWEET_MPI
+		int mpi_rank;
+		MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+		if (mpi_rank == 0)
+#endif
+		{
+			std::cout << "	--compute-error [0/1]	Output errors (if available, default: 1)" << std::endl;
+		}
 		return -1;
 	}
 
-
-//	if (simVars.bogus.var[0] != "")
-//		param_compute_error = atof(simVars.bogus.var[0].c_str());
-
 	sphereDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
+
+	int res_physical_nodealias[2] = {
+			2*(simVars.disc.res_spectral[0]+1),
+			simVars.disc.res_spectral[1]+1
+		};
+
+	sphereDataConfigInstance_nodealiasing.setupAuto(res_physical_nodealias, simVars.disc.res_spectral);
 
 
 #if SWEET_GUI
@@ -808,12 +831,13 @@ int main(int i_argc, char *i_argv[])
 	buf << std::setprecision(14);
 
 
+
 #if SWEET_MPI
 
 	int mpi_rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 
-	std::cout << "MPI RANK: " << mpi_rank << std::endl;
+	std::cout << "Helo from MPI rank: " << mpi_rank << std::endl;
 
 	// only start simulation and time stepping for first rank
 	if (mpi_rank > 0)
@@ -827,7 +851,12 @@ int main(int i_argc, char *i_argv[])
 #endif
 
 	{
-		std::cout << "SPH config string: " << sphereDataConfigInstance.getConfigInformationString() << std::endl;
+#if SWEET_MPI
+		if (mpi_rank == 0)
+#endif
+		{
+			std::cout << "SPH config string: " << sphereDataConfigInstance.getConfigInformationString() << std::endl;
+		}
 
 #if SWEET_PARAREAL
 		if (simVars.parareal.enabled)

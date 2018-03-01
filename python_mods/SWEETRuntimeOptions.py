@@ -82,6 +82,10 @@ class SWEETRuntimeOptions():
 		self.bench_id = 4
 		self.benchmark_name = ""
 
+		self.benchmark_galewsky_umax = -1
+		self.benchmark_galewsky_hamp = -1
+		self.benchmark_galewsky_phi2 = -1
+
 		self.use_robert_functions = 1
 
 		self.pde_id = 0
@@ -184,6 +188,15 @@ class SWEETRuntimeOptions():
 			else:
 				idstr += '_b'+str(self.bench_id)
 
+		if self.benchmark_galewsky_umax > 0:
+			idstr += '_bgu'+str("{:.4E}".format(self.benchmark_galewsky_umax))
+
+		if self.benchmark_galewsky_hamp > 0:
+			idstr += '_bgh'+str("{:.4E}".format(self.benchmark_galewsky_hamp))
+
+		if self.benchmark_galewsky_phi2 > 0:
+			idstr += '_bgp'+str("{:.4E}".format(self.benchmark_galewsky_phi2))
+
 		idstr += '_g'+str(self.g)
 		idstr += '_h'+str(self.h)
 		idstr += '_f'+str(self.f)
@@ -192,11 +205,11 @@ class SWEETRuntimeOptions():
 
 		if compileOptions.plane_or_sphere == 'sphere':
 			idstr += '_a'+str(self.r)
-			idstr += '_u'+str(self.viscosity)
-			idstr += '_U'+str(self.viscosity_order)
-
 			#idstr += '_rob'+str(self.use_robert_functions)
 			idstr += '_fsph'+str(self.f_sphere)
+			
+		idstr += '_u'+str(self.viscosity)
+		idstr += '_U'+str(self.viscosity_order)
 
 #		idstr += '_t'+str(self.simtime).zfill(8)
 #		idstr += '_o'+str(self.output_timestep_size).zfill(8)

@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 #! /usr/bin/python3
 
 import matplotlib
@@ -21,7 +22,7 @@ zoom_lat = 'eta' in sys.argv[1]
 
 fontsize=8
 
-figsize=(9, 3)
+figsize=(9, 7)
 
 for filename in sys.argv[1:]:
 

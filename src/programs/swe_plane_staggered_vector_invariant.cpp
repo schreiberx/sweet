@@ -8,7 +8,7 @@
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/plane/PlaneDiagnostics.hpp>
 
-#include <benchmarks_plane/SWEPlaneBenchmarks.hpp>
+#include <benchmarks_plane/SWE_bench_PlaneBenchmarks_DEPRECATED.hpp>
 
 #include <sweet/Stopwatch.hpp>
 

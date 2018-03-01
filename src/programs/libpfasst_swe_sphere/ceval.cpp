@@ -144,36 +144,36 @@ extern "C"
     SphereDataConfig* data_config = i_ctx->get_sphere_data_config(o_Y->get_level());
 
     // instantiate h, u, and v to get the initial condition
-    SphereData h_Y(data_config);
-    SphereData u_Y(data_config);
-    SphereData v_Y(data_config);
+    // SphereData h_Y(data_config);
+    // SphereData u_Y(data_config);
+    // SphereData v_Y(data_config);
 
     // get the operator for this level
     SphereOperators* op = i_ctx->get_sphere_operators(o_Y->get_level());
 
     // get the initial condition in h, u, and v
-    SphereBenchmarksCombined::setupInitialConditions(h_Y, 
-						     u_Y, 
-						     v_Y, 
+    SphereBenchmarksCombined::setupInitialConditions(phi_Y, 
+						     vort_Y, 
+						     div_Y, 
 						     *simVars, 
 						     *op);
     
-    // convert u, v, and h to phi, vort and div
-    phi_Y = h_Y*simVars->sim.gravitation;
+    // // convert u, v, and h to phi, vort and div
+    // phi_Y = h_Y*simVars->sim.gravitation;
 
-    write_file(*i_ctx, u_Y, "prog_u_init");
-    write_file(*i_ctx, v_Y, "prog_v_init");
+    // write_file(*i_ctx, u_Y, "prog_u_init");
+    // write_file(*i_ctx, v_Y, "prog_v_init");
 
-    if (simVars->misc.sphere_use_robert_functions)
-      op->robert_uv_to_vortdiv(u_Y.getSphereDataPhysical(), 
-			       v_Y.getSphereDataPhysical(), 
-			       vort_Y, 
-			       div_Y);
-    else    
-      op->uv_to_vortdiv(u_Y.getSphereDataPhysical(), 
-			v_Y.getSphereDataPhysical(), 
-			vort_Y, 
-			div_Y);
+    // if (simVars->misc.sphere_use_robert_functions)
+    //   op->robert_uv_to_vortdiv(u_Y.getSphereDataPhysical(), 
+    // 			       v_Y.getSphereDataPhysical(), 
+    // 			       vort_Y, 
+    // 			       div_Y);
+    // else    
+    //   op->uv_to_vortdiv(u_Y.getSphereDataPhysical(), 
+    // 			v_Y.getSphereDataPhysical(), 
+    // 			vort_Y, 
+    // 			div_Y);
     
     /////////////////////////////////////////////
 

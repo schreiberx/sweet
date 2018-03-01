@@ -29,8 +29,20 @@ if [ "${HOSTNAME:0:8}" == "cheyenne" ]; then
 #	echo "Loading GNU 7.1.0 module on Cheyenne"
 #	module load gnu/7.1.0
 	echo "Leaving compiler to mpiCC = intel"
+	echo "Loading newer version of git"
+	module load git
 fi
 
+#if [ "${HOSTNAME:0:13}" == "mac-login-amd" ]; then
+##	echo "Loading GNU 7.1.0 module on Cheyenne"
+##	module load gnu/7.1.0
+#
+#	echo "Loading modules for mac-login-amd"
+#	module unload gcc
+#	module load gcc/7
+#	module unload intel
+#	module load intel/18.0
+#fi
 
 #
 # Detect Ubuntu system

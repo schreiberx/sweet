@@ -73,6 +73,9 @@ class SWEETCompileOptions:
 
 		self.rexi_timings = 'disable'
 
+		# Additional barriers to overcome issues of turbo boost
+		self.rexi_timings_additional_barriers = 'disable'
+
 		# Memory allocator
 		if exec_command('uname -s') == "Darwin":
 			# Deactivate efficient NUMA block allocation on MacOSX systems (missing numa.h file)
@@ -135,6 +138,7 @@ class SWEETCompileOptions:
 		retval += ' --threading='+self.threading
 		retval += ' --rexi-thread-parallel-sum='+self.rexi_thread_parallel_sum
 		retval += ' --rexi-timings='+self.rexi_timings
+		retval += ' --rexi-timings-additional-barriers='+self.rexi_timings_additional_barriers
 
 		# Memory allocator
 		retval += ' --numa-block-allocator='+str(self.numa_block_allocator)
@@ -478,6 +482,15 @@ class SWEETCompileOptions:
 		)
 		self.rexi_timings = scons.GetOption('rexi_timings')
 
+		scons.AddOption(	'--rexi-timings-additional-barriers',
+				dest='rexi_timings_additional_barriers',
+				type='choice',
+				choices=['enable','disable'],
+				default='disable',
+				help='REXI timings with additional barriers: enable, disable [default: %default]\nThis is helpful for improved measurements if TurboBoost is activated'
+		)
+		self.rexi_timings_additional_barriers = scons.GetOption('rexi_timings_additional_barriers')
+
 
 		scons.AddOption(	'--sweet-mpi',
 				dest='sweet_mpi',
@@ -616,6 +629,9 @@ class SWEETCompileOptions:
 
 		if self.rexi_timings == 'enable':
 			exec_name+='_rxtime'
+
+		if self.rexi_timings_additional_barriers == 'enable':
+			exec_name+='_rxtbar'
 
 
 		if self.numa_block_allocator in [1, 2]:

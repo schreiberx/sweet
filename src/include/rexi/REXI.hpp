@@ -5,8 +5,8 @@
  *      Author: martin
  */
 
-#ifndef SRC_INCLUDE_REXI_REXI_TERRY_AND_FILE_HPP_
-#define SRC_INCLUDE_REXI_REXI_TERRY_AND_FILE_HPP_
+#ifndef SRC_INCLUDE_REXI_HPP_
+#define SRC_INCLUDE_REXI_HPP_
 
 
 #include <rexi/REXI_SimulationVariables.hpp>
@@ -17,12 +17,34 @@
 #include <complex>
 
 
+#if SWEET_MPI
+#include <mpi.h>
+#endif
 
 /**
  * Interface to load either REXI via Terrys method or via File
  */
 class REXI
 {
+#if SWEET_MPI
+	static
+	int& getMPIRank()
+	{
+		static int mpi_rank;
+		return mpi_rank;
+	}
+#endif
+
+
+
+public:
+	REXI()
+	{
+#if SWEET_MPI
+		MPI_Comm_rank(MPI_COMM_WORLD, &getMPIRank());
+#endif
+	}
+
 public:
 	static
 	void load(
@@ -112,6 +134,10 @@ public:
 			alpha = rexi_ci.alpha;
 			beta = rexi_ci.beta;
 		}
+		else if (i_rexiSimVars->rexi_method == "direct")
+		{
+			// no REXI
+		}
 		else
 		{
 			FatalError("REXI Mode not supported");
@@ -137,7 +163,9 @@ public:
 			}
 		}
 
-
+#if SWEET_MPI
+		if (getMPIRank() == 0)
+#endif
 		if (i_verbosity)
 		{
 			int N = alpha.size();
@@ -215,12 +243,10 @@ public:
 				i_max_error = error_real;
 				std::cout << "ERROR " << error_real << " too large at " << x << std::endl;
 			}
-
-//			std::cout << "exp(I*" << x << ") ~~ " << approx_real << "\t" << correct_real << std::endl;
 		}
 	}
 
 };
 
 
-#endif /* SRC_INCLUDE_REXI_REXI_TERRY_AND_FILE_HPP_ */
+#endif /* SRC_INCLUDE_REXI_HPP_ */
