@@ -17,7 +17,7 @@
 #include <sweet/sweetmath.hpp>
 #include <sweet/FatalError.hpp>
 #include <sweet/StringSplit.hpp>
-
+#include <sweet/sphere/SphereData.hpp>
 
 #ifndef SWEET_PARAREAL
 #	define SWEET_PARAREAL 1
@@ -320,6 +320,16 @@ public:
 		 */
 		bool f_sphere = false;
 
+	        /**
+		 * Flag to indicate the presence of topography
+		 */
+                bool use_topography = false;
+
+	        /**
+	         * Topography vector
+	         */
+	        SphereData h_topo = SphereData();
+	  
 		/**
 		 * Gravitational constant
 		 */
