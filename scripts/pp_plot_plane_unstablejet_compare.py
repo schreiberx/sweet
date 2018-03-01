@@ -196,10 +196,10 @@ cref=max(abs(cmin),abs(cmax))
 plt.clim(-cref, +cref)
 if 'diag_vort' in filename:
 	cbar = plt.colorbar(format='%.0e')
-	cbar.set_label('1/s', rotation=270, labelpad=+20)
+	cbar.set_label('1/s', rotation=270, labelpad=+20, size=fontsize)
 elif 'prog_h' in filename:
 	cbar = plt.colorbar()
-	cbar.set_label('meters', rotation=270)
+	cbar.set_label('meters', rotation=270,labelpad=+5, size=fontsize)
 cbar.ax.tick_params(labelsize=fontsize) 
 
 
@@ -354,7 +354,8 @@ plt.show()
 #outfilename = filename.replace('.csv', 'compare.eps')
 outfilename=outfile+".eps"
 print(outfilename)
-plt.savefig(outfilename, dpi=300)
+plt.savefig(outfilename, dpi=300, transparent=True, bbox_inches='tight', \
+                        pad_inches=0)
 
 
 #
