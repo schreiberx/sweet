@@ -1,1 +1,1 @@
-../swe_sphere_rexi/SWE_Sphere_TS_l_erk_n_erk.cpp
+../swe_sphere/SWE_Sphere_TS_l_erk_n_erk.cpp

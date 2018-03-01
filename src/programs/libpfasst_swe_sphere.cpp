@@ -10,7 +10,6 @@
 
 #include <sweet/FatalError.hpp>
 #include <sweet/SimulationVariables.hpp>
-//#include <sweet/sphere/SphereDataTimesteppingRK.hpp>
 #include <sweet/sphere/SphereData.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/sphere/SphereDiagnostics.hpp>
@@ -70,8 +69,6 @@ int main(int i_argc, char *i_argv[])
   simVars.timecontrol.current_timestep_size = - simVars.sim.CFL; 
   simVars.outputConfig();
 
-
-
   // define the number of levels and SDC nodes for each level
   // note: level #nlevels-1 is the finest, level #0 is the coarsest
 
@@ -86,10 +83,11 @@ int main(int i_argc, char *i_argv[])
       }
       // Two levels
       case 2: {
-	if (simVars.libpfasst.nnodes == 3 ||
-	    simVars.libpfasst.nnodes == 5 || 
-	    simVars.libpfasst.nnodes == 9)
-	  nnodes[0] = 5; 
+	if (simVars.libpfasst.nnodes == 3)
+	  nnodes[0] = 2;
+	else if (simVars.libpfasst.nnodes == 5 || 
+		 simVars.libpfasst.nnodes == 9)
+	  nnodes[0] = 3; 
 	else 
 	  FatalError("With 2 levels, the number of SDC nodes on the fine level must be either 3, 5, or 9");
 	break;
@@ -106,6 +104,11 @@ int main(int i_argc, char *i_argv[])
 	    nnodes[0] = 2; 
 	    nnodes[1] = 3;
 	  }
+	else if (simVars.libpfasst.nnodes == 3) 
+	  {
+	    nnodes[0] = 3; 
+	    nnodes[1] = 3;
+	  }
 	else 
 	  FatalError("With 3 levels, the number of SDC nodes on the fine level must be either 5, or 9");
 	break;
@@ -117,8 +120,6 @@ int main(int i_argc, char *i_argv[])
   
   // setup the LevelSingletons for all levels
   // note: level #nlevels-1 is the finest, level #0 is the coarsest
-
-
 
   // setup the finest level singleton
   levelSingletons.resize(simVars.libpfasst.nlevels);
@@ -140,8 +141,8 @@ int main(int i_argc, char *i_argv[])
     {
       levelSingletons[simVars.libpfasst.nlevels-1-i].dataConfig.setupAdditionalModes(
 										     &(levelSingletons[simVars.libpfasst.nlevels-i].dataConfig),
-										     -simVars.disc.res_spectral[0]*pow(simVars.libpfasst.coarsening_multiplier,i),
-										     -simVars.disc.res_spectral[1]*pow(simVars.libpfasst.coarsening_multiplier,i)
+										     -std::ceil(simVars.disc.res_spectral[0]*pow(simVars.libpfasst.coarsening_multiplier,i)),
+										     -std::ceil(simVars.disc.res_spectral[1]*pow(simVars.libpfasst.coarsening_multiplier,i))
 										     );
       
       levelSingletons[simVars.libpfasst.nlevels-1-i].level = simVars.libpfasst.nlevels-1-i;
@@ -152,9 +153,6 @@ int main(int i_argc, char *i_argv[])
 							      );
     }
 
-
-
-
   // define the SWEET parameters
 
   const int nfields = 3;  // number of vector fields (here, height and two horizontal velocities)
@@ -162,15 +160,29 @@ int main(int i_argc, char *i_argv[])
   for (int i = 0; i < simVars.libpfasst.nlevels; ++i) 
     nvars_per_field[i] = levelSingletons[i].dataConfig.physical_array_data_number_of_elements;  // number of degrees of freedom per vector field
 
+  // initialize the topography before instantiating the SphereDataCtx object
+  if (simVars.setup.benchmark_scenario_name == "flow_over_mountain") 
+  {
+
+      // create h_topo with the configuration at the finest level
+      simVars.sim.h_topo.setup(&(levelSingletons[simVars.libpfasst.nlevels-1].dataConfig));
+
+      // initialize the topography
+      SphereBenchmarksCombined::setupTopography(simVars,
+						levelSingletons[simVars.libpfasst.nlevels-1].op
+						);
+  }
+
   // instantiate the SphereDataCtx object 
   SphereDataCtx* pd_ctx = new SphereDataCtx(
-  					  &simVars,
-  					  &levelSingletons,
-					  nnodes
-  					  );
+					    &simVars,
+					    &levelSingletons,
+					    nnodes
+					    );
+
   // output the info for the levels
-  for (int i = 0; i < simVars.libpfasst.nlevels; i++)
-    std::cout << levelSingletons[simVars.libpfasst.nlevels-1-i].dataConfig.getConfigInformationString() << std::endl;
+  //for (int i = 0; i < simVars.libpfasst.nlevels; i++)
+  //  std::cout << levelSingletons[simVars.libpfasst.nlevels-1-i].dataConfig.getConfigInformationString() << std::endl;
   
   // get the C string length (needed by Fortran...)
   int string_length = simVars.libpfasst.nodes_type.size();

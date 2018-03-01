@@ -1,1 +1,1 @@
-../swe_sphere_rexi/SWE_Sphere_TS_interface.hpp
+../swe_sphere/SWE_Sphere_TS_interface.hpp
