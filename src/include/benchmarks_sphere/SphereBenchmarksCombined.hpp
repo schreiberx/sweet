@@ -189,6 +189,7 @@ public:
 			SphereOperators &i_op
 	)
 	{
+
 		if (io_simVars.setup.benchmark_scenario_name == "")
 		{
 			if (io_simVars.setup.benchmark_scenario_id < 0)
@@ -1114,6 +1115,9 @@ public:
 			    			       );			    
 			    
 			    */
+			    o_u = ug;
+			    o_v = vg;
+
      		        }
 			else if (
 				io_simVars.setup.benchmark_scenario_name == "galewsky" ||			///< Standard Galewsky benchmark
