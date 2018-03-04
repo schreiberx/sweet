@@ -111,13 +111,13 @@ for filename in sys.argv[1:]:
 		cbar.set_label('1/s', rotation=270, labelpad=+20, size=fontsize)
 	if 'prog_h' in filename:
 		title+="Depth (km) "
-		cbar.set_label('km', rotation=270)
+		cbar.set_label('km', rotation=270, size=fontsize)
 	if 'prog_u' in filename:
 		title+="U-Velocity (m/s) "
-		cbar.set_label('m/s', rotation=270)
+		cbar.set_label('m/s', rotation=270, size=fontsize)
 	if 'prog_v' in filename:
 		title+="V-Velocity (m/s) "
-		cbar.set_label('m/s', rotation=270)
+		cbar.set_label('m/s', rotation=270, size=fontsize)
 		
 	cbar.ax.tick_params(labelsize=fontsize) 
 			
@@ -177,6 +177,7 @@ for filename in sys.argv[1:]:
 	#plt.yticks(labelsy, fontsize=fontsize)
 	plt.ylabel("y (1000 km)", fontsize=fontsize)
 
+ 
 	plt.show()
 	
 	#Save file as eps
@@ -186,7 +187,8 @@ for filename in sys.argv[1:]:
 	
 	outfilename = outfilename.replace('/output', '')
 	print(outfilename)
-	plt.savefig(outfilename, dpi=300)
+	plt.savefig(outfilename, dpi=300, transparent=True, bbox_inches='tight', \
+                        pad_inches=0)
 	
 	#plt.show()
 	plt.close()
