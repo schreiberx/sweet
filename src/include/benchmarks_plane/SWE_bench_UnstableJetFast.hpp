@@ -1,11 +1,11 @@
 /*
- * SWEUnstableJet.hpp
+ * SWEUnstableJetFast.hpp
  *
- *  Created on: 03 Nov 2017
+ *  Created on: 05 Mar 2018
  *      Author: Pedro Peixoto <pedrosp@ime.usp.br>
  */
-#ifndef SWE_PLANE_UNSTABLEJET_HPP_
-#define SWE_PLANE_UNSTABLEJET_HPP_
+#ifndef SWE_PLANE_UNSTABLEJETFAST_HPP_
+#define SWE_PLANE_UNSTABLEJETFAST_HPP_
 
 
 #include <stdlib.h>
@@ -19,11 +19,11 @@
 /**
  * Implement unstable jet initial conditions
  *
- * Mimics Galewsky
+ * Mimics Spherical Mountain Wave test case 5
  *
  *
  **/
-class SWE_bench_UnstableJet
+class SWE_bench_UnstableJetFast
 {
 	SimulationVariables &simVars;
 
@@ -168,7 +168,7 @@ class SWE_bench_UnstableJet
 	}
 
 public:
-	SWE_bench_UnstableJet(
+	SWE_bench_UnstableJetFast(
 		SimulationVariables &io_simVars,
 		PlaneOperators &io_op
 	)	:
