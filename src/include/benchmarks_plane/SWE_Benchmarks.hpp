@@ -18,6 +18,7 @@
 	#include <benchmarks_plane/SWE_bench_MergeVortex.hpp>
 #endif
 #include <benchmarks_plane/SWE_bench_UnstableJet.hpp>
+#include <benchmarks_plane/SWE_bench_UnstableJetFast.hpp>
 #include <benchmarks_plane/SWE_bench_GaussianBump.hpp>
 
 
@@ -109,6 +110,19 @@ public:
 
 			return true;
 		}
+		else if (io_simVars.setup.benchmark_scenario_name == "unstablejetfast")
+			{
+				SWE_bench_UnstableJetFast swe_unstablejetfast(io_simVars, io_op);
+
+				swe_unstablejetfast.setup(
+						o_h_pert,
+						o_u,
+						o_v
+				);
+
+				return true;
+			}
+
 		else if (io_simVars.setup.benchmark_scenario_name == "gaussian_bump")
 		{
 			SWE_bench_GaussianBump swe_gaussian_bump(io_simVars, io_op);
