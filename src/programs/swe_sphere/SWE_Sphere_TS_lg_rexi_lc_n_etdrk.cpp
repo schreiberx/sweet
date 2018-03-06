@@ -354,7 +354,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::setup(
 	timestepping_order = i_timestepping_order;
 	timestepping_order2 = i_timestepping_order2;
 
-	ts_lg_erk_lf_n_erk.setup(i_timestepping_order);
+	ts_lg_erk_lf_n_erk.setup(i_timestepping_order, -1);
 
 	if (timestepping_order != timestepping_order2)
 		FatalError("Mismatch of orders, should be equal");
