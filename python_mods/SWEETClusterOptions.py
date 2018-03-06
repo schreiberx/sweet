@@ -55,7 +55,7 @@ class SWEETClusterOptions:
 	):
 		self.target_machine = target_machine
 
-		if self.target_machine == '':
+		if self.target_machine == 'auto':
 			# Autodetect host with FQDN
 			#hostname = socket.gethostname()
 			fqdn = socket.getfqdn()
