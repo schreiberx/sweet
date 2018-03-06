@@ -642,13 +642,16 @@ export OMP_NUM_THREADS=16
 			mpi_exec_prefix = "mpiexec.hydra -ppn 1 -n 1"
 
 
-		else:
+		elif self.target_machine == '':
 			content = ""
 			content += "#!/bin/bash\n"
 			content += "\n"
 			#content += "export OMP_PROC_BIND=CLOSE\n"
 			content += "\n"
 			mpi_exec_prefix = ""
+
+		else:
+			raise Exception("Invalid target machine "+self.target_machine)
  
 
 
