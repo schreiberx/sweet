@@ -102,12 +102,16 @@ class SWEETClusterOptions:
 			self.total_max_nodes = 1
 			self.total_max_cores = self.cores_per_node*self.total_max_nodes
 
-		else:
+		elif self.target_machine == '':
 			print("Unknown Target: "+str(self.target_machine))
 			print("Using default values")
 
 			self.total_max_cores = multiprocessing.cpu_count()
 			self.cores_per_node = self.total_max_cores
+
+		else:
+			raise Exception("Invalid target machine '"+self.target_machine+"'")
+
 
 
 		self.total_max_nodes = self.total_max_cores//self.cores_per_node
