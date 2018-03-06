@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#! /usr/bin/env python3
 
 ## "non-linear barotropically unstable shallow water test case"
 ## example provided by Jeffrey Whitaker
@@ -178,6 +178,12 @@ if __name__ == "__main__":
 	# initial vorticity, divergence in spectral space
 
 	vrtspec, divspec =  x.getvrtdivspec(ug,vg)
+
+	ugx, vgx = x.getuv(vrtspec, divspec)
+	outputMinMaxSum(ug - ugx, "UG")
+	outputMinMaxSum(vg - vgx, "UG")
+	sys.exit(1)
+	
 	outputSpecMinMaxSum(vrtspec, "vrtspec")
 	outputSpecMinMaxSum(divspec, "divspec")
 

@@ -18,7 +18,7 @@
 class FatalError
 {
 public:
-	[[ noreturn ]] FatalError(const std::string i_error)
+	[[ noreturn ]] FatalError(const std::string &i_error)
 	{
 		std::cerr << std::flush << std::endl;
 		std::cerr << "********************************************" << std::endl;
@@ -37,11 +37,11 @@ class AssertFatalError
 {
 public:
 #ifdef NDEBUG
-	AssertFatalError(bool i_assertion, const std::string i_error)	{}
+	AssertFatalError(bool i_assertion, const std::string &i_error)	{}
 #elif !SWEET_DEBUG
-	AssertFatalError(bool i_assertion, const std::string i_error)	{}
+	AssertFatalError(bool i_assertion, const std::string &i_error)	{}
 #else
-	AssertFatalError(bool i_assertion, const std::string i_error)
+	AssertFatalError(bool i_assertion, const std::string &i_error)
 	{
 		if (i_assertion)
 			return;
