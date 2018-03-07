@@ -5,7 +5,7 @@ source config.sh
 
 echo "*** SHTNS ***"
 if [ ! -e "$DST_DIR/lib/libshtns_omp.a"  -o "$1" != "" ]; then
-	SRC_LINK="http://www.martin-schreiber.info/pub/sweet_local_software/shtns-2.9_alpha.tar.gz"
+	SRC_LINK="https://www.martin-schreiber.info/pub/sweet_local_software/shtns-2.9_alpha.tar.gz"
 	FILENAME="`basename $SRC_LINK`"
 	BASENAME="shtns-2.9_alpha"
 
