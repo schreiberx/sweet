@@ -11,9 +11,11 @@ class LevelSingleton
 
 public:
   
-  int level;
+  int              level;
   SphereDataConfig dataConfig;
-  SphereOperators op;
+  SphereDataConfig dataConfigNoDealiasing;
+  SphereOperators  op;
+  SphereOperators  opNoDealiasing;
 };
 
 #endif

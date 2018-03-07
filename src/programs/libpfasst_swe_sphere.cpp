@@ -121,36 +121,62 @@ int main(int i_argc, char *i_argv[])
   // setup the LevelSingletons for all levels
   // note: level #nlevels-1 is the finest, level #0 is the coarsest
 
-  // setup the finest level singleton
   levelSingletons.resize(simVars.libpfasst.nlevels);
 
-  levelSingletons[simVars.libpfasst.nlevels-1].dataConfig.setupAuto(
-								    simVars.disc.res_physical,
-								    simVars.disc.res_spectral 
-								    );
+  // setup the finest level singleton
+  const int fineLevelId = simVars.libpfasst.nlevels-1;
 
-  levelSingletons[simVars.libpfasst.nlevels-1].level = simVars.libpfasst.nlevels-1;
+
+  levelSingletons[fineLevelId].level = fineLevelId;
+
+  // setup data configuration in fine level
+
+  levelSingletons[fineLevelId].dataConfig.setupAuto(
+						    simVars.disc.res_physical,
+						    simVars.disc.res_spectral 
+						    );
   
-  levelSingletons[simVars.libpfasst.nlevels-1].op.setup(
-							&(levelSingletons[simVars.libpfasst.nlevels-1].dataConfig),
-							simVars.sim.earth_radius
-							);
+  int res_physical_nodealiasing[2] = {
+    2*(simVars.disc.res_spectral[0]+1),
+    simVars.disc.res_spectral[1]+2
+  };
+
+  levelSingletons[fineLevelId].dataConfigNoDealiasing.setupAuto(
+								res_physical_nodealiasing,
+								simVars.disc.res_spectral 
+								);
+
+  // setup data operators in fine level
+  
+  levelSingletons[fineLevelId].op.setup(
+					&(levelSingletons[fineLevelId].dataConfig),
+					simVars.sim.earth_radius
+					);
+  levelSingletons[fineLevelId].opNoDealiasing.setup(
+						    &(levelSingletons[fineLevelId].dataConfigNoDealiasing),
+						    simVars.sim.earth_radius
+						    );
   
   // define the number of modes for the coarser levels
   for (int i = 1; i < simVars.libpfasst.nlevels; i++)
     {
-      levelSingletons[simVars.libpfasst.nlevels-1-i].dataConfig.setupAdditionalModes(
-										     &(levelSingletons[simVars.libpfasst.nlevels-i].dataConfig),
-										     -std::ceil(simVars.disc.res_spectral[0]*pow(simVars.libpfasst.coarsening_multiplier,i)),
-										     -std::ceil(simVars.disc.res_spectral[1]*pow(simVars.libpfasst.coarsening_multiplier,i))
-										     );
+      const int thisLevelId = simVars.libpfasst.nlevels-1-i;
+      levelSingletons[thisLevelId].level = thisLevelId;
+	    
+      // setup data configuration at this level
+
+      levelSingletons[thisLevelId].dataConfig.setupAdditionalModes(
+								   &(levelSingletons[simVars.libpfasst.nlevels-i].dataConfig),
+								   -std::ceil(simVars.disc.res_spectral[0]*pow(simVars.libpfasst.coarsening_multiplier,i)),
+								   -std::ceil(simVars.disc.res_spectral[1]*pow(simVars.libpfasst.coarsening_multiplier,i))
+								   );
       
-      levelSingletons[simVars.libpfasst.nlevels-1-i].level = simVars.libpfasst.nlevels-1-i;
+      // setup data operators at this level
   
-      levelSingletons[simVars.libpfasst.nlevels-1-i].op.setup(
-							      &(levelSingletons[simVars.libpfasst.nlevels-1-i].dataConfig),
-							      simVars.sim.earth_radius							      
-							      );
+      levelSingletons[thisLevelId].op.setup(
+					    &(levelSingletons[thisLevelId].dataConfig),
+					    simVars.sim.earth_radius
+					    );
     }
 
   // define the SWEET parameters
@@ -173,12 +199,16 @@ int main(int i_argc, char *i_argv[])
 						);
   }
 
+  std::cout << "avant" << std::endl;
+
   // instantiate the SphereDataCtx object 
   SphereDataCtx* pd_ctx = new SphereDataCtx(
 					    &simVars,
 					    &levelSingletons,
 					    nnodes
 					    );
+
+  std::cout << "apres" << std::endl;
 
   // output the info for the levels
   //for (int i = 0; i < simVars.libpfasst.nlevels; i++)
