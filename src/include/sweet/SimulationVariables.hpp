@@ -340,16 +340,16 @@ public:
 		 */
 		bool f_sphere = false;
 
-	        /**
+		/**
 		 * Flag to indicate the presence of topography
 		 */
-                bool use_topography = false;
+		bool use_topography = false;
 
-	        /**
-	         * Topography vector
-	         */
-	        SphereData h_topo = SphereData();
-	  
+		/**
+		 * Topography vector
+		 */
+		SphereData h_topo;
+
 		/**
 		 * Gravitational constant
 		 */
@@ -1072,13 +1072,13 @@ public:
 
 					if (c == 1)
 					{
-						disc.res_spectral[0] = atoi(modes[0].c_str());
+						disc.res_spectral[0] = atoi(modes[0].c_str())-1;
 						disc.res_spectral[1] = disc.res_spectral[0];
 					}
 					else if (c == 2)
 					{
-						disc.res_spectral[0] = atoi(modes[0].c_str());
-						disc.res_spectral[1] = atoi(modes[1].c_str());
+						disc.res_spectral[0] = atoi(modes[0].c_str())-1;
+						disc.res_spectral[1] = atoi(modes[1].c_str())-1;
 					}
 					else
 					{
