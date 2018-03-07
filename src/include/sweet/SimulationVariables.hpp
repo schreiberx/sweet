@@ -1072,13 +1072,13 @@ public:
 
 					if (c == 1)
 					{
-						disc.res_spectral[0] = atoi(modes[0].c_str())-1;
+						disc.res_spectral[0] = atoi(modes[0].c_str());
 						disc.res_spectral[1] = disc.res_spectral[0];
 					}
 					else if (c == 2)
 					{
-						disc.res_spectral[0] = atoi(modes[0].c_str())-1;
-						disc.res_spectral[1] = atoi(modes[1].c_str())-1;
+						disc.res_spectral[0] = atoi(modes[0].c_str());
+						disc.res_spectral[1] = atoi(modes[1].c_str());
 					}
 					else
 					{
