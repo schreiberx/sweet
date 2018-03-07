@@ -33,16 +33,16 @@ if [ "${HOSTNAME:0:8}" == "cheyenne" ]; then
 	module load git
 fi
 
-#if [ "${HOSTNAME:0:13}" == "mac-login-amd" ]; then
-##	echo "Loading GNU 7.1.0 module on Cheyenne"
-##	module load gnu/7.1.0
-#
-#	echo "Loading modules for mac-login-amd"
-#	module unload gcc
-#	module load gcc/7
+if [ "${HOSTNAME:0:15}" == "mac-login-intel" -o "${HOSTNAME:0:7}" == "mac-snb" ]; then
+	echo "Loading modules for mac-login-intel"
+
+	echo "Loading GCC/7"
+	module unload gcc
+	module load gcc/7
+
 #	module unload intel
 #	module load intel/18.0
-#fi
+fi
 
 #
 # Detect Ubuntu system
