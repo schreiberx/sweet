@@ -87,10 +87,10 @@ p.compile.threading = 'off'
 p.runtime.viscosity = 0.0
 
 
-timestep_size_reference = 15
+timestep_size_reference = 1
 
 #timestep_sizes = [timestep_size_reference*(2**i) for i in range(2, 4)]
-timestep_sizes = [15, 30, 60, 120, 240]
+timestep_sizes = [1*(2**i) for i in range(0, 10)]
 
 # 24 days
 p.runtime.simtime = 24*24*60*60
@@ -108,6 +108,11 @@ p.runtime.rexi_extended_modes = 0
 # ln: linear and nonlinear
 #groups = ['l1', 'l2', 'ln1', 'ln2', 'ln4']
 groups = ['ln2']
+
+
+
+p.cluster.par_space_cores = 16
+p.cluster.pm_space_cores_per_mpi_rank = 16
 
 
 #
