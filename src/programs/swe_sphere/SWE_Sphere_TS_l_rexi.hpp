@@ -29,8 +29,14 @@
 
 
 #ifndef SWEET_REXI_TIMINGS
-#define SWEET_REXI_TIMINGS 0
+	#define SWEET_REXI_TIMINGS 1
 #endif
+
+#ifndef SWEET_REXI_TIMINGS_ADDITIONAL_BARRIERS
+	#define SWEET_REXI_TIMINGS_ADDITIONAL_BARRIERS 1
+#endif
+
+
 
 #if SWEET_REXI_TIMINGS
 #include <sweet/Stopwatch.hpp>
@@ -109,7 +115,7 @@ private:
 	std::size_t block_size;
 
 #if SWEET_REXI_TIMINGS
-	Stopwatch stopwatch_preprocessing;
+	Stopwatch stopwatch_misc_processing;
 	Stopwatch stopwatch_broadcast;
 	Stopwatch stopwatch_reduce;
 	Stopwatch stopwatch_solve_rexi_terms;
@@ -218,12 +224,13 @@ public:
 	);
 
 
-
+#if 0
 public:
 	static
 	void MPI_quitWorkers(
 			SphereDataConfig *i_sphereDataConfig
 	);
+#endif
 
 	virtual ~SWE_Sphere_TS_l_rexi();
 };

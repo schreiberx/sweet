@@ -15,8 +15,8 @@ public:
 	static
 	void setup_initial_conditions_gaussian(
 			SphereData &o_h,
-			SphereData &o_u,
-			SphereData &o_v,
+			SphereDataPhysical &o_u,
+			SphereDataPhysical &o_v,
 			SimulationVariables &i_simVars,
 			double i_center_lon = M_PI/3,
 			double i_center_lat = M_PI/3,

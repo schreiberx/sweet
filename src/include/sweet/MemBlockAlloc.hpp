@@ -164,7 +164,7 @@ public:
 	void setup()
 	{
 		// access singleton to call constructor
-		getSingletonRef();
+		getSingletonRef().p_setup();
 	}
 
 private:
@@ -300,9 +300,16 @@ private:
 	}
 
 
+public:
+	static
+	void shutdown()
+	{
+		getSingletonRef().p_shutdown();
+	}
+
 
 public:
-	~MemBlockAlloc()
+	void p_shutdown()
 	{
 		if (verbosity > 1)
 			std::cout << "NUMABlockAlloc EXIT" << std::endl;
@@ -323,6 +330,8 @@ public:
 				}
 			}
 		}
+
+		setup_done = false;
 	}
 
 
@@ -511,9 +520,9 @@ public:
 #else
 
 	#if NUMA_BLOCK_ALLOCATOR_TYPE == 1 || NUMA_BLOCK_ALLOCATOR_TYPE == 3
-#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
-	#pragma omp critical
-#endif
+		#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+			#pragma omp critical
+		#endif
 	#endif
 		{
 			std::vector<void*>& block_list = getBlocksSameSize(i_size);

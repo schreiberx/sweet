@@ -41,6 +41,74 @@ std::string write_file(
   return buffer;
 }
 
+/**
+ *  Write the spectrum to file and return string of file name
+ **/
+std::string write_spectrum_to_file(
+				   SphereDataCtx &i_ctx,
+				   const SphereData &i_sphereData,
+				   const char* i_name
+				   )
+{
+  char buffer[1024];
+  
+  // get the pointer to the Simulation Variables object
+  SimulationVariables* simVars = i_ctx.get_simulation_variables();
+
+  // Write the spectrum into the file
+  const char* filename_template = simVars->misc.output_file_name_prefix.c_str();
+  sprintf(buffer, 
+	  filename_template, 
+	  i_name, 
+	  simVars->timecontrol.current_timestep_size);
+  i_sphereData.spectrum_file_write(buffer);
+  
+  return buffer;
+}
+
+/** 
+ *  Write the physical invariants to file
+ **/
+std::string write_physical_invariants_to_file(
+					      SphereDataCtx &i_ctx,
+					      const char* i_name
+					      )
+{
+  char buffer[1024];
+  
+  // get the pointer to the Simulation Variables object
+  SimulationVariables* simVars = i_ctx.get_simulation_variables();
+
+  // get the vector of time and invariants
+  const std::vector<double>& time               = i_ctx.get_time();
+  const std::vector<double>& mass               = i_ctx.get_mass();
+  const std::vector<double>& energy             = i_ctx.get_energy();
+  const std::vector<double>& potentialEnstrophy = i_ctx.get_potential_enstrophy();
+
+  // Write the spectrum into the file
+  const char* filename_template = simVars->misc.output_file_name_prefix.c_str();
+  sprintf(buffer, 
+	  filename_template, 
+	  i_name, 
+	  simVars->timecontrol.current_timestep_size);
+
+  std::ofstream file(buffer, std::ios_base::trunc);
+
+  file << std::setprecision(20);
+
+  for (unsigned int i = 0; i < time.size(); ++i) 
+    file << time[i] << " " 
+	 << mass[i] << " " 
+	 << energy[i] << " " 
+	 << potentialEnstrophy[i] 
+	 << std::endl;
+
+  file.close();
+  
+  return buffer;
+}
+
+
 extern "C"
 {
   // initialization of the variables (initial condition)
@@ -63,7 +131,10 @@ extern "C"
 
     // get the SimulationVariables object from context
     SimulationVariables* simVars(i_ctx->get_simulation_variables());
-    
+
+    if (simVars->sim.use_topography)
+      write_file(*i_ctx, simVars->sim.h_topo,  "prog_h_topo");
+
     // initialize the variables
     phi_Y.physical_set_zero();
     vort_Y.physical_set_zero();
@@ -73,46 +144,91 @@ extern "C"
     SphereDataConfig* data_config = i_ctx->get_sphere_data_config(o_Y->get_level());
 
     // instantiate h, u, and v to get the initial condition
-    SphereData h_Y(data_config);
-    SphereData u_Y(data_config);
-    SphereData v_Y(data_config);
+    // SphereData h_Y(data_config);
+    // SphereData u_Y(data_config);
+    // SphereData v_Y(data_config);
 
     // get the operator for this level
     SphereOperators* op = i_ctx->get_sphere_operators(o_Y->get_level());
 
     // get the initial condition in h, u, and v
-    SphereBenchmarksCombined::setupInitialConditions(h_Y, 
-						     u_Y, 
-						     v_Y, 
+    SphereBenchmarksCombined::setupInitialConditions(phi_Y, 
+						     vort_Y, 
+						     div_Y, 
 						     *simVars, 
 						     *op);
     
-    // convert u, v, and h to phi, vort and div
-    phi_Y = h_Y*simVars->sim.gravitation;
-    op->robert_uv_to_vortdiv(u_Y.getSphereDataPhysical(), 
-			     v_Y.getSphereDataPhysical(), 
-			     vort_Y, 
-			     div_Y);
+    // // convert u, v, and h to phi, vort and div
+    // phi_Y = h_Y*simVars->sim.gravitation;
+
+    // write_file(*i_ctx, u_Y, "prog_u_init");
+    // write_file(*i_ctx, v_Y, "prog_v_init");
+
+    // if (simVars->misc.sphere_use_robert_functions)
+    //   op->robert_uv_to_vortdiv(u_Y.getSphereDataPhysical(), 
+    // 			       v_Y.getSphereDataPhysical(), 
+    // 			       vort_Y, 
+    // 			       div_Y);
+    // else    
+    //   op->uv_to_vortdiv(u_Y.getSphereDataPhysical(), 
+    // 			v_Y.getSphereDataPhysical(), 
+    // 			vort_Y, 
+    // 			div_Y);
     
+    /////////////////////////////////////////////
+
+    // SphereDataPhysical u_Y_phys(data_config);
+    // SphereDataPhysical v_Y_phys(data_config);
+
+    // if (simVars->misc.sphere_use_robert_functions)
+    //   op->robert_vortdiv_to_uv(vort_Y,
+    // 			       div_Y,
+    // 			       u_Y_phys,
+    // 			       v_Y_phys);
+    // else    
+    //   op->vortdiv_to_uv(vort_Y,
+    // 			div_Y,
+    // 			u_Y_phys,
+    // 			v_Y_phys);
+    
+    // write_file(*i_ctx, u_Y_phys, "prog_u_phys_init");
+    // write_file(*i_ctx, v_Y_phys, "prog_v_phys_init");
+
+    // write_file(*i_ctx, u_Y.getSphereDataPhysical() - u_Y_phys, "prog_u_diff_init");
+    // write_file(*i_ctx, v_Y.getSphereDataPhysical() - v_Y_phys, "prog_v_diff_init");
+
+    // write_spectrum_to_file(*i_ctx, u_Y, "init_spectrum_u");
+    // write_spectrum_to_file(*i_ctx, v_Y, "init_spectrum_v");
+
+    // write_spectrum_to_file(*i_ctx, u_Y_phys, "init_spectrum_u_phys");
+    // write_spectrum_to_file(*i_ctx, v_Y_phys, "init_spectrum_v_phys");
+
+    
+    ///////////////////////////////////////////
+
     // output the configuration
     simVars->outputConfig();
 
     double current_simulation_time = 0;
-    int nsteps = 0;
-    /*    
-    
-    // get the timestepper 
-    SWE_Sphere_TS_l_erk_n_erk* timestepper = i_ctx->get_l_erk_n_erk_timestepper(o_Y->get_level());
-    
+    int nsteps                     = 0;
+   
     write_file(*i_ctx, phi_Y,  "prog_phi_init");
     write_file(*i_ctx, vort_Y, "prog_vort_init");
     write_file(*i_ctx, div_Y,  "prog_div_init");
 
+    write_spectrum_to_file(*i_ctx, phi_Y,  "init_spectrum_phi");
+    write_spectrum_to_file(*i_ctx, vort_Y, "init_spectrum_vort");
+    write_spectrum_to_file(*i_ctx, div_Y,  "init_spectrum_div");
+
+    /*
+    // get the timestepper 
+    SWE_Sphere_TS_lg_irk_lc_n_erk* timestepper = i_ctx->get_lg_irk_lc_n_erk_timestepper();
+    //SWE_Sphere_TS_ln_erk* timestepper = i_ctx->get_ln_erk_timestepper();
+    
     std::cout << "current_simulation_time = " << current_simulation_time 
 	      << " i_t = " << i_t 
 	      << std::endl;
     
-    i_dt /= 10;
     std::cout << "i_dt = " << i_dt << std::endl;
 
     // compute the reference solution (i.e., obtained with the reference time stepper)
@@ -131,10 +247,25 @@ extern "C"
 				  i_dt,
 				  simVars->timecontrol.max_simulation_time
 				  );
+
+	if (simVars->sim.viscosity != 0)
+	  {
+	    double scalar = simVars->sim.viscosity*i_dt;
+	    double r      = simVars->sim.earth_radius;
+	    
+	    phi_Y  = phi_Y.spectral_solve_helmholtz(1.0,  -scalar, r);
+	    vort_Y = vort_Y.spectral_solve_helmholtz(1.0, -scalar, r);
+	    div_Y  = div_Y.spectral_solve_helmholtz(1.0,  -scalar, r);
+	  }
 	
 	current_simulation_time += i_dt;
 	nsteps += 1;
       }
+
+    write_spectrum_to_file(*i_ctx, phi_Y,  "spectrum_phi_ref");
+    write_spectrum_to_file(*i_ctx, vort_Y, "spectrum_vort_ref");
+    write_spectrum_to_file(*i_ctx, div_Y,  "spectrum_div_ref");
+
 
     write_file(*i_ctx, phi_Y,  "prog_phi_ref");
     write_file(*i_ctx, vort_Y, "prog_vort_ref");
@@ -169,6 +300,18 @@ extern "C"
     filename = "prog_div_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
     write_file(*i_ctx, div_Y, filename.c_str());
     
+    filename = "spectrum_vort_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
+    write_spectrum_to_file(*i_ctx, vort_Y, filename.c_str());
+
+    filename = "spectrum_div_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
+    write_spectrum_to_file(*i_ctx, div_Y, filename.c_str());
+
+    filename = "spectrum_phi_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
+    write_spectrum_to_file(*i_ctx, phi_Y, filename.c_str());
+
+    filename = "invariants_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
+    write_physical_invariants_to_file(*i_ctx, filename.c_str());
+  
   }
 
   // evaluates the explicit (nonlinear) piece
@@ -188,7 +331,6 @@ extern "C"
 
     // get the time step parameters
     SimulationVariables* simVars = i_ctx->get_simulation_variables();
-
     
     // return immediately if no nonlinear terms
     if (simVars->pde.use_linear_div == 1)
@@ -220,18 +362,40 @@ extern "C"
     else
       {
 
-	SWE_Sphere_TS_lg_erk_lc_n_erk* timestepper = i_ctx->get_lg_erk_lc_n_erk_timestepper(i_Y->get_level());
-		  
-	// compute the explicit nonlinear right-hand side
-	timestepper->euler_timestep_update_coriolis_and_nonlinear(
-								  phi_Y, 
-								  vort_Y,
-								  div_Y,
-								  phi_F1,
-								  vort_F1,
-								  div_F1, 
-								  simVars->timecontrol.max_simulation_time
-								  );
+	if (!simVars->sim.use_topography) 
+	  {
+
+	    SWE_Sphere_TS_lg_erk_lc_n_erk* timestepper = i_ctx->get_lg_erk_lc_n_erk_timestepper(i_Y->get_level());
+	    
+	    // compute the explicit nonlinear right-hand side
+	    timestepper->euler_timestep_update_coriolis_and_nonlinear(
+								      phi_Y, 
+								      vort_Y,
+								      div_Y,
+								      phi_F1,
+								      vort_F1,
+								      div_F1, 
+								      simVars->timecontrol.max_simulation_time
+								      );
+	  } 
+	else
+	  {
+
+	    SWE_Sphere_TS_lg_erk_lc_n_t_erk* timestepper = i_ctx->get_lg_erk_lc_n_t_erk_timestepper(i_Y->get_level());
+	    
+	    // compute the explicit nonlinear right-hand side
+	    timestepper->euler_timestep_update_coriolis_and_nonlinear(
+								      phi_Y, 
+								      vort_Y,
+								      div_Y,
+								      phi_F1,
+								      vort_F1,
+								      div_F1, 
+								      simVars->timecontrol.max_simulation_time
+								      );
+
+	    
+	  }
 
       }
   }
@@ -278,23 +442,45 @@ extern "C"
       }
     else
       {
-	
-	// get the explicit timestepper 
-	SWE_Sphere_TS_lg_erk_lc_n_erk* timestepper = i_ctx->get_lg_erk_lc_n_erk_timestepper(i_Y->get_level());
-	
-	// compute the linear right-hand side
-	timestepper->euler_timestep_update_linear(
-						  phi_Y, 
-						  vort_Y,
-						  div_Y,
-						  phi_F2,
-						  vort_F2,
-						  div_F2,
-						  simVars->timecontrol.max_simulation_time
-						  );
 
+	if (!simVars->sim.use_topography) 
+	  {
+
+	    // get the explicit timestepper 
+	    SWE_Sphere_TS_lg_erk_lc_n_erk* timestepper = i_ctx->get_lg_erk_lc_n_erk_timestepper(i_Y->get_level());
+	    
+	    // compute the linear right-hand side
+	    timestepper->euler_timestep_update_linear(
+						      phi_Y, 
+						      vort_Y,
+						      div_Y,
+						      phi_F2,
+						      vort_F2,
+						      div_F2,
+						      simVars->timecontrol.max_simulation_time
+						      );
+
+	  }
+	else 
+	  {
+
+	    // get the explicit timestepper 
+	    SWE_Sphere_TS_lg_erk_lc_n_t_erk* timestepper = i_ctx->get_lg_erk_lc_n_t_erk_timestepper(i_Y->get_level());
+	    
+	    // compute the linear right-hand side
+	    timestepper->euler_timestep_update_linear(
+						      phi_Y, 
+						      vort_Y,
+						      div_Y,
+						      phi_F2,
+						      vort_F2,
+						      div_F2,
+						      simVars->timecontrol.max_simulation_time
+						      );
+
+
+	  }
       }
-    
   }
 
   // solves the first implicit system for io_Y
@@ -379,13 +565,41 @@ extern "C"
       }
 
     // now recompute F2 with the new value of Y
+    ceval_f2(
+      	     io_Y, 
+     	     i_t, 
+     	     i_ctx, 
+     	     o_F2
+     	     );
+    
+
     SphereData& phi_F2  = o_F2->get_phi();
     SphereData& vort_F2 = o_F2->get_vort();
     SphereData& div_F2  = o_F2->get_div();
 
-    phi_F2  = (phi_Y  - phi_Rhs)  / i_dt;
-    vort_F2 = (vort_Y - vort_Rhs) / i_dt;
-    div_F2  = (div_Y  - div_Rhs)  / i_dt;
+    SphereData phi_F2_new(i_ctx->get_sphere_data_config(io_Y->get_level()));
+    SphereData vort_F2_new(i_ctx->get_sphere_data_config(io_Y->get_level()));
+    SphereData div_F2_new(i_ctx->get_sphere_data_config(io_Y->get_level()));
+
+    phi_F2_new  = (phi_Y  - phi_Rhs)  / i_dt;
+    vort_F2_new = (vort_Y - vort_Rhs) / i_dt;
+    div_F2_new  = (div_Y  - div_Rhs)  / i_dt;
+
+    write_file(*i_ctx, phi_F2,  "prog_phi_F2");
+    write_file(*i_ctx, div_F2,  "prog_div_F2");
+    write_file(*i_ctx, vort_F2, "prog_vort_F2");
+    
+    write_file(*i_ctx, phi_F2_new,  "prog_phi_F2_new");
+    write_file(*i_ctx, div_F2_new,  "prog_div_F2_new");
+    write_file(*i_ctx, vort_F2_new, "prog_vort_F2_new");
+
+    write_file(*i_ctx, (phi_F2  - phi_F2_new)/phi_F2_new,  "prog_phi_F2_diff");
+    write_file(*i_ctx, (div_F2  - div_F2_new)/div_F2_new,  "prog_div_F2_diff");
+    write_file(*i_ctx, (vort_F2 - vort_F2_new)/vort_F2_new, "prog_vort_F2_diff");
+
+    phi_F2  = phi_F2_new;
+    vort_F2 = vort_F2_new;
+    div_F2  = div_F2_new;
 
   }
 
@@ -414,7 +628,7 @@ extern "C"
     SimulationVariables* simVars = i_ctx->get_simulation_variables();
 
     // no need to do anything if no artificial viscosity
-    if (simVars->sim.viscosity == 0)
+    if (simVars->sim.viscosity == 0) 
       return;
 
     // get the parameters used to apply diffusion
@@ -496,15 +710,14 @@ extern "C"
     div_Y  = div_Rhs.spectral_solve_helmholtz( 1.0, -scalar, r); 
     
     // now recompute F3 with the new value of Y
-    /*
-    ceval_f3(
-     	     io_Y, 
-	     i_t, 
-	     i_level,
-	     i_ctx, 
-	     o_F3
-	     );
-    */
+    
+    // ceval_f3(
+    //  	     io_Y, 
+    // 	     i_t, 
+    // 	     i_level,
+    // 	     i_ctx, 
+    // 	     o_F3
+    // 	     );
     
     SphereData& phi_F3  = o_F3->get_phi();
     SphereData& vort_F3 = o_F3->get_vort();

@@ -19,7 +19,6 @@
  */
 struct REXI_SimulationVariables
 {
-
 	/**
 	 * Choose REXI solver method
 	 */
@@ -47,6 +46,11 @@ struct REXI_SimulationVariables
 	 * beta coefficients are below this value
 	 */
 	double beta_cutoff = 0.0;
+
+	/**
+	 * Add U0 (initial condition of current time step) to REXI terms
+	 */
+	bool rexi_terms_add_u0 = 0;
 
 	/**
 	 * Use REXI preallocation
@@ -239,11 +243,15 @@ struct REXI_SimulationVariables
 		std::cout << "	--rexi-ext-modes [int]	Use this number of extended modes in spherical harmonics" << std::endl;
 		std::cout << "	--rexi-use-direct-solution [bool]	Use direct solution (analytical) for REXI, default:0" << std::endl;
 		std::cout << "	--rexi-beta-cutoff [float]	Cutoff of REXI coefficients if the absolute value of beta exceed this value, default:0" << std::endl;
+		std::cout << "	--rexi-add-u0 [bool]	Add U0 to the sum of REXI terms, default:0" << std::endl;
 		std::cout << "  REXI Terry:" << std::endl;
 		std::cout << "	--rexi-h [float]			REXI parameter h" << std::endl;
 		std::cout << "	--rexi-m [int]				REXI parameter M" << std::endl;
 		std::cout << "	--rexi-l [int]				REXI parameter L" << std::endl;
 		std::cout << "  REXI File:" << std::endl;
+		std::cout << "	--rexi-file-alpha [string]			File with alpha coefficients" << std::endl;
+		std::cout << "	--rexi-file-beta [string]			File with beta coefficients" << std::endl;
+#if 0
 		std::cout << "	--rexi-file-faf-dir [string]			Directory with FAF coefficients" << std::endl;
 		std::cout << "	--rexi-file-N [int]		Number of rational basis functions, default:auto" << std::endl;
 		std::cout << "	--rexi-file-h [double]	Spacing of rational basis functions, default:auto" << std::endl;
@@ -252,6 +260,7 @@ struct REXI_SimulationVariables
 		std::cout << "	--rexi-file-test-abs [double]	Set min/max test interval, default:0" << std::endl;
 		std::cout << "	--rexi-file-max-error [double]	Maximum allowed error within test interval, default:0" << std::endl;
 		std::cout << "	--rexi-file-filename [string]	Filename of REXI coefficients, default:''" << std::endl;
+#endif
 		std::cout << "  REXI CI:" << std::endl;
 		std::cout << "	--rexi-ci-n [double]	Number of quadrature points, default: 64" << std::endl;
 		std::cout << "	--rexi-ci-primitive [string]	Primitive ('circle', 'rectangle'), default: 'circle'" << std::endl;
@@ -299,6 +308,9 @@ struct REXI_SimulationVariables
 		io_next_free_program_option++;
 
 		io_long_options[io_next_free_program_option] = {"rexi-beta-cutoff", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"rexi-add-u0", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
 		io_long_options[io_next_free_program_option] = {"rexi-method", required_argument, 0, 256+io_next_free_program_option};
@@ -385,8 +397,9 @@ struct REXI_SimulationVariables
 			case 6:	use_direct_solution = atoi(optarg);	return 0;
 			case 7:	use_sphere_extended_modes = atoi(optarg);	return 0;
 			case 8: beta_cutoff = atof(optarg);	return 0;
+			case 9: rexi_terms_add_u0 = atoi(optarg);	return 0;
 
-			case 9:		rexi_method = optarg;	return 0;
+			case 10:		rexi_method = optarg;	return 0;
 #if 0
 			case 10:		file_faf_dir = optarg;	return 0;
 			case 11:	file_N = atoi(optarg);	return 0;
@@ -396,25 +409,26 @@ struct REXI_SimulationVariables
 			case 15:	file_test_max = atof(optarg);	file_test_min = -file_test_max;	return 0;
 			case 16:	file_max_error_double_precision = atof(optarg);	return 0;
 #endif
-			case 10:		file_filename_alpha = optarg;	return 0;
-			case 11:	file_filename_beta = optarg;	return 0;
+			case 11:		file_filename_alpha = optarg;	return 0;
+			case 12:	file_filename_beta = optarg;	return 0;
 
-			case 12:	ci_n = atoi(optarg);	return 0;
-			case 13:	ci_primitive = optarg;	return 0;
-			case 14:	ci_max_real = atof(optarg);	return 0;
-			case 15:	ci_max_imag = atof(optarg);	return 0;
-			case 16:	ci_s_real = atof(optarg);	return 0;
-			case 17:	ci_s_imag = atof(optarg);	return 0;
-			case 18:	ci_mu = atof(optarg);	return 0;
-			case 19:	ci_gaussian_filter_scale_a = atof(optarg);	return 0;
-			case 20:	ci_gaussian_filter_dt_norm = atof(optarg);	return 0;
-			case 21:	ci_gaussian_filter_exp_N = atof(optarg);	return 0;
+			case 13:	ci_n = atoi(optarg);	return 0;
+			case 14:	ci_primitive = optarg;	return 0;
+			case 15:	ci_max_real = atof(optarg);	return 0;
+			case 16:	ci_max_imag = atof(optarg);	return 0;
+			case 17:	ci_s_real = atof(optarg);	return 0;
+			case 18:	ci_s_imag = atof(optarg);	return 0;
+			case 19:	ci_mu = atof(optarg);	return 0;
+			case 20:	ci_gaussian_filter_scale_a = atof(optarg);	return 0;
+			case 21:	ci_gaussian_filter_dt_norm = atof(optarg);	return 0;
+			case 22:	ci_gaussian_filter_exp_N = atof(optarg);	return 0;
 		}
+
 
 		if (rexi_method != "" && rexi_method == "terry" && rexi_method == "file")
 			FatalError("Invalid argument for '--rexi-method='");
 
-		return 22;
+		return 23;
 	}
 };
 

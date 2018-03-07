@@ -21,7 +21,7 @@ for i in $DIRS; do
 	test -d "$i" || continue
 
 	cd "$i"
-	./run.sh | tee "../$i/output.out" || exit 2>&1
+	./run.sh 2>"output.err" | tee "output.out"
 	cd ".."
 
 done

@@ -2,7 +2,7 @@
  * BenchmarkCombined.hpp
  *
  *  Created on: 30 Nov 2016
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *	  Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef SRC_INCLUDE_BENCHMARKS_SPHERE_SPHEREBENCHMARKSCOMBINED_HPP_
@@ -13,8 +13,7 @@
 #include <sweet/SimulationVariables.hpp>
 //#include <benchmarks_sphere/BenchmarkGalewsky.hpp>
 #include <benchmarks_sphere/BenchmarkGaussianDam.hpp>
-
-
+#include <benchmarks_sphere/BenchmarkFlowOverMountain.hpp>
 
 class SphereBenchmarksCombined
 {
@@ -24,7 +23,7 @@ public:
 	{
 		std::cout << std::endl;
 		std::cout << "Benchmark scenario not selected (option -s [id])" << std::endl;
-		std::cout << "Available benchmark scenarios:" << std::endl;
+		std::cout << "Available benchmark scenarios (DEPRECATED):" << std::endl;
 		std::cout << "	0: Dummy" << std::endl;
 		std::cout << "	2: Use Gaussian bump initial conditions (0, pi/3, exp=10)" << std::endl;
 		std::cout << "	3: Use Gaussian bump initial conditions (pi/3, pi/3, exp=10)" << std::endl;
@@ -46,7 +45,16 @@ public:
 		std::cout << "	101: Galweski - geostrophic case including non-linear parts" << std::endl;
 		std::cout << "	200: h=h0, u=0, v=0" << std::endl;
 		std::cout << std::endl;
+		std::cout << "Benchmark scenario by name (NEW):" << std::endl;
+		std::cout << "  'flat': Constant height and zero velocity" << std::endl;
+		std::cout << "  'galewsky': Galwesky benchmark" << std::endl;
+		std::cout << "  'galewsky_nobump': Galwesky benchmark without any bump" << std::endl;
+		std::cout << "  'geostrophic_balance': Geostrophic balance, one wave (standard)" << std::endl;
+		std::cout << "  'geostrophic_balance_[N]': Geostrophic balance, with [N] waves" << std::endl;
+		std::cout << std::endl;
 	}
+
+
 
 	/*
 	 * Compute surface height for geostrophic balance with given velocities
@@ -79,7 +87,10 @@ public:
 		SphereData vrtspec(o_h.sphereDataConfig);
 		SphereData divspec(o_h.sphereDataConfig);
 
-		i_op.uv_to_vortdiv(i_u, i_v, vrtspec, divspec);
+		if (i_simVars.misc.sphere_use_robert_functions)
+		  i_op.robert_uv_to_vortdiv(i_u, i_v, vrtspec, divspec);
+		else
+		  i_op.uv_to_vortdiv(i_u, i_v, vrtspec, divspec);
 
 		SphereDataPhysical vrtg = vrtspec.getSphereDataPhysical();
 
@@ -88,11 +99,15 @@ public:
 
 		SphereData tmpspec1(o_h.sphereDataConfig);
 		SphereData tmpspec2(o_h.sphereDataConfig);
-		i_op.uv_to_vortdiv(tmpg1, tmpg2, tmpspec1, tmpspec2);
 
+		if (i_simVars.misc.sphere_use_robert_functions)
+		  i_op.robert_uv_to_vortdiv(tmpg1, tmpg2, tmpspec1, tmpspec2);
+		else
+		  i_op.uv_to_vortdiv(tmpg1, tmpg2, tmpspec1, tmpspec2);
+		
 		tmpspec2 = 0.5*(i_u*i_u+i_v*i_v);
 
-		SphereData phispec = i_op.inv_laplace(tmpspec1) - tmpspec2;
+		SphereData phispec = i_op.inv_laplace(tmpspec1) - tmpspec2 - tmpspec1;
 
 		phispec = phispec + i_simVars.sim.gravitation*i_simVars.sim.h0;
 		phispec.spectral_truncate();
@@ -102,16 +117,79 @@ public:
 
 
 public:
+
+		static
+	void setupTopography(
+				 SimulationVariables &io_simVars,
+				 SphereOperators &i_op
+				 )
+		 {
+	   if (io_simVars.setup.benchmark_scenario_name == "flow_over_mountain") 
+		 {
+		   // set the topography flag to true
+		   io_simVars.sim.use_topography = true;
+
+		   // setup the parameters for the flow-over-mountain test case
+		   const double R			= M_PI/9.;
+		   const double h_topo_0	 = 2000.;
+		   const double i_center_lon = 3.*M_PI/2.;
+		   const double i_center_lat = M_PI/6.;
+
+		   // initialize the topography
+		   io_simVars.sim.h_topo.physical_set_zero();
+
+		   // setup the topography vector
+		   BenchmarkFlowOverMountain::setup_topography(io_simVars.sim.h_topo,
+							   io_simVars,
+							   R,
+							   h_topo_0,
+							   i_center_lon,
+							   i_center_lat
+							   );
+
+		   io_simVars.sim.h_topo.spectral_truncate();
+		 }
+	   else 
+		 {
+		   // set the topography flag to false
+		   io_simVars.sim.use_topography = false;
+		 }
+		 }
+
+
 	static
 	void setupInitialConditions(
-			SphereData &o_h,
-			SphereData &o_u,
-			SphereData &o_v,
+			SphereData &o_phi,
+			SphereData &o_vort,
+			SphereData &o_div,
 
 			SimulationVariables &io_simVars,
 			SphereOperators &i_op
 	)
 	{
+		SphereData h(o_phi.sphereDataConfig);
+		SphereDataPhysical u(o_phi.sphereDataConfig);
+		SphereDataPhysical v(o_phi.sphereDataConfig);
+
+		setupInitialConditions_HUV(h, u, v, io_simVars, i_op);
+
+		o_phi = h*io_simVars.sim.gravitation;
+		i_op.robert_uv_to_vortdiv(u, v, o_vort, o_div);
+	}
+
+
+public:
+	static
+	void setupInitialConditions_HUV(
+			SphereData &o_h,
+			SphereDataPhysical &o_u,
+			SphereDataPhysical &o_v,
+
+			SimulationVariables &io_simVars,
+			SphereOperators &i_op
+	)
+	{
+
 		if (io_simVars.setup.benchmark_scenario_name == "")
 		{
 			if (io_simVars.setup.benchmark_scenario_id < 0)
@@ -151,6 +229,9 @@ public:
 			else if (io_simVars.setup.benchmark_scenario_id == 9)
 			{
 				SphereData tmp(o_h.sphereDataConfig);
+
+				o_u.physical_set_all_value(0);
+				o_v.physical_set_all_value(0);
 
 				o_h.physical_set_all_value(io_simVars.sim.h0);
 
@@ -216,7 +297,7 @@ public:
 					);
 				}
 
-				o_v.spectral_set_zero();
+				o_v.physical_set_zero();
 
 #if 0
 				if (io_simVars.timecontrol.current_simulation_time == 0)
@@ -265,7 +346,7 @@ public:
 				io_simVars.sim.h0 = 1000.0;
 
 				double lambda_c = 3.0*M_PI/2.0;
-				double theta_c = 0;
+				double theta_c = M_PI/4.0;
 				double a = io_simVars.sim.earth_radius;
 
 				double R = a/3.0;
@@ -273,7 +354,7 @@ public:
 
 				o_h.physical_update_lambda(
 					[&](double i_lambda, double i_theta, double &io_data)
-					{
+				{
 						double r = a * std::acos(
 								std::sin(theta_c)*std::sin(i_theta) +
 								std::cos(theta_c)*std::cos(i_theta)*std::cos(i_lambda-lambda_c)
@@ -460,9 +541,9 @@ public:
 					);
 				}
 
-				o_h.physical_truncate();
-				o_u.physical_truncate();
-				o_v.physical_truncate();
+				//o_h.physical_truncate();
+				//o_u.physical_truncate();
+				//o_v.physical_truncate();
 
 				if (io_simVars.timecontrol.current_simulation_time == 0)
 				{
@@ -503,21 +584,24 @@ public:
 				io_simVars.sim.earth_radius = 6.37122e6;
 				io_simVars.sim.h0 = 29400.0;
 
-				o_u.spectral_set_zero();
-				o_v.spectral_set_zero();
+				o_u.physical_set_zero();
+				o_v.physical_set_zero();
 
-				double a = io_simVars.sim.earth_radius;
-				double A = 6000.0;
-				double alpha = 10;
+				const double a = io_simVars.sim.earth_radius;
+				const double A = 6000.0;
+				const double alpha = 10;
+
+				const double center_lat = M_PI/4;
+				const double center_lon = M_PI;
 
 				o_h.physical_update_lambda(
 					[&](double i_lambda, double i_phi, double &io_data)
 					{
-						double x = a*std::cos(i_phi)*std::cos(i_lambda);
-						double y = a*std::cos(i_phi)*std::sin(i_lambda);
-						double z = a*std::sin(i_phi);
+					  double x = a* ( std::cos(i_phi)*std::cos(i_lambda) - std::cos(center_lat)*std::cos(center_lon) );
+					  double y = a* ( std::cos(i_phi)*std::sin(i_lambda) - std::cos(center_lat)*std::sin(center_lon) );
+					  double z = a* ( std::sin(i_phi)					- std::sin(center_lat) );
 
-						double d = std::sqrt(x*x+y*y+(z-a)*(z-a));
+						double d = std::sqrt(x*x+y*y+z*z);
 
 						io_data = io_simVars.sim.h0 + A*std::exp(-alpha*(d/a)*(d/a));
 					}
@@ -727,8 +811,8 @@ public:
 			else if (io_simVars.setup.benchmark_scenario_id == 200)
 			{
 				o_h.physical_set_all_value(io_simVars.sim.h0);
-				o_u.spectral_set_zero();
-				o_v.spectral_set_zero();
+				o_u.physical_set_zero();
+				o_v.physical_set_zero();
 			}
 			else
 			{
@@ -857,7 +941,190 @@ public:
 					);
 				}
 			}
-			else if (io_simVars.setup.benchmark_scenario_name == "galewsky" || io_simVars.setup.benchmark_scenario_name == "galewsky_nobump")
+
+			else if (io_simVars.setup.benchmark_scenario_name == "flow_over_mountain") 
+			{
+					if (io_simVars.timecontrol.current_simulation_time == 0)
+				  {
+					std::cout << "!!! WARNING !!!" << std::endl;
+					std::cout << "!!! WARNING: Overriding simulation parameters for this benchmark !!!" << std::endl;
+					std::cout << "!!! WARNING !!!" << std::endl;
+				  }
+				
+				/// Setup Williamson's parameters
+				io_simVars.sim.coriolis_omega = 7.292e-5;
+				io_simVars.sim.gravitation	= 9.80616;
+				io_simVars.sim.earth_radius   = 6.37122e6;
+				io_simVars.sim.h0			 = 5600;
+
+				const double u0 = 20.0;
+					
+				/*
+				 * Setup V=0
+				 */
+				SphereDataPhysical vg(o_h.sphereDataConfig);
+				vg.physical_set_zero();
+
+				/*
+				 * Setup U=...
+				 * initial velocity along longitude
+				 */
+				SphereDataPhysical ug(o_h.sphereDataConfig);
+				ug.physical_update_lambda(
+					[&](double lon, double phi, double &o_data)
+					{
+						o_data = u0 * std::cos(phi);
+					}
+				);		
+
+				if (io_simVars.misc.sphere_use_robert_functions)
+				{
+					ug.physical_update_lambda_cosphi_grid(
+						[&](double lon, double phi, double &o_data)
+						{
+							o_data *= phi;
+						}
+					);
+
+					vg.physical_update_lambda_cosphi_grid(
+						[&](double lon, double phi, double &o_data)
+						{
+							o_data *= phi;
+						}
+					);
+				}
+
+				
+				computeGeostrophicBalance(
+							  o_h,
+							  ug,
+							  vg,
+							  io_simVars,
+							  i_op
+							  );
+				
+
+				o_u = ug;
+				o_v = vg;
+
+			}
+			else if (io_simVars.setup.benchmark_scenario_name == "rossby_haurwitz_wave") 
+			{
+				if (io_simVars.timecontrol.current_simulation_time == 0)
+				{
+					std::cout << "!!! WARNING !!!" << std::endl;
+					std::cout << "!!! WARNING: Overriding simulation parameters for this benchmark !!!" << std::endl;
+					std::cout << "!!! WARNING !!!" << std::endl;
+				}
+				
+				/// Setup Williamson's parameters
+				io_simVars.sim.coriolis_omega = 7.292e-5;
+				io_simVars.sim.gravitation = 9.80616;
+				io_simVars.sim.earth_radius = 6.37122e6;
+				io_simVars.sim.h0 = 8000;
+
+				const double omega = 7.484e-6;
+				const double K = omega;
+				const int R	= 4;
+				const double a = io_simVars.sim.earth_radius;
+
+
+				// attempt to initialize vort and div directly
+				/*
+				SphereData vort(o_h.sphereDataConfig);
+				vort.physical_update_lambda(
+								  [&](double lon, double phi, double &o_data)
+								  {
+								o_data = 2 * omega * sin(phi)
+							  - K * sin(phi) * pow(cos(phi), R) * (R*R + 3*R + 2) * cos(R*lon) ;
+								  }
+								  );
+
+				SphereData div(o_h.sphereDataConfig);
+				div.physical_set_zero();
+				*/
+
+				/*
+				 * Setup U=...
+				 */
+				SphereDataPhysical ug(o_h.sphereDataConfig);
+				ug.physical_update_lambda(
+								[&](double lon, double phi, double &o_data)
+									{
+										o_data = a * omega * cos(phi)
+												+ a * K * pow(cos(phi), R-1) * (R * sin(phi)*sin(phi) - cos(phi)*cos(phi)) * cos(R*lon);
+									}
+								);
+
+
+				/*
+				 * Setup V=...
+				 */
+				SphereDataPhysical vg(o_h.sphereDataConfig);
+				vg.physical_update_lambda(
+								  [&](double lon, double phi, double &o_data)
+										{
+											o_data = - a * K * R * pow(cos(phi), R-1) * sin(phi) * sin(R*lon);
+										}
+								  );
+
+
+				if (io_simVars.misc.sphere_use_robert_functions)
+				{
+						ug.physical_update_lambda_cosphi_grid(
+								[&](double lon, double phi, double &o_data)
+								{
+									o_data *= phi;
+								}
+							);
+					
+						vg.physical_update_lambda_cosphi_grid(
+								[&](double lon, double phi, double &o_data)
+								{
+									o_data *= phi;
+								}
+							);
+				}
+
+
+				computeGeostrophicBalance(
+							  o_h,
+							  ug,
+							  vg,
+							  io_simVars,
+							  i_op
+					);
+
+				/*
+				o_h.physical_update_lambda(
+								   [&](double lon, double phi, double &o_data)
+								   {
+								 const double A = 0.5 * omega * (2 * io_simVars.sim.coriolis_omega + omega) * cos(phi)*cos(phi)
+  												+ 0.25 * K * K * pow(cos(phi), 2*R) * ( (R+1)*cos(phi)*cos(phi) + (2*R*R - R - 2) - 2*R*R/pow(cos(phi),2) );
+								 const double B = 2 * (io_simVars.sim.coriolis_omega + omega) * K / ((R+1)*(R+2)) * pow(cos(phi),R)
+												* ( (R*R + 2*R + 2) - (R+1)*(R+1)*cos(phi)*cos(phi) );
+								 const double C = 0.25 * K*K * pow(cos(phi),2*R)
+  												* ( (R+1)*cos(phi)*cos(phi) - (R+2) );
+
+								 o_data = io_simVars.sim.h0
+								   + io_simVars.sim.earth_radius*io_simVars.sim.earth_radius * (
+																 A
+																   + B * cos(R*lon)
+																   + C * cos(2*R*lon)
+																   ) /io_simVars.sim.gravitation;
+								   }
+								   );
+
+				*/
+				o_u = ug;
+				o_v = vg;
+
+	 				}
+			else if (
+				io_simVars.setup.benchmark_scenario_name == "galewsky" ||			///< Standard Galewsky benchmark
+				io_simVars.setup.benchmark_scenario_name == "galewsky_nobump" ||	///< Galewsky benchmark without bumps
+				io_simVars.setup.benchmark_scenario_name == "galewsky_nosetparam"	///< Galewsky benchmark without overriding parameters
+			)
 			{
 				if (io_simVars.timecontrol.current_simulation_time == 0)
 				{
@@ -866,11 +1133,14 @@ public:
 					std::cout << "!!! WARNING !!!" << std::endl;
 				}
 
-				/// Setup Galewski parameters
-				io_simVars.sim.coriolis_omega = 7.292e-5;
-				io_simVars.sim.gravitation = 9.80616;
-				io_simVars.sim.earth_radius = 6.37122e6;
-				io_simVars.sim.h0 = 10000;
+				if (io_simVars.setup.benchmark_scenario_name != "galewsky_nosetparam")
+				{
+					/// Setup Galewski parameters
+					io_simVars.sim.coriolis_omega = 7.292e-5;
+					io_simVars.sim.gravitation = 9.80616;
+					io_simVars.sim.earth_radius = 6.37122e6;
+					io_simVars.sim.h0 = 10000;
+				}
 
 				io_simVars.misc.output_time_scale = 1.0/(60.0*60.0);
 
@@ -878,13 +1148,110 @@ public:
 				 * Parameters from Galewsky paper setup
 				 */
 				double umax = 80.;
+
 				double phi0 = M_PI/7.;
 				double phi1 = 0.5*M_PI - phi0;
-				double phi2 = 0.25*M_PI;
+				double phi2 = 0.25*M_PI;		/// latitude placement of gaussian bump
 				double en = std::exp(-4.0/std::pow((phi1-phi0), 2.0));
 				double alpha = 1./3.;
 				double beta = 1./15.;
 				double hamp = 120.;
+
+#if 0
+				/*
+				 * Setup SphereDataConfig without dealiasing
+				 */
+				
+				io_simVars.disc.res_physical[0] = 784; //2 * io_simVars.disc.res_spectral[0] + 2; //784;
+				io_simVars.disc.res_physical[1] = 388; //	io_simVars.disc.res_spectral[1] + 2; //388;
+				SphereDataConfig sphereConfigNoDealiasing;
+				sphereConfigNoDealiasing.setupAuto(
+								   io_simVars.disc.res_physical,
+								   io_simVars.disc.res_spectral 
+								   );
+				
+
+				/*
+				 * Setup V=0
+				 */
+				SphereDataPhysical vg_nodealiasing(&sphereConfigNoDealiasing);
+				vg_nodealiasing.physical_set_zero();
+
+				/*
+				 * Setup U=...
+				 * initial velocity along longitude
+				 */
+				SphereDataPhysical ug_nodealiasing(&sphereConfigNoDealiasing);
+				ug_nodealiasing.physical_update_lambda(
+					[&](double lon, double phi, double &o_data)
+					{
+						if (phi >= phi1 || phi <= phi0)
+							o_data = 0;
+						else
+							o_data = umax/en*std::exp(1.0/((phi-phi0)*(phi-phi1)));
+					}
+				);
+
+				if (io_simVars.misc.sphere_use_robert_functions)
+				{
+					ug_nodealiasing.physical_update_lambda_cosphi_grid(
+						[&](double lon, double phi, double &o_data)
+						{
+							o_data *= phi;
+						}
+					);
+
+					vg_nodealiasing.physical_update_lambda_cosphi_grid(
+						[&](double lon, double phi, double &o_data)
+						{
+							o_data *= phi;
+						}
+					);
+				}
+
+				SphereData vort(&sphereConfigNoDealiasing);
+				SphereData div(&sphereConfigNoDealiasing);
+				SphereDataPhysical ug_nodealiasing_new(&sphereConfigNoDealiasing);
+
+				SphereOperators op_nodealiasing(&sphereConfigNoDealiasing, 
+								io_simVars.sim.earth_radius);
+
+				op_nodealiasing.robert_uv_to_vortdiv(ug_nodealiasing,
+									 vg_nodealiasing,
+									 vort,
+									 div);
+				op_nodealiasing.robert_vortdiv_to_uv(vort,
+									 div,
+									 ug_nodealiasing_new,
+									 vg_nodealiasing);
+
+				char buffer[1024];
+				const char* filename_template = io_simVars.misc.output_file_name_prefix.c_str();
+
+				sprintf(buffer, 
+					filename_template, 
+					"u_diff_nodealiasing", 
+					io_simVars.timecontrol.current_timestep_size);
+				(ug_nodealiasing - ug_nodealiasing_new).physical_file_write(buffer);
+								
+				sprintf(buffer, 
+					filename_template, 
+					"vort_nodealiasing", 
+					io_simVars.timecontrol.current_timestep_size);
+				vort.spectrum_file_write(buffer);
+				
+				std::cout << (ug_nodealiasing - ug_nodealiasing_new).physical_reduce_max_abs() << std::endl;
+				std::cout << (ug_nodealiasing - ug_nodealiasing_new).physical_reduce_rms() << std::endl;
+
+#endif
+				if (io_simVars.setup.benchmark_galewsky_umax >= 0)
+					hamp = io_simVars.setup.benchmark_galewsky_umax;
+
+				if (io_simVars.setup.benchmark_galewsky_hamp >= 0)
+					hamp = io_simVars.setup.benchmark_galewsky_hamp;
+
+				if (io_simVars.setup.benchmark_galewsky_phi2 >= 0)
+					hamp = io_simVars.setup.benchmark_galewsky_phi2;
 
 				/*
 				 * Setup V=0
@@ -906,6 +1273,24 @@ public:
 							o_data = umax/en*std::exp(1.0/((phi-phi0)*(phi-phi1)));
 					}
 				);
+
+
+				if (io_simVars.misc.sphere_use_robert_functions)
+				{
+					ug.physical_update_lambda_cosphi_grid(
+						[&](double lon, double phi, double &o_data)
+						{
+							o_data *= phi;
+						}
+					);
+
+					vg.physical_update_lambda_cosphi_grid(
+						[&](double lon, double phi, double &o_data)
+						{
+							o_data *= phi;
+						}
+					);
+				}
 
 				computeGeostrophicBalance(
 						o_h,
@@ -931,22 +1316,6 @@ public:
 				o_u = ug;
 				o_v = vg;
 
-				if (io_simVars.misc.sphere_use_robert_functions)
-				{
-					o_u.physical_update_lambda_cosphi_grid(
-						[&](double lon, double phi, double &o_data)
-						{
-							o_data *= phi;
-						}
-					);
-
-					o_v.physical_update_lambda_cosphi_grid(
-						[&](double lon, double phi, double &o_data)
-						{
-							o_data *= phi;
-						}
-					);
-				}
 			}
 			else if (io_simVars.setup.benchmark_scenario_name == "flat")
 			{

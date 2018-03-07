@@ -1,1 +1,1 @@
-../swe_sphere_rexi/SWE_Sphere_TimeSteppers.hpp
+../swe_sphere/SWE_Sphere_TimeSteppers.hpp

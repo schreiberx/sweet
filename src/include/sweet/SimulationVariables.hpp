@@ -17,7 +17,7 @@
 #include <sweet/sweetmath.hpp>
 #include <sweet/FatalError.hpp>
 #include <sweet/StringSplit.hpp>
-
+#include <sweet/sphere/SphereData.hpp>
 
 #ifndef SWEET_PARAREAL
 #	define SWEET_PARAREAL 1
@@ -51,7 +51,7 @@
 /*
  * Polvani program parameters
  */
-#include <benchmarks_plane/SWEPolvani_SimulationVariables.hpp>
+#include <benchmarks_plane/SWE_bench_Polvani_SimulationVariables.hpp>
 
 
 /**
@@ -96,11 +96,13 @@ public:
 		double total_potential_enstrophy = 0;
 
 
+
 		double ref_total_mass = -1;
 		double ref_kinetic_energy = -1;
 		double ref_potential_energy = -1;
 		double ref_total_energy = -1;
 		double ref_total_potential_enstrophy = -1;
+
 
 
 		void outputConfig()
@@ -180,6 +182,20 @@ public:
 		/// setup scenario
 		std::string benchmark_scenario_name = "";
 
+		/// Use 2/3 rule in physical space for dealiasing
+		bool benchmark_setup_dealiased = false;
+
+
+		/// Galewsky-benchmark specific: velocity
+		double benchmark_galewsky_umax = -1;
+
+		/// Galewsky-benchmark specific: amplitude of bump
+		double benchmark_galewsky_hamp = -1;
+
+		/// Galewsky-benchmark specific: latitude coordinate
+		double benchmark_galewsky_phi2 = -1;
+
+
 		/// radius
 		double radius_scale = 1;
 
@@ -233,6 +249,10 @@ public:
 			std::cout << " + random_seed: " << random_seed << std::endl;
 			std::cout << " + benchmark_scenario_id: " << benchmark_scenario_id << std::endl;
 			std::cout << " + benchmark_scenario_name: " << benchmark_scenario_name << std::endl;
+			std::cout << " + benchmark_setup_dealiased: " << benchmark_setup_dealiased << std::endl;
+			std::cout << " + benchmark_galewsky_umax: " << benchmark_galewsky_umax << std::endl;
+			std::cout << " + benchmark_galewsky_hamp: " << benchmark_galewsky_hamp << std::endl;
+			std::cout << " + benchmark_galewsky_phi2: " << benchmark_galewsky_phi2 << std::endl;
 			std::cout << " + radius_scale: " << radius_scale << std::endl;
 			std::cout << " + setup_coord_x: " << setup_coord_x << std::endl;
 			std::cout << " + setup_coord_y: " << setup_coord_y << std::endl;
@@ -320,6 +340,16 @@ public:
 		 */
 		bool f_sphere = false;
 
+	        /**
+		 * Flag to indicate the presence of topography
+		 */
+                bool use_topography = false;
+
+	        /**
+	         * Topography vector
+	         */
+	        SphereData h_topo = SphereData();
+	  
 		/**
 		 * Gravitational constant
 		 */
@@ -724,6 +754,19 @@ public:
         long_options[next_free_program_option] = {"benchmark", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
+        long_options[next_free_program_option] = {"benchmark-setup-dealiased", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
+
+        long_options[next_free_program_option] = {"benchmark-galewsky-umax", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
+        long_options[next_free_program_option] = {"benchmark-galewsky-hamp", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
+        long_options[next_free_program_option] = {"benchmark-galewsky-phi2", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
 
         // MISC
         long_options[next_free_program_option] = {"compute-errors", required_argument, 0, 256+next_free_program_option};
@@ -882,6 +925,11 @@ public:
 					c++;		if (i == c)	{	setup.setup_coord_y = atof(optarg);		continue;	}
 					c++;		if (i == c)	{	setup.advection_rotation_angle = atof(optarg);		continue;	}
 					c++;		if (i == c)	{	setup.benchmark_scenario_name = optarg;		continue;	}
+					c++;		if (i == c)	{	setup.benchmark_setup_dealiased = atof(optarg);		continue;	}
+
+					c++;		if (i == c)	{	setup.benchmark_galewsky_umax = atof(optarg);		continue;	}
+					c++;		if (i == c)	{	setup.benchmark_galewsky_hamp = atof(optarg);		continue;	}
+					c++;		if (i == c)	{	setup.benchmark_galewsky_phi2 = atof(optarg);		continue;	}
 
 					c++;		if (i == c)	{	misc.compute_errors = atoi(optarg);					continue;	}
 					c++;		if (i == c)	{	misc.stability_checks = atoi(optarg);				continue;	}

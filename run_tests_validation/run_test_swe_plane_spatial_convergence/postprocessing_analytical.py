@@ -57,7 +57,7 @@ for group_info in groups:
 	print("Group to be tested: "+str(group)+" "+str(conv_order))
 	print("")
 	#List of output files (all methods in group)
-	outputs = glob.glob("script_"+group+"_b*.out")
+	outputs = glob.glob("script_"+group+"*.out")
 	outputs.sort()
 			
 	#

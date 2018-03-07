@@ -76,8 +76,8 @@ def plot(x, y, marker, linestyle, label):
 	px = x[:]
 	py = y[:]
 
-	px = px[0::2]
-	py = py[0::2]
+	px = px[0::3]
+	py = py[0::3]
 
 	if len(px) % 2 == 0:
 		px.append(x[-1])
@@ -87,7 +87,8 @@ def plot(x, y, marker, linestyle, label):
 		text = "%.1f/%.1f" % (py[i], px[i])
 
 		if mode == 'dt':
-			ax.annotate(text, (px[i]*1.03, py[i]*0.92), fontsize=8)
+			#ax.annotate(text, (px[i]*1.03, py[i]*0.92), fontsize=8)
+			ax.annotate(px[i], (px[i]*1.03, py[i]*0.92), fontsize=8)
 		elif mode == 'wallclocktime':
 			ax.annotate(text, (px[i]*1.03, py[i]*1.03), fontsize=8)
 
@@ -120,7 +121,7 @@ for l in lines:
 
 	prev_name = d[0]
 	prev_name = prev_name.replace('script_ln2_g9.81_h10000_f7.2921e-05_a6371220_u0.0_U0_fsph0_tsm_', '')
-	#prev_name = prev_name.replace('tso2_tsob2_', '')
+	prev_name = prev_name.replace('tso2_tsob2_', '')
 	prev_name = re.sub(r"C[0-9]*_", "", prev_name)
 	prev_name = prev_name.replace('REXICI_n00000128_mr10.0_mi30.0_prcircle_gfs0.0000E+00_gfd0.0000E+00_gfe0.0000E+00_nrm0_hlf0_bf0_ext00_M0128_MPI_space01_time128', '')
 	prev_name = prev_name.replace('M0128_MPI_space01_time128', '')
@@ -159,6 +160,9 @@ for l in lines:
 plot(values_x, values_y, markers[c % len(markers)], linestyles[c % len(linestyles)], prev_name)
 
 
+#if mode == 'dt':
+	#ax.xaxis.set_ticks([2**i for i in range(0, 10)])
+	#ax.yaxis.set_ticks([2**i for i in range(-5, 5)])
 
 plt.legend()
 

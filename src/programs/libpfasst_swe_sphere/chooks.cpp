@@ -18,6 +18,52 @@ extern "C"
     // not implemented
   }
 
+  void cecho_output_invariants(
+			       SphereDataCtx *i_ctx,
+			       SphereDataVars *i_Y,
+			       int i_current_proc,
+			       int i_current_step,
+			       int i_current_iter,
+			       int i_nnodes,
+			       int i_niters
+			       )
+  {
+    const SphereData& phi_Y  = i_Y->get_phi();
+    const SphereData& vort_Y = i_Y->get_vort();
+    const SphereData& div_Y  = i_Y->get_div();
+
+    // get the current space-time level
+    const int level = i_Y->get_level();
+
+    // get the simulation variables
+    SimulationVariables* simVars         = i_ctx->get_simulation_variables();
+
+    // get the SphereDiagnostics object from context
+    SphereDiagnostics* sphereDiagnostics = i_ctx->get_sphere_diagnostics();
+
+    // get the SphereOperators object from context
+    SphereOperators* sphereOperators     = i_ctx->get_sphere_operators(level);
+
+    // compute the invariants
+    sphereDiagnostics->update_phi_vort_div_2_mass_energy_enstrophy(
+								   *sphereOperators,
+								   phi_Y,
+								   vort_Y,
+								   div_Y,
+								   *simVars
+								   );
+
+    std::cout << std::setprecision(20) 
+	      << "mass = " << simVars->diag.total_mass
+	      << " energy = " << simVars->diag.total_energy
+	      << " potential_enstrophy = " << simVars->diag.total_potential_enstrophy
+	      << std::endl;
+    
+    // save the invariants for plotting at the end
+    i_ctx->save_physical_invariants(i_current_step);
+
+  }
+
   void cecho_output_solution(
 			     SphereDataCtx *i_ctx,
 			     SphereDataVars *i_Y,

@@ -48,19 +48,23 @@ public:
 	SWE_Sphere_TS_lg_erk_lc_erk *lg_erk_lc_erk = nullptr;
 	SWE_Sphere_TS_lg_irk_lc_erk *lg_irk_lc_erk = nullptr;
 
-	SWE_Sphere_TS_lg_irk_lc_n_erk *lg_irk_lc_n_erk = nullptr;
 	SWE_Sphere_TS_lg_erk_lc_n_erk *lg_erk_lc_n_erk = nullptr;
+	SWE_Sphere_TS_lg_irk_lc_n_erk *lg_irk_lc_n_erk = nullptr;
+
 	SWE_Sphere_TS_l_irk *l_irk = nullptr;
 	SWE_Sphere_TS_l_lf *l_leapfrog = nullptr;
 	SWE_Sphere_TS_l_rexi *l_rexi = nullptr;
 	SWE_Sphere_TS_l_rexi *lg_rexi = nullptr;
+
 	SWE_Sphere_TS_l_cn *l_cn = nullptr;
 	SWE_Sphere_TS_ln_erk *ln_erk = nullptr;
+
 	SWE_Sphere_TS_l_na_erk *l_na_erk = nullptr;
 	SWE_Sphere_TS_l_rexi_n_erk *l_rexi_n_erk = nullptr;
 	SWE_Sphere_TS_l_rexi_n_etdrk *l_rexi_n_etdrk = nullptr;
 	SWE_Sphere_TS_lg_rexi_lc_n_erk *lg_rexi_lc_n_erk = nullptr;
 	SWE_Sphere_TS_lg_rexi_lc_n_etdrk *lg_rexi_lc_n_etdrk = nullptr;
+
 	SWE_Sphere_TS_lg_erk *lg_erk = nullptr;
 	SWE_Sphere_TS_lg_irk *lg_irk = nullptr;
 	SWE_Sphere_TS_lg_cn *lg_cn = nullptr;
@@ -85,6 +89,13 @@ public:
 			delete l_erk_n_erk;
 			l_erk_n_erk = nullptr;
 		}
+		if (l_irk_n_erk != nullptr)
+		{
+			delete l_irk_n_erk;
+			l_irk_n_erk = nullptr;
+		}
+
+
 		if (lg_erk_lc_erk != nullptr)
 		{
 			delete lg_erk_lc_erk;
@@ -95,51 +106,52 @@ public:
 			delete lg_irk_lc_erk;
 			lg_irk_lc_erk = nullptr;
 		}
-		if (l_irk_n_erk != nullptr)
+
+
+		if (lg_erk_lc_n_erk != nullptr)
 		{
-			delete l_irk_n_erk;
-			l_irk_n_erk = nullptr;
+			delete lg_erk_lc_n_erk;
+			lg_erk_lc_n_erk = nullptr;
 		}
 		if (lg_irk_lc_n_erk != nullptr)
 		{
 			delete lg_irk_lc_n_erk;
 			lg_irk_lc_n_erk = nullptr;
 		}
+
+
 		if (l_irk != nullptr)
 		{
 			delete l_irk;
 			l_irk = nullptr;
-		}
-		if (lg_irk != nullptr)
-		{
-			delete lg_irk;
-			lg_irk = nullptr;
-		}
-		if (l_cn != nullptr)
-		{
-			delete l_cn;
-			l_cn = nullptr;
-		}
-		if (lg_cn != nullptr)
-		{
-			delete lg_cn;
-			lg_cn = nullptr;
 		}
 		if (l_leapfrog != nullptr)
 		{
 			delete l_erk;
 			l_erk = nullptr;
 		}
-		if (lg_erk != nullptr)
+		if (l_rexi != nullptr)
 		{
-			delete lg_erk;
-			lg_erk = nullptr;
+			delete l_rexi;
+			l_rexi = nullptr;
+		}
+		if (lg_rexi != nullptr)
+		{
+			delete lg_rexi;
+			lg_rexi = nullptr;
+		}
+
+		if (l_cn != nullptr)
+		{
+			delete l_cn;
+			l_cn = nullptr;
 		}
 		if (ln_erk != nullptr)
 		{
 			delete ln_erk;
 			ln_erk = nullptr;
 		}
+
 		if (l_na_erk != nullptr)
 		{
 			delete l_na_erk;
@@ -155,16 +167,32 @@ public:
 			delete l_rexi_n_etdrk;
 			l_rexi_n_etdrk = nullptr;
 		}
-
-		if (l_rexi != nullptr)
+		if (lg_rexi_lc_n_erk != nullptr)
 		{
-			delete l_rexi;
-			l_rexi = nullptr;
+			delete lg_rexi_lc_n_erk;
+			lg_rexi_lc_n_erk = nullptr;
 		}
-		if (lg_rexi != nullptr)
+		if (lg_rexi_lc_n_etdrk != nullptr)
 		{
-			delete lg_rexi;
-			lg_rexi = nullptr;
+			delete lg_rexi_lc_n_etdrk;
+			lg_rexi_lc_n_etdrk = nullptr;
+		}
+
+
+		if (lg_erk != nullptr)
+		{
+			delete lg_erk;
+			lg_erk = nullptr;
+		}
+		if (lg_irk != nullptr)
+		{
+			delete lg_irk;
+			lg_irk = nullptr;
+		}
+		if (lg_cn != nullptr)
+		{
+			delete lg_cn;
+			lg_cn = nullptr;
 		}
 	}
 
@@ -303,11 +331,22 @@ public:
 
 			master = &(SWE_Sphere_TS_interface&)*lg_rexi_lc_n_erk;
 		}
-		else if (i_timestepping_method == "lg_erk_lc_n_erk")
+		else if (i_timestepping_method == "lg_erk_lc_n_erk" || i_timestepping_method == "lg_erk_lc_n_erk_ver0")
 		{
 			lg_erk_lc_n_erk = new SWE_Sphere_TS_lg_erk_lc_n_erk(i_simVars, i_op);
 			lg_erk_lc_n_erk->setup(
-					i_simVars.disc.timestepping_order
+					i_simVars.disc.timestepping_order,
+					0
+				);
+
+			master = &(SWE_Sphere_TS_interface&)*lg_erk_lc_n_erk;
+		}
+		else if (i_timestepping_method == "lg_erk_lc_n_erk_ver1")
+		{
+			lg_erk_lc_n_erk = new SWE_Sphere_TS_lg_erk_lc_n_erk(i_simVars, i_op);
+			lg_erk_lc_n_erk->setup(
+					i_simVars.disc.timestepping_order,
+					1
 				);
 
 			master = &(SWE_Sphere_TS_interface&)*lg_erk_lc_n_erk;

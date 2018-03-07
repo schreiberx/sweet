@@ -5,3 +5,6 @@ FFTW_*
 *.out
 *~
 output*
+*.eps
+*.directory
+*.png
