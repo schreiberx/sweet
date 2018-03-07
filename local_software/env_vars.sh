@@ -40,6 +40,9 @@ if [ "${HOSTNAME:0:15}" == "mac-login-intel" -o "${HOSTNAME:0:7}" == "mac-snb" ]
 	module unload gcc
 	module load gcc/7
 
+	echo "Loading binutils"
+	module load binutils/2.25
+
 #	module unload intel
 #	module load intel/18.0
 fi
