@@ -12,6 +12,7 @@
 #include "SWE_Sphere_TS_lg_erk_lc_n_erk.hpp"
 #include "SWE_Sphere_TS_lg_erk_lc_n_t_erk.hpp"
 #include "SWE_Sphere_TS_lg_irk_lc_n_erk_ver01.hpp"
+#include "SWE_Sphere_TS_l_irk_n_erk_ver01.hpp"
 #include "SWE_Sphere_TS_l_irk.hpp"
 #include "SWE_Sphere_TS_ln_erk.hpp"
 #include "SWE_Sphere_TS_lg_irk.hpp"
@@ -46,11 +47,17 @@ public:
 								    ((*levelSingletons)[levelSingletons->size()-1].op)
 								    );
     timestepper_lg_irk_lc_n_erk->setup(2,2,1);
+    timestepper_l_irk_n_erk = new SWE_Sphere_TS_l_irk_n_erk(
+							    *simVars,
+							    ((*levelSingletons)[levelSingletons->size()-1].op)
+							    );
+    timestepper_l_irk_n_erk->setup(2,2,1);
+
     timestepper_ln_erk = new SWE_Sphere_TS_ln_erk(
 								    *simVars,
 								    ((*levelSingletons)[levelSingletons->size()-1].op)
 								    );
-    timestepper_ln_erk->setup(2);
+    timestepper_ln_erk->setup(4);
 
 
 
@@ -85,8 +92,8 @@ public:
       {
 	// select first order integration in time for explicit
 	// and first order integration for implicit (only order currently supported)
-	simVars->disc.timestepping_order  = 1; 
-	simVars->disc.timestepping_order2 = 1; 
+	simVars->disc.timestepping_order  = 2; 
+	simVars->disc.timestepping_order2 = 2; 
 		
 	// these timesteppers contain the functions called by LibPFASST 
 	if (simVars->libpfasst.implicit_coriolis_force) 
@@ -108,11 +115,7 @@ public:
 						*simVars,
 						((*levelSingletons)[level].op)
 						);
-		  std::cout << "time stepper was created" << std::endl;
 	          timestepper_lg_erk_lc_n_t_erk[level]->setup(simVars->disc.timestepping_order);
-		  
-		   
-		  std::cout << "time stepper was setup" << std::endl;
                 }
 	      else
 		{
@@ -144,6 +147,10 @@ public:
 	  }
 	else
 	  {
+	    simVars->disc.timestepping_order  = 1; 
+	    simVars->disc.timestepping_order2 = 1; 
+
+
 	    if (simVars->libpfasst.implicit_coriolis_force)
 	      {
 		timestepper_l_irk[level] = 
@@ -230,13 +237,26 @@ public:
     return &((*levelSingletons)[i_level].dataConfig);
   }
 
+  // Getter for the sphere data configuration with no dealiasing at the fine level
+  SphereDataConfig* get_sphere_data_config_nodealiasing() const 
+  {
+    return &((*levelSingletons)[0].dataConfigNoDealiasing);
+  }
+
   // Getter for the sphere data operators at level i_level
   SphereOperators* get_sphere_operators(
-				      int i_level
-				      ) const
+					int i_level
+					) const
   {
     return &((*levelSingletons)[i_level].op);
   }
+
+  // Getter for the sphere data operators with no dealiasing at the fine level
+  SphereOperators* get_sphere_operators_nodealiasing() const
+  {
+    return &((*levelSingletons)[0].opNoDealiasing);
+  }
+
 
   // Getter for the sphere diagnostics at the fine level
   SphereDiagnostics* get_sphere_diagnostics() 
@@ -317,6 +337,13 @@ public:
     return timestepper_lg_irk_lc_n_erk;
   }
 
+  // Getter for linear implicit nonlinear explicit SWEET time stepper at the fine level
+  SWE_Sphere_TS_l_irk_n_erk* get_l_irk_n_erk_timestepper() const 
+  {
+    return timestepper_l_irk_n_erk;
+  }
+
+
   // Getter for the explicit timestepper
   SWE_Sphere_TS_ln_erk* get_ln_erk_timestepper() const 
   {
@@ -379,6 +406,7 @@ protected:
   std::vector<SWE_Sphere_TS_lg_irk*>            timestepper_lg_irk;
   std::vector<SWE_Sphere_TS_l_rexi*>            timestepper_l_rexi; 
 
+  SWE_Sphere_TS_l_irk_n_erk*     timestepper_l_irk_n_erk;
   SWE_Sphere_TS_lg_irk_lc_n_erk* timestepper_lg_irk_lc_n_erk;
   SWE_Sphere_TS_ln_erk*          timestepper_ln_erk;
 

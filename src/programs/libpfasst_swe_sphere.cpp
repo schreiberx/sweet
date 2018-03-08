@@ -67,7 +67,6 @@ int main(int i_argc, char *i_argv[])
     }
 
   simVars.timecontrol.current_timestep_size = - simVars.sim.CFL; 
-  simVars.outputConfig();
 
   // define the number of levels and SDC nodes for each level
   // note: level #nlevels-1 is the finest, level #0 is the coarsest
@@ -199,8 +198,6 @@ int main(int i_argc, char *i_argv[])
 						);
   }
 
-  std::cout << "avant" << std::endl;
-
   // instantiate the SphereDataCtx object 
   SphereDataCtx* pd_ctx = new SphereDataCtx(
 					    &simVars,
@@ -208,12 +205,6 @@ int main(int i_argc, char *i_argv[])
 					    nnodes
 					    );
 
-  std::cout << "apres" << std::endl;
-
-  // output the info for the levels
-  //for (int i = 0; i < simVars.libpfasst.nlevels; i++)
-  //  std::cout << levelSingletons[simVars.libpfasst.nlevels-1-i].dataConfig.getConfigInformationString() << std::endl;
-  
   // get the C string length (needed by Fortran...)
   int string_length = simVars.libpfasst.nodes_type.size();
 

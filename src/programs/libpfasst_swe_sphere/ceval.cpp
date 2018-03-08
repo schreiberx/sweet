@@ -129,7 +129,7 @@ extern "C"
 
     // set the time stepping params
     i_ctx->setup_time_steps(
-			    i_t,
+			    0,
 			    i_dt
 			    );
 
@@ -139,11 +139,6 @@ extern "C"
     if (simVars->sim.use_topography)
       write_file(*i_ctx, simVars->sim.h_topo,  "prog_h_topo");
 
-    // initialize the variables
-    phi_Y.physical_set_zero();
-    vort_Y.physical_set_zero();
-    div_Y.physical_set_zero();
-
     // get the configuration for this level
     SphereDataConfig* data_config              = i_ctx->get_sphere_data_config(o_Y->get_level());
     SphereDataConfig* data_config_nodealiasing = i_ctx->get_sphere_data_config_nodealiasing();
@@ -152,12 +147,12 @@ extern "C"
     SphereOperators* op              = i_ctx->get_sphere_operators(o_Y->get_level());
     SphereOperators* op_nodealiasing = i_ctx->get_sphere_operators_nodealiasing();
 
-    // instantiate h, u, and v to get the initial condition
+    // instantiate phi, vort, and div without dealiasing to get the initial condition
     SphereData phi_Y_nodealiasing(data_config_nodealiasing);
     SphereData vort_Y_nodealiasing(data_config_nodealiasing);
     SphereData div_Y_nodealiasing(data_config_nodealiasing);
 
-    // get the initial condition in h, u, and v
+    // get the initial condition in phi, vort, and div
     SphereBenchmarksCombined::setupInitialConditions(phi_Y_nodealiasing, 
 						     vort_Y_nodealiasing, 
 						     div_Y_nodealiasing, 
@@ -178,6 +173,11 @@ extern "C"
     write_file(*i_ctx, vort_Y, "prog_vort_init");
     write_file(*i_ctx, div_Y,  "prog_div_init");
 
+    phi_Y.request_data_spectral();
+
+    std::string name = "prog_phi_init2_"+std::to_string(nsteps)+"_";
+    write_file(*i_ctx, phi_Y, name.c_str());
+
     write_spectrum_to_file(*i_ctx, phi_Y,  "init_spectrum_phi");
     write_spectrum_to_file(*i_ctx, vort_Y, "init_spectrum_vort");
     write_spectrum_to_file(*i_ctx, div_Y,  "init_spectrum_div");
@@ -196,10 +196,20 @@ extern "C"
     // compute the reference solution (i.e., obtained with the reference time stepper)
     while (current_simulation_time < i_t)
       {
-    	if (nsteps%100 == 0)
-    	  std::cout << "current_simulation_time = "
-    		    << current_simulation_time
-    		    << std::endl;
+    	if (nsteps%120 == 0) 
+	  {
+	    std::cout << "current_simulation_time = "
+		      << current_simulation_time
+		      << std::endl;
+
+	    // std::string name = "prog_phi_ref_"+std::to_string(nsteps)+"_";
+	    // write_file(*i_ctx, phi_Y, name.c_str());
+	    // name = "prog_vort_ref_"+std::to_string(nsteps)+"_";
+	    // write_file(*i_ctx, vort_Y,name.c_str());
+	    // name = "prog_div_ref_"+std::to_string(nsteps)+"_";
+	    // write_file(*i_ctx, div_Y, name.c_str());
+
+	  }
 
     	// solve the implicit system using the Helmholtz solver
     	timestepper->run_timestep(
