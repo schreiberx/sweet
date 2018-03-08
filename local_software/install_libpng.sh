@@ -5,7 +5,7 @@ source config.sh
 echo "*** libpng ***"
 
 if [ ! -e "$DST_DIR/lib/libpng.so"  -o "$1" != "" ]; then
-	SRC_LINK="http://www.martin-schreiber.info/pub/sweet_local_software/libpng-1.6.29.tar.gz"
+	SRC_LINK="https://www.martin-schreiber.info/pub/sweet_local_software/libpng-1.6.29.tar.gz"
 	FILENAME="`basename $SRC_LINK`"
 	BASENAME="libpng-1.6.29"
 

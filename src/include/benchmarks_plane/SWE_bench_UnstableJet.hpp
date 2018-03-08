@@ -19,7 +19,7 @@
 /**
  * Implement unstable jet initial conditions
  *
- * Mimics Spherical Mountain Wave test case 5
+ * Mimics Galewsky
  *
  *
  **/

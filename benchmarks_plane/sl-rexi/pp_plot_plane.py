@@ -19,6 +19,18 @@ zoom_lat = False
 
 zoom_lat = 'eta' in sys.argv[1]
 
+symmetric = False
+
+if '_vort_' in sys.argv[1]:
+	symmetric = True
+
+if '_u_' in sys.argv[1]:
+	symmetric = True
+
+if '_v_' in sys.argv[1]:
+	symmetric = True
+
+
 fontsize=8
 
 figsize=(9, 7)
@@ -39,6 +51,11 @@ for filename in sys.argv[1:]:
 			cmax = -1e-4
 			#cmin *= 1.2
 			#cmax *= 1.2
+
+	if '_vort_' in filename:
+		if cmin < 0 and cmax > 0:
+			cmax = max(abs(cmin), cmax)
+			cmin = -cmax
 
 	plt.figure(figsize=figsize)
 

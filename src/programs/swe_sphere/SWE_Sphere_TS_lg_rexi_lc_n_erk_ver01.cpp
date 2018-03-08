@@ -182,7 +182,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_erk::setup(
 	// Only request 1st order time stepping methods for irk and erk
 	// These 1st order methods will be combined to higher-order methods in this class
 	//
-	timestepping_lg_erk_lc_n_erk.setup(1);
+	timestepping_lg_erk_lc_n_erk.setup(1, -1);
 }
 
 

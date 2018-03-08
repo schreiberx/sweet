@@ -816,8 +816,8 @@ int main(int i_argc, char *i_argv[])
 	sphereDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
 
 	int res_physical_nodealias[2] = {
-			2*(simVars.disc.res_spectral[0]+1),
-			simVars.disc.res_spectral[1]+1
+			2*simVars.disc.res_spectral[0],
+			simVars.disc.res_spectral[1]
 		};
 
 	sphereDataConfigInstance_nodealiasing.setupAuto(res_physical_nodealias, simVars.disc.res_spectral);

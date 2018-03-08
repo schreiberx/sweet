@@ -6,7 +6,7 @@ source config.sh
 echo "*** libfreetype ***"
 
 if [ ! -e "$DST_DIR/lib/libfreetype6.so"  -o "$1" != "" ]; then
-	SRC_LINK="http://www.martin-schreiber.info/pub/sweet_local_software/freetype-2.8.tar.gz"
+	SRC_LINK="https://www.martin-schreiber.info/pub/sweet_local_software/freetype-2.8.tar.gz"
 	FILENAME="`basename $SRC_LINK`"
 	BASENAME="freetype-2.8"
 

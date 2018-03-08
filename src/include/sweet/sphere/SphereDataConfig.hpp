@@ -379,6 +379,9 @@ public:
 
 	)
 	{
+		mmax--;
+		nmax--;
+
 		cleanup();
 
 		shtns_verbose(0);			// displays informations during initialization.
@@ -425,6 +428,9 @@ public:
 			int *o_nlat		/// physical resolution along latitude
 	)
 	{
+		i_mmax--;
+		i_nmax--;
+
 		cleanup();
 
 		shtns_verbose(0);			// displays informations during initialization.
@@ -474,6 +480,9 @@ public:
 			int i_nmax		/// latitude modes
 	)
 	{
+		i_mmax--;
+		i_nmax--;
+
 		cleanup();
 
 		shtns_verbose(0);			// displays informations during initialization.

@@ -10,7 +10,7 @@ source config.sh
 echo "*** Python3 ***"
 
 if [ ! -e "$DST_DIR/bin/python3"  -o "$1" != "" ]; then
-	SRC_LINK="http://www.martin-schreiber.info/pub/sweet_local_software/Python-3.6.2.tgz"
+	SRC_LINK="https://www.martin-schreiber.info/pub/sweet_local_software/Python-3.6.2.tgz"
 	#SRC_LINK="https://www.python.org/ftp/python/2.7.11/Python-2.7.11.tgz"
 	FILENAME="`basename $SRC_LINK`"
 	BASENAME="Python-3.6.2"

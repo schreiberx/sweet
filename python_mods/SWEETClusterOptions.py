@@ -55,7 +55,7 @@ class SWEETClusterOptions:
 	):
 		self.target_machine = target_machine
 
-		if self.target_machine == '':
+		if self.target_machine == 'auto':
 			# Autodetect host with FQDN
 			#hostname = socket.gethostname()
 			fqdn = socket.getfqdn()
@@ -102,12 +102,16 @@ class SWEETClusterOptions:
 			self.total_max_nodes = 1
 			self.total_max_cores = self.cores_per_node*self.total_max_nodes
 
-		else:
+		elif self.target_machine == '':
 			print("Unknown Target: "+str(self.target_machine))
 			print("Using default values")
 
 			self.total_max_cores = multiprocessing.cpu_count()
 			self.cores_per_node = self.total_max_cores
+
+		else:
+			raise Exception("Invalid target machine '"+self.target_machine+"'")
+
 
 
 		self.total_max_nodes = self.total_max_cores//self.cores_per_node
@@ -642,13 +646,16 @@ export OMP_NUM_THREADS=16
 			mpi_exec_prefix = "mpiexec.hydra -ppn 1 -n 1"
 
 
-		else:
+		elif self.target_machine == '':
 			content = ""
 			content += "#!/bin/bash\n"
 			content += "\n"
 			#content += "export OMP_PROC_BIND=CLOSE\n"
 			content += "\n"
 			mpi_exec_prefix = ""
+
+		else:
+			raise Exception("Invalid target machine "+self.target_machine)
  
 
 

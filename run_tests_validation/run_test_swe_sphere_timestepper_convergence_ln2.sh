@@ -45,6 +45,9 @@ else
 	./jobs_create.py ln2 lg_irk_lc_n_erk_ver0 2 2 0 || exit 1
 	./jobs_create.py ln2 lg_irk_lc_n_erk_ver1 2 2 0 || exit 1
 
+	./jobs_create.py ln2 lg_erk_lc_n_erk_ver0 2 2 0 || exit 1
+	./jobs_create.py ln2 lg_erk_lc_n_erk_ver1 2 2 0 || exit 1
+
 	./jobs_create.py ln2 l_rexi_n_erk_ver0 2 2 0 || exit 1
 	./jobs_create.py ln2 l_rexi_n_erk_ver1 2 2 0 || exit 1
 
