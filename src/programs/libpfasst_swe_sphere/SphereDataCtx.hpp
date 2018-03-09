@@ -54,9 +54,9 @@ public:
     timestepper_l_irk_n_erk->setup(2,2,1);
 
     timestepper_ln_erk = new SWE_Sphere_TS_ln_erk(
-								    *simVars,
-								    ((*levelSingletons)[levelSingletons->size()-1].op)
-								    );
+						  *simVars,
+						  ((*levelSingletons)[levelSingletons->size()-1].op)
+						  );
     timestepper_ln_erk->setup(4);
 
 
@@ -124,7 +124,7 @@ public:
 						*simVars,
 						((*levelSingletons)[level].op)
 						);
-	          timestepper_lg_erk_lc_n_erk[level]->setup(simVars->disc.timestepping_order);
+	          timestepper_lg_erk_lc_n_erk[level]->setup(simVars->disc.timestepping_order,1);
                 }
 	  }
 
