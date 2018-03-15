@@ -19,6 +19,7 @@
 #endif
 #include <benchmarks_plane/SWE_bench_UnstableJet.hpp>
 #include <benchmarks_plane/SWE_bench_UnstableJetFast.hpp>
+#include <benchmarks_plane/SWE_bench_UnstableJetAdv.hpp>
 #include <benchmarks_plane/SWE_bench_GaussianBump.hpp>
 
 
@@ -122,6 +123,20 @@ public:
 
 				return true;
 			}
+
+		else if (io_simVars.setup.benchmark_scenario_name == "unstablejetadv")
+		{
+			SWE_bench_UnstableJetAdv swe_unstablejetadv(io_simVars, io_op);
+
+			swe_unstablejetadv.setup(
+					o_h_pert,
+					o_u,
+					o_v
+			);
+
+			return true;
+		}
+
 
 		else if (io_simVars.setup.benchmark_scenario_name == "gaussian_bump")
 		{
