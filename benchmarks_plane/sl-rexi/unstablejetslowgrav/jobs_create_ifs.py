@@ -58,7 +58,7 @@ p.runtime.rexi_method = 'direct'
 #-----------------------------       
 p = RuntimeSWEPlaneEarthParam(p)
 #p = RuntimeSWENonDimParam(p)
-p.runtime.g=p.runtime.g
+p.runtime.g=p.runtime.g/3.0
 viscref = 10000000000000000.0
 p.runtime.viscosity = 0.0 #10000000000000000.0
 p.runtime.viscosity_order = 4
@@ -66,12 +66,12 @@ p.runtime.viscosity_order = 4
 #
 # Time, Mode and Physical resolution
 #
-timelevels = 10 #7 #5
+timelevels = 8 #7 #5
 timestep_size_reference = earth.day/24 #3600 #1 hour  #864000/10 #1 day
 timestep_sizes = [timestep_size_reference*(2.0**(-i)) for i in range(0, timelevels)]
 
-p.runtime.simtime = 5*earth.day #1 day #timestep_size_reference #864000 #10 days
-p.runtime.output_timestep_size = p.runtime.simtime/20
+p.runtime.simtime = 20*earth.day #1 day #timestep_size_reference #864000 #10 days
+p.runtime.output_timestep_size = p.runtime.simtime/40
 datastorage = p.runtime.simtime / p.runtime.output_timestep_size
 if datastorage > 200:
 	print("Warning::Too much data will be stored, are you sure you wish to run this?") 
@@ -102,8 +102,8 @@ for group in groups:
 	# 2nd order nonlinear non-fully-spectral
 	if group == 'sl-rexi':
 		ts_methods = [
-			#['ln_erk',		4,	4],	# reference solution - spectral (128 grid points)
-			['ln_erk',		2,	2],	# FD- C-grid
+			['ln_erk',		4,	4],	# reference solution - spectral (128 grid points)
+			#['ln_erk',		2,	2],	# FD- C-grid
 			['l_cn_na_sl_nd_settls', 2,	2],	# SI-SL-SP
 	        ['l_rexi_na_sl_nd_settls',	2,	2], #SL-EXP-SETTLS
 			#['l_rexi_na_sl_nd_etdrk',	2,	2], #SL-EXP-ETDRK
@@ -156,7 +156,7 @@ for group in groups:
 		for idx in range(0, phys_res_levels): #, phys_res in phys_res_list:
 		
 			p.runtime.timestep_size = timestep_sizes[idx]
-			if group == 'ln2space' and 'ln_erk' in tsm[0]:
+			if group == 'sl-rexi' and 'ln_erk' in tsm[0]:
 				p.runtime.timestep_size = p.runtime.timestep_size / 1000.0
 			
 			p.runtime.timestepping_method = tsm[0]
