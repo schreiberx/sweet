@@ -180,16 +180,19 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 	T sqrt_g = rexiFunctions.l_sqrt(g);
 
 
+#if SWEET_SPACE_THREADING
+	#pragma omp parallel for OPENMP_PAR_SIMD proc_bind(close) collapse(2)
+#endif
 	for (std::size_t ik1 = 0; ik1 < io_h_pert.planeDataConfig->spectral_data_size[1]; ik1++)
 	{
-		T k1;
-		if (ik1 < io_h_pert.planeDataConfig->spectral_data_size[1]/2)
-			k1 = (T)ik1;
-		else
-			k1 = (T)((int)ik1-(int)io_h_pert.planeDataConfig->spectral_data_size[1]);
-
 		for (std::size_t ik0 = 0; ik0 < io_h_pert.planeDataConfig->spectral_data_size[0]; ik0++)
 		{
+			T k1;
+			if (ik1 < io_h_pert.planeDataConfig->spectral_data_size[1]/2)
+				k1 = (T)ik1;
+			else
+				k1 = (T)((int)ik1-(int)io_h_pert.planeDataConfig->spectral_data_size[1]);
+
 			T k0 = (T)ik0;
 
 			complex U[3];
@@ -637,16 +640,19 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 	T sqrt_h = rexiFunctions.l_sqrt(h);
 	T sqrt_g = rexiFunctions.l_sqrt(g);
 
+#if SWEET_SPACE_THREADING
+	#pragma omp parallel for OPENMP_PAR_SIMD proc_bind(close) collapse(2)
+#endif
 	for (std::size_t ik1 = 0; ik1 < i_h_pert.planeDataConfig->spectral_complex_data_size[1]; ik1++)
 	{
-		T k1;
-		if (ik1 < i_h_pert.planeDataConfig->spectral_complex_data_size[1]/2)
-			k1 = (T)ik1;
-		else
-			k1 = -(T)((int)ik1-(int)i_h_pert.planeDataConfig->spectral_complex_data_size[1]);
-
 		for (std::size_t ik0 = 0; ik0 < i_h_pert.planeDataConfig->spectral_complex_data_size[0]; ik0++)
 		{
+			T k1;
+			if (ik1 < i_h_pert.planeDataConfig->spectral_complex_data_size[1]/2)
+				k1 = (T)ik1;
+			else
+				k1 = -(T)((int)ik1-(int)i_h_pert.planeDataConfig->spectral_complex_data_size[1]);
+
 			T k0;
 			if (ik0 < i_h_pert.planeDataConfig->spectral_complex_data_size[0]/2)
 				k0 = (T)ik0;

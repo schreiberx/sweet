@@ -10,7 +10,7 @@ if [ -e "$DST_DIR/bin/as" -a "$1" == "" ]; then
 fi
 
 
-SRC_LINK="http://www.martin-schreiber.info/pub/sweet_local_software/binutils-2.29.tar.gz"
+SRC_LINK="https://www.martin-schreiber.info/pub/sweet_local_software/binutils-2.29.tar.gz"
 FILENAME="`basename $SRC_LINK`"
 BASENAME="binutils-2.29"
 

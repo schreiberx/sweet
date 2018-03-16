@@ -9,8 +9,8 @@ if [ -e "$DST_DIR/lib/libtbb.so"  -o "$1" != "" ]; then
 	exit 1
 fi
 
-SRC_LINK="http://www.martin-schreiber.info/pub/sweet_local_software/tbb2018_20170919oss_lin.tgz"
-#SRC_LINK="http://www.fftw.org/fftw-3.3.4.tar.gz"
+SRC_LINK="https://www.martin-schreiber.info/pub/sweet_local_software/tbb2018_20170919oss_lin.tgz"
+#SRC_LINK="https://www.fftw.org/fftw-3.3.4.tar.gz"
 FILENAME="`basename $SRC_LINK`"
 #	BASENAME="fftw-3.3.4"
 BASENAME="tbb2018_20170919oss"

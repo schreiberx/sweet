@@ -5,7 +5,7 @@ source config.sh
 
 echo "*** LIKWID ***"
 if [ ! -e "$DST_DIR/bin/libwid-topology" -o "$1" != "" ]; then
-	SRC_LINK="http://ftp.fau.de/pub/likwid/likwid-4.2.0.tar.gz"
+	SRC_LINK="https://ftp.fau.de/pub/likwid/likwid-4.2.0.tar.gz"
 	FILENAME="`basename $SRC_LINK`"
 	BASENAME="likwid-4.2.0"
 

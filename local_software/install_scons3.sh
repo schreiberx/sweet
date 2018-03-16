@@ -5,7 +5,7 @@ source config.sh
 
 echo "*** SCONS ***"
 if [ ! -e "$DST_DIR/bin/scons"  -o "$1" != "" ]; then
-	SRC_LINK="http://www.martin-schreiber.info/pub/sweet_local_software/scons-3.0.0.tar.gz"
+	SRC_LINK="https://www.martin-schreiber.info/pub/sweet_local_software/scons-3.0.0.tar.gz"
 	FILENAME="`basename $SRC_LINK`"
 	BASENAME="scons-3.0.0"
 
