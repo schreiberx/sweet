@@ -181,7 +181,7 @@ void SWE_Plane_TS_l_rexi::setup(
 	if (simVars.rexi.rexi_terms_add_u0)
 	{
 		gamma0 = 1.0;
-		for (int i = 0; i < rexi_alpha.size(); i++)
+		for (int i = 0; i < (int)rexi_alpha.size(); i++)
 			gamma0 -= rexi_beta[i] / rexi_alpha[i];
 	}
 
