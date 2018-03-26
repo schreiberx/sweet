@@ -113,7 +113,7 @@ public:
 				std::cout << "**************************************************************" << std::endl;
 				std::cout << "* WARNING: " << i_function_name << " typically requires __float128 precision!" << std::endl;
 				std::cout << "**************************************************************" << std::endl;
-				FatalError("Seriously, you shouldn't use me with only double precision!");
+//				FatalError("Seriously, you shouldn't use me with only double precision!");
 			}
 		}
 	}
