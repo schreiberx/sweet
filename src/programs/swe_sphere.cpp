@@ -592,7 +592,7 @@ public:
 	)
 	{
 		if (simVars.timecontrol.run_simulation_timesteps)
-			for (int i = 0; i < i_num_iterations; i++)
+			for (int i = 0; i < i_num_iterations && !should_quit(); i++)
 				run_timestep();
 	}
 
