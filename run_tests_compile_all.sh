@@ -27,11 +27,11 @@ echo $SCONS
 $SCONS || exit
 
 echo
-echo "LAGRANGIAN TEST"
-SCONS="scons --program=lagrangian_test --gui=disable --plane-spectral-space=enable --mode=debug"
+echo "LAGRANGIAN PLANE TEST"
+SCONS="scons --program=lagrangian_plane_test --gui=disable --plane-spectral-space=enable --mode=debug"
 echo "$SCONS"
 $SCONS || exit
-SCONS="scons --program=lagrangian_test --gui=disable --plane-spectral-space=disable --mode=debug" 
+SCONS="scons --program=lagrangian_plane_test --gui=disable --plane-spectral-space=disable --mode=debug" 
 echo "$SCONS"
 $SCONS || exit
 
