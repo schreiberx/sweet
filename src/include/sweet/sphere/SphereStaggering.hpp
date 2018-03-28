@@ -1,19 +1,19 @@
 /*
- * Staggering.hpp
+ * SphereStaggering.hpp
  *
  *  Created on: 26 May 2017
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#ifndef SRC_INCLUDE_SWEET_PLANE_PLANESTAGGERING_HPP_
-#define SRC_INCLUDE_SWEET_PLANE_PLANESTAGGERING_HPP_
+#ifndef SRC_INCLUDE_SWEET_SPHERE_SPHERESTAGGERING_HPP_
+#define SRC_INCLUDE_SWEET_SPHERE_SPHERESTAGGERING_HPP_
 
 
 
 /**
  * Class which defines staggering for all variables
  */
-class Staggering
+class SphereStaggering
 {
 public:
 	double h[2] = {-0.5,-0.5};
@@ -24,7 +24,7 @@ public:
 
 
 public:
-	Staggering()
+	SphereStaggering()
 	{
 		setup_a_staggering();
 	}
@@ -84,4 +84,4 @@ public:
 
 
 
-#endif /* SRC_INCLUDE_SWEET_PLANE_PLANESTAGGERING_HPP_ */
+#endif /* SRC_INCLUDE_SWEET_SPHERE_SPHERESTAGGERING_HPP_ */

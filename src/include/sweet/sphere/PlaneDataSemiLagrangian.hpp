@@ -10,8 +10,8 @@
 #include <sweet/plane/Convert_PlaneData_to_ScalarDataArray.hpp>
 #include <sweet/plane/Convert_ScalarDataArray_to_PlaneData.hpp>
 #include <sweet/plane/PlaneStaggering.hpp>
+#include <sweet/sphere/SphereDataSampler.hpp>
 #include "PlaneData.hpp"
-#include "PlaneDataSampler.hpp"
 #include <sweet/ScalarDataArray.hpp>
 
 class PlaneDataSemiLagrangian

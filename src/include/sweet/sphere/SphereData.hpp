@@ -1026,7 +1026,7 @@ public:
 	}
 
 
-	double physical_get(
+	double p_physical_get(
 			int i_lon,
 			int i_lat
 	)	const

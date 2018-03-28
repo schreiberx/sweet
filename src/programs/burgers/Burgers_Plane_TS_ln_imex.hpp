@@ -17,7 +17,7 @@
 
 #include <sweet/sweetmath.hpp>
 #include <sweet/FatalError.hpp>
-#include <sweet/plane/Staggering.hpp>
+#include <sweet/plane/PlaneStaggering.hpp>
 
 class Burgers_Plane_TS_ln_imex	: public Burgers_Plane_TS_interface
 {

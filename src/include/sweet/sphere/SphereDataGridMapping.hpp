@@ -1,50 +1,50 @@
 /*
- * PlaneDataGridMapping.hpp
+ * SphereDataGridMapping.hpp
  *
  *  Created on: 18 Jul 2017
  *      Author: martin
  */
 
-#ifndef SRC_INCLUDE_SWEET_PLANE_PLANEDATAGRIDMAPPING_HPP_
-#define SRC_INCLUDE_SWEET_PLANE_PLANEDATAGRIDMAPPING_HPP_
+#ifndef SRC_INCLUDE_SWEET_SPHERE_SPHEREDATAGRIDMAPPING_HPP_
+#define SRC_INCLUDE_SWEET_SPHERE_SPHEREDATAGRIDMAPPING_HPP_
 
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/sphere/SphereData.hpp>
 #include <sweet/ScalarDataArray.hpp>
-#include <sweet/plane/PlaneDataSampler.hpp>
-#include <sweet/plane/PlaneStaggering.hpp>
+#include <sweet/sphere/SphereStaggering.hpp>
+#include <sweet/sphere/SphereDataSampler.hpp>
 
-class PlaneDataGridMapping
+class SphereDataGridMapping
 {
 public:
 	//(x,y) grid points, refers to lower left corner of cells
 	ScalarDataArray pos_ll_x, pos_ll_y;
 
 	// Interpolation stuff
-	PlaneDataSampler sampler2D;
+	SphereDataSampler sampler2D;
 
 	// Staggering
-	Staggering staggering;
+	SphereStaggering staggering;
 
 public:
-	PlaneDataGridMapping()
+	SphereDataGridMapping()
 	{
 	}
 
 
 	void setup(
 			SimulationVariables i_simVars,
-			PlaneDataConfig *i_planeDataConfig
+			SphereDataConfig *i_sphereDataConfig
 	)
 	{
 		// ll  refers to lower left corner of the cell.
-		pos_ll_x.setup(i_planeDataConfig->physical_array_data_number_of_elements);
-		pos_ll_y.setup(i_planeDataConfig->physical_array_data_number_of_elements);
+		pos_ll_x.setup(i_sphereDataConfig->physical_array_data_number_of_elements);
+		pos_ll_y.setup(i_sphereDataConfig->physical_array_data_number_of_elements);
 
 		std::size_t idx = 0;
-		for (std::size_t j = 0; j < i_planeDataConfig->physical_res[1]; j++)
+		for (std::size_t j = 0; j < i_sphereDataConfig->physical_res[1]; j++)
 		{
-			for (std::size_t i = 0; i < i_planeDataConfig->physical_res[0]; i++)
+			for (std::size_t i = 0; i < i_sphereDataConfig->physical_res[0]; i++)
 			{
 				pos_ll_x.scalar_data[idx] = ((double)i)*i_simVars.sim.domain_size[0]/(double)i_simVars.disc.res_physical[0];
 				pos_ll_y.scalar_data[idx] = ((double)j)*i_simVars.sim.domain_size[1]/(double)i_simVars.disc.res_physical[1];
@@ -53,7 +53,7 @@ public:
 		}
 
 		// Setup sampler for future interpolations
-		sampler2D.setup(i_simVars.sim.domain_size, i_planeDataConfig);
+		sampler2D.setup(i_simVars.sim.domain_size, i_sphereDataConfig);
 
 		if (i_simVars.disc.use_staggering)
 			staggering.setup_c_staggering();
@@ -63,8 +63,8 @@ public:
 
 
 	void mapCtoA_u(
-			const PlaneData &i_src,
-			PlaneData &o_dst
+			const SphereData &i_src,
+			SphereData &o_dst
 	)
 	{
 		// remap solution to A grid
@@ -73,8 +73,8 @@ public:
 
 
 	void mapCtoA_v(
-			const PlaneData &i_src,
-			PlaneData &o_dst
+			const SphereData &i_src,
+			SphereData &o_dst
 	)
 	{
 		// remap solution to A grid
@@ -85,8 +85,8 @@ public:
 
 
 	void mapAtoC_u(
-			const PlaneData &i_src,
-			PlaneData &o_dst
+			const SphereData &i_src,
+			SphereData &o_dst
 	)
 	{
 		// remap solution to C grid
@@ -95,8 +95,8 @@ public:
 
 
 	void mapAtoC_v(
-			const PlaneData &i_src,
-			PlaneData &o_dst
+			const SphereData &i_src,
+			SphereData &o_dst
 	)
 	{
 		// remap solution to C grid
@@ -106,4 +106,4 @@ public:
 
 
 
-#endif /* SRC_INCLUDE_SWEET_PLANE_PLANEDATAGRIDMAPPING_HPP_ */
+#endif /* SRC_INCLUDE_SWEET_SPHERE_SPHEREDATAGRIDMAPPING_HPP_ */

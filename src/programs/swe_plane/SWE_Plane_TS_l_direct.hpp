@@ -11,11 +11,11 @@
 #include <limits>
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>
-#include <sweet/plane/Staggering.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/plane/PlaneDataGridMapping.hpp>
 #include <rexi/REXIFunctions.hpp>
+#include <sweet/plane/PlaneStaggering.hpp>
 
 #include "../swe_plane/SWE_Plane_TS_interface.hpp"
 
