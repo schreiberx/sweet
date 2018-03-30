@@ -149,12 +149,12 @@ public:
 		ScalarDataArray posy_d(planeDataConfig->physical_array_data_number_of_elements);
 		ScalarDataArray* output_pos_departure[2] = {&posx_d, &posy_d};
 
-		semiLagrangian.compute_departure_points_settls(
-				vel_prev,
-				vel,
-				input_pos_arrival,
+		semiLagrangian.semi_lag_departure_points_settls(
+				prog_u_prev, prog_v_prev,
+				prog_u, prog_v,
+				posx_a, posy_a,
 				dt,
-				output_pos_departure
+				posx_d, posy_d
 		);
 
 		prog_u_prev = prog_u;

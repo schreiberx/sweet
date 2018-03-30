@@ -22,63 +22,74 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 	if (i_fixed_dt <= 0)
 		FatalError("Only constant time step size allowed");
 
+	double dt = simVars.timecontrol.current_timestep_size;
 
+	op.robert_vortdiv_to_uv(io_vort, io_div, diag_u, diag_v);
 
-#if 1
-		double dt = simVars.timecontrol.current_timestep_size;
-
-		op.robert_vortdiv_to_uv(io_vort, io_div, diag_u, diag_v);
-
-
-#if 0
-
-		// velocities at t
-		SphereDataPhysical* vel[2] = {&diag_u, &diag_v};
-
-		// velocities at t-1
-		SphereDataPhysical* vel_prev[2] = {&diag_u_prev, &diag_v_prev};
-
-		// OUTPUT: position of departure points at t
-		ScalarDataArray posx_d(sphereDataConfig->physical_array_data_number_of_elements);
-		ScalarDataArray posy_d(sphereDataConfig->physical_array_data_number_of_elements);
-		ScalarDataArray* output_pos_departure[2] = {&posx_d, &posy_d};
-
-		//return;
-		semiLagrangian.compute_departure_points_settls(
-				vel_prev,
-				vel,
-				input_pos_arrival,
-				dt,
-				output_pos_departure
-		);
-
+	if (i_simulation_timestamp == 0)
+	{
 		diag_u_prev = diag_u;
 		diag_v_prev = diag_v;
-#endif
+	}
+
+#if 1
 
 
-		SphereData new_prog_phi(io_phi.sphereDataConfig);
+	// OUTPUT: position of departure points at t
+	ScalarDataArray posx_d(io_phi.sphereDataConfig->physical_array_data_number_of_elements);
+	ScalarDataArray posy_d(io_phi.sphereDataConfig->physical_array_data_number_of_elements);
 
-		sampler2D.bicubic_scalar(
-				io_phi,
-#if 0
-				posx_d,
-				posy_d,
+	semiLagrangian.semi_lag_departure_points_settls(
+			diag_u_prev, diag_v_prev,
+			diag_u, diag_v,
+			posx_a, posy_a,
+			dt,
+			posx_d, posy_d
+	);
+
+	diag_u_prev = diag_u;
+	diag_v_prev = diag_v;
+
+
+	SphereData new_prog_phi(io_phi.sphereDataConfig);
+
+	sampler2D.bicubic_scalar(
+//		sampler2D.bilinear_scalar(
+			io_phi,
+#if 1
+			posx_d,
+			posy_d,
 #else
-				posx_a,
-				posy_a,
+			posx_a,
+			posy_a,
 #endif
-				new_prog_phi
-		);
+			new_prog_phi
+	);
+#else
 
-		io_phi = new_prog_phi;
+	SphereData new_prog_phi(io_phi.sphereDataConfig);
 
-
-		// advance in time
-		simVars.timecontrol.current_simulation_time += dt;
-		simVars.timecontrol.current_timestep_nr++;
+	sampler2D.bicubic_scalar(
+//		sampler2D.bilinear_scalar(
+			io_phi,
+#if 0
+			posx_d,
+			posy_d,
+#else
+			posx_a,
+			posy_a,
+#endif
+			new_prog_phi
+	);
 
 #endif
+
+	io_phi = new_prog_phi;
+
+
+	// advance in time
+	simVars.timecontrol.current_simulation_time += dt;
+	simVars.timecontrol.current_timestep_nr++;
 }
 
 
@@ -118,9 +129,6 @@ void Adv_Sphere_TS_na_sl::setup(
 			io_data = sphereDataConfig->lat[j];
 		}
 	);
-
-	input_pos_arrival[0] = &posx_a;
-	input_pos_arrival[1] = &posy_a;
 
 #if 0
 	posx_a.print();

@@ -38,7 +38,6 @@ class Adv_Sphere_TS_na_sl	: public Adv_Sphere_TS_interface
 	 * Position in physical space given in longitude/latitude angles
 	 */
 	ScalarDataArray posx_a, posy_a;
-	ScalarDataArray *input_pos_arrival[2];
 
 public:
 	Adv_Sphere_TS_na_sl(

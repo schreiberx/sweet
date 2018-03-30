@@ -39,104 +39,21 @@ public:
 
 
 	/**
-	 * Stable extrapolation Two-Time-Level Scheme, Mariano Hortal,
-	 *     Development and testing of a new two-time-level semi-lagrangian scheme (settls) in the ECMWF forecast model.
-	 * Quaterly Journal of the Royal Meterological Society
-	 *
-	 * r_d = r_a - dt/2 * (2 * v_n(r_d) - v_{n-1}(r_d) + v_n(r_a))
-	 *
-	 * v^{iter} := (dt*v_n - dt*0.5*v_{n-1})
-	 * r_d = r_a - dt/2 * v_n(r_d) - v^{iter}(r_d)
+	 * Add a vector on the sphere to a position
 	 */
-	void compute_departure_points_settls(
-			SphereDataPhysical* i_velocity_field_t_prev[2],	///< velocity field at time n-1
-			SphereDataPhysical* i_velocity_field_t[2],		///< velocity field at time n
+	void sphereCoordPlusVector(
+			const ScalarDataArray &i_pos_lon,
+			const ScalarDataArray &i_pos_lat,
+			const ScalarDataArray &i_vec_lon,
+			const ScalarDataArray &i_vec_lat,
 
-			ScalarDataArray* i_pos_arrival[2],		///< position at time n+1
-			double i_dt,							///< time step size
-
-			ScalarDataArray* o_pos_departure[2],	///< departure points at time n,
-			double *i_staggering = nullptr			///< staggering (ux, uy, vx, vy)
-	)
+			ScalarDataArray &o_pos_lon,
+			ScalarDataArray &o_pos_lat
+		)
 	{
-		if (i_staggering == nullptr)
-		{
-			static double constzerostuff[4] = {0,0,0,0};
-			i_staggering = constzerostuff;
-		}
 
-
-		std::size_t num_points = i_pos_arrival[0]->number_of_elements;
-
-		/**
-		 * Convert velocity components at previous departure points
-		 * to ScalarDataArray
-		 */
-
-		ScalarDataArray vx_n_prev = Convert_SphereData_To_ScalarDataArray::physical_convert(*i_velocity_field_t_prev[0]);
-		ScalarDataArray vy_n_prev = Convert_SphereData_To_ScalarDataArray::physical_convert(*i_velocity_field_t_prev[1]);
-
-		ScalarDataArray vx_n = Convert_SphereData_To_ScalarDataArray::physical_convert(*i_velocity_field_t[0]);
-		ScalarDataArray vy_n = Convert_SphereData_To_ScalarDataArray::physical_convert(*i_velocity_field_t[1]);
-
-		ScalarDataArray &rx_a = *i_pos_arrival[0];
-		ScalarDataArray &ry_a = *i_pos_arrival[1];
-
-		ScalarDataArray &rx_d = *o_pos_departure[0];
-		ScalarDataArray &ry_d = *o_pos_departure[1];
-
-
-		double dt = i_dt;
-
-		ScalarDataArray vx_iter(num_points);
-		ScalarDataArray vy_iter(num_points);
-
-		vx_iter = dt * vx_n - dt*0.5 * vx_n_prev;
-		vy_iter = dt * vy_n - dt*0.5 * vy_n_prev;
-
-		ScalarDataArray rx_d_new(num_points);
-		ScalarDataArray ry_d_new(num_points);
-
-		ScalarDataArray rx_d_prev = rx_a;
-		ScalarDataArray ry_d_prev = ry_a;
-
-		//SphereData* r_d[2] = {&rx_d, &ry_d};
-
-		// initialize departure points with arrival points
-		rx_d = rx_a;
-		ry_d = ry_a;
-
-		int iters;
-		for (iters = 0; iters < 10; iters++)
-		{
-			// r_d = r_a - dt/2 * v_n(r_d) - v^{iter}(r_d)
-			rx_d_new = rx_a - dt*0.5 * vx_n - sample2D.bilinear_scalar(
-					Convert_ScalarDataArray_to_SphereData::convert(vx_iter, sphereDataConfig),
-					rx_d, ry_d,
-					i_staggering[0], i_staggering[1]
-			);
-
-			ry_d_new = ry_a - dt*0.5 * vy_n - sample2D.bilinear_scalar(
-					Convert_ScalarDataArray_to_SphereData::convert(vy_iter, sphereDataConfig),
-					rx_d, ry_d, i_staggering[2], i_staggering[3]);
-
-			double diff = (rx_d_new - rx_d_prev).reduce_maxAbs() + (ry_d_new - ry_d_prev).reduce_maxAbs();
-			rx_d_prev = rx_d_new;
-			ry_d_prev = ry_d_new;
-
-			for (	std::size_t i = 0;
-					i < num_points;
-					i++
-			)
-			{
-				rx_d.scalar_data[i] = sample2D.wrapPeriodic(rx_d_new.scalar_data[i], sample2D.domain_size[0]);
-				ry_d.scalar_data[i] = sample2D.wrapPeriodic(ry_d_new.scalar_data[i], sample2D.domain_size[1]);
-			}
-
-			if (diff < 1e-8)
-				break;
-		}
 	}
+
 
 	/**
 	 * Stable extrapolation Two-Time-Level Scheme, Mariano Hortal,
@@ -159,9 +76,7 @@ public:
 
 			double i_dt,				///< time step size
 			ScalarDataArray &o_posx_d, 	///< Position of departure points x / y
-			ScalarDataArray &o_posy_d,
-
-			const SphereStaggering &i_staggering	///< staggering, if any (ux, uy, vx, vy)
+			ScalarDataArray &o_posy_d
 	)
 	{
 		std::size_t num_points = i_posx_a.number_of_elements;
@@ -172,18 +87,19 @@ public:
 		ScalarDataArray u = Convert_SphereData_To_ScalarDataArray::physical_convert(i_u, false);
 		ScalarDataArray v = Convert_SphereData_To_ScalarDataArray::physical_convert(i_v, false);
 
-		//local dt
+		// local dt
 		double dt = i_dt;
 
-		//Velocity for iterations
-		ScalarDataArray u_iter = dt * u - dt*0.5 * u_prev;
-		ScalarDataArray v_iter = dt * v - dt*0.5 * v_prev;
+		// Velocity for iterations
+		SphereData u_iter = Convert_ScalarDataArray_to_SphereData::convert(dt * u - dt*0.5 * u_prev, sphereDataConfig);
+		SphereData v_iter = Convert_ScalarDataArray_to_SphereData::convert(dt * v - dt*0.5 * v_prev, sphereDataConfig);
 
-		//Departure point tmp
+
+		// Departure point tmp
 		ScalarDataArray rx_d_new(num_points);
 		ScalarDataArray ry_d_new(num_points);
 
-		//Previous departure point
+		// Previous departure point
 		ScalarDataArray rx_d_prev = i_posx_a;
 		ScalarDataArray ry_d_prev = i_posy_a;
 
@@ -194,30 +110,58 @@ public:
 		int iters = 0;
 		for (; iters < 10; iters++)
 		{
-			//std::cout<<iters<<std::endl;
+
+#if 1
+			sphereCoordPlusVector(
+					i_posx_a,
+					i_posy_a,
+					- dt*0.5 * u - sample2D.bilinear_scalar(u_iter,	o_posx_d, o_posy_d),
+					- dt*0.5 * v - sample2D.bilinear_scalar(v_iter, o_posx_d, o_posy_d),
+					rx_d_new,
+					ry_d_new
+				);
+#else
 			// r_d = r_a - dt/2 * v_n(r_d) - v^{iter}(r_d)
 			rx_d_new = i_posx_a - dt*0.5 * u - sample2D.bilinear_scalar(
-					Convert_ScalarDataArray_to_SphereData::convert(u_iter, sphereDataConfig),
-					o_posx_d, o_posy_d, i_staggering.u[0], i_staggering.u[1]
+					u_iter,
+					o_posx_d, o_posy_d
 			);
 			ry_d_new = i_posy_a - dt*0.5 * v - sample2D.bilinear_scalar(
-					Convert_ScalarDataArray_to_SphereData::convert(v_iter, sphereDataConfig),
-					o_posx_d, o_posy_d, i_staggering.v[0], i_staggering.v[1]
+					v_iter,
+					o_posx_d, o_posy_d
 			);
+#endif
 
 			double diff = (rx_d_new - rx_d_prev).reduce_maxAbs() + (ry_d_new - ry_d_prev).reduce_maxAbs();
-			rx_d_prev = rx_d_new;
-			ry_d_prev = ry_d_new;
 
 			for (std::size_t i = 0; i < num_points; i++)
 			{
-				o_posx_d.scalar_data[i] = sample2D.wrapPeriodic(rx_d_new.scalar_data[i], sample2D.domain_size[0]);
-				o_posy_d.scalar_data[i] = sample2D.wrapPeriodic(ry_d_new.scalar_data[i], sample2D.domain_size[1]);
+				// posx \in [0;2*pi]
+				o_posx_d.scalar_data[i] = SphereDataSampler::wrapPeriodic(rx_d_new.scalar_data[i], 2.0*M_PI);
+				assert(o_posx_d.scalar_data[i] >= 0);
+				assert(o_posx_d.scalar_data[i] < M_PI*2.0);
+
+				// posx \in [-pi/2;pi/2]
+				o_posy_d.scalar_data[i] = ry_d_new.scalar_data[i];
+				if (o_posy_d.scalar_data[i] > M_PI*0.5)
+					o_posy_d.scalar_data[i] = M_PI - o_posy_d.scalar_data[i];
+				else if (o_posy_d.scalar_data[i] < -M_PI*0.5)
+					o_posy_d.scalar_data[i] = -M_PI - o_posy_d.scalar_data[i];
+
+				assert(o_posy_d.scalar_data[i] >= -M_PI*0.5);
+				assert(o_posy_d.scalar_data[i] <= -M_PI*0.5);
 			}
 
 			if (diff < 1e-8)
 			   break;
+
+			rx_d_prev = o_posx_d;
+			ry_d_prev = o_posy_d;
 		}
+
+
+		if (iters == 10)
+			std::cout << "WARNING: Too many iterations for SL scheme" << std::endl;
 	}
 };
 

@@ -879,10 +879,11 @@ public:
 
 
 	void physical_print(
-			int i_precision = 20
+			int i_precision = -1
 	)	const
 	{
-		std::cout << std::setprecision(i_precision);
+		if (i_precision >= 0)
+			std::cout << std::setprecision(i_precision);
 
         for (int j = sphereDataConfig->physical_num_lat-1; j >= 0; j--)
         {
