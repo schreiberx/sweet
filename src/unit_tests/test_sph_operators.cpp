@@ -200,7 +200,7 @@ void run_tests()
 			v.physical_update_lambda(
 				[&](double i_lon, double i_lat, double &io_data)
 				{
-					double i_phi = i_lat;
+					//double i_phi = i_lat;
 					double i_lambda = i_lon;
 					io_data =
 						-u0*(
@@ -208,7 +208,7 @@ void run_tests()
 						);
 				}
 			);
-
+#if 0
 			{
 				SphereData lhs = op.div(u, v);
 
@@ -224,6 +224,7 @@ void run_tests()
 
 				ErrorCheck::check(lhs, rhs, "DIV(U*phi) NON-Robert", error_threshold, true /* Ignored, because NON-Robert */);
 			}
+#endif
 		}
 	}
 #endif
@@ -386,6 +387,7 @@ void run_tests()
 			}
 		);
 
+#if 0
 		lhs = op.diff_lon(lhs);
 
 
@@ -399,6 +401,7 @@ void run_tests()
 		);
 
 		ErrorCheck::check(lhs, rhs, "TEST diff_lon(phi)", error_threshold*1e1);
+#endif
 	}
 #endif
 
@@ -735,6 +738,7 @@ void run_tests()
 		}
 
 
+#if 0
 		if (true)
 		{
 			// d/d lambda
@@ -742,6 +746,7 @@ void run_tests()
 			h.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.test_function__grid_gaussian(a,b,c);}
 			);
+
 
 			h = op.diff_lon(h);
 
@@ -752,8 +757,9 @@ void run_tests()
 
 			ErrorCheck::check(h, result, "TEST DIFF LON");
 		}
+#endif
 
-
+#if 0
 		if (true)
 		{
 			// d/d phi
@@ -770,6 +776,7 @@ void run_tests()
 
 			ErrorCheck::check(h, result, "TEST DIFF PHI");
 		}
+#endif
 
 
 #if 0
@@ -850,6 +857,7 @@ void run_tests()
 #endif
 
 
+#if 0
 		if (true)
 		{
 			// grad lambda
@@ -866,8 +874,10 @@ void run_tests()
 
 			ErrorCheck::check(h, result, "TEST GRAD LON");
 		}
+#endif
 
 
+#if 0
 		if (true)
 		{
 			// grad mu
@@ -932,6 +942,7 @@ void run_tests()
 //				FatalError("ERROR THRESHOLD EXCEEDED!");
 			}
 		}
+#endif
 
 
 #if 0
@@ -972,6 +983,7 @@ void run_tests()
 #endif
 
 
+#if 0
 		if (true)
 		{
 			// divergence
@@ -1073,6 +1085,7 @@ void run_tests()
 				std::cerr << "EXCEEDED ERROR THRESHOLD IGNORED since DIV should be only applied to a vector field, however we do this on a scalar field" << std::endl;
 			}
 		}
+#endif
 	}
 };
 

@@ -662,7 +662,7 @@ public:
 	{
 		const char* description = "";
 
-		int id = simVars.misc.vis_id % 4;
+		int id = simVars.misc.vis_id % 3;
 
 		switch (id)
 		{
@@ -672,18 +672,10 @@ public:
 			break;
 
 		case 1:
-			description = "U";
-			break;
-
-		case 2:
-			description = "V";
-			break;
-
-		case 3:
 			description = "vort";
 			break;
 
-		case 4:
+		case 2:
 			description = "div";
 			break;
 		}

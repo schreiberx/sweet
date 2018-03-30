@@ -157,6 +157,7 @@ public:
 
 
 
+#if 0
 
 public:
 	/**
@@ -192,6 +193,7 @@ public:
 
 		return out_sph_data;
 	}
+#endif
 
 
 #if 0
@@ -211,6 +213,7 @@ public:
 #endif
 
 
+#if 0
 	/**
 	 * Compute differential along latitude
 	 *
@@ -222,8 +225,10 @@ public:
 	{
 		return grad_lat(i_sph_data);
 	}
+#endif
 
 
+#if 0
 
 	/**
 	 * Compute gradient component along longitude (lambda)
@@ -262,6 +267,7 @@ public:
 
 		return out_sph_data;
 	}
+#endif
 
 
 #if 0
@@ -282,6 +288,7 @@ public:
 #endif
 
 
+#if 0
 	/**
 	 * Multiply with cos(phi)
 	 */
@@ -322,6 +329,7 @@ public:
 
 		return out;
 	}
+#endif
 
 #if 0
 	SphereData inv_one_minus_mu2(
@@ -359,7 +367,7 @@ public:
 	}
 #endif
 
-
+#if 0
 	void uv_to_stream_potential(
 			const SphereData &i_u,
 			const SphereData &i_v,
@@ -385,6 +393,7 @@ public:
 		o_potential.physical_space_data_valid = false;
 		o_potential.spectral_space_data_valid = true;
 	}
+#endif
 
 
 
@@ -404,6 +413,7 @@ public:
 
 		SphereData psi = inv_laplace(i_vrt)*ir;
 		SphereData chi = inv_laplace(i_div)*ir;
+
 
 #if SHTNS_REAL_SPH_SPHTOR
 
@@ -669,7 +679,7 @@ public:
 
 
 
-
+#if 0
 	/**
 	 * Compute gradient component along longitude (lambda) for Robert function formulation
 	 *
@@ -719,6 +729,7 @@ public:
 				spectral_one_minus_mu_squared_diff_lat_mu(i_phi)*i_v
 			;
 	}
+#endif
 
 #if 0
 	/**
@@ -918,7 +929,7 @@ public:
 		return out_sph_data;
 	}
 
-
+#if 0
 	/**
 	 * Compute gradient component along latitude
 	 */
@@ -1027,6 +1038,7 @@ public:
 
 		return out_sph_data;
 	}
+#endif
 
 
 
@@ -1076,7 +1088,7 @@ public:
 		return out;
 	}
 
-#if 1
+#if 0
 public:
 	/**
 	 * Compute vorticity
@@ -1088,6 +1100,7 @@ public:
 			const SphereData &i_lat
 	)	const
 	{
+#error "Don't do this"
 		return div_lon(i_lat) - div_lat(i_lon);
 	}
 
@@ -1104,9 +1117,9 @@ public:
 			const SphereData &i_lat
 	)	const
 	{
+#error "Don't do this"
 		return robert_div_lon(i_lat) - robert_div_lat(i_lon);
 	}
-#endif
 #endif
 
 public:
@@ -1122,6 +1135,7 @@ public:
 	{
 		return div_lon(i_lon) + div_lat(i_lat);
 	}
+#endif
 
 
 #if 0

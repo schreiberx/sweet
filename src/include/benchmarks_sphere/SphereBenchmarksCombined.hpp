@@ -47,10 +47,14 @@ public:
 		std::cout << std::endl;
 		std::cout << "Benchmark scenario by name (NEW):" << std::endl;
 		std::cout << "  'flat': Constant height and zero velocity" << std::endl;
-		std::cout << "  'galewsky': Galwesky benchmark" << std::endl;
-		std::cout << "  'galewsky_nobump': Galwesky benchmark without any bump" << std::endl;
+		std::cout << "  WILLIAMSON #1:" << std::endl;
+		std::cout << "  'adv_cosine_bell': Advection test case of cosine bell" << std::endl;
+		std::cout << "  WILLIAMSON #2 [TODO: Check]:" << std::endl;
 		std::cout << "  'geostrophic_balance': Geostrophic balance, one wave (standard)" << std::endl;
 		std::cout << "  'geostrophic_balance_[N]': Geostrophic balance, with [N] waves" << std::endl;
+		std::cout << "  WILLIAMSON #3:" << std::endl;
+		std::cout << "  'galewsky': Galwesky benchmark" << std::endl;
+		std::cout << "  'galewsky_nobump': Galwesky benchmark without any bump" << std::endl;
 		std::cout << std::endl;
 	}
 
@@ -118,14 +122,14 @@ public:
 
 public:
 
-		static
+	static
 	void setupTopography(
 				 SimulationVariables &io_simVars,
 				 SphereOperators &i_op
-				 )
-		 {
-	   if (io_simVars.setup.benchmark_scenario_name == "flow_over_mountain") 
-		 {
+	)
+	{
+		if (io_simVars.setup.benchmark_scenario_name == "flow_over_mountain")
+		{
 		   // set the topography flag to true
 		   io_simVars.sim.use_topography = true;
 
@@ -154,7 +158,8 @@ public:
 		   // set the topography flag to false
 		   io_simVars.sim.use_topography = false;
 		 }
-		 }
+	}
+
 
 
 	static
@@ -167,14 +172,83 @@ public:
 			SphereOperators &i_op
 	)
 	{
-		SphereData h(o_phi.sphereDataConfig);
-		SphereDataPhysical u(o_phi.sphereDataConfig);
-		SphereDataPhysical v(o_phi.sphereDataConfig);
+		if (
+				io_simVars.setup.benchmark_scenario_name == "williamson1"		||
+				io_simVars.setup.benchmark_scenario_name == "adv_cosine_bell"
+		)
+		{
+			/*
+			 * Advection test case
+			 * See Williamson test case, eq. (77), (78), (79)
+			 */
 
-		setupInitialConditions_HUV(h, u, v, io_simVars, i_op);
+			if (io_simVars.timecontrol.current_simulation_time == 0)
+			{
+				std::cout << "!!! WARNING !!!" << std::endl;
+				std::cout << "!!! WARNING: Overriding simulation parameters for this benchmark !!!" << std::endl;
+				std::cout << "!!! WARNING !!!" << std::endl;
+			}
 
-		o_phi = h*io_simVars.sim.gravitation;
-		i_op.robert_uv_to_vortdiv(u, v, o_vort, o_div);
+			io_simVars.sim.coriolis_omega = 7.292e-5;
+			io_simVars.sim.gravitation = 9.80616;
+			io_simVars.sim.earth_radius = 6.37122e6;
+			io_simVars.sim.h0 = 1000.0;
+
+			double lambda_c = 3.0*M_PI/2.0;
+			double theta_c = 0.0;
+			double a = io_simVars.sim.earth_radius;
+
+			double R = a/3.0;
+			double u0 = (2.0*M_PI*a)/(12.0*24.0*60.0*60.0);
+
+			o_phi.physical_update_lambda(
+				[&](double i_lambda, double i_theta, double &io_data)
+			{
+					double r = a * std::acos(
+							std::sin(theta_c)*std::sin(i_theta) +
+							std::cos(theta_c)*std::cos(i_theta)*std::cos(i_lambda-lambda_c)
+					);
+
+					if (r < R)
+						io_data = io_simVars.sim.h0/2.0*(1.0+std::cos(M_PI*r/R));
+					else
+						io_data = 0;
+
+					io_data *= io_simVars.sim.gravitation;
+				}
+			);
+
+			SphereData stream_function(o_phi.sphereDataConfig);
+
+			stream_function.physical_update_lambda(
+				[&](double i_lon, double i_lat, double &io_data)
+				{
+					double i_theta = i_lat;
+					double i_lambda = i_lon;
+					double alpha = io_simVars.setup.advection_rotation_angle;
+
+					io_data = -a*u0*(std::sin(i_theta)*std::cos(alpha) - std::cos(i_lambda)*std::cos(i_theta)*std::sin(alpha));
+				}
+			);
+
+			o_vort = i_op.laplace(stream_function);
+			o_div.spectral_set_zero();
+
+			io_simVars.misc.output_time_scale = 1.0/(60.0*60.0);
+
+//			std::cout << "advection_rotation_angle: " << io_simVars.setup.advection_rotation_angle << std::endl;
+		}
+		else
+		{
+			SphereData h(o_phi.sphereDataConfig);
+			SphereDataPhysical u(o_phi.sphereDataConfig);
+			SphereDataPhysical v(o_phi.sphereDataConfig);
+
+			setupInitialConditions_HUV(h, u, v, io_simVars, i_op);
+
+			o_phi = h*io_simVars.sim.gravitation;
+			i_op.robert_uv_to_vortdiv(u, v, o_vort, o_div);
+		}
 	}
 
 

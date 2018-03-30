@@ -72,6 +72,7 @@ public:
 	}
 
 
+
 public:
 	SphereData()	:
 		sphereDataConfig(nullptr),
@@ -79,6 +80,7 @@ public:
 		spectral_space_data(nullptr)
 	{
 	}
+
 
 
 public:
@@ -89,6 +91,8 @@ public:
 		physical_space_data(nullptr),
 		spectral_space_data(nullptr)
 	{
+		assert(i_sph_data.sphereDataConfig != nullptr);
+
 		setup(i_sph_data.sphereDataConfig);
 
 		operator=(i_sph_data);

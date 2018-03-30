@@ -1,38 +1,40 @@
 /*
- * SemiLangrangian.hpp
+ * SphereDataSemiLangrangian.hpp
  *
  *  Created on: 5 Dec 2015
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *
+ *  Updated to sphere on 28th March 2018
  */
-#ifndef SRC_INCLUDE_SWEET_PLANEDATASEMILAGRANGIAN_HPP_
-#define SRC_INCLUDE_SWEET_PLANEDATASEMILAGRANGIAN_HPP_
+#ifndef SRC_INCLUDE_SWEET_SPHEREDATASEMILAGRANGIAN_HPP_
+#define SRC_INCLUDE_SWEET_SPHEREDATASEMILAGRANGIAN_HPP_
 
-#include <sweet/plane/Convert_PlaneData_to_ScalarDataArray.hpp>
-#include <sweet/plane/Convert_ScalarDataArray_to_PlaneData.hpp>
-#include <sweet/plane/PlaneStaggering.hpp>
+#include <sweet/sphere/Convert_SphereData_to_ScalarDataArray.hpp>
+#include <sweet/sphere/Convert_ScalarDataArray_to_SphereData.hpp>
+#include <sweet/sphere/SphereStaggering.hpp>
 #include <sweet/sphere/SphereDataSampler.hpp>
-#include "PlaneData.hpp"
+#include "SphereData.hpp"
 #include <sweet/ScalarDataArray.hpp>
 
-class PlaneDataSemiLagrangian
+class SphereDataSemiLagrangian
 {
-	PlaneDataSampler sample2D;
-	PlaneDataConfig *planeDataConfig;
+	SphereDataSampler sample2D;
+	SphereDataConfig *sphereDataConfig;
 
 public:
-	PlaneDataSemiLagrangian()	:
-		planeDataConfig(nullptr)
+	SphereDataSemiLagrangian()	:
+		sphereDataConfig(nullptr)
 	{
 	}
 
 
 	void setup(
 		double i_domain_size[2],
-		PlaneDataConfig *i_planeDataConfig
+		SphereDataConfig *i_sphereDataConfig
 	)
 	{
-		planeDataConfig = i_planeDataConfig;
-		sample2D.setup(i_domain_size, planeDataConfig);
+		sphereDataConfig = i_sphereDataConfig;
+		sample2D.setup(i_domain_size, sphereDataConfig);
 	}
 
 
@@ -47,8 +49,8 @@ public:
 	 * r_d = r_a - dt/2 * v_n(r_d) - v^{iter}(r_d)
 	 */
 	void compute_departure_points_settls(
-			PlaneData* i_velocity_field_t_prev[2],	///< velocity field at time n-1
-			PlaneData* i_velocity_field_t[2],		///< velocity field at time n
+			SphereDataPhysical* i_velocity_field_t_prev[2],	///< velocity field at time n-1
+			SphereDataPhysical* i_velocity_field_t[2],		///< velocity field at time n
 
 			ScalarDataArray* i_pos_arrival[2],		///< position at time n+1
 			double i_dt,							///< time step size
@@ -71,11 +73,11 @@ public:
 		 * to ScalarDataArray
 		 */
 
-		ScalarDataArray vx_n_prev = Convert_PlaneData_To_ScalarDataArray::physical_convert(*i_velocity_field_t_prev[0]);
-		ScalarDataArray vy_n_prev = Convert_PlaneData_To_ScalarDataArray::physical_convert(*i_velocity_field_t_prev[1]);
+		ScalarDataArray vx_n_prev = Convert_SphereData_To_ScalarDataArray::physical_convert(*i_velocity_field_t_prev[0]);
+		ScalarDataArray vy_n_prev = Convert_SphereData_To_ScalarDataArray::physical_convert(*i_velocity_field_t_prev[1]);
 
-		ScalarDataArray vx_n = Convert_PlaneData_To_ScalarDataArray::physical_convert(*i_velocity_field_t[0]);
-		ScalarDataArray vy_n = Convert_PlaneData_To_ScalarDataArray::physical_convert(*i_velocity_field_t[1]);
+		ScalarDataArray vx_n = Convert_SphereData_To_ScalarDataArray::physical_convert(*i_velocity_field_t[0]);
+		ScalarDataArray vy_n = Convert_SphereData_To_ScalarDataArray::physical_convert(*i_velocity_field_t[1]);
 
 		ScalarDataArray &rx_a = *i_pos_arrival[0];
 		ScalarDataArray &ry_a = *i_pos_arrival[1];
@@ -98,7 +100,7 @@ public:
 		ScalarDataArray rx_d_prev = rx_a;
 		ScalarDataArray ry_d_prev = ry_a;
 
-		//PlaneData* r_d[2] = {&rx_d, &ry_d};
+		//SphereData* r_d[2] = {&rx_d, &ry_d};
 
 		// initialize departure points with arrival points
 		rx_d = rx_a;
@@ -109,13 +111,13 @@ public:
 		{
 			// r_d = r_a - dt/2 * v_n(r_d) - v^{iter}(r_d)
 			rx_d_new = rx_a - dt*0.5 * vx_n - sample2D.bilinear_scalar(
-					Convert_ScalarDataArray_to_PlaneData::convert(vx_iter, planeDataConfig),
+					Convert_ScalarDataArray_to_SphereData::convert(vx_iter, sphereDataConfig),
 					rx_d, ry_d,
 					i_staggering[0], i_staggering[1]
 			);
 
 			ry_d_new = ry_a - dt*0.5 * vy_n - sample2D.bilinear_scalar(
-					Convert_ScalarDataArray_to_PlaneData::convert(vy_iter, planeDataConfig),
+					Convert_ScalarDataArray_to_SphereData::convert(vy_iter, sphereDataConfig),
 					rx_d, ry_d, i_staggering[2], i_staggering[3]);
 
 			double diff = (rx_d_new - rx_d_prev).reduce_maxAbs() + (ry_d_new - ry_d_prev).reduce_maxAbs();
@@ -147,10 +149,10 @@ public:
 	 * r_d = r_a - dt/2 * v_n(r_d) - v^{iter}(r_d)
 	 */
 	void semi_lag_departure_points_settls(
-			const PlaneData &i_u_prev,	// Velocities at time t-1
-			const PlaneData &i_v_prev,
-			const PlaneData &i_u, 		// Velocities at time t
-			const PlaneData &i_v,
+			const SphereDataPhysical &i_u_prev,	// Velocities at time t-1
+			const SphereDataPhysical &i_v_prev,
+			const SphereDataPhysical &i_u, 		// Velocities at time t
+			const SphereDataPhysical &i_v,
 
 			const ScalarDataArray &i_posx_a,	// Position of arrival points x / y
 			const ScalarDataArray &i_posy_a,
@@ -159,16 +161,16 @@ public:
 			ScalarDataArray &o_posx_d, 	///< Position of departure points x / y
 			ScalarDataArray &o_posy_d,
 
-			const Staggering &i_staggering	///< staggering, if any (ux, uy, vx, vy)
+			const SphereStaggering &i_staggering	///< staggering, if any (ux, uy, vx, vy)
 	)
 	{
 		std::size_t num_points = i_posx_a.number_of_elements;
 
-		ScalarDataArray u_prev = Convert_PlaneData_To_ScalarDataArray::physical_convert(i_u_prev, false);
-		ScalarDataArray v_prev = Convert_PlaneData_To_ScalarDataArray::physical_convert(i_v_prev, false);
+		ScalarDataArray u_prev = Convert_SphereData_To_ScalarDataArray::physical_convert(i_u_prev, false);
+		ScalarDataArray v_prev = Convert_SphereData_To_ScalarDataArray::physical_convert(i_v_prev, false);
 
-		ScalarDataArray u = Convert_PlaneData_To_ScalarDataArray::physical_convert(i_u, false);
-		ScalarDataArray v = Convert_PlaneData_To_ScalarDataArray::physical_convert(i_v, false);
+		ScalarDataArray u = Convert_SphereData_To_ScalarDataArray::physical_convert(i_u, false);
+		ScalarDataArray v = Convert_SphereData_To_ScalarDataArray::physical_convert(i_v, false);
 
 		//local dt
 		double dt = i_dt;
@@ -195,11 +197,11 @@ public:
 			//std::cout<<iters<<std::endl;
 			// r_d = r_a - dt/2 * v_n(r_d) - v^{iter}(r_d)
 			rx_d_new = i_posx_a - dt*0.5 * u - sample2D.bilinear_scalar(
-					Convert_ScalarDataArray_to_PlaneData::convert(u_iter, planeDataConfig),
+					Convert_ScalarDataArray_to_SphereData::convert(u_iter, sphereDataConfig),
 					o_posx_d, o_posy_d, i_staggering.u[0], i_staggering.u[1]
 			);
 			ry_d_new = i_posy_a - dt*0.5 * v - sample2D.bilinear_scalar(
-					Convert_ScalarDataArray_to_PlaneData::convert(v_iter, planeDataConfig),
+					Convert_ScalarDataArray_to_SphereData::convert(v_iter, sphereDataConfig),
 					o_posx_d, o_posy_d, i_staggering.v[0], i_staggering.v[1]
 			);
 
@@ -219,4 +221,4 @@ public:
 	}
 };
 
-#endif /* SRC_INCLUDE_SWEET_PLANEDATASEMILAGRANGIAN_HPP_ */
+#endif /* SRC_INCLUDE_SWEET_SPHEREDATASEMILAGRANGIAN_HPP_ */

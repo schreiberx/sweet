@@ -17,7 +17,10 @@
 #include <sweet/sweetmath.hpp>
 #include <sweet/FatalError.hpp>
 #include <sweet/StringSplit.hpp>
-#include <sweet/sphere/SphereData.hpp>
+
+#if SWEET_USE_SPHERE_SPECTRAL_SPACE
+#	include <sweet/sphere/SphereData.hpp>
+#endif
 
 #ifndef SWEET_PARAREAL
 #	define SWEET_PARAREAL 1
@@ -345,10 +348,12 @@ public:
 		 */
 		bool use_topography = false;
 
+#if SWEET_USE_SPHERE_SPECTRAL_SPACE
 		/**
 		 * Topography vector
 		 */
 		SphereData h_topo;
+#endif
 
 		/**
 		 * Gravitational constant
