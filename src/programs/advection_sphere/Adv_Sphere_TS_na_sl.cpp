@@ -24,7 +24,8 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 
 	double dt = simVars.timecontrol.current_timestep_size;
 
-	op.robert_vortdiv_to_uv(io_vort, io_div, diag_u, diag_v);
+	// IMPORTANT!!! WE DO NOT USE THE ROBERT TRANSFORMATION HERE!!!
+	op.vortdiv_to_uv(io_vort, io_div, diag_u, diag_v);
 
 	if (i_simulation_timestamp == 0)
 	{
@@ -44,6 +45,7 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 			diag_u, diag_v,
 			posx_a, posy_a,
 			dt,
+			simVars.sim.earth_radius,
 			posx_d, posy_d
 	);
 
@@ -118,6 +120,8 @@ void Adv_Sphere_TS_na_sl::setup(
 			//int j = idx / sphereDataConfig->physical_data_size[0];
 
 			io_data = 2.0*M_PI*(double)i/(double)sphereDataConfig->physical_num_lon;
+			assert(io_data >= 0);
+			assert(io_data < 2.0*M_PI);
 		}
 	);
 	posy_a.update_lambda_array_indices(
@@ -127,6 +131,9 @@ void Adv_Sphere_TS_na_sl::setup(
 			int j = idx / sphereDataConfig->physical_num_lon;
 
 			io_data = sphereDataConfig->lat[j];
+
+			assert(io_data >= -M_PI*0.5);
+			assert(io_data <= M_PI*0.5);
 		}
 	);
 

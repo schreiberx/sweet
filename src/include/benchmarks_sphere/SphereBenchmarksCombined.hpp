@@ -1188,12 +1188,11 @@ public:
 																   ) /io_simVars.sim.gravitation;
 								   }
 								   );
-
 				*/
+
 				o_u = ug;
 				o_v = vg;
-
-	 				}
+	 		}
 			else if (
 				io_simVars.setup.benchmark_scenario_name == "galewsky" ||			///< Standard Galewsky benchmark
 				io_simVars.setup.benchmark_scenario_name == "galewsky_nobump" ||	///< Galewsky benchmark without bumps

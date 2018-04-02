@@ -261,17 +261,19 @@ public:
 			assert(est_lat_idx < ext_lat_M-1);
 
 			if (phi_lookup[est_lat_idx] < phi)
-				est_lat_idx++;
-			else if (phi_lookup[est_lat_idx+1] > phi)
 				est_lat_idx--;
+			else if (phi_lookup[est_lat_idx+1] > phi)
+				est_lat_idx++;
 
 			int array_idx_y = est_lat_idx;
 			assert(array_idx_y >= 0);
 			assert(array_idx_y < ext_lat_M);
 
 			double cell_y = (phi - phi_lookup[array_idx_y+1]) / phi_dist[array_idx_y];
+//			std::cout << cell_y << std::endl;
 			// flip since the coordinate system is also flipped!
 			cell_y = 1.0-cell_y;
+//			std::cout << cell_y << std::endl;
 			assert(cell_y >= 0);
 			assert(cell_y <= 1);
 
@@ -418,9 +420,9 @@ public:
 			assert(est_lat_idx < ext_lat_M-1);
 
 			if (phi_lookup[est_lat_idx] < phi)
-				est_lat_idx++;
-			else if (phi_lookup[est_lat_idx+1] > phi)
 				est_lat_idx--;
+			else if (phi_lookup[est_lat_idx+1] > phi)
+				est_lat_idx++;
 
 			int array_idx_y = est_lat_idx;
 			assert(array_idx_y >= 0);
@@ -457,7 +459,7 @@ public:
 			for (int kj = 0; kj < 2; kj++)
 			{
 				assert(idx_j >= 0);
-				assert(idx_j < num_lat+2);
+				assert(idx_j < num_lat+4);
 				double p[2];
 
 				p[0] = sampling_data[idx_j*num_lon + idx_i[0]];

@@ -231,7 +231,8 @@ public:
 				SphereDataPhysical u(sphereDataConfig);
 				SphereDataPhysical v(sphereDataConfig);
 
-				op.robert_vortdiv_to_uv(prog_vort, prog_div, u, v);
+//				op.robert_vortdiv_to_uv(prog_vort, prog_div, u, v);
+				op.vortdiv_to_uv(prog_vort, prog_div, u, v);
 				viz_plane_data = Convert_SphereDataPhysical_To_PlaneData::physical_convert(u, planeDataConfig);
 			}
 			break;
@@ -241,7 +242,8 @@ public:
 				SphereDataPhysical u(sphereDataConfig);
 				SphereDataPhysical v(sphereDataConfig);
 
-				op.robert_vortdiv_to_uv(prog_vort, prog_div, u, v);
+//				op.robert_vortdiv_to_uv(prog_vort, prog_div, u, v);
+				op.vortdiv_to_uv(prog_vort, prog_div, u, v);
 				viz_plane_data = Convert_SphereDataPhysical_To_PlaneData::physical_convert(v, planeDataConfig);
 			}
 			break;
