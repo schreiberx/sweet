@@ -23,7 +23,7 @@ class SphereDataSampler
 public:
 	double domain_size[2];			/// real physical size of the domain
 	int res[2];						/// resolution of domain
-	SphereDataConfig *sphereDataConfig;
+	const SphereDataConfig *sphereDataConfig;
 
 	std::vector<double> sampling_data;
 
@@ -72,7 +72,7 @@ public:
 public:
 	void setup(
 		double i_domain_size[2],	/// real physical size of the domain
-		SphereDataConfig *i_sphereDataConfig
+		const SphereDataConfig *i_sphereDataConfig
 	)
 	{
 		assert(i_sphereDataConfig != nullptr);
@@ -206,6 +206,69 @@ public:
 	}
 
 
+	/*
+	 * Compute determinant of 4x4 matrix
+	 */
+	static
+	double get4x4Determinant(
+			const double *i_m
+	)
+	{
+		return	  i_m[0*4+3] * i_m[1*4+2] * i_m[2*4+1] * i_m[3*4+0] - i_m[0*4+2] * i_m[1*4+3] * i_m[2*4+1] * i_m[3*4+0] - i_m[0*4+3] * i_m[1*4+1] * i_m[2*4+2] * i_m[3*4+0] + i_m[0*4+1] * i_m[1*4+3] * i_m[2*4+2] * i_m[3*4+0]
+				+ i_m[0*4+2] * i_m[1*4+1] * i_m[2*4+3] * i_m[3*4+0] - i_m[0*4+1] * i_m[1*4+2] * i_m[2*4+3] * i_m[3*4+0] - i_m[0*4+3] * i_m[1*4+2] * i_m[2*4+0] * i_m[3*4+1] + i_m[0*4+2] * i_m[1*4+3] * i_m[2*4+0] * i_m[3*4+1]
+				+ i_m[0*4+3] * i_m[1*4+0] * i_m[2*4+2] * i_m[3*4+1] - i_m[0*4+0] * i_m[1*4+3] * i_m[2*4+2] * i_m[3*4+1] - i_m[0*4+2] * i_m[1*4+0] * i_m[2*4+3] * i_m[3*4+1] + i_m[0*4+0] * i_m[1*4+2] * i_m[2*4+3] * i_m[3*4+1]
+				+ i_m[0*4+3] * i_m[1*4+1] * i_m[2*4+0] * i_m[3*4+2] - i_m[0*4+1] * i_m[1*4+3] * i_m[2*4+0] * i_m[3*4+2] - i_m[0*4+3] * i_m[1*4+0] * i_m[2*4+1] * i_m[3*4+2] + i_m[0*4+0] * i_m[1*4+3] * i_m[2*4+1] * i_m[3*4+2]
+				+ i_m[0*4+1] * i_m[1*4+0] * i_m[2*4+3] * i_m[3*4+2] - i_m[0*4+0] * i_m[1*4+1] * i_m[2*4+3] * i_m[3*4+2] - i_m[0*4+2] * i_m[1*4+1] * i_m[2*4+0] * i_m[3*4+3] + i_m[0*4+1] * i_m[1*4+2] * i_m[2*4+0] * i_m[3*4+3]
+				+ i_m[0*4+2] * i_m[1*4+0] * i_m[2*4+1] * i_m[3*4+3] - i_m[0*4+0] * i_m[1*4+2] * i_m[2*4+1] * i_m[3*4+3] - i_m[0*4+1] * i_m[1*4+0] * i_m[2*4+2] * i_m[3*4+3] + i_m[0*4+0] * i_m[1*4+1] * i_m[2*4+2] * i_m[3*4+3];
+	}
+
+
+	/*
+	 * Solve 4x4 system of equation
+	 */
+	static
+	void solve4x4SOE(
+			const double *i_mat,	///< matrix
+			const double *i_b,		///< rhs
+			double *o_x				///< solution
+	)
+	{
+
+		double minv[16] = {
+			i_mat[1*4+2]*i_mat[2*4+3]*i_mat[3*4+1] - i_mat[1*4+3]*i_mat[2*4+2]*i_mat[3*4+1] + i_mat[1*4+3]*i_mat[2*4+1]*i_mat[3*4+2] - i_mat[1*4+1]*i_mat[2*4+3]*i_mat[3*4+2] - i_mat[1*4+2]*i_mat[2*4+1]*i_mat[3*4+3] + i_mat[1*4+1]*i_mat[2*4+2]*i_mat[3*4+3],
+			i_mat[0*4+3]*i_mat[2*4+2]*i_mat[3*4+1] - i_mat[0*4+2]*i_mat[2*4+3]*i_mat[3*4+1] - i_mat[0*4+3]*i_mat[2*4+1]*i_mat[3*4+2] + i_mat[0*4+1]*i_mat[2*4+3]*i_mat[3*4+2] + i_mat[0*4+2]*i_mat[2*4+1]*i_mat[3*4+3] - i_mat[0*4+1]*i_mat[2*4+2]*i_mat[3*4+3],
+			i_mat[0*4+2]*i_mat[1*4+3]*i_mat[3*4+1] - i_mat[0*4+3]*i_mat[1*4+2]*i_mat[3*4+1] + i_mat[0*4+3]*i_mat[1*4+1]*i_mat[3*4+2] - i_mat[0*4+1]*i_mat[1*4+3]*i_mat[3*4+2] - i_mat[0*4+2]*i_mat[1*4+1]*i_mat[3*4+3] + i_mat[0*4+1]*i_mat[1*4+2]*i_mat[3*4+3],
+			i_mat[0*4+3]*i_mat[1*4+2]*i_mat[2*4+1] - i_mat[0*4+2]*i_mat[1*4+3]*i_mat[2*4+1] - i_mat[0*4+3]*i_mat[1*4+1]*i_mat[2*4+2] + i_mat[0*4+1]*i_mat[1*4+3]*i_mat[2*4+2] + i_mat[0*4+2]*i_mat[1*4+1]*i_mat[2*4+3] - i_mat[0*4+1]*i_mat[1*4+2]*i_mat[2*4+3],
+
+			i_mat[1*4+3]*i_mat[2*4+2]*i_mat[3*4+0] - i_mat[1*4+2]*i_mat[2*4+3]*i_mat[3*4+0] - i_mat[1*4+3]*i_mat[2*4+0]*i_mat[3*4+2] + i_mat[1*4+0]*i_mat[2*4+3]*i_mat[3*4+2] + i_mat[1*4+2]*i_mat[2*4+0]*i_mat[3*4+3] - i_mat[1*4+0]*i_mat[2*4+2]*i_mat[3*4+3],
+			i_mat[0*4+2]*i_mat[2*4+3]*i_mat[3*4+0] - i_mat[0*4+3]*i_mat[2*4+2]*i_mat[3*4+0] + i_mat[0*4+3]*i_mat[2*4+0]*i_mat[3*4+2] - i_mat[0*4+0]*i_mat[2*4+3]*i_mat[3*4+2] - i_mat[0*4+2]*i_mat[2*4+0]*i_mat[3*4+3] + i_mat[0*4+0]*i_mat[2*4+2]*i_mat[3*4+3],
+			i_mat[0*4+3]*i_mat[1*4+2]*i_mat[3*4+0] - i_mat[0*4+2]*i_mat[1*4+3]*i_mat[3*4+0] - i_mat[0*4+3]*i_mat[1*4+0]*i_mat[3*4+2] + i_mat[0*4+0]*i_mat[1*4+3]*i_mat[3*4+2] + i_mat[0*4+2]*i_mat[1*4+0]*i_mat[3*4+3] - i_mat[0*4+0]*i_mat[1*4+2]*i_mat[3*4+3],
+			i_mat[0*4+2]*i_mat[1*4+3]*i_mat[2*4+0] - i_mat[0*4+3]*i_mat[1*4+2]*i_mat[2*4+0] + i_mat[0*4+3]*i_mat[1*4+0]*i_mat[2*4+2] - i_mat[0*4+0]*i_mat[1*4+3]*i_mat[2*4+2] - i_mat[0*4+2]*i_mat[1*4+0]*i_mat[2*4+3] + i_mat[0*4+0]*i_mat[1*4+2]*i_mat[2*4+3],
+
+			i_mat[1*4+1]*i_mat[2*4+3]*i_mat[3*4+0] - i_mat[1*4+3]*i_mat[2*4+1]*i_mat[3*4+0] + i_mat[1*4+3]*i_mat[2*4+0]*i_mat[3*4+1] - i_mat[1*4+0]*i_mat[2*4+3]*i_mat[3*4+1] - i_mat[1*4+1]*i_mat[2*4+0]*i_mat[3*4+3] + i_mat[1*4+0]*i_mat[2*4+1]*i_mat[3*4+3],
+			i_mat[0*4+3]*i_mat[2*4+1]*i_mat[3*4+0] - i_mat[0*4+1]*i_mat[2*4+3]*i_mat[3*4+0] - i_mat[0*4+3]*i_mat[2*4+0]*i_mat[3*4+1] + i_mat[0*4+0]*i_mat[2*4+3]*i_mat[3*4+1] + i_mat[0*4+1]*i_mat[2*4+0]*i_mat[3*4+3] - i_mat[0*4+0]*i_mat[2*4+1]*i_mat[3*4+3],
+			i_mat[0*4+1]*i_mat[1*4+3]*i_mat[3*4+0] - i_mat[0*4+3]*i_mat[1*4+1]*i_mat[3*4+0] + i_mat[0*4+3]*i_mat[1*4+0]*i_mat[3*4+1] - i_mat[0*4+0]*i_mat[1*4+3]*i_mat[3*4+1] - i_mat[0*4+1]*i_mat[1*4+0]*i_mat[3*4+3] + i_mat[0*4+0]*i_mat[1*4+1]*i_mat[3*4+3],
+			i_mat[0*4+3]*i_mat[1*4+1]*i_mat[2*4+0] - i_mat[0*4+1]*i_mat[1*4+3]*i_mat[2*4+0] - i_mat[0*4+3]*i_mat[1*4+0]*i_mat[2*4+1] + i_mat[0*4+0]*i_mat[1*4+3]*i_mat[2*4+1] + i_mat[0*4+1]*i_mat[1*4+0]*i_mat[2*4+3] - i_mat[0*4+0]*i_mat[1*4+1]*i_mat[2*4+3],
+
+			i_mat[1*4+2]*i_mat[2*4+1]*i_mat[3*4+0] - i_mat[1*4+1]*i_mat[2*4+2]*i_mat[3*4+0] - i_mat[1*4+2]*i_mat[2*4+0]*i_mat[3*4+1] + i_mat[1*4+0]*i_mat[2*4+2]*i_mat[3*4+1] + i_mat[1*4+1]*i_mat[2*4+0]*i_mat[3*4+2] - i_mat[1*4+0]*i_mat[2*4+1]*i_mat[3*4+2],
+			i_mat[0*4+1]*i_mat[2*4+2]*i_mat[3*4+0] - i_mat[0*4+2]*i_mat[2*4+1]*i_mat[3*4+0] + i_mat[0*4+2]*i_mat[2*4+0]*i_mat[3*4+1] - i_mat[0*4+0]*i_mat[2*4+2]*i_mat[3*4+1] - i_mat[0*4+1]*i_mat[2*4+0]*i_mat[3*4+2] + i_mat[0*4+0]*i_mat[2*4+1]*i_mat[3*4+2],
+			i_mat[0*4+2]*i_mat[1*4+1]*i_mat[3*4+0] - i_mat[0*4+1]*i_mat[1*4+2]*i_mat[3*4+0] - i_mat[0*4+2]*i_mat[1*4+0]*i_mat[3*4+1] + i_mat[0*4+0]*i_mat[1*4+2]*i_mat[3*4+1] + i_mat[0*4+1]*i_mat[1*4+0]*i_mat[3*4+2] - i_mat[0*4+0]*i_mat[1*4+1]*i_mat[3*4+2],
+			i_mat[0*4+1]*i_mat[1*4+2]*i_mat[2*4+0] - i_mat[0*4+2]*i_mat[1*4+1]*i_mat[2*4+0] + i_mat[0*4+2]*i_mat[1*4+0]*i_mat[2*4+1] - i_mat[0*4+0]*i_mat[1*4+2]*i_mat[2*4+1] - i_mat[0*4+1]*i_mat[1*4+0]*i_mat[2*4+2] + i_mat[0*4+0]*i_mat[1*4+1]*i_mat[2*4+2]
+		};
+
+		for (int j = 0; j < 4; j++)
+		{
+			o_x[j] = 0;
+			for (int i = 0; i < 4; i++)
+				o_x[j] += minv[j*4+i]*i_b[i];
+		}
+
+
+		double inv_det = 1.0/get4x4Determinant(i_mat);
+		for (int i = 0; i < 4; i++)
+			o_x[i] *= inv_det;
+	}
+
 
 public:
 	void bicubic_scalar(
@@ -217,8 +280,6 @@ public:
 			double *o_data						///< output values
 	)
 	{
-		std::cout << "WARNING: Different cell sizes along latitude not yet considered!" << std::endl;
-
 		assert(res[0] > 0);
 		assert(i_pos_x.number_of_elements == i_pos_y.number_of_elements);
 
@@ -316,7 +377,27 @@ public:
 
 				idx_j++;
 			}
+			//phi_dist[array_idx_y]
+			double mat[16];
+			for (int i = 0; i < 4; i++)
+			{
+				for (int j = 0; j < 4; j++)
+				{
+					double x = j;
+					mat[j*4+i] = std::pow(x, i);
+				}
+			}
+
+			double x[4];
+			solve4x4SOE(mat, q, x);
+
+#if 1
+			double y = cell_y+1.0;
+			double value = x[0] + y*(x[1] + y*(x[2] + y*x[3]));
+
+#else
 			double value = q[1] + 0.5 * cell_y*(q[2] - q[0] + cell_y*(2.0*q[0] - 5.0*q[1] + 4.0*q[2] - q[3] + cell_y*(3.0*(q[1] - q[2]) + q[3] - q[0])));
+#endif
 
 			o_data[pos_idx] = value;
 		}

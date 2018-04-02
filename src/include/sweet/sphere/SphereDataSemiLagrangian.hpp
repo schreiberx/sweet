@@ -19,7 +19,7 @@
 class SphereDataSemiLagrangian
 {
 	SphereDataSampler sample2D;
-	SphereDataConfig *sphereDataConfig;
+	const SphereDataConfig *sphereDataConfig;
 
 public:
 	SphereDataSemiLagrangian()	:
@@ -30,7 +30,7 @@ public:
 
 	void setup(
 		double i_domain_size[2],
-		SphereDataConfig *i_sphereDataConfig
+		const SphereDataConfig *i_sphereDataConfig
 	)
 	{
 		sphereDataConfig = i_sphereDataConfig;
@@ -132,21 +132,7 @@ public:
 		// get lat-lon tangential basis
 		for (std::size_t i = 0; i < i_pos_lon.number_of_elements; i++)
 		{
-#if 0
-//			i_pos_lon.scalar_data[i] = 0;
-//			i_pos_lat.scalar_data[i] = 0;
 
-			double cartPos[3];
-			angleToCartCoord(i_pos_lon.scalar_data[i], i_pos_lat.scalar_data[i], cartPos);
-
-			cartToAngleCoord(cartPos, &o_pos_lon.scalar_data[i], &o_pos_lat.scalar_data[i]);
-
-//			std::cout << cartPos[0] << "\t" << cartPos[1] << "\t" << cartPos[2] << std::endl;
-//			std::cout << i_pos_lon.scalar_data[i] << "\t" << o_pos_lon.scalar_data[i] << std::endl;
-//			std::cout << i_pos_lat.scalar_data[i] << "\t" << o_pos_lat.scalar_data[i] << std::endl;
-//			std::cout << std::endl;
-
-#else
 			// compute 3D pos
 			double tanBasis[9];
 			angleToTangentialSpace(i_pos_lon.scalar_data[i], i_pos_lat.scalar_data[i], tanBasis);
@@ -154,7 +140,66 @@ public:
 			// compute 3D vel
 			double velVec[3];
 			for (int j = 0; j < 3; j++)
-				velVec[j] = tanBasis[j] + tanBasis[j+3]*i_vec_lon.scalar_data[i] + tanBasis[j+6]*i_vec_lat.scalar_data[i];
+				velVec[j] = tanBasis[j+3]*i_vec_lon.scalar_data[i] + tanBasis[j+6]*i_vec_lat.scalar_data[i];
+
+#if 1
+			// velocity basis
+			double velBasis[9];
+			for (int j = 0; j < 3; j++)
+				velBasis[j] = tanBasis[j];
+
+			double vel_length = std::sqrt(i_vec_lon.scalar_data[i]*i_vec_lon.scalar_data[i] + i_vec_lat.scalar_data[i]*i_vec_lat.scalar_data[i]);
+			double inv_vel_len = 1.0/vel_length;
+			for (int j = 0; j < 3; j++)
+				velBasis[3+j] = velVec[j]*inv_vel_len;
+
+			cross(&velBasis[0], &velBasis[3], &velBasis[6]);
+
+/*
+			for (int j = 0; j < 3; j++)
+			{
+				std::cout << velBasis[3*j+0] << ", " << velBasis[3*j+1] << ", " << velBasis[3*j+2] << std::endl;
+			}
+			std::cout << std::endl;
+*/
+
+			// Follow vel along unit circle
+			// start at relative position (1,0)
+			double pos[2];
+			pos[0] = std::cos(vel_length)-1.0;
+			pos[1] = std::sin(vel_length);
+
+			// update velVec
+#if 1
+			for (int j = 0; j < 3; j++)
+			{
+				velVec[j] = 0;
+				for (int i = 0; i < 2; i++)
+				{
+					// 2D velocity basis is made up by 2nd and 3rd column
+					velVec[j] += velBasis[j+i*3]*pos[i];
+				}
+			}
+#else
+			velVec[0] = 0;
+			for (int i = 0; i < 2; i++)
+				velVec[0] += velBasis[i*3]*pos[i];
+
+			velVec[1] = 0;
+			for (int i = 0; i < 2; i++)
+				velVec[1] += velBasis[3+i*3]*pos[i];
+#endif
+
+			// add
+			double finalPos[3];
+			for (int j = 0; j < 3; j++)
+				finalPos[j] = tanBasis[j] + velVec[j];
+
+//			std::cout << tanBasis[0] << ", " << tanBasis[1] << ", " << tanBasis[2] << std::endl;
+//			std::cout << velVec[0] << ", " << velVec[1] << ", " << velVec[2] << std::endl;
+//			std::cout << length(finalPos) << std::endl;
+
+#else
 
 			// add
 			double finalPos[3];
@@ -162,12 +207,13 @@ public:
 				finalPos[j] = tanBasis[j] + velVec[j];
 
 			// normalize
-			double inv_len = 1.0/std::sqrt(finalPos[0]*finalPos[0] + finalPos[1]*finalPos[1] + finalPos[2]*finalPos[2]);
+			double inv_len = 1.0/length(finalPos);
 			for (int j = 0; j < 3; j++)
 				finalPos[j] *= inv_len;
 
-			cartToAngleCoord(finalPos, &o_pos_lon.scalar_data[i], &o_pos_lat.scalar_data[i]);
 #endif
+
+			cartToAngleCoord(finalPos, &o_pos_lon.scalar_data[i], &o_pos_lat.scalar_data[i]);
 		}
 	}
 
@@ -185,6 +231,7 @@ public:
 	void semi_lag_departure_points_settls(
 			const SphereDataPhysical &i_u_prev,	// Velocities at time t-1
 			const SphereDataPhysical &i_v_prev,
+
 			const SphereDataPhysical &i_u, 		// Velocities at time t
 			const SphereDataPhysical &i_v,
 
@@ -228,39 +275,25 @@ public:
 		o_posx_d = i_posx_a;
 		o_posy_d = i_posy_a;
 
+		std::cout << "TODO: Figure out where the scaling 2 factor comes from!" << std::endl;
+		double vel_scaling = 2.0/i_earth_radius;
+
 		int iters = 0;
 		for (; iters < 10; iters++)
 		{
-#if 1
 			sphereCoordPlusSurfaceVector(
 					i_posx_a,
 					i_posy_a,
-					(- dt*0.5 * u - sample2D.bilinear_scalar(u_iter, o_posx_d, o_posy_d))/i_earth_radius,
-					(- dt*0.5 * v - sample2D.bilinear_scalar(v_iter, o_posx_d, o_posy_d))/i_earth_radius,
+					(-dt*0.5 * u - sample2D.bilinear_scalar(u_iter, o_posx_d, o_posy_d))*vel_scaling,
+					(-dt*0.5 * v - sample2D.bilinear_scalar(v_iter, o_posx_d, o_posy_d))*vel_scaling,
 					rx_d_new,
 					ry_d_new
 				);
-#else
-			// r_d = r_a - dt/2 * v_n(r_d) - v^{iter}(r_d)
-			rx_d_new = i_posx_a - dt*0.5 * u - sample2D.bilinear_scalar(
-					u_iter,
-					o_posx_d, o_posy_d
-			);
-			ry_d_new = i_posy_a - dt*0.5 * v - sample2D.bilinear_scalar(
-					v_iter,
-					o_posx_d, o_posy_d
-			);
-#endif
 
 			double diff = (rx_d_new - rx_d_prev).reduce_maxAbs() + (ry_d_new - ry_d_prev).reduce_maxAbs();
 
 			for (std::size_t i = 0; i < num_points; i++)
 			{
-#if 0
-				std::cout << i_posx_a.scalar_data[i] << "\t" << rx_d_new.scalar_data[i] << std::endl;
-				std::cout << i_posy_a.scalar_data[i] << "\t" << ry_d_new.scalar_data[i] << std::endl;
-				std::cout << std::endl;
-#endif
 				// posx \in [0;2*pi]
 				o_posx_d.scalar_data[i] = SphereDataSampler::wrapPeriodic(rx_d_new.scalar_data[i], 2.0*M_PI);
 				assert(o_posx_d.scalar_data[i] >= 0);

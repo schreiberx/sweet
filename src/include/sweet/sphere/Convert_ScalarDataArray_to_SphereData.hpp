@@ -18,7 +18,7 @@ public:
 	static
 	SphereData convert(
 			const ScalarDataArray &i_scalarDataArray,
-			SphereDataConfig *i_sphereDataConfig
+			const SphereDataConfig *i_sphereDataConfig
 	)
 	{
 		SphereData out(i_sphereDataConfig);

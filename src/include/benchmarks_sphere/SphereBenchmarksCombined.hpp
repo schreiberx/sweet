@@ -49,6 +49,8 @@ public:
 		std::cout << "  'flat': Constant height and zero velocity" << std::endl;
 		std::cout << "  WILLIAMSON #1:" << std::endl;
 		std::cout << "  'adv_cosine_bell': Advection test case of cosine bell" << std::endl;
+		std::cout << "  WILLIAMSON #1 (alternative):" << std::endl;
+		std::cout << "  'adv_gauss_bump': Advection test case of gaussian bump" << std::endl;
 		std::cout << "  WILLIAMSON #2 [TODO: Check]:" << std::endl;
 		std::cout << "  'geostrophic_balance': Geostrophic balance, one wave (standard)" << std::endl;
 		std::cout << "  'geostrophic_balance_[N]': Geostrophic balance, with [N] waves" << std::endl;
@@ -71,7 +73,7 @@ public:
 			SphereDataPhysical &i_v,
 
 			SimulationVariables &i_simVars,
-			SphereOperators &i_op
+			SphereOperators &io_op
 	)
 	{
 		/*
@@ -92,9 +94,9 @@ public:
 		SphereData divspec(o_h.sphereDataConfig);
 
 		if (i_simVars.misc.sphere_use_robert_functions)
-		  i_op.robert_uv_to_vortdiv(i_u, i_v, vrtspec, divspec);
+			io_op.robert_uv_to_vortdiv(i_u, i_v, vrtspec, divspec);
 		else
-		  i_op.uv_to_vortdiv(i_u, i_v, vrtspec, divspec);
+			io_op.uv_to_vortdiv(i_u, i_v, vrtspec, divspec);
 
 		SphereDataPhysical vrtg = vrtspec.getSphereDataPhysical();
 
@@ -105,13 +107,13 @@ public:
 		SphereData tmpspec2(o_h.sphereDataConfig);
 
 		if (i_simVars.misc.sphere_use_robert_functions)
-		  i_op.robert_uv_to_vortdiv(tmpg1, tmpg2, tmpspec1, tmpspec2);
+		  io_op.robert_uv_to_vortdiv(tmpg1, tmpg2, tmpspec1, tmpspec2);
 		else
-		  i_op.uv_to_vortdiv(tmpg1, tmpg2, tmpspec1, tmpspec2);
+		  io_op.uv_to_vortdiv(tmpg1, tmpg2, tmpspec1, tmpspec2);
 		
 		tmpspec2 = 0.5*(i_u*i_u+i_v*i_v);
 
-		SphereData phispec = i_op.inv_laplace(tmpspec1) - tmpspec2 - tmpspec1;
+		SphereData phispec = io_op.inv_laplace(tmpspec1) - tmpspec2 - tmpspec1;
 
 		phispec = phispec + i_simVars.sim.gravitation*i_simVars.sim.h0;
 		phispec.spectral_truncate();
@@ -169,7 +171,7 @@ public:
 			SphereData &o_div,
 
 			SimulationVariables &io_simVars,
-			SphereOperators &i_op
+			SphereOperators &io_op
 	)
 	{
 		if (
@@ -193,6 +195,9 @@ public:
 			io_simVars.sim.gravitation = 9.80616;
 			io_simVars.sim.earth_radius = 6.37122e6;
 			io_simVars.sim.h0 = 1000.0;
+
+			// reset operator
+			io_op.setup(o_phi.sphereDataConfig, io_simVars.sim.earth_radius);
 
 			double lambda_c = 3.0*M_PI/2.0;
 			double theta_c = 0.0;
@@ -231,7 +236,92 @@ public:
 				}
 			);
 
-			o_vort = i_op.laplace(stream_function);
+			o_vort = io_op.laplace(stream_function);
+			o_div.spectral_set_zero();
+
+			io_simVars.misc.output_time_scale = 1.0/(60.0*60.0);
+
+//			std::cout << "advection_rotation_angle: " << io_simVars.setup.advection_rotation_angle << std::endl;
+		}
+		else if (
+				io_simVars.setup.benchmark_scenario_name == "williamson1b"		||
+				io_simVars.setup.benchmark_scenario_name == "adv_gauss_bump"
+		)
+		{
+			/*
+			 * Advection test case
+			 * See Williamson test case, eq. (77), (78), (79)
+			 */
+
+			if (io_simVars.timecontrol.current_simulation_time == 0)
+			{
+				std::cout << "!!! WARNING !!!" << std::endl;
+				std::cout << "!!! WARNING: Overriding simulation parameters for this benchmark !!!" << std::endl;
+				std::cout << "!!! WARNING !!!" << std::endl;
+			}
+
+			io_simVars.sim.coriolis_omega = 7.292e-5;
+			io_simVars.sim.gravitation = 9.80616;
+			io_simVars.sim.earth_radius = 6.37122e6;
+			io_simVars.sim.h0 = 1000.0;
+
+			io_op.setup(o_phi.sphereDataConfig, io_simVars.sim.earth_radius);
+
+			double lambda_c = 3.0*M_PI/2.0;
+			double theta_c = 0.0;
+			double a = io_simVars.sim.earth_radius;
+
+			//double R = a/3.0;
+			double u0 = (2.0*M_PI*a)/(12.0*24.0*60.0*60.0);
+			//double u0 = (2.0*M_PI*a*1000.0);
+
+			o_phi.physical_update_lambda(
+				[&](double i_lambda, double i_theta, double &io_data)
+			{
+					double d = std::acos(
+							std::sin(theta_c)*std::sin(i_theta) +
+							std::cos(theta_c)*std::cos(i_theta)*std::cos(i_lambda-lambda_c)
+					);
+
+					double i_exp_fac = 20.0;
+					io_data = std::exp(-d*d*i_exp_fac)*0.1*io_simVars.sim.h0;
+
+					io_data *= io_simVars.sim.gravitation;
+				}
+			);
+
+			/*
+			 * Both versions are working
+			 */
+#if 1
+			SphereData stream_function(o_phi.sphereDataConfig);
+
+			stream_function.physical_update_lambda(
+				[&](double i_lon, double i_lat, double &io_data)
+				{
+					double i_theta = i_lat;
+					double i_lambda = i_lon;
+					double alpha = io_simVars.setup.advection_rotation_angle;
+
+					io_data = -a*u0*(std::sin(i_theta)*std::cos(alpha) - std::cos(i_lambda)*std::cos(i_theta)*std::sin(alpha));
+				}
+			);
+
+			o_vort = io_op.laplace(stream_function);
+
+#else
+
+			o_vort.physical_update_lambda(
+				[&](double i_lon, double i_lat, double &io_data)
+				{
+					double i_theta = i_lat;
+					double i_lambda = i_lon;
+					double alpha = io_simVars.setup.advection_rotation_angle;
+
+					io_data = 2.0*u0/a*(-std::cos(i_lambda)*std::cos(i_theta)*std::sin(alpha) + std::sin(i_theta)*std::cos(alpha));
+				}
+			);
+#endif
 			o_div.spectral_set_zero();
 
 			io_simVars.misc.output_time_scale = 1.0/(60.0*60.0);
@@ -244,10 +334,10 @@ public:
 			SphereDataPhysical u(o_phi.sphereDataConfig);
 			SphereDataPhysical v(o_phi.sphereDataConfig);
 
-			setupInitialConditions_HUV(h, u, v, io_simVars, i_op);
+			setupInitialConditions_HUV(h, u, v, io_simVars, io_op);
 
 			o_phi = h*io_simVars.sim.gravitation;
-			i_op.robert_uv_to_vortdiv(u, v, o_vort, o_div);
+			io_op.robert_uv_to_vortdiv(u, v, o_vort, o_div);
 		}
 	}
 
@@ -260,7 +350,7 @@ public:
 			SphereDataPhysical &o_v,
 
 			SimulationVariables &io_simVars,
-			SphereOperators &i_op
+			SphereOperators &io_op
 	)
 	{
 
@@ -339,6 +429,8 @@ public:
 					io_simVars.sim.earth_radius = 6.37122e6;
 					io_simVars.sim.h0 = 29400.0/io_simVars.sim.gravitation;
 
+					io_op.setup(o_h.sphereDataConfig, io_simVars.sim.earth_radius);
+
 					u0 = (2.0*M_PI*io_simVars.sim.earth_radius)/(12.0*24.0*60.0*60.0);
 				}
 				double a = io_simVars.sim.earth_radius;
@@ -381,15 +473,15 @@ public:
 
 					if (io_simVars.misc.sphere_use_robert_functions)
 					{
-						h_max_error = (-inv_r*i_op.robert_div_lon(o_u) -inv_r*i_op.robert_div_lat(o_v)).physical_reduce_max_abs();
-						u_max_error = (-inv_r*i_op.robert_grad_lon(o_h*io_simVars.sim.gravitation) + 2.0*io_simVars.sim.coriolis_omega*i_op.mu(o_v)).physical_reduce_max_abs();
-						v_max_error = (-inv_r*i_op.robert_grad_lat(o_h*io_simVars.sim.gravitation) - 2.0*io_simVars.sim.coriolis_omega*i_op.mu(o_u)).physical_reduce_max_abs();
+						h_max_error = (-inv_r*io_op.robert_div_lon(o_u) -inv_r*io_op.robert_div_lat(o_v)).physical_reduce_max_abs();
+						u_max_error = (-inv_r*io_op.robert_grad_lon(o_h*io_simVars.sim.gravitation) + 2.0*io_simVars.sim.coriolis_omega*io_op.mu(o_v)).physical_reduce_max_abs();
+						v_max_error = (-inv_r*io_op.robert_grad_lat(o_h*io_simVars.sim.gravitation) - 2.0*io_simVars.sim.coriolis_omega*io_op.mu(o_u)).physical_reduce_max_abs();
 					}
 					else
 					{
-						h_max_error = (-inv_r*i_op.div_lon(o_u) -inv_r*i_op.div_lat(o_v)).physical_reduce_max_abs();
-						u_max_error = (-inv_r*i_op.grad_lon(o_h*io_simVars.sim.gravitation) + 2.0*io_simVars.sim.coriolis_omega*i_op.mu(o_v)).physical_reduce_max_abs();
-						v_max_error = (-inv_r*i_op.grad_lat(o_h*io_simVars.sim.gravitation) - 2.0*io_simVars.sim.coriolis_omega*i_op.mu(o_u)).physical_reduce_max_abs();
+						h_max_error = (-inv_r*io_op.div_lon(o_u) -inv_r*io_op.div_lat(o_v)).physical_reduce_max_abs();
+						u_max_error = (-inv_r*io_op.grad_lon(o_h*io_simVars.sim.gravitation) + 2.0*io_simVars.sim.coriolis_omega*io_op.mu(o_v)).physical_reduce_max_abs();
+						v_max_error = (-inv_r*io_op.grad_lat(o_h*io_simVars.sim.gravitation) - 2.0*io_simVars.sim.coriolis_omega*io_op.mu(o_u)).physical_reduce_max_abs();
 					}
 
 					std::cout << "h_max_error for geostrophic balance case: " << h_max_error << std::endl;
@@ -418,6 +510,8 @@ public:
 				io_simVars.sim.gravitation = 9.80616;
 				io_simVars.sim.earth_radius = 6.37122e6;
 				io_simVars.sim.h0 = 1000.0;
+
+				io_op.setup(o_h.sphereDataConfig, io_simVars.sim.earth_radius);
 
 				double lambda_c = 3.0*M_PI/2.0;
 				double theta_c = M_PI/4.0;
@@ -532,6 +626,8 @@ public:
 				io_simVars.sim.gravitation = 9.80616;
 				io_simVars.sim.earth_radius = 6.37122e6;
 				io_simVars.sim.h0 = 1000.0;
+
+				io_op.setup(o_h.sphereDataConfig, io_simVars.sim.earth_radius);
 
 				double lambda_c = 3.0*M_PI/2.0;
 				double theta_c = 0;
@@ -658,6 +754,8 @@ public:
 				io_simVars.sim.earth_radius = 6.37122e6;
 				io_simVars.sim.h0 = 29400.0;
 
+				io_op.setup(o_h.sphereDataConfig, io_simVars.sim.earth_radius);
+
 				o_u.physical_set_zero();
 				o_v.physical_set_zero();
 
@@ -697,6 +795,8 @@ public:
 				io_simVars.sim.gravitation = 9.80616;
 				io_simVars.sim.earth_radius = 6.37122e6;
 				io_simVars.sim.h0 = 10000;
+
+				io_op.setup(o_h.sphereDataConfig, io_simVars.sim.earth_radius);
 
 				io_simVars.misc.output_time_scale = 1.0/(60.0*60.0);
 
@@ -833,7 +933,7 @@ public:
 				SphereData vrtspec(o_h.sphereDataConfig);
 				SphereData divspec(o_h.sphereDataConfig);
 
-				i_op.uv_to_vortdiv(ug, vg, vrtspec, divspec);
+				io_op.uv_to_vortdiv(ug, vg, vrtspec, divspec);
 
 
 				SphereDataPhysical vrtg = vrtspec.getSphereDataPhysical();
@@ -843,11 +943,11 @@ public:
 
 				SphereData tmpspec1(o_h.sphereDataConfig);
 				SphereData tmpspec2(o_h.sphereDataConfig);
-				i_op.uv_to_vortdiv(tmpg1, tmpg2, tmpspec1, tmpspec2);
+				io_op.uv_to_vortdiv(tmpg1, tmpg2, tmpspec1, tmpspec2);
 
 				tmpspec2 = (0.5*(ug*ug+vg*vg));
 
-				SphereData phispec = i_op.inv_laplace(tmpspec1) - tmpspec2;
+				SphereData phispec = io_op.inv_laplace(tmpspec1) - tmpspec2;
 
 				io_simVars.sim.h0 = 10000.0;
 				SphereDataPhysical phig = io_simVars.sim.gravitation*(hbump+io_simVars.sim.h0) + phispec.getSphereDataPhysical();
@@ -857,7 +957,7 @@ public:
 
 				////////////////////////////////
 
-				i_op.vortdiv_to_uv(vrtspec, divspec, ug, vg);
+				io_op.vortdiv_to_uv(vrtspec, divspec, ug, vg);
 
 				o_h = phispec/io_simVars.sim.gravitation;
 				o_u = ug;
@@ -942,6 +1042,8 @@ public:
 				io_simVars.sim.earth_radius = 6.37122e6;
 				io_simVars.sim.h0 = 29400.0/io_simVars.sim.gravitation;
 
+				io_op.setup(o_h.sphereDataConfig, io_simVars.sim.earth_radius);
+
 				//double u0 = (2.0*M_PI*io_simVars.sim.earth_radius)/(12.0*24.0*60.0*60.0);
 				//double a = io_simVars.sim.earth_radius;
 
@@ -992,7 +1094,7 @@ public:
 						ug,
 						vg,
 						io_simVars,
-						i_op
+						io_op
 				);
 
 				o_u = ug;
@@ -1030,6 +1132,8 @@ public:
 				io_simVars.sim.gravitation	= 9.80616;
 				io_simVars.sim.earth_radius   = 6.37122e6;
 				io_simVars.sim.h0			 = 5600;
+
+				io_op.setup(o_h.sphereDataConfig, io_simVars.sim.earth_radius);
 
 				const double u0 = 20.0;
 					
@@ -1074,7 +1178,7 @@ public:
 							  ug,
 							  vg,
 							  io_simVars,
-							  i_op
+							  io_op
 							  );
 				
 
@@ -1096,6 +1200,8 @@ public:
 				io_simVars.sim.gravitation = 9.80616;
 				io_simVars.sim.earth_radius = 6.37122e6;
 				io_simVars.sim.h0 = 8000;
+
+				io_op.setup(o_h.sphereDataConfig, io_simVars.sim.earth_radius);
 
 				const double omega = 7.484e-6;
 				const double K = omega;
@@ -1166,7 +1272,7 @@ public:
 							  ug,
 							  vg,
 							  io_simVars,
-							  i_op
+							  io_op
 					);
 
 				/*
@@ -1214,6 +1320,8 @@ public:
 					io_simVars.sim.earth_radius = 6.37122e6;
 					io_simVars.sim.h0 = 10000;
 				}
+
+				io_op.setup(o_h.sphereDataConfig, io_simVars.sim.earth_radius);
 
 				io_simVars.misc.output_time_scale = 1.0/(60.0*60.0);
 
@@ -1370,7 +1478,7 @@ public:
 						ug,
 						vg,
 						io_simVars,
-						i_op
+						io_op
 				);
 
 				if (io_simVars.setup.benchmark_scenario_name == "galewsky")

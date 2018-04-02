@@ -29,7 +29,7 @@ class SphereOperators	:
 	friend SphereDataConfig;
 
 public:
-	SphereDataConfig *sphereDataConfig;
+	const SphereDataConfig *sphereDataConfig;
 
 private:
 
@@ -71,7 +71,7 @@ public:
 
 public:
 	void setup(
-		SphereDataConfig *i_sphereDataConfig,
+		const SphereDataConfig *i_sphereDataConfig,
 		double i_earth_radius
 	)
 	{

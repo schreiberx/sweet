@@ -73,15 +73,28 @@ public:
 	}
 
 
+	~SimulationInstance()
+	{
+		std::cout << "Error compared to initial condition" << std::endl;
+		std::cout << "Lmax error: " << (prog_h0-prog_h).physical_reduce_max_abs() << std::endl;
+		std::cout << "RMS error: " << (prog_h0-prog_h).physical_reduce_rms() << std::endl;
+	}
+
+
 
 	void reset()
 	{
-		simVars.timecontrol.current_timestep_nr = 0;
+		simVars.reset();
 
 		SphereData tmp_vort(sphereDataConfig);
 		SphereData tmp_div(sphereDataConfig);
 
 		SphereBenchmarksCombined::setupInitialConditions(prog_h, prog_vort, prog_div, simVars, op);
+
+		prog_h0 = prog_h;
+
+		// setup sphereDataconfig instance again
+		sphereDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
 
 		timeSteppers.setup(simVars.disc.timestepping_method, op, simVars);
 
@@ -92,7 +105,6 @@ public:
 
 	void run_timestep()
 	{
-
 		if (simVars.timecontrol.current_simulation_time + simVars.timecontrol.current_timestep_size > simVars.timecontrol.max_simulation_time)
 			simVars.timecontrol.current_timestep_size = simVars.timecontrol.max_simulation_time - simVars.timecontrol.current_simulation_time;
 
@@ -102,59 +114,11 @@ public:
 				simVars.timecontrol.current_simulation_time
 			);
 
-#if 0
 		double dt = simVars.timecontrol.current_timestep_size;
-
-		op.robert_vortdiv_to_uv(prog_vort, prog_div, diag_u, diag_v);
-
-
-#if 0
-		// velocities at t
-		SphereDataPhysical* vel[2] = {&diag_u, &diag_v};
-
-		// velocities at t-1
-		SphereDataPhysical* vel_prev[2] = {&diag_u_prev, &diag_v_prev};
-
-		// OUTPUT: position of departure points at t
-		ScalarDataArray posx_d(sphereDataConfig->physical_array_data_number_of_elements);
-		ScalarDataArray posy_d(sphereDataConfig->physical_array_data_number_of_elements);
-		ScalarDataArray* output_pos_departure[2] = {&posx_d, &posy_d};
-
-		//return;
-		semiLagrangian.compute_departure_points_settls(
-				vel_prev,
-				vel,
-				input_pos_arrival,
-				dt,
-				output_pos_departure
-		);
-
-		diag_u_prev = diag_u;
-		diag_v_prev = diag_v;
-#endif
-
-		return;
-		SphereData new_prog_h(sphereDataConfig);
-		sampler2D.bicubic_scalar(
-				prog_h,
-#if 0
-				posx_d,
-				posy_d,
-#else
-				posx_a,
-				posy_a,
-#endif
-				new_prog_h
-		);
-
-		prog_h = new_prog_h;
-
 
 		// advance in time
 		simVars.timecontrol.current_simulation_time += dt;
 		simVars.timecontrol.current_timestep_nr++;
-
-#endif
 	}
 
 
@@ -193,6 +157,19 @@ public:
 
 	bool should_quit()
 	{
+		if (simVars.timecontrol.max_timesteps_nr != -1 && simVars.timecontrol.max_timesteps_nr <= simVars.timecontrol.current_timestep_nr)
+			return true;
+
+		double diff = std::abs(simVars.timecontrol.max_simulation_time - simVars.timecontrol.current_simulation_time);
+
+		if (	simVars.timecontrol.max_simulation_time != -1 &&
+				(
+						simVars.timecontrol.max_simulation_time <= simVars.timecontrol.current_simulation_time	||
+						diff/simVars.timecontrol.max_simulation_time < 1e-11	// avoid numerical issues in time stepping if current time step is 1e-14 smaller than max time step
+				)
+			)
+			return true;
+
 		return false;
 	}
 
@@ -202,7 +179,7 @@ public:
 	void vis_post_frame_processing(int i_num_iterations)
 	{
 		if (simVars.timecontrol.run_simulation_timesteps)
-			for (int i = 0; i < i_num_iterations; i++)
+			for (int i = 0; i < i_num_iterations && !should_quit(); i++)
 				run_timestep();
 
 		compute_error();
@@ -265,8 +242,49 @@ public:
 
 	const char* vis_get_status_string()
 	{
-		static char title_string[1024];
-		sprintf(title_string, "Timestep: %i, timestep size: %e", simVars.timecontrol.current_timestep_nr, simVars.timecontrol.current_timestep_size);
+		const char* description = "";
+		int id = simVars.misc.vis_id % 3;
+
+		switch (id)
+		{
+		default:
+		case 0:
+			description = "H";
+			break;
+
+		case 1:
+			description = "vort";
+			break;
+
+		case 2:
+			description = "div";
+			break;
+		}
+
+
+		static char title_string[2048];
+
+		//sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %.14e, Vis: %s, Mass: %.14e, Energy: %.14e, Potential Entrophy: %.14e",
+		sprintf(title_string,
+#if SWEET_MPI
+				"Rank %i - "
+#endif
+				"Time: %f (%.2f d), k: %i, dt: %.3e, Vis: %s, TMass: %.6e, TEnergy: %.6e, PotEnstrophy: %.6e, MaxVal: %.6e, MinVal: %.6e ",
+#if SWEET_MPI
+				mpi_rank,
+#endif
+				simVars.timecontrol.current_simulation_time,
+				simVars.timecontrol.current_simulation_time/(60.0*60.0*24.0),
+				simVars.timecontrol.current_timestep_nr,
+				simVars.timecontrol.current_timestep_size,
+				description,
+				simVars.diag.total_mass,
+				simVars.diag.total_energy,
+				simVars.diag.total_potential_enstrophy,
+				viz_plane_data.reduce_max(),
+				viz_plane_data.reduce_min()
+		);
+
 		return title_string;
 	}
 

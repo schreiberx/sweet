@@ -52,19 +52,12 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 	diag_u_prev = diag_u;
 	diag_v_prev = diag_v;
 
-
 	SphereData new_prog_phi(io_phi.sphereDataConfig);
 
 	sampler2D.bicubic_scalar(
-//		sampler2D.bilinear_scalar(
 			io_phi,
-#if 1
 			posx_d,
 			posy_d,
-#else
-			posx_a,
-			posy_a,
-#endif
 			new_prog_phi
 	);
 #else
@@ -87,11 +80,6 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 #endif
 
 	io_phi = new_prog_phi;
-
-
-	// advance in time
-	simVars.timecontrol.current_simulation_time += dt;
-	simVars.timecontrol.current_timestep_nr++;
 }
 
 
@@ -105,7 +93,7 @@ void Adv_Sphere_TS_na_sl::setup(
 {
 	timestepping_order = i_order;
 
-	SphereDataConfig *sphereDataConfig = op.sphereDataConfig;
+	const SphereDataConfig *sphereDataConfig = op.sphereDataConfig;
 
 	posx_a.setup(sphereDataConfig->physical_array_data_number_of_elements);
 	posy_a.setup(sphereDataConfig->physical_array_data_number_of_elements);

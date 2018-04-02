@@ -27,25 +27,6 @@ void Adv_Sphere_TS_na_erk::euler_timestep_update(
 )
 {
 
-
-#if 0
-	SphereDataPhysical phi_grad_lon(i_phi.sphereDataConfig);
-	SphereDataPhysical phi_grad_lat(i_phi.sphereDataConfig);
-	phi_grad_lon = op.robert_grad_lon(i_phi).getSphereDataPhysical()/simVars.sim.earth_radius;
-	phi_grad_lat = op.robert_grad_lat(i_phi).getSphereDataPhysical()/simVars.sim.earth_radius;
-//	op.robert_grad_to_vec(i_phi, phi_grad_lon, phi_grad_lat, simVars.sim.earth_radius);
-
-	SphereDataPhysical ug(i_phi.sphereDataConfig);
-	SphereDataPhysical vg(i_phi.sphereDataConfig);
-	op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
-
-	o_phi_t = ug*phi_grad_lon + vg*phi_grad_lat;
-	o_vort_t.spectral_set_zero();
-	o_div_t.spectral_set_zero();
-
-
-#else
-
 	/**
 	 * We simply compute
 	 * 	-DIV(rho*U) = -rho DIV(U) - U.GRAD(rho) = - U.GRAD(rho)
@@ -70,10 +51,15 @@ void Adv_Sphere_TS_na_erk::euler_timestep_update(
 
 	o_phi_t *= -1.0;
 
+#if 0
+	std::cout << phig.physical_reduce_max_abs() << std::endl;
+	std::cout << ug.physical_reduce_max_abs() << std::endl;
+	std::cout << o_phi_t.physical_reduce_max_abs() << std::endl;
+	std::cout << std::endl;
+#endif
+
 	o_vort_t.spectral_set_zero();
 	o_div_t.spectral_set_zero();
-
-#endif
 }
 
 
