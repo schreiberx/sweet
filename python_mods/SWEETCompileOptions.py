@@ -110,7 +110,8 @@ class SWEETCompileOptions:
 		# GUI
 		self.gui = 'disable'
 
-		self.quadmath = 'enable'
+		#self.quadmath = 'enable'
+		self.quadmath = 'disable'
 		pass
 
 
