@@ -31,7 +31,7 @@ public:
 	/**
 	 * SPH configuration
 	 */
-	SphereDataConfig *sphereDataConfig;
+	const SphereDataConfig *sphereDataConfig;
 
 	/**
 	 * Solver for banded matrix
@@ -53,7 +53,7 @@ public:
 	 */
 public:
 	void setup(
-			SphereDataConfig *i_sphereDataConfig,		///< Handler to sphereDataConfig
+			const SphereDataConfig *i_sphereDataConfig,		///< Handler to sphereDataConfig
 			int i_halosize_offdiagonal	///< Size of the halo around. A value of 2 allocates data for 5 diagonals.
 	)
 	{

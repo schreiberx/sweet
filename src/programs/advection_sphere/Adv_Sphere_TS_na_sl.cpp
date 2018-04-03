@@ -132,7 +132,7 @@ void Adv_Sphere_TS_na_sl::setup(
 	exit(1);
 #endif
 
-	sampler2D.setup(simVars.sim.domain_size, sphereDataConfig);
+	sampler2D.setup(sphereDataConfig);
 
 	//PXT- This just calls sampler2D.setup, so any reason for having it?
 	semiLagrangian.setup(simVars.sim.domain_size, sphereDataConfig);

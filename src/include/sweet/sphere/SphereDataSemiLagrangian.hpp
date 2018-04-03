@@ -21,6 +21,7 @@ class SphereDataSemiLagrangian
 	SphereDataSampler sample2D;
 	const SphereDataConfig *sphereDataConfig;
 
+
 public:
 	SphereDataSemiLagrangian()	:
 		sphereDataConfig(nullptr)
@@ -130,14 +131,16 @@ public:
 		// TODO: make this vectorizable
 
 		// get lat-lon tangential basis
+#if SWEET_SPACE_THREADING
+#pragma omp parallel for
+#endif
 		for (std::size_t i = 0; i < i_pos_lon.number_of_elements; i++)
 		{
-
 			// compute 3D pos
 			double tanBasis[9];
 			angleToTangentialSpace(i_pos_lon.scalar_data[i], i_pos_lat.scalar_data[i], tanBasis);
 
-			// compute 3D vel
+			// compute 3D velocity
 			double velVec[3];
 			for (int j = 0; j < 3; j++)
 				velVec[j] = tanBasis[j+3]*i_vec_lon.scalar_data[i] + tanBasis[j+6]*i_vec_lat.scalar_data[i];
@@ -292,6 +295,9 @@ public:
 
 			double diff = (rx_d_new - rx_d_prev).reduce_maxAbs() + (ry_d_new - ry_d_prev).reduce_maxAbs();
 
+#if SWEET_SPACE_THREADING
+#pragma omp parallel for
+#endif
 			for (std::size_t i = 0; i < num_points; i++)
 			{
 				// posx \in [0;2*pi]

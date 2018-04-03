@@ -31,7 +31,7 @@ class SWERexiTerm_SPHRobert
 //	SphereDataConfig *sphereDataConfig;
 
 	/// SPH configuration
-	SphereDataConfig *sphereDataConfigSolver;
+	const SphereDataConfig *sphereDataConfigSolver;
 
 	/// Solver for given alpha
 	SphBandedMatrixPhysicalComplex< std::complex<double> > sphSolverPhi;
@@ -88,7 +88,7 @@ public:
 	 * Setup the SWE REXI solver with SPH
 	 */
 	void setup_vectorinvariant_progphivortdiv(
-			SphereDataConfig *i_sphereDataConfigSolver,
+			const SphereDataConfig *i_sphereDataConfigSolver,
 
 			const std::complex<double> &i_alpha,
 			const std::complex<double> &i_beta,

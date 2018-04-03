@@ -22,7 +22,7 @@ class SphereOperatorsComplex	:
 {
 	friend SphereDataConfig;
 
-	SphereDataConfig *sphereDataConfig;
+	const SphereDataConfig *sphereDataConfig;
 
 public:
 	SphBandedMatrixPhysicalComplex< std::complex<double> > sphSolver_inv_one_minus_mu2;
@@ -51,7 +51,7 @@ public:
 
 public:
 	void setup(
-			SphereDataConfig *i_sphereDataConfig,
+			const SphereDataConfig *i_sphereDataConfig,
 			double i_earth_radius
 	)
 	{

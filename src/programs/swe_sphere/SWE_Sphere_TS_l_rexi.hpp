@@ -70,8 +70,8 @@ public:
 	std::vector<std::complex<double>> rexi_beta;
 
 
-	SphereDataConfig *sphereDataConfig;
-	SphereDataConfig *sphereDataConfigSolver;
+	const SphereDataConfig *sphereDataConfig;
+	const SphereDataConfig *sphereDataConfigSolver;
 
 	/// This class is only setp and used in case of added modes
 	SphereDataConfig sphereDataConfigInstance;

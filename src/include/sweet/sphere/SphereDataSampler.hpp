@@ -21,7 +21,6 @@
 class SphereDataSampler
 {
 public:
-	double domain_size[2];			/// real physical size of the domain
 	int res[2];						/// resolution of domain
 	const SphereDataConfig *sphereDataConfig;
 
@@ -42,14 +41,13 @@ private:
 
 public:
 	SphereDataSampler(
-		double i_domain_size[2],	/// real physical size of the domain
 		SphereDataConfig *i_sphereDataConfig
 	)
 	{
 		assert(i_sphereDataConfig != nullptr);
 
 		sphereDataConfig = i_sphereDataConfig;
-		setup(i_domain_size, sphereDataConfig);
+		setup(sphereDataConfig);
 	}
 
 
@@ -62,24 +60,17 @@ public:
 
 //		cached_scale_factor[0] = -1;
 //		cached_scale_factor[1] = -1;
-
-		domain_size[0] = -1;
-		domain_size[1] = -1;
 	}
 
 
 
 public:
 	void setup(
-		double i_domain_size[2],	/// real physical size of the domain
 		const SphereDataConfig *i_sphereDataConfig
 	)
 	{
 		assert(i_sphereDataConfig != nullptr);
 		sphereDataConfig = i_sphereDataConfig;
-
-		domain_size[0] = i_domain_size[0];
-		domain_size[1] = i_domain_size[1];
 
 		res[0] = i_sphereDataConfig->physical_num_lon;
 		res[1] = i_sphereDataConfig->physical_num_lat;
@@ -377,13 +368,15 @@ public:
 
 				idx_j++;
 			}
+
 			//phi_dist[array_idx_y]
 			double mat[16];
 			for (int i = 0; i < 4; i++)
 			{
 				for (int j = 0; j < 4; j++)
 				{
-					double x = j;
+					//double x = j;//phi_dist[array_idx_y-1+j];
+					double x = phi_lookup[array_idx_y-1+j];
 					mat[j*4+i] = std::pow(x, i);
 				}
 			}
@@ -392,7 +385,9 @@ public:
 			solve4x4SOE(mat, q, x);
 
 #if 1
-			double y = cell_y+1.0;
+			//double y = cell_y+1.0;
+			double y = phi;
+			//y = phi_dist[array_idx_y-1]+y*;
 			double value = x[0] + y*(x[1] + y*(x[2] + y*x[3]));
 
 #else
@@ -438,7 +433,7 @@ public:
 			ScalarDataArray &o_data				///< output values
 	)
 	{
-		assert ((std::size_t)i_data.sphereDataConfig->physical_array_data_number_of_elements == (std::size_t)o_data.number_of_elements);
+//		assert ((std::size_t)i_data.sphereDataConfig->physical_array_data_number_of_elements == (std::size_t)o_data.number_of_elements);
 		assert(res[0] > 0);
 		assert(i_pos_x.number_of_elements == i_pos_y.number_of_elements);
 		assert(i_pos_x.number_of_elements == o_data.number_of_elements);

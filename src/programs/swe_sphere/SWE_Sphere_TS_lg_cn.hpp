@@ -31,7 +31,7 @@ class SWE_Sphere_TS_lg_cn	: public SWE_Sphere_TS_interface
 	SphereOperators &op;
 
 	/// SPH configuration
-	SphereDataConfig *sphereDataConfig;
+	const SphereDataConfig *sphereDataConfig;
 
 	/// alpha/beta (time step related component for implicit solver)
 	double alpha;

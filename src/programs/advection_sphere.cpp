@@ -1,12 +1,13 @@
 /*
- * lagrangian_sphere_test.cpp
+ * advection_sphere.cpp
  *
  *  Created on: 3 Dec 2015
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
+
 #ifndef SWEET_GUI
-#define SWEET_GUI 1
+	#define SWEET_GUI 1
 #endif
 
 #include "../include/sweet/sphere/SphereData.hpp"
@@ -119,6 +120,9 @@ public:
 		// advance in time
 		simVars.timecontrol.current_simulation_time += dt;
 		simVars.timecontrol.current_timestep_nr++;
+
+		if (simVars.misc.verbosity > 2)
+			std::cout << simVars.timecontrol.current_timestep_nr << ": " << simVars.timecontrol.current_simulation_time/(60*60*24.0) << std::endl;
 	}
 
 
@@ -352,8 +356,8 @@ int main(int i_argc, char *i_argv[])
 		{
 			simulationSWE->run_timestep();
 
-			if (simVars.misc.verbosity > 2)
-				std::cout << simVars.timecontrol.current_simulation_time << std::endl;
+//			if (simVars.misc.verbosity > 2)
+//				std::cout << simVars.timecontrol.current_simulation_time << std::endl;
 
 			if (simVars.timecontrol.max_simulation_time != -1)
 				if (simVars.timecontrol.current_simulation_time > simVars.timecontrol.max_simulation_time)
