@@ -107,9 +107,6 @@ public:
 	{
 		simVars.reset();
 
-		PlaneData tmp_vort(planeDataConfig);
-		PlaneData tmp_div(planeDataConfig);
-
 		prog_h.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 			{

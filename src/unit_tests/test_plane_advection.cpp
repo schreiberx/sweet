@@ -1,8 +1,8 @@
 /*
- * test_sphere_advection.cpp
+ * test_plane_advection.cpp
  *
- *  Created on: 3 Apr 2018
- *      Author: martin
+ *  Created on: 4th April 2018
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 
@@ -10,69 +10,64 @@
 	#define SWEET_GUI 1
 #endif
 
-#include <sweet/sphere/SphereData.hpp>
+#include "../include/sweet/plane/PlaneData.hpp"
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
-#include <benchmarks_sphere/SphereBenchmarksCombined.hpp>
+#include <benchmarks_plane/SWEBenchmarksCombined.hpp>
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/sphere/SphereOperators.hpp>
-#include <sweet/Convert_SphereData_To_PlaneData.hpp>
-#include <sweet/Convert_SphereDataPhysical_To_PlaneData.hpp>
+#include <sweet/plane/PlaneOperators.hpp>
 
-#include "../programs/advection_sphere/Adv_Sphere_TimeSteppers.hpp"
+#include "test_plane_advection/Adv_Plane_TimeSteppers.hpp"
 
 
 
-// Sphere data config
-SphereDataConfig sphereDataConfigInstance;
-SphereDataConfig *sphereDataConfig = &sphereDataConfigInstance;
-
-#if SWEET_GUI
-	PlaneDataConfig planeDataConfigInstance;
-	PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
-#endif
+// Plane data config
+PlaneDataConfig planeDataConfigInstance;
+PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
 
 SimulationVariables simVars;
+
+double param_velocity_u;
+double param_velocity_v;
+
 
 
 class SimulationInstance
 {
 public:
-	SphereData prog_h;
-	SphereData prog_h0;	// at t0
-	SphereData prog_vort, prog_div;
+	PlaneData prog_h;
+	PlaneData prog_h0;	// at t0
+	PlaneData prog_u, prog_v;
 
-	Adv_Sphere_TimeSteppers timeSteppers;
+	Adv_Plane_TimeSteppers timeSteppers;
 
-	SphereOperators op;
+	double center_x = 0.5;
+	double center_y = 0.5;
+	double exp_fac = 50.0;
 
-	/*
-	 * LMax error to h0
-	 */
-	double max_error_h0;
-	/*
-	 * RMS error to h0
-	 */
-	double rms_error_h0;
-
+	PlaneOperators op;
 
 #if SWEET_GUI
 	PlaneData viz_plane_data;
 
-	int render_primitive_id = 1;
+	int render_primitive_id = 0;
 #endif
+
+
+	double max_error_h0 = -1;
+	double rms_error_h0 = -1;
 
 
 public:
 	SimulationInstance()	:
-		prog_h(sphereDataConfig),
-		prog_h0(sphereDataConfig),
+		prog_h(planeDataConfig),
+		prog_h0(planeDataConfig),
 
-		prog_vort(sphereDataConfig),
-		prog_div(sphereDataConfig),
+		prog_u(planeDataConfig),
+		prog_v(planeDataConfig),
 
-		op(sphereDataConfig, simVars.sim.earth_radius)
+		op(planeDataConfig, simVars.sim.domain_size)
 
 #if SWEET_GUI
 		,
@@ -83,25 +78,71 @@ public:
 	}
 
 
+	~SimulationInstance()
+	{
+		std::cout << "Error compared to initial condition" << std::endl;
+		std::cout << "Lmax error: " << (prog_h0-prog_h).reduce_maxAbs() << std::endl;
+		std::cout << "RMS error: " << (prog_h0-prog_h).reduce_rms() << std::endl;
+	}
+
+
+
+	static
+	double gaussianValue(
+			double i_center_x, double i_center_y,
+			double i_x, double i_y,
+			double i_exp_fac
+	)
+	{
+		double sx = simVars.sim.domain_size[0];
+		double sy = simVars.sim.domain_size[1];
+
+		// Gaussian
+		double dx = i_x-i_center_x*sx;
+		double dy = i_y-i_center_y*sy;
+
+		if (dx > 0.5*simVars.sim.domain_size[0])
+			dx -= simVars.sim.domain_size[0];
+		else if (dx < -0.5*simVars.sim.domain_size[0])
+			dx += simVars.sim.domain_size[0];
+
+		if (dy > 0.5*simVars.sim.domain_size[1])
+			dy -= simVars.sim.domain_size[1];
+		else if (dy < -0.5*simVars.sim.domain_size[1])
+			dy += simVars.sim.domain_size[1];
+
+		dx /= sx*simVars.setup.radius_scale;
+		dy /= sy*simVars.setup.radius_scale;
+
+		return std::exp(-i_exp_fac*(dx*dx + dy*dy));
+	}
 
 
 	void reset()
 	{
 		simVars.reset();
 
-		SphereData tmp_vort(sphereDataConfig);
-		SphereData tmp_div(sphereDataConfig);
+		prog_h.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
+			{
+				double x = (double)i*(simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0]);
+				double y = (double)j*(simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1]);
 
-		SphereBenchmarksCombined::setupInitialConditions(prog_h, prog_vort, prog_div, simVars, op);
-
+				io_data = gaussianValue(center_x, center_y, x, y, exp_fac);
+			}
+		);
 		prog_h0 = prog_h;
 
-		// setup sphereDataconfig instance again
-		sphereDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
+		prog_u = param_velocity_u;
+		prog_v = param_velocity_v;
+
+		// setup planeDataconfig instance again
+		planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
 
 		timeSteppers.setup(simVars.disc.timestepping_method, op, simVars);
 
-		//simVars.outputConfig();
+		if (simVars.misc.verbosity > 2)
+			simVars.outputConfig();
 	}
 
 
@@ -112,7 +153,7 @@ public:
 			simVars.timecontrol.current_timestep_size = simVars.timecontrol.max_simulation_time - simVars.timecontrol.current_simulation_time;
 
 		timeSteppers.master->run_timestep(
-				prog_h, prog_vort, prog_div,
+				prog_h, prog_u, prog_v,
 				simVars.timecontrol.current_timestep_size,
 				simVars.timecontrol.current_simulation_time
 			);
@@ -126,9 +167,10 @@ public:
 		if (simVars.misc.verbosity > 2)
 			std::cout << simVars.timecontrol.current_timestep_nr << ": " << simVars.timecontrol.current_simulation_time/(60*60*24.0) << std::endl;
 
-		max_error_h0 = (prog_h0-prog_h).physical_reduce_max_abs();
-		rms_error_h0 = (prog_h0-prog_h).physical_reduce_rms();
+		max_error_h0 = (prog_h-prog_h0).reduce_maxAbs();
+		rms_error_h0 = (prog_h-prog_h0).reduce_rms();
 	}
+
 
 
 	void compute_error()
@@ -136,7 +178,7 @@ public:
 #if 0
 		double t = simVars.timecontrol.current_simulation_time;
 
-		SphereData prog_testh(sphereDataConfig);
+		PlaneData prog_testh(planeDataConfig);
 		prog_testh.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
@@ -155,13 +197,14 @@ public:
 				x = std::fmod(x, simVars.sim.domain_size[0]);
 				y = std::fmod(y, simVars.sim.domain_size[1]);
 
-				io_data = SWESphereBenchmarks::return_h(simVars, x, y);
+				io_data = SWEPlaneBenchmarks::return_h(simVars, x, y);
 			}
 		);
 
 		std::cout << "Lmax Error: " << (prog_h-prog_testh).reduce_maxAbs() << std::endl;
 #endif
 	}
+
 
 
 	bool should_quit()
@@ -204,48 +247,26 @@ public:
 	)
 	{
 		*o_render_primitive_id = render_primitive_id;
-		*o_bogus_data = sphereDataConfig;
+//		*o_bogus_data = planeDataConfig;
 
-		int id = simVars.misc.vis_id % 5;
+		int id = simVars.misc.vis_id % 3;
 		switch (id)
 		{
 		case 0:
-			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(prog_h, planeDataConfig);
+			viz_plane_data = prog_h;
 			break;
 
 		case 1:
-			{
-				SphereDataPhysical u(sphereDataConfig);
-				SphereDataPhysical v(sphereDataConfig);
-
-//				op.robert_vortdiv_to_uv(prog_vort, prog_div, u, v);
-				op.vortdiv_to_uv(prog_vort, prog_div, u, v);
-				viz_plane_data = Convert_SphereDataPhysical_To_PlaneData::physical_convert(u, planeDataConfig);
-			}
+			viz_plane_data = prog_u;
 			break;
 
 		case 2:
-			{
-				SphereDataPhysical u(sphereDataConfig);
-				SphereDataPhysical v(sphereDataConfig);
-
-//				op.robert_vortdiv_to_uv(prog_vort, prog_div, u, v);
-				op.vortdiv_to_uv(prog_vort, prog_div, u, v);
-				viz_plane_data = Convert_SphereDataPhysical_To_PlaneData::physical_convert(v, planeDataConfig);
-			}
-			break;
-
-		case 3:
-			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(prog_vort, planeDataConfig);
-			break;
-
-		case 4:
-			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(prog_div, planeDataConfig);
+			viz_plane_data = prog_v;
 			break;
 		}
 
 		*o_dataArray = &viz_plane_data;
-		*o_aspect_ratio = 0.5;
+		*o_aspect_ratio = 1;
 	}
 
 
@@ -263,11 +284,11 @@ public:
 			break;
 
 		case 1:
-			description = "vort";
+			description = "u";
 			break;
 
 		case 2:
-			description = "div";
+			description = "v";
 			break;
 		}
 
@@ -328,11 +349,42 @@ public:
 
 int main(int i_argc, char *i_argv[])
 {
-	if (!simVars.setupFromMainParameters(i_argc, i_argv))
+	const char *bogus_var_names[] = {
+			"velocity-u",
+			"velocity-v",
+			nullptr
+	};
+
+	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
 		std::cout << std::endl;
 		return -1;
 	}
+
+	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
+	{
+		std::cout << std::endl;
+		std::cout << "Program-specific options:" << std::endl;
+		std::cout << "	--velocity-u [advection velocity u]" << std::endl;
+		std::cout << "	--velocity-v [advection velocity v]" << std::endl;
+		return -1;
+	}
+
+	if (simVars.bogus.var[0] != "")
+		param_velocity_u = atof(simVars.bogus.var[0].c_str());
+
+	if (simVars.bogus.var[1] != "")
+		param_velocity_v = atof(simVars.bogus.var[1].c_str());
+
+	if (param_velocity_u == 0 && param_velocity_v == 0)
+	{
+		std::cout << "At least one velocity has to be set, see parameters --velocity-u, --velocity-v" << std::endl;
+		return -1;
+	}
+
+	if (simVars.timecontrol.current_timestep_size < 0)
+		FatalError("Timestep size not set");
+
 
 	int initial_spectral_modes = simVars.disc.res_spectral[0];
 
@@ -349,8 +401,10 @@ int main(int i_argc, char *i_argv[])
 			simVars.disc.res_spectral[0] = i;
 			simVars.disc.res_spectral[1] = i;
 
-			simVars.disc.res_physical[0] = 2*i;
-			simVars.disc.res_physical[1] = i;
+//			simVars.disc.res_physical[0] = 2*i;
+//			simVars.disc.res_physical[1] = i;
+			simVars.disc.res_physical[0] = 0;
+			simVars.disc.res_physical[1] = 0;
 		}
 		else
 		{
@@ -363,9 +417,9 @@ int main(int i_argc, char *i_argv[])
 
 
 
-		sphereDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
+		planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
 
-		std::cout << "Testing with " << sphereDataConfigInstance.getUniqueIDString() << std::endl;
+		std::cout << "Testing with " << planeDataConfigInstance.getUniqueIDString() << std::endl;
 		std::cout << "Testing with dt=" << simVars.timecontrol.current_timestep_size << std::endl;
 
 		SimulationInstance simulation;
@@ -381,7 +435,6 @@ int main(int i_argc, char *i_argv[])
 		else
 	#endif
 		{
-//			simulation.reset();
 			while (!simulation.should_quit())
 				simulation.run_timestep();
 
@@ -402,7 +455,7 @@ int main(int i_argc, char *i_argv[])
 				}
 			}
 			prev_max_error = simulation.max_error_h0;
-
+			std::cout << std::endl;
 		}
 	}
 

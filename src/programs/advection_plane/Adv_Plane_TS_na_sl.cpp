@@ -97,16 +97,15 @@ void Adv_Plane_TS_na_sl::setup(
 
 	// setup some test sampling points
 	// we use 2 arrays - one for each sampling position
-
 	posx_a.update_lambda_array_indices(
 		[&](int idx, double &io_data)
 		{
 			int i = idx % planeDataConfig->physical_res[0];
-			//int j = idx / planeDataConfig->physical_data_size[0];
 
-			io_data = 2.0*M_PI*(double)i/(double)planeDataConfig->physical_res[0];
-			assert(io_data >= 0);
-			assert(io_data < 2.0*M_PI);
+			io_data = (double)i*(double)simVars.sim.domain_size[0]/(double)planeDataConfig->physical_res[0];
+
+			assert(io_data >= 0.0);
+			assert(io_data <= simVars.sim.domain_size[0]);
 		}
 	);
 	posy_a.update_lambda_array_indices(
@@ -115,10 +114,10 @@ void Adv_Plane_TS_na_sl::setup(
 			//int i = idx % planeDataConfig->physical_data_size[0];
 			int j = idx / (double)planeDataConfig->physical_res[0];
 
-			io_data = j;
+			io_data = (double)j*(double)simVars.sim.domain_size[1]/(double)planeDataConfig->physical_res[1];
 
-			assert(io_data >= -M_PI*0.5);
-			assert(io_data <= M_PI*0.5);
+			assert(io_data >= 0.0);
+			assert(io_data <= simVars.sim.domain_size[1]);
 		}
 	);
 

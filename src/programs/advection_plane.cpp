@@ -28,6 +28,10 @@ PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
 
 SimulationVariables simVars;
 
+double param_velocity_u;
+double param_velocity_v;
+
+
 
 class SimulationInstance
 {
@@ -38,14 +42,20 @@ public:
 
 	Adv_Plane_TimeSteppers timeSteppers;
 
+	double center_x = 0.5;
+	double center_y = 0.5;
+	double exp_fac = 50.0;
 
 	PlaneOperators op;
 
 #if SWEET_GUI
 	PlaneData viz_plane_data;
 
-	int render_primitive_id = 1;
+	int render_primitive_id = 0;
 #endif
+
+
+	double max_error_h0 = -1;
 
 
 public:
@@ -76,16 +86,54 @@ public:
 
 
 
+	static
+	double gaussianValue(
+			double i_center_x, double i_center_y,
+			double i_x, double i_y,
+			double i_exp_fac
+	)
+	{
+		double sx = simVars.sim.domain_size[0];
+		double sy = simVars.sim.domain_size[1];
+
+		// Gaussian
+		double dx = i_x-i_center_x*sx;
+		double dy = i_y-i_center_y*sy;
+
+		if (dx > 0.5*simVars.sim.domain_size[0])
+			dx -= simVars.sim.domain_size[0];
+		else if (dx < -0.5*simVars.sim.domain_size[0])
+			dx += simVars.sim.domain_size[0];
+
+		if (dy > 0.5*simVars.sim.domain_size[1])
+			dy -= simVars.sim.domain_size[1];
+		else if (dy < -0.5*simVars.sim.domain_size[1])
+			dy += simVars.sim.domain_size[1];
+
+		dx /= sx*simVars.setup.radius_scale;
+		dy /= sy*simVars.setup.radius_scale;
+
+		return std::exp(-i_exp_fac*(dx*dx + dy*dy));
+	}
+
+
 	void reset()
 	{
 		simVars.reset();
 
-		PlaneData tmp_vort(planeDataConfig);
-		PlaneData tmp_div(planeDataConfig);
+		prog_h.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
+			{
+				double x = (double)i*(simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0]);
+				double y = (double)j*(simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1]);
 
-		SWEBenchmarksCombined::setupInitialConditions(prog_h, prog_u, prog_v, simVars, op);
-
+				io_data = gaussianValue(center_x, center_y, x, y, exp_fac);
+			}
+		);
 		prog_h0 = prog_h;
+
+		prog_u = param_velocity_u;
+		prog_v = param_velocity_v;
 
 		// setup planeDataconfig instance again
 		planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
@@ -116,7 +164,10 @@ public:
 
 		if (simVars.misc.verbosity > 2)
 			std::cout << simVars.timecontrol.current_timestep_nr << ": " << simVars.timecontrol.current_simulation_time/(60*60*24.0) << std::endl;
+
+		max_error_h0 = (prog_h-prog_h0).reduce_maxAbs();
 	}
+
 
 
 	void compute_error()
@@ -150,6 +201,7 @@ public:
 		std::cout << "Lmax Error: " << (prog_h-prog_testh).reduce_maxAbs() << std::endl;
 #endif
 	}
+
 
 
 	bool should_quit()
@@ -192,7 +244,7 @@ public:
 	)
 	{
 		*o_render_primitive_id = render_primitive_id;
-		*o_bogus_data = planeDataConfig;
+//		*o_bogus_data = planeDataConfig;
 
 		int id = simVars.misc.vis_id % 3;
 		switch (id)
@@ -206,12 +258,12 @@ public:
 			break;
 
 		case 2:
-			viz_plane_data = prog_u;
+			viz_plane_data = prog_v;
 			break;
 		}
 
 		*o_dataArray = &viz_plane_data;
-		*o_aspect_ratio = 0.5;
+		*o_aspect_ratio = 1;
 	}
 
 
@@ -294,9 +346,36 @@ public:
 
 int main(int i_argc, char *i_argv[])
 {
-	if (!simVars.setupFromMainParameters(i_argc, i_argv))
+	const char *bogus_var_names[] = {
+			"velocity-u",
+			"velocity-v",
+			nullptr
+	};
+
+	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
 		std::cout << std::endl;
+		return -1;
+	}
+
+	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
+	{
+		std::cout << std::endl;
+		std::cout << "Program-specific options:" << std::endl;
+		std::cout << "	--velocity-u [advection velocity u]" << std::endl;
+		std::cout << "	--velocity-v [advection velocity v]" << std::endl;
+		return -1;
+	}
+
+	if (simVars.bogus.var[0] != "")
+		param_velocity_u = atof(simVars.bogus.var[0].c_str());
+
+	if (simVars.bogus.var[1] != "")
+		param_velocity_v = atof(simVars.bogus.var[1].c_str());
+
+	if (param_velocity_u == 0 && param_velocity_v == 0)
+	{
+		std::cout << "At least one velocity has to be set, see parameters --velocity-u, --velocity-v" << std::endl;
 		return -1;
 	}
 
@@ -305,38 +384,30 @@ int main(int i_argc, char *i_argv[])
 
 	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
 
-	SimulationInstance *simulation = new SimulationInstance;
+	{
+		SimulationInstance simulation;
 
 #if SWEET_GUI
 
-	if (simVars.misc.gui_enabled)
-	{
-		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical);
-
-		VisSweet<SimulationInstance> visSweet(simulation);
-	}
-	else
-#endif
-	{
-		simulation->reset();
-		while (!simulation->should_quit())
+		if (simVars.misc.gui_enabled)
 		{
-			simulation->run_timestep();
+			planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical);
 
-//			if (simVars.misc.verbosity > 2)
-//				std::cout << simVars.timecontrol.current_simulation_time << std::endl;
+			VisSweet<SimulationInstance> visSweet(&simulation);
+			std::cout << "Max error h0: "<< simulation.max_error_h0 << std::endl;
+		}
+		else
+#endif
+		{
+			simulation.reset();
+			while (!simulation.should_quit())
+			{
+				simulation.run_timestep();
+			}
 
-			if (simVars.timecontrol.max_simulation_time != -1)
-				if (simVars.timecontrol.current_simulation_time > simVars.timecontrol.max_simulation_time)
-					break;
-
-			if (simVars.timecontrol.max_timesteps_nr != -1)
-				if (simVars.timecontrol.current_timestep_nr > simVars.timecontrol.max_timesteps_nr)
-					break;
+			std::cout << "Max error h0: "<< simulation.max_error_h0 << std::endl;
 		}
 	}
-
-	delete simulation;
 
 	return 0;
 }

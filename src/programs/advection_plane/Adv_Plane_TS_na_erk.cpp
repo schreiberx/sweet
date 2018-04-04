@@ -34,7 +34,7 @@ void Adv_Plane_TS_na_erk::euler_timestep_update(
 	 * This is the case because the velocity field is divergence free!!!
 	 */
 
-	o_phi_t = op.diff_c_x(i_phi*i_u) + op.diff_c_y(i_phi*i_v);
+	o_phi_t = -op.diff_c_x(i_phi*i_u) - op.diff_c_y(i_phi*i_v);
 
 	o_u_t.spectral_set_zero();
 	o_v_t.spectral_set_zero();
