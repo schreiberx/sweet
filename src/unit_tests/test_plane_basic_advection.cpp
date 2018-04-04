@@ -309,7 +309,6 @@ public:
 			PlaneData &o_u_t,		///< time updates
 			PlaneData &o_v_t,		///< time updates
 
-			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp = -1
 	)
 	{
