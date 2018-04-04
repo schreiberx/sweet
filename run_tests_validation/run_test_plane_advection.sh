@@ -17,19 +17,19 @@ echo "$SCONS"
 $SCONS
 
 
-#for vu in 0.1 0.2 0.0; do
-#	EXEC="./build/test_plane_advection_*_debug -M 64 --dt=0.1 -X 2 -Y 2 --benchmark=gaussian_bump --timestepping-method=na_erk --timestepping-order=4  --velocity-u=$vu --velocity-v=0.2 -t 20"
-#	echo "$EXEC"
-#	$EXEC || exit
-#done
 
 for vu in 0.1 0.2 0.0; do
-	EXEC="./build/test_plane_advection_*_debug -M 64 --dt=0.1 -X 2 -Y 2 --benchmark=gaussian_bump --timestepping-method=na_sl --timestepping-order=4  --velocity-u=$vu --velocity-v=0.2 -t 20"
+	EXEC="./build/test_plane_advection_*_debug -M 64 --dt=0.1 -X 2 -Y 2 --benchmark=gaussian_bump --timestepping-method=na_sl --timestepping-order=2  --velocity-u=$vu --velocity-v=0.2 -t 20"
 	echo "$EXEC"
 	$EXEC || exit
 done
 
 
+for vu in 0.1 0.2 0.0; do
+	EXEC="./build/test_plane_advection_*_debug -M 64 --dt=0.05 -X 2 -Y 2 --benchmark=gaussian_bump --timestepping-method=na_erk --timestepping-order=2  --velocity-u=$vu --velocity-v=0.2 -t 20"
+	echo "$EXEC"
+	$EXEC || exit
+done
 
 
 echo "***********************************************"
