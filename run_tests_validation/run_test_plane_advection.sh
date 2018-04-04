@@ -16,27 +16,24 @@ SCONS="scons --threading=omp --unit-test=test_plane_advection --gui=disable --pl
 echo "$SCONS"
 $SCONS
 
-#for a in 1.5708 0 1.4 -0.7; do
-for a in 0 1.4 -0.7; do
-	EXEC="./build/test_plane_advection* -M 64 --dt=$((60*60*1)) -t $((60*60*24*12)) --benchmark=adv_gauss_bump --timestepping-order=2 --timestepping-method=na_sl --advection-rotation-angle=$a"
+
+#for vu in 0.1 0.2 0.0; do
+#	EXEC="./build/test_plane_advection_*_debug -M 64 --dt=0.1 -X 2 -Y 2 --benchmark=gaussian_bump --timestepping-method=na_erk --timestepping-order=4  --velocity-u=$vu --velocity-v=0.2 -t 20"
+#	echo "$EXEC"
+#	$EXEC || exit
+#done
+
+for vu in 0.1 0.2 0.0; do
+	EXEC="./build/test_plane_advection_*_debug -M 64 --dt=0.1 -X 2 -Y 2 --benchmark=gaussian_bump --timestepping-method=na_sl --timestepping-order=4  --velocity-u=$vu --velocity-v=0.2 -t 20"
 	echo "$EXEC"
 	$EXEC || exit
 done
 
 
-for a in 1.5708 0 1.4 -0.7; do
-	EXEC="./build/test_plane_advection* -M 64 --dt=$((60*60)) -t $((60*60*24*12)) --benchmark=adv_gauss_bump --timestepping-order=2 --timestepping-method=na_erk --advection-rotation-angle=$a"
-	echo "$EXEC"
-	#$EXEC || exit
-done
 
 
-echo "***********************************************"
-echo "***********************************************"
 echo "***********************************************"
 echo "***********************************************"
 echo "***************** FIN *************************"
-echo "***********************************************"
-echo "***********************************************"
 echo "***********************************************"
 echo "***********************************************"
