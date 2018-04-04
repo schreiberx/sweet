@@ -5,8 +5,8 @@
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#ifndef SRC_INCLUDE_BENCHMARKS_PLANE_SWE_BENCHMARKS_HPP_
-#define SRC_INCLUDE_BENCHMARKS_PLANE_SWE_BENCHMARKS_HPP_
+#ifndef SRC_INCLUDE_BENCHMARKS_PLANE_SWEBENCHMARKSCOMBINED_HPP_
+#define SRC_INCLUDE_BENCHMARKS_PLANE_SWEBENCHMARKSCOMBINED_HPP_
 
 #include <benchmarks_plane/SWE_bench_PlaneBenchmarks_DEPRECATED.hpp>
 #include <sweet/plane/PlaneData.hpp>
@@ -17,6 +17,7 @@
 	#include <benchmarks_plane/SWE_bench_Polvani.hpp>
 	#include <benchmarks_plane/SWE_bench_MergeVortex.hpp>
 #endif
+
 #include <benchmarks_plane/SWE_bench_UnstableJet.hpp>
 #include <benchmarks_plane/SWE_bench_UnstableJetFast.hpp>
 #include <benchmarks_plane/SWE_bench_UnstableJetAdv.hpp>
@@ -46,7 +47,7 @@ public:
 				double x = (double)i*(io_simVars.sim.domain_size[0]/(double)io_simVars.disc.res_physical[0]);
 				double y = (double)j*(io_simVars.sim.domain_size[1]/(double)io_simVars.disc.res_physical[1]);
 
-				io_data = SWEPlaneBenchmarks::return_h_perturbed(io_simVars, x, y);
+				io_data = SWEPlaneBenchmarks_DEPRECATED::return_h_perturbed(io_simVars, x, y);
 				}
 			);
 
@@ -56,7 +57,7 @@ public:
 					double x = (double)i*(io_simVars.sim.domain_size[0]/(double)io_simVars.disc.res_physical[0]);
 					double y = (double)j*(io_simVars.sim.domain_size[1]/(double)io_simVars.disc.res_physical[1]);
 
-					io_data = SWEPlaneBenchmarks::return_u(io_simVars, x, y);
+					io_data = SWEPlaneBenchmarks_DEPRECATED::return_u(io_simVars, x, y);
 				}
 			);
 
@@ -66,7 +67,7 @@ public:
 					double x = (double)i*(io_simVars.sim.domain_size[0]/(double)io_simVars.disc.res_physical[0]);
 					double y = (double)j*(io_simVars.sim.domain_size[1]/(double)io_simVars.disc.res_physical[1]);
 
-					io_data = SWEPlaneBenchmarks::return_v(io_simVars, x, y);
+					io_data = SWEPlaneBenchmarks_DEPRECATED::return_v(io_simVars, x, y);
 				}
 			);
 

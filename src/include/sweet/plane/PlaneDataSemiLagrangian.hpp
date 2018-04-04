@@ -17,7 +17,7 @@
 class PlaneDataSemiLagrangian
 {
 	PlaneDataSampler sample2D;
-	PlaneDataConfig *planeDataConfig;
+	const PlaneDataConfig *planeDataConfig;
 
 public:
 	PlaneDataSemiLagrangian()	:
@@ -28,7 +28,7 @@ public:
 
 	void setup(
 		double i_domain_size[2],
-		PlaneDataConfig *i_planeDataConfig
+		const PlaneDataConfig *i_planeDataConfig
 	)
 	{
 		planeDataConfig = i_planeDataConfig;

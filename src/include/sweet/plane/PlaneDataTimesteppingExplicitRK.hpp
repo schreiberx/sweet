@@ -1,10 +1,10 @@
 
-#ifndef TIMESTEPPING_RK_HPP
-#define TIMESTEPPING_RK_HPP
+#ifndef PLANEDATA_TIMESTEPPING_EXPLICIT_RK_HPP__
+#define PLANEDATA_TIMESTEPPING_EXPLICIT_RK_HPP__
 
 #include "PlaneData.hpp"
 
-class PlaneDataTimesteppingRK
+class PlaneDataTimesteppingExplicitRK
 {
 	// runge kutta data storages
 	PlaneData** RK_h_t;
@@ -14,7 +14,7 @@ class PlaneDataTimesteppingRK
 	int runge_kutta_order;
 
 public:
-	PlaneDataTimesteppingRK()	:
+	PlaneDataTimesteppingExplicitRK()	:
 		RK_h_t(nullptr),
 		RK_u_t(nullptr),
 		RK_v_t(nullptr),
@@ -52,7 +52,7 @@ public:
 
 
 
-	~PlaneDataTimesteppingRK()
+	~PlaneDataTimesteppingExplicitRK()
 	{
 		int N = runge_kutta_order;
 
@@ -93,7 +93,6 @@ public:
 					PlaneData &o_u_t,	///< time updates
 					PlaneData &o_v_t,	///< time updates
 
-					double i_dt,		///< time step size
 					double i_simulation_time	///< simulation time, e.g. for tidal waves
 			),
 
@@ -118,7 +117,6 @@ public:
 					*RK_h_t[0],	// output
 					*RK_u_t[0],
 					*RK_v_t[0],
-					i_dt,
 					i_simulation_time
 			);
 
@@ -151,7 +149,6 @@ public:
 					*RK_h_t[0],
 					*RK_u_t[0],
 					*RK_v_t[0],
-					i_dt,
 					i_simulation_time
 			);
 
@@ -163,7 +160,6 @@ public:
 					*RK_h_t[1],
 					*RK_u_t[1],
 					*RK_v_t[1],
-					i_dt,
 					i_simulation_time + c[0]*i_dt
 			);
 
@@ -196,7 +192,6 @@ public:
 					*RK_h_t[0],
 					*RK_u_t[0],
 					*RK_v_t[0],
-					i_dt,
 					i_simulation_time
 			);
 
@@ -208,7 +203,6 @@ public:
 					*RK_h_t[1],
 					*RK_u_t[1],
 					*RK_v_t[1],
-					i_dt,
 					i_simulation_time + c[0]*i_dt
 			);
 
@@ -220,7 +214,6 @@ public:
 					*RK_h_t[2],
 					*RK_u_t[2],
 					*RK_v_t[2],
-					i_dt,
 					i_simulation_time + c[1]*i_dt
 			);
 
@@ -255,7 +248,6 @@ public:
 					*RK_h_t[0],
 					*RK_u_t[0],
 					*RK_v_t[0],
-					i_dt,
 					i_simulation_time
 			);
 
@@ -267,7 +259,6 @@ public:
 					*RK_h_t[1],
 					*RK_u_t[1],
 					*RK_v_t[1],
-					i_dt,
 					i_simulation_time + c[0]*i_dt
 			);
 
@@ -279,7 +270,6 @@ public:
 					*RK_h_t[2],
 					*RK_u_t[2],
 					*RK_v_t[2],
-					i_dt,
 					i_simulation_time + c[1]*i_dt
 			);
 
@@ -291,7 +281,6 @@ public:
 					*RK_h_t[3],
 					*RK_u_t[3],
 					*RK_v_t[3],
-					i_dt,
 					i_simulation_time + c[2]*i_dt
 			);
 

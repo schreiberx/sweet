@@ -8,16 +8,16 @@
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#include <benchmarks_plane/SWE_Benchmarks.hpp>
+#include <benchmarks_plane/SWEBenchmarksCombined.hpp>
 #include <sweet/FatalError.hpp>
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/plane/PlaneDataTimesteppingRK.hpp>
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/plane/PlaneDiagnostics.hpp>
 #include "libpfasst_swe_plane/LevelSingleton.hpp"
 #include "libpfasst_swe_plane/PlaneDataCtx.hpp"
 #include <mpi.h>
+#include <sweet/plane/PlaneDataTimesteppingExplicitRK.hpp>
 
 #define WITH_MPI
 

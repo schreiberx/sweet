@@ -24,7 +24,7 @@
 #include <sweet/Stopwatch.hpp>
 #include <sweet/FatalError.hpp>
 #include <benchmarks_plane/SWE_bench_PlaneBenchmarks_DEPRECATED.hpp>
-#include <benchmarks_plane/SWE_Benchmarks.hpp>
+#include <benchmarks_plane/SWEBenchmarksCombined.hpp>
 #include <ostream>
 #include <algorithm>
 #include <sstream>
@@ -199,7 +199,7 @@ public:
 		{
 			std::cout << std::endl;
 			std::cout << "Benchmark scenario not selected (option -s [id])" << std::endl;
-			SWEPlaneBenchmarks::printScenarioInformation();
+			SWEPlaneBenchmarks_DEPRECATED::printScenarioInformation();
 			std::cout << std::endl;
 
 			std::cout << "Benchmark scenario not selected (option --benchmark [string])" << std::endl;
@@ -264,7 +264,7 @@ public:
 			) -> double
 			{
 				if (param_initial_freq_x_mul == 0)
-					return SWEPlaneBenchmarks::return_h_perturbed(simVars, x, y);
+					return SWEPlaneBenchmarks_DEPRECATED::return_h_perturbed(simVars, x, y);
 
 				// Waves scenario
 				// Remember to set up initial_freq_x_mul and initial_freq_y_mul
@@ -281,7 +281,7 @@ public:
 			) -> double
 			{
 				if (param_initial_freq_x_mul == 0)
-					return SWEPlaneBenchmarks::return_u(simVars, x, y);
+					return SWEPlaneBenchmarks_DEPRECATED::return_u(simVars, x, y);
 
 				double dx = x/i_parameters.sim.domain_size[0]*param_initial_freq_x_mul*M_PIl;
 				double dy = y/i_parameters.sim.domain_size[1]*param_initial_freq_y_mul*M_PIl;
@@ -296,7 +296,7 @@ public:
 			) -> double
 			{
 				if (param_initial_freq_x_mul == 0)
-					return SWEPlaneBenchmarks::return_v(simVars, x, y);
+					return SWEPlaneBenchmarks_DEPRECATED::return_v(simVars, x, y);
 
 				double dx = x/i_parameters.sim.domain_size[0]*param_initial_freq_x_mul*M_PIl;
 				double dy = y/i_parameters.sim.domain_size[1]*param_initial_freq_y_mul*M_PIl;
@@ -317,7 +317,7 @@ public:
 
 							prog_h_pert.p_physical_set(j, i, return_h_perturbed(simVars, x, y));
 							t0_prog_h_pert.p_physical_set(j, i, return_h_perturbed(simVars, x, y));
-							force_h_pert.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_h_perturbed(simVars, x, y));
+							force_h_pert.p_physical_set(j, i, SWEPlaneBenchmarks_DEPRECATED::return_force_h_perturbed(simVars, x, y));
 						}
 
 
@@ -328,7 +328,7 @@ public:
 
 							prog_u.p_physical_set(j,i, return_u(simVars, x, y));
 							t0_prog_u.p_physical_set(j, i, return_u(simVars, x, y));
-							force_u.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_u(simVars, x, y));
+							force_u.p_physical_set(j, i, SWEPlaneBenchmarks_DEPRECATED::return_force_u(simVars, x, y));
 						}
 
 						{
@@ -338,7 +338,7 @@ public:
 
 							prog_v.p_physical_set(j, i, return_v(simVars, x, y));
 							t0_prog_v.p_physical_set(j, i, return_v(simVars, x, y));
-							force_v.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_v(simVars, x, y));
+							force_v.p_physical_set(j, i, SWEPlaneBenchmarks_DEPRECATED::return_force_v(simVars, x, y));
 						}
 					}
 					else // A-Grid (colocated grid)
@@ -354,9 +354,9 @@ public:
 						t0_prog_u.p_physical_set(j, i, return_u(simVars, x, y));
 						t0_prog_v.p_physical_set(j, i, return_v(simVars, x, y));
 
-						force_h_pert.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_h_perturbed(simVars, x, y));
-						force_u.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_u(simVars, x, y));
-						force_v.p_physical_set(j, i, SWEPlaneBenchmarks::return_force_v(simVars, x, y));
+						force_h_pert.p_physical_set(j, i, SWEPlaneBenchmarks_DEPRECATED::return_force_h_perturbed(simVars, x, y));
+						force_u.p_physical_set(j, i, SWEPlaneBenchmarks_DEPRECATED::return_force_u(simVars, x, y));
+						force_v.p_physical_set(j, i, SWEPlaneBenchmarks_DEPRECATED::return_force_v(simVars, x, y));
 					}
 				}
 			}

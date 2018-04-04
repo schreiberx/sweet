@@ -10,7 +10,7 @@
 
 #include <limits>
 #include <sweet/plane/PlaneData.hpp>
-#include <sweet/plane/PlaneDataTimesteppingRK.hpp>
+#include <sweet/plane/PlaneDataTimesteppingExplicitRK.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 
@@ -26,8 +26,8 @@ class SWE_Plane_TS_l_erk_n_erk	: public SWE_Plane_TS_interface
 	int timestepping_order;
 	int timestepping_order2;
 
-	PlaneDataTimesteppingRK timestepping_rk_linear;
-	PlaneDataTimesteppingRK timestepping_rk_nonlinear;
+	PlaneDataTimesteppingExplicitRK timestepping_rk_linear;
+	PlaneDataTimesteppingExplicitRK timestepping_rk_nonlinear;
 
 private:
 	void euler_timestep_update_linear(
@@ -39,7 +39,6 @@ private:
 			PlaneData &o_u_t,	///< time updates
 			PlaneData &o_v_t,	///< time updates
 
-			double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp
 	);
 
@@ -54,7 +53,6 @@ private:
 			PlaneData &o_u_t,	///< time updates
 			PlaneData &o_v_t,	///< time updates
 
-			double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp
 	);
 

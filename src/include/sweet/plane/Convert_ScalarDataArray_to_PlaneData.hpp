@@ -18,7 +18,7 @@ public:
 	static
 	PlaneData convert(
 			const ScalarDataArray &i_scalarDataArray,
-			PlaneDataConfig *i_planeDataConfig
+			const PlaneDataConfig *i_planeDataConfig
 	)
 	{
 		PlaneData out(i_planeDataConfig);

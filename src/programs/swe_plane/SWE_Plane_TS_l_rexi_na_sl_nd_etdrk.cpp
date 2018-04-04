@@ -12,43 +12,6 @@
 
 
 
-/*
- * Main routine for method to be used in case of finite differences
- */
-void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::euler_timestep_update_nonlinear(
-
-		const PlaneData &i_h,	///< prognostic variables
-		const PlaneData &i_u,	///< prognostic variables
-		const PlaneData &i_v,	///< prognostic variables
-
-		PlaneData &o_h_t,	///< time updates
-		PlaneData &o_u_t,	///< time updates
-		PlaneData &o_v_t,	///< time updates
-
-		double &o_dt,
-		double i_dt,
-		double i_max_timestamp
-)
-{
-	/*
-	 * non-conservative (advective) formulation:
-	 *
-	 *	h_t = -(u*h)_x - (v*h)_y
-	 *	u_t = -g * h_x - u * u_x - v * u_y + f*v
-	 *	v_t = -g * h_y - u * v_x - v * v_y - f*u
-	 */
-	/*
-	 * o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
-	 * o_u_t = -i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
-	 * o_v_t = -i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
-	 */
-	// In lagrangian form, the only nonlinearity is the nonlinear divergence
-	o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
-	o_u_t = 0.0; //-i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
-	o_v_t = 0.0; //-i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
-	o_dt = i_dt;
-}
-
 
 
 /*

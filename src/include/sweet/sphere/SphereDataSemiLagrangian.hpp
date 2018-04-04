@@ -149,7 +149,7 @@ public:
 			/*
 			 * Project vector accurately on sphere
 			 *
-			 * Not fully tested yet!!!
+			 * Not fully tested yet, but seems to work betterh than other approach!!!
 			 */
 
 			// velocity basis

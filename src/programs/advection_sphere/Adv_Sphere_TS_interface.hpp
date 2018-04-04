@@ -1,7 +1,7 @@
 /*
- * ADV_Plane_TS_ln_erk.hpp
+ * Adv_Sphere_TS_Interface.hpp
  *
- *  Created on: 29 May 2017
+ *  Created on: 1st April 2018
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 

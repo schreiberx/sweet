@@ -10,7 +10,6 @@
 
 #include <limits>
 #include <sweet/plane/PlaneData.hpp>
-#include <sweet/plane/PlaneDataTimesteppingRK.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include "Burgers_Plane_TS_interface.hpp"
@@ -28,6 +27,7 @@
 
 #include <benchmarks_plane/BurgersValidationBenchmarks.hpp>
 #include <sweet/FatalError.hpp>
+#include <sweet/plane/PlaneDataTimesteppingExplicitRK.hpp>
 
 #include <sweet/plane/PlaneStaggering.hpp>
 
@@ -37,7 +37,7 @@ class Burgers_Plane_TS_ln_imex_forcing	: public Burgers_Plane_TS_interface
 	PlaneOperators &op;
 
 	int timestepping_order;
-	PlaneDataTimesteppingRK timestepping_rk;
+	PlaneDataTimesteppingExplicitRK timestepping_rk;
 
 public:
 	Burgers_Plane_TS_ln_imex_forcing(

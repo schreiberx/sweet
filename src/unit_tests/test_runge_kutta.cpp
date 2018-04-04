@@ -4,7 +4,7 @@
 	#include <sweet/VisSweet.hpp>
 #endif
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/plane/PlaneDataTimesteppingRK.hpp>
+#include <sweet/plane/PlaneDataTimesteppingExplicitRK.hpp>
 #include <benchmarks_plane/SWE_bench_PlaneBenchmarks_DEPRECATED.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/Stopwatch.hpp>
@@ -35,7 +35,7 @@ public:
 
 	PlaneOperators op;
 
-	PlaneDataTimesteppingRK timestepping;
+	PlaneDataTimesteppingExplicitRK timestepping;
 
 
 	/**

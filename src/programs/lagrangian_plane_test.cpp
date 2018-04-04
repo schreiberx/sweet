@@ -86,7 +86,7 @@ public:
 				double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 				double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-				io_data = SWEPlaneBenchmarks::return_h(simVars, x, y);
+				io_data = SWEPlaneBenchmarks_DEPRECATED::return_h(simVars, x, y);
 			}
 		);
 
@@ -200,7 +200,7 @@ public:
 				x = std::fmod(x, simVars.sim.domain_size[0]);
 				y = std::fmod(y, simVars.sim.domain_size[1]);
 
-				io_data = SWEPlaneBenchmarks::return_h(simVars, x, y);
+				io_data = SWEPlaneBenchmarks_DEPRECATED::return_h(simVars, x, y);
 			}
 		);
 
