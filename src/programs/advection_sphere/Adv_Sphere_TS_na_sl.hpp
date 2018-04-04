@@ -16,7 +16,7 @@
 #include <sweet/sphere/SphereDataSampler.hpp>
 #include <sweet/sphere/SphereDataSemiLagrangian.hpp>
 
-#include "../advection_sphere/Adv_Sphere_TS_interface.hpp"
+#include "Adv_Sphere_TS_interface.hpp"
 
 
 class Adv_Sphere_TS_na_sl	: public Adv_Sphere_TS_interface

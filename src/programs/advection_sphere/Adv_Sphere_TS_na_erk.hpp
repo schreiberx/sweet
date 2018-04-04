@@ -14,7 +14,7 @@
 #include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/SimulationVariables.hpp>
 
-#include "../advection_sphere/Adv_Sphere_TS_interface.hpp"
+#include "Adv_Sphere_TS_interface.hpp"
 
 
 

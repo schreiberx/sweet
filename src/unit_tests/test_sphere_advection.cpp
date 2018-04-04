@@ -1,8 +1,8 @@
 /*
- * advection_sphere.cpp
+ * test_sphere_advection.cpp
  *
- *  Created on: 3 Dec 2015
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *  Created on: 3 Apr 2018
+ *      Author: martin
  */
 
 
@@ -10,7 +10,7 @@
 	#define SWEET_GUI 1
 #endif
 
-#include "../include/sweet/sphere/SphereData.hpp"
+#include <sweet/sphere/SphereData.hpp>
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
@@ -20,7 +20,7 @@
 #include <sweet/Convert_SphereData_To_PlaneData.hpp>
 #include <sweet/Convert_SphereDataPhysical_To_PlaneData.hpp>
 
-#include "advection_sphere/Adv_Sphere_TimeSteppers.hpp"
+#include "../programs/advection_sphere/Adv_Sphere_TimeSteppers.hpp"
 
 
 
@@ -45,8 +45,10 @@ public:
 
 	Adv_Sphere_TimeSteppers timeSteppers;
 
-
 	SphereOperators op;
+
+	double max_error;
+	double rms_error;
 
 #if SWEET_GUI
 	PlaneData viz_plane_data;
@@ -74,13 +76,6 @@ public:
 	}
 
 
-	~SimulationInstance()
-	{
-		std::cout << "Error compared to initial condition" << std::endl;
-		std::cout << "Lmax error: " << (prog_h0-prog_h).physical_reduce_max_abs() << std::endl;
-		std::cout << "RMS error: " << (prog_h0-prog_h).physical_reduce_rms() << std::endl;
-	}
-
 
 
 	void reset()
@@ -99,7 +94,7 @@ public:
 
 		timeSteppers.setup(simVars.disc.timestepping_method, op, simVars);
 
-		simVars.outputConfig();
+		//simVars.outputConfig();
 	}
 
 
@@ -123,6 +118,9 @@ public:
 
 		if (simVars.misc.verbosity > 2)
 			std::cout << simVars.timecontrol.current_timestep_nr << ": " << simVars.timecontrol.current_simulation_time/(60*60*24.0) << std::endl;
+
+		max_error = (prog_h0-prog_h).physical_reduce_max_abs();
+		rms_error = (prog_h0-prog_h).physical_reduce_rms();
 	}
 
 
@@ -329,43 +327,77 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 	}
 
+	int initial_spectral_modes = simVars.disc.res_spectral[0];
+
 	if (simVars.timecontrol.current_timestep_size < 0)
 		FatalError("Timestep size not set");
 
-	sphereDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
-
-	SimulationInstance *simulation = new SimulationInstance;
-
-#if SWEET_GUI
-
-	if (simVars.misc.gui_enabled)
+	double prev_max_error = -1;
+	for (int i = initial_spectral_modes; i <= 256; i *= 2)
 	{
-		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical);
+		simVars.timecontrol.current_timestep_size *= 0.5;
 
-		VisSweet<SimulationInstance> visSweet(simulation);
-	}
-	else
-#endif
-	{
-		simulation->reset();
-		while (!simulation->should_quit())
+		if (simVars.disc.timestepping_method == "na_sl")
 		{
-			simulation->run_timestep();
+			simVars.disc.res_spectral[0] = i;
+			simVars.disc.res_spectral[1] = i;
 
-//			if (simVars.misc.verbosity > 2)
-//				std::cout << simVars.timecontrol.current_simulation_time << std::endl;
+			simVars.disc.res_physical[0] = 2*i;
+			simVars.disc.res_physical[1] = i;
+		}
+		else
+		{
+			simVars.disc.res_spectral[0] = initial_spectral_modes;
+			simVars.disc.res_spectral[1] = initial_spectral_modes;
 
-			if (simVars.timecontrol.max_simulation_time != -1)
-				if (simVars.timecontrol.current_simulation_time > simVars.timecontrol.max_simulation_time)
-					break;
+			simVars.disc.res_physical[0] = 0;
+			simVars.disc.res_physical[1] = 0;
+		}
 
-			if (simVars.timecontrol.max_timesteps_nr != -1)
-				if (simVars.timecontrol.current_timestep_nr > simVars.timecontrol.max_timesteps_nr)
-					break;
+
+
+		sphereDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
+
+		std::cout << "Testing with " << sphereDataConfigInstance.getUniqueIDString() << std::endl;
+		std::cout << "Testing with dt=" << simVars.timecontrol.current_timestep_size << std::endl;
+
+		SimulationInstance simulation;
+
+
+	#if SWEET_GUI
+		if (simVars.misc.gui_enabled)
+		{
+			planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical);
+			VisSweet<SimulationInstance> visSweet(&simulation);
+			return 0;
+		}
+		else
+	#endif
+		{
+//			simulation.reset();
+			while (!simulation.should_quit())
+				simulation.run_timestep();
+
+			std::cout << "Error compared to initial condition" << std::endl;
+			std::cout << "Lmax error: " << simulation.max_error << std::endl;
+			std::cout << "RMS error: " << simulation.rms_error << std::endl;
+
+			if (prev_max_error >= 0)
+			{
+				//double conv = (prev_max_error - simulation.max_error) / simulation.max_error;
+				double conv = prev_max_error / simulation.max_error;
+				std::cout << "Convergence: " << conv << std::endl;
+
+				if (conv*1.1 < 4.0)
+				{
+					std::cerr << "Convergence not given!" << std::endl;
+					exit(1);
+				}
+			}
+			prev_max_error = simulation.max_error;
+
 		}
 	}
-
-	delete simulation;
 
 	return 0;
 }

@@ -1,5 +1,5 @@
 /*
- * sPHERESampler2D.hpp
+ * SphereDataSampler2D.hpp
  *
  *  Created on: 29 Mar 2018
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
@@ -38,6 +38,8 @@ private:
 	// distance between phi angles
 	std::vector<double> phi_dist;
 
+	// storage for inverse matrices
+	std::vector<double> inv_matrices;
 
 public:
 	SphereDataSampler(
@@ -57,9 +59,6 @@ public:
 
 		res[0] = -1;
 		res[1] = -1;
-
-//		cached_scale_factor[0] = -1;
-//		cached_scale_factor[1] = -1;
 	}
 
 
@@ -80,6 +79,7 @@ public:
 
 		for (int i = 0; i < sphereDataConfig->physical_num_lat; i++)
 			phi_lookup[i+2] = sphereDataConfig->lat[i];
+
 		phi_lookup[1] = M_PI - phi_lookup[2];
 		phi_lookup[0] = M_PI - phi_lookup[3];
 		phi_lookup[ext_lat_M-2] = -M_PI - phi_lookup[ext_lat_M-3];
@@ -98,6 +98,55 @@ public:
 	//	for (int i = 0; i < ext_lat_M-1; i++)
 	//		std::cout << phi_dist[i] << std::endl;
 
+
+		inv_matrices.resize(ext_lat_M*4*4);
+		for (int k = 1; k < ext_lat_M-1; k++)
+		{
+			double xp[4];
+
+#if 0
+
+			/*
+			 * Equidistant spacing (WRONG!)
+			 */
+			for (int j = 0; j < 4; j++)
+				xp[j] = j;
+			double y = cell_y+1.0;
+
+#elif 0
+			/*
+			 * Use directly the longitude angles
+			 */
+
+			for (int j = 0; j < 4; j++)
+				xp[j] = phi_lookup[k-1+j+2];
+			double y = phi;
+
+#else
+			/*
+			 * Work with cell sizes.
+			 *
+			 * This seems to be numerically significantly
+			 * better than the previous version
+			 */
+			xp[0] = -phi_dist[k-1];
+			xp[1] = 0;
+			xp[2] = phi_dist[k];
+			xp[3] = xp[2]+phi_dist[k+1];
+
+#endif
+
+			double mat[16];
+			for (int j = 0; j < 4; j++)
+			{
+				for (int i = 0; i < 4; i++)
+				{
+					mat[j*4+i] = std::pow(xp[j], (double)i);
+				}
+			}
+
+			invMatrix(mat, &(inv_matrices[k*4*4]));
+		}
 	}
 
 
@@ -224,7 +273,6 @@ public:
 			double *o_x				///< solution
 	)
 	{
-
 		double minv[16] = {
 			i_mat[1*4+2]*i_mat[2*4+3]*i_mat[3*4+1] - i_mat[1*4+3]*i_mat[2*4+2]*i_mat[3*4+1] + i_mat[1*4+3]*i_mat[2*4+1]*i_mat[3*4+2] - i_mat[1*4+1]*i_mat[2*4+3]*i_mat[3*4+2] - i_mat[1*4+2]*i_mat[2*4+1]*i_mat[3*4+3] + i_mat[1*4+1]*i_mat[2*4+2]*i_mat[3*4+3],
 			i_mat[0*4+3]*i_mat[2*4+2]*i_mat[3*4+1] - i_mat[0*4+2]*i_mat[2*4+3]*i_mat[3*4+1] - i_mat[0*4+3]*i_mat[2*4+1]*i_mat[3*4+2] + i_mat[0*4+1]*i_mat[2*4+3]*i_mat[3*4+2] + i_mat[0*4+2]*i_mat[2*4+1]*i_mat[3*4+3] - i_mat[0*4+1]*i_mat[2*4+2]*i_mat[3*4+3],
@@ -258,6 +306,42 @@ public:
 		double inv_det = 1.0/get4x4Determinant(i_mat);
 		for (int i = 0; i < 4; i++)
 			o_x[i] *= inv_det;
+	}
+
+
+
+	/*
+	 * Invert 4x4 matrix
+	 */
+	static
+	void invMatrix(
+			const double *i_mat,	///< matrix
+			double *o_mat
+	)
+	{
+		o_mat[0] = i_mat[1*4+2]*i_mat[2*4+3]*i_mat[3*4+1] - i_mat[1*4+3]*i_mat[2*4+2]*i_mat[3*4+1] + i_mat[1*4+3]*i_mat[2*4+1]*i_mat[3*4+2] - i_mat[1*4+1]*i_mat[2*4+3]*i_mat[3*4+2] - i_mat[1*4+2]*i_mat[2*4+1]*i_mat[3*4+3] + i_mat[1*4+1]*i_mat[2*4+2]*i_mat[3*4+3];
+		o_mat[1] = i_mat[0*4+3]*i_mat[2*4+2]*i_mat[3*4+1] - i_mat[0*4+2]*i_mat[2*4+3]*i_mat[3*4+1] - i_mat[0*4+3]*i_mat[2*4+1]*i_mat[3*4+2] + i_mat[0*4+1]*i_mat[2*4+3]*i_mat[3*4+2] + i_mat[0*4+2]*i_mat[2*4+1]*i_mat[3*4+3] - i_mat[0*4+1]*i_mat[2*4+2]*i_mat[3*4+3];
+		o_mat[2] = i_mat[0*4+2]*i_mat[1*4+3]*i_mat[3*4+1] - i_mat[0*4+3]*i_mat[1*4+2]*i_mat[3*4+1] + i_mat[0*4+3]*i_mat[1*4+1]*i_mat[3*4+2] - i_mat[0*4+1]*i_mat[1*4+3]*i_mat[3*4+2] - i_mat[0*4+2]*i_mat[1*4+1]*i_mat[3*4+3] + i_mat[0*4+1]*i_mat[1*4+2]*i_mat[3*4+3];
+		o_mat[3] = i_mat[0*4+3]*i_mat[1*4+2]*i_mat[2*4+1] - i_mat[0*4+2]*i_mat[1*4+3]*i_mat[2*4+1] - i_mat[0*4+3]*i_mat[1*4+1]*i_mat[2*4+2] + i_mat[0*4+1]*i_mat[1*4+3]*i_mat[2*4+2] + i_mat[0*4+2]*i_mat[1*4+1]*i_mat[2*4+3] - i_mat[0*4+1]*i_mat[1*4+2]*i_mat[2*4+3];
+
+		o_mat[4] = i_mat[1*4+3]*i_mat[2*4+2]*i_mat[3*4+0] - i_mat[1*4+2]*i_mat[2*4+3]*i_mat[3*4+0] - i_mat[1*4+3]*i_mat[2*4+0]*i_mat[3*4+2] + i_mat[1*4+0]*i_mat[2*4+3]*i_mat[3*4+2] + i_mat[1*4+2]*i_mat[2*4+0]*i_mat[3*4+3] - i_mat[1*4+0]*i_mat[2*4+2]*i_mat[3*4+3];
+		o_mat[5] = i_mat[0*4+2]*i_mat[2*4+3]*i_mat[3*4+0] - i_mat[0*4+3]*i_mat[2*4+2]*i_mat[3*4+0] + i_mat[0*4+3]*i_mat[2*4+0]*i_mat[3*4+2] - i_mat[0*4+0]*i_mat[2*4+3]*i_mat[3*4+2] - i_mat[0*4+2]*i_mat[2*4+0]*i_mat[3*4+3] + i_mat[0*4+0]*i_mat[2*4+2]*i_mat[3*4+3];
+		o_mat[6] = i_mat[0*4+3]*i_mat[1*4+2]*i_mat[3*4+0] - i_mat[0*4+2]*i_mat[1*4+3]*i_mat[3*4+0] - i_mat[0*4+3]*i_mat[1*4+0]*i_mat[3*4+2] + i_mat[0*4+0]*i_mat[1*4+3]*i_mat[3*4+2] + i_mat[0*4+2]*i_mat[1*4+0]*i_mat[3*4+3] - i_mat[0*4+0]*i_mat[1*4+2]*i_mat[3*4+3];
+		o_mat[7] = i_mat[0*4+2]*i_mat[1*4+3]*i_mat[2*4+0] - i_mat[0*4+3]*i_mat[1*4+2]*i_mat[2*4+0] + i_mat[0*4+3]*i_mat[1*4+0]*i_mat[2*4+2] - i_mat[0*4+0]*i_mat[1*4+3]*i_mat[2*4+2] - i_mat[0*4+2]*i_mat[1*4+0]*i_mat[2*4+3] + i_mat[0*4+0]*i_mat[1*4+2]*i_mat[2*4+3];
+
+		o_mat[8] = i_mat[1*4+1]*i_mat[2*4+3]*i_mat[3*4+0] - i_mat[1*4+3]*i_mat[2*4+1]*i_mat[3*4+0] + i_mat[1*4+3]*i_mat[2*4+0]*i_mat[3*4+1] - i_mat[1*4+0]*i_mat[2*4+3]*i_mat[3*4+1] - i_mat[1*4+1]*i_mat[2*4+0]*i_mat[3*4+3] + i_mat[1*4+0]*i_mat[2*4+1]*i_mat[3*4+3];
+		o_mat[9] = i_mat[0*4+3]*i_mat[2*4+1]*i_mat[3*4+0] - i_mat[0*4+1]*i_mat[2*4+3]*i_mat[3*4+0] - i_mat[0*4+3]*i_mat[2*4+0]*i_mat[3*4+1] + i_mat[0*4+0]*i_mat[2*4+3]*i_mat[3*4+1] + i_mat[0*4+1]*i_mat[2*4+0]*i_mat[3*4+3] - i_mat[0*4+0]*i_mat[2*4+1]*i_mat[3*4+3];
+		o_mat[10] = i_mat[0*4+1]*i_mat[1*4+3]*i_mat[3*4+0] - i_mat[0*4+3]*i_mat[1*4+1]*i_mat[3*4+0] + i_mat[0*4+3]*i_mat[1*4+0]*i_mat[3*4+1] - i_mat[0*4+0]*i_mat[1*4+3]*i_mat[3*4+1] - i_mat[0*4+1]*i_mat[1*4+0]*i_mat[3*4+3] + i_mat[0*4+0]*i_mat[1*4+1]*i_mat[3*4+3];
+		o_mat[11] = i_mat[0*4+3]*i_mat[1*4+1]*i_mat[2*4+0] - i_mat[0*4+1]*i_mat[1*4+3]*i_mat[2*4+0] - i_mat[0*4+3]*i_mat[1*4+0]*i_mat[2*4+1] + i_mat[0*4+0]*i_mat[1*4+3]*i_mat[2*4+1] + i_mat[0*4+1]*i_mat[1*4+0]*i_mat[2*4+3] - i_mat[0*4+0]*i_mat[1*4+1]*i_mat[2*4+3];
+
+		o_mat[12] = i_mat[1*4+2]*i_mat[2*4+1]*i_mat[3*4+0] - i_mat[1*4+1]*i_mat[2*4+2]*i_mat[3*4+0] - i_mat[1*4+2]*i_mat[2*4+0]*i_mat[3*4+1] + i_mat[1*4+0]*i_mat[2*4+2]*i_mat[3*4+1] + i_mat[1*4+1]*i_mat[2*4+0]*i_mat[3*4+2] - i_mat[1*4+0]*i_mat[2*4+1]*i_mat[3*4+2];
+		o_mat[13] = i_mat[0*4+1]*i_mat[2*4+2]*i_mat[3*4+0] - i_mat[0*4+2]*i_mat[2*4+1]*i_mat[3*4+0] + i_mat[0*4+2]*i_mat[2*4+0]*i_mat[3*4+1] - i_mat[0*4+0]*i_mat[2*4+2]*i_mat[3*4+1] - i_mat[0*4+1]*i_mat[2*4+0]*i_mat[3*4+2] + i_mat[0*4+0]*i_mat[2*4+1]*i_mat[3*4+2];
+		o_mat[14] = i_mat[0*4+2]*i_mat[1*4+1]*i_mat[3*4+0] - i_mat[0*4+1]*i_mat[1*4+2]*i_mat[3*4+0] - i_mat[0*4+2]*i_mat[1*4+0]*i_mat[3*4+1] + i_mat[0*4+0]*i_mat[1*4+2]*i_mat[3*4+1] + i_mat[0*4+1]*i_mat[1*4+0]*i_mat[3*4+2] - i_mat[0*4+0]*i_mat[1*4+1]*i_mat[3*4+2];
+		o_mat[15] = i_mat[0*4+1]*i_mat[1*4+2]*i_mat[2*4+0] - i_mat[0*4+2]*i_mat[1*4+1]*i_mat[2*4+0] + i_mat[0*4+2]*i_mat[1*4+0]*i_mat[2*4+1] - i_mat[0*4+0]*i_mat[1*4+2]*i_mat[2*4+1] - i_mat[0*4+1]*i_mat[1*4+0]*i_mat[2*4+2] + i_mat[0*4+0]*i_mat[1*4+1]*i_mat[2*4+2];
+
+		double inv_det = 1.0/get4x4Determinant(i_mat);
+		for (int i = 0; i < 16; i++)
+			o_mat[i] *= inv_det;
 	}
 
 
@@ -309,7 +393,7 @@ public:
 			double phi = i_pos_y.scalar_data[pos_idx];
 			int est_lat_idx = (L - phi)*inv_s;
 
-			assert(est_lat_idx >= 0);
+			assert(est_lat_idx >= 1);
 			assert(est_lat_idx < ext_lat_M-1);
 
 			if (phi_lookup[est_lat_idx] < phi)
@@ -322,10 +406,10 @@ public:
 			assert(array_idx_y < ext_lat_M);
 
 			double cell_y = (phi - phi_lookup[array_idx_y+1]) / phi_dist[array_idx_y];
-//			std::cout << cell_y << std::endl;
+
 			// flip since the coordinate system is also flipped!
 			cell_y = 1.0-cell_y;
-//			std::cout << cell_y << std::endl;
+
 			assert(cell_y >= 0);
 			assert(cell_y <= 1);
 
@@ -369,29 +453,123 @@ public:
 				idx_j++;
 			}
 
+#if 0
+			/*
+			 * On-the-fly computation of matrix inversion
+			 */
 			//phi_dist[array_idx_y]
+			double xp[4];
+
+#if 0
+
+			/*
+			 * Equidistant spacing (WRONG!)
+			 */
+			for (int j = 0; j < 4; j++)
+				xp[j] = j;
+			double y = cell_y+1.0;
+
+#elif 0
+			/*
+			 * Use directly the longitude angles
+			 */
+
+			for (int j = 0; j < 4; j++)
+				xp[j] = phi_lookup[array_idx_y-1+j];
+			double y = phi;
+
+#else
+			/*
+			 * Work with cell sizes.
+			 *
+			 * This seems to be numerically significantly better than the previous version
+			 */
+			xp[0] = -phi_dist[array_idx_y-1];
+			xp[1] = 0;
+			xp[2] = phi_dist[array_idx_y];
+			xp[3] = xp[2]+phi_dist[array_idx_y+1];
+
+			double y = cell_y*phi_dist[array_idx_y];
+
+#endif
+
 			double mat[16];
-			for (int i = 0; i < 4; i++)
+
+			for (int j = 0; j < 4; j++)
 			{
-				for (int j = 0; j < 4; j++)
+				double x = xp[j];
+				for (int i = 0; i < 4; i++)
 				{
-					//double x = j;//phi_dist[array_idx_y-1+j];
-					double x = phi_lookup[array_idx_y-1+j];
 					mat[j*4+i] = std::pow(x, i);
 				}
 			}
 
-			double x[4];
-			solve4x4SOE(mat, q, x);
-
-#if 1
-			//double y = cell_y+1.0;
-			double y = phi;
-			//y = phi_dist[array_idx_y-1]+y*;
-			double value = x[0] + y*(x[1] + y*(x[2] + y*x[3]));
+			double a[4];
+			solve4x4SOE(mat, q, a);
 
 #else
+
+			/*
+			 * Use precomputed inverse matrices
+			 */
+			double *mat = &inv_matrices[array_idx_y*4*4];
+
+			double a[4];
+			for (int j = 0; j < 4; j++)
+			{
+				a[j] = 0;
+				for (int i = 0; i < 4; i++)
+					a[j] += mat[j*4+i]*q[i];
+			}
+
+			double y = cell_y*phi_dist[array_idx_y];
+#endif
+
+
+
+#if 1
+			double value = a[0] + y*(a[1] + y*(a[2] + y*a[3]));
+
+#if SWEET_DEBUG && 0
+			double error[4];
+			for (int i = 0; i < 4; i++)
+			{
+				double x = xp[i];
+				double value = a[0] + x*(a[1] + x*(a[2] + x*a[3]));
+				error[i] = std::abs(value - q[i]);
+				if (error[i] > 1e-7)
+				{
+					//std::cout << "x" << std::endl;
+					//std::cout << y << std::endl;
+					std::cout << "x support points" << std::endl;
+					std::cout << xp[0] << std::endl;
+					std::cout << xp[1] << std::endl;
+					std::cout << xp[2] << std::endl;
+					std::cout << xp[3] << std::endl;
+					std::cout << "support point values" << std::endl;
+					std::cout << q[0] << std::endl;
+					std::cout << q[1] << std::endl;
+					std::cout << q[2] << std::endl;
+					std::cout << q[3] << std::endl;
+					std::cout << "poly_coeffs" << std::endl;
+					std::cout << a[0] << std::endl;
+					std::cout << a[1] << std::endl;
+					std::cout << a[2] << std::endl;
+					std::cout << a[3] << std::endl;
+					std::cout << "error" << std::endl;
+					std::cout << error[i] << std::endl;
+					std::cout << std::endl;
+
+					FatalError("Errors too large!");
+				}
+			}
+#endif
+
+
+#else
+
 			double value = q[1] + 0.5 * cell_y*(q[2] - q[0] + cell_y*(2.0*q[0] - 5.0*q[1] + 4.0*q[2] - q[3] + cell_y*(3.0*(q[1] - q[2]) + q[3] - q[0])));
+
 #endif
 
 			o_data[pos_idx] = value;

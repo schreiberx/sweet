@@ -1,5 +1,5 @@
 /*
- * test_interpolation_sphere.cpp
+ * test_sphere_interpolation.cpp
  *
  *  Created on: 2nd April 2018
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
@@ -185,11 +185,6 @@ public:
 			double value = gaussianValue(center_lon, center_lat, posx_a.scalar_data[i], posy_a.scalar_data[i], exp_fac);
 			max_error = std::max(max_error, std::abs(value - out_data.scalar_data[i]));
 		}
-
-//		std::cout << prog_h.sphereDataConfig->physical_array_data_number_of_elements << std::endl;
-//		std::cout << posx_a.number_of_elements << std::endl;
-//		std::cout << max_error << std::endl;
-//		std::cout << std::endl;
 	}
 
 
@@ -315,14 +310,16 @@ int main(int i_argc, char *i_argv[])
 
 	int initial_spectral_modes = simVars.disc.res_spectral[0];
 
-	double gaussian_center_array[4][2] = {
+	double gaussian_center_array[6][2] = {
+			{0.0, M_PI*0.5},	// equator
+			{0.0, 0.0},			// equator
 			{0.0, -M_PI*0.5},	// bottom
 			{0.0, M_PI*0.5},	// top
-			{0.0, 0.0},			// equator
-			{1.0, M_PI*0.4},	// top
+			{1.0, M_PI*0.4},	// misc
+			{2.3, -M_PI*0.34},	// misc
 	};
 
-	for (int i_gaussians = 0; i_gaussians < 4; i_gaussians++)
+	for (int i_gaussians = 0; i_gaussians < 6; i_gaussians++)
 	{
 		double center_lon = gaussian_center_array[i_gaussians][0];
 		double center_lat = gaussian_center_array[i_gaussians][1];
@@ -333,7 +330,7 @@ int main(int i_argc, char *i_argv[])
 
 		for (int interpolation_order = 2; interpolation_order <= 3; interpolation_order++)
 		{
-interpolation_order = 3;
+//interpolation_order = 3;
 			std::cout << std::endl;
 			std::cout << "*********************************************************" << std::endl;
 			std::cout << "* Running studies for interpolation of order " << interpolation_order << std::endl;

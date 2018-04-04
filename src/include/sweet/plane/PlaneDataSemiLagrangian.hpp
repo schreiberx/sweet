@@ -81,8 +81,11 @@ public:
 		double dt = i_dt;
 
 		//Velocity for iterations
-		ScalarDataArray u_iter = dt * u - dt*0.5 * u_prev;
-		ScalarDataArray v_iter = dt * v - dt*0.5 * v_prev;
+		//ScalarDataArray u_iter = dt * u - dt*0.5 * u_prev;
+		//ScalarDataArray v_iter = dt * v - dt*0.5 * v_prev;
+
+		PlaneData u_extrap = Convert_ScalarDataArray_to_PlaneData::convert(2.0*u - u_prev, planeDataConfig);
+		PlaneData v_extrap = Convert_ScalarDataArray_to_PlaneData::convert(2.0*v - v_prev, planeDataConfig);
 
 		//Departure point tmp
 		ScalarDataArray rx_d_new(num_points);
@@ -99,18 +102,17 @@ public:
 		int iters = 0;
 		for (; iters < 10; iters++)
 		{
-			//std::cout<<iters<<std::endl;
 			// r_d = r_a - dt/2 * v_n(r_d) - v^{iter}(r_d)
-			rx_d_new = i_posx_a - dt*0.5 * u - sample2D.bilinear_scalar(
-// TODO: Avoid this by converting outside the loop
-					Convert_ScalarDataArray_to_PlaneData::convert(u_iter, planeDataConfig),
+			rx_d_new = i_posx_a - dt*0.5 *
+				(u + sample2D.bilinear_scalar(
+					u_extrap,
 					o_posx_d, o_posy_d, i_staggering->u[0], i_staggering->u[1]
-			);
-			ry_d_new = i_posy_a - dt*0.5 * v - sample2D.bilinear_scalar(
-// TODO: Avoid this by converting outside the loop
-					Convert_ScalarDataArray_to_PlaneData::convert(v_iter, planeDataConfig),
+			));
+			ry_d_new = i_posy_a - dt*0.5 *
+				(v + sample2D.bilinear_scalar(
+					v_extrap,
 					o_posx_d, o_posy_d, i_staggering->v[0], i_staggering->v[1]
-			);
+			));
 
 			double diff = (rx_d_new - rx_d_prev).reduce_maxAbs() + (ry_d_new - ry_d_prev).reduce_maxAbs();
 			rx_d_prev = rx_d_new;

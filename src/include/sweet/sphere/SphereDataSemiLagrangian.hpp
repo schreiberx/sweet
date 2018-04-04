@@ -35,7 +35,7 @@ public:
 	)
 	{
 		sphereDataConfig = i_sphereDataConfig;
-		sample2D.setup(i_domain_size, sphereDataConfig);
+		sample2D.setup(sphereDataConfig);
 	}
 
 
@@ -145,7 +145,13 @@ public:
 			for (int j = 0; j < 3; j++)
 				velVec[j] = tanBasis[j+3]*i_vec_lon.scalar_data[i] + tanBasis[j+6]*i_vec_lat.scalar_data[i];
 
-#if 1
+#if 0
+			/*
+			 * Project vector accurately on sphere
+			 *
+			 * Not fully tested yet!!!
+			 */
+
 			// velocity basis
 			double velBasis[9];
 			for (int j = 0; j < 3; j++)
@@ -259,8 +265,8 @@ public:
 		double dt = i_dt;
 
 		// Velocity for iterations
-		SphereData u_iter = Convert_ScalarDataArray_to_SphereData::convert(dt * u - dt*0.5 * u_prev, sphereDataConfig);
-		SphereData v_iter = Convert_ScalarDataArray_to_SphereData::convert(dt * v - dt*0.5 * v_prev, sphereDataConfig);
+		SphereData u_iter = Convert_ScalarDataArray_to_SphereData::convert(2.0 * u - u_prev, sphereDataConfig);
+		SphereData v_iter = Convert_ScalarDataArray_to_SphereData::convert(2.0 * v - v_prev, sphereDataConfig);
 
 		u_iter.physical_set_zero();
 		v_iter.physical_set_zero();
@@ -278,7 +284,6 @@ public:
 		o_posx_d = i_posx_a;
 		o_posy_d = i_posy_a;
 
-		std::cout << "TODO: Figure out where the scaling 2 factor comes from!" << std::endl;
 		double vel_scaling = 2.0/i_earth_radius;
 
 		int iters = 0;
@@ -287,8 +292,8 @@ public:
 			sphereCoordPlusSurfaceVector(
 					i_posx_a,
 					i_posy_a,
-					(-dt*0.5 * u - sample2D.bilinear_scalar(u_iter, o_posx_d, o_posy_d))*vel_scaling,
-					(-dt*0.5 * v - sample2D.bilinear_scalar(v_iter, o_posx_d, o_posy_d))*vel_scaling,
+					(-dt*0.5 * (u + sample2D.bilinear_scalar(u_iter, o_posx_d, o_posy_d)))*vel_scaling,
+					(-dt*0.5 * (v + sample2D.bilinear_scalar(v_iter, o_posx_d, o_posy_d)))*vel_scaling,
 					rx_d_new,
 					ry_d_new
 				);
