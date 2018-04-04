@@ -391,6 +391,7 @@ void SWE_Plane_TS_l_rexi_n_etdrk::setup(
 	if (timestepping_order == 1)
 	{
 		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", simVars.timecontrol.current_timestep_size);
+		ts_phi1_rexi.setup(i_rexiSimVars, "phi1", simVars.timecontrol.current_timestep_size);
 	}
 	else if (timestepping_order == 2)
 	{
