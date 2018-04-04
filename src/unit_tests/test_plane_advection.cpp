@@ -80,9 +80,6 @@ public:
 
 	~SimulationInstance()
 	{
-		std::cout << "Error compared to initial condition" << std::endl;
-		std::cout << "Lmax error: " << (prog_h0-prog_h).reduce_maxAbs() << std::endl;
-		std::cout << "RMS error: " << (prog_h0-prog_h).reduce_rms() << std::endl;
 	}
 
 
