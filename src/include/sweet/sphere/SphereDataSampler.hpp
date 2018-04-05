@@ -780,15 +780,17 @@ public:
 		return out;
 	}
 
+
+
 public:
-	const SphereData bicubic_scalar(
-			SphereData &i_data,				///< sampling data
+	const ScalarDataArray bicubic_scalar(
+			const SphereData &i_data,				///< sampling data
 
 			const ScalarDataArray &i_pos_x,				///< x positions of interpolation points
 			const ScalarDataArray &i_pos_y				///< y positions of interpolation points
 	)
 	{
-		SphereData out(sphereDataConfig);
+		ScalarDataArray out(i_data.sphereDataConfig->physical_array_data_number_of_elements);
 		bicubic_scalar(i_data, i_pos_x, i_pos_y, out);
 		return out;
 	}

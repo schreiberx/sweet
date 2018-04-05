@@ -16,6 +16,8 @@
 #include "SphereData.hpp"
 #include <sweet/ScalarDataArray.hpp>
 
+
+
 class SphereDataSemiLagrangian
 {
 	SphereDataSampler sample2D;
@@ -145,7 +147,7 @@ public:
 			for (int j = 0; j < 3; j++)
 				velVec[j] = tanBasis[j+3]*i_vec_lon.scalar_data[i] + tanBasis[j+6]*i_vec_lat.scalar_data[i];
 
-#if 0
+#if 1
 			/*
 			 * Project vector accurately on sphere
 			 *
@@ -163,6 +165,8 @@ public:
 				velBasis[3+j] = velVec[j]*inv_vel_len;
 
 			cross(&velBasis[0], &velBasis[3], &velBasis[6]);
+
+//			velBasis[2] = 0;
 
 /*
 			for (int j = 0; j < 3; j++)
@@ -305,18 +309,36 @@ public:
 #endif
 			for (std::size_t i = 0; i < num_points; i++)
 			{
-				// posx \in [0;2*pi]
-				o_posx_d.scalar_data[i] = SphereDataSampler::wrapPeriodic(rx_d_new.scalar_data[i], 2.0*M_PI);
-				assert(o_posx_d.scalar_data[i] >= 0);
-				assert(o_posx_d.scalar_data[i] < M_PI*2.0);
+				o_posx_d.scalar_data[i] = rx_d_new.scalar_data[i];
 
 				// posx \in [-pi/2;pi/2]
 				o_posy_d.scalar_data[i] = ry_d_new.scalar_data[i];
 				if (o_posy_d.scalar_data[i] > M_PI*0.5)
+				{
 					o_posy_d.scalar_data[i] = M_PI - o_posy_d.scalar_data[i];
+					o_posx_d.scalar_data[i] += M_PI;
+				}
 				else if (o_posy_d.scalar_data[i] < -M_PI*0.5)
+				{
 					o_posy_d.scalar_data[i] = -M_PI - o_posy_d.scalar_data[i];
+					o_posx_d.scalar_data[i] += M_PI;
+				}
 
+
+				// posx \in [0;2*pi]
+				o_posx_d.scalar_data[i] = SphereDataSampler::wrapPeriodic(o_posx_d.scalar_data[i], 2.0*M_PI);
+
+				assert(o_posx_d.scalar_data[i] >= 0);
+				assert(o_posx_d.scalar_data[i] < M_PI*2.0);
+/*
+
+#if SWEET_DEBUG
+				if (o_posy_d.scalar_data[i] < -M_PI*0.5)
+					std::cout << o_posy_d.scalar_data[i] << " >= -M_PI*0.5" << std::endl;
+				if (o_posy_d.scalar_data[i] > M_PI*0.5)
+					std::cout << o_posy_d.scalar_data[i] << " <= M_PI*0.5" << std::endl;
+#endif
+*/
 				assert(o_posy_d.scalar_data[i] >= -M_PI*0.5);
 				assert(o_posy_d.scalar_data[i] <= M_PI*0.5);
 			}
