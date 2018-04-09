@@ -121,8 +121,8 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 	if (simVars.disc.use_staggering)
 		FatalError("Staggering not supported");
 
-	if (i_dt < 0)
-		FatalError("SWE_Plane_TS_l_direct: Only constant time step size allowed (please set --dt )");
+	//if (i_dt < 0)
+	//	FatalError("SWE_Plane_TS_l_direct: Only constant time step size allowed (please set --dt )");
 
 
 	typedef std::complex<T> complex;

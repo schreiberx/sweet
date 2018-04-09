@@ -73,6 +73,9 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 	PlaneData h(io_h.planeDataConfig);
 	PlaneData u(io_h.planeDataConfig);
 	PlaneData v(io_h.planeDataConfig);
+	PlaneData h_dep(io_h.planeDataConfig);
+	PlaneData u_dep(io_h.planeDataConfig);
+	PlaneData v_dep(io_h.planeDataConfig);
 
 	Staggering staggering;
 	assert(staggering.staggering_type == 'a');
@@ -100,29 +103,25 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 	u = io_u;
 	v = io_v;
 	h = io_h;
+	//u_dep = io_u;
+	//v_dep = io_v;
+	//h_dep = io_h;
 
 	// Interpolate U to departure points
-	u = sampler2D.bicubic_scalar(io_u, posx_d, posy_d, -0.5, -0.5);
-	v = sampler2D.bicubic_scalar(io_v, posx_d, posy_d, -0.5, -0.5);
-	h = sampler2D.bicubic_scalar(io_h, posx_d, posy_d, -0.5, -0.5);
+	//u_dep = sampler2D.bicubic_scalar(io_u, posx_d, posy_d, -0.5, -0.5);
+	//v_dep = sampler2D.bicubic_scalar(io_v, posx_d, posy_d, -0.5, -0.5);
+	//h_dep = sampler2D.bicubic_scalar(io_h, posx_d, posy_d, -0.5, -0.5);
 
 	if (timestepping_order == 1)
 	{
 		/*
-		 * U_{1} = \psi_{0}( \Delta t L ) U_{0}
-		 * 			+\Delta t \psi_{1}(\Delta tL) N(U_{0}).
+		 * U_{1} = \phi_{0}( \Delta t L ) [
+		 * 			U_{0}_dep + \Delta t  (\phi_{1}(-\Delta tL) N(U_{0}))_dep.
 		 */
 
-		PlaneData phi0_Un_h(planeDataConfig);
-		PlaneData phi0_Un_u(planeDataConfig);
-		PlaneData phi0_Un_v(planeDataConfig);
-		ts_phi0_rexi.run_timestep(
-				h, u, v,
-				phi0_Un_h, phi0_Un_u, phi0_Un_v,
-				i_dt,
-				i_simulation_timestamp
-			);
+		// Calculate term to be interpolated: u+dt*phi_1(-dt L)N(U_{0})
 
+		//Calculate N(U_{0})
 		PlaneData FUn_h(planeDataConfig);
 		PlaneData FUn_u(planeDataConfig);
 		PlaneData FUn_v(planeDataConfig);
@@ -132,6 +131,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 				i_simulation_timestamp
 		);
 
+		//Apply phi_1 to N(U_{0}) with negative operation!
 		PlaneData phi1_FUn_h(planeDataConfig);
 		PlaneData phi1_FUn_u(planeDataConfig);
 		PlaneData phi1_FUn_v(planeDataConfig);
@@ -139,13 +139,37 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 		ts_phi1_rexi.run_timestep(
 				FUn_h, FUn_u, FUn_v,
 				phi1_FUn_h, phi1_FUn_u, phi1_FUn_v,
+				-i_dt,
+				i_simulation_timestamp
+		);
+
+
+
+		//Add this to U and interpolate to departure points
+		PlaneData h_adv(planeDataConfig);
+		PlaneData u_adv(planeDataConfig);
+		PlaneData v_adv(planeDataConfig);
+		u_adv = u + i_dt*phi1_FUn_h;
+		v_adv = v + i_dt*phi1_FUn_u;
+		h_adv = h + i_dt*phi1_FUn_v;
+		u_dep = sampler2D.bicubic_scalar(u_adv, posx_d, posy_d, -0.5, -0.5);
+		v_dep = sampler2D.bicubic_scalar(v_adv, posx_d, posy_d, -0.5, -0.5);
+		h_dep = sampler2D.bicubic_scalar(h_adv, posx_d, posy_d, -0.5, -0.5);
+
+		//Calculate phi_0 of interpolated U
+		PlaneData phi0_Un_h(planeDataConfig);
+		PlaneData phi0_Un_u(planeDataConfig);
+		PlaneData phi0_Un_v(planeDataConfig);
+		ts_phi0_rexi.run_timestep(
+				h_dep, u_dep, v_dep,
+				phi0_Un_h, phi0_Un_u, phi0_Un_v,
 				i_dt,
 				i_simulation_timestamp
 			);
 
-		io_h = phi0_Un_h + i_dt*phi1_FUn_h;
-		io_u = phi0_Un_u + i_dt*phi1_FUn_u;
-		io_v = phi0_Un_v + i_dt*phi1_FUn_v;
+		io_h = phi0_Un_h;
+		io_u = phi0_Un_u;
+		io_v = phi0_Un_v;
 	}
 	else if (timestepping_order == 2)
 	{
