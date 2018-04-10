@@ -21,18 +21,20 @@ class EarthMKSDimensions:
 	f = 0.00014584	#2 omega
 	omega = 0.00007292
 	erad = 6371220
-	
-	
+
+
 def CompileSWEPlane(p):
 	p.compile.program = 'swe_plane'
 	p.compile.plane_or_sphere = 'plane'
 	p.compile.plane_spectral_space = 'enable'
-	p.compile.plane_spectral_dealiasing = 'enable'
+	#p.compile.plane_spectral_dealiasing = 'enable'
+	p.compile.plane_spectral_dealiasing = 'disable'
 	p.compile.sphere_spectral_space = 'disable'
 	p.compile.sphere_spectral_dealiasing = 'disable'
 	p.compile.compiler = 'gnu'
 	p.compile.threading = 'omp'
-	return p	
+	p.compile.quadmath = 'disable'
+	return p
 
 
 def RuntimeSWEPlaneNondimParameters(p):
@@ -40,7 +42,7 @@ def RuntimeSWEPlaneNondimParameters(p):
 	p.runtime.f = 1
 	p.runtime.h = 1
 	p.runtime.domain_size = 1
-	return p	
+	return p
 
 def RuntimeSWEPlaneEarthParam(p):
 	s = EarthMKSDimensions()
@@ -48,19 +50,19 @@ def RuntimeSWEPlaneEarthParam(p):
 	p.runtime.f = s.f
 	p.runtime.h = 10000
 	p.runtime.domain_size = 2.0*math.pi*s.erad # 40031555.8928087
-	return p	
+	return p
 
-	
+
 def EnableGUI(p):
 	p.runtime.gui = 'enable'
 	p.compile.gui = 'enable'
-	return p	
+	return p
 
 
 def DisableGUI(p):
 	p.runtime.gui = 'disable'
 	p.compile.gui = 'disable'
-	return p	
+	return p
 
 
 def SetupFDCMethods(p):
@@ -89,6 +91,5 @@ class Unstablejet:
 	#Domain
 	x_min = 0
 	x_max = 2.0*math.pi*s.erad/1000/1000 #1000km
-	y_min = 0 
+	y_min = 0
 	y_max = 2.0*math.pi*s.erad/1000/1000 #1000km
-
