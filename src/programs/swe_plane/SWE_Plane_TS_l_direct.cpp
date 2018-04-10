@@ -519,6 +519,53 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 					}
 					break;
 
+					// Semi-Lagrangian psi functions
+				case 1001:	// psi1
+					//
+					if (lamdt < rexiFunctions.eps_phi)
+					{
+						K = 1.0;
+					}
+					else
+					{
+						K = -dt*lam;
+						//psi1(z)=phi(-z)
+						K = (rexiFunctions.l_expcplx(K) - std::complex<T>(1.0))/K;
+					}
+					break;
+
+
+				case 1002:	// psi2
+					//
+					if (lamdt < rexiFunctions.eps_phi)
+						//					if (lamdt*lamdt < rexiFunctions.eps_phi)
+					{
+						K = 1.0/2.0;
+					}
+					else
+					{
+						K = -dt*lam;
+						//psi2(z)=-phi2(-z)+phi1(-z)
+						K = -(rexiFunctions.l_expcplx(K) - std::complex<T>(1.0) - K)/(K*K)
+										+(rexiFunctions.l_expcplx(K) - std::complex<T>(1.0))/K;
+					}
+					break;
+
+
+				case 1003:	// psi3
+					if (lamdt < rexiFunctions.eps_phi)
+						//					if (lamdt*lamdt*lamdt < rexiFunctions.eps_phi)
+					{
+						K = 1.0/(2.0*3.0);
+					}
+					else
+					{
+						K = -dt*lam;
+						K = (rexiFunctions.l_expcplx(K) - std::complex<T>(1.0) - K - K*K)/(K*K*K)
+								- (rexiFunctions.l_expcplx(K) - std::complex<T>(1.0) - K)/(K*K)
+								+ 0.5*(rexiFunctions.l_expcplx(K) - std::complex<T>(1.0))/K;
+					}
+					break;
 
 				default:
 					FatalError("This phi is not yet supported");

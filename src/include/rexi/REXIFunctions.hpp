@@ -103,10 +103,18 @@ public:
 		else if (i_function_name  == "ups3")
 			phi_id = 103;
 
+		//Semi-Lag phi functions (phi0 factored out) - see sl-rexi paper
+		else if (i_function_name  == "psi1")
+			phi_id = 1001;
+		else if (i_function_name  == "psi2")
+			phi_id = 1002;
+		else if (i_function_name  == "psi3")
+			phi_id = 1003;
+
 		else
 			FatalError("This phi function is not supported!");
 
-		if (phi_id == 1 || phi_id == 2 || phi_id == 3 || phi_id == 101 || phi_id == 102 || phi_id == 103)
+		if (phi_id == 1 || phi_id == 2 || phi_id == 3 || phi_id == 101 || phi_id == 102 || phi_id == 103 || phi_id == 1002 || phi_id == 1003)
 		{
 			if (typeid(T) == typeid(double))
 			{

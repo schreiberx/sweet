@@ -37,6 +37,10 @@ class SWE_Plane_TS_l_rexi_na_sl_nd_etdrk	: public SWE_Plane_TS_interface
 	SWE_Plane_TS_l_rexi ts_ups2_rexi;
 	SWE_Plane_TS_l_rexi ts_ups3_rexi;
 
+	SWE_Plane_TS_l_rexi ts_psi1_rexi;
+	SWE_Plane_TS_l_rexi ts_psi2_rexi;
+	SWE_Plane_TS_l_rexi ts_psi3_rexi;
+
 	PlaneDataSemiLagrangian semiLagrangian;
 	PlaneDataSampler sampler2D;
 
