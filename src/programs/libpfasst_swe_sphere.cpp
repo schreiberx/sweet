@@ -30,6 +30,7 @@ extern "C"
   void fmain (SphereDataCtx* pd_ctx, 
 	      const int*     nlevels, 
 	      const int*     niters, 
+	      const int*     nsweeps_coarse,
 	      const int      nnodes[], 
 	      const char*    qtype_name, 
 	      const int*     qtype_name_len,
@@ -213,6 +214,7 @@ int main(int i_argc, char *i_argv[])
    	pd_ctx,                                       // user defined context
 	&simVars.libpfasst.nlevels,                   // number of SDC levels
 	&simVars.libpfasst.niters,                    // number of SDC iterations
+	&simVars.libpfasst.nsweeps_coarse,            // number of SDC sweeps on coarse level
 	nnodes,                                       // number of SDC nodes 
  	(simVars.libpfasst.nodes_type).c_str(),       // type of nodes
 	&string_length,                               // length of (simVars.libpfasst.nodes_type).c_str()

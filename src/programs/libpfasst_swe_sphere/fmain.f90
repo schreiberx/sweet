@@ -56,16 +56,16 @@ contains
 
   ! main Fortran routine calling LibPFASST
 
-  subroutine fmain(                                        &
-                   user_ctx_ptr,                           & ! user-defined context
-                   nlevs, niters, nnodes, qtype_name, qnl, & ! LibPFASST parameters
-                   nfields, nvars_per_field,               & ! SWEET parameters
-                   t_max, dt                               & ! timestepping parameters
+  subroutine fmain(                                                        &
+                   user_ctx_ptr,                                           & ! user-defined context
+                   nlevs, niters, nsweeps_coarse, nnodes, qtype_name, qnl, & ! LibPFASST parameters
+                   nfields, nvars_per_field,                               & ! SWEET parameters
+                   t_max, dt                                               & ! timestepping parameters
                    ) bind (c, name='fmain')
     use mpi
 
     type(c_ptr),                 value       :: user_ctx_ptr
-    integer                                  :: nlevs, niters, nnodes(nlevs), nvars(nlevs), shape(nlevs), &
+    integer                                  :: nlevs, niters, nsweeps_coarse, nnodes(nlevs), nvars(nlevs), shape(nlevs), &
                                                 nfields, nvars_per_field(nlevs), nsteps, level, qnl, qtype, &
                                                 ierr, num_procs, my_id, mpi_stat
     character(c_char)                        :: qtype_name
@@ -76,7 +76,8 @@ contains
     type(pf_comm_t)                          :: pf_comm
     type(pf_pfasst_t)                        :: pf
 
-    real(c_double),             allocatable  :: z(:)
+    real(c_double),             allocatable  :: z(:), y(:)
+    real(c_double)                           :: val
 
     ! create the mpi and pfasst objects
      call pf_mpi_create(pf_comm,    & 
@@ -136,11 +137,18 @@ contains
        else
 
           if (level > 1) then
-             pf%levels(level)%nsweeps      = 1
+             
+             pf%levels(level)%nsweeps      = 1             
              pf%levels(level)%nsweeps_pred = 1
+
           else
-             pf%levels(level)%nsweeps      = 1
-             pf%levels(level)%nsweeps_pred = 0
+             pf%levels(level)%nsweeps      = nsweeps_coarse
+
+             if (num_procs .eq. 1) then 
+                pf%levels(level)%nsweeps_pred = 0
+             else
+                pf%levels(level)%nsweeps_pred = 1
+             end if
           end if
        end if
 
@@ -151,7 +159,7 @@ contains
        ! define the properties (number of degrees of freedom and number of SDC nodes)
        pf%levels(level)%nvars   = nvars(level)
        pf%levels(level)%nnodes  = nnodes(level)
-       pf%levels(level)%Finterp = .true.
+       pf%levels(level)%Finterp = .false.
 
        ! allocate space for the objects at this level
        allocate(sweet_level_t::pf%levels(level)%ulevel)
@@ -194,12 +202,7 @@ contains
 
     end do
 
-    !allocate(z(nvars(pf%nlevels)))
-    !call pf%levels(pf%nlevels)%q0%unpack(z)
-    !call pf%levels(pf%nlevels)%q0%pack(z)
-
-  
-   ! define the hooks to output data to the terminal (residual and error)
+    ! define the hooks to output data to the terminal (residual and error)
     ! call pf_add_hook(pf,            &
     !                  pf%nlevels,    &
     !                  PF_POST_SWEEP, &
@@ -214,7 +217,7 @@ contains
     !                  fecho_interpolation_errors)
     call pf_add_hook(pf,                 &
                      -1,                 &
-                     PF_PRE_SWEEP,  &
+                     PF_POST_ITERATION,  &
                      fecho_output_solution)
     call pf_add_hook(pf,                 &
                      pf%nlevels,         &

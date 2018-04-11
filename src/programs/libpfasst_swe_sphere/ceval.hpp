@@ -33,7 +33,9 @@ extern "C"
 	      SphereDataCtx *i_ctx, 
 	      SphereDataVars *i_Y,
 	      int i_nnodes,
-	      int i_niters
+	      int i_niters,
+	      int i_rank,
+	      int i_nprocs
 	      );
 
   // evaluates the explicit piece

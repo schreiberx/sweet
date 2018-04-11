@@ -153,25 +153,33 @@ extern "C"
     SphereOperators* op              = i_ctx->get_sphere_operators(o_Y->get_level());
     SphereOperators* op_nodealiasing = i_ctx->get_sphere_operators_nodealiasing();
 
-    // instantiate phi, vort, and div without dealiasing to get the initial condition
-    SphereData phi_Y_nodealiasing(data_config_nodealiasing);
-    SphereData vort_Y_nodealiasing(data_config_nodealiasing);
-    SphereData div_Y_nodealiasing(data_config_nodealiasing);
+    // // instantiate phi, vort, and div without dealiasing to get the initial condition
+    // SphereData phi_Y_nodealiasing(data_config_nodealiasing);
+    // SphereData vort_Y_nodealiasing(data_config_nodealiasing);
+    // SphereData div_Y_nodealiasing(data_config_nodealiasing);
 
-    phi_Y_nodealiasing.physical_set_zero();
-    vort_Y_nodealiasing.physical_set_zero();
-    div_Y_nodealiasing.physical_set_zero();
+    // phi_Y_nodealiasing.physical_set_zero();
+    // vort_Y_nodealiasing.physical_set_zero();
+    // div_Y_nodealiasing.physical_set_zero();
 
-    // get the initial condition in phi, vort, and div
-    SphereBenchmarksCombined::setupInitialConditions(phi_Y_nodealiasing, 
-						     vort_Y_nodealiasing, 
-						     div_Y_nodealiasing, 
-						     *simVars, 
-						     *op_nodealiasing);
+    // // get the initial condition in phi, vort, and div
+    // SphereBenchmarksCombined::setupInitialConditions(phi_Y_nodealiasing, 
+    // 						     vort_Y_nodealiasing, 
+    // 						     div_Y_nodealiasing, 
+    // 						     *simVars, 
+    // 						     *op_nodealiasing);
     
-    phi_Y.load_nodealiasing(phi_Y_nodealiasing);
-    vort_Y.load_nodealiasing(vort_Y_nodealiasing);
-    div_Y.load_nodealiasing(div_Y_nodealiasing);
+    // phi_Y.load_nodealiasing(phi_Y_nodealiasing);
+    // vort_Y.load_nodealiasing(vort_Y_nodealiasing);
+    // div_Y.load_nodealiasing(div_Y_nodealiasing);
+
+
+    SphereBenchmarksCombined::setupInitialConditions(phi_Y, 
+     						     vort_Y, 
+     						     div_Y, 
+     						     *simVars, 
+     						     *op);
+
     
     // output the configuration
     simVars->outputConfig();
@@ -183,32 +191,29 @@ extern "C"
     write_file(*i_ctx, vort_Y, "prog_vort_init");
     write_file(*i_ctx, div_Y,  "prog_div_init");
 
-    std::string name = "prog_phi_init2_"+std::to_string(nsteps)+"_";
-    write_file(*i_ctx, phi_Y, name.c_str());
-
     write_spectrum_to_file(*i_ctx, phi_Y,  "init_spectrum_phi");
     write_spectrum_to_file(*i_ctx, vort_Y, "init_spectrum_vort");
     write_spectrum_to_file(*i_ctx, div_Y,  "init_spectrum_div");
 
         
-    // // get the timestepper 
-    // SWE_Sphere_TS_lg_irk_lc_n_erk* timestepper = i_ctx->get_lg_irk_lc_n_erk_timestepper();
-    // //SWE_Sphere_TS_ln_erk* timestepper = i_ctx->get_ln_erk_timestepper();
+    // get the timestepper 
+    SWE_Sphere_TS_lg_irk_lc_n_erk* timestepper = i_ctx->get_lg_irk_lc_n_erk_timestepper();
+    //SWE_Sphere_TS_ln_erk* timestepper = i_ctx->get_ln_erk_timestepper();
   
-    // std::cout << "current_simulation_time = " << current_simulation_time 
-    // 	      << " i_t = " << i_t 
-    // 	      << std::endl;
+    std::cout << "current_simulation_time = " << current_simulation_time 
+     	      << " i_t = " << i_t 
+     	      << std::endl;
     
-    // std::cout << "i_dt = " << i_dt << std::endl;
+    std::cout << "i_dt = " << i_dt << std::endl;
 
-    // // compute the reference solution (i.e., obtained with the reference time stepper)
-    // while (current_simulation_time < i_t)
-    //   {
-    // 	if (nsteps%120 == 0) 
-    // 	  {
-    // 	    std::cout << "current_simulation_time = "
-    // 		      << current_simulation_time
-    // 		      << std::endl;
+    // compute the reference solution (i.e., obtained with the reference time stepper)
+     while (current_simulation_time < i_t)
+       {
+     	if (nsteps%120 == 0) 
+     	  {
+     	    std::cout << "current_simulation_time = "
+     		      << current_simulation_time
+     		      << std::endl;
 
     // 	    // std::string name = "prog_phi_ref_"+std::to_string(nsteps)+"_";
     // 	    // write_file(*i_ctx, phi_Y, name.c_str());
@@ -217,42 +222,42 @@ extern "C"
     // 	    // name = "prog_div_ref_"+std::to_string(nsteps)+"_";
     // 	    // write_file(*i_ctx, div_Y, name.c_str());
 
-    // 	  }
+    	  }
 
-    // 	// solve the implicit system using the Helmholtz solver
-    // 	timestepper->run_timestep(
-    // 				  phi_Y,
-    // 				  vort_Y,
-    // 				  div_Y,
-    // 				  i_dt,
-    // 				  current_simulation_time
-    // 				  );
+    	// solve the implicit system using the Helmholtz solver
+    	timestepper->run_timestep(
+    				  phi_Y,
+    				  vort_Y,
+    				  div_Y,
+    				  i_dt,
+    				  current_simulation_time
+    				  );
 
-    // 	if (simVars->sim.viscosity != 0)
-    // 	  {
-    // 	    double scalar = simVars->sim.viscosity*i_dt;
-    // 	    double r      = simVars->sim.earth_radius;
+    	if (simVars->sim.viscosity != 0)
+    	  {
+    	    double scalar = simVars->sim.viscosity*i_dt;
+    	    double r      = simVars->sim.earth_radius;
 	    
-    // 	    phi_Y  = phi_Y.spectral_solve_helmholtz(1.0,  -scalar, r);
-    // 	    vort_Y = vort_Y.spectral_solve_helmholtz(1.0, -scalar, r);
-    // 	    div_Y  = div_Y.spectral_solve_helmholtz(1.0,  -scalar, r);
-    // 	  }
+    	    phi_Y  = phi_Y.spectral_solve_helmholtz(1.0,  -scalar, r);
+    	    vort_Y = vort_Y.spectral_solve_helmholtz(1.0, -scalar, r);
+    	    div_Y  = div_Y.spectral_solve_helmholtz(1.0,  -scalar, r);
+    	  }
 	
-    // 	current_simulation_time += i_dt;
-    // 	nsteps += 1;
-    //   }
+    	current_simulation_time += i_dt;
+    	nsteps += 1;
+       }
 
-    // std::cout << "nsteps = " << nsteps << std::endl;
+     std::cout << "nsteps = " << nsteps << std::endl;
 
-    // write_spectrum_to_file(*i_ctx, phi_Y,  "spectrum_phi_ref");
-    // write_spectrum_to_file(*i_ctx, vort_Y, "spectrum_vort_ref");
-    // write_spectrum_to_file(*i_ctx, div_Y,  "spectrum_div_ref");
+     write_spectrum_to_file(*i_ctx, phi_Y,  "spectrum_phi_ref");
+     write_spectrum_to_file(*i_ctx, vort_Y, "spectrum_vort_ref");
+     write_spectrum_to_file(*i_ctx, div_Y,  "spectrum_div_ref");
 
-    // write_file(*i_ctx, phi_Y,  "prog_phi_ref");
-    // write_file(*i_ctx, vort_Y, "prog_vort_ref");
-    // write_file(*i_ctx, div_Y,  "prog_div_ref");
+     write_file(*i_ctx, phi_Y,  "prog_phi_ref");
+     write_file(*i_ctx, vort_Y, "prog_vort_ref");
+     write_file(*i_ctx, div_Y,  "prog_div_ref");
 
-    // FatalError("stop the simulation");
+     FatalError("stop the simulation");
     
   }
 
@@ -262,7 +267,9 @@ extern "C"
 	      SphereDataCtx *i_ctx, 
 	      SphereDataVars *i_Y,
 	      int i_nnodes, 
-	      int i_niters
+	      int i_niters,
+	      int i_rank,
+	      int i_nprocs
 	      ) 
   {
     const SphereData& phi_Y  = i_Y->get_phi();
@@ -271,28 +278,57 @@ extern "C"
 
     // get the SimulationVariables object from context
     SimulationVariables* simVars(i_ctx->get_simulation_variables()); 
-    
-    std::string filename = "prog_phi_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
-    write_file(*i_ctx, phi_Y, filename.c_str());
-    
-    filename = "prog_vort_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
-    write_file(*i_ctx, vort_Y, filename.c_str());
 
-    filename = "prog_div_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
-    write_file(*i_ctx, div_Y, filename.c_str());
-    
-    filename = "spectrum_vort_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
-    write_spectrum_to_file(*i_ctx, vort_Y, filename.c_str());
+    if (i_nprocs == 1)
+      {
+	std::string filename = "prog_phi_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
+	write_file(*i_ctx, phi_Y, filename.c_str());
+	
+	filename = "prog_vort_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
+	write_file(*i_ctx, vort_Y, filename.c_str());
+	
+	filename = "prog_div_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
+	write_file(*i_ctx, div_Y, filename.c_str());
+	
+	filename = "spectrum_vort_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
+	write_spectrum_to_file(*i_ctx, vort_Y, filename.c_str());
+	
+	filename = "spectrum_div_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
+	write_spectrum_to_file(*i_ctx, div_Y, filename.c_str());
 
-    filename = "spectrum_div_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
-    write_spectrum_to_file(*i_ctx, div_Y, filename.c_str());
+	filename = "spectrum_phi_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
+	write_spectrum_to_file(*i_ctx, phi_Y, filename.c_str());
 
-    filename = "spectrum_phi_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
-    write_spectrum_to_file(*i_ctx, phi_Y, filename.c_str());
+	filename = "invariants_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
+	write_physical_invariants_to_file(*i_ctx, filename.c_str());
 
-    filename = "invariants_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
-    write_physical_invariants_to_file(*i_ctx, filename.c_str());
-  
+      }
+    else if (i_rank == 0)
+      {
+	
+	std::string filename = "prog_phi_nprocs_"+std::to_string(i_nprocs)+"_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
+	write_file(*i_ctx, phi_Y, filename.c_str());
+	
+	filename = "prog_vort_nprocs_"+std::to_string(i_nprocs)+"_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
+	write_file(*i_ctx, vort_Y, filename.c_str());
+	
+	filename = "prog_div_nprocs_"+std::to_string(i_nprocs)+"_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
+	write_file(*i_ctx, div_Y, filename.c_str());
+	
+	filename = "spectrum_vort_nprocs_"+std::to_string(i_nprocs)+"_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
+	write_spectrum_to_file(*i_ctx, vort_Y, filename.c_str());
+	
+	filename = "spectrum_div_nprocs_"+std::to_string(i_nprocs)+"_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
+	write_spectrum_to_file(*i_ctx, div_Y, filename.c_str());
+
+	filename = "spectrum_phi_nprocs_"+std::to_string(i_nprocs)+"_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
+	write_spectrum_to_file(*i_ctx, phi_Y, filename.c_str());
+
+	filename = "invariants_nprocs_"+std::to_string(i_nprocs)+"_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
+	write_physical_invariants_to_file(*i_ctx, filename.c_str());
+      }
+
+
   }
 
   // evaluates the explicit (nonlinear) piece

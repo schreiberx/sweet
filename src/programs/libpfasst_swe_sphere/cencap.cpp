@@ -35,8 +35,8 @@ extern "C"
 
     // return the size of the number of elements 
     *o_size = (phi.sphereDataConfig->physical_array_data_number_of_elements 
-	       + vort.sphereDataConfig->physical_array_data_number_of_elements 
-	       + div.sphereDataConfig->physical_array_data_number_of_elements);
+ 	     + vort.sphereDataConfig->physical_array_data_number_of_elements 
+	     + div.sphereDataConfig->physical_array_data_number_of_elements);
   }
 
   // calls the destructor of the sweet data encapsulated object
