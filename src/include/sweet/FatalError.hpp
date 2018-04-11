@@ -26,7 +26,7 @@ public:
 		std::cerr << "********************************************" << std::endl;
 		std::cerr << std::endl;
 		assert(false);
-		raise (SIGABRT);
+		raise(SIGABRT);
 		exit(-1);
 	}
 };

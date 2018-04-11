@@ -21,7 +21,7 @@ for i in $DIRS; do
 
 	cd "$i"
 	./run.sh | tee "../$i.out"
-	test ${PIPESTATUS[0]} -eq 0 || exit 2>&1
+	#test ${PIPESTATUS[0]} -eq 0 || exit 2>&1
 	cd ".."
 
 done

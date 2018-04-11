@@ -55,7 +55,10 @@ class SWEETClusterOptions:
 	):
 		self.target_machine = target_machine
 
+		auto = False
 		if self.target_machine == 'auto':
+			auto = True
+
 			# Autodetect host with FQDN
 			#hostname = socket.gethostname()
 			fqdn = socket.getfqdn()
@@ -102,16 +105,16 @@ class SWEETClusterOptions:
 			self.total_max_nodes = 1
 			self.total_max_cores = self.cores_per_node*self.total_max_nodes
 
-		elif self.target_machine == '':
-			print("Unknown Target: "+str(self.target_machine))
-			print("Using default values")
+		else:
+			if not auto and self.target_machine != '':
+				raise Exception("Invalid target machine '"+self.target_machine+"'")
+
+			#print("Invalid target machine '"+self.target_machine+"'")
+			#print("Unknown Target: "+str(self.target_machine))
+			#print("Using default values")
 
 			self.total_max_cores = multiprocessing.cpu_count()
 			self.cores_per_node = self.total_max_cores
-
-		else:
-			raise Exception("Invalid target machine '"+self.target_machine+"'")
-
 
 
 		self.total_max_nodes = self.total_max_cores//self.cores_per_node
@@ -149,6 +152,9 @@ class SWEETClusterOptions:
 		#if self.par_mpi_time_threads != 1:
 		#	if self.max_cores_per_node % self.par_space_threads != 0:
 		#		raise ValueError('Number of cores on node not evenly dividable by space threads')
+
+
+		print("Target: "+self.target_machine)
 
 		# total number of used MPI ranks
 		par_total_cores = self.par_space_cores*self.par_time_cores
@@ -646,7 +652,7 @@ export OMP_NUM_THREADS=16
 			mpi_exec_prefix = "mpiexec.hydra -ppn 1 -n 1"
 
 
-		elif self.target_machine == '':
+		else:
 			content = ""
 			content += "#!/bin/bash\n"
 			content += "\n"
@@ -654,8 +660,8 @@ export OMP_NUM_THREADS=16
 			content += "\n"
 			mpi_exec_prefix = ""
 
-		else:
-			raise Exception("Invalid target machine "+self.target_machine)
+	#	else:
+	#		raise Exception("Invalid target machine "+self.target_machine)
  
 
 

@@ -10,11 +10,11 @@
 
 #include <limits>
 #include <sweet/plane/PlaneData.hpp>
-#include <sweet/plane/PlaneDataTimesteppingRK.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include "Burgers_Plane_TS_interface.hpp"
 #include <benchmarks_plane/BurgersValidationBenchmarks.hpp>
+#include <sweet/plane/PlaneDataTimesteppingExplicitRK.hpp>
 
 
 
@@ -24,7 +24,7 @@ class Burgers_Plane_TS_ln_erk_forcing	: public Burgers_Plane_TS_interface
 	PlaneOperators &op;
 
 	int timestepping_order;
-	PlaneDataTimesteppingRK timestepping_rk;
+	PlaneDataTimesteppingExplicitRK timestepping_rk;
 
 private:
 	void euler_timestep_update(
@@ -36,7 +36,6 @@ private:
 			PlaneData &o_u_t,	///< time updates
 			PlaneData &o_v_t,	///< time updates
 
-			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp = -1
 	);
 

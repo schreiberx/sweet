@@ -74,7 +74,7 @@ int main(
 				double x = (double)i*(simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0]);
 				double y = (double)j*(simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1]);
 
-				prog_h.p_physical_set(j, i, SWEPlaneBenchmarks::return_h(simVars, x, y));
+				prog_h.p_physical_set(j, i, SWEPlaneBenchmarks_DEPRECATED::return_h(simVars, x, y));
 			}
 		}
 
@@ -101,7 +101,7 @@ int main(
 					double x = ((double)i/resolution_factor)*(simVars.sim.domain_size[0]/(double)res3[0]);
 					double y = ((double)j/resolution_factor)*(simVars.sim.domain_size[1]/(double)res3[1]);
 
-					prog_h3.p_physical_set(j, i, SWEPlaneBenchmarks::return_h(simVars, x, y));
+					prog_h3.p_physical_set(j, i, SWEPlaneBenchmarks_DEPRECATED::return_h(simVars, x, y));
 				}
 			}
 

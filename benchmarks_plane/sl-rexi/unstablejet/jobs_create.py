@@ -28,6 +28,7 @@ earth = EarthMKSDimensions()
 #Basic plane options
 p = CompileSWEPlane(p)
 
+
 # Verbosity mode
 p.runtime.verbosity = 3
 
@@ -63,12 +64,12 @@ p.runtime.viscosity = 0.0
 #
 # Time, Mode and Physical resolution
 #
-timelevels = 20 #7 #5
-timestep_size_reference = earth.day/10 #3600 #1 hour  #864000/10 #1 day
+timelevels = 10 #7 #5
+timestep_size_reference = earth.day/12 #3600 #1 hour  #864000/10 #1 day
 timestep_sizes = [timestep_size_reference*(2.0**(-i)) for i in range(0, timelevels)]
 
-p.runtime.simtime = earth.day*20 #1 day #timestep_size_reference #864000 #10 days
-p.runtime.output_timestep_size = p.runtime.simtime/100
+p.runtime.simtime = earth.day*12 #1 day #timestep_size_reference #864000 #10 days
+p.runtime.output_timestep_size = p.runtime.simtime/24
 datastorage = p.runtime.simtime / p.runtime.output_timestep_size
 if datastorage > 200:
 	print("Warning::Too much data will be stored, are you sure you wish to run this?") 
@@ -77,7 +78,7 @@ if datastorage > 200:
 #p.runtime.output_timestep_size = timestep_size_reference*(2.0**(-timelevels))/10.0
 
 phys_res_levels = timelevels
-phys_res_reference = 256
+phys_res_reference = 512
 #phys_res_list = [phys_res_reference*(2**i) for i in range(0, phys_res_levels)]
 phys_res_list = [phys_res_reference for i in range(0, phys_res_levels)]
 
@@ -98,12 +99,12 @@ for group in groups:
 	# 2nd order nonlinear non-fully-spectral
 	if group == 'sl-rexi':
 		ts_methods = [
-			['ln_erk',		4,	4],	# reference solution - spectral (128 grid points)
+			['ln_erk',		4,	4],	# reference solution
 			['ln_erk',		2,	2],	# FD- C-grid
 			['l_cn_na_sl_nd_settls', 2,	2],	# SI-SL-SP
-	        ['l_rexi_na_sl_nd_settls',	2,	2], #SL-EXP-SETTLS
+	                ['l_rexi_na_sl_nd_settls',	2,	2], #SL-EXP-SETTLS
 			['l_rexi_na_sl_nd_etdrk',	2,	2], #SL-EXP-ETDRK
-			['l_rexi_n_erk',	2,	2],
+			['l_rexi_n_erk',	2,	2], #ETDRK2
 		]
 
 	#
@@ -125,12 +126,12 @@ for group in groups:
 		print("Reference")
 		tsm = ts_methods[0]
 	
-		p.runtime.timestep_size = p.runtime.output_timestep_size/100.0
+		p.runtime.timestep_size = 2 # second #p.runtime.output_timestep_size/100.0
 		p.runtime.timestepping_method = tsm[0]
 		p.runtime.timestepping_order = tsm[1]
 		p.runtime.timestepping_order2 = tsm[2]
 		p.runtime.phys_res = -1
-		p.runtime.mode_res = 512
+		p.runtime.mode_res = 1024
 
 		if len(tsm) > 4:
 			s = tsm[4]
@@ -140,16 +141,16 @@ for group in groups:
 
 	for tsm in ts_methods[1:]:
 
-		if group == 'ln2space' and 'ln_erk' in tsm[0]:
+		if group == 'sl-rexi' and 'ln_erk' in tsm[0]:
 			p = SetupFDCMethods(p)
 		else:
 			p = SetupSpectralMethods(p)
 		
-		for idx in range(0, phys_res_levels): #, phys_res in phys_res_list:
+		for idx in range(0, timelevels): #, phys_res in phys_res_list:
 
 			p.runtime.timestep_size = timestep_sizes[idx]
-			if group == 'ln2space' and 'ln_erk' in tsm[0]:
-				p.runtime.timestep_size = p.runtime.timestep_size / 1000.0
+			if group == 'sl-rexi' and 'ln_erk' in tsm[0]:
+				p.runtime.timestep_size = p.runtime.timestep_size / 10
 
 			p.runtime.timestepping_method = tsm[0]
 			p.runtime.timestepping_order = tsm[1]

@@ -7,12 +7,12 @@
 
 #include "Burgers_Plane_TS_l_direct.hpp"
 #include <sweet/plane/PlaneDataComplex.hpp>
-#include <sweet/plane/Staggering.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/PlaneOperatorsComplex.hpp>
 
 #include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
 #include <sweet/plane/Convert_PlaneDataComplex_to_PlaneData.hpp>
+#include <sweet/plane/PlaneStaggering.hpp>
 
 
 

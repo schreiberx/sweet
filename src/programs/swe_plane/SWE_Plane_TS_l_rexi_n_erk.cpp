@@ -28,7 +28,6 @@ void SWE_Plane_TS_l_rexi_n_erk::euler_timestep_update_nonlinear(
 		PlaneData &o_u_t,	///< time updates
 		PlaneData &o_v_t,	///< time updates
 
-		double i_dt,
 		double i_timestamp
 )
 {

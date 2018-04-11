@@ -24,17 +24,9 @@ void SWE_Plane_TS_l_erk::euler_timestep_update(
 		PlaneData &o_u_t,	///< time updates
 		PlaneData &o_v_t,	///< time updates
 
-		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp
 )
 {
-	/*
-	 * TIME STEP SIZE
-	 */
-	if (i_dt <= 0)
-		FatalError("Only fixed time step size allowed (set --dt)");
-
-
 	// A- grid method
 	if (!simVars.disc.use_staggering)
 	{

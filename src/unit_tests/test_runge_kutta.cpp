@@ -4,7 +4,7 @@
 	#include <sweet/VisSweet.hpp>
 #endif
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/plane/PlaneDataTimesteppingRK.hpp>
+#include <sweet/plane/PlaneDataTimesteppingExplicitRK.hpp>
 #include <benchmarks_plane/SWE_bench_PlaneBenchmarks_DEPRECATED.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/Stopwatch.hpp>
@@ -35,7 +35,7 @@ public:
 
 	PlaneOperators op;
 
-	PlaneDataTimesteppingRK timestepping;
+	PlaneDataTimesteppingExplicitRK timestepping;
 
 
 	/**
@@ -138,7 +138,6 @@ public:
 			PlaneData &o_u_t,	///< time updates
 			PlaneData &o_v_t,	///< time updates
 
-			double i_fixed_dt = 0,	///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_current_timestamp = -1
 	)
 	{

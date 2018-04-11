@@ -1,537 +1,320 @@
+/*
+ * test_plane_advection.cpp
+ *
+ *  Created on: 4th April 2018
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ */
+
+
+#ifndef SWEET_GUI
+	#define SWEET_GUI 1
+#endif
 
 #include "../include/sweet/plane/PlaneData.hpp"
 #if SWEET_GUI
-	#include <sweet/VisSweet.hpp>
+	#include "sweet/VisSweet.hpp"
 #endif
+#include <benchmarks_plane/SWEBenchmarksCombined.hpp>
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/plane/PlaneDataTimesteppingRK.hpp>
-#include <benchmarks_plane/SWE_bench_PlaneBenchmarks_DEPRECATED.hpp>
-#include "../include/sweet/plane/PlaneOperators.hpp"
-#include <sweet/Stopwatch.hpp>
+#include <sweet/plane/PlaneOperators.hpp>
 
-#include <ostream>
-#include <sstream>
-#include <unistd.h>
-#include <iomanip>
-#include <stdio.h>
+#include "test_plane_advection/Adv_Plane_TimeSteppers.hpp"
+
 
 
 // Plane data config
 PlaneDataConfig planeDataConfigInstance;
 PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
 
-
 SimulationVariables simVars;
 
-double vel0 = 0.0;
-double vel1 = 0.0;
+double param_velocity_u;
+double param_velocity_v;
 
 
-//
-// 0: Gaussian (WARNING! DON'T USE THIS AS INITIAL CONDITIONS!)
-// 1: sin curve
-//
-#define ADV_FUNCTION	1
 
-class SimulationAdvection
+class SimulationInstance
 {
 public:
 	PlaneData prog_h;
-	PlaneData prog_u;
-	PlaneData prog_v;
+	PlaneData prog_h0;	// at t0
+	PlaneData prog_u, prog_v;
 
-	PlaneData hu;
-	PlaneData hv;
+	Adv_Plane_TimeSteppers timeSteppers;
 
-	PlaneData tmp;
+	double center_x = 0.5;
+	double center_y = 0.5;
+	double exp_fac = 50.0;
 
 	PlaneOperators op;
 
-	PlaneDataTimesteppingRK timestepping;
+#if SWEET_GUI
+	PlaneData viz_plane_data;
 
-#if ADV_FUNCTION==1
-	double freq_x = 4.0;
-	double freq_y = 4.0;
+	int render_primitive_id = 0;
 #endif
 
-	PlaneDataConfig *planeDataConfig;
+
+	double max_error_h0 = -1;
+	double rms_error_h0 = -1;
 
 
 public:
-	SimulationAdvection(PlaneDataConfig *i_planeDataConfig)	:
-		planeDataConfig(i_planeDataConfig),
-		prog_h(i_planeDataConfig),
-		prog_u(i_planeDataConfig),
-		prog_v(i_planeDataConfig),
+	SimulationInstance()	:
+		prog_h(planeDataConfig),
+		prog_h0(planeDataConfig),
 
-		hu(i_planeDataConfig),
-		hv(i_planeDataConfig),
+		prog_u(planeDataConfig),
+		prog_v(planeDataConfig),
 
-		tmp(i_planeDataConfig),
+		op(planeDataConfig, simVars.sim.domain_size)
 
-		op(	i_planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
+#if SWEET_GUI
+		,
+		viz_plane_data(planeDataConfig)
+#endif
 	{
 		reset();
 	}
 
 
-	PlaneData get_advected_solution(
-		double i_timestamp
-	)
+	~SimulationInstance()
 	{
-		PlaneData ret_h(planeDataConfig);
-
-		double adv_x = -vel0*i_timestamp;
-		double adv_y = -vel1*i_timestamp;
-
-		double radius = simVars.setup.radius_scale*
-			std::sqrt(
-				 (double)simVars.sim.domain_size[0]*(double)simVars.sim.domain_size[0]
-				+(double)simVars.sim.domain_size[1]*(double)simVars.sim.domain_size[1]
-			);
-
-		ret_h.physical_update_lambda_array_indices(
-			[&](int i, int j, double &io_data)
-			{
-
-#if ADV_FUNCTION==0
-
-				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-
-				x += adv_x;
-				y += adv_y;
-
-				if (x < 0)	x = simVars.sim.domain_size[0]-std::fmod(-x, simVars.sim.domain_size[0]);
-				else		x = std::fmod(x, simVars.sim.domain_size[0]);
-
-				if (y < 0)	y = simVars.sim.domain_size[1]-std::fmod(-y, simVars.sim.domain_size[1]);
-				else		y = std::fmod(y, simVars.sim.domain_size[1]);
-
-				double dx = x-simVars.setup.coord_x*simVars.sim.domain_size[0];
-				double dy = y-simVars.setup.coord_y*simVars.sim.domain_size[1];
-
-				dx /= radius;
-				dy /= radius;
-
-				double value = simVars.setup.h0+std::exp(-50.0*(dx*dx + dy*dy));
-				io_data = value;
-
-#elif ADV_FUNCTION==1
-				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-
-				x += adv_x;
-				y += adv_y;
-
-				if (x < 0)	x = simVars.sim.domain_size[0]-std::fmod(-x, simVars.sim.domain_size[0]);
-				else		x = std::fmod(x, simVars.sim.domain_size[0]);
-
-				if (y < 0)	y = simVars.sim.domain_size[1]-std::fmod(-y, simVars.sim.domain_size[1]);
-				else		y = std::fmod(y, simVars.sim.domain_size[1]);
-
-				x /= simVars.sim.domain_size[0];
-				y /= simVars.sim.domain_size[1];
-
-				io_data = std::sin(freq_x*M_PIl*x)*std::sin(freq_x*M_PIl*y);
-#endif
-			}
-		);
-
-		return ret_h;
 	}
 
 
 
-	PlaneData get_advected_solution_diffx(
-		double i_timestamp
+	static
+	double gaussianValue(
+			double i_center_x, double i_center_y,
+			double i_x, double i_y,
+			double i_exp_fac
 	)
 	{
-		PlaneData ret_h(planeDataConfig);
+		double sx = simVars.sim.domain_size[0];
+		double sy = simVars.sim.domain_size[1];
 
-		double adv_x = -vel0*i_timestamp;
-		double adv_y = -vel1*i_timestamp;
+		// Gaussian
+		double dx = i_x-i_center_x*sx;
+		double dy = i_y-i_center_y*sy;
 
-		double radius_scale = std::sqrt(
-				 (double)simVars.sim.domain_size[0]*(double)simVars.sim.domain_size[0]
-				+(double)simVars.sim.domain_size[1]*(double)simVars.sim.domain_size[1]
-			);
+		if (dx > 0.5*simVars.sim.domain_size[0])
+			dx -= simVars.sim.domain_size[0];
+		else if (dx < -0.5*simVars.sim.domain_size[0])
+			dx += simVars.sim.domain_size[0];
 
-		double radius = simVars.setup.radius_scale*radius_scale;
+		if (dy > 0.5*simVars.sim.domain_size[1])
+			dy -= simVars.sim.domain_size[1];
+		else if (dy < -0.5*simVars.sim.domain_size[1])
+			dy += simVars.sim.domain_size[1];
 
+		dx /= sx*simVars.setup.radius_scale;
+		dy /= sy*simVars.setup.radius_scale;
 
-		ret_h.physical_update_lambda_array_indices(
-			[&](int i, int j, double &io_data)
-			{
-#if ADV_FUNCTION==0
-
-				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-
-				x += adv_x;
-				y += adv_y;
-
-				if (x < 0)	x = simVars.sim.domain_size[0]-std::fmod(-x, simVars.sim.domain_size[0]);
-				else		x = std::fmod(x, simVars.sim.domain_size[0]);
-
-				if (y < 0)	y = simVars.sim.domain_size[1]-std::fmod(-y, simVars.sim.domain_size[1]);
-				else		y = std::fmod(y, simVars.sim.domain_size[1]);
-
-				double dx = x-simVars.setup.coord_x*simVars.sim.domain_size[0];
-				double dy = y-simVars.setup.coord_y*simVars.sim.domain_size[1];
-
-				dx /= radius;
-				dy /= radius;
-
-				double value = -50.0*2.0*dx*std::exp(-50.0*(dx*dx + dy*dy));
-				value /= radius_scale
-
-				io_data = value;
-
-#elif ADV_FUNCTION==1
-
-				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-
-				x += adv_x;
-				y += adv_y;
-
-				if (x < 0)	x = simVars.sim.domain_size[0]-std::fmod(-x, simVars.sim.domain_size[0]);
-				else		x = std::fmod(x, simVars.sim.domain_size[0]);
-
-				if (y < 0)	y = simVars.sim.domain_size[1]-std::fmod(-y, simVars.sim.domain_size[1]);
-				else		y = std::fmod(y, simVars.sim.domain_size[1]);
-
-				x /= simVars.sim.domain_size[0];
-				y /= simVars.sim.domain_size[1];
-
-				io_data = freq_x*M_PIl*std::cos(freq_x*M_PIl*x)*std::sin(freq_y*M_PIl*y)/simVars.sim.domain_size[0];
-#endif
-			}
-		);
-
-		return ret_h;
+		return std::exp(-i_exp_fac*(dx*dx + dy*dy));
 	}
-
-
-
-	PlaneData get_advected_solution_diffy(
-		double i_timestamp
-	)
-	{
-		PlaneData ret_h(planeDataConfig);
-
-		double adv_x = -vel0*i_timestamp;
-		double adv_y = -vel1*i_timestamp;
-
-		double radius_scale = std::sqrt(
-				 (double)simVars.sim.domain_size[0]*(double)simVars.sim.domain_size[0]
-				+(double)simVars.sim.domain_size[1]*(double)simVars.sim.domain_size[1]
-			);
-
-		double radius = simVars.setup.radius_scale*radius_scale;
-
-
-		ret_h.physical_update_lambda_array_indices(
-			[&](int i, int j, double &io_data)
-			{
-#if ADV_FUNCTION==0
-
-				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-
-				x += adv_x;
-				y += adv_y;
-
-				if (x < 0)	x = simVars.sim.domain_size[0]-std::fmod(-x, simVars.sim.domain_size[0]);
-				else		x = std::fmod(x, simVars.sim.domain_size[0]);
-
-				if (y < 0)	y = simVars.sim.domain_size[1]-std::fmod(-y, simVars.sim.domain_size[1]);
-				else		y = std::fmod(y, simVars.sim.domain_size[1]);
-
-				double dx = x-simVars.setup.coord_x*simVars.sim.domain_size[0];
-				double dy = y-simVars.setup.coord_y*simVars.sim.domain_size[1];
-
-				dx /= radius;
-				dy /= radius;
-
-				double value = -50.0*2.0*dy*std::exp(-50.0*(dx*dx + dy*dy));
-				value /= radius_scale;
-
-				io_data = value;
-
-#elif ADV_FUNCTION==1
-
-				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-
-				x += adv_x;
-				y += adv_y;
-
-				if (x < 0)	x = simVars.sim.domain_size[0]-std::fmod(-x, simVars.sim.domain_size[0]);
-				else		x = std::fmod(x, simVars.sim.domain_size[0]);
-
-				if (y < 0)	y = simVars.sim.domain_size[1]-std::fmod(-y, simVars.sim.domain_size[1]);
-				else		y = std::fmod(y, simVars.sim.domain_size[1]);
-
-				x /= simVars.sim.domain_size[0];
-				y /= simVars.sim.domain_size[1];
-
-				io_data = freq_y*M_PIl*std::sin(freq_x*M_PIl*x)*std::cos(freq_y*M_PIl*y)/simVars.sim.domain_size[1];
-#endif
-		});
-
-		return ret_h;
-	}
-
 
 
 	void reset()
 	{
-		simVars.timecontrol.current_timestep_nr = 0;
-		simVars.timecontrol.current_simulation_time = 0;
-		simVars.timecontrol.current_timestep_size = -1;
+		simVars.reset();
 
-		prog_u.physical_set_all(vel0);
-		prog_v.physical_set_all(vel1);
-
-		prog_h = get_advected_solution(0);
-	}
-
-
-
-	void p_run_euler_timestep_update(
-			const PlaneData &i_h,	///< prognostic variables
-			const PlaneData &i_u,	///< prognostic variables
-			const PlaneData &i_v,	///< prognostic variables
-
-			PlaneData &o_h_t,		///< time updates
-			PlaneData &o_u_t,		///< time updates
-			PlaneData &o_v_t,		///< time updates
-
-			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
-			double i_simulation_timestamp = -1
-	)
-	{
-		double cell_size_x = simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
-		double cell_size_y = simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
-
-		int asdf = atoi(simVars.bogus.var[2].c_str());
-		if (asdf == 0)
-		{
-			// UP/DOWNWINDING
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-			static bool output_given = false;
-			if (!output_given)
+		prog_h.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
 			{
-				std::cout << "WARNING: upwinding in spectral space not working" << std::endl;
-				output_given = true;
+				double x = (double)i*(simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0]);
+				double y = (double)j*(simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1]);
+
+				io_data = gaussianValue(center_x, center_y, x, y, exp_fac);
 			}
-#endif
+		);
+		prog_h0 = prog_h;
 
-			o_h_t =
-				(
-					(
-						// u is positive
-						op.shift_right(i_h)*i_u.physical_query_return_value_if_positive()	// inflow
-						-i_h*op.shift_left(i_u.physical_query_return_value_if_positive())	// outflow
+		prog_u = param_velocity_u;
+		prog_v = param_velocity_v;
 
-						// u is negative
-						+(i_h*i_u.physical_query_return_value_if_negative())					// outflow
-						-op.shift_left(i_h*i_u.physical_query_return_value_if_negative())	// inflow
-					)*(1.0/cell_size_x)				// here we see a finite-difference-like formulation
-					+
-					(
-						// v is positive
-						op.shift_up(i_h)*i_v.physical_query_return_value_if_positive()		// inflow
-						-i_h*op.shift_down(i_v.physical_query_return_value_if_positive())	// outflow
+		// setup planeDataconfig instance again
+		planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
 
-						// v is negative
-						+(i_h*i_v.physical_query_return_value_if_negative())					// outflow
-						-op.shift_down(i_h*i_v.physical_query_return_value_if_negative())	// inflow
-					)*(1.0/cell_size_y)
-				);
-		}
-		else if (asdf == 1)
-		{
-			// STAGGERED
+		timeSteppers.setup(simVars.disc.timestepping_method, op, simVars);
 
-			//             |                       |                       |
-			// --v---------|-----------v-----------|-----------v-----------|
-			//   h-1       u0          h0          u1          h1          u2
-
-			// staggered
-			o_h_t = -(
-					op.diff_f_x(op.avg_b_x(i_h)*i_u) +
-					op.diff_f_y(op.avg_b_y(i_h)*i_v)
-				);
-		}
-		else  if (asdf == 2)
-		{
-			// NON-STAGGERED
-
-			int a = atoi(simVars.bogus.var[3].c_str());
-
-			if (a == 0)
-			{
-				// non-staggered
-				o_h_t = -(
-						op.diff_c_x(i_h*i_u) +
-						op.diff_c_y(i_h*i_v)
-					);
-			}
-			else if (a == 1)
-			{
-				// non-staggered with analytical solution, only works for constant velocity!
-				o_h_t = -(
-						get_advected_solution_diffx(i_simulation_timestamp)*i_u +
-						get_advected_solution_diffy(i_simulation_timestamp)*i_v
-					);
-			}
-			else
-			{
-				std::cerr << "Usage of analytical solution not specified, use -d option [0: compute diffs on discrete solution, 1: use analytical diffs]" << std::endl;
-				exit(-1);
-			}
-		}
-		else  if (asdf == 3)
-		{
-			// NO H UPDATE
-			o_h_t.physical_set_all(0);
-		}
-		else
-		{
-			std::cerr << "Advection type not specified, use -c option [0: up/downwinding, 1: staggered, 2: non-staggered]" << std::endl;
-			exit(-1);
-		}
-
-		o_u_t.physical_set_all(0);
-		o_v_t.physical_set_all(0);
-
-		simVars.timecontrol.current_timestep_nr++;
-	}
-
-
-	double getMaxTimestepsize(
-			const PlaneData &i_u,
-			const PlaneData &i_v
-	)
-	{
-		double cell_size_x = simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
-		double cell_size_y = simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
-
-		assert(simVars.sim.CFL > 0);
-		return simVars.sim.CFL*std::min(cell_size_x/i_u.reduce_maxAbs(), cell_size_y/i_v.reduce_maxAbs());
-	}
-
-
-	void run()
-	{
+		if (simVars.misc.verbosity > 2)
+			simVars.outputConfig();
 	}
 
 
 
 	void run_timestep()
 	{
-		if (simVars.sim.CFL > 0)
-			simVars.timecontrol.current_timestep_size = getMaxTimestepsize(prog_u, prog_v);
+		if (simVars.timecontrol.current_simulation_time + simVars.timecontrol.current_timestep_size > simVars.timecontrol.max_simulation_time)
+			simVars.timecontrol.current_timestep_size = simVars.timecontrol.max_simulation_time - simVars.timecontrol.current_simulation_time;
 
-		timestepping.run_timestep(
-				this,
-				&SimulationAdvection::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
+		timeSteppers.master->run_timestep(
 				prog_h, prog_u, prog_v,
 				simVars.timecontrol.current_timestep_size,
-				simVars.disc.timestepping_order,
 				simVars.timecontrol.current_simulation_time
 			);
 
-		// provide information to parameters
-		simVars.timecontrol.current_simulation_time += simVars.timecontrol.current_timestep_size;
+		double dt = simVars.timecontrol.current_timestep_size;
+
+		// advance in time
+		simVars.timecontrol.current_simulation_time += dt;
 		simVars.timecontrol.current_timestep_nr++;
+
+		if (simVars.misc.verbosity > 2)
+			std::cout << simVars.timecontrol.current_timestep_nr << ": " << simVars.timecontrol.current_simulation_time/(60*60*24.0) << std::endl;
+
+		max_error_h0 = (prog_h-prog_h0).reduce_maxAbs();
+		rms_error_h0 = (prog_h-prog_h0).reduce_rms();
+	}
+
+
+
+	void compute_error()
+	{
+#if 0
+		double t = simVars.timecontrol.current_simulation_time;
+
+		PlaneData prog_testh(planeDataConfig);
+		prog_testh.physical_update_lambda_array_indices(
+			[&](int i, int j, double &io_data)
+			{
+				double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+				double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+
+				x -= param_velocity_u*t;
+				y -= param_velocity_v*t;
+
+				while (x < 0)
+					x += simVars.sim.domain_size[0];
+
+				while (y < 0)
+					y += simVars.sim.domain_size[1];
+
+				x = std::fmod(x, simVars.sim.domain_size[0]);
+				y = std::fmod(y, simVars.sim.domain_size[1]);
+
+				io_data = SWEPlaneBenchmarks::return_h(simVars, x, y);
+			}
+		);
+
+		std::cout << "Lmax Error: " << (prog_h-prog_testh).reduce_maxAbs() << std::endl;
+#endif
 	}
 
 
 
 	bool should_quit()
 	{
+		if (simVars.timecontrol.max_timesteps_nr != -1 && simVars.timecontrol.max_timesteps_nr <= simVars.timecontrol.current_timestep_nr)
+			return true;
+
+		double diff = std::abs(simVars.timecontrol.max_simulation_time - simVars.timecontrol.current_simulation_time);
+
+		if (	simVars.timecontrol.max_simulation_time != -1 &&
+				(
+						simVars.timecontrol.max_simulation_time <= simVars.timecontrol.current_simulation_time	||
+						diff/simVars.timecontrol.max_simulation_time < 1e-11	// avoid numerical issues in time stepping if current time step is 1e-14 smaller than max time step
+				)
+			)
+			return true;
+
 		return false;
 	}
 
-
-
+#if SWEET_GUI
 	/**
 	 * postprocessing of frame: do time stepping
 	 */
 	void vis_post_frame_processing(int i_num_iterations)
 	{
 		if (simVars.timecontrol.run_simulation_timesteps)
-			for (int i = 0; i < i_num_iterations; i++)
+			for (int i = 0; i < i_num_iterations && !should_quit(); i++)
 				run_timestep();
-	}
 
+		compute_error();
+	}
 
 
 	void vis_get_vis_data_array(
 			const PlaneData **o_dataArray,
 			double *o_aspect_ratio,
-			int *o_render_primitive,
+			int *o_render_primitive_id,
 			void **o_bogus_data
 	)
 	{
-		int vis_id = simVars.misc.vis_id % 6;
+		*o_render_primitive_id = render_primitive_id;
+//		*o_bogus_data = planeDataConfig;
 
-		switch (vis_id)
+		int id = simVars.misc.vis_id % 3;
+		switch (id)
 		{
-		default:
-			*o_dataArray = &prog_h;
+		case 0:
+			viz_plane_data = prog_h;
 			break;
 
 		case 1:
-			tmp = get_advected_solution(simVars.timecontrol.current_simulation_time);
-			*o_dataArray = &tmp;
+			viz_plane_data = prog_u;
 			break;
 
 		case 2:
-			tmp = op.diff_c_x(get_advected_solution(simVars.timecontrol.current_simulation_time));
-			*o_dataArray = &tmp;
-			break;
-
-		case 3:
-			tmp = get_advected_solution_diffx(simVars.timecontrol.current_simulation_time);
-			*o_dataArray = &tmp;
-			break;
-
-		case 4:
-			tmp = op.diff_c_y(get_advected_solution(simVars.timecontrol.current_simulation_time));
-			*o_dataArray = &tmp;
-			break;
-
-		case 5:
-			tmp = get_advected_solution_diffy(simVars.timecontrol.current_simulation_time);
-			*o_dataArray = &tmp;
+			viz_plane_data = prog_v;
 			break;
 		}
 
-		*o_aspect_ratio = simVars.sim.domain_size[1] / simVars.sim.domain_size[0];
+		*o_dataArray = &viz_plane_data;
+		*o_aspect_ratio = 1;
 	}
+
 
 
 	const char* vis_get_status_string()
 	{
-		static char title_string[1024];
-		sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %.14e, Mass: %.14e, Energy: %.14e, Potential Entrophy: %.14e",
+		const char* description = "";
+		int id = simVars.misc.vis_id % 3;
+
+		switch (id)
+		{
+		default:
+		case 0:
+			description = "H";
+			break;
+
+		case 1:
+			description = "u";
+			break;
+
+		case 2:
+			description = "v";
+			break;
+		}
+
+
+		static char title_string[2048];
+
+		//sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %.14e, Vis: %s, Mass: %.14e, Energy: %.14e, Potential Entrophy: %.14e",
+		sprintf(title_string,
+#if SWEET_MPI
+				"Rank %i - "
+#endif
+				"Time: %f (%.2f d), k: %i, dt: %.3e, Vis: %s, TMass: %.6e, TEnergy: %.6e, PotEnstrophy: %.6e, MaxVal: %.6e, MinVal: %.6e ",
+#if SWEET_MPI
+				mpi_rank,
+#endif
 				simVars.timecontrol.current_simulation_time,
 				simVars.timecontrol.current_simulation_time/(60.0*60.0*24.0),
 				simVars.timecontrol.current_timestep_nr,
 				simVars.timecontrol.current_timestep_size,
+				description,
 				simVars.diag.total_mass,
 				simVars.diag.total_energy,
-				simVars.diag.total_potential_enstrophy
-			);
+				simVars.diag.total_potential_enstrophy,
+				viz_plane_data.reduce_max(),
+				viz_plane_data.reduce_min()
+		);
 
 		return title_string;
 	}
-
 
 	void vis_pause()
 	{
@@ -550,403 +333,127 @@ public:
 		case 'V':
 			simVars.misc.vis_id--;
 			break;
+
+		case 'b':
+			render_primitive_id = (render_primitive_id + 1) % 2;
+			break;
 		}
 	}
-
-
-	bool instability_detected()
-	{
-		return !(	prog_h.reduce_boolean_all_finite() &&
-					prog_u.reduce_boolean_all_finite() &&
-					prog_v.reduce_boolean_all_finite()
-				);
-	}
+#endif
 };
 
 
-double compute_current_error(
-		SimulationAdvection *simulationAdvection
-)
-{
-	PlaneData benchmark_h = simulationAdvection->get_advected_solution(simVars.timecontrol.current_simulation_time);
 
-	return (simulationAdvection->prog_h-benchmark_h).reduce_rms_quad();
-}
-
-
-
-int main(
-		int i_argc,
-		char *i_argv[]
-)
+int main(int i_argc, char *i_argv[])
 {
 	const char *bogus_var_names[] = {
 			"velocity-u",
 			"velocity-v",
-			"advection-scheme",
-			"staggered-use-analytical-solution",
-			"test-mode",
 			nullptr
 	};
 
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
 		std::cout << std::endl;
-		std::cout << "Program-specific options:" << std::endl;
-		std::cout << "	--velocity-u [velocity in u direction]" << std::endl;
-		std::cout << std::endl;
-		std::cout << "	--velocity-v [velocity in v direction]" << std::endl;
-		std::cout << std::endl;
-		std::cout << "	--advection-scheme [nr]		Advection scheme" << std::endl;
-		std::cout << "	                            0: up/downwinding" << std::endl;
-		std::cout << "	                            1: staggered" << std::endl;
-		std::cout << "	                            2: non-staggered" << std::endl;
-		std::cout << "	                            3: no h update" << std::endl;
-		std::cout << std::endl;
-		std::cout << "	--staggered-use-analytical-solution [0/1]" << std::endl;
-		std::cout << "	                            Use analytical solution for non-staggered advection" << std::endl;
-		std::cout << std::endl;
-		std::cout << "	--test-mode [nr]	Test mode" << std::endl;
-		std::cout << "	                    0: space" << std::endl;
-		std::cout << "	                    1: time" << std::endl;
-		std::cout << std::endl;
 		return -1;
 	}
 
-	std::cout << "X> " << simVars.bogus.var[0] << std::endl;
-	std::cout << "Y> " << simVars.bogus.var[1] << std::endl;
-
-	double u, v;
-	if (simVars.bogus.var[0] == "")
-		u = 0;
-	else
-		u = atof(simVars.bogus.var[0].c_str());
-
-	if (simVars.bogus.var[1] == "")
-		v = 0;
-	else
-		v = atof(simVars.bogus.var[1].c_str());
-
-	vel0 = u;
-	vel1 = v;
-
-
-	std::cout << u << "\t" << v << std::endl;
-
-	double total_speed;
-	double turnaround_time;
-	if (u == 0 && v == 0)
+	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
-		std::cerr << "Both velocity components are zero, EXIT" << std::endl;
-		exit(1);
+		std::cout << std::endl;
+		std::cout << "Program-specific options:" << std::endl;
+		std::cout << "	--velocity-u [advection velocity u]" << std::endl;
+		std::cout << "	--velocity-v [advection velocity v]" << std::endl;
+		return -1;
 	}
 
-	if (u != 0 && v == 0)
+	if (simVars.bogus.var[0] != "")
+		param_velocity_u = atof(simVars.bogus.var[0].c_str());
+
+	if (simVars.bogus.var[1] != "")
+		param_velocity_v = atof(simVars.bogus.var[1].c_str());
+
+	if (param_velocity_u == 0 && param_velocity_v == 0)
 	{
-		total_speed = u;
-		turnaround_time = simVars.sim.domain_size[0]/u;
+		std::cout << "At least one velocity has to be set, see parameters --velocity-u, --velocity-v" << std::endl;
+		return -1;
 	}
-	else if (u == 0 && v != 0)
+
+	if (simVars.timecontrol.current_timestep_size < 0)
+		FatalError("Timestep size not set");
+
+
+	int initial_spectral_modes = simVars.disc.res_spectral[0];
+
+	if (simVars.timecontrol.current_timestep_size < 0)
+		FatalError("Timestep size not set");
+
+	double prev_max_error = -1;
+	for (int i = initial_spectral_modes; i <= 256; i *= 2)
 	{
-		total_speed = v;
-		turnaround_time = simVars.sim.domain_size[1]/v;
-	}
-	else
-	{
-		total_speed = v;
-		if (std::abs(simVars.sim.domain_size[1]/simVars.sim.domain_size[0]-v/u) > 0.000000001)
+		simVars.timecontrol.current_timestep_size *= 0.5;
+
+		if (simVars.disc.timestepping_method == "na_sl")
 		{
-			std::cerr << "ratio of domain sizes and speed have to be similar" << std::endl;
-			exit(1);
+			simVars.disc.res_spectral[0] = i;
+			simVars.disc.res_spectral[1] = i;
+
+//			simVars.disc.res_physical[0] = 2*i;
+//			simVars.disc.res_physical[1] = i;
+			simVars.disc.res_physical[0] = 0;
+			simVars.disc.res_physical[1] = 0;
+		}
+		else
+		{
+			simVars.disc.res_spectral[0] = initial_spectral_modes;
+			simVars.disc.res_spectral[1] = initial_spectral_modes;
+
+			simVars.disc.res_physical[0] = 0;
+			simVars.disc.res_physical[1] = 0;
 		}
 
-		total_speed = std::sqrt(u*u+v*v);
-		double diagonal = std::sqrt(simVars.sim.domain_size[0]*simVars.sim.domain_size[0] + simVars.sim.domain_size[1]*simVars.sim.domain_size[1]);
-		turnaround_time = diagonal/total_speed;
-	}
 
-	if (simVars.misc.verbosity > 1)
-	{
-		std::cout << "Turnaround time: " << turnaround_time << std::endl;
-		std::cout << "Total speed: " << total_speed << std::endl;
-	}
 
-#if SWEET_GUI
-	if (simVars.misc.gui_enabled)
-	{
-		SimulationAdvection *simulationAdvection = new SimulationAdvection;
-		VisSweet<SimulationAdvection> visSweet(simulationAdvection);
-		delete simulationAdvection;
-		return 0;
-	}
-#endif
+		planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
 
-	/*
-	 * iterate over resolutions, starting by res[0] given e.g. by program parameter -n
-	 */
-	// allocate data storage for computed errors
+		std::cout << "Testing with " << planeDataConfigInstance.getUniqueIDString() << std::endl;
+		std::cout << "Testing with dt=" << simVars.timecontrol.current_timestep_size << std::endl;
 
-	bool error_detected = false;
+		SimulationInstance simulation;
 
-	int asdf = atoi(simVars.bogus.var[4].c_str());
-	if (asdf == 0)
-	{
-		std::ostringstream output_string_conv;
 
-		double *computed_errors = new double[1024];
-		double *conv_rate = new double[1024];
-
-		std::size_t res_x = simVars.disc.res_physical[0];
-		std::size_t res_y = simVars.disc.res_physical[1];
-
-		std::size_t max_res = 128;
-
-		if (res_x > max_res || res_y > max_res)
-			max_res = std::max(res_x, res_y);
-
-		for (	int res_iterator_id = 0;
-				res_x <= max_res && res_y <= max_res;
-				res_x *= 2, res_y *= 2, res_iterator_id++
-		)
+	#if SWEET_GUI
+		if (simVars.misc.gui_enabled)
 		{
-			output_string_conv << std::endl;
-			output_string_conv << res_x << "x" << res_y << "\t";
-
-			std::cout << "*******************************************************************************" << std::endl;
-			std::cout << "Testing convergence with resolution " << res_x << " x " << res_y << " and RK order " << simVars.disc.timestepping_order << std::endl;
-			std::cout << "*******************************************************************************" << std::endl;
-
-			simVars.disc.res_physical[0] = res_x;
-			simVars.disc.res_physical[1] = res_y;
-			simVars.reset();
-
 			planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical);
-
-			SimulationAdvection *simulationAdvection = new SimulationAdvection(planeDataConfig);
-
-			Stopwatch time;
-			time.reset();
-
-			while(true)
-			{
-				if (simVars.misc.verbosity > 0)
-					std::cout << "time: " << simVars.timecontrol.current_simulation_time << std::endl;
-
-				simulationAdvection->run_timestep();
-
-				if (simulationAdvection->instability_detected())
-				{
-					std::cout << "INSTABILITY DETECTED" << std::endl;
-					break;
-				}
-
-				bool print_output = false;
-				if (turnaround_time <= simVars.timecontrol.current_simulation_time)
-					print_output = true;
-
-				if (simVars.timecontrol.max_simulation_time != -1)
-					if (simVars.timecontrol.current_simulation_time >= simVars.timecontrol.max_simulation_time)
-						print_output = true;
-
-				if (print_output)
-				{
-					double &this_error = computed_errors[res_iterator_id];
-					double &this_conv_rate_space = conv_rate[res_iterator_id];
-
-					double error = compute_current_error(simulationAdvection);
-					std::cout << "RMS error in height: " << error << std::endl;
-
-//					double error_max = (simulationAdvection->prog_h-benchmark_h).reduce_maxAbs();
-//					std::cout << "Max error in height: " << error_max << std::endl;
-
-					this_error = error;
-
-					double eps = 0.1;
-					/*
-					 * check convergence in space
-					 */
-					if (res_iterator_id > 0)
-					{
-						double &prev_error_space = computed_errors[(res_iterator_id-1)];
-
-						double expected_conv_rate = std::pow(2.0, (double)(simVars.disc.timestepping_order));
-						double this_conv_rate_space = prev_error_space / this_error;
-
-						std::cout << "          Norm2 convergence rate (space): " << this_conv_rate_space << ", expected: " << expected_conv_rate << std::endl;
-
-						if (std::abs(this_conv_rate_space-expected_conv_rate) > eps*expected_conv_rate)
-						{
-							if (error < 10e-12)
-							{
-								std::cerr << "Warning: Ignoring this error, since it's below machine precision" << std::endl;
-							}
-							else
-							{
-								std::cerr << "Convergence rate threshold (" << eps*expected_conv_rate << ") exceeded" << std::endl;
-								error_detected = true;
-							}
-						}
-
-						output_string_conv << this_conv_rate_space << "\t";
-					}
-					break;
-				}
-			}	// while true
-
-			time.stop();
-
-			double seconds = time();
-
-			std::cout << "Simulation time: " << seconds << " seconds" << std::endl;
-			std::cout << "Time per time step: " << seconds/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
-
-			delete simulationAdvection;
-
-		}	// res
-
-		delete [] computed_errors;
-		delete [] conv_rate;
-
-		std::cout << std::endl;
-		std::cout << "Convergence rate in space (inc. resolution):";
-		std::cout << output_string_conv.str() << std::endl;
-	}
-	else if (asdf == 1)
-	{
-		std::ostringstream output_string_conv;
-
-		double *computed_errors = new double[1024];
-		double *conv_rate = new double[1024];
-
-		std::size_t res_x = simVars.disc.res_physical[0];
-		std::size_t res_y = simVars.disc.res_physical[1];
-
-		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical);
-
-		double cfl_limitation = simVars.sim.CFL;
-
-		double end_cfl = 0.0025;
-		for (	int cfl_iterator_id = 0;
-				cfl_iterator_id < 7;
-//				cfl_limitation > end_cfl || cfl_limitation < -end_cfl;
-				cfl_limitation *= 0.5, cfl_iterator_id++
-		)
+			VisSweet<SimulationInstance> visSweet(&simulation);
+			return 0;
+		}
+		else
+	#endif
 		{
-			simVars.sim.CFL = cfl_limitation;
+			while (!simulation.should_quit())
+				simulation.run_timestep();
 
-			output_string_conv << std::endl;
-			output_string_conv << "CFL=" << simVars.sim.CFL << "\t";
+			std::cout << "Error compared to initial condition" << std::endl;
+			std::cout << "Lmax error: " << simulation.max_error_h0 << std::endl;
+			std::cout << "RMS error: " << simulation.rms_error_h0 << std::endl;
 
-			std::cout << "*********************************************************************************************************" << std::endl;
-			std::cout << "Testing time convergence with CFL " << simVars.sim.CFL << " and RK order " << simVars.disc.timestepping_order << std::endl;
-			std::cout << "*********************************************************************************************************" << std::endl;
-
-			SimulationAdvection *simulationAdvection = new SimulationAdvection(planeDataConfig);
-			simulationAdvection->reset();
-
-			Stopwatch time;
-			time.reset();
-
-			while(true)
+			if (prev_max_error >= 0)
 			{
-				if (simVars.misc.verbosity > 0)
-					std::cout << "time: " << simVars.timecontrol.current_simulation_time << std::endl;
+				//double conv = (prev_max_error - simulation.max_error) / simulation.max_error;
+				double conv = prev_max_error / simulation.max_error_h0;
+				std::cout << "Convergence: " << conv << std::endl;
 
-				simulationAdvection->run_timestep();
-
-				if (simulationAdvection->instability_detected())
+				if (conv*1.1 < 4.0)
 				{
-					std::cout << "INSTABILITY DETECTED" << std::endl;
-					break;
+					std::cerr << "Convergence not given!" << std::endl;
+					exit(1);
 				}
-
-				bool print_output = false;
-				if (turnaround_time <= simVars.timecontrol.current_simulation_time)
-					print_output = true;
-
-				if (simVars.timecontrol.max_simulation_time != -1)
-					if (simVars.timecontrol.current_simulation_time >= simVars.timecontrol.max_simulation_time)
-						print_output = true;
-
-				if (print_output)
-				{
-					double &this_error = computed_errors[cfl_iterator_id];
-					double &this_conv_rate_space = conv_rate[cfl_iterator_id];
-
-					double error = compute_current_error(simulationAdvection);
-					std::cout << "Error in height: " << error << std::endl;
-
-//					double error_max = (simulationAdvection->prog_h-benchmark_h).reduce_maxAbs();
-//					std::cout << "Max error in height: " << error_max << std::endl;
-
-					double cell_size_x = simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
-					double cell_size_y = simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
-
-					std::cout << "          dt = " << simVars.timecontrol.current_timestep_size << "    dx = " << cell_size_x << " x " << cell_size_x << std::endl;
-
-					this_error = error;
-
-					double eps = 0.1;
-					/*
-					 * check convergence in time
-					 */
-					if (cfl_iterator_id > 0)
-					{
-						double &prev_error_space = computed_errors[(cfl_iterator_id-1)];
-
-						double expected_conv_rate = std::pow(2.0, (double)(simVars.disc.timestepping_order));
-						double this_conv_rate_space = prev_error_space / this_error;
-
-						std::cout << "          Norm2 convergence rate (time): " << this_conv_rate_space << ", expected: " << expected_conv_rate << std::endl;
-
-						if (std::abs(this_conv_rate_space-expected_conv_rate) > eps*expected_conv_rate)
-						{
-							if (error < 10e-12)
-							{
-								std::cerr << "Warning: Ignoring this error, since it's below machine precision" << std::endl;
-							}
-							else
-							{
-								std::cerr << "Convergence rate threshold (" << eps*expected_conv_rate << ") exceeded" << std::endl;
-								error_detected = true;
-							}
-						}
-
-						output_string_conv << "r=" << this_conv_rate_space << "\t";
-						output_string_conv << "dt=" << simVars.timecontrol.current_timestep_size << "\t";
-						output_string_conv << "dx=" << cell_size_x << "." << cell_size_x;
-					}
-					break;
-				}
-			}	// while true
-
-			time.stop();
-
-			double seconds = time();
-
-			std::cout << "Simulation time: " << seconds << " seconds" << std::endl;
-			std::cout << "Time per time step: " << seconds/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
-
-			delete simulationAdvection;
-
-		}	// res
-
-		delete [] computed_errors;
-		delete [] conv_rate;
-
-		std::cout << std::endl;
-		std::cout << "Convergence rate in time (inc. resolution):";
-		std::cout << output_string_conv.str() << std::endl;
-	}
-	else
-	{
-		std::cout << "Use -e [0/1] to specify convergence test: 0 = spatial refinement, 1 = time refinement" << std::endl;
-	}
-
-	if (error_detected)
-	{
-		std::cerr << "There was an error in the convergence tests" << std::endl;
-		exit(1);
+			}
+			prev_max_error = simulation.max_error_h0;
+			std::cout << std::endl;
+		}
 	}
 
 	return 0;

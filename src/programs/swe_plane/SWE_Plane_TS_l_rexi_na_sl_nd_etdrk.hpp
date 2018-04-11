@@ -13,12 +13,12 @@
 
 #include <limits>
 #include <sweet/plane/PlaneData.hpp>
-#include <sweet/plane/PlaneDataTimesteppingRK.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include "SWE_Plane_TS_interface.hpp"
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/PlaneDataSemiLagrangian.hpp>
+#include <sweet/plane/PlaneDataTimesteppingExplicitRK.hpp>
 
 #include "SWE_Plane_TS_l_rexi.hpp"
 
@@ -37,6 +37,10 @@ class SWE_Plane_TS_l_rexi_na_sl_nd_etdrk	: public SWE_Plane_TS_interface
 	SWE_Plane_TS_l_rexi ts_ups2_rexi;
 	SWE_Plane_TS_l_rexi ts_ups3_rexi;
 
+	SWE_Plane_TS_l_rexi ts_psi1_rexi;
+	SWE_Plane_TS_l_rexi ts_psi2_rexi;
+	SWE_Plane_TS_l_rexi ts_psi3_rexi;
+
 	PlaneDataSemiLagrangian semiLagrangian;
 	PlaneDataSampler sampler2D;
 
@@ -50,21 +54,6 @@ class SWE_Plane_TS_l_rexi_na_sl_nd_etdrk	: public SWE_Plane_TS_interface
 	ScalarDataArray posx_d, posy_d;
 
 	int timestepping_order;
-
-private:
-	void euler_timestep_update_nonlinear(
-			const PlaneData &i_h,	///< prognostic variables
-			const PlaneData &i_u,	///< prognostic variables
-			const PlaneData &i_v,	///< prognostic variables
-
-			PlaneData &o_h_t,	///< time updates
-			PlaneData &o_u_t,	///< time updates
-			PlaneData &o_v_t,	///< time updates
-
-			double &o_dt,
-			double i_dt,
-			double i_max_timestamp
-	);
 
 
 public:

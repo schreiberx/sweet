@@ -10,7 +10,7 @@
 
 #include <limits>
 #include <sweet/plane/PlaneData.hpp>
-#include <sweet/plane/PlaneDataTimesteppingRK.hpp>
+#include <sweet/plane/PlaneDataTimesteppingExplicitRK.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include "SWE_Plane_TS_l_cn.hpp"
@@ -28,7 +28,7 @@ class SWE_Plane_TS_l_cn_n_erk	: public SWE_Plane_TS_interface
 	int timestepping_order_linear;
 	int timestepping_order_nonlinear;
 
-	PlaneDataTimesteppingRK timestepping_rk;
+	PlaneDataTimesteppingExplicitRK timestepping_rk;
 	SWE_Plane_TS_l_cn ts_l_cn;
 
 
@@ -42,7 +42,6 @@ private:
 			PlaneData &o_u_t,	///< time updates
 			PlaneData &o_v_t,	///< time updates
 
-			double i_dt,
 			double i_max_timestamp
 	);
 

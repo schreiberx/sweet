@@ -10,7 +10,7 @@
 
 #include <limits>
 #include <sweet/plane/PlaneData.hpp>
-#include <sweet/plane/PlaneDataTimesteppingRK.hpp>
+#include <sweet/plane/PlaneDataTimesteppingExplicitRK.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include "SWE_Plane_TS_interface.hpp"

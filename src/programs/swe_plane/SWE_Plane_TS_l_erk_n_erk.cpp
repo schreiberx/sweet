@@ -38,7 +38,6 @@ void SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_linear(
 		PlaneData &o_u_t,	///< time updates
 		PlaneData &o_v_t,	///< time updates
 
-		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp
 )
 {
@@ -65,7 +64,6 @@ void SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_nonlinear(
 		PlaneData &o_u_t,	///< time updates
 		PlaneData &o_v_t,	///< time updates
 
-		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp
 )
 {

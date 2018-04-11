@@ -16,7 +16,7 @@
 #include <sweet/SimulationVariables.hpp>
 
 
-class SWEPlaneBenchmarks
+class SWEPlaneBenchmarks_DEPRECATED
 {
 #if 1
 	static

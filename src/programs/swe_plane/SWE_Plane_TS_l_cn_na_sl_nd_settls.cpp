@@ -97,7 +97,7 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 			posx_a,	posy_a,
 			dt,
 			posx_d,	posy_d,
-			staggering
+			&staggering
 	);
 	//}
 

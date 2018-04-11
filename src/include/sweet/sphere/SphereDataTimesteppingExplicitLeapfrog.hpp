@@ -9,7 +9,7 @@
 
 class SphereDataTimesteppingExplicitLeapfrog
 {
-	SphereDataConfig *sphereDataConfig;
+	const SphereDataConfig *sphereDataConfig;
 
 	// Previous time step values
 	SphereData RK_h_prev;
@@ -37,7 +37,7 @@ class SphereDataTimesteppingExplicitLeapfrog
 
 public:
 	SphereDataTimesteppingExplicitLeapfrog(
-			SphereDataConfig *i_sphereDataconfig
+			const SphereDataConfig *i_sphereDataconfig
 	)	:
 		sphereDataConfig(i_sphereDataconfig),
 

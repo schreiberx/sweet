@@ -11,8 +11,8 @@
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/ScalarDataArray.hpp>
-#include <sweet/plane/Staggering.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>
+#include <sweet/plane/PlaneStaggering.hpp>
 
 class PlaneDataGridMapping
 {

@@ -8,13 +8,13 @@
 #include "../swe_plane/SWE_Plane_TS_l_direct.hpp"
 
 #include <sweet/plane/PlaneDataComplex.hpp>
-#include <sweet/plane/Staggering.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/PlaneOperatorsComplex.hpp>
 
 #include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
 #include <sweet/plane/Convert_PlaneDataComplex_to_PlaneData.hpp>
 #include <rexi/REXIFunctions.hpp>
+#include <sweet/plane/PlaneStaggering.hpp>
 
 
 void SWE_Plane_TS_l_direct::setup(
@@ -22,37 +22,6 @@ void SWE_Plane_TS_l_direct::setup(
 )
 {
 	rexiFunctions.setup(i_function_name);
-
-#if 0
-	if (i_function_name  == "phi0")
-		phi_id = 0;
-	else if (i_function_name  == "phi1")
-		phi_id = 1;
-	else if (i_function_name  == "phi2")
-		phi_id = 2;
-	else if (i_function_name  == "phi3")
-		phi_id = 3;
-//	else if (i_function_name  == "phi4")
-//		phi_id = 4;
-//	else if (i_function_name  == "phi5")
-//		phi_id = 5;
-
-//	else if (i_function_name  == "ups0")
-//		phi_id = 100;
-	else if (i_function_name  == "ups1")
-		phi_id = 101;
-	else if (i_function_name  == "ups2")
-		phi_id = 102;
-	else if (i_function_name  == "ups3")
-		phi_id = 103;
-//	else if (i_function_name  == "ups4")
-//		phi_id = 104;
-//	else if (i_function_name  == "ups5")
-//		phi_id = 105;
-
-	else
-		FatalError(std::string("function ")+i_function_name+" not supported");
-#endif
 }
 
 
@@ -152,8 +121,8 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 	if (simVars.disc.use_staggering)
 		FatalError("Staggering not supported");
 
-	if (i_dt < 0)
-		FatalError("SWE_Plane_TS_l_direct: Only constant time step size allowed (please set --dt )");
+	//if (i_dt < 0)
+	//	FatalError("SWE_Plane_TS_l_direct: Only constant time step size allowed (please set --dt )");
 
 
 	typedef std::complex<T> complex;
@@ -180,16 +149,19 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 	T sqrt_g = rexiFunctions.l_sqrt(g);
 
 
+#if SWEET_SPACE_THREADING
+	#pragma omp parallel for OPENMP_PAR_SIMD proc_bind(close) collapse(2)
+#endif
 	for (std::size_t ik1 = 0; ik1 < io_h_pert.planeDataConfig->spectral_data_size[1]; ik1++)
 	{
-		T k1;
-		if (ik1 < io_h_pert.planeDataConfig->spectral_data_size[1]/2)
-			k1 = (T)ik1;
-		else
-			k1 = (T)((int)ik1-(int)io_h_pert.planeDataConfig->spectral_data_size[1]);
-
 		for (std::size_t ik0 = 0; ik0 < io_h_pert.planeDataConfig->spectral_data_size[0]; ik0++)
 		{
+			T k1;
+			if (ik1 < io_h_pert.planeDataConfig->spectral_data_size[1]/2)
+				k1 = (T)ik1;
+			else
+				k1 = (T)((int)ik1-(int)io_h_pert.planeDataConfig->spectral_data_size[1]);
+
 			T k0 = (T)ik0;
 
 			complex U[3];
@@ -476,7 +448,8 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 
 				case 2:	// phi2
 					// http://www.wolframalpha.com/input/?i=(exp(i*x)-1-i*x)%2F(i*x*i*x)
-					if (lamdt*lamdt < rexiFunctions.eps_phi)
+					if (lamdt < rexiFunctions.eps_phi)
+//					if (lamdt*lamdt < rexiFunctions.eps_phi)
 					{
 						K = 1.0/2.0;
 					}
@@ -489,7 +462,8 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 
 
 				case 3:	// phi3
-					if (lamdt*lamdt*lamdt < rexiFunctions.eps_phi)
+					if (lamdt < rexiFunctions.eps_phi)
+//					if (lamdt*lamdt*lamdt < rexiFunctions.eps_phi)
 					{
 						K = 1.0/(2.0*3.0);
 					}
@@ -503,7 +477,8 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 
 				case 101:	// ups1
 					// http://www.wolframalpha.com/input/?i=(-4-K%2Bexp(K)*(4-3K%2BK*K))%2F(K*K*K)
-					if (lamdt*lamdt*lamdt < rexiFunctions.eps_ups)
+					if (lamdt < rexiFunctions.eps_phi)
+//					if (lamdt*lamdt*lamdt < rexiFunctions.eps_ups)
 					{
 						K = 1.0/(2.0*3.0);
 					}
@@ -517,7 +492,8 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 
 				case 102:	// ups2
 					// http://www.wolframalpha.com/input/?i=(2%2BK%2Bexp(K)*(-2%2BK))%2F(K*K*K)
-					if (lamdt*lamdt*lamdt < rexiFunctions.eps_ups)
+					if (lamdt < rexiFunctions.eps_phi)
+//					if (lamdt*lamdt*lamdt < rexiFunctions.eps_ups)
 					{
 						K = 1.0/(2.0*3.0);
 					}
@@ -531,7 +507,8 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 
 				case 103:	// ups3
 					// http://www.wolframalpha.com/input/?i=(-4-3*K-K*K%2Bexp(K)*(4-K))%2F(K*K*K)
-					if (lamdt*lamdt*lamdt < rexiFunctions.eps_ups)
+					if (lamdt < rexiFunctions.eps_phi)
+//					if (lamdt*lamdt*lamdt < rexiFunctions.eps_ups)
 					{
 						K = 1.0/(2.0*3.0);
 					}
@@ -542,6 +519,53 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 					}
 					break;
 
+					// Semi-Lagrangian psi functions
+				case 1001:	// psi1
+					//
+					if (lamdt < rexiFunctions.eps_phi)
+					{
+						K = 1.0;
+					}
+					else
+					{
+						K = -dt*lam;
+						//psi1(z)=phi(-z)
+						K = (rexiFunctions.l_expcplx(K) - std::complex<T>(1.0))/K;
+					}
+					break;
+
+
+				case 1002:	// psi2
+					//
+					if (lamdt < rexiFunctions.eps_phi)
+						//					if (lamdt*lamdt < rexiFunctions.eps_phi)
+					{
+						K = 1.0/2.0;
+					}
+					else
+					{
+						K = -dt*lam;
+						//psi2(z)=-phi2(-z)+phi1(-z)
+						K = -(rexiFunctions.l_expcplx(K) - std::complex<T>(1.0) - K)/(K*K)
+										+(rexiFunctions.l_expcplx(K) - std::complex<T>(1.0))/K;
+					}
+					break;
+
+
+				case 1003:	// psi3
+					if (lamdt < rexiFunctions.eps_phi)
+						//					if (lamdt*lamdt*lamdt < rexiFunctions.eps_phi)
+					{
+						K = 1.0/(2.0*3.0);
+					}
+					else
+					{
+						K = -dt*lam;
+						K = (rexiFunctions.l_expcplx(K) - std::complex<T>(1.0) - K - K*K)/(K*K*K)
+								- (rexiFunctions.l_expcplx(K) - std::complex<T>(1.0) - K)/(K*K)
+								+ 0.5*(rexiFunctions.l_expcplx(K) - std::complex<T>(1.0))/K;
+					}
+					break;
 
 				default:
 					FatalError("This phi is not yet supported");
@@ -637,16 +661,19 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 	T sqrt_h = rexiFunctions.l_sqrt(h);
 	T sqrt_g = rexiFunctions.l_sqrt(g);
 
+#if SWEET_SPACE_THREADING
+	#pragma omp parallel for OPENMP_PAR_SIMD proc_bind(close) collapse(2)
+#endif
 	for (std::size_t ik1 = 0; ik1 < i_h_pert.planeDataConfig->spectral_complex_data_size[1]; ik1++)
 	{
-		T k1;
-		if (ik1 < i_h_pert.planeDataConfig->spectral_complex_data_size[1]/2)
-			k1 = (T)ik1;
-		else
-			k1 = -(T)((int)ik1-(int)i_h_pert.planeDataConfig->spectral_complex_data_size[1]);
-
 		for (std::size_t ik0 = 0; ik0 < i_h_pert.planeDataConfig->spectral_complex_data_size[0]; ik0++)
 		{
+			T k1;
+			if (ik1 < i_h_pert.planeDataConfig->spectral_complex_data_size[1]/2)
+				k1 = (T)ik1;
+			else
+				k1 = -(T)((int)ik1-(int)i_h_pert.planeDataConfig->spectral_complex_data_size[1]);
+
 			T k0;
 			if (ik0 < i_h_pert.planeDataConfig->spectral_complex_data_size[0]/2)
 				k0 = (T)ik0;
@@ -934,7 +961,8 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 
 				case 2:	// phi2
 					// http://www.wolframalpha.com/input/?i=(exp(i*x)-1-i*x)%2F(i*x*i*x)
-					if (lamdt*lamdt < rexiFunctions.eps_phi)
+					if (lamdt < rexiFunctions.eps_phi)
+//					if (lamdt*lamdt < rexiFunctions.eps_phi)
 					{
 						K = 1.0/2.0;
 					}
@@ -947,7 +975,8 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 
 
 				case 3:	// phi3
-					if (lamdt*lamdt*lamdt < rexiFunctions.eps_phi)
+					if (lamdt < rexiFunctions.eps_phi)
+//					if (lamdt*lamdt*lamdt < rexiFunctions.eps_phi)
 					{
 						K = 1.0/(2.0*3.0);
 					}
@@ -961,7 +990,8 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 
 				case 101:	// ups1
 					// http://www.wolframalpha.com/input/?i=(-4-K%2Bexp(K)*(4-3K%2BK*K))%2F(K*K*K)
-					if (lamdt*lamdt*lamdt < rexiFunctions.eps_ups)
+					if (lamdt < rexiFunctions.eps_phi)
+//					if (lamdt*lamdt*lamdt < rexiFunctions.eps_ups)
 					{
 						K = 1.0/(2.0*3.0);
 					}
@@ -975,7 +1005,8 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 
 				case 102:	// ups2
 					// http://www.wolframalpha.com/input/?i=(2%2BK%2Bexp(K)*(-2%2BK))%2F(K*K*K)
-					if (lamdt*lamdt*lamdt < rexiFunctions.eps_ups)
+					if (lamdt < rexiFunctions.eps_phi)
+//					if (lamdt*lamdt*lamdt < rexiFunctions.eps_ups)
 					{
 						K = 1.0/(2.0*3.0);
 					}
@@ -989,7 +1020,8 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 
 				case 103:	// ups3
 					// http://www.wolframalpha.com/input/?i=(-4-3*K-K*K%2Bexp(K)*(4-K))%2F(K*K*K)
-					if (lamdt*lamdt*lamdt < rexiFunctions.eps_ups)
+					if (lamdt < rexiFunctions.eps_phi)
+//					if (lamdt*lamdt*lamdt < rexiFunctions.eps_ups)
 					{
 						K = 1.0/(2.0*3.0);
 					}

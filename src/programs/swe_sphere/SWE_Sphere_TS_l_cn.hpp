@@ -31,10 +31,10 @@ class SWE_Sphere_TS_l_cn	: public SWE_Sphere_TS_interface
 	SphereOperators &op;
 
 	/// SPH configuration
-	SphereDataConfig *sphereDataConfig;
+	const SphereDataConfig *sphereDataConfig;
 
 	/// SPH configuration used for solver (maybe extended modes)
-	SphereDataConfig *sphereDataConfigSolver;
+	const SphereDataConfig *sphereDataConfigSolver;
 	SphereDataConfig sphereDataConfigSolverAddedModes;
 
 	/// Solvers for alpha=Identity

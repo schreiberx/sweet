@@ -382,7 +382,7 @@ public:
 		mmax--;
 		nmax--;
 
-		cleanup();
+		cleanup(false);
 
 		shtns_verbose(0);			// displays informations during initialization.
 
@@ -431,7 +431,7 @@ public:
 		i_mmax--;
 		i_nmax--;
 
-		cleanup();
+		cleanup(false);
 
 		shtns_verbose(0);			// displays informations during initialization.
 #if SWEET_SPACE_THREADING
@@ -483,7 +483,7 @@ public:
 		i_mmax--;
 		i_nmax--;
 
-		cleanup();
+		cleanup(false);
 
 		shtns_verbose(0);			// displays informations during initialization.
 #if SWEET_SPACE_THREADING
@@ -528,7 +528,7 @@ public:
 			int io_spectral_modes[2]
 	)
 	{
-		cleanup();
+		cleanup(false);
 
 		if (io_physical_res[0] > 0 && io_spectral_modes[0] > 0)
 		{
@@ -581,12 +581,12 @@ public:
 
 
 	void setupAdditionalModes(
-			SphereDataConfig *i_sphereDataConfig,
+			const SphereDataConfig *i_sphereDataConfig,
 			int i_additional_modes_longitude,
 			int i_additional_modes_latitude
 	)
 	{
-		cleanup();
+		cleanup(false);
 
 		assert(shtns == nullptr);
 
@@ -600,14 +600,13 @@ public:
 
 
 
-	void cleanup()
+	void cleanup(
+		bool i_full_reset = true
+	)
 	{
 		// check if sphereDataConfig was initialized
 		if (shtns == nullptr)
 			return;
-
-		shtns_destroy(shtns);
-		shtns = nullptr;
 
 		fftw_free(lat);
 		lat = nullptr;
@@ -618,10 +617,16 @@ public:
 		fftw_free(lat_cogaussian);
 		lat_cogaussian = nullptr;
 
+		shtns_destroy(shtns);
+		shtns = nullptr;
+
+		if (i_full_reset)
+		{
 #if SWEET_USE_THREADING
-		fftw_cleanup_threads();
+			fftw_cleanup_threads();
 #endif
-		fftw_cleanup();
+			fftw_cleanup();
+		}
 	}
 
 

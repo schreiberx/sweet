@@ -4,7 +4,7 @@
 	#include "sweet/VisSweet.hpp"
 #endif
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/plane/PlaneDataTimesteppingRK.hpp>
+#include <sweet/plane/PlaneDataTimesteppingExplicitRK.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/plane/PlaneDiagnostics.hpp>
 #include <sweet/Stopwatch.hpp>
@@ -43,7 +43,7 @@ public:
 
 	PlaneOperators op;
 
-	PlaneDataTimesteppingRK timestepping;
+	PlaneDataTimesteppingExplicitRK timestepping;
 
 	int last_timestep_nr_update_diagnostics = -1;
 
@@ -127,7 +127,7 @@ public:
 			{
 				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-				io_data = SWEPlaneBenchmarks::return_h(simVars, x, y);
+				io_data = SWEPlaneBenchmarks_DEPRECATED::return_h(simVars, x, y);
 			}
 		);
 
@@ -136,7 +136,7 @@ public:
 			{
 				double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-				io_data = SWEPlaneBenchmarks::return_u(simVars, x, y);
+				io_data = SWEPlaneBenchmarks_DEPRECATED::return_u(simVars, x, y);
 			}
 		);
 
@@ -145,7 +145,7 @@ public:
 			{
 				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 				double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-				io_data = SWEPlaneBenchmarks::return_v(simVars, x, y);
+				io_data = SWEPlaneBenchmarks_DEPRECATED::return_v(simVars, x, y);
 			}
 		);
 
@@ -241,7 +241,6 @@ public:
 			PlaneData &o_u_t,		///< time updates
 			PlaneData &o_v_t,		///< time updates
 
-			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp = -1
 	)
 	{
@@ -438,7 +437,7 @@ public:
 						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-						io_data = SWEPlaneBenchmarks::return_h(simVars, x, y);
+						io_data = SWEPlaneBenchmarks_DEPRECATED::return_h(simVars, x, y);
 					}
 				);
 
@@ -455,7 +454,7 @@ public:
 						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-						io_data = SWEPlaneBenchmarks::return_u(simVars, x, y);
+						io_data = SWEPlaneBenchmarks_DEPRECATED::return_u(simVars, x, y);
 					}
 				);
 
@@ -470,7 +469,7 @@ public:
 						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
-						io_data = SWEPlaneBenchmarks::return_v(simVars, x, y);
+						io_data = SWEPlaneBenchmarks_DEPRECATED::return_v(simVars, x, y);
 					}
 				);
 
