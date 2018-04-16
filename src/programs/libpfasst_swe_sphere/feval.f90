@@ -3,10 +3,10 @@ module feval_module
   use pf_mod_dtype
   use encap_module
   use pf_mod_utils
-  use pf_mod_imex
+  use pf_mod_misdcQ
   implicit none
   
-  type, extends(pf_imex_t) :: sweet_sweeper_t
+  type, extends(pf_misdcQ_t) :: sweet_sweeper_t
      type(c_ptr)    :: ctx = c_null_ptr ! c pointer to PlaneDataCtx/SphereDataCtx
      integer        :: nnodes           ! number of nodes
      integer        :: sweep_niter      ! number of the current sweep
@@ -30,11 +30,12 @@ module feval_module
        real(c_double), value :: i_t, i_dt 
      end subroutine cinitial
 
-     subroutine cfinal(i_ctx, i_Y, i_nnodes, i_niter) bind(c, name="cfinal")
+     subroutine cfinal(i_ctx, i_Y, i_nnodes, i_niter, i_rank, i_nprocs) bind(c, name="cfinal")
        use iso_c_binding
        type(c_ptr), value :: i_ctx, i_Y
        integer,     value :: i_nnodes
        integer,     value :: i_niter
+       integer,     value :: i_rank, i_nprocs
      end subroutine cfinal
 
      subroutine ceval_f1(i_Y, i_t, i_ctx, o_F1) bind(c, name="ceval_f1")
@@ -114,10 +115,14 @@ contains
                   dt,                    &
                   sd_ptr%c_sweet_data_ptr)
 
+    call z%copy(sd)
+
   end subroutine finitial
 
 
   subroutine ffinal(sweeper, sd, nnodes, niter)
+    use mpi 
+
     class(pf_sweeper_t),       intent(in)    :: sweeper
     class(pf_encap_t),         intent(inout) :: sd
     integer,                   intent(in)    :: nnodes, niter
@@ -125,26 +130,47 @@ contains
     class(sweet_sweeper_t),    pointer       :: sweet_sweeper_ptr
     class(sweet_data_encap_t), pointer       :: sd_ptr
 
+    integer                                  :: nprocs, rank, ierr
+
     sweet_sweeper_ptr => as_sweet_sweeper(sweeper)
     sd_ptr            => as_sweet_data_encap(sd)
+
+
+
+    call MPI_COMM_SIZE (MPI_COMM_WORLD, nprocs,  ierr)
+    call MPI_COMM_RANK (MPI_COMM_WORLD, rank, ierr)
+
 
     call cfinal(sweet_sweeper_ptr%ctx,   & 
                 sd_ptr%c_sweet_data_ptr, &
                 nnodes,                  &
-                niter)
+                niter,                   &
+                rank,                    &
+                nprocs)
 
   end subroutine ffinal
 
 
-  ! prepare the current solution at m for the correction                                                                                                                           
+  ! prepare the current solution at m for the correction                    
+
   subroutine sweet_initialize_correction(this, y, t, dt, level, m, flag)
+    use mpi
+
     class(sweet_sweeper_t), intent(inout) :: this
     class(pf_encap_t),      intent(inout) :: y
     real(pfdp),             intent(in)    :: t, dt
     integer,                intent(in)    :: level, m
     logical,                intent(in)    :: flag
 
-    ! not implemented
+    integer                               :: num_procs, my_id, ierr
+
+    call MPI_COMM_SIZE (MPI_COMM_WORLD, num_procs, ierr)
+    call MPI_COMM_RANK (MPI_COMM_WORLD, my_id,     ierr)
+
+    print *, 'level = ',      level,            &
+             ' iter = ',      this%sweep_niter, & 
+             ' rank = ',      my_id,            &
+             ' num_procs = ', num_procs
 
   end subroutine sweet_initialize_correction
   
@@ -275,7 +301,7 @@ contains
 
     ! need the following line since the "final" keyword is not supported by some (older) compilers
     ! it forces Fortran to destroy the parent class data structures
-    call this%imex_destroy(lev) 
+    call this%misdcQ_destroy(lev) 
 
   end subroutine sweet_sweeper_destroy
 

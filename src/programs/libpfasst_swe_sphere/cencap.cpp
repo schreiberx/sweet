@@ -17,8 +17,6 @@ extern "C"
 			   ) 
   {
     SphereDataConfig *Y_config = i_ctx->get_sphere_data_config(i_level);
-    //Y_config->physical_array_data_number_of_elements = 
-    // Y_config->physical_res[0]*Y_config->physical_res[1];
 
     // create the SphereDataVars object
     *o_Y  = new SphereDataVars(
@@ -37,8 +35,8 @@ extern "C"
 
     // return the size of the number of elements 
     *o_size = (phi.sphereDataConfig->physical_array_data_number_of_elements 
-	       + vort.sphereDataConfig->physical_array_data_number_of_elements 
-	       + div.sphereDataConfig->physical_array_data_number_of_elements);
+ 	     + vort.sphereDataConfig->physical_array_data_number_of_elements 
+	     + div.sphereDataConfig->physical_array_data_number_of_elements);
   }
 
   // calls the destructor of the sweet data encapsulated object
@@ -92,9 +90,9 @@ extern "C"
     const SphereData& vort = i_Y->get_vort();
     const SphereData& div  = i_Y->get_div();
 
-    *o_val = phi.physical_reduce_max_abs();
-    const double vort_max = vort.physical_reduce_max_abs();
-    const double div_max  = div.physical_reduce_max_abs();
+    *o_val = SphereData(phi).physical_reduce_max_abs();
+    const double vort_max = SphereData(vort).physical_reduce_max_abs();
+    const double div_max  = SphereData(div).physical_reduce_max_abs();
 
     // L-infinity norm
     if (vort_max > *o_val) 
@@ -181,9 +179,9 @@ extern "C"
     div.spectral_space_data_valid  = false;
 
     // make sure that the spectral data is up to date
-    phi.request_data_spectral();  
-    vort.request_data_spectral();  
-    div.request_data_spectral();  
+    //phi.request_data_spectral();  
+    //vort.request_data_spectral();  
+    //div.request_data_spectral();  
     
   }
 

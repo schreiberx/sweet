@@ -261,20 +261,20 @@ contains
 
        sweet_sweeper_ptr => as_sweet_sweeper(level%ulevel%sweeper)
        x_ptr             => as_sweet_data_encap(level%Q(sweet_sweeper_ptr%nnodes))
+       
+       ! if (modulo(state%step, 10000) == 0 .and. state%iter == pf%niters) then
 
-       if (modulo(state%step, 100) == 0) then !.and. state%iter == pf%niters) then
-
-          call cecho_output_solution(sweet_sweeper_ptr%ctx,  &
-                                     x_ptr%c_sweet_data_ptr, &
-                                     state%proc,             &
-                                     state%step,             &
-                                     state%iter,             &
-                                     level%nnodes,           &
-                                     pf%niters)
+       !     call cecho_output_solution(sweet_sweeper_ptr%ctx,  &
+       !                                x_ptr%c_sweet_data_ptr, &
+       !                                state%proc,             &
+       !                                state%step,             &
+       !                                state%iter,             &
+       !                                level%nnodes,           &
+       !                                pf%niters)
           
-          print *, 'step = ', state%step, ' iter = ', state%iter, ' processor = ', state%proc
+       !     !print *, 'step = ', state%step, ' iter = ', state%iter, ' processor = ', state%proc
 
-       end if
+       ! end if
 
 !    end if
 

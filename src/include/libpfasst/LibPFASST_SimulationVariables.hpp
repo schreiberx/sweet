@@ -14,9 +14,14 @@ struct LibPFASST_SimulationVariables
   int nlevels = 2;
 
   /**
-   * Number of SDC sweeps at each level
+   * Number of (ML)SDC iterations
    */
   int niters = 8;
+
+  /** 
+   * Number of sweeps on the coarse level
+   */
+  int nsweeps_coarse = 1;
 
   /** 
    * Number of SDC temporal nodes on the finest level
@@ -49,6 +54,7 @@ struct LibPFASST_SimulationVariables
     std::cout << "LibPFASST:" << std::endl;
     std::cout << " + nlevels: "                 << nlevels                 << std::endl;
     std::cout << " + niters: "                  << niters                  << std::endl;
+    std::cout << " + nsweeps_coarse: "          << nsweeps_coarse          << std::endl;
     std::cout << " + nnodes: "                  << nnodes                  << std::endl;
     std::cout << " + nodes_type: "              << nodes_type              << std::endl;
     std::cout << " + coarsening_multiplier: "   << coarsening_multiplier   << std::endl;
@@ -63,6 +69,7 @@ struct LibPFASST_SimulationVariables
     std::cout << "LibPFASST:"                                                                                                       << std::endl;
     std::cout << "	--libpfasst-nlevels [int]			LibPFASST parameter nlevels, default: 2"                    << std::endl;
     std::cout << "	--libpfasst-niters [int]                        LibPFASST parameter niters, default: 8"                     << std::endl;
+    std::cout << "	--libpfasst-nsweeps_coarse [int]                LibPFASST parameter nsweeps_coarse, default: 1"             << std::endl;
     std::cout << "	--libpfasst-nnodes [int]			LibPFASST parameter nnodes, default: 5"                     << std::endl;
     std::cout << "	--libpfasst-nodes_type [string]			LibPFASST parameter nodes_type, default: SDC_GAUSS_LOBATTO" << std::endl;
     std::cout << "	--libpfasst-coarsening_multiplier [float]	LibPFASST parameter coarsening_multiplier, default: 0.5"    << std::endl;
@@ -81,6 +88,9 @@ struct LibPFASST_SimulationVariables
     io_next_free_program_option++;
     
     io_long_options[io_next_free_program_option] = {"libpfasst-niters", required_argument, 0, 256+io_next_free_program_option};
+    io_next_free_program_option++;
+
+    io_long_options[io_next_free_program_option] = {"libpfasst-nsweeps_coarse", required_argument, 0, 256+io_next_free_program_option};
     io_next_free_program_option++;
     
     io_long_options[io_next_free_program_option] = {"libpfasst-nnodes", required_argument, 0, 256+io_next_free_program_option};
@@ -113,14 +123,15 @@ struct LibPFASST_SimulationVariables
       {
       case 0:	nlevels                 = atoi(optarg);	return 0;
       case 1:	niters                  = atoi(optarg);	return 0;
-      case 2:	nnodes                  = atoi(optarg);	return 0;
-      case 3:	nodes_type              = optarg; 	return 0;
-      case 4:	coarsening_multiplier   = atof(optarg);	return 0;
-      case 5:   use_rexi                = atoi(optarg); return 0;
-      case 6:   implicit_coriolis_force = atoi(optarg); return 0;
+      case 2:   nsweeps_coarse          = atoi(optarg); return 0;
+      case 3:	nnodes                  = atoi(optarg);	return 0;
+      case 4:	nodes_type              = optarg; 	return 0;
+      case 5:	coarsening_multiplier   = atof(optarg);	return 0;
+      case 6:   use_rexi                = atoi(optarg); return 0;
+      case 7:   implicit_coriolis_force = atoi(optarg); return 0;
       }
     
-    return 7;
+    return 8;
   }
   
 
