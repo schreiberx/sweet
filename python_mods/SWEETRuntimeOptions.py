@@ -14,7 +14,7 @@ class SWEETRuntimeOptions():
 		self.f_sphere = 0
 		self.verbosity = 0
 
-		self.stability_checks = 0
+		self.stability_checks = 1
 
 		self.floating_point_output_digits = -1
 
@@ -207,7 +207,7 @@ class SWEETRuntimeOptions():
 			idstr += '_a'+str(self.r)
 			#idstr += '_rob'+str(self.use_robert_functions)
 			idstr += '_fsph'+str(self.f_sphere)
-			
+
 		idstr += '_u'+str(self.viscosity)
 		idstr += '_U'+str(self.viscosity_order)
 
@@ -258,7 +258,7 @@ class SWEETRuntimeOptions():
 				idstr += '_nrm'+str(self.rexi_normalization)
 				idstr += '_hlf'+str(self.rexi_half_poles)
 				idstr += '_bf'+str(self.rexi_beta_cutoff)
-	
+
 				#if self.plane_or_sphere == 'sphere':
 				#idstr += '_pre'+str(self.rexi_sphere_preallocation)
 				idstr += '_ext'+str(self.rexi_extended_modes).zfill(2)
@@ -278,7 +278,7 @@ class SWEETRuntimeOptions():
 			idstr += '_N'+str(self.phys_res).zfill(4)
 
 		return idstr
-		
+
 
 	def getRuntimeOptions(self):
 		retval = ''
@@ -298,7 +298,7 @@ class SWEETRuntimeOptions():
 
 		retval += ' -X '+str(self.domain_size)
 		retval += ' -Y '+str(self.domain_size)
-		
+
 		retval += ' -s '+str(self.bench_id)
 		retval += ' --benchmark='+str(self.benchmark_name)
 
@@ -389,4 +389,3 @@ class SWEETRuntimeOptions():
 		retval += ' --compute-error='+str(self.compute_error)
 
 		return retval
-
