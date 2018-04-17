@@ -37,7 +37,7 @@ p.runtime.verbosity = 3
 # 14: Steady diagonal benchmark
 #
 #p.runtime.bench_id = 1
-p.runtime.benchmark_name = "unstablejetadv"
+p.runtime.benchmark_name = "unstablejet"
 
 #
 # Compute error or difference to initial data
@@ -57,7 +57,7 @@ p.runtime.rexi_method = 'direct'
 #-----------------------------
 p = RuntimeSWEPlaneEarthParam(p)
 #p = RuntimeSWENonDimParam(p)
-p.runtime.g = p.runtime.g / 3.0
+p.runtime.g = p.runtime.g 
 p.runtime.viscosity = 0.0
 
 
@@ -102,8 +102,8 @@ for group in groups:
 			['ln_erk',		4,	4],	# reference solution
 			#['ln_erk',		2,	2],	# FD- C-grid
 			#['l_cn_na_sl_nd_settls', 2,	2],	# SI-SL-SP
-	                ['l_rexi_na_sl_nd_settls',	2,	2], #SL-EXP-SETTLS
-			['l_rexi_na_sl_nd_etdrk',	2,	2], #SL-EXP-ETDRK
+	                #['l_rexi_na_sl_nd_settls',	2,	2], #SL-EXP-SETTLS
+			#['l_rexi_na_sl_nd_etdrk',	2,	2], #SL-EXP-ETDRK
 			['l_rexi_n_erk',	2,	2], #ETDRK2
 		]
 
