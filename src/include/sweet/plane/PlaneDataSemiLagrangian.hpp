@@ -59,10 +59,12 @@ public:
 			ScalarDataArray &o_posx_d, 	///< Position of departure points x / y
 			ScalarDataArray &o_posy_d,
 
-			const Staggering *i_staggering = nullptr,	///< staggering, if any (ux, uy, vx, vy)
+			double i_domain_size[2],	///< domain size
 
-			int i_timestepping_order = 2,
-			int max_iters = 2,
+			const Staggering *i_staggering,	///< staggering, if any (ux, uy, vx, vy)
+
+			int i_timestepping_order,
+			int max_iters = 10,
 			double i_convergence_tolerance = 1e-8
 	)
 	{
@@ -128,7 +130,7 @@ public:
 						o_posx_d, o_posy_d, i_staggering->v[0], i_staggering->v[1]
 				));
 
-				diff = (rx_d_new - rx_d_prev).reduce_maxAbs() + (ry_d_new - ry_d_prev).reduce_maxAbs();
+				diff = (rx_d_new - rx_d_prev).reduce_maxAbs()/i_domain_size[0] + (ry_d_new - ry_d_prev).reduce_maxAbs()/i_domain_size[1];
 				rx_d_prev = rx_d_new;
 				ry_d_prev = ry_d_new;
 

@@ -149,6 +149,8 @@ public:
 				posx_a, posy_a,
 				dt,
 				posx_d, posy_d,
+				simVars.sim.domain_size,
+				nullptr,
 				simVars.disc.timestepping_order
 		);
 

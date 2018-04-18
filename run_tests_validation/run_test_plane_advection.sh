@@ -23,7 +23,15 @@ $SCONS
 # 1: fast rotaitons
 for r in 0 1 20; do
 
-	for o in 1 2; do
+	for o in 1; do
+		for vu in 0.1 0.2 0.0; do
+			EXEC="./build/test_plane_advection_*_debug -M 128 --dt=0.1 -X 2 -Y 2 --benchmark=gaussian_bump_advection --timestepping-method=na_sl --timestepping-order=$o  --advection-velocity=$vu,0.2,$r -t 20"
+			echo "$EXEC"
+			$EXEC || exit
+		done
+	done
+
+	for o in 2; do
 		for vu in 0.1 0.2 0.0; do
 			EXEC="./build/test_plane_advection_*_debug -M 64 --dt=0.1 -X 2 -Y 2 --benchmark=gaussian_bump_advection --timestepping-method=na_sl --timestepping-order=$o  --advection-velocity=$vu,0.2,$r -t 20"
 			echo "$EXEC"
@@ -31,8 +39,8 @@ for r in 0 1 20; do
 		done
 	done
 
-	for vu in 0.1 0.2 0.0; do
-		for o in 1 2 4; do
+	for o in 1 2 4; do
+		for vu in 0.1 0.2 0.0; do
 			EXEC="./build/test_plane_advection_*_debug -M 64 --dt=0.1 -X 2 -Y 2 --benchmark=gaussian_bump_advection --timestepping-method=na_erk --timestepping-order=$o  --advection-velocity=$vu,0.2,$r -t 20"
 			echo "$EXEC"
 			$EXEC || exit
