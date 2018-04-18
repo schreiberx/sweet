@@ -268,7 +268,7 @@ cd "$BASEDIR"
 		#else:
 		#	content += 'EXEC="$SWEETROOT/build/burgers_plspec_pldeal_quadmath_omp_fft_gnu_release'
 
-		content += 'EXEC="$SWEETROOT/build/burgers_plspec_pldeal_quadmath_omp_numa2_fft_gnu_release'
+		content += 'EXEC="$SWEETROOT/build/burgers_plspec_pldeal_*release'
 
 #		content += ' -g '+str(self.g)
 #		content += ' -H '+str(self.h)
