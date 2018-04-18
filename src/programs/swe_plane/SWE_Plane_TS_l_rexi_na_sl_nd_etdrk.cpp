@@ -95,6 +95,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 			posx_a,		posy_a,
 			i_dt,
 			posx_d,	posy_d,			// output
+			simVars.sim.domain_size,
 			&staggering,
 			simVars.disc.timestepping_order
 	);

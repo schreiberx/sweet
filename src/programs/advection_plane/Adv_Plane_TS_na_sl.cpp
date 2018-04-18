@@ -47,6 +47,7 @@ void Adv_Plane_TS_na_sl::run_timestep(
 			posx_a, posy_a,
 			dt,
 			posx_d, posy_d,
+			simVars.sim.domain_size,
 			nullptr,
 			timestepping_order
 	);
