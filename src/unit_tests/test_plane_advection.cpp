@@ -325,8 +325,14 @@ int main(int i_argc, char *i_argv[])
 	if (simVars.timecontrol.current_timestep_size < 0)
 		FatalError("Timestep size not set");
 
+	int max_modes = 256;
+
+	// double max modes if only 1st order
+	if (simVars.disc.timestepping_order == 1)
+		max_modes *= 2;
+
 	double prev_max_error = -1;
-	for (int i = initial_spectral_modes; i <= 256; i *= 2)
+	for (int i = initial_spectral_modes; i <= max_modes; i *= 2)
 	{
 		simVars.timecontrol.current_timestep_size *= 0.5;
 

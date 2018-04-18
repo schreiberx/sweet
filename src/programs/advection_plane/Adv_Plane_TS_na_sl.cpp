@@ -36,8 +36,6 @@ void Adv_Plane_TS_na_sl::run_timestep(
 		prog_v_prev = io_v;
 	}
 
-#if 1
-
 
 	// OUTPUT: position of departure points at t
 	ScalarDataArray posx_d(io_phi.planeDataConfig->physical_array_data_number_of_elements);
@@ -50,7 +48,7 @@ void Adv_Plane_TS_na_sl::run_timestep(
 			dt,
 			posx_d, posy_d,
 			nullptr,
-			simVars.disc.timestepping_order
+			timestepping_order
 	);
 
 	prog_u_prev = io_u;
@@ -58,30 +56,28 @@ void Adv_Plane_TS_na_sl::run_timestep(
 
 	PlaneData new_prog_phi(io_phi.planeDataConfig);
 
-	sampler2D.bicubic_scalar(
-			io_phi,
-			posx_d,
-			posy_d,
-			new_prog_phi
-	);
-#else
-
-	PlaneData new_prog_phi(io_phi.planeDataConfig);
-
-	sampler2D.bicubic_scalar(
-//		sampler2D.bilinear_scalar(
-			io_phi,
-#if 0
-			posx_d,
-			posy_d,
-#else
-			posx_a,
-			posy_a,
-#endif
-			new_prog_phi
-	);
-
-#endif
+	if (timestepping_order == 1)
+	{
+		sampler2D.bilinear_scalar(
+				io_phi,
+				posx_d,
+				posy_d,
+				new_prog_phi
+		);
+	}
+	else if (timestepping_order == 2)
+	{
+		sampler2D.bicubic_scalar(
+				io_phi,
+				posx_d,
+				posy_d,
+				new_prog_phi
+		);
+	}
+	else
+	{
+		FatalError("Timestepping order not available");
+	}
 
 	io_phi = new_prog_phi;
 }
