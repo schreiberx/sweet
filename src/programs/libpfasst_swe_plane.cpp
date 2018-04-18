@@ -8,7 +8,7 @@
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#include <benchmarks_plane/SWEBenchmarksCombined.hpp>
+#include <benchmarks_plane/SWEPlaneBenchmarksCombined.hpp>
 #include <sweet/FatalError.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneData.hpp>

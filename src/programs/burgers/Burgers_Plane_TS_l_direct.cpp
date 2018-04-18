@@ -143,8 +143,8 @@ void Burgers_Plane_TS_l_direct::run_timestep_agrid_planedata(
 			 */
 			complex lambda;
 
-         T a = pi2()*pi2()/(simVars.sim.domain_size[0]*simVars.sim.domain_size[0]);
-         T b = pi2()*pi2()/(simVars.sim.domain_size[1]*simVars.sim.domain_size[1]);
+			T a = pi2()*pi2()/(simVars.sim.domain_size[0]*simVars.sim.domain_size[0]);
+			T b = pi2()*pi2()/(simVars.sim.domain_size[1]*simVars.sim.domain_size[1]);
 			lambda = -simVars.sim.viscosity*(k0*k0*a+k1*k1*b);
 
 			for (int k = 0; k < 2; k++)
@@ -238,8 +238,8 @@ void Burgers_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 			 * Eigenvalues
 			 */
 			complex lambda;
-         T a = pi2()*pi2()/(simVars.sim.domain_size[0]*simVars.sim.domain_size[0]);
-         T b = pi2()*pi2()/(simVars.sim.domain_size[1]*simVars.sim.domain_size[1]);
+			T a = pi2()*pi2()/(simVars.sim.domain_size[0]*simVars.sim.domain_size[0]);
+			T b = pi2()*pi2()/(simVars.sim.domain_size[1]*simVars.sim.domain_size[1]);
 			lambda = -simVars.sim.viscosity*(k0*k0*a+k1*k1*b);
 
 			for (int k = 0; k < 2; k++)

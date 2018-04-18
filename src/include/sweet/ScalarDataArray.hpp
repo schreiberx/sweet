@@ -213,8 +213,6 @@ public:
 
 
 
-
-
 	/**
 	 * return true, if any value is infinity
 	 */
@@ -243,9 +241,8 @@ public:
 	 */
 	double reduce_maxAbs()	const
 	{
+		double maxabs = -1.0;
 
-
-		double maxabs = -1;
 #if SWEET_SPACE_THREADING
 #pragma omp parallel for proc_bind(close) reduction(max:maxabs)
 #endif

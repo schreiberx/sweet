@@ -35,7 +35,8 @@ void Burgers_Plane_TS_l_irk_n_sl_forcing::run_timestep(
 			posx_a, posy_a,
 			i_fixed_dt,
 			posx_d, posy_d,
-			&staggering
+			&staggering,
+			2
 			);
 
 	// Save old velocities

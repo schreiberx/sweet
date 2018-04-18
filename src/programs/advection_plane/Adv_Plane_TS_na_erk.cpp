@@ -33,14 +33,21 @@ void Adv_Plane_TS_na_erk::euler_timestep_update(
 	 *
 	 * This is the case because the velocity field is divergence free!!!
 	 */
-/*
-	PlaneData* ext_u;
-	PlaneData* ext_v;
 
-	simVars.sim.getExternalForces(0, &ext_u);
-	simVars.sim.getExternalForces(1, &ext_v);
-*/
-	o_phi_t = -op.diff_c_x(i_phi*i_u) - op.diff_c_y(i_phi*i_v);
+	if (simVars.sim.getExternalForcesCallback != nullptr)
+	{
+		PlaneData u(i_phi.planeDataConfig);
+		PlaneData v(i_phi.planeDataConfig);
+
+		simVars.sim.getExternalForcesCallback(1, simVars.timecontrol.current_simulation_time, &u, simVars.sim.getExternalForcesUserData);
+		simVars.sim.getExternalForcesCallback(2, simVars.timecontrol.current_simulation_time, &v, simVars.sim.getExternalForcesUserData);
+
+		o_phi_t = -op.diff_c_x(i_phi*u) - op.diff_c_y(i_phi*v);
+	}
+	else
+	{
+		o_phi_t = -op.diff_c_x(i_phi*i_u) - op.diff_c_y(i_phi*i_v);
+	}
 
 	o_u_t.spectral_set_zero();
 	o_v_t.spectral_set_zero();
@@ -69,6 +76,13 @@ void Adv_Plane_TS_na_erk::run_timestep(
 			timestepping_order,
 			i_simulation_timestamp
 		);
+
+	if (simVars.sim.getExternalForcesCallback != nullptr)
+	{
+		// this is just called for cosmetic reasons to update the velocity field
+		simVars.sim.getExternalForcesCallback(1, simVars.timecontrol.current_simulation_time, &io_u, simVars.sim.getExternalForcesUserData);
+		simVars.sim.getExternalForcesCallback(2, simVars.timecontrol.current_simulation_time, &io_v, simVars.sim.getExternalForcesUserData);
+	}
 }
 
 

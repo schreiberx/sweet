@@ -24,6 +24,12 @@ void Adv_Plane_TS_na_sl::run_timestep(
 
 	double dt = simVars.timecontrol.current_timestep_size;
 
+	if (simVars.sim.getExternalForcesCallback != nullptr)
+	{
+		simVars.sim.getExternalForcesCallback(1, i_simulation_timestamp, &io_u, simVars.sim.getExternalForcesUserData);
+		simVars.sim.getExternalForcesCallback(2, i_simulation_timestamp, &io_v, simVars.sim.getExternalForcesUserData);
+	}
+
 	if (i_simulation_timestamp == 0)
 	{
 		prog_u_prev = io_u;
@@ -42,8 +48,9 @@ void Adv_Plane_TS_na_sl::run_timestep(
 			io_u, io_v,
 			posx_a, posy_a,
 			dt,
-//			simVars.sim.earth_radius,
-			posx_d, posy_d
+			posx_d, posy_d,
+			nullptr,
+			simVars.disc.timestepping_order
 	);
 
 	prog_u_prev = io_u;

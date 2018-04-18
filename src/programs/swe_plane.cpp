@@ -23,8 +23,7 @@
 #include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
 #include <sweet/Stopwatch.hpp>
 #include <sweet/FatalError.hpp>
-#include <benchmarks_plane/SWE_bench_PlaneBenchmarks_DEPRECATED.hpp>
-#include <benchmarks_plane/SWEBenchmarksCombined.hpp>
+#include <benchmarks_plane/SWEPlaneBenchmarksCombined.hpp>
 #include <ostream>
 #include <algorithm>
 #include <sstream>
@@ -102,6 +101,7 @@ public:
 	SWE_Plane_TimeSteppers timeSteppersCoarse;
 #endif
 
+	SWEPlaneBenchmarksCombined swePlaneBenchmarks;
 
 	// Diagnostics measures
 	int last_timestep_nr_update_diagnostics = -1;
@@ -203,7 +203,7 @@ public:
 			std::cout << std::endl;
 
 			std::cout << "Benchmark scenario not selected (option --benchmark [string])" << std::endl;
-			SWEBenchmarksCombined::printBenchmarkInformation();
+			swePlaneBenchmarks.printBenchmarkInformation();
 
 			FatalError("Benchmark scenario not selected");
 		}
@@ -363,8 +363,7 @@ public:
 		}
 		else
 		{
-			SWEBenchmarksCombined s;
-			s.setupInitialConditions(t0_prog_h_pert, t0_prog_u, t0_prog_v, simVars, op);
+			swePlaneBenchmarks.setupInitialConditions(t0_prog_h_pert, t0_prog_u, t0_prog_v, simVars, op);
 
 			prog_h_pert = t0_prog_h_pert;
 			prog_u = t0_prog_u;
