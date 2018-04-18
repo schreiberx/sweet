@@ -268,12 +268,13 @@ public:
 					if (i_field_id == 1)
 					{
 						// u-velocity
-						*o_plane_data = std::cos(r)*u - std::sin(r)*v;
+						//*o_plane_data = std::cos(r)*u - std::sin(r)*v;
+						*o_plane_data = u*(1.0+std::sin(r));
 					}
 					else if (i_field_id == 2)
 					{
-						// u-velocity
-						*o_plane_data = std::sin(r)*u + std::cos(r)*v;
+						// v-velocity
+						*o_plane_data = v*(1.0+std::cos(r));
 					}
 
 					//s->ext_forces_last_timestamp[i_field_id] = s->simVars->timecontrol.current_simulation_time;
