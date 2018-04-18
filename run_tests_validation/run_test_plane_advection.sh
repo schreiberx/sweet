@@ -45,6 +45,7 @@ for r in 0 1 20; do
 			EXEC="./build/test_plane_advection_* -M 128 --dt=0.1 -X 2 -Y 2 --benchmark=gaussian_bump_advection --timestepping-method=na_sl --timestepping-order=1  --advection-velocity=$vu,$vv,$r -t 20"
 			echo "$EXEC"
 			$EXEC || exit
+		done
 	done
 done
 
