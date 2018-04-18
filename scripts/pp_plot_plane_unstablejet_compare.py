@@ -78,10 +78,10 @@ multiplier_i = (nx_ref)/(nx_cmp)
 #	print ("Grids are not aligned")
 #	sys.exit(1)
 	
-multiplier_j = int(multiplier_j)
-multiplier_i = int(multiplier_i)
+#multiplier_j = int(multiplier_j)
+#multiplier_i = int(multiplier_i)
 #print("Grids aligned")
-#print ("Multipliers (int): ", multiplier_i, multiplier_j)
+print ("Multipliers (int): ", multiplier_i, multiplier_j)
 
 norm_l1_value = 0.0
 norm_l2_value = 0.0
