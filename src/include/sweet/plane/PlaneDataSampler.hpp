@@ -79,14 +79,28 @@ public:
 	/**
 	 * wrap the position i in a periodic domain of size i_res
 	 */
+#if 0
+
+#error "This modulo operation doesn't work!"
+	inline
+	int wrapPeriodic(int i, int i_res)
+	{
+		return (i + i_res*10) % i_res;
+	}
+
+	inline
+	double wrapPeriodic(double i, double i_res)
+	{
+		return fmodf(i + i_res*10.0f, i_res);
+	}
+
+#else
+
 	template <typename T>
 	inline
-	T wrapPeriodic(T i, T i_res)
+	double wrapPeriodic(T i, T i_res)
 	{
-		/*
-		 * TODO: replace this with efficient hardware operation (if available)
-		 */
-#if 0
+#if 1
 		int c = 10;
 		while (i < 0 && c-- > 0)
 			i += i_res;
@@ -94,6 +108,14 @@ public:
 		int d = 10;
 		while (i >= i_res && d-- > 0)
 			i -= i_res;
+#elif 1
+
+			i = (i + i_res*10) % i_res;
+		else if (typeid(T) == typeid(double))
+			i = fmod(i + i_res*10.0, i_res);
+		else
+			i = fmodf(i + i_res*10.0f, i_res);
+
 #else
 		if (i < 0)
 			i += i_res;
@@ -109,6 +131,7 @@ public:
 
 		return i;
 	}
+#endif
 
 
 public:

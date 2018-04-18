@@ -59,7 +59,9 @@ public:
 			ScalarDataArray &o_posx_d, 	///< Position of departure points x / y
 			ScalarDataArray &o_posy_d,
 
-			const Staggering *i_staggering = nullptr	///< staggering, if any (ux, uy, vx, vy)
+			const Staggering *i_staggering = nullptr,	///< staggering, if any (ux, uy, vx, vy)
+			int max_iters = 2,
+			double i_convergence_tolerance = 1e-8
 	)
 	{
 		Staggering s;
@@ -100,7 +102,8 @@ public:
 		o_posy_d = i_posy_a;
 
 		int iters = 0;
-		for (; iters < 10; iters++)
+		double diff = 999;
+		for (; iters < max_iters; iters++)
 		{
 			// r_d = r_a - dt/2 * v_n(r_d) - v^{iter}(r_d)
 			rx_d_new = i_posx_a - dt*0.5 *
@@ -114,18 +117,30 @@ public:
 					o_posx_d, o_posy_d, i_staggering->v[0], i_staggering->v[1]
 			));
 
-			double diff = (rx_d_new - rx_d_prev).reduce_maxAbs() + (ry_d_new - ry_d_prev).reduce_maxAbs();
+			diff = (rx_d_new - rx_d_prev).reduce_maxAbs() + (ry_d_new - ry_d_prev).reduce_maxAbs();
 			rx_d_prev = rx_d_new;
 			ry_d_prev = ry_d_new;
 
+#if SWEET_SPACE_THREADING
+#pragma omp parallel for
+#endif
 			for (std::size_t i = 0; i < num_points; i++)
 			{
 				o_posx_d.scalar_data[i] = sample2D.wrapPeriodic(rx_d_new.scalar_data[i], sample2D.domain_size[0]);
 				o_posy_d.scalar_data[i] = sample2D.wrapPeriodic(ry_d_new.scalar_data[i], sample2D.domain_size[1]);
 			}
 
-			if (diff < 1e-8)
+			if (diff < i_convergence_tolerance)
 			   break;
+		}
+
+
+		if (diff > i_convergence_tolerance)
+		{
+			std::cout << "WARNING: Over convergence tolerance" << std::endl;
+			std::cout << "+ Iterations: " << iters << std::endl;
+			std::cout << "+ maxAbs: " << diff << std::endl;
+			std::cout << "+ Convergence tolerance: " << i_convergence_tolerance << std::endl;
 		}
 	}
 };

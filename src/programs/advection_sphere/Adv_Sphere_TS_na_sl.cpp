@@ -33,9 +33,6 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 		diag_v_prev = diag_v;
 	}
 
-#if 1
-
-
 	// OUTPUT: position of departure points at t
 	ScalarDataArray posx_d(io_phi.sphereDataConfig->physical_array_data_number_of_elements);
 	ScalarDataArray posy_d(io_phi.sphereDataConfig->physical_array_data_number_of_elements);
@@ -46,7 +43,8 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 			posx_a, posy_a,
 			dt,
 			simVars.sim.earth_radius,
-			posx_d, posy_d
+			posx_d, posy_d,
+			timestepping_order
 	);
 
 	diag_u_prev = diag_u;
@@ -54,30 +52,26 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 
 	SphereData new_prog_phi(io_phi.sphereDataConfig);
 
-	sampler2D.bicubic_scalar(
-			io_phi,
-			posx_d,
-			posy_d,
-			new_prog_phi
-	);
-#else
-
-	SphereData new_prog_phi(io_phi.sphereDataConfig);
-
-	sampler2D.bicubic_scalar(
-//		sampler2D.bilinear_scalar(
-			io_phi,
-#if 0
-			posx_d,
-			posy_d,
-#else
-			posx_a,
-			posy_a,
-#endif
-			new_prog_phi
-	);
-
-#endif
+	if (timestepping_order == 1 && 0)
+	{
+		sampler2D.bilinear_scalar(
+				io_phi,
+				posx_d,
+				posy_d,
+				new_prog_phi,
+				false
+		);
+	}
+	else
+	{
+		sampler2D.bicubic_scalar(
+						io_phi,
+						posx_d,
+						posy_d,
+						new_prog_phi,
+						false
+				);
+	}
 
 	io_phi = new_prog_phi;
 }
@@ -92,6 +86,9 @@ void Adv_Sphere_TS_na_sl::setup(
 )
 {
 	timestepping_order = i_order;
+
+	if (timestepping_order > 2 || timestepping_order <= 0)
+		FatalError("Only 1st and 2nd order for SL integration supported");
 
 	const SphereDataConfig *sphereDataConfig = op.sphereDataConfig;
 

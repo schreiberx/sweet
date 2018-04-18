@@ -527,6 +527,37 @@ public:
 		return out;
 	}
 
+	/**
+	 * Compute element-wise square root
+	 */
+	inline
+	ScalarDataArray sqrt()	const
+	{
+		ScalarDataArray out(number_of_elements);
+
+		SCALAR_DATA_FOR_IDX(
+				out.scalar_data[idx] = std::sqrt(scalar_data[idx]);
+			);
+
+		return out;
+	}
+
+
+	/**
+	 * Compute element-wise inverse square root
+	 */
+	inline
+	ScalarDataArray inv_sqrt()	const
+	{
+		ScalarDataArray out(number_of_elements);
+
+		SCALAR_DATA_FOR_IDX(
+				out.scalar_data[idx] = 1.0/std::sqrt(scalar_data[idx]);
+			);
+
+		return out;
+	}
+
 
 
 	/**
@@ -692,6 +723,24 @@ public:
 	}
 
 
+	/**
+	 * Compute element-wise subtraction
+	 */
+	inline
+	ScalarDataArray valueDivThis(
+			const double i_value
+	)	const
+	{
+		ScalarDataArray out(number_of_elements);
+
+		SCALAR_DATA_FOR_IDX(
+				out.scalar_data[idx] = i_value/scalar_data[idx];
+			);
+
+		return out;
+	}
+
+
 
 	/**
 	 * Invert sign
@@ -724,6 +773,22 @@ public:
 			);
 
 		return out;
+	}
+
+
+	/**
+	 * Compute element-wise multiplication
+	 */
+	inline
+	ScalarDataArray& operator*=(
+			const ScalarDataArray &i_array_data	///< this class times i_array_data
+	)
+	{
+		SCALAR_DATA_FOR_IDX(
+				scalar_data[idx] *= i_array_data.scalar_data[idx];
+			);
+
+		return *this;
 	}
 
 
@@ -855,8 +920,9 @@ ScalarDataArray operator-(
 		const ScalarDataArray &i_array_data
 )
 {
-	return ((ScalarDataArray&)i_array_data).valueMinusThis(i_value);
+	return i_array_data.valueMinusThis(i_value);
 }
+
 /**
  * operator to support operations such as:
  *
@@ -872,9 +938,20 @@ ScalarDataArray operator+(
 		const ScalarDataArray &i_array_data
 )
 {
-	return ((ScalarDataArray&)i_array_data)+i_value;
+	return i_array_data+i_value;
 }
 
+
+
+inline
+static
+ScalarDataArray operator/(
+		const double i_value,
+		const ScalarDataArray &i_array_data
+)
+{
+	return i_array_data.valueDivThis(i_value);
+}
 
 
 

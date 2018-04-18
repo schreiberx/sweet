@@ -117,6 +117,7 @@ public:
 	}
 
 
+
 	void reset()
 	{
 		simVars.reset();
@@ -221,6 +222,7 @@ public:
 
 		return false;
 	}
+
 
 #if SWEET_GUI
 	/**

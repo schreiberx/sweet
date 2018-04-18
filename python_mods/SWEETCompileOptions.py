@@ -445,7 +445,7 @@ class SWEETCompileOptions:
 				dest='quadmath',
 				type='choice',
 				choices=['enable','disable'],
-				default='enable',
+				default='disable',
 				help='quadmath: enable, disable [default: %default]'
 		)
 		self.quadmath = scons.GetOption('quadmath')

@@ -339,8 +339,18 @@ int main(int i_argc, char *i_argv[])
 	if (simVars.timecontrol.current_timestep_size < 0)
 		FatalError("Timestep size not set");
 
+
+	SphereDataSemiLagrangian::alpha() = simVars.setup.advection_rotation_angle;
+
+	int max_modes = 256;
+
+	if (simVars.disc.timestepping_order == 1)
+		max_modes = 512;
+	else if (simVars.disc.timestepping_order == 2)
+		max_modes = 256;
+
 	double prev_max_error = -1;
-	for (int i = initial_spectral_modes; i <= 256; i *= 2)
+	for (int i = initial_spectral_modes; i <= max_modes; i *= 2)
 	{
 		simVars.timecontrol.current_timestep_size *= 0.5;
 
@@ -395,7 +405,7 @@ int main(int i_argc, char *i_argv[])
 				double conv = prev_max_error / simulation.max_error_h0;
 				std::cout << "Convergence: " << conv << std::endl;
 
-				if (conv*1.1 < 4.0)
+				if (conv*1.1 < std::pow(2.0, (double)simVars.disc.timestepping_order))
 				{
 					std::cerr << "Convergence not given!" << std::endl;
 					exit(1);
@@ -403,6 +413,7 @@ int main(int i_argc, char *i_argv[])
 			}
 			prev_max_error = simulation.max_error_h0;
 
+			std::cout << "*********************************************" << std::endl;
 		}
 	}
 

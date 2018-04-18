@@ -366,6 +366,14 @@ public:
 		/// domain size
 		double domain_size[2] = {1.0, 1.0};
 
+		static void fun_no_forces(int, void*)
+		{
+			FatalError("External forces not available");
+		};
+
+		/// load external forces if available from benchmark scenario
+		void (*getExternalForces)(int, void*) = &fun_no_forces;
+
 
 		void outputConfig()
 		{

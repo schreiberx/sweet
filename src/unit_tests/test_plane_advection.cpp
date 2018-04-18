@@ -128,6 +128,8 @@ public:
 				io_data = gaussianValue(center_x, center_y, x, y, exp_fac);
 			}
 		);
+
+		prog_h.spectral_zeroAliasingModes();
 		prog_h0 = prog_h;
 
 		prog_u = param_velocity_u;
