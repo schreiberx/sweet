@@ -152,9 +152,9 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 		PlaneData h_adv(planeDataConfig);
 		PlaneData u_adv(planeDataConfig);
 		PlaneData v_adv(planeDataConfig);
-		h_adv = u + i_dt*psi1_FUn_h;
-		u_adv = v + i_dt*psi1_FUn_u;
-		v_adv = h + i_dt*psi1_FUn_v;
+		h_adv = h + i_dt*psi1_FUn_h;
+		u_adv = u + i_dt*psi1_FUn_u;
+		v_adv = v + i_dt*psi1_FUn_v;
 
 		PlaneData h_dep(io_h.planeDataConfig);
 		PlaneData u_dep(io_h.planeDataConfig);
@@ -232,9 +232,9 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 		PlaneData h_adv(planeDataConfig);
 		PlaneData u_adv(planeDataConfig);
 		PlaneData v_adv(planeDataConfig);
-		h_adv = u + i_dt*psi1_FUn_h;
-		u_adv = v + i_dt*psi1_FUn_u;
-		v_adv = h + i_dt*psi1_FUn_v;
+		h_adv = h + i_dt*psi1_FUn_h;
+		u_adv = u + i_dt*psi1_FUn_u;
+		v_adv = v + i_dt*psi1_FUn_v;
 
 		PlaneData h_dep(io_h.planeDataConfig);
 		PlaneData u_dep(io_h.planeDataConfig);
