@@ -36,11 +36,11 @@ class SphereData
 	friend class SphereDataComplex;
 
 public:
-	const SphereDataConfig *sphereDataConfig;
+	const SphereDataConfig *sphereDataConfig = nullptr;
 
 public:
-	double *physical_space_data;
-	std::complex<double> *spectral_space_data;
+	double *physical_space_data = nullptr;
+	std::complex<double> *spectral_space_data = nullptr;
 
 	bool physical_space_data_valid;
 	bool spectral_space_data_valid;
@@ -91,7 +91,11 @@ public:
 		physical_space_data(nullptr),
 		spectral_space_data(nullptr)
 	{
-		assert(i_sph_data.sphereDataConfig != nullptr);
+		// Dummy initialization
+		if (i_sph_data.sphereDataConfig == nullptr)
+			return;
+
+//		assert(i_sph_data.sphereDataConfig != nullptr);
 
 		setup(i_sph_data.sphereDataConfig);
 
