@@ -12,7 +12,7 @@ echo "***********************************************"
 echo "TEST SPECTRAL OPS (release) ALIASING CONTROL $X"
 echo "***********************************************"
 make clean
-scons --threading=omp --unit-test=test_samplers --gui=disable --plane-spectral-dealiasing=disable
+scons --threading=omp --unit-test=test_samplers --gui=disable --plane-spectral-dealiasing=disable || exit 1
 ./build/test_samplers_* -s 2 -n 128 -m 128 --timestepping-method=ln_erk --timestepping-order 4 || exit
 ./build/test_samplers_* -s 3 -n 128 -m 128 --timestepping-method=ln_erk --timestepping-order 4 || exit
 

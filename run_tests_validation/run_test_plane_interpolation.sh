@@ -13,7 +13,7 @@ cd ../
 make clean
 SCONS="scons --threading=omp --unit-test=test_plane_interpolation --gui=disable --plane-spectral-space=enable --mode=debug"
 echo "$SCONS"
-$SCONS
+$SCONS || exit 1
 
 ./build/test_plane_interpolation*_debug -M 32 || exit
 

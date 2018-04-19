@@ -11,12 +11,11 @@
 
 class BenchmarkGaussianDam
 {
+
 public:
 	static
 	void setup_initial_conditions_gaussian(
 			SphereData &o_h,
-			SphereDataPhysical &o_u,
-			SphereDataPhysical &o_v,
 			SimulationVariables &i_simVars,
 			double i_center_lon = M_PI/3,
 			double i_center_lat = M_PI/3,
@@ -44,6 +43,23 @@ public:
 		};
 
 		o_h.physical_update_lambda_gaussian_grid(initial_condition_h);
+	}
+
+
+public:
+	static
+	void setup_initial_conditions_gaussian(
+			SphereData &o_h,
+			SphereDataPhysical &o_u,
+			SphereDataPhysical &o_v,
+			SimulationVariables &i_simVars,
+			double i_center_lon = M_PI/3,
+			double i_center_lat = M_PI/3,
+			double i_exp_fac = 10.0
+	)
+	{
+		setup_initial_conditions_gaussian(o_h, i_simVars, i_center_lon, i_center_lat, i_exp_fac);
+
 		o_u.physical_set_zero();
 		o_v.physical_set_zero();
 	}

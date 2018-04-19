@@ -12,7 +12,7 @@ cd ..
 
 make clean
 SCONS="scons --threading=omp --unit-test=test_plane_restriction_interpolation --mode=debug --plane-spectral-dealiasing=disable"
-$SCONS
+$SCONS || exit 1
 
 ./build/test_plane_restriction_interpolation_*  -N 64 || exit 1
 
@@ -20,7 +20,7 @@ $SCONS
 
 make clean
 SCONS="scons --threading=omp --unit-test=test_plane_restriction_interpolation --mode=debug --plane-spectral-dealiasing=enable"
-$SCONS
+$SCONS || exit 1
 
 ./build/test_plane_restriction_interpolation_*  -N 64 || exit 1
 

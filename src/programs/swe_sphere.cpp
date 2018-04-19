@@ -12,7 +12,7 @@
 	#include <sweet/Convert_SphereData_To_PlaneData.hpp>
 #endif
 
-#include <benchmarks_sphere/SphereBenchmarksCombined.hpp>
+#include <benchmarks_sphere/SWESphereBenchmarksCombined.hpp>
 
 #include <sweet/sphere/SphereData.hpp>
 #include <sweet/sphere/SphereDataPhysical.hpp>
@@ -83,6 +83,7 @@ public:
 	int mpi_rank;
 #endif
 
+	SWESphereBenchmarksCombined sphereBenchmarks;
 
 public:
 	SimulationInstance()	:
@@ -170,7 +171,7 @@ public:
 		if (simVars.setup.benchmark_setup_dealiased)
 		{
 			// use dealiased physical space for setup
-			SphereBenchmarksCombined::setupInitialConditions(prog_phi, prog_vort, prog_div, simVars, op);
+			sphereBenchmarks.setupInitialConditions(prog_phi, prog_vort, prog_div, simVars, op);
 		}
 		else
 		{
@@ -180,7 +181,7 @@ public:
 			SphereData prog_vort_nodealiasing(sphereDataConfig_nodealiasing);
 			SphereData prog_div_nodealiasing(sphereDataConfig_nodealiasing);
 
-			SphereBenchmarksCombined::setupInitialConditions(prog_phi_nodealiasing, prog_vort_nodealiasing, prog_div_nodealiasing, simVars, op_nodealiasing);
+			sphereBenchmarks.setupInitialConditions(prog_phi_nodealiasing, prog_vort_nodealiasing, prog_div_nodealiasing, simVars, op_nodealiasing);
 
 			prog_phi.load_nodealiasing(prog_phi_nodealiasing);
 			prog_vort.load_nodealiasing(prog_vort_nodealiasing);
@@ -314,7 +315,7 @@ public:
 			SphereData anal_solution_u(sphereDataConfig);
 			SphereData anal_solution_v(sphereDataConfig);
 
-			SphereBenchmarksCombined::setupInitialConditions(anal_solution_h, anal_solution_u, anal_solution_v, simVars, op);
+			sphereBenchmarks.setupInitialConditions(anal_solution_h, anal_solution_u, anal_solution_v, simVars, op);
 
 			SphereDataPhysical anal_solution_hg = anal_solution_h.getSphereDataPhysical();
 			SphereDataPhysical anal_solution_ug = anal_solution_u.getSphereDataPhysical();
@@ -433,7 +434,7 @@ public:
 			SphereData test_u(sphereDataConfig);
 			SphereData test_v(sphereDataConfig);
 
-			SphereBenchmarksCombined::setupInitialConditions(test_h, test_u, test_v, simVars, op);
+			SWESphereBenchmarksCombined::setupInitialConditions(test_h, test_u, test_v, simVars, op);
 
 			std::cout << "ERRORS - time, RMS(h,u,v), MAXABS(h,u,v):\t";
 			std::cout << simVars.timecontrol.current_simulation_time << "\t";

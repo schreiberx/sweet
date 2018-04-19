@@ -80,8 +80,8 @@ void Adv_Plane_TS_na_erk::run_timestep(
 	if (simVars.sim.getExternalForcesCallback != nullptr)
 	{
 		// this is just called for cosmetic reasons to update the velocity field
-		simVars.sim.getExternalForcesCallback(1, simVars.timecontrol.current_simulation_time, &io_u, simVars.sim.getExternalForcesUserData);
-		simVars.sim.getExternalForcesCallback(2, simVars.timecontrol.current_simulation_time, &io_v, simVars.sim.getExternalForcesUserData);
+		simVars.sim.getExternalForcesCallback(1, simVars.timecontrol.current_simulation_time+i_fixed_dt, &io_u, simVars.sim.getExternalForcesUserData);
+		simVars.sim.getExternalForcesCallback(2, simVars.timecontrol.current_simulation_time+i_fixed_dt, &io_v, simVars.sim.getExternalForcesUserData);
 	}
 }
 

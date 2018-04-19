@@ -53,7 +53,7 @@ class SWEETRuntimeOptions():
 		self.rexi_l = 11
 		self.rexi_h = 0.15
 
-		self.rexi_half_poles = 1
+		self.rexi_half_poles = 0
 		self.rexi_extended_modes = 0
 		self.rexi_normalization = 0
 		self.rexi_sphere_preallocation = 0

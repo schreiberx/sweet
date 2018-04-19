@@ -13,7 +13,7 @@
 #include <rexi/REXIFunctions.hpp>
 
 
-#define TEST_REXI_PDE_QUADPRECISION 1
+#define TEST_REXI_PDE_QUADPRECISION SWEET_QUADMATH
 
 #if TEST_REXI_PDE_QUADPRECISION
 	typedef __float128 T;
@@ -48,8 +48,6 @@ std::complex<T> fromComplexDoubleToT(
 
 	return value;
 }
-
-
 
 
 
@@ -179,6 +177,7 @@ void rexiIntegrationEValues(
 
 
 
+#if 0
 T lenreal(
 		const cplx &a,
 		const cplx &b
@@ -188,6 +187,7 @@ T lenreal(
 	T bv = b.real();
 	return rexiFunctions.l_sqrt(av*av+bv*bv);
 }
+#endif
 
 
 
@@ -271,25 +271,6 @@ int main(
 			);
 
 #if 0
-		if (!simVars.rexi.use_half_poles && function_name == "phi0")
-		{
-			double start = -2.0*M_PI;
-			double end = 2.0*M_PI;
-			double step_size = M_PI/80.0;
-
-			double max_error = 0;
-			for (double x = start; x < end; x += step_size)
-			{
-				std::complex<double> correct = std::exp(std::complex<double>(0.0, x));
-
-				std::complex<double> approx = 0;
-				for (std::size_t n = 0; n < alpha.size(); n++)
-					approx += beta[n] / (std::complex<double>(0.0, x) + alpha[n]);
-			}
-		}
-#endif
-
-#if 1
 		std::cout << std::endl;
 		std::cout << "ALPHA:" << std::endl;
 		for (std::size_t i = 0; i < alpha.size(); i++)
@@ -301,22 +282,6 @@ int main(
 			std::cout << i << ": " << beta[i] << std::endl;
 #endif
 
-#if 0
-		if (!simVars.rexi.use_half_poles)
-		{
-			double d = 2.0;//simVars.rexi.h*simVars.rexi.M*0.1;
-			for (double x = -d; x <= d+1e-10; x += 0.1)
-			{
-					FatalError("Test not working if halving poles!");
-
-				std::complex<double> approx = approx_returnComplex(alpha, beta, x);
-				std::complex<double> analyt = fromTtoComplexDouble(rexiFunctions.eval(std::complex<double>(0, x)));
-				std::cout << x << ": " << approx << "	" << analyt << std::endl;
-				//std::cout << x << ": " << (approx-analyt) << std::endl;
-			}
-		}
-#endif
-
 
 		cplx U0[2];
 		U0[0] = {1.0, 1.0};
@@ -326,9 +291,6 @@ int main(
 		U[0] = U0[0];
 		U[1] = U0[1];
 
-		/*
-		 * Cope with phi2..5 scalings for first time step
-		 */
 		analyticalIntegration(
 				lambda,
 				0,

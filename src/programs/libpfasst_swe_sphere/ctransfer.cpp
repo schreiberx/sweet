@@ -1,7 +1,9 @@
 #include "ctransfer.hpp"
+
+#include <benchmarks_sphere/SWESphereBenchmarksCombined.hpp>
+
 #include "cencap.hpp"
 
-#include <benchmarks_sphere/SphereBenchmarksCombined.hpp>
 
 extern "C"
 {

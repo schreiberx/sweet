@@ -331,10 +331,15 @@ int main(int i_argc, char *i_argv[])
 	if (simVars.disc.timestepping_order == 1)
 		max_modes *= 2;
 
+	double dt = simVars.timecontrol.current_timestep_size;
+
+	int c = 0;
+
 	double prev_max_error = -1;
 	for (int i = initial_spectral_modes; i <= max_modes; i *= 2)
 	{
-		simVars.timecontrol.current_timestep_size *= 0.5;
+		simVars.timecontrol.current_timestep_size = dt/std::pow(2.0, c);
+		c++;
 
 		if (simVars.disc.timestepping_method == "na_sl")
 		{
@@ -364,7 +369,6 @@ int main(int i_argc, char *i_argv[])
 
 		SimulationInstance simulation;
 
-
 	#if SWEET_GUI
 		if (simVars.misc.gui_enabled)
 		{
@@ -390,8 +394,15 @@ int main(int i_argc, char *i_argv[])
 
 				if (conv*1.1 < std::pow(2.0, (double)simVars.disc.timestepping_order))
 				{
-					std::cerr << "Convergence not given!" << std::endl;
+					std::cerr << "Convergence too low!" << std::endl;
 					exit(1);
+				}
+
+
+				if (conv*0.9 > std::pow(2.0, (double)(simVars.disc.timestepping_order+1)))
+				{
+					std::cout<< "Convergence too high, might be still correct!" << std::endl;
+					//exit(1);
 				}
 			}
 			prev_max_error = simulation.max_error_h0;

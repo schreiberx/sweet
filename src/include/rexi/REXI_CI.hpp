@@ -92,6 +92,10 @@ public:
 			T i_ci_gaussian_filter_dt
 	)
 	{
+#if !SWEET_QUADMATH
+		FatalError("Don't use this without quad precision support to generate the coefficients!");
+#endif
+
 		alpha_eval.resize(N);
 		beta_eval.resize(N);
 

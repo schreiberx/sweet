@@ -14,7 +14,7 @@ make clean
 SCONS="scons --unit-test=test_sphere_coordinates"
 #SCONS="scons --threading=omp --unit-test=test_sphere_advection --gui=disable --plane-spectral-space=disable --sphere-spectral-space=enable --mode=release"
 echo "$SCONS"
-$SCONS
+$SCONS || exit 1
 
 
 EXEC="./build/test_sphere_coordinates*"
