@@ -539,7 +539,6 @@ public:
 					}
 				);
 
-
 				if (io_simVars.misc.sphere_use_robert_functions)
 				{
 					ug.physical_update_lambda_cosphi_grid(
@@ -857,13 +856,6 @@ public:
 					}
 				);
 
-				computeGeostrophicBalance(
-						o_h,
-						ug,
-						vg,
-						io_simVars,
-						io_op
-				);
 
 				if (io_simVars.misc.sphere_use_robert_functions)
 				{
@@ -882,8 +874,25 @@ public:
 					);
 				}
 
+				computeGeostrophicBalance(
+						o_h,
+						ug,
+						vg,
+						io_simVars,
+						io_op
+				);
+
 				o_phi = o_h*io_simVars.sim.gravitation;
 				io_op.robert_uv_to_vortdiv(ug, vg, o_vort, o_div);
+
+#if 0
+				std::cout << "phi" << std::endl;
+				o_phi.spectral_print();
+				std::cout << "vort" << std::endl;
+				o_vort.spectral_print();
+				std::cout << "div" << std::endl;
+				o_div.spectral_print();
+#endif
 			}
 			else
 			{
