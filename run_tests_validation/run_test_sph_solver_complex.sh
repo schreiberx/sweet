@@ -11,7 +11,7 @@ export OMP_PROC_BIND=close
 cd ../
 
 make clean
-SCONS="scons --threading=omp --unit-test=test_sph_solver_complex --gui=disable --plane-spectral-space=disable --sphere-spectral-space=enable --mode=debug"
+SCONS="scons --threading=omp --unit-test=test_sph_solver_complex --gui=disable --plane-spectral-space=disable --sphere-spectral-space=enable --mode=debug --quadmath=enable"
 echo "$SCONS"
 $SCONS || exit 1
 
