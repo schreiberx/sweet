@@ -563,7 +563,7 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 						K = -dt*lam;
 						K = (rexiFunctions.l_expcplx(K) - std::complex<T>(1.0) - K - K*K)/(K*K*K)
 								- (rexiFunctions.l_expcplx(K) - std::complex<T>(1.0) - K)/(K*K)
-								+ 0.5*(rexiFunctions.l_expcplx(K) - std::complex<T>(1.0))/K;
+								+ std::complex<T>(0.5)*(rexiFunctions.l_expcplx(K) - std::complex<T>(1.0))/K;
 					}
 					break;
 
