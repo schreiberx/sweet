@@ -32,44 +32,8 @@ public:
 	// Simulation variables
 	SimulationVariables *simVars;
 
-	// plane or sphere data
-	//void* ext_forces_data[3];
-
 	// plane or sphere data config
 	const void* ext_forces_data_config;
-
-	// last time stamp to update external forces
-	//double ext_forces_last_timestamp[3];
-
-
-
-	SWEPlaneBenchmarksCombined()
-	{
-		//ext_forces_data[0] = nullptr;
-		//ext_forces_data[1] = nullptr;
-		//ext_forces_data[2] = nullptr;
-
-		//ext_forces_last_timestamp[0] = -1;
-		//ext_forces_last_timestamp[1] = -1;
-		//ext_forces_last_timestamp[2] = -1;
-	}
-
-
-
-	~SWEPlaneBenchmarksCombined()
-	{
-#if 0
-		if (ext_forces_data[0] != nullptr)
-			delete (PlaneData*)ext_forces_data[0];
-
-		if (ext_forces_data[1] != nullptr)
-			delete (PlaneData*)ext_forces_data[1];
-
-		if (ext_forces_data[2] != nullptr)
-			delete (PlaneData*)ext_forces_data[2];
-#endif
-	}
-
 
 
 
@@ -246,16 +210,6 @@ public:
 
 				if (i_field_id >= 1 && i_field_id <= 2)
 				{
-//					if (s->ext_forces_data[i_field_id] == nullptr)
-//						s->ext_forces_data[i_field_id] = new PlaneData(o_plane_data_config);
-
-//					// set pointer to buffer
-//					*o_data_void = s->ext_forces_data[i_field_id];
-
-					// nothing to do?
-					//if (s->ext_forces_last_timestamp[i_field_id] == s->simVars->timecontrol.current_simulation_time)
-					//	return;
-
 					double u = s->simVars->sim.advection_velocity[0];
 					double v = s->simVars->sim.advection_velocity[1];
 
@@ -274,10 +228,10 @@ public:
 					else if (i_field_id == 2)
 					{
 						// v-velocity
+						//*o_plane_data = std::sin(r)*u + std::cos(r)*v;
 						*o_plane_data = v*(1.0+std::cos(r));
 					}
 
-					//s->ext_forces_last_timestamp[i_field_id] = s->simVars->timecontrol.current_simulation_time;
 					return;
 				}
 
@@ -289,11 +243,6 @@ public:
 			{
 				// backup data config
 				ext_forces_data_config = o_h_pert.planeDataConfig;
-
-				// external forces time stamp
-				//ext_forces_last_timestamp[0] = -1;
-				//ext_forces_last_timestamp[1] = -1;
-				//ext_forces_last_timestamp[2] = -1;
 
 				// set callback
 				io_simVars.sim.getExternalForcesCallback = callback_external_forces_advection_field;
