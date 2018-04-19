@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 # Plot unstable jet fields
 #Campare against reference solutions
-# 
+#
 #--------------------------------------
 
 import matplotlib
@@ -44,11 +44,11 @@ for filename in sys.argv[1:]:
 	print(filename)
 	if i == 1:
 		filename1 = filename
-		data1 = np.loadtxt(filename) 
+		data1 = np.loadtxt(filename)
 	else:
 		filename2 = filename
-		data2 = np.loadtxt(filename) 
-		
+		data2 = np.loadtxt(filename)
+
 #Check dimensions
 data_ref = data1
 data_cmp = data2
@@ -58,9 +58,9 @@ print("Dimensions (ref and cmp)")
 print(ny_ref, nx_ref)
 print(ny_cmp, nx_cmp)
 
-#Set benchmark 
+#Set benchmark
 earth = EarthMKSDimensions()
-benchpar = Unstablejet() 
+benchpar = Unstablejet()
 
 #Domain
 x_min = benchpar.x_min
@@ -71,13 +71,13 @@ y_max = benchpar.y_max
 multiplier_j = (ny_ref)/(ny_cmp)
 multiplier_i = (nx_ref)/(nx_cmp)
 
-#if not float(multiplier_i).is_integer() or not float(multiplier_j).is_integer() : 
+#if not float(multiplier_i).is_integer() or not float(multiplier_j).is_integer() :
 #	print ("Dimensions of reference solution: ", ny_ref, nx_ref)
 #	print ("Dimensions of method under analysis: ", ny_cmp, nx_cmp)
 #	print ("Multipliers: ", multiplier_i, multiplier_j)
 #	print ("Grids are not aligned")
 #	sys.exit(1)
-	
+
 #multiplier_j = int(multiplier_j)
 #multiplier_i = int(multiplier_i)
 #print("Grids aligned")
@@ -101,8 +101,8 @@ elif multiplier_i >= 1 and multiplier_j >= 1 :
 				#print("(",i,",",j,",", i*multiplier_i,",", j*multiplier_j,")", end="")
 
 				data[j,i] = data_cmp[j,i]-data_ref[j*multiplier_j,i*multiplier_i]
-		
-	else: 
+
+	else:
 	#Comparison via interpolation
 		print("Interpolation")
 		# A-grid REFERENCE (file1) - sweet outputs only A grids physical space
@@ -126,10 +126,10 @@ elif multiplier_i >= 1 and multiplier_j >= 1 :
 		y_cmp += dy_cmp/2
 		X_cmp, Y_cmp = np.meshgrid(x_cmp, y_cmp)
 
-		#Get reduced reference resolution 
+		#Get reduced reference resolution
 		data_ref_low = interp_spline(y_cmp, x_cmp)
-		data = data_cmp - data_ref_low 
-		
+		data = data_cmp - data_ref_low
+
 else :
 	print ("Please provide reference solution (file1) with dimension larger or equal file2")
 	sys.exit(1)
@@ -171,15 +171,15 @@ class MidpointNormalize(colors.Normalize):
 		# simple example...
 		x, y = [self.vmin, self.midpoint, self.vmax], [0, 0.5, 1]
 		return np.ma.masked_array(np.interp(value, x, y), np.isnan(value))
-		
+
 
 #Get max/min
 cmin = np.amin(data)
-cmax = np.amax(data)		
-mid_val=0		
+cmax = np.amax(data)
+mid_val=0
 
 dx_cmp=(x_max-x_min)/nx_cmp
-dy_cmp=(y_max-y_min)/ny_cmp		
+dy_cmp=(y_max-y_min)/ny_cmp
 extent = (labelsx[0]+dx_cmp/2, labelsx[-1]-dx_cmp/2, labelsy[0]+dy_cmp/2, labelsy[-1]-dy_cmp/2)
 
 #Color plot
@@ -200,7 +200,7 @@ if 'diag_vort' in filename:
 elif 'prog_h' in filename:
 	cbar = plt.colorbar()
 	cbar.set_label('meters', rotation=270,labelpad=+5, size=fontsize)
-cbar.ax.tick_params(labelsize=fontsize) 
+cbar.ax.tick_params(labelsize=fontsize)
 
 
 #Contour lines (black)
@@ -234,7 +234,7 @@ elif 'prog_h' in filename:
 else:
 	title+="What is this? \n"
 	outfile+="what_"
-	
+
 #Method
 print("Methods")
 pos1 = filename1.find('_tsm_')
@@ -259,7 +259,7 @@ elif method1 == "ln_erk":
 		method1 = "REF"
 	else:
 		method1 = "RK-FDC"
-	
+
 if method2 == "l_cn_na_sl_nd_settls":
 	method2 = "SL-SI-SETTLS"
 elif method2 == "l_rexi_na_sl_nd_settls":
@@ -273,7 +273,7 @@ elif method2 == "ln_erk":
 		method2 = "REF"
 	else:
 		method2 = "RK-FDC"
-		
+
 if method1 == method2:
 	title+=method1
 	outfile += method1
@@ -330,7 +330,7 @@ if timestep1 != timestep2:
 	outfile += "_vs_dt"
 	outfile += str(timestep2)
 title += ' sec '
-	
+
 
 print(title)
 plt.title(title, fontsize=fontsize)
@@ -354,6 +354,7 @@ plt.show()
 #outfilename = filename.replace('.csv', 'compare.eps')
 outfilename=outfile+".eps"
 print(outfilename)
+#outfilename="tmp.eps"
 plt.savefig(outfilename, dpi=300, transparent=True, bbox_inches='tight', \
                         pad_inches=0)
 
@@ -364,5 +365,3 @@ outfile_errors = outfilename.replace('.eps', 'Errors12max.txt')
 print(outfile_errors+"\t"+str(norm_l1_value)+"\t"+str(norm_l2_value)+"\t"+str(norm_linf_value))
 
 print(str(norm_l1_value)+"\t"+str(norm_l2_value)+"\t"+str(norm_linf_value), file=open(outfile_errors, 'w'))
-
-
