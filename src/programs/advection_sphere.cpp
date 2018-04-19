@@ -14,7 +14,7 @@
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
-#include <benchmarks_sphere/SphereBenchmarksCombined.hpp>
+#include <benchmarks_sphere/SWESphereBenchmarksCombined.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/Convert_SphereData_To_PlaneData.hpp>
@@ -54,7 +54,7 @@ public:
 	int render_primitive_id = 1;
 #endif
 
-	SphereBenchmarksCombined sphereBenchmarks;
+	SWESphereBenchmarksCombined sphereBenchmarks;
 
 
 public:

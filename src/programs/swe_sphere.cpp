@@ -12,7 +12,7 @@
 	#include <sweet/Convert_SphereData_To_PlaneData.hpp>
 #endif
 
-#include <benchmarks_sphere/SphereBenchmarksCombined.hpp>
+#include <benchmarks_sphere/SWESphereBenchmarksCombined.hpp>
 
 #include <sweet/sphere/SphereData.hpp>
 #include <sweet/sphere/SphereDataPhysical.hpp>
@@ -83,7 +83,7 @@ public:
 	int mpi_rank;
 #endif
 
-	SphereBenchmarksCombined sphereBenchmarks;
+	SWESphereBenchmarksCombined sphereBenchmarks;
 
 public:
 	SimulationInstance()	:
@@ -434,7 +434,7 @@ public:
 			SphereData test_u(sphereDataConfig);
 			SphereData test_v(sphereDataConfig);
 
-			SphereBenchmarksCombined::setupInitialConditions(test_h, test_u, test_v, simVars, op);
+			SWESphereBenchmarksCombined::setupInitialConditions(test_h, test_u, test_v, simVars, op);
 
 			std::cout << "ERRORS - time, RMS(h,u,v), MAXABS(h,u,v):\t";
 			std::cout << simVars.timecontrol.current_simulation_time << "\t";

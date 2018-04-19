@@ -5,8 +5,8 @@
  *	  Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#ifndef SRC_INCLUDE_BENCHMARKS_SPHERE_SPHEREBENCHMARKSCOMBINED_HPP_
-#define SRC_INCLUDE_BENCHMARKS_SPHERE_SPHEREBENCHMARKSCOMBINED_HPP_
+#ifndef SRC_INCLUDE_BENCHMARKS_SPHERE_SWESPHEREBENCHMARKSCOMBINED_HPP_
+#define SRC_INCLUDE_BENCHMARKS_SPHERE_SWESPHEREBENCHMARKSCOMBINED_HPP_
 
 #include <sweet/sphere/SphereData.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
@@ -15,11 +15,14 @@
 #include <benchmarks_sphere/BenchmarkGaussianDam.hpp>
 #include <benchmarks_sphere/BenchmarkFlowOverMountain.hpp>
 
-class SphereBenchmarksCombined
+class SWESphereBenchmarksCombined
 {
 public:
 	// Simulation variables
 	SimulationVariables *simVars;
+
+	// Sphere operators
+	SphereOperators *op;
 
 	// plane or sphere data config
 	const void* ext_forces_data_config;
@@ -193,10 +196,126 @@ public:
 	)
 	{
 		simVars = &io_simVars;
+		op = &io_op;
 
 		if (io_simVars.setup.benchmark_scenario_name != "")
 		{
-			if (
+			if (io_simVars.setup.benchmark_scenario_name == "gaussian_bump_advection")
+			{
+				/*
+				 * Advection benchmark with a time-varying velocity field
+				 */
+
+				auto callback_external_forces_advection_field =
+						[](
+								int i_field_id,
+								double i_simulation_timestamp,
+								void* o_data_void,			/// planedata or spheredata
+								void* o_data_user_void		/// user data (pointer to this class)
+				)
+				{
+					SphereData* o_sphere_data = (SphereData*)o_data_void;
+					SWESphereBenchmarksCombined* s = (SWESphereBenchmarksCombined*)o_data_user_void;
+
+					if (i_field_id == 1)
+					{
+						double a = s->simVars->sim.earth_radius;
+						double alpha = s->simVars->setup.advection_rotation_angle;
+						double u0 = (2.0*M_PI*a)/(12.0*24.0*60.0*60.0);
+
+						double r;
+						if (s->simVars->sim.advection_velocity[2] == 0)
+							r = 0;
+						else
+							r = i_simulation_timestamp/s->simVars->sim.advection_velocity[2]*2.0*M_PI;
+
+						// apply rotation
+						//alpha += r;
+
+						// change velocity
+						u0 = u0*(1.0 + std::cos(r));
+
+						SphereData stream_function(o_sphere_data->sphereDataConfig);
+
+						stream_function.physical_update_lambda(
+							[&](double i_lon, double i_lat, double &io_data)
+							{
+								double i_theta = i_lat;
+								double i_lambda = i_lon;
+
+								io_data = -a*u0*(std::sin(i_theta)*std::cos(alpha) - std::cos(i_lambda)*std::cos(i_theta)*std::sin(alpha));
+							}
+						);
+
+						*o_sphere_data = s->op->laplace(stream_function);
+					}
+					else if (i_field_id == 2)
+					{
+						o_sphere_data->spectral_set_zero();
+					}
+					else
+					{
+						FatalError("Non-existing external field requested!");
+					}
+					return;
+				};
+
+
+				/*
+				 * Gaussian bump advection with changing velocity field!
+				 */
+				if (io_simVars.timecontrol.current_simulation_time == 0)
+				{
+					std::cout << "!!! WARNING !!!" << std::endl;
+					std::cout << "!!! WARNING: Overriding simulation parameters for this benchmark !!!" << std::endl;
+					std::cout << "!!! WARNING !!!" << std::endl;
+				}
+
+				io_simVars.sim.coriolis_omega = 7.292e-5;
+				io_simVars.sim.gravitation = 9.80616;
+				io_simVars.sim.earth_radius = 6.37122e6;
+				io_simVars.sim.h0 = 1000.0;
+
+				io_op.setup(o_phi.sphereDataConfig, io_simVars.sim.earth_radius);
+
+				double lambda_c = 3.0*M_PI/2.0;
+				double theta_c = 0.0;
+
+				o_phi.physical_update_lambda(
+					[&](double i_lambda, double i_theta, double &io_data)
+				{
+						double d = std::acos(
+								std::sin(theta_c)*std::sin(i_theta) +
+								std::cos(theta_c)*std::cos(i_theta)*std::cos(i_lambda-lambda_c)
+						);
+
+						double i_exp_fac = 20.0;
+						io_data = std::exp(-d*d*i_exp_fac)*0.1*io_simVars.sim.h0;
+
+						io_data *= io_simVars.sim.gravitation;
+					}
+				);
+
+
+				if (simVars->sim.advection_velocity[2] != 0)
+				{
+					// backup data config
+					ext_forces_data_config = o_phi.sphereDataConfig;
+
+					// set callback
+					io_simVars.sim.getExternalForcesCallback = callback_external_forces_advection_field;
+
+					// set user data to this class
+					io_simVars.sim.getExternalForcesUserData = this;
+				}
+
+				// setup velocities with initial time stamp
+				callback_external_forces_advection_field(1, simVars->timecontrol.current_simulation_time, &o_vort, this);
+				callback_external_forces_advection_field(2, simVars->timecontrol.current_simulation_time, &o_div, this);
+
+				io_simVars.misc.output_time_scale = 1.0/(60.0*60.0);
+			}
+			else if (
 					io_simVars.setup.benchmark_scenario_name == "williamson1"		||
 					io_simVars.setup.benchmark_scenario_name == "adv_cosine_bell"
 			)
@@ -1234,4 +1353,4 @@ public:
 
 
 
-#endif /* SRC_INCLUDE_BENCHMARKS_SPHERE_SPHEREBENCHMARKSCOMBINED_HPP_ */
+#endif /* SRC_INCLUDE_BENCHMARKS_SPHERE_SWESPHEREBENCHMARKSCOMBINED_HPP_ */

@@ -2,7 +2,6 @@
 #include <math.h>
 #include <string>
 
-#include <benchmarks_sphere/SphereBenchmarksCombined.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/sphere/SphereData.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
@@ -18,6 +17,9 @@
 #include "SWE_Sphere_TS_l_rexi.hpp"
 
 #include "ceval.hpp"
+
+#include <benchmarks_sphere/SWESphereBenchmarksCombined.hpp>
+
 #include "cencap.hpp"
 
 /**
@@ -174,7 +176,7 @@ extern "C"
     // div_Y.load_nodealiasing(div_Y_nodealiasing);
 
 
-    SphereBenchmarksCombined::setupInitialConditions(phi_Y, 
+    SWESphereBenchmarksCombined::setupInitialConditions(phi_Y, 
      						     vort_Y, 
      						     div_Y, 
      						     *simVars, 
