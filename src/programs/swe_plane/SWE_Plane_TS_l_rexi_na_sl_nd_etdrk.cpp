@@ -42,12 +42,13 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::euler_timestep_update_nonlinear(
 	 * o_v_t = -i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
 	 */
 	// In lagrangian form, the only nonlinearity is the nonlinear divergence
-	o_h_t = 0.0; //-op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
 	o_u_t = 0.0; //-i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
 	o_v_t = 0.0; //-i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
 
-	if (simVars.pde.use_linear_div == 0) //!FIX THIS!!!!!!!!!!!!1 IT includes advection!!!!!!
-		o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
+	if (simVars.pde.use_linear_div == 1) // linear div only
+		o_h_t = 0.0; //-op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
+	else //nonlinear div
+		o_h_t = -i_h*(op.diff_c_x(i_u) + op.diff_c_y(i_v));
 
 }
 

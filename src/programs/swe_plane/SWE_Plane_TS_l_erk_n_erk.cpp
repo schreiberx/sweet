@@ -51,6 +51,7 @@ void SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_linear(
 	o_h_t = -(op.diff_c_x(i_u) + op.diff_c_y(i_v))*simVars.sim.h0;
 	o_u_t = -simVars.sim.gravitation*op.diff_c_x(i_h) + simVars.sim.f0*i_v;
 	o_v_t = -simVars.sim.gravitation*op.diff_c_y(i_h) - simVars.sim.f0*i_u;
+
 }
 
 
@@ -74,9 +75,13 @@ void SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_nonlinear(
 	 *	u_t = -g * h_x - u * u_x - v * u_y + f*v
 	 *	v_t = -g * h_y - u * v_x - v * v_y - f*u
 	 */
-	o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
+	//o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
 	o_u_t = -i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
 	o_v_t = -i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
+	if (simVars.pde.use_linear_div == 1) //only nonlinear advection left to solve
+		o_h_t = - (i_u*op.diff_c_x(i_h) + i_v*op.diff_c_y(i_h));
+	else //full nonlinear equation on h
+		o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
 }
 
 

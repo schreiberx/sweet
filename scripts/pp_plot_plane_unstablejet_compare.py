@@ -49,6 +49,40 @@ for filename in sys.argv[1:]:
 		filename2 = filename
 		data2 = np.loadtxt(filename)
 
+#Check if plotting in standard naming convention
+if 'script_' in filename:
+	stdpat = 1
+else:
+	stdpat = 0
+
+#Check variable to be plotted
+title=""
+outfile=""
+if 'diag_vort' in filename1:
+	if 'diag_vort' in filename2:
+		title += "Vorticity Deviation \n"
+		outfile += "vort_"
+		varplot = 'vort'
+	else:
+		print("Warning: you are comparing apples and oranges!!!!")
+		sys.exit(1)
+
+elif 'prog_h' in filename1:
+	if 'prog_h' in filename2:
+		title+="Depth Deviation (m) \n"
+		outfile+="depth_"
+		varplot = 'depth'
+	else:
+		print("Warning: you are comparing apples and oranges!!!!")
+		sys.exit(1)
+
+else:
+	pos1 = filename1.find('output_')
+	pos2 = filename1.find('_t')
+	varplot = filename1[pos1+8:pos2]
+	title += varplot+"\n"
+	outfile += varplot+"_"
+
 #Check dimensions
 data_ref = data1
 data_cmp = data2
@@ -152,6 +186,7 @@ y = np.linspace(y_min, y_max, n)
 labelsx = np.linspace(x_min, x_max, 7)
 labelsy = np.linspace(y_min, y_max, 7)
 
+
 #Start plotting
 plt.figure(figsize=figsize)
 
@@ -194,24 +229,27 @@ plt.imshow(data, interpolation='nearest', extent=extent, origin='lower', aspect=
 plt.clim(cmin, cmax)
 cref=max(abs(cmin),abs(cmax))
 plt.clim(-cref, +cref)
-if 'diag_vort' in filename:
+if varplot == 'vort':
 	cbar = plt.colorbar(format='%.0e')
 	cbar.set_label('1/s', rotation=270, labelpad=+20, size=fontsize)
-elif 'prog_h' in filename:
+elif varplot == "depth":
 	cbar = plt.colorbar()
 	cbar.set_label('meters', rotation=270,labelpad=+5, size=fontsize)
+else:
+	cbar = plt.colorbar()
+
 cbar.ax.tick_params(labelsize=fontsize)
 
 
 #Contour lines (black)
-if 'diag_vort' in filename:
+if varplot == 'vort':
 	s = 2e-5
 	eta_contour_levels = np.append(np.arange(-1e-4, 0, s), np.arange(s, 1e-4, s))
 
 	#plt.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, levels=eta_contour_levels, linewidths=0.5)
 	#plt.contour(x,y,data, colors="black", origin='lower', vmin=cmin, vmax=cmax, levels=eta_contour_levels, linewidths=0.5)
 	#plt.contourf(x, y, data, vmin=cmin, vmax=cmax, levels=eta_contour_levels)
-elif 'prog_h' in filename:
+elif varplot == "depth":
 	#plt.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, levels=h_contour_levels, linewidths=0.5)
 	hs = 20
 	#h_contour_levels = np.append(np.arange(900, 1000-hs, hs), np.arange(1000+hs, 1100, hs))
@@ -222,115 +260,107 @@ else:
 		pass
 		#plt.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, linewidths=0.5)
 
-#Set tittle
-title=""
-outfile=""
-if 'diag_vort' in filename:
-	title+="Vorticity Deviation \n"
-	outfile+="vort_"
-elif 'prog_h' in filename:
-	title+="Depth Deviation (m) \n"
-	outfile+="depth_"
-else:
-	title+="What is this? \n"
-	outfile+="what_"
 
 #Method
-print("Methods")
-pos1 = filename1.find('_tsm_')
-pos2 = filename1.find('_tso')
-method1 = filename1[pos1+5:pos2]
-print(method1)
-pos1 = filename2.find('_tsm_')
-pos2 = filename2.find('_tso')
-method2 = filename2[pos1+5:pos2]
-print(method2)
+if stdpat == 1:
+	print("Methods")
+	pos1 = filename1.find('_tsm_')
+	pos2 = filename1.find('_tso')
+	method1 = filename1[pos1+5:pos2]
+	print(method1)
+	pos1 = filename2.find('_tsm_')
+	pos2 = filename2.find('_tso')
+	method2 = filename2[pos1+5:pos2]
+	print(method2)
 
-if method1 == "l_cn_na_sl_nd_settls":
-	method1 = "SL-SI-SETTLS"
-elif method1 == "l_rexi_na_sl_nd_settls":
-	method1 = "SL-EXP-SETTLS"
-elif method1 == "l_rexi_na_sl_nd_etdrk":
-	method1 = "SL-ETD2RK"
-elif method1 == "l_rexi_n_etdrk":
-	method1 = "ETD2RK"
-elif method1 == "ln_erk":
-	if 'ref' in filename1:
-		method1 = "REF"
+	if method1 == "l_cn_na_sl_nd_settls":
+		method1 = "SL-SI-SETTLS"
+	elif method1 == "l_rexi_na_sl_nd_settls":
+		method1 = "SL-EXP-SETTLS"
+	elif method1 == "l_rexi_na_sl_nd_etdrk":
+		method1 = "SL-ETD2RK"
+	elif method1 == "l_rexi_n_etdrk":
+		method1 = "ETD2RK"
+	elif method1 == "ln_erk":
+		if 'ref' in filename1:
+			method1 = "REF"
+		else:
+			method1 = "RK-FDC"
+
+	if method2 == "l_cn_na_sl_nd_settls":
+		method2 = "SL-SI-SETTLS"
+	elif method2 == "l_rexi_na_sl_nd_settls":
+		method2 = "SL-EXP-SETTLS"
+	elif method2 == "l_rexi_na_sl_nd_etdrk":
+		method2 = "SL-ETD2RK"
+	elif method2 == "l_rexi_n_etdrk":
+		method2 = "ETD2RK"
+	elif method2 == "ln_erk":
+		if 'ref' in filename2:
+			method2 = "REF"
+		else:
+			method2 = "RK-FDC"
+
+	if method1 == method2:
+		title+=method1
+		outfile += method1
 	else:
-		method1 = "RK-FDC"
+		title += method1
+		title += " vs "
+		title += method2
+		outfile += method1
+		outfile += "_vs_"
+		outfile += method2
 
-if method2 == "l_cn_na_sl_nd_settls":
-	method2 = "SL-SI-SETTLS"
-elif method2 == "l_rexi_na_sl_nd_settls":
-	method2 = "SL-EXP-SETTLS"
-elif method2 == "l_rexi_na_sl_nd_etdrk":
-	method2 = "SL-ETD2RK"
-elif method2 == "l_rexi_n_etdrk":
-	method2 = "ETD2RK"
-elif method2 == "ln_erk":
-	if 'ref' in filename2:
-		method2 = "REF"
-	else:
-		method2 = "RK-FDC"
+	#Time
+	title += '  t='
+	pos1 = filename1.find('output')
+	name = filename1[pos1:]
+	pos2 = name.find('_t')
+	pos3 = filename1.find('.csv')
+	time1 = filename1[pos1+pos2+2:pos3]
+	time1 = float(time1)
+	time1 = round(time1 / 86400, 2)
+	title += str(time1)
+	outfile += "_t"
+	outfile += str(time1)
+	pos1 = filename2.find('output')
+	name = filename2[pos1:]
+	pos2 = name.find('_t')
+	pos3 = filename2.find('.csv')
+	time2 = filename2[pos1+pos2+2:pos3]
+	time2 = float(time2)
+	time2 = round(time2 / 86400, 2)
+	if time1 != time2:
+		title += " vs t="
+		title += str(time2)
+		outfile += "_vs_t"
+		outfile += str(time2)
 
-if method1 == method2:
-	title+=method1
-	outfile += method1
+	title += ' days '
+
+	#Time step
+	title+=" dt="
+	pos1 = filename1.find('_C')
+	pos2 = filename1.find('_R')
+	timestep1=filename1[pos1+2:pos2]
+	title += filename1[pos1+2:pos2]
+	outfile += "_dt"
+	outfile += str(timestep1)
+
+	pos1 = filename2.find('_C')
+	pos2 = filename2.find('_R')
+	timestep2=filename2[pos1+2:pos2]
+	if timestep1 != timestep2:
+		title += " vs dt="
+		title += filename2[pos1+2:pos2]
+		outfile += "_vs_dt"
+		outfile += str(timestep2)
+	title += ' sec '
+
 else:
-	title += method1
-	title += " vs "
-	title += method2
-	outfile += method1
-	outfile += "_vs_"
-	outfile += method2
-
-#Time
-title += '  t='
-pos1 = filename1.find('output')
-name = filename1[pos1:]
-pos2 = name.find('_t')
-pos3 = filename1.find('.csv')
-time1 = filename1[pos1+pos2+2:pos3]
-time1 = float(time1)
-time1 = round(time1 / 86400, 2)
-title += str(time1)
-outfile += "_t"
-outfile += str(time1)
-pos1 = filename2.find('output')
-name = filename2[pos1:]
-pos2 = name.find('_t')
-pos3 = filename2.find('.csv')
-time2 = filename2[pos1+pos2+2:pos3]
-time2 = float(time2)
-time2 = round(time2 / 86400, 2)
-if time1 != time2:
-	title += " vs t="
-	title += str(time2)
-	outfile += "_vs_t"
-	outfile += str(time2)
-
-title += ' days '
-
-#Time step
-title+=" dt="
-pos1 = filename1.find('_C')
-pos2 = filename1.find('_R')
-timestep1=filename1[pos1+2:pos2]
-title += filename1[pos1+2:pos2]
-outfile += "_dt"
-outfile += str(timestep1)
-
-pos1 = filename2.find('_C')
-pos2 = filename2.find('_R')
-timestep2=filename2[pos1+2:pos2]
-if timestep1 != timestep2:
-	title += " vs dt="
-	title += filename2[pos1+2:pos2]
-	outfile += "_vs_dt"
-	outfile += str(timestep2)
-title += ' sec '
-
+	title = filename1+"/n"+filename2
+	outfile = "plot"
 
 print(title)
 plt.title(title, fontsize=fontsize)
@@ -352,9 +382,11 @@ plt.show()
 
 #Save file as eps
 #outfilename = filename.replace('.csv', 'compare.eps')
-outfilename=outfile+".eps"
+#print(outfilename)
+outfilename = outfile+".eps"
 print(outfilename)
 #outfilename="tmp.eps"
+#print(outfilename)
 plt.savefig(outfilename, dpi=300, transparent=True, bbox_inches='tight', \
                         pad_inches=0)
 

@@ -85,8 +85,6 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 	kappa += f0*f0;
 	kappa_bar -= f0*f0;
 
-	//if (with_linear_div_only > 0)
-	//{
 	Staggering staggering;
 	assert(staggering.staggering_type == 'a');
 
@@ -101,7 +99,6 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 			&staggering,
 			simVars.disc.timestepping_order
 	);
-	//}
 
 
 	// Calculate Divergence and vorticity spectrally
@@ -115,8 +112,6 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 	PlaneData rhs_v =  - f0 * io_u + alpha * io_v - g * op.diff_c_y(io_h);
 	PlaneData rhs_h = alpha * io_h  - h_bar * div;
 
-	//if (with_linear_div_only > 0)
-	//{
 	// all the RHS are to be evaluated at the departure points
 	rhs_u=sampler2D.bicubic_scalar(rhs_u, posx_d, posy_d, -0.5, -0.5);
 	rhs_v=sampler2D.bicubic_scalar(rhs_v, posx_d, posy_d, -0.5, -0.5);
@@ -126,45 +121,18 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 	rhs_u.request_data_spectral();
 	rhs_v.request_data_spectral();
 	rhs_h.request_data_spectral();
-	//}
 
 	// Calculate nonlinear term at half timestep and add to RHS of h eq.
-	//if (with_linear_div_only > 0)
-	//{
-	// Calculate nonlinear term interpolated to departure points
-	// h*div is calculate in cartesian space (pseudo-spectrally)
-	//div.aliasing_zero_high_modes();
-	//div_prev.aliasing_zero_high_modes();
-	PlaneData hdiv = 2.0 * io_h * div - h_prev * div_prev;
-	//hdiv.aliasing_zero_high_modes();
-	//std::cout<<offcent<<std::endl;
 	PlaneData nonlin(io_h.planeDataConfig);
 	nonlin.spectral_set_zero();
-	if (simVars.pde.use_linear_div == 0)
-			nonlin = 0.5 * io_h * div + 0.5 * sampler2D.bicubic_scalar(hdiv, posx_d, posy_d, -0.5, -0.5);
-
-	//add diffusion
-	//nonlin.printSpectrumEnergy_y();
-	//nonlin.printSpectrumIndex();
-
-	//nonlin.aliasing_zero_high_modes();
-	//nonlin.printSpectrumEnergy_y();
-	//nonlin.printSpectrumIndex();
-	//nonlin=diff(nonlin);
-	//nonlin=op.implicit_diffusion(nonlin,i_simVars.sim.viscosity,i_simVars.sim.viscosity_order );
-	//nonlin.printSpectrumIndex();
-	//nonlin.aliasing_zero_high_modes();
-	//nonlin.printSpectrumIndex();
-
-	//std::cout << "blocked: "  << std::endl;
-	//nonlin.printSpectrumEnergy();
-	//std::cout << "Nonlinear error: " << nonlin.reduce_maxAbs() << std::endl;
-	//std::cout << "Div: " << div.reduce_maxAbs() << std::endl;
-	//nonlin=0;
+	if (simVars.pde.use_linear_div == 0) //full nonlinear case
+	{
+		PlaneData hdiv = 2.0 * io_h * div - h_prev * div_prev;
+		nonlin = 0.5 * io_h * div + 0.5 * sampler2D.bicubic_scalar(hdiv, posx_d, posy_d, -0.5, -0.5);
+	}
 
 	rhs_h = rhs_h - 2.0*nonlin;
 	rhs_h.request_data_spectral();	/// why is there a request_data_spectral()?
-	//}
 
 
 	// Build Helmholtz eq.
