@@ -124,11 +124,18 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 
 	// Calculate nonlinear term at half timestep and add to RHS of h eq.
 	PlaneData nonlin(io_h.planeDataConfig);
-	nonlin.spectral_set_zero();
 	if (simVars.pde.use_linear_div == 0) //full nonlinear case
 	{
 		PlaneData hdiv = 2.0 * io_h * div - h_prev * div_prev;
 		nonlin = 0.5 * io_h * div + 0.5 * sampler2D.bicubic_scalar(hdiv, posx_d, posy_d, -0.5, -0.5);
+	}
+	else
+	{
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+		nonlin.spectral_set_zero();
+#else
+		nonlin.physical_set_zero();
+#endif
 	}
 
 	rhs_h = rhs_h - 2.0*nonlin;
