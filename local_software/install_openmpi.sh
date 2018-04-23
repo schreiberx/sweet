@@ -30,7 +30,7 @@ if [ ! -e "$DST_DIR/bin/mpicc"  -o "$1" != "" ]; then
 	export CC=gcc
 	export CXX=g++
 	export LINK=ld
-	./configure --prefix="$DST_DIR" || exit 1
+	./configure --enable-mpi-fortran --prefix="$DST_DIR" || exit 1
 
 	make || exit 1
 	make install || exit 1
