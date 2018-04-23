@@ -193,9 +193,7 @@ int main(int i_argc, char *i_argv[])
       simVars.sim.h_topo.setup(&(levelSingletons[simVars.libpfasst.nlevels-1].dataConfig));
 
       // initialize the topography
-      SWESphereBenchmarksCombined::setupTopography(simVars,
-						levelSingletons[simVars.libpfasst.nlevels-1].op
-						);
+      (levelSingletons[simVars.libpfasst.nlevels-1].benchmarks).setupTopography();
   }
 
   // instantiate the SphereDataCtx object 

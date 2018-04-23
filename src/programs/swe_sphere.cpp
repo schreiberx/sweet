@@ -171,7 +171,8 @@ public:
 		if (simVars.setup.benchmark_setup_dealiased)
 		{
 			// use dealiased physical space for setup
-			sphereBenchmarks.setupInitialConditions(prog_phi, prog_vort, prog_div, simVars, op);
+			sphereBenchmarks.setup(simVars, op);
+			sphereBenchmarks.setupInitialConditions(prog_phi, prog_vort, prog_div);
 		}
 		else
 		{
@@ -181,7 +182,8 @@ public:
 			SphereData prog_vort_nodealiasing(sphereDataConfig_nodealiasing);
 			SphereData prog_div_nodealiasing(sphereDataConfig_nodealiasing);
 
-			sphereBenchmarks.setupInitialConditions(prog_phi_nodealiasing, prog_vort_nodealiasing, prog_div_nodealiasing, simVars, op_nodealiasing);
+			sphereBenchmarks.setup(simVars, op_nodealiasing);
+			sphereBenchmarks.setupInitialConditions(prog_phi_nodealiasing, prog_vort_nodealiasing, prog_div_nodealiasing);
 
 			prog_phi.load_nodealiasing(prog_phi_nodealiasing);
 			prog_vort.load_nodealiasing(prog_vort_nodealiasing);
@@ -315,7 +317,8 @@ public:
 			SphereData anal_solution_u(sphereDataConfig);
 			SphereData anal_solution_v(sphereDataConfig);
 
-			sphereBenchmarks.setupInitialConditions(anal_solution_h, anal_solution_u, anal_solution_v, simVars, op);
+			sphereBenchmarks.setup(simVars, op);
+			sphereBenchmarks.setupInitialConditions(anal_solution_h, anal_solution_u, anal_solution_v);
 
 			SphereDataPhysical anal_solution_hg = anal_solution_h.getSphereDataPhysical();
 			SphereDataPhysical anal_solution_ug = anal_solution_u.getSphereDataPhysical();

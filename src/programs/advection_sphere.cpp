@@ -92,7 +92,8 @@ public:
 		SphereData tmp_vort(sphereDataConfig);
 		SphereData tmp_div(sphereDataConfig);
 
-		sphereBenchmarks.setupInitialConditions(prog_h, prog_vort, prog_div, simVars, op);
+		sphereBenchmarks.setup(simVars, op);
+		sphereBenchmarks.setupInitialConditions(prog_h, prog_vort, prog_div);
 
 		prog_h0 = prog_h;
 

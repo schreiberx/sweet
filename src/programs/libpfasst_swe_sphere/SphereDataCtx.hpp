@@ -237,6 +237,14 @@ public:
     return &((*levelSingletons)[i_level].dataConfig);
   }
 
+  // Getter for the sphere data configuration at level i_level
+  SWESphereBenchmarksCombined* get_swe_benchmark(
+					 int i_level
+					 ) const 
+  {
+    return &((*levelSingletons)[i_level].benchmarks);
+  }
+
   // Getter for the sphere data configuration with no dealiasing at the fine level
   SphereDataConfig* get_sphere_data_config_nodealiasing() const 
   {

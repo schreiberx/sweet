@@ -155,6 +155,8 @@ extern "C"
     SphereOperators* op              = i_ctx->get_sphere_operators(o_Y->get_level());
     SphereOperators* op_nodealiasing = i_ctx->get_sphere_operators_nodealiasing();
 
+    SWESphereBenchmarksCombined *benchmarks = i_ctx->get_swe_benchmark(o_Y->get_level());
+
     // // instantiate phi, vort, and div without dealiasing to get the initial condition
     // SphereData phi_Y_nodealiasing(data_config_nodealiasing);
     // SphereData vort_Y_nodealiasing(data_config_nodealiasing);
@@ -175,12 +177,8 @@ extern "C"
     // vort_Y.load_nodealiasing(vort_Y_nodealiasing);
     // div_Y.load_nodealiasing(div_Y_nodealiasing);
 
-
-    SWESphereBenchmarksCombined::setupInitialConditions(phi_Y, 
-     						     vort_Y, 
-     						     div_Y, 
-     						     *simVars, 
-     						     *op);
+    benchmarks->setup(*simVars, *op);
+    benchmarks->setupInitialConditions(phi_Y, vort_Y, div_Y);
 
     
     // output the configuration
