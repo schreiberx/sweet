@@ -217,6 +217,54 @@ public:
 			   break;
 		}
 	}
+
+
+	/**
+	* Simple first order extrapolation for comparison
+	*
+	* r_d = r_a - dt * v_n(r_a)
+	*
+	*/
+	void semi_lag_departure_points_first_order(
+		const PlaneData &i_u,           	///< Velocities at time t
+		const PlaneData &i_v,
+
+		const ScalarDataArray &i_posx_a,    ///< Position of arrival points x / y
+		const ScalarDataArray &i_posy_a,
+
+		double i_dt,                        ///< time step size
+		ScalarDataArray &o_posx_d,      	///< Position of departure points x / y
+		ScalarDataArray &o_posy_d,
+
+		const Staggering &i_staggering  	///< staggering, if any (ux, uy, vx, vy)
+	)
+	{
+		std::size_t num_points = i_posx_a.number_of_elements;
+
+		ScalarDataArray u = Convert_PlaneData_To_ScalarDataArray::physical_convert(i_u, false);
+		ScalarDataArray v = Convert_PlaneData_To_ScalarDataArray::physical_convert(i_v, false);
+
+		//local dt
+		double dt = i_dt;
+
+		//Departure point tmp
+		ScalarDataArray rx_d_new(num_points);
+		ScalarDataArray ry_d_new(num_points);
+
+		// initialize departure points with arrival points
+		o_posx_d = i_posx_a;
+		o_posy_d = i_posy_a;
+
+		rx_d_new = i_posx_a - dt*0.5 * u;
+		ry_d_new = i_posy_a - dt*0.5 * v;
+
+
+		for (std::size_t i = 0; i < num_points; i++)
+		{
+			o_posx_d.scalar_data[i] = sample2D.wrapPeriodic(rx_d_new.scalar_data[i], sample2D.domain_size[0]);
+			o_posy_d.scalar_data[i] = sample2D.wrapPeriodic(ry_d_new.scalar_data[i], sample2D.domain_size[1]);
+		}
+	}
 };
 
 #endif /* SRC_INCLUDE_SWEET_PLANEDATASEMILAGRANGIAN_HPP_ */

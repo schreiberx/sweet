@@ -22,6 +22,9 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 	if (i_fixed_dt <= 0)
 		FatalError("Burgers_Plane_TS_l_irk_n_sl: Only constant time step size allowed");
 
+	if (simVars.disc.timestepping_order<1 || simVars.disc.timestepping_order>2)
+		FatalError("Burgers_Plane_TS_l_irk_n_sl: Only orders 1 and 2 possible");
+
 	//Departure points and arrival points
 	ScalarDataArray posx_d = posx_a;
 	ScalarDataArray posy_d = posy_a;
@@ -32,7 +35,19 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 	assert(staggering.staggering_type == 'a');
 
 	//Calculate departure points
-	semiLagrangian.semi_lag_departure_points_settls(
+	if (simVars.disc.timestepping_order == 1)
+	{
+		semiLagrangian.semi_lag_departure_points_first_order(
+			io_u, io_v,
+			posx_a, posy_a,
+			dt,
+			posx_d, posy_d,
+			staggering
+			);
+	}
+	else
+	{
+		semiLagrangian.semi_lag_departure_points_settls(
 			io_u_prev, io_v_prev,
 			io_u, io_v,
 			posx_a, posy_a,
@@ -40,6 +55,7 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 			posx_d, posy_d,
 			staggering
 			);
+	}
 
 	// Save old velocities
 	io_u_prev = io_u;
