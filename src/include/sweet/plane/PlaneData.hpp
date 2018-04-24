@@ -948,7 +948,7 @@ public:
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 #if __GNUC__ == 5
-			isallfinite = isallfinite && isfinite(physical_space_data[i]);
+			isallfinite = isallfinite && std::isfinite(physical_space_data[i]);
 #else
 			isallfinite = isallfinite && std::isfinite(physical_space_data[i]);
 #endif
@@ -2710,17 +2710,17 @@ public:
 	}
 
 	/**
-	* Write spectral data to ASCII file
-	*
-	* Each array row is stored to a line.
-	* Per default, a tab separator is used in each line to separate the values.
-	*/
+	 * Write spectral data to ASCII file
+	 *
+	 * Each array row is stored to a line.
+	 * Per default, a tab separator is used in each line to separate the values.
+	 */
 	bool file_spectral_abs_arg_saveData_ascii(
-		const char *i_filename,         ///< Name of file to store data to
-		char i_separator = '\t',        ///< separator to use for each line
-		int i_precision = 12,           ///< number of floating point digits
-		int dimension = 2               ///< store 1D or 2D
-	)       const
+			const char *i_filename,         ///< Name of file to store data to
+			char i_separator = '\t',        ///< separator to use for each line
+			int i_precision = 12,           ///< number of floating point digits
+			int dimension = 2               ///< store 1D or 2D
+	)	const
 	{
 		request_data_spectral();
 

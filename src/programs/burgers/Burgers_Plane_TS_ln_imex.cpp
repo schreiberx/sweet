@@ -97,7 +97,7 @@ void Burgers_Plane_TS_ln_imex::run_timestep(
 
 	} else { //Jacobi
 		FatalError("NOT available");
-}
+	}
 #else //Wrong Implementation
 	if (timestepping_order == 1)
 	{

@@ -220,23 +220,23 @@ public:
 
 
 	/**
-	* Simple first order extrapolation for comparison
-	*
-	* r_d = r_a - dt * v_n(r_a)
-	*
-	*/
+	 * Simple first order extrapolation for comparison
+	 *
+	 * r_d = r_a - dt * v_n(r_a)
+	 *
+	 */
 	void semi_lag_departure_points_first_order(
-		const PlaneData &i_u,           	///< Velocities at time t
-		const PlaneData &i_v,
+			const PlaneData &i_u,           	///< Velocities at time t
+			const PlaneData &i_v,
 
-		const ScalarDataArray &i_posx_a,    ///< Position of arrival points x / y
-		const ScalarDataArray &i_posy_a,
+			const ScalarDataArray &i_posx_a,    ///< Position of arrival points x / y
+			const ScalarDataArray &i_posy_a,
 
-		double i_dt,                        ///< time step size
-		ScalarDataArray &o_posx_d,      	///< Position of departure points x / y
-		ScalarDataArray &o_posy_d,
+			double i_dt,                        ///< time step size
+			ScalarDataArray &o_posx_d,      	///< Position of departure points x / y
+			ScalarDataArray &o_posy_d,
 
-		const Staggering &i_staggering  	///< staggering, if any (ux, uy, vx, vy)
+			const Staggering &i_staggering  	///< staggering, if any (ux, uy, vx, vy)
 	)
 	{
 		std::size_t num_points = i_posx_a.number_of_elements;

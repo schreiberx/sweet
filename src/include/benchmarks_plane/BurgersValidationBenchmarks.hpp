@@ -40,7 +40,6 @@ public:
 			double dy = y-i_parameters.setup.setup_coord_y*sy;
 
 			double radius = i_parameters.setup.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
-
 			dx /= radius;
 			dy /= radius;
 
@@ -175,8 +174,8 @@ public:
 		double tp = 2.0*M_PIl;
 
 		/*
-		* Gaussian Bump initial
-		*/
+		 * Gaussian Bump initial
+		 */
 		if (i_parameters.setup.benchmark_scenario_id == 0)
 		{
 			io_u_t.physical_set_all(0.0);
@@ -189,24 +188,24 @@ public:
 		 */
 		if (i_parameters.setup.benchmark_scenario_id == 1)
 		{
-				io_u_t.physical_set_all(1.0);
+			io_u_t.physical_set_all(1.0);
 		}
 
 		/*
-		* f(t,x,y) = 2*t
-		* matching to:
-		* u(t,x,y) = t^2
-		*/
+		 * f(t,x,y) = 2*t
+		 * matching to:
+		 * u(t,x,y) = t^2
+		 */
 		if (i_parameters.setup.benchmark_scenario_id == 2)
 		{
 			io_u_t.physical_set_all(2.0*t);
 		}
 
 		/*
-		* f(t,x,y) = 3*t^2
-		* matching to:
-		* u(t,x,y) = t^3
-		*/
+		 * f(t,x,y) = 3*t^2
+		 * matching to:
+		 * u(t,x,y) = t^3
+		 */
 		if (i_parameters.setup.benchmark_scenario_id == 3)
 		{
 			io_u_t.physical_set_all(3.0*t*t);
@@ -284,8 +283,8 @@ public:
 						x = (((double)i+0.5)/(double)i_parameters.disc.res_physical[0])*i_parameters.sim.domain_size[0];
 					}
 					double tmpvar = tp * std::sin(tp*k*x) * std::cos(tp*k*t)
-									  + tp * std::sin(tp*k*x) * std::sin(tp*k*t) * std::cos(tp*k*x)*std::sin(tp*k*t)
-									  + i_parameters.sim.viscosity * (tp*tp*k * std::sin(tp*k*x) * std::sin(tp*k*t));
+									+ tp * std::sin(tp*k*x) * std::sin(tp*k*t) * std::cos(tp*k*x)*std::sin(tp*k*t)
+									+ i_parameters.sim.viscosity * (tp*tp*k * std::sin(tp*k*x) * std::sin(tp*k*t));
 
 					io_data = tmpvar;
 				}
@@ -294,10 +293,10 @@ public:
 
 		/*
 		 * f(t,x,y) = 2*PI*sin(2*PI*x)*cos(2*PI*t)+2*PI*sin(2*PI*k*x)*cos(2*PI*k*t)
-		 *                      + [sin(2*PI*x)*sin(2*PI*t)+1/k*sin(2*PI*k*x)*sin(2*PI*k*t)]
-		 *                      * [2*PI*cos(2*PI*x)*sin(2*PI*t)+2*PI*cos(2*PI*k*x)*sin(2*PI*k*t)]
-		 *          - NU*[-4*PI*PI*sin(2*PI*x)*sin(2*PI*t)
-		 *          - 4*PI*PI*k*sin(2*PI*k*x)*sin(2*PI*k*t)]
+		 *			+ [sin(2*PI*x)*sin(2*PI*t)+1/k*sin(2*PI*k*x)*sin(2*PI*k*t)]
+		 *			* [2*PI*cos(2*PI*x)*sin(2*PI*t)+2*PI*cos(2*PI*k*x)*sin(2*PI*k*t)]
+		 *			- NU*[-4*PI*PI*sin(2*PI*x)*sin(2*PI*t)
+		 *			- 4*PI*PI*k*sin(2*PI*k*x)*sin(2*PI*k*t)]
 		 * matching to:
 		 * u(t,x,y) = sin(2*PI*x)*sin(2*PI*t)+1/k*sin(2*PI*k*x)*sin(2*PI*k*t)
 		 */
@@ -317,10 +316,10 @@ public:
 						x = (((double)i+0.5)/(double)i_parameters.disc.res_physical[0])*i_parameters.sim.domain_size[0];
 					}
 					double tmpvar = tp * std::sin(tp*x) * std::cos(tp*t) + tp * std::sin(tp*k*x) * std::cos(tp*k*t)
-									  + (std::sin(tp*x) * std::sin(tp*t) + 1/k * std::sin(tp*k*x) * std::sin(tp*k*t))
-									  * (tp * std::cos(tp*x) * std::sin(tp*t) + tp * std::cos(tp*k*x) * std::sin(tp*k*t))
-									  - i_parameters.sim.viscosity * (-tp*tp * std::sin(tp*x) * std::sin(tp*t)
-									  - tp*tp*k * std::sin(tp*k*x) * std::sin(tp*k*t));
+									+ (std::sin(tp*x) * std::sin(tp*t) + 1/k * std::sin(tp*k*x) * std::sin(tp*k*t))
+									* (tp * std::cos(tp*x) * std::sin(tp*t) + tp * std::cos(tp*k*x) * std::sin(tp*k*t))
+									- i_parameters.sim.viscosity * (-tp*tp * std::sin(tp*x) * std::sin(tp*t)
+									- tp*tp*k * std::sin(tp*k*x) * std::sin(tp*k*t));
 
 					io_data = tmpvar;
 				}
@@ -378,7 +377,7 @@ public:
 						x = (((double)i+0.5)/(double)i_parameters.disc.res_physical[0])*i_parameters.sim.domain_size[0];
 					}
 					double tmpvar = std::sin(tp*x) * std::cos(tp*x) * tp
-									  - i_parameters.sim.viscosity * (-tp*tp * std::sin(tp*x));
+									- i_parameters.sim.viscosity * (-tp*tp * std::sin(tp*x));
 
 					io_data = tmpvar;
 				}

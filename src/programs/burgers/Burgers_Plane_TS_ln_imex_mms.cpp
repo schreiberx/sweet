@@ -150,30 +150,36 @@ void Burgers_Plane_TS_ln_imex_mms::setup(
 		for (int jj=0; jj<simVars.disc.res_physical[0]; jj++)
 		{
 			x = (((double)jj+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-#if 1	// Forcing for two overlapping sinusoidal waves
-			table[ii][jj] = tp * std::sin(tp*x) * std::cos(tp*time) + tp * std::sin(tp*freq*x) * std::cos(tp*freq*time)
-				+ (std::sin(tp*x) * std::sin(tp*time) + 1/freq * std::sin(tp*freq*x) * std::sin(tp*freq*time))
-				* (tp * std::cos(tp*x) * std::sin(tp*time) + tp * std::cos(tp*freq*x) * std::sin(tp*freq*time))
-				- simVars.sim.viscosity * (-tp*tp * std::sin(tp*x) * std::sin(tp*time)
-				- tp*tp*freq * std::sin(tp*freq*x) * std::sin(tp*freq*time));
-#else
-			double tmpvar = 0.0;
-			double A1 = 0.0;
-			double A2 = 0.0;
-			double argument = 0.0;
-			double AA = 0.0;
-			for (int kk=1; kk<freq; kk++)
+
+			if (simVars.setup.benchmark_scenario_id == 8)
 			{
-				argument = tp*kk*x + M_PIl*kk*(1-time);
-				AA = eps/sinh(M_PIl*kk*eps/2);
-				tmpvar += (simVars.sim.viscosity*std::sin(argument)*4*M_PIl*kk - std::cos(argument))*kk*AA;
-				A1 += std::cos(argument)*kk*AA*M_PIl;
-				A2 += std::sin(argument)*0.5*AA;
+				table[ii][jj] = tp * std::sin(tp*x) * std::cos(tp*time) + tp * std::sin(tp*freq*x) * std::cos(tp*freq*time)
+					+ (std::sin(tp*x) * std::sin(tp*time) + 1/freq * std::sin(tp*freq*x) * std::sin(tp*freq*time))
+					* (tp * std::cos(tp*x) * std::sin(tp*time) + tp * std::cos(tp*freq*x) * std::sin(tp*freq*time))
+					- simVars.sim.viscosity * (-tp*tp * std::sin(tp*x) * std::sin(tp*time)
+					- tp*tp*freq * std::sin(tp*freq*x) * std::sin(tp*freq*time));
 			}
-			tmpvar *= 0.5*M_PIl;
-			tmpvar += A1*A2;
-			table[ii][jj] = tmpvar;
-#endif
+			else if (simVars.setup.benchmark_scenario_id == 12)
+			{
+				double tmpvar = 0.0;
+				double A1 = 0.0;
+				double A2 = 0.0;
+				double argument = 0.0;
+				double AA = 0.0;
+				for (int kk=1; kk<freq; kk++)
+				{
+					argument = tp*kk*x + M_PIl*kk*(1-time);
+					AA = eps/sinh(M_PIl*kk*eps/2);
+					tmpvar += (simVars.sim.viscosity*std::sin(argument)*4*M_PIl*kk - std::cos(argument))*kk*AA;
+					A1 += std::cos(argument)*kk*AA*M_PIl;
+					A2 += std::sin(argument)*0.5*AA;
+				}
+				tmpvar *= 0.5*M_PIl;
+				tmpvar += A1*A2;
+				table[ii][jj] = tmpvar;
+			}
+			else
+				FatalError("This scenario is not supported");
 		}
 	}
 }
