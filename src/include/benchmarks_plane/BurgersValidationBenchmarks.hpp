@@ -32,61 +32,71 @@ public:
 			double y
 	)
 	{
-		if (i_parameters.setup.benchmark_scenario_id == 70)
+		if (i_parameters.setup.benchmark_scenario_id == 0)
 		{
-			return sin(2*M_PI*x);
+			double sx = i_parameters.sim.domain_size[0];
+			double sy = i_parameters.sim.domain_size[1];
+			double dx = x-i_parameters.setup.setup_coord_x*sx;
+			double dy = y-i_parameters.setup.setup_coord_y*sy;
+
+			double radius = i_parameters.setup.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
+
+			dx /= radius;
+			dy /= radius;
+
+			return std::exp(-50.0*(dx*dx + dy*dy));
 		}
 
-		if (i_parameters.setup.benchmark_scenario_id == 51)
+		if (i_parameters.setup.benchmark_scenario_id == 1)
 		{
 			return i_parameters.timecontrol.current_simulation_time;
 		}
 
-		if (i_parameters.setup.benchmark_scenario_id == 52)
+		if (i_parameters.setup.benchmark_scenario_id == 2)
 		{
 			return i_parameters.timecontrol.current_simulation_time*i_parameters.timecontrol.current_simulation_time;
 		}
 
-		if (i_parameters.setup.benchmark_scenario_id == 53)
+		if (i_parameters.setup.benchmark_scenario_id == 3)
 		{
 			return i_parameters.timecontrol.current_simulation_time*i_parameters.timecontrol.current_simulation_time*i_parameters.timecontrol.current_simulation_time;
 		}
 
-		if (i_parameters.setup.benchmark_scenario_id == 54)
+		if (i_parameters.setup.benchmark_scenario_id == 4)
 		{
 			return 1000*i_parameters.timecontrol.current_simulation_time*std::sin(2*M_PI*x);
 		}
 
-		if (i_parameters.setup.benchmark_scenario_id == 55)
+		if (i_parameters.setup.benchmark_scenario_id == 5)
 		{
 			return std::sin(2*M_PI*i_parameters.timecontrol.current_simulation_time);
 		}
 
-		if (i_parameters.setup.benchmark_scenario_id == 56)
+		if (i_parameters.setup.benchmark_scenario_id == 6)
 		{
 			return std::sin(2*M_PI*i_parameters.timecontrol.current_simulation_time*i_parameters.sim.f0)/i_parameters.sim.f0;
 		}
 
-		if (i_parameters.setup.benchmark_scenario_id == 57)
+		if (i_parameters.setup.benchmark_scenario_id == 7)
 		{
 			double k=i_parameters.sim.f0;
 			double t=i_parameters.timecontrol.current_simulation_time;
 			return std::sin(2*M_PI*x*k)*std::sin(2*M_PI*t*k)/k;
 		}
 
-		if (i_parameters.setup.benchmark_scenario_id == 58)
+		if (i_parameters.setup.benchmark_scenario_id == 8)
 		{
 			double k=i_parameters.sim.f0;
 			double t=i_parameters.timecontrol.current_simulation_time;
 			return std::sin(2*M_PI*x)*std::sin(2*M_PI*t) + std::sin(2*M_PI*x*k)*std::sin(2*M_PI*t*k)/k;
 		}
 
-		if (i_parameters.setup.benchmark_scenario_id >= 59 && i_parameters.setup.benchmark_scenario_id <= 61)
+		if (i_parameters.setup.benchmark_scenario_id >= 9 && i_parameters.setup.benchmark_scenario_id <= 11)
 		{
 			return 0;
 		}
 
-		if (i_parameters.setup.benchmark_scenario_id == 62)
+		if (i_parameters.setup.benchmark_scenario_id == 12)
 		{
 			double t=i_parameters.timecontrol.current_simulation_time;
 			double tmpvar = 0;
@@ -101,11 +111,32 @@ public:
 			return tmpvar;
 		}
 
-		if (i_parameters.setup.benchmark_scenario_id == 63)
+		if (i_parameters.setup.benchmark_scenario_id == 13)
 		{
 			double tmpvar = 0;
 			tmpvar = sin(2*M_PIl*x)*sin(2*M_PIl*y);
 			return tmpvar;
+		}
+
+		if (i_parameters.setup.benchmark_scenario_id == 14)
+		{
+			return sin(2*M_PI*x);
+		}
+
+		if (i_parameters.setup.benchmark_scenario_id == 15)
+		{
+			double sx = i_parameters.sim.domain_size[0];
+			double dx = x-i_parameters.setup.setup_coord_x*sx;
+
+			double radius = i_parameters.setup.radius_scale*sqrt((double)sx*(double)sx);
+			dx /= radius;
+
+			return std::exp(-50.0*(dx*dx));
+		}
+
+		if (i_parameters.setup.benchmark_scenario_id == 16)
+		{
+			return (4*M_PI*i_parameters.sim.viscosity*sin(2*M_PI*x))/(2+cos(2*M_PI*x));
 		}
 
 		std::cerr << "Invalid setup scenario id " << i_parameters.setup.benchmark_scenario_id << std::endl;
@@ -122,7 +153,7 @@ public:
 			double y
 	)
 	{
-		if (i_parameters.setup.benchmark_scenario_id >= 51 && i_parameters.setup.benchmark_scenario_id <= 70)
+		if (i_parameters.setup.benchmark_scenario_id >= 0 && i_parameters.setup.benchmark_scenario_id <= 16)
 		{
 			return 0;
 		}
@@ -144,101 +175,11 @@ public:
 		double tp = 2.0*M_PIl;
 
 		/*
-		 * f(t,x,y) = 2*PI*sin(2*PI*k*x)*cos(2*PI*k*t)+2*PI*sin(2*PI*k*x)*cos(2*PI*k*x)*sin^2(2*PI*k*t)
-		 *          - nu(-4*PI^2*k*sin(2*PI*k*x)*sin(2*PI*k*t))
-		 * matching to:
-		 * u(t,x,y) = 1/k * sin(2*PI*k*x)*sin(2*PI*k*t)
-		 */
-		if (i_parameters.setup.benchmark_scenario_id == 57)
+		* Gaussian Bump initial
+		*/
+		if (i_parameters.setup.benchmark_scenario_id == 0)
 		{
-			double k = i_parameters.sim.f0;
-
-			io_u_t.physical_update_lambda_array_indices(
-				[&](int i, int j, double &io_data)
-				{
-					// u space
-					double x = 0.0;
-					if (i_use_staggering)
-					{
-						x = (((double)i)/(double)i_parameters.disc.res_physical[0])*i_parameters.sim.domain_size[0];
-					}
-					else
-					{
-						x = (((double)i+0.5)/(double)i_parameters.disc.res_physical[0])*i_parameters.sim.domain_size[0];
-					}
-					double tmpvar = tp * std::sin(tp*k*x) * std::cos(tp*k*t)
-								  + tp * std::sin(tp*k*x) * std::sin(tp*k*t) * std::cos(tp*k*x)*std::sin(tp*k*t)
-								  + i_parameters.sim.viscosity * (tp*tp*k * std::sin(tp*k*x) * std::sin(tp*k*t));
-
-					io_data = tmpvar;
-				}
-			);
-		}
-
-		/*
-		 * f(t,x,y) = 2*2*PI*sin(2*PI*k*x)*cos(2*PI*k*t)+4*2*PI*sin(2*PI*k*x)*cos(2*PI*k*x)*sin^2(2*PI*k*t)
-		 *          - 2*nu(-4*PI^2*k*sin(2*PI*k*x)*sin(2*PI*k*t))
-		 * matching to:
-		 * u(t,x,y) = 2/k * sin(2*PI*k*x)*sin(2*PI*k*t)
-		 */
-		if (i_parameters.setup.benchmark_scenario_id == 59)
-		{
-			double k = i_parameters.sim.f0;
-
-
-			io_u_t.physical_update_lambda_array_indices(
-				[&](int i, int j, double &io_data)
-				{
-					// u space
-					double x = 0.0;
-					if (i_use_staggering)
-					{
-						x = (((double)i)/(double)i_parameters.disc.res_physical[0])*i_parameters.sim.domain_size[0];
-					}else{
-						x = (((double)i+0.5)/(double)i_parameters.disc.res_physical[0])*i_parameters.sim.domain_size[0];
-					}
-					double tmpvar = 2*tp * std::sin(tp*k*x) * std::cos(tp*k*t)
-								  + 4*tp * std::sin(tp*k*x) * std::sin(tp*k*t) * std::cos(tp*k*x) * std::sin(tp*k*t)
-								  + 2*i_parameters.sim.viscosity * (tp*tp*k * std::sin(tp*k*x) * std::sin(tp*k*t));
-
-					io_data = tmpvar;
-				}
-			);
-		}
-
-		/*
-		 * f(t,x,y) = 2*PI*sin(2*PI*x)*cos(2*PI*t)+2*PI*sin(2*PI*k*x)*cos(2*PI*k*t)
-		 *			+ [sin(2*PI*x)*sin(2*PI*t)+1/k*sin(2*PI*k*x)*sin(2*PI*k*t)]
-		 *			* [2*PI*cos(2*PI*x)*sin(2*PI*t)+2*PI*cos(2*PI*k*x)*sin(2*PI*k*t)]
-		 *          - NU*[-4*PI*PI*sin(2*PI*x)*sin(2*PI*t)
-		 *          - 4*PI*PI*k*sin(2*PI*k*x)*sin(2*PI*k*t)]
-		 * matching to:
-		 * u(t,x,y) = sin(2*PI*x)*sin(2*PI*t)+1/k*sin(2*PI*k*x)*sin(2*PI*k*t)
-		 */
-		if (i_parameters.setup.benchmark_scenario_id == 58)
-		{
-			double k = i_parameters.sim.f0;
-
-			io_u_t.physical_update_lambda_array_indices(
-				[&](int i, int j, double &io_data)
-				{
-					// u space
-					double x = 0.0;
-					if (i_use_staggering)
-					{
-						x = (((double)i)/(double)i_parameters.disc.res_physical[0])*i_parameters.sim.domain_size[0];
-					}else{
-						x = (((double)i+0.5)/(double)i_parameters.disc.res_physical[0])*i_parameters.sim.domain_size[0];
-					}
-					double tmpvar = tp * std::sin(tp*x) * std::cos(tp*t) + tp * std::sin(tp*k*x) * std::cos(tp*k*t)
-								  + (std::sin(tp*x) * std::sin(tp*t) + 1/k * std::sin(tp*k*x) * std::sin(tp*k*t))
-								  * (tp * std::cos(tp*x) * std::sin(tp*t) + tp * std::cos(tp*k*x) * std::sin(tp*k*t))
-								  - i_parameters.sim.viscosity * (-tp*tp * std::sin(tp*x) * std::sin(tp*t)
-								  - tp*tp*k * std::sin(tp*k*x) * std::sin(tp*k*t));
-
-					io_data = tmpvar;
-				}
-			);
+			io_u_t.physical_set_all(0.0);
 		}
 
 		/*
@@ -246,27 +187,27 @@ public:
 		 * matching to:
 		 * u(t,x,y) = t
 		 */
-		if (i_parameters.setup.benchmark_scenario_id == 51)
+		if (i_parameters.setup.benchmark_scenario_id == 1)
 		{
-			io_u_t.physical_set_all(1.0);
+				io_u_t.physical_set_all(1.0);
 		}
 
 		/*
-		 * f(t,x,y) = 2*t
-		 * matching to:
-		 * u(t,x,y) = t^2
-		 */
-		if (i_parameters.setup.benchmark_scenario_id == 52)
+		* f(t,x,y) = 2*t
+		* matching to:
+		* u(t,x,y) = t^2
+		*/
+		if (i_parameters.setup.benchmark_scenario_id == 2)
 		{
 			io_u_t.physical_set_all(2.0*t);
 		}
 
 		/*
-		 * f(t,x,y) = 3*t^2
-		 * matching to:
-		 * u(t,x,y) = t^3
-		 */
-		if (i_parameters.setup.benchmark_scenario_id == 53)
+		* f(t,x,y) = 3*t^2
+		* matching to:
+		* u(t,x,y) = t^3
+		*/
+		if (i_parameters.setup.benchmark_scenario_id == 3)
 		{
 			io_u_t.physical_set_all(3.0*t*t);
 		}
@@ -276,7 +217,7 @@ public:
 		 * matching to:
 		 * u(t,x,y) = 1000*t*sin(2*PI*x)
 		 */
-		if (i_parameters.setup.benchmark_scenario_id == 54)
+		if (i_parameters.setup.benchmark_scenario_id == 4)
 		{
 
 			io_u_t.physical_update_lambda_array_indices(
@@ -303,7 +244,7 @@ public:
 		 * matching to:
 		 * u(t,x,y) = sin(2*PI*t)
 		 */
-		if (i_parameters.setup.benchmark_scenario_id == 55)
+		if (i_parameters.setup.benchmark_scenario_id == 5)
 		{
 			io_u_t.physical_set_all(tp*std::cos(tp*t));
 		}
@@ -313,10 +254,108 @@ public:
 		 * matching to:
 		 * u(t,x,y) = 1/k*sin(2*PI*k*t)
 		 */
-		if (i_parameters.setup.benchmark_scenario_id == 56)
+		if (i_parameters.setup.benchmark_scenario_id == 6)
 		{
 			double k=i_parameters.sim.f0;
 			io_u_t.physical_set_all(tp*std::cos(tp*k*t));
+		}
+
+		/*
+		 * f(t,x,y) = 2*PI*sin(2*PI*k*x)*cos(2*PI*k*t)+2*PI*sin(2*PI*k*x)*cos(2*PI*k*x)*sin^2(2*PI*k*t)
+		 *          - nu(-4*PI^2*k*sin(2*PI*k*x)*sin(2*PI*k*t))
+		 * matching to:
+		 * u(t,x,y) = 1/k * sin(2*PI*k*x)*sin(2*PI*k*t)
+		 */
+		if (i_parameters.setup.benchmark_scenario_id == 7)
+		{
+			double k = i_parameters.sim.f0;
+
+			io_u_t.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
+				{
+					// u space
+					double x = 0.0;
+					if (i_use_staggering)
+					{
+						x = (((double)i)/(double)i_parameters.disc.res_physical[0])*i_parameters.sim.domain_size[0];
+					}
+					else
+					{
+						x = (((double)i+0.5)/(double)i_parameters.disc.res_physical[0])*i_parameters.sim.domain_size[0];
+					}
+					double tmpvar = tp * std::sin(tp*k*x) * std::cos(tp*k*t)
+									  + tp * std::sin(tp*k*x) * std::sin(tp*k*t) * std::cos(tp*k*x)*std::sin(tp*k*t)
+									  + i_parameters.sim.viscosity * (tp*tp*k * std::sin(tp*k*x) * std::sin(tp*k*t));
+
+					io_data = tmpvar;
+				}
+			);
+		}
+
+		/*
+		 * f(t,x,y) = 2*PI*sin(2*PI*x)*cos(2*PI*t)+2*PI*sin(2*PI*k*x)*cos(2*PI*k*t)
+		 *                      + [sin(2*PI*x)*sin(2*PI*t)+1/k*sin(2*PI*k*x)*sin(2*PI*k*t)]
+		 *                      * [2*PI*cos(2*PI*x)*sin(2*PI*t)+2*PI*cos(2*PI*k*x)*sin(2*PI*k*t)]
+		 *          - NU*[-4*PI*PI*sin(2*PI*x)*sin(2*PI*t)
+		 *          - 4*PI*PI*k*sin(2*PI*k*x)*sin(2*PI*k*t)]
+		 * matching to:
+		 * u(t,x,y) = sin(2*PI*x)*sin(2*PI*t)+1/k*sin(2*PI*k*x)*sin(2*PI*k*t)
+		 */
+		if (i_parameters.setup.benchmark_scenario_id == 8)
+		{
+			double k = i_parameters.sim.f0;
+
+			io_u_t.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
+				{
+					// u space
+					double x = 0.0;
+					if (i_use_staggering)
+					{
+						x = (((double)i)/(double)i_parameters.disc.res_physical[0])*i_parameters.sim.domain_size[0];
+					}else{
+						x = (((double)i+0.5)/(double)i_parameters.disc.res_physical[0])*i_parameters.sim.domain_size[0];
+					}
+					double tmpvar = tp * std::sin(tp*x) * std::cos(tp*t) + tp * std::sin(tp*k*x) * std::cos(tp*k*t)
+									  + (std::sin(tp*x) * std::sin(tp*t) + 1/k * std::sin(tp*k*x) * std::sin(tp*k*t))
+									  * (tp * std::cos(tp*x) * std::sin(tp*t) + tp * std::cos(tp*k*x) * std::sin(tp*k*t))
+									  - i_parameters.sim.viscosity * (-tp*tp * std::sin(tp*x) * std::sin(tp*t)
+									  - tp*tp*k * std::sin(tp*k*x) * std::sin(tp*k*t));
+
+					io_data = tmpvar;
+				}
+			);
+		}
+
+		/*
+		 * f(t,x,y) = 2*2*PI*sin(2*PI*k*x)*cos(2*PI*k*t)+4*2*PI*sin(2*PI*k*x)*cos(2*PI*k*x)*sin^2(2*PI*k*t)
+		 *          - 2*nu(-4*PI^2*k*sin(2*PI*k*x)*sin(2*PI*k*t))
+		 * matching to:
+		 * u(t,x,y) = 2/k * sin(2*PI*k*x)*sin(2*PI*k*t)
+		 */
+		if (i_parameters.setup.benchmark_scenario_id == 9)
+		{
+			double k = i_parameters.sim.f0;
+
+
+			io_u_t.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
+				{
+					// u space
+					double x = 0.0;
+					if (i_use_staggering)
+					{
+						x = (((double)i)/(double)i_parameters.disc.res_physical[0])*i_parameters.sim.domain_size[0];
+					}else{
+						x = (((double)i+0.5)/(double)i_parameters.disc.res_physical[0])*i_parameters.sim.domain_size[0];
+					}
+					double tmpvar = 2*tp * std::sin(tp*k*x) * std::cos(tp*k*t)
+								  + 4*tp * std::sin(tp*k*x) * std::sin(tp*k*t) * std::cos(tp*k*x) * std::sin(tp*k*t)
+								  + 2*i_parameters.sim.viscosity * (tp*tp*k * std::sin(tp*k*x) * std::sin(tp*k*t));
+
+					io_data = tmpvar;
+				}
+			);
 		}
 
 		/*
@@ -324,7 +363,7 @@ public:
 		 * matching to:
 		 * u(t,x,y) = sin(2*PI*x)
 		 */
-		if (i_parameters.setup.benchmark_scenario_id == 60)
+		if (i_parameters.setup.benchmark_scenario_id == 10)
 		{
 
 			io_u_t.physical_update_lambda_array_indices(
@@ -339,7 +378,7 @@ public:
 						x = (((double)i+0.5)/(double)i_parameters.disc.res_physical[0])*i_parameters.sim.domain_size[0];
 					}
 					double tmpvar = std::sin(tp*x) * std::cos(tp*x) * tp
-								  - i_parameters.sim.viscosity * (-tp*tp * std::sin(tp*x));
+									  - i_parameters.sim.viscosity * (-tp*tp * std::sin(tp*x));
 
 					io_data = tmpvar;
 				}
@@ -351,7 +390,7 @@ public:
 		 * matching to:
 		 * u(t,x,y) = sin(2*PI*x)
 		 */
-		if (i_parameters.setup.benchmark_scenario_id == 61)
+		if (i_parameters.setup.benchmark_scenario_id == 11)
 		{
 
 			io_u_t.physical_update_lambda_array_indices(
@@ -379,7 +418,7 @@ public:
 		 * matching to:
 		 * u(t,x,y) = 0.5*SUM_(k=1)^(k_max) sin(2*PI*k*x-PI*k*t+PI*k)*EPS/sinh(0.5*PI*k*EPS)
 		 */
-		if (i_parameters.setup.benchmark_scenario_id == 62)
+		if (i_parameters.setup.benchmark_scenario_id == 12)
 		{
 			int kmax = i_parameters.sim.f0;
 			double eps = 0.1;
@@ -417,17 +456,35 @@ public:
 			);
 		}
 
-		if (i_parameters.setup.benchmark_scenario_id == 63)
+		if (i_parameters.setup.benchmark_scenario_id == 13)
 			io_u_t.physical_set_all(0.0);
 
-		if (i_parameters.setup.benchmark_scenario_id == 70)
+		if (i_parameters.setup.benchmark_scenario_id == 14)
+			io_u_t.physical_set_all(0.0);
+
+		/*
+		 * Gaussian Bump initial 1D
+		 */
+		if (i_parameters.setup.benchmark_scenario_id == 15)
+		{
+			io_u_t.physical_set_all(0.0);
+		}
+
+		if (i_parameters.setup.benchmark_scenario_id == 16)
 			io_u_t.physical_set_all(0.0);
 	}
 
 	static void printScenarioInformation()
 	{
 		std::cout << "Available benchmark scenarios:" << std::endl;
-		std::cout << "		58 : sin(2*PI*x)*sin(2*PI*t) + sin(2*PI*x*k)*sin(2*PI*t*k)/k" << std::endl;
+		std::cout << "           0 : Gaussian Bump initial condition" << std::endl;
+		std::cout << "           8 : Addition of two sinosoidal waves of frequency 1 and -f" << std::endl;
+		std::cout << "           9 : Sinosoidal wave of frequency -f" << std::endl;
+		std::cout << "          12 : Saw-tooth function considering frequencies from 1 to -f" << std::endl;
+		std::cout << "          13 : Initial condition sin(2*M_PIl*x)*sin(2*M_PIl*y)" << std::endl;
+		std::cout << "          14 : Initial condition sin(2*M_PIl*x)" << std::endl;
+		std::cout << "          15 : Gaussian Bump initial condition 1D" << std::endl;
+		std::cout << "          16 : Analytical solution (Wood, 2006)" << std::endl;
 	}
 
 };
