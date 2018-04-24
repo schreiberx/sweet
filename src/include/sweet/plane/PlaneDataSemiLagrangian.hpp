@@ -255,8 +255,8 @@ public:
 		o_posx_d = i_posx_a;
 		o_posy_d = i_posy_a;
 
-		rx_d_new = i_posx_a - dt*0.5 * u;
-		ry_d_new = i_posy_a - dt*0.5 * v;
+		rx_d_new = i_posx_a - dt * u;
+		ry_d_new = i_posy_a - dt * v;
 
 
 		for (std::size_t i = 0; i < num_points; i++)

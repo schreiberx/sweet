@@ -294,11 +294,13 @@ public:
 	// Calculate the model diagnostics
 	void update_diagnostics()
 	{
+#if !SWEET_PARAREAL
 		// Assure, that the diagnostics are only updated for new time steps
 		if (last_timestep_nr_update_diagnostics == simVars.timecontrol.current_timestep_nr)
 			return;
 
 		last_timestep_nr_update_diagnostics = simVars.timecontrol.current_timestep_nr;
+#endif
 
 		double normalization = (simVars.sim.domain_size[0]*simVars.sim.domain_size[1]) /
 								((double)simVars.disc.res_physical[0]*(double)simVars.disc.res_physical[1]);
@@ -372,7 +374,7 @@ public:
 		const char* filename_template = simVars.misc.output_file_name_prefix.c_str();
 		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
 //		i_planeData.file_physical_saveData_ascii(buffer);
-		i_planeData.file_physical_saveData_ascii(buffer,'\n',12,1);
+		i_planeData.file_physical_saveData_ascii(buffer,'\n',16,1);
 
 //		char tmp[128];
 //		strcpy(tmp,i_name);
@@ -1105,19 +1107,26 @@ public:
 		simVars.timecontrol.max_simulation_time = timeframe_end;
 		simVars.timecontrol.current_timestep_nr = 0;
 
+		if (simVars.parareal.coarse_timestep_size <= 0)
+			simVars.parareal.coarse_timestep_size = timeframe_end-timeframe_start;
+		double tstep = simVars.parareal.coarse_timestep_size;
+
 		// make multiple time steps in the coarse solver possible
 		while (simVars.timecontrol.current_simulation_time < timeframe_end)
 		{
+			if (simVars.timecontrol.current_simulation_time + tstep > timeframe_end)
+				tstep = timeframe_end - simVars.timecontrol.current_simulation_time;
+
 			//run_timestep(simVars.parareal.coarse_timestepping_method, simVars.parareal.coarse_timestepping_order);
 			timeSteppersCoarse.master->run_timestep(
 				prog_u, prog_v,
 				prog_u_prev, prog_v_prev,
-				timeframe_end-timeframe_start,
+				tstep,
 				simVars.timecontrol.current_simulation_time
 			);
 			// Provide information to parameters
 //			simVars.timecontrol.current_timestep_size = simVars.timecontrol.current_timestep_size;
-			simVars.timecontrol.current_simulation_time += timeframe_end-timeframe_start;
+			simVars.timecontrol.current_simulation_time += tstep;
 			simVars.timecontrol.current_timestep_nr++;
 
 			assert(simVars.timecontrol.current_simulation_time <= timeframe_end);
@@ -1265,43 +1274,46 @@ public:
 		if (simVars.parareal.verbosity > 2)
 			std::cout << "output_data_file()" << std::endl;
 
-		Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2>& data = (Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2>&)i_data;
-
-		// Copy to minimize errors from FFT
-		PlaneData tmp_u = *data.data_arrays[0];
-		PlaneData tmp_v = *data.data_arrays[1];
-
-		write_file_parareal(tmp_u,"prog_u",iteration_id,time_slice_id);
-
-		char buffer[1024];
-		sprintf(buffer,(simVars.misc.output_file_name_prefix+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(), "prog_u_amp_phase", iteration_id, time_slice_id);
-
-		std::ofstream file(buffer, std::ios_base::trunc);
-		file << std::setprecision(12);
-
-		for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
+		if (simVars.misc.output_file_name_prefix.size() > 0)
 		{
-			file << x << ", " << tmp_u.spectral_return_amplitude(0,x) << ", " << tmp_u.spectral_return_phase(0,x) << std::endl;
-		}
-		file.close();
-		file.clear();
+			Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2>& data = (Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2>&)i_data;
 
+			// Copy to minimize errors from FFT
+			PlaneData tmp_u = *data.data_arrays[0];
+			PlaneData tmp_v = *data.data_arrays[1];
 
-		if (simVars.misc.compute_errors)
-		{
-			PlaneData ana = compute_errors2(tmp_u, tmp_v);
+			write_file_parareal(tmp_u,"prog_u",iteration_id,time_slice_id);
 
-			write_file_parareal(ana,"analytical",iteration_id,time_slice_id);
+			char buffer[1024];
+			sprintf(buffer,(simVars.misc.output_file_name_prefix+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(), "prog_u_amp_phase", iteration_id, time_slice_id);
 
-			sprintf(buffer,(simVars.misc.output_file_name_prefix+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(),"analytical_amp_phase", iteration_id, time_slice_id);
-
-			file.open(buffer, std::ios_base::trunc);
+			std::ofstream file(buffer, std::ios_base::trunc);
 			file << std::setprecision(12);
+
 			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
 			{
-				file << x << ", " << ana.spectral_return_amplitude(0,x) << ", " << ana.spectral_return_phase(0,x) << std::endl;
+				file << x << ", " << tmp_u.spectral_return_amplitude(0,x) << ", " << tmp_u.spectral_return_phase(0,x) << std::endl;
 			}
 			file.close();
+			file.clear();
+
+
+			if (simVars.misc.compute_errors)
+			{
+				PlaneData ana = compute_errors2(tmp_u, tmp_v);
+
+				write_file_parareal(ana,"analytical",iteration_id,time_slice_id);
+
+				sprintf(buffer,(simVars.misc.output_file_name_prefix+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(),"analytical_amp_phase", iteration_id, time_slice_id);
+
+				file.open(buffer, std::ios_base::trunc);
+				file << std::setprecision(12);
+				for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
+				{
+					file << x << ", " << ana.spectral_return_amplitude(0,x) << ", " << ana.spectral_return_phase(0,x) << std::endl;
+				}
+				file.close();
+			}
 		}
 	}
 

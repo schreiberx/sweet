@@ -67,6 +67,11 @@ public:
 	int coarse_timestepping_order2 = 1;
 
 	/**
+	 * Coarse timestep size
+	 */
+	double coarse_timestep_size = -1;
+
+	/**
 	 * setup long options for program arguments
 	 */
 public:
@@ -105,6 +110,9 @@ public:
 
 		io_long_options[io_next_free_program_option] = {"parareal-coarse-timestepping-order2", required_argument, 0, (int)256+io_next_free_program_option};
 		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"parareal-coarse-timestep-size", required_argument, 0, (int)256+io_next_free_program_option};
+		io_next_free_program_option++;
 	}
 
 
@@ -123,6 +131,7 @@ public:
 		std::cout << "	--parareal-coarse-timestepping-method=[string]	Identifier for coarse time stepping method (default=ln_erk)" << std::endl;
 		std::cout << "	--parareal-coarse-timestepping-order=[int]	Order for coarse time stepping method (default=1)" << std::endl;
 		std::cout << "	--parareal-coarse-timestepping-order2=[int]	Order for coarse time stepping method (default=1)" << std::endl;
+		std::cout << "  --parareal-coarse-timestep-size=[float] Time step size for coarse time stepping method (default=-1, auto define)" << std::endl;
 		std::cout << std::endl;
 	}
 
@@ -141,6 +150,7 @@ public:
 		std::cout << " + coarse_timestepping_method: " << coarse_timestepping_method << std::endl;
 		std::cout << " + coarse_timestepping_method_order: " << coarse_timestepping_order << std::endl;
 		std::cout << " + coarse_timestepping_method_order2: " << coarse_timestepping_order2 << std::endl;
+		std::cout << " + coarse_timestep_size: " << coarse_timestep_size << std::endl;
 		std::cout << std::endl;
 	}
 
@@ -189,9 +199,13 @@ public:
 		case 7:
 			coarse_timestepping_order2 = atoi(i_value);
 			return 0;
+
+		case 8:
+			coarse_timestep_size = atof(i_value);
+			return 0;
 		}
 
-		return 8;
+		return 9;
 	}
 
 
