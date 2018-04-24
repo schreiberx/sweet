@@ -371,15 +371,15 @@ public:
 
 		const char* filename_template = simVars.misc.output_file_name_prefix.c_str();
 		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
+//		i_planeData.file_physical_saveData_ascii(buffer);
 		i_planeData.file_physical_saveData_ascii(buffer,'\n',12,1);
 
-		/*
-		char tmp[128];
-		strcpy(tmp,i_name);
-		strcat(tmp,"_spec");
-		sprintf(buffer, filename_template, tmp, simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
-		i_planeData.file_spectral_saveData_ascii(buffer,'\n',12,1);
-		*/
+//		char tmp[128];
+//		strcpy(tmp,i_name);
+//		strcat(tmp,"_spec");
+//		sprintf(buffer, filename_template, tmp, simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
+//		i_planeData.file_spectral_saveData_ascii(buffer,'\n',12,1);
+//		i_planeData.file_spectral_abs_arg_saveData_ascii(buffer,'\n',12,1);
 
 		return buffer;
 	}
@@ -395,7 +395,9 @@ public:
 		if (simVars.misc.output_each_sim_seconds < 0)
 			return false;
 
-		if (simVars.misc.output_next_sim_seconds-simVars.misc.output_next_sim_seconds*(1e-12) > simVars.timecontrol.current_simulation_time)
+//		if (simVars.misc.output_next_sim_seconds-simVars.misc.output_next_sim_seconds*(1e-12) > simVars.timecontrol.current_simulation_time)
+//			return false;
+		if (simVars.misc.output_next_sim_seconds-simVars.timecontrol.current_timestep_size*0.5 > simVars.timecontrol.current_simulation_time)
 			return false;
 
 		PlaneData tmp_u = prog_u;
@@ -431,21 +433,24 @@ public:
 				PlaneData tmp(planeDataConfig);
 				tmp = compute_errors2(tmp_u,tmp_v);
 
-				write_file(tmp, "analytical");
-
-				tmp.request_data_spectral();
-
-				char buffer[1024];
-				const char* filename_template = simVars.misc.output_file_name_prefix.c_str();
-				sprintf(buffer,filename_template,"analytical_amp_phase",simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
-
-				std::ofstream file(buffer, std::ios_base::trunc);
-				file << std::setprecision(12);
-				for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
+				if (simVars.misc.output_file_name_prefix.size() > 0)
 				{
-					file << x << ", " << tmp.spectral_return_amplitude(0,x) << ", " << tmp.spectral_return_phase(0,x) << std::endl;
+					write_file(tmp, "analytical");
+
+					tmp.request_data_spectral();
+
+					char buffer[1024];
+					const char* filename_template = simVars.misc.output_file_name_prefix.c_str();
+					sprintf(buffer,filename_template,"analytical_amp_phase",simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
+
+					std::ofstream file(buffer, std::ios_base::trunc);
+					file << std::setprecision(12);
+					for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
+					{
+						file << x << ", " << tmp.spectral_return_amplitude(0,x) << ", " << tmp.spectral_return_phase(0,x) << std::endl;
+					}
+					file.close();
 				}
-				file.close();
 			}
 
 			std::stringstream header;
@@ -489,7 +494,9 @@ public:
 			}
 			else
 			{
-				while (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
+//				while (simVars.misc.output_next_sim_seconds-simVars.misc.output_next_sim_seconds*(1e-12) <= simVars.timecontrol.current_simulation_time)
+//					simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
+				while (simVars.misc.output_next_sim_seconds-simVars.timecontrol.current_timestep_size*0.5 <= simVars.timecontrol.current_simulation_time)
 					simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
 
 				if (simVars.misc.output_next_sim_seconds > simVars.timecontrol.max_simulation_time)

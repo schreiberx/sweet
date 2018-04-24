@@ -2708,6 +2708,47 @@ public:
 
 		return true;
 	}
+
+	/**
+	* Write spectral data to ASCII file
+	*
+	* Each array row is stored to a line.
+	* Per default, a tab separator is used in each line to separate the values.
+	*/
+	bool file_spectral_abs_arg_saveData_ascii(
+		const char *i_filename,         ///< Name of file to store data to
+		char i_separator = '\t',        ///< separator to use for each line
+		int i_precision = 12,           ///< number of floating point digits
+		int dimension = 2               ///< store 1D or 2D
+	)       const
+	{
+		request_data_spectral();
+
+		std::ofstream file(i_filename, std::ios_base::trunc);
+		file << std::setprecision(i_precision);
+
+		size_t ymax = 0;
+		if (dimension == 2)
+			ymax = planeDataConfig->spectral_data_size[1];
+		else
+			ymax = 1;
+
+		for (std::size_t y = 0; y < ymax; y++)
+		{
+			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
+			{
+
+				file << spectral_return_amplitude(y, x) << " " << spectral_return_phase(y,x);
+
+				if (x < planeDataConfig->spectral_data_size[0]-1)
+					file << i_separator;
+				else
+					file << std::endl;
+			}
+		}
+
+		return true;
+	}
 #endif
 
 
