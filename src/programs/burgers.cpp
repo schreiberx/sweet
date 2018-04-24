@@ -203,6 +203,14 @@ public:
 			FatalError("Finite differences and spectral dealisiang should not be used together! Please compile without dealiasing.");
 #endif
 
+		timeSteppers.setup(
+			simVars.disc.timestepping_method,
+			simVars.disc.timestepping_order,
+			simVars.disc.timestepping_order2,
+			op,
+			simVars
+		);
+
 		// Set initial conditions given from BurgersValidationBenchmarks
 		if (simVars.disc.use_staggering)
 		{
@@ -244,6 +252,16 @@ public:
 			);
 		}
 
+		// Get inital condition from look-up table of Manufactured Solution
+		if (simVars.disc.timestepping_method.find("_mms")==0)
+		{
+			timeSteppers.return_initial(prog_u);
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+			prog_v.spectral_set_all(0,0);
+#endif
+			prog_v.physical_set_all(0);
+		}
+
 		// Initialize t-dt time step with initial condition
 		prog_u_prev = prog_u;
 		prog_v_prev = prog_v;
@@ -258,14 +276,6 @@ public:
 		if (simVars.setup.input_data_filenames.size() > 1)
 			prog_v.file_physical_loadData(simVars.setup.input_data_filenames[1].c_str(), simVars.setup.input_data_binary);
 
-
-		timeSteppers.setup(
-			simVars.disc.timestepping_method,
-			simVars.disc.timestepping_order,
-			simVars.disc.timestepping_order2,
-			op,
-			simVars
-		);
 
 		update_diagnostics();
 		diagnostics_energy_start = simVars.diag.total_energy;
@@ -526,8 +536,7 @@ public:
 
 		if (simVars.misc.compute_errors)
 		{
-			//if (simVars.setup.benchmark_scenario_id > 51 && simVars.setup.benchmark_scenario_id < 65)
-			if (simVars.disc.timestepping_method.find("forcing")!=std::string::npos)
+			if (simVars.disc.timestepping_method.find("forcing")!=std::string::npos || simVars.disc.timestepping_method.find("_mms")!=std::string::npos)
 			{
 				if (simVars.disc.use_staggering)
 				{
@@ -618,8 +627,7 @@ public:
 
 		if (simVars.misc.compute_errors)
 		{
-			//if (simVars.setup.benchmark_scenario_id > 51 && simVars.setup.benchmark_scenario_id < 65)
-			if (simVars.disc.timestepping_method.find("forcing")!=std::string::npos)
+			if (simVars.disc.timestepping_method.find("forcing")!=std::string::npos || simVars.disc.timestepping_method.find("_mms")!=std::string::npos)
 			{
 				if (simVars.disc.use_staggering)
 				{
