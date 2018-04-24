@@ -41,10 +41,7 @@ void Burgers_Plane_TS_l_erk::euler_timestep_update(
 
 	// u and v updates
 	o_u_t = simVars.sim.viscosity*(op.diff2_c_x(i_u)+op.diff2_c_y(i_u));
-
 	o_v_t = simVars.sim.viscosity*(op.diff2_c_x(i_v)+op.diff2_c_y(i_v));
-
-	o_tmp_t.physical_set_all(0);
 }
 
 

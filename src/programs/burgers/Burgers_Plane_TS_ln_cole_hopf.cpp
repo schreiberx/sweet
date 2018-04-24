@@ -42,6 +42,7 @@ void Burgers_Plane_TS_ln_cole_hopf::run_timestep(
 	 */
 	PlaneData lhs = op.diff_c_x;
 	tmp = io_u.spectral_div_element_wise(lhs);
+
 	phi = tmp;
 	phi.physical_update_lambda_array_indices(
 		[&](int i, int j, double &io_data)

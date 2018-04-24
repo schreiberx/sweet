@@ -18,11 +18,13 @@
 #include "Burgers_Plane_TS_ln_erk.hpp"
 #include "Burgers_Plane_TS_ln_erk_forcing.hpp"
 #include "Burgers_Plane_TS_ln_adomian.hpp"
+#include "Burgers_Plane_TS_l_irk_n_adomian.hpp"
 #include "Burgers_Plane_TS_ln_cole_hopf.hpp"
 #include "Burgers_Plane_TS_l_direct.hpp"
 #include "Burgers_Plane_TS_l_erk.hpp"
 #include "Burgers_Plane_TS_l_irk.hpp"
 #include "Burgers_Plane_TS_l_cn.hpp"
+#include "Burgers_Plane_TS_n_adomian.hpp"
 
 
 
@@ -39,12 +41,14 @@ public:
 	Burgers_Plane_TS_l_irk_n_sl *l_irk_n_sl = nullptr;
 	Burgers_Plane_TS_l_irk_n_sl_forcing *l_irk_n_sl_forcing = nullptr;
 	Burgers_Plane_TS_l_cn_n_sl *l_cn_n_sl = nullptr;
+	Burgers_Plane_TS_l_irk_n_adomian *l_irk_n_adomian = nullptr;
 	Burgers_Plane_TS_ln_adomian *ln_adomian = nullptr;
 	Burgers_Plane_TS_ln_cole_hopf *ln_cole_hopf = nullptr;
 	Burgers_Plane_TS_l_direct *l_direct = nullptr;
 	Burgers_Plane_TS_l_erk *l_erk = nullptr;
 	Burgers_Plane_TS_l_irk *l_irk = nullptr;
 	Burgers_Plane_TS_l_cn *l_cn = nullptr;
+	Burgers_Plane_TS_n_adomian *n_adomian = nullptr;
 
 	Burgers_Plane_TS_interface *master = nullptr;
 
@@ -102,6 +106,12 @@ public:
 			ln_adomian = nullptr;
 		}
 
+		if (l_irk_n_adomian != nullptr)
+		{
+			delete l_irk_n_adomian;
+			l_irk_n_adomian = nullptr;
+		}
+
 		if (ln_cole_hopf != nullptr)
 		{
 			delete ln_cole_hopf;
@@ -130,6 +140,12 @@ public:
 		{
 			delete l_cn;
 			l_cn = nullptr;
+		}
+
+		if (n_adomian != nullptr)
+		{
+			delete n_adomian;
+			n_adomian = nullptr;
 		}
 
 	}
@@ -212,6 +228,13 @@ public:
 
 			master = &(Burgers_Plane_TS_interface&)*ln_adomian;
 		}
+		else if (i_timestepping_method == "l_irk_n_adomian")
+		{
+			l_irk_n_adomian= new Burgers_Plane_TS_l_irk_n_adomian(i_simVars, i_op);
+			l_irk_n_adomian->setup();
+
+			master = &(Burgers_Plane_TS_interface&)*l_irk_n_adomian;
+		}
 		else if (i_timestepping_method == "ln_cole_hopf")
 		{
 			ln_cole_hopf= new Burgers_Plane_TS_ln_cole_hopf(i_simVars, i_op);
@@ -247,6 +270,13 @@ public:
 
 			master = &(Burgers_Plane_TS_interface&)*l_cn;
 		}
+		else if (i_timestepping_method == "n_adomian")
+		{
+			n_adomian= new Burgers_Plane_TS_n_adomian(i_simVars, i_op);
+			n_adomian->setup(i_timestepping_order);
+
+			master = &(Burgers_Plane_TS_interface&)*n_adomian;
+		}
 		//
 		else
 		{
@@ -265,6 +295,7 @@ public:
 			std::cout << "      l_irk_n_sl_forcing : Non-linear: implicit RK on semi-Lagrangian formulation with forcing"  << std::endl;
 			std::cout << "      l_cn_n_sl          : Non-linear: Crank-Nicolson on semi-Lagrangian formulation"  << std::endl;
 			std::cout << "      ln_adomian         : Non-linear: Adomian decomposition method"  << std::endl;
+			std::cout << "      l_irk_n_adomian    : Non-linear: Adomian decomposition method, Linear: implicit RK"  << std::endl;
 			FatalError("No valid --timestepping-method provided");
 		}
 	}
