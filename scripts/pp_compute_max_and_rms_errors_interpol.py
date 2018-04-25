@@ -6,7 +6,7 @@ import math
 import scipy
 from scipy.interpolate import RectBivariateSpline
 
-sys.stdout.write('.')
+sys.stdout.write('')
 
 #SWeet stuff
 from SWEETParameters import *
