@@ -11,9 +11,11 @@ class LevelSingleton
 
 public:
   
-  int level;
+  int             level;
   PlaneDataConfig dataConfig;
-  PlaneOperators op;
+  PlaneDataConfig dataConfigNoDealiasing;
+  PlaneOperators  op;
+  PlaneOperators  opNoDealiasing;
 };
 
 #endif

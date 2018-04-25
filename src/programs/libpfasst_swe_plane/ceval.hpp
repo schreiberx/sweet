@@ -10,7 +10,7 @@
 
 std::string write_file(
 		       PlaneDataCtx  &i_ctx,
-		       const PlaneData &i_planeData,
+		       const PlaneData &i_sphereData,
 		       const char* i_name	///< name of output variable
 		       );
 
@@ -33,15 +33,10 @@ extern "C"
 	      PlaneDataCtx *i_ctx, 
 	      PlaneDataVars *i_Y,
 	      int i_nnodes,
-	      int i_niters
+	      int i_niters,
+	      int i_rank,
+	      int i_nprocs
 	      );
-
-  // computes a reference solution to check libpfasst's results
-  void creference(
-		  double i_t,
-		  PlaneDataCtx *i_ctx,
-		  PlaneDataVars *i_Y
-		  );
 
   // evaluates the explicit piece
   void ceval_f1(
@@ -50,15 +45,6 @@ extern "C"
 		PlaneDataCtx *i_ctx,
 		PlaneDataVars *o_F1
 		);
-
-  // applies phi_n to Y 
-  void capply_phi( 
-		  PlaneDataVars *i_Y,
-		  double i_t, 
-		  double i_dt, 
-		  PlaneDataCtx *i_ctx,
-		  int i_n
-		  );
 
   // evaluates the first implicit piece
   void ceval_f2 (

@@ -642,43 +642,15 @@ extern "C"
 
 	  }
       }
-
-    // now recompute F2 with the new value of Y
-    // ceval_f2(
-    //   	     io_Y, 
-    //  	     i_t, 
-    //  	     i_ctx, 
-    //  	     o_F2
-    //  	     );
     
 
     SphereData& phi_F2  = o_F2->get_phi();
     SphereData& vort_F2 = o_F2->get_vort();
     SphereData& div_F2  = o_F2->get_div();
 
-    // SphereData phi_F2_new(i_ctx->get_sphere_data_config(io_Y->get_level()));
-    // SphereData vort_F2_new(i_ctx->get_sphere_data_config(io_Y->get_level()));
-    // SphereData div_F2_new(i_ctx->get_sphere_data_config(io_Y->get_level()));
-
     phi_F2  = (phi_Y  - phi_Rhs)  / i_dt;
     vort_F2 = (vort_Y - vort_Rhs) / i_dt;
     div_F2  = (div_Y  - div_Rhs)  / i_dt;
-
-    // write_file(*i_ctx, phi_F2,  "prog_phi_F2");
-    // write_file(*i_ctx, div_F2,  "prog_div_F2");
-    // write_file(*i_ctx, vort_F2, "prog_vort_F2");
-    
-    // write_file(*i_ctx, phi_F2_new,  "prog_phi_F2_new");
-    // write_file(*i_ctx, div_F2_new,  "prog_div_F2_new");
-    // write_file(*i_ctx, vort_F2_new, "prog_vort_F2_new");
-
-    // write_file(*i_ctx, (phi_F2  - phi_F2_new)/phi_F2_new,  "prog_phi_F2_diff");
-    // write_file(*i_ctx, (div_F2  - div_F2_new)/div_F2_new,  "prog_div_F2_diff");
-    // write_file(*i_ctx, (vort_F2 - vort_F2_new)/vort_F2_new, "prog_vort_F2_diff");
-
-    // phi_F2  = phi_F2_new;
-    // vort_F2 = vort_F2_new;
-    // div_F2  = div_F2_new;
 
   }
 

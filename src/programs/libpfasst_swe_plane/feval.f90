@@ -3,10 +3,10 @@ module feval_module
   use pf_mod_dtype
   use encap_module
   use pf_mod_utils
-  use pf_mod_imexQ
+  use pf_mod_misdcQ
   implicit none
   
-  type, extends(pf_imexQ_t) :: sweet_sweeper_t
+  type, extends(pf_misdcQ_t) :: sweet_sweeper_t
      type(c_ptr)    :: ctx = c_null_ptr ! c pointer to PlaneDataCtx/SphereDataCtx
      integer        :: nnodes           ! number of nodes
      integer        :: sweep_niter      ! number of the current sweep
@@ -18,7 +18,6 @@ module feval_module
      procedure :: f_comp                => sweet_f_comp
      procedure :: initialize_correction => sweet_initialize_correction
      procedure :: finalize_correction   => sweet_finalize_correction
-     procedure :: apply_phi             => sweet_apply_phi
      procedure :: destroy               => sweet_sweeper_destroy
   end type sweet_sweeper_t
   
@@ -31,31 +30,19 @@ module feval_module
        real(c_double), value :: i_t, i_dt 
      end subroutine cinitial
 
-     subroutine cfinal(i_ctx, i_Y, i_nnodes, i_niter) bind(c, name="cfinal")
+     subroutine cfinal(i_ctx, i_Y, i_nnodes, i_niter, i_rank, i_nprocs) bind(c, name="cfinal")
        use iso_c_binding
        type(c_ptr), value :: i_ctx, i_Y
        integer,     value :: i_nnodes
        integer,     value :: i_niter
+       integer,     value :: i_rank, i_nprocs
      end subroutine cfinal
-
-     subroutine creference(i_ctx, t, o_Y) bind(c, name="creference")
-       use iso_c_binding
-       real(c_double), value :: t
-       type(c_ptr),    value :: i_ctx, o_Y
-     end subroutine creference
 
      subroutine ceval_f1(i_Y, i_t, i_ctx, o_F1) bind(c, name="ceval_f1")
        use iso_c_binding
        type(c_ptr),    value :: i_Y, i_ctx, o_F1
        real(c_double), value :: i_t
      end subroutine ceval_f1
-
-     subroutine capply_phi(io_Y, i_t, i_dt, i_ctx, i_n) bind(c, name="capply_phi")
-       use iso_c_binding
-       type(c_ptr),    value :: io_Y, i_ctx
-       real(c_double), value :: i_t, i_dt
-       integer,        value :: i_n
-     end subroutine capply_phi
 
      subroutine ceval_f2(i_Y, i_t, i_ctx, o_F2) bind(c, name="ceval_f2")
        use iso_c_binding
@@ -128,10 +115,14 @@ contains
                   dt,                    &
                   sd_ptr%c_sweet_data_ptr)
 
+    call z%copy(sd)
+
   end subroutine finitial
 
 
   subroutine ffinal(sweeper, sd, nnodes, niter)
+    use mpi 
+
     class(pf_sweeper_t),       intent(in)    :: sweeper
     class(pf_encap_t),         intent(inout) :: sd
     integer,                   intent(in)    :: nnodes, niter
@@ -139,68 +130,50 @@ contains
     class(sweet_sweeper_t),    pointer       :: sweet_sweeper_ptr
     class(sweet_data_encap_t), pointer       :: sd_ptr
 
+    integer                                  :: nprocs, rank, ierr
+
     sweet_sweeper_ptr => as_sweet_sweeper(sweeper)
     sd_ptr            => as_sweet_data_encap(sd)
+
+
+
+    call MPI_COMM_SIZE (MPI_COMM_WORLD, nprocs,  ierr)
+    call MPI_COMM_RANK (MPI_COMM_WORLD, rank, ierr)
+
 
     call cfinal(sweet_sweeper_ptr%ctx,   & 
                 sd_ptr%c_sweet_data_ptr, &
                 nnodes,                  &
-                niter)
+                niter,                   &
+                rank,                    &
+                nprocs)
 
   end subroutine ffinal
 
 
-  ! prepare the current solution at m for the correction                                                                                                                           
+  ! prepare the current solution at m for the correction                    
+
   subroutine sweet_initialize_correction(this, y, t, dt, level, m, flag)
+    use mpi
+
     class(sweet_sweeper_t), intent(inout) :: this
     class(pf_encap_t),      intent(inout) :: y
     real(pfdp),             intent(in)    :: t, dt
     integer,                intent(in)    :: level, m
     logical,                intent(in)    :: flag
 
-    ! not implemented
+    integer                               :: num_procs, my_id, ierr
+
+    call MPI_COMM_SIZE (MPI_COMM_WORLD, num_procs, ierr)
+    call MPI_COMM_RANK (MPI_COMM_WORLD, my_id,     ierr)
+
+    print *, 'level = ',      level,            &
+             ' iter = ',      this%sweep_niter, & 
+             ' rank = ',      my_id,            &
+             ' num_procs = ', num_procs
 
   end subroutine sweet_initialize_correction
   
-  
-  subroutine freference(sweeper, t, sd)
-    class(pf_sweeper_t),       intent(in)    :: sweeper
-    real(pfdp),                intent(in)    :: t
-    class(pf_encap_t),         intent(inout) :: sd
-
-    class(sweet_sweeper_t),    pointer       :: sweet_sweeper_ptr
-    class(sweet_data_encap_t), pointer       :: sd_ptr
-
-    sweet_sweeper_ptr => as_sweet_sweeper(sweeper)
-    sd_ptr            => as_sweet_data_encap(sd)
-
-    call creference(sweet_sweeper_ptr%ctx,   &
-                    t,                       &
-                    sd_ptr%c_sweet_data_ptr)
-
-  end subroutine freference
-  
-  
-  ! apply phi to the argument Y
-  
-  subroutine sweet_apply_phi(this, y, t, dt, level, n) 
-    class(sweet_sweeper_t),    intent(inout) :: this
-    class(pf_encap_t),         intent(inout) :: y
-    real(pfdp),                intent(in)    :: t, dt
-    integer,                   intent(in)    :: level, n
-
-    class(sweet_data_encap_t), pointer       :: y_sd_ptr
-    
-    y_sd_ptr  => as_sweet_data_encap(y)
-
-    call capply_phi(y_sd_ptr%c_sweet_data_ptr, &
-                    t,                         &
-                    dt,                        &
-                    this%ctx,                  &
-                    n)
-
-  end subroutine sweet_apply_phi
-
 
   ! evaluate the right-hand side 
 
@@ -220,7 +193,7 @@ contains
 
     select case (piece)
 
-       case (1) ! explicit rhs
+       case (1) ! misdc rhs
           call ceval_f1(y_sd_ptr%c_sweet_data_ptr, &
                         t,                         & 
                         this%ctx,                  &  
@@ -328,7 +301,7 @@ contains
 
     ! need the following line since the "final" keyword is not supported by some (older) compilers
     ! it forces Fortran to destroy the parent class data structures
-    call this%imexQ_destroy(lev) 
+    call this%misdcQ_destroy(lev) 
 
   end subroutine sweet_sweeper_destroy
 

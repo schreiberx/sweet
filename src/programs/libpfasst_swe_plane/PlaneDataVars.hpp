@@ -4,7 +4,7 @@
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneDataConfig.hpp>
 
-// Class containing the prognotic PlaneData variables h, u, v
+// Class containing the prognotic PlaneData variables h, vort, and div
 
 class PlaneDataVars {
 
@@ -17,8 +17,8 @@ public:
 		)
 
     : prog_h(planeDataConfig),
-      prog_u(planeDataConfig),
-      prog_v(planeDataConfig),
+      prog_vort(planeDataConfig),
+      prog_div(planeDataConfig),
       flat_data_array(nullptr),
       flat_data_array_size(0),
       level(i_level)
@@ -50,12 +50,12 @@ public:
   }
   
   // getters for the PlaneData variables
-  const PlaneData& get_h() const {return prog_h;}
-  PlaneData&       get_h()       {return prog_h;}
-  const PlaneData& get_u() const {return prog_u;}
-  PlaneData&       get_u()       {return prog_u;}
-  const PlaneData& get_v() const {return prog_v;}
-  PlaneData&       get_v()       {return prog_v;}
+  const PlaneData& get_h() const    {return prog_h;}
+  PlaneData&       get_h()          {return prog_h;}
+  const PlaneData& get_vort() const {return prog_vort;}
+  PlaneData&       get_vort()       {return prog_vort;}
+  const PlaneData& get_div() const  {return prog_div;}
+  PlaneData&       get_div()        {return prog_div;}
 
   // getters for the flat data array
   double*&         get_flat_data_array()            {return flat_data_array;}
@@ -67,11 +67,9 @@ public:
 
 protected:
   
-  // height
   PlaneData prog_h;
-  // velocities
-  PlaneData prog_u;
-  PlaneData prog_v;
+  PlaneData prog_vort;
+  PlaneData prog_div;
 
   // flat data array vector (currently used to pack and unpack)
   double *flat_data_array;

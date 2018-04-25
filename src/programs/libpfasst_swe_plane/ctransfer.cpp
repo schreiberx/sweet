@@ -1,9 +1,7 @@
 #include "ctransfer.hpp"
-
-#include <benchmarks_plane/SWE_bench_PlaneBenchmarks_DEPRECATED.hpp>
-
 #include "cencap.hpp"
 
+#include <benchmarks_plane/SWEBenchmarksCombined.hpp>
 
 extern "C"
 {
@@ -15,18 +13,18 @@ extern "C"
 			     PlaneDataCtx *i_ctx,
 			     double i_t) 
   {
-    const PlaneData& h_Y_fine = i_Y_fine->get_h();
-    const PlaneData& u_Y_fine = i_Y_fine->get_u();
-    const PlaneData& v_Y_fine = i_Y_fine->get_v();
+    const PlaneData& h_Y_fine    = i_Y_fine->get_h();
+    const PlaneData& vort_Y_fine = i_Y_fine->get_vort();
+    const PlaneData& div_Y_fine  = i_Y_fine->get_div();
 
-    PlaneData& h_Y_coarse = io_Y_coarse->get_h();
-    PlaneData& u_Y_coarse = io_Y_coarse->get_u();
-    PlaneData& v_Y_coarse = io_Y_coarse->get_v();
+    PlaneData& h_Y_coarse    = io_Y_coarse->get_h();
+    PlaneData& vort_Y_coarse = io_Y_coarse->get_vort();
+    PlaneData& div_Y_coarse  = io_Y_coarse->get_div();
 
     // restrict the fine variables to the coarse grid and copy into the coarse variables
-    h_Y_coarse = h_Y_fine.spectral_returnWithDifferentModes(i_ctx->get_plane_data_config(i_level_coarse));
-    u_Y_coarse = u_Y_fine.spectral_returnWithDifferentModes(i_ctx->get_plane_data_config(i_level_coarse));
-    v_Y_coarse = v_Y_fine.spectral_returnWithDifferentModes(i_ctx->get_plane_data_config(i_level_coarse));
+    h_Y_coarse    = h_Y_fine.spectral_returnWithDifferentModes(i_ctx->get_plane_data_config(i_level_coarse));
+    vort_Y_coarse = vort_Y_fine.spectral_returnWithDifferentModes(i_ctx->get_plane_data_config(i_level_coarse));
+    div_Y_coarse  = div_Y_fine.spectral_returnWithDifferentModes(i_ctx->get_plane_data_config(i_level_coarse));
  
   }  
 
@@ -38,18 +36,18 @@ extern "C"
 				PlaneDataCtx *i_ctx,
 				double i_t) 
   {
-    const PlaneData& h_Y_coarse = i_Y_coarse->get_h();
-    const PlaneData& u_Y_coarse = i_Y_coarse->get_u();
-    const PlaneData& v_Y_coarse = i_Y_coarse->get_v();
+    const PlaneData& h_Y_coarse    = i_Y_coarse->get_h();
+    const PlaneData& vort_Y_coarse = i_Y_coarse->get_vort();
+    const PlaneData& div_Y_coarse  = i_Y_coarse->get_div();
   
-    PlaneData& h_Y_fine = io_Y_fine->get_h();
-    PlaneData& u_Y_fine = io_Y_fine->get_u();
-    PlaneData& v_Y_fine = io_Y_fine->get_v();
+    PlaneData& h_Y_fine    = io_Y_fine->get_h();
+    PlaneData& vort_Y_fine = io_Y_fine->get_vort();
+    PlaneData& div_Y_fine  = io_Y_fine->get_div();
 
     // interpolate the coarse variables on the fine grid and copy into the coarse variables
-    h_Y_fine = h_Y_coarse.spectral_returnWithDifferentModes(i_ctx->get_plane_data_config(i_level_fine));
-    u_Y_fine = u_Y_coarse.spectral_returnWithDifferentModes(i_ctx->get_plane_data_config(i_level_fine));
-    v_Y_fine = v_Y_coarse.spectral_returnWithDifferentModes(i_ctx->get_plane_data_config(i_level_fine));
+    h_Y_fine    = h_Y_coarse.spectral_returnWithDifferentModes(i_ctx->get_plane_data_config(i_level_fine));
+    vort_Y_fine = vort_Y_coarse.spectral_returnWithDifferentModes(i_ctx->get_plane_data_config(i_level_fine));
+    div_Y_fine  = div_Y_coarse.spectral_returnWithDifferentModes(i_ctx->get_plane_data_config(i_level_fine));
 
   }
 }

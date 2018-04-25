@@ -8,16 +8,16 @@
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#include <benchmarks_plane/SWEBenchmarksCombined.hpp>
 #include <sweet/FatalError.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/plane/PlaneDiagnostics.hpp>
+#include <benchmarks_plane/SWEBenchmarksCombined.hpp>
+
 #include "libpfasst_swe_plane/LevelSingleton.hpp"
 #include "libpfasst_swe_plane/PlaneDataCtx.hpp"
 #include <mpi.h>
-#include <sweet/plane/PlaneDataTimesteppingExplicitRK.hpp>
 
 #define WITH_MPI
 
@@ -26,11 +26,18 @@ std::vector<LevelSingleton> levelSingletons;
 
 extern "C"
 {
-  /* Driver function for pfasst control */
-  void fmain (PlaneDataCtx *pd_ctx, 
-	      const int* nlevels, const int* niters, const int nnodes[], const char* qtype_name, const int* qtype_name_len,
-	      const int* nfields, const int nvars_per_field[], 
-	      double* t_max, double* dt);
+   /* Driver function for pfasst control */
+  void fmain (PlaneDataCtx* pd_ctx, 
+	      const int*     nlevels, 
+	      const int*     niters, 
+	      const int*     nsweeps_coarse,
+	      const int      nnodes[], 
+	      const char*    qtype_name, 
+	      const int*     qtype_name_len,
+ 	      const int*     nfields, 
+	      const int      nvars_per_field[], 
+ 	      double*        t_max, 
+	      double*        dt);
 }
 
 /**
@@ -43,10 +50,14 @@ int main(int i_argc, char *i_argv[])
 
   // input parameter names (specific ones for this program)
   const char *bogus_var_names[] = {
+    "rexi-use-coriolis-formulation",
+    "compute-error",
     nullptr
   };
 
   // default values for specific input (for general input see SimulationVariables.hpp)
+  simVars.bogus.var[0] = 1;
+  simVars.bogus.var[1] = 1;
   
   // Help menu
   if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
@@ -57,9 +68,6 @@ int main(int i_argc, char *i_argv[])
     }
 
   simVars.timecontrol.current_timestep_size = - simVars.sim.CFL; 
-  simVars.outputConfig();
-
-
 
   // define the number of levels and SDC nodes for each level
   // note: level #nlevels-1 is the finest, level #0 is the coarsest
@@ -75,9 +83,10 @@ int main(int i_argc, char *i_argv[])
       }
       // Two levels
       case 2: {
-	if (simVars.libpfasst.nnodes == 3 ||
-	    simVars.libpfasst.nnodes == 5 || 
-	    simVars.libpfasst.nnodes == 9)
+	if (simVars.libpfasst.nnodes == 3)
+	  nnodes[0] = 2;
+	else if (simVars.libpfasst.nnodes == 5 || 
+		 simVars.libpfasst.nnodes == 9)
 	  nnodes[0] = 3; 
 	else 
 	  FatalError("With 2 levels, the number of SDC nodes on the fine level must be either 3, 5, or 9");
@@ -95,6 +104,11 @@ int main(int i_argc, char *i_argv[])
 	    nnodes[0] = 2; 
 	    nnodes[1] = 3;
 	  }
+	else if (simVars.libpfasst.nnodes == 3) 
+	  {
+	    nnodes[0] = 3; 
+	    nnodes[1] = 3;
+	  }
 	else 
 	  FatalError("With 3 levels, the number of SDC nodes on the fine level must be either 5, or 9");
 	break;
@@ -107,45 +121,66 @@ int main(int i_argc, char *i_argv[])
   // setup the LevelSingletons for all levels
   // note: level #nlevels-1 is the finest, level #0 is the coarsest
 
-
-
-  // setup the finest level singleton
   levelSingletons.resize(simVars.libpfasst.nlevels);
 
-  levelSingletons[simVars.libpfasst.nlevels-1].dataConfig.setupAutoPhysicalSpace(
-										 simVars.disc.res_spectral[0],
-										 simVars.disc.res_spectral[1],
-										 &(simVars.disc.res_physical[0]),
-										 &(simVars.disc.res_physical[1])
-										 );
+  // setup the finest level singleton
+  const int fineLevelId = simVars.libpfasst.nlevels-1;
 
-  levelSingletons[simVars.libpfasst.nlevels-1].level = simVars.libpfasst.nlevels-1;
+
+  levelSingletons[fineLevelId].level = fineLevelId;
+
+  // setup data configuration in fine level
+
+  levelSingletons[fineLevelId].dataConfig.setupAuto(
+						    simVars.disc.res_physical,
+						    simVars.disc.res_spectral 
+						    );
   
-  levelSingletons[simVars.libpfasst.nlevels-1].op.setup(
-							&(levelSingletons[simVars.libpfasst.nlevels-1].dataConfig),
-							simVars.sim.domain_size,
-							simVars.disc.use_spectral_basis_diffs
-							);
+  int res_physical_nodealiasing[2] = {
+    2*(simVars.disc.res_spectral[0]+1),
+    simVars.disc.res_spectral[1]+2
+  };
+
+  levelSingletons[fineLevelId].dataConfigNoDealiasing.setupAuto(
+								res_physical_nodealiasing,
+								simVars.disc.res_spectral 
+								);
+
+  // setup data operators in fine level
+  
+  levelSingletons[fineLevelId].op.setup(
+					&(levelSingletons[fineLevelId].dataConfig),
+					simVars.sim.domain_size,
+					simVars.disc.use_spectral_basis_diffs
+					);
+  levelSingletons[fineLevelId].opNoDealiasing.setup(
+						    &(levelSingletons[fineLevelId].dataConfigNoDealiasing),
+						    simVars.sim.domain_size,
+						    simVars.disc.use_spectral_basis_diffs
+						    );
   
   // define the number of modes for the coarser levels
   for (int i = 1; i < simVars.libpfasst.nlevels; i++)
     {
-      levelSingletons[simVars.libpfasst.nlevels-1-i].dataConfig.setupAdditionalModes(
-										     &(levelSingletons[simVars.libpfasst.nlevels-i].dataConfig),
-										     -simVars.disc.res_spectral[0]*pow(simVars.libpfasst.coarsening_multiplier,i),
-										     -simVars.disc.res_spectral[1]*pow(simVars.libpfasst.coarsening_multiplier,i)
-										     );
+      const int thisLevelId = simVars.libpfasst.nlevels-1-i;
+      levelSingletons[thisLevelId].level = thisLevelId;
+	    
+      // setup data configuration at this level
+
+      levelSingletons[thisLevelId].dataConfig.setupAdditionalModes(
+								   &(levelSingletons[simVars.libpfasst.nlevels-i].dataConfig),
+								   -std::ceil(simVars.disc.res_spectral[0]*pow(simVars.libpfasst.coarsening_multiplier,i)),
+								   -std::ceil(simVars.disc.res_spectral[1]*pow(simVars.libpfasst.coarsening_multiplier,i))
+								   );
       
-      levelSingletons[simVars.libpfasst.nlevels-1-i].level = simVars.libpfasst.nlevels-1-i;
+      // setup data operators at this level
   
-      levelSingletons[simVars.libpfasst.nlevels-1-i].op.setup(
-							      &(levelSingletons[simVars.libpfasst.nlevels-1-i].dataConfig),
-							      simVars.sim.domain_size,
-							      simVars.disc.use_spectral_basis_diffs
-							      );
+      levelSingletons[thisLevelId].op.setup(
+					    &(levelSingletons[thisLevelId].dataConfig),
+					    simVars.sim.domain_size,
+					    simVars.disc.use_spectral_basis_diffs
+					    );
     }
-
-
 
   // define the SWEET parameters
 
@@ -156,30 +191,28 @@ int main(int i_argc, char *i_argv[])
 
   // instantiate the PlaneDataCtx object 
   PlaneDataCtx* pd_ctx = new PlaneDataCtx(
-  					  &simVars,
-  					  &levelSingletons,
+					  &simVars,
+					  &levelSingletons,
 					  nnodes
-  					  );
-  // output the info for the levels
-  for (int i = 0; i < simVars.libpfasst.nlevels; i++)
-    levelSingletons[simVars.libpfasst.nlevels-1-i].dataConfig.printInformation();
-  
+					  );
+
   // get the C string length (needed by Fortran...)
   int string_length = simVars.libpfasst.nodes_type.size();
 
   // call LibPFASST to advance in time
   fmain(
-	pd_ctx,                                       // user defined context
+   	pd_ctx,                                       // user defined context
 	&simVars.libpfasst.nlevels,                   // number of SDC levels
 	&simVars.libpfasst.niters,                    // number of SDC iterations
+	&simVars.libpfasst.nsweeps_coarse,            // number of SDC sweeps on coarse level
 	nnodes,                                       // number of SDC nodes 
-	(simVars.libpfasst.nodes_type).c_str(),       // type of nodes
+ 	(simVars.libpfasst.nodes_type).c_str(),       // type of nodes
 	&string_length,                               // length of (simVars.libpfasst.nodes_type).c_str()
 	&nfields,                                     // number of vector fields
 	nvars_per_field,                              // number of dofs per vector field
-	&(simVars.timecontrol.max_simulation_time),   // simulation time
-	&(simVars.timecontrol.current_timestep_size)  // time step size
-  	); 
+ 	&(simVars.timecontrol.max_simulation_time),   // simulation time
+   	&(simVars.timecontrol.current_timestep_size)  // time step size
+ 	); 
 
   // release the memory
   delete pd_ctx;
