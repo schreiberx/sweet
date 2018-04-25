@@ -79,6 +79,7 @@ public:
 		std::cout << "  WILLIAMSON #3:" << std::endl;
 		std::cout << "     'galewsky': Galwesky benchmark" << std::endl;
 		std::cout << "     'galewsky_nobump': Galwesky benchmark without any bump" << std::endl;
+		std::cout << "     'galewsky_nosetparams': Galwesky benchmark without setting parameters" << std::endl;
 		std::cout << std::endl;
 		std::cout << "  WILLIAMSON #4:" << std::endl;
 		std::cout << "     [NOT YET IMPLEMENTED]" << std::endl;
@@ -791,7 +792,8 @@ public:
 					simVars->setup.benchmark_scenario_name == "geostrophic_balance_64"	||
 					simVars->setup.benchmark_scenario_name == "geostrophic_balance_128"	||
 					simVars->setup.benchmark_scenario_name == "geostrophic_balance_256"	||
-					simVars->setup.benchmark_scenario_name == "geostrophic_balance_512"
+					simVars->setup.benchmark_scenario_name == "geostrophic_balance_512"	||
+					simVars->setup.benchmark_scenario_name == "geostrophic_balance_nosetparam"
 			)
 			{
 				/*
@@ -810,10 +812,13 @@ public:
 					std::cout << "!!! WARNING !!!" << std::endl;
 				}
 
-				simVars->sim.coriolis_omega = 7.292e-5;
-				simVars->sim.gravitation = 9.80616;
-				simVars->sim.earth_radius = 6.37122e6;
-				simVars->sim.h0 = 29400.0/simVars->sim.gravitation;
+				if (simVars->setup.benchmark_scenario_name != "geostrophic_balance_nosetparam")
+				{
+					simVars->sim.coriolis_omega = 7.292e-5;
+					simVars->sim.gravitation = 9.80616;
+					simVars->sim.earth_radius = 6.37122e6;
+					simVars->sim.h0 = 29400.0/simVars->sim.gravitation;
+				}
 
 				SphereData o_h(o_phi.sphereDataConfig);
 
