@@ -21,7 +21,7 @@ if [ ! -e "$DST_DIR/lib/libSDL2.so"  -o "$1" != "" ]; then
 	# update configure scripts
 	#sh autogen.sh
 	sed -i -- 's/EXTRA_CFLAGS="$EXTRA_CFLAGS -fpascal-strings"//' ./configure
-	./configure --prefix="$DST_DIR" || exit 1
+	./configure --enable-video --enable-video-opengl --prefix="$DST_DIR" || exit 1
 	make install || exit 1
 
 	echo "DONE"
