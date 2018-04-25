@@ -38,9 +38,14 @@ void SWE_Plane_TS_l_rexi_n_erk::euler_timestep_update_nonlinear(
 	 *	u_t = -g * h_x - u * u_x - v * u_y + f*v
 	 *	v_t = -g * h_y - u * v_x - v * v_y - f*u
 	 */
-	o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
+	//o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
 	o_u_t = -i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
 	o_v_t = -i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
+	if (simVars.pde.use_linear_div == 1) //only nonlinear advection left to solve
+		o_h_t = - (i_u*op.diff_c_x(i_h) + i_v*op.diff_c_y(i_h));
+	else //full nonlinear equation on h
+		o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
+
 }
 
 

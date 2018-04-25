@@ -3,6 +3,7 @@
 
 #include <sweet/sphere/SphereData.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
+#include <benchmarks_sphere/SWESphereBenchmarksCombined.hpp>
 
 // Class to store the configurations and operators at each level
 
@@ -16,6 +17,8 @@ public:
   SphereDataConfig dataConfigNoDealiasing;
   SphereOperators  op;
   SphereOperators  opNoDealiasing;
+
+  SWESphereBenchmarksCombined benchmarks;
 };
 
 #endif

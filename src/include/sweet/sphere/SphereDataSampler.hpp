@@ -151,7 +151,10 @@ public:
 
 
 
-	void updateSamplingData(const SphereData &i_data)
+	void updateSamplingData(
+			const SphereData &i_data,
+			bool i_velocity_sampling
+	)
 	{
 		i_data.request_data_physical();
 
@@ -177,16 +180,32 @@ public:
 #endif
 
 #if 1
-		// first block
-		for (int i = 0; i < num_lon_d2; i++)
-			sampling_data[i] = i_data.physical_space_data[num_lon + num_lon_d2 + i];
-		for (int i = 0; i < num_lon_d2; i++)
-			sampling_data[num_lon_d2 + i] = i_data.physical_space_data[num_lon + i];
+		if (i_velocity_sampling)
+		{
+			// first block
+			for (int i = 0; i < num_lon_d2; i++)
+				sampling_data[i] = -i_data.physical_space_data[num_lon + num_lon_d2 + i];
+			for (int i = 0; i < num_lon_d2; i++)
+				sampling_data[num_lon_d2 + i] = -i_data.physical_space_data[num_lon + i];
 
-		for (int i = 0; i < num_lon_d2; i++)
-			sampling_data[num_lon + i] = i_data.physical_space_data[num_lon_d2 + i];
-		for (int i = 0; i < num_lon_d2; i++)
-			sampling_data[num_lon + num_lon_d2 + i] = i_data.physical_space_data[i];
+			for (int i = 0; i < num_lon_d2; i++)
+				sampling_data[num_lon + i] = -i_data.physical_space_data[num_lon_d2 + i];
+			for (int i = 0; i < num_lon_d2; i++)
+				sampling_data[num_lon + num_lon_d2 + i] = -i_data.physical_space_data[i];
+		}
+		else
+		{
+			// first block
+			for (int i = 0; i < num_lon_d2; i++)
+				sampling_data[i] = i_data.physical_space_data[num_lon + num_lon_d2 + i];
+			for (int i = 0; i < num_lon_d2; i++)
+				sampling_data[num_lon_d2 + i] = i_data.physical_space_data[num_lon + i];
+
+			for (int i = 0; i < num_lon_d2; i++)
+				sampling_data[num_lon + i] = i_data.physical_space_data[num_lon_d2 + i];
+			for (int i = 0; i < num_lon_d2; i++)
+				sampling_data[num_lon + num_lon_d2 + i] = i_data.physical_space_data[i];
+		}
 #endif
 
 		for (int i = 0; i < num_lon*num_lat; i++)
@@ -194,16 +213,32 @@ public:
 
 
 #if 1
-		// last block
-		for (int i = 0; i < num_lon_d2; i++)
-			sampling_data[num_lon*(num_lat+2) + i] = i_data.physical_space_data[num_lon*(num_lat-1) + num_lon_d2 + i];
-		for (int i = 0; i < num_lon_d2; i++)
-			sampling_data[num_lon*(num_lat+2) + num_lon_d2 + i] = i_data.physical_space_data[num_lon*(num_lat-1) + i];
+		if (i_velocity_sampling)
+		{
+			// last block
+			for (int i = 0; i < num_lon_d2; i++)
+				sampling_data[num_lon*(num_lat+2) + i] = -i_data.physical_space_data[num_lon*(num_lat-1) + num_lon_d2 + i];
+			for (int i = 0; i < num_lon_d2; i++)
+				sampling_data[num_lon*(num_lat+2) + num_lon_d2 + i] = -i_data.physical_space_data[num_lon*(num_lat-1) + i];
 
-		for (int i = 0; i < num_lon_d2; i++)
-			sampling_data[num_lon*(num_lat+3) + i] = i_data.physical_space_data[num_lon*(num_lat-2) + num_lon_d2 + i];
-		for (int i = 0; i < num_lon_d2; i++)
-			sampling_data[num_lon*(num_lat+3) + num_lon_d2 + i] = i_data.physical_space_data[num_lon*(num_lat-2) + i];
+			for (int i = 0; i < num_lon_d2; i++)
+				sampling_data[num_lon*(num_lat+3) + i] = -i_data.physical_space_data[num_lon*(num_lat-2) + num_lon_d2 + i];
+			for (int i = 0; i < num_lon_d2; i++)
+				sampling_data[num_lon*(num_lat+3) + num_lon_d2 + i] = -i_data.physical_space_data[num_lon*(num_lat-2) + i];
+		}
+		else
+		{
+			// last block
+			for (int i = 0; i < num_lon_d2; i++)
+				sampling_data[num_lon*(num_lat+2) + i] = i_data.physical_space_data[num_lon*(num_lat-1) + num_lon_d2 + i];
+			for (int i = 0; i < num_lon_d2; i++)
+				sampling_data[num_lon*(num_lat+2) + num_lon_d2 + i] = i_data.physical_space_data[num_lon*(num_lat-1) + i];
+
+			for (int i = 0; i < num_lon_d2; i++)
+				sampling_data[num_lon*(num_lat+3) + i] = i_data.physical_space_data[num_lon*(num_lat-2) + num_lon_d2 + i];
+			for (int i = 0; i < num_lon_d2; i++)
+				sampling_data[num_lon*(num_lat+3) + num_lon_d2 + i] = i_data.physical_space_data[num_lon*(num_lat-2) + i];
+		}
 #endif
 
 #if 0
@@ -220,6 +255,7 @@ public:
 		}
 #endif
 	}
+
 
 
 public:
@@ -352,13 +388,14 @@ public:
 			const ScalarDataArray &i_pos_x,		///< x positions of interpolation points
 			const ScalarDataArray &i_pos_y,		///< y positions of interpolation points
 
-			double *o_data						///< output values
+			double *o_data,						///< output values
+			bool i_velocity_sampling
 	)
 	{
 		assert(res[0] > 0);
 		assert(i_pos_x.number_of_elements == i_pos_y.number_of_elements);
 
-		updateSamplingData(i_data);
+		updateSamplingData(i_data, i_velocity_sampling);
 
 		int num_lon = sphereDataConfig->physical_num_lon;
 		int num_lat = sphereDataConfig->physical_num_lat;
@@ -584,7 +621,8 @@ public:
 			const ScalarDataArray &i_pos_x,		///< x positions of interpolation points
 			const ScalarDataArray &i_pos_y,		///< y positions of interpolation points
 
-			SphereData &o_data					///< output values
+			SphereData &o_data,					///< output values
+			bool i_velocity_sampling
 	)
 	{
 		assert(i_data.sphereDataConfig->physical_array_data_number_of_elements == o_data.sphereDataConfig->physical_array_data_number_of_elements);
@@ -592,7 +630,7 @@ public:
 		assert(i_pos_x.number_of_elements == i_pos_y.number_of_elements);
 		assert(i_pos_x.number_of_elements == (std::size_t)o_data.sphereDataConfig->physical_array_data_number_of_elements);
 
-		bicubic_scalar(i_data, i_pos_x, i_pos_y, o_data.physical_space_data);
+		bicubic_scalar(i_data, i_pos_x, i_pos_y, o_data.physical_space_data,  i_velocity_sampling);
 
 #if SWEET_USE_SPHERE_SPECTRAL_SPACE
 		o_data.physical_space_data_valid = true;
@@ -608,7 +646,8 @@ public:
 			const ScalarDataArray &i_pos_x,			///< x positions of interpolation points
 			const ScalarDataArray &i_pos_y,			///< y positions of interpolation points
 
-			ScalarDataArray &o_data				///< output values
+			ScalarDataArray &o_data,				///< output values
+			bool i_velocity_sampling
 	)
 	{
 //		assert ((std::size_t)i_data.sphereDataConfig->physical_array_data_number_of_elements == (std::size_t)o_data.number_of_elements);
@@ -616,7 +655,7 @@ public:
 		assert(i_pos_x.number_of_elements == i_pos_y.number_of_elements);
 		assert(i_pos_x.number_of_elements == o_data.number_of_elements);
 
-		bicubic_scalar(i_data, i_pos_x, i_pos_y, o_data.scalar_data);
+		bicubic_scalar(i_data, i_pos_x, i_pos_y, o_data.scalar_data, i_velocity_sampling);
 	}
 
 
@@ -628,13 +667,14 @@ public:
 			const ScalarDataArray &i_pos_x,		///< x positions of interpolation points
 			const ScalarDataArray &i_pos_y,		///< y positions of interpolation points
 
-			double *o_data						///< output values
+			double *o_data,						///< output values
+			bool i_velocity_sampling	///< swap sign for velocities
 	)
 	{
 		assert(res[0] > 0);
 		assert(i_pos_x.number_of_elements == i_pos_y.number_of_elements);
 
-		updateSamplingData(i_data);
+		updateSamplingData(i_data, i_velocity_sampling);
 
 		int num_lon = sphereDataConfig->physical_num_lon;
 		int num_lat = sphereDataConfig->physical_num_lat;
@@ -736,12 +776,13 @@ public:
 			const ScalarDataArray &i_pos_x,				///< x positions of interpolation points
 			const ScalarDataArray &i_pos_y,				///< y positions of interpolation points
 
-			ScalarDataArray &o_data				///< output values
+			ScalarDataArray &o_data,				///< output values
+			bool i_velocity_sampling
 	)
 	{
 		assert(i_pos_x.number_of_elements == i_pos_y.number_of_elements);
 		assert(i_pos_x.number_of_elements == (std::size_t)o_data.number_of_elements);
-		bilinear_scalar(i_data, i_pos_x, i_pos_y, o_data.scalar_data);
+		bilinear_scalar(i_data, i_pos_x, i_pos_y, o_data.scalar_data, i_velocity_sampling);
 	}
 
 
@@ -752,13 +793,14 @@ public:
 			const ScalarDataArray &i_pos_x,				///< x positions of interpolation points
 			const ScalarDataArray &i_pos_y,				///< y positions of interpolation points
 
-			SphereData &o_data				///< output values
+			SphereData &o_data,				///< output values
+			bool i_velocity_sampling
 	)
 	{
 		assert(i_pos_x.number_of_elements == i_pos_y.number_of_elements);
 		assert(i_pos_x.number_of_elements == (std::size_t)o_data.sphereDataConfig->physical_array_data_number_of_elements);
 
-		bilinear_scalar(i_data, i_pos_x, i_pos_y, o_data.physical_space_data);
+		bilinear_scalar(i_data, i_pos_x, i_pos_y, o_data.physical_space_data, i_velocity_sampling);
 
 #if SWEET_USE_SPHERE_SPECTRAL_SPACE
 		o_data.physical_space_data_valid = true;
@@ -772,11 +814,12 @@ public:
 			const SphereData &i_data,				///< sampling data
 
 			const ScalarDataArray &i_pos_x,				///< x positions of interpolation points
-			const ScalarDataArray &i_pos_y				///< y positions of interpolation points
+			const ScalarDataArray &i_pos_y,				///< y positions of interpolation points
+			bool i_velocity_sampling
 	)
 	{
 		ScalarDataArray out(i_data.sphereDataConfig->physical_array_data_number_of_elements);
-		bilinear_scalar(i_data, i_pos_x, i_pos_y, out);
+		bilinear_scalar(i_data, i_pos_x, i_pos_y, out, i_velocity_sampling);
 		return out;
 	}
 
@@ -787,11 +830,12 @@ public:
 			const SphereData &i_data,				///< sampling data
 
 			const ScalarDataArray &i_pos_x,				///< x positions of interpolation points
-			const ScalarDataArray &i_pos_y				///< y positions of interpolation points
+			const ScalarDataArray &i_pos_y,				///< y positions of interpolation points
+			bool i_velocity_sampling
 	)
 	{
 		ScalarDataArray out(i_data.sphereDataConfig->physical_array_data_number_of_elements);
-		bicubic_scalar(i_data, i_pos_x, i_pos_y, out);
+		bicubic_scalar(i_data, i_pos_x, i_pos_y, out, i_velocity_sampling);
 		return out;
 	}
 };

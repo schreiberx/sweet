@@ -14,7 +14,7 @@
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
-#include <benchmarks_sphere/SphereBenchmarksCombined.hpp>
+#include <benchmarks_sphere/SWESphereBenchmarksCombined.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/Convert_SphereData_To_PlaneData.hpp>
@@ -54,6 +54,8 @@ public:
 	int render_primitive_id = 1;
 #endif
 
+	SWESphereBenchmarksCombined sphereBenchmarks;
+
 
 public:
 	SimulationInstance()	:
@@ -90,7 +92,8 @@ public:
 		SphereData tmp_vort(sphereDataConfig);
 		SphereData tmp_div(sphereDataConfig);
 
-		SphereBenchmarksCombined::setupInitialConditions(prog_h, prog_vort, prog_div, simVars, op);
+		sphereBenchmarks.setup(simVars, op);
+		sphereBenchmarks.setupInitialConditions(prog_h, prog_vort, prog_div);
 
 		prog_h0 = prog_h;
 
@@ -124,6 +127,7 @@ public:
 		if (simVars.misc.verbosity > 2)
 			std::cout << simVars.timecontrol.current_timestep_nr << ": " << simVars.timecontrol.current_simulation_time/(60*60*24.0) << std::endl;
 	}
+
 
 
 	void compute_error()
@@ -331,6 +335,9 @@ int main(int i_argc, char *i_argv[])
 
 	if (simVars.timecontrol.current_timestep_size < 0)
 		FatalError("Timestep size not set");
+
+	SphereDataSemiLagrangian::alpha() = simVars.setup.advection_rotation_angle;
+
 
 	sphereDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
 

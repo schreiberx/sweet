@@ -22,6 +22,8 @@ p.compile.sphere_spectral_space = 'enable'
 p.compile.sphere_spectral_dealiasing = 'enable'
 
 
+# Enable quad math per default for CI REXI method
+p.compile.quadmath = 'enable'
 
 
 # Verbosity mode

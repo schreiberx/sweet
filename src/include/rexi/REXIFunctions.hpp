@@ -8,9 +8,6 @@
 #ifndef SRC_INCLUDE_REXI_REXIFUNCTIONS_HPP_
 #define SRC_INCLUDE_REXI_REXIFUNCTIONS_HPP_
 
-//#include <complex.h>
-//#include <complex>
-//#include <cmath>
 #include <iostream>
 #include <typeinfo>
 #include <libmath/DQStuff.hpp>
@@ -171,7 +168,7 @@ public:
 		return std::exp(i_value);
 	};
 
-	T l_sqrt(double &i_value)
+	T l_sqrt(const double &i_value)
 	{
 		return std::sqrt(i_value);
 	};

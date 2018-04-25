@@ -10,6 +10,7 @@
 #define SRC_INCLUDE_SWEET_SPHEREDATASEMILAGRANGIAN_HPP_
 
 #include <sweet/sphere/Convert_SphereData_to_ScalarDataArray.hpp>
+#include <sweet/sphere/Convert_SphereDataPhysical_to_ScalarDataArray.hpp>
 #include <sweet/sphere/Convert_ScalarDataArray_to_SphereData.hpp>
 #include <sweet/sphere/SphereStaggering.hpp>
 #include <sweet/sphere/SphereDataSampler.hpp>
@@ -40,19 +41,50 @@ public:
 		sample2D.setup(sphereDataConfig);
 	}
 
-
 	inline
 	static
 	void angleToCartCoord(
-			double i_lon,
-			double i_lat,
-			double *o_x
+			const ScalarDataArray &i_lon,
+			const ScalarDataArray &i_lat,
+			ScalarDataArray &o_x,
+			ScalarDataArray &o_y,
+			ScalarDataArray &o_z
 	)
 	{
-		i_lat += M_PI*0.5;
-		o_x[0] = std::sin(i_lat)*std::cos(i_lon);
-		o_x[1] = std::sin(i_lat)*std::sin(i_lon);
-		o_x[2] = -std::cos(i_lat);
+#if SWEET_SPACE_THREADING
+#pragma omp parallel for
+#endif
+		for (std::size_t i = 0; i < i_lon.number_of_elements; i++)
+		{
+			o_x.scalar_data[i] = std::cos(i_lon.scalar_data[i])*std::cos(i_lat.scalar_data[i]);
+			o_y.scalar_data[i] = std::sin(i_lon.scalar_data[i])*std::cos(i_lat.scalar_data[i]);
+			o_z.scalar_data[i] = std::sin(i_lat.scalar_data[i]);
+		}
+	}
+
+
+
+	inline
+	static
+	void angleSpeedToCartVector(
+			const ScalarDataArray &i_lon,
+			const ScalarDataArray &i_lat,
+			const ScalarDataArray &i_vel_lon,
+			const ScalarDataArray &i_vel_lat,
+			ScalarDataArray *o_v_x,
+			ScalarDataArray *o_v_y,
+			ScalarDataArray *o_v_z
+	)
+	{
+#if SWEET_SPACE_THREADING
+#pragma omp parallel for
+#endif
+		for (std::size_t i = 0; i < i_lon.number_of_elements; i++)
+		{
+			o_v_x->scalar_data[i] = -i_vel_lon.scalar_data[i]*std::sin(i_lon.scalar_data[i]) - i_vel_lat.scalar_data[i]*std::cos(i_lon.scalar_data[i])*std::sin(i_lat.scalar_data[i]);
+			o_v_y->scalar_data[i] = i_vel_lon.scalar_data[i]*std::cos(i_lon.scalar_data[i]) - i_vel_lat.scalar_data[i]*std::sin(i_lon.scalar_data[i])*std::sin(i_lat.scalar_data[i]);
+			o_v_z->scalar_data[i] = i_vel_lat.scalar_data[i]*std::cos(i_lat.scalar_data[i]);
+		}
 	}
 
 
@@ -60,300 +92,260 @@ public:
 	inline
 	static
 	void cartToAngleCoord(
-			const double i_x[3],
-			double *o_lon,
-			double *o_lat
+			const ScalarDataArray &i_x,
+			const ScalarDataArray &i_y,
+			const ScalarDataArray &i_z,
+			ScalarDataArray &o_lon,
+			ScalarDataArray &o_lat
 	)
 	{
-		*o_lon = std::acos(i_x[0]/std::sqrt(i_x[0]*i_x[0] + i_x[1]*i_x[1]));
-		if (i_x[1] < 0)
-			*o_lon = 2.0*M_PI-*o_lon;
-
-		*o_lat = std::acos(-i_x[2]);
-		*o_lat -= M_PI*0.5;
-	}
-
-
-	inline
-	static
-	double length(
-			const double *i_x
-	)
-	{
-		return std::sqrt(i_x[0]*i_x[0] + i_x[1]*i_x[1] + i_x[2]*i_x[2]);
-	}
-
-
-	inline
-	static
-	void angleToTangentialSpace(
-			double i_lon,
-			double i_lat,
-			double *o_x
-	)
-	{
-		angleToCartCoord(i_lon, i_lat, o_x);
-
-		o_x[3+0] = -std::sin(i_lon);
-		o_x[3+1] = std::cos(i_lon);
-		o_x[3+2] = 0;
-
-		cross(&o_x[0], &o_x[3], &o_x[6]);
-	}
-
-
-	inline
-	static
-	void cross(
-			const double *i_x,
-			const double *i_y,
-			double *o_z
-	)
-	{
-		o_z[0] = i_x[1]*i_y[2] - i_x[2]*i_y[1];
-		o_z[1] = i_x[2]*i_y[0] - i_x[0]*i_y[2];
-		o_z[2] = i_x[0]*i_y[1] - i_x[1]*i_y[0];
-	}
-
-
-	/**
-	 * Add a vector on the sphere to a position
-	 */
-	void sphereCoordPlusSurfaceVector(
-			const ScalarDataArray &i_pos_lon,	/// longitude angle
-			const ScalarDataArray &i_pos_lat,	/// latitude angle
-
-			const ScalarDataArray &i_vec_lon,	/// velocity along longitude
-			const ScalarDataArray &i_vec_lat,	/// velocity along latitude
-
-			ScalarDataArray &o_pos_lon,
-			ScalarDataArray &o_pos_lat
-		)
-	{
-		// TODO: make this vectorizable
-
-		// get lat-lon tangential basis
 #if SWEET_SPACE_THREADING
 #pragma omp parallel for
 #endif
-		for (std::size_t i = 0; i < i_pos_lon.number_of_elements; i++)
+		for (std::size_t i = 0; i < i_x.number_of_elements; i++)
 		{
-			// compute 3D pos
-			double tanBasis[9];
-			angleToTangentialSpace(i_pos_lon.scalar_data[i], i_pos_lat.scalar_data[i], tanBasis);
+			o_lon.scalar_data[i] = std::atan(i_y.scalar_data[i]/i_x.scalar_data[i]);
 
-			// compute 3D velocity
-			double velVec[3];
-			for (int j = 0; j < 3; j++)
-				velVec[j] = tanBasis[j+3]*i_vec_lon.scalar_data[i] + tanBasis[j+6]*i_vec_lat.scalar_data[i];
+			if (i_x.scalar_data[i] < 0)
+				o_lon.scalar_data[i] += M_PI;
+			else if (i_y.scalar_data[i] < 0)
+				o_lon.scalar_data[i] += M_PI*2.0;
 
-#if 1
-			/*
-			 * Project vector accurately on sphere
-			 *
-			 * Not fully tested yet, but seems to work betterh than other approach!!!
-			 */
-
-			// velocity basis
-			double velBasis[9];
-			for (int j = 0; j < 3; j++)
-				velBasis[j] = tanBasis[j];
-
-			double vel_length = std::sqrt(i_vec_lon.scalar_data[i]*i_vec_lon.scalar_data[i] + i_vec_lat.scalar_data[i]*i_vec_lat.scalar_data[i]);
-			double inv_vel_len = 1.0/vel_length;
-			for (int j = 0; j < 3; j++)
-				velBasis[3+j] = velVec[j]*inv_vel_len;
-
-			cross(&velBasis[0], &velBasis[3], &velBasis[6]);
-
-//			velBasis[2] = 0;
-
-/*
-			for (int j = 0; j < 3; j++)
-			{
-				std::cout << velBasis[3*j+0] << ", " << velBasis[3*j+1] << ", " << velBasis[3*j+2] << std::endl;
-			}
-			std::cout << std::endl;
-*/
-
-			// Follow vel along unit circle
-			// start at relative position (1,0)
-			double pos[2];
-			pos[0] = std::cos(vel_length)-1.0;
-			pos[1] = std::sin(vel_length);
-
-			// update velVec
-#if 1
-			for (int j = 0; j < 3; j++)
-			{
-				velVec[j] = 0;
-				for (int i = 0; i < 2; i++)
-				{
-					// 2D velocity basis is made up by 2nd and 3rd column
-					velVec[j] += velBasis[j+i*3]*pos[i];
-				}
-			}
-#else
-			velVec[0] = 0;
-			for (int i = 0; i < 2; i++)
-				velVec[0] += velBasis[i*3]*pos[i];
-
-			velVec[1] = 0;
-			for (int i = 0; i < 2; i++)
-				velVec[1] += velBasis[3+i*3]*pos[i];
-#endif
-
-			// add
-			double finalPos[3];
-			for (int j = 0; j < 3; j++)
-				finalPos[j] = tanBasis[j] + velVec[j];
-
-//			std::cout << tanBasis[0] << ", " << tanBasis[1] << ", " << tanBasis[2] << std::endl;
-//			std::cout << velVec[0] << ", " << velVec[1] << ", " << velVec[2] << std::endl;
-//			std::cout << length(finalPos) << std::endl;
-
-#else
-
-			// add
-			double finalPos[3];
-			for (int j = 0; j < 3; j++)
-				finalPos[j] = tanBasis[j] + velVec[j];
-
-			// normalize
-			double inv_len = 1.0/length(finalPos);
-			for (int j = 0; j < 3; j++)
-				finalPos[j] *= inv_len;
-
-#endif
-
-			cartToAngleCoord(finalPos, &o_pos_lon.scalar_data[i], &o_pos_lat.scalar_data[i]);
+			o_lat.scalar_data[i] = std::acos(-i_z.scalar_data[i]) - M_PI*0.5;
 		}
 	}
 
 
-	/**
-	 * Stable extrapolation Two-Time-Level Scheme, Mariano Hortal,
-	 *     Development and testing of a new two-time-level semi-lagrangian scheme (settls) in the ECMWF forecast model.
-	 * Quaterly Journal of the Royal Meterological Society
-	 *
-	 * r_d = r_a - dt/2 * (2 * v_n(r_d) - v_{n-1}(r_d) + v_n(r_a))
-	 *
-	 * v^{iter} := (dt*v_n - dt*0.5*v_{n-1})
-	 * r_d = r_a - dt/2 * v_n(r_d) - v^{iter}(r_d)
-	 */
+
+	//double alpha = 1.5708;
+	static
+	double& alpha()
+	{
+		static double alpha = 0;
+		return alpha;
+	}
+
+	double u_analytical(double i_lambda, double i_theta)
+	{
+		double a = 6.37122e6;
+		double u0 = (2.0*M_PI*a)/(12.0*24.0*60.0*60.0);
+
+		assert(i_lambda >= 0);
+		assert(i_lambda <= 2.0*M_PI);
+		assert(i_theta >= -0.5*M_PI);
+		assert(i_theta <= 0.5*M_PI);
+
+		return u0*(std::cos(i_theta)*std::cos(alpha()) + std::sin(i_theta)*std::cos(i_lambda)*std::sin(alpha()));
+	}
+
+
+	ScalarDataArray u_analytical(
+			const ScalarDataArray &i_lambda,
+			const ScalarDataArray &i_theta
+	)
+	{
+		ScalarDataArray ret;
+		ret.setup(i_lambda.number_of_elements);
+		for (int i = 0; i < (int)i_lambda.number_of_elements; i++)
+			ret.scalar_data[i] = u_analytical(i_lambda.scalar_data[i], i_theta.scalar_data[i]);
+
+		return ret;
+	}
+
+	double v_analytical(double i_lambda, double i_theta)
+	{
+		double a = 6.37122e6;
+		double u0 = (2.0*M_PI*a)/(12.0*24.0*60.0*60.0);
+
+		assert(i_lambda >= 0);
+		assert(i_lambda <= 2.0*M_PI);
+		assert(i_theta >= -0.5*M_PI);
+		assert(i_theta <= 0.5*M_PI);
+
+		return -u0*std::sin(i_lambda)*std::sin(alpha());
+	}
+
+
+	ScalarDataArray v_analytical(
+			const ScalarDataArray &i_lambda,
+			const ScalarDataArray &i_theta
+	)
+	{
+		ScalarDataArray ret;
+		ret.setup(i_lambda.number_of_elements);
+		for (int i = 0; i < (int)i_lambda.number_of_elements; i++)
+			ret.scalar_data[i] = v_analytical(i_lambda.scalar_data[i], i_theta.scalar_data[i]);
+
+		return ret;
+	}
+
+
+
 	void semi_lag_departure_points_settls(
-			const SphereDataPhysical &i_u_prev,	// Velocities at time t-1
-			const SphereDataPhysical &i_v_prev,
+			const SphereDataPhysical &i_u_lon_prev,	// Velocities at time t-1
+			const SphereDataPhysical &i_v_lat_prev,
 
-			const SphereDataPhysical &i_u, 		// Velocities at time t
-			const SphereDataPhysical &i_v,
+			const SphereDataPhysical &i_u_lon, 		// Velocities at time t
+			const SphereDataPhysical &i_v_lat,
 
-			const ScalarDataArray &i_posx_a,	// Position of arrival points x / y
-			const ScalarDataArray &i_posy_a,
+			const ScalarDataArray &i_pos_lon_a,	// Position of arrival points lon/lat
+			const ScalarDataArray &i_pos_lat_a,
 
 			double i_dt,				///< time step size
 			double i_earth_radius,
-			ScalarDataArray &o_posx_d, 	///< Position of departure points x / y
-			ScalarDataArray &o_posy_d
+
+			ScalarDataArray &o_pos_lon_d, 	///< Position of departure points x / y
+			ScalarDataArray &o_pos_lat_d,
+
+			int i_timestepping_order,
+			int max_iters = 10,
+			double i_convergence_tolerance = 1e-8
 	)
 	{
-		std::size_t num_points = i_posx_a.number_of_elements;
+		std::size_t num_elements = i_pos_lon_a.number_of_elements;
+		double inv_earth_radius = 1.0/i_earth_radius;
 
-		ScalarDataArray u_prev = Convert_SphereData_To_ScalarDataArray::physical_convert(i_u_prev, false);
-		ScalarDataArray v_prev = Convert_SphereData_To_ScalarDataArray::physical_convert(i_v_prev, false);
-
-		ScalarDataArray u = Convert_SphereData_To_ScalarDataArray::physical_convert(i_u, false);
-		ScalarDataArray v = Convert_SphereData_To_ScalarDataArray::physical_convert(i_v, false);
-
-		// local dt
-		double dt = i_dt;
-
-		// Velocity for iterations
-		SphereData u_iter = Convert_ScalarDataArray_to_SphereData::convert(2.0 * u - u_prev, sphereDataConfig);
-		SphereData v_iter = Convert_ScalarDataArray_to_SphereData::convert(2.0 * v - v_prev, sphereDataConfig);
-
-		u_iter.physical_set_zero();
-		v_iter.physical_set_zero();
-
-
-		// Departure point tmp
-		ScalarDataArray rx_d_new(num_points);
-		ScalarDataArray ry_d_new(num_points);
-
-		// Previous departure point
-		ScalarDataArray rx_d_prev = i_posx_a;
-		ScalarDataArray ry_d_prev = i_posy_a;
-
-		// initialize departure points with arrival points
-		o_posx_d = i_posx_a;
-		o_posy_d = i_posy_a;
-
-		double vel_scaling = 2.0/i_earth_radius;
-
-		int iters = 0;
-		for (; iters < 10; iters++)
+		if (i_timestepping_order == 1)
 		{
-			sphereCoordPlusSurfaceVector(
-					i_posx_a,
-					i_posy_a,
-					(-dt*0.5 * (u + sample2D.bilinear_scalar(u_iter, o_posx_d, o_posy_d)))*vel_scaling,
-					(-dt*0.5 * (v + sample2D.bilinear_scalar(v_iter, o_posx_d, o_posy_d)))*vel_scaling,
-					rx_d_new,
-					ry_d_new
+			ScalarDataArray pos_x_a(num_elements);
+			ScalarDataArray pos_y_a(num_elements);
+			ScalarDataArray pos_z_a(num_elements);
+
+			// polar => Cartesian coordinates
+			angleToCartCoord(
+					i_pos_lon_a, i_pos_lat_a,
+					pos_x_a, pos_y_a, pos_z_a
 				);
 
-			double diff = (rx_d_new - rx_d_prev).reduce_maxAbs() + (ry_d_new - ry_d_prev).reduce_maxAbs();
+			ScalarDataArray u_lon = Convert_SphereDataPhysical_To_ScalarDataArray::physical_convert(i_u_lon);
+			ScalarDataArray v_lat = Convert_SphereDataPhysical_To_ScalarDataArray::physical_convert(i_v_lat);
 
-#if SWEET_SPACE_THREADING
-#pragma omp parallel for
-#endif
-			for (std::size_t i = 0; i < num_points; i++)
-			{
-				o_posx_d.scalar_data[i] = rx_d_new.scalar_data[i];
+			ScalarDataArray vel_x(num_elements);
+			ScalarDataArray vel_y(num_elements);
+			ScalarDataArray vel_z(num_elements);
 
-				// posx \in [-pi/2;pi/2]
-				o_posy_d.scalar_data[i] = ry_d_new.scalar_data[i];
-				if (o_posy_d.scalar_data[i] > M_PI*0.5)
-				{
-					o_posy_d.scalar_data[i] = M_PI - o_posy_d.scalar_data[i];
-					o_posx_d.scalar_data[i] += M_PI;
-				}
-				else if (o_posy_d.scalar_data[i] < -M_PI*0.5)
-				{
-					o_posy_d.scalar_data[i] = -M_PI - o_posy_d.scalar_data[i];
-					o_posx_d.scalar_data[i] += M_PI;
-				}
+			// polar => Cartesian coordinates
+			angleSpeedToCartVector(
+					i_pos_lon_a, i_pos_lat_a,
+					u_lon, v_lat,
+					&vel_x, &vel_y, &vel_z
+				);
 
+			// go to departure point
+			ScalarDataArray pos_x_d = pos_x_a - vel_x*i_dt*inv_earth_radius;
+			ScalarDataArray pos_y_d = pos_y_a - vel_y*i_dt*inv_earth_radius;
+			ScalarDataArray pos_z_d = pos_z_a - vel_z*i_dt*inv_earth_radius;
 
-				// posx \in [0;2*pi]
-				o_posx_d.scalar_data[i] = SphereDataSampler::wrapPeriodic(o_posx_d.scalar_data[i], 2.0*M_PI);
+			// normalize
+			ScalarDataArray norm = (pos_x_d*pos_x_d + pos_y_d*pos_y_d + pos_z_d*pos_z_d).inv_sqrt();
 
-				assert(o_posx_d.scalar_data[i] >= 0);
-				assert(o_posx_d.scalar_data[i] < M_PI*2.0);
-/*
+			pos_x_d *= norm;
+			pos_y_d *= norm;
+			pos_z_d *= norm;
 
-#if SWEET_DEBUG
-				if (o_posy_d.scalar_data[i] < -M_PI*0.5)
-					std::cout << o_posy_d.scalar_data[i] << " >= -M_PI*0.5" << std::endl;
-				if (o_posy_d.scalar_data[i] > M_PI*0.5)
-					std::cout << o_posy_d.scalar_data[i] << " <= M_PI*0.5" << std::endl;
-#endif
-*/
-				assert(o_posy_d.scalar_data[i] >= -M_PI*0.5);
-				assert(o_posy_d.scalar_data[i] <= M_PI*0.5);
-			}
-
-			if (diff < 1e-8)
-			   break;
-
-			rx_d_prev = o_posx_d;
-			ry_d_prev = o_posy_d;
+			cartToAngleCoord(pos_x_d, pos_y_d, pos_z_d, o_pos_lon_d, o_pos_lat_d);
+			return;
 		}
 
+		if (i_timestepping_order == 2)
+		{
+			// Extrapolate velocities at departure points
+			SphereDataPhysical u_extrapol = 2.0*i_u_lon - i_u_lon_prev;
+			SphereDataPhysical v_extrapol = 2.0*i_v_lat - i_v_lat_prev;
 
-		if (iters == 10)
-			std::cout << "WARNING: Too many iterations for SL scheme" << std::endl;
+			// Compute cartesian arrival points
+			ScalarDataArray pos_x_a(num_elements);
+			ScalarDataArray pos_y_a(num_elements);
+			ScalarDataArray pos_z_a(num_elements);
+			angleToCartCoord(
+					i_pos_lon_a, i_pos_lat_a,
+					pos_x_a, pos_y_a, pos_z_a
+				);
+
+			// convert velocities along lon/lat to scalardata array
+			ScalarDataArray u_lon = Convert_SphereDataPhysical_To_ScalarDataArray::physical_convert(i_u_lon);
+			ScalarDataArray v_lat = Convert_SphereDataPhysical_To_ScalarDataArray::physical_convert(i_v_lat);
+
+			// compute Cartesian velocities
+			ScalarDataArray vel_x(num_elements);
+			ScalarDataArray vel_y(num_elements);
+			ScalarDataArray vel_z(num_elements);
+
+			// polar => Cartesian coordinates
+			angleSpeedToCartVector(
+					i_pos_lon_a, i_pos_lat_a,
+					u_lon, v_lat,
+					&vel_x, &vel_y, &vel_z
+				);
+
+			/*
+			 * Setup iterations
+			 */
+			// Departure points for iterations
+			ScalarDataArray pos_x_d = pos_x_a;
+			ScalarDataArray pos_y_d = pos_y_a;
+			ScalarDataArray pos_z_d = pos_z_a;
+
+
+			double diff = 999;
+			int iters = 0;
+			for (; iters < max_iters; iters++)
+			{
+				cartToAngleCoord(pos_x_d, pos_y_d, pos_z_d, o_pos_lon_d, o_pos_lat_d);
+
+				ScalarDataArray u_lon_extrapol = sample2D.bilinear_scalar(u_extrapol, o_pos_lon_d, o_pos_lat_d, true);
+				ScalarDataArray v_lat_extrapol = sample2D.bilinear_scalar(v_extrapol, o_pos_lon_d, o_pos_lat_d, true);
+
+				// convert extrapolated velocities to Cartesian velocities
+				ScalarDataArray vel_x_extrapol(num_elements);
+				ScalarDataArray vel_y_extrapol(num_elements);
+				ScalarDataArray vel_z_extrapol(num_elements);
+
+				// polar => Cartesian coordinates
+				angleSpeedToCartVector(
+						o_pos_lon_d, o_pos_lat_d,
+						u_lon_extrapol, v_lat_extrapol,
+						&vel_x_extrapol, &vel_y_extrapol, &vel_z_extrapol
+					);
+
+				pos_x_d = pos_x_a - i_dt*0.5*(vel_x_extrapol + vel_x)*inv_earth_radius;
+				pos_y_d = pos_y_a - i_dt*0.5*(vel_y_extrapol + vel_y)*inv_earth_radius;
+				pos_z_d = pos_z_a - i_dt*0.5*(vel_z_extrapol + vel_z)*inv_earth_radius;
+
+				ScalarDataArray norm = (pos_x_d*pos_x_d + pos_y_d*pos_y_d + pos_z_d*pos_z_d).inv_sqrt();
+
+				ScalarDataArray new_pos_x_d = pos_x_d*norm;
+				ScalarDataArray new_pos_y_d = pos_y_d*norm;
+				ScalarDataArray new_pos_z_d = pos_z_d*norm;
+
+				diff =  (pos_x_d-new_pos_x_d).reduce_maxAbs() +
+						(pos_y_d-new_pos_y_d).reduce_maxAbs() +
+						(pos_z_d-new_pos_z_d).reduce_maxAbs();
+
+				pos_x_d = new_pos_x_d;
+				pos_y_d = new_pos_y_d;
+				pos_z_d = new_pos_z_d;
+
+				if (diff < i_convergence_tolerance)
+				   break;
+			}
+
+			if (diff > i_convergence_tolerance)
+			{
+				std::cout << "WARNING: Over convergence tolerance" << std::endl;
+				std::cout << "+ Iterations: " << iters << std::endl;
+				std::cout << "+ maxAbs: " << diff << std::endl;
+				std::cout << "+ Convergence tolerance: " << i_convergence_tolerance << std::endl;
+			}
+
+			// convert final points from Cartesian space to angular space
+			cartToAngleCoord(pos_x_d, pos_y_d, pos_z_d, o_pos_lon_d, o_pos_lat_d);
+			return;
+		}
+
+		FatalError("Only 1st and 2nd order time integration supported");
 	}
+
 };
 
 #endif /* SRC_INCLUDE_SWEET_SPHEREDATASEMILAGRANGIAN_HPP_ */

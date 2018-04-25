@@ -24,13 +24,17 @@ void Adv_Plane_TS_na_sl::run_timestep(
 
 	double dt = simVars.timecontrol.current_timestep_size;
 
+	if (simVars.sim.getExternalForcesCallback != nullptr)
+	{
+		simVars.sim.getExternalForcesCallback(1, i_simulation_timestamp, &io_u, simVars.sim.getExternalForcesUserData);
+		simVars.sim.getExternalForcesCallback(2, i_simulation_timestamp, &io_v, simVars.sim.getExternalForcesUserData);
+	}
+
 	if (i_simulation_timestamp == 0)
 	{
 		prog_u_prev = io_u;
 		prog_v_prev = io_v;
 	}
-
-#if 1
 
 
 	// OUTPUT: position of departure points at t
@@ -42,8 +46,10 @@ void Adv_Plane_TS_na_sl::run_timestep(
 			io_u, io_v,
 			posx_a, posy_a,
 			dt,
-//			simVars.sim.earth_radius,
-			posx_d, posy_d
+			posx_d, posy_d,
+			simVars.sim.domain_size,
+			nullptr,
+			timestepping_order
 	);
 
 	prog_u_prev = io_u;
@@ -51,30 +57,28 @@ void Adv_Plane_TS_na_sl::run_timestep(
 
 	PlaneData new_prog_phi(io_phi.planeDataConfig);
 
-	sampler2D.bicubic_scalar(
-			io_phi,
-			posx_d,
-			posy_d,
-			new_prog_phi
-	);
-#else
-
-	PlaneData new_prog_phi(io_phi.planeDataConfig);
-
-	sampler2D.bicubic_scalar(
-//		sampler2D.bilinear_scalar(
-			io_phi,
-#if 0
-			posx_d,
-			posy_d,
-#else
-			posx_a,
-			posy_a,
-#endif
-			new_prog_phi
-	);
-
-#endif
+	if (timestepping_order == 1)
+	{
+		sampler2D.bilinear_scalar(
+				io_phi,
+				posx_d,
+				posy_d,
+				new_prog_phi
+		);
+	}
+	else if (timestepping_order == 2)
+	{
+		sampler2D.bicubic_scalar(
+				io_phi,
+				posx_d,
+				posy_d,
+				new_prog_phi
+		);
+	}
+	else
+	{
+		FatalError("Timestepping order not available");
+	}
 
 	io_phi = new_prog_phi;
 }

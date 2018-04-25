@@ -360,11 +360,22 @@ public:
 		 */
 		double gravitation = 9.80616;
 
-		/// zero out the v-component at the top and bottom layer
-		bool top_bottom_zero_v_velocity = false;
 
 		/// domain size
 		double domain_size[2] = {1.0, 1.0};
+
+
+		double advection_velocity[3] = {0, 0, 0};
+
+
+		static void fun_no_forces(int, double, void*, void*)
+		{
+			FatalError("External forces not available");
+		};
+
+		/// load external forces if available from benchmark scenario
+		void (*getExternalForcesCallback)(int, double, void*, void*) = nullptr;// = &fun_no_forces;		/// SET TO NULLPTR
+		void *getExternalForcesUserData = nullptr;
 
 
 		void outputConfig()
@@ -380,8 +391,8 @@ public:
 			std::cout << " + coriolis_omega: " << coriolis_omega << std::endl;
 			std::cout << " + f_sphere: " << f_sphere << std::endl;
 			std::cout << " + gravitation: " << gravitation << std::endl;
-			std::cout << " + top_bottom_zero_v_velocity: " << top_bottom_zero_v_velocity << std::endl;
 			std::cout << " + domain_size (2D): " << domain_size[0] << " x " << domain_size[1] << std::endl;
+			std::cout << " + advection_velocity (x, y, rotation speed): " << advection_velocity[0] << ", " << advection_velocity[1] << ", " << advection_velocity[2] << std::endl;
 			std::cout << std::endl;
 		}
 
@@ -417,9 +428,6 @@ public:
 		/// resolution in spectral space (number of modes)
 		int res_spectral[2] = {0, 0};
 
-		/// size of cell (hx, hy)
-		/// this is computed based on disc.res and sim.domain_size
-//		double cell_size[2] = {0, 0};
 
 
 
@@ -719,6 +727,106 @@ public:
 	}
 
 
+	static
+	int split2int(
+			const char *i_str,
+			int *o_int0,
+			int *o_int1
+	)
+	{
+		std::vector<std::string> res = StringSplit::split(i_str, ",");
+
+		int c = res.size();
+
+		if (c == 0)
+			FatalError("Invalid format for modes");
+
+		if (c == 1)
+		{
+			*o_int0 = atoi(res[0].c_str());
+			return 1;
+		}
+		else if (c == 2)
+		{
+			*o_int0 = atoi(res[0].c_str());
+			*o_int1 = atoi(res[1].c_str());
+			return 2;
+		}
+
+		FatalError("More than 2 values given");
+		return -1;
+	}
+
+
+	static
+	int split2double(
+			const char *i_str,
+			double *o_int0,
+			double *o_int1
+	)
+	{
+		std::vector<std::string> res = StringSplit::split(i_str, ",");
+
+		int c = res.size();
+
+		if (c == 0)
+			FatalError("Invalid format for modes");
+
+		if (c == 1)
+		{
+			*o_int0 = atof(res[0].c_str());
+			return 1;
+		}
+		else if (c == 2)
+		{
+			*o_int0 = atof(res[0].c_str());
+			*o_int1 = atof(res[1].c_str());
+			return 2;
+		}
+
+		FatalError("More than 2 values given");
+		return -1;
+	}
+
+
+	static
+	int split3double(
+			const char *i_str,
+			double *o_int0,
+			double *o_int1,
+			double *o_int2
+	)
+	{
+		std::vector<std::string> res = StringSplit::split(i_str, ",");
+
+		int c = res.size();
+
+		if (c == 0)
+			FatalError("Invalid format for modes");
+
+		if (c == 1)
+		{
+			*o_int0 = atof(res[0].c_str());
+			return 1;
+		}
+		else if (c == 2)
+		{
+			*o_int0 = atof(res[0].c_str());
+			*o_int1 = atof(res[1].c_str());
+			return 2;
+		}
+		else if (c == 3)
+		{
+			*o_int0 = atof(res[0].c_str());
+			*o_int1 = atof(res[1].c_str());
+			*o_int2 = atof(res[2].c_str());
+			return 3;
+		}
+
+		FatalError("More than 2 values given");
+		return -1;
+	}
+
 
 	/**
 	 * setup the variables based on program parameters
@@ -754,6 +862,9 @@ public:
         next_free_program_option++;
 
         long_options[next_free_program_option] = {"advection-rotation-angle", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
+        long_options[next_free_program_option] = {"advection-velocity", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
         long_options[next_free_program_option] = {"benchmark", required_argument, 0, 256+next_free_program_option};
@@ -907,7 +1018,7 @@ public:
 		{
 			opt = getopt_long(
 							i_argc, i_argv,
-							"N:M:n:m:C:u:U:s:X:Y:f:F:b:x:y:t:i:T:v:V:O:o:H:r:a:R:W:F:S:g:G:d:z",
+							"N:M:n:m:C:u:U:s:X:Y:f:F:b:x:y:t:i:T:v:V:O:o:H:r:a:R:W:F:S:g:G:d:zh",
 							long_options, &option_index
 					);
 
@@ -929,6 +1040,10 @@ public:
 					c++;		if (i == c)	{	setup.setup_coord_x = atof(optarg);		continue;	}
 					c++;		if (i == c)	{	setup.setup_coord_y = atof(optarg);		continue;	}
 					c++;		if (i == c)	{	setup.advection_rotation_angle = atof(optarg);		continue;	}
+					c++;		if (i == c) {
+							split3double(optarg, &sim.advection_velocity[0], &sim.advection_velocity[1], &sim.advection_velocity[2]);
+							continue;
+					}
 					c++;		if (i == c)	{	setup.benchmark_scenario_name = optarg;		continue;	}
 					c++;		if (i == c)	{	setup.benchmark_setup_dealiased = atof(optarg);		continue;	}
 
@@ -1042,53 +1157,17 @@ public:
 
 			case 'N':
 				{
-					std::vector<std::string> res = StringSplit::split(optarg, ",");
-
-					int c = res.size();
-
-					if (c == 0)
-						FatalError("Invaild format for modes");
-
+					int c = split2int(optarg, &disc.res_physical[0], &disc.res_physical[1]);
 					if (c == 1)
-					{
-						disc.res_physical[0] = atoi(res[0].c_str());
 						disc.res_physical[1] = disc.res_physical[0];
-					}
-					else if (c == 2)
-					{
-						disc.res_physical[0] = atoi(res[0].c_str());
-						disc.res_physical[1] = atoi(res[1].c_str());
-					}
-					else
-					{
-						FatalError("More than 2 max resolutions given");
-					}
 				}
 				break;
 
 			case 'M':
 				{
-					std::vector<std::string> modes = StringSplit::split(optarg, ",");
-
-					int c = modes.size();
-
-					if (c == 0)
-						FatalError("Invaild format for modes");
-
+					int c = split2int(optarg, &disc.res_spectral[0], &disc.res_spectral[1]);
 					if (c == 1)
-					{
-						disc.res_spectral[0] = atoi(modes[0].c_str());
 						disc.res_spectral[1] = disc.res_spectral[0];
-					}
-					else if (c == 2)
-					{
-						disc.res_spectral[0] = atoi(modes[0].c_str());
-						disc.res_spectral[1] = atoi(modes[1].c_str());
-					}
-					else
-					{
-						FatalError("More than 2 max modes given");
-					}
 				}
 				break;
 
@@ -1162,10 +1241,6 @@ public:
 
 			case 'a':
 				sim.earth_radius = atof(optarg);
-				break;
-
-			case 'z':
-				sim.top_bottom_zero_v_velocity = true;
 				break;
 
 			case 'G':

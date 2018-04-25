@@ -139,22 +139,19 @@ public:
 		prog_u = param_velocity_u;
 		prog_v = param_velocity_v;
 
-		// velocities at t
-		PlaneData* vel[2] = {&prog_u, &prog_v};
-		// velocities at t-1
-		PlaneData* vel_prev[2] = {&prog_u_prev, &prog_v_prev};
-
 		// position of departure points at t
 		ScalarDataArray posx_d(planeDataConfig->physical_array_data_number_of_elements);
 		ScalarDataArray posy_d(planeDataConfig->physical_array_data_number_of_elements);
-		ScalarDataArray* output_pos_departure[2] = {&posx_d, &posy_d};
 
 		semiLagrangian.semi_lag_departure_points_settls(
 				prog_u_prev, prog_v_prev,
 				prog_u, prog_v,
 				posx_a, posy_a,
 				dt,
-				posx_d, posy_d
+				posx_d, posy_d,
+				simVars.sim.domain_size,
+				nullptr,
+				simVars.disc.timestepping_order
 		);
 
 		prog_u_prev = prog_u;

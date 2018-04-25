@@ -2,7 +2,6 @@
 #include <math.h>
 #include <string>
 
-#include <benchmarks_sphere/SphereBenchmarksCombined.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/sphere/SphereData.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
@@ -18,6 +17,9 @@
 #include "SWE_Sphere_TS_l_rexi.hpp"
 
 #include "ceval.hpp"
+
+#include <benchmarks_sphere/SWESphereBenchmarksCombined.hpp>
+
 #include "cencap.hpp"
 
 /**
@@ -195,6 +197,8 @@ extern "C"
     SphereOperators* op              = i_ctx->get_sphere_operators(o_Y->get_level());
     SphereOperators* op_nodealiasing = i_ctx->get_sphere_operators_nodealiasing();
 
+    SWESphereBenchmarksCombined *benchmarks = i_ctx->get_swe_benchmark(o_Y->get_level());
+
     // // instantiate phi, vort, and div without dealiasing to get the initial condition
     SphereData phi_Y_nodealiasing(data_config_nodealiasing);
     SphereData vort_Y_nodealiasing(data_config_nodealiasing);
@@ -205,22 +209,15 @@ extern "C"
     div_Y_nodealiasing.physical_set_zero();
 
     // get the initial condition in phi, vort, and div
-    SphereBenchmarksCombined::setupInitialConditions(phi_Y_nodealiasing, 
-    						     vort_Y_nodealiasing, 
-    						     div_Y_nodealiasing, 
-    						     *simVars, 
-    						     *op_nodealiasing);
+    benchmarks->setup(*simVars, 
+		      *op);
+    benchmarks->setupInitialConditions(phi_Y_nodealiasing, 
+				       vort_Y_nodealiasing, 
+				       div_Y_nodealiasing);
     
     phi_Y.load_nodealiasing(phi_Y_nodealiasing);
     vort_Y.load_nodealiasing(vort_Y_nodealiasing);
     div_Y.load_nodealiasing(div_Y_nodealiasing);
-
-
-    // SphereBenchmarksCombined::setupInitialConditions(phi_Y, 
-    //  						     vort_Y, 
-    //  						     div_Y, 
-    //  						     *simVars, 
-    //  						     *op);
 
     
     // output the configuration

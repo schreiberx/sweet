@@ -122,11 +122,6 @@ else:
 
 
 
-if p.sweet_mpi == 'enable':
-	env.Append(CXXFLAGS = ' -DSWEET_MPI=1')
-else:
-	env.Append(CXXFLAGS = ' -DSWEET_MPI=0')
-
 
 
 
@@ -422,27 +417,6 @@ else:
   
 
 
-if p.sweet_mpi == 'enable':
-	print("Enabling MPI for REXI")
-	print("Warning: Compiler checks not done")
-
-	if p.compiler == 'gnu':
-		env.Replace(CXX = 'mpiCC')
-		env.Replace(LINK = 'mpiCC')
-		env.Replace(F90 = 'mpif90')
-
-	elif p.compiler == 'intel':
-		env.Replace(CXX = 'mpiicpc')
-		env.Replace(LINK = 'mpiicpc')
-		env.Replace(F90 = 'mpif90')
-
-	if p.threading != 'off' and p.compiler == 'intel':
-		env.Append(CXXFLAGS='-mt_mpi')
-		env.Append(LINKFLAGS='-mt_mpi')
-
-
-
-
 
 env.Append(CXXFLAGS=' -DNUMA_BLOCK_ALLOCATOR_TYPE='+str(p.numa_block_allocator))
 
@@ -477,12 +451,62 @@ if p.libpfasst == 'enable':
 	env.Append(CXXFLAGS=['-DSWEET_LIBPFASST=1'])
 
 	env.Append(LIBS=['libpfasst'])
-	env.Append(LIBS=['mpichcxx'])
-	env.Append(LIBS=['mpich'])
-	env.Append(LIBS=['mpi'])
+
+	# enable MPI per default for libpfasst
+	p.sweet_mpi = 'enable'
 
 else:
 	env.Append(CXXFLAGS=['-DSWEET_LIBPFASST=0'])
+
+
+
+
+if p.sweet_mpi == 'enable':
+	env.Append(CXXFLAGS = ' -DSWEET_MPI=1')
+else:
+	env.Append(CXXFLAGS = ' -DSWEET_MPI=0')
+
+
+if p.sweet_mpi == 'enable':
+	print("Enabling MPI for REXI")
+	print("Warning: Compiler checks not done")
+
+	if p.compiler == 'gnu':
+		env.Replace(CXX = 'mpiCC')
+		env.Replace(LINK = 'mpiCC')
+		env.Replace(F90 = 'mpif90')
+
+		# GNU compiler needs special treatment!
+		# Linking with Fortran MPI requires
+		# for OpenMPI: -lmpi_mpifh
+		# for MPICH: -lmpif90
+
+		output = exec_command('mpiCC -v')
+		if 'MPICH' in output:
+			env.Append(LINKFLAGS='-lmpif90')
+		else:
+			print("*"*80)
+			print("*"*80)
+			print("*"*80)
+			print("ERROR: MPI VERSION NOT DETECTED, ASSUMING OPENMPI!!!!!")
+			print("*"*80)
+			print("*"*80)
+			print("*"*80)
+			env.Append(LINKFLAGS='-lmpi_mpifh')
+			
+		
+
+	elif p.compiler == 'intel':
+		env.Replace(CXX = 'mpiicpc')
+		env.Replace(LINK = 'mpiicpc')
+		env.Replace(F90 = 'mpif90')
+
+	if p.threading != 'off' and p.compiler == 'intel':
+		env.Append(CXXFLAGS='-mt_mpi')
+		env.Append(LINKFLAGS='-mt_mpi')
+
+
+
 
 
 
@@ -595,7 +619,7 @@ build_dir='/tmp/scons_build_'+exec_name+'/'
 
 if p.libpfasst == 'enable':
 	#env.Append(F90FLAGS = ['-Ilocal_software/local_src/libpfasst/include'])
-	env.Append(F90FLAGS = ['-I../libpfasst_user_level/include'])
+	env.Append(F90FLAGS = ['-Ilocal_software/local/include'])
 #
 # USE build directory for Fortran module output
 #

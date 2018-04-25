@@ -38,7 +38,9 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 			posx_a, posy_a,
 			dt,
 			posx_d, posy_d,
-			&staggering
+			simVars.sim.domain_size,
+			&staggering,
+			2
 			);
 
 	// Save old velocities

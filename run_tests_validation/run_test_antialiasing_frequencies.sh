@@ -13,7 +13,7 @@ for MODE in debug release; do
 
 	SCONS="scons  --unit-test=test_antialiasing_frequencies --plane-spectral-space=enable --mode=$MODE --plane-spectral-dealiasing=enable"
 	echo "$SCONS"
-	$SCONS
+	$SCONS || exit 1
 
 	for Nx in `seq 4 8 36`; do
 		for Ny in `seq 4 8 36`; do

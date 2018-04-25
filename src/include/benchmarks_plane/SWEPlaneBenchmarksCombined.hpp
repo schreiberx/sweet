@@ -5,9 +5,10 @@
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#ifndef SRC_INCLUDE_BENCHMARKS_PLANE_SWEBENCHMARKSCOMBINED_HPP_
-#define SRC_INCLUDE_BENCHMARKS_PLANE_SWEBENCHMARKSCOMBINED_HPP_
+#ifndef SRC_INCLUDE_BENCHMARKS_PLANE_SWEPLANEBENCHMARKSCOMBINED_HPP_
+#define SRC_INCLUDE_BENCHMARKS_PLANE_SWEPLANEBENCHMARKSCOMBINED_HPP_
 
+#include <iostream>
 #include <benchmarks_plane/SWE_bench_PlaneBenchmarks_DEPRECATED.hpp>
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
@@ -24,10 +25,19 @@
 #include <benchmarks_plane/SWE_bench_GaussianBump.hpp>
 
 
-class SWEBenchmarksCombined
+
+class SWEPlaneBenchmarksCombined
 {
 public:
-	static
+	// Simulation variables
+	SimulationVariables *simVars;
+
+	// plane or sphere data config
+	const void* ext_forces_data_config;
+
+
+
+public:
 	bool setupInitialConditions(
 			PlaneData &o_h_pert,
 			PlaneData &o_u,
@@ -36,6 +46,39 @@ public:
 			PlaneOperators &io_op				///< Make this IO, since changes in the simulation parameters might require to also update the operators
 	)
 	{
+		simVars = &io_simVars;
+
+
+		auto callback_gaussian_bump =
+				[&](
+						double i_center_x, double i_center_y,
+						double i_x, double i_y,
+						double i_exp_fac
+				)
+				{
+					double sx = simVars->sim.domain_size[0];
+					double sy = simVars->sim.domain_size[1];
+
+					// Gaussian
+					double dx = i_x-i_center_x*sx;
+					double dy = i_y-i_center_y*sy;
+
+					if (dx > 0.5*simVars->sim.domain_size[0])
+						dx -= simVars->sim.domain_size[0];
+					else if (dx < -0.5*simVars->sim.domain_size[0])
+						dx += simVars->sim.domain_size[0];
+
+					if (dy > 0.5*simVars->sim.domain_size[1])
+						dy -= simVars->sim.domain_size[1];
+					else if (dy < -0.5*simVars->sim.domain_size[1])
+						dy += simVars->sim.domain_size[1];
+
+					dx /= sx*simVars->setup.radius_scale;
+					dy /= sy*simVars->setup.radius_scale;
+
+					return std::exp(-i_exp_fac*(dx*dx + dy*dy));
+				};
+
 		if (io_simVars.setup.benchmark_scenario_name == "")
 		{
 			std::cout << "WARNING: Using -s [int] is deprecated" << std::endl;
@@ -137,8 +180,7 @@ public:
 
 			return true;
 		}
-
-
+#endif
 		else if (io_simVars.setup.benchmark_scenario_name == "gaussian_bump")
 		{
 			SWE_bench_GaussianBump swe_gaussian_bump(io_simVars, io_op);
@@ -151,7 +193,88 @@ public:
 
 			return true;
 		}
-#endif
+
+		else if (io_simVars.setup.benchmark_scenario_name == "gaussian_bump_advection")
+		{
+
+			auto callback_external_forces_advection_field =
+					[](
+							int i_field_id,
+							double i_simulation_timestamp,
+							void* o_data_void,			/// planedata or spheredata
+							void* o_data_user_void		/// user data (pointer to this class)
+			)
+			{
+				PlaneData* o_plane_data = (PlaneData*)o_data_void;
+				SWEPlaneBenchmarksCombined* s = (SWEPlaneBenchmarksCombined*)o_data_user_void;
+
+				if (i_field_id >= 1 && i_field_id <= 2)
+				{
+					double u = s->simVars->sim.advection_velocity[0];
+					double v = s->simVars->sim.advection_velocity[1];
+
+					double r;
+					if (s->simVars->sim.advection_velocity[2] == 0)
+						r = 0;
+					else
+						r = i_simulation_timestamp/s->simVars->sim.advection_velocity[2]*2.0*M_PI;
+
+					if (i_field_id == 1)
+					{
+						// u-velocity
+						//*o_plane_data = std::cos(r)*u - std::sin(r)*v;
+						*o_plane_data = u*(1.0+std::sin(r));
+					}
+					else if (i_field_id == 2)
+					{
+						// v-velocity
+						//*o_plane_data = std::sin(r)*u + std::cos(r)*v;
+						*o_plane_data = v*(1.0+std::cos(r));
+					}
+
+					return;
+				}
+
+				FatalError("Non-existing external field requested!");
+				return;
+			};
+
+			if (simVars->sim.advection_velocity[2] != 0)
+			{
+				// backup data config
+				ext_forces_data_config = o_h_pert.planeDataConfig;
+
+				// set callback
+				io_simVars.sim.getExternalForcesCallback = callback_external_forces_advection_field;
+
+				// set user data to this class
+				io_simVars.sim.getExternalForcesUserData = this;
+
+				// setup velocities with initial time stamp
+				callback_external_forces_advection_field(1, simVars->timecontrol.current_simulation_time, &o_u, simVars->sim.getExternalForcesUserData);
+				callback_external_forces_advection_field(2, simVars->timecontrol.current_simulation_time, &o_v, simVars->sim.getExternalForcesUserData);
+			}
+			else
+			{
+				o_u = simVars->sim.advection_velocity[0];
+				o_v = simVars->sim.advection_velocity[1];
+			}
+
+			double center_x = 0.5;
+			double center_y = 0.5;
+			double exp_fac = 50.0;
+
+			o_h_pert.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
+				{
+					double x = (double)i*(simVars->sim.domain_size[0]/(double)simVars->disc.res_physical[0]);
+					double y = (double)j*(simVars->sim.domain_size[1]/(double)simVars->disc.res_physical[1]);
+
+					io_data = callback_gaussian_bump(center_x, center_y, x, y, exp_fac);
+				}
+			);
+			return true;
+		}
 
 		printBenchmarkInformation();
 		FatalError(std::string("Benchmark ")+io_simVars.setup.benchmark_scenario_name+ " not found (or not availble)");
@@ -160,11 +283,11 @@ public:
 		return false;
 	}
 
-	static void printBenchmarkInformation()
-		{
-			std::cout << "Available benchmark scenarios (--benchmark):" << std::endl;
-			std::cout << "		polvani : Polvani et al (1994) initial condition" << std::endl;
-		}
+	void printBenchmarkInformation()
+	{
+		std::cout << "Available benchmark scenarios (--benchmark):" << std::endl;
+		std::cout << "		polvani : Polvani et al (1994) initial condition" << std::endl;
+	}
 };
 
 

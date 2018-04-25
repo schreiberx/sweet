@@ -37,7 +37,7 @@ p.runtime.verbosity = 3
 # 14: Steady diagonal benchmark
 #
 #p.runtime.bench_id = 1
-p.runtime.benchmark_name = "unstablejet" 
+p.runtime.benchmark_name = "unstablejet"
 
 #
 # Compute error or difference to initial data
@@ -54,7 +54,7 @@ p.runtime.rexi_method = 'direct'
 #p.runtime.rexi_use_direct_solution = 1
 
 # Parameters for SL-REXI paper
-#-----------------------------       
+#-----------------------------
 p = RuntimeSWEPlaneEarthParam(p)
 #p = RuntimeSWENonDimParam(p)
 
@@ -72,7 +72,7 @@ p.runtime.simtime = earth.day*12 #1 day #timestep_size_reference #864000 #10 day
 p.runtime.output_timestep_size = p.runtime.simtime/24
 datastorage = p.runtime.simtime / p.runtime.output_timestep_size
 if datastorage > 200:
-	print("Warning::Too much data will be stored, are you sure you wish to run this?") 
+	print("Warning::Too much data will be stored, are you sure you wish to run this?")
 
 #p.runtime.output_filename = "-"
 #p.runtime.output_timestep_size = timestep_size_reference*(2.0**(-timelevels))/10.0
@@ -104,7 +104,8 @@ for group in groups:
 			['l_cn_na_sl_nd_settls', 2,	2],	# SI-SL-SP
 	                ['l_rexi_na_sl_nd_settls',	2,	2], #SL-EXP-SETTLS
 			['l_rexi_na_sl_nd_etdrk',	2,	2], #SL-EXP-ETDRK
-			['l_rexi_n_erk',	2,	2], #ETDRK2
+                        ['l_rexi_n_etdrk',	2,	2], #ETDRK2
+			['l_rexi_n_erk',	2,	2], #strang split
 		]
 
 	#
@@ -125,7 +126,7 @@ for group in groups:
 	if True:
 		print("Reference")
 		tsm = ts_methods[0]
-	
+
 		p.runtime.timestep_size = 2 # second #p.runtime.output_timestep_size/100.0
 		p.runtime.timestepping_method = tsm[0]
 		p.runtime.timestepping_order = tsm[1]
@@ -145,7 +146,7 @@ for group in groups:
 			p = SetupFDCMethods(p)
 		else:
 			p = SetupSpectralMethods(p)
-		
+
 		for idx in range(0, timelevels): #, phys_res in phys_res_list:
 
 			p.runtime.timestep_size = timestep_sizes[idx]
@@ -165,4 +166,3 @@ for group in groups:
 				p.runtime.load_from_dict(tsm[4])
 
 			p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile), 'run.sh')
-

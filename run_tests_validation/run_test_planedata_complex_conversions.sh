@@ -13,7 +13,7 @@ cd ../
 make clean
 SCONS="scons --threading=omp --unit-test=test_planedata_complex_conversions --gui=disable --plane-spectral-space=enable --plane-spectral-dealiasing=disable --mode=debug"
 echo "$SCONS"
-$SCONS
+$SCONS || exit 1
 
 ./build/test_planedata_complex_conversions_*debug -M 16 || exit
 
@@ -23,7 +23,7 @@ $SCONS
 make clean
 SCONS="scons --threading=omp --unit-test=test_planedata_complex_conversions --gui=disable --plane-spectral-space=enable --plane-spectral-dealiasing=enable --mode=debug"
 echo "$SCONS"
-$SCONS
+$SCONS || exit 1
 
 ./build/test_planedata_complex_conversions_*debug -M 16 || exit
 

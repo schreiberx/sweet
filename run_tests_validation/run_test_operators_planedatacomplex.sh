@@ -25,7 +25,7 @@ echo "TEST SPECTRAL OPS (release) ALIASING CONTROL $X"
 echo "***********************************************"
 make clean
 SCONS="scons --threading=omp --unit-test=test_plane_operators_complex --gui=disable --plane-spectral-space=enable --mode=release --plane-spectral-dealiasing=enable"
-$SCONS
+$SCONS || exit 1
 ./build/test_plane_operators_complex_*_release -n 128 -m 128 -X $X -Y $X -S 0 || exit
 ./build/test_plane_operators_complex_*_release -n 32 -m 32 -X $X -Y $X -S 1 || exit
 
@@ -36,7 +36,7 @@ echo "TEST SPECTRAL OPS (release) ALIASING CONTROL $X"
 echo "***********************************************"
 make clean
 SCONS="scons --threading=omp --unit-test=test_plane_operators_complex --gui=disable --plane-spectral-space=enable --mode=release --plane-spectral-dealiasing=enable"
-$SCONS
+$SCONS || exit 1
 ./build/test_plane_operators_complex_*_release -n 128 -m 128 -X $X -Y $X -S 0 || exit
 ./build/test_plane_operators_complex_*_release -n 128 -m 128 -X $X -Y $X -S 1 || exit
 
@@ -50,7 +50,7 @@ echo "TEST SPECTRAL OPS (release) $X x $Y"
 echo "***********************************************"
 make clean
 SCONS="scons --threading=omp --unit-test=test_plane_operators_complex --gui=disable --plane-spectral-space=enable --mode=release --plane-spectral-dealiasing=disable"
-$SCONS
+$SCONS || exit 1
 EXEC="./build/test_plane_operators_complex_*_release -n 128 -m 128 -X $X -Y $Y -S 0"
 echo "$EXEC"
 $EXEC || exit
@@ -65,7 +65,7 @@ echo "TEST SPECTRAL OPS (release) $X"
 echo "***********************************************"
 make clean
 SCONS="scons --threading=omp --unit-test=test_plane_operators_complex --gui=disable --plane-spectral-space=enable --mode=release --plane-spectral-dealiasing=disable"
-$SCONS
+$SCONS || exit 1
 EXEC="./build/test_plane_operators_complex_*_release -n 128 -m 128 -X $X -Y $X -S 1"
 echo "$EXEC"
 $EXEC || exit
@@ -79,7 +79,7 @@ echo "TEST SPECTRAL OPS (release) $X"
 echo "***********************************************"
 make clean
 SCONS="scons --threading=omp --unit-test=test_plane_operators_complex --gui=disable --plane-spectral-space=enable --mode=release --plane-spectral-dealiasing=disable"
-$SCONS
+$SCONS || exit 1
 ./build/test_plane_operators_complex_*_release -n 128 -m 128 -X $X -Y $X -S 1 || exit
 ./build/test_plane_operators_complex_*_release -n 128 -m 128 -X $X -Y $X -S 0 || exit
 

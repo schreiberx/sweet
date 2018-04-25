@@ -79,23 +79,59 @@ public:
 	/**
 	 * wrap the position i in a periodic domain of size i_res
 	 */
+#if 0
+
+#error "This modulo operation doesn't work!"
+	inline
+	int wrapPeriodic(int i, int i_res)
+	{
+		return (i + i_res*10) % i_res;
+	}
+
+	inline
+	double wrapPeriodic(double i, double i_res)
+	{
+		return fmodf(i + i_res*10.0f, i_res);
+	}
+
+#else
+
 	template <typename T>
 	inline
-	T wrapPeriodic(T i, T i_res)
+	double wrapPeriodic(T i, T i_res)
 	{
-		/*
-		 * TODO: replace this with efficient hardware operation (if available)
-		 */
-		while (i < 0)
+#if 1
+		int c = 10;
+		while (i < 0 && c-- > 0)
 			i += i_res;
 
-		while (i >= i_res)
+		int d = 10;
+		while (i >= i_res && d-- > 0)
 			i -= i_res;
+#elif 1
+
+			i = (i + i_res*10) % i_res;
+		else if (typeid(T) == typeid(double))
+			i = fmod(i + i_res*10.0, i_res);
+		else
+			i = fmodf(i + i_res*10.0f, i_res);
+
+#else
+		if (i < 0)
+			i += i_res;
+
+		if (i >= i_res)
+			i -= i_res;
+#endif
+
+		if (i < 0 || i >= i_res)
+			FatalError("Stopping here: Probably an instable velocity field since more than one periodic movement exists.");
 
 		assert(i >= 0 && i < i_res);
 
 		return i;
 	}
+#endif
 
 
 public:
@@ -117,11 +153,18 @@ public:
 
 		i_data.request_data_physical();
 
+		std::size_t max_pos_idx = i_pos_x.number_of_elements;
+
+#if SWEET_DEBUG
+		if (omp_get_num_threads() != 1)
+			FatalError("omp_num_threads() != 1, are we in a parallel region?");
+#endif
+
 		// iterate over all positions in parallel
 #if SWEET_SPACE_THREADING
 #pragma omp parallel for
 #endif
-		for (std::size_t pos_idx = 0; pos_idx < i_pos_x.number_of_elements; pos_idx++)
+		for (std::size_t pos_idx = 0; pos_idx < max_pos_idx; pos_idx++)
 		{
 			/*
 			 * load position to interpolate

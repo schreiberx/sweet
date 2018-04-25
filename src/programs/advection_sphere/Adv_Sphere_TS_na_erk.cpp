@@ -35,28 +35,46 @@ void Adv_Sphere_TS_na_erk::euler_timestep_update(
 	 * This is the case because the velocity field is divergence free!!!
 	 */
 
-	SphereDataPhysical ug(i_phi.sphereDataConfig);
-	SphereDataPhysical vg(i_phi.sphereDataConfig);
+	if (simVars.sim.getExternalForcesCallback != nullptr)
+	{
+		SphereData vort(i_phi.sphereDataConfig);
+		SphereData div(i_phi.sphereDataConfig);
 
-	SphereDataPhysical vrtg = i_vort.getSphereDataPhysical();
-	SphereDataPhysical divg = i_div.getSphereDataPhysical();
-	op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
-	SphereDataPhysical phig = i_phi.getSphereDataPhysical();
+		simVars.sim.getExternalForcesCallback(1, simVars.timecontrol.current_simulation_time, &vort, simVars.sim.getExternalForcesUserData);
+		simVars.sim.getExternalForcesCallback(2, simVars.timecontrol.current_simulation_time, &div, simVars.sim.getExternalForcesUserData);
 
-	SphereDataPhysical tmpg1 = ug*phig;
-	SphereDataPhysical tmpg2 = vg*phig;
+		SphereDataPhysical ug(i_phi.sphereDataConfig);
+		SphereDataPhysical vg(i_phi.sphereDataConfig);
 
-	SphereData tmpspec(i_phi.sphereDataConfig);
-	op.robert_uv_to_vortdiv(tmpg1, tmpg2, tmpspec, o_phi_t);
+		op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
+		SphereDataPhysical phig = i_phi.getSphereDataPhysical();
 
-	o_phi_t *= -1.0;
+		SphereDataPhysical tmpg1 = ug*phig;
+		SphereDataPhysical tmpg2 = vg*phig;
 
-#if 0
-	std::cout << phig.physical_reduce_max_abs() << std::endl;
-	std::cout << ug.physical_reduce_max_abs() << std::endl;
-	std::cout << o_phi_t.physical_reduce_max_abs() << std::endl;
-	std::cout << std::endl;
-#endif
+		SphereData tmpspec(i_phi.sphereDataConfig);
+		op.robert_uv_to_vortdiv(tmpg1, tmpg2, tmpspec, o_phi_t);
+
+		o_phi_t *= -1.0;
+	}
+	else
+	{
+		SphereDataPhysical ug(i_phi.sphereDataConfig);
+		SphereDataPhysical vg(i_phi.sphereDataConfig);
+
+		SphereDataPhysical vrtg = i_vort.getSphereDataPhysical();
+		SphereDataPhysical divg = i_div.getSphereDataPhysical();
+		op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
+		SphereDataPhysical phig = i_phi.getSphereDataPhysical();
+
+		SphereDataPhysical tmpg1 = ug*phig;
+		SphereDataPhysical tmpg2 = vg*phig;
+
+		SphereData tmpspec(i_phi.sphereDataConfig);
+		op.robert_uv_to_vortdiv(tmpg1, tmpg2, tmpspec, o_phi_t);
+
+		o_phi_t *= -1.0;
+	}
 
 	o_vort_t.spectral_set_zero();
 	o_div_t.spectral_set_zero();
@@ -85,6 +103,13 @@ void Adv_Sphere_TS_na_erk::run_timestep(
 			timestepping_order,
 			i_simulation_timestamp
 		);
+
+	if (simVars.sim.getExternalForcesCallback != nullptr)
+	{
+		// this is just called for cosmetic reasons to update the velocity field
+		simVars.sim.getExternalForcesCallback(1, simVars.timecontrol.current_simulation_time+i_fixed_dt, &io_vort, simVars.sim.getExternalForcesUserData);
+		simVars.sim.getExternalForcesCallback(2, simVars.timecontrol.current_simulation_time+i_fixed_dt, &io_div, simVars.sim.getExternalForcesUserData);
+	}
 }
 
 

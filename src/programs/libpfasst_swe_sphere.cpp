@@ -8,13 +8,12 @@
  *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
+#include <benchmarks_sphere/SWESphereBenchmarksCombined.hpp>
 #include <sweet/FatalError.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/sphere/SphereData.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/sphere/SphereDiagnostics.hpp>
-#include <benchmarks_sphere/SphereBenchmarksCombined.hpp>
-
 #include "libpfasst_swe_sphere/LevelSingleton.hpp"
 #include "libpfasst_swe_sphere/SphereDataCtx.hpp"
 #include <mpi.h>
@@ -194,9 +193,7 @@ int main(int i_argc, char *i_argv[])
       simVars.sim.h_topo.setup(&(levelSingletons[simVars.libpfasst.nlevels-1].dataConfig));
 
       // initialize the topography
-      SphereBenchmarksCombined::setupTopography(simVars,
-						levelSingletons[simVars.libpfasst.nlevels-1].op
-						);
+      (levelSingletons[simVars.libpfasst.nlevels-1].benchmarks).setupTopography();
   }
 
   // instantiate the SphereDataCtx object 

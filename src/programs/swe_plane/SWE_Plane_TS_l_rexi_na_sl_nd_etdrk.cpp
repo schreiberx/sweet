@@ -42,9 +42,13 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::euler_timestep_update_nonlinear(
 	 * o_v_t = -i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
 	 */
 	// In lagrangian form, the only nonlinearity is the nonlinear divergence
-	o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
 	o_u_t = 0.0; //-i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
 	o_v_t = 0.0; //-i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
+
+	if (simVars.pde.use_linear_div == 1) // linear div only
+		o_h_t = 0.0; //-op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
+	else //nonlinear div
+		o_h_t = -i_h*(op.diff_c_x(i_u) + op.diff_c_y(i_v));
 
 }
 
@@ -95,7 +99,9 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 			posx_a,		posy_a,
 			i_dt,
 			posx_d,	posy_d,			// output
-			&staggering
+			simVars.sim.domain_size,
+			&staggering,
+			simVars.disc.timestepping_order
 	);
 
 	u = io_u;
@@ -151,9 +157,9 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 		PlaneData h_adv(planeDataConfig);
 		PlaneData u_adv(planeDataConfig);
 		PlaneData v_adv(planeDataConfig);
-		h_adv = u + i_dt*psi1_FUn_h;
-		u_adv = v + i_dt*psi1_FUn_u;
-		v_adv = h + i_dt*psi1_FUn_v;
+		h_adv = h + i_dt*psi1_FUn_h;
+		u_adv = u + i_dt*psi1_FUn_u;
+		v_adv = v + i_dt*psi1_FUn_v;
 
 		PlaneData h_dep(io_h.planeDataConfig);
 		PlaneData u_dep(io_h.planeDataConfig);
@@ -231,9 +237,9 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 		PlaneData h_adv(planeDataConfig);
 		PlaneData u_adv(planeDataConfig);
 		PlaneData v_adv(planeDataConfig);
-		h_adv = u + i_dt*psi1_FUn_h;
-		u_adv = v + i_dt*psi1_FUn_u;
-		v_adv = h + i_dt*psi1_FUn_v;
+		h_adv = h + i_dt*psi1_FUn_h;
+		u_adv = u + i_dt*psi1_FUn_u;
+		v_adv = v + i_dt*psi1_FUn_v;
 
 		PlaneData h_dep(io_h.planeDataConfig);
 		PlaneData u_dep(io_h.planeDataConfig);

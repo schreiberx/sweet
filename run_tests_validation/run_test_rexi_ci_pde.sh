@@ -15,8 +15,8 @@ echo
 echo "***********************************************"
 echo "TEST REXI CI PDE"
 echo "***********************************************"
-#make clean
-scons --threading=omp --unit-test=test_rexi_ci_pde --gui=disable
+make clean
+scons --threading=omp --unit-test=test_rexi_ci_pde --gui=disable --quadmath=enable || exit 1
 
 EXEC="./build/test_rexi_ci_pde_*_release --rexi-method=ci --rexi-ci-primitive=circle --rexi-ci-n=64 --rexi-ci-sx=25 --rexi-ci-sy=25 -v 5"
 echo "$EXEC"

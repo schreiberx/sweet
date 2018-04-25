@@ -126,7 +126,6 @@ public:
 			[&](int idx, double &io_data)
 			{
 				int i = idx % sphereDataConfigOversampling->physical_num_lon;
-				//int j = idx / sphereDataConfig->physical_data_size[0];
 
 				io_data = 2.0*M_PI*(double)i/(double)sphereDataConfigOversampling->physical_num_lon;
 				assert(io_data >= 0);
@@ -162,7 +161,8 @@ public:
 					prog_h,
 					posx_a,
 					posy_a,
-					out_data
+					out_data,
+					false
 			);
 		}
 		else if (interpolation_order == 3)
@@ -171,7 +171,8 @@ public:
 					prog_h,
 					posx_a,
 					posy_a,
-					out_data
+					out_data,
+					false
 			);
 		}
 		else
@@ -342,8 +343,8 @@ int main(int i_argc, char *i_argv[])
 			double prev_max_error = -1;
 			for (int i = initial_spectral_modes; i <= 256; i *= 2)
 			{
-				simVars.disc.res_physical[0] = 0;
-				simVars.disc.res_physical[1] = 0;
+				simVars.disc.res_physical[0] = 2*i;
+				simVars.disc.res_physical[1] = i;
 
 				simVars.disc.res_spectral[0] = i;
 				simVars.disc.res_spectral[1] = i;
