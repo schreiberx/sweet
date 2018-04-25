@@ -101,9 +101,11 @@ contains
      ! LibPFASST parameters
      pf%nlevels    = nlevs   ! number of SDC levels
      pf%niters     = niters  ! number of SDC iterations
-     pf%pipeline_G = .true.  ! pipeline the coarse prediction sweeps
+     pf%pipeline_G = .false. ! pipeline the coarse prediction sweeps
      qtype         = translate_qtype(qtype_name, & ! select the type of nodes
                                      qnl)
+
+     !pf%abs_res_tol = 0.0000001 
 
      print *, qtype
 
@@ -145,7 +147,7 @@ contains
              pf%levels(level)%nsweeps      = nsweeps_coarse
 
              if (num_procs .eq. 1) then 
-                pf%levels(level)%nsweeps_pred = 0
+                pf%levels(level)%nsweeps_pred = 0 
              else
                 pf%levels(level)%nsweeps_pred = 1
              end if
@@ -191,39 +193,56 @@ contains
 
     print *, "t = ", t
     
-    ! initialize the state vector at each level
-    do level = 1, pf%nlevels
-
-       call finitial(pf%levels(level)%ulevel%sweeper, & 
-                     pf%levels(level)%Q(1),           & 
-                     pf%levels(level)%q0,             &
-                     t_max,                           &
+    !! initialize the state vector at each level
+    
+    ! first fine level
+    call finitial(pf%levels(pf%nlevels)%ulevel%sweeper, & 
+                     pf%levels(pf%nlevels)%Q(1),        & 
+                     pf%levels(pf%nlevels)%q0,          &
+                     t_max,                             &
                      dt)
+    ! then coarser levels
+    if (pf%nlevels > 1) then
+       do level = pf%nlevels-1, 1, -1
+       
+          call pf%levels(level)%ulevel%restrict(pf%levels(level+1),      &
+                                                pf%levels(level),        &
+                                                pf%levels(level+1)%Q(1), &
+                                                pf%levels(level)%Q(1),   &
+                                                t)
 
-    end do
+          call pf%levels(level)%q0%copy(pf%levels(level)%Q(1))
+       end do
+    end if
+    
 
-    ! define the hooks to output data to the terminal (residual and error)
-    ! call pf_add_hook(pf,            &
-    !                  pf%nlevels,    &
-    !                  PF_POST_SWEEP, &
-    !                  fecho_error)
-    call pf_add_hook(pf,             &
-                     -1,             &
-                     PF_POST_SWEEP,  &
+    call pf_add_hook(pf,              &
+                     pf%nlevels,      &
+                     PF_POST_SWEEP,   &
                      fecho_residual)   
-    ! call pf_add_hook(pf,           &
-    !                  pf%nlevels,   &
-    !                  PF_POST_STEP, &
-    !                  fecho_interpolation_errors)
-    call pf_add_hook(pf,                 &
-                     -1,                 &
-                     PF_POST_ITERATION,  &
-                     fecho_output_solution)
-    call pf_add_hook(pf,                 &
-                     pf%nlevels,         &
-                     PF_POST_STEP,       &
-                     fecho_output_invariants)
+    if (num_procs > 1) then
+       call pf_add_hook(pf,                 &
+                        pf%nlevels,         &
+                        PF_PRE_INTERP_Q0,   &
+                        fecho_output_jump)
+    end if
+    if (num_procs .eq. 1) then
+       call pf_add_hook(pf,                 &
+                        -1,                 &
+                        PF_POST_ITERATION,  &
+                        fecho_output_solution)
+    else
+       call pf_add_hook(pf,                 &
+                        -1,                 &
+                        PF_POST_SWEEP,      &
+                        fecho_output_solution)
+    end if
 
+    ! call pf_add_hook(pf,                 &
+    !                  pf%nlevels,         &
+    !                  PF_POST_STEP,       &
+    !                  fecho_output_invariants)
+    
     ! advance in time with libpfasst
     level = nlevs
 
@@ -236,6 +255,8 @@ contains
                        nsteps)
     t = t + dt*nsteps
 
+    call MPI_BARRIER(MPI_COMM_WORLD,mpi_stat)
+    
     ! finalize the simulation (does nothing right now)
     do level = 1, pf%nlevels
 

@@ -184,7 +184,7 @@ int main(int i_argc, char *i_argv[])
   const int nfields = 3;  // number of vector fields (here, height and two horizontal velocities)
   int nvars_per_field[simVars.libpfasst.nlevels];
   for (int i = 0; i < simVars.libpfasst.nlevels; ++i) 
-    nvars_per_field[i] = levelSingletons[i].dataConfig.physical_array_data_number_of_elements;  // number of degrees of freedom per vector field
+    nvars_per_field[i] = 2*levelSingletons[i].dataConfig.spectral_array_data_number_of_elements;  // number of degrees of freedom per vector field
 
   // initialize the topography before instantiating the SphereDataCtx object
   if (simVars.setup.benchmark_scenario_name == "flow_over_mountain") 

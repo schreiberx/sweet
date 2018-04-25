@@ -34,6 +34,12 @@ public:
     : simVars(i_simVars),
       levelSingletons(i_singletons)
   {
+    int rank   = 0;
+    int nprocs = 0;
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
+
     if (!simVars) 
       FatalError("SphereDataCtx: simVars pointer is NULL!");
 
@@ -170,12 +176,15 @@ public:
 					  *simVars,
 					  ((*levelSingletons)[level].op)
 					  );
-		
+ 		
 		timestepper_lg_irk[level]->setup(simVars->disc.timestepping_order,
 						 simVars->timecontrol.current_timestep_size);	
 	      }
 	  }
       }
+
+    // initialize the residuals
+    residuals.resize(nprocs,std::vector<double>(0,0.));
 
     // initialize the diagnostics object
     sphereDiagnostics = new SphereDiagnostics(
@@ -240,7 +249,7 @@ public:
   // Getter for the sphere data configuration with no dealiasing at the fine level
   SphereDataConfig* get_sphere_data_config_nodealiasing() const 
   {
-    return &((*levelSingletons)[0].dataConfigNoDealiasing);
+    return &((*levelSingletons)[levelSingletons->size()-1].dataConfigNoDealiasing);
   }
 
   // Getter for the sphere data operators at level i_level
@@ -254,7 +263,7 @@ public:
   // Getter for the sphere data operators with no dealiasing at the fine level
   SphereOperators* get_sphere_operators_nodealiasing() const
   {
-    return &((*levelSingletons)[0].opNoDealiasing);
+    return &((*levelSingletons)[levelSingletons->size()-1].opNoDealiasing);
   }
 
 
@@ -385,10 +394,14 @@ public:
   }
 
   // Getters for the time and invariants vectors
-  const std::vector<double>& get_time() const {return time;}
-  const std::vector<double>& get_mass() const {return mass;}
-  const std::vector<double>& get_energy() const {return energy;}
-  const std::vector<double>& get_potential_enstrophy() const {return potentialEnstrophy;}
+  const std::vector<double>& get_time()                const { return time; }
+  const std::vector<double>& get_mass()                const { return mass; }
+  const std::vector<double>& get_energy()              const { return energy; }
+  const std::vector<double>& get_potential_enstrophy() const { return potentialEnstrophy; }
+
+  // Getters for the residuals
+  const std::vector<std::vector<double> >& get_residuals() const { return residuals; }
+  std::vector<std::vector<double> >&       get_residuals()       { return residuals; }
     
 protected:
 
@@ -410,7 +423,10 @@ protected:
   SWE_Sphere_TS_lg_irk_lc_n_erk* timestepper_lg_irk_lc_n_erk;
   SWE_Sphere_TS_ln_erk*          timestepper_ln_erk;
 
-  // Diagnotics (mass, energy, enstrophy)
+  // Saved Residuals for each processor
+  std::vector<std::vector<double> > residuals;
+
+  // Diagnostics (mass, energy, enstrophy)
   SphereDiagnostics* sphereDiagnostics;
 
   // Some contructors and operator= are disabled
