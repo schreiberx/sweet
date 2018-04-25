@@ -74,31 +74,31 @@ if multiplier_i == 1 and multiplier_j == 1: #Grids are the same
 	data = data_cmp - data_ref
 elif multiplier_i > 1 and multiplier_j > 1 :
 	#Comparison via interpolation
-		#print("Interpolation")
-		# A-grid REFERENCE (file1) - sweet outputs only A grids physical space
-		dx_ref=1.0/(nx_ref)
-		dy_ref=1.0/(ny_ref)
-		x_ref = np.arange(0, 1, dx_ref)
-		y_ref = np.arange(0, 1, dy_ref)
-		x_ref += dx_ref/2
-		y_ref += dy_ref/2
-		X_ref, Y_ref = np.meshgrid(x_ref, y_ref)
+	#print("Interpolation")
+	# A-grid REFERENCE (file1) - sweet outputs only A grids physical space
+	dx_ref=1.0/(nx_ref)
+	dy_ref=1.0/(ny_ref)
+	x_ref = np.arange(0, 1, dx_ref)
+	y_ref = np.arange(0, 1, dy_ref)
+	x_ref += dx_ref/2
+	y_ref += dy_ref/2
+	X_ref, Y_ref = np.meshgrid(x_ref, y_ref)
 
-		#Creat cubic interpolation of reference file
-		interp_spline = RectBivariateSpline(y_ref, x_ref, data_ref)
+	#Creat cubic interpolation of reference file
+	interp_spline = RectBivariateSpline(y_ref, x_ref, data_ref)
 
-		#A-grid cmp file (file2)
-		dx_cmp=1.0/nx_cmp
-		dy_cmp=1.0/ny_cmp
-		x_cmp = np.arange(0, 1, dx_cmp)
-		y_cmp = np.arange(0, 1, dy_cmp)
-		x_cmp += dx_cmp/2
-		y_cmp += dy_cmp/2
-		X_cmp, Y_cmp = np.meshgrid(x_cmp, y_cmp)
+	#A-grid cmp file (file2)
+	dx_cmp=1.0/nx_cmp
+	dy_cmp=1.0/ny_cmp
+	x_cmp = np.arange(0, 1, dx_cmp)
+	y_cmp = np.arange(0, 1, dy_cmp)
+	x_cmp += dx_cmp/2
+	y_cmp += dy_cmp/2
+	X_cmp, Y_cmp = np.meshgrid(x_cmp, y_cmp)
 
-		#Get reduced reference resolution
-		data_ref_low = interp_spline(y_cmp, x_cmp)
-		data = data_cmp - data_ref_low
+	#Get reduced reference resolution
+	data_ref_low = interp_spline(y_cmp, x_cmp)
+	data = data_cmp - data_ref_low
 
 else :
 	print ("Please provide reference solution (file1) with dimension larger or equal file2")

@@ -23,9 +23,8 @@ from SWEETParameters import *
 
 #Go to working directory (need because .py is used as link)
 retval = os.getcwd()
-print ("Current working directory %s" % retval)
+#print ("Current working directory %s" % retval)
 os.chdir( retval )
-
 
 #Figure definitions
 fontsize=16
@@ -37,60 +36,42 @@ if len(sys.argv) != 3 :
 	print("First file is reference file, second file is the analysed file")
 	sys.exit(1)
 
-#Get data files
-i=0
-for filename in sys.argv[1:]:
-	i = i + 1
-	print(filename)
-	if i == 1:
-		filename1 = filename
-		data1 = np.loadtxt(filename)
-	else:
-		filename2 = filename
-		data2 = np.loadtxt(filename)
 
-#Check if plotting in standard naming convention
-if 'script_' in filename:
-	stdpat = 1
-else:
-	stdpat = 0
+#Get data files
+def loadDataFromFile(filename):
+	try:
+		data = np.loadtxt(filename)
+	except:
+		print(": UNABLE TO OPEN '"+filename+"'")
+		sys.exit(1)
+
+	#labelsx = data[0,0:]
+	#labelsy = data[0:,0]
+	#data = data[1:,1:]
+	return data
+
+
+filename_ref = sys.argv[1]
+data_ref = loadDataFromFile(sys.argv[1])
+filename_cmp = sys.argv[2]
+data_cmp = loadDataFromFile(sys.argv[2])
+
+#Extract parameters from filename (simplifies analysis)
+p_ref = ParameterFilename(filename_ref)
+p_cmp = ParameterFilename(filename_cmp)
+
 
 #Check variable to be plotted
-title=""
-outfile=""
-if 'diag_vort' in filename1:
-	if 'diag_vort' in filename2:
-		title += "Vorticity Deviation \n"
-		outfile += "vort_"
-		varplot = 'vort'
-	else:
-		print("Warning: you are comparing apples and oranges!!!!")
-		sys.exit(1)
-
-elif 'prog_h' in filename1:
-	if 'prog_h' in filename2:
-		title+="Depth Deviation (m) \n"
-		outfile+="depth_"
-		varplot = 'depth'
-	else:
-		print("Warning: you are comparing apples and oranges!!!!")
-		sys.exit(1)
-
-else:
-	pos1 = filename1.find('output_')
-	pos2 = filename1.find('_t')
-	varplot = filename1[pos1+8:pos2]
-	title += varplot+"\n"
-	outfile += varplot+"_"
+title = p_ref.title
+outfile = p_ref.var
+varplot = p_ref.var
 
 #Check dimensions
-data_ref = data1
-data_cmp = data2
 (ny_ref, nx_ref) = data_ref.shape
 (ny_cmp, nx_cmp) = data_cmp.shape
-print("Dimensions (ref and cmp)")
-print(ny_ref, nx_ref)
-print(ny_cmp, nx_cmp)
+#print("Dimensions (ref and cmp)")
+#print(ny_ref, nx_ref)
+#print(ny_cmp, nx_cmp)
 
 #Set benchmark
 earth = EarthMKSDimensions()
@@ -105,17 +86,7 @@ y_max = benchpar.y_max
 multiplier_j = (ny_ref)/(ny_cmp)
 multiplier_i = (nx_ref)/(nx_cmp)
 
-#if not float(multiplier_i).is_integer() or not float(multiplier_j).is_integer() :
-#	print ("Dimensions of reference solution: ", ny_ref, nx_ref)
-#	print ("Dimensions of method under analysis: ", ny_cmp, nx_cmp)
-#	print ("Multipliers: ", multiplier_i, multiplier_j)
-#	print ("Grids are not aligned")
-#	sys.exit(1)
-
-#multiplier_j = int(multiplier_j)
-#multiplier_i = int(multiplier_i)
-#print("Grids aligned")
-print ("Multipliers (int): ", multiplier_i, multiplier_j)
+#print ("Multipliers: ", multiplier_i, multiplier_j)
 
 norm_l1_value = 0.0
 norm_l2_value = 0.0
@@ -124,45 +95,32 @@ norm_linf_value = 0.0
 if multiplier_i == 1 and multiplier_j == 1: #Grids are the same
 	data = data_cmp - data_ref
 elif multiplier_i >= 1 and multiplier_j >= 1 :
-	if False:
-		print("Pointwise matching - Constains a bug!!!")
-		sys.exit(1)
-		#Data stores the difference and has the shape of cmp data (smaller)
-		data=data_cmp
-
-		for j in range(0, ny_cmp):
-			for i in range(0, nx_cmp):
-				#print("(",i,",",j,",", i*multiplier_i,",", j*multiplier_j,")", end="")
-
-				data[j,i] = data_cmp[j,i]-data_ref[j*multiplier_j,i*multiplier_i]
-
-	else:
 	#Comparison via interpolation
-		print("Interpolation")
-		# A-grid REFERENCE (file1) - sweet outputs only A grids physical space
-		dx_ref=(x_max-x_min)/(nx_ref)
-		dy_ref=(y_max-y_min)/(ny_ref)
-		x_ref = np.arange(x_min, x_max, dx_ref)
-		y_ref = np.arange(y_min, y_max, dy_ref)
-		x_ref += dx_ref/2
-		y_ref += dy_ref/2
-		X_ref, Y_ref = np.meshgrid(x_ref, y_ref)
+	#print("Interpolation")
+	# A-grid REFERENCE (file1) - sweet outputs only A grids physical space
+	dx_ref=(x_max-x_min)/(nx_ref)
+	dy_ref=(y_max-y_min)/(ny_ref)
+	x_ref = np.arange(x_min, x_max, dx_ref)
+	y_ref = np.arange(y_min, y_max, dy_ref)
+	x_ref += dx_ref/2
+	y_ref += dy_ref/2
+	X_ref, Y_ref = np.meshgrid(x_ref, y_ref)
 
-		#Creat cubic interpolation of reference file
-		interp_spline = RectBivariateSpline(y_ref, x_ref, data_ref)
+	#Create cubic interpolation of reference file
+	interp_spline = RectBivariateSpline(y_ref, x_ref, data_ref)
 
-		#A-grid cmp file (file2)
-		dx_cmp=(x_max-x_min)/nx_cmp
-		dy_cmp=(y_max-y_min)/ny_cmp
-		x_cmp = np.arange(x_min, x_max, dx_cmp)
-		y_cmp = np.arange(y_min, y_max, dy_cmp)
-		x_cmp += dx_cmp/2
-		y_cmp += dy_cmp/2
-		X_cmp, Y_cmp = np.meshgrid(x_cmp, y_cmp)
+	#A-grid cmp file (file2)
+	dx_cmp=(x_max-x_min)/nx_cmp
+	dy_cmp=(y_max-y_min)/ny_cmp
+	x_cmp = np.arange(x_min, x_max, dx_cmp)
+	y_cmp = np.arange(y_min, y_max, dy_cmp)
+	x_cmp += dx_cmp/2
+	y_cmp += dy_cmp/2
+	X_cmp, Y_cmp = np.meshgrid(x_cmp, y_cmp)
 
-		#Get reduced reference resolution
-		data_ref_low = interp_spline(y_cmp, x_cmp)
-		data = data_cmp - data_ref_low
+	#Get reduced reference resolution
+	data_ref_low = interp_spline(y_cmp, x_cmp)
+	data = data_cmp - data_ref_low
 
 else :
 	print ("Please provide reference solution (file1) with dimension larger or equal file2")
@@ -211,10 +169,10 @@ class MidpointNormalize(colors.Normalize):
 #Get max/min
 cmin = np.amin(data)
 cmax = np.amax(data)
-mid_val=0
+mid_val = 0
 
-dx_cmp=(x_max-x_min)/nx_cmp
-dy_cmp=(y_max-y_min)/ny_cmp
+dx_cmp = (x_max-x_min)/nx_cmp
+dy_cmp = (y_max-y_min)/ny_cmp
 extent = (labelsx[0]+dx_cmp/2, labelsx[-1]-dx_cmp/2, labelsy[0]+dy_cmp/2, labelsy[-1]-dy_cmp/2)
 
 #Color plot
@@ -261,106 +219,42 @@ else:
 		#plt.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, linewidths=0.5)
 
 
-#Method
-if stdpat == 1:
-	print("Methods")
-	pos1 = filename1.find('_tsm_')
-	pos2 = filename1.find('_tso')
-	method1 = filename1[pos1+5:pos2]
-	print(method1)
-	pos1 = filename2.find('_tsm_')
-	pos2 = filename2.find('_tso')
-	method2 = filename2[pos1+5:pos2]
-	print(method2)
-
-	if method1 == "l_cn_na_sl_nd_settls":
-		method1 = "SL-SI-SETTLS"
-	elif method1 == "l_rexi_na_sl_nd_settls":
-		method1 = "SL-EXP-SETTLS"
-	elif method1 == "l_rexi_na_sl_nd_etdrk":
-		method1 = "SL-ETD2RK"
-	elif method1 == "l_rexi_n_etdrk":
-		method1 = "ETD2RK"
-	elif method1 == "ln_erk":
-		if 'ref' in filename1:
-			method1 = "REF"
-		else:
-			method1 = "RK-FDC"
-
-	if method2 == "l_cn_na_sl_nd_settls":
-		method2 = "SL-SI-SETTLS"
-	elif method2 == "l_rexi_na_sl_nd_settls":
-		method2 = "SL-EXP-SETTLS"
-	elif method2 == "l_rexi_na_sl_nd_etdrk":
-		method2 = "SL-ETD2RK"
-	elif method2 == "l_rexi_n_etdrk":
-		method2 = "ETD2RK"
-	elif method2 == "ln_erk":
-		if 'ref' in filename2:
-			method2 = "REF"
-		else:
-			method2 = "RK-FDC"
-
-	if method1 == method2:
-		title+=method1
-		outfile += method1
-	else:
-		title += method1
-		title += " vs "
-		title += method2
-		outfile += method1
-		outfile += "_vs_"
-		outfile += method2
-
-	#Time
-	title += '  t='
-	pos1 = filename1.find('output')
-	name = filename1[pos1:]
-	pos2 = name.find('_t')
-	pos3 = filename1.find('.csv')
-	time1 = filename1[pos1+pos2+2:pos3]
-	time1 = float(time1)
-	time1 = round(time1 / 86400, 2)
-	title += str(time1)
-	outfile += "_t"
-	outfile += str(time1)
-	pos1 = filename2.find('output')
-	name = filename2[pos1:]
-	pos2 = name.find('_t')
-	pos3 = filename2.find('.csv')
-	time2 = filename2[pos1+pos2+2:pos3]
-	time2 = float(time2)
-	time2 = round(time2 / 86400, 2)
-	if time1 != time2:
-		title += " vs t="
-		title += str(time2)
-		outfile += "_vs_t"
-		outfile += str(time2)
-
-	title += ' days '
-
-	#Time step
-	title+=" dt="
-	pos1 = filename1.find('_C')
-	pos2 = filename1.find('_R')
-	timestep1=filename1[pos1+2:pos2]
-	title += filename1[pos1+2:pos2]
-	outfile += "_dt"
-	outfile += str(timestep1)
-
-	pos1 = filename2.find('_C')
-	pos2 = filename2.find('_R')
-	timestep2=filename2[pos1+2:pos2]
-	if timestep1 != timestep2:
-		title += " vs dt="
-		title += filename2[pos1+2:pos2]
-		outfile += "_vs_dt"
-		outfile += str(timestep2)
-	title += ' sec '
-
+#Labels
+if p_ref.method == p_cmp.method:
+	title+=p_ref.method_paper
+	outfile += "_"+p_ref.method
 else:
-	title = filename1+"/n"+filename2
-	outfile = "plot"
+	title += p_ref.method_paper
+	title += " vs "
+	title += p_cmp.method_paper
+	outfile += "_"+p_ref.method
+	outfile += "_vs_"
+	outfile += p_cmp.method
+
+#Time
+title += '  t='
+title += str(p_ref.time)
+outfile += "_t"
+outfile += str(p_ref.time)
+if p_ref.time != p_cmp.time:
+	title += " vs t="
+	title += str(p_cmp.time)
+	outfile += "_vs_t"
+	outfile += str(p_cmp.time)
+title += ' days '
+
+#Time step
+title += " dt="+str(p_ref.timestep)
+outfile += "_dt"
+outfile += str(p_ref.timestep)
+
+if p_ref.timestep != p_cmp.timestep:
+	title += " vs "
+	title += p_cmp.timestep
+	outfile += "_vs_dt"
+	outfile += str(p_cmp.timestep)
+title += ' sec '
+
 
 print(title)
 plt.title(title, fontsize=fontsize)
@@ -395,5 +289,4 @@ plt.savefig(outfilename, dpi=300, transparent=True, bbox_inches='tight', \
 # L1, L2, Linf
 outfile_errors = outfilename.replace('.eps', 'Errors12max.txt')
 print(outfile_errors+"\t"+str(norm_l1_value)+"\t"+str(norm_l2_value)+"\t"+str(norm_linf_value))
-
 print(str(norm_l1_value)+"\t"+str(norm_l2_value)+"\t"+str(norm_linf_value), file=open(outfile_errors, 'w'))
