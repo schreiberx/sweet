@@ -146,7 +146,7 @@ class ParameterFilename:
 			pos1 = self.filename.find('_tsm_')
 			pos2 = self.filename.find('_tso')
 			self.method_original = self.filename[pos1+5:pos2]
-
+			self.method_paper = self.method_original
 			if self.method_original == "l_cn_na_sl_nd_settls":
 				self.method_paper = "SL-SI-SETTLS"
 			elif self.method_original == "l_rexi_na_sl_nd_settls":
