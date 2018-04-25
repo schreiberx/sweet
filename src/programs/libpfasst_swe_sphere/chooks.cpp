@@ -85,9 +85,6 @@ extern "C"
     const SphereData& vort_Y = i_Y->get_vort();
     const SphereData& div_Y  = i_Y->get_div();
 
-    // get the SimulationVariables object from context
-    SimulationVariables* simVars(i_ctx->get_simulation_variables());
-
     // write the data to file
     std::string filename = "prog_jump_phi_current_proc_"+std::to_string(i_current_proc)
                                 +"_current_step_"+std::to_string(i_current_step)
@@ -127,9 +124,6 @@ void cecho_output_solution(
     const SphereData& phi_Y  = i_Y->get_phi();
     const SphereData& vort_Y = i_Y->get_vort();
     const SphereData& div_Y  = i_Y->get_div();
-
-    // get the SimulationVariables object from context
-    SimulationVariables* simVars(i_ctx->get_simulation_variables());
 
     // write the data to file
     std::string filename = "prog_phi_current_proc_"+std::to_string(i_current_proc)

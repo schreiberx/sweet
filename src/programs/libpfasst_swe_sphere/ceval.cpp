@@ -190,11 +190,9 @@ extern "C"
       write_file(*i_ctx, simVars->sim.h_topo,  "prog_h_topo");
 
     // get the configuration for this level
-    SphereDataConfig* data_config              = i_ctx->get_sphere_data_config(o_Y->get_level());
     SphereDataConfig* data_config_nodealiasing = i_ctx->get_sphere_data_config_nodealiasing();
 
     // get the operator for this level
-    SphereOperators* op              = i_ctx->get_sphere_operators(o_Y->get_level());
     SphereOperators* op_nodealiasing = i_ctx->get_sphere_operators_nodealiasing();
 
     SWESphereBenchmarksCombined *benchmarks = i_ctx->get_swe_benchmark(o_Y->get_level());
@@ -210,7 +208,7 @@ extern "C"
 
     // get the initial condition in phi, vort, and div
     benchmarks->setup(*simVars, 
-		      *op);
+		      *op_nodealiasing);
     benchmarks->setupInitialConditions(phi_Y_nodealiasing, 
 				       vort_Y_nodealiasing, 
 				       div_Y_nodealiasing);
@@ -222,10 +220,7 @@ extern "C"
     
     // output the configuration
     simVars->outputConfig();
-    
-    double current_simulation_time = 0;
-    int nsteps                     = 0;
-   
+       
     write_file(*i_ctx, phi_Y,  "prog_phi_init");
     write_file(*i_ctx, vort_Y, "prog_vort_init");
     write_file(*i_ctx, div_Y,  "prog_div_init");
@@ -239,6 +234,9 @@ extern "C"
     // SWE_Sphere_TS_lg_irk_lc_n_erk* timestepper = i_ctx->get_lg_irk_lc_n_erk_timestepper();
     // //SWE_Sphere_TS_ln_erk* timestepper = i_ctx->get_ln_erk_timestepper();
   
+    // double current_simulation_time = 0;
+    // int nsteps                     = 0;
+
     // std::cout << "current_simulation_time = " << current_simulation_time 
     //  	      << " i_t = " << i_t 
     //  	      << std::endl;
@@ -326,7 +324,6 @@ extern "C"
     sphereData_final.request_data_physical();
     sphereData_init -= sphereData_final;
 
-    double sphereDataNorm = 0.0;
     std::cout << "Error during conversion (infty norm) = " << sphereData_init.physical_reduce_max_abs() << std::endl;
 
 
