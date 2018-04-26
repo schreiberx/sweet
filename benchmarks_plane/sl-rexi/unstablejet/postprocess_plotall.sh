@@ -52,7 +52,7 @@ fi
 echo $out
 
 #if [ ! -e "$out" ]; then
-echo "Variable Method1 Method1Paper Time dt Variable Method1 Method1Paper Time dt L1 L2 Linf" > $out
+echo " L1 L2 Linf" > $out
 #fi
 
 file="output_""$var""_t""$time"".csv"
@@ -66,7 +66,7 @@ for i in $DIRS; do
 	#echo "$i"
 	#cd "$i"
 	datafile="$i""/""$file"
-	python3 ./pp_compute_max_and_rms_errors_interpol.py "$reffile" "$datafile" >> "$out"
+	python3 ./pp_plot_plane_unstablejet_compare.py "$reffile" "$datafile" >> "$out"
 	errors=`tail -1 "$out"`
 	echo "$i" 
 	echo "$errors"

@@ -186,7 +186,7 @@ public:
 			int i_initial_window_width = 800,
 			int i_initial_window_height = 600,
 			int i_request_opengl_major_version = 3,		///< major version of opengl context to request
-			int i_request_opengl_minor_version = 1		///< minor version of opengl context to request
+			int i_request_opengl_minor_version = 0		///< minor version of opengl context to request
 	)
 	{
 		if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_NOPARACHUTE) < 0) /* Initialize SDL's Video subsystem */
@@ -208,25 +208,24 @@ public:
 		/*
 		 * set the OpenGL version number to create the context for (p_request_opengl_major_version, p_request_opengl_minor_version)
 		 */
-		if (SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, i_request_opengl_major_version) == -1)
+		if (SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, i_request_opengl_major_version) < 0)
 		{
-			std::cerr << "unable to set major OpenGL version to " << i_request_opengl_major_version << std::endl;
+			std::cerr << "unable to set major OpenGL version to " << i_request_opengl_major_version << ": " << SDL_GetError() << std::endl;
 			return false;
 		}
 
-		if (SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, i_request_opengl_minor_version) == -1)
+		if (SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, i_request_opengl_minor_version) < 0)
 		{
-			std::cerr << "unable to set minor OpenGL version to " << i_request_opengl_minor_version << std::endl;
+			std::cerr << "unable to set minor OpenGL version to " << i_request_opengl_minor_version << ": " << SDL_GetError() << std::endl;
 			return false;
 		}
 
 		// Specifically request core mode for MacOSX systems
-		if (SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE) == -1)
+		if (SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE) < 0)
 		{
 			std::cerr << "unable to set CORE profile context" << i_request_opengl_minor_version << std::endl;
 			return false;
 		}
-
 		/*
 		 * Turn on double buffering with a 24bit Z buffer.
 		 * You may need to change this to 16 or 32 for your system.
