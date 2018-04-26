@@ -102,8 +102,9 @@ class ParameterFilename:
 		self.name, self.ext = os.path.splitext(self.basename)
 		self.dirname = os.path.dirname(filename)
 		self.extract_all()
-		self.details = self.outname+" Method: "+self.method+" "+self.method_paper+" Time:  "+self.time+" dt: "+self.timestep
-		self.prefix = self.method+"_t"+self.time+"_dt"+self.timestep
+		self.heading = "Variable \t Method \t MethodPaper \t Time \t dt \t"
+		self.details = self.outname+"\t"+self.method+"\t"+self.method_paper+"\t"+self.time+"\t"+self.timestep+"\t"
+		self.prefix = self.outname+"_"+self.method+"_t"+self.time+"_dt"+self.timestep
 	def extract_all(self):
 		self.setup()
 		self.extract_var()
