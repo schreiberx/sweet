@@ -33,6 +33,7 @@ extern "C"
 	      const int      nnodes[], 
 	      const char*    qtype_name, 
 	      const int*     qtype_name_len,
+	      const int*     use_rk_stepper, // 1 means true, 0 means false
  	      const int*     nfields, 
 	      const int      nvars_per_field[], 
  	      double*        t_max, 
@@ -87,6 +88,8 @@ int main(int i_argc, char *i_argv[])
 	else if (simVars.libpfasst.nnodes == 5 || 
 		 simVars.libpfasst.nnodes == 9)
 	  nnodes[0] = 3; 
+	else if (simVars.libpfasst.nnodes == 7)
+	  nnodes[0] = 4; // for rk_stepper
 	else 
 	  FatalError("With 2 levels, the number of SDC nodes on the fine level must be either 3, 5, or 9");
 	break;
@@ -206,6 +209,11 @@ int main(int i_argc, char *i_argv[])
   // get the C string length (needed by Fortran...)
   int string_length = simVars.libpfasst.nodes_type.size();
 
+  // flag for the RK stepper
+  const int rk_stepper_flag = (simVars.libpfasst.use_rk_stepper) 
+                            ? 1
+                            : 0;
+
   // call LibPFASST to advance in time
   fmain(
    	pd_ctx,                                       // user defined context
@@ -215,6 +223,7 @@ int main(int i_argc, char *i_argv[])
 	nnodes,                                       // number of SDC nodes 
  	(simVars.libpfasst.nodes_type).c_str(),       // type of nodes
 	&string_length,                               // length of (simVars.libpfasst.nodes_type).c_str()
+	&rk_stepper_flag,                             // flag for the RK stepper => 1 means true, 0 means false
 	&nfields,                                     // number of vector fields
 	nvars_per_field,                              // number of dofs per vector field
  	&(simVars.timecontrol.max_simulation_time),   // simulation time

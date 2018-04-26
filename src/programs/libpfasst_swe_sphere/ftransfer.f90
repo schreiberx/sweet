@@ -53,8 +53,8 @@ contains
 
           call c_sweet_data_interpolate(qF%c_sweet_data_ptr,   & 
                                         qG%c_sweet_data_ptr,   & 
-                                        levelF%level-1,        & ! conversion to c++ indexing
-                                        levelG%level-1,        & ! conversion to c++ indexing
+                                        levelF%index-1,        & ! conversion to c++ indexing
+                                        levelG%index-1,        & ! conversion to c++ indexing
                                         sweet_sweeper_ptr%ctx, &
                                         t)
 
@@ -87,8 +87,8 @@ contains
           
           call c_sweet_data_restrict(qG%c_sweet_data_ptr,   &
                                      qF%c_sweet_data_ptr,   & 
-                                     levelG%level-1,        & ! conversion to c++ indexing
-                                     levelF%level-1,        & ! conversion to c++ indexing
+                                     levelG%index-1,        & ! conversion to c++ indexing
+                                     levelF%index-1,        & ! conversion to c++ indexing
                                      sweet_sweeper_ptr%ctx, &
                                      t)
 
