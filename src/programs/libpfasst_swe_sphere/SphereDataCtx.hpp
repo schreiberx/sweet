@@ -190,7 +190,7 @@ public:
     sphereDiagnostics = new SphereDiagnostics(
 					      &((*levelSingletons)[levelSingletons->size()-1].dataConfig),
 					      *simVars,
-					      1
+					      0
 					      );
 	
   }

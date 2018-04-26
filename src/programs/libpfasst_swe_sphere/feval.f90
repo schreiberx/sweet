@@ -45,12 +45,11 @@ module feval_module
        real(c_double), value :: i_t, i_dt 
      end subroutine cinitial
 
-     subroutine cfinal(i_ctx, i_Y, i_nnodes, i_niter, i_rank, i_nprocs) bind(c, name="cfinal")
+     subroutine cfinal(i_ctx, i_Y, i_nnodes, i_niter) bind(c, name="cfinal")
        use iso_c_binding
        type(c_ptr), value :: i_ctx, i_Y
        integer,     value :: i_nnodes
        integer,     value :: i_niter
-       integer,     value :: i_rank, i_nprocs
      end subroutine cfinal
 
      subroutine ceval_f1(i_Y, i_t, i_ctx, o_F1) bind(c, name="ceval_f1")
@@ -157,21 +156,13 @@ contains
     class(sweet_sweeper_t),    pointer       :: sweet_sweeper_ptr
     class(sweet_data_encap_t), pointer       :: sd_ptr
 
-    integer                                  :: nprocs, rank, ierr
-
     sweet_sweeper_ptr => as_sweet_sweeper(sweeper)
     sd_ptr            => as_sweet_data_encap(sd)
-
-    call MPI_COMM_SIZE (MPI_COMM_WORLD, nprocs,  ierr)
-    call MPI_COMM_RANK (MPI_COMM_WORLD, rank, ierr)
-
 
     call cfinal(sweet_sweeper_ptr%ctx,   & 
                 sd_ptr%c_sweet_data_ptr, &
                 nnodes,                  &
-                niter,                   &
-                rank,                    &
-                nprocs)
+                niter)
 
   end subroutine ffinal  
 
@@ -383,6 +374,8 @@ contains
     integer,                intent(in   ) :: level_index
 
     class(sweet_data_encap_t),    pointer :: y_sd_ptr
+
+    y_sd_ptr   => as_sweet_data_encap(y)
 
     call cfinalize(y_sd_ptr%c_sweet_data_ptr, &
                    t,                         &

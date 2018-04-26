@@ -93,8 +93,7 @@ contains
      if (my_id == 0) then
         print *, 'Number of Processors: ', num_procs
      end if
-     print *, 'My Id = ', my_id
-
+     
      ! timestepping parameters
      t      = 0
      nsteps = int(t_max/dt)
@@ -105,18 +104,20 @@ contains
      pf%pipeline_G        = .false.                       ! pipeline the coarse prediction sweeps
      if (use_rk_stepper == 1) then
         pf%use_rk_stepper = .true.                        ! replace the SDC sweeps with RK steps
-        print *, "++++++++++++ use_rk_stepper == true  +++++++++++" 
+        if (my_id == 0) then
+           print *, "++++++++++++ use_rk_stepper == true  +++++++++++" 
+        end if
      else
         pf%use_rk_stepper = .false.                       ! use the SDC sweeps
-        print *, "++++++++++++ use_rk_stepper == false +++++++++++"
+        if (my_id == 0) then
+           print *, "++++++++++++ use_rk_stepper == false +++++++++++"
+        end if
      end if
      pf%echo_timings      = .true.                        ! output the timings in fort.601 file
      qtype                = translate_qtype(qtype_name, & ! select the type of nodes
                                             qnl)
 
      !pf%abs_res_tol = 0.00000005 
-
-     print *, qtype
 
      if (nlevs == 3) then
         nvars = [nfields*nvars_per_field(1), &
@@ -133,8 +134,6 @@ contains
 
      ! loop over levels to initialize level-specific data structures
      do level = 1, pf%nlevels
-
-        print *, level
 
        ! define the level id
        pf%levels(level)%index = level 
@@ -229,8 +228,6 @@ contains
     ! initialize the pfasst objects
     call pf_pfasst_setup(pf)
 
-    print *, "t = ", t
-    
     !! initialize the state vector at each level
     
     ! first fine level
@@ -254,10 +251,10 @@ contains
     end if
     
 
-    call pf_add_hook(pf,                &
-                     pf%nlevels,        &
-                     PF_POST_ITERATION, &
-                     fecho_residual)   
+    ! call pf_add_hook(pf,                &
+    !                  pf%nlevels,        &
+    !                  PF_POST_ITERATION, &
+    !                  fecho_residual)   
     ! if (num_procs > 1) then
     !    call pf_add_hook(pf,                 &
     !                     pf%nlevels,         &
@@ -310,7 +307,7 @@ contains
     ! release memory
     call pf_pfasst_destroy(pf)
 
-    print *, 'all the memory was released'
+    !print *, 'all the memory was released'
 
   end subroutine fmain
 
