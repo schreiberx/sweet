@@ -190,11 +190,9 @@ extern "C"
       write_file(*i_ctx, simVars->sim.h_topo,  "prog_h_topo");
 
     // get the configuration for this level
-    SphereDataConfig* data_config              = i_ctx->get_sphere_data_config(o_Y->get_level());
     SphereDataConfig* data_config_nodealiasing = i_ctx->get_sphere_data_config_nodealiasing();
 
     // get the operator for this level
-    SphereOperators* op              = i_ctx->get_sphere_operators(o_Y->get_level());
     SphereOperators* op_nodealiasing = i_ctx->get_sphere_operators_nodealiasing();
 
     SWESphereBenchmarksCombined *benchmarks = i_ctx->get_swe_benchmark(o_Y->get_level());
@@ -210,7 +208,7 @@ extern "C"
 
     // get the initial condition in phi, vort, and div
     benchmarks->setup(*simVars, 
-		      *op);
+		      *op_nodealiasing);
     benchmarks->setupInitialConditions(phi_Y_nodealiasing, 
 				       vort_Y_nodealiasing, 
 				       div_Y_nodealiasing);
@@ -222,10 +220,7 @@ extern "C"
     
     // output the configuration
     simVars->outputConfig();
-    
-    double current_simulation_time = 0;
-    int nsteps                     = 0;
-   
+       
     write_file(*i_ctx, phi_Y,  "prog_phi_init");
     write_file(*i_ctx, vort_Y, "prog_vort_init");
     write_file(*i_ctx, div_Y,  "prog_div_init");
@@ -234,11 +229,34 @@ extern "C"
     write_spectrum_to_file(*i_ctx, vort_Y, "init_spectrum_vort");
     write_spectrum_to_file(*i_ctx, div_Y,  "init_spectrum_div");
 
-        
+    SphereData phi_Y_init(phi_Y);  
+    SphereData phi_Y_final(phi_Y); 
+    phi_Y_final.request_data_spectral(); 
+    phi_Y_final.request_data_physical();                           
+    phi_Y_init -= phi_Y_final; 
+    std::cout << "Geopotential error during conversion (infty norm) = " << phi_Y_init.physical_reduce_max_abs() << std::endl;                                                                  
+
+    SphereData div_Y_init(div_Y); 
+    SphereData div_Y_final(div_Y);                                                                                                                                                                          
+    div_Y_final.request_data_spectral();                          
+    div_Y_final.request_data_physical(); 
+    div_Y_init -= div_Y_final;
+    std::cout << "Divergence error during conversion (infty norm) = " << div_Y_init.physical_reduce_max_abs() << std::endl; 
+                                                                                                                                                                                                            
+    SphereData vort_Y_init(vort_Y);                                                                                                                                                                        
+    SphereData vort_Y_final(vort_Y);  
+    vort_Y_final.request_data_spectral();                        
+    vort_Y_final.request_data_physical(); 
+    vort_Y_init -= vort_Y_final;    
+    std::cout << "Vorticity error during conversion (infty norm) = " << vort_Y_init.physical_reduce_max_abs() << std::endl; 
+            
     // // get the timestepper 
     // SWE_Sphere_TS_lg_irk_lc_n_erk* timestepper = i_ctx->get_lg_irk_lc_n_erk_timestepper();
     // //SWE_Sphere_TS_ln_erk* timestepper = i_ctx->get_ln_erk_timestepper();
   
+    // double current_simulation_time = 0;
+    // int nsteps                     = 0;
+
     // std::cout << "current_simulation_time = " << current_simulation_time 
     //  	      << " i_t = " << i_t 
     //  	      << std::endl;
@@ -320,15 +338,26 @@ extern "C"
     // get the SimulationVariables object from context
     SimulationVariables* simVars(i_ctx->get_simulation_variables()); 
 
-    SphereData sphereData_init(phi_Y);
-    SphereData sphereData_final(phi_Y);
-    sphereData_final.request_data_spectral();
-    sphereData_final.request_data_physical();
-    sphereData_init -= sphereData_final;
+    SphereData phi_Y_init(phi_Y);  
+    SphereData phi_Y_final(phi_Y); 
+    phi_Y_final.request_data_spectral(); 
+    phi_Y_final.request_data_physical();                           
+    phi_Y_init -= phi_Y_final; 
+    std::cout << "Geopotential error during conversion (infty norm) = " << phi_Y_init.physical_reduce_max_abs() << std::endl;                                                                  
 
-    double sphereDataNorm = 0.0;
-    std::cout << "Error during conversion (infty norm) = " << sphereData_init.physical_reduce_max_abs() << std::endl;
-
+    SphereData div_Y_init(div_Y); 
+    SphereData div_Y_final(div_Y);                                                                                                                                                                          
+    div_Y_final.request_data_spectral();                          
+    div_Y_final.request_data_physical(); 
+    div_Y_init -= div_Y_final;
+    std::cout << "Divergence error during conversion (infty norm) = " << div_Y_init.physical_reduce_max_abs() << std::endl; 
+                                                                                                                                                                                                            
+    SphereData vort_Y_init(vort_Y);                                                                                                                                                                        
+    SphereData vort_Y_final(vort_Y);  
+    vort_Y_final.request_data_spectral();                        
+    vort_Y_final.request_data_physical(); 
+    vort_Y_init -= vort_Y_final;    
+    std::cout << "Vorticity error during conversion (infty norm) = " << vort_Y_init.physical_reduce_max_abs() << std::endl; 
 
     if (i_nprocs == 1)
       {
@@ -361,7 +390,7 @@ extern "C"
 	write_file(*i_ctx, phi_Y, filename.c_str());
 
 	filename = "prog_conversion_phi_nprocs_"+std::to_string(i_nprocs)+"_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
-	write_file(*i_ctx, sphereData_init, filename.c_str());
+	write_file(*i_ctx, phi_Y_init, filename.c_str());
 	
 	filename = "prog_vort_nprocs_"+std::to_string(i_nprocs)+"_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
 	write_file(*i_ctx, vort_Y, filename.c_str());
@@ -757,16 +786,7 @@ extern "C"
     vort_Y = vort_Rhs.spectral_solve_helmholtz(1.0, -scalar, r); 
     div_Y  = div_Rhs.spectral_solve_helmholtz( 1.0, -scalar, r); 
     
-    // now recompute F3 with the new value of Y
-    
-    // ceval_f3(
-    //  	     io_Y, 
-    // 	     i_t, 
-    // 	     i_level,
-    // 	     i_ctx, 
-    // 	     o_F3
-    // 	     );
-    
+    // now recompute F3 with the new value of Y   
     SphereData& phi_F3  = o_F3->get_phi();
     SphereData& vort_F3 = o_F3->get_vort();
     SphereData& div_F3  = o_F3->get_div();
@@ -776,5 +796,32 @@ extern "C"
     div_F3  = (div_Y  - div_Rhs)  / i_dt;
   
   }
+  
+  // applies artificial diffusion to the system
+  void cfinalize(		 
+		 SphereDataVars *io_Y, 
+		 double i_t, 
+		 double i_dt,
+		 SphereDataCtx *i_ctx
+		)
+  {
+    // get the simulation variables
+    SimulationVariables* simVars = i_ctx->get_simulation_variables();
+
+    if (simVars->sim.viscosity == 0)
+      return;
+
+    SphereData& phi_Y  = io_Y->get_phi();
+    SphereData& vort_Y = io_Y->get_vort();
+    SphereData& div_Y  = io_Y->get_div();
+
+    const double scalar = simVars->sim.viscosity*i_dt;
+    const double r      = simVars->sim.earth_radius;
+	    
+    phi_Y  = phi_Y.spectral_solve_helmholtz(1.0,  -scalar, r);
+    vort_Y = vort_Y.spectral_solve_helmholtz(1.0, -scalar, r);
+    div_Y  = div_Y.spectral_solve_helmholtz(1.0,  -scalar, r);    
+  }
+
 
 }

@@ -78,12 +78,12 @@ contains
     type is (sweet_data_encap_t)
        
        print '("resid: step: ",i7.5," iter: ",i5.3," level: ",i2.2," resid: ",es14.7)', &
-            state%step+1, state%iter, level%level, R%norm()
+            state%step+1, state%iter, level%index, R%norm()
 
        sweet_sweeper_ptr => as_sweet_sweeper(level%ulevel%sweeper)
        x_ptr             => as_sweet_data_encap(level%Q(sweet_sweeper_ptr%nnodes))
 
-       if (level%level == pf%nlevels) then
+       if (level%index == pf%nlevels) then
 
           call cecho_residual(sweet_sweeper_ptr%ctx,  &
                               R%norm(),               &
@@ -122,7 +122,7 @@ contains
     sweet_sweeper_ptr => as_sweet_sweeper(level%ulevel%sweeper)
 
     call level%ulevel%factory%create_single(del,                   &
-                                            level%level,           & 
+                                            level%index,           & 
                                             SDC_KIND_SOL_NO_FEVAL, &
                                             level%nvars,           &
                                             level%shape)
