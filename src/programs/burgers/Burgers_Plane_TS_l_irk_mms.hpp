@@ -23,8 +23,9 @@ class Burgers_Plane_TS_l_irk_mms	: public Burgers_Plane_TS_interface
 	PlaneOperators &op;
 
 	int timestepping_order;
-	double **table;
-	bool table_crated;
+	static double **table;
+	static bool table_created;
+	static int table_size;
 	bool second_time;
 
 public:
@@ -49,6 +50,12 @@ public:
 
 	void return_initial(
 			PlaneData &init
+	);
+
+	void setup_look_up_table(
+			double start,
+			double end,
+			double step_size
 	);
 
 	virtual ~Burgers_Plane_TS_l_irk_mms();

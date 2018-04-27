@@ -22,7 +22,7 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 	if (i_fixed_dt <= 0)
 		FatalError("Burgers_Plane_TS_l_irk_n_sl: Only constant time step size allowed");
 
-	if (simVars.disc.timestepping_order<1 || simVars.disc.timestepping_order>2)
+	if (timestepping_order<1 || timestepping_order>2)
 		FatalError("Burgers_Plane_TS_l_irk_n_sl: Only orders 1 and 2 possible");
 
 	//Departure points and arrival points
@@ -35,7 +35,7 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 	assert(staggering.staggering_type == 'a');
 
 	//Calculate departure points
-	if (simVars.disc.timestepping_order == 1)
+	if (timestepping_order == 1)
 	{
 		semiLagrangian.semi_lag_departure_points_first_order(
 			io_u, io_v,
@@ -61,7 +61,7 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 	io_u_prev = io_u;
 	io_v_prev = io_v;
 
-	if (simVars.disc.timestepping_order == 2)
+	if (timestepping_order == 2)
 	{
 		// Run implicit Runge-Kutta on Burgers' equation in SL form
 		ts_l_irk.run_timestep(
@@ -90,7 +90,7 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 			staggering.v[1]
 	);
 
-	if (simVars.disc.timestepping_order == 2)
+	if (timestepping_order == 2)
 	{
 		// Run implicit Runge-Kutta on Burgers' equation in SL form
 		ts_l_irk.run_timestep(
@@ -118,9 +118,13 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 /*
  * Setup
  */
-void Burgers_Plane_TS_l_irk_n_sl::setup()
+void Burgers_Plane_TS_l_irk_n_sl::setup(
+		int i_order	///< order of RK time stepping method
+)
 {
-	ts_l_irk.setup(simVars.disc.timestepping_order);
+	timestepping_order = i_order;
+
+	ts_l_irk.setup(timestepping_order);
 
 	// Setup sampler for future interpolations
 	sampler2D.setup(simVars.sim.domain_size, op.planeDataConfig);
@@ -176,6 +180,7 @@ Burgers_Plane_TS_l_irk_n_sl::Burgers_Plane_TS_l_irk_n_sl(
 
 		ts_l_irk(simVars, op)
 {
+	setup(simVars.disc.timestepping_order);
 }
 
 

@@ -22,7 +22,7 @@ void Burgers_Plane_TS_l_irk_n_sl_mms::run_timestep(
 	if (i_fixed_dt <= 0)
 		FatalError("Burgers_Plane_TS_l_irk_n_sl_mms: Only constant time step size allowed");
 
-	if (simVars.disc.timestepping_order<1 || simVars.disc.timestepping_order>2)
+	if (timestepping_order<1 || timestepping_order>2)
 		FatalError("Burgers_Plane_TS_l_irk_n_sl_mms: Only orders 1 and 2 possible");
 
 	if (op.diff_c_y(io_u).reduce_maxAbs()>1e-11)
@@ -38,7 +38,7 @@ void Burgers_Plane_TS_l_irk_n_sl_mms::run_timestep(
 	assert(staggering.staggering_type == 'a');
 
 	//Calculate departure points
-	if (simVars.disc.timestepping_order == 1)
+	if (timestepping_order == 1)
 	{
 		semiLagrangian.semi_lag_departure_points_first_order(
 			io_u, io_v,
@@ -64,7 +64,7 @@ void Burgers_Plane_TS_l_irk_n_sl_mms::run_timestep(
 	io_u_prev = io_u;
 	io_v_prev = io_v;
 
-	if (simVars.disc.timestepping_order == 2)
+	if (timestepping_order == 2)
 	{
 		// Run implicit Runge-Kutta on Burgers' equation in SL form
 		ts_l_irk_mms.run_timestep(
@@ -93,7 +93,7 @@ void Burgers_Plane_TS_l_irk_n_sl_mms::run_timestep(
 			staggering.v[1]
 	);
 
-	if (simVars.disc.timestepping_order == 2)
+	if (timestepping_order == 2)
 	{
 		// Run implicit Runge-Kutta on Burgers' equation in SL form
 		ts_l_irk_mms.run_timestep(
@@ -122,13 +122,22 @@ void Burgers_Plane_TS_l_irk_n_sl_mms::return_initial(PlaneData& init)
 	ts_l_irk_mms.return_initial(init);
 }
 
+void Burgers_Plane_TS_l_irk_n_sl_mms::setup_look_up_table(double start, double end, double step_size)
+{
+	ts_l_irk_mms.setup_look_up_table(start, end, step_size);
+}
+
 
 /*
  * Setup
  */
-void Burgers_Plane_TS_l_irk_n_sl_mms::setup()
+void Burgers_Plane_TS_l_irk_n_sl_mms::setup(
+		int i_order	///< order of RK time stepping method
+)
 {
-	ts_l_irk_mms.setup(simVars.disc.timestepping_order);
+	timestepping_order = i_order;
+
+	ts_l_irk_mms.setup(timestepping_order);
 
 	// Setup sampler for future interpolations
 	sampler2D.setup(simVars.sim.domain_size, op.planeDataConfig);
@@ -183,6 +192,7 @@ Burgers_Plane_TS_l_irk_n_sl_mms::Burgers_Plane_TS_l_irk_n_sl_mms(
 
 		ts_l_irk_mms(simVars, op)
 {
+	setup(simVars.disc.timestepping_order);
 }
 
 

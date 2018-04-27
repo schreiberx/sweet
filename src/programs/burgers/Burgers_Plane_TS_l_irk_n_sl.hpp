@@ -26,6 +26,8 @@ class Burgers_Plane_TS_l_irk_n_sl	: public Burgers_Plane_TS_interface
 	SimulationVariables &simVars;
 	PlaneOperators &op;
 
+	int timestepping_order;
+
 	PlaneDataSemiLagrangian semiLagrangian;
 	PlaneDataSampler sampler2D;
 
@@ -43,7 +45,9 @@ public:
 			PlaneOperators &i_op
 		);
 
-	void setup();
+	void setup(
+			int i_order	///< order of RK time stepping method
+	);
 
 	void run_timestep(
 			PlaneData &io_u,	///< prognostic variables

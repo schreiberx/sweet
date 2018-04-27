@@ -25,7 +25,9 @@ class Burgers_Plane_TS_ln_imex_mms	: public Burgers_Plane_TS_interface
 	PlaneOperators &op;
 
 	int timestepping_order;
-	double** table;
+	static bool table_created;
+	static int table_size;
+	static double** table;
 	PlaneDataTimesteppingRK timestepping_rk;
 
 public:
@@ -52,6 +54,11 @@ public:
 			PlaneData &init
 	);
 
+	void setup_look_up_table(
+			double start,
+			double end,
+			double step_size
+	);
 
 	virtual ~Burgers_Plane_TS_ln_imex_mms();
 };

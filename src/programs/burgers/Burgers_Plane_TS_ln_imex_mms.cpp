@@ -8,6 +8,9 @@
 
 #include "Burgers_Plane_TS_ln_imex_mms.hpp"
 
+bool Burgers_Plane_TS_ln_imex_mms::table_created = false;
+int Burgers_Plane_TS_ln_imex_mms::table_size = 0;
+double** Burgers_Plane_TS_ln_imex_mms::table = nullptr;
 
 /*
  * Implementation of the IMEX method applied to Burgers' equation with the method of manufacturing solutions according
@@ -45,7 +48,7 @@ void Burgers_Plane_TS_ln_imex_mms::run_timestep(
 #endif
 	tmp.physical_set_all(0);
 
-	int itime = (int)(simVars.timecontrol.current_simulation_time/i_fixed_dt)+1;
+	int itime = (int)(simVars.timecontrol.current_simulation_time/simVars.timecontrol.current_timestep_size+0.5)+(int)(dt/simVars.timecontrol.current_timestep_size+0.5);
 	for (std::size_t jj=0; jj<tmp.planeDataConfig->physical_res[1]; jj++)
 		for (std::size_t ii=0; ii<tmp.planeDataConfig->physical_res[0]; ii++)
 			tmp.p_physical_set(jj,ii,table[itime][ii]);
@@ -122,6 +125,65 @@ void Burgers_Plane_TS_ln_imex_mms::return_initial(PlaneData& init)
 			init.p_physical_set(jj,ii,table[0][jj]);
 }
 
+void Burgers_Plane_TS_ln_imex_mms::setup_look_up_table(double start, double end, double step_size)
+{
+	if (!table_created)
+	{
+		// Calculate look-up table
+		double tp = 2*M_PIl;
+		double x = 0.0;
+		double time = 0.0;
+		double freq = simVars.sim.f0;
+		double eps = 0.1;
+		// Calculate number of iterations by rounding the result of max_simulation_time / timestep_size
+		int iiMax = (int)((end-start)/step_size+0.5);
+		table_size = iiMax + 1;
+
+		table = new double*[table_size];
+		for (int ii=0; ii<table_size; ii++)
+		{
+			table[ii] = new double[simVars.disc.res_physical[0]];
+			time = ii*step_size;
+			if ((timestepping_order == 2) && (ii > 0))
+				time = time-step_size/2;
+			for (int jj=0; jj<simVars.disc.res_physical[0]; jj++)
+			{
+				x = (((double)jj+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
+
+				if (simVars.setup.benchmark_scenario_id == 8)
+				{
+					table[ii][jj] = tp * std::sin(tp*x) * std::cos(tp*time) + tp * std::sin(tp*freq*x) * std::cos(tp*freq*time)
+						+ (std::sin(tp*x) * std::sin(tp*time) + 1/freq * std::sin(tp*freq*x) * std::sin(tp*freq*time))
+						* (tp * std::cos(tp*x) * std::sin(tp*time) + tp * std::cos(tp*freq*x) * std::sin(tp*freq*time))
+						- simVars.sim.viscosity * (-tp*tp * std::sin(tp*x) * std::sin(tp*time)
+						- tp*tp*freq * std::sin(tp*freq*x) * std::sin(tp*freq*time));
+				}
+				else if (simVars.setup.benchmark_scenario_id == 12)
+				{
+					double tmpvar = 0.0;
+					double A1 = 0.0;
+					double A2 = 0.0;
+					double argument = 0.0;
+					double AA = 0.0;
+					for (int kk=1; kk<freq; kk++)
+					{
+						argument = tp*kk*x + M_PIl*kk*(1-time);
+						AA = eps/sinh(M_PIl*kk*eps/2);
+						tmpvar += (simVars.sim.viscosity*std::sin(argument)*4*M_PIl*kk - std::cos(argument))*kk*AA;
+						A1 += std::cos(argument)*kk*AA*M_PIl;
+						A2 += std::sin(argument)*0.5*AA;
+					}
+					tmpvar *= 0.5*M_PIl;
+					tmpvar += A1*A2;
+					table[ii][jj] = tmpvar;
+				}
+				else
+					FatalError("This scenario is not supported");
+			}
+		}
+		table_created = true;
+	}
+}
 
 /*
  * Setup
@@ -131,57 +193,6 @@ void Burgers_Plane_TS_ln_imex_mms::setup(
 )
 {
 	timestepping_order = i_order;
-
-	// Calculate look-up table
-	double tp = 2*M_PIl;
-	double x = 0.0;
-	double time = 0.0;
-	double freq = simVars.sim.f0;
-	double eps = 0.1;
-	int iiMax = (int)(simVars.timecontrol.max_simulation_time/simVars.timecontrol.current_timestep_size);
-
-	table = new double*[iiMax+1];
-	for (int ii=0; ii<=iiMax; ii++)
-	{
-		table[ii] = new double[simVars.disc.res_physical[0]];
-		time = ii*simVars.timecontrol.current_timestep_size;
-		if ((i_order == 2) && (ii > 0))
-			time = time-simVars.timecontrol.current_timestep_size/2;
-		for (int jj=0; jj<simVars.disc.res_physical[0]; jj++)
-		{
-			x = (((double)jj+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-
-			if (simVars.setup.benchmark_scenario_id == 8)
-			{
-				table[ii][jj] = tp * std::sin(tp*x) * std::cos(tp*time) + tp * std::sin(tp*freq*x) * std::cos(tp*freq*time)
-					+ (std::sin(tp*x) * std::sin(tp*time) + 1/freq * std::sin(tp*freq*x) * std::sin(tp*freq*time))
-					* (tp * std::cos(tp*x) * std::sin(tp*time) + tp * std::cos(tp*freq*x) * std::sin(tp*freq*time))
-					- simVars.sim.viscosity * (-tp*tp * std::sin(tp*x) * std::sin(tp*time)
-					- tp*tp*freq * std::sin(tp*freq*x) * std::sin(tp*freq*time));
-			}
-			else if (simVars.setup.benchmark_scenario_id == 12)
-			{
-				double tmpvar = 0.0;
-				double A1 = 0.0;
-				double A2 = 0.0;
-				double argument = 0.0;
-				double AA = 0.0;
-				for (int kk=1; kk<freq; kk++)
-				{
-					argument = tp*kk*x + M_PIl*kk*(1-time);
-					AA = eps/sinh(M_PIl*kk*eps/2);
-					tmpvar += (simVars.sim.viscosity*std::sin(argument)*4*M_PIl*kk - std::cos(argument))*kk*AA;
-					A1 += std::cos(argument)*kk*AA*M_PIl;
-					A2 += std::sin(argument)*0.5*AA;
-				}
-				tmpvar *= 0.5*M_PIl;
-				tmpvar += A1*A2;
-				table[ii][jj] = tmpvar;
-			}
-			else
-				FatalError("This scenario is not supported");
-		}
-	}
 }
 
 
@@ -199,8 +210,12 @@ Burgers_Plane_TS_ln_imex_mms::Burgers_Plane_TS_ln_imex_mms(
 
 Burgers_Plane_TS_ln_imex_mms::~Burgers_Plane_TS_ln_imex_mms()
 {
-	for (int ii=0; ii<=(int)(simVars.timecontrol.max_simulation_time/simVars.timecontrol.current_timestep_size); ii++)
-		delete[] table[ii];
-	delete[] table;
+	if (table != nullptr)
+	{
+		for (int ii=0; ii<table_size; ii++)
+			delete[] table[ii];
+		delete[] table;
+		table = nullptr;
+	}
 }
 

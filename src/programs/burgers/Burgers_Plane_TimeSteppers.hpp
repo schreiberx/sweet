@@ -184,6 +184,15 @@ public:
 			ln_imex_mms->return_initial(init);
 	}
 
+	void setup_look_up_table(double start, double end, double step_size)
+	{
+		if (l_irk_n_sl_mms != nullptr)
+			l_irk_n_sl_mms->setup_look_up_table(start, end, step_size);
+
+		if (ln_imex_mms != nullptr)
+			ln_imex_mms->setup_look_up_table(start, end, step_size);
+	}
+
 
 	void setup(
 			const std::string &i_timestepping_method,
@@ -243,14 +252,14 @@ public:
 		else if (i_timestepping_method == "l_irk_n_sl")
 		{
 			l_irk_n_sl = new Burgers_Plane_TS_l_irk_n_sl(i_simVars, i_op);
-			l_irk_n_sl->setup();
+			l_irk_n_sl->setup(i_timestepping_order);
 
 			master = &(Burgers_Plane_TS_interface&)*l_irk_n_sl;
 		}
 		else if (i_timestepping_method == "l_irk_n_sl_mms")
 		{
 			l_irk_n_sl_mms = new Burgers_Plane_TS_l_irk_n_sl_mms(i_simVars, i_op);
-			l_irk_n_sl_mms->setup();
+			l_irk_n_sl_mms->setup(i_timestepping_order);
 
 			master = &(Burgers_Plane_TS_interface&)*l_irk_n_sl_mms;
 		}

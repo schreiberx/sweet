@@ -290,6 +290,9 @@ public:
 ///			start_slice++;
 		}
 
+		CONSOLEPREFIX_start("[MAIN] ");
+		std::cout << "Convergence reached at iteration " << k << " due to passing serial fine solution through all time slices" << std::endl;
+
 converged:
 
 		CONSOLEPREFIX_end();

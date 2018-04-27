@@ -8,6 +8,10 @@
 
 #include "Burgers_Plane_TS_l_irk_mms.hpp"
 
+bool Burgers_Plane_TS_l_irk_mms::table_created = false;
+int Burgers_Plane_TS_l_irk_mms::table_size = 0;
+double** Burgers_Plane_TS_l_irk_mms::table = nullptr;
+
 /*
  * Implementation of an implicit Runge-Kutta method for orders 1 and 2 with the method of manufactured solutions.
  * Solutions are either two sinusoidal waves or a smoothened saw-tooth function (Only working in combination with
@@ -40,14 +44,14 @@ void Burgers_Plane_TS_l_irk_mms::run_timestep(
 #endif
 	tmp.physical_set_all(0);
 
-
 	// Setting explicit right hand side and operator of the left hand side
 	PlaneData rhs_u = io_u;
 //	PlaneData rhs_v = io_v;
-
-	int itime = (int)(simVars.timecontrol.current_simulation_time/i_fixed_dt)+1;
+	int itime = (int)(simVars.timecontrol.current_simulation_time/simVars.timecontrol.current_timestep_size+0.5)+(int)(i_fixed_dt/simVars.timecontrol.current_timestep_size+0.5);
+	if (timestepping_order == 2)
+		itime = (int)(2*simVars.timecontrol.current_simulation_time/simVars.timecontrol.current_timestep_size+0.5)+(int)(2*i_fixed_dt/simVars.timecontrol.current_timestep_size+0.5);
 	if (second_time)
-		itime++;
+		itime +=(int)(2*i_fixed_dt/simVars.timecontrol.current_timestep_size+0.5);
 	for (std::size_t jj=0; jj<tmp.planeDataConfig->physical_res[1]; jj++)
 		for (std::size_t ii=0; ii<tmp.planeDataConfig->physical_res[0]; ii++)
 			tmp.p_physical_set(jj,ii,table[itime][ii]);
@@ -64,7 +68,7 @@ void Burgers_Plane_TS_l_irk_mms::run_timestep(
 			io_u = rhs_u.spectral_div_element_wise(lhs);
 //			io_v = rhs_v.spectral_div_element_wise(lhs);
 		}
-		else if (timestepping_order ==2)
+		else if (timestepping_order == 2)
 		{
 			rhs_u = simVars.sim.viscosity*(op.diff2_c_x(rhs_u) + op.diff2_c_y(rhs_u)) + tmp;
 //			rhs_v = simVars.sim.viscosity*(op.diff2_c_x(rhs_v) + op.diff2_c_y(rhs_v));
@@ -96,16 +100,9 @@ void Burgers_Plane_TS_l_irk_mms::return_initial(PlaneData& init)
 }
 
 
-/*
- * Setup
- */
-void Burgers_Plane_TS_l_irk_mms::setup(
-		int i_order	///< order of RK time stepping method
-)
+void Burgers_Plane_TS_l_irk_mms::setup_look_up_table(double start, double end, double step_size)
 {
-	timestepping_order = i_order;
-
-	if (!table_crated)
+	if (!table_created)
 	{
 		// Calculate look-up table
 		double tp = 2*M_PIl;
@@ -113,17 +110,19 @@ void Burgers_Plane_TS_l_irk_mms::setup(
 		double time = 0.0;
 		double freq = simVars.sim.f0;
 		double eps = 0.1;
-		int iiMax = (int)(simVars.timecontrol.max_simulation_time/simVars.timecontrol.current_timestep_size);
-		if (simVars.disc.timestepping_order == 2)
+		// Calculate number of iterations by rounding the result of max_simulation_time / timestep_size
+		int iiMax = (int)((end-start)/step_size+0.5);
+		if (timestepping_order == 2)
 			iiMax = iiMax*2;
+		table_size = iiMax + 1;
 
-		table = new double*[iiMax+1];
-		for (int ii=0; ii<=iiMax; ii++)
+		table = new double*[table_size];
+		for (int ii=0; ii<table_size; ii++)
 		{
 			table[ii] = new double[simVars.disc.res_physical[0]];
-			time = ii*simVars.timecontrol.current_timestep_size;
-			if ((i_order == 2) && (ii > 0))
-				time = time/2-simVars.timecontrol.current_timestep_size/4;
+			time = ii*step_size;
+			if ((timestepping_order == 2) && (ii > 0))
+				time = time/2-step_size/4;
 			for (int jj=0; jj<simVars.disc.res_physical[0]; jj++)
 			{
 				x = (((double)jj+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
@@ -159,8 +158,18 @@ void Burgers_Plane_TS_l_irk_mms::setup(
 					FatalError("This scenario is not supported");
 			}
 		}
-		table_crated = true;
+		table_created = true;
 	}
+}
+
+/*
+ * Setup
+ */
+void Burgers_Plane_TS_l_irk_mms::setup(
+		int i_order	///< order of RK time stepping method
+)
+{
+	timestepping_order = i_order;
 }
 
 
@@ -172,7 +181,6 @@ Burgers_Plane_TS_l_irk_mms::Burgers_Plane_TS_l_irk_mms(
 		op(i_op)
 {
 	second_time = false;
-	table_crated = false;
 	setup(simVars.disc.timestepping_order);
 }
 
@@ -180,8 +188,12 @@ Burgers_Plane_TS_l_irk_mms::Burgers_Plane_TS_l_irk_mms(
 
 Burgers_Plane_TS_l_irk_mms::~Burgers_Plane_TS_l_irk_mms()
 {
-	for (int ii=0; ii<=(int)(simVars.timecontrol.max_simulation_time/simVars.timecontrol.current_timestep_size); ii++)
-		delete[] table[ii];
-	delete[] table;
+	if (table != nullptr)
+	{
+		for (int ii=0; ii<table_size; ii++)
+			delete[] table[ii];
+		delete[] table;
+		table = nullptr;
+	}
 }
 

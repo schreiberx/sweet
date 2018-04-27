@@ -200,7 +200,7 @@ public:
 
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 		if (simVars.disc.use_staggering ||  !simVars.disc.use_spectral_basis_diffs)
-			FatalError("Finite differences and spectral dealisiang should not be used together! Please compile without dealiasing.");
+			FatalError("Finite differences and spectral dealiasing should not be used together! Please compile without dealiasing.");
 #endif
 
 		timeSteppers.setup(
@@ -252,14 +252,24 @@ public:
 			);
 		}
 
-		// Get inital condition from look-up table of Manufactured Solution
-		if (simVars.disc.timestepping_method.find("_mms")==0)
+		// Setup look-up table of Manufactured Solution
+		if (simVars.disc.timestepping_method.find("_mms")!=std::string::npos)
 		{
-			timeSteppers.return_initial(prog_u);
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-			prog_v.spectral_set_all(0,0);
+#if SWEET_PARAREAL
+			if (!simVars.parareal.enabled)
 #endif
-			prog_v.physical_set_all(0);
+			timeSteppers.setup_look_up_table(
+				simVars.timecontrol.current_simulation_time,
+				simVars.timecontrol.max_simulation_time,
+				simVars.timecontrol.current_timestep_size
+			);
+
+			// Set before anyway
+//			timeSteppers.return_initial(prog_u);
+//#if SWEET_USE_PLANE_SPECTRAL_SPACE
+//			prog_v.spectral_set_all(0,0);
+//#endif
+//			prog_v.physical_set_all(0);
 		}
 
 		// Initialize t-dt time step with initial condition
@@ -956,13 +966,13 @@ public:
 			parareal_data_error.setup(data_array);
 		}
 
-		timeSteppers.setup(
-				simVars.disc.timestepping_method,
-				simVars.disc.timestepping_order,
-				simVars.disc.timestepping_order2,
-				op,
-				simVars
-			);
+//		timeSteppers.setup(
+//				simVars.disc.timestepping_method,
+//				simVars.disc.timestepping_order,
+//				simVars.disc.timestepping_order2,
+//				op,
+//				simVars
+//			);
 
 		timeSteppersCoarse.setup(
 				simVars.parareal.coarse_timestepping_method,
@@ -989,6 +999,7 @@ public:
 
 		timeframe_start = i_timeframe_start;
 		timeframe_end = i_timeframe_end;
+
 	}
 
 
@@ -1008,6 +1019,21 @@ public:
 		*parareal_data_start.data_arrays[1] = prog_v;
 		*parareal_data_start.data_arrays[2] = prog_u_prev;
 		*parareal_data_start.data_arrays[3] = prog_v_prev;
+
+		// Setup look-up table of Manufactured Solution
+		if (simVars.disc.timestepping_method.find("_mms")!=std::string::npos)
+		{
+			timeSteppers.setup_look_up_table(
+				simVars.timecontrol.current_simulation_time,
+				simVars.timecontrol.max_simulation_time,
+				simVars.timecontrol.current_timestep_size
+			);
+			timeSteppersCoarse.setup_look_up_table(
+				simVars.timecontrol.current_simulation_time,
+				simVars.timecontrol.max_simulation_time,
+				simVars.timecontrol.current_timestep_size
+			);
+		}
 
 	}
 
@@ -1460,7 +1486,8 @@ int main(int i_argc, char *i_argv[])
 			SimulationInstance *simulationBurgers = new SimulationInstance;
 
 			// Setting initial conditions and workspace - in case there is no GUI
-			simulationBurgers->reset();
+			// already called in constructor
+//			simulationBurgers->reset();
 
 			// Time counter
 			Stopwatch time;
