@@ -9,27 +9,22 @@ from matplotlib.lines import Line2D
 
 #
 # First, use
-# postprocess_generrors.sh > errors.txt
+# postprocess_generrors.sh 
 # to generate the .txt file
 #
-
-
-# Mode: wallclocktime, dt
-mode = 'dt'
-if len(sys.argv) > 1:
-	mode = sys.argv[1]
+mode="dt"
 
 # input filename
 input_filename = 'errors.txt'
-if len(sys.argv) > 2:
-	input_filename = sys.argv[2]
+if len(sys.argv) > 1:
+	input_filename = sys.argv[1]
 
 # output filename
-output_filename = "./postprocessing_output_h_err_vs_"+mode+".pdf"
-if len(sys.argv) > 3:
-	output_filename = sys.argv[3]
+#output_filename = "./postprocessing_output_h_err_vs_"+mode+".pdf"
+#if len(sys.argv) > 2:
+#	output_filename = sys.argv[2]
+#print(output_filename)
 
-print(output_filename)
 #################################################################################
 #################################################################################
 #################################################################################
@@ -64,8 +59,9 @@ def plot(x, y, marker, linestyle, label):
 
 	if len(x) == 0:
 		return
+	print(x,y)
 	x, y = (list(t) for t in zip(*sorted(zip(x,y))))
-	
+	print(x,y)
 	ax.plot(x, y, marker=marker, linestyle=linestyle, label=label)
 
 	px = x[:]
@@ -81,12 +77,8 @@ def plot(x, y, marker, linestyle, label):
 	for i, txt in enumerate(px):
 		text = "%.1f/%.1f" % (py[i], px[i])
 
-		if mode == 'dt':
-			#ax.annotate(text, (px[i]*1.03, py[i]*0.92), fontsize=8)
-			ax.annotate(px[i], (px[i]*1.03, py[i]*0.92), fontsize=8)
-		elif mode == 'wallclocktime':
-			ax.annotate(text, (px[i]*1.03, py[i]*1.03), fontsize=8)
-
+		#ax.annotate(text, (px[i]*1.03, py[i]*0.92), fontsize=8)
+		#ax.annotate(px[i], (px[i]*1.03, py[i]*0.92), fontsize=8)
 
 
 prev_name = ''
@@ -116,10 +108,12 @@ itime2 = imethod2+head[imethod2:].index("Time")
 #Choose what error to plot
 #ierr = il2er
 ierr = imax
+ierr = il2er
 idt = idt2
 imethod = imethod2
 prev_name=''
 
+limit = 50
 for l in lines[1:]:
 	if l[-1] == '\n': #get rid of \n
 		l = l[0:-1]
@@ -144,10 +138,13 @@ for l in lines[1:]:
 	if d[ierr] == 'nan':
 		continue
 
-	values_y.append(float(d[ierr]))
-	values_x.append(float(d[idt]))
+	value = float(d[ierr]) 
+	if abs(value) < limit:
+		values_y.append(float(d[ierr]))
+		values_x.append(float(d[idt]))
+		
 	plt.xlabel("Timestep size (sec)")
-	plt.ylabel(head[imax])
+	plt.ylabel(head[ierr])
 	
 plot(values_x, values_y, markers[c % len(markers)], linestyles[c % len(linestyles)], name)
 
@@ -158,6 +155,7 @@ plot(values_x, values_y, markers[c % len(markers)], linestyles[c % len(linestyle
 
 plt.legend()
 
+output_filename = "./output_dt_vs_"+head[ierr]+".pdf"
 #if output_filename != '':
 print(output_filename)
 plt.savefig(output_filename)
