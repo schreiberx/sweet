@@ -88,8 +88,6 @@ if [ "`basename $SHELL`" != "bash" ]; then
 	return
 fi
 
-export PS1="[SWEET] $PS1"
-
 BACKDIR="$PWD"
 
 test "x${PWD##*/}" = "xlocal_software" && cd ../
@@ -106,6 +104,8 @@ if [ ! -d "$SCRIPTDIR" ]; then
 	echo
 	return
 fi
+
+export PS1="[SWEET] $PS1"
 
 export PATH="$SCRIPTDIR/local/bin:$PATH"
 export PKG_CONFIG_PATH="$SCRIPTDIR/local/lib/pkgconfig:$PKG_CONFIG_PATH"
