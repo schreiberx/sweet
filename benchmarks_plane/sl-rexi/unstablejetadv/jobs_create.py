@@ -104,7 +104,8 @@ for group in groups:
 			['l_cn_na_sl_nd_settls', 2,	2],	# SI-SL-SP
 	                ['l_rexi_na_sl_nd_settls',	2,	2], #SL-EXP-SETTLS
 			['l_rexi_na_sl_nd_etdrk',	2,	2], #SL-EXP-ETDRK
-			['l_rexi_n_erk',	2,	2], #ETDRK2
+			['l_rexi_n_erk',	2,	2], #strang split
+			['l_rexi_n_etdrk',	2,	2] 
 		]
 
 	#

@@ -33,9 +33,7 @@ extern "C"
 	      SphereDataCtx *i_ctx, 
 	      SphereDataVars *i_Y,
 	      int i_nnodes,
-	      int i_niters,
-	      int i_rank,
-	      int i_nprocs
+	      int i_niters
 	      );
 
   // evaluates the explicit piece
@@ -81,6 +79,12 @@ extern "C"
 		 SphereDataCtx *i_ctx, 
 		 SphereDataVars *o_F3
 		 );
+
+  // applies artificial diffusion
+  void cfinalize (SphereDataVars *io_Y,
+		  double i_t,
+		  double i_dt,
+		  SphereDataCtx *i_ctx);
   
 }
 

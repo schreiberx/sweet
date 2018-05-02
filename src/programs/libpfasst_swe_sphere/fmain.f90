@@ -4,7 +4,7 @@ module main_module
   use transfer_module
   use feval_module
   use hooks_module
-  use pf_mod_misdc
+  use pf_mod_rkstepper
   use pf_mod_parallel
   use pf_mod_mpi
   use pfasst
@@ -56,23 +56,24 @@ contains
 
   ! main Fortran routine calling LibPFASST
 
-  subroutine fmain(                                                        &
-                   user_ctx_ptr,                                           & ! user-defined context
-                   nlevs, niters, nsweeps_coarse, nnodes, qtype_name, qnl, & ! LibPFASST parameters
-                   nfields, nvars_per_field,                               & ! SWEET parameters
-                   t_max, dt                                               & ! timestepping parameters
+  subroutine fmain(                                                                        &
+                   user_ctx_ptr,                                                           & ! user-defined context
+                   nlevs, niters, nsweeps_coarse, nnodes, qtype_name, qnl, use_rk_stepper, & ! LibPFASST parameters
+                   nfields, nvars_per_field,                                               & ! SWEET parameters
+                   t_max, dt                                                               & ! timestepping parameters
                    ) bind (c, name='fmain')
     use mpi
 
     type(c_ptr),                 value       :: user_ctx_ptr
-    integer                                  :: nlevs, niters, nsweeps_coarse, nnodes(nlevs), nvars(nlevs), shape(nlevs), &
-                                                nfields, nvars_per_field(nlevs), nsteps, level, qnl, qtype, &
-                                                ierr, num_procs, my_id, mpi_stat
+    integer                                  :: nlevs, niters, nsweeps_coarse, nnodes(nlevs), nvars(nlevs), shape(nlevs),   &
+                                                nfields, nvars_per_field(nlevs), nsteps, level, qnl, qtype, use_rk_stepper, &
+                                                ierror, num_procs, my_id, mpi_stat
     character(c_char)                        :: qtype_name
     real(c_double)                           :: t, t_max, dt
     class(pf_factory_t),         allocatable :: factory
     class(sweet_data_factory_t), pointer     :: sd_factory_ptr
     class(sweet_sweeper_t),      pointer     :: sweet_sweeper_ptr
+    class(sweet_stepper_t),      pointer     :: sweet_stepper_ptr
     type(pf_comm_t)                          :: pf_comm
     type(pf_pfasst_t)                        :: pf
 
@@ -86,28 +87,37 @@ contains
                            pf_comm, & 
                            nlevs)
 
-     call MPI_COMM_RANK (MPI_COMM_WORLD, my_id, ierr)
-     call MPI_COMM_SIZE (MPI_COMM_WORLD, num_procs, ierr)
+     call MPI_COMM_RANK (MPI_COMM_WORLD, my_id, ierror)
+     call MPI_COMM_SIZE (MPI_COMM_WORLD, num_procs, ierror)
 
      if (my_id == 0) then
         print *, 'Number of Processors: ', num_procs
      end if
-     print *, 'My Id = ', my_id
-
+     
      ! timestepping parameters
      t      = 0
      nsteps = int(t_max/dt)
 
      ! LibPFASST parameters
-     pf%nlevels    = nlevs   ! number of SDC levels
-     pf%niters     = niters  ! number of SDC iterations
-     pf%pipeline_G = .false. ! pipeline the coarse prediction sweeps
-     qtype         = translate_qtype(qtype_name, & ! select the type of nodes
-                                     qnl)
+     pf%nlevels           = nlevs                         ! number of SDC levels
+     pf%niters            = niters                        ! number of SDC iterations
+     pf%pipeline_G        = .false.                       ! pipeline the coarse prediction sweeps
+     if (use_rk_stepper == 1) then
+        pf%use_rk_stepper = .true.                        ! replace the SDC sweeps with RK steps
+        if (my_id == 0) then
+           print *, "++++++++++++ use_rk_stepper == true  +++++++++++" 
+        end if
+     else
+        pf%use_rk_stepper = .false.                       ! use the SDC sweeps
+        if (my_id == 0) then
+           print *, "++++++++++++ use_rk_stepper == false +++++++++++"
+        end if
+     end if
+     pf%echo_timings      = .true.                        ! output the timings in fort.601 file
+     qtype                = translate_qtype(qtype_name, & ! select the type of nodes
+                                            qnl)
 
-     !pf%abs_res_tol = 0.0000001 
-
-     print *, qtype
+     !pf%abs_res_tol = 0.00000005 
 
      if (nlevs == 3) then
         nvars = [nfields*nvars_per_field(1), &
@@ -125,10 +135,11 @@ contains
      ! loop over levels to initialize level-specific data structures
      do level = 1, pf%nlevels
 
-        print *, level
-
        ! define the level id
-       pf%levels(level)%level = level ! confusing!
+       pf%levels(level)%index = level 
+
+       ! define the number of internal rk time steps
+       pf%levels(level)%nsteps_rk = 1
 
        ! define number of sweeps for each level
        if (pf%nlevels == 1) then
@@ -167,14 +178,37 @@ contains
        allocate(sweet_level_t::pf%levels(level)%ulevel)
        allocate(sweet_data_factory_t::pf%levels(level)%ulevel%factory)
        allocate(sweet_sweeper_t::pf%levels(level)%ulevel%sweeper)
+       allocate(sweet_stepper_t::pf%levels(level)%ulevel%stepper)
+       
+       ! select the order of the stepper
+       if (level == pf%nlevels) then
+          pf%levels(level)%ulevel%stepper%order = 4
+       else
+          pf%levels(level)%ulevel%stepper%order = 2
+       end if
+       
+       ! check the number of nodes for RK stepper
+       if (pf%use_rk_stepper .eqv. .true.) then
+          if (pf%levels(level)%ulevel%stepper%order      == 5 .and. nnodes(level) /= 9) then
+             stop "invalid number of nodes for the RK stepper"
+          else if (pf%levels(level)%ulevel%stepper%order == 4 .and. nnodes(level) /= 7) then
+             stop "invalid number of nodes for the RK stepper"
+          else if (pf%levels(level)%ulevel%stepper%order == 3 .and. nnodes(level) /= 5) then
+             stop "invalid number of nodes for the RK stepper"
+          else if (pf%levels(level)%ulevel%stepper%order == 2 .and. nnodes(level) /= 4) then
+             stop "invalid number of nodes for the RK stepper"
+          end if
+       end if
 
        ! cast the object into sweet data objects
        sd_factory_ptr    => as_sweet_data_factory(pf%levels(level)%ulevel%factory)
        sweet_sweeper_ptr => as_sweet_sweeper(pf%levels(level)%ulevel%sweeper)    
+       sweet_stepper_ptr => as_sweet_stepper(pf%levels(level)%ulevel%stepper)
 
        ! pass the pointer to sweet data context to LibPFASST
        sd_factory_ptr%ctx    = user_ctx_ptr
        sweet_sweeper_ptr%ctx = user_ctx_ptr
+       sweet_stepper_ptr%ctx = user_ctx_ptr
 
        ! initialize the sweeper data
        sweet_sweeper_ptr%level           = level
@@ -183,16 +217,17 @@ contains
        sweet_sweeper_ptr%sweep_niter_max = pf%niters
        sweet_sweeper_ptr%dt              = dt
        
+       sweet_stepper_ptr%level           = level
+       sweet_stepper_ptr%nnodes          = nnodes(level)
+       sweet_stepper_ptr%sweep_niter     = 0
+       sweet_stepper_ptr%sweep_niter_max = pf%niters
+       sweet_stepper_ptr%dt              = dt
+
     end do
 
-    ! initialize the mpi and pfasst objects
-    call pf_mpi_setup(pf_comm, & 
-                      pf)
-
+    ! initialize the pfasst objects
     call pf_pfasst_setup(pf)
 
-    print *, "t = ", t
-    
     !! initialize the state vector at each level
     
     ! first fine level
@@ -216,27 +251,27 @@ contains
     end if
     
 
-    call pf_add_hook(pf,              &
-                     pf%nlevels,      &
-                     PF_POST_SWEEP,   &
-                     fecho_residual)   
-    if (num_procs > 1) then
-       call pf_add_hook(pf,                 &
-                        pf%nlevels,         &
-                        PF_PRE_INTERP_Q0,   &
-                        fecho_output_jump)
-    end if
-    if (num_procs .eq. 1) then
-       call pf_add_hook(pf,                 &
-                        -1,                 &
-                        PF_POST_ITERATION,  &
-                        fecho_output_solution)
-    else
-       call pf_add_hook(pf,                 &
-                        -1,                 &
-                        PF_POST_SWEEP,      &
-                        fecho_output_solution)
-    end if
+    ! call pf_add_hook(pf,                &
+    !                  pf%nlevels,        &
+    !                  PF_POST_ITERATION, &
+    !                  fecho_residual)   
+    ! if (num_procs > 1) then
+    !    call pf_add_hook(pf,                 &
+    !                     pf%nlevels,         &
+    !                     PF_PRE_INTERP_Q0,   &
+    !                     fecho_output_jump)
+    ! end if
+    ! if (num_procs .eq. 1) then
+    !    call pf_add_hook(pf,                 &
+    !                     -1,                 &
+    !                     PF_POST_ITERATION,  &
+    !                     fecho_output_solution)
+    ! else
+    !    call pf_add_hook(pf,                 &
+    !                     -1,                 &
+    !                     PF_POST_SWEEP,      &
+    !                     fecho_output_solution)
+    ! end if
 
     ! call pf_add_hook(pf,                 &
     !                  pf%nlevels,         &
@@ -271,9 +306,8 @@ contains
 
     ! release memory
     call pf_pfasst_destroy(pf)
-    call pf_mpi_destroy(pf_comm)
 
-    print *, 'all the memory was released'
+    !print *, 'all the memory was released'
 
   end subroutine fmain
 

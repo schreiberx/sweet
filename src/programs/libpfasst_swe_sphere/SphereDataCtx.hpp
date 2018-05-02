@@ -94,7 +94,7 @@ public:
 	  }
       }
 
-    for (int level = 0; level < levelSingletons->size(); ++level) 
+    for (unsigned int level = 0; level < levelSingletons->size(); ++level) 
       {
 	// select first order integration in time for explicit
 	// and first order integration for implicit (only order currently supported)
@@ -190,7 +190,7 @@ public:
     sphereDiagnostics = new SphereDiagnostics(
 					      &((*levelSingletons)[levelSingletons->size()-1].dataConfig),
 					      *simVars,
-					      1
+					      0
 					      );
 	
   }

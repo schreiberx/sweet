@@ -285,7 +285,7 @@ contains
 
   subroutine sweet_data_unpack(this, z)
     class(sweet_data_encap_t), intent(inout)          :: this
-    real(pfdp),                intent(in   ), target  :: z(:)
+    real(pfdp),                intent(in   )          :: z(:)
     real(pfdp),                               target  :: z2(size(z))
 
     type(c_ptr)                                       :: z_c_ptr
