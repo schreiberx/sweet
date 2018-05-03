@@ -151,7 +151,7 @@ for group in groups:
 
 			p.runtime.timestep_size = timestep_sizes[idx]
 			if group == 'sl-rexi' and 'ln_erk' in tsm[0]:
-				p.runtime.timestep_size = p.runtime.timestep_size / 10
+				p.runtime.timestep_size = p.runtime.timestep_size
 
 			p.runtime.timestepping_method = tsm[0]
 			p.runtime.timestepping_order = tsm[1]

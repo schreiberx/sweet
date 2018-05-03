@@ -14,7 +14,7 @@ cd "$THISDIR"
 #Verify arguments
 if [ $# -eq 0  ] ; then
     echo "Please enter arguments:"
-    echo " Reference folder (with /)"
+    echo " Reference folder (without /)"
     echo " output file name (optional, e.g. errors.txt)"
     echo " Time (optional, e.g. 00000086400)"
     echo " variable (optional, e.g. prog_h_pert)"
@@ -24,7 +24,7 @@ fi
 ref=$1
 if [ -z "$ref" ]; then 
     echo "Please enter arguments:"
-    echo " Reference folder (with /)"
+    echo " Reference folder (without /)"
     echo " output file name (optional, e.g. errors.txt)"
     echo " Time (optional, e.g. 00000086400)"
     echo " variable (optional, e.g. prog_h_pert)"
@@ -57,7 +57,7 @@ echo "Variable Method1 Method1Paper Time dt Variable Method2 Method2Paper Time d
 
 
 file="output_""$var""_t""$time"".csv"
-reffile="$ref""$file"
+reffile="$ref""/""$file"
 
 DIRS=script_*
 
