@@ -828,6 +828,52 @@ e^{ix}\approx\sum_{n=-N}^{N}Re\left(\frac{\beta_{n}^{Re}}{ix+\alpha_{n}}\right)+
 \end_layout
 
 \begin_layout Subsection
+Joining real and imaginary exp-approximation
+\end_layout
+
+\begin_layout Standard
+With the previous formulation, we would have to extract the real components
+ from the complex values.
+ However, this is not applicable if we use this for a linear operator.
+ Therefore we require the system to cancel out the imaginary parts.
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Formula 
+\begin{eqnarray*}
+e^{ix} & \approx & \sum_{n=-N}^{N}Re\left(\frac{\beta_{n}^{Re}}{ix+\alpha_{n}}\right)+i\,Re\left(\frac{\beta_{n}^{Im}}{ix+\alpha_{n}}\right)\\
+ & = & \frac{1}{2}\sum_{n=-N}^{N}\left(\frac{\beta_{n}^{Re}}{ix+\alpha_{n}}\right)+\overline{\left(\frac{\beta_{n}^{Re}}{ix+\alpha_{n}}\right)}+i\,\left(\left(\frac{\beta_{n}^{Im}}{ix+\alpha_{n}}\right)+\overline{\left(\frac{\beta_{n}^{Im}}{ix+\alpha_{n}}\right)}\right)\\
+ & = & \frac{1}{2}\sum_{n=-N}^{N}\left(\frac{\beta_{n}^{Re}+i\beta_{n}^{Im}}{ix+\alpha_{n}}\right)+\overline{\left(\frac{\beta_{n}^{Re}-i\beta_{n}^{Im}}{ix+\alpha_{n}}\right)}\\
+ & = & \frac{1}{2}\sum_{n=-N}^{N}\left(\frac{\beta_{n}^{Re}+i\beta_{n}^{Im}}{ix+\alpha_{n}}\right)+\left(\frac{\overline{\beta_{n}^{Re}-i\beta_{n}^{Im}}}{\overline{ix+\alpha_{n}}}\right)\\
+ & = & \frac{1}{2}\sum_{n=-N}^{N}\left(\frac{\beta_{n}^{Re}+i\beta_{n}^{Im}}{ix+\alpha_{n}}\right)+\left(\frac{\overline{\beta_{n}^{Re}-i\beta_{n}^{Im}}}{-ix+\overline{\alpha_{n}}}\right)\\
+ & = & \frac{1}{2}\sum_{n=-N}^{N}\left(\frac{\beta_{n}^{Re}+i\beta_{n}^{Im}}{ix+\alpha_{n}}\right)+\left(\frac{\overline{-\beta_{-n}^{Re}+i\beta_{-n}^{Im}}}{ix-\alpha_{n}}\right)
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Finally, we gain new 
+\begin_inset Formula $\beta$
+\end_inset
+
+ and 
+\begin_inset Formula $\alpha$
+\end_inset
+
+ coefficients which don't require application of the 
+\begin_inset Formula $Re()$
+\end_inset
+
+ operator.
+ However, one drawback is that the number of coefficients is enlarged by
+ a factor of two.
+\end_layout
+
+\begin_layout Subsection
 Example coefficients
 \end_layout
 
