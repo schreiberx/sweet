@@ -30,7 +30,21 @@ hostname = exec_command('hostname')
 hostname = hostname.replace("\n", "")
 
 env = Environment(ENV = os.environ)
-env['SWEET_ROOT'] = os.getcwd()
+
+if 'SWEET_ROOT' not in os.environ:
+	print("*"*80)
+	print("* Welcome to SWEET, Awesome!")
+	print("*"*80)
+	print("* The SWEET_ROOT environment variable was not found.")
+	print("* Please load all SWEET environment variables with")
+	print("*   $ source ./local_software/env_vars.sh")
+	print("* or")
+	print("*   $ . ./local_software/env_vars.sh")
+	print("* (including the single dot at the beginning)")
+	print("*"*80)
+	Exit(1)
+
+env['SWEET_ROOT'] = os.environ['SWEET_ROOT']
 
 p = SWEETCompileOptions()
 
