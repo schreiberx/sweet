@@ -112,6 +112,7 @@ for group_info in groups:
 			if result[-1] == '\n':
 				result = result[0:-1]
 
+			# load error
 			last_conv_value = float(result.split('\t')[-1])
 
 			if prev_conv_value == 0.0:
