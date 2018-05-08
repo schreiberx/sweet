@@ -91,9 +91,6 @@ public:
 	{
 		simVars.reset();
 
-		SphereData tmp_vort(sphereDataConfig);
-		SphereData tmp_div(sphereDataConfig);
-
 		sphereBenchmarksCombined.setupInitialConditions(prog_h, prog_vort, prog_div, simVars, op);
 
 		prog_h0 = prog_h;

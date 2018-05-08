@@ -102,10 +102,11 @@ public:
 	 *
 	 * (Inspired by code of Jeffrey Whitaker)
 	 */
-	void computeGeostrophicBalance(
+	void computeGeostrophicBalance_HUV(
 			SphereData &o_h,
 			SphereDataPhysical &i_u,
-			SphereDataPhysical &i_v
+			SphereDataPhysical &i_v,
+			bool i_nonlinear = true		// geostropic balance for non-linear equations
 	)
 	{
 		/*
@@ -572,7 +573,7 @@ public:
 					);
 				}
 
-				computeGeostrophicBalance(
+				computeGeostrophicBalance_HUV(
 						o_h,
 						ug,
 						vg
@@ -663,7 +664,7 @@ public:
 				}
 
 
-				computeGeostrophicBalance(
+				computeGeostrophicBalance_HUV(
 							  o_h,
 							  ug,
 							  vg
@@ -743,7 +744,7 @@ public:
 							);
 				}
 
-				computeGeostrophicBalance(
+				computeGeostrophicBalance_HUV(
 							  o_h,
 							  ug,
 							  vg
@@ -888,7 +889,7 @@ public:
 					);
 				}
 
-				computeGeostrophicBalance(
+				computeGeostrophicBalance_HUV(
 						o_h,
 						ug,
 						vg

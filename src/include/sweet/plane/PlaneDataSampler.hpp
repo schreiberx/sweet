@@ -156,8 +156,10 @@ public:
 		std::size_t max_pos_idx = i_pos_x.number_of_elements;
 
 #if SWEET_DEBUG
+#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
 		if (omp_get_num_threads() != 1)
 			FatalError("omp_num_threads() != 1, are we in a parallel region?");
+#endif
 #endif
 
 		// iterate over all positions in parallel
