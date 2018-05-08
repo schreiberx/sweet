@@ -22,6 +22,9 @@
 typedef std::complex<TGeneration> TComplexGeneration;
 
 
+#if !SWEET_QUADMATH
+	#error "Only works with quadmath"
+#endif
 
 typedef double T;
 typedef std::complex<T> TComplex;
@@ -80,11 +83,12 @@ int main(
 
 				max_error_real = DQStuff::max(max_error_real, DQStuff::abs(error.real()));
 				max_error_imag = DQStuff::max(max_error_imag, DQStuff::abs(error.imag()));
-
+#if 0
 				std::cout << x << "\t";
 				std::cout << approx.real() << "\t" << approx.imag() << "\t";
 				std::cout << analyt.real() << "\t" << analyt.imag();
 				std::cout << std::endl;
+#endif
 			}
 //			exit(-1);
 
@@ -163,12 +167,11 @@ int main(
 		}
 
 
-		if (simVars.rexi.use_half_poles)
+
+		for (int half = 0; half < 2; half++)
 		{
-			std::cout << "Skipping testing for valid real parts since halving of poles is used" << std::endl;
-		}
-		else
-		{
+			simVars.rexi.use_half_poles = half;
+
 			std::cout << "******************************************************" << std::endl;
 			std::cout << "PHI " << fun_id << " - REXI real: Test for partition of unity and accuracy" << std::endl;
 			std::cout << "******************************************************" << std::endl;
@@ -182,12 +185,14 @@ int main(
 				for (int M = Mstart; M <= 1024; M *= 2)
 				{
 					std::cout << "******************************************************" << std::endl;
-					std::cout << "M: " << M << std::endl;
-					std::cout << "h: " << (double)h << std::endl;
+					std::cout << " + M: " << M << std::endl;
+					std::cout << " + h: " << (double)h << std::endl;
+					std::cout << " + half: " << half << std::endl;
 					std::cout << "******************************************************" << std::endl;
 					std::cout << "Setup coefficients... " << std::flush;
 					REXI_Terry<TGeneration, T> rexi(function_name, h, M, simVars.rexi.terry_L, simVars.rexi.use_half_poles, simVars.rexi.normalization);
 					std::cout << "OK" << std::endl;
+					std::cout << " + number of rexi coefficients: " << rexi.alpha.size() << std::endl;
 
 
 					REXIFunctions<__float128> rexiFunctions(function_name);
@@ -215,16 +220,10 @@ int main(
 					{
 						std::complex<__float128> correct_ = rexiFunctions.eval(std::complex<__float128>(0, x));
 						TComplex correct(correct_.real(), correct_.imag());
-						TComplex approx = rexi.approx_returnComplex(x);
-
-//						std::cout << (double)x << ": " << correct << "\t" << approx << "\t" << (correct-approx) << std::endl;
-//						continue;
+						TComplex approx = rexi.approx_returnComplex(x, simVars.rexi.use_half_poles);
 
 						if (DQStuff::abs(approx.real()) > 1.0)
 							std::cerr << "approx value_real " << approx.real() << " not bounded by unity (just a warning and not a problem) at x=" << (double)x << std::endl;
-
-//						if (DQStuff::abs(approx.imag()) > 1.0)
-//							std::cerr << "approx value_imag " << approx.imag() << " not bounded by unity (just a warning and not a problem) at x=" << (double)x << std::endl;
 
 						T error_real = DQStuff::abs(correct.real() - approx.real());
 						T error_imag = DQStuff::abs(correct.imag() - approx.imag());
@@ -232,7 +231,6 @@ int main(
 						max_error_real = DQStuff::max(max_error_real, error_real);
 						max_error_imag = DQStuff::max(max_error_imag, error_imag);
 					}
-//					exit(1);
 
 					std::cout << "max_error_real: " << (double)max_error_real << " for h " << (double)h << " and M " << M << std::endl;
 

@@ -162,6 +162,35 @@ public:
 		return i_value.real();
 	}
 #endif
+public:
+	constexpr
+	static
+	double Im(
+			const std::complex<double> &i_value
+	)
+	{
+		return i_value.imag();
+	}
+
+	constexpr
+	static
+	float Im(
+			const std::complex<float> &i_value
+	)
+	{
+		return i_value.imag();
+	}
+
+#if SWEET_QUADMATH
+	constexpr
+	static
+	__float128 Im(
+			const std::complex<__float128> &i_value
+	)
+	{
+		return i_value.imag();
+	}
+#endif
 
 
 public:
