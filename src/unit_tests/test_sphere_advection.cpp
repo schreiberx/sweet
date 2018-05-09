@@ -91,7 +91,8 @@ public:
 	{
 		simVars.reset();
 
-		sphereBenchmarksCombined.setupInitialConditions(prog_h, prog_vort, prog_div, simVars, op);
+		sphereBenchmarksCombined.setup(simVars, op);
+		sphereBenchmarksCombined.setupInitialConditions(prog_h, prog_vort, prog_div);
 
 		prog_h0 = prog_h;
 
