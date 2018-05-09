@@ -847,16 +847,24 @@ e^{ix} & \approx & \sum_{n=-N}^{N}Re\left(\frac{\beta_{n}^{Re}}{ix+\alpha_{n}}\r
  & = & \frac{1}{2}\sum_{n=-N}^{N}\left(\frac{\beta_{n}^{Re}+i\beta_{n}^{Im}}{ix+\alpha_{n}}\right)+\overline{\left(\frac{\beta_{n}^{Re}-i\beta_{n}^{Im}}{ix+\alpha_{n}}\right)}\\
  & = & \frac{1}{2}\sum_{n=-N}^{N}\left(\frac{\beta_{n}^{Re}+i\beta_{n}^{Im}}{ix+\alpha_{n}}\right)+\left(\frac{\overline{\beta_{n}^{Re}-i\beta_{n}^{Im}}}{\overline{ix+\alpha_{n}}}\right)\\
  & = & \frac{1}{2}\sum_{n=-N}^{N}\left(\frac{\beta_{n}^{Re}+i\beta_{n}^{Im}}{ix+\alpha_{n}}\right)+\left(\frac{\overline{\beta_{n}^{Re}-i\beta_{n}^{Im}}}{-ix+\overline{\alpha_{n}}}\right)\\
- & = & \frac{1}{2}\sum_{n=-N}^{N}\left(\frac{\beta_{n}^{Re}+i\beta_{n}^{Im}}{ix+\alpha_{n}}\right)+\left(\frac{\overline{-\beta_{-n}^{Re}+i\beta_{-n}^{Im}}}{ix-\alpha_{n}}\right)
+ & = & \frac{1}{2}\sum_{n=-N}^{N}\left(\frac{\beta_{n}^{Re}+i\beta_{n}^{Im}}{ix+\alpha_{n}}\right)+\left(\frac{\overline{-\beta_{-n}^{Re}+i\beta_{-n}^{Im}}}{ix-\alpha_{n}}\right)\\
+ & = & \frac{1}{2}\sum_{n=-N}^{N}\left(\frac{\beta_{n}^{Re}+i\beta_{n}^{Im}}{ix+\alpha_{n}}\right)+\left(\frac{\overline{-\beta_{-n}^{Re}}+\overline{i\beta_{-n}^{Im}}}{ix-\alpha_{n}}\right)\\
+ & = & \frac{1}{2}\sum_{n=-N}^{N}\left(\frac{\beta_{n}^{Re}+i\beta_{n}^{Im}}{ix+\alpha_{n}}\right)-\left(\frac{\overline{\beta_{-n}^{Re}}+i\overline{\beta_{-n}^{Im}}}{ix-\alpha_{n}}\right)\\
+ & = & \frac{1}{2}\sum_{n=-N}^{N}\left(\frac{\beta_{n}^{Re}+i\beta_{n}^{Im}}{ix+\alpha_{n}}\right)-\left(\frac{\beta_{n}^{Re}-i\beta_{n}^{Im}}{ix-\alpha_{n}}\right)
 \end{eqnarray*}
 
 \end_inset
 
+Where we used 
+\begin_inset Formula $\beta_{n}^{Re}=\overline{\beta_{-n}^{Re}}$
+\end_inset
 
-\end_layout
+ and 
+\begin_inset Formula $\beta_{n}^{Im}=-\overline{\beta_{-n}^{Im}}$
+\end_inset
 
-\begin_layout Standard
-Finally, we gain new 
+.
+ Finally, we gain new 
 \begin_inset Formula $\beta$
 \end_inset
 
@@ -1903,6 +1911,10 @@ For a better understanding and discussion of the poles, we provide some
 
 \end_layout
 
+\begin_layout Standard
+Merges alpha and beta coefficients have similar properties.
+\end_layout
+
 \begin_layout Section
 REXI on linear operators
 \end_layout
@@ -1940,10 +1952,14 @@ key "Terry:High-order time-parallel approximation of evolution operators"
 \begin_inset Formula $\beta_{n}$
 \end_inset
 
-: There is an anti-symmetry around the central pole with
+:
+\end_layout
+
+\begin_layout Standard
+There is an anti-symmetry around the central pole with
 \begin_inset Formula 
 \begin{equation}
-\alpha_{-n}=\bar{\alpha}_{+n}\label{eq:alpha_conjugate_symmetry}
+\alpha_{-n}=\overline{\alpha_{n}}\label{eq:alpha_conjugate_symmetry}
 \end{equation}
 
 \end_inset
@@ -1951,12 +1967,21 @@ key "Terry:High-order time-parallel approximation of evolution operators"
 and
 \begin_inset Formula 
 \begin{equation}
-\beta_{-n}=\bar{\beta}_{+n}\label{eq:beta_conjugate_symmetry}
+\beta_{-n}=\overline{\beta_{n}}\label{eq:beta_conjugate_symmetry}
 \end{equation}
 
 \end_inset
 
-In particular, with 
+For sake of simplicity, we only consider the first or second half of the
+ merged 
+\begin_inset Formula $\alpha$
+\end_inset
+
+ and 
+\begin_inset Formula $\beta$
+\end_inset
+
+ from the previous section! In particular, with 
 \begin_inset Formula $Im(\alpha_{0})=Im(\beta_{0})=0$
 \end_inset
 
@@ -1976,8 +2001,8 @@ with the overbar denoting the complex conjugate.
  We can then reformulate the approximation
 \begin_inset Formula 
 \begin{eqnarray*}
-e^{\tau L} & \approx & \sum_{n=-N}^{N}Re\left(\frac{\beta_{n}^{Re}}{\tau L+\alpha_{n}}\right)\\
- & = & \sum_{n=-N}^{-1}Re\left(\frac{\beta_{n}^{Re}}{\tau L+\alpha_{n}}\right)+Re\left(\frac{\beta_{0}^{Re}}{\tau L+\alpha_{0}}\right)+\sum_{n=-N}^{-1}Re\left(\frac{\beta_{N+n+1}^{Re}}{\tau L+\alpha_{N+n+1}}\right)
+e^{\tau L} & \approx & \sum_{n=-N}^{N}Re\left(\frac{\beta_{n}}{\tau L+\alpha_{n}}\right)\\
+ & = & \sum_{n=-N}^{-1}Re\left(\frac{\beta_{n}}{\tau L+\alpha_{n}}\right)+Re\left(\frac{\beta_{0}}{\tau L+\alpha_{0}}\right)+\sum_{n=-N}^{-1}Re\left(\frac{\beta_{N+n+1}}{\tau L+\alpha_{N+n+1}}\right)
 \end{eqnarray*}
 
 \end_inset
@@ -1998,10 +2023,10 @@ reference "eq:beta_conjugate_symmetry"
 
 , we can write this as
 \begin_inset Formula 
-\begin{align*}
-\sum_{n=-N}^{-1}Re\left(\frac{\beta_{n}^{Re}}{\tau L+\alpha_{n}}\right)+Re\left(\frac{\beta_{0}^{Re}}{\tau L+\alpha_{0}}\right)+\sum_{n=-N}^{-1}Re\left(\frac{\overline{\beta_{N}^{Re}}}{\tau L+\overline{\alpha_{N}}}\right)\\
-=\sum_{n=-N}^{-1}\left(Re\left(\frac{\beta_{n}^{Re}}{\tau L+\alpha_{n}}+\overline{\left(\frac{\beta_{n}^{Re}}{\tau L+\alpha_{n}}\right)}\right)\right)+Re\left(\frac{\beta_{0}^{Re}}{\tau L+\alpha_{0}}\right).
-\end{align*}
+\begin{eqnarray*}
+ &  & \sum_{n=-N}^{-1}Re\left(\frac{\beta_{n}}{\tau L+\alpha_{n}}\right)+Re\left(\frac{\beta_{0}}{\tau L+\alpha_{0}}\right)+\sum_{n=-N}^{-1}Re\left(\frac{\overline{\beta_{N}}}{\tau L+\overline{\alpha_{N}}}\right)\\
+ & = & \sum_{n=-N}^{-1}\left(Re\left(\frac{\beta_{n}}{\tau L+\alpha_{n}}+\overline{\left(\frac{\beta_{n}}{\tau L+\alpha_{n}}\right)}\right)\right)+Re\left(\frac{\beta_{0}}{\tau L+\alpha_{0}}\right).
+\end{eqnarray*}
 
 \end_inset
 
@@ -2020,7 +2045,7 @@ Since the imaginary parts cancel out for
  being only real-valued, we can simplify the equation to
 \begin_inset Formula 
 \[
-e^{\tau L}\approx\sum_{n=-N}^{N}Re\left(\frac{\beta_{n}^{Re}}{\tau L+\alpha_{n}}\right)=\sum_{n=-N}^{-1}\left(2\frac{\beta_{n}^{Re}}{\tau L+\alpha_{n}}\right)+\frac{\beta_{0}^{Re}}{\tau L+\alpha_{0}}.
+e^{\tau L}\approx\sum_{n=-N}^{N}Re\left(\frac{\beta_{n}}{\tau L+\alpha_{n}}\right)=\sum_{n=-N}^{-1}\left(2\frac{\beta_{n}}{\tau L+\alpha_{n}}\right)+\frac{\beta_{0}}{\tau L+\alpha_{0}}.
 \]
 
 \end_inset
@@ -2033,7 +2058,7 @@ This allows us to reduce the computational amount almost by a factor of
  giving the real valued solution
 \begin_inset Formula 
 \[
-U(\tau)=e^{\tau L}U(0)\approx\sum_{n=0}^{N}\gamma_{n}^{Re}\left(\tau L+\alpha_{n}\right)^{-1}U(0)
+U(\tau)=e^{\tau L}U(0)\approx\sum_{n=0}^{N}\gamma_{n}\left(\tau L+\alpha_{n}\right)^{-1}U(0)
 \]
 
 \end_inset
@@ -2319,11 +2344,6 @@ key "Terry:High-order time-parallel approximation of evolution operators"
 \end_inset
 
 .
-\end_layout
-
-\begin_layout Standard
-TODO: We have to investigate this by far in more depth.
- Can we possibly use a standard time step restriction of the linear equations?
 \end_layout
 
 \begin_layout Subsection
@@ -2950,7 +2970,7 @@ We tested this imperically with the code in helmholtz_problem_fault_tolerance.py
 \end_layout
 
 \begin_layout Standard
-Additinally, we can also observe significantly decreasing 
+Additionally, we can also observe significantly decreasing 
 \begin_inset Formula $\beta_{i}$
 \end_inset
 

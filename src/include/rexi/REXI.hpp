@@ -107,7 +107,7 @@ public:
 			rexi_terry.setup(i_function_name, i_rexiSimVars->terry_h, i_rexiSimVars->terry_M, i_rexiSimVars->terry_L, i_rexiSimVars->use_half_poles, i_rexiSimVars->normalization);
 
 			alpha = rexi_terry.alpha;
-			beta = rexi_terry.beta_re;
+			beta = rexi_terry.beta;
 		}
 		else if (i_rexiSimVars->rexi_method == "ci")
 		{
@@ -166,7 +166,7 @@ public:
 #if SWEET_MPI
 		if (getMPIRank() == 0)
 #endif
-		if (i_verbosity)
+		if (i_verbosity > 2)
 		{
 			int N = alpha.size();
 			std::cout << "N: " << N << std::endl;
@@ -177,7 +177,7 @@ public:
 
 	//		std::cout << "Beta:" << std::endl;
 			for (int i = 0; i < N; i++)
-				std::cout << "beta_re[" << i << "] = " << beta[i] << std::endl;
+				std::cout << "beta[" << i << "] = " << beta[i] << std::endl;
 		}
 	}
 

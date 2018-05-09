@@ -726,8 +726,8 @@ public:
 				// Run exact solution for linear case
 				timeSteppers.l_direct->run_timestep(
 						ts_h_pert, ts_u, ts_v,
-						simVars.timecontrol.current_simulation_time,
-						0			// initial condition given at time 0
+						simVars.timecontrol.current_simulation_time,	// time step size
+						0				// initial condition given at time 0
 				);
 
 				benchmark.analytical_error_rms_h = (ts_h_pert-prog_h_pert).reduce_rms_quad();

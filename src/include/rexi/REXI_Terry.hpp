@@ -27,7 +27,7 @@
  * After calling the setup, the rational approximation can be calculated
  * in the following way:
  *
- * \sum_i Re( (rexi.alpha[i]*I + L)^{-1} * rexi.beta_re[i] )
+ * \sum_i Re( (rexi.alpha[i]*I + L)^{-1} * rexi.beta[i] )
  *
  * where 'rexi' is an instantiation of the REXI class.
  *
@@ -59,11 +59,20 @@ public:
 
 public:
 	std::vector<TStorageComplex> alpha;
-	std::vector<TStorageComplex> beta_re;
-
+	std::vector<TStorageComplex> beta;
 
 	std::vector<TComplex> alpha_eval;
+	std::vector<TComplex> beta_eval;
+
+private:
+#if 0
+	std::vector<TStorageComplex> alpha_reim;
+	std::vector<TStorageComplex> beta_re;
+	std::vector<TStorageComplex> beta_im;
+#endif
+	std::vector<TComplex> alpha_reim_eval;
 	std::vector<TComplex> beta_re_eval;
+	std::vector<TComplex> beta_im_eval;
 
 
 
@@ -115,8 +124,9 @@ public:
 		int N = i_M+ga.L;
 		int M = i_M;
 
-		alpha_eval.resize(2*N+1);
+		alpha_reim_eval.resize(2*N+1);
 		beta_re_eval.resize(2*N+1);
+		beta_im_eval.resize(2*N+1);
 
 		/// temporary storage vector for generalization
 		/// over phi functions
@@ -127,55 +137,13 @@ public:
 
 		if (i_function_name == "phi0")
 		{
-#if 1
 			REXI_Terry_ExponentialApproximation<T> exp_approx(i_h, i_M);
 			b = exp_approx.b;
-#else
-			REXI_Terry_FunApproximation<T,T> phia(i_function_name, i_h, i_M);
-			b = phia.b;
-#endif
-
-
-#if 0
-			typedef double T;
-
-			REXIFunctions<T> rexiFunctions;
-			rexiFunctions.setup(i_function_name);
-
-			double d = i_h*i_M;
-			for (double x = -d; x <= d+1e-10; x += 1.0)
-			{
-				std::complex<double> approx = exp_approx.approx(x);
-				std::complex<T> tmp = rexiFunctions.eval_returnComplex(std::complex<double>(0, x));
-
-				std::complex<double> analyt(tmp.real(), tmp.imag());
-				std::cout << x << ": " << approx << "	" << analyt << std::endl;
-			}
-#endif
 		}
 		else
 		{
 			REXI_Terry_FunApproximation<T> phia(i_function_name, i_h, i_M);
 			b = phia.b;
-
-#if 0
-			typedef double T;
-			//typedef __float128 T;
-
-			REXIFunctions<T> rexiFunctions;
-			rexiFunctions.setup(i_function_name);
-
-			double d = i_h*i_M;
-			for (double x = -d; x <= d+1e-10; x += 1.0)
-			{
-				std::complex<double> approx = phia.approx(x);
-				std::complex<T> tmp = rexiFunctions.eval_returnComplex(std::complex<double>(0, x));
-
-				std::complex<double> analyt(tmp.real(), tmp.imag());
-				std::cout << x << ": " << approx << "	" << analyt << std::endl;
-			}
-#endif
-
 		}
 
 //		rexiFunctions.setup(i_function_name);
@@ -184,8 +152,9 @@ public:
 #if 1
 		for (int n = 0; n < 2*N+1; n++)
 		{
-			alpha_eval[n] = {0,0};
+			alpha_reim_eval[n] = {0,0};
 			beta_re_eval[n] = {0,0};
+			beta_im_eval[n] = {0,0};
 		}
 
 		TComplex cmu = ga.mu;
@@ -194,21 +163,23 @@ public:
 			for (int m = -M; m < M+1; m++)
 			{
 				int n = l+m;
-				alpha_eval[n+N] = i_h*(cmu + TComplex(0, n));
+				alpha_reim_eval[n+N] = i_h*(cmu + TComplex(0, n));
 
 				beta_re_eval[n+N] += b[m+M].real()*i_h*ga.a[l+L];
+				beta_im_eval[n+N] += b[m+M].imag()*i_h*ga.a[l+L];
 			}
 		}
 
 #else
 		for (int n = -N; n < N+1; n++)
 		{
-			alpha_eval[n+N] = i_h*(ga.mu + TComplex(0, n));
+			alpha_reim_eval[n+N] = i_h*(ga.mu + TComplex(0, n));
 
 			int L1 = std::max(-L, n-M);
 			int L2 = std::min(L, n+M);
 
 			beta_re_eval[n+N] = 0;
+			beta_im_eval[n+N] = 0;
 			for (int k = L1; k < L2; k++)
 			{
 				assert(k+L >= 0);
@@ -217,39 +188,55 @@ public:
 				assert(n-k+M < 2*M+1);
 
 				beta_re_eval[n+N] += ga.a[k+L]*ea.b[n-k+M].real();
+				beta_im_eval[n+N] += ga.a[k+L]*ea.b[n-k+M].imag();
 			}
 
 			beta_re_eval[n+N] *= i_h;
+			beta_im_eval[n+N] *= i_h;
 		}
 #endif
 
 
+
+		int Mk = 2*N+1;
+		alpha_eval.resize(2*Mk);
+		beta_eval.resize(2*Mk);
+		TComplex I(0, 1);
+		for (int i = 0; i < Mk; i++)
+		{
+			beta_eval[i] = (T)0.5*(beta_re_eval[i]+ I*beta_im_eval[i]);
+			alpha_eval[i] = alpha_reim_eval[i];
+
+			beta_eval[Mk+i] = (T)0.5*conj(-beta_re_eval[Mk-1-i] + I*beta_im_eval[Mk-1-i]);
+			alpha_eval[Mk+i] = -alpha_reim_eval[i];
+		}
+
+
 		if (i_reduce_to_half)
 		{
-#if 0
-			/**
-			 * reduce the computational amount to its half,
-			 * see understanding REXI in the documentation folder
-			 */
-			alpha_eval.resize(N+1);
-			beta_re_eval.resize(N+1);
+			// size of alpha
+			int N = alpha_eval.size();
 
-			// N+1 contains the pole and we don't rescale this one by 2 but all the other ones
-			for (int i = 0; i < N; i++)
-				beta_re_eval[i] *= 2.0;
+			// half the size
+			int hN = N/2;
 
-#else
-			/*
-			 * This is slightly more accurate
-			 */
-			for (int i = 0; i < N; i++)
+			// assure that it's odd
+			assert(hN & 1 == 1);
+
+			for (int i = 0; i < hN/2+1; i++)
 			{
-//				alpha_eval[i] = (alpha_eval[i] + alpha_eval[N*2-i])*complexEvaluation(0.5);
-				beta_re_eval[i] += conj(beta_re_eval[N*2-i]);
+				alpha_eval[hN/2+1+i] = alpha_eval[hN+i];
+				beta_eval[hN/2+1+i] = beta_eval[hN+i];
 			}
-			alpha_eval.resize(N+1);
-			beta_re_eval.resize(N+1);
-#endif
+
+			for (int i = 0; i < hN/2; i++)
+			{
+				beta_eval[i] *= (T)2.0;
+				beta_eval[hN/2+1+i] *= (T)2.0;
+			}
+
+			alpha_eval.resize(hN+2);
+			beta_eval.resize(hN+2);
 		}
 
 
@@ -264,7 +251,7 @@ public:
 
 					for (std::size_t n = 0; n < alpha_eval.size(); n++)
 					{
-						TStorageComplex b(beta_re_eval[n].real(), beta_re_eval[n].imag());
+						TStorageComplex b(beta_eval[n].real(), beta_eval[n].imag());
 						TStorageComplex a(alpha_eval[n].real(), alpha_eval[n].imag());
 						TStorageComplex val = b/a;
 						sum += val;
@@ -285,27 +272,39 @@ public:
 				{
 					TComplex sum = 0;
 					for (std::size_t n = 0; n < alpha_eval.size(); n++)
-						sum += beta_re_eval[n]/alpha_eval[n];
+						sum += beta_eval[n]/alpha_eval[n];
 
 					T normalization = sum.real();
 					std::cout << "REXI Error: " << (double)(TStorage)((T)1.0-normalization) << std::endl;
 					std::cout << "Using REXI normalization: " << (double)((TStorage)1.0/normalization) << std::endl;
 
-					for (std::size_t n = 0; n < beta_re_eval.size(); n++)
-						beta_re_eval[n] /= normalization;
+					for (std::size_t n = 0; n < beta_eval.size(); n++)
+						beta_eval[n] /= normalization;
 				}
 			}
 		}
 
+
 		alpha.resize(alpha_eval.size());
-		beta_re.resize(beta_re_eval.size());
-
-
+		beta.resize(beta_eval.size());
 		for (std::size_t n = 0; n < alpha.size(); n++)
 		{
 			alpha[n] = alpha_eval[n];
-			beta_re[n] = beta_re_eval[n];
+			beta[n] = beta_eval[n];
 		}
+
+
+#if 0
+		alpha_reim.resize(alpha_reim_eval.size());
+		beta_re.resize(beta_re_eval.size());
+		beta_im.resize(beta_im_eval.size());
+		for (std::size_t n = 0; n < alpha_reim.size(); n++)
+		{
+			alpha_reim[n] = alpha_reim_eval[n];
+			beta_re[n] = beta_re_eval[n];
+			beta_im[n] = beta_im_eval[n];
+		}
+#endif
 	}
 
 
@@ -314,13 +313,11 @@ public:
 		int N = alpha.size();
 		std::cout << "N: " << N << std::endl;
 
-//		std::cout << "Alpha:" << std::endl;
 		for (int i = 0; i < N; i++)
 			std::cout << "alpha[" << i << "] = " << alpha[i] << std::endl;
 
-//		std::cout << "Beta:" << std::endl;
 		for (int i = 0; i < N; i++)
-			std::cout << "beta_re[" << i << "] = " << beta_re[i] << std::endl;
+			std::cout << "beta[" << i << "] = " << beta[i] << std::endl;
 	}
 
 
@@ -344,15 +341,39 @@ public:
 	 * \return \f$ Re(cos(x) + i*sin(x)) = cos(x) \f$
 	 */
 	std::complex<TStorage> approx_returnComplex(
-			TStorage i_x
+			TStorage i_x,
+			bool i_linear_operator = false		///< set to true if applied to linear operator. Then a system of equations must be solved
 	)
 	{
 		std::complex<TStorage> sum = 0;
 
 		std::size_t S = alpha.size();
 
-		for (std::size_t n = 0; n < S; n++)
-			sum += (DQStuff::convertComplex<TStorage>(beta_re[n]) / (TStorageComplex(0, i_x) + DQStuff::convertComplex<TStorage>(alpha[n])));
+		if (!i_linear_operator)
+		{
+			for (std::size_t n = 0; n < S; n++)
+				sum += (DQStuff::convertComplex<TStorage>(beta[n]) / (TStorageComplex(0, i_x) + DQStuff::convertComplex<TStorage>(alpha[n])));
+		}
+		else
+		{
+			TStorageComplex U0[2] = {1, 0};
+
+			for (std::size_t n = 0; n < S; n++)
+			{
+				TStorageComplex L[2][2] = {{0, -i_x}, {i_x, 0}};
+				L[0][0] += DQStuff::convertComplex<TStorage>(alpha[n]);
+				L[1][1] += DQStuff::convertComplex<TStorage>(alpha[n]);
+
+				TStorageComplex d = 1.0/(L[0][0]*L[1][1] - L[0][1]*L[1][0]);
+				TStorageComplex invL[2][2] = {{L[1][1]*d, -L[0][1]*d}, {-L[1][0]*d, L[0][0]*d}};
+
+				TStorageComplex ret[2] = {	invL[0][0]*U0[0] + invL[0][1]*U0[1], invL[1][0]*U0[0] + invL[1][1]*U0[1]};
+				ret[0] *= beta[n];
+				ret[1] *= beta[n];
+
+				sum += DQStuff::Re(ret[0]) + DQStuff::Re(ret[1])*DQStuff::I((TStorage)1.0);
+			}
+		}
 
 		return sum;
 	}
@@ -370,7 +391,7 @@ public:
 		std::size_t S = alpha.size();
 
 		for (std::size_t n = 0; n < S; n++)
-			sum += (DQStuff::convertComplex<T>(beta_re[n]) / (TComplex(0, i_x) + DQStuff::convertComplex<T>(alpha[n]))).real();
+			sum += (DQStuff::convertComplex<T>(beta[n]) / (TComplex(0, i_x) + DQStuff::convertComplex<T>(alpha[n]))).real();
 
 		return sum;
 	}
@@ -390,7 +411,7 @@ public:
 
 		std::complex<T> sum = 0;
 		for (std::size_t n = 0; n < S; n++)
-			sum += (DQStuff::convertComplex<T>(beta_re[n]) / (TComplex(0, i_x) + DQStuff::convertComplex<T>(alpha[n])));
+			sum += (DQStuff::convertComplex<T>(beta[n]) / (TComplex(0, i_x) + DQStuff::convertComplex<T>(alpha[n])));
 		return sum;
 	}
 };

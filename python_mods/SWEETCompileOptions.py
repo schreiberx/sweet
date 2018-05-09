@@ -469,7 +469,7 @@ class SWEETCompileOptions:
 				type='choice',
 				choices=['enable','disable'],
 				default='disable',
-				help='Use a par for loop over the sum in REXI: enable, disable [default: %default]\n\tWARNING: This also disables the parallelization-in-space with OpenMP'
+				help='Use a par for loop over the sum in REXI: (enable, disable) [default: %default]\n\tWARNING: This also disables the parallelization-in-space with OpenMP'
 		)
 		self.rexi_thread_parallel_sum = scons.GetOption('rexi_thread_parallel_sum')
 
