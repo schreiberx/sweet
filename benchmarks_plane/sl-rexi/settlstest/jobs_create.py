@@ -65,7 +65,7 @@ p.runtime.viscosity = 0.0
 # Time, Mode and Physical resolution
 #
 timelevels = 5 #7 #5
-timestep_size_reference = earth.day/12 #3600 #1 hour  #864000/10 #1 day
+timestep_size_reference = earth.day/24 #3600 #1 hour  #864000/10 #1 day
 timestep_sizes = [timestep_size_reference*(2.0**(-i)) for i in range(0, timelevels)]
 
 p.runtime.simtime = earth.day*12 #1 day #timestep_size_reference #864000 #10 days
@@ -102,7 +102,7 @@ for group in groups:
 			['ln_erk',		4,	4],	# reference solution
 			#['ln_erk',		2,	2],	# FD- C-grid
 			['l_cn_na_sl_nd_settls', 2,	2],	# SI-SL-SP
-	        ['l_rexi_na_sl_nd_settls',	2,	2], #SL-EXP-SETTLS
+	        #['l_rexi_na_sl_nd_settls',	2,	2], #SL-EXP-SETTLS
 			#['l_rexi_na_sl_nd_etdrk',	2,	2], #SL-EXP-ETDRK
              #           ['l_rexi_n_etdrk',	2,	2], #ETDRK2
 			#['l_rexi_n_erk',	2,	2], #strang split
