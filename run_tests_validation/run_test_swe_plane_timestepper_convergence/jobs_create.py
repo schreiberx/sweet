@@ -72,8 +72,8 @@ p.runtime.rexi_ci_sy = 50
 p.runtime.rexi_ci_mu = 0
 p.runtime.rexi_ci_primitive = 'circle'
 
-# Don't activate, since direct solution is always used here 
-#p.compile.quadmath = 'enable'
+# Activate, since sometimes we need the numerical solution
+p.compile.quadmath = 'enable'
 
 
 p.runtime.g = 1
