@@ -263,8 +263,6 @@ plt.title(title, fontsize=fontsize)
 #Axis
 ax = plt.gca()
 ax.xaxis.set_label_coords(0.5, -0.075)
-plt.xticks(fontsize=fontsize)
-plt.yticks(fontsize=fontsize)
 
 #plt.xticks(labelsx, fontsize=fontsize)
 plt.xlabel("x (1000 km)", fontsize=fontsize)

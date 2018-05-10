@@ -87,90 +87,89 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 
 
 
-	    //Calculate nonlinear terms - not done in case of only linear divergence (linear div is already in linear part)
-		if (with_linear_div_only == 0) // Full nonlinear case
-		{
+	//Calculate nonlinear terms - not done in case of only linear divergence (linear div is already in linear part)
+	if (with_linear_div_only == 0) // Full nonlinear case
+	{
 
-			// Calculate nonlinear term for the previous time step
-			N_h = -h_prev * (op.diff_c_x(u_prev) + op.diff_c_y(v_prev));
-
-
-			//Calculate exp(Ldt)N(n-1), relative to previous timestep
-			//Calculate the V{n-1} term as in documentation, with the exponential integrator
-			ts_l_rexi.run_timestep(N_h, N_u, N_v, i_dt, i_simulation_timestamp);
-
-			//Use N_h to store now the nonlinearity of the current time (prev will not be required anymore)
-			//Update the nonlinear terms with the constants relative to dt
-			// N=dtN^n-0.5dtV^n-1 from paper
-			// h*div is calculate in cartesian space (pseudo-spectrally)
-			hdiv =  - h * (op.diff_c_x(io_u) + op.diff_c_y(io_v));
-			N_u = -0.5 * dt * N_u; // N^n of u term is zero
-			N_v = -0.5 * dt * N_v; // N^n of v term is zero
-			N_h = dt * hdiv - 0.5 * dt * N_h ; //N^n of h has the nonlin term
-
-			//Build variables to be interpolated to dep. points
-			// This is the W^n term in documentation
-			u = u + N_u;
-			v = v + N_v;
-			h = h + N_h;
-		}
-
-		// Interpolate W to departure points
-		u = sampler2D.bicubic_scalar(u, posx_d, posy_d, -0.5, -0.5);
-		v = sampler2D.bicubic_scalar(v, posx_d, posy_d, -0.5, -0.5);
-		h = sampler2D.bicubic_scalar(h, posx_d, posy_d, -0.5, -0.5);
-
-		/*
-		 * Calculate the exp(Ldt) W{n}_* term as in documentation, with the exponential integrator
-		 */
-		ts_l_rexi.run_timestep(h, u, v, i_dt, i_simulation_timestamp);
-
-		// Add nonlinearity in h
-		if (with_linear_div_only == 0) // Full nonlinear case
-		{
-			h = h + 0.5 * dt * hdiv;
-		}
-
-#else //simpler scheme (unstable)
+		// Calculate nonlinear term for the previous time step
+		N_h = -h_prev * (op.diff_c_x(u_prev) + op.diff_c_y(v_prev));
 
 
-		// Calculate linear part
+		//Calculate exp(Ldt)N(n-1), relative to previous timestep
+		ts_l_rexi.run_timestep(N_h, N_u, N_v, i_dt, i_simulation_timestamp);
+
+		//Use N_h to store now the nonlinearity of the current time (prev will not be required anymore)
+		//Update the nonlinear terms with the constants relative to dt
+		// N=dtN^n-0.5dt exp(dtL)N^n-1 from paper
+		// N=-h*div is calculate in cartesian space (pseudo-spectrally)
+		hdiv =  - h * (op.diff_c_x(io_u) + op.diff_c_y(io_v));
+		N_u = -0.5 * dt * N_u; // N^n of u term is zero
+		N_v = -0.5 * dt * N_v; // N^n of v term is zero
+		N_h = dt * hdiv - 0.5 * dt * N_h ; //N^n of h has the nonlin term
+
+		//Build variables to be interpolated to dep. points
+		// This is the W^n term in documentation
+		u = u + N_u;
+		v = v + N_v;
+		h = h + N_h;
+	}
+
+	// Interpolate W to departure points
+	u = sampler2D.bicubic_scalar(u, posx_d, posy_d, -0.5, -0.5);
+	v = sampler2D.bicubic_scalar(v, posx_d, posy_d, -0.5, -0.5);
+	h = sampler2D.bicubic_scalar(h, posx_d, posy_d, -0.5, -0.5);
+
+	// Add nonlinearity in h
+	if (with_linear_div_only == 0) // Full nonlinear case
+	{
+		h = h + 0.5 * dt * hdiv;
+	}
+
+	/*
+	 * Calculate the exp(Ldt) of the resulting u,v,h
+	 */
+	ts_l_rexi.run_timestep(h, u, v, i_dt, i_simulation_timestamp);
+
+#else	//#else //simpler scheme (unstable)
+
+
+	// Calculate linear part
+	// ------------------------------
+
+	// Interpolate U to departure points
+	u = sampler2D.bicubic_scalar(io_u, posx_d, posy_d, -0.5, -0.5);
+	v = sampler2D.bicubic_scalar(io_v, posx_d, posy_d, -0.5, -0.5);
+	h = sampler2D.bicubic_scalar(io_h, posx_d, posy_d, -0.5, -0.5);
+
+	ts_l_rexi.run_timestep(h, u, v, i_dt, i_simulation_timestamp);
+
+	if(with_linear_div_only==0) //linear div is already incorporated in the linear term, so simply ignore nonlinearity.
+	{
+		//std::cout<<"Be careful, don't trust me, I may be go unstable!"<<std::endl;
+		// Calculate nonlinear term
 		// ------------------------------
 
-		// Interpolate U to departure points
-		u = sampler2D.bicubic_scalar(io_u, posx_d, posy_d, -0.5, -0.5);
-		v = sampler2D.bicubic_scalar(io_v, posx_d, posy_d, -0.5, -0.5);
-		h = sampler2D.bicubic_scalar(io_h, posx_d, posy_d, -0.5, -0.5);
+		//Extrapolate N to t_n+1
+		N_h =  - io_h * (op.diff_c_x(io_u) + op.diff_c_y(io_v));
+		N_h_prev = - h_prev * (op.diff_c_x(u_prev) + op.diff_c_y(v_prev));
+		N_h_ext = 2 * N_h - N_h_prev;
 
-		ts_l_rexi.run_timestep(h, u, v, i_dt, i_simulation_timestamp);
+		//Interpolate to departure points
+		N_h_ext = sampler2D.bicubic_scalar(N_h_ext, posx_d, posy_d, -0.5, -0.5);
 
-		if(with_linear_div_only==0) //linear div is already incorporated in the linear term, so simply ignore nonlinearity.
-		{
-			std::cout<<"Be careful, don't trust me, I may be go unstable!"<<std::endl;
-			// Calculate nonlinear term
-			// ------------------------------
+		//Compose extrapolated N_n+1/2
+		N_h = 0.5 * ( N_h_ext + N_h );
 
-			//Extrapolate N to t_n+1
-			N_h =  - io_h * (op.diff_c_x(io_u) + op.diff_c_y(io_v));
-			N_h_prev = - h_prev * (op.diff_c_x(u_prev) + op.diff_c_y(v_prev));
-			N_h_ext = 2 * N_h - N_h_prev;
+		//Apply exponential dt/2
+		ts_l_rexi.run_timestep(N_h, N_u, N_v, 0.5*i_dt, i_simulation_timestamp);
 
-			//Interpolate to departure points
-			N_h_ext = sampler2D.bicubic_scalar(N_h_ext, posx_d, posy_d, -0.5, -0.5);
+		// Join linear and nonlinear
+		// ------------------------------
+		u = u + i_dt * N_u;
+		u = v + i_dt * N_v;
+		h = h + i_dt * N_h;
 
-			//Compose extrapolated N_n+1/2
-			N_h = 0.5 * ( N_h_ext + N_h );
-
-			//Apply exponential dt/2
-			ts_l_rexi.run_timestep(N_h, N_u, N_v, 0.5*i_dt, i_simulation_timestamp);
-
-			// Join linear and nonlinear
-			// ------------------------------
-			u = u + i_dt * N_u;
-			u = v + i_dt * N_v;
-			h = h + i_dt * N_h;
-
-		}
+	}
 
 #endif
 
@@ -248,20 +247,20 @@ SWE_Plane_TS_l_rexi_na_sl_nd_settls::SWE_Plane_TS_l_rexi_na_sl_nd_settls(
 		SimulationVariables &i_simVars,
 		PlaneOperators &i_op
 )	:
-				simVars(i_simVars),
-				op(i_op),
+						simVars(i_simVars),
+						op(i_op),
 
-				ts_l_rexi(i_simVars, i_op),
+						ts_l_rexi(i_simVars, i_op),
 
-				h_prev(i_op.planeDataConfig),
-				u_prev(i_op.planeDataConfig),
-				v_prev(i_op.planeDataConfig),
+						h_prev(i_op.planeDataConfig),
+						u_prev(i_op.planeDataConfig),
+						v_prev(i_op.planeDataConfig),
 
-				posx_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
-				posy_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
+						posx_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
+						posy_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
 
-				posx_d(i_op.planeDataConfig->physical_array_data_number_of_elements),
-				posy_d(i_op.planeDataConfig->physical_array_data_number_of_elements)
+						posx_d(i_op.planeDataConfig->physical_array_data_number_of_elements),
+						posy_d(i_op.planeDataConfig->physical_array_data_number_of_elements)
 {
 }
 

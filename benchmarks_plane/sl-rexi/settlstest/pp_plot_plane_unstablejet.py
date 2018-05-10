@@ -11,7 +11,7 @@ import numpy as np
 import sys
 
 #Figure definitions
-fontsize=18
+fontsize=16
 figsize=(9, 7)
 
 for filename in sys.argv[1:]:
@@ -86,7 +86,9 @@ for filename in sys.argv[1:]:
 		cref=max(abs(cmin),abs(cmax))
 		plt.clim(-cref, +cref)
 		cbar = plt.colorbar()
-			
+		
+	cbar.ax.tick_params(labelsize=fontsize) 
+	
 	#Contour lines (black)
 	if 'diag_vort' in filename:
 		pass
@@ -118,7 +120,7 @@ for filename in sys.argv[1:]:
 		cbar.set_label('m/s', rotation=270, size=fontsize)
 		
 	cbar.ax.tick_params(labelsize=fontsize) 
-	
+			
 	#Method
 	print("Methods")
 	pos1 = filename.find('_tsm_')
@@ -169,9 +171,6 @@ for filename in sys.argv[1:]:
 	ax = plt.gca()
 	ax.xaxis.set_label_coords(0.5, -0.075)
 	
-	plt.xticks(fontsize=fontsize)
-	plt.yticks(fontsize=fontsize)
- 
 	#plt.xticks(labelsx, fontsize=fontsize)
 	plt.xlabel("x (1000 km)", fontsize=fontsize)
 

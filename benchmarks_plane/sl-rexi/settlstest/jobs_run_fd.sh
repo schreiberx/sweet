@@ -10,7 +10,7 @@ source ./local_software/env_vars.sh || exit 1
 cd "$THISDIR"
 
 if [ -z "$1" ]; then
-	DIRS=script_*l_rexi_na_sl_nd_set*
+	DIRS=script_*ln_erk_tso2*
 else
 	DIRS=$@
 fi
