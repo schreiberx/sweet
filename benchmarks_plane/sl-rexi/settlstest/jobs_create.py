@@ -60,6 +60,7 @@ p = RuntimeSWEPlaneEarthParam(p)
 
 p.runtime.viscosity = 0.0
 
+#p.runtime.uselineardiv = 1
 
 #
 # Time, Mode and Physical resolution
