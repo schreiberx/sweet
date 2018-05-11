@@ -244,12 +244,15 @@ if p_ref.time != p_cmp.time:
 title += ' days '
 
 #Time step
-title += " dt="+str(p_ref.timestep)
+title += " dt="
 outfile += "_dt"
 outfile += str(p_ref.timestep)
-
+if p_ref.method_paper != "REF":
+	title += str(p_ref.timestep)
+	
 if p_ref.timestep != p_cmp.timestep:
-	title += " vs "
+	if p_ref.method_paper != "REF":
+		title += " vs "
 	title += p_cmp.timestep
 	outfile += "_vs_dt"
 	outfile += str(p_cmp.timestep)

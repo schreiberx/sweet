@@ -27,7 +27,7 @@ if len(sys.argv) > 1:
 	error_type = sys.argv[2]
 	
 #Plot style and definitions
-fig, ax = plt.subplots(figsize=(10,7))
+fig, ax = plt.subplots(figsize=(10,10))
 
 fontsize=16
 
@@ -58,9 +58,9 @@ def plot(x, y, marker, linestyle, label):
 	
 	if len(x) == 0:
 		return
-	print(x,y)
+	#print(x,y)
 	x, y = (list(t) for t in zip(*sorted(zip(x,y))))
-	print(x,y)
+	#print(x,y)
 	ax.plot(x, y, marker=marker, linestyle=linestyle, label=label)
 
 	px = x[:]
@@ -123,6 +123,7 @@ for l in lines[1:]:
 	d = l.split(" ") #line data
 	
 	name = d[imethod]
+	
 	if prev_name == '':
 		prev_name = name
 		
@@ -134,16 +135,20 @@ for l in lines[1:]:
 		values_y = []
 		values_x = []
 		c = c+1
-		continue
+		print("Name dt "+head[ierr])
+		
 
 	# skip invalid nan's
 	if d[ierr] == 'nan':
 		continue
 
 	value = float(d[ierr]) 
+	
 	if abs(value) < limit:
 		values_y.append(float(d[ierr]))
 		values_x.append(float(d[idt]))
+	
+	print(name, float(d[idt]), float(d[ierr]))
 		
 plt.xlabel("Timestep size (sec)", fontsize=fontsize)
 plt.ylabel(head[ierr], fontsize=fontsize)
@@ -159,7 +164,7 @@ plt.yticks(fontsize=fontsize)
 
 plt.legend(fontsize=15)
 
-output_filename = "./output_dt_vs_"+head[ierr]+".pdf"
+output_filename = "./output_dt_vs_"+head[ierr]+".eps"
 #if output_filename != '':
 print(output_filename)
 plt.savefig(output_filename)
