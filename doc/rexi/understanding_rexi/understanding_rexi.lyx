@@ -828,10 +828,16 @@ e^{ix}\approx\sum_{n=-N}^{N}Re\left(\frac{\beta_{n}^{Re}}{ix+\alpha_{n}}\right)+
 \end_layout
 
 \begin_layout Subsection
-Joining real and imaginary exp-approximation
+Merging real and imaginary exp-approximation
 \end_layout
 
 \begin_layout Standard
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:merging_real_and_imag"
+
+\end_inset
+
 With the previous formulation, we would have to extract the real components
  from the complex values.
  However, this is not applicable if we use this for a linear operator.
@@ -1928,50 +1934,10 @@ In this section, we investigate the linear operator
 \end_layout
 
 \begin_layout Subsection
-Reducing number of computations for 
-\begin_inset Formula $L$
-\end_inset
-
-
+Cancellation of imaginary values
 \end_layout
 
 \begin_layout Standard
-Note the property (see Sec.
- 3.3 in 
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Terry:High-order time-parallel approximation of evolution operators"
-
-\end_inset
-
-) for the 
-\begin_inset Formula $\alpha_{n}$
-\end_inset
-
- and 
-\begin_inset Formula $\beta_{n}$
-\end_inset
-
-:
-\end_layout
-
-\begin_layout Standard
-There is an anti-symmetry around the central pole with
-\begin_inset Formula 
-\begin{equation}
-\alpha_{-n}=\overline{\alpha_{n}}\label{eq:alpha_conjugate_symmetry}
-\end{equation}
-
-\end_inset
-
-and
-\begin_inset Formula 
-\begin{equation}
-\beta_{-n}=\overline{\beta_{n}}\label{eq:beta_conjugate_symmetry}
-\end{equation}
-
-\end_inset
-
 For sake of simplicity, we only consider the first or second half of the
  merged 
 \begin_inset Formula $\alpha$
@@ -1986,23 +1952,34 @@ For sake of simplicity, we only consider the first or second half of the
 \end_inset
 
 , there is a zero imaginary number for the central pole.
-\end_layout
-
-\begin_layout Standard
-Furthermore, it holds that 
+ Then, there is an anti-symmetry around the central pole with
 \begin_inset Formula 
-\[
-\overline{(L+\alpha)^{-1}U(0)}=(L+\overline{\alpha})^{-1}U(0)
-\]
+\begin{equation}
+\alpha_{-n}=\overline{\alpha_{n}}\label{eq:alpha_conjugate_symmetry}
+\end{equation}
 
 \end_inset
 
-with the overbar denoting the complex conjugate.
- We can then reformulate the approximation
+and
+\begin_inset Formula 
+\begin{equation}
+\beta_{-n}=\overline{\beta_{n}}.\label{eq:beta_conjugate_symmetry}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We start with REXI given by
+\end_layout
+
+\begin_layout Standard
 \begin_inset Formula 
 \begin{eqnarray*}
-e^{\tau L} & \approx & \sum_{n=-N}^{N}Re\left(\frac{\beta_{n}}{\tau L+\alpha_{n}}\right)\\
- & = & \sum_{n=-N}^{-1}Re\left(\frac{\beta_{n}}{\tau L+\alpha_{n}}\right)+Re\left(\frac{\beta_{0}}{\tau L+\alpha_{0}}\right)+\sum_{n=-N}^{-1}Re\left(\frac{\beta_{N+n+1}}{\tau L+\alpha_{N+n+1}}\right)
+e^{\tau L} & \approx & \sum_{n=-N}^{N}\beta_{n}(\tau L+\alpha_{n})^{-1}\\
+ & = & \sum_{n=-N}^{-1}\beta_{n}(\tau L+\alpha_{n})^{-1}+\beta_{0}(\tau L+\alpha_{0})^{-1}+\sum_{n=-N}^{-1}\beta_{-n}(\tau L+\alpha_{-n})^{-1}
 \end{eqnarray*}
 
 \end_inset
@@ -2024,12 +2001,95 @@ reference "eq:beta_conjugate_symmetry"
 , we can write this as
 \begin_inset Formula 
 \begin{eqnarray*}
- &  & \sum_{n=-N}^{-1}Re\left(\frac{\beta_{n}}{\tau L+\alpha_{n}}\right)+Re\left(\frac{\beta_{0}}{\tau L+\alpha_{0}}\right)+\sum_{n=-N}^{-1}Re\left(\frac{\overline{\beta_{N}}}{\tau L+\overline{\alpha_{N}}}\right)\\
- & = & \sum_{n=-N}^{-1}\left(Re\left(\frac{\beta_{n}}{\tau L+\alpha_{n}}+\overline{\left(\frac{\beta_{n}}{\tau L+\alpha_{n}}\right)}\right)\right)+Re\left(\frac{\beta_{0}}{\tau L+\alpha_{0}}\right).
+ &  & \sum_{n=-N}^{-1}\beta_{n}\left(\tau L+\alpha_{n}\right)^{-1}+\beta_{0}(\tau L+\alpha_{0})^{-1}+\sum_{n=-N}^{-1}\overline{\beta_{n}}(\tau L+\overline{\alpha_{n}})^{-1}\\
+ & = & \sum_{n=-N}^{-1}\beta_{n}\left(\tau L+\alpha_{n}\right)^{-1}+\beta_{0}(\tau L+\alpha_{0})^{-1}+\sum_{n=-N}^{-1}\overline{\beta_{n}(\tau L+\alpha_{n})^{-1}}.
 \end{eqnarray*}
 
 \end_inset
 
+which shows that the imaginary parts cancel out.
+\end_layout
+
+\begin_layout Standard
+This is also shows (see Sec.
+ 3.3 in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Terry:High-order time-parallel approximation of evolution operators"
+
+\end_inset
+
+)
+\begin_inset Formula 
+\[
+\overline{(L+\alpha)^{-1}U(0)}=(L+\overline{\alpha})^{-1}U(0).
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Reducing number of computations for 
+\begin_inset Formula $L$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:reducing_number_of_computations"
+
+\end_inset
+
+For 
+\begin_inset Formula $L$
+\end_inset
+
+ and 
+\begin_inset Formula $U(0)$
+\end_inset
+
+ real-valued only and with the overbar denoting the complex conjugate.
+ We can then reformulate the approximation
+\begin_inset Formula 
+\begin{eqnarray*}
+e^{\tau L} & \approx & \sum_{n=-N}^{-1}\beta_{n}\left(\tau L+\alpha_{n}\right)^{-1}+\beta_{0}\left(\tau L+\alpha_{0}\right)^{-1}+\sum_{n=-N}^{-1}\beta_{-n}\left(\tau L+\alpha_{-n}\right)^{-1}\\
+ & = & \sum_{n=-N}^{-1}\beta_{n}\left(\tau L+\alpha_{n}\right)^{-1}+\beta_{0}\left(\tau L+\alpha_{0}\right)^{-1}+\sum_{n=-N}^{-1}\overline{\beta_{N-1-n}}\left(\tau L+\overline{\alpha_{N-1-n}}\right)^{-1}
+\end{eqnarray*}
+
+\end_inset
+
+and using the properties 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:alpha_conjugate_symmetry"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:beta_conjugate_symmetry"
+
+\end_inset
+
+, we can write this as
+\begin_inset Formula 
+\begin{eqnarray*}
+ &  & \sum_{n=-N}^{-1}\beta_{n}\left(\tau L+\alpha_{n}\right)^{-1}+\beta_{0}\left(\tau L+\alpha_{0}\right)^{-1}+\sum_{n=-N}^{-1}\overline{\beta_{N-1-n}}\left(\tau L+\overline{\alpha_{N-1-n}}\right)^{-1}\\
+ & = & \sum_{n=-N}^{-1}\beta_{n}\left(\tau L+\alpha_{n}\right)^{-1}+\beta_{0}\left(\tau L+\alpha_{0}\right)^{-1}+\sum_{n=-N}^{-1}\beta_{n}\left(\tau L+\alpha_{n}\right)^{-1}
+\end{eqnarray*}
+
+\end_inset
+
+which shows that the imaginary parts cancel out.
+\end_layout
+
+\begin_layout Standard
 Since the imaginary parts cancel out for 
 \begin_inset Formula $Re(a+\overline{a})=a+\overline{a}$
 \end_inset
@@ -2045,7 +2105,7 @@ Since the imaginary parts cancel out for
  being only real-valued, we can simplify the equation to
 \begin_inset Formula 
 \[
-e^{\tau L}\approx\sum_{n=-N}^{N}Re\left(\frac{\beta_{n}}{\tau L+\alpha_{n}}\right)=\sum_{n=-N}^{-1}\left(2\frac{\beta_{n}}{\tau L+\alpha_{n}}\right)+\frac{\beta_{0}}{\tau L+\alpha_{0}}.
+e^{\tau L}\approx\sum_{n=-N}^{N}\left(\tau L+\alpha_{n}\right)^{-1}=\sum_{n=-N}^{-1}\left(\frac{2\beta_{n}}{\tau L+\alpha_{n}}\right)+\frac{\beta_{0}}{\tau L+\alpha_{0}}.
 \]
 
 \end_inset
@@ -3552,23 +3612,849 @@ which can also be written in matrix notation and solved with arbitrary elliptic
 \end_layout
 
 \begin_layout Section
-Filtering
+Compatibility table (merging + halving)
 \end_layout
 
 \begin_layout Standard
-The method described in the previous section is well defined for skew hermitian
+Different reformulations of the REXI coefficients for better approximation
+ and reduced workload were suggested in the previous sections.
+ Those were (a) the merging of real and imaginary approximation of 
+\begin_inset Formula $\exp(ix)$
+\end_inset
+
+ (see Sec.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:merging_real_and_imag"
+
+\end_inset
+
+) as well as halving the number of poles by exploiting symmetries and real-only
+ valued linear operator (see Sec.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:reducing_number_of_computations"
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Standard
+The test cases are described as follows:
+\end_layout
+
+\begin_layout Itemize
+Approximation of real parts of complex-valued ODE:
+\begin_inset Formula 
+\[
+Re(\exp(ix))u_{0}=Re\left(\sum_{n}\beta_{n}\left(ix+\alpha_{n}\right)^{-1}\right)u_{0}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+Approximation of real and imaginary parts of complex-valued ODE
+\begin_inset Formula 
+\[
+\exp(ix)u_{0}=\sum_{n}\beta_{n}\left(ix+\alpha_{n}\right)^{-1}u_{0}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+Approximation of (real) linear operator
+\begin_inset Formula 
+\[
+L=\left[\begin{array}{cc}
+0 & x\\
+-x & 0
+\end{array}\right]
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+\exp(L)U_{0}=\sum_{n}\beta_{n}\left(L+\alpha_{n}\right)^{-1}U_{0}
+\]
+
+\end_inset
+
+where
+\begin_inset Formula 
+\[
+U_{0}=[Re(u_{0}),Im(u_{0})].
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We test with two different initial conditions:
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $u_{0}=1.0$
+\end_inset
+
+:
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Tabular
+<lyxtabular version="3" rows="6" columns="5">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Merging
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+-
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+merge
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+-
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+merge
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Halve
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+-
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+-
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+halve
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+halve
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Resulting REXI setup
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\beta^{Re}$
+\end_inset
+
+ only
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+merge 
+\begin_inset Formula $\beta^{Re}$
+\end_inset
+
  
+\series default
+and
+\series bold
+ 
+\begin_inset Formula $\beta^{Im}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+halve
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+merge+halve
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $Re\left(\exp(ix)\right)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+OK
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+OK
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+fail
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+fail
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\exp(ix)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+fail
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+OK
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+fail
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+fail
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $Re(\exp(L))$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+fail
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+OK
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+fail
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+OK
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Neither merging, nor halving: Only the real values of the ODE are solved
+ properly.
+\end_layout
+
+\begin_layout Itemize
+Merging only: Results in a successful execution for all test cases.
+\end_layout
+
+\begin_layout Itemize
+Only halving: Full failure, in particular because the real-valued property
+ of the linear operator is failing
+\end_layout
+
+\begin_layout Itemize
+merge + halve: Only works for linear operator 
 \begin_inset Formula $L$
 \end_inset
 
-.
- If 
-\begin_inset Formula $L$
+ which is the only real-valued one.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+\begin_inset Formula $u0=(1+2j)/\sqrt{5}$
 \end_inset
 
- is not skew hermitian, the real eigenvalues might cause the REXI to have
- absolute values larger than 1, which can lead to instabilities if used
- as time stepping method.
+:
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Tabular
+<lyxtabular version="3" rows="6" columns="5">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Merging
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+-
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+merge
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+-
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+merge
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Halve
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+-
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+-
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+halve
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+halve
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Resulting REXI setup
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\beta^{Re}$
+\end_inset
+
+ only
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+merge 
+\begin_inset Formula $\beta^{Re}$
+\end_inset
+
+ 
+\series default
+and
+\series bold
+ 
+\begin_inset Formula $\beta^{Im}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+halve
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+merge+halve
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $Re\left(\exp(ix)\right)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+fail
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+OK
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+fail
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+fail
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\exp(ix)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+fail
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+OK
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+fail
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+fail
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $Re(\exp(L))$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+fail
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+OK
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+fail
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+OK
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Neither merging, nor halving: Even the real approximation now failes.
+ The reason for this is that a correct approximation of the imaginary value
+ of 
+\begin_inset Formula $\exp(ix)$
+\end_inset
+
+ is required.
+\end_layout
+
+\begin_layout Itemize
+All other benchmarks behave as expected.
+\end_layout
+
+\end_deeper
+\begin_layout Section
+Filtering
 \end_layout
 
 \begin_layout Standard
@@ -3603,16 +4489,15 @@ key "Terry:High-order time-parallel approximation of evolution operators"
 \end_inset
 
 , and decays very fast to zero outside this interval.
- Then we multiply this filters function to the original REXI, which will
- lead to a unit bounded REXI.
-\end_layout
-
-\begin_layout Standard
-Further details of how 
-\begin_inset Formula $S(ix)$
+ This filter can be applied as a separate 
+\begin_inset Quotes eld
 \end_inset
 
- is computed will be added later.
+time step
+\begin_inset Quotes erd
+\end_inset
+
+ to get rid of such fast modes.
 \end_layout
 
 \begin_layout Section
