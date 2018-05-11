@@ -103,9 +103,9 @@ for group in groups:
 			['ln_erk',		4,	4],	# reference solution
 			['ln_erk',		2,	2],	# FD- C-grid
 			['l_cn_na_sl_nd_settls', 2,	2],	# SI-SL-SP
-	                ['l_rexi_na_sl_nd_settls',	2,	2], #SL-EXP-SETTLS
+			['l_rexi_na_sl_nd_settls',	2,	2], #SL-EXP-SETTLS
 			['l_rexi_na_sl_nd_etdrk',	2,	2], #SL-EXP-ETDRK
-                        ['l_rexi_n_etdrk',	2,	2], #ETDRK2
+			['l_rexi_n_etdrk',	2,	2], #ETDRK2
 			['l_rexi_n_erk',	2,	2], #strang split
 		]
 
@@ -127,7 +127,7 @@ for group in groups:
 	if True:
 		print("Reference")
 		tsm = ts_methods[0]
-
+		p = SetupSpectralMethods(p)
 		p.runtime.timestep_size = 2 # second #p.runtime.output_timestep_size/100.0
 		p.runtime.timestepping_method = tsm[0]
 		p.runtime.timestepping_order = tsm[1]
