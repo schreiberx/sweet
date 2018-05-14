@@ -221,7 +221,7 @@ public:
 			int hN = N/2;
 
 			// assure that it's odd
-			assert(hN & 1 == 1);
+			assert(hN & 1);
 
 			for (int i = 0; i < hN/2+1; i++)
 			{
