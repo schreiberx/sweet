@@ -10,7 +10,7 @@
  */
 
 
-#include "../swe_plane/SWE_Plane_TS_l_rexi_na_sl_nd_settls.hpp"
+#include "SWE_Plane_TS_l_rexi_na_sl_nd_settls.hpp"
 
 
 void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
@@ -23,18 +23,9 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 )
 {
 	if (i_dt <= 0)
-		FatalError("SWE_Plane_TS_l_rexi_na_sl_nd_erk: Only constant time step size allowed (Please set --dt)");
+		FatalError("SWE_Plane_TS_l_rexi_na_sl_nd_settls: Only constant time step size allowed (Please set --dt)");
 
-	if (i_simulation_timestamp == 0)
-	{
-		/*
-		 * First time step
-		 */
-		h_prev = io_h;
-		u_prev = io_u;
-		v_prev = io_v;
-	}
-
+	const PlaneDataConfig *planeDataConfig = io_h.planeDataConfig;
 
 	//Out vars
 	PlaneData h(io_h.planeDataConfig);
@@ -58,6 +49,16 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 
 	Staggering staggering;
 	assert(staggering.staggering_type == 'a');
+
+	if (i_simulation_timestamp == 0)
+	{
+		/*
+		 * First time step
+		 */
+		h_prev = io_h;
+		u_prev = io_u;
+		v_prev = io_v;
+	}
 
 	// Calculate departure points
 	semiLagrangian.semi_lag_departure_points_settls(
@@ -83,9 +84,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 	N_h_ext.physical_set_all(0);
 	hdiv.physical_set_all(0);
 
-#if 1 	 //Original complicated scheme
-
-
+#if 1 	 //Original more stable scheme
 
 	//Calculate nonlinear terms - not done in case of only linear divergence (linear div is already in linear part)
 	if (with_linear_div_only == 0) // Full nonlinear case
@@ -93,7 +92,6 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 
 		// Calculate nonlinear term for the previous time step
 		N_h = -h_prev * (op.diff_c_x(u_prev) + op.diff_c_y(v_prev));
-
 
 		//Calculate exp(Ldt)N(n-1), relative to previous timestep
 		ts_l_rexi.run_timestep(N_h, N_u, N_v, i_dt, i_simulation_timestamp);
@@ -128,8 +126,26 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 	/*
 	 * Calculate the exp(Ldt) of the resulting u,v,h
 	 */
-	ts_l_rexi.run_timestep(h, u, v, i_dt, i_simulation_timestamp);
+	//Calculate phi_0 of interpolated U
+	PlaneData phi0_Un_h(planeDataConfig);
+	PlaneData phi0_Un_u(planeDataConfig);
+	PlaneData phi0_Un_v(planeDataConfig);
+	//ts_l_rexi.run_timestep(h, u, v, i_dt, i_simulation_timestamp);
+	ts_l_rexi.run_timestep(
+					h, u, v,
+					phi0_Un_h, phi0_Un_u, phi0_Un_v,
+					i_dt,
+					i_simulation_timestamp
+			);
 
+	h = phi0_Un_h;
+	u = phi0_Un_u;
+	v = phi0_Un_v;
+	/*
+	std::cout <<  h.reduce_sum()  << std::endl;
+	std::cout <<  u.reduce_sum()  << std::endl;
+	std::cout <<  v.reduce_sum()  << std::endl;
+	*/
 #else	//#else //simpler scheme (unstable)
 
 

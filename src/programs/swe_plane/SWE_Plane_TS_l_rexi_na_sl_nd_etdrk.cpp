@@ -10,10 +10,6 @@
 
 #include "SWE_Plane_TS_l_rexi_na_sl_nd_etdrk.hpp"
 
-
-
-
-
 /*
  * Main routine for method to be used in case of finite differences
  */
@@ -42,11 +38,11 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::euler_timestep_update_nonlinear(
 	 * o_v_t = -i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
 	 */
 	// In lagrangian form, the only nonlinearity is the nonlinear divergence
-	o_u_t = 0.0; //-i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
-	o_v_t = 0.0; //-i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
+	o_u_t.physical_set_all(0); //-i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
+	o_v_t.physical_set_all(0); // = 0.0; //-i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
 
 	if (simVars.pde.use_linear_div == 1) // linear div only
-		o_h_t = 0.0; //-op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
+		o_h_t.physical_set_all(0); // = 0.0; //-op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
 	else //nonlinear div
 		o_h_t = -i_h*(op.diff_c_x(i_u) + op.diff_c_y(i_v));
 
@@ -69,14 +65,14 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 
 	const PlaneDataConfig *planeDataConfig = io_h.planeDataConfig;
 
-	//Departure points and arrival points
-	ScalarDataArray posx_d(io_h.planeDataConfig->physical_array_data_number_of_elements);
-	ScalarDataArray posy_d(io_h.planeDataConfig->physical_array_data_number_of_elements);
-
 	// Tmp vars
 	PlaneData h(io_h.planeDataConfig);
 	PlaneData u(io_h.planeDataConfig);
 	PlaneData v(io_h.planeDataConfig);
+
+	//Departure points and arrival points
+	ScalarDataArray posx_d(io_h.planeDataConfig->physical_array_data_number_of_elements);
+	ScalarDataArray posy_d(io_h.planeDataConfig->physical_array_data_number_of_elements);
 
 
 	Staggering staggering;
@@ -107,6 +103,13 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 	u = io_u;
 	v = io_v;
 	h = io_h;
+
+	// Save time (n) as time (n-1)
+	// We won't need this anymore...
+	h_prev = io_h;
+	u_prev = io_u;
+	v_prev = io_v;
+
 	//u_dep = io_u;
 	//v_dep = io_v;
 	//h_dep = io_h;
@@ -130,51 +133,49 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 
 		// Calculate term to be interpolated: u+dt*psi_1(dt L)N(U_{0})
 
+
 		//Calculate N(U_{0})
-		PlaneData FUn_h(planeDataConfig);
-		PlaneData FUn_u(planeDataConfig);
-		PlaneData FUn_v(planeDataConfig);
-		euler_timestep_update_nonlinear(
-				h, u, v,
-				FUn_h, FUn_u, FUn_v,
-				i_simulation_timestamp
-		);
 
-		//Apply psi_1 to N(U_{0})
-		PlaneData psi1_FUn_h(planeDataConfig);
-		PlaneData psi1_FUn_u(planeDataConfig);
-		PlaneData psi1_FUn_v(planeDataConfig);
+		if (simVars.pde.use_linear_div == 0)
+		{
+			PlaneData FUn_h(planeDataConfig);
+			PlaneData FUn_u(planeDataConfig);
+			PlaneData FUn_v(planeDataConfig);
+			euler_timestep_update_nonlinear(
+					h, u, v,
+					FUn_h, FUn_u, FUn_v,
+					i_simulation_timestamp
+			);
 
-		ts_psi1_rexi.run_timestep(
-				FUn_h, FUn_u, FUn_v,
-				psi1_FUn_h, psi1_FUn_u, psi1_FUn_v,
-				i_dt,
-				i_simulation_timestamp
-		);
+			//Apply psi_1 to N(U_{0})
+			PlaneData psi1_FUn_h(planeDataConfig);
+			PlaneData psi1_FUn_u(planeDataConfig);
+			PlaneData psi1_FUn_v(planeDataConfig);
+
+			ts_psi1_rexi.run_timestep(
+					FUn_h, FUn_u, FUn_v,
+					psi1_FUn_h, psi1_FUn_u, psi1_FUn_v,
+					i_dt,
+					i_simulation_timestamp
+			);
+
+			//Add this to U and interpolate to departure points
+			h = h + i_dt*psi1_FUn_h;
+			u = u + i_dt*psi1_FUn_u;
+			v = v + i_dt*psi1_FUn_v;
+		}
 
 
-		//Add this to U and interpolate to departure points
-		PlaneData h_adv(planeDataConfig);
-		PlaneData u_adv(planeDataConfig);
-		PlaneData v_adv(planeDataConfig);
-		h_adv = h + i_dt*psi1_FUn_h;
-		u_adv = u + i_dt*psi1_FUn_u;
-		v_adv = v + i_dt*psi1_FUn_v;
-
-		PlaneData h_dep(io_h.planeDataConfig);
-		PlaneData u_dep(io_h.planeDataConfig);
-		PlaneData v_dep(io_h.planeDataConfig);
-
-		h_dep = sampler2D.bicubic_scalar(h_adv, posx_d, posy_d, -0.5, -0.5);
-		u_dep = sampler2D.bicubic_scalar(u_adv, posx_d, posy_d, -0.5, -0.5);
-		v_dep = sampler2D.bicubic_scalar(v_adv, posx_d, posy_d, -0.5, -0.5);
+		h = sampler2D.bicubic_scalar(h, posx_d, posy_d, -0.5, -0.5);
+		u = sampler2D.bicubic_scalar(u, posx_d, posy_d, -0.5, -0.5);
+		v = sampler2D.bicubic_scalar(v, posx_d, posy_d, -0.5, -0.5);
 
 		//Calculate phi_0 of interpolated U
 		PlaneData phi0_Un_h(planeDataConfig);
 		PlaneData phi0_Un_u(planeDataConfig);
 		PlaneData phi0_Un_v(planeDataConfig);
 		ts_phi0_rexi.run_timestep(
-				h_dep, u_dep, v_dep,
+				h, u, v,
 				phi0_Un_h, phi0_Un_u, phi0_Un_v,
 				i_dt,
 				i_simulation_timestamp
@@ -183,6 +184,15 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 		io_h = phi0_Un_h;
 		io_u = phi0_Un_u;
 		io_v = phi0_Un_v;
+
+		/*
+		io_h = h;
+		io_u = u;
+		io_v = v;
+		std::cout <<  io_h.reduce_sum()  << std::endl;
+		std::cout <<  io_u.reduce_sum()  << std::endl;
+		std::cout <<  io_v.reduce_sum()  << std::endl;
+		 */
 	}
 	else if (timestepping_order == 2)
 	{
@@ -231,7 +241,6 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 				i_dt,
 				i_simulation_timestamp
 		);
-
 
 		//Add this to U and interpolate to departure points
 		PlaneData h_adv(planeDataConfig);
@@ -336,6 +345,9 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 				i_dt,
 				i_simulation_timestamp
 			);
+		std::cout <<  h_1.reduce_maxAbs()  << std::endl;
+		std::cout <<  u_1.reduce_maxAbs()  << std::endl;
+		std::cout <<  v_1.reduce_maxAbs()  << std::endl;
 
 		io_h = h_1 + i_dt*phi0_dif2_h;
 		io_u = u_1 + i_dt*phi0_dif2_u;
@@ -536,10 +548,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 	{
 		FatalError("TODO: This order is not implemented, yet!");
 	}
-	// Set time (n) as time (n-1)
-	h_prev = io_h;
-	u_prev = io_u;
-	v_prev = io_v;
+
 
 }
 
