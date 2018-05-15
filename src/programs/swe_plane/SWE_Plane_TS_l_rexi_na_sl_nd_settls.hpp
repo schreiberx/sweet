@@ -54,9 +54,8 @@ public:
 		);
 
 	void setup(
-			REXI_SimulationVariables &i_rexi,
-
-			int i_with_nonlinear
+			//REXI_SimulationVariables &i_rexi,
+			//int i_with_nonlinear
 	);
 
 	void run_timestep(

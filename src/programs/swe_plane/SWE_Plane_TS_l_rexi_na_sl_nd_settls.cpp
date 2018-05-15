@@ -76,6 +76,10 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 	u = io_u;
 	v = io_v;
 	h = io_h;
+	std::cout <<  i_simulation_timestamp  << std::endl;
+	std::cout <<  io_h.reduce_sum()  << std::endl;
+	std::cout <<  io_u.reduce_sum()  << std::endl;
+	std::cout <<  io_v.reduce_sum()  << std::endl;
 
 	N_u.physical_set_all(0);
 	N_v.physical_set_all(0);
@@ -84,10 +88,10 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 	N_h_ext.physical_set_all(0);
 	hdiv.physical_set_all(0);
 
-#if 1 	 //Original more stable scheme
+	//Original more stable scheme
 
 	//Calculate nonlinear terms - not done in case of only linear divergence (linear div is already in linear part)
-	if (with_linear_div_only == 0) // Full nonlinear case
+	if (simVars.pde.use_linear_div == 0) // Full nonlinear case
 	{
 
 		// Calculate nonlinear term for the previous time step
@@ -118,7 +122,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 	h = sampler2D.bicubic_scalar(h, posx_d, posy_d, -0.5, -0.5);
 
 	// Add nonlinearity in h
-	if (with_linear_div_only == 0) // Full nonlinear case
+	if (simVars.pde.use_linear_div == 0) // Full nonlinear case
 	{
 		h = h + 0.5 * dt * hdiv;
 	}
@@ -132,62 +136,20 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 	PlaneData phi0_Un_v(planeDataConfig);
 	//ts_l_rexi.run_timestep(h, u, v, i_dt, i_simulation_timestamp);
 	ts_l_rexi.run_timestep(
-					h, u, v,
-					phi0_Un_h, phi0_Un_u, phi0_Un_v,
-					i_dt,
-					i_simulation_timestamp
-			);
+			h, u, v,
+			phi0_Un_h, phi0_Un_u, phi0_Un_v,
+			i_dt,
+			i_simulation_timestamp
+	);
 
 	h = phi0_Un_h;
 	u = phi0_Un_u;
 	v = phi0_Un_v;
-	/*
-	std::cout <<  h.reduce_sum()  << std::endl;
-	std::cout <<  u.reduce_sum()  << std::endl;
-	std::cout <<  v.reduce_sum()  << std::endl;
-	*/
-#else	//#else //simpler scheme (unstable)
 
-
-	// Calculate linear part
-	// ------------------------------
-
-	// Interpolate U to departure points
-	u = sampler2D.bicubic_scalar(io_u, posx_d, posy_d, -0.5, -0.5);
-	v = sampler2D.bicubic_scalar(io_v, posx_d, posy_d, -0.5, -0.5);
-	h = sampler2D.bicubic_scalar(io_h, posx_d, posy_d, -0.5, -0.5);
-
-	ts_l_rexi.run_timestep(h, u, v, i_dt, i_simulation_timestamp);
-
-	if(with_linear_div_only==0) //linear div is already incorporated in the linear term, so simply ignore nonlinearity.
-	{
-		//std::cout<<"Be careful, don't trust me, I may be go unstable!"<<std::endl;
-		// Calculate nonlinear term
-		// ------------------------------
-
-		//Extrapolate N to t_n+1
-		N_h =  - io_h * (op.diff_c_x(io_u) + op.diff_c_y(io_v));
-		N_h_prev = - h_prev * (op.diff_c_x(u_prev) + op.diff_c_y(v_prev));
-		N_h_ext = 2 * N_h - N_h_prev;
-
-		//Interpolate to departure points
-		N_h_ext = sampler2D.bicubic_scalar(N_h_ext, posx_d, posy_d, -0.5, -0.5);
-
-		//Compose extrapolated N_n+1/2
-		N_h = 0.5 * ( N_h_ext + N_h );
-
-		//Apply exponential dt/2
-		ts_l_rexi.run_timestep(N_h, N_u, N_v, 0.5*i_dt, i_simulation_timestamp);
-
-		// Join linear and nonlinear
-		// ------------------------------
-		u = u + i_dt * N_u;
-		u = v + i_dt * N_v;
-		h = h + i_dt * N_h;
-
-	}
-
-#endif
+	//std::cout <<  i_simulation_timestamp  << std::endl;
+	//std::cout <<  h.reduce_sum()  << std::endl;
+	//std::cout <<  u.reduce_sum()  << std::endl;
+	//std::cout <<  v.reduce_sum()  << std::endl;
 
 
 	// Set time (n) as time (n-1)
@@ -207,8 +169,8 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
  * Setup
  */
 void SWE_Plane_TS_l_rexi_na_sl_nd_settls::setup(
-		REXI_SimulationVariables &i_rexi,
-		int i_use_linear_div
+		//REXI_SimulationVariables &i_rexi,
+		//int i_use_linear_div
 )
 {
 	ts_l_rexi.setup(simVars.rexi, "phi0", simVars.timecontrol.current_timestep_size);
@@ -216,7 +178,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::setup(
 	if (simVars.disc.use_staggering)
 		FatalError("SWE_Plane_TS_l_rexi_na_sl_nd_settls: Staggering not supported for l_rexi_na_sl_nd_settls");
 
-	with_linear_div_only = i_use_linear_div;
+	//with_linear_div_only = i_use_linear_div;
 
 	// Setup sampler for future interpolations
 	sampler2D.setup(simVars.sim.domain_size, op.planeDataConfig);
@@ -263,20 +225,20 @@ SWE_Plane_TS_l_rexi_na_sl_nd_settls::SWE_Plane_TS_l_rexi_na_sl_nd_settls(
 		SimulationVariables &i_simVars,
 		PlaneOperators &i_op
 )	:
-						simVars(i_simVars),
-						op(i_op),
+								simVars(i_simVars),
+								op(i_op),
 
-						ts_l_rexi(i_simVars, i_op),
+								ts_l_rexi(i_simVars, i_op),
 
-						h_prev(i_op.planeDataConfig),
-						u_prev(i_op.planeDataConfig),
-						v_prev(i_op.planeDataConfig),
+								h_prev(i_op.planeDataConfig),
+								u_prev(i_op.planeDataConfig),
+								v_prev(i_op.planeDataConfig),
 
-						posx_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
-						posy_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
+								posx_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
+								posy_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
 
-						posx_d(i_op.planeDataConfig->physical_array_data_number_of_elements),
-						posy_d(i_op.planeDataConfig->physical_array_data_number_of_elements)
+								posx_d(i_op.planeDataConfig->physical_array_data_number_of_elements),
+								posy_d(i_op.planeDataConfig->physical_array_data_number_of_elements)
 {
 }
 

@@ -123,12 +123,16 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 	rhs_h.request_data_spectral();
 
 	// Calculate nonlinear term at half timestep and add to RHS of h eq.
-	PlaneData nonlin(io_h.planeDataConfig);
+
 	if (simVars.pde.use_linear_div == 0) //full nonlinear case
 	{
 		PlaneData hdiv = 2.0 * io_h * div - h_prev * div_prev;
+		PlaneData nonlin(io_h.planeDataConfig);
 		nonlin = 0.5 * io_h * div + 0.5 * sampler2D.bicubic_scalar(hdiv, posx_d, posy_d, -0.5, -0.5);
+		rhs_h = rhs_h - 2.0*nonlin;
+		rhs_h.request_data_spectral();	/// why is there a request_data_spectral()?
 	}
+	/*
 	else
 	{
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
@@ -137,10 +141,7 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 		nonlin.physical_set_zero();
 #endif
 	}
-
-	rhs_h = rhs_h - 2.0*nonlin;
-	rhs_h.request_data_spectral();	/// why is there a request_data_spectral()?
-
+*/
 
 	// Build Helmholtz eq.
 	PlaneData rhs_div = op.diff_c_x(rhs_u)+op.diff_c_y(rhs_v);
@@ -181,10 +182,10 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
  * Setup
  */
 void SWE_Plane_TS_l_cn_na_sl_nd_settls::setup(
-		int i_with_linear_div_only
+		//int i_with_linear_div_only
 )
 {
-	with_linear_div_only = i_with_linear_div_only;
+	//with_linear_div_only = i_with_linear_div_only;
 
 	if (simVars.disc.use_staggering)
 		FatalError("SWE_Plane_TS_l_cn_na_sl_nd_settls: Staggering not supported for l_cn_na_sl_nd_settls");

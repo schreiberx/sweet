@@ -38,11 +38,11 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::euler_timestep_update_nonlinear(
 	 * o_v_t = -i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
 	 */
 	// In lagrangian form, the only nonlinearity is the nonlinear divergence
-	o_u_t.physical_set_all(0); //-i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
-	o_v_t.physical_set_all(0); // = 0.0; //-i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
+	o_u_t.physical_set_zero(); //-i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
+	o_v_t.physical_set_zero(); // = 0.0; //-i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
 
 	if (simVars.pde.use_linear_div == 1) // linear div only
-		o_h_t.physical_set_all(0); // = 0.0; //-op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
+		o_h_t.physical_set_zero(); // = 0.0; //-op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
 	else //nonlinear div
 		o_h_t = -i_h*(op.diff_c_x(i_u) + op.diff_c_y(i_v));
 
@@ -103,21 +103,16 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 	u = io_u;
 	v = io_v;
 	h = io_h;
+	std::cout <<  i_simulation_timestamp  << std::endl;
+	std::cout <<  io_h.reduce_sum()  << std::endl;
+	std::cout <<  io_u.reduce_sum()  << std::endl;
+	std::cout <<  io_v.reduce_sum()  << std::endl;
 
 	// Save time (n) as time (n-1)
 	// We won't need this anymore...
 	h_prev = io_h;
 	u_prev = io_u;
 	v_prev = io_v;
-
-	//u_dep = io_u;
-	//v_dep = io_v;
-	//h_dep = io_h;
-
-	// Interpolate U to departure points
-	//u_dep = sampler2D.bicubic_scalar(io_u, posx_d, posy_d, -0.5, -0.5);
-	//v_dep = sampler2D.bicubic_scalar(io_v, posx_d, posy_d, -0.5, -0.5);
-	//h_dep = sampler2D.bicubic_scalar(io_h, posx_d, posy_d, -0.5, -0.5);
 
 	if (timestepping_order == 1)
 	{
@@ -132,11 +127,9 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 		 */
 
 		// Calculate term to be interpolated: u+dt*psi_1(dt L)N(U_{0})
-
-
 		//Calculate N(U_{0})
 
-		if (simVars.pde.use_linear_div == 0)
+		if (simVars.pde.use_linear_div == 0) //Full nonlinear case
 		{
 			PlaneData FUn_h(planeDataConfig);
 			PlaneData FUn_u(planeDataConfig);
@@ -185,14 +178,15 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 		io_u = phi0_Un_u;
 		io_v = phi0_Un_v;
 
-		/*
-		io_h = h;
-		io_u = u;
-		io_v = v;
-		std::cout <<  io_h.reduce_sum()  << std::endl;
-		std::cout <<  io_u.reduce_sum()  << std::endl;
-		std::cout <<  io_v.reduce_sum()  << std::endl;
-		 */
+
+		//io_h = h;
+		//io_u = u;
+		//io_v = v;
+		//std::cout <<  i_simulation_timestamp  << std::endl;
+		//std::cout <<  io_h.reduce_sum()  << std::endl;
+		//std::cout <<  io_u.reduce_sum()  << std::endl;
+		//std::cout <<  io_v.reduce_sum()  << std::endl;
+
 	}
 	else if (timestepping_order == 2)
 	{
@@ -558,7 +552,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
  * Setup
  */
 void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::setup(
-		REXI_SimulationVariables &i_rexiSimVars,
+		//REXI_SimulationVariables &i_rexiSimVars,
 		int i_timestepping_order
 )
 {
@@ -567,34 +561,34 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::setup(
 
 	if (timestepping_order == 1)
 	{
-		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", simVars.timecontrol.current_timestep_size);
-		ts_phi1_rexi.setup(i_rexiSimVars, "phi1", simVars.timecontrol.current_timestep_size);
-		ts_psi1_rexi.setup(i_rexiSimVars, "psi1", simVars.timecontrol.current_timestep_size);
+		ts_phi0_rexi.setup(simVars.rexi, "phi0", simVars.timecontrol.current_timestep_size);
+		ts_phi1_rexi.setup(simVars.rexi, "phi1", simVars.timecontrol.current_timestep_size);
+		ts_psi1_rexi.setup(simVars.rexi, "psi1", simVars.timecontrol.current_timestep_size);
 	}
 	else if (timestepping_order == 2)
 	{
-		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", simVars.timecontrol.current_timestep_size);
-		ts_phi1_rexi.setup(i_rexiSimVars, "phi1", simVars.timecontrol.current_timestep_size);
-		ts_phi2_rexi.setup(i_rexiSimVars, "phi2", simVars.timecontrol.current_timestep_size);
+		ts_phi0_rexi.setup(simVars.rexi, "phi0", simVars.timecontrol.current_timestep_size);
+		ts_phi1_rexi.setup(simVars.rexi, "phi1", simVars.timecontrol.current_timestep_size);
+		ts_phi2_rexi.setup(simVars.rexi, "phi2", simVars.timecontrol.current_timestep_size);
 
-		ts_psi1_rexi.setup(i_rexiSimVars, "psi1", simVars.timecontrol.current_timestep_size);
-		ts_psi2_rexi.setup(i_rexiSimVars, "psi2", simVars.timecontrol.current_timestep_size);
+		ts_psi1_rexi.setup(simVars.rexi, "psi1", simVars.timecontrol.current_timestep_size);
+		ts_psi2_rexi.setup(simVars.rexi, "psi2", simVars.timecontrol.current_timestep_size);
 
 	}
 	else if (timestepping_order == 4)
 	{
-		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", simVars.timecontrol.current_timestep_size*0.5);
-		ts_phi1_rexi.setup(i_rexiSimVars, "phi1", simVars.timecontrol.current_timestep_size*0.5);
-		ts_phi2_rexi.setup(i_rexiSimVars, "phi2", simVars.timecontrol.current_timestep_size*0.5);
+		ts_phi0_rexi.setup(simVars.rexi, "phi0", simVars.timecontrol.current_timestep_size*0.5);
+		ts_phi1_rexi.setup(simVars.rexi, "phi1", simVars.timecontrol.current_timestep_size*0.5);
+		ts_phi2_rexi.setup(simVars.rexi, "phi2", simVars.timecontrol.current_timestep_size*0.5);
 
-		ts_psi1_rexi.setup(i_rexiSimVars, "psi1", simVars.timecontrol.current_timestep_size*0.5);
-		ts_psi2_rexi.setup(i_rexiSimVars, "psi2", simVars.timecontrol.current_timestep_size*0.5);
-		ts_psi3_rexi.setup(i_rexiSimVars, "psi3", simVars.timecontrol.current_timestep_size*0.5);
+		ts_psi1_rexi.setup(simVars.rexi, "psi1", simVars.timecontrol.current_timestep_size*0.5);
+		ts_psi2_rexi.setup(simVars.rexi, "psi2", simVars.timecontrol.current_timestep_size*0.5);
+		ts_psi3_rexi.setup(simVars.rexi, "psi3", simVars.timecontrol.current_timestep_size*0.5);
 
-		ts_ups0_rexi.setup(i_rexiSimVars, "phi0", simVars.timecontrol.current_timestep_size);
-		ts_ups1_rexi.setup(i_rexiSimVars, "ups1", simVars.timecontrol.current_timestep_size);
-		ts_ups2_rexi.setup(i_rexiSimVars, "ups2", simVars.timecontrol.current_timestep_size);
-		ts_ups3_rexi.setup(i_rexiSimVars, "ups3", simVars.timecontrol.current_timestep_size);
+		ts_ups0_rexi.setup(simVars.rexi, "phi0", simVars.timecontrol.current_timestep_size);
+		ts_ups1_rexi.setup(simVars.rexi, "ups1", simVars.timecontrol.current_timestep_size);
+		ts_ups2_rexi.setup(simVars.rexi, "ups2", simVars.timecontrol.current_timestep_size);
+		ts_ups3_rexi.setup(simVars.rexi, "ups3", simVars.timecontrol.current_timestep_size);
 	}
 
 	if (simVars.disc.use_staggering)

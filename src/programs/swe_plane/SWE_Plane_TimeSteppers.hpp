@@ -269,10 +269,7 @@ public:
 
 			l_rexi_na_sl_nd_settls = new SWE_Plane_TS_l_rexi_na_sl_nd_settls(i_simVars, i_op);
 
-			l_rexi_na_sl_nd_settls->setup(
-					i_simVars.rexi,
-					i_simVars.pde.use_linear_div
-				);
+			l_rexi_na_sl_nd_settls->setup( );
 
 			master = &(SWE_Plane_TS_interface&)*l_rexi_na_sl_nd_settls;
 
@@ -281,7 +278,7 @@ public:
 		else if (i_timestepping_method == "l_rexi_na_sl_nd_etdrk")
 		{
 			l_rexi_na_sl_nd_etdrk = new SWE_Plane_TS_l_rexi_na_sl_nd_etdrk(i_simVars, i_op);
-			l_rexi_na_sl_nd_etdrk->setup(i_simVars.rexi, i_simVars.disc.timestepping_order);
+			l_rexi_na_sl_nd_etdrk->setup(i_simVars.disc.timestepping_order);
 
 			master = &(SWE_Plane_TS_interface&)*l_rexi_na_sl_nd_etdrk;
 
@@ -292,9 +289,7 @@ public:
 
 			l_cn_na_sl_nd_settls = new SWE_Plane_TS_l_cn_na_sl_nd_settls(i_simVars, i_op);
 
-			l_cn_na_sl_nd_settls->setup(
-					i_simVars.pde.use_linear_div
-				);
+			l_cn_na_sl_nd_settls->setup();
 
 			master = &(SWE_Plane_TS_interface&)*l_cn_na_sl_nd_settls;
 
