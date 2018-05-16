@@ -87,7 +87,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 		u_prev = io_u;
 		v_prev = io_v;
 	}
-	/*
+
 	std::cout << "input: time = " << i_simulation_timestamp  << std::endl;
 	std::cout <<  io_h.reduce_sum()  << std::endl;
 	std::cout <<  io_u.reduce_sum()  << std::endl;
@@ -96,7 +96,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 	std::cout <<  io_u.file_physical_saveData_ascii("u_in.csv")  << std::endl;
 	std::cout <<  io_v.file_physical_saveData_ascii("v_in.csv")  << std::endl;
 	std::cout << "-------------------------------"   << std::endl;
-	 */
+
 
 	//Preserve io unmodified
 	u = io_u;
@@ -174,7 +174,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 		u = sampler2D.bicubic_scalar(u, posx_d, posy_d, -0.5, -0.5);
 		v = sampler2D.bicubic_scalar(v, posx_d, posy_d, -0.5, -0.5);
 
-		/*
+
 		std::cout << "after interpolation to departure points: time = " << i_simulation_timestamp  << std::endl;
 		std::cout <<  h.file_physical_saveData_ascii("h_after_int.csv")  << std::endl;
 		std::cout <<  u.file_physical_saveData_ascii("u_after_int.csv")  << std::endl;
@@ -182,7 +182,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 		std::cout <<  h.reduce_sum()  << std::endl;
 		std::cout <<  u.reduce_sum()  << std::endl;
 		std::cout <<  v.reduce_sum()  << std::endl;
-		 */
+
 
 		//Calculate phi_0 of interpolated U
 		PlaneData phi0_Un_h(planeDataConfig);
@@ -202,7 +202,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 		//io_h = h;
 		//io_u = u;
 		//io_v = v;
-		/*
+
 		std::cout << "after interpolation phi0: time = " << i_simulation_timestamp  << std::endl;
 		std::cout <<  h.file_physical_saveData_ascii("h_after_phi0.csv")  << std::endl;
 		std::cout <<  u.file_physical_saveData_ascii("u_after_phi0.csv")  << std::endl;
@@ -210,7 +210,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 		std::cout <<  h.reduce_sum()  << std::endl;
 		std::cout <<  u.reduce_sum()  << std::endl;
 		std::cout <<  v.reduce_sum()  << std::endl;
-		*/
+
 
 	}
 	else if (timestepping_order == 2)
