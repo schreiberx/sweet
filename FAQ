@@ -4,8 +4,9 @@
 * SWEET takes long to startup
 ********************************************************
 
-  FFTW can take some seconts to setup the plans.
-  To overcome this, set the environemtn variable SWEET_FFTW_ESTIMATE
+  FFTW can take some seconds to setup the plans.
+  To overcome this, set the environment variable SWEET_FFTW_ESTIMATE
+  to some value.
 
 ********************************************************
 * GL library not found during linking stage
@@ -20,7 +21,13 @@
 
   One of the reasons can be that FFTW is choosing different plans
   everytime a SWEET program is started.
-  To avoid this, SWEET supports loading plans from wisdom files.
+
+  To avoid this, there are two ways:
+
+  1) Set environment variable SWEET_FFTW_ESTIMATE (see above), which
+  results in maybe sub-optimal plans.
+
+  2) SWEET supports loading plans from wisdom files.
   Set the environment variable SWEET_FFTW_LOAD_WISDOM_FROM_FILE to
   the wisdom file which you can generate with `fftw-wisdom`
 
@@ -31,6 +38,5 @@
 
   In case of activated frequency scaling, it might be necessary
   to deactivate this.
-
 
 
