@@ -622,7 +622,7 @@ public:
 			std::stringstream header;
 			std::stringstream rows;
 
-			rows << std::setprecision(8);
+			rows << std::setprecision(16);
 
 			// Prefix
 			if (simVars.timecontrol.current_timestep_nr == 0)
