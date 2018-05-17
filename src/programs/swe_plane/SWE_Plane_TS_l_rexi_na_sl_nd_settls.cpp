@@ -85,7 +85,9 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 			&staggering,
 			simVars.disc.timestepping_order
 	);
-	//}
+
+	std::cout << "Checksum u_prev: " << u_prev.reduce_sum() << std::endl;
+	std::cout << "Checksum v_prev: " << v_prev.reduce_sum() << std::endl;
 
 	N_u.physical_set_all(0);
 	N_v.physical_set_all(0);
@@ -99,6 +101,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 	//Calculate nonlinear terms - not done in case of only linear divergence (linear div is already in linear part)
 	if (simVars.pde.use_linear_div == 0) // Full nonlinear case
 	{
+		FatalError("Not yet tested");
 
 		// Calculate nonlinear term for the previous time step
 		N_h = -h_prev * (op.diff_c_x(u_prev) + op.diff_c_y(v_prev));
@@ -121,16 +124,6 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 		v = v + N_v;
 		h = h + N_h;
 	}
-
-	/*
-	std::cout << "after calculation of departure points: time = " << i_simulation_timestamp  << std::endl;
-		std::cout <<  h.reduce_sum()  << std::endl;
-		std::cout <<  u.reduce_sum()  << std::endl;
-		std::cout <<  v.reduce_sum()  << std::endl;
-		std::cout <<  h.file_physical_saveData_ascii("h_after_dep.csv")  << std::endl;
-		std::cout <<  u.file_physical_saveData_ascii("u_after_dep.csv")  << std::endl;
-		std::cout <<  v.file_physical_saveData_ascii("v_after_dep.csv")  << std::endl;
- 	*/
 
 	// Interpolate W to departure points
 	h = sampler2D.bicubic_scalar(h, posx_d, posy_d, -0.5, -0.5);

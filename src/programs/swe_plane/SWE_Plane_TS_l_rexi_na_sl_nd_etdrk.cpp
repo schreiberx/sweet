@@ -115,6 +115,8 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 			simVars.disc.timestepping_order
 	);
 
+	std::cout << "Checksum u_prev: " << u_prev.reduce_sum() << std::endl;
+	std::cout << "Checksum v_prev: " << v_prev.reduce_sum() << std::endl;
 
 	if (timestepping_order == 1)
 	{
@@ -133,6 +135,8 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 
 		if (simVars.pde.use_linear_div == 0) //Full nonlinear case
 		{
+			FatalError("Not yet tested");
+
 			PlaneData FUn_h(planeDataConfig);
 			PlaneData FUn_u(planeDataConfig);
 			PlaneData FUn_v(planeDataConfig);
@@ -159,8 +163,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 			u = u + i_dt*psi1_FUn_u;
 			v = v + i_dt*psi1_FUn_v;
 		}
-
-		/*
+#if 0
 		std::cout << "after calculation of departure points: time = " << i_simulation_timestamp  << std::endl;
 		std::cout <<  h.reduce_sum()  << std::endl;
 		std::cout <<  u.reduce_sum()  << std::endl;
@@ -168,7 +171,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 		std::cout <<  h.file_physical_saveData_ascii("h_after_dep.csv")  << std::endl;
 		std::cout <<  u.file_physical_saveData_ascii("u_after_dep.csv")  << std::endl;
 		std::cout <<  v.file_physical_saveData_ascii("v_after_dep.csv")  << std::endl;
-		 */
+#endif
 
 		h = sampler2D.bicubic_scalar(h, posx_d, posy_d, -0.5, -0.5);
 		u = sampler2D.bicubic_scalar(u, posx_d, posy_d, -0.5, -0.5);
