@@ -60,21 +60,13 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 		v_prev = io_v;
 	}
 
-	std::cout << "input: time = " << i_simulation_timestamp  << std::endl;
-	std::cout <<  io_h.reduce_sum()  << std::endl;
-	std::cout <<  io_u.reduce_sum()  << std::endl;
-	std::cout <<  io_v.reduce_sum()  << std::endl;
-	std::cout <<  io_h.file_physical_saveData_ascii("h_in.csv")  << std::endl;
-	std::cout <<  io_u.file_physical_saveData_ascii("u_in.csv")  << std::endl;
-	std::cout <<  io_v.file_physical_saveData_ascii("v_in.csv")  << std::endl;
-	std::cout << "-------------------------------"   << std::endl;
-
 	//Preserve io unmodified
 	u = io_u;
 	v = io_v;
 	h = io_h;
 
 	// Calculate departure points
+	//Calculate departure points - always force to be second order accurate!
 	semiLagrangian.semi_lag_departure_points_settls(
 			u_prev,	v_prev,
 			u,		v,
@@ -83,11 +75,8 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 			posx_d,	posy_d,			// output
 			simVars.sim.domain_size,
 			&staggering,
-			simVars.disc.timestepping_order
+			2 //simVars.disc.timestepping_order
 	);
-
-	std::cout << "Checksum u_prev: " << u_prev.reduce_sum() << std::endl;
-	std::cout << "Checksum v_prev: " << v_prev.reduce_sum() << std::endl;
 
 	N_u.physical_set_all(0);
 	N_v.physical_set_all(0);
@@ -131,15 +120,6 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 	v = sampler2D.bicubic_scalar(v, posx_d, posy_d, -0.5, -0.5);
 
 
-	std::cout << "after interpolation to departure points: time = " << i_simulation_timestamp  << std::endl;
-	std::cout <<  h.file_physical_saveData_ascii("h_after_int.csv")  << std::endl;
-	std::cout <<  u.file_physical_saveData_ascii("u_after_int.csv")  << std::endl;
-	std::cout <<  v.file_physical_saveData_ascii("v_after_int.csv")  << std::endl;
-	std::cout <<  h.reduce_sum()  << std::endl;
-	std::cout <<  u.reduce_sum()  << std::endl;
-	std::cout <<  v.reduce_sum()  << std::endl;
-
-
 	// Add nonlinearity in h
 	if (simVars.pde.use_linear_div == 0) // Full nonlinear case
 	{
@@ -164,15 +144,6 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 	h = phi0_Un_h;
 	u = phi0_Un_u;
 	v = phi0_Un_v;
-
-
-	std::cout << "after interpolation phi0: time = " << i_simulation_timestamp  << std::endl;
-	std::cout <<  h.file_physical_saveData_ascii("h_after_phi0.csv")  << std::endl;
-	std::cout <<  u.file_physical_saveData_ascii("u_after_phi0.csv")  << std::endl;
-	std::cout <<  v.file_physical_saveData_ascii("v_after_phi0.csv")  << std::endl;
-	std::cout <<  h.reduce_sum()  << std::endl;
-	std::cout <<  u.reduce_sum()  << std::endl;
-	std::cout <<  v.reduce_sum()  << std::endl;
 
 	// Set time (n) as time (n-1)
 	h_prev = io_h;

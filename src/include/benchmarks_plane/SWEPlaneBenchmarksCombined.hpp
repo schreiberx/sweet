@@ -287,6 +287,9 @@ public:
 	{
 		std::cout << "Available benchmark scenarios (--benchmark):" << std::endl;
 		std::cout << "		polvani : Polvani et al (1994) initial condition" << std::endl;
+		std::cout << "		mergevortex : Vortex merging initial conditions from McRae QJ 2014 paper" << std::endl;
+		std::cout << "		unstablejet : Unstable Jet test case" << std::endl;
+		std::cout << "		gaussian_bump : Gaussian bump" << std::endl;
 	}
 };
 
