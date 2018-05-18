@@ -64,7 +64,8 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 		else // use linear divergence
 		{
 			//o_h_t = -op.diff_f_x(simVars.sim.h0*i_u) - op.diff_f_y(simVars.sim.h0*i_v);
-			o_h_t = -op.diff_c_x(i_u*simVars.sim.h0) - op.diff_c_y(i_v*simVars.sim.h0);
+			o_h_t = -i_u*op.diff_c_x(total_h) - i_v*op.diff_c_y(total_h) + //nonlinear adv
+					-op.diff_c_x(i_u*simVars.sim.h0) - op.diff_c_y(i_v*simVars.sim.h0); //linear div
 		}
 
 	}
@@ -142,7 +143,9 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 		}
 		else // use linear divergence
 		{
-			o_h_t = -op.diff_f_x(simVars.sim.h0*i_u) - op.diff_f_y(simVars.sim.h0*i_v);
+			o_h_t = -i_u*op.diff_f_x(total_h) - i_v*op.diff_f_y(total_h) + //nonlinear adv
+					-op.diff_f_x(i_u*simVars.sim.h0) - op.diff_f_y(i_v*simVars.sim.h0); //linear div
+			//o_h_t = -op.diff_f_x(simVars.sim.h0*i_u) - op.diff_f_y(simVars.sim.h0*i_v);
 		}
 	}
 }
