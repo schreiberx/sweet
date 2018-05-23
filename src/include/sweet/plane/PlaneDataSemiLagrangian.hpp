@@ -64,7 +64,7 @@ public:
 			const Staggering *i_staggering,	///< staggering, if any (ux, uy, vx, vy)
 
 			int i_timestepping_order,
-			int max_iters = 10,
+			int max_iters = 20,
 			double i_convergence_tolerance = 1e-8
 	)
 	{
