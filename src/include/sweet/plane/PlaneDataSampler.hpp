@@ -125,7 +125,7 @@ public:
 #endif
 
 		if (i < 0 || i >= i_res)
-			FatalError("Stopping here: Probably an instable velocity field since more than one periodic movement exists.");
+			FatalError("Stopping here: Probably an unstable velocity field since more than one periodic movement exists.");
 
 		assert(i >= 0 && i < i_res);
 

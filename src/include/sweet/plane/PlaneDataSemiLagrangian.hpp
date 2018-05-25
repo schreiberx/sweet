@@ -98,10 +98,13 @@ public:
 			//Velocity for iterations
 			//ScalarDataArray u_iter = dt * u - dt*0.5 * u_prev;
 			//ScalarDataArray v_iter = dt * v - dt*0.5 * v_prev;
-
+#if 1
 			PlaneData u_extrap = Convert_ScalarDataArray_to_PlaneData::convert(2.0*u - u_prev, planeDataConfig);
 			PlaneData v_extrap = Convert_ScalarDataArray_to_PlaneData::convert(2.0*v - v_prev, planeDataConfig);
-
+#else       //To avoid multi-step method
+			PlaneData u_extrap = Convert_ScalarDataArray_to_PlaneData::convert(u , planeDataConfig);
+			PlaneData v_extrap = Convert_ScalarDataArray_to_PlaneData::convert(v , planeDataConfig);
+#endif
 			//Departure point tmp
 			ScalarDataArray rx_d_new(num_points);
 			ScalarDataArray ry_d_new(num_points);
