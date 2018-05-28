@@ -43,9 +43,14 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::euler_timestep_update_nonlinear(
 
 	if (simVars.pde.use_linear_div == 1) // linear div only
 		o_h_t.physical_set_zero(); // = 0.0; //-op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
-	else //nonlinear div
+	else
+	{//nonlinear div
 		o_h_t = -i_h*(op.diff_c_x(i_u) + op.diff_c_y(i_v));
-
+		//Smooth spectrum to avoid instability
+		//o_h_t= op.implicit_diffusion(o_h_t, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.viscosity_order);
+		//o_h_t= op.implicit_diffusion(o_h_t, 1000000.00, 4);
+		//o_h_t.physical_set_zero(); // = 0.0; //-op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
+	}
 }
 
 
@@ -136,6 +141,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 					i_simulation_timestamp
 			);
 
+
 			//Apply psi_1 to N(U_{0})
 			PlaneData psi1_FUn_h(planeDataConfig);
 			PlaneData psi1_FUn_u(planeDataConfig);
@@ -148,11 +154,13 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 					i_simulation_timestamp
 			);
 
+
 			//Add this to U and interpolate to departure points
 			h = h + i_dt*psi1_FUn_h;
 			u = u + i_dt*psi1_FUn_u;
 			v = v + i_dt*psi1_FUn_v;
 		}
+
 
 
 		h = sampler2D.bicubic_scalar(h, posx_d, posy_d, -0.5, -0.5);
@@ -201,8 +209,9 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 		PlaneData u1(planeDataConfig);
 		PlaneData v1(planeDataConfig);
 		h1 = h;
-		u1 = v;
+		u1 = u;
 		v1 = v;
+
 		//Calculate psi2NU_1
 		//-----------------------
 
@@ -215,6 +224,8 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 				FU1_h, FU1_u, FU1_v,
 				i_simulation_timestamp
 		);
+
+
 		//Apply psi2
 		PlaneData psi2_FU1_h(planeDataConfig);
 		PlaneData psi2_FU1_u(planeDataConfig);
@@ -237,6 +248,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 				i_dt,
 				i_simulation_timestamp
 		);
+
 
 		//Interpolate psi2NUn to departure points ( )_*
 
@@ -268,10 +280,13 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 				i_dt,
 				i_simulation_timestamp
 		);
+
 		h = h1 + i_dt*phi0_dif2_h;
 		u = u1 + i_dt*phi0_dif2_u;
 		v = v1 + i_dt*phi0_dif2_v;
+
 	}
+
 
 
 	// Save current time step for next step
@@ -282,6 +297,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 	io_h = h;
 	io_u = u;
 	io_v = v;
+
 
 }
 
