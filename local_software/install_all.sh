@@ -43,10 +43,10 @@ elif [ "${HOSTNAME}" == "mac-login-amd" ]; then
 	PKGS+=("install_scons3.sh")
 	PKGS+=("install_shtns.sh")
 
-elif [ "${HOSTNAME:0:8}" == "guepardo" ]; then
+elif [ "${HOSTNAME:0:8}" == "guepardo" ] || [ "${HOSTNAME:0:5}" == "green" ]; then
 
 	echo "***********************************"
-	echo "USP system detected: guepardo at USP-BR"
+	echo "USP system detected at USP-BR"
 	echo "***********************************"
 
 	#PKGS+=("install_autoconf.sh")
@@ -56,10 +56,10 @@ elif [ "${HOSTNAME:0:8}" == "guepardo" ]; then
 	#PKGS+=("install_gcc5.3.sh")
 	PKGS+=("install_gcc7.2.sh")
 	PKGS+=("install_lapack.sh")
-	#PKGS+=("install_libfreetype.sh")
+	PKGS+=("install_libfreetype.sh")
 	#PKGS+=("install_libpfasst.sh")
-	#PKGS+=("install_libpng.sh")
-	#PKGS+=("install_likwid.sh")
+	PKGS+=("install_libpng.sh")
+	PKGS+=("install_likwid.sh")
 	PKGS+=("install_numa.sh")
 	PKGS+=("install_openmpi.sh")
 	#PKGS+=("install_pfasst++.sh")
