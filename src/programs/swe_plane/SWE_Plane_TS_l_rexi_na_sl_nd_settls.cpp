@@ -90,10 +90,13 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 	//Calculate nonlinear terms - not done in case of only linear divergence (linear div is already in linear part)
 	if (simVars.pde.use_linear_div == 0) // Full nonlinear case
 	{
-		FatalError("Not yet tested");
+		//FatalError("Not yet tested");
 
 		// Calculate nonlinear term for the previous time step
 		N_h = -h_prev * (op.diff_c_x(u_prev) + op.diff_c_y(v_prev));
+
+		if(simVars.misc.use_local_visc != 0)
+			N_h= op.implicit_diffusion(N_h, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.viscosity_order);
 
 		//Calculate exp(Ldt)N(n-1), relative to previous timestep
 		ts_l_rexi.run_timestep(N_h, N_u, N_v, i_dt, i_simulation_timestamp);
@@ -103,6 +106,9 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 		// N=dtN^n-0.5dt exp(dtL)N^n-1 from paper
 		// N=-h*div is calculate in cartesian space (pseudo-spectrally)
 		hdiv =  - h * (op.diff_c_x(io_u) + op.diff_c_y(io_v));
+		if(simVars.misc.use_local_visc != 0)
+			hdiv= op.implicit_diffusion(hdiv, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.viscosity_order);
+
 		N_u = -0.5 * dt * N_u; // N^n of u term is zero
 		N_v = -0.5 * dt * N_v; // N^n of v term is zero
 		N_h = dt * hdiv - 0.5 * dt * N_h ; //N^n of h has the nonlin term

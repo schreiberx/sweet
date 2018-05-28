@@ -45,7 +45,17 @@ void SWE_Plane_TS_l_rexi_n_etdrk::euler_timestep_update_nonlinear(
 		//only nonlinear advection left to solve
 		o_h_t = - (i_u*op.diff_c_x(i_h) + i_v*op.diff_c_y(i_h));
 	else //full nonlinear equation on h
-		o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
+		if(simVars.misc.use_local_visc != 0)
+		{
+			//solve nonlinear divergence
+			o_h_t = - (i_h*op.diff_c_x(i_u) + i_h*op.diff_c_y(i_v));
+			//filter
+			o_h_t = op.implicit_diffusion(o_h_t, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.viscosity_order);
+			//add nonlinear advection
+			o_h_t = - (i_u*op.diff_c_x(i_h) + i_v*op.diff_c_y(i_h));
+		}
+		else
+			o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
 
 
 }

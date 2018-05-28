@@ -47,9 +47,11 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::euler_timestep_update_nonlinear(
 	{//nonlinear div
 		o_h_t = -i_h*(op.diff_c_x(i_u) + op.diff_c_y(i_v));
 		//Smooth spectrum to avoid instability
-		//o_h_t= op.implicit_diffusion(o_h_t, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.viscosity_order);
-		//o_h_t= op.implicit_diffusion(o_h_t, 1000000.00, 4);
-		//o_h_t.physical_set_zero(); // = 0.0; //-op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
+		if(simVars.misc.use_local_visc != 0)
+		{
+			o_h_t= op.implicit_diffusion(o_h_t, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.viscosity_order);
+		}
+
 	}
 }
 

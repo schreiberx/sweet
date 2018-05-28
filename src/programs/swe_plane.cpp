@@ -480,7 +480,8 @@ public:
 			);
 
 		// Apply viscosity at posteriori, for all methods explicit diffusion for non spectral schemes and implicit for spectral
-		if (simVars.sim.viscosity != 0)
+
+		if (simVars.sim.viscosity != 0 && simVars.misc.use_local_visc == 0)
 		{
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE //TODO: this needs checking
 

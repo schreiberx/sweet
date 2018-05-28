@@ -94,7 +94,7 @@ class SWEETRuntimeOptions():
 		self.uselineardiv = 0
 		self.viscosity = 0
 		self.viscosity_order = 0
-
+		self.uselocalvisc = 0
 		self.simtime = 0.001
 
 		self.compute_error = 0
@@ -328,7 +328,7 @@ class SWEETRuntimeOptions():
 			retval += ' -d '+str(self.floating_point_output_digits)
 
 		retval += ' --use-linear-div='+str(self.uselineardiv)
-
+		retval += ' --use-local-visc='+str(self.uselocalvisc)
 		retval += ' --timestepping-method='+self.timestepping_method
 		retval += ' --timestepping-order='+str(self.timestepping_order)
 		retval += ' --timestepping-order2='+str(self.timestepping_order2)

@@ -141,11 +141,12 @@ public:
 		/*
 		 * ID of PDE to use
 		 */
-		int id = 0;
+		int id = 0; //SWE is default
 
 		/// Use non-linear equations for simulations
 		///int use_nonlinear_equations = 1;
 		int use_linear_div = 0;
+
 
 
 		void outputConfig()
@@ -164,6 +165,7 @@ public:
 			std::cout << "Partial differential equation:" << std::endl;
 			std::cout << "	--pde-id [0/1]		    PDE to solve (0: SWE, 1: advection)" << std::endl;
 			std::cout << "	--use-linear-div [0/1]	Nonlinear equations will use linear divergence of mass equations, default:0" << std::endl;
+
 			std::cout << "" << std::endl;
 		}
 	} pde;
@@ -393,6 +395,7 @@ public:
 			std::cout << " + gravitation: " << gravitation << std::endl;
 			std::cout << " + domain_size (2D): " << domain_size[0] << " x " << domain_size[1] << std::endl;
 			std::cout << " + advection_velocity (x, y, rotation speed): " << advection_velocity[0] << ", " << advection_velocity[1] << ", " << advection_velocity[2] << std::endl;
+
 			std::cout << std::endl;
 		}
 
@@ -591,6 +594,7 @@ public:
 			std::cout << " + vis_id: " << vis_id << std::endl;
 			std::cout << " + sphere_use_robert_functions: " << sphere_use_robert_functions << std::endl;
 			std::cout << " + output_time_scale: " << output_time_scale << std::endl;
+			std::cout << " + use_local_visc: " << use_local_visc << std::endl;
 			std::cout << std::endl;
 		}
 
@@ -632,6 +636,10 @@ public:
 		/// time scaling for outputConfig
 		/// e.g. use scaling by 1.0/(60*60) to output days instead of seconds
 		double output_time_scale = 1.0;
+
+		/// Diffusion applied only on nonlinear divergence
+		int use_local_visc = 0;
+
 	} misc;
 
 
@@ -894,6 +902,8 @@ public:
         long_options[next_free_program_option] = {"use-robert-functions", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
+        long_options[next_free_program_option] = {"use-local-visc", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
 
         // PDE
         long_options[next_free_program_option] = {"use-linear-div", required_argument, 0, 256+next_free_program_option};
@@ -1036,6 +1046,7 @@ public:
 				if (i < next_free_program_option)
 				{
 					int c = 0;
+
 								if (i == c)	{	setup.random_seed = atoi(optarg);		continue;	}
 					c++;		if (i == c)	{	setup.setup_coord_x = atof(optarg);		continue;	}
 					c++;		if (i == c)	{	setup.setup_coord_y = atof(optarg);		continue;	}
@@ -1054,7 +1065,7 @@ public:
 					c++;		if (i == c)	{	misc.compute_errors = atoi(optarg);					continue;	}
 					c++;		if (i == c)	{	misc.stability_checks = atoi(optarg);				continue;	}
 					c++;		if (i == c)	{	misc.sphere_use_robert_functions = atoi(optarg);	continue;	}
-
+					c++;		if (i == c)	{	misc.use_local_visc = atoi(optarg);			continue;	}
 					c++;		if (i == c)	{	pde.use_linear_div = atoi(optarg);			continue;	}
 					c++;		if (i == c)	{	pde.id = atoi(optarg);								continue;	}
 
@@ -1304,6 +1315,7 @@ public:
 				std::cout << "					specify BINARY; as first file name to read files as binary raw data" << std::endl;
 				std::cout << "	--compute-errors [int]          Compute errors when possible [1], default=0	" << std::endl;
 				std::cout << "	--use-robert-functions [bool]	Use Robert function formulation for velocities on the sphere" << std::endl;
+				std::cout << "	--use-local-visc [0/1]	Viscosity will be applied only on nonlinear divergence, default:0" << std::endl;
 				std::cout << "" << std::endl;
 				rexi.outputProgParams();
 				swe_polvani.outputProgParams();
