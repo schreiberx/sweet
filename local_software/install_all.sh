@@ -56,7 +56,7 @@ elif [ "${HOSTNAME:0:8}" == "guepardo" ] || [ "${HOSTNAME:0:5}" == "green" ]; th
 	#PKGS+=("install_gcc5.3.sh")
 	PKGS+=("install_gcc7.2.sh")
 	PKGS+=("install_lapack.sh")
-	PKGS+=("install_libfreetype.sh")
+	#PKGS+=("install_libfreetype.sh")
 	#PKGS+=("install_libpfasst.sh")
 	PKGS+=("install_libpng.sh")
 	PKGS+=("install_likwid.sh")

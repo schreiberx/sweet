@@ -26,7 +26,7 @@ if [ -z "$ref" ]; then
     echo "Please enter arguments:"
     echo " Reference folder (without /)"
     echo " output file name (optional, e.g. errors.txt)"
-    echo " Time (optional, e.g. 00000086400)"
+    echo " Time (optional, e.g. 00000086400.00000000)"
     echo " variable (optional, e.g. prog_h_pert)"
     exit 0
 fi
