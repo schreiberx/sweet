@@ -256,7 +256,9 @@ if p_ref.timestep != p_cmp.timestep:
 	title += p_cmp.timestep
 	outfile += "_vs_dt"
 	outfile += str(p_cmp.timestep)
-title += ' sec '
+	
+if p_cmp.method_paper != "REF":
+	title += ' sec '
 
 
 print(title)
