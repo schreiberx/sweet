@@ -62,7 +62,7 @@ p = RuntimeSWEPlaneEarthParam(p)
 #
 # Time, Mode and Physical resolution
 #
-timelevels = 6 #7 #5
+timelevels = 10 #7 #5
 timestep_size_reference = earth.day/24 #3600 #1 hour  #864000/10 #1 day
 timestep_sizes = [timestep_size_reference*(2.0**(-i)) for i in range(0, timelevels)]
 
@@ -84,8 +84,8 @@ p.runtime.viscosity = 0.0
 p.runtime.viscosity_order = 2 #hyperviscosity
 p.runtime.uselocalvisc = 1
 visclevels = 10 #7 #5
-visc_reference = 100 #3600 #1 hour  #864000/10 #1 day
-visc_sizes = [visc_reference*(10**(i)) for i in range(0, visclevels)]
+visc_reference = 100000 #3600 #1 hour  #864000/10 #1 day
+visc_sizes = [visc_reference*(2**(i)) for i in range(0, visclevels)]
 
 
 # Groups to execute, see below
