@@ -12,7 +12,7 @@ import sys
 
 #Figure definitions
 fontsize=18
-figsize=(9, 7)
+figsize=(10, 5)
 
 for filename in sys.argv[1:]:
 
@@ -40,11 +40,15 @@ for filename in sys.argv[1:]:
 	x_min = 0
 	x_max = 4.00316e+07/1000/1000
 	y_min = 0
-	y_max = 4.00316e+07/1000/1000
+	y_max = 4.00316e+07/1000/1000/2
 	n = data.shape[0]
 	x = np.linspace(x_min, x_max, n)
 	y = np.linspace(y_min, y_max, n)
+	print(n, data.shape)
 	
+	data=data[0:int(n/2),0:n]
+	print(data.shape)
+	#print(data)
 	#Labels
 	labelsx = np.linspace(x_min, x_max, 7)
 	labelsy = np.linspace(y_min, y_max, 7)
@@ -62,7 +66,7 @@ for filename in sys.argv[1:]:
 
 	#Colorbar
 	if 'diag_vort' in filename:
-		plt.imshow(data, interpolation='nearest', extent=extent, origin='lower', aspect='auto', cmap=plt.get_cmap('seismic'))
+		plt.imshow(data, interpolation='nearest', extent=extent, origin='lower', aspect='equal', cmap=plt.get_cmap('seismic'))
 
 		#Fix max and min for vorticity
 		plt.clim(cmin, cmax)
@@ -75,13 +79,13 @@ for filename in sys.argv[1:]:
 		plt.clim(-cref, +cref)
 		cbar = plt.colorbar(format='%.0e')
 	elif 'prog_h' in filename:
-		plt.imshow(data, interpolation='nearest', extent=extent, origin='lower', aspect='auto', cmap=plt.get_cmap('jet'))
+		plt.imshow(data, interpolation='nearest', extent=extent, origin='lower', aspect='equal', cmap=plt.get_cmap('jet'))
 		plt.clim(cmin, cmax)
 		hs = 1000000
 		h_contour_levels = np.append(np.arange(900, 1000-hs, hs), np.arange(1000+hs, 1100, hs))
 		cbar = plt.colorbar()
 	elif 'prog_' in filename:
-		plt.imshow(data, interpolation='nearest', extent=extent, origin='lower', aspect='auto', cmap=plt.get_cmap('seismic'))
+		plt.imshow(data, interpolation='nearest', extent=extent, origin='lower', aspect='equal', cmap=plt.get_cmap('seismic'))
 		plt.clim(cmin, cmax)
 		cref=max(abs(cmin),abs(cmax))
 		plt.clim(-cref, +cref)
@@ -167,13 +171,13 @@ for filename in sys.argv[1:]:
 
 	#Axis
 	ax = plt.gca()
-	ax.xaxis.set_label_coords(0.5, -0.075)
+	#ax.xaxis.set_label_coords(0.5, -0.075)
 	
 	plt.xticks(fontsize=fontsize)
 	plt.yticks(fontsize=fontsize)
  
 	#plt.xticks(labelsx, fontsize=fontsize)
-	plt.xlabel("x (1000 km)", fontsize=fontsize)
+	plt.xlabel("x (1000 km)", fontsize=fontsize) #, labelpad=20)
 
 	#plt.yticks(labelsy, fontsize=fontsize)
 	plt.ylabel("y (1000 km)", fontsize=fontsize)
@@ -182,7 +186,7 @@ for filename in sys.argv[1:]:
 	plt.show()
 	
 	#Save file as eps
-	outfilename = filename.replace('.csv', '.eps')
+	outfilename = filename.replace('.csv', 'half.eps')
 	#print(outfilename)
 	#plt.savefig(outfilename, dpi=300)
 	

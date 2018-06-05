@@ -164,7 +164,8 @@ plt.yticks(fontsize=fontsize)
 
 plt.legend(fontsize=15)
 
-output_filename = "./output_dt_vs_"+head[ierr]+".eps"
+output_filename = input_filename.replace('.txt', "_"+head[ierr]+".eps")
+#output_filename = "./output_dt_vs_"+head[ierr]+".eps"
 #if output_filename != '':
 print(output_filename)
 plt.savefig(output_filename)
