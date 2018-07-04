@@ -8,7 +8,14 @@ import math
 from SWEETJobGeneration import *
 p = SWEETJobGeneration()
 
+
+#p.cluster.setupTargetMachine("cheyenne")
+#p.cluster.pm_space_cores_per_mpi_rank = 1
+#p.cluster.pm_time_cores_per_mpi_rank = 1
+
+p.compile.compiler = 'intel'
 p.compile.program = 'swe_sphere'
+p.compile.fortran_source = 'enable'
 
 p.compile.plane_or_sphere = 'sphere'
 p.compile.plane_spectral_space = 'disable'

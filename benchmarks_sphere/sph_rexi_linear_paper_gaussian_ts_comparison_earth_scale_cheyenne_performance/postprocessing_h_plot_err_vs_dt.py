@@ -107,7 +107,7 @@ for l in lines:
 		continue
 
 	prev_name = d[0]
-	prev_name = prev_name.replace('script_g9.80616_h10000_f7.292e-05_a6371220_u0_U0_fsph0_tsm_', '')
+	prev_name = prev_name.replace('script_g9.80616_h10000_f7.292e-05_a6371220_fsph0_u0_U0_tsm_', '')
 	prev_name = prev_name.replace('h0.15_nrm1_hlf0_bf0_ext00_M0128_MPI_space01_', '')
 	print(prev_name)
 

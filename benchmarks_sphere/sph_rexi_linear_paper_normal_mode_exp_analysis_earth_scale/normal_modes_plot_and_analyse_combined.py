@@ -259,7 +259,7 @@ if True:
 		if True:
 			marker = markers[(ik-1) % len(markers)]
 			plt.plot(
-				range(-len(datap)/2, len(datap)/2),
+				range(-len(datap)//2, len(datap)//2),
 				[abs(i) for i in datap],
 				linewidth=1,
 				linestyle='-',
@@ -272,7 +272,7 @@ if True:
 
 		if False:
 			ax.scatter(
-				range(-len(datap)/2, len(datap)/2),
+				range(-len(datap)//2, len(datap)//2),
 				datap,
 				s=2,
 				alpha=1,

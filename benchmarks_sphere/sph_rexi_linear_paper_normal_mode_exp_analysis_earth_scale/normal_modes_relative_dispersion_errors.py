@@ -249,6 +249,8 @@ if True:
 	plt.subplots_adjust(left=0.15, right=0.95, top=0.85, bottom=0.15)
 
 	ax.grid(linestyle='-', linewidth='0.5', color='grey')
+	#plt.yscale("log")
+	#plt.ylim(0.9999, 1.00001)
 
 	alpha_vals = [0.0, 1.0, 0.5]	# alpha values for relative dispersion shifts (see RSingle for a description)
 
@@ -304,8 +306,8 @@ if True:
 		tmp = tmp.replace('_m0', '_m')
 		tmp = tmp.replace('_tsob1_C000400', '')
 		tmp = tmp.replace('_T001_REXITER', '')
-		tmp = tmp.replace('_h0.15_nrm1_hlf1_bf0_ext02_M0016', '')
-		tmp = tmp.replace('script_g1_h100000_f0.000145842_a6371220_u0_U0_fsph1_TM_', '')
+		tmp = tmp.replace('_h0.15_nrm1_hlf0_bf0_ext02_M0016', '')
+		tmp = tmp.replace('script_g1_h100000_f0.000145842_a6371220_fsph1_u0_U0_TM_', '')
 		tmp = tmp.replace('/output_normal_modes_physical_t00000000400.00000000.csv_evalues_complex.csv', '')
 		tmp = tmp.replace('/output_normal_modes_physical_t00000000400.00000000.csv_evalues_complex.csv', '')
 

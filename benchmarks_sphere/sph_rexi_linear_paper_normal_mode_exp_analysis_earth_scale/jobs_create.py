@@ -11,7 +11,9 @@ import math
 from SWEETJobGeneration import *
 p = SWEETJobGeneration()
 
+p.compile.compiler = 'intel'
 p.compile.program = 'swe_sphere'
+p.compile.fortran_source = 'enable'
 
 p.compile.plane_or_sphere = 'sphere'
 p.compile.plane_spectral_space = 'disable'
@@ -71,7 +73,8 @@ for p.runtime.f_sphere in [1]:
 	####################################
 	p.runtime.rexi_method = 'terry'
 
-	for p.runtime.rexi_normalization in [1]:
+	#for p.runtime.rexi_normalization in [1]:
+	for p.runtime.rexi_normalization in [0, 1]:
 		for p.runtime.rexi_extended_modes in [2]:
 			p.runtime.timestepping_method = 'l_rexi'
 			p.runtime.timestepping_order = 0

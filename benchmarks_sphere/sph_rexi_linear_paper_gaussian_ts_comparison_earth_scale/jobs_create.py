@@ -8,7 +8,9 @@ import math
 from SWEETJobGeneration import *
 p = SWEETJobGeneration()
 
+p.compile.compiler = 'intel'
 p.compile.program = 'swe_sphere'
+p.compile.fortran_source = 'enable'
 
 p.compile.plane_or_sphere = 'sphere'
 p.compile.plane_spectral_space = 'disable'
@@ -133,7 +135,8 @@ if True:
 if True:
 	p.runtime.timestepping_method = 'l_rexi'
 
-	for p.runtime.rexi_m in [16, 32, 64, 128, 256, 512]:
+	#for p.runtime.rexi_m in [16, 32, 64, 128, 256, 512]:
+	for p.runtime.rexi_m in [1, 2, 4, 8, 16, 32, 64, 128, 256, 512]:
 		for p.runtime.timestepping_order in [0]:
 			for p.runtime.timestep_size in [800]:
 			#for p.runtime.timestep_size in timestep_sizes:
@@ -148,7 +151,8 @@ if True:
 if True:
 	p.runtime.timestepping_method = 'l_rexi'
 
-	for p.runtime.rexi_m in [1024, 4192]:
+	#for p.runtime.rexi_m in [1024, 4192]:
+	for p.runtime.rexi_m in [128, 256, 512, 1024, 2048, 4192]:
 		for p.runtime.timestepping_order in [0]:
 			for p.runtime.timestep_size in [129600]:
 			#for p.runtime.timestep_size in timestep_sizes:
