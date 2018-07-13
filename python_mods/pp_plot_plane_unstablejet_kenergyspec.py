@@ -36,11 +36,11 @@ for filename in sys.argv[1:]:
 	#Set physical grid for axis
 	n = data.shape[0]
 	m=int(n/2)+1
-	#m=100
+	m=10
 	x_min = 0
-	x_max = int(n/2)
+	x_max = int(m)
 	y_min = 0
-	y_max = int(n/2)
+	y_max = int(m)
 	x = np.linspace(x_min, x_max, m)
 	y = np.linspace(y_min, y_max, m)
 	
