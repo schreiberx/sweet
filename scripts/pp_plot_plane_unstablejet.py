@@ -7,6 +7,8 @@ import matplotlib
 matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
+import matplotlib.colors as colors
+
 import numpy as np
 import sys
 
@@ -80,7 +82,15 @@ for filename in sys.argv[1:]:
 		hs = 1000000
 		h_contour_levels = np.append(np.arange(900, 1000-hs, hs), np.arange(1000+hs, 1100, hs))
 		cbar = plt.colorbar()
-	elif 'prog_' in filename:
+	elif 'spec' in filename:
+		data=data+1
+		data=np.log(data)
+		plt.imshow(data, interpolation='nearest', extent=extent, origin='lower', aspect='auto', cmap=plt.get_cmap('jet'))
+		cmin = np.amin(data)
+		cmax = np.amax(data)
+		plt.clim(cmin, cmax)	
+		cbar = plt.colorbar()	
+	else:
 		plt.imshow(data, interpolation='nearest', extent=extent, origin='lower', aspect='auto', cmap=plt.get_cmap('seismic'))
 		plt.clim(cmin, cmax)
 		cref=max(abs(cmin),abs(cmax))

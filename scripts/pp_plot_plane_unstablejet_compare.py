@@ -123,6 +123,7 @@ elif multiplier_i >= 1 and multiplier_j >= 1 :
 	data = data_cmp - data_ref_low
 
 else :
+	print(multiplier_i, multiplier_j)
 	print ("Please provide reference solution (file1) with dimension larger or equal file2")
 	sys.exit(1)
 
