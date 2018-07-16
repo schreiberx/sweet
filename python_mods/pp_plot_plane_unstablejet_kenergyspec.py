@@ -34,15 +34,16 @@ for filename in sys.argv[1:]:
 	cmax = np.amax(data)
 	
 	#Set physical grid for axis
-	n = data.shape[0]
-	m=int(n/2)+1
-	m=10
+	n = data.shape[1]
+	#m=int(n/2)+1
+	m=n
+	#m=10
 	x_min = 0
 	x_max = int(m)
 	y_min = 0
 	y_max = int(m)
-	x = np.linspace(x_min, x_max, m)
-	y = np.linspace(y_min, y_max, m)
+	x = np.linspace(x_min, x_max, m+1)
+	y = np.linspace(y_min, y_max, m+1)
 	
 	#Labels
 	labelsx = np.linspace(x_min, x_max, 10)
@@ -96,13 +97,12 @@ for filename in sys.argv[1:]:
 		
 	print(title)
 
-	data=data[0:m,0:m]
-	
+
 	#Start plotting 2d figure
 	plt.figure(1, figsize=figsize)
 	
 	#2D plot
-	datalog=data+1
+	datalog=data[0:m,0:m]+1
 	datalog=np.log(datalog)
 	cmin = np.amin(datalog)
 	cmax = np.amax(datalog)
@@ -146,35 +146,53 @@ for filename in sys.argv[1:]:
 	#Start plotting 1d figure
 	plt.figure(2, figsize=figsize)
 	
-	#Polar coordinates for shell spectrum
-	
-	r=np.arange(0, m, 1) #radius
-	t=np.arange(0, np.pi/2, np.pi/2/m) #angle
-	
-	#Create cubic interpolation of reference file
-	interp_spline = RectBivariateSpline(x, y, data)
-	
-	energy=np.zeros(m)
-	i=0
-	for ri in r:
-		energy[i]=0.0
-		j=0
-		for tj in t:
-			x_tmp=ri*np.cos(tj)
-			y_tmp=ri*np.sin(tj)
-			energy[i] += interp_spline(x_tmp, y_tmp)/float(m)
-			#print(j, x_tmp, y_tmp, energy[i], data[0,0], m)
-			j=j+1
-		i=i+1
+	#Calculate energy per shell
+	r=np.arange(0, m+1, 1) #radius
+	energy=np.zeros(m+1)
+	shell_pattern=np.zeros((m+1, m+1))
+	if 0:
+		#Polar coordinates for shell spectrum
+		t=np.arange(0, np.pi/2, np.pi/2/m) #angle
+		
+		#Create cubic interpolation of reference file
+		interp_spline = RectBivariateSpline(x, y, data)
+		
+		i=0
+		for ri in r:
+			energy[i]=0.0
+			j=0
+			for tj in t:
+				x_tmp=ri*np.cos(tj)
+				y_tmp=ri*np.sin(tj)
+				energy[i] += interp_spline(x_tmp, y_tmp)/float(m)
+				#print(j, x_tmp, y_tmp, energy[i], data[0,0], m)
+				j=j+1
+			i=i+1
+	else:
+		print("Generating energy in shells (Each x is 1/", m, ")")
+		for i in range(0,m):
+			for j in range(0,m):
+				k=np.sqrt(pow(float(i),2)+pow(float(j),2))
+				intk=int(k)
+				if intk < m :
+					energy[intk]=energy[intk]+data[i,j]
+					shell_pattern[i,j]=intk
+			print(".", end='', flush=True)
+			#print(i, j, k, intk, data[i,j], energy[intk], data.shape, energy.shape)
+				
+	print(".")
 	#Quick check to see if things match
 	print("Energy in shells: ", energy[0:10])
 	print("Energy in first column of data: ", data[0:10,0])
 	print("Shell modes: ", r[0:10])
+	print("Pattern:\n", shell_pattern[0:10,0:10])
+	
+	
 	
 	r_ref53=r[int(m/4)-100:int(m/4)+100]
-		
+	
 	offsetx=10
-	offsety=0.1
+	offsety=0.01
 	en_ref53=np.array([])
 	for tmp in r_ref53:
 		ytmp=np.power(offsety*tmp, -float(5.0/3.0))*offsetx
@@ -182,17 +200,31 @@ for filename in sys.argv[1:]:
 		en_ref53=np.append(en_ref53, [ytmp])
 		#print(en_ref53)
 	
+	r_ref3=r[-400:-1]
+	
+	offsetx=10
+	offsety=0.005
+	en_ref3=np.array([])
+	for tmp in r_ref3:
+		ytmp=np.power(offsety*tmp, -float(3.0))*offsetx
+		#print(tmp, ytmp)
+		en_ref3=np.append(en_ref3, [ytmp])
+		#print(en_ref53)
+	
 	plt.title(title, fontsize=fontsize)
 	
-	plt.loglog(r,energy)
-	plt.loglog(r_ref53,en_ref53, '--', color='black')
+	plt.loglog(r, energy)
+	plt.loglog(r_ref53, en_ref53, '-.', color='black')
+	plt.loglog(r_ref3, en_ref3, '-.', color='black')
 	
 	
 	#Axis
 	ax = plt.gca()
-	ax.annotate("-5/3", xy=(float(m/4), en_ref53[100]+0.1), fontsize=fontsize)
+	ax.annotate("-5/3", xy=(float(m/4), en_ref53[100]+0.01), fontsize=fontsize)
+	ax.annotate("-3", xy=(r[-1]-200, en_ref3[100]+0.001), fontsize=fontsize)
+
 	ax.xaxis.set_label_coords(0.5, -0.075)
-	ax.set_ylim(0.001, 100)
+	#ax.set_ylim(0.001, 100)
 	#ax.set_yscale('log')
 
 	plt.xticks(fontsize=fontsize)
