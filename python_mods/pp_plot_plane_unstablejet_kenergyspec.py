@@ -189,7 +189,7 @@ for filename in sys.argv[1:]:
 	
 	
 	
-	r_ref53=r[int(m/4)-100:int(m/4)+100]
+	r_ref53=r[-300:-200]
 	
 	offsetx=10
 	offsety=0.01
@@ -200,7 +200,7 @@ for filename in sys.argv[1:]:
 		en_ref53=np.append(en_ref53, [ytmp])
 		#print(en_ref53)
 	
-	r_ref3=r[-400:-1]
+	r_ref3=r[-200:-1]
 	
 	offsetx=10
 	offsety=0.005
@@ -220,8 +220,8 @@ for filename in sys.argv[1:]:
 	
 	#Axis
 	ax = plt.gca()
-	ax.annotate("-5/3", xy=(float(m/4), en_ref53[100]+0.01), fontsize=fontsize)
-	ax.annotate("-3", xy=(r[-1]-200, en_ref3[100]+0.001), fontsize=fontsize)
+	ax.annotate("-5/3", xy=(r_ref53[50], en_ref53[50]+0.01), fontsize=fontsize)
+	ax.annotate("-3", xy=(r_ref3[50], en_ref3[50]+0.001), fontsize=fontsize)
 
 	ax.xaxis.set_label_coords(0.5, -0.075)
 	#ax.set_ylim(0.001, 100)
