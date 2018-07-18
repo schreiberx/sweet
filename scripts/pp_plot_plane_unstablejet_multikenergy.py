@@ -109,7 +109,17 @@ for filename in sys.argv[1:]:
 		else:
 			method1 = "RK-FDC"
 			
+	pos1 = filename.find('_u')
+	pos2 = filename.find('_U')
+	dif = filename[pos1+2:pos2]
+	print(dif)
+	dif = float(dif)
+	print("Difusion:", dif)
 	
+	if dif>0:
+		dif=str(dif/1000000)
+		method1 += "v"+dif
+		
 	pos1 = filename.find('output')
 	name = filename[pos1:]
 	pos2 = name.find('_t')
@@ -119,7 +129,7 @@ for filename in sys.argv[1:]:
 	time = time / 86400
 	if timeold != str(time):
 		title += 't='
-		timeold=time
+		timeold = str(time)
 		title += str(time)
 		title += ' days '
 		outfilename += str(time)
@@ -171,7 +181,7 @@ offsetx=m*100000
 
 en_ref3=np.array([])
 for tmp in r_ref3:
-	ytmp=np.power(tmp, -float(3.0))*offsetx
+	ytmp=np.power(tmp, -float(5.0/3.0))*offsetx
 	#print(tmp, ytmp)
 	en_ref3=np.append(en_ref3, [ytmp])
 	#print(en_ref53)	
@@ -186,7 +196,7 @@ plt.title(title, fontsize=fontsize)
 ax = plt.gca()
 ax.set_facecolor('xkcd:white')
 #ax.annotate("-5/3", xy=(r_ref53[50], en_ref53[50]+0.01), fontsize=fontsize)
-ax.annotate("$k^{-3}$", xy=(r_ref3[-int(m/8)], en_ref3[-int(m/8)]+0.001), fontsize=fontsize)
+ax.annotate("$k^{-5/3}$", xy=(r_ref3[-int(m/8)], en_ref3[-int(m/8)]+0.001), fontsize=fontsize)
 
 ax.xaxis.set_label_coords(0.5, -0.075)
 
