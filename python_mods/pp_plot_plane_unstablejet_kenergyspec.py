@@ -36,7 +36,7 @@ for filename in sys.argv[1:]:
 	#Set physical grid for axis
 	n = data.shape[1]
 	#m=int(n/2)+1
-	m=n
+	m=int(2*n/3)-1 #anti-aliasing cut
 	#m=10
 	x_min = 0
 	x_max = int(m)
@@ -189,18 +189,18 @@ for filename in sys.argv[1:]:
 	
 	
 	
-	r_ref53=r[-300:-200]
+	#r_ref53=r[-300:-200]
 	
-	offsetx=10
-	offsety=0.01
-	en_ref53=np.array([])
-	for tmp in r_ref53:
-		ytmp=np.power(offsety*tmp, -float(5.0/3.0))*offsetx
+	#offsetx=10
+	#offsety=0.01
+	#en_ref53=np.array([])
+	#for tmp in r_ref53:
+	#	ytmp=np.power(offsety*tmp, -float(5.0/3.0))*offsetx
 		#print(tmp, ytmp)
-		en_ref53=np.append(en_ref53, [ytmp])
+	#	en_ref53=np.append(en_ref53, [ytmp])
 		#print(en_ref53)
 	
-	r_ref3=r[-200:-1]
+	r_ref3=r[-int(m/4):-1]
 	
 	offsetx=10
 	offsety=0.005
@@ -214,14 +214,14 @@ for filename in sys.argv[1:]:
 	plt.title(title, fontsize=fontsize)
 	
 	plt.loglog(r, energy)
-	plt.loglog(r_ref53, en_ref53, '-.', color='black')
+	#plt.loglog(r_ref53, en_ref53, '-.', color='black')
 	plt.loglog(r_ref3, en_ref3, '-.', color='black')
 	
 	
 	#Axis
 	ax = plt.gca()
-	ax.annotate("-5/3", xy=(r_ref53[50], en_ref53[50]+0.01), fontsize=fontsize)
-	ax.annotate("-3", xy=(r_ref3[50], en_ref3[50]+0.001), fontsize=fontsize)
+	#ax.annotate("-5/3", xy=(r_ref53[50], en_ref53[50]+0.01), fontsize=fontsize)
+	ax.annotate("-3", xy=(r_ref3[-int(m/8)], en_ref3[-int(m/8)]+0.001), fontsize=fontsize)
 
 	ax.xaxis.set_label_coords(0.5, -0.075)
 	#ax.set_ylim(0.001, 100)
