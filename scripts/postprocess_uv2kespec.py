@@ -32,8 +32,6 @@ xL_max = benchpar.x_max
 yL_min = benchpar.y_min
 yL_max = benchpar.y_max
 
-timeold=""
-
 colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
 
 #markers = []
@@ -52,7 +50,8 @@ markers = ['']
 c = 0
 outfilename = "kespectrum_"
 mmin=0
-
+timeold=""
+dtold=""
 
 if len(sys.argv) <= 1:
 	print("Arguments must be files with the zonal velocities")
@@ -115,10 +114,7 @@ for filename in sys.argv[1:]:
 	print("Anti-aliased spectrum region:", m)		
 	#Naming
 	#-----------------------------------------
-	
-	#Set tittle
-	title="Kinetic Energy Spectrum "
-			
+				
 	#Method
 	print("")
 	print("Analysisng the method/data:")
@@ -159,15 +155,12 @@ for filename in sys.argv[1:]:
 	time = filename[pos1+pos2+2:pos3]
 	time = float(time)
 	time = time / 86400
-	if timeold != str(time):
-		title += '_t='
-		timeold = str(time)
-		title += str(time)
-		title += ' days '
-		outfilename += str(time)
-		outfilename += 'days'
+	#method1 += "_t"+str(time)
+	if c < 1:
+		title += ' t='+str(time)+' days '
+		outfilename += str(time)+'days'
 	
-	if time > 0 :
+	if time > 0 and True:
 		pos1 = filename.find('_C')
 		pos2 = filename.find('_R')
 		method1 += "_dt"+filename[pos1+2:pos2]
@@ -250,7 +243,7 @@ for filename in sys.argv[1:]:
 	r=np.arange(0, m+1, 1) #radius
 	energy=np.zeros(m+1)
 	shell_pattern=np.zeros((m+1, m+1))
-	#print("Generating energy in shells (Each x is 1/", m, ")")
+	print("Generating energy in shells (Each . is 1/", m, ")")
 	for i in range(0,m):
 		for j in range(0,m):
 			k=np.sqrt(pow(float(i),2)+pow(float(j),2))
@@ -258,9 +251,9 @@ for filename in sys.argv[1:]:
 			if intk < m :
 				energy[intk]=energy[intk]+data[i,j]
 				shell_pattern[i,j]=intk
-		#print(".", end='', flush=True)
+		print(".", end='', flush=True)
 		#print(i, j, k, intk, data[i,j], energy[intk], data.shape, energy.shape)
-				
+	print(".")	
 	#Quick check to see if things match
 	#print("Energy in shells: ", energy[0:10])
 	#print("Energy in first column of data: ", data[0:10,0])
@@ -277,18 +270,18 @@ for filename in sys.argv[1:]:
 
 
 #Define reference lines -3 and -5/3
-r_ref3=r[-int(m/2):-1]
+r_ref3=r[-int(2*m/3):-1]
 offsetx=m*1000
 offsety=0.005
 en_ref3=np.array([])
 i=int(r_ref3[0])
-iref=(energy[1]/10.0)/np.power(float(i), -3)
+iref=(energy[1]/50.0)/np.power(float(i), -3)
 for tmp in r_ref3:
 	ytmp=np.power(tmp, -float(3.0))*iref
 	en_ref3=np.append(en_ref3, [ytmp])
 
 en_ref53=np.array([])
-iref=(energy[1]/10.0)/np.power(float(i), -float(5.0/3.0))	
+iref=(energy[1]/50.0)/np.power(float(i), -float(5.0/3.0))	
 for tmp in r_ref3:
 	ytmp=np.power(tmp, -float(5.0/3.0))*iref
 	en_ref53=np.append(en_ref53, [ytmp])
@@ -315,6 +308,9 @@ plt.title(title, fontsize=fontsize, y=1.02)
 
 plt.xticks(fontsize=fontsize)
 plt.yticks(fontsize=fontsize)
+
+#plt.ylim(0.00000000001, 10)  # adjust the min leaving max unchanged
+
 
 #plt.xlabel("Horizontal wavenumber", fontsize=fontsize)
 plt.xlabel("Horizontal wavelength (km)", fontsize=fontsize)
