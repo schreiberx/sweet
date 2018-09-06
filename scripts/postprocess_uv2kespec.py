@@ -144,7 +144,7 @@ for filename in sys.argv[1:]:
 	dif = float(dif)
 	print("Difusion:", dif)
 	
-	if dif>0:
+	if dif>0 :
 		dif=str(dif/1000000)
 		method1 += "_v"+dif
 		
@@ -156,14 +156,17 @@ for filename in sys.argv[1:]:
 	time = float(time)
 	time = time / 86400
 	#method1 += "_t"+str(time)
+	
+	pos1 = filename.find('_C')
+	pos2 = filename.find('_R')
+	dt=filename[pos1+2:pos2]
+	#method1 += "_dt"+dt	
+	
 	if c < 1:
 		title += ' t='+str(time)+' days '
 		outfilename += str(time)+'days'
-	
-	if time > 0 and True:
-		pos1 = filename.find('_C')
-		pos2 = filename.find('_R')
-		method1 += "_dt"+filename[pos1+2:pos2]
+		title += ' dt='+str(dt)+'s '
+		outfilename +='dt'+str(dt)
 		
 	if len(sys.argv) == 2:
 		title+=method1
