@@ -4,20 +4,17 @@ source config.sh
 
 
 echo "*** libPFASST ***"
+
 if [ ! -e "$DST_DIR/lib/libpfasst.a"  -o "$1" != "" ]; then
-	#BASENAME="libpfasst"
-	BASENAME="libpfasst_martin"
+	SRC_LINK="https://www.martin-schreiber.info/pub/sweet_local_software/libpfasst_sweet_2018_09_13.tar.bz2"
+	FILENAME="`basename $SRC_LINK`"
+	BASENAME="libpfasst_sweet_2018_09_13"
 
 	cd "$SRC_DIR"
 
-	tar xzf libpfasst_2018_04_23_francois.tar.gz
-
-	#if [ ! -e "$BASENAME" ]; then
-	#	git clone https://bitbucket.org/memmett/libpfasst.git || exit 1
-	#fi
-
+	download "$SRC_LINK" "$FILENAME" || exit 1
+	tar xjf "$FILENAME"
 	cd "$BASENAME"
-
 	sed -i "s/ftn/mpif90/" Makefile.defaults || exit 1
 
 	make clean || exit 1
