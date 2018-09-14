@@ -1,6 +1,7 @@
 #! /bin/bash
 
 source config.sh
+source env_vars.sh
 
 
 #

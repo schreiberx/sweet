@@ -1,7 +1,7 @@
 #! /bin/bash
 
 
-. ./env_vars.sh
+source ./env_vars.sh
 
 PKGS=()
 

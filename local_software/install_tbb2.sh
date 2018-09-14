@@ -1,6 +1,7 @@
 #! /usr/bin/env bash
 
 source config.sh
+source env_vars.sh
 
 
 echo "*** TBB2 ***"

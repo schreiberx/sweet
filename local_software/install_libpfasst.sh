@@ -1,6 +1,7 @@
 #! /bin/bash
 
 source config.sh
+source env_vars.sh
 
 
 echo "*** libPFASST ***"
@@ -22,11 +23,13 @@ if [ ! -e "$DST_DIR/lib/libpfasst.a"  -o "$1" != "" ]; then
 
 	mkdir -p "$DST_DIR/lib/"
 
+	# Copy static library
 	echo cp -v -f "./lib/libpfasst.a" "$DST_DIR/lib/"
 	cp -v -f "./lib/libpfasst.a" "$DST_DIR/lib/"
 
-	echo cp -v -f ./include/* "$DST_DIR/include/"
-	cp -v -f ./include/* "$DST_DIR/include/"
+	# Copy modules
+	echo cp -v -f ./include/*mod "$DST_DIR/include/"
+	cp -v -f ./include/*mod "$DST_DIR/include/"
 
 	echo "DONE"
 
