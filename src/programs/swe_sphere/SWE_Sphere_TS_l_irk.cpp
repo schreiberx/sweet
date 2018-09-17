@@ -25,7 +25,7 @@ SWE_Sphere_TS_l_irk::SWE_Sphere_TS_l_irk(
 
 
 /**
- * Setup the SWE REXI solver with SPH
+ * Setup the SWE implicit solver with SPH
  */
 void SWE_Sphere_TS_l_irk::setup(
 		int i_timestep_order,
@@ -107,7 +107,7 @@ void SWE_Sphere_TS_l_irk::update_coefficients()
 
 
 /**
- * Solve a REXI time step for the given initial conditions
+ * Solve an implicit time step for the given initial conditions
  */
 void SWE_Sphere_TS_l_irk::run_timestep(
 		SphereData &io_phi,		///< prognostic variables
