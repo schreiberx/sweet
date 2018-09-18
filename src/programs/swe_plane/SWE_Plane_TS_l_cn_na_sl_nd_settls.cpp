@@ -129,7 +129,13 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 		PlaneData hdiv = 2.0 * io_h * div - h_prev * div_prev;
 		PlaneData nonlin(io_h.planeDataConfig);
 		if(simVars.misc.use_local_visc != 0)
+		{
+#if !SWEET_USE_PLANE_SPECTRAL_SPACE
+			FatalError("Implicit diffusion only supported with spectral space activated");
+#else
 			hdiv= op.implicit_diffusion(hdiv, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.viscosity_order);
+#endif
+		}
 		nonlin = 0.5 * io_h * div + 0.5 * sampler2D.bicubic_scalar(hdiv, posx_d, posy_d, -0.5, -0.5);
 		rhs_h = rhs_h - 2.0*nonlin;
 		rhs_h.request_data_spectral();

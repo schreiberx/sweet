@@ -49,7 +49,11 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::euler_timestep_update_nonlinear(
 		//Smooth spectrum to avoid instability
 		if(simVars.misc.use_local_visc != 0)
 		{
+#if !SWEET_USE_PLANE_SPECTRAL_SPACE
+			FatalError("Implicit diffusion only supported with spectral space activated");
+#else
 			o_h_t= op.implicit_diffusion(o_h_t, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.viscosity_order);
+#endif
 		}
 
 	}

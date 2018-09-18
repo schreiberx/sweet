@@ -135,7 +135,8 @@ int main(int i_argc, char *i_argv[])
 
   levelSingletons[fineLevelId].dataConfig.setupAuto(
 						    simVars.disc.res_physical,
-						    simVars.disc.res_spectral 
+						    simVars.disc.res_spectral,
+						    simVars.misc.shtns_use_plans
 						    );
   
   int res_physical_nodealiasing[2] = {
@@ -145,7 +146,8 @@ int main(int i_argc, char *i_argv[])
 
   levelSingletons[fineLevelId].dataConfigNoDealiasing.setupAuto(
 								res_physical_nodealiasing,
-								simVars.disc.res_spectral 
+								simVars.disc.res_spectral,
+								simVars.misc.shtns_use_plans
 								);
 
   // setup data operators in fine level
@@ -170,7 +172,8 @@ int main(int i_argc, char *i_argv[])
       levelSingletons[thisLevelId].dataConfig.setupAdditionalModes(
 								   &(levelSingletons[simVars.libpfasst.nlevels-i].dataConfig),
 								   -std::ceil(simVars.disc.res_spectral[0]*pow(simVars.libpfasst.coarsening_multiplier,i)),
-								   -std::ceil(simVars.disc.res_spectral[1]*pow(simVars.libpfasst.coarsening_multiplier,i))
+								   -std::ceil(simVars.disc.res_spectral[1]*pow(simVars.libpfasst.coarsening_multiplier,i)),
+								   simVars.misc.shtns_use_plans
 								   );
       
       // setup data operators at this level

@@ -49,7 +49,8 @@ void SWE_Sphere_TS_l_cn::setup(
 		sphereDataConfigSolverAddedModes.setupAdditionalModes(
 				sphereDataConfig,
 				use_extended_modes,	// TODO: Extend SPH wrapper to also support m != n to set this guy to 0
-				use_extended_modes
+				use_extended_modes,
+				simVars.misc.shtns_use_plans
 		);
 
 		sphereDataConfigSolver = &sphereDataConfigSolverAddedModes;

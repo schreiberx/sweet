@@ -2,11 +2,11 @@
  * SPHSetup.hpp
  *
  *  Created on: 12 Aug 2016
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk> Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
-#ifndef SPHSETUP_HPP_
-#define SPHSETUP_HPP_
+#ifndef SPHEREDATACONFIG_HPP_
+#define SPHEREDATACONFIG_HPP_
 
 
 #include <libmath/shtns_inc.hpp>
@@ -14,6 +14,10 @@
 #include <iostream>
 #include <sweet/sweetmath.hpp>
 #include <sweet/FatalError.hpp>
+
+#if SWEET_MPI
+#	include <mpi.h>
+#endif
 
 
 #define SPHERE_DATA_LON_CONTINUOUS	SHT_PHI_CONTIGUOUS
@@ -60,9 +64,6 @@ public:
 public:
 	int spectral_modes_n_max;
 	int spectral_modes_m_max;
-
-	int fast_setup = sht_quick_init;
-//	int fast_setup = 0;
 
 //	double shtns_error = 1.e-10;
 	double shtns_error = 0;
@@ -369,14 +370,35 @@ private:
 
 
 
+	shtns_type getFlags(
+			bool i_load_save_plan
+	)
+	{
+
+		int flags = 0;
+
+		// fast setup (Only for debugging)
+		// flags |= sht_quick_init;
+
+		// lat or lon continue
+		flags |= SPHERE_DATA_GRID_LAYOUT;
+
+		if (i_load_save_plan)
+			flags |= SHT_LOAD_SAVE_CFG;
+
+		return (shtns_type)flags;
+	}
+
+
 public:
 	void setup(
 			int nphi,	// physical
 			int nlat,
 
 			int mmax,	// spectral
-			int nmax
+			int nmax,
 
+			bool i_load_save_plan //= false	///< Load or save plans to file (important for reproducibility)
 	)
 	{
 		mmax--;
@@ -405,8 +427,7 @@ public:
 
 		shtns_set_grid(
 				shtns,
-				(shtns_type)(fast_setup | SPHERE_DATA_GRID_LAYOUT),
-				//sht_gauss | SHT_THETA_CONTIGUOUS,	// use gaussian grid
+				getFlags(i_load_save_plan),
 				shtns_error,
 				nlat,		// number of latitude grid points
 				nphi		// number of longitude grid points
@@ -425,7 +446,8 @@ public:
 			int i_mmax,		/// longitude modes
 			int i_nmax,		/// latitude modes
 			int *o_nphi,	/// physical resolution along longitude
-			int *o_nlat		/// physical resolution along latitude
+			int *o_nlat,	/// physical resolution along latitude
+			bool i_load_save_plan //= false	///< load and/or save plans
 	)
 	{
 		i_mmax--;
@@ -456,8 +478,7 @@ public:
 
 		shtns_set_grid_auto(
 				shtns,
-				// TODO: replace this with sht_gauss
-				(shtns_type)(fast_setup | SPHERE_DATA_GRID_LAYOUT),
+				getFlags(i_load_save_plan),
 				//sht_gauss | SPHERE_DATA_GRID_LAYOUT,	// use gaussian grid
 				shtns_error,
 				2,		// use order 2
@@ -476,8 +497,9 @@ public:
 	 * Spatial resolution will be determined automatically
 	 */
 	void setupAutoPhysicalSpace(
-			int i_mmax,		/// longitude modes
-			int i_nmax		/// latitude modes
+			int i_mmax,		///< longitude modes
+			int i_nmax,		///< latitude modes
+			bool i_load_save_plan //= false	///< load and/or save plans
 	)
 	{
 		i_mmax--;
@@ -508,8 +530,7 @@ public:
 
 		shtns_set_grid_auto(
 				shtns,
-				// TODO: replace this with sht_gauss
-				(shtns_type)(fast_setup | SPHERE_DATA_GRID_LAYOUT),
+				getFlags(i_load_save_plan),
 				//sht_gauss | SPHERE_DATA_GRID_LAYOUT,	// use gaussian grid
 				shtns_error,
 				2,		// use order 2
@@ -525,7 +546,8 @@ public:
 public:
 	void setupAuto(
 			int io_physical_res[2],
-			int io_spectral_modes[2]
+			int io_spectral_modes[2],
+			bool i_load_save_plan //= false
 	)
 	{
 		cleanup(false);
@@ -535,7 +557,8 @@ public:
 			setup(	io_physical_res[0],
 					io_physical_res[1],
 					io_spectral_modes[0],
-					io_spectral_modes[1]
+					io_spectral_modes[1],
+					i_load_save_plan
 				);
 			return;
 		}
@@ -546,7 +569,8 @@ public:
 #if 0
 			setupAutoSpectralSpace(
 					io_physical_res[0],
-					io_physical_res[1]
+					io_physical_res[1],
+					i_load_save_plan
 				);
 
 	#if SWEET_USE_LIBFFT
@@ -562,7 +586,8 @@ public:
 #if SWEET_USE_LIBFFT
 			setupAutoPhysicalSpace(
 					io_spectral_modes[0],
-					io_spectral_modes[1]
+					io_spectral_modes[1],
+					i_load_save_plan
 				);
 
 			io_physical_res[0] = physical_num_lon;
@@ -583,7 +608,8 @@ public:
 	void setupAdditionalModes(
 			const SphereDataConfig *i_sphereDataConfig,
 			int i_additional_modes_longitude,
-			int i_additional_modes_latitude
+			int i_additional_modes_latitude,
+			bool i_load_save_plan //= false
 	)
 	{
 		cleanup(false);
@@ -594,7 +620,8 @@ public:
 				i_sphereDataConfig->spectral_modes_m_max + i_additional_modes_longitude,
 				i_sphereDataConfig->spectral_modes_n_max + i_additional_modes_latitude,
 				&physical_num_lon,
-				&physical_num_lat
+				&physical_num_lat,
+				i_load_save_plan
 		);
 	}
 

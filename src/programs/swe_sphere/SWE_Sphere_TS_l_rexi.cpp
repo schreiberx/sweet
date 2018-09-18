@@ -223,7 +223,8 @@ void SWE_Sphere_TS_l_rexi::setup(
 		sphereDataConfigInstance.setupAdditionalModes(
 				sphereDataConfig,
 				rexi_use_sphere_extended_modes,	// TODO: Extend SPH wrapper to also support m != n to set this guy to 0
-				rexi_use_sphere_extended_modes
+				rexi_use_sphere_extended_modes,
+				simVars.misc.shtns_use_plans
 		);
 
 		sphereDataConfigSolver = &sphereDataConfigInstance;

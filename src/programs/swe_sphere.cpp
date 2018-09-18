@@ -791,6 +791,10 @@ int main(int i_argc, char *i_argv[])
 			nullptr
 	};
 
+#if SWEET_MPI
+	int mpi_rank;
+	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+#endif
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
@@ -799,25 +803,41 @@ int main(int i_argc, char *i_argv[])
 		simVars.parareal.printOptions();
 #endif
 #if SWEET_MPI
-		int mpi_rank;
-		MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 		if (mpi_rank == 0)
 #endif
 		{
-			std::cout << "	--compute-error [0/1]	Output errors (if available, default: 1)" << std::endl;
+//			std::cout << "	--compute-error [0/1]	Output errors (if available, default: 1)" << std::endl;
 		}
 		return -1;
 	}
 
-	sphereDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
+#if SWEET_MPI
+	if (mpi_rank > 0 && simVars.misc.shtns_use_plans)
+		MPI_Barrier(MPI_COMM_WORLD);
+#endif
+
+	sphereDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.shtns_use_plans);
+
+#if SWEET_MPI
+	if (mpi_rank == 0 && simVars.misc.shtns_use_plans)
+		MPI_Barrier(MPI_COMM_WORLD);
+#endif
 
 	int res_physical_nodealias[2] = {
 			2*simVars.disc.res_spectral[0],
 			simVars.disc.res_spectral[1]
 		};
 
-	sphereDataConfigInstance_nodealiasing.setupAuto(res_physical_nodealias, simVars.disc.res_spectral);
+#if SWEET_MPI
+	if (mpi_rank > 0 && simVars.misc.shtns_use_plans)
+		MPI_Barrier(MPI_COMM_WORLD);
+#endif
+	sphereDataConfigInstance_nodealiasing.setupAuto(res_physical_nodealias, simVars.disc.res_spectral, simVars.misc.shtns_use_plans);
 
+#if SWEET_MPI
+	if (mpi_rank == 0 && simVars.misc.shtns_use_plans)
+		MPI_Barrier(MPI_COMM_WORLD);
+#endif
 
 #if SWEET_GUI
 	planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical);
@@ -827,12 +847,7 @@ int main(int i_argc, char *i_argv[])
 	buf << std::setprecision(14);
 
 
-
 #if SWEET_MPI
-
-	int mpi_rank;
-	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
-
 	std::cout << "Helo from MPI rank: " << mpi_rank << std::endl;
 
 	// only start simulation and time stepping for first rank
