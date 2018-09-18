@@ -811,33 +811,14 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 	}
 
-#if SWEET_MPI
-	if (mpi_rank > 0 && simVars.misc.shtns_use_plans)
-		MPI_Barrier(MPI_COMM_WORLD);
-#endif
-
 	sphereDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.shtns_use_plans);
-
-#if SWEET_MPI
-	if (mpi_rank == 0 && simVars.misc.shtns_use_plans)
-		MPI_Barrier(MPI_COMM_WORLD);
-#endif
 
 	int res_physical_nodealias[2] = {
 			2*simVars.disc.res_spectral[0],
 			simVars.disc.res_spectral[1]
 		};
 
-#if SWEET_MPI
-	if (mpi_rank > 0 && simVars.misc.shtns_use_plans)
-		MPI_Barrier(MPI_COMM_WORLD);
-#endif
 	sphereDataConfigInstance_nodealiasing.setupAuto(res_physical_nodealias, simVars.disc.res_spectral, simVars.misc.shtns_use_plans);
-
-#if SWEET_MPI
-	if (mpi_rank == 0 && simVars.misc.shtns_use_plans)
-		MPI_Barrier(MPI_COMM_WORLD);
-#endif
 
 #if SWEET_GUI
 	planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical);
