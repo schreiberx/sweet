@@ -398,7 +398,7 @@ public:
 			int mmax,	// spectral
 			int nmax,
 
-			bool i_load_save_plan //= false	///< Load or save plans to file (important for reproducibility)
+			bool i_shtns_use_plans //= false	///< Load or save plans to file (important for reproducibility)
 	)
 	{
 		mmax--;
@@ -425,13 +425,25 @@ public:
 				(shtns_norm)((int)sht_orthonormal + SHT_NO_CS_PHASE)
 			);
 
+#if SWEET_MPI
+		int mpi_rank;
+		MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+		if (mpi_rank == 0 && i_shtns_use_plans)
+			MPI_Barrier(MPI_COMM_WORLD);
+#endif
+
 		shtns_set_grid(
 				shtns,
-				getFlags(i_load_save_plan),
+				getFlags(i_shtns_use_plans),
 				shtns_error,
 				nlat,		// number of latitude grid points
 				nphi		// number of longitude grid points
 			);
+
+#if SWEET_MPI
+		if (mpi_rank > 0 && i_shtns_use_plans)
+			MPI_Barrier(MPI_COMM_WORLD);
+#endif
 
 		setup_data();
 	}
@@ -447,7 +459,7 @@ public:
 			int i_nmax,		/// latitude modes
 			int *o_nphi,	/// physical resolution along longitude
 			int *o_nlat,	/// physical resolution along latitude
-			bool i_load_save_plan //= false	///< load and/or save plans
+			bool i_shtns_use_plans //= false	///< load and/or save plans
 	)
 	{
 		i_mmax--;
@@ -466,6 +478,7 @@ public:
 		if (shtns != nullptr)
 			shtns_destroy(shtns);
 
+
 		shtns = shtns_create(
 				i_nmax,
 				i_mmax,
@@ -476,15 +489,27 @@ public:
 		*o_nphi = 0;
 		*o_nlat = 0;
 
+#if SWEET_MPI
+	int mpi_rank;
+	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+	if (mpi_rank == 0 && i_shtns_use_plans)
+		MPI_Barrier(MPI_COMM_WORLD);
+#endif
+
 		shtns_set_grid_auto(
 				shtns,
-				getFlags(i_load_save_plan),
+				getFlags(i_shtns_use_plans),
 				//sht_gauss | SPHERE_DATA_GRID_LAYOUT,	// use gaussian grid
 				shtns_error,
 				2,		// use order 2
 				o_nlat,
 				o_nphi
 			);
+
+#if SWEET_MPI
+	if (mpi_rank > 0 && i_shtns_use_plans)
+		MPI_Barrier(MPI_COMM_WORLD);
+#endif
 
 		setup_data();
 	}
@@ -499,7 +524,7 @@ public:
 	void setupAutoPhysicalSpace(
 			int i_mmax,		///< longitude modes
 			int i_nmax,		///< latitude modes
-			bool i_load_save_plan //= false	///< load and/or save plans
+			bool i_shtns_use_plans //= false	///< load and/or save plans
 	)
 	{
 		i_mmax--;
@@ -528,15 +553,26 @@ public:
 		physical_num_lat = 0;
 		physical_num_lon = 0;
 
+#if SWEET_MPI
+	int mpi_rank;
+	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+	if (mpi_rank == 0 && i_shtns_use_plans)
+		MPI_Barrier(MPI_COMM_WORLD);
+#endif
+
 		shtns_set_grid_auto(
 				shtns,
-				getFlags(i_load_save_plan),
-				//sht_gauss | SPHERE_DATA_GRID_LAYOUT,	// use gaussian grid
+				getFlags(i_shtns_use_plans),
 				shtns_error,
 				2,		// use order 2
 				&physical_num_lat,
 				&physical_num_lon
 			);
+
+#if SWEET_MPI
+	if (mpi_rank > 0 && i_shtns_use_plans)
+		MPI_Barrier(MPI_COMM_WORLD);
+#endif
 
 		setup_data();
 	}
@@ -547,7 +583,7 @@ public:
 	void setupAuto(
 			int io_physical_res[2],
 			int io_spectral_modes[2],
-			bool i_load_save_plan //= false
+			bool i_shtns_use_plans //= false
 	)
 	{
 		cleanup(false);
@@ -558,7 +594,7 @@ public:
 					io_physical_res[1],
 					io_spectral_modes[0],
 					io_spectral_modes[1],
-					i_load_save_plan
+					i_shtns_use_plans
 				);
 			return;
 		}
@@ -584,10 +620,11 @@ public:
 		if (io_spectral_modes[0] > 0)
 		{
 #if SWEET_USE_LIBFFT
+
 			setupAutoPhysicalSpace(
 					io_spectral_modes[0],
 					io_spectral_modes[1],
-					i_load_save_plan
+					i_shtns_use_plans
 				);
 
 			io_physical_res[0] = physical_num_lon;
