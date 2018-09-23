@@ -2,7 +2,7 @@
  * test_plane_advection.cpp
  *
  *  Created on: 4th April 2018
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
 

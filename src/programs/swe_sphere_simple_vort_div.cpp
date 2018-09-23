@@ -4,7 +4,7 @@
  * Example ported from python code of Jeffrey Whitaker
  *
  *  Created on: 19 Feb 2017
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <SchreiberX@gmail.com>
  *
  *
  */

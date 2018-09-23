@@ -2,7 +2,7 @@
  * advection_sphere.cpp
  *
  *  Created on: 3 Dec 2015
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
 

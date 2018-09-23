@@ -5,7 +5,7 @@
  * PFASST SWE on the sphere implementation
  *
  *  Created on: 30 Nov 2016
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
 #include <benchmarks_sphere/SWESphereBenchmarksCombined.hpp>

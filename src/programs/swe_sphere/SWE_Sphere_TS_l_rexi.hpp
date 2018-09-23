@@ -2,7 +2,7 @@
  * SWE_Sphere_REXI.hpp
  *
  *  Created on: 25 Oct 2016
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
 #ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_REXI_HPP_

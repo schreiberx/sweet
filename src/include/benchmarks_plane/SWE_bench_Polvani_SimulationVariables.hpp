@@ -2,7 +2,7 @@
  * SWEPolvani_SimulationVariables.hpp
  *
  *  Created on: 14 Oct 2017
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 #ifndef SRC_SWE_POLVANI_SIMULATION_VARIABLES_HPP_
 #define SRC_SWE_POLVANI_SIMULATION_VARIABLES_HPP_

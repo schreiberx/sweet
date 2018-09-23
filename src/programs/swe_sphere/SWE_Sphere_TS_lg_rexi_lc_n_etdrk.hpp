@@ -2,7 +2,7 @@
  * SWE_Sphere_TS_lg_rexi_lf_n_etdrk.hpp
  *
  *  Created on: 10 Sept. 2017
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
 #ifndef SRC_PROGRAMS_SWE_PLANE_REXI_SWE_Sphere_TS_lg_rexi_lf_n_etdrk_HPP_

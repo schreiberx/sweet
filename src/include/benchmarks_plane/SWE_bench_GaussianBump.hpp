@@ -2,7 +2,7 @@
  * SWE_bench_GaussianBump.hpp
  *
  *  Created on: 16 Dec 2017
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 #ifndef SWE_BENCH_GAUSSIAN_BUMP_HPP__
 #define SWE_BENCH_GAUSSIAN_BUMP_HPP__

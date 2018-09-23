@@ -2,7 +2,7 @@
  * BenchmarkCombined.hpp
  *
  *  Created on: 30 Nov 2016
- *	  Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *	  Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
 #ifndef SRC_INCLUDE_BENCHMARKS_SPHERE_SWESPHEREBENCHMARKSCOMBINED_HPP_

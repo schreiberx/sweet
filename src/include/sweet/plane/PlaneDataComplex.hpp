@@ -2,7 +2,7 @@
  * PlaneDataComplex.hpp
  *
  *  Created on: 28 Jun 2015
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 #ifndef SRC_PLANE_DATA_COMPLEX_HPP_
 #define SRC_PLANE_DATA_COMPLEX_HPP_

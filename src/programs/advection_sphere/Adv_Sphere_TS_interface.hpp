@@ -2,7 +2,7 @@
  * Adv_Sphere_TS_Interface.hpp
  *
  *  Created on: 1st April 2018
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
 #ifndef SRC_PROGRAMS_ADV_SPHERE_TS_INTERFACE_HPP_

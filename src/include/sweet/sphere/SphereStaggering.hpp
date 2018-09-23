@@ -2,7 +2,7 @@
  * SphereStaggering.hpp
  *
  *  Created on: 26 May 2017
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
 #ifndef SRC_INCLUDE_SWEET_SPHERE_SPHERESTAGGERING_HPP_

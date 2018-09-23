@@ -2,7 +2,7 @@
  * NUMABlockAlloc.hpp
  *
  *  Created on: 14 Sep 2015
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 #ifndef SRC_INCLUDE_SWEET_MEMBLOCKALLOC_HPP_
 #define SRC_INCLUDE_SWEET_MEMBLOCKALLOC_HPP_

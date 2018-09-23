@@ -2,7 +2,7 @@
  * test_quadrature.cpp
  *
  *  Created on: 17 Feb 2017
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
 #include <libmath/GaussQuadrature.hpp>

@@ -2,7 +2,7 @@
  * SWE_Plane_TS_l_rexi_n_erk.hpp
  *
  *  Created on: 29 May 2017
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
 #ifndef SRC_PROGRAMS_SWE_PLANE_SWE_PLANE_TS_L_REXI_N_ERK_HPP_

@@ -2,7 +2,7 @@
  * SWEPlaneBenchmarks.hpp
  *
  *  Created on: 5 Jul 2015
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 #ifndef SWE_PLANE_BENCHMARKS_HPP_
 #define SWE_PLANE_BENCHMARKS_HPP_

@@ -2,7 +2,7 @@
  * SWEPolvani.hpp
  *
  *  Created on: 14 Oct 2017
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 #ifndef SWE_PLANE_POLVANI_HPP_
 #define SWE_PLANE_POLVANI_HPP_

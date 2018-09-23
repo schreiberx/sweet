@@ -2,7 +2,7 @@
  * REXIFunctions.hpp
  *
  *  Created on: 10 Aug 2017
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
 #ifndef SRC_INCLUDE_REXI_REXIFUNCTIONS_HPP_

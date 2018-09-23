@@ -2,7 +2,7 @@
  * test_sphere_interpolation.cpp
  *
  *  Created on: 2nd April 2018
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
 #ifndef SWEET_GUI

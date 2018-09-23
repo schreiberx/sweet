@@ -2,7 +2,7 @@
  * RexiNGCoefficients.hpp
  *
  *  Created on: 4 Jul 2017
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
 #ifndef SRC_INCLUDE_REXI_REXIFILECOEFFICIENTS_HPP_

@@ -2,7 +2,7 @@
  * SWE_Sphere_TS_l_erk.cpp
  *
  *  Created on: 30 May 2017
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
 #include "SWE_Sphere_TS_l_erk.hpp"

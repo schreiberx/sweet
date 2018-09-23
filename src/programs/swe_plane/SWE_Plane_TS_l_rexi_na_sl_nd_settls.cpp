@@ -2,7 +2,7 @@
  * SWE_Plane_TS_l_rexi_na_sl_nd_settls.cpp
  *
  *  Created on: 29 May 2017
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <SchreiberX@gmail.com>
  *
  *  Changelog:
  *  	2017-05-29: Based on source swe_plane.cpp

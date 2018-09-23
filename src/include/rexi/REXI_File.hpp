@@ -2,7 +2,7 @@
  * RexiNG.hpp
  *
  *  Created on: 3 July 2017
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 #ifndef SRC_INCLUDE_REXI_FILE_HPP_
 #define SRC_INCLUDE_REXI_FILE_HPP_

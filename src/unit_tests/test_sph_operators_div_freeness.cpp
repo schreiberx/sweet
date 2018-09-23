@@ -2,7 +2,7 @@
  * test_sph_operators_div_freeness.hpp
  *
  *  Created on: 07 Feb 2017
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
 #ifndef TEST_SPH_OPERATORS_DIV_FREENESS_HPP_

@@ -2,7 +2,7 @@
  * PlaneDataConfig.hpp
  *
  *  Created on: 17 Oct 2016
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk> Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <SchreiberX@gmail.com> Schreiber <M.Schreiber@exeter.ac.uk>
  */
 
 #ifndef PLANE_DATA_CONFIG_HPP_

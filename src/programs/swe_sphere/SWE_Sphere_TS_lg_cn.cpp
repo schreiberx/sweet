@@ -2,7 +2,7 @@
  * SWE_Sphere_TS_lg_cn.hpp
  *
  *  Created on: 30 Aug 2016
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
 

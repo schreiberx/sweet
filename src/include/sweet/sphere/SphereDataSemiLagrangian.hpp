@@ -2,7 +2,7 @@
  * SphereDataSemiLangrangian.hpp
  *
  *  Created on: 5 Dec 2015
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <SchreiberX@gmail.com>
  *
  *  Updated to sphere on 28th March 2018
  */

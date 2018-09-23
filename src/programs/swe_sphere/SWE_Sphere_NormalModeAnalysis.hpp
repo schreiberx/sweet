@@ -2,7 +2,7 @@
  * SWE_Sphere_NormalModeAnalysis.hpp
  *
  *  Created on: 19 Nov 2017
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
 #ifndef SRC_PROGRAMS_SWE_SPHERE_SWE_SPHERE_NORMALMODEANALYSIS_HPP_

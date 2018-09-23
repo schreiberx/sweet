@@ -2,7 +2,7 @@
  * openmp_helper.hpp
  *
  *  Created on: 20 Jul 2015
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 #ifndef SRC_EXAMPLES_OPENMP_HELPER_HPP_
 #define SRC_EXAMPLES_OPENMP_HELPER_HPP_
