@@ -6,6 +6,8 @@ FFTW_*
 *~
 **/.eps
 **/.directory
+
+**/*.pyc
 **/__pycache__
 
 .cproject
