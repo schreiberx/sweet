@@ -18,5 +18,5 @@ FFTW_*
 .settings/
 .vscode/
 
-shtns_cfg
-shtns_cfg_fftw
+**/shtns_cfg
+**/shtns_cfg_fftw
