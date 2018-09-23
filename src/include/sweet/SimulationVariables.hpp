@@ -77,6 +77,8 @@ public:
 	REXI_SimulationVariables rexi;
 	SWEPolvani_SimulationVariables swe_polvani;
 
+
+
 public:
 	/**
 	 * Diagnostic variables

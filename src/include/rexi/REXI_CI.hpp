@@ -93,7 +93,7 @@ public:
 	)
 	{
 #if !SWEET_QUADMATH
-		FatalError("Don't use this without quad precision support to generate the coefficients!");
+//		FatalError("Don't use this without quad precision support to generate the coefficients!");
 #endif
 
 		alpha_eval.resize(N);

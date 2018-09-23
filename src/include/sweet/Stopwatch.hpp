@@ -20,6 +20,7 @@
 #define STOPWATCH_HPP
 
 #include <cstddef>
+#include <cassert>
 #include <sys/time.h>
 
 
@@ -35,6 +36,8 @@ private:
 	struct timeval timevalue_start;	///< time value of last start
 	struct timeval timevalue_stop;	///< time value of last stop
 
+	int recursive_counter;	/// count recursions to support nested calls
+
 public:
 	double time;		///< stopped time (difference between start and stop time)
 
@@ -44,16 +47,21 @@ public:
 	void reset()
 	{
 		time = 0.0f;
+
+		recursive_counter = 0;
 	}
 
 	/**
 	 * initialize the stopwatch
 	 */
-	Stopwatch()
+	Stopwatch(bool i_start = false)
 	{
 		reset();
-		start();
+
+		if (i_start)
+			start();
 	}
+
 
 	/**
 	 * start the stop watch:
@@ -63,8 +71,12 @@ public:
 	 */
 	inline void start()
 	{
-		gettimeofday(&timevalue_start, NULL);
+		if (recursive_counter == 0)
+			gettimeofday(&timevalue_start, NULL);
+
+		recursive_counter++;
 	}
+
 
 	/**
 	 * stop the stop watch
@@ -73,12 +85,17 @@ public:
 	 */
 	inline void stop()
 	{
-		gettimeofday(&timevalue_stop, NULL);
+		recursive_counter--;
 
-		time_t dsec = timevalue_stop.tv_sec - timevalue_start.tv_sec;
-		suseconds_t dsusec = timevalue_stop.tv_usec - timevalue_start.tv_usec;
+		if (recursive_counter == 0)
+		{
+			gettimeofday(&timevalue_stop, NULL);
 
-		time += (double)dsec + (double)dsusec/1000000.0;
+			time_t dsec = timevalue_stop.tv_sec - timevalue_start.tv_sec;
+			suseconds_t dsusec = timevalue_stop.tv_usec - timevalue_start.tv_usec;
+
+			time += (double)dsec + (double)dsusec/1000000.0;
+		}
 	}
 
 
@@ -113,6 +130,10 @@ public:
 	 */
 	inline double operator()()
 	{
+#if SWEET_DEBUG
+		assert(recursive_counter == 0);
+#endif
+
 		return time;
 	}
 };

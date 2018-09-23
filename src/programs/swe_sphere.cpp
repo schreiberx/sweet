@@ -28,6 +28,8 @@
 #include "swe_sphere/SWE_Sphere_TimeSteppers.hpp"
 #include "swe_sphere/SWE_Sphere_NormalModeAnalysis.hpp"
 
+#include <sweet/SimulationBenchmarkTiming.hpp>
+
 
 
 SimulationVariables simVars;
@@ -125,6 +127,8 @@ public:
 
 	void reset()
 	{
+		SimulationBenchmarkTimings::getInstance().main_setup.start();
+
 		simVars.reset();
 
 		if (simVars.misc.sphere_use_robert_functions != 1)
@@ -213,6 +217,8 @@ public:
 		update_diagnostics();
 
 		simVars.diag.backup_reference();
+
+		SimulationBenchmarkTimings::getInstance().main_setup.stop();
 	}
 
 
@@ -764,6 +770,8 @@ case 'C':
 
 int main(int i_argc, char *i_argv[])
 {
+	// Time counter
+	SimulationBenchmarkTimings::getInstance().main.start();
 
 #if __MIC__
 	std::cout << "Compiled for MIC" << std::endl;
@@ -802,14 +810,11 @@ int main(int i_argc, char *i_argv[])
 #if SWEET_PARAREAL
 		simVars.parareal.printOptions();
 #endif
-#if SWEET_MPI
-		if (mpi_rank == 0)
-#endif
-		{
-//			std::cout << "	--compute-error [0/1]	Output errors (if available, default: 1)" << std::endl;
-		}
 		return -1;
 	}
+
+	if (simVars.misc.verbosity > 3)
+		std::cout << " + setup SH sphere transformations..." << std::endl;
 
 	sphereDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.shtns_use_plans);
 
@@ -818,15 +823,24 @@ int main(int i_argc, char *i_argv[])
 			simVars.disc.res_spectral[1]
 		};
 
+	if (simVars.misc.verbosity > 3)
+		std::cout << " + setup SH sphere transformations (nodealiasing)..." << std::endl;
+
 	sphereDataConfigInstance_nodealiasing.setupAuto(res_physical_nodealias, simVars.disc.res_spectral, simVars.misc.shtns_use_plans);
 
+
 #if SWEET_GUI
+	if (simVars.misc.verbosity > 3)
+		std::cout << " + setup FFT plane transformations..." << std::endl;
+
 	planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical);
 #endif
 
 	std::ostringstream buf;
 	buf << std::setprecision(14);
 
+	if (simVars.misc.verbosity > 3)
+		std::cout << " + setup finished" << std::endl;
 
 #if SWEET_MPI
 	std::cout << "Helo from MPI rank: " << mpi_rank << std::endl;
@@ -890,18 +904,13 @@ int main(int i_argc, char *i_argv[])
 				// Do first output before starting timer
 				simulationSWE->timestep_check_output();
 
-
-				//Time counter
-				Stopwatch time;
-
 #if SWEET_MPI
 				MPI_Barrier(MPI_COMM_WORLD);
 				// Start counting time
 				if (mpi_rank == 0)
 					std::cout << "TIMER RESET" << std::endl;
 #endif
-				time.reset();
-
+				SimulationBenchmarkTimings::getInstance().main_timestepping.start();
 
 				// Main time loop
 				while (true)
@@ -929,31 +938,16 @@ int main(int i_argc, char *i_argv[])
 					}
 				}
 
-
 				// Stop counting time
-				time.stop();
+				SimulationBenchmarkTimings::getInstance().main_timestepping.stop();
 
 #if SWEET_MPI
 				MPI_Barrier(MPI_COMM_WORLD);
+
 				// Start counting time
 				if (mpi_rank == 0)
 					std::cout << "TIMER STOP" << std::endl;
 #endif
-
-				double wallclock_time = time();
-
-#if SWEET_MPI
-				if (mpi_rank == 0)
-#endif
-				{
-					// End of run output results
-					std::cout << std::endl;
-					std::cout << "***************************************************" << std::endl;
-					std::cout << "Wallclock time (seconds): " << wallclock_time << std::endl;
-					std::cout << "Number of time steps: " << simVars.timecontrol.current_timestep_nr << std::endl;
-					std::cout << "Time per time step: " << wallclock_time/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
-					std::cout << "Last time step size: " << simVars.timecontrol.current_timestep_size << std::endl;
-				}
 
 				// Output final time step output!
 				simulationSWE->timestep_check_output();
@@ -962,6 +956,28 @@ int main(int i_argc, char *i_argv[])
 
 			delete simulationSWE;
 		}
+
+		SimulationBenchmarkTimings::getInstance().main.stop();
+	}
+
+
+#if SWEET_MPI
+	if (mpi_rank == 0)
+#endif
+	{
+		// End of run output results
+		std::cout << std::endl;
+		SimulationBenchmarkTimings::getInstance().output();
+		std::cout << "***************************************************" << std::endl;
+		std::cout << "* Other timing information (direct)" << std::endl;
+		std::cout << "***************************************************" << std::endl;
+		std::cout << " + simVars.timecontrol.current_timestep_nr: " << simVars.timecontrol.current_timestep_nr << std::endl;
+		std::cout << " + simVars.timecontrol.current_timestep_size: " << simVars.timecontrol.current_timestep_size << std::endl;
+		std::cout << std::endl;
+		std::cout << "***************************************************" << std::endl;
+		std::cout << "* Other timing information (derived)" << std::endl;
+		std::cout << "***************************************************" << std::endl;
+		std::cout << " + time per time step: " << SimulationBenchmarkTimings::getInstance().main_timestepping()/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
 	}
 
 

@@ -111,15 +111,7 @@ private:
 
 	bool use_rexi_sphere_solver_preallocation;
 
-
 	std::size_t block_size;
-
-#if SWEET_REXI_TIMINGS
-	Stopwatch stopwatch_misc_processing;
-	Stopwatch stopwatch_broadcast;
-	Stopwatch stopwatch_reduce;
-	Stopwatch stopwatch_solve_rexi_terms;
-#endif
 
 	class PerThreadVars
 	{
@@ -140,14 +132,17 @@ private:
 	// number of threads to be used
 	int num_local_rexi_par_threads;
 
+	// number of threads to be used
+	int num_global_threads;
+
+
+#if SWEET_MPI
 	// number of mpi ranks to be used
 	int mpi_rank;
 
 	// MPI ranks
 	int num_mpi_ranks;
-
-	// number of threads to be used
-	int num_global_threads;
+#endif
 
 
 private:
@@ -161,7 +156,13 @@ public:
 		);
 
 private:
-	void update_coefficients(bool i_update_rexi);
+	void p_update_coefficients(bool i_update_rexi);
+
+	void p_get_workload_start_end(
+			std::size_t &o_start,
+			std::size_t &o_end
+	);
+
 
 	/**
 	 * setup the REXI
@@ -198,12 +199,6 @@ public:
 			double i_simulation_timestamp
 	);
 
-	void get_workload_start_end(
-			std::size_t &o_start,
-			std::size_t &o_end
-	);
-
-
 
 	/**
 	 * Solve the REXI of \f$ U(t) = exp(L*t) \f$
@@ -223,14 +218,6 @@ public:
 		const SimulationVariables &i_parameters
 	);
 
-
-#if 0
-public:
-	static
-	void MPI_quitWorkers(
-			SphereDataConfig *i_sphereDataConfig
-	);
-#endif
 
 	virtual ~SWE_Sphere_TS_l_rexi();
 };
