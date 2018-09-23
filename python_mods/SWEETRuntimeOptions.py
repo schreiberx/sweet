@@ -99,6 +99,8 @@ class SWEETRuntimeOptions():
 
 		self.compute_error = 0
 
+		self.shtns_use_plans = 0
+
 		return
 
 
@@ -178,6 +180,11 @@ class SWEETRuntimeOptions():
 
 		if 'timestep_size' in d:
 			self.timestep_size = float(d['timestep_size'])
+
+		if 'shtns_use_plans' in d:
+			self.shtns_use_plans = int(d['shtns_use_plans'])
+
+
 
 	def getUniqueID(self, compileOptions):
 		idstr = ''
@@ -387,5 +394,7 @@ class SWEETRuntimeOptions():
 		retval += ' --use-robert-functions='+str(self.use_robert_functions)
 
 		retval += ' --compute-error='+str(self.compute_error)
+
+		retval += ' --shtns-use-plans='+str(self.shtns_use_plans)
 
 		return retval
