@@ -127,7 +127,6 @@ for i in datafiles:
 
 	print([bar_values[key][-1] for key in bar_values])
 
-
 labels_timings = [plot_bars_and_labels[key] for key in plot_bars_and_labels]
 values_timings = [bar_values[key] for key in plot_bars_and_labels]
 
