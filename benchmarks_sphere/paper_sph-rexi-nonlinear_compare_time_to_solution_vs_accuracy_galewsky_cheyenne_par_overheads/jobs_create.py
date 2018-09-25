@@ -19,8 +19,39 @@ p.cluster.force_turbo_off = True
 p.cluster.max_wallclock_seconds = 60*10
 
 
-# Override OMP_NUM_THREADS
-p.cluster.environment_vars = "export OMP_NUM_THREADS=1\n"
+# Override OMP_NUM_THREADS and use MASTER binding
+p.user_script_header += """
+
+# Manual override in jobs_create.py
+export OMP_NUM_THREADS=1
+export OMP_PROC_BIND=MASTER
+
+"""
+
+# Link to SHTNS plans
+p.user_script_preprocess += """
+
+# SHTNS plans required which have to be precomputed once.
+# You can generate them by simply running one benchmark.
+# Then, copy them to the main benchmark folder
+ln ../shtns_cfg ./ -sf || exit 1
+ln ../shtns_cfg_fftw ./ -sf || exit 1
+
+echo "CPU Frequencies:"
+cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq | sort -u
+echo ""
+
+"""
+
+p.user_script_postprocess += """
+
+echo "CPU Frequencies:"
+cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq | sort -u
+echo ""
+
+"""
+
+
 
 #
 # Parallelization models
@@ -49,6 +80,7 @@ p.compile.rexi_timings = 'enable'
 p.compile.rexi_timings_additional_barriers = 'enable'
 
 
+p.compile.quadmath = 'enable'
 
 #
 # Options for CHEYENNE
@@ -57,7 +89,9 @@ if True:
 	p.compile.compiler = 'intel'
 
 	# MKL turned out to be more robust on Cheyenne compared to FFTW
-	p.compile.mkl = 'enable'
+	#p.compile.mkl = 'enable'
+	# Disabled since we can now use FFTW plans in SHTNS
+	p.compile.mkl = 'disable'
 
 	#
 	# Use Intel MPI Compilers
@@ -89,11 +123,15 @@ p.runtime.mode_res = 128
 p.runtime.phys_res = -1
 
 #
+# Reuse SHTNS plans
+p.runtime.shtns_use_plans = 1
+
+#
 # Benchmark ID
 # 4: Gaussian breaking dam
 # 100: Galewski
 #
-p.runtime.bench_id = 100
+p.runtime.benchmark="galewsky"
 
 #
 # Compute error
@@ -243,7 +281,7 @@ if __name__ == "__main__":
 				#['lg_rexi_lc_n_erk_ver0',	2,	2,	0],
 				#['lg_rexi_lc_n_erk_ver0',	2,	2,	0],
 				['lg_rexi_lc_n_erk_ver1',	2,	2,	0],
-				['lg_rexi',	2,	2,	0],
+				#['lg_rexi',	2,	2,	0],
 
 				#['l_rexi_n_erk_ver0',	2,	2,	0],
 				#['l_rexi_n_erk_ver1',	2,	2,	0],
