@@ -29,14 +29,43 @@ ax.set_ylim(1e-1, 3000)
 output_filename = "output_rexi_performance_breakdown.pdf"
 
 
+#
+# All identifiers from the output and their placeholders
+#
+timings_identifiers = {
+	'main': ' + SimulationBenchmarkTimings.main: ',
+	'main_setup': ' + SimulationBenchmarkTimings.main_setup: ',
+	'main_simulationloop': ' + SimulationBenchmarkTimings.main_simulationloop: ',
+	'rexi': ' + SimulationBenchmarkTimings.rexi: ',
+	'rexi_setup': ' + SimulationBenchmarkTimings.rexi_setup: ',
+	'rexi_shutdown': ' + SimulationBenchmarkTimings.rexi_shutdown: ',
+	'rexi_timestepping': ' + SimulationBenchmarkTimings.rexi_timestepping: ',
+	'rexi_timestepping_solver': ' + SimulationBenchmarkTimings.rexi_timestepping_solver: ',
+	'rexi_timestepping_broadcast': ' + SimulationBenchmarkTimings.rexi_timestepping_broadcast: ',
+	'rexi_timestepping_reduce': ' + SimulationBenchmarkTimings.rexi_timestepping_reduce: ',
+	'rexi_timestepping_miscprocessing': ' + SimulationBenchmarkTimings.rexi_timestepping_miscprocessing: ',
+}
 
-bar_name = []
-bar_preprocess = []
-bar_broadcast = []
-bar_reduce = []
-bar_solve = []
-bar_wallclock_time = []
+#
+# Bars to plot
+#
+plot_bars_and_labels = {
+	'main_simulationloop': 'Total wallclock',
+#	'main_nonlinearities': 'Non-linearities',	# This is a placeholder and handled in a special way
+	'rexi_timestepping': 'Total REXI',
+	'rexi_timestepping_miscprocessing': 'REXI misc',
+	'rexi_timestepping_broadcast': 'REXI broadcast',
+	'rexi_timestepping_solver': 'REXI solver',
+	'rexi_timestepping_reduce': 'REXI reduce',
+}
 
+
+# 'name' contains the pretty name of the run
+bar_values = {
+	'name':  []	# name for this run
+}
+for key in plot_bars_and_labels:
+	bar_values[key] = []
 
 
 if len(datafiles) == 0:
@@ -55,94 +84,70 @@ for i in datafiles:
 	with open(filename) as f:
 		lines = f.readlines()
 
-	wallclock_time = -1.0
-	rexi_preprocess = -1.0
-	rexi_broadcast = -1.0
-	rexi_reduce = -1.0
-	rexi_solve = -1.0
+	#
+	# prepare temporary timing list
+	# this helps to setup dummy data in case that some timing doesn't exist
+	#
+	timings = {key: -1.0 for key in timings_identifiers}
 
 	for l in lines:
-		tag = "REXI STOPWATCH preprocessing: "
-		if l[0:len(tag)] == tag:
-			rexi_preprocess = float(l[len(tag):])
-			continue
+		for key, prefix in timings_identifiers.items():
+			if l[0:len(prefix)] == prefix:
+				timings[key] = float(l[len(prefix):])
+				break
 
-		tag = "REXI STOPWATCH reduce: "
-		if l[0:len(tag)] == tag:
-			rexi_reduce = float(l[len(tag):])
-			continue
-
-		tag = "REXI STOPWATCH solve_rexi_terms: "
-		if l[0:len(tag)] == tag:
-			rexi_solve = float(l[len(tag):])
-			continue
-
-		tag = "REXI STOPWATCH broadcast: "
-		if l[0:len(tag)] == tag:
-			rexi_broadcast = float(l[len(tag):])
-			continue
-
-		tag = "Wallclock time (seconds): "
-		if l[0:len(tag)] == tag:
-			wallclock_time = float(l[len(tag):])
-			continue
+	#
+	# Append to bar values
+	#
+	for key in timings:
+		# only if bar should be plotted
+		if key in bar_values:
+			bar_values[key].append(timings[key])
 
 
-	if rexi_broadcast < 0:
-		continue
+	#
+	# Some info output
+	#
+	name = i
+	name = name.replace('script_ln2_g9.81_h10000_f7.2921e-05_a6371220_fsph0_u0.0_U0_tsm_', '')
+	#name = name.replace('tso2_tsob2_', '')
+	name = re.sub(r"C[0-9]*_", "", name)
+	name = name.replace('REXICI_n00000128_mr10.0_mi30.0_prcircle_gfs0.0000E+00_gfd0.0000E+00_gfe0.0000E+00_nrm0_hlf0_bf0_ext00_M0128_MPI_space01_time128_', '')
+	name = name.replace('tso2_tsob2_REXICI_n00000128_mr10.0_mi30.0_prcircle_gfs0.0000E+00_gfd0.0000E+00_gfe0.0000E+00_nrm0_hlf0_bf0_ext00_', '')
+	name = name.replace('M0128_MPI_space01_', '')
+	if name[-1] == '_':
+		name = name[:-1]
+
+	bar_values['name'].append(name)
+
+	print([bar_values[key][-1] for key in bar_values])
 
 
-	prev_name = i
-	prev_name = prev_name.replace('script_ln2_g9.81_h10000_f7.2921e-05_a6371220_u0.0_U0_fsph0_tsm_', '')
-	#prev_name = prev_name.replace('tso2_tsob2_', '')
-	prev_name = re.sub(r"C[0-9]*_", "", prev_name)
-	prev_name = prev_name.replace('REXICI_n00000128_mr10.0_mi30.0_prcircle_gfs0.0000E+00_gfd0.0000E+00_gfe0.0000E+00_nrm0_hlf0_bf0_ext00_M0128_MPI_space01_time128_', '')
-	prev_name = prev_name.replace('tso2_tsob2_REXICI_n00000128_mr10.0_mi30.0_prcircle_gfs0.0000E+00_gfd0.0000E+00_gfe0.0000E+00_nrm0_hlf0_bf0_ext00_', '')
-	prev_name = prev_name.replace('M0128_MPI_space01_', '')
+labels_timings = [plot_bars_and_labels[key] for key in plot_bars_and_labels]
+values_timings = [bar_values[key] for key in plot_bars_and_labels]
 
+#print(labels_timings)
+#print(values_timings)
 
-	if prev_name[-1] == '_':
-		prev_name = prev_name[:-1]
+# number of different runs
+num_runs = len(bar_values['name'])
 
-	print(prev_name)
-
-
-	bar_name.append(prev_name)
-	bar_preprocess.append(rexi_preprocess)
-	bar_broadcast.append(rexi_broadcast)
-	bar_solve.append(rexi_solve)
-	bar_reduce.append(rexi_reduce)
-	bar_wallclock_time.append(wallclock_time)
-
-	print("")
-	print("prev_name: "+str(prev_name))
-	print("wallclock_time: "+str(wallclock_time))
-	print("rexi_preprocess: "+str(rexi_preprocess))
-	print("rexi_broadcast: "+str(rexi_broadcast))
-	print("rexi_solve: "+str(rexi_solve))
-	print("rexi_reduce: "+str(rexi_reduce))
-	
-
-labels = ['Total wallclock', 'REXI misc', 'REXI broadcast', 'REXI solve', 'REXI reduce']
-values = [bar_wallclock_time, bar_preprocess, bar_broadcast, bar_solve, bar_reduce]
-M = len(values)
-
-if len(bar_name) == 0:
-	print("No valid data found")
+if num_runs == 0:
+	print("No valid output found from one run")
 	sys.exit(1)
 
 
+# number of timings
+num_timings = len(plot_bars_and_labels)
 
-N = len(bar_name)
-ind = range(N)
+# adjust depending on number of labels_timings
 width = 0.18
 colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
 
-ax.set_xticklabels(bar_name)
+ax.set_xticks([i-width/2 for i in range(num_runs)])
+ax.set_xticklabels(labels_timings)
 ax.set_ylabel('Wallclock time (seconds)')
 
-ax.set_xticks([ind[i]-width/2 for i in range(N)])
-ax.set_xticklabels(bar_name)
 
 
 for tick in ax.get_xticklabels():
@@ -152,19 +157,21 @@ for tick in ax.get_xticklabels():
 
 rects = []
 
-for j in range(M):
-	rects_ = ax.bar([i - width*(M/2-j) for i in range(N)], values[j], width, color=colors[j])
+# iterate over all runs
+for j in range(num_timings):
+	# scatter plot bars for each run in different colors 'colors'
+	rects_ = ax.bar([i - width*(num_runs/2-j) for i in range(num_runs)], values_timings[j], width, color=colors[j])
 	rects.append(rects_)
 
 
-for j in range(M):
-	for rect, val in zip(rects[j], values[j]):
+for j in range(num_timings):
+	for rect, val in zip(rects[j], values_timings[j]):
 		height = rect.get_height()
 		text =  "%.2f" % height
 		ax.text(rect.get_x() + rect.get_width()/2, height+math.log(1.0+0.1*height), text, ha='center', va='bottom', size=8, rotation=90)
 
 
-ax.legend([rect[0] for rect in rects], labels)
+ax.legend([rect[0] for rect in rects], labels_timings)
 
 
 plt.legend()
