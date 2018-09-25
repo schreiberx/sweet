@@ -77,7 +77,7 @@ p.compile.sphere_spectral_space = 'enable'
 p.compile.sphere_spectral_dealiasing = 'enable'
 
 p.compile.rexi_timings = 'enable'
-p.compile.rexi_timings_additional_barriers = 'enable'
+p.compile.rexi_timings_additional_barriers = 'disable'
 
 
 p.compile.quadmath = 'enable'
