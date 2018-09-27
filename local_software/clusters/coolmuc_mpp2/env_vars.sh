@@ -19,9 +19,11 @@ module load gcc/8
 
 # Helper environment variables
 # MPIF90 is used by e.g. libpfasst
-export F90=gfortran
-export CC=gcc
-export CPP=g++
+export SWEET_F90=gfortran
+export SWEET_CC=gcc
+export SWEET_CXX=g++
 
-export MPIF90=mpifc
+export SWEET_MPIF90=mpifc
+export SWEET_MPICC=mpigcc
+export SWEET_MPICXX=mpigxx
 

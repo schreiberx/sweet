@@ -19,7 +19,7 @@ if [ ! -e "$DST_DIR/lib/libpfasst.a"  -o "$1" != "" ]; then
 	sed -i "s/ftn/mpif90/" Makefile.defaults || exit 1
 
 	make clean || exit 1
-	make FC=$MPIF90 || exit 1
+	make FC=$SWEET_MPIF90 || exit 1
 
 	mkdir -p "$DST_DIR/lib/"
 
