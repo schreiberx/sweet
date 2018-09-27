@@ -41,9 +41,6 @@ class SWEETClusterOptions:
 		# max wallclock time, default: 1h
 		self.max_wallclock_seconds = 60*60
 
-		# additional environment variables
-		self.environment_vars = ""
-
 		# Force disabling of turbo mode (if supported)
 		self.force_turbo_off = False
 
@@ -443,7 +440,7 @@ class SWEETClusterOptions:
 			#"rated": 2300000
 			#"slow": 1200000
 			if self.force_turbo_off:
-				content += "#PBS -l select=freq=rated\n"
+				content += "#PBS -l select=cpufreq=2300000\n"
 
 			content += """#
 #PBS -N """+jobid[0:100]+"""
@@ -455,7 +452,7 @@ export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
 module load openmpi
 """+("module load mkl" if mkl else "")+"""
 
-"""+self.environment_vars
+"""
 
 			#
 			# https://www2.cisl.ucar.edu/resources/computational-systems/cheyenne/running-jobs/submitting-jobs-pbs/omplace-and-dplace
@@ -504,7 +501,7 @@ module load openmpi
 			#"rated": 2300000
 			#"slow": 1200000
 			if self.force_turbo_off:
-				content += "#PBS -l select=freq=rated\n"
+				content += "#PBS -l select=cpufreq=2300000\n"
 
 			content += """#
 #PBS -N """+jobid[0:100]+"""
@@ -516,7 +513,7 @@ export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
 module load impi
 """+("module load mkl" if mkl else "")+"""
 
-"""+self.environment_vars
+"""
 
 			#
 			# https://www2.cisl.ucar.edu/resources/computational-systems/cheyenne/running-jobs/submitting-jobs-pbs/omplace-and-dplace
@@ -566,7 +563,7 @@ module load impi
 			#"rated": 2300000
 			#"slow": 1200000
 			if self.force_turbo_off:
-				content += "#PBS -l select=freq=rated\n"
+				content += "#PBS -l select=cpufreq=2300000\n"
 
 			content += """#
 #PBS -N """+jobid[0:100]+"""
@@ -577,8 +574,7 @@ export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
 
 """+("module load mkl" if mkl else "")+"""
 
-
-"""+self.environment_vars
+"""
 
 			#
 			# https://www2.cisl.ucar.edu/resources/computational-systems/cheyenne/running-jobs/submitting-jobs-pbs/omplace-and-dplace
