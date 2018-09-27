@@ -146,4 +146,16 @@ else
 
 	cd "$BACKDIR"
 
+
+	if [ "${HOSTNAME:0:10}" == "mpp2-login" ]; then
+		echo "Exporting environment variables CC, CPP and F90 and their MPI pedants"
+
+		# Helper environment variables
+		# MPIF90 is used by e.g. libpfasst
+		export F90=gfortran
+		export CC=gcc
+		export CPP=g++
+
+		export MPIF90=mpifc
+	fi
 fi
