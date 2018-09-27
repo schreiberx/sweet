@@ -55,7 +55,7 @@ else
 	fi
 
 	if [ "${HOSTNAME:0:10}" == "mpp2-login" ]; then
-		source "clusters/env_vars_coolmuc_mpp2.sh"
+		source "clusters/coolmuc_mpp2/env_vars.sh"
 	fi
 
 
