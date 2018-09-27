@@ -102,6 +102,18 @@ class SWEETClusterOptions:
 			self.total_max_nodes = 1
 			self.total_max_cores = self.cores_per_node*self.total_max_nodes
 
+		elif self.target_machine == "coolmuc_mpp2":
+			# https://www.lrz.de/services/compute/linux-cluster/overview/
+			self.cores_per_node = 28
+
+			# REAL number:
+			# self.total_max_nodes = 4032
+
+			# Low number to avoid accidentally wasting computing time
+			self.total_max_nodes = 384
+			self.total_max_cores = self.cores_per_node*self.total_max_nodes
+
+
 		else:
 			if not auto and self.target_machine != '':
 				raise Exception("Invalid target machine '"+self.target_machine+"'")
@@ -590,6 +602,47 @@ export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
 			#mpi_exec_prefix += " -tm pthreads "
 
 
+		elif self.target_machine == "coolmuc_mpp2":
+			#
+			# Coolmuc:
+			#  - Dual socket (14 cores / socket)
+			#  - 28 physical cores in total per node
+			#
+
+			content = """#!/bin/bash
+#SBATCH -o """+cwd+"/"+dirname+"""/output.out
+#SBATCH -e """+cwd+"/"+dirname+"""/output.err
+#SBATCH -D """+cwd+"/"+dirname+"""/
+#SBATCH -J """+jobid[0:100]+"""
+###SBATCH --get-user-env 
+#SBATCH --clusters=mpp2
+#SBATCH --ntasks="""+str(num_nodes*num_cores_per_node)+"""
+#SBATCH --cpus-per-task="""+str(int(num_cores_per_node/num_ranks_per_node))+"""
+# the above is a good match for the
+# CooLMUC2 architecture.
+#SBATCH --mail-type=end 
+#SBATCH --mail-user=schreiberx@gmail.com
+#SBATCH --export=NONE 
+#SBATCH --time="""+max_wallclock_seconds_str+"""
+source /etc/profile.d/modules.sh
+#PBS -l select="""+str(num_nodes)+""":ncpus="""+str(num_cores_per_node)+""":mpiprocs="""+str(num_ranks_per_node)+""":ompthreads="""+str(num_omp_threads_per_mpi_thread)+"\n"
+
+			#if self.force_turbo_off:
+			#	content += "#PBS -l select=freq=rated\n"
+
+			content += """
+export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
+export OMP_PROC_BIND=SCATTER
+
+"""
+
+			#
+			# https://www2.cisl.ucar.edu/resources/computational-systems/cheyenne/running-jobs/submitting-jobs-pbs/omplace-and-dplace
+			#
+			mpi_exec_prefix = "mpirun -n "+str(mpi_ranks_total)+" "
+			# TODO: This seems to make trouble
+
+
 		elif self.target_machine == 'mac-login-intel':
 
 			content = """#!/bin/bash
@@ -602,7 +655,7 @@ export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=32
 #SBATCH --mail-type=end
-#SBATCH --mail-user=M.Schreiber@exeter.ac.uk
+#SBATCH --mail-user=schreiberx@gmail.com
 #SBATCH --export=NONE
 ###SBATCH --time=01:30:00
 
@@ -631,7 +684,7 @@ export OMP_NUM_THREADS=32
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=64
 #SBATCH --mail-type=end
-#SBATCH --mail-user=M.Schreiber@exeter.ac.uk
+#SBATCH --mail-user=schreiberx@gmail.com
 #SBATCH --export=NONE
 ###SBATCH --time=01:30:00
 
