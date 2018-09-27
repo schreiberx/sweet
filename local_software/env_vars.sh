@@ -32,31 +32,6 @@ else
 		fi
 	fi
 
-	if [ "${HOSTNAME:0:8}" == "cheyenne" ]; then
-	#	echo "Loading GNU 7.1.0 module on Cheyenne"
-	#	module load gnu/7.1.0
-		echo "Leaving compiler to mpiCC = intel"
-		echo "Loading newer version of git"
-		module load git
-	fi
-
-	if [ "${HOSTNAME:0:15}" == "mac-login-intel" -o "${HOSTNAME:0:7}" == "mac-snb" ]; then
-		echo "Loading modules for mac-login-intel"
-
-		echo "Loading GCC/7"
-		module unload gcc
-		module load gcc/7
-
-		echo "Loading binutils"
-		module load binutils/2.25
-
-	#	module unload intel
-	#	module load intel/18.0
-	fi
-
-	if [ "${HOSTNAME:0:10}" == "mpp2-login" ]; then
-		source "clusters/coolmuc_mpp2/env_vars.sh"
-	fi
 
 
 	#
@@ -107,6 +82,32 @@ else
 	SCRIPTDIR="`pwd`/local_software"
 
 	export SWEET_ROOT="`pwd`"
+
+	if [ "${HOSTNAME:0:8}" == "cheyenne" ]; then
+	#	echo "Loading GNU 7.1.0 module on Cheyenne"
+	#	module load gnu/7.1.0
+		echo "Leaving compiler to mpiCC = intel"
+		echo "Loading newer version of git"
+		module load git
+	fi
+
+	if [ "${HOSTNAME:0:15}" == "mac-login-intel" -o "${HOSTNAME:0:7}" == "mac-snb" ]; then
+		echo "Loading modules for mac-login-intel"
+
+		echo "Loading GCC/7"
+		module unload gcc
+		module load gcc/7
+
+		echo "Loading binutils"
+		module load binutils/2.25
+
+	#	module unload intel
+	#	module load intel/18.0
+	fi
+
+	if [ "${HOSTNAME:0:10}" == "mpp2-login" ]; then
+		source "$SCRIPTDIR/clusters/coolmuc_mpp2/env_vars.sh"
+	fi
 
 
 	if [ ! -d "$SCRIPTDIR" ]; then
