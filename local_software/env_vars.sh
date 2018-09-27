@@ -54,19 +54,11 @@ else
 	#	module load intel/18.0
 	fi
 
-	if [ "${HOSTNAME:0:5}" == "mpp2-" -o "${HOSTNAME:0:5}" == "mpp3-" ]; then
-		echo "Loading modules for CoolMUC mpp2-* login nodes"
-
-		echo "Loading GCC/8"
-		module unload gcc
-		module load gcc/8
-
-	#	echo "Loading binutils"
-	#	module load binutils/2.25
-
-	#	module unload intel
-	#	module load intel/18.0
+	if [ "${HOSTNAME:0:10}" == "mpp2-login" ]; then
+		source "clusters/env_vars_coolmuc_mpp2.sh"
 	fi
+
+
 	#
 	# Detect Ubuntu system
 	#
@@ -147,15 +139,4 @@ else
 	cd "$BACKDIR"
 
 
-	if [ "${HOSTNAME:0:10}" == "mpp2-login" ]; then
-		echo "Exporting environment variables CC, CPP and F90 and their MPI pedants"
-
-		# Helper environment variables
-		# MPIF90 is used by e.g. libpfasst
-		export F90=gfortran
-		export CC=gcc
-		export CPP=g++
-
-		export MPIF90=mpifc
-	fi
 fi
