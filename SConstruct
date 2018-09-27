@@ -333,6 +333,11 @@ if p.compiler == 'llvm':
 		Exit(-1)
 
 
+override_list = ['CC', 'CXX', 'F90', 'MPICC', 'MPICXX', 'MPIF90']
+for i in override_list:
+	if 'SWEET_'+i in env['ENV']:
+		print("INFO: Overriding environment variable "+i+"="+env['ENV']['SWEET_'+i])
+		env[i] = env['ENV']['SWEET_'+i]
 
 
 if p.mode == 'debug':

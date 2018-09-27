@@ -72,6 +72,13 @@ fi
 """
 
 
+		override_list = ['CC', 'CXX', 'F90', 'MPICC', 'MPICXX', 'MPIF90']
+
+		for i in override_list:
+			if 'SWEET_'+i in env['ENV']:
+				print("INFO: Overriding environment variable "+i+"="+env['ENV']['SWEET_'+i])
+                                content += "export "+i+"="+env['ENV']['SWEET_'+i]+"\n"
+
 
 		#
 		# Setup compile options
