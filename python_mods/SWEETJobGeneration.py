@@ -92,7 +92,7 @@ $SCONS || exit 1
 			f.write("scons "+self.compile.getSConsParams()+'\n')
 			f.write("\n")
 
-		elif self.cluster.target_machine in ['cheyenne', 'cheyenne_impi', 'cheyenne_openmpi', 'mac-login-amd', 'mac-login-intel']:
+		elif self.cluster.target_machine in ['cheyenne', 'cheyenne_impi', 'cheyenne_openmpi', 'mac-login-amd', 'mac-login-intel', 'coolmuc_mpp2']:
 			fn = 'compile_'+self.cluster.target_machine+'.sh'
 			f = open(fn, 'w')
 			f.write("#! /bin/bash\n")

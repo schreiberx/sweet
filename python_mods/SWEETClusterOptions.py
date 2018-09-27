@@ -624,8 +624,10 @@ export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
 #SBATCH --mail-user=schreiberx@gmail.com
 #SBATCH --export=NONE 
 #SBATCH --time="""+max_wallclock_seconds_str+"""
+
 source /etc/profile.d/modules.sh
-#PBS -l select="""+str(num_nodes)+""":ncpus="""+str(num_cores_per_node)+""":mpiprocs="""+str(num_ranks_per_node)+""":ompthreads="""+str(num_omp_threads_per_mpi_thread)+"\n"
+
+"""
 
 			#if self.force_turbo_off:
 			#	content += "#PBS -l select=freq=rated\n"
