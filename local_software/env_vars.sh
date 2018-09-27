@@ -54,6 +54,19 @@ else
 	#	module load intel/18.0
 	fi
 
+	if [ "${HOSTNAME:0:5}" == "mpp2-" -o "${HOSTNAME:0:5}" == "mpp3-" ]; then
+		echo "Loading modules for CoolMUC mpp2-* login nodes"
+
+		echo "Loading GCC/8"
+		module unload gcc
+		module load gcc/8
+
+	#	echo "Loading binutils"
+	#	module load binutils/2.25
+
+	#	module unload intel
+	#	module load intel/18.0
+	fi
 	#
 	# Detect Ubuntu system
 	#
