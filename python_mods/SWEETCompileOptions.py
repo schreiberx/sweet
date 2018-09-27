@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 #
 # This file describes all possible compile options
 #

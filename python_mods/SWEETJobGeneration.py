@@ -11,58 +11,66 @@ from SWEETClusterOptions import *
 
 class SWEETJobGeneration:
 
+
 	def __init__(self):
 		self.compile = SWEETCompileOptions()
 		self.runtime = SWEETRuntimeOptions()
 		self.cluster = SWEETClusterOptions()
 
-		self.plane_or_sphere = 'plane'
+		self.user_script_header = ''
+		self.user_script_footer = ''
+
+		# Directly executed before the executable
+		self.user_script_preprocess = ''
+
+		# Directly executed after the executable
+		self.user_script_postprocess = ''
 
 		#
 		# REXI parallelization with threading?
 		# True deactivates OpenMP space parallelization and uses OMP parallel for over the REXI terms
-		self.rexi_thread_par = False
+		#self.rexi_thread_par = False
 
 
 
 
-	def create_job_script(self, dirpath, dirname):
+	def create_job_script(
+			self,
+			dirpath,	# directory path to generate benchmarks in
+			dirname		# name of directory to store benchmark in
+	):
 		self.compile.makeOptionsConsistent()
 
 		job_id = 'sweet_'+self.runtime.getUniqueID(self.compile)
 
 		content, mpiexec_prefix = self.cluster.getScriptHeader('script'+self.runtime.getUniqueID(self.compile), self.runtime, self.compile, dirname)
 
+		content += self.user_script_header
 		content += """
 
 cd \""""+dirpath+"""\"
 
 BASEDIR="`pwd`"
-#rm -f ./prog_h_*
-#rm -f ./prog_u_*
-#rm -f ./prog_v_*
 
 SWEETROOT=\""""+dirpath+"""/../../../\"
 cd "$SWEETROOT"
-
 pwd
 
 # Always load local software
 #is this really the root?
 if test -e ./local_software/env_vars.sh ; then
 	source ./local_software/env_vars.sh || exit 1
-else #try ../
+else
 	echo "Warning: changing SWEETROOT directory"	
 	cd ..
 	SWEETROOT="`pwd`"
 	pwd
 	source ./local_software/env_vars.sh || exit 1
 fi
-#source ./local_software/env_vars.sh || exit 1
 
-#make clean || exit 1
-
+###make clean || exit 1
 """
+
 
 
 		#
@@ -125,6 +133,8 @@ pwd
 
 """
 
+		content += self.user_script_preprocess
+
 		content += 'EXEC="$SWEETROOT/build/'+self.compile.getProgramName()+' '
 		content += self.runtime.getRuntimeOptions()
 		content += '"'
@@ -136,7 +146,11 @@ echo "$EXEC"
 pwd
 #ln -s "$SWEETROOT/data/" "$BASEDIR/data"   #Symlink for GUI directory, if necessary
 """+mpiexec_prefix+"""$EXEC || exit 1
+
 """
+		content += self.user_script_postprocess
+
+		content += self.user_script_footer
 
 		return content
 
