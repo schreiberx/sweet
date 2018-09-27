@@ -644,7 +644,7 @@ public:
 		int use_local_visc = 0;
 
 		/// Load / Save plans for SHTNS (useful for reproducibility)
-		bool shtns_use_plans = false;
+		bool shtns_use_plans = true;
 
 	} misc;
 
