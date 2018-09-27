@@ -634,7 +634,7 @@ source /etc/profile.d/modules.sh
 export OMP_NUM_THREADS="""+str(num_omp_threads_per_mpi_thread)+"""
 export OMP_PROC_BIND=SCATTER
 
-"""+self.environment_vars
+"""
 
 			#
 			# https://www2.cisl.ucar.edu/resources/computational-systems/cheyenne/running-jobs/submitting-jobs-pbs/omplace-and-dplace
