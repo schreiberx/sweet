@@ -32,7 +32,7 @@ if [ ! -e "$DST_DIR/bin/python3"  -o "$1" != "" ]; then
 	ln -sf "$DST_DIR/bin/python3" "$DST_DIR/bin/python" 
 
 	# install numpy since this is also required by other software
-	#pip3 install numpy
+	pip3 install numpy matplotlib
 
 	echo "DONE"
 

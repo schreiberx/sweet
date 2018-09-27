@@ -7,9 +7,9 @@ source env_vars.sh
 echo "*** libPFASST ***"
 
 if [ ! -e "$DST_DIR/lib/libpfasst.a"  -o "$1" != "" ]; then
-	SRC_LINK="https://www.martin-schreiber.info/pub/sweet_local_software/libpfasst_sweet_2018_09_13.tar.bz2"
+	SRC_LINK="https://www.martin-schreiber.info/pub/sweet_local_software/libpfasst_sweet_2018_09_27.tar.bz2"
 	FILENAME="`basename $SRC_LINK`"
-	BASENAME="libpfasst_sweet_2018_09_13"
+	BASENAME="libpfasst_sweet_2018_09_27"
 
 	cd "$SRC_DIR"
 
@@ -19,7 +19,7 @@ if [ ! -e "$DST_DIR/lib/libpfasst.a"  -o "$1" != "" ]; then
 	sed -i "s/ftn/mpif90/" Makefile.defaults || exit 1
 
 	make clean || exit 1
-	make || exit 1
+	make FC=$MPIF90 || exit 1
 
 	mkdir -p "$DST_DIR/lib/"
 
