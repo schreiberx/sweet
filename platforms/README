@@ -1,0 +1,31 @@
+
+
+Special configuration has to be setup for each cluster.
+This is required due to the different configurations on each cluster.
+
+Each platform requries a directory to be created in the ./platform directory:
+
+./platform/[uniqueIdentiier]/[config files]
+
+The placeholder [uniqueIdentifier] should be related to the platform.
+
+All files in [config files] should include a test for each specific platform.
+Only if the correct platform is detected, the platform-specific parts should
+be executed.
+
+Possible config files:
+
+	./env_vars.sh:
+		Included by ./local_software/env_vars.sh
+		Setup additional environment variables, e.g.
+		SWEET_CC,
+		SWEET_CXX,
+		SWEET_F90,
+		SWEET_MPICC,
+		SWEET_MPICXX,
+		SWEET_MPIF90
+		to override compiler environment variables
+
+	./SWEET.py
+		Included by files ./python_mods/SWEET*.py
+		

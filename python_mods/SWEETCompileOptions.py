@@ -13,6 +13,7 @@
 import sys
 import os
 from importlib import import_module
+from InfoError import *
 
 #from python_mods import CompileXMLOptions
 
@@ -32,10 +33,12 @@ def exec_command(command):
 	return out
 
 
-class SWEETCompileOptions:
+class SWEETCompileOptions(InfoError):
 
 
 	def __init__(self):
+		InfoError.__init__(self, "SWEETCompileOptions")
+
 		self.example_programs = []
 		self.unit_tests_programs = []
 
@@ -182,6 +185,7 @@ class SWEETCompileOptions:
 		retval += ' --quadmath='+self.quadmath
 
 		return retval
+
 
 
 	def makeOptionsConsistent(self):
@@ -578,6 +582,8 @@ class SWEETCompileOptions:
 
 
 	def getProgramName(self):
+		self.makeOptionsConsistent()
+
 		if self.program != '':
 			self.program_name = self.program
 
@@ -586,13 +592,14 @@ class SWEETCompileOptions:
 
 		else:
 			self.program_name = 'DUMMY'
-			print("")
-			print("")
-			print("Neither a program name, nor a unit test is given:\n")
-			print("  use --program=[program name] to specify the program\n")
-			print("  or --unit-test=[unit test] to specify a unit test\n")
-			print("")
-			#sys.exit(1)
+			self.info("")
+			self.info("")
+			self.info("Neither a program name, nor a unit test is given:")
+			self.info("  use --program=[program name] to specify the program")
+			self.info("  or --unit-test=[unit test] to specify a unit test")
+			self.info("")
+			sys.exit(1)
+
 
 		if self.program_binary_name != '':
 			return self.program_binary_name

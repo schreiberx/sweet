@@ -1,0 +1,217 @@
+import platform
+import socket
+import sys
+
+from SWEETPlatformResources import *
+import multiprocessing
+
+
+job_id = None
+
+def p_whoami(depth=1):
+	"""
+	String of function name to recycle code
+
+	https://www.oreilly.com/library/view/python-cookbook/0596001673/ch14s08.html
+
+	Returns
+	-------
+	string
+		Return function name
+	"""
+	return sys._getframe(depth).f_code.co_name
+
+
+
+def p_gen_script_info(jobgeneration):
+	global job_id
+
+	return """#
+# Generating function: """+p_whoami(2)+"""
+# Platform: """+get_platform_id()+"""
+# Job id: """+job_id+"""
+#
+"""
+
+
+
+def get_platform_autodetect():
+	"""
+	Returns
+	-------
+	bool
+		True if current platform matches, otherwise False
+	"""
+
+	# Always true, since this is the fallback solution
+	return True
+
+
+
+def get_platform_id():
+	"""
+	Return platform ID
+
+	Returns
+	-------
+	string
+		unique ID of platform
+	"""
+
+	return "default"
+
+
+def get_platform_hardware():
+	"""
+	Return information about hardware
+	"""
+
+	h = SWEETPlatformResources()
+
+	h.num_cores_per_node = multiprocessing.cpu_count()
+	h.num_nodes = 1
+
+	# TODO: So far, we only assume a single socket system as a fallback
+	h.num_cores_per_socket = h.num_cores_per_node
+
+	return h
+
+
+
+def jobscript_setup(jobgeneration):
+	"""
+	Setup data to generate job script
+	"""
+
+	global job_id
+	job_id = jobgeneration.runtime.getUniqueID(jobgeneration.compile)
+	return
+
+
+
+def jobscript_get_header(jobgeneration):
+	"""
+	These headers typically contain the information on e.g. Job exection, number of compute nodes, etc.
+
+	Returns
+	-------
+	string
+		multiline text for scripts
+	"""
+	content = """#! /bin/bash
+
+"""+p_gen_script_info(jobgeneration)+"""
+
+"""
+
+	return content
+
+
+
+
+def jobscript_get_exec_prefix(jobgeneration):
+	"""
+	Prefix before executable
+
+	Returns
+	-------
+	string
+		multiline text for scripts
+	"""
+	content = """
+
+"""+p_gen_script_info(jobgeneration)+"""
+
+"""
+
+	return content
+
+
+
+def jobscript_get_exec_command(jobgeneration):
+	"""
+	Prefix to executable command
+
+	Returns
+	-------
+	string
+		multiline text for scripts
+	"""
+	content = """
+
+"""+p_gen_script_info(jobgeneration)+"""
+
+# mpiexec ... would be here without a line break
+EXEC=\""""+jobgeneration.get_program_exec()+"""\"
+echo \"$EXEC\"
+$EXEC
+
+"""
+
+	return content
+
+
+
+def jobscript_get_exec_suffix(jobgeneration):
+	"""
+	Suffix before executable
+
+	Returns
+	-------
+	string
+		multiline text for scripts
+	"""
+	content = """
+
+"""+p_gen_script_info(jobgeneration)+"""
+
+"""
+
+	return content
+
+
+
+def jobscript_get_footer(jobgeneration):
+	"""
+	Footer at very end of job script
+
+	Returns
+	-------
+	string
+		multiline text for scripts
+	"""
+	content = """
+
+"""+p_gen_script_info(jobgeneration)+"""
+
+"""
+
+	return content
+
+
+
+
+def jobscript_get_compile_command(jobgeneration, separate_file_output = False):
+	"""
+	Compile command(s)
+
+	This is separated here to put it either
+	* into the job script (handy for workstations)
+	or
+	* into a separate compile file (handy for clusters)
+
+	Returns
+	-------
+	string
+		multiline text with compile command to generate executable
+	"""
+
+	content = """
+
+SCONS="scons """+jobgeneration.compile.getSConsParams()+' -j 4"'+"""
+echo "$SCONS"
+$SCONS
+"""
+
+	return content
+
