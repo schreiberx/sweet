@@ -180,7 +180,11 @@ void SWE_Sphere_TS_l_rexi::p_get_workload_start_end(
 		int local_thread_id = 0;
 	#endif
 
+#if SWEET_MPI
 	int global_thread_id = local_thread_id + num_local_rexi_par_threads*mpi_rank;
+#else
+	int global_thread_id = local_thread_id;
+#endif
 
 	assert(block_size >= 0);
 	assert(global_thread_id >= 0);

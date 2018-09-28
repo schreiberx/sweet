@@ -1,0 +1,1068 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\begin_preamble
+\usepackage[
+% these settings create hierarchical bookmarks which follow the
+% document hierarchy
+        bookmarks=true,
+        bookmarksopen=true,
+        bookmarksnumbered=true,
+% theese parameters are useful only if you build a pdf file
+% pdftitle={ DOCUMENT TITLE },
+% pdfauthor={ YOUR INFO },
+% pdfcreator={LyX, the LaTeX frontend with hyperref},
+% pdfkeywords={ DOCUMENT KEYWORDS },
+% pdfsubject={ DOCUMENT SUBJECT },
+% see http://www.tex.ac.uk/cgi-bin/texfaq2html?label=pdfpagelabels
+        pdfpagelabels, plainpages=false,
+% these settings remove all colours around any kind of link
+        colorlinks=true,
+        linkcolor=black,
+        urlcolor=black,
+        filecolor=black,
+        citecolor=black,
+]{hyperref}
+\end_preamble
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 2cm
+\topmargin 2cm
+\rightmargin 2cm
+\bottommargin 2cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+SWEET's unified building & execution framework
+\end_layout
+
+\begin_layout Author
+Martin Schreiber
+\end_layout
+
+\begin_layout Standard
+This is a description of SWEET's build and execution framework.
+ The reason for this development is a unified framework to support execution
+ in a variety of environments without requiring to make changes in the scripts
+ throughout many scripts used in the software development.
+\end_layout
+
+\begin_layout Standard
+With Python being available on all systems, SWEET strongly uses Python in
+ a variety of cases, from compilation, job scrip generation to analysis
+ of output data.
+\end_layout
+
+\begin_layout Section
+Terminology
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Platform
+\emph default
+:
+\begin_inset Newline newline
+\end_inset
+
+A computer system which can be e.g.
+ a laptop, single workstation, supercomputer
+\end_layout
+
+\begin_layout Itemize
+Physical resources:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+
+\emph on
+Core
+\emph default
+:
+\begin_inset Newline newline
+\end_inset
+
+Physical processing cores
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Node
+\emph default
+:
+\begin_inset Newline newline
+\end_inset
+
+One compute node which can have multiple sockets
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Socket
+\emph default
+:
+\begin_inset Newline newline
+\end_inset
+
+One socket consists out of 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Logical resources:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+
+\emph on
+Rank
+\emph default
+:
+\begin_inset Newline newline
+\end_inset
+
+A rank which is associated to a set of cores on a particular node.
+\begin_inset Newline newline
+\end_inset
+
+One rank cannot be associated to multiple nodes
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Thread
+\emph default
+:
+\begin_inset Newline newline
+\end_inset
+
+A set of threads for concurrent execution within one rank.
+\begin_inset Newline newline
+\end_inset
+
+One rank can have multiple exclusive threads assigned to it.
+\begin_inset Newline newline
+\end_inset
+
+The number of threads is not required to be identical to the number of cores
+ per rank!
+\end_layout
+
+\end_deeper
+\begin_layout Section
+Files:
+\end_layout
+
+\begin_layout Itemize
+[SWEETROOT]/platforms/*/
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+env_vars.sh:
+\begin_inset Newline newline
+\end_inset
+
+Environment variables to include for this environment, e.g.
+ overrides for compilers
+\end_layout
+
+\begin_layout Itemize
+SWEETPlatform.py:
+\begin_inset Newline newline
+\end_inset
+
+Script which includes callbacks to gain platform-specific information
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+[SWEETROOT]/python_mods:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+InfoError.py
+\begin_inset Newline newline
+\end_inset
+
+Some convenience functions to output Information and Errors
+\end_layout
+
+\begin_layout Itemize
+SWEETCompileOptions.py
+\begin_inset Newline newline
+\end_inset
+
+Compile specific options
+\end_layout
+
+\begin_layout Itemize
+SWEETJobGeneration.py
+\begin_inset Newline newline
+\end_inset
+
+Main class used throughout job generation
+\end_layout
+
+\begin_layout Itemize
+SWEETParallelizationDimOptions.py
+\begin_inset Newline newline
+\end_inset
+
+Per-dimension specified parameters for parallelization
+\end_layout
+
+\begin_layout Itemize
+SWEETParallelization.py
+\begin_inset Newline newline
+\end_inset
+
+Accumulated parameters for parallelization (based on SWEETParallelizationDimOpti
+ons)
+\end_layout
+
+\begin_layout Itemize
+SWEETParameters.py
+\begin_inset Newline newline
+\end_inset
+
+Parameters for some commonly used simulation scenarios
+\end_layout
+
+\begin_layout Itemize
+SWEETPlatformHardware.py
+\begin_inset Newline newline
+\end_inset
+
+Information on hardware (number of cores, number of nodes, etc.) to be provided
+ by Platform
+\end_layout
+
+\begin_layout Itemize
+SWEETPlatforms.py
+\begin_inset Newline newline
+\end_inset
+
+Platform detection mechanism based on information in [SWEETROOT]/platforms/*/SWE
+ETPlatform.py
+\end_layout
+
+\begin_layout Itemize
+SWEETRuntimeOptions.py
+\begin_inset Newline newline
+\end_inset
+
+Runtime parameters
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+[SWEETROOT]/SConstruct
+\begin_inset Newline newline
+\end_inset
+
+scons makefile replacement
+\end_layout
+
+\begin_layout Section
+Loading SWEET environment
+\end_layout
+
+\begin_layout Standard
+Loading the SWEET environment is accomplished by including the file
+\end_layout
+
+\begin_layout Verbatim
+
+[SWEETROOT]/local_software/env_vars.sh
+\end_layout
+
+\begin_layout Standard
+in the current environment.
+\end_layout
+
+\begin_layout Subsection
+Example
+\end_layout
+
+\begin_layout Verbatim
+
+martin@martinium:~/workspace/sweet$ source ./local_software/env_vars.sh 
+\end_layout
+
+\begin_layout Verbatim
+
+Default environment (nothing)
+\end_layout
+
+\begin_layout Verbatim
+
+SUCCESS! SWEET environment variables loaded
+\end_layout
+
+\begin_layout Verbatim
+
+[SWEET] martin@martinium:~/workspace/sweet$ 
+\end_layout
+
+\begin_layout Standard
+
+Note the prefix [SWEET] which is now before every line of the prompt.
+\end_layout
+
+\begin_layout Subsection
+
+Platform specific parts
+\end_layout
+
+\begin_layout Standard
+The script env_vars.sh looks up all files in
+\end_layout
+
+\begin_layout Verbatim
+
+$SWEET_ROOT/platforms/??_*
+\end_layout
+
+\begin_layout Standard
+and includes all env_vars.sh files from this directory.
+ It is then up to the script to detect the local platform and provide some
+ additional overrides, if required
+\end_layout
+
+\begin_layout Subsection
+Supported overrides
+\end_layout
+
+\begin_layout Standard
+The following example shows how to set environment variables in the platform-spe
+cific env_vars.sh.
+ This results in SCons using these compiler binaries
+\end_layout
+
+\begin_layout Verbatim
+
+export SWEET_F90=gfortran
+\end_layout
+
+\begin_layout Verbatim
+
+export SWEET_CC=gcc
+\end_layout
+
+\begin_layout Verbatim
+
+export SWEET_CPP=g++
+\end_layout
+
+\begin_layout Verbatim
+
+export SWEET_MPICC=mpigcc
+\end_layout
+
+\begin_layout Verbatim
+
+export SWEET_MPICXX=mpigxx
+\end_layout
+
+\begin_layout Verbatim
+
+export SWEET_MPIF90=mpifc
+\end_layout
+
+\begin_layout Section
+Building
+\end_layout
+
+\begin_layout Standard
+The scons build system is used to compile SWEET programs.
+ Type
+\end_layout
+
+\begin_layout Verbatim
+
+$ scons --help
+\end_layout
+
+\begin_layout Standard
+in the root SWEET folder for more information.
+\end_layout
+
+\begin_layout Subsection
+Platform-specific compilers
+\end_layout
+
+\begin_layout Standard
+See above (Supported overrides)
+\end_layout
+
+\begin_layout Subsection
+Dependencies
+\end_layout
+
+\begin_layout Standard
+The building process is triggered via the command 
+\begin_inset Quotes eld
+\end_inset
+
+scons
+\begin_inset Quotes erd
+\end_inset
+
+ which is a makefile replacement written in Python.
+\end_layout
+
+\begin_layout Itemize
+SConstruct
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+sconscript
+\begin_inset Newline newline
+\end_inset
+
+Source code detection
+\end_layout
+
+\begin_layout Itemize
+python_mods/SWEETCompileOptions.py
+\begin_inset Newline newline
+\end_inset
+
+Accumulation of all compile options
+\end_layout
+
+\end_deeper
+\begin_layout Subsection
+Shared infrastructure with job generation
+\end_layout
+
+\begin_layout Standard
+The compile options themselves are generated in SConstruct to avoid a dependency
+ of SConstruct libraries in other Python codes.
+\end_layout
+
+\begin_layout Standard
+SWEETCompileOptions.py only provides a container for all compile options
+ to be shared with the generation of the job scripts.
+ This allows to compile manually by using 
+\begin_inset Quotes eld
+\end_inset
+
+scons
+\begin_inset Quotes erd
+\end_inset
+
+ directly or indirectly by specifying compiler options and using SWEETCompileOpt
+ions to generate the scons parameters.
+\end_layout
+
+\begin_layout Standard
+This adds plenty of flexibility for automatic job script generation:
+\end_layout
+
+\begin_layout Itemize
+Unique program binary name identifier
+\end_layout
+
+\begin_layout Itemize
+Unique job identifier including the program binary identifier
+\end_layout
+
+\begin_layout Itemize
+All compile options accumulated in a single place
+\end_layout
+
+\begin_layout Section
+Job generation
+\end_layout
+
+\begin_layout Standard
+This section briefly discusses how the job generation works
+\end_layout
+
+\begin_layout Subsection
+Initialize SWEETJobGeneration
+\end_layout
+
+\begin_layout Standard
+The user of the building framework first generates a fresh JobGeneration
+ instance:
+\end_layout
+
+\begin_layout Verbatim
+
+p = SWEETJobGeneration([platform_id_override])
+\end_layout
+
+\begin_layout Standard
+SWEETJobGeneration is the centralized point for SWEET jobscript generation.
+\end_layout
+
+\begin_layout Subsubsection
+User-specified platform
+\end_layout
+
+\begin_layout Standard
+Instead of auto-detecting the environment, one can also request a particular
+ platform with the 
+\emph on
+platform_id_override
+\emph default
+ parameter.
+ An alternate to this is to specify the SWEET_PLATFORM environment variable.
+\end_layout
+
+\begin_layout Subsubsection
+Options
+\end_layout
+
+\begin_layout Standard
+A variety of options is made accessible which can be set by the user:
+\end_layout
+
+\begin_layout Itemize
+self.runtime: SWEETRuntimeOptions:
+\begin_inset Newline newline
+\end_inset
+
+with parameters for executing SWEET programs
+\end_layout
+
+\begin_layout Itemize
+self.compile: SWEETCompileOptions
+\begin_inset Newline newline
+\end_inset
+
+with compile-time parameters
+\end_layout
+
+\begin_layout Itemize
+self.parallelization: SWEETParallelizationOptions
+\begin_inset Newline newline
+\end_inset
+
+with options regarding parallelization to execute SWEET on clusters
+\end_layout
+
+\begin_layout Itemize
+self.platforms: list(SWEETPlatforms)
+\begin_inset Newline newline
+\end_inset
+
+with all available platforms
+\end_layout
+
+\begin_layout Itemize
+self.platform: SWEETPlatform
+\begin_inset Newline newline
+\end_inset
+
+with the currently used platform (from self.platform)
+\end_layout
+
+\begin_layout Itemize
+self.platform_hardware: SWEETPlatformHardware
+\begin_inset Newline newline
+\end_inset
+
+With information provided by platform on the available hardware (number
+ of nodes, number of cores per node, etc.)
+\end_layout
+
+\begin_layout Itemize
+self.platform_functions: Callback functions in SWEETPlatform which have to
+ be implemented by each platform.
+\end_layout
+
+\begin_layout Standard
+Here, the platform-specific data such as in self.platforms is loaded from
+ the matching platform in 
+\begin_inset Quotes eld
+\end_inset
+
+platforms/*/SWEETPlatform.py
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+SWEET compile & runtime options
+\end_layout
+
+\begin_layout Standard
+Next, some SWEET options can be specified where we differentiate between
+ compile and runtime options.
+\end_layout
+
+\begin_layout Subsubsection
+Program compile options
+\end_layout
+
+\begin_layout Verbatim
+
+...
+\end_layout
+
+\begin_layout Verbatim
+
+p.compile.program = 'swe_sphere'
+\end_layout
+
+\begin_layout Verbatim
+
+p.compile.plane_or_sphere = 'sphere'
+\end_layout
+
+\begin_layout Verbatim
+
+p.compile.plane_spectral_space = 'disable'
+\end_layout
+
+\begin_layout Verbatim
+
+...
+\end_layout
+
+\begin_layout Subsubsection
+Program runtime options
+\end_layout
+
+\begin_layout Verbatim
+
+...
+\end_layout
+
+\begin_layout Verbatim
+
+p.runtime.verbosity = 2
+\end_layout
+
+\begin_layout Verbatim
+
+p.runtime.mode_res = 128
+\end_layout
+
+\begin_layout Verbatim
+
+p.runtime.phys_res = -1
+\end_layout
+
+\begin_layout Verbatim
+
+...
+\end_layout
+
+\begin_layout Subsection
+Program (parallel) execution options
+\end_layout
+
+\begin_layout Standard
+SWEET was originally developed to study parallel-in-time approaches, therefore
+ requiring an additional dimension also for parallelization.
+ Without loss of generality, we use only a single dimension for the spatial
+ parallelization.
+ With more than one dimension for parallelization, we have to specify the
+ way how to parallelize in each dimension.
+ For a separation of concert, we do this first of all individually for each
+ dimension:
+\end_layout
+
+\begin_layout Verbatim
+
+pspace = SWEETParallelizationDimOptions()
+\end_layout
+
+\begin_layout Verbatim
+
+# Use all cores on one socket for each rank
+\end_layout
+
+\begin_layout Verbatim
+
+pspace.num_cores_per_rank = p.platform_hardware.num_cores_per_socket
+\end_layout
+
+\begin_layout Verbatim
+
+# Use only one rank in space, since MPI parallelization in space is not
+ available
+\end_layout
+
+\begin_layout Verbatim
+
+pspace.num_ranks = 1
+\end_layout
+
+\begin_layout Verbatim
+
+# Use as many threads as there are cores per rank
+\end_layout
+
+\begin_layout Verbatim
+
+pspace.num_threads_per_rank = pspace.num_cores_per_rank
+\end_layout
+
+\begin_layout Verbatim
+
+\end_layout
+
+\begin_layout Verbatim
+
+ptime = SWEETParallelizationDimOptions()
+\end_layout
+
+\begin_layout Verbatim
+
+# Use only one core per rank in the time dimension
+\end_layout
+
+\begin_layout Verbatim
+
+pspace.num_cores_per_rank = 1
+\end_layout
+
+\begin_layout Verbatim
+
+# Limit the number of ranks by param_max_space_ranks
+\end_layout
+
+\begin_layout Verbatim
+
+ptime.num_ranks = min(
+\end_layout
+
+\begin_layout Verbatim
+
+			param_max_time_ranks,
+\end_layout
+
+\begin_layout Verbatim
+
+			p.platform_hardware.num_nodes*p.platform_hardware.num_sockets_per_node
+\end_layout
+
+\begin_layout Verbatim
+
+		)
+\end_layout
+
+\begin_layout Verbatim
+
+# Use same number of cores for threading
+\end_layout
+
+\begin_layout Verbatim
+
+ptime.num_threads_per_rank = ptime.num_cores_per_rank
+\end_layout
+
+\begin_layout Standard
+Note, how easy we can specify e.g.
+ to use the max.
+ number of cores on one socket depending on the platform.
+ On a different platform, this will also lead to the utilization of the
+ full number of cores on one socket.
+\end_layout
+
+\begin_layout Verse
+Disclaimer: Even if it is possible to specify a variety of different configurati
+ons, this must be supported by the platform specific implementation
+\end_layout
+
+\begin_layout Standard
+The different dimensions are combined together in a particular way with
+\end_layout
+
+\begin_layout Verbatim
+
+p.parallelization.setup([pspace, ptime], mode)
+\end_layout
+
+\begin_layout Standard
+where 
+\emph on
+mode
+\emph default
+ does not yet exist, but is planned to specify the way how the space and
+ time parallelization is combined together.
+\end_layout
+
+\begin_layout Standard
+More information on this is available in SWEETParallelization.py.
+\end_layout
+
+\begin_layout Standard
+Note, that every time if the parallelization parameters are changes, 
+\emph on
+p.parallelization.setup(...) 
+\emph default
+must be executed again!
+\end_layout
+
+\begin_layout Subsection
+Generation of job script
+\end_layout
+
+\begin_layout Standard
+To generate the job script, we can simply call
+\end_layout
+
+\begin_layout Verbatim
+
+p.write_jobscript('script_'+p.getUniqueID()+'/run.sh') 
+\end_layout
+
+\begin_layout Standard
+where p.getUniqueID creates a parameter-specific unique ID.
+\end_layout
+
+\begin_layout Standard
+The method 
+\end_layout
+
+\begin_layout Itemize
+creates the required directory
+\end_layout
+
+\begin_layout Itemize
+creates the job script file content including the compilation commands before
+ execution of the binary and
+\end_layout
+
+\begin_layout Itemize
+writes out the job script file.
+\end_layout
+
+\begin_layout Section
+Pre-compilation
+\end_layout
+
+\begin_layout Standard
+For HPC systems, it's very often required to compile code on the login nodes.
+ We can accumulate the compile commands by specifying
+\end_layout
+
+\begin_layout Verbatim
+
+p.compilecommand_in_jobscript = False
+\end_layout
+
+\begin_layout Standard
+This accumulates all compile commands and also ensures, that each compile
+ command exists only once.
+ After all job scripts were generated, we can write out a script with compile
+ commands, e.g.
+ using
+\end_layout
+
+\begin_layout Verbatim
+
+p.write_compilecommands("./compile_platform_"+p.platforms.platform_id+".sh")
+ 
+\end_layout
+
+\begin_layout Standard
+asdf
+\end_layout
+
+\begin_layout Section
+Platform configuration
+\end_layout
+
+\begin_layout Standard
+To add a new platform, it's best to duplicate an existing platform (e.g.
+ 99_default).
+ The first numbers specify the priority (00: highest, 99: lowest) of the
+ order in which the platform-specific information is processed.
+\end_layout
+
+\begin_layout Subsection
+platforms/??_[platform_id]/env_var.sh
+\end_layout
+
+\begin_layout Standard
+First, an autodetection must be performed
+\end_layout
+
+\begin_layout Standard
+All scripts must include a test for the platform as well.
+\end_layout
+
+\begin_layout Subsection
+platforms/??_[platform_id]SWEETPlatform.py
+\end_layout
+
+\begin_layout Standard
+Must implement the following interfaces¨ with a reference to SWEETJobGeneration
+ handed over as a parameter to all these functions
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+get_platform_id
+\emph default
+: Unique string for platform (e.g.
+ pedros_awesome_laptop)
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+get_platform_autodetect
+\emph default
+: Return true if this platform was detected
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+get_platform_hardware
+\emph default
+: Return SWEETPlatformHardware with filled in information
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+jobscript_setup
+\emph default
+: setup return of job script content
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+jobscript_get_header
+\emph default
+: header (e.g.
+ scheduler print_information) for job script
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+jobscript_get_exec_prefix
+\emph default
+: prefix before MPI executable
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+jobscript_get_exec_command
+\emph default
+: MPI execution (something like "mpirun -n ### 
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+jobscript_get_exec_suffix
+\emph default
+: suffix aftere MPI executable
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+jobscript_get_footer
+\emph default
+: footer (e.g.
+ postprocessing) for job script
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+jobscript_get_compile_command
+\emph default
+: suffix aftere MPI executable
+\end_layout
+
+\end_body
+\end_document

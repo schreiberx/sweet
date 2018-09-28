@@ -1,0 +1,75 @@
+/gpfs/u/home/martins/workspace/sweet/benchmarks_sphere/paper_sph-rexi-nonlinear_compare_time_to_solution_vs_accuracy_galewsky_cheyenne/script_ln2_g9.81_h10000_f7.2921e-05_a6371220_fsph0_u0.0_U0_tsm_ln_erk_tso2_tsob2_C000120_M0128_MPI_space01_time001/../../..//build/swe_sphere_spspec_spdeal_quadmath_mpi_rxtime_numa2_fft_intel_release: unrecognized option '--use-local-visc=0'
+Unknown option '?'
+
+********************************************
+ERROR: Exit
+********************************************
+
+MPT ERROR: Rank 0(g:0) received signal SIGABRT/SIGIOT(6).
+	Process ID: 22526, Host: r3i0n15, Program: /gpfs/u/home/martins/workspace/sweet/build/swe_sphere_spspec_spdeal_quadmath_mpi_rxtime_numa2_fft_intel_release
+	MPT Version: SGI MPT 2.15  12/18/16 02:58:06
+
+MPT: --------stack traceback-------
+MPT: Attaching to program: /proc/22526/exe, process 22526
+MPT: Try: zypper install -C "debuginfo(build-id)=0bd429bf62ef3ffa20bccd9284d57dd0f6cceb5c"
+MPT: (no debugging symbols found)...done.
+MPT: Try: zypper install -C "debuginfo(build-id)=1e3a8289391f6d90ba727d268841234aa585ac02"
+MPT: (no debugging symbols found)...done.
+MPT: Try: zypper install -C "debuginfo(build-id)=15916519d9dbaea26ec88427460b4cedb9c0a6ab"
+MPT: (no debugging symbols found)...done.
+MPT: Try: zypper install -C "debuginfo(build-id)=a9e43795957904bc6a9f0302ef4f9942c07221b4"
+MPT: (no debugging symbols found)...done.
+MPT: Try: zypper install -C "debuginfo(build-id)=5409c48fdb15e90649c1407e444fbe31d6dc8ec1"
+MPT: (no debugging symbols found)...done.
+MPT: [Thread debugging using libthread_db enabled]
+MPT: Using host libthread_db library "/glade/u/apps/ch/os/lib64/libthread_db.so.1".
+MPT: Try: zypper install -C "debuginfo(build-id)=3a453a18f06ae88bd1b8146bf2ae8fcae5c4c203"
+MPT: (no debugging symbols found)...done.
+MPT: Try: zypper install -C "debuginfo(build-id)=3d290be00d48b823d3b71df2249e80d881bc473d"
+MPT: (no debugging symbols found)...done.
+MPT: Try: zypper install -C "debuginfo(build-id)=f43d7754940a14ffe3d9bd8fc9472ffbbfead544"
+MPT: (no debugging symbols found)...done.
+MPT: Try: zypper install -C "debuginfo(build-id)=e97cfdb062d6f0c41073f2109a7605d0ae991c03"
+MPT: (no debugging symbols found)...done.
+MPT: Try: zypper install -C "debuginfo(build-id)=0ea764119690f32c98faae9a63a73f35ed8b1099"
+MPT: (no debugging symbols found)...done.
+MPT: Try: zypper install -C "debuginfo(build-id)=79264652a62453da222372a430cd9351d4bbcbde"
+MPT: (no debugging symbols found)...done.
+MPT: Try: zypper install -C "debuginfo(build-id)=68682e9ac223d269cbecb94315fcec5e16b32bfb"
+MPT: (no debugging symbols found)...done.
+MPT: 0x00002aaaabdaf41c in waitpid () from /glade/u/apps/ch/os/lib64/libpthread.so.0
+MPT: Missing separate debuginfos, use: zypper install glibc-debuginfo-2.19-35.1.x86_64
+MPT: (gdb) #0  0x00002aaaabdaf41c in waitpid ()
+MPT:    from /glade/u/apps/ch/os/lib64/libpthread.so.0
+MPT: #1  0x00002aaaac7195d6 in mpi_sgi_system (
+MPT: #2  MPI_SGI_stacktraceback (
+MPT:     header=header@entry=0x7fffffff7e80 "MPT ERROR: Rank 0(g:0) received signal SIGABRT/SIGIOT(6).\n\tProcess ID: 22526, Host: r3i0n15, Program: /gpfs/u/home/martins/workspace/sweet/build/swe_sphere_spspec_spdeal_quadmath_mpi_rxtime_numa2_fft_"...) at sig.c:339
+MPT: #3  0x00002aaaac7197d8 in first_arriver_handler (signo=signo@entry=6, 
+MPT:     stack_trace_sem=stack_trace_sem@entry=0x2aaab0120500) at sig.c:488
+MPT: #4  0x00002aaaac719bbb in slave_sig_handler (signo=6, siginfo=<optimized out>, 
+MPT:     extra=<optimized out>) at sig.c:563
+MPT: #5  <signal handler called>
+MPT: #6  0x00002aaaabdaf73b in raise ()
+MPT:    from /glade/u/apps/ch/os/lib64/libpthread.so.0
+MPT: #7  0x000000000042cee9 in FatalError::FatalError (this=0x57fe, 
+MPT:     i_error=<error reading variable: Cannot access memory at address 0x57fe>)
+MPT:     at src/include/sweet/FatalError.hpp:29
+MPT: #8  0x00000000004178f9 in SimulationVariables::setupFromMainParameters (
+MPT:     this=0x57fe, i_argc=22526, i_argv=0x6, bogus_var_names=0xffffffffffffffff, 
+MPT:     i_run_prog_parameter_validation=false)
+MPT:     at src/include/sweet/SimulationVariables.hpp:1227
+MPT: #9  0x0000000000404e27 in main (i_argc=47, i_argv=0x7fffffffad48)
+MPT:     at src/programs/swe_sphere.cpp:786
+MPT: (gdb) A debugging session is active.
+MPT: 
+MPT: 	Inferior 1 [process 22526] will be detached.
+MPT: 
+MPT: Quit anyway? (y or n) [answered Y; input not from terminal]
+MPT: Detaching from program: /proc/22526/exe, process 22526
+
+MPT: -----stack traceback ends-----
+MPT: On host r3i0n15, Program /gpfs/u/home/martins/workspace/sweet/build/swe_sphere_spspec_spdeal_quadmath_mpi_rxtime_numa2_fft_intel_release, Rank 0, Process 22526: Dumping core on signal SIGABRT/SIGIOT(6) into directory /gpfs/u/home/martins/workspace/sweet/benchmarks_sphere/paper_sph-rexi-nonlinear_compare_time_to_solution_vs_accuracy_galewsky_cheyenne/script_ln2_g9.81_h10000_f7.2921e-05_a6371220_fsph0_u0.0_U0_tsm_ln_erk_tso2_tsob2_C000120_M0128_MPI_space01_time001
+MPT ERROR: MPI_COMM_WORLD rank 0 has terminated without calling MPI_Finalize()
+	aborting job
+MPT: Received signal 6
+

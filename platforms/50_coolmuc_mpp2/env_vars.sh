@@ -3,9 +3,9 @@
 # Configuration file for CoolMUC mpp2 login nodes
 #
 
-if [ "${HOSTNAME:0:10}" == "mpp2-login" ]; then
+if [ "${HOSTNAME:0:10}" == "mpp2-login" -o "#$SWEET_PLATFORM" == "#coolmuc_mpp2" ]; then
 
-	echo "Loading SWEET environment specifically for CoolMUC mpp2-* login nodes"
+	echo "SWEET Platform: 'coolmuc_mpp2'"
 
 	echo "Loading GCC/8"
 	module unload gcc

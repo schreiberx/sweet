@@ -78,6 +78,7 @@ class SWEETPlatformResources(InfoError):
 
 
 
+
 	def print(self):
 		self.hline()
 		self.info("num_cores_per_node: "+str(self.num_cores_per_node))

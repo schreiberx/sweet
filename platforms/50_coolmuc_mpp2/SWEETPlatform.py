@@ -72,6 +72,7 @@ def get_platform_hardware():
 	h.num_cores_per_node = 28
 	h.num_nodes = 384
 	h.num_cores_per_socket = 14
+	h.max_wallclock_seconds = 48*60*60
 	return h
 
 

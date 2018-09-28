@@ -3,9 +3,9 @@
 # Default (fallback) configuration file
 #
 
-if [ true ]; then
+if [ true -o "#$SWEET_PLATFORM" == "#default" ]; then
 
-	echo "Default environment (nothing)"
+	echo "SWEET Platform: 'default'"
 
 	#
 	# Compiler environment
