@@ -1,5 +1,7 @@
 #! /usr/bin/env python3
 
+from SWEETCompileOptions import *
+
 
 class SWEETRuntimeOptions():
 
@@ -186,7 +188,7 @@ class SWEETRuntimeOptions():
 
 
 
-	def getUniqueID(self, compileOptions):
+	def getUniqueID(self, compileOptions : SWEETCompileOptions):
 		idstr = ''
 
 		if False:

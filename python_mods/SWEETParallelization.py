@@ -8,6 +8,7 @@ import multiprocessing
 import datetime
 
 from SWEETPlatforms import *
+from SWEETJobGeneration import *
 from SWEETParallelizationDimOptions import *
 from InfoError import *
 
@@ -106,7 +107,7 @@ class SWEETParallelization(InfoError):
 
 
 
-	def dummy_setup_if_no_setup(self, jobgeneration):
+	def dummy_setup_if_no_setup(self, jobgeneration : SWEETJobGeneration):
 		"""
 		Setup a dummy parallelization dimension to use one rank on one node and all cores on the node
 		"""
@@ -122,7 +123,7 @@ class SWEETParallelization(InfoError):
 
 
 
-	def setup(self, list_pardims, jobgeneration):
+	def setup(self, list_pardims, jobgeneration : SWEETJobGeneration):
 		"""
 		Setup data which is required by the platform specific scripts to
 		generate the job scripts

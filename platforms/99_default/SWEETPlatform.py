@@ -3,6 +3,7 @@ import socket
 import sys
 
 from SWEETPlatformResources import *
+from SWEETJobGeneration import *
 import multiprocessing
 
 
@@ -23,7 +24,7 @@ def p_whoami(depth=1):
 
 
 
-def p_gen_script_info(jobgeneration):
+def p_gen_script_info(jobgeneration : SWEETJobGeneration):
 	global job_id
 
 	return """#
@@ -78,7 +79,7 @@ def get_platform_hardware():
 
 
 
-def jobscript_setup(jobgeneration):
+def jobscript_setup(jobgeneration : SWEETJobGeneration):
 	"""
 	Setup data to generate job script
 	"""
@@ -89,7 +90,7 @@ def jobscript_setup(jobgeneration):
 
 
 
-def jobscript_get_header(jobgeneration):
+def jobscript_get_header(jobgeneration : SWEETJobGeneration):
 	"""
 	These headers typically contain the information on e.g. Job exection, number of compute nodes, etc.
 
@@ -109,7 +110,7 @@ def jobscript_get_header(jobgeneration):
 
 
 
-def jobscript_get_exec_prefix(jobgeneration):
+def jobscript_get_exec_prefix(jobgeneration : SWEETJobGeneration):
 	"""
 	Prefix before executable
 
@@ -128,7 +129,7 @@ def jobscript_get_exec_prefix(jobgeneration):
 
 
 
-def jobscript_get_exec_command(jobgeneration):
+def jobscript_get_exec_command(jobgeneration : SWEETJobGeneration):
 	"""
 	Prefix to executable command
 
@@ -152,7 +153,7 @@ $EXEC
 
 
 
-def jobscript_get_exec_suffix(jobgeneration):
+def jobscript_get_exec_suffix(jobgeneration : SWEETJobGeneration):
 	"""
 	Suffix before executable
 
@@ -171,7 +172,7 @@ def jobscript_get_exec_suffix(jobgeneration):
 
 
 
-def jobscript_get_footer(jobgeneration):
+def jobscript_get_footer(jobgeneration : SWEETJobGeneration):
 	"""
 	Footer at very end of job script
 

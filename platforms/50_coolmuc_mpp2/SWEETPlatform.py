@@ -3,6 +3,7 @@ import socket
 import sys
 
 from SWEETPlatformResources import *
+from SWEETJobGeneration import *
 
 job_id = None
 
@@ -21,7 +22,7 @@ def p_whoami(depth=1):
 
 
 
-def p_gen_script_info(jobgeneration):
+def p_gen_script_info(jobgeneration : SWEETJobGeneration):
 	global job_id
 
 	return """#
@@ -70,14 +71,16 @@ def get_platform_hardware():
 	h = SWEETPlatformResources()
 
 	h.num_cores_per_node = 28
-	h.num_nodes = 384
+	# Number of nodes per job are limited
+	#h.num_nodes = 384
+	h.num_nodes = 60
 	h.num_cores_per_socket = 14
 	h.max_wallclock_seconds = 48*60*60
 	return h
 
 
 
-def jobscript_setup(jobgeneration):
+def jobscript_setup(jobgeneration : SWEETJobGeneration):
 	"""
 	Setup data to generate job script
 	"""
@@ -88,7 +91,7 @@ def jobscript_setup(jobgeneration):
 
 
 
-def jobscript_get_header(jobgeneration):
+def jobscript_get_header(jobgeneration : SWEETJobGeneration):
 	"""
 	These headers typically contain the information on e.g. Job exection, number of compute nodes, etc.
 
@@ -97,8 +100,30 @@ def jobscript_get_header(jobgeneration):
 	string
 		multiline text for scripts
 	"""
-	content = """#! /bin/bash
+	global job_id
 
+	content = """#! /bin/bash
+#SBATCH -o """+jobgeneration.p_jobscript_stdout_filepath+"""/output.out
+#SBATCH -D """+jobgeneration.p_jobscript_dirpath+"""
+#SBATCH -J """+job_id+"""
+#SBATCH --get-user-env 
+#SBATCH --clusters=mpp2
+#SBATCH --ntasks="""+jobgeneration.parallelization.num_cores_per_rank+"""
+#SBATCH --cpus-per-task=7
+# the above is a good match for the
+# CooLMUC2 architecture.
+#SBATCH --mail-type=end 
+#SBATCH --mail-user=xyz@xyz.de 
+#SBATCH --export=NONE 
+#SBATCH --time=08:00:00
+source /etc/profile.d/modules.sh
+
+cd $SCRATCH/mydata
+export OMP_NUM_THREADS=7
+mpiexec -n 16 --perhost 4 $HOME/exedir/myprog.exe
+# will start 16 MPI tasks with 7 threads each. Note that
+# each node has 28 cores, so 4 tasks must be started 
+# per host.
 """+p_gen_script_info(jobgeneration)+"""
 
 """
@@ -110,7 +135,7 @@ def jobscript_get_header(jobgeneration):
 
 
 
-def jobscript_get_exec_prefix(jobgeneration):
+def jobscript_get_exec_prefix(jobgeneration : SWEETJobGeneration):
 	"""
 	Prefix before executable
 
@@ -129,7 +154,7 @@ def jobscript_get_exec_prefix(jobgeneration):
 
 
 
-def jobscript_get_exec_command(jobgeneration):
+def jobscript_get_exec_command(jobgeneration : SWEETJobGeneration):
 	"""
 	Prefix to executable command
 
@@ -153,7 +178,7 @@ $EXEC
 
 
 
-def jobscript_get_exec_suffix(jobgeneration):
+def jobscript_get_exec_suffix(jobgeneration : SWEETJobGeneration):
 	"""
 	Suffix before executable
 
@@ -172,7 +197,7 @@ def jobscript_get_exec_suffix(jobgeneration):
 
 
 
-def jobscript_get_footer(jobgeneration):
+def jobscript_get_footer(jobgeneration : SWEETJobGeneration):
 	"""
 	Footer at very end of job script
 
@@ -192,7 +217,7 @@ def jobscript_get_footer(jobgeneration):
 
 
 
-def jobscript_get_compile_command(jobgeneration):
+def jobscript_get_compile_command(jobgeneration : SWEETJobGeneration):
 	"""
 	Compile command(s)
 
