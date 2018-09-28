@@ -4,8 +4,10 @@ FFTW_*
 *.mod
 *.out
 *~
-**/.eps
-**/.directory
+**/*.eps
+**/*.directory
+**/*.swp
+**/*.lyx#
 
 **/*.pyc
 **/__pycache__

@@ -5,11 +5,9 @@ import sys
 import stat
 import math
 
+sys.path.append(os.environ['SWEET_ROOT']+'/python_mods/')
 from SWEETJobGeneration import *
 p = SWEETJobGeneration()
-
-#p.cluster.setupTargetMachine("")
-
 
 #
 # Run simulation on plane or sphere
@@ -258,9 +256,6 @@ if __name__ == "__main__":
 			p.runtime.timestepping_order2 = tsm[2]
 			p.runtime.rexi_use_direct_solution = tsm[3]
 
-			p.cluster.par_space_cores = 1
-			p.cluster.par_time_cores = 1
-
 			if len(tsm) > 4:
 				s = tsm[4]
 				p.load_from_dict(tsm[4])
@@ -274,7 +269,6 @@ if __name__ == "__main__":
 		#
 		for tsm in ts_methods[1:]:
 			for p.runtime.timestep_size in timestep_sizes:
-	#			for p.cluster.par_time_cores in mpi_ranks:
 				p.runtime.timestepping_method = tsm[0]
 				p.runtime.timestepping_order = tsm[1]
 				p.runtime.timestepping_order2 = tsm[2]
@@ -290,17 +284,7 @@ if __name__ == "__main__":
 				if 'etdrk' in p.runtime.timestepping_method and False:
 
 					c = 1
-					if False:
-						#if True:
-						if False:
-							range_cores_single_socket = [1, 2, 4, 8, 12, 16, 18]
-							range_cores_node = range_cores_single_socket + [18+i for i in range_cores_single_socket]
-						else:
-							range_cores_node = [18,36]
-
-						range_cores = range_cores_node + [36*i for i in range(2, p.cluster.total_max_nodes)]
-					else:
-						range_cores = [1]
+					range_cores = [1]
 						
 
 					if p.runtime.rexi_ci_n not in range_cores:
@@ -318,20 +302,13 @@ if __name__ == "__main__":
 							for r in [20, 30]:
 								p.runtime.load_from_dict({'rexi_method': 'ci', 'ci_n':N, 'ci_sx':r, 'ci_sy':r, 'half_poles':0})
 
-								for p.cluster.par_time_cores in range_cores:
+								for par_time_cores in range_cores:
 
-									p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
+									p.gen_script('script_'+prefix_string_template+p.getUniqueID(), 'run.sh')
 
-									if p.cluster.par_time_cores >= p.runtime.rexi_ci_n:
+									if p.par_time_cores >= p.runtime.rexi_ci_n:
 										break
 
-#					for p.cluster.par_time_cores in range_cores:
-#						p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
-
 				else:
-					p.cluster.par_time_cores = 1
-
-					p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
-
-
+					p.gen_script('script_'+prefix_string_template+p.getUniqueID(), 'run.sh')
 

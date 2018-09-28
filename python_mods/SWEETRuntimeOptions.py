@@ -210,7 +210,7 @@ class SWEETRuntimeOptions():
 
 		#idstr += '_p'+str(self.pde_id)
 
-		if compileOptions.plane_or_sphere == 'sphere':
+		if compileOptions.sphere_spectral_space == 'enable':
 			idstr += '_a'+str(self.r)
 			#idstr += '_rob'+str(self.use_robert_functions)
 			idstr += '_fsph'+str(self.f_sphere)
@@ -283,6 +283,9 @@ class SWEETRuntimeOptions():
 
 		if self.phys_res != -1:
 			idstr += '_N'+str(self.phys_res).zfill(4)
+
+		if idstr[0] == "_":
+			idstr = idstr[1:]
 
 		return idstr
 

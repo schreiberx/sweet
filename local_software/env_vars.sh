@@ -6,6 +6,7 @@
 # It assumes that you install all your libraries in subdirectories in $HOME/local
 #
 
+
 if [ "#$SWEET_ROOT" != "#" ]; then
 	echo "SWEET environment variables already loaded (skipping)"
 	if [ "`basename $0`" == "env_vars.sh" ]; then
@@ -26,12 +27,19 @@ else
 					echo "     |"
 					echo "ERROR| to setup the environment variables correctly"
 					echo "ERROR|"
-					return
+					exit
 				fi
 			fi
 		fi
 	fi
 
+
+	if [ "`basename $SHELL`" != "bash" ]; then
+		echo "ERROR|"
+		echo "ERROR| These scripts are only compatible to the bash shell"
+		echo "ERROR|"
+		return
+	fi
 
 
 	#
@@ -67,28 +75,41 @@ else
 		done
 	fi
 
-
-	if [ "`basename $SHELL`" != "bash" ]; then
-		echo "ERROR|"
-		echo "ERROR| These scripts are only compatible to the bash shell"
-		echo "ERROR|"
-		return
-	fi
-
+	# Backup current directory
 	BACKDIR="$PWD"
 
-	test "x${PWD##*/}" = "xlocal_software" && cd ../
+	SCRIPTDIR="$(dirname "${BASH_SOURCE[0]}")"
+	cd "$SCRIPTDIR"
+	# Get full path
+	SCRIPTDIR="$PWD"
 
-	SCRIPTDIR="`pwd`/local_software"
+	# Get SWEET root directory
+	cd "../"
+	export SWEET_ROOT="$PWD"
 
-	export SWEET_ROOT="`pwd`"
+	# Back to local software
+	cd "$SCRIPTDIR"
+
 
 	#
 	# Include cluster-specific scripts
 	#
-	for i in $SCRIPTDIR/../platforms/*; do
-		source "$i/env_vars.sh"
-	done
+	if [ "#$SWEET_PLATFORM" != "#" ]; then
+		ENV_VARS=$(eval echo "${SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM}/env_vars.sh")
+		echo "Loading SWEET_PLATFORM='${SWEET_PLATFORM}' platform environment variables from ${ENV_VARS}"
+		source "$ENV_VARS"
+
+	elif [ "#$1" == "#" ]; then
+		#
+		# Try with autodetection of platforms
+		#
+		for i in $SWEET_ROOT/platforms/??_*; do
+			source "$i/env_vars.sh"
+		done
+	else
+		# Load platform environment variables if specified
+		source "$1"
+	fi
 
 
 	if [ ! -d "$SCRIPTDIR" ]; then
@@ -96,6 +117,7 @@ else
 		echo "ERROR| Execute this script only from the SWEET root directory"
 		echo "     |   $ source local_software/env_vars.sh"
 		echo
+		cd "$BACKDIR"
 		return
 	fi
 
@@ -105,18 +127,19 @@ else
 	export PKG_CONFIG_PATH="$SCRIPTDIR/local/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 	export LD_LIBRARY_PATH="$SCRIPTDIR/local/lib:$LD_LIBRARY_PATH"
-	# TODO
-	# TODO check for existing directory
-	# TODO
-	export LD_LIBRARY_PATH="$SCRIPTDIR/local/lib64:$LD_LIBRARY_PATH"
+	if [ -d "$SCRIPTDIR/local/lib64" ]; then
+		export LD_LIBRARY_PATH="$SCRIPTDIR/local/lib64:$LD_LIBRARY_PATH"
+	fi
 
 	export DYLD_LIBRARY_PATH="$SCRIPTDIR/local/lib:$LD_LIBRARY_PATH"
-	export DYLD_LIBRARY_PATH="$SCRIPTDIR/local/lib64:$LD_LIBRARY_PATH"
+	if [ -d "$SCRIPTDIR/local/lib64" ]; then
+		export DYLD_LIBRARY_PATH="$SCRIPTDIR/local/lib64:$LD_LIBRARY_PATH"
+	fi
 
 	export PYTHONPATH="$PYTHONPATH:$SCRIPTDIR/local/lib/python3.6/site-packages/"
 	#export PYTHONHOME="$SCRIPTDIR/local/lib/:$PYTHONHOME"
 
-	echo "SWEET environment variables loaded"
+	echo "SUCCESS! SWEET environment variables loaded"
 
 	cd "$BACKDIR"
 

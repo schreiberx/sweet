@@ -1,0 +1,6 @@
+MPT: Launch error on r1i2n4.ib0.cheyenne.ucar.edu
+dplace: unable to execute /gpfs/u/home/martins/workspace/sweet/benchmarks_sphere/paper_sph-rexi-nonlinear_compare_time_to_solution_vs_accuracy_galewsky_cheyenne/script_ln2_g9.81_h10000_f7.2921e-05_a6371220_fsph0_u0.0_U0_tsm_lg_irk_lc_n_erk_ver0_tso2_tsob2_C000360_M0128_MPI_space01_time001/../../..//build/swe_sphere_spspec_spdeal_quadmath_mpi_rxtime_numa2_fft_intel_release. Permission denied
+MPT ERROR: could not run executable. If this is a non-MPT application,
+you may need to set MPI_SHEPHERD=true.
+
+	(SGI MPT 2.15  12/18/16 02:59:28)

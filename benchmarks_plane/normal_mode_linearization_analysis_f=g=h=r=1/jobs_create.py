@@ -6,10 +6,9 @@ import stat
 
 import math
 
+sys.path.append(os.environ['SWEET_ROOT']+'/python_mods/')
 from SWEETJobGeneration import *
 p = SWEETJobGeneration()
-
-#p.cluster.setupTargetMachine("cheyenne")
 
 #
 # Run simulation on plane or sphere

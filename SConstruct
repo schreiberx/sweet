@@ -4,7 +4,10 @@ import re
 import sys
 import platform
 
-from python_mods.SWEETCompileOptions import *
+
+sys.path.append("./python_mods")
+from SWEETCompileOptions import *
+sys.path.remove("./python_mods")
 
 #
 # Setup parallel compilation
