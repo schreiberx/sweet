@@ -7,30 +7,14 @@ import math
 
 sys.path.append(os.environ['SWEET_ROOT']+'/python_mods/')
 from SWEETJobGeneration import *
+from SWEETParallelizationDimOptions import *
+
+
+
 p = SWEETJobGeneration()
 
-#
-# cheyenne_impi provides similar performance results
-#
-p.cluster.setupTargetMachine("cheyenne")
 
-# 10 mins max wallclock seconds
-p.cluster.max_wallclock_seconds = 60*10
-
-
-# Override OMP_NUM_THREADS
-p.cluster.environment_vars = "export OMP_NUM_THREADS=1\n"
-
-#
-# Parallelization models
-#
-# Use 18 cores for each MPI task even if only 1 thread is used
-# This avoid any bandwidth-related issues
-#
-# Parallelization model (18 threads per rank)
-p.cluster.pm_space_cores_per_mpi_rank = 18
-p.cluster.pm_time_cores_per_mpi_rank = 1
-
+p.compilecommand_in_jobscript = False
 
 
 #
@@ -44,31 +28,19 @@ p.compile.plane_spectral_dealiasing = 'disable'
 p.compile.sphere_spectral_space = 'enable'
 p.compile.sphere_spectral_dealiasing = 'enable'
 
-p.compile.rexi_timings = 'enable'
+p.platform_id_override = 'cheyenne'
 
 
-
-#
-# Options for CHEYENNE
-#
-if True:
-	p.compile.compiler = 'intel'
-
-	# MKL turned out to be more robust on Cheyenne compared to FFTW
-	p.compile.mkl = 'enable'
-
-	#
-	# Use Intel MPI Compilers
-	#
-	p.compile.compiler_c_exec = 'mpicc'
-	p.compile.compiler_cpp_exec = 'mpicxx'
-	p.compile.compiler_fortran_exec = 'mpif90'
+#p.compile.compiler = 'intel'
 
 
 #
-# MPI?
+# Use Intel MPI Compilers
 #
-p.compile.sweet_mpi = 'enable'
+#p.compile.compiler_c_exec = 'mpicc'
+#p.compile.compiler_cpp_exec = 'mpicxx'
+#p.compile.compiler_fortran_exec = 'mpif90'
+
 
 #
 # Activate Fortran source
@@ -76,9 +48,14 @@ p.compile.sweet_mpi = 'enable'
 p.compile.fortran_source = 'enable'
 
 
+#
+# MPI?
+#
+#p.compile.sweet_mpi = 'enable'
+
 
 # Verbosity mode
-p.runtime.verbosity = 0
+p.runtime.verbosity = 2
 
 #
 # Mode and Physical resolution
@@ -113,8 +90,8 @@ p.stability_checks = 0
 
 if True:
 	p.compile.threading = 'off'
-	#p.compile.rexi_thread_parallel_sum = 'enable'
-	p.compile.rexi_thread_parallel_sum = 'disable'
+	#p.compile.rexi_thread_parallel_sum = 'disable'
+	p.compile.rexi_thread_parallel_sum = 'enable'
 
 else:
 	#
@@ -160,7 +137,6 @@ p.runtime.viscosity = 0.0
 
 
 
-#timestep_size_reference = 60
 #timestep_sizes = [timestep_size_reference*(2.0**i) for i in range(0, 11)]
 #timestep_sizes = [timestep_size_reference*(2**i) for i in range(2, 4)]
 
@@ -170,8 +146,6 @@ timestep_sizes_rexi = [60, 120, 180, 240, 300, 360, 480, 600, 720]
 
 timestep_size_reference = timestep_sizes_explicit[0]
 
-
-
 #timestep_sizes = timestep_sizes[1:]
 #print(timestep_sizes)
 #sys.exit(1)
@@ -179,10 +153,13 @@ timestep_size_reference = timestep_sizes_explicit[0]
 
 #p.runtime.simtime = timestep_sizes[-1]*10 #timestep_size_reference*2000
 p.runtime.simtime = 432000 #timestep_size_reference*(2**6)*10
-p.runtime.output_timestep_size = p.runtime.simtime
-#p.runtime.output_timestep_size = -1
+#p.runtime.output_timestep_size = p.runtime.simtime
+p.runtime.output_filename = "-"
+p.runtime.output_timestep_size = 60
 
 p.runtime.rexi_extended_modes = 0
+
+p.runtime.floating_point_output_digits = 14
 
 # Groups to execute, see below
 # l: linear
@@ -191,6 +168,11 @@ p.runtime.rexi_extended_modes = 0
 groups = ['ln2']
 
 
+#
+# MPI ranks
+#
+#mpi_ranks = [2**i for i in range(0, 12+1)]
+#mpi_ranks = [1]
 
 
 
@@ -277,19 +259,15 @@ if __name__ == "__main__":
 		#
 		# Parallelization models
 		#
-		# Use 18 cores for each MPI task even if only 1 thread is used
+		# Use all cores on one domain for each MPI task even if only 1 thread is used
 		# This avoid any bandwidth-related issues
 		#
-		# Parallelization model (18 threads per rank)
-#		p.cluster.pm_space_cores_per_mpi_rank = 18
-#		p.cluster.pm_time_cores_per_mpi_rank = 1
 
 
 		#
 		# Reference solution
 		#
 		if True:
-		#if False:
 			tsm = ts_methods[0]
 			p.runtime.timestep_size  = timestep_size_reference
 
@@ -298,13 +276,39 @@ if __name__ == "__main__":
 			p.runtime.timestepping_order2 = tsm[2]
 			p.runtime.rexi_use_direct_solution = tsm[3]
 
-			p.cluster.par_time_cores = 1
+
+			# SPACE parallelization
+			pspace = SWEETParallelizationDimOptions('space')
+			pspace.num_cores_per_rank = p.platform_hardware.num_cores_per_socket
+			pspace.num_threads_per_rank = pspace.num_cores_per_rank
+			pspace.num_ranks = 1
+			pspace.setup()
+			#pspace.print()
+
+
+			# TIME parallelization
+			ptime = SWEETParallelizationDimOptions('time')
+			ptime.num_cores_per_rank = 1
+			ptime.num_threads_per_rank = 1 #pspace.num_cores_per_rank
+			ptime.num_ranks = 1
+			ptime.setup()
+			#ptime.print()
+
+			# Setup parallelization
+			p.setup_parallelization([pspace, ptime])
+			#p.parallelization.print()
+
+			# wallclocktime
+			p.parallelization.max_wallclock_seconds = 60*60		# allow at least one hour
+
+			# turbomode
+			p.parallelization.force_turbo_off = True
 
 			if len(tsm) > 4:
 				s = tsm[4]
 				p.load_from_dict(tsm[4])
-
-			p.gen_script('script_'+prefix_string_template+'_ref'+p.runtime.getUniqueID(p.compile), 'run.sh')
+ 
+			p.write_jobscript('script_'+prefix_string_template+'_ref'+p.runtime.getUniqueID(p.compile)+'/run.sh')
 
 
 
@@ -337,8 +341,36 @@ if __name__ == "__main__":
 
 				if not '_rexi' in p.runtime.timestepping_method:
 					p.runtime.rexi_method = ''
-					p.cluster.par_time_cores = 1
-					p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
+
+					# SPACE parallelization
+					pspace = SWEETParallelizationDimOptions('space')
+					pspace.num_cores_per_rank = p.platform_hardware.num_cores_per_socket
+					pspace.num_threads_per_rank = pspace.num_cores_per_rank
+					pspace.num_ranks = 1
+					pspace.setup()
+					#pspace.print()
+
+
+					# TIME parallelization
+					ptime = SWEETParallelizationDimOptions('time')
+					ptime.num_cores_per_rank = 1
+					ptime.num_threads_per_rank = 1 #pspace.num_cores_per_rank
+					ptime.num_ranks = min(128, p.platform_hardware.num_cores // pspace.num_cores_per_rank)
+
+					ptime.setup()
+					#ptime.print()
+
+					# Setup parallelization
+					p.setup_parallelization([pspace, ptime])
+					#p.parallelization.print()
+
+					# wallclocktime
+					p.parallelization.max_wallclock_seconds = 60*60		# allow at least one hour
+
+					# turbomode
+					p.parallelization.force_turbo_off = True
+
+					p.write_jobscript('script_'+prefix_string_template+p.getUniqueID()+'/run.sh')
 
 				else:
 					c = 1
@@ -356,7 +388,7 @@ if __name__ == "__main__":
 						#for N in [128, 256]:
 						for N in [128]:
 
-							range_cores = range_cores_node + [36*i for i in range(2, p.cluster.total_max_nodes)]
+							range_cores = range_cores_node + [36*i for i in range(2, p.platform_hardware.num_nodes)]
 
 							if p.runtime.rexi_ci_n not in range_cores:
 								range_cores.append(N)
@@ -392,13 +424,41 @@ if __name__ == "__main__":
 
 											#print(range_cores)
 											#sys.exit(1)
-											for p.cluster.par_time_cores in range_cores:
-												if p.cluster.par_time_cores >= p.runtime.rexi_ci_n:
+											range_cores = [1]
+											for par_time_cores in range_cores:
+												if True:
+
+													# SPACE parallelization
+													pspace = SWEETParallelizationDimOptions('space')
+													pspace.num_cores_per_rank = p.platform_hardware.num_cores_per_socket
+													pspace.num_threads_per_rank = pspace.num_cores_per_rank
+													pspace.num_ranks = 1
+													pspace.setup()
+													#pspace.print()
+
+
+													# TIME parallelization
+													ptime = SWEETParallelizationDimOptions('time')
+													ptime.num_cores_per_rank = 1
+													ptime.num_threads_per_rank = 1 #pspace.num_cores_per_rank
+													ptime.num_ranks = par_time_cores
+
+													ptime.setup()
+													#ptime.print()
+
+													# Setup parallelization
+													p.setup_parallelization([pspace, ptime])
+													#p.parallelization.print()
+
+													# wallclocktime
+													p.parallelization.max_wallclock_seconds = 60*60		# allow at least one hour
+
+													# turbomode
+													p.parallelization.force_turbo_off = True
+
 													# Generate only scripts with max number of cores
-													p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
+													p.write_jobscript('script_'+prefix_string_template+p.getUniqueID()+'/run.sh')
 													break
 
-#					for p.cluster.par_time_cores in range_cores:
-#						p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
 
-
+p.write_compilecommands("./compile_platform_"+p.platforms.platform_id+".sh")

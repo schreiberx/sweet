@@ -1,9 +1,6 @@
 #! /usr/bin/env python3
 
-import os
 import sys
-import stat
-import math
 
 sys.path.append(os.environ['SWEET_ROOT']+'/python_mods/')
 from SWEETJobGeneration import *
@@ -12,7 +9,12 @@ p = SWEETJobGeneration()
 #
 # cheyenne_impi provides similar performance results
 #
-p.cluster.setupTargetMachine("cheyenne")
+#p.cluster.setupTargetMachine("cheyenne")
+
+#
+# Force deactivating Turbo mode
+#
+p.cluster.force_turbo_off = True
 
 # 10 mins max wallclock seconds
 p.cluster.max_wallclock_seconds = 60*10
@@ -28,7 +30,8 @@ p.cluster.environment_vars = "export OMP_NUM_THREADS=1\n"
 # This avoid any bandwidth-related issues
 #
 # Parallelization model (18 threads per rank)
-p.cluster.pm_space_cores_per_mpi_rank = 18
+#p.cluster.pm_space_cores_per_mpi_rank = 18
+p.cluster.pm_space_cores_per_mpi_rank = 4
 p.cluster.pm_time_cores_per_mpi_rank = 1
 
 
@@ -45,13 +48,15 @@ p.compile.sphere_spectral_space = 'enable'
 p.compile.sphere_spectral_dealiasing = 'enable'
 
 p.compile.rexi_timings = 'enable'
+p.compile.rexi_timings_additional_barriers = 'enable'
 
 
 
 #
 # Options for CHEYENNE
 #
-if True:
+#if True:
+if False:
 	p.compile.compiler = 'intel'
 
 	# MKL turned out to be more robust on Cheyenne compared to FFTW
@@ -167,6 +172,7 @@ p.runtime.viscosity = 0.0
 timestep_sizes_explicit = [10, 20, 30, 60, 120, 180]
 timestep_sizes_implicit = [60, 120, 180, 360, 480, 600, 720]
 timestep_sizes_rexi = [60, 120, 180, 240, 300, 360, 480, 600, 720]
+timestep_sizes_rexi = [360]
 
 timestep_size_reference = timestep_sizes_explicit[0]
 
@@ -180,6 +186,7 @@ timestep_size_reference = timestep_sizes_explicit[0]
 #p.runtime.simtime = timestep_sizes[-1]*10 #timestep_size_reference*2000
 p.runtime.simtime = 432000 #timestep_size_reference*(2**6)*10
 p.runtime.output_timestep_size = p.runtime.simtime
+p.runtime.output_filename = "-"
 #p.runtime.output_timestep_size = -1
 
 p.runtime.rexi_extended_modes = 0
@@ -221,32 +228,37 @@ if __name__ == "__main__":
 				###########
 				# RK2/4
 				###########
-				['ln_erk',		2,	2,	0],	# reference solution
-				['ln_erk',		4,	4,	0],	# reference solution
+				#['ln_erk',		2,	2,	0],	# reference solution
+				#['ln_erk',		4,	4,	0],	# reference solution
 
 				###########
 				# CN
 				###########
-				['lg_irk_lc_n_erk_ver0',	2,	2,	0],
-				['lg_irk_lc_n_erk_ver1',	2,	2,	0],
+				#['lg_irk_lc_n_erk_ver0',	2,	2,	0],
+				#['lg_irk_lc_n_erk_ver1',	2,	2,	0],
 
-				['l_irk_n_erk_ver0',	2,	2,	0],
-				['l_irk_n_erk_ver1',	2,	2,	0],
+				#['l_irk_n_erk_ver0',	2,	2,	0],
+				#['l_irk_n_erk_ver1',	2,	2,	0],
 
 				###########
 				# REXI
 				###########
-				['lg_rexi_lc_n_erk_ver0',	2,	2,	0],
+				#['lg_rexi_lc_n_erk_ver0',	2,	2,	0],
+				#['lg_rexi_lc_n_erk_ver0',	2,	2,	0],
 				['lg_rexi_lc_n_erk_ver1',	2,	2,	0],
+				['lg_rexi',	2,	2,	0],
 
-				['l_rexi_n_erk_ver0',	2,	2,	0],
-				['l_rexi_n_erk_ver1',	2,	2,	0],
+				#['l_rexi_n_erk_ver0',	2,	2,	0],
+				#['l_rexi_n_erk_ver1',	2,	2,	0],
 
 				###########
 				# ETDRK
 				###########
-				['lg_rexi_lc_n_etdrk',	2,	2,	0],
-				['l_rexi_n_etdrk',	2,	2,	0],
+				#['lg_rexi_lc_n_etdrk',	2,	2,	0],
+				#['l_rexi_n_etdrk',	2,	2,	0],
+
+				#['lg_rexi_lc_n_etdrk',	4,	4,	0],
+				#['l_rexi_n_etdrk',	4,	4,	0],
 			]
 
 		# 4th order nonlinear
@@ -361,6 +373,7 @@ if __name__ == "__main__":
 							if p.runtime.rexi_ci_n not in range_cores:
 								range_cores.append(N)
 							range_cores.sort()
+							range_cores = [1, 2, 4, 8, 16, 32, 64, 128]
 
 							#for r in [25, 50, 75]:
 							# Everything starting and above 40 results in significant errors
@@ -393,10 +406,11 @@ if __name__ == "__main__":
 											#print(range_cores)
 											#sys.exit(1)
 											for p.cluster.par_time_cores in range_cores:
-												if p.cluster.par_time_cores >= p.runtime.rexi_ci_n:
+												if True:
+												#if p.cluster.par_time_cores >= p.runtime.rexi_ci_n:
 													# Generate only scripts with max number of cores
 													p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
-													break
+													#break
 
 #					for p.cluster.par_time_cores in range_cores:
 #						p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')

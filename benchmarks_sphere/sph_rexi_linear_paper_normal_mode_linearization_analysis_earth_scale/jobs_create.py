@@ -8,6 +8,7 @@ import sys
 import stat
 import math
 
+sys.path.append(os.environ['SWEET_ROOT']+'/python_mods/')
 from SWEETJobGeneration import *
 p = SWEETJobGeneration()
 
