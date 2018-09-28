@@ -5,7 +5,7 @@ import sys
 import stat
 import math
 
-sys.path.append('../../../python_mods/')
+sys.path.append(os.environ['SWEET_ROOT']+'/python_mods/')
 from SWEETJobGeneration import *
 p = SWEETJobGeneration()
 
