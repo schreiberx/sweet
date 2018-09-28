@@ -5,11 +5,9 @@ import sys
 import stat
 import math
 
+sys.path.append(os.environ['SWEET_ROOT']+'/python_mods/')
 from SWEETJobGeneration import *
 p = SWEETJobGeneration()
-
-#p.cluster.setupTargetMachine("cheyenne")
-p.cluster.setupTargetMachine("mac-login-intel")
 
 
 #
@@ -157,5 +155,5 @@ if __name__ == "__main__":
 				[2.00, 0.10, 'M'],	# M
 				[0.40, 0.10, 'N'],	# N
 			]:
-			p.gen_script('script_'+prefix+'_polvani_'+M+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
+			p.gen_script('script_'+prefix+'_polvani_'+M+p.getUniqueID(), 'run.sh')
 
