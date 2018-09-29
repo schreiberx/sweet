@@ -149,7 +149,7 @@ else
 		return
 	fi
 
-	export PS1="[SWEET] $PS1"
+	export PS1="[SWEET.$SWEET_PLATFORM] $PS1"
 
 	export PATH="$SCRIPTDIR/local/bin:$PATH"
 	export PKG_CONFIG_PATH="$SCRIPTDIR/local/lib/pkgconfig:$PKG_CONFIG_PATH"
