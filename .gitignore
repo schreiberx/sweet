@@ -1,9 +1,9 @@
-build
+/build
 FFTW_*
-*.txt
-*.mod
-*.out
-*~
+**/*.txt
+**/*.mod
+**/*.out
+**/*~
 **/*.eps
 **/*.directory
 **/*.swp
@@ -11,6 +11,9 @@ FFTW_*
 
 **/*.pyc
 **/__pycache__
+
+# exclude platform compile scripts
+**/compile_platform_*sh
 
 .cproject
 .gitignore.swp
