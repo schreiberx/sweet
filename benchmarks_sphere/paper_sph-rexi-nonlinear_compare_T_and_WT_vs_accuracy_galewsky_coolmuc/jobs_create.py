@@ -16,7 +16,7 @@ p.parallelization.force_turbo_off = True
 #p.cluster.max_wallclock_seconds = 60*10
 
 # 60 mins
-p.parallelization.max_wallclock_seconds = 60*60
+ref_max_wallclock_seconds = 60*60*2
 
 
 
@@ -245,35 +245,35 @@ if __name__ == "__main__":
 				###########
 				# RK2/4
 				###########
-				['ln_erk',		2,	2,	0],	# reference solution
-				['ln_erk',		4,	4,	0],	# reference solution
+				#['ln_erk',		2,	2,	0],	# reference solution
+				#['ln_erk',		4,	4,	0],	# reference solution
 
 				###########
 				# CN
 				###########
-				['lg_irk_lc_n_erk_ver0',	2,	2,	0],
+				#['lg_irk_lc_n_erk_ver0',	2,	2,	0],
 				['lg_irk_lc_n_erk_ver1',	2,	2,	0],
 
-				['l_irk_n_erk_ver0',	2,	2,	0],
-				['l_irk_n_erk_ver1',	2,	2,	0],
+				#['l_irk_n_erk_ver0',	2,	2,	0],
+				#['l_irk_n_erk_ver1',	2,	2,	0],
 
 				###########
 				# REXI
 				###########
-				['lg_rexi_lc_n_erk_ver0',	2,	2,	0],
+				#['lg_rexi_lc_n_erk_ver0',	2,	2,	0],
 				['lg_rexi_lc_n_erk_ver1',	2,	2,	0],
 
-				['l_rexi_n_erk_ver0',	2,	2,	0],
-				['l_rexi_n_erk_ver1',	2,	2,	0],
+				#['l_rexi_n_erk_ver0',	2,	2,	0],
+				#['l_rexi_n_erk_ver1',	2,	2,	0],
 
 				###########
 				# ETDRK
 				###########
 				['lg_rexi_lc_n_etdrk',	2,	2,	0],
-				['l_rexi_n_etdrk',	2,	2,	0],
+				#['l_rexi_n_etdrk',	2,	2,	0],
 
-				['lg_rexi_lc_n_etdrk',	4,	4,	0],
-				['l_rexi_n_etdrk',	4,	4,	0],
+				#['lg_rexi_lc_n_etdrk',	4,	4,	0],
+				#['l_rexi_n_etdrk',	4,	4,	0],
 			]
 
 		# 4th order nonlinear
@@ -331,7 +331,8 @@ if __name__ == "__main__":
 				s = tsm[4]
 				p.load_from_dict(tsm[4])
 
-			p.gen_script('script_'+prefix_string_template+'_ref'+p.runtime.getUniqueID(p.compile), 'run.sh')
+			p.parallelization.max_wallclock_seconds = ref_max_wallclock_seconds
+			p.write_jobscript('script_'+prefix_string_template+'_ref'+p.runtime.getUniqueID(p.compile)+'/run.sh')
 
 
 
@@ -376,6 +377,7 @@ if __name__ == "__main__":
 					ptime.print()
 					p.parallelization.print()
 
+					p.parallelization.max_wallclock_seconds = ref_max_wallclock_seconds / ptime.num_ranks
 					p.write_jobscript('script_'+prefix_string_template+p.getUniqueID()+'/run.sh')
 
 				else:
@@ -420,7 +422,8 @@ if __name__ == "__main__":
 												'ci_gaussian_filter_exp_N':gf_exp_N,
 											})
 
-											for time_ranks in range_time_ranks:
+											#for time_ranks in range_time_ranks:
+											for time_ranks in [range_time_ranks[-1]]:
 
 													# Update TIME parallelization
 													ptime = SWEETParallelizationDimOptions('time')
@@ -442,6 +445,7 @@ if __name__ == "__main__":
 													p.parallelization.print()
 
 													# Generate only scripts with max number of cores
+													p.parallelization.max_wallclock_seconds = ref_max_wallclock_seconds / ptime.num_ranks
 													p.write_jobscript('script_'+prefix_string_template+p.getUniqueID()+'/run.sh')
 													#break
 
