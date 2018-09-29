@@ -67,7 +67,8 @@ pspace.num_cores_per_rank = p.platform_resources.num_cores_per_socket//2
 pspace.num_threads_per_rank = pspace.num_cores_per_rank
 pspace.num_ranks = 1
 pspace.setup()
-pspace.print()
+if __name__ == "__main__":
+	pspace.print()
 
 
 # TIME parallelization
@@ -77,7 +78,8 @@ ptime.num_threads_per_rank = 1 #pspace.num_cores_per_rank
 ptime.num_ranks = 1
 
 ptime.setup()
-ptime.print()
+if __name__ == "__main__":
+	ptime.print()
 
 
 #
@@ -197,6 +199,8 @@ timestep_sizes_rexi = [60, 120, 180, 240, 300, 360, 480, 600, 720]
 
 timestep_size_reference = timestep_sizes_explicit[0]
 
+# Reference to estimate wallclock time for job scripts
+timesetp_size_max = 720*2
 
 
 
@@ -296,7 +300,7 @@ if __name__ == "__main__":
 		#
 		# add prefix string to group benchmarks
 		#
-		prefix_string_template = group
+		prefix_string_template = group+'_'
 
 
 
@@ -331,6 +335,9 @@ if __name__ == "__main__":
 				p.load_from_dict(tsm[4])
 
 			p.parallelization.max_wallclock_seconds = ref_max_wallclock_seconds
+			if p.parallelization.max_wallclock_seconds <= 0:
+				raise Exception("p.parallelization.max_wallclock_seconds <= 0")
+
 			p.write_jobscript('script_'+prefix_string_template+'_ref'+p.runtime.getUniqueID(p.compile)+'/run.sh')
 
 
@@ -376,7 +383,10 @@ if __name__ == "__main__":
 					ptime.print()
 					p.parallelization.print()
 
-					p.parallelization.max_wallclock_seconds = ref_max_wallclock_seconds / ptime.num_ranks
+					p.parallelization.max_wallclock_seconds = int(ref_max_wallclock_seconds / 32 * (timesetp_size_max / p.runtime.timestep_size))
+					if p.parallelization.max_wallclock_seconds <= 0:
+						raise Exception("p.parallelization.max_wallclock_seconds <= 0")
+
 					p.write_jobscript('script_'+prefix_string_template+p.getUniqueID()+'/run.sh')
 
 				else:
@@ -446,12 +456,15 @@ if __name__ == "__main__":
 													p.parallelization.print()
 
 													# Generate only scripts with max number of cores
-													p.parallelization.max_wallclock_seconds = ref_max_wallclock_seconds / ptime.num_ranks
+													p.parallelization.max_wallclock_seconds = int(ref_max_wallclock_seconds / ptime.num_ranks * (timesetp_size_max / p.runtime.timestep_size))
+													if p.parallelization.max_wallclock_seconds <= 0:
+														raise Exception("p.parallelization.max_wallclock_seconds <= 0")
+
 													p.write_jobscript('script_'+prefix_string_template+p.getUniqueID()+'/run.sh')
 													#break
 
 
-# Write compile script
-p.write_compilecommands("./compile_platform_"+p.platforms.platform_id+".sh")
+	# Write compile script
+	p.write_compilecommands("./compile_platform_"+p.platforms.platform_id+".sh")
 
 

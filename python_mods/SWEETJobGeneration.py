@@ -240,6 +240,12 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
 
 	def write_jobscript(self, jobscript_filepath):
 
+		if self.parallelization.max_wallclock_seconds != None and self.platform_resources.max_wallclock_seconds != None:
+			if self.platform_resources.max_wallclock_seconds < self.parallelization.max_wallclock_seconds:
+				self.info("platform_resources.max_wallclock_seconds: "+str(self.platform_resources.max_wallclock_seconds))
+				self.info("parallelization.max_wallclock_seconds: "+str(self.parallelization.max_wallclock_seconds))
+				self.error("Max. wallcock time exceeds platform's limit")
+
 		if jobscript_filepath[0] == '/':
 			self.p_jobscript_filepath = jobscript_filepath
 		else:

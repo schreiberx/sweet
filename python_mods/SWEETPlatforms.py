@@ -3,6 +3,7 @@
 
 import os
 import sys
+import re
 import importlib
 from inspect import getmembers
 from InfoError import *
@@ -118,8 +119,12 @@ class SWEETPlatforms(InfoError):
 		# Sort to include priority enumeration, e.g. 50_cheyenne
 		files.sort()
 
+		pattern = re.compile('[0-9]{2}_[a-z]+')
 		for f in files:
-			if f in ['.', '..', '_archive', 'README']:
+			if f in ['.', '..']:
+				continue
+
+			if pattern.match(f) == None:
 				continue
 
 			sys.path.append(self.platforms_dir)

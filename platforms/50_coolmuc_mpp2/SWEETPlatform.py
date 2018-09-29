@@ -102,8 +102,20 @@ def jobscript_get_header(jobgeneration : SWEETJobGeneration):
 
 	p = jobgeneration.parallelization
 
-	from time import gmtime, strftime
-	time_str = strftime("%H:%M:%S", gmtime(p.max_wallclock_seconds))
+	# seconds
+	s = int(p.max_wallclock_seconds)
+	m = s // 60
+	s = s % 60
+	h = m // 60
+	m = m % 60
+
+	stest = h*60*60 + m*60 + s
+	if int(p.max_wallclock_seconds) != stest:
+		print(int(p.max_wallclock_seconds))
+		print(stest)
+		raise Exception("Internal error!")
+
+	time_str = str(h).zfill(2)+":"+str(m).zfill(2)+":"+str(s).zfill(2)
 	
 	#
 	# See https://www.lrz.de/services/compute/linux-cluster/batch_parallel/example_jobs/
