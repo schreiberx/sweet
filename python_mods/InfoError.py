@@ -1,5 +1,6 @@
 
 
+__all__ = ['InfoError']
 
 class InfoError:
 
@@ -20,3 +21,10 @@ class InfoError:
 
 	def hline(self):
 		print("*"*80)
+
+
+
+if __name__ == "__main__":
+
+	p = InfoError("test")
+

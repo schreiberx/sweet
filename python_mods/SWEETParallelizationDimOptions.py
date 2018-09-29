@@ -10,7 +10,7 @@ import datetime
 from SWEETPlatforms import *
 from InfoError import *
 
-
+__all__ = ['SWEETParallelizationDimOptions']
 
 class SWEETParallelizationDimOptions(InfoError):
 	"""
@@ -84,8 +84,17 @@ class SWEETParallelizationDimOptions(InfoError):
 			self.error("num_cores_per_rank not specified")
 
 		if self.num_threads_per_rank == None:
-			self.p_error("num_threads_per_rank not specified")
+			self.error("num_threads_per_rank not specified")
 
 		if self.num_ranks == None:
-			self.p_error("num_ranks not specified")
+			self.error("num_ranks not specified")
 		
+
+if __name__ == "__main__":
+	p = SWEETParallelizationDimOptions("testdim")
+	p.num_ranks = 12
+	p.num_cores_per_rank = 4
+	p.setup()
+	p.print()
+
+	p.info("FIN")

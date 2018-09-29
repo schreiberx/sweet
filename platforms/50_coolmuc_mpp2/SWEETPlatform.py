@@ -3,11 +3,12 @@ import socket
 import sys
 
 from SWEETPlatformResources import *
-import SWEETJobGeneration
+from SWEETJobGeneration import *
+from . import SWEETPlatformAutodetect
 
-job_id = None
+_job_id = None
 
-def p_whoami(depth=1):
+def _whoami(depth=1):
 	"""
 	String of function name to recycle code
 
@@ -23,12 +24,12 @@ def p_whoami(depth=1):
 
 
 def p_gen_script_info(jobgeneration : SWEETJobGeneration):
-	global job_id
+	global _job_id
 
 	return """#
 # Platform: """+get_platform_id()+"""
-# Generating function: """+p_whoami(2)+"""
-# Job id: """+job_id+"""
+# Generating function: """+_whoami(2)+"""
+# Job id: """+_job_id+"""
 #
 """
 
@@ -42,10 +43,7 @@ def get_platform_autodetect():
 		True if current platform matches, otherwise False
 	"""
 
-	if platform.node()[:10] == 'mpp2-login':
-		return True
-
-	return False
+	return SWEETPlatformAutodetect.get_platform_autodetect()
 
 
 
@@ -63,7 +61,7 @@ def get_platform_id():
 
 
 
-def get_platform_hardware():
+def get_platform_resources():
 	"""
 	Return information about hardware
 	"""
@@ -85,8 +83,8 @@ def jobscript_setup(jobgeneration : SWEETJobGeneration):
 	Setup data to generate job script
 	"""
 
-	global job_id
-	job_id = jobgeneration.runtime.getUniqueID(jobgeneration.compile)
+	global _job_id
+	_job_id = jobgeneration.runtime.getUniqueID(jobgeneration.compile)
 	return
 
 
@@ -100,7 +98,7 @@ def jobscript_get_header(jobgeneration : SWEETJobGeneration):
 	string
 		multiline text for scripts
 	"""
-	global job_id
+	global _job_id
 
 	p = jobgeneration.parallelization
 
@@ -113,7 +111,7 @@ def jobscript_get_header(jobgeneration : SWEETJobGeneration):
 	content = """#! /bin/bash
 #SBATCH -o """+jobgeneration.p_jobscript_stdout_filepath+"""
 #SBATCH -D """+jobgeneration.p_jobscript_dirpath+"""
-#SBATCH -J """+job_id+"""
+#SBATCH -J """+_job_id+"""
 #SBATCH --get-user-env 
 #SBATCH --clusters=mpp2
 #SBATCH --ntasks="""+str(p.num_ranks)+"""

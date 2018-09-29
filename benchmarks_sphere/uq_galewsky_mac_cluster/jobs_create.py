@@ -7,7 +7,7 @@ import math
 import itertools
 import numpy as np
 
-from SWEETJobGeneration import *
+from SWEET import *
 p = SWEETJobGeneration()
 
 p.cluster.setupTargetMachine("mac-login-amd")

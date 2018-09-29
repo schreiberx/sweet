@@ -12,9 +12,8 @@ import sys
 import stat
 import math
 
-sys.path.append(os.environ['SWEET_ROOT']+'/python_mods/')
 #Classes containing sweet compile/run basic option
-from SWEETJobGeneration import *
+from SWEET import *
 from SWEETParameters import *
 
 #Create main compile/run options

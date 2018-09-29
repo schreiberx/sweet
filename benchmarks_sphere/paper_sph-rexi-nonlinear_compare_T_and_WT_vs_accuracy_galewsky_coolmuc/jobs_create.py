@@ -3,8 +3,7 @@
 import sys
 import os
 
-sys.path.append(os.environ['SWEET_ROOT']+'/python_mods/')
-from SWEETJobGeneration import *
+from SWEET import *
 p = SWEETJobGeneration()
 
 #
@@ -61,9 +60,9 @@ p.compilecommand_in_jobscript = False
 # SPACE parallelization
 pspace = SWEETParallelizationDimOptions('space')
 
-pspace.num_cores_per_rank = p.platform_hardware.num_cores_per_socket
+pspace.num_cores_per_rank = p.platform_resources.num_cores_per_socket
 # Use only half the cores of socket
-pspace.num_cores_per_rank = p.platform_hardware.num_cores_per_socket//2
+pspace.num_cores_per_rank = p.platform_resources.num_cores_per_socket//2
 
 pspace.num_threads_per_rank = pspace.num_cores_per_rank
 pspace.num_ranks = 1
@@ -391,6 +390,8 @@ if __name__ == "__main__":
 							range_time_ranks = []
 							i = 1
 							while i <= N:
+									if i > p.platform_resources.num_cores // pspace.num_cores:
+										break
 									range_time_ranks.append(i)
 									i *= 2
 
@@ -434,7 +435,7 @@ if __name__ == "__main__":
 
 													if False:
 														total_cores = ptime.num_ranks*ptime.num_cores_per_rank * pspace.num_ranks*pspace.num_cores_per_rank
-														if total_cores > p.platform_hardware.num_cores:
+														if total_cores > p.platform_resources.num_cores:
 															print("Skipping this configuration since number of cores exceeds physically available ones")
 															continue
 

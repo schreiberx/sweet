@@ -9,7 +9,6 @@ import multiprocessing
 from . import SWEETPlatformAutodetect
 
 
-
 # Underscore defines symbols to be private
 _job_id = None
 
@@ -62,7 +61,7 @@ def get_platform_id():
 		unique ID of platform
 	"""
 
-	return "default"
+	return "martinium"
 
 
 def get_platform_resources():

@@ -26,6 +26,10 @@ Possible config files:
 		SWEET_MPIF90
 		to override compiler environment variables
 
-	./SWEET.py
+	./SWEETPlatformAutodetect.py
+		Script which includes autodetect() function to
+		automatically determine the right environment
+
+	./SWEETPlatform.py
 		Included by files ./python_mods/SWEET*.py
 		

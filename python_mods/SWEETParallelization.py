@@ -1,26 +1,18 @@
-import socket
 import math
-import sys
-import os
-import multiprocessing
-import datetime
-
-from SWEETPlatforms import *
-from SWEETParallelizationDimOptions import *
-from InfoError import *
-import SWEETJobGeneration
-
 from functools import reduce
 import operator
 
-def prod(iterable):
+from InfoError import *
+from SWEETPlatformResources import *
+from SWEETParallelizationDimOptions import *
+
+__all__ = ['SWEETParallelization']
+
+def _prod(iterable):
 	return reduce(operator.mul, iterable, 1)
 
 
-
 class SWEETParallelization(InfoError):
-
-
 
 	"""
 	This class stores information on how each program should be executed on a platform
@@ -108,23 +100,23 @@ class SWEETParallelization(InfoError):
 
 
 
-	def dummy_setup_if_no_setup(self, jobgeneration : SWEETJobGeneration):
+	def dummy_setup_if_no_setup(self, platform_resources : SWEETPlatformResources):
 		"""
 		Setup a dummy parallelization dimension to use one rank on one node and all cores on the node
 		"""
 
 		if self.pardims == None:
 			dummy = SWEETParallelizationDimOptions("dummy")
-			dummy.num_cores = jobgeneration.platform_hardware.num_cores_per_node
+			dummy.num_cores = platform_resources.num_cores_per_node
 			dummy.num_cores_per_rank = dummy.num_cores
 			dummy.num_threads_per_rank = dummy.num_cores
 			dummy.num_ranks = 1
-			self.setup([dummy], jobgeneration)
+			self.setup([dummy], platform_resources)
 			self.print()
 
 
 
-	def setup(self, list_pardims, jobgeneration : SWEETJobGeneration):
+	def setup(self, list_pardims, platform_resources : SWEETPlatformResources):
 		"""
 		Setup data which is required by the platform specific scripts to
 		generate the job scripts
@@ -134,7 +126,7 @@ class SWEETParallelization(InfoError):
 		list_pardims:	SWEETParallelizationDimOptions
 			List with options for parallelization in each dimension
 
-		jobgeneration : SWEETJobGeneration
+		platform_resources
 			reference to jobgeneration class
 
 		#mode : string
@@ -158,20 +150,20 @@ class SWEETParallelization(InfoError):
 			dim_id += 1
 
 		# Compute total number of resources over all dimensions
-		self.num_cores_per_rank = prod(i.num_cores_per_rank for i in self.pardims)
+		self.num_cores_per_rank = _prod(i.num_cores_per_rank for i in self.pardims)
 
 		# Check if number of cores per rank exceeds the available number of cores per node
-		if self.num_cores_per_rank > jobgeneration.platform_hardware.num_cores_per_node:
+		if self.num_cores_per_rank > platform_resources.num_cores_per_node:
 			self.print()
-			self.error("Invalid config for parallelization: self.num_cores_per_rank >= jobgeneration.platform_hardware.num_cores_per_node")
+			self.error("Invalid config for parallelization: self.num_cores_per_rank >= platform_resources.num_cores_per_node")
 
 		# Number of ranks
-		self.num_ranks = prod(i.num_ranks for i in self.pardims)
+		self.num_ranks = _prod(i.num_ranks for i in self.pardims)
 		if self.num_ranks <= 0:
 			self.error("self.num_ranks <= 0")
 
 		# Check how many ranks we can run on each node
-		self.num_ranks_per_node = int(math.ceil(jobgeneration.platform_hardware.num_cores_per_node // self.num_cores_per_rank))
+		self.num_ranks_per_node = int(math.ceil(platform_resources.num_cores_per_node // self.num_cores_per_rank))
 		if self.num_ranks_per_node <= 0:
 			self.error("self.num_ranks_per_node <= 0")
 
@@ -191,7 +183,7 @@ class SWEETParallelization(InfoError):
 		# We do this mainly for debugging restrictions
 		#
 		# VALIDATION for inconsistencies
-		raw_num_ranks = prod(i.num_ranks for i in self.pardims)
+		raw_num_ranks = _prod(i.num_ranks for i in self.pardims)
 		if self.num_ranks < raw_num_ranks:
 			self.print()
 			self.error("Internal error: self.num_ranks < raw_num_ranks")
@@ -206,20 +198,20 @@ class SWEETParallelization(InfoError):
 			self.print()
 			self.error("Error: self.num_nodes * self.num_ranks_per_node != self.num_ranks\n******* Please change your job settings to avoid this *******")
 
-		self.num_cores = self.num_nodes * jobgeneration.platform_hardware.num_cores_per_node
+		self.num_cores = self.num_nodes * platform_resources.num_cores_per_node
 
 		#
 		# VALIDATION for hardware restrictions
 		#
 
 		# Enough computing cores?
-		if self.num_ranks*self.num_cores_per_rank > jobgeneration.platform_hardware.num_cores:
+		if self.num_ranks*self.num_cores_per_rank > platform_resources.num_cores:
 			self.print()
-			self.error("Invalid config for parallelization: self.num_ranks*self.num_cores_per_rank >= jobgeneration.platform_hardware.num_cores")
+			self.error("Invalid config for parallelization: self.num_ranks*self.num_cores_per_rank >= platform_resources.num_cores")
 
-		if self.num_cores > jobgeneration.platform_hardware.num_cores:
+		if self.num_cores > platform_resources.num_cores:
 			self.print()
-			self.error("Invalid config for parallelization: self.num_cores >= jobgeneration.platform_hardware.num_cores")
+			self.error("Invalid config for parallelization: self.num_cores >= platform_resources.num_cores")
 
 
 		#
@@ -227,7 +219,7 @@ class SWEETParallelization(InfoError):
 		#
 
 		# Number of total threads per rank (There are no restrictions for logical threading)
-		self.num_threads_per_rank = prod(i.num_threads_per_rank for i in self.pardims)
+		self.num_threads_per_rank = _prod(i.num_threads_per_rank for i in self.pardims)
 
 
 
@@ -238,3 +230,10 @@ class SWEETParallelization(InfoError):
 		return retval
 
 
+if __name__ == "__main__":
+	p = SWEETParallelization()
+	s = p.getUniqueID()
+	p.info(s)
+	p.print()
+
+	p.info("FIN")
