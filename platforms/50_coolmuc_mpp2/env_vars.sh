@@ -23,7 +23,7 @@ if [ "${HOSTNAME:0:10}" == "mpp2-login" -o "#$SWEET_PLATFORM" == "#coolmuc_mpp2"
 	#
 	export SWEET_F90=gfortran
 	export SWEET_CC=gcc
-	export SWEET_CPP=g++
+	export SWEET_CXX=g++
 
 	export SWEET_MPICC=mpigcc
 	export SWEET_MPICXX=mpigxx

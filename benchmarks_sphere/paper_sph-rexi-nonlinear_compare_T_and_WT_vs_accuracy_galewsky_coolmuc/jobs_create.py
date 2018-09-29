@@ -97,23 +97,12 @@ p.compile.rexi_timings = 'enable'
 
 p.compile.quadmath = 'enable'
 
-#
-# Options for CHEYENNE
-#
-if True:
-	#p.compile.compiler = 'intel'
-	p.compile.compiler = 'gnu'
+p.compile.compiler = 'gnu'
 
-	#p.compile.mkl = 'enable'
-	# Disabled since we can now use FFTW plans in SHTNS
-	p.compile.mkl = 'disable'
+#p.compile.mkl = 'enable'
+# Disabled since we can now use FFTW plans in SHTNS
+p.compile.mkl = 'disable'
 
-	#
-	# Use Intel MPI Compilers
-	#
-	p.compile.compiler_c_exec = 'mpicc'
-	p.compile.compiler_cpp_exec = 'mpicxx'
-	p.compile.compiler_fortran_exec = 'mpif90'
 
 
 #

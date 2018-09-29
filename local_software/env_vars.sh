@@ -3,21 +3,21 @@
 #
 # This is a template to set up environment variables correctly
 #
-# It assumes that you install all your libraries in subdirectories in $HOME/local
+# It assumes that you install all your libraries in subdirectories in $SWEETROOT/local_software/local
 #
 
 
 if [ "#$SWEET_ROOT" != "#" ]; then
 	echo "SWEET environment variables already loaded (skipping)"
-	if [ "`basename $0`" == "env_vars.sh" ]; then
+	if [ "`basename -- "$0"`" == "env_vars.sh" ]; then
 		return
 	fi
 else
 
 	if [ "#$0" != "#-bash" ]; then
-		if [ "`basename $0`" == "env_vars.sh" ]; then
-			if [ "`basename $0`" != "bash" ]; then
-				if [ "`basename $0`" != "modules_env_yellowstone.inc" ]; then
+		if [ "`basename -- "$0"`" == "env_vars.sh" ]; then
+			if [ "`basename -- "$0"`" != "bash" ]; then
+				if [ "`basename -- "$0"`" != "modules_env_yellowstone.inc" ]; then
 					echo "ERROR|"
 					echo "ERROR| >>> $0"
 					echo "ERROR| THIS SCRIPT MAY NOT BE EXECUTED, BUT INCLUDED IN THE ENVIRONMENT VARIABLES!"
@@ -34,7 +34,7 @@ else
 	fi
 
 
-	if [ "`basename $SHELL`" != "bash" ]; then
+	if [ "`basename -- "$SHELL"`" != "bash" ]; then
 		echo "ERROR|"
 		echo "ERROR| These scripts are only compatible to the bash shell"
 		echo "ERROR|"

@@ -111,7 +111,7 @@ def jobscript_get_header(jobgeneration : SWEETJobGeneration):
 	# See https://www.lrz.de/services/compute/linux-cluster/batch_parallel/example_jobs/
 	#
 	content = """#! /bin/bash
-#SBATCH -o """+jobgeneration.p_jobscript_stdout_filepath+"""/output.out
+#SBATCH -o """+jobgeneration.p_jobscript_stdout_filepath+"""
 #SBATCH -D """+jobgeneration.p_jobscript_dirpath+"""
 #SBATCH -J """+job_id+"""
 #SBATCH --get-user-env 
