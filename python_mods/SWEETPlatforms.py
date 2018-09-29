@@ -149,6 +149,7 @@ class SWEETPlatforms(InfoError):
 			for key, platform in self.platforms.items():
 				if platform['interfaces']['get_platform_autodetect']():
 					self.platform = platform
+					break
 
 		if self.platform == None:
 			self.error("No platform available!")
