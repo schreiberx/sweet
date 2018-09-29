@@ -91,66 +91,6 @@ else
 	cd "$SCRIPTDIR"
 
 
-	#
-	# Include cluster-specific scripts
-	#
-	if [ "#$SWEET_PLATFORM" != "#" ]; then
-
-		ENV_VARS=$(eval echo "${SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM}/env_vars.sh")
-		echo "Loading SWEET_PLATFORM='${SWEET_PLATFORM}' platform environment variables from ${ENV_VARS}"
-		source "$ENV_VARS"
-
-	elif [ "#$1" == "#" ]; then
-		#
-		# Use python code to detect hardware.
-		#
-		# Note, that this is not required on cluster nodes,
-		# since SWEET_PLATFORM will be used to avoid this autodetection.
-		#
-		function load_this_platform {
-
-			# Automagic detection here if called from terminal
-			echo -en "import sys\nimport SWEETPlatformAutodetect\nsys.exit(0 if SWEETPlatformAutodetect.autodetect() else 1)" | /usr/bin/env python3 && return 0
-
-			# Platform not detected
-			return 1
-		}
-
-		#
-		# Try with autodetection of platforms
-		#
-		for i in $SWEET_ROOT/platforms/??_*; do
-			cd "$i"
-			load_this_platform
-			if [ $? -eq 0 ]; then
-				p=$(basename "$i")
-				p=${p/??_/}
-				echo "SWEET: Detected platform '$p'"
-				export SWEET_PLATFORM="$p"
-				source "./env_vars.sh"
-				break
-			fi
-		done
-	else
-		# Load platform environment variables if specified
-		source "$1"
-	fi
-
-	# Back to local software
-	cd "$SCRIPTDIR"
-
-
-	if [ ! -d "$SCRIPTDIR" ]; then
-		echo
-		echo "ERROR| Execute this script only from the SWEET root directory"
-		echo "     |   $ source local_software/env_vars.sh"
-		echo
-		cd "$BACKDIR"
-		return
-	fi
-
-	export PS1="[SWEET.$SWEET_PLATFORM] $PS1"
-
 	export PATH="$SCRIPTDIR/local/bin:$PATH"
 	export PKG_CONFIG_PATH="$SCRIPTDIR/local/lib/pkgconfig:$PKG_CONFIG_PATH"
 
@@ -169,7 +109,77 @@ else
 	# Add SWEET python_mods to pythonpath
 	export PYTHONPATH="$PYTHONPATH:$SWEET_ROOT/python_mods"
 
-	echo "SWEET: SWEET environment variables loaded"
+	echo "SWEET: Environment variables loaded"
+
+
+	#
+	# Include cluster-specific scripts
+	#
+	if [ "#$SWEET_PLATFORM" != "#" ]; then
+
+		ENV_VARS=$(eval echo "${SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM}/env_vars.sh")
+		echo "SWEET: SWEET_PLATFORM='${SWEET_PLATFORM}' detected, loading platform environment variables from ${ENV_VARS}"
+		source "$ENV_VARS"
+
+	elif [ "#$1" == "#" ]; then
+		#
+		# Use python code to detect hardware.
+		#
+		# Note, that this is not required on cluster nodes,
+		# since SWEET_PLATFORM will be used to avoid this autodetection.
+		#
+		function load_this_platform {
+
+			# Automagic detection here if called from terminal
+			echo -en "import sys\nimport SWEETPlatformAutodetect\nsys.exit(0 if SWEETPlatformAutodetect.autodetect() else 1)" | /usr/bin/env python && return 0
+
+			# Platform not detected
+			return 1
+		}
+
+		#
+		# Try with autodetection of platforms
+		#
+		for i in $SWEET_ROOT/platforms/??_*; do
+			cd "$i"
+			load_this_platform
+			if [ $? -eq 0 ]; then
+				p=$(basename "$i")
+				p=${p/??_/}
+				echo "SWEET: Autoddetected platform '$p'"
+				export SWEET_PLATFORM="$p"
+				source "./env_vars.sh"
+				break
+			fi
+		done
+	else
+		# Load platform environment variables if specified
+		echo "SWEET: \$1='${1}' detected, loading platform environment variables from ${1}"
+		source "$1"
+	fi
+
+	if [ -z "${SWEET_PLATFORM}" ]; then
+		echo "SWEET: INTERNNAL ERROR: No platform detected!!!"
+		return
+	fi
+
+	echo "SWEET: Platform '${SWEET_PLATFORM}' loaded"
+
+	# Back to local software
+	cd "$SCRIPTDIR"
+
+
+	if [ ! -d "$SCRIPTDIR" ]; then
+		echo
+		echo "ERROR| Execute this script only from the SWEET root directory"
+		echo "     |   $ source local_software/env_vars.sh"
+		echo
+		cd "$BACKDIR"
+		return
+	fi
+
+	export PS1="[SWEET.$SWEET_PLATFORM] $PS1"
+
 
 	cd "$BACKDIR"
 
