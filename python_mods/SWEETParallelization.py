@@ -1,5 +1,3 @@
-#! /usr/bin/env python3
-
 import socket
 import math
 import sys
@@ -8,13 +6,12 @@ import multiprocessing
 import datetime
 
 from SWEETPlatforms import *
-from SWEETJobGeneration import *
 from SWEETParallelizationDimOptions import *
 from InfoError import *
+import SWEETJobGeneration
 
 from functools import reduce
 import operator
-
 
 def prod(iterable):
 	return reduce(operator.mul, iterable, 1)
@@ -56,13 +53,16 @@ class SWEETParallelization(InfoError):
 		"""
 
 		# Number of cores per rank
-		self.num_cores_per_rank = None
+		self.num_cores_per_rank : int = None 
 
 		# Number of threads per rank
 		self.num_threads_per_rank = None
 
 		# Number of ranks per node
 		self.num_ranks_per_node = None
+
+		# Number of cores per node
+		self.num_cores_per_node : int = None 
 
 		# Number of total ranks
 		self.num_ranks = None
@@ -99,6 +99,7 @@ class SWEETParallelization(InfoError):
 		self.info("num_cores_per_rank: "+str(self.num_cores_per_rank))
 		self.info("num_threads_per_rank: "+str(self.num_threads_per_rank))
 		self.info("num_ranks_per_node: "+str(self.num_ranks_per_node))
+		self.info("num_cores_per_node: "+str(self.num_cores_per_node))
 		self.info("num_ranks: "+str(self.num_ranks))
 		self.info("num_nodes: "+str(self.num_nodes))
 		self.info("num_cores: "+str(self.num_cores))
@@ -178,6 +179,10 @@ class SWEETParallelization(InfoError):
 		if self.num_ranks_per_node > self.num_ranks:
 			self.num_ranks_per_node = self.num_ranks
 
+		# Compute number of cores per node
+		if self.num_cores_per_node == None:
+			self.num_cores_per_node = self.num_cores_per_rank*self.num_ranks_per_node
+			
 		#
 		# Compute raw numbers and compare to new number
 		# The new number must be always \leq than the raw number

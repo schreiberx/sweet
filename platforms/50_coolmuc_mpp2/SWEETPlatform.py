@@ -3,7 +3,7 @@ import socket
 import sys
 
 from SWEETPlatformResources import *
-from SWEETJobGeneration import *
+import SWEETJobGeneration
 
 job_id = None
 
@@ -102,28 +102,30 @@ def jobscript_get_header(jobgeneration : SWEETJobGeneration):
 	"""
 	global job_id
 
+	p = jobgeneration.parallelization
+
+	from time import gmtime, strftime
+	time_str = strftime("%H:%M:%S", gmtime(p.max_wallclock_seconds))
+	
+	#
+	# See https://www.lrz.de/services/compute/linux-cluster/batch_parallel/example_jobs/
+	#
 	content = """#! /bin/bash
 #SBATCH -o """+jobgeneration.p_jobscript_stdout_filepath+"""/output.out
 #SBATCH -D """+jobgeneration.p_jobscript_dirpath+"""
 #SBATCH -J """+job_id+"""
 #SBATCH --get-user-env 
 #SBATCH --clusters=mpp2
-#SBATCH --ntasks="""+jobgeneration.parallelization.num_cores_per_rank+"""
-#SBATCH --cpus-per-task=7
+#SBATCH --ntasks="""+str(p.num_ranks)+"""
+#SBATCH --cpus-per-task="""+str(p.num_cores_per_rank)+"""
 # the above is a good match for the
 # CooLMUC2 architecture.
 #SBATCH --mail-type=end 
-#SBATCH --mail-user=xyz@xyz.de 
+#SBATCH --mail-user=schreiberx@gmail.com
 #SBATCH --export=NONE 
-#SBATCH --time=08:00:00
+#SBATCH --time="""+time_str+"""
 source /etc/profile.d/modules.sh
 
-cd $SCRATCH/mydata
-export OMP_NUM_THREADS=7
-mpiexec -n 16 --perhost 4 $HOME/exedir/myprog.exe
-# will start 16 MPI tasks with 7 threads each. Note that
-# each node has 28 cores, so 4 tasks must be started 
-# per host.
 """+p_gen_script_info(jobgeneration)+"""
 
 """
@@ -144,9 +146,14 @@ def jobscript_get_exec_prefix(jobgeneration : SWEETJobGeneration):
 	string
 		multiline text for scripts
 	"""
+
+	p = jobgeneration.parallelization
+
 	content = """
 
 """+p_gen_script_info(jobgeneration)+"""
+
+export OMP_NUM_THREADS="""+str(p.num_threads_per_rank)+"""
 
 """
 
@@ -163,6 +170,9 @@ def jobscript_get_exec_command(jobgeneration : SWEETJobGeneration):
 	string
 		multiline text for scripts
 	"""
+
+	p = jobgeneration.parallelization
+
 	content = """
 
 """+p_gen_script_info(jobgeneration)+"""
@@ -170,7 +180,8 @@ def jobscript_get_exec_command(jobgeneration : SWEETJobGeneration):
 # mpiexec ... would be here without a line break
 EXEC=\"$SWEETROOT/build/"""+jobgeneration.compile.getProgramName()+""" """+jobgeneration.runtime.getRuntimeOptions()+"""\"
 echo \"$EXEC\"
-$EXEC
+
+mpiexec -n """+str(p.num_ranks)+""" --perhost """+str(p.num_ranks_per_node)+""" "$EXEC"
 
 """
 
@@ -187,6 +198,7 @@ def jobscript_get_exec_suffix(jobgeneration : SWEETJobGeneration):
 	string
 		multiline text for scripts
 	"""
+
 	content = """
 
 """+p_gen_script_info(jobgeneration)+"""
@@ -216,7 +228,6 @@ def jobscript_get_footer(jobgeneration : SWEETJobGeneration):
 
 
 
-
 def jobscript_get_compile_command(jobgeneration : SWEETJobGeneration):
 	"""
 	Compile command(s)
@@ -232,8 +243,6 @@ def jobscript_get_compile_command(jobgeneration : SWEETJobGeneration):
 		multiline text with compile command to generate executable
 	"""
 	content = """
-
-"""+p_gen_script_info(jobgeneration)+"""
 
 SCONS="scons """+jobgeneration.compile.getSConsParams()+' -j 4"'+"""
 echo "$SCONS"

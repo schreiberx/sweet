@@ -311,7 +311,6 @@ if __name__ == "__main__":
 			p.write_jobscript('script_'+prefix_string_template+'_ref'+p.runtime.getUniqueID(p.compile)+'/run.sh')
 
 
-
 		#
 		# Create job scripts
 		#
@@ -339,6 +338,8 @@ if __name__ == "__main__":
 					s = tsm[4]
 					p.runtime.load_from_dict(tsm[4])
 
+				p.parallelization.force_turbo_off = True
+
 				if not '_rexi' in p.runtime.timestepping_method:
 					p.runtime.rexi_method = ''
 
@@ -355,7 +356,7 @@ if __name__ == "__main__":
 					ptime = SWEETParallelizationDimOptions('time')
 					ptime.num_cores_per_rank = 1
 					ptime.num_threads_per_rank = 1 #pspace.num_cores_per_rank
-					ptime.num_ranks = min(128, p.platform_hardware.num_cores // pspace.num_cores_per_rank)
+					ptime.num_ranks = 1
 
 					ptime.setup()
 					#ptime.print()
@@ -374,13 +375,7 @@ if __name__ == "__main__":
 
 				else:
 					c = 1
-					#if True:
-					if False:
-						range_cores_single_socket = [1, 2, 4, 8, 12, 16, 18]
-						range_cores_node = range_cores_single_socket + [18+i for i in range_cores_single_socket]
-					else:
-						#range_cores_node = [18,36]
-						range_cores_node = [18]
+					range_cores_node = [p.platform_hardware.num_cores_per_socket]
 
 					if True:
 						#for N in [64, 128]:
@@ -388,11 +383,12 @@ if __name__ == "__main__":
 						#for N in [128, 256]:
 						for N in [128]:
 
-							range_cores = range_cores_node + [36*i for i in range(2, p.platform_hardware.num_nodes)]
+							range_time_cores = []
 
-							if p.runtime.rexi_ci_n not in range_cores:
-								range_cores.append(N)
-							range_cores.sort()
+							i = 1
+							while i <= N:
+								range_time_cores.append(i)
+								i *= 2
 
 							#for r in [25, 50, 75]:
 							# Everything starting and above 40 results in significant errors
@@ -422,10 +418,7 @@ if __name__ == "__main__":
 												'ci_gaussian_filter_exp_N':gf_exp_N,
 											})
 
-											#print(range_cores)
-											#sys.exit(1)
-											range_cores = [1]
-											for par_time_cores in range_cores:
+											for par_time_cores in [range_time_cores[-1]]:
 												if True:
 
 													# SPACE parallelization
@@ -434,21 +427,21 @@ if __name__ == "__main__":
 													pspace.num_threads_per_rank = pspace.num_cores_per_rank
 													pspace.num_ranks = 1
 													pspace.setup()
-													#pspace.print()
+													pspace.print()
 
 
 													# TIME parallelization
 													ptime = SWEETParallelizationDimOptions('time')
 													ptime.num_cores_per_rank = 1
 													ptime.num_threads_per_rank = 1 #pspace.num_cores_per_rank
-													ptime.num_ranks = par_time_cores
+													ptime.num_ranks = min(par_time_cores, p.platform_hardware.num_cores // pspace.num_cores_per_rank)
 
 													ptime.setup()
-													#ptime.print()
+													ptime.print()
 
 													# Setup parallelization
 													p.setup_parallelization([pspace, ptime])
-													#p.parallelization.print()
+													p.parallelization.print()
 
 													# wallclocktime
 													p.parallelization.max_wallclock_seconds = 60*60		# allow at least one hour
@@ -458,7 +451,7 @@ if __name__ == "__main__":
 
 													# Generate only scripts with max number of cores
 													p.write_jobscript('script_'+prefix_string_template+p.getUniqueID()+'/run.sh')
-													break
+
 
 
 p.write_compilecommands("./compile_platform_"+p.platforms.platform_id+".sh")

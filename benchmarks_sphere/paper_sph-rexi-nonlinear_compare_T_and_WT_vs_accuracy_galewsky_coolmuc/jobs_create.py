@@ -1,35 +1,23 @@
 #! /usr/bin/env python3
 
 import sys
+import os
 
+sys.path.append(os.environ['SWEET_ROOT']+'/python_mods/')
 from SWEETJobGeneration import *
 p = SWEETJobGeneration()
 
 #
-# Test with CoolMUC
-#
-p.cluster.setupTargetMachine("coolmuc_mpp2")
-
-#
 # Force deactivating Turbo mode
 #
-p.cluster.force_turbo_off = True
+p.parallelization.force_turbo_off = True
 
 # 10 mins max wallclock seconds
 #p.cluster.max_wallclock_seconds = 60*10
 
 # 60 mins
-p.cluster.max_wallclock_seconds = 60*60
+p.parallelization.max_wallclock_seconds = 60*60
 
-
-# Override OMP_NUM_THREADS and use MASTER binding
-p.user_script_header += """
-
-# Manual override in jobs_create.py
-export OMP_NUM_THREADS=1
-export OMP_PROC_BIND=MASTER
-
-"""
 
 
 # Link to SHTNS plans
@@ -47,6 +35,11 @@ echo "CPU Frequencies:"
 cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq | sort -u
 echo ""
 
+# Manual override in jobs_create.py
+# Override OMP_NUM_THREADS and use MASTER binding
+export OMP_NUM_THREADS=1
+export OMP_PROC_BIND=MASTER
+
 """
 
 p.user_script_postprocess += """
@@ -58,17 +51,34 @@ echo ""
 """
 
 
+# Request dedicated compile script
+p.compilecommand_in_jobscript = False
 
-#
-# Parallelization models
-#
-# Use 18 cores for each MPI task even if only 1 thread is used
-# This avoid any bandwidth-related issues
-#
-# Parallelization model (18 threads per rank)
-p.cluster.pm_space_cores_per_mpi_rank = 18
-p.cluster.pm_time_cores_per_mpi_rank = 1
 
+
+
+
+# SPACE parallelization
+pspace = SWEETParallelizationDimOptions('space')
+
+pspace.num_cores_per_rank = p.platform_hardware.num_cores_per_socket
+# Use only half the cores of socket
+pspace.num_cores_per_rank = p.platform_hardware.num_cores_per_socket//2
+
+pspace.num_threads_per_rank = pspace.num_cores_per_rank
+pspace.num_ranks = 1
+pspace.setup()
+pspace.print()
+
+
+# TIME parallelization
+ptime = SWEETParallelizationDimOptions('time')
+ptime.num_cores_per_rank = 1
+ptime.num_threads_per_rank = 1 #pspace.num_cores_per_rank
+ptime.num_ranks = 1
+
+ptime.setup()
+ptime.print()
 
 
 #
@@ -76,7 +86,7 @@ p.cluster.pm_time_cores_per_mpi_rank = 1
 #
 p.compile.program = 'swe_sphere'
 
-p.compile.plane_or_sphere = 'sphere'
+#p.compile.plane_or_sphere = 'sphere'
 p.compile.plane_spectral_space = 'disable'
 p.compile.plane_spectral_dealiasing = 'disable'
 p.compile.sphere_spectral_space = 'enable'
@@ -189,21 +199,9 @@ p.runtime.rexi_ci_primitive = 'circle'
 #p.runtime.rexi_beta_cutoff = 1e-16
 p.runtime.rexi_beta_cutoff = 0
 
-#p.compile.debug_symbols = False
-
-
-#p.runtime.g = 1
-#p.runtime.f = 1
-#p.runtime.h = 1
-#p.runtime.domain_size = 1
-
 p.runtime.viscosity = 0.0
 
 
-
-#timestep_size_reference = 60
-#timestep_sizes = [timestep_size_reference*(2.0**i) for i in range(0, 11)]
-#timestep_sizes = [timestep_size_reference*(2**i) for i in range(2, 4)]
 
 timestep_sizes_explicit = [10, 20, 30, 60, 120, 180]
 timestep_sizes_implicit = [60, 120, 180, 360, 480, 600, 720]
@@ -212,10 +210,6 @@ timestep_sizes_rexi = [60, 120, 180, 240, 300, 360, 480, 600, 720]
 timestep_size_reference = timestep_sizes_explicit[0]
 
 
-
-#timestep_sizes = timestep_sizes[1:]
-#print(timestep_sizes)
-#sys.exit(1)
 
 
 #p.runtime.simtime = timestep_sizes[-1]*10 #timestep_size_reference*2000
@@ -319,17 +313,6 @@ if __name__ == "__main__":
 
 
 		#
-		# Parallelization models
-		#
-		# Use 18 cores for each MPI task even if only 1 thread is used
-		# This avoid any bandwidth-related issues
-		#
-		# Parallelization model (18 threads per rank)
-#		p.cluster.pm_space_cores_per_mpi_rank = 18
-#		p.cluster.pm_time_cores_per_mpi_rank = 1
-
-
-		#
 		# Reference solution
 		#
 		if True:
@@ -342,7 +325,18 @@ if __name__ == "__main__":
 			p.runtime.timestepping_order2 = tsm[2]
 			p.runtime.rexi_use_direct_solution = tsm[3]
 
-			p.cluster.par_time_cores = 1
+			# Update TIME parallelization
+			ptime = SWEETParallelizationDimOptions('time')
+			ptime.num_cores_per_rank = 1
+			ptime.num_threads_per_rank = 1 #pspace.num_cores_per_rank
+			ptime.num_ranks = 1
+
+			# Setup parallelization
+			p.setup_parallelization([pspace, ptime])
+
+			pspace.print()
+			ptime.print()
+			p.parallelization.print()
 
 			if len(tsm) > 4:
 				s = tsm[4]
@@ -381,30 +375,33 @@ if __name__ == "__main__":
 
 				if not '_rexi' in p.runtime.timestepping_method:
 					p.runtime.rexi_method = ''
-					p.cluster.par_time_cores = 1
-					p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
+
+					# Update TIME parallelization
+					ptime = SWEETParallelizationDimOptions('time')
+					ptime.num_cores_per_rank = 1
+					ptime.num_threads_per_rank = 1 #pspace.num_cores_per_rank
+					ptime.num_ranks = 1
+					p.setup_parallelization([pspace, ptime])
+
+					pspace.print()
+					ptime.print()
+					p.parallelization.print()
+
+					p.write_jobscript('script_'+prefix_string_template+p.getUniqueID()+'/run.sh')
 
 				else:
 					c = 1
-					#if True:
-					if False:
-						range_cores_single_socket = [1, 2, 4, 8, 12, 16, 18]
-						range_cores_node = range_cores_single_socket + [18+i for i in range_cores_single_socket]
-					else:
-						#range_cores_node = [18,36]
-						range_cores_node = [18]
-
 					if True:
 						#for N in [64, 128]:
 						#for N in [128, 256]:
 						#for N in [128, 256]:
 						for N in [128]:
 
-							range_cores = range_cores_node + [36*i for i in range(2, p.cluster.total_max_nodes)]
-
-							if p.runtime.rexi_ci_n not in range_cores:
-								range_cores.append(N)
-							range_cores.sort()
+							range_time_ranks = []
+							i = 1
+							while i <= N:
+									range_time_ranks.append(i)
+									i *= 2
 
 							#for r in [25, 50, 75]:
 							# Everything starting and above 40 results in significant errors
@@ -434,15 +431,33 @@ if __name__ == "__main__":
 												'ci_gaussian_filter_exp_N':gf_exp_N,
 											})
 
-											#print(range_cores)
-											#sys.exit(1)
-											for p.cluster.par_time_cores in range_cores:
-												if p.cluster.par_time_cores >= p.runtime.rexi_ci_n:
-													# Generate only scripts with max number of cores
-													p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
-													break
+											for time_ranks in range_time_ranks:
 
-#					for p.cluster.par_time_cores in range_cores:
-#						p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile)+'_'+p.cluster.getUniqueID(), 'run.sh')
+													# Update TIME parallelization
+													ptime = SWEETParallelizationDimOptions('time')
+													ptime.num_cores_per_rank = 1
+													ptime.num_threads_per_rank = 1
+													ptime.num_ranks = time_ranks
+													ptime.setup()
+
+													if False:
+														total_cores = ptime.num_ranks*ptime.num_cores_per_rank * pspace.num_ranks*pspace.num_cores_per_rank
+														if total_cores > p.platform_hardware.num_cores:
+															print("Skipping this configuration since number of cores exceeds physically available ones")
+															continue
+
+													p.setup_parallelization([pspace, ptime])
+
+													pspace.print()
+													ptime.print()
+													p.parallelization.print()
+
+													# Generate only scripts with max number of cores
+													p.write_jobscript('script_'+prefix_string_template+p.getUniqueID()+'/run.sh')
+													#break
+
+
+# Write compile script
+p.write_compilecommands("./compile_platform_"+p.platforms.platform_id+".sh")
 
 

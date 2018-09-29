@@ -1,5 +1,3 @@
-#! /usr/bin/env python3
-
 import os
 import sys
 import stat
@@ -23,9 +21,9 @@ class SWEETJobGeneration(InfoError):
 
 
 		# Setup all options
-		self.compile = SWEETCompileOptions()
-		self.runtime = SWEETRuntimeOptions()
-		self.parallelization = SWEETParallelization()
+		self.compile : SWEETCompileOptions = SWEETCompileOptions()
+		self.runtime : SWEETRuntimeOptions = SWEETRuntimeOptions()
+		self.parallelization : SWEETParallelization = SWEETParallelization()
 
 		self.platforms = SWEETPlatforms(platform_id_override)
 		self.platform_functions = self.platforms.functions
@@ -130,7 +128,6 @@ class SWEETJobGeneration(InfoError):
 
 		# Setup job script generation
 		self.platform_functions.jobscript_setup(self)
-
 
 		# Now, assemble pieces together
 
