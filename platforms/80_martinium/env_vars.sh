@@ -1,8 +1,7 @@
 
 #
-# Default (fallback) configuration file
+# hostname martinium
 #
-
 
 #
 # Compiler environment

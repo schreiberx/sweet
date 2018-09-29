@@ -1,11 +1,15 @@
 #! /usr/bin/env python3
 
 from SWEETCompileOptions import *
+from InfoError import *
 
+__all__ = ['SWEETRuntimeOptions']
 
-class SWEETRuntimeOptions():
+class SWEETRuntimeOptions(InfoError):
 
 	def __init__(self):
+		InfoError.__init__(self, "SWEETRuntimeOptions")
+
 	#	self.mode_res = 32
 		self.mode_res = -1
 		self.phys_res = -1
@@ -403,3 +407,13 @@ class SWEETRuntimeOptions():
 		retval += ' --shtns-use-plans='+str(self.shtns_use_plans)
 
 		return retval
+
+
+if __name__ == "__main__":
+
+	p = SWEETRuntimeOptions()
+	i = p.getRuntimeOptions()
+	p.info(i)
+
+	p.info("FIN")
+

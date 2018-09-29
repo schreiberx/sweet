@@ -1,11 +1,8 @@
 #! /usr/bin/env python3
 
-import os
 import sys
-import stat
 
-sys.path.append(os.environ['SWEET_ROOT']+'/python_mods/')
-from SWEETJobGeneration import *
+from SWEET import *
 p = SWEETJobGeneration()
 
 

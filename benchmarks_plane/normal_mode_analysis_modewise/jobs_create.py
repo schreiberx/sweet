@@ -5,13 +5,7 @@ import sys
 import stat
 import math
 
-sys.path.append(os.environ['SWEET_ROOT']+'/python_mods/')
-from SWEETJobGeneration import *
-
-#Specifit tests pre-setup
-from SWEETParameters import *
-
-#Create basic parameter setting
+from SWEET import *
 p = SWEETJobGeneration()
 
 #

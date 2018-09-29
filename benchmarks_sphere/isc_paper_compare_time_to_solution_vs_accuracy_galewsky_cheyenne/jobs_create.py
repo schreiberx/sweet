@@ -5,14 +5,8 @@ import sys
 import stat
 import math
 
-sys.path.append(os.environ['SWEET_ROOT']+'/python_mods/')
-from SWEETJobGeneration import *
+from SWEET import *
 p = SWEETJobGeneration()
-
-#
-# cheyenne_impi provides similar performance results
-#
-p.cluster.setupTargetMachine("cheyenne")
 
 # 10 mins max wallclock seconds
 p.cluster.max_wallclock_seconds = 60*10

@@ -1,13 +1,15 @@
+
 import os
 import sys
 import stat
-import math
+
 from SWEETCompileOptions import *
 from SWEETRuntimeOptions import *
-from SWEETParallelization import *
 from SWEETPlatforms import *
 from InfoError import *
+from SWEETParallelization import *
 
+__all__ = ['SWEETJobGeneration']
 
 class SWEETJobGeneration(InfoError):
 
@@ -28,11 +30,11 @@ class SWEETJobGeneration(InfoError):
 		self.platforms = SWEETPlatforms(platform_id_override)
 		self.platform_functions = self.platforms.functions
 
-		self.platform_hardware = self.platform_functions.get_platform_hardware()
+		self.platform_resources = self.platform_functions.get_platform_resources()
 
 		# Setup all hardware print_information which also ensures consistency
-		self.platform_hardware.setup()
-		self.platform_hardware.print()
+		self.platform_resources.setup()
+		self.platform_resources.print()
 
 		# Userdefined data for script header
 		self.user_script_header = ''
@@ -88,7 +90,7 @@ class SWEETJobGeneration(InfoError):
 			list with SWEETParallelizationDimOptions with parallelization
 			print_information along each dimension
 		"""
-		self.parallelization.setup(parallelization_dim_list, self)
+		self.parallelization.setup(parallelization_dim_list, self.platform_resources)
 
 
 	def get_program_exec(self):
@@ -107,7 +109,7 @@ class SWEETJobGeneration(InfoError):
 		"""
 
 		# Run Dummy setup in case that no setup was done so far!
-		self.parallelization.dummy_setup_if_no_setup(self)
+		self.parallelization.dummy_setup_if_no_setup(self.platform_resources)
 
 		if self.p_jobscript_filepath == None:
 			self.error("self.p_jobscript_filepath == None")
@@ -274,7 +276,7 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
 
 
 	def getUniqueID(self):
-		self.parallelization.dummy_setup_if_no_setup(self)
+		self.parallelization.dummy_setup_if_no_setup(self.platform_resources)
 		return self.runtime.getUniqueID(self.compile)+'_'+self.parallelization.getUniqueID()
 
 
@@ -285,3 +287,15 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
 
 		self.write_jobscript(dirname+'/'+scriptname)
 
+
+
+if __name__ == "__main__":
+	p = SWEETJobGeneration()
+
+	#s = p.get_jobscript_content()
+	#p.info(s)
+
+	s = p.getUniqueID()
+	p.info(s)
+
+	p.info("FIN")

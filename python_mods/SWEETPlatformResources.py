@@ -1,6 +1,8 @@
 
 from InfoError import *
 
+__all__ = ['SWEETPlatformResources']
+
 class SWEETPlatformResources(InfoError):
 	"""
 	Information on particular hardware for the target platform (e.g. cluster)
@@ -39,7 +41,6 @@ class SWEETPlatformResources(InfoError):
 		"""
 		Setup information after some information was already provided
 		"""
-
 		if self.num_cores == None:
 			self.num_cores = self.num_cores_per_node*self.num_nodes
 
@@ -90,3 +91,11 @@ class SWEETPlatformResources(InfoError):
 
 
 
+if __name__ == "__main__":
+	p = SWEETPlatformResources()
+	p.num_cores_per_node = 16
+	p.num_cores_per_socket = 4
+	p.num_nodes = 12
+	p.setup()
+	p.print()
+	p.info("FIN")

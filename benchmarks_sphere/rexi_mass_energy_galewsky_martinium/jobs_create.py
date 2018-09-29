@@ -1,16 +1,8 @@
 #! /usr/bin/env python3
 
-import os
 import sys
-import stat
-import math
 
-sys.path.append(os.environ['SWEET_ROOT']+'/python_mods/')
-from SWEETJobGeneration import *
-from SWEETParallelizationDimOptions import *
-
-
-
+from SWEET import *
 p = SWEETJobGeneration()
 
 
@@ -279,7 +271,7 @@ if __name__ == "__main__":
 
 			# SPACE parallelization
 			pspace = SWEETParallelizationDimOptions('space')
-			pspace.num_cores_per_rank = p.platform_hardware.num_cores_per_socket
+			pspace.num_cores_per_rank = p.platform_resources.num_cores_per_socket
 			pspace.num_threads_per_rank = pspace.num_cores_per_rank
 			pspace.num_ranks = 1
 			pspace.setup()
@@ -345,7 +337,7 @@ if __name__ == "__main__":
 
 					# SPACE parallelization
 					pspace = SWEETParallelizationDimOptions('space')
-					pspace.num_cores_per_rank = p.platform_hardware.num_cores_per_socket
+					pspace.num_cores_per_rank = p.platform_resources.num_cores_per_socket
 					pspace.num_threads_per_rank = pspace.num_cores_per_rank
 					pspace.num_ranks = 1
 					pspace.setup()
@@ -375,7 +367,7 @@ if __name__ == "__main__":
 
 				else:
 					c = 1
-					range_cores_node = [p.platform_hardware.num_cores_per_socket]
+					range_cores_node = [p.platform_resources.num_cores_per_socket]
 
 					if True:
 						#for N in [64, 128]:
@@ -423,7 +415,7 @@ if __name__ == "__main__":
 
 													# SPACE parallelization
 													pspace = SWEETParallelizationDimOptions('space')
-													pspace.num_cores_per_rank = p.platform_hardware.num_cores_per_socket
+													pspace.num_cores_per_rank = p.platform_resources.num_cores_per_socket
 													pspace.num_threads_per_rank = pspace.num_cores_per_rank
 													pspace.num_ranks = 1
 													pspace.setup()
@@ -434,7 +426,7 @@ if __name__ == "__main__":
 													ptime = SWEETParallelizationDimOptions('time')
 													ptime.num_cores_per_rank = 1
 													ptime.num_threads_per_rank = 1 #pspace.num_cores_per_rank
-													ptime.num_ranks = min(par_time_cores, p.platform_hardware.num_cores // pspace.num_cores_per_rank)
+													ptime.num_ranks = min(par_time_cores, p.platform_resources.num_cores // pspace.num_cores_per_rank)
 
 													ptime.setup()
 													ptime.print()

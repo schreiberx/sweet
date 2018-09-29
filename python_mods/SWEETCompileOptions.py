@@ -15,12 +15,13 @@ import os
 from importlib import import_module
 from InfoError import *
 
-#from python_mods import CompileXMLOptions
-
 import subprocess
 
 
-def exec_command(command):
+__all__ = ['SWEETCompileOptions']
+
+
+def _exec_command(command):
 	process = subprocess.Popen(command.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	out, err = process.communicate()
 	# combine stdout and stderr
@@ -82,7 +83,7 @@ class SWEETCompileOptions(InfoError):
 		self.rexi_timings_additional_barriers = 'disable'
 
 		# Memory allocator
-		if exec_command('uname -s') == "Darwin":
+		if _exec_command('uname -s') == "Darwin":
 			# Deactivate efficient NUMA block allocation on MacOSX systems (missing numa.h file)
 			self.numa_block_allocator = 0
 		else:
@@ -581,7 +582,7 @@ class SWEETCompileOptions(InfoError):
 
 
 
-	def getProgramName(self):
+	def getProgramName(self, ignore_errors = False):
 		self.makeOptionsConsistent()
 
 		if self.program != '':
@@ -598,7 +599,8 @@ class SWEETCompileOptions(InfoError):
 			self.info("  use --program=[program name] to specify the program")
 			self.info("  or --unit-test=[unit test] to specify a unit test")
 			self.info("")
-			sys.exit(1)
+			if not ignore_errors:
+				sys.exit(1)
 
 
 		if self.program_binary_name != '':
@@ -670,3 +672,14 @@ class SWEETCompileOptions(InfoError):
 		return self.__dict__
 
 
+if __name__ == "__main__":
+
+	p = SWEETCompileOptions()
+
+	s = p.getSConsParams()
+	p.info(s)
+
+	s = p.getProgramName(True)
+	p.info(s)
+
+	p.info("FIN")

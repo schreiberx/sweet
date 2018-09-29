@@ -5,10 +5,7 @@ import sys
 import stat
 import math
 
-sys.path.append(os.environ['SWEET_ROOT']+'/python_mods/')
 from sweet_swe_rexi_plane_params import *
-
-
 p = sweet_swe_rexi_plane_params()
 
 

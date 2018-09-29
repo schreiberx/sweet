@@ -7,6 +7,7 @@ import importlib
 from inspect import getmembers
 from InfoError import *
 
+__all__ = ['SWEETPlatforms']
 
 
 class SWEETPlatforms(InfoError):
@@ -58,7 +59,7 @@ class SWEETPlatforms(InfoError):
 		self.interface_names = {
 			'get_platform_id',
 			'get_platform_autodetect',
-			'get_platform_hardware',
+			'get_platform_resources',
 
 			# a reference to SWEETJobGeneration is handed over as a parameter to all these functions
 			'jobscript_setup',			# setup return of job script content
@@ -96,6 +97,7 @@ class SWEETPlatforms(InfoError):
 		for i in interfaces:
 			if interfaces[i] == None:
 				self.error("Interface '"+i+"' in module '"+module.__name__+"' not found")
+		self.info(" + platform_id: '"+ interfaces['get_platform_id']()+"'")
 
 		return interfaces
 
