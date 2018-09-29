@@ -20,7 +20,7 @@ class InfoError:
 		raise Exception(o)
 
 	def hline(self):
-		print("*"*80)
+		print("INFO ["+self.prefix+"] "+"*"*60)
 
 
 
