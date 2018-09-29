@@ -131,7 +131,7 @@ else
 		function load_this_platform {
 
 			# Automagic detection here if called from terminal
-			echo -en "import sys\nimport SWEETPlatformAutodetect\nsys.exit(0 if SWEETPlatformAutodetect.autodetect() else 1)" | /usr/bin/env python && return 0
+			echo -en "import sys\nimport SWEETPlatformAutodetect\nsys.exit(0 if SWEETPlatformAutodetect.autodetect() else 1)" | /usr/bin/env python3 && return 0
 
 			# Platform not detected
 			return 1
