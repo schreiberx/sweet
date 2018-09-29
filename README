@@ -62,7 +62,7 @@ Coding:
 
 
 **************************
-Compilation:
+Compilation on personal workstation:
 **************************
 
 	First of all, setup the environment variables correctly
@@ -87,3 +87,8 @@ Compilation:
 	with the list of programs given in src/examples
 
 
+**************************
+Compilation on cluster:
+**************************
+
+	Please see ./platform/HOWTO

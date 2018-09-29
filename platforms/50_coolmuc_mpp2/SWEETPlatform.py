@@ -178,10 +178,11 @@ def jobscript_get_exec_command(jobgeneration : SWEETJobGeneration):
 """+p_gen_script_info(jobgeneration)+"""
 
 # mpiexec ... would be here without a line break
-EXEC=\"$SWEETROOT/build/"""+jobgeneration.compile.getProgramName()+""" """+jobgeneration.runtime.getRuntimeOptions()+"""\"
-echo \"$EXEC\"
+EXEC=\"$SWEET_ROOT/build/"""+jobgeneration.compile.getProgramName()+"""\"
+PARAMS=\""""+jobgeneration.runtime.getRuntimeOptions()+"""\"
+echo \"${EXEC} ${PARAMS}\"
 
-mpiexec -n """+str(p.num_ranks)+""" --perhost """+str(p.num_ranks_per_node)+""" "$EXEC"
+mpiexec -n """+str(p.num_ranks)+""" --perhost """+str(p.num_ranks_per_node)+""" $EXEC $PARAMS
 
 """
 

@@ -501,14 +501,11 @@ if p.sweet_mpi == 'enable':
 		if 'MPICH' in output:
 			env.Append(LINKFLAGS='-lmpif90')
 		else:
-			print("*"*80)
-			print("*"*80)
-			print("*"*80)
-			print("ERROR: MPI VERSION NOT DETECTED, ASSUMING OPENMPI!!!!!")
-			print("*"*80)
-			print("*"*80)
-			print("*"*80)
-			env.Append(LINKFLAGS='-lmpi_mpifh')
+			pass
+			#print("*"*80)
+			#print("ERROR: MPI VERSION NOT DETECTED, ASSUMING OPENMPI!!!!!")
+			#print("*"*80)
+			#env.Append(LINKFLAGS='-lmpi_mpifh')
 			
 		
 

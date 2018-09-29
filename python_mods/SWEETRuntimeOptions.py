@@ -101,7 +101,7 @@ class SWEETRuntimeOptions():
 
 		self.compute_error = 0
 
-		self.shtns_use_plans = 0
+		self.shtns_use_plans = 1
 
 		return
 
