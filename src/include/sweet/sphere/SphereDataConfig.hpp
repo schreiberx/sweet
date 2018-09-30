@@ -39,6 +39,9 @@ class SphereDataConfig
 public:
 	shtns_cfg shtns;
 
+public:
+	shtns_cfg shtns_robert;
+
 	/**
 	 * Number of longitudes
 	 */

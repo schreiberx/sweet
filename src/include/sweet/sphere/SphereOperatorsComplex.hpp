@@ -626,7 +626,8 @@ public:
 
 #if SHTNS_COMPLEX_SPH_SPHTOR
 
-		spat_cplx_xsint_to_SHsphtor(
+		shtns_robert_form(sphereDataConfig->shtns, 1);
+		spat_cplx_to_SHsphtor(
 				sphereDataConfig->shtns,
 				ug.physical_space_data,
 				vg.physical_space_data,
@@ -664,6 +665,7 @@ public:
 		SphereData div_re(sphereDataConfig);
 		SphereData div_im(sphereDataConfig);
 
+		shtns_robert_form(sphereDataConfig->shtns, 0);
 		spat_to_SHsphtor(
 				sphereDataConfig->shtns,
 				ug_re.physical_space_data,
@@ -722,7 +724,8 @@ public:
 		psi.request_data_spectral();
 		chi.request_data_spectral();
 
-		SHsphtor_to_spat_cplx_xsint(
+		shtns_robert_form(sphereDataConfig->shtns, 1);
+		SHsphtor_to_spat_cplx(
 				sphereDataConfig->shtns,
 				psi.spectral_space_data,
 				chi.spectral_space_data,
@@ -741,6 +744,8 @@ public:
 		chi_re.request_data_spectral();
 		SphereDataPhysical u_re(sphereDataConfig);
 		SphereDataPhysical v_re(sphereDataConfig);
+
+		shtns_robert_form(sphereDataConfig->shtns, 0);
 		SHsphtor_to_spat(
 				sphereDataConfig->shtns,
 				psi_re.spectral_space_data,
@@ -811,6 +816,8 @@ public:
 		chi_re.request_data_spectral();
 		SphereDataPhysical u_re(sphereDataConfig);
 		SphereDataPhysical v_re(sphereDataConfig);
+
+		shtns_robert_form(sphereDataConfig->shtns, 0);
 		SHsphtor_to_spat(
 				sphereDataConfig->shtns,
 				psi_re.spectral_space_data,

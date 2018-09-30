@@ -379,6 +379,7 @@ public:
 		i_u.request_data_physical();
 		i_v.request_data_physical();
 
+		shtns_robert_form(sphereDataConfig->shtns, 0);
 		spat_to_SHsphtor(
 				sphereDataConfig->shtns,
 				i_u.physical_space_data,
@@ -417,7 +418,8 @@ public:
 
 #if SHTNS_REAL_SPH_SPHTOR
 
-		SHsphtor_to_spat_xsint(
+		shtns_robert_form(sphereDataConfig->shtns, 1);
+		SHsphtor_to_spat(
 				sphereDataConfig->shtns,
 				psi.spectral_space_data,
 				chi.spectral_space_data,
@@ -426,6 +428,7 @@ public:
 		);
 
 #else
+		shtns_robert_form(sphereDataConfig->shtns, 0);
 		SHsphtor_to_spat(
 				sphereDataConfig->shtns,
 				psi.spectral_space_data,
@@ -471,6 +474,7 @@ public:
 
 		SphereDataPhysical u(sphereDataConfig);
 		SphereDataPhysical v(sphereDataConfig);
+		shtns_robert_form(sphereDataConfig->shtns, 0);
 		SHsphtor_to_spat(
 				sphereDataConfig->shtns,
 				psi.spectral_space_data,
@@ -514,6 +518,7 @@ public:
 		SphereData psi = inv_laplace(i_vrt)*ir;
 		SphereData chi = inv_laplace(i_div)*ir;
 
+		shtns_robert_form(sphereDataConfig->shtns, 0);
 		SHsphtor_to_spat(
 				sphereDataConfig->shtns,
 				psi.spectral_space_data,
@@ -540,7 +545,8 @@ public:
 
 #if SHTNS_REAL_SPH_SPHTOR
 
-		spat_xsint_to_SHsphtor(
+		shtns_robert_form(sphereDataConfig->shtns, 1);
+		spat_to_SHsphtor(
 				sphereDataConfig->shtns,
 				ug.physical_space_data,
 				vg.physical_space_data,
@@ -564,6 +570,7 @@ public:
 			}
 		);
 
+		shtns_robert_form(sphereDataConfig->shtns, 0);
 		spat_to_SHsphtor(
 				sphereDataConfig->shtns,
 				ug.physical_space_data,
@@ -590,6 +597,7 @@ public:
 		SphereData tmp(sphereDataConfig);
 		SphereData vort(sphereDataConfig);
 
+		shtns_robert_form(sphereDataConfig->shtns, 0);
 		spat_to_SHsphtor(
 				sphereDataConfig->shtns,
 				i_u.physical_space_data,
@@ -630,6 +638,7 @@ public:
 			}
 		);
 
+		shtns_robert_form(sphereDataConfig->shtns, 0);
 		spat_to_SHsphtor(
 				sphereDataConfig->shtns,
 				ug.physical_space_data,
@@ -659,6 +668,7 @@ public:
 
 	)	const
 	{
+		shtns_robert_form(sphereDataConfig->shtns, 0);
 		spat_to_SHsphtor(
 				sphereDataConfig->shtns,
 				i_u.physical_space_data,
