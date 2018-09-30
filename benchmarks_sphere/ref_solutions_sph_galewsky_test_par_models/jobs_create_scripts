@@ -14,6 +14,7 @@ p = SWEETJobGeneration()
 threading = ['off', 'omp']
 mpi = ['enable', 'disable']
 rexi_thread_parallel_sum = ['disable']
+params_omp_num_threads = [1, 4]
 
 
 # Use an odd limit for number MPI ranks for nice debugging
@@ -27,6 +28,11 @@ ref_max_wallclock_seconds = 60*60*2
 # Filters for generation of UniqueID
 unique_id_filter = ['simparams', 'cirexi_params', 'rexi_params']
 
+global omp_num_threads
+omp_num_threads = -1
+
+def getUniqueID():
+	return p.getUniqueID(unique_id_filter)+"_OMPT"+str(omp_num_threads)
 
 #
 # EXEC PREFIX
@@ -55,12 +61,18 @@ echo ""
 
 # Manual override in jobs_create.py
 # Override OMP_NUM_THREADS and use MASTER binding
-export OMP_NUM_THREADS=1
-export OMP_PROC_BIND=MASTER
+export OMP_NUM_THREADS=%NUM_THREADS%
+
+
+# compact layout
+export OMP_PLACES=cores
+export OMP_PROC_BIND=close
+
+# always be verbose with placements
+export GOMP_DEBUG=1
+export OMP_DISPLAY_ENV=VERBOSE
 
 """
-
-p.user_script_exec_prefix = p.user_script_exec_prefix_shtns + p.user_script_exec_prefix_z
 
 #
 # EXEC SUFFIX
@@ -119,7 +131,7 @@ p.compile.fortran_source = 'enable'
 
 
 # Verbosity mode
-p.runtime.verbosity = 0
+p.runtime.verbosity = 10
 
 #
 # Mode and Physical resolution
@@ -334,178 +346,183 @@ if __name__ == "__main__":
 		for p.compile.threading in threading:
 			for p.compile.sweet_mpi in mpi:
 				for p.compile.rexi_thread_parallel_sum in rexi_thread_parallel_sum:
+					for omp_num_threads in params_omp_num_threads:
+						p.user_script_exec_prefix = p.user_script_exec_prefix_shtns + p.user_script_exec_prefix_z.replace('%NUM_THREADS%', str(omp_num_threads))
+
+						if p.compile.rexi_thread_parallel_sum == 'enable':
+							raise Exception("Not yet supported!")
+
+						# SPACE parallelization
+						pspace = SWEETParallelizationDimOptions('space')
+
+						pspace.num_cores_per_rank = p.platform_resources.num_cores_per_socket
+						pspace.num_threads_per_rank = pspace.num_cores_per_rank
+						pspace.num_ranks = 1
+						pspace.setup()
+						if __name__ == "__main__":
+							pspace.print()
 
 
-					if p.compile.rexi_thread_parallel_sum == 'enable':
-						raise Exception("Not yet supported!")
-
-					# SPACE parallelization
-					pspace = SWEETParallelizationDimOptions('space')
-
-					pspace.num_cores_per_rank = p.platform_resources.num_cores_per_socket
-					pspace.num_threads_per_rank = pspace.num_cores_per_rank
-					pspace.num_ranks = 1
-					pspace.setup()
-					if __name__ == "__main__":
-						pspace.print()
-
-
-					if p.compile.sweet_mpi=='enable':
-						# TIME parallelization
-						ptime = SWEETParallelizationDimOptions('time')
-						ptime.num_cores_per_rank = 1
-						ptime.num_threads_per_rank = 1	#pspace.num_cores_per_rank
-						ptime.num_ranks = 1
-					else:
-						ptime = SWEETParallelizationDimOptions('time')
-						ptime.num_cores_per_rank = 1
-						ptime.num_threads_per_rank = 4	# Always use 4
-						ptime.num_ranks = 1
-
-					ptime.setup()
-					if __name__ == "__main__":
-						ptime.print()
-					#
-					# Create job scripts
-					#
-					for tsm in ts_methods[1:]:
-						tsm_name = tsm[0]
-						if 'ln_erk' in tsm_name:
-							timestep_sizes = timestep_sizes_explicit
-						elif 'l_erk' in tsm_name or 'lg_erk' in tsm_name:
-							timestep_sizes = timestep_sizes_explicit
-						elif 'l_irk' in tsm_name or 'lg_irk' in tsm_name:
-							timestep_sizes = timestep_sizes_implicit
-						elif 'l_rexi' in tsm_name or 'lg_rexi' in tsm_name:
-							timestep_sizes = timestep_sizes_rexi
+						if p.compile.sweet_mpi=='enable':
+							# TIME parallelization
+							ptime = SWEETParallelizationDimOptions('time')
+							ptime.num_cores_per_rank = 1
+							ptime.num_threads_per_rank = 1	#pspace.num_cores_per_rank
+							ptime.num_ranks = 1
 						else:
-							raise Exception("Unable to identify time stepping method "+tsm_name)
+							ptime = SWEETParallelizationDimOptions('time')
+							ptime.num_cores_per_rank = 1
+							ptime.num_threads_per_rank = 4	# Always use 4
+							ptime.num_ranks = 1
 
-						for p.runtime.timestep_size in timestep_sizes:
-							p.runtime.timestepping_method = tsm[0]
-							p.runtime.timestepping_order = tsm[1]
-							p.runtime.timestepping_order2 = tsm[2]
-							p.runtime.rexi_use_direct_solution = tsm[3]
+						ptime.setup()
+						if __name__ == "__main__":
+							ptime.print()
+						#
+						# Create job scripts
+						#
+						for tsm in ts_methods[1:]:
+							tsm_name = tsm[0]
+							if 'ln_erk' in tsm_name:
+								timestep_sizes = timestep_sizes_explicit
+							elif 'l_erk' in tsm_name or 'lg_erk' in tsm_name:
+								timestep_sizes = timestep_sizes_explicit
+							elif 'l_irk' in tsm_name or 'lg_irk' in tsm_name:
+								timestep_sizes = timestep_sizes_implicit
+							elif 'l_rexi' in tsm_name or 'lg_rexi' in tsm_name:
+								timestep_sizes = timestep_sizes_rexi
+							else:
+								raise Exception("Unable to identify time stepping method "+tsm_name)
 
-							if len(tsm) > 4:
-								s = tsm[4]
-								p.runtime.load_from_dict(tsm[4])
+							for p.runtime.timestep_size in timestep_sizes:
+								p.runtime.timestepping_method = tsm[0]
+								p.runtime.timestepping_order = tsm[1]
+								p.runtime.timestepping_order2 = tsm[2]
+								p.runtime.rexi_use_direct_solution = tsm[3]
 
-							if not '_rexi' in p.runtime.timestepping_method:
-								p.runtime.rexi_method = ''
+								if len(tsm) > 4:
+									s = tsm[4]
+									p.runtime.load_from_dict(tsm[4])
 
-								# Update TIME parallelization
-								ptime = SWEETParallelizationDimOptions('time')
-								ptime.num_cores_per_rank = 1
-								ptime.num_threads_per_rank = 1 #pspace.num_cores_per_rank
-								ptime.num_ranks = 1
-								p.setup_parallelization([pspace, ptime])
+								if not '_rexi' in p.runtime.timestepping_method:
+									p.runtime.rexi_method = ''
 
-								pspace.print()
-								ptime.print()
-								p.parallelization.print()
+									# Update TIME parallelization
+									ptime = SWEETParallelizationDimOptions('time')
+									ptime.num_cores_per_rank = 1
+									ptime.num_threads_per_rank = 1 #pspace.num_cores_per_rank
+									ptime.num_ranks = 1
+									p.setup_parallelization([pspace, ptime])
 
-								p.parallelization.max_wallclock_seconds = int(ref_max_wallclock_seconds / 32 * (timestep_size_max / p.runtime.timestep_size))
-								if p.parallelization.max_wallclock_seconds <= 0:
-									raise Exception("p.parallelization.max_wallclock_seconds <= 0")
+									pspace.print()
+									ptime.print()
+									p.parallelization.print()
 
-								p.write_jobscript('script_'+prefix_string_template+p.getUniqueID(unique_id_filter)+'/run.sh')
-								continue
+									p.parallelization.max_wallclock_seconds = int(ref_max_wallclock_seconds / 32 * (timestep_size_max / p.runtime.timestep_size))
+									if p.parallelization.max_wallclock_seconds <= 0:
+										raise Exception("p.parallelization.max_wallclock_seconds <= 0")
 
-							if True:	# REXI
-								c = 1
-								for N in [128]:
+									p.write_jobscript('script_'+prefix_string_template+getUniqueID()+'/run.sh')
+									continue
 
-									range_time_ranks = [min(mpi_num_ranks_limit, p.platform_resources.num_cores // pspace.num_cores)]
+								if True:	# REXI
+									c = 1
+									for N in [128]:
 
-									p.runtime.load_from_dict({
-										'rexi_method': 'ci',
-										'ci_n': 128,
-										'ci_max_real': 10.0,
-										'ci_max_imag': 30,
-										'half_poles': 0,
-										'ci_gaussian_filter_scale': 0.0,
-										'ci_gaussian_filter_dt_norm': 0.0,	# unit scaling for T128 resolution
-										'ci_gaussian_filter_exp_N': 0.0,
-									})
+										range_time_ranks = [min(mpi_num_ranks_limit, p.platform_resources.num_cores // pspace.num_cores)]
 
-									#for time_ranks in range_time_ranks:
-									for time_ranks in [range_time_ranks[-1]]:
+										p.runtime.load_from_dict({
+											'rexi_method': 'ci',
+											'ci_n': 128,
+											'ci_max_real': 10.0,
+											'ci_max_imag': 30,
+											'half_poles': 0,
+											'ci_gaussian_filter_scale': 0.0,
+											'ci_gaussian_filter_dt_norm': 0.0,	# unit scaling for T128 resolution
+											'ci_gaussian_filter_exp_N': 0.0,
+										})
 
-											# Update TIME parallelization
-											ptime = SWEETParallelizationDimOptions('time')
-											ptime.num_cores_per_rank = 1
-											ptime.num_threads_per_rank = 1
-											ptime.num_ranks = time_ranks
-											ptime.setup()
+										#for time_ranks in range_time_ranks:
+										for time_ranks in [range_time_ranks[-1]]:
 
-											if False:
-												total_cores = ptime.num_ranks*ptime.num_cores_per_rank * pspace.num_ranks*pspace.num_cores_per_rank
-												if total_cores > p.platform_resources.num_cores:
-													print("Skipping this configuration since number of cores exceeds physically available ones")
-													continue
+												# Update TIME parallelization
+												ptime = SWEETParallelizationDimOptions('time')
+												ptime.num_cores_per_rank = 1
+												ptime.num_threads_per_rank = 1
+												ptime.num_ranks = time_ranks
+												ptime.setup()
 
-											p.setup_parallelization([pspace, ptime])
+												if False:
+													total_cores = ptime.num_ranks*ptime.num_cores_per_rank * pspace.num_ranks*pspace.num_cores_per_rank
+													if total_cores > p.platform_resources.num_cores:
+														print("Skipping this configuration since number of cores exceeds physically available ones")
+														continue
 
-											pspace.print()
-											ptime.print()
-											p.parallelization.print()
+												p.setup_parallelization([pspace, ptime])
 
-											# Generate only scripts with max number of cores
-											p.parallelization.max_wallclock_seconds = int(ref_max_wallclock_seconds / ptime.num_ranks * (timestep_size_max / p.runtime.timestep_size))
-											if p.parallelization.max_wallclock_seconds <= 0:
-												raise Exception("p.parallelization.max_wallclock_seconds <= 0")
+												pspace.print()
+												ptime.print()
+												p.parallelization.print()
 
-											p.write_jobscript('script_'+prefix_string_template+p.getUniqueID(unique_id_filter)+'/run.sh')
-											#break
+												# Generate only scripts with max number of cores
+												p.parallelization.max_wallclock_seconds = int(ref_max_wallclock_seconds / ptime.num_ranks * (timestep_size_max / p.runtime.timestep_size))
+												if p.parallelization.max_wallclock_seconds <= 0:
+													raise Exception("p.parallelization.max_wallclock_seconds <= 0")
+
+												p.write_jobscript('script_'+prefix_string_template+getUniqueID()+'/run.sh')
+												#break
 
 	#
 	# SHTNS plan generation scripts
 	#
 
+	p.compile.sweet_mpi = 'disable'
 	p.user_script_exec_prefix = p.user_script_exec_prefix_z
 
 	for p.compile.threading in threading:
-		for tsm in ts_methods[1:]:
+		for omp_num_threads in params_omp_num_threads:
+			p.user_script_exec_prefix = p.user_script_exec_prefix_z.replace('%NUM_THREADS%', str(omp_num_threads))
 
-			p.runtime.timestepping_method = tsm[0]
-			p.runtime.timestepping_order = tsm[1]
-			p.runtime.timestepping_order2 = tsm[2]
-			p.runtime.rexi_use_direct_solution = tsm[3]
+			for tsm in ts_methods[1:]:
 
-			if not '_rexi' in p.runtime.timestepping_method:
-				p.runtime.rexi_method = ''
-			else:
-				p.runtime.rexi_method = 'ci'
+				p.runtime.timestepping_method = tsm[0]
+				p.runtime.timestepping_order = tsm[1]
+				p.runtime.timestepping_order2 = tsm[2]
+				p.runtime.rexi_use_direct_solution = tsm[3]
 
-			if len(tsm) > 4:
-				s = tsm[4]
-				p.runtime.load_from_dict(tsm[4])
+				if not '_rexi' in p.runtime.timestepping_method:
+					p.runtime.rexi_method = ''
+				else:
+					p.runtime.rexi_method = 'ci'
 
-			#
-			# Create dummy scripts to be used for SHTNS script generation
-			#
+				if len(tsm) > 4:
+					s = tsm[4]
+					p.runtime.load_from_dict(tsm[4])
 
-			# No parallelization in time
-			ptime = SWEETParallelizationDimOptions('time')
-			ptime.num_cores_per_rank = 1
-			ptime.num_threads_per_rank = 1
-			ptime.num_ranks = 1
-			ptime.setup()
+				#
+				# Create dummy scripts to be used for SHTNS script generation
+				#
 
-			p.setup_parallelization([pspace, ptime])
+				# No parallelization in time
+				ptime = SWEETParallelizationDimOptions('time')
+				ptime.num_cores_per_rank = 1
+				ptime.num_threads_per_rank = 1
+				ptime.num_ranks = 1
+				ptime.setup()
 
-			# Use 10 minutes
-			p.parallelization.max_wallclock_seconds = 60*10
+				p.setup_parallelization([pspace, ptime])
 
-			# Set simtime to 0
-			p.runtime.simtime = 0
+				# Use 10 minutes
+				p.parallelization.max_wallclock_seconds = 60*10
 
-			# No output
-			p.runtime.output_timestep_size = -1
-			p.runtime.output_filename = "-"
+				# Set simtime to 0
+				p.runtime.simtime = 0
 
-			p.write_jobscript('genplans_script_'+p.getUniqueID(unique_id_filter)+'/run.sh')
+				# No output
+				p.runtime.output_timestep_size = -1
+				p.runtime.output_filename = "-"
+
+				p.write_jobscript('genplans_script_'+getUniqueID()+'/run.sh')
 
 
 	#

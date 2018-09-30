@@ -42,9 +42,15 @@ cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq | sort -u
 echo ""
 
 # Manual override in jobs_create.py
-# Set MASTER binding
 export OMP_NUM_THREADS=1
-export OMP_PROC_BIND=MASTER
+
+# compact layout
+export OMP_PLACES=cores
+export OMP_PROC_BIND=close
+
+# always be verbose with placements
+export GOMP_DEBUG=1
+export OMP_DISPLAY_ENV=VERBOSE
 
 """
 
