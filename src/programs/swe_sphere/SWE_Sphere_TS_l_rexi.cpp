@@ -131,7 +131,7 @@ SWE_Sphere_TS_l_rexi::~SWE_Sphere_TS_l_rexi()
 		delete p;
 	}
 
-#if SWEET_REXI_TIMINGS
+#if SWEET_MPI
 
 	int num_ranks;
 	MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
@@ -157,6 +157,9 @@ SWE_Sphere_TS_l_rexi::~SWE_Sphere_TS_l_rexi()
 		}
 
 	}
+#endif
+
+#if SWEET_REXI_TIMINGS
 
 	SimulationBenchmarkTimings::getInstance().rexi_shutdown.stop();
 	SimulationBenchmarkTimings::getInstance().rexi.stop();
@@ -902,18 +905,26 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 	#else	// SWEET_REXI_THREAD_PARALLEL_SUM
 
-#if SWEET_REXI_TIMINGS
+#if SWEET_MPI
 		if (mpi_rank == 0)
+		{
+	#if SWEET_REXI_TIMINGS
 			SimulationBenchmarkTimings::getInstance().rexi_timestepping_miscprocessing.start();
+	#endif
+		}
 #endif
 
 		io_prog_phi0 = perThreadVars[0]->accum_phi.spectral_returnWithDifferentModes(io_prog_phi0.sphereDataConfig);
 		io_prog_vort0 = perThreadVars[0]->accum_vort.spectral_returnWithDifferentModes(io_prog_vort0.sphereDataConfig);
 		io_prog_div0 = perThreadVars[0]->accum_div.spectral_returnWithDifferentModes(io_prog_div0.sphereDataConfig);
 
-#if SWEET_REXI_TIMINGS
+#if SWEET_MPI
 		if (mpi_rank == 0)
+		{
+	#if SWEET_REXI_TIMINGS
 			SimulationBenchmarkTimings::getInstance().rexi_timestepping_miscprocessing.stop();
+	#endif
+		}
 #endif
 
 	#endif	// SWEET_REXI_THREAD_PARALLEL_SUM
