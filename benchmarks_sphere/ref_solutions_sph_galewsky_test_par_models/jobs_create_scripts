@@ -469,6 +469,9 @@ if __name__ == "__main__":
 												if p.parallelization.max_wallclock_seconds <= 0:
 													raise Exception("p.parallelization.max_wallclock_seconds <= 0")
 
+												if p.compile.threading == 'off' and omp_num_threads > 1:
+													continue
+
 												p.write_jobscript('script_'+prefix_string_template+getUniqueID()+'/run.sh')
 												#break
 
@@ -521,6 +524,9 @@ if __name__ == "__main__":
 				# No output
 				p.runtime.output_timestep_size = -1
 				p.runtime.output_filename = "-"
+
+				if p.compile.threading == 'off' and omp_num_threads > 1:
+					continue
 
 				p.write_jobscript('genplans_script_'+getUniqueID()+'/run.sh')
 
