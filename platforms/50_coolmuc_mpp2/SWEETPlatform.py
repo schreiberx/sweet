@@ -6,6 +6,7 @@ from SWEETPlatformResources import *
 from SWEETJobGeneration import *
 from . import SWEETPlatformAutodetect
 
+# Underscore defines symbols to be private
 _job_id = None
 
 def _whoami(depth=1):
@@ -27,8 +28,8 @@ def p_gen_script_info(jobgeneration : SWEETJobGeneration):
 	global _job_id
 
 	return """#
-# Platform: """+get_platform_id()+"""
 # Generating function: """+_whoami(2)+"""
+# Platform: """+get_platform_id()+"""
 # Job id: """+_job_id+"""
 #
 """
@@ -253,6 +254,7 @@ def jobscript_get_compile_command(jobgeneration : SWEETJobGeneration):
 	string
 		multiline text with compile command to generate executable
 	"""
+
 	content = """
 
 SCONS="scons """+jobgeneration.compile.getSConsParams()+' -j 4"'+"""
