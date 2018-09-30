@@ -5,6 +5,7 @@ import subprocess
 import os
 import io
 import sys
+import imp
 from subprocess import Popen, PIPE
 
 
@@ -13,7 +14,9 @@ from contextlib import redirect_stdout
 
 # redirect output
 with io.StringIO() as buf, redirect_stdout(buf):
-	import jobs_create_scripts as jc
+	jc = imp.load_source('jobs_create_scripts', './jobs_create_scripts')
+
+#	import jobs_create_scripts as jc
 	# ignore output
 	#output = buf.getvalue()
 
