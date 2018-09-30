@@ -47,7 +47,7 @@ def get_platform_autodetect():
 		True if current platform matches, otherwise False
 	"""
 
-	return SWEETPlatformAutodetect.autodetect()
+	return SWEETPlatformAutodetect.get_platform_autodetect()
 
 
 
@@ -125,6 +125,8 @@ def jobscript_get_exec_prefix(jobgeneration : SWEETJobGeneration):
 
 """+p_gen_script_info(jobgeneration)+"""
 
+export OMP_NUM_THREADS="""+str(p.num_threads_per_rank)+"""
+
 """
 
 	return content
@@ -140,14 +142,19 @@ def jobscript_get_exec_command(jobgeneration : SWEETJobGeneration):
 	string
 		multiline text for scripts
 	"""
+
+	p = jobgeneration.parallelization
+
 	content = """
 
 """+p_gen_script_info(jobgeneration)+"""
 
 # mpiexec ... would be here without a line break
-EXEC=\""""+jobgeneration.get_program_exec()+"""\"
-echo \"$EXEC\"
-$EXEC
+EXEC=\"$SWEET_ROOT/build/"""+jobgeneration.compile.getProgramName()+"""\"
+PARAMS=\""""+jobgeneration.runtime.getRuntimeOptions()+"""\"
+echo \"${EXEC} ${PARAMS}\"
+
+$EXEC $PARAMS
 
 """
 
@@ -164,6 +171,7 @@ def jobscript_get_exec_suffix(jobgeneration : SWEETJobGeneration):
 	string
 		multiline text for scripts
 	"""
+
 	content = """
 
 """+p_gen_script_info(jobgeneration)+"""
@@ -193,8 +201,7 @@ def jobscript_get_footer(jobgeneration : SWEETJobGeneration):
 
 
 
-
-def jobscript_get_compile_command(jobgeneration, separate_file_output = False):
+def jobscript_get_compile_command(jobgeneration : SWEETJobGeneration):
 	"""
 	Compile command(s)
 
