@@ -432,6 +432,10 @@ else:
 
   
 
+if p.fortran_source == 'enable':
+	env.Append(CXXFLAGS=' -DSWEET_FORTRAN=1')
+else:
+	env.Append(CXXFLAGS=' -DSWEET_FORTRAN=0')
 
 
 env.Append(CXXFLAGS=' -DNUMA_BLOCK_ALLOCATOR_TYPE='+str(p.numa_block_allocator))
@@ -544,8 +548,12 @@ if p.libsph == 'enable':
 		env.Append(LIBS=['shtns'])
 
 	# Add LAPACK libraries
-	env.Append(LIBS=['lapack'])
-	env.Append(LIBS=['refblas'])
+	if p.lapack == 'enable':
+		env.Append(LIBS=['lapack'])
+		env.Append(LIBS=['refblas'])
+		env.Append(CXXFLAGS=['-DSWEET_LAPACK=1'])
+	else:
+		env.Append(CXXFLAGS=['-DSWEET_LAPACK=0'])
 
 	if p.compiler == 'gnu':
 		env.Append(LIBS=['gfortran'])

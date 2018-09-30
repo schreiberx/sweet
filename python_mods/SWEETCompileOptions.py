@@ -65,6 +65,8 @@ class SWEETCompileOptions(InfoError):
 
 		self.fortran_source = 'disable'
 
+		self.lapack = 'enable'
+
 		self.program_binary_name = ''
 
 		# LLVM overrides
@@ -137,6 +139,8 @@ class SWEETCompileOptions(InfoError):
 			retval += ' --ld-flags='+self.ld_flags
 
 		retval += ' --fortran-source='+self.fortran_source
+
+		retval += ' --lapack='+self.lapack
 
 		retval += ' --program-binary-name='+self.program_binary_name
 
@@ -370,6 +374,16 @@ class SWEETCompileOptions(InfoError):
 				help="Activate linking with Fortran source [default: %default]"
 		)
 		self.fortran_source = scons.GetOption('fortran_source')
+
+
+		scons.AddOption(	'--lapack',
+				dest='lapack',
+				type='choice',
+				choices=['enable', 'disable'],
+				default='enable',
+				help="Enable lapack [default: %default]"
+		)
+		self.lapack = scons.GetOption('lapack')
 
 
 

@@ -57,6 +57,7 @@ subroutine zgbsv
 /*
  * We create the interface to this function here
  */
+#if SWEET_LAPACK
 extern "C"
 {
 	void zgbsv_(
@@ -82,6 +83,7 @@ extern "C"
 	);
 #endif
 }
+#endif
 
 
 template <typename T>
@@ -411,6 +413,7 @@ public:
 		std::cout << "LDAB: " << LDAB << std::endl;
 #endif
 
+#if SWEET_LAPACK
 		zgbsv_(
 				i_size,				// number of linear equations
 				num_halo_size_diagonals,	// number of subdiagonals
@@ -430,6 +433,9 @@ public:
 			assert(false);
 			exit(1);
 		}
+#else
+		FatalError("SWEET compiled without LAPACK!!!");
+#endif
 	}
 
 };
