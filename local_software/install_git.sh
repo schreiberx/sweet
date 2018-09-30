@@ -22,7 +22,7 @@ if [ ! -e "$DST_DIR/bin/git" -o "$1" != "" ]; then
 	tar xzf "$FILENAME"
 	cd "$BASENAME"
 
-	./configure --prefix="$DST_DIR" || exit 1
+	./configure --prefix="$DST_DIR" --with-openssl || exit 1
 	make -j install
 
 	echo "DONE"
