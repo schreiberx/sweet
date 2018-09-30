@@ -1,6 +1,11 @@
 
 # dont touch this!
 
+#if [ "#$1" != "#FORCE" ]; then
+#	echo "Only parameter FORCE is allowed for install script to enforce (re)installation"
+#	exit 1
+#fi
+
 PWD=`pwd`
 ROOT_DIR="$PWD/local"
 SRC_DIR="$PWD/local_src"

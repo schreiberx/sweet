@@ -1,13 +1,13 @@
 #! /bin/bash
 
-source config.sh
-source env_vars.sh
+source ./config.sh ""
+source ./env_vars.sh ""
 
 
 echo "*** SHTNS ***"
-SRC_LINK="https://www.martin-schreiber.info/pub/sweet_local_software/shtns-3.0-r618.tar.gz"
+SRC_LINK="https://www.martin-schreiber.info/pub/sweet_local_software/shtns-3.0-20180930.tar.gz"
 FILENAME="`basename $SRC_LINK`"
-BASENAME="shtns-3.0-r618"
+BASENAME="shtns-3.0-20180930"
 
 if [ ! -e "$DST_DIR/lib/python3.6/site-packages/shtns.py"  -o "$1" != "" ]; then
 

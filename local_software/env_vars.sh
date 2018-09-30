@@ -9,13 +9,13 @@
 
 if [ "#$SWEET_ROOT" != "#" ]; then
 	echo "SWEET environment variables already loaded (skipping)"
-	if [ "`basename -- "$0"`" == "env_vars.sh" ]; then
+	if [ "`basename -- "$0"`" = "env_vars.sh" ]; then
 		return
 	fi
 else
 
 	if [ "#$0" != "#-bash" ]; then
-		if [ "`basename -- "$0"`" == "env_vars.sh" ]; then
+		if [ "`basename -- "$0"`" = "env_vars.sh" ]; then
 			if [ "`basename -- "$0"`" != "bash" ]; then
 				if [ "`basename -- "$0"`" != "modules_env_yellowstone.inc" ]; then
 					echo "ERROR|"
@@ -121,7 +121,7 @@ else
 		echo "SWEET: SWEET_PLATFORM='${SWEET_PLATFORM}' detected, loading platform environment variables from ${ENV_VARS}"
 		source "$ENV_VARS"
 
-	elif [ "#$1" == "#" ]; then
+	elif [ "#${1}" = "#" ] || [ "#${1}" = "#FORCE" ]; then
 		#
 		# Use python code to detect hardware.
 		#
@@ -154,7 +154,7 @@ else
 		done
 	else
 		# Load platform environment variables if specified
-		echo "SWEET: \$1='${1}' detected, loading platform environment variables from ${1}"
+		echo "SWEET: \$1='${1}' detected, loading platform environment variables from file '${1}'"
 		source "$1"
 	fi
 

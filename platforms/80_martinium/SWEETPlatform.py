@@ -121,6 +121,9 @@ def jobscript_get_exec_prefix(jobgeneration : SWEETJobGeneration):
 	string
 		multiline text for scripts
 	"""
+
+	p = jobgeneration.parallelization
+
 	content = """
 
 """+p_gen_script_info(jobgeneration)+"""

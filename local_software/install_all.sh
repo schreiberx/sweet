@@ -1,11 +1,9 @@
 #! /bin/bash
 
-
-source ./env_vars.sh
+source ./config.sh ""
+source ./env_vars.sh ""
 
 PKGS=()
-
-echo "${HOSTNAME:0:8}"
 
 if [ "${HOSTNAME:0:8}" == "cheyenne" ]; then
 
@@ -35,6 +33,11 @@ if [ "${HOSTNAME:0:8}" == "cheyenne" ]; then
 	PKGS+=("install_shtns.sh")
 
 elif [ "${HOSTNAME:0:5}" == "mpp2-" ]; then
+	#
+	# LRZ Munich
+	# CoolMUC Cluster
+	# mpp2 partition
+	#
 	#PKGS+=("install_gcc7.1.sh")
 	PKGS+=("install_fftw3.sh")
 	#PKGS+=("install_eigen3.sh")
@@ -44,6 +47,21 @@ elif [ "${HOSTNAME:0:5}" == "mpp2-" ]; then
 	PKGS+=("install_scons3.sh")
 	PKGS+=("install_shtns.sh")
 	PKGS+=("install_shtns_python.sh")
+
+elif [ "${HOSTNAME:0:9}" == "martinium" ]; then
+	#
+	# Martin Schreiber's laptop (martinium)
+	#
+	#PKGS+=("install_gcc7.1.sh")
+	PKGS+=("install_fftw3.sh")
+	#PKGS+=("install_eigen3.sh")
+	PKGS+=("install_lapack.sh")
+	#PKGS+=("install_openssl.sh")
+	#PKGS+=("install_python3.sh")
+	PKGS+=("install_scons3.sh")
+	PKGS+=("install_shtns.sh")
+	PKGS+=("install_shtns_python.sh")
+#	PKGS+=("install_numa.sh")
 
 elif [ "${HOSTNAME}" == "mac-login-amd" ]; then
 	PKGS+=("install_gcc7.1.sh")
