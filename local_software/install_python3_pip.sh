@@ -1,7 +1,7 @@
 #! /bin/bash
 
-source config.sh
-source env_vars.sh
+source ./config.sh ""
+source ./env_vars.sh ""
 
 export CC=gcc
 export CXX=g++

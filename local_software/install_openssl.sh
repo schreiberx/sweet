@@ -1,7 +1,7 @@
 #! /bin/bash
 
-source config.sh
-source env_vars.sh
+source ./config.sh ""
+source ./env_vars.sh ""
 
 
 if [ ! -e "$DST_DIR/lib/libssl.so" -o "$1" != "" ]; then
