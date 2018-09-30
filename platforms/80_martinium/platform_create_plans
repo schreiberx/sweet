@@ -1,0 +1,70 @@
+#! /bin/bash
+
+
+GENERATOR_SCRIPTS=$@
+
+
+if [ -z "$GENERATOR_SCRIPTS" ]; then
+
+	# Just pick one script, try to priorize rexi_ scripts due to the generation of complex-valued transformations
+	#echo "WARNING: Trying to automatically choose best script for SHTNS plan generator"
+	#for i in script_*rexi_* script*; do
+	#	GENERATOR_SCRIPTS=$i
+	#	break
+	#done
+
+	if [ -z "$GENERATOR_SCRIPTS" ]; then
+		echo ""
+		echo "ERROR: No script specified"
+		echo ""
+		echo "Usage:"
+		echo "	$0 [script_dir_1] [script_dir_2] ..."
+		echo ""
+		exit 1
+	fi
+fi
+
+
+
+JOBS=""
+PREV_JOBID=""
+for GENERATOR_SCRIPT in $GENERATOR_SCRIPTS; do
+	# cleanup name
+	GENERATOR_SCRIPT=$(basename "${GENERATOR_SCRIPT}")
+
+	echo "*********************************************************************"
+	echo "Using script '${GENERATOR_SCRIPT}' for generation of SHTNS plans"
+	SHTNS_SCRIPT="${GENERATOR_SCRIPT}"
+
+	# cleaning up to avoid conflicts
+	#rm -rf "${SHTNS_SCRIPT}"
+	#cp -r "${GENERATOR_SCRIPT}" "${SHTNS_SCRIPT}"
+
+	echo "Updating ${SHTNS_SCRIPT}/run.sh"
+	#echo " + updating directories in ${SHTNS_SCRIPT}/run.sh"
+	#sed -i "s/${GENERATOR_SCRIPT}/${SHTNS_SCRIPT}/" "${SHTNS_SCRIPT}/run.sh"
+
+	if [ -n "$PREV_JOBID" ]; then 
+		echo " + setting dependency to job with id ${PREV_JOBID}"
+
+		# Append dependency to #SBATCH line
+#		sed -i "2s/#SBATCH .*/&\n#SBATCH --dependency=afterany:${PREV_JOBID}/" "${SHTNS_SCRIPT}/run.sh"
+
+		# Copy SHTNS plan to current working directory
+		sed -i "s/# %SCRIPT_EXEC_PREFIX%/&\nmv ..\/shtns_cfg .\/ || exit 1/" "${SHTNS_SCRIPT}/run.sh"
+		sed -i "s/# %SCRIPT_EXEC_PREFIX%/&\nmv ..\/shtns_cfg_fftw .\/ || exit 1/" "${SHTNS_SCRIPT}/run.sh"
+	fi
+
+	# Copy (updated) SHTNS plans back to main benchmark directory
+	sed -i "s/# %SCRIPT_EXEC_SUFFIX%/&\ncp shtns_cfg ..\/ || exit 1/" "${SHTNS_SCRIPT}/run.sh"
+	sed -i "s/# %SCRIPT_EXEC_SUFFIX%/&\ncp shtns_cfg_fftw ..\/ || exit 1/" "${SHTNS_SCRIPT}/run.sh"
+
+	echo "Executing job..."
+	EXEC="./${SHTNS_SCRIPT}/run.sh"
+	echo "$EXEC"
+	$EXEC || exit 1
+
+	PREV_JOBID="dummy"
+done
+
+exit 0

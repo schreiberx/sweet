@@ -25,9 +25,9 @@ module load gcc/8
 #
 # Compiler environment
 #
-export SWEET_F90=gfortran
 export SWEET_CC=gcc
 export SWEET_CXX=g++
+export SWEET_F90=gfortran
 
 export SWEET_MPICC=mpigcc
 export SWEET_MPICXX=mpigxx
