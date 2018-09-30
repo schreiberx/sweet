@@ -1,7 +1,15 @@
-
 #
 # Configuration file for CoolMUC mpp2 login nodes
 #
+
+
+#
+# Tags in header of batch files
+#
+# This is important for the SHTNS plan generation scripts
+#
+export BATCH_FILE_TAG="#SBATCH"
+
 
 echo "Loading GCC/8"
 module unload gcc

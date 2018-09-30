@@ -1,0 +1,7 @@
+#! /bin/bash
+
+./cleanup_scriptdirs
+./cleanup_postprocessing
+./cleanup_plans
+
+rm -rf __pycache__

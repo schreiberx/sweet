@@ -7,4 +7,8 @@ else
 	IDS=$@
 fi
 
-scancel --clusters=mpp2 $IDS
+if [ -z "$IDS" ]; then
+	echo "No jobs found"
+else
+	scancel --clusters=mpp2 $IDS
+fi

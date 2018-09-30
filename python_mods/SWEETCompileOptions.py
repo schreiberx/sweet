@@ -663,7 +663,7 @@ class SWEETCompileOptions(InfoError):
 		return exec_name
 
 
-	def getUniqueID(self):
+	def getUniqueID(self, filter):
 		return self.getProgramName()
 
 

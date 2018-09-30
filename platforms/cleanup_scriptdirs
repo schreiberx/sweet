@@ -1,0 +1,9 @@
+#! /bin/bash
+
+for i in script_*; do
+	rm -rf "$i"
+done
+
+rm -rf shtns_gen_plans*
+
+rm -f compile_platform.sh

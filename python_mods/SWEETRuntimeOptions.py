@@ -192,7 +192,7 @@ class SWEETRuntimeOptions(InfoError):
 
 
 
-	def getUniqueID(self, compileOptions : SWEETCompileOptions):
+	def getUniqueID(self, compileOptions : SWEETCompileOptions, filter : list = []):
 		idstr = ''
 
 		if False:
@@ -210,22 +210,20 @@ class SWEETRuntimeOptions(InfoError):
 		if self.benchmark_galewsky_phi2 > 0:
 			idstr += '_bgp'+str("{:.4E}".format(self.benchmark_galewsky_phi2))
 
-		idstr += '_g'+str(self.g)
-		idstr += '_h'+str(self.h)
-		idstr += '_f'+str(self.f)
+		if not 'simparams' in filter:
+			idstr += '_g'+str(self.g)
+			idstr += '_h'+str(self.h)
+			idstr += '_f'+str(self.f)
 
-		#idstr += '_p'+str(self.pde_id)
+			#idstr += '_p'+str(self.pde_id)
 
-		if compileOptions.sphere_spectral_space == 'enable':
-			idstr += '_a'+str(self.r)
-			#idstr += '_rob'+str(self.use_robert_functions)
-			idstr += '_fsph'+str(self.f_sphere)
+			if compileOptions.sphere_spectral_space == 'enable':
+				idstr += '_a'+str(self.r)
+				#idstr += '_rob'+str(self.use_robert_functions)
+				idstr += '_fsph'+str(self.f_sphere)
 
-		idstr += '_u'+str(self.viscosity)
-		idstr += '_U'+str(self.viscosity_order)
-
-#		idstr += '_t'+str(self.simtime).zfill(8)
-#		idstr += '_o'+str(self.output_timestep_size).zfill(8)
+			idstr += '_u'+str(self.viscosity)
+			idstr += '_U'+str(self.viscosity_order)
 
 		idstr += '_tsm_'+self.timestepping_method
 		idstr += '_tso'+str(self.timestepping_order)

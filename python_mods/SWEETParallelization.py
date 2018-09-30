@@ -223,10 +223,12 @@ class SWEETParallelization(InfoError):
 
 
 
-	def getUniqueID(self):
-		retval = 'MPI'
-		for i in self.pardims:
-			retval += '_'+i.dim_name+str(i.num_cores).zfill(3)
+	def getUniqueID(self, filter):
+		retval = ''
+		if not 'parallelization' in filter:
+			retval += 'MPI'
+			for i in self.pardims:
+				retval += '_'+i.dim_name+str(i.num_cores).zfill(3)
 		return retval
 
 

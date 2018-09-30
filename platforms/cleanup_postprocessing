@@ -1,0 +1,4 @@
+#! /bin/bash
+
+rm -f output_*txt
+rm -f output_*pdf

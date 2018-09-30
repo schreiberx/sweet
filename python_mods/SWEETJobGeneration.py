@@ -43,10 +43,10 @@ class SWEETJobGeneration(InfoError):
 		self.user_script_footer = ''
 
 		# Directly executed before the executable
-		self.user_script_preprocess = ''
+		self.user_script_exec_prefix = ''
 
 		# Directly executed after the executable
-		self.user_script_postprocess = ''
+		self.user_script_exec_suffix = ''
 
 		#
 		# REXI parallelization with threading?
@@ -136,6 +136,7 @@ class SWEETJobGeneration(InfoError):
 		# Script header
 		content += self.platform_functions.jobscript_get_header(self)
 		content += self.user_script_header
+		content += "# %SCRIPT_HEADER%\n"
 			
 		content += """
 
@@ -178,17 +179,20 @@ cd \""""+self.p_jobscript_dirpath+"""\"
 
 		# EXEC prefix
 		content += self.platform_functions.jobscript_get_exec_prefix(self)
-		content += self.user_script_preprocess
+		content += self.user_script_exec_prefix
+		content += "# %SCRIPT_EXEC_PREFIX%\n"
 
 		# EXEC
 		content += self.platform_functions.jobscript_get_exec_command(self)
 
 		# EXEC suffix
-		content += self.user_script_postprocess
+		content += "# %SCRIPT_EXEC_SUFFIX%\n"
+		content += self.user_script_exec_suffix
 		content += self.platform_functions.jobscript_get_exec_suffix(self)
 
 		content += self.user_script_footer
 		content += self.platform_functions.jobscript_get_footer(self)
+		content += "# %SCRIPT_FOOTER%\n"
 
 		return content
 
@@ -281,9 +285,9 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
 
 
 
-	def getUniqueID(self):
+	def getUniqueID(self, filter : list = []):
 		self.parallelization.dummy_setup_if_no_setup(self.platform_resources)
-		return self.runtime.getUniqueID(self.compile)+'_'+self.parallelization.getUniqueID()
+		return self.runtime.getUniqueID(self.compile, filter)+'_'+self.parallelization.getUniqueID(filter)
 
 
 
