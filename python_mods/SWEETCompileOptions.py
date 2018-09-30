@@ -668,6 +668,24 @@ class SWEETCompileOptions(InfoError):
 
 
 
+	def getUniqueParID(self, filter):
+		"""
+		Return unique ID for the parallelization models
+		"""
+		retval = 'COMP'
+		if self.sweet_mpi == 'enable':
+			retval+='_mpi'
+
+		if self.threading in ['omp']:
+			retval+='_'+self.threading
+
+		if self.rexi_thread_parallel_sum == 'enable':
+			retval+='_rxthpar'
+
+		return retval
+
+
+
 	def getOptionList(self):
 		return self.__dict__
 

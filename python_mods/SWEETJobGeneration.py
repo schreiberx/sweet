@@ -287,7 +287,8 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
 
 	def getUniqueID(self, filter : list = []):
 		self.parallelization.dummy_setup_if_no_setup(self.platform_resources)
-		return self.runtime.getUniqueID(self.compile, filter)+'_'+self.parallelization.getUniqueID(filter)
+		unique_id = self.runtime.getUniqueID(self.compile, filter)+'_'+self.compile.getUniqueParID(filter)+'_'+self.parallelization.getUniqueID(filter)
+		return unique_id
 
 
 

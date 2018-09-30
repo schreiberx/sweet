@@ -253,22 +253,25 @@ class SWEETRuntimeOptions(InfoError):
 
 				elif self.rexi_method == "ci":
 					idstr += '_REXICI'
-					idstr += '_n'+str(self.rexi_ci_n).zfill(8)
-					if self.rexi_ci_max_real > 0:
-						idstr += '_mr'+str(float(self.rexi_ci_max_real))
-						idstr += '_mi'+str(float(self.rexi_ci_max_imag))
-					else:
-						idstr += '_sx'+str(float(self.rexi_ci_sx))
-						idstr += '_sy'+str(float(self.rexi_ci_sy))
-						idstr += '_mu'+str(float(self.rexi_ci_mu))
-					idstr += '_pr'+str(self.rexi_ci_primitive)
-					idstr += '_gfs'+str( "{:.4E}".format(self.rexi_ci_gaussian_filter_scale))
-					idstr += '_gfd'+str( "{:.4E}".format(self.rexi_ci_gaussian_filter_dt_norm))
-					idstr += '_gfe'+str( "{:.4E}".format(self.rexi_ci_gaussian_filter_exp_N))
 
-				idstr += '_nrm'+str(self.rexi_normalization)
-				idstr += '_hlf'+str(self.rexi_half_poles)
-				idstr += '_bf'+str(self.rexi_beta_cutoff)
+					if not 'cirexi_params' in filter:
+						idstr += '_n'+str(self.rexi_ci_n).zfill(8)
+						if self.rexi_ci_max_real > 0:
+							idstr += '_mr'+str(float(self.rexi_ci_max_real))
+							idstr += '_mi'+str(float(self.rexi_ci_max_imag))
+						else:
+							idstr += '_sx'+str(float(self.rexi_ci_sx))
+							idstr += '_sy'+str(float(self.rexi_ci_sy))
+							idstr += '_mu'+str(float(self.rexi_ci_mu))
+						idstr += '_pr'+str(self.rexi_ci_primitive)
+						idstr += '_gfs'+str( "{:.4E}".format(self.rexi_ci_gaussian_filter_scale))
+						idstr += '_gfd'+str( "{:.4E}".format(self.rexi_ci_gaussian_filter_dt_norm))
+						idstr += '_gfe'+str( "{:.4E}".format(self.rexi_ci_gaussian_filter_exp_N))
+
+				if not 'rexi_params' in filter:
+					idstr += '_nrm'+str(self.rexi_normalization)
+					idstr += '_hlf'+str(self.rexi_half_poles)
+					idstr += '_bf'+str(self.rexi_beta_cutoff)
 
 				#if self.plane_or_sphere == 'sphere':
 				#idstr += '_pre'+str(self.rexi_sphere_preallocation)

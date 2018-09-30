@@ -1,0 +1,516 @@
+#! /usr/bin/env python3
+
+import sys
+import os
+
+from SWEET import *
+p = SWEETJobGeneration()
+
+
+
+#
+# Parallelization tests
+#
+threading = ['off', 'omp']
+mpi = ['enable', 'disable']
+rexi_thread_parallel_sum = ['disable']
+
+
+# Use an odd limit for number MPI ranks for nice debugging
+mpi_num_ranks_limit = 4
+
+
+# 60 mins
+ref_max_wallclock_seconds = 60*60*2
+
+
+# Filters for generation of UniqueID
+unique_id_filter = ['simparams', 'cirexi_params', 'rexi_params']
+
+
+#
+# EXEC PREFIX
+#
+
+#
+# Load SHTNS plans for standard job scripts
+#
+p.user_script_exec_prefix_shtns = """
+# SHTNS plans required which have to be precomputed once.
+# You can generate them by simply running one benchmark.
+# Then, copy them to the main benchmark folder
+if [ -e ../shtns_cfg ]; then
+	ln ../shtns_cfg ./ -sf || exit 1
+	ln ../shtns_cfg_fftw ./ -sf || exit 1
+else
+	echo "SHTNS plans not found, see README for information on how to generate them"
+fi
+"""
+
+p.user_script_exec_prefix_z = """
+
+echo "CPU Frequencies:"
+cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq | sort -u
+echo ""
+
+# Manual override in jobs_create.py
+# Override OMP_NUM_THREADS and use MASTER binding
+export OMP_NUM_THREADS=1
+export OMP_PROC_BIND=MASTER
+
+"""
+
+p.user_script_exec_prefix = p.user_script_exec_prefix_shtns + p.user_script_exec_prefix_z
+
+#
+# EXEC SUFFIX
+#
+p.user_script_exec_suffix += """
+
+echo "CPU Frequencies:"
+cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq | sort -u
+echo ""
+
+"""
+
+
+# Request dedicated compile script
+p.compilecommand_in_jobscript = False
+
+
+
+
+
+
+#
+# Run simulation on plane or sphere
+#
+p.compile.program = 'swe_sphere'
+
+#p.compile.plane_or_sphere = 'sphere'
+p.compile.plane_spectral_space = 'disable'
+p.compile.plane_spectral_dealiasing = 'disable'
+p.compile.sphere_spectral_space = 'enable'
+p.compile.sphere_spectral_dealiasing = 'enable'
+
+p.compile.rexi_timings = 'enable'
+
+
+p.compile.quadmath = 'enable'
+
+p.compile.compiler = 'gnu'
+
+#p.compile.mkl = 'enable'
+# Disabled since we can now use FFTW plans in SHTNS
+p.compile.mkl = 'disable'
+
+
+
+#
+# MPI?
+#
+p.compile.sweet_mpi = 'enable'
+
+#
+# Activate Fortran source
+#
+p.compile.fortran_source = 'enable'
+
+
+
+# Verbosity mode
+p.runtime.verbosity = 0
+
+#
+# Mode and Physical resolution
+#
+p.runtime.mode_res = 128
+p.runtime.phys_res = -1
+
+#
+# Benchmark ID
+# 4: Gaussian breaking dam
+# 100: Galewski
+#
+p.runtime.benchmark="galewsky"
+
+#
+# Compute error
+#
+p.runtime.compute_error = 0
+
+#
+# Preallocate the REXI matrices
+#
+p.runtime.rexi_sphere_preallocation = 1
+
+#
+# Deactivate stability checks
+#
+p.stability_checks = 0
+
+
+#
+# REXI method
+# N=64, SX,SY=50 and MU=0 with circle primitive provide good results
+#
+p.runtime.rexi_method = ''
+p.runtime.rexi_ci_n = 128
+p.runtime.rexi_ci_max_real = -999
+p.runtime.rexi_ci_max_imag = -999
+p.runtime.rexi_ci_sx = -1
+p.runtime.rexi_ci_sy = -1
+p.runtime.rexi_ci_mu = 0
+p.runtime.rexi_ci_primitive = 'circle'
+
+#p.runtime.rexi_beta_cutoff = 1e-16
+p.runtime.rexi_beta_cutoff = 0
+
+p.runtime.viscosity = 0.0
+
+#
+# Use timestep sizes which create stable time integration
+# according to benchmarks
+#
+timestep_sizes_explicit = [30]
+timestep_sizes_implicit = [480]
+timestep_sizes_rexi = [480]
+
+timestep_size_reference = 20
+
+# Reference to estimate wallclock time for job scripts
+timestep_size_max = 720*2
+
+
+#p.runtime.simtime = timestep_sizes[-1]*10 #timestep_size_reference*2000
+p.runtime.simtime = 432000 #timestep_size_reference*(2**6)*10
+p.runtime.output_timestep_size = p.runtime.simtime
+
+p.runtime.rexi_extended_modes = 0
+
+# Groups to execute, see below
+# l: linear
+# ln: linear and nonlinear
+#groups = ['l1', 'l2', 'ln1', 'ln2', 'ln4']
+groups = ['ln2']
+
+
+
+
+
+#
+# allow including this file
+#
+if __name__ == "__main__":
+
+	####################################################
+	# WE FOCUS ON 2ND ORDER ACCURATE METHODS HERE
+	####################################################
+	groups = ['ln2']
+
+
+	if len(sys.argv) > 1:
+		groups = [sys.argv[1]]
+
+	print("Groups: "+str(groups))
+
+	for group in groups:
+		# 1st order linear
+
+		# 2nd order nonlinear
+		if group == 'ln2':
+			ts_methods = [
+				['ln_erk',		4,	4,	0],	# reference solution
+
+				###########
+				# RK2/4
+				###########
+				#['ln_erk',		2,	2,	0],	# reference solution
+				#['ln_erk',		4,	4,	0],	# reference solution
+
+				###########
+				# CN
+				###########
+				#['lg_irk_lc_n_erk_ver0',	2,	2,	0],
+				['lg_irk_lc_n_erk_ver1',	2,	2,	0],
+
+				#['l_irk_n_erk_ver0',	2,	2,	0],
+				#['l_irk_n_erk_ver1',	2,	2,	0],
+
+				###########
+				# REXI
+				###########
+				#['lg_rexi_lc_n_erk_ver0',	2,	2,	0],
+				['lg_rexi_lc_n_erk_ver1',	2,	2,	0],
+
+				#['l_rexi_n_erk_ver0',	2,	2,	0],
+				#['l_rexi_n_erk_ver1',	2,	2,	0],
+
+				###########
+				# ETDRK
+				###########
+				['lg_rexi_lc_n_etdrk',	2,	2,	0],
+				#['l_rexi_n_etdrk',	2,	2,	0],
+
+				#['lg_rexi_lc_n_etdrk',	4,	4,	0],
+				#['l_rexi_n_etdrk',	4,	4,	0],
+			]
+
+		# 4th order nonlinear
+		if group == 'ln4':
+			ts_methods = [
+				['ln_erk',		4,	4,	0],	# reference solution
+				['l_rexi_n_etdrk',	4,	4,	0],
+				['ln_erk',		4,	4,	0],
+			]
+
+
+
+		#
+		# OVERRIDE TS methods
+		#
+		if len(sys.argv) > 4:
+			ts_methods = [ts_methods[0]]+[[sys.argv[2], int(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5])]]
+
+
+
+		#
+		# add prefix string to group benchmarks
+		#
+		prefix_string_template = group+'_'
+
+
+
+		#
+		# Reference solution
+		#
+		if True:
+			# Deactiave all threading
+			p.compile.threading='off'
+			p.compile.sweet_mpi='disable'
+			p.compile.rexi_thread_parallel_sums='disable'
+
+			tsm = ts_methods[0]
+			p.runtime.timestep_size  = timestep_size_reference
+
+			p.runtime.timestepping_method = tsm[0]
+			p.runtime.timestepping_order = tsm[1]
+			p.runtime.timestepping_order2 = tsm[2]
+			p.runtime.rexi_use_direct_solution = tsm[3]
+
+
+			# SPACE parallelization
+			pspace = SWEETParallelizationDimOptions('space')
+			pspace.num_cores_per_rank = 1
+			pspace.num_threads_per_rank = 1
+			pspace.num_ranks = 1
+			pspace.setup()
+
+			# TIME parallelization
+			ptime = SWEETParallelizationDimOptions('time')
+			ptime.num_cores_per_rank = 1
+			ptime.num_threads_per_rank = 1
+			ptime.num_ranks = 1
+			ptime.setup()
+
+			# Setup parallelization
+			p.setup_parallelization([pspace, ptime])
+
+			pspace.print()
+			ptime.print()
+			p.parallelization.print()
+
+			if len(tsm) > 4:
+				s = tsm[4]
+				p.load_from_dict(tsm[4])
+
+			p.parallelization.max_wallclock_seconds = ref_max_wallclock_seconds
+			if p.parallelization.max_wallclock_seconds <= 0:
+				raise Exception("p.parallelization.max_wallclock_seconds <= 0")
+
+			p.write_jobscript('script_'+prefix_string_template+'ref_'+p.runtime.getUniqueID(p.compile, unique_id_filter)+'/run.sh')
+
+
+		for p.compile.threading in threading:
+			for p.compile.sweet_mpi in mpi:
+				for p.compile.rexi_thread_parallel_sum in rexi_thread_parallel_sum:
+
+
+					if p.compile.rexi_thread_parallel_sum == 'enable':
+						raise Exception("Not yet supported!")
+
+					# SPACE parallelization
+					pspace = SWEETParallelizationDimOptions('space')
+
+					pspace.num_cores_per_rank = p.platform_resources.num_cores_per_socket
+					pspace.num_threads_per_rank = pspace.num_cores_per_rank
+					pspace.num_ranks = 1
+					pspace.setup()
+					if __name__ == "__main__":
+						pspace.print()
+
+
+					if p.compile.sweet_mpi=='enable':
+						# TIME parallelization
+						ptime = SWEETParallelizationDimOptions('time')
+						ptime.num_cores_per_rank = 1
+						ptime.num_threads_per_rank = 1	#pspace.num_cores_per_rank
+						ptime.num_ranks = 1
+					else:
+						ptime = SWEETParallelizationDimOptions('time')
+						ptime.num_cores_per_rank = 1
+						ptime.num_threads_per_rank = 4	# Always use 4
+						ptime.num_ranks = 1
+
+					ptime.setup()
+					if __name__ == "__main__":
+						ptime.print()
+					#
+					# Create job scripts
+					#
+					for tsm in ts_methods[1:]:
+						tsm_name = tsm[0]
+						if 'ln_erk' in tsm_name:
+							timestep_sizes = timestep_sizes_explicit
+						elif 'l_erk' in tsm_name or 'lg_erk' in tsm_name:
+							timestep_sizes = timestep_sizes_explicit
+						elif 'l_irk' in tsm_name or 'lg_irk' in tsm_name:
+							timestep_sizes = timestep_sizes_implicit
+						elif 'l_rexi' in tsm_name or 'lg_rexi' in tsm_name:
+							timestep_sizes = timestep_sizes_rexi
+						else:
+							raise Exception("Unable to identify time stepping method "+tsm_name)
+
+						for p.runtime.timestep_size in timestep_sizes:
+							p.runtime.timestepping_method = tsm[0]
+							p.runtime.timestepping_order = tsm[1]
+							p.runtime.timestepping_order2 = tsm[2]
+							p.runtime.rexi_use_direct_solution = tsm[3]
+
+							if len(tsm) > 4:
+								s = tsm[4]
+								p.runtime.load_from_dict(tsm[4])
+
+							if not '_rexi' in p.runtime.timestepping_method:
+								p.runtime.rexi_method = ''
+
+								# Update TIME parallelization
+								ptime = SWEETParallelizationDimOptions('time')
+								ptime.num_cores_per_rank = 1
+								ptime.num_threads_per_rank = 1 #pspace.num_cores_per_rank
+								ptime.num_ranks = 1
+								p.setup_parallelization([pspace, ptime])
+
+								pspace.print()
+								ptime.print()
+								p.parallelization.print()
+
+								p.parallelization.max_wallclock_seconds = int(ref_max_wallclock_seconds / 32 * (timestep_size_max / p.runtime.timestep_size))
+								if p.parallelization.max_wallclock_seconds <= 0:
+									raise Exception("p.parallelization.max_wallclock_seconds <= 0")
+
+								p.write_jobscript('script_'+prefix_string_template+p.getUniqueID(unique_id_filter)+'/run.sh')
+								continue
+
+							if True:	# REXI
+								c = 1
+								for N in [128]:
+
+									range_time_ranks = [min(mpi_num_ranks_limit, p.platform_resources.num_cores // pspace.num_cores)]
+
+									p.runtime.load_from_dict({
+										'rexi_method': 'ci',
+										'ci_n': 128,
+										'ci_max_real': 10.0,
+										'ci_max_imag': 30,
+										'half_poles': 0,
+										'ci_gaussian_filter_scale': 0.0,
+										'ci_gaussian_filter_dt_norm': 0.0,	# unit scaling for T128 resolution
+										'ci_gaussian_filter_exp_N': 0.0,
+									})
+
+									#for time_ranks in range_time_ranks:
+									for time_ranks in [range_time_ranks[-1]]:
+
+											# Update TIME parallelization
+											ptime = SWEETParallelizationDimOptions('time')
+											ptime.num_cores_per_rank = 1
+											ptime.num_threads_per_rank = 1
+											ptime.num_ranks = time_ranks
+											ptime.setup()
+
+											if False:
+												total_cores = ptime.num_ranks*ptime.num_cores_per_rank * pspace.num_ranks*pspace.num_cores_per_rank
+												if total_cores > p.platform_resources.num_cores:
+													print("Skipping this configuration since number of cores exceeds physically available ones")
+													continue
+
+											p.setup_parallelization([pspace, ptime])
+
+											pspace.print()
+											ptime.print()
+											p.parallelization.print()
+
+											# Generate only scripts with max number of cores
+											p.parallelization.max_wallclock_seconds = int(ref_max_wallclock_seconds / ptime.num_ranks * (timestep_size_max / p.runtime.timestep_size))
+											if p.parallelization.max_wallclock_seconds <= 0:
+												raise Exception("p.parallelization.max_wallclock_seconds <= 0")
+
+											p.write_jobscript('script_'+prefix_string_template+p.getUniqueID(unique_id_filter)+'/run.sh')
+											#break
+
+	#
+	# SHTNS plan generation scripts
+	#
+
+	p.user_script_exec_prefix = p.user_script_exec_prefix_z
+
+	for p.compile.threading in threading:
+		for tsm in ts_methods[1:]:
+
+			p.runtime.timestepping_method = tsm[0]
+			p.runtime.timestepping_order = tsm[1]
+			p.runtime.timestepping_order2 = tsm[2]
+			p.runtime.rexi_use_direct_solution = tsm[3]
+
+			if not '_rexi' in p.runtime.timestepping_method:
+				p.runtime.rexi_method = ''
+			else:
+				p.runtime.rexi_method = 'ci'
+
+			if len(tsm) > 4:
+				s = tsm[4]
+				p.runtime.load_from_dict(tsm[4])
+
+			#
+			# Create dummy scripts to be used for SHTNS script generation
+			#
+
+			# No parallelization in time
+			ptime = SWEETParallelizationDimOptions('time')
+			ptime.num_cores_per_rank = 1
+			ptime.num_threads_per_rank = 1
+			ptime.num_ranks = 1
+			ptime.setup()
+
+			p.setup_parallelization([pspace, ptime])
+
+			# Use 10 minutes
+			p.parallelization.max_wallclock_seconds = 60*10
+
+			# Set simtime to 0
+			p.runtime.simtime = 0
+
+			# No output
+			p.runtime.output_timestep_size = -1
+			p.runtime.output_filename = "-"
+
+			p.write_jobscript('genplans_script_'+p.getUniqueID(unique_id_filter)+'/run.sh')
+
+
+	#
+	# Write compile script
+	#
+	p.write_compilecommands("./compile_platform.sh")
+
+
