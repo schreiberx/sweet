@@ -155,6 +155,8 @@ else
 	else
 		# Load platform environment variables if specified
 		echo "SWEET: \$1='${1}' detected, loading platform environment variables from file '${1}'"
+		# Set SWEET Platform override
+		export SWEET_PLATFORM="$1"
 		source "$1"
 	fi
 
