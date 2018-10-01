@@ -40,9 +40,6 @@ class SWEETCompileOptions(InfoError):
 	def __init__(self):
 		InfoError.__init__(self, "SWEETCompileOptions")
 
-		self.p_example_programs = []
-		self.p_unit_tests_programs = []
-
 		# Program or unit test
 		self.program = ""
 		self.unit_test = ""

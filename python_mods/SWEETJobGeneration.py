@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 
 import os
 import sys
@@ -303,18 +304,44 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
 	def save_file(self, filename):
 		import pickle
 
-		raise Exception("TODO")
+		def get_string_attributes(obj):
+			attr_dict = {}
+			obj_string_attributes = [a for a in dir(obj) if not a.startswith('__') and not callable(getattr(obj,a))]
+			for attr in obj_string_attributes:
+				a = getattr(obj, attr)
+				if not isinstance(a, (float, int, str)):
+					continue
+				attr_dict[attr] = getattr(obj, attr)
+			return attr_dict
+
+		attr_dict = {}
+		attr_dict['compile'] = get_string_attributes(self.compile)
+		attr_dict['runtime'] = get_string_attributes(self.runtime)
+		attr_dict['parallelization'] = get_string_attributes(self.parallelization)
+		attr_dict['platforms_platform'] = get_string_attributes(self.platforms.platform)
+		attr_dict['platform_resources'] = get_string_attributes(self.platform_resources)
+
 		with open('data.pickle', 'wb') as f:
 			# Pickle the 'data' dictionary using the highest protocol available.
-			pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
+			pickle.dump(attr_dict, f, pickle.HIGHEST_PROTOCOL)
 
 	def load_file(self, filename):
 		import pickle
 
-		raise Exception("TODO")
+		def set_string_attributes(obj, attr_dict):
+			for key, attr in attr_dict.items():
+				setattr(obj, key, attr)
+
 		with open('data.pickle', 'rb') as f:
 			# Pickle the 'data' dictionary using the highest protocol available.
-			self = pickle.load(f)
+			data = pickle.load(f)
+
+			set_string_attributes(self.compile, data['compile'])
+			set_string_attributes(self.runtime, data['runtime'])
+			set_string_attributes(self.parallelization, data['parallelization'])
+			set_string_attributes(self.platforms.platform, data['platforms_platform'])
+			set_string_attributes(self.platform_resources, data['platform_resources'])
+
 
 
 if __name__ == "__main__":
@@ -325,5 +352,21 @@ if __name__ == "__main__":
 
 	s = p.getUniqueID()
 	p.info(s)
+
+
+	print("simtime: "+str(p.runtime.simtime))
+	p.runtime.simtime = 666
+	print("simtime: "+str(p.runtime.simtime))
+
+	print("save_file()")
+	p.save_file("/tmp/test.pickle")
+
+	print("simtime: "+str(p.runtime.simtime))
+	p.runtime.simtime = 123
+	print("simtime: "+str(p.runtime.simtime))
+
+	print("load_file()")
+	p.load_file("/tmp/test.pickle")
+	print("simtime: "+str(p.runtime.simtime))
 
 	p.info("FIN")
