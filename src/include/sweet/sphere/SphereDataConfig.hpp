@@ -409,6 +409,12 @@ public:
 
 		cleanup(false);
 
+#if SWEET_MPI
+		// only output information for 1st rank
+		int mpi_rank;
+		MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+		if (mpi_rank == 0)
+#endif
 		shtns_verbose(0);			// displays informations during initialization.
 
 		// enable multi-threaded transforms (if supported).
