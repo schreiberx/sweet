@@ -190,7 +190,7 @@ public:
 		std::string benchmark_scenario_name = "";
 
 		/// Use 2/3 rule in physical space for dealiasing
-		bool benchmark_setup_dealiased = false;
+		bool benchmark_setup_dealiased = true;
 
 
 		/// Galewsky-benchmark specific: velocity

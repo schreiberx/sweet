@@ -77,7 +77,9 @@ void run_tests()
 		sphereDataConfigRexiAddedModes.setupAdditionalModes(
 				sphereDataConfig,
 				simVars.rexi.use_sphere_extended_modes,	// TODO: Extend SPH wrapper to also support m != n to set this guy to 0
-				simVars.rexi.use_sphere_extended_modes
+				simVars.rexi.use_sphere_extended_modes,
+				simVars.misc.shtns_use_plans
+
 		);
 		sphereDataConfigExt = &sphereDataConfigRexiAddedModes;
 	}
@@ -566,7 +568,8 @@ int main(
 					simVars.disc.res_spectral[0],
 					simVars.disc.res_spectral[1],
 					&simVars.disc.res_physical[0],
-					&simVars.disc.res_physical[1]
+					&simVars.disc.res_physical[1],
+					simVars.misc.shtns_use_plans
 			);
 
 	run_tests();

@@ -349,7 +349,11 @@ int main(int i_argc, char *i_argv[])
 				simVars.disc.res_spectral[0] = i;
 				simVars.disc.res_spectral[1] = i;
 
-				sphereDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
+				sphereDataConfigInstance.setupAuto(
+						simVars.disc.res_physical,
+						simVars.disc.res_spectral,
+						simVars.misc.shtns_use_plans
+					);
 
 				std::cout << "Testing with " << sphereDataConfigInstance.getUniqueIDString() << std::endl;
 

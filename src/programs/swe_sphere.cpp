@@ -51,7 +51,6 @@ SphereDataConfig *sphereDataConfig_nodealiasing = &sphereDataConfigInstance_node
 /*
  * This allows running REXI including Coriolis-related terms but just by setting f to 0
  */
-//bool param_compute_error = false;
 
 
 class SimulationInstance
@@ -84,6 +83,9 @@ public:
 #if SWEET_MPI
 	int mpi_rank;
 #endif
+
+	// was the output of the time step already done for this simulation state?
+	double timestep_last_output_simtime;
 
 	SWESphereBenchmarksCombined sphereBenchmarks;
 
@@ -180,7 +182,7 @@ public:
 		}
 		else
 		{
-			// this is the default
+			// this is not the default since noone uses it
 			// use reduced physical space for setup to avoid spurious modes
 			SphereData prog_phi_nodealiasing(sphereDataConfig_nodealiasing);
 			SphereData prog_vort_nodealiasing(sphereDataConfig_nodealiasing);
@@ -219,6 +221,9 @@ public:
 		simVars.diag.backup_reference();
 
 		SimulationBenchmarkTimings::getInstance().main_setup.stop();
+
+		// start at one second before to ensure output at t=0
+		timestep_last_output_simtime = simVars.timecontrol.current_simulation_time-1.0;
 	}
 
 
@@ -319,74 +324,37 @@ public:
 				}
 			}
 
-			SphereData anal_solution_h(sphereDataConfig);
-			SphereData anal_solution_u(sphereDataConfig);
-			SphereData anal_solution_v(sphereDataConfig);
+			SphereData anal_solution_phi(sphereDataConfig);
+			SphereData anal_solution_vort(sphereDataConfig);
+			SphereData anal_solution_div(sphereDataConfig);
 
 			sphereBenchmarks.setup(simVars, op);
-			sphereBenchmarks.setupInitialConditions(anal_solution_h, anal_solution_u, anal_solution_v);
-
-			SphereDataPhysical anal_solution_hg = anal_solution_h.getSphereDataPhysical();
-			SphereDataPhysical anal_solution_ug = anal_solution_u.getSphereDataPhysical();
-			SphereDataPhysical anal_solution_vg = anal_solution_v.getSphereDataPhysical();
-
-			double error_h = -1;
-			double error_u = -1;
-			double error_v = -1;
-			double error_vort = -1;
-			double error_div = -1;
-
-
-			SphereData h = prog_phi*(1.0/simVars.sim.gravitation);
-			SphereDataPhysical hg = h.getSphereDataPhysical();
-
-			SphereData tmp_vort(sphereDataConfig);
-			SphereData tmp_div(sphereDataConfig);
-
-
-			/*
-			 * Convert analytical correct velocities to vort/div
-			 */
-			if (simVars.misc.sphere_use_robert_functions)
-				op.robert_uv_to_vortdiv(anal_solution_ug, anal_solution_vg, tmp_vort, tmp_div);
-			else
-				op.uv_to_vortdiv(anal_solution_ug, anal_solution_vg, tmp_vort, tmp_div);
-
+			sphereBenchmarks.setupInitialConditions(anal_solution_phi, anal_solution_vort, anal_solution_div);
 
 			/*
 			 * Compute difference
 			 */
-			SphereData diff_vort = prog_vort - tmp_vort;
-			SphereData diff_div = prog_div - tmp_div;
+			SphereData diff_phi = prog_phi - anal_solution_phi;
+			SphereData diff_vort = prog_vort - anal_solution_vort;
+			SphereData diff_div = prog_div - anal_solution_div;
 
-
-			/*
-			 * Convert back to u-v
-			 */
-			SphereDataPhysical diff_u(sphereDataConfig);
-			SphereDataPhysical diff_v(sphereDataConfig);
-			if (simVars.misc.sphere_use_robert_functions)
-				op.robert_vortdiv_to_uv(diff_vort, diff_div, diff_u, diff_v);
-			else
-				op.vortdiv_to_uv(diff_vort, diff_div, diff_u, diff_v);
-
-			error_h = hg.physical_reduce_max_abs(anal_solution_hg);
-			error_u = diff_u.physical_reduce_max_abs();
-			error_v = diff_v.physical_reduce_max_abs();
-			error_vort = diff_vort.physical_reduce_max_abs();
-			error_div = diff_div.physical_reduce_max_abs();
+			double error_phi = diff_phi.physical_reduce_max_abs();
+			double error_vort = diff_vort.physical_reduce_max_abs();
+			double error_div = diff_div.physical_reduce_max_abs();
 #if SWEET_MPI
 			if (mpi_rank == 0)
 #endif
 			{
-				std::cerr << "error time, h, u, v, vort, div:\t" << simVars.timecontrol.current_simulation_time << "\t" << error_h << "\t" << error_u << "\t" << error_v << "\t" << error_vort << "\t" << error_div << std::endl;
+				std::cout << "[ERRORS]\t";
+				std::cout << "simtime=" << simVars.timecontrol.current_simulation_time;
+				std::cout << "\terror_l1_phi=" << error_phi;
+				std::cout << "\terror_l1_vort=" << error_vort;
+				std::cout << "\terror_l1_div=" << error_div;
+				std::cout << std::endl;
 			}
 		}
 
 		write_file_output();
-
-		// output line break
-		std::cout << std::endl;
 
 		if (simVars.misc.verbosity > 1)
 		{
@@ -399,23 +367,23 @@ public:
 				// Print header
 				if (simVars.timecontrol.current_timestep_nr == 0)
 				{
-					std::cerr << "T\tTOTAL_MASS\tPOT_ENERGY\tKIN_ENERGY\tTOT_ENERGY\tPOT_ENSTROPHY\tREL_TOTAL_MASS\tREL_POT_ENERGY\tREL_KIN_ENERGY\tREL_TOT_ENERGY\tREL_POT_ENSTROPHY";
-					std::cerr << std::endl;
+					std::cout << "T\tTOTAL_MASS\tPOT_ENERGY\tKIN_ENERGY\tTOT_ENERGY\tPOT_ENSTROPHY\tREL_TOTAL_MASS\tREL_POT_ENERGY\tREL_KIN_ENERGY\tREL_TOT_ENERGY\tREL_POT_ENSTROPHY";
+					std::cout << std::endl;
 				}
 
 				// Print simulation time, energy and pot enstrophy
-				std::cerr << simVars.timecontrol.current_simulation_time << "\t";
-				std::cerr << simVars.diag.total_mass << "\t";
-				std::cerr << simVars.diag.potential_energy << "\t";
-				std::cerr << simVars.diag.kinetic_energy << "\t";
-				std::cerr << simVars.diag.total_energy << "\t";
-				std::cerr << simVars.diag.total_potential_enstrophy << "\t";
+				std::cout << simVars.timecontrol.current_simulation_time << "\t";
+				std::cout << simVars.diag.total_mass << "\t";
+				std::cout << simVars.diag.potential_energy << "\t";
+				std::cout << simVars.diag.kinetic_energy << "\t";
+				std::cout << simVars.diag.total_energy << "\t";
+				std::cout << simVars.diag.total_potential_enstrophy << "\t";
 
-				std::cerr << (simVars.diag.total_mass-simVars.diag.ref_total_mass)/simVars.diag.total_mass << "\t";
-				std::cerr << (simVars.diag.potential_energy-simVars.diag.ref_potential_energy)/simVars.diag.potential_energy << "\t";
-				std::cerr << (simVars.diag.kinetic_energy-simVars.diag.ref_kinetic_energy)/simVars.diag.kinetic_energy << "\t";
-				std::cerr << (simVars.diag.total_energy-simVars.diag.total_energy)/simVars.diag.total_energy << "\t";
-				std::cerr << (simVars.diag.total_potential_enstrophy-simVars.diag.total_potential_enstrophy)/simVars.diag.total_potential_enstrophy << std::endl;
+				std::cout << (simVars.diag.total_mass-simVars.diag.ref_total_mass)/simVars.diag.total_mass << "\t";
+				std::cout << (simVars.diag.potential_energy-simVars.diag.ref_potential_energy)/simVars.diag.potential_energy << "\t";
+				std::cout << (simVars.diag.kinetic_energy-simVars.diag.ref_kinetic_energy)/simVars.diag.kinetic_energy << "\t";
+				std::cout << (simVars.diag.total_energy-simVars.diag.total_energy)/simVars.diag.total_energy << "\t";
+				std::cout << (simVars.diag.total_potential_enstrophy-simVars.diag.total_potential_enstrophy)/simVars.diag.total_potential_enstrophy << std::endl;
 
 				static double start_tot_energy = -1;
 				if (start_tot_energy == -1)
@@ -465,6 +433,7 @@ public:
 
 
 
+
 public:
 	bool timestep_check_output()
 	{
@@ -480,8 +449,19 @@ public:
 		if (simVars.misc.output_each_sim_seconds < 0)
 			return false;
 
-		if (simVars.misc.output_next_sim_seconds > simVars.timecontrol.current_simulation_time)
+		if (simVars.timecontrol.current_simulation_time == timestep_last_output_simtime)
 			return false;
+
+		timestep_last_output_simtime = simVars.timecontrol.current_simulation_time;
+
+		if (simVars.timecontrol.current_simulation_time < simVars.timecontrol.max_simulation_time - simVars.misc.output_each_sim_seconds*1e-10)
+		{
+			if (simVars.misc.output_next_sim_seconds > simVars.timecontrol.current_simulation_time)
+				return false;
+		}
+
+		if (simVars.misc.verbosity > 0)
+			std::cout << std::endl;
 
 		timestep_do_output();
 
@@ -937,6 +917,9 @@ int main(int i_argc, char *i_argv[])
 						}
 					}
 				}
+
+				// Do some output after the time loop
+				simulationSWE->timestep_check_output();
 
 				// Stop counting time
 				SimulationBenchmarkTimings::getInstance().main_timestepping.stop();

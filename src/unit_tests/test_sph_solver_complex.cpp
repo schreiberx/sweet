@@ -544,7 +544,8 @@ int main(
 					simVars.disc.res_spectral[0],
 					simVars.disc.res_spectral[1],
 					&simVars.disc.res_physical[0],
-					&simVars.disc.res_physical[1]
+					&simVars.disc.res_physical[1],
+					simVars.misc.shtns_use_plans
 			);
 
 	sphereDataConfig = &p_sphereDataConfig;

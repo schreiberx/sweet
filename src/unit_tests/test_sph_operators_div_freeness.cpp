@@ -224,7 +224,9 @@ int main(
 						simVars.disc.res_spectral[0],
 						simVars.disc.res_spectral[1],
 						&simVars.disc.res_physical[0],
-						&simVars.disc.res_physical[1]
+						&simVars.disc.res_physical[1],
+						simVars.misc.shtns_use_plans
+
 				);
 	}
 	else
@@ -233,14 +235,18 @@ int main(
 						simVars.disc.res_spectral[0],
 						simVars.disc.res_spectral[1],
 						simVars.disc.res_physical[0],
-						simVars.disc.res_physical[1]
+						simVars.disc.res_physical[1],
+						simVars.misc.shtns_use_plans
+
 				);
 	}
 
 	sphereDataConfigExtInstance.setupAdditionalModes(
 			&sphereDataConfigInstance,
 			simVars.rexi.use_sphere_extended_modes,
-			simVars.rexi.use_sphere_extended_modes
+			simVars.rexi.use_sphere_extended_modes,
+			simVars.misc.shtns_use_plans
+
 		);
 
 	run_tests();
