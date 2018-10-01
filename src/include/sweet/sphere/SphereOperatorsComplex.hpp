@@ -13,10 +13,10 @@
 #include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalComplex.hpp>
 #include <sweet/sphere/Convert_SphereDataComplex_to_SphereData.hpp>
 #include <sweet/sphere/Convert_SphereDataPhysicalComplex_to_SphereDataPhysical.hpp>
+#include <libmath/shtns_inc.hpp>
 
 #define SHTNS_COMPLEX_SPH_SPHTOR	1
 
-#define SHTNS_COMPLEX_SPH_OLD_INTERFACE	1
 
 
 class SphereOperatorsComplex	:
@@ -731,10 +731,10 @@ public:
 		chi.request_data_spectral();
 
 #if SHTNS_COMPLEX_SPH_OLD_INTERFACE
+		SHsphtor_to_spat_cplx_xsint(
+#else
 		shtns_robert_form(sphereDataConfig->shtns, 1);
 		SHsphtor_to_spat_cplx(
-#else
-		SHsphtor_to_spat_cplx_xsint(
 #endif
 				sphereDataConfig->shtns,
 				psi.spectral_space_data,
@@ -827,8 +827,12 @@ public:
 		SphereDataPhysical u_re(sphereDataConfig);
 		SphereDataPhysical v_re(sphereDataConfig);
 
+#if SHTNS_COMPLEX_SPH_OLD_INTERFACE
+		SHsphtor_to_spat(
+#else
 		shtns_robert_form(sphereDataConfig->shtns, 0);
 		SHsphtor_to_spat(
+#endif
 				sphereDataConfig->shtns,
 				psi_re.spectral_space_data,
 				chi_re.spectral_space_data,

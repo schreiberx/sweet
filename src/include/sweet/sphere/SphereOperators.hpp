@@ -19,9 +19,8 @@
  * 2: Use memory cached version
  */
 #define SWEET_SPH_ON_THE_FLY_MODE	0
-
-
 #define SHTNS_REAL_SPH_SPHTOR	1
+
 
 class SphereOperators	:
 	public SphereSPHIdentities
@@ -418,8 +417,12 @@ public:
 
 #if SHTNS_REAL_SPH_SPHTOR
 
+#if SHTNS_COMPLEX_SPH_OLD_INTERFACE
+		SHsphtor_to_spat_xsint(
+#else
 		shtns_robert_form(sphereDataConfig->shtns, 1);
 		SHsphtor_to_spat(
+#endif
 				sphereDataConfig->shtns,
 				psi.spectral_space_data,
 				chi.spectral_space_data,
@@ -474,8 +477,14 @@ public:
 
 		SphereDataPhysical u(sphereDataConfig);
 		SphereDataPhysical v(sphereDataConfig);
+
+// TODO: Check if this is correct (non-robert transformation)
+#if SHTNS_COMPLEX_SPH_OLD_INTERFACE
+		SHsphtor_to_spat(
+#else
 		shtns_robert_form(sphereDataConfig->shtns, 0);
 		SHsphtor_to_spat(
+#endif
 				sphereDataConfig->shtns,
 				psi.spectral_space_data,
 				i_phi.spectral_space_data,
@@ -518,8 +527,12 @@ public:
 		SphereData psi = inv_laplace(i_vrt)*ir;
 		SphereData chi = inv_laplace(i_div)*ir;
 
+#if SHTNS_COMPLEX_SPH_OLD_INTERFACE
+		SHsphtor_to_spat(
+#else
 		shtns_robert_form(sphereDataConfig->shtns, 0);
 		SHsphtor_to_spat(
+#endif
 				sphereDataConfig->shtns,
 				psi.spectral_space_data,
 				chi.spectral_space_data,
@@ -545,8 +558,12 @@ public:
 
 #if SHTNS_REAL_SPH_SPHTOR
 
+#if SHTNS_COMPLEX_SPH_OLD_INTERFACE
+		spat_xsint_to_SHsphtor(
+#else
 		shtns_robert_form(sphereDataConfig->shtns, 1);
 		spat_to_SHsphtor(
+#endif
 				sphereDataConfig->shtns,
 				ug.physical_space_data,
 				vg.physical_space_data,
@@ -597,8 +614,12 @@ public:
 		SphereData tmp(sphereDataConfig);
 		SphereData vort(sphereDataConfig);
 
+#if SHTNS_COMPLEX_SPH_OLD_INTERFACE
+		spat_to_SHsphtor(
+#else
 		shtns_robert_form(sphereDataConfig->shtns, 0);
 		spat_to_SHsphtor(
+#endif
 				sphereDataConfig->shtns,
 				i_u.physical_space_data,
 				i_v.physical_space_data,
@@ -638,8 +659,12 @@ public:
 			}
 		);
 
+#if SHTNS_COMPLEX_SPH_OLD_INTERFACE
+		spat_to_SHsphtor(
+#else
 		shtns_robert_form(sphereDataConfig->shtns, 0);
 		spat_to_SHsphtor(
+#endif
 				sphereDataConfig->shtns,
 				ug.physical_space_data,
 				vg.physical_space_data,
@@ -668,8 +693,13 @@ public:
 
 	)	const
 	{
+
+#if SHTNS_COMPLEX_SPH_OLD_INTERFACE
+		spat_to_SHsphtor(
+#else
 		shtns_robert_form(sphereDataConfig->shtns, 0);
 		spat_to_SHsphtor(
+#endif
 				sphereDataConfig->shtns,
 				i_u.physical_space_data,
 				i_v.physical_space_data,
