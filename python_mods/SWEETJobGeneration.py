@@ -300,6 +300,23 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
 
 
 
+	def save_file(self, filename):
+		import pickle
+
+		raise Exception("TODO")
+		with open('data.pickle', 'wb') as f:
+			# Pickle the 'data' dictionary using the highest protocol available.
+			pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
+
+	def load_file(self, filename):
+		import pickle
+
+		raise Exception("TODO")
+		with open('data.pickle', 'rb') as f:
+			# Pickle the 'data' dictionary using the highest protocol available.
+			self = pickle.load(f)
+
+
 if __name__ == "__main__":
 	p = SWEETJobGeneration()
 

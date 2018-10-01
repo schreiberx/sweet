@@ -40,8 +40,8 @@ class SWEETCompileOptions(InfoError):
 	def __init__(self):
 		InfoError.__init__(self, "SWEETCompileOptions")
 
-		self.example_programs = []
-		self.unit_tests_programs = []
+		self.p_example_programs = []
+		self.p_unit_tests_programs = []
 
 		# Program or unit test
 		self.program = ""
@@ -535,13 +535,19 @@ class SWEETCompileOptions(InfoError):
 		self.parareal = scons.GetOption('parareal')
 
 
+		files = os.listdir('src/programs/')
+		files = sorted(files)
+		example_programs = []
+		for f in files:
+			if os.path.isfile('src/programs/'+f):
+				example_programs.append(f[0:-4])
 
 		scons.AddOption(      '--program',
 				dest='program',
 				type='choice',
-				choices=self.example_programs,
+				choices=example_programs,
 				default='',
-				help='Specify program to compile: '+', '.join(self.example_programs)+' '*80+' [default: %default]'
+				help='Specify program to compile: '+', '.join(example_programs)+' '*80+' [default: %default]'
 		)
 		self.program = scons.GetOption('program')
 
@@ -556,12 +562,20 @@ class SWEETCompileOptions(InfoError):
 		self.program_binary_name = scons.GetOption('program_binary_name')
 
 
+
+		files = os.listdir('src/unit_tests/')
+		files = sorted(files)
+		unit_tests_programs = []
+		for f in files:
+			unit_tests_programs.append(f[0:-4])
+
+
 		scons.AddOption(      '--unit-test',
 				dest='unit_test',
 				type='choice',
-				choices=self.unit_tests_programs,
+				choices=unit_tests_programs,
 				default='',
-				help='Specify unit tests to compile: '+', '.join(self.unit_tests_programs)+' '*80+' [default: %default]'
+				help='Specify unit tests to compile: '+', '.join(unit_tests_programs)+' '*80+' [default: %default]'
 		)
 		self.unit_test = scons.GetOption('unit_test')
 

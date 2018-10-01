@@ -59,19 +59,6 @@ p = SWEETCompileOptions()
 if 'LD_LIBRARY_PATH' in os.environ:
 	env.Append(LIBPATH=os.environ['LD_LIBRARY_PATH'].split(':'))
 
-files = os.listdir('src/programs/')
-files = sorted(files)
-p.example_programs = []
-for f in files:
-	if os.path.isfile('src/programs/'+f):
-		p.example_programs.append(f[0:-4])
-
-
-files = os.listdir('src/unit_tests/')
-files = sorted(files)
-p.unit_tests_programs = []
-for f in files:
-	p.unit_tests_programs.append(f[0:-4])
 
 
 ###########################################
