@@ -470,7 +470,8 @@ public:
 
 		cleanup(false);
 
-		shtns_verbose(0);			// displays informations during initialization.
+		shtns_verbose(1);			// displays informations during initialization.
+
 #if SWEET_SPACE_THREADING
 		shtns_use_threads(0);	// automatically choose number of threads
 #else

@@ -15,6 +15,7 @@
  */
 
 // undef for C++11 support
+// TODO: For which compiler versions is this required?
 #undef _COMPLEX_H
 #include <shtns.h>
 

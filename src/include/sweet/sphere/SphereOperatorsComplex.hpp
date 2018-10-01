@@ -16,6 +16,8 @@
 
 #define SHTNS_COMPLEX_SPH_SPHTOR	1
 
+#define SHTNS_COMPLEX_SPH_OLD_INTERFACE	1
+
 
 class SphereOperatorsComplex	:
 		public SphereSPHIdentities
@@ -626,8 +628,12 @@ public:
 
 #if SHTNS_COMPLEX_SPH_SPHTOR
 
+#if SHTNS_COMPLEX_SPH_OLD_INTERFACE
+		spat_cplx_xsint_to_SHsphtor(
+#else
 		shtns_robert_form(sphereDataConfig->shtns, 1);
 		spat_cplx_to_SHsphtor(
+#endif
 				sphereDataConfig->shtns,
 				ug.physical_space_data,
 				vg.physical_space_data,
@@ -724,8 +730,12 @@ public:
 		psi.request_data_spectral();
 		chi.request_data_spectral();
 
+#if SHTNS_COMPLEX_SPH_OLD_INTERFACE
 		shtns_robert_form(sphereDataConfig->shtns, 1);
 		SHsphtor_to_spat_cplx(
+#else
+		SHsphtor_to_spat_cplx_xsint(
+#endif
 				sphereDataConfig->shtns,
 				psi.spectral_space_data,
 				chi.spectral_space_data,
