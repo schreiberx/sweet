@@ -9,7 +9,8 @@
 #define SRC_INCLUDE_LIBMATH_SHTNS_INC_HPP_
 
 
-#define SHTNS_COMPLEX_SPH_OLD_INTERFACE	1
+//#define SHTNS_COMPLEX_SPH_OLD_INTERFACE	1
+#define SHTNS_COMPLEX_SPH_OLD_INTERFACE	0
 
 /**
  * This is a wrapper to avoid including shtns.h twice.

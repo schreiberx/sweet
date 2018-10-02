@@ -971,7 +971,7 @@ public:
 #pragma omp parallel for proc_bind(close) reduction(max:maxabs)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			maxabs = std::max(maxabs, std::abs(physical_space_data[i]));
+			maxabs = std::max(std::abs(physical_space_data[i]), maxabs);
 
 		return maxabs;
 	}
@@ -1045,7 +1045,7 @@ public:
 #pragma omp parallel for proc_bind(close) reduction(max:maxvalue)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			maxvalue = std::max(maxvalue, physical_space_data[i]);
+			maxvalue = std::max(physical_space_data[i], maxvalue);
 
 		return maxvalue;
 	}
@@ -1064,7 +1064,7 @@ public:
 #pragma omp parallel for proc_bind(close) reduction(min:minvalue)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			minvalue = std::min(minvalue, physical_space_data[i]);
+			minvalue = std::min(physical_space_data[i], minvalue);
 
 		return minvalue;
 	}
@@ -1089,7 +1089,7 @@ public:
 
 
 	/**
-	 * return the maximum of all values, use quad precision for reduction
+	 * return the sum of all values, use quad precision for reduction
 	 */
 	double reduce_sum_quad()	const
 	{
@@ -1117,7 +1117,7 @@ public:
 	}
 
 	/**
-	 * return the maximum of all absolute values
+	 * return the sum of all absolute values
 	 */
 	double reduce_norm1()	const
 	{

@@ -1400,10 +1400,10 @@ public:
 		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
 		{
 			error = std::max(
-						error,
 						std::abs(
 								physical_space_data[j] - i_sph_data.physical_space_data[j]
-							)
+							),
+						error
 						);
 		}
 		return error;
@@ -1597,8 +1597,8 @@ public:
 
 		for (int j = 0; j < sphereDataConfig->spectral_array_data_number_of_elements; j++)
 		{
-			error.real(std::min(error.real(), spectral_space_data[j].real()));
-			error.imag(std::min(error.imag(), spectral_space_data[j].imag()));
+			error.real(std::min(spectral_space_data[j].real(), error.real()));
+			error.imag(std::min(spectral_space_data[j].imag(), error.imag()));
 		}
 
 		return error;
@@ -1616,8 +1616,8 @@ public:
 
 		for (int j = 0; j < sphereDataConfig->spectral_array_data_number_of_elements; j++)
 		{
-			error.real(std::max(error.real(), spectral_space_data[j].real()));
-			error.imag(std::max(error.imag(), spectral_space_data[j].imag()));
+			error.real(std::max(spectral_space_data[j].real(), error.real()));
+			error.imag(std::max(spectral_space_data[j].imag(), error.imag()));
 		}
 
 		return error;
@@ -1652,9 +1652,9 @@ public:
 		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
 		{
 			error = std::max(
-						error,
-						std::abs(physical_space_data[j])
-						);
+						std::abs(physical_space_data[j]),
+						error
+					);
 		}
 		return error;
 	}
@@ -1670,7 +1670,7 @@ public:
 		double error = std::numeric_limits<double>::infinity();
 
 		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
-			error = std::min(error, physical_space_data[j]);
+			error = std::min(physical_space_data[j], error);
 
 		return error;
 	}
@@ -1686,7 +1686,7 @@ public:
 		double error = -std::numeric_limits<double>::infinity();
 
 		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
-			error = std::max(error, physical_space_data[j]);
+			error = std::max(physical_space_data[j], error);
 
 		return error;
 	}

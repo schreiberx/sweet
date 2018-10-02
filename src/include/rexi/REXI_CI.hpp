@@ -111,7 +111,12 @@ public:
 			for (int j = 0; j < N; j++)
 			{
 //				T theta_j = (T)pi2*((T)j+(T)0.5)/(T)N;
-				T theta_j = (T)pi2*((T)j+(T)0.5)/(T)N;
+
+				// avoid points directoy on axes
+				//T theta_j = (T)pi2*((T)j+(T)0.5)/(T)N;
+
+				// allow points directoy on axes
+				T theta_j = (T)pi2*((T)j)/(T)N;
 
 				// sampling position of support point
 				TComplex pos = r*DQStuff::exp(I*theta_j);

@@ -684,10 +684,10 @@ public:
 		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
 		{
 			error = std::max(
-						error,
 						std::abs(
 								physical_space_data[j] - i_sph_data.physical_space_data[j]
-							)
+							),
+							error
 						);
 		}
 		return error;
@@ -802,10 +802,10 @@ public:
 		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
 		{
 			error = std::max(
-						error,
 						std::abs(
 								physical_space_data[j] - i_sph_data.physical_space_data[j]
-							)
+							),
+							error	// leave the error variable as the 2nd parameter. In case of NaN of the 1st parameter, std::max returns NaN
 						);
 		}
 		return error;
@@ -823,8 +823,8 @@ public:
 		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
 		{
 			error = std::max(
-						error,
-						std::abs(physical_space_data[j])
+						std::abs(physical_space_data[j]),
+						error		// leave the error variable as the 2nd parameter. In case of NaN of the 1st parameter, std::max returns NaN
 						);
 		}
 		return error;
@@ -839,7 +839,7 @@ public:
 		double error = std::numeric_limits<double>::infinity();
 
 		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
-			error = std::min(error, physical_space_data[j]);
+			error = std::min(physical_space_data[j], error);
 
 		return error;
 	}
@@ -853,7 +853,7 @@ public:
 		double error = -std::numeric_limits<double>::infinity();
 
 		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
-			error = std::max(error, physical_space_data[j]);
+			error = std::max(physical_space_data[j], error);
 
 		return error;
 	}
