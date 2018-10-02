@@ -1,11 +1,7 @@
 #! /bin/bash
 
 #
-# Submit jobs
-#
-# Return
-# ------
-# Job ID in each line
+# Execute all jobs by directly running them from the current shell
 #
 
 
@@ -40,3 +36,7 @@ for i in $DIRS; do
 	cd "$P"
 done
 
+
+echo "**********************************"
+echo "* Finished directly running all jobs
+echo "**********************************"
