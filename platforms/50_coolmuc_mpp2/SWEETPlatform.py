@@ -259,7 +259,7 @@ def jobscript_get_compile_command(jobgeneration : SWEETJobGeneration):
 
 SCONS="scons """+jobgeneration.compile.getSConsParams()+' -j 4"'+"""
 echo "$SCONS"
-$SCONS
+$SCONS || exit 1
 """
 
 	return content
