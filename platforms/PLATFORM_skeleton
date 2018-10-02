@@ -1,0 +1,16 @@
+#! /bin/bash
+
+
+
+# Expand wildcards
+SCRIPT="$(echo ${SWEET_ROOT}/platforms/??_${SWEET_PLATFORM}/$(basename $0))"
+
+# check if this script exists
+if [ ! -e "$SCRIPT" ]; then
+	echo "Script '$(basename ${0})' does not exist for platform '${SWEET_PLATFORM}'"
+	exit 1
+fi
+
+# Execute script
+$SCRIPT $@
+
