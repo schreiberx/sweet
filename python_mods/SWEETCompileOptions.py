@@ -688,14 +688,20 @@ class SWEETCompileOptions(InfoError):
 		return exec_name
 
 
-	def getUniqueID(self, filter):
+	def getUniqueID(self, i_filter):
+		"""
+		Return a unique ID including *all* string and number attributes of this class
+
+		i_filter:
+			list of filter names to filter out from unique ID generation
+		"""
 		return self.getProgramName()
 
 
 
-	def getUniqueParID(self, filter):
+	def getUniqueParID(self, i_filter):
 		"""
-		Return unique ID for the parallelization models
+		TODO: Get rid of this!
 		"""
 		retval = 'COMP'
 		if self.sweet_mpi == 'enable':

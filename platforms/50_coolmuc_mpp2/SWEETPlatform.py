@@ -184,6 +184,15 @@ def jobscript_get_exec_command(jobgeneration : SWEETJobGeneration):
 
 	p = jobgeneration.parallelization
 
+	mpiexec = ''
+
+	#
+	# Only use MPI exec if we are allowed to do so
+	# We shouldn't use mpiexec for validation scripts
+	#
+	if not p.mpiexec_disabled:
+		mpiexec = "mpiexec -n "+str(p.num_ranks)+" --perhost "+str(p.num_ranks_per_node)
+
 	content = """
 
 """+p_gen_script_info(jobgeneration)+"""
@@ -193,7 +202,7 @@ EXEC=\"$SWEET_ROOT/build/"""+jobgeneration.compile.getProgramName()+"""\"
 PARAMS=\""""+jobgeneration.runtime.getRuntimeOptions()+"""\"
 echo \"${EXEC} ${PARAMS}\"
 
-mpiexec -n """+str(p.num_ranks)+""" --perhost """+str(p.num_ranks_per_node)+""" $EXEC $PARAMS
+"""+mpiexec+""" $EXEC $PARAMS
 
 """
 

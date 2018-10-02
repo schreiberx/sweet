@@ -71,9 +71,15 @@ class SWEETParallelization(InfoError):
 		# Force disabling of turbo mode (if supported)
 		self.force_turbo_off = False
 
+
 		# List with parallelization information in each dimension
 		# Note, that space dimension can and should be treated as a single dimension
 		self.pardims = None
+
+		# Disable utilization of `mpiexec` to run job
+		# This is required to run e.g. the validation scripts should be
+		# (currently) executed on a single node and without MPI support
+		self.mpiexec_disabled = False
 
 
 
@@ -223,9 +229,15 @@ class SWEETParallelization(InfoError):
 
 
 
-	def getUniqueID(self, filter):
+	def getUniqueID(self, i_filter):
+		"""
+		Return a unique ID including *all* string and number attributes of this class
+
+		i_filter:
+			list of filter names to filter out from unique ID generation
+		"""
 		retval = ''
-		if not 'parallelization' in filter:
+		if not 'parallelization' in i_filter:
 			retval += 'PAR'
 
 			# cores per rank

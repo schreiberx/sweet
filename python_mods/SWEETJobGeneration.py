@@ -14,7 +14,6 @@ __all__ = ['SWEETJobGeneration']
 
 class SWEETJobGeneration(InfoError):
 
-
 	def __init__(self, platform_id_override = None):
 		InfoError.__init__(self, "SWEETJobGeneration")
 
@@ -58,14 +57,16 @@ class SWEETJobGeneration(InfoError):
 		self.compilecommand_in_jobscript = True
 
 		# Filepath to jobscript
-		self.p_jobscript_filepath = None
+		self.p_job_scriptpath = None
 
 		# Directory where to execute job
-		self.p_jobscript_dirpath = None
+		self.p_job_dirpath = None
 
 		# Filepath to write output of jobscript to
-		self.p_jobscript_stdout_filepath = None
-		self.p_jobscript_stderr_filepath = None
+		self.p_job_stdout_filepath = None
+		self.p_job_stderr_filepath = None
+
+		self.p_job_picklepath = None
 
 		# Accumulator for compile commands
 		self.p_compilecommands_accum = []
@@ -74,10 +75,11 @@ class SWEETJobGeneration(InfoError):
 
 	def print(self):
 		self.print_info("compilecommand_in_jobscript: "+str(self.compilecommand_in_jobscript))
-		self.print_info("p_jobscript_filepath: "+str(self.p_jobscript_filepath))
-		self.print_info("p_jobscript_dirpath: "+str(self.p_jobscript_dirpath))
-		self.print_info("p_jobscript_stdout_filepath: "+str(self.p_jobscript_stdout_filepath))
-		self.print_info("p_jobscript_stderr_filepath: "+str(self.p_jobscript_stderr_filepath))
+		self.print_info("p_job_scriptpath: "+str(self.p_job_scriptpath))
+		self.print_info("p_job_dirpath: "+str(self.p_job_dirpath))
+		self.print_info("p_job_stdout_filepath: "+str(self.p_job_stdout_filepath))
+		self.print_info("p_job_stderr_filepath: "+str(self.p_job_stderr_filepath))
+		self.print_info("p_job_picklepath: "+str(self.p_job_picklepath))
 
 
 
@@ -112,17 +114,18 @@ class SWEETJobGeneration(InfoError):
 		# Run Dummy setup in case that no setup was done so far!
 		self.parallelization.dummy_setup_if_no_setup(self.platform_resources)
 
-		if self.p_jobscript_filepath == None:
-			self.error("self.p_jobscript_filepath == None")
+		if self.p_job_scriptpath == None:
+			self.error("self.p_job_filepath == None")
 
-		if self.p_jobscript_dirpath == None:
-			self.error("self.p_jobscript_dirpath == None")
+		if self.p_job_dirpath == None:
+			self.error("self.p_job_dirpath == None")
 
-		if self.p_jobscript_stdout_filepath == None:
-			self.error("self.p_jobscript_stdout_filepath == None")
+		if self.p_job_stdout_filepath == None:
+			self.error("self.p_job_stdout_filepath == None")
 
-		if self.p_jobscript_stderr_filepath == None:
-			self.error("self.p_jobscript_stderr_filepath == None")
+		if self.p_job_stderr_filepath == None:
+			self.error("self.p_job_stderr_filepath == None")
+
 
 
 		self.compile.makeOptionsConsistent()
@@ -173,7 +176,7 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
 		content += """
 
 # chdir to execution directory
-cd \""""+self.p_jobscript_dirpath+"""\"
+cd \""""+self.p_job_dirpath+"""\"
 
 """
 
@@ -215,6 +218,12 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
 		self.p_compilecommands_accum = []
 		return content
 
+	def validate(self):
+		if self.parallelization.max_wallclock_seconds != None and self.platform_resources.max_wallclock_seconds != None:
+			if self.platform_resources.max_wallclock_seconds < self.parallelization.max_wallclock_seconds:
+				self.info("platform_resources.max_wallclock_seconds: "+str(self.platform_resources.max_wallclock_seconds))
+				self.info("parallelization.max_wallclock_seconds: "+str(self.parallelization.max_wallclock_seconds))
+				self.error("Max. wallcock time exceeds platform's limit")
 
 
 	def write_compilecommands(self, compilecommands_filename):
@@ -243,61 +252,112 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
 
 
 
-	def write_jobscript(self, jobscript_filepath):
+	def p_write_jobscript(self):
 
-		if self.parallelization.max_wallclock_seconds != None and self.platform_resources.max_wallclock_seconds != None:
-			if self.platform_resources.max_wallclock_seconds < self.parallelization.max_wallclock_seconds:
-				self.info("platform_resources.max_wallclock_seconds: "+str(self.platform_resources.max_wallclock_seconds))
-				self.info("parallelization.max_wallclock_seconds: "+str(self.parallelization.max_wallclock_seconds))
-				self.error("Max. wallcock time exceeds platform's limit")
-
-		if jobscript_filepath[0] == '/':
-			self.p_jobscript_filepath = jobscript_filepath
-		else:
-			self.p_jobscript_filepath = os.path.abspath(jobscript_filepath)
-
-		# Create directory for job script if it doesn't yet exist
-		self.p_jobscript_dirpath = os.path.dirname(self.p_jobscript_filepath)
-
-		# Execute in directory where job is generated in
-
-		# Setup default output
-		self.p_jobscript_stdout_filepath = self.p_jobscript_dirpath+"/output.out"
-		self.p_jobscript_stderr_filepath = self.p_jobscript_dirpath+"/output.err"
+		# Validate before writing job script
+		self.validate()
 
 		# Generate script file content
 		content = self.get_jobscript_content()
 
-		self.info("Job file '"+self.p_jobscript_filepath+"'")
-
-		# Generate directory of scriptfile is not exist
-		if not os.path.exists(self.p_jobscript_dirpath):
-			os.makedirs(self.p_jobscript_dirpath)
-
 		# Write scriptfile
-		script_file = open(self.p_jobscript_filepath, 'w')
+		script_file = open(self.p_job_scriptpath, 'w')
+		self.info("Writing job file '"+self.p_job_scriptpath+"'")
 		script_file.write(content)
 		script_file.close()
 
-		# Set permissions
-		st = os.stat(self.p_jobscript_filepath)
-		os.chmod(self.p_jobscript_filepath, st.st_mode | stat.S_IEXEC)
+		# Make script executable
+		st = os.stat(self.p_job_scriptpath)
+		os.chmod(self.p_job_scriptpath, st.st_mode | stat.S_IEXEC)
 
 
 
+	def gen_jobscript_directory(self, i_job_dirpath):
+		"""
+		Generate a job script directory with
+			run.sh:		Job script
+		and
+			jobgeneration.pickle:	Information about job generation
+		"""
 
-	def getUniqueID(self, filter : list = []):
-		self.parallelization.dummy_setup_if_no_setup(self.platform_resources)
-		unique_id = self.runtime.getUniqueID(self.compile, filter)+'_'+self.compile.getUniqueParID(filter)+'_'+self.parallelization.getUniqueID(filter)
-		return unique_id
+		# Job directory
+		self.p_job_dirpath = i_job_dirpath
+
+		# path to jobscript file
+		self.p_job_scriptpath = self.p_job_dirpath+'/run.sh'
+
+		# path to pickle file
+		self.p_job_picklepath = self.p_job_dirpath+'/jobgeneration.pickle'
+
+		# Determine output files
+		self.p_job_stdout_filepath = self.p_job_dirpath+"/output.out"
+		self.p_job_stderr_filepath = self.p_job_dirpath+"/output.err"
+
+
+		# Generate directory of scriptfile if it does not exist
+		if not os.path.exists(self.p_job_dirpath):
+			os.makedirs(self.p_job_dirpath)
+
+		self.p_write_jobscript()
+		self.save_file(self.p_job_picklepath)
 
 
 
-	# Keep this for backward compatibility
 	def gen_script(self, dirname, scriptname):
-		#self.info("WARNING: gen_script(...) is deprecated, use write_jobscript(...)")
+		"""
+		DEPRECATED
+		DEPRECATED
+		DEPRECATED
+		"""
+		self.info("WARNING: gen_script(...) is deprecated, use gen_jobscript_directory(...)")
 
 		self.write_jobscript(dirname+'/'+scriptname)
+
+
+
+	def write_jobscript(self, jobscript_filepath):
+		"""
+		DEPRECATED
+		DEPRECATED
+		DEPRECATED
+		"""
+		self.info("THIS FUNCTION IS DEPRECATED")
+
+		# Job directory
+		self.p_job_dirpath = os.path.abspath(os.path.dirname(jobscript_filepath))
+
+		# path to jobscript file
+		if os.path.basename(jobscript_filepath) != 'run.sh':
+			raise Exception("Sorry, not supported anymore. Job script must be named 'run.sh'")
+
+		self.p_job_scriptpath = self.p_job_dirpath+'/run.sh'
+
+		# path to pickle file
+		self.p_job_picklepath = self.p_job_dirpath+'/jobgeneration.pickle'
+
+		# Determine output files
+		self.p_job_stdout_filepath = self.p_job_dirpath+"/output.out"
+		self.p_job_stderr_filepath = self.p_job_dirpath+"/output.err"
+
+		# Generate directory of scriptfile if it does not exist
+		if not os.path.exists(self.p_job_dirpath):
+			os.makedirs(self.p_job_dirpath)
+
+		self.p_write_jobscript()
+
+
+	def getUniqueID(self, i_filter : list = []):
+		"""
+		Return a unique ID including *all* string and number attributes of this class
+
+		i_filter:
+			list of filter names to filter out from unique ID generation
+		"""
+		self.parallelization.dummy_setup_if_no_setup(self.platform_resources)
+		unique_id = self.runtime.getUniqueID(self.compile, i_filter)
+		unique_id += '_'+self.compile.getUniqueParID(i_filter)
+		unique_id += '_'+self.parallelization.getUniqueID(i_filter)
+		return unique_id
 
 
 
@@ -321,7 +381,7 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
 		attr_dict['platforms_platform'] = get_string_attributes(self.platforms.platform)
 		attr_dict['platform_resources'] = get_string_attributes(self.platform_resources)
 
-		with open('data.pickle', 'wb') as f:
+		with open(filename, 'wb') as f:
 			# Pickle the 'data' dictionary using the highest protocol available.
 			pickle.dump(attr_dict, f, pickle.HIGHEST_PROTOCOL)
 
@@ -332,7 +392,7 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
 			for key, attr in attr_dict.items():
 				setattr(obj, key, attr)
 
-		with open('data.pickle', 'rb') as f:
+		with open(filename, 'rb') as f:
 			# Pickle the 'data' dictionary using the highest protocol available.
 			data = pickle.load(f)
 

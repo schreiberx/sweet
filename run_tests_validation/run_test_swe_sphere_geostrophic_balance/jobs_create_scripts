@@ -8,6 +8,11 @@ import math
 from SWEET import *
 p = SWEETJobGeneration()
 
+#
+# Skip using 'mpiexec'
+#
+p.parallelization.mpiexec_disabled = True
+
 
 #
 # Run simulation on plane or sphere
@@ -100,14 +105,12 @@ p.runtime.output_filename = "-"
 
 # Load SHTNS plans
 p.user_script_exec_prefix = """
-# SHTNS plans required which have to be precomputed once.
-# You can generate them by simply running one benchmark.
-# Then, copy them to the main benchmark folder
+# Reutilize SHTNS plans if they exist
 if [ -e ../shtns_cfg ]; then
 	cp ../shtns_cfg ./ || exit 1
 	cp ../shtns_cfg_fftw ./ || exit 1
-else
-	echo "SHTNS plans not found, see README for information on how to generate them"
+#else
+#	echo "WARNING: SHTNS plans not found, see README for information on how to generate them"
 fi
 """
 
@@ -149,5 +152,5 @@ if __name__ == "__main__":
 				s = tsm[4]
 				p.runtime.load_from_dict(tsm[4])
 
-			p.gen_script('script_'+p.runtime.getUniqueID(p.compile), 'run.sh')
+			p.gen_jobscript_directory('script_'+p.getUniqueID())
 
