@@ -11,15 +11,15 @@ export OMP_PROC_BIND=close
 cd "./run_test_swe_sphere_geostrophic_balance" || exit
 
 
-./cleanup_all
+./cleanup_all || exit 1
 
-./jobs_create_scripts
+./jobs_create_scripts || exit 1
 
 ./platform_jobs_run || exit 1
 
 ./postprocessing || exit 1
 
-./cleanup_all
+./cleanup_all || exit 1
 
 echo "***********************************************"
 echo "***************** FIN *************************"

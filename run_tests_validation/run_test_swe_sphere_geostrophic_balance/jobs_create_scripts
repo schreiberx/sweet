@@ -20,6 +20,7 @@ p.compile.sphere_spectral_space = 'enable'
 p.compile.sphere_spectral_dealiasing = 'enable'
 
 
+
 # Enable quad math per default for CI REXI method
 p.compile.quadmath = 'enable'
 
@@ -31,6 +32,11 @@ p.compile.quadmath = 'enable'
 #
 p.runtime.mode_res = 128
 p.runtime.phys_res = -1
+
+
+# no stability checks to get some error output (e.g. NAN)
+p.runtime.stability_checks = 0
+
 
 #
 # Benchmark ID
