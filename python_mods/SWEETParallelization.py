@@ -38,6 +38,16 @@ class SWEETParallelization(InfoError):
 
 		self.reset()
 
+		#
+		# Disable utilization of `mpiexec` to run job
+		# This is required to run e.g. the validation scripts should be
+		# (currently) executed on a single node and without MPI support
+		#
+		# Leave this variable here to ensure being not influenced by reset()
+		#
+		self.mpiexec_disabled = False
+
+
 
 	def reset(self):
 		"""
@@ -75,11 +85,6 @@ class SWEETParallelization(InfoError):
 		# List with parallelization information in each dimension
 		# Note, that space dimension can and should be treated as a single dimension
 		self.pardims = None
-
-		# Disable utilization of `mpiexec` to run job
-		# This is required to run e.g. the validation scripts should be
-		# (currently) executed on a single node and without MPI support
-		self.mpiexec_disabled = False
 
 
 
