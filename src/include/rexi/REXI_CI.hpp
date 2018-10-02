@@ -110,13 +110,22 @@ public:
 
 			for (int j = 0; j < N; j++)
 			{
-//				T theta_j = (T)pi2*((T)j+(T)0.5)/(T)N;
-
-				// avoid points directoy on axes
-				//T theta_j = (T)pi2*((T)j+(T)0.5)/(T)N;
-
-				// allow points directoy on axes
-				T theta_j = (T)pi2*((T)j)/(T)N;
+				/*
+				 * TODO:
+				 * Figure out why the half-shifted version is a must-do
+				 * for the upsN functions (forgot the reason for it)
+				 */
+				T theta_j;
+				if (i_function_name.substr(0, 3) == "ups" || 1 || 1 || 1 || 1 || 1 || 1 || 1)
+				{
+					// avoid points directly on axes for upsN functions
+					theta_j = (T)pi2*((T)j+(T)0.5)/(T)N;
+				}
+				else
+				{
+					// allow points directly on axes
+					theta_j = (T)pi2*((T)j)/(T)N;
+				}
 
 				// sampling position of support point
 				TComplex pos = r*DQStuff::exp(I*theta_j);
@@ -133,11 +142,7 @@ public:
 				T filter_value = 1.0;
 				if (i_ci_gaussian_filter_dt_norm != 0 && i_ci_gaussian_filter_scale_a != 0)
 				{
-//					T dist = DQStuff::sqrt(gamma_j.real()*gamma_j.real() + gamma_j.imag()*gamma_j.imag());
 					T dist = DQStuff::abs(gamma_j.imag());
-
-//					std::cout << (double)gamma_j.real() << std::endl;
-//					std::cout << (double)gamma_j.imag() << std::endl;
 
 					filter_value = DQStuff::exp(
 										-DQStuff::pow(
