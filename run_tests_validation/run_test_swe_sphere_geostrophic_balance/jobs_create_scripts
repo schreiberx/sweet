@@ -97,6 +97,7 @@ timestep_sizes = [30]
 # run 100 time steps
 #p.runtime.simtime = 200*30
 p.runtime.simtime = 100*30
+p.runtime.simtime = 50*30
 
 # output results after end
 p.runtime.output_timestep_size = p.runtime.simtime
