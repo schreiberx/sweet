@@ -116,8 +116,8 @@ fi
 
 p.user_script_exec_suffix = """
 
-	cp shtns_cfg ../
-	cp shtns_cfg_fftw ../
+cp shtns_cfg ../
+cp shtns_cfg_fftw ../
 
 """
 
