@@ -1,0 +1,42 @@
+#! /bin/bash
+
+#
+# Submit jobs
+#
+# Return
+# ------
+# Job ID in each line
+#
+
+
+if [ -z "$1" ]; then
+	DIRS=script_*
+else
+	DIRS=$@
+fi
+
+P="$(pwd)"
+for i in $DIRS; do
+	cd "$i"
+
+	echo "Executing '$i'"
+
+	./run.sh 2>"output.err" > "./output.out" &
+
+	SCRIPT_PID=$!
+
+        # Wait for finish
+        wait $SCRIPT_PID
+
+	EXIT_CODE=$?
+
+	if [ 0 -ne $EXIT_CODE ]; then
+		echo "ERROR"
+		cat "output.out"
+		cat "output.err"
+		exit 1
+	fi
+
+	cd "$P"
+done
+
