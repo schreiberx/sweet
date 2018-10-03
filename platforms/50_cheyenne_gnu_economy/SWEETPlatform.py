@@ -67,15 +67,18 @@ def get_platform_resources():
 	Return information about hardware
 	"""
 
-	h = SWEETPlatformResources()
+	r = SWEETPlatformResources()
 
-	h.num_cores_per_node = 36
-	# Physical number of nodes
-	h.num_nodes = 4032
-	h.num_cores_per_socket = 18
+	r.num_cores_per_node = 36
+
+	# Physical number of nodes, maybe the limit is different
+	r.num_nodes = 4032
+
+	r.num_cores_per_socket = 18
+
 	# 12h limit
-	h.max_wallclock_seconds = 60*60*12
-	return h
+	r.max_wallclock_seconds = 60*60*12
+	return r
 
 
 
@@ -102,7 +105,7 @@ def jobscript_get_header(jobgeneration : SWEETJobGeneration):
 	global _job_id
 
 	p = jobgeneration.parallelization
-	h = jobgeneration.platform_hardware
+	#r = jobgeneration.platform_resources
 
 	def get_time_str(secs):
 		# seconds
@@ -136,7 +139,7 @@ def jobscript_get_header(jobgeneration : SWEETJobGeneration):
 ## select: number of nodes
 ## ncpus: number of CPUs per node
 ## mpiprocs: number of ranks per node
-#PBS -l select="""+str(p.num_nodes)+""":ncpus="""+str(h.num_cores_per_node)+""":mpiprocs="""+str(p.num_ranks_per_node)+""":ompthreads="""+str(p.threads_per_rank)+"\n"
+#PBS -l select="""+str(p.num_nodes)+""":ncpus="""+str(p.num_cores_per_node)+""":mpiprocs="""+str(p.num_ranks_per_node)+""":ompthreads="""+str(p.threads_per_rank)+"\n"
 
 	#"default": 2301000 
 	#"turbo": 2301000
