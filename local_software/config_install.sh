@@ -10,6 +10,9 @@ SWEET_LOCAL_SOFTWARE_DST_DIR="$PWD/local"
 mkdir -p "$SWEET_LOCAL_SOFTWARE_DST_DIR"
 mkdir -p "$SWEET_LOCAL_SOFTWARE_SRC_DIR"
 
+MAKE_DEFAULT_OPTS=" -j $(nproc)"
+
+
 function download() {
 	echo_info "Downloading from '${1}'"
 
@@ -87,10 +90,10 @@ function config_package()
 function config_make_install()
 {
 	echo_info "Executing 'make'"
-	make -j || echo_error_exit "FAILED make"
+	make $MAKE_DEFAULT_OPTS || echo_error_exit "FAILED make"
 
 	echo_info "Executing 'make install'"
-	make -j install || echo_error_exit "FAILED make install"
+	make $MAKE_DEFAULT_OPTS install || echo_error_exit "FAILED make install"
 }
 
 
