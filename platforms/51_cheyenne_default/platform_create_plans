@@ -59,8 +59,8 @@ for GENERATOR_SCRIPT in $GENERATOR_SCRIPTS; do
 	fi
 
 	# Copy (updated) SHTNS plans back to main benchmark directory
-	sed -i "s/# %SCRIPT_EXEC_SUFFIX%/&\ncp shtns_cfg ..\/ || exit 1/" "${SHTNS_SCRIPT}/run.sh"
-	sed -i "s/# %SCRIPT_EXEC_SUFFIX%/\ncp shtns_cfg_fftw ..\/ || exit 1/" "${SHTNS_SCRIPT}/run.sh"
+	sed -i "s/# %SCRIPT_EXEC_SUFFIX%/&\nmv shtns_cfg ..\/ || exit 1/" "${SHTNS_SCRIPT}/run.sh"
+	sed -i "s/# %SCRIPT_EXEC_SUFFIX%/\nmv shtns_cfg_fftw ..\/ || exit 1/" "${SHTNS_SCRIPT}/run.sh"
 
 	echo "Submitting job..."
 	PREV_JOBID="$(./platform_jobs_submit ${SHTNS_SCRIPT})"
