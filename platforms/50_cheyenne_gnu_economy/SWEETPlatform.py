@@ -151,7 +151,7 @@ def jobscript_get_header(jobgeneration : SWEETJobGeneration):
 	content += """#
 #PBS -N """+_job_id[0:100]+"""
 #PBS -o """+jobgeneration.p_job_stdout_filepath+"""
-#PBS -o """+jobgeneration.p_job_stderr_filepath+"""
+#PBS -e """+jobgeneration.p_job_stderr_filepath+"""
 
 source /etc/profile.d/modules.sh
 
@@ -215,7 +215,11 @@ def jobscript_get_exec_command(jobgeneration : SWEETJobGeneration):
 	# We shouldn't use mpiexec for validation scripts
 	#
 	if not p.mpiexec_disabled:
-		mpiexec = "mpiexec_mpt -n "+str(p.num_ranks)
+		# Use mpiexec_mpt for Intel MPI
+		#mpiexec = "mpiexec_mpt -n "+str(p.num_ranks)
+
+		# Use mpiexec for GNU
+		mpiexec = "mpiexec -n "+str(p.num_ranks)
 
 		mpiexec += " omplace "
 		mpiexec += " -nt "+str(p.num_threads_per_rank)+" "
