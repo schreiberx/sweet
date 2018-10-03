@@ -23,7 +23,6 @@ done
 # Compiler environment
 #
 
-echo "TODO: CHEYENNE"
 export SWEET_CC=gcc
 export SWEET_CXX=g++
 export SWEET_F90=gfortran
