@@ -490,7 +490,8 @@ if p.sweet_mpi == 'enable':
 
 		output = exec_command('mpiCC -v')
 		if 'MPICH' in output:
-			env.Append(LINKFLAGS='-lmpif90')
+			if p.fortran_source == 'enabled':
+				env.Append(LINKFLAGS='-lmpif90')
 		else:
 			pass
 			#print("*"*80)
@@ -650,19 +651,6 @@ env.Append(F90FLAGS = '-J'+build_dir)
 
 env.Append(CPPPATH = ['/usr/local/include', '/usr/include'])
 
-
-
-
-
-if p.compiler_c_exec != '':
-	env.Replace(CC = p.compiler_c_exec)
-
-if p.compiler_cpp_exec != '':
-	env.Replace(CXX = p.compiler_cpp_exec)
-	env.Replace(LINK = p.compiler_cpp_exec)
-
-if p.compiler_fortran_exec != '':
-	env.Replace(F90 = p.compiler_fortran_exec)
 
 
 
