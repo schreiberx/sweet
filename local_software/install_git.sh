@@ -1,30 +1,29 @@
 #! /bin/bash
 
-source ./config_install.sh ""
-source ./env_vars.sh ""
+
+source ./config_install.sh "" || exit 1
+source ./env_vars.sh "" || exit 1
 
 
-#
-# GIT
-#
+# Name of package
+PKG_NAME="Git"
+
+# Path to one file of installed package to test for existing installation
+PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/git"
+
+# URL to source code to fetch it
+PKG_URL_SRC="https://www.martin-schreiber.info/pub/sweet_local_software/git-2.19.0.tar.gz"
+
+# subdirectory of source in extracted package
+# (autodetected with basename of url without file extension if not set)
+#SRC_SUBDIR="automake-1.15"
+
+config_package $@
 
 
-echo "*** GIT ***"
-if [ ! -e "$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/git" -o "$1" != "" ]; then
-	SRC_LINK="https://www.martin-schreiber.info/pub/sweet_local_software/git-2.19.0.tar.gz"
-	FILENAME="`basename $SRC_LINK`"
-	BASENAME="git-2.19.0"
+echo_info "configure"
+./configure --prefix="$SWEET_LOCAL_SOFTWARE_DST_DIR" --with-openssl || echo_error_exit "configure failed"
 
-	cd "$SWEET_LOCAL_SOFTWARE_SRC_DIR"
+config_make_install
 
-	download "$SRC_LINK" "$FILENAME" || exit 1
-
-	tar xzf "$FILENAME"
-	cd "$BASENAME"
-
-	./configure --prefix="$SWEET_LOCAL_SOFTWARE_DST_DIR" --with-openssl || exit 1
-	make -j install
-
-	echo "DONE"
-
-fi
+config_success

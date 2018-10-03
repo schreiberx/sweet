@@ -8,10 +8,10 @@
 #
 # This is important for the SHTNS plan generation scripts
 #
-export BATCH_FILE_TAG="#PBS"
+export BATCH_FILE_TAG="#SBATCH"
 
 
-MODULES="gnu/8.1.0"
+MODULES="intel/18.0.1"
 for m in $MODULES; do
 	echo
 	echo "Loading $m"
@@ -23,9 +23,9 @@ done
 # Compiler environment
 #
 
-export SWEET_CC=gcc
-export SWEET_CXX=g++
-export SWEET_F90=gfortran
+export SWEET_CC=icc
+export SWEET_CXX=icpc
+export SWEET_F90=ifort
 
 export SWEET_MPICC=mpicc
 export SWEET_MPICXX=mpicxx
@@ -43,5 +43,3 @@ export CC=$SWEET_CC
 export CXX=$SWEET_CXX
 export LINK=$SWEET_CXX
 export LD=ld
-
-

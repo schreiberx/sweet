@@ -16,6 +16,6 @@ else
 fi
 
 for i in $DIRS; do
-	qsub "$i/run.sh" | sed "s/ .*//"
+	qsub "$i/run.sh" | sed "s/;.*//"
 done
 

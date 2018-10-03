@@ -160,7 +160,7 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
 
 		for i in override_list:
 			if 'SWEET_'+i in os.environ:
-				print("INFO: Overriding environment variable "+i+"="+os.environ['SWEET_'+i])
+				#print("INFO: Overriding environment variable "+i+"="+os.environ['SWEET_'+i])
 				content += "export "+i+"="+os.environ['SWEET_'+i]+"\n"
 
 		# Compile in main SWEET directory if requested
@@ -276,12 +276,17 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
 		"""
 		Generate a job script directory with
 			run.sh:		Job script
-		and
 			jobgeneration.pickle:	Information about job generation
+
+		Parameters:
+		--------------
+		i_job_dirpath: str
+			Directory to generate job script in.
+			There is one directory per job!
 		"""
 
 		# Job directory
-		self.p_job_dirpath = i_job_dirpath
+		self.p_job_dirpath = os.path.abspath(i_job_dirpath)
 
 		# path to jobscript file
 		self.p_job_scriptpath = self.p_job_dirpath+'/run.sh'
@@ -321,7 +326,7 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
 		DEPRECATED
 		DEPRECATED
 		"""
-		self.info("THIS FUNCTION IS DEPRECATED")
+		self.info("WARNING: write_jobscript(...) THIS FUNCTION IS DEPRECATED")
 
 		# Job directory
 		self.p_job_dirpath = os.path.abspath(os.path.dirname(jobscript_filepath))
