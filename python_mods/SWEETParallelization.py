@@ -111,7 +111,7 @@ class SWEETParallelization(InfoError):
 		self.info("num_nodes: "+str(self.num_nodes))
 		self.info("num_cores: "+str(self.num_cores))
 		self.info("max_wallclock_seconds: "+str(self.max_wallclock_seconds))
-		self.info("omp_threads_per_mpi_rank: "+str(self.self.omp_threads_per_mpi_rank))
+		self.info("omp_threads_per_mpi_rank: "+str(self.omp_threads_per_mpi_rank))
 		self.info("mpiexec_disabled: "+str(self.mpiexec_disabled))
 		self.info("force_turbo_off: "+str(self.force_turbo_off))
 
