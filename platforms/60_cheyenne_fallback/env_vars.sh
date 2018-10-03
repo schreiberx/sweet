@@ -37,6 +37,6 @@
 #export CC=$SWEET_CC
 #export CXX=$SWEET_CXX
 #export LINK=$SWEET_CXX
-#export LD=$SWEET_CXX
+#export LD=ld
 
 
