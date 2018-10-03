@@ -33,3 +33,16 @@ export SWEET_MPICC=mpigcc
 export SWEET_MPICXX=mpigxx
 export SWEET_MPIF90=mpifc
 
+export SWEET_LINK=$SWEET_CXX
+export SWEET_MPILINK=$SWEET_MPICXX
+
+
+#
+# local software compile overrides
+#
+export F90=$SWEET_F90
+export FC=$F90
+export CC=$SWEET_CC
+export CXX=$SWEET_CXX
+export LINK=$SWEET_CXX
+
