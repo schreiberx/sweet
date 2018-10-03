@@ -55,9 +55,9 @@ class SWEETRuntimeOptions(InfoError):
 		self.rexi_ci_gaussian_filter_dt_norm = 0
 		self.rexi_ci_gaussian_filter_exp_N = 0
 
-		self.rexi_m = 0
-		self.rexi_l = 11
-		self.rexi_h = 0.15
+		self.rexi_terry_m = 0
+		self.rexi_terry_l = 11
+		self.rexi_terry_h = 0.15
 
 		self.rexi_half_poles = 0
 		self.rexi_extended_modes = 0
@@ -136,10 +136,10 @@ class SWEETRuntimeOptions(InfoError):
 			self.rexi_use_direct_solution = d['use_direct_solution']
 
 		if 'terry_m' in d:
-			self.rexi_m = d['terry_m']
+			self.rexi_terry_m = d['terry_m']
 
 		if 'terry_h' in d:
-			self.rexi_h = d['terry_h']
+			self.rexi_terry_h = d['terry_h']
 
 		if 'file_n' in d:
 			self.rexi_file_n = d['file_n']
@@ -253,8 +253,8 @@ class SWEETRuntimeOptions(InfoError):
 
 				elif self.rexi_method == "terry":
 					idstr += '_REXITER'
-					idstr += '_m'+str(self.rexi_m).zfill(8)
-					idstr += '_h'+str(self.rexi_h)
+					idstr += '_m'+str(self.rexi_terry_m).zfill(8)
+					idstr += '_h'+str(self.rexi_terry_h)
 
 				elif self.rexi_method == "ci":
 					idstr += '_REXICI'
@@ -376,8 +376,8 @@ class SWEETRuntimeOptions(InfoError):
 
 				if self.rexi_method == 'terry':
 					# REXI Terry
-					retval += ' --rexi-m='+str(self.rexi_m)
-					retval += ' --rexi-h='+str(self.rexi_h)
+					retval += ' --rexi-terry-m='+str(self.rexi_terry_m)
+					retval += ' --rexi-terry-h='+str(self.rexi_terry_h)
 
 				elif self.rexi_method == 'file':
 					# REXI File

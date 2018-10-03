@@ -245,9 +245,9 @@ struct REXI_SimulationVariables
 		std::cout << "	--rexi-beta-cutoff [float]	Cutoff of REXI coefficients if the absolute value of beta exceed this value, default:0" << std::endl;
 		std::cout << "	--rexi-add-u0 [bool]	Add U0 to the sum of REXI terms, default:0" << std::endl;
 		std::cout << "  REXI Terry:" << std::endl;
-		std::cout << "	--rexi-h [float]			REXI parameter h" << std::endl;
-		std::cout << "	--rexi-m [int]				REXI parameter M" << std::endl;
-		std::cout << "	--rexi-l [int]				REXI parameter L" << std::endl;
+		std::cout << "	--rexi-terry-h [float]			REXI parameter h" << std::endl;
+		std::cout << "	--rexi-terry-m [int]				REXI parameter M" << std::endl;
+		std::cout << "	--rexi-terry-l [int]				REXI parameter L" << std::endl;
 		std::cout << "  REXI File:" << std::endl;
 		std::cout << "	--rexi-file-alpha [string]			File with alpha coefficients" << std::endl;
 		std::cout << "	--rexi-file-beta [string]			File with beta coefficients" << std::endl;
@@ -283,13 +283,13 @@ struct REXI_SimulationVariables
 			int i_max_options					///< maximum number of options
 	)
 	{
-		io_long_options[io_next_free_program_option] = {"rexi-h", required_argument, 0, 256+io_next_free_program_option};
+		io_long_options[io_next_free_program_option] = {"rexi-terry-h", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
-		io_long_options[io_next_free_program_option] = {"rexi-m", required_argument, 0, 256+io_next_free_program_option};
+		io_long_options[io_next_free_program_option] = {"rexi-terry-m", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
-		io_long_options[io_next_free_program_option] = {"rexi-l", required_argument, 0, 256+io_next_free_program_option};
+		io_long_options[io_next_free_program_option] = {"rexi-terry-l", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
 		io_long_options[io_next_free_program_option] = {"rexi-half", required_argument, 0, 256+io_next_free_program_option};
