@@ -62,7 +62,7 @@ Coding:
 
 
 **************************
-Compilation on personal workstation:
+SWEET Environment
 **************************
 
 	First of all, setup the environment variables correctly
@@ -72,6 +72,10 @@ Compilation on personal workstation:
 
 	$ source ./local_software/env_vars.sh
 
+
+**************************
+Compilation on personal workstation:
+**************************
 
 	The compilation is then done by calling 'scons' which is a
 	makefile alternative and offers the flexibility of Python.
