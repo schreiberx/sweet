@@ -48,10 +48,6 @@ class SWEETCompileOptions(InfoError):
 		self.mode = 'release'
 		self.compiler = 'gnu'
 
-		self.compiler_c_exec = ''
-		self.compiler_cpp_exec = ''
-		self.compiler_fortran_exec = ''
-
 		self.debug_symbols = 'enable'
 		self.simd = 'enable'
 		self.mic = 'disable'
@@ -176,10 +172,6 @@ class SWEETCompileOptions(InfoError):
 		retval += ' --sphere-spectral-dealiasing='+self.sphere_spectral_dealiasing
 		retval += ' --libxml='+self.libxml
 
-		retval += ' --compiler-c-exec='+self.compiler_c_exec
-		retval += ' --compiler-cpp-exec='+self.compiler_cpp_exec
-		retval += ' --compiler-fortran-exec='+self.compiler_fortran_exec
-
 		# GUI
 		retval += ' --gui='+self.gui
 
@@ -246,31 +238,6 @@ class SWEETCompileOptions(InfoError):
 				help='specify compiler to use: gnu, intel, llvm, pgi [default: %default]'
 		)
 		self.compiler = scons.GetOption('compiler')
-
-		scons.AddOption(	'--compiler-c-exec',
-				dest='compiler_c_exec',
-				type='string',
-				default='',
-				help='Specify program name for c compiler'
-		)
-		self.compiler_c_exec = scons.GetOption('compiler_c_exec')
-
-		scons.AddOption(	'--compiler-cpp-exec',
-				dest='compiler_cpp_exec',
-				type='string',
-				default='',
-				help='Specify program name for cpp compiler'
-		)
-		self.compiler_cpp_exec = scons.GetOption('compiler_cpp_exec')
-
-		scons.AddOption(	'--compiler-fortran-exec',
-				dest='compiler_fortran_exec',
-				type='string',
-				default='',
-				help='Specify program name for fortran compiler'
-		)
-		self.compiler_fortran_exec = scons.GetOption('compiler_fortran_exec')
-
 
 		scons.AddOption(	'--numa-block-allocator',
 				dest='numa_block_allocator',
