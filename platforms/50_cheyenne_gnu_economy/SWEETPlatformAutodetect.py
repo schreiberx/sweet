@@ -1,6 +1,7 @@
 
 import platform
 import socket
+import os
 
 def autodetect():
 	"""
@@ -10,8 +11,17 @@ def autodetect():
 		True if current platform matches, otherwise False
 	"""
 
-	fqdn = socket.getfqdn()
-	return ".cheyenne" in fqdn
+	dirs = os.path.abspath(__file__).split('/')
+	sweet_src_dirname = dirs[len(dirs)-4]
+
+	# Autodetect based on source folder name for SWEET source
+	# This helps to utilize different versions of SWEET on cheyenne
+	if sweet_src_dirname=="sweet_gnu_cheyenne":
+		return True
+
+	return False
+#	fqdn = socket.getfqdn()
+#	return ".cheyenne" in fqdn
 
 
 if __name__ == "__main__":
