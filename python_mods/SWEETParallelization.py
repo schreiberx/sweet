@@ -82,9 +82,6 @@ class SWEETParallelization(InfoError):
 		# max wallclock time, default: 1h
 		self.max_wallclock_seconds = 60*60
 
-		# number of OpenMP threads for each MPI rank
-		self.omp_threads_per_mpi_rank = None
-
 
 		# List with parallelization information in each dimension
 		# Note, that space dimension can and should be treated as a single dimension
@@ -111,7 +108,6 @@ class SWEETParallelization(InfoError):
 		self.info("num_nodes: "+str(self.num_nodes))
 		self.info("num_cores: "+str(self.num_cores))
 		self.info("max_wallclock_seconds: "+str(self.max_wallclock_seconds))
-		self.info("omp_threads_per_mpi_rank: "+str(self.omp_threads_per_mpi_rank))
 		self.info("mpiexec_disabled: "+str(self.mpiexec_disabled))
 		self.info("force_turbo_off: "+str(self.force_turbo_off))
 
@@ -128,7 +124,6 @@ class SWEETParallelization(InfoError):
 			dummy.num_cores_per_rank = dummy.num_cores
 			dummy.num_threads_per_rank = dummy.num_cores
 			dummy.num_ranks = 1
-			dummy.omp_threads_per_mpi_rank = dummy.num_threads_per_rank
 			self.setup([dummy], platform_resources)
 			self.print()
 
