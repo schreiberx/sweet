@@ -74,7 +74,7 @@ function config_package()
 			echo_warning "	${0} FORCE CLEAN"
 			echo_warning "to remove existing source files first."
 			echo_warning_hline
-			exit 1
+			exit 0
 		fi
 	fi
 

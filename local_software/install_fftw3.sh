@@ -7,7 +7,7 @@ source ./env_vars.sh "" || exit 1
 PKG_NAME="fftw"
 
 # Path to one file of installed package to test for existing installation
-PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/libfftw3.so"
+PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/libfftw3.a"
 
 # URL to source code to fetch it
 PKG_URL_SRC="fftw-3.3.8.tar.gz"
