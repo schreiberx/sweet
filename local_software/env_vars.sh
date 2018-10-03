@@ -7,27 +7,71 @@
 #
 
 
+#
+# START: Some convenient functions
+#
+# echo_info [message]:
+#	Output in regular colors
+#
+# echo_success [message]:
+#	Output success message in green color
+#
+# echo_warning [message]:
+#	Output warning message in yellow color
+#
+# echo_error [message]:
+#	Output success message in red color
+#
+# echo_hline [message]:
+#	Output a horizontal separator line
+#
+
+ECHO_PREFIX="echo -n \"SWEET: \""
+
+# Pretty output
+echo_info()( eval ${ECHO_PREFIX}; echo "${@}"; )
+echo_success()( eval ${ECHO_PREFIX}; echo -en "\033[0;32m"; echo "${@}"; echo -en "\033[0m"; )
+echo_warning()( eval ${ECHO_PREFIX}; echo -en "\033[0;33m"; echo "${@}"; echo -en "\033[0m"; )
+echo_error()( eval ${ECHO_PREFIX}; echo -en "\033[0;31m"; echo "${@}"; echo -en "\033[0m"; )
+
+# hlines
+echo_hline()( echo "SWEET: *************************************************************************"; )
+echo_info_hline()( echo_info "*************************************************************************"; )
+echo_success_hline()( echo_success "*************************************************************************"; )
+echo_warning_hline()( echo_warning "*************************************************************************"; )
+echo_error_hline()( echo_error "*************************************************************************"; )
+
+# output error and exit
+echo_error_exit(){ echo_error_hline; eval ${ECHO_PREFIX}; echo -en "\033[0;31m"; echo "${@}"; echo -en "\033[0m"; echo_error_hline; exit 1; }
+
+#
+# END CONV
+#
+
+
 if [ "#$SWEET_ROOT" != "#" ]; then
-	echo "SWEET environment variables already loaded (skipping)"
+
+	echo_warning "Environment variables already loaded (skipping)"
 	if [ "`basename -- "$0"`" = "env_vars.sh" ]; then
 		return
 	fi
 else
 
+	echo_hline
 	if [ "#$0" != "#-bash" ]; then
 		if [ "`basename -- "$0"`" = "env_vars.sh" ]; then
 			if [ "`basename -- "$0"`" != "bash" ]; then
 				if [ "`basename -- "$0"`" != "modules_env_yellowstone.inc" ]; then
-					echo "ERROR|"
-					echo "ERROR| >>> $0"
-					echo "ERROR| THIS SCRIPT MAY NOT BE EXECUTED, BUT INCLUDED IN THE ENVIRONMENT VARIABLES!"
-					echo "ERROR| Use e.g. "
-					echo "     |"
-					echo "     |    $ source ./env_vars.sh"
-					echo "     |"
-					echo "ERROR| to setup the environment variables correctly"
-					echo "ERROR|"
-					exit
+					echo_error ""
+					echo_error ">>> $0"
+					echo_error "THIS SCRIPT MAY NOT BE EXECUTED, BUT INCLUDED IN THE ENVIRONMENT VARIABLES!"
+					echo_error "Use e.g. "
+					echo_error ""
+					echo_error "   $ source ./env_vars.sh"
+					echo_error ""
+					echo_error "to setup the environment variables correctly"
+					echo_error ""
+					exit 1
 				fi
 			fi
 		fi
@@ -35,9 +79,9 @@ else
 
 
 	if [ "`basename -- "$SHELL"`" != "bash" ]; then
-		echo "ERROR|"
-		echo "ERROR| These scripts are only compatible to the bash shell"
-		echo "ERROR|"
+		echo_error ""
+		echo_error "These scripts are only compatible to the bash shell"
+		echo_error ""
 		return
 	fi
 
@@ -59,17 +103,17 @@ else
 		for i in $SWEET_SYSTEM_PACKAGES; do
 			dpkg -s "$i" >/dev/null 2>&1
 			if [ "x$?" != "x0" ]; then
-				echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-				echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-				echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-				echo ""
-				echo "Ubuntu system detected and packages missing, please use"
-				echo ""
-				echo "    sudo apt-get install $SWEET_SYSTEM_PACKAGES"
-				echo ""
-				echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-				echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-				echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+				echo_error "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+				echo_error "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+				echo_error "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+				echo_error ""
+				echo_error "Ubuntu system detected and packages missing, please use"
+				echo_error ""
+				echo_error "    sudo apt-get install $SWEET_SYSTEM_PACKAGES"
+				echo_error ""
+				echo_error "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+				echo_error "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+				echo_error "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 				return
 			fi
 		done
@@ -90,6 +134,7 @@ else
 	# Back to local software
 	cd "$SCRIPTDIR"
 
+	echo_info " + Setting up platform independent environment variables..."
 
 	export PATH="$SCRIPTDIR/local/bin:$PATH"
 	export PKG_CONFIG_PATH="$SCRIPTDIR/local/lib/pkgconfig:$PKG_CONFIG_PATH"
@@ -109,19 +154,26 @@ else
 	# Add SWEET python_mods to pythonpath
 	export PYTHONPATH="$PYTHONPATH:$SWEET_ROOT/python_mods"
 
-	echo "SWEET: Environment variables loaded"
+	echo_info " + Loading platform specific environment variables..."
 
 
 	#
 	# Include cluster-specific scripts
 	#
 	if [ "#$SWEET_PLATFORM" != "#" ]; then
+		echo_info "                   Mode: SWEET_PLATFORM (=${SWEET_PLATFORM})"
+		PLATFORM_ENV_VARS=$(eval echo "${SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM}/env_vars.sh")
 
-		ENV_VARS=$(eval echo "${SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM}/env_vars.sh")
-		echo "SWEET: SWEET_PLATFORM='${SWEET_PLATFORM}' detected, loading platform environment variables from ${ENV_VARS}"
-		source "$ENV_VARS"
+		if [ ! -e "$PLATFORM_ENV_VARS" ]; then
+			echo_error "File '${PLATFORM_ENV_VARS}' not found!"
+			return 1
+		fi
+
+		source "$PLATFORM_ENV_VARS" || return 1
 
 	elif [ "#${1}" = "#" ] || [ "#${1}" = "#FORCE" ]; then
+		echo_info "                   Mode: Autodetect"
+
 		#
 		# Use python code to detect hardware.
 		#
@@ -130,6 +182,10 @@ else
 		#
 		function load_this_platform {
 
+			if [ ! -e "SWEETPlatformAutodetect.py" ]; then
+				echo_warning "Warning: 'SWEETPlatformAutodetect.py' not found in ${PWD}"
+				return 1
+			fi
 			# Automagic detection here if called from terminal
 			echo -en "import sys\nimport SWEETPlatformAutodetect\nsys.exit(0 if SWEETPlatformAutodetect.autodetect() else 1)" | /usr/bin/env python3 && return 0
 
@@ -146,44 +202,41 @@ else
 			if [ $? -eq 0 ]; then
 				p=$(basename "$i")
 				p=${p/??_/}
-				echo "SWEET: Autoddetected platform '$p'"
 				export SWEET_PLATFORM="$p"
-				source "./env_vars.sh"
+				source "./env_vars.sh" || return 1
 				break
 			fi
 		done
 	else
+		echo_info "                   Mode: Platform environment file provided"
+
 		# Load platform environment variables if specified
-		echo "SWEET: \$1='${1}' detected, loading platform environment variables from file '${1}'"
+		echo_info "     Platform env. file: \$1='${1}'"
+
 		# Set SWEET Platform override
 		export SWEET_PLATFORM="$1"
-		source "$1"
+		source "$1" || return 1
 	fi
 
 	if [ -z "${SWEET_PLATFORM}" ]; then
-		echo "SWEET: INTERNNAL ERROR: No platform detected!!!"
+		echo_error "INTERNNAL ERROR: No platform detected!!!"
 		return
 	fi
 
-	echo "SWEET: Platform '${SWEET_PLATFORM}' loaded"
+	export SWEET_PLATFORM_DIR="$(eval echo "${SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM}/")"
+
+	echo_info "         Using platform: '${SWEET_PLATFORM}'"
+	echo_info "     Platform directory: '${SWEET_PLATFORM_DIR}'"
 
 	# Back to local software
 	cd "$SCRIPTDIR"
-
-
-	if [ ! -d "$SCRIPTDIR" ]; then
-		echo
-		echo "ERROR| Execute this script only from the SWEET root directory"
-		echo "     |   $ source local_software/env_vars.sh"
-		echo
-		cd "$BACKDIR"
-		return
-	fi
 
 	export PS1="[SWEET.$SWEET_PLATFORM] $PS1"
 
 
 	cd "$BACKDIR"
 
+	echo_success " Environment setup successful (I hope so...)"
+	echo_hline
 
 fi

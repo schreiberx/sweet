@@ -1,37 +1,36 @@
 #! /bin/bash
 
-source ./config.sh ""
-source ./env_vars.sh ""
+source ./config_install.sh "" || exit 1
+source ./env_vars.sh "" || exit 1
 
 
-#
-# Autoconf
-#
+# Name of package
+PKG_NAME="autoconf"
 
-echo "*** Autoconf ***"
+# Path to one file of installed package to test for existing installation
+PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/autoconf"
+
+# URL to source code to fetch it
+PKG_URL_SRC="https://www.martin-schreiber.info/pub/sweet_local_software/autoconf-2.69.tar.gz"
+
+# subdirectory of source in extracted package
+# (autodetected with basename of url without file extension if not set)
+#SRC_SUBDIR="autoconf-2.69"
+
 if [ "`uname -s`" != "Linux" ] && [ "`uname -s`" != "Darwin" ]; then
 	echo "This script only supports Autoconf on Linux systems"
-else
-
-	if [ ! -e "$DST_DIR/bin/autoconf" -o "$1" != ""  ]; then
-		SRC_LINK="https://www.martin-schreiber.info/pub/sweet_local_software/autoconf-2.69.tar.gz"
-		#SRC_LINK="https://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.gz"
-		FILENAME="`basename $SRC_LINK`"
-		BASENAME="autoconf-2.69"
-
-		cd "$SRC_DIR"
-
-		download "$SRC_LINK" "$FILENAME" || exit 1
-		tar xzf "$FILENAME"
-		cd "$BASENAME"
-
-		pwd
-		./configure --prefix="$DST_DIR" || exit 1
-		make -j install
-
-		echo "DONE"
-
-	else
-		echo "Autoconf already installed"
-	fi
+	exit 1
 fi
+
+config_package $@
+
+#
+# We are now in the extracted source folder
+#
+
+echo_info "configure"
+./configure --prefix="$SWEET_LOCAL_SOFTWARE_DST_DIR" || echo_error_exit "FAILED configure"
+
+config_make_install
+
+config_success

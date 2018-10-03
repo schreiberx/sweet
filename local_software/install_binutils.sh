@@ -1,28 +1,27 @@
 #! /bin/bash
 
-source ./config.sh ""
-source ./env_vars.sh ""
+source ./config_install.sh "" || exit 1
+source ./env_vars.sh "" || exit 1
 
 
-echo "*** BINUTILS ***"
-if [ -e "$DST_DIR/bin/as" -a "$1" == "" ]; then
-	echo "Binutils already installed"
-	exit 1
-fi
+# Name of package
+PKG_NAME="binutils"
 
+# Path to one file of installed package to test for existing installation
+PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/as"
 
-SRC_LINK="https://www.martin-schreiber.info/pub/sweet_local_software/binutils-2.29.tar.gz"
-FILENAME="`basename $SRC_LINK`"
-BASENAME="binutils-2.29"
+# URL to source code to fetch it
+PKG_URL_SRC="https://www.martin-schreiber.info/pub/sweet_local_software/binutils-2.29.tar.gz"
 
-cd "$SRC_DIR" || exit 1
+# subdirectory of source in extracted package
+# (autodetected with basename of url without file extension if not set)
+#SRC_SUBDIR="automake-1.15"
 
-download "$SRC_LINK" "$FILENAME" || exit 1
-tar xzf "$FILENAME" || exit 1
-cd "$BASENAME" || exit 1
+config_package $@
 
-./configure --prefix="$DST_DIR" || exit 1
-make || exit 1
-make install || exit 1
+echo_info "configure"
+./configure --prefix="$SWEET_LOCAL_SOFTWARE_DST_DIR" || echo_error_exit "FAILED configure"
 
-echo "DONE"
+config_make_install
+
+config_success

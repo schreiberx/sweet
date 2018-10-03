@@ -1,62 +1,55 @@
 #! /bin/bash
 
-source ./config.sh ""
-source ./env_vars.sh ""
+source ./config_install.sh "" || exit 1
+source ./env_vars.sh "" || exit 1
 
 
-echo "*** FFTW3 ***"
-if [ ! -e "$DST_DIR/lib/libfftw3.so"  -o "$1" != "" ]; then
-	#SRC_LINK="https://www.martin-schreiber.info/pub/sweet_local_software/fftw-3.3.6-pl2.tar.gz"
-	SRC_LINK="https://www.martin-schreiber.info/pub/sweet_local_software/fftw-3.3.8.tar.gz"
-	#SRC_LINK="https://www.fftw.org/fftw-3.3.4.tar.gz"
-	FILENAME="`basename $SRC_LINK`"
-	#BASENAME="fftw-3.3.6-pl2"
-	BASENAME="fftw-3.3.8"
+# Name of package
+PKG_NAME="fftw"
 
-	cd "$SRC_DIR"
+# Path to one file of installed package to test for existing installation
+PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/libfftw3.so"
 
-	download "$SRC_LINK" "$FILENAME" || exit 1
-	tar xzf "$FILENAME"
-	cd "$BASENAME"
+# URL to source code to fetch it
+PKG_URL_SRC="https://www.martin-schreiber.info/pub/sweet_local_software/fftw-3.3.8.tar.gz"
 
-	
-	CONF_FLAGS=""
+# subdirectory of source in extracted package
+# (autodetected with basename of url without file extension if not set)
+#SRC_SUBDIR=""
 
-	if [ "`uname -s`" == "Linux" -o "`uname -s`" == "Darwin" ]; then
-		CONF_FLAGS+=" --enable-openmp "
-	fi
+config_package $@
 
-	# Activate vectorization code
+CONF_FLAGS=""
+
+if [ "`uname -s`" == "Linux" -o "`uname -s`" == "Darwin" ]; then
+	CONF_FLAGS+=" --enable-openmp "
+fi
+
+# Activate vectorization code
 
 #	sse only works with single precision
 #	CONF_FLAGS+=" --enable-sse"
 
-	CONF_FLAGS+=" --enable-sse2"
-	CONF_FLAGS+=" --enable-avx"
-	CONF_FLAGS+=" --enable-avx2"
-	CONF_FLAGS+=" --enable-avx512"
-	CONF_FLAGS+=" --enable-avx-128-fma"
+CONF_FLAGS+=" --enable-sse2"
+CONF_FLAGS+=" --enable-avx"
+CONF_FLAGS+=" --enable-avx2"
+CONF_FLAGS+=" --enable-avx512"
+#CONF_FLAGS+=" --enable-avx-128-fma"
 
-	# Never used directly in Fortran
-	CONF_FLAGS+=" --disable-fortran"
+# Never used directly in Fortran
+CONF_FLAGS+=" --disable-fortran"
 
-	# Enable generation of shared library
-	CONF_FLAGS+=" --enable-shared"
-
-	# TODO: Autodetect ARM and use --enable-neon
+# Enable generation of shared library
+#CONF_FLAGS+=" --enable-shared"
 
 #	neon only works with single precision
 #	CONF_FLAGS+=" --enable-neon"
 
-	echo "Configuration flags: $CONF_FLAGS"
+echo "Configuration flags: $CONF_FLAGS"
 
-	./configure --prefix="$DST_DIR" $CONF_FLAGS  || exit 1
+echo_info "configure"
+./configure --prefix="$SWEET_LOCAL_SOFTWARE_DST_DIR" $CONF_FLAGS  || echo_error_exit "configure failed"
 
-	make install || exit 1
-	make check || exit 1
+config_make_install
 
-	echo "DONE"
-
-else
-	echo "FFTW already installed"
-fi
+config_success

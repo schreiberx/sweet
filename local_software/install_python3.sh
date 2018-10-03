@@ -1,6 +1,6 @@
 #! /bin/bash
 
-source ./config.sh ""
+source ./config_install.sh ""
 source ./env_vars.sh ""
 
 
@@ -11,13 +11,13 @@ source ./env_vars.sh ""
 
 echo "*** Python3 ***"
 
-if [ ! -e "$DST_DIR/bin/python3"  -o "$1" != "" ]; then
+if [ ! -e "$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/python3"  -o "$1" != "" ]; then
 	SRC_LINK="https://www.martin-schreiber.info/pub/sweet_local_software/Python-3.6.2.tgz"
 	#SRC_LINK="https://www.python.org/ftp/python/2.7.11/Python-2.7.11.tgz"
 	FILENAME="`basename $SRC_LINK`"
 	BASENAME="Python-3.6.2"
 
-	cd "$SRC_DIR"
+	cd "$SWEET_LOCAL_SOFTWARE_SRC_DIR"
 
 	download "$SRC_LINK" "$FILENAME" || exit 1
 	tar xzf "$FILENAME"
@@ -26,10 +26,10 @@ if [ ! -e "$DST_DIR/bin/python3"  -o "$1" != "" ]; then
 	#sed -i "s/#zlib/zlib/" Modules/Setup	 || exit 1
 	#sed -i "s/#binascii/binascii/" Modules/Setup	|| exit 1
 
-	./configure --prefix="$DST_DIR" || exit 1
+	./configure --prefix="$SWEET_LOCAL_SOFTWARE_DST_DIR" || exit 1
 
 	make install || exit 1
-	ln -sf "$DST_DIR/bin/python3" "$DST_DIR/bin/python" 
+	ln -sf "$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/python3" "$DST_DIR/bin/python" 
 
 	# install numpy since this is also required by other software
 	pip3 install numpy matplotlib

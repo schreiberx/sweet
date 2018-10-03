@@ -1,30 +1,30 @@
 #! /bin/bash
 
-source ./config.sh ""
-source ./env_vars.sh ""
+source ./config_install.sh "" || exit 1
+source ./env_vars.sh "" || exit 1
 
 
-echo "*** EIGEN3 ***"
-if [ ! -e "$DST_DIR/include/eigen3/Eigen/Eigenvalues"  -o "$1" != "" ]; then
-	SRC_LINK="https://www.martin-schreiber.info/pub/sweet_local_software/eigen-3.3.3.tar.bz2"
-	#SRC_LINK="https://bitbucket.org/eigen/eigen/get/3.3.3.tar.bz2"
-	FILENAME="`basename $SRC_LINK`"
-	BASENAME="eigen-3.3.3"
+# Name of package
+PKG_NAME="eigen"
 
-	cd "$SRC_DIR"
+# Path to one file of installed package to test for existing installation
+PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/include/eigen3/Eigen/Eigenvalues"
 
-	download "$SRC_LINK" "$FILENAME" || exit 1
-	tar xjf "$FILENAME"
-	mv "eigen-eigen-67e894c6cd8f" "$BASENAME"
-	cd "$BASENAME"
+# URL to source code to fetch it
+PKG_URL_SRC="https://www.martin-schreiber.info/pub/sweet_local_software/eigen-3.3.3.tar.bz2"
 
-	mkdir -p build
-	cd build
-	cmake ../  -DCMAKE_INSTALL_PREFIX="$DST_DIR" || exit 1
-	make install || exit 1
+# subdirectory of source in extracted package
+# (autodetected with basename of url without file extension if not set)
+SRC_SUBDIR="eigen-eigen-67e894c6cd8f"
 
-	echo "DONE"
+config_package $@
 
-else
-	echo "Eigen is already installed"
-fi
+mkdir -p build
+cd build
+
+echo_info "cmake"
+cmake ../  -DCMAKE_INSTALL_PREFIX="$SWEET_LOCAL_SOFTWARE_DST_DIR" || echo_error_exit "cmake failed"
+
+config_make_install
+
+config_success

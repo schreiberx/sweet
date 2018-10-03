@@ -1,6 +1,6 @@
 #! /bin/bash
 
-source ./config.sh ""
+source ./config_install.sh ""
 source ./env_vars.sh ""
 
 
@@ -11,12 +11,12 @@ if [ "${HOSTNAME:0:8}" == "cheyenne" ]; then
 fi
 
 echo "*** GCC7.1 ***"
-if [ ! -e "$DST_DIR/bin/gcc-7.1"  -o "$1" != "" ]; then
+if [ ! -e "$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/gcc-7.1"  -o "$1" != "" ]; then
 	SRC_LINK="https://www.martin-schreiber.info/pub/sweet_local_software/gcc-7.1.0.tar.bz2"
 	FILENAME="`basename $SRC_LINK`"
 	BASENAME="gcc-7.1.0"
 
-	cd "$SRC_DIR"
+	cd "$SWEET_LOCAL_SOFTWARE_SRC_DIR"
 	download "$SRC_LINK" "$FILENAME" || exit 1
 
 	echo "Uncompressing $FILENAME"
@@ -102,13 +102,13 @@ if [ ! -e "$DST_DIR/bin/gcc-7.1"  -o "$1" != "" ]; then
 	export CC=gcc
 	export CXX=g++
 	export LINK=ld
-	./configure --disable-multilib --enable-languages=c++,fortran  --prefix="$DST_DIR" --program-suffix=-7.1 || exit 1
+	./configure --disable-multilib --enable-languages=c++,fortran  --prefix="$SWEET_LOCAL_SOFTWARE_DST_DIR" --program-suffix=-7.1 || exit 1
 
 	make || exit 1
 	make install || exit 1
 
 	for i in g++ gcc gcc-ar gcc-nm gcc-ranlib gfortran gcov gcov-tool gfortran; do
-		ln -sf "$DST_DIR/bin/$i-7.1" "$DST_DIR/bin/$i"
+		ln -sf "$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/$i-7.1" "$DST_DIR/bin/$i"
 	done
 
 	echo "DONE"

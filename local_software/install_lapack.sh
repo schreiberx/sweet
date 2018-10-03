@@ -1,17 +1,17 @@
 #! /bin/bash
 
-source ./config.sh ""
+source ./config_install.sh ""
 source ./env_vars.sh ""
 
 
 echo "*** LAPACK ***"
-if [ ! -e "$DST_DIR/lib/liblapack.a"  -o "$1" != "" ]; then
+if [ ! -e "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/liblapack.a"  -o "$1" != "" ]; then
 	SRC_LINK="https://www.martin-schreiber.info/pub/sweet_local_software/lapack-3.8.0.tar.gz"
 	#SRC_LINK="https://www.netlib.org/lapack/lapack-3.6.1.tgz"
 	FILENAME="`basename $SRC_LINK`"
 	BASENAME="lapack-3.8.0"
 
-	cd "$SRC_DIR"
+	cd "$SWEET_LOCAL_SOFTWARE_SRC_DIR"
 
 	download "$SRC_LINK" "$FILENAME" || exit 1
 
@@ -29,8 +29,8 @@ if [ ! -e "$DST_DIR/lib/liblapack.a"  -o "$1" != "" ]; then
 
 
 		echo "Installing liblapack.a"
-		cp ./lib/liblapack.a "$DST_DIR/lib" || exit 1
-		cp ./lib/libblas.a "$DST_DIR/lib" || exit 1
+		cp ./lib/liblapack.a "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib" || exit 1
+		cp ./lib/libblas.a "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib" || exit 1
 	else
 		# create default configuration
 		cp make.inc.example make.inc
@@ -61,10 +61,10 @@ if [ ! -e "$DST_DIR/lib/liblapack.a"  -o "$1" != "" ]; then
 
 		#cd LAPACKE || exit 1
 		#make lapacke || exit 1
-		#mkdir -p "$DST_DIR/lib"
+		#mkdir -p "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib"
 		echo "Installing liblapack.a"
-		cp ./liblapack.a "$DST_DIR/lib" || exit 1
-		cp ./libblas.a "$DST_DIR/lib" || exit 1
+		cp ./liblapack.a "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib" || exit 1
+		cp ./libblas.a "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib" || exit 1
 	fi
 
 	echo "DONE"

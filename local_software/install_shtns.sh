@@ -1,6 +1,6 @@
 #! /bin/bash
 
-source config.sh ""
+source config_install.sh ""
 source env_vars.sh ""
 
 
@@ -9,9 +9,9 @@ SRC_LINK="https://www.martin-schreiber.info/pub/sweet_local_software/nschaeff-sh
 FILENAME="`basename $SRC_LINK`"
 BASENAME="nschaeff-shtns-2018_10_01"
 
-if [ ! -e "$DST_DIR/lib/libshtns_omp.a"  -o "$1" != "" ]; then
+if [ ! -e "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/libshtns_omp.a"  -o "$1" != "" ]; then
 
-	cd "$SRC_DIR"
+	cd "$SWEET_LOCAL_SOFTWARE_SRC_DIR"
 
 	download "$SRC_LINK" "$FILENAME" || exit 1
 
@@ -21,12 +21,12 @@ if [ ! -e "$DST_DIR/lib/libshtns_omp.a"  -o "$1" != "" ]; then
 	
 	# library, OpenMP
 	make clean
-	./configure --prefix="$DST_DIR" --enable-openmp || exit 1
+	./configure --prefix="$SWEET_LOCAL_SOFTWARE_DST_DIR" --enable-openmp || exit 1
 	make install || exit 1
 
 	# library, no OpenMP
 	make clean
-	./configure --prefix="$DST_DIR" --disable-openmp || exit 1
+	./configure --prefix="$SWEET_LOCAL_SOFTWARE_DST_DIR" --disable-openmp || exit 1
 	make install || exit 1
 
 
