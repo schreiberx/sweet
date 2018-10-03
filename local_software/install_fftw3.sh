@@ -21,18 +21,39 @@ if [ ! -e "$DST_DIR/lib/libfftw3.so"  -o "$1" != "" ]; then
 
 	
 	CONF_FLAGS=""
+
 	if [ "`uname -s`" == "Linux" -o "`uname -s`" == "Darwin" ]; then
-		CONF_FLAGS=" --enable-openmp "
+		CONF_FLAGS+=" --enable-openmp "
 	fi
 
-	CONF_FLAGS=" --disable-fortran $CONF_FLAGS"
-	./configure --prefix="$DST_DIR" --with-our-malloc16 $CONF_FLAGS --enable-shared  || exit 1
-	#./configure $HOST --prefix="$DST_DIR" --with-our-malloc16 $CONF_FLAGS --enable-shared  || exit 1
+	# Activate vectorization code
 
-# AVX is not compiling on all platforms
-#	./configure --prefix="$DST_DIR" --with-our-malloc16 $CONF_FLAGS --enable-shared --enable-avx || exit 1
+#	sse only works with single precision
+#	CONF_FLAGS+=" --enable-sse"
+
+	CONF_FLAGS+=" --enable-sse2"
+	CONF_FLAGS+=" --enable-avx"
+	CONF_FLAGS+=" --enable-avx2"
+	CONF_FLAGS+=" --enable-avx512"
+	CONF_FLAGS+=" --enable-avx-128-fma"
+
+	# Never used directly in Fortran
+	CONF_FLAGS+=" --disable-fortran"
+
+	# Enable generation of shared library
+	CONF_FLAGS+=" --enable-shared"
+
+	# TODO: Autodetect ARM and use --enable-neon
+
+#	neon only works with single precision
+#	CONF_FLAGS+=" --enable-neon"
+
+	echo "Configuration flags: $CONF_FLAGS"
+
+	./configure --prefix="$DST_DIR" $CONF_FLAGS  || exit 1
 
 	make install || exit 1
+	make check || exit 1
 
 	echo "DONE"
 
