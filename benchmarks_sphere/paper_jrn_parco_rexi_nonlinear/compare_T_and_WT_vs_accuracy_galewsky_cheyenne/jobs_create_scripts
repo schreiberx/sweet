@@ -1,26 +1,73 @@
 #! /usr/bin/env python3
 
-import sys
 import os
+import sys
+import math
 
 from SWEET import *
 p = SWEETJobGeneration()
+
+verbose = False
 
 #
 # Force deactivating Turbo mode
 #
 p.parallelization.force_turbo_off = True
 
-# 10 mins max wallclock seconds
-#p.cluster.max_wallclock_seconds = 60*10
 
-# 60 mins
-ref_max_wallclock_seconds = 60*60*2
+def estimateWallclockTime(p):
+	"""
+	Return an estimated wallclock time
+	"""
+	#
+	# Reference wallclock time and corresponding time step size
+	# e.g. for explicit RK2 integration scheme
+	#
+	# On Cheyenne with GNU compiler
+	# OMP_NUM_THREADS=18
+	# 247.378 seconds for ln_erk2 with dt=30 m=128 t=432000
+	#
+	ref_wallclock_seconds = 60*4
+	ref_simtime = 432000
+	ref_timestep_size = 60
+	ref_mode_res = 128
+
+	# Use this scaling for additional wallclock time
+	safety_scaling = 10
+
+	wallclock_seconds = ref_wallclock_seconds
+
+	# linear with simulation time
+	wallclock_seconds *= ref_simtime/p.runtime.simtime
+
+	# linear with time step size
+	wallclock_seconds *= ref_timestep_size/p.runtime.timestep_size
+
+	# quadratic with resolution
+	wallclock_seconds *= pow(ref_mode_res/p.runtime.mode_res, 2.0)
+
+	if p.runtime.rexi_method != '':
+		if p.runtime.rexi_method != 'ci':
+			raise Exception("TODO: Support other REXI methods")
+
+			# Complex-valued
+			wallclock_seconds *= 2.0
+
+			# Number of REXI terms
+			wallclock_seconds *= p.runtime.rexi_ci_n
+
+			# Parallelization
+			wallclock_seconds /= p.parallelization.num_ranks
+
+	wallclock_seconds *= safety_scaling
+
+	if wallclock_seconds <= 0:
+		raise Exception("Estimated wallclock_seconds <= 0")
+
+	return wallclock_seconds
 
 
-
-# Link to SHTNS plans
-p.user_script_preprocess += """
+p.user_script_exec_prefix_shtns = """
 
 # SHTNS plans required which have to be precomputed once.
 # You can generate them by simply running one benchmark.
@@ -30,18 +77,24 @@ if [ -e ../shtns_cfg ]; then
 	ln ../shtns_cfg_fftw ./ -sf || exit 1
 fi
 
+"""
+
+p.user_script_exec_prefix_z = """
+
 echo "CPU Frequencies:"
 cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq | sort -u
 echo ""
 
 # Manual override in jobs_create.py
 # Override OMP_NUM_THREADS and use MASTER binding
-export OMP_NUM_THREADS=1
-export OMP_PROC_BIND=MASTER
+#export OMP_NUM_THREADS=1
+export OMP_PROC_BIND=close
 
 """
 
-p.user_script_postprocess += """
+p.user_script_exec_prefix = p.user_script_exec_prefix_shtns + p.user_script_exec_prefix_z
+
+p.user_script_exec_suffix += """
 
 echo "CPU Frequencies:"
 cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq | sort -u
@@ -50,11 +103,12 @@ echo ""
 """
 
 
+#p.compile.lapack = 'disable'
+p.compile.lapack = 'enable'
+p.compile.mkl = 'disable'
+
 # Request dedicated compile script
 p.compilecommand_in_jobscript = False
-
-
-
 
 
 # SPACE parallelization
@@ -62,12 +116,12 @@ pspace = SWEETParallelizationDimOptions('space')
 
 pspace.num_cores_per_rank = p.platform_resources.num_cores_per_socket
 # Use only half the cores of socket
-pspace.num_cores_per_rank = p.platform_resources.num_cores_per_socket//2
+#pspace.num_cores_per_rank = p.platform_resources.num_cores_per_socket//2
 
 pspace.num_threads_per_rank = pspace.num_cores_per_rank
 pspace.num_ranks = 1
 pspace.setup()
-if __name__ == "__main__":
+if verbose:
 	pspace.print()
 
 
@@ -78,7 +132,7 @@ ptime.num_threads_per_rank = 1 #pspace.num_cores_per_rank
 ptime.num_ranks = 1
 
 ptime.setup()
-if __name__ == "__main__":
+if verbose:
 	ptime.print()
 
 
@@ -87,7 +141,6 @@ if __name__ == "__main__":
 #
 p.compile.program = 'swe_sphere'
 
-#p.compile.plane_or_sphere = 'sphere'
 p.compile.plane_spectral_space = 'disable'
 p.compile.plane_spectral_dealiasing = 'disable'
 p.compile.sphere_spectral_space = 'enable'
@@ -98,13 +151,11 @@ p.compile.rexi_timings = 'enable'
 
 p.compile.quadmath = 'enable'
 
-p.compile.compiler = 'gnu'
-
-#p.compile.mkl = 'enable'
-# Disabled since we can now use FFTW plans in SHTNS
-p.compile.mkl = 'disable'
-
-
+if 'gnu' in p.platforms.platform_id:
+	p.compile.compiler = 'gnu'
+else:
+	p.compile.compiler = 'intel'
+#
 
 #
 # MPI?
@@ -128,11 +179,9 @@ p.runtime.mode_res = 128
 p.runtime.phys_res = -1
 
 #
-# Benchmark ID
-# 4: Gaussian breaking dam
-# 100: Galewski
+# Benchmark
 #
-p.runtime.benchmark="galewsky"
+p.runtime.benchmark_name = "galewsky"
 
 #
 # Compute error
@@ -199,9 +248,6 @@ timestep_sizes_rexi = [60, 120, 180, 240, 300, 360, 480, 600, 720]
 
 timestep_size_reference = timestep_sizes_explicit[0]
 
-# Reference to estimate wallclock time for job scripts
-timesetp_size_max = 720*2
-
 
 
 #p.runtime.simtime = timestep_sizes[-1]*10 #timestep_size_reference*2000
@@ -248,7 +294,7 @@ if __name__ == "__main__":
 				###########
 				# RK2/4
 				###########
-				#['ln_erk',		2,	2,	0],	# reference solution
+				['ln_erk',		2,	2,	0],	# reference solution
 				#['ln_erk',		4,	4,	0],	# reference solution
 
 				###########
@@ -258,7 +304,7 @@ if __name__ == "__main__":
 				['lg_irk_lc_n_erk_ver1',	2,	2,	0],
 
 				#['l_irk_n_erk_ver0',	2,	2,	0],
-				#['l_irk_n_erk_ver1',	2,	2,	0],
+				['l_irk_n_erk_ver1',	2,	2,	0],
 
 				###########
 				# REXI
@@ -267,16 +313,13 @@ if __name__ == "__main__":
 				['lg_rexi_lc_n_erk_ver1',	2,	2,	0],
 
 				#['l_rexi_n_erk_ver0',	2,	2,	0],
-				#['l_rexi_n_erk_ver1',	2,	2,	0],
+				['l_rexi_n_erk_ver1',	2,	2,	0],
 
 				###########
 				# ETDRK
 				###########
 				['lg_rexi_lc_n_etdrk',	2,	2,	0],
 				#['l_rexi_n_etdrk',	2,	2,	0],
-
-				#['lg_rexi_lc_n_etdrk',	4,	4,	0],
-				#['l_rexi_n_etdrk',	4,	4,	0],
 			]
 
 		# 4th order nonlinear
@@ -326,19 +369,18 @@ if __name__ == "__main__":
 			# Setup parallelization
 			p.setup_parallelization([pspace, ptime])
 
-			pspace.print()
-			ptime.print()
-			p.parallelization.print()
+			if verbose:
+				pspace.print()
+				ptime.print()
+				p.parallelization.print()
 
 			if len(tsm) > 4:
 				s = tsm[4]
 				p.load_from_dict(tsm[4])
 
-			p.parallelization.max_wallclock_seconds = ref_max_wallclock_seconds
-			if p.parallelization.max_wallclock_seconds <= 0:
-				raise Exception("p.parallelization.max_wallclock_seconds <= 0")
+			p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
 
-			p.write_jobscript('script_'+prefix_string_template+'_ref'+p.runtime.getUniqueID(p.compile)+'/run.sh')
+			p.gen_jobscript_directory('script_'+prefix_string_template+'ref_'+p.runtime.getUniqueID(p.compile))
 
 
 
@@ -379,15 +421,14 @@ if __name__ == "__main__":
 					ptime.num_ranks = 1
 					p.setup_parallelization([pspace, ptime])
 
-					pspace.print()
-					ptime.print()
-					p.parallelization.print()
+					if verbose:
+						pspace.print()
+						ptime.print()
+						p.parallelization.print()
 
-					p.parallelization.max_wallclock_seconds = int(ref_max_wallclock_seconds / 32 * (timesetp_size_max / p.runtime.timestep_size))
-					if p.parallelization.max_wallclock_seconds <= 0:
-						raise Exception("p.parallelization.max_wallclock_seconds <= 0")
+					p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
 
-					p.write_jobscript('script_'+prefix_string_template+p.getUniqueID()+'/run.sh')
+					p.gen_jobscript_directory('script_'+prefix_string_template+p.getUniqueID())
 
 				else:
 					c = 1
@@ -451,17 +492,63 @@ if __name__ == "__main__":
 
 													p.setup_parallelization([pspace, ptime])
 
-													pspace.print()
-													ptime.print()
-													p.parallelization.print()
+													if verbose:
+														pspace.print()
+														ptime.print()
+														p.parallelization.print()
 
 													# Generate only scripts with max number of cores
-													p.parallelization.max_wallclock_seconds = int(ref_max_wallclock_seconds / ptime.num_ranks * (timesetp_size_max / p.runtime.timestep_size))
-													if p.parallelization.max_wallclock_seconds <= 0:
-														raise Exception("p.parallelization.max_wallclock_seconds <= 0")
+													p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
 
-													p.write_jobscript('script_'+prefix_string_template+p.getUniqueID()+'/run.sh')
-													#break
+													p.gen_jobscript_directory('script_'+prefix_string_template+p.getUniqueID())
+
+	#
+	# SHTNS plan generation scripts
+	#
+
+	p.user_script_exec_prefix = p.user_script_exec_prefix_z
+
+	for tsm in ts_methods[1:]:
+
+		p.runtime.timestepping_method = tsm[0]
+		p.runtime.timestepping_order = tsm[1]
+		p.runtime.timestepping_order2 = tsm[2]
+		p.runtime.rexi_use_direct_solution = tsm[3]
+
+		if not '_rexi' in p.runtime.timestepping_method:
+			p.runtime.rexi_method = ''
+		else:
+			p.runtime.rexi_method = 'ci'
+
+		if len(tsm) > 4:
+			s = tsm[4]
+			p.runtime.load_from_dict(tsm[4])
+
+		#
+		# Create dummy scripts to be used for SHTNS script generation
+		#
+
+		# No parallelization in time
+		ptime = SWEETParallelizationDimOptions('time')
+		ptime.num_cores_per_rank = 1
+		ptime.num_threads_per_rank = 1
+		ptime.num_ranks = 1
+		ptime.setup()
+
+		p.setup_parallelization([pspace, ptime])
+
+		# Use 10 minutes per default to generate plans
+		p.parallelization.max_wallclock_seconds = 60*10
+
+		# Set simtime to 0
+		p.runtime.simtime = 0
+
+		# No output
+		p.runtime.output_timestep_size = -1
+		p.runtime.output_filename = "-"
+
+		p.gen_jobscript_directory('genplans_script_'+p.getUniqueID(['simparams']))
+
 
 
 	# Write compile script
