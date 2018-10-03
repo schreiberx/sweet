@@ -16,6 +16,6 @@ else
 fi
 
 for i in $DIRS; do
-	sbatch --parsable --cluster mpp2 "$i/run.sh" | sed "s/;.*//"
+	qsub "$i/run.sh" | sed "s/;.*//"
 done
 
