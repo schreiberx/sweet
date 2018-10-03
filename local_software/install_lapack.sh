@@ -26,6 +26,11 @@ if [ ! -e "$DST_DIR/lib/liblapack.a"  -o "$1" != "" ]; then
 		cd build || exit
 		cmake ../ || exit
 		make
+
+
+		echo "Installing liblapack.a"
+		cp ./lib/liblapack.a "$DST_DIR/lib" || exit 1
+		#cp ./librefblas.a "$DST_DIR/lib" || exit 1
 	else
 		# create default configuration
 		cp make.inc.example make.inc
@@ -52,13 +57,15 @@ if [ ! -e "$DST_DIR/lib/liblapack.a"  -o "$1" != "" ]; then
 
 		make blaslib || exit 1
 		make || exit 1
-	fi
 
-	#cd LAPACKE || exit 1
-	#make lapacke || exit 1
-	#mkdir -p "$DST_DIR/lib"
-	cp ./liblapack.a "$DST_DIR/lib" || exit 1
-	cp ./librefblas.a "$DST_DIR/lib" || exit 1
+
+		#cd LAPACKE || exit 1
+		#make lapacke || exit 1
+		#mkdir -p "$DST_DIR/lib"
+		echo "Installing liblapack.a"
+		cp ./liblapack.a "$DST_DIR/lib" || exit 1
+		#cp ./librefblas.a "$DST_DIR/lib" || exit 1
+	fi
 
 	echo "DONE"
 
