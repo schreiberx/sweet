@@ -8,9 +8,9 @@
 
 # Avoid using $@ for this test since -z fails to compare with arrays
 if [ -z "$1" ]; then
-	qstat -1 -n -u $USER | tail -n +6 #| sed "s/\..*//"
+	qstat -1 -n -u $USER | tail -n +6 #| sed "s/ .*//"
 else
 	for i in $@; do
-		qstat -1 -n -u $USER $i 2>/dev/null | tail -n +6 #| sed "s/\..*//"
+		qstat -1 -n -u $USER $i 2>/dev/null | tail -n +6 #| sed "s/ .*//"
 	done
 fi

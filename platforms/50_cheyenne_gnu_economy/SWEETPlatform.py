@@ -153,6 +153,7 @@ def jobscript_get_header(jobgeneration : SWEETJobGeneration):
 #PBS -o """+jobgeneration.p_job_stdout_filepath+"""
 #PBS -e """+jobgeneration.p_job_stderr_filepath+"""
 
+
 source /etc/profile.d/modules.sh
 
 export OMP_NUM_THREADS="""+str(p.num_threads_per_rank)+"""
@@ -160,6 +161,8 @@ export OMP_NUM_THREADS="""+str(p.num_threads_per_rank)+"""
 #module load openmpi
 """+("module load mkl" if jobgeneration.compile.mkl==True or jobgeneration.compile.mkl=='enable' else "")+"""
 
+# Change to job script directory
+cd \""""+jobgeneration.p_job_dirpath+"""\"
 
 """+p_gen_script_info(jobgeneration)+"""
 
