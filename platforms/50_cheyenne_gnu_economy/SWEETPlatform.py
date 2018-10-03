@@ -2,8 +2,7 @@ import platform
 import socket
 import sys
 
-from SWEETPlatformResources import *
-from SWEETJobGeneration import *
+from SWEET import *
 from . import SWEETPlatformAutodetect
 
 # Underscore defines symbols to be private
@@ -122,6 +121,7 @@ def jobscript_get_header(jobgeneration : SWEETJobGeneration):
 			raise Exception("Internal error!")
 
 		time_str = str(h).zfill(2)+":"+str(m).zfill(2)+":"+str(s).zfill(2)
+		return time_str
 
 	time_str = get_time_str(p.max_wallclock_seconds)
 	
@@ -139,13 +139,13 @@ def jobscript_get_header(jobgeneration : SWEETJobGeneration):
 ## select: number of nodes
 ## ncpus: number of CPUs per node
 ## mpiprocs: number of ranks per node
-#PBS -l select="""+str(p.num_nodes)+""":ncpus="""+str(p.num_cores_per_node)+""":mpiprocs="""+str(p.num_ranks_per_node)+""":ompthreads="""+str(p.threads_per_rank)+"\n"
+#PBS -l select="""+str(p.num_nodes)+""":ncpus="""+str(p.num_cores_per_node)+""":mpiprocs="""+str(p.num_ranks_per_node)+""":ompthreads="""+str(p.num_threads_per_rank)+"\n"
 
 	#"default": 2301000 
 	#"turbo": 2301000
 	#"rated": 2300000
 	#"slow": 1200000
-	if jobgeneration.cluster.force_turbo_off:
+	if jobgeneration.parallelization.force_turbo_off:
 		content += "#PBS -l select=cpufreq=2300000\n"
 
 	content += """#
@@ -158,7 +158,7 @@ source /etc/profile.d/modules.sh
 export OMP_NUM_THREADS="""+str(p.num_threads_per_rank)+"""
 
 module load openmpi
-"""+("module load mkl" if mkl else "")+"""
+"""+("module load mkl" if jobgeneration.compile.mkl else "")+"""
 
 
 """+p_gen_script_info(jobgeneration)+"""
@@ -218,7 +218,7 @@ def jobscript_get_exec_command(jobgeneration : SWEETJobGeneration):
 		mpiexec = "mpiexec_mpt -n "+str(p.num_ranks)
 
 		mpiexec += " omplace "
-		mpiexec += " -nt "+str(p.threads_per_rank)+" "
+		mpiexec += " -nt "+str(p.num_threads_per_rank)+" "
 		mpiexec += " -vv "
 
 

@@ -514,12 +514,13 @@ if p.sweet_mpi == 'enable':
 #
 # Override compiler settings from environment variable
 #
-override_list = ['CC', 'CXX', 'F90']
+override_list = ['CC', 'CXX', 'F90', 'LINK']
 for i in override_list:
 	if p.sweet_mpi == 'enable':
 		if 'SWEET_MPI'+i in env['ENV']:
 			print("INFO: Overriding environment variable "+i+"="+env['ENV']['SWEET_MPI'+i])
 			env[i] = env['ENV']['SWEET_MPI'+i]
+
 
 	else:
 		if 'SWEET_'+i in env['ENV']:
