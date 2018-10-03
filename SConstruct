@@ -540,7 +540,7 @@ if p.libsph == 'enable':
 	# Add LAPACK libraries
 	if p.lapack == 'enable':
 		env.Append(LIBS=['lapack'])
-		env.Append(LIBS=['refblas'])
+		env.Append(LIBS=['blas'])
 		env.Append(CXXFLAGS=['-DSWEET_LAPACK=1'])
 	else:
 		env.Append(CXXFLAGS=['-DSWEET_LAPACK=0'])
@@ -562,10 +562,6 @@ if p.libfft == 'enable':
 		else:
 			env.Append(CXXFLAGS=['-mkl=parallel'])
 			env.Append(LINKFLAGS=['-mkl=parallel'])
-
-		# STFC HARTREE CENTRE PHASE2 HACK
-		env.Append(CXXFLAGS=['-I/gpfs/stfc/local/apps/intel/intel_cs/2016.2.062/compilers_and_libraries/linux/mkl/include/fftw/'])
-		env.Append(LINKFLAGS=['-L/gpfs/stfc/local/apps/intel/intel_cs/2016.2.062/mkl/lib/intel64_lin_mic/'])
 
 	else:
 		env.Append(LIBS=['fftw3'])
