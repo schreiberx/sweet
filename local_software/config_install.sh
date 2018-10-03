@@ -87,10 +87,10 @@ function config_package()
 function config_make_install()
 {
 	echo_info "Executing 'make'"
-	make -j || echo_error_exit "FAILED make"
+	make || echo_error_exit "FAILED make"
 
 	echo_info "Executing 'make install'"
-	make -j install || echo_error_exit "FAILED make install"
+	make install || echo_error_exit "FAILED make install"
 }
 
 

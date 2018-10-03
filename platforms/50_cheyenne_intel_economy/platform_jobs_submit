@@ -1,0 +1,21 @@
+#! /bin/bash
+
+#
+# Submit jobs
+#
+# Return
+# ------
+# Job ID in each line
+#
+
+
+if [ -z "$1" ]; then
+	DIRS=script_*
+else
+	DIRS=$@
+fi
+
+for i in $DIRS; do
+	qsub "$i/run.sh" | sed "s/;.*//"
+done
+

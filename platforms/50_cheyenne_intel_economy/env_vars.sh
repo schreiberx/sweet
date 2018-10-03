@@ -11,31 +11,28 @@
 export BATCH_FILE_TAG="#SBATCH"
 
 
-echo "Loading GCC/8"
-module unload gcc
-module load gcc/8
-
-#echo "Loading binutils"
-#module load binutils/2.25
-
-#module unload intel
-#module load intel/18.0
+MODULES="intel/18.0.1"
+for m in $MODULES; do
+	echo
+	echo "Loading $m"
+	module load $m
+done
 
 
 #
 # Compiler environment
 #
-export SWEET_CC=gcc
-export SWEET_CXX=g++
-export SWEET_F90=gfortran
 
-export SWEET_MPICC=mpigcc
-export SWEET_MPICXX=mpigxx
-export SWEET_MPIF90=mpifc
+export SWEET_CC=icc
+export SWEET_CXX=icpc
+export SWEET_F90=ifort
+
+export SWEET_MPICC=mpicc
+export SWEET_MPICXX=mpicxx
+export SWEET_MPIF90=mpif90
 
 export SWEET_LINK=$SWEET_CXX
 export SWEET_MPILINK=$SWEET_MPICXX
-
 
 #
 # local software compile overrides
@@ -46,4 +43,3 @@ export CC=$SWEET_CC
 export CXX=$SWEET_CXX
 export LINK=$SWEET_CXX
 export LD=$SWEET_CXX
-
