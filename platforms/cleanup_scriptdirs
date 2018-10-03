@@ -4,6 +4,6 @@ for i in script_*; do
 	rm -rf "$i"
 done
 
-rm -rf shtns_gen_plans*
+rm -rf genplans_*
 
 rm -f compile_platform.sh

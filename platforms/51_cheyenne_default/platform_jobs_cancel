@@ -1,9 +1,10 @@
 #! /bin/bash
 
 IDS=$@
+IDS=$(echo "${IDS}" | sed "s/\..*//")
 
 if [ -z "$IDS" ]; then
 	echo "No jobs found specified"
 else
-	scancel --clusters=mpp2 $IDS
+	qdel -W force $IDS
 fi

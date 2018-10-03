@@ -57,7 +57,7 @@ def get_platform_id():
 		unique ID of platform
 	"""
 
-	return "cheyenne_gnu_economy"
+	return "cheyenne_intel_economy"
 
 
 
@@ -157,8 +157,8 @@ source /etc/profile.d/modules.sh
 
 export OMP_NUM_THREADS="""+str(p.num_threads_per_rank)+"""
 
-module load openmpi
-"""+("module load mkl" if jobgeneration.compile.mkl else "")+"""
+#module load openmpi
+"""+("module load mkl" if jobgeneration.compile.mkl==True or jobgeneration.compile.mkl=='enable' else "")+"""
 
 
 """+p_gen_script_info(jobgeneration)+"""
@@ -223,6 +223,7 @@ def jobscript_get_exec_command(jobgeneration : SWEETJobGeneration):
 
 		mpiexec += " omplace "
 		mpiexec += " -nt "+str(p.num_threads_per_rank)+" "
+		mpiexec += " -tm intel"
 		mpiexec += " -vv "
 
 
