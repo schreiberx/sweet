@@ -5,15 +5,16 @@ source ./env_vars.sh ""
 
 
 echo "*** SHTNS ***"
-SRC_LINK="https://www.martin-schreiber.info/pub/sweet_local_software/shtns-3.0-20180930.tar.gz"
+SRC_LINK="https://www.martin-schreiber.info/pub/sweet_local_software/nschaeff-shtns-2018_10_01.tar.bz2"
 FILENAME="`basename $SRC_LINK`"
-BASENAME="shtns-3.0-20180930"
+BASENAME="nschaeff-shtns-2018_10_01"
 
 if [ ! -e "$DST_DIR/lib/python3.6/site-packages/shtns.py"  -o "$1" != "" ]; then
 
 	cd "$SRC_DIR"
 	download "$SRC_LINK" "$FILENAME" || exit 1
-	tar xzf "$FILENAME"
+
+	tar xjf "$FILENAME"
 	cd "$BASENAME"
 
 	# Python, no OpenMP
