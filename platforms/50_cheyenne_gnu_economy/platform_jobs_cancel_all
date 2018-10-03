@@ -1,14 +1,10 @@
 #! /bin/bash
 
-if [ -z "$1" ]; then
-	IDS=$(squeue --cluster=mpp2 | tail -n +3 | sed "s/ mpp2.*//")
-	echo ${IDS}
-else
-	IDS=$@
-fi
+IDS=$(qstat -1 -n -u $USER | tail -n +6 | sed "s/\..*//")
+echo ${IDS}
 
 if [ -z "$IDS" ]; then
 	echo "No jobs found"
 else
-	scancel --clusters=mpp2 $IDS
+	qdel -W force $IDS
 fi
