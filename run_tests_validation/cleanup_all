@@ -1,0 +1,10 @@
+#! /bin/bash
+
+
+P=$(pwd)
+for i in $(ls -d */); do
+	echo "$i"
+	cd "$i"
+	./cleanup.sh
+	cd "$P"
+done

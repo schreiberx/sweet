@@ -5,7 +5,7 @@ import sys
 import stat
 import math
 
-from SWEETJobGeneration import *
+from SWEET import *
 p = SWEETJobGeneration()
 
 
