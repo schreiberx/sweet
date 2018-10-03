@@ -22,7 +22,7 @@ if [ "${HOSTNAME:0:8}" == "cheyenne" ]; then
 	#PKGS+=("install_libpfasst.sh")
 	#PKGS+=("install_libpng.sh")
 	#PKGS+=("install_likwid.sh")
-	#PKGS+=("install_numa.sh")
+	PKGS+=("install_numa.sh")
 	#PKGS+=("install_openmpi.sh")
 	#PKGS+=("install_pfasst++.sh")
 	PKGS+=("install_python3.sh")
