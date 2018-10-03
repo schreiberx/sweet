@@ -57,7 +57,7 @@ def get_platform_id():
 		unique ID of platform
 	"""
 
-	return "cheyenne_gnu_economy"
+	return "cheyenne_default"
 
 
 

@@ -47,17 +47,20 @@ for GENERATOR_SCRIPT in $GENERATOR_SCRIPTS; do
 	if [ -n "$PREV_JOBID" ]; then 
 		echo " + setting dependency to job with id ${PREV_JOBID}"
 
-		# Append dependency to #SBATCH line
-		sed -i "2s/${BATCH_FILE_TAG} .*/&\n${BATCH_FILE_TAG} --dependency=afterany:${PREV_JOBID}/" "${SHTNS_SCRIPT}/run.sh"
+		# Append dependency
+		# This line must be changed for each job scheduler
+		NEWPARAM="-W depend=afterany:${PREV_JOBID}"
+		# Search for 1st batch job prefix add dependency information
+		sed -i -r  "0,/#[a-Z]+/{s/#[a-Z]+/& $NEWPARAM\n&/}"  "${SHTNS_SCRIPT}/run.sh"
 
 		# Copy SHTNS plan to current working directory
 		sed -i "s/# %SCRIPT_EXEC_PREFIX%/&\nmv ..\/shtns_cfg .\/ || exit 1/" "${SHTNS_SCRIPT}/run.sh"
-		sed -i "s/# %SCRIPT_EXEC_PREFIX%/&\nmv ..\/shtns_cfg_fftw .\/ || exit 1/" "${SHTNS_SCRIPT}/run.sh"
+		sed -i "s/# %SCRIPT_EXEC_PREFIX%/\nmv ..\/shtns_cfg_fftw .\/ || exit 1/" "${SHTNS_SCRIPT}/run.sh"
 	fi
 
 	# Copy (updated) SHTNS plans back to main benchmark directory
 	sed -i "s/# %SCRIPT_EXEC_SUFFIX%/&\ncp shtns_cfg ..\/ || exit 1/" "${SHTNS_SCRIPT}/run.sh"
-	sed -i "s/# %SCRIPT_EXEC_SUFFIX%/&\ncp shtns_cfg_fftw ..\/ || exit 1/" "${SHTNS_SCRIPT}/run.sh"
+	sed -i "s/# %SCRIPT_EXEC_SUFFIX%/\ncp shtns_cfg_fftw ..\/ || exit 1/" "${SHTNS_SCRIPT}/run.sh"
 
 	echo "Submitting job..."
 	PREV_JOBID="$(./platform_jobs_submit ${SHTNS_SCRIPT})"

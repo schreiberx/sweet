@@ -1,16 +1,1 @@
-#! /bin/bash
-
-#
-# Output the status of jobs submitted to the system
-#
-# One line for each job
-#
-
-# Avoid using $@ for this test since -z fails to compare with arrays
-if [ -z "$1" ]; then
-	qstat -1 -n -u $USER | tail -n +6
-else
-	for i in $@; do
-		qstat -1 -n -u $USER $i 2>/dev/null | tail -n +6
-	done
-fi
+../51_cheyenne_default/platform_jobs_status

@@ -1,9 +1,1 @@
-#! /bin/bash
-
-IDS=$@
-
-if [ -z "$IDS" ]; then
-	echo "No jobs found specified"
-else
-	scancel --clusters=mpp2 $IDS
-fi
+../51_cheyenne_default/platform_jobs_cancel
