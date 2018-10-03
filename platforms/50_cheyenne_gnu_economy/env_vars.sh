@@ -8,7 +8,7 @@
 #
 # This is important for the SHTNS plan generation scripts
 #
-export BATCH_FILE_TAG="#SBATCH"
+export BATCH_FILE_TAG="#PBS"
 
 
 MODULES="gnu/8.1.0"

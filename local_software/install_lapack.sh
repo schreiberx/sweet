@@ -30,7 +30,7 @@ if [ ! -e "$DST_DIR/lib/liblapack.a"  -o "$1" != "" ]; then
 
 		echo "Installing liblapack.a"
 		cp ./lib/liblapack.a "$DST_DIR/lib" || exit 1
-		#cp ./librefblas.a "$DST_DIR/lib" || exit 1
+		cp ./lib/libblas.a "$DST_DIR/lib" || exit 1
 	else
 		# create default configuration
 		cp make.inc.example make.inc
@@ -64,7 +64,7 @@ if [ ! -e "$DST_DIR/lib/liblapack.a"  -o "$1" != "" ]; then
 		#mkdir -p "$DST_DIR/lib"
 		echo "Installing liblapack.a"
 		cp ./liblapack.a "$DST_DIR/lib" || exit 1
-		#cp ./librefblas.a "$DST_DIR/lib" || exit 1
+		cp ./libblas.a "$DST_DIR/lib" || exit 1
 	fi
 
 	echo "DONE"
