@@ -228,7 +228,7 @@ class VisSweet	:
 
 	const char* vis_getStatusString()
 	{
-		static char title_string[1024];
+		static char title_string[4096];
 		sprintf(title_string, "%s, vis min/max: %f/%f", simulation->vis_get_status_string(), vis_min, vis_max);
 		return title_string;
 	}
