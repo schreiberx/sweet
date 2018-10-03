@@ -360,7 +360,11 @@ int main(int i_argc, char *i_argv[])
 				int res_physical_overs[2] = {simVars.disc.res_physical[0]*oversampling, simVars.disc.res_physical[1]*oversampling};
 				int res_spectral_overs[2] = {simVars.disc.res_spectral[0]*oversampling, simVars.disc.res_spectral[1]*oversampling};
 
-				sphereDataConfigOversamplingInstance.setupAuto(res_physical_overs, res_spectral_overs);
+				sphereDataConfigOversamplingInstance.setupAuto(
+						res_physical_overs,
+						res_spectral_overs,
+						simVars.misc.shtns_use_plans
+					);
 
 				{
 					SimulationInstance simulation;
