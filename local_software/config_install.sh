@@ -10,7 +10,15 @@ SWEET_LOCAL_SOFTWARE_DST_DIR="$PWD/local"
 mkdir -p "$SWEET_LOCAL_SOFTWARE_DST_DIR"
 mkdir -p "$SWEET_LOCAL_SOFTWARE_SRC_DIR"
 
-MAKE_DEFAULT_OPTS=" -j $(nproc)"
+NPROCS="$(nproc --all)"
+if [ "$NPROCS" -gt "10" ]; then
+	# We limit the number of parallel build processes
+	# This is important on architectures such as Cheyenne where this
+	# results in compilation errors due to a lack of resources
+	NPROCS=10
+fi
+MAKE_DEFAULT_OPTS=" -j ${NPROCS}"
+
 
 
 function download() {
@@ -84,16 +92,20 @@ function config_package()
 
 	echo_info "Changing to package directory '${SRC_SUBDIR}'"
 	cd "$SRC_SUBDIR"
+
+	echo_info "Suggesting to use '${NPROCS}' parallel build processes"
 }
 
 
 function config_make_install()
 {
-	echo_info "Executing 'make'"
-	make $MAKE_DEFAULT_OPTS || echo_error_exit "FAILED make"
+	M="make $MAKE_DEFAULT_OPTS"
+	echo_info "Executing '${M}'"
+	$M || echo_error_exit "FAILED make"
 
-	echo_info "Executing 'make install'"
-	make $MAKE_DEFAULT_OPTS install || echo_error_exit "FAILED make install"
+	M="make $MAKE_DEFAULT_OPTS install"
+	echo_info "Executing '${M}'"
+	$M || echo_error_exit "FAILED make install"
 }
 
 
