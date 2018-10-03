@@ -39,14 +39,18 @@ class SWEETParallelization(InfoError):
 		self.reset()
 
 		#
+		# WARNIING:
+		# Leave these variables here to ensure being not influenced by reset()
+		#
+
+		#
 		# Disable utilization of `mpiexec` to run job
 		# This is required to run e.g. the validation scripts should be
 		# (currently) executed on a single node and without MPI support
-		#
-		# Leave this variable here to ensure being not influenced by reset()
-		#
 		self.mpiexec_disabled = False
 
+		# Force disabling of turbo mode (if supported)
+		self.force_turbo_off = False
 
 
 	def reset(self):
@@ -78,8 +82,8 @@ class SWEETParallelization(InfoError):
 		# max wallclock time, default: 1h
 		self.max_wallclock_seconds = 60*60
 
-		# Force disabling of turbo mode (if supported)
-		self.force_turbo_off = False
+		# number of OpenMP threads for each MPI rank
+		self.omp_threads_per_mpi_rank = None
 
 
 		# List with parallelization information in each dimension
@@ -122,6 +126,7 @@ class SWEETParallelization(InfoError):
 			dummy.num_cores_per_rank = dummy.num_cores
 			dummy.num_threads_per_rank = dummy.num_cores
 			dummy.num_ranks = 1
+			dummy.omp_threads_per_mpi_rank = dummy.num_threads_per_rank
 			self.setup([dummy], platform_resources)
 			self.print()
 
@@ -229,7 +234,7 @@ class SWEETParallelization(InfoError):
 		# Finally, setup variables without any restrictions
 		#
 
-		# Number of total threads per rank (There are no restrictions for logical threading)
+		# Number of total (e.g. OpenMP) threads per rank (There are no restrictions for logical threading)
 		self.num_threads_per_rank = _prod(i.num_threads_per_rank for i in self.pardims)
 
 
