@@ -213,12 +213,12 @@ if p.compiler == 'gnu':
 		# activate gnu C++ compiler
 
 		if p.fortran_source=='enable':
-			env.Replace(F90='gfortran')
+			#env.Replace(F90='gfortran')
 			env.Append(F90FLAGS=' -cpp')
 			env.Append(LIBS=['gfortran'])
 
 	#	env.Replace(CXX = 'g++-4.7')
-		env.Replace(CXX = 'g++')
+	#	env.Replace(CXX = 'g++')
 
 
 
@@ -266,13 +266,13 @@ if p.compiler == 'intel':
 			env.Append(CXXFLAGS=' -I/usr/include/i386-linux-gnu/')
 
 	# SSE 4.2
-	env.Replace(CXX = 'icpc')
-	env.Replace(LINK='icpc')
+	#env.Replace(CXX = 'icpc')
+	#env.Replace(LINK='icpc')
 
 	if p.fortran_source == 'enable':
 		env.Append(LIBS=['gfortran'])
 		env.Append(LIBS=['ifcore'])
-		env.Replace(F90='ifort')
+		#env.Replace(F90='ifort')
 		env.Append(F90FLAGS=' -fpp')
 
 
@@ -315,7 +315,7 @@ if p.compiler == 'llvm':
 		p.threading = 'off'
 
 	# todo: fix me also for intel mpicxx compiler
-	env.Replace(CXX = 'clang++')
+	#env.Replace(CXX = 'clang++')
 
 	if p.fortran_source == 'enable':
 		env.Append(LIBS=['gfortran'])
@@ -479,9 +479,9 @@ if p.sweet_mpi == 'enable':
 	print("Warning: Compiler checks not done")
 
 	if p.compiler == 'gnu':
-		env.Replace(CXX = 'mpiCC')
-		env.Replace(LINK = 'mpiCC')
-		env.Replace(F90 = 'mpif90')
+		#env.Replace(CXX = 'mpiCC')
+		#env.Replace(LINK = 'mpiCC')
+		#env.Replace(F90 = 'mpif90')
 
 		# GNU compiler needs special treatment!
 		# Linking with Fortran MPI requires
@@ -502,9 +502,10 @@ if p.sweet_mpi == 'enable':
 		
 
 	elif p.compiler == 'intel':
-		env.Replace(CXX = 'mpiicpc')
-		env.Replace(LINK = 'mpiicpc')
-		env.Replace(F90 = 'mpif90')
+		#env.Replace(CXX = 'mpiicpc')
+		#env.Replace(LINK = 'mpiicpc')
+		#env.Replace(F90 = 'mpif90')
+		pass
 
 	if p.threading != 'off' and p.compiler == 'intel':
 		env.Append(CXXFLAGS='-mt_mpi')
