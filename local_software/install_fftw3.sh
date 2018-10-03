@@ -1,8 +1,7 @@
 #! /bin/bash
 
-source ./config_install.sh "" || exit 1
+source ./install_helpers.sh "" || exit 1
 source ./env_vars.sh "" || exit 1
-
 
 # Name of package
 PKG_NAME="fftw"
@@ -11,11 +10,11 @@ PKG_NAME="fftw"
 PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/libfftw3.so"
 
 # URL to source code to fetch it
-PKG_URL_SRC="https://www.martin-schreiber.info/pub/sweet_local_software/fftw-3.3.8.tar.gz"
+PKG_URL_SRC="fftw-3.3.8.tar.gz"
 
 # subdirectory of source in extracted package
 # (autodetected with basename of url without file extension if not set)
-#SRC_SUBDIR=""
+#PKG_SRC_SUBDIR=""
 
 config_package $@
 
@@ -47,8 +46,7 @@ CONF_FLAGS+=" --disable-fortran"
 
 echo "Configuration flags: $CONF_FLAGS"
 
-echo_info "configure"
-./configure --prefix="$SWEET_LOCAL_SOFTWARE_DST_DIR" $CONF_FLAGS  || echo_error_exit "configure failed"
+config_configure $CONF_FLAGS
 
 config_make_install
 

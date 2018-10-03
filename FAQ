@@ -8,6 +8,12 @@
   To overcome this, set the environment variable SWEET_FFTW_ESTIMATE
   to some value.
 
+  If you run simulations on the sphere, use the parameter
+  --shtns-use-plans=1
+  which first generates and then reutilizes plans for
+  spherical harmonics transformations
+
+
 ********************************************************
 * GL library not found during linking stage
 ********************************************************

@@ -1,25 +1,19 @@
 #! /bin/bash
 
-source ./config_install.sh ""
-source ./env_vars.sh ""
+source ./install_helpers.sh "" || exit 1
 
 
-echo "*** SCONS ***"
-if [ ! -e "$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/scons"  -o "$1" != "" ]; then
-	SRC_LINK="https://www.martin-schreiber.info/pub/sweet_local_software/scons-3.0.0.tar.gz"
-	FILENAME="`basename $SRC_LINK`"
-	BASENAME="scons-3.0.0"
+# Name of package
+PKG_NAME="SCons"
 
-	cd "$SWEET_LOCAL_SOFTWARE_SRC_DIR"
+# Path to one file of installed package to test for existing installation
+PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/scons"
 
-	download "$SRC_LINK" "$FILENAME" || exit 1
-	tar xzf "$FILENAME" || exit 1
-	cd "$BASENAME" || exit 1
+# URL to source code to fetch it
+PKG_URL_SRC="scons-3.0.0.tar.gz"
 
-	python3 setup.py install --prefix="$SWEET_LOCAL_SOFTWARE_DST_DIR" || exit 1
+config_package $@
 
-	echo "DONE"
+python3 setup.py install --prefix="$SWEET_LOCAL_SOFTWARE_DST_DIR" || echo_error_exit "Failed to install scons"
 
-else
-	echo "SCONS is already installed"
-fi
+config_success

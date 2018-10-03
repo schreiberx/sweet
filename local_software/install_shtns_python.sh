@@ -1,36 +1,33 @@
 #! /bin/bash
 
-source ./config_install.sh ""
-source ./env_vars.sh ""
+source ./install_helpers.sh "" || exit 1
 
 
-echo "*** SHTNS ***"
-SRC_LINK="https://www.martin-schreiber.info/pub/sweet_local_software/nschaeff-shtns-2018_10_01.tar.bz2"
-FILENAME="`basename $SRC_LINK`"
-BASENAME="nschaeff-shtns-2018_10_01"
+# Name of package
+PKG_NAME="SHTNS Python"
 
-if [ ! -e "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/python3.6/site-packages/shtns.py"  -o "$1" != "" ]; then
+# Path to one file of installed package to test for existing installation
+PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/python3.6/site-packages/shtns.py"
 
-	cd "$SWEET_LOCAL_SOFTWARE_SRC_DIR"
-	download "$SRC_LINK" "$FILENAME" || exit 1
+# URL to source code to fetch it
+PKG_URL_SRC="nschaeff-shtns-2018_10_01.tar.bz2"
 
-	tar xjf "$FILENAME"
-	cd "$BASENAME"
+config_package $@
 
-	# Python, no OpenMP
-	make clean
-	./configure --prefix="$SWEET_LOCAL_SOFTWARE_DST_DIR" --enable-python --disable-openmp || exit 1
-	make || exit 1
-	python3 setup.py install --prefix="$SWEET_LOCAL_SOFTWARE_DST_DIR"
+echo_info_hline
+echo_info "SHTNS Python noOpenMP:"
+# Python, no OpenMP
+config_configure --enable-python --disable-openmp
+config_make_clean
+config_make
+python3 setup.py install --prefix="$SWEET_LOCAL_SOFTWARE_DST_DIR" || echo_error_exit "Failed to install"
 
-	# Python, OpenMP
-	make clean
-	./configure --prefix="$SWEET_LOCAL_SOFTWARE_DST_DIR" --enable-python --enable-openmp || exit 1
-	make || exit 1
-	python3 setup.py install --prefix="$SWEET_LOCAL_SOFTWARE_DST_DIR"
+echo_info_hline
+echo_info "SHTNS Python OpenMP:"
+# Python, OpenMP
+make_configure --enable-python --enable-openmp
+config_make_clean
+config_make
+python3 setup.py install --prefix="$SWEET_LOCAL_SOFTWARE_DST_DIR" || echo_error_exit "Failed to install"
 
-	echo "DONE"
-
-else
-	echo "SHTNS (with python) already installed"
-fi
+config_success

@@ -1,43 +1,20 @@
 #! /bin/bash
 
-source ./config_install.sh ""
-source ./env_vars.sh ""
+source ./install_helpers.sh "" || exit 1
 
 
-echo "*** OpenMPI ***"
-if [ ! -e "$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/mpicc"  -o "$1" != "" ]; then
-	SRC_LINK="https://www.martin-schreiber.info/pub/sweet_local_software/openmpi-1.10.2.tar.bz2"
-	#SRC_LINK="https://www.open-mpi.org/software/ompi/v1.10/downloads/openmpi-1.10.2.tar.bz2"
-	FILENAME="`basename $SRC_LINK`"
-	BASENAME="openmpi-1.10.2"
+# Name of package
+PKG_NAME="OpenMPI"
 
-	cd "$SWEET_LOCAL_SOFTWARE_SRC_DIR"
-	download "$SRC_LINK" "$FILENAME" || exit 1
+# Path to one file of installed package to test for existing installation
+PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/mpicc"
 
-	echo "Uncompressing $FILENAME"
-	tar xjf "$FILENAME"
+# URL to source code to fetch it
+PKG_URL_SRC="openmpi-3.1.2.tar.bz2"
 
-	if [ ! -e "$BASENAME" ]; then
-		echo "$BASENAME does not exist"
-		exit 1
-	fi
+config_package $@
 
+config_configure --enable-mpi-fortran
+config_make_install
 
-	##############################
-	##############################
-
-	cd "$BASENAME"
-	
-	export CC=gcc
-	export CXX=g++
-	export LINK=ld
-	./configure --enable-mpi-fortran --prefix="$SWEET_LOCAL_SOFTWARE_DST_DIR" || exit 1
-
-	make || exit 1
-	make install || exit 1
-
-	echo "DONE"
-
-else
-	echo "OpenMPI already installed"
-fi
+config_success

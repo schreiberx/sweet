@@ -1,25 +1,20 @@
 #! /bin/bash
 
-source ./config_install.sh ""
-source ./env_vars.sh ""
+source ./install_helpers.sh "" || exit 1
 
 
-if [ ! -e "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/libssl.so" -o "$1" != "" ]; then
-	SRC_LINK="https://www.martin-schreiber.info/pub/sweet_local_software/openssl-1.1.1.tar.gz"
-	FILENAME="`basename $SRC_LINK`"
-	BASENAME="openssl-1.1.1"
+# Name of package
+PKG_NAME="openssl"
 
-	cd "$SWEET_LOCAL_SOFTWARE_SRC_DIR"
+# Path to one file of installed package to test for existing installation
+PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/libssl.so"
 
-	download "$SRC_LINK" "$FILENAME" || exit 1
+# URL to source code to fetch it
+PKG_URL_SRC="openssl-1.1.1.tar.gz"
 
-	tar xzf "$FILENAME"
-	cd "$BASENAME"
+config_package $@
 
-	./config --prefix="$SWEET_LOCAL_SOFTWARE_DST_DIR" || exit 1
-	make
-	make install
+config_configure_make_install
 
-	echo "DONE"
+config_success
 
-fi

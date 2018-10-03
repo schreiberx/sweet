@@ -1,8 +1,8 @@
 #! /bin/bash
 
-source ./config_install.sh "" || exit 1
-source ./env_vars.sh "" || exit 1
+source ./install_helpers.sh "" || exit 1
 
+echo_error "ERROR: There are some issues if installing binutils such as 'configure: error: memset not found in libc' if configuring libpng\nTherefore, we disable this right here"
 
 # Name of package
 PKG_NAME="binutils"
@@ -11,17 +11,10 @@ PKG_NAME="binutils"
 PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/as"
 
 # URL to source code to fetch it
-PKG_URL_SRC="https://www.martin-schreiber.info/pub/sweet_local_software/binutils-2.29.tar.gz"
-
-# subdirectory of source in extracted package
-# (autodetected with basename of url without file extension if not set)
-#SRC_SUBDIR="automake-1.15"
+PKG_URL_SRC="binutils-2.29.tar.gz"
 
 config_package $@
 
-echo_info "configure"
-./configure --prefix="$SWEET_LOCAL_SOFTWARE_DST_DIR" || echo_error_exit "FAILED configure"
-
-config_make_install
+config_configure_make_install
 
 config_success

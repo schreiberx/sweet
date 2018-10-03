@@ -1,8 +1,6 @@
 #! /bin/bash
 
-source ./config_install.sh "" || exit 1
-source ./env_vars.sh "" || exit 1
-
+source ./install_helpers.sh "" || exit 1
 
 if [ ! -e "$SWEET_PLATFORM_DIR" ]; then
 	echo_error ""

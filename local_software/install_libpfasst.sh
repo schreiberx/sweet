@@ -1,38 +1,43 @@
 #! /bin/bash
 
-source ./config_install.sh ""
-source ./env_vars.sh ""
+source ./install_helpers.sh "" || exit 1
 
 
-echo "*** libPFASST ***"
+# Name of package
+PKG_NAME="libpfasst"
 
-if [ ! -e "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/libpfasst.a"  -o "$1" != "" ]; then
-	SRC_LINK="https://www.martin-schreiber.info/pub/sweet_local_software/libpfasst_sweet_2018_09_27.tar.bz2"
-	FILENAME="`basename $SRC_LINK`"
-	BASENAME="libpfasst_sweet_2018_09_27"
+# Path to one file of installed package to test for existing installation
+PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/libpfasst.a"
 
-	cd "$SWEET_LOCAL_SOFTWARE_SRC_DIR"
+# URL to source code to fetch it
+PKG_URL_SRC="libpfasst_sweet_2018_09_27.tar.bz2"
 
-	download "$SRC_LINK" "$FILENAME" || exit 1
-	tar xjf "$FILENAME"
-	cd "$BASENAME"
-	sed -i "s/ftn/mpif90/" Makefile.defaults || exit 1
+config_package $@
 
-	make clean || exit 1
-	make FC=$SWEET_MPIF90 || exit 1
-
-	mkdir -p "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/"
-
-	# Copy static library
-	echo cp -v -f "./lib/libpfasst.a" "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/"
-	cp -v -f "./lib/libpfasst.a" "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/"
-
-	# Copy modules
-	echo cp -v -f ./include/*mod "$SWEET_LOCAL_SOFTWARE_DST_DIR/include/"
-	cp -v -f ./include/*mod "$SWEET_LOCAL_SOFTWARE_DST_DIR/include/"
-
-	echo "DONE"
-
-else
-	echo "libpfasst (Fortran PFASST) is already installed"
+if [ -z "$SWEET_MPIF90" ]; then
+	echo_error_exit "SWEET_MPIF90 environment variable must be set for libpfasst compilation, see platform configuration"
 fi
+
+sed -i "s/ftn/${SWEET_MPIF90}/" Makefile.defaults || echo_error_exit "Replacing compiler failed"
+
+echo_info "Executing 'make clean'..."
+make clean || exit 1
+
+M="make FC=${SWEET_MPIF90}"
+echo_info "Executing '${M}'..."
+$M || exit 1
+
+echo_info "Installing..."
+
+# Copy modules
+mkdir -p "$SWEET_LOCAL_SOFTWARE_DST_DIR/include/"
+echo_info cp -v -f ./include/*mod "$SWEET_LOCAL_SOFTWARE_DST_DIR/include/"
+cp -v -f ./include/*mod "$SWEET_LOCAL_SOFTWARE_DST_DIR/include/" || echo_error_exit "Failed to install .mod files"
+
+# Copy static library
+mkdir -p "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/"
+echo_info cp -v -f "./lib/libpfasst.a" "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/"
+cp -v -f "./lib/libpfasst.a" "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/" || echo_error_exit "Failed to install libpfasst.a files"
+
+
+config_success

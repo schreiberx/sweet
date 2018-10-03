@@ -1,35 +1,26 @@
 #! /bin/bash
 
-source ./config_install.sh ""
-source ./env_vars.sh ""
+source ./install_helpers.sh "" || exit 1
 
 
-echo "*** LIKWID ***"
-if [ ! -e "$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/libwid-topology" -o "$1" != "" ]; then
-	SRC_LINK="https://ftp.fau.de/pub/likwid/likwid-4.2.0.tar.gz"
-	FILENAME="`basename $SRC_LINK`"
-	BASENAME="likwid-4.2.0"
+# Name of package
+PKG_NAME="likwid"
 
-	cd "$SWEET_LOCAL_SOFTWARE_SRC_DIR"
+# Path to one file of installed package to test for existing installation
+PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/libwid-topology"
 
-	download "$SRC_LINK" "$FILENAME" || exit 1
+# URL to source code to fetch it
+PKG_URL_SRC="likwid-4.3.2.tar.gz"
 
-	tar xzf "$FILENAME"
-	cd "$BASENAME"
+config_package $@
 
-	M_SRC="PREFIX = /usr/local"
-	M_DST="PREFIX = ${SWEET_LOCAL_SOFTWARE_DST_DIR}"
-	M_SRC=${M_SRC//\//\\/}
-	M_DST=${M_DST//\//\\/}
-	sed -i "s/$M_SRC/$M_DST/" config.mk
-	sed -i "s/INSTALL_CHOWN = -g root -o root/INSTALL_CHOWN = /" config.mk
+M_SRC="PREFIX = /usr/local"
+M_DST="PREFIX = ${SWEET_LOCAL_SOFTWARE_DST_DIR}"
+M_SRC=${M_SRC//\//\\/}
+M_DST=${M_DST//\//\\/}
+sed -i "s/$M_SRC/$M_DST/" config.mk
+sed -i "s/INSTALL_CHOWN = -g root -o root/INSTALL_CHOWN = /" config.mk
 
-	#./configure --prefix="$SWEET_LOCAL_SOFTWARE_DST_DIR" || exit 1
-	make || exit 1
-	make install || exit 1
+config_make_install
 
-	echo "DONE"
-
-else
-	echo "LIKWID already installed"
-fi
+config_success

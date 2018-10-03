@@ -1,29 +1,19 @@
 #! /bin/bash
 
-source ./config_install.sh ""
-source ./env_vars.sh ""
+source ./install_helpers.sh "" || exit 1
 
 
-echo "*** libpng ***"
+# Name of package
+PKG_NAME="libpng"
 
-if [ ! -e "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/libpng.so"  -o "$1" != "" ]; then
-	SRC_LINK="https://www.martin-schreiber.info/pub/sweet_local_software/libpng-1.6.29.tar.gz"
-	FILENAME="`basename $SRC_LINK`"
-	BASENAME="libpng-1.6.29"
+# Path to one file of installed package to test for existing installation
+PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/libpng.so"
 
-	cd "$SWEET_LOCAL_SOFTWARE_SRC_DIR"
+# URL to source code to fetch it
+PKG_URL_SRC="libpng-1.6.29.tar.gz"
 
-	download "$SRC_LINK" "$FILENAME" || exit 1
+config_package $@
 
-	tar xzf "$FILENAME"
-	cd "$BASENAME"
+config_configure_make_install
 
-	# update configure scripts
-	./configure --prefix="$SWEET_LOCAL_SOFTWARE_DST_DIR" || exit 1
-	make install || exit 1
-
-	echo "DONE"
-
-else
-	echo "libpng already installed"
-fi
+config_success

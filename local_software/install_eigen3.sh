@@ -1,8 +1,7 @@
 #! /bin/bash
 
-source ./config_install.sh "" || exit 1
+source ./install_helpers.sh "" || exit 1
 source ./env_vars.sh "" || exit 1
-
 
 # Name of package
 PKG_NAME="eigen"
@@ -11,11 +10,11 @@ PKG_NAME="eigen"
 PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/include/eigen3/Eigen/Eigenvalues"
 
 # URL to source code to fetch it
-PKG_URL_SRC="https://www.martin-schreiber.info/pub/sweet_local_software/eigen-3.3.3.tar.bz2"
+PKG_URL_SRC="eigen-3.3.3.tar.bz2"
 
 # subdirectory of source in extracted package
 # (autodetected with basename of url without file extension if not set)
-SRC_SUBDIR="eigen-eigen-67e894c6cd8f"
+PKG_SRC_SUBDIR="eigen-eigen-67e894c6cd8f"
 
 config_package $@
 

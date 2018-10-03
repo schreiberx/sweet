@@ -1,37 +1,31 @@
 #! /bin/bash
 
-source config_install.sh ""
-source env_vars.sh ""
+source ./install_helpers.sh "" || exit 1
 
 
-echo "*** SHTNS ***"
-SRC_LINK="https://www.martin-schreiber.info/pub/sweet_local_software/nschaeff-shtns-2018_10_01.tar.bz2"
-FILENAME="`basename $SRC_LINK`"
-BASENAME="nschaeff-shtns-2018_10_01"
+# Name of package
+PKG_NAME="SHTNS Python"
 
-if [ ! -e "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/libshtns_omp.a"  -o "$1" != "" ]; then
+# Path to one file of installed package to test for existing installation
+PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/libshtns.a"
 
-	cd "$SWEET_LOCAL_SOFTWARE_SRC_DIR"
+# URL to source code to fetch it
+PKG_URL_SRC="nschaeff-shtns-2018_10_01.tar.bz2"
 
-	download "$SRC_LINK" "$FILENAME" || exit 1
+config_package $@
 
-	tar xjf "$FILENAME"
-	cd "$BASENAME"
+echo_info_hline
+echo_info "SHTNS noOpenMP:"
+# Python, no OpenMP
+config_configure --disable-openmp
+config_make_clean
+config_make_install
 
-	
-	# library, OpenMP
-	make clean
-	./configure --prefix="$SWEET_LOCAL_SOFTWARE_DST_DIR" --enable-openmp || exit 1
-	make install || exit 1
+echo_info_hline
+echo_info "SHTNS OpenMP:"
+# Python, OpenMP
+make_configure --enable-openmp
+config_make_clean
+config_make_install
 
-	# library, no OpenMP
-	make clean
-	./configure --prefix="$SWEET_LOCAL_SOFTWARE_DST_DIR" --disable-openmp || exit 1
-	make install || exit 1
-
-
-	echo "DONE"
-
-else
-	echo "SHTNS already installed"
-fi
+config_success
