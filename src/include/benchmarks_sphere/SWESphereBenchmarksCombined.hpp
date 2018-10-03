@@ -161,7 +161,7 @@ public:
 		if (simVars == nullptr)
 			FatalError("Benchmarks are not yet initialized");
 
-		if (simVars->setup.benchmark_scenario_name == "flow_over_mountain")
+		if (simVars->setup.benchmark_name == "flow_over_mountain")
 		{
 			// set the topography flag to true
 			simVars->sim.use_topography = true;
@@ -215,9 +215,9 @@ public:
 		if (simVars == nullptr)
 			FatalError("Benchmarks are not yet initialized");
 
-		if (simVars->setup.benchmark_scenario_name != "")
+		if (simVars->setup.benchmark_name != "")
 		{
-			if (simVars->setup.benchmark_scenario_name == "gaussian_bump_advection")
+			if (simVars->setup.benchmark_name == "gaussian_bump_advection")
 			{
 				/*
 				 * Advection benchmark with a time-varying velocity field
@@ -333,8 +333,8 @@ public:
 				simVars->misc.output_time_scale = 1.0/(60.0*60.0);
 			}
 			else if (
-					simVars->setup.benchmark_scenario_name == "williamson1"		||
-					simVars->setup.benchmark_scenario_name == "adv_cosine_bell"
+					simVars->setup.benchmark_name == "williamson1"		||
+					simVars->setup.benchmark_name == "adv_cosine_bell"
 			)
 			{
 				/*
@@ -402,8 +402,8 @@ public:
 	//			std::cout << "advection_rotation_angle: " << simVars->setup.advection_rotation_angle << std::endl;
 			}
 			else if (
-					simVars->setup.benchmark_scenario_name == "williamson1b"		||
-					simVars->setup.benchmark_scenario_name == "adv_gauss_bump"
+					simVars->setup.benchmark_name == "williamson1b"		||
+					simVars->setup.benchmark_name == "adv_gauss_bump"
 			)
 			{
 				/*
@@ -485,10 +485,10 @@ public:
 				simVars->misc.output_time_scale = 1.0/(60.0*60.0);
 			}
 			else if (
-					simVars->setup.benchmark_scenario_name == "williamson3"		||
-					simVars->setup.benchmark_scenario_name == "galewsky" ||			///< Standard Galewsky benchmark
-					simVars->setup.benchmark_scenario_name == "galewsky_nobump" ||	///< Galewsky benchmark without bumps
-					simVars->setup.benchmark_scenario_name == "galewsky_nosetparam"	///< Galewsky benchmark without overriding parameters
+					simVars->setup.benchmark_name == "williamson3"		||
+					simVars->setup.benchmark_name == "galewsky" ||			///< Standard Galewsky benchmark
+					simVars->setup.benchmark_name == "galewsky_nobump" ||	///< Galewsky benchmark without bumps
+					simVars->setup.benchmark_name == "galewsky_nosetparam"	///< Galewsky benchmark without overriding parameters
 			)
 			{
 				if (simVars->timecontrol.current_simulation_time == 0)
@@ -498,7 +498,7 @@ public:
 					std::cout << "!!! WARNING !!!" << std::endl;
 				}
 
-				if (simVars->setup.benchmark_scenario_name != "galewsky_nosetparam")
+				if (simVars->setup.benchmark_name != "galewsky_nosetparam")
 				{
 					/// Setup Galewski parameters
 					simVars->sim.coriolis_omega = 7.292e-5;
@@ -579,7 +579,7 @@ public:
 						vg
 				);
 
-				if (simVars->setup.benchmark_scenario_name == "galewsky" || simVars->setup.benchmark_scenario_name == "williamson3")
+				if (simVars->setup.benchmark_name == "galewsky" || simVars->setup.benchmark_name == "williamson3")
 				{
 					SphereData hbump(o_h.sphereDataConfig);
 					hbump.physical_update_lambda(
@@ -597,15 +597,15 @@ public:
 				op->robert_uv_to_vortdiv(ug, vg, o_vort, o_div);
 			}
 			else if (
-					simVars->setup.benchmark_scenario_name == "williamson4"		||
-					simVars->setup.benchmark_scenario_name == "forced_nonlinear"
+					simVars->setup.benchmark_name == "williamson4"		||
+					simVars->setup.benchmark_name == "forced_nonlinear"
 			)
 			{
 				FatalError("TODO: Implement this");
 			}
 			else if (
-					simVars->setup.benchmark_scenario_name == "williamson5"	||
-					simVars->setup.benchmark_scenario_name == "flow_over_mountain"
+					simVars->setup.benchmark_name == "williamson5"	||
+					simVars->setup.benchmark_name == "flow_over_mountain"
 			)
 			{
 				if (simVars->timecontrol.current_simulation_time == 0)
@@ -675,8 +675,8 @@ public:
 				op->robert_uv_to_vortdiv(ug, vg, o_vort, o_div);
 			}
 			else if (
-					simVars->setup.benchmark_scenario_name == "williamson6"	||
-					simVars->setup.benchmark_scenario_name == "rossby_haurwitz_wave"
+					simVars->setup.benchmark_name == "williamson6"	||
+					simVars->setup.benchmark_name == "rossby_haurwitz_wave"
 			)
 			{
 				if (simVars->timecontrol.current_simulation_time == 0)
@@ -754,19 +754,19 @@ public:
 				op->robert_uv_to_vortdiv(ug, vg, o_vort, o_div);
 			}
 			else if (
-					simVars->setup.benchmark_scenario_name == "williamson7"	||
-					simVars->setup.benchmark_scenario_name == "real_initial_conditions"
+					simVars->setup.benchmark_name == "williamson7"	||
+					simVars->setup.benchmark_name == "real_initial_conditions"
 			)
 			{
 				FatalError("Williamson#7 not yet implemented!");
 			}
-			else if (simVars->setup.benchmark_scenario_name == "flat")
+			else if (simVars->setup.benchmark_name == "flat")
 			{
 				o_phi.physical_set_all_value(simVars->sim.h0*simVars->sim.gravitation);
 				o_vort.physical_set_all_value(0);
 				o_div.physical_set_all_value(0);
 			}
-			else if (simVars->setup.benchmark_scenario_name == "gaussian_bumps2")
+			else if (simVars->setup.benchmark_name == "gaussian_bumps2")
 			{
 				SphereData tmp(o_phi.sphereDataConfig);
 				SphereData o_h(o_phi.sphereDataConfig);
@@ -783,18 +783,18 @@ public:
 				o_phi = o_h*simVars->sim.gravitation;
 			}
 			else if (
-					simVars->setup.benchmark_scenario_name == "geostrophic_balance"	||
-					simVars->setup.benchmark_scenario_name == "geostrophic_balance_1"	||
-					simVars->setup.benchmark_scenario_name == "geostrophic_balance_2"	||
-					simVars->setup.benchmark_scenario_name == "geostrophic_balance_4"	||
-					simVars->setup.benchmark_scenario_name == "geostrophic_balance_8"	||
-					simVars->setup.benchmark_scenario_name == "geostrophic_balance_16"	||
-					simVars->setup.benchmark_scenario_name == "geostrophic_balance_32"	||
-					simVars->setup.benchmark_scenario_name == "geostrophic_balance_64"	||
-					simVars->setup.benchmark_scenario_name == "geostrophic_balance_128"	||
-					simVars->setup.benchmark_scenario_name == "geostrophic_balance_256"	||
-					simVars->setup.benchmark_scenario_name == "geostrophic_balance_512"	||
-					simVars->setup.benchmark_scenario_name == "geostrophic_balance_nosetparam"
+					simVars->setup.benchmark_name == "geostrophic_balance"	||
+					simVars->setup.benchmark_name == "geostrophic_balance_1"	||
+					simVars->setup.benchmark_name == "geostrophic_balance_2"	||
+					simVars->setup.benchmark_name == "geostrophic_balance_4"	||
+					simVars->setup.benchmark_name == "geostrophic_balance_8"	||
+					simVars->setup.benchmark_name == "geostrophic_balance_16"	||
+					simVars->setup.benchmark_name == "geostrophic_balance_32"	||
+					simVars->setup.benchmark_name == "geostrophic_balance_64"	||
+					simVars->setup.benchmark_name == "geostrophic_balance_128"	||
+					simVars->setup.benchmark_name == "geostrophic_balance_256"	||
+					simVars->setup.benchmark_name == "geostrophic_balance_512"	||
+					simVars->setup.benchmark_name == "geostrophic_balance_nosetparam"
 			)
 			{
 				/*
@@ -813,7 +813,7 @@ public:
 					std::cout << "!!! WARNING !!!" << std::endl;
 				}
 
-				if (simVars->setup.benchmark_scenario_name != "geostrophic_balance_nosetparam")
+				if (simVars->setup.benchmark_name != "geostrophic_balance_nosetparam")
 				{
 					simVars->sim.coriolis_omega = 7.292e-5;
 					simVars->sim.gravitation = 9.80616;
@@ -833,23 +833,23 @@ public:
 
 				double freq_multiplier = 1.0;
 
-				if (simVars->setup.benchmark_scenario_name == "geostrophic_balance_2")
+				if (simVars->setup.benchmark_name == "geostrophic_balance_2")
 					freq_multiplier = 2.0;
-				else if (simVars->setup.benchmark_scenario_name == "geostrophic_balance_4")
+				else if (simVars->setup.benchmark_name == "geostrophic_balance_4")
 					freq_multiplier = 4.0;
-				else if (simVars->setup.benchmark_scenario_name == "geostrophic_balance_8")
+				else if (simVars->setup.benchmark_name == "geostrophic_balance_8")
 					freq_multiplier = 8.0;
-				else if (simVars->setup.benchmark_scenario_name == "geostrophic_balance_16")
+				else if (simVars->setup.benchmark_name == "geostrophic_balance_16")
 					freq_multiplier = 16.0;
-				else if (simVars->setup.benchmark_scenario_name == "geostrophic_balance_32")
+				else if (simVars->setup.benchmark_name == "geostrophic_balance_32")
 					freq_multiplier = 32.0;
-				else if (simVars->setup.benchmark_scenario_name == "geostrophic_balance_64")
+				else if (simVars->setup.benchmark_name == "geostrophic_balance_64")
 					freq_multiplier = 64.0;
-				else if (simVars->setup.benchmark_scenario_name == "geostrophic_balance_128")
+				else if (simVars->setup.benchmark_name == "geostrophic_balance_128")
 					freq_multiplier = 128.0;
-				else if (simVars->setup.benchmark_scenario_name == "geostrophic_balance_256")
+				else if (simVars->setup.benchmark_name == "geostrophic_balance_256")
 					freq_multiplier = 256.0;
-				else if (simVars->setup.benchmark_scenario_name == "geostrophic_balance_512")
+				else if (simVars->setup.benchmark_name == "geostrophic_balance_512")
 					freq_multiplier = 512.0;
 
 
@@ -933,41 +933,41 @@ public:
 			SphereDataPhysical &o_v
 	)
 	{
-		if (simVars->setup.benchmark_scenario_id < 0)
+		if (simVars->setup.benchmark_id < 0)
 		{
 			printAvailableBenchmarks();
 			FatalError("Benchmark scenario not selected");
 		}
 
-		if (simVars->setup.benchmark_scenario_id == 0)
+		if (simVars->setup.benchmark_id == 0)
 		{
 			BenchmarkGaussianDam::setup_initial_conditions_gaussian(o_h, o_u, o_v, *simVars, M_PI/3.0, M_PI/3.0);
 		}
-		else if (simVars->setup.benchmark_scenario_id == 2)
+		else if (simVars->setup.benchmark_id == 2)
 		{
 			BenchmarkGaussianDam::setup_initial_conditions_gaussian(o_h, o_u, o_v, *simVars, M_PI/3.0, 0);
 		}
-		else if (simVars->setup.benchmark_scenario_id == 3)
+		else if (simVars->setup.benchmark_id == 3)
 		{
 			BenchmarkGaussianDam::setup_initial_conditions_gaussian(o_h, o_u, o_v, *simVars, M_PI/3.0, M_PI/3.0);
 		}
-		else if (simVars->setup.benchmark_scenario_id == 4)
+		else if (simVars->setup.benchmark_id == 4)
 		{
 			BenchmarkGaussianDam::setup_initial_conditions_gaussian(o_h, o_u, o_v, *simVars, M_PI/4.0, -M_PI);
 		}
-		else if (simVars->setup.benchmark_scenario_id == 5)
+		else if (simVars->setup.benchmark_id == 5)
 		{
 			BenchmarkGaussianDam::setup_initial_conditions_gaussian(o_h, o_u, o_v, *simVars, M_PI/4.0, -M_PI, 100.0);
 		}
-		else if (simVars->setup.benchmark_scenario_id == 6)
+		else if (simVars->setup.benchmark_id == 6)
 		{
 			BenchmarkGaussianDam::setup_initial_conditions_gaussian(o_h, o_u, o_v, *simVars, M_PI/3.0, M_PI/3.0, 20.0);
 		}
-		else if (simVars->setup.benchmark_scenario_id == 7)
+		else if (simVars->setup.benchmark_id == 7)
 		{
 			BenchmarkGaussianDam::setup_initial_conditions_gaussian(o_h, o_u, o_v, *simVars, M_PI/4.0, -M_PI, 100.0);
 		}
-		else if (simVars->setup.benchmark_scenario_id == 9)
+		else if (simVars->setup.benchmark_id == 9)
 		{
 			SphereData tmp(o_h.sphereDataConfig);
 
@@ -983,7 +983,7 @@ public:
 			BenchmarkGaussianDam::setup_initial_conditions_gaussian(tmp, o_u, o_v, *simVars, 2.0*M_PI*0.8, -M_PI/4, 100.0);
 			o_h += (tmp-simVars->sim.h0);
 		}
-		else if (simVars->setup.benchmark_scenario_id == 10 || simVars->setup.benchmark_scenario_id == 11)
+		else if (simVars->setup.benchmark_id == 10 || simVars->setup.benchmark_id == 11)
 		{
 			/*
 			 * Williamson test case 2 for geostrophic balance.
@@ -992,7 +992,7 @@ public:
 			 */
 
 			double u0 = 1.0;
-			if (simVars->setup.benchmark_scenario_id == 11)
+			if (simVars->setup.benchmark_id == 11)
 			{
 				if (simVars->timecontrol.current_simulation_time == 0)
 				{
@@ -1067,7 +1067,7 @@ public:
 			}
 #endif
 		}
-		else if (simVars->setup.benchmark_scenario_id == 21)
+		else if (simVars->setup.benchmark_id == 21)
 		{
 			/*
 			 * Advection test case
@@ -1183,7 +1183,7 @@ public:
 
 			std::cout << "advection_rotation_angle: " << simVars->setup.advection_rotation_angle << std::endl;
 		}
-		else if (simVars->setup.benchmark_scenario_id == 22)
+		else if (simVars->setup.benchmark_id == 22)
 		{
 			/**
 			 * Advection test case
@@ -1304,13 +1304,13 @@ public:
 
 			std::cout << "advection_rotation_angle: " << simVars->setup.advection_rotation_angle << std::endl;
 		}
-		else if (simVars->setup.benchmark_scenario_id == 40)
+		else if (simVars->setup.benchmark_id == 40)
 		{
 			o_h.physical_set_all_value(simVars->sim.h0);
 			o_u.physical_set_all_value(0);
 			o_v.physical_set_all_value(0);
 		}
-		else if (simVars->setup.benchmark_scenario_id == 50)
+		else if (simVars->setup.benchmark_id == 50)
 		{
 			/*
 			 * PAUL N. SWARZTRAUBER
@@ -1356,7 +1356,7 @@ public:
 				}
 			);
 		}
-		else if (simVars->setup.benchmark_scenario_id == 200)
+		else if (simVars->setup.benchmark_id == 200)
 		{
 			o_h.physical_set_all_value(simVars->sim.h0);
 			o_u.physical_set_zero();

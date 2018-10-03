@@ -420,7 +420,7 @@ public:
 			{
 				o_ostream << "T\tTOTAL_MASS\tTOTAL_ENERGY\tPOT_ENSTROPHY";
 
-				if (simVars.setup.benchmark_scenario_id == 2 || simVars.setup.benchmark_scenario_id == 3 || simVars.setup.benchmark_scenario_id == 4)
+				if (simVars.setup.benchmark_id == 2 || simVars.setup.benchmark_id == 3 || simVars.setup.benchmark_id == 4)
 					o_ostream << "\tABS_P_DT\tABS_U_DT\tABS_V_DT";
 
 				o_ostream << std::endl;
@@ -429,7 +429,7 @@ public:
 			o_ostream << simVars.timecontrol.current_simulation_time << "\t" << simVars.diag.total_mass << "\t" << simVars.diag.total_energy << "\t" << simVars.diag.total_potential_enstrophy;
 
 			// this should be zero for the steady state test
-			if (simVars.setup.benchmark_scenario_id == 2 || simVars.setup.benchmark_scenario_id == 3 || simVars.setup.benchmark_scenario_id == 4)
+			if (simVars.setup.benchmark_id == 2 || simVars.setup.benchmark_id == 3 || simVars.setup.benchmark_id == 4)
 			{
 
 				tmp.physical_update_lambda_array_indices(
@@ -678,7 +678,7 @@ int main(int i_argc, char *i_argv[])
 			std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs(simVars.diag.total_mass-diagnostics_mass_start) << std::endl;
 			std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs(simVars.diag.total_potential_enstrophy-diagnostics_potential_entrophy_start) << std::endl;
 
-			if (simVars.setup.benchmark_scenario_id == 2 || simVars.setup.benchmark_scenario_id == 3 || simVars.setup.benchmark_scenario_id == 4)
+			if (simVars.setup.benchmark_id == 2 || simVars.setup.benchmark_id == 3 || simVars.setup.benchmark_id == 4)
 			{
 				std::cout << "DIAGNOSTICS BENCHMARK DIFF H:\t" << simulationSWE->benchmark_diff_h << std::endl;
 				std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationSWE->benchmark_diff_u << std::endl;

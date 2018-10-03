@@ -195,7 +195,7 @@ public:
 	{
 		simVars.reset();
 
-		if (simVars.setup.benchmark_scenario_id < 0 && simVars.setup.benchmark_scenario_name == "" )
+		if (simVars.setup.benchmark_id < 0 && simVars.setup.benchmark_name == "" )
 		{
 			std::cout << std::endl;
 			std::cout << "Benchmark scenario not selected (option -s [id])" << std::endl;
@@ -254,7 +254,7 @@ public:
 			gridMapping.setup(simVars, planeDataConfig);
 
 
-		if (simVars.setup.benchmark_scenario_name == "")
+		if (simVars.setup.benchmark_name == "")
 		{
 			// Waves test case - separate from SWEValidationBench because it depends on certain local input parameters
 			auto return_h_perturbed = [] (
@@ -392,9 +392,9 @@ public:
 		{
 			//Compute difference to initial condition (makes more sense in steady state cases, but useful in others too)
 			compute_error_difference_to_initial_condition = true;
-					//simVars.setup.benchmark_scenario_id == 2 ||
-					//simVars.setup.benchmark_scenario_id == 3 ||
-					//simVars.setup.benchmark_scenario_id == 14;
+					//simVars.setup.benchmark_id == 2 ||
+					//simVars.setup.benchmark_id == 3 ||
+					//simVars.setup.benchmark_id == 14;
 
 			//Compute difference to analytical solution (makes more sense in linear cases, but might be useful in others too)
 			compute_error_to_analytical_solution = timeSteppers.linear_only;

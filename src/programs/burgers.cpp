@@ -161,7 +161,7 @@ public:
 
 	void reset()
 	{
-		if (simVars.setup.benchmark_scenario_id <0)
+		if (simVars.setup.benchmark_id <0)
 		{
 			std::cout << std::endl;
 			std::cout << "Benchmark scenario not selected (option -s [id])" << std::endl;
@@ -517,7 +517,7 @@ public:
 
 		if (simVars.misc.compute_errors)
 		{
-			//if (simVars.setup.benchmark_scenario_id > 51 && simVars.setup.benchmark_scenario_id < 65)
+			//if (simVars.setup.benchmark_id > 51 && simVars.setup.benchmark_id < 65)
 			if (simVars.disc.timestepping_method.find("forcing")!=std::string::npos)
 			{
 				if (simVars.disc.use_staggering)
@@ -563,7 +563,7 @@ public:
 					);
 				}
 			}
-			else //if (simVars.setup.benchmark_scenario_id == 70)
+			else //if (simVars.setup.benchmark_id == 70)
 			{
 				if (analytic_solution == 1)
 				{
@@ -609,7 +609,7 @@ public:
 
 		if (simVars.misc.compute_errors)
 		{
-			//if (simVars.setup.benchmark_scenario_id > 51 && simVars.setup.benchmark_scenario_id < 65)
+			//if (simVars.setup.benchmark_id > 51 && simVars.setup.benchmark_id < 65)
 			if (simVars.disc.timestepping_method.find("forcing")!=std::string::npos)
 			{
 				if (simVars.disc.use_staggering)
@@ -655,7 +655,7 @@ public:
 					);
 				}
 			}
-			else //if (simVars.setup.benchmark_scenario_id == 70)
+			else //if (simVars.setup.benchmark_id == 70)
 			{
 				if (analytic_solution == 1)
 				{

@@ -139,7 +139,7 @@ public:
 		// one month runtime
 		if (simVars.timecontrol.max_simulation_time == -1)
 		{
-			if (simVars.setup.benchmark_scenario_id == 10)
+			if (simVars.setup.benchmark_id == 10)
 			{
 				simVars.timecontrol.max_simulation_time = 31*60*60*24;
 
@@ -269,7 +269,7 @@ public:
 		std::cout << "Simulation time: " << simVars.timecontrol.current_simulation_time << std::endl;
 
 		SphereData h = prog_phi*(1.0/simVars.sim.gravitation);
-		output_filename = write_file(h, "prog_h", simVars.setup.benchmark_scenario_id == 0);
+		output_filename = write_file(h, "prog_h", simVars.setup.benchmark_id == 0);
 		std::cout << output_filename << " (min: " << SphereData(h).physical_reduce_min() << ", max: " << SphereData(h).physical_reduce_max() << ")" << std::endl;
 
 		SphereDataPhysical u(sphereDataConfig);
@@ -277,18 +277,18 @@ public:
 
 		op.robert_vortdiv_to_uv(prog_vort, prog_div, u, v);
 
-		output_filename = write_file(u, "prog_u", simVars.setup.benchmark_scenario_id == 0);
+		output_filename = write_file(u, "prog_u", simVars.setup.benchmark_id == 0);
 		std::cout << output_filename << std::endl;
 
-		output_filename = write_file(v, "prog_v", simVars.setup.benchmark_scenario_id == 0);
+		output_filename = write_file(v, "prog_v", simVars.setup.benchmark_id == 0);
 		std::cout << output_filename << std::endl;
 
-		output_filename = write_file(prog_vort, "prog_vort", simVars.setup.benchmark_scenario_id == 0);
+		output_filename = write_file(prog_vort, "prog_vort", simVars.setup.benchmark_id == 0);
 		std::cout << output_filename << std::endl;
 
 		SphereData potvort = (prog_phi/simVars.sim.gravitation)*prog_vort;
 
-		output_filename = write_file(potvort, "prog_potvort", simVars.setup.benchmark_scenario_id == 0);
+		output_filename = write_file(potvort, "prog_potvort", simVars.setup.benchmark_id == 0);
 		std::cout << output_filename << std::endl;
 	}
 
@@ -299,27 +299,27 @@ public:
 		if (simVars.misc.compute_errors)
 		{
 			if (
-					simVars.setup.benchmark_scenario_name != "geostrophic_balance"		&&
-					simVars.setup.benchmark_scenario_name != "geostrophic_balance_1"		&&
-					simVars.setup.benchmark_scenario_name != "geostrophic_balance_2"		&&
-					simVars.setup.benchmark_scenario_name != "geostrophic_balance_4"		&&
-					simVars.setup.benchmark_scenario_name != "geostrophic_balance_8"		&&
-					simVars.setup.benchmark_scenario_name != "geostrophic_balance_16"	&&
-					simVars.setup.benchmark_scenario_name != "geostrophic_balance_32"	&&
-					simVars.setup.benchmark_scenario_name != "geostrophic_balance_64"	&&
-					simVars.setup.benchmark_scenario_name != "geostrophic_balance_128"	&&
-					simVars.setup.benchmark_scenario_name != "geostrophic_balance_256"	&&
-					simVars.setup.benchmark_scenario_name != "geostrophic_balance_512"
+					simVars.setup.benchmark_name != "geostrophic_balance"		&&
+					simVars.setup.benchmark_name != "geostrophic_balance_1"		&&
+					simVars.setup.benchmark_name != "geostrophic_balance_2"		&&
+					simVars.setup.benchmark_name != "geostrophic_balance_4"		&&
+					simVars.setup.benchmark_name != "geostrophic_balance_8"		&&
+					simVars.setup.benchmark_name != "geostrophic_balance_16"	&&
+					simVars.setup.benchmark_name != "geostrophic_balance_32"	&&
+					simVars.setup.benchmark_name != "geostrophic_balance_64"	&&
+					simVars.setup.benchmark_name != "geostrophic_balance_128"	&&
+					simVars.setup.benchmark_name != "geostrophic_balance_256"	&&
+					simVars.setup.benchmark_name != "geostrophic_balance_512"
 			)
 			{
 				if (
-						simVars.setup.benchmark_scenario_id != 10	 &&
-						simVars.setup.benchmark_scenario_id != 11	 &&
-						simVars.setup.benchmark_scenario_id != 101
+						simVars.setup.benchmark_id != 10	 &&
+						simVars.setup.benchmark_id != 11	 &&
+						simVars.setup.benchmark_id != 101
 				)
 				{
-					std::cout << "Benchamrk name: " << simVars.setup.benchmark_scenario_name << std::endl;
-					std::cout << "Benchmark scenario id: " << simVars.setup.benchmark_scenario_id << std::endl;
+					std::cout << "Benchamrk name: " << simVars.setup.benchmark_name << std::endl;
+					std::cout << "Benchmark scenario id: " << simVars.setup.benchmark_id << std::endl;
 					FatalError("Analytical solution not available for this benchmark");
 				}
 			}
@@ -404,7 +404,7 @@ public:
 #if 0
 		if (	param_compute_error &&
 			//	simVars.pde.use_nonlinear_equations == 0 &&
-				simVars.setup.benchmark_scenario_id == 10
+				simVars.setup.benchmark_id == 10
 		)
 		{
 			SphereData test_h(sphereDataConfig);
@@ -497,7 +497,7 @@ public:
 
 		if (
 				SphereData(prog_phi).physical_reduce_max_abs() > max_abs_value &&
-				simVars.setup.benchmark_scenario_id != 4
+				simVars.setup.benchmark_id != 4
 		)
 		{
 			std::cerr << "Instability detected (max abs value of h > " << max_abs_value << ")" << std::endl;

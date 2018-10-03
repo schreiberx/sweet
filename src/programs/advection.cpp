@@ -65,7 +65,7 @@ public:
 		double center_x = 0.7;
 		double center_y = 0.6;
 
-		if (simVars.setup.benchmark_scenario_id == 0)
+		if (simVars.setup.benchmark_id == 0)
 		{
 			/*
 			 * radial dam break
@@ -87,7 +87,7 @@ public:
 			);
 		}
 
-		if (simVars.setup.benchmark_scenario_id == 1)
+		if (simVars.setup.benchmark_id == 1)
 		{
 			/*
 			 * fun with Gaussian

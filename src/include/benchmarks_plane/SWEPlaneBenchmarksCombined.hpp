@@ -79,7 +79,7 @@ public:
 					return std::exp(-i_exp_fac*(dx*dx + dy*dy));
 				};
 
-		if (io_simVars.setup.benchmark_scenario_name == "")
+		if (io_simVars.setup.benchmark_name == "")
 		{
 			std::cout << "WARNING: Using -s [int] is deprecated" << std::endl;
 			std::cout << "WARNING: TODO: change to use --benchmark [string] for benchmarks" << std::endl;
@@ -119,7 +119,7 @@ public:
 
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		if (io_simVars.setup.benchmark_scenario_name == "polvani")
+		if (io_simVars.setup.benchmark_name == "polvani")
 		{
 			SWE_bench_Polvani swe_polvani(io_simVars, io_op);
 
@@ -131,7 +131,7 @@ public:
 
 			return true;
 		}
-		else if (io_simVars.setup.benchmark_scenario_name == "mergevortex")
+		else if (io_simVars.setup.benchmark_name == "mergevortex")
 		{
 			SWE_bench_MergeVortex swe_mergevortex(io_simVars, io_op);
 
@@ -143,7 +143,7 @@ public:
 
 			return true;
 		}
-		else if (io_simVars.setup.benchmark_scenario_name == "unstablejet")
+		else if (io_simVars.setup.benchmark_name == "unstablejet")
 		{
 			SWE_bench_UnstableJet swe_unstablejet(io_simVars, io_op);
 
@@ -155,7 +155,7 @@ public:
 
 			return true;
 		}
-		else if (io_simVars.setup.benchmark_scenario_name == "unstablejetfast")
+		else if (io_simVars.setup.benchmark_name == "unstablejetfast")
 			{
 				SWE_bench_UnstableJetFast swe_unstablejetfast(io_simVars, io_op);
 
@@ -168,7 +168,7 @@ public:
 				return true;
 			}
 
-		else if (io_simVars.setup.benchmark_scenario_name == "unstablejetadv")
+		else if (io_simVars.setup.benchmark_name == "unstablejetadv")
 		{
 			SWE_bench_UnstableJetAdv swe_unstablejetadv(io_simVars, io_op);
 
@@ -181,7 +181,7 @@ public:
 			return true;
 		}
 #endif
-		else if (io_simVars.setup.benchmark_scenario_name == "gaussian_bump")
+		else if (io_simVars.setup.benchmark_name == "gaussian_bump")
 		{
 			SWE_bench_GaussianBump swe_gaussian_bump(io_simVars, io_op);
 
@@ -194,7 +194,7 @@ public:
 			return true;
 		}
 
-		else if (io_simVars.setup.benchmark_scenario_name == "gaussian_bump_advection")
+		else if (io_simVars.setup.benchmark_name == "gaussian_bump_advection")
 		{
 
 			auto callback_external_forces_advection_field =
@@ -277,7 +277,7 @@ public:
 		}
 
 		printBenchmarkInformation();
-		FatalError(std::string("Benchmark ")+io_simVars.setup.benchmark_scenario_name+ " not found (or not availble)");
+		FatalError(std::string("Benchmark ")+io_simVars.setup.benchmark_name+ " not found (or not availble)");
 
 
 		return false;

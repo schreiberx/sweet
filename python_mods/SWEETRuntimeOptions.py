@@ -322,7 +322,7 @@ class SWEETRuntimeOptions(InfoError):
 		retval += ' -Y '+str(self.domain_size)
 
 		retval += ' -s '+str(self.bench_id)
-		retval += ' --benchmark='+str(self.benchmark_name)
+		retval += ' --benchmark-name='+str(self.benchmark_name)
 
 		retval += ' -v '+str(self.verbosity)
 

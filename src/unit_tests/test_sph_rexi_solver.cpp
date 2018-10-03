@@ -105,7 +105,7 @@ void run_tests()
 		SphereDataComplex prog_u_cplx_setup(sphereDataConfig);
 		SphereDataComplex prog_v_cplx_setup(sphereDataConfig);
 
-		if (simVars.setup.benchmark_scenario_id <= 0)
+		if (simVars.setup.benchmark_id <= 0)
 		{
 			std::cout << "SETUP: Computing solution based on time stepping scheme." << std::endl;
 			SphereOperators op(sphereDataConfig, 1);
@@ -171,13 +171,13 @@ void run_tests()
 			SphereDataComplex prog_v_cplx(sphereDataConfig);
 
 
-			if (simVars.setup.benchmark_scenario_id <= 0)
+			if (simVars.setup.benchmark_id <= 0)
 			{
 				prog_phi_cplx = prog_phi_cplx_setup;
 				prog_u_cplx = prog_u_cplx_setup;
 				prog_v_cplx = prog_v_cplx_setup;
 			}
-			else if (simVars.setup.benchmark_scenario_id == 1)
+			else if (simVars.setup.benchmark_id == 1)
 			{
 				std::cout << "SETUP: Computing steady state solution" << std::endl;
 
@@ -256,7 +256,7 @@ void run_tests()
 			SphereDataComplex prog_u0_cplx = prog_u0_cplx_ext.spectral_returnWithDifferentModes(sphereDataConfig);
 			SphereDataComplex prog_v0_cplx = prog_v0_cplx_ext.spectral_returnWithDifferentModes(sphereDataConfig);
 
-			if (simVars.setup.benchmark_scenario_id == 1)
+			if (simVars.setup.benchmark_id == 1)
 			{
 				SphereDataComplex zero(sphereDataConfig);
 				zero.physical_set_zero();
@@ -269,7 +269,7 @@ void run_tests()
 				ErrorCheck::checkTruncated(prog_v0_cplx_ext, zero, sphereDataConfig, "ERROR Geostrophic balance v", epsilon, false);
 			}
 
-			if (simVars.setup.benchmark_scenario_id == 1)
+			if (simVars.setup.benchmark_id == 1)
 			{
 				SphereDataComplex zero(sphereDataConfig);
 				zero.physical_set_zero();
@@ -527,9 +527,9 @@ void run_tests()
 			 * These should match prog_*
 			 */
 // commented out since this is not how REXI is computed
-//			ErrorCheck::checkTruncated(rexi_prog_phi, prog_phi, sphereDataConfig, "prog_phi", epsilon*1e+5, false, simVars.setup.benchmark_scenario_id != 1);
-//			ErrorCheck::checkTruncated(rexi_prog_u, prog_u, sphereDataConfig, "prog_u", epsilon*1e+5, false, simVars.setup.benchmark_scenario_id != 1);
-//			ErrorCheck::checkTruncated(rexi_prog_v, prog_v, sphereDataConfig, "prog_v", epsilon*1e+5, false, simVars.setup.benchmark_scenario_id != 1);
+//			ErrorCheck::checkTruncated(rexi_prog_phi, prog_phi, sphereDataConfig, "prog_phi", epsilon*1e+5, false, simVars.setup.benchmark_id != 1);
+//			ErrorCheck::checkTruncated(rexi_prog_u, prog_u, sphereDataConfig, "prog_u", epsilon*1e+5, false, simVars.setup.benchmark_id != 1);
+//			ErrorCheck::checkTruncated(rexi_prog_v, prog_v, sphereDataConfig, "prog_v", epsilon*1e+5, false, simVars.setup.benchmark_id != 1);
 		}
 	}
 }

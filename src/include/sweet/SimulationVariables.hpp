@@ -184,10 +184,10 @@ public:
 		int random_seed = 0;
 
 		/// setup scenario
-		int benchmark_scenario_id = -1;
+		int benchmark_id = -1;
 
 		/// setup scenario
-		std::string benchmark_scenario_name = "";
+		std::string benchmark_name = "";
 
 		/// Use 2/3 rule in physical space for dealiasing
 		bool benchmark_setup_dealiased = true;
@@ -254,8 +254,8 @@ public:
 			std::cout << std::endl;
 			std::cout << "SETUP:" << std::endl;
 			std::cout << " + random_seed: " << random_seed << std::endl;
-			std::cout << " + benchmark_scenario_id: " << benchmark_scenario_id << std::endl;
-			std::cout << " + benchmark_scenario_name: " << benchmark_scenario_name << std::endl;
+			std::cout << " + benchmark_id: " << benchmark_id << std::endl;
+			std::cout << " + benchmark_name: " << benchmark_name << std::endl;
 			std::cout << " + benchmark_setup_dealiased: " << benchmark_setup_dealiased << std::endl;
 			std::cout << " + benchmark_galewsky_umax: " << benchmark_galewsky_umax << std::endl;
 			std::cout << " + benchmark_galewsky_hamp: " << benchmark_galewsky_hamp << std::endl;
@@ -881,7 +881,7 @@ public:
         long_options[next_free_program_option] = {"advection-velocity", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        long_options[next_free_program_option] = {"benchmark", required_argument, 0, 256+next_free_program_option};
+        long_options[next_free_program_option] = {"benchmark-name", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
         long_options[next_free_program_option] = {"benchmark-setup-dealiased", required_argument, 0, 256+next_free_program_option};
@@ -1064,7 +1064,7 @@ public:
 							split3double(optarg, &sim.advection_velocity[0], &sim.advection_velocity[1], &sim.advection_velocity[2]);
 							continue;
 					}
-					c++;		if (i == c)	{	setup.benchmark_scenario_name = optarg;		continue;	}
+					c++;		if (i == c)	{	setup.benchmark_name = optarg;		continue;	}
 					c++;		if (i == c)	{	setup.benchmark_setup_dealiased = atof(optarg);		continue;	}
 
 					c++;		if (i == c)	{	setup.benchmark_galewsky_umax = atof(optarg);		continue;	}
@@ -1228,7 +1228,7 @@ public:
 				break;
 
 			case 's':
-				setup.benchmark_scenario_id = atoi(optarg);
+				setup.benchmark_id = atoi(optarg);
 				break;
 
 			case 'S':
