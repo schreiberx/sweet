@@ -18,8 +18,10 @@ fi
 
 config_package $@
 
-config_configure_make_default_install
+config_configure
 
-config_make_default_install
+./build.sh || echo_error_exit "Failed build"
+
+./make install || echo_error_exit "Failed to .make install"
 
 config_success
