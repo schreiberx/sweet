@@ -382,10 +382,12 @@ private:
 			nthreads = omp_get_max_threads();
 #endif
 
+#if 0
 			std::cout << "Using " << nthreads << " for FFTW" << std::endl;
 			std::cout << "omp_get_max_threads(): " << omp_get_max_threads() << std::endl;
 			std::cout << "omp_get_num_procs() " << omp_get_num_procs() << std::endl;
 			std::cout << "PAR MASTER omp_get_num_threads() " << nthreads << std::endl;
+#endif
 
 			fftw_plan_with_nthreads(nthreads);
 
