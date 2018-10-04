@@ -7,7 +7,7 @@ source ./install_helpers.sh "" || exit 1
 PKG_NAME="likwid"
 
 # Path to one file of installed package to test for existing installation
-PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/libwid-topology"
+PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/likwid-topology"
 
 # URL to source code to fetch it
 PKG_URL_SRC="likwid-4.3.2.tar.gz"
