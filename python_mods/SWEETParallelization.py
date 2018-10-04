@@ -247,12 +247,16 @@ class SWEETParallelization(InfoError):
 		if not 'parallelization' in i_filter:
 			retval += 'PAR'
 
-			# cores per rank
-			retval += "_cpr"+str(self.num_cores_per_rank)
-
 			# mpi ranks
-			retval += "_rks"+str(self.num_ranks)
+			retval += "_r"+str(self.num_ranks).zfill(5)
 
+			# cores per rank
+			retval += "_cpr"+str(self.num_cores_per_rank).zfill(3)
+
+			# cores per rank
+			retval += "_tpr"+str(self.num_threads_per_rank).zfill(3)
+
+			retval += "_DIMS"
 			for i in self.pardims:
 				retval += '_'+i.dim_name+str(i.num_cores).zfill(3)
 
