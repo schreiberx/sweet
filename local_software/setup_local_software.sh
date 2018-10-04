@@ -29,7 +29,7 @@ for D in "${PKGS[@]}"; do
 	./$D || exit 1
 done
 
-echo_hline
+echo_success_hline
 echo_success "All software installed"
-echo_hline
+echo_success_hline
 

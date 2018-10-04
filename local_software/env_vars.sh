@@ -22,11 +22,11 @@
 # echo_error [message]:
 #	Output success message in red color
 #
-# echo_hline [message]:
+# echo_*_hline [message]:
 #	Output a horizontal separator line
 #
 
-ECHO_PREFIX="echo -n \"SWEET: \""
+export ECHO_PREFIX="echo -n \"SWEET: \""
 
 # Pretty output
 echo_info()( eval ${ECHO_PREFIX}; echo "${@}"; )
@@ -35,7 +35,6 @@ echo_warning()( eval ${ECHO_PREFIX}; echo -en "\033[0;33m"; echo "${@}"; echo -e
 echo_error()( eval ${ECHO_PREFIX}; echo -en "\033[0;31m"; echo "${@}"; echo -en "\033[0m"; )
 
 # hlines
-echo_hline()( echo "SWEET: *************************************************************************"; )
 echo_info_hline()( echo_info "*************************************************************************"; )
 echo_success_hline()( echo_success "*************************************************************************"; )
 echo_warning_hline()( echo_warning "*************************************************************************"; )
@@ -43,6 +42,10 @@ echo_error_hline()( echo_error "************************************************
 
 # output error and exit
 echo_error_exit(){ echo_error_hline; eval ${ECHO_PREFIX}; echo -en "\033[0;31m"; echo "${@}"; echo -en "\033[0m"; echo_error_hline; exit 1; }
+
+export -f echo_info echo_success echo_warning echo_error
+export -f echo_info_hline echo_success_hline echo_warning_hline echo_error_hline
+export -f echo_error_exit
 
 #
 # END CONV
@@ -57,7 +60,7 @@ if [ "#$SWEET_ROOT" != "#" ]; then
 	fi
 else
 
-	echo_hline
+	echo_info_hline
 	if [ "#$0" != "#-bash" ]; then
 		if [ "`basename -- "$0"`" = "env_vars.sh" ]; then
 			if [ "`basename -- "$0"`" != "bash" ]; then
@@ -237,6 +240,6 @@ else
 	cd "$BACKDIR"
 
 	echo_success " Environment setup successful (I hope so...)"
-	echo_hline
+	echo_info_hline
 
 fi
