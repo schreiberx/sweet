@@ -200,20 +200,21 @@ class SWEETRuntimeOptions(InfoError):
 	def getUniqueID(self, compileOptions : SWEETCompileOptions, filter : list = []):
 		idstr = ''
 
-		if False:
+		if not 'benchmark' in filter:
 			if self.benchmark_name != '':
 				idstr += '_b'+str(self.benchmark_name)
 			else:
 				idstr += '_b'+str(self.bench_id)
 
-		if self.benchmark_galewsky_umax > 0:
-			idstr += '_bgu'+str("{:.4E}".format(self.benchmark_galewsky_umax))
+		if not 'galewsky_params' in filter:
+			if self.benchmark_galewsky_umax > 0:
+				idstr += '_bgu'+str("{:.4E}".format(self.benchmark_galewsky_umax))
 
-		if self.benchmark_galewsky_hamp > 0:
-			idstr += '_bgh'+str("{:.4E}".format(self.benchmark_galewsky_hamp))
+			if self.benchmark_galewsky_hamp > 0:
+				idstr += '_bgh'+str("{:.4E}".format(self.benchmark_galewsky_hamp))
 
-		if self.benchmark_galewsky_phi2 > 0:
-			idstr += '_bgp'+str("{:.4E}".format(self.benchmark_galewsky_phi2))
+			if self.benchmark_galewsky_phi2 > 0:
+				idstr += '_bgp'+str("{:.4E}".format(self.benchmark_galewsky_phi2))
 
 		if not 'simparams' in filter:
 			idstr += '_g'+str(self.g)
@@ -230,12 +231,16 @@ class SWEETRuntimeOptions(InfoError):
 			idstr += '_u'+str(self.viscosity)
 			idstr += '_U'+str(self.viscosity_order)
 
-		idstr += '_tsm_'+self.timestepping_method
-		idstr += '_tso'+str(self.timestepping_order)
-		idstr += '_tsob'+str(self.timestepping_order2)
+		if not 'timestep' in filter:
+			if not 'timestep_method' in filter:
+				idstr += '_tsm_'+self.timestepping_method
 
+			if not 'timestep_order' in filter:
+				idstr += '_tso'+str(self.timestepping_order)
+				idstr += '_tsob'+str(self.timestepping_order2)
 
-		idstr += '_C'+str(self.timestep_size).zfill(6)
+			if not 'timestep_size' in filter:
+				idstr += '_C'+str(self.timestep_size).zfill(6)
 
 		if self.max_timesteps != -1:
 			idstr += '_T'+str(self.max_timesteps).zfill(3)
@@ -246,20 +251,22 @@ class SWEETRuntimeOptions(InfoError):
 			else:
 				if self.rexi_method == "file":
 					idstr += '_REXIFIL'
-					idstr += '_n'+str(self.rexi_file_n).zfill(8)
-					idstr += '_h'+str(self.rexi_file_h)
-					idstr += '_teabs'+str(self.rexi_file_test_abs).zfill(3)
-					idstr += '_mxer'+str(self.rexi_file_max_error)
+					if not 'rexi_params' in filter:
+						idstr += '_n'+str(self.rexi_file_n).zfill(8)
+						idstr += '_h'+str(self.rexi_file_h)
+						idstr += '_teabs'+str(self.rexi_file_test_abs).zfill(3)
+						idstr += '_mxer'+str(self.rexi_file_max_error)
 
 				elif self.rexi_method == "terry":
 					idstr += '_REXITER'
-					idstr += '_m'+str(self.rexi_terry_m).zfill(8)
-					idstr += '_h'+str(self.rexi_terry_h)
+					if not 'rexi_params' in filter:
+						idstr += '_m'+str(self.rexi_terry_m).zfill(8)
+						idstr += '_h'+str(self.rexi_terry_h)
 
 				elif self.rexi_method == "ci":
 					idstr += '_REXICI'
 
-					if not 'cirexi_params' in filter:
+					if not 'rexi_params' in filter:
 						idstr += '_n'+str(self.rexi_ci_n).zfill(8)
 						if self.rexi_ci_max_real > 0:
 							idstr += '_mr'+str(float(self.rexi_ci_max_real))
@@ -290,11 +297,12 @@ class SWEETRuntimeOptions(InfoError):
 		if self.polvani_froude >= 0:
 			idstr += '_PF'+str(self.polvani_froude)
 
-		if self.mode_res != -1:
-			idstr += '_M'+str(self.mode_res).zfill(4)
+		if not 'disc_space' in filter:
+			if self.mode_res != -1:
+				idstr += '_M'+str(self.mode_res).zfill(4)
 
-		if self.phys_res != -1:
-			idstr += '_N'+str(self.phys_res).zfill(4)
+			if self.phys_res != -1:
+				idstr += '_N'+str(self.phys_res).zfill(4)
 
 		if idstr[0] == "_":
 			idstr = idstr[1:]
