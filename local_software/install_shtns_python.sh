@@ -25,7 +25,7 @@ python3 setup.py install --prefix="$SWEET_LOCAL_SOFTWARE_DST_DIR" || echo_error_
 echo_info_hline
 echo_info "SHTNS Python OpenMP:"
 # Python, OpenMP
-make_configure --enable-python --enable-openmp
+config_configure --enable-python --enable-openmp
 config_make_clean
 config_make
 python3 setup.py install --prefix="$SWEET_LOCAL_SOFTWARE_DST_DIR" || echo_error_exit "Failed to install"
