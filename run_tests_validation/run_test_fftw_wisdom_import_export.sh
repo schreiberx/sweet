@@ -21,7 +21,29 @@ echo_info_hline
 echo_info_hline
 echo_info_hline
 
-for THREADS in -1 1 2 4; do
+# Determine number of processors
+NPROC=$(nproc --all)
+
+# Use twice as many processors
+NPROC=$(($NPROC*2))
+
+# Generate testing sequence 
+SEQ=$(seq ${NPROC})
+
+# Make pretty
+SEQ=$(echo -n "${SEQ}" | tr '\n' ' ')
+
+# Add autodetection
+SEQ="-1 ${SEQ}"
+
+# Output
+echo_info " Testing for THREADS \in { ${SEQ} }"
+
+for THREADS in $SEQ; do
+
+	echo_info "Cleaning up file 'sweet_fftw'"
+	rm -rf "sweet_fftw"
+
 	echo_info_hline
 	echo_info "Testing for '${THREADS}' threads"
 	echo_info_hline
@@ -42,3 +64,8 @@ for THREADS in -1 1 2 4; do
 	echo_success_hline
 
 done
+
+
+echo_success_hline
+echo_success " All tests for THREADS \in { $SEQ } passed"
+echo_success_hline
