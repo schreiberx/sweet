@@ -62,7 +62,7 @@ function config_package()
 	echo_info "Package: ${PKG_NAME}"
 	echo_info_hline
 
-	if [ "$1" == "FORCE"  ]; then
+	if [ "$1" = "FORCE"  ]; then
 		echo_warning "FORCE detected => reinstallation of package"
 	else
 		if [ -e "${PKG_INSTALLED_FILE}" ]; then
@@ -74,7 +74,7 @@ function config_package()
 			echo_warning "	${0} FORCE CLEAN"
 			echo_warning "to remove existing source files as well."
 			echo_warning_hline
-			exit 0
+			exit 0	# Exit with success code since software was already successfully installed
 		fi
 	fi
 
@@ -93,30 +93,44 @@ function config_package()
 	download "$PKG_URL_SRC" "$PKG_FILENAME"
 
 	# Determine how to extract compressed file
+	# !!!
+	# Be verbose to determine directory!!!
+	# !!!
 	EXT="${PKG_FILENAME##*.}"
 	EXTRACT_PROG=""
 	if [ "#$EXT" = "#gz" ]; then
-		EXTRACT_PROG="tar xzf ${PKG_FILENAME}"
+		TAR_CMD="zf"
 	elif [ "#$EXT" = "#tgz" ]; then
-		EXTRACT_PROG="tar xzf ${PKG_FILENAME}"
+		TAR_CMD="zf"
 	elif [ "#$EXT" = "#xz" ]; then
-		EXTRACT_PROG="tar xf ${PKG_FILENAME}"
+		TAR_CMD="f"
 	elif [ "#$EXT" = "#bz2" ]; then
-		EXTRACT_PROG="tar xjf ${PKG_FILENAME}"
+		TAR_CMD="jf"
 	else
 		echo_error_exit "Unknown extension '${EXT}'"
 	fi
 
-	echo_info "Extracting '${PKG_FILENAME}'"
-	$EXTRACT_PROG || exit 1
+	EXTRACT_PROG="tar x${TAR_CMD} ${PKG_FILENAME}"
+	LIST_TAR="tar t${TAR_CMD} ${PKG_FILENAME}"
+	echo $LIST_TAR
 
 	if [ -z "${PKG_SRC_SUBDIR}" ]; then
-		# Automatically detect basename
-		PKG_SRC_SUBDIR="${PKG_FILENAME}"
-		PKG_SRC_SUBDIR="${PKG_SRC_SUBDIR%%.tar.*}"
-		PKG_SRC_SUBDIR="${PKG_SRC_SUBDIR%%.tgz}"
-		echo_info "Assuming source foldername to be '${PKG_SRC_SUBDIR}'"
+		LIST_OUTPUT="$($LIST_TAR || echo_error_exit 'Failed to determine content of archive')"
+		PKG_SRC_SUBDIR=$(echo "$LIST_OUTPUT" | head -n 1 | sed "s/\/.*//")
+		echo_info "Detected source foldername to be '${PKG_SRC_SUBDIR}'"
 	fi
+
+	if [ "$2" == "CLEAN"  ]; then
+		echo_warning "CLEAN detected => removing source folder '${PKG_SRC_SUBDIR}'"
+		if [ ! -e "${PKG_SRC_SUBDIR}" ]; then
+			echo_warning "Directory '${PKG_SRC_SUBDIR}' does not exist"
+		else
+			rm -rf "${PKG_SRC_SUBDIR}"
+		fi
+	fi
+
+	echo_info "Extracting '${EXTRACT_PROG}'"
+	EXTRACT_OUTPUT="$($EXTRACT_PROG || echo_error_exit 'Failed to extract archive')"
 
 	if [ ! -e "${PKG_SRC_SUBDIR}" ]; then
 		echo_error_exit "Source folder '${PKG_SRC_SUBDIR}' not found"
