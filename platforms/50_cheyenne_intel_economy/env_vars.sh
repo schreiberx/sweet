@@ -8,7 +8,7 @@
 #
 # This is important for the SHTNS plan generation scripts
 #
-export BATCH_FILE_TAG="#SBATCH"
+export BATCH_FILE_TAG="#PBS"
 
 
 MODULES="intel/18.0.1"
@@ -43,3 +43,5 @@ export CC=$SWEET_CC
 export CXX=$SWEET_CXX
 export LINK=$SWEET_CXX
 export LD=ld
+
+

@@ -219,12 +219,13 @@ def jobscript_get_exec_command(jobgeneration : SWEETJobGeneration):
 		#mpiexec = "mpiexec_mpt -n "+str(p.num_ranks)
 
 		# Use mpiexec for GNU
-		mpiexec = "mpiexec -n "+str(p.num_ranks)
+		if jobgeneration.compile.sweet_mpi == 'enable':
+			mpiexec = "mpiexec -n "+str(p.num_ranks)
 
-		mpiexec += " omplace "
-		mpiexec += " -nt "+str(p.num_threads_per_rank)+" "
-		mpiexec += " -tm intel"
-		mpiexec += " -vv "
+			mpiexec += " omplace "
+			mpiexec += " -nt "+str(p.num_threads_per_rank)+" "
+			mpiexec += " -tm intel"
+			mpiexec += " -vv "
 
 
 	content = """
