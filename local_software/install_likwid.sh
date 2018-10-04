@@ -17,17 +17,17 @@ config_package $@
 M_DST="${SWEET_LOCAL_SOFTWARE_DST_DIR}"
 M_DST=${M_DST//\//\\/}
 
-sed -i "s/PREFIX =.*/PREFIX = "${M_DST}"/" config.mk
+sed -i "s/^PREFIX =.*/PREFIX = "${M_DST}"/" config.mk
 
 #sed -i "s/INSTALL_CHOWN = -g root -o root/INSTALL_CHOWN = /" config.mk
 
-sed -i "s/ACCESSMODE = /&direct#/" config.mk
+sed -i "s/^ACCESSMODE = /&direct#/" config.mk
 
 # Don't build daemon
-sed -i "s/BUILDDAEMON = /&false#/" config.mk
+sed -i "s/^BUILDDAEMON = /&false#/" config.mk
 
 # Don't build setFreq
-sed -i "s/BUILDFREQ = /&false#/" config.mk
+sed -i "s/^BUILDFREQ = /&false#/" config.mk
 
 config_make_install
 
