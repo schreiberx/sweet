@@ -26,5 +26,6 @@ PKGS+=("install_lapack.sh")
 PKGS+=("install_scons3.sh")
 PKGS+=("install_shtns.sh")
 PKGS+=("install_shtns_python.sh")
-#PKGS+=("install_numa.sh")
+
+PKGS+=("install_sdl2.sh")
 

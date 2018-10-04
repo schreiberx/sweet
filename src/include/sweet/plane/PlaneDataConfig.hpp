@@ -1011,7 +1011,7 @@ public:
 			if (refCounterFftwPlans() == 0)
 			{
 				// backup wisdom
-				if (reuse_spectral_transformation_plans)
+				if (reuse_spectral_transformation_plans == 1)
 				{
 					//std::cout << "STORING WISDOM "<< std::endl;
 					storeWisdom();

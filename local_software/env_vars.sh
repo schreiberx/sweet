@@ -89,38 +89,6 @@ else
 	fi
 
 
-	#
-	# Detect Ubuntu system
-	#
-	grep "Ubuntu" /etc/issue > /dev/null
-	if [ "x$?" = "x0" ]; then
-		export SWEET_SYSTEM_PACKAGES="libxft-dev libssl-dev"
-
-		#
-		# Check for extra package if X-server is locally activated
-		#
-		if [ "x$DISPLAY" = "x:0" ]; then
-			export SWEET_SYSTEM_PACKAGES="$SWEET_SYSTEM_PACKAGES libgl1-mesa-dev"
-		fi
-
-		for i in $SWEET_SYSTEM_PACKAGES; do
-			dpkg -s "$i" >/dev/null 2>&1
-			if [ "x$?" != "x0" ]; then
-				echo_error "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-				echo_error "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-				echo_error "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-				echo_error ""
-				echo_error "Ubuntu system detected and packages missing, please use"
-				echo_error ""
-				echo_error "    sudo apt-get install $SWEET_SYSTEM_PACKAGES"
-				echo_error ""
-				echo_error "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-				echo_error "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-				echo_error "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-				return
-			fi
-		done
-	fi
 
 	# Backup current directory
 	BACKDIR="$PWD"
