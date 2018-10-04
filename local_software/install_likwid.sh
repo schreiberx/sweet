@@ -14,12 +14,20 @@ PKG_URL_SRC="likwid-4.3.2.tar.gz"
 
 config_package $@
 
-M_SRC="PREFIX = /usr/local"
-M_DST="PREFIX = ${SWEET_LOCAL_SOFTWARE_DST_DIR}"
-M_SRC=${M_SRC//\//\\/}
+M_DST="${SWEET_LOCAL_SOFTWARE_DST_DIR}"
 M_DST=${M_DST//\//\\/}
-sed -i "s/$M_SRC/$M_DST/" config.mk
-sed -i "s/INSTALL_CHOWN = -g root -o root/INSTALL_CHOWN = /" config.mk
+
+sed -i "s/PREFIX =.*/PREFIX = "${M_DST}"/" config.mk
+
+#sed -i "s/INSTALL_CHOWN = -g root -o root/INSTALL_CHOWN = /" config.mk
+
+sed -i "s/ACCESSMODE = /&direct#/" config.mk
+
+# Don't build daemon
+sed -i "s/BUILDDAEMON = /&false#/" config.mk
+
+# Don't build setFreq
+sed -i "s/BUILDFREQ = /&false#/" config.mk
 
 config_make_install
 
