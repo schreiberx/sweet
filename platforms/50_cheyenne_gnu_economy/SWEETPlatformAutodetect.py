@@ -23,6 +23,7 @@ def autodetect():
 	if sweet_src_dirname=="sweet_gnu_economy":
 		return True
 
+	return False
 
 
 if __name__ == "__main__":
