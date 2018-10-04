@@ -55,7 +55,12 @@ class SWE_bench_Polvani
 		/*
 		 * Avoid race conditions in random number generator!
 		 */
-		int max_threads = omp_get_max_threads();
+		int max_threads;
+
+#pragma omp parallel
+#pragma omp master
+		max_threads = omp_get_num_threads();
+
 		omp_set_num_threads(1);
 #endif
 
@@ -82,8 +87,13 @@ class SWE_bench_Polvani
 			[&](int k0, int k1, std::complex<double> &o_data)
 			{
 #if SWEET_DEBUG && SWEET_SPACE_THREADING
-				if (omp_get_num_threads() > 1)
-					FatalError("THREADING MUST BE DEACTIVATED HERE BECAUSE OF RACE CONDITIONS!");
+#pragma omp parallel
+#pragma omp master
+				{
+					if (omp_get_num_threads() > 1)
+						FatalError("THREADING MUST BE DEACTIVATED HERE BECAUSE OF RACE CONDITIONS!");
+				}
+
 #endif
 				int ka[2] = {k0, k1};
 

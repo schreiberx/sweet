@@ -94,7 +94,7 @@ public:
 
 
 		// setup planeDataconfig instance again
-		planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
+		planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 
 		timeSteppers.setup(simVars.disc.timestepping_method, op, simVars);
 
@@ -362,7 +362,7 @@ int main(int i_argc, char *i_argv[])
 
 
 
-		planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
+		planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 
 		std::cout << "Testing with " << planeDataConfigInstance.getUniqueIDString() << std::endl;
 		std::cout << "Testing with dt=" << simVars.timecontrol.current_timestep_size << std::endl;
@@ -372,7 +372,7 @@ int main(int i_argc, char *i_argv[])
 	#if SWEET_GUI
 		if (simVars.misc.gui_enabled)
 		{
-			planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical);
+			planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical, simVars.misc.reuse_spectral_transformation_plans);
 			VisSweet<SimulationInstance> visSweet(&simulation);
 			return 0;
 		}

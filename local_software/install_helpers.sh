@@ -58,9 +58,9 @@ function config_package()
 	# PKG_SRC_SUBDIR: string
 	#	Name of folder in which the source code can be found after extracting the package
 	#
-	echo_hline
+	echo_info_hline
 	echo_info "Package: ${PKG_NAME}"
-	echo_hline
+	echo_info_hline
 
 	if [ "$1" == "FORCE"  ]; then
 		echo_warning "FORCE detected => reinstallation of package"
@@ -70,9 +70,9 @@ function config_package()
 			echo_warning "The package '${PKG_NAME}' is already installed"
 			echo_warning "Use"
 			echo_warning "	${0} FORCE"
-			echo_warning "to reinstall package and"
+			echo_warning "to reinstall package or"
 			echo_warning "	${0} FORCE CLEAN"
-			echo_warning "to remove existing source files first."
+			echo_warning "to remove existing source files as well."
 			echo_warning_hline
 			exit 0
 		fi

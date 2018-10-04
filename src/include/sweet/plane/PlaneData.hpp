@@ -796,7 +796,7 @@ public:
 #if SWEET_DEBUG
 #if SWEET_SPACE_THREADING
 		if (omp_get_num_threads() > 1)
-			FatalError("Threading race conditions likely");
+			FatalError("Are we already in parallel region? Threading race conditions likely!");
 #endif
 #endif
 

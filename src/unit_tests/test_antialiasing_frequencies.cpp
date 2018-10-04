@@ -59,7 +59,8 @@ int main(
 
 	planeDataConfigInstance.setupAuto(
 			simVars.disc.res_physical,
-			simVars.disc.res_spectral
+			simVars.disc.res_spectral,
+			simVars.misc.reuse_spectral_transformation_plans
 		);
 
 	std::size_t test_max_freqx = planeDataConfig->spectral_real_modes[0];

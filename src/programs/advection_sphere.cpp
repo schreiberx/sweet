@@ -98,7 +98,7 @@ public:
 		prog_h0 = prog_h;
 
 		// setup sphereDataconfig instance again
-		sphereDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.shtns_use_plans);
+		sphereDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 
 		timeSteppers.setup(simVars.disc.timestepping_method, op, simVars);
 
@@ -339,7 +339,7 @@ int main(int i_argc, char *i_argv[])
 	SphereDataSemiLagrangian::alpha() = simVars.setup.advection_rotation_angle;
 
 
-	sphereDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.shtns_use_plans);
+	sphereDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 
 	SimulationInstance *simulation = new SimulationInstance;
 
@@ -347,7 +347,7 @@ int main(int i_argc, char *i_argv[])
 
 	if (simVars.misc.gui_enabled)
 	{
-		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical);
+		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical, simVars.misc.reuse_spectral_transformation_plans);
 
 		VisSweet<SimulationInstance> visSweet(simulation);
 	}

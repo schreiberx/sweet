@@ -598,7 +598,7 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 
 
-	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
+	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 
 
 	if (simVars.disc.use_spectral_basis_diffs)

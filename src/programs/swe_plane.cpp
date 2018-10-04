@@ -1388,7 +1388,14 @@ int main(int i_argc, char *i_argv[])
 	if (simVars.bogus.var[1] != "")
 		param_initial_freq_y_mul = atof(simVars.bogus.var[1].c_str());
 
-	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
+	if (simVars.misc.verbosity > 5)
+		std::cout << " + Setting up FFT plans..." << std::flush;
+
+	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.reuse_spectral_transformation_plans);
+
+	if (simVars.misc.verbosity > 5)
+		std::cout << " done" << std::endl;
+
 	planeDataConfig->printInformation();
 
 	// Print header
@@ -1458,6 +1465,7 @@ int main(int i_argc, char *i_argv[])
 
 			// Start counting time
 			time.reset();
+			time.start();
 
 
 			if (simVars.disc.normal_mode_analysis_generation > 0)

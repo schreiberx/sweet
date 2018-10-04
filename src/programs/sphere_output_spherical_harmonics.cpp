@@ -80,7 +80,7 @@ int main(int i_argc, char *i_argv[])
 		sphereDataConfig.setupAutoPhysicalSpace(
 				simVars.disc.res_spectral[0], simVars.disc.res_spectral[1],		// spectral (lon/lat)
 				&simVars.disc.res_physical[0], &simVars.disc.res_physical[1],	// physical (lon/lat)
-				simVars.misc.shtns_use_plans
+				simVars.misc.reuse_spectral_transformation_plans
 		);
 	}
 	else
@@ -88,7 +88,7 @@ int main(int i_argc, char *i_argv[])
 		sphereDataConfig.setup(
 				simVars.disc.res_spectral[0], simVars.disc.res_spectral[1],		// spectral (lon/lat)
 				simVars.disc.res_physical[0], simVars.disc.res_physical[1],	// physical (lon/lat)
-				simVars.misc.shtns_use_plans
+				simVars.misc.reuse_spectral_transformation_plans
 			);
 	}
 

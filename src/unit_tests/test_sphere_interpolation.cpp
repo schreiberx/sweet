@@ -352,7 +352,7 @@ int main(int i_argc, char *i_argv[])
 				sphereDataConfigInstance.setupAuto(
 						simVars.disc.res_physical,
 						simVars.disc.res_spectral,
-						simVars.misc.shtns_use_plans
+						simVars.misc.reuse_spectral_transformation_plans
 					);
 
 				std::cout << "Testing with " << sphereDataConfigInstance.getUniqueIDString() << std::endl;
@@ -363,7 +363,7 @@ int main(int i_argc, char *i_argv[])
 				sphereDataConfigOversamplingInstance.setupAuto(
 						res_physical_overs,
 						res_spectral_overs,
-						simVars.misc.shtns_use_plans
+						simVars.misc.reuse_spectral_transformation_plans
 					);
 
 				{
@@ -382,7 +382,7 @@ int main(int i_argc, char *i_argv[])
 
 					if (simVars.misc.gui_enabled)
 					{
-						planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical);
+						planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical, simVars.misc.reuse_spectral_transformation_plans);
 
 						VisSweet<SimulationInstance> visSweet(&simulation);
 						return 0;

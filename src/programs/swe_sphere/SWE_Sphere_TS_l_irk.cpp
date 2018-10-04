@@ -52,7 +52,7 @@ void SWE_Sphere_TS_l_irk::setup(
 				sphereDataConfig,
 				use_extended_modes,	// TODO: Extend SPH wrapper to also support m != n to set this guy to 0
 				use_extended_modes,
-				simVars.misc.shtns_use_plans
+				simVars.misc.reuse_spectral_transformation_plans
 		);
 
 		sphereDataConfigSolver = &sphereDataConfigSolverAddedModes;

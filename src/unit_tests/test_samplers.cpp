@@ -62,7 +62,7 @@ int main(
 		int res[2] = {res_x, res_y};
 
 		//simVars.reset();
-		planeDataConfigInstance.setupAutoSpectralSpace(res);
+		planeDataConfigInstance.setupAutoSpectralSpace(res, simVars.misc.reuse_spectral_transformation_plans);
 
 		PlaneData prog_h(planeDataConfig);
 
@@ -85,7 +85,7 @@ int main(
 
 
 		//simVars.reset();
-		planeDataConfigInstance3.setupAutoSpectralSpace(res3);
+		planeDataConfigInstance3.setupAutoSpectralSpace(res3, simVars.misc.reuse_spectral_transformation_plans);
 
 		PlaneData prog_h3(planeDataConfig3);
 

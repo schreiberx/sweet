@@ -719,7 +719,7 @@ int main(
 			simVars.disc.res_physical[1] = res_y;
 			simVars.reset();
 
-			planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical);
+			planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical, simVars.misc.reuse_spectral_transformation_plans);
 
 			SimulationAdvection *simulationAdvection = new SimulationAdvection(planeDataConfig);
 
@@ -820,7 +820,7 @@ int main(
 		std::size_t res_x = simVars.disc.res_physical[0];
 		std::size_t res_y = simVars.disc.res_physical[1];
 
-		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical);
+		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical, simVars.misc.reuse_spectral_transformation_plans);
 
 		double cfl_limitation = simVars.sim.CFL;
 

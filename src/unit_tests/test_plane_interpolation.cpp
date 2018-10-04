@@ -349,14 +349,14 @@ int main(int i_argc, char *i_argv[])
 				simVars.disc.res_spectral[0] = i;
 				simVars.disc.res_spectral[1] = i;
 
-				planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
+				planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 
 				std::cout << "Testing with " << planeDataConfigInstance.getUniqueIDString() << std::endl;
 
 				int res_physical_overs[2] = {simVars.disc.res_physical[0]*oversampling, simVars.disc.res_physical[1]*oversampling};
 				int res_spectral_overs[2] = {simVars.disc.res_spectral[0]*oversampling, simVars.disc.res_spectral[1]*oversampling};
 
-				planeDataConfigOversamplingInstance.setupAuto(res_physical_overs, res_spectral_overs);
+				planeDataConfigOversamplingInstance.setupAuto(res_physical_overs, res_spectral_overs, simVars.misc.reuse_spectral_transformation_plans);
 
 				{
 					SimulationInstance simulation;
@@ -377,7 +377,7 @@ int main(int i_argc, char *i_argv[])
 
 					if (simVars.misc.gui_enabled)
 					{
-						planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical);
+						planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical, simVars.misc.reuse_spectral_transformation_plans);
 
 						VisSweet<SimulationInstance> visSweet(&simulation);
 						return 0;

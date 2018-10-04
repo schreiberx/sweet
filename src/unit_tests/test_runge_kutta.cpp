@@ -273,7 +273,7 @@ int main(
 	}
 
 
-	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
+	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 
 #if SWEET_GUI
 	if (simVars.misc.gui_enabled)

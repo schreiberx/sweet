@@ -109,7 +109,7 @@ int main(int i_argc, char *i_argv[])
 		/**
 		 * Here we enforce the same physical and spectral resolution
 		 */
-		planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral);
+		planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 		planeDataConfigInstance.printInformation();
 		std::cout << std::endl;
 
@@ -132,7 +132,7 @@ int main(int i_argc, char *i_argv[])
 			int dst_res_spectral[2] = {0, 0};
 
 			PlaneDataConfig planeDataConfigInstanceDst;
-			planeDataConfigInstanceDst.setupAuto(dst_res_physical, dst_res_spectral);
+			planeDataConfigInstanceDst.setupAuto(dst_res_physical, dst_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 
 			PlaneDataConfig *planeDataConfigDst = &planeDataConfigInstanceDst;
 

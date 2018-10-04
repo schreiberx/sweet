@@ -373,12 +373,11 @@ private:
 
 
 
-	shtns_type getFlags(
-			bool i_load_save_plan
+	unsigned int getFlags(
+			bool i_reuse_spectral_transformation_plans
 	)
 	{
-
-		int flags = 0;
+		unsigned int flags = 0;
 
 		// fast setup (Only for debugging)
 		// flags |= sht_quick_init;
@@ -386,10 +385,10 @@ private:
 		// lat or lon continue
 		flags |= SPHERE_DATA_GRID_LAYOUT;
 
-		if (i_load_save_plan)
+		if (i_reuse_spectral_transformation_plans)
 			flags |= SHT_LOAD_SAVE_CFG;
 
-		return (shtns_type)flags;
+		return flags;
 	}
 
 
@@ -401,7 +400,7 @@ public:
 			int mmax,	// spectral
 			int nmax,
 
-			bool i_shtns_use_plans //= false	///< Load or save plans to file (important for reproducibility)
+			bool i_reuse_transformation_plans //= false	///< Load or save plans to file (important for reproducibility)
 	)
 	{
 		mmax--;
@@ -436,20 +435,20 @@ public:
 
 #if SWEET_MPI
 		MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
-		if (mpi_rank == 0 && i_shtns_use_plans)
+		if (mpi_rank == 0 && i_reuse_transformation_plans)
 			MPI_Barrier(MPI_COMM_WORLD);
 #endif
 
 		shtns_set_grid(
 				shtns,
-				getFlags(i_shtns_use_plans),
+				(shtns_type)getFlags(i_reuse_transformation_plans),
 				shtns_error,
 				nlat,		// number of latitude grid points
 				nphi		// number of longitude grid points
 			);
 
 #if SWEET_MPI
-		if (mpi_rank > 0 && i_shtns_use_plans)
+		if (mpi_rank > 0 && i_reuse_transformation_plans)
 			MPI_Barrier(MPI_COMM_WORLD);
 #endif
 
@@ -467,7 +466,7 @@ public:
 			int i_nmax,		/// latitude modes
 			int *o_nphi,	/// physical resolution along longitude
 			int *o_nlat,	/// physical resolution along latitude
-			bool i_shtns_use_plans //= false	///< load and/or save plans
+			bool i_reuse_transformation_plans //= false	///< load and/or save plans
 	)
 	{
 		i_mmax--;
@@ -478,7 +477,7 @@ public:
 		shtns_verbose(1);			// displays informations during initialization.
 
 #if SWEET_SPACE_THREADING
-		shtns_use_threads(0);	// automatically choose number of threads
+		shtns_use_threads(0);	// automatically choose number of threads based on omp_num_threads
 #else
 		shtns_use_threads(1);	// value of 1 disables threading
 #endif
@@ -501,14 +500,13 @@ public:
 #if SWEET_MPI
 	int mpi_rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
-	if (mpi_rank == 0 && i_shtns_use_plans)
+	if (mpi_rank == 0 && i_reuse_transformation_plans)
 		MPI_Barrier(MPI_COMM_WORLD);
 #endif
 
 		shtns_set_grid_auto(
 				shtns,
-				getFlags(i_shtns_use_plans),
-				//sht_gauss | SPHERE_DATA_GRID_LAYOUT,	// use gaussian grid
+				(shtns_type)getFlags(i_reuse_transformation_plans),
 				shtns_error,
 				2,		// use order 2
 				o_nlat,
@@ -516,7 +514,7 @@ public:
 			);
 
 #if SWEET_MPI
-	if (mpi_rank > 0 && i_shtns_use_plans)
+	if (mpi_rank > 0 && i_reuse_transformation_plans)
 		MPI_Barrier(MPI_COMM_WORLD);
 #endif
 
@@ -533,7 +531,7 @@ public:
 	void setupAutoPhysicalSpace(
 			int i_mmax,		///< longitude modes
 			int i_nmax,		///< latitude modes
-			bool i_shtns_use_plans //= false	///< load and/or save plans
+			bool i_reuse_transformation_plans //= false	///< load and/or save plans
 	)
 	{
 		i_mmax--;
@@ -565,13 +563,13 @@ public:
 #if SWEET_MPI
 	int mpi_rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
-	if (mpi_rank == 0 && i_shtns_use_plans)
+	if (mpi_rank == 0 && i_reuse_transformation_plans)
 		MPI_Barrier(MPI_COMM_WORLD);
 #endif
 
 		shtns_set_grid_auto(
 				shtns,
-				getFlags(i_shtns_use_plans),
+				(shtns_type)getFlags(i_reuse_transformation_plans),
 				shtns_error,
 				2,		// use order 2
 				&physical_num_lat,
@@ -579,7 +577,7 @@ public:
 			);
 
 #if SWEET_MPI
-	if (mpi_rank > 0 && i_shtns_use_plans)
+	if (mpi_rank > 0 && i_reuse_transformation_plans)
 		MPI_Barrier(MPI_COMM_WORLD);
 #endif
 
@@ -592,7 +590,7 @@ public:
 	void setupAuto(
 			int io_physical_res[2],
 			int io_spectral_modes[2],
-			bool i_shtns_use_plans //= false
+			bool i_reuse_transformation_plans //= false
 	)
 	{
 		cleanup(false);
@@ -603,7 +601,7 @@ public:
 					io_physical_res[1],
 					io_spectral_modes[0],
 					io_spectral_modes[1],
-					i_shtns_use_plans
+					i_reuse_transformation_plans
 				);
 			return;
 		}
@@ -633,7 +631,7 @@ public:
 			setupAutoPhysicalSpace(
 					io_spectral_modes[0],
 					io_spectral_modes[1],
-					i_shtns_use_plans
+					i_reuse_transformation_plans
 				);
 
 			io_physical_res[0] = physical_num_lon;

@@ -796,7 +796,7 @@ int main(int i_argc, char *i_argv[])
 	if (simVars.misc.verbosity > 3)
 		std::cout << " + setup SH sphere transformations..." << std::endl;
 
-	sphereDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.shtns_use_plans);
+	sphereDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 
 	int res_physical_nodealias[2] = {
 			2*simVars.disc.res_spectral[0],
@@ -806,7 +806,7 @@ int main(int i_argc, char *i_argv[])
 	if (simVars.misc.verbosity > 3)
 		std::cout << " + setup SH sphere transformations (nodealiasing)..." << std::endl;
 
-	sphereDataConfigInstance_nodealiasing.setupAuto(res_physical_nodealias, simVars.disc.res_spectral, simVars.misc.shtns_use_plans);
+	sphereDataConfigInstance_nodealiasing.setupAuto(res_physical_nodealias, simVars.disc.res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 
 
 #if SWEET_GUI

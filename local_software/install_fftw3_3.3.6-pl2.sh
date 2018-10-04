@@ -10,7 +10,7 @@ PKG_NAME="fftw"
 PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/libfftw3.a"
 
 # URL to source code to fetch it
-PKG_URL_SRC="fftw-3.3.8.tar.gz"
+PKG_URL_SRC="fftw-3.3.6-pl2.tar.gz"
 
 # subdirectory of source in extracted package
 # (autodetected with basename of url without file extension if not set)

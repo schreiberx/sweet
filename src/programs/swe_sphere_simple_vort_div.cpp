@@ -355,7 +355,7 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 	}
 
-	sphereDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.shtns_use_plans);
+	sphereDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 	std::cout << "N: " << simVars.disc.res_physical[0] << ", " << simVars.disc.res_physical[1] << std::endl;
 	std::cout << "Nlm: " << sphereDataConfigInstance.shtns->nlm << std::endl;
 

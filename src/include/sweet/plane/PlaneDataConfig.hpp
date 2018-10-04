@@ -77,6 +77,11 @@ public:
 	/// number of real valued data
 	std::size_t physical_array_data_number_of_elements;
 
+	/// reutilize spectral transformation plans (wisdom for FFTW plans)
+	/// -1: estimate plan
+	/// 0: no reutilization
+	/// 1: try to reutilize the plan
+	int reuse_spectral_transformation_plans;
 
 
 public:
@@ -196,26 +201,77 @@ public:
 #endif
 	}
 
+
 public:
 	static
-	bool loadWisdom()
+	bool loadWisdom(int i_reuse_spectral_transformation_plans)
 	{
-		static const char *load_wisdom_from_file = nullptr;
+#if 1
 
-		if (load_wisdom_from_file != nullptr)
+		static const char *wisdom_file = "sweet_fftw";
+
+#else
+		static const char *wisdom_file = nullptr;
+
+		if (wisdom_file != nullptr)
 			return false;
 
-		load_wisdom_from_file = getenv("SWEET_FFTW_LOAD_WISDOM_FROM_FILE");
+		wisdom_file = getenv("SWEET_FFTW_WISDOM_FROM_FILE");
 
-		if (load_wisdom_from_file == nullptr)
+		if (wisdom_file == nullptr)
+		{
+			wisdom_file = "sweet_fftw";
 			return false;
+		}
 
-		std::cout << "Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=" << load_wisdom_from_file << std::endl;
+		std::cout << "Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=" << wisdom_file << std::endl;
+#endif
 
-		int wisdom_plan_loaded = fftw_import_wisdom_from_filename(load_wisdom_from_file);
+		int wisdom_plan_loaded = fftw_import_wisdom_from_filename(wisdom_file);
 		if (wisdom_plan_loaded == 0)
 		{
-			std::cerr << "Failed to load FFTW wisdom from file " << load_wisdom_from_file << std::endl;
+			std::cerr << "Failed to load FFTW wisdom from file '" << wisdom_file << "'" << std::endl;
+			if (i_reuse_spectral_transformation_plans == 2)
+			{
+				std::cerr << "IMPORTANT: Usage of FFTW wisdoms file enforced, hence exiting here" << std::endl;
+				exit(1);
+			}
+		}
+
+		return true;
+	}
+
+
+public:
+	static
+	bool storeWisdom()
+	{
+#if 1
+
+		static const char *wisdom_file = "sweet_fftw";
+
+#else
+
+		static const char *store_wisdom_from_file = nullptr;
+
+		if (wisdom_file != nullptr)
+			return false;
+
+		wisdom_file = getenv("SWEET_FFTW_WISDOM_FROM_FILE");
+
+		if (wisdom_file == nullptr)
+		{
+			wisdom_file = "sweet_fftw";
+			return false;
+		}
+
+		std::cout << "Loading SWEET_FFTW_LOAD_WISDOM_FROM_FILE=" << wisdom_file << std::endl;
+#endif
+
+		int wisdom_plan_loaded = fftw_export_wisdom_to_filename(wisdom_file);
+		if (wisdom_plan_loaded == 0)
+		{
+			std::cerr << "Failed to store FFTW wisdom to file " << wisdom_file << std::endl;
 			exit(1);
 		}
 
@@ -253,8 +309,12 @@ public:
 
 
 private:
-	void setup_internal_data()
+	void setup_internal_data(
+			int i_reuse_spectral_transformation_plans
+	)
 	{
+		reuse_spectral_transformation_plans = i_reuse_spectral_transformation_plans;
+
 		if (initialized)
 		{
 			//
@@ -303,26 +363,77 @@ private:
 		// Is this the first instance?
 		if (refCounterFftwPlans() == 1)
 		{
+//			std::cout << "FFTW THREADING" << std::endl;
 			// initialise FFTW with spatial parallelization
-			fftw_init_threads();
-			fftw_plan_with_nthreads(omp_get_max_threads());
+			int retval = fftw_init_threads();
+			if (retval == 0)
+			{
+				std::cerr << "ERROR: fftw_init_threads()" << std::endl;
+				exit(1);
+			}
+
+			int nthreads = 1;
+#if 0
+			// Don't use omp_get_max_threads(), since this doesn't reflect the actual number of cores in OMP_NUM_THREADS
+#pragma omp parallel
+#pragma omp master
+			nthreads = omp_get_num_threads();
+#else
+			nthreads = omp_get_max_threads();
+#endif
+
+			std::cout << "Using " << nthreads << " for FFTW" << std::endl;
+			std::cout << "omp_get_max_threads(): " << omp_get_max_threads() << std::endl;
+			std::cout << "omp_get_num_procs() " << omp_get_num_procs() << std::endl;
+			std::cout << "PAR MASTER omp_get_num_threads() " << nthreads << std::endl;
+
+			fftw_plan_with_nthreads(nthreads);
+
 		}
 	#endif
 
 #endif
 
-
-		/*
-		 * Load existing wisdom
-		 */
-		bool wisdom_loaded = loadWisdom();
-
-		int fftw_estimate_plan = 0;
-		const char* fftw_estimate_plan_env = getenv("SWEET_FFTW_ESTIMATE");
-		if (fftw_estimate_plan_env != nullptr)
+		if (refCounterFftwPlans() == 1)
 		{
-			std::cout << "Using estimated FFTW plan" << std::endl;
-			fftw_estimate_plan = FFTW_ESTIMATE;
+			// load wisdom the first time
+			// this must be done after initializing the threading!
+			if (reuse_spectral_transformation_plans >= 1)
+			{
+//				std::cout << "Wisdom: " << fftw_export_wisdom_to_string() << std::endl;
+//				std::cout << "LOADING WISDOM "<< std::endl;
+				loadWisdom(reuse_spectral_transformation_plans);
+//				std::cout << "Wisdom: " << fftw_export_wisdom_to_string() << std::endl;
+			}
+		}
+
+
+		unsigned int flags = 0;
+
+		// allow destroying input for faster transformations
+		//flags |= FFTW_DESTROY_INPUT;
+
+		if (reuse_spectral_transformation_plans == -1)
+		{
+			flags |= FFTW_ESTIMATE;
+		}
+		else
+		{
+			// estimation base don workload
+			unsigned int cells = physical_data_size[0]*physical_data_size[1];
+
+			if (cells < 32*32)
+				//flags |= FFTW_EXHAUSTIVE;
+				flags |= FFTW_MEASURE;
+			else if (cells < 128*128)
+				flags |= FFTW_MEASURE;
+			else
+				flags |= FFTW_PATIENT;
+
+			if (reuse_spectral_transformation_plans == 2)
+			{
+				flags |= FFTW_WISDOM_ONLY;
+			}
 		}
 
 
@@ -388,8 +499,6 @@ private:
 			 * Physical space data
 			 */
 			double *data_physical = MemBlockAlloc::alloc<double>(physical_array_data_number_of_elements*sizeof(double));
-			//std::cout << physical_array_data_number_of_elements << std::endl;
-			//std::cout << spectral_array_data_number_of_elements << std::endl;
 
 	#if SWEET_SPACE_THREADING
 	#pragma omp parallel for OPENMP_PAR_SIMD
@@ -408,22 +517,28 @@ private:
 			for (std::size_t i = 0; i < spectral_array_data_number_of_elements; i++)
 				data_spectral[i] = 1;	// dummy data
 
-
 			fftw_plan_forward =
 					fftw_plan_dft_r2c_2d(
 						physical_data_size[1],	// n0 = ny
 						physical_data_size[0],	// n1 = nx
 						data_physical,
 						(fftw_complex*)data_spectral,
-						//(!wisdom_loaded ? FFTW_PRESERVE_INPUT : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
-						(!wisdom_loaded ? fftw_estimate_plan | FFTW_PRESERVE_INPUT : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
+						flags | FFTW_PRESERVE_INPUT
 					);
+//			std::cout << "Wisdom: " << fftw_export_wisdom_to_string() << std::endl;
 
 			if (fftw_plan_forward == nullptr)
 			{
-				std::cerr << "Failed to create forward plan for fftw" << std::endl;
+				std::cerr << "Wisdom: " << fftw_export_wisdom_to_string() << std::endl;
+				std::cerr << "Failed to get forward plan dft_r2c fftw" << std::endl;
 				std::cerr << "r2c preverse_input forward " << physical_res[0] << " x " << physical_res[1] << std::endl;
 				std::cerr << "FFTW-wisdom plan: rf" << physical_res[0] << "x" << physical_res[1] << std::endl;
+				if (i_reuse_spectral_transformation_plans == 2)
+				{
+					std::cerr << "********************************************************************************" << std::endl;
+					std::cerr << "* IMPORTANT: Usage of FFTW wisdoms file enforced" << std::endl;
+					std::cerr << "********************************************************************************" << std::endl;
+				}
 				exit(-1);
 			}
 
@@ -433,14 +548,22 @@ private:
 						physical_res[0],	// n1 = nx
 						(fftw_complex*)data_spectral,
 						data_physical,
-						(!wisdom_loaded ? fftw_estimate_plan : FFTW_WISDOM_ONLY)
+						flags
 					);
+//			std::cout << "Wisdom: " << fftw_export_wisdom_to_string() << std::endl;
 
 			if (fftw_plan_backward == nullptr)
 			{
-				std::cerr << "Failed to create backward plan for fftw" << std::endl;
+				std::cerr << "Wisdom: " << fftw_export_wisdom_to_string() << std::endl;
+				std::cerr << "Failed to get backward plan dft_c2r fftw" << std::endl;
 				std::cerr << "r2c backward " << physical_res[0] << " x " << physical_res[1] << std::endl;
 				std::cerr << "fftw-wisdom plan: rb" << physical_res[0] << "x" << physical_res[1] << std::endl;
+				if (i_reuse_spectral_transformation_plans == 2)
+				{
+					std::cerr << "********************************************************************************" << std::endl;
+					std::cerr << "* IMPORTANT: Usage of FFTW wisdoms file enforced" << std::endl;
+					std::cerr << "********************************************************************************" << std::endl;
+				}
 				exit(-1);
 			}
 
@@ -517,15 +640,22 @@ private:
 						(fftw_complex*)data_physical,
 						(fftw_complex*)data_spectral,
 						FFTW_FORWARD,
-//						(!wisdom_loaded ? FFTW_PRESERVE_INPUT | fftw_estimate_plan : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
-						(!wisdom_loaded ? fftw_estimate_plan : FFTW_WISDOM_ONLY)
+						flags
 					);
+//			std::cout << "Wisdom: " << fftw_export_wisdom_to_string() << std::endl;
 
 			if (fftw_plan_complex_forward == nullptr)
 			{
-				std::cerr << "Failed to create plan_forward for fftw" << std::endl;
+				std::cerr << "Wisdom: " << fftw_export_wisdom_to_string() << std::endl;
+				std::cerr << "Failed to create complex forward plan for fftw" << std::endl;
 				std::cerr << "complex forward preverse_input forward " << physical_res[0] << " x " << physical_res[1] << std::endl;
 				std::cerr << "fftw-wisdom plan: cf" << physical_res[0] << "x" << physical_res[1] << std::endl;
+				if (i_reuse_spectral_transformation_plans == 2)
+				{
+					std::cerr << "********************************************************************************" << std::endl;
+					std::cerr << "* IMPORTANT: Usage of FFTW wisdoms file enforced" << std::endl;
+					std::cerr << "********************************************************************************" << std::endl;
+				}
 				exit(-1);
 			}
 
@@ -536,15 +666,22 @@ private:
 						(fftw_complex*)data_spectral,
 						(fftw_complex*)data_physical,
 						FFTW_BACKWARD,
-//						(!wisdom_loaded ? FFTW_PRESERVE_INPUT | fftw_estimate_plan : FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY)
-						(!wisdom_loaded ? fftw_estimate_plan : FFTW_WISDOM_ONLY)
+						flags
 					);
+//			std::cout << "Wisdom: " << fftw_export_wisdom_to_string() << std::endl;
 
 			if (fftw_plan_complex_backward == nullptr)
 			{
-				std::cerr << "Failed to create plan_backward for fftw" << std::endl;
+				std::cerr << "Wisdom: " << fftw_export_wisdom_to_string() << std::endl;
+				std::cerr << "Failed to create complex backward plan for fftw" << std::endl;
 				std::cerr << "complex backward preverse_input forward " << physical_res[0] << " x " << physical_res[1] << std::endl;
 				std::cerr << "fftw-wisdom plan: cf" << physical_res[0] << "x" << physical_res[1] << std::endl;
+				if (i_reuse_spectral_transformation_plans == 2)
+				{
+					std::cerr << "********************************************************************************" << std::endl;
+					std::cerr << "* IMPORTANT: Usage of FFTW wisdoms file enforced" << std::endl;
+					std::cerr << "********************************************************************************" << std::endl;
+				}
 				exit(-1);
 			}
 
@@ -553,6 +690,10 @@ private:
 			MemBlockAlloc::free(data_spectral, spectral_complex_array_data_number_of_elements*sizeof(std::complex<double>));
 		}
 #endif
+
+//		std::cout << "STORING WISDOM "<< std::endl;
+//		storeWisdom();
+//		std::cout << "Wisdom: " << fftw_export_wisdom_to_string() << std::endl;
 	}
 
 
@@ -644,7 +785,9 @@ public:
 			int i_physical_res_y,
 
 			int i_spectral_modes_x,
-			int i_spectral_modes_y
+			int i_spectral_modes_y,
+
+			int i_reuse_spectral_transformation_plans
 	)
 	{
 		physical_res[0] = i_physical_res_x;
@@ -655,7 +798,7 @@ public:
 		spectral_modes[1] = i_spectral_modes_y;
 #endif
 
-		setup_internal_data();
+		setup_internal_data(i_reuse_spectral_transformation_plans);
 	}
 
 
@@ -663,7 +806,8 @@ public:
 public:
 	void setupAuto(
 			int io_physical_res[2],
-			int io_spectral_modes[2]
+			int io_spectral_modes[2],
+			int i_reuse_spectral_transformation_plans
 	)
 	{
 //		std::cout << io_physical_res[0] << ", " << io_physical_res[1] << std::endl;
@@ -674,7 +818,8 @@ public:
 			setup(	io_physical_res[0],
 					io_physical_res[1],
 					io_spectral_modes[0],
-					io_spectral_modes[1]
+					io_spectral_modes[1],
+					i_reuse_spectral_transformation_plans
 				);
 			return;
 		}
@@ -683,7 +828,8 @@ public:
 		{
 			setupAutoSpectralSpace(
 					io_physical_res[0],
-					io_physical_res[1]
+					io_physical_res[1],
+					i_reuse_spectral_transformation_plans
 				);
 
 #if SWEET_USE_LIBFFT
@@ -698,7 +844,8 @@ public:
 #if SWEET_USE_LIBFFT
 			setupAutoPhysicalSpace(
 					io_spectral_modes[0],
-					io_spectral_modes[1]
+					io_spectral_modes[1],
+					i_reuse_spectral_transformation_plans
 				);
 
 			io_physical_res[0] = physical_res[0];
@@ -716,10 +863,15 @@ public:
 
 public:
 	void setupAutoSpectralSpace(
-			int i_physical_res[2]
+			int i_physical_res[2],
+			int i_reuse_spectral_transformation_plans
 	)
 	{
-		setupAutoSpectralSpace(i_physical_res[0], i_physical_res[1]);
+		setupAutoSpectralSpace(
+				i_physical_res[0],
+				i_physical_res[1],
+				i_reuse_spectral_transformation_plans
+		);
 	}
 
 
@@ -727,7 +879,8 @@ public:
 public:
 	void setupAutoSpectralSpace(
 			int i_physical_res_x,
-			int i_physical_res_y
+			int i_physical_res_y,
+			int i_reuse_spectral_transformation_plans
 	)
 	{
 		physical_res[0] = i_physical_res_x;
@@ -749,7 +902,7 @@ public:
 
 #endif
 
-		setup_internal_data();
+		setup_internal_data(i_reuse_spectral_transformation_plans);
 	}
 
 
@@ -757,10 +910,11 @@ public:
 			int i_physical_res_x,
 			int i_physical_res_y,
 			int *o_spectral_res_x,
-			int *o_spectral_res_y
+			int *o_spectral_res_y,
+			int i_reuse_spectral_transformation_plans
 	)
 	{
-		setupAutoSpectralSpace(i_physical_res_x, i_physical_res_y);
+		setupAutoSpectralSpace(i_physical_res_x, i_physical_res_y, i_reuse_spectral_transformation_plans);
 
 
 #if SWEET_USE_LIBFFT
@@ -776,7 +930,8 @@ public:
 public:
 	void setupAutoPhysicalSpace(
 			int i_spectral_res_x,
-			int i_spectral_res_y
+			int i_spectral_res_y,
+			int i_reuse_spectral_transformation_plans
 	)
 	{
 		spectral_modes[0] = i_spectral_res_x;
@@ -797,7 +952,7 @@ public:
 
 #endif
 
-		setup_internal_data();
+		setup_internal_data(i_reuse_spectral_transformation_plans);
 	}
 
 
@@ -806,12 +961,14 @@ public:
 			int i_spectral_res_x,
 			int i_spectral_res_y,
 			int *o_physical_res_x,
-			int *o_physical_res_y
+			int *o_physical_res_y,
+			int i_reuse_spectral_transformation_plans
 	)
 	{
 		setupAutoPhysicalSpace(
 				i_spectral_res_x,
-				i_spectral_res_y
+				i_spectral_res_y,
+				i_reuse_spectral_transformation_plans
 		);
 
 		*o_physical_res_x = physical_res[0];
@@ -821,12 +978,14 @@ public:
 	void setupAdditionalModes(
 			PlaneDataConfig *i_planeConfig,
 			int i_additional_modes_x,
-			int i_additional_modes_y
+			int i_additional_modes_y,
+			int i_reuse_spectral_transformation_plans
 	)
 	{
 		setupAutoPhysicalSpace(
 				i_planeConfig->spectral_modes[0] + i_additional_modes_x,
-				i_planeConfig->spectral_modes[1] + i_additional_modes_y
+				i_planeConfig->spectral_modes[1] + i_additional_modes_y,
+				i_reuse_spectral_transformation_plans
 		);
 	}
 
@@ -851,6 +1010,14 @@ public:
 
 			if (refCounterFftwPlans() == 0)
 			{
+				// backup wisdom
+				if (reuse_spectral_transformation_plans)
+				{
+					//std::cout << "STORING WISDOM "<< std::endl;
+					storeWisdom();
+//					std::cout << "Wisdom: " << fftw_export_wisdom_to_string() << std::endl;
+				}
+
 #if SWEET_SPACE_THREADING
 				fftw_cleanup_threads();
 #endif
@@ -864,6 +1031,7 @@ public:
 
 	~PlaneDataConfig()
 	{
+
 		cleanup();
 	}
 };

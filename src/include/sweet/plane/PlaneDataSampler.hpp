@@ -157,8 +157,9 @@ public:
 
 #if SWEET_DEBUG
 #if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
-		if (omp_get_num_threads() != 1)
-			FatalError("omp_num_threads() != 1, are we in a parallel region?");
+
+		if (omp_get_num_threads() > 1)
+			FatalError("Are we already in parallel region? Threading race conditions likely!");
 #endif
 #endif
 

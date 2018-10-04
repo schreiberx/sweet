@@ -597,7 +597,7 @@ public:
 			std::cout << " + sphere_use_robert_functions: " << sphere_use_robert_functions << std::endl;
 			std::cout << " + output_time_scale: " << output_time_scale << std::endl;
 			std::cout << " + use_local_visc: " << use_local_visc << std::endl;
-			std::cout << " + shtns_use_plans: " << shtns_use_plans << std::endl;
+			std::cout << " + shtns_use_plans: " << reuse_spectral_transformation_plans << std::endl;
 			std::cout << std::endl;
 		}
 
@@ -644,7 +644,7 @@ public:
 		int use_local_visc = 0;
 
 		/// Load / Save plans for SHTNS (useful for reproducibility)
-		bool shtns_use_plans = true;
+		int reuse_spectral_transformation_plans = 1;
 
 	} misc;
 
@@ -1075,7 +1075,7 @@ public:
 					c++;		if (i == c)	{	misc.stability_checks = atoi(optarg);				continue;	}
 					c++;		if (i == c)	{	misc.sphere_use_robert_functions = atoi(optarg);	continue;	}
 					c++;		if (i == c)	{	misc.use_local_visc = atoi(optarg);			continue;	}
-					c++;		if (i == c)	{	misc.shtns_use_plans = atoi(optarg);			continue;	}
+					c++;		if (i == c)	{	misc.reuse_spectral_transformation_plans = atoi(optarg);			continue;	}
 					c++;		if (i == c)	{	pde.use_linear_div = atoi(optarg);			continue;	}
 					c++;		if (i == c)	{	pde.id = atoi(optarg);								continue;	}
 
@@ -1326,7 +1326,7 @@ public:
 				std::cout << "	--compute-errors [int]          Compute errors when possible [1], default=0	" << std::endl;
 				std::cout << "	--use-robert-functions [bool]	Use Robert function formulation for velocities on the sphere" << std::endl;
 				std::cout << "	--use-local-visc [0/1]	Viscosity will be applied only on nonlinear divergence, default:0" << std::endl;
-				std::cout << "	--shtns-use-plans [0/1]	Save plans for fftw transformations in SHTNS, reuse if plan exists, default:0" << std::endl;
+				std::cout << "	--shtns-use-plans [0/1]	Save plans for fftw transformations in SHTNS, reuse if plan exists (-1: quick mode), default:0" << std::endl;
 				std::cout << "" << std::endl;
 				rexi.outputProgParams();
 				swe_polvani.outputProgParams();

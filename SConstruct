@@ -564,10 +564,10 @@ if p.libfft == 'enable':
 			env.Append(LINKFLAGS=['-mkl=parallel'])
 
 	else:
-		env.Append(LIBS=['fftw3'])
-
 		if p.threading == 'omp':
 			env.Append(LIBS=['fftw3_omp'])
+
+		env.Append(LIBS=['fftw3'])
 else:
 	env.Append(CXXFLAGS = ' -DSWEET_USE_LIBFFT=0')
 
