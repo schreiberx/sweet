@@ -597,7 +597,7 @@ public:
 			std::cout << " + sphere_use_robert_functions: " << sphere_use_robert_functions << std::endl;
 			std::cout << " + output_time_scale: " << output_time_scale << std::endl;
 			std::cout << " + use_local_visc: " << use_local_visc << std::endl;
-			std::cout << " + shtns_use_plans: " << reuse_spectral_transformation_plans << std::endl;
+			std::cout << " + reuse_spectral_transformation_plans: " << reuse_spectral_transformation_plans << std::endl;
 			std::cout << std::endl;
 		}
 
@@ -911,7 +911,7 @@ public:
         long_options[next_free_program_option] = {"use-local-visc", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        long_options[next_free_program_option] = {"shtns-use-plans", required_argument, 0, 256+next_free_program_option};
+        long_options[next_free_program_option] = {"reuse-plans", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
         // PDE
@@ -1326,7 +1326,12 @@ public:
 				std::cout << "	--compute-errors [int]          Compute errors when possible [1], default=0	" << std::endl;
 				std::cout << "	--use-robert-functions [bool]	Use Robert function formulation for velocities on the sphere" << std::endl;
 				std::cout << "	--use-local-visc [0/1]	Viscosity will be applied only on nonlinear divergence, default:0" << std::endl;
-				std::cout << "	--shtns-use-plans [0/1]	Save plans for fftw transformations in SHTNS, reuse if plan exists (-1: quick mode), default:0" << std::endl;
+				std::cout << "	--reuse-plans [0/1]	Save plans for fftw transformations and SH transformations" << std::endl;
+				std::cout << "					-1: use only estimated plans (no wisdom)" << std::endl;
+				std::cout << "					0: compute optimized plans (no wisdom)" << std::endl;
+				std::cout << "					1: compute optimized plans, use wisdom if available and store wisdom" << std::endl;
+				std::cout << "					2: use wisdom if available if not, trigger error (not yet working for SHTNS)" << std::endl;
+				std::cout << "					default: -1 (quick mode)" << std::endl;
 				std::cout << "" << std::endl;
 				rexi.outputProgParams();
 				swe_polvani.outputProgParams();
