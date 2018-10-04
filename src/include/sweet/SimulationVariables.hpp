@@ -644,7 +644,7 @@ public:
 		int use_local_visc = 0;
 
 		/// Load / Save plans for SHTNS (useful for reproducibility)
-		int reuse_spectral_transformation_plans = 1;
+		int reuse_spectral_transformation_plans = -1;
 
 	} misc;
 

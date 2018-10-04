@@ -61,7 +61,7 @@ def get_platform_id():
 		unique ID of platform
 	"""
 
-	return "martinium"
+	return "martinium_gnu"
 
 
 def get_platform_resources():

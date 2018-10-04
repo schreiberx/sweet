@@ -374,18 +374,22 @@ private:
 
 
 	unsigned int getFlags(
-			bool i_reuse_spectral_transformation_plans
+			int i_reuse_spectral_transformation_plans
 	)
 	{
 		unsigned int flags = 0;
 
-		// fast setup (Only for debugging)
-		// flags |= sht_quick_init;
-
 		// lat or lon continue
 		flags |= SPHERE_DATA_GRID_LAYOUT;
 
-		if (i_reuse_spectral_transformation_plans)
+		if (i_reuse_spectral_transformation_plans == -1)
+			flags |= sht_quick_init;
+
+		if (i_reuse_spectral_transformation_plans == 1)
+			flags |= SHT_LOAD_SAVE_CFG;
+
+		// TODO: Hope for shtns update to create error if plan doesn't exist
+		if (i_reuse_spectral_transformation_plans == 2)
 			flags |= SHT_LOAD_SAVE_CFG;
 
 		return flags;
@@ -400,7 +404,7 @@ public:
 			int mmax,	// spectral
 			int nmax,
 
-			bool i_reuse_transformation_plans //= false	///< Load or save plans to file (important for reproducibility)
+			int i_reuse_transformation_plans //= false	///< Load or save plans to file (important for reproducibility)
 	)
 	{
 		mmax--;
@@ -466,7 +470,7 @@ public:
 			int i_nmax,		/// latitude modes
 			int *o_nphi,	/// physical resolution along longitude
 			int *o_nlat,	/// physical resolution along latitude
-			bool i_reuse_transformation_plans //= false	///< load and/or save plans
+			int i_reuse_transformation_plans //= false	///< load and/or save plans
 	)
 	{
 		i_mmax--;
@@ -531,7 +535,7 @@ public:
 	void setupAutoPhysicalSpace(
 			int i_mmax,		///< longitude modes
 			int i_nmax,		///< latitude modes
-			bool i_reuse_transformation_plans //= false	///< load and/or save plans
+			int i_reuse_transformation_plans //= false	///< load and/or save plans
 	)
 	{
 		i_mmax--;
@@ -590,7 +594,7 @@ public:
 	void setupAuto(
 			int io_physical_res[2],
 			int io_spectral_modes[2],
-			bool i_reuse_transformation_plans //= false
+			int i_reuse_transformation_plans //= false
 	)
 	{
 		cleanup(false);

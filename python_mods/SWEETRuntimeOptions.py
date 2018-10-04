@@ -110,7 +110,7 @@ class SWEETRuntimeOptions(InfoError):
 
 		self.compute_error = 0
 
-		self.shtns_use_plans = 1
+		self.reuse_plans = -1
 
 		return
 
@@ -192,8 +192,8 @@ class SWEETRuntimeOptions(InfoError):
 		if 'timestep_size' in d:
 			self.timestep_size = float(d['timestep_size'])
 
-		if 'shtns_use_plans' in d:
-			self.shtns_use_plans = int(d['shtns_use_plans'])
+		if 'reuse_plans' in d:
+			self.reuse_plans = int(d['reuse_plans'])
 
 
 
@@ -410,7 +410,7 @@ class SWEETRuntimeOptions(InfoError):
 
 		retval += ' --compute-error='+str(self.compute_error)
 
-		retval += ' --shtns-use-plans='+str(self.shtns_use_plans)
+		retval += ' --reuse-plans='+str(self.reuse_plans)
 
 		return retval
 
