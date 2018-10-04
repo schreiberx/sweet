@@ -15,7 +15,9 @@ SCONS="scons --threading=omp --unit-test=test_planedata_complex_conversions --gu
 echo "$SCONS"
 $SCONS || exit 1
 
-./build/test_planedata_complex_conversions_*debug -M 16 || exit
+EXEC="$(eval echo ./build/test_planedata_complex_conversions_*debug -M 16)"
+echo "$EXEC"
+$EXEC || exit
 
 
 
@@ -25,7 +27,9 @@ SCONS="scons --threading=omp --unit-test=test_planedata_complex_conversions --gu
 echo "$SCONS"
 $SCONS || exit 1
 
-./build/test_planedata_complex_conversions_*debug -M 16 || exit
+EXEC="$(eval echo ./build/test_planedata_complex_conversions_*debug -M 16)"
+echo "$EXEC"
+$EXEC || exit
 
 
 echo "***********************************************"
