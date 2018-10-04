@@ -652,12 +652,8 @@ public:
 
 #if SWEET_DEBUG
 	#if SWEET_SPACE_THREADING
-		#pragma omp parallel
-		#pragma omp master
-		{
-			if (omp_get_num_threads() > 1)
-				FatalError("Are we already in parallel region? Threading race conditions likely!");
-		}
+		if (omp_get_num_threads() > 1)
+			FatalError("Are we already in parallel region? Threading race conditions likely!");
 	#endif
 #endif
 
