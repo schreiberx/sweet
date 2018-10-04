@@ -14,7 +14,11 @@ PKG_URL_SRC="openssl-1.1.1.tar.gz"
 
 config_package $@
 
-config_configure_make_default_install
+M="./config --prefix=$SWEET_LOCAL_SOFTWARE_DST_DIR $@"
+echo_info "Executing '${M}'"
+$M || echo_error_exit "FAILED '${M}'"
+
+config_make_default_install
 
 config_success
 
