@@ -167,6 +167,12 @@ function config_make_install()	# make install
 	echo_info "Executing '${M}'"
 	$M || echo_error_exit "FAILED '${M}'"
 }
+function config_exec()
+{
+	M="$@"
+	echo_info "Executing '${M}'"
+	$M || echo_error_exit "FAILED '${M}'"
+}
 
 # Combined functions
 function config_make_default_install()			# make; make install
