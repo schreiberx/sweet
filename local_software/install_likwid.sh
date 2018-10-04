@@ -29,6 +29,7 @@ sed -i "s/^BUILDDAEMON = /&false#/" config.mk
 # Don't build setFreq
 sed -i "s/^BUILDFREQ = /&false#/" config.mk
 
-config_make_install
+config_make_clean
+config_make_default_install
 
 config_success

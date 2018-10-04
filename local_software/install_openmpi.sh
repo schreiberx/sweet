@@ -15,6 +15,6 @@ PKG_URL_SRC="openmpi-3.1.2.tar.bz2"
 config_package $@
 
 config_configure --enable-mpi-fortran
-config_make_install
+config_make_default_install
 
 config_success

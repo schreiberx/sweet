@@ -19,13 +19,13 @@ echo_info "SHTNS noOpenMP:"
 # Python, no OpenMP
 config_configure --disable-openmp
 config_make_clean
-config_make_install
+config_make_default_install
 
 echo_info_hline
 echo_info "SHTNS OpenMP:"
 # Python, OpenMP
 config_configure --enable-openmp
 config_make_clean
-config_make_install
+config_make_default_install
 
 config_success

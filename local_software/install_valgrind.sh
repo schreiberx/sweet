@@ -14,7 +14,7 @@ PKG_URL_SRC="valgrind-3.13.0.tar.bz2"
 
 config_package $@
 
-config_configure_make_install
+config_configure_make_default_install
 
 config_success
 

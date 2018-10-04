@@ -14,7 +14,7 @@ PKG_URL_SRC="openssl-1.1.1.tar.gz"
 
 config_package $@
 
-config_configure_make_install
+config_configure_make_default_install
 
 config_success
 

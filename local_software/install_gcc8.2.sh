@@ -18,7 +18,7 @@ echo_info "Downloading additional packages"
 
 config_configure --disable-multilib --enable-languages=c++,fortran  --prefix="$DST_DIR" --program-suffix=-8.2
 
-config_make_install
+config_make_default_install
 
 for i in g++ gcc gcc-ar gcc-nm gcc-ranlib gfortran gcov gcov-tool gfortran; do
 	ln -sf "$DST_DIR/bin/$i-8.2" "$DST_DIR/bin/$i" || echo_error_exit "FAILED to create sym links"

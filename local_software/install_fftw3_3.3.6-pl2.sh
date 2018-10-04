@@ -48,6 +48,6 @@ echo "Configuration flags: $CONF_FLAGS"
 
 config_configure $CONF_FLAGS
 
-config_make_install
+config_make_default_install
 
 config_success

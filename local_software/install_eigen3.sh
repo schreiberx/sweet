@@ -24,6 +24,6 @@ cd build
 echo_info "cmake"
 cmake ../  -DCMAKE_INSTALL_PREFIX="$SWEET_LOCAL_SOFTWARE_DST_DIR" || echo_error_exit "cmake failed"
 
-config_make_install
+config_make_default_install
 
 config_success

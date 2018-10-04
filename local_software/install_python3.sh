@@ -14,7 +14,7 @@ PKG_URL_SRC="Python-3.6.2.tgz"
 
 config_package $@
 
-config_configure_make_install
+config_configure_make_default_install
 
 mkdir -p "$DST_DIR/bin/python"
 ln -sf "$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/python3" "$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/python" 

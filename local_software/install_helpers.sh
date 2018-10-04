@@ -133,32 +133,40 @@ function config_configure()
 {
 	M="./configure --prefix=$SWEET_LOCAL_SOFTWARE_DST_DIR $@"
 	echo_info "Executing '${M}'"
-	$M || echo_error_exit "FAILED ${M}"
+	$M || echo_error_exit "FAILED '${M}'"
 }
-function config_make()
+function config_make_default()	# make
 {
 	M="make $MAKE_DEFAULT_OPTS $@"
 	echo_info "Executing '${M}'"
-	$M || echo_error_exit "FAILED ${M}"
+	$M || echo_error_exit "FAILED '${M}'"
 }
-function config_make_clean()
+function config_make_clean()	# make clean
 {
 	M="make $MAKE_DEFAULT_OPTS $@ clean"
 	echo_info "Executing '${M}'"
 	$M || echo_error_exit "FAILED '${M}'"
 }
-function config_make_install()
+function config_make_install()	# make install
 {
 	M="make $MAKE_DEFAULT_OPTS $@ install"
 	echo_info "Executing '${M}'"
-	$M || echo_error_exit "FAILED '${M}"
+	$M || echo_error_exit "FAILED '${M}'"
 }
-function config_configure_make_install()
+
+# Combined functions
+function config_make_default_install()			# make; make install
 {
-	config_configure
-	config_make
+	config_make_default
 	config_make_install
 }
+function config_configure_make_default_install()	# ./configure...; make ...; make install
+{
+	config_configure
+	config_make_default
+	config_make_default_install
+}
+
 
 
 function config_success()

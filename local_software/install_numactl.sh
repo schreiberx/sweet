@@ -14,6 +14,6 @@ PKG_URL_SRC="numactl-2.0.12.tar.gz"
 
 config_package $@
 
-config_configure_make_install
+config_configure_make_default_install
 
 config_success

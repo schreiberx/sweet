@@ -18,8 +18,8 @@ fi
 
 config_package $@
 
-config_configure_make_install
+config_configure_make_default_install
 
-config_make_install
+config_make_default_install
 
 config_success
