@@ -154,13 +154,15 @@ class SWEETParallelization(InfoError):
 		if not isinstance(self.pardims, list):
 			self.pardims = [self.pardims]
 
-
 		# First, we setup each dimension
 		# This also runs a validation checker over it
 		dim_id = 0
+		self.pardims_dict = {}
 		for i in self.pardims:
 			i.setup(dim_id)
 			dim_id += 1
+
+			self.pardims_dict[i.dim_name] = i
 
 		# Compute total number of resources over all dimensions
 		self.num_cores_per_rank = _prod(i.num_cores_per_rank for i in self.pardims)
