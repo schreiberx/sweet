@@ -14,9 +14,6 @@ PKG_URL_SRC="SDL2-2.0.8.tar.gz"
 
 config_package $@
 
-#sed -i -- 's/EXTRA_CFLAGS="$EXTRA_CFLAGS -fpascal-strings"//' ./configure
-#./configure --enable-video --enable-video-opengl --prefix="$SWEET_LOCAL_SOFTWARE_DST_DIR" || exit 1
-
 config_configure_make_default_install
 
 config_success
