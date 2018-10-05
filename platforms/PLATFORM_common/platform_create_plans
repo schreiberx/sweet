@@ -6,10 +6,7 @@ GENERATOR_SCRIPTS=$@
 if [ -z "$GENERATOR_SCRIPTS" ]; then
 
 	echo_warning "Autodetecting script directories 'genplans_*'"
-
-	for i in script_*rexi_* script*; do
-		GENERATOR_SCRIPTS="$(ls -d genplans_*)"
-	done
+	GENERATOR_SCRIPTS="$(ls -d genplans_*/)"
 
 	if [ -z "$GENERATOR_SCRIPTS" ]; then
 		echo ""
