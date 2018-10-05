@@ -62,10 +62,11 @@ function config_package()
 	echo_info "Package: ${PKG_NAME}"
 	echo_info_hline
 
+	echo ${PKG_INSTALLED_FILE}
 	if [ "$1" = "FORCE"  ]; then
 		echo_warning "FORCE detected => reinstallation of package"
 	else
-		if [ -d "${PKG_INSTALLED_FILE}" ]; then
+		if [ -e "${PKG_INSTALLED_FILE}" ]; then
 			echo_warning_hline
 			echo_warning "The package '${PKG_NAME}' is already installed"
 			echo_warning "Use"

@@ -38,7 +38,7 @@ for GENERATOR_SCRIPT in $GENERATOR_SCRIPTS; do
 
 				# Append dependency
 				# This line depends on each job scheduler
-				NEWPARAM="${JOB_SCHEDULER_DEPENDENCY/%JOBID$/${PREV_JOBID}}"
+				NEWPARAM="${JOB_SCHEDULER_DEPENDENCY/\%JOBID\%/${PREV_JOBID}}"
 
 				# Search for 1st batch job prefix add dependency information
 				sed -i -r  "0,/#[a-Z]+/{s/#[a-Z]+/& $NEWPARAM\n&/}"  "${JOB_SCRIPT}"

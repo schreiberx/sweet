@@ -7,6 +7,10 @@
 #
 
 
+#######################################################################
+# Step 1) Setup echo functions ########################################
+#######################################################################
+
 #
 # START: Some convenient functions
 #
@@ -26,13 +30,13 @@
 #	Output a horizontal separator line
 #
 
-export ECHO_PREFIX="echo -n \"SWEET: \""
+export SWEET_ECHO_PREFIX="echo -n \"SWEET: \""
 
 # Pretty output
-echo_info()( eval ${ECHO_PREFIX}; echo "${@}"; )
-echo_success()( eval ${ECHO_PREFIX}; echo -en "\033[0;32m"; echo "${@}"; echo -en "\033[0m"; )
-echo_warning()( eval ${ECHO_PREFIX}; echo -en "\033[0;33m"; echo "${@}"; echo -en "\033[0m"; )
-echo_error()( eval ${ECHO_PREFIX}; echo -en "\033[0;31m"; echo "${@}"; echo -en "\033[0m"; )
+echo_info()( eval ${SWEET_ECHO_PREFIX}; echo "${@}"; )
+echo_success()( eval ${SWEET_ECHO_PREFIX}; echo -en "\033[0;32m"; echo "${@}"; echo -en "\033[0m"; )
+echo_warning()( eval ${SWEET_ECHO_PREFIX}; echo -en "\033[0;33m"; echo "${@}"; echo -en "\033[0m"; )
+echo_error()( eval ${SWEET_ECHO_PREFIX}; echo -en "\033[0;31m"; echo "${@}"; echo -en "\033[0m"; )
 
 # hlines
 echo_info_hline()( echo_info "*************************************************************************"; )
@@ -41,173 +45,222 @@ echo_warning_hline()( echo_warning "********************************************
 echo_error_hline()( echo_error "*************************************************************************"; )
 
 # output error and exit
-echo_error_exit(){ echo_error_hline; eval ${ECHO_PREFIX}; echo -en "\033[0;31m"; echo "${@}"; echo -en "\033[0m"; echo_error_hline; exit 1; }
+echo_error_exit(){ echo_error_hline; eval ${SWEET_ECHO_PREFIX}; echo -en "\033[0;31m"; echo "${@}"; echo -en "\033[0m"; echo_error_hline; return 2>/dev/null; exit 1; }
 
 export -f echo_info echo_success echo_warning echo_error
 export -f echo_info_hline echo_success_hline echo_warning_hline echo_error_hline
 export -f echo_error_exit
 
-#
-# END CONV
-#
 
+#######################################################################
+# Check if SWEET environment are already setup ########################
+#######################################################################
 
 if [ "#$SWEET_ROOT" != "#" ]; then
 
 	echo_warning "Environment variables already loaded (skipping)"
-	if [ "`basename -- "$0"`" = "env_vars.sh" ]; then
-		return
-	fi
-else
-
-	echo_info_hline
-	if [ "#$0" != "#-bash" ]; then
-		if [ "`basename -- "$0"`" = "env_vars.sh" ]; then
-			if [ "`basename -- "$0"`" != "bash" ]; then
-				if [ "`basename -- "$0"`" != "modules_env_yellowstone.inc" ]; then
-					echo_error ""
-					echo_error ">>> $0"
-					echo_error "THIS SCRIPT MAY NOT BE EXECUTED, BUT INCLUDED IN THE ENVIRONMENT VARIABLES!"
-					echo_error "Use e.g. "
-					echo_error ""
-					echo_error "   $ source ./env_vars.sh"
-					echo_error ""
-					echo_error "to setup the environment variables correctly"
-					echo_error ""
-					exit 1
-				fi
-			fi
-		fi
-	fi
-
-
-	if [ "`basename -- "$SHELL"`" != "bash" ]; then
-		echo_error ""
-		echo_error "These scripts are only compatible to the bash shell"
-		echo_error ""
-		return
-	fi
-
-
-
-	# Backup current directory
-	BACKDIR="$PWD"
-
-	SCRIPTDIR="$(dirname "${BASH_SOURCE[0]}")"
-	cd "$SCRIPTDIR"
-	# Get full path
-	SCRIPTDIR="$PWD"
-
-	# Get SWEET root directory
-	cd "../"
-	export SWEET_ROOT="$PWD"
-
-	# Back to local software
-	cd "$SCRIPTDIR"
-
-	echo_info " + Setting up platform independent environment variables..."
-
-	export PATH="$SCRIPTDIR/local/bin:$PATH"
-	export PKG_CONFIG_PATH="$SCRIPTDIR/local/lib/pkgconfig:$PKG_CONFIG_PATH"
-
-	export LD_LIBRARY_PATH="$SCRIPTDIR/local/lib:$LD_LIBRARY_PATH"
-	if [ -d "$SCRIPTDIR/local/lib64" ]; then
-		export LD_LIBRARY_PATH="$SCRIPTDIR/local/lib64:$LD_LIBRARY_PATH"
-	fi
-
-	export DYLD_LIBRARY_PATH="$SCRIPTDIR/local/lib:$LD_LIBRARY_PATH"
-	if [ -d "$SCRIPTDIR/local/lib64" ]; then
-		export DYLD_LIBRARY_PATH="$SCRIPTDIR/local/lib64:$LD_LIBRARY_PATH"
-	fi
-
-	export PYTHONPATH="$PYTHONPATH:$SCRIPTDIR/local/lib/python3.6/site-packages/"
-
-	# Add SWEET python_mods to pythonpath
-	export PYTHONPATH="$PYTHONPATH:$SWEET_ROOT/python_mods"
-
-	echo_info " + Loading platform specific environment variables..."
-
-
-	#
-	# Include cluster-specific scripts
-	#
-	if [ "#$SWEET_PLATFORM" != "#" ]; then
-		echo_info "                   Mode: SWEET_PLATFORM (=${SWEET_PLATFORM})"
-		PLATFORM_ENV_VARS=$(eval echo "${SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM}/env_vars.sh")
-
-		if [ ! -e "$PLATFORM_ENV_VARS" ]; then
-			echo_error "File '${PLATFORM_ENV_VARS}' not found!"
-			return 1
-		fi
-
-		source "$PLATFORM_ENV_VARS" || return 1
-
-	elif [ "#${1}" = "#" ] || [ "#${1}" = "#FORCE" ]; then
-		echo_info "                   Mode: Autodetect"
-
-		#
-		# Use python code to detect hardware.
-		#
-		# Note, that this is not required on cluster nodes,
-		# since SWEET_PLATFORM will be used to avoid this autodetection.
-		#
-		function load_this_platform {
-
-			if [ ! -e "SWEETPlatformAutodetect.py" ]; then
-				echo_warning "Warning: 'SWEETPlatformAutodetect.py' not found in ${PWD}"
-				return 1
-			fi
-			# Automagic detection here if called from terminal
-			echo -en "import sys\nimport SWEETPlatformAutodetect\nsys.exit(0 if SWEETPlatformAutodetect.autodetect() else 1)" | /usr/bin/env python && return 0
-
-			# Platform not detected
-			return 1
-		}
-
-		#
-		# Try with autodetection of platforms
-		#
-		for i in $SWEET_ROOT/platforms/??_*; do
-			cd "$i"
-			load_this_platform
-			if [ $? -eq 0 ]; then
-				p=$(basename "$i")
-				p=${p/??_/}
-				export SWEET_PLATFORM="$p"
-				source "./env_vars.sh" || return 1
-				break
-			fi
-		done
-	else
-		echo_info "                   Mode: Platform environment file provided"
-
-		# Load platform environment variables if specified
-		echo_info "     Platform env. file: \$1='${1}'"
-
-		# Set SWEET Platform override
-		export SWEET_PLATFORM="$1"
-		source "$1" || return 1
-	fi
-
-	if [ -z "${SWEET_PLATFORM}" ]; then
-		echo_error "INTERNNAL ERROR: No platform detected!!!"
-		return
-	fi
-
-	export SWEET_PLATFORM_DIR="$(eval echo "${SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM}/")"
-
-	echo_info "         Using platform: '${SWEET_PLATFORM}'"
-	echo_info "     Platform directory: '${SWEET_PLATFORM_DIR}'"
-
-	# Back to local software
-	cd "$SCRIPTDIR"
-
-	export PS1="[SWEET.$SWEET_PLATFORM] $PS1"
-
-
-	cd "$BACKDIR"
-
-	echo_success " Environment setup successful (I hope so...)"
-	echo_info_hline
-
+	return 2>/dev/null
+	exit
 fi
+
+
+#######################################################################
+# Setup important variables ###########################################
+#######################################################################
+
+# Location of this script
+SCRIPTDIR="$(dirname "${BASH_SOURCE[0]}")"
+cd "$SCRIPTDIR"
+# Get full path
+SCRIPTDIR="$PWD"
+
+# Get SWEET root directory
+cd "../"
+export SWEET_ROOT="$PWD"
+
+
+#######################################################################
+# Check if this script is included (OK) or directly executed (FAILURE)
+#######################################################################
+
+#
+# Include detection
+#
+#
+SOURCED="true"
+
+# bash appears if sourced from the bash
+#if [ "#$(basename -- $0)" = "#bash" ]; then
+#	SOURCED="false"
+#fi
+
+
+if [ "#$(basename -- $0)" = "#env_vars.sh" ]; then
+	SOURCED="false"
+fi
+
+if [ "$SOURCED" != "true" ]; then
+	echo_error_hline
+	echo_error "THIS SCRIPT MAY NOT BE EXECUTED, BUT INCLUDED IN THE ENVIRONMENT VARIABLES!"
+	echo_error_hline
+	echo_error "Use e.g. "
+	echo_error ""
+	echo_error "   $ source ./env_vars.sh"
+	echo_error ""
+	echo_error "to setup the environment variables correctly"
+	echo_error_hline
+	return 2>/dev/null
+	exit 1
+fi
+
+if [ "`basename -- "$SHELL"`" != "bash" ]; then
+	echo_error_hline
+	echo_error "These scripts are only compatible to the bash shell"
+	echo_error_hline
+	return
+fi
+
+
+
+# Backup current directory
+BACKDIR="$PWD"
+
+
+#######################################################################
+# Setup platform specific parts
+#######################################################################
+
+echo_info " + Loading platform specific environment variables..."
+
+#
+# Include cluster-specific scripts
+#
+if [ "#$SWEET_PLATFORM" != "#" ]; then
+
+	echo_info_hline
+	echo_info "                   Mode: SWEET_PLATFORM (=${SWEET_PLATFORM})"
+	echo_info_hline
+	PLATFORM_ENV_VARS=$(eval echo "${SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM}/env_vars.sh")
+
+	if [ ! -e "$PLATFORM_ENV_VARS" ]; then
+		echo_error "File '${PLATFORM_ENV_VARS}' not found!"
+		return 1
+	fi
+
+	source "$PLATFORM_ENV_VARS" || return 1
+
+elif [ "#${1}" = "#" ] || [ "#${1}" = "#FORCE" ]; then
+
+	echo_info_hline
+	echo_info "                   Mode: Autodetect"
+	echo_info_hline
+
+	#
+	# Use python code to detect hardware.
+	#
+	# Note, that this is not required on cluster nodes,
+	# since SWEET_PLATFORM will be used to avoid this autodetection.
+	#
+	function load_this_platform {
+
+		if [ ! -e "SWEETPlatformAutodetect.py" ]; then
+			echo_warning "Warning: 'SWEETPlatformAutodetect.py' not found in ${PWD}"
+			return 1
+		fi
+		# Automagic detection here if called from terminal
+		echo -en "import sys\nimport SWEETPlatformAutodetect\nsys.exit(0 if SWEETPlatformAutodetect.autodetect() else 1)" | /usr/bin/env python && return 0
+
+		# Platform not detected
+		return 1
+	}
+
+	#
+	# Try with autodetection of platforms
+	#
+	for i in $SWEET_ROOT/platforms/??_*; do
+		cd "$i"
+		load_this_platform
+		if [ $? -eq 0 ]; then
+			p=$(basename "$i")
+			p=${p/??_/}
+			export SWEET_PLATFORM="$p"
+			source "$i/env_vars.sh" || return 1
+			break
+		fi
+	done
+else
+	echo_info_hline
+	echo_info "                   Mode: Platform environment file provided"
+	echo_info_hline
+
+	# Load platform environment variables if specified
+	echo_info "     Platform env. file: \$1='${1}'"
+
+	# Set SWEET Platform override
+	export SWEET_PLATFORM="$1"
+	source "$1" || return 1
+fi
+
+
+if [ -z "${SWEET_PLATFORM}" ]; then
+	echo_error_hline
+	echo_error "INTERNNAL ERROR: No platform detected!!!"
+	echo_error_hline
+	return
+fi
+
+export SWEET_PLATFORM_DIR="$(eval echo "${SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM}/")"
+
+echo_info "         Using platform: '${SWEET_PLATFORM}'"
+echo_info "     Platform directory: '${SWEET_PLATFORM_DIR}'"
+
+
+
+#######################################################################
+# Setup SWEET specific parts
+#######################################################################
+# This must be done after the platform specific parts to ensure
+# that environment variables are correctly overwritten/extended with
+# the SWEET variables
+#######################################################################
+
+# Back to local software
+cd "$SCRIPTDIR"
+
+echo_info " + Setting up platform independent environment variables..."
+
+export PATH="$SCRIPTDIR/local/bin:$PATH"
+export PKG_CONFIG_PATH="$SCRIPTDIR/local/lib/pkgconfig:$PKG_CONFIG_PATH"
+
+export LD_LIBRARY_PATH="$SCRIPTDIR/local/lib:$LD_LIBRARY_PATH"
+if [ -d "$SCRIPTDIR/local/lib64" ]; then
+	export LD_LIBRARY_PATH="$SCRIPTDIR/local/lib64:$LD_LIBRARY_PATH"
+fi
+
+export DYLD_LIBRARY_PATH="$SCRIPTDIR/local/lib:$LD_LIBRARY_PATH"
+if [ -d "$SCRIPTDIR/local/lib64" ]; then
+	export DYLD_LIBRARY_PATH="$SCRIPTDIR/local/lib64:$LD_LIBRARY_PATH"
+fi
+
+export PYTHONPATH="$PYTHONPATH:$SCRIPTDIR/local/lib/python3.6/site-packages/"
+
+# Add SWEET python_mods to pythonpath
+export PYTHONPATH="$PYTHONPATH:$SWEET_ROOT/python_mods"
+
+
+# Back to local software
+cd "$SCRIPTDIR"
+
+export PS1="[SWEET.$SWEET_PLATFORM] $PS1"
+
+
+#######################################################################
+#######################################################################
+#######################################################################
+
+cd "$BACKDIR"
+
+echo_success_hline
+echo_success " SWEET environment setup successfully"
+echo_success_hline
+
