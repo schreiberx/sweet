@@ -16,7 +16,7 @@ PKG_URL_SRC="tbb2019_20180718oss_lin.tgz"
 # (autodetected with basename of url without file extension if not set)
 PKG_SRC_SUBDIR="tbb2019_20180718oss"
 
-config_package $@
+config_package $@ || exit 1
 
 echo_info "Installing..."
 for i in ./bin ./include ./python ./lib; do
@@ -24,4 +24,4 @@ for i in ./bin ./include ./python ./lib; do
 	cp -r "$i" "$SWEET_LOCAL_SOFTWARE_DST_DIR" || echo_error_exit "Failed to copy '$i'"
 done
 
-config_success
+config_success || exit 1

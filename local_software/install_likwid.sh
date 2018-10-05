@@ -12,7 +12,7 @@ PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/likwid-topology"
 # URL to source code to fetch it
 PKG_URL_SRC="likwid-4.3.2.tar.gz"
 
-config_package $@
+config_package $@ || exit 1
 
 M_DST="${SWEET_LOCAL_SOFTWARE_DST_DIR}"
 M_DST=${M_DST//\//\\/}
@@ -29,7 +29,8 @@ sed -i "s/^BUILDDAEMON = /&false#/" config.mk
 # Don't build setFreq
 sed -i "s/^BUILDFREQ = /&false#/" config.mk
 
-config_make_clean
-config_make_default_install
+config_make_clean || exit 1
 
-config_success
+config_make_default_install || exit 1
+
+config_success || exit 1

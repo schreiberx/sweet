@@ -176,16 +176,21 @@ function config_exec()
 }
 
 # Combined functions
-function config_make_default_install()			# make; make install
+function config_configure_make_default()	# ./configure...; make ...;
 {
+	config_configure
 	config_make_default
-	config_make_install
 }
 function config_configure_make_default_install()	# ./configure...; make ...; make install
 {
 	config_configure
 	config_make_default
 	config_make_default_install
+}
+function config_make_default_install()			# make; make install
+{
+	config_make_default
+	config_make_install
 }
 
 

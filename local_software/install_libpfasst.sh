@@ -12,7 +12,7 @@ PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/libpfasst.a"
 # URL to source code to fetch it
 PKG_URL_SRC="libpfasst_sweet_2018_09_27.tar.bz2"
 
-config_package $@
+config_package $@ || exit 1
 
 if [ -z "$SWEET_MPIF90" ]; then
 	echo_error_exit "SWEET_MPIF90 environment variable must be set for libpfasst compilation, see platform configuration"
@@ -40,4 +40,4 @@ echo_info cp -v -f "./lib/libpfasst.a" "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/"
 cp -v -f "./lib/libpfasst.a" "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/" || echo_error_exit "Failed to install libpfasst.a files"
 
 
-config_success
+config_success || exit 1

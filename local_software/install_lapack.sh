@@ -12,7 +12,7 @@ PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/liblapack.a"
 # URL to source code to fetch it
 PKG_URL_SRC="lapack-3.8.0.tar.gz"
 
-config_package $@
+config_package $@ || exit 1
 
 ulimit -s 100000 || echo_warning "Warning: failed to increase ulimit"
 

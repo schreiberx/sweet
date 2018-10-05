@@ -16,7 +16,7 @@ PKG_URL_SRC="fftw-3.3.4.tar.gz"
 # (autodetected with basename of url without file extension if not set)
 #PKG_SRC_SUBDIR=""
 
-config_package $@
+config_package $@ || exit 1
 
 CONF_FLAGS=""
 
@@ -46,8 +46,8 @@ CONF_FLAGS+=" --disable-fortran"
 
 echo "Configuration flags: $CONF_FLAGS"
 
-config_configure $CONF_FLAGS
+config_configure $CONF_FLAGS || exit 1
 
-config_make_default_install
+config_make_default_install || exit 1
 
-config_success
+config_success || exit 1
