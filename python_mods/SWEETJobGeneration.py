@@ -180,9 +180,6 @@ cd \""""+self.p_job_dirpath+"""\"
 
 """
 
-		# output some additional information about system
-		content += "\nlscpu  -e\n"
-
 		# EXEC prefix
 		content += self.platform_functions.jobscript_get_exec_prefix(self)
 		content += self.user_script_exec_prefix

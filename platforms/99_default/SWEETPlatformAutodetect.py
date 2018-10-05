@@ -9,7 +9,10 @@ def autodetect():
 	"""
 
 	# Always true, since this is the fallback solution
-	return True
+	#return True
+
+	# Return false to avoid any accidental errors
+	return False
 
 if __name__ == "__main__":
 	print("Autodetect: "+str(autodetect()))

@@ -8,7 +8,14 @@
 
 
 #######################################################################
-# Step 1) Setup echo functions ########################################
+# Backup current directory to go back to it at the end of this script
+#######################################################################
+
+BACKDIR="$PWD"
+
+
+#######################################################################
+# Setup echo functions ################################################
 #######################################################################
 
 #
@@ -64,8 +71,9 @@ if [ "#$SWEET_ROOT" != "#" ]; then
 fi
 
 
+
 #######################################################################
-# Setup important variables ###########################################
+# Setup important directory environment variables #####################
 #######################################################################
 
 # Location of this script
@@ -88,11 +96,6 @@ export SWEET_ROOT="$PWD"
 #
 #
 SOURCED="true"
-
-# bash appears if sourced from the bash
-#if [ "#$(basename -- $0)" = "#bash" ]; then
-#	SOURCED="false"
-#fi
 
 
 if [ "#$(basename -- $0)" = "#env_vars.sh" ]; then
@@ -122,15 +125,10 @@ fi
 
 
 
-# Backup current directory
-BACKDIR="$PWD"
-
 
 #######################################################################
 # Setup platform specific parts
 #######################################################################
-
-echo_info " + Loading platform specific environment variables..."
 
 #
 # Include cluster-specific scripts
@@ -227,7 +225,7 @@ echo_info "     Platform directory: '${SWEET_PLATFORM_DIR}'"
 # Back to local software
 cd "$SCRIPTDIR"
 
-echo_info " + Setting up platform independent environment variables..."
+#echo_info " + Setting up platform independent environment variables..."
 
 export PATH="$SCRIPTDIR/local/bin:$PATH"
 export PKG_CONFIG_PATH="$SCRIPTDIR/local/lib/pkgconfig:$PKG_CONFIG_PATH"

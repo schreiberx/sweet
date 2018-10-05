@@ -111,7 +111,6 @@ class SWEETRuntimeOptions(InfoError):
 		self.compute_error = 0
 
 		self.reuse_plans = -1
-
 		return
 
 

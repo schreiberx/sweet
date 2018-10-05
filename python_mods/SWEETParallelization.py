@@ -88,6 +88,27 @@ class SWEETParallelization(InfoError):
 		self.pardims = None
 
 
+	def get_max_wallclock_seconds_hh_mm_ss(self):
+		"""
+		Return properly formatted self.max_wallclock_seconds usable for job scripts
+		"""
+		secs = self.max_wallclock_seconds
+		# seconds
+		s = int(secs)
+		m = s // 60
+		s = s % 60
+		h = m // 60
+		m = m % 60
+
+		stest = h*60*60 + m*60 + s
+		if int(secs) != stest:
+			print(secs)
+			print(stest)
+			raise Exception("Internal error!")
+
+		return str(h).zfill(2)+":"+str(m).zfill(2)+":"+str(s).zfill(2)
+
+
 
 
 	def print(self):

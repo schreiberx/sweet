@@ -124,41 +124,12 @@ def estimateWallclockTime(p):
 	return wallclock_seconds
 
 
-p.user_script_exec_prefix_shtns = """
-
-# SHTNS plans required which have to be precomputed once.
-# You can generate them by simply running one benchmark.
-# Then, copy them to the main benchmark folder
-if [ -e ../shtns_cfg ]; then
-	cp ../shtns_cfg ./ -sf || exit 1
-	cp ../shtns_cfg_fftw ./ -sf || exit 1
-fi
-
-"""
-
-p.user_script_exec_prefix_z = """
-
-echo "CPU Frequencies:"
-cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq | sort -u
-echo ""
+p.user_script_exec_prefix += """
 
 # Manual override in jobs_create.py
 # Override OMP_NUM_THREADS and use MASTER binding
 #export OMP_NUM_THREADS=1
 export OMP_PROC_BIND=close
-
-"""
-
-p.user_script_exec_prefix = p.user_script_exec_prefix_shtns + p.user_script_exec_prefix_z
-
-p.user_script_exec_suffix += """
-
-echo "CPU Frequencies:"
-cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq | sort -u
-echo ""
-
-echo "Hostname:"
-hostname
 
 """
 
@@ -438,8 +409,6 @@ if __name__ == "__main__":
 		#
 		# SHTNS plan generation scripts
 		#
-
-		p.user_script_exec_prefix = p.user_script_exec_prefix_z
 		p.runtime.reuse_plans = 1	# search for awesome plans and store them
 
 		#
