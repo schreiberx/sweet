@@ -197,6 +197,14 @@ cd \""""+self.p_job_dirpath+"""\"
 		content += self.platform_functions.jobscript_get_footer(self)
 		content += "# %SCRIPT_FOOTER%\n"
 
+		#
+		# Add return and exit 0
+		#
+		# return in case that it's sourced into someone's bash
+		# exit 0 is required in case that the last program (e.g. a copy) failed
+		#
+		content += "return 2>/dev/null; exit 0"
+
 		return content
 
 
