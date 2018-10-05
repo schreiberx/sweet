@@ -1,0 +1,5 @@
+#! /bin/bash
+
+
+./platform_create_plans ./genplans_script_*
+
