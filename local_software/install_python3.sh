@@ -16,7 +16,7 @@ config_package $@
 
 config_configure_make_default_install
 
-mkdir -p "$DST_DIR/bin/python"
+mkdir -p "$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/python"
 ln -sf "$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/python3" "$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/python" 
 
 echo_info "Upgrading pip..."
