@@ -58,7 +58,7 @@ def get_platform_id():
 		unique ID of platform
 	"""
 
-	return "coolmuc_mpp2"
+	return "coolmuc_mpp2_gnu"
 
 
 
@@ -135,6 +135,13 @@ def jobscript_get_header(jobgeneration : SWEETJobGeneration):
 #SBATCH --mail-user=schreiberx@gmail.com
 #SBATCH --export=NONE 
 #SBATCH --time="""+time_str+"""
+"""
+	if p.force_turbo_off:
+		content += """# Try to avoid slowing down CPUs
+#SBATCH --cpu-freq=Performance
+"""
+
+	content += """
 source /etc/profile.d/modules.sh
 
 """+p_gen_script_info(jobgeneration)+"""
