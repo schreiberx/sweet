@@ -1,5 +1,22 @@
 #! /bin/bash
 
+if [ -z "$SWEET_ROOT" ]; then
+	echo "****************************************************************************************************"
+	echo "* ERROR: SWEET environment variables missing!"
+	echo "****************************************************************************************************"
+	exit 1
+fi
+
+#
+# DO NOT MODIFY THIS SCRIPT
+#
+# This is used for all platform_* scripts in this directory
+#
+# This script forwards all platform_* requests to the corresponding platform
+#
+# If a script doesn't exist in the platform directory, it outputs a warning
+#
+
 # Script path
 SCRIPT="$(echo -n ${SWEET_PLATFORM_DIR}/$(basename $0))"
 
