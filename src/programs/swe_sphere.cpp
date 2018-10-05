@@ -890,7 +890,6 @@ int main(int i_argc, char *i_argv[])
 				if (mpi_rank == 0)
 					std::cout << "TIMER RESET" << std::endl;
 #endif
-				bool instability = false;
 				SimulationBenchmarkTimings::getInstance().main_timestepping.start();
 
 				// Main time loop
@@ -913,7 +912,6 @@ int main(int i_argc, char *i_argv[])
 						{
 							std::cout << "INSTABILITY DETECTED" << std::endl;
 							std::cerr << "INSTABILITY DETECTED" << std::endl;
-							instability = true;
 							// IMPORANT: EXIT IN CASE OF INSTABILITIES
 							exit(1);
 							break;
