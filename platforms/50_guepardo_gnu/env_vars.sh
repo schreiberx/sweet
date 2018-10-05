@@ -1,13 +1,5 @@
 
 #
-# hostname martinium
-#
-
-# No batch files
-export BATCH_FILE_TAG="-"
-
-
-#
 # SWEET Compiler environment
 #
 export SWEET_CC=gcc-6

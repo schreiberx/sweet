@@ -1,12 +1,3 @@
-
-#
-# hostname martinium
-#
-
-# No batch files
-export BATCH_FILE_TAG="-"
-
-
 #
 # SWEET Compiler environment
 #

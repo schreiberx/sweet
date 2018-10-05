@@ -20,7 +20,8 @@ class SWEETRuntimeOptions(InfoError):
 		self.f_sphere = 0
 		self.verbosity = 0
 
-		self.stability_checks = 1
+		# Deactivated per default for more performance
+		self.instability_checks = 0
 
 		self.floating_point_output_digits = -1
 
@@ -32,7 +33,6 @@ class SWEETRuntimeOptions(InfoError):
 		self.max_timesteps = -1
 
 		self.normal_mode_analysis = 0
-
 
 		self.rexi_method = ''
 
@@ -352,7 +352,7 @@ class SWEETRuntimeOptions(InfoError):
 			retval += ' -U '+str(self.viscosity_order)
 		retval += ' -t '+str(self.simtime)
 
-		retval += ' --stability-checks='+str(self.stability_checks)
+		retval += ' --instability-checks='+str(self.instability_checks)
 
 		if self.floating_point_output_digits >= 0:
 			retval += ' -d '+str(self.floating_point_output_digits)

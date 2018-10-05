@@ -586,7 +586,7 @@ public:
 			std::cout << "MISC:" << std::endl;
 			std::cout << " + verbosity: " << verbosity << std::endl;
 			std::cout << " + compute_errors " << compute_errors << std::endl;
-			std::cout << " + stability_checks: " << stability_checks << std::endl;
+			std::cout << " + instability_checks: " << instability_checks << std::endl;
 			std::cout << " + output_floating_point_precision: " << output_floating_point_precision << std::endl;
 			std::cout << " + gui_enabled: " << gui_enabled << std::endl;
 			std::cout << " + be_verbose_after_this_simulation_time_period: " << be_verbose_after_this_simulation_time_period << std::endl;
@@ -608,8 +608,8 @@ public:
 		/// compute errors
 		int compute_errors = 0;
 
-		/// do stability checks for simulation
-		int stability_checks = 1;
+		/// do instability checks for simulation
+		int instability_checks = 1;
 
 		/// precision for floating point outputConfig to std::cout and std::endl
 		int output_floating_point_precision = -1;
@@ -902,7 +902,7 @@ public:
         long_options[next_free_program_option] = {"compute-errors", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        long_options[next_free_program_option] = {"stability-checks", required_argument, 0, 256+next_free_program_option};
+        long_options[next_free_program_option] = {"instability-checks", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
         long_options[next_free_program_option] = {"use-robert-functions", required_argument, 0, 256+next_free_program_option};
@@ -1072,7 +1072,7 @@ public:
 					c++;		if (i == c)	{	setup.benchmark_galewsky_phi2 = atof(optarg);		continue;	}
 
 					c++;		if (i == c)	{	misc.compute_errors = atoi(optarg);					continue;	}
-					c++;		if (i == c)	{	misc.stability_checks = atoi(optarg);				continue;	}
+					c++;		if (i == c)	{	misc.instability_checks = atoi(optarg);				continue;	}
 					c++;		if (i == c)	{	misc.sphere_use_robert_functions = atoi(optarg);	continue;	}
 					c++;		if (i == c)	{	misc.use_local_visc = atoi(optarg);			continue;	}
 					c++;		if (i == c)	{	misc.reuse_spectral_transformation_plans = atoi(optarg);			continue;	}

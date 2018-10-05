@@ -71,7 +71,9 @@ def get_platform_resources():
 
 	h = SWEETPlatformResources()
 
-	h.num_cores_per_node = multiprocessing.cpu_count()
+	#h.num_cores_per_node = multiprocessing.cpu_count()
+	# There are only 2 cores, not 4 !!!
+	h.num_cores_per_node = 2
 	h.num_nodes = 1
 
 	# TODO: So far, we only assume a single socket system as a fallback
@@ -148,6 +150,8 @@ def jobscript_get_exec_command(jobgeneration : SWEETJobGeneration):
 
 	p = jobgeneration.parallelization
 
+	limit_to_physical_cores = "$SWEET_ROOT/platforms/bin/exec_on_physical_cores.sh "
+
 	content = """
 
 """+p_gen_script_info(jobgeneration)+"""
@@ -157,7 +161,8 @@ EXEC=\"$SWEET_ROOT/build/"""+jobgeneration.compile.getProgramName()+"""\"
 PARAMS=\""""+jobgeneration.runtime.getRuntimeOptions()+"""\"
 echo \"${EXEC} ${PARAMS}\"
 
-$EXEC $PARAMS
+# Ensure that program is only executed on physical cores!
+"""+limit_to_physical_cores+""" $EXEC $PARAMS
 
 """
 

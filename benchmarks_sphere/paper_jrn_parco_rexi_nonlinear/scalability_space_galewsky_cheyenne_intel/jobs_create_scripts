@@ -55,6 +55,12 @@ p.runtime.output_timestep_size = p.runtime.simtime
 # No output
 p.runtime.output_filename = "-"
 
+# REXI stuff
+params_ci_N = [128]
+#params_ci_N = [1]
+params_ci_max_imag = [30.0]
+params_ci_max_real = [10.0]
+
 ##################################################
 
 
@@ -209,9 +215,9 @@ p.runtime.compute_error = 0
 p.runtime.rexi_sphere_preallocation = 1
 
 #
-# Deactivate stability checks
+# Deactivate instability checks
 #
-p.stability_checks = 0
+p.runtime.instability_checks = 0
 
 p.compile.rexi_thread_parallel_sum = 'disable'
 
@@ -395,9 +401,6 @@ if __name__ == "__main__":
 					p.gen_jobscript_directory('script_'+prefix_string_template+p.getUniqueID(unique_id_filter))
 
 				else:
-					params_ci_N = [128]
-					params_ci_max_imag = [30.0]
-					params_ci_max_real = [10.0]
 
 					for ci_N, ci_max_imag, ci_max_real in product(params_ci_N, params_ci_max_imag, params_ci_max_real):
 						p.runtime.load_from_dict({
