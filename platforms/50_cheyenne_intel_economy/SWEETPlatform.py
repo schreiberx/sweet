@@ -221,7 +221,7 @@ def jobscript_get_exec_prefix(j : SWEETJobGeneration):
 	#
 	# Reusing plans assumes them to be stored in the folder one level up in the hierarchy
 	#
-	if j.runtime.reuse_plans == 0:
+	if j.runtime.reuse_plans == -1:
 		# Quick plan generation mode, nothing to do
 		pass
 
