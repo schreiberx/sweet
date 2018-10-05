@@ -230,10 +230,19 @@ cd "$SCRIPTDIR"
 export PATH="$SCRIPTDIR/local/bin:$PATH"
 export PKG_CONFIG_PATH="$SCRIPTDIR/local/lib/pkgconfig:$PKG_CONFIG_PATH"
 
-export LD_LIBRARY_PATH="$SCRIPTDIR/local/lib:$LD_LIBRARY_PATH"
+#
+# setup SWEET_LD_LIBRARY_PATH which stored additional library paths
+# This is used
+#	1) to extend LD_LIBRARY_PATH in this script
+#	2) to fix the mess in job schedulers (Cheyenne, e.g.) which
+#	   otherwise prioritize their own system libraries such as libfftw.
+#
+export SWEET_LD_LIBRARY_PATH="$SCRIPTDIR/local/lib"
 if [ -d "$SCRIPTDIR/local/lib64" ]; then
-	export LD_LIBRARY_PATH="$SCRIPTDIR/local/lib64:$LD_LIBRARY_PATH"
+	export SWEET_LD_LIBRARY_PATH="$SCRIPTDIR/local/lib64:$SWEET_LD_LIBRARY_PATH"
 fi
+export LD_LIBRARY_PATH="$SWEET_LD_LIBRARY_PATH:$LD_LIBRARY_PATH"
+
 
 export DYLD_LIBRARY_PATH="$SCRIPTDIR/local/lib:$LD_LIBRARY_PATH"
 if [ -d "$SCRIPTDIR/local/lib64" ]; then
