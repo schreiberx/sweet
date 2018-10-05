@@ -146,6 +146,12 @@ def jobscript_get_header(j : SWEETJobGeneration):
 
 """+p_gen_script_info(j)+"""
 
+echo
+echo "LD_LIBRARY_PATH"
+echo "${LD_LIBRARY_PATH}"
+echo
+
+
 # Make sure that SWEET library path is really known
 export LD_LIBRARY_PATH=\""""+ld_library_path+""":$LD_LIBRARY_PATH\"
 
