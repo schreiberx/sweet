@@ -131,8 +131,6 @@ def jobscript_get_header(j : SWEETJobGeneration):
 	if p.force_turbo_off:
 		content += "#PBS -l select=cpufreq=2300000\n"
 
-	ld_library_path = os.getenv('LD_LIBRARY_PATH')
-
 	content += """#
 #PBS -N """+_job_id[0:100]+"""
 #PBS -o """+j.p_job_stdout_filepath+"""
@@ -145,21 +143,6 @@ def jobscript_get_header(j : SWEETJobGeneration):
 
 
 """+p_gen_script_info(j)+"""
-
-echo
-echo "LD_LIBRARY_PATH"
-echo "${LD_LIBRARY_PATH}"
-echo
-
-
-# Make sure that SWEET library path is really known
-export LD_LIBRARY_PATH=\""""+ld_library_path+""":$LD_LIBRARY_PATH\"
-
-
-echo
-echo "LD_LIBRARY_PATH"
-echo "${LD_LIBRARY_PATH}"
-echo
 
 
 echo
@@ -289,8 +272,33 @@ def jobscript_get_exec_command(j : SWEETJobGeneration):
 			if mpiexec[-1] != ' ':
 				mpiexec += ' '
 
+	#
+	# Fix the mess on Cheyenne!
+	#
+	# We prefix the current LD_LIBRARY_PATH with the one from the shell where the job was submitted
+	# This is required since Cheyenne scripts mess around with the existing path in a way
+	# which results in e.g. the system-wide installed fftw to be loaded.
+	#
+	# What we basically accomplish here is to suggest to really first
+	# lookup the SWEET local_software/local/lib directory, then the system libraries
+	#
+	sweet_ld_library_path = os.getenv('SWEET_LD_LIBRARY_PATH')
+
+	if sweet_ld_library_path == None:
+		raise Exception("Environment variable SWEET_LD_LIBRARY_PATH not found!")
 
 	content = """
+
+
+# Make sure that SWEET library path is really known
+export LD_LIBRARY_PATH=\""""+sweet_ld_library_path+""":$LD_LIBRARY_PATH\"
+
+
+echo
+echo "LD_LIBRARY_PATH"
+echo "${LD_LIBRARY_PATH}"
+echo
+
 
 EXEC=\"$SWEET_ROOT/build/"""+j.compile.getProgramName()+"""\"
 PARAMS=\""""+j.runtime.getRuntimeOptions()+"""\"

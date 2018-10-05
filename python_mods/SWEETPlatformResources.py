@@ -35,6 +35,10 @@ class SWEETPlatformResources(InfoError):
 		# Maximum wallclock seconds
 		self.max_wallclock_seconds = None
 
+		# Number of oversubscribed cores
+		# These are the total logically available cores
+		# For hyperthreading, these are e.g. the physical ones plus the hyperthreaded ones
+		self.num_oversubscribed_cores_per_socket = None
 
 
 	def setup(self):
@@ -78,6 +82,10 @@ class SWEETPlatformResources(InfoError):
 			self.error("self.num_sockets_per_node == None")
 
 
+		# Initialize oversubscribed cores per default with number of cores per socket
+		if self.num_oversubscribed_cores_per_socket == None:
+			self.num_oversubscribed_cores_per_socket = self.num_cores_per_socket
+
 
 
 	def print(self):
@@ -87,6 +95,7 @@ class SWEETPlatformResources(InfoError):
 		self.info("num_cores: "+str(self.num_cores))
 		self.info("num_cores_per_socket: "+str(self.num_cores_per_socket))
 		self.info("num_sockets_per_node: "+str(self.num_sockets_per_node))
+		self.info("num_oversubscribed_cores_per_socket: "+str(self.num_oversubscribed_cores_per_socket))
 		self.info("max_wallclock_seconds: "+str(self.max_wallclock_seconds))
 
 
