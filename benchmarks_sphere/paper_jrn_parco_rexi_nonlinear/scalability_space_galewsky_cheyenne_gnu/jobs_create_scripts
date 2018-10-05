@@ -395,7 +395,7 @@ if __name__ == "__main__":
 					p.gen_jobscript_directory('script_'+prefix_string_template+p.getUniqueID(unique_id_filter))
 
 				else:
-					params_ci_N = [30]
+					params_ci_N = [128]
 					params_ci_max_imag = [30.0]
 					params_ci_max_real = [10.0]
 
