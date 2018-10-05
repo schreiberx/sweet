@@ -2,13 +2,14 @@
 #
 # SWEET Compiler environment
 #
-export SWEET_CC=gcc-6
-export SWEET_CXX=g++-6
-export SWEET_F90=gfortran-6
+export SWEET_CC=gcc-8.2
+export SWEET_CXX=g++-8.2
+export SWEET_F90=gfortran-8.2
 
 export SWEET_MPICC=mpicc
 export SWEET_MPICXX=mpic++
 export SWEET_MPIF90=mpif90
+
 
 export SWEET_LINK=$SWEET_CXX
 export SWEET_MPILINK=$SWEET_MPICXX

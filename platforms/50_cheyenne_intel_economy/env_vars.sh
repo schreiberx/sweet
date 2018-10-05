@@ -17,9 +17,22 @@ done
 # Compiler environment
 #
 
-export SWEET_CC=icc
-export SWEET_CXX=icpc
-export SWEET_F90=ifort
+
+#
+# DO NOT USE icc, icpc or ifort directly on Cheyenne!
+# These are python scripts which mess around with the libraries!!!
+#
+# Use e.g.
+# icpc --show
+# to see what's really executed for the compiler
+#
+#export SWEET_CC=icc
+#export SWEET_CXX=icpc
+#export SWEET_F90=ifort
+
+export SWEET_CC=/glade/u/apps/opt/intel/2018u1/compilers_and_libraries/linux/bin/intel64/icc
+export SWEET_CXX=/glade/u/apps/opt/intel/2018u1/compilers_and_libraries/linux/bin/intel64/icpc
+export SWEET_F90=/glade/u/apps/opt/intel/2018u1/compilers_and_libraries/linux/bin/intel64/ifort
 
 export SWEET_MPICC=mpicc
 export SWEET_MPICXX=mpicxx

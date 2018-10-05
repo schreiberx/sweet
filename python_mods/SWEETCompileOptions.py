@@ -655,7 +655,7 @@ class SWEETCompileOptions(InfoError):
 		return exec_name
 
 
-	def getUniqueID(self, i_filter):
+	def getUniqueID(self, i_filter_list = []):
 		"""
 		Return a unique ID including *all* string and number attributes of this class
 
@@ -666,19 +666,21 @@ class SWEETCompileOptions(InfoError):
 
 
 
-	def getUniqueParID(self, i_filter):
+	def getUniqueParID(self, i_filter_list = []):
 		"""
 		TODO: Get rid of this!
 		"""
-		retval = 'COMP'
-		if self.sweet_mpi == 'enable':
-			retval+='_mpi'
+		retval = ""
+		if not 'compiler_parallelization' in i_filter_list:
+			retval = 'COMP'
+			if self.sweet_mpi == 'enable':
+				retval+='_mpi'
 
-		if self.threading in ['omp']:
-			retval+='_'+self.threading
+			if self.threading in ['omp']:
+				retval+='_'+self.threading
 
-		if self.rexi_thread_parallel_sum == 'enable':
-			retval+='_rxthpar'
+			if self.rexi_thread_parallel_sum == 'enable':
+				retval+='_rxthpar'
 
 		return retval
 

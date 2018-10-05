@@ -24,7 +24,7 @@ p.compile.plane_spectral_dealiasing = 'disable'
 p.compile.sphere_spectral_space = 'enable'
 p.compile.sphere_spectral_dealiasing = 'enable'
 
-
+filter_list = ['simparams', 'parallelization', 'benchmark', 'rexi_params', 'compiler_parallelization' ]
 
 # Enable quad math per default for CI REXI method
 p.compile.quadmath = 'enable'
@@ -153,5 +153,5 @@ if __name__ == "__main__":
 				s = tsm[4]
 				p.runtime.load_from_dict(tsm[4])
 
-			p.gen_jobscript_directory('script_'+p.getUniqueID())
+			p.gen_jobscript_directory('script_'+p.getUniqueID(filter_list))
 
