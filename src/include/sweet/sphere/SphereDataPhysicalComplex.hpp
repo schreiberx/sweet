@@ -2,7 +2,7 @@
  * SphereDataPhysicalComplex.hpp
  *
  *  Created on: 3 Mar 2017
- *      Author: Martin Schreiber <SchreiberX@gmail.com> Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <schreiberx@gmail.com>
  */
 
 #ifndef SPHERE_DATA_PHYSICAL_COMPLEX_HPP_

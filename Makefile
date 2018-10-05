@@ -6,3 +6,7 @@ clean:
 	rm -rf build
 	rm -rf /tmp/scons_build_*
 	rm -rf python_mods/*.pyc
+
+	rm -rf shtns
+	rm -rf shtns_fftw
+	rm -rf sweet_fftw

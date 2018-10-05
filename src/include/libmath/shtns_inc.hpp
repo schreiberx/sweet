@@ -2,7 +2,7 @@
  * shtns_inc.hpp
  *
  *  Created on: 25 Aug 2016
- *      Author: Martin Schreiber <SchreiberX@gmail.com> Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <schreiberx@gmail.com>
  */
 
 #ifndef SRC_INCLUDE_LIBMATH_SHTNS_INC_HPP_

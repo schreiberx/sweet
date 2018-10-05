@@ -52,6 +52,16 @@ class SWEETParallelization(InfoError):
 		# Force disabling of turbo mode (if supported)
 		self.force_turbo_off = False
 
+		# Qualitative settings
+
+		# Allow oversubscription (aka Hyperthreading)
+		self.core_oversubscription = False
+
+		# affinities:
+		# compact, scatter
+		self.core_affinity = None
+		
+
 
 	def reset(self):
 		"""
@@ -86,6 +96,27 @@ class SWEETParallelization(InfoError):
 		# List with parallelization information in each dimension
 		# Note, that space dimension can and should be treated as a single dimension
 		self.pardims = None
+
+
+	def get_max_wallclock_seconds_hh_mm_ss(self):
+		"""
+		Return properly formatted self.max_wallclock_seconds usable for job scripts
+		"""
+		secs = self.max_wallclock_seconds
+		# seconds
+		s = int(secs)
+		m = s // 60
+		s = s % 60
+		h = m // 60
+		m = m % 60
+
+		stest = h*60*60 + m*60 + s
+		if int(secs) != stest:
+			print(secs)
+			print(stest)
+			raise Exception("Internal error!")
+
+		return str(h).zfill(2)+":"+str(m).zfill(2)+":"+str(s).zfill(2)
 
 
 

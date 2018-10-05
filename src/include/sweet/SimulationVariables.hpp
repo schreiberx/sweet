@@ -1330,7 +1330,7 @@ public:
 				std::cout << "					-1: use only estimated plans (no wisdom)" << std::endl;
 				std::cout << "					0: compute optimized plans (no wisdom)" << std::endl;
 				std::cout << "					1: compute optimized plans, use wisdom if available and store wisdom" << std::endl;
-				std::cout << "					2: use wisdom if available if not, trigger error (not yet working for SHTNS)" << std::endl;
+				std::cout << "					2: use wisdom if available if not, trigger error if wisdom doesn't exist (not yet working for SHTNS)" << std::endl;
 				std::cout << "					default: -1 (quick mode)" << std::endl;
 				std::cout << "" << std::endl;
 				rexi.outputProgParams();

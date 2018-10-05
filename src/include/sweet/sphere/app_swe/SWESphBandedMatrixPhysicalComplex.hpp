@@ -2,7 +2,7 @@
  * SPHSolverComplex.hpp
  *
  *  Created on: 31 Aug 2016
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk> Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <schreiberx@gmail.com>
  */
 
 #ifndef SRC_INCLUDE_SPH_BANDED_MATRIX_COMPLEX_HPP_
