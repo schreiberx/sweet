@@ -65,7 +65,7 @@ function config_package()
 	if [ "$1" = "FORCE"  ]; then
 		echo_warning "FORCE detected => reinstallation of package"
 	else
-		if [ -e "${PKG_INSTALLED_FILE}" ]; then
+		if [ -d "${PKG_INSTALLED_FILE}" ]; then
 			echo_warning_hline
 			echo_warning "The package '${PKG_NAME}' is already installed"
 			echo_warning "Use"
@@ -164,6 +164,12 @@ function config_make_clean()	# make clean
 function config_make_install()	# make install
 {
 	M="make $MAKE_DEFAULT_OPTS $@ install"
+	echo_info "Executing '${M}'"
+	$M || echo_error_exit "FAILED '${M}'"
+}
+function config_exec()
+{
+	M="$@"
 	echo_info "Executing '${M}'"
 	$M || echo_error_exit "FAILED '${M}'"
 }
