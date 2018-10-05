@@ -359,8 +359,15 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
 		"""
 		self.parallelization.dummy_setup_if_no_setup(self.platform_resources)
 		unique_id = self.runtime.getUniqueID(self.compile, i_filter)
-		unique_id += '_'+self.compile.getUniqueParID(i_filter)
-		unique_id += '_'+self.parallelization.getUniqueID(i_filter)
+
+		s = self.compile.getUniqueParID(i_filter)
+		if s != '':
+			unique_id += '_'+s
+
+		s = self.parallelization.getUniqueID(i_filter)
+		if s != '':
+			unique_id += '_'+s
+
 		return unique_id
 
 

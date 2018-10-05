@@ -670,6 +670,7 @@ class SWEETCompileOptions(InfoError):
 		"""
 		TODO: Get rid of this!
 		"""
+		retval = ""
 		if not 'compiler_parallelization' in i_filter_list:
 			retval = 'COMP'
 			if self.sweet_mpi == 'enable':
