@@ -440,7 +440,28 @@ if __name__ == "__main__":
 		#
 
 		p.user_script_exec_prefix = p.user_script_exec_prefix_z
-		p.runtime.reuse_plans = 1	# search for awesome plans and store them
+
+		#
+		# -1: Quick mode:
+		#	estimate plan as fast as possible (might be sub optimal)
+		#	(estimate only, compute)
+		#
+		#  0: Optimize plan:
+		#	Always generate the plan
+		#	(generate, compute)
+		#
+		#  1: Reuse and store plan:
+		#	Load the plan if file exists
+		#	If plan doesn't exist, generate optimal plan (similar to option 0)
+		#	Store the plan
+		#	(load|generate, store, compute)
+		#
+		#  2: Enforce existing plan:
+		#	Load existing plan, fail if plan doesn't exist
+		#	Don't store plan
+		#	(load, compute)
+		#
+		p.runtime.reuse_plans = -1
 
 		#
 		# Create dummy scripts to be used for SHTNS script generation
