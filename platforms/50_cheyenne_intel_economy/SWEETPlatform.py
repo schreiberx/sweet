@@ -130,18 +130,30 @@ def jobscript_get_header(j : SWEETJobGeneration):
 	if p.force_turbo_off:
 		content += "#PBS -l select=cpufreq=2300000\n"
 
+	ld_library_path = sys.getenv('LD_LIBRARY_PATH')
+
 	content += """#
 #PBS -N """+_job_id[0:100]+"""
 #PBS -o """+j.p_job_stdout_filepath+"""
 #PBS -e """+j.p_job_stderr_filepath+"""
 
-source /etc/profile.d/modules.sh
+#source /etc/profile.d/modules.sh
 
 #module load openmpi
 """+("module load mkl" if j.compile.mkl==True or j.compile.mkl=='enable' else "")+"""
 
 
 """+p_gen_script_info(j)+"""
+
+# Make sure that SWEET library path is really known
+export LD_LIBRARY_PATH=\""""+ld_library_path+""":$LD_LIBRARY_PATH\"
+
+
+echo
+echo "LD_LIBRARY_PATH"
+echo "${LD_LIBRARY_PATH}"
+echo
+
 
 echo
 echo "hostname"
@@ -158,7 +170,6 @@ echo "CPU Frequencies (uniquely reduced):"
 cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq | sort -u
 echo
 
-
 """
 
 	if j.compile.threading != 'off':
@@ -166,11 +177,18 @@ echo
 export OMP_NUM_THREADS="""+str(p.num_threads_per_rank)+"""
 """
 
-	content += """
+	if p.core_oversubscription:
+		raise Exception("Not supported with this script!")
 
-export OMP_PROC_BIND=close
-
-"""
+	if p.core_affinity != None:
+		
+		content += "\necho \"Affnity: "+str(p.core_affinity)+"\"\n"
+		if p.core_affinity == 'compact':
+			content += "\nexport OMP_PROC_BIND=close\n"
+		elif p.core_affinity == 'scatter':
+			content += "\nexport OMP_PROC_BIND=spread\n"
+		else:
+			raise Exception("Affinity '"+str(p.core_affinity)+"' not supported")
 
 	return content
 
