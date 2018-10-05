@@ -494,7 +494,8 @@ int main(
 					simVars.disc.res_spectral[0],
 					simVars.disc.res_spectral[1],
 					&simVars.disc.res_physical[0],
-					&simVars.disc.res_physical[1]
+					&simVars.disc.res_physical[1],
+					simVars.misc.reuse_spectral_transformation_plans
 			);
 
 	run_tests(&sphereDataConfig);
