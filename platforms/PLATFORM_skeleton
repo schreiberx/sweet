@@ -1,9 +1,7 @@
 #! /bin/bash
 
-
-
-# Expand wildcards
-SCRIPT="$(echo ${SWEET_ROOT}/platforms/??_${SWEET_PLATFORM}/$(basename $0))"
+# Script path
+SCRIPT="$(echo -n ${SWEET_PLATFORM_DIR}/$(basename $0))"
 
 # check if this script exists
 if [ ! -e "$SCRIPT" ]; then

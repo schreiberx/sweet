@@ -1,14 +1,7 @@
 #
-# Configuration file for CoolMUC mpp2 login nodes
+# How to express dependency in job scheduler
 #
-
-
-#
-# Tags in header of batch files
-#
-# This is important for the SHTNS plan generation scripts
-#
-export BATCH_FILE_TAG="#SBATCH"
+export JOB_SCHEDULER_DEPENDENCY="--dependency=afterany:%JOBID%"
 
 
 echo "Loading GCC/8"
@@ -25,6 +18,7 @@ module load gcc/8
 #
 # Compiler environment
 #
+
 export SWEET_CC=gcc
 export SWEET_CXX=g++
 export SWEET_F90=gfortran

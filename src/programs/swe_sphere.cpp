@@ -813,7 +813,7 @@ int main(int i_argc, char *i_argv[])
 	if (simVars.misc.verbosity > 3)
 		std::cout << " + setup FFT plane transformations..." << std::endl;
 
-	planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical);
+	planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical, simVars.misc.reuse_spectral_transformation_plans);
 #endif
 
 	std::ostringstream buf;
@@ -890,6 +890,7 @@ int main(int i_argc, char *i_argv[])
 				if (mpi_rank == 0)
 					std::cout << "TIMER RESET" << std::endl;
 #endif
+				bool instability = false;
 				SimulationBenchmarkTimings::getInstance().main_timestepping.start();
 
 				// Main time loop
@@ -899,31 +900,32 @@ int main(int i_argc, char *i_argv[])
 					if (simulationSWE->should_quit())
 						break;
 
-					// Do the output here before the quit check.
-					// This assures that in case of writing the data for the 1st and last time step,
-					// this is not included in the timings
+					// Test for some output to be done
 					simulationSWE->timestep_check_output();
 
 					// Main call for timestep run
 					simulationSWE->run_timestep();
 
 					// Instability
-					if (simVars.misc.stability_checks)
+					if (simVars.misc.instability_checks)
 					{
 						if (simulationSWE->detect_instability())
 						{
 							std::cout << "INSTABILITY DETECTED" << std::endl;
+							std::cerr << "INSTABILITY DETECTED" << std::endl;
+							instability = true;
+							// IMPORANT: EXIT IN CASE OF INSTABILITIES
+							exit(1);
 							break;
 						}
 					}
 				}
 
-				// Do some output after the time loop
-				simulationSWE->timestep_check_output();
-
 				// Stop counting time
 				SimulationBenchmarkTimings::getInstance().main_timestepping.stop();
 
+				// Do some output after the time loop
+				simulationSWE->timestep_check_output();
 #if SWEET_MPI
 				MPI_Barrier(MPI_COMM_WORLD);
 
@@ -931,9 +933,6 @@ int main(int i_argc, char *i_argv[])
 				if (mpi_rank == 0)
 					std::cout << "TIMER STOP" << std::endl;
 #endif
-
-				// Output final time step output!
-				simulationSWE->timestep_check_output();
 			}
 
 

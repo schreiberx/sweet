@@ -1,14 +1,8 @@
 #
-# Configuration file for CoolMUC mpp2 login nodes
+# Tag in header of job subscription files to express dependency to another job
+# This is highly important for the plan generation of spectral transformations
 #
-
-
-#
-# Tags in header of batch files
-#
-# This is important for the SHTNS plan generation scripts
-#
-export BATCH_FILE_TAG="#PBS"
+export JOB_SCHEDULER_DEPENDENCY="-W depend=afterany:%JOBID%"
 
 
 MODULES="intel/18.0.1"
