@@ -16,7 +16,7 @@ config_package $@
 echo_info "Downloading additional packages"
 ./contrib/download_prerequisites || echo_error_exit "Failed to download other required packages"
 
-config_configure --disable-multilib --enable-languages=c++,fortran  --prefix="$DST_DIR" --program-suffix=-8.2
+config_configure --disable-multilib --enable-languages=c++,fortran  --prefix=$DST_DIR --program-suffix=-8.2
 
 config_make_default_install
 
