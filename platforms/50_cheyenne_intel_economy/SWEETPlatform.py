@@ -1,6 +1,7 @@
 import platform
 import socket
 import sys
+import os
 
 from SWEET import *
 from . import SWEETPlatformAutodetect
@@ -130,7 +131,7 @@ def jobscript_get_header(j : SWEETJobGeneration):
 	if p.force_turbo_off:
 		content += "#PBS -l select=cpufreq=2300000\n"
 
-	ld_library_path = sys.getenv('LD_LIBRARY_PATH')
+	ld_library_path = os.getenv('LD_LIBRARY_PATH')
 
 	content += """#
 #PBS -N """+_job_id[0:100]+"""

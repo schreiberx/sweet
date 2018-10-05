@@ -52,6 +52,16 @@ class SWEETParallelization(InfoError):
 		# Force disabling of turbo mode (if supported)
 		self.force_turbo_off = False
 
+		# Qualitative settings
+
+		# Allow oversubscription (aka Hyperthreading)
+		self.core_oversubscription = False
+
+		# affinities:
+		# compact, scatter
+		self.core_affinity = None
+		
+
 
 	def reset(self):
 		"""
