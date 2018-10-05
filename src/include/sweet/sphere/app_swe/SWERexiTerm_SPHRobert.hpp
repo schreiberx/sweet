@@ -2,7 +2,7 @@
  * SWE_REXI_SPH.hpp
  *
  *  Created on: 30 Aug 2016
- *      Author: Martin Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <schreiberx@gmail.com>
  */
 
 #ifndef SRC_SWEREXI_SPHROBERT_HPP_

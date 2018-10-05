@@ -2,7 +2,7 @@
  * PlaneDataConfig.hpp
  *
  *  Created on: 17 Oct 2016
- *      Author: Martin Schreiber <SchreiberX@gmail.com> Schreiber <M.Schreiber@exeter.ac.uk>
+ *      Author: Martin Schreiber <schreiberx@gmail.com>
  */
 
 #ifndef PLANE_DATA_CONFIG_HPP_
@@ -78,9 +78,10 @@ public:
 	std::size_t physical_array_data_number_of_elements;
 
 	/// reutilize spectral transformation plans (wisdom for FFTW plans)
-	/// -1: estimate plan
-	/// 0: no reutilization
+	/// -1: estimate plan as fast as possible
+	/// 0: no reutilization, always create new plan
 	/// 1: try to reutilize the plan
+	/// 2: try to reutilize the plan, fail if plan doesn't exist
 	int reuse_spectral_transformation_plans;
 
 

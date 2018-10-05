@@ -21,8 +21,14 @@
 
 #include <cstddef>
 #include <cassert>
-#include <sys/time.h>
 
+#define SWEET_TIMER_CHRONO	1
+
+#if SWEET_TIMER_CHRONO
+#	include <chrono>
+#else
+#	include <sys/time.h>
+#endif
 
 /**
  * \brief start, stop, continue and restart a virtual stopwatch
@@ -33,8 +39,15 @@ class Stopwatch
 	 * some storage for the time values at start of stopwatch and at stop of stopwatch
 	 */
 private:
+
+#if SWEET_TIMER_CHRONO
+	std::chrono::time_point<std::chrono::system_clock> timevalue_start;	///< time value of last start
+	std::chrono::time_point<std::chrono::system_clock> timevalue_stop;	///< time value of last stop
+#else
+
 	struct timeval timevalue_start;	///< time value of last start
 	struct timeval timevalue_stop;	///< time value of last stop
+#endif
 
 	int recursive_counter;	/// count recursions to support nested calls
 
@@ -72,7 +85,11 @@ public:
 	inline void start()
 	{
 		if (recursive_counter == 0)
+#if SWEET_TIMER_CHRONO
+			timevalue_start = std::chrono::system_clock::now();
+#else
 			gettimeofday(&timevalue_start, NULL);
+#endif
 
 		recursive_counter++;
 	}
@@ -89,12 +106,18 @@ public:
 
 		if (recursive_counter == 0)
 		{
+#if SWEET_TIMER_CHRONO
+			timevalue_stop = std::chrono::system_clock::now();
+
+			time += ((std::chrono::duration<double>)(timevalue_stop-timevalue_start)).count();
+#else
 			gettimeofday(&timevalue_stop, NULL);
 
 			time_t dsec = timevalue_stop.tv_sec - timevalue_start.tv_sec;
 			suseconds_t dsusec = timevalue_stop.tv_usec - timevalue_start.tv_usec;
 
 			time += (double)dsec + (double)dsusec/1000000.0;
+#endif
 		}
 	}
 
@@ -104,26 +127,20 @@ public:
 	 */
 	inline double getTimeSinceStart()
 	{
+#if SWEET_TIMER_CHRONO
+		timevalue_stop = std::chrono::system_clock::now();
+
+		return ((std::chrono::duration<double>)(timevalue_stop-timevalue_start)).count();
+#else
 		gettimeofday(&timevalue_stop, NULL);
 
 		time_t dsec = timevalue_stop.tv_sec - timevalue_start.tv_sec;
 		suseconds_t dsusec = timevalue_stop.tv_usec - timevalue_start.tv_usec;
 
 		return time + (double)dsec + (double)dsusec/1000000.0;
+#endif
 	}
 
-
-	/**
-	 * return the current time value in seconds
-	 *
-	 * This has nothing to do with a stop watch and is only a convenient feature to access the current time value
-	 */
-	inline static double getCurrentClockSeconds()
-	{
-		struct timeval timevalue;		///< time value of last stop
-		gettimeofday(&timevalue, NULL);
-		return (double)timevalue.tv_sec + (double)timevalue.tv_usec/1000000.0f;
-	}
 
 	/**
 	 * return the time in seconds
