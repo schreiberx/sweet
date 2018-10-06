@@ -21,6 +21,8 @@ p.runtime.mode_res = 128
 p.runtime.reuse_plans = 2	# enforce using plans (todo, enforcing not yet implemented)!
 p.compile.threading = 'omp'
 
+p.parallelization.core_affinity = 'compact'
+
 gen_reference_solution = False
 
 #p.runtime.simtime = 432000 #timestep_size_reference*(2**6)*10
@@ -126,16 +128,6 @@ def estimateWallclockTime(p):
 	wallclock_seconds += safety_add
 
 	return wallclock_seconds
-
-
-p.user_script_exec_prefix += """
-
-# Manual override in jobs_create.py
-# Override OMP_NUM_THREADS and use MASTER binding
-#export OMP_NUM_THREADS=1
-export OMP_PROC_BIND=close
-
-"""
 
 p.compile.lapack = 'enable'
 p.compile.mkl = 'disable'
