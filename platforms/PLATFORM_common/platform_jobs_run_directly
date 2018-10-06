@@ -6,7 +6,7 @@
 
 
 if [ -z "$1" ]; then
-	DIRS=script_*
+	DIRS=job_*
 else
 	DIRS=$@
 fi
