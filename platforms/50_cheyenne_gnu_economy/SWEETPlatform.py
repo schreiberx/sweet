@@ -267,15 +267,14 @@ def jobscript_get_exec_command(j : SWEETJobGeneration):
 		if j.compile.sweet_mpi == 'enable':
 			mpiexec = "mpiexec_mpt -n "+str(p.num_ranks)
 
-			if False:
-				mpiexec += " omplace "
-				#mpiexec += " -nt "+str(p.num_threads_per_rank)+" "
-				mpiexec += " -nt "+str(p.num_cores_per_rank)+" "
-				# Don't know if intel mode really works with gnu
-				mpiexec += " -tm intel "
-				mpiexec += " -vv"
-				if mpiexec[-1] != ' ':
-					mpiexec += ' '
+			mpiexec += " omplace "
+			#mpiexec += " -nt "+str(p.num_threads_per_rank)+" "
+			mpiexec += " -nt "+str(p.num_cores_per_rank)+" "
+			# Don't know if intel mode really works with gnu
+			mpiexec += " -tm intel "
+			mpiexec += " -vv"
+			if mpiexec[-1] != ' ':
+				mpiexec += ' '
 
 	#
 	# Fix the mess on Cheyenne!

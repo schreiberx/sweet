@@ -23,7 +23,8 @@ class SWEETRuntimeOptions(InfoError):
 		# Deactivated per default for more performance
 		self.instability_checks = 0
 
-		self.floating_point_output_digits = -1
+		# Use 14 digits per default
+		self.floating_point_output_digits = 12
 
 		self.timestepping_method = 'ln_erk'
 		self.timestepping_order = 1

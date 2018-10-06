@@ -70,6 +70,29 @@ p.sconsProcessOptions()
 
 p.makeOptionsConsistent()
 
+if p.libfft == 'enable':
+
+	env.Append(CXXFLAGS = ' -DSWEET_USE_LIBFFT=1')
+
+	if p.mkl == 'enable':
+		print("INFO: Using Intel MKL instead of FFTW");
+
+		if p.threading != 'omp':
+			env.Append(CXXFLAGS=['-mkl=sequential'])
+			env.Append(LINKFLAGS=['-mkl=sequential'])
+		else:
+			env.Append(CXXFLAGS=['-mkl=parallel'])
+			env.Append(LINKFLAGS=['-mkl=parallel'])
+
+	else:
+		if p.threading == 'omp':
+			env.Append(LIBS=['fftw3_omp'])
+
+		env.Append(LIBS=['fftw3'])
+else:
+	env.Append(CXXFLAGS = ' -DSWEET_USE_LIBFFT=0')
+
+
 
 if p.libxml == 'enable':
 	env.ParseConfig("xml2-config --cflags --libs")
@@ -548,28 +571,6 @@ if p.libsph == 'enable':
 	if p.compiler == 'gnu':
 		env.Append(LIBS=['gfortran'])
 
-
-if p.libfft == 'enable':
-
-	env.Append(CXXFLAGS = ' -DSWEET_USE_LIBFFT=1')
-
-	if p.mkl == 'enable':
-		print("INFO: Using Intel MKL instead of FFTW");
-
-		if p.threading != 'omp':
-			env.Append(CXXFLAGS=['-mkl=sequential'])
-			env.Append(LINKFLAGS=['-mkl=sequential'])
-		else:
-			env.Append(CXXFLAGS=['-mkl=parallel'])
-			env.Append(LINKFLAGS=['-mkl=parallel'])
-
-	else:
-		if p.threading == 'omp':
-			env.Append(LIBS=['fftw3_omp'])
-
-		env.Append(LIBS=['fftw3'])
-else:
-	env.Append(CXXFLAGS = ' -DSWEET_USE_LIBFFT=0')
 
 
 if p.mic == 'enable':
