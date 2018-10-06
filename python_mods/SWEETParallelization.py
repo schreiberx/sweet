@@ -33,10 +33,10 @@ class SWEETParallelization(InfoError):
 		MPI rank
 
 	"""
-	def __init__(self):
+	def __init__(self, dummy_init = False):
 		InfoError.__init__(self, "SWEETParallelization")
 
-		self.reset()
+		self.reset(dummy_init)
 
 		#
 		# WARNIING:
@@ -63,7 +63,7 @@ class SWEETParallelization(InfoError):
 		
 
 
-	def reset(self):
+	def reset(self, dummy_init = False):
 		"""
 		Reset functionality for a fresh configuration in case that a new setup is triggered
 		"""

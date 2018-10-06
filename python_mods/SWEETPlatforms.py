@@ -53,9 +53,9 @@ class SWEETPlatforms(InfoError):
 
 		self.platforms_dir = os.path.normpath(self.sweetroot+'/platforms/')
 
-		self.hline()
-		self.info("Platforms description path: "+self.platforms_dir)
-
+		if not dummy_init:
+			self.hline()
+			self.info("Platforms description path: "+self.platforms_dir)
 
 		# Required interfaces by platforms
 		self.interface_names = {
@@ -76,8 +76,7 @@ class SWEETPlatforms(InfoError):
 
 		self.platform_id = None
 
-		if not dummy_init:
-			self.__setup()
+		self.__setup(dummy_init)
 
 
 
@@ -111,9 +110,13 @@ class SWEETPlatforms(InfoError):
 	self.platform: Target platform
 	"""
 	def __setup(
-			self
+			self,
+			dummy_init = False
 	):
 		self.platforms = {}
+
+		if dummy_init:
+			return
 
 		# Iterate over all possible packages
 		files = os.listdir(self.platforms_dir)

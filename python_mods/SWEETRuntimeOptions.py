@@ -7,7 +7,7 @@ __all__ = ['SWEETRuntimeOptions']
 
 class SWEETRuntimeOptions(InfoError):
 
-	def __init__(self):
+	def __init__(self, dummy_init = False):
 		InfoError.__init__(self, "SWEETRuntimeOptions")
 
 	#	self.mode_res = 32

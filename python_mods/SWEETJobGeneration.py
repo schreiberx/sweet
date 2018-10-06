@@ -7,6 +7,7 @@ import stat
 from SWEETCompileOptions import *
 from SWEETRuntimeOptions import *
 from SWEETPlatforms import *
+from SWEETPlatformResources import *
 from InfoError import *
 from SWEETParallelization import *
 
@@ -21,20 +22,28 @@ class SWEETJobGeneration(InfoError):
 		if self.sweetroot == None:
 			self.error("SWEET environment variables not loaded!")
 
-
 		# Setup all options
-		self.compile : SWEETCompileOptions = SWEETCompileOptions()
-		self.runtime : SWEETRuntimeOptions = SWEETRuntimeOptions()
-		self.parallelization : SWEETParallelization = SWEETParallelization()
+		self.compile : SWEETCompileOptions = SWEETCompileOptions(dummy_init=dummy_init)
+		self.runtime : SWEETRuntimeOptions = SWEETRuntimeOptions(dummy_init=dummy_init)
+		self.parallelization : SWEETParallelization = SWEETParallelization(dummy_init=dummy_init)
 
-		self.platforms = SWEETPlatforms(platform_id_override, dummy_init)
-		self.platform_functions = self.platforms.functions
+		self.platforms = SWEETPlatforms(platform_id_override, dummy_init=dummy_init)
 
-		self.platform_resources = self.platform_functions.get_platform_resources()
+		if dummy_init:
+			self.platform_resources = SWEETPlatformResources()
 
-		# Setup all hardware print_information which also ensures consistency
-		self.platform_resources.setup()
-		self.platform_resources.print()
+			self.platform_id = "DUMMY"
+
+		else:
+			self.platform_functions = self.platforms.functions
+			self.platform_resources = self.platform_functions.get_platform_resources()
+
+			# Setup all hardware print_information which also ensures consistency
+			self.platform_resources.setup()
+			self.platform_resources.print()
+
+			self.platform_id = self.platform_functions.get_platform_id()
+
 
 		# Userdefined data for script header
 		self.user_script_header = ''
@@ -141,7 +150,7 @@ class SWEETJobGeneration(InfoError):
 		content += self.platform_functions.jobscript_get_header(self)
 		content += self.user_script_header
 		content += "# %SCRIPT_HEADER%\n"
-			
+
 		content += """
 
 # Provide platform ID helper for scripts.
@@ -379,47 +388,59 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
 		return unique_id
 
 
+	def __get_sub_attributes(self, obj):
+		attr_dict = {}
+		obj_string_attributes = [a for a in dir(obj) if not a.startswith('__') and not callable(getattr(obj,a))]
+		for attr in obj_string_attributes:
+			a = getattr(obj, attr)
+			if not isinstance(a, (float, int, str)):
+				continue
+			attr_dict[attr] = getattr(obj, attr)
+		return attr_dict
+
+
+	def get_attributes_dict(self):
+		attr_dict = {}
+		attr_dict['compile'] = self.__get_sub_attributes(self.compile)
+		attr_dict['runtime'] = self.__get_sub_attributes(self.runtime)
+		attr_dict['parallelization'] = self.__get_sub_attributes(self.parallelization)
+		#attr_dict['platforms_platform'] = self.__get_sub_attributes(self.platforms.platform)
+		attr_dict['platform_resources'] = self.__get_sub_attributes(self.platform_resources)
+		attr_dict['platform_id'] = self.platform_id
+		return attr_dict
+
 
 	def save_file(self, filename):
 		import pickle
 
-		def get_string_attributes(obj):
-			attr_dict = {}
-			obj_string_attributes = [a for a in dir(obj) if not a.startswith('__') and not callable(getattr(obj,a))]
-			for attr in obj_string_attributes:
-				a = getattr(obj, attr)
-				if not isinstance(a, (float, int, str)):
-					continue
-				attr_dict[attr] = getattr(obj, attr)
-			return attr_dict
-
-		attr_dict = {}
-		attr_dict['compile'] = get_string_attributes(self.compile)
-		attr_dict['runtime'] = get_string_attributes(self.runtime)
-		attr_dict['parallelization'] = get_string_attributes(self.parallelization)
-		attr_dict['platforms_platform'] = get_string_attributes(self.platforms.platform)
-		attr_dict['platform_resources'] = get_string_attributes(self.platform_resources)
+		attr_dict = self.get_attributes_dict()
 
 		with open(filename, 'wb') as f:
 			# Pickle the 'data' dictionary using the highest protocol available.
 			pickle.dump(attr_dict, f, pickle.HIGHEST_PROTOCOL)
 
-	def load_file(self, filename):
+
+	def load_attributes_dict(self, filename):
 		import pickle
 
+		with open(filename, 'rb') as f:
+			# Pickle the 'data' dictionary using the highest protocol available.
+			return pickle.load(f)
+		
+
+	def load_file(self, filename):
 		def set_string_attributes(obj, attr_dict):
 			for key, attr in attr_dict.items():
 				setattr(obj, key, attr)
 
-		with open(filename, 'rb') as f:
-			# Pickle the 'data' dictionary using the highest protocol available.
-			data = pickle.load(f)
+		data = self.load_attributes_dict(filename)
 
-			set_string_attributes(self.compile, data['compile'])
-			set_string_attributes(self.runtime, data['runtime'])
-			set_string_attributes(self.parallelization, data['parallelization'])
-			set_string_attributes(self.platforms.platform, data['platforms_platform'])
-			set_string_attributes(self.platform_resources, data['platform_resources'])
+		set_string_attributes(self.compile, data['compile'])
+		set_string_attributes(self.runtime, data['runtime'])
+		set_string_attributes(self.parallelization, data['parallelization'])
+		#set_string_attributes(self.platforms.platform, data['platforms_platform'])
+		set_string_attributes(self.platform_resources, data['platform_resources'])
+		self.platform_id = data['platform_id']
 
 
 
