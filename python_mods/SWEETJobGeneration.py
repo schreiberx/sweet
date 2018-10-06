@@ -14,7 +14,7 @@ __all__ = ['SWEETJobGeneration']
 
 class SWEETJobGeneration(InfoError):
 
-	def __init__(self, platform_id_override = None):
+	def __init__(self, platform_id_override = None, dummy_init = False):
 		InfoError.__init__(self, "SWEETJobGeneration")
 
 		self.sweetroot = os.environ.get('SWEET_ROOT')
@@ -27,7 +27,7 @@ class SWEETJobGeneration(InfoError):
 		self.runtime : SWEETRuntimeOptions = SWEETRuntimeOptions()
 		self.parallelization : SWEETParallelization = SWEETParallelization()
 
-		self.platforms = SWEETPlatforms(platform_id_override)
+		self.platforms = SWEETPlatforms(platform_id_override, dummy_init)
 		self.platform_functions = self.platforms.functions
 
 		self.platform_resources = self.platform_functions.get_platform_resources()

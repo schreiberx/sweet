@@ -15,7 +15,8 @@ class SWEETPlatforms(InfoError):
 
 	def __init__(	
 			self,
-			platform_id_override = None	# Override automatic detection of platform
+			platform_id_override = None,	# Override automatic detection of platform
+			dummy_init = False
 	):
 		"""
 		Initialize platform and setup target platform
@@ -75,12 +76,13 @@ class SWEETPlatforms(InfoError):
 
 		self.platform_id = None
 
-		self.p_setup()
+		if not dummy_init:
+			self.__setup()
 
 
 
 
-	def p_load_module_interfaces(
+	def __load_module_interfaces(
 			self,
 			module
 	):
@@ -108,7 +110,7 @@ class SWEETPlatforms(InfoError):
 	self.platforms:	Dictionary with all platforms
 	self.platform: Target platform
 	"""
-	def p_setup(
+	def __setup(
 			self
 	):
 		self.platforms = {}
@@ -131,7 +133,7 @@ class SWEETPlatforms(InfoError):
 			module = importlib.import_module(f+'.SWEETPlatform')
 			sys.path.remove(self.platforms_dir)
 
-			interfaces = self.p_load_module_interfaces(module)
+			interfaces = self.__load_module_interfaces(module)
 
 			platform_id = interfaces['get_platform_id']()
 

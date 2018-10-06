@@ -250,7 +250,7 @@ class SWEETRuntimeOptions(InfoError):
 			else:
 				if self.rexi_method == "file":
 					idstr += '_REXIFIL'
-					if not 'rexi_params' in filter:
+					if not 'rexi_params' in filter_list:
 						idstr += '_n'+str(self.rexi_file_n).zfill(8)
 						idstr += '_h'+str(self.rexi_file_h)
 						idstr += '_teabs'+str(self.rexi_file_test_abs).zfill(3)
@@ -258,14 +258,14 @@ class SWEETRuntimeOptions(InfoError):
 
 				elif self.rexi_method == "terry":
 					idstr += '_REXITER'
-					if not 'rexi_params' in filter:
+					if not 'rexi_params' in filter_list:
 						idstr += '_m'+str(self.rexi_terry_m).zfill(8)
 						idstr += '_h'+str(self.rexi_terry_h)
 
 				elif self.rexi_method == "ci":
 					idstr += '_REXICI'
 
-					if not 'rexi_params' in filter:
+					if not 'rexi_params' in filter_list:
 						idstr += '_n'+str(self.rexi_ci_n).zfill(8)
 						if self.rexi_ci_max_real > 0:
 							idstr += '_mr'+str(float(self.rexi_ci_max_real))
@@ -279,7 +279,7 @@ class SWEETRuntimeOptions(InfoError):
 						idstr += '_gfd'+str( "{:.4E}".format(self.rexi_ci_gaussian_filter_dt_norm))
 						idstr += '_gfe'+str( "{:.4E}".format(self.rexi_ci_gaussian_filter_exp_N))
 
-				if not 'rexi_params' in filter:
+				if not 'rexi_params' in filter_list:
 					idstr += '_nrm'+str(self.rexi_normalization)
 					idstr += '_hlf'+str(self.rexi_half_poles)
 					idstr += '_bf'+str(self.rexi_beta_cutoff)
@@ -296,7 +296,7 @@ class SWEETRuntimeOptions(InfoError):
 		if self.polvani_froude >= 0:
 			idstr += '_PF'+str(self.polvani_froude)
 
-		if not 'disc_space' in filter:
+		if not 'disc_space' in filter_list:
 			if self.mode_res != -1:
 				idstr += '_M'+str(self.mode_res).zfill(4)
 
