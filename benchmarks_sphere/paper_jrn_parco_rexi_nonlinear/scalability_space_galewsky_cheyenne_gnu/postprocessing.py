@@ -9,8 +9,7 @@ from matplotlib.lines import Line2D
 
 
 
-j = SWEETPostprocessing(verbosity=0)
-
+j = SWEETPostprocessing(verbosity=100)
 data_table = j.create_data_table_float(
 		['runtime.timestepping_method'],
 		'parallelization.num_threads_per_rank',
