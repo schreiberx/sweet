@@ -62,8 +62,8 @@ p.runtime.compute_error = 1
 p.runtime.rexi_sphere_preallocation = 1
 
 
-#params_compile_threading = ['omp', 'off']
-params_compile_threading = ['omp']
+params_compile_threading = ['omp', 'off']
+##params_compile_threading = ['omp']
 
 params_ext_modes = [0, 4]
 
@@ -145,23 +145,29 @@ if __name__ == "__main__":
 	# Create job scripts
 	#
 	for tsm in ts_methods[1:]:
+
+		p.runtime.timestepping_method = tsm[0]
+		p.runtime.timestepping_order = tsm[1]
+		p.runtime.timestepping_order2 = tsm[2]
+		p.runtime.rexi_use_direct_solution = tsm[3]
+
+		if len(tsm) > 4:
+			s = tsm[4]
+			p.runtime.load_from_dict(tsm[4])
+
 		for p.runtime.timestep_size in timestep_sizes:
+
 			for p.compile.threading in params_compile_threading:
-				for p.runtime.rexi_extended_modes in params_ext_modes:
+				if p.compile.threading == 'omp':
+					p.compile.rexi_thread_parallel_sum = 'disable'
+				else:
+					p.compile.rexi_thread_parallel_sum = 'enable'
 
-					if p.compile.threading == 'omp':
-						p.compile.rexi_thread_parallel_sum = 'disable'
-					else:
-						p.compile.rexi_thread_parallel_sum = 'enable'
+				if 'rexi_' in p.runtime.timestepping_method:
+					for p.runtime.rexi_extended_modes in params_ext_modes:
+						p.gen_jobscript_directory('job_'+p.getUniqueID(filter_list))
 
-					p.runtime.timestepping_method = tsm[0]
-					p.runtime.timestepping_order = tsm[1]
-					p.runtime.timestepping_order2 = tsm[2]
-					p.runtime.rexi_use_direct_solution = tsm[3]
-
-					if len(tsm) > 4:
-						s = tsm[4]
-						p.runtime.load_from_dict(tsm[4])
+				else:
+					p.runtime.rexi_extended_modes = 0
 
 					p.gen_jobscript_directory('job_'+p.getUniqueID(filter_list))
-

@@ -8,7 +8,7 @@ jc = imp.load_source('jobs_create_scripts', './jobs_create_scripts')
 
 
 import glob
-directories = glob.glob("script_*")
+directories = glob.glob("job_*")
 directories.sort()
 
 errors = []
