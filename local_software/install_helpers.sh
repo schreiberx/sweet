@@ -116,6 +116,7 @@ function config_package()
 	echo $LIST_TAR
 
 	if [ -z "${PKG_SRC_SUBDIR}" ]; then
+		echo_info "Detecting target directory"
 		LIST_OUTPUT="$($LIST_TAR || echo_error_exit 'Failed to determine content of archive')"
 		PKG_SRC_SUBDIR=$(echo "$LIST_OUTPUT" | head -n 1 | sed "s/\/.*//")
 		echo_info "Detected source foldername to be '${PKG_SRC_SUBDIR}'"
@@ -176,16 +177,21 @@ function config_exec()
 }
 
 # Combined functions
-function config_make_default_install()			# make; make install
+function config_configure_make_default()	# ./configure...; make ...;
 {
+	config_configure
 	config_make_default
-	config_make_install
 }
 function config_configure_make_default_install()	# ./configure...; make ...; make install
 {
 	config_configure
 	config_make_default
 	config_make_default_install
+}
+function config_make_default_install()			# make; make install
+{
+	config_make_default
+	config_make_install
 }
 
 

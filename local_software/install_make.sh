@@ -16,12 +16,12 @@ if [ "`uname -s`" != "Linux" ] && [ "`uname -s`" != "Darwin" ]; then
 	exit 1
 fi
 
-config_package $@
+config_package $@ || exit 1
 
-config_configure
+config_configure || exit 1
 
 ./build.sh || echo_error_exit "Failed build"
 
 ./make install || echo_error_exit "Failed to .make install"
 
-config_success
+config_success || exit 1

@@ -12,9 +12,10 @@ PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/mpicc"
 # URL to source code to fetch it
 PKG_URL_SRC="openmpi-3.1.2.tar.bz2"
 
-config_package $@
+config_package $@ || exit 1
 
-config_configure --enable-mpi-fortran
-config_make_default_install
+config_configure --enable-mpi-fortran || exit 1
 
-config_success
+config_make_default_install || exit 1
+
+config_success || exit 1

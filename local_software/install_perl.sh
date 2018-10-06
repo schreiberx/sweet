@@ -11,10 +11,10 @@ PKG_INSTALLED_FILE="${SWEET_LOCAL_SOFTWARE_DST_DIR}/bin/perl"
 # URL to source code to fetch it
 PKG_URL_SRC="perl-5.28.0.tar.gz"
 
-config_package $@
+config_package $@ || exit 1
 
-config_exec ./Configure -des -Dprefix=$SWEET_LOCAL_SOFTWARE_DST_DIR -Dnoextensions=ODBM_File
+config_exec ./Configure -des -Dprefix=$SWEET_LOCAL_SOFTWARE_DST_DIR -Dnoextensions=ODBM_File || exit 1
 
-config_make_default_install
+config_make_default_install || exit 1
 
-config_success
+config_success || exit 1

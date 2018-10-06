@@ -12,20 +12,20 @@ PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/libshtns.a"
 # URL to source code to fetch it
 PKG_URL_SRC="https://bitbucket.org/nschaeff/shtns/get/tip.tar.bz2"
 
-config_package $@
+config_package $@ || exit 1
 
 echo_info_hline
 echo_info "SHTNS noOpenMP:"
 # Python, no OpenMP
-config_configure --disable-openmp
-config_make_clean
-config_make_default_install
+config_configure --disable-openmp || exit 1
+config_make_clean || exit 1
+config_make_default_install || exit 1
 
 echo_info_hline
 echo_info "SHTNS OpenMP:"
 # Python, OpenMP
-config_configure --enable-openmp
-config_make_clean
-config_make_default_install
+config_configure --enable-openmp || exit 1
+config_make_clean || exit 1
+config_make_default_install || exit 1
 
-config_success
+config_success || exit 1

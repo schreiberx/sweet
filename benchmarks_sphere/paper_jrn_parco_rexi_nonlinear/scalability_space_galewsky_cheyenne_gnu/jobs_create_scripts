@@ -89,7 +89,8 @@ def estimateWallclockTime(p):
 
 	# Use this scaling for additional wallclock time
 	safety_scaling = 10
-	safety_add = 60*1
+	# 5 Min additionaly
+	safety_add = 60*5
 
 	wallclock_seconds = ref_wallclock_seconds
 
@@ -311,7 +312,7 @@ if __name__ == "__main__":
 
 			p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
 
-			p.gen_jobscript_directory('script_'+prefix_string_template+'ref_'+p.getUniqueID(unique_id_filter))
+			p.gen_jobscript_directory('job_'+prefix_string_template+'ref_'+p.getUniqueID(unique_id_filter))
 
 
 
@@ -369,7 +370,7 @@ if __name__ == "__main__":
 
 					p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
 
-					p.gen_jobscript_directory('script_'+prefix_string_template+p.getUniqueID(unique_id_filter))
+					p.gen_jobscript_directory('job_'+prefix_string_template+p.getUniqueID(unique_id_filter))
 
 				else:
 
@@ -404,61 +405,61 @@ if __name__ == "__main__":
 								# Generate only scripts with max number of cores
 								p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
 
-								p.gen_jobscript_directory('script_'+prefix_string_template+p.getUniqueID(unique_id_filter))
+								p.gen_jobscript_directory('job_'+prefix_string_template+p.getUniqueID(unique_id_filter))
 
-		#
-		# SHTNS plan generation scripts
-		#
-		p.runtime.reuse_plans = 1	# search for awesome plans and store them
+	#
+	# SHTNS plan generation scripts
+	#
+	p.runtime.reuse_plans = 1	# search for awesome plans and store them
 
-		#
-		# Create dummy scripts to be used for SHTNS script generation
-		#
+	#
+	# Create dummy scripts to be used for SHTNS script generation
+	#
 
-		# No parallelization in time
-		ptime = SWEETParallelizationDimOptions('time')
-		ptime.num_cores_per_rank = 1
-		ptime.num_threads_per_rank = 1
-		ptime.num_ranks = 1
-		ptime.setup()
+	# No parallelization in time
+	ptime = SWEETParallelizationDimOptions('time')
+	ptime.num_cores_per_rank = 1
+	ptime.num_threads_per_rank = 1
+	ptime.num_ranks = 1
+	ptime.setup()
 
-		for tsm in ts_methods[1:2]:
+	for tsm in ts_methods[1:2]:
 
-			p.runtime.timestepping_method = tsm[0]
-			p.runtime.timestepping_order = tsm[1]
-			p.runtime.timestepping_order2 = tsm[2]
-			p.runtime.rexi_use_direct_solution = tsm[3]
+		p.runtime.timestepping_method = tsm[0]
+		p.runtime.timestepping_order = tsm[1]
+		p.runtime.timestepping_order2 = tsm[2]
+		p.runtime.rexi_use_direct_solution = tsm[3]
 
-			if not '_rexi' in p.runtime.timestepping_method:
-				p.runtime.rexi_method = ''
-			else:
-				p.runtime.rexi_method = 'ci'
+		if not '_rexi' in p.runtime.timestepping_method:
+			p.runtime.rexi_method = ''
+		else:
+			p.runtime.rexi_method = 'ci'
 
-			if len(tsm) > 4:
-				s = tsm[4]
-				p.runtime.load_from_dict(tsm[4])
+		if len(tsm) > 4:
+			s = tsm[4]
+			p.runtime.load_from_dict(tsm[4])
 
 
-			for pspace_num_cores_per_rank, pspace_num_threads_per_rank, p.runtime.timestep_size in product(params_pspace_num_cores_per_rank, params_pspace_num_threads_per_rank, timestep_sizes):
-				pspace = SWEETParallelizationDimOptions('space')
-				pspace.num_cores_per_rank = pspace_num_cores_per_rank
-				pspace.num_threads_per_rank = pspace_num_threads_per_rank
-				pspace.num_ranks = 1
-				pspace.setup()
+		for pspace_num_cores_per_rank, pspace_num_threads_per_rank, p.runtime.timestep_size in product(params_pspace_num_cores_per_rank, params_pspace_num_threads_per_rank, timestep_sizes):
+			pspace = SWEETParallelizationDimOptions('space')
+			pspace.num_cores_per_rank = pspace_num_cores_per_rank
+			pspace.num_threads_per_rank = pspace_num_threads_per_rank
+			pspace.num_ranks = 1
+			pspace.setup()
 
-				p.setup_parallelization([pspace, ptime])
+			p.setup_parallelization([pspace, ptime])
 
-				# Use 10 minutes per default to generate plans
-				p.parallelization.max_wallclock_seconds = 60*10
+			# Use 10 minutes per default to generate plans
+			p.parallelization.max_wallclock_seconds = 60*10
 
-				# Set simtime to 0
-				p.runtime.simtime = 0
+			# Set simtime to 0
+			p.runtime.simtime = 0
 
-				# No output
-				p.runtime.output_timestep_size = -1
-				p.runtime.output_filename = "-"
+			# No output
+			p.runtime.output_timestep_size = -1
+			p.runtime.output_filename = "-"
 
-				p.gen_jobscript_directory('genplans_script_'+p.getUniqueID(unique_id_filter))
+			p.gen_jobscript_directory('genplans_job_'+p.getUniqueID(unique_id_filter))
 
 
 

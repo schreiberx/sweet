@@ -15,7 +15,7 @@ cd "./run_test_swe_sphere_geostrophic_balance" || exit
 
 ./jobs_create_scripts || exit 1
 
-./platform_jobs_run || exit 1
+./platform_jobs_run_directly || exit 1
 
 ./postprocessing || exit 1
 

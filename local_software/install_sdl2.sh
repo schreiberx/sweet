@@ -12,8 +12,8 @@ PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/libSDL2.so"
 # URL to source code to fetch it
 PKG_URL_SRC="SDL2-2.0.8.tar.gz"
 
-config_package $@
+config_package $@ || exit 1
 
-config_configure_make_default_install
+config_configure_make_default_install || exit 1
 
-config_success
+config_success || exit 1

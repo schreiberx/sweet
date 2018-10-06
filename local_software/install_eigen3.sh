@@ -16,7 +16,7 @@ PKG_URL_SRC="eigen-3.3.3.tar.bz2"
 # (autodetected with basename of url without file extension if not set)
 PKG_SRC_SUBDIR="eigen-eigen-67e894c6cd8f"
 
-config_package $@
+config_package $@ || exit 1
 
 mkdir -p build
 cd build
@@ -24,6 +24,6 @@ cd build
 echo_info "cmake"
 cmake ../  -DCMAKE_INSTALL_PREFIX="$SWEET_LOCAL_SOFTWARE_DST_DIR" || echo_error_exit "cmake failed"
 
-config_make_default_install
+config_make_default_install || exit 1
 
-config_success
+config_success || exit 1

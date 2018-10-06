@@ -16,8 +16,8 @@ if [ "`uname -s`" != "Linux" ] && [ "`uname -s`" != "Darwin" ]; then
 	exit 1
 fi
 
-config_package $@
+config_package $@ || exit 1
 
-config_configure_make_default_install
+config_configure_make_default_install || exit 1
 
-config_success
+config_success || exit 1
