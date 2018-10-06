@@ -1,6 +1,6 @@
 #! /bin/bash
 
-./cleanup_scriptdirs
+./cleanup_job_dirs
 ./cleanup_postprocessing
 ./cleanup_plans
 
