@@ -165,6 +165,7 @@ echo
 	if j.compile.threading != 'off':
 		content += """
 export OMP_NUM_THREADS="""+str(p.num_threads_per_rank)+"""
+export KMP_AFFINITY=verbose
 """
 
 	if p.core_oversubscription:

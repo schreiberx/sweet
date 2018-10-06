@@ -165,13 +165,14 @@ echo
 	if j.compile.threading != 'off':
 		content += """
 export OMP_NUM_THREADS="""+str(p.num_threads_per_rank)+"""
+export OMP_DISPLAY_ENV=VERBOSE
 """
 
 	if p.core_oversubscription:
 		raise Exception("Not supported with this script!")
 
 	if p.core_affinity != None:
-		
+
 		content += "\necho \"Affnity: "+str(p.core_affinity)+"\"\n"
 		if p.core_affinity == 'compact':
 			content += "\nexport OMP_PROC_BIND=close\n"
