@@ -39,8 +39,8 @@ p.runtime.mode_res = 128
 p.runtime.phys_res = -1
 
 
-# no stability checks to get some error output (e.g. NAN)
-p.runtime.stability_checks = 0
+# no instability checks to get some error output (e.g. NAN)
+p.runtime.instability_checks = 0
 
 
 #
