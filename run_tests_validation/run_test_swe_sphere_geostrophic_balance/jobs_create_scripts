@@ -5,6 +5,8 @@ import sys
 import stat
 import math
 
+from itertools import product
+
 from SWEET import *
 p = SWEETJobGeneration()
 
@@ -63,9 +65,8 @@ p.runtime.rexi_sphere_preallocation = 1
 
 
 params_compile_threading = ['omp', 'off']
-##params_compile_threading = ['omp']
-
 params_ext_modes = [0, 4]
+params_compile_thread_parallel_sum = ['enable', 'disable']
 
 #
 # REXI method
@@ -157,17 +158,18 @@ if __name__ == "__main__":
 
 		for p.runtime.timestep_size in timestep_sizes:
 
-			for p.compile.threading in params_compile_threading:
-				if p.compile.threading == 'omp':
-					p.compile.rexi_thread_parallel_sum = 'disable'
-				else:
-					p.compile.rexi_thread_parallel_sum = 'enable'
-
+			for p.compile.threading, p.compile.rexi_thread_parallel_sum, p.runtime.rexi_extended_modes in product(params_compile_threading, params_compile_thread_parallel_sum, params_ext_modes):
 				if 'rexi_' in p.runtime.timestepping_method:
-					for p.runtime.rexi_extended_modes in params_ext_modes:
-						p.gen_jobscript_directory('job_'+p.getUniqueID(filter_list))
+					if p.compile.threading == 'omp' and p.compile.rexi_thread_parallel_sum == 'enable':
+						continue
+
+					p.gen_jobscript_directory('job_'+p.getUniqueID(filter_list))
 
 				else:
-					p.runtime.rexi_extended_modes = 0
+					if p.compile.rexi_thread_parallel_sum == 'enable':
+						continue
+
+					if p.runtime.rexi_extended_modes == 0:
+						continue
 
 					p.gen_jobscript_directory('job_'+p.getUniqueID(filter_list))
