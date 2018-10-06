@@ -19,12 +19,14 @@ p.parallelization.mpiexec_disabled = True
 #
 p.compile.program = 'swe_sphere'
 
+p.compile.mode = 'debug'
+
 p.compile.plane_spectral_space = 'disable'
 p.compile.plane_spectral_dealiasing = 'disable'
 p.compile.sphere_spectral_space = 'enable'
 p.compile.sphere_spectral_dealiasing = 'enable'
 
-filter_list = ['simparams', 'parallelization', 'benchmark', 'rexi_params', 'compiler_parallelization' ]
+filter_list = ['simparams', 'parallelization', 'benchmark', 'rexi_params']
 
 # Enable quad math per default for CI REXI method
 p.compile.quadmath = 'enable'
@@ -59,11 +61,11 @@ p.runtime.compute_error = 1
 #
 p.runtime.rexi_sphere_preallocation = 1
 
-#
-# Threading accross all REXI terms
-#
-p.compile.threading = 'omp'
 
+#params_compile_threading = ['omp', 'off']
+params_compile_threading = ['omp']
+
+params_ext_modes = [0, 4]
 
 #
 # REXI method
@@ -144,14 +146,22 @@ if __name__ == "__main__":
 	#
 	for tsm in ts_methods[1:]:
 		for p.runtime.timestep_size in timestep_sizes:
-			p.runtime.timestepping_method = tsm[0]
-			p.runtime.timestepping_order = tsm[1]
-			p.runtime.timestepping_order2 = tsm[2]
-			p.runtime.rexi_use_direct_solution = tsm[3]
+			for p.compile.threading in params_compile_threading:
+				for p.runtime.rexi_extended_modes in params_ext_modes:
 
-			if len(tsm) > 4:
-				s = tsm[4]
-				p.runtime.load_from_dict(tsm[4])
+					if p.compile.threading == 'omp':
+						p.compile.rexi_thread_parallel_sum = 'disable'
+					else:
+						p.compile.rexi_thread_parallel_sum = 'enable'
 
-			p.gen_jobscript_directory('script_'+p.getUniqueID(filter_list))
+					p.runtime.timestepping_method = tsm[0]
+					p.runtime.timestepping_order = tsm[1]
+					p.runtime.timestepping_order2 = tsm[2]
+					p.runtime.rexi_use_direct_solution = tsm[3]
+
+					if len(tsm) > 4:
+						s = tsm[4]
+						p.runtime.load_from_dict(tsm[4])
+
+					p.gen_jobscript_directory('job_'+p.getUniqueID(filter_list))
 

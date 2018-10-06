@@ -951,13 +951,13 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "***************************************************" << std::endl;
 		std::cout << "* Other timing information (direct)" << std::endl;
 		std::cout << "***************************************************" << std::endl;
-		std::cout << " + simVars.timecontrol.current_timestep_nr: " << simVars.timecontrol.current_timestep_nr << std::endl;
-		std::cout << " + simVars.timecontrol.current_timestep_size: " << simVars.timecontrol.current_timestep_size << std::endl;
+		std::cout << "[DATA] simVars.timecontrol.current_timestep_nr: " << simVars.timecontrol.current_timestep_nr << std::endl;
+		std::cout << "[DATA] simVars.timecontrol.current_timestep_size: " << simVars.timecontrol.current_timestep_size << std::endl;
 		std::cout << std::endl;
 		std::cout << "***************************************************" << std::endl;
 		std::cout << "* Other timing information (derived)" << std::endl;
 		std::cout << "***************************************************" << std::endl;
-		std::cout << " + time per time step: " << SimulationBenchmarkTimings::getInstance().main_timestepping()/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
+		std::cout << "[DATA] SimulationBenchmarkTimings.time_per_time_step (secs/ts): " << SimulationBenchmarkTimings::getInstance().main_timestepping()/(double)simVars.timecontrol.current_timestep_nr << std::endl;
 	}
 
 
