@@ -27,13 +27,14 @@ class SWEETPostprocessing(InfoError):
 
 
 
-	def __parse_output(
+	def __parse_job_output(
 		self,
 		output_lines
 	):
 		retdict = {}
 		for l in output_lines:
-			m=re.match("^\[DATA\] ([^ :]*): (.*)$", l)
+			#m=re.match("^\[DATA\] ([^ :]*): (.*)$", l)
+			m=re.match(" \+ ([^ :]*): (.*)$", l)
 			if m != None:
 				tag = m.group(1)
 				data = m.group(2)
@@ -88,11 +89,11 @@ class SWEETPostprocessing(InfoError):
 			job_data = {}
 
 			if self.verbosity > 5:
-				self.info("Loading output 'outout.out'")
+				self.info("Loading output 'output.out'")
 			outfile = jobdir+'/output.out'
-			with open(outfile) as f:
+			with open(outfile, 'r') as f:
 				content = f.readlines()
-				job_data['output'] = self.__parse_output(content)
+				job_data['output'] = self.__parse_job_output(content)
 
 			if self.verbosity > 5:
 				self.info("Loading job generation data 'jobgeneration.pickle'")
@@ -336,12 +337,20 @@ class SWEETPostprocessing(InfoError):
 			col_id = col_keys.index(col_key)
 
 			for jobdir, jobdata in group_jobs.items():
+				print("Job: "+jobdir)
 				row_key = jobdata[primary_key_attribute_name]
 				row_id = row_keys.index(row_key)
 
 				if data[row_id+1][col_id+1] != None:
 					self.print_data_table(data)
 					raise Exception("Duplicate entry detected! Stopping here")
+
+				if not data_attribute_name in jobdata:
+					print("Error: "+jobdir)
+					for key, value in jobdata.items():
+						print(" + "+key+": "+str(value))
+
+					raise Exception("attribute '"+data_attribute_name+"' not found")
 
 				data[row_id+1][col_id+1] = jobdata[data_attribute_name]
 
