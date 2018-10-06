@@ -36,8 +36,11 @@ params_timestep_sizes_rexi = [30]
 #timestep_sizes_rexi = [60, 120, 180, 240, 300, 360, 480, 600, 720]
 
 # Parallelization
-params_pspace_num_cores_per_rank = [p.platform_resources.num_cores_per_socket]
-params_pspace_num_threads_per_rank = [i for i in range(1, p.platform_resources.num_cores_per_socket+1)]
+#params_pspace_num_cores_per_rank = [p.platform_resources.num_cores_per_socket]
+params_pspace_num_cores_per_rank = [p.platform_resources.num_cores_per_node]
+#params_pspace_num_threads_per_rank = [i for i in range(1, p.platform_resources.num_cores_per_socket+1)]
+params_pspace_num_threads_per_rank = [i for i in range(1, p.platform_resources.num_cores_per_node+1)]
+
 params_ptime_num_cores_per_rank = [1]
 
 unique_id_filter = []
@@ -295,7 +298,7 @@ if __name__ == "__main__":
 
 			pspace = SWEETParallelizationDimOptions('space')
 			pspace.num_cores_per_rank = 1
-			pspace.num_threads_per_rank = pspace.num_cores_per_rank
+			pspace.num_threads_per_rank = params_pspace_num_cores_per_rank[-1]
 			pspace.num_ranks = 1
 
 			# Setup parallelization
