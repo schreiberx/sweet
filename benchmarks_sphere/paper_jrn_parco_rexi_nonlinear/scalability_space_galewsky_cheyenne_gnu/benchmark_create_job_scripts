@@ -125,15 +125,6 @@ def estimateWallclockTime(p):
 	return wallclock_seconds
 
 
-p.user_script_exec_prefix += """
-
-# Manual override in jobs_create.py
-# Override OMP_NUM_THREADS and use MASTER binding
-#export OMP_NUM_THREADS=1
-export OMP_PROC_BIND=close
-
-"""
-
 p.compile.lapack = 'enable'
 p.compile.mkl = 'disable'
 
