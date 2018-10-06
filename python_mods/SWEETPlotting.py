@@ -5,9 +5,11 @@ from SWEET import *
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
-class SWEETPlotting:
+class SWEETPlotting(InfoError):
 
 	def __init__(self):
+		InfoError.__init__(self, 'SWEETPlotting')
+
 		self.colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
 
 		self.markers = []
@@ -79,6 +81,7 @@ class SWEETPlotting:
 		plt.legend()
 
 		if outfile != None:
+			self.info("Plotting to '"+outfile+"'")
 			plt.savefig(outfile)
 		else:
 			plt.show()

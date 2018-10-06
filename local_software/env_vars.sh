@@ -73,21 +73,6 @@ fi
 
 
 #######################################################################
-# Setup important directory environment variables #####################
-#######################################################################
-
-# Location of this script
-SCRIPTDIR="$(dirname "${BASH_SOURCE[0]}")"
-cd "$SCRIPTDIR"
-# Get full path
-SCRIPTDIR="$PWD"
-
-# Get SWEET root directory
-cd "../"
-export SWEET_ROOT="$PWD"
-
-
-#######################################################################
 # Check if this script is included (OK) or directly executed (FAILURE)
 #######################################################################
 
@@ -125,6 +110,21 @@ fi
 
 
 
+#######################################################################
+# Setup important directory environment variables #####################
+#######################################################################
+
+# Location of this script
+SCRIPTDIR="$(dirname "${BASH_SOURCE[0]}")"
+cd "$SCRIPTDIR"
+# Get full path
+SCRIPTDIR="$PWD"
+
+# Get SWEET root directory
+cd "../"
+export TMP_SWEET_ROOT="$PWD"
+
+
 
 #######################################################################
 # Setup platform specific parts
@@ -138,7 +138,7 @@ if [ "#$SWEET_PLATFORM" != "#" ]; then
 	echo_info_hline
 	echo_info "                   Mode: SWEET_PLATFORM (=${SWEET_PLATFORM})"
 	echo_info_hline
-	PLATFORM_ENV_VARS=$(eval echo "${SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM}/env_vars.sh")
+	PLATFORM_ENV_VARS=$(eval echo "${TMP_SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM}/env_vars.sh")
 
 	if [ ! -e "$PLATFORM_ENV_VARS" ]; then
 		echo_error "File '${PLATFORM_ENV_VARS}' not found!"
@@ -175,7 +175,7 @@ elif [ "#${1}" = "#" ] || [ "#${1}" = "#FORCE" ]; then
 	#
 	# Try with autodetection of platforms
 	#
-	for i in $SWEET_ROOT/platforms/??_*; do
+	for i in $TMP_SWEET_ROOT/platforms/??_*; do
 		cd "$i"
 		load_this_platform
 		if [ $? -eq 0 ]; then
@@ -207,11 +207,13 @@ if [ -z "${SWEET_PLATFORM}" ]; then
 	return
 fi
 
-export SWEET_PLATFORM_DIR="$(eval echo "${SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM}/")"
+export SWEET_PLATFORM_DIR="$(eval echo "${TMP_SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM}/")"
 
 echo_info "         Using platform: '${SWEET_PLATFORM}'"
 echo_info "     Platform directory: '${SWEET_PLATFORM_DIR}'"
 
+
+export SWEET_ROOT="$TMP_SWEET_ROOT"
 
 
 #######################################################################
