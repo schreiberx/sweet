@@ -1,9 +1,0 @@
-#! /bin/bash
-
-for i in job_*; do
-	rm -rf "$i"
-done
-
-rm -rf ./genplans_*
-
-rm -f ./compile_platform*.sh
