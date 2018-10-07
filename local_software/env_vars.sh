@@ -180,8 +180,8 @@ cd "$SCRIPTDIR"
 PS_RELPATH="realpath  --relative-to=$SWEET_ROOT ./"
 
 # Make prompt nice looking
-#export PS1='\[\033[01;32m\][SWEET \u@$SWEET_PLATFORM]\[\033[00m\] $($PS_RELPATH)\$ '
-export PS1='\[\033[01;32m\][SWEET @ $SWEET_PLATFORM]\[\033[00m\] $($PS_RELPATH)\$ '
+#export PS1='\[\033[01;32m\][SWEET \u@$SWEET_PLATFORM_ID]\[\033[00m\] $($PS_RELPATH)\$ '
+export PS1='\[\033[01;32m\][SWEET @ $SWEET_PLATFORM_ID]\[\033[00m\] $($PS_RELPATH)\$ '
 
 
 
