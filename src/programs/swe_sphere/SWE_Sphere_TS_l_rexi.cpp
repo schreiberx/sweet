@@ -572,20 +572,23 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 		perThreadVars[0]->accum_vort.spectral_set_zero();
 		perThreadVars[0]->accum_div.spectral_set_zero();
 
+		#if SWEET_REXI_TIMINGS
+			SimulationBenchmarkTimings::getInstance().rexi_timestepping_miscprocessing.stop();
+		#endif
+
 		if (simVars.rexi.use_sphere_extended_modes == 0)
 		{
 			/*
 			 * -> No threading
 			 * -> No extended modes
 			 */
+			#if SWEET_REXI_TIMINGS
+				SimulationBenchmarkTimings::getInstance().rexi_timestepping_solver.start();
+			#endif
+
 			SphereData tmp_prog_phi(sphereDataConfigSolver);
 			SphereData tmp_prog_vort(sphereDataConfigSolver);
 			SphereData tmp_prog_div(sphereDataConfigSolver);
-
-			#if SWEET_REXI_TIMINGS
-				SimulationBenchmarkTimings::getInstance().rexi_timestepping_miscprocessing.stop();
-				SimulationBenchmarkTimings::getInstance().rexi_timestepping_solver.start();
-			#endif
 
 			for (std::size_t workload_idx = start; workload_idx < end; workload_idx++)
 			{
@@ -637,7 +640,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 			io_prog_div0 = perThreadVars[0]->accum_div;
 
 			#if SWEET_DEBUG
-				if (	!io_prog_phi0.spectral_space_data_valid	||
+				if (	!io_prog_phi0.spectral_space_data_valid		||
 						!io_prog_vort0.spectral_space_data_valid	||
 						!io_prog_div0.spectral_space_data_valid
 					)
@@ -648,14 +651,18 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 			#if SWEET_REXI_TIMINGS
 				SimulationBenchmarkTimings::getInstance().rexi_timestepping_solver.stop();
-				SimulationBenchmarkTimings::getInstance().rexi_timestepping_miscprocessing.start();
 			#endif
 		}
 		else
 		{
 			/*
-			 * Extended modes
+			 * no threading
+			 * with extended modes
 			 */
+			#if SWEET_REXI_TIMINGS
+				SimulationBenchmarkTimings::getInstance().rexi_timestepping_solver.start();
+			#endif
+
 			SphereData thread_prog_phi0 = io_prog_phi0.spectral_returnWithDifferentModes(sphereDataConfigSolver);
 			SphereData thread_prog_vort0 = io_prog_vort0.spectral_returnWithDifferentModes(sphereDataConfigSolver);
 			SphereData thread_prog_div0 = io_prog_div0.spectral_returnWithDifferentModes(sphereDataConfigSolver);
@@ -663,11 +670,6 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 			SphereData tmp_prog_phi(sphereDataConfigSolver);
 			SphereData tmp_prog_vort(sphereDataConfigSolver);
 			SphereData tmp_prog_div(sphereDataConfigSolver);
-
-			#if SWEET_REXI_TIMINGS
-				SimulationBenchmarkTimings::getInstance().rexi_timestepping_miscprocessing.stop();
-				SimulationBenchmarkTimings::getInstance().rexi_timestepping_solver.start();
-			#endif
 
 			for (std::size_t workload_idx = start; workload_idx < end; workload_idx++)
 			{
@@ -741,9 +743,9 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 			 * spectral space *in parallel* with write
 			 * access raceconditions
 			 */
-			if (	!io_prog_phi0.spectral_space_data_valid	||
-				!io_prog_vort0.spectral_space_data_valid	||
-				!io_prog_div0.spectral_space_data_valid
+			if (	!io_prog_phi0.spectral_space_data_valid		||
+					!io_prog_vort0.spectral_space_data_valid	||
+					!io_prog_div0.spectral_space_data_valid
 			)
 			{
 				FatalError("SPECTRAL DATA NOT AVAILABLE, BUT REQUIRED!");
@@ -752,25 +754,13 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 		if (simVars.rexi.use_sphere_extended_modes == 0)
 		{
+			#if SWEET_REXI_TIMINGS
+				SimulationBenchmarkTimings::getInstance().rexi_timestepping_solver.start();
+			#endif
+
 			#pragma omp parallel for schedule(static,1) default(none) shared(i_fixed_dt, io_prog_phi0, io_prog_vort0, io_prog_div0, std::cout, std::cerr)
 			for (int thread_id = 0; thread_id < num_local_rexi_par_threads; thread_id++)
 			{
-				#if SWEET_REXI_TIMINGS
-					/*
-					* measure time only with 1st thread!
-					*/
-					bool stopwatch_measure = false;
-					#if SWEET_REXI_THREAD_PARALLEL_SUM
-						if (omp_get_thread_num() == 0)
-							stopwatch_measure = true;
-					#else
-						stopwatch_measure = true;
-					#endif
-
-					if (stopwatch_measure)
-						SimulationBenchmarkTimings::getInstance().rexi_timestepping_miscprocessing.start();
-				#endif
-
 				std::size_t start, end;
 				p_get_workload_start_end(start, end);
 
@@ -789,13 +779,6 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 				perThreadVars[thread_id]->accum_vort.spectral_set_zero();
 				perThreadVars[thread_id]->accum_div.spectral_set_zero();
 
-				#if SWEET_REXI_TIMINGS
-					if (stopwatch_measure)
-					{
-						SimulationBenchmarkTimings::getInstance().rexi_timestepping_miscprocessing.stop();
-						SimulationBenchmarkTimings::getInstance().rexi_timestepping_solver.start();
-					}
-				#endif
 
 				for (std::size_t workload_idx = start; workload_idx < end; workload_idx++)
 				{
@@ -851,13 +834,10 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 					}
 				#endif
 
-				#if SWEET_REXI_TIMINGS
-					if (stopwatch_measure)
-						SimulationBenchmarkTimings::getInstance().rexi_timestepping_solver.stop();
-				#endif
 			}
-			
+
 			#if SWEET_REXI_TIMINGS
+				SimulationBenchmarkTimings::getInstance().rexi_timestepping_solver.stop();
 				SimulationBenchmarkTimings::getInstance().rexi_timestepping_reduce.start();
 			#endif
 
@@ -889,28 +869,17 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 			#if SWEET_REXI_TIMINGS
 				SimulationBenchmarkTimings::getInstance().rexi_timestepping_reduce.stop();
 			#endif
+			
 		}
 		else
 		{
+			#if SWEET_REXI_TIMINGS
+					SimulationBenchmarkTimings::getInstance().rexi_timestepping_solver.start();
+			#endif
+
 			#pragma omp parallel for schedule(static,1) default(none) shared(i_fixed_dt, io_prog_phi0, io_prog_vort0, io_prog_div0, std::cout, std::cerr)
 			for (int thread_id = 0; thread_id < num_local_rexi_par_threads; thread_id++)
 			{
-				#if SWEET_REXI_TIMINGS
-					/*
-					* measure time only with 1st thread!
-					*/
-					bool stopwatch_measure = false;
-					#if SWEET_REXI_THREAD_PARALLEL_SUM
-						if (omp_get_thread_num() == 0)
-							stopwatch_measure = true;
-					#else
-						stopwatch_measure = true;
-					#endif
-
-					if (stopwatch_measure)
-						SimulationBenchmarkTimings::getInstance().rexi_timestepping_miscprocessing.start();
-				#endif
-
 				std::size_t start, end;
 				p_get_workload_start_end(start, end);
 
@@ -933,14 +902,6 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 				perThreadVars[thread_id]->accum_phi.spectral_set_zero();
 				perThreadVars[thread_id]->accum_vort.spectral_set_zero();
 				perThreadVars[thread_id]->accum_div.spectral_set_zero();
-
-				#if SWEET_REXI_TIMINGS
-					if (stopwatch_measure)
-					{
-						SimulationBenchmarkTimings::getInstance().rexi_timestepping_miscprocessing.stop();
-						SimulationBenchmarkTimings::getInstance().rexi_timestepping_solver.start();
-					}
-				#endif
 
 				for (std::size_t workload_idx = start; workload_idx < end; workload_idx++)
 				{
@@ -985,16 +946,12 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 					perThreadVars[thread_id]->accum_vort += tmp_prog_vort;
 					perThreadVars[thread_id]->accum_div += tmp_prog_div;
 				}
-
-				#if SWEET_REXI_TIMINGS
-					if (stopwatch_measure)
-						SimulationBenchmarkTimings::getInstance().rexi_timestepping_solver.stop();
-				#endif
 			}
 
 			assert(io_prog_phi0.sphereDataConfig->spectral_array_data_number_of_elements == sphereDataConfig->spectral_array_data_number_of_elements);
 
 			#if SWEET_REXI_TIMINGS
+				SimulationBenchmarkTimings::getInstance().rexi_timestepping_solver.stop();
 				SimulationBenchmarkTimings::getInstance().rexi_timestepping_reduce.start();
 			#endif
 
@@ -1025,32 +982,25 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 			}
 
 			#if SWEET_REXI_TIMINGS
-				SimulationBenchmarkTimings::getInstance().rexi_timestepping_reduce.stop();
-			#endif
-
-			#if SWEET_DEBUG
-				if (	!io_prog_phi0.spectral_space_data_valid	||
-						!io_prog_vort0.spectral_space_data_valid	||
-						!io_prog_div0.spectral_space_data_valid
-					)
-				{
-					FatalError("SPECTRAL DATA NOT AVAILABLE, BUT REQUIRED!");
-				}
-			#endif
-
-			#if SWEET_REXI_TIMINGS
 				if (stopwatch_measure)
-					SimulationBenchmarkTimings::getInstance().rexi_timestepping_solver.stop();
+					SimulationBenchmarkTimings::getInstance().rexi_timestepping_reduce.stop()
 			#endif
 		}
+
+
+		#if SWEET_DEBUG
+			if (	!io_prog_phi0.physical_space_data_valid	||
+					!io_prog_vort0.physical_space_data_valid	||
+					!io_prog_div0.physical_space_data_valid
+				)
+			{
+				FatalError("SPECTRAL DATA NOT AVAILABLE, BUT REQUIRED!");
+			}
+		#endif
 
 		#if SWEET_REXI_TIMINGS
 			SimulationBenchmarkTimings::getInstance().rexi_timestepping_miscprocessing.start();
 		#endif
-
-		io_prog_phi0.request_data_physical();
-		io_prog_vort0.request_data_physical();
-		io_prog_div0.request_data_physical();
 
 
 		#if SWEET_REXI_TIMINGS_ADDITIONAL_BARRIERS && SWEET_MPI
@@ -1064,7 +1014,6 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 
 	#if SWEET_MPI
-	{
 		#if SWEET_REXI_TIMINGS
 			SimulationBenchmarkTimings::getInstance().rexi_timestepping_reduce.start();
 		#endif
@@ -1102,7 +1051,6 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 		#if SWEET_REXI_TIMINGS
 			SimulationBenchmarkTimings::getInstance().rexi_timestepping_reduce.stop();
 		#endif
-	}
 	#endif
 
 	#if SWEET_REXI_TIMINGS
