@@ -62,7 +62,7 @@ def get_platform_id():
 		unique ID of platform
 	"""
 
-	return "default_gnu"
+	return "default_intel"
 
 
 def get_platform_resources():
