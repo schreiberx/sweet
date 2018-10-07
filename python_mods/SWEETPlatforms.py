@@ -141,6 +141,7 @@ class SWEETPlatforms(InfoError):
 			platform_id = interfaces['get_platform_id']()
 
 			if platform_id in self.platforms:
+				self.info("Duplicate platform id '"+platform_id+"' detected")
 				self.error("Duplicate platform id '"+platform_id+"' detected in modules '"+self.platforms[platform_id].module.__name__+"' and '"+module.__name__+"'")
 
 			self.platforms[platform_id] = {
