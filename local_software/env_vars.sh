@@ -50,7 +50,8 @@ echo_warning_hline()( echo_warning "********************************************
 echo_error_hline()( echo_error "*************************************************************************"; )
 
 # output error and exit
-echo_error_exit(){ echo_error_hline; eval ${SWEET_ECHO_PREFIX}; echo -en "\033[0;31m"; echo "${@}"; echo -en "\033[0m"; echo_error_hline; return 2>/dev/null; exit 1; }
+echo_error_exit(){ echo_error_hline; eval ${SWEET_ECHO_PREFIX}; echo -en "\033[0;31m"; echo "${@}"; echo -en "\033[0m"; echo_error_hline; exit 1; }
+#echo_error_return(){ echo_error_hline; eval ${SWEET_ECHO_PREFIX}; echo -en "\033[0;31m"; echo "${@}"; echo -en "\033[0m"; echo_error_hline; return; }
 
 export -f echo_info echo_success echo_warning echo_error
 export -f echo_info_hline echo_success_hline echo_warning_hline echo_error_hline
@@ -120,7 +121,7 @@ SCRIPTDIR="$PWD"
 
 # Get SWEET root directory
 cd "../"
-export TMP_SWEET_ROOT="$PWD"
+export SWEET_ROOT="$PWD"
 
 
 
@@ -128,9 +129,15 @@ export TMP_SWEET_ROOT="$PWD"
 # Setup platform specific parts
 #######################################################################
 
-source $TMP_SWEET_ROOT/local_software/load_platform.sh $@ || exit 1
+source $SWEET_ROOT/local_software/load_platform.sh $@ || exit 1
 
-export SWEET_ROOT="$TMP_SWEET_ROOT"
+if [[ -z "$SWEET_PLATFORM_DIR" ]]; then
+	unset SWEET_ROOT
+	unset SCRIPTDIR
+	return
+fi
+
+export SWEET_ROOT="$SWEET_ROOT"
 
 
 #######################################################################
