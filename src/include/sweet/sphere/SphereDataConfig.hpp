@@ -199,7 +199,7 @@ private:
 	void setup_data()
 	{
 #if SWEET_DEBUG
-		shtns_print_cfg();
+		shtns_print_cfg(shtns);
 #endif
 
 		physical_num_lat = shtns->nlat;
