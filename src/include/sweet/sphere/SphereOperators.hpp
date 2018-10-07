@@ -13,14 +13,6 @@
 #include "../sphere/SphereSPHIdentities.hpp"
 #include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalReal.hpp>
 
-/*
- * 0: Compute on-the-fly and element wise (independent from previous iteration)
- * 1: Start by direct computation and then use deltas [TODO: Not yet implemented]
- * 2: Use memory cached version
- */
-#define SWEET_SPH_ON_THE_FLY_MODE	0
-#define SHTNS_REAL_SPH_SPHTOR	1
-
 
 class SphereOperators	:
 	public SphereSPHIdentities
@@ -31,21 +23,6 @@ public:
 	const SphereDataConfig *sphereDataConfig;
 
 private:
-
-#if SWEET_SPH_ON_THE_FLY_MODE == 2
-	std::vector<double> spec_one_minus_mu_squared_diff_lat_mu__1;
-	std::vector<double> spec_one_minus_mu_squared_diff_lat_mu__2;
-
-	std::vector<double> mu__1;
-	std::vector<double> mu__2;
-
-	std::vector<double> mu2__1;
-	std::vector<double> mu2__2;
-	std::vector<double> mu2__3;
-#endif
-
-
-//	SphBandedMatrixPhysicalReal< std::complex<double> > sphSolver_inv_one_minus_mu2;
 
 	double r;
 	double ir;
@@ -113,41 +90,6 @@ public:
 		delete [] mx;
 #endif
 
-#if SWEET_SPH_ON_THE_FLY_MODE == 2
-		std::size_t storage_size = sphereDataConfig->spectral_complex_array_data_number_of_elements;
-		spec_one_minus_mu_squared_diff_lat_mu__1.resize(storage_size);
-		spec_one_minus_mu_squared_diff_lat_mu__2.resize(storage_size);
-
-		mu__1.resize(storage_size);
-		mu__2.resize(storage_size);
-
-		mu2__1.resize(storage_size);
-		mu2__2.resize(storage_size);
-		mu2__3.resize(storage_size);
-
-		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
-		{
-			int idx = sphereDataConfig->getArrayIndexByModes(m, m);
-
-			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
-			{
-				spec_one_minus_mu_squared_diff_lat_mu__1[idx] = (-n+1.0)*R(n-1,m);
-				spec_one_minus_mu_squared_diff_lat_mu__2[idx] = (n+2.0)*S(n+1,m);
-
-				mu__1[idx] = R(n-1,m);
-				mu__2[idx] = S(n+1,m);
-
-				mu__1[idx] = R(n-1,m);
-				mu__2[idx] = S(n+1,m);
-
-				mu2__1[idx] = A(n-2,m);
-				mu2__2[idx] = B(n+0,m);
-				mu2__3[idx] = C(n+2,m);
-
-				idx++;
-			}
-		}
-#endif
 	}
 
 
@@ -169,7 +111,7 @@ public:
 		SphereData out_sph_data(i_sph_data.sphereDataConfig);
 
 		// compute d/dlambda in spectral space
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for schedule(guided)
 #endif
 		for (int m = i_sph_data.sphereDataConfig->spectral_modes_m_max; m >= 0; m--)
@@ -273,7 +215,7 @@ public:
 		SphereData chi = inv_laplace(i_div)*ir;
 
 		#if SWEET_DEBUG
-			#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+			#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
 				if (omp_in_parallel())
 					FatalError("IN PARALLEL REGION!!!");
 			#endif
@@ -331,7 +273,7 @@ public:
 		SphereData vort(sphereDataConfig);
 
 		#if SWEET_DEBUG
-			#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+			#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
 				if (omp_in_parallel())
 					FatalError("IN PARALLEL REGION!!!");
 			#endif
@@ -397,7 +339,7 @@ public:
 	{
 
 		#if SWEET_DEBUG
-			#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+			#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
 				if (omp_in_parallel())
 					FatalError("IN PARALLEL REGION!!!");
 			#endif
@@ -456,7 +398,7 @@ public:
 
 		SphereData out_sph_data(sphereDataConfig);
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
 		for (int m = 0; m <= i_sph_data.sphereDataConfig->spectral_modes_m_max; m++)
@@ -465,21 +407,10 @@ public:
 
 			for (int n = m; n <= i_sph_data.sphereDataConfig->spectral_modes_n_max; n++)
 			{
-#if SWEET_SPH_ON_THE_FLY_MODE == 0
-
 				out_sph_data.spectral_space_data[idx] =
 						((double)(-n+1.0)*R(n-1,m))*i_sph_data.spectral_get(n-1, m) +
 						((double)(n+2.0)*S(n+1,m))*i_sph_data.spectral_get(n+1, m);
 
-#elif SWEET_SPH_ON_THE_FLY_MODE == 2
-
-				out_sph_data.spectral_space_data[idx] =
-						spec_one_minus_mu_squared_diff_lat_mu__1[idx]*i_sph_data.spectral_get(n-1, m)
-						+ spec_one_minus_mu_squared_diff_lat_mu__2[idx]*i_sph_data.spectral_get(n+1, m);
-
-#else
-#	error "unsupported"
-#endif
 				idx++;
 			}
 		}
@@ -506,7 +437,7 @@ public:
 		SphereData out_sph_data = SphereData(sphereDataConfig);
 
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
 		for (int m = 0; m <= i_sphere_data.sphereDataConfig->spectral_modes_m_max; m++)
@@ -515,17 +446,10 @@ public:
 
 			for (int n = m; n <= i_sphere_data.sphereDataConfig->spectral_modes_n_max; n++)
 			{
-#if SWEET_SPH_ON_THE_FLY_MODE == 0
 				out_sph_data.spectral_space_data[idx] =
 							R(n-1,m)*i_sphere_data.spectral_get(n-1, m)
 							+ S(n+1,m)*i_sphere_data.spectral_get(n+1, m);
-#elif SWEET_SPH_ON_THE_FLY_MODE == 2
-				out_sph_data.spectral_space_data[idx] =
-							mu__1[idx]*i_sphere_data.spectral_get(n-1, m)
-							+ mu__2[idx]*i_sphere_data.spectral_get(n+1, m);
-#else
-#	error "unsupported"
-#endif
+
 				idx++;
 			}
 		}
@@ -550,7 +474,7 @@ public:
 		SphereData out_sph_data = SphereData(sphereDataConfig);
 
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
 		for (int m = 0; m <= i_sph_data.sphereDataConfig->spectral_modes_m_max; m++)
@@ -559,21 +483,11 @@ public:
 
 			for (int n = m; n <= i_sph_data.sphereDataConfig->spectral_modes_n_max; n++)
 			{
-#if SWEET_SPH_ON_THE_FLY_MODE == 0
 				out_sph_data.spectral_space_data[idx] =
 						+A(n-2,m)*i_sph_data.spectral_get(n-2, m)
 						+B(n+0,m)*i_sph_data.spectral_get(n+0, m)
 						+C(n+2,m)*i_sph_data.spectral_get(n+2, m)
 						;
-#elif SWEET_SPH_ON_THE_FLY_MODE == 2
-				out_sph_data.spectral_space_data[idx] =
-						+mu2__1[idx]*i_sph_data.spectral_get(n-2, m)
-						+mu2__2[idx]*i_sph_data.spectral_get(n+0, m)
-						+mu2__3[idx]*i_sph_data.spectral_get(n+2, m)
-						;
-#else
-#	error "unsupported"
-#endif
 				idx++;
 			}
 		}
@@ -743,80 +657,6 @@ public:
 		return out;
 	}
 
-#if 0
-public:
-	/**
-	 * Compute vorticity
-	 *
-	 * \eta = div_lon(V_lat) - div_lat(V_lon)
-	 */
-	SphereData vort(
-			const SphereData &i_lon,
-			const SphereData &i_lat
-	)	const
-	{
-#error "Don't do this"
-		return div_lon(i_lat) - div_lat(i_lon);
-	}
-
-
-public:
-	/**
-	 * Compute vorticity
-	 *
-	 * \eta = robert_div_lon(V_lat) - robert_div_lat(V_lon)
-	 */
-#if 0
-	SphereData robert_vort(
-			const SphereData &i_lon,
-			const SphereData &i_lat
-	)	const
-	{
-#error "Don't do this"
-		return robert_div_lon(i_lat) - robert_div_lat(i_lon);
-	}
-#endif
-
-public:
-	/**
-	 * Compute divergence
-	 *
-	 * \delta = div_lon(i_lon) + div_lan(i_lan)
-	 */
-	SphereData div(
-			const SphereData &i_lon,
-			const SphereData &i_lat
-	)	const
-	{
-		return div_lon(i_lon) + div_lat(i_lat);
-	}
-#endif
-
-
-#if 0
-public:
-	/**
-	 * Compute divergence
-	 *
-	 * \delta = robert_div_lon(i_lon) + robert_div_lan(i_lan)
-	 */
-	SphereData robert_div(
-			const SphereData &i_lon,
-			const SphereData &i_lat
-	)	const
-	{
-#if 0
-
-		return robert_div_lon(i_lon) + robert_div_lat(i_lat);
-#else
-
-		return inv_one_minus_mu2(
-				diff_lon(i_lon)
-				+ spectral_cosphi2_diff_lat_mu(i_lat)
-			);
-#endif
-	}
-#endif
 
 };
 

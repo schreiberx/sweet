@@ -436,9 +436,10 @@ if p.threading == 'omp':
 	env.Append(CXXFLAGS=['-fopenmp'])
 	env.Append(LINKFLAGS=['-fopenmp'])
 
-	env.Append(CXXFLAGS=' -DSWEET_SPACE_THREADING=1')
+	env.Append(CXXFLAGS=' -DSWEET_THREADING_SPACE=1')
 else:
-	env.Append(CXXFLAGS=' -DSWEET_SPACE_THREADING=0')
+	env.Append(CXXFLAGS=' -DSWEET_THREADING_SPACE=0')
+
 
 
 if p.pfasst_cpp == 'enable':
@@ -587,7 +588,7 @@ if p.mic == 'enable':
 
 
 #
-# If SWEET_REXI_THREAD_PARALLEL_SUM is activated, the REXI sum is computed
+# If SWEET_THREADING_TIME_REXI is activated, the REXI sum is computed
 # with parallel for over the sum terms
 #
 if p.rexi_thread_parallel_sum == 'enable':
@@ -602,16 +603,16 @@ if p.rexi_thread_parallel_sum == 'enable':
 	#
 	# loops are annoted with
 	#
-	#if SWEET_SPACE_THREADING
+	#if SWEET_THREADING_SPACE
 	#
 	env.Append(CXXFLAGS=['-fopenmp'])
 
 	# Compile flag is set in sconscript
 
 	# Activate precompiler flag
-	env.Append(CXXFLAGS=' -DSWEET_REXI_THREAD_PARALLEL_SUM=1')
+	env.Append(CXXFLAGS=' -DSWEET_THREADING_TIME_REXI=1')
 else:
-	env.Append(CXXFLAGS=' -DSWEET_REXI_THREAD_PARALLEL_SUM=0')
+	env.Append(CXXFLAGS=' -DSWEET_THREADING_TIME_REXI=0')
 
 
 if p.rexi_timings == 'enable':
@@ -623,6 +624,12 @@ if p.rexi_timings_additional_barriers == 'enable':
 	env.Append(CXXFLAGS=' -DSWEET_REXI_TIMINGS_ADDITIONAL_BARRIERS=1')
 else:
 	env.Append(CXXFLAGS=' -DSWEET_REXI_TIMINGS_ADDITIONAL_BARRIERS=0')
+
+
+if p.threading == 'omp' or p.rexi_thread_parallel_sum == 'enable':
+	env.Append(CXXFLAGS=' -DSWEET_THREADING=1')
+else:
+	env.Append(CXXFLAGS=' -DSWEET_THREADING=0')
 
 
 if p.debug_symbols == 'enable':

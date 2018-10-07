@@ -17,11 +17,10 @@
 #include <sweet/sphere/SphereData.hpp>
 #include <sweet/sphere/Convert_SphereDataComplex_to_SphereData.hpp>
 #include <sweet/sphere/Convert_SphereData_to_SphereDataComplex.hpp>
-
 #include "../programs/swe_sphere/SWE_Sphere_TS_l_rexi.hpp"
 
 #include <sweet/sphere/GenerateConsistentGradDivSphereData.hpp>
-#include <sweet/sphere/ErrorCheck.hpp>
+#include <sweet/sphere/SphereDataErrorCheck.hpp>
 
 
 SimulationVariables simVars;
@@ -262,11 +261,11 @@ void run_tests()
 				zero.physical_set_zero();
 
 				// Check for geostrophic balance
-				ErrorCheck::checkTruncated(prog_phi0_cplx_ext, prog_phi_cplx_ext*alpha, sphereDataConfig, "ERROR Geostrophic balance phi", epsilon, false);
-				ErrorCheck::checkTruncated(prog_u0_cplx_ext, prog_u_cplx_ext*alpha, sphereDataConfig, "ERROR Geostrophic balance u", epsilon, false);
-				ErrorCheck::checkTruncated(prog_v0_cplx_ext, prog_v_cplx_ext*alpha, sphereDataConfig, "ERROR Geostrophic balance v", epsilon, false);
+				SphereDataErrorCheck::checkTruncated(prog_phi0_cplx_ext, prog_phi_cplx_ext*alpha, sphereDataConfig, "ERROR Geostrophic balance phi", epsilon, false);
+				SphereDataErrorCheck::checkTruncated(prog_u0_cplx_ext, prog_u_cplx_ext*alpha, sphereDataConfig, "ERROR Geostrophic balance u", epsilon, false);
+				SphereDataErrorCheck::checkTruncated(prog_v0_cplx_ext, prog_v_cplx_ext*alpha, sphereDataConfig, "ERROR Geostrophic balance v", epsilon, false);
 
-				ErrorCheck::checkTruncated(prog_v0_cplx_ext, zero, sphereDataConfig, "ERROR Geostrophic balance v", epsilon, false);
+				SphereDataErrorCheck::checkTruncated(prog_v0_cplx_ext, zero, sphereDataConfig, "ERROR Geostrophic balance v", epsilon, false);
 			}
 
 			if (simVars.setup.benchmark_id == 1)
@@ -317,35 +316,35 @@ void run_tests()
 					 */
 					{
 						SphereDataComplex lhs = -opComplexExt.robert_div_lon(prog_u_cplx) - opComplexExt.robert_div_lat(prog_v_cplx);
-						ErrorCheck::checkTruncated(lhs, zero, sphereDataConfig, "ERROR Geostrophic balance test a", epsilon, false, false);
+						SphereDataErrorCheck::checkTruncated(lhs, zero, sphereDataConfig, "ERROR Geostrophic balance test a", epsilon, false, false);
 					}
 
 					{
 						// Equation (1)
 						SphereDataComplex lhs = -opComplexExt.robert_grad_lon(prog_phi_cplx) + f*prog_v_cplx;
 						SphereDataComplex rhs = zero;
-						ErrorCheck::checkTruncated(lhs, rhs, sphereDataConfig, "ERROR Geostrophic balance test 1", epsilon, false, false);
+						SphereDataErrorCheck::checkTruncated(lhs, rhs, sphereDataConfig, "ERROR Geostrophic balance test 1", epsilon, false, false);
 					}
 
 					{
 						// Equation (1b)
 						SphereDataComplex lhs = prog_v_cplx;
 						SphereDataComplex rhs = inv_f(opComplexExt.robert_grad_lon(prog_phi_cplx));
-						ErrorCheck::checkTruncated(lhs, rhs, sphereDataConfig, "ERROR Geostrophic balance test 1b", epsilon, false, false);
+						SphereDataErrorCheck::checkTruncated(lhs, rhs, sphereDataConfig, "ERROR Geostrophic balance test 1b", epsilon, false, false);
 					}
 
 					{
 						// Equation (2)
 						SphereDataComplex lhs = -opComplexExt.robert_grad_lat(prog_phi_cplx) - f*prog_u_cplx;
 						SphereDataComplex rhs = zero;
-						ErrorCheck::checkTruncated(lhs, rhs, sphereDataConfig, "ERROR Geostrophic balance test 2", epsilon, false, false);
+						SphereDataErrorCheck::checkTruncated(lhs, rhs, sphereDataConfig, "ERROR Geostrophic balance test 2", epsilon, false, false);
 					}
 
 					{
 						// Equation (2b)
 						SphereDataComplex lhs = prog_u_cplx;
 						SphereDataComplex rhs = -inv_f(opComplexExt.robert_grad_lat(prog_phi_cplx));
-						ErrorCheck::checkTruncated(lhs, rhs, sphereDataConfig, "ERROR Geostrophic balance test 2b", epsilon, false, false);
+						SphereDataErrorCheck::checkTruncated(lhs, rhs, sphereDataConfig, "ERROR Geostrophic balance test 2b", epsilon, false, false);
 					}
 
 					{
@@ -353,7 +352,7 @@ void run_tests()
 								opComplexExt.robert_div_lon(-inv_f(opComplexExt.robert_grad_lat(prog_phi_cplx)))
 								+ opComplexExt.robert_div_lat(inv_f(opComplexExt.robert_grad_lon(prog_phi_cplx)));
 						SphereDataComplex rhs = zero;
-						ErrorCheck::checkTruncated(lhs, rhs, sphereDataConfig, "ERROR Geostrophic balance test 3", epsilon, false, false);
+						SphereDataErrorCheck::checkTruncated(lhs, rhs, sphereDataConfig, "ERROR Geostrophic balance test 3", epsilon, false, false);
 					}
 
 					{
@@ -361,7 +360,7 @@ void run_tests()
 								-opComplexExt.robert_grad_lat(prog_phi_cplx)*inv_cos2phi(opComplexExt.robert_grad_lon(data_inv_f))
 								+opComplexExt.robert_grad_lon(prog_phi_cplx)*inv_cos2phi(opComplexExt.robert_grad_lat(data_inv_f));
 						SphereDataComplex rhs = zero;
-						ErrorCheck::checkTruncated(lhs, rhs, sphereDataConfig, "ERROR Geostrophic balance test 4", epsilon, false, false);
+						SphereDataErrorCheck::checkTruncated(lhs, rhs, sphereDataConfig, "ERROR Geostrophic balance test 4", epsilon, false, false);
 					}
 #if 0
 					{
@@ -369,13 +368,13 @@ void run_tests()
 								-inv_cos2phi(opComplexExt.robert_grad_lon(prog_phi_cplx))
 								+f*prog_v_cplx;
 						SphereDataComplex rhs = zero;
-						ErrorCheck::checkTruncated(lhs, rhs, sphereDataConfig, "ERROR Geostrophic balance test 5a", epsilon, false, false);
+						SphereDataErrorCheck::checkTruncated(lhs, rhs, sphereDataConfig, "ERROR Geostrophic balance test 5a", epsilon, false, false);
 					}
 
 					{
 						SphereDataComplex lhs = inv_cos2phi(opComplexExt.robert_grad_lat(prog_phi_cplx));
 						SphereDataComplex rhs = -two_omega*opComplexExt.mu(prog_u_cplx);
-						ErrorCheck::checkTruncated(lhs, rhs, sphereDataConfig, "ERROR Geostrophic balance test 5b", epsilon, false, false);
+						SphereDataErrorCheck::checkTruncated(lhs, rhs, sphereDataConfig, "ERROR Geostrophic balance test 5b", epsilon, false, false);
 					}
 #endif
 
@@ -387,7 +386,7 @@ void run_tests()
 								)
 								;
 						SphereDataComplex rhs = -f*prog_u_cplx;
-						ErrorCheck::checkTruncated(lhs, rhs, sphereDataConfig, "ERROR Geostrophic balance test robert", epsilon, false, false);
+						SphereDataErrorCheck::checkTruncated(lhs, rhs, sphereDataConfig, "ERROR Geostrophic balance test robert", epsilon, false, false);
 					}
 				}
 			}
@@ -484,7 +483,7 @@ void run_tests()
 								rexi_prog_u_cplx_ext,
 								rexi_prog_v_cplx_ext
 							);
-						ErrorCheck::checkTruncated(rexi_prog_phi_cplx_ext, prog_phi_cplx_ext, sphereDataConfig, "prog_phi SSSSSSSSSSS", epsilon*1e+1);
+						SphereDataErrorCheck::checkTruncated(rexi_prog_phi_cplx_ext, prog_phi_cplx_ext, sphereDataConfig, "prog_phi SSSSSSSSSSS", epsilon*1e+1);
 #endif
 					}
 					else

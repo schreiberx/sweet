@@ -51,7 +51,7 @@ public:
 			ScalarDataArray &o_z
 	)
 	{
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
 		for (std::size_t i = 0; i < i_lon.number_of_elements; i++)
@@ -76,7 +76,7 @@ public:
 			ScalarDataArray *o_v_z
 	)
 	{
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
 		for (std::size_t i = 0; i < i_lon.number_of_elements; i++)
@@ -99,7 +99,7 @@ public:
 			ScalarDataArray &o_lat
 	)
 	{
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
 		for (std::size_t i = 0; i < i_x.number_of_elements; i++)

@@ -18,7 +18,7 @@
 #include <sweet/sphere/SphereDataComplex.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalReal.hpp>
-#include <sweet/sphere/ErrorCheck.hpp>
+#include <sweet/sphere/SphereDataErrorCheck.hpp>
 
 
 SimulationVariables simVars;
@@ -53,7 +53,7 @@ void run_tests(
 			}
 		);
 
-		ErrorCheck::check(physical, spectral, "n=0, m=0", epsilon, false, true);
+		SphereDataErrorCheck::check(physical, spectral, "n=0, m=0", epsilon, false, true);
 	}
 
 	{
@@ -76,7 +76,7 @@ void run_tests(
 			}
 		);
 
-		ErrorCheck::check(physical, spectral, "n=1, m=0", epsilon, false, true);
+		SphereDataErrorCheck::check(physical, spectral, "n=1, m=0", epsilon, false, true);
 	}
 
 	{
@@ -99,7 +99,7 @@ void run_tests(
 			}
 		);
 
-		ErrorCheck::check(physical, spectral, "n=2, m=0", epsilon, false, true);
+		SphereDataErrorCheck::check(physical, spectral, "n=2, m=0", epsilon, false, true);
 	}
 
 
@@ -123,7 +123,7 @@ void run_tests(
 			}
 		);
 
-		ErrorCheck::check(physical, spectral, "n=3, m=0", epsilon, false, true);
+		SphereDataErrorCheck::check(physical, spectral, "n=3, m=0", epsilon, false, true);
 	}
 }
 

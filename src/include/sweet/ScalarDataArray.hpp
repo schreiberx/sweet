@@ -22,7 +22,7 @@
  * Precompiler helper functions to handle loops in spectral and physical space
  */
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 
 	#define SCALAR_DATA_FOR_IDX(CORE)				\
 		_Pragma("omp parallel for OPENMP_PAR_SIMD proc_bind(close)")	\
@@ -38,7 +38,7 @@
 #endif
 
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #	include <omp.h>
 #endif
 
@@ -220,7 +220,7 @@ public:
 	{
 		bool isallfinite = true;
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for proc_bind(close) reduction(&&:isallfinite)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
@@ -243,7 +243,7 @@ public:
 	{
 		double maxabs = -1.0;
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for proc_bind(close) reduction(max:maxabs)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
@@ -260,7 +260,7 @@ public:
 	double reduce_rms()
 	{
 		double sum = 0;
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for proc_bind(close) reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
@@ -280,7 +280,7 @@ public:
 		double sum = 0;
 		double c = 0;
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for proc_bind(close) reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
@@ -309,7 +309,7 @@ public:
 	double reduce_max()	const
 	{
 		double maxvalue = -std::numeric_limits<double>::max();
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for proc_bind(close) reduction(max:maxvalue)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
@@ -325,7 +325,7 @@ public:
 	double reduce_min()	const
 	{
 		double minvalue = std::numeric_limits<double>::max();
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for proc_bind(close) reduction(min:minvalue)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
@@ -341,7 +341,7 @@ public:
 	double reduce_sum()	const
 	{
 		double sum = 0;
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for proc_bind(close) reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
@@ -358,7 +358,7 @@ public:
 	{
 		double sum = 0;
 		double c = 0;
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for proc_bind(close) reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
@@ -383,7 +383,7 @@ public:
 	double reduce_norm1()	const
 	{
 		double sum = 0;
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for proc_bind(close) reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
@@ -400,7 +400,7 @@ public:
 	{
 		double sum = 0;
 		double c = 0;
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for proc_bind(close) reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
@@ -426,7 +426,7 @@ public:
 	double reduce_norm2()	const
 	{
 		double sum = 0;
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for proc_bind(close) reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
@@ -445,7 +445,7 @@ public:
 		double sum = 0.0;
 		double c = 0.0;
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for proc_bind(close) reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)

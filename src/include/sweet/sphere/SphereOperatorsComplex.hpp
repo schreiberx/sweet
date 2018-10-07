@@ -80,7 +80,7 @@ public:
 		SphereDataComplex out(i_sph_data.sphereDataConfig);
 
 		// compute d/dlambda in spectral space
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
 		for (int n = 0; n <= i_sph_data.sphereDataConfig->spectral_modes_n_max; n++)
@@ -185,7 +185,7 @@ public:
 		SphereDataComplex out(sphereDataConfig);
 
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
 		for (int n = 0; n <= sphereDataConfig->spectral_modes_n_max; n++)
@@ -224,7 +224,7 @@ public:
 
 		SphereDataComplex out = SphereDataComplex(sphereDataConfig);
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
 		for (int n = 0; n <= i_sph_data.sphereDataConfig->spectral_modes_n_max; n++)
@@ -259,7 +259,7 @@ public:
 
 		SphereDataComplex out = SphereDataComplex(sphereDataConfig);
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
 		for (int n = 0; n <= i_sph_data.sphereDataConfig->spectral_modes_n_max; n++)
@@ -626,14 +626,8 @@ public:
 		SphereDataPhysicalComplex ug = i_u;
 		SphereDataPhysicalComplex vg = i_v;
 
-#if SHTNS_COMPLEX_SPH_SPHTOR
-
-#if SHTNS_COMPLEX_SPH_OLD_INTERFACE
-		spat_cplx_xsint_to_SHsphtor(
-#else
 		shtns_robert_form(sphereDataConfig->shtns, 1);
 		spat_cplx_to_SHsphtor(
-#endif
 				sphereDataConfig->shtns,
 				ug.physical_space_data,
 				vg.physical_space_data,
@@ -644,61 +638,6 @@ public:
 		o_vort.physical_space_data_valid = false;
 		o_div.spectral_space_data_valid = true;
 		o_div.physical_space_data_valid = false;
-
-#else
-
-		ug.physical_update_lambda_cosphi_grid(
-			[&](double lon, double phi, std::complex<double> &o_data)
-			{
-				o_data /= phi;
-			}
-		);
-
-		vg.physical_update_lambda_cosphi_grid(
-			[&](double lon, double phi, std::complex<double> &o_data)
-			{
-				o_data /= phi;
-			}
-		);
-
-		SphereDataPhysical ug_re = Convert_SphereDataPhysicalComplex_To_SphereDataPhysical::physical_convert_real(ug);
-		SphereDataPhysical ug_im = Convert_SphereDataPhysicalComplex_To_SphereDataPhysical::physical_convert_imag(ug);
-		SphereDataPhysical vg_re = Convert_SphereDataPhysicalComplex_To_SphereDataPhysical::physical_convert_real(vg);
-		SphereDataPhysical vg_im = Convert_SphereDataPhysicalComplex_To_SphereDataPhysical::physical_convert_imag(vg);
-
-		SphereData vort_re(sphereDataConfig);
-		SphereData vort_im(sphereDataConfig);
-		SphereData div_re(sphereDataConfig);
-		SphereData div_im(sphereDataConfig);
-
-		shtns_robert_form(sphereDataConfig->shtns, 0);
-		spat_to_SHsphtor(
-				sphereDataConfig->shtns,
-				ug_re.physical_space_data,
-				vg_re.physical_space_data,
-				vort_re.spectral_space_data,
-				div_re.spectral_space_data
-		);
-		vort_re.spectral_space_data_valid = true;
-		vort_re.physical_space_data_valid = false;
-		div_re.spectral_space_data_valid = true;
-		div_re.physical_space_data_valid = false;
-
-		spat_to_SHsphtor(
-				sphereDataConfig->shtns,
-				ug_im.physical_space_data,
-				vg_im.physical_space_data,
-				vort_im.spectral_space_data,
-				div_im.spectral_space_data
-		);
-		vort_im.spectral_space_data_valid = true;
-		vort_im.physical_space_data_valid = false;
-		div_im.spectral_space_data_valid = true;
-		div_im.physical_space_data_valid = false;
-
-		o_vort.loadRealImag(vort_re, vort_im);
-		o_div.loadRealImag(div_re, div_im);
-#endif
 
 		o_vort = laplace(o_vort, r)*r;
 		o_div = laplace(o_div, r)*r;
@@ -725,76 +664,17 @@ public:
 		SphereDataComplex psi = inv_laplace(i_vrt, i_radius)*ir;
 		SphereDataComplex chi = inv_laplace(i_div, i_radius)*ir;
 
-#if SHTNS_COMPLEX_SPH_SPHTOR
-
 		psi.request_data_spectral();
 		chi.request_data_spectral();
 
-#if SHTNS_COMPLEX_SPH_OLD_INTERFACE
-		SHsphtor_to_spat_cplx_xsint(
-#else
 		shtns_robert_form(sphereDataConfig->shtns, 1);
 		SHsphtor_to_spat_cplx(
-#endif
 				sphereDataConfig->shtns,
 				psi.spectral_space_data,
 				chi.spectral_space_data,
 				o_u.physical_space_data,
 				o_v.physical_space_data
 		);
-
-#else
-
-		SphereData psi_re = Convert_SphereDataComplex_To_SphereData::physical_convert_real(psi);
-		SphereData psi_im = Convert_SphereDataComplex_To_SphereData::physical_convert_imag(psi);
-		SphereData chi_re = Convert_SphereDataComplex_To_SphereData::physical_convert_real(chi);
-		SphereData chi_im = Convert_SphereDataComplex_To_SphereData::physical_convert_imag(chi);
-
-		psi_re.request_data_spectral();
-		chi_re.request_data_spectral();
-		SphereDataPhysical u_re(sphereDataConfig);
-		SphereDataPhysical v_re(sphereDataConfig);
-
-		shtns_robert_form(sphereDataConfig->shtns, 0);
-		SHsphtor_to_spat(
-				sphereDataConfig->shtns,
-				psi_re.spectral_space_data,
-				chi_re.spectral_space_data,
-				u_re.physical_space_data,
-				v_re.physical_space_data
-		);
-
-		psi_im.request_data_spectral();
-		chi_im.request_data_spectral();
-		SphereDataPhysical u_im(sphereDataConfig);
-		SphereDataPhysical v_im(sphereDataConfig);
-		SHsphtor_to_spat(
-				sphereDataConfig->shtns,
-				psi_im.spectral_space_data,
-				chi_im.spectral_space_data,
-				u_im.physical_space_data,
-				v_im.physical_space_data
-		);
-
-		o_u.loadRealImag(u_re, u_im);
-		o_v.loadRealImag(v_re, v_im);
-
-
-		o_u.physical_update_lambda_cosphi_grid(
-			[](double lon, double phi, std::complex<double> &o_data)
-			{
-				o_data *= phi;
-			}
-		);
-
-		o_v.physical_update_lambda_cosphi_grid(
-			[](double lon, double phi, std::complex<double> &o_data)
-			{
-				o_data *= phi;
-			}
-		);
-#endif
-
 	}
 
 
@@ -811,7 +691,6 @@ public:
 	{
 		double ir = 1.0/i_radius;
 
-#if 1
 		SphereDataComplex psi(sphereDataConfig);
 		psi.spectral_set_zero();
 
@@ -829,67 +708,6 @@ public:
 
 		o_u *= ir;
 		o_v *= ir;
-
-#else
-
-		i_phi.request_data_spectral();
-
-		SphereDataComplex psi(sphereDataConfig);
-		psi.spectral_set_zero();
-		const SphereDataComplex &chi = i_phi;
-
-		SphereData psi_re(sphereDataConfig);	psi_re.spectral_set_zero();
-		SphereData psi_im(sphereDataConfig);	psi_im.spectral_set_zero();
-
-		SphereData chi_re = Convert_SphereDataComplex_To_SphereData::physical_convert_real(chi);
-		SphereData chi_im = Convert_SphereDataComplex_To_SphereData::physical_convert_imag(chi);
-
-		chi_re.request_data_spectral();
-		SphereDataPhysical u_re(sphereDataConfig);
-		SphereDataPhysical v_re(sphereDataConfig);
-
-#if SHTNS_COMPLEX_SPH_OLD_INTERFACE
-		SHsphtor_to_spat(
-#else
-		FatalError("Don't use this function!");
-		shtns_robert_form(sphereDataConfig->shtns, 1);
-		SHsphtor_to_spat(
-#endif
-				sphereDataConfig->shtns,
-				psi_re.spectral_space_data,
-				chi_re.spectral_space_data,
-				u_re.physical_space_data,
-				v_re.physical_space_data
-		);
-
-		psi_im.request_data_spectral();
-		chi_im.request_data_spectral();
-		SphereDataPhysical u_im(sphereDataConfig);
-		SphereDataPhysical v_im(sphereDataConfig);
-		SHsphtor_to_spat(
-				sphereDataConfig->shtns,
-				psi_im.spectral_space_data,
-				chi_im.spectral_space_data,
-				u_im.physical_space_data,
-				v_im.physical_space_data
-		);
-
-		o_u.loadRealImag(u_re, u_im);
-		o_u.physical_update_lambda_cosphi_grid(
-			[&](double lon, double phi, std::complex<double> &o_data)
-			{
-				o_data *= phi*ir;
-			}
-		);
-
-		o_v.loadRealImag(v_re, v_im);
-		o_v.physical_update_lambda_cosphi_grid(
-			[&](double lon, double phi, std::complex<double> &o_data)
-			{
-				o_data *= phi*ir;
-			}
-		);
-#endif
 	}
 
 
@@ -908,44 +726,6 @@ public:
 		return div_lon(i_lon) + div_lat(i_lat);
 	}
 
-
-
-public:
-	/**
-	 * Compute divergence
-	 *
-	 * \delta = div_lon(i_lon) + div_lan(i_lan)
-	 */
-	SphereDataComplex robert_div(
-			const SphereDataComplex &i_lon,
-			const SphereDataComplex &i_lat
-	)
-	{
-
-#if 1
-		return inv_one_minus_mu2(
-				diff_lon(i_lon)
-				+ spectral_cosphi2_diff_lat_mu(i_lat)
-			);
-
-#elif 1
-
-		return robert_div_lon(i_lon) + robert_div_lat(i_lat);
-
-#elif 1
-		// Only compute division once
-		SphereDataComplex out = diff_lon(i_lon) + spectral_cosphi2_diff_lat_mu(i_lat);
-
-		out.physical_update_lambda_cosphi_grid(
-				[](double lambda, double cos_phi, std::complex<double> &o_data)
-				{
-					o_data /= cos_phi*cos_phi;
-				}
-			);
-
-		return out;
-#endif
-	}
 };
 
 

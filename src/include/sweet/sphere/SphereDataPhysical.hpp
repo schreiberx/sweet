@@ -162,7 +162,7 @@ public:
 
 		SphereDataPhysical out(sphereDataConfig);
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
 		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
@@ -179,7 +179,7 @@ public:
 	{
 		check(i_sph_data.sphereDataConfig);
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
 		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
@@ -195,7 +195,7 @@ public:
 	{
 		check(i_sph_data.sphereDataConfig);
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
 		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
@@ -214,7 +214,7 @@ public:
 
 		SphereDataPhysical out(sphereDataConfig);
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
 		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
@@ -229,7 +229,7 @@ public:
 	{
 		SphereDataPhysical out(sphereDataConfig);
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
 		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
@@ -248,7 +248,7 @@ public:
 
 		SphereDataPhysical out(sphereDataConfig);
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
 		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
@@ -269,7 +269,7 @@ public:
 
 		SphereDataPhysical out(sphereDataConfig);
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
 		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
@@ -286,7 +286,7 @@ public:
 	{
 		SphereDataPhysical out(sphereDataConfig);
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
 		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
@@ -302,7 +302,7 @@ public:
 			const double i_value
 	)	const
 	{
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
 		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
@@ -320,7 +320,7 @@ public:
 	{
 		SphereDataPhysical out(sphereDataConfig);
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
 		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
@@ -337,7 +337,7 @@ public:
 	{
 		SphereDataPhysical out(sphereDataConfig);
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
 		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
@@ -354,7 +354,7 @@ public:
 	{
 		SphereDataPhysical out(sphereDataConfig);
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
 		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
@@ -398,7 +398,7 @@ public:
 			std::function<void(double,double,double&)> i_lambda	///< lambda function to return value for lat/mu
 	)
 	{
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
 
@@ -456,7 +456,7 @@ public:
 	)
 	{
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
 
@@ -493,7 +493,7 @@ public:
 			std::function<void(double,double,double&)> i_lambda	///< lambda function to return value for lat/mu
 	)
 	{
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
 
@@ -540,7 +540,7 @@ public:
 	)
 	{
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
 
@@ -606,7 +606,7 @@ public:
 	 */
 	void physical_set_zero()
 	{
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
 
@@ -624,7 +624,7 @@ public:
 			double i_value
 	)
 	{
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
 
@@ -709,7 +709,7 @@ public:
 	{
 		double sum = 0;
 		double c = 0;
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for proc_bind(close) reduction(+:sum,c)
 #endif
 		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
@@ -736,7 +736,7 @@ public:
 	{
 		double sum = 0;
 		double c = 0;
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for proc_bind(close) reduction(+:sum,c)
 #endif
 		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)

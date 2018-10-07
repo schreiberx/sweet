@@ -42,7 +42,7 @@
  */
 #if SWEET_USE_PLANE_COMPLEX_SPECTRAL_SPACE
 
-	#if SWEET_SPACE_THREADING
+	#if SWEET_THREADING_SPACE
 		#define PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(CORE)					\
 			_Pragma("omp parallel for proc_bind(spread)")			\
 			for (int r = 0; r < 4; r++)								\
@@ -92,7 +92,7 @@
 #endif
 
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 	#define PLANE_DATA_COMPLEX_PHYSICAL_FOR_IDX(CORE)				\
 		_Pragma("omp parallel for OPENMP_PAR_SIMD proc_bind(close)")	\
 			for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)	\
@@ -148,7 +148,7 @@
 #	include <fftw3.h>
 #endif
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #	include <omp.h>
 #endif
 
@@ -450,7 +450,7 @@ public:
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING || 1	/// ALWAYS run this to eliminate Nyquist Frequency even without dealiasing activated
 		assert(spectral_space_data_valid);
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for proc_bind(spread)
 #endif
 		for (int k = 0; k < 2; k++)
@@ -460,7 +460,7 @@ public:
 				/*
 				 * First process part between top and bottom spectral data blocks
 				 */
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for OPENMP_PAR_SIMD proc_bind(close) collapse(2)
 #endif
 				for (std::size_t jj = planeDataConfig->spectral_complex_ranges[0][1][1]; jj < planeDataConfig->spectral_complex_ranges[1][1][0]; jj++)
@@ -474,7 +474,7 @@ public:
 				/*
 				 * Then process the aliasing block on the right side
 				 */
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for OPENMP_PAR_SIMD proc_bind(close) collapse(2)
 #endif
 				for (std::size_t jj = 0; jj < planeDataConfig->spectral_complex_data_size[1]; jj++)
@@ -651,7 +651,7 @@ public:
 #else
 
 #if SWEET_DEBUG
-	#if SWEET_SPACE_THREADING
+	#if SWEET_THREADING_SPACE
 		if (omp_get_num_threads() > 1)
 			FatalError("Are we already in parallel region? Threading race conditions likely!");
 	#endif
@@ -712,7 +712,7 @@ public:
 		request_data_physical();
 
 		std::complex<double> maxabs = -1;
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 		//#pragma omp parallel for proc_bind(close) reduction(max:maxabs)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
@@ -732,7 +732,7 @@ public:
 		request_data_physical();
 
 		std::complex<double> sum = 0;
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 //#pragma omp parallel for proc_bind(close) reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
@@ -755,8 +755,8 @@ public:
 		double sum = 0;
 		double c = 0;
 
-#if SWEET_SPACE_THREADING
-//#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_SPACE
+//#if !SWEET_THREADING_TIME_REXI
 		#pragma omp parallel for reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
@@ -785,8 +785,8 @@ public:
 		double sum = 0;
 		double c = 0;
 
-#if SWEET_SPACE_THREADING
-//#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_SPACE
+//#if !SWEET_THREADING_TIME_REXI
 		#pragma omp parallel for reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
@@ -825,7 +825,7 @@ public:
 		std::complex<double> sum = 0;
 		std::complex<double> c = 0;
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 //#pragma omp parallel for proc_bind(close) reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
@@ -855,7 +855,7 @@ public:
 		request_data_physical();
 
 		double maxvalue = -std::numeric_limits<double>::max();
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for proc_bind(close) reduction(max:maxvalue)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
@@ -874,7 +874,7 @@ public:
 		request_data_physical();
 
 		std::complex<double> minvalue = std::numeric_limits<double>::max();
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 //#pragma omp parallel for proc_bind(close) reduction(min:minvalue)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
@@ -892,7 +892,7 @@ public:
 		request_data_physical();
 
 		std::complex<double> sum = 0;
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 //#pragma omp parallel for proc_bind(close) reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
@@ -912,7 +912,7 @@ public:
 
 		std::complex<double> sum = 0;
 		std::complex<double> c = 0;
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 //#pragma omp parallel for proc_bind(close) reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
@@ -939,7 +939,7 @@ public:
 		request_data_physical();
 
 		double sum = 0;
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for proc_bind(close) reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
@@ -958,7 +958,7 @@ public:
 
 		double sum = 0;
 		double c = 0;
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for proc_bind(close) reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
@@ -986,7 +986,7 @@ public:
 		request_data_physical();
 
 		double sum = 0;
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for proc_bind(close) reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
@@ -1009,7 +1009,7 @@ public:
 		double sum = 0.0;
 		double c = 0.0;
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for proc_bind(close) reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)

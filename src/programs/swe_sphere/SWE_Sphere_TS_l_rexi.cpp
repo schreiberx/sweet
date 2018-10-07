@@ -14,15 +14,15 @@
 #include <sweet/sphere/Convert_SphereData_to_SphereDataComplex.hpp>
 #include <sweet/SimulationBenchmarkTiming.hpp>
 
-#ifndef SWEET_REXI_THREAD_PARALLEL_SUM
-#	define SWEET_REXI_THREAD_PARALLEL_SUM 1
+#ifndef SWEET_THREADING_TIME_REXI
+#	define SWEET_THREADING_TIME_REXI 1
 #endif
 
 
 /*
  * Compute the REXI sum massively parallel *without* a parallelization with parfor in space
  */
-#if SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_TIME_REXI
 #	include <omp.h>
 #endif
 
@@ -58,7 +58,7 @@ SWE_Sphere_TS_l_rexi::SWE_Sphere_TS_l_rexi(
 	#endif
 
 
-	#if SWEET_REXI_THREAD_PARALLEL_SUM
+	#if SWEET_THREADING_TIME_REXI
 
 		num_local_rexi_par_threads = omp_get_max_threads();
 
@@ -176,7 +176,7 @@ void SWE_Sphere_TS_l_rexi::p_get_workload_start_end(
 {
 	std::size_t max_N = rexi_alpha.size();
 
-	#if SWEET_REXI_THREAD_PARALLEL_SUM || SWEET_MPI
+	#if SWEET_THREADING_TIME_REXI || SWEET_MPI
 
 		#if SWEET_MPI
 			int global_thread_id = i_local_thread_id + num_local_rexi_par_threads*mpi_rank;
@@ -278,7 +278,7 @@ void SWE_Sphere_TS_l_rexi::setup(
 		exit(-1);
 	}
 
-	#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+	#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
 		if (omp_in_parallel())
 		{
 			std::cerr << "FATAL ERROR X: in parallel region" << std::endl;
@@ -289,7 +289,7 @@ void SWE_Sphere_TS_l_rexi::setup(
 	// use a kind of serialization of the input to avoid threading conflicts in the ComplexFFT generation
 	for (int j = 0; j < num_local_rexi_par_threads; j++)
 	{
-		#if SWEET_REXI_THREAD_PARALLEL_SUM
+		#if SWEET_THREADING_TIME_REXI
 		#pragma omp parallel for schedule(static,1) default(none) shared(std::cout,j)
 		#endif
 		for (int local_thread_id = 0; local_thread_id < num_local_rexi_par_threads; local_thread_id++)
@@ -297,7 +297,7 @@ void SWE_Sphere_TS_l_rexi::setup(
 			if (local_thread_id != j)
 				continue;
 
-			#if SWEET_DEBUG && SWEET_REXI_THREAD_PARALLEL_SUM
+			#if SWEET_DEBUG && SWEET_THREADING_TIME_REXI
 				if (omp_get_thread_num() != local_thread_id)
 				{
 					// leave this dummy std::cout in it to avoid the intel compiler removing this part
@@ -366,7 +366,7 @@ void SWE_Sphere_TS_l_rexi::p_update_coefficients(
 		);
 	}
 
-	#if SWEET_REXI_THREAD_PARALLEL_SUM
+	#if SWEET_THREADING_TIME_REXI
 	#pragma omp parallel for schedule(static,1) default(none) shared(std::cout)
 	#endif
 	for (int local_thread_id = 0; local_thread_id < num_local_rexi_par_threads; local_thread_id++)
@@ -532,7 +532,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 	/*
 	 * Special handler for REXI without using mode extension and no threading to speedup things
 	 */
-	#if !SWEET_REXI_THREAD_PARALLEL_SUM
+	#if !SWEET_THREADING_TIME_REXI
 
 		#if SWEET_REXI_TIMINGS
 			SimulationBenchmarkTimings::getInstance().rexi_timestepping_miscprocessing.start();
@@ -722,7 +722,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 			SimulationBenchmarkTimings::getInstance().rexi_timestepping_miscprocessing.stop();
 		#endif
 
-	#else	/* SWEET_REXI_THREAD_PARALLEL_SUM */
+	#else	/* SWEET_THREADING_TIME_REXI */
 
 
 		#if SWEET_DEBUG
@@ -999,7 +999,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 		#if SWEET_REXI_TIMINGS
 			SimulationBenchmarkTimings::getInstance().rexi_timestepping_miscprocessing.stop();
 		#endif
-	#endif	// END SWEET_REXI_THREAD_PARALLEL_SUM
+	#endif	// END SWEET_THREADING_TIME_REXI
 
 
 	#if SWEET_MPI

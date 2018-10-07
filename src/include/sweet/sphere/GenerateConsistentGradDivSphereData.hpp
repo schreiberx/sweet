@@ -13,7 +13,6 @@
 #include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/sphere/SphereDataTimesteppingExplicitRK.hpp>
 #include "../../../programs/swe_sphere/SWE_Sphere_TS_l_erk.hpp"
-//#include "../../../programs/swe_sphere/SWE_Sphere_TS_ln_erk.hpp"
 
 
 
@@ -49,122 +48,6 @@ public:
 	SphereData prog_h, prog_u, prog_v;
 
 	double center_lon, center_lat;
-
-#if 0
-private:
-	// Main routine for method to be used in case of finite differences
-	void p_run_euler_timestep_update(
-			const SphereData &i_h,	///< prognostic variables
-			const SphereData &i_u,	///< prognostic variables
-			const SphereData &i_v,	///< prognostic variables
-
-			SphereData &o_h_t,	///< time updates
-			SphereData &o_u_t,	///< time updates
-			SphereData &o_v_t,	///< time updates
-
-			double i_simulation_timestamp = -1
-	)
-	{
-		assert(simVars.sim.earth_radius > 0);
-
-		if (!simVars.pde.use_nonlinear_equations)
-		{
-			if (!simVars.misc.sphere_use_robert_functions)
-			{
-				// linear equations
-				o_h_t = -(op.div_lon(i_u)+op.div_lat(i_v))*(simVars.sim.h0/simVars.sim.earth_radius);
-
-				o_u_t = -op.grad_lon(i_h)*(simVars.sim.gravitation/simVars.sim.earth_radius);
-				o_v_t = -op.grad_lat(i_h)*(simVars.sim.gravitation/simVars.sim.earth_radius);
-
-				if (simVars.sim.coriolis_omega != 0)
-				{
-					o_u_t += 2.0*simVars.sim.coriolis_omega*op.mu(i_v);
-					o_v_t -= 2.0*simVars.sim.coriolis_omega*op.mu(i_u);
-				}
-			}
-			else
-			{
-				// use Robert functions for velocity
-				// linear equations
-				o_h_t = -(op.robert_div_lon(i_u)+op.robert_div_lat(i_v))*(simVars.sim.h0/simVars.sim.earth_radius);
-
-				o_u_t = -op.robert_grad_lon(i_h)*(simVars.sim.gravitation/simVars.sim.earth_radius);
-				o_v_t = -op.robert_grad_lat(i_h)*(simVars.sim.gravitation/simVars.sim.earth_radius);
-
-				if (simVars.sim.coriolis_omega != 0)
-				{
-					o_u_t += 2.0*simVars.sim.coriolis_omega*op.mu(i_v);
-					o_v_t -= 2.0*simVars.sim.coriolis_omega*op.mu(i_u);
-				}
-			}
-		}
-		else
-		{
-			if (!simVars.misc.sphere_use_robert_functions)
-			{
-				/*
-				 * Height
-				 */
-				// non-linear equations
-				o_h_t = -(op.div_lon(i_h*i_u)+op.div_lat(i_h*i_v))*(1.0/simVars.sim.earth_radius);
-
-				/*
-				 * Velocity
-				 */
-				// linear terms
-				o_u_t = -op.grad_lon(i_h)*(simVars.sim.gravitation/simVars.sim.earth_radius);
-				o_v_t = -op.grad_lat(i_h)*(simVars.sim.gravitation/simVars.sim.earth_radius);
-
-				if (simVars.sim.coriolis_omega != 0)
-				{
-					o_u_t += 2.0*simVars.sim.coriolis_omega*op.mu(i_v);
-					o_v_t -= 2.0*simVars.sim.coriolis_omega*op.mu(i_u);
-				}
-
-				// non-linear terms
-				o_u_t -= (i_u*op.grad_lon(i_u) + i_v*op.grad_lat(i_u))*(1.0/simVars.sim.earth_radius);
-				o_v_t -= (i_u*op.grad_lon(i_v) + i_v*op.grad_lat(i_v))*(1.0/simVars.sim.earth_radius);
-			}
-			else
-			{
-				/*
-				 * Height
-				 */
-				// non-linear equations
-				o_h_t = -(op.robert_div_lon(i_h*i_u)+op.robert_div_lat(i_h*i_v))*(1.0/simVars.sim.earth_radius);
-
-				/*
-				 * Velocity
-				 */
-				// linear terms
-				o_u_t = -op.robert_grad_lon(i_h)*(simVars.sim.gravitation/simVars.sim.earth_radius);
-				o_v_t = -op.robert_grad_lat(i_h)*(simVars.sim.gravitation/simVars.sim.earth_radius);
-
-				if (simVars.sim.coriolis_omega != 0)
-				{
-					o_u_t += 2.0*simVars.sim.coriolis_omega*op.mu(i_v);
-					o_v_t -= 2.0*simVars.sim.coriolis_omega*op.mu(i_u);
-				}
-
-				// non-linear terms
-				o_u_t -= (i_u*op.robert_grad_lon(i_u) + i_v*op.robert_grad_lat(i_u))*(1.0/simVars.sim.earth_radius);
-				o_v_t -= (i_u*op.robert_grad_lon(i_v) + i_v*op.robert_grad_lat(i_v))*(1.0/simVars.sim.earth_radius);
-
-			}
-		}
-
-		assert(simVars.sim.viscosity_order == 2);
-		if (simVars.sim.viscosity != 0)
-		{
-			double scalar = simVars.sim.viscosity/(simVars.sim.earth_radius*simVars.sim.earth_radius);
-
-			o_h_t += op.laplace(i_h)*scalar;
-			o_u_t += op.laplace(i_u)*scalar;
-			o_v_t += op.laplace(i_v)*scalar;
-		}
-	}
-#endif
 
 
 private:

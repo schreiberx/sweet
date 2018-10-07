@@ -156,7 +156,7 @@ public:
 		std::size_t max_pos_idx = i_pos_x.number_of_elements;
 
 #if SWEET_DEBUG
-#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
 
 		if (omp_get_num_threads() > 1)
 			FatalError("Are we already in parallel region? Threading race conditions likely!");
@@ -164,7 +164,7 @@ public:
 #endif
 
 		// iterate over all positions in parallel
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
 		for (std::size_t pos_idx = 0; pos_idx < max_pos_idx; pos_idx++)
@@ -330,7 +330,7 @@ public:
 		assert(size != 0);
 
 		// iterate over all positions
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
 		for (std::size_t pos_idx = 0; pos_idx < size; pos_idx++)

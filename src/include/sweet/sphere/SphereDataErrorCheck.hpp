@@ -1,12 +1,12 @@
 /*
- * ErrorCheck.hpp
+ * SphereDataErrorCheck.hpp
  *
  *  Created on: 3 Feb 2017
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#ifndef SRC_INCLUDE_SWEET_SPHERE_ERRORCHECK_HPP_
-#define SRC_INCLUDE_SWEET_SPHERE_ERRORCHECK_HPP_
+#ifndef SRC_INCLUDE_SWEET_SPHERE_SPHEREDATAERRORCHECK_HPP_
+#define SRC_INCLUDE_SWEET_SPHERE_SPHEREDATAERRORCHECK_HPP_
 
 #include <sweet/sphere/SphereData.hpp>
 #include <sweet/sphere/SphereDataComplex.hpp>
@@ -14,7 +14,7 @@
 #include <sweet/sphere/Convert_SphereData_to_SphereDataComplex.hpp>
 
 
-class ErrorCheck
+class SphereDataErrorCheck
 {
 public:
 	static
@@ -323,4 +323,4 @@ public:
 };
 
 
-#endif /* SRC_INCLUDE_SWEET_SPHERE_ERRORCHECK_HPP_ */
+#endif /* SRC_INCLUDE_SWEET_SPHERE_SPHEREDATAERRORCHECK_HPP_ */

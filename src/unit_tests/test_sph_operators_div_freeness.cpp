@@ -16,7 +16,7 @@
 #include <sweet/sphere/SphereOperatorsComplex.hpp>
 #include <sweet/FatalError.hpp>
 #include <sweet/MemBlockAlloc.hpp>
-#include <sweet/sphere/ErrorCheck.hpp>
+#include <sweet/sphere/SphereDataErrorCheck.hpp>
 
 
 
@@ -167,37 +167,6 @@ void run_tests()
 				}
 			);
 
-#if 0
-			{
-				SphereData lhs = op.robert_div(u, v);
-				ErrorCheck::check(lhs, zero, "REAL: div freeness Robert formulation", error_threshold*1e1);
-			}
-
-			{
-				SphereDataComplex lhsc = opComplex.robert_div(uc, vc);
-				ErrorCheck::check(lhsc, zeroc, "COMPLEX: div freeness Robert formulation", error_threshold*1e1);
-			}
-
-			{
-				// LHS = div(U*phi)
-				SphereData lhs = op.robert_div(u*phi, v*phi);
-
-				// RHS = div(U)*phi + grad(phi)*U = grad(phi)*U  (divergence free)
-				SphereData rhs = op.robert_grad_M(phi, u, v);
-
-				ErrorCheck::check(lhs, rhs, "REAL: TEST div(U*phi) with Robert formulation", error_threshold*10e4);
-			}
-#endif
-
-			{
-				// LHS = div(U*phi)
-				SphereDataComplex lhsc = opComplex.robert_div(uc*phic, vc*phic);
-
-				// RHS = div(U)*phi + grad(phi)*U = grad(phi)*U  (divergence free)
-				SphereDataComplex rhsc = opComplex.robert_grad_M(phic, uc, vc);
-
-				ErrorCheck::check(lhsc, rhsc, "COMPLEX: TEST div(U*phi) with Robert formulation", error_threshold*10e4);
-			}
 		}
 	}
 }

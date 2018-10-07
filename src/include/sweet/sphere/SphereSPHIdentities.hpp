@@ -87,36 +87,6 @@ public:
 		return std::sqrt(((n+1.0)*(n+1.0)-m*m)/((2.0*n+1.0)*(2.0*n+3.0)));
 	}
 
-#if 0
-	inline
-	static std::complex<double> Rc(double k, double m)
-	{
-		double n=k+1;
-
-		if (n < std::abs(m))
-			return 0;
-
-		assert (n*n-m*m >= 0);
-
-		assert(n >= 0);
-		return std::sqrt(std::complex<double>((n*n-m*m)/(4.0*n*n-1.0)));
-	}
-
-	inline
-	static std::complex<double> Sc(double k, double m)
-	{
-		double n=k-1;
-
-		if (n < std::abs(m))
-			return 0;
-
-		assert (n*n-m*m >= 0);
-
-		assert(n >= 0);
-		return std::sqrt(std::complex<double>(((n+1.0)*(n+1.0)-m*m)/((2.0*n+1.0)*(2.0*n+3.0))));
-	}
-#endif
-
 	inline
 	static double A(double k, double m)
 	{
@@ -138,84 +108,6 @@ public:
 	}
 
 
-#if 0
-	inline
-	static std::complex<double> Ac(double k, double m)
-	{
-		double n = k+2.0;
-		return Rc(n-1,m)*Rc(n-2,m);
-	}
-
-	inline
-	static std::complex<double> Bc(double n, double m)
-	{
-		return Rc(n-1,m)*Sc(n,m) + Sc(n+1,m)*Rc(n,m);
-	}
-
-	inline
-	static std::complex<double> Cc(double k, double m)
-	{
-		double n = k-2.0;
-		return Sc(n+1,m)*Sc(n+2,m);
-	}
-
-
-
-
-
-	inline
-	static std::complex<double> cR(
-			const std::complex<double> &k,
-			const std::complex<double> &m
-	)
-	{
-		std::complex<double> n=k+1.0;
-
-		return std::sqrt((n*n-m*m)/(4.0*n*n-1.0));
-	}
-
-	inline
-	static std::complex<double> cS(
-			const std::complex<double> &k,
-			const std::complex<double> &m
-	)
-	{
-		std::complex<double> n=k-1.0;
-
-		return std::sqrt(((n+1.0)*(n+1.0)-m*m)/((2.0*n+1.0)*(2.0*n+3.0)));
-	}
-
-
-	inline
-	static std::complex<double> cA(
-			const std::complex<double> &k,
-			const std::complex<double> &m
-	)
-	{
-		std::complex<double> n = k+2.0;
-
-		return cR(n-1.0, m)*cR(n-2.0,m);
-	}
-
-	inline
-	static std::complex<double> cB(
-			const std::complex<double> &n,
-			const std::complex<double> &m
-	)
-	{
-		return cR(n-1.0,m)*cS(n,m) + cS(n+1.0, m)*cR(n,m);
-	}
-
-	inline
-	static std::complex<double> cC(
-			const std::complex<double> &k,
-			const std::complex<double> &m
-	)
-	{
-		std::complex<double> n = k-2.0;
-		return cS(n+1.0,m)*cS(n+2.0,m);
-	}
-#endif
 };
 
 

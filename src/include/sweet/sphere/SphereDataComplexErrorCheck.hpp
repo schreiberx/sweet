@@ -1,12 +1,12 @@
 /*
- * SphereComplexErrorCheck.hpp
+ * SphereDataComplexErrorCheck.hpp
  *
  *  Created on: 10 Nov 2016
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#ifndef SRC_INCLUDE_SWEET_SPHERE_SPHERECOMPLEXERRORCHECK_HPP_
-#define SRC_INCLUDE_SWEET_SPHERE_SPHERECOMPLEXERRORCHECK_HPP_
+#ifndef SRC_INCLUDE_SWEET_SPHERE_SPHEREDATACOMPLEXERRORCHECK_HPP_
+#define SRC_INCLUDE_SWEET_SPHERE_SPHEREDATACOMPLEXERRORCHECK_HPP_
 
 #include <sweet/sphere/SphereDataComplex.hpp>
 
@@ -53,4 +53,4 @@ class SphereComplexErrorCheck
 };
 
 
-#endif /* SRC_INCLUDE_SWEET_SPHERE_SPHERECOMPLEXERRORCHECK_HPP_ */
+#endif /* SRC_INCLUDE_SWEET_SPHERE_SPHEREDATACOMPLEXERRORCHECK_HPP_ */
