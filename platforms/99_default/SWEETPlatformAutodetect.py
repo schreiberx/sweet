@@ -9,9 +9,11 @@ def autodetect():
 	"""
 
 	# Always true, since this is the fallback solution
-	#return True
+	# This helps new user for a quick start
+	return True
 
 	# Return false to avoid any accidental errors
+	#return True
 	return False
 
 if __name__ == "__main__":
