@@ -2,7 +2,7 @@
 
 CHANGE_PLATFORM_PWD=$PWD
 
-if [ -z "$TMP_SWEET_ROOT" ]; then
+if [ -z "$SWEET_ROOT" ]; then
 	echo "********************************************************************************"
 	echo "* ERROR: SWEET environment variables missing!"
 	echo "********************************************************************************"
@@ -27,7 +27,7 @@ if [[ "#$1" != "#" && "#$1" != "#auto" ]]; then
 	echo_info "                   Mode: manual: $0 $1 (=${1})"
 	echo_info_hline
 
-	PLATFORM_ENV_VARS=$(eval echo "${TMP_SWEET_ROOT}/platforms/"??"_$1/env_vars.sh")
+	PLATFORM_ENV_VARS=$(eval echo "${SWEET_ROOT}/platforms/"??"_$1/env_vars.sh")
 
 	if [ ! -e "$PLATFORM_ENV_VARS" ]; then
 		echo_error "File '${PLATFORM_ENV_VARS}' not found!"
@@ -39,7 +39,7 @@ if [[ "#$1" != "#" && "#$1" != "#auto" ]]; then
 
 	export SWEET_PLATFORM_ID="$1"
 
-	export SWEET_PLATFORM_DIR="$(eval echo "${TMP_SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM_ID}/")"
+	export SWEET_PLATFORM_DIR="$(eval echo "${SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM_ID}/")"
 
 elif [[ "#$SWEET_PLATFORM_ID" != "#" && "#$1" != "#auto" ]]; then
 	#
@@ -50,7 +50,7 @@ elif [[ "#$SWEET_PLATFORM_ID" != "#" && "#$1" != "#auto" ]]; then
 	echo_info "                   Mode: manual: SWEET_PLATFORM_ID (=${SWEET_PLATFORM_ID})"
 	echo_info_hline
 
-	export SWEET_PLATFORM_DIR="$(eval echo "${TMP_SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM_ID}/")"
+	export SWEET_PLATFORM_DIR="$(eval echo "${SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM_ID}/")"
 
 else
 
@@ -80,7 +80,7 @@ else
 	#
 	# Try with autodetection of platforms
 	#
-	for i in $TMP_SWEET_ROOT/platforms/??_*; do
+	for i in $SWEET_ROOT/platforms/??_*; do
 		cd "$i"
 		load_this_platform
 		if [ $? -eq 0 ]; then
@@ -106,7 +106,7 @@ fi
 echo_info "         Using platform: '${SWEET_PLATFORM_ID}'"
 echo_info "     Platform directory: '${SWEET_PLATFORM_DIR}'"
 
-export SWEET_PLATFORM_DIR="$(eval echo "${TMP_SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM_ID}/")"
+export SWEET_PLATFORM_DIR="$(eval echo "${SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM_ID}/")"
 
 
 echo_success_hline
