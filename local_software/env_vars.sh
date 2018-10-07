@@ -1,5 +1,3 @@
-#! /bin/bash
-
 #
 # This is a template to set up environment variables correctly
 #
@@ -138,14 +136,8 @@ if [ "#$SWEET_PLATFORM" != "#" ]; then
 	echo_info_hline
 	echo_info "                   Mode: SWEET_PLATFORM (=${SWEET_PLATFORM})"
 	echo_info_hline
-	PLATFORM_ENV_VARS=$(eval echo "${TMP_SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM}/env_vars.sh")
 
-	if [ ! -e "$PLATFORM_ENV_VARS" ]; then
-		echo_error "File '${PLATFORM_ENV_VARS}' not found!"
-		return 1
-	fi
-
-	source "$PLATFORM_ENV_VARS" || return 1
+	source "$TMP_SWEET_ROOT/local_software/change_platform.sh"
 
 elif [ "#${1}" = "#" ] || [ "#${1}" = "#FORCE" ]; then
 
@@ -260,7 +252,12 @@ export PYTHONPATH="$PYTHONPATH:$SWEET_ROOT/python_mods"
 # Back to local software
 cd "$SCRIPTDIR"
 
-export PS1="[SWEET.$SWEET_PLATFORM] $PS1"
+PS_RELPATH="realpath  --relative-to=/home/martin/workspace/sweet ./"
+
+# Make prompt nice looking
+#export PS1='\[\033[01;32m\][SWEET \u@$SWEET_PLATFORM]\[\033[00m\] $($PS_RELPATH)\$ '
+export PS1='\[\033[01;32m\][SWEET @ $SWEET_PLATFORM]\[\033[00m\] $($PS_RELPATH)\$ '
+
 
 
 #######################################################################
