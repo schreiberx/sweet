@@ -10,7 +10,8 @@ for i in $SWEET_SYSTEM_PACKAGES; do
 	if [ "x$?" != "x0" ]; then
 		echo_error "Debian-based system detected and packages missing, please use"
 		echo_error "    sudo apt-get install $SWEET_SYSTEM_PACKAGES"
-		return
+		return 2>/dev/null
+		exit 1
 	fi
 done
 
