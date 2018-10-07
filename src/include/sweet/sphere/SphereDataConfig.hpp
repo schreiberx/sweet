@@ -198,6 +198,10 @@ public:
 private:
 	void setup_data()
 	{
+#if SWEET_DEBUG
+		shtns_print_cfg();
+#endif
+
 		physical_num_lat = shtns->nlat;
 		physical_num_lon = shtns->nphi;
 		physical_array_data_number_of_elements = shtns->nspat;
