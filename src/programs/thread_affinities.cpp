@@ -1,5 +1,6 @@
 /*
- * This script originates from Brian Dobbins (NCAR).
+ * This script originates from Brian Dobbins (NCAR) who
+ * might have got it from another person.
  *
  * It is not directly related to SWEET, but helps to identify affinities
  * if running it on supercomputers.
