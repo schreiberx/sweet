@@ -1,8 +1,8 @@
 
 
-SWEET_SYSTEM_PACKAGES="libxft-dev libssl-dev"
+SWEET_SYSTEM_PACKAGES="libxft-dev libssl-dev texinfo"
 if [ "x$DISPLAY" = "x:0" ]; then
-	export SWEET_SYSTEM_PACKAGES="$SWEET_SYSTEM_PACKAGES libgl1-mesa-dev texinfo"
+	export SWEET_SYSTEM_PACKAGES="$SWEET_SYSTEM_PACKAGES libgl1-mesa-dev"
 fi
 
 for i in $SWEET_SYSTEM_PACKAGES; do
