@@ -153,13 +153,10 @@ class SWEETJobGeneration(InfoError):
 
 		content += """
 
-# Provide platform ID helper for scripts.
-# This makes platform detection on the compute nodes easier since they might have mainly numerical identifiers
-export SWEET_PLATFORM=\""""+self.platforms.platform_id+"""\"
 
-# Loading SWEET environment variables
+# Loading SWEET environment variables for currently active platform
 cd \""""+self.sweetroot+"""\"
-source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platform_dirpath+"/env_vars.sh")+"""\" || exit 1
+source ./local_software/env_vars.sh \""""+self.platforms.platform_id+"""\" || exit 1
 
 """
 		#

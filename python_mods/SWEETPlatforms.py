@@ -46,8 +46,8 @@ class SWEETPlatforms(InfoError):
 			self.error("SWEET environment variables not loaded!")
 
 		if platform_id_override == None:
-			# Check for environment variable SWEET_PLATFORM
-			platform_id_override = os.environ.get('SWEET_PLATFORM')
+			# Check for environment variable SWEET_PLATFORM_ID
+			platform_id_override = os.environ.get('SWEET_PLATFORM_ID')
 
 		self.platform_id_override = platform_id_override
 

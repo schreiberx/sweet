@@ -22,7 +22,7 @@ SCRIPT="$(echo -n ${SWEET_PLATFORM_DIR}/$(basename $0))"
 
 # check if this script exists
 if [ ! -e "$SCRIPT" ]; then
-	echo "Script '$(basename ${0})' does not exist for platform '${SWEET_PLATFORM}'"
+	echo "Script '$(basename ${0})' does not exist for platform '${SWEET_PLATFORM_ID}'"
 	exit 1
 fi
 

@@ -33,3 +33,9 @@ Possible config files:
 	./SWEETPlatform.py
 		Included by files ./python_mods/SWEET*.py
 		
+
+	./local_software_default.sh
+		Information on software packages in
+			[sweet root]/local_sofware/
+		to install on this platform, see
+			[sweet root]/local_sofware/setup_local_software.sh
