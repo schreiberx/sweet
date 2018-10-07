@@ -7,3 +7,5 @@ done
 rm -rf ./genplans_*
 
 rm -f ./compile_platform*.sh
+
+exit 0

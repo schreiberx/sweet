@@ -579,7 +579,7 @@ public:
 		return out_sph_data;
 	}
 
-
+#if 0
 	const SphereDataComplex& operator*=(
 			const double i_value
 	)	const
@@ -594,6 +594,7 @@ public:
 
 		return *this;
 	}
+#endif
 
 
 	const SphereDataComplex& operator*=(

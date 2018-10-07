@@ -18,6 +18,7 @@
 #	define SWEET_REXI_THREAD_PARALLEL_SUM 1
 #endif
 
+
 /*
  * Compute the REXI sum massively parallel *without* a parallelization with parfor in space
  */
@@ -169,23 +170,18 @@ SWE_Sphere_TS_l_rexi::~SWE_Sphere_TS_l_rexi()
 
 void SWE_Sphere_TS_l_rexi::p_get_workload_start_end(
 		std::size_t &o_start,
-		std::size_t &o_end
+		std::size_t &o_end,
+		int i_local_thread_id
 )
 {
 	std::size_t max_N = rexi_alpha.size();
 
 	#if SWEET_REXI_THREAD_PARALLEL_SUM || SWEET_MPI
 
-		#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
-			int local_thread_id = omp_get_thread_num();
-		#else
-			int local_thread_id = 0;
-		#endif
-
 		#if SWEET_MPI
-			int global_thread_id = local_thread_id + num_local_rexi_par_threads*mpi_rank;
+			int global_thread_id = i_local_thread_id + num_local_rexi_par_threads*mpi_rank;
 		#else
-			int global_thread_id = local_thread_id;
+			int global_thread_id = i_local_thread_id;
 		#endif
 
 		assert(block_size >= 0);
@@ -296,24 +292,24 @@ void SWE_Sphere_TS_l_rexi::setup(
 		#if SWEET_REXI_THREAD_PARALLEL_SUM
 		#pragma omp parallel for schedule(static,1) default(none) shared(std::cout,j)
 		#endif
-		for (int i = 0; i < num_local_rexi_par_threads; i++)
+		for (int local_thread_id = 0; local_thread_id < num_local_rexi_par_threads; local_thread_id++)
 		{
-			if (i != j)
+			if (local_thread_id != j)
 				continue;
 
-			#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
-				if (omp_get_thread_num() != i)
+			#if SWEET_DEBUG && SWEET_REXI_THREAD_PARALLEL_SUM
+				if (omp_get_thread_num() != local_thread_id)
 				{
 					// leave this dummy std::cout in it to avoid the intel compiler removing this part
-					std::cout << "ERROR: thread " << omp_get_thread_num() << " number mismatch " << i << std::endl;
+					std::cout << "ERROR: thread " << omp_get_thread_num() << " number mismatch " << local_thread_id << std::endl;
 					exit(-1);
 				}
 			#endif
 
-			perThreadVars[i] = new PerThreadVars;
+			perThreadVars[local_thread_id] = new PerThreadVars;
 
 			std::size_t start, end;
-			p_get_workload_start_end(start, end);
+			p_get_workload_start_end(start, end, local_thread_id);
 			int local_size = (int)end-(int)start;
 
 			#if SWEET_DEBUG
@@ -321,19 +317,19 @@ void SWE_Sphere_TS_l_rexi::setup(
 					FatalError("local_size < 0");
 			#endif
 
-			perThreadVars[i]->alpha.resize(local_size);
-			perThreadVars[i]->beta_re.resize(local_size);
+			perThreadVars[local_thread_id]->alpha.resize(local_size);
+			perThreadVars[local_thread_id]->beta_re.resize(local_size);
 
-			perThreadVars[i]->accum_phi.setup(sphereDataConfigSolver);
-			perThreadVars[i]->accum_vort.setup(sphereDataConfigSolver);
-			perThreadVars[i]->accum_div.setup(sphereDataConfigSolver);
+			perThreadVars[local_thread_id]->accum_phi.setup(sphereDataConfigSolver);
+			perThreadVars[local_thread_id]->accum_vort.setup(sphereDataConfigSolver);
+			perThreadVars[local_thread_id]->accum_div.setup(sphereDataConfigSolver);
 
 			for (std::size_t n = start; n < end; n++)
 			{
 				int thread_local_idx = n-start;
 
-				perThreadVars[i]->alpha[thread_local_idx] = rexi_alpha[n];
-				perThreadVars[i]->beta_re[thread_local_idx] = rexi_beta[n];
+				perThreadVars[local_thread_id]->alpha[thread_local_idx] = rexi_alpha[n];
+				perThreadVars[local_thread_id]->beta_re[thread_local_idx] = rexi_beta[n];
 			}
 		}
 	}
@@ -370,42 +366,35 @@ void SWE_Sphere_TS_l_rexi::p_update_coefficients(
 		);
 	}
 
-	// use a kind of serialization of the input to avoid threading conflicts in the ComplexFFT generation
-	for (int j = 0; j < num_local_rexi_par_threads; j++)
+	#if SWEET_REXI_THREAD_PARALLEL_SUM
+	#pragma omp parallel for schedule(static,1) default(none) shared(std::cout)
+	#endif
+	for (int local_thread_id = 0; local_thread_id < num_local_rexi_par_threads; local_thread_id++)
 	{
-		#if SWEET_REXI_THREAD_PARALLEL_SUM
-		#pragma omp parallel for schedule(static,1) default(none) shared(std::cout,j)
-		#endif
-		for (int i = 0; i < num_local_rexi_par_threads; i++)
+		std::size_t start, end;
+		p_get_workload_start_end(start, end, local_thread_id);
+		int local_size = (int)end-(int)start;
+
+		if (use_rexi_sphere_solver_preallocation)
 		{
-			if (i != j)
-				continue;
+			perThreadVars[local_thread_id]->rexiSPHRobert_vector.resize(local_size);
 
-			std::size_t start, end;
-			p_get_workload_start_end(start, end);
-			int local_size = (int)end-(int)start;
-
-			if (use_rexi_sphere_solver_preallocation)
+			for (std::size_t n = start; n < end; n++)
 			{
-				perThreadVars[i]->rexiSPHRobert_vector.resize(local_size);
+				int thread_local_idx = n-start;
 
-				for (std::size_t n = start; n < end; n++)
-				{
-					int thread_local_idx = n-start;
-
-					perThreadVars[i]->rexiSPHRobert_vector[thread_local_idx].setup_vectorinvariant_progphivortdiv(
-							sphereDataConfigSolver,
-							perThreadVars[i]->alpha[thread_local_idx],
-							perThreadVars[i]->beta_re[thread_local_idx],
-							simCoeffs.earth_radius,
-							simCoeffs.coriolis_omega,
-							simCoeffs.f0,
-							simCoeffs.h0 * simCoeffs.gravitation,
-							timestep_size,
-							use_f_sphere,
-							no_coriolis
-						);
-				}
+				perThreadVars[local_thread_id]->rexiSPHRobert_vector[thread_local_idx].setup_vectorinvariant_progphivortdiv(
+						sphereDataConfigSolver,
+						perThreadVars[local_thread_id]->alpha[thread_local_idx],
+						perThreadVars[local_thread_id]->beta_re[thread_local_idx],
+						simCoeffs.earth_radius,
+						simCoeffs.coriolis_omega,
+						simCoeffs.f0,
+						simCoeffs.h0 * simCoeffs.gravitation,
+						timestep_size,
+						use_f_sphere,
+						no_coriolis
+					);
 			}
 		}
 	}
@@ -550,7 +539,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 		#endif
 
 		std::size_t start, end;
-		p_get_workload_start_end(start, end);
+		p_get_workload_start_end(start, end, 0);
 
 		#if SWEET_DEBUG
 			/**
@@ -759,10 +748,10 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 			#endif
 
 			#pragma omp parallel for schedule(static,1) default(none) shared(i_fixed_dt, io_prog_phi0, io_prog_vort0, io_prog_div0, std::cout, std::cerr)
-			for (int thread_id = 0; thread_id < num_local_rexi_par_threads; thread_id++)
+			for (int local_thread_id = 0; local_thread_id < num_local_rexi_par_threads; local_thread_id++)
 			{
 				std::size_t start, end;
-				p_get_workload_start_end(start, end);
+				p_get_workload_start_end(start, end, local_thread_id);
 
 				/*
 				* Make a copy to ensure that there are no race conditions by converting to physical space
@@ -775,9 +764,9 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 				SphereData tmp_prog_vort(sphereDataConfigSolver);
 				SphereData tmp_prog_div(sphereDataConfigSolver);
 
-				perThreadVars[thread_id]->accum_phi.spectral_set_zero();
-				perThreadVars[thread_id]->accum_vort.spectral_set_zero();
-				perThreadVars[thread_id]->accum_div.spectral_set_zero();
+				perThreadVars[local_thread_id]->accum_phi.spectral_set_zero();
+				perThreadVars[local_thread_id]->accum_vort.spectral_set_zero();
+				perThreadVars[local_thread_id]->accum_div.spectral_set_zero();
 
 
 				for (std::size_t workload_idx = start; workload_idx < end; workload_idx++)
@@ -786,7 +775,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 					if (use_rexi_sphere_solver_preallocation)
 					{
-						perThreadVars[thread_id]->rexiSPHRobert_vector[local_idx].solve_vectorinvariant_progphivortdiv(
+						perThreadVars[local_thread_id]->rexiSPHRobert_vector[local_idx].solve_vectorinvariant_progphivortdiv(
 								thread_io_prog_phi0, thread_io_prog_vort0, thread_io_prog_div0,
 								tmp_prog_phi, tmp_prog_vort, tmp_prog_div
 							);
@@ -795,8 +784,8 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 					{
 						SWERexiTerm_SPHRobert rexiSPHRobert;
 
-						std::complex<double> &alpha = perThreadVars[thread_id]->alpha[local_idx];
-						std::complex<double> &beta_re = perThreadVars[thread_id]->beta_re[local_idx];
+						std::complex<double> &alpha = perThreadVars[local_thread_id]->alpha[local_idx];
+						std::complex<double> &beta_re = perThreadVars[local_thread_id]->beta_re[local_idx];
 
 						rexiSPHRobert.setup_vectorinvariant_progphivortdiv(
 								sphereDataConfigSolver,	///< sphere data for input data
@@ -819,9 +808,9 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 							);
 					}
 
-					perThreadVars[thread_id]->accum_phi += tmp_prog_phi;
-					perThreadVars[thread_id]->accum_vort += tmp_prog_vort;
-					perThreadVars[thread_id]->accum_div += tmp_prog_div;
+					perThreadVars[local_thread_id]->accum_phi += tmp_prog_phi;
+					perThreadVars[local_thread_id]->accum_vort += tmp_prog_vort;
+					perThreadVars[local_thread_id]->accum_div += tmp_prog_div;
 				}
 
 				#if SWEET_DEBUG
@@ -833,7 +822,6 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 						FatalError("SPECTRAL DATA NOT AVAILABLE, BUT REQUIRED!");
 					}
 				#endif
-
 			}
 
 			#if SWEET_REXI_TIMINGS
@@ -850,6 +838,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 				assert(io_prog_phi0.sphereDataConfig->spectral_array_data_number_of_elements == perThreadVars[0]->accum_phi.sphereDataConfig->spectral_array_data_number_of_elements);
 
 				perThreadVars[thread_id]->accum_phi.request_data_physical();
+				std::cout << thread_id << ": " << perThreadVars[thread_id]->accum_phi.physical_reduce_max_abs() << std::endl;
 				#pragma omp parallel for schedule(static) default(none) shared(io_prog_phi0, thread_id, perThreadVars)
 				for (int i = 0; i < io_prog_phi0.sphereDataConfig->physical_array_data_number_of_elements; i++)
 					io_prog_phi0.physical_space_data[i] += perThreadVars[thread_id]->accum_phi.physical_space_data[i];
@@ -878,10 +867,10 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 			#endif
 
 			#pragma omp parallel for schedule(static,1) default(none) shared(i_fixed_dt, io_prog_phi0, io_prog_vort0, io_prog_div0, std::cout, std::cerr)
-			for (int thread_id = 0; thread_id < num_local_rexi_par_threads; thread_id++)
+			for (int local_thread_id = 0; local_thread_id < num_local_rexi_par_threads; local_thread_id++)
 			{
 				std::size_t start, end;
-				p_get_workload_start_end(start, end);
+				p_get_workload_start_end(start, end, local_thread_id);
 
 				/*
 				 * threaded rexi sum 
@@ -899,9 +888,9 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 				SphereData tmp_prog_vort(sphereDataConfigSolver);
 				SphereData tmp_prog_div(sphereDataConfigSolver);
 
-				perThreadVars[thread_id]->accum_phi.spectral_set_zero();
-				perThreadVars[thread_id]->accum_vort.spectral_set_zero();
-				perThreadVars[thread_id]->accum_div.spectral_set_zero();
+				perThreadVars[local_thread_id]->accum_phi.spectral_set_zero();
+				perThreadVars[local_thread_id]->accum_vort.spectral_set_zero();
+				perThreadVars[local_thread_id]->accum_div.spectral_set_zero();
 
 				for (std::size_t workload_idx = start; workload_idx < end; workload_idx++)
 				{
@@ -909,7 +898,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 					if (use_rexi_sphere_solver_preallocation)
 					{
-						perThreadVars[thread_id]->rexiSPHRobert_vector[local_idx].solve_vectorinvariant_progphivortdiv(
+						perThreadVars[local_thread_id]->rexiSPHRobert_vector[local_idx].solve_vectorinvariant_progphivortdiv(
 								thread_prog_phi0, thread_prog_vort0, thread_prog_div0,
 								tmp_prog_phi, tmp_prog_vort, tmp_prog_div
 							);
@@ -918,8 +907,8 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 					{
 						SWERexiTerm_SPHRobert rexiSPHRobert;
 
-						std::complex<double> &alpha = perThreadVars[thread_id]->alpha[local_idx];
-						std::complex<double> &beta_re = perThreadVars[thread_id]->beta_re[local_idx];
+						std::complex<double> &alpha = perThreadVars[local_thread_id]->alpha[local_idx];
+						std::complex<double> &beta_re = perThreadVars[local_thread_id]->beta_re[local_idx];
 
 						rexiSPHRobert.setup_vectorinvariant_progphivortdiv(
 								sphereDataConfigSolver,	///< sphere data for input data
@@ -942,9 +931,9 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 							);
 					}
 
-					perThreadVars[thread_id]->accum_phi += tmp_prog_phi;
-					perThreadVars[thread_id]->accum_vort += tmp_prog_vort;
-					perThreadVars[thread_id]->accum_div += tmp_prog_div;
+					perThreadVars[local_thread_id]->accum_phi += tmp_prog_phi;
+					perThreadVars[local_thread_id]->accum_vort += tmp_prog_vort;
+					perThreadVars[local_thread_id]->accum_div += tmp_prog_div;
 				}
 			}
 

@@ -404,7 +404,6 @@ public:
 		assert((num_diagonals & 1) == 1);
 		assert(AB != nullptr);
 
-		int info;
 
 #if 0
 		std::cout << "************************************" << std::endl;
@@ -414,6 +413,7 @@ public:
 #endif
 
 #if SWEET_LAPACK
+		int info;
 		zgbsv_(
 				i_size,				// number of linear equations
 				num_halo_size_diagonals,	// number of subdiagonals

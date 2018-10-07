@@ -528,11 +528,12 @@ public:
 			const SphereDataComplex &i_rhs
 	)
 	{
+		SphereDataComplex out(sphereDataConfig);
+
 		i_rhs.check_sphereDataConfig_identical_res(sphereDataConfig);
 
 		i_rhs.request_data_spectral();
 
-		SphereDataComplex out(sphereDataConfig);
 
 		for (int m = -sphereDataConfig->spectral_modes_m_max; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{

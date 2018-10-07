@@ -22,7 +22,7 @@ struct REXI_SimulationVariables
 	/**
 	 * Choose REXI solver method
 	 */
-	std::string rexi_method = "terry";
+	std::string rexi_method = "ci";
 
 
 	/**
@@ -129,7 +129,7 @@ struct REXI_SimulationVariables
 	/*
 	 * Number of quadrature points
 	 */
-	int ci_n = 64;
+	int ci_n = 16;
 
 	/*
 	 * Primitive name
@@ -145,12 +145,12 @@ struct REXI_SimulationVariables
 	/*
 	 * Size of primitive in real axis
 	 */
-	double ci_s_real = 1;
+	double ci_s_real = 5;
 
 	/*
 	 * Size of primitive in imag axis
 	 */
-	double ci_s_imag = 1;
+	double ci_s_imag = 5;
 
 	/*
 	 * Shift

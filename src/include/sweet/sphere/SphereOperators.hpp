@@ -76,10 +76,6 @@ public:
 	{
 		sphereDataConfig = i_sphereDataConfig;
 
-//		sphSolver_inv_one_minus_mu2.setup(sphereDataConfig, 2);
-//		sphSolver_inv_one_minus_mu2.solver_component_rexi_z1(1.0, 1.0);	// (1.0
-//		sphSolver_inv_one_minus_mu2.solver_component_rexi_z2(-1.0, 1.0);	//      - mu^2)
-
 		r = i_earth_radius;
 		ir = 1.0/r;
 
@@ -195,207 +191,6 @@ public:
 #endif
 
 
-#if 0
-	/**
-	 * Compute differential along latitude
-	 *
-	 * Compute d/d mu f(lambda,mu)
-	 *
-	 * sqrt(1-mu*mu)*d/dmu P_n^m = ...
-	 */
-	SphereData diff_lat_mu(
-			const SphereData &i_sph_data
-	)	const
-	{
-		return inv_one_minus_mu2(spectral_one_minus_mu_squared_diff_lat_mu(i_sph_data));
-	}
-#endif
-
-
-#if 0
-	/**
-	 * Compute differential along latitude
-	 *
-	 * Compute d/d phi f(lambda,mu)
-	 */
-	SphereData diff_lat_phi(
-			const SphereData &i_sph_data
-	)	const
-	{
-		return grad_lat(i_sph_data);
-	}
-#endif
-
-
-#if 0
-
-	/**
-	 * Compute gradient component along longitude (lambda)
-	 */
-	SphereData grad(
-			const SphereData &i_phi,
-			const SphereData &i_u,
-			const SphereData &i_v
-	)	const
-	{
-		return i_u*grad_lon(i_phi) + i_v*grad_lat(i_phi);
-	}
-
-
-
-	/**
-	 * Compute gradient component along longitude (lambda)
-	 *
-	 * 1.0/sqrt(1-mu*mu) d/dlambda()
-	 */
-	SphereData grad_lon(
-			const SphereData &i_sph_data
-	)	const
-	{
-		i_sph_data.request_data_spectral();
-
-		SphereData out_sph_data = diff_lon(i_sph_data);
-
-		// physical space already requested if spectral space data is valid
-		out_sph_data.physical_update_lambda_gaussian_grid(
-				[](double lambda, double mu, double &o_data)
-				{
-					o_data /= std::sqrt(1.0-mu*mu);
-				}
-		);
-
-		return out_sph_data;
-	}
-#endif
-
-
-#if 0
-	/**
-	 * Divergence Operator along longitude for Robert function formulation
-	 *
-	 * This computes
-	 * 	1/cos^2(phi)  d/dlambda U
-	 *
-	 * 	= 1/(1-mu^2) d/dlambda U
-	 */
-	SphereData robert_div_lon(
-			const SphereData &i_sph_data
-	)	const
-	{
-		return inv_one_minus_mu2(diff_lon(i_sph_data));
-	}
-#endif
-
-
-#if 0
-	/**
-	 * Multiply with cos(phi)
-	 */
-	SphereData toRobert(
-			const SphereData &i_sph_data
-	)	const
-	{
-		SphereData out(i_sph_data);
-
-		// Physical space
-		out.physical_update_lambda_cosphi_grid(
-				[](double lambda, double cos_phi, double &o_data)
-				{
-					o_data *= cos_phi;
-				}
-			);
-
-		return out;
-	}
-
-
-	/**
-	 * Divide by cos(phi)
-	 */
-	SphereData fromRobert(
-			const SphereData &i_sph_data
-	)	const
-	{
-		SphereData out(i_sph_data);
-
-		// Physical space
-		out.physical_update_lambda_cosphi_grid(
-				[](double lambda, double cos_phi, double &o_data)
-				{
-					o_data /= cos_phi;
-				}
-			);
-
-		return out;
-	}
-#endif
-
-#if 0
-	SphereData inv_one_minus_mu2(
-			const SphereData &i_sph_data
-	)	const
-	{
-#if 1
-
-		return sphSolver_inv_one_minus_mu2.solve(i_sph_data);
-
-#elif 1
-		/*
-		 * WARNING: THIS VERSION RESULTS IN REAL EIGENVALUES!!!!
-		 */
-//		i_sph_data.request_data_spectral();
-
-
-		/*
-		 * Scale in physical space
-		 * => This leads to spurious modes!
-		 */
-
-		SphereData out(i_sph_data);
-
-		// Physical space
-		out.physical_update_lambda_cosphi_grid(
-				[](double lambda, double cos_phi, double &o_data)
-				{
-					o_data /= cos_phi*cos_phi;
-				}
-			);
-
-		return out;
-#endif
-	}
-#endif
-
-#if 0
-	void uv_to_stream_potential(
-			const SphereData &i_u,
-			const SphereData &i_v,
-			SphereData &o_stream,
-			SphereData &o_potential
-
-	)	const
-	{
-		i_u.request_data_physical();
-		i_v.request_data_physical();
-
-		shtns_robert_form(sphereDataConfig->shtns, 0);
-		spat_to_SHsphtor(
-				sphereDataConfig->shtns,
-				i_u.physical_space_data,
-				i_v.physical_space_data,
-				o_stream.spectral_space_data,
-				o_potential.spectral_space_data
-		);
-
-		o_stream.physical_space_data_valid = false;
-		o_stream.spectral_space_data_valid = true;
-
-		o_potential.physical_space_data_valid = false;
-		o_potential.spectral_space_data_valid = true;
-	}
-#endif
-
-
 
 	/**
 	 * Convert vorticity/divergence field to u,v velocity field
@@ -414,24 +209,6 @@ public:
 		SphereData psi = inv_laplace(i_vrt)*ir;
 		SphereData chi = inv_laplace(i_div)*ir;
 
-
-#if SHTNS_REAL_SPH_SPHTOR
-
-#if SHTNS_COMPLEX_SPH_OLD_INTERFACE
-		SHsphtor_to_spat_xsint(
-#else
-		shtns_robert_form(sphereDataConfig->shtns, 1);
-		SHsphtor_to_spat(
-#endif
-				sphereDataConfig->shtns,
-				psi.spectral_space_data,
-				chi.spectral_space_data,
-				o_u.physical_space_data,
-				o_v.physical_space_data
-		);
-
-#else
-		shtns_robert_form(sphereDataConfig->shtns, 0);
 		SHsphtor_to_spat(
 				sphereDataConfig->shtns,
 				psi.spectral_space_data,
@@ -439,21 +216,6 @@ public:
 				o_u.physical_space_data,
 				o_v.physical_space_data
 		);
-
-		o_u.physical_update_lambda_cosphi_grid(
-			[&](double lon, double phi, double &o_data)
-			{
-				o_data *= phi;
-			}
-		);
-
-		o_v.physical_update_lambda_cosphi_grid(
-			[&](double lon, double phi, double &o_data)
-			{
-				o_data *= phi;
-			}
-		);
-#endif
 	}
 
 
@@ -478,33 +240,16 @@ public:
 		SphereDataPhysical u(sphereDataConfig);
 		SphereDataPhysical v(sphereDataConfig);
 
-// TODO: Check if this is correct (non-robert transformation)
-#if SHTNS_COMPLEX_SPH_OLD_INTERFACE
 		SHsphtor_to_spat(
-#else
-		shtns_robert_form(sphereDataConfig->shtns, 0);
-		SHsphtor_to_spat(
-#endif
-				sphereDataConfig->shtns,
-				psi.spectral_space_data,
-				i_phi.spectral_space_data,
-				o_u.physical_space_data,
-				o_v.physical_space_data
-		);
+						sphereDataConfig->shtns,
+						psi.spectral_space_data,
+						i_phi.spectral_space_data,
+						o_u.physical_space_data,
+						o_v.physical_space_data
+				);
 
-		o_u.physical_update_lambda_cosphi_grid(
-			[&](double lon, double phi, double &o_data)
-			{
-				o_data *= phi*ir;
-			}
-		);
-
-		o_v.physical_update_lambda_cosphi_grid(
-			[&](double lon, double phi, double &o_data)
-			{
-				o_data *= phi*ir;
-			}
-		);
+		o_u *= ir;
+		o_v *= ir;
 	}
 
 
@@ -527,18 +272,22 @@ public:
 		SphereData psi = inv_laplace(i_vrt)*ir;
 		SphereData chi = inv_laplace(i_div)*ir;
 
-#if SHTNS_COMPLEX_SPH_OLD_INTERFACE
-		SHsphtor_to_spat(
-#else
+		#if SWEET_DEBUG
+			#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+				if (omp_in_parallel())
+					FatalError("IN PARALLEL REGION!!!");
+			#endif
+		#endif
+
 		shtns_robert_form(sphereDataConfig->shtns, 0);
 		SHsphtor_to_spat(
-#endif
 				sphereDataConfig->shtns,
 				psi.spectral_space_data,
 				chi.spectral_space_data,
 				o_u.physical_space_data,
 				o_v.physical_space_data
 		);
+		shtns_robert_form(sphereDataConfig->shtns, 1);
 	}
 
 
@@ -555,47 +304,14 @@ public:
 		SphereDataPhysical ug = i_u;
 		SphereDataPhysical vg = i_v;
 
-
-#if SHTNS_REAL_SPH_SPHTOR
-
-#if SHTNS_COMPLEX_SPH_OLD_INTERFACE
-		spat_xsint_to_SHsphtor(
-#else
 		shtns_robert_form(sphereDataConfig->shtns, 1);
 		spat_to_SHsphtor(
-#endif
 				sphereDataConfig->shtns,
 				ug.physical_space_data,
 				vg.physical_space_data,
 				vort.spectral_space_data,
 				tmp.spectral_space_data
 		);
-
-#else
-
-		ug.physical_update_lambda_cosphi_grid(
-			[&](double lon, double phi, double &o_data)
-			{
-				o_data /= phi;
-			}
-		);
-
-		vg.physical_update_lambda_cosphi_grid(
-			[&](double lon, double phi, double &o_data)
-			{
-				o_data /= phi;
-			}
-		);
-
-		shtns_robert_form(sphereDataConfig->shtns, 0);
-		spat_to_SHsphtor(
-				sphereDataConfig->shtns,
-				ug.physical_space_data,
-				vg.physical_space_data,
-				vort.spectral_space_data,
-				tmp.spectral_space_data
-		);
-#endif
 
 		vort.physical_space_data_valid = false;
 		vort.spectral_space_data_valid = true;
@@ -614,24 +330,29 @@ public:
 		SphereData tmp(sphereDataConfig);
 		SphereData vort(sphereDataConfig);
 
-#if SHTNS_COMPLEX_SPH_OLD_INTERFACE
-		spat_to_SHsphtor(
-#else
+		#if SWEET_DEBUG
+			#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+				if (omp_in_parallel())
+					FatalError("IN PARALLEL REGION!!!");
+			#endif
+		#endif
+
 		shtns_robert_form(sphereDataConfig->shtns, 0);
 		spat_to_SHsphtor(
-#endif
 				sphereDataConfig->shtns,
 				i_u.physical_space_data,
 				i_v.physical_space_data,
 				vort.spectral_space_data,
 				tmp.spectral_space_data
 		);
+		shtns_robert_form(sphereDataConfig->shtns, 1);
 
 		vort.physical_space_data_valid = false;
 		vort.spectral_space_data_valid = true;
 
 		return laplace(vort)*r;
 	}
+
 
 
 	void robert_uv_to_vortdiv(
@@ -643,28 +364,9 @@ public:
 	)	const
 	{
 		SphereDataPhysical ug = i_u;
-
-		ug.physical_update_lambda_cosphi_grid(
-			[&](double lon, double phi, double &o_data)
-			{
-				o_data /= phi;
-			}
-		);
-
 		SphereDataPhysical vg = i_v;
-		vg.physical_update_lambda_cosphi_grid(
-			[&](double lon, double phi, double &o_data)
-			{
-				o_data /= phi;
-			}
-		);
 
-#if SHTNS_COMPLEX_SPH_OLD_INTERFACE
 		spat_to_SHsphtor(
-#else
-		shtns_robert_form(sphereDataConfig->shtns, 0);
-		spat_to_SHsphtor(
-#endif
 				sphereDataConfig->shtns,
 				ug.physical_space_data,
 				vg.physical_space_data,
@@ -694,18 +396,22 @@ public:
 	)	const
 	{
 
-#if SHTNS_COMPLEX_SPH_OLD_INTERFACE
-		spat_to_SHsphtor(
-#else
+		#if SWEET_DEBUG
+			#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+				if (omp_in_parallel())
+					FatalError("IN PARALLEL REGION!!!");
+			#endif
+		#endif
+
 		shtns_robert_form(sphereDataConfig->shtns, 0);
 		spat_to_SHsphtor(
-#endif
 				sphereDataConfig->shtns,
 				i_u.physical_space_data,
 				i_v.physical_space_data,
 				o_stream.spectral_space_data,
 				o_potential.spectral_space_data
 		);
+		shtns_robert_form(sphereDataConfig->shtns, 1);
 
 		o_stream.physical_space_data_valid = false;
 		o_stream.spectral_space_data_valid = true;
@@ -716,97 +422,6 @@ public:
 		o_stream = laplace(o_stream)*r;
 		o_potential = laplace(o_potential)*r;
 	}
-
-
-
-#if 0
-	/**
-	 * Compute gradient component along longitude (lambda) for Robert function formulation
-	 *
-	 * This computes
-	 * 		d/dlambda Phi
-	 * with Phi the geopotential
-	 */
-	SphereData robert_grad_lon(
-			const SphereData &i_sph_data
-	)	const
-	{
-		return diff_lon(i_sph_data);
-	}
-
-
-
-
-	/**
-	 * Compute gradient component along latitude for Robert function formulation
-	 *
-	 * This computes
-	 * 		cos^2(phi) * d/dmu Phi
-	 *
-	 * with Phi the geopotential
-	 */
-	SphereData robert_grad_lat(
-			const SphereData &i_sph_data
-	)	const
-	{
-		// Entirely in spectral space
-		return spectral_one_minus_mu_squared_diff_lat_mu(i_sph_data);
-	}
-
-
-
-
-	/**
-	 */
-	SphereData robert_grad(
-			const SphereData &i_phi,
-			const SphereData &i_u,
-			const SphereData &i_v
-	)	const
-	{
-		return
-				diff_lon(i_phi)*i_u +
-				spectral_one_minus_mu_squared_diff_lat_mu(i_phi)*i_v
-			;
-	}
-#endif
-
-#if 0
-	/**
-	 * Special formulation for Robert gradient,
-	 * see REXI with spherical harmonics
-	 */
-	SphereData robert_grad_M(
-			const SphereData &i_phi,
-			const SphereData &i_u,
-			const SphereData &i_v
-	)	const
-	{
-		return inv_one_minus_mu2(
-				diff_lon(i_phi)*i_u +
-				spectral_one_minus_mu_squared_diff_lat_mu(i_phi)*i_v
-			);
-	}
-
-
-	/**
-	 * A function following Richies paper
-	 */
-	SphereData ritchie_A(
-			const SphereData &i_u,
-			const SphereData &i_v,
-			const SphereData &i_phi
-	)	const
-	{
-		return inv_one_minus_mu2(
-				(
-						i_u*diff_lon(i_phi) +
-						i_v*spectral_one_minus_mu_squared_diff_lat_mu(i_phi)
-				)
-			);
-	}
-#endif
-
 
 
 

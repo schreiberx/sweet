@@ -40,6 +40,7 @@ p.compile.quadmath = 'enable'
 # Mode and Physical resolution
 #
 p.runtime.mode_res = 128
+p.runtime.mode_res = 64
 p.runtime.phys_res = -1
 
 
@@ -85,6 +86,8 @@ p.runtime.rexi_ci_mu = 0
 p.runtime.rexi_ci_primitive = 'circle'
 
 
+
+
 #p.runtime.g = 1
 #p.runtime.f = 1
 #p.runtime.h = 1
@@ -125,20 +128,48 @@ cp shtns_cfg_fftw ../
 
 """
 
+
+ts_methods = [
+	['ln_erk',		4,	4,	0],	# reference solution
+
+	['ln_erk',		2,	2,	0],
+
+	['l_erk_n_erk',		2,	2,	0],
+
+	['l_irk_n_erk_ver0',		2,	2,	0],
+	['l_irk_n_erk_ver1',		2,	2,	0],
+
+	['l_rexi_n_erk_ver0',	2,	2,	0],
+	['l_rexi_n_erk_ver1',	2,	2,	0],
+
+	['l_rexi_n_etdrk',	2,	2,	0],
+	['lg_rexi_lc_n_etdrk',	2,	2,	0],
+]
+
+
+if False:
+	#params_compile_threading = ['off']
+	#params_ext_modes = [0]
+	#params_compile_thread_parallel_sum = ['enable']
+	p.runtime.mode_res = 16
+	p.runtime.simtime = 2*30
+
+	if False:
+		ts_methods = [
+			['ln_erk',		4,	4,	0],	# reference solution
+	#		['l_erk_n_erk',		2,	2,	0],
+	#		['l_irk_n_erk',		2,	2,	0],
+	#		['ln_erk',		2,	2,	0],
+			['l_rexi_n_erk_ver1',	2,	2,	0],
+	#		['l_rexi_n_etdrk',	2,	2,	0],
+	#		['lg_rexi_lc_n_etdrk',	2,	2,	0],
+		]
+
+
 #
 # allow including this file
 #
 if __name__ == "__main__":
-
-	ts_methods = [
-		['ln_erk',		4,	4,	0],	# reference solution
-		['l_erk_n_erk',		2,	2,	0],
-		['l_irk_n_erk',		2,	2,	0],
-		['ln_erk',		2,	2,	0],
-		['l_rexi_n_erk',	2,	2,	0],
-		['l_rexi_n_etdrk',	2,	2,	0],
-		['lg_rexi_lc_n_etdrk',	2,	2,	0],
-	]
 
 
 
@@ -160,16 +191,13 @@ if __name__ == "__main__":
 
 			for p.compile.threading, p.compile.rexi_thread_parallel_sum, p.runtime.rexi_extended_modes in product(params_compile_threading, params_compile_thread_parallel_sum, params_ext_modes):
 				if 'rexi_' in p.runtime.timestepping_method:
-					if p.compile.threading == 'omp' and p.compile.rexi_thread_parallel_sum == 'enable':
-						continue
-
 					p.gen_jobscript_directory('job_'+p.getUniqueID(filter_list))
 
 				else:
 					if p.compile.rexi_thread_parallel_sum == 'enable':
 						continue
 
-					if p.runtime.rexi_extended_modes == 0:
+					if p.runtime.rexi_extended_modes != 0:
 						continue
 
 					p.gen_jobscript_directory('job_'+p.getUniqueID(filter_list))

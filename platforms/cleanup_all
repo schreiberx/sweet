@@ -6,3 +6,5 @@
 
 # Cleanup pycache mess
 rm -rf __pycache__
+
+exit 0

@@ -8,21 +8,22 @@
 #ifndef SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TIMESTEPPERS_HPP_
 #define SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TIMESTEPPERS_HPP_
 
-#include "../swe_plane/SWE_Plane_TS_interface.hpp"
-#include "../swe_plane/SWE_Plane_TS_l_cn.hpp"
-#include "../swe_plane/SWE_Plane_TS_l_cn_n_erk.hpp"
-#include "../swe_plane/SWE_Plane_TS_l_cn_na_sl_nd_settls.hpp"
-#include "../swe_plane/SWE_Plane_TS_l_direct.hpp"
-#include "../swe_plane/SWE_Plane_TS_l_erk.hpp"
-#include "../swe_plane/SWE_Plane_TS_l_erk_n_erk.hpp"
-#include "../swe_plane/SWE_Plane_TS_l_irk_n_erk.hpp"
-#include "../swe_plane/SWE_Plane_TS_l_rexi_n_erk.hpp"
-#include "../swe_plane/SWE_Plane_TS_l_rexi_n_etdrk.hpp"
-#include "../swe_plane/SWE_Plane_TS_l_rexi_na_sl_nd_etdrk.hpp"
-#include "../swe_plane/SWE_Plane_TS_l_rexi_na_sl_nd_settls.hpp"
-#include "../swe_plane/SWE_Plane_TS_ln_erk.hpp"
+#include "SWE_Plane_TS_interface.hpp"
+#include "SWE_Plane_TS_l_cn.hpp"
+#include "SWE_Plane_TS_l_cn_n_erk.hpp"
+#include "SWE_Plane_TS_l_cn_na_sl_nd_settls.hpp"
+#include "SWE_Plane_TS_l_direct.hpp"
+#include "SWE_Plane_TS_l_erk.hpp"
+#include "SWE_Plane_TS_l_erk_n_erk.hpp"
+#include "SWE_Plane_TS_l_irk_n_erk.hpp"
+#include "SWE_Plane_TS_l_rexi_n_erk.hpp"
+#include "SWE_Plane_TS_l_rexi_n_etdrk.hpp"
+#include "SWE_Plane_TS_l_rexi_na_sl_nd_etdrk.hpp"
+#include "SWE_Plane_TS_l_rexi_na_sl_nd_settls.hpp"
+#include "SWE_Plane_TS_ln_erk.hpp"
 #include "SWE_Plane_TS_l_irk.hpp"
 #include "SWE_Plane_TS_l_rexi.hpp"
+
 //When adding a new scheme, remember to update the list of schemes for --help in the end of this hpp file
 
 

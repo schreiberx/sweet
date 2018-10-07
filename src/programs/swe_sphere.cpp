@@ -235,7 +235,7 @@ public:
 			const SphereData &i_sphereData,
 			const char* i_name,		///< name of output variable
 			bool i_phi_shifted
-		)
+	)
 	{
 		char buffer[1024];
 
@@ -399,32 +399,6 @@ public:
 #endif
 				std::cout << "prog_phi min/max:\t" << SphereData(prog_phi).physical_reduce_min() << ", " << SphereData(prog_phi).physical_reduce_max() << std::endl;
 		}
-
-
-#if 0
-		if (	param_compute_error &&
-			//	simVars.pde.use_nonlinear_equations == 0 &&
-				simVars.setup.benchmark_id == 10
-		)
-		{
-			SphereData test_h(sphereDataConfig);
-			SphereData test_u(sphereDataConfig);
-			SphereData test_v(sphereDataConfig);
-
-			SWESphereBenchmarksCombined::setupInitialConditions(test_h, test_u, test_v, simVars, op);
-
-			std::cout << "ERRORS - time, RMS(h,u,v), MAXABS(h,u,v):\t";
-			std::cout << simVars.timecontrol.current_simulation_time << "\t";
-
-			std::cout << (SphereData(test_h)-SphereData(prog_h)).physical_reduce_rms() << "\t";
-			std::cout << (SphereData(test_u)-SphereData(prog_u)).physical_reduce_rms() << "\t";
-			std::cout << (SphereData(test_v)-SphereData(prog_v)).physical_reduce_rms() << "\t";
-
-			std::cout << (SphereData(test_h)-SphereData(prog_h)).physical_reduce_max_abs() << "\t";
-			std::cout << (SphereData(test_u)-SphereData(prog_u)).physical_reduce_max_abs() << "\t";
-			std::cout << (SphereData(test_v)-SphereData(prog_v)).physical_reduce_max_abs() << std::endl;
-		}
-#endif
 
 		if (simVars.misc.output_each_sim_seconds > 0)
 			while (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)

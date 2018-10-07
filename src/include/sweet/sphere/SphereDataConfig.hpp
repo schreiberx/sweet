@@ -377,24 +377,31 @@ private:
 
 
 
-	unsigned int getFlags(
+	int getFlags(
 			int i_reuse_spectral_transformation_plans
 	)
 	{
-		unsigned int flags = 0;
+		int flags = 0;
 
 		// lat or lon continue
 		flags |= SPHERE_DATA_GRID_LAYOUT;
 
 		if (i_reuse_spectral_transformation_plans == -1)
+		{
 			flags |= sht_quick_init;
+		}
+		else
+		{
+			if (i_reuse_spectral_transformation_plans == 1)
+				flags |= SHT_LOAD_SAVE_CFG;
 
-		if (i_reuse_spectral_transformation_plans == 1)
-			flags |= SHT_LOAD_SAVE_CFG;
+			// TODO: Hope for shtns update to create error if plan doesn't exist
+			if (i_reuse_spectral_transformation_plans == 2)
+				flags |= SHT_LOAD_SAVE_CFG;
+		}
 
-		// TODO: Hope for shtns update to create error if plan doesn't exist
-		if (i_reuse_spectral_transformation_plans == 2)
-			flags |= SHT_LOAD_SAVE_CFG;
+		std::cout << i_reuse_spectral_transformation_plans << std::endl;
+//		flags |= sht_quick_init;
 
 		return flags;
 	}
@@ -459,6 +466,11 @@ public:
 		if (mpi_rank > 0 && i_reuse_transformation_plans)
 			MPI_Barrier(MPI_COMM_WORLD);
 #endif
+
+		/*
+		 * Use Robert form per default
+		 */
+		shtns_robert_form(shtns, 1);
 
 		setup_data();
 	}
@@ -526,6 +538,8 @@ public:
 		MPI_Barrier(MPI_COMM_WORLD);
 #endif
 
+		shtns_robert_form(shtns, 1);
+
 		setup_data();
 	}
 
@@ -588,6 +602,8 @@ public:
 	if (mpi_rank > 0 && i_reuse_transformation_plans)
 		MPI_Barrier(MPI_COMM_WORLD);
 #endif
+
+		shtns_robert_form(shtns, 1);
 
 		setup_data();
 	}
@@ -661,7 +677,7 @@ public:
 			const SphereDataConfig *i_sphereDataConfig,
 			int i_additional_modes_longitude,
 			int i_additional_modes_latitude,
-			bool i_load_save_plan //= false
+			int i_load_save_plan
 	)
 	{
 		cleanup(false);

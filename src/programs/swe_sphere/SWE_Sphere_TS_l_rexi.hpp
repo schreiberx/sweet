@@ -160,7 +160,8 @@ private:
 
 	void p_get_workload_start_end(
 			std::size_t &o_start,
-			std::size_t &o_end
+			std::size_t &o_end,
+			int i_local_thread_id
 	);
 
 

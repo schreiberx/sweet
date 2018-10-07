@@ -379,24 +379,6 @@ public:
 
 
 
-
-
-	const SphereDataPhysicalComplex& operator*=(
-			const double &i_value
-	)	const
-	{
-#if SWEET_SPACE_THREADING
-#pragma omp parallel for
-#endif
-
-		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
-			physical_space_data[idx] *= i_value;
-
-		return *this;
-	}
-
-
-
 	SphereDataPhysicalComplex operator/(
 			double i_value
 	)	const

@@ -811,6 +811,27 @@ public:
 	{
 		double ir = 1.0/i_radius;
 
+#if 1
+		SphereDataComplex psi(sphereDataConfig);
+		psi.spectral_set_zero();
+
+		SphereDataComplex chi = i_phi;
+		chi.request_data_spectral();
+
+		shtns_robert_form(sphereDataConfig->shtns, 1);
+		SHsphtor_to_spat_cplx(
+						sphereDataConfig->shtns,
+						psi.spectral_space_data,
+						chi.spectral_space_data,
+						o_u.physical_space_data,
+						o_v.physical_space_data
+				);
+
+		o_u *= ir;
+		o_v *= ir;
+
+#else
+
 		i_phi.request_data_spectral();
 
 		SphereDataComplex psi(sphereDataConfig);
@@ -830,7 +851,8 @@ public:
 #if SHTNS_COMPLEX_SPH_OLD_INTERFACE
 		SHsphtor_to_spat(
 #else
-		shtns_robert_form(sphereDataConfig->shtns, 0);
+		FatalError("Don't use this function!");
+		shtns_robert_form(sphereDataConfig->shtns, 1);
 		SHsphtor_to_spat(
 #endif
 				sphereDataConfig->shtns,
@@ -867,6 +889,7 @@ public:
 				o_data *= phi*ir;
 			}
 		);
+#endif
 	}
 
 

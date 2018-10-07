@@ -184,7 +184,7 @@ export PYTHONPATH="$PYTHONPATH:$SWEET_ROOT/python_mods"
 # Back to local software
 cd "$SCRIPTDIR"
 
-PS_RELPATH="realpath  --relative-to=$SWEET_ROOT ./"
+PS_RELPATH="realpath  --relative-base=$SWEET_ROOT ./"
 
 # Make prompt nice looking
 #export PS1='\[\033[01;32m\][SWEET \u@$SWEET_PLATFORM_ID]\[\033[00m\] $($PS_RELPATH)\$ '
