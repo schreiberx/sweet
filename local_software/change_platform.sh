@@ -8,18 +8,25 @@ if [ -z "$TMP_SWEET_ROOT" ]; then
 fi
 
 if [ -z "$1" ]; then
-	echo "Usage:"
-	echo "	$0 [platform name]"
-	echo
+	echo_info "Usage:"
+	echo_info "	$0 [platform name]"
+	echo_info
 fi
 
-SWEET_PLATFORM="$1"
-
-PLATFORM_ENV_VARS=$(eval echo "${TMP_SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM}/env_vars.sh")
+PLATFORM_ENV_VARS=$(eval echo "${TMP_SWEET_ROOT}/platforms/"??"_$1/env_vars.sh")
 
 if [ ! -e "$PLATFORM_ENV_VARS" ]; then
 	echo_error "File '${PLATFORM_ENV_VARS}' not found!"
-	return 1
+	return 2>/dev/null
+	exit 1
 fi
 
 source "$PLATFORM_ENV_VARS" || return 1
+
+export SWEET_PLATFORM="$1"
+
+export SWEET_PLATFORM_DIR="$(eval echo "${TMP_SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM}/")"
+
+echo_success_hline
+echo_success "Platform changed to '${SWEET_PLATFORM}'"
+echo_success_hline

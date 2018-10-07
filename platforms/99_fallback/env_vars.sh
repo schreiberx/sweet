@@ -9,7 +9,7 @@
 #
 #export SWEET_F90=gfortran-8
 #export SWEET_CC=gcc-8
-#export SWEET_CPP=g++-8
+#export SWEET_CXX=g++-8
 
 #export SWEET_MPICC=mpicc
 #export SWEET_MPICXX=mpic+_

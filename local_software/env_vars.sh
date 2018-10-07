@@ -139,6 +139,8 @@ if [ "#$SWEET_PLATFORM" != "#" ]; then
 
 	source "$TMP_SWEET_ROOT/local_software/change_platform.sh"
 
+	export SWEET_PLATFORM_DIR="$(eval echo "${TMP_SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM}/")"
+
 elif [ "#${1}" = "#" ] || [ "#${1}" = "#FORCE" ]; then
 
 	echo_info_hline
@@ -178,6 +180,8 @@ elif [ "#${1}" = "#" ] || [ "#${1}" = "#FORCE" ]; then
 			break
 		fi
 	done
+
+	export SWEET_PLATFORM_DIR="$(eval echo "${TMP_SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM}/")"
 else
 	echo_info_hline
 	echo_info "                   Mode: Platform environment file provided"
@@ -189,6 +193,8 @@ else
 	# Set SWEET Platform override
 	export SWEET_PLATFORM="$1"
 	source "$1" || return 1
+
+	export SWEET_PLATFORM_DIR="$(eval echo "${TMP_SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM}/")"
 fi
 
 
@@ -198,8 +204,6 @@ if [ -z "${SWEET_PLATFORM}" ]; then
 	echo_error_hline
 	return
 fi
-
-export SWEET_PLATFORM_DIR="$(eval echo "${TMP_SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM}/")"
 
 echo_info "         Using platform: '${SWEET_PLATFORM}'"
 echo_info "     Platform directory: '${SWEET_PLATFORM_DIR}'"

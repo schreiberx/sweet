@@ -16,8 +16,14 @@ fi
 # Setup variables where to download source, to compile and to install
 #
 PWD=`pwd`
+
 SWEET_LOCAL_SOFTWARE_SRC_DIR="$PWD/local_src"
 SWEET_LOCAL_SOFTWARE_DST_DIR="$PWD/local"
+
+# Each platform has its own source and binary directory
+# Not yet...
+#SWEET_LOCAL_SOFTWARE_SRC_DIR="$PWD/local_${PLATFORM}_src"
+#SWEET_LOCAL_SOFTWARE_DST_DIR="$PWD/local_${PLATFORM}"
 
 #
 # Prepare directory structure
