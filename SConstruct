@@ -581,8 +581,8 @@ if p.mic == 'enable':
 	env.Append(LINKFLAGS=['-mmic'])
 
 
-if p.rexi_thread_parallel_sum == 'enable' and p.threading == 'omp':
-	raise Exception('ERROR: "REXI Parallel Sum" and "Threading" is both activated')
+#if p.rexi_thread_parallel_sum == 'enable' and p.threading == 'omp':
+#	raise Exception('ERROR: "REXI Parallel Sum" and "Threading" is both activated')
 
 
 
