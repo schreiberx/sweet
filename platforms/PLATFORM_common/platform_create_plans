@@ -31,14 +31,14 @@ for GENERATOR_SCRIPT in $GENERATOR_SCRIPTS; do
 
 	if [ -n "$PREV_JOBID" ]; then 
 		if true; then
-			if [ -z "$JOB_SCHEDULER_DEPENDENCY" ]; then
-				echo_info " + job dependency: No variable JOB_SCHEDULER_DEPENDENCY set, hence not using any job scheduler dependency"
+			if [ -z "$SWEET_JOB_SCHEDULER_DEPENDENCY" ]; then
+				echo_info " + job dependency: No variable SWEET_JOB_SCHEDULER_DEPENDENCY set, hence not using any job scheduler dependency"
 			else
 				echo_info " + job dependency: setting dependency to job id ${PREV_JOBID}"
 
 				# Append dependency
 				# This line depends on each job scheduler
-				NEWPARAM="${JOB_SCHEDULER_DEPENDENCY/\%JOBID\%/${PREV_JOBID}}"
+				NEWPARAM="${SWEET_JOB_SCHEDULER_DEPENDENCY/\%JOBID\%/${PREV_JOBID}}"
 
 				# Search for 1st batch job prefix add dependency information
 				sed -i -r  "0,/#[a-Z]+/{s/#[a-Z]+/& $NEWPARAM\n&/}"  "${JOB_SCRIPT}"
@@ -65,7 +65,7 @@ for GENERATOR_SCRIPT in $GENERATOR_SCRIPTS; do
 
 
 	echo_info "Submitting job..."
-	if [ -z "$JOB_SCHEDULER_DEPENDENCY" ]; then
+	if [ -z "$SWEET_JOB_SCHEDULER_DEPENDENCY" ]; then
 
 		echo_info " + No job scheduler detected, executing job directly..."
 
@@ -98,7 +98,7 @@ done
 
 
 
-if [ -z "$JOB_SCHEDULER_DEPENDENCY" ]; then
+if [ -z "$SWEET_JOB_SCHEDULER_DEPENDENCY" ]; then
 	echo_success " + All jobs directly executed"
 else
 	echo_info " + Waiting for jobs ${JOBS}"

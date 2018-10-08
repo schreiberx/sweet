@@ -1,8 +1,11 @@
 #
 # How to express dependency in job scheduler
 #
-export JOB_SCHEDULER_DEPENDENCY="--dependency=afterany:%JOBID%"
 
+export SWEET_JOB_SCHEDULER_DEPENDENCY="--dependency=afterany:%JOBID%"
+
+# Limited number of jobs in queue
+export SWEET_JOB_SCHEDULER_NUM_JOB_LIMITATION=50
 
 echo "Loading GCC/8"
 module unload gcc

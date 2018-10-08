@@ -2,7 +2,7 @@
 # Tag in header of job subscription files to express dependency to another job
 # This is highly important for the plan generation of spectral transformations
 #
-export JOB_SCHEDULER_DEPENDENCY="-W depend=afterany:%JOBID%"
+export SWEET_JOB_SCHEDULER_DEPENDENCY="-W depend=afterany:%JOBID%"
 
 
 MODULES="gnu/8.1.0"

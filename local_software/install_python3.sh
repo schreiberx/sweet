@@ -16,8 +16,9 @@ config_package $@ || exit 1
 
 config_configure_make_default_install || exit 1
 
-mkdir -p "$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/python"
-ln -sf "$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/python3" "$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/python" 
+#mkdir -p "$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/python"
+#Create symlink to make python linked to python3
+config_exec ln -sf "$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/python3" "$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/python" 
 
 echo_info "Upgrading pip..."
 pip3 install --upgrade pip
