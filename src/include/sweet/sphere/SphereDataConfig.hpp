@@ -400,9 +400,6 @@ private:
 				flags |= SHT_LOAD_SAVE_CFG;
 		}
 
-		std::cout << i_reuse_spectral_transformation_plans << std::endl;
-//		flags |= sht_quick_init;
-
 		return flags;
 	}
 
