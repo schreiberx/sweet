@@ -2,7 +2,7 @@
 
 SWEET_SYSTEM_PACKAGES="libxft-dev libssl-dev texinfo"
 if [ "x$DISPLAY" = "x:0" ]; then
-	export SWEET_SYSTEM_PACKAGES="$SWEET_SYSTEM_PACKAGES libgl1-mesa-dev"
+	export SWEET_SYSTEM_PACKAGES="$SWEET_SYSTEM_PACKAGES libgl1-mesa-dev libxext-dev"
 fi
 
 for i in $SWEET_SYSTEM_PACKAGES; do
@@ -18,8 +18,9 @@ done
 
 #PKGS+=("install_autoconf.sh")
 PKGS+=("install_make.sh")
-PKGS+=("install_cmake.sh")
 PKGS+=("install_gcc8.2.sh")
+
+PKGS+=("install_cmake.sh")
 #PKGS+=("install_automake.sh")
 
 PKGS+=("install_fftw3.sh")

@@ -164,9 +164,9 @@ export PKG_CONFIG_PATH="$SCRIPTDIR/local/lib/pkgconfig:$PKG_CONFIG_PATH"
 #	   otherwise prioritize their own system libraries such as libfftw.
 #
 export SWEET_LD_LIBRARY_PATH="$SCRIPTDIR/local/lib"
-if [ -d "$SCRIPTDIR/local/lib64" ]; then
-	export SWEET_LD_LIBRARY_PATH="$SCRIPTDIR/local/lib64:$SWEET_LD_LIBRARY_PATH"
-fi
+# Always include lib64 even if it doesn exist.
+# Thatś important to install software into this directory
+export SWEET_LD_LIBRARY_PATH="$SCRIPTDIR/local/lib64:$SWEET_LD_LIBRARY_PATH"
 export LD_LIBRARY_PATH="$SWEET_LD_LIBRARY_PATH:$LD_LIBRARY_PATH"
 
 

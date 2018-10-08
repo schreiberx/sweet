@@ -17,31 +17,30 @@ verbose = False
 
 ##################################################
 
+p.compile.mode = 'release'
 p.compile.compiler = 'gnu'
 p.compile.sweet_mpi = 'disable'
 p.runtime.mode_res = 128
-p.runtime.reuse_plans = 2	# enforce using plans (todo, enforcing not yet implemented)!
+p.runtime.reuse_plans = -1 # 2	# enforce using plans (todo, enforcing not yet implemented)!
 
-#if True:
-if False:
-	p.compile.threading = 'omp'
-	p.compile.rexi_thread_parallel_sum = 'disable'
-else:
-	p.compile.threading = 'off'
-	p.compile.rexi_thread_parallel_sum = 'enable'
+p.parallelization.core_oversubscription = False
+p.parallelization.core_affinity = 'compact'
+
+p.compile.threading = 'omp'
+p.compile.rexi_thread_parallel_sum = 'enable'
 
 gen_reference_solution = True
 
 p.runtime.simtime = 432000
 
 #params_timestep_sizes_explicit = [30]
-params_timestep_sizes_explicit = [10, 20, 30, 60, 120, 180]
+params_timestep_sizes_explicit = [10, 20, 30, 60, 120, 180, 360]
 
 #params_timestep_sizes_implicit = [30]
-params_timestep_sizes_implicit = [60, 120, 180, 360, 480, 600, 720]
+params_timestep_sizes_implicit = [60, 120, 180, 360, 480, 600, 720, 840]
 
 #params_timestep_sizes_rexi = [30]
-params_timestep_sizes_rexi = [60, 120, 180, 240, 300, 360, 480, 600, 720]
+params_timestep_sizes_rexi = [60, 120, 180, 240, 300, 360, 480, 600, 720, 840]
 
 # Parallelization
 params_pspace_num_cores_per_rank = [p.platform_resources.num_cores_per_socket]
@@ -51,11 +50,11 @@ params_ptime_num_cores_per_rank = [1]
 
 unique_id_filter = []
 #unique_id_filter.append('simparams')
-#unique_id_filter.append('rexi_params')
 unique_id_filter.append('compiler')
 unique_id_filter.append('disc_space')
 unique_id_filter.append('timestep_order')
 #unique_id_filter.append('timestep_size')
+unique_id_filter.append('rexi_params')
 unique_id_filter.append('benchmark')
 
 
