@@ -53,7 +53,7 @@ function download() {
 }
 
 
-function config_package()
+function config_package_download()
 {
 	#
 	# PKG_NAME: string
@@ -98,13 +98,16 @@ function config_package()
 
 	PKG_FILENAME="$(basename ${PKG_URL_SRC})"
 
-
 	echo_info "Changing to directory '${SWEET_LOCAL_SOFTWARE_SRC_DIR}'"
 	cd "$SWEET_LOCAL_SOFTWARE_SRC_DIR"
 
 	# Download file
 	echo_info "Downloading '${PKG_URL_SRC}'"
 	download "$PKG_URL_SRC" "$PKG_FILENAME"
+}
+
+function config_package_extract()
+{
 
 	# Determine how to extract compressed file
 	# !!!
@@ -153,6 +156,13 @@ function config_package()
 
 	echo_info "Changing to package directory '${PKG_SRC_SUBDIR}'"
 	cd "$PKG_SRC_SUBDIR"
+}
+
+function config_package()
+{
+	config_package_download $@ || exit 1
+
+	config_package_extract || exit 1
 
 	echo_info "Suggesting to use '${NPROCS}' parallel build processes"
 }
@@ -192,17 +202,17 @@ function config_exec()
 # Combined functions
 function config_configure_make_default()	# ./configure...; make ...;
 {
-	config_configure
+	config_configure $@
 	config_make_default
 }
 function config_make_default_install()			# make; make install
 {
-	config_make_default
+	config_make_default $@
 	config_make_install
 }
 function config_configure_make_default_install()	# ./configure...; make ...; make install
 {
-	config_configure
+	config_configure $@
 	config_make_default
 	config_make_install
 }
