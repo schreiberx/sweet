@@ -97,8 +97,10 @@ def jobscript_get_header(j : SWEETJobGeneration):
 #SBATCH --export=NONE 
 #SBATCH --time="""+time_str+"""
 """
-	if p.force_turbo_off:
-		content += """# Try to avoid slowing down CPUs
+
+	if False:
+		if p.force_turbo_off:
+			content += """# Try to avoid slowing down CPUs
 #SBATCH --cpu-freq=Performance
 """
 
