@@ -1,1 +1,21 @@
-../PLATFORM_cheyenne/platform_jobs_submit
+#! /bin/bash
+
+#
+# Submit jobs
+#
+# Return
+# ------
+# Job ID in each line
+#
+
+
+if [ -z "$1" ]; then
+	DIRS=job_*
+else
+	DIRS=$@
+fi
+
+for i in $DIRS; do
+	qsub "$i/run.sh" | sed "s/ .*//"
+done
+

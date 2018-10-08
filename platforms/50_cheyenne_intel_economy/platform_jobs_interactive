@@ -1,1 +1,7 @@
-../PLATFORM_cheyenne/platform_jobs_interactive
+#! /bin/bash
+
+#qsub -I -l select=1:ncpus=36:mpiprocs=36 -l walltime=01:00:00 -q economy -A NCIS0002
+
+#qsub -I -l select=1:ncpus=36:mpiprocs=2:ompthreads=18 -l walltime=01:00:00 -q economy -A NCIS0002 $@
+qsub -I -l select=1:ncpus=36:mpiprocs=1:ompthreads=18 -l walltime=00:10:00 -q regular -A NCIS0002 $@
+

@@ -9,31 +9,6 @@ from . import SWEETPlatformAutodetect
 # Underscore defines symbols to be private
 _job_id = None
 
-def _whoami(depth=1):
-	"""
-	String of function name to recycle code
-
-	https://www.oreilly.com/library/view/python-cookbook/0596001673/ch14s08.html
-
-	Returns
-	-------
-	string
-		Return function name
-	"""
-	return sys._getframe(depth).f_code.co_name
-
-
-
-def p_gen_script_info(jobgeneration : SWEETJobGeneration):
-	global _job_id
-
-	return """#
-# Generating function: """+_whoami(2)+"""
-# Platform: """+get_platform_id()+"""
-# Job id: """+_job_id+"""
-#
-"""
-
 
 
 def get_platform_autodetect():
@@ -79,18 +54,18 @@ def get_platform_resources():
 
 
 
-def jobscript_setup(jobgeneration : SWEETJobGeneration):
+def jobscript_setup(j : SWEETJobGeneration):
 	"""
 	Setup data to generate job script
 	"""
 
 	global _job_id
-	_job_id = jobgeneration.runtime.getUniqueID(jobgeneration.compile)
+	_job_id = j.runtime.getUniqueID(j.compile)
 	return
 
 
 
-def jobscript_get_header(jobgeneration : SWEETJobGeneration):
+def jobscript_get_header(j : SWEETJobGeneration):
 	"""
 	These headers typically contain the information on e.g. Job exection, number of compute nodes, etc.
 
@@ -101,29 +76,15 @@ def jobscript_get_header(jobgeneration : SWEETJobGeneration):
 	"""
 	global _job_id
 
-	p = jobgeneration.parallelization
+	p = j.parallelization
+	time_str = p.get_max_wallclock_seconds_hh_mm_ss()
 
-	# seconds
-	s = int(p.max_wallclock_seconds)
-	m = s // 60
-	s = s % 60
-	h = m // 60
-	m = m % 60
-
-	stest = h*60*60 + m*60 + s
-	if int(p.max_wallclock_seconds) != stest:
-		print(int(p.max_wallclock_seconds))
-		print(stest)
-		raise Exception("Internal error!")
-
-	time_str = str(h).zfill(2)+":"+str(m).zfill(2)+":"+str(s).zfill(2)
-	
 	#
 	# See https://www.lrz.de/services/compute/linux-cluster/batch_parallel/example_jobs/
 	#
 	content = """#! /bin/bash
-#SBATCH -o """+jobgeneration.p_job_stdout_filepath+"""
-#SBATCH -D """+jobgeneration.p_job_dirpath+"""
+#SBATCH -o """+j.p_job_stdout_filepath+"""
+#SBATCH -D """+j.p_job_dirpath+"""
 #SBATCH -J """+_job_id+"""
 #SBATCH --get-user-env 
 #SBATCH --clusters=mpp2
@@ -144,9 +105,25 @@ def jobscript_get_header(jobgeneration : SWEETJobGeneration):
 	content += """
 source /etc/profile.d/modules.sh
 
-"""+p_gen_script_info(jobgeneration)+"""
-
 """
+
+	if j.compile.threading != 'off':
+		content += """
+export OMP_NUM_THREADS="""+str(p.num_threads_per_rank)+"""
+"""
+
+	if p.core_oversubscription:
+		raise Exception("Not supported with this script!")
+
+	if p.core_affinity != None:
+		
+		content += "\necho \"Affnity: "+str(p.core_affinity)+"\"\n"
+		if p.core_affinity == 'compact':
+			content += "\nexport OMP_PROC_BIND=close\n"
+		elif p.core_affinity == 'scatter':
+			content += "\nexport OMP_PROC_BIND=spread\n"
+		else:
+			raise Exception("Affinity '"+str(p.core_affinity)+"' not supported")
 
 	return content
 
@@ -155,7 +132,7 @@ source /etc/profile.d/modules.sh
 
 
 
-def jobscript_get_exec_prefix(jobgeneration : SWEETJobGeneration):
+def jobscript_get_exec_prefix(j : SWEETJobGeneration):
 	"""
 	Prefix before executable
 
@@ -165,21 +142,14 @@ def jobscript_get_exec_prefix(jobgeneration : SWEETJobGeneration):
 		multiline text for scripts
 	"""
 
-	p = jobgeneration.parallelization
-
-	content = """
-
-"""+p_gen_script_info(jobgeneration)+"""
-
-export OMP_NUM_THREADS="""+str(p.num_threads_per_rank)+"""
-
-"""
+	p = j.parallelization
+	content = ""
 
 	return content
 
 
 
-def jobscript_get_exec_command(jobgeneration : SWEETJobGeneration):
+def jobscript_get_exec_command(j : SWEETJobGeneration):
 	"""
 	Prefix to executable command
 
@@ -189,7 +159,7 @@ def jobscript_get_exec_command(jobgeneration : SWEETJobGeneration):
 		multiline text for scripts
 	"""
 
-	p = jobgeneration.parallelization
+	p = j.parallelization
 
 	mpiexec = ''
 
@@ -202,11 +172,9 @@ def jobscript_get_exec_command(jobgeneration : SWEETJobGeneration):
 
 	content = """
 
-"""+p_gen_script_info(jobgeneration)+"""
-
 # mpiexec ... would be here without a line break
-EXEC=\"$SWEET_ROOT/build/"""+jobgeneration.compile.getProgramName()+"""\"
-PARAMS=\""""+jobgeneration.runtime.getRuntimeOptions()+"""\"
+EXEC=\"$SWEET_ROOT/build/"""+j.compile.getProgramName()+"""\"
+PARAMS=\""""+j.runtime.getRuntimeOptions()+"""\"
 echo \"${EXEC} ${PARAMS}\"
 
 """+mpiexec+""" $EXEC $PARAMS
@@ -217,7 +185,7 @@ echo \"${EXEC} ${PARAMS}\"
 
 
 
-def jobscript_get_exec_suffix(jobgeneration : SWEETJobGeneration):
+def jobscript_get_exec_suffix(j : SWEETJobGeneration):
 	"""
 	Suffix before executable
 
@@ -227,17 +195,12 @@ def jobscript_get_exec_suffix(jobgeneration : SWEETJobGeneration):
 		multiline text for scripts
 	"""
 
-	content = """
-
-"""+p_gen_script_info(jobgeneration)+"""
-
-"""
-
+	content = ""
 	return content
 
 
 
-def jobscript_get_footer(jobgeneration : SWEETJobGeneration):
+def jobscript_get_footer(j : SWEETJobGeneration):
 	"""
 	Footer at very end of job script
 
@@ -246,17 +209,13 @@ def jobscript_get_footer(jobgeneration : SWEETJobGeneration):
 	string
 		multiline text for scripts
 	"""
-	content = """
 
-"""+p_gen_script_info(jobgeneration)+"""
-
-"""
-
+	content = ""
 	return content
 
 
 
-def jobscript_get_compile_command(jobgeneration : SWEETJobGeneration):
+def jobscript_get_compile_command(j : SWEETJobGeneration):
 	"""
 	Compile command(s)
 
@@ -273,7 +232,7 @@ def jobscript_get_compile_command(jobgeneration : SWEETJobGeneration):
 
 	content = """
 
-SCONS="scons """+jobgeneration.compile.getSConsParams()+' -j 4"'+"""
+SCONS="scons """+j.compile.getSConsParams()+' -j 4"'+"""
 echo "$SCONS"
 $SCONS || exit 1
 """

@@ -1,1 +1,10 @@
-../PLATFORM_cheyenne/platform_jobs_cancel
+#! /bin/bash
+
+IDS=$@
+IDS=$(echo "${IDS}" | sed "s/\..*//")
+
+if [ -z "$IDS" ]; then
+	echo "No jobs found specified"
+else
+	qdel -W force $IDS
+fi
