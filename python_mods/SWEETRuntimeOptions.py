@@ -7,7 +7,7 @@ __all__ = ['SWEETRuntimeOptions']
 
 class SWEETRuntimeOptions(InfoError):
 
-	def __init__(self):
+	def __init__(self, dummy_init = False):
 		InfoError.__init__(self, "SWEETRuntimeOptions")
 
 	#	self.mode_res = 32
@@ -23,7 +23,8 @@ class SWEETRuntimeOptions(InfoError):
 		# Deactivated per default for more performance
 		self.instability_checks = 0
 
-		self.floating_point_output_digits = -1
+		# Use 14 digits per default
+		self.floating_point_output_digits = 12
 
 		self.timestepping_method = 'ln_erk'
 		self.timestepping_order = 1
@@ -250,7 +251,7 @@ class SWEETRuntimeOptions(InfoError):
 			else:
 				if self.rexi_method == "file":
 					idstr += '_REXIFIL'
-					if not 'rexi_params' in filter:
+					if not 'rexi_params' in filter_list:
 						idstr += '_n'+str(self.rexi_file_n).zfill(8)
 						idstr += '_h'+str(self.rexi_file_h)
 						idstr += '_teabs'+str(self.rexi_file_test_abs).zfill(3)
@@ -258,7 +259,7 @@ class SWEETRuntimeOptions(InfoError):
 
 				elif self.rexi_method == "terry":
 					idstr += '_REXITER'
-					if not 'rexi_params' in filter:
+					if not 'rexi_params' in filter_list:
 						idstr += '_m'+str(self.rexi_terry_m).zfill(8)
 						idstr += '_h'+str(self.rexi_terry_h)
 

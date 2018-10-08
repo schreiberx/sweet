@@ -16,15 +16,15 @@ config_package $@ || exit 1
 
 echo_info_hline
 echo_info "SHTNS noOpenMP:"
-# Python, no OpenMP
-config_configure --disable-openmp || exit 1
+config_configure --disable-mem --disable-openmp || exit 1
+#config_configure --disable-openmp || exit 1
 config_make_clean || exit 1
 config_make_default_install || exit 1
 
 echo_info_hline
 echo_info "SHTNS OpenMP:"
-# Python, OpenMP
-config_configure --enable-openmp || exit 1
+config_configure --disable-mem --enable-openmp || exit 1
+#config_configure --enable-openmp || exit 1
 config_make_clean || exit 1
 config_make_default_install || exit 1
 

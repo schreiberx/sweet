@@ -5,3 +5,5 @@ rm -f shtns_cfg
 rm -f shtns_cfg_fftw
 
 rm -rf genplans_*
+
+exit 0

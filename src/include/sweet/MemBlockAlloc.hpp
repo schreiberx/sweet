@@ -15,7 +15,7 @@
  * 0: default allocator
  *
  * 1: NUMA domains
- *    -> Allocate one memory block chain per numa domain
+ *    -> Allocate one memory block chain per NUMA domain
  *    -> requires additional synchronization (critical regions)
  *
  * 2: Threads
@@ -40,7 +40,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
 #	include <omp.h>
 #endif
 
@@ -131,7 +131,7 @@ private:
 	int& getThreadLocalDomainIdRef()
 	{
 #if 0
-#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
 		static int domain_id = omp_get_thread_num();
 #else
 		static int domain_id = 0;
@@ -170,7 +170,7 @@ public:
 private:
 	void p_setup()
 	{
-#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
 		if (omp_in_parallel())
 		{
 			std::cerr << "ERROR: NUMAMemManager may not be initialized within parallel region!" << std::endl;
@@ -214,7 +214,7 @@ private:
 		getThreadLocalDomainIdRef() = numa_node_of_cpu(cpuid);
 
 
-#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
 #pragma omp parallel
 		{
 			int cpuid = sched_getcpu();
@@ -232,7 +232,7 @@ private:
 		/*
 		 * Thread granularity, use this also per default
 		 */
-#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
 		num_alloc_domains = omp_get_max_threads();
 #else
 		num_alloc_domains = 1;
@@ -242,7 +242,7 @@ private:
 			std::cout << "num_alloc_domains: " << num_alloc_domains << std::endl;
 
 		// set NUMA id in case that master thread has a different id than the first thread
-#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
 		getThreadLocalDomainIdRef() = omp_get_thread_num();
 
 #pragma omp parallel
@@ -270,7 +270,7 @@ private:
 
 #endif
 
-#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
 		if (verbosity > 0)
 		{
 			#pragma omp parallel
@@ -425,79 +425,79 @@ public:
 	{
 		T *data = nullptr;
 
-#if NUMA_BLOCK_ALLOCATOR_TYPE == 1 || NUMA_BLOCK_ALLOCATOR_TYPE == 2
+		#if NUMA_BLOCK_ALLOCATOR_TYPE == 1 || NUMA_BLOCK_ALLOCATOR_TYPE == 2
 
-#	if NUMA_BLOCK_ALLOCATOR_TYPE == 1
-		// dummy call here to initialize this class as part of the singleton out of critical region
-		getSingletonRef();
+			#if NUMA_BLOCK_ALLOCATOR_TYPE == 1
+				// dummy call here to initialize this class as part of the singleton out of critical region
+				getSingletonRef();
 
-#	if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
-#		pragma omp critical
-#	endif
+				#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
+				#	pragma omp critical
+				#endif
 
-#	endif
-		{
-			std::vector<void*>& block_list = getBlocksSameSize(i_size);
+			#endif
+				{
+					std::vector<void*>& block_list = getBlocksSameSize(i_size);
 
-			if (block_list.size() > 0)
+					if (block_list.size() > 0)
+					{
+						data = (T*)block_list.back();
+						block_list.pop_back();
+					}
+				}
+
+				if (data != nullptr)
+					return data;
+
+				return (T*)first_touch_init(numa_alloc(i_size), i_size);
+
+		#elif NUMA_BLOCK_ALLOCATOR_TYPE == 3
+
+			#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
+			#	pragma omp critical
+			#endif
 			{
-				data = (T*)block_list.back();
-				block_list.pop_back();
-			}
-		}
+				std::vector<void*>& block_list = getBlocksSameSize(i_size);
 
-		if (data != nullptr)
+				if (block_list.size() > 0)
+				{
+					data = (T*)block_list.back();
+					block_list.pop_back();
+				}
+			}
+
+			if (data != nullptr)
+				return data;
+
+			int retval = posix_memalign((void**)&data, 4096, i_size);
+			if (retval != 0)
+			{
+				std::cerr << "Unable to allocate memory" << std::endl;
+				assert(false);
+				exit(-1);
+			}
+
+			first_touch_init(data, i_size);
 			return data;
 
-		return (T*)first_touch_init(numa_alloc(i_size), i_size);
+		#else
 
-#elif NUMA_BLOCK_ALLOCATOR_TYPE == 3
+			// allocate a new element to the list of blocks given in block_list
 
-#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
-#	pragma omp critical
-#endif
-		{
-			std::vector<void*>& block_list = getBlocksSameSize(i_size);
-
-			if (block_list.size() > 0)
+			// posix_memalign is thread safe
+			// http://www.qnx.com/developers/docs/6.3.0SP3/neutrino/lib_ref/p/posix_memalign.html
+			int retval = posix_memalign((void**)&data, 4096, i_size);
+			if (retval != 0)
 			{
-				data = (T*)block_list.back();
-				block_list.pop_back();
+				std::cerr << "Unable to allocate memory" << std::endl;
+				assert(false);
+				exit(-1);
 			}
-		}
 
-		if (data != nullptr)
+			first_touch_init(data, i_size);
 			return data;
 
-		int retval = posix_memalign((void**)&data, 4096, i_size);
-		if (retval != 0)
-		{
-			std::cerr << "Unable to allocate memory" << std::endl;
-			assert(false);
-			exit(-1);
-		}
-
-		first_touch_init(data, i_size);
-		return data;
-
-#else
-
-		// allocate a new element to the list of blocks given in block_list
-
-		// posix_memalign is thread safe
-		// http://www.qnx.com/developers/docs/6.3.0SP3/neutrino/lib_ref/p/posix_memalign.html
-		int retval = posix_memalign((void**)&data, 4096, i_size);
-		if (retval != 0)
-		{
-			std::cerr << "Unable to allocate memory" << std::endl;
-			assert(false);
-			exit(-1);
-		}
-
-		first_touch_init(data, i_size);
-		return data;
-
-#endif
+		#endif
 	}
 
 
@@ -520,7 +520,7 @@ public:
 #else
 
 	#if NUMA_BLOCK_ALLOCATOR_TYPE == 1 || NUMA_BLOCK_ALLOCATOR_TYPE == 3
-		#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+		#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
 			#pragma omp critical
 		#endif
 	#endif

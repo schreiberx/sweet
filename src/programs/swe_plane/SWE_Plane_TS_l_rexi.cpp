@@ -16,7 +16,7 @@
 #include <sweet/plane/Convert_PlaneDataComplex_to_PlaneData.hpp>
 
 
-#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
 #include <omp.h>
 #endif
 
@@ -74,7 +74,7 @@ void SWE_Plane_TS_l_rexi::setup(
 		exit(-1);
 	}
 
-#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
 	if (omp_in_parallel())
 	{
 		std::cerr << "FATAL ERROR X: in parallel region" << std::endl;
@@ -87,7 +87,7 @@ void SWE_Plane_TS_l_rexi::setup(
 	// use a kind of serialization of the input to avoid threading conflicts in the ComplexFFT generation
 	for (int j = 0; j < num_local_rexi_par_threads; j++)
 	{
-#if SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_TIME_REXI
 #	pragma omp parallel for schedule(static,1) default(none) shared(planeDataConfig_local, std::cout,j)
 #endif
 		for (int i = 0; i < num_local_rexi_par_threads; i++)
@@ -95,7 +95,7 @@ void SWE_Plane_TS_l_rexi::setup(
 			if (i != j)
 				continue;
 
-#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
 			if (omp_get_thread_num() != i)
 			{
 				// leave this dummy std::cout in it to avoid the intel compiler removing this part
@@ -133,12 +133,12 @@ void SWE_Plane_TS_l_rexi::setup(
 		}
 	}
 
-#if SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_TIME_REXI
 #	pragma omp parallel for schedule(static,1) default(none)  shared(planeDataConfig_local, std::cout)
 #endif
 	for (int i = 0; i < num_local_rexi_par_threads; i++)
 	{
-#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
 		if (omp_get_thread_num() != i)
 		{
 			// leave this dummy std::cout in it to avoid the intel compiler removing this part
@@ -284,14 +284,14 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 
 
 
-#if SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_TIME_REXI
 #	pragma omp parallel for schedule(static,1) default(none) shared(i_dt, i_h_pert, i_u, i_v, max_N, std::cout, std::cerr)
 #endif
 	for (int i = 0; i < num_local_rexi_par_threads; i++)
 	{
 #if SWEET_REXI_TIMINGS
 		bool stopwatch_measure = false;
-	#if SWEET_REXI_THREAD_PARALLEL_SUM
+	#if SWEET_THREADING_TIME_REXI
 		if (omp_get_thread_num() == 0)
 	#endif
 			if (mpi_rank == 0)
@@ -359,9 +359,9 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 		u0 = u0*inv_dt;
 		v0 = v0*inv_dt;
 
-#if SWEET_REXI_THREAD_PARALLEL_SUM || SWEET_MPI
+#if SWEET_THREADING_TIME_REXI || SWEET_MPI
 
-#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
 		int local_thread_id = omp_get_thread_num();
 #else
 		int local_thread_id = 0;
@@ -474,7 +474,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 		stopwatch_reduce.start();
 #endif
 
-#if SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_TIME_REXI
 
 
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
@@ -648,7 +648,7 @@ SWE_Plane_TS_l_rexi::SWE_Plane_TS_l_rexi(
 #endif
 
 
-#if SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_TIME_REXI
 
 	num_local_rexi_par_threads = omp_get_max_threads();
 

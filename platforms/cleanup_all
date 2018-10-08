@@ -1,7 +1,10 @@
 #! /bin/bash
 
-./cleanup_scriptdirs
-./cleanup_postprocessing
-./cleanup_plans
+./cleanup_job_dirs || echo_error_exit "Failed to cleanup job dirs"
+./cleanup_postprocessing || echo_error_exit "Failed to cleanup postprocessing files"
+./cleanup_plans || echo_error_exit "Failed to cleanup plans"
 
+# Cleanup pycache mess
 rm -rf __pycache__
+
+exit 0

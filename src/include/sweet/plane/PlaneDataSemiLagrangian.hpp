@@ -137,7 +137,7 @@ public:
 				rx_d_prev = rx_d_new;
 				ry_d_prev = ry_d_new;
 
-	#if SWEET_SPACE_THREADING
+	#if SWEET_THREADING_SPACE
 	#pragma omp parallel for
 	#endif
 				for (std::size_t i = 0; i < num_points; i++)

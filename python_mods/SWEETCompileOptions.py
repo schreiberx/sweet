@@ -37,7 +37,7 @@ def _exec_command(command):
 class SWEETCompileOptions(InfoError):
 
 
-	def __init__(self):
+	def __init__(self, dummy_init = False):
 		InfoError.__init__(self, "SWEETCompileOptions")
 
 		# Program or unit test

@@ -13,7 +13,7 @@
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneData.hpp>
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 	#include <omp.h>
 #endif
 
@@ -51,7 +51,7 @@ class SWE_bench_Polvani
 			PlaneData &o_psi
 	)
 	{
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 		/*
 		 * Avoid race conditions in random number generator!
 		 */
@@ -86,7 +86,7 @@ class SWE_bench_Polvani
 		o_psi.spectral_update_lambda_modes(
 			[&](int k0, int k1, std::complex<double> &o_data)
 			{
-#if SWEET_DEBUG && SWEET_SPACE_THREADING
+#if SWEET_DEBUG && SWEET_THREADING_SPACE
 #pragma omp parallel
 #pragma omp master
 				{
@@ -136,7 +136,7 @@ class SWE_bench_Polvani
 
 //		o_psi *= 1.0/max_energy_amplitude;
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 	omp_set_num_threads(max_threads);
 #endif
 	}

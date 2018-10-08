@@ -1042,30 +1042,6 @@ public:
 
 			o_v.physical_set_zero();
 
-#if 0
-			if (simVars->timecontrol.current_simulation_time == 0)
-			{
-				double inv_r = 1.0/simVars->sim.earth_radius;
-				double h_max_error, u_max_error, v_max_error;
-
-				if (simVars->misc.sphere_use_robert_functions)
-				{
-					h_max_error = (-inv_r*op->robert_div_lon(o_u) -inv_r*op->robert_div_lat(o_v)).physical_reduce_max_abs();
-					u_max_error = (-inv_r*op->robert_grad_lon(o_h*simVars->sim.gravitation) + 2.0*simVars->sim.coriolis_omega*op->mu(o_v)).physical_reduce_max_abs();
-					v_max_error = (-inv_r*op->robert_grad_lat(o_h*simVars->sim.gravitation) - 2.0*simVars->sim.coriolis_omega*op->mu(o_u)).physical_reduce_max_abs();
-				}
-				else
-				{
-					h_max_error = (-inv_r*op->div_lon(o_u) -inv_r*op->div_lat(o_v)).physical_reduce_max_abs();
-					u_max_error = (-inv_r*op->grad_lon(o_h*simVars->sim.gravitation) + 2.0*simVars->sim.coriolis_omega*op->mu(o_v)).physical_reduce_max_abs();
-					v_max_error = (-inv_r*op->grad_lat(o_h*simVars->sim.gravitation) - 2.0*simVars->sim.coriolis_omega*op->mu(o_u)).physical_reduce_max_abs();
-				}
-
-				std::cout << "h_max_error for geostrophic balance case: " << h_max_error << std::endl;
-				std::cout << "u_max_error for geostrophic balance case: " << u_max_error << std::endl;
-				std::cout << "v_max_error for geostrophic balance case: " << v_max_error << std::endl;
-			}
-#endif
 		}
 		else if (simVars->setup.benchmark_id == 21)
 		{

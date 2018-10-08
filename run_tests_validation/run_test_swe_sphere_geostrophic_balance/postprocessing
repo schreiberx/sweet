@@ -4,11 +4,12 @@ import sys
 
 # Load simulation time to get reference file
 import imp
-jc = imp.load_source('jobs_create_scripts', './jobs_create_scripts')
+jc = imp.load_source('benchmark_create_job_scripts', './benchmark_create_job_scripts')
+print(jc.p.runtime.simtime)
 
 
 import glob
-directories = glob.glob("script_*")
+directories = glob.glob("job_*")
 directories.sort()
 
 errors = []

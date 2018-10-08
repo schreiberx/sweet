@@ -14,8 +14,8 @@
 #include <sweet/sphere/SphereDataConfig.hpp>
 #include <sweet/sphere/SphereData.hpp>
 #include <sweet/sphere/SphereDataComplex.hpp>
+#include <sweet/sphere/SphereDataErrorCheck.hpp>
 #include <sweet/sphere/SphereOperatorsComplex.hpp>
-#include <sweet/sphere/ErrorCheck.hpp>
 
 
 SimulationVariables simVars;
@@ -115,21 +115,6 @@ void run_tests()
 					io_data *= cos(i_lat);
 				}
 			);
-
-			{
-				SphereDataComplex lhsc = opComplex.robert_div(uc, vc);
-				ErrorCheck::check(lhsc, zeroc, "COMPLEX: div freeness Robert formulation", error_threshold*1e1);
-			}
-
-			{
-				// LHS = div(U*phi)
-				SphereDataComplex lhsc = opComplex.robert_div(uc*phic, vc*phic);
-
-				// RHS = div(U)*phi + grad(phi)*U = grad(phi)*U  (divergence free)
-				SphereDataComplex rhsc = opComplex.robert_grad_M(phic, uc, vc);
-
-				ErrorCheck::check(lhsc, rhsc, "COMPLEX: TEST div(U*phi) with Robert formulation", error_threshold*10e4);
-			}
 		}
 	}
 
@@ -209,23 +194,6 @@ void run_tests()
 					io_data *= cos(i_lat);
 				}
 			);
-
-			{
-				SphereDataComplex lhs = opComplex.robert_div(u, v);
-
-				ErrorCheck::check(lhs, zero, "div freeness Robert formulation", error_threshold);
-			}
-
-			{
-				// LHS = div(U*phi)
-				SphereDataComplex lhs = opComplex.robert_div(u*phi, v*phi);
-
-				// RHS = div(U)*phi + grad(phi)*U = grad(phi)*U  (divergence free)
-				SphereDataComplex rhs = opComplex.robert_grad_M(phi, u, v);
-
-
-				ErrorCheck::check(lhs, rhs, "TEST div(U*phi) with Robert formulation", error_threshold*10e5);
-			}
 		}
 	}
 #endif
@@ -367,7 +335,7 @@ void run_tests()
 			data2.request_data_spectral();
 			data2.request_data_physical();
 
-			ErrorCheck::check(data, data2, "operator+(cplx):", error_threshold*10e2);
+			SphereDataErrorCheck::check(data, data2, "operator+(cplx):", error_threshold*10e2);
 		}
 
 
@@ -418,7 +386,7 @@ void run_tests()
 			SphereDataComplex one(sphereDataConfig);
 			one.physical_set_all_value(1.0);
 
-			ErrorCheck::check(lhs, one, "1.0/(1.0-mu^2)", error_threshold, false, true);
+			SphereDataErrorCheck::check(lhs, one, "1.0/(1.0-mu^2)", error_threshold, false, true);
 		}
 
 
@@ -464,7 +432,7 @@ void run_tests()
 					}
 			);
 
-			ErrorCheck::check(h, hphi, "ROBERT DIV LONGITUDE", error_threshold*1e3, false, true);
+			SphereDataErrorCheck::check(h, hphi, "ROBERT DIV LONGITUDE", error_threshold*1e3, false, true);
 		}
 #endif
 
@@ -492,7 +460,7 @@ void run_tests()
 					}
 			);
 
-			ErrorCheck::check(h, hphi, "ROBERT DIV LATITUDE", error_threshold*1e3, false, true);
+			SphereDataErrorCheck::check(h, hphi, "ROBERT DIV LATITUDE", error_threshold*1e3, false, true);
 		}
 #endif
 
@@ -519,7 +487,7 @@ void run_tests()
 
 			SphereDataComplex rhs = div_lat_phi;
 
-			ErrorCheck::check(lhs, rhs, "TEST div_j(phi) with Robert formulation", error_threshold);
+			SphereDataErrorCheck::check(lhs, rhs, "TEST div_j(phi) with Robert formulation", error_threshold);
 		}
 
 
@@ -542,7 +510,7 @@ void run_tests()
 				}
 			);
 
-			ErrorCheck::check(phi, div_lat_phi, "ROBERT DIV LATITUDE");
+			SphereDataErrorCheck::check(phi, div_lat_phi, "ROBERT DIV LATITUDE");
 		}
 
 
@@ -570,7 +538,7 @@ void run_tests()
 					}
 			);
 
-			ErrorCheck::check(h, hphi, "ROBERT GRAD LONGITUDE");
+			SphereDataErrorCheck::check(h, hphi, "ROBERT GRAD LONGITUDE");
 		}
 
 
@@ -599,7 +567,7 @@ void run_tests()
 					}
 			);
 
-			ErrorCheck::check(h, hphi, "ROBERT GRAD LATITUDE");
+			SphereDataErrorCheck::check(h, hphi, "ROBERT GRAD LATITUDE");
 		}
 
 
@@ -626,7 +594,7 @@ void run_tests()
 					}
 			);
 
-			ErrorCheck::check(h, result, "TEST IDENTITY");
+			SphereDataErrorCheck::check(h, result, "TEST IDENTITY");
 		}
 
 
@@ -655,7 +623,7 @@ void run_tests()
 					}
 			);
 
-			ErrorCheck::check(h, result, "TEST DIFF LON");
+			SphereDataErrorCheck::check(h, result, "TEST DIFF LON");
 		}
 
 
@@ -684,7 +652,7 @@ void run_tests()
 					}
 			);
 
-			ErrorCheck::check(h, result, "TEST DIFF PHI");
+			SphereDataErrorCheck::check(h, result, "TEST DIFF PHI");
 		}
 
 
@@ -712,7 +680,7 @@ void run_tests()
 				}
 			);
 
-			ErrorCheck::check(h, result, "TEST DIFF LAT MU");
+			SphereDataErrorCheck::check(h, result, "TEST DIFF LAT MU");
 		}
 
 

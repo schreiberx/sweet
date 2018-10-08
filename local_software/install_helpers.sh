@@ -2,15 +2,28 @@
 # Helper functions and environment variables for install scripts
 #
 
-source ./env_vars.sh "" || exit 1
+if [ -z "$SWEET_ROOT" ]; then
+	echo "****************************************************************************************************"
+	echo "* ERROR: SWEET environment variables missing!"
+	echo "****************************************************************************************************"
+	exit 1
+fi
+
+#source ./env_vars.sh "" || exit 1
 
 
 #
 # Setup variables where to download source, to compile and to install
 #
 PWD=`pwd`
+
 SWEET_LOCAL_SOFTWARE_SRC_DIR="$PWD/local_src"
 SWEET_LOCAL_SOFTWARE_DST_DIR="$PWD/local"
+
+# Each platform has its own source and binary directory
+# Not yet...
+#SWEET_LOCAL_SOFTWARE_SRC_DIR="$PWD/local_${PLATFORM}_src"
+#SWEET_LOCAL_SOFTWARE_DST_DIR="$PWD/local_${PLATFORM}"
 
 #
 # Prepare directory structure
@@ -192,15 +205,15 @@ function config_configure_make_default()	# ./configure...; make ...;
 	config_configure $@
 	config_make_default
 }
+function config_make_default_install()			# make; make install
+{
+	config_make_default $@
+	config_make_install
+}
 function config_configure_make_default_install()	# ./configure...; make ...; make install
 {
 	config_configure $@
 	config_make_default
-	config_make_default_install
-}
-function config_make_default_install()			# make; make install
-{
-	config_make_default $@
 	config_make_install
 }
 

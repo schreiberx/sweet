@@ -136,7 +136,7 @@ class VisSweet	:
 
 		double inv_delta = 1.0/real_delta;
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 		for (	std::size_t i = 0;

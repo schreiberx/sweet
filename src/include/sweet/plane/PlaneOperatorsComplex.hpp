@@ -199,8 +199,8 @@ public:
 			/*
 			 * left bottom
 			 */
-#if SWEET_SPACE_THREADING
-//#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_SPACE
+//#if !SWEET_THREADING_TIME_REXI
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 			for (std::size_t j = planeDataConfig->spectral_complex_ranges[0][1][0]; j < planeDataConfig->spectral_complex_ranges[0][1][1]; j++)
@@ -213,8 +213,8 @@ public:
 			/*
 			 * left top
 			 */
-#if SWEET_SPACE_THREADING
-//#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_SPACE
+//#if !SWEET_THREADING_TIME_REXI
 
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
@@ -227,8 +227,8 @@ public:
 			/*
 			 * right bottom
 			 */
-#if SWEET_SPACE_THREADING
-//#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_SPACE
+//#if !SWEET_THREADING_TIME_REXI
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 			for (std::size_t j = planeDataConfig->spectral_complex_ranges[2][1][0]; j < planeDataConfig->spectral_complex_ranges[2][1][1]; j++)
@@ -240,8 +240,8 @@ public:
 			/*
 			 * right top
 			 */
-#if SWEET_SPACE_THREADING
-//#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_SPACE
+//#if !SWEET_THREADING_TIME_REXI
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 			for (std::size_t j = planeDataConfig->spectral_complex_ranges[3][1][0]; j < planeDataConfig->spectral_complex_ranges[3][1][1]; j++)
@@ -265,8 +265,8 @@ public:
 			/*
 			 * left bottom
 			 */
-#if SWEET_SPACE_THREADING
-//#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_SPACE
+//#if !SWEET_THREADING_TIME_REXI
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 			for (std::size_t j = planeDataConfig->spectral_complex_ranges[0][1][0]; j < planeDataConfig->spectral_complex_ranges[0][1][1]; j++)
@@ -279,8 +279,8 @@ public:
 			/*
 			 * left top
 			 */
-#if SWEET_SPACE_THREADING
-//#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_SPACE
+//#if !SWEET_THREADING_TIME_REXI
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 			for (std::size_t j = planeDataConfig->spectral_complex_ranges[1][1][0]; j < planeDataConfig->spectral_complex_ranges[1][1][1]; j++)
@@ -292,8 +292,8 @@ public:
 			/*
 			 * right bottom
 			 */
-#if SWEET_SPACE_THREADING
-//#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_SPACE
+//#if !SWEET_THREADING_TIME_REXI
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 			for (std::size_t j = planeDataConfig->spectral_complex_ranges[2][1][0]; j < planeDataConfig->spectral_complex_ranges[2][1][1]; j++)
@@ -306,8 +306,8 @@ public:
 			/*
 			 * right top
 			 */
-#if SWEET_SPACE_THREADING
-//#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_SPACE
+//#if !SWEET_THREADING_TIME_REXI
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 			for (std::size_t j = planeDataConfig->spectral_complex_ranges[3][1][0]; j < planeDataConfig->spectral_complex_ranges[3][1][1]; j++)
@@ -326,8 +326,8 @@ public:
 		 * DIFF2 X
 		 */
 		{
-#if SWEET_SPACE_THREADING
-//#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_SPACE
+//#if !SWEET_THREADING_TIME_REXI
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 			for (std::size_t i = 0; i < planeDataConfig->spectral_complex_array_data_number_of_elements; i++)
@@ -342,8 +342,8 @@ public:
 		 * DIFF2 X
 		 */
 		{
-#if SWEET_SPACE_THREADING
-//#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_SPACE
+//#if !SWEET_THREADING_TIME_REXI
 #		pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 			for (std::size_t i = 0; i < planeDataConfig->spectral_complex_array_data_number_of_elements; i++)

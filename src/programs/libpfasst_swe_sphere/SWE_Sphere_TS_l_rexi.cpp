@@ -14,14 +14,14 @@
 #include <sweet/sphere/Convert_SphereData_to_SphereDataComplex.hpp>
 #include <sweet/SimulationBenchmarkTiming.hpp>
 
-#ifndef SWEET_REXI_THREAD_PARALLEL_SUM
-#	define SWEET_REXI_THREAD_PARALLEL_SUM 1
+#ifndef SWEET_THREADING_TIME_REXI
+#	define SWEET_THREADING_TIME_REXI 1
 #endif
 
 /*
  * Compute the REXI sum massively parallel *without* a parallelization with parfor in space
  */
-#if SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_TIME_REXI
 #	include <omp.h>
 #endif
 
@@ -57,7 +57,7 @@ SWE_Sphere_TS_l_rexi::SWE_Sphere_TS_l_rexi(
 #endif
 
 
-#if SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_TIME_REXI
 
 	num_local_rexi_par_threads = omp_get_max_threads();
 
@@ -172,9 +172,9 @@ void SWE_Sphere_TS_l_rexi::p_get_workload_start_end(
 {
 	std::size_t max_N = rexi_alpha.size();
 
-#if SWEET_REXI_THREAD_PARALLEL_SUM || SWEET_MPI
+#if SWEET_THREADING_TIME_REXI || SWEET_MPI
 
-	#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+	#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
 		int local_thread_id = omp_get_thread_num();
 	#else
 		int local_thread_id = 0;
@@ -276,7 +276,7 @@ void SWE_Sphere_TS_l_rexi::setup(
 		exit(-1);
 	}
 
-#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
 	if (omp_in_parallel())
 	{
 		std::cerr << "FATAL ERROR X: in parallel region" << std::endl;
@@ -287,7 +287,7 @@ void SWE_Sphere_TS_l_rexi::setup(
 	// use a kind of serialization of the input to avoid threading conflicts in the ComplexFFT generation
 	for (int j = 0; j < num_local_rexi_par_threads; j++)
 	{
-#if SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_TIME_REXI
 #	pragma omp parallel for schedule(static,1) default(none) shared(std::cout,j)
 #endif
 		for (int i = 0; i < num_local_rexi_par_threads; i++)
@@ -295,7 +295,7 @@ void SWE_Sphere_TS_l_rexi::setup(
 			if (i != j)
 				continue;
 
-#if SWEET_SPACE_THREADING || SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
 			if (omp_get_thread_num() != i)
 			{
 				// leave this dummy std::cout in it to avoid the intel compiler removing this part
@@ -367,7 +367,7 @@ void SWE_Sphere_TS_l_rexi::p_update_coefficients(
 	// use a kind of serialization of the input to avoid threading conflicts in the ComplexFFT generation
 	for (int j = 0; j < num_local_rexi_par_threads; j++)
 	{
-#if SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_TIME_REXI
 #	pragma omp parallel for schedule(static,1) default(none) shared(std::cout,j)
 #endif
 		for (int i = 0; i < num_local_rexi_par_threads; i++)
@@ -539,7 +539,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 	 */
 	bool flag_noext_no_thread = false;
 
-#if !SWEET_REXI_THREAD_PARALLEL_SUM
+#if !SWEET_THREADING_TIME_REXI
 	if (simVars.rexi.use_sphere_extended_modes == 0)
 		flag_noext_no_thread = true;
 #endif
@@ -549,7 +549,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 	{
 	#if SWEET_REXI_TIMINGS
 		bool stopwatch_measure_thread = false;
-		#if SWEET_REXI_THREAD_PARALLEL_SUM
+		#if SWEET_THREADING_TIME_REXI
 			if (omp_get_thread_num() == 0)
 		#endif
 					stopwatch_measure_thread = true;
@@ -691,10 +691,10 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 	else
 	{
 		/*
-		 * SWEET_REXI_THREAD_PARALLEL_SUM or rexi_ext_modes != 0
+		 * SWEET_THREADING_TIME_REXI or rexi_ext_modes != 0
 		 */
 
-	#if SWEET_REXI_THREAD_PARALLEL_SUM
+	#if SWEET_THREADING_TIME_REXI
 	#	pragma omp parallel for schedule(static,1) default(none) shared(i_fixed_dt, io_prog_phi0, io_prog_vort0, io_prog_div0, std::cout, std::cerr)
 	#endif
 		for (int thread_id = 0; thread_id < num_local_rexi_par_threads; thread_id++)
@@ -702,7 +702,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 #if SWEET_REXI_TIMINGS
 			bool stopwatch_measure = false;
-	#if SWEET_REXI_THREAD_PARALLEL_SUM
+	#if SWEET_THREADING_TIME_REXI
 			if (omp_get_thread_num() == 0)
 	#endif
 				stopwatch_measure = true;
@@ -824,7 +824,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 		}
 
 
-#if SWEET_REXI_THREAD_PARALLEL_SUM
+#if SWEET_THREADING_TIME_REXI
 
 		#if SWEET_REXI_TIMINGS
 			#error "Not yet properly supported!"
@@ -896,7 +896,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 			SimulationBenchmarkTimings::getInstance().rexi_timestepping_reduce.stop();
 		#endif
 
-	#else	// SWEET_REXI_THREAD_PARALLEL_SUM
+	#else	// SWEET_THREADING_TIME_REXI
 
 #if SWEET_REXI_TIMINGS
 		if (mpi_rank == 0)
@@ -912,7 +912,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 			SimulationBenchmarkTimings::getInstance().rexi_timestepping_miscprocessing.stop();
 #endif
 
-	#endif	// SWEET_REXI_THREAD_PARALLEL_SUM
+	#endif	// SWEET_THREADING_TIME_REXI
 
 
 #if SWEET_REXI_TIMINGS

@@ -165,6 +165,7 @@ public:
 			SphereData &o_div
 	)
 	{
+
 		const SphereDataComplex phi0 = Convert_SphereData_To_SphereDataComplex::physical_convert(i_phi0);
 		const SphereDataComplex vort0 = Convert_SphereData_To_SphereDataComplex::physical_convert(i_vort0);
 		const SphereDataComplex div0 = Convert_SphereData_To_SphereDataComplex::physical_convert(i_div0);
@@ -193,9 +194,11 @@ public:
 		{
 			SphereDataPhysicalComplex u0g(sphereDataConfigSolver);
 			SphereDataPhysicalComplex v0g(sphereDataConfigSolver);
+
 			opComplex.robert_vortdiv_to_uv(vort0, div0, u0g, v0g, r);
 
 			SphereDataComplex rhs(sphereDataConfigSolver);
+
 
 			SphereDataPhysicalComplex phi0g = phi0.getSphereDataPhysicalComplex();
 
@@ -213,9 +216,9 @@ public:
 					alpha*alpha*foo +
 					two_coriolis_omega*two_coriolis_omega*mug*mug*foo
 					- (gh/alpha)*Fc_k;
-
 			// convert to spectral space
 			rhs = rhsg;
+
 
 			phi = sphSolverPhi.solve(rhs);
 
@@ -227,7 +230,6 @@ public:
 
 			opComplex.robert_vortdiv_to_uv(vort0, div0, u0, v0, r);
 
-
 			SphereDataPhysicalComplex a(sphereDataConfigSolver);
 			SphereDataPhysicalComplex b(sphereDataConfigSolver);
 
@@ -235,6 +237,7 @@ public:
 
 			SphereDataPhysicalComplex gradu(sphereDataConfigSolver);
 			SphereDataPhysicalComplex gradv(sphereDataConfigSolver);
+
 			opComplex.robert_grad_to_vec(phi, gradu, gradv, r);
 			a = u0 + gradu;
 			b = v0 + gradv;
@@ -243,6 +246,7 @@ public:
 			// LEAVE THIS CODE HERE!!!
 			// THIS code resulted in the requirement of a mode extension of 2 additional modes
 			// for the REXI solver!!!
+			// However, it turned out not to be necessary :-(
             a = u0 + inv_r*opComplex.robert_grad_lon(phi).getSphereDataPhysicalComplex();
             b = v0 + inv_r*opComplex.robert_grad_lat(phi).getSphereDataPhysicalComplex();
 
@@ -253,6 +257,7 @@ public:
 			SphereDataPhysicalComplex v = (two_coriolis_omega*mug*(a) + alpha*b)/k;
 
 			opComplex.robert_uv_to_vortdiv(u, v, vort, div, r);
+
 		}
 
 		o_phi = Convert_SphereDataComplex_To_SphereData::physical_convert_real(phi * beta);

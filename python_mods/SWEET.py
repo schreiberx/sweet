@@ -1,8 +1,10 @@
-import matplotlib
-matplotlib.use('agg')
-
 import os
 import sys
+
+import matplotlib
+d = os.getenv('DISPLAY')
+if d == None or not d in [':0', ':0.0', ':1']:
+	matplotlib.use('agg')
 
 from InfoError import *
 

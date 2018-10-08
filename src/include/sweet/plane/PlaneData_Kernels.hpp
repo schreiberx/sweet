@@ -80,7 +80,7 @@ public:
 		// radius of kernel (half size)
 		std::size_t R = S>>1;
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for OPENMP_PAR_SIMD
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
@@ -216,7 +216,7 @@ public:
 			switch (kernel_id)
 			{
 			case get_kernel_mask3x3(0, 0, 0, 1, 0, 1, 0, 0, 0):	// (X, 0, X)
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for OPENMP_PAR_SIMD collapse(2)
 #endif
 				for (int y = 0; y < res_y; y++)
@@ -258,7 +258,7 @@ public:
 
 
 			case get_kernel_mask3x3(0, 0, 0, 1, 1, 1, 0, 0, 0):	// (X, X, X)
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for OPENMP_PAR_SIMD collapse(2)
 #endif
 					for (int y = 0; y < res_y; y++)
@@ -302,7 +302,7 @@ public:
 					break;
 
 			case get_kernel_mask3x3(0, 1, 0, 0, 0, 0, 0, 1, 0):	// (X, 0, X)^T
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for OPENMP_PAR_SIMD collapse(2)
 #endif
 					for (int y = 0; y < res_y; y++)
@@ -342,7 +342,7 @@ public:
 					break;
 
 			case get_kernel_mask3x3(0, 1, 0, 0, 1, 0, 0, 1, 0):	// (X, 0, X)^T
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for OPENMP_PAR_SIMD collapse(2)
 #endif
 					for (int y = 0; y < res_y; y++)
@@ -383,7 +383,7 @@ public:
 					break;
 
 			default:
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 #pragma omp parallel for OPENMP_PAR_SIMD collapse(2)
 #endif
 				for (int y = 0; y < res_y; y++)

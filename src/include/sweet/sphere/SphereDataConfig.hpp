@@ -198,6 +198,10 @@ public:
 private:
 	void setup_data()
 	{
+#if SWEET_DEBUG
+		shtns_print_cfg(shtns);
+#endif
+
 		physical_num_lat = shtns->nlat;
 		physical_num_lon = shtns->nphi;
 		physical_array_data_number_of_elements = shtns->nspat;
@@ -373,24 +377,31 @@ private:
 
 
 
-	unsigned int getFlags(
+	int getFlags(
 			int i_reuse_spectral_transformation_plans
 	)
 	{
-		unsigned int flags = 0;
+		int flags = 0;
 
 		// lat or lon continue
 		flags |= SPHERE_DATA_GRID_LAYOUT;
 
 		if (i_reuse_spectral_transformation_plans == -1)
+		{
 			flags |= sht_quick_init;
+		}
+		else
+		{
+			if (i_reuse_spectral_transformation_plans == 1)
+				flags |= SHT_LOAD_SAVE_CFG;
 
-		if (i_reuse_spectral_transformation_plans == 1)
-			flags |= SHT_LOAD_SAVE_CFG;
+			// TODO: Hope for shtns update to create error if plan doesn't exist
+			if (i_reuse_spectral_transformation_plans == 2)
+				flags |= SHT_LOAD_SAVE_CFG;
+		}
 
-		// TODO: Hope for shtns update to create error if plan doesn't exist
-		if (i_reuse_spectral_transformation_plans == 2)
-			flags |= SHT_LOAD_SAVE_CFG;
+		std::cout << i_reuse_spectral_transformation_plans << std::endl;
+//		flags |= sht_quick_init;
 
 		return flags;
 	}
@@ -421,7 +432,7 @@ public:
 		shtns_verbose(0);			// displays informations during initialization.
 
 		// enable multi-threaded transforms (if supported).
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 		shtns_use_threads(0);	// automatically choose number of threads
 #else
 		shtns_use_threads(1);	// value of 1 disables threading
@@ -456,6 +467,11 @@ public:
 			MPI_Barrier(MPI_COMM_WORLD);
 #endif
 
+		/*
+		 * Use Robert form per default
+		 */
+		shtns_robert_form(shtns, 1);
+
 		setup_data();
 	}
 
@@ -480,7 +496,7 @@ public:
 
 		shtns_verbose(1);			// displays informations during initialization.
 
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 		shtns_use_threads(0);	// automatically choose number of threads based on omp_num_threads
 #else
 		shtns_use_threads(1);	// value of 1 disables threading
@@ -522,6 +538,8 @@ public:
 		MPI_Barrier(MPI_COMM_WORLD);
 #endif
 
+		shtns_robert_form(shtns, 1);
+
 		setup_data();
 	}
 
@@ -544,7 +562,7 @@ public:
 		cleanup(false);
 
 		shtns_verbose(0);			// displays informations during initialization.
-#if SWEET_SPACE_THREADING
+#if SWEET_THREADING_SPACE
 		shtns_use_threads(0);	// automatically choose number of threads
 #else
 		shtns_use_threads(1);	// value of 1 disables threading
@@ -584,6 +602,8 @@ public:
 	if (mpi_rank > 0 && i_reuse_transformation_plans)
 		MPI_Barrier(MPI_COMM_WORLD);
 #endif
+
+		shtns_robert_form(shtns, 1);
 
 		setup_data();
 	}
@@ -657,7 +677,7 @@ public:
 			const SphereDataConfig *i_sphereDataConfig,
 			int i_additional_modes_longitude,
 			int i_additional_modes_latitude,
-			bool i_load_save_plan //= false
+			int i_load_save_plan
 	)
 	{
 		cleanup(false);

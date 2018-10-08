@@ -19,10 +19,9 @@
 #include <sweet/sphere/SphereDataComplex.hpp>
 #include <sweet/sphere/SphereOperatorsComplex.hpp>
 #include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalComplex.hpp>
-#include <sweet/sphere/ErrorCheck.hpp>
-
 #include <sweet/sphere/Convert_SphereDataComplex_to_SphereData.hpp>
 #include <sweet/sphere/Convert_SphereData_to_SphereDataComplex.hpp>
+#include <sweet/sphere/SphereDataErrorCheck.hpp>
 
 
 
@@ -105,7 +104,7 @@ void run_tests()
 			);
 
 			SphereDataComplex x_numerical = sphSolver.solve(b);
-			ErrorCheck::check(x_numerical, x_result, "Test Zx = c*Phi(mu)", epsilon);
+			SphereDataErrorCheck::check(x_numerical, x_result, "Test Zx = c*Phi(mu)", epsilon);
 		}
 
 		/*
@@ -131,7 +130,7 @@ void run_tests()
 			);
 
 			SphereDataComplex x_numerical = sphSolver.solve(b);
-			ErrorCheck::check(x_numerical, x_result, "Test Zx = mu*Phi(lam,mu) + a*Phi(lam,mu)", epsilon);
+			SphereDataErrorCheck::check(x_numerical, x_result, "Test Zx = mu*Phi(lam,mu) + a*Phi(lam,mu)", epsilon);
 		}
 
 		/*
@@ -162,7 +161,7 @@ void run_tests()
 			);
 
 			SphereDataComplex x_numerical = sphSolver.solve(b);
-			ErrorCheck::check(x_numerical, x_result, "Test Zx = (1-mu*mu)*d/dmu Phi(lam,mu) + a*Phi(lam,mu)", epsilon);
+			SphereDataErrorCheck::check(x_numerical, x_result, "Test Zx = (1-mu*mu)*d/dmu Phi(lam,mu) + a*Phi(lam,mu)", epsilon);
 		}
 
 		std::cout << "************************************************************" << std::endl;
@@ -193,7 +192,7 @@ void run_tests()
 			);
 
 			SphereDataComplex x_numerical = sphSolver.solve(b);
-			ErrorCheck::check(x_numerical, x_result, "Test Z1 = alpha^4*Phi(mu)", epsilon);
+			SphereDataErrorCheck::check(x_numerical, x_result, "Test Z1 = alpha^4*Phi(mu)", epsilon);
 		}
 
 		/*
@@ -218,7 +217,7 @@ void run_tests()
 			);
 
 			SphereDataComplex x_numerical = sphSolver.solve(b);
-			ErrorCheck::check(x_numerical, x_result, "Test Z2 = mu^2*Phi(lam,mu)", epsilon);
+			SphereDataErrorCheck::check(x_numerical, x_result, "Test Z2 = mu^2*Phi(lam,mu)", epsilon);
 		}
 
 
@@ -245,7 +244,7 @@ void run_tests()
 			);
 
 			SphereDataComplex x_numerical = sphSolver.solve(b);
-			ErrorCheck::check(x_numerical, x_result, "Test Z3 = mu^4*Phi(lam,mu)", epsilon*1e+1);
+			SphereDataErrorCheck::check(x_numerical, x_result, "Test Z3 = mu^4*Phi(lam,mu)", epsilon*1e+1);
 		}
 
 
@@ -278,7 +277,7 @@ void run_tests()
 			);
 
 			SphereDataComplex x_numerical = sphSolver.solve(b);
-			ErrorCheck::check(x_numerical, x_result, "Test Z4 = grad_j(mu) grad_i(Phi(lam,mu)) = d/dlambda Phi(lam,mu)", epsilon);
+			SphereDataErrorCheck::check(x_numerical, x_result, "Test Z4 = grad_j(mu) grad_i(Phi(lam,mu)) = d/dlambda Phi(lam,mu)", epsilon);
 		}
 		/*
 		 * Test Z4robert = grad_j(mu) grad_i(Phi(lam,mu)) = d/dlambda Phi(lam,mu)
@@ -309,7 +308,7 @@ void run_tests()
 			);
 
 			SphereDataComplex x_numerical = sphSolver.solve(b);
-			ErrorCheck::check(x_numerical, x_result, "Test Z4robert = grad_j(mu) grad_i(Phi(lam,mu)) = d/dlambda Phi(lam,mu)", epsilon);
+			SphereDataErrorCheck::check(x_numerical, x_result, "Test Z4robert = grad_j(mu) grad_i(Phi(lam,mu)) = d/dlambda Phi(lam,mu)", epsilon);
 		}
 
 
@@ -343,7 +342,7 @@ void run_tests()
 
 			SphereDataComplex x_numerical = sphSolver.solve(b);
 			std::cout << "WARNING: This component is very sensitive to small alpha values vs. large two_omega^3 !" << std::endl;
-			ErrorCheck::check(x_numerical, x_result, "Test Z5 = grad_j(mu) mu^2 grad_i(Phi(lam,mu))", epsilon, two_omega>=100000);
+			SphereDataErrorCheck::check(x_numerical, x_result, "Test Z5 = grad_j(mu) mu^2 grad_i(Phi(lam,mu))", epsilon, two_omega>=100000);
 		}
 
 
@@ -378,7 +377,7 @@ void run_tests()
 
 			SphereDataComplex x_numerical = sphSolver.solve(b);
 			std::cout << "WARNING: This component is very sensitive to small alpha values vs. large two_omega^3 !" << std::endl;
-			ErrorCheck::check(x_numerical, x_result, "Test Z5robert = grad_j(mu) mu^2 grad_i(Phi(lam,mu))", epsilon);
+			SphereDataErrorCheck::check(x_numerical, x_result, "Test Z5robert = grad_j(mu) mu^2 grad_i(Phi(lam,mu))", epsilon);
 		}
 
 
@@ -411,7 +410,7 @@ void run_tests()
 			);
 
 			SphereDataComplex x_numerical = sphSolver.solve(b);
-			ErrorCheck::check(x_numerical, x_result, "Test Z6 = grad_j(mu) mu grad_j(Phi(lam,mu))", epsilon);
+			SphereDataErrorCheck::check(x_numerical, x_result, "Test Z6 = grad_j(mu) mu grad_j(Phi(lam,mu))", epsilon);
 		}
 
 
@@ -444,7 +443,7 @@ void run_tests()
 			);
 
 			SphereDataComplex x_numerical = sphSolver.solve(b);
-			ErrorCheck::check(x_numerical, x_result, "Test Z6robert = grad_j(mu) mu grad_j(Phi(lam,mu))", epsilon);
+			SphereDataErrorCheck::check(x_numerical, x_result, "Test Z6robert = grad_j(mu) mu grad_j(Phi(lam,mu))", epsilon);
 		}
 
 
@@ -475,7 +474,7 @@ void run_tests()
 			b = opComplex.laplace(b,1)*scalar/(r*r) + b*alpha;
 
 			SphereDataComplex x_numerical = sphSolver.solve(b);
-			ErrorCheck::check(x_numerical, x_result, "Test Z7 = laplace(Phi(lam,mu))", epsilon);
+			SphereDataErrorCheck::check(x_numerical, x_result, "Test Z7 = laplace(Phi(lam,mu))", epsilon);
 		}
 
 
@@ -496,7 +495,7 @@ void run_tests()
 			SphereDataComplex b = opComplex.mu2(opComplex.laplace(x_result,1))*scalar/(r*r) + x_result*alpha;
 			SphereDataComplex x_numerical = sphSolver.solve(b);
 
-			ErrorCheck::check(x_numerical, x_result, "Test Z8 = mu*mu*laplace(Phi(lam,mu))", epsilon);
+			SphereDataErrorCheck::check(x_numerical, x_result, "Test Z8 = mu*mu*laplace(Phi(lam,mu))", epsilon);
 		}
 
 
@@ -515,7 +514,7 @@ void run_tests()
 
 			SphereDataComplex x_numerical = testc.spectral_solve_helmholtz(a, b, r);
 
-			ErrorCheck::check(x_numerical, x_result, "Test Zx = a + b*laplace", epsilon);
+			SphereDataErrorCheck::check(x_numerical, x_result, "Test Zx = a + b*laplace", epsilon);
 		}
 
 	}

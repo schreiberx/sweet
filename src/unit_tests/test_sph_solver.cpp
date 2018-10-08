@@ -18,7 +18,7 @@
 #include <sweet/sphere/SphereDataComplex.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalReal.hpp>
-#include <sweet/sphere/ErrorCheck.hpp>
+#include <sweet/sphere/SphereDataErrorCheck.hpp>
 
 
 
@@ -86,7 +86,7 @@ void run_tests(
 
 			SphereData x_numerical = sphSolver.solve(b);
 
-			ErrorCheck::check(x_numerical, x_result, "Test Zx = c*Phi(mu)", error_threshold);
+			SphereDataErrorCheck::check(x_numerical, x_result, "Test Zx = c*Phi(mu)", error_threshold);
 		}
 
 		/*
@@ -113,7 +113,7 @@ void run_tests(
 
 			SphereData x_numerical = sphSolver.solve(b);
 
-			ErrorCheck::check(x_numerical, x_result, "Test Zx = mu*Phi(lam,mu) + a*Phi(lam,mu)", error_threshold);
+			SphereDataErrorCheck::check(x_numerical, x_result, "Test Zx = mu*Phi(lam,mu) + a*Phi(lam,mu)", error_threshold);
 		}
 
 		/*
@@ -144,7 +144,7 @@ void run_tests(
 
 			SphereData x_numerical = sphSolver.solve(b);
 
-			ErrorCheck::check(x_numerical, x_result, "Zx = (1-mu*mu)*d/dmu Phi(lam,mu) + a*Phi(lam,mu)", error_threshold);
+			SphereDataErrorCheck::check(x_numerical, x_result, "Zx = (1-mu*mu)*d/dmu Phi(lam,mu) + a*Phi(lam,mu)", error_threshold);
 		}
 
 		std::cout << "************************************************************" << std::endl;
@@ -175,7 +175,7 @@ void run_tests(
 
 			SphereData x_numerical = sphSolver.solve(b);
 
-			ErrorCheck::check(x_numerical, x_result, "Test Z1 = alpha^4*Phi(mu)", error_threshold);
+			SphereDataErrorCheck::check(x_numerical, x_result, "Test Z1 = alpha^4*Phi(mu)", error_threshold);
 		}
 
 		/*
@@ -202,7 +202,7 @@ void run_tests(
 
 			SphereData x_numerical = sphSolver.solve(b);
 
-			ErrorCheck::check(x_numerical, x_result, "Test Z2 = mu^2*Phi(lam,mu)", error_threshold);
+			SphereDataErrorCheck::check(x_numerical, x_result, "Test Z2 = mu^2*Phi(lam,mu)", error_threshold);
 		}
 
 		/*
@@ -275,7 +275,7 @@ void run_tests(
 
 			SphereData x_numerical = sphSolver.solve(b);
 
-			ErrorCheck::check(x_numerical, x_result, "Test Z3 = mu^4*Phi(lam,mu)", error_threshold);
+			SphereDataErrorCheck::check(x_numerical, x_result, "Test Z3 = mu^4*Phi(lam,mu)", error_threshold);
 		}
 
 
@@ -311,7 +311,7 @@ void run_tests(
 
 			SphereData x_numerical = sphSolver.solve(b);
 
-			ErrorCheck::check(x_numerical, x_result, "Test Z4 = grad_j(mu) grad_i(Phi(lam,mu)) = d/dlambda Phi(lam,mu)", error_threshold);
+			SphereDataErrorCheck::check(x_numerical, x_result, "Test Z4 = grad_j(mu) grad_i(Phi(lam,mu)) = d/dlambda Phi(lam,mu)", error_threshold);
 		}
 
 

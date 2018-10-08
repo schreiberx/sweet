@@ -14,7 +14,7 @@ class SWEETPlatformResources(InfoError):
 	In case that insufficient information was provided, an exception is triggered.
 	"""
 
-	def __init__(self):
+	def __init__(self, dummy_init = False):
 		InfoError.__init__(self, "SWEETPlatformResources")
 
 		# Number of physical cores per MPI shared-memory node

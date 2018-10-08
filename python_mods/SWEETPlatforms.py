@@ -15,7 +15,8 @@ class SWEETPlatforms(InfoError):
 
 	def __init__(	
 			self,
-			platform_id_override = None	# Override automatic detection of platform
+			platform_id_override = None,	# Override automatic detection of platform
+			dummy_init = False
 	):
 		"""
 		Initialize platform and setup target platform
@@ -45,16 +46,16 @@ class SWEETPlatforms(InfoError):
 			self.error("SWEET environment variables not loaded!")
 
 		if platform_id_override == None:
-			# Check for environment variable SWEET_PLATFORM
-			platform_id_override = os.environ.get('SWEET_PLATFORM')
+			# Check for environment variable SWEET_PLATFORM_ID
+			platform_id_override = os.environ.get('SWEET_PLATFORM_ID')
 
 		self.platform_id_override = platform_id_override
 
 		self.platforms_dir = os.path.normpath(self.sweetroot+'/platforms/')
 
-		self.hline()
-		self.info("Platforms description path: "+self.platforms_dir)
-
+		if not dummy_init:
+			self.hline()
+			self.info("Platforms description path: "+self.platforms_dir)
 
 		# Required interfaces by platforms
 		self.interface_names = {
@@ -75,12 +76,12 @@ class SWEETPlatforms(InfoError):
 
 		self.platform_id = None
 
-		self.p_setup()
+		self.__setup(dummy_init)
 
 
 
 
-	def p_load_module_interfaces(
+	def __load_module_interfaces(
 			self,
 			module
 	):
@@ -108,10 +109,14 @@ class SWEETPlatforms(InfoError):
 	self.platforms:	Dictionary with all platforms
 	self.platform: Target platform
 	"""
-	def p_setup(
-			self
+	def __setup(
+			self,
+			dummy_init = False
 	):
 		self.platforms = {}
+
+		if dummy_init:
+			return
 
 		# Iterate over all possible packages
 		files = os.listdir(self.platforms_dir)
@@ -131,11 +136,12 @@ class SWEETPlatforms(InfoError):
 			module = importlib.import_module(f+'.SWEETPlatform')
 			sys.path.remove(self.platforms_dir)
 
-			interfaces = self.p_load_module_interfaces(module)
+			interfaces = self.__load_module_interfaces(module)
 
 			platform_id = interfaces['get_platform_id']()
 
 			if platform_id in self.platforms:
+				self.info("Duplicate platform id '"+platform_id+"' detected")
 				self.error("Duplicate platform id '"+platform_id+"' detected in modules '"+self.platforms[platform_id].module.__name__+"' and '"+module.__name__+"'")
 
 			self.platforms[platform_id] = {

@@ -122,15 +122,32 @@ def jobscript_get_exec_prefix(jobgeneration : SWEETJobGeneration):
 		multiline text for scripts
 	"""
 
-	p = jobgeneration.parallelization
+	j = jobgeneration
+	p = j.parallelization
 
-	content = """
+	content = ""
 
-"""+p_gen_script_info(jobgeneration)+"""
-
+	if j.compile.threading != 'off':
+		content += """
 export OMP_NUM_THREADS="""+str(p.num_threads_per_rank)+"""
-
+export OMP_DISPLAY_ENV=VERBOSE
 """
+
+	if p.core_oversubscription:
+		raise Exception("Not supported with this script!")
+	else:
+		if p.core_affinity != None:
+			content += "\necho \"Affnity: "+str(p.core_affinity)+"\"\n"
+			if p.core_affinity == 'compact':
+				content += "source $SWEET_ROOT/platforms/bin/setup_omp_places.sh nooversubscription close\n"
+				#content += "\nexport OMP_PROC_BIND=close\n"
+			elif p.core_affinity == 'scatter':
+				raise Exception("Affinity '"+str(p.core_affinity)+"' not supported")
+				content += "\nexport OMP_PROC_BIND=spread\n"
+			else:
+				raise Exception("Affinity '"+str(p.core_affinity)+"' not supported")
+
+			content += "\n"
 
 	return content
 

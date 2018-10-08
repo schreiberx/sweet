@@ -1,5 +1,3 @@
-#! /bin/bash
-
 #
 # This is a template to set up environment variables correctly
 #
@@ -52,7 +50,8 @@ echo_warning_hline()( echo_warning "********************************************
 echo_error_hline()( echo_error "*************************************************************************"; )
 
 # output error and exit
-echo_error_exit(){ echo_error_hline; eval ${SWEET_ECHO_PREFIX}; echo -en "\033[0;31m"; echo "${@}"; echo -en "\033[0m"; echo_error_hline; return 2>/dev/null; exit 1; }
+echo_error_exit(){ echo_error_hline; eval ${SWEET_ECHO_PREFIX}; echo -en "\033[0;31m"; echo "${@}"; echo -en "\033[0m"; echo_error_hline; exit 1; }
+#echo_error_return(){ echo_error_hline; eval ${SWEET_ECHO_PREFIX}; echo -en "\033[0;31m"; echo "${@}"; echo -en "\033[0m"; echo_error_hline; return; }
 
 export -f echo_info echo_success echo_warning echo_error
 export -f echo_info_hline echo_success_hline echo_warning_hline echo_error_hline
@@ -70,21 +69,6 @@ if [ "#$SWEET_ROOT" != "#" ]; then
 	exit
 fi
 
-
-
-#######################################################################
-# Setup important directory environment variables #####################
-#######################################################################
-
-# Location of this script
-SCRIPTDIR="$(dirname "${BASH_SOURCE[0]}")"
-cd "$SCRIPTDIR"
-# Get full path
-SCRIPTDIR="$PWD"
-
-# Get SWEET root directory
-cd "../"
-export SWEET_ROOT="$PWD"
 
 
 #######################################################################
@@ -125,93 +109,35 @@ fi
 
 
 
+#######################################################################
+# Setup important directory environment variables #####################
+#######################################################################
+
+# Location of this script
+SCRIPTDIR="$(dirname "${BASH_SOURCE[0]}")"
+cd "$SCRIPTDIR"
+# Get full path
+SCRIPTDIR="$PWD"
+
+# Get SWEET root directory
+cd "../"
+export SWEET_ROOT="$PWD"
+
+
 
 #######################################################################
 # Setup platform specific parts
 #######################################################################
 
-#
-# Include cluster-specific scripts
-#
-if [ "#$SWEET_PLATFORM" != "#" ]; then
+source $SWEET_ROOT/local_software/load_platform.sh $@ || exit 1
 
-	echo_info_hline
-	echo_info "                   Mode: SWEET_PLATFORM (=${SWEET_PLATFORM})"
-	echo_info_hline
-	PLATFORM_ENV_VARS=$(eval echo "${SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM}/env_vars.sh")
-
-	if [ ! -e "$PLATFORM_ENV_VARS" ]; then
-		echo_error "File '${PLATFORM_ENV_VARS}' not found!"
-		return 1
-	fi
-
-	source "$PLATFORM_ENV_VARS" || return 1
-
-elif [ "#${1}" = "#" ] || [ "#${1}" = "#FORCE" ]; then
-
-	echo_info_hline
-	echo_info "                   Mode: Autodetect"
-	echo_info_hline
-
-	#
-	# Use python code to detect hardware.
-	#
-	# Note, that this is not required on cluster nodes,
-	# since SWEET_PLATFORM will be used to avoid this autodetection.
-	#
-	function load_this_platform {
-
-		if [ ! -e "SWEETPlatformAutodetect.py" ]; then
-			echo_warning "Warning: 'SWEETPlatformAutodetect.py' not found in ${PWD}"
-			return 1
-		fi
-		# Automagic detection here if called from terminal
-		echo -en "import sys\nimport SWEETPlatformAutodetect\nsys.exit(0 if SWEETPlatformAutodetect.autodetect() else 1)" | /usr/bin/env python && return 0
-
-		# Platform not detected
-		return 1
-	}
-
-	#
-	# Try with autodetection of platforms
-	#
-	for i in $SWEET_ROOT/platforms/??_*; do
-		cd "$i"
-		load_this_platform
-		if [ $? -eq 0 ]; then
-			p=$(basename "$i")
-			p=${p/??_/}
-			export SWEET_PLATFORM="$p"
-			source "$i/env_vars.sh" || return 1
-			break
-		fi
-	done
-else
-	echo_info_hline
-	echo_info "                   Mode: Platform environment file provided"
-	echo_info_hline
-
-	# Load platform environment variables if specified
-	echo_info "     Platform env. file: \$1='${1}'"
-
-	# Set SWEET Platform override
-	export SWEET_PLATFORM="$1"
-	source "$1" || return 1
-fi
-
-
-if [ -z "${SWEET_PLATFORM}" ]; then
-	echo_error_hline
-	echo_error "INTERNNAL ERROR: No platform detected!!!"
-	echo_error_hline
+if [[ -z "$SWEET_PLATFORM_DIR" ]]; then
+	unset SWEET_ROOT
+	unset SCRIPTDIR
 	return
 fi
 
-export SWEET_PLATFORM_DIR="$(eval echo "${SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM}/")"
-
-echo_info "         Using platform: '${SWEET_PLATFORM}'"
-echo_info "     Platform directory: '${SWEET_PLATFORM_DIR}'"
-
+export SWEET_ROOT="$SWEET_ROOT"
 
 
 #######################################################################
@@ -238,9 +164,9 @@ export PKG_CONFIG_PATH="$SCRIPTDIR/local/lib/pkgconfig:$PKG_CONFIG_PATH"
 #	   otherwise prioritize their own system libraries such as libfftw.
 #
 export SWEET_LD_LIBRARY_PATH="$SCRIPTDIR/local/lib"
-if [ -d "$SCRIPTDIR/local/lib64" ]; then
-	export SWEET_LD_LIBRARY_PATH="$SCRIPTDIR/local/lib64:$SWEET_LD_LIBRARY_PATH"
-fi
+# Always include lib64 even if it doesn exist.
+# Thatś important to install software into this directory
+export SWEET_LD_LIBRARY_PATH="$SCRIPTDIR/local/lib64:$SWEET_LD_LIBRARY_PATH"
 export LD_LIBRARY_PATH="$SWEET_LD_LIBRARY_PATH:$LD_LIBRARY_PATH"
 
 
@@ -258,7 +184,12 @@ export PYTHONPATH="$PYTHONPATH:$SWEET_ROOT/python_mods"
 # Back to local software
 cd "$SCRIPTDIR"
 
-export PS1="[SWEET.$SWEET_PLATFORM] $PS1"
+PS_RELPATH="realpath  --relative-base=$SWEET_ROOT ./"
+
+# Make prompt nice looking
+#export PS1='\[\033[01;32m\][SWEET \u@$SWEET_PLATFORM_ID]\[\033[00m\] $($PS_RELPATH)\$ '
+export PS1='\[\033[01;32m\][SWEET @ $SWEET_PLATFORM_ID]\[\033[00m\] $($PS_RELPATH)\$ '
+
 
 
 #######################################################################
