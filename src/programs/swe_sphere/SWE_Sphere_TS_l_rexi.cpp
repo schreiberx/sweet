@@ -838,7 +838,6 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 				assert(io_prog_phi0.sphereDataConfig->spectral_array_data_number_of_elements == perThreadVars[0]->accum_phi.sphereDataConfig->spectral_array_data_number_of_elements);
 
 				perThreadVars[thread_id]->accum_phi.request_data_physical();
-				std::cout << thread_id << ": " << perThreadVars[thread_id]->accum_phi.physical_reduce_max_abs() << std::endl;
 				#pragma omp parallel for schedule(static) default(none) shared(io_prog_phi0, thread_id, perThreadVars)
 				for (int i = 0; i < io_prog_phi0.sphereDataConfig->physical_array_data_number_of_elements; i++)
 					io_prog_phi0.physical_space_data[i] += perThreadVars[thread_id]->accum_phi.physical_space_data[i];
