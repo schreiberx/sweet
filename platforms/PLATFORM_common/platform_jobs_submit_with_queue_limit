@@ -8,10 +8,14 @@
 #
 
 
+# Limit of max. jobs in queue
 LIMIT=10
 if [[ ! -z "$SWEET_JOB_SCHEDULER_NUM_JOB_LIMITATION" ]]; then
 	LIMIT=$SWEET_JOB_SCHEDULER_NUM_JOB_LIMITATION
 fi
+
+# Seconds to wait before trying to enqueue more jobs
+SLEEP_SECS=10
 
 echo_info "Using job limitation of ${SWEET_JOB_SCHEDULER_NUM_JOB_LIMITATION}"
 
@@ -19,6 +23,8 @@ echo_info "Using job limitation of ${SWEET_JOB_SCHEDULER_NUM_JOB_LIMITATION}"
 JOBS=""
 if [[ ! -z "$1" ]]; then
 	JOBS="$@"
+else
+	JOBS=$(ls -d */)
 fi
 
 for JOB in $JOBS; do
@@ -27,10 +33,11 @@ for JOB in $JOBS; do
 		if [[ $NUM_JOBS -lt $LIMIT ]]; then
 			break
 		fi
-		echo_info "Found $NUM_JOBS in queue, waiting to submit more jobs"
-		sleep 1
+		echo_info "Found ${NUM_JOBS} (= max. ${LIMIT}) in queue, waiting to submit more jobs"
+		sleep $SLEEP_SECS
 	done
 
+	echo_info "Found ${NUM_JOBS} of max. ${LIMIT} in queue"
 	echo_info "Submitting job '${JOB}'"
 	$SWEET_PLATFORM_DIR/platform_jobs_submit $JOB
 done
