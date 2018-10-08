@@ -184,11 +184,15 @@ export PYTHONPATH="$PYTHONPATH:$SWEET_ROOT/python_mods"
 # Back to local software
 cd "$SCRIPTDIR"
 
-PS_RELPATH="realpath  --relative-base=$SWEET_ROOT ./"
-
-# Make prompt nice looking
-#export PS1='\[\033[01;32m\][SWEET \u@$SWEET_PLATFORM_ID]\[\033[00m\] $($PS_RELPATH)\$ '
-export PS1='\[\033[01;32m\][SWEET @ $SWEET_PLATFORM_ID]\[\033[00m\] $($PS_RELPATH)\$ '
+# Test if 'realpath' exists
+type realpath >/dev/null 2>&1
+if [[ $? -eq 0 ]]; then
+	SWEET_SHELL_PATH='$(realpath  --relative-base=$SWEET_ROOT ./)'
+	#export PS1='\[\033[01;32m\][SWEET \u@$SWEET_PLATFORM_ID]\[\033[00m\] $($PS_RELPATH)\$ '
+else
+	SWEET_SHELL_PATH='\w'
+	export PS1="\[\033[01;32m\][SWEET @ $SWEET_PLATFORM_ID]\[\033[00m\] $SWEET_SHELL_PATH\$ "
+fi
 
 
 
