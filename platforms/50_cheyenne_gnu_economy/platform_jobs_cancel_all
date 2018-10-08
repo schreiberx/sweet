@@ -1,11 +1,1 @@
-#! /bin/bash
-
-IDS=$(qstat -1 -n -u $USER | tail -n +6 | sed "s/ .*//")
-IDS=$(echo "${IDS}" | sed "s/\..*//")
-echo ${IDS}
-
-if [ -z "$IDS" ]; then
-	echo "No jobs found"
-else
-	qdel -W force $IDS
-fi
+../PLATFORM_cheyenne/platform_jobs_cancel_all
