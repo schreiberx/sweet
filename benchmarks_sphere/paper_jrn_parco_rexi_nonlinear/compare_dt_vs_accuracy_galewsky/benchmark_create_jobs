@@ -21,7 +21,7 @@ p.compile.mode = 'release'
 p.compile.compiler = 'gnu'
 p.compile.sweet_mpi = 'disable'
 p.runtime.mode_res = 128
-p.runtime.reuse_plans = -1 # 2	# enforce using plans (todo, enforcing not yet implemented)!
+p.runtime.reuse_plans = 2	# enforce using plans (todo, enforcing not yet implemented)!
 
 p.parallelization.core_oversubscription = False
 p.parallelization.core_affinity = 'compact'
@@ -129,6 +129,9 @@ def estimateWallclockTime(p):
 
 	wallclock_seconds *= safety_scaling
 	wallclock_seconds += safety_add
+
+	if wallclock_seconds > p.platform_resources.max_wallclock_seconds:
+		wallclock_seconds = p.platform_resources.max_wallclock_seconds
 
 	return wallclock_seconds
 
