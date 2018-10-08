@@ -970,8 +970,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 			}
 
 			#if SWEET_REXI_TIMINGS
-				if (stopwatch_measure)
-					SimulationBenchmarkTimings::getInstance().rexi_timestepping_reduce.stop()
+				SimulationBenchmarkTimings::getInstance().rexi_timestepping_reduce.stop();
 			#endif
 		}
 
