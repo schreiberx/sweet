@@ -61,7 +61,7 @@ unique_id_filter.append('benchmark')
 p.runtime.output_timestep_size = p.runtime.simtime
 
 # No output
-p.runtime.output_filename = "-"
+#p.runtime.output_filename = "-"
 
 # REXI stuff
 params_ci_N = [128]
