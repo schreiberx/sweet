@@ -84,6 +84,7 @@ def jobscript_get_header(j : SWEETJobGeneration):
 	#
 	content = """#! /bin/bash
 #SBATCH -o """+j.p_job_stdout_filepath+"""
+#SBATCH -e """+j.p_job_stderr_filepath+"""
 #SBATCH -D """+j.p_job_dirpath+"""
 #SBATCH -J """+_job_id+"""
 #SBATCH --get-user-env 

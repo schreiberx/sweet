@@ -33,7 +33,7 @@ for JOB in $JOBS; do
 		if [[ $NUM_JOBS -lt $LIMIT ]]; then
 			break
 		fi
-		echo_info "Found ${NUM_JOBS} (= max. ${LIMIT}) in queue, waiting to submit more jobs"
+		echo_info "Found ${NUM_JOBS} (of max. ${LIMIT}) in queue, waiting to submit more jobs"
 		sleep $SLEEP_SECS
 	done
 
