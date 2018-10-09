@@ -612,91 +612,84 @@ class SWEETCompileOptions(InfoError):
 		if self.program_binary_name != '':
 			return self.program_binary_name
 
-		exec_name = self.program_name
+		retval = self.program_name
+		s = self.getUniqueID()
 
-		if self.plane_spectral_space == 'enable':
-			exec_name+='_plspec'
+		if s != '':
+			retval += s
 
-		if self.plane_spectral_dealiasing == 'enable':
-			exec_name+='_pldeal'
+		return retval
 
-		if self.sphere_spectral_space == 'enable':
-			exec_name+='_spspec'
-
-		if self.sphere_spectral_dealiasing == 'enable':
-			exec_name+='_spdeal'
-
-		if self.gui == 'enable':
-			exec_name+='_gui'
-
-		if self.quadmath == 'enable':
-			exec_name+='_quadmath'
-
-		if self.sweet_mpi == 'enable':
-			exec_name+='_mpi'
-
-		if self.threading in ['omp']:
-			exec_name+='_'+self.threading
-		else:
-			if self.llvm_omp_override:
-				print("WARNING: adding _omp despite program was not compiled with OpenMP activated. This is for compatibility reasons only!")
-				exec_name+='_omp'
-			
-		if self.rexi_thread_parallel_sum == 'enable':
-			exec_name+='_rxthpar'
-
-		if self.rexi_timings == 'enable':
-			exec_name+='_rxtime'
-
-		if self.rexi_timings_additional_barriers == 'enable':
-			exec_name+='_rxtbar'
-
-
-		if self.numa_block_allocator in [1, 2]:
-			exec_name+='_numa'+str(self.numa_block_allocator)
-
-		if self.libfft == 'enable':
-			exec_name+='_fft'
-
-		if self.llvm_gnu_override:
-			print("WARNING: adding _omp despite program was not compiled with LLVM. This is for compatibility reasons only!")
-			exec_name += '_gnu'
-		else:
-			exec_name += '_'+self.compiler
-
-		exec_name += '_'+self.mode
-
-		return exec_name
 
 
 	def getUniqueID(self, i_filter_list = []):
-		"""
-		Return a unique ID including *all* string and number attributes of this class
 
-		i_filter:
-			list of filter names to filter out from unique ID generation
 		"""
-		return self.getProgramName()
-
-
-
-	def getUniqueParID(self, i_filter_list = []):
+		Return a unique ID representing the compile parameters 
 		"""
-		TODO: Get rid of this!
-		"""
-		retval = ""
-		if not 'compiler_parallelization' in i_filter_list:
-			retval = 'COMP'
+		retval = ''
+
+		if not 'compile_misc' in i_filter_list:
+
+			if not 'compile_plane' in i_filter_list:
+				if self.plane_spectral_space == 'enable':
+					retval+='_plspec'
+
+				if self.plane_spectral_dealiasing == 'enable':
+					retval+='_pldeal'
+
+			if not 'compile_sphere' in i_filter_list:
+				if self.sphere_spectral_space == 'enable':
+					retval+='_spspec'
+
+				if self.sphere_spectral_dealiasing == 'enable':
+					retval+='_spdeal'
+
+			if self.gui == 'enable':
+				retval+='_gui'
+
+			if self.quadmath == 'enable':
+				retval+='_quadmath'
+
+			if self.numa_block_allocator in [1, 2]:
+				retval+='_numa'+str(self.numa_block_allocator)
+
+			if self.libfft == 'enable':
+				retval+='_fft'
+
+			if self.llvm_gnu_override:
+				print("WARNING: adding _omp despite program was not compiled with LLVM. This is for compatibility reasons only!")
+				retval += '_gnu'
+			else:
+				retval += '_'+self.compiler
+
+			retval += '_'+self.mode
+
+		if not 'compile_parallelization' in i_filter_list:
 			if self.sweet_mpi == 'enable':
 				retval+='_mpi'
 
 			if self.threading in ['omp']:
 				retval+='_'+self.threading
-
+			else:
+				if self.llvm_omp_override:
+					print("WARNING: adding _omp despite program was not compiled with OpenMP activated. This is for compatibility reasons only!")
+					retval+='_omp'
+				
 			if self.rexi_thread_parallel_sum == 'enable':
 				retval+='_rxthpar'
 
+			if self.rexi_timings == 'enable':
+				retval+='_rxtime'
+
+			if self.rexi_timings_additional_barriers == 'enable':
+				retval+='_rxtbar'
+
+		if retval != '':
+			retval = 'COMP'+retval
+
 		return retval
+
 
 
 
