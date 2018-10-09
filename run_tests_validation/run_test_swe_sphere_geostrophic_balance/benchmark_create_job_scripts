@@ -13,7 +13,7 @@ p = SWEETJobGeneration()
 #
 # Skip using 'mpiexec'
 #
-p.parallelization.mpiexec_disabled = True
+#p.parallelization.mpiexec_disabled = True
 
 
 #
@@ -22,13 +22,15 @@ p.parallelization.mpiexec_disabled = True
 p.compile.program = 'swe_sphere'
 
 p.compile.mode = 'debug'
+p.compile.sweet_mpi = 'enable'
 
 p.compile.plane_spectral_space = 'disable'
 p.compile.plane_spectral_dealiasing = 'disable'
 p.compile.sphere_spectral_space = 'enable'
 p.compile.sphere_spectral_dealiasing = 'enable'
 
-filter_list = ['simparams', 'parallelization', 'benchmark', 'rexi_params']
+p.unique_id_filter = ['simparams', 'parallelization', 'benchmark', 'rexi_params']
+
 
 # Enable quad math per default for CI REXI method
 p.compile.quadmath = 'enable'
@@ -191,7 +193,7 @@ if __name__ == "__main__":
 
 			for p.compile.threading, p.compile.rexi_thread_parallel_sum, p.runtime.rexi_extended_modes in product(params_compile_threading, params_compile_thread_parallel_sum, params_ext_modes):
 				if 'rexi_' in p.runtime.timestepping_method:
-					p.gen_jobscript_directory('job_'+p.getUniqueID(filter_list))
+					p.gen_jobscript_directory('job_bench_'+p.getUniqueID())
 
 				else:
 					if p.compile.rexi_thread_parallel_sum == 'enable':
@@ -200,4 +202,4 @@ if __name__ == "__main__":
 					if p.runtime.rexi_extended_modes != 0:
 						continue
 
-					p.gen_jobscript_directory('job_'+p.getUniqueID(filter_list))
+					p.gen_jobscript_directory('job_bench_'+p.getUniqueID())
