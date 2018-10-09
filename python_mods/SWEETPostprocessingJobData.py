@@ -33,8 +33,7 @@ class SWEETPostprocessingJobData(InfoError):
 	):
 		retdict = {}
 		for l in output_lines:
-			#m=re.match("^\[DATA\] ([^ :]*): (.*)$", l)
-			m=re.match(" \+ ([^ :]*): (.*)$", l)
+			m=re.match("^\[MULE\] ([^ :]*): (.*)$", l)
 			if m != None:
 				tag = m.group(1)
 				data = m.group(2)

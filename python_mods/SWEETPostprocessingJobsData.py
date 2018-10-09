@@ -45,22 +45,6 @@ class SWEETPostprocessingJobsData(InfoError):
 
 
 
-	def __parse_job_output(
-		self,
-		output_lines
-	):
-		retdict = {}
-		for l in output_lines:
-			#m=re.match("^\[DATA\] ([^ :]*): (.*)$", l)
-			m=re.match(" \+ ([^ :]*): (.*)$", l)
-			if m != None:
-				tag = m.group(1)
-				data = m.group(2)
-				retdict[tag] = data
-
-		return retdict
-
-
 
 	def __load_job_raw_data(
 			self,
