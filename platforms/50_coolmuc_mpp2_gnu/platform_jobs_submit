@@ -10,7 +10,7 @@
 
 
 if [[ -z "$1" ]]; then
-	DIRS=job_*
+	DIRS=job_bench*
 else
 	DIRS=$@
 fi
