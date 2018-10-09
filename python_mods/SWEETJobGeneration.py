@@ -82,6 +82,9 @@ class SWEETJobGeneration(InfoError):
 		# Accumulator for compile commands
 		self.p_compilecommands_accum = []
 
+		# List with filter names to reduce unique ID
+		self.unique_id_filter = []
+
 		self.init_phase = False
 
 
@@ -376,21 +379,18 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
 		self.p_write_jobscript()
 
 
-	def getUniqueID(self, i_filter : list = []):
+	def getUniqueID(self):
 		"""
 		Return a unique ID including *all* string and number attributes of this class
-
-		i_filter:
-			list of filter names to filter out from unique ID generation
 		"""
 		self.parallelization.dummy_setup_if_no_setup(self.platform_resources)
-		unique_id = self.runtime.getUniqueID(self.compile, i_filter)
+		unique_id = self.runtime.getUniqueID(self.compile, self.unique_id_filter)
 
-		s = self.compile.getUniqueParID(i_filter)
+		s = self.compile.getUniqueParID(self.unique_id_filter)
 		if s != '':
 			unique_id += '_'+s
 
-		s = self.parallelization.getUniqueID(i_filter)
+		s = self.parallelization.getUniqueID(self.unique_id_filter)
 		if s != '':
 			unique_id += '_'+s
 

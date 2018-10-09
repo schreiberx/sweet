@@ -88,7 +88,7 @@ def jobscript_setup(j : SWEETJobGeneration):
 	"""
 
 	global _job_id
-	_job_id = j.runtime.getUniqueID(j.compile)
+	_job_id = j.getUniqueID()
 	return
 
 
