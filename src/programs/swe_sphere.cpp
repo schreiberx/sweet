@@ -885,7 +885,13 @@ int main(int i_argc, char *i_argv[])
 				if (mpi_rank == 0)
 					std::cout << "TIMER RESET" << std::endl;
 #endif
+				#if SWEET_REXI_TIMINGS_ADDITIONAL_BARRIERS && SWEET_MPI
+					MPI_Barrier(MPI_COMM_WORLD);
+				#endif
+
 				SimulationBenchmarkTimings::getInstance().main_timestepping.start();
+
+				std::cout << "BEFORE WHILE"<< std::endl;
 
 				// Main time loop
 				while (true)
@@ -913,6 +919,7 @@ int main(int i_argc, char *i_argv[])
 						}
 					}
 				}
+				std::cout << "AFTER WHILE"<< std::endl;
 
 				// Stop counting time
 				SimulationBenchmarkTimings::getInstance().main_timestepping.stop();
