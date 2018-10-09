@@ -293,7 +293,6 @@ class SWEETParallelization(InfoError):
 		"""
 		retval = ''
 		if not 'parallelization' in i_filter:
-			retval += 'PAR'
 
 			# mpi ranks
 			retval += "_r"+str(self.num_ranks).zfill(5)
@@ -307,6 +306,9 @@ class SWEETParallelization(InfoError):
 			retval += "_DIMS"
 			for i in self.pardims:
 				retval += '_'+i.dim_name+str(i.num_cores).zfill(3)
+
+		if retval != '':
+			retval = 'PAR'+retval
 
 		return retval
 

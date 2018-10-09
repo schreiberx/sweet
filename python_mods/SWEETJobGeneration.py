@@ -387,15 +387,26 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
 		Return a unique ID including *all* string and number attributes of this class
 		"""
 		self.parallelization.dummy_setup_if_no_setup(self.platform_resources)
-		unique_id = self.runtime.getUniqueID(self.compile, self.unique_id_filter)
 
-		s = self.compile.getUniqueParID(self.unique_id_filter)
-		if s != '':
-			unique_id += '_'+s
+		unique_id = ''
+		if 'runtime' not in self.unique_id_filter:
+			s = self.runtime.getUniqueID(self.compile, self.unique_id_filter)
+			if s != '':
+				unique_id += s
 
-		s = self.parallelization.getUniqueID(self.unique_id_filter)
-		if s != '':
-			unique_id += '_'+s
+		if 'compile' not in self.unique_id_filter:
+			s = self.compile.getUniqueID(self.unique_id_filter)
+			if unique_id != '':
+				unique_id += '_'
+			if s != '':
+				unique_id += s
+
+		if 'parallelization' not in self.unique_id_filter:
+			s = self.parallelization.getUniqueID(self.unique_id_filter)
+			if unique_id != '':
+				unique_id += '_'
+			if s != '':
+				unique_id += s
 
 		return unique_id
 

@@ -319,8 +319,8 @@ class SWEETRuntimeOptions(InfoError):
 			if self.phys_res != -1:
 				idstr += '_N'+str(self.phys_res).zfill(4)
 
-		if idstr[0] == "_":
-			idstr = idstr[1:]
+		if idstr != '':
+			idstr = "RT"+idstr
 
 		return idstr
 
