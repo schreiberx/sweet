@@ -254,7 +254,10 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
 				self.error("Max. wallcock time exceeds platform's limit")
 
 
-	def write_compilecommands(self, compilecommands_filename):
+	def write_compilecommands(self, compilecommands_filename = None):
+		if compilecommands_filename == None:
+			compilecommands_filename = "./compile_platform_"+self.platforms.platform_id+".sh"
+
 		compilecommands_filepath = os.path.abspath(compilecommands_filename)
 
 		# Create directory for job script if it doesn't yet exist
