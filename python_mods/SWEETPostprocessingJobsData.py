@@ -13,12 +13,29 @@ class SWEETPostprocessingJobsData(InfoError):
 
 	def __init__(
 		self,
-		job_dirs = [],
+		job_dirs = 'jobs_bench_*',
 		verbosity = 10
 	):
+		"""
+		Load the data of all jobs in the current folder
+
+		Parameters:
+		-----------
+			job_dirs: string / list
+				if string:
+					Pattern with wildcards to autodetect job directories, e.g. 'jobs_bench_*'
+		"""
 		InfoError.__init__(self, 'SWEETPostprocessingJobsData')
 
 		self.verbosity = verbosity
+
+		# If job_dirs is just a string, it's a search pattern
+		if isinstance(job_dirs, str):
+			job_dirs = glob.glob(job_dirs)
+		elif isinstance(job_dirs, list):
+			pass
+		else:
+			raise Exception("Unknown type for job_dirs")
 
 		# Load raw job data
 		self.__load_job_raw_data(job_dirs)
@@ -76,9 +93,6 @@ class SWEETPostprocessingJobsData(InfoError):
 				}
 			}
 		"""
-
-		if job_dirs == []:
-			job_dirs = glob.glob('./job_bench_*')
 
 		self.__jobs_data = {}
 		for job_dir in job_dirs:
@@ -174,7 +188,8 @@ class SWEETPostprocessingJobsData(InfoError):
 		group_identifiers : list,
 		primary_key_attribute_name : str,
 		data_attribute_name : str,
-		placeholder = None
+		placeholder = None,
+		data_filter = None
 	):
 		"""
 		Create a data structure which is suitable for plotting
@@ -212,6 +227,10 @@ class SWEETPostprocessingJobsData(InfoError):
 				else:
 					y = jobdata[data_attribute_name]
 
+					if data_filter != None:
+						if data_filter(group_id, x, y):
+							continue
+
 				x_values.append(x)
 				y_values.append(y)
 
@@ -229,13 +248,19 @@ class SWEETPostprocessingJobsData(InfoError):
 		primary_key_attribute_name : str,
 		data_attribute_name : str,
 		placeholder = None,
-		sort_data = True
+		sort_data = True,
+		data_filter = None
+
 	):
-		data_plotting = self.create_data_plotting(group_identifiers, primary_key_attribute_name, data_attribute_name, placeholder)
+		data_plotting = self.create_data_plotting(group_identifiers, primary_key_attribute_name, data_attribute_name, placeholder, data_filter = data_filter)
 
 		for key, values in data_plotting.items():
-			x = [float(i) for i in values['x_values']]
-			y = [float(i) for i in values['y_values']]
+			x = []
+			y = []
+			for (i, j) in zip(values['x_values'], values['y_values']):
+				if j != None:
+					x.append(i)
+					y.append(j)
 
 			if sort_data:
 				y = [y for _,y in sorted(zip(x,y))]
@@ -254,7 +279,8 @@ class SWEETPostprocessingJobsData(InfoError):
 		primary_key_attribute_name : str,
 		data_attribute_name : str,
 		placeholder = None,
-		sort_data = True
+		sort_data = True,
+		data_filter = None
 	):
 		"""
 		Create a table-like data structure
@@ -312,16 +338,30 @@ class SWEETPostprocessingJobsData(InfoError):
 
 				if data[row_id+1][col_id+1] != None:
 					self.print_data_table(data)
-					raise Exception("Duplicate entry detected! Stopping here")
+					print("")
+					print("ERROR: Duplicate entry detected")
+					print("ERROR: This typically happens if either")
+					print("ERROR:  a) Groups are colliding")
+					print("ERROR:  b) axis variables are incorrect")
+					print("")
+					raise Exception("Duplicate entry!")
 
 				if not data_attribute_name in jobdata:
 					print("Error: "+jobdir)
 					for key, value in jobdata.items():
 						print(" + "+key+": "+str(value))
 
-					raise Exception("attribute '"+data_attribute_name+"' not found")
+					# Ignore missing data, will be filled in by placeholder :-)
+					#raise Exception("attribute '"+data_attribute_name+"' not found")
 
-				data[row_id+1][col_id+1] = jobdata[data_attribute_name]
+				else:
+					x = row_key
+					y = jobdata[data_attribute_name]
+					if data_filter != None:
+						if data_filter(group_id, x, y):
+							continue
+
+					data[row_id+1][col_id+1] = y
 
 		data[0][0] = '-'
 		#data[0][0] = primary_key_attribute_name+'\\'+data_attribute_name
@@ -349,9 +389,10 @@ class SWEETPostprocessingJobsData(InfoError):
 		group_identifiers : list,
 		primary_key_attribute_name : str,
 		data_attribute_name : str,
-		placeholder = None
+		placeholder = None,
+		data_filter = None
 	):
-		data = self.create_data_table(group_identifiers, primary_key_attribute_name, data_attribute_name)
+		data = self.create_data_table(group_identifiers, primary_key_attribute_name, data_attribute_name, data_filter=data_filter)
 
 		# Replace None fields with placeholder
 		for j in range(1,len(data)):
