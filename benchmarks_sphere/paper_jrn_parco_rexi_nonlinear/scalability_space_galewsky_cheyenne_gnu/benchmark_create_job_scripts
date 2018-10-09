@@ -105,8 +105,8 @@ def estimateWallclockTime(p):
 	# linear with time step size
 	wallclock_seconds *= ref_timestep_size/p.runtime.timestep_size
 
-	# quadratic with resolution
-	wallclock_seconds *= pow(ref_mode_res/p.runtime.mode_res, 2.0)
+	# inverse quadratic with resolution
+	wallclock_seconds *= pow(p.runtime.mode_res/ref_mode_res, 2.0)
 
 	if p.runtime.rexi_method != '':
 		if p.runtime.rexi_method != 'ci':
