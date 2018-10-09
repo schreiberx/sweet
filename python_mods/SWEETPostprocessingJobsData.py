@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 from SWEET import *
+from SWEETPostprocessingJobData import *
 import glob
 import os
 import re
@@ -8,19 +9,19 @@ import sys
 
 
 
-class SWEETPostprocessing(InfoError):
+class SWEETPostprocessingJobsData(InfoError):
 
 	def __init__(
 		self,
-		jobs_dir = None,
+		job_dirs = [],
 		verbosity = 10
 	):
-		InfoError.__init__(self, 'SWEETPostprocessing')
+		InfoError.__init__(self, 'SWEETPostprocessingJobsData')
 
 		self.verbosity = verbosity
 
 		# Load raw job data
-		self.__load_job_raw_data(jobs_dir)
+		self.__load_job_raw_data(job_dirs)
 
 		# Create flattened data
 		self.__create_flattened_data()
@@ -46,7 +47,7 @@ class SWEETPostprocessing(InfoError):
 
 	def __load_job_raw_data(
 			self,
-			jobs_dir = None
+			job_dirs = []
 	):
 		"""
 		Parse all output.out files and extract all kind of job output information
@@ -76,82 +77,26 @@ class SWEETPostprocessing(InfoError):
 			}
 		"""
 
-		if jobs_dir != None:
-			jobdirs = glob.glob(jobs_dir+'/job_*')
-		else:
-			jobdirs = glob.glob('job_*')
-			
-		# 
-		self.__jobs_raw_data = {}
-		for jobdir in jobdirs:
+		if job_dirs == []:
+			job_dirs = glob.glob('./job_bench_*')
+
+		self.__jobs_data = {}
+		for job_dir in job_dirs:
 			if self.verbosity > 5:
 				self.info("")
-				self.info("Processing '"+jobdir+"'")
-			job_data = {}
-
-			"""
-			* Process 'output.out'
-			"""
-			if self.verbosity > 5:
-				self.info("Loading job output file 'output.out'")
-			outfile = jobdir+'/output.out'
-			#try:
-			if True:
-				with open(outfile, 'r') as f:
-					content = f.readlines()
-					job_data['output'] = self.__parse_job_output(content)
-			"""
-			except Exception as err:
-				print("*"*80)
-				print("* ERROR opening '"+outfile+"' (ignoring)")
-				print("* "+str(err))
-				print("*"*80)
-				continue
-
-"""
+				self.info("Processing '"+job_dir+"'")
 
 
-			"""
-			Process 'jobgeneration.pickle'
-			"""
-			# Ensure that 'jobgeneration.pickle' exists
-			jobgenerationfile = jobdir+'/jobgeneration.pickle'
-			self.info("Loading 'jobgeneration.pickle'")
-			j = SWEETJobGeneration(dummy_init=True)
-			job_data['jobgeneration'] = j.load_attributes_dict(jobgenerationfile)
-	
-			"""
-			Process other '*.pickle'
-			"""
-			pickle_files = glob.glob(jobdir+'/*.pickle')
-
-			# Iterate over all found pickle files
-			for picklefile in pickle_files:
-				filename = os.path.basename(picklefile)
-				tag = filename.replace('.pickle', '')
-				if tag == 'jobgeneration':
-					continue
-
-				if self.verbosity > 5:
-					self.info("Loading pickle file '"+filename+"'")
-
-				import pickle
-				with open(picklefile, 'rb') as f:
-					job_data[tag] = pickle.load(f)
-
-			"""
-			Insert into dictionary
-			"""
-			self.__jobs_raw_data[jobdir] = job_data
+			self.__jobs_data[job_dir] = SWEETPostprocessingJobData(job_dir)
 
 
 
-	def get_jobs_raw_data(self):
+	def get_jobs_data(self):
 		"""
 		Return the raw job information data
 		Warning: This storage format is likely to change!
 		"""
-		return self.__jobs_raw_data
+		return self.__jobs_data
 
 
 
@@ -170,40 +115,14 @@ class SWEETPostprocessing(InfoError):
 		self.__flattened_jobs_data = {}
 
 		# For all jobs
-		for job_key, job_raw_data in self.__jobs_raw_data.items():
-			flattened_job_data = {}
+		for job_key, job_data in self.__jobs_data.items():
+			self.__flattened_jobs_data[job_key] = job_data.get_flattened_data()
 
-			# For all raw data
-			for raw_key, raw_value in job_raw_data.items():
-				if raw_key == 'output':
-					for key, data in raw_value.items():
-						key = key.replace('SimulationBenchmarkTimings', 'benchmark_timings')
-						key = 'output.'+key.lower()
-						flattened_job_data[key] = data
-
-				elif raw_key == 'jobgeneration':
-					for group_name, group_value in raw_value.items():
-						if isinstance(group_value, dict):
-							for key, attr in group_value.items():
-								key = group_name+"."+key
-								flattened_job_data[key] = attr
-						elif isinstance(group_value, (int, float, str)):
-							flattened_job_data[group_name] = group_value
-						else:
-							raise Exception("Unknown type in pickled data")
-
-				else:
-					for key, data in raw_value.items():
-						key = key.lower()
-						flattened_job_data[key] = data
-
-			self.__flattened_jobs_data[job_key] = flattened_job_data
-
-	
 
 
 	def get_flattened_data(self):
 		return self.__flattened_jobs_data
+
 
 
 	def create_groups(
@@ -449,21 +368,21 @@ if __name__ == "__main__":
 
 	verbosity = 10
 
-	#if False:
 	if True:
-		j = SWEETPostprocessing(verbosity=verbosity)
+		j = SWEETPostprocessingJobsData(verbosity=verbosity)
 		d = j.get_flattened_data()
 
 		for jobdir, job_data in d.items():
-			print("")
+			print("*"*80)
 			print("Data for '"+jobdir+"'")
+			print("*"*80)
 			for key, value in job_data.items():
 				print(key+" => "+str(value))
-#			break
+
 	sys.exit(1)
 
 	if False:
-		j = SWEETPostprocessing(verbosity=verbosity)
+		j = SWEETPostprocessingJobsData(verbosity=verbosity)
 
 		jobs_raw_data = j.get_jobs_raw_data()
 		for key, values in jobs_raw_data.items():
@@ -473,7 +392,7 @@ if __name__ == "__main__":
 
 	#if True:
 	if False:
-		j = SWEETPostprocessing(verbosity=verbosity)
+		j = SWEETPostprocessingJobsData(verbosity=verbosity)
 		d = j.get_flattened_data()
 
 		for jobdir, job_data in d.items():
@@ -484,7 +403,7 @@ if __name__ == "__main__":
 
 	#if True:
 	if False:
-		j = SWEETPostprocessing(verbosity=verbosity)
+		j = SWEETPostprocessingJobsData(verbosity=verbosity)
 		d = j.get_flattened_data()
 
 		# Just print the first item
@@ -507,7 +426,7 @@ if __name__ == "__main__":
 
 	#if True:
 	if False:
-		j = SWEETPostprocessing(verbosity=verbosity)
+		j = SWEETPostprocessingJobsData(verbosity=verbosity)
 
 		data_table = j.create_data_table(
 				['runtime.timestepping_method'],

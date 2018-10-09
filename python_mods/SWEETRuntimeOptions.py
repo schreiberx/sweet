@@ -8,6 +8,9 @@ __all__ = ['SWEETRuntimeOptions']
 class SWEETRuntimeOptions(InfoError):
 
 	def __init__(self, dummy_init = False):
+
+		self.init_phase = True
+
 		InfoError.__init__(self, "SWEETRuntimeOptions")
 
 	#	self.mode_res = 32
@@ -112,7 +115,18 @@ class SWEETRuntimeOptions(InfoError):
 		self.compute_error = 0
 
 		self.reuse_plans = -1
-		return
+
+		self.init_phase = False
+
+
+	def __setattr__(self, name, value):
+
+		if name != 'init_phase':
+			if not self.init_phase:
+				if not name in self.__dict__:
+					raise Exception("Attribute '"+name+"' does not exist!")
+
+		self.__dict__[name] = value
 
 
 

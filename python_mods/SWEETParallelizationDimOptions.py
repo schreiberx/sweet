@@ -28,6 +28,8 @@ class SWEETParallelizationDimOptions(InfoError):
 			Information on this dimension for error output
 		"""
 
+		self.init_phase = True
+
 		InfoError.__init__(self, "SWEETParallelizationDimOptions."+dim_name)
 
 		# Name of dimension for debugging purpose
@@ -45,6 +47,17 @@ class SWEETParallelizationDimOptions(InfoError):
 		# Number of ranks
 		self.num_ranks = None
 
+		self.init_phase = False
+
+
+	def __setattr__(self, name, value):
+
+		if name != 'init_phase':
+			if not self.init_phase:
+				if not name in self.__dict__:
+					raise Exception("Attribute '"+name+"' does not exist!")
+
+		self.__dict__[name] = value
 
 
 	def print(self):
