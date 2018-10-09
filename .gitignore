@@ -8,6 +8,7 @@ FFTW_*
 **/*.directory
 **/*.swp
 **/*.lyx#
+**/*.o
 
 **/*.pyc
 **/__pycache__
