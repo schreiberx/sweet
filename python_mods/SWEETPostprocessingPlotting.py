@@ -105,11 +105,12 @@ class SWEETPostprocessingPlotting(InfoError):
 
 	def plot_scattered(
 			self,
+			data_plotting,
 			outfile=None,
 			**kwargs
 		):
 		self.reset()
-		self.plot_scattered_data(**kwargs)
+		self.plot_scattered_data(data_plotting, **kwargs)
 		self.plot_finish(outfile)
 
 

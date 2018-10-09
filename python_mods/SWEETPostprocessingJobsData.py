@@ -243,8 +243,8 @@ class SWEETPostprocessingJobsData(InfoError):
 			y = []
 			for (i, j) in zip(values['x_values'], values['y_values']):
 				if j != None:
-					x.append(i)
-					y.append(j)
+					x.append(float(i))
+					y.append(float(j))
 
 			if sort_data:
 				y = [y for _,y in sorted(zip(x,y))]
