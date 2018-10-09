@@ -6,9 +6,6 @@ import os
 from SWEET import *
 from . import SWEETPlatformAutodetect
 
-# Underscore defines symbols to be private
-_job_id = None
-
 def _whoami(depth=1):
 	"""
 	String of function name to recycle code
@@ -25,12 +22,10 @@ def _whoami(depth=1):
 
 
 def p_gen_script_info(j : SWEETJobGeneration):
-	global _job_id
-
 	return """#
 # Generating function: """+_whoami(2)+"""
 # Platform: """+get_platform_id()+"""
-# Job id: """+_job_id+"""
+# Job id: """+j.getUniqueID()+"""
 #
 """
 
@@ -87,8 +82,6 @@ def jobscript_setup(j : SWEETJobGeneration):
 	Setup data to generate job script
 	"""
 
-	global _job_id
-	_job_id = j.getUniqueID()
 	return
 
 
@@ -102,7 +95,7 @@ def jobscript_get_header(j : SWEETJobGeneration):
 	string
 		multiline text for scripts
 	"""
-	global _job_id
+	job_id = j.getUniqueID()
 
 	p = j.parallelization
 
@@ -132,7 +125,7 @@ def jobscript_get_header(j : SWEETJobGeneration):
 		content += "#PBS -l select=cpufreq=2300000\n"
 
 	content += """#
-#PBS -N """+_job_id[0:100]+"""
+#PBS -N """+job_id[0:100]+"""
 #PBS -o """+j.p_job_stdout_filepath+"""
 #PBS -e """+j.p_job_stderr_filepath+"""
 
