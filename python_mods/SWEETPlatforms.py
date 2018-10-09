@@ -39,6 +39,8 @@ class SWEETPlatforms(InfoError):
 			Path to directory where platform information can be found		
 		"""
 
+		self.init_phase = True
+
 		InfoError.__init__(self, "SWEETPlatforms")
 
 		self.sweetroot = os.environ.get('SWEET_ROOT')
@@ -78,6 +80,17 @@ class SWEETPlatforms(InfoError):
 
 		self.__setup(dummy_init)
 
+		self.init_phase = False
+
+
+	def __setattr__(self, name, value):
+
+		if name != 'init_phase':
+			if not self.init_phase:
+				if not name in self.__dict__:
+					raise Exception("Attribute '"+name+"' does not exist!")
+
+		self.__dict__[name] = value
 
 
 

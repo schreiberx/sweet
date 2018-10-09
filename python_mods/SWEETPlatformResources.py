@@ -15,6 +15,8 @@ class SWEETPlatformResources(InfoError):
 	"""
 
 	def __init__(self, dummy_init = False):
+		self.init_phase = True
+
 		InfoError.__init__(self, "SWEETPlatformResources")
 
 		# Number of physical cores per MPI shared-memory node
@@ -39,6 +41,19 @@ class SWEETPlatformResources(InfoError):
 		# These are the total logically available cores
 		# For hyperthreading, these are e.g. the physical ones plus the hyperthreaded ones
 		self.num_oversubscribed_cores_per_socket = None
+
+		self.init_phase = False
+
+
+	def __setattr__(self, name, value):
+
+		if name != 'init_phase':
+			if not self.init_phase:
+				if not name in self.__dict__:
+					raise Exception("Attribute '"+name+"' does not exist!")
+
+		self.__dict__[name] = value
+
 
 
 	def setup(self):

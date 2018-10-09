@@ -6,6 +6,8 @@ import math
 
 from itertools import product
 
+# TODO: Add to exec_prefix
+# { sleep 5; $SWEET_ROOT/platform/bin/get_thread_affinities_by_procname.sh $EXEC >&2; } &
 
 from SWEET import *
 p = SWEETJobGeneration()
@@ -13,13 +15,19 @@ p = SWEETJobGeneration()
 verbose = False
 #verbose = True
 
+p.user_script_exec_prefix = """
+{ sleep 5; $SWEET_ROOT/platforms/bin/get_thread_affinities_by_procname.sh $EXEC; } &
+"""
+
 ##################################################
 
-p.compile.compiler = 'intel'
+p.compile.compiler = 'gnu'
 p.compile.sweet_mpi = 'disable'
 p.runtime.mode_res = 128
 p.runtime.reuse_plans = 2	# enforce using plans (todo, enforcing not yet implemented)!
 p.compile.threading = 'omp'
+
+p.parallelization.core_affinity = 'compact'
 
 gen_reference_solution = False
 
@@ -36,8 +44,11 @@ params_timestep_sizes_rexi = [30]
 #timestep_sizes_rexi = [60, 120, 180, 240, 300, 360, 480, 600, 720]
 
 # Parallelization
-params_pspace_num_cores_per_rank = [p.platform_resources.num_cores_per_socket]
-params_pspace_num_threads_per_rank = [i for i in range(1, p.platform_resources.num_cores_per_socket+1)]
+#params_pspace_num_cores_per_rank = [p.platform_resources.num_cores_per_socket]
+params_pspace_num_cores_per_rank = [p.platform_resources.num_cores_per_node]
+#params_pspace_num_threads_per_rank = [i for i in range(1, p.platform_resources.num_cores_per_socket+1)]
+params_pspace_num_threads_per_rank = [i for i in range(1, p.platform_resources.num_cores_per_node+1)]
+
 params_ptime_num_cores_per_rank = [1]
 
 unique_id_filter = []
@@ -100,8 +111,8 @@ def estimateWallclockTime(p):
 	# linear with time step size
 	wallclock_seconds *= ref_timestep_size/p.runtime.timestep_size
 
-	# quadratic with resolution
-	wallclock_seconds *= pow(ref_mode_res/p.runtime.mode_res, 2.0)
+	# inverse quadratic with resolution
+	wallclock_seconds *= pow(p.runtime.mode_res/ref_mode_res, 2.0)
 
 	if p.runtime.rexi_method != '':
 		if p.runtime.rexi_method != 'ci':
@@ -123,16 +134,6 @@ def estimateWallclockTime(p):
 	wallclock_seconds += safety_add
 
 	return wallclock_seconds
-
-
-p.user_script_exec_prefix += """
-
-# Manual override in jobs_create.py
-# Override OMP_NUM_THREADS and use MASTER binding
-#export OMP_NUM_THREADS=1
-export OMP_PROC_BIND=close
-
-"""
 
 p.compile.lapack = 'enable'
 p.compile.mkl = 'disable'
@@ -295,7 +296,7 @@ if __name__ == "__main__":
 
 			pspace = SWEETParallelizationDimOptions('space')
 			pspace.num_cores_per_rank = 1
-			pspace.num_threads_per_rank = pspace.num_cores_per_rank
+			pspace.num_threads_per_rank = params_pspace_num_cores_per_rank[-1]
 			pspace.num_ranks = 1
 
 			# Setup parallelization
@@ -312,7 +313,7 @@ if __name__ == "__main__":
 
 			p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
 
-			p.gen_jobscript_directory('script_'+prefix_string_template+'ref_'+p.getUniqueID(unique_id_filter))
+			p.gen_jobscript_directory('job_benchref_'+prefix_string_template+p.getUniqueID(unique_id_filter))
 
 
 
@@ -370,7 +371,7 @@ if __name__ == "__main__":
 
 					p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
 
-					p.gen_jobscript_directory('script_'+prefix_string_template+p.getUniqueID(unique_id_filter))
+					p.gen_jobscript_directory('job_bench_'+prefix_string_template+p.getUniqueID(unique_id_filter))
 
 				else:
 
@@ -405,7 +406,7 @@ if __name__ == "__main__":
 								# Generate only scripts with max number of cores
 								p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
 
-								p.gen_jobscript_directory('job_'+prefix_string_template+p.getUniqueID(unique_id_filter))
+								p.gen_jobscript_directory('job_bench_'+prefix_string_template+p.getUniqueID(unique_id_filter))
 
 	#
 	# SHTNS plan generation scripts
@@ -459,7 +460,7 @@ if __name__ == "__main__":
 			p.runtime.output_timestep_size = -1
 			p.runtime.output_filename = "-"
 
-			p.gen_jobscript_directory('genplans_job_'+p.getUniqueID(unique_id_filter))
+			p.gen_jobscript_directory('job_plan_'+p.getUniqueID(unique_id_filter))
 
 
 

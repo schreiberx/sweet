@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-if [ -z "$2" ]; then
+if [[ -z "$2" ]]; then
 	echo "Usage:"
 	echo "	./$0 [oversubscription|nooversubscription] [close|spread] ..."
 	return
@@ -15,7 +15,7 @@ function join()
 
 DIR=$(dirname $0)
 
-if [ "$1" = "nooversubscription" ]; then
+if [[ "$1" = "nooversubscription" ]]; then
 
 	if [ "$2" = "close" ]; then
 		CORE_IDS=$(${SWEET_ROOT}/platforms/bin/get_physical_cpus_close.sh)
@@ -27,7 +27,7 @@ if [ "$1" = "nooversubscription" ]; then
 		return
 	fi
 
-elif [ "$1" = "oversubscription" ]; then
+elif [[ "$1" = "oversubscription" ]]; then
 	echo "TODO: oversubscription"
 	return
 fi
@@ -37,7 +37,7 @@ NUM_CORES="$(echo "$CORE_IDS" | wc -l)"
 LIST="$(join , $CORE_IDS)"
 LIST="{$(echo $LIST | sed "s/,/},{/g")}"
 
-if [ -z "$LIST" ]; then
+if [[ -z "$LIST" ]]; then
 	echo "$CORE_IDS"
 	echo "Unknown error"
 	return

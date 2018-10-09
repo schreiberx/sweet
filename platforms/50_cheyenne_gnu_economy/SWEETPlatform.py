@@ -237,6 +237,13 @@ def jobscript_get_exec_prefix(j : SWEETJobGeneration):
 	else:
 		raise Exception("Invalid reuse_plans value"+str(p.runtime.reuse_plans))
 
+	content += """
+
+EXEC=\"$SWEET_ROOT/build/"""+j.compile.getProgramName()+"""\"
+PARAMS=\""""+j.runtime.getRuntimeOptions()+"""\"
+
+"""
+
 	return content
 
 
@@ -302,10 +309,6 @@ echo
 echo "LD_LIBRARY_PATH"
 echo "${LD_LIBRARY_PATH}"
 echo
-
-
-EXEC=\"$SWEET_ROOT/build/"""+j.compile.getProgramName()+"""\"
-PARAMS=\""""+j.runtime.getRuntimeOptions()+"""\"
 
 echo
 echo "ldd"

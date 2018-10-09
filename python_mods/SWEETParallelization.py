@@ -34,6 +34,9 @@ class SWEETParallelization(InfoError):
 
 	"""
 	def __init__(self, dummy_init = False):
+
+		self.init_phase = True
+
 		InfoError.__init__(self, "SWEETParallelization")
 
 		self.reset(dummy_init)
@@ -61,6 +64,17 @@ class SWEETParallelization(InfoError):
 		# compact, scatter
 		self.core_affinity = None
 		
+		self.init_phase = False
+
+
+	def __setattr__(self, name, value):
+
+		if name != 'init_phase':
+			if not self.init_phase:
+				if not name in self.__dict__:
+					raise Exception("Attribute '"+name+"' does not exist!")
+
+		self.__dict__[name] = value
 
 
 	def reset(self, dummy_init = False):
@@ -97,6 +111,7 @@ class SWEETParallelization(InfoError):
 		# Note, that space dimension can and should be treated as a single dimension
 		self.pardims = None
 
+		self.pardims_dict = {}
 
 	def get_max_wallclock_seconds_hh_mm_ss(self):
 		"""

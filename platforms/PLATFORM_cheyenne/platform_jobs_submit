@@ -9,8 +9,8 @@
 #
 
 
-if [ -z "$1" ]; then
-	DIRS=job_*
+if [[ -z "$1" ]]; then
+	DIRS=job_bench*
 else
 	DIRS=$@
 fi

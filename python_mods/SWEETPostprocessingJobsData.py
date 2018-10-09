@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 from SWEET import *
+from SWEETPostprocessingJobData import *
 import glob
 import os
 import re
@@ -8,45 +9,46 @@ import sys
 
 
 
-class SWEETPostprocessing(InfoError):
+class SWEETPostprocessingJobsData(InfoError):
 
 	def __init__(
 		self,
-		jobs_dir = None,
+		job_dirs = 'jobs_bench_*',
 		verbosity = 10
 	):
-		InfoError.__init__(self, 'SWEETPostprocessing')
+		"""
+		Load the data of all jobs in the current folder
+
+		Parameters:
+		-----------
+			job_dirs: string / list
+				if string:
+					Pattern with wildcards to autodetect job directories, e.g. 'jobs_bench_*'
+		"""
+		InfoError.__init__(self, 'SWEETPostprocessingJobsData')
 
 		self.verbosity = verbosity
 
+		# If job_dirs is just a string, it's a search pattern
+		if isinstance(job_dirs, str):
+			job_dirs = glob.glob(job_dirs)
+		elif isinstance(job_dirs, list):
+			pass
+		else:
+			raise Exception("Unknown type for job_dirs")
+
 		# Load raw job data
-		self.__load_job_raw_data(jobs_dir)
+		self.__load_job_raw_data(job_dirs)
 
 		# Create flattened data
 		self.__create_flattened_data()
 
 
 
-	def __parse_job_output(
-		self,
-		output_lines
-	):
-		retdict = {}
-		for l in output_lines:
-			#m=re.match("^\[DATA\] ([^ :]*): (.*)$", l)
-			m=re.match(" \+ ([^ :]*): (.*)$", l)
-			if m != None:
-				tag = m.group(1)
-				data = m.group(2)
-				retdict[tag] = data
-
-		return retdict
-
-
 
 	def __load_job_raw_data(
 			self,
-			jobs_dir = None
+			job_dirs = []
 	):
 		"""
 		Parse all output.out files and extract all kind of job output information
@@ -76,41 +78,23 @@ class SWEETPostprocessing(InfoError):
 			}
 		"""
 
-		if jobs_dir != None:
-			jobdirs = glob.glob(jobs_dir+'/job_*')
-		else:
-			jobdirs = glob.glob('job_*')
-			
-		# 
-		self.__jobs_raw_data = {}
-		for jobdir in jobdirs:
+		self.__jobs_data = {}
+		for job_dir in job_dirs:
 			if self.verbosity > 5:
-				self.info("Processing '"+jobdir+"'")
-			job_data = {}
+				self.info("")
+				self.info("Processing '"+job_dir+"'")
 
-			if self.verbosity > 5:
-				self.info("Loading output 'output.out'")
-			outfile = jobdir+'/output.out'
-			with open(outfile, 'r') as f:
-				content = f.readlines()
-				job_data['output'] = self.__parse_job_output(content)
 
-			if self.verbosity > 5:
-				self.info("Loading job generation data 'jobgeneration.pickle'")
-			picklefile = jobdir+'/jobgeneration.pickle'
-			j = SWEETJobGeneration(dummy_init=True)
-			job_data['jobgeneration'] = j.load_attributes_dict(picklefile)
-
-			self.__jobs_raw_data[jobdir] = job_data
+			self.__jobs_data[job_dir] = SWEETPostprocessingJobData(job_dir)
 
 
 
-	def get_jobs_raw_data(self):
+	def get_jobs_data(self):
 		"""
 		Return the raw job information data
 		Warning: This storage format is likely to change!
 		"""
-		return self.__jobs_raw_data
+		return self.__jobs_data
 
 
 
@@ -128,32 +112,15 @@ class SWEETPostprocessing(InfoError):
 
 		self.__flattened_jobs_data = {}
 
-		for job_key, job_raw_data in self.__jobs_raw_data.items():
-			flattened_job_data = {}
+		# For all jobs
+		for job_key, job_data in self.__jobs_data.items():
+			self.__flattened_jobs_data[job_key] = job_data.get_flattened_data()
 
-			for key, data in job_raw_data['output'].items():
-				key = key.replace('SimulationBenchmarkTimings', 'benchmark_timings')
-				key = 'output.'+key.lower()
-				flattened_job_data[key] = data
-
-			attr_dict = job_raw_data['jobgeneration']
-			for group_name, group_value in attr_dict.items():
-				if isinstance(group_value, dict):
-					for key, attr in group_value.items():
-						key = group_name+"."+key
-						flattened_job_data[key] = attr
-				elif isinstance(group_value, (int, float, str)):
-					flattened_job_data[group_name] = group_value
-				else:
-					raise Exception("Unknown type in pickled data")
-
-			self.__flattened_jobs_data[job_key] = flattened_job_data
-
-	
 
 
 	def get_flattened_data(self):
 		return self.__flattened_jobs_data
+
 
 
 	def create_groups(
@@ -205,7 +172,8 @@ class SWEETPostprocessing(InfoError):
 		group_identifiers : list,
 		primary_key_attribute_name : str,
 		data_attribute_name : str,
-		placeholder = None
+		placeholder = None,
+		data_filter = None
 	):
 		"""
 		Create a data structure which is suitable for plotting
@@ -243,6 +211,10 @@ class SWEETPostprocessing(InfoError):
 				else:
 					y = jobdata[data_attribute_name]
 
+					if data_filter != None:
+						if data_filter(group_id, x, y):
+							continue
+
 				x_values.append(x)
 				y_values.append(y)
 
@@ -260,13 +232,19 @@ class SWEETPostprocessing(InfoError):
 		primary_key_attribute_name : str,
 		data_attribute_name : str,
 		placeholder = None,
-		sort_data = True
+		sort_data = True,
+		data_filter = None
+
 	):
-		data_plotting = self.create_data_plotting(group_identifiers, primary_key_attribute_name, data_attribute_name, placeholder)
+		data_plotting = self.create_data_plotting(group_identifiers, primary_key_attribute_name, data_attribute_name, placeholder, data_filter = data_filter)
 
 		for key, values in data_plotting.items():
-			x = [float(i) for i in values['x_values']]
-			y = [float(i) for i in values['y_values']]
+			x = []
+			y = []
+			for (i, j) in zip(values['x_values'], values['y_values']):
+				if j != None:
+					x.append(i)
+					y.append(j)
 
 			if sort_data:
 				y = [y for _,y in sorted(zip(x,y))]
@@ -285,7 +263,8 @@ class SWEETPostprocessing(InfoError):
 		primary_key_attribute_name : str,
 		data_attribute_name : str,
 		placeholder = None,
-		sort_data = True
+		sort_data = True,
+		data_filter = None
 	):
 		"""
 		Create a table-like data structure
@@ -343,16 +322,30 @@ class SWEETPostprocessing(InfoError):
 
 				if data[row_id+1][col_id+1] != None:
 					self.print_data_table(data)
-					raise Exception("Duplicate entry detected! Stopping here")
+					print("")
+					print("ERROR: Duplicate entry detected")
+					print("ERROR: This typically happens if either")
+					print("ERROR:  a) Groups are colliding")
+					print("ERROR:  b) axis variables are incorrect")
+					print("")
+					raise Exception("Duplicate entry!")
 
 				if not data_attribute_name in jobdata:
 					print("Error: "+jobdir)
 					for key, value in jobdata.items():
 						print(" + "+key+": "+str(value))
 
-					raise Exception("attribute '"+data_attribute_name+"' not found")
+					# Ignore missing data, will be filled in by placeholder :-)
+					#raise Exception("attribute '"+data_attribute_name+"' not found")
 
-				data[row_id+1][col_id+1] = jobdata[data_attribute_name]
+				else:
+					x = row_key
+					y = jobdata[data_attribute_name]
+					if data_filter != None:
+						if data_filter(group_id, x, y):
+							continue
+
+					data[row_id+1][col_id+1] = y
 
 		data[0][0] = '-'
 		#data[0][0] = primary_key_attribute_name+'\\'+data_attribute_name
@@ -380,9 +373,10 @@ class SWEETPostprocessing(InfoError):
 		group_identifiers : list,
 		primary_key_attribute_name : str,
 		data_attribute_name : str,
-		placeholder = None
+		placeholder = None,
+		data_filter = None
 	):
-		data = self.create_data_table(group_identifiers, primary_key_attribute_name, data_attribute_name)
+		data = self.create_data_table(group_identifiers, primary_key_attribute_name, data_attribute_name, data_filter=data_filter)
 
 		# Replace None fields with placeholder
 		for j in range(1,len(data)):
@@ -394,9 +388,26 @@ class SWEETPostprocessing(InfoError):
 
 		return data
 
+
 if __name__ == "__main__":
+
+	verbosity = 10
+
+	if True:
+		j = SWEETPostprocessingJobsData(verbosity=verbosity)
+		d = j.get_flattened_data()
+
+		for jobdir, job_data in d.items():
+			print("*"*80)
+			print("Data for '"+jobdir+"'")
+			print("*"*80)
+			for key, value in job_data.items():
+				print(key+" => "+str(value))
+
+	sys.exit(1)
+
 	if False:
-		j = SWEETPostprocessing(verbosity=0)
+		j = SWEETPostprocessingJobsData(verbosity=verbosity)
 
 		jobs_raw_data = j.get_jobs_raw_data()
 		for key, values in jobs_raw_data.items():
@@ -406,7 +417,7 @@ if __name__ == "__main__":
 
 	#if True:
 	if False:
-		j = SWEETPostprocessing(verbosity=0)
+		j = SWEETPostprocessingJobsData(verbosity=verbosity)
 		d = j.get_flattened_data()
 
 		for jobdir, job_data in d.items():
@@ -414,22 +425,10 @@ if __name__ == "__main__":
 			print("Data for '"+jobdir+"'")
 			for key, value in job_data.items():
 				print(key+" => "+str(value))
-
-	#if False:
-	if True:
-		j = SWEETPostprocessing(verbosity=0)
-		d = j.get_flattened_data()
-
-		for jobdir, job_data in d.items():
-			print("")
-			print("Data for '"+jobdir+"'")
-			for key, value in job_data.items():
-				print(key+" => "+str(value))
-			break
 
 	#if True:
 	if False:
-		j = SWEETPostprocessing(verbosity=0)
+		j = SWEETPostprocessingJobsData(verbosity=verbosity)
 		d = j.get_flattened_data()
 
 		# Just print the first item
@@ -450,9 +449,9 @@ if __name__ == "__main__":
 				print(" + "+jobdir+"\t"+jobdata['output.benchmark_timings.main_simulationloop'])
 
 
-	if True:
-	#if False:
-		j = SWEETPostprocessing(verbosity=0)
+	#if True:
+	if False:
+		j = SWEETPostprocessingJobsData(verbosity=verbosity)
 
 		data_table = j.create_data_table(
 				['runtime.timestepping_method'],

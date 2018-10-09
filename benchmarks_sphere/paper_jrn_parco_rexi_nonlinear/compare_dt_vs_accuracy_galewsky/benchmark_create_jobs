@@ -35,6 +35,7 @@ p.runtime.simtime = 432000
 
 #params_timestep_sizes_explicit = [30]
 params_timestep_sizes_explicit = [10, 20, 30, 60, 120, 180, 360]
+params_timestep_sizes_explicit = [20, 30, 60, 120, 180, 360]
 
 #params_timestep_sizes_implicit = [30]
 params_timestep_sizes_implicit = [60, 120, 180, 360, 480, 600, 720, 840]
@@ -68,6 +69,13 @@ params_ci_N = [128]
 #params_ci_N = [1]
 params_ci_max_imag = [30.0]
 params_ci_max_real = [10.0]
+
+#
+# Scale the CI circle radius relative to this time step size
+# We do this simply to get a consistent time stepping method
+# Otherwise, CI would not behave consistently
+#
+params_ci_max_real_scaling_relative_to_timestep_size = 480
 
 ##################################################
 
@@ -251,7 +259,7 @@ if __name__ == "__main__":
 				###########
 				# CN
 				###########
-				#['lg_irk_lc_n_erk_ver0',	2,	2,	0],
+				['lg_irk_lc_n_erk_ver0',	2,	2,	0],
 				['lg_irk_lc_n_erk_ver1',	2,	2,	0],
 
 				['l_irk_n_erk_ver0',	2,	2,	0],
@@ -280,12 +288,6 @@ if __name__ == "__main__":
 				['l_rexi_n_etdrk',	4,	4,	0],
 				['ln_erk',		4,	4,	0],
 			]
-
-		#
-		# add prefix string to group benchmarks
-		#
-		prefix_string_template = group+'_'
-
 
 
 		#
@@ -325,7 +327,7 @@ if __name__ == "__main__":
 
 			p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
 
-			p.gen_jobscript_directory('job_'+prefix_string_template+'ref_'+p.getUniqueID(unique_id_filter))
+			p.gen_jobscript_directory('job_ref_'+p.getUniqueID(unique_id_filter))
 
 
 
@@ -382,11 +384,15 @@ if __name__ == "__main__":
 
 					p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
 
-					p.gen_jobscript_directory('job_'+prefix_string_template+p.getUniqueID(unique_id_filter))
+					p.gen_jobscript_directory('job_bench_'+p.getUniqueID(unique_id_filter))
 
 				else:
 
 					for ci_N, ci_max_imag, ci_max_real in product(params_ci_N, params_ci_max_imag, params_ci_max_real):
+
+						if params_ci_max_real_scaling_relative_to_timestep_size != None:
+							ci_max_imag = ci_max_imag * (params_ci_max_real_scaling_relative_to_timestep_size/p.runtime.timestep_size)
+
 						p.runtime.load_from_dict({
 							'rexi_method': 'ci',
 							'ci_n':ci_N,
@@ -417,7 +423,7 @@ if __name__ == "__main__":
 								# Generate only scripts with max number of cores
 								p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
 
-								p.gen_jobscript_directory('job_'+prefix_string_template+p.getUniqueID(unique_id_filter))
+								p.gen_jobscript_directory('job_bench_'+p.getUniqueID(unique_id_filter))
 
 	#
 	# SHTNS plan generation scripts
@@ -471,7 +477,7 @@ if __name__ == "__main__":
 			p.runtime.output_timestep_size = -1
 			p.runtime.output_filename = "-"
 
-			p.gen_jobscript_directory('genplans_job_'+p.getUniqueID(unique_id_filter))
+			p.gen_jobscript_directory('job_plan_'+p.getUniqueID(unique_id_filter))
 
 
 

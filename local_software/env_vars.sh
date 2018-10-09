@@ -53,9 +53,12 @@ echo_error_hline()( echo_error "************************************************
 echo_error_exit(){ echo_error_hline; eval ${SWEET_ECHO_PREFIX}; echo -en "\033[0;31m"; echo "${@}"; echo -en "\033[0m"; echo_error_hline; exit 1; }
 #echo_error_return(){ echo_error_hline; eval ${SWEET_ECHO_PREFIX}; echo -en "\033[0;31m"; echo "${@}"; echo -en "\033[0m"; echo_error_hline; return; }
 
+echo_exec()( eval ${SWEET_ECHO_PREFIX}; echo "Executing '${@}'"; ${@})
+
 export -f echo_info echo_success echo_warning echo_error
 export -f echo_info_hline echo_success_hline echo_warning_hline echo_error_hline
 export -f echo_error_exit
+export -f echo_exec
 
 
 #######################################################################

@@ -157,19 +157,6 @@ public:
 		if (simVars.sim.CFL < 0)
 			simVars.timecontrol.current_timestep_size = -simVars.sim.CFL;
 
-#if 0
-		if (simVars.timecontrol.current_timestep_size <= 0)
-		{
-			// TRY to guess optimal time step size
-
-			// time step size
-			if (sphereDataConfig->physical_num_lat < 256)
-				simVars.timecontrol.current_timestep_size = 0.002*simVars.sim.earth_radius/(double)sphereDataConfig->physical_num_lat;
-			else
-				simVars.timecontrol.current_timestep_size = 0.001*simVars.sim.earth_radius/(double)sphereDataConfig->physical_num_lat;
-		}
-#endif
-
 		if (simVars.timecontrol.current_timestep_size <= 0)
 			FatalError("Only fixed time step size supported");
 
@@ -202,13 +189,6 @@ public:
 #endif
 		{
 			simVars.outputConfig();
-
-#if 0
-			std::cout << std::endl;
-			std::cout << "LOCAL PARAMETERS:" << std::endl;
-			std::cout << " + param_compute_error: " << param_compute_error << std::endl;
-			std::cout << std::endl;
-#endif
 		}
 
 		/*
@@ -925,13 +905,13 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "***************************************************" << std::endl;
 		std::cout << "* Other timing information (direct)" << std::endl;
 		std::cout << "***************************************************" << std::endl;
-		std::cout << "[DATA] simVars.timecontrol.current_timestep_nr: " << simVars.timecontrol.current_timestep_nr << std::endl;
-		std::cout << "[DATA] simVars.timecontrol.current_timestep_size: " << simVars.timecontrol.current_timestep_size << std::endl;
+		std::cout << "[MULE] simVars.timecontrol.current_timestep_nr: " << simVars.timecontrol.current_timestep_nr << std::endl;
+		std::cout << "[MULE] simVars.timecontrol.current_timestep_size: " << simVars.timecontrol.current_timestep_size << std::endl;
 		std::cout << std::endl;
 		std::cout << "***************************************************" << std::endl;
 		std::cout << "* Other timing information (derived)" << std::endl;
 		std::cout << "***************************************************" << std::endl;
-		std::cout << "[DATA] SimulationBenchmarkTimings.time_per_time_step (secs/ts): " << SimulationBenchmarkTimings::getInstance().main_timestepping()/(double)simVars.timecontrol.current_timestep_nr << std::endl;
+		std::cout << "[MULE] SimulationBenchmarkTimings.time_per_time_step (secs/ts): " << SimulationBenchmarkTimings::getInstance().main_timestepping()/(double)simVars.timecontrol.current_timestep_nr << std::endl;
 	}
 
 

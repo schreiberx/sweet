@@ -16,6 +16,8 @@ __all__ = ['SWEETJobGeneration']
 class SWEETJobGeneration(InfoError):
 
 	def __init__(self, platform_id_override = None, dummy_init = False):
+		self.init_phase = True
+
 		InfoError.__init__(self, "SWEETJobGeneration")
 
 		self.sweetroot = os.environ.get('SWEET_ROOT')
@@ -80,7 +82,17 @@ class SWEETJobGeneration(InfoError):
 		# Accumulator for compile commands
 		self.p_compilecommands_accum = []
 
+		self.init_phase = False
 
+
+	def __setattr__(self, name, value):
+
+		if name != 'init_phase':
+			if not self.init_phase:
+				if not name in self.__dict__:
+					raise Exception("Attribute '"+name+"' does not exist!")
+
+		self.__dict__[name] = value
 
 	def print(self):
 		self.print_info("compilecommand_in_jobscript: "+str(self.compilecommand_in_jobscript))

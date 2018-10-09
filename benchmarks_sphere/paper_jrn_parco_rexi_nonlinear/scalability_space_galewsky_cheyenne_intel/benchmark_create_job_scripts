@@ -15,7 +15,7 @@ verbose = False
 
 ##################################################
 
-p.compile.compiler = 'gnu'
+p.compile.compiler = 'intel'
 p.compile.sweet_mpi = 'disable'
 p.runtime.mode_res = 128
 p.runtime.reuse_plans = 2	# enforce using plans (todo, enforcing not yet implemented)!
@@ -264,7 +264,6 @@ if __name__ == "__main__":
 				['l_rexi_n_etdrk',	4,	4,	0],
 				['ln_erk',		4,	4,	0],
 			]
-
 
 		#
 		# Reference solution

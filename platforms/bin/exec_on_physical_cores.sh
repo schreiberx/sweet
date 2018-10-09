@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-if [ -z "$1" ]; then
+if [[ -z "$1" ]]; then
 	echo_info "Usage:"
 	echo_info "	$0 [exec] [parameter1] [parameter2] ..."
 	exit 1
@@ -18,7 +18,7 @@ CORE_IDS=$(${DIR}/get_physical_cpus_close.sh)
 
 LIST=$(join , $CORE_IDS)
 
-if [ -z "$LIST" ]; then
+if [[ -z "$LIST" ]]; then
 	echo "$CORE_IDS"
 	echo_error_exit "Unknown error"
 fi

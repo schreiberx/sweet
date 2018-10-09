@@ -38,10 +38,13 @@ class SWEETCompileOptions(InfoError):
 
 
 	def __init__(self, dummy_init = False):
+		self.init_phase = True
+
 		InfoError.__init__(self, "SWEETCompileOptions")
 
 		# Program or unit test
 		self.program = ""
+		self.program_name = ""
 		self.unit_test = ""
 
 		# Compile options
@@ -113,7 +116,18 @@ class SWEETCompileOptions(InfoError):
 
 		#self.quadmath = 'enable'
 		self.quadmath = 'disable'
-		pass
+
+		self.init_phase = False
+
+
+	def __setattr__(self, name, value):
+
+		if name != 'init_phase':
+			if not self.init_phase:
+				if not name in self.__dict__:
+					raise Exception("Attribute '"+name+"' does not exist!")
+
+		self.__dict__[name] = value
 
 
 	def getSConsParams(self):

@@ -10,6 +10,11 @@ class SWEETPostprocessingPlotting(InfoError):
 	def __init__(self):
 		InfoError.__init__(self, 'SWEETPostprocessingPlotting')
 
+		self.reset()
+
+
+	def reset(self):
+
 		self.colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
 
 		self.markers = []
@@ -26,59 +31,29 @@ class SWEETPostprocessingPlotting(InfoError):
 
 		self.linestyles = ['-', '--', ':', '-.']
 
-
-	def get_color(self, i):
-		return self.colors[i % len(self.colors)]
-
-	def get_marker(self, i):
-		return self.markers[i % len(self.markers)]
-
-	def get_linestyle(self, i):
-		return self.linestyles[i % len(self.linestyles)]
-
-
-	def plot_scattered(	
-			self,
-			data_plotting,
-			x_label = None,
-			y_label = None,
-			title = None,
-			outfile = None
-		):
-
 		plt.clf()
 		plt.cla()
 		plt.close()
 
-		fig, ax = plt.subplots(figsize=(8,6))
 
-		ax.set_xscale("linear")
-		ax.set_yscale("linear")
+	def __get_color(self, i):
+		return self.colors[i % len(self.colors)]
 
-		if title != None:
-			plt.title(title)
+	def __get_marker(self, i):
+		return self.markers[i % len(self.markers)]
 
-		if x_label != None:
-			plt.xlabel(x_label)
-
-		if y_label != None:
-			plt.ylabel(y_label)
+	def __get_linestyle(self, i):
+		return self.linestyles[i % len(self.linestyles)]
 
 
-		c = 0
-		for key, values in data_plotting.items():
-			marker = self.get_marker(c)
-			linestyle = self.get_linestyle(c)
-			color = self.get_color(c)
+	def plot_start(self):
+		self.reset()
 
-			label = key
-			x_values = values['x_values']
-			y_values = values['y_values']
 
-			ax.plot(x_values, y_values, marker=marker, linestyle=linestyle, label=label)
-			c += 1
-
-		plt.legend()
+	def plot_finish(
+			self,
+			outfile = None,
+		):
 
 		if outfile != None:
 			self.info("Plotting to '"+outfile+"'")
@@ -86,6 +61,56 @@ class SWEETPostprocessingPlotting(InfoError):
 		else:
 			plt.show()
 
+	def plot_scattered_data(
+			self,
+			data_plotting,
+			xlabel = None,
+			ylabel = None,
+			title = None,
+			xscale = "linear",
+			yscale = "linear",
+		):
+
+		self.fig, self.ax = plt.subplots(figsize=(10,7))
+
+		self.ax.set_xscale(xscale, nonposx='clip')
+		self.ax.set_yscale(yscale, nonposy='clip')
+
+		if title != None:
+			plt.title(title)
+
+		if xlabel != None:
+			plt.xlabel(xlabel)
+
+		if ylabel != None:
+			plt.ylabel(ylabel)
+
+
+		c = 0
+		for key, values in data_plotting.items():
+			marker = self.__get_marker(c)
+			linestyle = self.__get_linestyle(c)
+			color = self.__get_color(c)
+
+			label = key
+			x_values = values['x_values']
+			y_values = values['y_values']
+
+			self.ax.plot(x_values, y_values, marker=marker, linestyle=linestyle, label=label)
+			c += 1
+
+		plt.legend()
+
+		
+
+	def plot_scattered(
+			self,
+			outfile=None,
+			**kwargs
+		):
+		self.reset()
+		self.plot_scattered_data(**kwargs)
+		self.plot_finish(outfile)
 
 
 
