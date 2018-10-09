@@ -13,7 +13,7 @@ class SWEETPostprocessingJobsData(InfoError):
 
 	def __init__(
 		self,
-		job_dirs = 'jobs_bench_*',
+		job_dirs = 'job_bench_*',
 		verbosity = 10
 	):
 		"""
@@ -23,7 +23,7 @@ class SWEETPostprocessingJobsData(InfoError):
 		-----------
 			job_dirs: string / list
 				if string:
-					Pattern with wildcards to autodetect job directories, e.g. 'jobs_bench_*'
+					Pattern with wildcards to autodetect job directories, e.g. 'job_bench_*'
 		"""
 		InfoError.__init__(self, 'SWEETPostprocessingJobsData')
 
