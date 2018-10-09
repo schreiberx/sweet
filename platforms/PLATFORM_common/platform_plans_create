@@ -5,12 +5,12 @@ GENERATOR_SCRIPTS=$@
 
 if [[ -z "$GENERATOR_SCRIPTS" ]]; then
 
-	echo_warning "Autodetecting script directories 'genplans_*'"
-	GENERATOR_SCRIPTS="$(ls -d genplans_*/)"
+	echo_warning "Autodetecting script directories 'job_plan_*'"
+	GENERATOR_SCRIPTS="$(ls -d job_plan_*/)"
 
 	if [[ -z "$GENERATOR_SCRIPTS" ]]; then
 		echo ""
-		echo "ERROR: No script directories "genplans_*" found"
+		echo "ERROR: No script directories "job_plan_*" found"
 	fi
 fi
 

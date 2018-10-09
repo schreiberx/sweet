@@ -22,6 +22,7 @@ p.runtime.reuse_plans = 2	# enforce using plans (todo, enforcing not yet impleme
 p.compile.threading = 'omp'
 
 p.parallelization.core_affinity = 'compact'
+p.parallelization.core_oversubscription = False
 
 gen_reference_solution = False
 
