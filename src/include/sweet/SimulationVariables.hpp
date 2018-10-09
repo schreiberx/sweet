@@ -320,7 +320,7 @@ public:
 
 		/**
 		 * Coriolis effect
-		 * 7.2921 × 10 −5
+		 * 7.2921 x 10^{-5}
 		 */
 		double coriolis_omega = 0.000072921;
 

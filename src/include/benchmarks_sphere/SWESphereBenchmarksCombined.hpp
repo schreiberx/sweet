@@ -77,9 +77,7 @@ public:
 		std::cout << "     'geostrophic_balance_[N]': Geostrophic balance, with [N] waves" << std::endl;
 		std::cout << std::endl;
 		std::cout << "  WILLIAMSON #3:" << std::endl;
-		std::cout << "     'galewsky': Galwesky benchmark" << std::endl;
-		std::cout << "     'galewsky_nobump': Galwesky benchmark without any bump" << std::endl;
-		std::cout << "     'galewsky_nosetparams': Galwesky benchmark without setting parameters" << std::endl;
+		std::cout << "     [NOT YET IMPLEMENTED]" << std::endl;
 		std::cout << std::endl;
 		std::cout << "  WILLIAMSON #4:" << std::endl;
 		std::cout << "     [NOT YET IMPLEMENTED]" << std::endl;
@@ -92,6 +90,13 @@ public:
 		std::cout << std::endl;
 		std::cout << "  WILLIAMSON #7:" << std::endl;
 		std::cout << "     [NOT YET IMPLEMENTED]" << std::endl;
+		std::cout << std::endl;
+		/*
+		 * Williamson #3 test case is only simliar to Galewsky, but not identical
+		 */
+		std::cout << "  'galewsky': Galwesky benchmark" << std::endl;
+		std::cout << "  'galewsky_nobump': Galwesky benchmark without any bump" << std::endl;
+		std::cout << "  'galewsky_nosetparams': Galwesky benchmark without setting parameters" << std::endl;
 		std::cout << std::endl;
 	}
 
@@ -485,7 +490,6 @@ public:
 				simVars->misc.output_time_scale = 1.0/(60.0*60.0);
 			}
 			else if (
-					simVars->setup.benchmark_name == "williamson3"		||
 					simVars->setup.benchmark_name == "galewsky" ||			///< Standard Galewsky benchmark
 					simVars->setup.benchmark_name == "galewsky_nobump" ||	///< Galewsky benchmark without bumps
 					simVars->setup.benchmark_name == "galewsky_nosetparam"	///< Galewsky benchmark without overriding parameters
@@ -579,7 +583,7 @@ public:
 						vg
 				);
 
-				if (simVars->setup.benchmark_name == "galewsky" || simVars->setup.benchmark_name == "williamson3")
+				if (simVars->setup.benchmark_name == "galewsky")
 				{
 					SphereData hbump(o_h.sphereDataConfig);
 					hbump.physical_update_lambda(
