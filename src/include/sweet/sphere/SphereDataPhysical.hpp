@@ -1138,46 +1138,5 @@ SphereDataPhysical operator*(
 }
 
 
-/**
- * operator to support operations such as:
- *
- * 1.5 - arrayData;
- *
- * Otherwise, we'd have to write it as arrayData-1.5
- *
- */
-#if 0
-inline
-static
-SphereDataPhysical operator-(
-		const double i_value,
-		const SphereDataPhysical &i_array_data
-)
-{
-//	return ((SphereDataPhysical&)i_array_data).operator-(i_value);
-//	return -(((SPHData&)i_array_data).operator-(i_value));
-}
-#endif
-/**
- * operator to support operations such as:
- *
- * 1.5 + arrayData;
- *
- * Otherwise, we'd have to write it as arrayData+1.5
- *
- */
-
-#if 0
-inline
-static
-SphereDataPhysical operator+(
-		const double i_value,
-		const SphereDataPhysical &i_array_data
-)
-{
-	i_array_data.checkConsistency();
-	return ((SphereDataPhysical&)i_array_data)+i_value;
-}
-#endif
 
 #endif /* SPHDATA_HPP_ */

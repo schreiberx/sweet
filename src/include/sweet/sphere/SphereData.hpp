@@ -1825,44 +1825,160 @@ public:
 			int i_precision = 20
 	)	const
 	{
-	  request_data_spectral();
-	  
-	  std::ofstream file(i_filename, std::ios_base::trunc);
+  		request_data_spectral();
 
-	  file << std::setprecision(i_precision);
-	  file << "#TI " << i_title << std::endl;
-	  
-	  // Use 0 to make it processable by python
-	  file << "0\t";
-	  
-	  std::complex<double> w = {0,0};
-	  std::vector<double> sum(sphereDataConfig->spectral_modes_n_max+1,0);
-	  std::vector<double> sum_squared(sphereDataConfig->spectral_modes_n_max+1,0);
-	  std::vector<double> max(sphereDataConfig->spectral_modes_n_max+1,0);
+  		std::ofstream file(i_filename, std::ios_base::trunc);
 
-	  for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
-	    {
-	      std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
-	      for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
-		{
-		  w = spectral_space_data[idx];
-		  idx++;
+  		file << std::setprecision(i_precision);
+  		file << "#TI " << i_title << std::endl;
 
-		  sum[n]         += std::abs(w);
-		  sum_squared[n] += std::abs(w * w);
-		  if (std::abs(w) >= max[n]) max[n] = std::abs(w);
-		}
-	    }
+  		// Use 0 to make it processable by python
+  		file << "0\t";
 
-	  file << sphereDataConfig->spectral_modes_m_max << " " 
-	       << sphereDataConfig->spectral_modes_n_max << std::endl;
-	  for (int n = 0; n <= sphereDataConfig->spectral_modes_n_max; n++)
-	    file << n << " " << sum[n] << " " << max[n] << " " << std::sqrt(sum_squared[n]) << std::endl;
-	  
-	  file.close();
+  		std::complex<double> w = {0,0};
+  		std::vector<double> sum(sphereDataConfig->spectral_modes_n_max+1,0);
+  		std::vector<double> sum_squared(sphereDataConfig->spectral_modes_n_max+1,0);
+  		std::vector<double> max(sphereDataConfig->spectral_modes_n_max+1,0);
 
+  		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
+  		{
+  			std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
+  			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
+  			{
+  				w = spectral_space_data[idx];
+  				idx++;
+
+  				sum[n]         += std::abs(w);
+  				sum_squared[n] += std::abs(w * w);
+  				if (std::abs(w) >= max[n]) max[n] = std::abs(w);
+  			}
+  		}
+
+  		file << sphereDataConfig->spectral_modes_m_max << " "
+  				<< sphereDataConfig->spectral_modes_n_max << std::endl;
+  		for (int n = 0; n <= sphereDataConfig->spectral_modes_n_max; n++)
+  			file << n << " " << sum[n] << " " << max[n] << " " << std::sqrt(sum_squared[n]) << std::endl;
+
+  		file.close();
 	}
 
+
+
+
+  	/**
+  	 * Write the spectral data to a file in binary format
+  	 */
+  	void file_write_binary_spectral(
+			const std::string &i_filename
+	)	const
+	{
+  		request_data_spectral();
+
+  		std::ofstream file(i_filename, std::ios_base::trunc | std::ios_base::binary);
+
+		if (!file.is_open())
+			FatalError("Error while opening file");
+
+  		file << "SWEET" << std::endl;
+  		file << "DATA_TYPE SH_DATA" << std::endl;
+  		file << "NUM_LON " << sphereDataConfig->spectral_modes_m_max << std::endl;
+  		file << "NUM_LAT " << sphereDataConfig->spectral_modes_n_max << std::endl;
+  		file << "SIZE " << sphereDataConfig->spectral_array_data_number_of_elements << std::endl;
+  		file << "FIN" << std::endl;
+  		std::cout << file.tellp() << std::endl;
+
+  		file.write((const char*)spectral_space_data, sizeof(std::complex<double>)*sphereDataConfig->spectral_array_data_number_of_elements);
+
+  		file.close();
+	}
+
+
+  	void file_read_binary_spectral(
+			const std::string &i_filename
+	)
+	{
+  		request_data_spectral();
+
+  		std::ifstream file(i_filename, std::ios_base::binary);
+
+		if (!file.is_open())
+			FatalError("Error while opening file");
+
+  		std::string magic;
+  		std::getline(file, magic);
+
+  		if (magic != "SWEET")
+  			FatalError("Magic code 'SWEET' not found");
+
+  		std::string data_type;
+  		int num_lon = -1;
+  		int num_lat = -1;
+  		int size = -1;
+
+  		while (true)
+  		{
+  			std::string buf;
+  			file >> buf;
+
+  			if (buf == "FIN")
+  				break;
+
+  			if (buf == "DATA_TYPE")
+  			{
+  				// load data type
+  	  			file >> data_type;
+  				std::cout << data_type << std::endl;
+  	  			continue;
+  			}
+
+  			if (buf == "NUM_LON")
+  			{
+  				file >> buf;
+  				num_lon = std::stoi(buf);
+  				std::cout << num_lon << std::endl;
+  				continue;
+  			}
+
+  			if (buf == "NUM_LAT")
+  			{
+  				file >> buf;
+  				num_lat = std::stoi(buf);
+  				std::cout << num_lat << std::endl;
+  				continue;
+  			}
+
+  			if (buf == "SIZE")
+  			{
+  				file >> buf;
+  				size = std::stoi(buf);
+  				std::cout << size << std::endl;
+  				continue;
+  			}
+
+  			FatalError("Unknown Tag '"+buf+"'");
+  		}
+
+  		// read last newline
+  		char nl;
+  		file.read(&nl, 1);
+  		std::cout << file.tellg() << std::endl;
+
+  		if (data_type != "SH_DATA")
+  			FatalError("Unknown data type '"+data_type+"'");
+
+  		if (num_lon != sphereDataConfig->spectral_modes_m_max)
+  			FatalError("NUM_LON "+std::to_string(num_lon)+" doesn't match SphereDataConfig");
+
+  		if (num_lat != sphereDataConfig->spectral_modes_n_max)
+  			FatalError("NUM_LAT "+std::to_string(num_lat)+" doesn't match SphereDataConfig");
+
+  		file.read((char*)spectral_space_data, sizeof(std::complex<double>)*sphereDataConfig->spectral_array_data_number_of_elements);
+
+  		file.close();
+
+  		spectral_space_data_valid = true;
+  		physical_space_data_valid = false;
+	}
 
 	void physical_file_write_lon_pi_shifted(
 			const char *i_filename,
