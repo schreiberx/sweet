@@ -265,11 +265,6 @@ if __name__ == "__main__":
 				['ln_erk',		4,	4,	0],
 			]
 
-		#
-		# add prefix string to group benchmarks
-		#
-		prefix_string_template = group+'_'
-
 
 		#
 		# Reference solution
@@ -308,7 +303,7 @@ if __name__ == "__main__":
 
 			p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
 
-			p.gen_jobscript_directory('job_'+prefix_string_template+'ref_'+p.getUniqueID(unique_id_filter))
+			p.gen_jobscript_directory('job_benchref_'+p.getUniqueID(unique_id_filter))
 
 
 
@@ -366,7 +361,7 @@ if __name__ == "__main__":
 
 					p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
 
-					p.gen_jobscript_directory('job_'+prefix_string_template+p.getUniqueID(unique_id_filter))
+					p.gen_jobscript_directory('job_'+p.getUniqueID(unique_id_filter))
 
 				else:
 
@@ -401,7 +396,7 @@ if __name__ == "__main__":
 								# Generate only scripts with max number of cores
 								p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
 
-								p.gen_jobscript_directory('job_'+prefix_string_template+p.getUniqueID(unique_id_filter))
+								p.gen_jobscript_directory('job_'+p.getUniqueID(unique_id_filter))
 
 	#
 	# SHTNS plan generation scripts
@@ -455,7 +450,7 @@ if __name__ == "__main__":
 			p.runtime.output_timestep_size = -1
 			p.runtime.output_filename = "-"
 
-			p.gen_jobscript_directory('genplans_job_'+p.getUniqueID(unique_id_filter))
+			p.gen_jobscript_directory('job_plan_'+p.getUniqueID(unique_id_filter))
 
 
 

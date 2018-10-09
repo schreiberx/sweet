@@ -6,6 +6,8 @@ import math
 
 from itertools import product
 
+# TODO: Add to exec_prefix
+# { sleep 5; $SWEET_ROOT/platform/bin/get_thread_affinities_by_procname.sh $EXEC >&2; } &
 
 from SWEET import *
 p = SWEETJobGeneration()
@@ -13,16 +15,19 @@ p = SWEETJobGeneration()
 verbose = False
 #verbose = True
 
+p.user_script_exec_prefix = """
+{ sleep 5; $SWEET_ROOT/platforms/bin/get_thread_affinities_by_procname.sh $EXEC; } &
+"""
+
 ##################################################
 
-p.compile.compiler = 'intel'
+p.compile.compiler = 'gnu'
 p.compile.sweet_mpi = 'disable'
 p.runtime.mode_res = 128
 p.runtime.reuse_plans = 2	# enforce using plans (todo, enforcing not yet implemented)!
 p.compile.threading = 'omp'
 
 p.parallelization.core_affinity = 'compact'
-p.parallelization.core_oversubscription = False
 
 gen_reference_solution = False
 
@@ -266,6 +271,12 @@ if __name__ == "__main__":
 			]
 
 		#
+		# add prefix string to group benchmarks
+		#
+		prefix_string_template = group+'_'
+
+
+		#
 		# Reference solution
 		#
 		if gen_reference_solution:
@@ -302,7 +313,7 @@ if __name__ == "__main__":
 
 			p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
 
-			p.gen_jobscript_directory('job_benchref_'+p.getUniqueID(unique_id_filter))
+			p.gen_jobscript_directory('job_benchref_'+prefix_string_template+p.getUniqueID(unique_id_filter))
 
 
 
@@ -360,7 +371,7 @@ if __name__ == "__main__":
 
 					p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
 
-					p.gen_jobscript_directory('job_'+p.getUniqueID(unique_id_filter))
+					p.gen_jobscript_directory('job_bench_'+prefix_string_template+p.getUniqueID(unique_id_filter))
 
 				else:
 
@@ -395,7 +406,7 @@ if __name__ == "__main__":
 								# Generate only scripts with max number of cores
 								p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
 
-								p.gen_jobscript_directory('job_'+p.getUniqueID(unique_id_filter))
+								p.gen_jobscript_directory('job_bench_'+prefix_string_template+p.getUniqueID(unique_id_filter))
 
 	#
 	# SHTNS plan generation scripts
