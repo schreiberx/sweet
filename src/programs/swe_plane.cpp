@@ -521,7 +521,7 @@ public:
 	{
 		char buffer[1024];
 
-		const char* filename_template = simVars.misc.output_file_name_prefix.c_str();
+		const char* filename_template = simVars.misc.output_file_name.c_str();
 		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
 		i_planeData.file_physical_saveData_ascii(buffer);
 		return buffer;
@@ -539,7 +539,7 @@ public:
 	{
 		char buffer[1024];
 
-		const char* filename_template = simVars.misc.output_file_name_prefix.c_str();
+		const char* filename_template = simVars.misc.output_file_name.c_str();
 		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
 		i_planeData.file_spectral_abs_saveData_ascii(buffer);
 		//i_planeData.file_spectral_saveData_ascii(buffer);
@@ -591,7 +591,7 @@ public:
 			//std::cout << simVars.misc.output_next_sim_seconds << "\t" << simVars.timecontrol.current_simulation_time << std::endl;
 
 			// Dump  data in csv, if output filename is not empty
-			if (simVars.misc.output_file_name_prefix.size() > 0)
+			if (simVars.misc.output_file_name.size() > 0)
 			{
 				write_file(t_h, "prog_h_pert");
 				write_file(t_u, "prog_u");

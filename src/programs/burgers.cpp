@@ -369,7 +369,7 @@ public:
 	{
 		char buffer[1024];
 
-		const char* filename_template = simVars.misc.output_file_name_prefix.c_str();
+		const char* filename_template = simVars.misc.output_file_name.c_str();
 		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
 		i_planeData.file_physical_saveData_ascii(buffer,'\n',12,1);
 
@@ -402,7 +402,7 @@ public:
 		PlaneData tmp_v = prog_v;
 
 		// Dump data in csv, if requested
-		if (simVars.misc.output_file_name_prefix.size() > 0)
+		if (simVars.misc.output_file_name.size() > 0)
 		{
 			write_file(tmp_u, "prog_u");
 			//write_file(tmp_v, "prog_v");
@@ -410,7 +410,7 @@ public:
 			tmp_u.request_data_spectral();
 
 			char buffer[1024];
-			const char* filename_template = simVars.misc.output_file_name_prefix.c_str();
+			const char* filename_template = simVars.misc.output_file_name.c_str();
 			sprintf(buffer,filename_template,"prog_u_amp_phase",simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
 
 			std::ofstream file(buffer, std::ios_base::trunc);
@@ -436,7 +436,7 @@ public:
 				tmp.request_data_spectral();
 
 				char buffer[1024];
-				const char* filename_template = simVars.misc.output_file_name_prefix.c_str();
+				const char* filename_template = simVars.misc.output_file_name.c_str();
 				sprintf(buffer,filename_template,"analytical_amp_phase",simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
 
 				std::ofstream file(buffer, std::ios_base::trunc);
@@ -1231,7 +1231,7 @@ public:
 	{
 		char buffer[1024];
 
-		sprintf(buffer, (simVars.misc.output_file_name_prefix+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(), i_name, i_iteration_id, i_time_slice_id);
+		sprintf(buffer, (simVars.misc.output_file_name+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(), i_name, i_iteration_id, i_time_slice_id);
 		i_planeData.file_physical_saveData_ascii(buffer,'\n',12,1);
 
 		/*
@@ -1267,7 +1267,7 @@ public:
 		write_file_parareal(tmp_u,"prog_u",iteration_id,time_slice_id);
 
 		char buffer[1024];
-		sprintf(buffer,(simVars.misc.output_file_name_prefix+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(), "prog_u_amp_phase", iteration_id, time_slice_id);
+		sprintf(buffer,(simVars.misc.output_file_name+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(), "prog_u_amp_phase", iteration_id, time_slice_id);
 
 		std::ofstream file(buffer, std::ios_base::trunc);
 		file << std::setprecision(12);
@@ -1286,7 +1286,7 @@ public:
 
 			write_file_parareal(ana,"analytical",iteration_id,time_slice_id);
 
-			sprintf(buffer,(simVars.misc.output_file_name_prefix+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(),"analytical_amp_phase", iteration_id, time_slice_id);
+			sprintf(buffer,(simVars.misc.output_file_name+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(),"analytical_amp_phase", iteration_id, time_slice_id);
 
 			file.open(buffer, std::ios_base::trunc);
 			file << std::setprecision(12);

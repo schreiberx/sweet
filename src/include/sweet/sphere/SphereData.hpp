@@ -1779,13 +1779,11 @@ public:
 		file << "#TX Longitude" << std::endl;
 		file << "#TY Latitude" << std::endl;
 
-		//file << "lat\\lon\t";
 		// Use 0 to make it processable by python
 		file << "0\t";
 
 		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
 		{
-//			double lon_degree = ((double)i/(double)sphereDataConfig->spat_num_lon)*2.0*M_PI;
 			double lon_degree = ((double)i/(double)sphereDataConfig->physical_num_lon)*2.0*M_PI;
 			lon_degree = lon_degree/M_PI*180.0;
 
@@ -1797,7 +1795,6 @@ public:
 
         for (int j = sphereDataConfig->physical_num_lat-1; j >= 0; j--)
         {
-//        		double lat_degree =  M_PI*0.5 - acos(shtns->ct[j]);
         		double lat_degree = sphereDataConfig->lat[j];
         		lat_degree = lat_degree/M_PI*180.0;
 
@@ -2191,46 +2188,5 @@ SphereData operator*(
 
 
 
-/**
- * operator to support operations such as:
- *
- * 1.5 - arrayData;
- *
- * Otherwise, we'd have to write it as arrayData-1.5
- *
- */
-#if 0
-inline
-static
-SphereData operator-(
-		const double i_value,
-		const SphereData &i_array_data
-)
-{
-	return ((SphereData&)i_array_data).valueMinusThis(i_value);
-//	return -(((SPHData&)i_array_data).operator-(i_value));
-}
-#endif
-/**
- * operator to support operations such as:
- *
- * 1.5 + arrayData;
- *
- * Otherwise, we'd have to write it as arrayData+1.5
- *
- */
-
-#if 0
-inline
-static
-SphereData operator+(
-		const double i_value,
-		const SphereData &i_array_data
-)
-{
-	i_array_data.checkConsistency();
-	return ((SphereData&)i_array_data)+i_value;
-}
-#endif
 
 #endif /* SPHDATA_HPP_ */

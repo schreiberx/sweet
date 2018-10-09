@@ -589,8 +589,8 @@ public:
 			std::cout << " + instability_checks: " << instability_checks << std::endl;
 			std::cout << " + output_floating_point_precision: " << output_floating_point_precision << std::endl;
 			std::cout << " + gui_enabled: " << gui_enabled << std::endl;
-			std::cout << " + be_verbose_after_this_simulation_time_period: " << be_verbose_after_this_simulation_time_period << std::endl;
-			std::cout << " + output_file_name_prefix: " << output_file_name_prefix << std::endl;
+			std::cout << " + output_file_name " << output_file_name << std::endl;
+			std::cout << " + output_file_mode " << output_file_mode << std::endl;
 			std::cout << " + output_each_sim_seconds: " << output_each_sim_seconds << std::endl;
 			std::cout << " + output_next_sim_seconds: " << output_next_sim_seconds << std::endl;
 			std::cout << " + vis_id: " << vis_id << std::endl;
@@ -617,11 +617,11 @@ public:
 		/// activate GUI mode?
 		bool gui_enabled = (SWEET_GUI == 0 ? false : true);
 
-		/// outputConfig verbose information every given period of simulation time.
-		double be_verbose_after_this_simulation_time_period = 0;
-
 		/// prefix of filename for outputConfig of data
-		std::string output_file_name_prefix = "output_%s_t%020.8f.csv";
+		std::string output_file_name = "";
+
+		/// output mode of variables
+		std::string output_file_mode = "default";
 
 		/// prefix of filename for outputConfig of data
 		double output_each_sim_seconds = -1;
@@ -902,6 +902,12 @@ public:
         long_options[next_free_program_option] = {"compute-errors", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
+        long_options[next_free_program_option] = {"output-file-name", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
+        long_options[next_free_program_option] = {"output-file-mode", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
         long_options[next_free_program_option] = {"instability-checks", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
@@ -1072,6 +1078,9 @@ public:
 					c++;		if (i == c)	{	setup.benchmark_galewsky_phi2 = atof(optarg);		continue;	}
 
 					c++;		if (i == c)	{	misc.compute_errors = atoi(optarg);					continue;	}
+					c++;		if (i == c)	{	misc.output_file_name = optarg;					continue;	}
+					c++;		if (i == c)	{	misc.output_file_mode = optarg;					continue;	}
+
 					c++;		if (i == c)	{	misc.instability_checks = atoi(optarg);				continue;	}
 					c++;		if (i == c)	{	misc.sphere_use_robert_functions = atoi(optarg);	continue;	}
 					c++;		if (i == c)	{	misc.use_local_visc = atoi(optarg);			continue;	}
@@ -1276,14 +1285,10 @@ public:
 				misc.verbosity = atoi(optarg);
 				break;
 
-			case 'V':
-				misc.be_verbose_after_this_simulation_time_period = atof(optarg);
-				break;
-
 			case 'O':
-				misc.output_file_name_prefix = optarg;
-				if (misc.output_file_name_prefix == "-")
-					misc.output_file_name_prefix = "";
+				misc.output_file_name = optarg;
+				if (misc.output_file_name == "-")
+					misc.output_file_name = "";
 				break;
 
 			case 'o':
@@ -1365,6 +1370,26 @@ public:
 			{
 				FatalError("Select physical resolution or spectral modes (use -N (or -n, -m) for physical and -M for spectral) ");
 			}
+
+			if (misc.output_file_mode == "default")
+			{
+				misc.output_file_mode = "csv";
+
+				if (misc.output_file_name == "")
+					misc.output_file_name = "output_%s_t%020.8f.csv";
+			}
+			else
+			{
+				if (misc.output_file_name == "")
+				{
+					if (misc.output_file_mode == "csv")
+						misc.output_file_name = "output_%s_t%020.8f.csv";
+					else if (misc.output_file_mode == "bin")
+						misc.output_file_name = "output_%s_t%020.8f.sweet";
+					else
+						FatalError("Unknown filemode '"+misc.output_file_mode+"'");
+				}
+			}
 		}
 
 		reset();
@@ -1390,8 +1415,8 @@ public:
 		 * to specify it in all other programs.
 		 */
 
-		if (misc.output_file_name_prefix == "-")
-			misc.output_file_name_prefix = "";
+		if (misc.output_file_name == "-")
+			misc.output_file_name = "";
 
 		if (misc.output_floating_point_precision >= 0)
 		{

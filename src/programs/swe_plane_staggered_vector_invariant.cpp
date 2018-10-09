@@ -379,7 +379,7 @@ public:
 	{
 		char buffer[1024];
 
-		const char* filename_template = simVars.misc.output_file_name_prefix.c_str();
+		const char* filename_template = simVars.misc.output_file_name.c_str();
 		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
 		i_planeData.file_physical_saveData_ascii(buffer);
 
@@ -407,7 +407,7 @@ public:
 		{
 			update_diagnostics();
 
-			if (simVars.misc.output_file_name_prefix.size() > 0)
+			if (simVars.misc.output_file_name.size() > 0)
 			{
 				write_file(prog_h, "prog_P");
 				write_file(prog_u, "prog_u");

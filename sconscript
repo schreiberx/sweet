@@ -3,8 +3,6 @@ import sys
 import glob
 
 Import('env', 'p')
-env.Append(CPPPATH = ['include'])
-
 
 sweet_root = env['SWEET_ROOT']+'/'
 
@@ -70,6 +68,11 @@ if mainsrcadddir != '':
 			env.src_files.append(obj)
 			#env.AddPostAction(obj, moveModFiles)
 
+if p.sphere_spectral_space == 'enable':
+	env.src_files.append(env.Object(Glob(sweet_root+'src/include/sweet/sphere/*.cpp')))
+
+if p.plane_spectral_space == 'enable':
+	env.src_files.append(Glob(sweet_root+'src/include/sweet/plane/*.cpp'))
 
 Export('env', 'p')
 

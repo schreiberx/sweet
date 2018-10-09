@@ -378,7 +378,7 @@ public:
 	{
 		char buffer[1024];
 
-		const char* filename_template = simVars.misc.output_file_name_prefix.c_str();
+		const char* filename_template = simVars.misc.output_file_name.c_str();
 		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
 		i_planeData.file_physical_saveData_ascii(buffer);
 
@@ -395,18 +395,18 @@ public:
 		if (simVars.timecontrol.current_simulation_time < next_timestep_output)
 			return;
 
-		if (simVars.misc.be_verbose_after_this_simulation_time_period != 0)
+		if (simVars.misc.output_each_sim_seconds != 0)
 		{
 			// advance to next time step output
 			while (next_timestep_output <= simVars.timecontrol.current_simulation_time)
-				next_timestep_output += simVars.misc.be_verbose_after_this_simulation_time_period;
+				next_timestep_output += simVars.misc.output_each_sim_seconds;
 		}
 
 		if (simVars.misc.verbosity > 0)
 		{
 			update_diagnostics();
 
-			if (simVars.misc.output_file_name_prefix.size() > 0)
+			if (simVars.misc.output_file_name.size() > 0)
 			{
 				write_file(prog_h, "prog_P");
 				write_file(prog_u, "prog_u");

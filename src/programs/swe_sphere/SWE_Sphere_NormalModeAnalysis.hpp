@@ -37,7 +37,7 @@ public:
 		 * "Computational Modes and Grid Imprinting on Five Quasi-Uniform Spherical C Grids"
 		 */
 		char buffer_real[1024];
-		const char* filename = i_simVars.misc.output_file_name_prefix.c_str();
+		const char* filename = i_simVars.misc.output_file_name.c_str();
 
 		if (i_simVars.timecontrol.max_timesteps_nr > 0)
 			sprintf(buffer_real, filename, "normal_modes_physical", i_simVars.timecontrol.current_timestep_size*i_simVars.timecontrol.max_timesteps_nr*i_simVars.misc.output_time_scale);

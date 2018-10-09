@@ -63,10 +63,10 @@ public:
 			const char* filename; //general filename
 			char buffer_real[1024];
 
-			if (i_simVars.misc.output_file_name_prefix == "")
+			if (i_simVars.misc.output_file_name == "")
 				filename = "output_%s_t%020.8f.csv";
 			else
-				filename = i_simVars.misc.output_file_name_prefix.c_str();
+				filename = i_simVars.misc.output_file_name.c_str();
 
 			sprintf(buffer_real, filename, "normal_modes_plane", i_simVars.timecontrol.current_timestep_size*i_simVars.misc.output_time_scale);
 			std::ofstream file(buffer_real, std::ios_base::trunc);
@@ -279,10 +279,10 @@ public:
 			const char* filename;
 			char buffer_real[1024];
 
-			if (i_simVars.misc.output_file_name_prefix == "")
+			if (i_simVars.misc.output_file_name == "")
 				filename = "output_%s_normalmodes.csv";
 			else
-				filename = i_simVars.misc.output_file_name_prefix.c_str();
+				filename = i_simVars.misc.output_file_name.c_str();
 
 
 			sprintf(buffer_real, filename, "normal_modes_physical", i_simVars.timecontrol.current_timestep_size*i_simVars.misc.output_time_scale);

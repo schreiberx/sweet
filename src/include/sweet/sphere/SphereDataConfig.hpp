@@ -78,7 +78,7 @@ public:
 
 	/**
 	 * Number of elements for SPH which is based on
-	 * complex-valued physical data
+	 * the *** complex-valued physical data ***
 	 */
 	int spectral_complex_array_data_number_of_elements;
 

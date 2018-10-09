@@ -33,7 +33,7 @@ std::string write_file(
   PlaneData planeData(i_planeData);
 
   // Write the data into the file
-  const char* filename_template = simVars->misc.output_file_name_prefix.c_str();
+  const char* filename_template = simVars->misc.output_file_name.c_str();
   sprintf(buffer, 
 	  filename_template, 
 	  i_name, 
@@ -92,7 +92,7 @@ std::string write_physical_invariants_to_file(
   const std::vector<double>& potentialEnstrophy = i_ctx.get_potential_enstrophy();
 
   // Write the spectrum into the file
-  const char* filename_template = simVars->misc.output_file_name_prefix.c_str();
+  const char* filename_template = simVars->misc.output_file_name.c_str();
   sprintf(buffer, 
 	  filename_template, 
 	  i_name, 
@@ -132,7 +132,7 @@ std::string write_residuals_to_file(
   const std::vector<std::vector<double> >& residuals = i_ctx.get_residuals();
 
   // Write the spectrum into the file
-  const char* filename_template = simVars->misc.output_file_name_prefix.c_str();
+  const char* filename_template = simVars->misc.output_file_name.c_str();
   sprintf(buffer, 
 	  filename_template, 
 	  i_name, 

@@ -19,6 +19,7 @@ class SWEETRuntimeOptions(InfoError):
 
 		self.output_timestep_size = 0.0001
 		self.output_filename = ''
+		self.output_file_mode = ''
 
 		self.f_sphere = 0
 		self.verbosity = 0
@@ -355,15 +356,20 @@ class SWEETRuntimeOptions(InfoError):
 
 		retval += ' -o '+str(self.output_timestep_size)
 
-		if self.output_timestep_size < 0:
-			retval += ' -O -'	# deactivate file output
-
 		if self.output_filename != '':
-			retval += ' -O '+self.output_filename
+			retval += ' --output-file-name='+self.output_filename
+
+		if self.output_file_mode != '':
+			retval += ' --output-file-mode='+self.output_file-mode
+
+		if self.output_timestep_size < 0:
+			retval += ' --output-file-name=-'
 
 		retval += ' -u '+str(self.viscosity)
+
 		if self.viscosity_order > 0:
 			retval += ' -U '+str(self.viscosity_order)
+
 		retval += ' -t '+str(self.simtime)
 
 		retval += ' --instability-checks='+str(self.instability_checks)

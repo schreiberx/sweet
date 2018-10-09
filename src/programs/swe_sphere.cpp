@@ -211,7 +211,7 @@ public:
 	/**
 	 * Write file to data and return string of file name
 	 */
-	std::string write_file(
+	std::string write_file_csv(
 			const SphereData &i_sphereData,
 			const char* i_name,		///< name of output variable
 			bool i_phi_shifted
@@ -222,12 +222,32 @@ public:
 		// create copy
 		SphereData sphereData(i_sphereData);
 
-		const char* filename_template = simVars.misc.output_file_name_prefix.c_str();
+		const char* filename_template = simVars.misc.output_file_name.c_str();
 		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
 		if (i_phi_shifted)
 			sphereData.physical_file_write_lon_pi_shifted(buffer, "vorticity, lon pi shifted");
 		else
 			sphereData.physical_file_write(buffer);
+
+		return buffer;
+	}
+
+
+
+	/**
+	 * Write file to data and return string of file name
+	 */
+	std::string write_file_bin(
+			const SphereData &i_sphereData,
+			const char* i_name
+	)
+	{
+		char buffer[1024];
+
+		SphereData sphereData(i_sphereData);
+		const char* filename_template = simVars.misc.output_file_name.c_str();
+		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
+		sphereData.file_write_binary_spectral(buffer);
 
 		return buffer;
 	}
@@ -241,35 +261,56 @@ public:
 			return;
 #endif
 
-		if (simVars.misc.output_file_name_prefix.length() == 0)
+		if (simVars.misc.output_file_name.length() == 0)
 			return;
 
-		std::string output_filename;
 
-		std::cout << "Simulation time: " << simVars.timecontrol.current_simulation_time << std::endl;
+		std::cout << "Writing output files as simulation time: " << simVars.timecontrol.current_simulation_time << std::endl;
 
-		SphereData h = prog_phi*(1.0/simVars.sim.gravitation);
-		output_filename = write_file(h, "prog_h", simVars.setup.benchmark_id == 0);
-		std::cout << output_filename << " (min: " << SphereData(h).physical_reduce_min() << ", max: " << SphereData(h).physical_reduce_max() << ")" << std::endl;
+		if (simVars.misc.output_file_mode == "csv")
+		{
+			std::string output_filename;
+			SphereData h = prog_phi*(1.0/simVars.sim.gravitation);
 
-		SphereDataPhysical u(sphereDataConfig);
-		SphereDataPhysical v(sphereDataConfig);
+			output_filename = write_file_csv(h, "prog_h", simVars.setup.benchmark_id == 0);
+			std::cout << " + " << output_filename << " (min: " << SphereData(h).physical_reduce_min() << ", max: " << SphereData(h).physical_reduce_max() << ")" << std::endl;
 
-		op.robert_vortdiv_to_uv(prog_vort, prog_div, u, v);
+			SphereDataPhysical u(sphereDataConfig);
+			SphereDataPhysical v(sphereDataConfig);
 
-		output_filename = write_file(u, "prog_u", simVars.setup.benchmark_id == 0);
-		std::cout << output_filename << std::endl;
+			op.robert_vortdiv_to_uv(prog_vort, prog_div, u, v);
 
-		output_filename = write_file(v, "prog_v", simVars.setup.benchmark_id == 0);
-		std::cout << output_filename << std::endl;
+			output_filename = write_file_csv(u, "prog_u", simVars.setup.benchmark_id == 0);
+			std::cout << " + " << output_filename << std::endl;
 
-		output_filename = write_file(prog_vort, "prog_vort", simVars.setup.benchmark_id == 0);
-		std::cout << output_filename << std::endl;
+			output_filename = write_file_csv(v, "prog_v", simVars.setup.benchmark_id == 0);
+			std::cout << " + " << output_filename << std::endl;
 
-		SphereData potvort = (prog_phi/simVars.sim.gravitation)*prog_vort;
+			output_filename = write_file_csv(prog_vort, "prog_vort", simVars.setup.benchmark_id == 0);
+			std::cout << " + " << output_filename << std::endl;
 
-		output_filename = write_file(potvort, "prog_potvort", simVars.setup.benchmark_id == 0);
-		std::cout << output_filename << std::endl;
+			SphereData potvort = (prog_phi/simVars.sim.gravitation)*prog_vort;
+
+			output_filename = write_file_csv(potvort, "prog_potvort", simVars.setup.benchmark_id == 0);
+			std::cout << " + " << output_filename << std::endl;
+		}
+		else if (simVars.misc.output_file_mode == "bin")
+		{
+			std::string output_filename;
+
+			output_filename = write_file_bin(prog_phi, "prog_phi");
+			std::cout << " + " << output_filename << std::endl;
+
+			output_filename = write_file_bin(prog_vort, "prog_vort");
+			std::cout << " + " << output_filename << std::endl;
+
+			output_filename = write_file_bin(prog_div, "prog_div");
+			std::cout << " + " << output_filename << std::endl;
+		}
+		else
+		{
+			FatalError("Unknown output file mode '"+simVars.misc.output_file_mode+"'");
+		}
 	}
 
 
