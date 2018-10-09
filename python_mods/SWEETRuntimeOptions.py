@@ -360,7 +360,7 @@ class SWEETRuntimeOptions(InfoError):
 			retval += ' --output-file-name='+self.output_filename
 
 		if self.output_file_mode != '':
-			retval += ' --output-file-mode='+self.output_file-mode
+			retval += ' --output-file-mode='+self.output_file_mode
 
 		if self.output_timestep_size < 0:
 			retval += ' --output-file-name=-'
