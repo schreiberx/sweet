@@ -9,7 +9,7 @@
 #
 
 
-if [ -z "$1" ]; then
+if [[ -z "$1" ]]; then
 	DIRS=job_*
 else
 	DIRS=$@

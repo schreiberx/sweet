@@ -5,7 +5,7 @@
 #
 
 
-if [ -z "$1" ]; then
+if [[ -z "$1" ]]; then
 	DIRS=job_*
 else
 	DIRS=$@
@@ -26,7 +26,7 @@ for i in $DIRS; do
 
 	EXIT_CODE=$?
 
-	if [ 0 -ne $EXIT_CODE ]; then
+	if [[ 0 -ne $EXIT_CODE ]]; then
 		echo_error_hline
 		echo_error_exit "ERROR"
 		echo_error_hline

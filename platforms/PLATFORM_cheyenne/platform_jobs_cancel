@@ -3,7 +3,7 @@
 IDS=$@
 IDS=$(echo "${IDS}" | sed "s/\..*//")
 
-if [ -z "$IDS" ]; then
+if [[ -z "$IDS" ]]; then
 	echo "No jobs found specified"
 else
 	qdel -W force $IDS

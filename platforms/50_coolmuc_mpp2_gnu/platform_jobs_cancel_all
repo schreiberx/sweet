@@ -3,7 +3,7 @@
 IDS=$(squeue --cluster=mpp2 | tail -n +3 | sed "s/ mpp2.*//")
 echo ${IDS}
 
-if [ -z "$IDS" ]; then
+if [[ -z "$IDS" ]]; then
 	echo "No jobs found"
 else
 	scancel --clusters=mpp2 $IDS

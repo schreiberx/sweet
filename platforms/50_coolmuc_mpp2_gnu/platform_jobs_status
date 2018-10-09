@@ -9,7 +9,7 @@
 #
 
 # Avoid using $@ for this test since -z fails to compare arrays
-if [ -z "$1" ]; then
+if [[ -z "$1" ]]; then
 	squeue --cluster=mpp2 -l | tail -n +4
 else
 	for i in $@; do

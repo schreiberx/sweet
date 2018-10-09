@@ -1,7 +1,7 @@
 #! /bin/bash
 
 
-if [ -z "$1" ]; then
+if [[ -z "$1" ]]; then
 	echo "Usage:"
 	echo "	$0 [pid]"
 	echo

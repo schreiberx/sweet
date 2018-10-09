@@ -7,12 +7,12 @@
 #
 
 # Avoid using $@ for this test since -z fails to compare arrays
-if [ -z "$1" ]; then
+if [[ -z "$1" ]]; then
 	echo_error_exit "Not supported for multicore systems without job queues!"
 else
 	for i in $@; do
 		ps -p $i > /dev/null
-		if [ $? -eq 0 ]; then
+		if [[ $? -eq 0 ]]; then
 			echo $i
 		fi
 	done
