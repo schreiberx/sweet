@@ -18,6 +18,7 @@ data_table = j.create_data_table_float(
 
 print("Data table:")
 j.print_data_table(data_table)
+j.write_data_table(data_table, "output_threads_vs_wallclock_time.csv")
 
 
 data_plotting = j.create_data_plotting_float(
