@@ -272,6 +272,9 @@ public:
 			std::string output_filename;
 			SphereData h = prog_phi*(1.0/simVars.sim.gravitation);
 
+			output_filename = write_file_csv(prog_phi, "prog_phi", simVars.setup.benchmark_id == 0);
+			std::cout << " + " << output_filename << " (min: " << SphereData(h).physical_reduce_min() << ", max: " << SphereData(h).physical_reduce_max() << ")" << std::endl;
+
 			output_filename = write_file_csv(h, "prog_h", simVars.setup.benchmark_id == 0);
 			std::cout << " + " << output_filename << " (min: " << SphereData(h).physical_reduce_min() << ", max: " << SphereData(h).physical_reduce_max() << ")" << std::endl;
 
@@ -287,6 +290,9 @@ public:
 			std::cout << " + " << output_filename << std::endl;
 
 			output_filename = write_file_csv(prog_vort, "prog_vort", simVars.setup.benchmark_id == 0);
+			std::cout << " + " << output_filename << std::endl;
+
+			output_filename = write_file_csv(prog_div, "prog_div", simVars.setup.benchmark_id == 0);
 			std::cout << " + " << output_filename << std::endl;
 
 			SphereData potvort = (prog_phi/simVars.sim.gravitation)*prog_vort;
