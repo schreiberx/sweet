@@ -35,6 +35,9 @@ p.unique_id_filter = ['simparams', 'parallelization', 'benchmark', 'rexi_params'
 # Enable quad math per default for CI REXI method
 p.compile.quadmath = 'enable'
 
+params_compile_sweet_mpi = ['enable', 'disable']
+
+
 
 # Verbosity mode
 
@@ -48,6 +51,22 @@ p.runtime.phys_res = -1
 
 # no instability checks to get some error output (e.g. NAN)
 p.runtime.instability_checks = 0
+
+
+# Update TIME parallelization
+ptime = SWEETParallelizationDimOptions('time')
+ptime.num_cores_per_rank = 1
+ptime.num_threads_per_rank = 1
+ptime.num_ranks = 4
+
+pspace = SWEETParallelizationDimOptions('space')
+pspace.num_cores_per_rank = 1
+pspace.num_threads_per_rank = p.platform_resources.num_cores_per_socket//4
+pspace.num_ranks = 1
+
+# Setup parallelization
+p.setup_parallelization([pspace, ptime])
+
 
 
 #
@@ -112,23 +131,7 @@ p.runtime.output_timestep_size = p.runtime.simtime
 
 p.runtime.output_filename = "-"
 
-# Load SHTNS plans
-p.user_script_exec_prefix = """
-# Reutilize SHTNS plans if they exist
-if [ -e ../shtns_cfg ]; then
-	cp ../shtns_cfg ./ || exit 1
-	cp ../shtns_cfg_fftw ./ || exit 1
-#else
-#	echo "WARNING: SHTNS plans not found, see README for information on how to generate them"
-fi
-"""
-
-p.user_script_exec_suffix = """
-
-cp shtns_cfg ../
-cp shtns_cfg_fftw ../
-
-"""
+p.runtime.reuse_plans = -1
 
 
 ts_methods = [
@@ -138,13 +141,16 @@ ts_methods = [
 
 	['l_erk_n_erk',		2,	2,	0],
 
-	['l_irk_n_erk_ver0',		2,	2,	0],
+#	['l_irk_n_erk_ver0',		2,	2,	0],
 	['l_irk_n_erk_ver1',		2,	2,	0],
 
-	['l_rexi_n_erk_ver0',	2,	2,	0],
+#	['l_rexi_n_erk_ver0',	2,	2,	0],
 	['l_rexi_n_erk_ver1',	2,	2,	0],
 
-	['l_rexi_n_etdrk',	2,	2,	0],
+#	['lg_rexi_lc_n_erk_ver0',	2,	2,	0],
+	['lg_rexi_lc_n_erk_ver1',	2,	2,	0],
+
+#	['l_rexi_n_etdrk',	2,	2,	0],
 	['lg_rexi_lc_n_etdrk',	2,	2,	0],
 ]
 
@@ -191,11 +197,14 @@ if __name__ == "__main__":
 
 		for p.runtime.timestep_size in timestep_sizes:
 
-			for p.compile.threading, p.compile.rexi_thread_parallel_sum, p.runtime.rexi_extended_modes in product(params_compile_threading, params_compile_thread_parallel_sum, params_ext_modes):
+			for p.compile.threading, p.compile.rexi_thread_parallel_sum, p.runtime.rexi_extended_modes, p.compile.sweet_mpi in product(params_compile_threading, params_compile_thread_parallel_sum, params_ext_modes, params_compile_sweet_mpi):
 				if 'rexi_' in p.runtime.timestepping_method:
 					p.gen_jobscript_directory('job_bench_'+p.getUniqueID())
 
 				else:
+					if p.compile.sweet_mpi == 'enable':
+						continue
+
 					if p.compile.rexi_thread_parallel_sum == 'enable':
 						continue
 

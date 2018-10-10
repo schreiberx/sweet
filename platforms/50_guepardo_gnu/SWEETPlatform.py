@@ -174,9 +174,13 @@ EXEC=\"$SWEET_ROOT/build/"""+jobgeneration.compile.getProgramName()+"""\"
 PARAMS=\""""+jobgeneration.runtime.getRuntimeOptions()+"""\"
 echo \"${EXEC} ${PARAMS}\"
 
-$EXEC $PARAMS
-
 """
+	if jobgeneration.compile.sweet_mpi == 'enable':
+		content += 'mpiexec -n '+str(p.num_ranks)+' '
+
+	content += "$EXEC $PARAMS"
+	content += "\n"
+	content += "\n"
 
 	return content
 
