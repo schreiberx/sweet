@@ -18,17 +18,18 @@ verbose = False
 ##################################################
 
 p.compile.mode = 'release'
-p.compile.compiler = 'gnu'
-p.compile.sweet_mpi = 'disable'
+p.compile.compiler = 'intel'
+p.compile.sweet_mpi = 'enable'
+
 p.runtime.mode_res = 128
 p.runtime.reuse_plans = 2	# enforce using plans (todo, enforcing not yet implemented)!
-p.runtime.reuse_plans = -1	# quick mode!
 
 p.parallelization.core_oversubscription = False
 p.parallelization.core_affinity = 'compact'
 
 p.compile.threading = 'omp'
-p.compile.rexi_thread_parallel_sum = 'enable'
+p.compile.rexi_thread_parallel_sum = 'disable'
+#p.compile.rexi_thread_parallel_sum = 'enabl'
 
 gen_reference_solution = True
 
@@ -60,6 +61,7 @@ unique_id_filter.append('rexi_params')
 unique_id_filter.append('benchmark')
 
 p.unique_id_filter = unique_id_filter
+
 
 p.runtime.output_timestep_size = p.runtime.simtime
 
@@ -93,6 +95,17 @@ def estimateWallclockTime(p):
 	"""
 	Return an estimated wallclock time
 	"""
+
+
+	###
+	### ALWAYS RETURN 20 MINUTES
+	###
+	return 60*20
+	###
+	###
+	###
+
+
 	#
 	# Reference wallclock time and corresponding time step size
 	# e.g. for explicit RK2 integration scheme
@@ -141,9 +154,8 @@ def estimateWallclockTime(p):
 	wallclock_seconds *= safety_scaling
 	wallclock_seconds += safety_add
 
-	if p.platform_resources.max_wallclock_seconds != None:
-		if wallclock_seconds > p.platform_resources.max_wallclock_seconds:
-			wallclock_seconds = p.platform_resources.max_wallclock_seconds
+	if wallclock_seconds > p.platform_resources.max_wallclock_seconds:
+		wallclock_seconds = p.platform_resources.max_wallclock_seconds
 
 	return wallclock_seconds
 
@@ -395,7 +407,7 @@ if __name__ == "__main__":
 					for ci_N, ci_max_imag, ci_max_real in product(params_ci_N, params_ci_max_imag, params_ci_max_real):
 
 						if params_ci_max_imag_scaling_relative_to_timestep_size != None:
-							ci_max_imag = ci_max_imag * (p.runtime.timestep_size/params_ci_max_imag_scaling_relative_to_timestep_size)
+							ci_max_imag *= (p.runtime.timestep_size/params_ci_max_imag_scaling_relative_to_timestep_size)
 
 						p.runtime.load_from_dict({
 							'rexi_method': 'ci',
@@ -408,26 +420,28 @@ if __name__ == "__main__":
 							#'ci_gaussian_filter_exp_N':0.0,
 						})
 
-						for time_ranks in params_ptime_num_cores_per_rank:
+						time_ranks = ci_N
+						#for time_ranks in params_ptime_num_cores_per_rank:
+						if True:
 
-								# Update TIME parallelization
-								ptime = SWEETParallelizationDimOptions('time')
-								ptime.num_cores_per_rank = 1
-								ptime.num_threads_per_rank = 1
-								ptime.num_ranks = time_ranks
-								ptime.setup()
+							# Update TIME parallelization
+							ptime = SWEETParallelizationDimOptions('time')
+							ptime.num_cores_per_rank = 1
+							ptime.num_threads_per_rank = 1
+							ptime.num_ranks = time_ranks
+							ptime.setup()
 
-								p.setup_parallelization([pspace, ptime])
+							p.setup_parallelization([pspace, ptime])
 
-								if verbose:
-									pspace.print()
-									ptime.print()
-									p.parallelization.print()
+							if verbose:
+								pspace.print()
+								ptime.print()
+								p.parallelization.print()
 
-								# Generate only scripts with max number of cores
-								p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
+							# Generate only scripts with max number of cores
+							p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
 
-								p.gen_jobscript_directory('job_bench_'+p.getUniqueID())
+							p.gen_jobscript_directory('job_bench_'+p.getUniqueID())
 
 	#
 	# SHTNS plan generation scripts

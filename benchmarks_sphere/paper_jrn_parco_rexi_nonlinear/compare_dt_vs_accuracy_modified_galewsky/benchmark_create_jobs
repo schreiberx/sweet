@@ -84,7 +84,8 @@ params_ci_max_real = [10.0]
 # We do this simply to get a consistent time stepping method
 # Otherwise, CI would not behave consistently
 #
-params_ci_max_real_scaling_relative_to_timestep_size = 480
+params_ci_max_imag_scaling_relative_to_timestep_size = 480
+params_ci_max_imag_scaling_relative_to_timestep_size = None
 
 ##################################################
 
@@ -405,8 +406,8 @@ if __name__ == "__main__":
 
 						for ci_N, ci_max_imag, ci_max_real in product(params_ci_N, params_ci_max_imag, params_ci_max_real):
 
-							if params_ci_max_real_scaling_relative_to_timestep_size != None:
-								ci_max_imag = ci_max_imag * (params_ci_max_real_scaling_relative_to_timestep_size/p.runtime.timestep_size)
+							if params_ci_max_imag_scaling_relative_to_timestep_size != None:
+								ci_max_imag = ci_max_imag * (p.runtime.timestep_size/params_ci_max_imag_scaling_relative_to_timestep_size)
 
 							p.runtime.load_from_dict({
 								'rexi_method': 'ci',
