@@ -58,6 +58,7 @@ unique_id_filter.append('timestep_order')
 unique_id_filter.append('rexi_params')
 unique_id_filter.append('benchmark')
 
+p.unique_id_filter = unique_id_filter
 
 p.runtime.output_timestep_size = p.runtime.simtime
 
@@ -139,8 +140,9 @@ def estimateWallclockTime(p):
 	wallclock_seconds *= safety_scaling
 	wallclock_seconds += safety_add
 
-	if wallclock_seconds > p.platform_resources.max_wallclock_seconds:
-		wallclock_seconds = p.platform_resources.max_wallclock_seconds
+	if p.platform_resources.max_wallclock_seconds != None:
+		if wallclock_seconds > p.platform_resources.max_wallclock_seconds:
+			wallclock_seconds = p.platform_resources.max_wallclock_seconds
 
 	return wallclock_seconds
 
@@ -328,7 +330,7 @@ if __name__ == "__main__":
 
 			p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
 
-			p.gen_jobscript_directory('job_ref_'+p.getUniqueID(unique_id_filter))
+			p.gen_jobscript_directory('job_ref_'+p.getUniqueID())
 
 
 
@@ -385,7 +387,7 @@ if __name__ == "__main__":
 
 					p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
 
-					p.gen_jobscript_directory('job_bench_'+p.getUniqueID(unique_id_filter))
+					p.gen_jobscript_directory('job_bench_'+p.getUniqueID())
 
 				else:
 
@@ -424,7 +426,7 @@ if __name__ == "__main__":
 								# Generate only scripts with max number of cores
 								p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
 
-								p.gen_jobscript_directory('job_bench_'+p.getUniqueID(unique_id_filter))
+								p.gen_jobscript_directory('job_bench_'+p.getUniqueID())
 
 	#
 	# SHTNS plan generation scripts
@@ -478,7 +480,7 @@ if __name__ == "__main__":
 			p.runtime.output_timestep_size = -1
 			p.runtime.output_filename = "-"
 
-			p.gen_jobscript_directory('job_plan_'+p.getUniqueID(unique_id_filter))
+			p.gen_jobscript_directory('job_plan_'+p.getUniqueID())
 
 
 
