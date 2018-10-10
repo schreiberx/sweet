@@ -22,7 +22,7 @@ p.compile.compiler = 'gnu'
 p.compile.sweet_mpi = 'disable'
 p.runtime.mode_res = 128
 p.runtime.reuse_plans = 2	# enforce using plans (todo, enforcing not yet implemented)!
-p.runtime.reuse_plans = -1
+p.runtime.reuse_plans = -1	# quick mode!
 
 p.parallelization.core_oversubscription = False
 p.parallelization.core_affinity = 'compact'
