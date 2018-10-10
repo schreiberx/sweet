@@ -815,18 +815,18 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 					assert(io_prog_phi0.sphereDataConfig->spectral_array_data_number_of_elements == perThreadVars[0]->accum_phi.sphereDataConfig->spectral_array_data_number_of_elements);
 
 					perThreadVars[thread_id]->accum_phi.request_data_physical();
-					#pragma omp parallel for schedule(static) default(none) shared(io_prog_phi0, thread_id, perThreadVars)
+					#pragma omp parallel for schedule(static) default(none) shared(io_prog_phi0, thread_id)
 					for (int i = 0; i < io_prog_phi0.sphereDataConfig->physical_array_data_number_of_elements; i++)
 						io_prog_phi0.physical_space_data[i] += perThreadVars[thread_id]->accum_phi.physical_space_data[i];
 
 					perThreadVars[thread_id]->accum_vort.request_data_physical();
-					#pragma omp parallel for schedule(static) default(none) shared(io_prog_vort0, thread_id, perThreadVars)
+					#pragma omp parallel for schedule(static) default(none) shared(io_prog_vort0, thread_id)
 					for (int i = 0; i < io_prog_vort0.sphereDataConfig->physical_array_data_number_of_elements; i++)
 						io_prog_vort0.physical_space_data[i] += perThreadVars[thread_id]->accum_vort.physical_space_data[i];
 
 
 					perThreadVars[thread_id]->accum_div.request_data_physical();
-					#pragma omp parallel for schedule(static) default(none) shared(io_prog_div0, thread_id, perThreadVars)
+					#pragma omp parallel for schedule(static) default(none) shared(io_prog_div0, thread_id)
 					for (int i = 0; i < io_prog_div0.sphereDataConfig->physical_array_data_number_of_elements; i++)
 						io_prog_div0.physical_space_data[i] += perThreadVars[thread_id]->accum_div.physical_space_data[i];
 				}
