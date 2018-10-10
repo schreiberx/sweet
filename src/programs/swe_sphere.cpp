@@ -883,8 +883,13 @@ int main(int i_argc, char *i_argv[])
 				MPI_Barrier(MPI_COMM_WORLD);
 				// Start counting time
 				if (mpi_rank == 0)
-					std::cout << "TIMER RESET" << std::endl;
+				{
+					std::cout << "********************************************************************************" << std::endl;
+					std::cout << "Parallel performance information: MPI barrier & timer starts here" << std::endl;
+					std::cout << "********************************************************************************" << std::endl;
+				}
 #endif
+
 				SimulationBenchmarkTimings::getInstance().main_timestepping.start();
 
 				// Main time loop
@@ -917,15 +922,21 @@ int main(int i_argc, char *i_argv[])
 				// Stop counting time
 				SimulationBenchmarkTimings::getInstance().main_timestepping.stop();
 
-				// Do some output after the time loop
-				simulationSWE->timestep_check_output();
+				if (simVars.misc.verbosity > 0)
+					std::cout << std::endl;
 #if SWEET_MPI
 				MPI_Barrier(MPI_COMM_WORLD);
-
 				// Start counting time
 				if (mpi_rank == 0)
-					std::cout << "TIMER STOP" << std::endl;
+				{
+					std::cout << "********************************************************************************" << std::endl;
+					std::cout << "Parallel performance information: timer stopped here" << std::endl;
+					std::cout << "********************************************************************************" << std::endl;
+				}
 #endif
+
+				// Do some output after the time loop
+				simulationSWE->timestep_check_output();
 			}
 
 

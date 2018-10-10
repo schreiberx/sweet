@@ -166,6 +166,10 @@ class SWEETPostprocessingJobsData(InfoError):
 		for row in data_table:
 			print("\t".join([str(d) for d in row]))
 
+	def write_data_table(self, data_table, filename):
+		with open(filename, 'w') as f:
+			for row in data_table:
+				f.write("\t".join([str(d) for d in row])+"\n")
 
 	def create_data_plotting(
 		self,

@@ -15,6 +15,10 @@
 #include <benchmarks_sphere/BenchmarkGaussianDam.hpp>
 #include <benchmarks_sphere/BenchmarkFlowOverMountain.hpp>
 
+#if SWEET_MPI
+	#include <mpi.h>
+#endif
+
 class SWESphereBenchmarksCombined
 {
 public:
@@ -288,9 +292,16 @@ public:
 				 */
 				if (simVars->timecontrol.current_simulation_time == 0)
 				{
-					std::cout << "!!! WARNING !!!" << std::endl;
-					std::cout << "!!! WARNING: Overriding simulation parameters for this benchmark !!!" << std::endl;
-					std::cout << "!!! WARNING !!!" << std::endl;
+					#if SWEET_MPI
+						int mpi_rank;
+						MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+						if (mpi_rank == 0)
+					#endif
+					{
+						std::cout << "!!! WARNING !!!" << std::endl;
+						std::cout << "!!! WARNING: Overriding simulation parameters for this benchmark !!!" << std::endl;
+						std::cout << "!!! WARNING !!!" << std::endl;
+					}
 				}
 
 				simVars->sim.coriolis_omega = 7.292e-5;

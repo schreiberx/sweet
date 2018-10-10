@@ -3,6 +3,7 @@ all:
 
 
 clean:
+	#scons -c
 	rm -rf build
 	rm -rf /tmp/scons_build_*
 	rm -rf python_mods/*.pyc
