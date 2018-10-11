@@ -6,5 +6,8 @@ IDS=$(echo "${IDS}" | sed "s/\..*//")
 if [[ -z "$IDS" ]]; then
 	echo "No jobs found specified"
 else
-	qdel -W force $IDS
+	for ID in $IDS; do
+		echo $ID
+		qdel -W force $ID
+	done
 fi
