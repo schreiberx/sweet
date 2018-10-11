@@ -40,13 +40,11 @@
  */
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
-#if SWEET_THREADING_SPACE
-
 #define PLANE_DATA_SPECTRAL_FOR_IDX(CORE)					\
-		_Pragma("omp parallel for proc_bind(spread)")			\
+		SWEET_THREADING_SPACE_PARALLEL_FOR			\
 		for (int r = 0; r < 2; r++)								\
 		{														\
-			_Pragma("omp parallel for OPENMP_PAR_SIMD proc_bind(close) collapse(2)")		\
+			SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD_COLLAPSE2		\
 			for (std::size_t jj = planeDataConfig->spectral_data_iteration_ranges[r][1][0]; jj < planeDataConfig->spectral_data_iteration_ranges[r][1][1]; jj++)		\
 			{				\
 				for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[r][0][0]; ii < planeDataConfig->spectral_data_iteration_ranges[r][0][1]; ii++)	\
@@ -58,28 +56,12 @@
 		}
 
 
-#else
-
-#define PLANE_DATA_SPECTRAL_FOR_IDX(CORE)					\
-		for (int r = 0; r < 2; r++)								\
-		{														\
-			for (std::size_t jj = planeDataConfig->spectral_data_iteration_ranges[r][1][0]; jj < planeDataConfig->spectral_data_iteration_ranges[r][1][1]; jj++)		\
-			{				\
-				for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[r][0][0]; ii < planeDataConfig->spectral_data_iteration_ranges[r][0][1]; ii++)	\
-				{			\
-					std::size_t idx = jj*planeDataConfig->spectral_data_size[0]+ii;	\
-					CORE	\
-				}			\
-			}				\
-		}
-
-#endif
 #endif
 
 
 #if SWEET_THREADING_SPACE
 #define PLANE_DATA_PHYSICAL_FOR_IDX(CORE)				\
-		_Pragma("omp parallel for OPENMP_PAR_SIMD proc_bind(close)")	\
+		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD			\
 		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)	\
 		{	CORE;	}
 
@@ -91,7 +73,7 @@
 		{	CORE;	}
 
 #define PLANE_DATA_PHYSICAL_FOR_2D_IDX(CORE)										\
-		_Pragma("omp parallel for OPENMP_PAR_SIMD proc_bind(close) collapse(2)")	\
+		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD_COLLAPSE2	\
 		for (std::size_t j = 0; j < planeDataConfig->physical_data_size[1]; j++)						\
 		{				\
 			for (std::size_t i = 0; i < planeDataConfig->physical_data_size[0]; i++)	\
@@ -487,9 +469,7 @@ public:
 		if (!spectral_space_data_valid)
 			FatalError("Spectral data not valid, but trying to apply anti-aliasing rule!\nDid you call spectral_zeroAliasingModes() after initializing data in physical space?");
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(spread)
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int k = 0; k < 2; k++)
 		{
 			if (k == 0)
@@ -497,9 +477,7 @@ public:
 				/*
 				 * First process part between top and bottom spectral data blocks
 				 */
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for OPENMP_PAR_SIMD proc_bind(close) collapse(2)
-#endif
+				SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD_COLLAPSE2
 				for (std::size_t jj = planeDataConfig->spectral_data_iteration_ranges[0][1][1]; jj < planeDataConfig->spectral_data_iteration_ranges[1][1][0]; jj++)
 					for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[0][0][0]; ii < planeDataConfig->spectral_data_iteration_ranges[0][0][1]; ii++)
 					{
@@ -519,9 +497,7 @@ public:
 				/*
 				 * Then process the aliasing block on the right side
 				 */
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for OPENMP_PAR_SIMD proc_bind(close) collapse(2)
-#endif
+				SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD_COLLAPSE2
 				for (std::size_t jj = 0; jj < planeDataConfig->spectral_data_size[1]; jj++)
 					for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[0][0][1]; ii < planeDataConfig->spectral_data_size[0]; ii++)
 					{
@@ -564,9 +540,7 @@ public:
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING || 1	/// ALWAYS run this to eliminate Nyquist Frequency even without dealiasing activated
 		assert(spectral_space_data_valid);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(spread)
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int k = 0; k < 2; k++)
 		{
 			if (k == 0)
@@ -574,9 +548,7 @@ public:
 				/*
 				 * First process part between top and bottom spectral data blocks
 				 */
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for OPENMP_PAR_SIMD proc_bind(close) collapse(2)
-#endif
+				SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD_COLLAPSE2
 				for (std::size_t jj = planeDataConfig->spectral_data_iteration_ranges[0][1][1]; jj < planeDataConfig->spectral_data_iteration_ranges[1][1][0]; jj++)
 					for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[0][0][0]; ii < planeDataConfig->spectral_data_iteration_ranges[0][0][1]; ii++)
 					{
@@ -588,9 +560,7 @@ public:
 				/*
 				 * Then process the aliasing block on the right side
 				 */
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for OPENMP_PAR_SIMD proc_bind(close) collapse(2)
-#endif
+				SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD_COLLAPSE2
 				for (std::size_t jj = 0; jj < planeDataConfig->spectral_data_size[1]; jj++)
 					for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[0][0][1]; ii < planeDataConfig->spectral_data_size[0]; ii++)
 					{
@@ -1502,9 +1472,8 @@ public:
 					assert(dst_range_dim1[0] == 0);
 
 					std::size_t dst_size = dst_range_dim0[1];//-dst_range_dim0[0];
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+
+					SWEET_THREADING_SPACE_PARALLEL_FOR
 					for (std::size_t j = 0; j < dst_range_dim1[1]; j++)
 					{
 						std::complex<double> *src = &spectral_space_data[planeDataConfig->spectral_data_size[0]*j];
@@ -1540,9 +1509,7 @@ public:
 
 					std::size_t dst_size = dst_range_dim0[1];//-dst_range_dim0[0];
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+					SWEET_THREADING_SPACE_PARALLEL_FOR
 					for (std::size_t j = dst_range_dim1[0]; j < dst_range_dim1[1]; j++)
 					{
 						std::complex<double> *src = &spectral_space_data[planeDataConfig->spectral_data_size[0]*(src_range_dim1[1]-(dst_range_dim1[1]-j))];
@@ -1589,9 +1556,9 @@ public:
 					assert(src_range_dim1[0] == 0);
 
 					std::size_t src_size = src_range_dim0[1];//-dst_range_dim0[0];
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+
+
+					SWEET_THREADING_SPACE_PARALLEL_FOR
 					for (std::size_t j = 0; j < src_range_dim1[1]; j++)
 					{
 						std::complex<double> *src = &spectral_space_data[planeDataConfig->spectral_data_size[0]*(j-src_range_dim1[0]+dst_range_dim1[0])];
@@ -1630,9 +1597,8 @@ public:
 					std::size_t src_size0 = src_range_dim0[1];//-dst_range_dim0[0];
 					std::size_t src_size1 = src_range_dim1[1]-src_range_dim1[0];
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+
+					SWEET_THREADING_SPACE_PARALLEL_FOR
 					for (std::size_t j = src_range_dim1[0]; j < src_range_dim1[1]; j++)
 					{
 						std::complex<double> *src = &spectral_space_data[planeDataConfig->spectral_data_size[0]*j];

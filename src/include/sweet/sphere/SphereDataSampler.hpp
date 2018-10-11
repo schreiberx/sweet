@@ -689,9 +689,7 @@ public:
 		double inv_s = (double)(ext_lat_M-1)/(M_PI+M_PI/ext_lat_M*3);
 
 		// iterate over all positions in parallel
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (std::size_t pos_idx = 0; pos_idx < i_pos_x.number_of_elements; pos_idx++)
 		{
 			// compute array position

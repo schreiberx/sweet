@@ -25,7 +25,7 @@
 #if SWEET_THREADING_SPACE
 
 	#define SCALAR_DATA_FOR_IDX(CORE)				\
-		_Pragma("omp parallel for OPENMP_PAR_SIMD proc_bind(close)")	\
+		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD	\
 			for (std::size_t idx = 0; idx < number_of_elements; idx++)	\
 			{	CORE;	}
 
@@ -843,6 +843,7 @@ public:
 
 		return out;
 	}
+
 
 
 

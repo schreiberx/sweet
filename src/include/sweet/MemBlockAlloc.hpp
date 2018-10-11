@@ -406,7 +406,7 @@ public:
 #else
 		char *data = (char*)i_data;
 
-#pragma omp parallel for OPENMP_PAR_SIMD
+		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 		for (std::size_t i = 0; i < i_size; i++)
 			data[i] = 0;
 

@@ -51,9 +51,7 @@ public:
 			ScalarDataArray &o_z
 	)
 	{
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (std::size_t i = 0; i < i_lon.number_of_elements; i++)
 		{
 			o_x.scalar_data[i] = std::cos(i_lon.scalar_data[i])*std::cos(i_lat.scalar_data[i]);
@@ -76,9 +74,7 @@ public:
 			ScalarDataArray *o_v_z
 	)
 	{
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (std::size_t i = 0; i < i_lon.number_of_elements; i++)
 		{
 			o_v_x->scalar_data[i] = -i_vel_lon.scalar_data[i]*std::sin(i_lon.scalar_data[i]) - i_vel_lat.scalar_data[i]*std::cos(i_lon.scalar_data[i])*std::sin(i_lat.scalar_data[i]);
@@ -99,9 +95,7 @@ public:
 			ScalarDataArray &o_lat
 	)
 	{
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (std::size_t i = 0; i < i_x.number_of_elements; i++)
 		{
 			o_lon.scalar_data[i] = std::atan(i_y.scalar_data[i]/i_x.scalar_data[i]);

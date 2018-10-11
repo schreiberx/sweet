@@ -137,9 +137,7 @@ public:
 				rx_d_prev = rx_d_new;
 				ry_d_prev = ry_d_new;
 
-	#if SWEET_THREADING_SPACE
-	#pragma omp parallel for
-	#endif
+				SWEET_THREADING_SPACE_PARALLEL_FOR
 				for (std::size_t i = 0; i < num_points; i++)
 				{
 					o_posx_d.scalar_data[i] = sample2D.wrapPeriodic(rx_d_new.scalar_data[i], sample2D.domain_size[0]);

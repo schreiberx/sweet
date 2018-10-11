@@ -28,17 +28,16 @@ public:
 
 		PlaneData out(i_planeDataConfig);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
 
 
 #if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
 
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int i = 0; i < i_sphereData.sphereDataConfig->physical_num_lon; i++)
 			for (int j = 0; j < i_sphereData.sphereDataConfig->physical_num_lat; j++)
 				out.physical_space_data[(i_sphereData.sphereDataConfig->physical_num_lat-1-j)*i_sphereData.sphereDataConfig->physical_num_lon + i] = i_sphereData.physical_space_data[i*i_sphereData.sphereDataConfig->physical_num_lat + j];
 #else
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int j = 0; j < i_sphereData.sphereDataConfig->physical_num_lat; j++)
 			for (int i = 0; i < i_sphereData.sphereDataConfig->physical_num_lon; i++)
 				out.physical_space_data[(i_sphereData.sphereDataConfig->physical_num_lat-1-j)*i_sphereData.sphereDataConfig->physical_num_lon + i] = i_sphereData.physical_space_data[j*i_sphereData.sphereDataConfig->physical_num_lon + i];

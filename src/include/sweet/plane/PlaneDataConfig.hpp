@@ -503,9 +503,7 @@ private:
 			 */
 			double *data_physical = MemBlockAlloc::alloc<double>(physical_array_data_number_of_elements*sizeof(double));
 
-	#if SWEET_THREADING_SPACE
-	#pragma omp parallel for OPENMP_PAR_SIMD
-	#endif
+			SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 			for (std::size_t i = 0; i < physical_array_data_number_of_elements; i++)
 				data_physical[i] = 1;	// dummy data
 
@@ -514,9 +512,7 @@ private:
 			 */
 			std::complex<double> *data_spectral = MemBlockAlloc::alloc< std::complex<double> >(spectral_array_data_number_of_elements*sizeof(std::complex<double>));
 
-	#if SWEET_THREADING_SPACE
-	#pragma omp parallel for OPENMP_PAR_SIMD
-	#endif
+			SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 			for (std::size_t i = 0; i < spectral_array_data_number_of_elements; i++)
 				data_spectral[i] = 1;	// dummy data
 
@@ -618,9 +614,7 @@ private:
 			 */
 			std::complex<double> *data_physical = MemBlockAlloc::alloc< std::complex<double> >(physical_array_data_number_of_elements*sizeof(std::complex<double>));
 
-	#if SWEET_THREADING_SPACE
-	#pragma omp parallel for OPENMP_PAR_SIMD
-	#endif
+			SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 			for (std::size_t i = 0; i < physical_array_data_number_of_elements; i++)
 				data_physical[i] = 1;	// dummy data
 
@@ -629,9 +623,7 @@ private:
 			 */
 			std::complex<double> *data_spectral = MemBlockAlloc::alloc< std::complex<double> >(spectral_complex_array_data_number_of_elements*sizeof(std::complex<double>));
 
-	#if SWEET_THREADING_SPACE
-	#pragma omp parallel for OPENMP_PAR_SIMD
-	#endif
+			SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 			for (std::size_t i = 0; i < spectral_complex_array_data_number_of_elements; i++)
 				data_spectral[i] = 1;	// dummy data
 
@@ -740,9 +732,7 @@ public:
 				o_physical_data
 			);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 		for (std::size_t i = 0; i < physical_array_data_number_of_elements; i++)
 			o_physical_data[i] *= fftw_backward_scale_factor;
 	}
@@ -774,9 +764,7 @@ public:
 				(fftw_complex*)o_physical_data
 			);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for OPENMP_PAR_SIMD
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 		for (std::size_t i = 0; i < physical_array_data_number_of_elements; i++)
 			o_physical_data[i] *= fftw_backward_scale_factor;
 	}

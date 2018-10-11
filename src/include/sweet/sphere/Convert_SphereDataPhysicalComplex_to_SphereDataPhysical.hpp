@@ -22,9 +22,7 @@ public:
 	{
 		SphereDataPhysical out(i_sphereData.sphereDataConfig);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 		for (int i = 0; i < out.sphereDataConfig->physical_array_data_number_of_elements; i++)
 			out.physical_space_data[i] = i_sphereData.physical_space_data[i].real();
 
@@ -41,9 +39,7 @@ public:
 	{
 		SphereDataPhysical out(i_sphereData.sphereDataConfig);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 		for (int i = 0; i < out.sphereDataConfig->physical_array_data_number_of_elements; i++)
 			out.physical_space_data[i] = i_sphereData.physical_space_data[i].imag();
 

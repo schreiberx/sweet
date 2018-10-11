@@ -199,10 +199,7 @@ public:
 			/*
 			 * left bottom
 			 */
-#if SWEET_THREADING_SPACE
-//#if !SWEET_THREADING_TIME_REXI
-#		pragma omp parallel for OPENMP_PAR_SIMD
-#endif
+			SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 			for (std::size_t j = planeDataConfig->spectral_complex_ranges[0][1][0]; j < planeDataConfig->spectral_complex_ranges[0][1][1]; j++)
 				for (std::size_t i = planeDataConfig->spectral_complex_ranges[0][0][0]; i < planeDataConfig->spectral_complex_ranges[0][0][1]; i++)
 					diff_c_x.p_spectral_set(j, i, 0, (double)i*scale_x);
@@ -213,11 +210,7 @@ public:
 			/*
 			 * left top
 			 */
-#if SWEET_THREADING_SPACE
-//#if !SWEET_THREADING_TIME_REXI
-
-#		pragma omp parallel for OPENMP_PAR_SIMD
-#endif
+			SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 			for (std::size_t j = planeDataConfig->spectral_complex_ranges[1][1][0]; j < planeDataConfig->spectral_complex_ranges[1][1][1]; j++)
 				for (std::size_t i = planeDataConfig->spectral_complex_ranges[1][0][0]; i < planeDataConfig->spectral_complex_ranges[1][0][1]; i++)
 					diff_c_x.p_spectral_set(j, i, 0, (double)i*scale_x);
@@ -227,10 +220,7 @@ public:
 			/*
 			 * right bottom
 			 */
-#if SWEET_THREADING_SPACE
-//#if !SWEET_THREADING_TIME_REXI
-#		pragma omp parallel for OPENMP_PAR_SIMD
-#endif
+			SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 			for (std::size_t j = planeDataConfig->spectral_complex_ranges[2][1][0]; j < planeDataConfig->spectral_complex_ranges[2][1][1]; j++)
 				for (std::size_t i = planeDataConfig->spectral_complex_ranges[2][0][0]; i < planeDataConfig->spectral_complex_ranges[2][0][1]; i++)
 					diff_c_x.p_spectral_set(j, i, 0, -(double)(planeDataConfig->spectral_complex_ranges[2][0][1]-i)*scale_x);
@@ -240,10 +230,7 @@ public:
 			/*
 			 * right top
 			 */
-#if SWEET_THREADING_SPACE
-//#if !SWEET_THREADING_TIME_REXI
-#		pragma omp parallel for OPENMP_PAR_SIMD
-#endif
+			SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 			for (std::size_t j = planeDataConfig->spectral_complex_ranges[3][1][0]; j < planeDataConfig->spectral_complex_ranges[3][1][1]; j++)
 				for (std::size_t i = planeDataConfig->spectral_complex_ranges[3][0][0]; i < planeDataConfig->spectral_complex_ranges[3][0][1]; i++)
 					diff_c_x.p_spectral_set(j, i, 0, -(double)(planeDataConfig->spectral_complex_ranges[3][0][1]-i)*scale_x);
@@ -265,10 +252,7 @@ public:
 			/*
 			 * left bottom
 			 */
-#if SWEET_THREADING_SPACE
-//#if !SWEET_THREADING_TIME_REXI
-#		pragma omp parallel for OPENMP_PAR_SIMD
-#endif
+			SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 			for (std::size_t j = planeDataConfig->spectral_complex_ranges[0][1][0]; j < planeDataConfig->spectral_complex_ranges[0][1][1]; j++)
 				for (std::size_t i = planeDataConfig->spectral_complex_ranges[0][0][0]; i < planeDataConfig->spectral_complex_ranges[0][0][1]; i++)
 					diff_c_y.p_spectral_set(j, i, 0, (double)j*scale_y);
@@ -279,10 +263,7 @@ public:
 			/*
 			 * left top
 			 */
-#if SWEET_THREADING_SPACE
-//#if !SWEET_THREADING_TIME_REXI
-#		pragma omp parallel for OPENMP_PAR_SIMD
-#endif
+			SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 			for (std::size_t j = planeDataConfig->spectral_complex_ranges[1][1][0]; j < planeDataConfig->spectral_complex_ranges[1][1][1]; j++)
 				for (std::size_t i = planeDataConfig->spectral_complex_ranges[1][0][0]; i < planeDataConfig->spectral_complex_ranges[1][0][1]; i++)
 					diff_c_y.p_spectral_set(j, i, 0, -(double)(planeDataConfig->spectral_complex_ranges[1][1][1]-j)*scale_y);
@@ -292,10 +273,7 @@ public:
 			/*
 			 * right bottom
 			 */
-#if SWEET_THREADING_SPACE
-//#if !SWEET_THREADING_TIME_REXI
-#		pragma omp parallel for OPENMP_PAR_SIMD
-#endif
+			SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 			for (std::size_t j = planeDataConfig->spectral_complex_ranges[2][1][0]; j < planeDataConfig->spectral_complex_ranges[2][1][1]; j++)
 				for (std::size_t i = planeDataConfig->spectral_complex_ranges[2][0][0]; i < planeDataConfig->spectral_complex_ranges[2][0][1]; i++)
 					diff_c_y.p_spectral_set(j, i, 0, (double)(j)*scale_y);
@@ -306,10 +284,7 @@ public:
 			/*
 			 * right top
 			 */
-#if SWEET_THREADING_SPACE
-//#if !SWEET_THREADING_TIME_REXI
-#		pragma omp parallel for OPENMP_PAR_SIMD
-#endif
+			SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 			for (std::size_t j = planeDataConfig->spectral_complex_ranges[3][1][0]; j < planeDataConfig->spectral_complex_ranges[3][1][1]; j++)
 				for (std::size_t i = planeDataConfig->spectral_complex_ranges[3][0][0]; i < planeDataConfig->spectral_complex_ranges[3][0][1]; i++)
 					diff_c_y.p_spectral_set(j, i, 0, -(double)(planeDataConfig->spectral_complex_ranges[3][1][1]-j)*scale_y);
@@ -326,10 +301,7 @@ public:
 		 * DIFF2 X
 		 */
 		{
-#if SWEET_THREADING_SPACE
-//#if !SWEET_THREADING_TIME_REXI
-#		pragma omp parallel for OPENMP_PAR_SIMD
-#endif
+			SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 			for (std::size_t i = 0; i < planeDataConfig->spectral_complex_array_data_number_of_elements; i++)
 				diff2_c_x.spectral_space_data[i] = diff_c_x.spectral_space_data[i]*diff_c_x.spectral_space_data[i];
 
@@ -342,10 +314,7 @@ public:
 		 * DIFF2 X
 		 */
 		{
-#if SWEET_THREADING_SPACE
-//#if !SWEET_THREADING_TIME_REXI
-#		pragma omp parallel for OPENMP_PAR_SIMD
-#endif
+			SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 			for (std::size_t i = 0; i < planeDataConfig->spectral_complex_array_data_number_of_elements; i++)
 				diff2_c_y.spectral_space_data[i] = diff_c_y.spectral_space_data[i]*diff_c_y.spectral_space_data[i];
 

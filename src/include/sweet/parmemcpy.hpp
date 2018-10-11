@@ -11,6 +11,7 @@
 
 
 #include <complex>
+#include <sweet/openmp_helper.hpp>
 
 
 
@@ -32,9 +33,7 @@ inline void parmemcpy(
 		std::complex<double> *src = (std::complex<double>*)i_src;
 		i_size >>= 4;
 
-		#if SWEET_THREADING_SPACE
-		#pragma omp parallel for
-		#endif
+		SWEET_OMP_PARALLEL_FOR_SIMD
 		for (std::size_t i = 0; i < i_size; i++)
 		{
 			dst[i] = src[i];
@@ -52,9 +51,7 @@ inline void parmemcpy(
 		double *src = (double*)i_src;
 		i_size >>= 3;
 
-		#if SWEET_THREADING_SPACE
-		#pragma omp parallel for
-		#endif
+		SWEET_OMP_PARALLEL_FOR_SIMD
 		for (std::size_t i = 0; i < i_size; i++)
 		{
 			dst[i] = src[i];
@@ -72,9 +69,7 @@ inline void parmemcpy(
 		float *src = (float*)i_src;
 		i_size >>= 2;
 
-		#if SWEET_THREADING_SPACE
-		#pragma omp parallel for
-		#endif
+		SWEET_OMP_PARALLEL_FOR_SIMD
 		for (std::size_t i = 0; i < i_size; i++)
 		{
 			dst[i] = src[i];
@@ -88,9 +83,7 @@ inline void parmemcpy(
 	char *dst = (char*)i_dst;
 	char *src = (char*)i_src;
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+	SWEET_OMP_PARALLEL_FOR_SIMD
 	for (std::size_t i = 0; i < i_size; i++)
 	{
 		dst[i] = src[i];

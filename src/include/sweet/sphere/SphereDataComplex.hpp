@@ -112,9 +112,8 @@ public:
 	{
 		setup(i_sph_data.sphereDataConfig);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+
+	SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 			physical_space_data[i] = i_sph_data.physical_space_data[i];
 
@@ -136,9 +135,8 @@ public:
 		i_re.request_data_physical();
 		i_im.request_data_physical();
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+
+	SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 		{
 			physical_space_data[i].real(i_re.physical_space_data[i]);
@@ -272,9 +270,8 @@ public:
 			 * more modes -> less modes
 			 */
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+
+	SWEET_THREADING_SPACE_PARALLEL_FOR
 			for (int n = 0; n <= out.sphereDataConfig->spectral_modes_n_max; n++)
 			{
 				int src_idx = sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
@@ -297,9 +294,8 @@ public:
 			// zero all values
 			out.spectral_set_zero();
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+
+	SWEET_THREADING_SPACE_PARALLEL_FOR
 			for (int n = 0; n <= sphereDataConfig->spectral_modes_n_max; n++)
 			{
 				int src_idx = sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
@@ -327,9 +323,8 @@ public:
 
 		if (physical_space_data_valid)
 		{
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+
+	SWEET_THREADING_SPACE_PARALLEL_FOR
 			for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 				out.physical_space_data[i] = physical_space_data[i];
 
@@ -344,9 +339,8 @@ public:
 		tmp.request_data_spectral();
 		SH_to_spat_cplx(sphereDataConfig->shtns, tmp.spectral_space_data, tmp.physical_space_data);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+
+	SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 			out.physical_space_data[i] = tmp.physical_space_data[i];
 
@@ -409,9 +403,8 @@ public:
 
 		SphereDataComplex out_sph_data(sphereDataConfig);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+
+	SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
 			out_sph_data.spectral_space_data[idx] = spectral_space_data[idx] + i_sph_data.spectral_space_data[idx];
 
@@ -432,9 +425,8 @@ public:
 		request_data_spectral();
 		i_sph_data.request_data_spectral();
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+
+	SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
 			spectral_space_data[idx] += i_sph_data.spectral_space_data[idx];
 
@@ -454,9 +446,8 @@ public:
 		request_data_spectral();
 		i_sph_data.request_data_spectral();
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+
+	SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
 			spectral_space_data[idx] -= i_sph_data.spectral_space_data[idx];
 
@@ -479,9 +470,8 @@ public:
 
 		SphereDataComplex out_sph_data(sphereDataConfig);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+
+	SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
 			out_sph_data.spectral_space_data[idx] = spectral_space_data[idx] - i_sph_data.spectral_space_data[idx];
 
@@ -498,9 +488,8 @@ public:
 
 		SphereDataComplex out_sph_data(sphereDataConfig);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+
+	SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
 			out_sph_data.spectral_space_data[idx] = -spectral_space_data[idx];
 
@@ -522,9 +511,8 @@ public:
 
 		SphereDataComplex out_sph_data(sphereDataConfig);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+
+	SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 			out_sph_data.physical_space_data[i] = i_sph_data.physical_space_data[i]*physical_space_data[i];
 
@@ -546,9 +534,8 @@ public:
 
 		SphereDataComplex out_sph_data(sphereDataConfig);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+
+	SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 			out_sph_data.physical_space_data[i] = physical_space_data[i]/i_sph_data.physical_space_data[i];
 
@@ -567,9 +554,8 @@ public:
 
 		SphereDataComplex out_sph_data(sphereDataConfig);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+
+	SWEET_THREADING_SPACE_PARALLEL_FOR
 
 		for (int idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
 			out_sph_data.spectral_space_data[idx] = spectral_space_data[idx]*i_value;
@@ -587,9 +573,8 @@ public:
 	{
 		request_data_spectral();
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+
+	SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
 			spectral_space_data[idx] *= i_value;
 
@@ -604,9 +589,8 @@ public:
 	{
 		request_data_spectral();
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+
+	SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
 			spectral_space_data[idx] *= i_value;
 
@@ -622,9 +606,8 @@ public:
 
 		SphereDataComplex out_sph_data(sphereDataConfig);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+
+	SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
 			out_sph_data.spectral_space_data[idx] = spectral_space_data[idx]/i_value;
 
@@ -641,9 +624,8 @@ public:
 	{
 		request_data_spectral();
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+
+	SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
 			spectral_space_data[idx] /= i_value;
 
@@ -714,9 +696,8 @@ public:
 
 		SphereDataComplex out_sph_data(sphereDataConfig);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+
+	SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
 			out_sph_data.spectral_space_data[idx] = spectral_space_data[idx]*i_value;
 
@@ -834,9 +815,8 @@ public:
 
 		assert(spectral_space_data_valid);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+
+	SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int n = 0; n <= sphereDataConfig->spectral_modes_n_max; n++)
 		{
 			int idx = sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
@@ -907,9 +887,8 @@ public:
 		if (spectral_space_data_valid)
 			request_data_physical();
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+
+	SWEET_THREADING_SPACE_PARALLEL_FOR
 
 #if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
 
@@ -973,9 +952,8 @@ public:
 		if (spectral_space_data_valid)
 			request_data_physical();
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+
+	SWEET_THREADING_SPACE_PARALLEL_FOR
 
 #if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
 		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
@@ -1023,9 +1001,8 @@ public:
 		if (spectral_space_data_valid)
 			request_data_physical();
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+
+	SWEET_THREADING_SPACE_PARALLEL_FOR
 
 #if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
 		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
@@ -1067,9 +1044,8 @@ public:
 			std::complex<double> i_value
 	)
 	{
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+
+	SWEET_THREADING_SPACE_PARALLEL_FOR
 
 		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
 			for (int j = 0; j < sphereDataConfig->physical_num_lat; j++)
@@ -1087,9 +1063,8 @@ public:
 	{
 		AssertFatalError(sphereDataConfig != nullptr, "sphereDataConfig not initialized!");
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+
+	SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
 			for (int j = 0; j < sphereDataConfig->physical_num_lat; j++)
 				physical_space_data[i*sphereDataConfig->physical_num_lat + j] = 0;
@@ -1113,9 +1088,8 @@ public:
 
 		SphereDataComplex out(sphereDataConfig);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+
+	SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
 			out.physical_space_data[j] = a.physical_space_data[j] - b.physical_space_data[j];
 
@@ -1213,9 +1187,8 @@ public:
 	 */
 	void spectral_set_zero()
 	{
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+
+	SWEET_THREADING_SPACE_PARALLEL_FOR
 
 		for (int n = 0; n <= sphereDataConfig->spectral_modes_n_max; n++)
 		{
@@ -1531,9 +1504,8 @@ SphereDataComplex operator-(
 
 	SphereDataComplex out_sph_data(i_array_data.sphereDataConfig);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+
+	SWEET_THREADING_SPACE_PARALLEL_FOR
 	for (int idx = 0; idx < i_array_data.sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
 		out_sph_data.spectral_space_data[idx] = -i_array_data.spectral_space_data[idx];
 

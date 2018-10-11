@@ -80,9 +80,7 @@ public:
 		SphereDataComplex out(i_sph_data.sphereDataConfig);
 
 		// compute d/dlambda in spectral space
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int n = 0; n <= i_sph_data.sphereDataConfig->spectral_modes_n_max; n++)
 		{
 			int idx = i_sph_data.sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
@@ -185,9 +183,7 @@ public:
 		SphereDataComplex out(sphereDataConfig);
 
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int n = 0; n <= sphereDataConfig->spectral_modes_n_max; n++)
 		{
 			int idx = sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
@@ -224,9 +220,7 @@ public:
 
 		SphereDataComplex out = SphereDataComplex(sphereDataConfig);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int n = 0; n <= i_sph_data.sphereDataConfig->spectral_modes_n_max; n++)
 		{
 			int idx = i_sph_data.sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
@@ -259,9 +253,7 @@ public:
 
 		SphereDataComplex out = SphereDataComplex(sphereDataConfig);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int n = 0; n <= i_sph_data.sphereDataConfig->spectral_modes_n_max; n++)
 		{
 			int idx = i_sph_data.sphereDataConfig->getArrayIndexByModes_Complex(n, -n);

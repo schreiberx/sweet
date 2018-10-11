@@ -70,10 +70,7 @@ public:
 			const std::complex<double> &i_value
 	)
 	{
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
-
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
 			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
@@ -94,9 +91,7 @@ public:
 			const std::complex<double> &i_scalar = 1.0
 	)
 	{
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
 			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
@@ -177,10 +172,7 @@ public:
 			double i_r
 	)
 	{
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
-
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
 			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
@@ -206,10 +198,7 @@ public:
 			double i_r
 	)
 	{
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
-
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
 			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
@@ -232,9 +221,7 @@ public:
 			double i_r
 	)
 	{
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
 			std::complex<double> fac = 1.0/(i_r*i_r)*i_scalar*T(0, m);
@@ -257,9 +244,7 @@ public:
 			double i_r
 	)
 	{
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
 			T fac = std::complex<double>(1.0/(i_r*i_r))*i_scalar*T(0, m);
@@ -286,10 +271,7 @@ public:
 			double i_r
 	)
 	{
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
-
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
 			std::complex<double> fac = (i_scalar/(i_r*i_r))*std::complex<double>(0, m);
@@ -315,10 +297,7 @@ public:
 			double i_r
 	)
 	{
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
-
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
 			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
@@ -356,9 +335,7 @@ public:
 		/*
 		 * Second part
 		 */
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
 			std::complex<double> fac = -1.0/(i_r*i_r)*i_scalar;
@@ -384,9 +361,7 @@ public:
 			double i_r
 	)
 	{
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
 			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
@@ -409,10 +384,7 @@ public:
 	{
 		std::complex<double> fac = (1.0/(i_r*i_r))*i_scalar;
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
-
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
 			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)

@@ -175,9 +175,7 @@ public:
 
 		SphereDataPhysical out(sphereDataConfig);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
 			out.physical_space_data[idx] = physical_space_data[idx] + i_sph_data.physical_space_data[idx];
 
@@ -192,9 +190,7 @@ public:
 	{
 		check(i_sph_data.sphereDataConfig);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
 			physical_space_data[idx] += i_sph_data.physical_space_data[idx];
 
@@ -208,9 +204,7 @@ public:
 	{
 		check(i_sph_data.sphereDataConfig);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
 			physical_space_data[idx] -= i_sph_data.physical_space_data[idx];
 
@@ -227,9 +221,7 @@ public:
 
 		SphereDataPhysical out(sphereDataConfig);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
 			out.physical_space_data[idx] = physical_space_data[idx] - i_sph_data.physical_space_data[idx];
 
@@ -242,9 +234,7 @@ public:
 	{
 		SphereDataPhysical out(sphereDataConfig);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
 			out.physical_space_data[idx] = -physical_space_data[idx];
 
@@ -261,9 +251,7 @@ public:
 
 		SphereDataPhysical out(sphereDataConfig);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 			out.physical_space_data[i] = physical_space_data[i]*i_sph_data.physical_space_data[i];
 
@@ -282,9 +270,7 @@ public:
 
 		SphereDataPhysical out(sphereDataConfig);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 			out.physical_space_data[i] = physical_space_data[i]/i_sph_data.physical_space_data[i];
 
@@ -299,9 +285,7 @@ public:
 	{
 		SphereDataPhysical out(sphereDataConfig);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 			out.physical_space_data[i] = physical_space_data[i]*i_value;
 
@@ -315,9 +299,7 @@ public:
 			const double i_value
 	)	const
 	{
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
 			physical_space_data[idx] *= i_value;
 
@@ -333,9 +315,7 @@ public:
 	{
 		SphereDataPhysical out(sphereDataConfig);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
 			out.physical_space_data[idx] = physical_space_data[idx]/i_value;
 
@@ -350,9 +330,7 @@ public:
 	{
 		SphereDataPhysical out(sphereDataConfig);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
 			out.physical_space_data[idx] = physical_space_data[idx]+i_value;
 
@@ -367,9 +345,7 @@ public:
 	{
 		SphereDataPhysical out(sphereDataConfig);
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
 			out.physical_space_data[idx] = physical_space_data[idx]-i_value;
 
@@ -411,9 +387,7 @@ public:
 			std::function<void(double,double,double&)> i_lambda	///< lambda function to return value for lat/mu
 	)
 	{
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 
 #if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
 
@@ -469,9 +443,7 @@ public:
 	)
 	{
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 
 #if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
 
@@ -506,9 +478,7 @@ public:
 			std::function<void(double,double,double&)> i_lambda	///< lambda function to return value for lat/mu
 	)
 	{
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 
 #if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
 
@@ -553,9 +523,7 @@ public:
 	)
 	{
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 
 #if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
 		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
@@ -619,9 +587,7 @@ public:
 	 */
 	void physical_set_zero()
 	{
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 
 		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
 			for (int j = 0; j < sphereDataConfig->physical_num_lat; j++)
@@ -637,10 +603,7 @@ public:
 			double i_value
 	)
 	{
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
-
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
 			for (int j = 0; j < sphereDataConfig->physical_num_lat; j++)
 				physical_space_data[j*sphereDataConfig->physical_num_lon + i] = i_value;

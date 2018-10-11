@@ -164,9 +164,7 @@ public:
 #endif
 
 		// iterate over all positions in parallel
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (std::size_t pos_idx = 0; pos_idx < max_pos_idx; pos_idx++)
 		{
 			/*
@@ -330,9 +328,7 @@ public:
 		assert(size != 0);
 
 		// iterate over all positions
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (std::size_t pos_idx = 0; pos_idx < size; pos_idx++)
 		{
 			// load position to interpolate
