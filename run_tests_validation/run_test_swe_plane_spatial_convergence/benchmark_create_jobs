@@ -191,7 +191,7 @@ for group in groups:
 			s = tsm[4]
 			p.runtime.load_from_dict(tsm[4])
 
-		p.gen_script('script_'+prefix_string_template+'_ref_'+p.runtime.getUniqueID(p.compile), 'run.sh')
+		p.gen_script('job_benchref_'+prefix_string_template+'_'+p.runtime.getUniqueID(p.compile), 'run.sh')
 
 
 	for tsm in ts_methods[1:]:
@@ -212,8 +212,6 @@ for group in groups:
 
 		for phys_res in phys_res_list:
 
-			p.prefix_string = prefix_string_template
-
 			p.runtime.timestep_size = timestep_size_reference
 			p.runtime.timestepping_method = tsm[0]
 			p.runtime.timestepping_order = tsm[1]
@@ -225,5 +223,5 @@ for group in groups:
 				s = tsm[4]
 				p.runtime.load_from_dict(tsm[4])
 
-			p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile), 'run.sh')
+			p.gen_script('job_bench_'+prefix_string_template+'_'+p.runtime.getUniqueID(p.compile), 'run.sh')
 

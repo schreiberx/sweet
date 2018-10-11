@@ -894,7 +894,7 @@ public:
 		if (physical_space_data_valid)
 			request_data_spectral();
 
-		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
 			std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
