@@ -240,7 +240,6 @@ class SWEETRuntimeOptions(InfoError):
 
 			if compileOptions.sphere_spectral_space == 'enable':
 				idstr += '_a'+str(self.r)
-				#idstr += '_rob'+str(self.use_robert_functions)
 				idstr += '_fsph'+str(self.f_sphere)
 
 			idstr += '_u'+str(self.viscosity)
@@ -318,6 +317,8 @@ class SWEETRuntimeOptions(InfoError):
 
 			if self.phys_res != -1:
 				idstr += '_N'+str(self.phys_res).zfill(4)
+
+			idstr += '_rob'+str(self.use_robert_functions)
 
 		if idstr != '':
 			idstr = "RT"+idstr

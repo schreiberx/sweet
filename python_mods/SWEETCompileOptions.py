@@ -663,8 +663,6 @@ class SWEETCompileOptions(InfoError):
 			else:
 				retval += '_'+self.compiler
 
-			retval += '_'+self.mode
-
 		if not 'compile_parallelization' in i_filter_list:
 			if self.sweet_mpi == 'enable':
 				retval+='_mpi'
@@ -684,6 +682,8 @@ class SWEETCompileOptions(InfoError):
 
 			if self.rexi_timings_additional_barriers == 'enable':
 				retval+='_rxtbar'
+
+		retval += '_'+self.mode
 
 		if retval != '':
 			retval = 'COMP'+retval
