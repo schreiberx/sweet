@@ -158,7 +158,6 @@ class SWEETPostprocessingJobsData(InfoError):
 			# append job data to group
 			groups[group_attributes_short_id][jobdir] = job_data
 
-
 		return groups
 
 
@@ -204,7 +203,10 @@ class SWEETPostprocessingJobsData(InfoError):
 		plot_data = {}
 
 		groups = self.create_groups(group_identifiers)
-		for group_id, group_jobs in groups.items():
+#		for group_id, group_jobs in groups.items():
+		for group_id in sorted(groups):
+			group_jobs = groups[group_id]
+
 			x_values = []
 			y_values = []
 			for jobdir, jobdata in group_jobs.items():
@@ -294,7 +296,9 @@ class SWEETPostprocessingJobsData(InfoError):
 		# Determine full set of primary keys in case that primary key is missing somewhere
 		#
 		row_keys = []
-		for group_id, group_jobs in groups.items():
+		#for group_id, group_jobs in groups.items():
+		for group_id in sorted(groups):
+			group_jobs = groups[group_id]
 			for jobdir, jobdata in group_jobs.items():
 				primary_key = jobdata[primary_key_attribute_name]
 				if not primary_key in row_keys:
@@ -314,7 +318,9 @@ class SWEETPostprocessingJobsData(InfoError):
 		# Create table data
 		data = [[None for i in range(ncols+1)] for j in range(nrows+1)]
 
-		for group_id, group_jobs in groups.items():
+		#for group_id, group_jobs in groups.items():
+		for group_id in sorted(groups):
+			group_jobs = groups[group_id]
 
 			col_key = group_id
 			col_id = col_keys.index(col_key)
@@ -447,7 +453,10 @@ if __name__ == "__main__":
 
 		g = j.create_groups(['runtime.timestepping_method'])
 
-		for group_id, group_jobs in g.items():
+		#for group_id, group_jobs in g.items():
+		for group_id in sorted(groups):
+			group_jobs = groups[group_id]
+
 			print(group_id)
 			for jobdir, jobdata in group_jobs.items():
 				print(" + "+jobdir+"\t"+jobdata['output.benchmark_timings.main_simulationloop'])
