@@ -105,7 +105,7 @@ for j in range(0, size_cmp_j):
 		# http://mathworld.wolfram.com/L2-Norm.html
 		norm_l2_value += value*value
 		# http://mathworld.wolfram.com/L-Infinity-Norm.html
-		norm_linf_value = max(norm_linf_value, abs(value))
+		norm_linf_value = max(abs(value), norm_linf_value)
 
 		# http://mathworld.wolfram.com/Root-Mean-Square.html
 		norm_rms_value += value*value
