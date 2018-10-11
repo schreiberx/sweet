@@ -36,6 +36,7 @@ PKGS+=("install_numactl.sh")
 PKGS+=("install_python3.sh")
 PKGS+=("install_scons3.sh")
 PKGS+=("install_shtns.sh")
+PKGS+=("install_shtns_python.sh")
 
 
 PKGS+=("install_openmpi.sh")
