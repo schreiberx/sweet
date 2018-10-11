@@ -34,7 +34,10 @@ void SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_linear(
 
 	SphereDataPhysical vrtg = i_vort.getSphereDataPhysical();
 	SphereDataPhysical divg = i_div.getSphereDataPhysical();
-	op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
+	if (simVars.misc.sphere_use_robert_functions)
+		op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
+	else
+		op.vortdiv_to_uv(i_vort, i_div, ug, vg);
 	SphereDataPhysical phig = i_phi.getSphereDataPhysical();
 
 	// No Coriolis here
@@ -42,7 +45,10 @@ void SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_linear(
 	SphereDataPhysical tmpg1 = ug*(/*vrtg+*/fg);
 	SphereDataPhysical tmpg2 = vg*(/*vrtg+*/fg);
 
-	op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
+	if (simVars.misc.sphere_use_robert_functions)
+		op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
+	else
+		op.uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
 
 	o_vort_t *= -1.0;
 
@@ -59,13 +65,20 @@ void SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_linear(
 	SphereDataPhysical tmpg2 = vg*avgphi;
 
 	SphereData tmpspec(i_phi.sphereDataConfig);
-	op.robert_uv_to_vortdiv(tmpg1, tmpg2, tmpspec, o_phi_t);
+	if (simVars.misc.sphere_use_robert_functions)
+		op.robert_uv_to_vortdiv(tmpg1, tmpg2, tmpspec, o_phi_t);
+	else
+		op.uv_to_vortdiv(tmpg1, tmpg2, tmpspec, o_phi_t);
 
 	o_phi_t *= -1.0;
+/*
+	SphereDataPhysical tmpg = 0.5*(ug*ug+vg*vg);
 
-	tmpspec = (phig/*+0.5*(ug*ug+vg*vg)*/);
-	tmpspec.request_data_spectral();
-//	o_div_t += -op.laplace(tmpspec);
+	if (simVars.misc.sphere_use_robert_functions)
+		tmpg = tmpg.robert_convertToNonRobertSquared();
+*/
+	tmpspec = (phig/*+tmpg*/);
+
 	o_div_t = -op.laplace(tmpspec);
 }
 
@@ -96,28 +109,40 @@ void SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_coriolis_and_nonlinear
 
 	SphereDataPhysical vrtg = i_vort.getSphereDataPhysical();
 	SphereDataPhysical divg = i_div.getSphereDataPhysical();
-	op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
+	if (simVars.misc.sphere_use_robert_functions)
+		op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
+	else
+		op.vortdiv_to_uv(i_vort, i_div, ug, vg);
 	SphereDataPhysical phig = i_phi.getSphereDataPhysical();
 
 	SphereDataPhysical tmpg1 = ug*(vrtg+fg);
 	SphereDataPhysical tmpg2 = vg*(vrtg+fg);
 
-	op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
+	if (simVars.misc.sphere_use_robert_functions)
+		op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
+	else
+		op.uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
 
 	o_vort_t *= -1.0;
-
-	SphereDataPhysical tmpg = o_div_t.getSphereDataPhysical();
 
 	tmpg1 = ug*(phig-avgphi);
 	tmpg2 = vg*(phig-avgphi);
 
 	SphereData tmpspec(i_phi.sphereDataConfig);
-	op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
+	if (simVars.misc.sphere_use_robert_functions)
+		op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
+	else
+		op.uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
 
 	o_phi_t *= -1.0;
 
-	tmpspec = (/*phig+*/0.5*(ug*ug+vg*vg));
-	tmpspec.request_data_spectral();
+	SphereDataPhysical tmpg(i_phi.sphereDataConfig);
+	tmpg = 0.5*(ug*ug+vg*vg);
+
+	if (simVars.misc.sphere_use_robert_functions)
+		tmpg = tmpg.robert_convertToNonRobertSquared();
+
+	tmpspec = tmpg;
 	o_div_t += -op.laplace(tmpspec);
 }
 

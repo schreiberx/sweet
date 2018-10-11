@@ -26,40 +26,45 @@ void SWE_Sphere_TS_l_na_erk::euler_timestep_update(
 		double i_simulation_timestamp
 )
 {
-	/*
-	 * NON-LINEAR
-	 *
-	 * Follows Hack & Jakob formulation
-	 */
-
 	SphereDataPhysical ug(i_phi.sphereDataConfig);
 	SphereDataPhysical vg(i_phi.sphereDataConfig);
 
 	SphereDataPhysical vrtg = i_vort.getSphereDataPhysical();
 	SphereDataPhysical divg = i_div.getSphereDataPhysical();
-	op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
+	if (simVars.misc.sphere_use_robert_functions)
+		op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
+	else
+		op.vortdiv_to_uv(i_vort, i_div, ug, vg);
 	SphereDataPhysical phig = i_phi.getSphereDataPhysical();
 
 	SphereDataPhysical tmpg1 = ug*(vrtg+fg);
 	SphereDataPhysical tmpg2 = vg*(vrtg+fg);
 
-	op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
+	if (simVars.misc.sphere_use_robert_functions)
+		op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
+	else
+		op.uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
 
 	o_vort_t *= -1.0;
-
-	SphereDataPhysical tmpg = o_div_t.getSphereDataPhysical();
 
 	double gh = simVars.sim.gravitation * simVars.sim.h0;
 	tmpg1 = ug*gh;
 	tmpg2 = vg*gh;
 
 	SphereData tmpspec(i_phi.sphereDataConfig);
-	op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
+	if (simVars.misc.sphere_use_robert_functions)
+		op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
+	else
+		op.uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
 
 	o_phi_t *= -1.0;
 
-	tmpspec = (phig+0.5*(ug*ug+vg*vg));
-	tmpspec.request_data_spectral();
+	SphereDataPhysical tmpg = 0.5*(ug*ug+vg*vg);
+
+	if (simVars.misc.sphere_use_robert_functions)
+		tmpg = tmpg.robert_convertToNonRobertSquared();
+
+	tmpspec = phig+tmpg;
 	o_div_t += -op.laplace(tmpspec);
 }
 

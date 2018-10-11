@@ -184,10 +184,17 @@ void SWE_Sphere_TS_l_cn::run_timestep(
 	}
 	else
 	{
+		if (!simVars.misc.sphere_use_robert_functions)
+			FatalError("Robert functions not yet supported in this time integrator");
+
 		SphereDataPhysical ug(sphereDataConfig);
 		SphereDataPhysical vg(sphereDataConfig);
 
-		op.robert_vortdiv_to_uv(vort0, div0, ug, vg);
+		if (simVars.misc.sphere_use_robert_functions)
+			op.robert_vortdiv_to_uv(vort0, div0, ug, vg);
+		else
+			op.vortdiv_to_uv(vort0, div0, ug, vg);
+
 		SphereDataPhysical phig = phi0.getSphereDataPhysical();
 
 		SphereDataPhysical tmpg1 = ug*fg;
@@ -201,6 +208,7 @@ void SWE_Sphere_TS_l_cn::run_timestep(
 		tmpg2 = vg*gh;
 
 		SphereData tmpspec(sphereDataConfig);
+
 		op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
 
 		o_phi_t *= -1.0;
@@ -236,7 +244,10 @@ void SWE_Sphere_TS_l_cn::run_timestep(
 
 		SphereDataPhysical u0g(sphereDataConfig);
 		SphereDataPhysical v0g(sphereDataConfig);
-		op.robert_vortdiv_to_uv(vort0, div0, u0g, v0g);
+		if (simVars.misc.sphere_use_robert_functions)
+			op.robert_vortdiv_to_uv(vort0, div0, u0g, v0g);
+		else
+			op.vortdiv_to_uv(vort0, div0, u0g, v0g);
 
 		SphereDataPhysical phi0g = phi0.getSphereDataPhysical();
 

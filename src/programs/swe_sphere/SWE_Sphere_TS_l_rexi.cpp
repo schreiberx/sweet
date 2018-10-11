@@ -48,6 +48,7 @@ SWE_Sphere_TS_l_rexi::SWE_Sphere_TS_l_rexi(
 	sphereDataConfig(i_op.sphereDataConfig),
 	sphereDataConfigSolver(nullptr)
 {
+
 	#if SWEET_REXI_TIMINGS
 		SimulationBenchmarkTimings::getInstance().rexi.start();
 		SimulationBenchmarkTimings::getInstance().rexi_setup.start();

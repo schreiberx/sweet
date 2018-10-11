@@ -22,6 +22,7 @@
 #include <cmath>
 
 #include <sweet/sweetmath.hpp>
+#include <sweet/parmemcpy.hpp>
 #include <sweet/MemBlockAlloc.hpp>
 #include <sweet/sphere/SphereDataConfig.hpp>
 #include <sweet/sphere/SphereDataPhysical.hpp>
@@ -143,7 +144,6 @@ public:
 	}
 
 
-
 public:
 	SphereData& operator=(
 			const SphereData &i_sph_data
@@ -153,10 +153,10 @@ public:
 			setup(i_sph_data.sphereDataConfig);
 
 		if (i_sph_data.physical_space_data_valid)
-			memcpy(physical_space_data, i_sph_data.physical_space_data, sizeof(double)*sphereDataConfig->physical_array_data_number_of_elements);
+			parmemcpy(physical_space_data, i_sph_data.physical_space_data, sizeof(double)*sphereDataConfig->physical_array_data_number_of_elements);
 
 		if (i_sph_data.spectral_space_data_valid)
-			memcpy(spectral_space_data, i_sph_data.spectral_space_data, sizeof(cplx)*sphereDataConfig->spectral_array_data_number_of_elements);
+			parmemcpy(spectral_space_data, i_sph_data.spectral_space_data, sizeof(cplx)*sphereDataConfig->spectral_array_data_number_of_elements);
 
 		physical_space_data_valid = i_sph_data.physical_space_data_valid;
 		spectral_space_data_valid = i_sph_data.spectral_space_data_valid;
@@ -183,7 +183,7 @@ public:
 		// only copy spectral data
 		i_sph_data.request_data_spectral();
 
-		memcpy(spectral_space_data, i_sph_data.spectral_space_data, sizeof(cplx)*sphereDataConfig->spectral_array_data_number_of_elements);
+		parmemcpy(spectral_space_data, i_sph_data.spectral_space_data, sizeof(cplx)*sphereDataConfig->spectral_array_data_number_of_elements);
 
 		physical_space_data_valid = false;
 		spectral_space_data_valid = true;
@@ -263,6 +263,8 @@ public:
 			/*
 			 * more modes -> less modes
 			 */
+
+//SWEET_OMP_PAR_FOR_SIMD
 
 #if SWEET_THREADING_SPACE
 #pragma omp parallel for
@@ -352,7 +354,7 @@ public:
 #if 1
 		if (physical_space_data_valid)
 		{
-			memcpy(out.physical_space_data, physical_space_data, sizeof(double)*sphereDataConfig->physical_array_data_number_of_elements);
+			parmemcpy(out.physical_space_data, physical_space_data, sizeof(double)*sphereDataConfig->physical_array_data_number_of_elements);
 			return out;
 		}
 #endif
@@ -374,9 +376,7 @@ public:
 #if 1
 		if (physical_space_data_valid)
 		{
-			for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
-				out.physical_space_data[i] = physical_space_data[i];
-//			memcpy(out.physical_space_data, physical_space_data, sizeof(double)*sphereDataConfig->physical_array_data_number_of_elements);
+			parmemcpy(out.physical_space_data, physical_space_data, sizeof(double)*sphereDataConfig->physical_array_data_number_of_elements);
 			return out;
 		}
 #endif
@@ -388,8 +388,7 @@ public:
 		tmp.request_data_spectral();
 		SH_to_spat(sphereDataConfig->shtns, tmp.spectral_space_data, tmp.physical_space_data);
 
-		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
-			out.physical_space_data[i] = tmp.physical_space_data[i];
+		parmemcpy(out.physical_space_data, tmp.physical_space_data, sizeof(double)*sphereDataConfig->physical_array_data_number_of_elements);
 
 		return out;
 	}
@@ -402,7 +401,7 @@ public:
 	{
 		setup(i_sph_data.sphereDataConfig);
 
-		memcpy(physical_space_data, i_sph_data.physical_space_data, sizeof(double)*sphereDataConfig->physical_array_data_number_of_elements);
+		parmemcpy(physical_space_data, i_sph_data.physical_space_data, sizeof(double)*sphereDataConfig->physical_array_data_number_of_elements);
 
 		physical_space_data_valid = true;
 		spectral_space_data_valid = false;
@@ -416,8 +415,7 @@ public:
 	{
 		setup(i_sph_data.sphereDataConfig);
 
-		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
-			physical_space_data[i] = i_sph_data.physical_space_data[i].real();
+		parmemcpy(physical_space_data, i_sph_data.physical_space_data, sizeof(double)*sphereDataConfig->physical_array_data_number_of_elements);
 
 //		memcpy(physical_space_data, i_sph_data.physical_space_data, sizeof(double)*sphereDataConfig->physical_array_data_number_of_elements);
 
@@ -451,6 +449,20 @@ public:
 				[](double i_lon, double i_lat, double &io_data)
 				{
 					io_data /= std::cos(i_lat);
+				}
+		);
+
+		return out;
+	}
+
+	SphereData robert_convertToNonRobertSquared()
+	{
+		SphereData out = *this;
+
+		out.physical_update_lambda_cosphi_grid(
+				[](double i_lon, double i_cosphi, double &io_data)
+				{
+					io_data /= i_cosphi*i_cosphi;
 				}
 		);
 
@@ -1456,7 +1468,7 @@ public:
 	/**
 	 * return the sum of all values=
 	 */
-	double physical_reduce_sum()
+	double physical_reduce_sum()	const
 	{
 		request_data_physical();
 
@@ -2163,6 +2175,22 @@ public:
 		return true;
 	}
 
+
+	/*
+	 * Debug helper to compare output with the output of another time integrator
+	 */
+	void print_debug(
+			const char *name
+	)
+	{
+		SphereData tmp = *this;
+		std::cout << name << ":" << std::endl;
+		std::cout << "                min: " << tmp.physical_reduce_min() << std::endl;
+		std::cout << "                max: " << tmp.physical_reduce_max() << std::endl;
+		std::cout << "                sum: " << tmp.physical_reduce_sum() << std::endl;
+		std::cout << "                suminc: " << tmp.physical_reduce_debug_sum_quad_mul_increasing() << std::endl;
+		std::cout << std::endl;
+	}
 };
 
 

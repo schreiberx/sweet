@@ -133,8 +133,10 @@ public:
 
 		simVars.reset();
 
+#if 0
 		if (simVars.misc.sphere_use_robert_functions != 1)
 			FatalError("Only Robert formulation allowed");
+#endif
 
 		// one month runtime
 		if (simVars.timecontrol.max_simulation_time == -1)

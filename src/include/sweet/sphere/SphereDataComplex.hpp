@@ -23,6 +23,7 @@
 #include <sweet/sphere/SphereData.hpp>
 #include <sweet/sphere/SphereDataPhysicalComplex.hpp>
 #include <sweet/MemBlockAlloc.hpp>
+#include <sweet/parmemcpy.hpp>
 
 
 
@@ -177,10 +178,10 @@ public:
 			setup(i_sph_data.sphereDataConfig);
 
 		if (i_sph_data.physical_space_data_valid)
-			memcpy(physical_space_data, i_sph_data.physical_space_data, sizeof(cplx)*sphereDataConfig->physical_array_data_number_of_elements);
+			parmemcpy(physical_space_data, i_sph_data.physical_space_data, sizeof(cplx)*sphereDataConfig->physical_array_data_number_of_elements);
 
 		if (i_sph_data.spectral_space_data_valid)
-			memcpy(spectral_space_data, i_sph_data.spectral_space_data, sizeof(cplx)*sphereDataConfig->spectral_complex_array_data_number_of_elements);
+			parmemcpy(spectral_space_data, i_sph_data.spectral_space_data, sizeof(cplx)*sphereDataConfig->spectral_complex_array_data_number_of_elements);
 
 		physical_space_data_valid = i_sph_data.physical_space_data_valid;
 		spectral_space_data_valid = i_sph_data.spectral_space_data_valid;

@@ -37,28 +37,42 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update(
 
 	SphereDataPhysical vrtg = i_vort.getSphereDataPhysical();
 	SphereDataPhysical divg = i_div.getSphereDataPhysical();
-	op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
+
+	if (simVars.misc.sphere_use_robert_functions)
+		op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
+	else
+		op.vortdiv_to_uv(i_vort, i_div, ug, vg);
+
 	SphereDataPhysical phig = i_phi.getSphereDataPhysical();
 
 	SphereDataPhysical tmpg1 = ug*(vrtg+fg);
 	SphereDataPhysical tmpg2 = vg*(vrtg+fg);
 
-	op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
+	if (simVars.misc.sphere_use_robert_functions)
+		op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
+	else
+		op.uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
 
 	o_vort_t *= -1.0;
-
-	SphereDataPhysical tmpg = o_div_t.getSphereDataPhysical();
 
 	tmpg1 = ug*phig;
 	tmpg2 = vg*phig;
 
 	SphereData tmpspec(i_phi.sphereDataConfig);
-	op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
+	if (simVars.misc.sphere_use_robert_functions)
+		op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
+	else
+		op.uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
 
 	o_phi_t *= -1.0;
 
-	tmpspec = (phig+0.5*(ug*ug+vg*vg));
-//	tmpspec.request_data_spectral();
+	SphereDataPhysical tmpg = 0.5*(ug*ug+vg*vg);
+
+	if (simVars.misc.sphere_use_robert_functions)
+		tmpg = tmpg.robert_convertToNonRobertSquared();
+
+	tmpspec = phig+tmpg;
+
 	o_div_t -= op.laplace(tmpspec);
 }
 

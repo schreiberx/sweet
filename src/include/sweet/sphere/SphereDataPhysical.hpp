@@ -153,6 +153,19 @@ public:
 		return out;
 	}
 
+	SphereDataPhysical robert_convertToNonRobertSquared()
+	{
+		SphereDataPhysical out = *this;
+
+		out.physical_update_lambda_cosphi_grid(
+				[](double i_lon, double i_cosphi, double &io_data)
+				{
+					io_data /= i_cosphi*i_cosphi;
+				}
+		);
+
+		return out;
+	}
 
 	SphereDataPhysical operator+(
 			const SphereDataPhysical &i_sph_data
@@ -692,7 +705,7 @@ public:
 
 
 
-	double physical_reduce_sum()
+	double physical_reduce_sum()	const
 	{
 		double sum = 0;
 		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
@@ -1114,6 +1127,20 @@ public:
 
 		return true;
 	}
+
+
+	void print_debug(
+			const char *name
+	)	const
+	{
+		std::cout << name << ":" << std::endl;
+		std::cout << "                min: " << this->physical_reduce_min() << std::endl;
+		std::cout << "                max: " << this->physical_reduce_max() << std::endl;
+		std::cout << "                sum: " << this->physical_reduce_sum() << std::endl;
+		std::cout << "                suminc: " << this->physical_reduce_sum_quad_increasing() << std::endl;
+		std::cout << std::endl;
+	}
+
 };
 
 

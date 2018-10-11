@@ -14,21 +14,41 @@
 
 #define OMP_SCHEDULE	schedule(static)
 
-#if !SWEET_SIMD_ENABLE
+#if !SWEET_THREADING
 
-	#define OPENMP_PAR_SIMD	OMP_SCHEDULE
-	#define OPENMP_SIMD
+	#define SWEET_OMP_PAR_FOR_SIMD
 
 #else
 
-	#ifdef __INTEL_COMPILER
-		#define OPENMP_PAR_SIMD     simd OMP_SCHEDULE
-		#define OPENMP_SIMD simd
+	#if !SWEET_SIMD_ENABLE
+
+		#define OPENMP_PAR_SIMD	OMP_SCHEDULE
+		#define OPENMP_SIMD
+		#define SWEET_OMP_PAR_FOR_SIMD #pragma omp parallel
+
 	#else
-		#define OPENMP_PAR_SIMD	simd OMP_SCHEDULE
-		#define OPENMP_SIMD simd
+
+		#ifdef __INTEL_COMPILER
+			#define OPENMP_PAR_SIMD     simd OMP_SCHEDULE
+			#define OPENMP_SIMD simd
+		#else
+			#define OPENMP_PAR_SIMD	simd OMP_SCHEDULE
+			#define OPENMP_SIMD simd
+		#endif
+
+
+		/*
+		 * This should be used for all parallel for loops with stream-like access
+		 * e.g.
+		 * #pragma omp OMP_PAR_FOR_SIMD
+		 */
+
+		#define OMP_PAR_FOR_SIMD	parallel for OPENMP_PAR_SIMD
+		#define SWEET_OMP_PAR_FOR_SIMD #pragma omp parallel for OPENMP_PAR_SIMD
 	#endif
+
 #endif
+
 
 
 #endif /* SRC_EXAMPLES_OPENMP_HELPER_HPP_ */

@@ -111,17 +111,18 @@ public:
 	 *
 	 * (Inspired by code of Jeffrey Whitaker)
 	 */
-	void computeGeostrophicBalance_HUV(
-			SphereData &o_h,
-			SphereDataPhysical &i_u,
-			SphereDataPhysical &i_v,
-			bool i_nonlinear = true		// geostropic balance for non-linear equations
+	void computeGeostrophicBalance(
+			SphereData &o_phi,
+			SphereData &i_vort,
+			SphereData &i_div,
+			// Don't use robert formulation per default! Otherwise bugs in here can cancel out bugs in the Robert time stepper
+			bool i_use_robert_formulation = false
 	)
 	{
 		/*
 		 * Setup Coriolis effect
 		 */
-		SphereDataPhysical f(o_h.sphereDataConfig);
+		SphereDataPhysical f(o_phi.sphereDataConfig);
 		f.physical_update_lambda_gaussian_grid(
 			[&](double lon, double mu, double &o_data)
 			{
@@ -132,35 +133,35 @@ public:
 		/*
 		 * Compute vorticity and divergence from velocities
 		 */
-		SphereData vrtspec(o_h.sphereDataConfig);
-		SphereData divspec(o_h.sphereDataConfig);
+		SphereDataPhysical u(o_phi.sphereDataConfig);
+		SphereDataPhysical v(o_phi.sphereDataConfig);
 
-		if (simVars->misc.sphere_use_robert_functions)
-			op->robert_uv_to_vortdiv(i_u, i_v, vrtspec, divspec);
+		if (i_use_robert_formulation)
+			op->robert_vortdiv_to_uv(i_vort, i_div, u, v);
 		else
-			op->uv_to_vortdiv(i_u, i_v, vrtspec, divspec);
+			op->vortdiv_to_uv(i_vort, i_div, u, v);
 
-		SphereDataPhysical vrtg = vrtspec.getSphereDataPhysical();
+		SphereDataPhysical vrtg = i_vort.getSphereDataPhysical();
 
-		SphereDataPhysical tmpg1 = i_u*(vrtg+f);
-		SphereDataPhysical tmpg2 = i_v*(vrtg+f);
+		SphereDataPhysical tmpg1 = u*(vrtg+f);
+		SphereDataPhysical tmpg2 = v*(vrtg+f);
 
-		SphereData tmpspec1(o_h.sphereDataConfig);
-		SphereData tmpspec2(o_h.sphereDataConfig);
+		SphereData tmpspec1(o_phi.sphereDataConfig);
+		SphereData tmpspec2(o_phi.sphereDataConfig);
 
-		if (simVars->misc.sphere_use_robert_functions)
+		if (i_use_robert_formulation)
 		  op->robert_uv_to_vortdiv(tmpg1, tmpg2, tmpspec1, tmpspec2);
 		else
 		  op->uv_to_vortdiv(tmpg1, tmpg2, tmpspec1, tmpspec2);
-		
-		tmpspec2 = 0.5*(i_u*i_u+i_v*i_v);
 
-		SphereData phispec = op->inv_laplace(tmpspec1) - tmpspec2 - tmpspec1;
+		tmpspec2 = 0.5*(u*u+v*v);
 
-		phispec = phispec + simVars->sim.gravitation*simVars->sim.h0;
-		phispec.spectral_truncate();
+		if (i_use_robert_formulation)
+			tmpspec2 = tmpspec2.robert_convertToNonRobertSquared();
 
-		o_h = phispec/simVars->sim.gravitation;
+		SphereData phispec = op->inv_laplace(tmpspec1) - tmpspec2;
+
+		o_phi = phispec + simVars->sim.h0*simVars->sim.gravitation;
 	}
 
 
@@ -522,9 +523,7 @@ public:
 					simVars->sim.h0 = 10000;
 				}
 
-				SphereData o_h(o_phi.sphereDataConfig);
-
-				op->setup(o_h.sphereDataConfig, simVars->sim.earth_radius);
+				op->setup(o_phi.sphereDataConfig, simVars->sim.earth_radius);
 
 				simVars->misc.output_time_scale = 1.0/(60.0*60.0);
 
@@ -553,14 +552,14 @@ public:
 				/*
 				 * Setup V=0
 				 */
-				SphereDataPhysical vg(o_h.sphereDataConfig);
+				SphereDataPhysical vg(o_phi.sphereDataConfig);
 				vg.physical_set_zero();
 
 				/*
 				 * Setup U=...
 				 * initial velocity along longitude
 				 */
-				SphereDataPhysical ug(o_h.sphereDataConfig);
+				SphereDataPhysical ug(o_phi.sphereDataConfig);
 				ug.physical_update_lambda(
 					[&](double lon, double phi, double &o_data)
 					{
@@ -586,30 +585,32 @@ public:
 							o_data *= phi;
 						}
 					);
+
+					op->robert_uv_to_vortdiv(ug, vg, o_vort, o_div);
+				}
+				else
+				{
+					op->uv_to_vortdiv(ug, vg, o_vort, o_div);
 				}
 
-				computeGeostrophicBalance_HUV(
-						o_h,
-						ug,
-						vg
+				computeGeostrophicBalance(
+						o_phi,
+						o_vort,
+						o_div
 				);
 
+				SphereDataPhysical hbump(o_phi.sphereDataConfig);
 				if (simVars->setup.benchmark_name == "galewsky")
 				{
-					SphereData hbump(o_h.sphereDataConfig);
 					hbump.physical_update_lambda(
 						[&](double lon, double phi, double &o_data)
 						{
 							o_data = hamp*std::cos(phi)*std::exp(-(lon/alpha)*(lon/alpha))*std::exp(-(phi2-phi)*(phi2-phi)/beta);
 						}
 					);
-
-					o_h += hbump;
 				}
 
-
-				o_phi = o_h*simVars->sim.gravitation;
-				op->robert_uv_to_vortdiv(ug, vg, o_vort, o_div);
+				o_phi += hbump*simVars->sim.gravitation;
 			}
 			else if (
 					simVars->setup.benchmark_name == "williamson4"		||
@@ -636,24 +637,23 @@ public:
 				simVars->sim.earth_radius   = 6.37122e6;
 				simVars->sim.h0			 = 5600;
 
-				SphereData o_h(o_phi.sphereDataConfig);
 
 				// update operator because we changed the simulation parameters
-				op->setup(o_h.sphereDataConfig, simVars->sim.earth_radius);
+				op->setup(o_phi.sphereDataConfig, simVars->sim.earth_radius);
 
 				const double u0 = 20.0;
 
 				/*
 				 * Setup V=0
 				 */
-				SphereDataPhysical vg(o_h.sphereDataConfig);
+				SphereDataPhysical vg(o_phi.sphereDataConfig);
 				vg.physical_set_zero();
 
 				/*
 				 * Setup U=...
 				 * initial velocity along longitude
 				 */
-				SphereDataPhysical ug(o_h.sphereDataConfig);
+				SphereDataPhysical ug(o_phi.sphereDataConfig);
 				ug.physical_update_lambda(
 					[&](double lon, double phi, double &o_data)
 					{
@@ -676,18 +676,20 @@ public:
 							o_data *= phi;
 						}
 					);
+
+					op->robert_uv_to_vortdiv(ug, vg, o_vort, o_div);
+				}
+				else
+				{
+					op->uv_to_vortdiv(ug, vg, o_vort, o_div);
 				}
 
-
-				computeGeostrophicBalance_HUV(
-							  o_h,
-							  ug,
-							  vg
-							  );
-
-
-				o_phi = o_h*simVars->sim.gravitation;
-				op->robert_uv_to_vortdiv(ug, vg, o_vort, o_div);
+				SphereDataPhysical hg(o_phi.sphereDataConfig);
+				computeGeostrophicBalance(
+						o_phi,
+						o_vort,
+						o_div
+				);
 			}
 			else if (
 					simVars->setup.benchmark_name == "williamson6"	||
@@ -707,10 +709,8 @@ public:
 				simVars->sim.earth_radius = 6.37122e6;
 				simVars->sim.h0 = 8000;
 
-				SphereData o_h(o_phi.sphereDataConfig);
-
 				// update operator because we changed the simulation parameters
-				op->setup(o_h.sphereDataConfig, simVars->sim.earth_radius);
+				op->setup(o_phi.sphereDataConfig, simVars->sim.earth_radius);
 
 				const double omega = 7.484e-6;
 				const double K = omega;
@@ -720,7 +720,7 @@ public:
 				/*
 				 * Setup U=...
 				 */
-				SphereDataPhysical ug(o_h.sphereDataConfig);
+				SphereDataPhysical ug(o_phi.sphereDataConfig);
 				ug.physical_update_lambda(
 								[&](double lon, double phi, double &o_data)
 									{
@@ -733,7 +733,7 @@ public:
 				/*
 				 * Setup V=...
 				 */
-				SphereDataPhysical vg(o_h.sphereDataConfig);
+				SphereDataPhysical vg(o_phi.sphereDataConfig);
 				vg.physical_update_lambda(
 								  [&](double lon, double phi, double &o_data)
 										{
@@ -741,32 +741,35 @@ public:
 										}
 								  );
 
-
 				if (simVars->misc.sphere_use_robert_functions)
 				{
-						ug.physical_update_lambda_cosphi_grid(
-								[&](double lon, double phi, double &o_data)
-								{
-									o_data *= phi;
-								}
-							);
-
-						vg.physical_update_lambda_cosphi_grid(
-								[&](double lon, double phi, double &o_data)
-								{
-									o_data *= phi;
-								}
-							);
-				}
-
-				computeGeostrophicBalance_HUV(
-							  o_h,
-							  ug,
-							  vg
+					ug.physical_update_lambda_cosphi_grid(
+						[&](double lon, double phi, double &o_data)
+						{
+							o_data *= phi;
+						}
 					);
 
-				o_phi = o_h*simVars->sim.gravitation;
-				op->robert_uv_to_vortdiv(ug, vg, o_vort, o_div);
+					vg.physical_update_lambda_cosphi_grid(
+						[&](double lon, double phi, double &o_data)
+						{
+							o_data *= phi;
+						}
+					);
+
+					op->robert_uv_to_vortdiv(ug, vg, o_vort, o_div);
+				}
+				else
+				{
+					op->uv_to_vortdiv(ug, vg, o_vort, o_div);
+				}
+
+				SphereDataPhysical hg(o_phi.sphereDataConfig);
+				computeGeostrophicBalance(
+						o_phi,
+						o_vort,
+						o_div
+				);
 			}
 			else if (
 					simVars->setup.benchmark_name == "williamson7"	||
@@ -886,7 +889,6 @@ public:
 					}
 				);
 
-
 				if (simVars->misc.sphere_use_robert_functions)
 				{
 					ug.physical_update_lambda_cosphi_grid(
@@ -902,25 +904,19 @@ public:
 							o_data *= phi;
 						}
 					);
+
+					op->robert_uv_to_vortdiv(ug, vg, o_vort, o_div);
+				}
+				else
+				{
+					op->uv_to_vortdiv(ug, vg, o_vort, o_div);
 				}
 
-				computeGeostrophicBalance_HUV(
-						o_h,
-						ug,
-						vg
+				computeGeostrophicBalance(
+						o_phi,
+						o_vort,
+						o_div
 				);
-
-				o_phi = o_h*simVars->sim.gravitation;
-				op->robert_uv_to_vortdiv(ug, vg, o_vort, o_div);
-
-#if 0
-				std::cout << "phi" << std::endl;
-				o_phi.spectral_print();
-				std::cout << "vort" << std::endl;
-				o_vort.spectral_print();
-				std::cout << "div" << std::endl;
-				o_div.spectral_print();
-#endif
 			}
 			else
 			{
@@ -936,7 +932,10 @@ public:
 			setupInitialConditions_HUV(h, u, v);
 
 			o_phi = h*simVars->sim.gravitation;
-			op->robert_uv_to_vortdiv(u, v, o_vort, o_div);
+			if (simVars->misc.sphere_use_robert_functions)
+				op->robert_uv_to_vortdiv(u, v, o_vort, o_div);
+			else
+				op->uv_to_vortdiv(u, v, o_vort, o_div);
 		}
 	}
 
