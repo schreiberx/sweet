@@ -916,13 +916,18 @@ int main(int i_argc, char *i_argv[])
 					// Instability
 					if (simVars.misc.instability_checks)
 					{
-						if (simulationSWE->detect_instability())
+#if SWEET_MPI
+						if (mpi_rank == 0)
+#endif
 						{
-							std::cout << "INSTABILITY DETECTED" << std::endl;
-							std::cerr << "INSTABILITY DETECTED" << std::endl;
-							// IMPORANT: EXIT IN CASE OF INSTABILITIES
-							exit(1);
-							break;
+							if (simulationSWE->detect_instability())
+							{
+								std::cout << "INSTABILITY DETECTED" << std::endl;
+								std::cerr << "INSTABILITY DETECTED" << std::endl;
+								// IMPORANT: EXIT IN CASE OF INSTABILITIES
+								exit(1);
+								break;
+							}
 						}
 					}
 				}

@@ -999,42 +999,49 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 			if (!io_prog_phi0.physical_space_data_valid)
 				FatalError("Physical data should be available here");
 
-			std::size_t physical_data_num_doubles = io_prog_phi0.sphereDataConfig->physical_array_data_number_of_elements;
-
 			SphereData tmp(sphereDataConfig);
 
-#if SWEET_REXI_ALLREDUCE
-			int retval = MPI_Allreduce(io_prog_phi0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-#else
-			int retval = MPI_Reduce(io_prog_phi0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-#endif
-			if (retval != MPI_SUCCESS)
-			{
-				FatalError("MPI Reduce FAILED!");
-				exit(1);
-			}
+			std::size_t physical_data_num_doubles = io_prog_phi0.sphereDataConfig->physical_array_data_number_of_elements;
 
-			std::swap(io_prog_phi0.physical_space_data, tmp.physical_space_data);
+			#if SWEET_REXI_ALLREDUCE
 
-#if SWEET_REXI_ALLREDUCE
-			MPI_Allreduce(io_prog_vort0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-#else
-			MPI_Reduce(io_prog_vort0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-#endif
-			std::swap(io_prog_vort0.physical_space_data, tmp.physical_space_data);
+				MPI_Allreduce(io_prog_phi0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+				std::swap(io_prog_phi0.physical_space_data, tmp.physical_space_data);
 
-#if SWEET_REXI_ALLREDUCE
-			MPI_Allreduce(io_prog_div0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-#else
-			MPI_Reduce(io_prog_div0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-#endif
-			std::swap(io_prog_div0.physical_space_data, tmp.physical_space_data);
+				MPI_Allreduce(io_prog_vort0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+				std::swap(io_prog_vort0.physical_space_data, tmp.physical_space_data);
+
+				MPI_Allreduce(io_prog_div0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+				std::swap(io_prog_div0.physical_space_data, tmp.physical_space_data);
+
+			#else
+
+				/*
+				 * We only swap the buffer for the 1st rank
+				 * This helps to utilize garbage data, resulting in NaN's and hence
+				 * maybe reduce performance on other ranks.
+				 */
+				MPI_Reduce(io_prog_phi0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+				if (mpi_rank == 0)
+					std::swap(io_prog_phi0.physical_space_data, tmp.physical_space_data);
+
+				MPI_Reduce(io_prog_vort0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+				if (mpi_rank == 0)
+					std::swap(io_prog_vort0.physical_space_data, tmp.physical_space_data);
+
+				MPI_Reduce(io_prog_div0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+				if (mpi_rank == 0)
+					std::swap(io_prog_div0.physical_space_data, tmp.physical_space_data);
+
+			#endif
 
 
 		#if SWEET_REXI_TIMINGS
 			SimulationBenchmarkTimings::getInstance().rexi_timestepping_reduce.stop();
 		#endif
 	#endif
+
+
 
 	#if SWEET_REXI_TIMINGS
 		SimulationBenchmarkTimings::getInstance().rexi_timestepping.stop();
