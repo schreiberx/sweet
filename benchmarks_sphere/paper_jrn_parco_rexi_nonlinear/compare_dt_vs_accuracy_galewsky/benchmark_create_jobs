@@ -18,7 +18,10 @@ verbose = False
 ##################################################
 
 p.compile.mode = 'release'
-p.compile.compiler = 'gnu'
+if '_gnu' in os.getenv('SWEET_PLATFORM_ID'):
+	p.compile.compiler = 'gnu'
+else:
+	p.compile.compiler = 'intel'
 p.compile.sweet_mpi = 'disable'
 p.runtime.mode_res = 128
 p.runtime.reuse_plans = 2	# enforce using plans (todo, enforcing not yet implemented)!
@@ -35,11 +38,11 @@ gen_reference_solution = True
 p.runtime.simtime = 432000
 
 #params_timestep_sizes_explicit = [30]
-params_timestep_sizes_explicit = [10, 20, 30, 60, 120, 180, 360]
-params_timestep_sizes_explicit = [20, 30, 60, 120, 180, 360]
+params_timestep_sizes_explicit = [10, 20, 30, 60, 120, 180, 240, 360]
+params_timestep_sizes_explicit = [20, 30, 60, 120, 180, 240, 360]
 
 #params_timestep_sizes_implicit = [30]
-params_timestep_sizes_implicit = [60, 120, 180, 360, 480, 600, 720, 840]
+params_timestep_sizes_implicit = [60, 120, 180, 240, 300, 360, 480, 600, 720, 840]
 
 #params_timestep_sizes_rexi = [30]
 params_timestep_sizes_rexi = [60, 120, 180, 240, 300, 360, 480, 600, 720, 840]
