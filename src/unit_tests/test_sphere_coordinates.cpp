@@ -29,7 +29,7 @@ int main(int i_argc, char *i_argv[])
 
 	for (double lon = dlon*0.5; lon < 2.0*M_PI; lon += dlon)
 	{
-		std::cout << lon << std::endl;
+		std::cout << "Testing for longitude " << lon << std::endl;
 		a_lon.scalar_data[0] = lon;
 
 		for (double lat = -M_PI*0.5+dlat*0.5; lat <= M_PI*0.5; lat += dlat)
