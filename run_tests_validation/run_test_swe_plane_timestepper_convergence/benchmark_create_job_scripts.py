@@ -210,7 +210,7 @@ if __name__ == "__main__":
 		if True:
 			tsm = ts_methods[0]
 
-			p.timestep_size = timestep_size_reference
+			p.runtime.timestep_size = timestep_size_reference
 
 			p.runtime.timestepping_method = tsm[0]
 			p.runtime.timestepping_order = tsm[1]
@@ -221,7 +221,7 @@ if __name__ == "__main__":
 				s = tsm[4]
 				p.runtime.load_from_dict(tsm[4])
 
-			p.gen_script('script_'+prefix_string_template+'_ref'+p.runtime.getUniqueID(p.compile), 'run.sh')
+			p.gen_script('job_benchref_'+prefix_string_template+'_'+p.runtime.getUniqueID(p.compile), 'run.sh')
 
 
 		#
@@ -238,5 +238,5 @@ if __name__ == "__main__":
 					s = tsm[4]
 					p.runtime.load_from_dict(tsm[4])
 
-				p.gen_script('script_'+prefix_string_template+p.runtime.getUniqueID(p.compile), 'run.sh')
+				p.gen_script('job_bench_'+prefix_string_template+'_'+p.runtime.getUniqueID(p.compile), 'run.sh')
 

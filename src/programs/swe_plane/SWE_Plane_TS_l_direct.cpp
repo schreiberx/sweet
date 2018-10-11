@@ -150,7 +150,7 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 
 
 #if SWEET_THREADING_SPACE
-	#pragma omp parallel for OPENMP_PAR_SIMD proc_bind(close) collapse(2)
+	SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD_COLLAPSE2
 #endif
 	for (std::size_t ik1 = 0; ik1 < io_h_pert.planeDataConfig->spectral_data_size[1]; ik1++)
 	{
@@ -661,9 +661,7 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 	T sqrt_h = rexiFunctions.l_sqrt(h);
 	T sqrt_g = rexiFunctions.l_sqrt(g);
 
-#if SWEET_THREADING_SPACE
-	#pragma omp parallel for OPENMP_PAR_SIMD proc_bind(close) collapse(2)
-#endif
+	SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD_COLLAPSE2
 	for (std::size_t ik1 = 0; ik1 < i_h_pert.planeDataConfig->spectral_complex_data_size[1]; ik1++)
 	{
 		for (std::size_t ik0 = 0; ik0 < i_h_pert.planeDataConfig->spectral_complex_data_size[0]; ik0++)

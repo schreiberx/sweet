@@ -57,7 +57,7 @@ for group_info in groups:
 	print("Group to be tested: "+str(group)+" "+str(conv_order))
 	print("")
 	#List of output files (all methods in group)
-	outputs = glob.glob("script_"+group+"*.out")
+	outputs = glob.glob("job_bench_"+group+"*/output.out")
 	outputs.sort()
 			
 	#
@@ -77,12 +77,14 @@ for group_info in groups:
 		#test_group_methods[-1].append(test_name)
 
 	print("")
-	print("Methods to be analysed:"+str(test_group_methods))
+	print("Methods to be analysed:")
+	for t in test_group_methods:
+		print(t)
 	print("")
 
 	for method in test_group_methods:
 		# List of outputs for this method
-		outputs = glob.glob(method+"*.out")
+		outputs = glob.glob(method+"*/output.out")
 		outputs.sort()
 
 		conv_test = []

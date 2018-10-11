@@ -23,7 +23,7 @@ for i in $DIRS; do
 	test -d "$i" || continue
 
 	cd "$i"
-	./run.sh | tee "../$i.out" || exit 2>&1
+	./run.sh 2>&1 || exit 1 | tee "../$i.out"
 	cd ".."
 
 done

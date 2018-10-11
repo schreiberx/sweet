@@ -176,48 +176,6 @@ class default_params:
 
 		content = "#!/bin/bash\n"
 
-		#
-		# YELLOWSTONE:
-		# Each node has 16 cores
-		# 8 cores per socket
-		# hyperthreading enabled
-		#
-
-		if self.target_machine == '':
-			content += "\n"
-		elif self.target_machine == 'yellowstone':
-			content += """
-#
-# LSF batch script to run an MPI application
-#
-# YELLOW STONE SPECIFIC!!!
-# https://www2.cisl.ucar.edu/resources/computational-systems/yellowstone/
-#
-#BSUB -P NCIS0002            # project code
-#BSUB -W 02:00               # wall-clock time (hrs:mins)
-#
-#BSUB -n """+str(mpi_ranks_total)+"""   # number of tasks in job         
-#BSUB -R "span[ptile=16]"    # run 16 MPI tasks per node
-#
-#BSUB -outdir """+dirname+"""
-#BSUB -J """+job_id+"""      # job name
-#BSUB -o """+dirname+""".out  # output file name in which %J is replaced by the job ID
-#BSUB -e """+dirname+""".out  # error file name in which %J is replaced by the job ID
-#
-## https://www2.cisl.ucar.edu/resources/computational-systems/yellowstone/using-computing-resources/queues-and-charges
-#BSUB -q small
-#
-
-#
-# More example job scripts:
-# https://www2.cisl.ucar.edu/resources/computational-systems/yellowstone/using-computing-resources/running-jobs/platform-lsf-job-script-examples
-#
-""" # end yellowstone script
-		else:
-			print("Target machine "+str(self.target_machine)+" not supported")
-			sys.exit(1)
-
-
 		content += """
 
 cd \""""+dirname+"""\"
@@ -231,15 +189,11 @@ cd "$SWEETROOT"
 
 pwd
 
-# Always load local software
-#source ./local_software/env_vars.sh || exit 1
-source ~/.bashrc
 
 #make clean || exit 1
 
 """
-		if self.target_machine == '':
-			content += """
+		content += """
 
 . ./local_software/env_vars.sh
 
@@ -248,12 +202,6 @@ echo "$SCONS"
 $SCONS || exit 1
 
 """
-		elif self.target_machine == 'yellowstone':
-			pass
-
-		else:
-			print("Target machine "+str(self.target_machine)+" not supported")
-			sys.exit(1)
 
 		content += """
 cd "$BASEDIR"
@@ -266,13 +214,8 @@ cd "$BASEDIR"
 		#else:
 		#	content += 'EXEC="$SWEETROOT/build/burgers_plspec_pldeal_quadmath_omp_fft_gnu_release'
 
-		content += 'EXEC="$SWEETROOT/build/burgers_plspec_pldeal_*release'
+		content += 'EXEC="$SWEETROOT/build/burgers_*plspec_pldeal_*release'
 
-#		content += ' -g '+str(self.g)
-#		content += ' -H '+str(self.h)
-#		content += ' -f '+str(self.f)
-#		content += ' -F '+str(self.f_sphere)
-#		content += ' -a '+str(self.r)
 		if self.mode_res != -1:
 			content += ' -M '+str(self.mode_res)
 		if self.phys_res != -1:
@@ -459,7 +402,8 @@ timestep_sizes = [0.0001*(2.0**i) for i in range(0, 11)]
 # Groups to execute, see below
 # l: linear
 # ln: linear and nonlinear
-groups = ['l1', 'l2', 'ln1', 'ln2', 'ln4']
+#groups = ['l1', 'l2', 'ln1', 'ln2', 'ln4']
+groups = ['l1', 'l2', 'ln1', 'ln2']
 
 #if len(sys.argv) < 5:
 #	print("Usage: "+str(sys.argv[0])+" [group=l1/l2/ln1/ln2] [tsmethod] [order1] [order2] [use rexi direct solution]")
