@@ -255,9 +255,7 @@ public:
 
 
 			case get_kernel_mask3x3(0, 0, 0, 1, 1, 1, 0, 0, 0):	// (X, X, X)
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for OPENMP_PAR_SIMD collapse(2)
-#endif
+					SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD_COLLAPSE2
 					for (int y = 0; y < res_y; y++)
 					{
 						for (int x = 0; x < res_x; x++)

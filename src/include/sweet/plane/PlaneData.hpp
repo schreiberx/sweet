@@ -68,7 +68,7 @@
 
 
 #define PLANE_DATA_PHYSICAL_FOR_IDX_REDUCTION(CORE, REDUCTION)				\
-		_Pragma("omp parallel for OPENMP_PAR_SIMD "##REDUCTION##" proc_bind(close)")	\
+		_Pragma("omp parallel for "##REDUCTION##" proc_bind(close)")	\
 		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)	\
 		{	CORE;	}
 
