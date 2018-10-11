@@ -1322,7 +1322,7 @@ public:
 
 
 
-#if 0
+#if 1
 	SphereData physical_diff_realconst(
 			const SphereData &i_sphereData
 	)	const
