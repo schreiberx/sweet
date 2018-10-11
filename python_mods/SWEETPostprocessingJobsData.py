@@ -296,9 +296,7 @@ class SWEETPostprocessingJobsData(InfoError):
 		# Determine full set of primary keys in case that primary key is missing somewhere
 		#
 		row_keys = []
-		#for group_id, group_jobs in groups.items():
-		for group_id in sorted(groups):
-			group_jobs = groups[group_id]
+		for group_id, group_jobs in groups.items():
 			for jobdir, jobdata in group_jobs.items():
 				primary_key = jobdata[primary_key_attribute_name]
 				if not primary_key in row_keys:
@@ -309,7 +307,7 @@ class SWEETPostprocessingJobsData(InfoError):
 			row_keys.sort()
 
 		# get column names
-		col_keys = list(groups.keys())
+		col_keys = sorted(list(groups.keys()))
 
 		# get dimensions of table
 		ncols = len(groups)
@@ -318,10 +316,7 @@ class SWEETPostprocessingJobsData(InfoError):
 		# Create table data
 		data = [[None for i in range(ncols+1)] for j in range(nrows+1)]
 
-		#for group_id, group_jobs in groups.items():
-		for group_id in sorted(groups):
-			group_jobs = groups[group_id]
-
+		for group_id, group_jobs in groups.items():
 			col_key = group_id
 			col_id = col_keys.index(col_key)
 
