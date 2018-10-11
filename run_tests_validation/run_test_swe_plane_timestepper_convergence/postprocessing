@@ -8,7 +8,8 @@ from subprocess import Popen, PIPE
 
 
 # Load simulation time to get reference file
-import jobs_create as jc
+import benchmark_create_job_scripts as jc
+
 simtime = jc.p.runtime.simtime
 print(simtime)
 t = ("%8.8f" % simtime).zfill(20)
@@ -35,7 +36,7 @@ for group_info in groups:
 	conv_order = group_info[1]
 
 	ref_dir=""
-	for i in glob.glob("script_"+group+"_ref*"):
+	for i in glob.glob("job_benchref_"+group+"_*"):
 		if os.path.isdir(i):
 			ref_dir=i
 			break
@@ -46,7 +47,7 @@ for group_info in groups:
 	prev_conv_value = 0.0
 
 	print("SIMNAME\tL1\tL2\tLinf\tCONV")
-	directories = glob.glob("script_"+group+"_*")
+	directories = glob.glob("job_bench_"+group+"_*")
 	directories.sort()
 
 	prev_test_name = ""
