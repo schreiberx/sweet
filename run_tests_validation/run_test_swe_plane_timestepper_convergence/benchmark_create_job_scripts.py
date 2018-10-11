@@ -64,10 +64,11 @@ else:
 # REXI method
 # N=64, SX,SY=50 and MU=0 with circle primitive provide good results
 #
-p.runtime.rexi_method = 'ci'
+#p.runtime.rexi_method = 'ci'
+p.runtime.rexi_method = 'direct'
 p.runtime.rexi_ci_n = 64
-p.runtime.rexi_ci_sx = 50
-p.runtime.rexi_ci_sy = 50
+p.runtime.rexi_ci_max_real = 10
+p.runtime.rexi_ci_max_imag = 10
 p.runtime.rexi_ci_mu = 0
 p.runtime.rexi_ci_primitive = 'circle'
 
