@@ -17,8 +17,6 @@ class default_params:
 
 	prefix_string = ''
 
-	plane_or_sphere = 'plane'
-
 	#	mode_res = 32
 	mode_res = -1
 	phys_res = -1
@@ -362,16 +360,9 @@ $EXEC || exit 1
 #		idstr += '_h'+str(self.h)
 #		idstr += '_f'+str(self.f)
 
-#		if self.plane_or_sphere == 'sphere':
-#			idstr += '_a'+str(self.r)
-
 		idstr += '_u'+str(self.viscosity)
 
 #		idstr += '_pdeid'+str(self.pde_id)
-
-#		if self.plane_or_sphere == 'sphere':
-#			idstr += '_robert'+str(self.use_robert_functions)
-#			idstr += '_fsphere'+str(self.f_sphere)
 
 #		idstr += '_t'+str(self.simtime).zfill(8)
 #		idstr += '_o'+str(self.output_timestep_size).zfill(8)
@@ -404,9 +395,6 @@ $EXEC || exit 1
 #            idstr += '_rexinorm'+str(self.rexi_normalization)
 #            idstr += '_rexihalf'+str(self.rexi_half_poles)
 	
-#			if self.plane_or_sphere == 'sphere':
-#				idstr += '_rexiprealloc'+str(self.rexi_sphere_preallocation)
-#				idstr += '_rexiextmodes'+str(self.rexi_extended_modes).zfill(2)
 
 #			idstr += '_rexipar'+str(1 if self.rexi_par else 0)
 
@@ -444,8 +432,6 @@ p = default_params()
 
 
 p.verbosity = 2
-
-p.plane_or_sphere = 'plane'
 
 p.mode_res = -1
 p.phys_res = 128
