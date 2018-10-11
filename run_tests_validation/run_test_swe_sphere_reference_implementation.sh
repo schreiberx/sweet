@@ -2,16 +2,17 @@
 
 
 echo "***********************************************"
-echo "Running comparisons of SWEET SWE on the sphere implementation with Python reference implementation
+echo "Running comparisons of SWEET SWE on the sphere implementation with Python reference implementation"
 echo "***********************************************"
 
 
 cd "./run_test_swe_sphere_reference_implementation" || exit
 
-echo "TODO"
 ./cleanup_all || exit 1
 
 ./benchmark_create_job_scripts || exit 1
+
+./benchmark_gen_swe_reference_solution.py || exit 1
 
 ./platform_jobs_run_directly || exit 1
 

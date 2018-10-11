@@ -13,7 +13,7 @@ import shtns
 import sys
 import os
 
-debug = 10
+#debug = 10
 debug = 0
 
 
@@ -180,61 +180,109 @@ if __name__ == "__main__":
 	f = 2.*omega*np.sin(lats) # coriolis
 	outputMinMaxSum(f, "f")
 
-	# zonal jet.
-	vg = np.zeros((nlats,nlons),np.float)
-	u1 = (umax/en)*np.exp(1./((x.lats-phi0)*(x.lats-phi1)))
-	outputMinMaxSum(u1, "u1")
-	ug = np.zeros((nlats),np.float)
-	ug = np.where(np.logical_and(x.lats < phi1, x.lats > phi0), u1, ug)
-	ug.shape = (nlats,1)
-	ug = ug*np.ones((nlats,nlons),dtype=np.float) # broadcast to shape (nlats,nlonss)
+	def setup(add_bump = True):
 
-	# height perturbation.
-	hbump = hamp*np.cos(lats)*np.exp(-(lons/alpha)**2)*np.exp(-(phi2-lats)**2/beta)
-	outputMinMaxSum(hbump, "hbump")
+		# zonal jet.
+		vg = np.zeros((nlats,nlons),np.float)
+		u1 = (umax/en)*np.exp(1./((x.lats-phi0)*(x.lats-phi1)))
+		outputMinMaxSum(u1, "u1")
+		ug = np.zeros((nlats),np.float)
+		ug = np.where(np.logical_and(x.lats < phi1, x.lats > phi0), u1, ug)
+		ug.shape = (nlats,1)
+		ug = ug*np.ones((nlats,nlons),dtype=np.float) # broadcast to shape (nlats,nlonss)
 
-	# initial vorticity, divergence in spectral space
+		# height perturbation.
+		hbump = hamp*np.cos(lats)*np.exp(-(lons/alpha)**2)*np.exp(-(phi2-lats)**2/beta)
+		outputMinMaxSum(hbump, "hbump")
 
-	vrtspec, divspec =  x.getvrtdivspec(ug,vg)
+		# initial vorticity, divergence in spectral space
+		vrtspec, divspec =  x.getvrtdivspec(ug,vg)
+
+		# Truncate velocities!
+		# This is different to the original Whitaker version
+		ug, vg = x.getuv(vrtspec, divspec)
+
+		# create hyperdiffusion factor
+	#	hyperdiff_fact = np.exp((-dt/efold)*(x.lap/x.lap[-1])**(ndiss/2))
+
+		# solve nonlinear balance eqn to get initial zonal geopotential,
+		# add localized bump (not balanced).
+		vrtg = x.spectogrd(vrtspec)
+
+		outputMinMaxSum(ug, "ug")
+		outputMinMaxSum(vg, "vg")
+		outputMinMaxSum(vg, "f")
+		
+		tmpg1 = ug*(vrtg+f); tmpg2 = vg*(vrtg+f)
+		outputMinMaxSum(tmpg1, "tmpg1")
+		outputMinMaxSum(tmpg2, "tmpg2")
+		
+		tmpspec1, tmpspec2 = x.getvrtdivspec(tmpg1,tmpg2)
+		outputMinMaxSum(x.spectogrd(tmpspec1), "tmpspec1")
+		
+		tmpspec2 = x.grdtospec(0.5*(ug**2+vg**2))
+		outputMinMaxSum(x.spectogrd(tmpspec2), "tmpspec2")
+
+		phispec = x.invlap*tmpspec1 - tmpspec2
+		outputMinMaxSum(x.spectogrd(phispec), "phispec")
+
+		phig = grav*hbar
+		phig += x.spectogrd(phispec)
+		
+		phispec = x.grdtospec(phig)
+
+		if add_bump:
+			phispec += x.grdtospec(grav*hbump)
+
+		return vrtspec, divspec, phispec
 
 
-	# create hyperdiffusion factor
-#	hyperdiff_fact = np.exp((-dt/efold)*(x.lap/x.lap[-1])**(ndiss/2))
+	def timestep(vrtspec, divspec, phispec):
+		# get vort,u,v,phi on grid
+		vrtg = x.spectogrd(vrtspec)
+		ug, vg = x.getuv(vrtspec,divspec)
+		phig = x.spectogrd(phispec)
+		
+		# compute tendencies.
+		tmpg1 = ug*(vrtg+f); tmpg2 = vg*(vrtg+f)
+		
+		ddivdtspec, dvrtdtspec = x.getvrtdivspec(tmpg1,tmpg2)
+		
+		dvrtdtspec *= -1
+		tmpg = x.spectogrd(ddivdtspec)
+		
+		tmpg1 = ug*phig; tmpg2 = vg*phig
+		
+		tmpspec, dphidtspec = x.getvrtdivspec(tmpg1,tmpg2)
+				
+		dphidtspec *= -1
+		tmpspec = x.grdtospec(phig+0.5*(ug**2+vg**2))
+		ddivdtspec += -x.lap*tmpspec
+		
+		#print(np.max(np.abs(dphidtspec)))
+		return(dvrtdtspec, ddivdtspec, dphidtspec)
 
-	# solve nonlinear balance eqn to get initial zonal geopotential,
-	# add localized bump (not balanced).
-	vrtg = x.spectogrd(vrtspec)
-	outputMinMaxSum(vrtg, "vrtg")
-	outputMinMaxSum(ug, "ug")
-	outputMinMaxSum(vg, "vg")
-	
-	tmpg1 = ug*(vrtg+f); tmpg2 = vg*(vrtg+f)
+	# Test for optimal geostrophic balance
+	vrtspec, divspec, phispec = setup(False)
+	tendencies = timestep(vrtspec, divspec, phispec)
 
-	outputMinMaxSum(tmpg1, "tmpg1")
-	outputMinMaxSum(tmpg2, "tmpg2")
-	
-	tmpspec1, tmpspec2 = x.getvrtdivspec(tmpg1,tmpg2)
-	outputSpecMinMaxSum(tmpspec1, "tmpspec1")
-	outputSpecMinMaxSum(tmpspec2, "tmpspec2")
-	
-	tmpspec2 = x.grdtospec(0.5*(ug**2+vg**2))
-	outputMinMaxSum(x.spectogrd(tmpspec2), "tmpspec2")
-	outputSpecMinMaxSum(tmpspec2, "tmpspec2")
-	
-	phispec = x.invlap*tmpspec1 - tmpspec2
-	outputMinMaxSum(x.spectogrd(phispec), "phispec")
+	l1_dvrtdt = np.max(np.abs(tendencies[0]))
+	l1_ddivdt = np.max(np.abs(tendencies[1]))
+	l1_dphidt = np.max(np.abs(tendencies[2]))
+	print("l1 dvrtdt = "+str(l1_dvrtdt))
+	print("l1 ddivdt = "+str(l1_ddivdt))
+	print("l1 dphidt = "+str(l1_dphidt))
 
-	
+	if l1_dphidt/hbar > 1e-12:
+		raise Exception("Error too high!")
 
-	phig = grav*hbar
-	phig += grav*hbump
-	phig += x.spectogrd(phispec)
-	
-	phispec = x.grdtospec(phig)
+	if l1_dvrtdt > 1e-16:
+		raise Exception("Error too high!")
 
-	outputMinMaxSum(x.spectogrd(phispec), "phispec")
-	outputMinMaxSum(x.spectogrd(vrtspec), "vrtspec")
-	outputMinMaxSum(x.spectogrd(divspec), "divspec")
+	if l1_ddivdt > 1e-12:
+		raise Exception("Error too high!")
+
+	vrtspec, divspec, phispec = setup(True)
 
 	# initialize spectral tendency arrays
 	ddivdtspec = np.zeros(vrtspec.shape+(3,), np.complex)
@@ -243,55 +291,6 @@ if __name__ == "__main__":
 	nnew = 0; nnow = 1; nold = 2
 
 
-
-	def timestep(vrtspec, divspec, phispec):
-		# get vort,u,v,phi on grid
-		vrtg = x.spectogrd(vrtspec)
-		ug,vg = x.getuv(vrtspec,divspec)
-		phig = x.spectogrd(phispec)
-		
-		outputMinMaxSum(vrtg, "vrtg")
-		outputMinMaxSum(ug, "ug")
-		outputMinMaxSum(vg, "vg")
-		outputMinMaxSum(phig, "phig")
-
-		#print('t=%6.2f hours: min/max %6.9f, %6.9f	 %6.9f, %6.9f	 %6.9f, %6.9f' % (t/3600., phig.min()/grav, phig.max()/grav, ug.min(), ug.max(), vg.min(), vg.max()))
-		# compute tendencies.
-		tmpg1 = ug*(vrtg+f); tmpg2 = vg*(vrtg+f)
-		
-		outputMinMaxSum(tmpg1, "tmpg1")
-		outputMinMaxSum(tmpg2, "tmpg2")
-		
-		ddivdtspec, dvrtdtspec = x.getvrtdivspec(tmpg1,tmpg2)
-		
-		outputSpecMinMaxSum(ddivdtspec, "ddivdtspec")
-		outputSpecMinMaxSum(dvrtdtspec, "dvrtdtspec")
-		
-		dvrtdtspec *= -1
-		tmpg = x.spectogrd(ddivdtspec)
-		outputMinMaxSum(tmpg, "tmpg")
-		
-		tmpg1 = ug*phig; tmpg2 = vg*phig
-		outputMinMaxSum(tmpg1, "tmpg1")
-		outputMinMaxSum(tmpg2, "tmpg2")
-		
-		tmpspec, dphidtspec = x.getvrtdivspec(tmpg1,tmpg2)
-		outputSpecMinMaxSum(tmpspec, "tmpspec")
-		outputSpecMinMaxSum(dphidtspec, "dphidtspec")
-				
-		dphidtspec *= -1
-		tmpspec = x.grdtospec(phig+0.5*(ug**2+vg**2))
-		ddivdtspec += -x.lap*tmpspec
-		
-		outputSpecMinMaxSum(dvrtdtspec, "dvrtdtspec")
-		outputSpecMinMaxSum(ddivdtspec, "ddivdtspec")
-		outputSpecMinMaxSum(dphidtspec, "dphidtspec")
-		
-		outputMinMaxSum(x.spectogrd(dvrtdtspec), "dvrtdtg")
-		outputMinMaxSum(x.spectogrd(ddivdtspec), "ddivdtg")
-		outputMinMaxSum(x.spectogrd(dphidtspec), "dphidtg")
-
-		return(dvrtdtspec, ddivdtspec, dphidtspec)
 
 	t = 0
 	os.makedirs("job_ref_solution", exist_ok=True)
@@ -313,13 +312,12 @@ if __name__ == "__main__":
 		t = ncycle*dt
 
 		maxval = x.spectogrd(phispec).max()
-		print("TIMESTEP "+str(ncycle)+", t="+str(t/(60*60))+", maxval="+str(maxval))
-		#outputMinMaxSum(i_data, i_prefix):
 
-		# RK2 time stepping
 		if True:
+			# RK1 time stepping
 			(vrtdt, divdt, phidt) = timestep(vrtspec, divspec, phispec)
 		else:
+			# RK2 time stepping
 			(vrtdt, divdt, phidt) = timestep(vrtspec, divspec, phispec)
 			(vrtdt, divdt, phidt) = timestep(vrtspec+0.5*dt*vrtdt, divspec+0.5*dt*divdt, phispec+0.5*dt*phidt)
 
@@ -330,9 +328,13 @@ if __name__ == "__main__":
 		t += dt
 
 		if t % output_t == 0:
+			print("FILEOUTPUT TIMESTEP "+str(ncycle)+", t="+str(t/(60*60))+", maxval="+str(maxval))
 			savefile(phispec, "prog_phi", t)
 			savefile(vrtspec, "prog_vort", t)
 			savefile(divspec, "prog_div", t)
+		else:
+			if debug > 0:
+				print("TIMESTEP "+str(ncycle)+", t="+str(t/(60*60))+", maxval="+str(maxval))
 
 	savefile(phispec, "prog_phi", t)
 	savefile(vrtspec, "prog_vort", t)
