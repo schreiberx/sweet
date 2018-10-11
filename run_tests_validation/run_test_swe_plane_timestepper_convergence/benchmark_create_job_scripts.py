@@ -222,7 +222,7 @@ if __name__ == "__main__":
 				s = tsm[4]
 				p.runtime.load_from_dict(tsm[4])
 
-			p.gen_script('job_benchref_'+prefix_string_template+'_'+p.runtime.getUniqueID(p.compile), 'run.sh')
+			p.gen_jobscript_directory('job_benchref_'+prefix_string_template+'_'+p.getUniqueID())
 
 
 		#
@@ -239,5 +239,5 @@ if __name__ == "__main__":
 					s = tsm[4]
 					p.runtime.load_from_dict(tsm[4])
 
-				p.gen_script('job_bench_'+prefix_string_template+'_'+p.runtime.getUniqueID(p.compile), 'run.sh')
+				p.gen_jobscript_directory('job_bench_'+prefix_string_template+'_'+p.getUniqueID())
 
