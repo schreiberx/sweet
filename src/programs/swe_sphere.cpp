@@ -971,7 +971,7 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "***************************************************" << std::endl;
 		std::cout << "* Other timing information (derived)" << std::endl;
 		std::cout << "***************************************************" << std::endl;
-		std::cout << "[MULE] SimulationBenchmarkTimings.time_per_time_step (secs/ts): " << SimulationBenchmarkTimings::getInstance().main_timestepping()/(double)simVars.timecontrol.current_timestep_nr << std::endl;
+		std::cout << "[MULE] simulation_benchmark_timings.time_per_time_step (secs/ts): " << SimulationBenchmarkTimings::getInstance().main_timestepping()/(double)simVars.timecontrol.current_timestep_nr << std::endl;
 	}
 
 

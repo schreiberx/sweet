@@ -57,9 +57,9 @@ public:
 	{
 		if (main() != 0 || main_setup() != 0 || main_timestepping() != 0)
 		{
-			std::cout << "[MULE] SimulationBenchmarkTimings.main: " << main() << std::endl;
-			std::cout << "[MULE] SimulationBenchmarkTimings.main_setup: " << main_setup() << std::endl;
-			std::cout << "[MULE] SimulationBenchmarkTimings.main_simulationloop: " << main_timestepping() << std::endl;
+			std::cout << "[MULE] simulation_benchmark_timings.main: " << main() << std::endl;
+			std::cout << "[MULE] simulation_benchmark_timings.main_setup: " << main_setup() << std::endl;
+			std::cout << "[MULE] simulation_benchmark_timings.main_timestepping: " << main_timestepping() << std::endl;
 		}
 
 #if SWEET_REXI_TIMINGS
@@ -74,14 +74,14 @@ public:
 				rexi_timestepping_miscprocessing() != 0
 		)
 		{
-			std::cout << "[MULE] SimulationBenchmarkTimings.rexi: " << rexi() << std::endl;
-			std::cout << "[MULE] SimulationBenchmarkTimings.rexi_setup: " << rexi_setup() << std::endl;
-			std::cout << "[MULE] SimulationBenchmarkTimings.rexi_shutdown: " << rexi_shutdown() << std::endl;
-			std::cout << "[MULE] SimulationBenchmarkTimings.rexi_timestepping: " << rexi_timestepping() << std::endl;
-			std::cout << "[MULE] SimulationBenchmarkTimings.rexi_timestepping_solver: " << rexi_timestepping_solver() << std::endl;
-			std::cout << "[MULE] SimulationBenchmarkTimings.rexi_timestepping_broadcast: " << rexi_timestepping_broadcast() << std::endl;
-			std::cout << "[MULE] SimulationBenchmarkTimings.rexi_timestepping_reduce: " << rexi_timestepping_reduce() << std::endl;
-			std::cout << "[MULE] SimulationBenchmarkTimings.rexi_timestepping_miscprocessing: " << rexi_timestepping_miscprocessing() << std::endl;
+			std::cout << "[MULE] simulation_benchmark_timings.rexi: " << rexi() << std::endl;
+			std::cout << "[MULE] simulation_benchmark_timings.rexi_setup: " << rexi_setup() << std::endl;
+			std::cout << "[MULE] simulation_benchmark_timings.rexi_shutdown: " << rexi_shutdown() << std::endl;
+			std::cout << "[MULE] simulation_benchmark_timings.rexi_timestepping: " << rexi_timestepping() << std::endl;
+			std::cout << "[MULE] simulation_benchmark_timings.rexi_timestepping_solver: " << rexi_timestepping_solver() << std::endl;
+			std::cout << "[MULE] simulation_benchmark_timings.rexi_timestepping_broadcast: " << rexi_timestepping_broadcast() << std::endl;
+			std::cout << "[MULE] simulation_benchmark_timings.rexi_timestepping_reduce: " << rexi_timestepping_reduce() << std::endl;
+			std::cout << "[MULE] simulation_benchmark_timings.rexi_timestepping_miscprocessing: " << rexi_timestepping_miscprocessing() << std::endl;
 		}
 #endif
 	}

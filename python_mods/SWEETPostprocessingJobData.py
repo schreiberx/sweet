@@ -56,7 +56,7 @@ class SWEETPostprocessingJobData(InfoError):
 			# Dictionary with data from job generation
 			# (read from [jobdir]/jobgeneration.pickle)
 			#
-			'jobgeneration':
+			'jobgeneration':	# From jobgeneration.pickle
 			{
 				'compile': [...],
 				'runtime': [...],
@@ -64,10 +64,10 @@ class SWEETPostprocessingJobData(InfoError):
 				'platforms_platform': [...],
 				'platform_resources': [...],
 			},
-			'output':
+			'output':		# From output.out with prefix [MULE]
 			{
-				'SimulationBenchmarkTimings.main': [value],
-				'SimulationBenchmarkTimings.main_simulationLoop': [value],
+				'simulation_benchmark_timings.main': [value],
+				'simulation_benchmark_timings.main_simulationLoop': [value],
 				[...]
 			},
 			'[filename(.pickle)]':
@@ -168,7 +168,6 @@ class SWEETPostprocessingJobData(InfoError):
 		for raw_key, raw_value in self.__job_raw_data.items():
 			if raw_key == 'output':
 				for key, data in raw_value.items():
-					key = key.replace('SimulationBenchmarkTimings', 'benchmark_timings')
 					key = 'output.'+key.lower()
 					self.__flattened_job_data[key] = data
 
