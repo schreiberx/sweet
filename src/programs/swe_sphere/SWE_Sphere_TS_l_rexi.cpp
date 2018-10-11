@@ -32,6 +32,9 @@
 #endif
 
 
+#define SWEET_REXI_ALLREDUCE 0
+
+
 #if SWEET_MPI
 #	include <mpi.h>
 #endif
@@ -953,19 +956,19 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 		}
 
 
-		#if SWEET_DEBUG
-			if (	!io_prog_phi0.physical_space_data_valid	||
-					!io_prog_vort0.physical_space_data_valid	||
-					!io_prog_div0.physical_space_data_valid
-				)
-			{
-				FatalError("SPECTRAL DATA NOT AVAILABLE, BUT REQUIRED!");
-			}
-		#endif
 	#endif	// END SWEET_THREADING_TIME_REXI
 
 
 
+	#if SWEET_DEBUG
+		if (	!io_prog_phi0.physical_space_data_valid	||
+				!io_prog_vort0.physical_space_data_valid	||
+				!io_prog_div0.physical_space_data_valid
+			)
+		{
+			FatalError("SPECTRAL DATA NOT AVAILABLE, BUT REQUIRED!");
+		}
+	#endif
 
 	#if SWEET_REXI_TIMINGS_ADDITIONAL_BARRIERS && SWEET_MPI
 		#if SWEET_REXI_TIMINGS
@@ -981,6 +984,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 
 	#if SWEET_MPI
+
 		#if SWEET_REXI_TIMINGS
 			SimulationBenchmarkTimings::getInstance().rexi_timestepping_reduce.start();
 		#endif
@@ -999,7 +1003,11 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 			SphereData tmp(sphereDataConfig);
 
+#if SWEET_REXI_ALLREDUCE
+			int retval = MPI_Allreduce(io_prog_phi0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+#else
 			int retval = MPI_Reduce(io_prog_phi0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
 			if (retval != MPI_SUCCESS)
 			{
 				FatalError("MPI Reduce FAILED!");
@@ -1008,10 +1016,18 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 			std::swap(io_prog_phi0.physical_space_data, tmp.physical_space_data);
 
+#if SWEET_REXI_ALLREDUCE
+			MPI_Allreduce(io_prog_vort0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+#else
 			MPI_Reduce(io_prog_vort0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
 			std::swap(io_prog_vort0.physical_space_data, tmp.physical_space_data);
 
+#if SWEET_REXI_ALLREDUCE
+			MPI_Allreduce(io_prog_div0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+#else
 			MPI_Reduce(io_prog_div0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
 			std::swap(io_prog_div0.physical_space_data, tmp.physical_space_data);
 
 
