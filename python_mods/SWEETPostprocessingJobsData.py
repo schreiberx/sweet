@@ -85,7 +85,7 @@ class SWEETPostprocessingJobsData(InfoError):
 				self.info("Processing '"+job_dir+"'")
 
 
-			self.__jobs_data[job_dir] = SWEETPostprocessingJobData(job_dir)
+			self.__jobs_data[job_dir] = SWEETPostprocessingJobData(job_dir, verbosity=self.verbosity)
 
 
 
@@ -203,13 +203,18 @@ class SWEETPostprocessingJobsData(InfoError):
 		plot_data = {}
 
 		groups = self.create_groups(group_identifiers)
-#		for group_id, group_jobs in groups.items():
 		for group_id in sorted(groups):
 			group_jobs = groups[group_id]
 
 			x_values = []
 			y_values = []
 			for jobdir, jobdata in group_jobs.items():
+				if not primary_key_attribute_name in jobdata:
+					print("")
+					print("WARNING: No data for attribute "+primary_key_attribute_name+" found")
+					print("WARNING: Job: "+jobdir)
+					continue
+
 				x = jobdata[primary_key_attribute_name]
 
 				if not data_attribute_name in jobdata:
@@ -230,6 +235,31 @@ class SWEETPostprocessingJobsData(InfoError):
 			}
 
 		return plot_data
+
+
+
+	def print_data_plotting(self, data_plotting):
+		for group_key in sorted(data_plotting):
+			print("Group '"+group_key+"'")
+			group_data = data_plotting[group_key]
+
+			for x, y in zip(group_data['x_values'], group_data['y_values']):
+				print("	"+str(x)+" -> "+str(y))
+			print("")
+
+
+
+	def write_data_plotting(self, data_plotting, filename):
+		with open(filename, 'w') as f:
+			for group_key in sorted(data_plotting):
+				f.write("Group '"+group_key+"'\n")
+				group_data = data_plotting[group_key]
+
+				f.write("x_values\ty_values")
+				for x, y in zip(group_data['x_values'], group_data['y_values']):
+					f.write(str(x)+"\t"+str(y)+"\n")
+				f.write("\n")
+
 
 
 	def create_data_plotting_float(
@@ -298,6 +328,12 @@ class SWEETPostprocessingJobsData(InfoError):
 		row_keys = []
 		for group_id, group_jobs in groups.items():
 			for jobdir, jobdata in group_jobs.items():
+				if not primary_key_attribute_name in jobdata:
+					print("")
+					print("WARNING: No data for attribute "+primary_key_attribute_name+" found")
+					print("WARNING: Job: "+jobdir)
+					continue
+
 				primary_key = jobdata[primary_key_attribute_name]
 				if not primary_key in row_keys:
 					row_keys.append(primary_key)
@@ -321,7 +357,15 @@ class SWEETPostprocessingJobsData(InfoError):
 			col_id = col_keys.index(col_key)
 
 			for jobdir, jobdata in group_jobs.items():
-				print("Job: "+jobdir)
+				if self.verbosity > 5:
+					print("Job: "+jobdir)
+
+				if not primary_key_attribute_name in jobdata:
+					print("")
+					print("WARNING: No data for attribute "+primary_key_attribute_name+" found")
+					print("WARNING: Job: "+jobdir)
+					continue
+
 				row_key = jobdata[primary_key_attribute_name]
 				row_id = row_keys.index(row_key)
 
@@ -336,9 +380,10 @@ class SWEETPostprocessingJobsData(InfoError):
 					raise Exception("Duplicate entry!")
 
 				if not data_attribute_name in jobdata:
-					print("Error: "+jobdir)
-					for key, value in jobdata.items():
-						print(" + "+key+": "+str(value))
+					print("WARNING: attribute "+data_attribute_name+" not found")
+					print("Job directory: "+jobdir)
+					#for key, value in jobdata.items():
+					#	print(" + "+key+": "+str(value))
 
 					# Ignore missing data, will be filled in by placeholder :-)
 					#raise Exception("attribute '"+data_attribute_name+"' not found")
