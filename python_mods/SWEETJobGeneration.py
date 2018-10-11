@@ -394,15 +394,15 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
 			if s != '':
 				unique_id += s
 
-		if 'compile' not in self.unique_id_filter:
-			s = self.compile.getUniqueID(self.unique_id_filter)
+		if 'parallelization' not in self.unique_id_filter:
+			s = self.parallelization.getUniqueID(self.unique_id_filter)
 			if unique_id != '':
 				unique_id += '_'
 			if s != '':
 				unique_id += s
 
-		if 'parallelization' not in self.unique_id_filter:
-			s = self.parallelization.getUniqueID(self.unique_id_filter)
+		if 'compile' not in self.unique_id_filter:
+			s = self.compile.getUniqueID(self.unique_id_filter)
 			if unique_id != '':
 				unique_id += '_'
 			if s != '':

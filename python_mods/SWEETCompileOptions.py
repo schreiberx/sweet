@@ -616,7 +616,7 @@ class SWEETCompileOptions(InfoError):
 		s = self.getUniqueID()
 
 		if s != '':
-			retval += s
+			retval += '_'+s
 
 		return retval
 
