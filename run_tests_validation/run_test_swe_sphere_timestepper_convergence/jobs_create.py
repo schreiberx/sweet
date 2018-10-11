@@ -15,7 +15,6 @@ p = SWEETJobGeneration()
 #
 p.compile.program = 'swe_sphere'
 
-p.compile.plane_or_sphere = 'sphere'
 p.compile.plane_spectral_space = 'disable'
 p.compile.plane_spectral_dealiasing = 'disable'
 p.compile.sphere_spectral_space = 'enable'

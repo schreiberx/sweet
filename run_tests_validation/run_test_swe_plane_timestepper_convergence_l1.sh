@@ -22,11 +22,11 @@ cd "$BASEDIR/run_test_swe_plane_timestepper_convergence"
 if false; then
 	# 4th order accurate scheme
 #	./jobs_create.py ln4 ln_erk 4 4 0
-	./jobs_create.py ln4 l_rexi_n_etdrk 4 4 1
+	./jobs_create.py ln4 l_rexi_n_etdrk 4 4 1 || exit 1
 else
 	# 1st order linear
-	./jobs_create.py l1 l_irk 1 0 0
-	./jobs_create.py l1 l_erk 1 0 0
+	./jobs_create.py l1 l_irk 1 0 0 || exit 1
+	./jobs_create.py l1 l_erk 1 0 0 || exit 1
 fi
 
 
