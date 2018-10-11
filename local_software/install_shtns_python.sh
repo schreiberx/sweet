@@ -10,7 +10,7 @@ PKG_NAME="SHTNS Python"
 PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/python3.6/site-packages/shtns.py"
 
 # URL to source code to fetch it
-PKG_URL_SRC="nschaeff-shtns-2018_10_01.tar.bz2"
+PKG_URL_SRC="shtns-3.1-r633.tar.gz"
 
 config_package $@ || exit 1
 
