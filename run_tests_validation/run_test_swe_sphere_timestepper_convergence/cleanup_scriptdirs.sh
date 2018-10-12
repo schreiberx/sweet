@@ -1,5 +1,5 @@
 #! /bin/bash
 
-for i in script_*; do
+for i in job_*; do
 	rm -rf "$i"
 done

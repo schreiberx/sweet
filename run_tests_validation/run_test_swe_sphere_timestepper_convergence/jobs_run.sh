@@ -11,7 +11,7 @@ cd "$THISDIR"
 
 
 if [ -z "$1" ]; then
-	DIRS=script_*
+	DIRS=job_bench*
 else
 	DIRS=$@
 fi
@@ -21,8 +21,8 @@ for i in $DIRS; do
 	test -d "$i" || continue
 
 	cd "$i"
-	./run.sh | tee "../$i/output.out"
-	test ${PIPESTATUS[0]} -eq 0 || exit 2>&1
+	echo "$i"
+	./run.sh 2>&1 > "../$i.out" || exit 1
 	cd ".."
 
 done

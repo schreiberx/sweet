@@ -38,7 +38,7 @@ for group_info in groups:
 	conv_order = group_info[1]
 
 	ref_dir=""
-	for i in glob.glob("script_"+group+"_ref*"):
+	for i in glob.glob("job_benchref_"+group+"_*"):
 		if os.path.isdir(i):
 			ref_dir=i
 			break
@@ -51,7 +51,7 @@ for group_info in groups:
 	if len(sys.argv) > 1:
 		directories = sys.argv[1:]
 	else:
-		directories = glob.glob("script_"+group+"_*")
+		directories = glob.glob("job_bench_"+group+"_*")
 		directories.sort()
 
 	#print(directories)
